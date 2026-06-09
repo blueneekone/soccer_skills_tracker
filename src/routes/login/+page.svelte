@@ -56,15 +56,18 @@
 		googleError = '';
 		loginEngine.error = '';
 		try {
-			const provider = new GoogleAuthProvider();
-			const result = await signInWithPopup(auth, provider);
-			const user = result.user;
-			await setDoc(
-				doc(db, 'users', user.uid),
-				{ email: user.email, displayName: user.displayName, photoURL: user.photoURL ?? null, lastLogin: serverTimestamp() },
-				{ merge: true },
-			);
-			await routeByFirestoreRole(user);
+		const provider = new GoogleAuthProvider();
+		const result = await signInWithPopup(auth, provider);
+		const user = result.user;
+		const emailKey = (user.email ?? '').trim().toLowerCase();
+		if (!emailKey) throw new Error('Google account has no email address — cannot create profile.');
+		await setDoc(
+			doc(db, 'users', emailKey),
+			{ email: user.email, displayName: user.displayName, photoURL: user.photoURL ?? null, lastLogin: serverTimestamp() },
+			{ merge: true },
+		);
+		await authStore.refresh({ silent: true });
+		await routeByFirestoreRole(user);
 		} catch (err) {
 			googleError = err instanceof Error ? err.message : 'Google sign-in failed.';
 			navigating = false;

@@ -21,7 +21,6 @@
 	} from 'firebase/firestore';
 	import Swal from 'sweetalert2';
 	import { enterprisePlayerDrawer } from '$lib/stores/enterprisePlayerDrawer.svelte.js';
-	import { getLevelProgressFromTotalXp } from '$lib/gamification/level.js';
 	import LiveTelemetrySection from '$lib/components/coach/LiveTelemetrySection.svelte';
 	import IntelModal from '$lib/components/ui/IntelModal.svelte';
 
@@ -822,13 +821,13 @@
 
 	<div class="bento-grid bento-grid--12col bento-grid--liquid">
 		{#each READINESS_ROSTER as p (p.id)}
-			{@const xpFill = p.xpMax > 0 ? p.xp / p.xpMax : 0}
+			{@const staminaFill = Math.max(0, Math.min(1, p.stamina / 100))}
 			<article class="bento-span-3 hud-readiness-card hud-telemetry-panel">
 				<div class="hud-readiness-card__ring hud-telemetry-avatar">
 					<HudSeededRingCanvas
 						uid={p.id}
 						size={64}
-						fill={xpFill}
+						fill={staminaFill}
 						strokeColor="#14b8a6"
 						showAvatar={true}
 						avatarSeed={p.name}
@@ -837,7 +836,7 @@
 				</div>
 				<div class="hud-readiness-card__meta">
 					<p class="tw-font-mono tw-text-[10px] tw-font-black tw-uppercase tw-tracking-wider tw-text-white tw-m-0">{p.name}</p>
-					<p class="tw-font-mono tw-text-[10px] tw-text-[#14b8a6] tw-m-0">LVL {p.level} · {Math.round(xpFill * 100)}% XP</p>
+					<p class="tw-font-mono tw-text-[10px] tw-text-[#14b8a6] tw-m-0">{p.position} · #{p.number}</p>
 					<p class="tw-font-mono tw-text-[10px] tw-uppercase tw-tracking-widest tw-m-0" style="color: {p.status === 'READY' ? '#14b8a6' : p.status === 'INJURY RISK' ? '#ff003c' : '#666'}">{p.status}</p>
 				</div>
 			</article>
@@ -959,7 +958,7 @@
 	<div class="stw__grid">
 		<section class="stw__panel" aria-labelledby="stw-roster">
 			<div class="stw__panelhead">
-				<h2 id="stw-roster" class="stw__h2">Roster &amp; XP</h2>
+				<h2 id="stw-roster" class="stw__h2">Roster</h2>
 			</div>
 			<div class="stw__add">
 				<input class="stw__inp" type="text" placeholder="Name" bind:value={addName} />
@@ -968,21 +967,19 @@
 				<button type="button" class="stw__btn" disabled={addSaving} onclick={addPlayer}>Ingest</button>
 			</div>
 			<div class="stw__tablewrap">
-				<table class="stw__table" aria-label="Roster and levels">
+				<table class="stw__table" aria-label="Roster">
 					<thead>
 						<tr>
 							<th scope="col">Athlete</th>
-							<th scope="col">Lvl</th>
-							<th scope="col">XP</th>
 							<th scope="col">#</th>
 							<th scope="col">Link</th>
 						</tr>
 					</thead>
 					<tbody>
 						{#if loading}
-							<tr><td colspan="5" class="stw__muted">Loading roster…</td></tr>
+							<tr><td colspan="3" class="stw__muted">Loading roster…</td></tr>
 						{:else if players.length === 0}
-							<tr><td colspan="5" class="stw__muted">No athletes on file.</td></tr>
+							<tr><td colspan="3" class="stw__muted">No athletes on file.</td></tr>
 						{:else}
 							{#each players as p (p)}
 								{@const sid = resolveStatsId(p, playerStats)}
@@ -999,26 +996,6 @@
 									onkeydown={(e) => e.key === 'Enter' && openDrawer(p)}
 								>
 									<td class="stw__mono">{rowLabel}</td>
-									<td class="stw__mono stw__cyber">
-										{getLevelProgressFromTotalXp(
-											Math.max(
-												0,
-												typeof playerStats[sid]?.total_xp === 'number'
-													? /** @type {number} */ (playerStats[sid].total_xp)
-													: 0,
-											),
-										).level}
-									</td>
-									<td class="stw__mono">
-										{Math.max(
-											0,
-											Math.floor(
-												Number(
-													playerStats[sid]?.total_xp,
-												) || 0,
-											),
-										).toLocaleString()}
-									</td>
 									<td class="stw__mono">
 										{jerseys[p] != null && String(jerseys[p]).trim() ? jerseys[p] : '—'}
 									</td>

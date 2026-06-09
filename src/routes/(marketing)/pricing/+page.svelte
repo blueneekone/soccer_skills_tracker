@@ -7,7 +7,8 @@
 	 */
 	import { browser } from '$app/environment';
 	import { authStore } from '$lib/stores/auth.svelte.js';
-	import { getFunctions, httpsCallable } from 'firebase/functions';
+	import { httpsCallable } from 'firebase/functions';
+	import { functions } from '$lib/firebase.js';
 
 	// ── Tiers config ──────────────────────────────────────────────────────────
 
@@ -123,11 +124,10 @@
 			// and stores the priceId against the tenant's Firestore document.
 			// Replace the CF stub with real Stripe Checkout session creation
 			// when going live: create a Stripe Checkout Session → redirect to Stripe.
-			const fns = getFunctions(undefined, 'us-central1');
-			const createSubscription = httpsCallable<
-				{ priceId: string; tenantId: string; tierId: string },
-				{ sessionUrl?: string; status: string }
-			>(fns, 'createSubscription');
+		const createSubscription = httpsCallable<
+			{ priceId: string; tenantId: string; tierId: string },
+			{ sessionUrl?: string; status: string }
+		>(functions, 'createSubscription');
 
 			const result = await createSubscription({
 				priceId: tier.priceId,

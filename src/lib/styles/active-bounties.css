@@ -385,6 +385,21 @@
 	outline-offset: 3px;
 }
 
+/* B4b — advisory parent-verified badge (inner only; no gamification chrome) */
+.quest-row__parent-verified {
+	display: inline-block;
+	margin-top: 0.25rem;
+	padding: 0.1rem 0.4rem;
+	font-size: 0.5rem;
+	font-weight: 700;
+	letter-spacing: 0.12em;
+	text-transform: uppercase;
+	color: rgba(20, 184, 166, 0.75);
+	border: 1px solid rgba(20, 184, 166, 0.25);
+	border-radius: 3px;
+	background: rgba(20, 184, 166, 0.06);
+}
+
 @media (max-width: 640px) {
 	.quest-row {
 		flex-wrap: wrap;

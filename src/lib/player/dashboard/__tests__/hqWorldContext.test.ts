@@ -1,4 +1,6 @@
 import { describe, it, expect } from 'vitest';
+import { readFileSync } from 'fs';
+import { resolve } from 'path';
 import {
 	parseScheduleEventStartMs,
 	pickNextScheduleEvent,
@@ -163,5 +165,35 @@ describe('hqWorldContext — resolveHqStatusBadges', () => {
 			now,
 		});
 		expect(badges.map((b) => b.label)).toEqual(['2 COACH MISSIONS', 'STREAK LIVE']);
+	});
+});
+
+// T0-2 regression guard: player schedule must read team_workouts/startTimestamp, not schedules/startAt.
+describe('T0-2 — player schedule query source guard', () => {
+	const dashboardSrc = readFileSync(
+		resolve(__dirname, '../../../../routes/(app)/player/dashboard/+page.svelte'),
+		'utf8',
+	);
+
+	it('scheduleQ targets team_workouts collection', () => {
+		expect(dashboardSrc).toMatch(/collection\(db,\s*['"]team_workouts['"]\)/);
+	});
+
+	it('scheduleQ filters on startTimestamp (numeric unix-ms)', () => {
+		expect(dashboardSrc).toMatch(/where\(['"]startTimestamp['"]/);
+	});
+
+	it('loadLegacyScheduleFallback also targets team_workouts', () => {
+		expect(dashboardSrc).toMatch(/loadLegacyScheduleFallback[\s\S]{0,400}team_workouts/);
+	});
+
+	it('does not query the stale schedules collection for player schedule', () => {
+		// schedules collection must not appear as a Firestore query target in the schedule block
+		expect(dashboardSrc).not.toMatch(/collection\(db,\s*['"]schedules['"]\)/);
+	});
+
+	it('does not filter on the missing startAt field', () => {
+		// startAt was the old field that was never written by the coach
+		expect(dashboardSrc).not.toMatch(/where\(['"]startAt['"]/);
 	});
 });

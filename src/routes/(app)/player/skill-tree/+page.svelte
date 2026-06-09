@@ -28,8 +28,9 @@
 	$effect(() => {
 		if (!browser || authStore.isLoading) return;
 		const uid = authStore.user?.uid;
-		if (uid) {
-			armory.loadPlayerData(uid);
+		const userKey = (authStore.user?.email ?? '').trim().toLowerCase();
+		if (uid && userKey) {
+			armory.loadPlayerData(uid, userKey);
 		}
 	});
 

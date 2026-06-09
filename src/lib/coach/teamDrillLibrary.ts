@@ -24,6 +24,10 @@ export type TeamDrillPickerRow = {
 	scope: TeamDrillScope;
 	/** Present when scope === 'club' (director-published). */
 	clubId?: string;
+	/** Demo video URL from the drill doc. Carried through to player prescription. */
+	videoUrl?: string;
+	/** Coaching cues / description from the drill doc. Carried through to player prescription. */
+	cues?: string;
 };
 
 /** Maps drill library category labels → RPG attribute ids. */
@@ -80,6 +84,11 @@ function mapTeamDrillDoc(
 		typeof data.durationMinutes === 'number' && data.durationMinutes >= 1 ?
 			Math.floor(data.durationMinutes)
 		:	10;
+	const videoUrlRaw = typeof data.videoUrl === 'string' ? data.videoUrl.trim() : '';
+	const cuesRaw =
+		typeof data.cues === 'string' ? data.cues.trim()
+		: typeof data.description === 'string' ? data.description.trim()
+		: '';
 	return {
 		id,
 		title,
@@ -87,6 +96,8 @@ function mapTeamDrillDoc(
 		durationMinutes,
 		scope,
 		...(clubId ? { clubId } : {}),
+		...(videoUrlRaw ? { videoUrl: videoUrlRaw } : {}),
+		...(cuesRaw ? { cues: cuesRaw } : {}),
 	};
 }
 

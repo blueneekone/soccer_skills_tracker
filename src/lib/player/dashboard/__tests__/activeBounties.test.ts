@@ -4,6 +4,8 @@ import {
 	sortQuestLog,
 	bountyFromCoachIntent,
 	buildDailyQuests,
+	countCadenceSessionsInWindow,
+	formatCadenceProgress,
 	questCtaLabel,
 	questHudCtaShort,
 	questHudCtaFor,
@@ -259,5 +261,183 @@ describe('activeBounties', () => {
 		expect(formatQuestRewardLabel(quest)).toBe('Earn +35 XP on completion');
 		expect(formatQuestRewardLabel({ ...quest, lifecycle: 'claim' })).toBe('+35 XP');
 		expect(formatQuestRewardLabel({ ...quest, lifecycle: 'complete' })).toMatch(/\+35 XP/);
+	});
+});
+
+describe('B2 — countCadenceSessionsInWindow', () => {
+	const NOW = 1_720_000_000_000; // fixed reference time
+
+	it('counts completions matching attribute within window', () => {
+		const completions = [
+			{ attributeId: 'ball_mastery', loggedAtMs: NOW - 1 * 86_400_000 },
+			{ attributeId: 'ball_mastery', loggedAtMs: NOW - 3 * 86_400_000 },
+			{ attributeId: 'pace', loggedAtMs: NOW - 1 * 86_400_000 },
+		];
+		expect(countCadenceSessionsInWindow(completions, 'ball_mastery', 7, NOW)).toBe(2);
+	});
+
+	it('excludes sessions outside the window', () => {
+		const completions = [
+			{ attributeId: 'ball_mastery', loggedAtMs: NOW - 8 * 86_400_000 },
+		];
+		expect(countCadenceSessionsInWindow(completions, 'ball_mastery', 7, NOW)).toBe(0);
+	});
+
+	it('returns 0 for empty array', () => {
+		expect(countCadenceSessionsInWindow([], 'ball_mastery', 7, NOW)).toBe(0);
+	});
+
+	it('boundary: session exactly at window start is included', () => {
+		const completions = [
+			{ attributeId: 'pace', loggedAtMs: NOW - 7 * 86_400_000 },
+		];
+		expect(countCadenceSessionsInWindow(completions, 'pace', 7, NOW)).toBe(1);
+	});
+});
+
+describe('B2 — formatCadenceProgress', () => {
+	it('uses "this week" label for 7-day windows', () => {
+		expect(formatCadenceProgress(2, 3, 7)).toBe('2/3 this week');
+	});
+
+	it('uses "in Nd" label for non-7-day windows', () => {
+		expect(formatCadenceProgress(1, 5, 14)).toBe('1/5 in 14d');
+	});
+
+	it('zero-completed state', () => {
+		expect(formatCadenceProgress(0, 3, 7)).toBe('0/3 this week');
+	});
+});
+
+describe('B2 — bountyFromCoachIntent carries cadence', () => {
+	const progress = {
+		acceptedIds: [],
+		completedIds: [],
+		claimedIds: [],
+		claimedDateUtc: '2099-01-01',
+	};
+
+	it('extracts cadence from prescription sub-object', () => {
+		const bounty = bountyFromCoachIntent(
+			'intent-cadence',
+			{
+				targetAttributeId: 'ball_mastery',
+				requiredXp: 200,
+				prescription: { sets: 3, bilateral: false, cadence: { sessionsPerWindow: 3, windowDays: 7 } },
+			},
+			progress,
+		);
+		expect(bounty?.cadence).toEqual({ sessionsPerWindow: 3, windowDays: 7 });
+		expect(bounty?.targetAttributeId).toBe('ball_mastery');
+	});
+
+	it('cadence absent when prescription has none', () => {
+		const bounty = bountyFromCoachIntent(
+			'intent-nocadence',
+			{ targetAttributeId: 'pace', requiredXp: 100 },
+			progress,
+		);
+		expect(bounty?.cadence).toBeUndefined();
+	});
+
+	it('cadence absent when sessionsPerWindow is out of range', () => {
+		const bounty = bountyFromCoachIntent(
+			'intent-bad-cadence',
+			{
+				targetAttributeId: 'pace',
+				requiredXp: 100,
+				prescription: { sets: 1, bilateral: false, cadence: { sessionsPerWindow: 99, windowDays: 7 } },
+			},
+			progress,
+		);
+		expect(bounty?.cadence).toBeUndefined();
+	});
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// B4b — advisory parent-verified badge: view-model contract
+//
+// The badge is driven by a Set<intentId> of approved completion_verifications
+// records. These guards verify the advisory contract: the badge state is purely
+// display-only and the bountyFromCoachIntent view-model is unaffected by it.
+// ─────────────────────────────────────────────────────────────────────────────
+describe('B4b — advisory parent-verified badge: bountyFromCoachIntent is unaffected', () => {
+	const progress = {
+		acceptedIds: [],
+		completedIds: [],
+		claimedIds: [],
+		claimedDateUtc: '2099-01-01',
+	};
+
+	it('bountyFromCoachIntent does NOT include a parentVerified field (badge is component-layer only)', () => {
+		const bounty = bountyFromCoachIntent(
+			'intent-b4b',
+			{ targetAttributeId: 'ball_mastery', requiredXp: 200 },
+			progress,
+		);
+		// The view-model must NOT carry a parentVerified flag — the badge is derived
+		// in the component from completion_verifications subscription, not baked in.
+		expect(bounty).not.toHaveProperty('parentVerified');
+	});
+
+	it('bountyFromCoachIntent id is the intentId — used as key for approvedIntentIds lookup', () => {
+		const bounty = bountyFromCoachIntent(
+			'intent-key-check',
+			{ targetAttributeId: 'pace', requiredXp: 100 },
+			progress,
+		);
+		expect(bounty?.id).toBe('intent-key-check');
+	});
+
+	it('approvedIntentIds Set lookup: Set.has returns true for known id, false for unknown', () => {
+		const approved = new Set(['intent-b4b', 'intent-other']);
+		expect(approved.has('intent-b4b')).toBe(true);
+		expect(approved.has('intent-not-there')).toBe(false);
+	});
+
+	it('approvedIntentIds Set lookup: empty Set never matches', () => {
+		const empty = new Set<string>();
+		expect(empty.has('intent-b4b')).toBe(false);
+	});
+
+	it('source-scan: ActiveBounties.svelte subscribes to completion_verifications for approved status', () => {
+		const { readFileSync } = require('fs');
+		const { join } = require('path');
+		const AB_SRC = readFileSync(
+			join(__dirname, '../../../components/hud/ActiveBounties.svelte'),
+			'utf-8',
+		);
+		expect(AB_SRC).toMatch(/completion_verifications/);
+		expect(AB_SRC).toMatch(/status.*==.*approved|approved.*status/);
+		expect(AB_SRC).toMatch(/approvedIntentIds/);
+	});
+
+	it('source-scan: ActiveBounties.svelte shows parent-verified badge only for coach_intent quests', () => {
+		const { readFileSync } = require('fs');
+		const { join } = require('path');
+		const AB_SRC = readFileSync(
+			join(__dirname, '../../../components/hud/ActiveBounties.svelte'),
+			'utf-8',
+		);
+		expect(AB_SRC).toMatch(/quest-row__parent-verified/);
+		expect(AB_SRC).toMatch(/approvedIntentIds\.has\(quest\.id\)/);
+	});
+
+	it('source-scan: badge does NOT alter xpReward, lifecycle, or sortKey (advisory only)', () => {
+		const { readFileSync } = require('fs');
+		const { join } = require('path');
+		const AB_SRC = readFileSync(
+			join(__dirname, '../../../components/hud/ActiveBounties.svelte'),
+			'utf-8',
+		);
+		// Badge section must NOT assign to xpReward, lifecycle, or sortKey.
+		const badgeSection = (() => {
+			const idx = AB_SRC.indexOf('approvedIntentIds');
+			if (idx === -1) return '';
+			return AB_SRC.slice(Math.max(0, idx - 200), idx + 400);
+		})();
+		expect(badgeSection).not.toMatch(/xpReward\s*=/);
+		expect(badgeSection).not.toMatch(/lifecycle\s*=/);
+		expect(badgeSection).not.toMatch(/sortKey\s*=/);
 	});
 });

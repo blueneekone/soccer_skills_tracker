@@ -36,3 +36,35 @@ describe('/parent/dashboard — Liquid Bento (Sprint 1.1)', () => {
 		expect(backdropMatches.length).toBeLessThanOrEqual(2);
 	});
 });
+
+// ─────────────────────────────────────────────────────────────────────────────
+// B4b — ProofReviewQueue mounted on parent dashboard
+// ─────────────────────────────────────────────────────────────────────────────
+describe('B4b — ProofReviewQueue mounted on parent dashboard', () => {
+	it('imports ProofReviewQueue from $lib/components/parent/ProofReviewQueue.svelte', () => {
+		expect(src).toMatch(/import ProofReviewQueue from.*ProofReviewQueue\.svelte/);
+	});
+
+	it('mounts <ProofReviewQueue> in the template', () => {
+		expect(src).toMatch(/<ProofReviewQueue/);
+	});
+
+	it('passes householdId to ProofReviewQueue (reuses dashboard resolver, no duplicate)', () => {
+		expect(src).toMatch(/householdId={resolvedHouseholdId}/);
+	});
+
+	it('passes childNames to ProofReviewQueue', () => {
+		expect(src).toMatch(/\{childNames\}|childNames={childNames}/);
+	});
+
+	it('resolvedHouseholdId is guarded before mounting ProofReviewQueue (no empty householdId render)', () => {
+		// The template must wrap the queue in an {#if resolvedHouseholdId} guard.
+		expect(src).toMatch(/#if\s+resolvedHouseholdId/);
+	});
+
+	it('does NOT add a second household getDoc call (reuses the existing onMount resolver)', () => {
+		// There should be exactly one getDoc call in the page script (the original resolver).
+		const getDocMatches = [...src.matchAll(/getDoc\s*\(/g)];
+		expect(getDocMatches.length).toBeLessThanOrEqual(1);
+	});
+});

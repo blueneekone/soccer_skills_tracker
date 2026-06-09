@@ -1,7 +1,7 @@
 ﻿/* eslint-disable quotes */
 /**
- * subscription.js â€” Marketing / Stripe Checkout Stub
- * â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+ * subscription.js — Marketing / Stripe Checkout Stub
+ * ────────────────────────────────────────────────────────────────────────────
  * PRODUCTION PATH: When going live, replace the stub block in `createSubscription`
  * with real Stripe Checkout Session creation:
  *
@@ -16,17 +16,19 @@
  *   });
  *   return { sessionUrl: session.url };
  *
- * STUB PATH (current): Sets subscriptionStatus: 'active' directly on the tenant's
- * Firestore document so the UI shows a success state without real payment.
- * Also writes an immutable subscription_log entry for billing audit purposes.
+ * STUB PATH (current): Sets subscription_status: 'active' on
+ * license_entitlements/{clubId} (the authoritative collection read by the
+ * Player OS gate) so the UI lifts the billing gate without real payment.
+ * Also mirrors to organizations/{tenantId} for legacy Director OS reads,
+ * and writes an immutable subscription_log entry for billing audit purposes.
  *
- * TIER â†’ Firestore field map:
- *   basecamp   â†’ planTier: 'base_camp',   maxPlayers: 30
- *   pro        â†’ planTier: 'pro',          maxPlayers: null (unlimited)
- *   enterprise â†’ planTier: 'enterprise',   maxPlayers: null
+ * TIER → Firestore field map:
+ *   basecamp   → planTier: 'base_camp',   maxPlayers: 30
+ *   pro        → planTier: 'pro',          maxPlayers: null (unlimited)
+ *   enterprise → planTier: 'enterprise',   maxPlayers: null
  *
  * Exports:
- *   createSubscription â€” onCall
+ *   createSubscription — onCall
  */
 
 'use strict';
@@ -70,8 +72,23 @@ exports.createSubscription = onCall({region: REGION}, async (request) => {
   const config = TIER_CONFIG[tierId];
   const now = admin.firestore.FieldValue.serverTimestamp();
 
-  // â”€â”€ STUB: Directly activate subscription in Firestore â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── STUB: Directly activate subscription in Firestore ────────────────────
   // PRODUCTION: Remove this block and return Stripe session URL instead.
+
+  // Authoritative write: license_entitlements/{clubId} — the Player OS gate
+  // (playerOsAccess.js / billing.js) reads subscription_status (snake_case)
+  // from this collection to decide read-only mode. tenantId === clubId in this
+  // codebase (JWT token.clubId / token.tenantId resolve to the same value).
+  const entitlementRef = db.doc(`license_entitlements/${tenantId}`);
+  await entitlementRef.set({
+    subscription_status: 'active',
+    tier: config.planTier,
+    maxPlayers: config.maxPlayers,
+    subscribedAt: now,
+    subscribedByUid: callerUid,
+  }, {merge: true});
+
+  // Mirror write to organizations/{tenantId} for legacy Director OS reads.
   const orgRef = db.doc(`organizations/${tenantId}`);
   await orgRef.set({
     subscriptionStatus: 'active',
@@ -99,6 +116,6 @@ exports.createSubscription = onCall({region: REGION}, async (request) => {
     status: 'activated',
     planTier: config.planTier,
     label: config.label,
-    // sessionUrl: null â€” set when Stripe integration is live
+    // sessionUrl: null — set when Stripe integration is live
   };
 });

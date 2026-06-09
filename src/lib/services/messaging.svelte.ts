@@ -4,17 +4,16 @@
  * Manages the full lifecycle of a Web Push device token:
  *   1. Request browser notification permission (with pre-prompt context)
  *   2. Obtain the FCM registration token via getToken()
- *   3. Atomically write the token to users/{email}.fcmTokens[] (arrayUnion)
- *   4. On sign-out, atomically remove the token (arrayRemove)
+ *   3. Persist the token to device_tokens/{uid} via the registerDeviceToken callable
+ *   4. On sign-out, atomically remove the token from device_tokens/{uid}
  *
  * SECURITY (Zero-Trust)
  * ─────────────────────
- * • Tokens are written via arrayUnion — clients can only ADD their own
- *   device token, never read or enumerate another user's tokens.
- * • Removal is scoped to the exact token string — a rogue client cannot
- *   clear another device's token.
- * • Firestore rules must enforce: token writes are allowed only when
- *   the write is a single-token arrayUnion on the caller's own document.
+ * • Registration routes through the registerDeviceToken Cloud Function (Admin SDK),
+ *   which is the canonical single store for ALL persona token writes.
+ * • Removal writes directly to device_tokens/{uid} (Firestore rules: owner-only).
+ * • All server-side dispatchers (notificationOps, dispatcher) read device_tokens —
+ *   no split-store silent drop.
  *
  * USAGE
  * ─────
@@ -28,13 +27,13 @@
  */
 
 import { browser } from '$app/environment';
-import { messaging, db, auth } from '$lib/firebase.js';
+import { messaging, db, auth, functions } from '$lib/firebase.js';
 import type { Messaging } from 'firebase/messaging';
 import { getToken, onMessage, deleteToken } from 'firebase/messaging';
+import { httpsCallable } from 'firebase/functions';
 import {
 	doc,
 	updateDoc,
-	arrayUnion,
 	arrayRemove,
 	type Firestore,
 } from 'firebase/firestore';
@@ -180,21 +179,17 @@ export class FcmService {
 	// ── Private ───────────────────────────────────────────────────────────────
 
 	private async _writeToken(token: string): Promise<void> {
-		const email = auth.currentUser?.email?.toLowerCase();
-		if (!email) throw new Error('Not signed in — cannot persist FCM token.');
-		const userRef = doc(db as Firestore, 'users', email);
-		await updateDoc(userRef, {
-			fcmTokens: arrayUnion(token),
-			fcmUpdatedAt: new Date(),
-		});
+		if (!auth.currentUser?.uid) throw new Error('Not signed in — cannot persist FCM token.');
+		const registerDeviceToken = httpsCallable(functions, 'registerDeviceToken');
+		await registerDeviceToken({ fcmToken: token });
 	}
 
 	private async _removeToken(token: string): Promise<void> {
-		const email = auth.currentUser?.email?.toLowerCase();
-		if (!email) return;
-		const userRef = doc(db as Firestore, 'users', email);
-		await updateDoc(userRef, {
-			fcmTokens: arrayRemove(token),
+		const uid = auth.currentUser?.uid;
+		if (!uid) return;
+		const tokenRef = doc(db as Firestore, 'device_tokens', uid);
+		await updateDoc(tokenRef, {
+			tokens: arrayRemove(token),
 		});
 	}
 }

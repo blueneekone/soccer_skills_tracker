@@ -3,9 +3,7 @@
 	import { doc, onSnapshot } from 'firebase/firestore';
 	import { db } from '$lib/firebase.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
-	import { teamsStore } from '$lib/stores/teams.svelte.js';
 	import { getLevelProgressFromTotalXp } from '$lib/gamification/level.js';
-	import { dossierRadarFromPlayerStats } from '$lib/utils/sport-attributes.js';
 	import { deriveVanguardPrism } from '$lib/utils/vanguard-prism.js';
 	import { hasVanguardTelemetry } from '$lib/player/dashboard/vanguardProtocol.js';
 	import '$lib/styles/director-os.css';
@@ -25,14 +23,8 @@
 	let ChartCtor = $state(null);
 	let chartOk = $state(false);
 	/** @type {HTMLCanvasElement | undefined} */
-	let radarCanvas = $state();
-	/** @type {HTMLCanvasElement | undefined} */
 	let workoutCanvas = $state();
 
-	/** Skill vector 0–100 — sport-specific axes from verify trials + player_stats skills */
-	let skillsVector = $state(/** @type {number[]} */ ([10, 10, 10, 10, 10, 10]));
-	let radarLabels = $state(/** @type {string[]} */ (['PACE', 'SKILL', 'PASS', 'DEF', 'PHY', 'TECH']));
-	let radarTag = $state('RDR_S6_generic');
 	let selectedVanguardAxis = $state<VanguardAxisId | null>(null);
 
 	/** @type {Array<{ month: string; xp: number }>} */
@@ -222,55 +214,6 @@
 	);
 	const telemetryReady = $derived(hasVanguardTelemetry(attrRadarValues));
 
-	function resolveTeamSportRaw() {
-		const tid =
-			typeof authStore.userProfile?.teamId === 'string' ?
-				authStore.userProfile.teamId.trim()
-			:	'';
-		const teamRow = tid ? teamsStore.teams.find((t) => t.id === tid) : null;
-		let sportRaw =
-			typeof teamRow?.sport === 'string' && teamRow.sport.trim() ?
-				teamRow.sport.trim()
-			:	'';
-		if (!sportRaw && typeof authStore.userProfile?.clubId === 'string') {
-			const cid = authStore.userProfile.clubId.trim();
-			const club = teamsStore.clubs.find((c) => c.id === cid);
-			sportRaw =
-				typeof club?.sport === 'string' && club.sport.trim() ?
-					club.sport.trim()
-				:	'';
-		}
-		return sportRaw || undefined;
-	}
-
-	/**
-	 * @param {Record<string, unknown>} d
-	 */
-	function applyRadarFromPlayerStats(d) {
-		const vt =
-			d.verified_trial_scores && typeof d.verified_trial_scores === 'object' ?
-				/** @type {Record<string, unknown>} */ (d.verified_trial_scores)
-			:	{};
-		const dr = dossierRadarFromPlayerStats(
-			/** @type {Record<string, unknown>} */ (d),
-			vt,
-			resolveTeamSportRaw(),
-		);
-		skillsVector = dr.values;
-		radarLabels = dr.labels;
-		radarTag = dr.radarTag;
-	}
-
-	$effect(() => {
-		teamsStore.teams;
-		teamsStore.clubs;
-		authStore.userProfile?.teamId;
-		authStore.userProfile?.clubId;
-		const snap = playerStatsSnapshot;
-		if (!snap) return;
-		applyRadarFromPlayerStats(snap);
-	});
-
 	$effect(() => {
 		if (!browser || !userUid) return;
 
@@ -327,7 +270,6 @@
 				monthlyPerformance = parseMonthlyPerformance(d.monthly_performance);
 				dailyPerformance = parseDailyPerformance(d.daily_performance);
 				weeklyPerformance = parseWeeklyPerformance(d.weekly_performance);
-				applyRadarFromPlayerStats(/** @type {Record<string, unknown>} */ (d));
 			},
 			(e) => {
 				console.warn('[stats] player_stats snapshot', e);
@@ -350,73 +292,8 @@
 		})();
 	});
 
-	$effect(() => {
-		chartOk;
-		radarCanvas;
-		ChartCtor;
-		radarLabels;
-		if (isPlayerRole) return;
-		const values = skillsVector;
-		if (!chartOk || !ChartCtor || !radarCanvas || !browser) return;
-
-		let inst = new ChartCtor(radarCanvas, {
-			type: 'radar',
-			data: {
-				labels: radarLabels,
-				datasets: [
-					{
-						label: 'SKILL_VECTOR',
-						data: values,
-						fill: true,
-						borderColor: 'rgba(0, 255, 200, 0.95)',
-						backgroundColor: 'rgba(0, 255, 200, 0.12)',
-						borderWidth: 2,
-						pointBackgroundColor: 'rgba(56, 189, 248, 0.95)',
-						pointBorderColor: 'rgba(0, 255, 200, 1)',
-						pointHoverBackgroundColor: '#00ffc8',
-						pointRadius: 3,
-					},
-				],
-			},
-			options: {
-				responsive: true,
-				maintainAspectRatio: false,
-				animation: { duration: 420 },
-				plugins: {
-					legend: { display: false },
-					filler: { propagate: true },
-					tooltip: {
-						enabled: true,
-						backgroundColor: 'rgba(0,0,0,0.9)',
-						borderColor: 'rgba(255,255,255,0.12)',
-						borderWidth: 1,
-						titleFont: { family: 'ui-monospace, monospace' },
-						bodyFont: { family: 'ui-monospace, monospace' },
-					},
-				},
-				scales: {
-					r: {
-						min: 0,
-						max: 100,
-						beginAtZero: true,
-						angleLines: { color: 'rgba(0, 255, 200, 0.2)' },
-						grid: { color: 'rgba(34, 211, 255, 0.15)' },
-						pointLabels: {
-							color: 'rgba(255,255,255,0.45)',
-							font: { size: 10, family: 'ui-monospace, monospace' },
-						},
-						ticks: {
-							display: false,
-							backdropColor: 'transparent',
-						},
-					},
-				},
-			},
-		});
-		return () => {
-			inst?.destroy();
-		};
-	});
+	// CLB-2 — raw Chart.js skill radar removed; the cohesive VanguardProtocolPanel
+	// (SVG prism radar) now renders for every role. Workout XP timeline below stays Chart.js.
 
 	/** @type {import('chart.js').Chart | null} */
 	let workoutChartInst = null;
@@ -584,48 +461,23 @@
 		role="region"
 		aria-label="Skill radar and analytics"
 	>
-		{#if isPlayerRole}
-			<section
-				class="stats-analytics-void pd-os-deck pd-os-deck--recessed bento-span-12"
-				class:stats-analytics-void--compact={!telemetryReady}
-				data-region="stats-analytics-void"
-				aria-label="Vanguard protocol telemetry"
-			>
-				<header class="pd-hq-section-head stats-analytics-void__head">
-					<h2 class="pd-hq-section-head__title stats-analytics-void__title">Vanguard telemetry</h2>
-					<p class="pd-hq-section-head__eyebrow pd-label stats-analytics-void__eyebrow">Performance</p>
-				</header>
-				<VanguardProtocolPanel
-					prismValues={attrRadarValues}
-					bind:selectedAxis={selectedVanguardAxis}
-					compact={!telemetryReady}
-					hideHeadTitle={true}
-				/>
-			</section>
-		{:else}
 		<section
-			class="dossier-panel dossier-radar pd-page-panel pd-panel-section"
-			aria-label="Skill radar telemetry matrix"
+			class="stats-analytics-void pd-os-deck pd-os-deck--recessed bento-span-12"
+			class:stats-analytics-void--compact={!telemetryReady}
+			data-region="stats-analytics-void"
+			aria-label="Vanguard protocol telemetry"
 		>
-			<div class="dossier-radar__head">
-				<span class="dossier-label">Telemetry matrix</span>
-				<span class="dossier-mono dossier-tx-tag">{radarTag}</span>
-			</div>
-			<p class="dossier-radar__hint no-print">
-				Sport-attribute radar · 0–100 · coach trials overlay + dossier skills fallback
-			</p>
-			<div class="dossier-radar__chart tw-min-w-0 tw-h-[300px] tw-relative">
-				<canvas
-					bind:this={radarCanvas}
-					class="dossier-canvas"
-					aria-label={`Sport skill radar: ${radarLabels.join(', ')}`}
-				></canvas>
-			</div>
-			<div class="dossier-radar__footer font-mono dossier-radar__footer-tx">
-				LV {dossierLevel} · XP {dossierXp.toLocaleString()} · {radarTag} · SRC=PLAYER_STATS
-			</div>
+			<header class="pd-hq-section-head stats-analytics-void__head">
+				<h2 class="pd-hq-section-head__title stats-analytics-void__title">Vanguard telemetry</h2>
+				<p class="pd-hq-section-head__eyebrow pd-label stats-analytics-void__eyebrow">Performance</p>
+			</header>
+			<VanguardProtocolPanel
+				prismValues={attrRadarValues}
+				bind:selectedAxis={selectedVanguardAxis}
+				compact={!telemetryReady}
+				hideHeadTitle={true}
+			/>
 		</section>
-		{/if}
 
 		<section
 			class="dossier-workout pd-panel-section"
@@ -1037,8 +889,7 @@
 	}
 
 	/* Sprint 2.22 slice 4e — workout chart full-width parity with VPP radar */
-	.dossier-workout__chart,
-	.dossier-radar__chart {
+	.dossier-workout__chart {
 		width: 100%;
 		min-height: 300px;
 	}

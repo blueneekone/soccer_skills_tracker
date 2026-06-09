@@ -126,3 +126,156 @@ describe('Sprint 4.1 — MessagesTab remains team-scoped', () => {
 		expect(src).toMatch(/teams',\s*teamId,\s*'channels'/);
 	});
 });
+
+// ── T0-8a guards ─────────────────────────────────────────────────────────────
+
+describe('T0-8a — coach inbox teamId filter (RQ-1)', () => {
+	const MESSAGES_PAGE = join(ROOT, 'routes/(app)/messages/+page.svelte');
+
+	it('coach inbox query includes teamId filter alongside fromEmail', () => {
+		const src = readFileSync(MESSAGES_PAGE, 'utf-8');
+		// Both where clauses must appear in the coach branch to satisfy the Firestore rule
+		expect(src).toMatch(/where\('fromEmail'/);
+		expect(src).toMatch(/where\('teamId',\s*'==',\s*tid\)/);
+	});
+
+	it('coach inbox no longer post-filters teamId client-side', () => {
+		const src = readFileSync(MESSAGES_PAGE, 'utf-8');
+		// The redundant client-side guard was removed
+		expect(src).not.toMatch(/x\.teamId\s*===\s*tid/);
+	});
+});
+
+describe('T0-8a — sendCoachPlayerMessage client path', () => {
+	it('CommsEngine exports sendCoachPlayerMessage wrapper calling the callable', () => {
+		const src = readFileSync(COMMS_SERVICE, 'utf-8');
+		expect(src).toMatch(/sendCoachPlayerMessage/);
+		// Wrapper must call the callable registered under the same function name
+		expect(src).toMatch(/httpsCallable\([^,]+,\s*'sendCoachPlayerMessage'\)/);
+	});
+
+	it('CommsEngine sendCoachPlayerMessage validates teamId, playerName, body', () => {
+		const src = readFileSync(COMMS_SERVICE, 'utf-8');
+		expect(src).toMatch(/teamId and playerName are required/);
+		expect(src).toMatch(/Message body is required/);
+	});
+
+	it('MessagesTab imports CommsEngine and invokes sendCoachPlayerMessage', () => {
+		const src = readFileSync(MESSAGES_TAB, 'utf-8');
+		expect(src).toMatch(/CommsEngine/);
+		expect(src).toMatch(/sendCoachPlayerMessage/);
+	});
+
+	it('MessagesTab DM compose only shown for coach or director roles', () => {
+		const src = readFileSync(MESSAGES_TAB, 'utf-8');
+		// canSendDm guard must reference coach and director roles
+		expect(src).toMatch(/canSendDm/);
+		expect(src).toMatch(/coach/);
+		expect(src).toMatch(/director/);
+	});
+});
+
+// ── T0-8b guards ─────────────────────────────────────────────────────────────
+// Announcements get a dedicated, higher-priority surface SEPARATE from DM inbox.
+
+const ANNOUNCEMENTS_INBOX = join(ROOT, 'lib/components/comms/AnnouncementsInbox.svelte');
+const FIRESTORE_RULES = join(ROOT, '..', 'firestore.rules');
+const FIRESTORE_INDEXES = join(ROOT, '..', 'firestore.indexes.json');
+const MESSAGES_PAGE = join(ROOT, 'routes/(app)/messages/+page.svelte');
+
+describe('T0-8b — AnnouncementsInbox component reads team_broadcasts', () => {
+	it('AnnouncementsInbox.svelte exists under comms components', () => {
+		expect(existsSync(ANNOUNCEMENTS_INBOX)).toBe(true);
+	});
+
+	it('AnnouncementsInbox subscribes to team_broadcasts collection', () => {
+		const src = readFileSync(ANNOUNCEMENTS_INBOX, 'utf-8');
+		expect(src).toMatch(/team_broadcasts/);
+		expect(src).toMatch(/onSnapshot/);
+	});
+
+	it('parent query uses ccParentEmails array-contains', () => {
+		const src = readFileSync(ANNOUNCEMENTS_INBOX, 'utf-8');
+		expect(src).toMatch(/ccParentEmails.*array-contains/);
+	});
+
+	it('player/staff query uses teamId equality filter', () => {
+		const src = readFileSync(ANNOUNCEMENTS_INBOX, 'utf-8');
+		expect(src).toMatch(/where\('teamId',\s*'==',\s*teamId\)/);
+	});
+
+	it('queries are ordered by createdAt descending with limit', () => {
+		const src = readFileSync(ANNOUNCEMENTS_INBOX, 'utf-8');
+		expect(src).toMatch(/orderBy\('createdAt',\s*'desc'\)/);
+		expect(src).toMatch(/limit\(20\)/);
+	});
+});
+
+describe('T0-8b — announcements surface is separate from DM inbox', () => {
+	it('/messages page imports AnnouncementsInbox', () => {
+		const src = readFileSync(MESSAGES_PAGE, 'utf-8');
+		expect(src).toMatch(/AnnouncementsInbox/);
+		expect(src).toMatch(/comms\/AnnouncementsInbox/);
+	});
+
+	it('AnnouncementsInbox is mounted BEFORE the DM inbox section', () => {
+		const src = readFileSync(MESSAGES_PAGE, 'utf-8');
+		const annPos = src.indexOf('AnnouncementsInbox');
+		const dmPos = src.indexOf('card-header');
+		// Announcements section must appear in markup before the DM card header
+		expect(annPos).toBeGreaterThan(-1);
+		expect(dmPos).toBeGreaterThan(-1);
+		expect(annPos).toBeLessThan(dmPos);
+	});
+
+	it('AnnouncementsInbox is NOT inside the DM inbox card', () => {
+		const src = readFileSync(MESSAGES_PAGE, 'utf-8');
+		// The DM card wraps from card-header to end of bento-section.
+		// AnnouncementsInbox must appear outside that block (before it).
+		const annPos = src.indexOf('<AnnouncementsInbox');
+		const inboxCardStart = src.indexOf('class="card"');
+		expect(annPos).toBeLessThan(inboxCardStart);
+	});
+});
+
+describe('T0-8b — Firestore rules include parent read branch on team_broadcasts', () => {
+	it('firestore.rules has isParent() branch for team_broadcasts read', () => {
+		const src = readFileSync(FIRESTORE_RULES, 'utf-8');
+		// Must contain the parent check near the team_broadcasts match block
+		expect(src).toMatch(/isParent\(\)\s*&&\s*emailKey\(\)\s*in\s*resource\.data\.ccParentEmails/);
+	});
+
+	it('firestore.rules still preserves coach/director/player branch', () => {
+		const src = readFileSync(FIRESTORE_RULES, 'utf-8');
+		expect(src).toMatch(/isCoach\(\)\s*\|\|\s*isDirector\(\)\s*\|\|\s*isPlayer\(\)/);
+	});
+});
+
+describe('T0-8b — composite indexes for team_broadcasts queries', () => {
+	it('firestore.indexes.json has teamId + createdAt DESC index for team_broadcasts', () => {
+		const idx = JSON.parse(readFileSync(FIRESTORE_INDEXES, 'utf-8'));
+		const found = idx.indexes.some(
+			(ix: { collectionGroup: string; fields: Array<{ fieldPath: string; order?: string }> }) =>
+				ix.collectionGroup === 'team_broadcasts' &&
+				ix.fields.some((f) => f.fieldPath === 'teamId' && f.order === 'ASCENDING') &&
+				ix.fields.some((f) => f.fieldPath === 'createdAt' && f.order === 'DESCENDING'),
+		);
+		expect(found).toBe(true);
+	});
+
+	it('firestore.indexes.json has ccParentEmails ARRAY_CONTAINS + createdAt DESC index', () => {
+		const idx = JSON.parse(readFileSync(FIRESTORE_INDEXES, 'utf-8'));
+		const found = idx.indexes.some(
+			(ix: {
+				collectionGroup: string;
+				fields: Array<{ fieldPath: string; order?: string; arrayConfig?: string }>;
+			}) =>
+				ix.collectionGroup === 'team_broadcasts' &&
+				ix.fields.some(
+					(f) => f.fieldPath === 'ccParentEmails' && f.arrayConfig === 'CONTAINS',
+				) &&
+				ix.fields.some((f) => f.fieldPath === 'createdAt' && f.order === 'DESCENDING'),
+		);
+		expect(found).toBe(true);
+	});
+});

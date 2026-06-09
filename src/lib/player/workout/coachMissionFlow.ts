@@ -13,7 +13,9 @@ import {
 } from 'firebase/firestore';
 import {
 	repairIntentPrescription,
+	repairDrillEntry,
 	type IntentPrescription,
+	type PrescriptionDrillEntry,
 } from '$lib/types/intent.js';
 import { readRlPolicyCache } from './rlPolicyCache.js';
 
@@ -45,6 +47,22 @@ export type MissionHandoff = {
 	prescription?: IntentPrescription;
 	/** Policy/heuristic duration+RPE hints — never override prescription volume. */
 	policyHints?: MissionHandoffPolicyHints;
+	/** Demo video URL from prescription — shown on Train page when present. */
+	videoUrl?: string;
+	/** Coaching cues from prescription — shown on Train page when present. */
+	cues?: string;
+	/** Per-assignment cadence from prescription — shown on Train + mission card. */
+	cadence?: { sessionsPerWindow: number; windowDays: number };
+	/**
+	 * B3 bundle drills from prescription.drills — ordered array passed to the Train stepper.
+	 * Absent when the assignment is a single-drill prescription (unchanged behaviour).
+	 */
+	drills?: PrescriptionDrillEntry[];
+	/**
+	 * B4a — coach opt-in: when true, player sees optional "Send proof to parent"
+	 * affordance after logging the session. Advisory only — never gates XP.
+	 */
+	requiresParentVerification?: boolean;
 };
 
 /** Handoffs older than this are cleared on Train mount. */
@@ -61,6 +79,39 @@ export type SuggestedDrill = {
 export const MISSION_HANDOFF_KEY = 'player_mission_handoff_v1';
 export const LEGACY_MISSION_ID_KEY = 'player_active_mission_id';
 export const LEGACY_ASSIGNMENT_ID_KEY = 'player_active_assignment_id';
+
+/**
+ * B3: Sanitize drills[] from sessionStorage JSON — each entry repaired with
+ * repairDrillEntry; invalid entries silently dropped; max 8 enforced.
+ * Returns undefined when array is absent, empty, or not an array.
+ */
+export function parseBundleDrills(raw: unknown): PrescriptionDrillEntry[] | undefined {
+	if (!Array.isArray(raw) || raw.length === 0) return undefined;
+	const repaired = raw
+		.map(repairDrillEntry)
+		.filter((e): e is PrescriptionDrillEntry => e !== undefined)
+		.slice(0, 8);
+	return repaired.length > 0 ? repaired : undefined;
+}
+
+export function parseCadence(
+	raw: unknown,
+): { sessionsPerWindow: number; windowDays: number } | undefined {
+	if (raw == null || typeof raw !== 'object' || Array.isArray(raw)) return undefined;
+	const c = raw as Record<string, unknown>;
+	const spw =
+		typeof c.sessionsPerWindow === 'number' && Number.isFinite(c.sessionsPerWindow)
+			? Math.floor(c.sessionsPerWindow)
+			: 0;
+	const wd =
+		typeof c.windowDays === 'number' && Number.isFinite(c.windowDays)
+			? Math.floor(c.windowDays)
+			: 0;
+	if (spw >= 1 && spw <= 21 && wd >= 1 && wd <= 30) {
+		return { sessionsPerWindow: spw, windowDays: wd };
+	}
+	return undefined;
+}
 
 function parseOptionalPositiveInt(value: unknown, max?: number): number | undefined {
 	if (!Number.isFinite(Number(value))) return undefined;
@@ -259,9 +310,15 @@ export function readMissionHandoff(): MissionHandoff | null {
 						Number.isFinite(Number(parsed.stashedAt)) ?
 							Math.floor(Number(parsed.stashedAt))
 						:	undefined,
-					prescription: repairIntentPrescription(parsed.prescription),
-					policyHints: parsePolicyHints(parsed.policyHints),
-				};
+			prescription: repairIntentPrescription(parsed.prescription),
+			policyHints: parsePolicyHints(parsed.policyHints),
+			videoUrl: typeof parsed.videoUrl === 'string' && parsed.videoUrl.trim() ? parsed.videoUrl.trim() : undefined,
+			cues: typeof parsed.cues === 'string' && parsed.cues.trim() ? parsed.cues.trim() : undefined,
+			cadence: parseCadence(parsed.cadence),
+			drills: parseBundleDrills(parsed.drills),
+			// B4a: strict boolean — undefined when absent or falsy.
+			requiresParentVerification: parsed.requiresParentVerification === true ? true : undefined,
+		};
 			}
 		}
 	} catch {
@@ -313,6 +370,14 @@ export function buildCoachIntentHandoff(input: {
 	const drillTitle =
 		input.drill?.title ?? rx?.drillTitle ?? undefined;
 	const drillId = input.drill?.id ?? rx?.drillId ?? undefined;
+	const videoUrl = rx?.videoUrl ?? undefined;
+	const cues = rx?.cues ?? undefined;
+	const cadence = rx?.cadence ?? undefined;
+	// B3: forward repaired drills[] from prescription to handoff.
+	const drills =
+		Array.isArray(rx?.drills) && rx.drills.length > 0 ? rx.drills : undefined;
+	// B4a: carry coach opt-in flag — advisory only, never gates XP.
+	const requiresParentVerification = rx?.requiresParentVerification === true ? true : undefined;
 	return {
 		missionId: input.missionId,
 		source: 'coach_intent',
@@ -325,6 +390,11 @@ export function buildCoachIntentHandoff(input: {
 		focusArea,
 		prescription: rx,
 		policyHints,
+		...(videoUrl ? { videoUrl } : {}),
+		...(cues ? { cues } : {}),
+		...(cadence ? { cadence } : {}),
+		...(drills ? { drills } : {}),
+		...(requiresParentVerification ? { requiresParentVerification } : {}),
 	};
 }
 

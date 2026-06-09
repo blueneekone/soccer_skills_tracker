@@ -21,7 +21,7 @@
 	import { workoutsStore, saveTeamScheduledEvent } from '$lib/stores/workouts.svelte.js';
 	import { categoryToAttributeId } from '$lib/coach/teamDrillLibrary.js';
 	import {
-		buildDirectorDrillRecommendation,
+		recommendDrillToDirector,
 		copyPlatformDrillToTeam,
 		loadPlatformBasics,
 	} from '$lib/coach/platformDrillLibrary.js';
@@ -470,18 +470,29 @@
 	async function recommendToDirector(row) {
 		if (row.source !== 'team') return;
 		const clubId = authStore.tenantId || '';
-		const text = buildDirectorDrillRecommendation({
-			drillTitle: row.title,
-			category: row.category,
-			teamId: teamScope.selectedTeamId,
-			coachEmail: myEmail,
-			clubId: clubId || undefined,
-		});
+		if (!clubId) {
+			copyPlatformMsg = 'No club linked to your account. Contact your director.';
+			return;
+		}
+		const uid = auth.currentUser?.uid ?? '';
+		const email = auth.currentUser?.email ?? '';
+		copyPlatformBusy = true;
+		copyPlatformMsg = '';
 		try {
-			await navigator.clipboard.writeText(text);
-			copyPlatformMsg = 'Recommendation copied — send it to your club director for the shared library.';
-		} catch {
-			copyPlatformMsg = text;
+			await recommendDrillToDirector(db, {
+				drillTitle: row.title,
+				category: row.category,
+				durationMinutes: row.durationMinutes,
+				teamId: teamScope.selectedTeamId,
+				coachUid: uid,
+				coachEmail: email,
+				clubId,
+			});
+			copyPlatformMsg = `"${row.title}" sent to your director's inbox for club library review.`;
+		} catch (e) {
+			copyPlatformMsg = e instanceof Error ? e.message : 'Could not send recommendation.';
+		} finally {
+			copyPlatformBusy = false;
 		}
 	}
 

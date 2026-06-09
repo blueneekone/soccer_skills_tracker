@@ -39,7 +39,7 @@
 
 	// ── Cloud Function handles ─────────────────────────────────────────────────
 	const getRetentionReportFn = browser
-		? httpsCallable(getFunctions(undefined, 'us-central1'), 'getRetentionReport')
+		? httpsCallable(getFunctions(undefined, 'us-east1'), 'getRetentionReport')
 		: null;
 
 	// ── Load ───────────────────────────────────────────────────────────────────

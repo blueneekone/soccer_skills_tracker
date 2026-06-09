@@ -4,7 +4,7 @@
 	import { goto } from '$app/navigation';
 	import Icon from '$lib/components/ui/Icon.svelte';
 	import type { IconName } from '$lib/icons/registry.js';
-	import { doc, getDoc, getDocs, onSnapshot, updateDoc, collection, query, where, orderBy, limit, Timestamp } from 'firebase/firestore';
+	import { doc, getDoc, getDocs, onSnapshot, updateDoc, collection, query, where, orderBy, limit } from 'firebase/firestore';
 	import { db } from '$lib/firebase.js';
 	import ActiveBounties from '$lib/components/player/dashboard/ActiveBounties.svelte';
 	import OperativeHub from '$lib/components/player/dashboard/OperativeHub.svelte';
@@ -290,9 +290,12 @@
 	});
 
 	async function loadLegacyScheduleFallback(tid: string, now: Date) {
-		const fallbackQ = query(collection(db, 'schedules'), where('teamId', '==', tid));
+		// T0-2: read from team_workouts (coach-written), client-filter scheduled_event.
+		const fallbackQ = query(collection(db, 'team_workouts'), where('teamId', '==', tid));
 		const snap = await getDocs(fallbackQ);
-		const events = snap.docs.map((d) => mapScheduleDoc(d.id, d.data()));
+		const events = snap.docs
+			.filter((d) => d.data().recordType === 'scheduled_event')
+			.map((d) => mapScheduleDoc(d.id, d.data()));
 		nextScheduleEvent = pickNextScheduleEvent(events, now);
 	}
 
@@ -306,12 +309,15 @@
 		}
 
 		const now = new Date();
+		// T0-2: repointed from `schedules`/`startAt` to `team_workouts`/`startTimestamp`.
+		// recordType filtered client-side to avoid a 3-field composite index
+		// (teamId + recordType + startTimestamp). Requires composite index: teamId + startTimestamp.
 		const scheduleQ = query(
-			collection(db, 'schedules'),
+			collection(db, 'team_workouts'),
 			where('teamId', '==', tid),
-			where('startAt', '>=', Timestamp.fromDate(now)),
-			orderBy('startAt', 'asc'),
-			limit(1),
+			where('startTimestamp', '>=', now.getTime()),
+			orderBy('startTimestamp', 'asc'),
+			limit(5),
 		);
 
 		let cancelled = false;
@@ -320,9 +326,11 @@
 			scheduleQ,
 			(snap) => {
 				if (cancelled) return;
-				if (!snap.empty) {
-					const docSnap = snap.docs[0];
-					nextScheduleEvent = mapScheduleDoc(docSnap.id, docSnap.data());
+				const scheduledDocs = snap.docs.filter(
+					(d) => d.data().recordType === 'scheduled_event',
+				);
+				if (scheduledDocs.length > 0) {
+					nextScheduleEvent = mapScheduleDoc(scheduledDocs[0].id, scheduledDocs[0].data());
 					return;
 				}
 				void loadLegacyScheduleFallback(tid, now).catch(() => {
@@ -330,7 +338,7 @@
 				});
 			},
 			(e) => {
-				console.warn('[player dashboard] schedules', e);
+				console.warn('[player dashboard] team_workouts schedule', e);
 				void loadLegacyScheduleFallback(tid, now).catch(() => {
 					if (!cancelled) nextScheduleEvent = null;
 				});

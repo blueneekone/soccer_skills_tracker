@@ -668,6 +668,106 @@ describe('functionsDeploy guard — WebAuthn RP env', () => {
   });
 });
 
+describe('functionsDeploy guard — T0-4 invite/uplink onboarding callables', () => {
+  // T0-4 was flagged "not implemented" by an audit that searched only
+  // functions/src/. In fact consumeInviteCode + redeemMagicUplink are
+  // implemented in functions/invites.js + functions/magicUplinks.js and
+  // exported from the deployed `default` codebase at us-east1. These guards
+  // prevent a future monolith slim from silently dropping them (which would
+  // break invite-code join and passwordless magic uplink sign-in).
+
+  it('default index re-exports the onboarding callables (not slimmed away)', () => {
+    const src = readRepo('functions/index.js');
+    assertExportLine('consumeInviteCode', src);
+    assertExportLine('redeemMagicUplink', src);
+  });
+
+  it('consumeInviteCode + redeemMagicUplink are NOT in the migrated-away slim list', () => {
+    // Defensive cross-check against the DEPLOY-N slim guard above: if either
+    // name is ever added to MIGRATED_FROM_DEFAULT without moving the impl to a
+    // split codebase, the onboarding loop dies. Keep them owned by `default`.
+    const src = readRepo('functions/index.js');
+    assert.match(src, /inviteHandlers\.consumeInviteCode/);
+    assert.match(src, /magicUplinkHandlers\.redeemMagicUplink/);
+  });
+
+  it('callable definitions deploy to us-east1 (matches client call sites)', () => {
+    const invites = readRepo('functions/invites.js');
+    const uplinks = readRepo('functions/magicUplinks.js');
+    assert.match(invites, /const REGION\s*=\s*'us-east1'/, 'invites.js REGION must be us-east1');
+    assert.match(uplinks, /const REGION\s*=\s*'us-east1'/, 'magicUplinks.js REGION must be us-east1');
+    assert.match(
+        invites,
+        /exports\.consumeInviteCode\s*=\s*onCall\(\s*\{[\s\S]*?region:\s*REGION/,
+        'consumeInviteCode must bind region: REGION',
+    );
+    assert.match(
+        uplinks,
+        /exports\.redeemMagicUplink\s*=\s*onCall\(\s*\{region:\s*REGION\}/,
+        'redeemMagicUplink must bind region: REGION',
+    );
+  });
+
+  it('client call sites target us-east1 (region parity with server)', () => {
+    // redeemMagicUplink: explicit getFunctions(undefined, 'us-east1').
+    const uplinkEngine = readRepo('src/lib/components/uplink/UplinkRedeemEngine.svelte.ts');
+    assert.match(
+        uplinkEngine,
+        /getFunctions\(\s*undefined\s*,\s*'us-east1'\s*\)/,
+        'UplinkRedeemEngine must call redeemMagicUplink in us-east1',
+    );
+    // consumeInviteCode: uses the shared functions instance, which is us-east1.
+    const firebase = readRepo('src/lib/firebase.js');
+    assert.match(
+        firebase,
+        /export const functions\s*=\s*getFunctions\([^,]+,\s*'us-east1'\)/,
+        'shared functions instance must be us-east1 (consumeInviteCode region parity)',
+    );
+    const inviteService = readRepo('src/lib/services/inviteService.ts');
+    assert.match(
+        inviteService,
+        /httpsCallable<[\s\S]*?>\(\s*\n?\s*functions,\s*\n?\s*'consumeInviteCode'/,
+        'inviteService must call consumeInviteCode via the shared functions instance',
+    );
+  });
+});
+
+describe('functionsDeploy guard — T1-11 retention report region parity', () => {
+  it('verifyDocument.js declares REGION = us-east1', () => {
+    const src = readRepo('functions/verifyDocument.js');
+    assert.match(
+        src,
+        /const REGION\s*=\s*'us-east1'/,
+        'verifyDocument.js REGION must be us-east1',
+    );
+  });
+
+  it('getRetentionReport onCall binds region: REGION', () => {
+    const src = readRepo('functions/verifyDocument.js');
+    assert.match(
+        src,
+        /exports\.getRetentionReport\s*=\s*onCall\(\s*\{region:\s*REGION\}/,
+        'getRetentionReport must use {region: REGION}',
+    );
+  });
+
+  it('DirectorRetentionReport client calls getRetentionReport in us-east1', () => {
+    const src = readRepo(
+        'src/lib/components/compliance/DirectorRetentionReport.svelte',
+    );
+    assert.match(
+        src,
+        /getFunctions\(\s*undefined\s*,\s*'us-east1'\s*\)/,
+        'DirectorRetentionReport must call getRetentionReport via us-east1',
+    );
+    assert.doesNotMatch(
+        src,
+        /getFunctions\(\s*undefined\s*,\s*'us-central1'\s*\)/,
+        'DirectorRetentionReport must not use us-central1 (region mismatch)',
+    );
+  });
+});
+
 describe('functionsDeploy guard — launch callable memory', () => {
   const LAUNCH_CALLABLES = [
     'logTrainingSession',

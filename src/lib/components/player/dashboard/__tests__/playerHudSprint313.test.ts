@@ -73,3 +73,58 @@ describe('Sprint 3.1.3 — cross-file bento span guard', () => {
 		});
 	}
 });
+
+// ── T1-7 regression guard: ArmoryEngine armory.stats uid vs email key ────────
+// Proving Grounds (ProvingGrounds.svelte) calls armory.updateStat() → _syncStat().
+// The stat must be written to users/{emailKey} (email-keyed profile doc) so the
+// stats radar (deriveVanguardPrism via authStore.userProfile.armory.stats) can
+// read it.  Writing to users/{uid} instead silently produces an empty radar.
+
+const ARMORY_ENGINE = join(ROOT, 'lib/states/ArmoryEngine.svelte.ts');
+const SKILL_TREE_PAGE = join(ROOT, 'routes/(app)/player/skill-tree/+page.svelte');
+
+const armoryEngineSrc = existsSync(ARMORY_ENGINE) ? readFileSync(ARMORY_ENGINE, 'utf-8') : '';
+const skillTreePageSrc = existsSync(SKILL_TREE_PAGE) ? readFileSync(SKILL_TREE_PAGE, 'utf-8') : '';
+
+describe('T1-7 — ArmoryEngine writes armory.stats to email-keyed users doc', () => {
+	it('ArmoryEngine class declares a userKey $state field', () => {
+		// The engine must maintain a distinct email-key field separate from the Firebase Auth UID.
+		expect(armoryEngineSrc).toMatch(/userKey\s*=\s*\$state/);
+	});
+
+	it('loadPlayerData signature accepts uid + userKey parameters', () => {
+		// Signature must include both uid (Auth UID) and userKey (email-based doc ID).
+		expect(armoryEngineSrc).toMatch(/loadPlayerData\s*\(\s*uid\s*:\s*string\s*,\s*userKey\s*:\s*string\s*\)/);
+	});
+
+	it('loadPlayerData sets this.userKey from the email-key parameter', () => {
+		// The engine must store the email key so sync methods can use it.
+		expect(armoryEngineSrc).toMatch(/this\.userKey\s*=\s*userKey/);
+	});
+
+	it('_syncStat guard checks this.userKey — not this.userId', () => {
+		// The guard that skips Firestore writes must check userKey presence.
+		// If it still checked userId, a user whose UID != email key would write to the wrong doc.
+		// Match _syncStat method declaration followed (within 300 chars) by the guard.
+		expect(armoryEngineSrc).toMatch(/_syncStat[\s\S]{0,300}!this\.userKey/);
+	});
+
+	it('_syncXP guard checks this.userKey — not this.userId', () => {
+		expect(armoryEngineSrc).toMatch(/_syncXP[\s\S]{0,300}!this\.userKey/);
+	});
+
+	it('_syncStat writes to doc(db, "users", this.userKey) — email-keyed path', () => {
+		// The write must land in the same document the auth profile reader loads.
+		expect(armoryEngineSrc).toMatch(/doc\s*\(\s*db\s*,\s*['"]users['"]\s*,\s*this\.userKey\s*\)/);
+	});
+
+	it('_syncXP writes to PATHS.users with this.userKey — not this.userId', () => {
+		expect(armoryEngineSrc).toMatch(/PATHS\.users\s*,\s*this\.userKey/);
+	});
+
+	it('skill-tree page derives normalized email key and passes it to loadPlayerData', () => {
+		// The call site must pass the lowercase-trimmed email as the second argument.
+		expect(skillTreePageSrc).toMatch(/\.email.*?\.trim\(\)\.toLowerCase\(\)/);
+		expect(skillTreePageSrc).toMatch(/loadPlayerData\s*\(\s*uid\s*,\s*userKey\s*\)/);
+	});
+});

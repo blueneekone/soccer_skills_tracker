@@ -286,6 +286,64 @@ describe('secureDeployIntent', () => {
     const req = makeCoachRequest({ prescription: { sets: 0 } });
     await expect(trainingOps.secureDeployIntent(req)).rejects.toMatchObject({ code: 'invalid-argument' });
   });
+
+  it('persists valid videoUrl and cues on deploy', async () => {
+    const req = makeCoachRequest({
+      prescription: {
+        sets: 2,
+        bilateral: false,
+        videoUrl: 'https://example.com/demo.mp4',
+        cues: 'Keep your head up.',
+      },
+    });
+    await trainingOps.secureDeployIntent(req);
+    const teamAssignWrite = mockCapturedDocWrites.find((w) => w.collection === 'team_assignments');
+    expect(teamAssignWrite?.data.prescription.videoUrl).toBe('https://example.com/demo.mp4');
+    expect(teamAssignWrite?.data.prescription.cues).toBe('Keep your head up.');
+  });
+
+  it('drops a non-http videoUrl (security boundary)', async () => {
+    const req = makeCoachRequest({
+      prescription: {
+        sets: 1,
+        bilateral: false,
+        videoUrl: 'javascript:alert(1)',
+        cues: 'Legit cues.',
+      },
+    });
+    await trainingOps.secureDeployIntent(req);
+    const teamAssignWrite = mockCapturedDocWrites.find((w) => w.collection === 'team_assignments');
+    expect(teamAssignWrite?.data.prescription.videoUrl).toBeUndefined();
+    expect(teamAssignWrite?.data.prescription.cues).toBe('Legit cues.');
+  });
+
+  it('drops a ftp:// videoUrl (only http/https allowed)', async () => {
+    const req = makeCoachRequest({
+      prescription: { sets: 1, bilateral: false, videoUrl: 'ftp://files.example.com/video.mp4' },
+    });
+    await trainingOps.secureDeployIntent(req);
+    const teamAssignWrite = mockCapturedDocWrites.find((w) => w.collection === 'team_assignments');
+    expect(teamAssignWrite?.data.prescription.videoUrl).toBeUndefined();
+  });
+
+  it('truncates cues to 2000 chars', async () => {
+    const longCues = 'x'.repeat(3000);
+    const req = makeCoachRequest({
+      prescription: { sets: 1, bilateral: false, cues: longCues },
+    });
+    await trainingOps.secureDeployIntent(req);
+    const teamAssignWrite = mockCapturedDocWrites.find((w) => w.collection === 'team_assignments');
+    expect(teamAssignWrite?.data.prescription.cues).toHaveLength(2000);
+  });
+
+  it('drops empty cues string', async () => {
+    const req = makeCoachRequest({
+      prescription: { sets: 1, bilateral: false, cues: '   ' },
+    });
+    await trainingOps.secureDeployIntent(req);
+    const teamAssignWrite = mockCapturedDocWrites.find((w) => w.collection === 'team_assignments');
+    expect(teamAssignWrite?.data.prescription.cues).toBeUndefined();
+  });
 });
 
 // ─────────────────────────────────────────────────────────────────────────────

@@ -157,6 +157,9 @@ describe('Sprint LAUNCH-functional-os — Coach→Player bounty handoff', () => 
 		expect(src).toMatch(/incomingMissions\.some/);
 		expect(src).toMatch(/FREE_LOG_DURATION_MAX_MINUTES/);
 		expect(src).toMatch(/sessionNotes/);
+		// G1 source-level guard: targetAttributeId must be forwarded into executePlayerWorkoutLog
+		// so the server can write xpByAttribute and trigger intent lifecycle fulfillment.
+		expect(src).toMatch(/targetAttributeId/);
 	});
 
 	it('IntentEngine loads team drill library for coach sub-drill picker', () => {
@@ -164,7 +167,8 @@ describe('Sprint LAUNCH-functional-os — Coach→Player bounty handoff', () => 
 		const src = readFileSync(INTENT_ENGINE, 'utf-8');
 		expect(src).toMatch(/teamDrillLibrary/);
 		expect(src).toMatch(/loadTeamDrillsForIntent/);
-		expect(src).toMatch(/teamDrillId/);
+		expect(src).toMatch(/draftDrillTitle/);
+		expect(src).toMatch(/drillTitle/);
 		expect(src).not.toMatch(/global_drills/);
 	});
 
@@ -210,5 +214,27 @@ describe('Sprint LAUNCH-functional-os — Coach→Player bounty handoff', () => 
 			'utf-8',
 		);
 		expect(trainingOps).toMatch(/invoker:\s*'public'/);
+	});
+});
+
+describe('T0-10 — Parent dashboard resolves children from households doc', () => {
+	const DASHBOARD = join(ROOT, 'routes/(app)/parent/dashboard/+page.svelte');
+
+	it('dashboard fetches childEmails via getDoc on households collection', () => {
+		expect(existsSync(DASHBOARD)).toBe(true);
+		const src = readFileSync(DASHBOARD, 'utf-8');
+		// Must use Firestore getDoc against the households collection
+		expect(src).toMatch(/getDoc\s*\(/);
+		expect(src).toMatch(/households/);
+		// Must NOT derive childEmails from profile.playerEmails (never populated by provision)
+		expect(src).not.toMatch(/profile\?\.playerEmails/);
+		expect(src).not.toMatch(/profile\.playerEmails/);
+	});
+
+	it('dashboard passes resolved childEmails into engine.init and carRideEngine.init', () => {
+		const src = readFileSync(DASHBOARD, 'utf-8');
+		expect(src).toMatch(/engine\.init\s*\(\s*parentEmail\s*,\s*householdId\s*,\s*childEmails/);
+		expect(src).toMatch(/carRideEngine\.init\s*\(\s*linkedPlayerEmail/);
+		expect(src).toMatch(/childEmails\[0\]/);
 	});
 });

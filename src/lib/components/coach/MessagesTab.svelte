@@ -16,6 +16,7 @@
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import Icon from '$lib/components/ui/Icon.svelte';
 	import type { IconName } from '$lib/icons/registry.js';
+	import { CommsEngine } from '$lib/services/comms.svelte.js';
 
 	let { teamId = '', players: _players = [], clubId: _clubId = '' } = $props();
 
@@ -162,6 +163,37 @@
 		}
 	}
 
+	// ── Direct-message compose (coach→adult player) ──────────────────────────
+	const dmEngine = new CommsEngine();
+	let dmPlayerName = $state('');
+	let dmBody = $state('');
+	let dmErr = $state('');
+	let dmSuccess = $state('');
+
+	const canSendDm = $derived(myRole === 'coach' || myRole === 'director');
+
+	async function sendDm() {
+		if (!teamId || !dmPlayerName.trim() || !dmBody.trim() || dmEngine.isSending) return;
+		dmErr = '';
+		dmSuccess = '';
+		try {
+			await dmEngine.sendCoachPlayerMessage({
+				teamId,
+				playerName: dmPlayerName.trim(),
+				body: dmBody.trim(),
+			});
+			dmSuccess = 'Message sent.';
+			dmPlayerName = '';
+			dmBody = '';
+			setTimeout(() => {
+				dmSuccess = '';
+				dmEngine.reset();
+			}, 3000);
+		} catch (e) {
+			dmErr = e instanceof Error ? e.message : String(e);
+		}
+	}
+
 	function openSchedule() {
 		goto('/coach/drills');
 	}
@@ -246,6 +278,52 @@
 		return t.slice(0, 2).toUpperCase();
 	}
 </script>
+
+<div class="mt-shell" aria-label="Coach messaging">
+{#if canSendDm && teamId}
+	<section class="dm-compose" aria-label="Direct message a player">
+		<h3 class="dm-compose__heading">Direct Message a Player</h3>
+		<p class="dm-compose__hint">Adult players only — minor DMs are blocked by SafeSport policy.</p>
+		<div class="dm-compose__row">
+			<label class="dm-compose__label" for="dm-player">Player name</label>
+			<input
+				id="dm-player"
+				class="dm-compose__input"
+				type="text"
+				placeholder="Exact name from roster…"
+				maxlength="200"
+				bind:value={dmPlayerName}
+			/>
+		</div>
+		<div class="dm-compose__row">
+			<label class="dm-compose__label" for="dm-body">Message</label>
+			<textarea
+				id="dm-body"
+				class="dm-compose__textarea"
+				rows="3"
+				maxlength="4000"
+				placeholder="Write your message…"
+				bind:value={dmBody}
+			></textarea>
+		</div>
+		{#if dmErr}
+			<p class="dm-compose__err" role="alert">{dmErr}</p>
+		{/if}
+		{#if dmSuccess}
+			<p class="dm-compose__ok" role="status">{dmSuccess}</p>
+		{/if}
+		<div class="dm-compose__actions">
+			<button
+				type="button"
+				class="dm-compose__btn"
+				disabled={dmEngine.isSending || !dmPlayerName.trim() || !dmBody.trim()}
+				onclick={() => void sendDm()}
+			>
+				{dmEngine.isSending ? 'Sending…' : 'Send DM'}
+			</button>
+		</div>
+	</section>
+{/if}
 
 <div class="matrix" aria-label="Team channel messaging">
 	{#if !teamId}
@@ -432,7 +510,119 @@
 	{/if}
 </div>
 
+</div>
+
 <style>
+	.mt-shell {
+		display: flex;
+		flex-direction: column;
+		gap: 20px;
+	}
+
+	.dm-compose {
+		border: 1px solid #e2e8f0;
+		border-radius: 20px;
+		background: #fff;
+		padding: 18px 20px 16px;
+		display: flex;
+		flex-direction: column;
+		gap: 12px;
+	}
+
+	:global(html.dark) .dm-compose {
+		background: #0c0c0e;
+		border-color: rgba(255, 255, 255, 0.09);
+	}
+
+	.dm-compose__heading {
+		margin: 0;
+		font-size: 13px;
+		font-weight: 800;
+		text-transform: uppercase;
+		letter-spacing: 0.07em;
+		color: var(--text-primary, #0f172a);
+	}
+
+	.dm-compose__hint {
+		margin: 0;
+		font-size: 11px;
+		color: #64748b;
+		line-height: 1.4;
+	}
+
+	.dm-compose__row {
+		display: flex;
+		flex-direction: column;
+		gap: 4px;
+	}
+
+	.dm-compose__label {
+		font-size: 10px;
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.05em;
+		color: #64748b;
+	}
+
+	.dm-compose__input,
+	.dm-compose__textarea {
+		border: 1px solid #e2e8f0;
+		border-radius: 12px;
+		padding: 9px 12px;
+		font: inherit;
+		font-size: 13px;
+		background: #f8fafc;
+		color: var(--text-primary, #0f172a);
+		width: 100%;
+		box-sizing: border-box;
+	}
+
+	:global(html.dark) .dm-compose__input,
+	:global(html.dark) .dm-compose__textarea {
+		background: #141416;
+		border-color: rgba(255, 255, 255, 0.1);
+		color: #e4e4e7;
+	}
+
+	.dm-compose__textarea {
+		resize: vertical;
+		min-height: 72px;
+	}
+
+	.dm-compose__err {
+		margin: 0;
+		font-size: 12px;
+		color: #b91c1c;
+	}
+
+	.dm-compose__ok {
+		margin: 0;
+		font-size: 12px;
+		color: #047857;
+		font-weight: 600;
+	}
+
+	.dm-compose__actions {
+		display: flex;
+		justify-content: flex-end;
+	}
+
+	.dm-compose__btn {
+		border: none;
+		border-radius: 12px;
+		padding: 9px 20px;
+		font-size: 12px;
+		font-weight: 800;
+		cursor: pointer;
+		background: var(--brand-primary, #f59e0b);
+		color: #0f172a;
+	}
+
+	.dm-compose__btn:disabled {
+		opacity: 0.45;
+		cursor: not-allowed;
+	}
+
 	.matrix {
 		--mx-radius: 24px;
 		--mx-surface: #f4f6fa;

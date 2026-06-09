@@ -2,7 +2,7 @@
 
 **Architecture:** [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)  
 **Last updated:** 2026-06-02  
-**Current sprint:** **LAUNCH-functional-os** · **next build order:** **XP-verify Done** · **3.5k Done** · **Epic 4.1 Done** · **4.2 Done** · **4.11 Done** → **4.4** → **4.3** · Launch portrait: `defaultPortraitV2` SVG + profile initials · **TABLED (post-launch):** Platform visual system (Gemini research — [`references/ui/research/`](docs/vision/references/ui/research/)), Flow asset generation, Avatar Studio **3.6b+** · **Deferred (post-launch — owner art):** 3.5m-gemini-ingest, 3.5m-gate · **3.5k Done** · **3.5h Done** · **3.5j Done** · **LAUNCH-defer-avatar Done**  
+**Current sprint:** **LAUNCH-functional-os** · **next build order:** **XP-verify Done** · **3.5k Done** · **Epic 4.1 Done** · **4.2 Done** · **4.11 Done** → **LAUNCH-loop-integrity (Tier-0 launch blockers — see Functional-loop audit)** → **LAUNCH-test-integrity (emulator round-trip guards)** → **4.4** → **4.3** · Launch portrait: `defaultPortraitV2` SVG + profile initials · **TABLED (post-launch):** Platform visual system (Gemini research — [`references/ui/research/`](docs/vision/references/ui/research/)), Flow asset generation, Avatar Studio **3.6b+** · **Deferred (post-launch — owner art):** 3.5m-gemini-ingest, 3.5m-gate · **3.5k Done** · **3.5h Done** · **3.5j Done** · **LAUNCH-defer-avatar Done**  
 **Note:** **3.5l-gate** closed in error — automated regression ≠ human VA; Phase 2 visual **rejected by product owner**  
 *Phase 7 · G1–G10 Done · Sprint 2.20 Done — Player OS premium foundation locked*
 
@@ -1415,6 +1415,9 @@ Loadout art (3.2+) consumed by 2.12 hero identity column.
 | **LAUNCH-drill-library** | **Done** | Three-tier drill library — team `teams/{id}/drills`, club `clubs/{id}/shared_drills`, platform basics (`drills` by `sportId`); Intent Engine team/club picker; spatial designer saves team drills | `personaFunctionalMvp.test.ts`, `teamDrillLibrary.ts`, `platformDrillLibrary.ts` |
 | **LAUNCH-train-lock** | **Done** | Coach-directed Train session — locked focus/drill/duration/RPE; session notes only; free log capped at 120 min | `personaFunctionalMvp.test.ts`, `coachMissionFlow.test.ts` |
 | **LAUNCH-club-drill-promote** | **Planned** | Optional team drill → club workflow — director inbox for coach recommendations; duplicate/publish team drill to `clubs/{clubId}/shared_drills`; coach read-only club repo on Intent Engine + drills page | `clubs/{clubId}/shared_drills` rules (read: coach, write: director) |
+| **LAUNCH-loop-integrity** | **Planned — launch blocker** | Fix Tier-0/Tier-1 cross-persona silent breaks found in the functional-loop audit (writer/reader key+field mismatches). See "Functional-loop audit" section below for the tiered backlog | emulator round-trip guards G1–G10 + `personaFunctionalMvp.test.ts` |
+| **LAUNCH-test-integrity** | **Planned — runs with loop-integrity** | Emulator-backed write→read field-parity guards (G1–G10); make `firestoreTenantIsolation`-style emulator tests visible in CI. Replaces static source-scans that let the breaks ship | G1–G10 in existing sprint test files |
+| **LAUNCH-cohesion-lb** | **Done** | 3 cohesion launch-blockers resolved: CLB-1 SweetAlert2 → `PlayerDiegeticOverlay` on `/tracker`; CLB-2 raw Chart.js radar → `VanguardProtocolPanel` (all roles) on `/stats`; CLB-3 coach XP/Level chrome removed from `SquadTelemetryView` + `CoachSquadReadinessCard`. Polish-tier cohesion deferred to tracked polish epic | `src/lib/__tests__/launchCohesionLb.test.ts` (14 guards) |
 | **XP-verify** | **Done** | XP algorithm tests + client/server parity (`level.js` ↔ `gamificationWorkoutXp.js`) | `levelXp.test.ts`, `gamificationWorkoutXp.test.js`, `trainingOpsXp.test.js` |
 | **3.5m-frame** | **Done** | Art-well recess + holo inset — unified portrait clip, xMidYMid bust centering | `playerLoadoutSprint35mFrame.test.ts` |
 | **3.5m-art** | **Superseded** | Agent modular SVG bust redraw — human VA failed; owner Gemini + ingest replaces | `playerLoadoutSprint35mArt.test.ts` (historical) |
@@ -1449,6 +1452,92 @@ npm run check
 ```
 
 **Run after:** LAUNCH-drill-library Done. **Run before:** platform basics seeder per sport (optional).
+
+---
+
+## Functional-loop audit backlog (LAUNCH-loop-integrity + LAUNCH-test-integrity) — **Tier 0 + Tier 1 + Track B Done · Test guards (G1–G10) + Tier 2 Planned**
+
+**Status (2026-06-09):** All Tier-0 launch blockers (T0-1..T0-10; T0-4 a verified false positive) and all Tier-1 majors (T1-1..T1-13) are **fixed and verified**, each shipped with a dedicated regression guard; no prior regression tests deleted. Full-codebase `npm run check` sits at 382 errors (below the 383 baseline Tier-1 started from) — zero net new type errors. **Track B assignment richness (B1–B4) is also Done** (cues/video, per-assignment cadence, multi-drill bundles, advisory parent-verification proof with COPPA-safe optional media — see the Track B section below). Remaining: the LAUNCH-test-integrity emulator round-trip guards (G1–G10) and Tier 2 fragilities.
+
+**Origin:** 8-domain read-only functional + design audit (2026-06-09). Root cause across the platform: writer/reader **key + field mismatches** (collection A vs B, camelCase vs snake_case, email-key vs uid-key) that never error and were not caught because ~160/200 tests are static source-scans. Full evidence + file:line in the agent plan `coach_assignment_flow_phases`.
+
+**Build rule:** integrity first; each fix slice ships with the one emulator round-trip guard (G1–G10) that would have caught it. Do not delete prior regression tests. Track B assignment-richness features (drill cues/video, multi-drill bundles, per-assignment cadence/streaks, proof) run **after** Tier-0 closes (esp. T0-1, which they depend on).
+
+### Tier 0 — launch blockers
+
+| ID | Break | Writer → Reader mismatch |
+|----|-------|--------------------------|
+| T0-1 | Coach intent fulfillment + RL adherence + mastery bounties + under-13 cap all dead | `xpByAttribute`/`ageBand` have readers, no writer; `ageBand` written `users/{email}` but read `player_stats/{uid}` |
+| T0-2 | Coach schedule never reaches player HQ | writes `team_workouts`/`startTimestamp`; player reads `schedules`/`startAt` |
+| T0-3 | Google sign-in claimless + mis-routed | writes `users/{uid}`; platform keyed by `users/{email}`; `syncUserClaims` never fires |
+| T0-4 | ~~Invite + magic-uplink redemption dead~~ **FALSE POSITIVE (resolved)** — both callables are implemented (`functions/invites.js`, `functions/magicUplinks.js`), exported from the deployed `default` codebase, region-aligned `us-east1` with client call sites. Audit only searched `functions/src/`. Guarded by `functionsDeploy.guard.test.js` (4 guards) |
+| T0-5 | Coach role self-assignment | `/setup` writes `role:'coach'` client-direct, bypasses `claimCoachInvite` + seat reservation |
+| T0-6 | Billing gate never lifts | `subscriptionStatus`→`organizations` vs gate reads `subscription_status`←`license_entitlements`; +region mismatch |
+| T0-7 | Cross-tenant leak | `team_assignments` list rule bare `isPlayer()`, no tenant/team guard |
+| T0-8 | Comms 4.1 dead | announcements→`team_broadcasts`, parents read `in_app_messages` (rules block); coach inbox query missing `teamId`; coach→player DM no send UI. **Owner decision:** announcements get a dedicated higher-priority surface, separate from DM inbox |
+| T0-9 | Player push silently dropped | players register `users.fcmTokens`; dispatchers read `device_tokens`; no onCreate push trigger |
+| T0-10 | Parent dashboard empty | reads `profile.playerEmails` (never written); link lives in `households.playerEmails` |
+
+### Tier 1 — major (feature exists, data does not round-trip) — **Done (2026-06-09)**
+
+All 13 fixed via batched subagents, each with a regression guard (orchestrator-verified):
+
+- **T1-1** tactical board no persistence → persists to `teams/{teamId}/tactics/wr_{uid}` (debounced save + load on team change). *8 guards.*
+- **T1-2** match-day telemetry local-only → persists to `teams/{teamId}/telemetry_events` (reused existing rule + index); hydrates on reload. *5 guards.*
+- **T1-3** club drill promote clipboard-only → `recommendDrillToDirector` writes `drill_recommendations`, `publishDrillToClub` → `clubs/{clubId}/shared_drills` (shape matches `loadTeamDrillsForIntent`). **Latent gap closed:** `drill_recommendations` had no Firestore rule — added tenant-scoped rule (coach/director create in-club, director-only triage). *7 + 4 guards.*
+- **T1-4** VpcApprovalQueue rules deny director → tenant-scoped director read on `consent_records`. *5 guards.*
+- **T1-5** parent privacy `audit_logs` rules deny parent → household-scoped parent read via `parentHouseholdAllowsChildEmail` (read-only, no write opened). *5 guards.*
+- **T1-6** reps_count/volume bounties on weekly-reset counters → switched to cumulative `total_reps`/`totalMins` (both training + RL paths). *9 guards.* **Caveat:** `total_reps` is new, so pre-existing players accrue from now — historical reps not back-credited (backfill optional).
+- **T1-7** Proving Grounds `armory.stats` uid vs email key → `ArmoryEngine` writes to email-keyed `users` doc. *8 guards.*
+- **T1-8** collectibles `ownedSeasonOneCards` no writer → granted on level-up in `logTrainingSession` via `arrayUnion`. *7 guards.* **Follow-up:** align the rep-based grant path with the level-up path.
+- **T1-9** `completedAssignments30d` query/count contradiction → query realigned to `status=='completed'` + `completedAt` 30-day window + `orderBy('completedAt','desc')`; composite index added. *5 guards.* Also fixed a stale `functions-rl` require-path guard (bundling refactor).
+- **T1-10** player_stats org query "exceeds 10-get rule limit" → **audit premise did not reproduce (worst-case was 2 gets, not >10)**; still hardened the director branch to zero-get via `tokenClubMatchesDoc` + denormalized `clubId` on write paths. *5 guards.* Severity downgraded — not a live 10-get failure.
+- **T1-11** retention report region mismatch → client `DirectorRetentionReport.svelte` aligned `us-central1` → `us-east1` (server already `us-east1`). *3 guards.*
+- **T1-12** Stripe Connect status + audit_logs director view no UI reader → new `DirectorBillingAuditPanel` on director compliance page (reads `organizations` Stripe fields + tenant `audit_logs`); index added. *12 guards.*
+- **T1-13** RL-flow log never triggers bounty evaluation → `onWorkoutLogCreated` now calls `evaluateActiveBountiesForPlayer` (mirrors training path); confirmed wired in deployed `functions-rl` bundle. *8 guards.*
+
+### Tier 2 — fragility (fold into relevant sprints)
+
+Roster name-only players invisible (admin + Forge) · trials name-string identity + `trials` vs `trial_scores` split · claim-refresh timing gaps (householdId/vpcVerified) · operative-without-team `/setup` loop · scouting + attendance not implemented.
+
+### Test guards (LAUNCH-test-integrity)
+
+G1 XP field-path parity · G2 intent→`team_assignments` shape · G3 `parentProvisionOperative` seeded fields · G4 `safeSportBroadcast` delivery · G5 subscription gate · G6 emulator visible in CI · G7 RL trigger write · G8 VPC ceremony batch · G9 custom-claims trigger · G10 household thread path. Map each to its existing sprint test file.
+
+> **Environment blocker (2026-06-09):** the `@firebase/rules-unit-testing` harness exists (`firestoreTenantIsolation.test.ts`, `npm run test:firestore-rules`) but the **Firestore emulator requires a JDK that is not installed in the local dev environment** (`java`/`javac`/`JAVA_HOME` all absent). The emulator round-trip guards therefore cannot be authored-and-verified locally — **G6 must land first as a CI job** (Java + `emulators:exec`) before G1–G5/G7–G10 can be added with confidence. Until then, the Tier-0/Tier-1 rule changes remain covered by source-scan guards (`firestoreRulesSprint22.test.ts`). Do not author emulator tests that can't be run; wire CI first.
+
+**Verify (per slice):**
+
+```bash
+npm test -- <slice test path>
+npm run check
+```
+
+**Run before:** Track B assignment-richness features and any further feature/polish work.
+
+---
+
+## Track B — assignment richness (LAUNCH-track-b) — **Done (2026-06-09)**
+
+**Status (2026-06-09):** All slices **B1–B4 shipped and verified** (each with runnable guards; `npm run check` held at the 382 baseline throughout — zero net new type errors). B4 was delivered in three sub-slices (B4a foundation, B4b parent review, B4c COPPA media), each independently verified by the orchestrator (writer/reader field alignment on `completion_verifications`; both proof callables confirmed exported from `functions/index.js`; Storage `proof_media` read-scoping confirmed to use the same `token.householdId` claim that `customClaims.js` sets and `tokenHousehold()` reads — no silent deny). Verification proof remains advisory: it never gates XP / `workout_logs` / intent fulfillment. Emulator round-trip coverage still deferred to the test-integrity CI blocker.
+
+**Goal:** give players the *full picture* of a coach assignment while keeping coach effort low. **Canonical `team_assignments` / `prescription` path only** (owner decision — do NOT invest in legacy `assignments` homework path or unify paths in this track). Depends on T0-1 (Done).
+
+**Owner decisions (2026-06-09):**
+- **Path:** canonical `team_assignments` / `prescription` only.
+- **Proof (B4):** **parent verification is primary**, and it must surface **in the Parent OS space** (parent verifies from their own device, not the child's). **Optional** photo / short-video evidence — never a hard requirement to complete.
+- **Order:** build slices in order B1 → B4.
+
+**Key existing-state facts (from assignment-flow map):** drill-library docs already carry `videoUrl` + `description` (coaching cues), but `buildDeployPrescription()` copies only title/IDs/duration, and `mapTeamDrillDoc` ignores `videoUrl`/`description` — so players never see cues/video. `prescription` (`src/lib/types/intent.ts`) is the extension point; handoff flows coach→Train via `coachMissionFlow.ts` sessionStorage.
+
+| Slice | Scope | Files (explicit) | Guard |
+|---|---|---|---|
+| **B1 — Done** Cues + video to players | Carry the selected drill's `videoUrl` + coaching `cues` into `prescription` at deploy; display on `/player/workout` (and mission detail). Inherit from drill (no new coach UI). | `src/lib/coach/teamDrillLibrary.ts` (picker row + `mapTeamDrillDoc` read `videoUrl`/`description`), `src/lib/coach/intent/IntentEngine.svelte.ts` (`buildDeployPrescription`), `src/lib/types/intent.ts` (`IntentPrescription`+`DeployIntentInput`), `functions/src/domains/trainingOps.js` (`normalizePrescription` sanitize), `src/lib/player/workout/coachMissionFlow.ts` (handoff carry), `src/routes/(app)/player/workout/+page.svelte` (render) | `prescriptionSchema.test.ts` + `coachMissionFlow.test.ts` + `trainingOpsXp.test.js`/`intentOps.test.js` |
+| **B2 — Done** Per-assignment cadence/streak | `prescription.cadence { sessionsPerWindow, windowDays }`; per-assignment completion count (do NOT conflate with global `currentStreak`). | trainingOps `normalizePrescription`, `intent.ts`, `activeBounties.ts`, workout page | activeBounties + intentOps |
+| **B3 — Done** Multi-drill bundles | `prescription.drills[]` (canonical only; ignore legacy `assignments.drills[]`); Train runs the sequence via a sequential stepper that logs each step through the existing primitive. Server validates array length 1–8 + per-entry. | trainingOps, `intent.ts`, workout page, coachMissionFlow | coachMissionFlow + prescriptionSchema + trackB3Bundle.guard |
+| **B4 — Done** Completion proof | Parent-verification surfaced in **Parent OS**. **Owner decisions (2026-06-09):** (1) **coach opt-in** per intent (`prescription.requiresParentVerification`) for verification; (2) **media uploads are ALWAYS parent-gated** — a child's photo/short-video proof is COPPA-sensitive and must be parent-reviewed/approved before it is visible to ANYONE (coach/director included); media is optional, never required; (3) verification is **ADVISORY** — the player's log still awards XP / fulfills immediately; verification only adds a `parent-verified` mark (never gates XP or fulfillment). **COPPA-first:** child media lands in a private Storage path, unreadable by coach/director until a parent approves. Split: **B4a** data model + coach toggle + player proof submission (note + optional private media) + verification-request doc + Firestore/Storage rules (child create-own, parent read/moderate household-scoped, coach read approved-only); **B4b** Parent OS review surface (list pending → view → approve/reject) + advisory `parent-verified` badge on player/coach views. **Delivered (B4a/B4b/B4c):** `completion_verifications` collection (CF-only writes via `submitCompletionProof` + `parentReviewCompletionProof`, both us-east1 and exported from `functions/index.js`); Firestore rule scopes reads to player-own / parent-household / staff-tenant; `ProofReviewQueue.svelte` mounted on `/parent/dashboard`; B4c added optional photo/video to a private `households/{hid}/proof_media/{playerUid}/…` Storage path readable ONLY by the uploading player, same-household parent, and super-admin (no coach/director read branch), with server-side path-ownership validation on submit and `mediaApproved` flipped only on parent approval. | trainingOps (`submitCompletionProof`, `parentReviewCompletionProof`), `completion_verifications` collection + Firestore rule + index, `storage.rules` proof_media, `ProofReviewQueue.svelte` + parent dashboard, coach `requiresParentVerification` toggle (IntentHUD), player completion UI | `trackB4Proof.guard.test.js` + `storageRulesB4c.test.ts` + `firestoreRulesSprint22.test.ts` + parent dashboard / activeBounties vitest |
+
+**Verify (per slice):** `npm test -- <slice test paths>` · `npm run check`. (Emulator round-trip guards deferred — see test-integrity blocker above.)
 
 ---
 

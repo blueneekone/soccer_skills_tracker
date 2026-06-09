@@ -25,6 +25,13 @@ export type QuestTask = {
 	actionHref: string;
 	/** Lower = surfaced earlier within the same tier. */
 	sortKey: number;
+	/**
+	 * Per-assignment cadence config when coach set one.
+	 * Distinct from the global streak — do NOT reuse streak chrome/labels.
+	 */
+	cadence?: { sessionsPerWindow: number; windowDays: number };
+	/** targetAttributeId from the intent — used to count completions per window. */
+	targetAttributeId?: string;
 };
 
 export type QuestProgressStore = {
@@ -454,6 +461,37 @@ export function buildDailyQuests(
 	return [trainingLog, streakCheck].filter((q) => !progress.claimedIds.includes(q.id));
 }
 
+/**
+ * Count drill completion records for a given attribute within a rolling window.
+ * Operates on a pre-fetched array — no Firestore calls.
+ * Caveat: a session matching the attribute may count toward multiple active intents
+ * for the same attribute (expected and acceptable for display purposes).
+ */
+export function countCadenceSessionsInWindow(
+	completions: Array<{ attributeId: string; loggedAtMs: number }>,
+	attributeId: string,
+	windowDays: number,
+	now = Date.now(),
+): number {
+	const windowStart = now - windowDays * 86_400_000;
+	return completions.filter(
+		(c) => c.attributeId === attributeId && c.loggedAtMs >= windowStart,
+	).length;
+}
+
+/**
+ * Compact cadence progress label for the mission card.
+ * Semantically distinct from global streak — no streak chrome or day-count language.
+ */
+export function formatCadenceProgress(
+	completed: number,
+	sessionsPerWindow: number,
+	windowDays: number,
+): string {
+	const windowLabel = windowDays === 7 ? 'this week' : `in ${windowDays}d`;
+	return `${completed}/${sessionsPerWindow} ${windowLabel}`;
+}
+
 export function bountyFromCoachIntent(
 	id: string,
 	data: Record<string, unknown>,
@@ -469,6 +507,25 @@ export function bountyFromCoachIntent(
 	const attrLabel = formatAttributeLabel(targetAttributeId);
 	const fulfilledBy = Array.isArray(data.fulfilledByUids) ? data.fulfilledByUids : [];
 	const playerFulfilled = Boolean(playerUid && fulfilledBy.includes(playerUid));
+	const rx = data.prescription;
+	const cadence =
+		rx != null &&
+		typeof rx === 'object' &&
+		!Array.isArray(rx) &&
+		(rx as Record<string, unknown>).cadence != null &&
+		typeof (rx as Record<string, unknown>).cadence === 'object' &&
+		!Array.isArray((rx as Record<string, unknown>).cadence)
+			? (() => {
+					const c = (rx as Record<string, unknown>).cadence as Record<string, unknown>;
+					const spw =
+						typeof c.sessionsPerWindow === 'number' ? Math.floor(c.sessionsPerWindow) : 0;
+					const wd =
+						typeof c.windowDays === 'number' ? Math.floor(c.windowDays) : 0;
+					return spw >= 1 && spw <= 21 && wd >= 1 && wd <= 30
+						? { sessionsPerWindow: spw, windowDays: wd }
+						: undefined;
+				})()
+			: undefined;
 	return {
 		id,
 		tier: 'bounty',
@@ -480,6 +537,8 @@ export function bountyFromCoachIntent(
 		lifecycle: resolveQuestLifecycle(id, progress, { readyToClaim: playerFulfilled }),
 		actionHref: '/player/workout',
 		sortKey: priority,
+		targetAttributeId,
+		...(cadence ? { cadence } : {}),
 	};
 }
 

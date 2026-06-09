@@ -4,17 +4,24 @@
 	import { get } from 'svelte/store';
 	import { CoOpEngine } from '$lib/states/CoOpEngine.svelte.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
+	import { db } from '$lib/firebase.js';
+	import { doc, getDoc } from 'firebase/firestore';
 	import CoOpArena from '$lib/components/parent/co-op/CoOpArena.svelte';
 	import CoOpHUD from '$lib/components/parent/co-op/CoOpHUD.svelte';
 	import BountyTerminal from './BountyTerminal.svelte';
 	import { CarRideEngine } from './CarRideEngine.svelte.js';
 	import CarRideArena from './CarRideArena.svelte';
 	import CarRideHUD from './CarRideHUD.svelte';
+	import ProofReviewQueue from '$lib/components/parent/ProofReviewQueue.svelte';
 
 	const engine = new CoOpEngine();
 	const carRideEngine = new CarRideEngine();
 
 	let showCreateBounty = $state(false);
+	/** Resolved householdId passed down to ProofReviewQueue — set in onMount. */
+	let resolvedHouseholdId = $state('');
+	/** email → display name map for household children — built from households doc. */
+	let childNames = $state<Record<string, string>>({});
 
 	onMount(async () => {
 		const user = authStore.user;
@@ -22,10 +29,40 @@
 
 		const parentEmail = (user as { email?: string } | null)?.email?.toLowerCase() ?? '';
 		const householdId = (profile?.householdId as string | undefined) ?? '';
-		const childEmails = (profile?.playerEmails as string[] | undefined) ?? [];
 		const tenantId = authStore.tenantId ?? '';
 		const clubId = (profile?.clubId as string | undefined) ?? tenantId;
 
+		// Resolve child emails from the households doc — the authoritative source.
+		// parentProvisionOperative writes to households/{id}.playerEmails; the parent profile doc is never updated.
+		let childEmails: string[] = [];
+		if (householdId) {
+			try {
+				const hSnap = await getDoc(doc(db, 'households', householdId));
+				if (hSnap.exists()) {
+					const hData = hSnap.data();
+					const raw: unknown[] = hData.playerEmails ?? [];
+					childEmails = raw
+						.map((e) => String(e ?? '').trim().toLowerCase())
+						.filter(Boolean);
+
+					// Build email→name map for ProofReviewQueue (uses playerNames parallel array).
+					const rawNames: unknown[] = hData.playerNames ?? [];
+					const nameMap: Record<string, string> = {};
+					childEmails.forEach((em, i) => {
+						const nm =
+							typeof rawNames[i] === 'string' && (rawNames[i] as string).trim()
+								? (rawNames[i] as string).trim()
+								: em.split('@')[0];
+						nameMap[em] = nm;
+					});
+					childNames = nameMap;
+				}
+			} catch (err) {
+				console.error('[parent dashboard] household read', err);
+			}
+		}
+
+		resolvedHouseholdId = householdId;
 		await engine.init(parentEmail, householdId, childEmails);
 
 		// Phase 4, Epic 8 — Car Ride Home Protocol.
@@ -108,6 +145,13 @@
 					Create bounty
 				</button>
 			</aside>
+
+			<!-- B4b — advisory completion proof review queue -->
+			{#if resolvedHouseholdId}
+				<div class="bento-span-12 tw-min-w-0">
+					<ProofReviewQueue householdId={resolvedHouseholdId} {childNames} />
+				</div>
+			{/if}
 		</div>
 	</div>
 

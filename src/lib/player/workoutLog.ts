@@ -198,6 +198,8 @@ export async function executePlayerWorkoutLog(deps: {
 	oldLevel: number;
 	intensityStep: number;
 	sessionNotes?: string;
+	/** Forwarded from MissionHandoff.targetAttributeId for coach-intent XP routing. */
+	targetAttributeId?: string;
 	authUser: { uid: string; email?: string | null };
 	profile: { teamId?: unknown; playerName?: unknown };
 	logTrainingSession: (data: {
@@ -209,6 +211,8 @@ export async function executePlayerWorkoutLog(deps: {
 		subjectiveRpe: number;
 		assignmentId?: string;
 		sessionNotes?: string;
+		/** Coach intent target attribute — triggers xpByAttribute increment on server for intent lifecycle. */
+		attributeId?: string;
 	}) => Promise<HttpsCallableResult<WorkoutSessionPayload>>;
 	writePlayerOsWorkout: (args: {
 		emailKey: string;
@@ -243,6 +247,7 @@ export async function executePlayerWorkoutLog(deps: {
 		subjectiveRpe: Math.max(1, Math.min(10, Math.round(deps.intensityStep))),
 		...(assignmentId ? { assignmentId } : {}),
 		...(deps.sessionNotes?.trim() ? { sessionNotes: deps.sessionNotes.trim() } : {}),
+		...(deps.targetAttributeId?.trim() ? { attributeId: deps.targetAttributeId.trim() } : {}),
 	});
 	const payload = res.data;
 	const earned = payload && typeof payload.earnedXP === 'number' ? payload.earnedXP : 0;

@@ -12,9 +12,11 @@
 	import { scale } from 'svelte/transition';
 	import { quintOut } from 'svelte/easing';
 	import { db } from '$lib/firebase.js';
-	import { collection, doc, getDoc, getDocs, query, where } from 'firebase/firestore';
+	import { collection, doc, getDoc, getDocs, setDoc, query, where, serverTimestamp } from 'firebase/firestore';
+	import { authStore } from '$lib/stores/auth.svelte.js';
 
 	/** @typedef {import('$lib/states/war-room/types').TacticalToken} TacticalToken */
+	/** @typedef {import('$lib/states/war-room/types').TacticalCartridge} TacticalCartridge */
 
 	let selectedTeamId = $state('');
 	let warRoomTool = $state(/** @type {'DRAG' | 'ROUTE'} */ ('DRAG'));
@@ -34,6 +36,98 @@
 	let wrBucketBench = $state(/** @type {TacticalToken[]} */ ([]));
 	let wrOppPitch = $state(/** @type {TacticalToken[]} */ ([]));
 	let drawnRoutes = $state(/** @type {unknown[]} */ ([]));
+
+	// ── Persistence ───────────────────────────────────────────────────────────
+	// Board state is persisted to teams/{teamId}/tactics/wr_{uid} — a per-coach
+	// singleton inside the existing `tactics` sub-collection, which already has
+	// coach/director-scoped rules (Epic 2.3).  Using a per-coach doc ID avoids
+	// the createdBy ownership conflict in the update rule.
+
+	/** Set to true once the initial Firestore load attempt has completed. Prevents
+	 *  the auto-save effect from saving half-hydrated state on first render. */
+	let boardLoadComplete = $state(false);
+	/** @type {ReturnType<typeof setTimeout> | null} */
+	let _saveTimer = null;
+
+	/** Persist current board state to Firestore (debounce-called). */
+	async function saveBoardState() {
+		const tid = selectedTeamId;
+		const uid = authStore.user?.uid;
+		if (!tid || !uid) return;
+		try {
+			const cartridge = engine.serializeToCartridge();
+			const docRef = doc(db, 'teams', tid, 'tactics', `wr_${uid}`);
+			await setDoc(
+				docRef,
+				{
+					name: 'warRoom',
+					canvasState: JSON.stringify({ entities: cartridge.entities, routes: cartridge.routes }),
+					createdBy: uid,
+					updatedAt: serverTimestamp(),
+					teamId: tid,
+					clubId: teamScope.teamClubId || null,
+					cartridge,
+				},
+				{ merge: true },
+			);
+		} catch (e) {
+			console.error('[War Room] save error:', e);
+		}
+	}
+
+	/** Schedule a debounced save (1.5 s quiet period). Skipped before initial load. */
+	function scheduleSave() {
+		if (!boardLoadComplete) return;
+		if (_saveTimer !== null) clearTimeout(_saveTimer);
+		_saveTimer = setTimeout(() => {
+			_saveTimer = null;
+			void saveBoardState();
+		}, 1500);
+	}
+
+	// Auto-save: re-runs whenever any of the three board state signals change.
+	// Each of these is a $state array that is *replaced* (not mutated) by the engine,
+	// so accessing the variables registers reactive dependencies correctly.
+	$effect(() => {
+		// Accessing these signals registers them as dependencies.
+		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
+		wrBucketPitch; wrOppPitch; drawnRoutes;
+		scheduleSave();
+	});
+
+	// Load board state from Firestore when the selected team becomes known.
+	// Hydrates pitch + opp tokens and routes directly so wrBucketXi (roster)
+	// is left untouched — the roster load effect populates Xi independently.
+	$effect(() => {
+		const tid = selectedTeamId;
+		if (!tid) return;
+
+		boardLoadComplete = false;
+
+		void (async () => {
+			try {
+				const uid = authStore.user?.uid;
+				if (uid) {
+					const snap = await getDoc(doc(db, 'teams', tid, 'tactics', `wr_${uid}`));
+					if (snap.exists()) {
+						const c = /** @type {any} */ (snap.data()?.cartridge);
+						if (c && Array.isArray(c.entities)) {
+							wrBucketPitch = c.entities
+								.filter(/** @param {any} e */ (e) => e.side !== 'opponent')
+								.map(/** @param {any} e */ (e) => ({ ...e }));
+							wrOppPitch = c.entities
+								.filter(/** @param {any} e */ (e) => e.side === 'opponent')
+								.map(/** @param {any} e */ (e) => ({ ...e }));
+							drawnRoutes = Array.isArray(c.routes) ? c.routes.map(/** @param {any} r */ (r) => ({ ...r })) : [];
+						}
+					}
+				}
+			} catch (e) {
+				console.error('[War Room] load error:', e);
+			}
+			boardLoadComplete = true;
+		})();
+	});
 
 	// TacticalGridHost — reactive accessors wrapping $state vars
 	const host = {

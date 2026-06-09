@@ -189,8 +189,9 @@ async function buildStateVector(uid, now = new Date()) {
     const [aSnap, taSnap] = await Promise.all([
       db().collection('assignments')
           .where('teamId', '==', teamId)
-          .where('status', '==', 'active')
-          .orderBy('createdAt', 'desc')
+          .where('status', '==', 'completed')
+          .where('completedAt', '>=', admin.firestore.Timestamp.fromDate(cutoff30))
+          .orderBy('completedAt', 'desc')
           .limit(20)
           .get(),
       // Epic 8: filter active intents only, then scope-filter in memory.

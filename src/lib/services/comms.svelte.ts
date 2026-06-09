@@ -37,6 +37,16 @@ export interface BroadcastMessageInput {
 	subject?: string;
 }
 
+/** Input for the coach→player direct message callable (adult players only). */
+export interface CoachPlayerDMInput {
+	/** The coach's team ID — must match the calling coach's JWT teamId. */
+	teamId: string;
+	/** Exact player name as it appears on the roster (used for player_lookup). */
+	playerName: string;
+	/** Message body, max 4000 characters. */
+	body: string;
+}
+
 export interface BroadcastResult {
 	success: true;
 	messageId: string;
@@ -77,6 +87,7 @@ export class CommsEngine {
 	private _broadcastFn: ReturnType<typeof httpsCallable> | null = null;
 	private _channelFn: ReturnType<typeof httpsCallable> | null = null;
 	private _householdFn: ReturnType<typeof httpsCallable> | null = null;
+	private _coachDmFn: ReturnType<typeof httpsCallable> | null = null;
 
 	constructor() {
 		if (!browser) return;
@@ -84,6 +95,7 @@ export class CommsEngine {
 		this._broadcastFn = httpsCallable(fns, 'safeSportBroadcast');
 		this._channelFn = httpsCallable(fns, 'sendChannelMessage');
 		this._householdFn = httpsCallable(fns, 'sendHouseholdMessage');
+		this._coachDmFn = httpsCallable(fns, 'sendCoachPlayerMessage');
 	}
 
 	/**
@@ -202,6 +214,44 @@ export class CommsEngine {
 			return response.data as { ok: true; messageId: string };
 		} catch (err: unknown) {
 			this.error = err instanceof Error ? err.message : 'Failed to send household message.';
+			this.phase = 'error';
+			throw err;
+		}
+	}
+
+	/**
+	 * Send a coach→player direct message (adult players only).
+	 *
+	 * Calls the `sendCoachPlayerMessage` Cloud Function which resolves the
+	 * player email via `player_lookup`, enforces the adult-only rule
+	 * (`assertStaffMayDirectMessagePlayer`), and writes `in_app_messages` +
+	 * `messaging_audit` in a single server-side batch.
+	 *
+	 * Input: `{ teamId, playerName, body }` — playerName must match the roster.
+	 */
+	async sendCoachPlayerMessage(input: CoachPlayerDMInput): Promise<{ ok: true; messageId: string }> {
+		const teamId = input.teamId?.trim() ?? '';
+		const playerName = input.playerName?.trim() ?? '';
+		const body = input.body?.trim() ?? '';
+		if (!teamId || !playerName) {
+			throw new Error('teamId and playerName are required.');
+		}
+		if (!body) throw new Error('Message body is required.');
+		if (body.length > 4000) throw new Error('Message body exceeds 4000 characters.');
+		if (!this._coachDmFn) {
+			throw new Error('CommsEngine not initialised (SSR context).');
+		}
+
+		this.phase = 'sending';
+		this.error = '';
+		this.lastResult = null;
+
+		try {
+			const response = await this._coachDmFn({ teamId, playerName, body });
+			this.phase = 'success';
+			return response.data as { ok: true; messageId: string };
+		} catch (err: unknown) {
+			this.error = err instanceof Error ? err.message : 'Failed to send direct message.';
 			this.phase = 'error';
 			throw err;
 		}

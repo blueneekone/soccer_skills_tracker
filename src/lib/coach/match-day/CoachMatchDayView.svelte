@@ -1,7 +1,15 @@
 ﻿<script>
 	import { browser } from '$app/environment';
 	import { page } from '$app/state';
-	import { collection, getDocs, query, where } from 'firebase/firestore';
+	import {
+		addDoc,
+		collection,
+		getDocs,
+		orderBy,
+		query,
+		serverTimestamp,
+		where,
+	} from 'firebase/firestore';
 	import { db } from '$lib/firebase.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { CoachTeamScope } from '$lib/coach/context/coachTeamScope.svelte.js';
@@ -22,6 +30,16 @@
 		{ id: 'TURNOVER', label: 'TURNOVER', tone: 'rose' },
 		{ id: 'PASS_COMPLETED', label: 'PASS COMPLETED', tone: 'cyan' },
 	]);
+
+	/** XP points per telemetry action — mirrors MatchLogger.svelte LIVE_ACTION table. */
+	const ACTION_POINTS = /** @type {Record<string, number>} */ ({
+		GOAL: 10,
+		SHOT_ON_TARGET: 3,
+		TACKLE_WON: 5,
+		FOUL: 0,
+		TURNOVER: 0,
+		PASS_COMPLETED: 1,
+	});
 
 	const MOCK_OPERATIVES = /** @type {Operative[]} */ ([
 		{ id: 'm1', shortId: 'OP-01', name: 'Jimmy T.', role: 'MID' },
@@ -45,6 +63,15 @@
 	const activeTeamLabel = $derived.by(() => {
 		const n = typeof teamScope.currentTeam?.name === 'string' ? teamScope.currentTeam.name.trim() : '';
 		return n ? n.toUpperCase() : 'AGGIES FC';
+	});
+
+	/** Date-scoped session match ID — stable across reloads within the same calendar day. */
+	const sessionMatchId = $derived.by(() => {
+		const tid = teamScope.selectedTeamId?.trim();
+		if (!tid) return '';
+		const d = new Date();
+		const ds = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+		return `md_${tid}_${ds}`.slice(0, 128);
 	});
 
 	/** @type {Operative[]} */
@@ -134,6 +161,48 @@
 		};
 	});
 
+	/** Hydrate eventFeed from Firestore whenever the team or session match changes. */
+	$effect(() => {
+		if (!browser || authStore.isLoading || !authStore.isAuthenticated) return;
+		const tid = teamScope.selectedTeamId?.trim();
+		const mid = sessionMatchId;
+		if (!tid || !mid) return;
+
+		let cancelled = false;
+		void (async () => {
+			try {
+				const snap = await getDocs(
+					query(
+						collection(db, 'teams', tid, 'telemetry_events'),
+						where('matchId', '==', mid),
+						orderBy('timestamp', 'asc'),
+					),
+				);
+				if (cancelled) return;
+				/** @type {FeedLine[]} */
+				const lines = [];
+				snap.forEach((docSnap) => {
+					const data = docSnap.data();
+					if (typeof data.line !== 'string' || !data.line) return;
+					lines.push({
+						id: docSnap.id,
+						matchTs: typeof data.matchTs === 'string' ? data.matchTs : '',
+						line: data.line,
+						tone: /** @type {PadTone} */ (
+							data.tone === 'emerald' || data.tone === 'rose' ? data.tone : 'cyan'
+						),
+					});
+				});
+				if (!cancelled && lines.length > 0) eventFeed = lines;
+			} catch (e) {
+				console.error('[MatchDay] feed hydrate', e);
+			}
+		})();
+		return () => {
+			cancelled = true;
+		};
+	});
+
 	const activeOperative = $derived(
 		operatives.find((o) => o.id === activeTarget) ?? operatives[0] ?? null,
 	);
@@ -179,7 +248,7 @@
 	 * @param {string} actionType
 	 * @param {PadTone} tone
 	 */
-	function logTelemetryEvent(actionType, tone) {
+	async function logTelemetryEvent(actionType, tone) {
 		const op = activeOperative;
 		if (!op) return;
 
@@ -203,13 +272,36 @@
 		if (actionType === 'GOAL') homeScore += 1;
 
 		triggerIngestPulse();
+
+		// Persist to Firestore — only when a real team is active and user is authenticated.
+		const tid = teamScope.selectedTeamId?.trim();
+		const mid = sessionMatchId;
+		const uid = authStore.user?.uid;
+		if (!tid || !mid || !uid) return;
+		try {
+			await addDoc(collection(db, 'teams', tid, 'telemetry_events'), {
+				teamId: tid,
+				clubId: teamScope.teamClubId || '',
+				matchId: mid,
+				playerId: op.id,
+				action: actionType,
+				points: ACTION_POINTS[actionType] ?? 0,
+				matchTs,
+				line,
+				tone,
+				loggedBy: uid,
+				timestamp: serverTimestamp(),
+			});
+		} catch (e) {
+			console.error('[MatchDay] persist event', e);
+		}
 	}
 
 	/**
 	 * @param {TelemetryPadDef} a
 	 */
 	function fireAction(a) {
-		logTelemetryEvent(a.id, a.tone);
+		void logTelemetryEvent(a.id, a.tone);
 		flashTelemetryButton(a.id);
 	}
 

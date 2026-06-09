@@ -96,7 +96,20 @@ async function sendVanguardPush(userEmail, payload, category) {
 		return {sent: 0, failed: 0, skipped: true};
 	}
 
-	const tokens = Array.isArray(userData.fcmTokens) ? userData.fcmTokens.filter(Boolean) : [];
+	// Resolve uid from email to read device_tokens/{uid} (canonical single store)
+	let uid;
+	try {
+		const userRecord = await admin.auth().getUserByEmail(userEmail);
+		uid = userRecord.uid;
+	} catch (e) {
+		logger.warn('[dispatcher] uid lookup failed; no push', {userEmail});
+		return {sent: 0, failed: 0, skipped: true};
+	}
+
+	const tokenSnap = await db.doc(`device_tokens/${uid}`).get();
+	const tokens = tokenSnap.exists && Array.isArray(tokenSnap.data().tokens)
+		? tokenSnap.data().tokens.filter(Boolean)
+		: [];
 	if (tokens.length === 0) return {sent: 0, failed: 0, skipped: true};
 
 	const message = {
@@ -136,10 +149,10 @@ async function sendVanguardPush(userEmail, payload, category) {
 		}
 	});
 	if (staleTokens.length > 0) {
-		await db.doc(`users/${userEmail}`).update({
-			fcmTokens: admin.firestore.FieldValue.arrayRemove(...staleTokens),
+		await db.doc(`device_tokens/${uid}`).update({
+			tokens: admin.firestore.FieldValue.arrayRemove(...staleTokens),
 		});
-		logger.info('[dispatcher] pruned stale tokens', {userEmail, count: staleTokens.length});
+		logger.info('[dispatcher] pruned stale tokens', {userEmail, uid, count: staleTokens.length});
 	}
 
 	return {sent: response.successCount, failed: response.failureCount, skipped: false};

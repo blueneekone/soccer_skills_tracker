@@ -2,14 +2,12 @@
 	import { browser } from '$app/environment';
 	import { collection, getDocs, query, where } from 'firebase/firestore';
 	import { db } from '$lib/firebase.js';
-	import { getLevelProgressFromTotalXp, MAX_PLAYER_LEVEL } from '$lib/gamification/level.js';
 	import EligibilityBadge from './EligibilityBadge.svelte';
 	import Icon from '$lib/components/ui/Icon.svelte';
 
 	/**
 	 * @typedef {{
 	 *   id: string; name: string; number: string; position: string;
-	 *   level: number; xp: number; xpMax: number;
 	 *   stamina: number; hr: number;
 	 *   vpc_approved: boolean;
 	 *   status: 'READY' | 'FATIGUED' | 'INJURED' | 'SUSPENDED' | 'OFFLINE' | 'INJURY RISK';
@@ -32,7 +30,6 @@
 					.toUpperCase()
 			: '',
 	);
-	const xpPct = $derived(player ? Math.min(100, Math.round((player.xp / player.xpMax) * 100)) : 0);
 	/** @type {Record<string, string>} */
 	const STATUS_COLORS = {
 		READY: '#14b8a6',
@@ -59,8 +56,6 @@
 		player ? (player.hr <= 80 ? '#14b8a6' : player.hr <= 100 ? '#ffff00' : '#ff003c') : '#14b8a6',
 	);
 
-	/** @type {Array<{ name: string, level: number, xpToNext: number, gap: number }>} */
-	let levelingSoon = $state([]);
 	/** @type {Array<{ name: string, status: string }>} */
 	let unavailable = $state([]);
 	let loading = $state(true);
@@ -87,7 +82,6 @@
 
 	$effect(() => {
 		if (!browser || !teamId) {
-			levelingSoon = [];
 			unavailable = [];
 			loading = false;
 			err = '';
@@ -98,34 +92,10 @@
 		err = '';
 		void (async () => {
 			try {
-				const [statsSnap, lookupSnap] = await Promise.all([
-					getDocs(query(collection(db, 'player_stats'), where('teamId', '==', teamId))),
-					getDocs(query(collection(db, 'player_lookup'), where('teamId', '==', teamId))),
-				]);
+				const lookupSnap = await getDocs(
+					query(collection(db, 'player_lookup'), where('teamId', '==', teamId)),
+				);
 				if (cancelled) return;
-
-				/** @type {Array<{ name: string, level: number, xpToNext: number, gap: number }>} */
-				const xpRows = [];
-				statsSnap.forEach((d) => {
-					const data = d.data();
-					const name =
-						typeof data.playerName === 'string' && data.playerName.trim() ?
-							data.playerName.trim()
-						:	'';
-					if (!name) return;
-					const totalXp = Math.max(0, Math.floor(Number(data.total_xp) || 0));
-					const prog = getLevelProgressFromTotalXp(totalXp);
-					if (prog.level >= MAX_PLAYER_LEVEL || prog.xpToNext <= 0) return;
-					const gap = Math.max(0, prog.xpToNext - prog.xpIntoLevel);
-					xpRows.push({
-						name,
-						level: prog.level,
-						xpToNext: prog.xpToNext,
-						gap,
-					});
-				});
-				xpRows.sort((a, b) => a.gap - b.gap);
-				levelingSoon = xpRows.slice(0, 3);
 
 				/** @type {Array<{ name: string, status: string }>} */
 				const bad = [];
@@ -144,7 +114,6 @@
 			} catch (e) {
 				console.error('[CoachSquadReadinessCard]', e);
 				err = e instanceof Error ? e.message : 'Could not load readiness.';
-				levelingSoon = [];
 				unavailable = [];
 			} finally {
 				if (!cancelled) loading = false;
@@ -200,26 +169,6 @@
 			>
 				{player.status}
 			</span>
-		</div>
-
-		<!-- RPG Level + XP bar -->
-		<div class="tw-mb-3 tw-rounded-xl tw-border tw-border-white/5 tw-bg-white/[0.02] tw-px-3 tw-py-2.5">
-			<div class="tw-mb-1.5 tw-flex tw-items-center tw-justify-between tw-gap-2">
-				<span
-					class="tw-rounded-md tw-border tw-border-[#14b8a6]/25 tw-bg-[#14b8a6]/10 tw-px-1.5 tw-py-0.5 tw-font-mono tw-text-[9px] tw-font-bold tw-text-[#14b8a6]"
-				>
-					LVL {player.level}
-				</span>
-				<span class="tw-font-mono tw-text-[9px] tw-tabular-nums tw-text-white/40">
-					{player.xp.toLocaleString()} / {player.xpMax.toLocaleString()} XP
-				</span>
-			</div>
-			<div class="tw-h-1 tw-overflow-hidden tw-rounded-full tw-bg-white/10">
-				<div
-					class="tw-h-full tw-rounded-full tw-bg-gradient-to-r tw-from-[#14b8a6]/50 tw-to-[#14b8a6] tw-shadow-[0_0_8px_rgba(20, 184, 166,0.45)]"
-					style="width: {xpPct}%;"
-				></div>
-			</div>
 		</div>
 
 		<!-- Biometrics + VPC consent gate -->
@@ -363,26 +312,6 @@
 				Live signals
 			</h3>
 			<div class="space-y-4">
-				<div>
-					<h4 class="mb-2 text-[10px] font-semibold uppercase tracking-wide text-slate-500">
-						Closest to leveling up
-					</h4>
-					{#if levelingSoon.length === 0}
-						<p class="text-xs text-slate-600">No XP progression rows yet, or squad is at cap.</p>
-					{:else}
-						<ol class="list-decimal space-y-2 pl-4 text-sm text-slate-300">
-							{#each levelingSoon as row, i (row.name + i)}
-								<li>
-									<span class="font-medium text-slate-200">{row.name}</span>
-									<span class="ml-1 font-mono text-xs tabular-nums text-slate-500">
-										L{row.level} · {row.gap.toLocaleString()} XP to next
-									</span>
-								</li>
-							{/each}
-						</ol>
-					{/if}
-				</div>
-
 				<div>
 					<h4 class="mb-2 text-[10px] font-semibold uppercase tracking-wide text-slate-500">
 						Injured / absent / inactive

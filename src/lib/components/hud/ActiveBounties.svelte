@@ -8,6 +8,7 @@
 		onSnapshot,
 		orderBy,
 		query,
+		Timestamp,
 		where,
 	} from 'firebase/firestore';
 	import { db } from '$lib/firebase.js';
@@ -20,6 +21,8 @@
 		bountyFromCoachIntent,
 		bountyFromHomeworkAssignment,
 		bountyFromParentBounty,
+		countCadenceSessionsInWindow,
+		formatCadenceProgress,
 		loadQuestProgress,
 		markQuestAccepted,
 		markQuestClaimed,
@@ -81,6 +84,14 @@
 	let refreshNonce = $state(0);
 	let isRefreshing = $state(false);
 	let lastCoachIntentIds = $state<string[]>([]);
+	/** Flat completion records for cadence progress — fetched once per uid, not real-time. */
+	let cadenceCompletions = $state<Array<{ attributeId: string; loggedAtMs: number }>>([]);
+	/**
+	 * B4b advisory badge: intentIds that have an 'approved' completion_verifications record
+	 * for this player. Subscribed player-own only (playerUid == auth.uid). Read-only display —
+	 * does NOT affect XP, progress, or intent fulfilment.
+	 */
+	let approvedIntentIds = $state<Set<string>>(new Set());
 
 	const quests = $derived(questsProp ?? internalQuests);
 	const loading = $derived(loadingProp ?? internalLoading);
@@ -155,6 +166,69 @@
 
 	$effect(() => {
 		onHeroQuestId?.(heroQuest?.id ?? visibleQuests[0]?.id ?? null);
+	});
+
+	$effect(() => {
+		if (!browser || authStore.isLoading || authStore.role !== 'player') return;
+		const uid = authStore.user?.uid ?? '';
+		if (!uid) return;
+		const hasCadenceQuests = dedupedQuests.some(
+			(q) => q.source === 'coach_intent' && q.cadence,
+		);
+		if (!hasCadenceQuests) return;
+		const windowStart = Timestamp.fromMillis(Date.now() - 30 * 86_400_000);
+		void getDocs(
+			query(
+				collection(db, 'drill_completions'),
+				where('playerUid', '==', uid),
+				where('loggedAt', '>=', windowStart),
+			),
+		)
+			.then((snap) => {
+				cadenceCompletions = snap.docs.map((d) => {
+					const data = d.data();
+					const attrId = typeof data.attributeId === 'string' ? data.attributeId : '';
+					const ts = data.loggedAt;
+					const ms =
+						ts instanceof Timestamp
+							? ts.toMillis()
+							: typeof ts?.toMillis === 'function'
+								? ts.toMillis()
+								: typeof ts?.seconds === 'number'
+									? ts.seconds * 1000
+									: 0;
+					return { attributeId: attrId, loggedAtMs: ms };
+				});
+			})
+		.catch(() => {
+			/* non-fatal: cadence count stays at 0 */
+		});
+	});
+
+	// B4b — subscribe to player's own approved completion_verifications for advisory badge.
+	// Reads are player-own only (playerUid == auth.uid); no XP or progress logic is touched.
+	$effect(() => {
+		if (!browser || authStore.isLoading || authStore.role !== 'player') return;
+		const uid = authStore.user?.uid ?? '';
+		if (!uid) return;
+
+		const unsub = onSnapshot(
+			query(
+				collection(db, 'completion_verifications'),
+				where('playerUid', '==', uid),
+				where('status', '==', 'approved'),
+			),
+			(snap) => {
+				const ids = new Set<string>();
+				snap.docs.forEach((d) => {
+					const intentId = d.data().intentId;
+					if (typeof intentId === 'string' && intentId) ids.add(intentId);
+				});
+				approvedIntentIds = ids;
+			},
+			() => { /* non-fatal: badge stays hidden on read error */ },
+		);
+		return unsub;
 	});
 
 	const playerUid = $derived(authStore.user?.uid ?? '');
@@ -511,6 +585,21 @@
 				<p class="quest-row__hint">{COACH_INTENT_HINT}</p>
 				{#if drillPreviewByQuestId[quest.id]?.line}
 					<p class="quest-row__drill">{drillPreviewByQuestId[quest.id].line}</p>
+				{/if}
+				{#if quest.cadence && quest.targetAttributeId}
+					{@const completed = countCadenceSessionsInWindow(
+						cadenceCompletions,
+						quest.targetAttributeId,
+						quest.cadence.windowDays,
+					)}
+					<p class="quest-row__cadence pw-mono" aria-label="Cadence progress">
+						{formatCadenceProgress(completed, quest.cadence.sessionsPerWindow, quest.cadence.windowDays)}
+					</p>
+				{/if}
+				{#if approvedIntentIds.has(quest.id)}
+					<span class="quest-row__parent-verified" aria-label="Parent-verified">
+						Parent-verified
+					</span>
 				{/if}
 			{:else if quest.source === 'coach_homework'}
 				<p class="quest-row__drill">Assigned drill: {quest.title}</p>

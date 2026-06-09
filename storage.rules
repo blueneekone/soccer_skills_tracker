@@ -303,6 +303,50 @@ service firebase.storage {
         );
     }
 
+    // ─────────────────────────────────────────────────────────────────────
+    // B4c — COPPA-safe optional media proof
+    //
+    // Path layout:
+    //   households/{householdId}/proof_media/{playerUid}/{fileName}
+    //
+    // COPPA mandate:
+    //   - Optional (player never required to upload).
+    //   - Write: owning player only (uid + household claim match).
+    //   - Read: owning player OR same-household parent OR super_admin ONLY.
+    //   - Coaches and directors: NO read access in this block.
+    //   - No public read.
+    //   - Content-type: image or video only; size caps: image ≤10MB, video ≤50MB.
+    //   - Verification stays ADVISORY — no XP/workout_logs/fulfillment gating.
+    // ─────────────────────────────────────────────────────────────────────
+    match /households/{householdId}/proof_media/{playerUid}/{fileName} {
+      // Write: only the owning player — uid and household claim must both match.
+      // Content-type must be image or video. Size caps: image ≤10MB, video ≤50MB.
+      allow write: if request.auth != null
+        && request.auth.uid == playerUid
+        && request.auth.token.householdId == householdId
+        && request.resource != null
+        && (
+          (
+            request.resource.contentType.matches('image/.*')
+            && request.resource.size <= 10 * 1024 * 1024
+          )
+          ||
+          (
+            request.resource.contentType.matches('video/.*')
+            && request.resource.size <= 50 * 1024 * 1024
+          )
+        );
+
+      // Read: owning player OR same-household member (parent claim) OR super_admin.
+      // Coaches and directors have NO read access here (COPPA: parent-only visibility).
+      allow read: if request.auth != null
+        && (
+          request.auth.uid == playerUid
+          || request.auth.token.householdId == householdId
+          || request.auth.token.role == 'super_admin'
+        );
+    }
+
     match /{allPaths=**} {
       allow read, write: if false;
     }

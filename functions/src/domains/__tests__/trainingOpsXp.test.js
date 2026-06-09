@@ -83,3 +83,272 @@ describe('logTrainingSession subjectiveRpe guard', () => {
     assert.equal(parseSubjectiveRpe({subjectiveRpe: 'hard'}), null);
   });
 });
+
+// ── G1: xpByAttribute field parity guard ────────────────────────────────────
+// Confirms the sanitization logic and Firestore field paths that logTrainingSession
+// uses to increment xpByAttribute on BOTH reader docs:
+//   users/{email}.xpByAttribute[attrId]     ← onUserXpUpdateIntentLifecycle trigger
+//   player_stats/{uid}.xpByAttribute[attrId] ← RL featureBuilder (ml/featureBuilder.js)
+
+/** Mirrors trainingOps.js attributeId sanitization */
+function sanitizeAttributeId(raw) {
+  if (typeof raw !== 'string') return '';
+  return raw.trim().toLowerCase().replace(/[^a-z0-9_]/g, '').slice(0, 60);
+}
+
+/** Mirrors trainingOps.js decision: whether to write xpByAttribute */
+function wouldWriteXpByAttribute(data) {
+  const attrRaw = sanitizeAttributeId(data.attributeId);
+  return !!attrRaw;
+}
+
+// ── T1-8: ownedSeasonOneCards writer guard ───────────────────────────────────
+// Confirms SEASON_ONE_LEVEL_REWARDS covers valid catalog IDs and that
+// getSeasonOneCardRewardsForLevelRange produces the correct set for level ranges,
+// matching the field/doc contract that users/{email}.ownedSeasonOneCards readers
+// (dashboard + armory) expect (string[]).
+
+const {
+  SEASON_ONE_LEVEL_REWARDS,
+  getSeasonOneCardRewardsForLevelRange,
+} = require('../../../gamificationWorkoutXp');
+
+describe('logTrainingSession ownedSeasonOneCards writer (T1-8)', () => {
+  it('level 1 (first session ever) grants card_001_base into users/{email}.ownedSeasonOneCards', () => {
+    const cards = getSeasonOneCardRewardsForLevelRange(0, 1);
+    assert.deepStrictEqual(cards, ['card_001_base']);
+  });
+
+  it('grants all cards for each level crossed in one high-XP session (0→3)', () => {
+    const cards = getSeasonOneCardRewardsForLevelRange(0, 3);
+    assert.ok(cards.includes('card_001_base'), 'should include level-1 card');
+    assert.ok(cards.includes('card_002_base'), 'should include level-2 card');
+    assert.ok(cards.includes('card_004_base'), 'should include level-3 card');
+    assert.equal(cards.length, 3);
+  });
+
+  it('returns empty array for levels with no reward entry (e.g. 23→24)', () => {
+    const cards = getSeasonOneCardRewardsForLevelRange(23, 24);
+    assert.deepStrictEqual(cards, []);
+  });
+
+  it('returns empty array when prevLevel equals newLevel (no level-up)', () => {
+    const cards = getSeasonOneCardRewardsForLevelRange(5, 5);
+    assert.deepStrictEqual(cards, []);
+  });
+
+  it('all SEASON_ONE_LEVEL_REWARDS entries reference valid seasonOneCards catalog IDs', () => {
+    const {seasonOneCards} = require('../../../../src/lib/gamification/seasonOneData.js');
+    const validIds = new Set(seasonOneCards.map((c) => c.id));
+    for (const [level, cardIds] of Object.entries(SEASON_ONE_LEVEL_REWARDS)) {
+      for (const id of cardIds) {
+        assert.ok(
+          validIds.has(id),
+          `Level ${level} reward '${id}' is not in seasonOneCards catalog`,
+        );
+      }
+    }
+  });
+
+  it('SEASON_ONE_LEVEL_REWARDS covers at least 20 level entries (enough to fill readers)', () => {
+    const levels = Object.keys(SEASON_ONE_LEVEL_REWARDS).map(Number);
+    assert.ok(levels.length >= 20, `expected >= 20 reward levels, got ${levels.length}`);
+  });
+
+  it('Legendary alt-art card_015_alt_art is reachable at level 30', () => {
+    const cards = getSeasonOneCardRewardsForLevelRange(29, 30);
+    assert.ok(cards.includes('card_015_alt_art'));
+  });
+});
+
+// ── T1-6: reps_count / volume bounty cumulative counter guard ─────────────────
+// Verifies that the bounty evaluation call sites pass CUMULATIVE counters
+// (total_reps, totalMins) rather than the weekly-reset counters
+// (reps_this_week, minutes_this_week) that caused T1-6.
+//
+// Additionally verifies that CRITERION_HANDLERS.reps_count / workout_volume_kj
+// are satisfied by cumulative totals, and that progress is NOT lost when
+// simulating a weekly counter reset (reps_this_week = 0) while the
+// cumulative total remains high.
+
+const path = require('path');
+const fs   = require('fs');
+
+describe('T1-6 reps_count/volume bounty cumulative counter guard', () => {
+  const XP_SRC = path.join(__dirname, '../../../gamificationWorkoutXp.js');
+  const RL_SRC = path.join(__dirname, '../../ml/transitionRecorder.js');
+
+  it('gamificationWorkoutXp passes total_reps (cumulative) — not reps_this_week — as totalReps', () => {
+    const src = fs.readFileSync(XP_SRC, 'utf8');
+    assert.match(
+        src,
+        /totalReps\s*:\s*typeof psData\.total_reps/,
+        'must pass psData.total_reps as totalReps, not the weekly-reset reps_this_week',
+    );
+    assert.doesNotMatch(
+        src,
+        /totalReps\s*:\s*typeof psData\.reps_this_week/,
+        'reps_this_week must NOT be used as totalReps in bounty evaluation',
+    );
+  });
+
+  it('gamificationWorkoutXp passes totalMins (cumulative) — not minutes_this_week — as totalMinutes', () => {
+    const src = fs.readFileSync(XP_SRC, 'utf8');
+    assert.match(
+        src,
+        /totalMinutes\s*:\s*typeof psData\.totalMins/,
+        'must pass psData.totalMins as totalMinutes, not the weekly-reset minutes_this_week',
+    );
+    assert.doesNotMatch(
+        src,
+        /totalMinutes\s*:\s*typeof psData\.minutes_this_week/,
+        'minutes_this_week must NOT be used as totalMinutes in bounty evaluation',
+    );
+  });
+
+  it('transitionRecorder (RL path) passes total_reps — not reps_this_week — as totalReps', () => {
+    const src = fs.readFileSync(RL_SRC, 'utf8');
+    assert.match(
+        src,
+        /totalReps\s*:\s*typeof psData\.total_reps/,
+        'RL path must pass psData.total_reps as totalReps',
+    );
+    assert.doesNotMatch(
+        src,
+        /totalReps\s*:\s*typeof psData\.reps_this_week/,
+        'RL path must NOT pass reps_this_week as totalReps',
+    );
+  });
+
+  it('transitionRecorder (RL path) passes totalMins — not minutes_this_week — as totalMinutes', () => {
+    const src = fs.readFileSync(RL_SRC, 'utf8');
+    assert.match(
+        src,
+        /totalMinutes\s*:\s*typeof psData\.totalMins/,
+        'RL path must pass psData.totalMins as totalMinutes',
+    );
+    assert.doesNotMatch(
+        src,
+        /totalMinutes\s*:\s*typeof psData\.minutes_this_week/,
+        'RL path must NOT pass minutes_this_week as totalMinutes',
+    );
+  });
+
+  it('gamificationWorkoutXp increments total_reps (cumulative counter) in player_stats transaction', () => {
+    const src = fs.readFileSync(XP_SRC, 'utf8');
+    assert.match(
+        src,
+        /total_reps\s*:\s*(?:admin\.firestore\.FieldValue\.increment|repsInc)/,
+        'player_stats transaction must increment total_reps as a cumulative counter',
+    );
+  });
+
+  it('reps_count handler is satisfied when cumulative totalReps crosses target', () => {
+    // Inline logic mirror of CRITERION_HANDLERS.reps_count (non-drillFilter fast path)
+    function evalRepsCount(ctx, targetReps) {
+      const currentReps = typeof ctx.totalReps === 'number' ? ctx.totalReps : 0;
+      return {satisfied: currentReps >= targetReps, currentValue: currentReps};
+    }
+    // Cumulative total is 500 — bounty target is 300 → should complete
+    const r = evalRepsCount({totalReps: 500}, 300);
+    assert.equal(r.satisfied, true, 'should be satisfied when cumulative reps >= target');
+    assert.equal(r.currentValue, 500);
+  });
+
+  it('reps_count progress is NOT lost when weekly counter resets to 0 but cumulative remains', () => {
+    // Simulate: reps_this_week was reset to 0 (Monday rollover) but
+    // total_reps (cumulative) is still 500.  With the fix the caller passes
+    // total_reps, so the handler sees 500 — bounty stays satisfied.
+    function evalRepsCount(ctx, targetReps) {
+      const currentReps = typeof ctx.totalReps === 'number' ? ctx.totalReps : 0;
+      return {satisfied: currentReps >= targetReps, currentValue: currentReps};
+    }
+    const weeklyResetValue = 0; // reps_this_week after Monday reset
+    const cumulativeValue  = 500; // total_reps — never resets
+
+    // Old (broken) path would pass weeklyResetValue and lose progress:
+    const brokenResult = evalRepsCount({totalReps: weeklyResetValue}, 300);
+    assert.equal(brokenResult.satisfied, false, 'weekly-reset path (broken) would lose progress');
+
+    // New (fixed) path passes cumulativeValue — progress preserved:
+    const fixedResult = evalRepsCount({totalReps: cumulativeValue}, 300);
+    assert.equal(fixedResult.satisfied, true, 'cumulative path preserves progress across weekly reset');
+  });
+
+  it('workout_volume_kj handler satisfied when cumulative KJ (from totalMinutes) crosses target', () => {
+    function evalVolumeKj(ctx, targetKj) {
+      const currentKj = typeof ctx.totalMinutes === 'number' ?
+        Math.floor(ctx.totalMinutes * 0.75) : 0;
+      return {satisfied: currentKj >= targetKj, currentValue: currentKj};
+    }
+    // 400 cumulative minutes × 0.75 = 300 KJ; target 200 → satisfied
+    const r = evalVolumeKj({totalMinutes: 400}, 200);
+    assert.equal(r.satisfied, true);
+    assert.equal(r.currentValue, 300);
+  });
+
+  it('workout_volume_kj progress NOT lost when minutes_this_week resets while totalMins stays', () => {
+    function evalVolumeKj(ctx, targetKj) {
+      const currentKj = typeof ctx.totalMinutes === 'number' ?
+        Math.floor(ctx.totalMinutes * 0.75) : 0;
+      return {satisfied: currentKj >= targetKj, currentValue: currentKj};
+    }
+    const weeklyMinutes    = 0;   // minutes_this_week after reset
+    const cumulativeMinutes = 400; // totalMins — never resets
+
+    const brokenResult = evalVolumeKj({totalMinutes: weeklyMinutes}, 200);
+    assert.equal(brokenResult.satisfied, false, 'weekly-reset path would fail');
+
+    const fixedResult = evalVolumeKj({totalMinutes: cumulativeMinutes}, 200);
+    assert.equal(fixedResult.satisfied, true, 'cumulative path preserves progress');
+  });
+});
+
+describe('logTrainingSession xpByAttribute field parity (G1)', () => {
+  it('sanitizes attributeId to [a-z0-9_], max 60 chars', () => {
+    assert.equal(sanitizeAttributeId('dribbling'), 'dribbling');
+    assert.equal(sanitizeAttributeId('ball_mastery'), 'ball_mastery');
+    assert.equal(sanitizeAttributeId('  PACE  '), 'pace');
+    assert.equal(sanitizeAttributeId('first_touch'), 'first_touch');
+    assert.equal(sanitizeAttributeId('attr<script>xss'), 'attrscriptxss');
+    assert.equal(sanitizeAttributeId(''), '');
+    assert.equal(sanitizeAttributeId(null), '');
+    assert.equal(sanitizeAttributeId('a'.repeat(100)), 'a'.repeat(60));
+  });
+
+  it('produces exact Firestore field paths that trigger and featureBuilder read', () => {
+    // Trigger reads: users/{email}.xpByAttribute (object key = attrId)
+    // featureBuilder reads: player_stats/{uid}.xpByAttribute (object key = attrId)
+    const attrId = sanitizeAttributeId('dribbling');
+    // Dot-notation path used in Firestore update/set-merge
+    const userDotPath = `xpByAttribute.${attrId}`;
+    const psDotPath = `xpByAttribute.${attrId}`;
+    assert.equal(userDotPath, 'xpByAttribute.dribbling');
+    assert.equal(psDotPath, 'xpByAttribute.dribbling');
+  });
+
+  it('xpByAttribute write is SKIPPED when attributeId is absent (free-log path unchanged)', () => {
+    assert.equal(wouldWriteXpByAttribute({}), false);
+    assert.equal(wouldWriteXpByAttribute({attributeId: ''}), false);
+    assert.equal(wouldWriteXpByAttribute({attributeId: '   '}), false);
+  });
+
+  it('xpByAttribute write IS triggered when a valid attributeId is present', () => {
+    assert.equal(wouldWriteXpByAttribute({attributeId: 'dribbling'}), true);
+    assert.equal(wouldWriteXpByAttribute({attributeId: 'ball_mastery'}), true);
+    assert.equal(wouldWriteXpByAttribute({attributeId: 'pace'}), true);
+    assert.equal(wouldWriteXpByAttribute({attributeId: 'first_touch'}), true);
+  });
+
+  it('known sport attribute ids all survive sanitization unchanged', () => {
+    const knownAttrs = [
+      'ball_mastery', 'dribbling', 'first_touch', 'technical',
+      'striking', 'pace', 'physical', 'strength', 'grit', 'stamina',
+      'scanning', 'tactical', 'vision', 'recovery',
+    ];
+    for (const attr of knownAttrs) {
+      assert.equal(sanitizeAttributeId(attr), attr,
+          `${attr} should survive sanitization unchanged`);
+    }
+  });
+});

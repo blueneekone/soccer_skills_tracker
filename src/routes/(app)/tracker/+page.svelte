@@ -11,7 +11,7 @@
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { workoutsStore } from '$lib/stores/workouts.svelte.js';
 	import { getLevelProgressFromTotalXp } from '$lib/gamification/level.js';
-	import Swal from 'sweetalert2';
+	import PlayerDiegeticOverlay from '$lib/components/player/PlayerDiegeticOverlay.svelte';
 	import { dopamineOnCallable } from '$lib/services/dopamine.svelte.js';
 
 	const logTrainingSession = httpsCallable(functions, 'logTrainingSession');
@@ -69,6 +69,22 @@
 	let workoutAccuracyAck = $state(false);
 	let homeworkAssignmentId = $state('');
 	let submitting = $state(false);
+
+	// CLB-1 — cohesive diegetic confirmation (replaces the legacy commit modal).
+	let overlayOpen = $state(false);
+	let overlayVariant = $state<'success' | 'error' | 'confirm'>('success');
+	let overlayTitle = $state('');
+	let overlayMessage = $state('');
+
+	async function onOverlayConfirm() {
+		const wasSuccess = overlayVariant === 'success';
+		overlayOpen = false;
+		if (wasSuccess) {
+			await authStore.refresh({ silent: true });
+			clearForm();
+			goto('/stats');
+		}
+	}
 
 	let selectWarmup = $state('');
 	let selectCore = $state('');
@@ -273,7 +289,9 @@
 			}),
 			{ kind: 'drill' },
 		);
-		const payload = res.data;
+		const payload = res.data as
+			| { earnedXP?: number; totalXp?: number; level?: number }
+			| undefined;
 		const earned = payload && typeof payload.earnedXP === 'number' ? payload.earnedXP : 0;
 		const newTotal = payload && typeof payload.totalXp === 'number' ? payload.totalXp : 0;
 		if (typeof sessionStorage !== 'undefined') {
@@ -286,20 +304,16 @@
 			);
 		}
 
-		await Swal.fire({
-				title: 'Workout Logged!',
-				text: `+${earned} XP · Level ${payload?.level ?? '—'}`,
-				icon: 'success',
-				confirmButtonColor: '#4f46e5',
-				confirmButtonText: 'Continue',
-				customClass: { popup: 'card' },
-			});
-			await authStore.refresh({ silent: true });
-			clearForm();
-			goto('/stats');
+		overlayVariant = 'success';
+		overlayTitle = 'Workout Logged!';
+		overlayMessage = `+${earned} XP · Level ${payload?.level ?? '—'}`;
+		overlayOpen = true;
 		} catch (e) {
 			const msg = e && typeof e === 'object' && 'message' in e ? String(e.message) : String(e);
-			alert('Could not log workout: ' + msg);
+			overlayVariant = 'error';
+			overlayTitle = 'Log Failed';
+			overlayMessage = 'Could not log workout: ' + msg;
+			overlayOpen = true;
 		} finally {
 			submitting = false;
 		}
@@ -643,6 +657,16 @@
 			</div>
 		</div>
 	{/if}
+
+	<PlayerDiegeticOverlay
+		open={overlayOpen}
+		variant={overlayVariant}
+		title={overlayTitle}
+		message={overlayMessage}
+		confirmLabel={overlayVariant === 'success' ? 'Continue' : 'OK'}
+		onConfirm={onOverlayConfirm}
+		onCancel={() => (overlayOpen = false)}
+	/>
 </div>
 
 <style>

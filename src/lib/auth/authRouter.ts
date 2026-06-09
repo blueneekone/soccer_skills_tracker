@@ -92,7 +92,12 @@ export async function routeByFirestoreRole(
 	const { replaceState = true } = opts;
 
 	try {
-		const snap = await getDoc(doc(db, 'users', user.uid));
+		const emailKey = (user.email ?? '').trim().toLowerCase();
+		if (!emailKey) {
+			await goto('/onboarding', { replaceState });
+			return;
+		}
+		const snap = await getDoc(doc(db, 'users', emailKey));
 		const role = snap.exists()
 			? (snap.data()?.role as UserRole | undefined)
 			: undefined;

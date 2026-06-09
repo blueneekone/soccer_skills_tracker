@@ -3,6 +3,7 @@
 	import { db } from '$lib/firebase.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import HouseholdThreadPanel from '$lib/components/comms/HouseholdThreadPanel.svelte';
+	import AnnouncementsInbox from '$lib/components/comms/AnnouncementsInbox.svelte';
 
 	const role = $derived(authStore.role);
 	const profile = $derived(authStore.userProfile);
@@ -92,19 +93,17 @@
 						if (!cancelled) items = [];
 						return;
 					}
-					const qFrom = query(
-						collection(db, 'in_app_messages'),
-						where('fromEmail', '==', myEmail),
-						orderBy('createdAt', 'desc'),
-						limit(40)
-					);
-					const snap = await getDocs(qFrom);
-					const rows = [];
-					snap.forEach((d) => {
-						const x = d.data();
-						if (x.teamId === tid) rows.push({ id: d.id, ...x });
-					});
-					if (!cancelled) items = rows;
+				const qFrom = query(
+					collection(db, 'in_app_messages'),
+					where('fromEmail', '==', myEmail),
+					where('teamId', '==', tid),
+					orderBy('createdAt', 'desc'),
+					limit(40)
+				);
+				const snap = await getDocs(qFrom);
+				const rows = [];
+				snap.forEach((d) => rows.push({ id: d.id, ...d.data() }));
+				if (!cancelled) items = rows;
 					return;
 				}
 
@@ -130,6 +129,12 @@
 
 <div class="view-section">
 	<h2 class="view-title">Messages</h2>
+
+	{#if role !== 'super_admin' && role !== 'global_admin'}
+		<div class="announcements-section">
+			<AnnouncementsInbox />
+		</div>
+	{/if}
 
 	<div class="bento-section">
 		<div class="card">
@@ -193,6 +198,10 @@
 </div>
 
 <style>
+	.announcements-section {
+		margin-bottom: var(--bento-gap-sm, 16px);
+	}
+
 	.inbox-body {
 		display: flex;
 		flex-direction: column;

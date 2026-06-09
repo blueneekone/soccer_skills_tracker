@@ -1,4 +1,4 @@
-rules_version = '2';
+﻿rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
@@ -934,30 +934,28 @@ service cloud.firestore {
                  'dateOfBirth', 'vpcStatus', 'isMinor',
                  'xp', 'currentStreak', 'longestStreak', 'lastActivityDate'
                ])
-            // role: coach/registrar from lookup; parent self-onboarding (club only, no team).
-            && (!request.resource.data.keys().hasAny(['role'])
-                || (exists(/databases/$(database)/documents/coach_lookup/$(userId.lower()))
-                    && request.resource.data.role
-                       == get(/databases/$(database)/documents/coach_lookup/$(userId.lower())).data.get('role', 'coach'))
-                || (exists(/databases/$(database)/documents/registrar_lookup/$(userId.lower()))
-                    && request.resource.data.role == 'registrar'
-                    && request.resource.data.get('clubId', null)
-                       == get(/databases/$(database)/documents/registrar_lookup/$(userId.lower())).data.get('clubId', null))
-                || (request.resource.data.role == 'parent'
-                    && !request.resource.data.keys().hasAny(['teamId'])
-                    && request.resource.data.get('clubId', null) != null))
+             // T0-5 role allowlist: clients may only self-assign 'parent'.
+             // 'coach' is exclusively server-assigned via claimCoachInvite (Admin SDK
+             //  bypass). Registrar self-onboards via registrar_lookup (server-written).
+             // Privileged roles ('coach','director','admin','super_admin','recruiter')
+             // are never self-assignable by client writes.
+             && (!request.resource.data.keys().hasAny(['role'])
+                 || (request.resource.data.role == 'parent'
+                     && !request.resource.data.keys().hasAny(['teamId'])
+                     && request.resource.data.get('clubId', null) != null)
+                 || (exists(/databases/$(database)/documents/registrar_lookup/$(userId.lower()))
+                     && request.resource.data.role == 'registrar'
+                     && request.resource.data.get('clubId', null)
+                        == get(/databases/$(database)/documents/registrar_lookup/$(userId.lower())).data.get('clubId', null)))
             // teamId must match the invite record. clubId is org-context only and is
             // not stored in player_lookup, so only teamId is validated here.
             && (!request.resource.data.keys().hasAny(['teamId'])
                 || (exists(/databases/$(database)/documents/player_lookup/$(userId.lower()))
                     && request.resource.data.get('teamId', null)
                        == get(/databases/$(database)/documents/player_lookup/$(userId.lower())).data.get('teamId', null))
-                || (exists(/databases/$(database)/documents/coach_lookup/$(userId.lower()))
-                    && request.resource.data.get('teamId', null)
-                       == get(/databases/$(database)/documents/coach_lookup/$(userId.lower())).data.get('teamId', null))
-                || (exists(/databases/$(database)/documents/registrar_lookup/$(userId.lower()))
-                    && (!request.resource.data.keys().hasAny(['teamId'])
-                        || request.resource.data.get('teamId', null) == null))));
+                 || (exists(/databases/$(database)/documents/registrar_lookup/$(userId.lower()))
+                     && (!request.resource.data.keys().hasAny(['teamId'])
+                         || request.resource.data.get('teamId', null) == null))));
 
       allow update: if authed() && (
         (emailKey() == userId.lower()
@@ -1772,6 +1770,9 @@ service cloud.firestore {
       // playerKey is Firebase Auth uid (Elite aggregate) or legacy display-name key.
       // Peers on the same team (token.teamId) may read for leaderboard — no emails exposed.
       // Epic 14: Coach sameTeam reads require isCleared JWT claim.
+      // T1-10: Director path replaced the team-lookup helper (1 get via teamClubId) with
+      //   tokenClubMatchesDoc (zero gets — uses denormalized clubId/tenantId on doc).
+      //   Worst-case get budget: userDoc=1 + parentCanSeePlayerName=1 = 2 ≤ 10.
       allow read: if authed() && playerVpcAllowed() && (
         isSuper()
         || (sameTeam(resource.data.teamId) && isCleared())
@@ -1779,7 +1780,7 @@ service cloud.firestore {
         || playerKey == userDoc().playerName
         || (resource.data.keys().hasAll(['playerName'])
             && parentCanSeePlayerName(resource.data.playerName))
-        || directorScopedToTeam(resource.data.teamId)
+        || (isDirector() && tokenClubMatchesDoc(resource.data))
       );
       // Server-only (Cloud Functions / Admin SDK). Legacy client writes removed.
       allow create, update, delete: if false;
@@ -1895,8 +1896,27 @@ service cloud.firestore {
     }
 
     match /consent_records/{docId} {
-      allow read: if authed() && (resource.data.subjectEmail == emailKey() || isSuper());
+      allow read: if authed() && (
+        resource.data.subjectEmail == emailKey()
+        || isSuper()
+        || (isDirector() && tokenClub() != null && resource.data.clubId == tokenClub())
+      );
       allow write: if isSuper();
+    }
+
+    // T1-3: coach → director drill recommendation inbox. Coaches create within their
+    // own club; directors read/triage and (server or director) publish into
+    // clubs/{clubId}/shared_drills. Tenant-scoped by clubId == tokenClub().
+    match /drill_recommendations/{recId} {
+      allow read: if authed() && (
+        isSuper()
+        || ((isDirector() || isCoach()) && resource.data.clubId == tokenClub())
+      );
+      allow create: if authed()
+        && (isCoach() || isDirector())
+        && request.resource.data.clubId == tokenClub();
+      allow update, delete: if isSuper()
+        || (isDirector() && resource.data.clubId == tokenClub());
     }
 
     match /minor_retention_queue/{docId} {
@@ -2270,12 +2290,16 @@ service cloud.firestore {
     match /audit_logs/{docId} {
       // get: directors may fetch their own audit events; an actor may always
       // retrieve a log entry about themselves (canAccessOwnData on uid field).
+      // T1-5: parents may get a specific log entry that targets their linked child.
       allow get: if isPlatformAdmin()
         || (isDirector() && isAuthorized(resource.data.get('tenantId', '')))
-        || canAccessOwnData(resource.data.get('uid', '__none__'));
-      // list: restricted to platform admins and directors (PII segregation).
+        || canAccessOwnData(resource.data.get('uid', '__none__'))
+        || (isParent() && parentHouseholdAllowsChildEmail(resource.data.get('targetEmail', '')));
+      // list: restricted to platform admins, directors (PII segregation), and
+      // T1-5: parents querying by targetEmail for their own linked child only.
       allow list: if isPlatformAdmin()
-        || (isDirector() && isAuthorized(resource.data.get('tenantId', '')));
+        || (isDirector() && isAuthorized(resource.data.get('tenantId', '')))
+        || (isParent() && parentHouseholdAllowsChildEmail(resource.data.get('targetEmail', '')));
       // All writes go through Admin SDK — no client path.
       allow create, update, delete: if false;
     }
@@ -2601,10 +2625,13 @@ service cloud.firestore {
     // ─────────────────────────────────────────────────────────────────────────
     match /team_broadcasts/{msgId} {
       // Team members (player, coach, director) within the same club may read.
+      // Parents may read any broadcast where their email is in ccParentEmails
+      // (set by safeSportBroadcast when hasMinors is true — COPPA CC policy).
       allow get, list: if authed() && (
         isPlatformAdmin()
         || (tokenTenant() != '' && resource.data.teamClubId == tokenTenant()
             && (isCoach() || isDirector() || isPlayer()))
+        || (isParent() && emailKey() in resource.data.ccParentEmails)
       );
       // Created only by Cloud Function (Admin SDK).
       allow create, update, delete: if false;
@@ -2939,8 +2966,14 @@ service cloud.firestore {
         || (resource.data.keys().hasAll(['userKey'])
             && parentHouseholdAllowsChildEmail(resource.data.userKey))
       );
+      // Players may list their OWN completions (query MUST filter
+      // where('playerUid','==',request.auth.uid)). Fixes the cadence
+      // progress reader (Track B2) + MemoryCapsule, which were silently
+      // permission-denied under the role-only list rule.
       allow list: if authed() && (
         isSuper() || isCoach() || isDirector()
+        || (resource.data.keys().hasAll(['playerUid'])
+            && request.auth.uid == resource.data.playerUid)
       );
       allow create: if authed() && playerVpcAllowed()
         && request.resource.data.keys().hasAll([
@@ -3572,13 +3605,47 @@ service cloud.firestore {
       allow list: if authed() && (
         isSuper()
         || (isCoach() || isDirector()) && tokenClub() != null
-        || isPlayer()
+        // T0-7: player list scoped to own team + tenant only (cross-tenant enumeration fix)
+        || (
+          isPlayer()
+          && tokenTeam() != null
+          && tokenClub() != null
+          && resource.data.teamId == tokenTeam()
+          && resource.data.tenantId == tokenClub()
+        )
       );
 
       // All writes are Admin SDK only (callable functions).
       allow create, update, delete: if false;
     }
     // ─────────────────────────────────────────────────────────────────────────
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // B4a — completion_verifications: advisory parent-proof records.
+    //
+    // ALL writes are CF/Admin SDK only (submitCompletionProof callable in B4a;
+    // parent review callable in B4b). Client writes are permanently denied.
+    //
+    // Read access is scoped three ways:
+    //   • Player reads their own record (playerUid match).
+    //   • Parent reads records for household children (household email scope).
+    //   • Coach/director reads records for their club (tenant-scoped).
+    //
+    // List queries are filtered at query level:
+    //   player  → where('playerUid','==',uid)
+    //   parent  → where('householdId','==',householdId)
+    //   coach   → where('clubId','==',clubId)
+    // The rule permits those filtered reads via the same allow get,list block.
+    // ─────────────────────────────────────────────────────────────────────────
+    match /completion_verifications/{vId} {
+      allow create, update, delete: if false;
+      allow get, list: if authed() && (
+        isSuper()
+        || (request.auth.uid == resource.data.playerUid)
+        || parentHouseholdAllowsChildEmail(resource.data.userKey)
+        || ((isCoach() || isDirector()) && resource.data.clubId == tokenClub())
+      );
+    }
 
     match /{document=**} {
       allow read, write: if false;

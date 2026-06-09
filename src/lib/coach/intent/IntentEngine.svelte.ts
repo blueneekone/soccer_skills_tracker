@@ -36,6 +36,7 @@ import type {
 	DeployIntentInput,
 	DeployIntentResult,
 	IntentPrescription,
+	PrescriptionDrillEntry,
 	CancelIntentInput,
 	CancelIntentResult,
 	ExtendIntentInput,
@@ -86,9 +87,24 @@ export class IntentEngine {
 	draftPrescriptionBilateral = $state(false);
 	draftPrescriptionDurationMin = $state(0);
 	draftPrescriptionTargetRpe = $state(0);
+	/** 0 = absent (no cadence). 1–21 = sessions per 7-day window. */
+	draftCadenceSessionsPerWindow = $state(0);
 	draftDrillId = $state('');
+	draftDrillTitle = $state('');
 	availableDrills = $state<TeamDrillPickerRow[]>([]);
 	isLoadingDrills = $state(false);
+	/** B4a — coach opt-in: emit requiresParentVerification on prescription when true. Default off. */
+	draftRequiresParentVerification = $state(false);
+	/**
+	 * B3 bundle drills: ordered array of draft entries. Empty = single-drill mode (unchanged).
+	 * Each entry mirrors PrescriptionDrillEntry minus teamDrillId/clubDrillId (set at build time).
+	 */
+	draftBundleDrills = $state<Array<{
+		drillId: string;
+		drillTitle: string;
+		sets: number;
+		repsPerSet: number;
+	}>>([]);
 
 	// ── Mutation state ──────────────────────────────────────────────────────────
 	deployPhase = $state<DeployPhase>('idle');
@@ -229,7 +245,11 @@ export class IntentEngine {
 		this.draftPrescriptionBilateral = false;
 		this.draftPrescriptionDurationMin = 0;
 		this.draftPrescriptionTargetRpe = 0;
+		this.draftCadenceSessionsPerWindow = 0;
 		this.draftDrillId = '';
+		this.draftDrillTitle = '';
+		this.draftBundleDrills = [];
+		this.draftRequiresParentVerification = false;
 		this.deployPhase = 'idle';
 		this.deployError = '';
 	}
@@ -257,8 +277,69 @@ export class IntentEngine {
 			if (!rx.targetDurationMin && drill.durationMinutes > 0) {
 				rx.targetDurationMin = Math.min(120, drill.durationMinutes);
 			}
+			if (drill.videoUrl) rx.videoUrl = drill.videoUrl;
+			if (drill.cues) rx.cues = drill.cues;
+		} else {
+			const customTitle = this.draftDrillTitle.trim();
+			if (customTitle) rx.drillTitle = customTitle.slice(0, 200);
+		}
+		const sessionsPerWindow = Math.floor(Number(this.draftCadenceSessionsPerWindow) || 0);
+		if (sessionsPerWindow >= 1 && sessionsPerWindow <= 21) {
+			rx.cadence = { sessionsPerWindow, windowDays: 7 };
+		}
+		// B4a: emit requiresParentVerification only when coach opts in.
+		if (this.draftRequiresParentVerification === true) {
+			rx.requiresParentVerification = true;
+		}
+		// B3: emit drills[] only when the coach has added bundle entries.
+		if (this.draftBundleDrills.length > 0) {
+			const drills: PrescriptionDrillEntry[] = this.draftBundleDrills
+				.slice(0, 8)
+				.map((entry) => {
+					const entrySets = Math.max(1, Math.min(99, Math.floor(Number(entry.sets) || 1)));
+					const entryReps = Math.floor(Number(entry.repsPerSet) || 0);
+					const out: PrescriptionDrillEntry = { sets: entrySets };
+					const matchedDrill = this.availableDrills.find((d) => d.id === entry.drillId);
+					if (matchedDrill?.title) {
+						out.drillTitle = matchedDrill.title.slice(0, 200);
+						if (matchedDrill.scope === 'club') {
+							out.clubDrillId = matchedDrill.id;
+						} else {
+							out.teamDrillId = matchedDrill.id;
+						}
+						if (matchedDrill.videoUrl) out.videoUrl = matchedDrill.videoUrl;
+						if (matchedDrill.cues) out.cues = matchedDrill.cues;
+					} else {
+						const customTitle = (entry.drillTitle ?? '').trim();
+						if (customTitle) out.drillTitle = customTitle.slice(0, 200);
+					}
+					if (entryReps > 0) out.repsPerSet = Math.min(999, entryReps);
+					return out;
+				});
+			if (drills.length > 0) rx.drills = drills;
 		}
 		return rx;
+	}
+
+	/** B3: add a new blank bundle drill entry (max 8). */
+	addBundleDrill() {
+		if (this.draftBundleDrills.length >= 8) return;
+		this.draftBundleDrills = [
+			...this.draftBundleDrills,
+			{ drillId: '', drillTitle: '', sets: 3, repsPerSet: 10 },
+		];
+	}
+
+	/** B3: remove bundle drill entry at index. */
+	removeBundleDrill(index: number) {
+		this.draftBundleDrills = this.draftBundleDrills.filter((_, i) => i !== index);
+	}
+
+	/** B3: update a single field on a bundle entry (immutable replacement). */
+	updateBundleDrill(index: number, patch: Partial<{ drillId: string; drillTitle: string; sets: number; repsPerSet: number }>) {
+		this.draftBundleDrills = this.draftBundleDrills.map((entry, i) =>
+			i === index ? { ...entry, ...patch } : entry,
+		);
 	}
 
 	onAttributeChanged() {

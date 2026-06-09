@@ -1,4 +1,4 @@
-<script lang="ts">
+﻿<script lang="ts">
 	import { goto } from '$app/navigation';
 	import { auth, db, functions } from '$lib/firebase.js';
 	import Icon from '$lib/components/ui/Icon.svelte';
@@ -12,7 +12,8 @@
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { teamsStore } from '$lib/stores/teams.svelte.js';
 
-	const listTeamsForClub = httpsCallable(functions, 'listTeamsForClub');
+	/** T0-5: coach role is server-assigned via this callable — no client setDoc(role:'coach'). */
+	const claimCoachInviteCallable = httpsCallable(functions, 'claimCoachInvite');
 
 	// Redirect logic — global admins (JWT claims or role token) skip profile completion.
 	$effect(() => {
@@ -73,12 +74,9 @@
 	let setupRole = $state(/** @type {'parent' | 'coach'} */ ('parent'));
 	let displayName = $state('');
 	let selectedClubId = $state('');
-	let selectedTeamId = $state('');
 	let errorMsg = $state('');
 	let saving = $state(false);
 	let termsAccepted = $state(false);
-	let clubTeams = $state([]);
-	let clubTeamsLoading = $state(false);
 
 	const basePrivacy = {
 		privacyProfile: 'strict_minor_defaults',
@@ -87,39 +85,8 @@
 		consentPolicyVersion: '2026-04',
 	};
 
-	$effect(() => {
-		if (!selectedClubId) {
-			clubTeams = [];
-			clubTeamsLoading = false;
-			return;
-		}
-		if (setupRole !== 'coach') {
-			clubTeams = [];
-			clubTeamsLoading = false;
-			return;
-		}
-		let cancelled = false;
-		clubTeamsLoading = true;
-		(async () => {
-			try {
-				const res = await listTeamsForClub({ clubId: selectedClubId });
-				const list = res.data && res.data.teams ? res.data.teams : [];
-				if (!cancelled) clubTeams = Array.isArray(list) ? list : [];
-			} catch (e) {
-				console.error(e);
-				if (!cancelled) clubTeams = [];
-			} finally {
-				if (!cancelled) clubTeamsLoading = false;
-			}
-		})();
-		return () => {
-			cancelled = true;
-		};
-	});
-
 	function setSetupRole(/** @type {'parent' | 'coach'} */ kind) {
 		setupRole = kind;
-		selectedTeamId = '';
 		errorMsg = '';
 	}
 
@@ -139,15 +106,12 @@
 		if (!termsAccepted) {
 			return (errorMsg = 'You must acknowledge the Vanguard Protocol Terms before continuing.');
 		}
-		if (!selectedClubId) {
+		// Club selection is required for parents only; coaches get club/team from their invite.
+		if (setupRole === 'parent' && !selectedClubId) {
 			return (errorMsg = 'Please select your club / organization.');
 		}
 		if (!name) {
 			return (errorMsg = 'Please enter your display name.');
-		}
-
-		if (setupRole === 'coach' && !selectedTeamId) {
-			return (errorMsg = 'Please select your team.');
 		}
 
 		const userEmail = auth.currentUser?.email?.toLowerCase();
@@ -174,17 +138,21 @@
 					{ merge: true },
 				);
 			} else {
-				const team = clubTeams.find((t) => t.id === selectedTeamId);
-				const clubFromTeam =
-					team && typeof team.clubId === 'string' && team.clubId.trim() ?
-						team.clubId.trim()
-					:	selectedClubId;
+			// T0-5: privileged role is NEVER written by client — server callable owns it.
+			// claimCoachInvite finds the pending invite by authenticated email, validates
+			// seat reservation, and writes role/teamId/clubId via Admin SDK.
+			const claimResult = await claimCoachInviteCallable({});
+			const claimData = claimResult.data as { ok: boolean; claimed: boolean; teamId?: string };
+				if (!claimData.claimed) {
+					errorMsg =
+						'No pending coach invite found for your email address. Ask your director to send you an invite first.';
+					saving = false;
+					return;
+				}
+				// Persist display name and privacy defaults only — role/teamId/clubId are server-owned.
 				await setDoc(
 					userRef,
 					{
-						clubId: clubFromTeam,
-						teamId: selectedTeamId,
-						role: 'coach',
 						playerName: name,
 						joinedAt,
 						...basePrivacy,
@@ -197,7 +165,7 @@
 			goto(applyLoginWaterfall(authStore.role, authStore.userProfile), { replaceState: true });
 		} catch (err) {
 			errorMsg =
-				'Error saving profile: ' +
+				'Error: ' +
 				(err && typeof err === 'object' && 'message' in err ? String(/** @type {*} */ (err).message) : 'unknown');
 			saving = false;
 		}
@@ -245,19 +213,15 @@
 			Club directors are invited by your organization admin — use the link you received or contact support.
 		</p>
 
+	{#if setupRole === 'parent'}
 		<label for="setup-club">Select your club / organization</label>
-		<select
-			id="setup-club"
-			bind:value={selectedClubId}
-			onchange={() => {
-				selectedTeamId = '';
-			}}
-		>
+		<select id="setup-club" bind:value={selectedClubId}>
 			<option value="">Select your club…</option>
 			{#each teamsStore.clubs as club}
 				<option value={club.id}>{club.name || club.id}</option>
 			{/each}
 		</select>
+	{/if}
 
 		<label for="setup-name">
 			{#if setupRole === 'parent'}
@@ -273,34 +237,16 @@
 			placeholder="e.g. Alex Morgan"
 			autocomplete="name"
 		/>
-
-		{#if setupRole === 'coach'}
-			<label for="setup-team">Select your team</label>
-			<select
-				id="setup-team"
-				bind:value={selectedTeamId}
-				disabled={!selectedClubId || clubTeamsLoading}
-			>
-				<option value="">
-					{!selectedClubId
-						? 'Select a club first…'
-						: clubTeamsLoading
-							? 'Loading teams…'
-							: 'Select your team…'}
-				</option>
-				{#each clubTeams as team}
-					<option value={team.id}>{team.name || team.id}</option>
-				{/each}
-			</select>
-		{/if}
-
 		{#if setupRole === 'parent'}
 			<p class="setup-helper-text">
-				Players under 13 must be created by a parent in the Household Clearance flow — you cannot add a “player
-				account” here.
+				Players under 13 must be created by a parent in the Household Clearance flow — you cannot add a "player
+				account" here.
 			</p>
 		{:else}
-			<p class="setup-helper-text">Pick the team you lead. Claims sync after you save (via the clearance server).</p>
+			<p class="setup-helper-text">
+				Your director must send an invite to your email address first. Once a pending invite exists for your
+				account, click "Claim invite" below to activate your coach role.
+			</p>
 		{/if}
 
 	<!-- Terms acknowledgement — required before submission -->
@@ -328,7 +274,11 @@
 	{/if}
 
 	<button class="primary-btn btn-orange w-100" onclick={completeSetup} disabled={saving || !termsAccepted}>
-		{saving ? 'Saving profile…' : 'Complete setup'}
+		{#if saving}
+			{setupRole === 'coach' ? 'Claiming invite…' : 'Saving profile…'}
+		{:else}
+			{setupRole === 'coach' ? 'Claim invite' : 'Complete setup'}
+		{/if}
 	</button>
 		<button class="secondary-btn w-100" type="button" onclick={handleLogout}>Cancel &amp; logout</button>
 	</div>

@@ -2,6 +2,11 @@
  * Platform basics — read-only starter drills per sport (`drills/{id}`).
  * Coaches copy into `teams/{teamId}/drills`; they never deploy intents from here directly.
  * RL personalization uses separate `global_drills` (admin/seed only).
+ *
+ * Promote flow:
+ *   coach "Share with director"  → recommendDrillToDirector → drill_recommendations/{id}
+ *   director "Publish to club"   → publishDrillToClub       → clubs/{clubId}/shared_drills/{id}
+ *   Intent Engine reads          → loadTeamDrillsForIntent  ← clubs/{clubId}/shared_drills
  */
 
 import {
@@ -119,6 +124,7 @@ export async function copyPlatformDrillToTeam(
 	return ref.id;
 }
 
+/** @deprecated Use recommendDrillToDirector for Firestore-persisted recommendations. */
 export function buildDirectorDrillRecommendation(input: {
 	drillTitle: string;
 	category: string;
@@ -142,4 +148,111 @@ export function buildDirectorDrillRecommendation(input: {
 		lines.push('', 'Notes:', input.notes.trim());
 	}
 	return lines.join('\n');
+}
+
+/**
+ * Coach "Share with director" — persists a recommendation inbox doc.
+ *
+ * Writes to: `drill_recommendations/{auto-id}`
+ * Doc shape mirrors `loadTeamDrillsForIntent` reader fields so the director's
+ * publish step can copy them directly to `clubs/{clubId}/shared_drills`.
+ *
+ * NOTE: `drill_recommendations` requires a Firestore rule granting coach write
+ * within the same club (tokenClub() == clubId). Add before shipping.
+ */
+export async function recommendDrillToDirector(
+	firestore: Firestore,
+	input: {
+		drillTitle: string;
+		category: string;
+		attributeId?: string;
+		durationMinutes?: number;
+		teamId: string;
+		coachUid: string;
+		coachEmail: string;
+		clubId: string;
+		notes?: string;
+	},
+): Promise<string> {
+	const cid = input.clubId.trim();
+	const tid = input.teamId.trim();
+	if (!cid) throw new Error('clubId is required to recommend a drill.');
+	if (!tid) throw new Error('teamId is required to recommend a drill.');
+
+	const title = input.drillTitle.trim() || 'Untitled Drill';
+	const category = input.category || 'General';
+	const attrId =
+		input.attributeId?.trim() ? input.attributeId.trim() : categoryToAttributeId(category);
+	const duration =
+		typeof input.durationMinutes === 'number' && input.durationMinutes >= 1 ?
+			Math.floor(input.durationMinutes)
+		:	10;
+
+	const ref = await addDoc(collection(firestore, 'drill_recommendations'), {
+		// Fields forwarded verbatim to shared_drills on director publish —
+		// must match what mapTeamDrillDoc in teamDrillLibrary.ts reads.
+		title,
+		name: title,
+		attributeId: attrId,
+		focusArea: category,
+		category,
+		durationMinutes: duration,
+		// Recommendation provenance
+		clubId: cid,
+		teamId: tid,
+		coachUid: input.coachUid,
+		coachEmail: input.coachEmail,
+		status: 'pending' as const,
+		createdAt: serverTimestamp(),
+		...(input.notes?.trim() ? { notes: input.notes.trim() } : {}),
+	});
+	return ref.id;
+}
+
+/**
+ * Director "Publish to club" — promotes an inbox recommendation to the
+ * canonical `clubs/{clubId}/shared_drills` collection read by `loadTeamDrillsForIntent`.
+ */
+export async function publishDrillToClub(
+	firestore: Firestore,
+	input: {
+		recommendationId: string;
+		clubId: string;
+		directorUid: string;
+	},
+): Promise<string> {
+	const rid = input.recommendationId.trim();
+	const cid = input.clubId.trim();
+	if (!rid || !cid) throw new Error('recommendationId and clubId are required.');
+
+	const snap = await getDoc(doc(firestore, 'drill_recommendations', rid));
+	if (!snap.exists()) throw new Error('Drill recommendation not found.');
+
+	const x = snap.data() as Record<string, unknown>;
+	const title =
+		typeof x.title === 'string' && x.title.trim() ? x.title.trim() : 'Untitled Drill';
+	const category = typeof x.category === 'string' ? x.category : 'General';
+	const attrId =
+		typeof x.attributeId === 'string' && x.attributeId.trim() ?
+			x.attributeId.trim()
+		:	categoryToAttributeId(category);
+	const duration =
+		typeof x.durationMinutes === 'number' && x.durationMinutes >= 1 ?
+			Math.floor(x.durationMinutes)
+		:	10;
+
+	const ref = await addDoc(collection(firestore, 'clubs', cid, 'shared_drills'), {
+		title,
+		name: title,
+		attributeId: attrId,
+		focusArea: category,
+		category,
+		durationMinutes: duration,
+		clubId: cid,
+		scope: 'club' as const,
+		publishedBy: input.directorUid,
+		publishedAt: serverTimestamp(),
+		sourceRecommendationId: rid,
+	});
+	return ref.id;
 }

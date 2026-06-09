@@ -32,6 +32,28 @@ export type IntentScope = 'team' | 'players';
 export type IntentStatus = 'active' | 'fulfilled' | 'expired' | 'cancelled';
 
 /**
+ * One drill entry inside a bundle prescription (B3 multi-drill bundles).
+ * Mirrors top-level IntentPrescription fields except no `cadence` or nested `drills`.
+ */
+export interface PrescriptionDrillEntry {
+	/** teams/{teamId}/drills/{id} when referencing team library drill */
+	teamDrillId?: string;
+	/** clubs/{clubId}/shared_drills/{id} when referencing club-wide drill */
+	clubDrillId?: string;
+	/** @deprecated RL catalog only — prefer teamDrillId */
+	drillId?: string;
+	drillTitle?: string;
+	/** Required: integer 1–99 */
+	sets: number;
+	repsPerSet?: number;
+	bilateral?: boolean;
+	targetDurationMin?: number;
+	targetRpe?: number;
+	videoUrl?: string;
+	cues?: string;
+}
+
+/**
  * Optional coach drill prescription on team_assignments (PRESCRIPTION-schema).
  * Omit `repsPerSet` for time-only homework. `bilateral` doubles rep count for XP math.
  */
@@ -52,6 +74,32 @@ export interface IntentPrescription {
 	targetDurationMin?: number;
 	/** Coach target RPE 1–10 */
 	targetRpe?: number;
+	/** Demo video URL from the drill library — shown on the player's Train page. */
+	videoUrl?: string;
+	/** Coaching cues / description from the drill library — shown on the player's Train page. */
+	cues?: string;
+	/**
+	 * Optional per-assignment cadence: X sessions per rolling window.
+	 * Absent = one-shot intent (unchanged behaviour).
+	 * sessionsPerWindow: 1–21; windowDays: 1–30.
+	 */
+	cadence?: { sessionsPerWindow: number; windowDays: number };
+	/**
+	 * B3 multi-drill bundle: ordered array of mini-prescriptions (1–8 entries).
+	 * When present and non-empty, the assignment is a BUNDLE and the player runs
+	 * drills in sequence. Top-level drill reference fields (drillId, drillTitle, etc.)
+	 * are superseded by the per-entry fields. Top-level `targetDurationMin`,
+	 * `targetRpe`, and `cadence` still apply to the bundle session as a whole.
+	 * One-shot behaviour (no `drills`) is 100% unchanged.
+	 */
+	drills?: PrescriptionDrillEntry[];
+	/**
+	 * B4a — coach opt-in (per intent). When true, players see an optional
+	 * "Send proof to your parent" affordance after logging the session.
+	 * Verification is ADVISORY: XP/fulfillment is awarded immediately regardless.
+	 * Absent (undefined) = off. Coerced to strict boolean on read-repair.
+	 */
+	requiresParentVerification?: boolean;
 }
 
 // ── Core document ─────────────────────────────────────────────────────────────
@@ -156,6 +204,60 @@ export const INTENT_MIGRATION_DEFAULTS: Partial<IntentDoc> = {
 };
 
 /**
+ * Repair a single bundle drill entry (B3). Same per-field guards as the
+ * top-level prescription — sets required int 1–99; other fields optional.
+ * Returns undefined when `raw` is null/non-object (entry is silently dropped
+ * on the client; server throws instead).
+ */
+export function repairDrillEntry(raw: unknown): PrescriptionDrillEntry | undefined {
+	if (raw == null || typeof raw !== 'object' || Array.isArray(raw)) return undefined;
+	const p = raw as Record<string, unknown>;
+	const sets =
+		typeof p.sets === 'number' && Number.isFinite(p.sets) && p.sets >= 1
+			? Math.floor(p.sets)
+			: 1;
+	const entry: PrescriptionDrillEntry = { sets };
+	if (typeof p.teamDrillId === 'string' && p.teamDrillId.trim()) {
+		entry.teamDrillId = p.teamDrillId.trim();
+	}
+	if (typeof p.clubDrillId === 'string' && p.clubDrillId.trim()) {
+		entry.clubDrillId = p.clubDrillId.trim();
+	}
+	if (typeof p.drillId === 'string' && p.drillId.trim()) {
+		entry.drillId = p.drillId.trim();
+	}
+	if (typeof p.drillTitle === 'string' && p.drillTitle.trim()) {
+		entry.drillTitle = p.drillTitle.trim();
+	}
+	if (typeof p.repsPerSet === 'number' && Number.isFinite(p.repsPerSet) && p.repsPerSet >= 1) {
+		entry.repsPerSet = Math.floor(p.repsPerSet);
+	}
+	if (p.bilateral === true) entry.bilateral = true;
+	if (
+		typeof p.targetDurationMin === 'number' &&
+		Number.isFinite(p.targetDurationMin) &&
+		p.targetDurationMin >= 1
+	) {
+		entry.targetDurationMin = Math.floor(p.targetDurationMin);
+	}
+	if (
+		typeof p.targetRpe === 'number' &&
+		Number.isFinite(p.targetRpe) &&
+		p.targetRpe >= 1 &&
+		p.targetRpe <= 10
+	) {
+		entry.targetRpe = Math.round(p.targetRpe);
+	}
+	if (typeof p.videoUrl === 'string' && p.videoUrl.trim()) {
+		entry.videoUrl = p.videoUrl.trim();
+	}
+	if (typeof p.cues === 'string' && p.cues.trim()) {
+		entry.cues = p.cues.trim();
+	}
+	return entry;
+}
+
+/**
  * Lazy read-repair for optional prescription sub-object (no Firestore backfill).
  */
 export function repairIntentPrescription(raw: unknown): IntentPrescription | undefined {
@@ -198,6 +300,41 @@ export function repairIntentPrescription(raw: unknown): IntentPrescription | und
 		p.targetRpe <= 10
 	) {
 		repaired.targetRpe = Math.round(p.targetRpe);
+	}
+	if (typeof p.videoUrl === 'string' && p.videoUrl.trim()) {
+		repaired.videoUrl = p.videoUrl.trim();
+	}
+	if (typeof p.cues === 'string' && p.cues.trim()) {
+		repaired.cues = p.cues.trim();
+	}
+	if (p.cadence != null && typeof p.cadence === 'object' && !Array.isArray(p.cadence)) {
+		const c = p.cadence as Record<string, unknown>;
+		const spw =
+			typeof c.sessionsPerWindow === 'number' && Number.isFinite(c.sessionsPerWindow)
+				? Math.floor(c.sessionsPerWindow)
+				: 0;
+		const wd =
+			typeof c.windowDays === 'number' && Number.isFinite(c.windowDays)
+				? Math.floor(c.windowDays)
+				: 0;
+		if (spw >= 1 && spw <= 21 && wd >= 1 && wd <= 30) {
+			repaired.cadence = { sessionsPerWindow: spw, windowDays: wd };
+		}
+	}
+	// B3: repair drills[] — each entry repaired with the same per-field guards.
+	// Silently drops null/invalid entries; caps at 8; omits field when empty.
+	if (Array.isArray(p.drills)) {
+		const repairedDrills: PrescriptionDrillEntry[] = p.drills
+			.map(repairDrillEntry)
+			.filter((e): e is PrescriptionDrillEntry => e !== undefined)
+			.slice(0, 8);
+		if (repairedDrills.length > 0) {
+			repaired.drills = repairedDrills;
+		}
+	}
+	// B4a: coerce requiresParentVerification to strict boolean; omit when falsy.
+	if (p.requiresParentVerification === true) {
+		repaired.requiresParentVerification = true;
 	}
 	return repaired;
 }

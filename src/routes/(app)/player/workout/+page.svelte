@@ -5,7 +5,8 @@
   import { untrack } from 'svelte';
   import Icon from '$lib/components/ui/Icon.svelte';
   import { httpsCallable } from 'firebase/functions';
-  import { db, functions } from '$lib/firebase.js';
+  import { db, functions, storage } from '$lib/firebase.js';
+  import { ref as storageRef, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
   import { collection, getDocs, onSnapshot, orderBy, query, where } from 'firebase/firestore';
   import { authStore } from '$lib/stores/auth.svelte.js';
   import { playerEngine, writePlayerOsWorkout } from '$lib/stores/playerEngine.svelte.js';
@@ -35,6 +36,7 @@
     resolveHeuristicDrill,
     type MissionHandoff,
   } from '$lib/player/workout/coachMissionFlow.js';
+  import type { PrescriptionDrillEntry } from '$lib/types/intent.js';
   import { resolveTeamDrillById as resolveTeamLibraryDrill } from '$lib/coach/teamDrillLibrary.js';
   import {
     clampFreeLogDurationMinutes,
@@ -64,6 +66,7 @@
   };
 
   const logTrainingSession = httpsCallable(functions, 'logTrainingSession');
+  const submitCompletionProof = httpsCallable(functions, 'submitCompletionProof');
 
   const profile = $derived(authStore.userProfile);
   const profileXp = $derived(Math.max(0, Math.floor(Number(profile?.totalXp ?? profile?.xp) || 0)));
@@ -130,6 +133,142 @@
   let incomingMissions = $state([]);
   let missionSyncRefreshing = $state(false);
   let missionRefreshNonce = $state(0);
+
+  // B4a/B4c — advisory parent-proof state (inner Execute band; never gates XP).
+  /** intentId captured after a successful log when requiresParentVerification is set. */
+  let pendingProofIntentId = $state(/** @type {string | null} */ (null));
+  let proofNote = $state('');
+  let proofSubmitting = $state(false);
+  let proofSubmitted = $state(false);
+
+  // B4c — optional media proof (COPPA-safe; optional/skippable; never gates XP).
+  /** The selected media file to attach (image or short video). Optional — may be null. */
+  let proofMediaFile = $state(/** @type {File | null} */ (null));
+  /** Upload progress 0–100 while uploading, null when idle. */
+  let proofUploadProgress = $state(/** @type {number | null} */ (null));
+  /** Any upload/validation error shown to the player. */
+  let proofMediaError = $state('');
+
+  const PROOF_IMAGE_MAX = 10 * 1024 * 1024;  // 10 MB
+  const PROOF_VIDEO_MAX = 50 * 1024 * 1024;  // 50 MB
+
+  function onProofFileChange(e: Event) {
+    const input = e.target as HTMLInputElement;
+    const file = input.files?.[0] ?? null;
+    proofMediaError = '';
+    proofMediaFile = null;
+    if (!file) return;
+    if (!file.type.startsWith('image/') && !file.type.startsWith('video/')) {
+      proofMediaError = 'Only images and video files are supported.';
+      return;
+    }
+    if (file.type.startsWith('image/') && file.size > PROOF_IMAGE_MAX) {
+      proofMediaError = 'Image must be under 10 MB.';
+      return;
+    }
+    if (file.type.startsWith('video/') && file.size > PROOF_VIDEO_MAX) {
+      proofMediaError = 'Video must be under 50 MB.';
+      return;
+    }
+    proofMediaFile = file;
+  }
+
+  async function sendCompletionProof() {
+    if (!pendingProofIntentId || proofSubmitting) return;
+    const trimmed = proofNote.trim().slice(0, 500);
+    proofSubmitting = true;
+    proofMediaError = '';
+    let mediaStoragePath: string | null = null;
+
+    try {
+      // B4c — upload media if a file was chosen (optional; skip entirely if none).
+      if (proofMediaFile) {
+        const playerUid = authStore.user?.uid ?? '';
+        const householdId =
+          typeof authStore.userProfile?.householdId === 'string'
+            ? authStore.userProfile.householdId.trim()
+            : '';
+
+        if (!playerUid || !householdId) {
+          proofMediaError = 'Profile incomplete — media attachment skipped.';
+          proofMediaFile = null;
+        } else {
+          const mediaId = crypto.randomUUID();
+          const ext = proofMediaFile.name.split('.').pop() ?? 'bin';
+          const storagePath = `households/${householdId}/proof_media/${playerUid}/${mediaId}.${ext}`;
+          const fileRef = storageRef(storage, storagePath);
+          const uploadTask = uploadBytesResumable(fileRef, proofMediaFile);
+          await new Promise<void>((resolve, reject) => {
+            uploadTask.on(
+              'state_changed',
+              (snap) => {
+                proofUploadProgress = Math.round(
+                  (snap.bytesTransferred / snap.totalBytes) * 100,
+                );
+              },
+              (err) => {
+                proofMediaError = 'Media upload failed — proof will be sent as note-only.';
+                console.error('[B4c] upload error', err);
+                reject(err);
+              },
+              () => resolve(),
+            );
+          }).catch(() => {
+            // Upload failed — continue as note-only (advisory, non-blocking).
+            proofMediaFile = null;
+          });
+
+          if (proofMediaFile) {
+            mediaStoragePath = storagePath;
+          }
+        }
+      }
+
+      await submitCompletionProof({
+        intentId: pendingProofIntentId,
+        proofNote: trimmed || null,
+        mediaStoragePath,
+      });
+      proofSubmitted = true;
+      pendingProofIntentId = null;
+      proofNote = '';
+      proofMediaFile = null;
+    } catch (e) {
+      console.error('[B4a/B4c] submitCompletionProof', e);
+    } finally {
+      proofSubmitting = false;
+      proofUploadProgress = null;
+    }
+  }
+
+  function dismissProofAffordance() {
+    pendingProofIntentId = null;
+    proofNote = '';
+    proofSubmitted = false;
+    proofMediaFile = null;
+    proofMediaError = '';
+    proofUploadProgress = null;
+  }
+
+  // B3 bundle stepper state (inner Execute band — no new frame, no overflow:auto).
+  /** 0-based index of the current bundle step. Reset when armed mission changes. */
+  let bundleStepIdx = $state(0);
+  /** True when the armed mission has a multi-drill prescription bundle. */
+  const isBundleMode = $derived(
+    !!(armedHandoff?.drills?.length && armedHandoff.drills.length > 0),
+  );
+  /** Ordered bundle drill entries from handoff (empty array when not in bundle mode). */
+  const bundleDrills = $derived(
+    /** @type {PrescriptionDrillEntry[]} */ (armedHandoff?.drills ?? []),
+  );
+  /** The drill entry for the current bundle step, or null when not in bundle mode. */
+  const currentBundleDrill = $derived(
+    isBundleMode ? (bundleDrills[bundleStepIdx] ?? null) : null,
+  );
+  /** True when the current bundle step is the final step. */
+  const isFinalBundleStep = $derived(
+    isBundleMode && bundleStepIdx === bundleDrills.length - 1,
+  );
 
   /**
    * @param {MissionHandoff} handoff
@@ -198,8 +337,15 @@
     activeMissionId = null;
     armedHandoff = null;
     sessionNotes = '';
+    bundleStepIdx = 0;
     clearMissionHandoff();
   }
+
+  // Reset bundle step index whenever the armed mission changes.
+  $effect(() => {
+    void armedHandoff?.missionId;
+    bundleStepIdx = 0;
+  });
 
   const isCoachDirectedSession = $derived.by(() => {
     if (!activeMissionId) return false;
@@ -436,6 +582,102 @@
     }
   });
 
+  /**
+   * B3: Log a single bundle step via the EXISTING executePlayerWorkoutLog primitive.
+   * Intermediate steps pass activeMissionId=null to prevent premature mission clear.
+   * The final step passes the real activeMissionId/source so clearMission fires normally.
+   * XP accrues on every step via attributeId (coach_intent path on logTrainingSession).
+   *
+   * Wired: logTrainingSession callable (XP + drill_completions), persistPlayerOsWorkout.
+   * Simplified: per-step dopamine animation runs once on final step only (no spam).
+   */
+  async function logBundleStep() {
+    const drill = currentBundleDrill;
+    if (!drill || logSubmitting) return;
+    const drillName = drill.drillTitle || lockedCoachDrillLabel || 'Bundle drill';
+    const drillType = buildWorkoutDrillType(focusLabel, drillName);
+    const stepSets = drill.sets ?? 1;
+    const stepReps = drill.repsPerSet ?? 0;
+    const stepBilateral = drill.bilateral === true;
+    const stepTotalReps = stepBilateral ? stepSets * stepReps * 2 : stepSets * stepReps;
+    const stepDuration = Math.max(
+      1,
+      drill.targetDurationMin ?? Math.max(1, Math.floor(duration / Math.max(1, bundleDrills.length))),
+    );
+    const stepRpe = drill.targetRpe ?? intensity;
+    const intensityCall = intensityApiFromStep(stepRpe);
+    const expectedXp = expectedWorkoutXp(stepDuration, stepRpe, stepTotalReps);
+    const user = authStore.user;
+    if (!user) return;
+
+    const isLastStep = isFinalBundleStep;
+    // Intermediate steps: pass null mission so clearMission stays false.
+    const stepMissionId = isLastStep ? activeMissionId : null;
+    const stepMissionSource = isLastStep ? (armedHandoff?.source ?? null) : null;
+    const oldLevel = getLevelProgressFromTotalXp(totalXpHud).level;
+
+    logSubmitting = true;
+    playerEngine.bumpBy(expectedXp);
+    try {
+      const result = await executePlayerWorkoutLog({
+        drillType,
+        durationMin: stepDuration,
+        totalReps: stepTotalReps,
+        intensityCall,
+        focusLabel,
+        selectedDrill: drillName,
+        activeMissionId: stepMissionId,
+        missionSource: stepMissionSource,
+        targetAttributeId: armedHandoff?.targetAttributeId ?? undefined,
+        totalXpHud,
+        oldLevel,
+        intensityStep: stepRpe,
+        sessionNotes: isLastStep ? sessionNotes : '',
+        authUser: { uid: user.uid, email: user.email },
+        profile,
+        logTrainingSession,
+        writePlayerOsWorkout,
+        commitWorkoutCompletion,
+        dopamineOnCommit,
+      });
+
+      if (isLastStep) {
+        if (result.clearMission) {
+          recordQuestProgressAfterLog(armedHandoff);
+          clearArmedMission();
+        } else {
+          recordQuestProgressAfterLog(null);
+        }
+        if (result.levelUpFrom != null && result.levelUpTo != null) {
+          window.dispatchEvent(
+            new CustomEvent('phoenix:level-up', {
+              detail: { from: result.levelUpFrom, to: result.levelUpTo, earnedXp: result.earned },
+            }),
+          );
+        }
+        void dopamineOnCallable(Promise.resolve(result), { kind: 'drill' });
+        showDiegeticSuccess(
+          'Bundle complete',
+          `All ${bundleDrills.length} drills logged · +${result.earned} XP · Level ${result.level ?? '—'}`,
+        );
+        sessionNotes = '';
+        await authStore.refresh({ silent: true });
+      } else {
+        bundleStepIdx += 1;
+        showDiegeticSuccess(
+          `Drill ${bundleStepIdx} logged`,
+          `+${result.earned} XP · Next: ${bundleDrills[bundleStepIdx]?.drillTitle ?? 'Drill ' + (bundleStepIdx + 1)}`,
+        );
+      }
+    } catch (e) {
+      playerEngine.bumpBy(-expectedXp);
+      console.error(e);
+      showDiegeticError('Step failed', workoutLogErrorMessage(e));
+    } finally {
+      logSubmitting = false;
+    }
+  }
+
   async function logWorkout() {
     const gate = validatePlayerWorkoutLog({
       selectedFocus,
@@ -477,6 +719,7 @@
         selectedDrill: drillName,
         activeMissionId,
         missionSource: armedHandoff?.source ?? null,
+        targetAttributeId: armedHandoff?.targetAttributeId ?? undefined,
         totalXpHud,
         oldLevel,
         // Raw RPE 1–10 → logTrainingSession.subjectiveRpe (RL telemetry); intensityCall stays for XP.
@@ -507,6 +750,11 @@
         'Command executed',
         `+${result.earned} XP · Level ${result.level ?? '—'}${result.missionCloseNote}`,
       );
+      // B4a: advisory proof affordance — non-blocking, only when coach opted in.
+      if (activeMissionId && armedHandoff?.requiresParentVerification) {
+        pendingProofIntentId = activeMissionId;
+        proofSubmitted = false;
+      }
       sessionNotes = '';
       await authStore.refresh({ silent: true });
     } catch (e) {
@@ -574,6 +822,22 @@
         {#if coachPrescriptionLine}
           <p class="pw-mission-armed__drill pw-mono pw-dim">
             Coach prescription: {coachPrescriptionLine}
+          </p>
+        {/if}
+        {#if armedPrescription?.cues}
+          <p class="pw-mission-armed__drill pw-mono pw-dim">Coaching cues: {armedPrescription.cues}</p>
+        {/if}
+        {#if armedPrescription?.videoUrl}
+          <a class="pw-link pw-mono pw-dim" href={armedPrescription.videoUrl} target="_blank" rel="noopener noreferrer">Watch demo</a>
+        {/if}
+        {#if armedPrescription?.cadence}
+          <p class="pw-mission-armed__drill pw-mono pw-dim" aria-label="Cadence requirement">
+            Cadence: {armedPrescription.cadence.sessionsPerWindow} session{armedPrescription.cadence.sessionsPerWindow !== 1 ? 's' : ''} / {armedPrescription.cadence.windowDays === 7 ? 'week' : `${armedPrescription.cadence.windowDays} days`}
+          </p>
+        {/if}
+        {#if isBundleMode}
+          <p class="pw-mission-armed__drill pw-mono" aria-label="Bundle drill sequence">
+            Bundle · {bundleDrills.length} drills in sequence
           </p>
         {/if}
       </div>
@@ -677,11 +941,79 @@
 
         <div class="pw-theater__execute pd-os-deck__well">
           <span class="pw-eyebrow pd-panel-eyebrow">Execute</span>
-          {#if isCoachDirectedSession}
+          {#if isBundleMode && currentBundleDrill}
+            <!-- B3 bundle stepper — inner Execute band, no new frame (instrument: Execute) -->
+            <div class="pw-configure-step" role="region" aria-label="Bundle drill stepper">
+              <span class="pw-eyebrow pd-panel-eyebrow">
+                Drill {bundleStepIdx + 1} of {bundleDrills.length}
+              </span>
+              <p class="pw-mission-armed__title pw-mono">
+                {currentBundleDrill.drillTitle || 'Bundle drill'}
+              </p>
+              {#if currentBundleDrill.cues}
+                <p class="pw-mono pw-data pw-dim">Cues: {currentBundleDrill.cues}</p>
+              {/if}
+              {#if currentBundleDrill.videoUrl}
+                <a class="pw-link pw-mono pw-dim" href={currentBundleDrill.videoUrl} target="_blank" rel="noopener noreferrer">Watch demo</a>
+              {/if}
+              <dl class="pw-mono pw-data tw-grid tw-grid-cols-2 tw-gap-2 tw-text-sm">
+                <div>
+                  <dt class="pw-dim tw-text-xs">Sets</dt>
+                  <dd>{currentBundleDrill.sets}</dd>
+                </div>
+                {#if currentBundleDrill.repsPerSet}
+                  <div>
+                    <dt class="pw-dim tw-text-xs">Reps / set</dt>
+                    <dd>{currentBundleDrill.repsPerSet}{currentBundleDrill.bilateral ? ' · both sides' : ''}</dd>
+                  </div>
+                {/if}
+                {#if currentBundleDrill.targetRpe}
+                  <div>
+                    <dt class="pw-dim tw-text-xs">Target RPE</dt>
+                    <dd>{currentBundleDrill.targetRpe} / 10</dd>
+                  </div>
+                {/if}
+                {#if currentBundleDrill.targetDurationMin}
+                  <div>
+                    <dt class="pw-dim tw-text-xs">Duration</dt>
+                    <dd>{currentBundleDrill.targetDurationMin} min</dd>
+                  </div>
+                {/if}
+              </dl>
+              {#if isFinalBundleStep}
+                <div class="pw-configure-step">
+                  <label for="pw-bundle-notes" class="pw-eyebrow pd-panel-eyebrow">
+                    Session notes (optional)
+                  </label>
+                  <textarea
+                    id="pw-bundle-notes"
+                    class="pw-mono tw-w-full tw-min-h-[72px] tw-rounded-lg tw-border tw-border-teal-900/40
+                           tw-bg-black/40 tw-p-2 tw-text-sm tw-text-teal-100/90 tw-outline-none
+                           focus:tw-border-teal-500/60"
+                    maxlength={SESSION_NOTES_MAX_LENGTH}
+                    placeholder="How did it feel? Anything your coach should know?"
+                    bind:value={sessionNotes}
+                  ></textarea>
+                  <p class="pw-dim pw-mono tw-text-xs">{sessionNotes.length}/{SESSION_NOTES_MAX_LENGTH}</p>
+                </div>
+              {/if}
+            </div>
+          {:else if isCoachDirectedSession}
             <div class="pw-configure-step" role="group" aria-label="Coach prescription">
               <span class="pw-eyebrow pd-panel-eyebrow">Coach prescription</span>
               {#if coachPrescriptionLine}
                 <p class="pw-mono pw-data">{coachPrescriptionLine}</p>
+              {/if}
+              {#if armedPrescription?.cues}
+                <p class="pw-mono pw-data pw-dim">Coaching cues: {armedPrescription.cues}</p>
+              {/if}
+              {#if armedPrescription?.videoUrl}
+                <a class="pw-link pw-mono pw-dim" href={armedPrescription.videoUrl} target="_blank" rel="noopener noreferrer">Watch demo</a>
+              {/if}
+              {#if armedPrescription?.cadence}
+                <p class="pw-mono pw-data pw-dim" aria-label="Cadence requirement">
+                  Cadence: {armedPrescription.cadence.sessionsPerWindow} session{armedPrescription.cadence.sessionsPerWindow !== 1 ? 's' : ''} / {armedPrescription.cadence.windowDays === 7 ? 'week' : `${armedPrescription.cadence.windowDays} days`}
+                </p>
               {/if}
               <dl class="pw-mono pw-data tw-grid tw-grid-cols-2 tw-gap-2 tw-text-sm">
                 <div>
@@ -808,25 +1140,124 @@
     </div>
 
     <div class="pw-theater__transmit">
-      <button
-        type="button"
-        class="pw-exec pw-exec--transmit"
-        disabled={(!selectedDrill && !isCoachDirectedSession) || logSubmitting}
-        onclick={logWorkout}
-      >
-        {#if logSubmitting}
-          <span class="pw-mono">Logging…</span>
-        {:else}
-          <Icon name="game.zap" />
-          <span>Log session</span>
+      {#if isBundleMode}
+        <button
+          type="button"
+          class="pw-exec pw-exec--transmit"
+          disabled={logSubmitting || !currentBundleDrill}
+          onclick={logBundleStep}
+        >
+          {#if logSubmitting}
+            <span class="pw-mono">Logging…</span>
+          {:else if isFinalBundleStep}
+            <Icon name="game.zap" />
+            <span>Complete bundle</span>
+          {:else}
+            <Icon name="game.zap" />
+            <span>Complete &amp; next drill</span>
+          {/if}
+        </button>
+        <p class="pw-mono pw-dim tw-text-xs">
+          Step {bundleStepIdx + 1} of {bundleDrills.length}
+          {isFinalBundleStep ? ' · Final step — completes bundle' : ''}
+        </p>
+      {:else}
+        <button
+          type="button"
+          class="pw-exec pw-exec--transmit"
+          disabled={(!selectedDrill && !isCoachDirectedSession) || logSubmitting}
+          onclick={logWorkout}
+        >
+          {#if logSubmitting}
+            <span class="pw-mono">Logging…</span>
+          {:else}
+            <Icon name="game.zap" />
+            <span>Log session</span>
+          {/if}
+        </button>
+        {#if !selectedDrill && !isCoachDirectedSession}
+          <p class="pw-mono pw-locked">Awaiting sub-drill selection</p>
         {/if}
-      </button>
-      {#if !selectedDrill && !isCoachDirectedSession}
-        <p class="pw-mono pw-locked">Awaiting sub-drill selection</p>
       {/if}
     </div>
   </div>
   </div>
+
+  {#if pendingProofIntentId && !proofSubmitted}
+    <!-- B4a/B4c — advisory proof affordance (Execute band inner addition; never gates XP) -->
+    <div class="pw-theater pd-os-deck pd-os-deck--hero bento-span-12" aria-live="polite">
+      <div class="pd-os-deck__well pw-mission-armed" style="border-color:rgba(20,184,166,0.2);">
+        <div class="pw-mission-armed__head">
+          <span class="pw-eyebrow pw-mono">Parent verification</span>
+          <button type="button" class="pw-mission-armed__clear pw-mono" onclick={dismissProofAffordance}>
+            Skip
+          </button>
+        </div>
+        <p class="pw-mission-armed__hint pw-mono" style="font-size:11px;">
+          Your coach requested proof for this session. Add an optional note and submit — or skip entirely. XP is already awarded.
+        </p>
+        <textarea
+          class="pw-session-notes pw-mono"
+          rows="3"
+          maxlength="500"
+          placeholder="Optional note for your parent…"
+          bind:value={proofNote}
+          disabled={proofSubmitting}
+          style="width:100%; resize:vertical; font-size:11px; background:rgba(20,184,166,0.04); border:1px solid rgba(20,184,166,0.15); border-radius:6px; padding:6px 8px; color:#e2e8f0;"
+        ></textarea>
+
+        <!-- B4c — optional media attachment (COPPA-safe; parent-only visibility; never gates XP) -->
+        <label class="pw-mono" style="display:block; margin-top:8px; font-size:10px; color:rgba(20,184,166,0.6); letter-spacing:0.08em;">
+          ATTACH PHOTO OR SHORT VIDEO <span style="opacity:0.5;">(optional)</span>
+          <input
+            type="file"
+            accept="image/*,video/*"
+            disabled={proofSubmitting}
+            onchange={onProofFileChange}
+            style="display:block; margin-top:4px; font-size:10px; color:#e2e8f0;"
+          />
+        </label>
+        {#if proofMediaFile}
+          <p class="pw-mono" style="font-size:10px; color:rgba(20,184,166,0.7); margin-top:4px;">
+            {proofMediaFile.name} selected
+            {#if proofUploadProgress !== null}
+              · uploading {proofUploadProgress}%
+            {/if}
+          </p>
+        {/if}
+        {#if proofMediaError}
+          <p class="pw-mono" style="font-size:10px; color:rgba(255,80,60,0.8); margin-top:4px;" role="alert">{proofMediaError}</p>
+        {/if}
+
+        <div class="tw-flex tw-gap-2 tw-mt-2">
+          <button
+            type="button"
+            class="pw-exec pw-exec--transmit"
+            style="flex:1; font-size:11px;"
+            disabled={proofSubmitting}
+            onclick={sendCompletionProof}
+          >
+            {proofSubmitting ? (proofUploadProgress !== null ? `Uploading ${proofUploadProgress}%…` : 'Sending…') : 'Send proof'}
+          </button>
+          <button
+            type="button"
+            class="pw-mission-armed__clear pw-mono"
+            style="font-size:11px;"
+            disabled={proofSubmitting}
+            onclick={dismissProofAffordance}
+          >
+            Skip
+          </button>
+        </div>
+      </div>
+    </div>
+  {/if}
+
+  {#if proofSubmitted}
+    <p class="pw-mono pw-dim" style="font-size:11px; padding:8px 0;" aria-live="polite">
+      Proof sent to parent.
+    </p>
+  {/if}
 
   <PlayerDiegeticOverlay
     open={overlayOpen}

@@ -27,6 +27,7 @@ const {
   trainingLevelFromTotalXp,
   computeMatchTelemetryParlayXp,
   grantTrainingXpAfterRepCreated,
+  getSeasonOneCardRewardsForLevelRange,
 } = require('../../gamificationWorkoutXp');
 
 const {
@@ -588,6 +589,14 @@ exports.logTrainingSession = onCall(LAUNCH_CORE_CALLABLE_OPTS, async (request) =
         data.assignmentId.trim() :
         '';
 
+  // Coach-intent target attribute: sanitize to [a-z0-9_], max 60 chars.
+  // When present, xpByAttribute is incremented on users/{email} (intent lifecycle trigger)
+  // and player_stats/{uid} (RL featureBuilder). Free logs without attributeId are unchanged.
+  const attributeIdRaw =
+      typeof data.attributeId === 'string' ?
+        data.attributeId.trim().toLowerCase().replace(/[^a-z0-9_]/g, '').slice(0, 60) :
+        '';
+
   /** @type {string} */
   let playerEmail;
   /** @type {string|null} */
@@ -854,23 +863,30 @@ exports.logTrainingSession = onCall(LAUNCH_CORE_CALLABLE_OPTS, async (request) =
 
     tx.set(logRef, logDoc);
 
-    tx.set(
-        psRef,
-        {
-          teamId,
-          playerName,
-          total_xp: admin.firestore.FieldValue.increment(earned),
-          current_level: lv.level,
-          reps_this_week: repsWeek,
-          minutes_this_week: minsWeek,
-          xp_this_week: xpWeek,
-          streak_days: streakDays,
-          stats_week_key: weekKey,
-          last_training_utc: todayStr,
-          updatedAt: now,
-        },
-        {merge: true},
-    );
+    const psSetData = {
+      teamId,
+      // T1-10: denormalize clubId onto player_stats so the Firestore read rule can use
+      // tokenClubMatchesDoc() (zero gets) instead of teamClubId() (1 get).
+      clubId: (teamSnap.exists && typeof teamSnap.data().clubId === 'string' && teamSnap.data().clubId.trim())
+        ? teamSnap.data().clubId.trim()
+        : null,
+      playerName,
+      total_xp: admin.firestore.FieldValue.increment(earned),
+      current_level: lv.level,
+      reps_this_week: repsWeek,
+      minutes_this_week: minsWeek,
+      xp_this_week: xpWeek,
+      streak_days: streakDays,
+      stats_week_key: weekKey,
+      last_training_utc: todayStr,
+      updatedAt: now,
+    };
+    // xpByAttribute: feeds RL featureBuilder (player_stats/{uid}.xpByAttribute).
+    if (attributeIdRaw) {
+      psSetData[`xpByAttribute.${attributeIdRaw}`] =
+          admin.firestore.FieldValue.increment(earned);
+    }
+    tx.set(psRef, psSetData, {merge: true});
 
     const uTxData = uSnapTx.data() || {};
     const prevLong =
@@ -878,14 +894,27 @@ exports.logTrainingSession = onCall(LAUNCH_CORE_CALLABLE_OPTS, async (request) =
           Math.floor(uTxData.longestStreak) :
           0;
     const xpInc = admin.firestore.FieldValue.increment(earned);
-    tx.update(uRef, {
+    const uUpdateData = {
       xp: xpInc,
       totalXp: xpInc,
       trainingLevel: lv.level,
       currentStreak: streakDays,
       longestStreak: Math.max(prevLong, streakDays),
       updatedAt: now,
-    });
+    };
+    // xpByAttribute: feeds onUserXpUpdateIntentLifecycle trigger (users/{email}.xpByAttribute).
+    if (attributeIdRaw) {
+      uUpdateData[`xpByAttribute.${attributeIdRaw}`] =
+          admin.firestore.FieldValue.increment(earned);
+    }
+    // T1-8: grant Season 1 cards for newly reached levels into users/{email}.ownedSeasonOneCards.
+    const prevLevel = trainingLevelFromTotalXp(prevTotal).level;
+    const newLevelCards = getSeasonOneCardRewardsForLevelRange(prevLevel, lv.level);
+    if (newLevelCards.length > 0) {
+      uUpdateData.ownedSeasonOneCards =
+          admin.firestore.FieldValue.arrayUnion(...newLevelCards);
+    }
+    tx.update(uRef, uUpdateData);
 
     const clubId =
         teamSnap.exists &&
@@ -1827,6 +1856,74 @@ exports.analyzeTacticWithAI = onCall(
 // ── Epic 8: Intent-Based Homework Triggers ────────────────────────────────────
 
 /**
+ * B3: Normalize a single bundle drill entry — same validation rules as the
+ * top-level prescription fields (sets required int 1–99; others optional).
+ * Throws HttpsError on any malformed field so the whole deploy is rejected.
+ * @param {unknown} raw
+ * @param {number} index - position in drills[] for error messages
+ * @returns {object}
+ */
+function normalizeDrillEntry(raw, index) {
+  const pfx = `prescription.drills[${index}]`;
+  if (raw === null || raw === undefined || typeof raw !== 'object' || Array.isArray(raw)) {
+    throw new HttpsError('invalid-argument', `${pfx} must be an object.`);
+  }
+  const drillTitle = typeof raw.drillTitle === 'string' ? raw.drillTitle.trim() : '';
+  const teamDrillId = typeof raw.teamDrillId === 'string' ? raw.teamDrillId.trim() : '';
+  const clubDrillId = typeof raw.clubDrillId === 'string' ? raw.clubDrillId.trim() : '';
+  const legacyDrillId = typeof raw.drillId === 'string' ? raw.drillId.trim() : '';
+  const sets = Number(raw.sets);
+  if (!Number.isFinite(sets) || sets < 1 || sets > 99 || Math.floor(sets) !== sets) {
+    throw new HttpsError('invalid-argument', `${pfx}.sets must be an integer 1–99.`);
+  }
+  let repsPerSet;
+  if (raw.repsPerSet !== undefined && raw.repsPerSet !== null) {
+    repsPerSet = Number(raw.repsPerSet);
+    if (!Number.isFinite(repsPerSet) || repsPerSet < 1 || repsPerSet > 999 || Math.floor(repsPerSet) !== repsPerSet) {
+      throw new HttpsError('invalid-argument', `${pfx}.repsPerSet must be an integer 1–999.`);
+    }
+    repsPerSet = Math.floor(repsPerSet);
+  }
+  const bilateral = raw.bilateral === true;
+  let targetDurationMin;
+  if (raw.targetDurationMin !== undefined && raw.targetDurationMin !== null) {
+    targetDurationMin = Number(raw.targetDurationMin);
+    if (!Number.isFinite(targetDurationMin) || targetDurationMin < 1 || targetDurationMin > 120) {
+      throw new HttpsError('invalid-argument', `${pfx}.targetDurationMin must be 1–120.`);
+    }
+    targetDurationMin = Math.floor(targetDurationMin);
+  }
+  let targetRpe;
+  if (raw.targetRpe !== undefined && raw.targetRpe !== null) {
+    targetRpe = Number(raw.targetRpe);
+    if (!Number.isFinite(targetRpe) || targetRpe < 1 || targetRpe > 10) {
+      throw new HttpsError('invalid-argument', `${pfx}.targetRpe must be 1–10.`);
+    }
+    targetRpe = Math.round(targetRpe);
+  }
+  const rawVideoUrl = typeof raw.videoUrl === 'string' ? raw.videoUrl.trim() : '';
+  const validVideoUrl =
+    rawVideoUrl &&
+    (rawVideoUrl.startsWith('http://') || rawVideoUrl.startsWith('https://')) &&
+    rawVideoUrl.length <= 2048 ?
+      rawVideoUrl :
+      undefined;
+  const rawCues = typeof raw.cues === 'string' ? raw.cues.trim() : '';
+  const validCues = rawCues ? rawCues.slice(0, 2000) : undefined;
+  const out = {sets: Math.floor(sets), bilateral};
+  if (teamDrillId) out.teamDrillId = teamDrillId.slice(0, 128);
+  if (clubDrillId) out.clubDrillId = clubDrillId.slice(0, 128);
+  if (legacyDrillId) out.drillId = legacyDrillId.slice(0, 128);
+  if (drillTitle) out.drillTitle = drillTitle.slice(0, 200);
+  if (repsPerSet !== undefined) out.repsPerSet = repsPerSet;
+  if (targetDurationMin !== undefined) out.targetDurationMin = targetDurationMin;
+  if (targetRpe !== undefined) out.targetRpe = targetRpe;
+  if (validVideoUrl) out.videoUrl = validVideoUrl;
+  if (validCues) out.cues = validCues;
+  return out;
+}
+
+/**
  * PRESCRIPTION-schema — validate and normalize optional coach prescription on deploy.
  * @param {unknown} raw
  * @returns {object|undefined}
@@ -1869,6 +1966,30 @@ function normalizePrescription(raw) {
     }
     targetRpe = Math.round(targetRpe);
   }
+  const rawVideoUrl = typeof raw.videoUrl === 'string' ? raw.videoUrl.trim() : '';
+  const validVideoUrl =
+    rawVideoUrl &&
+    (rawVideoUrl.startsWith('http://') || rawVideoUrl.startsWith('https://')) &&
+    rawVideoUrl.length <= 2048 ?
+      rawVideoUrl :
+      undefined;
+  const rawCues = typeof raw.cues === 'string' ? raw.cues.trim() : '';
+  const validCues = rawCues ? rawCues.slice(0, 2000) : undefined;
+  let cadence;
+  if (raw.cadence !== undefined && raw.cadence !== null) {
+    if (typeof raw.cadence !== 'object' || Array.isArray(raw.cadence)) {
+      throw new HttpsError('invalid-argument', 'prescription.cadence must be an object.');
+    }
+    const spw = Number(raw.cadence.sessionsPerWindow);
+    const wd = Number(raw.cadence.windowDays);
+    if (!Number.isFinite(spw) || spw < 1 || spw > 21 || Math.floor(spw) !== spw) {
+      throw new HttpsError('invalid-argument', 'prescription.cadence.sessionsPerWindow must be an integer 1–21.');
+    }
+    if (!Number.isFinite(wd) || wd < 1 || wd > 30 || Math.floor(wd) !== wd) {
+      throw new HttpsError('invalid-argument', 'prescription.cadence.windowDays must be an integer 1–30.');
+    }
+    cadence = {sessionsPerWindow: Math.floor(spw), windowDays: Math.floor(wd)};
+  }
   const out = {sets: Math.floor(sets), bilateral};
   if (teamDrillId) out.teamDrillId = teamDrillId.slice(0, 128);
   if (clubDrillId) out.clubDrillId = clubDrillId.slice(0, 128);
@@ -1877,6 +1998,21 @@ function normalizePrescription(raw) {
   if (repsPerSet !== undefined) out.repsPerSet = repsPerSet;
   if (targetDurationMin !== undefined) out.targetDurationMin = targetDurationMin;
   if (targetRpe !== undefined) out.targetRpe = targetRpe;
+  if (validVideoUrl) out.videoUrl = validVideoUrl;
+  if (validCues) out.cues = validCues;
+  if (cadence) out.cadence = cadence;
+  // B4a: optional coach opt-in flag — only emit when strictly true.
+  if (raw.requiresParentVerification === true) out.requiresParentVerification = true;
+  // B3: validate drills[] bundle entries.
+  if (raw.drills !== undefined && raw.drills !== null) {
+    if (!Array.isArray(raw.drills)) {
+      throw new HttpsError('invalid-argument', 'prescription.drills must be an array.');
+    }
+    if (raw.drills.length < 1 || raw.drills.length > 8) {
+      throw new HttpsError('invalid-argument', 'prescription.drills must have 1–8 entries.');
+    }
+    out.drills = raw.drills.map((entry, i) => normalizeDrillEntry(entry, i));
+  }
   return out;
 }
 
@@ -2167,6 +2303,180 @@ exports.secureExtendIntent = onCall(LAUNCH_CORE_CALLABLE_OPTS, async (request) =
   });
 
   return {intentId, newExpiresAt: newExpiresAt.toDate().toISOString()};
+});
+
+/**
+ * B4a — Player submits advisory completion proof for a coach-verified intent.
+ * Writes to completion_verifications/{auto} via Admin SDK (CF-only path).
+ * ADVISORY: does NOT touch XP, workout_logs, or intent fulfilment — those are
+ * already awarded by logTrainingSession before this callable is ever invoked.
+ * Returns { verificationId, status: 'pending' }.
+ */
+exports.submitCompletionProof = onCall(LAUNCH_CORE_CALLABLE_OPTS, async (request) => {
+  if (!request.auth || !request.auth.uid) {
+    throw new HttpsError('unauthenticated', 'Sign in required.');
+  }
+  const playerUid = request.auth.uid;
+  const data = request.data || {};
+
+  // Validate intentId (required, non-empty string).
+  const intentId = typeof data.intentId === 'string' ? data.intentId.trim() : '';
+  if (!intentId) {
+    throw new HttpsError('invalid-argument', 'intentId is required.');
+  }
+
+  // Validate proofNote (optional, string, trim, <= 500 chars).
+  let proofNote = null;
+  if (data.proofNote !== undefined && data.proofNote !== null) {
+    if (typeof data.proofNote !== 'string') {
+      throw new HttpsError('invalid-argument', 'proofNote must be a string.');
+    }
+    const trimmed = data.proofNote.trim();
+    if (trimmed.length > 500) {
+      throw new HttpsError('invalid-argument', 'proofNote must be 500 characters or fewer.');
+    }
+    proofNote = trimmed || null;
+  }
+
+  // B4c — validate optional mediaStoragePath (COPPA-safe private path).
+  // Validation is deferred until after householdId is resolved from the user doc,
+  // so the prefix check can include the caller's actual householdId and uid.
+  const rawMediaStoragePath =
+    data.mediaStoragePath !== undefined && data.mediaStoragePath !== null
+      ? data.mediaStoragePath
+      : null;
+
+  // Resolve player context from users/{email} doc (Admin SDK).
+  // Caller must be a player — their email is on the Auth token.
+  const playerEmail = typeof request.auth.token.email === 'string'
+    ? request.auth.token.email.toLowerCase().trim()
+    : '';
+  if (!playerEmail) {
+    throw new HttpsError('failed-precondition', 'Player email required for proof submission.');
+  }
+  const userKey = playerEmail;
+
+  const userSnap = await db().collection('users').doc(userKey).get();
+  if (!userSnap.exists) {
+    throw new HttpsError('not-found', 'Player profile not found.');
+  }
+  const userDoc = userSnap.data() || {};
+  const householdId = typeof userDoc.householdId === 'string' ? userDoc.householdId.trim() : '';
+  const clubId = typeof userDoc.clubId === 'string' ? userDoc.clubId.trim()
+    : typeof userDoc.tenantId === 'string' ? userDoc.tenantId.trim() : '';
+  const teamId = typeof userDoc.teamId === 'string' ? userDoc.teamId.trim() : '';
+
+  // B4c — validate mediaStoragePath now that householdId + playerUid are known.
+  // Path must be: households/{callerHouseholdId}/proof_media/{callerUid}/<anything>
+  // Reject cross-household / cross-user paths with permission-denied.
+  let mediaStoragePath = null;
+  if (rawMediaStoragePath !== null) {
+    if (typeof rawMediaStoragePath !== 'string') {
+      throw new HttpsError('invalid-argument', 'mediaStoragePath must be a string.');
+    }
+    if (rawMediaStoragePath.length > 512) {
+      throw new HttpsError('invalid-argument', 'mediaStoragePath must be 512 characters or fewer.');
+    }
+    const expectedPrefix = `households/${householdId}/proof_media/${playerUid}/`;
+    if (!rawMediaStoragePath.startsWith(expectedPrefix)) {
+      throw new HttpsError(
+          'permission-denied',
+          'mediaStoragePath must be within your own household proof_media folder.',
+      );
+    }
+    mediaStoragePath = rawMediaStoragePath;
+  }
+
+  // Create completion_verifications/{auto} — Admin SDK write only.
+  const ref = await db().collection('completion_verifications').add({
+    playerUid,
+    userKey,
+    playerEmail,
+    householdId: householdId || null,
+    clubId: clubId || null,
+    teamId: teamId || null,
+    intentId,
+    proofNote,
+    mediaStoragePath,
+    mediaApproved: false,
+    status: 'pending',
+    createdAt: admin.firestore.FieldValue.serverTimestamp(),
+  });
+
+  return {verificationId: ref.id, status: 'pending'};
+});
+
+/**
+ * B4b — Parent reviews an advisory completion proof for their household child.
+ * ADVISORY: does NOT touch player XP, training logs, or intent fulfilment.
+ * Only transitions completion_verifications/{vId}.status: 'pending' → 'approved'|'rejected'.
+ * Caller must be authenticated PARENT. Household membership is verified via Firestore.
+ * Returns { verificationId, status: decision }.
+ */
+exports.parentReviewCompletionProof = onCall(LAUNCH_CORE_CALLABLE_OPTS, async (request) => {
+  // 1. Require authenticated parent role (throws unauthenticated / permission-denied if not).
+  const parent = assertParent(request);
+
+  // 2. Validate inputs.
+  const data = request.data || {};
+
+  const verificationId = typeof data.verificationId === 'string' ? data.verificationId.trim() : '';
+  if (!verificationId) {
+    throw new HttpsError('invalid-argument', 'verificationId is required.');
+  }
+
+  const decision = typeof data.decision === 'string' ? data.decision.trim() : '';
+  if (decision !== 'approved' && decision !== 'rejected') {
+    throw new HttpsError('invalid-argument', "decision must be 'approved' or 'rejected'.");
+  }
+
+  // 3. Load the verification record via Admin SDK.
+  const cvRef = db().collection('completion_verifications').doc(verificationId);
+  const cvSnap = await cvRef.get();
+  if (!cvSnap.exists) {
+    throw new HttpsError('not-found', 'Completion verification record not found.');
+  }
+  const cv = cvSnap.data() || {};
+
+  // 4. Verify household membership: the record's userKey must be in the parent's
+  //    household.playerEmails (mirrors parentGrantVpcConsent membership check).
+  const hSnap = await db().collection('households').doc(parent.householdId).get();
+  if (!hSnap.exists) {
+    throw new HttpsError('failed-precondition', 'Parent household not found.');
+  }
+  const h = hSnap.data() || {};
+
+  const playerSet = new Set(
+      (h.playerEmails || []).map((e) => normEmail(String(e))).filter(Boolean),
+  );
+  const recordUserKey = typeof cv.userKey === 'string' ? normEmail(cv.userKey) : '';
+  if (!recordUserKey || !playerSet.has(recordUserKey)) {
+    throw new HttpsError(
+        'permission-denied',
+        'This completion record does not belong to a player in your household.',
+    );
+  }
+
+  // 5. Only allow transition from 'pending' — reject re-review of already-decided records.
+  if (cv.status !== 'pending') {
+    throw new HttpsError(
+        'failed-precondition',
+        `This record has already been reviewed (status: ${cv.status}).`,
+    );
+  }
+
+  // 6. Update: status + reviewer metadata + B4c mediaApproved flag.
+  // DO NOT touch XP, training logs, or fulfillment — stays advisory.
+  // mediaApproved: true only on 'approved'; false on 'rejected' (harmless when no media).
+  await cvRef.update({
+    status: decision,
+    reviewedByUid: request.auth.uid,
+    reviewedByEmail: parent.email,
+    reviewedAt: admin.firestore.FieldValue.serverTimestamp(),
+    mediaApproved: decision === 'approved',
+  });
+
+  return {verificationId, status: decision};
 });
 
 /** Server XP grant when a `reps` doc is created (parent/player submitWorkoutRep). */

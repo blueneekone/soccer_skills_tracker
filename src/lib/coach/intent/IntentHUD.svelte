@@ -16,11 +16,18 @@
 		draftPrescriptionSets = $bindable(3),
 		draftPrescriptionRepsPerSet = $bindable(10),
 		draftPrescriptionBilateral = $bindable(false),
-		draftPrescriptionDurationMin = $bindable(0),
-		draftPrescriptionTargetRpe = $bindable(0),
-		draftDrillId = $bindable(''),
+	draftPrescriptionDurationMin = $bindable(0),
+	draftPrescriptionTargetRpe = $bindable(0),
+	/** 0 = absent (no cadence). 1–21 = sessions per 7-day window. */
+	draftCadenceSessionsPerWindow = $bindable(0),
+	draftDrillId = $bindable(''),
+		draftDrillTitle = $bindable(''),
 		availableDrills = [] as Array<{ id: string; title: string; scope?: string }>,
 		isLoadingDrills = false,
+		/** B3 bundle drill entries (ordered). Empty = single-drill mode. */
+		draftBundleDrills = $bindable([] as Array<{ drillId: string; drillTitle: string; sets: number; repsPerSet: number }>),
+	/** B4a — coach opt-in: require parent verification (advisory). Default off. */
+	draftRequiresParentVerification = $bindable(false),
 		deployPhase = 'idle' as DeployPhase,
 		deployError = '',
 		isLoadingRoster = false,
@@ -30,6 +37,9 @@
 		onSelectAll = () => {},
 		onClearSelection = () => {},
 		onAttributeChange = () => {},
+		onAddBundleDrill = () => {},
+		onRemoveBundleDrill = (_index: number) => {},
+		onUpdateBundleDrill = (_index: number, _patch: Partial<{ drillId: string; drillTitle: string; sets: number; repsPerSet: number }>) => {},
 	} = $props();
 
 	const deployBtnLabel = $derived(
@@ -162,8 +172,26 @@
 				</select>
 				{#if !isLoadingDrills && availableDrills.length === 0}
 					<p class="tw-font-mono tw-text-[8px] tw-text-white/25 tw-leading-relaxed">
-						No team drills for this attribute yet — create one under Drills → Spatial designer.
+						No saved team drills — type a drill name below, copy from Drill library → Platform basics, or leave open for RL suggestion.
 					</p>
+				{/if}
+				{#if !draftDrillId}
+					<div class="tw-flex tw-flex-col tw-gap-1">
+						<label for="hud-drill-title" class="tw-font-mono tw-text-[8px] tw-text-[#14b8a6]/35 tw-uppercase">
+							Drill name (optional)
+						</label>
+						<input
+							id="hud-drill-title"
+							type="text"
+							maxlength="200"
+							placeholder="e.g. Toe taps"
+							bind:value={draftDrillTitle}
+							class="tw-w-full tw-rounded-lg tw-border tw-border-[#14b8a6]/20 tw-bg-[#020202]
+							       tw-text-[#14b8a6]/80 tw-font-mono tw-text-[10px] tw-tracking-wide
+							       tw-px-2 tw-py-1.5 tw-outline-none focus:tw-border-[#14b8a6]
+							       placeholder:tw-text-white/20"
+						/>
+					</div>
 				{/if}
 			</div>
 			<div class="tw-grid tw-grid-cols-2 tw-gap-2">
@@ -234,12 +262,160 @@
 					/>
 				</div>
 			</div>
-			<p class="tw-font-mono tw-text-[8px] tw-text-white/20 tw-leading-relaxed">
-				Team + club drills only. Platform basics are copied from /coach/drills first.
-			</p>
-		</div>
+	<p class="tw-font-mono tw-text-[8px] tw-text-white/20 tw-leading-relaxed">
+		Team + club drills, or type a drill name. Platform basics: copy from Drill library first.
+	</p>
+</div>
 
-		<!-- ── Priority (secondary row) ─────────────────── -->
+<!-- ── B3 Bundle drills (ordered sequence) ─────── -->
+<div class="tw-flex tw-flex-col tw-gap-2">
+	<div class="tw-flex tw-items-center tw-justify-between">
+		<span class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-[#14b8a6]/40 tw-uppercase">
+			Bundle drills <span class="tw-text-white/20">(opt)</span>
+		</span>
+		{#if draftBundleDrills.length < 8}
+			<button
+				class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-uppercase tw-text-[#14b8a6]/60
+				       hover:tw-text-[#14b8a6] tw-transition-colors"
+				onclick={() => onAddBundleDrill()}
+			>
+				+ Add drill
+			</button>
+		{/if}
+	</div>
+	{#if draftBundleDrills.length > 0}
+		<p class="tw-font-mono tw-text-[8px] tw-text-white/25 tw-leading-relaxed">
+			Player runs drills in order. Top single-drill fields above are replaced by this sequence.
+		</p>
+		{#each draftBundleDrills as entry, i (i)}
+			<div class="tw-flex tw-flex-col tw-gap-1 tw-rounded-lg tw-border tw-border-[#14b8a6]/15
+			             tw-bg-[#14b8a6]/5 tw-px-2 tw-py-2">
+				<div class="tw-flex tw-items-center tw-justify-between">
+					<span class="tw-font-mono tw-text-[8px] tw-text-[#14b8a6]/50 tw-uppercase">
+						Drill {i + 1}
+					</span>
+					<button
+						class="tw-font-mono tw-text-[8px] tw-text-white/30 hover:tw-text-red-400/70 tw-transition-colors"
+						onclick={() => onRemoveBundleDrill(i)}
+					>
+						remove
+					</button>
+				</div>
+				<select
+					value={entry.drillId}
+					onchange={(e) => onUpdateBundleDrill(i, { drillId: (e.target as HTMLSelectElement).value })}
+					disabled={isLoadingDrills}
+					class="tw-w-full tw-rounded tw-border tw-border-[#14b8a6]/20 tw-bg-[#020202]
+					       tw-text-[#14b8a6]/80 tw-font-mono tw-text-[10px] tw-px-2 tw-py-1
+					       tw-outline-none focus:tw-border-[#14b8a6] disabled:tw-opacity-40"
+				>
+					<option value="">— Select team drill —</option>
+					{#each availableDrills as drill (drill.id)}
+						<option value={drill.id}>{drill.scope === 'club' ? `[CLUB] ${drill.title}` : drill.title}</option>
+					{/each}
+				</select>
+				{#if !entry.drillId}
+					<input
+						type="text"
+						maxlength="200"
+						placeholder="Or type drill name"
+						value={entry.drillTitle}
+						oninput={(e) => onUpdateBundleDrill(i, { drillTitle: (e.target as HTMLInputElement).value })}
+						class="tw-w-full tw-rounded tw-border tw-border-[#14b8a6]/20 tw-bg-[#020202]
+						       tw-text-[#14b8a6]/80 tw-font-mono tw-text-[10px] tw-px-2 tw-py-1
+						       tw-outline-none focus:tw-border-[#14b8a6] placeholder:tw-text-white/20"
+					/>
+				{/if}
+				<div class="tw-flex tw-gap-2">
+					<div class="tw-flex tw-flex-col tw-gap-0.5 tw-flex-1">
+						<label class="tw-font-mono tw-text-[8px] tw-text-[#14b8a6]/35 tw-uppercase">Sets</label>
+						<input
+							type="number"
+							min="1"
+							max="99"
+							value={entry.sets}
+							oninput={(e) => onUpdateBundleDrill(i, { sets: Number((e.target as HTMLInputElement).value) })}
+							class="tw-w-full tw-rounded tw-border tw-border-[#14b8a6]/20 tw-bg-[#020202]
+							       tw-text-[#14b8a6]/80 tw-font-mono tw-text-[10px] tw-px-2 tw-py-1
+							       tw-outline-none focus:tw-border-[#14b8a6]"
+						/>
+					</div>
+					<div class="tw-flex tw-flex-col tw-gap-0.5 tw-flex-1">
+						<label class="tw-font-mono tw-text-[8px] tw-text-[#14b8a6]/35 tw-uppercase">Reps/set</label>
+						<input
+							type="number"
+							min="0"
+							max="999"
+							value={entry.repsPerSet}
+							oninput={(e) => onUpdateBundleDrill(i, { repsPerSet: Number((e.target as HTMLInputElement).value) })}
+							class="tw-w-full tw-rounded tw-border tw-border-[#14b8a6]/20 tw-bg-[#020202]
+							       tw-text-[#14b8a6]/80 tw-font-mono tw-text-[10px] tw-px-2 tw-py-1
+							       tw-outline-none focus:tw-border-[#14b8a6]"
+						/>
+					</div>
+				</div>
+			</div>
+		{/each}
+	{:else}
+		<p class="tw-font-mono tw-text-[8px] tw-text-white/20 tw-leading-relaxed">
+			Add 2+ drills for a sequential bundle session. Leave empty for single-drill (default).
+		</p>
+	{/if}
+</div>
+
+	<!-- ── Cadence (optional sessions / week) ────────── -->
+	<div class="tw-flex tw-flex-col tw-gap-1.5">
+		<div class="tw-flex tw-items-center tw-justify-between">
+			<label for="hud-cadence" class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-[#14b8a6]/40 tw-uppercase">
+				Sessions / week <span class="tw-text-white/20">(opt)</span>
+			</label>
+			<span class="tw-font-mono tw-text-[11px] tw-tracking-wider tw-text-[#14b8a6]/60">
+				{draftCadenceSessionsPerWindow > 0 ? `${draftCadenceSessionsPerWindow}×/wk` : 'off'}
+			</span>
+		</div>
+		<input
+			id="hud-cadence"
+			type="range"
+			min="0"
+			max="7"
+			step="1"
+			bind:value={draftCadenceSessionsPerWindow}
+			class="tw-w-full tw-accent-[#14b8a6] tw-h-1 tw-rounded-full tw-cursor-pointer"
+		/>
+		<p class="tw-font-mono tw-text-[8px] tw-text-white/20 tw-leading-relaxed">
+			Repeat frequency goal shown on player mission card. 0 = one-shot (default).
+		</p>
+	</div>
+
+	<!-- ── Parent verification opt-in (B4a) ──────────── -->
+	<div class="tw-flex tw-items-center tw-justify-between tw-gap-3">
+		<label for="hud-parent-verify" class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-[#14b8a6]/40 tw-uppercase tw-leading-relaxed">
+			Require parent verification <span class="tw-text-white/20">(opt)</span>
+		</label>
+		<button
+			id="hud-parent-verify"
+			type="button"
+			role="switch"
+			aria-checked={draftRequiresParentVerification}
+			onclick={() => (draftRequiresParentVerification = !draftRequiresParentVerification)}
+			class="tw-w-8 tw-h-4 tw-rounded-full tw-border tw-transition-all tw-shrink-0"
+			style={draftRequiresParentVerification
+				? 'background:rgba(20,184,166,0.25); border-color:#14b8a6;'
+				: 'background:transparent; border-color:rgba(20,184,166,0.2);'}
+		>
+			<span
+				class="tw-block tw-w-2.5 tw-h-2.5 tw-rounded-full tw-transition-transform"
+				style={draftRequiresParentVerification
+					? 'background:#14b8a6; transform:translateX(18px);'
+					: 'background:rgba(20,184,166,0.3); transform:translateX(2px);'}
+			></span>
+		</button>
+	</div>
+	<p class="tw-font-mono tw-text-[8px] tw-text-white/20 tw-leading-relaxed tw-mt-[-4px]">
+		Player sees optional "Send proof" prompt after logging. Advisory — XP is never gated.
+	</p>
+
+	<!-- ── Priority (secondary row) ─────────────────── -->
 		<div class="tw-flex tw-items-center tw-gap-3">
 			<label for="hud-pri" class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-[#14b8a6]/30 tw-uppercase tw-shrink-0">
 				PRIORITY

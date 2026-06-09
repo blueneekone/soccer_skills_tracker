@@ -121,16 +121,23 @@
 	bind:draftPrescriptionBilateral={engine.draftPrescriptionBilateral}
 	bind:draftPrescriptionDurationMin={engine.draftPrescriptionDurationMin}
 	bind:draftPrescriptionTargetRpe={engine.draftPrescriptionTargetRpe}
+	bind:draftCadenceSessionsPerWindow={engine.draftCadenceSessionsPerWindow}
 	bind:draftDrillId={engine.draftDrillId}
+	bind:draftDrillTitle={engine.draftDrillTitle}
 	availableDrills={engine.availableDrills}
 	isLoadingDrills={engine.isLoadingDrills}
 	deployPhase={engine.deployPhase}
 	deployError={engine.deployError}
 	isLoadingRoster={engine.isLoadingRoster}
 	canDeploy={engine.canDeploy}
+	bind:draftBundleDrills={engine.draftBundleDrills}
+	bind:draftRequiresParentVerification={engine.draftRequiresParentVerification}
 	onDeploy={() => engine.deployIntent()}
 	onToggleUid={(uid) => engine.toggleDraftUid(uid)}
 	onSelectAll={() => engine.selectAllRosterUids()}
 	onClearSelection={() => engine.clearRosterSelection()}
 	onAttributeChange={() => engine.onAttributeChanged()}
+	onAddBundleDrill={() => engine.addBundleDrill()}
+	onRemoveBundleDrill={(i) => engine.removeBundleDrill(i)}
+	onUpdateBundleDrill={(i, patch) => engine.updateBundleDrill(i, patch)}
 />

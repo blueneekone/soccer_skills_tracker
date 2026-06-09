@@ -206,6 +206,12 @@ export type ScoutsSix = {
 export type ArmoryEngineInit = {
 	/** Firebase Auth UID. When provided, `loadPlayerData` can be called immediately. */
 	userId?: string;
+	/**
+	 * Email-based Firestore document key (`email.trim().toLowerCase()`).
+	 * This is the document ID under `users/{userKey}` — distinct from the
+	 * Firebase Auth UID.  Required for cloud sync; omit only in demo/preview mode.
+	 */
+	userKey?: string;
 	totalXP?: number;
 	playerStats?: Partial<ScoutsSix>;
 	xpHistory?: XpHistoryEntry[];
@@ -228,6 +234,14 @@ export class ArmoryEngine {
 	 * `null` = offline / demo mode — all Firestore calls are skipped.
 	 */
 	userId = $state<string | null>(null);
+
+	/**
+	 * Email-based Firestore document key (`email.trim().toLowerCase()`).
+	 * This is the document ID used for `users/{userKey}` — distinct from
+	 * the Firebase Auth UID.  All Firestore reads/writes use this key so
+	 * the armory doc lives at the same path the auth profile reader expects.
+	 */
+	userKey = $state<string | null>(null);
 
 	/**
 	 * Accumulated XP points. All award / deduction operations flow through
@@ -463,6 +477,7 @@ export class ArmoryEngine {
 
 	constructor(init: ArmoryEngineInit = {}) {
 		if (init.userId !== undefined) this.userId = init.userId;
+		if (init.userKey !== undefined) this.userKey = init.userKey;
 		if (init.totalXP !== undefined) this.totalXP = init.totalXP;
 		if (init.playerStats) {
 			this.playerStats = { ...this.playerStats, ...init.playerStats };
@@ -484,15 +499,19 @@ export class ArmoryEngine {
 	 * the local state is left unchanged — any subsequent `awardXP` / `updateStat`
 	 * call will create the field via `setDoc( ..., { merge: true } )`.
 	 *
-	 * @param userId Firebase Auth UID.
+	 * @param uid      Firebase Auth UID (stored on `this.userId`).
+	 * @param userKey  Email-based Firestore document ID (`email.trim().toLowerCase()`).
+	 *                 This is the key for `users/{userKey}` — the same key the auth
+	 *                 profile reader uses, so armory writes land in the right doc.
 	 */
-	async loadPlayerData(userId: string): Promise<void> {
+	async loadPlayerData(uid: string, userKey: string): Promise<void> {
 		if (!browser) return; // SSR-safe guard
 
-		this.userId = userId;
+		this.userId = uid;
+		this.userKey = userKey;
 
 		try {
-			const ref = doc(db, 'users', userId);
+			const ref = doc(db, 'users', userKey);
 			const snap = await getDoc(ref);
 
 			if (!snap.exists()) return; // brand-new user — nothing to hydrate
@@ -702,10 +721,10 @@ export class ArmoryEngine {
 	 * on the next `loadPlayerData()` call.
 	 */
 	_syncXP(entry: XpHistoryEntry): void {
-		if (!browser || !this.userId) return;
+		if (!browser || !this.userKey) return;
 
-		const userRef = doc(db, PATHS.users, this.userId);
-		const historyRef = doc(collection(db, PATHS.userXpHistory(this.userId)));
+		const userRef = doc(db, PATHS.users, this.userKey);
+		const historyRef = doc(collection(db, PATHS.userXpHistory(this.userKey)));
 
 		const batchId =
 			typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
@@ -745,9 +764,9 @@ export class ArmoryEngine {
 	 * Falls back to a `setDoc` merge if the doc somehow doesn't exist yet.
 	 */
 	_syncStat(statName: keyof ScoutsSix, value: string): void {
-		if (!browser || !this.userId) return;
+		if (!browser || !this.userKey) return;
 
-		const ref = doc(db, 'users', this.userId);
+		const ref = doc(db, 'users', this.userKey);
 
 		// Dot-notation key targets only this stat inside the armory.stats map.
 		const patch = { [`armory.stats.${statName}`]: value };
