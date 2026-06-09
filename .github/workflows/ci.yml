@@ -1,0 +1,254 @@
+name: 🧪 SSTracker CI — Test Suite
+
+on:
+  pull_request:
+  push:
+    branches:
+      - dev
+      - main
+
+# Cancel superseded runs on the same ref so queued PRs don't pile up.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ─────────────────────────────────────────────────────────────────────────────
+  # JOB 1 — Unit tests (vitest, no emulator needed)
+  #
+  # Full `npm test` is NOT green: 61 files / 113 tests carry pre-existing
+  # failures (unrelated to this slice). Root causes documented below:
+  #
+  # EXCLUDED suites and their pre-existing failure reasons:
+  #   playerHudSprint14, 18–21, 24–25, 27–29, 210–214, 216–217, 219,
+  #   222–225, 227–243, 246, 249, 256, 260, 282, 312–313
+  #     → CSS token / Svelte prop-pass guards written for superseded sprint
+  #       markup that has since been reworked; e.g. missing --bento-pad-liquid,
+  #       railQuests prop rename, embedded branch markup divergence.
+  #   playerLoadoutSprint31, 32, 34, 35c, 35e, 35f, 35gVision, 35h,
+  #   35i-fix, 35i-a, 35i-b, 35mArt
+  #     → Mix of ROADMAP text state checks, SVG layer geometry assertions,
+  #       and OperativeLoadoutStudio slot-picker checks for unshipped/superseded
+  #       avatar sprints (avatar-builder-deferred track).
+  #   playerRlFunctional
+  #     → Expects functions/index.js to export getAdaptiveWorkoutPolicy and
+  #       rlOnWorkoutLogCreated; those exports were removed/renamed.
+  #   firestoreRulesSprint13
+  #     → Checks `clubs` collection requires isAuthorized (blanket authed);
+  #       rules structure changed in subsequent sprints.
+  #   armory.layout, armoryAvatar
+  #     → Avatar layer PNG/SVG structure assertions in the deferred avatar track.
+  #   playerDashboard.hud.test, workout.layout.test
+  #     → Component CSS token checks that diverged from current markup.
+  #
+  # This command runs the 117 confirmed-green files verified 2026-06-09.
+  # ─────────────────────────────────────────────────────────────────────────────
+  unit:
+    name: Unit Tests (vitest)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run curated vitest suites (117 green files)
+        run: |
+          npx vitest run \
+            "src/lib/__tests__" \
+            "src/lib/admin/__tests__" \
+            "src/lib/auth/__tests__" \
+            "src/lib/coach/__tests__" \
+            "src/lib/coach/intent/__tests__" \
+            "src/lib/compliance/__tests__" \
+            "src/lib/components/hud/__tests__" \
+            "src/lib/components/ui/__tests__" \
+            "src/lib/components/player/skill-tree/__tests__" \
+            "src/lib/director/__tests__" \
+            "src/lib/hud/__tests__" \
+            "src/lib/parent/__tests__" \
+            "src/lib/player/__tests__" \
+            "src/lib/player/dashboard/__tests__" \
+            "src/lib/player/workout/__tests__" \
+            "src/lib/services/__tests__" \
+            "src/lib/states/war-room/__tests__" \
+            "src/lib/stores/auth/__tests__" \
+            "src/lib/styles/__tests__" \
+            "src/lib/types/__tests__" \
+            "src/lib/security/__tests__/firestoreRulesSprint21.test" \
+            "src/lib/security/__tests__/firestoreRulesSprint22.test" \
+            "src/lib/security/__tests__/firestoreTenantIsolation.test" \
+            "src/lib/security/__tests__/storageRulesB4c.test" \
+            "src/lib/gamification/__tests__/levelXp.test" \
+            "src/lib/gamification/__tests__/loadoutSchema.test" \
+            "src/lib/gamification/__tests__/personaFunctionalMvp.test" \
+            "src/lib/gamification/__tests__/playerLaunchDeferAvatar.test" \
+            "src/lib/gamification/__tests__/playerLoadoutSprint30.test" \
+            "src/lib/gamification/__tests__/playerLoadoutSprint311.test" \
+            "src/lib/gamification/__tests__/playerLoadoutSprint33.test" \
+            "src/lib/gamification/__tests__/playerLoadoutSprint35a.test" \
+            "src/lib/gamification/__tests__/playerLoadoutSprint35b.test" \
+            "src/lib/gamification/__tests__/playerLoadoutSprint35d.test" \
+            "src/lib/gamification/__tests__/playerLoadoutSprint35g.test" \
+            "src/lib/gamification/__tests__/playerLoadoutSprint35j.test" \
+            "src/lib/gamification/__tests__/playerLoadoutSprint35k.test" \
+            "src/lib/gamification/__tests__/playerLoadoutSprint35lA.test" \
+            "src/lib/gamification/__tests__/playerLoadoutSprint35mDocsGemini.test" \
+            "src/lib/gamification/__tests__/playerLoadoutSprint35mFrame.test" \
+            "src/lib/gamification/__tests__/playerLoadoutSprint35mRef.test" \
+            "playerHudSprint15.test" \
+            "playerHudSprint16.test" \
+            "playerHudSprint17.test" \
+            "playerHudSprint2101.test" \
+            "playerHudSprint2102.test" \
+            "playerHudSprint215.test" \
+            "playerHudSprint2161.test" \
+            "playerHudSprint218.test" \
+            "playerHudSprint22.test" \
+            "playerHudSprint220.test" \
+            "playerHudSprint226.test" \
+            "playerHudSprint23.test" \
+            "playerHudSprint232.test" \
+            "playerHudSprint235.test" \
+            "playerHudSprint237.test" \
+            "playerHudSprint239.test" \
+            "playerHudSprint240.test" \
+            "playerHudSprint241.test" \
+            "playerHudSprint244.test" \
+            "playerHudSprint245.test" \
+            "playerHudSprint247.test" \
+            "playerHudSprint248.test" \
+            "playerHudSprint250.test" \
+            "playerHudSprint251.test" \
+            "playerHudSprint252.test" \
+            "playerHudSprint253.test" \
+            "playerHudSprint254.test" \
+            "playerHudSprint255.test" \
+            "playerHudSprint257.test" \
+            "playerHudSprint258.test" \
+            "playerHudSprint259.test" \
+            "playerHudSprint26.test" \
+            "playerHudSprint281.test" \
+            "playerHudSprint31.test" \
+            "playerHudSprint311.test" \
+            "playerOsCohesion.test" \
+            "src/routes/(app)/admin/coach-clearance/__tests__" \
+            "src/routes/(app)/admin/organizations/__tests__" \
+            "src/routes/(app)/admin/overview/__tests__" \
+            "src/routes/(app)/coach/__tests__" \
+            "src/routes/(app)/coach/forge/__tests__" \
+            "src/routes/(app)/coach/scouting/__tests__" \
+            "src/routes/(app)/dashboard/__tests__" \
+            "src/routes/(app)/parent/dashboard/__tests__" \
+            "src/routes/(app)/parent/household/__tests__" \
+            "armoryCommandDeck.test" \
+            "armoryLoadoutStudio.test" \
+            "armoryRouteGuards.test" \
+            "playerDashboard.layout.test" \
+            "playerDashboard.slice5.test"
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # JOB 2 — Functions guards (node --test, no Java / no emulator)
+  #
+  # Runs source-scan guards that confirmed green locally (2026-06-09):
+  #   • trackB1–B4: 144 tests / 0 failures
+  #   • rlBountyWiring + subscriptionGate: 23 tests / 0 failures
+  #   • functionsDeploy guard + codebase deps verify: 58 tests / 0 failures
+  #
+  # NOTE: test:functions-deploy verifies all codebase node_modules are present,
+  # so this job installs all function codebase deps before running it.
+  # ─────────────────────────────────────────────────────────────────────────────
+  functions-guards:
+    name: Functions Guards (node --test)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install root dependencies
+        run: npm ci
+
+      - name: Install Cloud Functions codebase dependencies
+        run: |
+          for dir in functions functions-core functions-rl functions-commerce functions-compliance functions-integrations functions-platform; do
+            npm ci --prefix "$dir"
+          done
+
+      - name: Track B domain guards (B1–B4, source-scan)
+        run: |
+          node --test \
+            functions/src/domains/__tests__/trackB1Prescription.guard.test.js \
+            functions/src/domains/__tests__/trackB2Cadence.guard.test.js \
+            functions/src/domains/__tests__/trackB3Bundle.guard.test.js \
+            functions/src/domains/__tests__/trackB4Proof.guard.test.js
+
+      - name: RL bounty + subscription gate guards
+        run: |
+          node --test \
+            functions/__tests__/rlBountyWiring.guard.test.js \
+            functions/__tests__/subscriptionGate.test.js
+
+      - name: Functions deploy guard + codebase deps verify
+        run: npm run test:functions-deploy
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # JOB 3 — Firestore emulator rules (G6 core — requires Java)
+  #
+  # Runs firestoreTenantIsolation.test.ts against a local Firestore emulator.
+  # No Firebase credentials or project secrets needed — the project ID
+  # `sst-sprint-13-rules` is arbitrary for emulator use only.
+  #
+  # firebase.json confirms:
+  #   emulators.firestore.port = 8080   (test file reads FIRESTORE_EMULATOR_HOST)
+  #   firestore.rules = "firestore.rules"  (ruleset under test)
+  #
+  # The test uses `describe.skipIf(!process.env.FIRESTORE_EMULATOR_HOST)`,
+  # so it skips gracefully in the unit job above (no emulator running there).
+  # The `emulators:exec` command sets FIRESTORE_EMULATOR_HOST automatically.
+  #
+  # Cannot be verified locally (no JDK installed on dev machine). Command
+  # mirrors the existing `test:firestore-rules` npm script shipped with the repo.
+  # ─────────────────────────────────────────────────────────────────────────────
+  firestore-rules:
+    name: Firestore Emulator Rules (G6)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Setup Java 17 (Temurin) — required by Firestore emulator
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run Firestore emulator rules tests
+        run: npm run test:firestore-rules
