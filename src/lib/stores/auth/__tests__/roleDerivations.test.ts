@@ -4,6 +4,8 @@ import {
 	deriveIsConsented,
 	deriveNeedsOnboarding,
 	deriveRequiresConsent,
+	deriveRequiresEmailConsent,
+	deriveUsesHouseholdVpcPath,
 	deriveRoleFlags,
 	canAccess,
 	type AccessGate,
@@ -53,6 +55,52 @@ describe('auth/roleDerivations', () => {
 				userProfile: { isMinor: true, coppaStatus: 'granted' },
 			}),
 		).toBe(false);
+	});
+
+	describe('deriveRequiresEmailConsent (LAUNCH-VPC-UX)', () => {
+		const base = {
+			isAuthenticated: true,
+			isLoading: false,
+			role: 'player' as const,
+		};
+
+		it('parentProvisioned minor skips email consent but remains unconsented until VPC verified', () => {
+			const profile = {
+				isMinor: true,
+				coppaStatus: 'pending',
+				parentProvisioned: true,
+				householdId: 'hh-1',
+				vpcStatus: 'pending_parent',
+			};
+			expect(deriveRequiresEmailConsent({ ...base, userProfile: profile })).toBe(false);
+			expect(deriveRequiresConsent({ ...base, userProfile: profile })).toBe(true);
+			expect(deriveIsConsented({ ...base, userProfile: profile })).toBe(false);
+		});
+
+		it('householdId-only minor skips email consent', () => {
+			expect(
+				deriveRequiresEmailConsent({
+					...base,
+					userProfile: { isMinor: true, coppaStatus: 'pending', householdId: 'hh-2' },
+				}),
+			).toBe(false);
+		});
+
+		it('non-provisioned self-signup minor still requires email consent', () => {
+			expect(
+				deriveRequiresEmailConsent({
+					...base,
+					userProfile: { isMinor: true, coppaStatus: 'pending' },
+				}),
+			).toBe(true);
+		});
+
+		it('deriveUsesHouseholdVpcPath detects parentProvisioned or householdId', () => {
+			expect(deriveUsesHouseholdVpcPath({ parentProvisioned: true })).toBe(true);
+			expect(deriveUsesHouseholdVpcPath({ householdId: 'hh-3' })).toBe(true);
+			expect(deriveUsesHouseholdVpcPath({ householdId: '  ' })).toBe(false);
+			expect(deriveUsesHouseholdVpcPath(null)).toBe(false);
+		});
 	});
 
 	describe('deriveIsConsented (Sprint 2.1)', () => {

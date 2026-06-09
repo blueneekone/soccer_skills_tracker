@@ -490,7 +490,7 @@ import Icon from '$lib/components/ui/Icon.svelte';
 			The overlay renders INSIDE the player block so VanguardVFX/scanlines are
 			still active beneath it, maintaining the Stark aesthetic.
 		-->
-		{#if authStore.requiresConsent}
+		{#if authStore.requiresEmailConsent}
 			<ConsentOverlay />
 		{/if}
 		<LoadoutUnlockCeremony

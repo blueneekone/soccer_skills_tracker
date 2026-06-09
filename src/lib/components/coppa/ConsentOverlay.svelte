@@ -4,7 +4,7 @@
 	 * ─────────────────────
 	 * COPPA 2026 / Privacy Shield — Parental Consent Gate
 	 *
-	 * Rendered by the (app)/+layout.svelte when authStore.requiresConsent
+	 * Rendered by the (app)/+layout.svelte when authStore.requiresEmailConsent
 	 * is true (player is a minor whose coppaStatus !== 'granted').
 	 *
 	 * This component COVERS the entire PlayerShell with a Zero-Trust overlay.
@@ -77,6 +77,8 @@
 		errorMsg = '';
 
 		try {
+			// sendParentalConsentEmail returns { success: true } even when Trigger Email
+			// is not configured (mail write fails server-side). No mailQueued flag today.
 			await sendConsentEmailFn({ parentEmail: parentEmail.trim().toLowerCase() });
 			sentToEmail = parentEmail.trim().toLowerCase();
 			phase = 'sent';
@@ -134,6 +136,14 @@
 				Your account has been identified as belonging to a player under 13.
 				A parent or guardian must grant consent before you can access
 				<span class="co-accent">VANGUARD</span>.
+			</p>
+		</div>
+
+		<!-- ── Household path notice (legacy self-signup only) ─────────────── -->
+		<div class="co-household-banner" role="note">
+			<p class="co-household-banner__text">
+				If your parent created your account from their household, they should complete
+				consent at <strong>Parent dashboard → VPC</strong> — not via this email form.
 			</p>
 		</div>
 
@@ -359,6 +369,26 @@
 	.co-accent {
 		color: #14b8a6;
 		font-weight: 700;
+	}
+
+	/* ─── Household banner ──────────────────────────────────────────────────── */
+	.co-household-banner {
+		background: rgba(245, 158, 11, 0.08);
+		border: 1px solid rgba(245, 158, 11, 0.25);
+		border-radius: 8px;
+		padding: 0.75rem 1rem;
+	}
+
+	.co-household-banner__text {
+		margin: 0;
+		font-size: 0.72rem;
+		line-height: 1.6;
+		color: rgba(255, 255, 255, 0.65);
+		text-align: center;
+	}
+
+	.co-household-banner__text strong {
+		color: #fbbf24;
 	}
 
 	/* ─── Legal strip ───────────────────────────────────────────────────────── */
