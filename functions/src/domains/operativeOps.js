@@ -1203,6 +1203,7 @@ exports.parentProvisionOperative = onCall({region: REGION}, async (request) => {
   );
   nameSet.add(childName);
   const userPayload = {
+    uid: childUid,
     role: 'player',
     clubId,
     householdId: hid,

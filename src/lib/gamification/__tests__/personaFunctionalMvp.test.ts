@@ -118,3 +118,48 @@ describe('Sprint LAUNCH-functional-os — launch-focus rule', () => {
 		expect(rule).toMatch(/Epic 4/);
 	});
 });
+
+describe('Sprint LAUNCH-functional-os — Coach→Player bounty handoff', () => {
+	const INTENT_ENGINE = join(ROOT, 'routes/(app)/coach/assignments/IntentEngine.svelte.ts');
+	const ACTIVE_BOUNTIES = join(ROOT, 'lib/components/hud/ActiveBounties.svelte');
+	const WORKOUT_PAGE = join(ROOT, 'routes/(app)/player/workout/+page.svelte');
+	const FIREBASE = join(ROOT, 'lib/firebase.js');
+	const OPERATIVE_OPS = join(ROOT, '..', 'functions/src/domains/operativeOps.js');
+
+	it('IntentEngine deploys intents via us-east1 functions bundle', () => {
+		expect(existsSync(INTENT_ENGINE)).toBe(true);
+		const src = readFileSync(INTENT_ENGINE, 'utf-8');
+		expect(src).toMatch(/from '\$lib\/firebase\.js'/);
+		expect(src).toMatch(/httpsCallable[\s\S]*functions[\s\S]*'secureDeployIntent'/);
+		expect(src).not.toMatch(/getFunctions\(\)/);
+	});
+
+	it('ActiveBounties subscribes to team_assignments and deduplicates missions', () => {
+		expect(existsSync(ACTIVE_BOUNTIES)).toBe(true);
+		const src = readFileSync(ACTIVE_BOUNTIES, 'utf-8');
+		expect(src).toMatch(/team_assignments/);
+		expect(src).toMatch(/bountyFromCoachIntent/);
+		expect(src).toMatch(/deduplicateById/);
+		expect(src).toMatch(/stashMissionHandoff/);
+	});
+
+	it('Train page logs sessions and records quest progress after coach handoff', () => {
+		expect(existsSync(WORKOUT_PAGE)).toBe(true);
+		const src = readFileSync(WORKOUT_PAGE, 'utf-8');
+		expect(src).toMatch(/logTrainingSession/);
+		expect(src).toMatch(/recordQuestProgressAfterLog/);
+		expect(src).toMatch(/from '\$lib\/firebase\.js'/);
+	});
+
+	it('firebase.js pins Cloud Functions to us-east1', () => {
+		expect(existsSync(FIREBASE)).toBe(true);
+		const src = readFileSync(FIREBASE, 'utf-8');
+		expect(src).toMatch(/getFunctions\(app,\s*'us-east1'\)/);
+	});
+
+	it('parentProvisionOperative persists Firebase uid on users doc for roster targeting', () => {
+		expect(existsSync(OPERATIVE_OPS)).toBe(true);
+		const src = readFileSync(OPERATIVE_OPS, 'utf-8');
+		expect(src).toMatch(/uid:\s*childUid/);
+	});
+});

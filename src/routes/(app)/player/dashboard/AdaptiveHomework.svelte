@@ -12,8 +12,8 @@
 	} from 'firebase/firestore';
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
-	import { getFunctions, httpsCallable } from 'firebase/functions';
-	import { db } from '$lib/firebase.js';
+	import { httpsCallable } from 'firebase/functions';
+	import { db, functions } from '$lib/firebase.js';
 	import { stashCoachIntentHandoffForAssignment, buildPolicyHintsFromResult } from '$lib/player/workout/coachMissionFlow.js';
 	import { ensureRlPolicyCached, readRlPolicyCache } from '$lib/player/workout/rlPolicyCache.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
@@ -160,8 +160,7 @@
 				const result = await ensureRlPolicyCached({
 					sportId,
 					fetchPolicy: async (sid) => {
-						const fns = getFunctions();
-						const getPolicy = httpsCallable(fns, 'getAdaptiveWorkoutPolicy');
+						const getPolicy = httpsCallable(functions, 'getAdaptiveWorkoutPolicy');
 						const res = await getPolicy({ sportId: sid });
 						return res.data;
 					},
