@@ -2,20 +2,25 @@
 	import { browser } from '$app/environment';
 	import { goto } from '$app/navigation';
 	import { untrack } from 'svelte';
-	import { auth } from '$lib/firebase.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { applyLoginWaterfall } from '$lib/auth/loginRouting.js';
+	import { deriveUsesHouseholdVpcPath } from '$lib/stores/auth/roleDerivations.js';
 	import Icon from '$lib/components/ui/Icon.svelte';
-	import type { IconName } from '$lib/icons/registry.js';
 
 	const userEmail = $derived(authStore.user?.email || '');
 	const vpcStatus = $derived(authStore.userProfile?.vpcStatus || '');
+	const isHouseholdPath = $derived(
+		deriveUsesHouseholdVpcPath(authStore.userProfile as Record<string, unknown> | null),
+	);
 	const statusLabel = $derived.by(() => {
 		switch (vpcStatus) {
-			case 'pending': return 'Pending — Awaiting parent';
-			case 'pending_parent': return 'Pending — Awaiting parent';
-			case 'parent_consented': return 'Parent consented — Awaiting director approval';
-			default: return vpcStatus || 'Pending';
+			case 'pending':
+			case 'pending_parent':
+				return 'Pending — awaiting parent';
+			case 'parent_consented':
+				return 'Parent consented — finishing setup';
+			default:
+				return vpcStatus || 'Pending';
 		}
 	});
 
@@ -48,8 +53,7 @@
 
 	function copyParentLink() {
 		if (!browser) return;
-		const base = window.location.origin;
-		const link = `${base}/parent/vpc`;
+		const link = `${window.location.origin}/parent/vpc`;
 		navigator.clipboard.writeText(link).then(() => {
 			copyDone = true;
 			setTimeout(() => (copyDone = false), 2500);
@@ -65,9 +69,8 @@
 
 		<h1 class="vpc-pending__title">Parental consent required</h1>
 		<p class="vpc-pending__subtitle">
-			Your account is in a privacy-protected holding state while parental consent is verified.
-			You will gain full access once a parent completes the consent ceremony and your club director
-			approves the request.
+			Your account is in a privacy-protected holding state. A parent or guardian must
+			complete the in-app consent ceremony before you can access training and other features.
 		</p>
 
 		<div class="vpc-pending__status-row">
@@ -84,26 +87,38 @@
 
 		<div class="vpc-pending__steps">
 			<h2 class="vpc-pending__steps-title">Next steps for your parent or guardian</h2>
-			<ol class="vpc-pending__step-list">
-				<li>
-					<strong>Create a Parent account</strong> using the same platform at
-					<a href="/login" target="_blank" rel="noopener noreferrer">{browser ? window.location.origin : ''}/login</a>.
-					Select <em>Parent / guardian</em> during setup.
-				</li>
-				<li>
-					<strong>Link to your athlete</strong> — your club director will link your household
-					after the parent account is set up.
-				</li>
-				<li>
-					<strong>Complete the consent ceremony</strong> at
-					<em>Parent dashboard → Consent</em>. They must review the data-use disclosure and
-					sign the digital attestation.
-				</li>
-				<li>
-					<strong>Await director approval</strong> — your club director will receive an
-					in-platform alert and approve the final VPC request.
-				</li>
-			</ol>
+			{#if isHouseholdPath}
+				<ol class="vpc-pending__step-list">
+					<li>
+						<strong>Your parent already has an account</strong> on this platform.
+					</li>
+					<li>
+						Ask them to sign in and open
+						<strong>Parent dashboard → Consent (VPC)</strong>.
+					</li>
+					<li>
+						They will review the data-use disclosure and complete the in-app consent
+						ceremony. Your account unlocks automatically when they finish.
+					</li>
+				</ol>
+			{:else}
+				<ol class="vpc-pending__step-list">
+					<li>
+						<strong>Create a Parent account</strong> using the same platform at
+						<a href="/login" target="_blank" rel="noopener noreferrer">{browser ? window.location.origin : ''}/login</a>.
+						Select <em>Parent / guardian</em> during setup.
+					</li>
+					<li>
+						<strong>Link to your athlete</strong> — your club director will link your household
+						after the parent account is set up.
+					</li>
+					<li>
+						<strong>Complete the consent ceremony</strong> at
+						<em>Parent dashboard → Consent (VPC)</em>. They must review the data-use disclosure
+						and sign the digital attestation in the app.
+					</li>
+				</ol>
+			{/if}
 		</div>
 
 		<div class="vpc-pending__actions">
@@ -127,7 +142,8 @@
 		</div>
 
 		<p class="vpc-pending__footer-note">
-			Questions? Contact your club director directly — they can expedite the approval process.
+			Questions? Ask your parent or guardian, or contact your club director for help linking
+			your household.
 		</p>
 	</div>
 </div>

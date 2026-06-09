@@ -3,6 +3,7 @@ import {
 	deriveIsConsented,
 	deriveNeedsOnboarding,
 	deriveRequiresConsent,
+	deriveRequiresEmailConsent,
 } from '$lib/stores/auth/roleDerivations.js';
 
 /** Derived onboarding / consent / clearance gates from user + session + tenant. */
@@ -18,6 +19,15 @@ export function createAuthGates(userState, sessionState, tenantState) {
 
 	const requiresConsent = $derived(
 		deriveRequiresConsent({
+			isAuthenticated: sessionState.isAuthenticated,
+			isLoading: sessionState.isLoading,
+			role: sessionState.role,
+			userProfile: userState.userProfile,
+		}),
+	);
+
+	const requiresEmailConsent = $derived(
+		deriveRequiresEmailConsent({
 			isAuthenticated: sessionState.isAuthenticated,
 			isLoading: sessionState.isLoading,
 			role: sessionState.role,
@@ -42,6 +52,9 @@ export function createAuthGates(userState, sessionState, tenantState) {
 		},
 		get requiresConsent() {
 			return requiresConsent;
+		},
+		get requiresEmailConsent() {
+			return requiresEmailConsent;
 		},
 		get isConsented() {
 			return isConsented;

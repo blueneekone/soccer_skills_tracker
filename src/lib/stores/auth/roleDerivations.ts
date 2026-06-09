@@ -95,6 +95,30 @@ export function deriveRequiresConsent(input: {
 	);
 }
 
+/** Parent-provisioned or household-linked minors use in-app VPC — not email consent. */
+export function deriveUsesHouseholdVpcPath(
+	userProfile: Record<string, unknown> | null,
+): boolean {
+	if (!userProfile) return false;
+	if (userProfile.parentProvisioned === true) return true;
+	const householdId = userProfile.householdId;
+	return typeof householdId === 'string' && householdId.trim() !== '';
+}
+
+/**
+ * LAUNCH-VPC-UX — email ConsentOverlay only for self-signup minors without a household.
+ * Household minors block on /vpc-pending until parentGrantVpcConsent completes.
+ */
+export function deriveRequiresEmailConsent(input: {
+	isAuthenticated: boolean;
+	isLoading: boolean;
+	role: string;
+	userProfile: Record<string, unknown> | null;
+}): boolean {
+	if (!deriveRequiresConsent(input)) return false;
+	return !deriveUsesHouseholdVpcPath(input.userProfile);
+}
+
 /**
  * Sprint 2.1 — unified COPPA + VPC consent gate for minor players.
  * Non-players and non-minors always pass. Minors require granted COPPA
@@ -137,4 +161,4 @@ export function deriveIsCleared(
 		return false;
 	}
 }
-
+
