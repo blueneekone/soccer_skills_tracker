@@ -80,6 +80,7 @@ const dispatcherHandlers = require('./dispatcher');
 exports.sendWeatherAlertToTenant = dispatcherHandlers.sendWeatherAlertToTenant;
 exports.sendGameRemindersToday = dispatcherHandlers.sendGameRemindersToday;
 exports.sendScheduledEventReminders = dispatcherHandlers.sendScheduledEventReminders;
+exports.sendRegistrationPaymentReminders = dispatcherHandlers.sendRegistrationPaymentReminders;
 
 // â”€â”€ Hotfix Alpha-3: League & Fixture Management (UTC enforcement) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const leagueHandlers = require('./league');
@@ -94,6 +95,7 @@ exports.schedulePractice = leagueHandlers.schedulePractice;
 const commsHandlers = require('./comms');
 exports.safeSportBroadcast = commsHandlers.safeSportBroadcast;
 exports.clubSportBroadcast = commsHandlers.clubSportBroadcast;
+exports.reportMessageIncident = commsHandlers.reportMessageIncident;
 
 // â”€â”€ Epic 5 â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const inviteHandlers = require('./invites');

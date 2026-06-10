@@ -12,6 +12,7 @@
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { licenseEntitlementStore } from '$lib/stores/licenseEntitlement.svelte.js';
 	import { isSubscriptionReadOnly } from '$lib/auth/billing.js';
+	import DirectorActiveSeasonPanel from '$lib/components/director/DirectorActiveSeasonPanel.svelte';
 
 	let { clubId = '' } = $props();
 
@@ -165,6 +166,7 @@
 </script>
 
 <div class="licenses-tab tw-space-y-6">
+	<DirectorActiveSeasonPanel {clubId} />
 	<div class="card">
 		<div class="card-header bg-blue-header">Club Master License</div>
 		<div class="card-body">

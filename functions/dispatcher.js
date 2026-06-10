@@ -58,6 +58,7 @@ const ROLE_DEFAULTS = {
 	push_gameReminders:  {default: true},
 	push_messages:       {default: true},
 	push_announcements:  {default: true},
+	push_paymentReminders: {parent: true, default: false},
 };
 
 function getDefaultPreference(role, category) {
@@ -420,6 +421,244 @@ exports.sendScheduledEventReminders = onSchedule(
 		}
 
 		logger.info('[dispatcher] scheduled event reminders', {totalSent, eventsScanned: snap.size});
+	},
+);
+
+// ── sendRegistrationPaymentReminders (Epic 4.6 B/C) ───────────────────────────
+// Daily nudges for abandoned/failed registration payments + deadline reminders
+// keyed off organizations.activeSeason.registrationDeadline.
+
+const PAYMENT_DEADLINE_OFFSETS = [7, 3, 1, 0];
+const PENDING_PAYMENT_MIN_AGE_MS = 48 * 60 * 60 * 1000;
+
+/** @param {string} e */
+function normEmail(e) {
+	return typeof e === 'string' ? e.trim().toLowerCase() : '';
+}
+
+/** @param {string} isoDate YYYY-MM-DD */
+function parseDeadlineMs(isoDate) {
+	const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(isoDate || '').trim());
+	if (!m) return NaN;
+	return Date.UTC(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
+}
+
+/** @param {number} nowMs @param {number} deadlineMs @param {string} tz */
+function calendarDaysUntil(nowMs, deadlineMs, tz) {
+	const endDay = new Intl.DateTimeFormat('en-CA', {
+		timeZone: tz, year: 'numeric', month: '2-digit', day: '2-digit',
+	}).format(new Date(deadlineMs));
+	const nowDay = new Intl.DateTimeFormat('en-CA', {
+		timeZone: tz, year: 'numeric', month: '2-digit', day: '2-digit',
+	}).format(new Date(nowMs));
+	const [ey, em, ed] = endDay.split('-').map(Number);
+	const [ny, nm, nd] = nowDay.split('-').map(Number);
+	const endUtc = Date.UTC(ey, em - 1, ed);
+	const nowUtc = Date.UTC(ny, nm - 1, nd);
+	return Math.round((endUtc - nowUtc) / (24 * 60 * 60 * 1000));
+}
+
+/** @param {string} playerEmail */
+async function resolveParentEmailsForPlayer(playerEmail) {
+	const email = normEmail(playerEmail);
+	if (!email) return [];
+	const set = new Set();
+
+	const profSnap = await db.collection('users').doc(email).get();
+	if (profSnap.exists) {
+		const prof = profSnap.data();
+		const direct = normEmail(prof.parentEmail || '');
+		if (direct) set.add(direct);
+		const householdId = prof.householdId || '';
+		if (householdId) {
+			const hSnap = await db.collection('households').doc(householdId).get();
+			if (hSnap.exists) {
+				for (const p of hSnap.data().parentEmails || []) {
+					const n = normEmail(String(p));
+					if (n) set.add(n);
+				}
+			}
+		}
+	}
+
+	const hq = await db
+		.collection('households')
+		.where('playerEmails', 'array-contains', email)
+		.limit(5)
+		.get();
+	for (const hDoc of hq.docs) {
+		for (const p of hDoc.data().parentEmails || []) {
+			const n = normEmail(String(p));
+			if (n) set.add(n);
+		}
+	}
+
+	return [...set];
+}
+
+/** @param {string} tenantId @param {string} seasonId */
+async function collectUnpaidPlayerEmails(tenantId, seasonId) {
+	const teamsSnap = await db.collection('teams').where('clubId', '==', tenantId).get();
+	const teamIds = teamsSnap.docs.map((d) => d.id);
+	const rosterEmails = new Set();
+
+	await Promise.all(
+		teamIds.map(async (teamId) => {
+			const snap = await db
+				.collection('player_lookup')
+				.where('teamId', '==', teamId)
+				.get();
+			for (const d of snap.docs) {
+				const em = normEmail(d.data().email || d.id);
+				if (em) rosterEmails.add(em);
+			}
+		}),
+	);
+
+	const paidSnap = await db
+		.collection('season_registrations')
+		.where('tenantId', '==', tenantId)
+		.where('seasonId', '==', seasonId)
+		.where('paymentStatus', '==', 'paid')
+		.get();
+	const paid = new Set(paidSnap.docs.map((d) => normEmail(d.data().playerEmail)));
+
+	const unpaid = [];
+	for (const em of rosterEmails) {
+		if (!paid.has(em)) unpaid.push(em);
+	}
+	return unpaid;
+}
+
+exports.sendRegistrationPaymentReminders = onSchedule(
+	{
+		region: REGION,
+		schedule: '0 9 * * *',
+		timeZone: REMINDER_TZ,
+	},
+	async () => {
+		const nowMs = Date.now();
+		let totalSent = 0;
+
+		// ── Track B: abandoned pending + failed payment intents ───────────────
+		const [pendingSnap, failedSnap] = await Promise.all([
+			db.collection('season_registrations').where('paymentStatus', '==', 'pending').get(),
+			db.collection('season_registrations').where('paymentStatus', '==', 'failed').get(),
+		]);
+
+		for (const regDoc of [...pendingSnap.docs, ...failedSnap.docs]) {
+			const data = regDoc.data();
+			const playerEmail = normEmail(data.playerEmail);
+			if (!playerEmail) continue;
+
+			const sent = data.paymentRemindersSent && typeof data.paymentRemindersSent === 'object'
+				? data.paymentRemindersSent
+				: {};
+			const status = data.paymentStatus;
+			const reminderKey = status === 'failed' ? 'failed' : 'pending';
+
+			if (sent[reminderKey]) continue;
+			if (status === 'pending') {
+				const createdMs = data.createdAt?.toMillis?.() ?? 0;
+				if (!createdMs || nowMs - createdMs < PENDING_PAYMENT_MIN_AGE_MS) continue;
+			}
+
+			const parents = await resolveParentEmailsForPlayer(playerEmail);
+			if (parents.length === 0) continue;
+
+			const seasonName = data.seasonId || 'season';
+			const title = status === 'failed'
+				? 'Registration payment failed'
+				: 'Complete registration payment';
+			const body = status === 'failed'
+				? `Payment did not go through for ${seasonName}. Retry from Payments.`
+				: `Your ${seasonName} registration payment is still pending.`;
+
+			for (const parentEmail of parents) {
+				const result = await sendVanguardPush(
+					parentEmail,
+					{
+						title,
+						body,
+						link: '/parent/payments',
+						data: {
+							registrationId: regDoc.id,
+							tenantId: data.tenantId || '',
+							playerEmail,
+							kind: reminderKey,
+						},
+					},
+					'push_paymentReminders',
+				);
+				totalSent += result.sent;
+			}
+
+			await regDoc.ref.update({
+				[`paymentRemindersSent.${reminderKey}`]: admin.firestore.FieldValue.serverTimestamp(),
+			});
+		}
+
+		// ── Track C: registration deadline offsets per organization ───────────
+		const orgsSnap = await db.collection('organizations').get();
+		for (const orgDoc of orgsSnap.docs) {
+			const org = orgDoc.data();
+			const activeSeason = org.activeSeason && typeof org.activeSeason === 'object'
+				? org.activeSeason
+				: null;
+			if (!activeSeason?.seasonId || !activeSeason.registrationDeadline) continue;
+
+			const deadlineMs = parseDeadlineMs(activeSeason.registrationDeadline);
+			if (!Number.isFinite(deadlineMs)) continue;
+
+			const daysUntil = calendarDaysUntil(nowMs, deadlineMs, REMINDER_TZ);
+			if (!PAYMENT_DEADLINE_OFFSETS.includes(daysUntil)) continue;
+
+			const offsetKey = `deadline_${daysUntil}`;
+			const sentMap = activeSeason.remindersSent && typeof activeSeason.remindersSent === 'object'
+				? activeSeason.remindersSent
+				: {};
+			if (sentMap[offsetKey]) continue;
+
+			const tenantId = orgDoc.id;
+			const seasonId = activeSeason.seasonId;
+			const seasonName = activeSeason.name || seasonId;
+			const unpaidPlayers = await collectUnpaidPlayerEmails(tenantId, seasonId);
+
+			const deadlineLabel = daysUntil === 0
+				? 'due today'
+				: daysUntil === 1
+					? 'due tomorrow'
+					: `due in ${daysUntil} days`;
+
+			for (const playerEmail of unpaidPlayers) {
+				const parents = await resolveParentEmailsForPlayer(playerEmail);
+				for (const parentEmail of parents) {
+					const result = await sendVanguardPush(
+						parentEmail,
+						{
+							title: `Registration ${deadlineLabel}`,
+							body: `${seasonName} registration — complete payment for your player.`,
+							link: '/parent/payments',
+							data: {
+								tenantId,
+								seasonId,
+								playerEmail,
+								deadline: activeSeason.registrationDeadline,
+								offset: String(daysUntil),
+							},
+						},
+						'push_paymentReminders',
+					);
+					totalSent += result.sent;
+				}
+			}
+
+			await orgDoc.ref.update({
+				[`activeSeason.remindersSent.${offsetKey}`]: admin.firestore.FieldValue.serverTimestamp(),
+			});
+		}
+
+		logger.info('[dispatcher] registration/payment reminders', {totalSent});
 	},
 );
 

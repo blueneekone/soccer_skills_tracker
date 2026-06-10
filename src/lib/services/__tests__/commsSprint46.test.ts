@@ -1,13 +1,19 @@
 /**
- * commsSprint46.test.ts — Epic 4.6 game reminder guards (source-scan)
+ * commsSprint46.test.ts — Epic 4.6 game + payment/registration reminder guards
  */
 import { readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
+import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
-const dispatcher = readFileSync(resolve('functions/dispatcher.js'), 'utf8');
-const indexJs = readFileSync(resolve('functions/index.js'), 'utf8');
-const indexes = readFileSync(resolve('firestore.indexes.json'), 'utf8');
+const ROOT = join(__dirname, '..', '..');
+const dispatcher = readFileSync(join(ROOT, '..', '..', 'functions', 'dispatcher.js'), 'utf8');
+const indexJs = readFileSync(join(ROOT, '..', '..', 'functions', 'index.js'), 'utf8');
+const indexes = readFileSync(join(ROOT, '..', '..', 'firestore.indexes.json'), 'utf8');
+const seasonPanel = readFileSync(
+	join(ROOT, 'components', 'director', 'DirectorActiveSeasonPanel.svelte'),
+	'utf8',
+);
+const licensesTab = readFileSync(join(ROOT, 'components', 'director', 'LicensesTab.svelte'), 'utf8');
 
 describe('Epic 4.6 — scheduled event reminders (game)', () => {
 	it('exports sendScheduledEventReminders from dispatcher.js', () => {
@@ -49,5 +55,41 @@ describe('Epic 4.6 — scheduled event reminders (game)', () => {
 	it('has composite index recordType + startTimestamp on team_workouts', () => {
 		expect(indexes).toMatch(/"fieldPath":\s*"recordType"/);
 		expect(indexes).toMatch(/"fieldPath":\s*"startTimestamp"/);
+	});
+});
+
+describe('Epic 4.6 — payment & registration reminders', () => {
+	it('exports sendRegistrationPaymentReminders daily scheduler', () => {
+		expect(dispatcher).toMatch(/exports\.sendRegistrationPaymentReminders\s*=\s*onSchedule/);
+		expect(indexJs).toMatch(
+			/exports\.sendRegistrationPaymentReminders\s*=\s*dispatcherHandlers\.sendRegistrationPaymentReminders/,
+		);
+	});
+
+	it('nudges pending/failed season_registrations with paymentRemindersSent dedup', () => {
+		const block = dispatcher.slice(dispatcher.indexOf('sendRegistrationPaymentReminders'));
+		expect(block).toMatch(/paymentStatus['"],\s*['"]==['"],\s*['"]pending['"]/);
+		expect(block).toMatch(/paymentStatus['"],\s*['"]==['"],\s*['"]failed['"]/);
+		expect(block).toMatch(/paymentRemindersSent/);
+		expect(block).toMatch(/['"]push_paymentReminders['"]/);
+		expect(block).toMatch(/\/parent\/payments/);
+	});
+
+	it('deadline fan-out uses organizations.activeSeason.registrationDeadline offsets 7/3/1/0', () => {
+		const block = dispatcher.slice(dispatcher.indexOf('sendRegistrationPaymentReminders'));
+		expect(block).toMatch(/registrationDeadline/);
+		expect(block).toMatch(/PAYMENT_DEADLINE_OFFSETS\s*=\s*\[7,\s*3,\s*1,\s*0\]/);
+		expect(block).toMatch(/activeSeason\.remindersSent/);
+		expect(block).toMatch(/collectUnpaidPlayerEmails/);
+	});
+
+	it('push_paymentReminders defaults on for parents only', () => {
+		expect(dispatcher).toMatch(/push_paymentReminders:\s*\{parent:\s*true,\s*default:\s*false\}/);
+	});
+
+	it('director configures deadline via DirectorActiveSeasonPanel on Licenses tab', () => {
+		expect(seasonPanel).toMatch(/registrationDeadline/);
+		expect(seasonPanel).toMatch(/organizations/);
+		expect(licensesTab).toMatch(/DirectorActiveSeasonPanel/);
 	});
 });
