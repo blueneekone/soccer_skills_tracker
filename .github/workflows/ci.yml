@@ -241,11 +241,11 @@ jobs:
           node-version: '20'
           cache: 'npm'
 
-      - name: Setup Java 17 (Temurin) — required by Firestore emulator
+      - name: Setup Java 21 (Temurin) — required by Firestore emulator (firebase-tools 15+)
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
-          java-version: '17'
+          java-version: '21'
 
       - name: Install dependencies
         run: npm ci

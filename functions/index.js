@@ -79,6 +79,7 @@ exports.confirmPlayerTransfer = transferHandlers.confirmPlayerTransfer;
 const dispatcherHandlers = require('./dispatcher');
 exports.sendWeatherAlertToTenant = dispatcherHandlers.sendWeatherAlertToTenant;
 exports.sendGameRemindersToday = dispatcherHandlers.sendGameRemindersToday;
+exports.sendScheduledEventReminders = dispatcherHandlers.sendScheduledEventReminders;
 
 // â”€â”€ Hotfix Alpha-3: League & Fixture Management (UTC enforcement) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const leagueHandlers = require('./league');

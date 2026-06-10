@@ -4,6 +4,14 @@
       "collectionGroup": "team_workouts",
       "queryScope": "COLLECTION",
       "fields": [
+        { "fieldPath": "recordType", "order": "ASCENDING" },
+        { "fieldPath": "startTimestamp", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "team_workouts",
+      "queryScope": "COLLECTION",
+      "fields": [
         { "fieldPath": "teamId", "order": "ASCENDING" },
         { "fieldPath": "startTimestamp", "order": "ASCENDING" }
       ]

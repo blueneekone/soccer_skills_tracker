@@ -292,5 +292,136 @@ exports.sendGameRemindersToday = onSchedule(
 	},
 );
 
-// â”€â”€ Export sendVanguardPush for internal use by other CFs â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── sendScheduledEventReminders (Epic 4.6) ───────────────────────────────────
+// Consumes `reminderOffsets` on team_workouts scheduled events (written by coach
+// forms but previously never read). Fires push_gameReminders at each offset.
+
+const REMINDER_TZ = 'America/Denver';
+const REMINDER_CRON_WINDOW_MS = 15 * 60 * 1000;
+const MORNING_HOUR_MT = 8;
+
+/** @param {number} ms @param {string} tz */
+function calendarDayInTz(ms, tz) {
+	return new Intl.DateTimeFormat('en-CA', {timeZone: tz, year: 'numeric', month: '2-digit', day: '2-digit'})
+		.format(new Date(ms));
+}
+
+/** @param {Date} now */
+function hourMinuteInTz(now, tz) {
+	const parts = new Intl.DateTimeFormat('en-US', {
+		timeZone: tz,
+		hour: 'numeric',
+		minute: 'numeric',
+		hour12: false,
+	}).formatToParts(now);
+	const hour = Number(parts.find((p) => p.type === 'hour')?.value ?? 0);
+	const minute = Number(parts.find((p) => p.type === 'minute')?.value ?? 0);
+	return {hour, minute};
+}
+
+/**
+ * @param {number | string} offset minutes before start, or 'morning'
+ * @param {number} startMs event startTimestamp
+ * @param {number} nowMs
+ */
+function shouldFireReminderOffset(offset, startMs, nowMs) {
+	if (startMs <= nowMs) return false;
+	if (offset === 'morning') {
+		if (calendarDayInTz(startMs, REMINDER_TZ) !== calendarDayInTz(nowMs, REMINDER_TZ)) {
+			return false;
+		}
+		const {hour, minute} = hourMinuteInTz(new Date(nowMs), REMINDER_TZ);
+		return hour === MORNING_HOUR_MT && minute < REMINDER_CRON_WINDOW_MS / 60000;
+	}
+	const mins = Number(offset);
+	if (!Number.isFinite(mins) || mins <= 0) return false;
+	const targetMs = startMs - mins * 60 * 1000;
+	return nowMs >= targetMs && nowMs < targetMs + REMINDER_CRON_WINDOW_MS;
+}
+
+/** @param {number | string} offset */
+function reminderOffsetLabel(offset) {
+	if (offset === 'morning') return 'Today';
+	const mins = Number(offset);
+	if (mins === 60) return '1 hour';
+	if (mins === 30) return '30 minutes';
+	if (Number.isFinite(mins)) return `${mins} minutes`;
+	return 'soon';
+}
+
+exports.sendScheduledEventReminders = onSchedule(
+	{
+		region: REGION,
+		schedule: 'every 15 minutes',
+		timeZone: REMINDER_TZ,
+	},
+	async () => {
+		const nowMs = Date.now();
+		const horizonMs = nowMs + 26 * 60 * 60 * 1000;
+
+		const snap = await db
+			.collection('team_workouts')
+			.where('recordType', '==', 'scheduled_event')
+			.where('startTimestamp', '>=', nowMs)
+			.where('startTimestamp', '<=', horizonMs)
+			.get();
+
+		let totalSent = 0;
+
+		for (const eventDoc of snap.docs) {
+			const data = eventDoc.data();
+			const offsets = Array.isArray(data.reminderOffsets) ? data.reminderOffsets : [];
+			if (offsets.length === 0) continue;
+
+			const startMs = Number(data.startTimestamp);
+			const teamId = data.teamId;
+			if (!teamId || !Number.isFinite(startMs)) continue;
+
+			const sentMap = data.remindersSent && typeof data.remindersSent === 'object'
+				? data.remindersSent
+				: {};
+			const kind = data.eventKind === 'game' ? 'Game' : 'Practice';
+			const name = data.name || kind;
+			const kickoff = new Date(startMs).toLocaleTimeString('en-US', {
+				hour: '2-digit',
+				minute: '2-digit',
+				timeZone: REMINDER_TZ,
+			});
+
+			for (const offset of offsets) {
+				const key = String(offset);
+				if (sentMap[key]) continue;
+				if (!shouldFireReminderOffset(offset, startMs, nowMs)) continue;
+
+				const usersSnap = await db.collection('users').where('teamId', '==', teamId).get();
+				let sentForOffset = 0;
+
+				await Promise.all(
+					usersSnap.docs.map(async (userDoc) => {
+						const result = await sendVanguardPush(
+							userDoc.id,
+							{
+								title: `${kind} in ${reminderOffsetLabel(offset)} — ${name}`,
+								body: `Starts at ${kickoff}. Check your schedule.`,
+								link: '/player/dashboard',
+								data: {eventId: eventDoc.id, teamId, offset: key},
+							},
+							'push_gameReminders',
+						);
+						sentForOffset += result.sent;
+					}),
+				);
+
+				await eventDoc.ref.update({
+					[`remindersSent.${key}`]: admin.firestore.FieldValue.serverTimestamp(),
+				});
+				totalSent += sentForOffset;
+			}
+		}
+
+		logger.info('[dispatcher] scheduled event reminders', {totalSent, eventsScanned: snap.size});
+	},
+);
+
+// ── Export sendVanguardPush for internal use by other CFs ────────────────────
 module.exports.sendVanguardPush = sendVanguardPush;
