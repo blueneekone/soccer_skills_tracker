@@ -18,6 +18,7 @@ import {
 	orderBy,
 	query,
 	serverTimestamp,
+	updateDoc,
 	type Firestore,
 } from 'firebase/firestore';
 import { categoryToAttributeId } from '$lib/coach/teamDrillLibrary.js';
@@ -254,5 +255,39 @@ export async function publishDrillToClub(
 		publishedAt: serverTimestamp(),
 		sourceRecommendationId: rid,
 	});
+
+	await updateDoc(doc(firestore, 'drill_recommendations', rid), {
+		status: 'published',
+		publishedDrillId: ref.id,
+		publishedAt: serverTimestamp(),
+		publishedBy: input.directorUid,
+	});
+
 	return ref.id;
+}
+
+/** Director dismisses a pending recommendation without publishing. */
+export async function dismissDrillRecommendation(
+	firestore: Firestore,
+	input: {
+		recommendationId: string;
+		clubId: string;
+		directorUid: string;
+	},
+): Promise<void> {
+	const rid = input.recommendationId.trim();
+	const cid = input.clubId.trim();
+	if (!rid || !cid) throw new Error('recommendationId and clubId are required.');
+
+	const snap = await getDoc(doc(firestore, 'drill_recommendations', rid));
+	if (!snap.exists()) throw new Error('Drill recommendation not found.');
+
+	const x = snap.data() as Record<string, unknown>;
+	if (x.clubId !== cid) throw new Error('Recommendation is not in this club.');
+
+	await updateDoc(doc(firestore, 'drill_recommendations', rid), {
+		status: 'dismissed',
+		dismissedAt: serverTimestamp(),
+		dismissedBy: input.directorUid,
+	});
 }

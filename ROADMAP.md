@@ -1414,7 +1414,7 @@ Loadout art (3.2+) consumed by 2.12 hero identity column.
 | **LAUNCH-functional-os** | **In progress** | Three-persona functional MVP; table visual research | `personaFunctionalMvp.test.ts` |
 | **LAUNCH-drill-library** | **Done** | Three-tier drill library — team `teams/{id}/drills`, club `clubs/{id}/shared_drills`, platform basics (`drills` by `sportId`); Intent Engine team/club picker; spatial designer saves team drills | `personaFunctionalMvp.test.ts`, `teamDrillLibrary.ts`, `platformDrillLibrary.ts` |
 | **LAUNCH-train-lock** | **Done** | Coach-directed Train session — locked focus/drill/duration/RPE; session notes only; free log capped at 120 min | `personaFunctionalMvp.test.ts`, `coachMissionFlow.test.ts` |
-| **LAUNCH-club-drill-promote** | **Planned** | Optional team drill → club workflow — director inbox for coach recommendations; duplicate/publish team drill to `clubs/{clubId}/shared_drills`; coach read-only club repo on Intent Engine + drills page | `clubs/{clubId}/shared_drills` rules (read: coach, write: director) |
+| **LAUNCH-club-drill-promote** | **Done** | Optional team drill → club workflow — director inbox on Playbook tab; `publishDrillToClub` / `dismissDrillRecommendation` | `coachModule.test.ts` |
 | **LAUNCH-loop-integrity** | **Planned — launch blocker** | Fix Tier-0/Tier-1 cross-persona silent breaks found in the functional-loop audit (writer/reader key+field mismatches). See "Functional-loop audit" section below for the tiered backlog | emulator round-trip guards G1–G10 + `personaFunctionalMvp.test.ts` |
 | **LAUNCH-test-integrity** | **Planned — runs with loop-integrity** | Emulator-backed write→read field-parity guards (G1–G10); make `firestoreTenantIsolation`-style emulator tests visible in CI. Replaces static source-scans that let the breaks ship | G1–G10 in existing sprint test files |
 | **LAUNCH-cohesion-lb** | **Done** | 3 cohesion launch-blockers resolved: CLB-1 SweetAlert2 → `PlayerDiegeticOverlay` on `/tracker`; CLB-2 raw Chart.js radar → `VanguardProtocolPanel` (all roles) on `/stats`; CLB-3 coach XP/Level chrome removed from `SquadTelemetryView` + `CoachSquadReadinessCard`. Polish-tier cohesion deferred to tracked polish epic | `src/lib/__tests__/launchCohesionLb.test.ts` (14 guards) |
@@ -1429,29 +1429,25 @@ Loadout art (3.2+) consumed by 2.12 hero identity column.
 
 ---
 
-## Sprint LAUNCH-club-drill-promote scope — **Planned**
+## Sprint LAUNCH-club-drill-promote scope — **Done**
 
 **Goal:** Close the optional team drill → club workflow. Coaches keep team-scoped drills by default; directors can promote approved drills to the club repo for all teams in the org.
 
-**In scope:**
+**Delivered:**
 
 | Layer | Behavior |
 |-------|----------|
-| Coach `/coach/drills` | **Share with director** (clipboard recommendation today) → persist `drill_recommendations/{id}` or equivalent inbox doc |
-| Director OS | Inbox queue — preview spatial layout + metadata; **Publish to club** duplicates doc into `clubs/{clubId}/shared_drills` |
-| Intent Engine | Already reads club shared drills via `loadTeamDrillsForIntent`; no change beyond inbox-driven catalog growth |
-| Firestore rules | `clubs/{clubId}/shared_drills` — director write, coach read (shipped) |
-
-**Out of scope:** Global/platform drill publishing (platform basics remain super_admin seed only); tactics-board → intent shortcut.
+| Coach `/coach/drills` | **Share with director** → `recommendDrillToDirector` → `drill_recommendations/{id}` |
+| Director OS | `DirectorDrillRecommendationsPanel` on `/director?tab=playbook` — preview metadata; **Publish to club** / Dismiss |
+| Intent Engine | Reads club shared drills via `loadTeamDrillsForIntent` (unchanged) |
+| Firestore rules | `drill_recommendations` + `clubs/{clubId}/shared_drills` (shipped) |
 
 **Verify:**
 
 ```bash
-npm test -- src/lib/gamification/__tests__/personaFunctionalMvp.test.ts
+npm test -- src/lib/coach/__tests__/coachModule.test.ts
 npm run check
 ```
-
-**Run after:** LAUNCH-drill-library Done. **Run before:** platform basics seeder per sport (optional).
 
 ---
 

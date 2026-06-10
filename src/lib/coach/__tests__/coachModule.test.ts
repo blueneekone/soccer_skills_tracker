@@ -182,3 +182,35 @@ describe('T1-3: drill promote writes to canonical Firestore path (not clipboard-
 		expect(rules).toMatch(/isDirector\(\)/);
 	});
 });
+
+// LAUNCH-club-drill-promote — director inbox UI on Playbook tab
+describe('LAUNCH-club-drill-promote: director drill recommendation inbox', () => {
+	const PANEL = join(ROOT, 'lib/components/director/DirectorDrillRecommendationsPanel.svelte');
+	const PLAYBOOK = join(ROOT, 'lib/components/director/PlaybookTab.svelte');
+	const PLATFORM_LIB = join(COACH_LIB, 'platformDrillLibrary.ts');
+
+	it('DirectorDrillRecommendationsPanel imports publishDrillToClub and dismissDrillRecommendation', () => {
+		const src = readFileSync(PANEL, 'utf-8');
+		expect(src).toMatch(/publishDrillToClub/);
+		expect(src).toMatch(/dismissDrillRecommendation/);
+		expect(src).toMatch(/drill_recommendations/);
+	});
+
+	it('PlaybookTab mounts DirectorDrillRecommendationsPanel for director inbox', () => {
+		const src = readFileSync(PLAYBOOK, 'utf-8');
+		expect(src).toMatch(/DirectorDrillRecommendationsPanel/);
+	});
+
+	it('publishDrillToClub marks recommendation published after shared_drills write', () => {
+		const src = readFileSync(PLATFORM_LIB, 'utf-8');
+		const fn = src.match(/export async function publishDrillToClub[\s\S]*?\n\}/)?.[0] ?? '';
+		expect(fn).toMatch(/status:\s*['"]published['"]/);
+		expect(fn).toMatch(/publishedDrillId:\s*ref\.id/);
+	});
+
+	it('dismissDrillRecommendation exports status dismissed update', () => {
+		const src = readFileSync(PLATFORM_LIB, 'utf-8');
+		expect(src).toMatch(/export async function dismissDrillRecommendation/);
+		expect(src).toMatch(/status:\s*['"]dismissed['"]/);
+	});
+});

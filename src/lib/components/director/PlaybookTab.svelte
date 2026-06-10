@@ -18,6 +18,8 @@
 		where,
 	} from 'firebase/firestore';
 
+	import DirectorDrillRecommendationsPanel from '$lib/components/director/DirectorDrillRecommendationsPanel.svelte';
+
 	let { clubId = '' } = $props();
 
 	/**
@@ -128,6 +130,8 @@
 </script>
 
 <div class="pb-tab">
+	<DirectorDrillRecommendationsPanel {clubId} />
+
 	<header class="pb-tab__header">
 		<div>
 			<h3 class="pb-tab__title">Club Playbook</h3>
