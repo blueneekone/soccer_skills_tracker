@@ -47,6 +47,7 @@ import {
 	loadTeamDrillsForIntent,
 	type TeamDrillPickerRow,
 } from '$lib/coach/teamDrillLibrary.js';
+import { mergeAdminRoster } from '$lib/admin/rosterMerge.js';
 
 export type DeployPhase = 'idle' | 'saving' | 'success' | 'error';
 
@@ -59,6 +60,10 @@ export interface RosterEntry {
 	email: string;
 	playerName: string;
 	xpByAttribute: Record<string, number>;
+	/** False for name-only roster strings without a linked account — not intent-targetable. */
+	assignable: boolean;
+	/** Roster row from `rosters/{teamId}.players[]` without email/account. */
+	nameOnly?: boolean;
 }
 
 export class IntentEngine {
@@ -217,6 +222,8 @@ export class IntentEngine {
 	}
 
 	toggleDraftUid(uid: string) {
+		const row = this.roster.find((r) => r.rosterKey === uid);
+		if (row && !row.assignable) return;
 		const idx = this.draftTargetUids.indexOf(uid);
 		if (idx === -1) {
 			this.draftTargetUids = [...this.draftTargetUids, uid];
@@ -226,7 +233,7 @@ export class IntentEngine {
 	}
 
 	selectAllRosterUids() {
-		this.draftTargetUids = this.roster.map((r) => r.rosterKey);
+		this.draftTargetUids = this.roster.filter((r) => r.assignable).map((r) => r.rosterKey);
 	}
 
 	clearRosterSelection() {
@@ -364,7 +371,12 @@ export class IntentEngine {
 				requiredXp: this.draftRequiredXp,
 				durationDays: this.draftDurationDays,
 				scope: this.draftScope,
-				targetUids: this.draftScope === 'players' ? [...this.draftTargetUids] : [],
+				targetUids:
+					this.draftScope === 'players' ?
+						this.draftTargetUids.filter((key) =>
+							this.roster.some((r) => r.rosterKey === key && r.assignable),
+						)
+					:	[],
 				priority: this.draftPriority,
 				prescription: this.buildDeployPrescription(),
 			});
@@ -497,7 +509,7 @@ export class IntentEngine {
 		if (!this._teamId) return;
 		this.isLoadingRoster = true;
 		try {
-			const [snap, teamSnap] = await Promise.all([
+			const [snap, teamSnap, rosterSnap] = await Promise.all([
 				getDocs(
 					query(
 						collection(db, 'users'),
@@ -506,6 +518,7 @@ export class IntentEngine {
 					),
 				),
 				getDoc(doc(db, 'teams', this._teamId)),
+				getDoc(doc(db, 'rosters', this._teamId)),
 			]);
 			const teamPlayerUids = Array.isArray(teamSnap.data()?.playerUids)
 				? teamSnap
@@ -527,6 +540,8 @@ export class IntentEngine {
 						? x.playerName.trim()
 						: d.id,
 					xpByAttribute: (x.xpByAttribute as Record<string, number>) || {},
+					assignable: Boolean(authUid || d.id.includes('@')),
+					nameOnly: false,
 				};
 			});
 
@@ -537,9 +552,58 @@ export class IntentEngine {
 				const resolvedUid = orphanUids[0];
 				missingUidRows[0].uid = resolvedUid;
 				missingUidRows[0].rosterKey = resolvedUid;
+				missingUidRows[0].assignable = true;
 			}
 
-			this.roster = rows.sort((a, b) => a.playerName.localeCompare(b.playerName));
+			const rosterNames =
+				rosterSnap.exists() && Array.isArray(rosterSnap.data()?.players) ?
+					rosterSnap.data()!.players
+						.filter((n): n is string => typeof n === 'string' && n.trim().length > 0)
+						.map((n) => n.trim())
+				:	[];
+
+			const merged = mergeAdminRoster(
+				rows.map((r) => ({
+					email: r.email,
+					playerName: r.playerName,
+					ageGroup: null,
+					teamId: this._teamId,
+				})),
+				rosterNames,
+				this._teamId,
+			);
+
+			const byEmail = new Map(rows.map((r) => [r.email.toLowerCase(), r]));
+			const byName = new Map(rows.map((r) => [r.playerName.trim().toLowerCase(), r]));
+
+			this.roster = merged.map((m) => {
+				if (m.nameOnly) {
+					return {
+						uid: '',
+						rosterKey: m.key,
+						email: '',
+						playerName: m.playerName,
+						xpByAttribute: {},
+						assignable: false,
+						nameOnly: true,
+					};
+				}
+				const linked =
+					(m.email && byEmail.get(m.email.toLowerCase())) ||
+					byName.get(m.playerName.trim().toLowerCase());
+				if (linked) {
+					return { ...linked, assignable: Boolean(linked.uid || linked.email), nameOnly: false };
+				}
+				return {
+					uid: '',
+					rosterKey: m.email || m.key,
+					email: m.email,
+					playerName: m.playerName,
+					xpByAttribute: {},
+					assignable: Boolean(m.email),
+					nameOnly: false,
+				};
+			});
 		} catch (e) {
 			console.error('[IntentEngine] roster load error:', e);
 			this.roster = [];

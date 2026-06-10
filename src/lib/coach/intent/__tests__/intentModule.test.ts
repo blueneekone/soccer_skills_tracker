@@ -36,3 +36,26 @@ describe('$lib/coach/intent module layout', () => {
 		);
 	});
 });
+
+describe('LAUNCH-forge-nameonly — Intent Engine roster hints', () => {
+	const ENGINE = join(ROOT, 'IntentEngine.svelte.ts');
+	const HUD = join(ROOT, 'IntentHUD.svelte');
+
+	it('IntentEngine merges rosters/{teamId} name-only players via mergeAdminRoster', () => {
+		const src = readFileSync(ENGINE, 'utf-8');
+		expect(src).toMatch(/mergeAdminRoster/);
+		expect(src).toMatch(/rosters',\s*this\._teamId/);
+		expect(src).toMatch(/assignable:\s*false/);
+	});
+
+	it('IntentEngine selectAllRosterUids skips non-assignable rows', () => {
+		const src = readFileSync(ENGINE, 'utf-8');
+		expect(src).toMatch(/filter\(\(r\)\s*=>\s*r\.assignable\)/);
+	});
+
+	it('IntentHUD shows disabled name-only rows with add email hint', () => {
+		const src = readFileSync(HUD, 'utf-8');
+		expect(src).toMatch(/Add email to assign/);
+		expect(src).toMatch(/assignable !== false/);
+	});
+});

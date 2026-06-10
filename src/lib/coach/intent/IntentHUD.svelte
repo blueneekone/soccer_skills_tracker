@@ -6,7 +6,14 @@
 
 	let {
 		attributes = [] as Array<{ id: string; name: string; hexColor: string }>,
-		roster = [] as Array<{ uid: string; rosterKey: string; playerName: string; email: string }>,
+		roster = [] as Array<{
+			uid: string;
+			rosterKey: string;
+			playerName: string;
+			email: string;
+			assignable?: boolean;
+			nameOnly?: boolean;
+		}>,
 		draftAttributeId = $bindable(''),
 		draftRequiredXp = $bindable(150),
 		draftDurationDays = $bindable(7),
@@ -505,24 +512,41 @@
 					{:else}
 						{#each roster as player (player.rosterKey)}
 							{@const isChecked = draftTargetUids.includes(player.rosterKey)}
-							<label
-								class="tw-flex tw-items-center tw-gap-2.5 tw-px-3 tw-py-1.5 tw-cursor-pointer
-								       tw-transition-colors hover:tw-bg-[#14b8a6]/5"
-								style={isChecked ? 'background:rgba(20, 184, 166,0.07);' : ''}
-							>
-								<input
-									type="checkbox"
-									checked={isChecked}
-									onchange={() => onToggleUid(player.rosterKey)}
-									class="tw-accent-[#14b8a6] tw-w-3 tw-h-3 tw-shrink-0"
-								/>
-								<span
-									class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-uppercase tw-truncate"
-									style={isChecked ? 'color:#14b8a6;' : 'color:rgba(20, 184, 166,0.45);'}
+							{@const canSelect = player.assignable !== false}
+							{#if canSelect}
+								<label
+									class="tw-flex tw-items-center tw-gap-2.5 tw-px-3 tw-py-1.5 tw-cursor-pointer
+									       tw-transition-colors hover:tw-bg-[#14b8a6]/5"
+									style={isChecked ? 'background:rgba(20, 184, 166,0.07);' : ''}
 								>
-									{player.playerName}
-								</span>
-							</label>
+									<input
+										type="checkbox"
+										checked={isChecked}
+										onchange={() => onToggleUid(player.rosterKey)}
+										class="tw-accent-[#14b8a6] tw-w-3 tw-h-3 tw-shrink-0"
+									/>
+									<span
+										class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-uppercase tw-truncate"
+										style={isChecked ? 'color:#14b8a6;' : 'color:rgba(20, 184, 166,0.45);'}
+									>
+										{player.playerName}
+									</span>
+								</label>
+							{:else}
+								<div
+									class="tw-flex tw-flex-col tw-gap-0.5 tw-px-3 tw-py-1.5 tw-opacity-50"
+									title="Add email to assign — name-only roster entry"
+								>
+									<span
+										class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-uppercase tw-truncate tw-text-slate-500"
+									>
+										{player.playerName}
+									</span>
+									<span class="tw-font-mono tw-text-[8px] tw-tracking-wide tw-text-amber-500/80">
+										Add email to assign
+									</span>
+								</div>
+							{/if}
 						{/each}
 					{/if}
 				</div>
