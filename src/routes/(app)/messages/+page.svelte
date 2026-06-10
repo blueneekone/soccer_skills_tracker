@@ -324,8 +324,12 @@
 		</div>
 	{/if}
 
-	{#if clubId && role !== 'super_admin' && role !== 'global_admin'}
-		<ReportMessageIncident {clubId} {teamId} messageKind="other" />
+	{#if (clubId || parentLoungeTeams[0]?.clubId) && role !== 'super_admin' && role !== 'global_admin'}
+		<ReportMessageIncident
+			clubId={clubId || parentLoungeTeams[0]?.clubId || ''}
+			teamId={teamId || parentLoungeTeams[0]?.teamId || ''}
+			messageKind="other"
+		/>
 	{/if}
 </div>
 

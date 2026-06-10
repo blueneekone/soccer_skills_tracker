@@ -583,9 +583,11 @@ export function bountyFromParentBounty(
 	const expiresMs = timestampToMillis(data.expiresAt);
 	const axisId = axisFromParentCriterion(data.criterion);
 	const status = typeof data.status === 'string' ? data.status : 'active';
-	const progressCurrent = Math.floor(Number(data.progressCurrent) || 0);
-	const progressTarget = Math.floor(Number(data.progressTarget) || 1);
-	const readyToClaim = status === 'verified' || progressCurrent >= progressTarget;
+	// Claim CTA must track the *server* money state: the Tremendous payout is issued
+	// server-side (bountyVerification → issueBountyReward) and the bounty doc flips to
+	// 'verified'. Showing "claim" merely on local progress would let a player dismiss a
+	// reward that has not actually been paid. Gate strictly on verified status.
+	const readyToClaim = status === 'verified';
 	return {
 		id,
 		tier: 'bounty',

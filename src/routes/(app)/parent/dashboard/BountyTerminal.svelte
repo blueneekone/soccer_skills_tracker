@@ -54,6 +54,9 @@
 	}
 
 	function isFormValid(): boolean {
+		// No funding source → server rejects createBountyEscrow; block deploy up front
+		// (the funding-source warning banner directs the parent to link one).
+		if (!engine.hasFundingSource) return false;
 		if (!selectedPlayerEmail) return false;
 		if (!title.trim()) return false;
 		if (!rewardDollars || rewardDollars < 1) return false;

@@ -173,10 +173,11 @@
 		if (cardElement && stripe) {
 			await commerce.confirmPayment(cardElement, cardholderName);
 		} else {
-			// Demo mode — simulate webhook delay
-			await new Promise((r) => setTimeout(r, 2500));
-			phase = 'confirmed';
-			onpaid?.();
+			// Stripe is not configured/available — never fabricate a "paid" state.
+			// Real confirmation only happens via the webhook-backed paymentStatus listener.
+			cardError =
+				'Secure payment is unavailable right now. Please try again later or contact your club administrator.';
+			phase = 'form';
 			return;
 		}
 
@@ -381,8 +382,8 @@
 							<p class="font-mono text-xs" style="color: #ff4060;">⚠ {cardError}</p>
 						{/if}
 						{#if !cardMounted}
-							<p class="font-mono text-xs" style="color: rgba(0,255,255,0.3);">
-								DEMO MODE · No Stripe key configured · Payment will be simulated
+							<p class="font-mono text-xs" style="color: rgba(255,64,96,0.7);">
+								SECURE CARD ENTRY UNAVAILABLE · Payment cannot be processed right now
 							</p>
 						{/if}
 					</div>
