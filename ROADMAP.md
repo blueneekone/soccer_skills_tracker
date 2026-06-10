@@ -1947,7 +1947,7 @@ npm run check
 | 4.9 | **Done** | Compliance console + audit export: `DirectorCommsCompliancePanel` on `/director?tab=comms` reads `team_broadcasts`, `messaging_audit`, `audit_logs` (MESSAGE/BROADCAST) + JSON export. | `commsSprint49.test.ts` |
 | 4.10 | **Done** | Report message / incident flow: `reportMessageIncident` callable → `message_incidents`; `ReportMessageIncident.svelte` on `/messages`; director queue in compliance console. | `commsSprint410.test.ts` |
 | 4.11 | **Done** | Household parent↔child threads | `commsSprint411.test.ts` |
-| 4.12 | Planned | Firestore rules + callable integration tests | — |
+| 4.12 | **Done** | Firestore rules + callable integration tests: `firestoreRulesSprint412.test.ts` (source-scan + emulator) for team_broadcasts, message_incidents, attendance_sessions, messaging_audit; Epic 4 callable export guards; CI via `test:firestore-rules`. `npm run deploy:comms` for default-codebase comms batch. | `firestoreRulesSprint412.test.ts` |
 
 **Epic 4 runs parallel to Epic 3** after **3.2** ships. **Summer MVP:** 4.1–4.4 + 4.11. **Fall season:** 4.5–4.10 + 4.12.
 

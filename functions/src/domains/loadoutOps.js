@@ -14,7 +14,7 @@ const {
 } = require('../middleware/authBouncers');
 const {
   getSeasonOneCardsForSet,
-} = require('../../../src/lib/gamification/seasonOneData.js');
+} = require('../gamification/seasonOneData.js');
 
 const REGION = 'us-east1';
 

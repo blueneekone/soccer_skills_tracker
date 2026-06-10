@@ -95,7 +95,7 @@ describe('grantAlbumSetBonus set validation', () => {
   });
 
   it('isAlbumSetCompleteOnServer requires full ownedSeasonOneCards set', () => {
-    const {getSeasonOneCardsForSet} = require('../../../src/lib/gamification/seasonOneData.js');
+    const {getSeasonOneCardsForSet} = require('../gamification/seasonOneData.js');
     const ids = getSeasonOneCardsForSet('dark_arts').map((c) => c.id);
     assert.equal(isAlbumSetCompleteOnServer('dark_arts', ids.slice(0, 2)), false);
     assert.equal(isAlbumSetCompleteOnServer('dark_arts', ids), true);
