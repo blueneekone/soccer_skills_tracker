@@ -39,7 +39,7 @@
 	 * the authoritative immutability enforcer).
 	 */
 	async function checkAlreadySubmitted() {
-		const uid = authStore.currentUser?.uid;
+		const uid = authStore.user?.uid;
 		if (!uid) return false;
 		try {
 			const ref = doc(db, 'physio_self_reports', uid, 'daily', todayUtc());

@@ -232,7 +232,7 @@ export class CoOpEngine {
 					snapshots.push({
 						email,
 						displayName: d?.playerName || email,
-						totalXP: armory.totalXP ?? 0,
+						totalXP: d?.totalXp ?? armory.totalXP ?? 0,
 						currentStreak: d?.currentStreak ?? 0,
 						lastActiveUtc: armory.lastActiveUtc ?? '',
 						boostAppliedToday:

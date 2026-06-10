@@ -169,7 +169,7 @@
 							id: 'passport-pending',
 							label: `${passportPending} passport${passportPending === 1 ? '' : 's'} pending verification`,
 							meta: 'Compliance · Passports',
-							href: '/director?tab=registrars',
+							href: '/director?tab=compliance',
 						});
 					}
 					if (!cancelled && waiverMissing > 0) {
@@ -177,7 +177,7 @@
 							id: 'waiver-missing',
 							label: `${waiverMissing} player${waiverMissing === 1 ? '' : 's'} missing waiver${waiverMissing === 1 ? '' : 's'}`,
 							meta: 'Compliance · Waivers',
-							href: '/director?tab=registrars',
+							href: '/director?tab=compliance',
 						});
 					}
 				} else if (role === 'parent' && authStore.userProfile?.playerName) {

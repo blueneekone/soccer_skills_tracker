@@ -13,7 +13,6 @@
 	 *   • Audit   — opens modal with magic_uplink_audit rows
 	 */
 
-	import { onMount } from 'svelte';
 	import { onSnapshot, collection, query, where, orderBy, getDocs } from 'firebase/firestore';
 	import { httpsCallable } from 'firebase/functions';
 	import { db, functions } from '$lib/firebase.js';
@@ -40,27 +39,32 @@
 
 	let allUplinks = $state<MagicUplinkDoc[]>([]);
 	let loadError  = $state('');
-	let unsubscribe: (() => void) | null = null;
 
-	const clubId = $derived((authStore as { clubId?: string }).clubId ?? '');
+	const clubId = $derived(
+		(authStore.userProfile as { clubId?: string } | null)?.clubId ?? authStore.tenantId ?? '',
+	);
 
 	const visibleUplinks = $derived(
 		allUplinks.filter((u) => u.status === activeTab),
 	);
 
-	onMount(() => {
-		if (!clubId) {
+	// Subscribe (and re-subscribe) once club context hydrates — onMount fired too
+	// early when userProfile was not yet loaded, leaving a permanent error state.
+	$effect(() => {
+		const cid = clubId;
+		if (!cid) {
 			loadError = 'Club context not available.';
 			return;
 		}
+		loadError = '';
 
 		const q = query(
 			collection(db, 'magic_uplinks'),
-			where('clubId', '==', clubId),
+			where('clubId', '==', cid),
 			orderBy('mintedAt', 'desc'),
 		);
 
-		unsubscribe = onSnapshot(
+		const unsub = onSnapshot(
 			q,
 			(snap) => {
 				allUplinks = snap.docs.map((d) => ({ id: d.id, ...d.data() } as MagicUplinkDoc));
@@ -71,7 +75,7 @@
 			},
 		);
 
-		return () => unsubscribe?.();
+		return () => unsub();
 	});
 
 	// ── Row actions ───────────────────────────────────────────────────────────
@@ -146,7 +150,7 @@
 			<h1 class="page-title">Invite Management Console</h1>
 			<p class="page-subtitle">Passwordless single-use invite tokens dispatched by email</p>
 		</div>
-		<a href="/director/uplinks/compose" class="compose-btn">⚡ New Uplink</a>
+		<a href="/director?tab=household" class="compose-btn">⚡ New Uplink</a>
 	</div>
 
 	<!-- ── Status tabs ────────────────────────────────────────────────────── -->

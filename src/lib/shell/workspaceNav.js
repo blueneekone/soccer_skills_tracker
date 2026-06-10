@@ -56,9 +56,9 @@ const athleteHouseholdLinks = [
 
 /** @type {ShellNavItem[]} */
 const parentLinks = [
-	{ tab: '', label: 'Clearance',     icon: 'status.shield-check', href: '/parent/household' },
-	{ tab: '', label: 'Co-op Command', icon: 'content.grid',        href: '/parent/dashboard' },
-	{ tab: '', label: 'Household',     icon: 'nav.home',            href: '/parent/vpc' },
+	{ tab: '', label: 'Household',      icon: 'nav.home',            href: '/parent/household' },
+	{ tab: '', label: 'Co-op Command',  icon: 'content.grid',        href: '/parent/dashboard' },
+	{ tab: '', label: 'Consent (VPC)',  icon: 'status.shield-check', href: '/parent/vpc' },
 	{ tab: '', label: 'Log Workout', icon: 'user.check',           href: '/parent/log-workout' },
 	{ tab: '', label: 'Payments',    icon: 'sys.credit-card',      href: '/parent/payments' },
 	{ tab: '', label: 'Messages',    icon: 'comm.chat',            href: '/messages' },

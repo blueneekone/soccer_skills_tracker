@@ -92,12 +92,13 @@
 	// Whether to show the policy-recommended drill or fall back to heuristic
 	const isPolicyMode = $derived(policyResult?.mode === 'policy' && !!policyResult.recommendedDrillId);
 
-	// Lazy migration write-back: if calculatedTier is missing, patch Firestore non-blocking
+	// Lazy migration write-back: if calculatedTier is missing, patch Firestore non-blocking.
+	// User docs are keyed by lowercased email (not uid) across the app.
 	$effect(() => {
 		const profile = playerProfile;
-		const uid = authStore.user?.uid;
-		if (!profile || !uid || profile.calculatedTier) return;
-		setDoc(doc(db, 'users', uid), { calculatedTier: 'beginner' }, { merge: true }).catch(() => {});
+		const email = authStore.user?.email?.toLowerCase();
+		if (!profile || !email || profile.calculatedTier) return;
+		setDoc(doc(db, 'users', email), { calculatedTier: 'beginner' }, { merge: true }).catch(() => {});
 	});
 
 	// Epic 8: uid for scope filtering

@@ -136,7 +136,7 @@ export class CommerceEngine {
 		this.isLoading = true;
 		this.error = null;
 		try {
-			const fns = getFunctions(undefined, 'us-central1');
+			const fns = getFunctions(undefined, 'us-east1');
 			const createFn = httpsCallable<
 				{ seasonId: string; feeAmountDollars: number },
 				{ clientSecret: string; registrationId: string; feeAmountCents: number }
