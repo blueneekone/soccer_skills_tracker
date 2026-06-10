@@ -1,6 +1,8 @@
 <script lang="ts">
+	import { goto } from '$app/navigation';
 	import type { SkillTreeEngine } from './SkillTreeEngine.svelte.js';
 	import type { ArmoryEngine } from '$lib/states/ArmoryEngine.svelte.js';
+	import { scoutsSixToWorkoutFocus } from '$lib/data/skillTree/scoutsSixWorkoutBridge.js';
 
 	interface Props {
 		engine: SkillTreeEngine;
@@ -39,6 +41,13 @@
 		if (state === 'mastered') return '#f0a500';
 		if (state === 'unlocked') return '#14b8a6';
 		return '#4b5563';
+	}
+
+	function launchDrillForNode() {
+		if (!detail || detail.state === 'locked') return;
+		const focus = scoutsSixToWorkoutFocus(detail.parentAttr);
+		const params = new URLSearchParams({ focus, skillNode: detail.id });
+		void goto(`/player/workout?${params.toString()}`);
 	}
 </script>
 
@@ -154,9 +163,23 @@
 					[ MIST DENSITY: ADAPTIVE · UNLOCK PARENTS TO REVEAL ]
 				{/if}
 			</div>
-			<!-- Sprint 5.2 placeholder -->
-			<div class="tw-text-[8px] tw-font-mono tw-tracking-[0.15em] tw-text-slate-700 tw-pt-0.5">
-				[ DRILL MAPPINGS · BACKEND SPRINT ]
+			<div class="tw-flex tw-items-center tw-gap-2 tw-pt-0.5">
+				{#if detail.state === 'locked'}
+					<span class="tw-text-[8px] tw-font-mono tw-tracking-[0.15em] tw-text-slate-600">
+						[ UNLOCK NODE TO LAUNCH TRAINING ]
+					</span>
+				{:else}
+					<button
+						type="button"
+						class="tw-pointer-events-auto tw-text-[9px] tw-font-black tw-tracking-[0.18em] tw-uppercase tw-font-mono tw-px-2.5 tw-py-1 tw-rounded tw-border tw-cursor-pointer tw-transition"
+						style:color="#14b8a6"
+						style:border-color="rgba(20, 184, 166,0.55)"
+						style:background="rgba(20, 184, 166,0.12)"
+						onclick={launchDrillForNode}
+					>
+						Launch training
+					</button>
+				{/if}
 			</div>
 		</div>
 	{/if}

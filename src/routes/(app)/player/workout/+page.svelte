@@ -1,6 +1,7 @@
 <script lang="ts">
   import { browser } from '$app/environment';
   import { goto } from '$app/navigation';
+  import { page } from '$app/state';
   import { resolve } from '$app/paths';
   import { untrack } from 'svelte';
   import Icon from '$lib/components/ui/Icon.svelte';
@@ -19,6 +20,11 @@
   import type { PrescriptionDrillEntry } from '$lib/types/intent.js';
   import { resolveTeamDrillById as resolveTeamLibraryDrill } from '$lib/coach/teamDrillLibrary.js';
   import { clampFreeLogDurationMinutes, FREE_LOG_DURATION_MAX_MINUTES, isCoachDirectedHandoff, SESSION_NOTES_MAX_LENGTH } from '$lib/player/workout/workoutSessionConstants.js';
+  import { WORKOUT_FOCUS_AREAS } from '$lib/player/workout/focusDrillCatalog.js';
+  import {
+    useWorkoutDrillCatalog,
+    useWorkoutSkillTreePrefill,
+  } from '$lib/player/workout/workoutPageDrillHooks.svelte.js';
   import { ensureRlPolicyCached, readRlPolicyCache } from '$lib/player/workout/rlPolicyCache.js';
   import { sportsConfigStore } from '$lib/stores/sportsConfigStore.svelte.js';
   import {
@@ -464,23 +470,13 @@
     missionRefreshNonce += 1;
   }
 
-  const focusAreas = [
-    { id: /** @type {const} */ ('technical'), label: 'Technical', op: 'OP-TECH' },
-    { id: /** @type {const} */ ('physical'), label: 'Physical', op: 'OP-PHY' },
-    { id: /** @type {const} */ ('tactical'), label: 'Tactical', op: 'OP-TAC' },
-    { id: /** @type {const} */ ('recovery'), label: 'Recovery', op: 'OP-RCV' },
-  ];
+  const focusAreas = WORKOUT_FOCUS_AREAS;
 
-  const drillsByFocus = {
-    technical: ['Juggling', 'First Touch', 'Shooting', 'Wall Passing', 'Cone Dribbling'],
-    physical: ['100m Sprints', 'Beep Test', '5k Run', 'Agility Ladder', 'Weight Training'],
-    tactical: ['Film Study', 'Set Pieces', 'Scrimmage', 'Positional Drills', 'Box-to-Box'],
-    recovery: ['Stretching', 'Yoga', 'Foam Rolling', 'Light Jog', 'Ice Bath'],
-  };
-
-  const availableDrills = $derived(
-    selectedFocus ? drillsByFocus[selectedFocus] : [],
-  );
+  const drillCatalog = useWorkoutDrillCatalog(() => selectedFocus, () => String(profile?.teamId ?? '').trim(), db);
+  useWorkoutSkillTreePrefill(() => page.url.searchParams, () => isCoachDirectedSession, db, {
+    setFocus: (focus) => { selectedFocus = focus; },
+    setDrill: (title) => { selectedDrill = title; },
+  });
 
   /**
    * @param {'technical' | 'physical' | 'tactical' | 'recovery'} id
@@ -883,6 +879,9 @@
 
           <div class="pw-configure-step">
             <span class="pw-eyebrow pd-panel-eyebrow">2 · Sub-drill</span>
+            {#if drillCatalog.drillsLoading}
+              <p class="pw-mono tw-text-xs tw-text-zinc-500">Loading drill catalog…</p>
+            {/if}
             {#if isCoachDirectedSession}
               <p class="pw-mono pw-data pw-ghostline">
                 {lockedCoachDrillLabel}
@@ -890,7 +889,7 @@
               </p>
             {:else}
               <div class="pw-subdrill" role="list">
-                {#each availableDrills as drill}
+                {#each drillCatalog.availableDrills as drill}
                   <button
                     type="button"
                     class="pw-chip"
@@ -904,7 +903,7 @@
                   </button>
                 {/each}
               </div>
-              {#if selectedDrill && !availableDrills.includes(selectedDrill)}
+              {#if selectedDrill && !drillCatalog.availableDrills.includes(selectedDrill)}
                 <p class="pw-ghostline">
                   <span class="pw-eyebrow">Off-catalog transmit</span>
                   <span class="pw-mono pw-data">{selectedDrill}</span>

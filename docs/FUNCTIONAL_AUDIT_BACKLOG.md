@@ -1,6 +1,6 @@
 # Functional Audit Backlog — 2026-06-10
 
-**Status (2026-06-10):** P0 A1–A7, B1–B3, C1–C4, D1–D4, D7–D10, F2, E8, E9 **Done**. Director B4, D6, D8, F3 **Done**. D5 weather API stub + E-series mount decisions **remaining** (player/coach unmounted components).
+**Status (2026-06-10):** P0 A1–A7, B1–B4, C1–C4, D1–D4, D6–D10, F2–F5, E8, E9 **Done**. D5 weather API stub + E-series mount decisions **remaining** (player/coach unmounted components; operator deploy checklist).
 
 Fresh end-to-end read-only audit of `/player`, `/parent`, `/coach`, `/director` workspaces.
 Supersedes the optimistic "all functional epics closed" header in `ROADMAP.md`: that claim

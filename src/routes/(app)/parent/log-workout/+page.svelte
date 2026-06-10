@@ -17,6 +17,10 @@
 	import Swal from 'sweetalert2';
 	import { dopamineOnCallable } from '$lib/services/dopamine.svelte.js';
 	import IntelModal from '$lib/components/ui/IntelModal.svelte';
+	import {
+		loadDrillTitlesForFocus,
+		WORKOUT_FOCUS_AREAS,
+	} from '$lib/player/workout/focusDrillCatalog.js';
 
 	const TELEMETRY_INTEL = {
 		title: 'GUARDIAN TELEMETRY',
@@ -112,23 +116,31 @@
 		});
 	});
 
-	const focusAreas = [
-		{ id: /** @type {const} */ ('technical'), label: 'Technical', op: 'OP-TECH' },
-		{ id: /** @type {const} */ ('physical'), label: 'Physical', op: 'OP-PHY' },
-		{ id: /** @type {const} */ ('tactical'), label: 'Tactical', op: 'OP-TAC' },
-		{ id: /** @type {const} */ ('recovery'), label: 'Recovery', op: 'OP-RCV' },
-	];
+	const focusAreas = WORKOUT_FOCUS_AREAS;
 
-	const drillsByFocus = {
-		technical: ['Juggling', 'First Touch', 'Shooting', 'Wall Passing', 'Cone Dribbling'],
-		physical: ['100m Sprints', 'Beep Test', '5k Run', 'Agility Ladder', 'Weight Training'],
-		tactical: ['Film Study', 'Set Pieces', 'Scrimmage', 'Positional Drills', 'Box-to-Box'],
-		recovery: ['Stretching', 'Yoga', 'Foam Rolling', 'Light Jog', 'Ice Bath'],
-	};
+	let availableDrills = $state(/** @type {string[]} */ ([]));
+	let drillsLoading = $state(false);
 
-	const availableDrills = $derived(
-		selectedFocus ? drillsByFocus[selectedFocus] : [],
-	);
+	$effect(() => {
+		const focus = selectedFocus;
+		const teamId = String(childProfile?.teamId || selectedChild?.teamId || '').trim();
+		let cancelled = false;
+		drillsLoading = true;
+		(async () => {
+			try {
+				const titles = await loadDrillTitlesForFocus(db, focus, { teamId });
+				if (!cancelled) availableDrills = titles;
+			} catch (e) {
+				console.error('[parent log-workout] drill catalog', e);
+				if (!cancelled) availableDrills = [];
+			} finally {
+				if (!cancelled) drillsLoading = false;
+			}
+		})();
+		return () => {
+			cancelled = true;
+		};
+	});
 
 	const focusLabel = $derived(
 		(focusAreas.find((f) => f.id === selectedFocus) ?? { label: 'Session' }).label,
@@ -441,7 +453,10 @@
 			</div>
 
 			<div class="pw-section">
-				<span class="pw-eyebrow">2 · Sub-drill (dynamic)</span>
+				<span class="pw-eyebrow">2 · Sub-drill (catalog)</span>
+				{#if drillsLoading}
+					<p class="pw-mono tw-text-xs tw-text-zinc-500">Loading drill catalog…</p>
+				{/if}
 				<div class="pw-subdrill" role="list">
 					{#each availableDrills as drill}
 						<button
