@@ -5,6 +5,7 @@
 
 <script>
 	import { page } from '$app/state';
+	import { goto } from '$app/navigation';
 	import { CoachTeamScope } from '$lib/coach/context/coachTeamScope.svelte.js';
 	import { createTacticalWarRoom } from '$lib/components/coach/TacticalEngine.svelte.ts';
 	import TacticalArena from '$lib/components/coach/TacticalArena.svelte';
@@ -72,6 +73,31 @@
 			);
 		} catch (e) {
 			console.error('[War Room] save error:', e);
+		}
+	}
+
+	/** DEPLOY PLAY — persist a named tactic snapshot (rules-compliant create). */
+	async function deployPlay(cartridge) {
+		const tid = selectedTeamId;
+		const uid = authStore.user?.uid;
+		if (!tid || !uid || !cartridge?.id) return;
+		try {
+			const shortId = String(cartridge.id).slice(0, 8).toUpperCase();
+			const docRef = doc(db, 'teams', tid, 'tactics', `play_${shortId}_${Date.now()}`);
+			await setDoc(docRef, {
+				name: `Deployed ${shortId}`,
+				canvasState: JSON.stringify({ entities: cartridge.entities, routes: cartridge.routes }),
+				createdBy: uid,
+				updatedAt: serverTimestamp(),
+				teamId: tid,
+				clubId: teamScope.teamClubId || null,
+				cartridge,
+				deployedAt: serverTimestamp(),
+			});
+			// Keep the working board in sync with the deployed snapshot.
+			await saveBoardState();
+		} catch (e) {
+			console.error('[War Room] deploy error:', e);
 		}
 	}
 
@@ -222,26 +248,12 @@
 				return;
 				}
 
-			// ── Source 3: placeholder tokens so the board is usable ─────────
-			wrBucketXi = Array.from({ length: 11 }, (_, i) => ({
-					id: `${tid}_slot${i}`,
-					name: `PLAYER ${String(i + 1).padStart(2, '0')}`,
-					number: String(i + 1).padStart(2, '0'),
-					position: '',
-					side: /** @type {'friendly'} */ ('friendly'),
-					color: '#14b8a6',
-				}));
+			// ── Source 3: no roster yet — leave the bench empty (no fake players).
+			//    The board stays usable for drawing; coach loads a real roster to populate.
+			wrBucketXi = [];
 			} catch (e) {
 				console.error('[War Room] roster load error:', e);
-				// Placeholders on error so the board stays usable
-				wrBucketXi = Array.from({ length: 11 }, (_, i) => ({
-					id: `${tid}_fallback${i}`,
-					name: `SLOT ${String(i + 1).padStart(2, '0')}`,
-					number: String(i + 1).padStart(2, '0'),
-					position: '',
-					side: /** @type {'friendly'} */ ('friendly'),
-					color: '#14b8a6',
-				}));
+				wrBucketXi = [];
 			}
 		})();
 	});
@@ -262,5 +274,15 @@
 	in:scale={{ duration: 350, start: 0.97, easing: quintOut }}
 >
 	<TacticalArena model={engine} {warRoomTool} />
-	<TacticalHUD model={engine} bind:warRoomTool />
+	<TacticalHUD model={engine} bind:warRoomTool ondeploy={deployPlay} />
+
+	<!-- Exit control — the War Room is a fullscreen route; give an explicit way out. -->
+	<button
+		type="button"
+		class="tw-absolute tw-top-3 tw-right-3 tw-z-[1060] tw-flex tw-items-center tw-gap-2 tw-rounded-md tw-border tw-border-white/15 tw-bg-black/70 tw-px-3 tw-py-2 tw-font-mono tw-text-[10px] tw-uppercase tw-tracking-widest tw-text-slate-300 tw-transition-colors hover:tw-border-cyan-400/60 hover:tw-text-cyan-300 focus-visible:tw-outline focus-visible:tw-outline-2 focus-visible:tw-outline-cyan-400"
+		aria-label="Exit War Room"
+		onclick={() => goto('/coach')}
+	>
+		✕ Exit War Room
+	</button>
 </div>

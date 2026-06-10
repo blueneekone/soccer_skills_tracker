@@ -3,8 +3,8 @@
 	import CommandDrawer from './tactical/hud/CommandDrawer.svelte';
 	import ContextRadial from './tactical/hud/ContextRadial.svelte';
 
-	/** @type {{ model: import('./TacticalEngine.svelte.ts').TacticalWarRoomModel }} */
-	let { model } = $props();
+	/** @type {{ model: import('./TacticalEngine.svelte.ts').TacticalWarRoomModel, ondeploy?: (cartridge: import('$lib/states/war-room/types').TacticalCartridge) => void }} */
+	let { model, ondeploy } = $props();
 
 	// ── Deploy sequence — owned here, threaded to Dock (button) and ContextRadial (modal) ──
 	let deployPhase = $state(/** @type {'idle' | 'deploying' | 'success'} */ ('idle'));
@@ -27,6 +27,9 @@
 		deployXpBounty = computeXpBounty();
 		deployPhase = 'deploying';
 		deployProgress = 0;
+
+		// Persist the deployed play (the page implements the Firestore write).
+		void ondeploy?.(cartridge);
 
 		const start = performance.now();
 		const duration = 1800;

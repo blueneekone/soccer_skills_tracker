@@ -37,9 +37,11 @@ const directorLinks = [
 const coachLinks = [
 	{ label: 'Daily Intel',       href: '/coach',               icon: 'content.grid' },
 	{ label: 'The Forge',         href: '/coach/forge',         icon: 'game.dumbbell' },
+	{ label: 'Field Station',     href: '/coach/drills',        icon: 'content.checks' },
+	{ label: 'War Room',          href: '/coach/tactical',      icon: 'data.target' },
 	{ label: 'Match Day',         href: '/coach/match-day',     icon: 'data.activity' },
 	{ label: 'Proving Grounds',   href: '/coach/scouting',      icon: 'data.target' },
-	{ label: 'Team Ops', href: '/coach/logistics',     icon: 'sys.calendar' },
+	{ label: 'Team Ops',          href: '/coach/logistics',     icon: 'sys.calendar' },
 ];
 
 /**
