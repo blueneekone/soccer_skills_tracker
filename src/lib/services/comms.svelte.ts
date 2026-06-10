@@ -47,6 +47,31 @@ export interface CoachPlayerDMInput {
 	body: string;
 }
 
+export interface ClubBroadcastResult {
+	success: true;
+	clubId: string;
+	clubAuditId: string;
+	teamCount: number;
+	successCount: number;
+	totalRecipients: number;
+	totalCcParents: number;
+	results: Array<{
+		teamId: string;
+		messageId?: string;
+		recipientCount?: number;
+		ccParentCount?: number;
+		error?: string;
+	}>;
+}
+
+export interface ClubBroadcastInput {
+	clubId: string;
+	body: string;
+	subject?: string;
+	/** When empty/omitted, server fans out to all teams in the club. */
+	teamIds?: string[];
+}
+
 export interface BroadcastResult {
 	success: true;
 	messageId: string;
@@ -76,6 +101,7 @@ export class CommsEngine {
 	// ── Reactive state ────────────────────────────────────────────────────────
 	phase = $state<SendPhase>('idle');
 	lastResult = $state<BroadcastResult | null>(null);
+	lastClubResult = $state<ClubBroadcastResult | null>(null);
 	error = $state('');
 
 	/** True while a message is in-flight. */
@@ -85,6 +111,7 @@ export class CommsEngine {
 
 	// ── Private ───────────────────────────────────────────────────────────────
 	private _broadcastFn: ReturnType<typeof httpsCallable> | null = null;
+	private _clubBroadcastFn: ReturnType<typeof httpsCallable> | null = null;
 	private _channelFn: ReturnType<typeof httpsCallable> | null = null;
 	private _householdFn: ReturnType<typeof httpsCallable> | null = null;
 	private _coachDmFn: ReturnType<typeof httpsCallable> | null = null;
@@ -93,6 +120,7 @@ export class CommsEngine {
 		if (!browser) return;
 		const fns = getFunctions(undefined, 'us-east1');
 		this._broadcastFn = httpsCallable(fns, 'safeSportBroadcast');
+		this._clubBroadcastFn = httpsCallable(fns, 'clubSportBroadcast');
 		this._channelFn = httpsCallable(fns, 'sendChannelMessage');
 		this._householdFn = httpsCallable(fns, 'sendHouseholdMessage');
 		this._coachDmFn = httpsCallable(fns, 'sendCoachPlayerMessage');
@@ -157,6 +185,45 @@ export class CommsEngine {
 		} catch (err: unknown) {
 			const msg = err instanceof Error ? err.message : 'Failed to send message.';
 			this.error = msg;
+			this.phase = 'error';
+			throw err;
+		}
+	}
+
+	/**
+	 * Director club-wide broadcast — fans out to selected or all teams via `clubSportBroadcast`.
+	 */
+	async clubBroadcastMessage(input: ClubBroadcastInput): Promise<ClubBroadcastResult> {
+		const clubId = input.clubId?.trim() ?? '';
+		const body = input.body?.trim() ?? '';
+		if (!clubId) throw new Error('clubId is required.');
+		if (!body) throw new Error('Message body is required.');
+		if (body.length > 4000) throw new Error('Message body exceeds 4000 characters.');
+		if (!this._clubBroadcastFn) {
+			throw new Error('CommsEngine not initialised (SSR context).');
+		}
+
+		this.phase = 'sending';
+		this.error = '';
+		this.lastResult = null;
+		this.lastClubResult = null;
+
+		try {
+			const payload: Record<string, unknown> = {
+				clubId,
+				body,
+				subject: input.subject?.trim() || undefined,
+			};
+			const teamIds = input.teamIds?.map((t) => t.trim()).filter(Boolean);
+			if (teamIds && teamIds.length > 0) payload.teamIds = teamIds;
+
+			const response = await this._clubBroadcastFn(payload);
+			const result = response.data as ClubBroadcastResult;
+			this.lastClubResult = result;
+			this.phase = 'success';
+			return result;
+		} catch (err: unknown) {
+			this.error = err instanceof Error ? err.message : 'Failed to send club broadcast.';
 			this.phase = 'error';
 			throw err;
 		}
@@ -262,5 +329,6 @@ export class CommsEngine {
 		this.phase = 'idle';
 		this.error = '';
 		this.lastResult = null;
+		this.lastClubResult = null;
 	}
 }

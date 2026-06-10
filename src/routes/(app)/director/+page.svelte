@@ -17,13 +17,14 @@
 	import Icon from '$lib/components/ui/Icon.svelte';
 	import type { IconName } from '$lib/icons/registry.js';
 	import MissionControl from '$lib/components/director/MissionControl.svelte';
+	import DirectorClubBroadcastComposer from '$lib/components/director/DirectorClubBroadcastComposer.svelte';
 	import DirectorRetentionReport from '$lib/components/compliance/DirectorRetentionReport.svelte';
 	import WeatherAlert from '$lib/components/weather/WeatherAlert.svelte';
 	import { teamsStore } from '$lib/stores/teams.svelte.js';
 	import { workspaceContextStore } from '$lib/stores/workspaceContext.svelte.js';
 
 	const VALID_DIR_TABS = new Set([
-		'home', 'teams', 'field', 'registrars', 'brand', 'playbook', 'licenses', 'compliance', 'household',
+		'home', 'teams', 'field', 'comms', 'registrars', 'brand', 'playbook', 'licenses', 'compliance', 'household',
 		'vanguard',   // EPIC 4 — Director Mission Control
 		'retention',  // EPIC 6 — PII Burn Protocol compliance dashboard
 	]);
@@ -68,6 +69,10 @@
 		teamsStore.teams
 			.filter((t) => t.clubId === clubId)
 			.map((t) => ({ id: t.id, name: t.name }))
+	);
+
+	const clubLabel = $derived(
+		teamsStore.clubs.find((c) => c.id === clubId)?.name || clubId,
 	);
 
 	$effect(() => {
@@ -130,6 +135,10 @@
 	{:else if activeTab === 'field'}
 		<section class="director-console-page__section director-console-page__section--full">
 			<FieldOpsModule {clubId} />
+		</section>
+	{:else if activeTab === 'comms'}
+		<section class="director-console-page__section">
+			<DirectorClubBroadcastComposer {clubId} clubName={clubLabel} teams={clubTeams} />
 		</section>
 	{:else}
 		<section class="director-console-page__section">

@@ -93,6 +93,7 @@ exports.schedulePractice = leagueHandlers.schedulePractice;
 // â”€â”€ Epic 6+: Communications â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const commsHandlers = require('./comms');
 exports.safeSportBroadcast = commsHandlers.safeSportBroadcast;
+exports.clubSportBroadcast = commsHandlers.clubSportBroadcast;
 
 // â”€â”€ Epic 5 â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const inviteHandlers = require('./invites');

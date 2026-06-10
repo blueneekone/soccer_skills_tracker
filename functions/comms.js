@@ -40,6 +40,146 @@ const db = admin.firestore();
 /** Normalise email to lowercase, trimmed. */
 const normEmail = (e) => (typeof e === 'string' ? e.trim().toLowerCase() : '');
 
+const MAX_CLUB_BROADCAST_TEAMS = 40;
+
+/**
+ * Persist a SafeSport team broadcast (shared by safeSportBroadcast + clubSportBroadcast).
+ * Caller must enforce auth/scope before invoking.
+ *
+ * @return {Promise<{success: true, messageId: string, auditLogId: string, teamId: string, recipientCount: number, parentNotified: boolean, ccParentCount: number}>}
+ */
+async function commitTeamBroadcast({
+  callerUid,
+  callerEmail,
+  callerRole,
+  callerClubId,
+  teamId,
+  channelId = '',
+  bodyRaw,
+  subject = '',
+  ipAddress,
+  broadcastSource = null,
+}) {
+  const teamSnap = await db.collection('teams').doc(teamId).get();
+  if (!teamSnap.exists) {
+    throw new HttpsError('not-found', `Team "${teamId}" not found.`);
+  }
+  const teamData = teamSnap.data();
+  const teamClubId = teamData.clubId || '';
+
+  const rosterSnap = await db
+      .collection('player_lookup')
+      .where('teamId', '==', teamId)
+      .get();
+
+  const playerEmails = rosterSnap.docs.map((d) => normEmail(d.data().email || d.id));
+  let hasMinors = false;
+  const ccParentEmailSet = new Set();
+
+  const profilePromises = playerEmails.map(async (email) => {
+    if (!email) return;
+    try {
+      const profSnap = await db.collection('users').doc(email).get();
+      if (!profSnap.exists) return;
+      const prof = profSnap.data();
+      if (!resolveIsMinor(prof)) return;
+      hasMinors = true;
+
+      /** @type {string[]} */
+      const parentCandidates = [];
+      const householdId = prof.householdId || '';
+      if (householdId) {
+        const hSnap = await db.collection('households').doc(householdId).get();
+        if (hSnap.exists) {
+          const pe = hSnap.data().parentEmails || [];
+          pe.forEach((p) => {
+            const n = normEmail(String(p));
+            if (n) parentCandidates.push(n);
+          });
+        }
+      }
+
+      const directParent = normEmail(prof.parentEmail || '');
+      if (directParent) parentCandidates.push(directParent);
+
+      const consented = await filterParentsWithCommsConsent(
+          db,
+          parentCandidates,
+          email,
+      );
+      consented.forEach((p) => ccParentEmailSet.add(p));
+    } catch (err) {
+      logger.warn('[commitTeamBroadcast] profile resolution error', {email, err: err.message});
+    }
+  });
+
+  await Promise.all(profilePromises);
+
+  const ccParentEmails = [...ccParentEmailSet];
+  const parentNotified = hasMinors ? ccParentEmails.length > 0 : false;
+  const messageHash = crypto.createHash('sha256').update(bodyRaw).digest('hex');
+
+  const auditId = db.collection('audit_logs').doc().id;
+  await logActivity(ACTIVITY_TYPE.MESSAGE_BROADCAST, {
+    actorUid: callerUid,
+    actorEmail: callerEmail,
+    tenantId: callerClubId || teamClubId,
+    notes: `Team broadcast to ${teamId} — ${playerEmails.length} recipients, minors: ${hasMinors}, CCd parents: ${ccParentEmails.length}`,
+    extra: {
+      teamId,
+      channelId: channelId || null,
+      recipientCount: playerEmails.length,
+      hasMinors,
+      ccParentEmails,
+      parentNotified,
+      messageHash,
+      subject: subject || null,
+      auditId,
+      broadcastSource: broadcastSource || null,
+    },
+    ipAddress,
+  });
+
+  const msgRef = db.collection('team_broadcasts').doc();
+  await msgRef.set({
+    teamId,
+    teamClubId: teamClubId || null,
+    channelId: channelId || null,
+    fromUid: callerUid,
+    fromEmail: callerEmail,
+    fromRole: callerRole,
+    subject: subject || null,
+    body: bodyRaw,
+    bodyPreview: bodyRaw.slice(0, 140),
+    recipientCount: playerEmails.length,
+    hasMinors,
+    ccParentEmails,
+    parentNotified,
+    messageHash,
+    auditLogId: auditId,
+    source: broadcastSource || null,
+    createdAt: admin.firestore.FieldValue.serverTimestamp(),
+  });
+
+  logger.info('[commitTeamBroadcast] broadcast committed', {
+    msgId: msgRef.id,
+    teamId,
+    hasMinors,
+    parentNotified,
+    callerEmail,
+  });
+
+  return {
+    success: true,
+    messageId: msgRef.id,
+    auditLogId: auditId,
+    teamId,
+    recipientCount: playerEmails.length,
+    parentNotified,
+    ccParentCount: ccParentEmails.length,
+  };
+}
+
 // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // safeSportBroadcast
 // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -134,130 +274,180 @@ exports.safeSportBroadcast = onCall({region: REGION}, async (request) => {
     }
   }
 
-  // â”€â”€ Resolve roster for minor detection â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-  const rosterSnap = await db
-      .collection('player_lookup')
-      .where('teamId', '==', teamId)
-      .get();
-
-  const playerEmails = rosterSnap.docs.map((d) => normEmail(d.data().email || d.id));
-  let hasMinors = false;
-  const ccParentEmailSet = new Set();
-
-  // Resolve each player's profile for isMinor flag and householdId.
-  const profilePromises = playerEmails.map(async (email) => {
-    if (!email) return;
-    try {
-      const profSnap = await db.collection('users').doc(email).get();
-      if (!profSnap.exists) return;
-      const prof = profSnap.data();
-      if (!resolveIsMinor(prof)) return;
-      hasMinors = true;
-
-      /** @type {string[]} */
-      const parentCandidates = [];
-      const householdId = prof.householdId || '';
-      if (householdId) {
-        const hSnap = await db.collection('households').doc(householdId).get();
-        if (hSnap.exists) {
-          const pe = hSnap.data().parentEmails || [];
-          pe.forEach((p) => {
-            const n = normEmail(String(p));
-            if (n) parentCandidates.push(n);
-          });
-        }
-      }
-
-      const directParent = normEmail(prof.parentEmail || '');
-      if (directParent) parentCandidates.push(directParent);
-
-      const consented = await filterParentsWithCommsConsent(
-          db,
-          parentCandidates,
-          email,
-      );
-      consented.forEach((p) => ccParentEmailSet.add(p));
-    } catch (err) {
-      logger.warn('[safeSportBroadcast] profile resolution error', {email, err: err.message});
-    }
+  return commitTeamBroadcast({
+    callerUid,
+    callerEmail,
+    callerRole,
+    callerClubId,
+    teamId,
+    channelId,
+    bodyRaw,
+    subject,
+    ipAddress: request.rawRequest?.ip,
   });
+});
 
-  await Promise.all(profilePromises);
+// ─────────────────────────────────────────────────────────────────────────────
+// clubSportBroadcast — Epic 4.8 director club-wide fan-out
+// ─────────────────────────────────────────────────────────────────────────────
 
-  const ccParentEmails = [...ccParentEmailSet];
+/**
+ * Director club broadcast — fans out to one or all teams in a club.
+ * Each team receives a team_broadcasts doc (rides Epic 4.3 push bus).
+ *
+ * Input:
+ *   clubId    string   — required
+ *   body      string   — required (max 4000)
+ *   subject   string   — optional
+ *   teamIds   string[] — optional subset; default all teams in club
+ */
+exports.clubSportBroadcast = onCall({region: REGION}, async (request) => {
+  if (!request.auth) {
+    throw new HttpsError('unauthenticated', 'Authentication required.');
+  }
 
-  // â”€â”€ SAFETY GUARD: block broadcast to minor-containing team without parent CCs â”€â”€
-  // If the team has minors but we failed to resolve any parent emails, we
-  // still proceed â€” the message is stored with parentNotified: false so
-  // directors can see the gap in the compliance report.
-  const parentNotified = hasMinors ? ccParentEmails.length > 0 : false;
+  const callerUid = request.auth.uid;
+  const callerEmail = normEmail(request.auth.token.email);
+  const callerRole = request.auth.token.role || '';
+  const callerClubId = request.auth.token.clubId || request.auth.token.tenantId || '';
 
-  // â”€â”€ Compute message hash for audit integrity â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-  const messageHash = crypto.createHash('sha256').update(bodyRaw).digest('hex');
+  const directorRoles = ['director', 'global_admin', 'super_admin'];
+  if (!directorRoles.includes(callerRole)) {
+    throw new HttpsError(
+        'permission-denied',
+        'Only directors may send club-wide broadcasts.',
+    );
+  }
 
-  // â”€â”€ AUDIT LOG â€” written BEFORE message commit â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-  // Safe-Sport compliance: we MUST record the communication intent before
-  // any data is written, so the log cannot be deleted by rolling back the
-  // batch.
-  const auditId = db.collection('audit_logs').doc().id;
+  const data = request.data || {};
+  const clubId = typeof data.clubId === 'string' ? data.clubId.trim() : '';
+  const bodyRaw = typeof data.body === 'string' ? data.body.trim() : '';
+  const subject = typeof data.subject === 'string' ? data.subject.trim().slice(0, 200) : '';
+  const requestedTeamIds = Array.isArray(data.teamIds)
+    ? data.teamIds.filter((t) => typeof t === 'string' && t.trim()).map((t) => t.trim())
+    : [];
+
+  if (!clubId) {
+    throw new HttpsError('invalid-argument', 'clubId is required.');
+  }
+  if (!bodyRaw) {
+    throw new HttpsError('invalid-argument', 'Message body is required.');
+  }
+  if (bodyRaw.length > 4000) {
+    throw new HttpsError('invalid-argument', 'Message body exceeds 4000 characters.');
+  }
+
+  if (callerRole === 'director' && callerClubId !== clubId) {
+    throw new HttpsError(
+        'permission-denied',
+        'Club broadcast is limited to your organisation.',
+    );
+  }
+
+  /** @type {string[]} */
+  let teamIds = requestedTeamIds;
+  if (teamIds.length === 0) {
+    const teamsSnap = await db.collection('teams').where('clubId', '==', clubId).get();
+    teamIds = teamsSnap.docs.map((d) => d.id);
+  } else {
+    const teamSnaps = await Promise.all(
+        teamIds.map((tid) => db.collection('teams').doc(tid).get()),
+    );
+    for (let i = 0; i < teamSnaps.length; i++) {
+      const snap = teamSnaps[i];
+      const tid = teamIds[i];
+      if (!snap.exists) {
+        throw new HttpsError('not-found', `Team "${tid}" not found.`);
+      }
+      if ((snap.data().clubId || '') !== clubId) {
+        throw new HttpsError(
+            'permission-denied',
+            `Team "${tid}" is not in club "${clubId}".`,
+        );
+      }
+    }
+  }
+
+  if (teamIds.length === 0) {
+    throw new HttpsError('failed-precondition', 'No teams found in this club.');
+  }
+  if (teamIds.length > MAX_CLUB_BROADCAST_TEAMS) {
+    throw new HttpsError(
+        'resource-exhausted',
+        `Club broadcast limited to ${MAX_CLUB_BROADCAST_TEAMS} teams per send.`,
+    );
+  }
+
+  const clubAuditId = db.collection('audit_logs').doc().id;
   await logActivity(ACTIVITY_TYPE.MESSAGE_BROADCAST, {
     actorUid: callerUid,
     actorEmail: callerEmail,
-    tenantId: callerClubId || teamClubId,
-    notes: `Team broadcast to ${teamId} â€” ${playerEmails.length} recipients, minors: ${hasMinors}, CCd parents: ${ccParentEmails.length}`,
+    tenantId: clubId,
+    notes: `Club broadcast to ${teamIds.length} team(s) in ${clubId}`,
     extra: {
-      teamId,
-      channelId: channelId || null,
-      recipientCount: playerEmails.length,
-      hasMinors,
-      ccParentEmails,
-      parentNotified,
-      messageHash, // SHA-256 â€” not the body itself
+      clubId,
+      teamIds,
+      teamCount: teamIds.length,
       subject: subject || null,
-      auditId,
+      auditId: clubAuditId,
+      broadcastSource: 'club_broadcast',
     },
     ipAddress: request.rawRequest?.ip,
   });
 
-  // â”€â”€ Write message document â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-  const targetPath = channelId
-      ? db.collection('clubs').doc(teamClubId).collection('channels').doc(channelId)
-      : db.collection('team_broadcasts').doc();
+  /** @type {Array<{teamId: string, messageId?: string, recipientCount?: number, ccParentCount?: number, error?: string}>} */
+  const results = [];
+  let totalRecipients = 0;
+  let totalCcParents = 0;
 
-  const msgRef = db.collection('team_broadcasts').doc();
-  await msgRef.set({
-    teamId,
-    teamClubId: teamClubId || null,
-    channelId: channelId || null,
-    fromUid: callerUid,
-    fromEmail: callerEmail,
-    fromRole: callerRole,
-    subject: subject || null,
-    body: bodyRaw,
-    bodyPreview: bodyRaw.slice(0, 140),
-    recipientCount: playerEmails.length,
-    hasMinors,
-    ccParentEmails,
-    parentNotified,
-    messageHash,
-    auditLogId: auditId,
-    createdAt: admin.firestore.FieldValue.serverTimestamp(),
-  });
+  for (const teamId of teamIds) {
+    try {
+      const r = await commitTeamBroadcast({
+        callerUid,
+        callerEmail,
+        callerRole,
+        callerClubId: clubId,
+        teamId,
+        bodyRaw,
+        subject,
+        ipAddress: request.rawRequest?.ip,
+        broadcastSource: 'club_broadcast',
+      });
+      results.push({
+        teamId,
+        messageId: r.messageId,
+        recipientCount: r.recipientCount,
+        ccParentCount: r.ccParentCount,
+      });
+      totalRecipients += r.recipientCount;
+      totalCcParents += r.ccParentCount;
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      logger.warn('[clubSportBroadcast] team fan-out failed', {teamId, err: msg});
+      results.push({teamId, error: msg});
+    }
+  }
 
-  logger.info('[safeSportBroadcast] broadcast committed', {
-    msgId: msgRef.id,
-    teamId,
-    hasMinors,
-    parentNotified,
+  const successCount = results.filter((r) => r.messageId).length;
+  if (successCount === 0) {
+    throw new HttpsError('internal', 'Club broadcast failed for all teams.');
+  }
+
+  logger.info('[clubSportBroadcast] club broadcast complete', {
+    clubId,
+    teamCount: teamIds.length,
+    successCount,
     callerEmail,
   });
 
   return {
     success: true,
-    messageId: msgRef.id,
-    auditLogId: auditId,
-    recipientCount: playerEmails.length,
-    parentNotified,
-    ccParentCount: ccParentEmails.length,
+    clubId,
+    clubAuditId,
+    teamCount: teamIds.length,
+    successCount,
+    totalRecipients,
+    totalCcParents,
+    results,
   };
 });

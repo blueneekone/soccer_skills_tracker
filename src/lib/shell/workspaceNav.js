@@ -23,6 +23,7 @@ const directorLinks = [
 	{ tab: 'home',       label: 'Overview',          icon: 'nav.home',           href: '/director?tab=home' },
 	{ tab: 'teams',      label: 'Roster & Teams',    icon: 'user.group',         href: '/director?tab=teams' },
 	{ tab: 'field',      label: 'Field Ops',         icon: 'sys.map-pin',        href: '/director?tab=field' },
+	{ tab: 'comms',      label: 'Comms',             icon: 'comm.broadcast',     href: '/director?tab=comms' },
 	{ tab: 'registrars', label: 'Registrars',        icon: 'nav.swap',           href: '/director?tab=registrars' },
 	{ tab: 'brand',      label: 'Club Branding',     icon: 'sys.palette',        href: '/director?tab=brand' },
 	{ tab: 'playbook',   label: 'Playbook',          icon: 'data.target',        href: '/director?tab=playbook' },

@@ -1943,7 +1943,7 @@ npm run check
 | 4.5 | **Done** | Schedule → announce → push. Director: `onDeploymentCalendarEntryCreated` trigger auto-writes `team_broadcasts` per `teamId` (reuses safeSportBroadcast parent-CC + commsPolicy consent). Coach: opt-in "Announce to team" toggle on scheduled-event forms (FieldOps + CoachDrillsView) → `safeSportBroadcast`. Both ride the 4.3 push bus (auto player+consented-parent FCM). Create-only v1 (no reschedule re-announce). | `commsSprint45.test.ts` (44) |
 | 4.6 | **Partial** | Game reminders: `sendScheduledEventReminders` onSchedule (every 15m) consumes `team_workouts.reminderOffsets` [60,30,'morning'] with `remindersSent` dedup + `push_gameReminders`. Existing `sendGameRemindersToday` still covers `fixtures` only. **Deferred:** payment + registration reminder slices (billing model TBD). | `commsSprint46.test.ts` (8) |
 | 4.7 | **Done** | Team ops (coach-delegated v1 — no `team_manager` JWT): `/coach/logistics` tabbed hub (Comms · Schedule · Roster · Attendance). Schedule reuses `saveTeamScheduledEvent` + reminders + SafeSport announce. Roster live from `player_lookup`. Attendance writes `teams/{teamId}/attendance_sessions` with present/absent map. Nav relabeled Team Ops. | `commsSprint47.test.ts` |
-| 4.8 | Planned | Director club broadcast composer | — |
+| 4.8 | **Done** | Director club broadcast composer: `clubSportBroadcast` callable fans out to all/selected teams via shared `commitTeamBroadcast` → `team_broadcasts` + Epic 4.3 push. `/director?tab=comms` mounts `DirectorClubBroadcastComposer.svelte`. | `commsSprint48.test.ts` |
 | 4.9 | Planned | Compliance console + audit export | — |
 | 4.10 | Planned | Report message / incident flow | — |
 | 4.11 | **Done** | Household parent↔child threads | `commsSprint411.test.ts` |
