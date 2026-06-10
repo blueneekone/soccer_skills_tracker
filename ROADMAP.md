@@ -1500,7 +1500,7 @@ All four real fragilities fixed, each with a runnable guard (`npm run check` hel
 - **Item 3** claim-refresh gap → `syncUserClaims` trigger now emits `householdId`/`vpcVerified`/`minor`/`ageBand`/`divisionId` (parity with `buildBaseCustomClaims`) + idempotency coverage; `parentSignCoppaWaiver` sets the parent `householdId` claim fast-path. **Critical:** this was silently nulling `tokenHousehold()` for all parents, defeating the B4 parent-verification loop, T1-5, and household threads. *25 node.*
 - **Item 4** operative-without-team `/setup` loop → `isProfileComplete` recognizes `role:'player' + teamId`; `/setup` renders a stable "not linked to a team yet" + sign-out state for player-role users instead of trapping them in the parent/coach choice. *32 vitest.*
 
-**Deferred as net-new feature work (NOT fragilities):** coach **scouting** page (`/coach/scouting` is a hardcoded `MOCK_PROSPECTS` stub — no Firestore wiring) and **attendance** (no collection/route/stub exists at all).
+**Deferred as net-new feature work (NOT fragilities):** coach **scouting** page — **Done (2026-06-10):** `/coach/scouting` loads live squad from `player_lookup`, persists evaluation matrix to `teams/{teamId}/scouting_assessments` (`CoachScoutingView.svelte`). **Attendance** covered by Epic 4.7 Team Ops tab.
 
 ### Test guards (LAUNCH-test-integrity)
 

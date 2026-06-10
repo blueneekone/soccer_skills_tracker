@@ -1341,6 +1341,43 @@ service cloud.firestore {
         allow delete: if isSuper() || directorScopedToTeam(teamId);
       }
 
+      // LAUNCH-scouting: per-player evaluation matrix (coach Proving Grounds).
+      match /scouting_assessments/{playerKey} {
+        allow read: if authed() && (
+          isSuper()
+          || directorScopedToTeam(teamId)
+          || coachStaffCanAccessTeam(teamId)
+          || (isPlayer() && sameTeam(teamId) && playerKey == emailKey())
+        );
+        allow create, update: if coachStaffCanAccessTeam(teamId)
+          && request.resource.data.teamId == teamId
+          && request.resource.data.keys().hasAll([
+               'playerEmail', 'playerName', 'pace', 'technique',
+               'tacticalVision', 'physicality', 'mentality', 'overallGrade',
+               'lockedBy', 'lockedByEmail'
+             ])
+          && request.resource.data.playerEmail is string
+          && request.resource.data.playerEmail == playerKey
+          && request.resource.data.playerName is string
+          && request.resource.data.playerName.size() > 0
+          && request.resource.data.playerName.size() <= 120
+          && request.resource.data.pace is int
+          && request.resource.data.technique is int
+          && request.resource.data.tacticalVision is int
+          && request.resource.data.physicality is int
+          && request.resource.data.mentality is int
+          && request.resource.data.overallGrade is int
+          && request.resource.data.pace >= 0 && request.resource.data.pace <= 100
+          && request.resource.data.technique >= 0 && request.resource.data.technique <= 100
+          && request.resource.data.tacticalVision >= 0 && request.resource.data.tacticalVision <= 100
+          && request.resource.data.physicality >= 0 && request.resource.data.physicality <= 100
+          && request.resource.data.mentality >= 0 && request.resource.data.mentality <= 100
+          && request.resource.data.overallGrade >= 0 && request.resource.data.overallGrade <= 100
+          && request.resource.data.lockedBy == request.auth.uid
+          && request.resource.data.lockedByEmail == emailKey();
+        allow delete: if isSuper() || directorScopedToTeam(teamId);
+      }
+
       // Epic 2.3: saved tactical boards (coaches / directors / super_admin only).
       match /tactics/{tacticId} {
         allow read: if authed() && (

@@ -7,19 +7,25 @@ import { readFileSync } from 'fs';
 import { join } from 'path';
 
 const PAGE = join(__dirname, '..', '+page.svelte');
-const src = readFileSync(PAGE, 'utf-8');
+const VIEW = join(process.cwd(), 'src/lib/coach/scouting/CoachScoutingView.svelte');
+const pageSrc = readFileSync(PAGE, 'utf-8');
+const viewSrc = readFileSync(VIEW, 'utf-8');
 
 describe('/coach/scouting — Liquid Bento (Sprint 1.1)', () => {
 	it('prospect panel grid uses bento-grid--liquid', () => {
-		expect(src).toMatch(/bento-grid--liquid/);
+		expect(viewSrc).toMatch(/bento-grid--liquid/);
 	});
 
 	it('uses 12-column bento grid layout', () => {
-		expect(src).toMatch(/bento-grid--12col/);
+		expect(viewSrc).toMatch(/bento-grid--12col/);
 	});
 
 	it('roster spans 4 columns and evaluation spans 8', () => {
-		expect(src).toMatch(/bento-span-4/);
-		expect(src).toMatch(/bento-span-8/);
+		expect(viewSrc).toMatch(/bento-span-4/);
+		expect(viewSrc).toMatch(/bento-span-8/);
+	});
+
+	it('route stays thin and imports CoachScoutingView', () => {
+		expect(pageSrc).toMatch(/CoachScoutingView/);
 	});
 });
