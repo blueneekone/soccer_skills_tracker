@@ -3,6 +3,10 @@
 	import { doc, getDoc, setDoc } from 'firebase/firestore';
 	import { getIdTokenResult } from 'firebase/auth';
 	import { authStore } from '$lib/stores/auth.svelte.js';
+	import {
+		buildVaultSealedPatch,
+		hydrateSensitiveFieldsFromDoc,
+	} from '$lib/services/vault.svelte.ts';
 
 	const profile = $derived(authStore.userProfile);
 
@@ -66,12 +70,18 @@
 			const snap = await getDoc(doc(db, 'passports', auth.currentUser.email.toLowerCase()));
 			if (snap.exists()) {
 				const data = snap.data();
-				emergencyName = data.emergencyName || '';
-				emergencyPhone = data.emergencyPhone || '';
-				medicalNotes = data.medicalNotes || '';
+				const pii = await hydrateSensitiveFieldsFromDoc(data, [
+					'emergencyName',
+					'emergencyPhone',
+					'medicalNotes',
+					'waiverSignerLegalName',
+				]);
+				emergencyName = pii.emergencyName ?? '';
+				emergencyPhone = pii.emergencyPhone ?? '';
+				medicalNotes = pii.medicalNotes ?? '';
 				clearanceStatus = data.clearanceStatus || 'CLEARED';
 				hasSignedWaiver = data.hasSignedWaiver || false;
-				attestorLegalName = String(data.waiverSignerLegalName || '');
+				attestorLegalName = String(pii.waiverSignerLegalName ?? data.waiverSignerLegalName ?? '');
 				waiverAcknowledged = hasSignedWaiver;
 			}
 		} catch (e) {
@@ -97,24 +107,39 @@
 		saving = true;
 		try {
 			const email = auth.currentUser.email.toLowerCase();
-			const base = { emergencyName, emergencyPhone, medicalNotes };
+			const clubId =
+				typeof profile?.clubId === 'string' ? profile.clubId.trim() : undefined;
+			const sealedBase = await buildVaultSealedPatch(
+				email,
+				{ emergencyName, emergencyPhone, medicalNotes },
+				{ clubId },
+			);
 			if (isMinorPlayer) {
-				await setDoc(doc(db, 'passports', email), base, { merge: true });
+				await setDoc(doc(db, 'passports', email), sealedBase, { merge: true });
 				alert(
 					'Medical / emergency details saved. The season waiver for minors is completed only after your club records verifiable parental consent (VPC).'
 				);
 			} else {
 				const signer = attestorLegalName.trim().replace(/\s+/g, ' ');
+				const sealed = await buildVaultSealedPatch(
+					email,
+					{
+						emergencyName,
+						emergencyPhone,
+						medicalNotes,
+						waiverSignerLegalName: signer,
+					},
+					{ clubId },
+				);
 				await setDoc(
 					doc(db, 'passports', email),
 					{
-						...base,
+						...sealed,
 						hasSignedWaiver: true,
 						waiverSignedAt: new Date(),
-						waiverSignerLegalName: signer,
-						waiverMethod: 'typed_parent_attestation'
+						waiverMethod: 'typed_parent_attestation',
 					},
-					{ merge: true }
+					{ merge: true },
 				);
 				alert('Passport & waiver securely saved!');
 			}

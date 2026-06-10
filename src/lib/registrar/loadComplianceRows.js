@@ -1,5 +1,6 @@
 import { db } from '$lib/firebase.js';
 import { collection, doc, getDoc, query, where, getDocs } from 'firebase/firestore';
+import { hydrateSensitiveFieldsFromDoc } from '$lib/services/vault.svelte.ts';
 
 /**
  * @typedef {object} RegistrarRosterRow
@@ -144,13 +145,21 @@ export async function loadComplianceTable(teams) {
 		for (const playerName of sorted) {
 			const em = nameToEmail[playerName] || null;
 			const statsId = resolveStatsDocId(playerName, playerStats);
-			const passportData = em ? cache.passports[em] ?? null : null;
+			const passportRaw = em ? cache.passports[em] ?? null : null;
+			const passportData =
+				passportRaw && typeof passportRaw === 'object' ? passportRaw : null;
+			const pii =
+				passportData ?
+					await hydrateSensitiveFieldsFromDoc(passportData, [
+						'emergencyName',
+						'emergencyPhone',
+						'medicalNotes',
+					])
+				:	{};
 			const userData = em ? cache.users[em] ?? null : null;
 			const dobRaw = passportData?.dateOfBirth ?? userData?.dateOfBirth ?? null;
-			const pc = passportCell(passportData && typeof passportData === 'object' ? passportData : null);
-			const wc = waiverCell(passportData && typeof passportData === 'object' ? passportData : null);
-			const passportObj =
-				passportData && typeof passportData === 'object' ? passportData : null;
+			const pc = passportCell(passportData);
+			const wc = waiverCell(passportData);
 			out.push({
 				key: `${teamId}::${playerName}`,
 				playerName,
@@ -165,23 +174,14 @@ export async function loadComplianceTable(teams) {
 				waiverKind: wc.kind,
 				passportLabel: pc.label,
 				passportKind: pc.kind,
-				hasSignedWaiver: passportObj?.hasSignedWaiver === true,
+				hasSignedWaiver: passportData?.hasSignedWaiver === true,
 				clearanceStatus:
-					typeof passportObj?.clearanceStatus === 'string' ?
-						passportObj.clearanceStatus
+					typeof passportData?.clearanceStatus === 'string' ?
+						passportData.clearanceStatus
 					:	null,
-				emergencyName:
-					typeof passportObj?.emergencyName === 'string' ?
-						passportObj.emergencyName
-					:	null,
-				emergencyPhone:
-					typeof passportObj?.emergencyPhone === 'string' ?
-						passportObj.emergencyPhone
-					:	null,
-				medicalNotes:
-					typeof passportObj?.medicalNotes === 'string' ?
-						passportObj.medicalNotes
-					:	null,
+				emergencyName: pii.emergencyName ?? null,
+				emergencyPhone: pii.emergencyPhone ?? null,
+				medicalNotes: pii.medicalNotes ?? null,
 			});
 		}
 	}

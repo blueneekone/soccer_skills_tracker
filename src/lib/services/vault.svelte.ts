@@ -10,10 +10,20 @@ import { functions } from '$lib/firebase.js';
 import { httpsCallable } from 'firebase/functions';
 import {
 	isSensitivePiiField,
+	SHRED_SENTINEL,
 	type SensitivePII,
 	type SensitivePiiField,
 	type VaultEnvelope,
 } from '$lib/types/compliance.js';
+
+export function isVaultEnvelope(value: unknown): value is VaultEnvelope {
+	return (
+		!!value &&
+		typeof value === 'object' &&
+		'vaultRef' in value &&
+		typeof /** @type {VaultEnvelope} */ (value).vaultRef === 'string'
+	);
+}
 
 type SealPayload = {
 	ownerEmailKey: string;
@@ -92,4 +102,64 @@ export function stripSensitivePlaintext<T extends Record<string, unknown>>(patch
 		}
 	}
 	return next;
+}
+
+/**
+ * Resolve sensitive fields from a Firestore doc — legacy plaintext, vault envelopes, or shredded.
+ */
+export async function hydrateSensitiveFieldsFromDoc(
+	data: Record<string, unknown>,
+	fields: SensitivePiiField[],
+): Promise<Partial<Record<SensitivePiiField, string>>> {
+	if (!browser || !data) return {};
+
+	/** @type {Partial<Record<SensitivePiiField, string>>} */
+	const out = {};
+	/** @type {Array<{ field: SensitivePiiField; envelope: VaultEnvelope }>} */
+	const toUnseal = [];
+
+	for (const field of fields) {
+		const raw = data[field];
+		if (raw === SHRED_SENTINEL) {
+			out[field] = '';
+			continue;
+		}
+		if (isVaultEnvelope(raw)) {
+			toUnseal.push({ field, envelope: raw });
+			continue;
+		}
+		if (typeof raw === 'string') {
+			out[field] = raw;
+		}
+	}
+
+	if (toUnseal.length === 0) return out;
+
+	const result = await vaultUnsealPiiFn({
+		vaultRefs: toUnseal.map(({ field, envelope }) => ({
+			vaultRef: envelope.vaultRef,
+			field,
+		})),
+	});
+	const values = result.data?.values ?? {};
+	for (const { field } of toUnseal) {
+		const v = values[field];
+		if (v != null) out[field] = String(v);
+	}
+	return out;
+}
+
+/**
+ * Seal sensitive passport fields and return a Firestore-safe merge patch.
+ */
+export async function buildVaultSealedPatch(
+	ownerEmailKey: string,
+	fields: Partial<Record<SensitivePiiField, string>>,
+	opts: { clubId?: string } = {},
+): Promise<Record<string, unknown>> {
+	const vaultRefs = await vaultWrite(ownerEmailKey, fields, opts);
+	return {
+		...stripSensitivePlaintext(fields as Record<string, unknown>),
+		...vaultRefs,
+	};
 }

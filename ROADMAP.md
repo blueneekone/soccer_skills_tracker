@@ -2,7 +2,7 @@
 
 **Architecture:** [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)  
 **Last updated:** 2026-06-10  
-**Current sprint:** **LAUNCH-functional-os** · **Epic 4 Done (4.1–4.12)** · **Epic 5 Done (5.1–5.6; 5.4 provider scaffold)** · **LAUNCH-loop-integrity Done** · **LAUNCH-test-integrity Done** · **LAUNCH-club-drill-promote Done** · **LAUNCH-scouting Done** · **LAUNCH-forge-nameonly Done** · **next:** Epic **2.2** vault finish · **DEPLOY-O-bundle** (no owner QA until all epics complete) · Launch portrait: `defaultPortraitV2` SVG + profile initials · **TABLED (post-launch):** Platform visual system (Gemini research — [`references/ui/research/`](docs/vision/references/ui/research/)), Flow asset generation, Avatar Studio **3.6b+** · **Deferred (post-launch — owner art):** 3.5m-gemini-ingest, 3.5m-gate · **3.5k Done** · **3.5h Done** · **3.5j Done** · **LAUNCH-defer-avatar Done**  
+**Current sprint:** **LAUNCH-functional-os** · **Epic 4 Done (4.1–4.12)** · **Epic 5 Done (5.1–5.6; 5.4 provider scaffold)** · **Epic 2.2 Done** · **LAUNCH-loop-integrity Done** · **LAUNCH-test-integrity Done** · **LAUNCH-club-drill-promote Done** · **LAUNCH-scouting Done** · **LAUNCH-forge-nameonly Done** · **next:** **DEPLOY-O-bundle** · deploy compliance/weather functions + rules (no owner QA until all epics complete) · Launch portrait: `defaultPortraitV2` SVG + profile initials · **TABLED (post-launch):** Platform visual system (Gemini research — [`references/ui/research/`](docs/vision/references/ui/research/)), Flow asset generation, Avatar Studio **3.6b+** · **Deferred (post-launch — owner art):** 3.5m-gemini-ingest, 3.5m-gate · **3.5k Done** · **3.5h Done** · **3.5j Done** · **LAUNCH-defer-avatar Done**  
 **Note:** **3.5l-gate** closed in error — automated regression ≠ human VA; Phase 2 visual **rejected by product owner**  
 *Phase 7 · G1–G10 Done · Sprint 2.20 Done — Player OS premium foundation locked*
 
@@ -1424,6 +1424,7 @@ Loadout art (3.2+) consumed by 2.12 hero identity column.
 | **LAUNCH-epic52** | **Done** | Registrar → Director compliance matrix; `/registrar` redirect; team-scoped `loadComplianceTable` | `epic52RegistrarConsolidation.test.ts` |
 | **LAUNCH-epic51** | **Done** | COPPA / household / VPC gate inventory + regression guards | `epic51CoppaSignup.test.ts` |
 | **LAUNCH-epic55** | **Done** | FCM / messaging infra audit guards | `epic55MessagingAudit.test.ts` |
+| **LAUNCH-epic22** | **Done** | Passport PII vault seal/unseal + director compliance matrix hydrate | `epic22VaultWiring.test.ts` |
 | **LAUNCH-cohesion-lb** | **Done** | 3 cohesion launch-blockers resolved: CLB-1 SweetAlert2 → `PlayerDiegeticOverlay` on `/tracker`; CLB-2 raw Chart.js radar → `VanguardProtocolPanel` (all roles) on `/stats`; CLB-3 coach XP/Level chrome removed from `SquadTelemetryView` + `CoachSquadReadinessCard`. Polish-tier cohesion deferred to tracked polish epic | `src/lib/__tests__/launchCohesionLb.test.ts` (14 guards) |
 | **XP-verify** | **Done** | XP algorithm tests + client/server parity (`level.js` ↔ `gamificationWorkoutXp.js`) | `levelXp.test.ts`, `gamificationWorkoutXp.test.js`, `trainingOpsXp.test.js` |
 | **3.5m-frame** | **Done** | Art-well recess + holo inset — unified portrait clip, xMidYMid bust centering | `playerLoadoutSprint35mFrame.test.ts` |
@@ -2673,7 +2674,7 @@ npm run build
 | Sprint | Status | Summary | Proof |
 |--------|--------|---------|-------|
 | 2.1 | Done | COPPA consent gates, PII route blocking | `firestoreRulesSprint21.test.ts`, `route-policies.js` |
-| 2.2 | Partial | PII vault, shredder, retention rules | `vaultOps.js`, `shredOps.test.js`, `firestoreRulesSprint22.test.ts` |
+| 2.2 | **Done** | PII vault client wiring, shredder, retention rules | `vault.svelte.ts`, `epic22VaultWiring.test.ts`, `firestoreRulesSprint22.test.ts`, `vaultOps.js`, `shredOps.js` |
 | 2.3 | Absorbed | SafeSport messaging → **Epic 4** (household-only policy supersedes CC-on-minor-DM model) | [`docs/vision/COMMS_HUB.md`](docs/vision/COMMS_HUB.md) |
 
 **Parallel track:** Epic 2 runs alongside Epic 3 — finish **2.2** (vault/shredder). SafeSport messaging absorbed into **Epic 4** (Sprint 2.3 → 4.0–4.2). Player HUD delivery (Epic 1) does not block compliance work.
