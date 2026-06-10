@@ -2,7 +2,7 @@
 
 **Architecture:** [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)  
 **Last updated:** 2026-06-10  
-**Current sprint:** **LAUNCH-functional-os** · **Epic 4 Done (4.1–4.12)** · **Epic 5 Done (5.1–5.6; 5.4 provider scaffold)** · **Epic 2.2 Done** · **LAUNCH-loop-integrity Done** · **LAUNCH-test-integrity Done** · **LAUNCH-club-drill-promote Done** · **LAUNCH-scouting Done** · **LAUNCH-forge-nameonly Done** · **next:** **DEPLOY-O-bundle** · deploy compliance/weather functions + rules (no owner QA until all epics complete) · Launch portrait: `defaultPortraitV2` SVG + profile initials · **TABLED (post-launch):** Platform visual system (Gemini research — [`references/ui/research/`](docs/vision/references/ui/research/)), Flow asset generation, Avatar Studio **3.6b+** · **Deferred (post-launch — owner art):** 3.5m-gemini-ingest, 3.5m-gate · **3.5k Done** · **3.5h Done** · **3.5j Done** · **LAUNCH-defer-avatar Done**  
+**Current sprint:** **LAUNCH-functional-os** · **Epic 4 Done (4.1–4.12)** · **Epic 5 Done (5.1–5.6; 5.4 provider scaffold)** · **Epic 2.2 Done** · **DEPLOY-O-bundle Done** · **LAUNCH-loop-integrity Done** · **LAUNCH-test-integrity Done** · **LAUNCH-club-drill-promote Done** · **LAUNCH-scouting Done** · **LAUNCH-forge-nameonly Done** · **next:** operator deploy to dev (`deploy:core` / `deploy:rl` / `deploy:compliance` + Firestore rules) — all functional epics closed (no owner QA until all epics complete) · Launch portrait: `defaultPortraitV2` SVG + profile initials · **TABLED (post-launch):** Platform visual system (Gemini research — [`references/ui/research/`](docs/vision/references/ui/research/)), Flow asset generation, Avatar Studio **3.6b+** · **Deferred (post-launch — owner art):** 3.5m-gemini-ingest, 3.5m-gate · **3.5k Done** · **3.5h Done** · **3.5j Done** · **LAUNCH-defer-avatar Done**  
 **Note:** **3.5l-gate** closed in error — automated regression ≠ human VA; Phase 2 visual **rejected by product owner**  
 *Phase 7 · G1–G10 Done · Sprint 2.20 Done — Player OS premium foundation locked*
 
@@ -1616,7 +1616,7 @@ npm run check
 | **DEPLOY-L-integrations** | **Done** | `functions-integrations/` codebase (media, feeds, weather webhook) |
 | **DEPLOY-M-platform** | **Done** | `functions-platform/` codebase (apiGateway, cells, admin subset, analytics) |
 | **DEPLOY-N-monolith-retire** | **Done** | Slim `functions/index.js`; CI sequential codebase deploy; Node 20 engines |
-| **DEPLOY-O-bundle** | **In progress** | Self-contained `functions-core` + `functions-shared` deploy tarballs (Session 1: core; Session 2: rl) |
+| **DEPLOY-O-bundle** | **Done** | Self-contained bundle closures for all split codebases (Session 1: core/shared; Session 2: rl) — local-only requires; predeploy hooks; 58 guard tests green |
 
 **Verify** (functions deploy track):
 
@@ -1878,7 +1878,7 @@ npm run check
 npm run build
 ```
 
-### Sprint DEPLOY-O-bundle scope — **In progress**
+### Sprint DEPLOY-O-bundle scope — **Done**
 
 **Goal:** Cloud Run `/workspace` resolves every `require()` in `functions-core` and `functions-shared` without `../functions/` (Classification B: thin re-exports missing at runtime). **DEPLOY-N** production deploy depends on **O** for `logTrainingSession` / intent callables.
 
@@ -1891,7 +1891,7 @@ npm run build
 - `functions/__tests__/functionsDeploy.guard.test.js` — no `../functions/` in core/shared indexes; bundle script produces `functions-core/src/domains/trainingOps.js`
 - `docs/FUNCTIONS_DEPLOY.md` — bundle + predeploy runbook
 
-**Session 2:** **DEPLOY-O-bundle-rl** — same pattern for `functions-rl` (`rlOps`, `src/ml/*`, `trainer.js`).
+**Session 2 (Done):** **DEPLOY-O-bundle-rl** — `functions-rl` closure (`rlOps`, `src/ml/transitionRecorder.js`, `src/ml/trainer.js`) bundled by the shared `bundle-functions.cjs rl` target (18 files); `node -e require('./functions-rl/index.js')` resolves with no `Cannot find module`; `rl` predeploy hook present in `firebase.json`; covered by `functionsDeploy.guard.test.js` (rl wiring + tfjs-node dep + bundle closure).
 
 **Verify (Session 1):**
 
