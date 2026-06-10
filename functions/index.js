@@ -177,6 +177,10 @@ exports.sendCoachPlayerMessage      = operativeOps.sendCoachPlayerMessage;
 exports.sendChannelMessage          = operativeOps.sendChannelMessage;
 exports.sendHouseholdMessage        = operativeOps.sendHouseholdMessage;
 
+// ── Epic 4.4 W1: Parent Lounge channel provisioning ──────────────────────────
+const commsChannelOps = require('./src/domains/commsChannelOps');
+exports.coachProvisionParentLounge  = commsChannelOps.coachProvisionParentLounge;
+
 // ── Sprint 3.3 — Operative loadout unlock ceremonies ────────────────────────
 const loadoutOps = require('./src/domains/loadoutOps');
 exports.grantLoadoutCosmetic        = loadoutOps.grantLoadoutCosmetic;
@@ -204,6 +208,8 @@ exports.onMissionAssigned            = notificationOps.onMissionAssigned;
 exports.onAssignmentCreated          = notificationOps.onAssignmentCreated;
 exports.onTrialScoreAdded            = notificationOps.onTrialScoreAdded;
 exports.onTrialScoreWritten          = notificationOps.onTrialScoreWritten;
+// Epic 4.3 — announcement push loop
+exports.onTeamBroadcastCreated       = notificationOps.onTeamBroadcastCreated;
 
 // ── Phase 4, Epic 8 — Car Ride Home Protocol ─────────────────────────────────
 // Fires mandatory push notifications to parents 15 minutes post-match and

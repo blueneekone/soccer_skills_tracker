@@ -55,8 +55,9 @@ const ROLE_DEFAULTS = {
 		coach: true, director: true, registrar: true,
 		parent: false, player: false, tutor: false, recruiter: false,
 	},
-	push_gameReminders: {default: true},
-	push_messages:      {default: true},
+	push_gameReminders:  {default: true},
+	push_messages:       {default: true},
+	push_announcements:  {default: true},
 };
 
 function getDefaultPreference(role, category) {

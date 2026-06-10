@@ -1757,6 +1757,8 @@ service cloud.firestore {
         || sameTeam(resource.data.teamId)
         || resource.data.player == userDoc().playerName
         || parentCanSeePlayerName(resource.data.player)
+        || resource.data.playerId == request.auth.uid
+        || resource.data.playerEmail == emailKey()
       );
       allow create, update: if authed() && (
         isSuper()

@@ -19,6 +19,8 @@ const {
   isStaffRole,
   resolveIsMinor,
 } = require('./commsPolicy');
+const {sendFcmToUids} = require('./notificationOps');
+const {provisionLoungesForParentHousehold} = require('./commsChannelOps');
 
 const REGION = 'us-east1';
 
@@ -355,6 +357,31 @@ exports.sendCoachPlayerMessage = onCall({region: REGION}, async (request) => {
   });
 
   await batch.commit();
+
+  // Epic 4.3 — push the player on DM delivery (non-fatal; never breaks the send path).
+  try {
+    let playerUid = '';
+    try {
+      const ur = await admin.auth().getUserByEmail(toPlayerEmail);
+      playerUid = ur && ur.uid ? ur.uid : '';
+    } catch (_) {
+      /* player has no Auth account — skip push */
+    }
+    if (playerUid) {
+      await sendFcmToUids(
+          [playerUid],
+          {
+            title: 'New message from your coach',
+            body: bodyPreview,
+          },
+          {category: 'push_messages'},
+      );
+    }
+  } catch (e) {
+    logger.warn('[sendCoachPlayerMessage] push failed (non-fatal)', {
+      err: e instanceof Error ? e.message : String(e),
+    });
+  }
 
   return {
     ok: true,
@@ -1015,6 +1042,30 @@ exports.parentSignCoppaWaiver = onCall({region: REGION}, async (request) => {
       updatedAt: now,
     });
     await uRef.set({householdId: hid}, {merge: true});
+    // Fast-path: propagate householdId into parent's JWT immediately.
+    // syncUserClaims only fires on role/clubId changes, so a householdId
+    // write from this callable would otherwise not propagate until the next
+    // role/clubId update.
+    try {
+      const parentRec = await admin.auth().getUser(request.auth.uid);
+      const existingClaims = parentRec.customClaims || {};
+      await admin.auth().setCustomUserClaims(request.auth.uid, {...existingClaims, householdId: hid});
+    } catch (claimErr) {
+      logger.warn('[parentSignCoppaWaiver] householdId claim fast-path failed (non-fatal)', claimErr.message);
+    }
+    // W2: provision Parent Lounge channels for any children already in the household.
+    try {
+      const childEmailsList = pe.map((x) => normEmail(String(x))).filter(Boolean);
+      await provisionLoungesForParentHousehold({
+        parentEmail: email,
+        childEmails: childEmailsList,
+        parentClubId: clubId,
+      });
+    } catch (loungeErr) {
+      logger.warn('[parentSignCoppaWaiver] lounge provision failed (non-fatal)', {
+        err: loungeErr instanceof Error ? loungeErr.message : String(loungeErr),
+      });
+    }
     return {ok: true, householdId: hid, createdHousehold: true};
   }
   const hRef = db().collection('households').doc(hid);
@@ -1039,6 +1090,29 @@ exports.parentSignCoppaWaiver = onCall({region: REGION}, async (request) => {
       },
       {merge: true},
   );
+  // Fast-path: same as creation path — propagate householdId into parent's JWT claims.
+  try {
+    const parentRec = await admin.auth().getUser(request.auth.uid);
+    const existingClaims = parentRec.customClaims || {};
+    await admin.auth().setCustomUserClaims(request.auth.uid, {...existingClaims, householdId: hid});
+  } catch (claimErr) {
+    logger.warn('[parentSignCoppaWaiver] householdId claim fast-path failed (non-fatal)', claimErr.message);
+  }
+  // W2: provision/upsert Parent Lounge channels for all children in the household.
+  try {
+    const childEmailsList = (hData.playerEmails || [])
+        .map((x) => normEmail(String(x)))
+        .filter(Boolean);
+    await provisionLoungesForParentHousehold({
+      parentEmail: email,
+      childEmails: childEmailsList,
+      parentClubId: clubId,
+    });
+  } catch (loungeErr) {
+    logger.warn('[parentSignCoppaWaiver] lounge provision failed (non-fatal)', {
+      err: loungeErr instanceof Error ? loungeErr.message : String(loungeErr),
+    });
+  }
   return {ok: true, householdId: hid, createdHousehold: false};
 });
 
@@ -1294,6 +1368,21 @@ exports.parentProvisionOperative = onCall({region: REGION}, async (request) => {
     }, {merge: true});
   }
   await batch.commit();
+  // W2: when a child is linked to a team, provision the Parent Lounge for this child.
+  // The users/{childEmail} doc with teamId was just committed, so the helper can resolve it.
+  if (teamIdForUser) {
+    try {
+      await provisionLoungesForParentHousehold({
+        parentEmail,
+        childEmails: [childEmail],
+        parentClubId: clubId,
+      });
+    } catch (loungeErr) {
+      logger.warn('[parentProvisionOperative] lounge provision failed (non-fatal)', {
+        err: loungeErr instanceof Error ? loungeErr.message : String(loungeErr),
+      });
+    }
+  }
   return {
     ok: true,
     householdId: hid,

@@ -5,6 +5,7 @@
 import { describe, it, expect } from 'vitest';
 import { readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
+import { mergeAdminRoster } from '../../admin/rosterMerge.js';
 
 const ROOT = join(__dirname, '..', '..', '..');
 const ROADMAP = join(ROOT, '..', 'ROADMAP.md');
@@ -236,5 +237,96 @@ describe('T0-10 — Parent dashboard resolves children from households doc', () 
 		expect(src).toMatch(/engine\.init\s*\(\s*parentEmail\s*,\s*householdId\s*,\s*childEmails/);
 		expect(src).toMatch(/carRideEngine\.init\s*\(\s*linkedPlayerEmail/);
 		expect(src).toMatch(/childEmails\[0\]/);
+	});
+});
+
+// ── Tier-2 Item 1 — name-only roster visibility ──────────────────────────────
+
+describe('Tier-2 Item 1 — admin roster reads both player_lookup and rosters collection', () => {
+	const ADMIN_ROSTER = join(
+		ROOT,
+		'routes/(app)/admin/organizations/[clubId]/teams/[teamId]/roster/+page.svelte',
+	);
+
+	it('admin roster page file exists', () => {
+		expect(existsSync(ADMIN_ROSTER)).toBe(true);
+	});
+
+	it('admin roster page reads the rosters collection (name array source)', () => {
+		const src = readFileSync(ADMIN_ROSTER, 'utf-8');
+		// Must reference rosters/{teamId} doc to load name-only players
+		expect(src).toMatch(/['"`]rosters['"`]/);
+	});
+
+	it('admin roster page still reads player_lookup (no regression)', () => {
+		const src = readFileSync(ADMIN_ROSTER, 'utf-8');
+		expect(src).toMatch(/player_lookup/);
+	});
+
+	it('admin roster page imports and calls mergeAdminRoster', () => {
+		const src = readFileSync(ADMIN_ROSTER, 'utf-8');
+		expect(src).toMatch(/mergeAdminRoster/);
+		expect(src).toMatch(/rosterMerge/);
+	});
+
+	it('admin roster page marks name-only rows with a "No account" indicator', () => {
+		const src = readFileSync(ADMIN_ROSTER, 'utf-8');
+		expect(src).toMatch(/nameOnly/);
+		expect(src).toMatch(/No account/i);
+	});
+});
+
+describe('Tier-2 Item 1 — mergeAdminRoster unit tests', () => {
+
+	it('name-only player appears when not in linkedRows', () => {
+		const result = mergeAdminRoster([], ['Alice'], 'team1');
+		expect(result).toHaveLength(1);
+		expect(result[0].playerName).toBe('Alice');
+		expect(result[0].nameOnly).toBe(true);
+		expect(result[0].email).toBe('');
+		expect(result[0].key).toBe('nameonly:Alice');
+	});
+
+	it('email-linked player appears with nameOnly=false', () => {
+		const linked = [{ email: 'bob@x.com', playerName: 'Bob', ageGroup: 'U14', teamId: 'team1' }];
+		const result = mergeAdminRoster(linked, [], 'team1');
+		expect(result).toHaveLength(1);
+		expect(result[0].nameOnly).toBe(false);
+		expect(result[0].email).toBe('bob@x.com');
+	});
+
+	it('name in both sources deduplicates — email-linked wins (name-only is dropped)', () => {
+		const linked = [{ email: 'carol@x.com', playerName: 'Carol', ageGroup: null, teamId: 't1' }];
+		const result = mergeAdminRoster(linked, ['Carol'], 't1');
+		expect(result).toHaveLength(1);
+		expect(result[0].nameOnly).toBe(false);
+		expect(result[0].email).toBe('carol@x.com');
+	});
+
+	it('deduplication is case-insensitive', () => {
+		const linked = [{ email: 'dave@x.com', playerName: 'dave', ageGroup: null, teamId: 't1' }];
+		const result = mergeAdminRoster(linked, ['Dave', 'DAVE'], 't1');
+		// All three represent the same player; only email-linked survives
+		expect(result).toHaveLength(1);
+		expect(result[0].email).toBe('dave@x.com');
+	});
+
+	it('mixed list: email-linked + name-only combined, no duplicates, sorted by name', () => {
+		const linked = [
+			{ email: 'z@x.com', playerName: 'Zara', ageGroup: null, teamId: 't1' },
+			{ email: 'a@x.com', playerName: 'Alice', ageGroup: 'U12', teamId: 't1' },
+		];
+		const names = ['Alice', 'Bob', 'Charlie'];
+		const result = mergeAdminRoster(linked, names, 't1');
+		expect(result).toHaveLength(4); // Alice (linked), Bob (name-only), Charlie (name-only), Zara (linked)
+		expect(result.map((r) => r.playerName)).toEqual(['Alice', 'Bob', 'Charlie', 'Zara']);
+		expect(result[0].nameOnly).toBe(false);
+		expect(result[1].nameOnly).toBe(true);
+		expect(result[2].nameOnly).toBe(true);
+		expect(result[3].nameOnly).toBe(false);
+	});
+
+	it('empty inputs produce empty result', () => {
+		expect(mergeAdminRoster([], [], 'team1')).toHaveLength(0);
 	});
 });

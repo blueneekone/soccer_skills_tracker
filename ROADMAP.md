@@ -1496,15 +1496,25 @@ All 13 fixed via batched subagents, each with a regression guard (orchestrator-v
 - **T1-12** Stripe Connect status + audit_logs director view no UI reader → new `DirectorBillingAuditPanel` on director compliance page (reads `organizations` Stripe fields + tenant `audit_logs`); index added. *12 guards.*
 - **T1-13** RL-flow log never triggers bounty evaluation → `onWorkoutLogCreated` now calls `evaluateActiveBountiesForPlayer` (mirrors training path); confirmed wired in deployed `functions-rl` bundle. *8 guards.*
 
-### Tier 2 — fragility (fold into relevant sprints)
+### Tier 2 — fragility — **Fixes Done (2026-06-10); scouting + attendance deferred (feature work)**
 
-Roster name-only players invisible (admin + Forge) · trials name-string identity + `trials` vs `trial_scores` split · claim-refresh timing gaps (householdId/vpcVerified) · operative-without-team `/setup` loop · scouting + attendance not implemented.
+All four real fragilities fixed, each with a runnable guard (`npm run check` held at 382 throughout):
+- **Item 1** Roster name-only players invisible → admin roster page now merges `rosters/{teamId}.players[]` with `player_lookup` (deduped case-insensitively; name-only rows marked "No account") via new `src/lib/admin/rosterMerge.ts`. *35 vitest.* **Forge nuance (product decision pending):** name-only players have no account and are correctly NOT intent-targetable; recommend showing them disabled in the Forge picker with an "add email to assign" hint (no code change yet — IntentEngine left untouched).
+- **Item 2** trials name-string identity → `/challenges` `trials` write now adds stable `playerId`(uid)+`playerEmail` backlinks (retains `player` name for back-compat); `profileSyncer` joins uid→email→name cascade; additive uid/email read branch on the `trials` rule. *60 vitest + 4 node.* `legacy/**` confirmed unwired dead code (left alone).
+- **Item 3** claim-refresh gap → `syncUserClaims` trigger now emits `householdId`/`vpcVerified`/`minor`/`ageBand`/`divisionId` (parity with `buildBaseCustomClaims`) + idempotency coverage; `parentSignCoppaWaiver` sets the parent `householdId` claim fast-path. **Critical:** this was silently nulling `tokenHousehold()` for all parents, defeating the B4 parent-verification loop, T1-5, and household threads. *25 node.*
+- **Item 4** operative-without-team `/setup` loop → `isProfileComplete` recognizes `role:'player' + teamId`; `/setup` renders a stable "not linked to a team yet" + sign-out state for player-role users instead of trapping them in the parent/coach choice. *32 vitest.*
+
+**Deferred as net-new feature work (NOT fragilities):** coach **scouting** page (`/coach/scouting` is a hardcoded `MOCK_PROSPECTS` stub — no Firestore wiring) and **attendance** (no collection/route/stub exists at all).
 
 ### Test guards (LAUNCH-test-integrity)
 
-G1 XP field-path parity · G2 intent→`team_assignments` shape · G3 `parentProvisionOperative` seeded fields · G4 `safeSportBroadcast` delivery · G5 subscription gate · G6 emulator visible in CI · G7 RL trigger write · G8 VPC ceremony batch · G9 custom-claims trigger · G10 household thread path. Map each to its existing sprint test file.
+G1 XP field-path parity · G2 intent→`team_assignments` shape · G3 `parentProvisionOperative` seeded fields · G4 `safeSportBroadcast` delivery · G5 subscription gate · **G6 emulator visible in CI — Done** · G7 RL trigger write · G8 VPC ceremony batch · G9 custom-claims trigger · G10 household thread path. Map each to its existing sprint test file. (G1–G5/G7–G10 authored against the CI `firestore-rules` job — see G6 note below.)
 
-> **Environment blocker (2026-06-09):** the `@firebase/rules-unit-testing` harness exists (`firestoreTenantIsolation.test.ts`, `npm run test:firestore-rules`) but the **Firestore emulator requires a JDK that is not installed in the local dev environment** (`java`/`javac`/`JAVA_HOME` all absent). The emulator round-trip guards therefore cannot be authored-and-verified locally — **G6 must land first as a CI job** (Java + `emulators:exec`) before G1–G5/G7–G10 can be added with confidence. Until then, the Tier-0/Tier-1 rule changes remain covered by source-scan guards (`firestoreRulesSprint22.test.ts`). Do not author emulator tests that can't be run; wire CI first.
+> **G6 — Done (2026-06-09):** `.github/workflows/ci.yml` now runs on every PR + push to `dev`/`main` with three jobs: `unit` (curated green vitest suites), `functions-guards` (Track B + deploy `node --test` guards), and **`firestore-rules`** — a Temurin-JDK-17 job that runs `npm run test:firestore-rules` (`emulators:exec --only firestore`). No Firebase secrets needed (emulator-only, arbitrary project id). The emulator round-trip suite is now **visible in CI**, which unblocks authoring G1–G5/G7–G10.
+>
+> **Environment note:** the local dev environment still has **no JDK** (`java`/`javac`/`JAVA_HOME` absent), so emulator tests remain un-runnable on the dev machine — they must be authored/iterated against the CI `firestore-rules` job. The `@firebase/rules-unit-testing` harness (`firestoreTenantIsolation.test.ts`) `skipIf`s without `FIRESTORE_EMULATOR_HOST`, so it no-ops safely in local runs and the `unit` job. Tier-0/Tier-1 rule changes remain covered by source-scan guards (`firestoreRulesSprint22.test.ts`, `storageRulesB4c.test.ts`) until G1–G10 land.
+>
+> **Known debt:** the `unit` job uses a hand-curated allowlist of 117 green files because full `npm test` is red (61 files / 113 tests — superseded Player OS sprint CSS/markup guards, deferred-avatar track checks, and a few stale export/rule assertions). New test files are NOT auto-included. Follow-up: triage the 61 stale suites (update or quarantine via vitest config) so CI can run the full suite by glob instead of an allowlist.
 
 **Verify (per slice):**
 
@@ -1928,8 +1938,8 @@ npm run check
 | 4.0 | Done | Messaging policy charter — household-only adult↔minor | [`docs/vision/COMMS_HUB.md`](docs/vision/COMMS_HUB.md), [`docs/SAFESPORT_COMMS_MATRIX.md`](docs/SAFESPORT_COMMS_MATRIX.md) |
 | 4.1 | **Done** | Wire send surfaces — `/coach/logistics`, mount MessagesTab, parent-targeted compose | `commsSprint41.test.ts` |
 | 4.2 | **Done** | SafeSport compliance — block coach→minor, `consentComms`, unify monitored channel path | `commsSprint42.test.ts` |
-| 4.3 | Planned | Notification bus — single FCM store, push on announcements/messages | — |
-| 4.4 | Planned | Parent comms hub — Parent Lounge, unified inbox, reply UX | — |
+| 4.3 | **Done** | Notification bus — single FCM store (T0-9) + `onTeamBroadcastCreated` push on announcements (consent-filtered parents + team players) + DM push in `sendCoachPlayerMessage`; `push_announcements` default-on. *Refinement noted:* `sendFcmToUids` doesn't pref-gate per-user yet — fine until announcement opt-out UI exists. | `comms43Push.guard.test.ts` (14) |
+| 4.4 | **Done** | Parent comms hub — per-team **Parent Lounge** (`clubs/{clubId}/channels/parent-lounge-{teamId}`): provisioning helper + coach callable (W1), auto-provision on household link + parent `clubId` set (W2), `ParentLoungePanel.svelte` live read/send via `sendChannelMessage` (W3), mounted in `/messages` parent view derived from children's teams so it shows pre-first-message (W4/W4b). Parents initiate + reply; SafeSport-monitored. | `comms44ParentLounge*.guard.test.ts` (17+20+13/16) |
 | 4.5 | Planned | Schedule → announce → push (deployment calendar integration) | — |
 | 4.6 | Planned | Game + payment + registration reminders | — |
 | 4.7 | Planned | Team ops mode (TM MVP or coach-delegated logistics) | — |

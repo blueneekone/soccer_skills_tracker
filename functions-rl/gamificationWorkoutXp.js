@@ -365,6 +365,7 @@ async function grantTrainingXpAfterRepCreated(db, repSnap, repId) {
 
       const lv = trainingLevelFromTotalXp(newTotal);
       const xpInc = admin.firestore.FieldValue.increment(earned);
+      const repsInc = admin.firestore.FieldValue.increment(repsTotal);
 
       const uData = uSnap.data() || {};
       const prevLong =
@@ -372,12 +373,18 @@ async function grantTrainingXpAfterRepCreated(db, repSnap, repId) {
             Math.floor(uData.longestStreak) :
             0;
 
+      // T1-10: denormalize clubId onto player_stats so the Firestore read rule can use
+      // tokenClubMatchesDoc() (zero gets) instead of teamClubId() (1 get).
+      const psClubId =
+          typeof uData.clubId === "string" && uData.clubId.trim() ? uData.clubId.trim() : null;
       tx.set(
           psRef,
           {
             teamId: teamId || null,
+            clubId: psClubId,
             playerName: playerName || null,
             total_xp: xpInc,
+            total_reps: repsInc,
             current_level: lv.level,
             reps_this_week: repsWeek,
             minutes_this_week: minsWeek,
@@ -442,14 +449,64 @@ async function grantTrainingXpAfterRepCreated(db, repSnap, repId) {
     const psSnap = await db.collection("player_stats").doc(athleteUid).get();
     const psData = psSnap.exists ? psSnap.data() : {};
     await evaluateActiveBountiesForPlayer(db, playerEmail, {
-      totalReps:    typeof psData.reps_this_week === "number" ? psData.reps_this_week : repsTotal,
-      totalMinutes: typeof psData.minutes_this_week === "number" ? psData.minutes_this_week : duration,
+      totalReps:    typeof psData.total_reps === "number" ? psData.total_reps : repsTotal,
+      totalMinutes: typeof psData.totalMins === "number" ? psData.totalMins : duration,
       streakDays:   typeof psData.streak_days === "number" ? psData.streak_days : 0,
       triggerSource: `reps/${repId}`,
     });
   } catch (e) {
     logger.error("grantTrainingXpAfterRepCreated: bounty evaluation failed", {repId, err: e});
   }
+}
+
+/**
+ * Level → Season 1 card IDs granted when a player first reaches that level.
+ * Cards are granted via FieldValue.arrayUnion into users/{email}.ownedSeasonOneCards.
+ * @type {Record<number, string[]>}
+ */
+const SEASON_ONE_LEVEL_REWARDS = {
+  1:  ['card_001_base'],
+  2:  ['card_002_base'],
+  3:  ['card_004_base'],
+  4:  ['card_008_base'],
+  5:  ['card_009_base'],
+  6:  ['card_013_base'],
+  7:  ['card_016_base'],
+  8:  ['card_017_base'],
+  9:  ['card_003_base'],
+  10: ['card_006_base'],
+  11: ['card_010_base'],
+  12: ['card_012_base'],
+  13: ['card_018_base'],
+  14: ['card_020_base'],
+  15: ['card_001_holo'],
+  16: ['card_005_base'],
+  17: ['card_011_base'],
+  18: ['card_014_base'],
+  19: ['card_019_base'],
+  20: ['card_007_base'],
+  21: ['card_015_base'],
+  22: ['card_021_base'],
+  25: ['card_007_radiant'],
+  30: ['card_015_alt_art'],
+};
+
+/**
+ * Returns the Season 1 card IDs earned for every level crossed from
+ * `prevLevel + 1` up to (and including) `newLevel`. Used in logTrainingSession
+ * to populate users/{email}.ownedSeasonOneCards via FieldValue.arrayUnion.
+ *
+ * @param {number} prevLevel Level before XP was applied.
+ * @param {number} newLevel  Level after XP was applied.
+ * @return {string[]}
+ */
+function getSeasonOneCardRewardsForLevelRange(prevLevel, newLevel) {
+  const cards = [];
+  for (let lvl = prevLevel + 1; lvl <= newLevel; lvl++) {
+    const reward = SEASON_ONE_LEVEL_REWARDS[lvl];
+    if (reward) cards.push(...reward);
+  }
+  return cards;
 }
 
 module.exports = {
@@ -461,4 +518,6 @@ module.exports = {
   calculateRepsEarnedXp,
   computeMatchTelemetryParlayXp,
   grantTrainingXpAfterRepCreated,
+  SEASON_ONE_LEVEL_REWARDS,
+  getSeasonOneCardRewardsForLevelRange,
 };

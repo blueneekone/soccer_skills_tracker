@@ -1,9 +1,10 @@
 <script lang="ts">
-	import { collection, query, where, orderBy, limit, getDocs } from 'firebase/firestore';
+	import { collection, query, where, orderBy, limit, getDocs, doc, getDoc } from 'firebase/firestore';
 	import { db } from '$lib/firebase.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import HouseholdThreadPanel from '$lib/components/comms/HouseholdThreadPanel.svelte';
 	import AnnouncementsInbox from '$lib/components/comms/AnnouncementsInbox.svelte';
+	import ParentLoungePanel from '$lib/components/comms/ParentLoungePanel.svelte';
 
 	const role = $derived(authStore.role);
 	const profile = $derived(authStore.userProfile);
@@ -24,6 +25,114 @@
 				: role === 'director'
 					? 'director'
 					: 'staff'
+	);
+
+	// Primary source: distinct (clubId, teamId) pairs from the parent's children's user docs.
+	// Resolved once per session via household → child emails → user docs.
+	let parentLoungeTeams = $state<Array<{ clubId: string; teamId: string }>>([]);
+	let parentLoungeLoading = $state(false);
+
+	$effect(() => {
+		if (role !== 'parent' || !householdId) {
+			parentLoungeTeams = [];
+			parentLoungeLoading = false;
+			return;
+		}
+
+		let cancelled = false;
+		parentLoungeLoading = true;
+
+		(async () => {
+			try {
+				// Step 1: resolve child emails from the authoritative household doc.
+				const hSnap = await getDoc(doc(db, 'households', householdId));
+				if (cancelled) return;
+				if (!hSnap.exists()) {
+					parentLoungeLoading = false;
+					return;
+				}
+				const rawEmails: unknown[] = hSnap.data().playerEmails ?? [];
+				const childEmails = rawEmails
+					.map((e) => String(e ?? '').trim().toLowerCase())
+					.filter(Boolean);
+
+				if (!childEmails.length) {
+					parentLoungeLoading = false;
+					return;
+				}
+
+				// Step 2: read each child's user doc (fall back to player_lookup) for teamId + clubId.
+				const seen: Record<string, true> = {};
+				const teams: Array<{ clubId: string; teamId: string }> = [];
+
+				await Promise.all(
+					childEmails.map(async (email) => {
+						try {
+							const uSnap = await getDoc(doc(db, 'users', email));
+							let data = uSnap.exists()
+								? (uSnap.data() as Record<string, unknown>)
+								: null;
+							if (!data?.clubId || !data?.teamId) {
+								const lSnap = await getDoc(doc(db, 'player_lookup', email));
+								if (lSnap.exists()) data = lSnap.data() as Record<string, unknown>;
+							}
+							const cId = String(data?.clubId ?? '');
+							const tId = String(data?.teamId ?? '');
+							if (cId && tId) {
+								const key = `${cId}:${tId}`;
+								if (!seen[key]) {
+									seen[key] = true;
+									teams.push({ clubId: cId, teamId: tId });
+								}
+							}
+						} catch {
+							// per-child errors are non-fatal — skip silently
+						}
+					})
+				);
+
+				if (!cancelled) {
+					parentLoungeTeams = teams;
+					parentLoungeLoading = false;
+				}
+			} catch (e) {
+				console.error('[messages] parent lounge teams load', e);
+				if (!cancelled) parentLoungeLoading = false;
+			}
+		})();
+
+		return () => {
+			cancelled = true;
+		};
+	});
+
+	// Merge primary (child team docs) and fallback (CC'd in_app_messages headers) sources.
+	// Primary ensures lounges appear as soon as the channel is provisioned, before any messages.
+	const parentLounges = $derived(
+		(() => {
+			if (role !== 'parent') return [] as Array<{ clubId: string; teamId: string }>;
+			const seen: Record<string, true> = {};
+			const result: Array<{ clubId: string; teamId: string }> = [];
+			for (const t of parentLoungeTeams) {
+				const key = `${t.clubId}:${t.teamId}`;
+				if (!seen[key]) {
+					seen[key] = true;
+					result.push({ clubId: t.clubId, teamId: t.teamId });
+				}
+			}
+			// CC-message fallback: picks up teamClubId/teamId from items when child doc lookup missed it
+			for (const m of items) {
+				const cId = String(m['teamClubId'] ?? clubId ?? '');
+				const tId = String(m['teamId'] ?? '');
+				if (!cId || !tId) continue;
+				const key = `${cId}:${tId}`;
+				if (!seen[key]) {
+					seen[key] = true;
+					result.push({ clubId: cId, teamId: tId });
+				}
+			}
+			return result;
+		})()
 	);
 
 	function formatDate(ts) {
@@ -195,6 +304,23 @@
 			<HouseholdThreadPanel householdId={householdId} />
 		{/if}
 	</div>
+
+	{#if role === 'parent'}
+		<div class="lounge-section">
+			<h3 class="lounge-section-label">Parent Lounge</h3>
+			{#if parentLounges.length === 0}
+				{#if !loading && !parentLoungeLoading}
+					<p class="muted lounge-empty">
+						No team lounges yet — your coach will provision one once your child's team is active.
+					</p>
+				{/if}
+			{:else}
+				{#each parentLounges as lounge (`${lounge.clubId}:${lounge.teamId}`)}
+					<ParentLoungePanel clubId={lounge.clubId} teamId={lounge.teamId} />
+				{/each}
+			{/if}
+		</div>
+	{/if}
 </div>
 
 <style>
@@ -299,5 +425,26 @@
 		white-space: pre-wrap;
 		line-height: 1.5;
 		font-size: 0.92rem;
+	}
+
+	.lounge-section {
+		margin-top: var(--bento-gap-sm, 16px);
+		display: flex;
+		flex-direction: column;
+		gap: var(--bento-gap-sm, 16px);
+	}
+
+	.lounge-section-label {
+		margin: 0 0 4px;
+		font-size: 0.8rem;
+		font-weight: 800;
+		text-transform: uppercase;
+		letter-spacing: 0.06em;
+		opacity: 0.7;
+	}
+
+	.lounge-empty {
+		font-size: 0.88rem;
+		padding: 12px 0;
 	}
 </style>

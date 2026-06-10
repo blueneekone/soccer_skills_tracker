@@ -489,3 +489,43 @@ describe('B4b — completion_verifications: write stays CF-only; parent list ena
 		expect(cvB4bBlock).not.toMatch(/allow create[\s\S]*?mediaStoragePath/);
 	});
 });
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Tier-2 Item 2 — trials identity backlink (uid + email stable read branches)
+//
+// Source-scan only. Verifies:
+//   (a) The trials read rule adds a uid-keyed branch (playerId == request.auth.uid).
+//   (b) The trials read rule adds an email-keyed branch (playerEmail == emailKey()).
+//   (c) The legacy name-string branch (player == userDoc().playerName) is retained.
+//   (d) The write rules are unchanged — no uid/email create/update bypass added.
+// ─────────────────────────────────────────────────────────────────────────────
+describe('Tier-2 Item 2 — trials collection identity backlink read rule', () => {
+	const trialsBlock = (() => {
+		const blockMatch = RULES.match(/match \/trials\/\{docId\}\s*\{[\s\S]*?\n\s*\}/);
+		return blockMatch ? blockMatch[0] : '';
+	})();
+
+	it('trials match block is found in rules', () => {
+		expect(trialsBlock).toBeTruthy();
+	});
+
+	it('(a) trials read allows playerId == request.auth.uid (stable uid branch)', () => {
+		expect(trialsBlock).toMatch(/resource\.data\.playerId\s*==\s*request\.auth\.uid/);
+	});
+
+	it('(b) trials read allows playerEmail == emailKey() (stable email branch)', () => {
+		expect(trialsBlock).toMatch(/resource\.data\.playerEmail\s*==\s*emailKey\(\)/);
+	});
+
+	it('(c) legacy name-string branch is retained (backward compat)', () => {
+		expect(trialsBlock).toMatch(/resource\.data\.player\s*==\s*userDoc\(\)\.playerName/);
+	});
+
+	it('(d) write rules do NOT include a playerId or playerEmail create/update bypass', () => {
+		const writeBlock = trialsBlock.match(/allow create, update:[\s\S]*?;/);
+		if (writeBlock) {
+			expect(writeBlock[0]).not.toMatch(/playerId/);
+			expect(writeBlock[0]).not.toMatch(/playerEmail/);
+		}
+	});
+});

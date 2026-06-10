@@ -244,18 +244,35 @@ exports.syncUserClaims = onDocumentWritten(
         }
       } else {
         // â”€â”€ REVOCATION â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-        // User removed from their organisation.  Strip all tenant-scope claims.
+        // User removed from their organisation.  Strip tenant-scope claims only.
+        // householdId is household-scoped (not club-scoped) — never strip it here.
         delete updated.clubId;
         delete updated.tenantId;
         delete updated.teamId;
       }
 
+      // Identity claims — sourced from the after-snapshot user doc.
+      // Added unconditionally (outside the club branch) so they are always
+      // present regardless of which path last wrote custom claims.
+      // householdId is outside the club/revocation branch intentionally:
+      // a household persists independently of club-tenant membership.
+      updated.householdId = after.householdId || null;
+      updated.vpcVerified = after.vpcStatus === 'verified';
+      updated.minor = after.isMinor === true;
+      updated.ageBand = after.ageBand || (after.isMinor === true ? 'teen13to16' : 'adult');
+      updated.divisionId = after.divisionId || after.clubId || null;
+
       // Idempotency: skip write if claims are already identical.
+      // Includes identity fields so household/vpc changes propagate instead of no-opping.
       const unchanged =
         existing.role === updated.role &&
         existing.clubId === updated.clubId &&
         existing.tenantId === updated.tenantId &&
-        existing.teamId === updated.teamId;
+        existing.teamId === updated.teamId &&
+        existing.householdId === updated.householdId &&
+        existing.vpcVerified === updated.vpcVerified &&
+        existing.minor === updated.minor &&
+        existing.ageBand === updated.ageBand;
 
       if (unchanged) {
         logger.info('[syncUserClaims] no-op (claims current)', {email: emailKey});

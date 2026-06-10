@@ -45,15 +45,17 @@
 		if (!profile?.playerName || !profile?.teamId) return alert('Profile incomplete.');
 
 		try {
-			await addDoc(collection(db, 'trials'), {
-				player: profile.playerName,
-				teamId: profile.teamId,
-				type,
-				skill,
-				a1, a2: a2 || 0, a3: a3 || 0,
-				result: String(result),
-				timestamp: new Date()
-			});
+		await addDoc(collection(db, 'trials'), {
+			player: profile.playerName,
+			playerId: authStore.user?.uid ?? '',
+			playerEmail: (authStore.user?.email ?? '').toLowerCase(),
+			teamId: profile.teamId,
+			type,
+			skill,
+			a1, a2: a2 || 0, a3: a3 || 0,
+			result: String(result),
+			timestamp: new Date()
+		});
 			alert(`${type} Trial Saved! Your coach has been notified.`);
 			// Clear form
 			if (type === 'Passing') { passSkillName = ''; passScore1 = ''; passScore2 = ''; passScore3 = ''; }

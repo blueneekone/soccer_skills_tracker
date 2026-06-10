@@ -27,6 +27,7 @@
 const {onDocumentCreated} = require('firebase-functions/v2/firestore');
 const admin = require('firebase-admin');
 const {calculateTrainingSessionEarnedXp} = require('../../gamificationWorkoutXp');
+const {evaluateActiveBountiesForPlayer} = require('../../bountyVerification');
 const {buildStateVector} = require('./featureBuilder');
 
 const REGION = 'us-central1';
@@ -205,6 +206,26 @@ exports.onWorkoutLogCreated = onDocumentCreated(
         workoutDateUtc,
         policyVersion,
       });
+
+      // Evaluate individual-player bounties for RL-path workouts.
+      // Mirrors the same post-transaction call in grantTrainingXpAfterRepCreated
+      // (gamificationWorkoutXp.js). Without this call, bounties that gate on
+      // reps_count / workout_volume_kj / streak_length never advance for
+      // workouts that went through the adaptive-policy flow.
+      const playerEmail = typeof logDoc.playerEmail === 'string' ? logDoc.playerEmail : '';
+      if (playerEmail && playerEmail.includes('@')) {
+        try {
+          const psData = playerStats || {};
+          await evaluateActiveBountiesForPlayer(db(), playerEmail, {
+            totalReps:    typeof psData.total_reps === 'number' ? psData.total_reps : (logDoc.reps || 0),
+            totalMinutes: typeof psData.totalMins === 'number' ? psData.totalMins : (logDoc.duration || 0),
+            streakDays:   typeof psData.streak_days === 'number' ? psData.streak_days : 0,
+            triggerSource: `workout_logs/${event.params?.logId || uid}`,
+          });
+        } catch (bountyErr) {
+          console.error('[transitionRecorder] bounty evaluation failed:', bountyErr);
+        }
+      }
     },
 );
 

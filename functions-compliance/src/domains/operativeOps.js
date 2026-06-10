@@ -1015,6 +1015,17 @@ exports.parentSignCoppaWaiver = onCall({region: REGION}, async (request) => {
       updatedAt: now,
     });
     await uRef.set({householdId: hid}, {merge: true});
+    // Fast-path: propagate householdId into parent's JWT immediately.
+    // syncUserClaims only fires on role/clubId changes, so a householdId
+    // write from this callable would otherwise not propagate until the next
+    // role/clubId update.
+    try {
+      const parentRec = await admin.auth().getUser(request.auth.uid);
+      const existingClaims = parentRec.customClaims || {};
+      await admin.auth().setCustomUserClaims(request.auth.uid, {...existingClaims, householdId: hid});
+    } catch (claimErr) {
+      logger.warn('[parentSignCoppaWaiver] householdId claim fast-path failed (non-fatal)', claimErr.message);
+    }
     return {ok: true, householdId: hid, createdHousehold: true};
   }
   const hRef = db().collection('households').doc(hid);
@@ -1039,6 +1050,14 @@ exports.parentSignCoppaWaiver = onCall({region: REGION}, async (request) => {
       },
       {merge: true},
   );
+  // Fast-path: same as creation path — propagate householdId into parent's JWT claims.
+  try {
+    const parentRec = await admin.auth().getUser(request.auth.uid);
+    const existingClaims = parentRec.customClaims || {};
+    await admin.auth().setCustomUserClaims(request.auth.uid, {...existingClaims, householdId: hid});
+  } catch (claimErr) {
+    logger.warn('[parentSignCoppaWaiver] householdId claim fast-path failed (non-fatal)', claimErr.message);
+  }
   return {ok: true, householdId: hid, createdHousehold: false};
 });
 

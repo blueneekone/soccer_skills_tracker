@@ -56,6 +56,7 @@ export function isProfileComplete(profile) {
 	if (!profile) return false;
 	if (isAccountSuspendedProfile(/** @type {Record<string, unknown>} */ (profile))) return false;
 	if (userDocHasPlayerRole(/** @type {Record<string, unknown>} */ (profile))) return true;
+	if (profile.role === 'player' && profile.teamId) return true;
 	if (profile.role === 'super_admin' || profile.role === 'global_admin') return true;
 	if (profile.role === 'director') return true;
 	if (profile.role === 'registrar' && profile.clubId) return true;

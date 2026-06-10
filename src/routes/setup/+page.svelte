@@ -12,6 +12,16 @@
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { teamsStore } from '$lib/stores/teams.svelte.js';
 
+	/**
+	 * True when the signed-in user already has a player role (string claim or roles array).
+	 * Used to show the teamless-player terminal state instead of the parent/coach onboarding form.
+	 */
+	const isPlayerRole = $derived(
+		authStore.role === 'player' ||
+		(Array.isArray((authStore.userProfile as Record<string, unknown> | null | undefined)?.roles) &&
+			((authStore.userProfile as Record<string, unknown>).roles as string[]).includes('player'))
+	);
+
 	/** T0-5: coach role is server-assigned via this callable — no client setDoc(role:'coach'). */
 	const claimCoachInviteCallable = httpsCallable(functions, 'claimCoachInvite');
 
@@ -180,107 +190,119 @@
 	<div class="auth-card">
 		<div class="logo-circle" aria-hidden="true"><Icon name="sport.soccer" size={24} /></div>
 		<h2 class="auth-title">Complete Profile</h2>
-		<p class="auth-subtitle">Link your account to your organization.</p>
 
-		<p class="kind-label">I am registering as</p>
-		<div
-			class="tw-mb-5 tw-flex tw-flex-col tw-gap-3 sm:tw-flex-row sm:tw-flex-nowrap sm:tw-gap-3"
-			role="group"
-			aria-label="Registration role"
-		>
-			<button
-				type="button"
-				class={roleBtnClass('coach')}
-				aria-pressed={setupRole === 'coach'}
-				onclick={() => setSetupRole('coach')}
+		{#if isPlayerRole}
+			<!-- Teamless-player terminal state: stable, no redirect bounce. -->
+			<p class="auth-subtitle">Operative account detected.</p>
+			<div class="player-unlinked-msg" role="status">
+				<p>
+					Your operative profile isn't linked to a team yet. Ask your coach or club admin to add you to a roster.
+				</p>
+			</div>
+			<button class="secondary-btn w-100" type="button" onclick={handleLogout}>Sign out</button>
+		{:else}
+			<p class="auth-subtitle">Link your account to your organization.</p>
+
+			<p class="kind-label">I am registering as</p>
+			<div
+				class="tw-mb-5 tw-flex tw-flex-col tw-gap-3 sm:tw-flex-row sm:tw-flex-nowrap sm:tw-gap-3"
+				role="group"
+				aria-label="Registration role"
 			>
-				Coach<br /><span class="tw-text-[0.58rem] tw-font-bold tw-normal-case tw-tracking-normal tw-opacity-90"
-					>(Team leader)</span
+				<button
+					type="button"
+					class={roleBtnClass('coach')}
+					aria-pressed={setupRole === 'coach'}
+					onclick={() => setSetupRole('coach')}
 				>
-			</button>
-			<button
-				type="button"
-				class={roleBtnClass('parent')}
-				aria-pressed={setupRole === 'parent'}
-				onclick={() => setSetupRole('parent')}
-			>
-				Parent<br /><span class="tw-text-[0.58rem] tw-font-bold tw-normal-case tw-tracking-normal tw-opacity-90"
-					>(Household manager)</span
+					Coach<br /><span class="tw-text-[0.58rem] tw-font-bold tw-normal-case tw-tracking-normal tw-opacity-90"
+						>(Team leader)</span
+					>
+				</button>
+				<button
+					type="button"
+					class={roleBtnClass('parent')}
+					aria-pressed={setupRole === 'parent'}
+					onclick={() => setSetupRole('parent')}
 				>
-			</button>
-		</div>
-		<p class="setup-helper-text tw-mb-5">
-			Club directors are invited by your organization admin — use the link you received or contact support.
-		</p>
+					Parent<br /><span class="tw-text-[0.58rem] tw-font-bold tw-normal-case tw-tracking-normal tw-opacity-90"
+						>(Household manager)</span
+					>
+				</button>
+			</div>
+			<p class="setup-helper-text tw-mb-5">
+				Club directors are invited by your organization admin — use the link you received or contact support.
+			</p>
 
-	{#if setupRole === 'parent'}
-		<label for="setup-club">Select your club / organization</label>
-		<select id="setup-club" bind:value={selectedClubId}>
-			<option value="">Select your club…</option>
-			{#each teamsStore.clubs as club}
-				<option value={club.id}>{club.name || club.id}</option>
-			{/each}
-		</select>
-	{/if}
-
-		<label for="setup-name">
-			{#if setupRole === 'parent'}
-				Your name (as parent / guardian)
-			{:else}
-				Your name (as coach)
-			{/if}
-		</label>
-		<input
-			id="setup-name"
-			type="text"
-			bind:value={displayName}
-			placeholder="e.g. Alex Morgan"
-			autocomplete="name"
-		/>
 		{#if setupRole === 'parent'}
-			<p class="setup-helper-text">
-				Players under 13 must be created by a parent in the Household Clearance flow — you cannot add a "player
-				account" here.
-			</p>
-		{:else}
-			<p class="setup-helper-text">
-				Your director must send an invite to your email address first. Once a pending invite exists for your
-				account, click "Claim invite" below to activate your coach role.
-			</p>
+			<label for="setup-club">Select your club / organization</label>
+			<select id="setup-club" bind:value={selectedClubId}>
+				<option value="">Select your club…</option>
+				{#each teamsStore.clubs as club}
+					<option value={club.id}>{club.name || club.id}</option>
+				{/each}
+			</select>
 		{/if}
 
-	<!-- Terms acknowledgement — required before submission -->
-	<label class="setup-terms-label">
-		<input
-			type="checkbox"
-			class="setup-terms-checkbox"
-			bind:checked={termsAccepted}
-			disabled={saving}
-		/>
-		<span>
-			I acknowledge the
-			<a href="/terms" target="_blank" rel="noopener noreferrer" class="setup-terms-link">
-				Vanguard Protocol Terms
-			</a>
-			and
-			<a href="/privacy" target="_blank" rel="noopener noreferrer" class="setup-terms-link">
-				Privacy Policy
-			</a>.
-		</span>
-	</label>
+			<label for="setup-name">
+				{#if setupRole === 'parent'}
+					Your name (as parent / guardian)
+				{:else}
+					Your name (as coach)
+				{/if}
+			</label>
+			<input
+				id="setup-name"
+				type="text"
+				bind:value={displayName}
+				placeholder="e.g. Alex Morgan"
+				autocomplete="name"
+			/>
+			{#if setupRole === 'parent'}
+				<p class="setup-helper-text">
+					Players under 13 must be created by a parent in the Household Clearance flow — you cannot add a "player
+					account" here.
+				</p>
+			{:else}
+				<p class="setup-helper-text">
+					Your director must send an invite to your email address first. Once a pending invite exists for your
+					account, click "Claim invite" below to activate your coach role.
+				</p>
+			{/if}
 
-	{#if errorMsg}
-		<div class="auth-error-msg" role="alert">{errorMsg}</div>
-	{/if}
+		<!-- Terms acknowledgement — required before submission -->
+		<label class="setup-terms-label">
+			<input
+				type="checkbox"
+				class="setup-terms-checkbox"
+				bind:checked={termsAccepted}
+				disabled={saving}
+			/>
+			<span>
+				I acknowledge the
+				<a href="/terms" target="_blank" rel="noopener noreferrer" class="setup-terms-link">
+					Vanguard Protocol Terms
+				</a>
+				and
+				<a href="/privacy" target="_blank" rel="noopener noreferrer" class="setup-terms-link">
+					Privacy Policy
+				</a>.
+			</span>
+		</label>
 
-	<button class="primary-btn btn-orange w-100" onclick={completeSetup} disabled={saving || !termsAccepted}>
-		{#if saving}
-			{setupRole === 'coach' ? 'Claiming invite…' : 'Saving profile…'}
-		{:else}
-			{setupRole === 'coach' ? 'Claim invite' : 'Complete setup'}
+		{#if errorMsg}
+			<div class="auth-error-msg" role="alert">{errorMsg}</div>
 		{/if}
-	</button>
-		<button class="secondary-btn w-100" type="button" onclick={handleLogout}>Cancel &amp; logout</button>
+
+		<button class="primary-btn btn-orange w-100" onclick={completeSetup} disabled={saving || !termsAccepted}>
+			{#if saving}
+				{setupRole === 'coach' ? 'Claiming invite…' : 'Saving profile…'}
+			{:else}
+				{setupRole === 'coach' ? 'Claim invite' : 'Complete setup'}
+			{/if}
+		</button>
+			<button class="secondary-btn w-100" type="button" onclick={handleLogout}>Cancel &amp; logout</button>
+		{/if}
 	</div>
 </div>
 
@@ -331,4 +353,19 @@
 	}
 
 	.setup-terms-link:hover { color: #14b8a6; }
+
+	.player-unlinked-msg {
+		margin: 0 0 1.5rem;
+		padding: 1rem 1.25rem;
+		border: 1px solid rgba(20, 184, 166, 0.22);
+		border-radius: 0.5rem;
+		background: rgba(20, 184, 166, 0.06);
+		font-size: 0.85rem;
+		line-height: 1.6;
+		color: var(--text-secondary, #a1a1aa);
+	}
+
+	.player-unlinked-msg p {
+		margin: 0;
+	}
 </style>

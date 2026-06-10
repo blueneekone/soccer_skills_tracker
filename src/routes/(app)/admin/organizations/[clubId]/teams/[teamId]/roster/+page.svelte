@@ -18,6 +18,8 @@
 	import '$lib/styles/enterprise-console.css';
 	import Icon from '$lib/components/ui/Icon.svelte';
 	import type { IconName } from '$lib/icons/registry.js';
+	import { mergeAdminRoster } from '$lib/admin/rosterMerge.js';
+	import type { RosterRow, LinkedRosterInput } from '$lib/admin/rosterMerge.js';
 
 	/**
 	 * @type {{
@@ -41,19 +43,17 @@
 	let teamErr = $state('');
 
 	// ── Roster ───────────────────────────────────────────────────────────────────
-	/**
-	 * @typedef {{
-	 *   email: string,
-	 *   playerName: string,
-	 *   ageGroup: string | null,
-	 *   teamId: string,
-	 * }} RosterRow
-	 */
 
 	const ROSTER_PAGE_SIZE = 20;
 
-	/** @type {RosterRow[]} */
-	let roster = $state([]);
+	/** Email-linked rows from player_lookup (paginated). */
+	let emailLinkedRows: LinkedRosterInput[] = $state([]);
+	/** Name strings from rosters/{teamId}.players[] (loaded once, not paginated). */
+	let nameOnlyNames: string[] = $state([]);
+
+	/** Merged + deduped roster for display. Re-derived whenever either source changes. */
+	const roster = $derived(mergeAdminRoster(emailLinkedRows, nameOnlyNames, teamId));
+
 	let rosterLoading = $state(false);
 	let rosterErr = $state('');
 	/** @type {import('firebase/firestore').DocumentSnapshot | null} */
@@ -74,13 +74,13 @@
 
 	// ── Age group helper ─────────────────────────────────────────────────────────
 	/** @param {string} teamName */
-	function parseAgeGroup(teamName) {
+	function parseAgeGroup(teamName: string) {
 		if (!teamName) return null;
 		const m = String(teamName).match(/\bU\s*(\d{1,2})\b/i);
 		return m ? `U${m[1]}` : null;
 	}
 
-	// ── Data fetch — team doc + roster (deps: authReady + teamId; no $effect → $state sync loops) ──
+	// ── Data fetch — team doc + roster (deps: authReady + teamId) ─────────────────
 	$effect(() => {
 		const gen = ++rosterFetchGen;
 		if (!authReady) return;
@@ -90,7 +90,8 @@
 			untrack(() => {
 				teamErr = 'No team ID in URL.';
 				teamDoc = null;
-				roster = [];
+				emailLinkedRows = [];
+				nameOnlyNames = [];
 				teamLoading = false;
 				rosterLoading = false;
 			});
@@ -114,27 +115,38 @@
 					orderBy('playerName'),
 					limit(ROSTER_PAGE_SIZE + 1),
 				);
-				const [teamSnap, rosterSnap] = await Promise.all([
-					getDoc(doc(db, 'teams', tid)),
+				// Fetch player_lookup (paginated first page), rosters doc (name array), and team meta in parallel.
+				const [rosterSnap, rostersDocSnap, teamSnap] = await Promise.all([
 					getDocs(rosterFirstPageQ),
+					getDoc(doc(db, 'rosters', tid)),
+					getDoc(doc(db, 'teams', tid)),
 				]);
 
 				if (cancelled || gen !== rosterFetchGen) return;
 
 				untrack(() => {
+					// ── player_lookup (email-linked) ─────────────────────────────────
 					const rawDocs = rosterSnap.docs;
 					rosterHasMore = rawDocs.length > ROSTER_PAGE_SIZE;
 					const pageDocs = rawDocs.slice(0, ROSTER_PAGE_SIZE);
 					rosterLastDoc = pageDocs.at(-1) ?? null;
-					roster = pageDocs.map((d) => {
+					emailLinkedRows = pageDocs.map((d) => {
 						const data = d.data();
 						return {
 							email: String(data.email ?? d.id),
 							playerName: String(data.playerName ?? data.displayName ?? ''),
-							ageGroup: data.ageGroup ? String(data.ageGroup) : parseAgeGroup(String(data.teamName ?? '')),
+							ageGroup: data.ageGroup
+								? String(data.ageGroup)
+								: parseAgeGroup(String(data.teamName ?? '')),
 							teamId: String(data.teamId ?? ''),
 						};
 					});
+
+					// ── rosters/{tid} (name-only players) ────────────────────────────
+					nameOnlyNames = Array.isArray(rostersDocSnap.data()?.players)
+						? (rostersDocSnap.data()!.players as unknown[])
+								.filter((n): n is string => typeof n === 'string')
+						: [];
 				});
 
 				if (teamSnap.exists()) {
@@ -148,7 +160,6 @@
 					teamErr = `Team "${tid}" not found.`;
 				}
 				teamLoading = false;
-				// roster was already set in the untrack block above; just clear loading.
 				rosterLoading = false;
 			} catch (e) {
 				if (cancelled || gen !== rosterFetchGen) return;
@@ -167,7 +178,7 @@
 
 	const teamName = $derived(teamDoc?.name || teamId);
 
-	/** Append the next page of roster documents. */
+	/** Append the next page of email-linked (player_lookup) rows. Name-only rows are already fully loaded. */
 	async function loadMoreRoster() {
 		if (!rosterHasMore || rosterLoadingMore || !rosterLastDoc) return;
 		rosterLoadingMore = true;
@@ -183,17 +194,18 @@
 			rosterHasMore = snap.docs.length > ROSTER_PAGE_SIZE;
 			const pageDocs = snap.docs.slice(0, ROSTER_PAGE_SIZE);
 			rosterLastDoc = pageDocs.at(-1) ?? rosterLastDoc;
-			/** @type {RosterRow[]} */
-			const newRows = pageDocs.map((d) => {
+			const newLinked: LinkedRosterInput[] = pageDocs.map((d) => {
 				const data = d.data();
 				return {
 					email: String(data.email ?? d.id),
 					playerName: String(data.playerName ?? data.displayName ?? ''),
-					ageGroup: data.ageGroup ? String(data.ageGroup) : parseAgeGroup(String(data.teamName ?? '')),
+					ageGroup: data.ageGroup
+						? String(data.ageGroup)
+						: parseAgeGroup(String(data.teamName ?? '')),
 					teamId: String(data.teamId ?? ''),
 				};
 			});
-			roster = [...roster, ...newRows];
+			emailLinkedRows = [...emailLinkedRows, ...newLinked];
 		} catch (e) {
 			rosterErr = e instanceof Error ? e.message : 'Failed to load more roster entries.';
 		} finally {
@@ -283,14 +295,18 @@
 						</td>
 					</tr>
 				{:else}
-					{#each filteredRoster as r (r.email)}
+					{#each filteredRoster as r (r.key)}
 						<tr class="roster-dt__row">
 							<td class="roster-dt__td roster-dt__td--name">
 								<span class="roster-player-name">{r.playerName}</span>
 							</td>
-							<td class="roster-dt__td roster-dt__td--mono">
+						<td class="roster-dt__td roster-dt__td--mono">
+							{#if r.nameOnly}
+								<span class="roster-no-account" title="Player added by name only — no account yet">No account</span>
+							{:else}
 								{r.email}
-							</td>
+							{/if}
+						</td>
 							<td class="roster-dt__td roster-dt__td--muted">
 								{r.ageGroup || '—'}
 							</td>
@@ -583,6 +599,26 @@
 	:global(html.dark) .roster-spinner {
 		border-color: rgba(255, 255, 255, 0.1);
 		border-top-color: var(--brand-primary, #f59e0b);
+	}
+
+	/* ── Name-only badge ────────────────────────────────────────────── */
+	.roster-no-account {
+		display: inline-block;
+		font-size: 0.6875rem;
+		font-weight: 700;
+		letter-spacing: 0.06em;
+		text-transform: uppercase;
+		color: var(--text-secondary);
+		background: rgba(0, 0, 0, 0.05);
+		border: 1px solid rgba(0, 0, 0, 0.10);
+		border-radius: 4px;
+		padding: 1px 6px;
+	}
+
+	:global(html.dark) .roster-no-account {
+		color: rgba(255, 255, 255, 0.45);
+		background: rgba(255, 255, 255, 0.05);
+		border-color: rgba(255, 255, 255, 0.10);
 	}
 
 	@keyframes roster-spin { to { transform: rotate(360deg); } }

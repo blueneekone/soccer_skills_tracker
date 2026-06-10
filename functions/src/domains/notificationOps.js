@@ -8,6 +8,7 @@ const admin = require('firebase-admin');
 
 const {normEmail} = require('../utils/formatters');
 const {syncPublicPlayerProfile} = require('../utils/profileSyncer');
+const {parentHasCommsConsent} = require('./commsPolicy');
 
 const REGION = 'us-east1';
 
@@ -483,6 +484,8 @@ async function sendFcmToUids(uids, notification, data) {
   }
 }
 
+exports.sendFcmToUids = sendFcmToUids;
+
 /**
  * Resolve Auth UIDs for an email array (best-effort, skips missing users).
  * @param {string[]} emails
@@ -621,8 +624,8 @@ exports.onTrialScoreWritten = onDocumentWritten(
       const chunkSize = 500;
       for (let i = 0; i < tokens.length; i += chunkSize) {
         const chunk = tokens.slice(i, i + chunkSize);
-        try {
-          await admin.messaging().sendMulticast({
+      try {
+        await admin.messaging().sendMulticast({
             tokens: chunk,
             notification: {title, body},
             data: {
@@ -633,6 +636,154 @@ exports.onTrialScoreWritten = onDocumentWritten(
         } catch (e) {
           logger.error('onTrialScoreWritten FCM', e);
         }
+      }
+    },
+);
+
+// ── Epic 4.3 — Team Broadcast Push ───────────────────────────────────────────
+
+/**
+ * Fires when safeSportBroadcast writes a team_broadcasts doc.
+ * Resolves player UIDs for the team (via player_lookup) and CC'd parent UIDs
+ * (consent re-validated via commsPolicy before push — COPPA defence in depth).
+ * Non-fatal: errors are logged and swallowed; never throws out of the trigger.
+ */
+exports.onTeamBroadcastCreated = onDocumentCreated(
+    {
+      document: 'team_broadcasts/{msgId}',
+      region: REGION,
+    },
+    async (event) => {
+      const msgId = event.params.msgId;
+      const snap = event.data;
+      if (!snap) {
+        logger.warn('onTeamBroadcastCreated: missing event.data', {msgId});
+        return;
+      }
+
+      const data = snap.data() || {};
+      const teamId =
+          typeof data.teamId === 'string' ? data.teamId.trim() : '';
+      if (!teamId) {
+        logger.warn('onTeamBroadcastCreated: missing teamId', {msgId});
+        return;
+      }
+
+      const pushTitle =
+          typeof data.subject === 'string' && data.subject.trim()
+            ? data.subject.trim().slice(0, 100)
+            : 'Team Announcement';
+      const pushBody =
+          typeof data.bodyPreview === 'string' && data.bodyPreview
+            ? data.bodyPreview.slice(0, 140)
+            : typeof data.body === 'string'
+              ? data.body.slice(0, 140)
+              : '';
+      const rawCcParents = Array.isArray(data.ccParentEmails)
+        ? data.ccParentEmails
+        : [];
+
+      // ── 1. Resolve player emails from player_lookup ──────────────────────
+      /** @type {string[]} */
+      const playerEmails = [];
+      try {
+        const plSnap = await db()
+            .collection('player_lookup')
+            .where('teamId', '==', teamId)
+            .get();
+        for (const pd of plSnap.docs) {
+          const em = normEmail(pd.data().email || pd.id);
+          if (em && em.includes('@')) playerEmails.push(em);
+        }
+      } catch (e) {
+        logger.warn('onTeamBroadcastCreated: player_lookup query failed', {
+          teamId,
+          err: e instanceof Error ? e.message : String(e),
+        });
+      }
+
+      // ── 2. Player emails → Auth UIDs (best-effort) ────────────────────────
+      /** @type {string[]} */
+      const playerUids = [];
+      await Promise.all(
+          playerEmails.map(async (em) => {
+            try {
+              const ur = await admin.auth().getUserByEmail(em);
+              if (ur && ur.uid) playerUids.push(ur.uid);
+            } catch (_) {
+              /* no Auth account for this roster email */
+            }
+          }),
+      );
+
+      // ── 3. Consent-filter CC'd parents (COPPA secondary guard) ───────────
+      // ccParentEmails in the doc are already consent-filtered by the
+      // safeSportBroadcast callable; this is a defence-in-depth re-check.
+      /** @type {string[]} */
+      const consentedParentEmails = [];
+      for (const raw of rawCcParents) {
+        const pEmail = normEmail(String(raw));
+        if (!pEmail || !pEmail.includes('@')) continue;
+        let allowed = false;
+        for (const playerEmail of playerEmails) {
+          try {
+            if (await parentHasCommsConsent(db(), pEmail, playerEmail)) {
+              allowed = true;
+              break;
+            }
+          } catch (e) {
+            logger.warn('onTeamBroadcastCreated: consent check error', {
+              pEmail,
+              playerEmail,
+              err: e instanceof Error ? e.message : String(e),
+            });
+          }
+        }
+        if (allowed) consentedParentEmails.push(pEmail);
+      }
+
+      // ── 4. Consented parent emails → Auth UIDs ────────────────────────────
+      /** @type {string[]} */
+      const parentUids = [];
+      await Promise.all(
+          consentedParentEmails.map(async (em) => {
+            try {
+              const ur = await admin.auth().getUserByEmail(em);
+              if (ur && ur.uid) parentUids.push(ur.uid);
+            } catch (_) {
+              /* no Auth account for this parent email */
+            }
+          }),
+      );
+
+      // ── 5. Merge and push ─────────────────────────────────────────────────
+      const allUids = [...new Set([...playerUids, ...parentUids])];
+      if (allUids.length === 0) {
+        logger.info('onTeamBroadcastCreated: no push recipients resolved', {
+          teamId,
+          msgId,
+        });
+        return;
+      }
+
+      try {
+        await sendFcmToUids(
+            allUids,
+            {title: pushTitle, body: pushBody},
+            {category: 'push_announcements'},
+        );
+        logger.info('onTeamBroadcastCreated: push dispatched', {
+          teamId,
+          msgId,
+          playerCount: playerUids.length,
+          parentCount: parentUids.length,
+        });
+      } catch (e) {
+        logger.error('onTeamBroadcastCreated: sendFcmToUids failed', {
+          teamId,
+          msgId,
+          err: e instanceof Error ? e.message : String(e),
+        });
       }
     },
 );
