@@ -25,12 +25,25 @@ const PROJECT = 'sst-loop-integrity-guards';
 const FIRESTORE_HOST = process.env.FIRESTORE_EMULATOR_HOST?.split(':')[0] ?? '127.0.0.1';
 const FIRESTORE_PORT = Number(process.env.FIRESTORE_EMULATOR_HOST?.split(':')[1] ?? 8080);
 
+/**
+ * Build a TokenOptions object for authenticatedContext.
+ * householdId defaults to null so tokenHousehold() returns null (not undefined)
+ * for actors that don't have a household, preventing "Property householdId is
+ * undefined on object" errors in rules that guard with isParent() && ... first.
+ */
 function token(overrides: Record<string, unknown>) {
 	return {
 		email: 'actor@test.com',
 		role: 'player',
 		clubId: null,
 		teamId: null,
+		householdId: null,
+		// Prevent "Property X is undefined on object" errors in rules that access
+		// these fields directly (without null-guard) before short-circuiting:
+		//   tokenMinor()  → request.auth.token.minor == true  (playerVpcAllowed)
+		//   isCleared()   → request.auth.token.isCleared == true  (sameTeam branch)
+		minor: false,
+		isCleared: false,
 		...overrides,
 	};
 }
@@ -49,7 +62,7 @@ describe.skipIf(!process.env.FIRESTORE_EMULATOR_HOST)(
 					port: FIRESTORE_PORT,
 				},
 			});
-		});
+		}, 60000);
 
 		afterAll(async () => {
 			if (env) await env.cleanup();
@@ -60,6 +73,31 @@ describe.skipIf(!process.env.FIRESTORE_EMULATOR_HOST)(
 			await env.withSecurityRulesDisabled(async (ctx) => {
 				const db = ctx.firestore();
 				const { setDoc: seed } = await import('firebase/firestore');
+
+				// Actor user docs — prevents userDoc().field throws when rules evaluate
+				// the userDoc() branch before short-circuiting on an earlier true branch.
+				// playerName: null avoids "Property playerName is undefined" on player_stats rule.
+				await seed(doc(db, 'users/player@club-a.com'), {
+					role: 'player',
+					clubId: 'club-a',
+					teamId: 'team-a',
+					playerName: null,
+				});
+				await seed(doc(db, 'users/parent@test.com'), {
+					role: 'parent',
+					clubId: 'club-a',
+					householdId: 'hh-a',
+					playerName: null,
+				});
+				await seed(doc(db, 'users/director@club-a.com'), {
+					role: 'director',
+					clubId: 'club-a',
+					playerName: null,
+				});
+				await seed(doc(db, 'users/admin@platform.com'), {
+					role: 'global_admin',
+					playerName: null,
+				});
 
 				// G1: player_stats doc — uid-keyed, clubId/teamId/playerName denormalised
 				await seed(doc(db, 'player_stats/uid-player-a'), {
@@ -138,14 +176,12 @@ describe.skipIf(!process.env.FIRESTORE_EMULATOR_HOST)(
 
 		it('G1: player reads OWN player_stats doc (uid == playerKey) — succeeds', async () => {
 			const db = env
-				.authenticatedContext('uid-player-a', {
-					token: token({
-						email: 'player@club-a.com',
-						role: 'player',
-						clubId: 'club-a',
-						teamId: 'team-a',
-					}),
-				})
+				.authenticatedContext('uid-player-a', token({
+					email: 'player@club-a.com',
+					role: 'player',
+					clubId: 'club-a',
+					teamId: 'team-a',
+				}))
 				.firestore();
 			await assertSucceeds(getDoc(doc(db, 'player_stats/uid-player-a')));
 		});
@@ -153,14 +189,12 @@ describe.skipIf(!process.env.FIRESTORE_EMULATOR_HOST)(
 		it('G1: parent reads child player_stats via playerName/household claim — succeeds', async () => {
 			// parentCanSeePlayerName('ChildPlayer') ← households/hh-a.playerNames has 'ChildPlayer'
 			const db = env
-				.authenticatedContext('parent-uid', {
-					token: token({
-						email: 'parent@test.com',
-						role: 'parent',
-						clubId: 'club-a',
-						householdId: 'hh-a',
-					}),
-				})
+				.authenticatedContext('parent-uid', token({
+					email: 'parent@test.com',
+					role: 'parent',
+					clubId: 'club-a',
+					householdId: 'hh-a',
+				}))
 				.firestore();
 			await assertSucceeds(getDoc(doc(db, 'player_stats/uid-player-a')));
 		});
@@ -168,13 +202,11 @@ describe.skipIf(!process.env.FIRESTORE_EMULATOR_HOST)(
 		it('G1: cross-club director read of player_stats is denied (tokenClubMatchesDoc fails)', async () => {
 			// doc.clubId='club-a', director.tokenClub='club-b' → tokenClubMatchesDoc = false
 			const db = env
-				.authenticatedContext('director-b', {
-					token: token({
-						email: 'director@club-b.com',
-						role: 'director',
-						clubId: 'club-b',
-					}),
-				})
+				.authenticatedContext('director-b', token({
+					email: 'director@club-b.com',
+					role: 'director',
+					clubId: 'club-b',
+				}))
 				.firestore();
 			await assertFails(getDoc(doc(db, 'player_stats/uid-player-a')));
 		});
@@ -184,14 +216,12 @@ describe.skipIf(!process.env.FIRESTORE_EMULATOR_HOST)(
 
 		it('G2: player on team-a reads active team-a assignment — succeeds', async () => {
 			const db = env
-				.authenticatedContext('uid-player-a', {
-					token: token({
-						email: 'player@club-a.com',
-						role: 'player',
-						clubId: 'club-a',
-						teamId: 'team-a',
-					}),
-				})
+				.authenticatedContext('uid-player-a', token({
+					email: 'player@club-a.com',
+					role: 'player',
+					clubId: 'club-a',
+					teamId: 'team-a',
+				}))
 				.firestore();
 			await assertSucceeds(getDoc(doc(db, 'team_assignments/intent-1')));
 		});
@@ -199,14 +229,12 @@ describe.skipIf(!process.env.FIRESTORE_EMULATOR_HOST)(
 		it('G2: player on team-b reads team-a assignment — denied (tokenTeam mismatch)', async () => {
 			// intent-1.teamId='team-a', player.tokenTeam='team-b' → condition fails
 			const db = env
-				.authenticatedContext('uid-player-b', {
-					token: token({
-						email: 'player@club-b.com',
-						role: 'player',
-						clubId: 'club-b',
-						teamId: 'team-b',
-					}),
-				})
+				.authenticatedContext('uid-player-b', token({
+					email: 'player@club-b.com',
+					role: 'player',
+					clubId: 'club-b',
+					teamId: 'team-b',
+				}))
 				.firestore();
 			await assertFails(getDoc(doc(db, 'team_assignments/intent-1')));
 		});
@@ -218,14 +246,12 @@ describe.skipIf(!process.env.FIRESTORE_EMULATOR_HOST)(
 		it('G3: parent with matching householdId reads child users/{email} doc — succeeds', async () => {
 			// households/hh-a.playerEmails has 'child@test.com'
 			const db = env
-				.authenticatedContext('parent-uid', {
-					token: token({
-						email: 'parent@test.com',
-						role: 'parent',
-						clubId: 'club-a',
-						householdId: 'hh-a',
-					}),
-				})
+				.authenticatedContext('parent-uid', token({
+					email: 'parent@test.com',
+					role: 'parent',
+					clubId: 'club-a',
+					householdId: 'hh-a',
+				}))
 				.firestore();
 			await assertSucceeds(getDoc(doc(db, 'users/child@test.com')));
 		});
@@ -233,14 +259,12 @@ describe.skipIf(!process.env.FIRESTORE_EMULATOR_HOST)(
 		it('G3: parent with non-matching householdId reads child users/{email} doc — denied', async () => {
 			// households/hh-other does not exist → parentHouseholdAllowsChildEmail = false
 			const db = env
-				.authenticatedContext('parent-other', {
-					token: token({
-						email: 'other-parent@test.com',
-						role: 'parent',
-						clubId: 'club-b',
-						householdId: 'hh-other',
-					}),
-				})
+				.authenticatedContext('parent-other', token({
+					email: 'other-parent@test.com',
+					role: 'parent',
+					clubId: 'club-b',
+					householdId: 'hh-other',
+				}))
 				.firestore();
 			await assertFails(getDoc(doc(db, 'users/child@test.com')));
 		});
@@ -252,14 +276,12 @@ describe.skipIf(!process.env.FIRESTORE_EMULATOR_HOST)(
 		it('G4: player on club-a reads club-a team_broadcast — succeeds', async () => {
 			// tokenTenant()='club-a' == teamClubId='club-a', isPlayer() = true
 			const db = env
-				.authenticatedContext('uid-player-a', {
-					token: token({
-						email: 'player@club-a.com',
-						role: 'player',
-						clubId: 'club-a',
-						teamId: 'team-a',
-					}),
-				})
+				.authenticatedContext('uid-player-a', token({
+					email: 'player@club-a.com',
+					role: 'player',
+					clubId: 'club-a',
+					teamId: 'team-a',
+				}))
 				.firestore();
 			await assertSucceeds(getDoc(doc(db, 'team_broadcasts/bc-1')));
 		});
@@ -267,13 +289,11 @@ describe.skipIf(!process.env.FIRESTORE_EMULATOR_HOST)(
 		it('G4: parent reads broadcast via ccParentEmails — succeeds', async () => {
 			// isParent() && emailKey()='parent@test.com' in ccParentEmails
 			const db = env
-				.authenticatedContext('parent-uid', {
-					token: token({
-						email: 'parent@test.com',
-						role: 'parent',
-						householdId: 'hh-a',
-					}),
-				})
+				.authenticatedContext('parent-uid', token({
+					email: 'parent@test.com',
+					role: 'parent',
+					householdId: 'hh-a',
+				}))
 				.firestore();
 			await assertSucceeds(getDoc(doc(db, 'team_broadcasts/bc-1')));
 		});
@@ -281,14 +301,12 @@ describe.skipIf(!process.env.FIRESTORE_EMULATOR_HOST)(
 		it('G4: cross-club player reads club-a broadcast — denied (tokenTenant mismatch)', async () => {
 			// tokenTenant()='club-b' != teamClubId='club-a'
 			const db = env
-				.authenticatedContext('uid-player-b', {
-					token: token({
-						email: 'player@club-b.com',
-						role: 'player',
-						clubId: 'club-b',
-						teamId: 'team-b',
-					}),
-				})
+				.authenticatedContext('uid-player-b', token({
+					email: 'player@club-b.com',
+					role: 'player',
+					clubId: 'club-b',
+					teamId: 'team-b',
+				}))
 				.firestore();
 			await assertFails(getDoc(doc(db, 'team_broadcasts/bc-1')));
 		});
@@ -300,13 +318,11 @@ describe.skipIf(!process.env.FIRESTORE_EMULATOR_HOST)(
 		it('G5: director reads own club license_entitlement — succeeds', async () => {
 			// isDirector() && tokenClub()='club-a' == clubPathId='club-a'
 			const db = env
-				.authenticatedContext('director-a', {
-					token: token({
-						email: 'director@club-a.com',
-						role: 'director',
-						clubId: 'club-a',
-					}),
-				})
+				.authenticatedContext('director-a', token({
+					email: 'director@club-a.com',
+					role: 'director',
+					clubId: 'club-a',
+				}))
 				.firestore();
 			await assertSucceeds(getDoc(doc(db, 'license_entitlements/club-a')));
 		});
@@ -314,13 +330,11 @@ describe.skipIf(!process.env.FIRESTORE_EMULATOR_HOST)(
 		it('G5: cross-club director reads club-a license_entitlement — denied', async () => {
 			// tokenClub()='club-b' != clubPathId='club-a'; no matching canReadLicenseEntitlement path
 			const db = env
-				.authenticatedContext('director-b', {
-					token: token({
-						email: 'director@club-b.com',
-						role: 'director',
-						clubId: 'club-b',
-					}),
-				})
+				.authenticatedContext('director-b', token({
+					email: 'director@club-b.com',
+					role: 'director',
+					clubId: 'club-b',
+				}))
 				.firestore();
 			await assertFails(getDoc(doc(db, 'license_entitlements/club-a')));
 		});
@@ -330,23 +344,19 @@ describe.skipIf(!process.env.FIRESTORE_EMULATOR_HOST)(
 
 		it('G7: global_admin reads rl_transitions — succeeds (isSuper())', async () => {
 			const db = env
-				.authenticatedContext('super-uid', {
-					token: token({ email: 'admin@platform.com', role: 'global_admin' }),
-				})
+				.authenticatedContext('super-uid', token({ email: 'admin@platform.com', role: 'global_admin' }))
 				.firestore();
 			await assertSucceeds(getDoc(doc(db, 'rl_transitions/rt-1')));
 		});
 
 		it('G7: player read of rl_transitions — denied (not isSuper())', async () => {
 			const db = env
-				.authenticatedContext('uid-player-a', {
-					token: token({
-						email: 'player@club-a.com',
-						role: 'player',
-						clubId: 'club-a',
-						teamId: 'team-a',
-					}),
-				})
+				.authenticatedContext('uid-player-a', token({
+					email: 'player@club-a.com',
+					role: 'player',
+					clubId: 'club-a',
+					teamId: 'team-a',
+				}))
 				.firestore();
 			await assertFails(getDoc(doc(db, 'rl_transitions/rt-1')));
 		});
@@ -354,9 +364,7 @@ describe.skipIf(!process.env.FIRESTORE_EMULATOR_HOST)(
 		it('G7: client write to rl_transitions — denied even for global_admin (allow write: if false)', async () => {
 			// Rule is unconditionally false for all writes — CF/Admin SDK only
 			const db = env
-				.authenticatedContext('super-uid', {
-					token: token({ email: 'admin@platform.com', role: 'global_admin' }),
-				})
+				.authenticatedContext('super-uid', token({ email: 'admin@platform.com', role: 'global_admin' }))
 				.firestore();
 			await assertFails(setDoc(doc(db, 'rl_transitions/rt-new'), { workoutId: 'w-x' }));
 		});
@@ -368,13 +376,11 @@ describe.skipIf(!process.env.FIRESTORE_EMULATOR_HOST)(
 		it('G8: director reads tenant-scoped consent_record — succeeds', async () => {
 			// isDirector() && tokenClub()='club-a' && cr.clubId='club-a'
 			const db = env
-				.authenticatedContext('director-a', {
-					token: token({
-						email: 'director@club-a.com',
-						role: 'director',
-						clubId: 'club-a',
-					}),
-				})
+				.authenticatedContext('director-a', token({
+					email: 'director@club-a.com',
+					role: 'director',
+					clubId: 'club-a',
+				}))
 				.firestore();
 			await assertSucceeds(getDoc(doc(db, 'consent_records/cr-1')));
 		});
@@ -382,13 +388,11 @@ describe.skipIf(!process.env.FIRESTORE_EMULATOR_HOST)(
 		it('G8: cross-tenant director reads consent_record — denied', async () => {
 			// tokenClub()='club-b' != cr.clubId='club-a'
 			const db = env
-				.authenticatedContext('director-b', {
-					token: token({
-						email: 'director@club-b.com',
-						role: 'director',
-						clubId: 'club-b',
-					}),
-				})
+				.authenticatedContext('director-b', token({
+					email: 'director@club-b.com',
+					role: 'director',
+					clubId: 'club-b',
+				}))
 				.firestore();
 			await assertFails(getDoc(doc(db, 'consent_records/cr-1')));
 		});
@@ -396,13 +400,11 @@ describe.skipIf(!process.env.FIRESTORE_EMULATOR_HOST)(
 		it('G8: parent reads own vpc_request by parentEmail match — succeeds', async () => {
 			// isParent() && vpc.parentEmail='parent@test.com' == emailKey()='parent@test.com'
 			const db = env
-				.authenticatedContext('parent-uid', {
-					token: token({
-						email: 'parent@test.com',
-						role: 'parent',
-						householdId: 'hh-a',
-					}),
-				})
+				.authenticatedContext('parent-uid', token({
+					email: 'parent@test.com',
+					role: 'parent',
+					householdId: 'hh-a',
+				}))
 				.firestore();
 			await assertSucceeds(getDoc(doc(db, 'vpc_requests/vpc-1')));
 		});
@@ -410,13 +412,11 @@ describe.skipIf(!process.env.FIRESTORE_EMULATOR_HOST)(
 		it('G8: different parent reads vpc_request — denied (parentEmail mismatch)', async () => {
 			// emailKey()='other-parent@test.com' != vpc.parentEmail='parent@test.com'
 			const db = env
-				.authenticatedContext('parent-other', {
-					token: token({
-						email: 'other-parent@test.com',
-						role: 'parent',
-						householdId: 'hh-other',
-					}),
-				})
+				.authenticatedContext('parent-other', token({
+					email: 'other-parent@test.com',
+					role: 'parent',
+					householdId: 'hh-other',
+				}))
 				.firestore();
 			await assertFails(getDoc(doc(db, 'vpc_requests/vpc-1')));
 		});
@@ -429,13 +429,11 @@ describe.skipIf(!process.env.FIRESTORE_EMULATOR_HOST)(
 		it('G9: parent WITH householdId claim reads child users/{email} doc — succeeds', async () => {
 			// tokenHousehold()='hh-a' → parentHouseholdAllowsChildEmail('child@test.com') = true
 			const db = env
-				.authenticatedContext('parent-uid', {
-					token: token({
-						email: 'parent@test.com',
-						role: 'parent',
-						householdId: 'hh-a',
-					}),
-				})
+				.authenticatedContext('parent-uid', token({
+					email: 'parent@test.com',
+					role: 'parent',
+					householdId: 'hh-a',
+				}))
 				.firestore();
 			await assertSucceeds(getDoc(doc(db, 'users/child@test.com')));
 		});
@@ -444,13 +442,12 @@ describe.skipIf(!process.env.FIRESTORE_EMULATOR_HOST)(
 			// tokenHousehold()=null → parentHouseholdAllowsChildEmail returns false immediately
 			// Simulates the pre-fix state where syncUserClaims did not emit householdId
 			const db = env
-				.authenticatedContext('parent-nohh', {
-					token: token({
-						email: 'parent-nohh@test.com',
-						role: 'parent',
-						// householdId intentionally absent — validates the syncUserClaims fix
-					}),
-				})
+				.authenticatedContext('parent-nohh', token({
+					email: 'parent-nohh@test.com',
+					role: 'parent',
+					// householdId intentionally absent — validates the syncUserClaims fix
+					// token() default sets householdId: null, so tokenHousehold() == null → denied
+				}))
 				.firestore();
 			await assertFails(getDoc(doc(db, 'users/child@test.com')));
 		});
@@ -462,13 +459,11 @@ describe.skipIf(!process.env.FIRESTORE_EMULATOR_HOST)(
 		it('G10: parent with matching householdId reads household thread message — succeeds', async () => {
 			// tokenHousehold()='hh-a' == householdId path param 'hh-a'
 			const db = env
-				.authenticatedContext('parent-uid', {
-					token: token({
-						email: 'parent@test.com',
-						role: 'parent',
-						householdId: 'hh-a',
-					}),
-				})
+				.authenticatedContext('parent-uid', token({
+					email: 'parent@test.com',
+					role: 'parent',
+					householdId: 'hh-a',
+				}))
 				.firestore();
 			await assertSucceeds(getDoc(doc(db, 'households/hh-a/thread_messages/msg-1')));
 		});
@@ -476,13 +471,11 @@ describe.skipIf(!process.env.FIRESTORE_EMULATOR_HOST)(
 		it('G10: parent with non-matching householdId reads household thread message — denied', async () => {
 			// tokenHousehold()='hh-other' != 'hh-a'; not a player; denied
 			const db = env
-				.authenticatedContext('parent-other', {
-					token: token({
-						email: 'other-parent@test.com',
-						role: 'parent',
-						householdId: 'hh-other',
-					}),
-				})
+				.authenticatedContext('parent-other', token({
+					email: 'other-parent@test.com',
+					role: 'parent',
+					householdId: 'hh-other',
+				}))
 				.firestore();
 			await assertFails(getDoc(doc(db, 'households/hh-a/thread_messages/msg-1')));
 		});

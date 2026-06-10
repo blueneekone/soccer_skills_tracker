@@ -45,7 +45,7 @@ describe.skipIf(!process.env.FIRESTORE_EMULATOR_HOST)(
 				port: FIRESTORE_PORT,
 			},
 		});
-	});
+	}, 60000);
 
 	afterAll(async () => {
 		if (env) await env.cleanup();
@@ -96,64 +96,52 @@ describe.skipIf(!process.env.FIRESTORE_EMULATOR_HOST)(
 
 	it('denies director (club-a) reading users doc in club-b', async () => {
 		const db = env
-			.authenticatedContext('director-a', {
-				token: token({ role: 'director', clubId: 'club-a', email: 'director@club-a.com' }),
-			})
+			.authenticatedContext('director-a', token({ role: 'director', clubId: 'club-a', email: 'director@club-a.com' }))
 			.firestore();
 		await assertFails(getDoc(doc(db, 'users/player@club-b.com')));
 	});
 
 	it('allows director (club-a) reading users doc in club-a', async () => {
 		const db = env
-			.authenticatedContext('director-a', {
-				token: token({ role: 'director', clubId: 'club-a', email: 'director@club-a.com' }),
-			})
+			.authenticatedContext('director-a', token({ role: 'director', clubId: 'club-a', email: 'director@club-a.com' }))
 			.firestore();
 		await assertSucceeds(getDoc(doc(db, 'users/player@club-a.com')));
 	});
 
 	it('denies director (club-a) reading organizations/club-b', async () => {
 		const db = env
-			.authenticatedContext('director-a', {
-				token: token({ role: 'director', clubId: 'club-a', email: 'director@club-a.com' }),
-			})
+			.authenticatedContext('director-a', token({ role: 'director', clubId: 'club-a', email: 'director@club-a.com' }))
 			.firestore();
 		await assertFails(getDoc(doc(db, 'organizations/club-b')));
 	});
 
 	it('denies director (club-a) reading workouts in club-b', async () => {
 		const db = env
-			.authenticatedContext('director-a', {
-				token: token({ role: 'director', clubId: 'club-a', email: 'director@club-a.com' }),
-			})
+			.authenticatedContext('director-a', token({ role: 'director', clubId: 'club-a', email: 'director@club-a.com' }))
 			.firestore();
 		await assertFails(getDoc(doc(db, 'workouts/w-cross')));
 	});
 
 	it('denies coach (club-a) reading clubs/club-b', async () => {
 		const db = env
-			.authenticatedContext('coach-a', {
-				token: token({
-					role: 'coach',
-					clubId: 'club-a',
-					teamId: 'team-a',
-					email: 'coach@club-a.com',
-				}),
-			})
+			.authenticatedContext('coach-a', token({
+				role: 'coach',
+				clubId: 'club-a',
+				teamId: 'team-a',
+				email: 'coach@club-a.com',
+			}))
 			.firestore();
 		await assertFails(getDoc(doc(db, 'clubs/club-b')));
 	});
 
 	it('allows coach (club-a) reading clubs/club-a', async () => {
 		const db = env
-			.authenticatedContext('coach-a', {
-				token: token({
-					role: 'coach',
-					clubId: 'club-a',
-					teamId: 'team-a',
-					email: 'coach@club-a.com',
-				}),
-			})
+			.authenticatedContext('coach-a', token({
+				role: 'coach',
+				clubId: 'club-a',
+				teamId: 'team-a',
+				email: 'coach@club-a.com',
+			}))
 			.firestore();
 		await assertSucceeds(getDoc(doc(db, 'clubs/club-a')));
 	});
