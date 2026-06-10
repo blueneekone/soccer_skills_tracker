@@ -39,9 +39,9 @@ describe('Sprint LAUNCH-functional-os — FUNCTIONAL_MVP.md', () => {
 describe('Sprint LAUNCH-functional-os — ROADMAP', () => {
 	const roadmap = readFileSync(ROADMAP, 'utf-8');
 
-	it('ROADMAP lists LAUNCH-functional-os as current sprint', () => {
-		expect(roadmap).toMatch(/Current sprint:\*\*\s*\*\*LAUNCH-functional-os\*\*/);
-		expect(roadmap).toMatch(/\|\s*\*\*LAUNCH-functional-os\*\*\s*\|\s*\*\*In progress\*\*/i);
+	it('ROADMAP marks LAUNCH-functional-os done (all functional gaps closed)', () => {
+		expect(roadmap).toMatch(/Current sprint:\*\*\s*\*\*LAUNCH-functional-os Done\*\*/);
+		expect(roadmap).toMatch(/\|\s*\*\*LAUNCH-functional-os\*\*\s*\|\s*\*\*Done\*\*/i);
 	});
 
 	it('ROADMAP next build order includes Epic 5 after Epic 4 comms complete', () => {

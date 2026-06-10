@@ -152,10 +152,10 @@ Scan covered `/player/*` (dashboard, workout, armory, stats, settings, tracker),
 | Logistics nav → missing route | **Resolved (4.1 Done)** | `/coach/logistics` | Route mounts `MessagesTab` + `ParentAnnouncementCompose` (`safeSportBroadcast`). | — |
 | Assignments not in coach sidebar | **Resolved (LAUNCH-nav)** | `/coach/forge` | Intent Engine in The Forge (`workspaceNav` coachLinks). | — |
 | Parent Co-op hub off nav | **Resolved (LAUNCH-nav)** | `/parent/dashboard` | Co-op Command in parent sidebar; login still defaults to `/parent/household`. | — |
-| Parent messages read-only | Partial | `/messages` | Staff CC inbox + **4.11 household thread** compose; Parent Lounge reply UX remains | **Epic 4.4** |
+| Parent messages read-only | **Resolved (Epic 4.4 Done)** | `/messages` | Staff CC inbox + 4.11 household thread + **Parent Lounge** initiate/reply (`ParentLoungePanel`, `sendChannelMessage`); SafeSport-monitored. | — |
 | Coach→minor DM policy | **Resolved (4.2 Done)** | Messaging stack | `sendCoachPlayerMessage` blocks minors; staff blocked in minor channels | — |
-| Scouting mock data | Stub | `/coach/scouting` | `MOCK_PROSPECTS` only — not wired to roster/recruit pipeline. | Post-MVP scouting |
-| Match-day mock fallback | Degraded empty state | `/coach/match-day` | Uses `MOCK_OPERATIVES` when roster fetch empty; works with real roster. | **LAUNCH-functional-os** (empty-state copy) |
+| Scouting mock data | **Resolved (LAUNCH-scouting)** | `/coach/scouting` | Wired to `player_lookup` recruit pipeline; mock prospects removed. | — |
+| Match-day mock fallback | **Resolved (LAUNCH-functional-os)** | `/coach/match-day` | `MOCK_OPERATIVES` removed; roster is `player_lookup`-only with explicit empty state (select-team / no-roster copy). | — |
 | Dual player settings paths | **Documented (LAUNCH-nav)** | `/player/settings` vs `/settings` | PlayerShell + `workspaceNav` athlete links → `/player/settings`; `/settings` = cross-role terminal (see Player OS section above). | — |
 | Player tracker off shell nav | Discoverability | `/player/tracker` | Route renders; not in PlayerShell bottom nav (HQ/Stats/Train/Armory/Settings only). | Low — document or add link |
 | Enterprise player nav label | **Resolved (LAUNCH-nav)** | `workspaceNav` athlete links | Labels aligned to HQ / Train / Stats / Settings (PlayerShell parity). | — |

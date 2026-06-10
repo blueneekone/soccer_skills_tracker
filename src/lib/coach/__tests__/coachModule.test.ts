@@ -114,6 +114,17 @@ describe('T1-2: match-day telemetry Firestore persistence', () => {
 		expect(rules).toMatch(/coachStaffCanAccessTeam\(teamId\)/);
 		expect(rules).toMatch(/directorScopedToTeam\(teamId\)/);
 	});
+
+	// LAUNCH-functional-os — match-day roster shows real data only, no mock fallback
+	it('CoachMatchDayView has no MOCK_OPERATIVES fallback and renders an empty state', () => {
+		const src = readFileSync(VIEW, 'utf-8');
+		expect(src).not.toMatch(/MOCK_OPERATIVES/);
+		expect(src).not.toMatch(/Jimmy T\.|Sarah W\.|AGGIES FC/);
+		// real roster comes from player_lookup; empty roster yields an empty array
+		expect(src).toMatch(/player_lookup/);
+		expect(src).toMatch(/operatives\.length === 0/);
+		expect(src).toMatch(/SELECT A TEAM|NO ROSTERED PLAYERS/);
+	});
 });
 
 // T1-3 — club drill promote: clipboard stub replaced with canonical Firestore write

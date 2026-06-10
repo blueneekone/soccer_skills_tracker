@@ -41,14 +41,6 @@
 		PASS_COMPLETED: 1,
 	});
 
-	const MOCK_OPERATIVES = /** @type {Operative[]} */ ([
-		{ id: 'm1', shortId: 'OP-01', name: 'Jimmy T.', role: 'MID' },
-		{ id: 'm2', shortId: 'OP-02', name: 'Sarah W.', role: 'DEF' },
-		{ id: 'm3', shortId: 'OP-03', name: 'Marcus R.', role: 'FWD' },
-		{ id: 'm4', shortId: 'OP-04', name: 'Leo M.', role: 'MID' },
-		{ id: 'm5', shortId: 'OP-05', name: 'David K.', role: 'GK' },
-	]);
-
 	const teamScope = new CoachTeamScope({
 		preferUrlTeamId: () => page.url.searchParams.get('teamId'),
 		includeDirector: false,
@@ -62,7 +54,7 @@
 
 	const activeTeamLabel = $derived.by(() => {
 		const n = typeof teamScope.currentTeam?.name === 'string' ? teamScope.currentTeam.name.trim() : '';
-		return n ? n.toUpperCase() : 'AGGIES FC';
+		return n ? n.toUpperCase() : 'YOUR SQUAD';
 	});
 
 	/** Date-scoped session match ID — stable across reloads within the same calendar day. */
@@ -109,8 +101,8 @@
 
 		const tid = teamScope.selectedTeamId?.trim();
 		if (!tid) {
-			operatives = MOCK_OPERATIVES.slice();
-			activeTarget = operatives[0]?.id ?? null;
+			operatives = [];
+			activeTarget = null;
 			rosterLoading = false;
 			return;
 		}
@@ -143,10 +135,10 @@
 					rows.push({ id: d.id, shortId: sid, name, role: pos });
 				});
 				rows.sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }));
-				operatives = rows.length > 0 ? rows : MOCK_OPERATIVES.slice();
+				operatives = rows;
 			} catch (e) {
 				console.error('[Match Logger] roster', e);
-				if (!cancelled) operatives = MOCK_OPERATIVES.slice();
+				if (!cancelled) operatives = [];
 			} finally {
 				if (!cancelled) rosterLoading = false;
 			}
@@ -483,6 +475,12 @@
 			{#if rosterLoading}
 				<p class="tw-whitespace-nowrap tw-py-3 tw-font-mono tw-text-[10px] tw-text-slate-500">
 					SYNCINGâ€¦
+				</p>
+			{:else if operatives.length === 0}
+				<p class="tw-whitespace-nowrap tw-py-3 tw-font-mono tw-text-[10px] tw-text-slate-500">
+					{teamScope.selectedTeamId?.trim()
+						? 'NO ROSTERED PLAYERS â€” ADD PLAYERS IN ROSTER & TEAMS'
+						: 'SELECT A TEAM TO LOAD THE SQUAD'}
 				</p>
 			{:else}
 				{#each operatives as op (op.id)}

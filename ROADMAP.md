@@ -2,7 +2,7 @@
 
 **Architecture:** [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)  
 **Last updated:** 2026-06-10  
-**Current sprint:** **LAUNCH-functional-os** · **Epic 4 Done (4.1–4.12)** · **Epic 5 Done (5.1–5.6; 5.4 provider scaffold)** · **Epic 2.2 Done** · **DEPLOY-O-bundle Done** · **LAUNCH-loop-integrity Done** · **LAUNCH-test-integrity Done** · **LAUNCH-club-drill-promote Done** · **LAUNCH-scouting Done** · **LAUNCH-forge-nameonly Done** · **next:** operator deploy to dev (`deploy:core` / `deploy:rl` / `deploy:compliance` + Firestore rules) — all functional epics closed (no owner QA until all epics complete) · Launch portrait: `defaultPortraitV2` SVG + profile initials · **TABLED (post-launch):** Platform visual system (Gemini research — [`references/ui/research/`](docs/vision/references/ui/research/)), Flow asset generation, Avatar Studio **3.6b+** · **Deferred (post-launch — owner art):** 3.5m-gemini-ingest, 3.5m-gate · **3.5k Done** · **3.5h Done** · **3.5j Done** · **LAUNCH-defer-avatar Done**  
+**Current sprint:** **LAUNCH-functional-os Done** · **Epic 4 Done (4.1–4.12)** · **Epic 5 Done (5.1–5.6; 5.4 provider scaffold)** · **Epic 2.2 Done** · **DEPLOY-O-bundle Done** · **LAUNCH-loop-integrity Done** · **LAUNCH-test-integrity Done** · **LAUNCH-club-drill-promote Done** · **LAUNCH-scouting Done** · **LAUNCH-forge-nameonly Done** · **next:** operator deploy to dev (`deploy:core` / `deploy:rl` / `deploy:compliance` + Firestore rules) — all functional epics closed (no owner QA until all epics complete) · Launch portrait: `defaultPortraitV2` SVG + profile initials · **TABLED (post-launch):** Platform visual system (Gemini research — [`references/ui/research/`](docs/vision/references/ui/research/)), Flow asset generation, Avatar Studio **3.6b+** · **Deferred (post-launch — owner art):** 3.5m-gemini-ingest, 3.5m-gate · **3.5k Done** · **3.5h Done** · **3.5j Done** · **LAUNCH-defer-avatar Done**  
 **Note:** **3.5l-gate** closed in error — automated regression ≠ human VA; Phase 2 visual **rejected by product owner**  
 *Phase 7 · G1–G10 Done · Sprint 2.20 Done — Player OS premium foundation locked*
 
@@ -1411,7 +1411,7 @@ Loadout art (3.2+) consumed by 2.12 hero identity column.
 | **3.5m-ref** | **Done** | Reference image kit — `REFERENCE_SOURCES.md` + `references/character/` (legacy mood boards trimmed in **3.6a**) | [`REFERENCE_SOURCES.md`](docs/vision/references/REFERENCE_SOURCES.md), `playerLoadoutSprint35mRef.test.ts` |
 | **3.6a-ref-organize** | **Done** | Avatar reference rename + dedupe + `character/AVATAR_REFERENCE_INDEX.md` | `playerLoadoutSprint35mRef.test.ts` |
 | **LAUNCH-defer-avatar** | **Done** | Reference hierarchy + avatar builder pause | `playerLaunchDeferAvatar.test.ts` |
-| **LAUNCH-functional-os** | **In progress** | Three-persona functional MVP; table visual research | `personaFunctionalMvp.test.ts` |
+| **LAUNCH-functional-os** | **Done** | Three-persona functional MVP — all functional gaps closed (Epic 4/5/2.2 done; match-day `MOCK_OPERATIVES` removed → `player_lookup`-only roster + empty state; scouting + parent-lounge gaps resolved). Remaining open items are post-launch visual/avatar tracks only. | `personaFunctionalMvp.test.ts` · `coachModule.test.ts` |
 | **LAUNCH-drill-library** | **Done** | Three-tier drill library — team `teams/{id}/drills`, club `clubs/{id}/shared_drills`, platform basics (`drills` by `sportId`); Intent Engine team/club picker; spatial designer saves team drills | `personaFunctionalMvp.test.ts`, `teamDrillLibrary.ts`, `platformDrillLibrary.ts` |
 | **LAUNCH-train-lock** | **Done** | Coach-directed Train session — locked focus/drill/duration/RPE; session notes only; free log capped at 120 min | `personaFunctionalMvp.test.ts`, `coachMissionFlow.test.ts` |
 | **LAUNCH-club-drill-promote** | **Done** | Optional team drill → club workflow — director inbox on Playbook tab; `publishDrillToClub` / `dismissDrillRecommendation` | `coachModule.test.ts` |
@@ -2707,7 +2707,7 @@ Lettered epics avoid collision with **Epic 5** in [`docs/EPIC5_STATUS.md`](docs/
 | Player | `/player/dashboard` | OperativeHub, IdentityBentoModule, HudMetricsPanel, ActiveBounties, VanguardProtocolPanel |
 | Player | `/player/workout`, `/player/tracker`, `/player/armory` | Command Center drawer links |
 | Parent | `/parent/dashboard` | CoOpArena, CarRideArena, BountyTerminal |
-| Parent | `/messages` | CC inbox (today); Parent Lounge *(planned — Epic 4.4)* |
+| Parent | `/messages` | CC inbox + 4.11 household threads + **Parent Lounge** *(Epic 4.4 Done — initiate/reply)* |
 | Coach | `/coach` | SquadTelemetryView, assignments, drills, match-day |
 | Coach | `/coach/logistics` | MessagesTab, parent-targeted announcement compose |
 | Director | `/director` | Compliance, Field Ops, teams, registrars tab |

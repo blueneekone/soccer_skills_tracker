@@ -13,37 +13,12 @@
   import { commitWorkoutCompletion } from '$lib/services/writes.svelte';
   import { dopamineOnCommit, dopamineOnCallable } from '$lib/services/dopamine.svelte.js';
   import { calculateTrainingSessionEarnedXp, getLevelProgressFromTotalXp } from '$lib/gamification/level.js';
-  import {
-    buildWorkoutDrillType,
-    executePlayerWorkoutLog,
-    expectedWorkoutXp,
-    intensityApiFromStep,
-    validatePlayerWorkoutLog,
-    workoutLogErrorMessage,
-  } from '$lib/player/workoutLog.js';
+  import { buildWorkoutDrillType, executePlayerWorkoutLog, expectedWorkoutXp, intensityApiFromStep, validatePlayerWorkoutLog, workoutLogErrorMessage } from '$lib/player/workoutLog.js';
   import { formatAttributeLabel, loadQuestProgress, markQuestCompletedAfterWorkoutLog, saveQuestProgress } from '$lib/player/dashboard/activeBounties.js';
-  import {
-    attributeIdToWorkoutFocus,
-    buildPolicyHintsFromResult,
-    clearMissionHandoff,
-    COACH_INTENT_HINT,
-    formatSuggestedDrillLine,
-    isMissionHandoffStale,
-    readMissionHandoff,
-    resolveHandoffDurationMinutes,
-    resolveHandoffTargetRpe,
-    resolveDrillById,
-    resolveHeuristicDrill,
-    type MissionHandoff,
-  } from '$lib/player/workout/coachMissionFlow.js';
+  import { attributeIdToWorkoutFocus, buildPolicyHintsFromResult, clearMissionHandoff, COACH_INTENT_HINT, formatSuggestedDrillLine, isMissionHandoffStale, readMissionHandoff, resolveHandoffDurationMinutes, resolveHandoffTargetRpe, resolveDrillById, resolveHeuristicDrill, type MissionHandoff } from '$lib/player/workout/coachMissionFlow.js';
   import type { PrescriptionDrillEntry } from '$lib/types/intent.js';
   import { resolveTeamDrillById as resolveTeamLibraryDrill } from '$lib/coach/teamDrillLibrary.js';
-  import {
-    clampFreeLogDurationMinutes,
-    FREE_LOG_DURATION_MAX_MINUTES,
-    isCoachDirectedHandoff,
-    SESSION_NOTES_MAX_LENGTH,
-  } from '$lib/player/workout/workoutSessionConstants.js';
+  import { clampFreeLogDurationMinutes, FREE_LOG_DURATION_MAX_MINUTES, isCoachDirectedHandoff, SESSION_NOTES_MAX_LENGTH } from '$lib/player/workout/workoutSessionConstants.js';
   import { ensureRlPolicyCached, readRlPolicyCache } from '$lib/player/workout/rlPolicyCache.js';
   import { sportsConfigStore } from '$lib/stores/sportsConfigStore.svelte.js';
   import {
