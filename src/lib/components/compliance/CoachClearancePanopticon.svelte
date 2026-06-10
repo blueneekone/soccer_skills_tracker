@@ -14,12 +14,21 @@
 	interface Props {
 		headerLabel?: string;
 		pageTitle?: string;
+		/** When set (e.g. from context switcher), scopes coach queries to this club. */
+		clubId?: string;
 	}
 
 	let {
 		headerLabel = 'DIRECTOR PORTAL — COMPLIANCE PANOPTICON',
 		pageTitle = 'Staff Clearance Matrix',
+		clubId: clubIdProp = '',
 	}: Props = $props();
+
+	const effectiveClubId = $derived(
+		clubIdProp?.trim() ||
+			(typeof authStore.userProfile?.clubId === 'string' ? authStore.userProfile.clubId.trim() : '') ||
+			(typeof authStore.tenantId === 'string' ? authStore.tenantId.trim() : ''),
+	);
 
 	/** @typedef {{ email: string, displayName?: string, role?: string, clubId?: string, clearance?: Record<string,unknown> }} CoachRow */
 
@@ -64,7 +73,7 @@
 			loading = false;
 			return;
 		}
-		const clubId = authStore.userProfile?.clubId;
+		const clubId = effectiveClubId;
 		if (!clubId && !['super_admin', 'global_admin'].includes(authStore.role ?? '')) {
 			loading = false;
 			return;

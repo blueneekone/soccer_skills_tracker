@@ -8,6 +8,7 @@
 	import RevenueLedgerModule from '$lib/components/director/os/RevenueLedgerModule.svelte';
 	import EventReconciliationModule from '$lib/components/director/os/EventReconciliationModule.svelte';
 	import HotelRebatePanel from '$lib/components/director/os/HotelRebatePanel.svelte';
+	import CoachAccountabilityModule from '$lib/components/director/os/CoachAccountabilityModule.svelte';
 	import WorkspaceSocShell from '$lib/components/workspace/WorkspaceSocShell.svelte';
 	import WorkspaceSocMetricGrid from '$lib/components/workspace/WorkspaceSocMetricGrid.svelte';
 	import Icon from '$lib/components/ui/Icon.svelte';
@@ -85,8 +86,8 @@
 			},
 			{
 				k: 'Orchestration',
-				v: 'Live',
-				s: 'Inbox + VPC workflows',
+				v: L ? '…' : kpis.pendingInvites > 0 ? `${kpis.pendingInvites} pending` : 'Clear',
+				s: 'Coach invites · inbox workflows',
 			},
 		];
 	});
@@ -145,30 +146,6 @@
 				delta: '—',
 				deltaDir: /** @type {const} */ ('flat'),
 			},
-			{
-				label: 'Brand sync',
-				value: 'OK',
-				hint: 'Club assets · last publish',
-				band: /** @type {const} */ ('ok'),
-				delta: '—',
-				deltaDir: /** @type {const} */ ('flat'),
-			},
-			{
-				label: 'Policy posture',
-				value: 'Enforce',
-				hint: 'COPPA + waivers',
-				band: /** @type {const} */ ('ok'),
-				delta: '—',
-				deltaDir: /** @type {const} */ ('flat'),
-			},
-			{
-				label: 'Data region',
-				value: 'US',
-				hint: 'Primary residency',
-				band: /** @type {const} */ ('info'),
-				delta: '—',
-				deltaDir: /** @type {const} */ ('flat'),
-			},
 		];
 	});
 </script>
@@ -201,6 +178,8 @@
 		<EventReconciliationModule {clubId} />
 
 		<HotelRebatePanel {clubId} />
+
+		<CoachAccountabilityModule {clubId} />
 
 		<DirectorAnalyticsCharts {clubId} />
 	</WorkspaceSocShell>

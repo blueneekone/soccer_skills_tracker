@@ -31,6 +31,9 @@ const directorLinks = [
 	{ tab: 'compliance', label: 'Player passports',  icon: 'status.shield-check',href: '/director?tab=compliance' },
 	{ label: 'Staff clearance', icon: 'status.verified',   href: '/director/compliance' },
 	{ tab: 'household',  label: 'Households & COPPA',icon: 'nav.home',           href: '/director?tab=household' },
+	{ tab: 'vanguard',   label: 'Mission Control',   icon: 'data.activity',      href: '/director?tab=vanguard' },
+	{ tab: 'retention',  label: 'Retention & PII',   icon: 'status.shield-check', href: '/director?tab=retention' },
+	{ label: 'Tournaments', icon: 'sys.calendar',     href: '/director/events' },
 ];
 
 /** @type {ShellNavItem[]} */

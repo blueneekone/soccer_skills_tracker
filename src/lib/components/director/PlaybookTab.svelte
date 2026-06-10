@@ -10,11 +10,13 @@
 	import {
 		collection,
 		doc,
+		deleteDoc,
 		getDocs,
 		orderBy,
 		query,
 		serverTimestamp,
 		setDoc,
+		updateDoc,
 		where,
 	} from 'firebase/firestore';
 
@@ -45,6 +47,9 @@
 	let notes = $state('');
 	let saving = $state(false);
 	let savedFlash = $state('');
+	/** When set, save updates this doc instead of creating a new play. */
+	let editingId = $state(/** @type {string | null} */ (null));
+	let deletingId = $state(/** @type {string | null} */ (null));
 
 	const phaseOptions = [
 		{ value: 'attack', label: 'Attacking Phase' },
@@ -85,31 +90,83 @@
 
 	async function saveEntry() {
 		const t = title.trim();
-		if (!t) return;
+		if (!t || !clubId) return;
 		saving = true;
 		errMsg = '';
 		savedFlash = '';
 		try {
-			const ref = doc(collection(db, 'club_playbooks'));
-			await setDoc(ref, {
-				clubId,
-				title: t,
-				formation,
-				phase,
-				notes: notes.trim(),
-				authorEmail: authStore.userProfile?.email || null,
-				updatedAt: serverTimestamp(),
-				createdAt: serverTimestamp(),
-			});
+			if (editingId) {
+				await updateDoc(doc(db, 'club_playbooks', editingId), {
+					title: t,
+					formation,
+					phase,
+					notes: notes.trim(),
+					authorEmail: authStore.userProfile?.email || null,
+					updatedAt: serverTimestamp(),
+				});
+				savedFlash = 'Play updated.';
+				editingId = null;
+			} else {
+				const ref = doc(collection(db, 'club_playbooks'));
+				await setDoc(ref, {
+					clubId,
+					title: t,
+					formation,
+					phase,
+					notes: notes.trim(),
+					authorEmail: authStore.userProfile?.email || null,
+					updatedAt: serverTimestamp(),
+					createdAt: serverTimestamp(),
+				});
+				savedFlash = 'Play saved to the club playbook.';
+			}
 			title = '';
 			notes = '';
-			savedFlash = 'Play saved to the club playbook.';
+			formation = '4-3-3';
+			phase = 'attack';
 			await loadEntries();
 			setTimeout(() => (savedFlash = ''), 2400);
 		} catch (e) {
 			errMsg = e instanceof Error ? e.message : 'Failed to save play.';
 		} finally {
 			saving = false;
+		}
+	}
+
+	/** @param {PlaybookEntry} entry */
+	function startEdit(entry) {
+		editingId = entry.id;
+		title = entry.title;
+		formation = entry.formation;
+		phase = entry.phase;
+		notes = entry.notes;
+		savedFlash = '';
+		errMsg = '';
+	}
+
+	function cancelEdit() {
+		editingId = null;
+		title = '';
+		notes = '';
+		formation = '4-3-3';
+		phase = 'attack';
+	}
+
+	/** @param {string} id */
+	async function deleteEntry(id) {
+		if (!clubId || deletingId) return;
+		deletingId = id;
+		errMsg = '';
+		try {
+			await deleteDoc(doc(db, 'club_playbooks', id));
+			if (editingId === id) cancelEdit();
+			await loadEntries();
+			savedFlash = 'Play removed.';
+			setTimeout(() => (savedFlash = ''), 2400);
+		} catch (e) {
+			errMsg = e instanceof Error ? e.message : 'Failed to delete play.';
+		} finally {
+			deletingId = null;
 		}
 	}
 
@@ -199,8 +256,13 @@
 				onclick={saveEntry}
 				disabled={saving || !title.trim()}
 			>
-				{saving ? 'Saving…' : 'Save Play'}
+				{saving ? 'Saving…' : editingId ? 'Update Play' : 'Save Play'}
 			</button>
+			{#if editingId}
+				<button type="button" class="pb-tab__btn pb-tab__btn--ghost" onclick={cancelEdit} disabled={saving}>
+					Cancel edit
+				</button>
+			{/if}
 		</div>
 	</section>
 
@@ -220,6 +282,7 @@
 							<th>Formation</th>
 							<th>Phase</th>
 							<th>Updated</th>
+							<th></th>
 						</tr>
 					</thead>
 					<tbody>
@@ -234,6 +297,17 @@
 								<td><code class="pb-tab__code">{entry.formation}</code></td>
 								<td><span class="pb-tab__chip pb-tab__chip--{entry.phase}">{entry.phase}</span></td>
 								<td class="pb-tab__muted">{formatUpdated(entry)}</td>
+								<td class="pb-tab__actions-cell">
+									<button type="button" class="pb-tab__link-btn" onclick={() => startEdit(entry)}>Edit</button>
+									<button
+										type="button"
+										class="pb-tab__link-btn pb-tab__link-btn--danger"
+										disabled={deletingId === entry.id}
+										onclick={() => deleteEntry(entry.id)}
+									>
+										{deletingId === entry.id ? '…' : 'Delete'}
+									</button>
+								</td>
 							</tr>
 						{/each}
 					</tbody>
@@ -345,7 +419,39 @@
 	.pb-tab__actions {
 		display: flex;
 		justify-content: flex-end;
+		gap: 8px;
 		margin-top: 12px;
+	}
+
+	.pb-tab__btn--ghost {
+		background: transparent;
+		border-color: #cbd5e1;
+		color: #475569;
+	}
+
+	.pb-tab__actions-cell {
+		white-space: nowrap;
+		text-align: right;
+	}
+
+	.pb-tab__link-btn {
+		background: none;
+		border: none;
+		padding: 0 6px;
+		font: inherit;
+		font-size: 12px;
+		font-weight: 600;
+		color: #2563eb;
+		cursor: pointer;
+	}
+
+	.pb-tab__link-btn--danger {
+		color: #b91c1c;
+	}
+
+	.pb-tab__link-btn:disabled {
+		opacity: 0.5;
+		cursor: not-allowed;
 	}
 
 	.pb-tab__btn {

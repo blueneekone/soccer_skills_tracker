@@ -3,6 +3,9 @@
 	import { goto } from '$app/navigation';
 	import { untrack } from 'svelte';
 	import { authStore } from '$lib/stores/auth.svelte.js';
+	import { teamsStore } from '$lib/stores/teams.svelte.js';
+	import { workspaceContextStore } from '$lib/stores/workspaceContext.svelte.js';
+	import { pickDirectorClubId } from '$lib/director/pickDirectorClubId.js';
 	import CoachClearancePanopticon from '$lib/components/compliance/CoachClearancePanopticon.svelte';
 	import DirectorBillingAuditPanel from '$lib/components/director/DirectorBillingAuditPanel.svelte';
 
@@ -16,16 +19,10 @@
 		}
 	});
 
-	const clubId = $derived(
-		typeof authStore.tenantId === 'string' && authStore.tenantId.trim()
-			? authStore.tenantId.trim()
-			: (typeof (authStore.userProfile as Record<string, unknown> | null)?.clubId === 'string'
-				? ((authStore.userProfile as Record<string, unknown>).clubId as string).trim()
-				: ''),
-	);
+	const clubId = $derived(pickDirectorClubId(teamsStore, authStore, workspaceContextStore));
 </script>
 
-<CoachClearancePanopticon />
+<CoachClearancePanopticon {clubId} />
 
 {#if clubId}
 	<div style="margin-top: 1.5rem;">

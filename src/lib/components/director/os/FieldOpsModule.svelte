@@ -475,6 +475,12 @@
 		</div>
 
 		<div class="tw-flex tw-flex-wrap tw-gap-3 tw-items-end">
+			<p class="tw-m-0 tw-w-full tw-text-xs tw-leading-relaxed tw-text-slate-500">
+				<strong class="tw-font-semibold tw-text-slate-400">Two field systems:</strong>
+				Tactical deployments (left) use facilities registered in the Facility Map.
+				The pitch schedule below uses legacy <code class="tw-text-slate-400">fields</code> bookings —
+				register facilities in the map panel before scheduling deployments.
+			</p>
 			<label class="tw-flex tw-flex-col tw-gap-1 tw-text-xs tw-font-bold" style="color: var(--text-secondary);">
 				Field
 				<select

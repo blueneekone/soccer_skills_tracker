@@ -3735,6 +3735,29 @@ service cloud.firestore {
       );
     }
 
+    // Director tactical playbook — club-scoped CRUD (PlaybookTab.svelte).
+    match /club_playbooks/{playbookId} {
+      allow read: if authed() && (
+        isSuper()
+        || ((isDirector() || isRegistrar()) && tokenClub() != null
+            && resource.data.clubId == tokenClub())
+      );
+      allow create: if authed() && (
+        isSuper()
+        || (isDirector() && tokenClub() != null
+            && request.resource.data.clubId == tokenClub()
+            && request.resource.data.title is string
+            && request.resource.data.title.size() > 0
+            && request.resource.data.title.size() <= 200)
+      );
+      allow update, delete: if authed() && (
+        isSuper()
+        || (isDirector() && tokenClub() != null
+            && resource.data.clubId == tokenClub()
+            && request.resource.data.clubId == tokenClub())
+      );
+    }
+
     match /{document=**} {
       allow read, write: if false;
     }
