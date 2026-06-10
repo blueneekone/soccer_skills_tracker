@@ -226,6 +226,14 @@
 		</section>
 
 		<section class="pd-panel-section">
+			<span class="pd-panel-eyebrow">Compliance</span>
+			<p class="ps-settings-hint">
+				Medical info, emergency contacts, and waiver —
+				<a href="/passport" class="ps-settings-link">Player passport</a>.
+			</p>
+		</section>
+
+		<section class="pd-panel-section">
 			<span class="pd-panel-eyebrow">Display name</span>
 			{#if isOperativeProxy}
 				<p class="ps-settings-hint">
