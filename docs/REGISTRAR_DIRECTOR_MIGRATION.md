@@ -21,4 +21,9 @@
 
 ## Redirect behavior
 
-`src/routes/(app)/registrar/+layout.svelte` sends eligible roles to Director **Registrars** tab. If a team needs the legacy page, temporarily remove or narrow the layout guard.
+`src/routes/(app)/registrar/+page.js` sends all eligible roles to Director **Player passports** tab (`/director?tab=compliance`). Legacy standalone registrar pages are **removed**; compliance matrix uses `loadComplianceTable` in `ComplianceTab.svelte`.
+
+## Status (2026-06-10)
+
+- **Done:** `/registrar` → `/director?tab=compliance`; registrar login waterfall → compliance tab; `ComplianceTab` wired to `loadComplianceRows.js` (team-scoped roster + passport matrix).
+- **Director-only invite tooling** remains on `tab=registrars` (`RegistrarInviteTab`) for directors managing registrar seats.

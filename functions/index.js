@@ -217,6 +217,10 @@ exports.onTeamBroadcastCreated       = notificationOps.onTeamBroadcastCreated;
 // Epic 4.5 Slice A — deployment calendar → team broadcast auto-announce
 exports.onDeploymentCalendarEntryCreated = notificationOps.onDeploymentCalendarEntryCreated;
 
+// Epic 5.4 — field weather / lightning lock (scheduled; feature-flagged)
+const weatherOps = require('./src/domains/weatherOps');
+exports.evaluateFieldWeatherLock = weatherOps.evaluateFieldWeatherLock;
+
 // ── Phase 4, Epic 8 — Car Ride Home Protocol ─────────────────────────────────
 // Fires mandatory push notifications to parents 15 minutes post-match and
 // locks per-player metrics behind an EQ attestation.

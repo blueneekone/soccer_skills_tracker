@@ -1,84 +1,120 @@
 <script>
 	import { db } from '$lib/firebase.js';
-	import { collection, getDocs, updateDoc, doc } from 'firebase/firestore';
+	import { doc, updateDoc } from 'firebase/firestore';
+	import { teamsStore } from '$lib/stores/teams.svelte.js';
+	import { loadComplianceTable } from '$lib/registrar/loadComplianceRows.js';
 
 	let { clubId = '' } = $props();
 
+	/** @type {import('$lib/registrar/loadComplianceRows.js').RegistrarRosterRow[]} */
 	let rows = $state([]);
 	let loading = $state(false);
+	let loadErr = $state('');
+
+	const clubTeams = $derived(
+		teamsStore.teams
+			.filter((t) => t.clubId === clubId)
+			.map((t) => ({ id: t.id, name: t.name })),
+	);
 
 	const load = async () => {
-		if (!clubId) return;
+		if (!clubId || clubTeams.length === 0) {
+			rows = [];
+			return;
+		}
 		loading = true;
+		loadErr = '';
 		try {
-			const [passSnap, userSnap] = await Promise.all([
-				getDocs(collection(db, 'passports')),
-				getDocs(collection(db, 'users'))
-			]);
-			const clubUsers = {};
-			userSnap.forEach((d) => { if (d.data().clubId === clubId) clubUsers[d.id] = d.data().playerName || d.id; });
-			const data = [];
-			passSnap.forEach((d) => {
-				const email = d.id;
-				if (!clubUsers[email]) return;
-				data.push({ email, playerName: clubUsers[email], ...d.data() });
-			});
-			rows = data;
-		} catch (e) { console.error(e); }
-		finally { loading = false; }
+			rows = await loadComplianceTable(clubTeams);
+		} catch (e) {
+			console.error('[ComplianceTab]', e);
+			loadErr = e instanceof Error ? e.message : 'Could not load compliance matrix.';
+			rows = [];
+		} finally {
+			loading = false;
+		}
 	};
 
-	$effect(() => { if (clubId) load(); });
+	$effect(() => {
+		if (clubId && teamsStore.loaded) void load();
+	});
 
+	/** @param {string | null} email @param {string} newStatus */
 	const updateStatus = async (email, newStatus) => {
+		if (!email) return;
 		try {
 			await updateDoc(doc(db, 'passports', email), { clearanceStatus: newStatus });
-		} catch (e) { alert('Error: ' + e.message); }
+			rows = rows.map((row) =>
+				row.email === email ? { ...row, clearanceStatus: newStatus } : row,
+			);
+		} catch (e) {
+			alert('Error: ' + (e instanceof Error ? e.message : String(e)));
+		}
 	};
 </script>
 
 <div class="compliance-tab">
 	<div class="card">
-		<div class="card-header bg-red-header">Player compliance</div>
+		<div class="card-header bg-red-header">Player compliance matrix</div>
 		<div class="card-body p-0 overflow-x-auto">
 			<table class="admin-table">
 				<thead>
 					<tr>
 						<th>Player</th>
-						<th>Medical Info</th>
-						<th>Waiver Signed</th>
-						<th>Official Status</th>
+						<th>Team</th>
+						<th>DOB</th>
+						<th>Account</th>
+						<th>Medical info</th>
+						<th>Waiver</th>
+						<th>Passport</th>
+						<th>Official status</th>
 					</tr>
 				</thead>
 				<tbody>
 					{#if loading}
-						<tr><td colspan="4" class="text-center">Loading passports...</td></tr>
+						<tr><td colspan="8" class="text-center">Loading compliance matrix…</td></tr>
+					{:else if loadErr}
+						<tr><td colspan="8" class="text-center">{loadErr}</td></tr>
 					{:else if rows.length === 0}
-						<tr><td colspan="4" class="text-center">No passports found for your club.</td></tr>
+						<tr><td colspan="8" class="text-center">No roster players found for your club.</td></tr>
 					{:else}
-						{#each rows as row}
+						{#each rows as row (row.key)}
 							<tr>
 								<td>
-									<b>{row.playerName}</b><br />
-									<span class="text-sm-sub">{row.email}</span>
+									<b>{row.playerName}</b>
+									{#if row.email}
+										<br /><span class="text-sm-sub">{row.email}</span>
+									{/if}
+								</td>
+								<td class="text-sm-sub">{row.teamLabel}</td>
+								<td class="text-sm-sub">{row.dobLabel}</td>
+								<td class="text-sm-sub">
+									{row.guardianLinked ? 'Linked' : 'Name only'}
 								</td>
 								<td class="text-sm-sub">
-									<b>Contact:</b> {row.emergencyName} ({row.emergencyPhone})<br />
+									{#if row.emergencyName || row.emergencyPhone}
+										<b>Contact:</b> {row.emergencyName || '—'} ({row.emergencyPhone || '—'})<br />
+									{/if}
 									<b>Notes:</b> {row.medicalNotes || 'None'}
 								</td>
-								<td>{row.hasSignedWaiver ? 'Yes' : 'No'}</td>
+								<td>{row.waiverLabel}</td>
+								<td>{row.passportLabel}</td>
 								<td>
-									<select
-										value={row.clearanceStatus || 'CLEARED'}
-										onchange={(e) => updateStatus(row.email, e.target.value)}
-										class="status-select"
-										class:status-select--suspended={row.clearanceStatus === 'RED_CARD'}
-										class:status-select--clear={row.clearanceStatus !== 'RED_CARD'}
-									>
-										<option value="CLEARED">Cleared</option>
-										<option value="PENDING_SAFESPORT">SafeSport pending</option>
-										<option value="RED_CARD">Suspended (red card)</option>
-									</select>
+									{#if row.email}
+										<select
+											value={row.clearanceStatus || 'CLEARED'}
+											onchange={(e) => updateStatus(row.email, e.currentTarget.value)}
+											class="status-select"
+											class:status-select--suspended={row.clearanceStatus === 'RED_CARD'}
+											class:status-select--clear={row.clearanceStatus !== 'RED_CARD'}
+										>
+											<option value="CLEARED">Cleared</option>
+											<option value="PENDING_SAFESPORT">SafeSport pending</option>
+											<option value="RED_CARD">Suspended (red card)</option>
+										</select>
+									{:else}
+										<span class="text-sm-sub">Add email to manage</span>
+									{/if}
 								</td>
 							</tr>
 						{/each}

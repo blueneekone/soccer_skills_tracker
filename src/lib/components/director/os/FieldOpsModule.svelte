@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { browser } from '$app/environment';
 	import { getContext } from 'svelte';
 	import { db, functions } from '$lib/firebase.js';
 	import { collection, query, where, onSnapshot } from 'firebase/firestore';
@@ -68,6 +69,30 @@
 
 	/** @type {() => void} */
 	const openReadOnlyUpgrade = getContext('openReadOnlyUpgrade') || (() => {});
+
+	/** Epic 5.4 — weather-locked facilities for director advisory banner. */
+	let weatherLockedFacilities = $state(
+		/** @type {Array<{ id: string; facilityId?: string; lockReason?: string }>} */ ([]),
+	);
+
+	$effect(() => {
+		if (!browser || !resolvedClubId) {
+			weatherLockedFacilities = [];
+			return;
+		}
+		const wq = query(
+			collection(db, 'field_weather_status'),
+			where('clubId', '==', resolvedClubId),
+		);
+		return onSnapshot(wq, (snap) => {
+			weatherLockedFacilities = snap.docs
+				.filter((d) => d.data().status === 'locked')
+				.map((d) => ({
+					id: d.id,
+					...(d.data() || {}),
+				}));
+		});
+	});
 
 	const directorUpsertField = httpsCallable(functions, 'directorUpsertField');
 	const secureBookField = httpsCallable(functions, 'secureBookField');
@@ -409,6 +434,24 @@
 			Master schedule for your pitches — conflicts are blocked server-side.
 		</p>
 	</div>
+
+	{#if weatherLockedFacilities.length > 0}
+		<div
+			class="tw-rounded-xl tw-border tw-border-amber-500/40 tw-bg-amber-950/30 tw-px-4 tw-py-3 tw-text-sm tw-text-amber-100"
+			role="status"
+		>
+			<p class="tw-m-0 tw-font-bold tw-uppercase tw-tracking-wide tw-text-amber-300">
+				Weather lock active
+			</p>
+			<p class="tw-m-0 tw-mt-1 tw-text-xs tw-leading-relaxed tw-text-amber-100/90">
+				{weatherLockedFacilities.length} field{weatherLockedFacilities.length === 1 ? '' : 's'}
+				locked — new deployments blocked until status clears.
+				{#if weatherLockedFacilities[0]?.lockReason}
+					({weatherLockedFacilities[0].lockReason})
+				{/if}
+			</p>
+		</div>
+	{/if}
 
 	{#if resolvedClubId}
 		<!-- Liquid glass split: deployments (1/3) + facility vault / map (2/3) -->

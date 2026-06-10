@@ -10,6 +10,7 @@
 export const ROLE_ROUTE_POLICIES = {
 	'/admin': ['super_admin', 'global_admin'],
 	'/director': ['super_admin', 'global_admin', 'director', 'registrar'],
+	'/registrar': ['super_admin', 'global_admin', 'director', 'registrar'],
 	'/recruiter': ['super_admin', 'global_admin', 'director'],
 	'/coach': ['super_admin', 'global_admin', 'director', 'coach'],
 	'/parent': ['parent'],

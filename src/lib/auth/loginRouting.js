@@ -59,7 +59,7 @@ export function getLoginWaterfallDestination(role, profile) {
 	if (role === 'registrar') {
 		const cid = typeof profile?.clubId === 'string' ? profile.clubId.trim() : '';
 		return {
-			path: '/director?tab=registrars',
+			path: '/director?tab=compliance',
 			context: 'director',
 			pivotKey: cid ? `ctx-director-${cid}` : 'ctx-director-fallback',
 		};
@@ -123,6 +123,7 @@ export function getContextFromHref(href) {
 		const path = new URL(href, 'https://placeholder.local').pathname;
 		if (path.startsWith('/admin')) return 'admin';
 		if (path.startsWith('/director')) return 'director';
+		if (path.startsWith('/registrar')) return 'director';
 		if (path.startsWith('/coach')) return 'coach';
 		if (path.startsWith('/recruiter')) return 'recruiter';
 		if (path.startsWith('/parent')) return 'household';

@@ -13,7 +13,7 @@ Minimal collection for **practice / match deployment** windows in Director Field
 | `endsAt` | `timestamp` | no | Optional end. |
 | `facilityId` | `string` | no | Reference to `fields/{id}` or facility vault id when stable. |
 | `teamIds` | `array<string>` | no | Teams involved. |
-| `visibility` | `string` | no | Default `club`; future: `staff_only`. |
+| `visibility` | `string` | no | `club` (default — family Safe-Comms via Epic 4.5 trigger) or `staff_only` (suppress broadcast). |
 | `createdAt` | `timestamp` | server | Audit. |
 | `updatedAt` | `timestamp` | server | Audit. |
 
@@ -25,8 +25,12 @@ Composite index for list query:
 
 ## Security
 
-`firestore.rules`: read for `clubId == tokenClub()` when role is director or registrar; writes `false` until a callable (e.g. `directorUpsertDeploymentCalendarEntry`) is implemented.
+`firestore.rules`: read for `clubId == tokenClub()` when role is director or registrar; **create/update** allowed for director/registrar when `deploymentCalendarEntryWriteOk` passes.
 
 ## Client
 
-`src/lib/components/director/os/DeploymentCalendarPanel.svelte` subscribes read-only to this collection.
+`src/lib/components/director/os/DeploymentCalendar.svelte` — embedded in Field Ops (`FieldOpsModule.svelte`); live list + **New deployment** modal (practice / match / tournament). Optional **Announce to team families** checkbox maps to `visibility`.
+
+## Comms (Epic 4.5)
+
+`onDeploymentCalendarEntryCreated` (Firestore trigger) writes `team_broadcasts` per `teamIds` when `visibility !== 'staff_only'`.

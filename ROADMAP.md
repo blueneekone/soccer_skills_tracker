@@ -2,7 +2,7 @@
 
 **Architecture:** [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)  
 **Last updated:** 2026-06-10  
-**Current sprint:** **LAUNCH-functional-os** · **Epic 4 Done (4.1–4.12)** · **LAUNCH-loop-integrity Done** · **LAUNCH-test-integrity Done** · **LAUNCH-club-drill-promote Done** · **LAUNCH-scouting Done** · **next:** owner QA on [`FUNCTIONAL_MVP.md`](docs/vision/FUNCTIONAL_MVP.md) · Launch portrait: `defaultPortraitV2` SVG + profile initials · **TABLED (post-launch):** Platform visual system (Gemini research — [`references/ui/research/`](docs/vision/references/ui/research/)), Flow asset generation, Avatar Studio **3.6b+** · **Deferred (post-launch — owner art):** 3.5m-gemini-ingest, 3.5m-gate · **3.5k Done** · **3.5h Done** · **3.5j Done** · **LAUNCH-defer-avatar Done**  
+**Current sprint:** **LAUNCH-functional-os** · **Epic 4 Done (4.1–4.12)** · **Epic 5 Done (5.1–5.6; 5.4 provider scaffold)** · **LAUNCH-loop-integrity Done** · **LAUNCH-test-integrity Done** · **LAUNCH-club-drill-promote Done** · **LAUNCH-scouting Done** · **LAUNCH-forge-nameonly Done** · **next:** Epic **2.2** vault finish · **DEPLOY-O-bundle** (no owner QA until all epics complete) · Launch portrait: `defaultPortraitV2` SVG + profile initials · **TABLED (post-launch):** Platform visual system (Gemini research — [`references/ui/research/`](docs/vision/references/ui/research/)), Flow asset generation, Avatar Studio **3.6b+** · **Deferred (post-launch — owner art):** 3.5m-gemini-ingest, 3.5m-gate · **3.5k Done** · **3.5h Done** · **3.5j Done** · **LAUNCH-defer-avatar Done**  
 **Note:** **3.5l-gate** closed in error — automated regression ≠ human VA; Phase 2 visual **rejected by product owner**  
 *Phase 7 · G1–G10 Done · Sprint 2.20 Done — Player OS premium foundation locked*
 
@@ -1419,6 +1419,11 @@ Loadout art (3.2+) consumed by 2.12 hero identity column.
 | **LAUNCH-test-integrity** | **Done** | Emulator round-trip guards G1–G10 in CI (`test:firestore-rules` + `loopIntegrityGuards.test.ts`); G6 CI job shipped | `loopIntegrityGuards.test.ts`, `firestoreRulesSprint412.test.ts` |
 | **LAUNCH-scouting** | **Done** | `/coach/scouting` live squad from `player_lookup`; assessments → `teams/{teamId}/scouting_assessments` | `coachScouting.test.ts` |
 | **LAUNCH-forge-nameonly** | **Done** | Intent Engine shows name-only roster rows disabled with “add email to assign” hint; not intent-targetable | `intentModule.test.ts` |
+| **LAUNCH-epic53** | **Done** | Director Field Ops deployment calendar — create practice/match/tournament; announce toggle → Epic 4.5 comms | `epic53DeploymentCalendar.test.ts` |
+| **LAUNCH-epic54** | **Partial** | Weather lock scaffold — scheduled `evaluateFieldWeatherLock`, `field_weather_status`, Field Ops banner + deployment block | `epic54WeatherLock.test.ts` |
+| **LAUNCH-epic52** | **Done** | Registrar → Director compliance matrix; `/registrar` redirect; team-scoped `loadComplianceTable` | `epic52RegistrarConsolidation.test.ts` |
+| **LAUNCH-epic51** | **Done** | COPPA / household / VPC gate inventory + regression guards | `epic51CoppaSignup.test.ts` |
+| **LAUNCH-epic55** | **Done** | FCM / messaging infra audit guards | `epic55MessagingAudit.test.ts` |
 | **LAUNCH-cohesion-lb** | **Done** | 3 cohesion launch-blockers resolved: CLB-1 SweetAlert2 → `PlayerDiegeticOverlay` on `/tracker`; CLB-2 raw Chart.js radar → `VanguardProtocolPanel` (all roles) on `/stats`; CLB-3 coach XP/Level chrome removed from `SquadTelemetryView` + `CoachSquadReadinessCard`. Polish-tier cohesion deferred to tracked polish epic | `src/lib/__tests__/launchCohesionLb.test.ts` (14 guards) |
 | **XP-verify** | **Done** | XP algorithm tests + client/server parity (`level.js` ↔ `gamificationWorkoutXp.js`) | `levelXp.test.ts`, `gamificationWorkoutXp.test.js`, `trainingOpsXp.test.js` |
 | **3.5m-frame** | **Done** | Art-well recess + holo inset — unified portrait clip, xMidYMid bust centering | `playerLoadoutSprint35mFrame.test.ts` |
@@ -1428,6 +1433,28 @@ Loadout art (3.2+) consumed by 2.12 hero identity column.
 | **3.5m-hair** | **Superseded** | Folded into Gemini bust + ingest | — |
 | **3.5m-gate** | **Deferred (post-launch — owner art)** | Portrait stability gate — full regression + **product owner** human VA | [`s35m-gate-manifest.json`](docs/vision/va-screenshots/s35m-gate-manifest.json) |
 | **3.6b+** | **Deferred (post-launch — owner art)** | Avatar Studio PNG layer stack — Photopea slice from `references/character/` | [`character/AVATAR_REFERENCE_INDEX.md`](docs/vision/references/character/AVATAR_REFERENCE_INDEX.md), [`.cursor/rules/avatar-builder-deferred.mdc`](.cursor/rules/avatar-builder-deferred.mdc) |
+
+---
+
+## Sprint LAUNCH-epic53 scope — **Done**
+
+**Goal:** Close Epic **5.3** — tactical deployment calendar in Director Field Ops with create flow and optional family announce (Epic 4.5 trigger).
+
+**Delivered:**
+
+| Layer | Behavior |
+|-------|----------|
+| Field Ops | `DeploymentCalendar.svelte` embedded in `FieldOpsModule.svelte` (replaces read-only `DeploymentCalendarPanel`) |
+| Create | Practice / match / tournament + team + facility + start/end |
+| Comms | **Announce to team families** checkbox → `visibility: club` (broadcast) vs `staff_only` (suppress) |
+| Rules + index | `deployment_calendar_entries` director/registrar create; `clubId` + `startsAt` composite |
+
+**Verify:**
+
+```bash
+npm test -- src/lib/components/director/os/__tests__/epic53DeploymentCalendar.test.ts
+npm run check
+```
 
 ---
 
@@ -1455,7 +1482,7 @@ npm run check
 
 ## Functional-loop audit backlog (LAUNCH-loop-integrity + LAUNCH-test-integrity) — **Done (2026-06-10)**
 
-**Status (2026-06-10):** All Tier-0 launch blockers (T0-1..T0-10; T0-4 verified false positive), all Tier-1 majors (T1-1..T1-13), Track B (B1–B4), Tier-2 fragility fixes, **LAUNCH-test-integrity** emulator guards (G1–G10 in `loopIntegrityGuards.test.ts` + CI `test:firestore-rules`), and follow-on **LAUNCH-scouting** / **LAUNCH-forge-nameonly** are **shipped**. Remaining launch work is **owner QA** on [`FUNCTIONAL_MVP.md`](docs/vision/FUNCTIONAL_MVP.md) — not new feature slices unless QA finds gaps.
+**Status (2026-06-10):** All Tier-0 launch blockers (T0-1..T0-10; T0-4 verified false positive), all Tier-1 majors (T1-1..T1-13), Track B (B1–B4), Tier-2 fragility fixes, **LAUNCH-test-integrity** emulator guards (G1–G10 in `loopIntegrityGuards.test.ts` + CI `test:firestore-rules`), and follow-on **LAUNCH-scouting** / **LAUNCH-forge-nameonly** / **LAUNCH-epic53** are **shipped**. Remaining launch work: **Epic 5.4+**, **Epic 2.2**, **DEPLOY-O-bundle** — **no owner QA until all epics complete** (per product owner).
 
 **Origin:** 8-domain read-only functional + design audit (2026-06-09). Root cause across the platform: writer/reader **key + field mismatches** (collection A vs B, camelCase vs snake_case, email-key vs uid-key) that never error and were not caught because ~160/200 tests are static source-scans. Full evidence + file:line in the agent plan `coach_assignment_flow_phases`.
 

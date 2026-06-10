@@ -1,6 +1,6 @@
 # Field weather / lightning lock (Epic 5.4) — design placeholder
 
-**Status:** No live API calls in repo without secrets. This document defines the intended **Tomorrow.io** (or compatible) flow and facility geometry.
+**Status:** Scheduled evaluator shipped (`evaluateFieldWeatherLock`); **Tomorrow.io API integration stubbed** until `TOMORROW_IO_API_KEY` is bound. Client reads `field_weather_status` in Field Ops.
 
 ## Goals
 

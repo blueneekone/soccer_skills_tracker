@@ -16,6 +16,11 @@ import { collection, doc, getDoc, query, where, getDocs } from 'firebase/firesto
  * @property {'ok' | 'bad' | 'warn' | 'muted'} waiverKind
  * @property {string} passportLabel
  * @property {'ok' | 'bad' | 'warn' | 'muted'} passportKind
+ * @property {boolean} hasSignedWaiver
+ * @property {string | null} clearanceStatus
+ * @property {string | null} emergencyName
+ * @property {string | null} emergencyPhone
+ * @property {string | null} medicalNotes
  */
 
 /**
@@ -144,6 +149,8 @@ export async function loadComplianceTable(teams) {
 			const dobRaw = passportData?.dateOfBirth ?? userData?.dateOfBirth ?? null;
 			const pc = passportCell(passportData && typeof passportData === 'object' ? passportData : null);
 			const wc = waiverCell(passportData && typeof passportData === 'object' ? passportData : null);
+			const passportObj =
+				passportData && typeof passportData === 'object' ? passportData : null;
 			out.push({
 				key: `${teamId}::${playerName}`,
 				playerName,
@@ -158,6 +165,23 @@ export async function loadComplianceTable(teams) {
 				waiverKind: wc.kind,
 				passportLabel: pc.label,
 				passportKind: pc.kind,
+				hasSignedWaiver: passportObj?.hasSignedWaiver === true,
+				clearanceStatus:
+					typeof passportObj?.clearanceStatus === 'string' ?
+						passportObj.clearanceStatus
+					:	null,
+				emergencyName:
+					typeof passportObj?.emergencyName === 'string' ?
+						passportObj.emergencyName
+					:	null,
+				emergencyPhone:
+					typeof passportObj?.emergencyPhone === 'string' ?
+						passportObj.emergencyPhone
+					:	null,
+				medicalNotes:
+					typeof passportObj?.medicalNotes === 'string' ?
+						passportObj.medicalNotes
+					:	null,
 			});
 		}
 	}

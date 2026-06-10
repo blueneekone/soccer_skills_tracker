@@ -2132,6 +2132,20 @@ service cloud.firestore {
         && resource.data.clubId == tokenClub();
     }
 
+    // Epic 5.4: weather lock snapshots — director/registrar read; Cloud Functions write only.
+    match /field_weather_status/{facilityId} {
+      allow read: if authed() && (
+        isSuper()
+        || (
+          resource.data.keys().hasAll(['clubId'])
+          && resource.data.clubId != null
+          && resource.data.clubId == tokenClub()
+          && (isDirector() || isRegistrar())
+        )
+      );
+      allow create, update, delete: if false;
+    }
+
     // Epic 3 Sprint 5: aggregated seat usage vs purchased cap (Admin SDK / callable only).
     match /license_entitlements/{clubId} {
       allow read: if authed() && canReadLicenseEntitlement(clubId);

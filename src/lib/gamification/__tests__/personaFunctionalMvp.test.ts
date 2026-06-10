@@ -44,9 +44,13 @@ describe('Sprint LAUNCH-functional-os — ROADMAP', () => {
 		expect(roadmap).toMatch(/\|\s*\*\*LAUNCH-functional-os\*\*\s*\|\s*\*\*In progress\*\*/i);
 	});
 
-	it('ROADMAP next build order includes 3.5k Done then Epic 4.1 comms', () => {
-		expect(roadmap).toMatch(/3\.5k Done.*Epic 4\.1/s);
-		expect(roadmap).toMatch(/4\.1.*4\.2.*4\.11.*4\.4.*4\.3/s);
+	it('ROADMAP next build order includes Epic 5 after Epic 4 comms complete', () => {
+		expect(roadmap).toMatch(/Epic 4 Done \(4\.1–4\.12\)/);
+		expect(roadmap).toMatch(/Epic 5 Done/);
+	});
+
+	it('ROADMAP defers owner QA until all epics complete', () => {
+		expect(roadmap).toMatch(/no owner QA until all epics complete/i);
 	});
 
 	it('ROADMAP documents personaFunctionalMvp test proof', () => {
@@ -215,6 +219,34 @@ describe('Sprint LAUNCH-functional-os — Coach→Player bounty handoff', () => 
 			'utf-8',
 		);
 		expect(trainingOps).toMatch(/invoker:\s*'public'/);
+	});
+});
+
+describe('Sprint LAUNCH-epic53 — Director deployment calendar', () => {
+	const CAL = join(ROOT, 'lib/components/director/os/DeploymentCalendar.svelte');
+	const FIELD_OPS = join(ROOT, 'lib/components/director/os/FieldOpsModule.svelte');
+	const EPIC53_TEST = join(
+		ROOT,
+		'lib/components/director/os/__tests__/epic53DeploymentCalendar.test.ts',
+	);
+
+	it('ROADMAP documents LAUNCH-epic53 Done', () => {
+		const roadmap = readFileSync(ROADMAP, 'utf-8');
+		expect(roadmap).toMatch(/\*\*LAUNCH-epic53\*\*\s*\|\s*\*\*Done\*\*/);
+	});
+
+	it('Field Ops wires DeploymentCalendar with create + announce toggle', () => {
+		expect(existsSync(CAL)).toBe(true);
+		expect(existsSync(FIELD_OPS)).toBe(true);
+		const cal = readFileSync(CAL, 'utf-8');
+		expect(cal).toMatch(/announceToTeams/);
+		expect(cal).toMatch(/staff_only/);
+		const fieldOps = readFileSync(FIELD_OPS, 'utf-8');
+		expect(fieldOps).toMatch(/DeploymentCalendar/);
+	});
+
+	it('epic53DeploymentCalendar regression guards exist', () => {
+		expect(existsSync(EPIC53_TEST)).toBe(true);
 	});
 });
 

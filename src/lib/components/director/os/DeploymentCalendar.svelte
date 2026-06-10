@@ -41,6 +41,8 @@
 
 	let rows = $state(/** @type {CalRow[]} */ ([]));
 	let facilities = $state(/** @type {Array<{ id: string; name: string }>} */ ([]));
+	/** @type {Record<string, { status?: string; lockReason?: string }>} */
+	let weatherStatusByFacility = $state({});
 	let loading = $state(true);
 	let listErr = $state(/** @type {string | null} */ (null));
 
@@ -52,10 +54,17 @@
 	let endsLocal = $state('');
 	let teamId = $state('');
 	let facilityId = $state('');
+	/** When true, visibility is `club` and Epic 4.5 comms trigger may broadcast to families. */
+	let announceToTeams = $state(true);
 
 	const clubTeams = $derived(
 		teamsStore.teams.filter((t) => t.clubId === clubId),
 	);
+
+	const selectedFacilityWeatherLocked = $derived.by(() => {
+		if (!facilityId) return false;
+		return weatherStatusByFacility[facilityId]?.status === 'locked';
+	});
 
 	const kindLabels = [
 		{ value: 'practice', label: 'Practice' },
@@ -68,6 +77,7 @@
 			loading = false;
 			rows = [];
 			facilities = [];
+			weatherStatusByFacility = {};
 			return;
 		}
 		loading = true;
@@ -108,9 +118,31 @@
 			},
 			(e) => console.error('[DeploymentCalendar] facilities', e),
 		);
+		const wq = query(
+			collection(db, 'field_weather_status'),
+			where('clubId', '==', clubId),
+		);
+		const unsubWeather = onSnapshot(
+			wq,
+			(snap) => {
+				/** @type {Record<string, { status?: string; lockReason?: string }>} */
+				const map = {};
+				for (const d of snap.docs) {
+					const data = d.data();
+					map[d.id] = {
+						status: typeof data.status === 'string' ? data.status : undefined,
+						lockReason:
+							typeof data.lockReason === 'string' ? data.lockReason : undefined,
+					};
+				}
+				weatherStatusByFacility = map;
+			},
+			(e) => console.error('[DeploymentCalendar] weather status', e),
+		);
 		return () => {
 			unsub();
 			unsubFac();
+			unsubWeather();
 		};
 	});
 
@@ -124,6 +156,7 @@
 		teamId = clubTeams[0]?.id ?? '';
 		facilityId = facilities[0]?.id ?? '';
 		eventKind = 'practice';
+		announceToTeams = true;
 		modalOpen = true;
 	}
 
@@ -197,6 +230,13 @@
 			saveErr = 'Select a facility location.';
 			return;
 		}
+		const weather = weatherStatusByFacility[facilityId];
+		if (weather?.status === 'locked') {
+			saveErr =
+				weather.lockReason ||
+				'This facility is weather-locked. Choose another location or wait for clear status.';
+			return;
+		}
 		const tName = teamLabel(teamId);
 		const fName = facilityLabel(facilityId);
 		const title = `${kindLabel(eventKind)} · ${tName} · ${fName}`.slice(0, 500);
@@ -210,7 +250,7 @@
 				...(endD ? { endsAt: Timestamp.fromDate(endD) } : {}),
 				facilityId,
 				teamIds: [teamId],
-				visibility: 'club',
+				visibility: announceToTeams ? 'club' : 'staff_only',
 				createdAt: serverTimestamp(),
 				updatedAt: serverTimestamp(),
 			});
@@ -483,10 +523,33 @@
 						bind:value={facilityId}
 					>
 						<option value="">Select facility…</option>
-						{#each facilities as f}
-							<option value={f.id}>{f.name}</option>
+						{#each facilities as f (f.id)}
+							<option value={f.id} disabled={weatherStatusByFacility[f.id]?.status === 'locked'}>
+								{f.name}{weatherStatusByFacility[f.id]?.status === 'locked' ? ' (weather locked)' : ''}
+							</option>
 						{/each}
 					</select>
+					{#if selectedFacilityWeatherLocked}
+						<p class="tw-m-0 tw-text-[10px] tw-font-semibold tw-text-amber-400" role="status">
+							Weather lock active — scheduling blocked for this facility.
+						</p>
+					{/if}
+				</label>
+
+				<label class="tw-flex tw-cursor-pointer tw-items-start tw-gap-2 tw-rounded-lg tw-border tw-border-slate-800 tw-bg-black/20 tw-px-3 tw-py-2">
+					<input
+						type="checkbox"
+						class="tw-mt-0.5"
+						bind:checked={announceToTeams}
+					/>
+					<span class="tw-flex tw-flex-col tw-gap-0.5">
+						<span class="tw-text-xs tw-font-semibold tw-text-slate-200">
+							Announce to team families
+						</span>
+						<span class="tw-text-[10px] tw-leading-relaxed tw-text-slate-500">
+							Safe-Comms broadcast when scheduled (staff-only entries skip family notify).
+						</span>
+					</span>
 				</label>
 
 				{#if saveErr}

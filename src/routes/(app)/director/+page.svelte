@@ -86,9 +86,11 @@
 	// different tenant so team dropdowns never show stale data from the
 	// layout-level cache key.
 	$effect(() => {
-		if (!clubId || authStore.role !== 'director') return;
+		if (!clubId) return;
+		const role = authStore.role;
+		if (role !== 'director' && role !== 'registrar') return;
 		untrack(() => {
-			void teamsStore.load(authStore.role, {
+			void teamsStore.load(role, {
 				clubId,
 				scope: 'club',
 				routePath: page.url.pathname,
