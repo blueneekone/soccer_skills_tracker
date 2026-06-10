@@ -38,6 +38,8 @@
 		deployPhase = 'idle' as DeployPhase,
 		deployError = '',
 		isLoadingRoster = false,
+		assignableRosterCount = 0,
+		nameOnlyRosterCount = 0,
 		canDeploy = false,
 		onDeploy = () => {},
 		onToggleUid = (_uid: string) => {},
@@ -551,6 +553,22 @@
 					{/if}
 				</div>
 			</div>
+		{/if}
+
+		<!-- ── Name-only roster advisory (D9) ─────────────── -->
+		{#if nameOnlyRosterCount > 0}
+			<p
+				class="tw-font-mono tw-text-[9px] tw-tracking-wide tw-text-amber-500/90 tw-leading-relaxed tw-uppercase"
+				role="status"
+			>
+				{nameOnlyRosterCount} name-only roster {nameOnlyRosterCount === 1 ? 'entry' : 'entries'} —
+				link player accounts on Daily Intel before they can receive assignments.
+			</p>
+		{/if}
+		{#if !isLoadingRoster && assignableRosterCount === 0}
+			<p class="tw-font-mono tw-text-[9px] tw-tracking-wide tw-text-slate-500 tw-uppercase" role="status">
+				No assignable players — sync roster emails on Daily Intel first.
+			</p>
 		{/if}
 
 		<!-- ── Deploy button ──────────────────────────────── -->

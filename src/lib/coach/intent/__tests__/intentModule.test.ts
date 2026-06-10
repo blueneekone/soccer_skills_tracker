@@ -58,4 +58,11 @@ describe('LAUNCH-forge-nameonly — Intent Engine roster hints', () => {
 		expect(src).toMatch(/Add email to assign/);
 		expect(src).toMatch(/assignable !== false/);
 	});
+
+	it('IntentEngine canDeploy requires assignable roster (D9 — no silent empty deploy)', () => {
+		const src = readFileSync(ENGINE, 'utf-8');
+		expect(src).toMatch(/assignableRosterCount/);
+		expect(src).toMatch(/selectedAssignableCount/);
+		expect(src).toMatch(/nameOnlyRosterCount/);
+	});
 });

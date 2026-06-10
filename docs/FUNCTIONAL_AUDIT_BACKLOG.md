@@ -1,5 +1,7 @@
 # Functional Audit Backlog — 2026-06-10
 
+**Status (2026-06-10):** P0 A1–A7, B1–B2, C1–C4, D1–D4, F2, D9, D10, B3, E8 **Done**. Director (B4, D5–D8, E9, F3) and E-series mount decisions **remaining**.
+
 Fresh end-to-end read-only audit of `/player`, `/parent`, `/coach`, `/director` workspaces.
 Supersedes the optimistic "all functional epics closed" header in `ROADMAP.md`: that claim
 only covered doc-tracked MVP epics (4 / 5 / 2.2). This audit found real wiring gaps, mock

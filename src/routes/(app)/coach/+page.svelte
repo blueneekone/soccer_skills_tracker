@@ -38,15 +38,15 @@
 	const activeClubId = $derived(typeof activeTeamRow?.clubId === 'string' ? activeTeamRow.clubId : '');
 
 	const clubNameDisplay = $derived.by(() => {
-		if (!activeClubId) return 'AGGIES FC';
+		if (!activeClubId) return 'YOUR CLUB';
 		const n = teamsStore.clubs.find((c) => c.id === activeClubId)?.name;
-		return typeof n === 'string' && n.trim() ? n.trim().toUpperCase() : 'AGGIES FC';
+		return typeof n === 'string' && n.trim() ? n.trim().toUpperCase() : 'YOUR CLUB';
 	});
 
 	const teamNameDisplay = $derived(
 		typeof activeTeamRow?.name === 'string' && activeTeamRow.name.trim()
 			? activeTeamRow.name.trim().toUpperCase()
-			: 'U14 VARSITY',
+			: 'SELECT TEAM',
 	);
 
 	const nexusBadgeLetter = $derived((clubNameDisplay.slice(0, 1) || 'A').toUpperCase());
@@ -287,7 +287,7 @@
 				<dl class="tw-m-0 tw-flex tw-flex-col tw-gap-3 tw-font-mono tw-text-[11px]">
 					<div class="tw-flex tw-items-baseline tw-justify-between tw-gap-3 tw-border-b tw-border-white/5 tw-pb-2">
 						<dt class="tw-text-[9px] tw-font-bold tw-uppercase tw-tracking-widest tw-text-white/35">PITCH</dt>
-						<dd class="tw-tabular-nums tw-text-[#14b8a6]/90">TURF 2 · LANE A</dd>
+						<dd class="tw-tabular-nums tw-text-[#14b8a6]/90">{teamNameDisplay}</dd>
 					</div>
 					<div class="tw-flex tw-items-baseline tw-justify-between tw-gap-3 tw-border-b tw-border-white/5 tw-pb-2">
 						<dt class="tw-text-[9px] tw-font-bold tw-uppercase tw-tracking-widest tw-text-white/35">COORDS</dt>
@@ -299,11 +299,11 @@
 					</div>
 					<div class="tw-flex tw-items-baseline tw-justify-between tw-gap-3 tw-border-b tw-border-white/5 tw-pb-2">
 						<dt class="tw-text-[9px] tw-font-bold tw-uppercase tw-tracking-widest tw-text-white/35">COMMS</dt>
-						<dd class="tw-tabular-nums tw-text-[#14b8a6]/90">ENCRYPTED · NEXUS-7</dd>
+						<dd class="tw-tabular-nums tw-text-[#14b8a6]/90">TEAM OPS · LOGISTICS</dd>
 					</div>
 					<div class="tw-flex tw-items-baseline tw-justify-between tw-gap-3">
 						<dt class="tw-text-[9px] tw-font-bold tw-uppercase tw-tracking-widest tw-text-white/35">EGRESS</dt>
-						<dd class="tw-tabular-nums tw-text-slate-300">GATE 04</dd>
+						<dd class="tw-tabular-nums tw-text-slate-300">{effectiveTeamId ? 'ROSTER LINKED' : 'NO TEAM'}</dd>
 					</div>
 				</dl>
 

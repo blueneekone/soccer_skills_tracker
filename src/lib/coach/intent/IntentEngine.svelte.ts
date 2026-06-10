@@ -186,12 +186,26 @@ export class IntentEngine {
 		});
 	});
 
+	assignableRosterCount = $derived(this.roster.filter((r) => r.assignable).length);
+
+	nameOnlyRosterCount = $derived(
+		this.roster.filter((r) => r.nameOnly || !r.assignable).length,
+	);
+
+	selectedAssignableCount = $derived(
+		this.draftTargetUids.filter((key) =>
+			this.roster.some((r) => r.rosterKey === key && r.assignable),
+		).length,
+	);
+
 	/** True if draft is ready to deploy. */
 	canDeploy = $derived(
 		!!this.draftAttributeId &&
 		this.draftRequiredXp >= 1 &&
 		this.draftDurationDays >= 1 &&
-		(this.draftScope === 'team' || this.draftTargetUids.length > 0) &&
+		(this.draftScope === 'team' ?
+			this.assignableRosterCount > 0
+		:	this.selectedAssignableCount > 0) &&
 		this.deployPhase === 'idle',
 	);
 

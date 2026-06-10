@@ -42,6 +42,7 @@ const coachLinks = [
 	{ label: 'Match Day',         href: '/coach/match-day',     icon: 'data.activity' },
 	{ label: 'Proving Grounds',   href: '/coach/scouting',      icon: 'data.target' },
 	{ label: 'Team Ops',          href: '/coach/logistics',     icon: 'sys.calendar' },
+	{ label: 'Trial Builder',     href: '/coach/trial-builder', icon: 'action.edit' },
 ];
 
 /**

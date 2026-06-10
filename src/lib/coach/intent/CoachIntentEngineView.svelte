@@ -129,6 +129,8 @@
 	deployPhase={engine.deployPhase}
 	deployError={engine.deployError}
 	isLoadingRoster={engine.isLoadingRoster}
+	assignableRosterCount={engine.assignableRosterCount}
+	nameOnlyRosterCount={engine.nameOnlyRosterCount}
 	canDeploy={engine.canDeploy}
 	bind:draftBundleDrills={engine.draftBundleDrills}
 	bind:draftRequiresParentVerification={engine.draftRequiresParentVerification}

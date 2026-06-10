@@ -44,7 +44,11 @@
 
 <div class="ops-panel">
 	<h2 class="ops-panel__title">Roster</h2>
-	<p class="ops-panel__sub">Active squad from <code>player_lookup</code> — registration-linked players on this team.</p>
+	<p class="ops-panel__sub">
+		Active squad from <code>player_lookup</code> — registration-linked players on this team.
+		To add or remove players, use the roster tools on
+		<a class="ops-link" href="/coach">Daily Intel</a>.
+	</p>
 
 	{#if loading}
 		<p class="ops-muted">Loading roster…</p>
@@ -79,4 +83,6 @@
 	}
 	.ops-roster__name { font-size: 13px; font-weight: 700; color: #0f172a; }
 	.ops-roster__email { font-size: 12px; color: #64748b; font-family: ui-monospace, monospace; }
+	.ops-link { color: #0d9488; font-weight: 700; text-decoration: underline; text-underline-offset: 2px; }
+	.ops-link:hover { color: #0f766e; }
 </style>
