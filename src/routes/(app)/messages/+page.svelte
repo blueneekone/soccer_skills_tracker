@@ -5,11 +5,13 @@
 	import HouseholdThreadPanel from '$lib/components/comms/HouseholdThreadPanel.svelte';
 	import AnnouncementsInbox from '$lib/components/comms/AnnouncementsInbox.svelte';
 	import ParentLoungePanel from '$lib/components/comms/ParentLoungePanel.svelte';
+	import ReportMessageIncident from '$lib/components/comms/ReportMessageIncident.svelte';
 
 	const role = $derived(authStore.role);
 	const profile = $derived(authStore.userProfile);
 	const myEmail = $derived((authStore.user?.email || '').toLowerCase());
 	const clubId = $derived(profile?.clubId ? String(profile.clubId) : '');
+	const teamId = $derived(profile?.teamId ? String(profile.teamId) : '');
 	const householdId = $derived(profile?.householdId ? String(profile.householdId) : '');
 	const showHouseholdThread = $derived(
 		(role === 'parent' || role === 'player') && Boolean(householdId),
@@ -320,6 +322,10 @@
 				{/each}
 			{/if}
 		</div>
+	{/if}
+
+	{#if clubId && role !== 'super_admin' && role !== 'global_admin'}
+		<ReportMessageIncident {clubId} {teamId} messageKind="other" />
 	{/if}
 </div>
 

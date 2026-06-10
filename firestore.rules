@@ -2659,6 +2659,21 @@ service cloud.firestore {
       allow create, update, delete: if false;
     }
 
+    // Epic 4.10: comms incident reports (callable-created; director review queue).
+    match /message_incidents/{incidentId} {
+      allow get: if authed() && (
+        isPlatformAdmin()
+        || (isDirector() && resource.data.clubId == tokenClub())
+        || resource.data.reporterEmail == emailKey()
+      );
+      allow list: if authed() && (
+        isPlatformAdmin()
+        || (isDirector() && resource.data.clubId == tokenClub())
+        || resource.data.reporterEmail == emailKey()
+      );
+      allow create, update, delete: if false;
+    }
+
     // ─────────────────────────────────────────────────────────────────────────
     // academic_records/{playerEmail}
     // ─────────────────────────────────

@@ -451,3 +451,101 @@ exports.clubSportBroadcast = onCall({region: REGION}, async (request) => {
     results,
   };
 });
+
+// ─────────────────────────────────────────────────────────────────────────────
+// reportMessageIncident — Epic 4.10 SafeSport incident report
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * File a comms incident report (parent/coach/player → director review queue).
+ *
+ * Input:
+ *   clubId       string  — required
+ *   teamId       string  — optional
+ *   messageKind  string  — team_broadcast | channel_message | coach_dm | other
+ *   messageId    string  — optional upstream doc id
+ *   bodyPreview  string  — optional snapshot (max 500)
+ *   reason       string  — required (max 200)
+ *   details      string  — optional (max 2000)
+ */
+exports.reportMessageIncident = onCall({region: REGION}, async (request) => {
+  if (!request.auth) {
+    throw new HttpsError('unauthenticated', 'Authentication required.');
+  }
+
+  const callerUid = request.auth.uid;
+  const callerEmail = normEmail(request.auth.token.email);
+  const callerRole = request.auth.token.role || '';
+  const callerClubId = request.auth.token.clubId || request.auth.token.tenantId || '';
+
+  const allowedRoles = ['parent', 'player', 'coach', 'director', 'registrar'];
+  if (!allowedRoles.includes(callerRole)) {
+    throw new HttpsError('permission-denied', 'Your role cannot file comms incident reports.');
+  }
+
+  const data = request.data || {};
+  const clubId = typeof data.clubId === 'string' ? data.clubId.trim() : '';
+  const teamId = typeof data.teamId === 'string' ? data.teamId.trim() : '';
+  const messageKind = typeof data.messageKind === 'string' ? data.messageKind.trim() : 'other';
+  const messageId = typeof data.messageId === 'string' ? data.messageId.trim() : '';
+  const bodyPreview = typeof data.bodyPreview === 'string'
+    ? data.bodyPreview.trim().slice(0, 500)
+    : '';
+  const reason = typeof data.reason === 'string' ? data.reason.trim().slice(0, 200) : '';
+  const details = typeof data.details === 'string' ? data.details.trim().slice(0, 2000) : '';
+
+  if (!clubId) {
+    throw new HttpsError('invalid-argument', 'clubId is required.');
+  }
+  if (!reason) {
+    throw new HttpsError('invalid-argument', 'reason is required.');
+  }
+  if (callerRole !== 'director' && callerRole !== 'global_admin' && callerRole !== 'super_admin') {
+    if (callerClubId && callerClubId !== clubId) {
+      throw new HttpsError('permission-denied', 'Incident must be filed for your organisation.');
+    }
+  }
+
+  const validKinds = new Set(['team_broadcast', 'channel_message', 'coach_dm', 'household', 'other']);
+  if (!validKinds.has(messageKind)) {
+    throw new HttpsError('invalid-argument', 'Invalid messageKind.');
+  }
+
+  const incidentRef = db.collection('message_incidents').doc();
+  await incidentRef.set({
+    clubId,
+    teamId: teamId || null,
+    messageKind,
+    messageId: messageId || null,
+    bodyPreview: bodyPreview || null,
+    reason,
+    details: details || null,
+    reporterUid: callerUid,
+    reporterEmail: callerEmail,
+    reporterRole: callerRole,
+    status: 'open',
+    createdAt: admin.firestore.FieldValue.serverTimestamp(),
+  });
+
+  await logActivity(ACTIVITY_TYPE.MESSAGE_BROADCAST, {
+    actorUid: callerUid,
+    actorEmail: callerEmail,
+    tenantId: clubId,
+    notes: `Comms incident filed — ${messageKind}: ${reason.slice(0, 80)}`,
+    extra: {
+      incidentId: incidentRef.id,
+      messageKind,
+      messageId: messageId || null,
+      teamId: teamId || null,
+    },
+    ipAddress: request.rawRequest?.ip,
+  });
+
+  logger.info('[reportMessageIncident] incident filed', {
+    incidentId: incidentRef.id,
+    clubId,
+    callerEmail,
+  });
+
+  return {success: true, incidentId: incidentRef.id};
+});
