@@ -8,7 +8,11 @@ const admin = require('firebase-admin');
 
 const {normEmail} = require('../utils/formatters');
 const {syncPublicPlayerProfile} = require('../utils/profileSyncer');
-const {parentHasCommsConsent} = require('./commsPolicy');
+const {
+  parentHasCommsConsent,
+  resolveIsMinor,
+  filterParentsWithCommsConsent,
+} = require('./commsPolicy');
 
 const REGION = 'us-east1';
 
@@ -784,6 +788,169 @@ exports.onTeamBroadcastCreated = onDocumentCreated(
           msgId,
           err: e instanceof Error ? e.message : String(e),
         });
+      }
+    },
+);
+
+// ── Epic 4.5 Slice A — Deployment Calendar → Team Broadcast ──────────────────
+
+/**
+ * Auto-generates a `team_broadcasts` doc for every teamId in a newly-created
+ * `deployment_calendar_entries` doc.  The broadcast rides the already-shipped
+ * `onTeamBroadcastCreated` push bus (Epic 4.3) for FCM delivery and COPPA
+ * consent filtering — this trigger does NOT call sendFcmToUids directly.
+ *
+ * Parent-email resolution mirrors safeSportBroadcast (comms.js lines 138–185):
+ *   1. player_lookup where teamId == teamId  → player emails
+ *   2. users/{email} → isMinor flag + householdId
+ *   3. households/{householdId}.parentEmails + users.parentEmail → candidates
+ *   4. filterParentsWithCommsConsent → ccParentEmails
+ *
+ * Suppression: entries with visibility === 'staff_only' are skipped.
+ * Non-fatal: per-team errors are caught/logged; trigger never throws.
+ */
+exports.onDeploymentCalendarEntryCreated = onDocumentCreated(
+    {
+      document: 'deployment_calendar_entries/{entryId}',
+      region: REGION,
+    },
+    async (event) => {
+      const entryId = event.params.entryId;
+      const snap = event.data;
+      if (!snap) {
+        logger.warn('onDeploymentCalendarEntryCreated: missing event.data', {entryId});
+        return;
+      }
+
+      const entry = snap.data() || {};
+
+      if (entry.visibility === 'staff_only') {
+        logger.info('onDeploymentCalendarEntryCreated: suppressed staff_only entry', {entryId});
+        return;
+      }
+
+      const teamIds = Array.isArray(entry.teamIds) ? entry.teamIds : [];
+      if (teamIds.length === 0) {
+        logger.info('onDeploymentCalendarEntryCreated: no teamIds, skipping', {entryId});
+        return;
+      }
+
+      const clubId = typeof entry.clubId === 'string' ? entry.clubId.trim() : '';
+      const kind = typeof entry.kind === 'string' ? entry.kind.trim() : 'event';
+      const title = typeof entry.title === 'string' ? entry.title.trim() : '(untitled)';
+      const facilityId =
+          typeof entry.facilityId === 'string' ? entry.facilityId.trim() : '';
+
+      let dateStr = '';
+      try {
+        const d =
+            entry.startsAt && typeof entry.startsAt.toDate === 'function'
+              ? entry.startsAt.toDate()
+              : new Date(entry.startsAt);
+        dateStr = d.toLocaleString('en-US', {
+          timeZone: 'UTC',
+          month: 'short',
+          day: 'numeric',
+          year: 'numeric',
+          hour: 'numeric',
+          minute: '2-digit',
+          hour12: true,
+        });
+      } catch (_) { /* leave dateStr empty */ }
+
+      const subject = `New ${kind}: ${title}`;
+      const bodyLines = [
+        `${kind.charAt(0).toUpperCase() + kind.slice(1)}: ${title}`,
+      ];
+      if (dateStr) bodyLines.push(`When: ${dateStr} UTC`);
+      if (facilityId) bodyLines.push(`Location: ${facilityId}`);
+      const body = bodyLines.join('\n');
+
+      for (const teamId of teamIds) {
+        try {
+          if (typeof teamId !== 'string' || !teamId.trim()) continue;
+
+          // ── Resolve ccParentEmails (mirrors safeSportBroadcast lines 138–185) ──
+          const rosterSnap = await db()
+              .collection('player_lookup')
+              .where('teamId', '==', teamId)
+              .get();
+
+          const ccParentEmailSet = new Set();
+          await Promise.all(
+              rosterSnap.docs.map(async (pd) => {
+                const playerEmail = normEmail(pd.data().email || pd.id);
+                if (!playerEmail) return;
+                try {
+                  const profSnap = await db().collection('users').doc(playerEmail).get();
+                  if (!profSnap.exists) return;
+                  const prof = profSnap.data();
+                  if (!resolveIsMinor(prof)) return;
+
+                  const parentCandidates = [];
+                  const householdId = prof.householdId || '';
+                  if (householdId) {
+                    const hSnap = await db().collection('households').doc(householdId).get();
+                    if (hSnap.exists) {
+                      const pe = hSnap.data().parentEmails || [];
+                      pe.forEach((p) => {
+                        const n = normEmail(String(p));
+                        if (n) parentCandidates.push(n);
+                      });
+                    }
+                  }
+                  const directParent = normEmail(prof.parentEmail || '');
+                  if (directParent) parentCandidates.push(directParent);
+
+                  const consented = await filterParentsWithCommsConsent(
+                      db(),
+                      parentCandidates,
+                      playerEmail,
+                  );
+                  consented.forEach((p) => ccParentEmailSet.add(p));
+                } catch (err) {
+                  logger.warn(
+                      'onDeploymentCalendarEntryCreated: parent resolution error',
+                      {
+                        teamId,
+                        playerEmail,
+                        err: err instanceof Error ? err.message : String(err),
+                      },
+                  );
+                }
+              }),
+          );
+
+          const ccParentEmails = [...ccParentEmailSet];
+
+          await db().collection('team_broadcasts').add({
+            teamId,
+            teamClubId: clubId || null,
+            channelId: null,
+            fromUid: 'system',
+            fromEmail: null,
+            fromRole: 'director',
+            subject,
+            body,
+            bodyPreview: body.slice(0, 140),
+            ccParentEmails,
+            createdAt: admin.firestore.FieldValue.serverTimestamp(),
+            source: 'deployment_calendar',
+            sourceEntryId: entryId,
+          });
+
+          logger.info('onDeploymentCalendarEntryCreated: broadcast written', {
+            entryId,
+            teamId,
+            ccParentCount: ccParentEmails.length,
+          });
+        } catch (err) {
+          logger.error('onDeploymentCalendarEntryCreated: per-team error', {
+            entryId,
+            teamId,
+            err: err instanceof Error ? err.message : String(err),
+          });
+        }
       }
     },
 );

@@ -1,5 +1,6 @@
-import { db } from '$lib/firebase.js';
+import { db, functions } from '$lib/firebase.js';
 import { addDoc, collection, query, where, getDocs, serverTimestamp, Timestamp } from 'firebase/firestore';
+import { httpsCallable } from 'firebase/functions';
 
 /**
  * UI / API keys → stored in `reminderOffsets` as numbers (minutes) or the sentinel `'morning'`.
@@ -47,6 +48,7 @@ export function computeReminderFields(keys) {
  * @param {'coach_form' | 'field_booking'} [o.source]
  * @param {string} [o.fieldId]
  * @param {string} [o.scheduleDate] YYYY-MM-DD when linked to a field day
+ * @param {boolean} [o.announceToTeam] When true, fires a team_broadcasts entry via safeSportBroadcast after save. Default false. Broadcast failure is non-fatal.
  * @returns {Promise<void>}
  */
 export async function saveTeamScheduledEvent({
@@ -59,6 +61,7 @@ export async function saveTeamScheduledEvent({
 	source = 'coach_form',
 	fieldId = null,
 	scheduleDate = null,
+	announceToTeam = false,
 }) {
 	if (!teamId) {
 		throw new Error('teamId is required');
@@ -109,6 +112,18 @@ export async function saveTeamScheduledEvent({
 	}
 
 	await addDoc(collection(db, 'team_workouts'), payload);
+
+	if (announceToTeam) {
+		try {
+			const broadcastFn = httpsCallable(functions, 'safeSportBroadcast');
+			const kindLabel = kind === 'game' ? 'Game' : 'Practice';
+			const subject = `New ${kindLabel}: ${name}`;
+			const body = `${name} has been added to the team schedule.`;
+			await broadcastFn({ teamId, subject, body });
+		} catch (broadcastErr) {
+			console.error('[workouts] announce broadcast failed (non-fatal):', broadcastErr);
+		}
+	}
 }
 
 function createWorkoutsStore() {

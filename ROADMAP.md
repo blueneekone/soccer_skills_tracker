@@ -1940,7 +1940,7 @@ npm run check
 | 4.2 | **Done** | SafeSport compliance — block coach→minor, `consentComms`, unify monitored channel path | `commsSprint42.test.ts` |
 | 4.3 | **Done** | Notification bus — single FCM store (T0-9) + `onTeamBroadcastCreated` push on announcements (consent-filtered parents + team players) + DM push in `sendCoachPlayerMessage`; `push_announcements` default-on. *Refinement noted:* `sendFcmToUids` doesn't pref-gate per-user yet — fine until announcement opt-out UI exists. | `comms43Push.guard.test.ts` (14) |
 | 4.4 | **Done** | Parent comms hub — per-team **Parent Lounge** (`clubs/{clubId}/channels/parent-lounge-{teamId}`): provisioning helper + coach callable (W1), auto-provision on household link + parent `clubId` set (W2), `ParentLoungePanel.svelte` live read/send via `sendChannelMessage` (W3), mounted in `/messages` parent view derived from children's teams so it shows pre-first-message (W4/W4b). Parents initiate + reply; SafeSport-monitored. | `comms44ParentLounge*.guard.test.ts` (17+20+13/16) |
-| 4.5 | Planned | Schedule → announce → push (deployment calendar integration) | — |
+| 4.5 | **Done** | Schedule → announce → push. Director: `onDeploymentCalendarEntryCreated` trigger auto-writes `team_broadcasts` per `teamId` (reuses safeSportBroadcast parent-CC + commsPolicy consent). Coach: opt-in "Announce to team" toggle on scheduled-event forms (FieldOps + CoachDrillsView) → `safeSportBroadcast`. Both ride the 4.3 push bus (auto player+consented-parent FCM). Create-only v1 (no reschedule re-announce). | `commsSprint45.test.ts` (44) |
 | 4.6 | Planned | Game + payment + registration reminders | — |
 | 4.7 | Planned | Team ops mode (TM MVP or coach-delegated logistics) | — |
 | 4.8 | Planned | Director club broadcast composer | — |

@@ -50,6 +50,8 @@
 	let schedNotify1h = $state(false);
 	let schedNotify30m = $state(true);
 	let schedNotifyMorning = $state(false);
+	/** Opt-in: fires a team_broadcasts entry via safeSportBroadcast after event save. Default OFF. */
+	let schedAnnounce = $state(false);
 	let scheduleSaveBusy = $state(false);
 	let scheduleErr = $state('');
 	let scheduleOk = $state('');
@@ -100,14 +102,15 @@
 			keys.push('morning');
 		}
 		try {
-			await saveTeamScheduledEvent({
-				teamId: teamScope.selectedTeamId,
-				eventKind: scheduleEventKind,
-				title: scheduleTitle,
-				startAt: start,
-				reminderKeys: keys,
-				source: 'coach_form'
-			});
+		await saveTeamScheduledEvent({
+			teamId: teamScope.selectedTeamId,
+			eventKind: scheduleEventKind,
+			title: scheduleTitle,
+			startAt: start,
+			reminderKeys: keys,
+			source: 'coach_form',
+			announceToTeam: schedAnnounce
+		});
 			scheduleOk = 'Event saved with notification preferences.';
 			await workoutsStore.loadForTeam(teamScope.selectedTeamId);
 		} catch (e) {
@@ -676,6 +679,10 @@
 							<label class="cdm-sch-ch">
 								<input type="checkbox" bind:checked={schedNotifyMorning} />
 								Morning of
+							</label>
+							<label class="cdm-sch-ch cdm-sch-ch--announce" title="Sends a team broadcast message via the SafeSport comms bus">
+								<input type="checkbox" bind:checked={schedAnnounce} />
+								Announce to team
 							</label>
 						</div>
 					</fieldset>

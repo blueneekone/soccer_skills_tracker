@@ -210,6 +210,8 @@ exports.onTrialScoreAdded            = notificationOps.onTrialScoreAdded;
 exports.onTrialScoreWritten          = notificationOps.onTrialScoreWritten;
 // Epic 4.3 — announcement push loop
 exports.onTeamBroadcastCreated       = notificationOps.onTeamBroadcastCreated;
+// Epic 4.5 Slice A — deployment calendar → team broadcast auto-announce
+exports.onDeploymentCalendarEntryCreated = notificationOps.onDeploymentCalendarEntryCreated;
 
 // ── Phase 4, Epic 8 — Car Ride Home Protocol ─────────────────────────────────
 // Fires mandatory push notifications to parents 15 minutes post-match and

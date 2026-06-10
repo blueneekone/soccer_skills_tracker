@@ -101,6 +101,8 @@
 	let notify1h = $state(false);
 	let notify30m = $state(true);
 	let notifyMorning = $state(false);
+	/** Opt-in: fires a team_broadcasts entry via safeSportBroadcast after event save. Default OFF. */
+	let announceToTeam = $state(false);
 	let booking = $state(false);
 	let conflictMsg = $state(/** @type {string | null} */ (null));
 	let dragTeamId = $state(/** @type {string | null} */ (null));
@@ -308,17 +310,18 @@
 				rKeys.push('morning');
 			}
 			try {
-				await saveTeamScheduledEvent({
-					teamId: bookingTeamId,
-					eventKind: activityType,
-					title: '',
-					startAt: startD,
-					endAt: endD,
-					reminderKeys: rKeys,
-					source: 'field_booking',
-					fieldId,
-					scheduleDate
-				});
+			await saveTeamScheduledEvent({
+				teamId: bookingTeamId,
+				eventKind: activityType,
+				title: '',
+				startAt: startD,
+				endAt: endD,
+				reminderKeys: rKeys,
+				source: 'field_booking',
+				fieldId,
+				scheduleDate,
+				announceToTeam
+			});
 			} catch (e2) {
 				const msg2 =
 					e2 && typeof e2 === 'object' && 'message' in e2 ?
@@ -581,12 +584,16 @@
 							<input type="checkbox" bind:checked={notify30m} class="tw-rounded" />
 							30 minutes before
 						</label>
-						<label class="tw-flex tw-items-center tw-gap-2 tw-text-xs tw-cursor-pointer">
-							<input type="checkbox" bind:checked={notifyMorning} class="tw-rounded" />
-							Morning of
-						</label>
-					</div>
+					<label class="tw-flex tw-items-center tw-gap-2 tw-text-xs tw-cursor-pointer">
+						<input type="checkbox" bind:checked={notifyMorning} class="tw-rounded" />
+						Morning of
+					</label>
+					<label class="tw-flex tw-items-center tw-gap-2 tw-text-xs tw-cursor-pointer tw-border-l tw-border-slate-700 tw-pl-3" title="Sends a team broadcast message via the SafeSport comms bus">
+						<input type="checkbox" bind:checked={announceToTeam} class="tw-rounded" />
+						Announce to team
+					</label>
 				</div>
+			</div>
 				<button
 					type="button"
 					class="dir-os-btn-primary sm:tw-col-span-2 lg:tw-col-span-4"
