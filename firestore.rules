@@ -1321,6 +1321,26 @@ service cloud.firestore {
         allow update, delete: if false;
       }
 
+      // Epic 4.7: coach team ops attendance sessions (present/absent per player email).
+      match /attendance_sessions/{sessionId} {
+        allow read: if authed() && (
+          isSuper()
+          || directorScopedToTeam(teamId)
+          || coachStaffCanAccessTeam(teamId)
+          || (isPlayer() && sameTeam(teamId))
+        );
+        allow create, update: if coachStaffCanAccessTeam(teamId)
+          && request.resource.data.teamId == teamId
+          && request.resource.data.keys().hasAll(['title', 'sessionDate', 'records', 'createdBy'])
+          && request.resource.data.title is string
+          && request.resource.data.title.size() > 0
+          && request.resource.data.title.size() <= 120
+          && request.resource.data.sessionDate is string
+          && request.resource.data.records is map
+          && request.resource.data.createdBy == request.auth.uid;
+        allow delete: if isSuper() || directorScopedToTeam(teamId);
+      }
+
       // Epic 2.3: saved tactical boards (coaches / directors / super_admin only).
       match /tactics/{tacticId} {
         allow read: if authed() && (

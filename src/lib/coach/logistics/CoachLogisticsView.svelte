@@ -1,6 +1,9 @@
 <script lang="ts">
 	import MessagesTab from '$lib/components/coach/MessagesTab.svelte';
 	import ParentAnnouncementCompose from '$lib/components/coach/ParentAnnouncementCompose.svelte';
+	import CoachTeamSchedulePanel from '$lib/coach/logistics/CoachTeamSchedulePanel.svelte';
+	import CoachTeamRosterPanel from '$lib/coach/logistics/CoachTeamRosterPanel.svelte';
+	import CoachTeamAttendancePanel from '$lib/coach/logistics/CoachTeamAttendancePanel.svelte';
 	import { teamsStore } from '$lib/stores/teams.svelte.js';
 	import { CoachTeamScope } from '$lib/coach/context/coachTeamScope.svelte.js';
 
@@ -13,15 +16,26 @@
 	const currentTeam = $derived(teamScope.currentTeam);
 	const teamClubId = $derived(teamScope.teamClubId);
 	const teamLabel = $derived(teamScope.teamLabel);
+
+	/** @type {'comms' | 'schedule' | 'roster' | 'attendance'} */
+	let activeTab = $state('comms');
+
+	const tabs = [
+		{ id: 'comms', label: 'Comms' },
+		{ id: 'schedule', label: 'Schedule' },
+		{ id: 'roster', label: 'Roster' },
+		{ id: 'attendance', label: 'Attendance' },
+	] as const;
 </script>
 
 <div class="logistics-root">
 	<header class="logistics-head">
 		<div>
-			<p class="logistics-kicker qa-mono">Epic 4 · Coach logistics</p>
-			<h1 class="logistics-title">Logistics &amp; Comms</h1>
+			<p class="logistics-kicker qa-mono">Epic 4.7 · Team ops</p>
+			<h1 class="logistics-title">Team Ops</h1>
 			<p class="logistics-sub">
-				Parent-targeted announcements and monitored team channels — SafeSport-aligned per COMMS_HUB.
+				Coach-delegated logistics — schedule, roster, attendance, and parent-targeted comms (no separate
+				team_manager role in v1).
 			</p>
 		</div>
 
@@ -42,20 +56,41 @@
 	{:else if myTeams.length === 0}
 		<p class="logistics-hint">No team assigned — contact your director to link a roster.</p>
 	{:else}
-		<div class="logistics-stack">
-			<ParentAnnouncementCompose
-				teamId={teamScope.selectedTeamId}
-				clubId={teamClubId}
-				teamName={teamLabel}
-			/>
+		<nav class="logistics-tabs" aria-label="Team ops sections">
+			{#each tabs as tab (tab.id)}
+				<button
+					type="button"
+					class="logistics-tab"
+					class:logistics-tab--active={activeTab === tab.id}
+					aria-current={activeTab === tab.id ? 'page' : undefined}
+					onclick={() => (activeTab = tab.id)}
+				>
+					{tab.label}
+				</button>
+			{/each}
+		</nav>
 
-			<section class="logistics-channels" aria-labelledby="logistics-channels-heading">
-				<h2 id="logistics-channels-heading" class="logistics-section-title">Team channels</h2>
-				<p class="logistics-section-sub">
-					Staff/participant channel matrix — game day, practice, and general logistics threads.
-				</p>
-				<MessagesTab teamId={teamScope.selectedTeamId} clubId={teamClubId} />
-			</section>
+		<div class="logistics-stack">
+			{#if activeTab === 'comms'}
+				<ParentAnnouncementCompose
+					teamId={teamScope.selectedTeamId}
+					clubId={teamClubId}
+					teamName={teamLabel}
+				/>
+				<section class="logistics-channels" aria-labelledby="logistics-channels-heading">
+					<h2 id="logistics-channels-heading" class="logistics-section-title">Team channels</h2>
+					<p class="logistics-section-sub">
+						Staff/participant channel matrix — game day, practice, and general logistics threads.
+					</p>
+					<MessagesTab teamId={teamScope.selectedTeamId} clubId={teamClubId} />
+				</section>
+			{:else if activeTab === 'schedule'}
+				<CoachTeamSchedulePanel teamId={teamScope.selectedTeamId} />
+			{:else if activeTab === 'roster'}
+				<CoachTeamRosterPanel teamId={teamScope.selectedTeamId} />
+			{:else if activeTab === 'attendance'}
+				<CoachTeamAttendancePanel teamId={teamScope.selectedTeamId} />
+			{/if}
 		</div>
 	{/if}
 </div>
@@ -100,6 +135,29 @@
 		font-size: 13px;
 		line-height: 1.45;
 		color: #64748b;
+	}
+
+	.logistics-tabs {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 8px;
+	}
+
+	.logistics-tab {
+		border: 1px solid #e2e8f0;
+		border-radius: 999px;
+		padding: 8px 14px;
+		font-size: 12px;
+		font-weight: 700;
+		background: #fff;
+		color: #475569;
+		cursor: pointer;
+	}
+
+	.logistics-tab--active {
+		background: #0f172a;
+		border-color: #0f172a;
+		color: #fff;
 	}
 
 	.logistics-team-label {

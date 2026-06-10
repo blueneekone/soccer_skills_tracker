@@ -38,7 +38,7 @@ const coachLinks = [
 	{ label: 'The Forge',         href: '/coach/forge',         icon: 'game.dumbbell' },
 	{ label: 'Match Day',         href: '/coach/match-day',     icon: 'data.activity' },
 	{ label: 'Proving Grounds',   href: '/coach/scouting',      icon: 'data.target' },
-	{ label: 'Logistics & Comms', href: '/coach/logistics',     icon: 'sys.calendar' },
+	{ label: 'Team Ops', href: '/coach/logistics',     icon: 'sys.calendar' },
 ];
 
 /**
