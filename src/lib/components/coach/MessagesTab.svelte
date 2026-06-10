@@ -195,7 +195,7 @@
 	}
 
 	function openSchedule() {
-		goto('/coach/drills');
+		goto('/coach/drills?view=schedule');
 	}
 
 	/**

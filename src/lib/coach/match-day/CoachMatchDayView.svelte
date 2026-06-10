@@ -73,8 +73,8 @@
 	/** Active asset for next telemetry log */
 	let activeTarget = $state(/** @type {string | null} */ (null));
 
-	let homeScore = $state(2);
-	let awayScore = $state(1);
+	let homeScore = $state(0);
+	let awayScore = $state(0);
 
 	/** Match elapsed seconds (live sideline clock) */
 	let elapsedSeconds = $state(0);

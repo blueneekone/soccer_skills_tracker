@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { browser } from '$app/environment';
+	import { page } from '$app/state';
 	import { untrack } from 'svelte';
 	import Icon from '$lib/components/ui/Icon.svelte';
 	import type { IconName } from '$lib/icons/registry.js';
@@ -42,6 +43,15 @@
 
 	/** @type {'library' | 'designer' | 'schedule'} */
 	let pageView = $state('library');
+
+	// Honor ?view= deep links (e.g. comms "Open training & schedule" CTA) — apply once.
+	let _viewInit = false;
+	$effect(() => {
+		if (_viewInit) return;
+		const v = page.url.searchParams.get('view');
+		if (v === 'schedule' || v === 'designer' || v === 'library') pageView = v;
+		_viewInit = true;
+	});
 
 	/** @type {'game' | 'practice'} */
 	let scheduleEventKind = $state('practice');
