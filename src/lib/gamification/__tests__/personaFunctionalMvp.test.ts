@@ -370,3 +370,22 @@ describe('Functional audit — E5 streak freeze mount', () => {
 		expect(src).toMatch(/armory\.loadPlayerData/);
 	});
 });
+
+describe('Functional audit — player workout surfaces (E1/E2/E3/E4)', () => {
+	it('proving-grounds route mounts ProvingGrounds with ArmoryEngine', () => {
+		const src = readFileSync(join(ROOT, 'routes/(app)/player/proving-grounds/+page.svelte'), 'utf-8');
+		expect(src).toMatch(/ProvingGrounds/);
+		expect(src).toMatch(/armory\.loadPlayerData/);
+	});
+
+	it('media route mounts ClipAnalyzer and MediaVault', () => {
+		const src = readFileSync(join(ROOT, 'routes/(app)/player/media/+page.svelte'), 'utf-8');
+		expect(src).toMatch(/ClipAnalyzer/);
+		expect(src).toMatch(/MediaVault/);
+	});
+
+	it('tracker mounts IntrinsicSanctuary session reflection', () => {
+		const src = readFileSync(join(ROOT, 'routes/(app)/player/tracker/+page.svelte'), 'utf-8');
+		expect(src).toMatch(/IntrinsicSanctuary/);
+	});
+});

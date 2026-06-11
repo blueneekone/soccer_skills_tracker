@@ -8,6 +8,7 @@
 	import { TrajectoryEngine } from '$lib/states/TrajectoryEngine.svelte.js';
 	import { vanguardFlags } from '$lib/services/remoteConfig.svelte.js';
 	import MemoryCapsuleArena from '$lib/components/player/trajectory/MemoryCapsuleArena.svelte';
+	import IntrinsicSanctuary from '../dashboard/IntrinsicSanctuary.svelte';
 	import '$lib/styles/player-dashboard-hud.css';
 
 	const profile = $derived(authStore.userProfile);
@@ -57,6 +58,16 @@
 			<HudStatCell label="Current level" value={`Lv. ${levelHud.level}`} />
 			<HudStatCell label="XP to next level" value={xpToNextLabel} variant="xp" />
 			<HudStatCell label="Day streak" value={`${streakDays}d`} variant="streak" />
+		</div>
+	</section>
+
+	<section class="pt-archive-section" aria-labelledby="pt-reflect-heading">
+		<header class="pt-archive-section__head">
+			<span class="pd-label">Reflection</span>
+			<h2 id="pt-reflect-heading" class="pt-archive-section__title">Session check-in</h2>
+		</header>
+		<div class="pd-os-deck__well tw-min-w-0">
+			<IntrinsicSanctuary />
 		</div>
 	</section>
 

@@ -69,10 +69,10 @@ feature or persistence bug · `P2` = discoverability / empty-state / edge case.
 
 | # | Area | Component | Capability lost |
 |---|------|-----------|-----------------|
-| E1 | Player | `ClipAnalyzer.svelte` | AI movement analysis (real upload, but `analyzeMovement` returns `MOCK_RESPONSES`); unmounted |
-| E2 | Player | `ProvingGrounds.svelte` | Self-report drill metrics; unmounted |
-| E3 | Player | `MediaVault.svelte`, `TransferPortal.svelte` | Media management, player transfer; unmounted |
-| E4 | Player | `DrillExecution.svelte`, `IntrinsicSanctuary.svelte`, `MemoryCapsule.svelte` | Firestore-backed but no `+page` import (parallel impls used instead) |
+| E1 | Player | `ClipAnalyzer.svelte` | **Done** — `/player/media` with preview-AI disclaimer |
+| E2 | Player | `ProvingGrounds.svelte` | **Done** — `/player/proving-grounds` + HQ quick ops |
+| E3 | Player | `MediaVault.svelte`, `TransferPortal.svelte` | **MediaVault Done** on `/player/media`; TransferPortal deferred |
+| E4 | Player | `DrillExecution.svelte`, `IntrinsicSanctuary.svelte`, `MemoryCapsule.svelte` | **IntrinsicSanctuary Done** on `/player/tracker`; DrillExecution deferred; MemoryCapsule superseded |
 | E5 | Player | `PlayerActivityStreak.svelte` | **Done** — mounted on player HQ metrics band with `ArmoryEngine` freeze CTA |
 | E6 | Coach | `NewMessageModal.svelte` | DM-thread composer; zero route imports |
 | E7 | Coach | `FacilityScheduler.svelte`, `TacticalCommandBoard.svelte` | Facility booking; named-tactic save + `analyzeTacticWithAI`; unmounted |

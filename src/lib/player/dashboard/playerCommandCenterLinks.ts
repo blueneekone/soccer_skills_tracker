@@ -22,6 +22,18 @@ export const PLAYER_COMMAND_CENTER_LINKS: readonly PlayerCommandCenterLink[] = O
 		description: 'Record reps, minutes, and intensity',
 	},
 	{
+		href: '/player/proving-grounds',
+		label: 'Proving Grounds',
+		icon: 'game.zap',
+		description: 'Self-report benchmark drills · Scouts Six XP',
+	},
+	{
+		href: '/player/media',
+		label: 'Training Media',
+		icon: 'content.film',
+		description: 'Upload clips and review your film vault',
+	},
+	{
 		href: '/stats',
 		label: 'Career Stats',
 		icon: 'data.chart-bar',
