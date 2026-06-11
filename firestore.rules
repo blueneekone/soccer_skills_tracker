@@ -1321,6 +1321,31 @@ service cloud.firestore {
         allow update, delete: if false;
       }
 
+      // Coach OS: daily match session scoreboard (home/away tallies per calendar day).
+      match /match_sessions/{sessionId} {
+        allow read: if authed() && (
+          isSuper()
+          || directorScopedToTeam(teamId)
+          || coachStaffCanAccessTeam(teamId)
+        );
+        allow create, update: if coachStaffCanAccessTeam(teamId)
+          && request.resource.data.teamId == teamId
+          && request.resource.data.matchId == sessionId
+          && request.resource.data.matchId is string
+          && request.resource.data.matchId.size() > 0
+          && request.resource.data.matchId.size() <= 128
+          && request.resource.data.homeScore is int
+          && request.resource.data.homeScore >= 0
+          && request.resource.data.homeScore <= 99
+          && request.resource.data.awayScore is int
+          && request.resource.data.awayScore >= 0
+          && request.resource.data.awayScore <= 99
+          && request.resource.data.updatedBy == request.auth.uid
+          && request.resource.data.updatedAt == request.time
+          && request.resource.data.keys().size() <= 10;
+        allow delete: if false;
+      }
+
       // Epic 4.7: coach team ops attendance sessions (present/absent per player email).
       match /attendance_sessions/{sessionId} {
         allow read: if authed() && (

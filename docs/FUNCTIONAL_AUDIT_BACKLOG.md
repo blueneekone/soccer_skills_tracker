@@ -1,6 +1,6 @@
 # Functional Audit Backlog — 2026-06-10
 
-**Status (2026-06-10):** **A1–A7, B1–B4, C1–C4, D1–D10, E1–E9, F1–F3, F5 Done.** **F4 deferred** (skill-tree drill launch — post-launch). Operator deploy checklist remains until owner runs all `deploy:*` targets + Firestore rules.
+**Status (2026-06-10):** **A1–A7, B1–B4, C1–C4, D1–D10, E1–E9, F1–F5 Done.** Operator deploy checklist remains until owner runs all `deploy:*` targets + Firestore rules.
 
 Fresh end-to-end read-only audit of `/player`, `/parent`, `/coach`, `/director` workspaces.
 Supersedes the optimistic "all functional epics closed" header in `ROADMAP.md`: that claim
@@ -37,7 +37,7 @@ feature or persistence bug · `P2` = discoverability / empty-state / edge case.
 | # | Status | Area | Resolution |
 |---|--------|------|------------|
 | B1 | **Done** | War Room roster | Empty roster leaves bench empty — no `PLAYER 01` / `SLOT 01` placeholders |
-| B2 | **Done** | Match-day scoreboard | Scores start at 0–0; GOAL bumps home only (local pad — no Firestore fixture yet) |
+| B2 | **Done** | Match-day scoreboard | Scores persist to `teams/{teamId}/match_sessions/{matchId}`; hydrate on load; tap score to bump |
 | B3 | **Done** | Coach HQ facility card | Live team name, weather coords, roster link — no hardcoded turf/gate strings |
 | B4 | **Done** | Director command center KPIs | Firestore-backed teams, invites, seat utilization — no static posture strings |
 
@@ -86,7 +86,7 @@ feature or persistence bug · `P2` = discoverability / empty-state / edge case.
 | F1 | **Done** | Player nav | Comms → `/messages`; HQ quick ops → `/player/tracker` (skill-tree/challenges/passport remain direct URL) |
 | F2 | **Done** | Coach nav | Field Station + War Room in `workspaceNav.js` |
 | F3 | **Done** | Director nav | Vanguard, Retention, Tournaments in `directorLinks` |
-| F4 | **Deferred** | Player skill-tree | Inspect-only surface — drill launch from nodes is post-launch |
+| F4 | **Done** | Player skill-tree | Unlocked nodes launch Train via HUD + double-click; `workoutDrillPrefill` resolves `skillNode`; HQ quick op link |
 | F5 | **Done** | Parent log-workout drills | `loadDrillTitlesForFocus` from Firestore |
 
 ## Deploy-completeness (NOT code bugs — owner deploy checklist)

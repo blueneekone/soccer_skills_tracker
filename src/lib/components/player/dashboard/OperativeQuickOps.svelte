@@ -24,6 +24,12 @@
 			subtitle: 'Coach homework · adaptive drills',
 		},
 		{
+			label: 'Skill tree',
+			href: '/player/skill-tree',
+			icon: 'data.target',
+			subtitle: 'Physical progression · launch drills',
+		},
+		{
 			label: 'Proving grounds',
 			href: '/player/proving-grounds',
 			icon: 'game.zap',

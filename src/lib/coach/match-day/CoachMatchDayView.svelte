@@ -4,10 +4,13 @@
 	import {
 		addDoc,
 		collection,
+		doc,
+		getDoc,
 		getDocs,
 		orderBy,
 		query,
 		serverTimestamp,
+		setDoc,
 		where,
 	} from 'firebase/firestore';
 	import { db } from '$lib/firebase.js';
@@ -153,7 +156,7 @@
 		};
 	});
 
-	/** Hydrate eventFeed from Firestore whenever the team or session match changes. */
+	/** Hydrate scores + eventFeed from Firestore whenever the team or session match changes. */
 	$effect(() => {
 		if (!browser || authStore.isLoading || !authStore.isAuthenticated) return;
 		const tid = teamScope.selectedTeamId?.trim();
@@ -163,6 +166,14 @@
 		let cancelled = false;
 		void (async () => {
 			try {
+				const sessionSnap = await getDoc(doc(db, 'teams', tid, 'match_sessions', mid));
+				if (cancelled) return;
+				if (sessionSnap.exists()) {
+					const data = sessionSnap.data();
+					if (typeof data.homeScore === 'number') homeScore = Math.max(0, data.homeScore);
+					if (typeof data.awayScore === 'number') awayScore = Math.max(0, data.awayScore);
+				}
+
 				const snap = await getDocs(
 					query(
 						collection(db, 'teams', tid, 'telemetry_events'),
@@ -173,9 +184,13 @@
 				if (cancelled) return;
 				/** @type {FeedLine[]} */
 				const lines = [];
+				let goalsFromEvents = 0;
+				let oppGoalsFromEvents = 0;
 				snap.forEach((docSnap) => {
 					const data = docSnap.data();
 					if (typeof data.line !== 'string' || !data.line) return;
+					if (data.action === 'GOAL') goalsFromEvents += 1;
+					if (data.action === 'OPPONENT_GOAL') oppGoalsFromEvents += 1;
 					lines.push({
 						id: docSnap.id,
 						matchTs: typeof data.matchTs === 'string' ? data.matchTs : '',
@@ -185,15 +200,89 @@
 						),
 					});
 				});
+				if (!sessionSnap.exists()) {
+					homeScore = goalsFromEvents;
+					awayScore = oppGoalsFromEvents;
+				}
 				if (!cancelled && lines.length > 0) eventFeed = lines;
 			} catch (e) {
-				console.error('[MatchDay] feed hydrate', e);
+				console.error('[MatchDay] session hydrate', e);
 			}
 		})();
 		return () => {
 			cancelled = true;
 		};
 	});
+
+	async function persistMatchSession() {
+		const tid = teamScope.selectedTeamId?.trim();
+		const mid = sessionMatchId;
+		const uid = authStore.user?.uid;
+		if (!tid || !mid || !uid) return;
+		try {
+			await setDoc(
+				doc(db, 'teams', tid, 'match_sessions', mid),
+				{
+					teamId: tid,
+					clubId: teamScope.teamClubId || '',
+					matchId: mid,
+					homeScore,
+					awayScore,
+					updatedBy: uid,
+					updatedAt: serverTimestamp(),
+				},
+				{ merge: true },
+			);
+		} catch (e) {
+			console.error('[MatchDay] persist session', e);
+		}
+	}
+
+	/** @param {'home' | 'away'} side */
+	async function bumpScore(side) {
+		if (side === 'home') homeScore += 1;
+		else awayScore += 1;
+		const matchTs = formatMatchTs(elapsedSeconds);
+		const line =
+			side === 'home' ?
+				`[${matchTs}] SQUAD >> GOAL`
+			:	`[${matchTs}] ENEMY >> GOAL`;
+		eventFeed = [
+			...eventFeed,
+			{
+				id:
+					typeof crypto !== 'undefined' && crypto.randomUUID ?
+						crypto.randomUUID()
+					:	`ev_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`,
+				matchTs,
+				line,
+				tone: side === 'home' ? 'emerald' : 'rose',
+			},
+		];
+		triggerIngestPulse();
+		const tid = teamScope.selectedTeamId?.trim();
+		const mid = sessionMatchId;
+		const uid = authStore.user?.uid;
+		if (!tid || !mid || !uid) return;
+		try {
+			await addDoc(collection(db, 'teams', tid, 'telemetry_events'), {
+				teamId: tid,
+				clubId: teamScope.teamClubId || '',
+				matchId: mid,
+				playerId: side === 'home' ? activeOperative?.id || 'squad' : 'opponent',
+				action: side === 'home' ? 'GOAL' : 'OPPONENT_GOAL',
+				points: side === 'home' ? 10 : 0,
+				matchTs,
+				line,
+				tone: side === 'home' ? 'emerald' : 'rose',
+				loggedBy: uid,
+				timestamp: serverTimestamp(),
+			});
+			await persistMatchSession();
+		} catch (e) {
+			console.error('[MatchDay] score bump', e);
+		}
+	}
 
 	const activeOperative = $derived(
 		operatives.find((o) => o.id === activeTarget) ?? operatives[0] ?? null,
@@ -261,7 +350,10 @@
 			},
 		];
 
-		if (actionType === 'GOAL') homeScore += 1;
+		if (actionType === 'GOAL') {
+			homeScore += 1;
+			void persistMatchSession();
+		}
 
 		triggerIngestPulse();
 
@@ -416,9 +508,23 @@
 		</p>
 		<p class="tw-mt-2 tw-max-w-full tw-truncate tw-text-center tw-font-mono tw-text-xs tw-font-black tw-tracking-[0.14em] tw-text-white tw-uppercase">
 			{activeTeamLabel}
-			<span class="tw-tabular-nums tw-text-cyan-400"> {homeScore} </span>
-			<span class="tw-text-slate-500">â€”</span>
-			<span class="tw-tabular-nums tw-text-rose-300"> {awayScore} </span>
+			<button
+				type="button"
+				class="tw-tabular-nums tw-text-cyan-400 tw-bg-transparent tw-border-0 tw-p-0 tw-font-inherit tw-cursor-pointer hover:tw-text-cyan-200"
+				aria-label="Add home goal"
+				onclick={() => bumpScore('home')}
+			>
+				{homeScore}
+			</button>
+			<span class="tw-text-slate-500">—</span>
+			<button
+				type="button"
+				class="tw-tabular-nums tw-text-rose-300 tw-bg-transparent tw-border-0 tw-p-0 tw-font-inherit tw-cursor-pointer hover:tw-text-rose-200"
+				aria-label="Add opponent goal"
+				onclick={() => bumpScore('away')}
+			>
+				{awayScore}
+			</button>
 			<span class="tw-text-slate-400"> ENEMY</span>
 		</p>
 	</header>

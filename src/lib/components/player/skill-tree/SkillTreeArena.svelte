@@ -17,7 +17,8 @@
 	 *   3. VanguardPrism absolute overlay
 	 */
 
-	import VanguardPrism from '$lib/components/player/VanguardPrism.svelte';
+	import { goto } from '$app/navigation';
+	import { scoutsSixToWorkoutFocus } from '$lib/data/skillTree/scoutsSixWorkoutBridge.js';
 	import type { SkillTreeEngine } from './SkillTreeEngine.svelte.js';
 	import type { ScoutsSix } from '$lib/states/ArmoryEngine.svelte.js';
 	import { hexPolygonPoints, HEX_CIRCUMRADIUS } from './snowflakeGeometry.js';
@@ -35,6 +36,14 @@
 
 	/** Unique prefix so gradient/filter IDs don't collide across instances. */
 	const uid = `sta-${Math.random().toString(36).slice(2, 7)}`;
+
+	function launchNodeTraining(nodeId: string) {
+		const node = engine.nodes.find((n) => n.id === nodeId);
+		if (!node || node.state === 'locked') return;
+		const focus = scoutsSixToWorkoutFocus(node.parentAttr);
+		const params = new URLSearchParams({ focus, skillNode: node.id });
+		void goto(`/player/workout?${params.toString()}`);
+	}
 
 	/** Outer polygon circumradius for the selection ring. */
 	const SELECTION_R = HEX_CIRCUMRADIUS + 4;
@@ -257,6 +266,7 @@
 				aria-label="Skill: {node.label} ({node.state})"
 				tabindex="0"
 				onclick={() => engine.selectNode(node.id)}
+				ondblclick={() => launchNodeTraining(node.id)}
 				onpointerenter={() => engine.hoverNode(node.id)}
 				onpointerleave={() => engine.hoverNode(null)}
 				onkeydown={(e) => {

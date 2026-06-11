@@ -378,7 +378,8 @@ describe('Functional audit backlog A–F — regression guards', () => {
 		const doc = readFileSync(BACKLOG, 'utf-8');
 		expect(doc).toMatch(/A1–A7.*Done/);
 		expect(doc).toMatch(/D9.*Done/);
-		expect(doc).toMatch(/F4.*Deferred/);
+		expect(doc).toMatch(/F4.*Done/);
+		expect(doc).not.toMatch(/F4.*Deferred/);
 	});
 
 	it('A1 commerce uses us-east1 for createRegistrationIntent', () => {
@@ -443,6 +444,24 @@ describe('Functional audit backlog A–F — regression guards', () => {
 	it('F5 parent log-workout loads drills from Firestore', () => {
 		const src = readFileSync(join(ROOT, 'routes/(app)/parent/log-workout/+page.svelte'), 'utf-8');
 		expect(src).toMatch(/loadDrillTitlesForFocus/);
+	});
+
+	it('F4 skill-tree launches Train from unlocked nodes', () => {
+		const hud = readFileSync(join(ROOT, 'lib/components/player/skill-tree/SkillTreeHUD.svelte'), 'utf-8');
+		const arena = readFileSync(join(ROOT, 'lib/components/player/skill-tree/SkillTreeArena.svelte'), 'utf-8');
+		const prefill = readFileSync(join(ROOT, 'lib/player/workout/workoutDrillPrefill.ts'), 'utf-8');
+		expect(hud).toMatch(/Launch training/);
+		expect(hud).toMatch(/\/player\/workout/);
+		expect(arena).toMatch(/launchNodeTraining/);
+		expect(prefill).toMatch(/skillNode/);
+	});
+
+	it('match-day scoreboard persists to match_sessions', () => {
+		const src = readFileSync(join(ROOT, 'lib/coach/match-day/CoachMatchDayView.svelte'), 'utf-8');
+		const rules = readFileSync(join(ROOT, '..', 'firestore.rules'), 'utf-8');
+		expect(src).toMatch(/match_sessions/);
+		expect(src).toMatch(/persistMatchSession/);
+		expect(rules).toMatch(/match \/match_sessions\/\{sessionId\}/);
 	});
 });
 
