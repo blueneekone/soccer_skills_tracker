@@ -44,6 +44,10 @@
 	} from '$lib/avatars/portraitReadRepair.js';
 	import { fetchClubDisplayName } from '$lib/player/fetchClubDisplayName.js';
 	import AdaptiveHomework from './AdaptiveHomework.svelte';
+	import { ArmoryEngine } from '$lib/states/ArmoryEngine.svelte.js';
+	import PlayerActivityStreak from '$lib/components/shell/PlayerActivityStreak.svelte';
+
+	const armory = new ArmoryEngine();
 
 	/**
 	 * Effective operative for this lobby: Firestore profile for the signed-in Firebase user.
@@ -71,6 +75,11 @@
 	$effect(() => {
 		if (!browser || authStore.isLoading) return;
 		if (email) trajectoryEngine.connect(email);
+	});
+
+	$effect(() => {
+		if (!browser || authStore.isLoading) return;
+		if (uid && email) armory.loadPlayerData(uid, email);
 	});
 
 	onDestroy(() => trajectoryEngine.destroy());
@@ -457,6 +466,7 @@
 					/>
 				{/snippet}
 				{#snippet metrics()}
+					<PlayerActivityStreak {armory} />
 					{#if !telemetryReady}
 						<p class="hmp-vectors-collapsed hmp-vectors-collapsed--premium" role="status">
 							AWAITING TELEMETRY · LOG A SESSION TO UNLOCK VECTORS

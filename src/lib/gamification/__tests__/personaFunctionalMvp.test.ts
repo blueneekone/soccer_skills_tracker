@@ -362,3 +362,11 @@ describe('Tier-2 Item 1 — mergeAdminRoster unit tests', () => {
 		expect(mergeAdminRoster([], [], 'team1')).toHaveLength(0);
 	});
 });
+
+describe('Functional audit — E5 streak freeze mount', () => {
+	it('player HQ mounts PlayerActivityStreak with ArmoryEngine', () => {
+		const src = readFileSync(join(ROOT, 'routes/(app)/player/dashboard/+page.svelte'), 'utf-8');
+		expect(src).toMatch(/PlayerActivityStreak/);
+		expect(src).toMatch(/armory\.loadPlayerData/);
+	});
+});
