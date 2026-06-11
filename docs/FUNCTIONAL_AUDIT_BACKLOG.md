@@ -59,7 +59,7 @@ feature or persistence bug · `P2` = discoverability / empty-state / edge case.
 | D3 | Parent | `messages/+page.svelte` + `ReportMessageIncident.svelte:62-64` | Incident report requires `profile.clubId`; parents without it blocked even when child team/club known via `parentLoungeTeams` |
 | D4 | Parent | `BountyTerminal.svelte:125-134,415-427` | Bounty deploy allowed without funding source; server rejects → failed-submit loop, no redirect to funding panel |
 | D5 | Director | `weatherOps.js:63-65,106-118` | `evaluateFieldWeatherLock` is a stub: no-op unless `WEATHER_LOCK_ENABLED`; with flag + no `TOMORROW_IO_API_KEY`, always `{status:'clear'}` (provider integration not built) |
-| D6 | Director | `FieldOpsModule.svelte:197-288` + `DeploymentCalendar.svelte` | Two disconnected data models on one tab: booking grid uses top-level `fields`; deployment calendar uses `clubs/{clubId}/facilities` → can book on grid but can't schedule deployments until facilities separately registered |
+| D6 | Director | `FieldOpsModule.svelte` + `FacilityMapVault.svelte` | **Done** — facility map rows mirror into `fields` via `syncFacilityToLegacyField` / `directorUpsertField`; orphan backfill on Field Ops load |
 | D7 | Director | `PlaybookTab.svelte:86-114,207-241` | Playbook is create+list only; no edit/delete for `club_playbooks` (append-only) |
 | D8 | Director | `CoachClearancePanopticon.svelte:67-83` + `compliance/+page.svelte:19-25` | Staff clearance + billing audit use static `userProfile.clubId`, ignore workspace context switcher → multi-club directors see wrong club |
 | D9 | Coach | `IntentEngine.svelte.ts:580-588` + `IntentHUD.svelte:535-548` | Name-only roster entries are `assignable:false`; team-scope Forge deploy silently excludes them (legacy rosters) |
@@ -83,7 +83,7 @@ feature or persistence bug · `P2` = discoverability / empty-state / edge case.
 
 | # | Area | Problem |
 |---|------|---------|
-| F1 | Player | `PlayerShell` bottom nav omits `/player/skill-tree`, `/player/tracker`, `/challenges`, `/passport` (all routable) |
+| F1 | Player | **Partial** — `PlayerShell` adds Comms → `/messages`; HQ quick ops links `/player/tracker`; skill-tree/challenges/passport remain routable-only |
 | F2 | Coach | `workspaceNav.js:37-43` omits `/coach/drills` (Field Station) and `/coach/tactical` (War Room) |
 | F3 | Director | `?tab=vanguard`, `?tab=retention`, `/director/events` render but no nav entry; mobile strip covers 5 of 10+ tabs |
 | F4 | Player | `skill-tree` is inspect-only (`[ DRILL MAPPINGS · BACKEND SPRINT ]`); no drill launch from nodes |

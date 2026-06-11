@@ -13,6 +13,7 @@
 	/** Epic 17 — static vault + facility drawer (logistics map, address, routing URL). */
 	import FacilityMapVault from '$lib/components/field-ops/FacilityMapVault.svelte';
 	import DeploymentCalendar from '$lib/components/director/os/DeploymentCalendar.svelte';
+	import { syncFacilityToLegacyField } from '$lib/director/fieldOps/syncFacilityToLegacyField.js';
 
 	let { clubId: clubIdProp = '' } = $props();
 
@@ -109,6 +110,9 @@
 	const NUM_SLOTS = (DAY_END_MIN - DAY_START_MIN) / SLOT_MIN;
 
 	let fields = $state(/** @type {Array<{ id: string; name: string; location?: string; status?: string }>} */ ([]));
+	/** Facilities from the map vault — synced into `fields` when missing. */
+	let mapFacilities = $state(/** @type {Array<{ id: string; name: string; address?: string; status?: string }>} */ ([]));
+	const syncedFacilityIds = new Set<string>();
 	let fieldId = $state('');
 	let scheduleDate = $state(
 		typeof Intl !== 'undefined' ?
@@ -197,6 +201,7 @@
 	$effect(() => {
 		if (!resolvedClubId) {
 			fields = [];
+			mapFacilities = [];
 			return;
 		}
 		const q = query(collection(db, 'fields'), where('clubId', '==', resolvedClubId));
@@ -213,7 +218,47 @@
 			},
 			(e) => console.error('[FieldOpsModule] fields', e)
 		);
-		return () => unsub();
+		const fq = collection(db, 'clubs', resolvedClubId, 'facilities');
+		const unsubFac = onSnapshot(
+			fq,
+			(snap) => {
+				mapFacilities = snap.docs.map((d) => {
+					const x = d.data();
+					return {
+						id: d.id,
+						name: typeof x.name === 'string' ? x.name : d.id,
+						address: typeof x.address === 'string' ? x.address : '',
+						status: typeof x.status === 'string' ? x.status : 'Active',
+					};
+				});
+			},
+			(e) => console.error('[FieldOpsModule] map facilities', e),
+		);
+		return () => {
+			unsub();
+			unsubFac();
+		};
+	});
+
+	/** Backfill legacy `fields` docs for facilities registered before the bridge shipped. */
+	$effect(() => {
+		const cid = resolvedClubId;
+		if (!cid || isReadOnly || mapFacilities.length === 0) return;
+		const fieldIds = new Set(fields.map((f) => f.id));
+		for (const fac of mapFacilities) {
+			if (fieldIds.has(fac.id) || syncedFacilityIds.has(fac.id)) continue;
+			syncedFacilityIds.add(fac.id);
+			void syncFacilityToLegacyField({
+				fieldId: fac.id,
+				clubId: cid,
+				name: fac.name,
+				location: fac.address ?? '',
+				status: fac.status,
+			}).catch((e) => {
+				syncedFacilityIds.delete(fac.id);
+				console.error('[FieldOpsModule] facility backfill', e);
+			});
+		}
 	});
 
 	$effect(() => {
@@ -497,10 +542,9 @@
 
 		<div class="tw-flex tw-flex-wrap tw-gap-3 tw-items-end">
 			<p class="tw-m-0 tw-w-full tw-text-xs tw-leading-relaxed tw-text-slate-500">
-				<strong class="tw-font-semibold tw-text-slate-400">Two field systems:</strong>
-				Tactical deployments (left) use facilities registered in the Facility Map.
-				The pitch schedule below uses legacy <code class="tw-text-slate-400">fields</code> bookings —
-				register facilities in the map panel before scheduling deployments.
+				<strong class="tw-font-semibold tw-text-slate-400">Unified field registry:</strong>
+				Facilities registered in the Facility Map sync to the pitch schedule automatically —
+				deployments and bookings share the same field ids.
 			</p>
 			<label class="tw-flex tw-flex-col tw-gap-1 tw-text-xs tw-font-bold" style="color: var(--text-secondary);">
 				Field

@@ -51,6 +51,23 @@ describe('Epic 5.3 — tactical deployment calendar', () => {
 		expect(indexes).toMatch(/startsAt/);
 	});
 
+	it('facility map syncs to legacy fields collection for pitch booking', () => {
+		const vault = readFileSync(
+			join(ROOT, 'lib/components/field-ops/FacilityMapVault.svelte'),
+			'utf8',
+		);
+		const bridge = readFileSync(
+			join(ROOT, 'lib/director/fieldOps/syncFacilityToLegacyField.ts'),
+			'utf8',
+		);
+		const fieldOps = readFileSync(FIELD_OPS, 'utf8');
+		expect(bridge).toMatch(/directorUpsertField/);
+		expect(vault).toMatch(/syncFacilityToLegacyField/);
+		expect(vault).toMatch(/mirrorFacilityToFields/);
+		expect(fieldOps).toMatch(/syncFacilityToLegacyField/);
+		expect(fieldOps).toMatch(/clubs', resolvedClubId, 'facilities'/);
+	});
+
 	it('Epic 4.5 trigger broadcasts non-staff_only deployment entries', () => {
 		const ops = readFileSync(NOTIFICATION_OPS, 'utf8');
 		expect(ops).toMatch(/onDeploymentCalendarEntryCreated/);

@@ -20,6 +20,7 @@
 	import FacilityDrawingMap from '$lib/components/field-ops/FacilityDrawingMap.svelte';
 	import Icon from '$lib/components/ui/Icon.svelte';
 	import type { IconName } from '$lib/icons/registry.js';
+	import { syncFacilityToLegacyField } from '$lib/director/fieldOps/syncFacilityToLegacyField.js';
 
 	/**
 	 * @typedef {{ version: 1; polygons: Array<{ name: string; path: Array<{ lat: number; lng: number }> }>; markers: Array<{ label?: string; lat: number; lng: number }> }} FacilityMapDataPayload
@@ -424,6 +425,27 @@
 		return 'active';
 	}
 
+	/** Mirror facility map rows into legacy `fields` for pitch booking. */
+	async function mirrorFacilityToFields(
+		fieldId: string,
+		name: string,
+		location = '',
+		status = 'Active',
+	) {
+		if (!clubId || !canManage) return;
+		try {
+			await syncFacilityToLegacyField({
+				fieldId,
+				clubId,
+				name,
+				location,
+				status,
+			});
+		} catch (e) {
+			console.error('[FacilityMapVault] legacy field sync', e);
+		}
+	}
+
 	async function saveRegistryFacility() {
 		regErr = '';
 		if (!clubId || !canManage) return;
@@ -457,6 +479,7 @@
 				routingUrl,
 				status: regStatus,
 			});
+			await mirrorFacilityToFields(fid, nameTrim, regAddress.trim(), regStatus);
 			regName = '';
 			regAddress = '';
 			regLat = '';
@@ -534,6 +557,7 @@
 		}
 		try {
 			await deleteDoc(doc(db, 'clubs', clubId, 'facilities', row.id));
+			await mirrorFacilityToFields(row.id, row.name, row.address ?? '', 'closed');
 		} catch (e) {
 			alert(e instanceof Error ? e.message : String(e));
 		}
@@ -582,6 +606,12 @@
 				patch.lockedAt = deleteField();
 			}
 			await updateDoc(doc(db, 'clubs', clubId, 'facilities', heroFacilityId), patch);
+			await mirrorFacilityToFields(
+				heroFacilityId,
+				nameTrim,
+				typeof row?.address === 'string' ? row.address.trim() : '',
+				statusOut,
+			);
 		} catch (e) {
 			heroSaveErr =
 				e instanceof Error ? e.message : typeof e === 'object' && e && 'message' in e ?
@@ -633,6 +663,12 @@
 				patch.lockedAt = deleteField();
 			}
 			await updateDoc(doc(db, 'clubs', clubId, 'facilities', previewId), patch);
+			await mirrorFacilityToFields(
+				previewId,
+				nameTrim,
+				draftAddress.trim(),
+				typeof patch.status === 'string' ? patch.status : 'Active',
+			);
 			logisticsQuietFacilityId = savingFacilityId;
 			logisticsPostSaveHydrateQuietUntil = Date.now() + 450;
 		} catch (e) {
@@ -703,6 +739,12 @@
 				patch.lockedAt = deleteField();
 			}
 			await updateDoc(doc(db, 'clubs', clubId, 'facilities', facilityEditId), patch);
+			await mirrorFacilityToFields(
+				facilityEditId,
+				nameTrim,
+				facilityEditAddress.trim(),
+				statusOut,
+			);
 			if (heroFacilityId === facilityEditId) {
 				heroLat = lat;
 				heroLng = lng;
