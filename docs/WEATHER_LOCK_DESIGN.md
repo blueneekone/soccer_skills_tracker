@@ -1,6 +1,6 @@
 # Field weather / lightning lock (Epic 5.4) — design placeholder
 
-**Status:** Scheduled evaluator shipped (`evaluateFieldWeatherLock`); **Tomorrow.io API integration stubbed** until `TOMORROW_IO_API_KEY` is bound. Client reads `field_weather_status` in Field Ops.
+**Status:** Scheduled evaluator shipped (`evaluateFieldWeatherLock`); **AEGIS Open-Meteo + NWS** evaluation active when `WEATHER_LOCK_ENABLED=true` (no API key required). Optional `TOMORROW_IO_API_KEY` reserved for future strike-radius enrichment. Client reads `field_weather_status` in Field Ops.
 
 ## Goals
 

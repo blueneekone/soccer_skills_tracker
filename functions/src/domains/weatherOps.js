@@ -4,26 +4,24 @@
  * weatherOps.js — Epic 5.4 field weather / lightning lock (scheduled evaluator).
  *
  * Default: no-op when WEATHER_LOCK_ENABLED !== 'true'.
- * With provider secret: evaluates club facilities and writes field_weather_status/{facilityId}.
+ * When enabled: evaluates club facilities via AEGIS (Open-Meteo + NWS) and writes
+ * field_weather_status/{facilityId}. Optional TOMORROW_IO_API_KEY reserved for
+ * future strike-radius enrichment.
  */
 
 const {onSchedule} = require('firebase-functions/v2/scheduler');
 const logger = require('firebase-functions/logger');
 const admin = require('firebase-admin');
+const {
+  evaluateWeatherAtCoords,
+  mapSnapshotToFieldStatus,
+} = require('./weatherEvaluation');
 
 const REGION = 'us-east1';
 const EARTH_RADIUS_KM = 6371;
 
 const db = () => admin.firestore();
 
-/**
- * Haversine distance in km between two WGS84 points.
- * @param {number} lat1
- * @param {number} lng1
- * @param {number} lat2
- * @param {number} lng2
- * @returns {number}
- */
 function haversineKm(lat1, lng1, lat2, lng2) {
   const toRad = (deg) => (deg * Math.PI) / 180;
   const dLat = toRad(lat2 - lat1);
@@ -34,20 +32,11 @@ function haversineKm(lat1, lng1, lat2, lng2) {
   return 2 * EARTH_RADIUS_KM * Math.asin(Math.sqrt(a));
 }
 
-/**
- * @param {unknown} value
- * @returns {number|null}
- */
 function parseCoord(value) {
   const n = typeof value === 'number' ? value : Number(value);
   return Number.isFinite(n) ? n : null;
 }
 
-/**
- * Resolve lat/lng from facility doc (supports latitude/longitude and lat/lng).
- * @param {FirebaseFirestore.DocumentData} data
- * @returns {{ lat: number, lng: number } | null}
- */
 function resolveFacilityCoords(data) {
   const lat = parseCoord(data.latitude ?? data.lat);
   const lng = parseCoord(data.longitude ?? data.lng);
@@ -55,33 +44,31 @@ function resolveFacilityCoords(data) {
   return {lat, lng};
 }
 
-/**
- * Stub provider — returns clear until Tomorrow.io integration is configured.
- * @param {{ lat: number, lng: number }} _coords
- * @returns {Promise<{ status: 'clear' | 'advisory' | 'locked', lockReason?: string, distanceKm?: number }>}
- */
-async function evaluateWeatherStub(_coords) {
-  return {status: 'clear'};
+async function evaluateWeatherForFacility(coords) {
+  try {
+    const snapshot = await evaluateWeatherAtCoords(coords.lat, coords.lng);
+    return mapSnapshotToFieldStatus(snapshot);
+  } catch (err) {
+    logger.warn('[evaluateFieldWeatherLock] provider evaluation failed', {
+      err: err instanceof Error ? err.message : String(err),
+    });
+    return {
+      status: 'advisory',
+      lockReason: 'Weather provider unreachable — verify manually before deploying',
+      provider: 'aegis',
+    };
+  }
 }
 
-/**
- * @param {string} clubId
- * @param {string} facilityId
- * @param {{ lat: number, lng: number } | null} coords
- * @param {boolean} providerConfigured
- * @returns {Promise<void>}
- */
-async function writeFacilityWeatherStatus(clubId, facilityId, coords, providerConfigured) {
-  /** @type {{ status: 'clear' | 'advisory' | 'locked', lockReason?: string, distanceKm?: number }} */
-  let evalResult = {status: 'clear'};
+async function writeFacilityWeatherStatus(clubId, facilityId, coords) {
+  let evalResult;
   if (coords) {
-    evalResult = providerConfigured ?
-      await evaluateWeatherStub(coords) :
-      {status: 'clear', lockReason: 'Provider not configured'};
+    evalResult = await evaluateWeatherForFacility(coords);
   } else {
     evalResult = {
       status: 'advisory',
       lockReason: 'Missing facility coordinates — add lat/lng in Field Ops vault',
+      provider: 'aegis',
     };
   }
 
@@ -92,28 +79,26 @@ async function writeFacilityWeatherStatus(clubId, facilityId, coords, providerCo
         status: evalResult.status,
         ...(evalResult.lockReason ? {lockReason: evalResult.lockReason} : {}),
         ...(evalResult.distanceKm != null ? {distanceKm: evalResult.distanceKm} : {}),
-        provider: providerConfigured ? 'stub' : 'disabled',
+        provider: evalResult.provider,
         evaluatedAt: admin.firestore.FieldValue.serverTimestamp(),
       },
       {merge: true},
   );
+
+  return evalResult.status;
 }
 
-/**
- * @returns {Promise<{ clubs: number, facilities: number, locked: number }>}
- */
 async function runWeatherLockPass() {
   const enabled = process.env.WEATHER_LOCK_ENABLED === 'true';
   if (!enabled) {
     logger.info('[evaluateFieldWeatherLock] disabled via WEATHER_LOCK_ENABLED');
-    return {clubs: 0, facilities: 0, locked: 0};
+    return {clubs: 0, facilities: 0, locked: 0, advisory: 0};
   }
 
-  const apiKey = process.env.TOMORROW_IO_API_KEY || '';
-  const providerConfigured = Boolean(apiKey.trim());
-  if (!providerConfigured) {
-    logger.warn(
-        '[evaluateFieldWeatherLock] TOMORROW_IO_API_KEY missing — writing clear/stub status only',
+  const tomorrowKey = (process.env.TOMORROW_IO_API_KEY || '').trim();
+  if (tomorrowKey) {
+    logger.info(
+        '[evaluateFieldWeatherLock] TOMORROW_IO_API_KEY set — AEGIS active; Tomorrow.io radius enrich pending',
     );
   }
 
@@ -125,6 +110,7 @@ async function runWeatherLockPass() {
   let clubs = 0;
   let facilities = 0;
   let locked = 0;
+  let advisory = 0;
 
   const clubsSnap = await db().collection('clubs').limit(500).get();
   for (const clubDoc of clubsSnap.docs) {
@@ -133,25 +119,23 @@ async function runWeatherLockPass() {
     for (const facDoc of facSnap.docs) {
       facilities += 1;
       const coords = resolveFacilityCoords(facDoc.data() || {});
-      await writeFacilityWeatherStatus(
+      const status = await writeFacilityWeatherStatus(
           clubDoc.id,
           facDoc.id,
           coords,
-          providerConfigured,
       );
-      const statusSnap = await db().collection('field_weather_status').doc(facDoc.id).get();
-      if (statusSnap.exists && statusSnap.data()?.status === 'locked') {
-        locked += 1;
-      }
+      if (status === 'locked') locked += 1;
+      if (status === 'advisory') advisory += 1;
     }
   }
 
-  return {clubs, facilities, locked};
+  return {clubs, facilities, locked, advisory};
 }
 
 exports.haversineKm = haversineKm;
 exports.resolveFacilityCoords = resolveFacilityCoords;
 exports.runWeatherLockPass = runWeatherLockPass;
+exports.evaluateWeatherForFacility = evaluateWeatherForFacility;
 
 exports.evaluateFieldWeatherLock = onSchedule(
     {

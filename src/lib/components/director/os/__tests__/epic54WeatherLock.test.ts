@@ -23,6 +23,18 @@ describe('Epic 5.4 — field weather lock', () => {
 		expect(src).toMatch(/WEATHER_LOCK_ENABLED/);
 		expect(src).toMatch(/field_weather_status/);
 		expect(src).toMatch(/haversineKm/);
+		expect(src).toMatch(/weatherEvaluation/);
+		expect(src).not.toMatch(/evaluateWeatherStub/);
+	});
+
+	it('weatherEvaluation maps DANGER alerts to locked field status', () => {
+		const { mapSnapshotToFieldStatus } = require(join(ROOT, 'functions/src/domains/weatherEvaluation.js'));
+		const status = mapSnapshotToFieldStatus({
+			lightning: { alertLevel: 'DANGER', estimatedMiles: 5, nwsEvent: 'Severe Thunderstorm Warning' },
+			deploymentStatus: 'NO-GO',
+		});
+		expect(status.status).toBe('locked');
+		expect(status.provider).toBe('aegis');
 	});
 
 	it('functions index re-exports evaluateFieldWeatherLock', () => {
@@ -41,6 +53,7 @@ describe('Epic 5.4 — field weather lock', () => {
 		const src = readFileSync(FIELD_OPS, 'utf8');
 		expect(src).toMatch(/field_weather_status/);
 		expect(src).toMatch(/Weather lock active/);
+		expect(src).toMatch(/Weather advisory/);
 	});
 
 	it('DeploymentCalendar blocks schedule on locked facilities', () => {

@@ -70,14 +70,21 @@
 	/** @type {() => void} */
 	const openReadOnlyUpgrade = getContext('openReadOnlyUpgrade') || (() => {});
 
-	/** Epic 5.4 — weather-locked facilities for director advisory banner. */
-	let weatherLockedFacilities = $state(
-		/** @type {Array<{ id: string; facilityId?: string; lockReason?: string }>} */ ([]),
+	/** Epic 5.4 — weather status for director advisory banners. */
+	let weatherFacilityStatuses = $state(
+		/** @type {Array<{ id: string; status?: string; lockReason?: string }>} */ ([]),
+	);
+
+	const weatherLockedFacilities = $derived(
+		weatherFacilityStatuses.filter((f) => f.status === 'locked'),
+	);
+	const weatherAdvisoryFacilities = $derived(
+		weatherFacilityStatuses.filter((f) => f.status === 'advisory'),
 	);
 
 	$effect(() => {
 		if (!browser || !resolvedClubId) {
-			weatherLockedFacilities = [];
+			weatherFacilityStatuses = [];
 			return;
 		}
 		const wq = query(
@@ -85,12 +92,10 @@
 			where('clubId', '==', resolvedClubId),
 		);
 		return onSnapshot(wq, (snap) => {
-			weatherLockedFacilities = snap.docs
-				.filter((d) => d.data().status === 'locked')
-				.map((d) => ({
-					id: d.id,
-					...(d.data() || {}),
-				}));
+			weatherFacilityStatuses = snap.docs.map((d) => ({
+				id: d.id,
+				...(d.data() || {}),
+			}));
 		});
 	});
 
@@ -448,6 +453,22 @@
 				locked — new deployments blocked until status clears.
 				{#if weatherLockedFacilities[0]?.lockReason}
 					({weatherLockedFacilities[0].lockReason})
+				{/if}
+			</p>
+		</div>
+	{:else if weatherAdvisoryFacilities.length > 0}
+		<div
+			class="tw-rounded-xl tw-border tw-border-cyan-500/30 tw-bg-cyan-950/20 tw-px-4 tw-py-3 tw-text-sm tw-text-cyan-100"
+			role="status"
+		>
+			<p class="tw-m-0 tw-font-bold tw-uppercase tw-tracking-wide tw-text-cyan-300">
+				Weather advisory
+			</p>
+			<p class="tw-m-0 tw-mt-1 tw-text-xs tw-leading-relaxed tw-text-cyan-100/90">
+				{weatherAdvisoryFacilities.length} field{weatherAdvisoryFacilities.length === 1 ? '' : 's'}
+				under watch — deployments allowed but verify conditions.
+				{#if weatherAdvisoryFacilities[0]?.lockReason}
+					({weatherAdvisoryFacilities[0].lockReason})
 				{/if}
 			</p>
 		</div>
