@@ -371,6 +371,81 @@ describe('Functional audit — E5 streak freeze mount', () => {
 	});
 });
 
+describe('Functional audit backlog A–F — regression guards', () => {
+	const BACKLOG = join(ROOT, '..', 'docs/FUNCTIONAL_AUDIT_BACKLOG.md');
+
+	it('backlog marks A–F complete except F4 deferred', () => {
+		const doc = readFileSync(BACKLOG, 'utf-8');
+		expect(doc).toMatch(/A1–A7.*Done/);
+		expect(doc).toMatch(/D9.*Done/);
+		expect(doc).toMatch(/F4.*Deferred/);
+	});
+
+	it('A1 commerce uses us-east1 for createRegistrationIntent', () => {
+		const src = readFileSync(join(ROOT, 'lib/services/commerce.svelte.ts'), 'utf-8');
+		expect(src).toMatch(/getFunctions\(undefined,\s*'us-east1'\)/);
+	});
+
+	it('A3 CoOpEngine reads root totalXp', () => {
+		const src = readFileSync(join(ROOT, 'lib/states/CoOpEngine.svelte.ts'), 'utf-8');
+		expect(src).toMatch(/totalXp/);
+	});
+
+	it('A4 AdaptiveHomework keys users by email', () => {
+		const src = readFileSync(join(ROOT, 'routes/(app)/player/dashboard/AdaptiveHomework.svelte'), 'utf-8');
+		expect(src).toMatch(/doc\(db,\s*'users',\s*email\)/);
+	});
+
+	it('B1 War Room has no placeholder player tokens', () => {
+		const src = readFileSync(join(ROOT, 'routes/(app)/coach/tactical/+page.svelte'), 'utf-8');
+		expect(src).not.toMatch(/PLAYER 01|SLOT 01/);
+		expect(src).toMatch(/wrBucketXi = \[\]/);
+	});
+
+	it('C1 parent bounty claim gates on verified status', () => {
+		const src = readFileSync(join(ROOT, 'lib/player/dashboard/activeBounties.ts'), 'utf-8');
+		expect(src).toMatch(/status === 'verified'/);
+	});
+
+	it('C2 War Room deployPlay persists tactics', () => {
+		const src = readFileSync(join(ROOT, 'routes/(app)/coach/tactical/+page.svelte'), 'utf-8');
+		expect(src).toMatch(/async function deployPlay/);
+		expect(src).toMatch(/setDoc\(docRef/);
+	});
+
+	it('C4 War Room has explicit exit control', () => {
+		const src = readFileSync(join(ROOT, 'routes/(app)/coach/tactical/+page.svelte'), 'utf-8');
+		expect(src).toMatch(/Exit War Room/);
+		expect(src).toMatch(/goto\('\/coach'\)/);
+	});
+
+	it('D1 SeasonRegistration rejects pay without Stripe', () => {
+		const src = readFileSync(join(ROOT, 'lib/components/parent/SeasonRegistration.svelte'), 'utf-8');
+		expect(src).toMatch(/Secure payment is unavailable/);
+		expect(src).toMatch(/never fabricate a "paid" state/);
+		expect(src).not.toMatch(/demo mode/i);
+	});
+
+	it('D9 team-scope Forge deploy allows name-only roster squads', () => {
+		const engine = readFileSync(join(ROOT, 'lib/coach/intent/IntentEngine.svelte.ts'), 'utf-8');
+		const hud = readFileSync(join(ROOT, 'lib/coach/intent/IntentHUD.svelte'), 'utf-8');
+		expect(engine).toMatch(/draftScope === 'team'\s*\?\s*\n?\s*this\.roster\.length > 0/);
+		expect(hud).toMatch(/draftScope === 'team'/);
+		expect(hud).toMatch(/included in squad-wide deploy/);
+	});
+
+	it('F2 coach nav includes Field Station and War Room', () => {
+		const nav = readFileSync(WORKSPACE_NAV, 'utf-8');
+		expect(nav).toMatch(/href:\s*'\/coach\/drills'/);
+		expect(nav).toMatch(/href:\s*'\/coach\/tactical'/);
+	});
+
+	it('F5 parent log-workout loads drills from Firestore', () => {
+		const src = readFileSync(join(ROOT, 'routes/(app)/parent/log-workout/+page.svelte'), 'utf-8');
+		expect(src).toMatch(/loadDrillTitlesForFocus/);
+	});
+});
+
 describe('Functional audit — player workout surfaces (E1/E2/E3/E4)', () => {
 	it('proving-grounds route mounts ProvingGrounds with ArmoryEngine', () => {
 		const src = readFileSync(join(ROOT, 'routes/(app)/player/proving-grounds/+page.svelte'), 'utf-8');

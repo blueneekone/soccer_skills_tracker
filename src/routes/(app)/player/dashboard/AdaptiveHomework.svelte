@@ -98,7 +98,9 @@
 		const profile = playerProfile;
 		const email = authStore.user?.email?.toLowerCase();
 		if (!profile || !email || profile.calculatedTier) return;
-		setDoc(doc(db, 'users', email), { calculatedTier: 'beginner' }, { merge: true }).catch(() => {});
+		setDoc(doc(db, 'users', email), { calculatedTier: 'beginner' }, { merge: true }).catch((err) => {
+			console.error('[AdaptiveHomework] tier migration write failed', err);
+		});
 	});
 
 	// Epic 8: uid for scope filtering

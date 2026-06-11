@@ -204,7 +204,7 @@ export class IntentEngine {
 		this.draftRequiredXp >= 1 &&
 		this.draftDurationDays >= 1 &&
 		(this.draftScope === 'team' ?
-			this.assignableRosterCount > 0
+			this.roster.length > 0
 		:	this.selectedAssignableCount > 0) &&
 		this.deployPhase === 'idle',
 	);
