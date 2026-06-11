@@ -11,38 +11,30 @@
 		updateDoc,
 		doc,
 		serverTimestamp,
+		where,
 	} from 'firebase/firestore';
 	import { db } from '$lib/firebase.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import Icon from '$lib/components/ui/Icon.svelte';
-	import type { IconName } from '$lib/icons/registry.js';
 	import { CommsEngine } from '$lib/services/comms.svelte.js';
 	import NewMessageModal from '$lib/components/coach/NewMessageModal.svelte';
+	import {
+		DEFAULT_TEAM_CHANNELS,
+		isDefaultTeamChannelId,
+		mapClubChannelDoc,
+		type MessagesTabChannel,
+	} from '$lib/coach/comms/messagesTabChannels.js';
 
 	let { teamId = '', players: _players = [], clubId = '' } = $props();
 
 	let newChannelOpen = $state(false);
 	let channelCreatedMsg = $state('');
 
-	/** @type {Array<{ id: string; label: string; description: string; icon: IconName }>} */
-	const DEFAULT_CHANNELS = [
-		{ id: 'game-day', label: 'Game Day', description: 'Matchday logistics & squad notes', icon: /** @type {IconName} */ ('game.trophy') },
-		{
-			id: 'practice-sessions',
-			label: 'Practice',
-			description: 'Session plans, drills, and attendance',
-			icon: /** @type {IconName} */ ('game.dumbbell'),
-		},
-		{
-			id: 'general',
-			label: 'General',
-			description: 'Everyday team conversation',
-			icon: /** @type {IconName} */ ('comm.chats'),
-		},
-	];
+	/** Default landing channel; team defaults live under teams/{teamId}/channels/{id}/messages */
+	let activeChannel = $state('game-day');
 
-	/** Default landing channel; path: teams/{teamId}/channels/{activeChannel}/messages */
-	let activeChannel = $state(/** @type {string} */ ('game-day'));
+	/** Live custom channels from clubs/{clubId}/channels filtered by teamId. */
+	let customChannels = $state<MessagesTabChannel[]>([]);
 
 	const myEmail = $derived((authStore.user?.email || '').toLowerCase());
 	const myUid = $derived(authStore.user?.uid || '');
@@ -71,16 +63,49 @@
 	/** @type {HTMLDivElement | null} */
 	let scrollEl = $state(null);
 
+	const allChannels = $derived([...DEFAULT_TEAM_CHANNELS, ...customChannels]);
+
+	const isClubChannel = $derived(!isDefaultTeamChannelId(activeChannel));
+
 	const activeChannelDef = $derived(
-		DEFAULT_CHANNELS.find((c) => c.id === activeChannel) ?? DEFAULT_CHANNELS[0],
+		allChannels.find((c) => c.id === activeChannel) ?? DEFAULT_TEAM_CHANNELS[0],
 	);
 
 	/**
 	 * @param {string} id
 	 */
 	function isAllowedChannelId(id) {
-		return DEFAULT_CHANNELS.some((c) => c.id === id);
+		return allChannels.some((c) => c.id === id);
 	}
+
+	$effect(() => {
+		const cId = clubId?.trim();
+		const tId = teamId?.trim();
+		if (!browser || !cId || !tId) {
+			customChannels = [];
+			return;
+		}
+		const qy = query(
+			collection(db, 'clubs', cId, 'channels'),
+			where('teamId', '==', tId),
+		);
+		const unsub = onSnapshot(
+			qy,
+			(snap) => {
+				const next = [];
+				for (const d of snap.docs) {
+					const row = mapClubChannelDoc(d.id, d.data(), tId);
+					if (row) next.push(row);
+				}
+				next.sort((a, b) => a.label.localeCompare(b.label));
+				customChannels = next;
+			},
+			(e) => {
+				console.error('[MessagesTab] custom channels', e);
+			},
+		);
+		return () => unsub();
+	});
 
 	$effect(() => {
 		if (!browser || !teamId) {
@@ -92,7 +117,10 @@
 		}
 		messagesLoading = true;
 		messagesErr = '';
-		const colPath = collection(db, 'teams', teamId, 'channels', activeChannel, 'messages');
+		const colPath =
+			isClubChannel && clubId.trim()
+				? collection(db, 'clubs', clubId.trim(), 'channels', activeChannel, 'messages')
+				: collection(db, 'teams', teamId, 'channels', activeChannel, 'messages');
 		const mq = query(colPath, orderBy('timestamp', 'desc'), limit(100));
 		const unsub = onSnapshot(
 			mq,
@@ -103,7 +131,7 @@
 					rows.push({
 						id: d.id,
 						senderId: String(x.senderId || ''),
-						senderName: String(x.senderName || ''),
+						senderName: String(x.senderName || x.fromEmail || ''),
 						senderRole: String(x.senderRole || ''),
 						text: String(x.text || ''),
 						timestamp: x.timestamp,
@@ -135,14 +163,23 @@
 		sending = true;
 		const text = draft.trim().slice(0, 8000);
 		try {
-			await addDoc(collection(db, 'teams', teamId, 'channels', activeChannel, 'messages'), {
-				senderId: myUid,
-				senderName: myName,
-				senderRole: myRole,
-				text,
-				timestamp: serverTimestamp(),
-				deleted: false,
-			});
+			if (isClubChannel) {
+				if (!clubId.trim()) throw new Error('Club context required for this channel.');
+				await clubChannelEngine.sendChannelMessage({
+					clubId: clubId.trim(),
+					channelId: activeChannel,
+					text,
+				});
+			} else {
+				await addDoc(collection(db, 'teams', teamId, 'channels', activeChannel, 'messages'), {
+					senderId: myUid,
+					senderName: myName,
+					senderRole: myRole,
+					text,
+					timestamp: serverTimestamp(),
+					deleted: false,
+				});
+			}
 			draft = '';
 		} catch (e) {
 			alert(e instanceof Error ? e.message : String(e));
@@ -155,7 +192,7 @@
 	 * @param {string} messageId
 	 */
 	async function softDeleteMessage(messageId) {
-		if (!teamId || !isAllowedChannelId(activeChannel) || !canModerate) return;
+		if (!teamId || !isDefaultTeamChannelId(activeChannel) || !canModerate) return;
 		if (!confirm('Remove this message for everyone?')) return;
 		try {
 			await updateDoc(
@@ -169,6 +206,7 @@
 
 	// ── Direct-message compose (coach→adult player) ──────────────────────────
 	const dmEngine = new CommsEngine();
+	const clubChannelEngine = new CommsEngine();
 	let dmPlayerName = $state('');
 	let dmBody = $state('');
 	let dmErr = $state('');
@@ -338,7 +376,7 @@
 		{/if}
 		<!-- Mobile: top channel scroller -->
 		<div class="matrix__strip md:hidden" role="tablist" aria-label="Channels">
-			{#each DEFAULT_CHANNELS as ch (ch.id)}
+			{#each allChannels as ch (ch.id)}
 				<button
 					type="button"
 					class="matrix__chip"
@@ -373,7 +411,7 @@
 					<span class="matrix__rail-hint">Team matrix</span>
 				</div>
 				<nav class="matrix__nav">
-					{#each DEFAULT_CHANNELS as ch (ch.id)}
+					{#each DEFAULT_TEAM_CHANNELS as ch (ch.id)}
 						<button
 							type="button"
 							class="matrix__ch"
@@ -387,6 +425,23 @@
 							</div>
 						</button>
 					{/each}
+					{#if customChannels.length > 0}
+						<p class="matrix__rail-section">Custom channels</p>
+						{#each customChannels as ch (ch.id)}
+							<button
+								type="button"
+								class="matrix__ch matrix__ch--custom"
+								class:matrix__ch--active={activeChannel === ch.id}
+								onclick={() => (activeChannel = ch.id)}
+							>
+								<span class="matrix__ch-hash" aria-hidden="true">◎</span>
+								<div class="matrix__ch-text">
+									<span class="matrix__ch-label">{ch.label}</span>
+									<span class="matrix__ch-sub">{ch.description}</span>
+								</div>
+							</button>
+						{/each}
+					{/if}
 				</nav>
 			</aside>
 
@@ -519,7 +574,12 @@
 				<h3 class="matrix__context-h">Context</h3>
 				<p class="matrix__context-p">
 					<strong>#{activeChannelDef.label}</strong>
-					· live path <code class="matrix__code">teams/{teamId}/channels/{activeChannel}/messages</code>
+					· live path
+					<code class="matrix__code"
+						>{isClubChannel
+							? `clubs/${clubId}/channels/${activeChannel}/messages`
+							: `teams/${teamId}/channels/${activeChannel}/messages`}</code
+					>
 				</p>
 				<button type="button" class="matrix__link" onclick={openSchedule}>
 					Open training &amp; schedule
@@ -540,7 +600,8 @@
 		newChannelOpen = false;
 	}}
 	onChannelCreated={(id) => {
-		channelCreatedMsg = `Channel created (${id.slice(0, 8)}…). Open it from the comms hub when wired to custom channels.`;
+		activeChannel = id;
+		channelCreatedMsg = 'Channel created — thread opened.';
 		newChannelOpen = false;
 	}}
 />
@@ -821,6 +882,17 @@
 	.matrix__rail-hint {
 		font-size: 11px;
 		color: #94a3b8;
+	}
+	.matrix__rail-section {
+		margin: 12px 16px 6px;
+		font-size: 10px;
+		font-weight: 700;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+		color: #94a3b8;
+	}
+	.matrix__ch--custom .matrix__ch-hash {
+		color: #0d9488;
 	}
 
 	.matrix__nav {

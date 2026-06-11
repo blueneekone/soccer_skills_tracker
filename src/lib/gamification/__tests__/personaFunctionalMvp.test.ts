@@ -433,4 +433,19 @@ describe('Functional audit — E-series coach/director mounts', () => {
 		const src = readFileSync(join(ROOT, 'lib/components/shell/ActionInbox.svelte'), 'utf-8');
 		expect(src).not.toMatch(/MOCK_COACH_ACTIONS/);
 	});
+
+	it('MessagesTab loads custom club channels and sendChannelMessage path', () => {
+		const src = readFileSync(join(ROOT, 'lib/components/coach/MessagesTab.svelte'), 'utf-8');
+		expect(src).toMatch(/mapClubChannelDoc/);
+		expect(src).toMatch(/sendChannelMessage/);
+		expect(src).toMatch(/clubs', cId, 'channels'/);
+	});
+
+	it('Team Ops schedule embeds FacilityScheduler for pitch booking', () => {
+		const src = readFileSync(
+			join(ROOT, 'lib/coach/logistics/CoachTeamSchedulePanel.svelte'),
+			'utf-8',
+		);
+		expect(src).toMatch(/FacilityScheduler/);
+	});
 });

@@ -321,10 +321,16 @@
 						<Icon name="data.target" /> MATCH LOG
 					</a>
 					<a
-						href="/coach/drills"
+						href="/coach/drills?view=schedule"
 						class="tw-pointer-events-auto tw-inline-flex tw-items-center tw-gap-1.5 tw-rounded-full tw-border tw-border-[#14b8a6]/35 tw-bg-[#020202]/80 tw-px-3 tw-py-1.5 tw-font-mono tw-text-[10px] tw-font-bold tw-uppercase tw-tracking-widest tw-text-[#14b8a6] tw-no-underline tw-backdrop-blur-3xl tw-transition-all hover:tw-border-[#14b8a6]/75 hover:tw-bg-[#14b8a6]/10"
 					>
-						<Icon name="content.checks" /> DRILLS
+						<Icon name="sys.calendar" /> BOOK PITCH
+					</a>
+					<a
+						href="/coach/drills?view=schedule"
+						class="tw-pointer-events-auto tw-inline-flex tw-items-center tw-gap-1.5 tw-rounded-full tw-border tw-border-[#14b8a6]/35 tw-bg-[#020202]/80 tw-px-3 tw-py-1.5 tw-font-mono tw-text-[10px] tw-font-bold tw-uppercase tw-tracking-widest tw-text-[#14b8a6] tw-no-underline tw-backdrop-blur-3xl tw-transition-all hover:tw-border-[#14b8a6]/75 hover:tw-bg-[#14b8a6]/10"
+					>
+						<Icon name="content.checks" /> FIELD STATION
 					</a>
 				</div>
 			</article>

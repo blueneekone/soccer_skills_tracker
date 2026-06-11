@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { saveTeamScheduledEvent, REMINDER_OPTIONS, workoutsStore } from '$lib/stores/workouts.svelte.js';
+	import FacilityScheduler from '$lib/components/coach/FacilityScheduler.svelte';
 
 	let { teamId = '' } = $props();
 
@@ -133,6 +134,16 @@
 			{/if}
 		</div>
 	</div>
+
+	{#if teamId}
+		<section class="ops-facility" aria-labelledby="ops-facility-h">
+			<h2 id="ops-facility-h" class="ops-panel__title">Pitch booking</h2>
+			<p class="ops-panel__sub">
+				Check availability and book practice or fixture blocks without double-booking the pitch.
+			</p>
+			<FacilityScheduler {teamId} />
+		</section>
+	{/if}
 </div>
 
 <style>
@@ -158,4 +169,5 @@
 	.ops-list__item { border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px 12px; display: flex; flex-direction: column; gap: 4px; background: #f8fafc; }
 	.ops-muted { font-size: 12px; color: #64748b; margin: 0; }
 	.ops-tag { font-size: 11px; color: #475569; font-family: ui-monospace, monospace; }
+	.ops-facility { margin-top: 8px; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
 </style>
