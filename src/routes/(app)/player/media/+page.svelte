@@ -34,9 +34,8 @@
 		{:else}
 			<section class="pd-os-deck bento-span-12 tw-mb-4 tw-min-w-0" aria-label="Clip analyzer">
 				<p class="pd-label tw-mb-3 tw-max-w-2xl tw-text-xs tw-leading-relaxed tw-text-white/50">
-					Upload a clip for biomechanics feedback. Files are scanned and stored securely.
-					Stat suggestions use the preview analyzer until the vision backend is fully live —
-					confirm only when the read looks accurate.
+					Upload a clip for secure storage and safety scanning. When biomechanics analysis is enabled
+					on the backend, results will appear here for you to confirm before XP is applied.
 				</p>
 				<ClipAnalyzer {armory} playerUid={uid} />
 			</section>

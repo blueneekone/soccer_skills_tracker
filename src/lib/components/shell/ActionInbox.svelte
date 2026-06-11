@@ -18,45 +18,16 @@
 	let items = $state([]);
 	let loading = $state(true);
 
-	/** Coach dashboard mocks when inbox is empty (Liquid Glass bento). */
-	const MOCK_COACH_ACTIONS = [
-		{
-			id: 'mock-trial',
-			label: "Review Jimmy's Video Trial",
-			meta: 'Trials · Verification',
-			href: '/coach',
-			dot: 'cyan',
-		},
-		{
-			id: 'mock-roster',
-			label: 'Approve Roster for Saturday',
-			meta: 'Match day · Roster',
-			href: '/coach',
-			dot: 'amber',
-		},
-		{
-			id: 'mock-waiver',
-			label: 'Message Parent: Missing Waiver',
-			meta: 'Compliance · Waivers',
-			href: '/messages',
-			dot: 'cyan',
-		},
-	];
-
 	/**
-	 * Rows shown in the UI: live Firestore-driven items, or coach mocks when empty.
+	 * Rows shown in the UI: live Firestore-driven items only (no mock fallbacks).
 	 * @type {Array<{ id: string, label: string, meta?: string, href: string, dot: 'cyan' | 'amber' }>}
 	 */
 	const displayRows = $derived.by(() => {
 		if (loading) return [];
-		if (items.length > 0) {
-			return items.map((row, i) => ({
-				...row,
-				dot: i % 2 === 0 ? 'cyan' : 'amber',
-			}));
-		}
-		if (role === 'coach') return MOCK_COACH_ACTIONS;
-		return [];
+		return items.map((row, i) => ({
+			...row,
+			dot: i % 2 === 0 ? 'cyan' : 'amber',
+		}));
 	});
 
 	$effect(() => {

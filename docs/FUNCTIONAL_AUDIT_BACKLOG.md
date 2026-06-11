@@ -1,6 +1,6 @@
 # Functional Audit Backlog — 2026-06-10
 
-**Status (2026-06-10):** P0 A1–A7, B1–B4, C1–C4, D1–D10, F2–F5, E8, E9 **Done**. E-series mount decisions **remaining** (player/coach unmounted components; operator deploy checklist).
+**Status (2026-06-10):** P0 A1–A7, B1–B4, C1–C4, D1–D10, F2–F5, **E1–E9 Done**. Operator deploy checklist remains for media/transfer/facility CFs.
 
 Fresh end-to-end read-only audit of `/player`, `/parent`, `/coach`, `/director` workspaces.
 Supersedes the optimistic "all functional epics closed" header in `ROADMAP.md`: that claim
@@ -69,15 +69,15 @@ feature or persistence bug · `P2` = discoverability / empty-state / edge case.
 
 | # | Area | Component | Capability lost |
 |---|------|-----------|-----------------|
-| E1 | Player | `ClipAnalyzer.svelte` | **Done** — `/player/media` with preview-AI disclaimer |
+| E1 | Player | `ClipAnalyzer.svelte` | **Done** — `/player/media`; polls Firestore after upload (no client mock analysis) |
 | E2 | Player | `ProvingGrounds.svelte` | **Done** — `/player/proving-grounds` + HQ quick ops |
-| E3 | Player | `MediaVault.svelte`, `TransferPortal.svelte` | **MediaVault Done** on `/player/media`; TransferPortal deferred |
-| E4 | Player | `DrillExecution.svelte`, `IntrinsicSanctuary.svelte`, `MemoryCapsule.svelte` | **IntrinsicSanctuary Done** on `/player/tracker`; DrillExecution deferred; MemoryCapsule superseded |
+| E3 | Player | `MediaVault.svelte`, `TransferPortal.svelte` | **Done** — media vault on `/player/media`; transfer on `/parent/household` + director `?tab=registrars` |
+| E4 | Player | `DrillExecution.svelte`, `IntrinsicSanctuary.svelte`, `MemoryCapsule.svelte` | **Done** — sanctuary on `/player/tracker`; DrillExecution on `/player/workout` coach missions; MemoryCapsule superseded |
 | E5 | Player | `PlayerActivityStreak.svelte` | **Done** — mounted on player HQ metrics band with `ArmoryEngine` freeze CTA |
-| E6 | Coach | `NewMessageModal.svelte` | DM-thread composer; zero route imports |
-| E7 | Coach | `FacilityScheduler.svelte`, `TacticalCommandBoard.svelte` | Facility booking; named-tactic save + `analyzeTacticWithAI`; unmounted |
-| E8 | Coach | `trial-builder/+page.svelte` | Persists `trials` but no nav link |
-| E9 | Director | `CoachAccountabilityModule.svelte` | `getAccountabilityReport` wired; never mounted |
+| E6 | Coach | `NewMessageModal.svelte` | **Done** — mounted from Team Ops `MessagesTab` (new channel) |
+| E7 | Coach | `FacilityScheduler.svelte`, `TacticalCommandBoard.svelte` | **Done** — Field Station schedule tab + `/coach/tactics-board` |
+| E8 | Coach | `trial-builder/+page.svelte` | **Done** — nav link in coach shell |
+| E9 | Director | `CoachAccountabilityModule.svelte` | **Done** — director compliance context |
 
 ## P2 — discoverability / nav
 

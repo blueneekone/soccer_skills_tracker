@@ -19,6 +19,7 @@
 	import { handleSignOut } from '$lib/auth/signOutFlow.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import ParentPrivacyDashboard from '$lib/components/compliance/ParentPrivacyDashboard.svelte';
+	import TransferPortal from '$lib/components/player/TransferPortal.svelte';
 	import type { HouseholdOperativeRow } from '$lib/types/household.js';
 	import {
 		buildEnrichedOperativeRows,
@@ -706,6 +707,31 @@
 					</p>
 				</div>
 			{/if}
+		</section>
+
+		<section
+			class="phh-surface bento-span-12 tw-min-w-0 tw-border tw-border-white/10 tw-px-3 tw-py-4 sm:tw-px-4 md:tw-px-5"
+			aria-labelledby="phh-transfer"
+		>
+			<div class="tw-mb-3">
+				<span class="phh-eyebrow tw-text-white/50">Club transfer</span>
+				<h2
+					id="phh-transfer"
+					class="tw-m-0 tw-text-sm tw-font-bold tw-uppercase tw-tracking-widest tw-text-white"
+				>
+					Vanguard transfer protocol
+				</h2>
+			</div>
+			<p class="tw-mb-3 tw-text-xs tw-leading-relaxed tw-text-white/50">
+				Initiate a player transfer to another club. You will receive a token to share with the
+				destination registrar; confirm with their auth code when prompted.
+			</p>
+			<TransferPortal
+				role="parent"
+				playerEmail={operativeRows[0]?.email && !operativeRows[0].email.endsWith('@operative.local')
+					? operativeRows[0].email
+					: ''}
+			/>
 		</section>
 	</div>
 

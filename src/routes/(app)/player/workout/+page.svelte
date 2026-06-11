@@ -34,6 +34,7 @@
   import PlayerDiegeticOverlay from '$lib/components/player/PlayerDiegeticOverlay.svelte';
   import IntelModal from '$lib/components/ui/IntelModal.svelte';
   import PlayerOsPageStrap from '$lib/components/player/PlayerOsPageStrap.svelte';
+  import CoachMissionDrillExecutionPanel from '$lib/player/workout/CoachMissionDrillExecutionPanel.svelte';
   import '$lib/styles/player-dashboard-hud.css';
   import '$lib/styles/player-terminal.css';
 
@@ -813,6 +814,8 @@
         {/if}
       </div>
     {/if}
+
+    <CoachMissionDrillExecutionPanel {armedHandoff} armedMissionTitle={armedMissionTitle} />
 
     <div class="pw-exec__command" aria-labelledby="pw-exec-heading">
       <div class="pw-panel__head pw-panel__head--row">

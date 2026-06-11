@@ -11,6 +11,7 @@
 	import IntakePanopticon from './dashboard/IntakePanopticon.svelte';
 	import VpcApprovalQueue from '$lib/components/director/os/VpcApprovalQueue.svelte';
 	import RegistrarInviteTab from '$lib/components/director/RegistrarInviteTab.svelte';
+	import TransferPortal from '$lib/components/player/TransferPortal.svelte';
 	import PlaybookTab from '$lib/components/director/PlaybookTab.svelte';
 	import LicensesTab from '$lib/components/director/LicensesTab.svelte';
 	import ClubLogoMark from '$lib/components/ClubLogoMark.svelte';
@@ -150,6 +151,9 @@
 				<TeamsTab {clubId} />
 			{:else if activeTab === 'registrars'}
 				<RegistrarInviteTab {clubId} />
+				<section class="director-console-page__section tw-mt-6" aria-label="Player transfer intake">
+					<TransferPortal role="director" />
+				</section>
 			{:else if activeTab === 'brand'}
 				<BrandingTab {clubId} />
 			{:else if activeTab === 'playbook'}

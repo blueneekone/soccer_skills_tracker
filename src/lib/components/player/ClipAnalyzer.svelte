@@ -1,35 +1,14 @@
 <script lang="ts">
 	/**
-	 * ClipAnalyzer.svelte — AI Biomechanics Analysis Terminal
-	 * ─────────────────────────────────────────────────────────
-	 * "The Billion-Dollar Feature" — players upload a training clip and receive
-	 * AI-driven Scout's Six stat feedback bound directly to their ArmoryEngine.
-	 *
-	 * FLOW
-	 * ────
-	 * 1. Player selects a clip (video) or photo.
-	 * 2. Client calls `getUploadToken` CF → receives a pre-signed PUT URL.
-	 * 3. File is uploaded directly to GCS (zero bytes touch SvelteKit).
-	 * 4. Stark-tech ANALYZING overlay appears while:
-	 *    a. Upload to GCS completes (XHR progress tracking).
-	 *    b. `analyzeMovement()` stub runs with a 2-second simulation.
-	 *    c. `processMedia` CF triggers in background (async).
-	 * 5. Mock analysis result (e.g. "Knee drive optimal. PAC +2.") is shown.
-	 * 6. Player confirms → `armory.updateStat()` writes the XP delta.
-	 *
-	 * The `analyzeMovement()` stub is designed so that a Python/Gemini
-	 * Vision endpoint can be slotted in with no UI changes. It returns:
-	 *   {
-	 *     stat: 'PAC' | 'ACC' | 'AGI' | 'STM' | 'POW' | 'VAN',
-	 *     delta: number,          — XP delta to award
-	 *     statDelta: string,      — human-readable change ("+2 mph")
-	 *     headline: string,       — e.g. "Knee drive optimal. PAC +2."
-	 *     confidence: number,     — 0–100
-	 *     feedbackPoints: string[], — bullet observations
-	 *   }
+	 * ClipAnalyzer.svelte — Training clip upload terminal
+	 * Upload → GCS (signed URL) → poll `player_media/{uid}/clips/{clipId}` until
+	 * `processMedia` sets status ready/quarantined/error. XP is applied only when
+	 * the clip document includes a server-written `analysisResult`.
 	 */
 
+	import { doc, getDoc } from 'firebase/firestore';
 	import { getFunctions, httpsCallable } from 'firebase/functions';
+	import { db } from '$lib/firebase.js';
 	import type { ArmoryEngine } from '$lib/states/ArmoryEngine.svelte.js';
 
 	// ── Props ─────────────────────────────────────────────────────────────────
@@ -134,115 +113,83 @@
 		if (scanInterval !== null) { clearInterval(scanInterval); scanInterval = null; }
 	}
 
-	// ── analyzeMovement stub ──────────────────────────────────────────────────
-	// ────────────────────────────────────────────────────────────────────────
-	// INTEGRATION POINT: Replace this stub with a real call to your
-	// Python computer-vision endpoint or Gemini Video Intelligence API.
-	//
-	// Expected signature:
-	//   analyzeMovement(videoUrl: string, stat: string) → Promise<AnalysisResult>
-	//
-	// Gemini integration example (server-side):
-	//   const res = await ai.models.generateContent({
-	//     model: 'gemini-2.0-flash',
-	//     contents: [{ parts: [
-	//       { fileData: { fileUri: videoUrl, mimeType: 'video/mp4' } },
-	//       { text: `Analyse the athlete's ${stat} biomechanics.
-	//               Rate improvement potential 0-100.
-	//               Return JSON: { headline, feedbackPoints[], statDelta, delta, confidence }` }
-	//     ]}]
-	//   });
-	// ────────────────────────────────────────────────────────────────────────
-	async function analyzeMovement(videoUrl: string, stat: string): Promise<AnalysisResult> {
-		// Simulate network latency and CV processing time
-		await new Promise((r) => setTimeout(r, 2200 + Math.random() * 800));
+	const CLIP_POLL_INTERVAL_MS = 2_000;
+	const CLIP_POLL_MAX_MS = 120_000;
 
-		// Mock responses keyed by target stat
-		const MOCK_RESPONSES: Record<string, AnalysisResult> = {
-			PAC: {
-				stat: 'PAC',
-				delta: 120,
-				statDelta: '+0.3 MPH',
-				headline: 'Knee drive optimal. Stride cadence within elite range.',
-				confidence: 87,
-				feedbackPoints: [
-					'Hip flexor engagement: 94% of optimal',
-					'Ground contact time: 168ms (target ≤180ms)',
-					'Arm swing symmetry: strong (Δ2°)',
-					'Lean angle on acceleration: 12° — increase to 15° for max sprint output',
-				],
-			},
-			ACC: {
-				stat: 'ACC',
-				delta: 100,
-				statDelta: '-0.04s',
-				headline: 'First-step explosive. Ankle dorsiflexion limiting factor.',
-				confidence: 81,
-				feedbackPoints: [
-					'First-step time: 0.24s (elite: <0.22s)',
-					'Knee bend on stance: 24° — target 28-30° for deeper power transfer',
-					'Arm drive on burst: 82% optimal',
-					'Dorsiflexion angle: 8° — mobility work recommended',
-				],
-			},
-			AGI: {
-				stat: 'AGI',
-				delta: 90,
-				statDelta: '-0.12s',
-				headline: 'Change-of-direction mechanics efficient. Hip drop detected.',
-				confidence: 79,
-				feedbackPoints: [
-					'Cut angle: 38° — acceptable for match-speed scenarios',
-					'Hip drop on deceleration: reduce by ~6° to prevent ACL load',
-					'Foot plant before cut: 0.08m outside center of mass — optimal',
-					'Deceleration steps: 2 (elite: 1-2)',
-				],
-			},
-			STM: {
-				stat: 'STM',
-				delta: 80,
-				statDelta: '+1 Level',
-				headline: 'Recovery rate strong. Work rate above position average.',
-				confidence: 74,
-				feedbackPoints: [
-					'Clip shows sustained sprint effort across 4 repetitions',
-					'Estimated VO2 proxy from movement density: above median',
-					'Technique degradation between rep 1 and rep 4: minimal (−3%)',
-					'Recommending interval volume increase in next training cycle',
-				],
-			},
-			POW: {
-				stat: 'POW',
-				delta: 110,
-				statDelta: '+1.2 in',
-				headline: 'Hip extension generating above-average shot power.',
-				confidence: 85,
-				feedbackPoints: [
-					'Plant foot position: 14cm behind ball — ideal',
-					'Hip-to-shoulder rotation: 48° (target: 45-55°)',
-					'Follow-through path: slightly across body — address for accuracy',
-					'Estimated ball velocity based on foot contact speed: top-third for age group',
-				],
-			},
-			VAN: {
-				stat: 'VAN',
-				delta: 200,
-				statDelta: '+2 pts',
-				headline: 'Exceptional overall movement quality detected.',
-				confidence: 91,
-				feedbackPoints: [
-					'Multi-plane athleticism score: 88/100',
-					'Tactical positioning awareness: above-average for role',
-					'Physical readiness indicators: all green',
-					'Vanguard composite score: upgraded',
-				],
-			},
-		};
-
-		return MOCK_RESPONSES[stat] ?? MOCK_RESPONSES['PAC'];
+	function sleep(ms: number): Promise<void> {
+		return new Promise((r) => setTimeout(r, ms));
 	}
 
-	// ── Upload + analysis pipeline ────────────────────────────────────────────
+	function parseAnalysisResult(raw: unknown): AnalysisResult | null {
+		if (!raw || typeof raw !== 'object') return null;
+		const r = raw as Record<string, unknown>;
+		const stat = typeof r.stat === 'string' ? r.stat : '';
+		const headline = typeof r.headline === 'string' ? r.headline.trim() : '';
+		if (!stat || !headline) return null;
+		return {
+			stat,
+			delta: typeof r.delta === 'number' && Number.isFinite(r.delta) ? r.delta : 0,
+			statDelta: typeof r.statDelta === 'string' ? r.statDelta : '',
+			headline,
+			confidence:
+				typeof r.confidence === 'number' && Number.isFinite(r.confidence) ? r.confidence : 0,
+			feedbackPoints: Array.isArray(r.feedbackPoints)
+				? r.feedbackPoints.filter((x): x is string => typeof x === 'string')
+				: [],
+		};
+	}
+
+	async function waitForClipProcessing(
+		uid: string,
+		processedClipId: string,
+	): Promise<{
+		status: string;
+		publicUrl?: string;
+		analysisResult?: AnalysisResult | null;
+		error?: string;
+	}> {
+		const ref = doc(db, 'player_media', uid, 'clips', processedClipId);
+		const deadline = Date.now() + CLIP_POLL_MAX_MS;
+		while (Date.now() < deadline) {
+			const snap = await getDoc(ref);
+			if (snap.exists()) {
+				const data = snap.data();
+				const status = typeof data.status === 'string' ? data.status : 'pending';
+				if (status === 'ready') {
+					return {
+						status,
+						publicUrl: typeof data.publicUrl === 'string' ? data.publicUrl : undefined,
+						analysisResult: parseAnalysisResult(data.analysisResult),
+					};
+				}
+				if (status === 'quarantined') {
+					return {
+						status,
+						error:
+							typeof data.safetyReason === 'string' && data.safetyReason.trim()
+								? data.safetyReason
+								: 'Clip failed safety review.',
+					};
+				}
+				if (status === 'error') {
+					return {
+						status,
+						error:
+							typeof data.error === 'string' && data.error.trim()
+								? data.error
+								: 'Media processing failed.',
+					};
+				}
+			}
+			await sleep(CLIP_POLL_INTERVAL_MS);
+		}
+		return {
+			status: 'timeout',
+			error: 'Processing is taking longer than expected. Check the media vault in a minute.',
+		};
+	}
+
+	// ── Upload + processing pipeline ──────────────────────────────────────────
 
 	async function startAnalysis(): Promise<void> {
 		if (!selectedFile) return;
@@ -286,25 +233,44 @@
 			uploadProgress = 100;
 			phase = 'analyzing';
 
-			// STEP 3: Run AI analysis (stub → real CV model)
-			const result = await analyzeMovement(tokenRes.data.storagePath, targetStat);
-			analysisResult = result;
-			publicUrl = tokenRes.data.storagePath; // Will be updated by processMedia CF
-			phase = 'result';
+			const processed = await waitForClipProcessing(playerUid, cId);
+			stopScan();
+
+			if (processed.status === 'quarantined' || processed.status === 'error') {
+				errorMsg = processed.error ?? 'Clip could not be processed.';
+				phase = 'error';
+				return;
+			}
+
+			if (processed.publicUrl) publicUrl = processed.publicUrl;
+			if (clipId && publicUrl) onClipReady?.(clipId, publicUrl);
+
+			if (processed.analysisResult) {
+				analysisResult = processed.analysisResult;
+				phase = 'result';
+				return;
+			}
+
+			if (processed.status === 'timeout') {
+				errorMsg = processed.error ?? 'Processing timed out.';
+				phase = 'error';
+				return;
+			}
+
+			analysisResult = null;
+			phase = 'complete';
 		} catch (err: unknown) {
-			errorMsg = err instanceof Error ? err.message : 'Analysis failed.';
+			errorMsg = err instanceof Error ? err.message : 'Upload failed.';
 			phase = 'error';
 			stopScan();
 		}
 	}
 
 	async function confirmResult(): Promise<void> {
-		if (!analysisResult) return;
+		if (!analysisResult || analysisResult.delta <= 0) return;
 		phase = 'confirming';
 		try {
-			// Award XP to ArmoryEngine
 			armory.awardXP(analysisResult.delta, `AI Biomechanics: ${analysisResult.headline}`);
-			// Notify parent
 			if (clipId && publicUrl) onClipReady?.(clipId, publicUrl);
 			phase = 'complete';
 		} catch (err: unknown) {
@@ -342,18 +308,13 @@
 					</div>
 					<p class="ca-overlay__stat-target">TARGET STAT: <strong>{targetStat} · {targetStatLabel}</strong></p>
 				{:else}
-					<div class="ca-overlay__phase-label">AEGIS BIOMECHANICS · ANALYZING</div>
+					<div class="ca-overlay__phase-label">PROCESSING · EXIF STRIP &amp; SAFETY SCAN</div>
 					<div class="ca-overlay__dots">
 						<span></span><span></span><span></span>
 					</div>
 					<p class="ca-overlay__stat-target">
-						SCANNING {isVideo ? 'VIDEO FRAMES' : 'IMAGE'} FOR <strong>{targetStatLabel}</strong> INDICATORS
+						WAITING FOR <strong>{targetStatLabel}</strong> CLIP TO CLEAR THE VAULT PIPELINE
 					</p>
-					<div class="ca-overlay__grid-data" aria-hidden="true">
-						<span>JOINT_TRACKING: ACTIVE</span>
-						<span>STRIDE_ANALYSIS: RUNNING</span>
-						<span>CONFIDENCE_CAL: {Math.floor(40 + scanLine * 0.55)}%</span>
-					</div>
 				{/if}
 			</div>
 		</div>
@@ -370,10 +331,9 @@
 			</h3>
 			<p class="ca-drop-zone__sub">
 				{#if phase === 'idle'}
-					Upload a video or photo for AI biomechanics analysis.
-					Clips are automatically EXIF-stripped before processing.
+					Upload a video or photo. Clips are EXIF-stripped and scanned before they appear in your vault.
 				{:else}
-					Ready to transmit for <strong>{targetStatLabel}</strong> analysis.
+					Ready to upload for <strong>{targetStatLabel}</strong> tracking.
 				{/if}
 			</p>
 
@@ -397,7 +357,7 @@
 			{#if phase === 'selected'}
 				<button class="ca-analyze-btn" onclick={startAnalysis}>
 					<span class="ca-analyze-btn__icon" aria-hidden="true">⚡</span>
-					TRANSMIT & ANALYZE
+					TRANSMIT CLIP
 				</button>
 			{/if}
 		</div>
@@ -434,9 +394,11 @@
 
 			<div class="ca-result__actions">
 				<button class="ca-btn-ghost" onclick={reset}>DISCARD</button>
-				<button class="ca-confirm-btn" onclick={confirmResult} disabled={phase === 'confirming'}>
-					{phase === 'confirming' ? 'APPLYING…' : '✓ APPLY TO ARMORY'}
-				</button>
+				{#if analysisResult.delta > 0}
+					<button class="ca-confirm-btn" onclick={confirmResult} disabled={phase === 'confirming'}>
+						{phase === 'confirming' ? 'APPLYING…' : '✓ APPLY TO ARMORY'}
+					</button>
+				{/if}
 			</div>
 		</div>
 	{/if}
@@ -445,9 +407,19 @@
 	{#if phase === 'complete'}
 		<div class="ca-complete">
 			<span class="ca-complete__icon" aria-hidden="true">✓</span>
-			<h3 class="ca-complete__title">ARMORY UPDATED</h3>
-			<p class="ca-complete__sub">+{analysisResult?.delta ?? 0} XP applied to {analysisResult?.stat} track.</p>
-			<button class="ca-btn-ghost" onclick={reset}>ANALYZE ANOTHER CLIP</button>
+			{#if analysisResult && analysisResult.delta > 0}
+				<h3 class="ca-complete__title">ARMORY UPDATED</h3>
+				<p class="ca-complete__sub">
+					+{analysisResult.delta} XP applied to {analysisResult.stat} track.
+				</p>
+			{:else}
+				<h3 class="ca-complete__title">CLIP IN VAULT</h3>
+				<p class="ca-complete__sub">
+					Processing complete. View the clip below in your media vault. Stat analysis will appear here
+					when the vision backend writes results to Firestore.
+				</p>
+			{/if}
+			<button class="ca-btn-ghost" onclick={reset}>UPLOAD ANOTHER CLIP</button>
 		</div>
 	{/if}
 

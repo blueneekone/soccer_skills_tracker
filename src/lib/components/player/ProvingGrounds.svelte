@@ -169,8 +169,7 @@
 	 */
 	let { engine: externalEngine = undefined, class: extraClass = '' } = $props();
 
-	const _demoEngine = new ArmoryEngine({ totalXP: 3_400 });
-	const armory = $derived(externalEngine ?? _demoEngine);
+	const armory = $derived(externalEngine);
 
 	// ── UI state ──────────────────────────────────────────────────────────
 	let selectedDrillId = $state(DRILLS[0].id);
@@ -225,7 +224,7 @@
 
 	// ── Submission handler ────────────────────────────────────────────────
 	function handleSubmit() {
-		if (!isInputValid) {
+		if (!armory || !isInputValid) {
 			submitState = 'error';
 			return;
 		}
@@ -251,6 +250,11 @@
 </script>
 
 <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
+{#if !armory}
+	<div class="pg-shell tw-font-mono tw-p-6 tw-text-white/60 {extraClass}">
+		<p class="tw-text-sm">Sign in to load armory progress before logging proving-grounds benchmarks.</p>
+	</div>
+{:else}
 <div class="pg-shell tw-font-mono tw-text-white {extraClass}">
 
 	<!-- ── PAGE HEADER ─────────────────────────────────────────────────── -->
@@ -524,6 +528,7 @@
 
 	</div>
 </div>
+{/if}
 
 <style>
 	/* ── Shell ─────────────────────────────────────────────────────────── */

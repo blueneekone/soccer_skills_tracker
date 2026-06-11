@@ -389,3 +389,48 @@ describe('Functional audit — player workout surfaces (E1/E2/E3/E4)', () => {
 		expect(src).toMatch(/IntrinsicSanctuary/);
 	});
 });
+
+describe('Functional audit — E-series coach/director mounts', () => {
+	it('ClipAnalyzer has no client mock analysis responses', () => {
+		const src = readFileSync(join(ROOT, 'lib/components/player/ClipAnalyzer.svelte'), 'utf-8');
+		expect(src).not.toMatch(/MOCK_RESPONSES/);
+		expect(src).toMatch(/waitForClipProcessing/);
+	});
+
+	it('MessagesTab mounts NewMessageModal for channel creation', () => {
+		const src = readFileSync(join(ROOT, 'lib/components/coach/MessagesTab.svelte'), 'utf-8');
+		expect(src).toMatch(/NewMessageModal/);
+	});
+
+	it('Field Station schedule mounts FacilityScheduler', () => {
+		const src = readFileSync(join(ROOT, 'lib/coach/drills/CoachDrillsView.svelte'), 'utf-8');
+		expect(src).toMatch(/FacilityScheduler/);
+	});
+
+	it('coach tactics-board route mounts TacticalCommandBoard', () => {
+		const src = readFileSync(join(ROOT, 'routes/(app)/coach/tactics-board/+page.svelte'), 'utf-8');
+		expect(src).toMatch(/CoachTacticsBoardView|TacticalCommandBoard/);
+	});
+
+	it('parent household and director registrars mount TransferPortal', () => {
+		const household = readFileSync(join(ROOT, 'routes/(app)/parent/household/+page.svelte'), 'utf-8');
+		const director = readFileSync(join(ROOT, 'routes/(app)/director/+page.svelte'), 'utf-8');
+		expect(household).toMatch(/TransferPortal/);
+		expect(director).toMatch(/TransferPortal/);
+	});
+
+	it('player workout mounts DrillExecution for coach missions', () => {
+		const src = readFileSync(join(ROOT, 'routes/(app)/player/workout/+page.svelte'), 'utf-8');
+		expect(src).toMatch(/CoachMissionDrillExecutionPanel/);
+		const panel = readFileSync(
+			join(ROOT, 'lib/player/workout/CoachMissionDrillExecutionPanel.svelte'),
+			'utf-8',
+		);
+		expect(panel).toMatch(/DrillExecution/);
+	});
+
+	it('ActionInbox has no coach mock fallback rows', () => {
+		const src = readFileSync(join(ROOT, 'lib/components/shell/ActionInbox.svelte'), 'utf-8');
+		expect(src).not.toMatch(/MOCK_COACH_ACTIONS/);
+	});
+});

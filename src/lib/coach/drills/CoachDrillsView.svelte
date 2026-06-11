@@ -28,6 +28,7 @@
 	} from '$lib/coach/platformDrillLibrary.js';
 	import { sportsConfigStore } from '$lib/stores/sportsConfigStore.svelte.js';
 	import DrillDesignerTab from '$lib/components/coach/DrillDesignerTab.svelte';
+	import FacilityScheduler from '$lib/components/coach/FacilityScheduler.svelte';
 
 	const secureAssignHomework = httpsCallable(functions, 'secureAssignHomework');
 
@@ -747,6 +748,18 @@
 				{/if}
 			</aside>
 		</div>
+		{#if teamScope.selectedTeamId}
+			<section class="cdm-panel cdm-panel--facility" aria-labelledby="cdm-facility-h">
+				<div class="cdm-panel__head">
+					<span class="cdm-eyebrow">Field booking</span>
+					<h2 id="cdm-facility-h" class="cdm-h2">Facility scheduler</h2>
+					<p class="cdm-muted" style="margin:0; font-size:0.8rem; max-width: 36rem">
+						Check pitch availability and book practice or fixture blocks without double-booking.
+					</p>
+				</div>
+				<FacilityScheduler teamId={teamScope.selectedTeamId} />
+			</section>
+		{/if}
 	{:else}
 	<nav class="drill-lib__tabs" aria-label="Drill library sections">
 		<button

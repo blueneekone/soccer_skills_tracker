@@ -17,8 +17,12 @@
 	import Icon from '$lib/components/ui/Icon.svelte';
 	import type { IconName } from '$lib/icons/registry.js';
 	import { CommsEngine } from '$lib/services/comms.svelte.js';
+	import NewMessageModal from '$lib/components/coach/NewMessageModal.svelte';
 
-	let { teamId = '', players: _players = [], clubId: _clubId = '' } = $props();
+	let { teamId = '', players: _players = [], clubId = '' } = $props();
+
+	let newChannelOpen = $state(false);
+	let channelCreatedMsg = $state('');
 
 	/** @type {Array<{ id: string; label: string; description: string; icon: IconName }>} */
 	const DEFAULT_CHANNELS = [
@@ -329,6 +333,9 @@
 	{#if !teamId}
 		<p class="matrix__hint">Select a team to open channels.</p>
 	{:else}
+		{#if channelCreatedMsg}
+			<p class="matrix__ok" role="status">{channelCreatedMsg}</p>
+		{/if}
 		<!-- Mobile: top channel scroller -->
 		<div class="matrix__strip md:hidden" role="tablist" aria-label="Channels">
 			{#each DEFAULT_CHANNELS as ch (ch.id)}
@@ -351,6 +358,18 @@
 			<aside class="matrix__rail" aria-label="Channel list">
 				<div class="matrix__rail-head">
 					<span class="matrix__rail-title">Channels</span>
+					{#if clubId}
+						<button
+							type="button"
+							class="matrix__new-channel"
+							onclick={() => {
+								channelCreatedMsg = '';
+								newChannelOpen = true;
+							}}
+						>
+							New channel
+						</button>
+					{/if}
 					<span class="matrix__rail-hint">Team matrix</span>
 				</div>
 				<nav class="matrix__nav">
@@ -509,6 +528,22 @@
 		</div>
 	{/if}
 </div>
+
+<NewMessageModal
+	open={newChannelOpen}
+	{clubId}
+	{teamId}
+	myEmail={myEmail}
+	myUid={myUid}
+	myRole={myRole}
+	onClose={() => {
+		newChannelOpen = false;
+	}}
+	onChannelCreated={(id) => {
+		channelCreatedMsg = `Channel created (${id.slice(0, 8)}…). Open it from the comms hub when wired to custom channels.`;
+		newChannelOpen = false;
+	}}
+/>
 
 </div>
 
@@ -753,6 +788,35 @@
 		letter-spacing: 0.08em;
 		text-transform: uppercase;
 		color: var(--text-secondary, #64748b);
+	}
+	.matrix__new-channel {
+		margin-top: 8px;
+		display: inline-flex;
+		align-items: center;
+		padding: 4px 10px;
+		font-size: 11px;
+		font-weight: 600;
+		border: 1px solid #cbd5e1;
+		border-radius: 6px;
+		background: #fff;
+		color: #0f172a;
+		cursor: pointer;
+	}
+	:global(html.dark) .matrix__new-channel {
+		border-color: rgba(255, 255, 255, 0.15);
+		background: rgba(15, 23, 42, 0.6);
+		color: #e2e8f0;
+	}
+	.matrix__ok {
+		margin: 0 0 10px;
+		padding: 8px 12px;
+		font-size: 12px;
+		border-radius: 6px;
+		background: rgba(20, 184, 166, 0.12);
+		color: #0f766e;
+	}
+	:global(html.dark) .matrix__ok {
+		color: #5eead4;
 	}
 	.matrix__rail-hint {
 		font-size: 11px;
