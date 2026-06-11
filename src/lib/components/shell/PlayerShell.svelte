@@ -35,6 +35,7 @@
 		{ href: HQ_HREF, icon: 'content.grid', label: 'HQ' },
 		{ href: '/stats', icon: 'data.chart-bar', label: 'Stats' },
 		{ href: '/player/workout', icon: 'content.checks', label: 'Train' },
+		{ href: '/messages', icon: 'comm.chat', label: 'Comms' },
 		{ href: '/player/armory', icon: 'status.shield-check', label: 'Armory' },
 		{ href: '/player/settings', icon: 'sys.settings', label: 'Settings' },
 	];

@@ -449,3 +449,36 @@ describe('Functional audit — E-series coach/director mounts', () => {
 		expect(src).toMatch(/FacilityScheduler/);
 	});
 });
+
+describe('Player/parent launch — discoverability and payment refresh', () => {
+	it('PlayerShell bottom rail includes Comms → /messages', () => {
+		const src = readFileSync(join(ROOT, 'lib/components/shell/PlayerShell.svelte'), 'utf-8');
+		expect(src).toMatch(/href:\s*'\/messages'/);
+		expect(src).toMatch(/label:\s*'Comms'/);
+	});
+
+	it('OperativeQuickOps links Today\'s quests to /player/tracker', () => {
+		const src = readFileSync(
+			join(ROOT, 'lib/components/player/dashboard/OperativeQuickOps.svelte'),
+			'utf-8',
+		);
+		expect(src).toMatch(/Today's quests/);
+		expect(src).toMatch(/href:\s*'\/player\/tracker'/);
+	});
+
+	it('parent payments handlePaid re-fetches season_registrations from Firestore', () => {
+		const src = readFileSync(join(ROOT, 'routes/(app)/parent/payments/+page.svelte'), 'utf-8');
+		expect(src).toMatch(/void loadData\(parentEmail, tid\)/);
+		expect(src).not.toMatch(/players\[idx\]\s*=\s*\{\s*\.\.\.players\[idx\],\s*paymentStatus:\s*'paid'/);
+	});
+
+	it('BountyTerminal links unfunded deploy to parent funding panel anchor', () => {
+		const terminal = readFileSync(
+			join(ROOT, 'routes/(app)/parent/dashboard/BountyTerminal.svelte'),
+			'utf-8',
+		);
+		const arena = readFileSync(join(ROOT, 'lib/components/parent/co-op/CoOpArena.svelte'), 'utf-8');
+		expect(terminal).toMatch(/#parent-funding-source/);
+		expect(arena).toMatch(/id="parent-funding-source"/);
+	});
+});

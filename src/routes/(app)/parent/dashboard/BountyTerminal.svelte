@@ -127,12 +127,17 @@
 	<!-- FUNDING SOURCE WARNING -->
 	{#if !engine.hasFundingSource}
 		<div
-			class="tw-rounded-lg tw-bg-[#ffcc00]/10 tw-border tw-border-[#ffcc00]/30 tw-px-4 tw-py-3 tw-flex tw-items-center tw-gap-3"
+			class="tw-rounded-lg tw-bg-[#ffcc00]/10 tw-border tw-border-[#ffcc00]/30 tw-px-4 tw-py-3 tw-flex tw-flex-col tw-gap-2 sm:tw-flex-row sm:tw-items-center sm:tw-justify-between"
 		>
-			<span class="tw-text-[#ffcc00] tw-font-mono tw-text-[11px]">⚠</span>
 			<span class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-[#ffcc00] tw-uppercase">
-				LINK A FUNDING SOURCE FIRST — USE FUNDING SOURCE PANEL
+				Link a funding source before deploying bounties.
 			</span>
+			<a
+				href="#parent-funding-source"
+				class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-[#ffcc00] tw-uppercase tw-underline tw-underline-offset-2"
+			>
+				Open funding panel
+			</a>
 		</div>
 	{/if}
 

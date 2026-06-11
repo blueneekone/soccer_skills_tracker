@@ -212,12 +212,12 @@
 	}
 
 	function handlePaid() {
-		// Refresh the player's status in the list
-		const idx = players.findIndex((p) => p.email === payingPlayerEmail);
-		if (idx !== -1) {
-			players[idx] = { ...players[idx], paymentStatus: 'paid' };
-		}
 		closePayment();
+		const parentEmail = (authStore.user?.email ?? '').toLowerCase();
+		const tid = tenantId.trim();
+		if (parentEmail && tid) {
+			void loadData(parentEmail, tid);
+		}
 	}
 </script>
 

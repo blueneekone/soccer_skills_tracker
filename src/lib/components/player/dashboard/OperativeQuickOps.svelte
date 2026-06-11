@@ -18,6 +18,12 @@
 			subtitle: 'Record training · earn XP',
 		},
 		{
+			label: "Today's quests",
+			href: '/player/tracker',
+			icon: 'game.zap',
+			subtitle: 'Coach homework · adaptive drills',
+		},
+		{
 			label: 'Proving grounds',
 			href: '/player/proving-grounds',
 			icon: 'game.zap',

@@ -339,7 +339,7 @@
 		</div>
 
 		<!-- ─── CELL 3: FUNDING SOURCE (right, bottom half) ───────────────── -->
-		<div class="tw-flex tw-flex-col tw-gap-0">
+		<div id="parent-funding-source" class="tw-flex tw-flex-col tw-gap-0">
 			<!-- Cell header -->
 			<div class="tw-px-5 tw-pt-4 tw-pb-3 tw-border-b tw-border-[#14b8a6]/10">
 				<div class="tw-flex tw-items-center tw-gap-2">
