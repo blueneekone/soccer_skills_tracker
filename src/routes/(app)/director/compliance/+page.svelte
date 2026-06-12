@@ -24,8 +24,5 @@
 
 <div class="coach-clearance-director-stack">
 	<CoachClearancePanopticon {clubId} />
-
-	{#if clubId}
-		<DirectorBillingAuditPanel {clubId} />
-	{/if}
+	<DirectorBillingAuditPanel clubId={clubId || ''} />
 </div>

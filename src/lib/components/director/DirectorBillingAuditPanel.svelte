@@ -11,7 +11,6 @@
 	 * timestamp desc, limit 50.  Firestore rule: isDirector() && isAuthorized(tenantId).
 	 */
 
-	import { browser } from '$app/environment';
 	import {
 		doc,
 		getDoc,
@@ -56,6 +55,9 @@
 	let auditRows = $state<AuditRow[]>([]);
 	let loading = $state(false);
 	let error = $state('');
+	let lastLoadedClubId = $state('');
+	let lastFetchClubId = '';
+	let loadSeq = 0;
 
 	// ── Derived ────────────────────────────────────────────────────────────────
 	const connectStatus = $derived.by((): 'NOT_STARTED' | 'PENDING' | 'RESTRICTED' | 'CONNECTED' => {
@@ -69,11 +71,87 @@
 
 	// ── Load ───────────────────────────────────────────────────────────────────
 	$effect(() => {
-		if (!browser || !clubId) return;
-		void load(clubId);
+		const id = clubId.trim();
+		if (!id) {
+			lastLoadedClubId = '';
+			lastFetchClubId = '';
+			auditRows = [];
+			stripeData = {
+				stripeAccountId: null,
+				stripeOnboardingComplete: null,
+				stripePayoutsEnabled: null,
+				stripeUpdatedAt: null,
+			};
+			error = '';
+			loading = false;
+			return;
+		}
+		if (id === lastFetchClubId) return;
+
+		let cancelled = false;
+		const seq = ++loadSeq;
+		lastFetchClubId = id;
+
+		void (async () => {
+			loading = true;
+			error = '';
+			try {
+				const [orgSnap, auditSnap] = await Promise.all([
+					getDoc(doc(db, 'organizations', id)),
+					getDocs(
+						query(
+							collection(db, 'audit_logs'),
+							where('tenantId', '==', id),
+							orderBy('timestamp', 'desc'),
+							limit(50),
+						),
+					),
+				]);
+				if (cancelled || seq !== loadSeq) return;
+
+				if (orgSnap.exists()) {
+					const d = orgSnap.data();
+					stripeData = {
+						stripeAccountId: typeof d.stripeAccountId === 'string' ? d.stripeAccountId : null,
+						stripeOnboardingComplete:
+							typeof d.stripeOnboardingComplete === 'boolean' ? d.stripeOnboardingComplete : null,
+						stripePayoutsEnabled:
+							typeof d.stripePayoutsEnabled === 'boolean' ? d.stripePayoutsEnabled : null,
+						stripeUpdatedAt: d.stripeUpdatedAt?.toDate?.() ?? null,
+					};
+				}
+
+				auditRows = auditSnap.docs.map((d) => {
+					const data = d.data();
+					return {
+						id: d.id,
+						action: String(data.action ?? ''),
+						actorEmail: data.actorEmail ? String(data.actorEmail) : null,
+						targetEmail: data.targetEmail ? String(data.targetEmail) : null,
+						timestamp: data.timestamp?.toDate?.() ?? null,
+					};
+				});
+				lastLoadedClubId = id;
+			} catch (err) {
+				if (cancelled || seq !== loadSeq) return;
+				error = err instanceof Error ? err.message : 'Failed to load billing / audit data.';
+			} finally {
+				if (!cancelled && seq === loadSeq) loading = false;
+			}
+		})();
+
+		return () => {
+			cancelled = true;
+		};
 	});
 
-	async function load(id: string) {
+	async function refreshNow() {
+		const id = clubId.trim();
+		if (!id) return;
+		lastLoadedClubId = '';
+		lastFetchClubId = '';
+		loadSeq += 1;
+		const seq = ++loadSeq;
 		loading = true;
 		error = '';
 		try {
@@ -88,6 +166,7 @@
 					),
 				),
 			]);
+			if (seq !== loadSeq) return;
 
 			if (orgSnap.exists()) {
 				const d = orgSnap.data();
@@ -111,10 +190,12 @@
 					timestamp: data.timestamp?.toDate?.() ?? null,
 				};
 			});
+			lastLoadedClubId = id;
 		} catch (err) {
+			if (seq !== loadSeq) return;
 			error = err instanceof Error ? err.message : 'Failed to load billing / audit data.';
 		} finally {
-			loading = false;
+			if (seq === loadSeq) loading = false;
 		}
 	}
 
@@ -200,7 +281,7 @@
 			<span class="dbap-eyebrow">COMPLIANCE · TENANT AUDIT LOG</span>
 			<button
 				class="dbap-refresh"
-				onclick={() => { if (clubId) void load(clubId); }}
+				onclick={() => void refreshNow()}
 				disabled={loading}
 				aria-label="Refresh audit log"
 			>

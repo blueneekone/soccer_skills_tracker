@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { browser } from '$app/environment';
 	import { db } from '$lib/firebase.js';
 	import {
 		collection,
@@ -7,29 +8,39 @@
 		limit,
 		startAfter,
 		getDocs,
+		type QueryDocumentSnapshot,
 	} from 'firebase/firestore';
 	import { safeGetDate } from '$lib/utils/dates.js';
+	import { authStore } from '$lib/stores/auth.svelte.js';
 	import '$lib/styles/enterprise-console.css';
 	import Icon from '$lib/components/ui/Icon.svelte';
 	import type { IconName } from '$lib/icons/registry.js';
 
+	export const ssr = false;
+
 	const PAGE_SIZE = 100;
 
-	/** @typedef {{ id: string, timestamp: unknown, admin: unknown, action: unknown, target: unknown, details: unknown }} AuditRow */
+	type AuditRow = {
+		id: string;
+		timestamp: unknown;
+		admin: unknown;
+		action: unknown;
+		target: unknown;
+		details: unknown;
+	};
 
-	/** @type {AuditRow[]} */
-	let logs = $state([]);
+	let logs = $state<AuditRow[]>([]);
 	let loading = $state(false);
 	let loadErr = $state('');
 	let totalLoaded = $state(0);
-	/** @type {import('firebase/firestore').QueryDocumentSnapshot | null} */
-	let lastDoc = $state(null);
+	let lastDoc = $state<QueryDocumentSnapshot | null>(null);
 	let hasMore = $state(false);
 
-	/** @type {string} */
 	let actionFilter = $state('');
-	/** Full-text search across action, admin, target, details (Strike 13 toolbar). */
 	let searchQuery = $state('');
+
+	let loadSeq = 0;
+	let auditHydrated = false;
 
 	const filteredLogs = $derived.by(() => {
 		let rows = logs;
@@ -47,30 +58,38 @@
 		return rows;
 	});
 
+	async function fetchAuditPage(append: boolean, cursor: QueryDocumentSnapshot | null) {
+		const base = collection(db, 'security_audit');
+		if (append && cursor) {
+			try {
+				return await getDocs(
+					query(base, orderBy('createdAt', 'desc'), startAfter(cursor), limit(PAGE_SIZE)),
+				);
+			} catch {
+				return getDocs(
+					query(base, orderBy('timestamp', 'desc'), startAfter(cursor), limit(PAGE_SIZE)),
+				);
+			}
+		}
+
+		try {
+			return await getDocs(query(base, orderBy('createdAt', 'desc'), limit(PAGE_SIZE)));
+		} catch {
+			return getDocs(query(base, orderBy('timestamp', 'desc'), limit(PAGE_SIZE)));
+		}
+	}
+
 	async function loadLogs(append = false) {
+		const seq = ++loadSeq;
 		loading = true;
 		loadErr = '';
 		try {
-			let q;
-			if (append && lastDoc) {
-				q = query(
-					collection(db, 'security_audit'),
-					orderBy('timestamp', 'desc'),
-					startAfter(lastDoc),
-					limit(PAGE_SIZE),
-				);
-			} else {
-				q = query(
-					collection(db, 'security_audit'),
-					orderBy('timestamp', 'desc'),
-					limit(PAGE_SIZE),
-				);
-			}
-			const snap = await getDocs(q);
-			/** @type {AuditRow[]} */
-			const rows = [];
+			const snap = await fetchAuditPage(append, append ? lastDoc : null);
+			if (seq !== loadSeq) return;
+
+			const rows: AuditRow[] = [];
 			snap.forEach((d) => {
-				rows.push({ id: d.id, .../** @type {Omit<AuditRow,'id'>} */ (d.data()) });
+				rows.push({ id: d.id, ...(d.data() as Omit<AuditRow, 'id'>) });
 			});
 			if (append) {
 				logs = [...logs, ...rows];
@@ -81,25 +100,42 @@
 			lastDoc = snap.docs[snap.docs.length - 1] ?? null;
 			hasMore = snap.size === PAGE_SIZE;
 		} catch (e) {
+			if (seq !== loadSeq) return;
 			loadErr = e instanceof Error ? e.message : 'Could not load audit log.';
 		} finally {
-			loading = false;
+			if (seq === loadSeq) loading = false;
 		}
 	}
 
-	// Initial load
-	loadLogs();
+	$effect(() => {
+		if (!browser) return;
+		if (authStore.isLoading || !authStore.isAuthenticated) return;
+		const role = authStore.role ?? '';
+		if (role !== 'super_admin' && role !== 'global_admin') return;
+		if (auditHydrated) return;
 
-	/**
-	 * Color-codes an action badge by severity keyword.
-	 * @param {unknown} action
-	 */
-	function actionSeverityClass(action) {
+		auditHydrated = true;
+		let cancelled = false;
+		void loadLogs().finally(() => {
+			if (cancelled) loadSeq += 1;
+		});
+
+		return () => {
+			cancelled = true;
+			loadSeq += 1;
+		};
+	});
+
+	function actionSeverityClass(action: unknown) {
 		const a = String(action || '').toUpperCase();
 		if (a.includes('DELETE') || a.includes('REVOKE')) return 'al-badge--danger';
 		if (a.includes('GRANT') || a.includes('ASSIGN') || a.includes('CREATE')) return 'al-badge--success';
 		if (a.includes('EDIT') || a.includes('UPDATE')) return 'al-badge--warn';
 		return 'al-badge--neutral';
+	}
+
+	function rowTimestamp(log: AuditRow) {
+		return safeGetDate(log.timestamp ?? log).toLocaleString();
 	}
 </script>
 
@@ -192,7 +228,7 @@
 							{#each filteredLogs as log (log.id)}
 								<tr class="al-row">
 									<td class="al-td-ts">
-										{safeGetDate(log.timestamp).toLocaleString()}
+										{rowTimestamp(log)}
 									</td>
 									<td class="al-td-admin">{log.admin || '—'}</td>
 									<td class="al-td-action">
