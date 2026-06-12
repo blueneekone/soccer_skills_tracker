@@ -473,6 +473,63 @@ describe('VS-6a — Comms hub persona skins', () => {
 	});
 });
 
+describe('VS-6b — Coach clearance SIEM', () => {
+	const clearanceCss = readFileSync(
+		join(process.cwd(), 'src/lib/styles/coach-clearance-siem.css'),
+		'utf8',
+	);
+	const complianceLayout = readFileSync(
+		join(process.cwd(), 'src/routes/(app)/compliance/+layout.svelte'),
+		'utf8',
+	);
+	const compliancePage = readFileSync(
+		join(process.cwd(), 'src/routes/(app)/compliance/+page.svelte'),
+		'utf8',
+	);
+	const directorLayout = readFileSync(
+		join(process.cwd(), 'src/routes/(app)/director/compliance/+layout.svelte'),
+		'utf8',
+	);
+	const adminLayout = readFileSync(
+		join(process.cwd(), 'src/routes/(app)/admin/coach-clearance/+layout.svelte'),
+		'utf8',
+	);
+	const panopticon = readFileSync(
+		join(process.cwd(), 'src/lib/components/compliance/CoachClearancePanopticon.svelte'),
+		'utf8',
+	);
+	const checklist = readFileSync(
+		join(process.cwd(), 'src/lib/components/compliance/CoachClearanceChecklist.svelte'),
+		'utf8',
+	);
+
+	it('coach-clearance-siem.css defines SIEM clearance contract', () => {
+		expect(clearanceCss).toContain('.coach-clearance-shell');
+		expect(clearanceCss).toContain('.coach-clearance-z4-chrome');
+		expect(clearanceCss).toContain('.coach-clearance-z1-well');
+		expect(clearanceCss).toContain('.coach-clearance-panopticon');
+		expect(clearanceCss).toMatch(/#06b6d4|#14b8a6/);
+		expect(clearanceCss).not.toMatch(/#fbbf24|--pd-action-gold|backdrop-filter:\s*blur|border-radius:\s*999/);
+	});
+
+	it('/compliance layout and page use coach clearance hooks', () => {
+		expect(complianceLayout).toContain('coach-clearance-siem.css');
+		expect(complianceLayout).toMatch(/coach-clearance-shell/);
+		expect(compliancePage).toMatch(/coach-clearance-z4-chrome/);
+		expect(compliancePage).not.toContain('<style>');
+		expect(checklist).not.toContain('<style>');
+	});
+
+	it('director and admin clearance routes share coach-clearance-shell', () => {
+		expect(directorLayout).toContain('coach-clearance-siem.css');
+		expect(directorLayout).toMatch(/coach-clearance-shell/);
+		expect(adminLayout).toContain('coach-clearance-siem.css');
+		expect(adminLayout).toMatch(/coach-clearance-shell/);
+		expect(panopticon).toMatch(/coach-clearance-panopticon/);
+		expect(panopticon).not.toContain('<style>');
+	});
+});
+
 describe('VS-1a — Mission Hero Modal', () => {
 	const modalSrc = readFileSync(
 		join(process.cwd(), 'src/lib/components/hud/MissionHeroModal.svelte'),

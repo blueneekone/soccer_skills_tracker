@@ -16,43 +16,13 @@
 	});
 </script>
 
-<nav class="cc-admin-bc" aria-label="Breadcrumb">
-	<a class="cc-admin-bc__link" href="/admin/overview">Global Admin</a>
-	<span class="cc-admin-bc__sep" aria-hidden="true">/</span>
-	<span class="cc-admin-bc__current">Coach clearance</span>
+<nav class="coach-clearance-admin-bc" aria-label="Breadcrumb">
+	<a class="coach-clearance-admin-bc__link" href="/admin/overview">Global Admin</a>
+	<span class="coach-clearance-admin-bc__sep" aria-hidden="true">/</span>
+	<span class="coach-clearance-admin-bc__current">Coach clearance</span>
 </nav>
 
 <CoachClearancePanopticon
 	headerLabel="GLOBAL ADMIN — COACH CLEARANCE"
 	pageTitle="Staff Clearance Matrix"
 />
-
-<style>
-	.cc-admin-bc {
-		display: flex;
-		align-items: center;
-		gap: 0.5rem;
-		padding: 0.75rem 1.5rem 0;
-		font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;
-		font-size: 0.65rem;
-		letter-spacing: 0.08em;
-		text-transform: uppercase;
-	}
-
-	.cc-admin-bc__link {
-		color: rgba(20, 184, 166, 0.75);
-		text-decoration: none;
-	}
-
-	.cc-admin-bc__link:hover {
-		color: #14b8a6;
-	}
-
-	.cc-admin-bc__sep {
-		color: rgba(229, 231, 235, 0.25);
-	}
-
-	.cc-admin-bc__current {
-		color: rgba(229, 231, 235, 0.55);
-	}
-</style>

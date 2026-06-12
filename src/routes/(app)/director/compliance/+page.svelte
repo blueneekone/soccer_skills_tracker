@@ -22,10 +22,10 @@
 	const clubId = $derived(pickDirectorClubId(teamsStore, authStore, workspaceContextStore));
 </script>
 
-<CoachClearancePanopticon {clubId} />
+<div class="coach-clearance-director-stack">
+	<CoachClearancePanopticon {clubId} />
 
-{#if clubId}
-	<div style="margin-top: 1.5rem;">
+	{#if clubId}
 		<DirectorBillingAuditPanel {clubId} />
-	</div>
-{/if}
+	{/if}
+</div>
