@@ -5,7 +5,6 @@
 
 	let { engine }: { engine: CoOpEngine } = $props();
 
-	// Funding source link flow
 	let availableSources = $state<Array<{ id: string; label: string; method: string }>>([]);
 	let loadingSources = $state(false);
 	let selectedSourceId = $state('');
@@ -36,39 +35,20 @@
 		}
 	}
 
-	function statusColor(status: BountyDoc['status']): string {
+	function statusChipClass(status: BountyDoc['status']): string {
 		switch (status) {
 			case 'active':
-				return 'tw-text-[#14b8a6] tw-border-[#14b8a6]/40 tw-bg-[#14b8a6]/10';
+				return 'parent-bounty-chip parent-bounty-chip--nav';
 			case 'verified':
-				return 'tw-text-[#ffcc00] tw-border-[#ffcc00]/40 tw-bg-[#ffcc00]/10';
 			case 'paid':
-				return 'tw-text-[#00ff66] tw-border-[#00ff66]/40 tw-bg-[#00ff66]/10';
-			case 'expired':
-				return 'tw-text-[#888] tw-border-[#888]/30 tw-bg-[#888]/5';
-			case 'voided':
-				return 'tw-text-[#888] tw-border-[#888]/30 tw-bg-[#888]/5';
+				return 'parent-bounty-chip parent-bounty-chip--verified';
 			case 'failed':
-				return 'tw-text-[#ff0055] tw-border-[#ff0055]/40 tw-bg-[#ff0055]/10';
+				return 'parent-bounty-chip parent-bounty-chip--pending';
+			case 'expired':
+			case 'voided':
+				return 'parent-bounty-chip parent-bounty-chip--muted';
 			default:
-				return 'tw-text-[#aaa] tw-border-[#aaa]/20 tw-bg-transparent';
-		}
-	}
-
-	function criterionBadgeColor(type: BountyDoc['criterion']['type']): string {
-		switch (type) {
-			case 'reps_count':
-				return 'tw-text-[#14b8a6]/80 tw-border-[#14b8a6]/20 tw-bg-[#14b8a6]/5';
-			case 'workout_volume_kj':
-				return 'tw-text-[#a78bfa]/80 tw-border-[#a78bfa]/20 tw-bg-[#a78bfa]/5';
-			case 'streak_length':
-				return 'tw-text-[#fb923c]/80 tw-border-[#fb923c]/20 tw-bg-[#fb923c]/5';
-			case 'gpa_threshold':
-				return 'tw-text-[#34d399]/80 tw-border-[#34d399]/20 tw-bg-[#34d399]/5';
-			case 'mastery_node_unlock':
-				return 'tw-text-[#f472b6]/80 tw-border-[#f472b6]/20 tw-bg-[#f472b6]/5';
-			default:
-				return 'tw-text-[#aaa] tw-border-[#aaa]/20 tw-bg-transparent';
+				return 'parent-bounty-chip parent-bounty-chip--muted';
 		}
 	}
 
@@ -106,352 +86,198 @@
 	const displayBounties = $derived([...engine.activeBounties, ...engine.verifiedBounties]);
 </script>
 
-<div
-	class="tw-w-full tw-h-full tw-backdrop-blur-xl tw-bg-[#040f16]/70 tw-border tw-border-[#14b8a6]/15 tw-rounded-3xl tw-p-0 tw-overflow-hidden"
-	style="box-shadow: 0 0 40px rgba(20, 184, 166,0.06), 0 0 80px rgba(0,0,0,0.8), inset 0 1px 0 rgba(20, 184, 166,0.08);"
->
-	<!-- BENTO GRID -->
-	<div
-		class="tw-grid tw-h-full"
-		style="grid-template-columns: clamp(320px, 65%, 820px) 1fr; grid-template-rows: 1fr 1fr; min-height: clamp(600px, 80vh, 960px);"
-	>
-		<!-- ─── CELL 1: BOUNTY BOARD (left, full height) ──────────────────── -->
-		<div
-			class="tw-row-span-2 tw-flex tw-flex-col tw-gap-0 tw-border-r tw-border-[#14b8a6]/10"
-		>
-			<!-- Cell header -->
-			<div class="tw-px-6 tw-pt-6 tw-pb-4 tw-border-b tw-border-[#14b8a6]/10">
-				<div class="tw-flex tw-items-center tw-gap-2">
-					<span class="tw-font-mono tw-text-[10px] tw-text-[#14b8a6]/40 tw-tracking-widest">
-						//
-					</span>
-					<span class="tw-font-mono tw-text-[11px] tw-tracking-widest tw-text-[#14b8a6] tw-uppercase">
-						BOUNTY BOARD
-					</span>
-					<span
-						class="tw-ml-auto tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-[#14b8a6]/30 tw-uppercase"
-					>
-						{displayBounties.length} ACTIVE
-					</span>
+<div class="parent-bounty-funding-panel">
+	<div class="parent-bounty-funding-panel__grid">
+		<section class="parent-bounty-board" aria-label="Bounty board">
+			<header class="parent-bounty-module-head">
+				<div class="parent-bounty-module-head__row">
+					<span class="parent-bounty-module-head__prefix">//</span>
+					<span class="parent-bounty-module-head__title">Bounty board</span>
+					<span class="parent-bounty-module-head__meta">{displayBounties.length} active</span>
 				</div>
-			</div>
+			</header>
 
-			<!-- Bounty list -->
-			<div class="tw-flex-1 tw-overflow-y-auto tw-flex tw-flex-col tw-gap-3 tw-p-6">
+			<div class="parent-bounty-board__list">
 				{#if displayBounties.length === 0}
-					<div
-						class="tw-flex-1 tw-flex tw-items-center tw-justify-center tw-rounded-xl tw-border tw-border-dashed tw-border-[#14b8a6]/10 tw-py-16"
-					>
-						<div class="tw-flex tw-flex-col tw-items-center tw-gap-3">
-							<div
-								class="tw-w-8 tw-h-8 tw-rounded-full tw-border tw-border-[#14b8a6]/20 tw-flex tw-items-center tw-justify-center"
-							>
-								<span class="tw-font-mono tw-text-[14px] tw-text-[#14b8a6]/30">◎</span>
-							</div>
-							<span
-								class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-[#14b8a6]/25 tw-uppercase"
-							>
-								[ NO ACTIVE BOUNTIES — DEPLOY ONE ]
-							</span>
-						</div>
+					<div class="parent-bounty-empty">
+						<span class="parent-bounty-empty__label">No active bounties — deploy one</span>
 					</div>
 				{:else}
 					{#each displayBounties as bounty (bounty.id)}
 						{@const progress = engine.bountyProgress(bounty)}
 						{@const isActive = bounty.status === 'active'}
-						<div
-							class="tw-rounded-xl tw-bg-[#020202]/60 tw-border tw-border-[#14b8a6]/10 tw-p-4 tw-flex tw-flex-col tw-gap-3 tw-transition-all tw-duration-200 hover:tw-border-[#14b8a6]/25 hover:tw-shadow-[0_0_20px_rgba(20, 184, 166,0.06)]"
-						>
-							<!-- Bounty top row -->
-							<div class="tw-flex tw-items-start tw-gap-3">
-								<div class="tw-flex-1 tw-min-w-0 tw-flex tw-flex-col tw-gap-1">
-									<span
-										class="tw-font-mono tw-text-[12px] tw-tracking-wider tw-text-[#e0e0e0] tw-uppercase tw-leading-tight tw-truncate"
-									>
-										{bounty.title}
-									</span>
-									<span
-										class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-[#14b8a6]/40 tw-uppercase"
-									>
-										→ {bounty.playerEmail}
-									</span>
+						<article class="parent-bounty-z2-panel parent-bounty-row">
+							<div class="parent-bounty-row__top">
+								<div class="parent-bounty-row__body">
+									<span class="parent-bounty-row__title">{bounty.title}</span>
+									<span class="parent-bounty-row__target">→ {bounty.playerEmail}</span>
 								</div>
-								<div class="tw-flex tw-items-center tw-gap-2 tw-flex-shrink-0">
-									<!-- Criterion badge -->
-									<span
-										class="tw-font-mono tw-text-[8px] tw-tracking-widest tw-uppercase tw-border tw-rounded tw-px-2 tw-py-0.5 {criterionBadgeColor(bounty.criterion.type)}"
-									>
+								<div class="parent-bounty-row__badges">
+									<span class="parent-bounty-chip parent-bounty-chip--type">
 										{criterionLabel(bounty.criterion.type)}
 									</span>
-									<!-- Status badge -->
-									<span
-										class="tw-font-mono tw-text-[8px] tw-tracking-widest tw-uppercase tw-border tw-rounded tw-px-2 tw-py-0.5 {statusColor(bounty.status)}"
-									>
-										{bounty.status}
-									</span>
+									<span class={statusChipClass(bounty.status)}>{bounty.status}</span>
 								</div>
 							</div>
 
-							<!-- Progress bar -->
 							{#if bounty.progressTarget && bounty.progressTarget > 0}
-								<div class="tw-flex tw-flex-col tw-gap-1">
-									<div
-										class="tw-w-full tw-h-1.5 tw-rounded-full tw-bg-[#14b8a6]/10 tw-overflow-hidden"
-									>
+								<div class="parent-bounty-field-group">
+									<div class="parent-bounty-progress">
 										<div
-											class="tw-h-full tw-rounded-full tw-bg-[#14b8a6] tw-transition-all tw-duration-500"
-											style="width: {progress}%; box-shadow: 0 0 8px rgba(20, 184, 166,0.6);"
+											class="parent-bounty-progress__fill"
+											style="width: {progress}%"
 										></div>
 									</div>
-									<div class="tw-flex tw-justify-between tw-items-center">
-										<span
-											class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-[#14b8a6]/40 tw-uppercase"
-										>
+									<div class="parent-bounty-progress__meta">
+										<span>
 											{bounty.progressCurrent ?? 0} / {bounty.progressTarget}
 											{bounty.progressUnit ?? ''}
 										</span>
-										<span
-											class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-[#14b8a6]/60"
-										>
-											{progress}%
-										</span>
+										<span>{progress}%</span>
 									</div>
 								</div>
 							{/if}
 
-							<!-- Bottom row: reward + expiry + void -->
-							<div class="tw-flex tw-items-center tw-gap-3 tw-pt-1 tw-border-t tw-border-[#14b8a6]/8">
-								<span
-									class="tw-font-mono tw-text-[11px] tw-tracking-widest tw-text-[#ffcc00] tw-font-bold"
-								>
+							<div class="parent-bounty-row__foot">
+								<span class="parent-bounty-reward">
 									${((bounty.rewardCents ?? 0) / 100).toFixed(2)}
 								</span>
-								<span class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-[#14b8a6]/30 tw-uppercase">
-									USD
-								</span>
-								<span class="tw-flex-1"></span>
-								<span
-									class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-[#14b8a6]/30 tw-uppercase"
-								>
-									EXP: {formatExpiry(bounty.expiresAt)}
-								</span>
+								<span class="parent-bounty-reward__unit">USD</span>
+								<span class="parent-bounty-expiry">Exp: {formatExpiry(bounty.expiresAt)}</span>
 								{#if isActive}
 									<button
+										type="button"
+										class="parent-bounty-btn-void"
 										onclick={() => engine.voidBounty(bounty.id!)}
 										disabled={engine.mutating}
-										class="tw-font-mono tw-text-[8px] tw-tracking-widest tw-uppercase tw-border tw-border-[#ff0055]/30 tw-text-[#ff0055]/70 tw-bg-[#ff0055]/5 tw-rounded tw-px-2.5 tw-py-1 tw-transition-all tw-duration-150 hover:tw-border-[#ff0055]/60 hover:tw-text-[#ff0055] hover:tw-bg-[#ff0055]/10 disabled:tw-opacity-30 disabled:tw-cursor-not-allowed"
 									>
-										VOID
+										Void
 									</button>
 								{/if}
 							</div>
-						</div>
+						</article>
 					{/each}
 				{/if}
 			</div>
-		</div>
+		</section>
 
-		<!-- ─── CELL 2: BOOST CONSOLE (right, top half) ────────────────────── -->
-		<div class="tw-flex tw-flex-col tw-gap-0 tw-border-b tw-border-[#14b8a6]/10">
-			<!-- Cell header -->
-			<div class="tw-px-5 tw-pt-5 tw-pb-4 tw-border-b tw-border-[#14b8a6]/10">
-				<div class="tw-flex tw-items-center tw-gap-2">
-					<span class="tw-font-mono tw-text-[10px] tw-text-[#14b8a6]/40 tw-tracking-widest">
-						//
-					</span>
-					<span class="tw-font-mono tw-text-[11px] tw-tracking-widest tw-text-[#14b8a6] tw-uppercase">
-						BOOST CONSOLE
-					</span>
+		<section class="parent-bounty-side-stack" aria-label="Boost console">
+			<header class="parent-bounty-module-head">
+				<div class="parent-bounty-module-head__row">
+					<span class="parent-bounty-module-head__prefix">//</span>
+					<span class="parent-bounty-module-head__title">Boost console</span>
 				</div>
-			</div>
+			</header>
 
-			<!-- Children list -->
-			<div class="tw-flex-1 tw-overflow-y-auto tw-flex tw-flex-col tw-gap-3 tw-p-5">
+			<div class="parent-bounty-side-list">
 				{#if engine.householdChildren.length === 0}
-					<div class="tw-flex tw-items-center tw-justify-center tw-py-8">
-						<span
-							class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-[#14b8a6]/25 tw-uppercase"
-						>
-							[ NO CHILDREN LINKED ]
-						</span>
-					</div>
+					<p class="parent-bounty-empty__label">No children linked</p>
 				{:else}
 					{#each engine.householdChildren as child (child.email)}
-						<div
-							class="tw-rounded-xl tw-bg-[#020202]/60 tw-border tw-border-[#14b8a6]/10 tw-p-4 tw-flex tw-flex-col tw-gap-3"
-						>
-							<!-- Child info row -->
-							<div class="tw-flex tw-items-start tw-justify-between tw-gap-2">
-								<div class="tw-flex tw-flex-col tw-gap-0.5 tw-min-w-0">
-									<span
-										class="tw-font-mono tw-text-[11px] tw-tracking-widest tw-text-[#e0e0e0] tw-uppercase tw-truncate"
-									>
-										{child.displayName}
-									</span>
-									<span
-										class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-[#14b8a6]/35 tw-uppercase tw-truncate"
-									>
-										{child.email}
-									</span>
+						<article class="parent-bounty-z2-panel parent-bounty-child-row">
+							<div class="parent-bounty-child-row__head">
+								<div>
+									<div class="parent-bounty-child-row__name">{child.displayName}</div>
+									<div class="parent-bounty-child-row__email">{child.email}</div>
 								</div>
-								<div class="tw-flex tw-flex-col tw-items-end tw-gap-1 tw-flex-shrink-0">
-									<span
-										class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-[#ffcc00] tw-uppercase"
-									>
+								<div>
+									<div class="parent-bounty-child-row__stat">
 										{child.totalXP.toLocaleString()} XP
-									</span>
-									<span
-										class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-[#14b8a6]/40 tw-uppercase"
-									>
-										🔥 {child.currentStreak}d
-									</span>
+									</div>
+									<div class="parent-bounty-child-row__stat">{child.currentStreak}d streak</div>
 								</div>
 							</div>
 
 							{#if child.boostAppliedToday}
-								<div
-									class="tw-rounded tw-bg-[#a78bfa]/10 tw-border tw-border-[#a78bfa]/25 tw-px-3 tw-py-1.5 tw-text-center"
-								>
-									<span
-										class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-[#a78bfa] tw-uppercase"
-									>
-										⚡ BOOST ACTIVE TODAY
-									</span>
-								</div>
+								<div class="parent-bounty-boost-active">Boost active today</div>
 							{/if}
 
-							<!-- Boost preset buttons -->
-							<div class="tw-grid tw-grid-cols-3 tw-gap-1.5">
+							<div class="parent-bounty-boost-grid">
 								{#each BOOST_PRESETS as preset (preset.id)}
 									<button
+										type="button"
+										class="parent-bounty-btn-audit parent-bounty-btn-audit--sm"
 										onclick={() => engine.activateBoost(child.email, preset.id)}
 										disabled={engine.mutating}
-										class="tw-font-mono tw-text-[8px] tw-tracking-widest tw-uppercase tw-border tw-border-[#a78bfa]/25 tw-text-[#a78bfa]/70 tw-bg-[#a78bfa]/5 tw-rounded-lg tw-px-1 tw-py-2 tw-transition-all tw-duration-150 hover:tw-border-[#a78bfa]/55 hover:tw-text-[#a78bfa] hover:tw-bg-[#a78bfa]/12 hover:tw-shadow-[0_0_8px_rgba(167,139,250,0.3)] disabled:tw-opacity-30 disabled:tw-cursor-not-allowed tw-leading-tight"
 									>
 										{preset.label}
 									</button>
 								{/each}
 							</div>
-						</div>
+						</article>
 					{/each}
 				{/if}
 			</div>
-		</div>
+		</section>
 
-		<!-- ─── CELL 3: FUNDING SOURCE (right, bottom half) ───────────────── -->
-		<div id="parent-funding-source" class="tw-flex tw-flex-col tw-gap-0">
-			<!-- Cell header -->
-			<div class="tw-px-5 tw-pt-4 tw-pb-3 tw-border-b tw-border-[#14b8a6]/10">
-				<div class="tw-flex tw-items-center tw-gap-2">
-					<span class="tw-font-mono tw-text-[10px] tw-text-[#14b8a6]/40 tw-tracking-widest">
-						//
-					</span>
-					<span class="tw-font-mono tw-text-[11px] tw-tracking-widest tw-text-[#14b8a6] tw-uppercase">
-						FUNDING SOURCE
-					</span>
+		<section id="parent-funding-source" class="tw-flex tw-flex-col" aria-label="Funding source">
+			<header class="parent-bounty-module-head">
+				<div class="parent-bounty-module-head__row">
+					<span class="parent-bounty-module-head__prefix">//</span>
+					<span class="parent-bounty-module-head__title">Funding source</span>
 				</div>
-			</div>
+			</header>
 
-			<div class="tw-flex-1 tw-flex tw-flex-col tw-gap-3 tw-p-5">
+			<div class="parent-bounty-funding-body">
 				{#if engine.hasFundingSource}
-					<!-- Linked source display -->
-					<div
-						class="tw-flex tw-flex-col tw-gap-2 tw-rounded-xl tw-bg-[#00ff66]/5 tw-border tw-border-[#00ff66]/20 tw-p-4"
-					>
-						<div class="tw-flex tw-items-center tw-gap-2">
-							<span class="tw-text-[#00ff66] tw-font-mono tw-text-[11px]">✓</span>
-							<span
-								class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-[#00ff66] tw-uppercase"
-							>
-								LINKED
-							</span>
-						</div>
+					<div class="parent-bounty-funding-linked">
+						<span class="parent-bounty-funding-linked__status">Linked</span>
 						{#if engine.fundingSource?.label}
-							<span
-								class="tw-font-mono tw-text-[12px] tw-tracking-wider tw-text-[#e0e0e0] tw-uppercase"
-							>
+							<span class="parent-bounty-funding-linked__label">
 								{engine.fundingSource.label}
 							</span>
 						{/if}
 						{#if engine.fundingSource?.method}
-							<span
-								class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-[#00ff66]/50 tw-uppercase"
-							>
-								METHOD: {engine.fundingSource.method}
+							<span class="parent-bounty-funding-linked__method">
+								Method: {engine.fundingSource.method}
 							</span>
 						{/if}
 					</div>
+				{:else if availableSources.length === 0 && !loadingSources}
+					<div class="parent-bounty-empty">
+						<span class="parent-bounty-empty__label">No funding source linked</span>
+						<button
+							type="button"
+							class="parent-bounty-btn-audit"
+							onclick={fetchSources}
+							disabled={loadingSources}
+						>
+							Link funding source
+						</button>
+					</div>
+				{:else if loadingSources}
+					<p class="parent-bounty-empty__label">Fetching sources…</p>
 				{:else}
-					<!-- Link funding source CTA -->
-					<div class="tw-flex tw-flex-col tw-gap-3">
-						{#if availableSources.length === 0 && !loadingSources}
-							<div
-								class="tw-rounded-xl tw-bg-[#020202]/60 tw-border tw-border-dashed tw-border-[#14b8a6]/15 tw-p-4 tw-flex tw-flex-col tw-items-center tw-gap-3"
-							>
-								<span
-									class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-[#14b8a6]/30 tw-uppercase tw-text-center"
-								>
-									NO FUNDING SOURCE LINKED
-								</span>
-								<button
-									onclick={fetchSources}
-									disabled={loadingSources}
-									class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-uppercase tw-border tw-border-[#14b8a6]/40 tw-text-[#14b8a6] tw-bg-[#14b8a6]/5 tw-rounded-lg tw-px-4 tw-py-2 tw-transition-all tw-duration-150 hover:tw-bg-[#14b8a6]/10 hover:tw-border-[#14b8a6]/70 hover:tw-shadow-[0_0_10px_rgba(20, 184, 166,0.25)] disabled:tw-opacity-40"
-								>
-									[ LINK FUNDING SOURCE ]
-								</button>
-							</div>
-						{:else if loadingSources}
-							<div class="tw-flex tw-items-center tw-justify-center tw-py-4">
-								<span
-									class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-[#14b8a6]/40 tw-uppercase tw-animate-pulse"
-								>
-									[ FETCHING SOURCES... ]
-								</span>
-							</div>
-						{:else}
-							<div class="tw-flex tw-flex-col tw-gap-2">
-								<label
-									for="source-select"
-									class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-[#14b8a6]/40 tw-uppercase"
-								>
-									SELECT FUNDING SOURCE
-								</label>
-								<select
-									id="source-select"
-									bind:value={selectedSourceId}
-									class="tw-w-full tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-[#e0e0e0] tw-uppercase tw-bg-[#020202] tw-border tw-border-[#14b8a6]/20 tw-rounded-lg tw-px-3 tw-py-2.5 tw-outline-none focus:tw-border-[#14b8a6]/60 tw-transition-all tw-duration-150 tw-appearance-none tw-cursor-pointer"
-								>
-									<option value="" disabled>— SELECT —</option>
-									{#each availableSources as src (src.id)}
-										<option value={src.id}
-											>{src.label} ({src.method})</option
-										>
-									{/each}
-								</select>
-								{#if linkError}
-									<span
-										class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-[#ff0055] tw-uppercase"
-									>
-										[ {linkError} ]
-									</span>
-								{/if}
-								<button
-									onclick={handleLinkSource}
-									disabled={!selectedSourceId || linkingSource || engine.mutating}
-									class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-uppercase tw-border tw-border-[#ffcc00]/40 tw-text-[#ffcc00] tw-bg-[#ffcc00]/5 tw-rounded-lg tw-px-4 tw-py-2 tw-transition-all tw-duration-150 hover:tw-bg-[#ffcc00]/10 hover:tw-border-[#ffcc00]/70 disabled:tw-opacity-40 disabled:tw-cursor-not-allowed"
-								>
-									{#if linkingSource}
-										[ LINKING... ]
-									{:else}
-										[ CONFIRM LINK ]
-									{/if}
-								</button>
-							</div>
+					<div class="parent-bounty-field-group">
+						<label for="source-select" class="parent-bounty-field-label">
+							Select funding source
+						</label>
+						<select id="source-select" bind:value={selectedSourceId} class="parent-bounty-field">
+							<option value="" disabled>— Select —</option>
+							{#each availableSources as src (src.id)}
+								<option value={src.id}>{src.label} ({src.method})</option>
+							{/each}
+						</select>
+						{#if linkError}
+							<p class="parent-bounty-alert parent-bounty-alert--error" role="alert">
+								{linkError}
+							</p>
 						{/if}
+						<button
+							type="button"
+							class="parent-bounty-btn-deploy parent-bounty-btn-deploy--block"
+							onclick={handleLinkSource}
+							disabled={!selectedSourceId || linkingSource || engine.mutating}
+						>
+							{#if linkingSource}
+								Linking…
+							{:else}
+								Confirm link
+							{/if}
+						</button>
 					</div>
 				{/if}
 			</div>
-		</div>
+		</section>
 	</div>
 </div>

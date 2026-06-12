@@ -10,6 +10,7 @@
 	import { vanguardFlags } from '$lib/services/remoteConfig.svelte.js';
 	import '$lib/styles/player-shell.css';
 	import '$lib/styles/player-dossier.css';
+	import '$lib/styles/player-modal-scrim.css';
 	import Icon from '$lib/components/ui/Icon.svelte';
 	import type { IconName } from '$lib/icons/registry.js';
 

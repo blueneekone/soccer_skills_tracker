@@ -1,0 +1,491 @@
+/**
+ * VS-5b — DIRECTOR_FIELD_OPS_MAP
+ * Field Ops tab — map substrate, facility manifests, legacy sync, weather lock.
+ * Z0 void · Z1 map well · Z2 side panels · Z3 weather · Z4 ops HUD.
+ * Data cyan #14b8a6 only — no nav cyan on this surface.
+ */
+
+.director-os-root .director-field-ops-map {
+	display: flex;
+	flex-direction: column;
+	gap: 1rem;
+	color: #e2e8f0;
+}
+
+/* ── Z4 ops HUD ────────────────────────────────────────────────────────────── */
+.director-os-root .director-field-ops-z4-head {
+	padding: 0.85rem 1rem;
+	background: var(--pd-navy-panel, #0f172a);
+	border: 1px solid var(--pd-grey-trim, #334155);
+	border-radius: 0;
+	clip-path: polygon(
+		var(--pd-chamfer-sm, 4px) 0%,
+		100% 0%,
+		100% calc(100% - var(--pd-chamfer-sm, 4px)),
+		calc(100% - var(--pd-chamfer-sm, 4px)) 100%,
+		0% 100%,
+		0% var(--pd-chamfer-sm, 4px)
+	);
+}
+
+.director-os-root .director-field-ops-z4-head__title {
+	margin: 0;
+	font-family: ui-monospace, 'Geist Mono', monospace;
+	font-size: 13px;
+	font-weight: 700;
+	letter-spacing: 0.12em;
+	text-transform: uppercase;
+	color: #ffffff;
+}
+
+.director-os-root .director-field-ops-z4-head__lede {
+	margin: 0.35rem 0 0;
+	font-size: 0.8rem;
+	line-height: 1.5;
+	color: #94a3b8;
+}
+
+/* ── Z3 weather lock / advisory ────────────────────────────────────────────── */
+.director-os-root .director-field-ops-z3-weather {
+	padding: 0.65rem 0.85rem;
+	font-family: ui-monospace, 'Geist Mono', monospace;
+	font-size: 10px;
+	line-height: 1.5;
+	border-radius: 0;
+	border: 1px solid;
+	clip-path: polygon(
+		var(--pd-chamfer-sm, 4px) 0%,
+		100% 0%,
+		100% calc(100% - var(--pd-chamfer-sm, 4px)),
+		calc(100% - var(--pd-chamfer-sm, 4px)) 100%,
+		0% 100%,
+		0% var(--pd-chamfer-sm, 4px)
+	);
+}
+
+.director-os-root .director-field-ops-z3-weather--lock {
+	color: var(--pd-atom-amber, #d97706);
+	border-color: color-mix(in srgb, var(--pd-atom-amber, #d97706) 50%, var(--pd-grey-trim, #334155));
+	background: color-mix(in srgb, var(--pd-atom-amber, #d97706) 10%, var(--pd-navy-panel, #0f172a));
+}
+
+.director-os-root .director-field-ops-z3-weather--advisory {
+	color: var(--pd-data-cyan, #14b8a6);
+	border-color: color-mix(in srgb, var(--pd-data-cyan, #14b8a6) 45%, var(--pd-grey-trim, #334155));
+	background: color-mix(in srgb, var(--pd-data-cyan, #14b8a6) 8%, var(--pd-navy-panel, #0f172a));
+}
+
+.director-os-root .director-field-ops-z3-weather__title {
+	margin: 0;
+	font-weight: 700;
+	letter-spacing: 0.1em;
+	text-transform: uppercase;
+}
+
+.director-os-root .director-field-ops-z3-weather__body {
+	margin: 0.35rem 0 0;
+	font-size: 9px;
+	letter-spacing: 0.04em;
+	opacity: 0.9;
+}
+
+/* ── Z1 map well ───────────────────────────────────────────────────────────── */
+.director-os-root .director-field-ops-z1-well {
+	padding: 1px;
+	background: var(--pd-grey-trim, #334155);
+	clip-path: polygon(
+		var(--pd-chamfer-md, 8px) 0%,
+		100% 0%,
+		100% calc(100% - var(--pd-chamfer-md, 8px)),
+		calc(100% - var(--pd-chamfer-md, 8px)) 100%,
+		0% 100%,
+		0% var(--pd-chamfer-md, 8px)
+	);
+}
+
+.director-os-root .director-field-ops-z1-well__inner {
+	display: grid;
+	grid-template-columns: 1fr;
+	gap: 1px;
+	min-height: min(560px, 72vh);
+	background: var(--pd-grey-trim, #334155);
+}
+
+@media (min-width: 64rem) {
+	.director-os-root .director-field-ops-z1-well__inner {
+		grid-template-columns: minmax(260px, 1fr) minmax(0, 2fr);
+	}
+}
+
+/* ── Z2 side panels ────────────────────────────────────────────────────────── */
+.director-os-root .director-field-ops-z2-panel {
+	display: flex;
+	flex-direction: column;
+	min-height: 0;
+	overflow: hidden;
+	background: var(--pd-navy-panel, #0f172a);
+	border-radius: 0;
+	box-shadow: none;
+	backdrop-filter: none;
+	-webkit-backdrop-filter: none;
+}
+
+/* ── Schedule / booking deck ───────────────────────────────────────────────── */
+.director-os-root .director-field-ops-meta {
+	margin: 0;
+	width: 100%;
+	font-size: 0.75rem;
+	line-height: 1.5;
+	color: #64748b;
+}
+
+.director-os-root .director-field-ops-meta strong {
+	color: #94a3b8;
+}
+
+.director-os-root .director-field-ops-controls {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.75rem;
+	align-items: flex-end;
+}
+
+.director-os-root .director-field-ops-field-label {
+	display: flex;
+	flex-direction: column;
+	gap: 0.25rem;
+	font-family: ui-monospace, 'Geist Mono', monospace;
+	font-size: 9px;
+	font-weight: 700;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: var(--pd-data-cyan, #14b8a6);
+	opacity: 0.8;
+}
+
+.director-os-root .director-field-ops-control {
+	height: 40px;
+	box-sizing: border-box;
+	padding: 0 0.75rem;
+	font-family: ui-monospace, 'Geist Mono', monospace;
+	font-size: 12px;
+	color: #f8fafc;
+	background: color-mix(in srgb, var(--pd-void-base, #000) 35%, var(--pd-navy-panel, #0f172a));
+	border: 1px solid var(--pd-grey-trim, #334155);
+	border-radius: 0;
+	outline: none;
+	appearance: none;
+	-webkit-appearance: none;
+}
+
+.director-os-root .director-field-ops-control:focus {
+	border-color: var(--pd-data-cyan, #14b8a6);
+}
+
+.director-os-root .director-field-ops-control--wide {
+	min-width: 12rem;
+}
+
+.director-os-root .director-field-ops-z2-form {
+	display: grid;
+	grid-template-columns: 1fr;
+	gap: 0.75rem;
+	padding: 1rem;
+	background: var(--pd-navy-panel, #0f172a);
+	border: 1px solid var(--pd-grey-trim, #334155);
+	border-radius: 0;
+}
+
+@media (min-width: 40rem) {
+	.director-os-root .director-field-ops-z2-form {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+}
+
+@media (min-width: 64rem) {
+	.director-os-root .director-field-ops-z2-form {
+		grid-template-columns: repeat(4, minmax(0, 1fr));
+	}
+}
+
+.director-os-root .director-field-ops-z2-form__span {
+	grid-column: 1 / -1;
+}
+
+.director-os-root .director-field-ops-checklist {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.65rem;
+}
+
+.director-os-root .director-field-ops-checklist label {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.35rem;
+	font-size: 0.75rem;
+	color: #94a3b8;
+	cursor: pointer;
+}
+
+.director-os-root .director-field-ops-checklist input[type='checkbox'] {
+	accent-color: var(--pd-data-cyan, #14b8a6);
+}
+
+.director-os-root .director-field-ops-btn-sync {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-height: 40px;
+	padding: 0.45rem 1rem;
+	font-family: ui-monospace, 'Geist Mono', monospace;
+	font-size: 10px;
+	font-weight: 700;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: var(--pd-data-cyan, #14b8a6);
+	background: var(--pd-navy-panel, #0f172a);
+	border: 1px solid var(--pd-grey-trim, #334155);
+	border-radius: 0;
+	box-shadow: none;
+	cursor: pointer;
+	clip-path: polygon(
+		var(--pd-chamfer-sm, 4px) 0%,
+		100% 0%,
+		100% calc(100% - var(--pd-chamfer-sm, 4px)),
+		calc(100% - var(--pd-chamfer-sm, 4px)) 100%,
+		0% 100%,
+		0% var(--pd-chamfer-sm, 4px)
+	);
+}
+
+.director-os-root .director-field-ops-btn-sync:hover:not(:disabled) {
+	border-color: var(--pd-data-cyan, #14b8a6);
+}
+
+.director-os-root .director-field-ops-btn-sync:disabled {
+	opacity: 0.45;
+	cursor: not-allowed;
+}
+
+.director-os-root .director-field-ops-btn-sync--block {
+	width: 100%;
+}
+
+.director-os-root .director-field-ops-alert {
+	padding: 0.65rem 0.85rem;
+	font-family: ui-monospace, 'Geist Mono', monospace;
+	font-size: 10px;
+	font-weight: 600;
+	letter-spacing: 0.04em;
+	color: var(--pd-atom-amber, #d97706);
+	background: color-mix(in srgb, var(--pd-atom-amber, #d97706) 8%, var(--pd-navy-panel, #0f172a));
+	border: 1px solid color-mix(in srgb, var(--pd-atom-amber, #d97706) 45%, transparent);
+	border-radius: 0;
+}
+
+.director-os-root .director-field-ops-scope-lock {
+	max-width: 42rem;
+	padding: 1rem;
+	background: var(--pd-navy-panel, #0f172a);
+	border: 1px solid var(--pd-grey-trim, #334155);
+	border-radius: 0;
+}
+
+.director-os-root .director-field-ops-scope-lock__eyebrow {
+	margin: 0;
+	font-family: ui-monospace, 'Geist Mono', monospace;
+	font-size: 9px;
+	font-weight: 700;
+	letter-spacing: 0.1em;
+	text-transform: uppercase;
+	color: var(--pd-atom-amber, #d97706);
+}
+
+.director-os-root .director-field-ops-scope-lock__body {
+	margin: 0.5rem 0 0;
+	font-size: 0.875rem;
+	line-height: 1.5;
+	color: #cbd5e1;
+}
+
+.director-os-root .director-field-ops-empty-add {
+	display: grid;
+	gap: 0.65rem;
+	padding: 1rem;
+	border: 1px solid var(--pd-grey-trim, #334155);
+	background: var(--pd-navy-panel, #0f172a);
+}
+
+@media (min-width: 48rem) {
+	.director-os-root .director-field-ops-empty-add {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+}
+
+.director-os-root .director-field-ops-hint {
+	margin: 0;
+	font-size: 0.75rem;
+	color: #64748b;
+}
+
+.director-os-root .director-field-ops-teams {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.35rem;
+	align-items: center;
+}
+
+.director-os-root .director-field-ops-teams__label {
+	font-family: ui-monospace, 'Geist Mono', monospace;
+	font-size: 9px;
+	font-weight: 700;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: #64748b;
+}
+
+/* Master schedule — flat SIEM timeline */
+.director-os-root .director-field-ops-map .dir-field-master {
+	margin-top: 0.5rem;
+}
+
+.director-os-root .director-field-ops-map .dir-field-hour-ruler {
+	color: #64748b;
+	font-family: ui-monospace, 'Geist Mono', monospace;
+}
+
+.director-os-root .director-field-ops-map .dir-field-slot {
+	border-radius: 0;
+	background: color-mix(in srgb, var(--pd-void-base, #000) 40%, var(--pd-navy-panel, #0f172a));
+	border: 1px dashed var(--pd-grey-trim, #334155);
+	box-shadow: none;
+}
+
+.director-os-root .director-field-ops-map .dir-field-slot--hint {
+	border-color: var(--pd-data-cyan, #14b8a6);
+	box-shadow: none;
+}
+
+.director-os-root .director-field-ops-map .dir-field-block {
+	border-radius: 0;
+	background: color-mix(in srgb, var(--pd-data-cyan, #14b8a6) 22%, var(--pd-navy-panel, #0f172a));
+	color: #f8fafc;
+	border: 1px solid color-mix(in srgb, var(--pd-data-cyan, #14b8a6) 55%, var(--pd-grey-trim, #334155));
+	box-shadow: none;
+	font-family: ui-monospace, 'Geist Mono', monospace;
+}
+
+.director-os-root .director-field-ops-map .dir-field-team-chip {
+	border-radius: 0;
+	background: var(--pd-navy-panel, #0f172a);
+	border: 1px solid var(--pd-grey-trim, #334155);
+	color: var(--pd-data-cyan, #14b8a6);
+	font-family: ui-monospace, 'Geist Mono', monospace;
+	box-shadow: none;
+}
+
+/* Facility map vault overrides (embedded in field ops) */
+.director-os-root .director-field-ops-map .fm-vault--embedded {
+	background: var(--pd-void-base, #000000);
+}
+
+.director-os-root .director-field-ops-map .fm-vault--embedded .fm-panel {
+	background: var(--pd-navy-panel, #0f172a) !important;
+	border: 0 !important;
+	border-bottom: 1px solid var(--pd-grey-trim, #334155) !important;
+	border-radius: 0 !important;
+	box-shadow: none !important;
+}
+
+.director-os-root .director-field-ops-map .fm-vault--embedded .fm-panel__title,
+.director-os-root .director-field-ops-map .fm-vault--embedded .fm-logistics__title {
+	font-family: ui-monospace, 'Geist Mono', monospace;
+	font-size: 10px;
+	font-weight: 700;
+	letter-spacing: 0.1em;
+	text-transform: uppercase;
+	color: #ffffff !important;
+}
+
+.director-os-root .director-field-ops-map .fm-vault--embedded .fm-panel__hint,
+.director-os-root .director-field-ops-map .fm-vault--embedded .fm-label {
+	font-family: ui-monospace, 'Geist Mono', monospace;
+	font-size: 9px;
+	letter-spacing: 0.06em;
+	text-transform: uppercase;
+	color: var(--pd-data-cyan, #14b8a6) !important;
+	opacity: 0.85;
+}
+
+.director-os-root .director-field-ops-map .fm-vault--embedded .fm-input {
+	border-radius: 0 !important;
+	background: color-mix(in srgb, var(--pd-void-base, #000) 35%, var(--pd-navy-panel, #0f172a)) !important;
+	border: 1px solid var(--pd-grey-trim, #334155) !important;
+	color: #f8fafc !important;
+	font-family: ui-monospace, 'Geist Mono', monospace;
+}
+
+.director-os-root .director-field-ops-map .fm-vault--embedded .fm-btn--primary {
+	border-radius: 0 !important;
+	background: var(--pd-navy-panel, #0f172a) !important;
+	color: var(--pd-data-cyan, #14b8a6) !important;
+	border: 1px solid var(--pd-grey-trim, #334155) !important;
+	box-shadow: none !important;
+	font-family: ui-monospace, 'Geist Mono', monospace;
+	font-size: 9px;
+	font-weight: 700;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+}
+
+.director-os-root .director-field-ops-map .fm-vault--embedded .fm-btn--secondary,
+.director-os-root .director-field-ops-map .fm-vault--embedded .fm-btn--danger {
+	border-radius: 0 !important;
+	box-shadow: none !important;
+	font-family: ui-monospace, 'Geist Mono', monospace;
+}
+
+.director-os-root .director-field-ops-map .fm-vault--embedded .fm-status--active {
+	color: var(--pd-data-cyan, #14b8a6) !important;
+}
+
+.director-os-root .director-field-ops-map .fm-vault--embedded .fm-status--locked,
+.director-os-root .director-field-ops-map .fm-vault--embedded .fm-lock-banner {
+	color: var(--pd-atom-amber, #d97706) !important;
+}
+
+.director-os-root .director-field-ops-map .fm-vault--embedded .fm-inline-code {
+	border-radius: 0;
+	color: var(--pd-data-cyan, #14b8a6);
+	border-color: var(--pd-grey-trim, #334155);
+	background: transparent;
+}
+
+.director-os-root .director-field-ops-map .fm-vault--embedded .ec-table-wrap {
+	border: 1px solid var(--pd-grey-trim, #334155);
+	border-radius: 0;
+}
+
+.director-os-root .director-field-ops-map .fm-vault--embedded .ec-table th,
+.director-os-root .director-field-ops-map .fm-vault--embedded .ec-table td {
+	border-bottom: 1px solid var(--pd-grey-trim, #334155);
+}
+
+.director-os-root .director-field-ops-map .fm-vault--embedded .fm-embedded-map-frame {
+	background: var(--pd-void-base, #000000);
+	border: 1px solid var(--pd-grey-trim, #334155);
+	border-radius: 0;
+	filter: saturate(0.85);
+}
+
+.director-os-root .director-field-ops-map .fm-vault--embedded .fm-err {
+	color: var(--pd-atom-amber, #d97706) !important;
+	font-family: ui-monospace, 'Geist Mono', monospace;
+	font-size: 10px;
+}
+
+/* Z0 map substrate desaturation for drawing map container */
+.director-os-root .director-field-ops-map .fm-logistics-map-slot,
+.director-os-root .director-field-ops-map .fm-embedded-map-frame :global(.facility-drawing-map) {
+	background: var(--pd-void-base, #000000);
+}

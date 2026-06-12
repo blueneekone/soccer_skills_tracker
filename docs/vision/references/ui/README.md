@@ -14,14 +14,27 @@
 
 ## Naming
 
+**Canonical (Gemini research §G):**
+
 ```
-ref-{persona}-{feature}-{variant}.{png|jpg|webp}
+ref-{persona}-{category}-{name}-option-{a-d}.png
 ```
 
 Examples:
 
-- `ref-player-holo-hq-v1.png`
-- `ref-coach-logistics-inbox-v2.webp`
+- `ref-player-z2panel-edgeglass-option-a.png`
+- `ref-coach-bento-datagrid-option-b.png`
+- `ref-parent-vpc-trust-shield-option-a.png`
+
+Legacy short form (`ref-{persona}-{feature}-{variant}`) is OK until refs are regenerated.
+
+## Do I need images before building?
+
+**No for Phase 1.** Engineering can implement tokens, Z-depth, chamfer grammar, and bento layout from [`research/TOKEN_GAP_ANALYSIS.md`](./research/TOKEN_GAP_ANALYSIS.md) using CSS alone.
+
+**Yes for Phase 2 polish** if you want pixel-matched chrome (Z0 atmosphere plates, edge-lit panel slices from §C manifest). Generate those in a separate Flow session (research §D), then drop PNGs/JPGs in the persona folders above — they guide slicing/compositing, not runtime `<img>` tags until a sprint wires them.
+
+**Character / avatar art** is a **different folder**: [`../character/`](../character/README.md). Your existing Meg/Tom sheets stay there as owner reference; they are **not** wired into the app until Avatar Studio unpauses post-launch.
 
 ## Rules
 

@@ -150,23 +150,26 @@
 	});
 </script>
 
-<section class="tw-mb-8 tw-max-w-[min(100%,120rem)] tw-mx-auto" aria-labelledby="dir-os-heading">
+<section class="director-command-center" aria-labelledby="dir-os-heading">
 	<WorkspaceSocShell
 		eyebrow="Director workspace · club operations"
 		title="Command center"
-		lede="SOAR-style executive surface: invites, households, and analytics. Severity bands mirror risk — scroll for queues and charts."
+		lede="Firestore KPIs, compliance queues, and club-ops telemetry. Severity bands mirror risk — scroll for queues and charts."
 		ribbon={ribbonRows}
 		metaLine="Club scope · client"
 	>
 		<h2 id="dir-os-heading" class="tw-sr-only">Director command center</h2>
-		<WorkspaceSocMetricGrid metrics={metrics} />
+		<WorkspaceSocMetricGrid
+			metrics={metrics}
+			gridClass="bento-grid bento-grid--12col bento-grid--liquid director-cc-kpi-grid"
+		/>
 
-		<div class="wsd-surface-accent tw-overflow-hidden tw-rounded-xl">
+		<div class="director-cc-z2-panel wsd-surface-accent">
 			<ActionInbox {clubId} />
 		</div>
 
-		<div class="dcc-vpc-section">
-			<div class="dcc-vpc-section__head">
+		<div class="director-cc-compliance-band">
+			<div class="director-cc-compliance-band__head">
 				<Icon name="status.shield-check" />
 				<span>Consent audit</span>
 			</div>
@@ -184,34 +187,3 @@
 		<DirectorAnalyticsCharts {clubId} />
 	</WorkspaceSocShell>
 </section>
-
-<style>
-	.dcc-vpc-section {
-		border: 1px solid rgba(245, 158, 11, 0.25);
-		border-radius: 14px;
-		background: rgba(245, 158, 11, 0.03);
-		padding: 10px 12px;
-		margin-bottom: 4px;
-	}
-
-	:global(html.dark) .dcc-vpc-section {
-		border-color: rgba(245, 158, 11, 0.2);
-		background: rgba(245, 158, 11, 0.05);
-	}
-
-	.dcc-vpc-section__head {
-		display: flex;
-		align-items: center;
-		gap: 8px;
-		font-size: 11px;
-		font-weight: 700;
-		text-transform: uppercase;
-		letter-spacing: 0.06em;
-		color: #b45309;
-		margin-bottom: 8px;
-	}
-
-	:global(html.dark) .dcc-vpc-section__head {
-		color: #fbbf24;
-	}
-</style>

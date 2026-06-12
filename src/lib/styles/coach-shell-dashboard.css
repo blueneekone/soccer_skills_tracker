@@ -1,0 +1,326 @@
+/**
+ * VS-3a — COACH_SHELL_DASHBOARD_V1
+ * SIEM flat Coach OS shell + Nexus dashboard (/coach).
+ * Loads after coach-os.css.
+ */
+
+.coach-os-root {
+	--pd-chamfer-md: 8px;
+	--pd-chamfer-modal: 8px;
+	--coach-bento-gap: 4px;
+	font-family: 'Geist', ui-sans-serif, system-ui, sans-serif;
+}
+
+/* ── Z0 void canvas (40% module exposure via tight bento) ─────────────────── */
+.coach-os-root .coach-nexus-canvas {
+	background: var(--pd-void-base, #000000);
+	color: #e2e8f0;
+}
+
+.coach-os-root .coach-nexus-main {
+	--bento-gap-liquid: var(--coach-bento-gap, 4px);
+}
+
+.coach-os-root .coach-nexus-main .bento-grid--liquid {
+	gap: var(--coach-bento-gap, 4px);
+}
+
+/* ── Z4 SIEM header chrome ────────────────────────────────────────────────── */
+.coach-os-root .coach-os-z4-header {
+	border-radius: 0;
+}
+
+.coach-os-root .nexus-banner__media {
+	background: var(--pd-void-base, #000000);
+}
+
+.coach-os-root .nexus-banner__glow {
+	display: none;
+}
+
+.coach-os-root .nexus-banner__grid {
+	background-image: linear-gradient(var(--pd-grey-trim, #334155) 1px, transparent 1px),
+		linear-gradient(90deg, var(--pd-grey-trim, #334155) 1px, transparent 1px);
+	background-size: 44px 44px;
+	opacity: 0.12;
+}
+
+.coach-os-root .nexus-banner__scanline {
+	opacity: 0.2;
+	background-image: repeating-linear-gradient(
+		0deg,
+		transparent,
+		transparent 3px,
+		color-mix(in srgb, var(--pd-nav-cyan, #06b6d4) 10%, transparent) 3px,
+		color-mix(in srgb, var(--pd-nav-cyan, #06b6d4) 10%, transparent) 4px
+	);
+	mix-blend-mode: normal;
+}
+
+.coach-os-root .nexus-banner .vanguard-surface,
+.coach-os-root .coach-os-z4-header .coach-os-z4-strip {
+	background: var(--pd-void-base, #000000);
+	border: 1px solid var(--pd-grey-trim, #334155);
+	border-radius: 0;
+	box-shadow: none;
+	backdrop-filter: none;
+	-webkit-backdrop-filter: none;
+}
+
+.coach-os-root .coach-os-badge {
+	border-radius: 0;
+	border: 1px solid var(--pd-nav-cyan, #06b6d4);
+	background: var(--pd-navy-panel, #0f172a);
+	box-shadow: none;
+	clip-path: polygon(
+		var(--pd-chamfer-sm, 4px) 0%,
+		100% 0%,
+		100% calc(100% - var(--pd-chamfer-sm, 4px)),
+		calc(100% - var(--pd-chamfer-sm, 4px)) 100%,
+		0% 100%,
+		0% var(--pd-chamfer-sm, 4px)
+	);
+}
+
+.coach-os-root .coach-os-badge span {
+	color: var(--pd-nav-cyan, #06b6d4);
+}
+
+.coach-os-root .coach-os-z4-strip .coach-os-uplink,
+.coach-os-root .coach-os-uplink.tw-tabular-nums {
+	font-family: ui-monospace, 'Geist Mono', monospace;
+	font-variant-numeric: tabular-nums;
+	color: var(--pd-data-cyan, #14b8a6);
+	text-shadow: none;
+}
+
+/* ── Z2 SIEM modules ──────────────────────────────────────────────────────── */
+.coach-os-root .coach-os-panel {
+	background: var(--pd-navy-panel, #0f172a);
+	border: 1px solid var(--pd-grey-trim, #334155);
+	border-radius: 0;
+	box-shadow: none;
+	clip-path: polygon(
+		var(--pd-chamfer-md, 8px) 0%,
+		100% 0%,
+		100% calc(100% - var(--pd-chamfer-md, 8px)),
+		calc(100% - var(--pd-chamfer-md, 8px)) 100%,
+		0% 100%,
+		0% var(--pd-chamfer-md, 8px)
+	);
+	transition: box-shadow 100ms ease, border-color 100ms ease;
+}
+
+.coach-os-root .coach-os-panel:hover,
+.coach-os-root .coach-os-panel:focus-visible {
+	border-color: var(--pd-nav-cyan, #06b6d4);
+	box-shadow: inset 0 0 0 1px var(--pd-nav-cyan, #06b6d4);
+	transform: none;
+}
+
+.coach-os-root .coach-os-well {
+	background: var(--pd-void-base, #000000);
+	border: 1px solid var(--pd-grey-trim, #334155);
+	border-radius: 0;
+	box-shadow: none;
+}
+
+/* War room — flat SIEM gateway */
+.coach-os-root .coach-os-war-room {
+	border-width: 1px;
+}
+
+.coach-os-root .coach-os-war-room .coach-os-war-room__pulse {
+	display: none;
+}
+
+.coach-os-root .coach-os-war-room svg path[stroke='#a855f7'] {
+	display: none;
+}
+
+.coach-os-root .coach-os-war-room__cta {
+	border-radius: 0;
+	box-shadow: none;
+	background: var(--pd-void-base, #000000);
+	border: 1px solid var(--pd-nav-cyan, #06b6d4);
+	color: var(--pd-nav-cyan, #06b6d4);
+	clip-path: polygon(
+		var(--pd-chamfer-sm, 4px) 0%,
+		100% 0%,
+		100% calc(100% - var(--pd-chamfer-sm, 4px)),
+		calc(100% - var(--pd-chamfer-sm, 4px)) 100%,
+		0% 100%,
+		0% var(--pd-chamfer-sm, 4px)
+	);
+}
+
+.coach-os-root .coach-os-war-room__status-dot {
+	border-radius: 0;
+	box-shadow: none;
+	background: var(--pd-data-cyan, #14b8a6);
+}
+
+/* Facility ops metrics */
+.coach-os-root .coach-os-facility dt {
+	font-size: 8pt;
+	font-weight: 600;
+	letter-spacing: 0.05em;
+	text-transform: uppercase;
+	color: var(--pd-grey-trim, #334155);
+}
+
+.coach-os-root .coach-os-facility dd {
+	font-family: ui-monospace, 'Geist Mono', monospace;
+	font-variant-numeric: tabular-nums;
+	color: var(--pd-data-cyan, #14b8a6);
+}
+
+.coach-os-root .coach-os-facility header {
+	border-bottom-color: var(--pd-grey-trim, #334155);
+}
+
+/* Actions — chamfer chips, no pills */
+.coach-os-root .media-hub-btn,
+.coach-os-root .coach-os-action-chip {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.5rem;
+	min-height: 44px;
+	padding: 0.45rem 0.85rem;
+	font-family: ui-monospace, 'Geist Mono', monospace;
+	font-size: 10pt;
+	font-weight: 600;
+	letter-spacing: 0.05em;
+	text-transform: uppercase;
+	text-decoration: none;
+	color: var(--pd-nav-cyan, #06b6d4);
+	background: var(--pd-void-base, #000000);
+	border: 1px solid var(--pd-grey-trim, #334155);
+	border-radius: 0;
+	box-shadow: none;
+	backdrop-filter: none;
+	-webkit-backdrop-filter: none;
+	cursor: pointer;
+	clip-path: polygon(
+		var(--pd-chamfer-sm, 4px) 0%,
+		100% 0%,
+		100% calc(100% - var(--pd-chamfer-sm, 4px)),
+		calc(100% - var(--pd-chamfer-sm, 4px)) 100%,
+		0% 100%,
+		0% var(--pd-chamfer-sm, 4px)
+	);
+	transition: box-shadow 100ms ease, border-color 100ms ease;
+}
+
+.coach-os-root .media-hub-btn:hover,
+.coach-os-root .coach-os-action-chip:hover {
+	border-color: var(--pd-nav-cyan, #06b6d4);
+	box-shadow: inset 0 0 0 1px var(--pd-nav-cyan, #06b6d4);
+	background: var(--pd-void-base, #000000);
+	color: var(--pd-nav-cyan, #06b6d4);
+}
+
+/* Squad telemetry SIEM pass (dashboard embed) */
+.coach-os-root .hud-telemetry-root {
+	--hud-gap: var(--coach-bento-gap, 4px);
+	--hud-radius: 0;
+}
+
+.coach-os-root .hud-telemetry-root .hud-telemetry-panel {
+	background: var(--pd-navy-panel, #0f172a);
+	border: 1px solid var(--pd-grey-trim, #334155);
+	border-radius: 0;
+	box-shadow: none;
+	backdrop-filter: none;
+	-webkit-backdrop-filter: none;
+	clip-path: polygon(
+		var(--pd-chamfer-md, 8px) 0%,
+		100% 0%,
+		100% calc(100% - var(--pd-chamfer-md, 8px)),
+		calc(100% - var(--pd-chamfer-md, 8px)) 100%,
+		0% 100%,
+		0% var(--pd-chamfer-md, 8px)
+	);
+}
+
+.coach-os-root .hud-telemetry-root .hud-telemetry-panel:hover {
+	box-shadow: inset 0 0 0 1px var(--pd-nav-cyan, #06b6d4);
+}
+
+.coach-os-root .hud-telemetry-uptime__bar {
+	border-radius: 0;
+	background: var(--pd-void-base, #000000);
+	border: 1px solid var(--pd-grey-trim, #334155);
+}
+
+.coach-os-root .hud-telemetry-uptime__bar-fill {
+	border-radius: 0;
+	background: var(--pd-data-cyan, #14b8a6);
+}
+
+.coach-os-root .hud-telemetry-root .hud-telemetry-avatar,
+.coach-os-root .hud-telemetry-root :global(.hud-seeded-ring__avatar) {
+	border-radius: 0;
+	clip-path: polygon(
+		var(--pd-chamfer-sm, 4px) 0%,
+		100% 0%,
+		100% calc(100% - var(--pd-chamfer-sm, 4px)),
+		calc(100% - var(--pd-chamfer-sm, 4px)) 100%,
+		0% 100%,
+		0% var(--pd-chamfer-sm, 4px)
+	);
+}
+
+.coach-os-root .coach-nexus-main :is(.tw-drop-shadow-\[0_0_12px_rgba\(20\,\ 184\,\ 166\,0\.55\)\], .tw-shadow-\[0_0_18px_rgba\(20\,\ 184\,\ 166\,0\.35\)\]) {
+	filter: none;
+	text-shadow: none;
+	box-shadow: none;
+}
+
+.coach-os-root .coach-nexus-main [class*='tw-rounded-full'],
+.coach-os-root .coach-nexus-main [class*='tw-rounded-vanguard'],
+.coach-os-root .coach-nexus-main [class*='tw-rounded-xl'],
+.coach-os-root .coach-nexus-main [class*='tw-rounded-2xl'] {
+	border-radius: 0;
+}
+
+.coach-os-root .coach-nexus-main [class*='tw-backdrop-blur'] {
+	backdrop-filter: none;
+	-webkit-backdrop-filter: none;
+}
+
+.coach-os-root .coach-nexus-main [class*='tw-scale-'] {
+	transform: none;
+}
+
+.coach-os-root .coach-nexus-main [class*='tw-animate-pulse'] {
+	animation: none;
+}
+
+/* Typography — metrics mono tabular */
+.coach-os-root .coach-nexus-main .tw-tabular-nums,
+.coach-os-root .coach-nexus-main .tw-font-mono {
+	font-family: ui-monospace, 'Geist Mono', monospace;
+	font-variant-numeric: tabular-nums;
+}
+
+.coach-os-root .coach-nexus-main .tw-text-\[\#14b8a6\] {
+	color: var(--pd-data-cyan, #14b8a6);
+}
+
+.coach-os-root .coach-nexus-main .tw-text-\[\#14b8a6\]\/85,
+.coach-os-root .coach-nexus-main .tw-text-\[\#14b8a6\]\/90 {
+	color: var(--pd-data-cyan, #14b8a6);
+}
+
+.coach-os-root .coach-nexus-main .tw-text-\[\#14b8a6\]\/55 {
+	color: var(--pd-nav-cyan, #06b6d4);
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.coach-os-root .coach-os-panel,
+	.coach-os-root .media-hub-btn,
+	.coach-os-root .coach-os-action-chip {
+		transition: none !important;
+	}
+}

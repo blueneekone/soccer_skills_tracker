@@ -85,9 +85,9 @@ describe('Sprint 4.1 — /coach/logistics route wiring', () => {
 		expect(src).not.toMatch(/us-central1/);
 	});
 
-	it('workspaceNav links Logistics & Comms to /coach/logistics', () => {
+	it('workspaceNav links Team Ops to /coach/logistics', () => {
 		const nav = readFileSync(WORKSPACE_NAV, 'utf-8');
-		expect(nav).toMatch(/Logistics & Comms/);
+		expect(nav).toMatch(/Team Ops/);
 		expect(nav).toMatch(/href:\s*'\/coach\/logistics'/);
 	});
 });
@@ -221,8 +221,7 @@ describe('T0-8b — announcements surface is separate from DM inbox', () => {
 	it('AnnouncementsInbox is mounted BEFORE the DM inbox section', () => {
 		const src = readFileSync(MESSAGES_PAGE, 'utf-8');
 		const annPos = src.indexOf('AnnouncementsInbox');
-		const dmPos = src.indexOf('card-header');
-		// Announcements section must appear in markup before the DM card header
+		const dmPos = src.indexOf('comms-hub-z3-inbox');
 		expect(annPos).toBeGreaterThan(-1);
 		expect(dmPos).toBeGreaterThan(-1);
 		expect(annPos).toBeLessThan(dmPos);
@@ -230,11 +229,9 @@ describe('T0-8b — announcements surface is separate from DM inbox', () => {
 
 	it('AnnouncementsInbox is NOT inside the DM inbox card', () => {
 		const src = readFileSync(MESSAGES_PAGE, 'utf-8');
-		// The DM card wraps from card-header to end of bento-section.
-		// AnnouncementsInbox must appear outside that block (before it).
 		const annPos = src.indexOf('<AnnouncementsInbox');
-		const inboxCardStart = src.indexOf('class="card"');
-		expect(annPos).toBeLessThan(inboxCardStart);
+		const inboxStart = src.indexOf('comms-hub-z3-inbox');
+		expect(annPos).toBeLessThan(inboxStart);
 	});
 });
 

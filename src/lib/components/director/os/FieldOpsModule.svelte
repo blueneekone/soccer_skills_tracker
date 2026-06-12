@@ -473,27 +473,18 @@
 	}
 </script>
 
-<div class="field-ops-root tw-flex tw-flex-col tw-gap-4">
-	<div
-		class="tw-rounded-xl tw-border tw-border-slate-800/80 tw-bg-gradient-to-br tw-from-slate-950 tw-via-slate-900 tw-to-slate-950 tw-px-4 tw-py-3 tw-shadow-xl tw-ring-1 tw-ring-white/5 tw-backdrop-blur-sm"
-	>
-		<h3 class="tw-m-0 tw-text-lg tw-font-extrabold tw-tracking-tight tw-text-slate-100">
-			Field Ops
-		</h3>
-		<p class="tw-m-0 tw-mt-1 tw-text-sm tw-text-slate-400">
+<div class="director-field-ops-map field-ops-root">
+	<header class="director-field-ops-z4-head">
+		<h3 class="director-field-ops-z4-head__title">Field ops</h3>
+		<p class="director-field-ops-z4-head__lede">
 			Master schedule for your pitches — conflicts are blocked server-side.
 		</p>
-	</div>
+	</header>
 
 	{#if weatherLockedFacilities.length > 0}
-		<div
-			class="tw-rounded-xl tw-border tw-border-amber-500/40 tw-bg-amber-950/30 tw-px-4 tw-py-3 tw-text-sm tw-text-amber-100"
-			role="status"
-		>
-			<p class="tw-m-0 tw-font-bold tw-uppercase tw-tracking-wide tw-text-amber-300">
-				Weather lock active
-			</p>
-			<p class="tw-m-0 tw-mt-1 tw-text-xs tw-leading-relaxed tw-text-amber-100/90">
+		<div class="director-field-ops-z3-weather director-field-ops-z3-weather--lock" role="status">
+			<p class="director-field-ops-z3-weather__title">Weather lock active</p>
+			<p class="director-field-ops-z3-weather__body">
 				{weatherLockedFacilities.length} field{weatherLockedFacilities.length === 1 ? '' : 's'}
 				locked — new deployments blocked until status clears.
 				{#if weatherLockedFacilities[0]?.lockReason}
@@ -502,14 +493,9 @@
 			</p>
 		</div>
 	{:else if weatherAdvisoryFacilities.length > 0}
-		<div
-			class="tw-rounded-xl tw-border tw-border-cyan-500/30 tw-bg-cyan-950/20 tw-px-4 tw-py-3 tw-text-sm tw-text-cyan-100"
-			role="status"
-		>
-			<p class="tw-m-0 tw-font-bold tw-uppercase tw-tracking-wide tw-text-cyan-300">
-				Weather advisory
-			</p>
-			<p class="tw-m-0 tw-mt-1 tw-text-xs tw-leading-relaxed tw-text-cyan-100/90">
+		<div class="director-field-ops-z3-weather director-field-ops-z3-weather--advisory" role="status">
+			<p class="director-field-ops-z3-weather__title">Weather advisory</p>
+			<p class="director-field-ops-z3-weather__body">
 				{weatherAdvisoryFacilities.length} field{weatherAdvisoryFacilities.length === 1 ? '' : 's'}
 				under watch — deployments allowed but verify conditions.
 				{#if weatherAdvisoryFacilities[0]?.lockReason}
@@ -520,71 +506,56 @@
 	{/if}
 
 	{#if resolvedClubId}
-		<!-- Liquid glass split: deployments (1/3) + facility vault / map (2/3) -->
-		<div
-			class="field-ops-split tw-mb-6 tw-grid tw-min-h-[min(560px,72vh)] tw-grid-cols-1 tw-gap-4 tw-items-stretch lg:tw-grid-cols-[minmax(260px,1fr)_minmax(0,2fr)]"
-		>
-			<div
-				class="tw-flex tw-min-h-0 tw-flex-col tw-overflow-hidden tw-rounded-xl tw-border tw-border-slate-800 tw-bg-slate-900/95 tw-shadow-2xl tw-ring-1 tw-ring-white/5 tw-backdrop-blur-md"
-			>
-				<DeploymentCalendar
-					clubId={resolvedClubId}
-					canManage={!isReadOnly}
-					embedded
-				/>
-			</div>
-			<div
-				class="tw-flex tw-min-h-0 tw-flex-1 tw-flex-col tw-overflow-hidden tw-rounded-xl tw-border tw-border-slate-800 tw-bg-slate-900/95 tw-shadow-2xl tw-ring-1 tw-ring-white/5 tw-backdrop-blur-md"
-			>
-				<FacilityMapVault clubId={resolvedClubId} canManage={!isReadOnly} embedded />
+		<div class="director-field-ops-z1-well">
+			<div class="director-field-ops-z1-well__inner field-ops-split">
+				<div class="director-field-ops-z2-panel">
+					<DeploymentCalendar
+						clubId={resolvedClubId}
+						canManage={!isReadOnly}
+						embedded
+					/>
+				</div>
+				<div class="director-field-ops-z2-panel">
+					<FacilityMapVault clubId={resolvedClubId} canManage={!isReadOnly} embedded />
+				</div>
 			</div>
 		</div>
 
-		<div class="tw-flex tw-flex-wrap tw-gap-3 tw-items-end">
-			<p class="tw-m-0 tw-w-full tw-text-xs tw-leading-relaxed tw-text-slate-500">
-				<strong class="tw-font-semibold tw-text-slate-400">Unified field registry:</strong>
+		<div class="director-field-ops-controls">
+			<p class="director-field-ops-meta">
+				<strong>Unified field registry:</strong>
 				Facilities registered in the Facility Map sync to the pitch schedule automatically —
 				deployments and bookings share the same field ids.
 			</p>
-			<label class="tw-flex tw-flex-col tw-gap-1 tw-text-xs tw-font-bold" style="color: var(--text-secondary);">
+			<label class="director-field-ops-field-label">
 				Field
-				<select
-					class="fieldops-control tw-rounded-lg tw-border tw-px-3 tw-min-w-[12rem]"
-					bind:value={fieldId}
-				>
+				<select class="director-field-ops-control director-field-ops-control--wide" bind:value={fieldId}>
 					{#each fields as f (f.id)}
 						<option value={f.id}>{f.name}</option>
 					{/each}
 				</select>
 			</label>
-			<label class="tw-flex tw-flex-col tw-gap-1 tw-text-xs tw-font-bold" style="color: var(--text-secondary);">
+			<label class="director-field-ops-field-label">
 				Date
-				<input
-					type="date"
-					bind:value={scheduleDate}
-					class="fieldops-control tw-rounded-lg tw-border tw-px-3"
-				/>
+				<input type="date" bind:value={scheduleDate} class="director-field-ops-control" />
 			</label>
 		</div>
 
 		{#if fields.length === 0}
-			<div
-				class="tw-rounded-xl tw-border tw-p-4 tw-grid tw-gap-2 md:tw-grid-cols-2"
-				style="border-color: rgba(15,23,42,0.1);"
-			>
+			<div class="director-field-ops-empty-add">
 				<input
-					class="tw-rounded-lg tw-border tw-px-3 tw-py-2"
+					class="director-field-ops-control"
 					placeholder="Field name (e.g. North Pitch)"
 					bind:value={newFieldName}
 				/>
 				<input
-					class="tw-rounded-lg tw-border tw-px-3 tw-py-2"
+					class="director-field-ops-control"
 					placeholder="Location (optional)"
 					bind:value={newFieldLocation}
 				/>
 				<button
 					type="button"
-					class="dir-os-btn-primary md:tw-col-span-2"
+					class="director-field-ops-btn-sync director-field-ops-btn-sync--block"
 					class:dir-os-btn--readonly={isReadOnly}
 					disabled={savingField || !newFieldName.trim()}
 					onclick={addField}
@@ -633,13 +604,13 @@
 				</div>
 			</div>
 
-			<p class="tw-m-0 tw-text-xs" style="color: var(--muted-slate);">
-				Drag a team onto a slot to draft a 1-hour window (adjust below). Booked times use your club brand
-				gradient.
+			<p class="director-field-ops-hint">
+				Drag a team onto a slot to draft a 1-hour window (adjust below). Booked times use data-cyan
+				telemetry blocks.
 			</p>
 
-			<div class="tw-flex tw-flex-wrap tw-gap-2 tw-items-center">
-				<span class="tw-text-xs tw-font-bold" style="color: var(--text-secondary);">Teams</span>
+			<div class="director-field-ops-teams">
+				<span class="director-field-ops-teams__label">Teams</span>
 				{#each clubTeams as t}
 					<button
 						type="button"
@@ -653,64 +624,55 @@
 				{/each}
 			</div>
 
-			<div
-				class="tw-grid tw-grid-cols-1 sm:tw-grid-cols-2 lg:tw-grid-cols-4 tw-gap-3 tw-items-end tw-rounded-xl tw-border tw-p-4"
-				style="border-color: color-mix(in srgb, var(--brand-primary) 18%, rgba(15,23,42,0.12)); background: color-mix(in srgb, var(--brand-accent) 6%, transparent);"
-			>
-				<label class="tw-flex tw-flex-col tw-gap-1 tw-text-xs tw-font-bold" style="color: var(--text-secondary);">
+			<div class="director-field-ops-z2-form">
+				<label class="director-field-ops-field-label">
 					Team
-					<select class="tw-rounded-lg tw-border tw-px-2 tw-py-2" bind:value={bookingTeamId}>
+					<select class="director-field-ops-control" bind:value={bookingTeamId}>
 						<option value="">Select…</option>
 						{#each clubTeams as t}
 							<option value={t.id}>{t.name}</option>
 						{/each}
 					</select>
 				</label>
-				<label class="tw-flex tw-flex-col tw-gap-1 tw-text-xs tw-font-bold" style="color: var(--text-secondary);">
+				<label class="director-field-ops-field-label">
 					Activity
-					<select class="tw-rounded-lg tw-border tw-px-2 tw-py-2" bind:value={activityType}>
+					<select class="director-field-ops-control" bind:value={activityType}>
 						<option value="Practice">Practice</option>
 						<option value="Game">Game</option>
 					</select>
 				</label>
-				<label class="tw-flex tw-flex-col tw-gap-1 tw-text-xs tw-font-bold" style="color: var(--text-secondary);">
+				<label class="director-field-ops-field-label">
 					Start
-					<input type="time" bind:value={startTimeInput} class="tw-rounded-lg tw-border tw-px-2 tw-py-2" />
+					<input type="time" bind:value={startTimeInput} class="director-field-ops-control" />
 				</label>
-				<label class="tw-flex tw-flex-col tw-gap-1 tw-text-xs tw-font-bold" style="color: var(--text-secondary);">
+				<label class="director-field-ops-field-label">
 					End
-					<input type="time" bind:value={endTimeInput} class="tw-rounded-lg tw-border tw-px-2 tw-py-2" />
+					<input type="time" bind:value={endTimeInput} class="director-field-ops-control" />
 				</label>
-				<div
-					class="tw-flex tw-flex-col tw-gap-2 sm:tw-col-span-2 lg:tw-col-span-4"
-					role="group"
-					aria-label="Notification triggers"
-				>
-					<span class="tw-text-xs tw-font-bold" style="color: var(--text-secondary);"
-						>Notification triggers</span
-					>
-					<div class="tw-flex tw-flex-wrap tw-gap-3">
-						<label class="tw-flex tw-items-center tw-gap-2 tw-text-xs tw-cursor-pointer">
-							<input type="checkbox" bind:checked={notify1h} class="tw-rounded" />
+				<div class="director-field-ops-z2-form__span" role="group" aria-label="Notification triggers">
+					<span class="director-field-ops-teams__label">Notification triggers</span>
+					<div class="director-field-ops-checklist">
+						<label>
+							<input type="checkbox" bind:checked={notify1h} />
 							1 hour before
 						</label>
-						<label class="tw-flex tw-items-center tw-gap-2 tw-text-xs tw-cursor-pointer">
-							<input type="checkbox" bind:checked={notify30m} class="tw-rounded" />
+						<label>
+							<input type="checkbox" bind:checked={notify30m} />
 							30 minutes before
 						</label>
-					<label class="tw-flex tw-items-center tw-gap-2 tw-text-xs tw-cursor-pointer">
-						<input type="checkbox" bind:checked={notifyMorning} class="tw-rounded" />
-						Morning of
-					</label>
-					<label class="tw-flex tw-items-center tw-gap-2 tw-text-xs tw-cursor-pointer tw-border-l tw-border-slate-700 tw-pl-3" title="Sends a team broadcast message via the SafeSport comms bus">
-						<input type="checkbox" bind:checked={announceToTeam} class="tw-rounded" />
-						Announce to team
-					</label>
+						<label>
+							<input type="checkbox" bind:checked={notifyMorning} />
+							Morning of
+						</label>
+						<label title="Sends a team broadcast message via the SafeSport comms bus">
+							<input type="checkbox" bind:checked={announceToTeam} />
+							Announce to team
+						</label>
+					</div>
 				</div>
-			</div>
 				<button
 					type="button"
-					class="dir-os-btn-primary sm:tw-col-span-2 lg:tw-col-span-4"
+					class="director-field-ops-btn-sync director-field-ops-z2-form__span"
 					class:dir-os-btn--readonly={isReadOnly}
 					disabled={booking || !!conflictMsg || !bookingTeamId}
 					onclick={submitBooking}
@@ -720,59 +682,18 @@
 			</div>
 
 			{#if conflictMsg}
-				<div
-					class="tw-rounded-lg tw-px-3 tw-py-2 tw-text-sm tw-font-semibold"
-					style="background: color-mix(in srgb, var(--danger-red) 15%, transparent); color: var(--danger-red); border: 1px solid color-mix(in srgb, var(--danger-red) 35%, transparent);"
-					role="alert"
-				>
+				<div class="director-field-ops-alert" role="alert">
 					Conflict warning — {conflictMsg}
 				</div>
 			{/if}
 		{/if}
 	{:else}
-		<div
-			class="tw-rounded-xl tw-border tw-p-5 tw-max-w-2xl"
-			style="
-				border-color: rgba(148, 163, 184, 0.45);
-				background: linear-gradient(
-					165deg,
-					rgba(15, 23, 42, 0.92) 0%,
-					rgba(30, 41, 59, 0.88) 100%
-				);
-				box-shadow: 0 1px 0 rgba(255, 255, 255, 0.06) inset;
-			"
-			role="alert"
-		>
-			<p
-				class="tw-m-0 tw-text-xs tw-font-bold tw-uppercase tw-tracking-wider"
-				style="color: rgba(251, 191, 36, 0.95); letter-spacing: 0.08em;"
-			>
-				Security lock
-			</p>
-			<p class="tw-m-0 tw-mt-2 tw-text-sm tw-leading-relaxed" style="color: #e2e8f0;">
+		<div class="director-field-ops-scope-lock" role="alert">
+			<p class="director-field-ops-scope-lock__eyebrow">Security lock</p>
+			<p class="director-field-ops-scope-lock__body">
 				Your account is not bound to a specific Organization. Contact a Global Admin to assign your Club
 				Scope.
 			</p>
 		</div>
 	{/if}
 </div>
-
-<style>
-	/* Normalize Field selector + Date input to identical 40px heights so the
-	   two controls align perfectly. Native date inputs have invisible UA
-	   padding; forcing height + box-sizing removes the drift. */
-	.fieldops-control {
-		height: 40px;
-		line-height: 1;
-		font-size: 13.5px;
-		box-sizing: border-box;
-		appearance: none;
-		-webkit-appearance: none;
-		background-color: #ffffff;
-	}
-
-	:global(html.dark) .fieldops-control {
-		background-color: #0f0f11;
-		color: #fafafa;
-	}
-</style>

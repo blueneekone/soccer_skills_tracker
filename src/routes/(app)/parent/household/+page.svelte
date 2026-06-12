@@ -412,8 +412,8 @@
 <svelte:window onkeydown={onOtpKeydown} />
 
 <div
-	class="phh tw-mx-auto tw-w-full tw-max-w-3xl tw-bg-slate-950"
-	style="padding: var(--bento-pad-liquid); padding-bottom: calc(var(--bento-pad-liquid) + env(safe-area-inset-bottom, 0px));"
+	class="phh parent-lounge-page tw-mx-auto tw-w-full tw-max-w-3xl"
+	style="padding-bottom: env(safe-area-inset-bottom, 0px);"
 	data-region="household-clearance"
 >
 	<header class="phh-page-head bento-mb-lg">
@@ -452,7 +452,7 @@
 	>
 		<!-- COPPA & liability block -->
 		<section
-			class="phh-surface bento-span-12 tw-min-w-0 tw-border-2 tw-border-red-500/60 tw-px-3 tw-py-4 tw-shadow-[0_0_24px_rgba(239,68,68,0.12)] sm:tw-px-4 md:tw-px-5"
+			class="phh-surface parent-lounge-z2-panel parent-lounge-z2-panel--warn bento-span-12 tw-min-w-0 tw-px-3 tw-py-4 sm:tw-px-4 md:tw-px-5"
 			aria-labelledby="phh-coppa"
 		>
 			<div class="tw-mb-3 tw-flex tw-flex-col tw-gap-1">
@@ -500,7 +500,7 @@
 		<!-- Linked operatives — ephemeral OTP login -->
 		{#if operativeRows.length > 0}
 			<section
-				class="phh-surface bento-span-12 tw-min-w-0 tw-border tw-border-cyan-500/25 tw-px-3 tw-py-4 sm:tw-px-4 md:tw-px-5"
+				class="phh-surface parent-lounge-z2-panel bento-span-12 tw-min-w-0 tw-px-3 tw-py-4 sm:tw-px-4 md:tw-px-5"
 				aria-labelledby="phh-active-ops"
 			>
 				<div class="tw-mb-3">
@@ -621,7 +621,7 @@
 
 		<!-- Operative generation -->
 		<section
-			class="phh-surface bento-span-12 tw-min-w-0 tw-border tw-border-cyan-500/30 tw-px-3 tw-py-4 sm:tw-px-4 md:tw-px-5"
+			class="phh-surface parent-lounge-z2-panel bento-span-12 tw-min-w-0 tw-px-3 tw-py-4 sm:tw-px-4 md:tw-px-5"
 			aria-labelledby="phh-ops"
 		>
 			<div class="tw-mb-3">
@@ -710,7 +710,7 @@
 		</section>
 
 		<section
-			class="phh-surface bento-span-12 tw-min-w-0 tw-border tw-border-white/10 tw-px-3 tw-py-4 sm:tw-px-4 md:tw-px-5"
+			class="phh-surface parent-lounge-z2-panel bento-span-12 tw-min-w-0 tw-px-3 tw-py-4 sm:tw-px-4 md:tw-px-5"
 			aria-labelledby="phh-transfer"
 		>
 			<div class="tw-mb-3">

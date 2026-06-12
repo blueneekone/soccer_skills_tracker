@@ -8,6 +8,7 @@
 	import { goto } from '$app/navigation';
 	import { CoachTeamScope } from '$lib/coach/context/coachTeamScope.svelte.js';
 	import { createTacticalWarRoom } from '$lib/components/coach/TacticalEngine.svelte.ts';
+	import '$lib/styles/coach-tactics-stratagem.css';
 	import TacticalArena from '$lib/components/coach/TacticalArena.svelte';
 	import TacticalHUD from '$lib/components/coach/TacticalHUD.svelte';
 	import { scale } from 'svelte/transition';
@@ -269,17 +270,16 @@
   below command palette(9999) so Cmd+K remains accessible.
 -->
 <div
-	class="tw-fixed tw-inset-0 tw-overflow-hidden tw-bg-[#020202]"
+	class="coach-tactics-shell tw-fixed tw-inset-0 tw-overflow-hidden"
 	style="z-index: 1050;"
 	in:scale={{ duration: 350, start: 0.97, easing: quintOut }}
 >
 	<TacticalArena model={engine} {warRoomTool} />
 	<TacticalHUD model={engine} bind:warRoomTool ondeploy={deployPlay} />
 
-	<!-- Exit control — the War Room is a fullscreen route; give an explicit way out. -->
 	<button
 		type="button"
-		class="tw-absolute tw-top-3 tw-right-3 tw-z-[1060] tw-flex tw-items-center tw-gap-2 tw-rounded-md tw-border tw-border-white/15 tw-bg-black/70 tw-px-3 tw-py-2 tw-font-mono tw-text-[10px] tw-uppercase tw-tracking-widest tw-text-slate-300 tw-transition-colors hover:tw-border-cyan-400/60 hover:tw-text-cyan-300 focus-visible:tw-outline focus-visible:tw-outline-2 focus-visible:tw-outline-cyan-400"
+		class="coach-tac-exit coach-os-action-chip"
 		aria-label="Exit War Room"
 		onclick={() => goto('/coach')}
 	>

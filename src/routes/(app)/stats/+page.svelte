@@ -8,6 +8,7 @@
 	import { hasVanguardTelemetry } from '$lib/player/dashboard/vanguardProtocol.js';
 	import '$lib/styles/director-os.css';
 	import '$lib/styles/player-dossier.css';
+	import '$lib/styles/player-armory-stats-telemetry.css';
 	import '$lib/styles/player-dashboard-hud.css';
 	import Icon from '$lib/components/ui/Icon.svelte';
 	import PlayerOsPageStrap from '$lib/components/player/PlayerOsPageStrap.svelte';
@@ -458,6 +459,9 @@
 
 	<div
 		class="dossier-grid"
+		class:bento-grid={isPlayerRole}
+		class:bento-grid--12col={isPlayerRole}
+		class:bento-grid--liquid={isPlayerRole}
 		role="region"
 		aria-label="Skill radar and analytics"
 	>

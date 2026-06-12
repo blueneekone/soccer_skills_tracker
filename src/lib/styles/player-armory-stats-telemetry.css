@@ -1,0 +1,240 @@
+/**
+ * VS-2b — ARMORY_STATS_TELEMETRY_PASS
+ * Player OS Armory quartermaster + Stats telemetry skin.
+ * Loads after player-dossier.css / player-dashboard-hud.css.
+ */
+
+/* ── Z0 void canvas ─────────────────────────────────────────────────────── */
+.player-hud-root[data-region='quartermaster-armory'],
+.player-hud-root.pos-stats {
+	background: var(--pd-void-base, #000000);
+}
+
+/* ── Armory Z2 quartermaster cards ──────────────────────────────────────── */
+.player-hud-root[data-region='quartermaster-armory'] .armory-balance {
+	color: var(--pd-data-cyan, #14b8a6);
+	text-shadow: none;
+}
+
+.player-hud-root[data-region='quartermaster-armory'] .qa-card.pd-os-deck {
+	background: var(--pd-navy-panel, #0f172a);
+	border: 1px solid var(--pd-grey-trim, #334155);
+	box-shadow: none;
+	clip-path: polygon(
+		var(--pd-chamfer-modal, 8px) 0%,
+		100% 0%,
+		100% calc(100% - var(--pd-chamfer-modal, 8px)),
+		calc(100% - var(--pd-chamfer-modal, 8px)) 100%,
+		0% 100%,
+		0% var(--pd-chamfer-modal, 8px)
+	);
+	transition: border-color 100ms ease;
+}
+
+.player-hud-root[data-region='quartermaster-armory'] .qa-card.pd-os-deck:hover {
+	border-color: var(--pd-grey-trim, #334155);
+	box-shadow: none;
+	transform: none;
+}
+
+.player-hud-root[data-region='quartermaster-armory'] .qa-card.pd-os-deck .qa-card__icon {
+	background: var(--pd-void-base, #000000);
+	border: 1px solid var(--pd-grey-trim, #334155);
+	box-shadow: none;
+	color: var(--pd-data-cyan, #14b8a6);
+	clip-path: polygon(
+		var(--pd-chamfer-sm, 6px) 0%,
+		100% 0%,
+		100% calc(100% - var(--pd-chamfer-sm, 6px)),
+		calc(100% - var(--pd-chamfer-sm, 6px)) 100%,
+		0% 100%,
+		0% var(--pd-chamfer-sm, 6px)
+	);
+}
+
+.player-hud-root[data-region='quartermaster-armory'] .qa-card__cost .pd-mono {
+	color: var(--pd-data-cyan, #14b8a6);
+	font-variant-numeric: tabular-nums;
+}
+
+.player-hud-root[data-region='quartermaster-armory'] .qa-pill {
+	border-radius: 0;
+	clip-path: polygon(
+		4px 0%,
+		100% 0%,
+		100% calc(100% - 4px),
+		calc(100% - 4px) 100%,
+		0% 100%,
+		0% 4px
+	);
+}
+
+.player-hud-root[data-region='quartermaster-armory'] .qa-pill--phys {
+	border-color: var(--pd-atom-amber, #d97706);
+	color: var(--pd-atom-amber, #d97706);
+}
+
+.player-hud-root[data-region='quartermaster-armory'] .qa-pill--dig {
+	border-color: var(--pd-data-cyan, #14b8a6);
+	color: var(--pd-data-cyan, #14b8a6);
+}
+
+/* Deploy — teal chamfer block (no gold) */
+.player-hud-root[data-region='quartermaster-armory'] .armory-deploy-btn.pd-os-btn {
+	background: var(--pd-data-cyan, #14b8a6);
+	border: none;
+	color: var(--pd-void-base, #000000);
+	box-shadow: none;
+	font-weight: 800;
+	letter-spacing: 0.14em;
+	text-transform: uppercase;
+}
+
+.player-hud-root[data-region='quartermaster-armory'] .armory-deploy-btn.pd-os-btn:hover:not(:disabled):not([aria-disabled='true']) {
+	background: color-mix(in srgb, var(--pd-data-cyan, #14b8a6) 88%, #000);
+	border: none;
+	box-shadow: none;
+	filter: none;
+}
+
+.player-hud-root[data-region='quartermaster-armory'] .armory-deploy-btn.pd-os-btn:active:not(:disabled) {
+	filter: brightness(0.92);
+	transform: none;
+}
+
+.player-hud-root[data-region='quartermaster-armory'] .qa-insufficient {
+	border: 1px solid var(--pd-grey-trim, #334155);
+	background: var(--pd-navy-panel, #0f172a);
+}
+
+/* ── Stats Z1 telemetry wells (VPP) ─────────────────────────────────────── */
+.player-hud-root.pos-stats .stats-analytics-void.pd-os-deck--recessed {
+	background: var(--pd-navy-panel, #0f172a);
+	border: 1px solid var(--pd-grey-trim, #334155);
+	box-shadow: none;
+}
+
+.player-hud-root.pos-stats :is(.stats-analytics-void) .vpp-chart--premium,
+.player-hud-root.pos-stats :is(.stats-analytics-void) .vpp-inspector--premium,
+.player-hud-root.pos-stats :is(.stats-analytics-void) .vpp-inspector--premium.vpp-inspector--idle,
+.player-hud-root.pos-stats :is(.stats-analytics-void) .vpp-inspector--premium.vpp-inspector--selected {
+	background: var(--pd-void-base, #000000);
+	border: 1px solid var(--pd-grey-trim, #334155);
+	box-shadow: none;
+}
+
+.player-hud-root.pos-stats :is(.stats-analytics-void) .vpp-inspector--premium.vpp-inspector--selected {
+	border-left: 3px solid var(--pd-data-cyan, #14b8a6);
+}
+
+.player-hud-root.pos-stats :is(.stats-analytics-void) .vpp-chart--premium :global(.ar-svg line),
+.player-hud-root.pos-stats :is(.stats-analytics-void) .vpp-chart--premium :global(.ar-svg polygon) {
+	stroke: var(--pd-data-cyan, #14b8a6);
+}
+
+.player-hud-root.pos-stats :is(.stats-analytics-void) .vpp-inspector__empty-icon {
+	box-shadow: none;
+	border: 1px solid var(--pd-grey-trim, #334155);
+	color: var(--pd-data-cyan, #14b8a6);
+}
+
+/* No nav tile chrome inside telemetry wells */
+.player-hud-root.pos-stats :is(.stats-analytics-void) .vpp-root--premium :is(.pd-os-tab-rail, .stats-chip-rail) {
+	display: none;
+}
+
+/* Stats workout band — Z2 solid panel */
+.player-hud-root.pos-stats .stats-workout-band.pd-os-deck--hero {
+	background: var(--pd-navy-panel, #0f172a);
+	border: 1px solid var(--pd-grey-trim, #334155);
+	box-shadow: none;
+}
+
+.player-hud-root.pos-stats .stats-workout-band .pd-os-deck__well.dossier-workout__chart {
+	background: var(--pd-void-base, #000000);
+	border: 1px solid var(--pd-grey-trim, #334155);
+	box-shadow: none;
+}
+
+/* Workout window chips — matte chamfer, telemetry isolation */
+.player-hud-root.pos-stats .stats-chip {
+	border: 1px solid var(--pd-grey-trim, #334155);
+	background: var(--pd-navy-panel, #0f172a);
+	box-shadow: none;
+	clip-path: polygon(
+		var(--pd-chamfer-sm, 6px) 0%,
+		100% 0%,
+		100% calc(100% - var(--pd-chamfer-sm, 6px)),
+		calc(100% - var(--pd-chamfer-sm, 6px)) 100%,
+		0% 100%,
+		0% var(--pd-chamfer-sm, 6px)
+	);
+	transition: border-color 100ms ease, color 100ms ease;
+}
+
+.player-hud-root.pos-stats .stats-chip:hover,
+.player-hud-root.pos-stats .stats-chip--on {
+	border-color: var(--pd-data-cyan, #14b8a6);
+	color: var(--pd-data-cyan, #14b8a6);
+	box-shadow: none;
+	transform: none;
+}
+
+.player-hud-root.pos-stats .stats-achievement-row.pd-os-deck {
+	background: var(--pd-navy-panel, #0f172a);
+	border: 1px solid var(--pd-grey-trim, #334155);
+	box-shadow: none;
+	clip-path: polygon(
+		var(--pd-chamfer-sm, 6px) 0%,
+		100% 0%,
+		100% calc(100% - var(--pd-chamfer-sm, 6px)),
+		calc(100% - var(--pd-chamfer-sm, 6px)) 100%,
+		0% 100%,
+		0% var(--pd-chamfer-sm, 6px)
+	);
+}
+
+.player-hud-root.pos-stats .stats-achievement-row.pd-os-deck:hover {
+	border-color: var(--pd-grey-trim, #334155);
+	box-shadow: none;
+}
+
+.player-hud-root.pos-stats .stats-achievement-row--unlocked .dossier-badge__label {
+	color: var(--pd-data-cyan, #14b8a6);
+	text-shadow: none;
+}
+
+.player-hud-root.pos-stats .stats-achievement-row--elite .dossier-badge__icon {
+	color: var(--pd-data-cyan, #14b8a6);
+	filter: none;
+}
+
+.player-hud-root.pos-stats .stats-achievement-deck__status .pd-mono {
+	color: var(--pd-data-cyan, #14b8a6);
+	font-variant-numeric: tabular-nums;
+}
+
+.player-hud-root.pos-stats .pd-hq-section-head__eyebrow,
+.player-hud-root.pos-stats .pd-label {
+	color: var(--pd-grey-trim, #334155);
+}
+
+.player-hud-root.pos-stats .pd-hq-section-head__title {
+	color: var(--pd-atom-amber, #d97706);
+	font-family: var(--pd-font-mono, ui-monospace, monospace);
+	text-transform: uppercase;
+	letter-spacing: 0.1em;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.player-hud-root[data-region='quartermaster-armory'] .qa-card.pd-os-deck,
+	.player-hud-root.pos-stats .stats-chip,
+	.player-hud-root.pos-stats .stats-achievement-row.pd-os-deck {
+		transition: none !important;
+	}
+}
+
+.player-hud-root[data-dopamine='off'][data-region='quartermaster-armory'] .qa-card.pd-os-deck:hover,
+.player-hud-root[data-dopamine='off'].pos-stats .stats-chip:hover {
+	transform: none;
+}

@@ -55,6 +55,7 @@
 	} from '$lib/player/workout/coachMissionFlow.js';
 	import { repairIntentPrescription } from '$lib/types/intent.js';
 	import '$lib/styles/active-bounties.css';
+	import MissionHeroModal from '$lib/components/hud/MissionHeroModal.svelte';
 
 	let {
 		embedded = false,
@@ -92,6 +93,7 @@
 	 * does NOT affect XP, progress, or intent fulfilment.
 	 */
 	let approvedIntentIds = $state<Set<string>>(new Set());
+	let missionModalQuest = $state<QuestTask | null>(null);
 
 	const quests = $derived(questsProp ?? internalQuests);
 	const loading = $derived(loadingProp ?? internalLoading);
@@ -481,6 +483,50 @@
 		}
 	}
 
+	function shouldOpenMissionHeroModal(quest: QuestTask): boolean {
+		return quest.lifecycle === 'complete' && quest.actionHref.includes('/player/workout');
+	}
+
+	function formatMissionId(id: string): string {
+		const normalized = id.trim().toUpperCase().replace(/[^A-Z0-9_-]/g, '_');
+		return normalized.length > 24 ? `${normalized.slice(0, 24)}…` : normalized;
+	}
+
+	function buildMissionModalReadout(quest: QuestTask): string {
+		const parts: string[] = [];
+		if (quest.senderLabel) parts.push(quest.senderLabel);
+		const drill = drillPreviewByQuestId[quest.id]?.line;
+		if (drill) parts.push(drill);
+		const reward = formatQuestRewardLabel(quest);
+		if (reward) parts.push(reward);
+		return parts.join(' · ') || 'Confirm mission parameters before training handoff.';
+	}
+
+	function completeQuestHandoff(quest: QuestTask) {
+		const deferUntilLog = shouldDeferQuestCompletionUntilWorkoutLog(quest);
+		if (!deferUntilLog) {
+			questProgress = markQuestCompleted(quest.id, questProgress);
+		}
+		if (quest.source === 'coach_intent' || quest.source === 'coach_homework') {
+			stashQuestHandoff(quest);
+		}
+		goto(resolve(quest.actionHref));
+		if (!deferUntilLog && questsProp === undefined) {
+			internalQuests = patchQuestLifecycle(internalQuests);
+		}
+	}
+
+	function engageMissionModal() {
+		const quest = missionModalQuest;
+		if (!quest) return;
+		missionModalQuest = null;
+		completeQuestHandoff(quest);
+	}
+
+	function terminateMissionModal() {
+		missionModalQuest = null;
+	}
+
 	/** @param {QuestTask} quest */
 	function handleQuestAction(quest: QuestTask) {
 		if (quest.lifecycle === 'accept') {
@@ -495,17 +541,11 @@
 		}
 
 		if (quest.lifecycle === 'complete') {
-			const deferUntilLog = shouldDeferQuestCompletionUntilWorkoutLog(quest);
-			if (!deferUntilLog) {
-				questProgress = markQuestCompleted(quest.id, questProgress);
+			if (shouldOpenMissionHeroModal(quest)) {
+				missionModalQuest = quest;
+				return;
 			}
-			if (quest.source === 'coach_intent' || quest.source === 'coach_homework') {
-				stashQuestHandoff(quest);
-			}
-			goto(resolve(quest.actionHref));
-			if (!deferUntilLog && questsProp === undefined) {
-				internalQuests = patchQuestLifecycle(internalQuests);
-			}
+			completeQuestHandoff(quest);
 			return;
 		}
 
@@ -766,4 +806,13 @@
 		<p class="quest-log__placeholder" aria-hidden="true">NO ACTIVE MISSIONS</p>
 	{/if}
 </section>
+
+<MissionHeroModal
+	open={missionModalQuest != null}
+	missionId={missionModalQuest ? formatMissionId(missionModalQuest.id) : ''}
+	title={missionModalQuest?.title ?? ''}
+	readout={missionModalQuest ? buildMissionModalReadout(missionModalQuest) : ''}
+	onEngage={engageMissionModal}
+	onTerminate={terminateMissionModal}
+/>
 

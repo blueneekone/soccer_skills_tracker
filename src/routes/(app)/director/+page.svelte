@@ -112,8 +112,8 @@
 		<h2 class="director-console-page__title">Director Portal</h2>
 	</div>
 
-	<!-- Mobile-only horizontal tab strip -->
-	<div class="dir-mobile-tabs">
+	<!-- Z4 mobile tab rail -->
+	<div class="director-z4-tab-rail" role="navigation" aria-label="Director sections">
 		{#each [
 			{ label: 'Home',     icon: 'nav.home' as IconName,            tab: 'home' },
 			{ label: 'Roster',   icon: 'user.group' as IconName,          tab: 'teams' },
@@ -123,10 +123,10 @@
 		] as item (item.tab)}
 			<a
 				href="/director?tab={item.tab}"
-				class="dir-mobile-tabs__pill"
-				class:dir-mobile-tabs__pill--active={activeTab === item.tab}
+				class="director-z4-tab-rail__link"
+				class:director-z4-tab-rail__link--active={activeTab === item.tab}
 			>
-				<Icon name={item.icon} size={18} class="dir-mobile-tabs__icon" />
+				<Icon name={item.icon} size={18} />
 				{item.label}
 			</a>
 		{/each}
@@ -178,103 +178,3 @@
 		</section>
 	{/if}
 </div>
-
-<style>
-	.director-console-page__header {
-		display: flex;
-		align-items: center;
-		gap: 12px;
-		flex-wrap: wrap;
-		margin-bottom: 16px;
-	}
-
-	.director-console-page__title {
-		margin: 0;
-		font-size: 1.125rem;
-		font-weight: 600;
-		letter-spacing: -0.03em;
-		color: var(--text-primary);
-	}
-
-	.director-console-page__section {
-		margin-top: 0;
-	}
-
-	/* Field Ops gets the full canvas width with no extra wrappers */
-	.director-console-page__section--full {
-		width: 100%;
-		box-sizing: border-box;
-	}
-
-	.director-console-fallback {
-		margin: 0;
-		font-size: 13px;
-		color: var(--text-secondary);
-	}
-
-	/* ── Mobile tab strip ─────────────────────────────────────────────────── */
-	.dir-mobile-tabs {
-		display: none; /* shown only on mobile via media query below */
-		overflow-x: auto;
-		scrollbar-width: none;
-		height: 48px;
-		align-items: center;
-		gap: 6px;
-		padding: 0 4px;
-		margin-bottom: 12px;
-	}
-
-	.dir-mobile-tabs::-webkit-scrollbar {
-		display: none;
-	}
-
-	.dir-mobile-tabs__pill {
-		display: inline-flex;
-		align-items: center;
-		gap: 5px;
-		min-height: 36px;
-		min-width: 36px;
-		white-space: nowrap;
-		padding: 6px 12px;
-		border-radius: 999px;
-		border: 1px solid rgba(255, 255, 255, 0.1);
-		background: rgba(255, 255, 255, 0.06);
-		color: rgba(255, 255, 255, 0.5);
-		font-family: monospace;
-		font-size: 10px;
-		text-transform: uppercase;
-		letter-spacing: 0.1em;
-		text-decoration: none;
-		flex-shrink: 0;
-		transition: background 0.15s, border-color 0.15s, color 0.15s;
-	}
-
-	.dir-mobile-tabs__pill--active {
-		background: rgba(20, 184, 166, 0.12);
-		border-color: rgba(20, 184, 166, 0.4);
-		color: #14b8a6;
-	}
-
-	.dir-mobile-tabs__pill :global(svg) {
-		width: 18px;
-		height: 18px;
-		flex-shrink: 0;
-	}
-
-	/* ── Responsive ───────────────────────────────────────────────────────── */
-	@media (max-width: 767.98px) {
-		.director-console-page__header {
-			display: none;
-		}
-
-		.dir-mobile-tabs {
-			display: flex;
-		}
-	}
-
-	@media (max-width: 1023.98px) {
-		.director-console-page {
-			padding-bottom: calc(7rem + env(safe-area-inset-bottom, 0px));
-		}
-	}
-</style>

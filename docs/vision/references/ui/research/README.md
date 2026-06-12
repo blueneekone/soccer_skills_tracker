@@ -1,34 +1,53 @@
-# Gemini Deep Research — UI visual system (owner archive)
+# Gemini Deep Research — UI visual system
 
-**Status:** **TABLED — post-launch visual system**
+**Status:** **ACTIVE** — owner reopened Platform visual system (`ROADMAP.md` · 2026-06-11)
 
-Product owner stores **Gemini Deep Research** exports here (PDF, markdown, or linked notes). These reports inform a future **Platform Visual System** track — custom chrome, Flow artwork direction, and cross-persona visual cohesion beyond the current Player OS foundation.
+Gemini Deep Research exports and derived engineering notes live here. Agents may **read** this folder for token/layout authority during visual sprints. Do **not** wire PNG chrome from §C into production bundles until an explicit sprint scopes asset ingest.
+
+## Ingested artifacts
+
+| File | Purpose |
+|------|---------|
+| [`SSTracker-Visual-System-Research-Report.pdf`](./SSTracker-Visual-System-Research-Report.pdf) | Canonical 18-page spec (§A–I) |
+| [`TOKEN_GAP_ANALYSIS.md`](./TOKEN_GAP_ANALYSIS.md) | Research §B vs `app.css` / `player-dossier.css` gap table |
+| [`OWNER_DECISION_CHECKLIST.md`](./OWNER_DECISION_CHECKLIST.md) | §H — eight owner choices before PNG/chamfer sweeps |
+| [`PLATFORM_VISUAL_REDESIGN_PLAN.md`](./PLATFORM_VISUAL_REDESIGN_PLAN.md) | Iterative VS-* sprint phases |
+| [`CDO_PROMPT_LIBRARY.md`](./CDO_PROMPT_LIBRARY.md) | Copy-paste prompts for Gemini Vanguard Architect AI |
 
 ## What belongs here
 
-- Gemini Deep Research exports (`.pdf`, `.md`)
+- Gemini Deep Research exports (`.pdf`, derived `.md`)
 - Owner annotations on visual system direction
-- Flow asset generation briefs (reference only)
+- Flow asset generation briefs (reference only — generation is a **separate owner session** per §D)
 
 ## Rules (agents + contributors)
 
-- **Read-only** until the owner reopens the **Platform Visual System** track in `ROADMAP.md`.
-- **Do not wire** research content into Svelte components, tokens, or static assets in functional sprints.
-- **Do not** implement custom chrome PNGs, Gemini-generated UI art, or avatar layers from this folder.
-- Functional launch work uses existing Player/Parent/Coach shells and `defaultPortraitV2` portrait bar — see [`FUNCTIONAL_MVP.md`](../../FUNCTIONAL_MVP.md) and [`.cursor/rules/launch-focus.mdc`](../../../../.cursor/rules/launch-focus.mdc).
+- **Phase 1 build:** CSS tokens + layout grammar — **no PNG requirement**
+- **Phase 2 polish:** Platform chrome PNGs (§C manifest) → reference folders under [`../`](../README.md), not `static/` until sprint says so
+- **Avatar / character art:** [`../../character/`](../../character/README.md) — reference only; launch ships `defaultPortraitV2` + initials
+- Functional launch invariants still apply: bento 12-col, persona separation, COPPA gates
 
-## Active UI references (OK for layout tokens)
+## Reference image folders (§G)
 
-Layout and deck grammar refs remain under [`../`](../README.md) (`references/ui/coach|player|parent|…`) — holo **frame** and spacing only, not bust art.
+Drop layout/chrome mocks here (not character busts):
 
-## When owner reopens
+```
+docs/vision/references/ui/{player,coach,parent,shared}/
+ref-{persona}-{category}-{name}-option-{a-d}.png
+```
 
-1. Update `ROADMAP.md` — move Platform visual system from **TABLED** to **Planned**.
-2. Add sprint row with explicit file list and VA proof.
-3. Lift read-only gate in `launch-focus.mdc`.
+Example: `ref-player-z2panel-edgeglass-option-a.png`
+
+## When implementing
+
+1. Read [`TOKEN_GAP_ANALYSIS.md`](./TOKEN_GAP_ANALYSIS.md)
+2. Complete [`OWNER_DECISION_CHECKLIST.md`](./OWNER_DECISION_CHECKLIST.md) (owner)
+3. Add sprint row to `ROADMAP.md` with explicit file list
+4. Map tokens to `var(--pd-color-*)` — avoid new hard-coded hex in components
 
 ## Cross-links
 
-- Launch focus rule: [`.cursor/rules/launch-focus.mdc`](../../../../.cursor/rules/launch-focus.mdc)
-- Functional MVP: [`FUNCTIONAL_MVP.md`](../../FUNCTIONAL_MVP.md)
-- Avatar builder (separate defer): [`../character/README.md`](../../character/README.md)
+- UI ref index: [`../README.md`](../README.md)
+- Launch focus: [`.cursor/rules/launch-focus.mdc`](../../../../.cursor/rules/launch-focus.mdc)
+- Avatar defer: [`../../character/README.md`](../../character/README.md)
+- Player instruments: [`../../../PLAYER_OS_INSTRUMENT_TAXONOMY.md`](../../../PLAYER_OS_INSTRUMENT_TAXONOMY.md)

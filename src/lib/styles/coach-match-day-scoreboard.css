@@ -1,0 +1,378 @@
+/**
+ * VS-3d — COACH_MATCH_DAY_SCOREBOARD
+ * Match-day (/coach/match-day) SIEM sideline scoreboard.
+ * Z0 void · Z1 log well · Z2 score cells · Z4 match strap.
+ */
+
+.coach-os-root .coach-match-shell {
+	--pd-chamfer-md: 8px;
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	height: 100vh;
+	max-width: 42rem;
+	margin: 0 auto;
+	overflow: hidden;
+	background: var(--pd-void-base, #000000);
+	color: #e2e8f0;
+	font-family: ui-monospace, 'Geist Mono', monospace;
+}
+
+/* ── Z0 void — no decorative gradients ─────────────────────────────────────── */
+.coach-os-root .coach-match-shell::before,
+.coach-os-root .coach-match-shell::after {
+	display: none;
+}
+
+/* ── Z4 match strap (clock + period) ──────────────────────────────────────── */
+.coach-os-root .coach-match-z4-strap {
+	position: relative;
+	z-index: 10;
+	flex-shrink: 0;
+	margin: 12px 0.75rem 0.5rem;
+	padding: 0.65rem 1rem;
+	background: var(--pd-navy-panel, #0f172a);
+	border: 1px solid var(--pd-grey-trim, #334155);
+	border-radius: 0;
+	box-shadow: none;
+	backdrop-filter: none;
+	-webkit-backdrop-filter: none;
+	clip-path: polygon(
+		var(--pd-chamfer-md, 8px) 0%,
+		100% 0%,
+		100% calc(100% - var(--pd-chamfer-md, 8px)),
+		calc(100% - var(--pd-chamfer-md, 8px)) 100%,
+		0% 100%,
+		0% var(--pd-chamfer-md, 8px)
+	);
+}
+
+.coach-os-root .coach-match-z4-strap__label {
+	margin: 0 0 0.25rem;
+	font-size: 10px;
+	font-weight: 600;
+	letter-spacing: 0.12em;
+	text-transform: uppercase;
+	color: var(--pd-grey-trim, #334155);
+}
+
+.coach-os-root .coach-match-z4-strap__clock {
+	margin: 0;
+	font-size: 24px;
+	font-weight: 700;
+	font-variant-numeric: tabular-nums;
+	letter-spacing: 0.04em;
+	color: var(--pd-atom-amber, #d97706);
+	line-height: 1.1;
+}
+
+.coach-os-root .coach-match-z4-strap__period {
+	margin: 0.35rem 0 0;
+	font-size: 10px;
+	font-weight: 700;
+	letter-spacing: 0.14em;
+	text-transform: uppercase;
+	color: #f8fafc;
+}
+
+.coach-os-root .coach-match-z4-strap__team {
+	margin: 0.15rem 0 0;
+	font-size: 9px;
+	font-weight: 600;
+	letter-spacing: 0.1em;
+	text-transform: uppercase;
+	color: var(--pd-grey-trim, #334155);
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.coach-os-root .coach-match-exit {
+	position: absolute;
+	top: 0.75rem;
+	right: 0.75rem;
+	z-index: 50;
+}
+
+/* ── Main stage: Z2 scores + Z1 log ───────────────────────────────────────── */
+.coach-os-root .coach-match-main {
+	display: grid;
+	grid-template-columns: 1fr minmax(9rem, 38%);
+	gap: 0.5rem;
+	flex: 1 1 auto;
+	min-height: 0;
+	padding: 0 0.75rem;
+}
+
+@media (max-width: 22rem) {
+	.coach-os-root .coach-match-main {
+		grid-template-columns: 1fr;
+		grid-template-rows: auto minmax(6rem, 1fr);
+	}
+}
+
+.coach-os-root .coach-match-z2-row {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 0.5rem;
+	align-content: start;
+}
+
+.coach-os-root .coach-match-z2-cell {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 0.35rem;
+	min-height: 8.5rem;
+	padding: 0.75rem 0.5rem;
+	background: var(--pd-navy-panel, #0f172a);
+	border: 1px solid var(--pd-grey-trim, #334155);
+	border-radius: 0;
+	box-shadow: none;
+	cursor: pointer;
+	clip-path: polygon(
+		var(--pd-chamfer-md, 8px) 0%,
+		100% 0%,
+		100% calc(100% - var(--pd-chamfer-md, 8px)),
+		calc(100% - var(--pd-chamfer-md, 8px)) 100%,
+		0% 100%,
+		0% var(--pd-chamfer-md, 8px)
+	);
+	transition: none;
+}
+
+.coach-os-root .coach-match-z2-cell:hover {
+	border-color: var(--pd-data-cyan, #14b8a6);
+}
+
+.coach-os-root .coach-match-z2-cell--flash {
+	background: color-mix(in srgb, var(--pd-data-cyan, #14b8a6) 22%, var(--pd-navy-panel, #0f172a));
+	border-color: var(--pd-data-cyan, #14b8a6);
+}
+
+.coach-os-root .coach-match-z2-cell__label {
+	margin: 0;
+	font-size: 10px;
+	font-weight: 600;
+	letter-spacing: 0.12em;
+	text-transform: uppercase;
+	color: var(--pd-grey-trim, #334155);
+}
+
+.coach-os-root .coach-match-z2-cell__score {
+	margin: 0;
+	font-size: clamp(3rem, 14vw, 4.5rem);
+	font-weight: 700;
+	font-variant-numeric: tabular-nums;
+	line-height: 1;
+	color: var(--pd-data-cyan, #14b8a6);
+}
+
+/* ── Z1 match-log well ────────────────────────────────────────────────────── */
+.coach-os-root .coach-match-z1-well {
+	display: flex;
+	flex-direction: column;
+	min-height: 0;
+	padding: 0;
+	background: var(--pd-void-base, #000000);
+	border: 0;
+}
+
+.coach-os-root .coach-match-z1-well__label {
+	margin: 0 0 0.35rem;
+	flex-shrink: 0;
+	font-size: 10px;
+	font-weight: 600;
+	letter-spacing: 0.12em;
+	text-transform: uppercase;
+	color: var(--pd-grey-trim, #334155);
+}
+
+.coach-os-root .coach-match-z1-log {
+	flex: 1 1 auto;
+	min-height: 0;
+	overflow: hidden;
+	background: var(--pd-void-base, #000000);
+	border-left: 1px solid var(--pd-grey-trim, #334155);
+	padding-left: 0.5rem;
+}
+
+@media (max-width: 22rem) {
+	.coach-os-root .coach-match-z1-log {
+		border-left: 0;
+		border-top: 1px solid var(--pd-grey-trim, #334155);
+		padding-left: 0;
+		padding-top: 0.5rem;
+	}
+}
+
+.coach-os-root .coach-match-z1-log__scroll {
+	height: 100%;
+	overflow-y: auto;
+	padding: 0.25rem 0;
+	font-size: 10px;
+	line-height: 1.45;
+}
+
+.coach-os-root .coach-match-z1-log__empty {
+	margin: 0;
+	padding: 1.5rem 0.5rem;
+	text-align: center;
+	font-size: 9px;
+	letter-spacing: 0.1em;
+	text-transform: uppercase;
+	color: var(--pd-grey-trim, #334155);
+}
+
+.coach-os-root .coach-match-z1-log__line {
+	margin: 0 0 0.35rem;
+	padding-left: 0.35rem;
+	border-left: 1px solid var(--pd-grey-trim, #334155);
+	color: #94a3b8;
+	word-break: break-word;
+}
+
+.coach-os-root .coach-match-z1-log__line--latest {
+	border-left-color: var(--pd-data-cyan, #14b8a6);
+	color: var(--pd-data-cyan, #14b8a6);
+}
+
+.coach-os-root .coach-match-z1-log__line--warn {
+	color: var(--pd-atom-amber, #d97706);
+}
+
+/* ── Telemetry deck (functional — flat SIEM) ──────────────────────────────── */
+.coach-os-root .coach-match-telemetry {
+	flex-shrink: 0;
+	display: flex;
+	flex-direction: column;
+	min-height: 0;
+	margin-top: auto;
+	padding: 0.75rem;
+	border-top: 1px solid var(--pd-grey-trim, #334155);
+	background: var(--pd-navy-panel, #0f172a);
+}
+
+.coach-os-root .coach-match-telemetry__label {
+	margin: 0 0 0.5rem;
+	font-size: 9px;
+	font-weight: 600;
+	letter-spacing: 0.12em;
+	text-transform: uppercase;
+	color: var(--pd-grey-trim, #334155);
+}
+
+.coach-os-root .coach-match-roster {
+	display: flex;
+	gap: 0.35rem;
+	overflow-x: auto;
+	margin-bottom: 0.65rem;
+	padding-bottom: 0.25rem;
+	scrollbar-width: none;
+}
+
+.coach-os-root .coach-match-roster::-webkit-scrollbar {
+	display: none;
+}
+
+.coach-os-root .coach-match-roster__chip {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	flex-shrink: 0;
+	width: 3rem;
+	height: 3rem;
+	padding: 0;
+	font-family: inherit;
+	background: var(--pd-void-base, #000000);
+	border: 1px solid var(--pd-grey-trim, #334155);
+	border-radius: 0;
+	cursor: pointer;
+	clip-path: polygon(
+		var(--pd-chamfer-sm, 4px) 0%,
+		100% 0%,
+		100% calc(100% - var(--pd-chamfer-sm, 4px)),
+		calc(100% - var(--pd-chamfer-sm, 4px)) 100%,
+		0% 100%,
+		0% var(--pd-chamfer-sm, 4px)
+	);
+}
+
+.coach-os-root .coach-match-roster__chip--active {
+	border-color: var(--pd-data-cyan, #14b8a6);
+	box-shadow: inset 0 0 0 1px var(--pd-data-cyan, #14b8a6);
+}
+
+.coach-os-root .coach-match-roster__glyph {
+	font-size: 11px;
+	font-weight: 700;
+	color: #f8fafc;
+}
+
+.coach-os-root .coach-match-roster__pos {
+	font-size: 7px;
+	color: var(--pd-grey-trim, #334155);
+}
+
+.coach-os-root .coach-match-pad-grid {
+	display: grid;
+	grid-template-columns: repeat(3, 1fr);
+	gap: 0.35rem;
+}
+
+.coach-os-root .coach-match-pad {
+	min-height: 3.25rem;
+	padding: 0.35rem 0.25rem;
+	font-family: inherit;
+	font-size: 9px;
+	font-weight: 700;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: #e2e8f0;
+	background: var(--pd-void-base, #000000);
+	border: 1px solid var(--pd-grey-trim, #334155);
+	border-radius: 0;
+	box-shadow: none;
+	cursor: pointer;
+	clip-path: polygon(
+		var(--pd-chamfer-sm, 4px) 0%,
+		100% 0%,
+		100% calc(100% - var(--pd-chamfer-sm, 4px)),
+		calc(100% - var(--pd-chamfer-sm, 4px)) 100%,
+		0% 100%,
+		0% var(--pd-chamfer-sm, 4px)
+	);
+}
+
+.coach-os-root .coach-match-pad:hover:not(:disabled) {
+	border-color: var(--pd-data-cyan, #14b8a6);
+	color: var(--pd-data-cyan, #14b8a6);
+}
+
+.coach-os-root .coach-match-pad--positive {
+	border-color: color-mix(in srgb, var(--pd-data-cyan, #14b8a6) 45%, var(--pd-grey-trim, #334155));
+}
+
+.coach-os-root .coach-match-pad--warn {
+	border-color: color-mix(in srgb, var(--pd-atom-amber, #d97706) 45%, var(--pd-grey-trim, #334155));
+}
+
+.coach-os-root .coach-match-pad--flash {
+	background: color-mix(in srgb, var(--pd-data-cyan, #14b8a6) 15%, var(--pd-void-base, #000000));
+	border-color: var(--pd-data-cyan, #14b8a6);
+}
+
+.coach-os-root .coach-match-pad:disabled {
+	opacity: 0.35;
+	cursor: not-allowed;
+}
+
+.coach-os-root .coach-match-roster__empty {
+	margin: 0;
+	padding: 0.5rem 0;
+	font-size: 9px;
+	color: var(--pd-grey-trim, #334155);
+	white-space: nowrap;
+}

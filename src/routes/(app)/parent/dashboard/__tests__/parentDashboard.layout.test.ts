@@ -14,8 +14,14 @@ const PAGE = join(__dirname, '..', '+page.svelte');
 const src = readFileSync(PAGE, 'utf-8');
 
 describe('/parent/dashboard — Liquid Bento (Sprint 1.1)', () => {
-	it('content wrapper references --bento-pad-liquid token', () => {
-		expect(src).toMatch(/--bento-pad-liquid/);
+	it('parent lounge shell provides --bento-pad-liquid via layout CSS', () => {
+		const layout = readFileSync(join(__dirname, '..', '..', '+layout.svelte'), 'utf-8');
+		const shellCss = readFileSync(
+			join(process.cwd(), 'src/lib/styles/parent-lounge-shell.css'),
+			'utf-8',
+		);
+		expect(layout).toMatch(/parent-lounge-shell/);
+		expect(shellCss).toMatch(/--bento-pad-liquid:\s*var\(--parent-lounge-gutter\)/);
 	});
 
 	it('uses 12-column liquid bento grid', () => {
@@ -27,13 +33,9 @@ describe('/parent/dashboard — Liquid Bento (Sprint 1.1)', () => {
 		expect(src).toMatch(/bento-span-4/);
 	});
 
-	it('the modal scrim backdrop-filter is legitimately scoped to a floating overlay', () => {
-		// The carve-out allows backdrop-filter on floating modal overlays.
-		// We confirm it's only used inside a modal/overlay context, not on data cards.
-		const backdropMatches = [...src.matchAll(/backdrop-filter/g)];
-		// All uses should be inside an element that also contains modal/overlay aria/class
-		// signals; we just assert it is not proliferating to non-floating elements.
-		expect(backdropMatches.length).toBeLessThanOrEqual(2);
+	it('bounty deploy modal uses Z3 scrim without backdrop blur', () => {
+		expect(src).toMatch(/parent-bounty-z3-modal-scrim/);
+		expect(src).not.toMatch(/backdrop-filter:\s*blur/);
 	});
 });
 

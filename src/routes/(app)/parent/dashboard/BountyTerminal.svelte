@@ -25,7 +25,6 @@
 	let rewardDollars = $state<number>(5);
 	let expiresAt = $state('');
 
-	// Criterion-specific fields
 	let targetReps = $state<number>(100);
 	let targetKj = $state<number>(50);
 	let targetDays = $state<number>(7);
@@ -54,8 +53,6 @@
 	}
 
 	function isFormValid(): boolean {
-		// No funding source → server rejects createBountyEscrow; block deploy up front
-		// (the funding-source warning banner directs the parent to link one).
 		if (!engine.hasFundingSource) return false;
 		if (!selectedPlayerEmail) return false;
 		if (!title.trim()) return false;
@@ -103,69 +100,30 @@
 	});
 </script>
 
-<div
-	class="tw-w-full tw-backdrop-blur-[40px] tw-bg-[#040f16]/85 tw-border tw-border-[#14b8a6]/20 tw-rounded-xl tw-p-6 tw-flex tw-flex-col tw-gap-5"
->
-	<!-- HEADER -->
-	<div class="tw-flex tw-flex-col tw-gap-1">
-		<div class="tw-flex tw-items-center tw-gap-2">
-			<span class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-[#14b8a6]/50 tw-uppercase">
-				//
-			</span>
-			<h2 class="tw-font-mono tw-text-[13px] tw-tracking-widest tw-text-[#14b8a6] tw-uppercase">
-				BOUNTY TERMINAL
-			</h2>
-		</div>
-		<p class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-[#14b8a6]/40 tw-uppercase">
-			[ DEPLOY ESCROW BOUNTY ]
-		</p>
-	</div>
+<div class="parent-bounty-terminal">
+	<header>
+		<h2 class="parent-bounty-terminal__title">Bounty terminal</h2>
+		<p class="parent-bounty-terminal__subtitle">Deploy escrow bounty</p>
+	</header>
 
-	<!-- DIVIDER -->
-	<div class="tw-w-full tw-h-px tw-bg-[#14b8a6]/10"></div>
+	<hr class="parent-bounty-divider" />
 
-	<!-- FUNDING SOURCE WARNING -->
 	{#if !engine.hasFundingSource}
-		<div
-			class="tw-rounded-lg tw-bg-[#ffcc00]/10 tw-border tw-border-[#ffcc00]/30 tw-px-4 tw-py-3 tw-flex tw-flex-col tw-gap-2 sm:tw-flex-row sm:tw-items-center sm:tw-justify-between"
-		>
-			<span class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-[#ffcc00] tw-uppercase">
-				Link a funding source before deploying bounties.
-			</span>
-			<a
-				href="#parent-funding-source"
-				class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-[#ffcc00] tw-uppercase tw-underline tw-underline-offset-2"
-			>
+		<div class="parent-bounty-alert parent-bounty-alert--pending">
+			<span>Link a funding source before deploying bounties.</span>
+			<a href="#parent-funding-source" class="parent-bounty-btn-audit parent-bounty-btn-audit--sm">
 				Open funding panel
 			</a>
 		</div>
 	{/if}
 
-	<!-- PLAYER SELECTOR -->
-	<div class="tw-flex tw-flex-col tw-gap-2">
-		<label
-			for="player-select"
-			class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-[#14b8a6]/40 tw-uppercase"
-		>
-			TARGET PLAYER
-		</label>
+	<div class="parent-bounty-field-group">
+		<label for="player-select" class="parent-bounty-field-label">Target player</label>
 		{#if engine.householdChildren.length === 0}
-			<div
-				class="tw-rounded-lg tw-bg-[#020202] tw-border tw-border-[#14b8a6]/10 tw-px-4 tw-py-3"
-			>
-				<span
-					class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-[#14b8a6]/30 tw-uppercase"
-				>
-					[ NO CHILDREN LINKED TO HOUSEHOLD ]
-				</span>
-			</div>
+			<p class="parent-bounty-empty__label">No children linked to household</p>
 		{:else}
-			<select
-				id="player-select"
-				bind:value={selectedPlayerEmail}
-				class="tw-w-full tw-font-mono tw-text-[11px] tw-tracking-widest tw-text-[#e0e0e0] tw-uppercase tw-bg-[#020202] tw-border tw-border-[#14b8a6]/20 tw-rounded-lg tw-px-4 tw-py-3 tw-outline-none focus:tw-border-[#14b8a6]/60 focus:tw-shadow-[0_0_10px_rgba(20, 184, 166,0.2)] tw-transition-all tw-duration-150 tw-appearance-none tw-cursor-pointer"
-			>
-				<option value="" disabled>— SELECT PLAYER —</option>
+			<select id="player-select" bind:value={selectedPlayerEmail} class="parent-bounty-field">
+				<option value="" disabled>— Select player —</option>
 				{#each engine.householdChildren as child (child.email)}
 					<option value={child.email}>{child.displayName} ({child.email})</option>
 				{/each}
@@ -173,127 +131,76 @@
 		{/if}
 	</div>
 
-	<!-- TITLE -->
-	<div class="tw-flex tw-flex-col tw-gap-2">
-		<label
-			for="bounty-title"
-			class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-[#14b8a6]/40 tw-uppercase"
-		>
-			BOUNTY TITLE <span class="tw-text-[#14b8a6]/25">— MAX 100 CHARS</span>
+	<div class="parent-bounty-field-group">
+		<label for="bounty-title" class="parent-bounty-field-label">
+			Bounty title — max 100 chars
 		</label>
 		<input
 			id="bounty-title"
 			type="text"
 			bind:value={title}
 			maxlength={100}
-			placeholder="e.g. 500 REPS THIS WEEK"
-			class="tw-w-full tw-font-mono tw-text-[11px] tw-tracking-widest tw-text-[#e0e0e0] tw-uppercase tw-bg-[#020202] tw-border tw-border-[#14b8a6]/20 tw-rounded-lg tw-px-4 tw-py-3 tw-outline-none focus:tw-border-[#14b8a6]/60 focus:tw-shadow-[0_0_10px_rgba(20, 184, 166,0.2)] tw-transition-all tw-duration-150 placeholder:tw-text-[#14b8a6]/20"
+			placeholder="e.g. 500 reps this week"
+			class="parent-bounty-field"
 		/>
-		<span class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-[#14b8a6]/25 tw-text-right">
-			{title.length}/100
-		</span>
+		<span class="parent-bounty-char-count">{title.length}/100</span>
 	</div>
 
-	<!-- CRITERION TYPE -->
-	<div class="tw-flex tw-flex-col tw-gap-3">
-		<p class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-[#14b8a6]/40 tw-uppercase">
-			COMPLETION CRITERION
-		</p>
-		<div class="tw-flex tw-flex-col tw-gap-2">
+	<div class="parent-bounty-field-group">
+		<p class="parent-bounty-field-label">Completion criterion</p>
+		<div class="parent-bounty-criterion-list">
 			{#each CRITERION_OPTIONS as opt (opt.id)}
 				{@const isActive = criterionType === opt.id}
-				<label
-					class="tw-flex tw-items-center tw-gap-3 tw-rounded-lg tw-px-4 tw-py-3 tw-border tw-cursor-pointer tw-transition-all tw-duration-150
-					{isActive
-						? 'tw-border-[#14b8a6]/60 tw-bg-[#14b8a6]/8 tw-shadow-[0_0_12px_rgba(20, 184, 166,0.2),inset_0_0_6px_rgba(20, 184, 166,0.08)]'
-						: 'tw-border-[#14b8a6]/10 tw-bg-transparent hover:tw-border-[#14b8a6]/30'}"
-				>
-					<input
-						type="radio"
-						name="criterion-type"
-						value={opt.id}
-						bind:group={criterionType}
-						class="tw-accent-[#14b8a6] tw-w-3 tw-h-3"
-					/>
-					<span
-						class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-uppercase
-						{isActive ? 'tw-text-[#14b8a6]' : 'tw-text-[#e0e0e0]/60'}"
-					>
-						{opt.label}
-					</span>
+				<label class="parent-bounty-criterion {isActive ? 'parent-bounty-criterion--active' : ''}">
+					<input type="radio" name="criterion-type" value={opt.id} bind:group={criterionType} />
+					<span class="parent-bounty-criterion__label">{opt.label}</span>
 				</label>
 			{/each}
 		</div>
 	</div>
 
-	<!-- DYNAMIC CRITERION FIELDS -->
-	<div class="tw-flex tw-flex-col tw-gap-3 tw-rounded-lg tw-bg-[#020202] tw-border tw-border-[#14b8a6]/10 tw-p-4">
-		<p class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-[#14b8a6]/30 tw-uppercase">
-			// CRITERION PARAMETERS
-		</p>
+	<div class="parent-bounty-params">
+		<p class="parent-bounty-params__eyebrow">Criterion parameters</p>
 
 		{#if criterionType === 'reps_count'}
-			<div class="tw-flex tw-flex-col tw-gap-2">
-				<label
-					for="target-reps"
-					class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-[#14b8a6]/40 tw-uppercase"
-				>
-					TARGET REPS
-				</label>
+			<div class="parent-bounty-field-group">
+				<label for="target-reps" class="parent-bounty-field-label">Target reps</label>
 				<input
 					id="target-reps"
 					type="number"
 					bind:value={targetReps}
 					min={1}
 					step={1}
-					class="tw-w-full tw-font-mono tw-text-[11px] tw-tracking-widest tw-text-[#e0e0e0] tw-bg-[#040f16] tw-border tw-border-[#14b8a6]/20 tw-rounded-lg tw-px-4 tw-py-3 tw-outline-none focus:tw-border-[#14b8a6]/60 tw-transition-all tw-duration-150"
+					class="parent-bounty-field"
 				/>
 			</div>
-
 		{:else if criterionType === 'workout_volume_kj'}
-			<div class="tw-flex tw-flex-col tw-gap-2">
-				<label
-					for="target-kj"
-					class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-[#14b8a6]/40 tw-uppercase"
-				>
-					TARGET KILOJOULES
-				</label>
+			<div class="parent-bounty-field-group">
+				<label for="target-kj" class="parent-bounty-field-label">Target kilojoules</label>
 				<input
 					id="target-kj"
 					type="number"
 					bind:value={targetKj}
 					min={1}
 					step={0.1}
-					class="tw-w-full tw-font-mono tw-text-[11px] tw-tracking-widest tw-text-[#e0e0e0] tw-bg-[#040f16] tw-border tw-border-[#14b8a6]/20 tw-rounded-lg tw-px-4 tw-py-3 tw-outline-none focus:tw-border-[#14b8a6]/60 tw-transition-all tw-duration-150"
+					class="parent-bounty-field"
 				/>
 			</div>
-
 		{:else if criterionType === 'streak_length'}
-			<div class="tw-flex tw-flex-col tw-gap-2">
-				<label
-					for="target-days"
-					class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-[#14b8a6]/40 tw-uppercase"
-				>
-					TARGET STREAK (DAYS)
-				</label>
+			<div class="parent-bounty-field-group">
+				<label for="target-days" class="parent-bounty-field-label">Target streak (days)</label>
 				<input
 					id="target-days"
 					type="number"
 					bind:value={targetDays}
 					min={1}
 					step={1}
-					class="tw-w-full tw-font-mono tw-text-[11px] tw-tracking-widest tw-text-[#e0e0e0] tw-bg-[#040f16] tw-border tw-border-[#14b8a6]/20 tw-rounded-lg tw-px-4 tw-py-3 tw-outline-none focus:tw-border-[#14b8a6]/60 tw-transition-all tw-duration-150"
+					class="parent-bounty-field"
 				/>
 			</div>
-
 		{:else if criterionType === 'gpa_threshold'}
-			<div class="tw-flex tw-flex-col tw-gap-2">
-				<label
-					for="minimum-gpa"
-					class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-[#14b8a6]/40 tw-uppercase"
-				>
-					MINIMUM GPA (0.0 – 4.0)
-				</label>
+			<div class="parent-bounty-field-group">
+				<label for="minimum-gpa" class="parent-bounty-field-label">Minimum GPA (0.0 – 4.0)</label>
 				<input
 					id="minimum-gpa"
 					type="number"
@@ -301,137 +208,87 @@
 					min={0}
 					max={4.0}
 					step={0.1}
-					class="tw-w-full tw-font-mono tw-text-[11px] tw-tracking-widest tw-text-[#e0e0e0] tw-bg-[#040f16] tw-border tw-border-[#14b8a6]/20 tw-rounded-lg tw-px-4 tw-py-3 tw-outline-none focus:tw-border-[#14b8a6]/60 tw-transition-all tw-duration-150"
+					class="parent-bounty-field"
 				/>
 			</div>
-
 		{:else if criterionType === 'mastery_node_unlock'}
-			<div class="tw-flex tw-flex-col tw-gap-3">
-				<div class="tw-flex tw-flex-col tw-gap-2">
-					<label
-						for="node-id"
-						class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-[#14b8a6]/40 tw-uppercase"
-					>
-						NODE ID
-					</label>
-					<input
-						id="node-id"
-						type="text"
-						bind:value={nodeId}
-						placeholder="skill_tree_node_id"
-						class="tw-w-full tw-font-mono tw-text-[11px] tw-tracking-widest tw-text-[#e0e0e0] tw-bg-[#040f16] tw-border tw-border-[#14b8a6]/20 tw-rounded-lg tw-px-4 tw-py-3 tw-outline-none focus:tw-border-[#14b8a6]/60 tw-transition-all tw-duration-150 placeholder:tw-text-[#14b8a6]/20"
-					/>
-				</div>
-				<div class="tw-flex tw-flex-col tw-gap-2">
-					<label
-						for="node-label"
-						class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-[#14b8a6]/40 tw-uppercase"
-					>
-						NODE LABEL
-					</label>
-					<input
-						id="node-label"
-						type="text"
-						bind:value={nodeLabel}
-						placeholder="e.g. Advanced Dribbling"
-						class="tw-w-full tw-font-mono tw-text-[11px] tw-tracking-widest tw-text-[#e0e0e0] tw-bg-[#040f16] tw-border tw-border-[#14b8a6]/20 tw-rounded-lg tw-px-4 tw-py-3 tw-outline-none focus:tw-border-[#14b8a6]/60 tw-transition-all tw-duration-150 placeholder:tw-text-[#14b8a6]/20"
-					/>
-				</div>
-				<div class="tw-flex tw-flex-col tw-gap-2">
-					<label
-						for="required-status"
-						class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-[#14b8a6]/40 tw-uppercase"
-					>
-						REQUIRED STATUS
-					</label>
-					<select
-						id="required-status"
-						bind:value={requiredStatus}
-						class="tw-w-full tw-font-mono tw-text-[11px] tw-tracking-widest tw-text-[#e0e0e0] tw-uppercase tw-bg-[#040f16] tw-border tw-border-[#14b8a6]/20 tw-rounded-lg tw-px-4 tw-py-3 tw-outline-none focus:tw-border-[#14b8a6]/60 tw-transition-all tw-duration-150 tw-appearance-none tw-cursor-pointer"
-					>
-						<option value="unlocked">UNLOCKED</option>
-						<option value="mastered">MASTERED</option>
-					</select>
-				</div>
+			<div class="parent-bounty-field-group">
+				<label for="node-id" class="parent-bounty-field-label">Node ID</label>
+				<input
+					id="node-id"
+					type="text"
+					bind:value={nodeId}
+					placeholder="skill_tree_node_id"
+					class="parent-bounty-field"
+				/>
+			</div>
+			<div class="parent-bounty-field-group">
+				<label for="node-label" class="parent-bounty-field-label">Node label</label>
+				<input
+					id="node-label"
+					type="text"
+					bind:value={nodeLabel}
+					placeholder="e.g. Advanced dribbling"
+					class="parent-bounty-field"
+				/>
+			</div>
+			<div class="parent-bounty-field-group">
+				<label for="required-status" class="parent-bounty-field-label">Required status</label>
+				<select id="required-status" bind:value={requiredStatus} class="parent-bounty-field">
+					<option value="unlocked">Unlocked</option>
+					<option value="mastered">Mastered</option>
+				</select>
 			</div>
 		{/if}
 	</div>
 
-	<!-- REWARD AMOUNT -->
-	<div class="tw-flex tw-flex-col tw-gap-2">
-		<label
-			for="reward-dollars"
-			class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-[#14b8a6]/40 tw-uppercase"
-		>
-			REWARD AMOUNT (USD) — MIN $1
-		</label>
-		<div class="tw-relative">
-			<span
-				class="tw-absolute tw-left-4 tw-top-1/2 -tw-translate-y-1/2 tw-font-mono tw-text-[11px] tw-text-[#14b8a6]/50"
-			>
-				$
-			</span>
+	<div class="parent-bounty-field-group">
+		<label for="reward-dollars" class="parent-bounty-field-label">Reward amount (USD) — min $1</label>
+		<div class="parent-bounty-field-wrap">
+			<span class="parent-bounty-field-wrap__prefix">$</span>
 			<input
 				id="reward-dollars"
 				type="number"
 				bind:value={rewardDollars}
 				min={1}
 				step={1}
-				class="tw-w-full tw-font-mono tw-text-[11px] tw-tracking-widest tw-text-[#e0e0e0] tw-bg-[#020202] tw-border tw-border-[#14b8a6]/20 tw-rounded-lg tw-pl-8 tw-pr-4 tw-py-3 tw-outline-none focus:tw-border-[#14b8a6]/60 focus:tw-shadow-[0_0_10px_rgba(20, 184, 166,0.2)] tw-transition-all tw-duration-150"
+				class="parent-bounty-field parent-bounty-field--currency"
 			/>
 		</div>
 	</div>
 
-	<!-- EXPIRY DATE -->
-	<div class="tw-flex tw-flex-col tw-gap-2">
-		<label
-			for="expires-at"
-			class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-[#14b8a6]/40 tw-uppercase"
-		>
-			BOUNTY EXPIRY DATE
-		</label>
+	<div class="parent-bounty-field-group">
+		<label for="expires-at" class="parent-bounty-field-label">Bounty expiry date</label>
 		<input
 			id="expires-at"
 			type="date"
 			bind:value={expiresAt}
 			min={minExpiryDate}
-			class="tw-w-full tw-font-mono tw-text-[11px] tw-tracking-widest tw-text-[#e0e0e0] tw-bg-[#020202] tw-border tw-border-[#14b8a6]/20 tw-rounded-lg tw-px-4 tw-py-3 tw-outline-none focus:tw-border-[#14b8a6]/60 focus:tw-shadow-[0_0_10px_rgba(20, 184, 166,0.2)] tw-transition-all tw-duration-150 tw-cursor-pointer"
+			class="parent-bounty-field"
 		/>
 	</div>
 
-	<!-- SUCCESS / ERROR STATES -->
 	{#if submitSuccess}
-		<div
-			class="tw-rounded-lg tw-bg-[#00ff66]/10 tw-border tw-border-[#00ff66]/30 tw-px-4 tw-py-3 tw-text-center"
-		>
-			<span class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-[#00ff66] tw-uppercase">
-				[ BOUNTY STAKED TO ESCROW — AWAITING PLAYER COMPLETION ]
-			</span>
+		<div class="parent-bounty-alert parent-bounty-alert--verified" role="status">
+			Bounty staked to escrow — awaiting player completion
 		</div>
 	{/if}
 	{#if submitError}
-		<div
-			class="tw-rounded-lg tw-bg-[#ff0055]/10 tw-border tw-border-[#ff0055]/30 tw-px-4 tw-py-3 tw-text-center"
-		>
-			<span class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-[#ff0055] tw-uppercase">
-				[ {submitError} ]
-			</span>
+		<div class="parent-bounty-alert parent-bounty-alert--error" role="alert">
+			{submitError}
 		</div>
 	{/if}
 
-	<!-- SUBMIT -->
 	<button
+		type="button"
 		onclick={handleSubmit}
 		disabled={!isFormValid() || submitting || engine.mutating}
-		class="tw-w-full tw-font-mono tw-text-[10px] tw-tracking-widest tw-uppercase tw-border tw-border-[#ffcc00]/40 tw-text-[#ffcc00] tw-bg-[#ffcc00]/5 tw-rounded-lg tw-px-6 tw-py-3.5 tw-transition-all tw-duration-200
-		{!isFormValid() || submitting || engine.mutating
-			? 'tw-opacity-40 tw-cursor-not-allowed'
-			: 'hover:tw-bg-[#ffcc00]/10 hover:tw-shadow-[0_0_12px_rgba(255,204,0,0.3)] hover:tw-border-[#ffcc00]/70'}"
+		class="parent-bounty-btn-deploy parent-bounty-btn-deploy--block"
 	>
 		{#if submitting || engine.mutating}
-			[ DEPLOYING BOUNTY... ]
+			Deploying bounty…
 		{:else}
-			[ DEPLOY ESCROW BOUNTY ]
+			Deploy bounty
 		{/if}
 	</button>
 </div>

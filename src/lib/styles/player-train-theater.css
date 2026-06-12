@@ -1,0 +1,272 @@
+/**
+ * VS-2a — TRAIN_EXECUTE_THEATER
+ * Player OS Execute instrument skin for /player/workout (pw-theater).
+ * Loads after player-dashboard-hud.css to override legacy G4 gradients/glow.
+ */
+
+/* ── Z0 void canvas ─────────────────────────────────────────────────────── */
+.player-hud-root.pw-page {
+	background: var(--pd-void-base, #000000);
+}
+
+/* ── Z3 hero deck ───────────────────────────────────────────────────────── */
+.player-hud-root .pw-theater.pd-os-deck--hero {
+	position: relative;
+	background: var(--pd-navy-panel, #0f172a);
+	border: 1px solid var(--pd-grey-trim, #334155);
+	box-shadow: 12px 12px 0 0 var(--pd-void-base, #000000);
+	clip-path: polygon(
+		var(--pd-chamfer-modal, 8px) 0%,
+		100% 0%,
+		100% calc(100% - var(--pd-chamfer-modal, 8px)),
+		calc(100% - var(--pd-chamfer-modal, 8px)) 100%,
+		0% 100%,
+		0% var(--pd-chamfer-modal, 8px)
+	);
+	overflow: visible;
+}
+
+.player-hud-root .pw-theater.pd-os-deck--hero > :not(.pw-theater__z4-scan) {
+	position: relative;
+	z-index: 2;
+}
+
+/* ── Z4 atompunk terminal chrome ────────────────────────────────────────── */
+.player-hud-root .pw-theater__z4-scan {
+	pointer-events: none;
+	position: absolute;
+	inset: 0;
+	z-index: 4;
+	border: 1.5px solid var(--pd-atom-amber, #d97706);
+	clip-path: inherit;
+	opacity: 1;
+}
+
+.player-hud-root .pw-theater__z4-scan::before {
+	content: '';
+	position: absolute;
+	inset: 0;
+	background: repeating-linear-gradient(
+		0deg,
+		transparent,
+		transparent 2px,
+		color-mix(in srgb, var(--pd-atom-amber, #d97706) 14%, transparent) 2px,
+		color-mix(in srgb, var(--pd-atom-amber, #d97706) 14%, transparent) 3px
+	);
+	opacity: 0.35;
+}
+
+.player-hud-root .pw-theater__z4-scan::after {
+	content: '';
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 10px;
+	height: 10px;
+	border-top: 1.5px solid var(--pd-atom-amber, #d97706);
+	border-left: 1.5px solid var(--pd-atom-amber, #d97706);
+}
+
+/* ── Z1 telemetry wells ─────────────────────────────────────────────────── */
+.player-hud-root .pw-theater .pd-os-deck__well,
+.player-hud-root .pw-theater .pw-mission-armed.pd-os-deck__well {
+	background: var(--pd-navy-panel, #0f172a);
+	border: 1px solid var(--pd-data-cyan, #14b8a6);
+	box-shadow: none;
+	clip-path: polygon(
+		var(--pd-chamfer-modal, 8px) 0%,
+		100% 0%,
+		100% calc(100% - var(--pd-chamfer-modal, 8px)),
+		calc(100% - var(--pd-chamfer-modal, 8px)) 100%,
+		0% 100%,
+		0% var(--pd-chamfer-modal, 8px)
+	);
+}
+
+/* ── Z2 configure panels ────────────────────────────────────────────────── */
+.player-hud-root .pw-theater__configure,
+.player-hud-root .pw-theater__execute {
+	background: var(--pd-navy-panel, #0f172a);
+}
+
+/* ── Typography: headers amber mono ───────────────────────────────────────── */
+.player-hud-root .pw-theater .pw-title,
+.player-hud-root .pw-theater .pw-exec__head-copy .pw-title {
+	font-family: var(--pd-font-mono, ui-monospace, monospace);
+	text-transform: uppercase;
+	letter-spacing: 0.12em;
+	color: var(--pd-atom-amber, #d97706);
+}
+
+.player-hud-root .pw-theater .pw-terminal-state {
+	font-family: var(--pd-font-mono, ui-monospace, monospace);
+	color: var(--pd-atom-amber, #d97706);
+}
+
+.player-hud-root .pw-theater .pd-panel-eyebrow,
+.player-hud-root .pw-theater .pw-eyebrow.pd-panel-eyebrow {
+	color: var(--pd-atom-amber, #d97706);
+}
+
+/* Quest / metadata labels */
+.player-hud-root .pw-theater .pw-dim,
+.player-hud-root .pw-theater .pd-label,
+.player-hud-root .pw-theater .pw-exec__head-copy .pw-eyebrow {
+	color: var(--pd-grey-trim, #334155);
+}
+
+/* Telemetry: cyan tabular */
+.player-hud-root .pw-theater .pw-data,
+.player-hud-root .pw-theater .pw-green,
+.player-hud-root .pw-theater .pw-telem,
+.player-hud-root .pw-theater .pw-exec__status .pw-est .pw-green,
+.player-hud-root .pw-theater .pw-exec__status .pw-est .pw-action,
+.player-hud-root .pw-theater .pw-gauge__head .pw-mono:not(.pw-eyebrow) {
+	color: var(--pd-data-cyan, #14b8a6);
+	font-variant-numeric: tabular-nums;
+}
+
+/* ── Focus / chip tiles — matte Z2, no gradient glow ────────────────────── */
+.player-hud-root .pw-theater .pw-focus__btn,
+.player-hud-root .pw-theater .pw-chip {
+	border: 1px solid var(--pd-grey-trim, #334155);
+	background: var(--pd-navy-panel, #0f172a);
+	box-shadow: none;
+	border-radius: 0;
+	clip-path: polygon(
+		var(--pd-chamfer-sm, 6px) 0%,
+		100% 0%,
+		100% calc(100% - var(--pd-chamfer-sm, 6px)),
+		calc(100% - var(--pd-chamfer-sm, 6px)) 100%,
+		0% 100%,
+		0% var(--pd-chamfer-sm, 6px)
+	);
+	transition: border-color 100ms ease, filter 100ms ease;
+}
+
+.player-hud-root .pw-theater .pw-focus__btn:hover,
+.player-hud-root .pw-theater .pw-chip:hover,
+.player-hud-root .pw-theater .pw-focus__btn:active,
+.player-hud-root .pw-theater .pw-chip:active {
+	border-color: var(--pd-data-cyan, #14b8a6);
+	box-shadow: none;
+	transform: none;
+}
+
+.player-hud-root .pw-theater .pw-focus__btn--on,
+.player-hud-root .pw-theater .pw-chip--on {
+	border-color: var(--pd-data-cyan, #14b8a6);
+	color: var(--pd-text, #f4f4f5);
+}
+
+/* RPE gauge — telemetry cyan only (gold reserved for commit) */
+.player-hud-root .pw-theater .pw-gauge--rpe .pw-gauge__bar,
+.player-hud-root .pw-theater .pw-gauge__bar--rpe {
+	border-color: var(--pd-data-cyan, #14b8a6);
+}
+
+.player-hud-root .pw-theater .pw-gauge--rpe .pw-gauge__bar-fill {
+	background: var(--pd-data-cyan, #14b8a6);
+}
+
+/* Form fields — chamfer wells, no radius */
+.player-hud-root .pw-theater .pw-field {
+	display: block;
+	width: 100%;
+	box-sizing: border-box;
+	padding: 0.5rem 0.65rem;
+	font-family: var(--pd-font-mono, ui-monospace, monospace);
+	font-size: 0.78rem;
+	color: var(--pd-data-cyan, #14b8a6);
+	background: var(--pd-void-base, #000000);
+	border: 1px solid var(--pd-data-cyan, #14b8a6);
+	border-radius: 0;
+	clip-path: polygon(
+		var(--pd-chamfer-sm, 6px) 0%,
+		100% 0%,
+		100% calc(100% - var(--pd-chamfer-sm, 6px)),
+		calc(100% - var(--pd-chamfer-sm, 6px)) 100%,
+		0% 100%,
+		0% var(--pd-chamfer-sm, 6px)
+	);
+}
+
+.player-hud-root .pw-theater .pw-field:focus-visible {
+	outline: 2px solid var(--pd-data-cyan, #14b8a6);
+	outline-offset: 2px;
+}
+
+/* ── Actions: EXEC_COMMIT single gold focal ─────────────────────────────── */
+.player-hud-root .pw-theater .pw-exec.pw-exec--transmit {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 0.5rem;
+	min-height: 3.5rem;
+	width: 100%;
+	font-family: var(--pd-font-mono, ui-monospace, monospace);
+	font-size: 0.72rem;
+	font-weight: 800;
+	letter-spacing: 0.14em;
+	text-transform: uppercase;
+	cursor: pointer;
+	border: 1px solid var(--pd-grey-trim, #334155);
+	background: var(--pd-navy-panel, #0f172a);
+	color: var(--pd-text-muted, rgba(255, 255, 255, 0.55));
+	box-shadow: none;
+	border-radius: 0;
+	transition: filter 100ms ease, border-color 100ms ease;
+}
+
+.player-hud-root .pw-theater .pw-exec.pw-exec--transmit:hover:not(:disabled),
+.player-hud-root .pw-theater .pw-exec.pw-exec--transmit:active:not(:disabled) {
+	box-shadow: none;
+	transform: none;
+}
+
+.player-hud-root .pw-theater .pw-exec.pw-exec-commit {
+	background: var(--pd-action-gold, #fbbf24);
+	color: var(--pd-void-base, #000000);
+	border: none;
+	clip-path: polygon(
+		var(--pd-chamfer-sm, 6px) 0%,
+		100% 0%,
+		100% calc(100% - var(--pd-chamfer-sm, 6px)),
+		calc(100% - var(--pd-chamfer-sm, 6px)) 100%,
+		0% 100%,
+		0% var(--pd-chamfer-sm, 6px)
+	);
+}
+
+.player-hud-root .pw-theater .pw-exec.pw-exec-commit:hover:not(:disabled) {
+	filter: brightness(0.92);
+}
+
+.player-hud-root .pw-theater .pw-exec.pw-exec-commit:active:not(:disabled) {
+	filter: brightness(0.88);
+}
+
+.player-hud-root .pw-theater .pw-exec.pw-exec--alt {
+	border: 1px solid var(--pd-atom-amber, #d97706);
+	color: var(--pd-atom-amber, #d97706);
+	background: var(--pd-void-base, #000000);
+}
+
+.player-hud-root .pw-theater .pw-exec.pw-exec--transmit:disabled {
+	opacity: 0.38;
+	cursor: not-allowed;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.player-hud-root .pw-theater .pw-focus__btn,
+	.player-hud-root .pw-theater .pw-chip,
+	.player-hud-root .pw-theater .pw-exec {
+		transition: none !important;
+	}
+}
+
+.player-hud-root[data-dopamine='off'] .pw-theater .pw-focus__btn:hover,
+.player-hud-root[data-dopamine='off'] .pw-theater .pw-chip:hover,
+.player-hud-root[data-dopamine='off'] .pw-theater .pw-exec.pw-exec-commit:hover:not(:disabled) {
+	transform: none;
+}

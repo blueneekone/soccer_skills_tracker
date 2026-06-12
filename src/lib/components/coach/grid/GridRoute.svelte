@@ -33,38 +33,23 @@
 
 	const routeDistance = $derived(Math.hypot(route.x2 - route.x1, route.y2 - route.y1));
 	const successProb = $derived(Math.round(Math.max(0, Math.min(100, playerStamina * (1 - routeDistance / 2000)))));
-	const probColor = $derived(successProb >= 70 ? '#14b8a6' : successProb >= 40 ? '#ffff00' : '#ff003c');
+	const probColor = $derived(successProb >= 70 ? '#14b8a6' : successProb >= 40 ? '#d97706' : '#ef4444');
 </script>
 
 {#if renderLayer === 'stroke'}
-	<!-- Stroke layer: triple-pass route paint (bloom + neon + crisp inner). -->
 	<g
 		aria-current={isSelected ? 'true' : undefined}
 		data-timeline-ms={timelineMs}
 	>
-		<!-- Outer glow bloom -->
 		<path
 			d={pathD}
 			fill="none"
 			stroke={route.color}
-			stroke-width="8"
-			stroke-opacity="0.12"
-			stroke-linecap="round"
-			stroke-linejoin="round"
-			pointer-events="none"
-			style="filter: blur(3px);"
-		/>
-		<!-- Core line + arrowhead -->
-		<path
-			d={pathD}
-			fill="none"
-			stroke={route.color}
-			stroke-width="3"
+			stroke-width={isSelected ? 4 : 3}
 			stroke-linecap="round"
 			stroke-linejoin="round"
 			marker-end="url(#arrowhead)"
 			pointer-events="none"
-			style="filter: drop-shadow(0 0 8px {route.color});"
 		/>
 	</g>
 {/if}

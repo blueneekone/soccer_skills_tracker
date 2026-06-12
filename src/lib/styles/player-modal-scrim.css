@@ -1,0 +1,79 @@
+/**
+ * VS-1c — PLAYER_MODAL_SCRIM_UTIL
+ * Shared Z4 overlay contract for Player OS modals.
+ * Z-order: Void(0) → Panel(2) → ShellRail(60) → Scrim(4000) → ModalHero(4001)
+ */
+
+.player-dossier-root,
+.player-hud-root.player-dossier-root {
+	--pd-chamfer-modal: 8px;
+	--pd-scrim-void-canonical: rgba(0, 0, 0, 0.85);
+	--pd-modal-shadow-void: 12px 12px 0 0 var(--pd-void-base);
+	--pd-z-modal-scrim: 4000;
+	--pd-z-modal-hero: 4001;
+}
+
+/* Z4-SCRIM — full viewport, captures pointer events above shell rail */
+.ss-scrim-overlay {
+	position: fixed;
+	inset: 0;
+	z-index: var(--pd-z-modal-scrim, 4000);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: clamp(1rem, 4vw, 2rem);
+	background-color: var(--pd-scrim-void-canonical, rgba(0, 0, 0, 0.85));
+	pointer-events: auto;
+}
+
+/* Z4-CONTENT — chamfered hero chassis */
+.ss-modal-z4-hero {
+	position: relative;
+	z-index: var(--pd-z-modal-hero, 4001);
+	width: min(100%, 32rem);
+	padding: clamp(1rem, 2.4vw, 1.35rem);
+	background: var(--pd-navy-panel, #0f172a);
+	border: 1px solid var(--pd-grey-trim, #334155);
+	box-shadow: var(--pd-modal-shadow-void, 12px 12px 0 0 var(--pd-void-base));
+	clip-path: polygon(
+		var(--pd-chamfer-modal, 8px) 0%,
+		100% 0%,
+		100% calc(100% - var(--pd-chamfer-modal, 8px)),
+		calc(100% - var(--pd-chamfer-modal, 8px)) 100%,
+		0% 100%,
+		0% var(--pd-chamfer-modal, 8px)
+	);
+}
+
+/* Directive milestone variant — emissive gold reserved for SkillTierUnlockModal only */
+.ss-modal-z4-hero.ss-modal-directive {
+	box-shadow:
+		var(--pd-modal-shadow-void, 12px 12px 0 0 var(--pd-void-base)),
+		var(--pd-emissive-gold, 0 0 14px color-mix(in srgb, var(--pd-action-gold) 32%, transparent));
+}
+
+.ss-scrim-overlay :global(button:focus-visible),
+.ss-scrim-overlay :global(a:focus-visible) {
+	outline: 2px solid var(--pd-action-gold, #fbbf24);
+	outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.ss-scrim-overlay,
+	.ss-scrim-overlay *,
+	.ss-modal-z4-hero,
+	.ss-modal-directive {
+		transition: none !important;
+		animation: none !important;
+	}
+}
+
+.pd-chrome-root[data-dopamine='off'] .ss-modal-z4-hero.ss-modal-directive {
+	box-shadow: var(--pd-modal-shadow-void, 12px 12px 0 0 var(--pd-void-base));
+	animation: none !important;
+}
+
+.pd-chrome-root[data-dopamine='off'] .ss-modal-directive,
+.pd-chrome-root[data-dopamine='off'] .ss-scrim-overlay {
+	animation: none !important;
+}

@@ -15,12 +15,13 @@ const PAGE = join(__dirname, '..', '+page.svelte');
 const src = readFileSync(PAGE, 'utf-8');
 
 describe('/parent/household — Liquid aesthetic (Sprint 1.1)', () => {
-	it('.phh-surface CSS uses var(--shadow-liquid)', () => {
-		expect(src).toMatch(/var\(--shadow-liquid\)/);
+	it('uses parent lounge Z2 panels on main sections', () => {
+		expect(src).toMatch(/parent-lounge-z2-panel/);
 	});
 
-	it('page shell uses --bento-pad-liquid', () => {
-		expect(src).toMatch(/--bento-pad-liquid/);
+	it('parent lounge shell provides page gutter via layout CSS', () => {
+		const layout = readFileSync(join(__dirname, '..', '..', '+layout.svelte'), 'utf-8');
+		expect(layout).toMatch(/parent-lounge-z1-well/);
 	});
 
 	it('main sections use 12-column liquid bento grid', () => {

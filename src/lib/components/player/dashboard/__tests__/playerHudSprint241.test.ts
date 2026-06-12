@@ -208,7 +208,8 @@ describe('Wave A — diegetic overlay primitive (Wave D stub)', () => {
 		expect(existsSync(OVERLAY)).toBe(true);
 		expect(overlaySrc).not.toMatch(/pg-bracket|pg-scanline/);
 		expect(overlaySrc).toMatch(/pd-diegetic-overlay/);
-		expect(overlaySrc).toMatch(/role="alertdialog"/);
+		expect(overlaySrc).toMatch(/PlayerModalScrim/);
+		expect(overlaySrc).toMatch(/\bdialog\b/);
 		expect(overlaySrc).not.toMatch(/Swal|sweetalert/i);
 	});
 

@@ -1,0 +1,56 @@
+/**
+ * Coach OS — CDO TOKEN_SKIN_MANIFEST (VS-0b)
+ * Scoped to .coach-os-root on /coach/* routes only.
+ * Does not alter global :root --vanguard-* (Parent/Director share EnterpriseConsoleShell).
+ */
+
+.coach-os-root {
+	/* Canonical PD tokens (Coach SIEM) */
+	--pd-void-base: #000000;
+	--pd-navy-panel: #0f172a;
+	--pd-data-cyan: #14b8a6;
+	--pd-nav-cyan: #06b6d4;
+	--pd-atom-amber: #d97706;
+	--pd-grey-trim: #334155;
+	--pd-chamfer-sm: 4px;
+	--pd-chamfer-md: 4px;
+	--pd-chamfer-depth: var(--pd-chamfer-sm);
+
+	/* Vanguard ↔ PD bridge (manifest names) */
+	--vanguard-bg-main: var(--pd-void-base);
+	--vanguard-surface-level-1: var(--pd-navy-panel);
+	--vanguard-border-default: var(--pd-grey-trim);
+	--vanguard-accent-primary: var(--pd-data-cyan);
+	--vanguard-status-alert: var(--pd-atom-amber);
+
+	/* Coach content column canvas (Z0) — local to coach pages */
+	--coach-canvas-bg: var(--pd-void-base);
+	color: var(--vanguard-text-primary, #e2e8f0);
+}
+
+.coach-os-root .coach-os-panel {
+	background: var(--pd-navy-panel);
+	border: 1px solid var(--pd-grey-trim);
+	box-shadow: none;
+}
+
+.coach-os-root .coach-os-well {
+	background: var(--pd-void-base);
+	border: 1px solid var(--pd-grey-trim);
+	box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+}
+
+.coach-os-root .coach-os-panel:hover,
+.coach-os-root .coach-os-well:hover {
+	border-color: var(--pd-data-cyan);
+}
+
+.coach-os-root .coach-os-panel:focus-within {
+	border-color: var(--pd-data-cyan);
+	box-shadow: inset 3px 0 0 var(--pd-data-cyan);
+}
+
+.coach-os-root .coach-os-warning {
+	color: var(--pd-atom-amber);
+	border-color: var(--pd-atom-amber);
+}

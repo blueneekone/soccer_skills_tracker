@@ -12,16 +12,45 @@
 
 	import { browser } from '$app/environment';
 	import { authStore } from '$lib/stores/auth.svelte.js';
-	import { ArmoryEngine } from '$lib/states/ArmoryEngine.svelte.js';
+	import {
+		ArmoryEngine,
+		TIER_DEFINITIONS,
+		type ArmoryTier,
+	} from '$lib/states/ArmoryEngine.svelte.js';
 	import { SkillTreeEngine } from '$lib/components/player/skill-tree/SkillTreeEngine.svelte.js';
 	import SkillTreeArena from '$lib/components/player/skill-tree/SkillTreeArena.svelte';
 	import SkillTreeHUD from '$lib/components/player/skill-tree/SkillTreeHUD.svelte';
 	import PlayerOsPageStrap from '$lib/components/player/PlayerOsPageStrap.svelte';
+	import SkillTierUnlockModal from '$lib/components/hud/SkillTierUnlockModal.svelte';
 
 	// ── Engine instantiation (module-level — correct for Svelte 5 rune classes) ──
 
 	const armory = new ArmoryEngine();
 	const skillTree = new SkillTreeEngine(armory);
+
+	let previousTierId = $state<ArmoryTier['id'] | null>(null);
+	let tierUnlockReady = $state(false);
+	let tierUnlockTier = $state<ArmoryTier | null>(null);
+
+	function tierCodeFor(tier: ArmoryTier): string {
+		const idx = TIER_DEFINITIONS.findIndex((t) => t.id === tier.id);
+		const num = idx >= 0 ? idx + 1 : 1;
+		return `TIER_${String(num).padStart(2, '0')}`;
+	}
+
+	function buildAttributesReadout(): string {
+		return skillTree.branchSummaries
+			.map((s) => `${s.attr} ${s.unlocked}/${s.total}`)
+			.join(' · ');
+	}
+
+	function commitTierUnlock() {
+		tierUnlockTier = null;
+	}
+
+	function deferTierUnlock() {
+		tierUnlockTier = null;
+	}
 
 	// ── Auth → data wiring ────────────────────────────────────────────────────
 
@@ -29,9 +58,27 @@
 		if (!browser || authStore.isLoading) return;
 		const uid = authStore.user?.uid;
 		const userKey = (authStore.user?.email ?? '').trim().toLowerCase();
-		if (uid && userKey) {
-			armory.loadPlayerData(uid, userKey);
+		if (!uid || !userKey) {
+			tierUnlockReady = false;
+			previousTierId = null;
+			return;
 		}
+
+		tierUnlockReady = false;
+		void (async () => {
+			await armory.loadPlayerData(uid, userKey);
+			previousTierId = armory.currentTier.id;
+			tierUnlockReady = true;
+		})();
+	});
+
+	$effect(() => {
+		if (!tierUnlockReady) return;
+		const tierId = armory.currentTier.id;
+		if (previousTierId !== null && previousTierId !== tierId) {
+			tierUnlockTier = armory.currentTier;
+		}
+		previousTierId = tierId;
 	});
 
 	// ── Derived values for Arena / HUD props ──────────────────────────────────
@@ -140,6 +187,15 @@
 	</div>
 </div>
 <!-- /player-dossier-root -->
+
+<SkillTierUnlockModal
+	open={tierUnlockTier != null}
+	tierCode={tierUnlockTier ? tierCodeFor(tierUnlockTier) : ''}
+	tierLabel={tierUnlockTier?.label ?? ''}
+	attributesReadout={tierUnlockTier ? buildAttributesReadout() : ''}
+	onCommit={commitTierUnlock}
+	onDefer={deferTierUnlock}
+/>
 
 <style>
 	.st-bento {

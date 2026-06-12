@@ -92,7 +92,6 @@
 					stroke={highlightColor}
 					stroke-width="1.25"
 					opacity="0.9"
-					filter="url(#heavy-bloom)"
 				/>
 			</g>
 		{/if}
@@ -125,7 +124,7 @@
 					cy="0"
 					r={DISC_R + 10}
 					fill="none"
-					stroke="#ffaa00"
+					stroke="#d97706"
 					stroke-width="1.5"
 					stroke-dasharray="2 4"
 					opacity="0.9"
@@ -138,9 +137,8 @@
 				cy="0"
 				r={DISC_R}
 				fill="#050505"
-				stroke={isDragging ? '#ff2a2a' : siemColor}
+				stroke={isDragging ? '#d97706' : siemColor}
 				stroke-width="2"
-				filter="url(#heavy-bloom)"
 			/>
 			<circle
 				cx="0"
@@ -167,7 +165,6 @@
 				cy="0"
 				r="2.5"
 				fill="#ffffff"
-				filter="url(#heavy-bloom)"
 				class="tw-pointer-events-none"
 			/>
 			<!-- Route-mode anchor ring: pulses to show players are snap targets -->
@@ -180,7 +177,6 @@
 					stroke={siemColor}
 					stroke-width="1.5"
 					opacity="0.85"
-					filter="url(#heavy-bloom)"
 					pointer-events="none"
 				>
 					<animate attributeName="r" values="6;11;6" dur="1.4s" repeatCount="indefinite" />

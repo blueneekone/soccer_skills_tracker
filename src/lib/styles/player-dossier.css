@@ -12,6 +12,28 @@
 	--pd-text-muted: rgba(255, 255, 255, 0.5);
 	--pd-accent-action: #fbbf24;
 	--pd-accent-data: #14b8a6;
+	/* VS-0a — CDO TOKEN_ALIAS_MANIFEST canonical names (alias existing tokens) */
+	--pd-void-base: var(--pd-bg);
+	--pd-navy-panel: #0f172a;
+	--pd-action-gold: var(--pd-accent-action);
+	--pd-data-cyan: var(--pd-accent-data);
+	--pd-nav-cyan: #06b6d4;
+	--pd-nav-primary: var(--pd-nav-cyan);
+	--pd-atom-amber: #d97706;
+	--pd-grey-trim: #334155;
+	--pd-border-low: var(--pd-grey-trim);
+	--pd-status-warn: var(--pd-atom-amber);
+	--pd-chamfer-sm: 6px;
+	--pd-chamfer-md: 12px;
+	--pd-chamfer-lg: 16px;
+	--pd-chamfer-depth: var(--pd-chamfer-md);
+	--pd-scrim-void-low: rgba(0, 0, 0, 0.7);
+	--pd-scrim-void-high: rgba(0, 0, 0, 0.8);
+	--pd-scrim-void-canonical: rgba(0, 0, 0, 0.85);
+	--pd-scrim-void: var(--pd-scrim-void-canonical);
+	--pd-z0: var(--pd-void-base);
+	--pd-z1: #080c14;
+	--pd-z2: var(--pd-navy-panel);
 	/* Wave A — teal-derived bright data accent (retired legacy cyan) */
 	--pd-accent-data-bright: color-mix(in srgb, var(--pd-accent-data) 78%, #fff 22%);
 	/* Sprint 2.18 — emissive edge tokens (void > edges > glass > matte) */

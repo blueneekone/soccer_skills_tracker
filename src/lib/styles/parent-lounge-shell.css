@@ -1,0 +1,234 @@
+/**
+ * VS-4a — PARENT_LOUNGE_SHELL
+ * Parent OS SIEM admin shell (/parent/*).
+ * Z0 void · Z1 well · Z2 panels · Z4 chrome nav.
+ */
+
+.parent-os-root.parent-lounge-shell {
+	--pd-void-base: #000000;
+	--pd-navy-panel: #0f172a;
+	--pd-data-cyan: #14b8a6;
+	--pd-atom-amber: #d97706;
+	--pd-grey-trim: #334155;
+	--pd-chamfer-md: 8px;
+	--pd-chamfer-sm: 4px;
+	--parent-lounge-inset: 16px;
+	--parent-lounge-gutter: 24px;
+	--bento-pad-liquid: var(--parent-lounge-gutter);
+	display: flex;
+	flex-direction: column;
+	min-height: 100%;
+	background: var(--pd-void-base, #000000);
+	color: #e2e8f0;
+	font-family: 'Geist', ui-sans-serif, system-ui, sans-serif;
+}
+
+/* ── Z4 chrome nav ─────────────────────────────────────────────────────────── */
+.parent-os-root .parent-lounge-z4-nav {
+	position: sticky;
+	top: 0;
+	z-index: 20;
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.25rem;
+	padding: 0.5rem var(--parent-lounge-inset, 16px);
+	background: var(--pd-void-base, #000000);
+	border-bottom: 1px solid var(--pd-grey-trim, #334155);
+}
+
+.parent-os-root .parent-lounge-z4-nav__link {
+	display: inline-flex;
+	align-items: center;
+	min-height: 36px;
+	padding: 0 0.75rem;
+	font-family: ui-monospace, 'Geist Mono', monospace;
+	font-size: 10px;
+	font-weight: 700;
+	letter-spacing: 0.1em;
+	text-transform: uppercase;
+	text-decoration: none;
+	color: #94a3b8;
+	border: 1px solid transparent;
+	border-radius: 0;
+	box-shadow: none;
+}
+
+.parent-os-root .parent-lounge-z4-nav__link:hover {
+	color: var(--pd-data-cyan, #14b8a6);
+}
+
+.parent-os-root .parent-lounge-z4-nav__link--active {
+	color: var(--pd-data-cyan, #14b8a6);
+	border-bottom: 2px solid var(--pd-data-cyan, #14b8a6);
+}
+
+/* ── Z1 well ───────────────────────────────────────────────────────────────── */
+.parent-os-root .parent-lounge-z1-well {
+	flex: 1 1 auto;
+	min-height: 0;
+	margin: var(--parent-lounge-inset, 16px);
+	padding: var(--parent-lounge-gutter, 24px);
+	background: var(--pd-navy-panel, #0f172a);
+	border: 0;
+	border-radius: 0;
+	box-shadow: none;
+}
+
+/* ── Z2 panels ─────────────────────────────────────────────────────────────── */
+.parent-os-root .parent-lounge-z2-panel,
+.parent-os-root .phh-surface,
+.parent-os-root .vanguard-surface.vanguard-surface--liquid {
+	background: var(--pd-navy-panel, #0f172a);
+	border: 1px solid var(--pd-grey-trim, #334155);
+	border-radius: 0;
+	box-shadow: none;
+	backdrop-filter: none;
+	-webkit-backdrop-filter: none;
+	clip-path: polygon(
+		var(--pd-chamfer-md, 8px) 0%,
+		100% 0%,
+		100% calc(100% - var(--pd-chamfer-md, 8px)),
+		calc(100% - var(--pd-chamfer-md, 8px)) 100%,
+		0% 100%,
+		0% var(--pd-chamfer-md, 8px)
+	);
+}
+
+.parent-os-root .parent-lounge-z2-panel {
+	padding: var(--parent-lounge-gutter, 24px);
+}
+
+.parent-os-root .parent-lounge-z2-panel--warn {
+	border-color: color-mix(in srgb, var(--pd-atom-amber, #d97706) 55%, var(--pd-grey-trim, #334155));
+}
+
+/* Typography */
+.parent-os-root .parent-lounge-z4-nav__title,
+.parent-os-root .parent-lounge-page-title {
+	margin: 0;
+	font-family: ui-monospace, 'Geist Mono', monospace;
+	font-size: 14px;
+	font-weight: 700;
+	letter-spacing: 0.12em;
+	text-transform: uppercase;
+	color: #f8fafc;
+}
+
+.parent-os-root .parent-lounge-eyebrow {
+	margin: 0;
+	font-family: ui-monospace, 'Geist Mono', monospace;
+	font-size: 10px;
+	font-weight: 600;
+	letter-spacing: 0.12em;
+	text-transform: uppercase;
+	color: var(--pd-grey-trim, #334155);
+}
+
+.parent-os-root .parent-lounge-meta {
+	font-size: 13px;
+	line-height: 1.5;
+	color: #94a3b8;
+}
+
+/* Actions */
+.parent-os-root .parent-lounge-btn-primary,
+.parent-os-root .phh-btn:not(.phh-btn--ghost):not(.phh-otp-btn--close),
+.parent-os-root .vanguard-btn-primary {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-height: 44px;
+	padding: 0.5rem 1rem;
+	font-family: ui-monospace, 'Geist Mono', monospace;
+	font-size: 10px;
+	font-weight: 700;
+	letter-spacing: 0.1em;
+	text-transform: uppercase;
+	color: var(--pd-void-base, #000000);
+	background: var(--pd-data-cyan, #14b8a6);
+	border: 1px solid var(--pd-data-cyan, #14b8a6);
+	border-radius: 0;
+	box-shadow: none;
+	cursor: pointer;
+	clip-path: polygon(
+		var(--pd-chamfer-sm, 4px) 0%,
+		100% 0%,
+		100% calc(100% - var(--pd-chamfer-sm, 4px)),
+		calc(100% - var(--pd-chamfer-sm, 4px)) 100%,
+		0% 100%,
+		0% var(--pd-chamfer-sm, 4px)
+	);
+}
+
+.parent-os-root .parent-lounge-btn-secondary,
+.parent-os-root .phh-btn--ghost,
+.parent-os-root .phh-sign-out {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-height: 36px;
+	padding: 0.4rem 0.85rem;
+	font-family: ui-monospace, 'Geist Mono', monospace;
+	font-size: 10px;
+	font-weight: 600;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: var(--pd-data-cyan, #14b8a6);
+	background: transparent;
+	border: 1px solid var(--pd-grey-trim, #334155);
+	border-radius: 0;
+	box-shadow: none;
+	cursor: pointer;
+}
+
+.parent-os-root .parent-lounge-btn-secondary:hover,
+.parent-os-root .phh-sign-out:hover {
+	border-color: var(--pd-data-cyan, #14b8a6);
+}
+
+.parent-os-root .parent-lounge-alert {
+	padding: 0.75rem 1rem;
+	font-family: ui-monospace, 'Geist Mono', monospace;
+	font-size: 10px;
+	letter-spacing: 0.06em;
+	text-transform: uppercase;
+	color: var(--pd-atom-amber, #d97706);
+	border: 1px solid color-mix(in srgb, var(--pd-atom-amber, #d97706) 45%, transparent);
+	background: color-mix(in srgb, var(--pd-atom-amber, #d97706) 8%, var(--pd-navy-panel, #0f172a));
+	border-radius: 0;
+}
+
+/* Household overrides — strip gradients / glow / pills */
+.parent-os-root .phh .phh-gt-approve {
+	color: var(--pd-void-base, #000000);
+	background: var(--pd-data-cyan, #14b8a6);
+	border: 1px solid var(--pd-data-cyan, #14b8a6);
+	border-radius: 0;
+	box-shadow: none;
+}
+
+.parent-os-root .phh .phh-gt-deny {
+	color: #fca5a5;
+	background: transparent;
+	border: 1px solid var(--pd-grey-trim, #334155);
+	border-radius: 0;
+}
+
+.parent-os-root .phh .phh-dispatch-gen {
+	border-radius: 0;
+	box-shadow: none;
+}
+
+.parent-os-root .phh .phh-otp-panel {
+	border-radius: 0;
+	border: 1px solid var(--pd-grey-trim, #334155);
+	box-shadow: none;
+}
+
+.parent-os-root .bento-grid--liquid {
+	gap: 4px;
+}
+
+.parent-os-root .parent-lounge-page-head {
+	margin-bottom: 1rem;
+}

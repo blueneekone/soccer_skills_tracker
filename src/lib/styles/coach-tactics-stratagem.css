@@ -1,0 +1,411 @@
+/**
+ * VS-3b — COACH_TACTICS_STRATAGEM_V1
+ * War Room (/coach/tactical) SIEM flat skin.
+ * Z0 void · Z1 timeline well · Z2 drawer · Z3 pitch · Z4 HUD.
+ * Loads on tactical route; scoped under .coach-os-root .coach-tactics-shell.
+ */
+
+.coach-os-root .coach-tactics-shell {
+	--pd-chamfer-md: 8px;
+	background: var(--pd-void-base, #000000);
+	font-family: ui-monospace, 'Geist Mono', monospace;
+}
+
+/* ── Z0 void canvas ───────────────────────────────────────────────────────── */
+.coach-os-root .coach-tactics-shell,
+.coach-os-root .coach-tactics-shell .coach-tac-z3-stage {
+	background: var(--pd-void-base, #000000);
+}
+
+/* ── Z3 hero pitch plane ──────────────────────────────────────────────────── */
+.coach-os-root .coach-tactics-shell .coach-tac-z3-pitch {
+	background: var(--pd-navy-panel, #0f172a);
+	border: 1px solid var(--pd-grey-trim, #334155);
+	border-radius: 0;
+	box-shadow: none;
+	clip-path: polygon(
+		var(--pd-chamfer-md, 8px) 0%,
+		100% 0%,
+		100% calc(100% - var(--pd-chamfer-md, 8px)),
+		calc(100% - var(--pd-chamfer-md, 8px)) 100%,
+		0% 100%,
+		0% var(--pd-chamfer-md, 8px)
+	);
+}
+
+.coach-os-root .coach-tactics-shell .coach-tac-z3-pitch svg {
+	opacity: 1;
+}
+
+.coach-os-root .coach-tactics-shell svg [filter] {
+	filter: none;
+}
+
+/* ── Z1 timeline well (bottom tray) ───────────────────────────────────────── */
+.coach-os-root .coach-tactics-shell .coach-tac-z1-dock {
+	position: absolute;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	z-index: 10000;
+	display: flex;
+	justify-content: center;
+	pointer-events: none;
+	padding: 0 0.75rem 0.5rem;
+}
+
+.coach-os-root .coach-tactics-shell .coach-tac-z1-well {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: center;
+	gap: 0.35rem 0.5rem;
+	width: 100%;
+	max-width: 100%;
+	padding: 0.5rem 0.75rem;
+	pointer-events: auto;
+	background: var(--pd-navy-panel, #0f172a);
+	border-top: 1px solid var(--pd-grey-trim, #334155);
+	border-radius: 0;
+	box-shadow: none;
+	backdrop-filter: none;
+	-webkit-backdrop-filter: none;
+}
+
+/* ── Z4 HUD chrome (tools + deploy within dock) ───────────────────────────── */
+.coach-os-root .coach-tactics-shell .coach-tac-z4-btn {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-height: 32px;
+	padding: 0.35rem 0.75rem;
+	font-family: inherit;
+	font-size: 10px;
+	font-weight: 600;
+	letter-spacing: 0.25em;
+	text-transform: uppercase;
+	color: #94a3b8;
+	background: transparent;
+	border: 1px solid transparent;
+	border-radius: 0;
+	box-shadow: none;
+	cursor: pointer;
+	clip-path: polygon(
+		var(--pd-chamfer-sm, 4px) 0%,
+		100% 0%,
+		100% calc(100% - var(--pd-chamfer-sm, 4px)),
+		calc(100% - var(--pd-chamfer-sm, 4px)) 100%,
+		0% 100%,
+		0% var(--pd-chamfer-sm, 4px)
+	);
+	transition: border-color 100ms ease, color 100ms ease, background 100ms ease;
+}
+
+.coach-os-root .coach-tactics-shell .coach-tac-z4-btn:hover:not(:disabled) {
+	color: var(--pd-data-cyan, #14b8a6);
+	border-color: color-mix(in srgb, var(--pd-data-cyan, #14b8a6) 40%, transparent);
+}
+
+.coach-os-root .coach-tactics-shell .coach-tac-z4-btn--active {
+	color: var(--pd-data-cyan, #14b8a6);
+	background: color-mix(in srgb, var(--pd-data-cyan, #14b8a6) 12%, transparent);
+	border-color: color-mix(in srgb, var(--pd-data-cyan, #14b8a6) 55%, transparent);
+}
+
+.coach-os-root .coach-tactics-shell .coach-tac-z4-btn--erase-active,
+.coach-os-root .coach-tactics-shell .coach-tac-z4-btn--erase:hover:not(:disabled) {
+	color: #ef4444;
+	border-color: color-mix(in srgb, #ef4444 55%, transparent);
+}
+
+.coach-os-root .coach-tactics-shell .coach-tac-z4-btn--erase-active {
+	background: color-mix(in srgb, #ef4444 12%, transparent);
+}
+
+.coach-os-root .coach-tactics-shell .coach-tac-z4-btn--menu-active {
+	color: var(--pd-atom-amber, #d97706);
+	background: color-mix(in srgb, var(--pd-atom-amber, #d97706) 12%, transparent);
+	border-color: color-mix(in srgb, var(--pd-atom-amber, #d97706) 55%, transparent);
+}
+
+.coach-os-root .coach-tactics-shell .coach-tac-z4-btn--menu:hover:not(:disabled) {
+	color: var(--pd-atom-amber, #d97706);
+}
+
+.coach-os-root .coach-tactics-shell .coach-tac-z4-btn--deploy {
+	color: var(--pd-data-cyan, #14b8a6);
+	background: color-mix(in srgb, var(--pd-data-cyan, #14b8a6) 10%, transparent);
+	border-color: color-mix(in srgb, var(--pd-data-cyan, #14b8a6) 50%, transparent);
+}
+
+.coach-os-root .coach-tactics-shell .coach-tac-z4-btn--deploy:hover:not(:disabled) {
+	border-color: var(--pd-data-cyan, #14b8a6);
+	background: color-mix(in srgb, var(--pd-data-cyan, #14b8a6) 18%, transparent);
+}
+
+.coach-os-root .coach-tactics-shell .coach-tac-z4-btn:disabled {
+	opacity: 0.35;
+	cursor: not-allowed;
+}
+
+.coach-os-root .coach-tactics-shell .coach-tac-z4-icon-btn {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 32px;
+	height: 32px;
+	min-height: 32px;
+	padding: 0;
+	font-family: inherit;
+	font-size: 11px;
+	font-weight: 700;
+	color: var(--pd-data-cyan, #14b8a6);
+	background: var(--pd-void-base, #000000);
+	border: 1px solid var(--pd-grey-trim, #334155);
+	border-radius: 0;
+	box-shadow: none;
+	cursor: pointer;
+	clip-path: polygon(
+		var(--pd-chamfer-sm, 4px) 0%,
+		100% 0%,
+		100% calc(100% - var(--pd-chamfer-sm, 4px)),
+		calc(100% - var(--pd-chamfer-sm, 4px)) 100%,
+		0% 100%,
+		0% var(--pd-chamfer-sm, 4px)
+	);
+}
+
+.coach-os-root .coach-tactics-shell .coach-tac-z4-icon-btn:hover:not(:disabled) {
+	border-color: var(--pd-data-cyan, #14b8a6);
+}
+
+.coach-os-root .coach-tactics-shell .coach-tac-z4-play {
+	width: 40px;
+	height: 40px;
+	color: var(--pd-atom-amber, #d97706);
+	border: 1px solid color-mix(in srgb, var(--pd-atom-amber, #d97706) 45%, transparent);
+	background: var(--pd-void-base, #000000);
+	border-radius: 0;
+	box-shadow: none;
+	backdrop-filter: none;
+	-webkit-backdrop-filter: none;
+	clip-path: polygon(
+		var(--pd-chamfer-sm, 4px) 0%,
+		100% 0%,
+		100% calc(100% - var(--pd-chamfer-sm, 4px)),
+		calc(100% - var(--pd-chamfer-sm, 4px)) 100%,
+		0% 100%,
+		0% var(--pd-chamfer-sm, 4px)
+	);
+}
+
+.coach-os-root .coach-tactics-shell .coach-tac-z4-play:hover:not(:disabled) {
+	border-color: var(--pd-atom-amber, #d97706);
+}
+
+.coach-os-root .coach-tactics-shell .coach-tac-z4-play svg {
+	filter: none;
+}
+
+.coach-os-root .coach-tactics-shell .coach-tac-z4-divider {
+	display: block;
+	width: 1px;
+	height: 1.25rem;
+	flex-shrink: 0;
+	background: var(--pd-grey-trim, #334155);
+}
+
+.coach-os-root .coach-tactics-shell .coach-tac-z4-rail {
+	position: relative;
+	width: 6rem;
+	height: 4px;
+	cursor: pointer;
+	overflow: hidden;
+	background: color-mix(in srgb, var(--pd-grey-trim, #334155) 60%, transparent);
+	border-radius: 0;
+	box-shadow: none;
+}
+
+.coach-os-root .coach-tactics-shell .coach-tac-z4-rail-fill {
+	position: absolute;
+	left: 0;
+	top: 0;
+	height: 100%;
+	pointer-events: none;
+	background: var(--pd-data-cyan, #14b8a6);
+	border-radius: 0;
+	box-shadow: none;
+}
+
+.coach-os-root .coach-tactics-shell .coach-tac-z4-time {
+	font-size: 11px;
+	font-weight: 700;
+	font-variant-numeric: tabular-nums;
+	color: var(--pd-data-cyan, #14b8a6);
+}
+
+/* ── Z2 command drawer (squad / drill sidebar) ────────────────────────────── */
+.coach-os-root .coach-tactics-shell .coach-tac-z2-drawer-wrap {
+	position: fixed;
+	top: 0;
+	right: 0;
+	height: 100%;
+	width: 350px;
+	z-index: 9999;
+	pointer-events: none;
+	overflow: hidden;
+}
+
+.coach-os-root .coach-tactics-shell .coach-tac-z2-drawer {
+	position: absolute;
+	inset: 0;
+	overflow-x: hidden;
+	overflow-y: auto;
+	pointer-events: auto;
+	background: var(--pd-navy-panel, #0f172a);
+	border-left: 1px solid var(--pd-grey-trim, #334155);
+	border-radius: 0;
+	box-shadow: none;
+	backdrop-filter: none;
+	-webkit-backdrop-filter: none;
+	transition: transform 500ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.coach-os-root .coach-tactics-shell .coach-tac-z2-header {
+	position: sticky;
+	top: 0;
+	z-index: 10;
+	display: flex;
+	align-items: center;
+	padding: 1rem 1.25rem;
+	background: var(--pd-navy-panel, #0f172a);
+	border-bottom: 1px solid var(--pd-grey-trim, #334155);
+	backdrop-filter: none;
+	-webkit-backdrop-filter: none;
+}
+
+.coach-os-root .coach-tactics-shell .coach-tac-z2-title {
+	margin: 0;
+	font-family: inherit;
+	font-size: 12px;
+	font-weight: 700;
+	letter-spacing: 0.12em;
+	text-transform: uppercase;
+	color: var(--pd-nav-cyan, #06b6d4);
+}
+
+.coach-os-root .coach-tactics-shell .coach-tac-z2-section-label {
+	margin: 0 0 0.625rem;
+	font-family: inherit;
+	font-size: 8px;
+	font-weight: 700;
+	letter-spacing: 0.28em;
+	text-transform: uppercase;
+	color: #64748b;
+}
+
+.coach-os-root .coach-tactics-shell .coach-tac-z2-seg {
+	display: block;
+	width: 100%;
+	padding: 0.625rem 0.75rem;
+	text-align: left;
+	font-family: inherit;
+	font-size: 9px;
+	font-weight: 700;
+	letter-spacing: 0.14em;
+	color: #94a3b8;
+	background: var(--pd-void-base, #000000);
+	border: 1px solid var(--pd-grey-trim, #334155);
+	border-radius: 0;
+	box-shadow: none;
+	cursor: pointer;
+	clip-path: polygon(
+		var(--pd-chamfer-sm, 4px) 0%,
+		100% 0%,
+		100% calc(100% - var(--pd-chamfer-sm, 4px)),
+		calc(100% - var(--pd-chamfer-sm, 4px)) 100%,
+		0% 100%,
+		0% var(--pd-chamfer-sm, 4px)
+	);
+	transition: border-color 100ms ease, color 100ms ease;
+}
+
+.coach-os-root .coach-tactics-shell .coach-tac-z2-seg:hover {
+	border-color: var(--pd-data-cyan, #14b8a6);
+	color: var(--pd-data-cyan, #14b8a6);
+}
+
+.coach-os-root .coach-tactics-shell .coach-tac-z2-seg--active {
+	color: var(--pd-data-cyan, #14b8a6);
+	background: color-mix(in srgb, var(--pd-data-cyan, #14b8a6) 10%, var(--pd-void-base, #000000));
+	border-color: color-mix(in srgb, var(--pd-data-cyan, #14b8a6) 55%, transparent);
+}
+
+.coach-os-root .coach-tactics-shell .coach-tac-z2-seg--curve-active {
+	color: var(--pd-atom-amber, #d97706);
+	background: color-mix(in srgb, var(--pd-atom-amber, #d97706) 10%, var(--pd-void-base, #000000));
+	border-color: color-mix(in srgb, var(--pd-atom-amber, #d97706) 55%, transparent);
+}
+
+.coach-os-root .coach-tactics-shell .coach-tac-z2-seg--danger:hover {
+	border-color: #ef4444;
+	color: #ef4444;
+}
+
+.coach-os-root .coach-tactics-shell .coach-tac-z2-ink {
+	position: relative;
+	width: 32px;
+	height: 32px;
+	flex-shrink: 0;
+	border: 1px solid var(--pd-grey-trim, #334155);
+	border-radius: 0;
+	box-shadow: none;
+	cursor: pointer;
+	clip-path: polygon(
+		var(--pd-chamfer-sm, 4px) 0%,
+		100% 0%,
+		100% calc(100% - var(--pd-chamfer-sm, 4px)),
+		calc(100% - var(--pd-chamfer-sm, 4px)) 100%,
+		0% 100%,
+		0% var(--pd-chamfer-sm, 4px)
+	);
+	transition: border-color 100ms ease;
+}
+
+.coach-os-root .coach-tactics-shell .coach-tac-z2-ink--active {
+	border-color: var(--ink-color, var(--pd-data-cyan, #14b8a6));
+	outline: 1px solid var(--ink-color, var(--pd-data-cyan, #14b8a6));
+	outline-offset: 1px;
+}
+
+.coach-os-root .coach-tactics-shell .coach-tac-z2-placeholder {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 1.5rem 1rem;
+	background: var(--pd-void-base, #000000);
+	border: 1px solid var(--pd-grey-trim, #334155);
+	border-radius: 0;
+	clip-path: polygon(
+		var(--pd-chamfer-md, 8px) 0%,
+		100% 0%,
+		100% calc(100% - var(--pd-chamfer-md, 8px)),
+		calc(100% - var(--pd-chamfer-md, 8px)) 100%,
+		0% 100%,
+		0% var(--pd-chamfer-md, 8px)
+	);
+}
+
+.coach-os-root .coach-tactics-shell .coach-tac-z2-placeholder span {
+	font-family: inherit;
+	font-size: 8px;
+	color: #64748b;
+}
+
+/* Exit control — Z4 chrome */
+.coach-os-root .coach-tactics-shell .coach-tac-exit {
+	position: absolute;
+	top: 0.75rem;
+	right: 0.75rem;
+	z-index: 1060;
+}

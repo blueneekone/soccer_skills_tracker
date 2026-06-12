@@ -37,6 +37,7 @@
   import CoachMissionDrillExecutionPanel from '$lib/player/workout/CoachMissionDrillExecutionPanel.svelte';
   import '$lib/styles/player-dashboard-hud.css';
   import '$lib/styles/player-terminal.css';
+  import '$lib/styles/player-train-theater.css';
 
   const TELEMETRY_INTEL = {
     title: 'TELEMETRY LOGGING',
@@ -773,6 +774,7 @@
   {/if}
 
   <div class="pw-theater pd-os-deck pd-os-deck--hero bento-span-12">
+    <div class="pw-theater__z4-scan" aria-hidden="true"></div>
     {#if activeMissionId}
       <div class="pw-mission-armed pd-os-deck__well" aria-live="polite">
         <div class="pw-mission-armed__head">
@@ -831,7 +833,7 @@
               <span class="pw-green">+{estimatedLogXp} XP</span>
               {#if missionBounty != null}
                 <span class="pw-dim">· CAP</span>
-                <span class="pw-action">{missionBounty} XP</span>
+                <span class="pw-telem">{missionBounty} XP</span>
               {/if}
             </p>
           </div>
@@ -964,9 +966,7 @@
                   </label>
                   <textarea
                     id="pw-bundle-notes"
-                    class="pw-mono tw-w-full tw-min-h-[72px] tw-rounded-lg tw-border tw-border-teal-900/40
-                           tw-bg-black/40 tw-p-2 tw-text-sm tw-text-teal-100/90 tw-outline-none
-                           focus:tw-border-teal-500/60"
+                    class="pw-field tw-min-h-[72px]"
                     maxlength={SESSION_NOTES_MAX_LENGTH}
                     placeholder="How did it feel? Anything your coach should know?"
                     bind:value={sessionNotes}
@@ -1015,9 +1015,7 @@
               </label>
               <textarea
                 id="pw-session-notes"
-                class="pw-mono tw-w-full tw-min-h-[72px] tw-rounded-lg tw-border tw-border-teal-900/40
-                       tw-bg-black/40 tw-p-2 tw-text-sm tw-text-teal-100/90 tw-outline-none
-                       focus:tw-border-teal-500/60"
+                class="pw-field tw-min-h-[72px]"
                 maxlength={SESSION_NOTES_MAX_LENGTH}
                 placeholder="How did it feel? Anything your coach should know?"
                 bind:value={sessionNotes}
@@ -1077,8 +1075,7 @@
                   <span class="pw-mono pw-data">{duration}</span>
                 </div>
                 <input
-                  class="pw-mono tw-w-full tw-rounded-lg tw-border tw-border-teal-900/40 tw-bg-black/40
-                         tw-px-2 tw-py-1.5 tw-text-sm tw-text-teal-100"
+                  class="pw-field"
                   type="number"
                   min="1"
                   max={FREE_LOG_DURATION_MAX_MINUTES}
@@ -1091,7 +1088,7 @@
               <div class="pw-gauge pw-gauge--rpe">
                 <div class="pw-gauge__head">
                   <span class="pw-eyebrow">RPE (intensity 1–10)</span>
-                  <span class="pw-mono pw-action">{intensity} / 10</span>
+                  <span class="pw-mono pw-telem">{intensity} / 10</span>
                 </div>
                 <div
                   class="pw-gauge__bar pw-gauge__bar--rpe"
@@ -1120,7 +1117,7 @@
       {#if isBundleMode}
         <button
           type="button"
-          class="pw-exec pw-exec--transmit"
+          class="pw-exec pw-exec--alt"
           disabled={logSubmitting || !currentBundleDrill}
           onclick={logBundleStep}
         >
@@ -1141,7 +1138,7 @@
       {:else}
         <button
           type="button"
-          class="pw-exec pw-exec--transmit"
+          class="pw-exec pw-exec--transmit pw-exec-commit"
           disabled={(!selectedDrill && !isCoachDirectedSession) || logSubmitting}
           onclick={logWorkout}
         >
@@ -1149,7 +1146,7 @@
             <span class="pw-mono">Logging…</span>
           {:else}
             <Icon name="game.zap" />
-            <span>Log session</span>
+            <span>EXEC_COMMIT</span>
           {/if}
         </button>
         {#if !selectedDrill && !isCoachDirectedSession}
@@ -1209,7 +1206,7 @@
         <div class="tw-flex tw-gap-2 tw-mt-2">
           <button
             type="button"
-            class="pw-exec pw-exec--transmit"
+            class="pw-exec pw-exec--alt"
             style="flex:1; font-size:11px;"
             disabled={proofSubmitting}
             onclick={sendCompletionProof}

@@ -1,4 +1,5 @@
-﻿<script>
+<script>
+	import '$lib/styles/coach-match-day-scoreboard.css';
 	import { browser } from '$app/environment';
 	import { page } from '$app/state';
 	import {
@@ -78,6 +79,8 @@
 
 	let homeScore = $state(0);
 	let awayScore = $state(0);
+	let scoreFlashHome = $state(false);
+	let scoreFlashAway = $state(false);
 
 	/** Match elapsed seconds (live sideline clock) */
 	let elapsedSeconds = $state(0);
@@ -85,7 +88,6 @@
 	/** @type {FeedLine[]} */
 	let eventFeed = $state([]);
 
-	let ingestPulse = $state(false);
 	let feedScrollRoot = $state(/** @type {HTMLDivElement | undefined} */ (undefined));
 
 	/** @type {string | null} */
@@ -240,8 +242,19 @@
 
 	/** @param {'home' | 'away'} side */
 	async function bumpScore(side) {
-		if (side === 'home') homeScore += 1;
-		else awayScore += 1;
+		if (side === 'home') {
+			homeScore += 1;
+			scoreFlashHome = true;
+			window.setTimeout(() => {
+				scoreFlashHome = false;
+			}, 150);
+		} else {
+			awayScore += 1;
+			scoreFlashAway = true;
+			window.setTimeout(() => {
+				scoreFlashAway = false;
+			}, 150);
+		}
 		const matchTs = formatMatchTs(elapsedSeconds);
 		const line =
 			side === 'home' ?
@@ -259,7 +272,6 @@
 				tone: side === 'home' ? 'emerald' : 'rose',
 			},
 		];
-		triggerIngestPulse();
 		const tid = teamScope.selectedTeamId?.trim();
 		const mid = sessionMatchId;
 		const uid = authStore.user?.uid;
@@ -288,6 +300,12 @@
 		operatives.find((o) => o.id === activeTarget) ?? operatives[0] ?? null,
 	);
 
+	const matchPeriodLabel = $derived.by(() => {
+		if (elapsedSeconds < 45 * 60) return '1ST HALF';
+		if (elapsedSeconds < 90 * 60) return '2ND HALF';
+		return 'EXTRA TIME';
+	});
+
 	const matchClockDisplay = $derived.by(() => {
 		const t = Math.max(0, elapsedSeconds);
 		const m = Math.floor(t / 60);
@@ -311,18 +329,11 @@
 		return `${m}:${String(s).padStart(2, '0')}`;
 	}
 
-	function triggerIngestPulse() {
-		ingestPulse = true;
-		window.setTimeout(() => {
-			ingestPulse = false;
-		}, 140);
-	}
-
 	function flashTelemetryButton(actionId) {
 		flashActionId = actionId;
 		window.setTimeout(() => {
 			flashActionId = null;
-		}, 220);
+		}, 150);
 	}
 
 	/**
@@ -352,10 +363,12 @@
 
 		if (actionType === 'GOAL') {
 			homeScore += 1;
+			scoreFlashHome = true;
+			window.setTimeout(() => {
+				scoreFlashHome = false;
+			}, 150);
 			void persistMatchSession();
 		}
-
-		triggerIngestPulse();
 
 		// Persist to Firestore — only when a real team is active and user is authenticated.
 		const tid = teamScope.selectedTeamId?.trim();
@@ -411,181 +424,96 @@
 	}
 
 	/**
-	 * @param {number} idx
-	 */
-	function feedLineOpacity(idx) {
-		const n = eventFeed.length;
-		if (n <= 1) return 1;
-		return 0.28 + 0.72 * (idx / Math.max(n - 1, 1));
-	}
-
-	/**
 	 * @param {FeedLine} entry
 	 * @param {number} idx
 	 */
-	function feedLineToneClass(entry, idx) {
+	function feedLineClass(entry, idx) {
 		const n = eventFeed.length;
 		const isLatest = n > 0 && idx === n - 1;
-		if (isLatest) {
-			return 'tw-font-mono tw-text-[11px] tw-leading-snug tw-tracking-wide tw-text-cyan-300 tw-drop-shadow-[0_0_10px_rgba(20, 184, 166,0.55)]';
-		}
-		const muted =
-			entry.tone === 'rose' ? 'tw-text-rose-600/45'
-			: entry.tone === 'cyan' ? 'tw-text-slate-600'
-			: 'tw-text-slate-600';
-		return `tw-font-mono tw-text-[11px] tw-leading-snug tw-tracking-wide ${muted}`;
+		if (isLatest) return 'coach-match-z1-log__line coach-match-z1-log__line--latest';
+		if (entry.tone === 'rose') return 'coach-match-z1-log__line coach-match-z1-log__line--warn';
+		return 'coach-match-z1-log__line';
 	}
-
-	/**
-	 * @param {PadTone} tone
-	 */
-	function padFlashShadow(tone) {
-		if (tone === 'emerald') return 'tw-shadow-[0_0_30px_rgba(52,211,153,0.95)]';
-		if (tone === 'rose') return 'tw-shadow-[0_0_30px_rgba(244,63,94,0.95)]';
-		return 'tw-shadow-[0_0_30px_rgba(20, 184, 166,0.95)]';
-	}
-
-	/** .cursorrules PRIMARY-style clipped tactical buttons */
-	const clipPrimary =
-		'tw-[clip-path:polygon(10%_0,100%_0,100%_70%,90%_100%,0_100%,0_30%)]';
-
-	const padBtnEmerald = `tw-min-h-[4.25rem] tw-w-full tw-border-2 tw-border-emerald-500/65 tw-bg-emerald-500 tw-px-2 tw-py-3 tw-font-black tw-text-black tw-text-[11px] tw-tracking-widest tw-uppercase tw-transition-all hover:tw-scale-[1.02] hover:tw-shadow-[0_0_24px_rgba(52,211,153,0.5)] active:tw-scale-[0.98] disabled:tw-opacity-40 ${clipPrimary}`;
-
-	const padBtnRose = `tw-min-h-[4.25rem] tw-w-full tw-border-2 tw-border-rose-500/65 tw-bg-rose-600 tw-px-2 tw-py-3 tw-font-black tw-text-white tw-text-[11px] tw-tracking-widest tw-uppercase tw-transition-all hover:tw-scale-[1.02] hover:tw-shadow-[0_0_28px_rgba(244,63,94,0.55)] active:tw-scale-[0.98] disabled:tw-opacity-40 ${clipPrimary}`;
-
-	const padBtnCyan = `tw-min-h-[4.25rem] tw-w-full tw-border-2 tw-border-cyan-400/65 tw-bg-cyan-500 tw-px-2 tw-py-3 tw-font-black tw-text-black tw-text-[11px] tw-tracking-widest tw-uppercase tw-transition-all hover:tw-scale-[1.02] hover:tw-shadow-[0_0_24px_rgba(20, 184, 166,0.55)] active:tw-scale-[0.98] disabled:tw-opacity-40 ${clipPrimary}`;
 
 	/**
 	 * @param {TelemetryPadDef} a
 	 */
-	function padBtnClass(a) {
-		const base =
-			a.tone === 'emerald' ? padBtnEmerald
-			: a.tone === 'rose' ? padBtnRose
-			: padBtnCyan;
-		const flash = flashActionId === a.id ? padFlashShadow(a.tone) : '';
-		return `${base} ${flash}`;
+	function padClass(a) {
+		const tone =
+			a.tone === 'rose' ? 'coach-match-pad--warn'
+			: a.tone === 'emerald' ? 'coach-match-pad--positive'
+			: '';
+		const flash = flashActionId === a.id ? 'coach-match-pad--flash' : '';
+		return `coach-match-pad ${tone} ${flash}`.trim();
 	}
 </script>
 
-<!-- Vanguard Match-Day â€” bg-[#020202] void root, mono telemetry, blur-3xl cards. -->
-<div
-	class="tw-relative tw-mx-auto tw-flex tw-h-screen tw-max-w-md tw-flex-col tw-overflow-hidden tw-bg-[#020202] tw-font-mono tw-text-slate-300 tw-selection:bg-[#14b8a6]/30"
-	class:matchLoggerPulse={ingestPulse}
->
-	<!-- Deep space grid -->
-	<div
-		class="tw-pointer-events-none tw-absolute tw-inset-0 tw-z-0 tw-bg-[radial-gradient(ellipse_at_50%_0%,rgba(20, 184, 166,0.08)_0%,transparent_55%)]"
-		aria-hidden="true"
-	></div>
-	<div
-		class="tw-pointer-events-none tw-absolute tw-inset-0 tw-z-0 tw-opacity-[0.14]"
-		style="background-image: linear-gradient(rgba(15, 23, 42, 0.9) 1px, transparent 1px), linear-gradient(90deg, rgba(15, 23, 42, 0.9) 1px, transparent 1px); background-size: 32px 32px;"
-		aria-hidden="true"
-	></div>
+<!-- VS-3d — Coach match-day SIEM scoreboard -->
+<div class="coach-match-shell">
+	<a href="/coach" class="coach-match-exit coach-os-action-chip">HUB</a>
 
-	<a
-		href="/coach"
-		class="tw-absolute tw-right-3 tw-top-3 tw-z-[50] tw-rounded-md tw-border tw-border-[#14b8a6]/40 tw-bg-[#020202]/80 tw-px-2.5 tw-py-1.5 tw-font-mono tw-text-[9px] tw-font-black tw-tracking-widest tw-text-cyan-400 tw-backdrop-blur-sm tw-transition-colors hover:tw-border-cyan-400 hover:tw-bg-cyan-950/40 hover:tw-text-cyan-200"
-	>
-		HUB
-	</a>
+	<header class="coach-match-z4-strap" aria-label="Match clock">
+		<p class="coach-match-z4-strap__label">Match clock</p>
+		<p class="coach-match-z4-strap__clock" aria-live="polite">{matchClockDisplay}</p>
+		<p class="coach-match-z4-strap__period">{matchPeriodLabel}</p>
+		<p class="coach-match-z4-strap__team">{activeTeamLabel}</p>
+	</header>
 
-	<!-- Top viewport ~15% â€” clock & score -->
-	<header
-		class="tw-relative tw-z-10 tw-flex tw-shrink-0 tw-basis-[15%] tw-min-h-0 tw-flex-col tw-items-center tw-justify-center tw-border-b tw-border-cyan-500/20 tw-px-4 tw-pt-10 tw-pb-2"
-	>
-		<p
-			class="tw-mb-1 tw-font-mono tw-text-[9px] tw-tracking-[0.28em] tw-text-slate-500 tw-uppercase"
-		>
-			Live match clock
-		</p>
-		<p
-			class="tw-font-mono tw-text-5xl tw-font-black tw-tabular-nums tw-tracking-tight tw-text-cyan-300 tw-drop-shadow-[0_0_24px_rgba(20, 184, 166,0.55)] sm:tw-text-6xl"
-			aria-live="polite"
-		>
-			{matchClockDisplay}
-		</p>
-		<p class="tw-mt-2 tw-max-w-full tw-truncate tw-text-center tw-font-mono tw-text-xs tw-font-black tw-tracking-[0.14em] tw-text-white tw-uppercase">
-			{activeTeamLabel}
+	<div class="coach-match-main">
+		<div class="coach-match-z2-row" aria-label="Scoreboard">
 			<button
 				type="button"
-				class="tw-tabular-nums tw-text-cyan-400 tw-bg-transparent tw-border-0 tw-p-0 tw-font-inherit tw-cursor-pointer hover:tw-text-cyan-200"
+				class="coach-match-z2-cell"
+				class:coach-match-z2-cell--flash={scoreFlashHome}
 				aria-label="Add home goal"
 				onclick={() => bumpScore('home')}
 			>
-				{homeScore}
+				<p class="coach-match-z2-cell__label">Home</p>
+				<p class="coach-match-z2-cell__score">{homeScore}</p>
 			</button>
-			<span class="tw-text-slate-500">—</span>
 			<button
 				type="button"
-				class="tw-tabular-nums tw-text-rose-300 tw-bg-transparent tw-border-0 tw-p-0 tw-font-inherit tw-cursor-pointer hover:tw-text-rose-200"
+				class="coach-match-z2-cell"
+				class:coach-match-z2-cell--flash={scoreFlashAway}
 				aria-label="Add opponent goal"
 				onclick={() => bumpScore('away')}
 			>
-				{awayScore}
+				<p class="coach-match-z2-cell__label">Away</p>
+				<p class="coach-match-z2-cell__score">{awayScore}</p>
 			</button>
-			<span class="tw-text-slate-400"> ENEMY</span>
-		</p>
-	</header>
-
-	<!-- Middle viewport ~35% â€” holographic feed -->
-	<section
-		class="tw-relative tw-z-10 tw-flex tw-min-h-0 tw-shrink-0 tw-basis-[35%] tw-flex-col tw-px-3 tw-pt-2"
-		aria-label="Telemetry event stream"
-	>
-		<p class="tw-mb-1 tw-font-mono tw-text-[8px] tw-tracking-[0.24em] tw-text-slate-600 tw-uppercase">
-			Event stream
-		</p>
-		<div
-			class="tw-relative tw-min-h-0 tw-flex-1 tw-overflow-hidden tw-rounded-lg tw-border tw-border-white/10 tw-bg-[#020202]/80"
-		>
-			<div
-				bind:this={feedScrollRoot}
-				class="telemetry-feed-mask tw-h-full tw-overflow-y-auto tw-px-3 tw-py-3 tw-font-mono tw-leading-relaxed"
-				role="log"
-				aria-live="polite"
-				aria-relevant="additions"
-			>
-				{#if eventFeed.length === 0}
-					<p class="tw-py-8 tw-text-center tw-font-mono tw-text-[10px] tw-text-slate-600">
-						AWAITING FIRST INGESTâ€¦
-					</p>
-				{:else}
-					{#each eventFeed as entry, idx (entry.id)}
-						<div
-							style="opacity: {feedLineOpacity(idx)}"
-							class="tw-mb-2 tw-break-words tw-border-l-2 tw-border-cyan-500/15 tw-pl-2 {feedLineToneClass(entry, idx)}"
-						>
-							{entry.line}
-						</div>
-					{/each}
-				{/if}
-			</div>
 		</div>
-	</section>
 
-	<!-- Arc Reactor pad ~50% thumb zone -->
-	<div
-		class="tw-relative tw-z-10 tw-mt-auto tw-flex tw-min-h-0 tw-flex-1 tw-flex-col tw-rounded-t-3xl tw-border-t tw-border-cyan-500/30 tw-bg-[#020617]/80 tw-p-4 tw-backdrop-blur-xl"
-		aria-label="Telemetry control pad"
-	>
-		<p class="tw-mb-2 tw-font-mono tw-text-[8px] tw-tracking-[0.22em] tw-text-slate-500 tw-uppercase">
-			Asset selector
-		</p>
-		<div
-			class="telemetry-roster-strip tw-mb-4 tw-flex tw-gap-3 tw-overflow-x-auto tw-overflow-y-visible tw-py-3 tw-px-1"
-			role="tablist"
-			aria-label="Select active player"
-		>
+		<section class="coach-match-z1-well" aria-label="Match log">
+			<p class="coach-match-z1-well__label">Match log</p>
+			<div class="coach-match-z1-log">
+				<div
+					bind:this={feedScrollRoot}
+					class="coach-match-z1-log__scroll"
+					role="log"
+					aria-live="polite"
+					aria-relevant="additions"
+				>
+					{#if eventFeed.length === 0}
+						<p class="coach-match-z1-log__empty">Awaiting first event</p>
+					{:else}
+						{#each eventFeed as entry, idx (entry.id)}
+							<p class={feedLineClass(entry, idx)}>{entry.line}</p>
+						{/each}
+					{/if}
+				</div>
+			</div>
+		</section>
+	</div>
+
+	<div class="coach-match-telemetry" aria-label="Telemetry control pad">
+		<p class="coach-match-telemetry__label">Asset selector</p>
+		<div class="coach-match-roster" role="tablist" aria-label="Select active player">
 			{#if rosterLoading}
-				<p class="tw-whitespace-nowrap tw-py-3 tw-font-mono tw-text-[10px] tw-text-slate-500">
-					SYNCINGâ€¦
-				</p>
+				<p class="coach-match-roster__empty">Syncing roster…</p>
 			{:else if operatives.length === 0}
-				<p class="tw-whitespace-nowrap tw-py-3 tw-font-mono tw-text-[10px] tw-text-slate-500">
+				<p class="coach-match-roster__empty">
 					{teamScope.selectedTeamId?.trim()
-						? 'NO ROSTERED PLAYERS â€” ADD PLAYERS IN ROSTER & TEAMS'
+						? 'NO ROSTERED PLAYERS — ADD PLAYERS IN ROSTER & TEAMS'
 						: 'SELECT A TEAM TO LOAD THE SQUAD'}
 				</p>
 			{:else}
@@ -593,71 +521,26 @@
 					<button
 						type="button"
 						role="tab"
-						class="tw-relative tw-flex tw-h-14 tw-w-14 tw-shrink-0 tw-flex-col tw-items-center tw-justify-center tw-rounded-full tw-border-2 tw-bg-black/70 tw-transition-[box-shadow,border-color] focus-visible:tw-outline focus-visible:tw-outline-2 focus-visible:tw-outline-offset-2 focus-visible:tw-outline-cyan-400 {						activeTarget ===
-						op.id ?
-							'tw-border-cyan-400 tw-shadow-[0_0_28px_rgba(20, 184, 166,0.95),0_0_48px_rgba(20, 184, 166,0.35)]'
-						:	'tw-border-white/10 hover:tw-border-cyan-500/35'}"
+						class="coach-match-roster__chip"
+						class:coach-match-roster__chip--active={activeTarget === op.id}
 						aria-selected={activeTarget === op.id}
 						aria-label="Target {op.name}"
 						onclick={() => (activeTarget = op.id)}
 					>
-						<span class="tw-font-mono tw-text-[11px] tw-font-black tw-tabular-nums tw-text-white">
-							{rosterGlyph(op)}
-						</span>
-						<span class="tw-mt-px tw-font-mono tw-text-[7px] tw-tabular-nums tw-tracking-wide tw-text-slate-500">
-							{stripAbbr(op)}
-						</span>
+						<span class="coach-match-roster__glyph">{rosterGlyph(op)}</span>
+						<span class="coach-match-roster__pos">{stripAbbr(op)}</span>
 					</button>
 				{/each}
 			{/if}
 		</div>
 
-		<p class="tw-mb-2 tw-font-mono tw-text-[8px] tw-tracking-[0.22em] tw-text-slate-500 tw-uppercase">
-			Telemetry triggers
-		</p>
-		<div class="tw-grid tw-min-h-0 tw-grid-cols-3 tw-gap-2 tw-gap-y-3">
+		<p class="coach-match-telemetry__label">Telemetry triggers</p>
+		<div class="coach-match-pad-grid">
 			{#each TELEMETRY_PAD as a (a.id)}
-				<button
-					type="button"
-					class={padBtnClass(a)}
-					disabled={!activeOperative}
-					onclick={() => fireAction(a)}
-				>
+				<button type="button" class={padClass(a)} disabled={!activeOperative} onclick={() => fireAction(a)}>
 					{a.label}
 				</button>
 			{/each}
 		</div>
 	</div>
 </div>
-
-<style>
-	@keyframes matchLoggerIngestPulse {
-		0% {
-			box-shadow: inset 0 0 0 0 rgba(20, 184, 166, 0);
-		}
-		40% {
-			box-shadow: inset 0 0 36px 3px rgba(20, 184, 166, 0.28);
-		}
-		100% {
-			box-shadow: inset 0 0 0 0 rgba(20, 184, 166, 0);
-		}
-	}
-
-	:global(.matchLoggerPulse) {
-		animation: matchLoggerIngestPulse 0.28s ease-out;
-	}
-
-	.telemetry-feed-mask {
-		mask-image: linear-gradient(to bottom, transparent, black 40%);
-		-webkit-mask-image: linear-gradient(to bottom, transparent, black 40%);
-	}
-
-	.telemetry-roster-strip {
-		scrollbar-width: none;
-		-ms-overflow-style: none;
-	}
-
-	.telemetry-roster-strip::-webkit-scrollbar {
-		display: none;
-	}
-</style>

@@ -238,30 +238,30 @@
 	});
 </script>
 
-<div class="view-section">
-	<h2 class="view-title">Messages</h2>
-
+<div class="comms-hub-stack">
 	{#if role !== 'super_admin' && role !== 'global_admin'}
-		<div class="announcements-section">
+		<div class="comms-hub-section">
 			<AnnouncementsInbox />
 		</div>
 	{/if}
 
-	<div class="bento-section">
-		<div class="card">
-			<div class="card-header bg-green-header">Inbox</div>
-			<div class="card-body inbox-body">
+	<div class="comms-hub-stack">
+		<section class="comms-hub-z3-inbox" aria-labelledby="comms-inbox-heading">
+			<header class="comms-hub-z3-inbox__head">
+				<h2 id="comms-inbox-heading" class="comms-hub-z3-inbox__title">Inbox</h2>
+			</header>
+			<div class="comms-hub-z3-inbox__body">
 				{#if role === 'super_admin' || role === 'global_admin'}
-					<p class="muted">
+					<p class="comms-hub-muted">
 						Use the Coach tools → Messages tab to send mail as a team staff member. Global admins can review
 						<code>messaging_audit</code> in the Firebase console.
 					</p>
 				{:else if loading}
-					<p class="muted">Loading…</p>
+					<p class="comms-hub-muted">Loading…</p>
 				{:else if items.length === 0}
-					<p class="muted">No messages yet.</p>
+					<p class="comms-hub-muted">No messages yet.</p>
 				{:else}
-					<p class="inbox-hint muted">
+					<p class="comms-hub-hint">
 						{#if inboxKind === 'parent_cc'}
 							You are viewing staff messages where your account is copied because the athlete is under 13.
 						{:else if inboxKind === 'player'}
@@ -272,35 +272,35 @@
 							Messages you sent from the Coach → Messages tab.
 						{/if}
 					</p>
-					<ul class="msg-list">
+					<ul class="comms-hub-z2-msg-list">
 						{#each items as m}
-							<li class="msg-card">
-								<div class="msg-meta">
-									<span class="msg-date">{formatDate(m.createdAt)}</span>
+							<li class="comms-hub-z2-msg-card">
+								<div class="comms-hub-msg-meta">
+									<span class="comms-hub-msg-date">{formatDate(m.createdAt)}</span>
 									{#if m.minorRecipient}
-										<span class="badge-minor">Minor · CC policy</span>
+										<span class="comms-hub-badge-minor">Minor · CC policy</span>
 									{/if}
 								</div>
-								<div class="msg-parties">
-									<span class="lbl">From</span> {String(m.fromEmail ?? '—')}
+								<div class="comms-hub-msg-parties">
+									<span class="comms-hub-lbl">From</span> {String(m.fromEmail ?? '—')}
 									<br />
-									<span class="lbl">To</span>
+									<span class="comms-hub-lbl">To</span>
 									{String(m.toPlayerName ?? '—')}
-									<span class="subtle">({String(m.toPlayerEmail ?? '')})</span>
+									<span class="comms-hub-subtle">({String(m.toPlayerEmail ?? '')})</span>
 								</div>
 								{#if inboxKind === 'parent_cc' && Array.isArray(m.ccParentEmails)}
-									<div class="cc-line">
-										<span class="lbl">CC (visibility)</span>
+									<div class="comms-hub-cc-line">
+										<span class="comms-hub-lbl">CC (visibility)</span>
 										{m.ccParentEmails.join(', ')}
 									</div>
 								{/if}
-								<p class="msg-text">{String(m.body ?? '')}</p>
+								<p class="comms-hub-msg-text">{String(m.body ?? '')}</p>
 							</li>
 						{/each}
 					</ul>
 				{/if}
 			</div>
-		</div>
+		</section>
 
 		{#if showHouseholdThread}
 			<HouseholdThreadPanel householdId={householdId} />
@@ -308,11 +308,11 @@
 	</div>
 
 	{#if role === 'parent'}
-		<div class="lounge-section">
-			<h3 class="lounge-section-label">Parent Lounge</h3>
+		<div class="comms-hub-stack">
+			<h3 class="comms-hub-lounge-section-label">Parent Lounge</h3>
 			{#if parentLounges.length === 0}
 				{#if !loading && !parentLoungeLoading}
-					<p class="muted lounge-empty">
+					<p class="comms-hub-muted">
 						No team lounges yet — your coach will provision one once your child's team is active.
 					</p>
 				{/if}
@@ -332,129 +332,3 @@
 		/>
 	{/if}
 </div>
-
-<style>
-	.announcements-section {
-		margin-bottom: var(--bento-gap-sm, 16px);
-	}
-
-	.inbox-body {
-		display: flex;
-		flex-direction: column;
-		gap: var(--bento-gap-sm);
-	}
-
-	.inbox-hint {
-		margin: 0;
-		font-size: 0.88rem;
-		line-height: 1.45;
-	}
-
-	.muted {
-		margin: 0;
-		opacity: 0.88;
-		line-height: 1.45;
-	}
-
-	.msg-list {
-		list-style: none;
-		padding: 0;
-		margin: 0;
-		display: flex;
-		flex-direction: column;
-		gap: var(--bento-gap-sm);
-	}
-
-	.msg-card {
-		padding: var(--bento-pad-sm);
-		border-radius: 16px;
-		border: 1px solid var(--glass-border);
-		background: rgba(255, 255, 255, 0.04);
-	}
-
-	:global(html.dark) .msg-card {
-		background: rgba(15, 23, 42, 0.35);
-	}
-
-	.msg-meta {
-		display: flex;
-		flex-wrap: wrap;
-		align-items: center;
-		gap: 8px;
-		margin-bottom: 8px;
-	}
-
-	.msg-date {
-		font-size: 0.8rem;
-		font-weight: 700;
-		opacity: 0.85;
-	}
-
-	.badge-minor {
-		font-size: 0.72rem;
-		font-weight: 800;
-		text-transform: uppercase;
-		letter-spacing: 0.04em;
-		padding: 4px 8px;
-		border-radius: 999px;
-		background: rgba(251, 191, 36, 0.2);
-		color: var(--text-primary);
-		border: 1px solid rgba(251, 191, 36, 0.35);
-	}
-
-	.msg-parties {
-		font-size: 0.88rem;
-		line-height: 1.5;
-		margin-bottom: 8px;
-		word-break: break-word;
-	}
-
-	.lbl {
-		font-weight: 800;
-		margin-right: 6px;
-		font-size: 0.72rem;
-		text-transform: uppercase;
-		letter-spacing: 0.04em;
-		opacity: 0.8;
-	}
-
-	.subtle {
-		opacity: 0.75;
-		font-size: 0.8rem;
-	}
-
-	.cc-line {
-		font-size: 0.82rem;
-		margin-bottom: 8px;
-		opacity: 0.9;
-		word-break: break-word;
-	}
-
-	.msg-text {
-		margin: 0;
-		white-space: pre-wrap;
-		line-height: 1.5;
-		font-size: 0.92rem;
-	}
-
-	.lounge-section {
-		margin-top: var(--bento-gap-sm, 16px);
-		display: flex;
-		flex-direction: column;
-		gap: var(--bento-gap-sm, 16px);
-	}
-
-	.lounge-section-label {
-		margin: 0 0 4px;
-		font-size: 0.8rem;
-		font-weight: 800;
-		text-transform: uppercase;
-		letter-spacing: 0.06em;
-		opacity: 0.7;
-	}
-
-	.lounge-empty {
-		font-size: 0.88rem;
-		padding: 12px 0;
-	}
-</style>

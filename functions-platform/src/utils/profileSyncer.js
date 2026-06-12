@@ -174,20 +174,39 @@ async function syncPublicPlayerProfile(uid) {
 
   /** @type {Record<string, string>} */
   const verifiedTrialScores = {};
-  if (teamIdForTrials && playerNameForTrials) {
+  if (teamIdForTrials) {
+    // Prefer stable identity keys (added in Tier-2 Item 2 fix); fall back to
+    // the legacy mutable name-string so pre-fix historical docs still sync.
     let trialSnap = await db().collection('trials')
         .where('teamId', '==', teamIdForTrials)
-        .where('player', '==', playerNameForTrials)
+        .where('playerId', '==', uid)
         .limit(80)
         .get();
 
-    if (trialSnap.empty) {
+    if (trialSnap.empty && email) {
+      trialSnap = await db().collection('trials')
+          .where('teamId', '==', teamIdForTrials)
+          .where('playerEmail', '==', email)
+          .limit(80)
+          .get();
+    }
+
+    if (trialSnap.empty && playerNameForTrials) {
+      trialSnap = await db().collection('trials')
+          .where('teamId', '==', teamIdForTrials)
+          .where('player', '==', playerNameForTrials)
+          .limit(80)
+          .get();
+    }
+
+    if (trialSnap.empty && playerNameForTrials) {
       trialSnap = await db().collection('trials')
           .where('teamId', '==', teamIdForTrials)
           .where('playerName', '==', playerNameForTrials)
           .limit(80)
           .get();
     }
+
     trialSnap.forEach((d) => {
       const tr = d.data() || {};
       if (tr.isCoach !== true) return;

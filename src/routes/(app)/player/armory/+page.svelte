@@ -42,6 +42,7 @@
 	import { onDestroy } from 'svelte';
 	import { db } from '$lib/firebase.js';
 	import { fetchClubDisplayName } from '$lib/player/fetchClubDisplayName.js';
+	import '$lib/styles/player-armory-stats-telemetry.css';
 
 	const trajectoryEngine = new TrajectoryEngine();
 
@@ -507,7 +508,7 @@
 					</p>
 					{#if tacticalCredits >= item.cost}
 						<PlayerOsButton
-							variant="primary"
+							variant="data"
 							class="armory-deploy-btn"
 							disabled={armoryBusy}
 							onclick={async () => {

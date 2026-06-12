@@ -1,4 +1,5 @@
 <script lang="ts">
+	import '$lib/styles/coach-drill-library.css';
 	import { browser } from '$app/environment';
 	import { page } from '$app/state';
 	import { untrack } from 'svelte';
@@ -32,7 +33,7 @@
 
 	const secureAssignHomework = httpsCallable(functions, 'secureAssignHomework');
 
-	// ── Team context resolution ──────────────────────────────────────────────
+	// â”€â”€ Team context resolution â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 	const teamScope = new CoachTeamScope({ preferProfileTeam: true });
 	$effect(() => {
 		teamScope.syncSelectedTeam();
@@ -41,11 +42,12 @@
 	const role = $derived(teamScope.role);
 	const myTeams = $derived(teamScope.myTeams);
 	const currentTeam = $derived(teamScope.currentTeam);
+	const myEmail = $derived(authStore.user?.email ?? '');
 
 	/** @type {'library' | 'designer' | 'schedule'} */
 	let pageView = $state('library');
 
-	// Honor ?view= deep links (e.g. comms "Open training & schedule" CTA) — apply once.
+	// Honor ?view= deep links (e.g. comms "Open training & schedule" CTA) â€” apply once.
 	let _viewInit = false;
 	$effect(() => {
 		if (_viewInit) return;
@@ -155,7 +157,7 @@
 		if (typeof u === 'number' && u > 0) {
 			return new Date(u * 1000).toLocaleString();
 		}
-		return '—';
+		return 'â€”';
 	}
 
 	$effect(() => {
@@ -165,7 +167,7 @@
 
 	// Mission deploy tab removed (Epic 8). Intents deploy via The Forge (/coach/forge).
 
-	// ── Drill library data loads ─────────────────────────────────────────────
+	// â”€â”€ Drill library data loads â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 	/** @typedef {{ id: string, title: string, category: string, metricType: string, videoUrl: string, description: string, durationMinutes: number, baseXp: number, source: 'team' | 'platform', sportId?: string, createdBy?: string }} DrillRow */
 
 	/** @type {DrillRow[]} */
@@ -278,7 +280,7 @@
 		};
 	});
 
-	// ── Tab + search ─────────────────────────────────────────────────────────
+	// â”€â”€ Tab + search â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 	/** @type {'team' | 'platform'} */
 	let activeTab = $state('team');
 	let searchTerm = $state('');
@@ -296,7 +298,7 @@
 		});
 	});
 
-	// ── Add Drill modal ──────────────────────────────────────────────────────
+	// â”€â”€ Add Drill modal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 	let addOpen = $state(false);
 	let formTitle = $state('');
 	let formCategory = $state('Ball Mastery');
@@ -363,7 +365,7 @@
 			const duration = Number.isFinite(formDuration) ?
 				Math.max(1, Math.min(240, Math.floor(formDuration))) :
 				10;
-			const description = `${formCategory} · metric: ${formMetricType}${formVideoUrl ? `\nVideo: ${formVideoUrl.trim()}` : ''}`;
+			const description = `${formCategory} Â· metric: ${formMetricType}${formVideoUrl ? `\nVideo: ${formVideoUrl.trim()}` : ''}`;
 			await addDoc(collection(db, 'teams', teamScope.selectedTeamId, 'drills'), {
 				name: title,
 				title,
@@ -388,7 +390,7 @@
 		}
 	}
 
-	// ── Delete drill ─────────────────────────────────────────────────────────
+	// â”€â”€ Delete drill â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 	async function deleteDrill(row) {
 		if (row.source !== 'team') return;
 		const ok = confirm(`Delete drill "${row.title}"? This cannot be undone.`);
@@ -401,7 +403,7 @@
 		}
 	}
 
-	// ── Assign Homework modal ────────────────────────────────────────────────
+	// â”€â”€ Assign Homework modal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 	let assignOpen = $state(false);
 	/** @type {DrillRow | null} */
 	let assignDrill = $state(null);
@@ -529,6 +531,15 @@
 		!assignDrill || !assignDue || selectedEmails.size === 0 || assignBusy,
 	);
 
+	function openAssign(row) {
+		assignDrill = row;
+		assignOpen = true;
+		assignErr = '';
+		assignOk = '';
+		selectedEmails = new Set();
+		assignDue = '';
+	}
+
 	async function submitAssign() {
 		if (assignDisabled || !assignDrill || !teamScope.selectedTeamId) return;
 		assignBusy = true;
@@ -561,55 +572,51 @@
 </script>
 
 <svelte:head>
-	<title>Coach · Field Station · SSTRACKER</title>
+	<title>Coach Â· Field Station Â· SSTRACKER</title>
 </svelte:head>
 
-<!-- Vanguard Drills — bg-[#020202] void root with native page scroll, no overflow traps. -->
-<div class="tw-relative tw-min-h-screen tw-w-full tw-bg-[#020202] tw-px-3 tw-py-6 tw-font-mono tw-text-slate-200 sm:tw-px-5">
-<section class="drill-lib cdm-page">
-	<header class="drill-lib__head">
+<!-- VS-3c â€” Coach drill library SIEM shell -->
+<div class="coach-drill-lib tw-relative tw-min-h-screen tw-w-full tw-px-3 tw-py-6 sm:tw-px-5">
+<section class="cdm-page">
+	<header class="coach-drill-z4">
 		<div>
-			<h1 class="drill-lib__title">Field operations</h1>
-			<p class="drill-lib__sub">
-				Team › {currentTeam?.name || teamScope.selectedTeamId || '—'}
+			<h1 class="coach-drill-z4__title">Field operations</h1>
+			<p class="coach-drill-z4__sub">
+				Team â€º {currentTeam?.name || teamScope.selectedTeamId || 'â€”'}
 			</p>
-			<nav class="cdm-seg" aria-label="Coach section">
-				<a
-					href="/coach/forge"
-					class="cdm-seg__btn cdm-seg__btn--intent"
-					title="Deploy macro-goal intents — individualized drills per player"
-				>
+			<nav class="coach-drill-z4-nav" aria-label="Coach section">
+				<a href="/coach/forge" class="coach-drill-z4-nav__btn coach-drill-z4-nav__btn--link" title="Deploy macro-goal intents â€” individualized drills per player">
 					The Forge
 				</a>
 				<button
 					type="button"
-					class="cdm-seg__btn"
-					class:cdm-seg__btn--on={pageView === 'library'}
+					class="coach-drill-z4-nav__btn"
+					class:coach-drill-z4-nav__btn--active={pageView === 'library'}
 					onclick={() => (pageView = 'library')}
 				>
 					Drill library
 				</button>
 				<button
 					type="button"
-					class="cdm-seg__btn"
-					class:cdm-seg__btn--on={pageView === 'designer'}
+					class="coach-drill-z4-nav__btn"
+					class:coach-drill-z4-nav__btn--active={pageView === 'designer'}
 					onclick={() => (pageView = 'designer')}
 				>
 					Spatial designer
 				</button>
 				<button
 					type="button"
-					class="cdm-seg__btn"
-					class:cdm-seg__btn--on={pageView === 'schedule'}
+					class="coach-drill-z4-nav__btn"
+					class:coach-drill-z4-nav__btn--active={pageView === 'schedule'}
 					onclick={() => (pageView = 'schedule')}
 				>
 					Team schedule
 				</button>
 			</nav>
 		</div>
-		<div class="drill-lib__head-actions">
+		<div class="coach-drill-z4__actions">
 			{#if myTeams.length > 1}
-				<label class="drill-lib__team-picker">
+				<label class="coach-drill-z4__team">
 					<span class="sr-only">Team</span>
 					<select bind:value={teamScope.selectedTeamId}>
 						{#each myTeams as t (t.id)}
@@ -619,9 +626,9 @@
 				</label>
 			{/if}
 			{#if pageView === 'library'}
-				<button type="button" class="drill-lib__btn drill-lib__btn--primary" onclick={openAddDrill}>
+				<button type="button" class="coach-drill-z4-cta" onclick={openAddDrill}>
 					<Icon name="status.circle-plus" />
-					<span>Add Drill</span>
+					<span>NEW DRILL</span>
 				</button>
 			{/if}
 		</div>
@@ -710,7 +717,7 @@
 						onclick={() => void submitScheduleEvent()}
 					>
 						{#if scheduleSaveBusy}
-							Saving…
+							Savingâ€¦
 						{:else}
 							Save event
 						{/if}
@@ -730,16 +737,16 @@
 							<li class="cdm-sch-li">
 								<div class="cdm-sch-li__top">
 									<span class="cdm-sch-pill"
-										>{String(ev.eventKind || ev.type || '—')}</span
+										>{String(ev.eventKind || ev.type || 'â€”')}</span
 									>
 									<time class="cdm-sch-time">{formatScheduleStart(/** @type {*} */ (ev))}</time>
 								</div>
-								<p class="cdm-sch-name">{String(ev.name || '—')}</p>
+								<p class="cdm-sch-name">{String(ev.name || 'â€”')}</p>
 								<p class="cdm-sch-meta">
 									<span>reminderOffsets: {JSON.stringify(ev.reminderOffsets || [])}</span>
 									<br />
 									<span class="cdm-mono"
-										>startTimestamp: {String(ev.startTimestamp != null ? ev.startTimestamp : '—')}</span
+										>startTimestamp: {String(ev.startTimestamp != null ? ev.startTimestamp : 'â€”')}</span
 									>
 								</p>
 							</li>
@@ -761,158 +768,158 @@
 			</section>
 		{/if}
 	{:else}
-	<nav class="drill-lib__tabs" aria-label="Drill library sections">
+	<nav class="coach-drill-z4-tabs" aria-label="Drill library sections">
 		<button
 			type="button"
-			class="drill-lib__tab"
-			class:is-active={activeTab === 'team'}
+			class="coach-drill-z4-tab"
+			class:coach-drill-z4-tab--active={activeTab === 'team'}
 			onclick={() => (activeTab = 'team')}
 		>
-			Custom Drills
-			<span class="drill-lib__tab-count">{teamDrills.length}</span>
+			Custom drills
+			<span class="coach-drill-z4-tab__count">{teamDrills.length}</span>
 		</button>
 		<button
 			type="button"
-			class="drill-lib__tab"
-			class:is-active={activeTab === 'platform'}
+			class="coach-drill-z4-tab"
+			class:coach-drill-z4-tab--active={activeTab === 'platform'}
 			onclick={() => (activeTab = 'platform')}
 		>
 			Platform basics
-			<span class="drill-lib__tab-hint">{activeSportLabel}</span>
-			<span class="drill-lib__tab-count">{platformDrills.length}</span>
+			<span class="coach-drill-z4-tab__count">{platformDrills.length}</span>
+			<span class="coach-drill-z4-tab__count">{activeSportLabel}</span>
 		</button>
 	</nav>
 
-	<div class="drill-lib__toolbar">
-		<label class="drill-lib__search">
-			<Icon name="action.search" />
-			<input
-				type="search"
-				placeholder="Search by title, category, or metric…"
-				bind:value={searchTerm}
-			/>
-		</label>
+	<div class="coach-drill-z1-well">
+		<div class="coach-drill-z1-toolbar">
+			<label class="coach-drill-z1-search">
+				<Icon name="action.search" />
+				<input
+					type="search"
+					placeholder="Search by title, category, or metricâ€¦"
+					bind:value={searchTerm}
+				/>
+			</label>
+		</div>
 		{#if activeTab === 'team'}
-			<p class="drill-lib__hint">
-				Team drills are yours to edit and deploy via Intent Engine. Recommend a strong drill to your director with <strong>Share with director</strong> — they add it to the club library after review.
+			<p class="coach-drill-z1-hint">
+				Team drills are yours to edit and deploy via Intent Engine. Recommend a strong drill to your director with Share with director â€” they add it to the club library after review.
 			</p>
 		{:else}
-			<p class="drill-lib__hint">
-				Starter drills for {activeSportLabel}. Copy to your team library, then customize in Spatial designer or deploy from Assignments. Platform basics are read-only templates — not assigned directly.
+			<p class="coach-drill-z1-hint">
+				Starter drills for {activeSportLabel}. Copy to your team library, then customize in Spatial designer or deploy from Assignments.
 			</p>
 		{/if}
 		{#if copyPlatformMsg}
-			<p class="drill-lib__hint drill-lib__hint--status" role="status">{copyPlatformMsg}</p>
+			<p class="coach-drill-z1-hint coach-drill-z1-hint--status" role="status">{copyPlatformMsg}</p>
 		{/if}
-	</div>
+		{#if loadError}
+			<div class="coach-drill-z1-alert" role="alert">{loadError}</div>
+		{/if}
 
-	{#if loadError}
-		<div class="drill-lib__alert" role="alert">{loadError}</div>
-	{/if}
-
-	<div class="drill-lib__table-wrap">
-		<table class="drill-lib__table" aria-label="Drill library table">
-			<thead>
-				<tr>
-					<th scope="col">Title</th>
-					<th scope="col">Category</th>
-					<th scope="col">Metric</th>
-					<th scope="col">Video</th>
-					<th scope="col" class="drill-lib__num-col">Base XP</th>
-					<th scope="col" class="drill-lib__actions-col"><span class="sr-only">Actions</span></th>
-				</tr>
-			</thead>
-			<tbody>
-				{#if activeTab === 'team' && loadingTeamDrills}
-					<tr><td colspan="6" class="drill-lib__empty">Loading custom drills…</td></tr>
-				{:else if activeTab === 'platform' && loadingPlatformDrills}
-					<tr><td colspan="6" class="drill-lib__empty">Loading platform basics…</td></tr>
-				{:else if visibleRows.length === 0}
-					<tr>
-						<td colspan="6" class="drill-lib__empty">
-							{#if activeTab === 'team'}
-								No team drills yet. Use <strong>Add Drill</strong>, <strong>Spatial designer</strong>, or copy from Platform basics.
-							{:else}
-								No platform basics for {activeSportLabel} yet. Your org admin can seed multi-sport starter drills.
+		<div class="coach-drill-z2-grid" aria-label="Drill library">
+			{#if activeTab === 'team' && loadingTeamDrills}
+				<p class="coach-drill-z2-empty">Loading custom drillsâ€¦</p>
+			{:else if activeTab === 'platform' && loadingPlatformDrills}
+				<p class="coach-drill-z2-empty">Loading platform basicsâ€¦</p>
+			{:else if visibleRows.length === 0}
+				<p class="coach-drill-z2-empty">
+					{#if activeTab === 'team'}
+						No team drills yet. Use New drill, Spatial designer, or copy from Platform basics.
+					{:else}
+						No platform basics for {activeSportLabel} yet.
+					{/if}
+				</p>
+			{:else}
+				{#each visibleRows as row (row.id)}
+					<article class="coach-drill-z2-card">
+						<h2 class="coach-drill-z2-card__title">{row.title}</h2>
+						{#if row.description}
+							<p class="coach-drill-z2-card__desc">{row.description}</p>
+						{/if}
+						<div class="coach-drill-z2-card__labels">
+							<span class="coach-drill-z2-label">{row.category}</span>
+							<span class="coach-drill-z2-label">{row.metricType}</span>
+							{#if row.source === 'platform'}
+								<span class="coach-drill-z2-label coach-drill-z2-label--warn">Template</span>
 							{/if}
-						</td>
-					</tr>
-				{:else}
-					{#each visibleRows as row (row.id)}
-						<tr>
-							<td class="drill-lib__title-cell">
-								<span class="drill-lib__title-text">{row.title}</span>
-								{#if row.description}
-									<span class="drill-lib__desc">{row.description}</span>
-								{/if}
-							</td>
-							<td>
-								<span class="drill-lib__chip">{row.category}</span>
-							</td>
-							<td>
-								<span class="drill-lib__chip drill-lib__chip--alt">{row.metricType}</span>
-							</td>
-							<td>
-								{#if row.videoUrl}
-									<a
-										class="drill-lib__video-link"
-										href={row.videoUrl}
-										target="_blank"
-										rel="noopener noreferrer"
-									>
-										<Icon name="status.circle-play" />
-										<span>Watch</span>
-									</a>
-								{:else}
-									<span class="drill-lib__muted">—</span>
-								{/if}
-							</td>
-							<td class="drill-lib__num-col tabular-num">{row.baseXp}</td>
-							<td class="drill-lib__actions-col">
-								{#if row.source === 'platform'}
-									<button
-										type="button"
-										class="drill-lib__btn drill-lib__btn--ghost"
-										disabled={copyPlatformBusy || !teamScope.selectedTeamId}
-										onclick={() => void copyPlatformToTeam(row)}
-									>
-										<Icon name="action.copy" />
-										<span>Copy to team</span>
-									</button>
-								{:else}
-									<button
-										type="button"
-										class="drill-lib__btn drill-lib__btn--ghost"
-										onclick={() => void recommendToDirector(row)}
-									>
-										<Icon name="comm.send" />
-										<span>Share with director</span>
-									</button>
-									<button
-										type="button"
-										class="drill-lib__btn drill-lib__btn--ghost drill-lib__btn--danger"
-										onclick={() => deleteDrill(row)}
-										aria-label={`Delete drill ${row.title}`}
-									>
-										<Icon name="action.delete" />
-										<span>Delete</span>
-									</button>
-								{/if}
-							</td>
-						</tr>
-					{/each}
-				{/if}
-			</tbody>
-		</table>
+						</div>
+						<ul class="coach-drill-z2-card__meta">
+							<li>
+								<dl>
+									<dt>Base XP</dt>
+									<dd>{row.baseXp}</dd>
+								</dl>
+							</li>
+							<li>
+								<dl>
+									<dt>Duration</dt>
+									<dd>{row.durationMinutes}m</dd>
+								</dl>
+							</li>
+						</ul>
+						{#if row.videoUrl}
+							<a
+								class="coach-drill-z2-card__link"
+								href={row.videoUrl}
+								target="_blank"
+								rel="noopener noreferrer"
+							>
+								<Icon name="status.circle-play" />
+								<span>Watch</span>
+							</a>
+						{/if}
+						<div class="coach-drill-z2-card__actions">
+							{#if row.source === 'platform'}
+								<button
+									type="button"
+									class="coach-drill-z2-btn coach-drill-z2-btn--assign"
+									disabled={copyPlatformBusy || !teamScope.selectedTeamId}
+									onclick={() => void copyPlatformToTeam(row)}
+								>
+									<Icon name="action.copy" />
+									<span>Copy to team</span>
+								</button>
+							{:else}
+								<button
+									type="button"
+									class="coach-drill-z2-btn coach-drill-z2-btn--assign"
+									onclick={() => openAssign(row)}
+								>
+									<span>Assign</span>
+								</button>
+								<button
+									type="button"
+									class="coach-drill-z2-btn"
+									onclick={() => void recommendToDirector(row)}
+								>
+									<Icon name="comm.send" />
+									<span>Share</span>
+								</button>
+								<button
+									type="button"
+									class="coach-drill-z2-btn coach-drill-z2-btn--danger"
+									onclick={() => deleteDrill(row)}
+									aria-label={`Delete drill ${row.title}`}
+								>
+									<Icon name="action.delete" />
+									<span>Delete</span>
+								</button>
+							{/if}
+						</div>
+					</article>
+				{/each}
+			{/if}
+		</div>
 	</div>
 	{/if}
 </section>
 </div>
 
 <Modal bind:open={addOpen} title="Add Custom Drill" maxWidth="520px">
-	<form class="dl-form" onsubmit={(e) => { e.preventDefault(); void submitAddDrill(); }}>
-		<label class="dl-field">
-			<span class="dl-field__label">Title</span>
+	<form class="coach-drill-form" onsubmit={(e) => { e.preventDefault(); void submitAddDrill(); }}>
+		<label class="coach-drill-form__field">
+			<span class="coach-drill-form__label">Title</span>
 			<input
 				type="text"
 				bind:value={formTitle}
@@ -922,8 +929,8 @@
 			/>
 		</label>
 
-		<label class="dl-field">
-			<span class="dl-field__label">Category</span>
+		<label class="coach-drill-form__field">
+			<span class="coach-drill-form__label">Category</span>
 			<select bind:value={formCategory}>
 				{#each DRILL_CATEGORIES as c}
 					<option value={c}>{c}</option>
@@ -931,8 +938,8 @@
 			</select>
 		</label>
 
-		<label class="dl-field">
-			<span class="dl-field__label">Metric Type</span>
+		<label class="coach-drill-form__field">
+			<span class="coach-drill-form__label">Metric Type</span>
 			<select bind:value={formMetricType}>
 				{#each METRIC_TYPES as m}
 					<option value={m.value}>{m.label}</option>
@@ -940,34 +947,34 @@
 			</select>
 		</label>
 
-		<label class="dl-field">
-			<span class="dl-field__label">Duration (minutes)</span>
+		<label class="coach-drill-form__field">
+			<span class="coach-drill-form__label">Duration (minutes)</span>
 			<input type="number" min="1" max="240" bind:value={formDuration} />
 		</label>
 
-		<label class="dl-field">
-			<span class="dl-field__label">Video URL (optional)</span>
+		<label class="coach-drill-form__field">
+			<span class="coach-drill-form__label">Video URL (optional)</span>
 			<input
 				type="url"
 				bind:value={formVideoUrl}
-				placeholder="https://youtube.com/watch?v=…"
+				placeholder="https://youtube.com/watch?v=â€¦"
 			/>
 		</label>
 
 		{#if addErr}
-			<p class="dl-form__err" role="alert">{addErr}</p>
+			<p class="coach-drill-form__err" role="alert">{addErr}</p>
 		{/if}
 
-		<div class="dl-form__actions">
-			<button type="button" class="drill-lib__btn drill-lib__btn--ghost" onclick={() => (addOpen = false)}>
+		<div class="coach-drill-form__actions">
+			<button type="button" class="coach-drill-z2-btn" onclick={() => (addOpen = false)}>
 				Cancel
 			</button>
 			<button
 				type="submit"
-				class="drill-lib__btn drill-lib__btn--primary"
+				class="coach-drill-z4-cta"
 				disabled={addBusy}
 			>
-				{addBusy ? 'Saving…' : 'Save Drill'}
+				{addBusy ? 'Savingâ€¦' : 'Save Drill'}
 			</button>
 		</div>
 	</form>
@@ -975,41 +982,41 @@
 
 <Modal bind:open={assignOpen} title="Assign Homework" maxWidth="560px">
 	{#if assignDrill}
-		<div class="dl-assign">
-			<div class="dl-assign__drill">
-				<span class="dl-assign__label">Drill</span>
+		<div class="coach-drill-form">
+			<div class="coach-drill-assign__drill">
+				<span class="coach-drill-form__label">Drill</span>
 				<strong>{assignDrill.title}</strong>
-				<span class="dl-assign__meta">{assignDrill.category} · metric: {assignDrill.metricType}</span>
+				<span class="coach-drill-z1-hint">{assignDrill.category} Â· metric: {assignDrill.metricType}</span>
 			</div>
 
-			<label class="dl-field">
-				<span class="dl-field__label">Due date &amp; time</span>
+			<label class="coach-drill-form__field">
+				<span class="coach-drill-form__label">Due date &amp; time</span>
 				<input type="datetime-local" bind:value={assignDue} required />
 			</label>
 
-			<div class="dl-assign__roster">
-				<div class="dl-assign__roster-head">
-					<span class="dl-field__label">Roster</span>
-					<button type="button" class="drill-lib__btn drill-lib__btn--ghost" onclick={toggleAllEmails}>
+			<div class="coach-drill-assign__roster">
+				<div class="coach-drill-assign__roster-head">
+					<span class="coach-drill-form__label">Roster</span>
+					<button type="button" class="coach-drill-z2-btn" onclick={toggleAllEmails}>
 						{selectedEmails.size === roster.length && roster.length > 0 ? 'Clear all' : 'Select all'}
 					</button>
 				</div>
 				{#if loadingRoster}
-					<p class="drill-lib__hint">Loading roster…</p>
+					<p class="coach-drill-z1-hint">Loading rosterâ€¦</p>
 				{:else if roster.length === 0}
-					<p class="drill-lib__hint">No player accounts on this team yet.</p>
+					<p class="coach-drill-z1-hint">No player accounts on this team yet.</p>
 				{:else}
-					<ul class="dl-assign__list">
+					<ul class="coach-drill-assign__list">
 						{#each roster as p (p.email)}
 							<li>
-								<label class="dl-assign__row">
+								<label class="coach-drill-assign__row">
 									<input
 										type="checkbox"
 										checked={selectedEmails.has(p.email)}
 										onchange={() => toggleEmail(p.email)}
 									/>
-									<span class="dl-assign__name">{p.playerName}</span>
-									<span class="dl-assign__email">{p.email}</span>
+									<span class="coach-drill-assign__name">{p.playerName}</span>
+									<span class="coach-drill-assign__email">{p.email}</span>
 								</label>
 							</li>
 						{/each}
@@ -1018,27 +1025,27 @@
 			</div>
 
 			{#if assignErr}
-				<p class="dl-form__err" role="alert">{assignErr}</p>
+				<p class="coach-drill-form__err" role="alert">{assignErr}</p>
 			{/if}
 			{#if assignOk}
-				<p class="dl-form__ok" role="status">{assignOk}</p>
+				<p class="coach-drill-form__ok" role="status">{assignOk}</p>
 			{/if}
 
-			<div class="dl-form__actions">
+			<div class="coach-drill-form__actions">
 				<button
 					type="button"
-					class="drill-lib__btn drill-lib__btn--ghost"
+					class="coach-drill-z2-btn"
 					onclick={() => (assignOpen = false)}
 				>
 					Close
 				</button>
 				<button
 					type="button"
-					class="drill-lib__btn drill-lib__btn--primary"
+					class="coach-drill-z4-cta"
 					disabled={assignDisabled}
 					onclick={submitAssign}
 				>
-					{assignBusy ? 'Dispatching…' : `Assign to ${selectedEmails.size || 0}`}
+					{assignBusy ? 'Dispatchingâ€¦' : `Assign to ${selectedEmails.size || 0}`}
 				</button>
 			</div>
 		</div>
@@ -1054,54 +1061,6 @@
 		--cdm-toxic: #2dd4bf;
 		--cdm-threat: #ff6b00;
 		background: var(--cdm-bg);
-	}
-
-	.drill-lib {
-		display: flex;
-		flex-direction: column;
-		gap: var(--bento-gap-md);
-		padding: var(--bento-pad) var(--bento-pad) 48px;
-		color: var(--text-primary, #fafafa);
-	}
-
-	.cdm-seg {
-		display: inline-flex;
-		gap: 4px;
-		margin-top: 12px;
-		padding: 4px;
-		border: 1px solid var(--cdm-line);
-		background: var(--cdm-panel);
-	}
-
-	.cdm-seg__btn {
-		padding: 6px 14px;
-		font-size: 0.65rem;
-		font-weight: 800;
-		text-transform: uppercase;
-		letter-spacing: 0.12em;
-		border: 0;
-		background: transparent;
-		color: rgba(255, 255, 255, 0.45);
-		cursor: pointer;
-	}
-
-	.cdm-seg__btn--on {
-		background: #000;
-		color: var(--cdm-cyber);
-		box-shadow: 0 0 14px rgba(0, 212, 255, 0.2);
-	}
-
-	.cdm-seg__btn--intent {
-		color: #a855f7;
-		border: 1px solid rgba(168, 85, 247, 0.3);
-		text-decoration: none;
-		display: inline-flex;
-		align-items: center;
-	}
-
-	.cdm-seg__btn--intent:hover {
-		background: rgba(168, 85, 247, 0.1);
-		box-shadow: 0 0 14px rgba(168, 85, 247, 0.2);
 	}
 
 	.cdm-grid {
@@ -1408,464 +1367,5 @@
 		line-height: 1.4;
 		color: rgba(255, 255, 255, 0.45);
 		word-break: break-word;
-	}
-
-	.sr-only {
-		position: absolute;
-		width: 1px;
-		height: 1px;
-		padding: 0;
-		margin: -1px;
-		overflow: hidden;
-		clip: rect(0, 0, 0, 0);
-		white-space: nowrap;
-		border: 0;
-	}
-
-	.tabular-num {
-		font-variant-numeric: tabular-nums;
-	}
-
-	.drill-lib__head {
-		display: flex;
-		align-items: flex-end;
-		justify-content: space-between;
-		gap: 16px;
-		flex-wrap: wrap;
-	}
-
-	.drill-lib__title {
-		margin: 0 0 4px;
-		font-size: clamp(1.4rem, 3.2vw, 1.75rem);
-		font-weight: 800;
-		letter-spacing: -0.01em;
-	}
-
-	.drill-lib__sub {
-		margin: 0;
-		font-size: 0.85rem;
-		color: #a1a1aa;
-		text-transform: uppercase;
-		letter-spacing: 0.08em;
-		font-weight: 700;
-	}
-
-	.drill-lib__head-actions {
-		display: flex;
-		gap: 10px;
-		flex-wrap: wrap;
-		align-items: center;
-	}
-
-	.drill-lib__team-picker select {
-		height: 40px;
-		padding: 0 12px;
-		border-radius: 10px;
-		border: 1px solid rgba(255, 255, 255, 0.08);
-		background: #18181b;
-		color: #fafafa;
-		font-size: 13.5px;
-		min-width: 200px;
-	}
-
-	.drill-lib__btn {
-		display: inline-flex;
-		align-items: center;
-		gap: 8px;
-		height: 40px;
-		padding: 0 16px;
-		border-radius: 10px;
-		border: 1px solid rgba(255, 255, 255, 0.08);
-		background: #18181b;
-		color: #fafafa;
-		font-weight: 700;
-		font-size: 13.5px;
-		cursor: pointer;
-		transition: background 0.15s ease, border-color 0.15s ease, transform 0.05s ease;
-	}
-
-	.drill-lib__btn:hover {
-		background: #27272a;
-	}
-
-	.drill-lib__btn:active {
-		transform: translateY(1px);
-	}
-
-	.drill-lib__btn:disabled {
-		opacity: 0.5;
-		cursor: not-allowed;
-	}
-
-	.drill-lib__btn--primary {
-		background: linear-gradient(135deg, #6366f1, #4f46e5);
-		border-color: transparent;
-		color: #fff;
-	}
-
-	.drill-lib__btn--primary:hover {
-		background: linear-gradient(135deg, #6366f1, #4338ca);
-	}
-
-	.drill-lib__btn--ghost {
-		background: transparent;
-		border-color: rgba(255, 255, 255, 0.14);
-	}
-
-	.drill-lib__btn--danger {
-		color: #fca5a5;
-		border-color: rgba(248, 113, 113, 0.35);
-	}
-
-	.drill-lib__btn--danger:hover {
-		background: rgba(248, 113, 113, 0.12);
-	}
-
-	.drill-lib__tabs {
-		display: inline-flex;
-		align-items: center;
-		gap: 4px;
-		padding: 4px;
-		border-radius: 12px;
-		background: #18181b;
-		border: 1px solid rgba(255, 255, 255, 0.06);
-		align-self: flex-start;
-	}
-
-	.drill-lib__tab {
-		display: inline-flex;
-		align-items: center;
-		gap: 8px;
-		height: 34px;
-		padding: 0 14px;
-		border-radius: 8px;
-		background: transparent;
-		border: 0;
-		color: #d4d4d8;
-		font-weight: 700;
-		font-size: 13px;
-		cursor: pointer;
-	}
-
-	.drill-lib__tab.is-active {
-		background: #27272a;
-		color: #fafafa;
-	}
-
-	.drill-lib__tab-count {
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
-		min-width: 22px;
-		height: 20px;
-		padding: 0 6px;
-		border-radius: 999px;
-		background: rgba(255, 255, 255, 0.08);
-		font-size: 11px;
-		font-weight: 800;
-	}
-
-	.drill-lib__toolbar {
-		display: flex;
-		align-items: center;
-		gap: 14px;
-		flex-wrap: wrap;
-	}
-
-	.drill-lib__search {
-		position: relative;
-		flex: 1 1 280px;
-		max-width: 420px;
-	}
-
-	.drill-lib__search :global(svg) {
-		position: absolute;
-		top: 50%;
-		left: 12px;
-		transform: translateY(-50%);
-		color: #a1a1aa;
-		width: 16px;
-		height: 16px;
-		pointer-events: none;
-	}
-
-	.drill-lib__search input {
-		width: 100%;
-		height: 40px;
-		padding: 0 14px 0 2.5rem;
-		border-radius: 10px;
-		border: 1px solid rgba(255, 255, 255, 0.08);
-		background: #18181b;
-		color: #fafafa;
-		font-size: 13.5px;
-		line-height: 1;
-	}
-
-	.drill-lib__hint {
-		margin: 0;
-		font-size: 12.5px;
-		color: #a1a1aa;
-		line-height: 1.5;
-		max-width: 560px;
-	}
-
-	.drill-lib__alert {
-		padding: 12px 14px;
-		border-radius: 10px;
-		background: rgba(248, 113, 113, 0.1);
-		border: 1px solid rgba(248, 113, 113, 0.35);
-		color: #fecaca;
-		font-size: 13px;
-	}
-
-	.drill-lib__table-wrap {
-		border: 1px solid rgba(255, 255, 255, 0.06);
-		border-radius: 14px;
-		overflow: hidden;
-		background: #09090b;
-	}
-
-	.drill-lib__table {
-		width: 100%;
-		border-collapse: separate;
-		border-spacing: 0;
-	}
-
-	.drill-lib__table thead th {
-		text-align: left;
-		padding: 12px 16px;
-		font-size: 11.5px;
-		font-weight: 800;
-		text-transform: uppercase;
-		letter-spacing: 0.08em;
-		color: #a1a1aa;
-		background: #18181b;
-		border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-	}
-
-	.drill-lib__table tbody td {
-		padding: 14px 16px;
-		border-top: 1px solid rgba(255, 255, 255, 0.04);
-		vertical-align: middle;
-		font-size: 13.5px;
-		color: #fafafa;
-	}
-
-	.drill-lib__table tbody tr:first-child td {
-		border-top: 0;
-	}
-
-	.drill-lib__table tbody tr:hover td {
-		background: rgba(255, 255, 255, 0.02);
-	}
-
-	.drill-lib__title-cell {
-		display: flex;
-		flex-direction: column;
-		gap: 4px;
-		min-width: 200px;
-	}
-
-	.drill-lib__title-text {
-		font-weight: 700;
-	}
-
-	.drill-lib__desc {
-		font-size: 12px;
-		color: #a1a1aa;
-		white-space: pre-wrap;
-	}
-
-	.drill-lib__chip {
-		display: inline-block;
-		padding: 4px 10px;
-		border-radius: 999px;
-		background: rgba(99, 102, 241, 0.14);
-		color: #c7d2fe;
-		font-size: 11.5px;
-		font-weight: 800;
-		text-transform: uppercase;
-		letter-spacing: 0.04em;
-	}
-
-	.drill-lib__chip--alt {
-		background: rgba(16, 185, 129, 0.14);
-		color: #6ee7b7;
-	}
-
-	.drill-lib__video-link {
-		display: inline-flex;
-		align-items: center;
-		gap: 6px;
-		color: #93c5fd;
-		font-weight: 700;
-		font-size: 13px;
-		text-decoration: none;
-	}
-
-	.drill-lib__video-link:hover {
-		text-decoration: underline;
-	}
-
-	.drill-lib__muted {
-		color: #52525b;
-	}
-
-	.drill-lib__num-col {
-		text-align: right;
-		width: 110px;
-	}
-
-	.drill-lib__actions-col {
-		width: 140px;
-		text-align: right;
-	}
-
-	.drill-lib__empty {
-		padding: 28px 16px;
-		text-align: center;
-		color: #a1a1aa;
-		font-size: 13.5px;
-	}
-
-	/* Modal form styles */
-	.dl-form {
-		display: flex;
-		flex-direction: column;
-		gap: 14px;
-	}
-
-	.dl-field {
-		display: flex;
-		flex-direction: column;
-		gap: 6px;
-	}
-
-	.dl-field__label {
-		font-size: 12px;
-		font-weight: 700;
-		color: #a1a1aa;
-		text-transform: uppercase;
-		letter-spacing: 0.06em;
-	}
-
-	.dl-field input,
-	.dl-field select {
-		height: 40px;
-		padding: 0 12px;
-		border-radius: 10px;
-		border: 1px solid rgba(0, 0, 0, 0.12);
-		background: #fff;
-		color: #18181b;
-		font-size: 14px;
-	}
-
-	:global(html.dark) .dl-field input,
-	:global(html.dark) .dl-field select {
-		background: #18181b;
-		color: #fafafa;
-		border-color: rgba(255, 255, 255, 0.12);
-	}
-
-	.dl-form__actions {
-		display: flex;
-		justify-content: flex-end;
-		gap: 10px;
-		margin-top: 6px;
-	}
-
-	.dl-form__err {
-		margin: 0;
-		padding: 10px 12px;
-		border-radius: 8px;
-		background: rgba(248, 113, 113, 0.12);
-		color: #b91c1c;
-		font-size: 13px;
-	}
-
-	.dl-form__ok {
-		margin: 0;
-		padding: 10px 12px;
-		border-radius: 8px;
-		background: rgba(34, 197, 94, 0.12);
-		color: #15803d;
-		font-size: 13px;
-	}
-
-	/* Assign modal */
-	.dl-assign {
-		display: flex;
-		flex-direction: column;
-		gap: 14px;
-	}
-
-	.dl-assign__drill {
-		padding: 12px 14px;
-		border-radius: 10px;
-		background: rgba(99, 102, 241, 0.08);
-		border: 1px solid rgba(99, 102, 241, 0.2);
-		display: flex;
-		flex-direction: column;
-		gap: 4px;
-	}
-
-	.dl-assign__label {
-		font-size: 11px;
-		text-transform: uppercase;
-		letter-spacing: 0.08em;
-		color: #6366f1;
-		font-weight: 800;
-	}
-
-	.dl-assign__meta {
-		font-size: 12.5px;
-		color: #a1a1aa;
-	}
-
-	.dl-assign__roster-head {
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
-		margin-bottom: 8px;
-	}
-
-	.dl-assign__list {
-		list-style: none;
-		margin: 0;
-		padding: 0;
-		border: 1px solid rgba(0, 0, 0, 0.08);
-		border-radius: 10px;
-	}
-
-	:global(html.dark) .dl-assign__list {
-		border-color: rgba(255, 255, 255, 0.08);
-	}
-
-	.dl-assign__row {
-		display: grid;
-		grid-template-columns: 24px 1fr auto;
-		gap: 10px;
-		align-items: center;
-		padding: 10px 12px;
-		border-bottom: 1px solid rgba(0, 0, 0, 0.06);
-		cursor: pointer;
-	}
-
-	:global(html.dark) .dl-assign__row {
-		border-bottom-color: rgba(255, 255, 255, 0.06);
-	}
-
-	.dl-assign__list li:last-child .dl-assign__row {
-		border-bottom: 0;
-	}
-
-	.dl-assign__name {
-		font-weight: 700;
-		font-size: 13.5px;
-	}
-
-	.dl-assign__email {
-		font-size: 12px;
-		color: #a1a1aa;
 	}
 </style>

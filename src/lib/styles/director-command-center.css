@@ -1,0 +1,391 @@
+/**
+ * VS-5a — DIRECTOR_COMMAND_CENTER
+ * /director — SIEM club-ops command surface.
+ * Z0 void · Z1 well · Z2 KPI tiles · Z4 chrome nav.
+ */
+
+.director-os-root.director-command-center-shell {
+	--pd-void-base: #000000;
+	--pd-navy-panel: #0f172a;
+	--pd-data-cyan: #14b8a6;
+	--pd-nav-cyan: #06b6d4;
+	--pd-atom-amber: #d97706;
+	--pd-grey-trim: #334155;
+	--pd-chamfer-md: 8px;
+	--pd-chamfer-sm: 4px;
+	background: var(--pd-void-base, #000000);
+	color: #e2e8f0;
+}
+
+/* ── Z4 page chrome ────────────────────────────────────────────────────────── */
+.director-os-root .director-console-page {
+	box-sizing: border-box;
+}
+
+.director-os-root .director-console-page__header {
+	display: flex;
+	align-items: center;
+	gap: 0.75rem;
+	flex-wrap: wrap;
+	margin-bottom: 1rem;
+	padding-bottom: 0.75rem;
+	border-bottom: 1px solid var(--pd-grey-trim, #334155);
+}
+
+.director-os-root .director-console-page__title {
+	margin: 0;
+	font-family: ui-monospace, 'Geist Mono', monospace;
+	font-size: 14px;
+	font-weight: 700;
+	letter-spacing: 0.12em;
+	text-transform: uppercase;
+	color: #ffffff;
+}
+
+.director-os-root .director-console-page__section {
+	margin-top: 0;
+}
+
+.director-os-root .director-console-page__section--full {
+	width: 100%;
+	box-sizing: border-box;
+}
+
+.director-os-root .director-console-fallback {
+	margin: 0;
+	font-family: ui-monospace, 'Geist Mono', monospace;
+	font-size: 11px;
+	color: #94a3b8;
+}
+
+/* Z4 mobile tab rail */
+.director-os-root .director-z4-tab-rail {
+	display: none;
+	overflow-x: auto;
+	scrollbar-width: none;
+	align-items: center;
+	gap: 0.35rem;
+	padding: 0 0.25rem;
+	margin-bottom: 0.75rem;
+	border-bottom: 1px solid var(--pd-grey-trim, #334155);
+}
+
+.director-os-root .director-z4-tab-rail::-webkit-scrollbar {
+	display: none;
+}
+
+.director-os-root .director-z4-tab-rail__link {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.35rem;
+	min-height: 36px;
+	padding: 0 0.65rem;
+	font-family: ui-monospace, 'Geist Mono', monospace;
+	font-size: 10px;
+	font-weight: 700;
+	letter-spacing: 0.1em;
+	text-transform: uppercase;
+	text-decoration: none;
+	white-space: nowrap;
+	flex-shrink: 0;
+	color: #94a3b8;
+	background: transparent;
+	border: 1px solid transparent;
+	border-radius: 0;
+	box-shadow: none;
+	clip-path: polygon(
+		var(--pd-chamfer-sm, 4px) 0%,
+		100% 0%,
+		100% calc(100% - var(--pd-chamfer-sm, 4px)),
+		calc(100% - var(--pd-chamfer-sm, 4px)) 100%,
+		0% 100%,
+		0% var(--pd-chamfer-sm, 4px)
+	);
+}
+
+.director-os-root .director-z4-tab-rail__link:hover {
+	color: var(--pd-nav-cyan, #06b6d4);
+}
+
+.director-os-root .director-z4-tab-rail__link--active {
+	color: var(--pd-nav-cyan, #06b6d4);
+	border-color: var(--pd-nav-cyan, #06b6d4);
+}
+
+.director-os-root .director-z4-tab-rail__link :global(svg) {
+	width: 1rem;
+	height: 1rem;
+	flex-shrink: 0;
+}
+
+@media (max-width: 767.98px) {
+	.director-os-root .director-console-page__header {
+		display: none;
+	}
+
+	.director-os-root .director-z4-tab-rail {
+		display: flex;
+	}
+}
+
+@media (max-width: 1023.98px) {
+	.director-os-root .director-console-page {
+		padding-bottom: calc(7rem + env(safe-area-inset-bottom, 0px));
+	}
+}
+
+/* ── Command center root (Z1 well) ─────────────────────────────────────────── */
+.director-os-root .director-command-center {
+	max-width: min(100%, 120rem);
+	margin-inline: auto;
+}
+
+.director-os-root .director-command-center .wsd-root {
+	max-width: none;
+}
+
+/* Hero / ribbon — strip gradients & glow */
+.director-os-root .director-command-center .wsd-eyebrow {
+	font-family: ui-monospace, 'Geist Mono', monospace;
+	font-size: 10px;
+	font-weight: 700;
+	letter-spacing: 0.12em;
+	color: var(--pd-nav-cyan, #06b6d4);
+}
+
+.director-os-root .director-command-center .wsd-title {
+	font-family: ui-monospace, 'Geist Mono', monospace;
+	font-size: clamp(1.25rem, 2.5vw, 1.75rem);
+	font-weight: 700;
+	letter-spacing: 0.1em;
+	text-transform: uppercase;
+	color: #ffffff;
+}
+
+.director-os-root .director-command-center .wsd-lede {
+	font-size: 0.875rem;
+	line-height: 1.5;
+	color: #94a3b8;
+}
+
+.director-os-root .director-command-center .wsd-hero__meta {
+	font-family: ui-monospace, 'Geist Mono', monospace;
+	font-size: 9px;
+	font-weight: 600;
+	letter-spacing: 0.1em;
+	color: #64748b;
+}
+
+.director-os-root .director-command-center .wsd-live {
+	padding: 0.2rem 0.5rem;
+	font-family: ui-monospace, 'Geist Mono', monospace;
+	font-size: 9px;
+	font-weight: 700;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: var(--pd-nav-cyan, #06b6d4);
+	background: color-mix(in srgb, var(--pd-nav-cyan, #06b6d4) 10%, transparent);
+	border: 1px solid color-mix(in srgb, var(--pd-nav-cyan, #06b6d4) 35%, var(--pd-grey-trim, #334155));
+	border-radius: 0;
+	box-shadow: none;
+	animation: none;
+}
+
+.director-os-root .director-command-center .wsd-live__dot {
+	width: 5px;
+	height: 5px;
+	border-radius: 0;
+	background: var(--pd-data-cyan, #14b8a6);
+	animation: none;
+	box-shadow: none;
+}
+
+/* Z2 ribbon KPI cells */
+.director-os-root .director-command-center .wsd-ribbon {
+	gap: 4px;
+	margin-bottom: 1rem;
+}
+
+.director-os-root .director-command-center .wsd-ribbon__cell {
+	padding: 0.75rem 0.85rem;
+	background: var(--pd-navy-panel, #0f172a);
+	border: 1px solid var(--pd-grey-trim, #334155);
+	border-radius: 0;
+	box-shadow: none;
+	clip-path: polygon(
+		var(--pd-chamfer-sm, 4px) 0%,
+		100% 0%,
+		100% calc(100% - var(--pd-chamfer-sm, 4px)),
+		calc(100% - var(--pd-chamfer-sm, 4px)) 100%,
+		0% 100%,
+		0% var(--pd-chamfer-sm, 4px)
+	);
+}
+
+.director-os-root .director-command-center .wsd-ribbon__metric {
+	font-family: ui-monospace, 'Geist Mono', monospace;
+	font-size: 9px;
+	font-weight: 700;
+	letter-spacing: 0.1em;
+	color: var(--pd-nav-cyan, #06b6d4);
+	opacity: 0.85;
+}
+
+.director-os-root .director-command-center .wsd-ribbon__value {
+	font-family: ui-monospace, 'Geist Mono', monospace;
+	font-size: 1.25rem;
+	font-weight: 700;
+	letter-spacing: 0.04em;
+	font-variant-numeric: tabular-nums;
+	color: var(--pd-data-cyan, #14b8a6);
+}
+
+.director-os-root .director-command-center .wsd-ribbon__sub {
+	font-size: 0.72rem;
+	font-weight: 600;
+	color: #64748b;
+}
+
+/* Z2 bento KPI tiles */
+.director-os-root .director-command-center .director-cc-kpi-grid {
+	gap: 4px;
+	margin-bottom: 1rem;
+}
+
+.director-os-root .director-command-center .wsd-metric {
+	padding: 0.85rem 1rem;
+	background: var(--pd-navy-panel, #0f172a);
+	border: 1px solid var(--pd-grey-trim, #334155);
+	border-radius: 0;
+	box-shadow: none;
+	border-left: 1px solid var(--pd-grey-trim, #334155);
+	min-width: 0;
+	clip-path: polygon(
+		var(--pd-chamfer-md, 8px) 0%,
+		100% 0%,
+		100% calc(100% - var(--pd-chamfer-md, 8px)),
+		calc(100% - var(--pd-chamfer-md, 8px)) 100%,
+		0% 100%,
+		0% var(--pd-chamfer-md, 8px)
+	);
+}
+
+.director-os-root .director-command-center .wsd-metric--crit,
+.director-os-root .director-command-center .wsd-metric--high {
+	border-color: color-mix(in srgb, var(--pd-atom-amber, #d97706) 55%, var(--pd-grey-trim, #334155));
+	box-shadow: none;
+}
+
+.director-os-root .director-command-center .wsd-metric--med {
+	border-color: color-mix(in srgb, var(--pd-atom-amber, #d97706) 40%, var(--pd-grey-trim, #334155));
+	box-shadow: none;
+}
+
+.director-os-root .director-command-center .wsd-metric--low,
+.director-os-root .director-command-center .wsd-metric--ok,
+.director-os-root .director-command-center .wsd-metric--info {
+	border-color: var(--pd-grey-trim, #334155);
+	box-shadow: none;
+}
+
+.director-os-root .director-command-center .wsd-metric__label {
+	font-family: ui-monospace, 'Geist Mono', monospace;
+	font-size: 9px;
+	font-weight: 700;
+	letter-spacing: 0.1em;
+	text-transform: uppercase;
+	color: var(--pd-nav-cyan, #06b6d4);
+	opacity: 0.8;
+}
+
+.director-os-root .director-command-center .wsd-metric__value {
+	font-family: ui-monospace, 'Geist Mono', monospace;
+	font-size: 1.35rem;
+	font-weight: 700;
+	letter-spacing: 0.04em;
+	font-variant-numeric: tabular-nums;
+	color: var(--pd-data-cyan, #14b8a6);
+}
+
+.director-os-root .director-command-center .wsd-metric--crit .wsd-metric__value,
+.director-os-root .director-command-center .wsd-metric--high .wsd-metric__value {
+	color: var(--pd-atom-amber, #d97706);
+}
+
+.director-os-root .director-command-center .wsd-metric--ok .wsd-metric__value {
+	color: var(--pd-data-cyan, #14b8a6);
+}
+
+.director-os-root .director-command-center .wsd-metric__hint {
+	font-size: 0.72rem;
+	font-weight: 600;
+	color: #64748b;
+}
+
+.director-os-root .director-command-center .wsd-metric__delta--up {
+	color: var(--pd-data-cyan, #14b8a6);
+}
+
+.director-os-root .director-command-center .wsd-metric__delta--down {
+	color: var(--pd-atom-amber, #d97706);
+}
+
+.director-os-root .director-command-center .wsd-metric__delta--flat {
+	color: #64748b;
+}
+
+/* Z2 module panels */
+.director-os-root .director-command-center .wsd-body {
+	gap: 1rem;
+}
+
+.director-os-root .director-command-center .wsd-surface-accent,
+.director-os-root .director-command-center .director-cc-z2-panel {
+	background: var(--pd-navy-panel, #0f172a);
+	border: 1px solid var(--pd-grey-trim, #334155);
+	border-radius: 0;
+	box-shadow: none;
+	overflow: hidden;
+	clip-path: polygon(
+		var(--pd-chamfer-md, 8px) 0%,
+		100% 0%,
+		100% calc(100% - var(--pd-chamfer-md, 8px)),
+		calc(100% - var(--pd-chamfer-md, 8px)) 100%,
+		0% 100%,
+		0% var(--pd-chamfer-md, 8px)
+	);
+}
+
+.director-os-root .director-command-center .director-cc-compliance-band {
+	padding: 0.65rem 0.85rem;
+	border: 1px solid color-mix(in srgb, var(--pd-atom-amber, #d97706) 45%, var(--pd-grey-trim, #334155));
+	background: color-mix(in srgb, var(--pd-atom-amber, #d97706) 6%, var(--pd-navy-panel, #0f172a));
+	border-radius: 0;
+	clip-path: polygon(
+		var(--pd-chamfer-sm, 4px) 0%,
+		100% 0%,
+		100% calc(100% - var(--pd-chamfer-sm, 4px)),
+		calc(100% - var(--pd-chamfer-sm, 4px)) 100%,
+		0% 100%,
+		0% var(--pd-chamfer-sm, 4px)
+	);
+}
+
+.director-os-root .director-command-center .director-cc-compliance-band__head {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	margin-bottom: 0.5rem;
+	font-family: ui-monospace, 'Geist Mono', monospace;
+	font-size: 10px;
+	font-weight: 700;
+	letter-spacing: 0.1em;
+	text-transform: uppercase;
+	color: var(--pd-atom-amber, #d97706);
+}
+
+.director-os-root .director-command-center .director-cc-compliance-band__head :global(svg) {
+	width: 1rem;
+	height: 1rem;
+	flex-shrink: 0;
+}
