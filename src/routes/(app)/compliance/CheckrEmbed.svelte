@@ -28,6 +28,7 @@
 	let status = $state<EmbedStatus>('idle');
 	let errorMsg = $state('');
 	let reportsMounted = $state(false);
+	let reloadKey = $state(0);
 
 	const canTrack = $derived(
 		Boolean(
@@ -49,6 +50,17 @@
 
 	function resolveCoachEmail(): string {
 		return authStore.user?.email ?? authStore.userProfile?.email ?? '';
+	}
+
+	function resetEmbedState() {
+		reportsMounted = false;
+		errorMsg = '';
+		status = 'idle';
+	}
+
+	function retryEmbed() {
+		resetEmbedState();
+		reloadKey += 1;
 	}
 
 	async function mountReportsOverview(Checkr: CheckrWebSdk) {
@@ -106,6 +118,7 @@
 	}
 
 	$effect(() => {
+		void reloadKey;
 		if (!browser) return;
 		if (showSelfInvite) return;
 		if (!canTrack) {
@@ -151,6 +164,7 @@
 	});
 
 	$effect(() => {
+		void reloadKey;
 		if (!browser || !showSelfInvite) return;
 
 		let cancelled = false;
@@ -181,39 +195,48 @@
 	});
 </script>
 
-{#if showSelfInvite}
-	<div id="checkr-invite-container" class="checkr-embed__panel" aria-label="Checkr invitation"></div>
-{/if}
+<div class="checkr-embed" data-status={status}>
+	{#if showSelfInvite}
+		<div id="checkr-invite-container" class="checkr-embed__panel" aria-label="Checkr invitation"></div>
+	{/if}
 
-{#if status === 'loading'}
-	<div class="checkr-embed__skeleton" aria-busy="true">
-		<div class="checkr-embed__spinner" aria-hidden="true"></div>
-		<p class="checkr-embed__skeleton-label">Loading screening status…</p>
-	</div>
-{/if}
+	{#if status === 'loading'}
+		<div class="checkr-embed__skeleton" aria-busy="true" aria-live="polite">
+			<div class="checkr-embed__spinner" aria-hidden="true"></div>
+			<p class="checkr-embed__skeleton-label">Connecting to Checkr…</p>
+			<p class="checkr-embed__skeleton-hint">Report details load in a secure panel below.</p>
+		</div>
+	{/if}
 
-{#if status === 'alpha'}
-	<div class="checkr-embed__alpha" role="status">
-		<Icon name="status.shield-check" size={32} />
-		<p class="checkr-embed__alpha-body">
-			Live Checkr connection is pending platform approval. Your director can use simulate
-			clearance for QA, or order screening once Checkr is credentialed.
-		</p>
-	</div>
-{/if}
+	{#if status === 'alpha'}
+		<div class="checkr-embed__alpha" role="status">
+			<Icon name="status.shield-check" size={32} />
+			<p class="checkr-embed__alpha-body">
+				Live Checkr connection is pending platform approval. Your director can use simulate
+				clearance for QA, or order screening once Checkr is credentialed.
+			</p>
+		</div>
+	{/if}
 
-{#if status === 'error'}
-	<div class="checkr-embed__error" role="alert">
-		<Icon name="status.warning-circle" />
-		<p>{errorMsg}</p>
-	</div>
-{/if}
+	{#if status === 'error'}
+		<div class="checkr-embed__error" role="alert">
+			<Icon name="status.warning-circle" />
+			<div class="checkr-embed__error-copy">
+				<p>{errorMsg}</p>
+				<button type="button" class="checkr-embed__retry" onclick={retryEmbed}>
+					Retry connection
+				</button>
+			</div>
+		</div>
+	{/if}
 
-{#if canTrack || showSelfInvite}
-	<div
-		id="checkr-status-container"
-		class="checkr-embed__panel checkr-embed__panel--status"
-		class:checkr-embed__panel--hidden={status !== 'tracking'}
-		aria-label="Checkr screening status"
-	></div>
-{/if}
+	{#if canTrack || showSelfInvite}
+		<div
+			id="checkr-status-container"
+			class="checkr-embed__panel checkr-embed__panel--status"
+			class:checkr-embed__panel--hidden={status !== 'tracking'}
+			aria-label="Checkr screening status"
+			aria-busy={status === 'loading'}
+		></div>
+	{/if}
+</div>
