@@ -53,7 +53,7 @@ Legend: ✅ Shipped · 🟡 Partial · ❌ Gap · 🏆 SSTracker leads
 | **Guardian on roster row** | ✅ | ✅ | ✅ | ✅ LAUNCH-household-graph | Deploy CF |
 | **Pre-event RSVP / availability** | ✅ Premium | ✅ | ✅ | 🟡 LAUNCH-rsvp | Maintain |
 | **Tryout lifecycle OS** (reg → session → check-in → eval → callback → roster) | 🟡 Forms + schedule | 🟡 Eval tools | 🟡 | ❌ | **P1** **LAUNCH-tryouts-os** |
-| **Schedule + calendar sync** | ✅ | ✅ | ✅ | 🟡 team_workouts + deployment calendar | P1 iCal export |
+| **Schedule + calendar sync** | ✅ | ✅ | ✅ | 🟡 team_workouts + deployment calendar + parent `.ics` export | — |
 | **Team / org messaging** | ✅ | ✅ | ✅ | ✅ SafeSport + Parent Lounge + 4.11 | Maintain |
 | **Native parent mobile app** | ✅ | ✅ | ✅ Team app | ❌ Web | P1 PWA + push polish |
 | **Push notifications** | ✅ | ✅ | ✅ | 🟡 FCM bus; limited opt-out UI | P1 |

@@ -1,15 +1,14 @@
 <script lang="ts">
-	import { db, functions, auth } from '$lib/firebase.js';
+	import { functions, auth } from '$lib/firebase.js';
 	import { httpsCallable } from 'firebase/functions';
 	import {
-		collection,
-		doc,
-		getDoc,
-		getDocs,
-		query,
-		where,
-		limit,
-	} from 'firebase/firestore';
+		loadHouseholdScheduleEvents,
+		type HouseholdScheduleEvent,
+	} from '$lib/parent/loadHouseholdScheduleEvents.js';
+	import {
+		buildHouseholdIcsCalendar,
+		downloadIcsFile,
+	} from '$lib/parent/householdCalendarIcs.js';
 
 	let {
 		childEmails = [],
@@ -21,15 +20,22 @@
 
 	type RsvpStatus = 'going' | 'not_going' | 'maybe';
 
-	/** @type {Array<{ id: string; name: string; kind: string; startLabel: string; teamId: string }>} */
-	let events = $state([]);
+	let events = $state<HouseholdScheduleEvent[]>([]);
 	let loading = $state(true);
 	let err = $state('');
 	/** @type {Record<string, RsvpStatus | ''>} */
 	let statusByKey = $state({});
 	let busyKey = $state('');
+	let exporting = $state(false);
 
 	const setEventRsvp = httpsCallable(functions, 'setEventRsvp');
+
+	const displayEvents = $derived(
+		events.map((ev) => ({
+			...ev,
+			startLabel: new Date(ev.startMs).toLocaleString(),
+		})),
+	);
 
 	$effect(() => {
 		const emails = childEmails.filter(Boolean);
@@ -43,44 +49,11 @@
 		err = '';
 		void (async () => {
 			try {
-				/** @type {typeof events} */
-				const found = [];
-				const teamIds = new Set<string>();
-				for (const em of emails) {
-					const u = await getDoc(doc(db, 'users', em));
-					const tid =
-						u.exists() && typeof u.data()?.teamId === 'string' ? u.data()!.teamId!.trim() : '';
-					if (tid) teamIds.add(tid);
-					const pl = await getDoc(doc(db, 'player_lookup', em));
-					const plTeam =
-						pl.exists() && typeof pl.data()?.teamId === 'string'
-							? pl.data()!.teamId!.trim()
-							: '';
-					if (plTeam) teamIds.add(plTeam);
-				}
-				for (const teamId of teamIds) {
-					const q = query(
-						collection(db, 'team_workouts'),
-						where('teamId', '==', teamId),
-						limit(24),
-					);
-					const snap = await getDocs(q);
-					for (const d of snap.docs) {
-						const data = d.data();
-						if (data.recordType !== 'scheduled_event' && data.type !== 'scheduled') continue;
-						const startTs = Number(data.startTimestamp) || 0;
-						if (startTs > 0 && startTs < Date.now() - 86_400_000) continue;
-						found.push({
-							id: d.id,
-							name: String(data.name || data.title || 'Team event'),
-							kind: String(data.eventKind || 'practice'),
-							startLabel: startTs > 0 ? new Date(startTs).toLocaleString() : '—',
-							teamId,
-						});
-					}
-				}
-				found.sort((a, b) => a.startLabel.localeCompare(b.startLabel));
-				if (!cancelled) events = found.slice(0, 6);
+				const found = await loadHouseholdScheduleEvents(emails, {
+					horizonDays: 90,
+					maxEvents: 48,
+				});
+				if (!cancelled) events = found;
 			} catch (e) {
 				if (!cancelled) err = e instanceof Error ? e.message : 'Could not load schedule.';
 			} finally {
@@ -107,14 +80,54 @@
 		}
 	}
 
+	async function exportCalendar() {
+		if (exporting || childEmails.length === 0) return;
+		exporting = true;
+		err = '';
+		try {
+			const exportEvents =
+				events.length > 0
+					? events
+					: await loadHouseholdScheduleEvents(childEmails, {
+							horizonDays: 90,
+							maxEvents: 48,
+						});
+			if (exportEvents.length === 0) {
+				err = 'No upcoming events to export.';
+				return;
+			}
+			const ics = buildHouseholdIcsCalendar(exportEvents);
+			const stamp = new Date().toISOString().slice(0, 10);
+			downloadIcsFile(ics, `sstracker-household-${stamp}.ics`);
+		} catch (e) {
+			err = e instanceof Error ? e.message : 'Could not export calendar.';
+		} finally {
+			exporting = false;
+		}
+	}
+
 	function labelFor(email: string) {
 		return childNames[email] || email.split('@')[0];
 	}
 </script>
 
 <section class="parent-rsvp" aria-labelledby="parent-rsvp-title">
-	<h3 id="parent-rsvp-title" class="parent-rsvp__title">Upcoming — availability</h3>
-	<p class="parent-rsvp__sub">Confirm whether your athlete can attend practices and games.</p>
+	<div class="parent-rsvp__head">
+		<div>
+			<h3 id="parent-rsvp-title" class="parent-rsvp__title">Upcoming — availability</h3>
+			<p class="parent-rsvp__sub">Confirm whether your athlete can attend practices and games.</p>
+		</div>
+		{#if childEmails.length > 0}
+			<button
+				type="button"
+				class="parent-rsvp__export"
+				disabled={loading || exporting}
+				onclick={exportCalendar}
+			>
+				{exporting ? 'Exporting…' : 'Add to calendar'}
+			</button>
+		{/if}
+	</div>
 
 	{#if loading}
 		<p class="parent-rsvp__muted">Loading schedule…</p>
@@ -122,11 +135,11 @@
 		<p class="parent-rsvp__muted">
 			Link an athlete on <a href="/parent/household" class="parent-rsvp__link">Household</a> to RSVP.
 		</p>
-	{:else if events.length === 0}
+	{:else if displayEvents.length === 0}
 		<p class="parent-rsvp__muted">No upcoming team events yet.</p>
 	{:else}
 		<ul class="parent-rsvp__list">
-			{#each events as ev (ev.id)}
+			{#each displayEvents.slice(0, 6) as ev (ev.id)}
 				{#each childEmails as childEmail (ev.id + childEmail)}
 					{@const key = `${ev.id}:${childEmail}`}
 					{@const current = statusByKey[key] || ''}
@@ -171,6 +184,15 @@
 		background: rgba(15, 23, 42, 0.4);
 	}
 
+	.parent-rsvp__head {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: flex-start;
+		justify-content: space-between;
+		gap: 0.75rem;
+		margin-bottom: 0.85rem;
+	}
+
 	.parent-rsvp__title {
 		margin: 0 0 0.25rem;
 		font-size: 0.95rem;
@@ -179,9 +201,28 @@
 	}
 
 	.parent-rsvp__sub {
-		margin: 0 0 0.85rem;
+		margin: 0;
 		font-size: 0.8125rem;
 		color: #94a3b8;
+	}
+
+	.parent-rsvp__export {
+		padding: 0.4rem 0.7rem;
+		border-radius: 6px;
+		border: 1px solid rgba(20, 184, 166, 0.45);
+		background: rgba(20, 184, 166, 0.1);
+		color: #5eead4;
+		font-size: 0.6875rem;
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.06em;
+		cursor: pointer;
+		flex-shrink: 0;
+	}
+
+	.parent-rsvp__export:disabled {
+		opacity: 0.5;
+		cursor: not-allowed;
 	}
 
 	.parent-rsvp__list {
