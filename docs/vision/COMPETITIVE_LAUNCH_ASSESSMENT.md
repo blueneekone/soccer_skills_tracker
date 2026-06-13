@@ -14,9 +14,9 @@ This document is the **canonical competitive gap matrix** for launch. Agents and
 | Dimension | Verdict |
 |-----------|---------|
 | **Beat competitors on** | Athlete development loop, SafeSport-native comms, COPPA/VPC depth, coach intent + prescriptions, RL homework, tactical drill designer, **tryout lifecycle OS (reg → eval → callback → roster)** |
-| **At parity (launch functional track)** | Guardian roster visibility, RSVP, registration-lite, roster invite, eligibility matrix, parent calendar export, push prefs, PWA install path |
-| **Behind on table stakes** | Native app store binaries (web+PWA only), NGB/state roster export |
-| **Launch functional gate** | **Partial** — Wave 0–2 code shipped; **LAUNCH-deploy-dev Done**; **overnight P2 polish + check=0** remain before owner QA |
+| **At parity (launch functional track)** | Guardian roster visibility, RSVP, registration-lite, roster invite, eligibility matrix, parent calendar export, push prefs, PWA install path, **payments installments**, **reg→roster assign**, **tournament brackets**, **live stream MVP**, **NGB CSV export v1** |
+| **Behind on table stakes** | Native App Store / Play Store binaries (Capacitor shell shipped; submission deferred) |
+| **Launch functional gate** | **Partial** — Wave 0–2 + overnight P2 parity shipped on `overnight/base`; **agent 12 + check=0 + Phase 2 deploy** remain before owner QA |
 
 **Positioning:** SSTracker is **not** “another TeamSnap.” It is the **development + compliance OS** clubs adopt when they outgrow chat-and-schedule tools — but parents still expect RSVP, schedules, and payments on day one.
 
@@ -45,26 +45,26 @@ Legend: ✅ Shipped · 🟡 Partial · ❌ Gap · 🏆 SSTracker leads
 | Category | TeamSnap | SportsEngine | GotSport | SSTracker | Launch priority |
 |----------|----------|--------------|----------|-----------|-----------------|
 | **Online registration + cart** | ✅ | ✅ | ✅ | ✅ LAUNCH-registration-lite | — |
-| **Integrated payments / installments** | ✅ | ✅ | ✅ | 🟡 Parent payments route | P2 polish |
-| **Drag-drop roster from registration** | ✅ | ✅ | ✅ | 🟡 Admin roster + player_lookup | P2 |
+| **Integrated payments / installments** | ✅ | ✅ | ✅ | ✅ ACQ-p2-payments | — |
+| **Drag-drop roster from registration** | ✅ | ✅ | ✅ | ✅ ACQ-p2-reg-roster | — |
 | **Guardian on roster row** | ✅ | ✅ | ✅ | ✅ LAUNCH-household-graph | — |
 | **Pre-event RSVP / availability** | ✅ Premium | ✅ | ✅ | ✅ LAUNCH-rsvp | — |
 | **Tryout lifecycle OS** | 🟡 | 🟡 | 🟡 | ✅ LAUNCH-tryouts-os | — |
 | **Schedule + calendar sync** | ✅ | ✅ | ✅ | ✅ team_workouts + `.ics` export | — |
 | **Team / org messaging** | ✅ | ✅ | ✅ | ✅ SafeSport + Parent Lounge + Epic 4 | Maintain |
-| **Native parent mobile app** | ✅ | ✅ | ✅ | 🟡 PWA + web (no store binary) | Post-launch |
+| **Native parent mobile app** | ✅ | ✅ | ✅ | 🟡 Capacitor 6 shell + PWA (no store binary) | Post-launch submit |
 | **Push notifications** | ✅ | ✅ | ✅ | ✅ FCM + parent dashboard prefs | — |
 | **Eligibility matrix (configurable)** | 🟡 | ✅ | ✅ | ✅ LAUNCH-eligibility-matrix | — |
-| **Background check integration** | Partner | NCSI | ✅ | 🟡 Coach clearance track | P2 vendor hook |
+| **Background check integration** | Partner | NCSI | ✅ | ✅ P2-CHECKR embed polish | — |
 | **Practice / drill content** | ✅ Pro plans | 🟡 | 🟡 | 🏆 Intent Engine + spatial designer + drill library | Market |
 | **Player development / stats** | 🟡 | 🟡 | 🟡 | 🏆 XP, skill tree, telemetry, RL homework | Market |
 | **COPPA / minor consent** | Checkbox | Membership rules | Docs | 🏆 Household + VPC ceremony + retention burn | Market |
 | **SafeSport minor DM policy** | 🟡 | 🟡 | 🟡 | 🏆 Enforced in rules + callables | Market |
 | **Facility / field scheduling** | 🟡 | ✅ | 🟡 | ✅ Field ops + weather lock | — |
-| **Tournaments / brackets** | ✅ | ✅ | ✅ | 🟡 tournament_events + ticketing | P2 |
+| **Tournaments / brackets** | ✅ | ✅ | ✅ | ✅ ACQ-p2-tournament | — |
 | **Club website builder** | ✅ | ✅ | ✅ | ❌ | P3 post-launch |
-| **NGB / state roster export** | Some | ✅ | 🏆 38 bodies | ❌ | P3 unless soccer GTM |
-| **Live streaming** | ✅ Free | ✅ | 🟡 | ❌ | P3 |
+| **NGB / state roster export** | Some | ✅ | 🏆 38 bodies | ✅ LAUNCH-fed-ngb CSV v1 | — |
+| **Live streaming** | ✅ Free | ✅ | 🟡 | ✅ LAUNCH-live-stream MVP embed | — |
 
 ---
 
