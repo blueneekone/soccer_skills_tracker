@@ -57,7 +57,7 @@
 	});
 
 	/** @type {'game' | 'practice'} */
-	let scheduleEventKind = $state('practice');
+	let scheduleEventKind = $state<'game' | 'practice'>('practice');
 	let scheduleTitle = $state('');
 	let scheduleStartLocal = $state('');
 	let schedNotify1h = $state(false);
@@ -916,7 +916,10 @@
 </section>
 </div>
 
-<Modal bind:open={addOpen} title="Add Custom Drill" maxWidth="520px">
+<Modal bind:open={addOpen} maxWidth="520px">
+	{#snippet titleSlot()}
+		Add Custom Drill
+	{/snippet}
 	<form class="coach-drill-form" onsubmit={(e) => { e.preventDefault(); void submitAddDrill(); }}>
 		<label class="coach-drill-form__field">
 			<span class="coach-drill-form__label">Title</span>
@@ -980,7 +983,10 @@
 	</form>
 </Modal>
 
-<Modal bind:open={assignOpen} title="Assign Homework" maxWidth="560px">
+<Modal bind:open={assignOpen} maxWidth="560px">
+	{#snippet titleSlot()}
+		Assign Homework
+	{/snippet}
 	{#if assignDrill}
 		<div class="coach-drill-form">
 			<div class="coach-drill-assign__drill">
