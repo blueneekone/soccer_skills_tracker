@@ -186,6 +186,7 @@ exports.setEventRsvp                = scheduleOps.setEventRsvp;
 
 const registrationOps = require('./src/domains/registrationOps');
 exports.getPublicRegistrationProgram = registrationOps.getPublicRegistrationProgram;
+exports.assignSeasonRegistrationToRoster = registrationOps.assignSeasonRegistrationToRoster;
 
 const rosterOps = require('./src/domains/rosterOps');
 exports.claimRosterSpot             = rosterOps.claimRosterSpot;
