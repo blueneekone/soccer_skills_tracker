@@ -1,6 +1,6 @@
 # svelte-check zero status
 
-**Baseline:** 391 errors (RUNNER-0 bootstrap, 2026-06-13)
+**Baseline:** 391 errors (RUNNER-0 bootstrap `843e44b`, 2026-06-13)
 
 | Agent | Scope | Errors (start) | Errors (end) | Updated |
 |-------|-------|----------------|--------------|---------|
@@ -15,3 +15,5 @@
 **Repo total (post-merge estimate):** ~160–180 errors — parent/admin + residual scopes remain.
 
 Agents 08–13: log `npm run check` error count at start and after each commit batch.
+
+**Repo totals after individual slices (pre-merge overlap):** routes 191 · components 168 · stores 390 · coach-dir 383 · player 389. Agent **22** must reconcile merged `overnight/base` to **0**.

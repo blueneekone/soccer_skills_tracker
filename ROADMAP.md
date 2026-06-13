@@ -2,7 +2,7 @@
 
 **Architecture:** [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)  
 **Last updated:** 2026-06-13  
-**Current sprint:** **ACQ-overnight-wave** poll cycle 2 — Phase 1 **17/20 Done** (agent **12** pending; **19–20** blocked) · **next:** parent/admin check=0 → Phase 2 (22–24) → merge `overnight/base` → `dev` → **Owner QA** · See [`docs/acquisition/PARALLEL_SUMMARY.md`](docs/acquisition/PARALLEL_SUMMARY.md) · **TABLED (post-launch):** Platform visual system (Gemini research) · Player OS **6j/6i** · Flow asset generation, Avatar Studio **3.6b+**  
+**Current sprint:** **ACQ-overnight-wave** poll cycle 2 — Phase 1 **17/20 Done** (agent **12** pending; **19–20** blocked) · **next:** parent/admin check=0 → Phase 2 (22–24) → merge `overnight/base` → `dev` → **Owner QA** · See [`docs/acquisition/PARALLEL_SUMMARY.md`](docs/acquisition/PARALLEL_SUMMARY.md) · **TABLED (post-launch):** Platform visual system (Gemini research) · Player OS **6j/6i** · Flow asset generation, Avatar Studio **3.6b+**
 **Note:** **3.5l-gate** closed in error — automated regression ≠ human VA; Phase 2 visual **rejected by product owner**  
 *Phase 7 · G1–G10 Done · Sprint 2.20 Done — Player OS premium foundation locked*
 
