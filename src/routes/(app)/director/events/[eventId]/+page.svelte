@@ -4,8 +4,9 @@
 	import { onDestroy } from 'svelte';
 	import { getFunctions, httpsCallable } from 'firebase/functions';
 	import { getFirestore, doc, onSnapshot } from 'firebase/firestore';
-	import type { TournamentEventDoc, TicketTier } from '$lib/types/tournamentEvent.js';
+	import type { TournamentEventDoc, TicketTier, TournamentBracket } from '$lib/types/tournamentEvent.js';
 	import { labelToTierId } from '$lib/types/tournamentEvent.js';
+	import TournamentBracketPanel from '$lib/components/director/TournamentBracketPanel.svelte';
 
 	const eventId = $derived(page.params.eventId);
 
@@ -33,6 +34,7 @@
 		gateOpensAt: string;
 	}
 	let tiers = $state<TierDraft[]>([]);
+	let bracket = $state<TournamentBracket | null>(null);
 
 	let unsubscribe: (() => void) | null = null;
 
@@ -58,6 +60,7 @@
 					description: t.description ?? '',
 					gateOpensAt: isoToDatetimeLocal(t.gateOpensAt ?? ''),
 				}));
+				bracket = data.bracket ?? null;
 			}
 			loading = false;
 		});
@@ -129,6 +132,7 @@
 				eventStartAt: datetimeLocalToIso(eventStartAt),
 				eventEndAt: eventEndAt ? datetimeLocalToIso(eventEndAt) : undefined,
 				ticketTiers: buildTierMap(),
+				bracket: bracket ?? null,
 			});
 			successMsg = 'Event saved.';
 			setTimeout(() => { successMsg = ''; }, 3000);
@@ -317,6 +321,12 @@
 					</div>
 				{/each}
 			</section>
+
+			<TournamentBracketPanel
+				{bracket}
+				onchange={(next) => { bracket = next; }}
+			/>
+
 			<!-- Hotel rebates sub-section (Session B6) -->
 			{#if event?.hotelRebates && event.hotelRebates.length > 0}
 				<section class="glass-panel card">

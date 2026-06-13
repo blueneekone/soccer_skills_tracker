@@ -7,6 +7,8 @@
 	import { createTicketCheckout } from '$lib/services/ticketCheckout.svelte.js';
 	import type { TournamentEventDoc, TicketTier } from '$lib/types/tournamentEvent.js';
 	import { isEventOpen } from '$lib/types/tournamentEvent.js';
+	import { bracketHasStarted } from '$lib/tournament/tournamentBracket.js';
+	import TournamentBracketPanel from '$lib/components/director/TournamentBracketPanel.svelte';
 
 	const eventId = $derived(page.params.eventId);
 
@@ -140,6 +142,10 @@
 				{/if}
 			</div>
 		</header>
+
+		{#if bracketHasStarted(event.bracket)}
+			<TournamentBracketPanel bracket={event.bracket ?? null} readonly />
+		{/if}
 
 		<div class="checkout-grid">
 			<!-- Tier selector -->

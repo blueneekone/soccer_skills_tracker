@@ -447,7 +447,7 @@ exports.verifyScanToken = onCall(
 
 // ── upsertTournamentEvent ──────────────────────────────────────────────────
 
-const {validateTierMap} = require('./tournamentEventConstants');
+const {validateTierMap, validateBracket} = require('./tournamentEventConstants');
 
 /**
  * Create or update a tournament event.  Director+ only.
@@ -473,6 +473,7 @@ exports.upsertTournamentEvent = onCall(
         eventStartAt,
         eventEndAt,
         ticketTiers: tierInput,
+        bracket: bracketInput,
       } = request.data ?? {};
 
       if (typeof name !== 'string' || !name.trim()) {
@@ -498,6 +499,11 @@ exports.upsertTournamentEvent = onCall(
       const tierErrors = validateTierMap(sanitisedTiers);
       if (tierErrors.length) {
         throw new HttpsError('invalid-argument', tierErrors.join(' | '));
+      }
+
+      const bracketErrors = validateBracket(bracketInput ?? null);
+      if (bracketErrors.length) {
+        throw new HttpsError('invalid-argument', bracketErrors.join(' | '));
       }
 
       let ref;
@@ -551,6 +557,11 @@ exports.upsertTournamentEvent = onCall(
         totalSold: Object.values(finalTiers).reduce((s, t) => s + (t.soldCount ?? 0), 0),
         hostClubId: clubId || (request.auth.token.super_admin ? 'platform' : clubId),
         updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        ...(bracketInput === null
+          ? {bracket: admin.firestore.FieldValue.delete()}
+          : bracketInput != null
+            ? {bracket: bracketInput}
+            : {}),
         ...(isNew ? {
           status: 'draft',
           createdAt: admin.firestore.FieldValue.serverTimestamp(),

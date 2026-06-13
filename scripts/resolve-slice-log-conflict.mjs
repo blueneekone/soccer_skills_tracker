@@ -15,7 +15,7 @@ if (!content.includes('<<<<<<<')) {
   process.exit(0);
 }
 
-const match = content.match(/<<<<<<< HEAD\n([\s\S]*?)=======\n([\s\S]*?)>>>>>>>[^\n]*/);
+const match = content.match(/<<<<<<< HEAD\r?\n([\s\S]*?)=======\r?\n([\s\S]*?)>>>>>>>[^\n\r]*/);
 if (!match) {
   console.error('Could not parse conflict markers');
   process.exit(1);
