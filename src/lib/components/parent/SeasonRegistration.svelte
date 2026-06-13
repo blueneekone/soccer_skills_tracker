@@ -24,28 +24,75 @@
 	import { CommerceEngine } from '$lib/services/commerce.svelte.js';
 	import Icon from '$lib/components/ui/Icon.svelte';
 	import type { IconName } from '$lib/icons/registry.js';
+	import { saveInstallmentPlan } from '$lib/parent/paymentInstallmentPrefs.js';
+	import {
+		buildInstallmentSchedule,
+		formatCents,
+		splitAmountCents,
+		type SeasonPaymentLedger,
+	} from '$lib/parent/paymentInstallments.js';
 
 	interface Props {
 		playerEmail: string;
+		parentEmail?: string;
 		tenantId: string;
 		seasonId: string;
 		seasonName: string;
 		feeAmountDollars: number;
+		registrationDeadline?: string | null;
+		installmentOptions?: number[];
+		existingLedger?: SeasonPaymentLedger | null;
 		onclose?: () => void;
 		onpaid?: () => void;
 	}
 
 	let {
 		playerEmail,
+		parentEmail = '',
 		tenantId,
 		seasonId,
 		seasonName,
 		feeAmountDollars,
+		registrationDeadline = null,
+		installmentOptions = [1],
+		existingLedger = null,
 		onclose,
 		onpaid,
 	}: Props = $props();
 
 	const commerce = new CommerceEngine(playerEmail, tenantId, seasonId);
+
+	const totalFeeCents = $derived(Math.round(feeAmountDollars * 100));
+	const paidCents = $derived(existingLedger?.paidCents ?? 0);
+	const remainingCents = $derived(Math.max(0, totalFeeCents - paidCents));
+	const continuingInstallments = $derived(paidCents > 0 && remainingCents > 0);
+	const selectableOptions = $derived(
+		[...new Set(installmentOptions.filter((n) => Number.isFinite(n) && n >= 1))].sort(
+			(a, b) => a - b,
+		),
+	);
+	let installmentCount = $state(
+		existingLedger?.installmentCount && existingLedger.installmentCount > 1
+			? existingLedger.installmentCount
+			: selectableOptions[selectableOptions.length - 1] ?? 1,
+	);
+	const chargeCents = $derived.by(() => {
+		if (continuingInstallments && existingLedger) {
+			return existingLedger.nextDueCents;
+		}
+		if (installmentCount <= 1) return totalFeeCents;
+		return splitAmountCents(totalFeeCents, installmentCount)[0] ?? totalFeeCents;
+	});
+	const chargeDollars = $derived(chargeCents / 100);
+	const previewSchedule = $derived(
+		buildInstallmentSchedule({
+			totalFeeCents,
+			installmentCount,
+			paidCents,
+			deadlineIso: registrationDeadline,
+		}),
+	);
+	const registrationComplete = $derived(remainingCents <= 0 || paidCents >= totalFeeCents);
 
 	// ── Stripe Elements state ─────────────────────────────────────────────────
 
@@ -74,10 +121,12 @@
 	onMount(async () => {
 		commerce.init();
 
-		// Already paid — skip to confirmed
-		if (commerce.isPaid) { phase = 'confirmed'; onpaid?.(); return; }
+		if (registrationComplete) {
+			phase = 'confirmed';
+			onpaid?.();
+			return;
+		}
 
-		// Start by showing the idle briefing screen
 		phase = 'idle';
 	});
 
@@ -154,7 +203,13 @@
 	async function handleInitiatePayment() {
 		phase = 'loading';
 		startPulse();
-		await commerce.createIntent(feeAmountDollars);
+		if (parentEmail && installmentCount > 1 && !continuingInstallments) {
+			await saveInstallmentPlan(parentEmail, tenantId, seasonId, playerEmail, {
+				installmentCount,
+				totalFeeCents,
+			});
+		}
+		await commerce.createIntent(chargeDollars);
 		if (commerce.error) { phase = 'error'; return; }
 		phase = 'form';
 
@@ -194,7 +249,7 @@
 	// ── Formatters ────────────────────────────────────────────────────────────
 
 	const hexFee = $derived(
-		'0x' + (feeAmountDollars * 100).toString(16).toUpperCase().padStart(6, '0'),
+		'0x' + chargeCents.toString(16).toUpperCase().padStart(6, '0'),
 	);
 </script>
 
@@ -268,8 +323,14 @@
 					<div class="text-right">
 						<div class="font-mono text-xs tracking-widest mb-1" style="color: rgba(0,255,255,0.5);">FEE PAYLOAD</div>
 						<div class="font-mono text-xl font-bold" style="color: #14b8a6; text-shadow: 0 0 20px rgba(0,255,255,0.5);">
-							${feeAmountDollars.toFixed(2)}
+							{formatCents(chargeCents)}
 						</div>
+						{#if installmentCount > 1 || continuingInstallments}
+							<div class="font-mono text-xs" style="color: rgba(0,255,255,0.35);">
+								{continuingInstallments ? 'Next installment' : `Installment 1 of ${installmentCount}`}
+								· season total {formatCents(totalFeeCents)}
+							</div>
+						{/if}
 						<div class="font-mono text-xs" style="color: rgba(0,255,255,0.3);">{hexFee}</div>
 					</div>
 				</div>
@@ -292,8 +353,58 @@
 					<div class="font-mono text-xs leading-relaxed" style="color: rgba(0,255,255,0.5);">
 						ENCRYPT PAYMENT AND TRANSMIT VIA SECURE CHANNEL.<br/>
 						FUNDS ROUTE DIRECTLY TO CLUB DIRECTOR'S CONNECTED ACCOUNT.<br/>
-						PLATFORM FEE: 3% · POWERED BY STRIPE CONNECT.
+						CHOOSE PAY-IN-FULL OR AN INSTALLMENT PLAN BELOW.
 					</div>
+
+					{#if !continuingInstallments && selectableOptions.length > 1}
+						<div
+							class="rounded-sm p-3 space-y-2 text-left"
+							style="background: rgba(0,255,255,0.02); border: 1px solid rgba(0,255,255,0.08);"
+						>
+							<div class="font-mono text-xs tracking-widest" style="color: rgba(0,255,255,0.5);">
+								PAYMENT PLAN
+							</div>
+							<div class="flex flex-wrap gap-2">
+								{#each selectableOptions as option (option)}
+									<button
+										type="button"
+										class="px-3 py-2 font-mono text-xs tracking-wide transition-all"
+										style="
+											border: 1px solid {installmentCount === option ? 'rgba(0,255,255,0.55)' : 'rgba(0,255,255,0.2)'};
+											color: {installmentCount === option ? '#14b8a6' : 'rgba(0,255,255,0.45)'};
+											background: {installmentCount === option ? 'rgba(0,255,255,0.1)' : 'transparent'};
+										"
+										onclick={() => (installmentCount = option)}
+									>
+										{option === 1 ? 'Pay in full' : `${option} payments`}
+									</button>
+								{/each}
+							</div>
+							{#if installmentCount > 1}
+								<ul class="m-0 p-0 list-none space-y-1">
+									{#each previewSchedule as row (row.index)}
+										<li class="flex justify-between font-mono text-xs" style="color: rgba(0,255,255,0.35);">
+											<span>
+												#{row.index + 1}
+												{#if row.dueDateIso} · {row.dueDateIso}{/if}
+											</span>
+											<span>{formatCents(row.amountCents)}</span>
+										</li>
+									{/each}
+								</ul>
+							{/if}
+						</div>
+					{:else if continuingInstallments && existingLedger}
+						<div
+							class="rounded-sm p-3 text-left font-mono text-xs"
+							style="background: rgba(0,255,255,0.02); border: 1px solid rgba(0,255,255,0.08); color: rgba(0,255,255,0.45);"
+						>
+							Continuing {existingLedger.installmentCount}-payment plan ·
+							{formatCents(existingLedger.paidCents)} paid ·
+							{formatCents(existingLedger.remainingCents)} remaining
+						</div>
+					{/if}
+
 					<button
 						onclick={handleInitiatePayment}
 						class="w-full py-3 font-mono text-sm font-bold tracking-widest transition-all duration-200"
@@ -305,7 +416,7 @@
 						"
 						onmouseenter={(e) => (e.currentTarget.style.background = 'rgba(0,255,255,0.15)')}
 						onmouseleave={(e) => (e.currentTarget.style.background = 'rgba(0,255,255,0.08)')}
-					>[ INITIATE SECURE PAYMENT ]</button>
+					>[ INITIATE {continuingInstallments ? 'NEXT INSTALLMENT' : 'SECURE PAYMENT'} ]</button>
 				</div>
 
 			<!-- ── PHASE: LOADING ─────────────────────────────────────────────── -->
@@ -394,19 +505,21 @@
 						style="background: rgba(0,255,255,0.02); border: 1px solid rgba(0,255,255,0.06);"
 					>
 						<div class="flex justify-between font-mono text-xs" style="color: rgba(0,255,255,0.4);">
-							<span>SEASON FEE</span>
-							<span>${feeAmountDollars.toFixed(2)}</span>
+							<span>SEASON FEE (TOTAL)</span>
+							<span>{formatCents(totalFeeCents)}</span>
 						</div>
-						<div class="flex justify-between font-mono text-xs" style="color: rgba(0,255,255,0.3);">
-							<span>PLATFORM FEE (3%)</span>
-							<span>${(feeAmountDollars * 0.03).toFixed(2)}</span>
-						</div>
+						{#if installmentCount > 1 || continuingInstallments}
+							<div class="flex justify-between font-mono text-xs" style="color: rgba(0,255,255,0.35);">
+								<span>THIS CHARGE</span>
+								<span>{formatCents(chargeCents)}</span>
+							</div>
+						{/if}
 						<div
 							class="flex justify-between font-mono text-xs font-bold pt-1"
 							style="color: #14b8a6; border-top: 1px solid rgba(0,255,255,0.08);"
 						>
 							<span>TOTAL CHARGE</span>
-							<span>${feeAmountDollars.toFixed(2)}</span>
+							<span>{formatCents(chargeCents)}</span>
 						</div>
 					</div>
 
@@ -471,11 +584,18 @@
 				</div>
 					<div class="space-y-2">
 						<div class="font-mono text-base font-bold" style="color: #2dd4bf; text-shadow: 0 0 20px rgba(45, 212, 191,0.4);">
-							PAYMENT CONFIRMED
+							{installmentCount > 1 && chargeCents < totalFeeCents
+								? 'INSTALLMENT RECEIVED'
+								: 'PAYMENT CONFIRMED'}
 						</div>
 						<div class="font-mono text-xs" style="color: rgba(0,255,255,0.5);">
-							Season registration complete.<br/>
-							Player status: ACTIVE
+							{#if installmentCount > 1 && chargeCents < totalFeeCents}
+								Installment recorded. Return to Payments when the next installment is due.<br/>
+								Remaining balance: {formatCents(Math.max(0, totalFeeCents - paidCents - chargeCents))}
+							{:else}
+								Season registration complete.<br/>
+								Player status: ACTIVE
+							{/if}
 						</div>
 						{#if commerce.registration?.paidAt}
 							<div class="font-mono text-xs" style="color: rgba(0,255,255,0.3);">
