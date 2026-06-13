@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { browser } from '$app/environment';
-	import { resolve } from '$app/paths';
+	import { resolveAppPath } from '$lib/components/_shared/resolveAppPath.js';
 	import {
 		collection,
 		limit,
@@ -107,7 +107,7 @@
 				<p class="pd-empty-state__title">No ceremonies yet</p>
 				<p class="pd-empty-state__lede">
 					Complete missions to unlock ceremony replays — or visit
-					<a href={resolve('/player/armory')} class="ocp-empty__link">Armory studio</a>
+					<a href={resolveAppPath('/player/armory')} class="ocp-empty__link">Armory studio</a>
 					after your next unlock.
 				</p>
 			</div>

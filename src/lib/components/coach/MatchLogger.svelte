@@ -31,7 +31,8 @@
 	});
 
 	/** @type {Record<string, { goals: number, assists: number, shots: number, saves: number }>} */
-	let pending = $state({});
+	type PendingRow = { goals: number; assists: number; shots: number; saves: number };
+	let pending = $state<Record<string, PendingRow>>({});
 
 	let committing = $state(false);
 	/** @type {{ type: 'error' | 'success'; text: string } | null} */
@@ -118,8 +119,11 @@
 	/**
 	 * @param {string} id
 	 */
-	function rowFor(id) {
-		return pending[id] || { goals: 0, assists: 0, shots: 0, saves: 0 };
+	function rowFor(id: string) {
+		return (
+			(pending[id] as { goals: number; assists: number; shots: number; saves: number } | undefined) ||
+			{ goals: 0, assists: 0, shots: 0, saves: 0 }
+		);
 	}
 
 	function hasAnyPending() {

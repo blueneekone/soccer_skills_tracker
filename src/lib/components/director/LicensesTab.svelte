@@ -18,7 +18,7 @@
 	let { clubId = '' } = $props();
 
 	/** @type {() => void} */
-	const openReadOnlyUpgrade = getContext('openReadOnlyUpgrade') || (() => {});
+	const openReadOnlyUpgrade = (getContext('openReadOnlyUpgrade') as (() => void) | undefined) ?? (() => {});
 
 	const isReadOnly = $derived(
 		isSubscriptionReadOnly(

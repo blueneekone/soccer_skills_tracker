@@ -106,7 +106,7 @@
 			const snap = await getDocs(q);
 			/** @type {typeof results} */
 			const rows = [];
-			snap.forEach((d) => rows.push({ id: d.id, ...d.data() }));
+			snap.forEach((d) => rows.push({ id: d.id, ...(d.data() as Record<string, unknown>) }));
 			results = rows;
 		} catch (e) {
 			console.error(e);

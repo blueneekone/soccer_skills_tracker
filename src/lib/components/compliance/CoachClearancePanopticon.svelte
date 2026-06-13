@@ -94,7 +94,19 @@
 		}
 		getDocs(q)
 			.then((snap) => {
-				coaches = snap.docs.map((d) => /** @type {CoachRow} */ ({ email: d.id, ...d.data() }));
+				coaches = snap.docs.map((d) => {
+					const data = (d.data() ?? {}) as Record<string, unknown>;
+					return {
+						email: d.id,
+						...data,
+					} as {
+						email: string;
+						displayName?: string;
+						role?: string;
+						clubId?: string;
+						clearance?: Record<string, unknown>;
+					};
+				});
 				initRowActions(coaches);
 			})
 			.catch((e) => {
@@ -184,7 +196,7 @@
 			const fns = getFunctions(getApp(), 'us-east1');
 			const initiate = httpsCallable(fns, 'directorInitiateCoachClearance');
 			const result = await initiate({ coachEmail: coach.email });
-			const data = /** @type {Record<string, unknown>} */ (result.data ?? {});
+			const data = result.data as Record<string, unknown>;
 			coach.clearance = {
 				.../** @type {object} */ (coach.clearance ?? {}),
 				status: 'pending',

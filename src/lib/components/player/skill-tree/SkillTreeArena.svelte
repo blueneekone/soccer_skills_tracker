@@ -17,6 +17,7 @@
 	 *   3. VanguardPrism absolute overlay
 	 */
 
+	import VanguardPrism from '$lib/components/player/VanguardPrism.svelte';
 	import { goto } from '$app/navigation';
 	import { scoutsSixToWorkoutFocus } from '$lib/data/skillTree/scoutsSixWorkoutBridge.js';
 	import type { SkillTreeEngine } from './SkillTreeEngine.svelte.js';

@@ -70,7 +70,7 @@
 	);
 
 	/** @type {() => void} */
-	const openReadOnlyUpgrade = getContext('openReadOnlyUpgrade') || (() => {});
+	const openReadOnlyUpgrade = (getContext('openReadOnlyUpgrade') as (() => void) | undefined) ?? (() => {});
 
 	/** Epic 5.4 — weather status for director advisory banners. */
 	let weatherFacilityStatuses = $state(
@@ -114,9 +114,11 @@
 		weatherRefreshMsg = null;
 		try {
 			const res = await refreshClubWeatherLock({ clubId: resolvedClubId });
-			const data = /** @type {{ facilities?: number; locked?: number; advisory?: number }} */ (
-				res.data || {}
-			);
+			const data = (res.data || {}) as {
+				facilities?: number;
+				locked?: number;
+				advisory?: number;
+			};
 			weatherRefreshMsg = `Weather scan complete — ${data.facilities ?? 0} field(s), ${data.locked ?? 0} locked, ${data.advisory ?? 0} advisory.`;
 		} catch (err) {
 			weatherRefreshMsg =
@@ -410,7 +412,7 @@
 			try {
 			await saveTeamScheduledEvent({
 				teamId: bookingTeamId,
-				eventKind: activityType,
+				eventKind: activityType as 'Practice' | 'practice' | 'game' | 'Game',
 				title: '',
 				startAt: startD,
 				endAt: endD,

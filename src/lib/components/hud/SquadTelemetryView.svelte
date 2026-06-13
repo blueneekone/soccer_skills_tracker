@@ -222,7 +222,7 @@
 	/**
 	 * @param {string} [overrideTeamId] When passed from the `$effect` untrack run, use this id for the whole load (avoids racing reactive `teamId`).
 	 */
-	const loadRoster = async (overrideTeamId) => {
+	const loadRoster = async (overrideTeamId?: string) => {
 		const tid = typeof overrideTeamId === 'string' && overrideTeamId ? overrideTeamId : teamId;
 		if (!tid) {
 			loading = false;
@@ -559,7 +559,7 @@
 					...(emailTrim ? { playerEmail: emailTrim } : {}),
 					...(jerseyStr ? { jersey: jerseyStr } : {}),
 				});
-				const data = res.data;
+				const data = res.data as { duplicate?: boolean } | undefined;
 				if (data?.duplicate) {
 					feedback = { type: 'info', text: 'Already on roster.' };
 					return;

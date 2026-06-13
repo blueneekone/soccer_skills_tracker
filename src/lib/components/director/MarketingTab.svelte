@@ -295,8 +295,7 @@
 		}
 		publishBusy = true;
 		try {
-			/** @type {Record<string, unknown>} */
-			const payload = {
+			const payload: Record<string, unknown> = {
 				title: t,
 				body: b,
 				targetAudience,
