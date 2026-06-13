@@ -9,6 +9,7 @@
 		getCheckrCandidateDashboardUrl,
 		getCheckrDashboardBaseUrl,
 		getClearanceStatusSubLabel,
+		clearanceStatusSubLabelTitle,
 	} from '$lib/compliance/checkrCoachClearance.js';
 
 	interface Props {
@@ -368,13 +369,9 @@
 								{#if statusSubLabel}
 									<div
 										class="dp-clearance-ref"
-										title={statusSubLabel.kind === 'ankoredId'
-											? 'Legacy Ankored record ID'
-											: statusSubLabel.kind === 'checkrCandidateId'
-												? 'Checkr candidate ID'
-												: 'Checkr invitation ID'}
+										title={clearanceStatusSubLabelTitle(statusSubLabel.kind)}
 									>
-										{#if statusSubLabel.kind === 'ankoredId'}
+										{#if statusSubLabel.kind === 'legacyRecordId'}
 											<span class="dp-clearance-ref__legacy">legacy</span>
 										{/if}
 										{statusSubLabel.value}

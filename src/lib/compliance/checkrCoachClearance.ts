@@ -126,9 +126,21 @@ export function getCheckrCandidateDashboardUrl(candidateId: string): string {
 export type ClearanceStatusSubLabel =
 	| { kind: 'checkrCandidateId'; value: string }
 	| { kind: 'invitationId'; value: string }
-	| { kind: 'ankoredId'; value: string; legacy: true };
+	| { kind: 'legacyRecordId'; value: string; legacy: true };
 
-/** Status sub-label for director clearance matrix — prefers Checkr ids over legacy Ankored. */
+/** Tooltip / dt label for clearance reference ids in staff and coach status UI. */
+export function clearanceStatusSubLabelTitle(kind: ClearanceStatusSubLabel['kind']): string {
+	switch (kind) {
+		case 'checkrCandidateId':
+			return 'Checkr candidate ID';
+		case 'invitationId':
+			return 'Checkr invitation ID';
+		case 'legacyRecordId':
+			return 'Legacy screening record ID';
+	}
+}
+
+/** Status sub-label for director clearance matrix — prefers Checkr ids over legacy records. */
 export function getClearanceStatusSubLabel(
 	clearance?: Pick<ClearanceDoc, 'checkrCandidateId' | 'invitationId' | 'ankoredId'> | null,
 ): ClearanceStatusSubLabel | null {
@@ -139,8 +151,8 @@ export function getClearanceStatusSubLabel(
 	const invitationId =
 		typeof clearance.invitationId === 'string' ? clearance.invitationId.trim() : '';
 	if (invitationId) return { kind: 'invitationId', value: invitationId };
-	const ankoredId = typeof clearance.ankoredId === 'string' ? clearance.ankoredId.trim() : '';
-	if (ankoredId) return { kind: 'ankoredId', value: ankoredId, legacy: true };
+	const legacyId = typeof clearance.ankoredId === 'string' ? clearance.ankoredId.trim() : '';
+	if (legacyId) return { kind: 'legacyRecordId', value: legacyId, legacy: true };
 	return null;
 }
 
@@ -236,10 +248,36 @@ function buildReportsOverviewStyles(): CheckrEmbedStyles {
 			padding: '1rem',
 			border: '1px solid #e5e7eb',
 			'border-radius': '8px',
+			'font-family': 'system-ui, -apple-system, sans-serif',
 		},
 		'.bgc-package-name': {
 			color: '#374151',
 			'font-weight': '600',
+		},
+		'.report-status': {
+			color: '#111827',
+			'font-weight': '600',
+		},
+		'.report-status--complete': {
+			color: '#047857',
+		},
+		'.report-status--pending': {
+			color: '#b45309',
+		},
+		'a': {
+			color: '#2563eb',
+			'text-decoration': 'underline',
+		},
+		'.table th': {
+			color: '#6b7280',
+			'font-size': '0.75rem',
+			'font-weight': '600',
+			'text-transform': 'uppercase',
+			'letter-spacing': '0.04em',
+		},
+		'.table td': {
+			color: '#111827',
+			'border-color': '#e5e7eb',
 		},
 	};
 }

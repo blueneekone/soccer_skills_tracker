@@ -6,6 +6,7 @@
 		formatClearanceSource,
 		formatClearanceTimestamp,
 		getClearanceStatusSubLabel,
+		clearanceStatusSubLabelTitle,
 	} from '$lib/compliance/checkrCoachClearance.js';
 	import Icon from '$lib/components/ui/Icon.svelte';
 
@@ -60,17 +61,9 @@
 			{/if}
 			{#if statusRef}
 				<div class="ncs__row">
-					<dt>
-						{#if statusRef.kind === 'checkrCandidateId'}
-							Checkr candidate
-						{:else if statusRef.kind === 'invitationId'}
-							Checkr invitation
-						{:else}
-							Reference
-						{/if}
-					</dt>
+					<dt>{clearanceStatusSubLabelTitle(statusRef.kind)}</dt>
 					<dd class="ncs__ref">
-						{#if statusRef.kind === 'ankoredId'}
+						{#if statusRef.kind === 'legacyRecordId'}
 							<span class="ncs__legacy">legacy</span>
 						{/if}
 						{statusRef.value}

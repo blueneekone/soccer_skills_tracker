@@ -7,6 +7,7 @@ import {
 	getCheckrDashboardBaseUrl,
 	getCheckrCandidateDashboardUrl,
 	getClearanceStatusSubLabel,
+	clearanceStatusSubLabelTitle,
 	coachClearanceStepLabel,
 	formatClearanceSource,
 	deriveCoachClearanceStep,
@@ -57,13 +58,18 @@ describe('checkrCoachClearance — clearance status sub-label', () => {
 		).toEqual({ kind: 'invitationId', value: 'inv_2' });
 	});
 
-	it('shows ankoredId with legacy flag only when no Checkr ids', () => {
+	it('shows legacyRecordId with legacy flag only when no Checkr ids', () => {
 		expect(
 			getClearanceStatusSubLabel({
 				status: 'cleared',
-				ankoredId: 'ANKORED-SIM',
+				ankoredId: 'LEGACY-SIM',
 			}),
-		).toEqual({ kind: 'ankoredId', value: 'ANKORED-SIM', legacy: true });
+		).toEqual({ kind: 'legacyRecordId', value: 'LEGACY-SIM', legacy: true });
+	});
+
+	it('clearanceStatusSubLabelTitle avoids vendor names for legacy records', () => {
+		expect(clearanceStatusSubLabelTitle('legacyRecordId')).toBe('Legacy screening record ID');
+		expect(clearanceStatusSubLabelTitle('checkrCandidateId')).toBe('Checkr candidate ID');
 	});
 });
 

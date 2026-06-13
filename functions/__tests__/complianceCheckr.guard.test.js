@@ -94,6 +94,7 @@ const CHECKR_CLUB_CONFIG = path.join(
   'compliance',
   'checkrClubConfig.ts',
 );
+const CLEARANCE_CSS = path.join(REPO_ROOT, 'src', 'lib', 'styles', 'coach-clearance-siem.css');
 const COMPLIANCE_INDEX = path.join(REPO_ROOT, 'functions-compliance', 'index.js');
 const FIREBASE_JSON = path.join(REPO_ROOT, 'firebase.json');
 
@@ -108,6 +109,7 @@ const nativeStatusSrc = fs.readFileSync(NATIVE_STATUS, 'utf8');
 const loaderSrc = fs.readFileSync(LOAD_CHECKR_SDK, 'utf8');
 const coachClearanceSrc = fs.readFileSync(CHECKR_COACH_CLEARANCE, 'utf8');
 const clubConfigSrc = fs.readFileSync(CHECKR_CLUB_CONFIG, 'utf8');
+const clearanceCss = fs.readFileSync(CLEARANCE_CSS, 'utf8');
 const complianceIndexSrc = fs.readFileSync(COMPLIANCE_INDEX, 'utf8');
 const firebaseJson = JSON.parse(fs.readFileSync(FIREBASE_JSON, 'utf8'));
 
@@ -171,11 +173,13 @@ describe('CHECKR-PANOPTICON-COPY — staff clearance UI uses Checkr (not Ankored
     assert.match(panopticonSrc, /Simulate clearance \(QA\)/i);
     assert.match(panopticonSrc, /QA bypass available when live Checkr unavailable/);
     assert.match(panopticonSrc, /getClearanceStatusSubLabel/);
+    assert.match(panopticonSrc, /clearanceStatusSubLabelTitle/);
     assert.match(panopticonSrc, /Open Checkr invitation/i);
     assert.match(panopticonSrc, /getCheckrCandidateDashboardUrl/);
     assert.doesNotMatch(panopticonSrc, /app\.ankored\.com/);
     assert.doesNotMatch(panopticonSrc, /ANKORED INTEGRATION SIMULATED/i);
     assert.doesNotMatch(panopticonSrc, /SIMULATE ANKORED CLEARANCE/i);
+    assert.doesNotMatch(panopticonSrc, /\bAnkored\b/i);
   });
 
   it('checkrCoachClearance exposes dashboard URL helpers', () => {
@@ -183,6 +187,8 @@ describe('CHECKR-PANOPTICON-COPY — staff clearance UI uses Checkr (not Ankored
     assert.match(coachClearanceSrc, /dashboard\.checkr\.com/);
     assert.match(coachClearanceSrc, /dashboard\.checkr-staging\.com/);
     assert.match(coachClearanceSrc, /getClearanceStatusSubLabel/);
+    assert.match(coachClearanceSrc, /clearanceStatusSubLabelTitle/);
+    assert.match(coachClearanceSrc, /legacyRecordId/);
   });
 });
 
@@ -211,7 +217,9 @@ describe('LAUNCH-CHECKR-NATIVE — coach status without required Checkr embed', 
     assert.match(pageSrc, /NativeClearanceStatus/);
     assert.match(nativeStatusSrc, /deriveCoachClearanceStep/);
     assert.match(nativeStatusSrc, /formatClearanceSource/);
+    assert.match(nativeStatusSrc, /clearanceStatusSubLabelTitle/);
     assert.doesNotMatch(nativeStatusSrc, /invitationUrl/);
+    assert.doesNotMatch(nativeStatusSrc, /\bAnkored\b/i);
   });
 
   it('CheckrEmbed is optional enhancement gated by invitation or candidate id', () => {
@@ -242,12 +250,25 @@ describe('LAUNCH-CHECKR-NATIVE — coach status without required Checkr embed', 
     }
     scanDir(SRC_ROOT);
   });
+
+  it('no Ankored user-facing copy in compliance svelte components', () => {
+    const complianceUi = [PANOPTICON, NATIVE_STATUS, CHECKR_EMBED, COMPLIANCE_PAGE, CHECKLIST];
+    for (const file of complianceUi) {
+      const body = fs.readFileSync(file, 'utf8');
+      assert.doesNotMatch(
+        body,
+        /\bAnkored\b/i,
+        `${path.relative(REPO_ROOT, file)} must not expose Ankored user copy`,
+      );
+    }
+  });
 });
 
 describe('LAUNCH-CHECKR-MODEL — coach native checklist UX', () => {
   it('compliance page uses CoachClearanceChecklist and light readable shell', () => {
     assert.match(pageSrc, /CoachClearanceChecklist/);
-    assert.match(pageSrc, /background:\s*#ffffff/);
+    assert.match(clearanceCss, /checkr-embed__panel[\s\S]*background:\s*#f8fafc/);
+    assert.match(clearanceCss, /checkr-embed__panel iframe/);
     assert.doesNotMatch(pageSrc, /vanguard-bg/);
   });
 
@@ -262,6 +283,8 @@ describe('LAUNCH-CHECKR-MODEL — coach native checklist UX', () => {
     assert.match(embedSrc, /mode\s*=\s*'tracking'/);
     assert.match(embedSrc, /COACH_SELF_START_ENABLED/);
     assert.match(embedSrc, /Embeds\.ReportsOverview/);
+    assert.match(embedSrc, /class="checkr-embed"/);
+    assert.match(embedSrc, /Retry connection/);
     assert.doesNotMatch(embedSrc, /payment/i);
   });
 
