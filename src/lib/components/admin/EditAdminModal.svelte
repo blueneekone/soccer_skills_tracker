@@ -116,7 +116,7 @@
 			const previousRole = typeof admin.role === 'string' ? admin.role : '';
 
 			/** @type {Record<string, unknown>} */
-			const patch = {
+			const patch: Record<string, unknown> = {
 				displayName: dn,
 				role,
 				phoneNumber: ph,

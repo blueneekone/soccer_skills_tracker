@@ -48,7 +48,7 @@
 				clubId: clubId.trim(),
 				subject: subject.trim() || undefined,
 				body: body.trim(),
-				teamIds,
+				teamIds: teamIds as string[] | undefined,
 			});
 			subject = '';
 			body = '';

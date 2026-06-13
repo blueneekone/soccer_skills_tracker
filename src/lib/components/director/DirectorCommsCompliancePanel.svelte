@@ -28,6 +28,8 @@
 	/** @type {Array<Record<string, unknown>>} */
 	let messagingAudit = $state([]);
 	/** @type {Array<Record<string, unknown>>} */
+	let broadcastAuditLogs = $state([]);
+	/** @type {Array<Record<string, unknown>>} */
 	let incidents = $state([]);
 
 	const canView = $derived(authStore.isDirector || authStore.isAdmin);

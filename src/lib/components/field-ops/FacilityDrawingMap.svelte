@@ -298,7 +298,7 @@
 			polygons: [...mapData.polygons],
 			markers: mapData.markers.map((m, i) => {
 				if (i !== idx) return m;
-				const next = /** @type {typeof cur} */ ({ lat: m.lat, lng: m.lng });
+				const next: { lat: number; lng: number; label?: string } = { lat: m.lat, lng: m.lng };
 				if (trimmed) next.label = trimmed;
 				return next;
 			}),

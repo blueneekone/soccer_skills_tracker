@@ -81,7 +81,7 @@
 					aria-checked={active}
 					class="orgs3-filter-chip orgs3-filter-chip--multi"
 					class:orgs3-filter-chip--active={active}
-					onclick={() => onTiersChange(toggleInList(filterTiers, tier.key))}
+					onclick={() => onTiersChange(toggleInList(filterTiers, tier.key) as AdminClubTierKey[])}
 				>
 					<span class="orgs3-filter-chip__dot" style="background:{tier.accent};"></span>
 					<Icon name={tier.icon as IconName} aria-hidden="true" />

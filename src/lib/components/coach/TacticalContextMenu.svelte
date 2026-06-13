@@ -191,7 +191,7 @@
 						s.action();
 					}}
 				>
-					<Icon name={s.icon} size={18} />
+					<Icon name={s.icon as IconName} size={18} />
 					<span class="tw-leading-none">{s.label}</span>
 				</button>
 			{/each}
