@@ -165,7 +165,7 @@ export class IntentEngine {
 
 			const expiresMs = intent.expiresAt
 				? (typeof (intent.expiresAt as { toMillis?: () => number }).toMillis === 'function'
-					? (intent.expiresAt as { toMillis: () => number }).toMillis()
+					? (intent.expiresAt as unknown as { toMillis: () => number }).toMillis()
 					: new Date(intent.expiresAt as string).getTime())
 				: 0;
 			const daysRemaining = Math.max(0, Math.ceil((expiresMs - Date.now()) / 86_400_000));

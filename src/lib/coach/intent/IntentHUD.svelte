@@ -1,6 +1,7 @@
 <script lang="ts">
 	import Icon from '$lib/components/ui/Icon.svelte';
 	import type { IconName } from '$lib/icons/registry.js';
+	import type { MouseEventHandler } from 'svelte/elements';
 
 	type DeployPhase = 'idle' | 'saving' | 'success' | 'error';
 
@@ -41,10 +42,10 @@
 		assignableRosterCount = 0,
 		nameOnlyRosterCount = 0,
 		canDeploy = false,
-		onDeploy = () => {},
+		onDeploy = (() => {}) as MouseEventHandler<HTMLButtonElement>,
 		onToggleUid = (_uid: string) => {},
-		onSelectAll = () => {},
-		onClearSelection = () => {},
+		onSelectAll = (() => {}) as MouseEventHandler<HTMLButtonElement>,
+		onClearSelection = (() => {}) as MouseEventHandler<HTMLButtonElement>,
 		onAttributeChange = () => {},
 		onAddBundleDrill = () => {},
 		onRemoveBundleDrill = (_index: number) => {},
