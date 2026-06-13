@@ -17,6 +17,7 @@
 				Start your club →
 			</a>
 			<a href="/pricing" class="fc-link-cta">VIEW PRICING →</a>
+			<a href="/acquisition" class="fc-link-cta">STRATEGIC ACQUISITION →</a>
 		</div>
 		<ul class="fc-checklist" aria-label="Included features">
 			{#each FINAL_CTA_FEATURES as item (item)}

@@ -17,6 +17,7 @@
 				<h4 class="mf-col__title">PLATFORM</h4>
 				<a href="/features" class="mf-link">Features</a>
 				<a href="/pricing" class="mf-link">Pricing</a>
+				<a href="/acquisition" class="mf-link">Acquisition</a>
 				<a href="/setup" class="mf-link">Register</a>
 			</div>
 			<div class="mf-col">

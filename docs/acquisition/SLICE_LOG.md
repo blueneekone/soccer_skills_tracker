@@ -87,3 +87,7 @@ Agents append entries below. Do not edit prior rows.
 
 ### Notes
 - Each installment uses existing `createRegistrationIntent` with partial `feeAmountDollars`; full-season unlock on first partial payment remains a backend follow-up (webhook sets `activeSeasonStatus` on any succeeded PI).
+
+| Slice | Branch | Tests | Check | Build | Notes |
+|-------|--------|-------|-------|-------|-------|
+| 16-marketing-acq | overnight/marketing-acq | marketingLanding.test.ts | 391 errors (pre-existing) | pass | `/acquisition` route, acquisitionContent.ts, landing CTA + footer links, test guards |
