@@ -24,9 +24,9 @@
 			armedHandoff.missionId;
 		const attributeId = armedHandoff.targetAttributeId ?? 'technical';
 		if (!drillTitle || !drillId) return null;
-		const rankRaw = /** @type {Record<string, unknown> | undefined} */ (armedHandoff.prescription)
+		const rankRaw = (armedHandoff.prescription as unknown as Record<string, unknown> | undefined)
 			?.complexityRank;
-		const complexityRank = rankRaw === 2 || rankRaw === 3 ? rankRaw : 1;
+		const complexityRank: 1 | 2 | 3 = rankRaw === 2 || rankRaw === 3 ? rankRaw : 1;
 		return { drillId, drillTitle, attributeId, complexityRank };
 	});
 </script>
