@@ -2,9 +2,8 @@
 	/**
 	 * /parent/payments — Season Registration Payments
 	 *
-	 * Shows each linked player's current payment status for the active season
-	 * and allows the parent to open the Secure Payment Terminal (SeasonRegistration)
-	 * to complete registration.
+	 * Shows each linked player's payment status (including installment progress)
+	 * and opens SeasonRegistration for pay-in-full or installment checkout.
 	 */
 	import { browser } from '$app/environment';
 	import { collection, doc, getDoc, getDocs, limit, query, where } from 'firebase/firestore';
@@ -13,54 +12,50 @@
 	import SeasonRegistration from '$lib/components/parent/SeasonRegistration.svelte';
 	import Icon from '$lib/components/ui/Icon.svelte';
 	import type { IconName } from '$lib/icons/registry.js';
-
-	// ── Types ─────────────────────────────────────────────────────────────────
-
-	type PaymentStatus = 'none' | 'pending' | 'processing' | 'paid' | 'failed';
+	import { loadSeasonPaymentLedger } from '$lib/parent/loadSeasonPaymentLedger.js';
+	import {
+		displayStatusLabel,
+		formatCents,
+		installmentProgressLabel,
+		parseInstallmentConfig,
+		type PaymentDisplayStatus,
+		type SeasonPaymentLedger,
+	} from '$lib/parent/paymentInstallments.js';
 
 	interface PlayerRow {
 		email: string;
 		displayName: string;
-		paymentStatus: PaymentStatus;
+		ledger: SeasonPaymentLedger;
 		paidAt: number | null;
-		feeAmountCents: number;
 	}
 
 	interface ActiveSeason {
 		seasonId: string;
 		seasonName: string;
 		feeAmountDollars: number;
+		registrationDeadline: string | null;
+		raw: Record<string, unknown>;
 	}
-
-	// ── State ─────────────────────────────────────────────────────────────────
 
 	let players = $state<PlayerRow[]>([]);
 	let activeSeason = $state<ActiveSeason | null>(null);
 	let tenantId = $state('');
 	let loading = $state(true);
 	let err = $state('');
-
-	/** Email of the player whose payment modal is currently open. */
 	let payingPlayerEmail = $state('');
-
-	// ── Derived ───────────────────────────────────────────────────────────────
 
 	const profile = $derived(authStore.userProfile);
 	const payingPlayer = $derived(players.find((p) => p.email === payingPlayerEmail) ?? null);
-
-	// ── Data load ─────────────────────────────────────────────────────────────
+	const installmentConfig = $derived(
+		activeSeason
+			? parseInstallmentConfig(activeSeason.raw, activeSeason.feeAmountDollars)
+			: { enabled: false, options: [1], minFeeDollars: 50 },
+	);
 
 	$effect(() => {
 		if (!browser || authStore.isLoading) return;
 
 		const parentEmail = (authStore.user?.email ?? '').toLowerCase();
-		const rawTid =
-			/** @type {string | undefined} */ (
-				(authStore.user as unknown as { accessToken?: string } | null)
-					?.accessToken
-			) ?? '';
-
-		// Resolve tenantId from profile (stored after provisioning)
 		const tid =
 			typeof (profile as Record<string, unknown>)?.clubId === 'string'
 				? String((profile as Record<string, unknown>).clubId)
@@ -74,7 +69,6 @@
 		}
 
 		tenantId = tid;
-
 		void loadData(parentEmail, tid);
 	});
 
@@ -82,7 +76,6 @@
 		loading = true;
 		err = '';
 		try {
-			// 1. Get household to find linked player emails
 			const hq = query(
 				collection(db, 'households'),
 				where('parentEmails', 'array-contains', parentEmail),
@@ -96,65 +89,63 @@
 							(e) => typeof e === 'string',
 						);
 
-			// 2. Get active season from organization
 			const orgSnap = await getDoc(doc(db, 'organizations', tid));
 			const orgData = orgSnap.exists() ? orgSnap.data() : null;
-			const rawSeason = orgData?.activeSeason as
-				| { seasonId?: string; name?: string; feeAmountDollars?: number }
-				| undefined;
+			const rawSeason =
+				orgData?.activeSeason && typeof orgData.activeSeason === 'object'
+					? (orgData.activeSeason as Record<string, unknown>)
+					: null;
 
-			if (rawSeason?.seasonId) {
+			if (rawSeason && typeof rawSeason.seasonId === 'string') {
 				activeSeason = {
 					seasonId: rawSeason.seasonId,
-					seasonName: rawSeason.name ?? `Season ${rawSeason.seasonId}`,
-					feeAmountDollars: rawSeason.feeAmountDollars ?? 0,
+					seasonName:
+						typeof rawSeason.name === 'string'
+							? rawSeason.name
+							: `Season ${rawSeason.seasonId}`,
+					feeAmountDollars:
+						typeof rawSeason.feeAmountDollars === 'number' ? rawSeason.feeAmountDollars : 0,
+					registrationDeadline:
+						typeof rawSeason.registrationDeadline === 'string'
+							? rawSeason.registrationDeadline
+							: null,
+					raw: rawSeason,
 				};
 			} else {
 				activeSeason = null;
 			}
 
-			// 3. For each player, fetch latest season_registration
 			if (playerEmails.length === 0 || !activeSeason) {
 				players = [];
 				loading = false;
 				return;
 			}
 
+			const totalFeeCents = Math.round(activeSeason.feeAmountDollars * 100);
 			const rows: PlayerRow[] = await Promise.all(
 				playerEmails.map(async (email) => {
-					const rq = query(
-						collection(db, 'season_registrations'),
-						where('playerEmail', '==', email),
-						where('tenantId', '==', tid),
-						where('seasonId', '==', activeSeason!.seasonId),
-						limit(1),
-					);
-					const rs = await getDocs(rq);
-
 					const userSnap = await getDoc(doc(db, 'users', email));
 					const displayName =
 						typeof userSnap.data()?.playerName === 'string'
 							? (userSnap.data()!.playerName as string)
 							: email.split('@')[0];
 
-					if (rs.empty) {
-						return {
-							email,
-							displayName,
-							paymentStatus: 'none' as PaymentStatus,
-							paidAt: null,
-							feeAmountCents: Math.round(activeSeason!.feeAmountDollars * 100),
-						};
-					}
+					const ledger = await loadSeasonPaymentLedger({
+						parentEmail,
+						playerEmail: email,
+						tenantId: tid,
+						seasonId: activeSeason!.seasonId,
+						totalFeeCents,
+						activeSeason: activeSeason!.raw,
+						registrationDeadline: activeSeason!.registrationDeadline,
+					});
 
-					const d = rs.docs[0].data();
-					return {
-						email,
-						displayName,
-						paymentStatus: (d.paymentStatus as PaymentStatus) ?? 'none',
-						paidAt: d.paidAt?.toMillis?.() ?? null,
-						feeAmountCents: d.feeAmountCents ?? 0,
-					};
+					const latestPaidAt = ledger.registrations
+						.filter((r) => r.paymentStatus === 'paid' && r.paidAt)
+						.map((r) => r.paidAt as number)
+						.sort((a, b) => b - a)[0] ?? null;
+
+					return { email, displayName, ledger, paidAt: latestPaidAt };
 				}),
 			);
 
@@ -166,32 +157,20 @@
 		}
 	}
 
-	// ── Status helpers ────────────────────────────────────────────────────────
-
-	function statusLabel(s: PaymentStatus): string {
-		if (s === 'paid') return 'Paid';
-		if (s === 'pending') return 'Pending';
-		if (s === 'processing') return 'Processing';
-		if (s === 'failed') return 'Failed';
-		return 'Not paid';
-	}
-
-	function statusIcon(s: PaymentStatus): string {
+	function statusIcon(s: PaymentDisplayStatus): string {
 		if (s === 'paid') return 'status.check';
+		if (s === 'partial') return 'sys.clock';
 		if (s === 'pending' || s === 'processing') return 'sys.clock';
 		if (s === 'failed') return 'status.warning';
 		return 'sys.credit-card';
 	}
 
-	function statusColor(s: PaymentStatus): string {
+	function statusColor(s: PaymentDisplayStatus): string {
 		if (s === 'paid') return 'tw-text-emerald-400';
+		if (s === 'partial') return 'tw-text-sky-400';
 		if (s === 'pending' || s === 'processing') return 'tw-text-amber-400';
 		if (s === 'failed') return 'tw-text-red-400';
 		return 'tw-text-slate-400';
-	}
-
-	function fmtCents(cents: number): string {
-		return `$${(cents / 100).toFixed(2)}`;
 	}
 
 	function fmtDate(ms: number | null): string {
@@ -201,6 +180,21 @@
 			day: 'numeric',
 			year: 'numeric',
 		});
+	}
+
+	function payButtonLabel(ledger: SeasonPaymentLedger): string {
+		if (ledger.effectiveStatus === 'partial') {
+			return `Pay installment ${formatCents(ledger.nextDueCents)}`;
+		}
+		return `Pay ${formatCents(ledger.totalFeeCents)}`;
+	}
+
+	function canPay(ledger: SeasonPaymentLedger): boolean {
+		return (
+			ledger.effectiveStatus === 'none' ||
+			ledger.effectiveStatus === 'failed' ||
+			ledger.effectiveStatus === 'partial'
+		);
 	}
 
 	function openPayment(playerEmail: string) {
@@ -228,10 +222,14 @@
 {#if payingPlayerEmail && payingPlayer && activeSeason}
 	<SeasonRegistration
 		playerEmail={payingPlayer.email}
+		parentEmail={(authStore.user?.email ?? '').toLowerCase()}
 		{tenantId}
 		seasonId={activeSeason.seasonId}
 		seasonName={activeSeason.seasonName}
 		feeAmountDollars={activeSeason.feeAmountDollars}
+		registrationDeadline={activeSeason.registrationDeadline}
+		installmentOptions={installmentConfig.options}
+		existingLedger={payingPlayer.ledger}
 		onclose={closePayment}
 		onpaid={handlePaid}
 	/>
@@ -248,7 +246,11 @@
 		{#if activeSeason}
 			<p class="tw-mt-1 tw-text-sm tw-text-slate-400">
 				Active season: <span class="tw-font-semibold tw-text-slate-300">{activeSeason.seasonName}</span>
-				· <span class="tw-font-mono">{fmtCents(Math.round(activeSeason.feeAmountDollars * 100))}</span> registration fee
+				· <span class="tw-font-mono">{formatCents(Math.round(activeSeason.feeAmountDollars * 100))}</span>
+				registration fee
+				{#if installmentConfig.enabled}
+					· installment plans available
+				{/if}
 			</p>
 		{/if}
 	</header>
@@ -283,7 +285,6 @@
 			{#each players as player (player.email)}
 				<li class="tw-rounded-2xl tw-border tw-border-slate-800 tw-bg-slate-900/60 tw-p-5">
 					<div class="tw-flex tw-flex-wrap tw-items-center tw-justify-between tw-gap-4">
-						<!-- Player identity -->
 						<div class="tw-flex tw-min-w-0 tw-items-center tw-gap-3">
 							<div
 								class="tw-flex tw-h-10 tw-w-10 tw-shrink-0 tw-items-center tw-justify-center tw-rounded-full tw-bg-slate-800 tw-font-mono tw-text-sm tw-font-black tw-text-slate-300"
@@ -298,41 +299,80 @@
 								<p class="tw-m-0 tw-truncate tw-font-mono tw-text-xs tw-text-slate-500">
 									{player.email}
 								</p>
+								{#if player.ledger.installmentCount > 1}
+									<p class="tw-m-0 tw-mt-1 tw-font-mono tw-text-xs tw-text-slate-500">
+										{installmentProgressLabel(player.ledger)}
+									</p>
+								{/if}
 							</div>
 						</div>
 
-						<!-- Status + action -->
-						<div class="tw-flex tw-shrink-0 tw-items-center tw-gap-3">
-							<div class="tw-flex tw-items-center tw-gap-1.5 {statusColor(player.paymentStatus)}">
-								<Icon name={statusIcon(player.paymentStatus) as IconName} size={15} />
-								<span class="tw-font-mono tw-text-sm tw-font-bold">{statusLabel(player.paymentStatus)}</span>
+						<div class="tw-flex tw-shrink-0 tw-flex-col tw-items-end tw-gap-2">
+							<div
+								class="tw-flex tw-items-center tw-gap-1.5 {statusColor(player.ledger.effectiveStatus)}"
+							>
+								<Icon
+									name={statusIcon(player.ledger.effectiveStatus) as IconName}
+									size={15}
+								/>
+								<span class="tw-font-mono tw-text-sm tw-font-bold">
+									{displayStatusLabel(player.ledger.effectiveStatus)}
+								</span>
 							</div>
 
-							{#if player.paymentStatus === 'paid'}
+							{#if player.ledger.effectiveStatus === 'paid'}
 								{#if player.paidAt}
 									<span class="tw-font-mono tw-text-xs tw-text-slate-500">
 										{fmtDate(player.paidAt)}
 									</span>
 								{/if}
-							{:else if player.paymentStatus === 'none' || player.paymentStatus === 'failed'}
+							{:else if canPay(player.ledger)}
 								<button
 									type="button"
 									class="tw-inline-flex tw-items-center tw-justify-center tw-rounded-lg tw-border tw-border-teal-700/60 tw-bg-teal-900/30 tw-px-3 tw-py-2 tw-font-mono tw-text-xs tw-font-bold tw-tracking-wide tw-text-teal-300 tw-transition-colors hover:tw-bg-teal-900/60"
 									onclick={() => openPayment(player.email)}
 								>
-									Pay {fmtCents(Math.round(activeSeason.feeAmountDollars * 100))}
+									{payButtonLabel(player.ledger)}
 								</button>
 							{:else}
 								<span class="tw-font-mono tw-text-xs tw-text-slate-500">In progress…</span>
 							{/if}
 						</div>
 					</div>
+
+					{#if player.ledger.installmentCount > 1 && player.ledger.effectiveStatus !== 'paid'}
+						<ul class="tw-m-0 tw-mt-4 tw-list-none tw-space-y-1 tw-border-t tw-border-slate-800 tw-pt-3 tw-p-0">
+							{#each player.ledger.schedule as item (item.index)}
+								<li class="tw-flex tw-items-center tw-justify-between tw-font-mono tw-text-xs">
+									<span class="tw-text-slate-500">
+										Installment {item.index + 1}
+										{#if item.dueDateIso}
+											· due {item.dueDateIso}
+										{/if}
+									</span>
+									<span
+										class={item.status === 'paid'
+											? 'tw-text-emerald-400'
+											: item.status === 'overdue'
+												? 'tw-text-red-400'
+												: item.status === 'due'
+													? 'tw-text-amber-300'
+													: 'tw-text-slate-500'}
+									>
+										{formatCents(item.amountCents)}
+										· {item.status}
+									</span>
+								</li>
+							{/each}
+						</ul>
+					{/if}
 				</li>
 			{/each}
 		</ul>
 
 		<p class="tw-mt-6 tw-text-xs tw-text-slate-600">
-			Payments are processed securely via Stripe Connect. Funds route directly to your club director's connected account.
+			Payments are processed securely via Stripe Connect. Pay in full or split into installments before
+			the registration deadline. Funds route directly to your club director's connected account.
 		</p>
 	{/if}
 </div>
