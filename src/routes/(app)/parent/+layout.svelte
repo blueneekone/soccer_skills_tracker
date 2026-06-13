@@ -11,6 +11,8 @@
 		{ href: '/parent/vpc', label: 'Consent' },
 		{ href: '/parent/payments', label: 'Payments' },
 		{ href: '/parent/log-workout', label: 'Log workout' },
+		{ href: '/settings', label: 'Settings' },
+		{ href: '/messages', label: 'Messages' },
 	] as const;
 
 	function navActive(href: string) {

@@ -116,12 +116,12 @@
 </script>
 
 {#if visible}
-	<div class="ip-banner" role="complementary" aria-label="Install VANGUARD app">
+	<div class="ip-banner" role="complementary" aria-label="Install SSTracker app">
 		<!-- Left: icon + copy -->
 		<div class="ip-left">
 			<div class="ip-icon" aria-hidden="true">▼</div>
 			<div class="ip-copy">
-				<p class="ip-copy__title">INSTALL VANGUARD</p>
+				<p class="ip-copy__title">INSTALL SSTRACKER</p>
 				{#if variant === 'ios'}
 					<p class="ip-copy__sub">
 						Tap <strong>Share</strong> then <strong>Add to Home Screen</strong> for offline access.
