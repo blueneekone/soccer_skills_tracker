@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { resolve } from '$app/paths';
+	import { resolveAppPath } from '$lib/components/_shared/resolveAppPath.js';
 	import Icon from '$lib/components/ui/Icon.svelte';
 	import type { IconName } from '$lib/icons/registry.js';
 
@@ -68,7 +68,7 @@
 	<nav class="oqo-deck__grid" aria-label="Player quick destinations">
 		{#each QUICK_OPS as op (`${op.label}-${op.href}`)}
 			<a
-				href={resolve(op.href)}
+				href={resolveAppPath(op.href)}
 				class="oqo-op"
 				data-sveltekit-preload-data="hover"
 			>

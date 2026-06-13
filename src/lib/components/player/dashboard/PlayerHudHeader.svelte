@@ -106,7 +106,7 @@
 					onclick={onOpenCommandCenter}
 					aria-label="Open command center"
 				>
-					<Icon name="sys.grid" size={18} />
+					<Icon name={'content.grid' as import('$lib/icons/registry.js').IconName} size={18} />
 				</button>
 			{/if}
 		</div>

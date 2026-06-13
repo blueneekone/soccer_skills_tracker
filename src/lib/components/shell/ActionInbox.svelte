@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { browser } from '$app/environment';
 	import { goto } from '$app/navigation';
-	import { resolve } from '$app/paths';
+	import { resolveAppPath } from '$lib/components/_shared/resolveAppPath.js';
 	import Icon from '$lib/components/ui/Icon.svelte';
 	import type { IconName } from '$lib/icons/registry.js';
 	import { collection, doc, query, where, getDoc, getDocs, getCountFromServer } from 'firebase/firestore';
@@ -118,7 +118,7 @@
 					const tSnap = await getDocs(
 						query(collection(db, 'teams'), where('clubId', '==', clubId)),
 					);
-					const emails = new Set();
+					const emails = new Set<string>();
 					for (const td of tSnap.docs) {
 						const lq = query(collection(db, 'player_lookup'), where('teamId', '==', td.id));
 						const ls = await getDocs(lq);
@@ -184,7 +184,7 @@
 
 	async function navigateTo(href) {
 		if (!href) return;
-		await goto(resolve(href));
+		await goto(resolveAppPath(href));
 	}
 </script>
 
@@ -203,7 +203,7 @@
 			{#each displayRows as row (row.id)}
 				<li>
 					<a
-						href={resolve(row.href)}
+						href={resolveAppPath(row.href)}
 						class="ai-row"
 						onclick={(event) => {
 							event.preventDefault();

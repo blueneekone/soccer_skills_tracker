@@ -42,7 +42,7 @@
 	let loading = $state(false);
 
 	/** @type {Set<string>} */
-	let selected = $state(new Set());
+	let selected = $state(new Set<string>());
 
 	let search = $state('');
 	let groupName = $state('');

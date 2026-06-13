@@ -34,7 +34,7 @@
 				);
 				const snap = await getDocs(q);
 				if (cancelled) return;
-				const drillIds = new Set();
+				const drillIds = new Set<string>();
 				const rows = [];
 				for (const d of snap.docs) {
 					const x = d.data();
@@ -53,7 +53,7 @@
 						baseXp: 10,
 					});
 				}
-				const baseById = {};
+				const baseById: Record<string, number> = {};
 				await Promise.all(
 					[...drillIds].map(async (id) => {
 						try {

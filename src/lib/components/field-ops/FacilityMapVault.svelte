@@ -344,7 +344,10 @@
 					path.push({ lat, lng });
 				}
 				if (path.length >= 3) {
-					const entry = { name: p.name.trim().slice(0, 120), path };
+					const entry: { name: string; path: Array<{ lat: number; lng: number }>; color?: string } = {
+						name: p.name.trim().slice(0, 120),
+						path,
+					};
 					const col =
 						typeof p.color === 'string' ?
 							p.color.trim().slice(0, 9)
@@ -528,7 +531,11 @@
 				const vp = page.getViewport({ scale });
 				canvas.width = Math.floor(vp.width);
 				canvas.height = Math.floor(vp.height);
-				const renderTask = page.render({ canvasContext: ctx, viewport: vp });
+				const renderTask = page.render({
+					canvasContext: ctx,
+					viewport: vp,
+					canvas,
+				});
 				await renderTask.promise;
 			} catch (e) {
 				console.error('[FacilityMapVault] pdf render', e);
@@ -592,7 +599,7 @@
 				st === 'Locked' ? 'Locked' :
 				'Active';
 			/** @type {Record<string, unknown>} */
-			const patch = {
+			const patch: Record<string, unknown> = {
 				name: nameTrim,
 				address: typeof row?.address === 'string' ? row.address.trim().slice(0, 500) : '',
 				latitude: heroLat,
@@ -646,7 +653,7 @@
 		logisticsSaving = true;
 		try {
 			/** @type {Record<string, unknown>} */
-			const patch = {
+			const patch: Record<string, unknown> = {
 				name: nameTrim,
 				address: draftAddress.trim().slice(0, 500),
 				latitude: draftLat,
@@ -726,7 +733,7 @@
 				st === 'Locked' ? 'Locked' :
 				'Active';
 			/** @type {Record<string, unknown>} */
-			const patch = {
+			const patch: Record<string, unknown> = {
 				name: nameTrim,
 				address: facilityEditAddress.trim().slice(0, 500),
 				latitude: lat,

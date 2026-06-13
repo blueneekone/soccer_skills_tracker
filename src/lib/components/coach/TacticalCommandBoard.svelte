@@ -346,7 +346,7 @@
 				teamId,
 				tacticId: loadedTacticId,
 			});
-			const data = /** @type {{ analysis?: string, model?: string }} */ (res.data);
+			const data = res.data as { analysis?: string; model?: string } | undefined;
 			const text = typeof data?.analysis === 'string' ? data.analysis.trim() : '';
 			if (text) {
 				aiAnalysis = text;

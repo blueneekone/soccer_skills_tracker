@@ -91,7 +91,7 @@
 				});
 
 				const rows = Object.entries(counts)
-					.map(([id, count]) => ({ id, name: clubNameById[id] || id, count }))
+					.map(([id, count]) => ({ id, name: clubNameById[id] || id, count: count as number }))
 					.sort((a, b) => b.count - a.count)
 					.slice(0, 8);
 
@@ -164,7 +164,7 @@
 						tooltip: {
 							...opts.plugins.tooltip,
 							footerColor: '#71717a',
-							footerFont: { weight: '600' },
+							footerFont: { weight: 600 },
 							callbacks: {
 								footer: () => `Utilization: ${utilPct}%`,
 							},
@@ -218,15 +218,15 @@
 					},
 					scales: {
 						x: {
-							grid: { color: 'rgba(0,0,0,0.04)', drawBorder: false },
+							grid: { color: 'rgba(0,0,0,0.04)' },
 							ticks: { color: EC_INK_LIGHT, font: { size: 11 } },
 						},
 						y: {
 							beginAtZero: true,
-							grid: { color: 'rgba(0,0,0,0.04)', drawBorder: false },
+							grid: { color: 'rgba(0,0,0,0.04)' },
 							ticks: { color: EC_INK_LIGHT, font: { size: 11 } },
 						},
-					},
+					} as Record<string, unknown>,
 				},
 			});
 		})();

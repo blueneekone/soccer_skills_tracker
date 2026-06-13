@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { browser } from '$app/environment';
-	import { resolve } from '$app/paths';
+	import { resolveAppPath } from '$lib/components/_shared/resolveAppPath.js';
 	import { collection, query, where, getDocs } from 'firebase/firestore';
 	import { db } from '$lib/firebase.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
@@ -96,7 +96,7 @@
 								<li class="pai__li">
 									<a
 										class="pai__li-link"
-										href={resolve('/player/workout')}
+										href={resolveAppPath('/player/workout')}
 										data-sveltekit-preload-data="hover"
 									>
 										{row.title}
@@ -108,14 +108,14 @@
 				{/if}
 				<div class="pai__actions">
 					<a
-						href={resolve('/player/armory')}
+						href={resolveAppPath('/player/armory')}
 						class="pai__btn pai__btn--primary"
 						data-sveltekit-preload-data="hover"
 					>
 						Open Armory
 					</a>
 					<a
-						href={resolve('/player/workout')}
+						href={resolveAppPath('/player/workout')}
 						class="pai__btn pai__btn--ghost"
 						data-sveltekit-preload-data="hover"
 					>

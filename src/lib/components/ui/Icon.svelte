@@ -27,8 +27,10 @@
 		strokeWidth?: number;
 		absoluteStrokeWidth?: boolean;
 		class?: string;
+		style?: string;
 		decorative?: boolean;
 		label?: string;
+		'aria-hidden'?: boolean | 'true' | 'false';
 	}
 
 	const {
@@ -37,6 +39,7 @@
 		strokeWidth = 1.5,
 		absoluteStrokeWidth = true,
 		class: className = '',
+		style = undefined,
 		decorative = true,
 		label,
 	}: Props = $props();
@@ -45,14 +48,16 @@
 	const ariaLabel = $derived(!decorative && label ? label : undefined);
 	const role = $derived(!decorative && label ? 'img' : undefined);
 	const ariaHidden = $derived(decorative ? true : undefined);
+	const iconAttrs = $derived({
+		size,
+		strokeWidth,
+		absoluteStrokeWidth,
+		class: className,
+		style,
+		'aria-hidden': ariaHidden,
+		'aria-label': ariaLabel,
+		role,
+	});
 </script>
 
-<IconComponent
-	{size}
-	stroke-width={strokeWidth}
-	absolute-stroke-width={absoluteStrokeWidth}
-	class={className}
-	aria-hidden={ariaHidden}
-	aria-label={ariaLabel}
-	{role}
-/>
+<IconComponent {...(iconAttrs as Record<string, unknown>)} />

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { resolve } from '$app/paths';
+	import { resolveAppPath } from '$lib/components/_shared/resolveAppPath.js';
 	import OperativeLoadoutPreview from '$lib/components/player/OperativeLoadoutPreview.svelte';
 
 	type QuartermasterItem = {
@@ -28,11 +28,11 @@
 		albumCap > 0 ? Math.min(100, (albumOwnedCount / albumCap) * 100) : 0,
 	);
 
-	const studioHref = `${resolve('/player/armory')}?tab=studio`;
-	const albumHref = `${resolve('/player/armory')}?tab=album`;
-	const quartermasterHref = `${resolve('/player/armory')}?tab=quartermaster`;
-	const hqHref = resolve('/player/dashboard');
-	const trainHref = resolve('/player/workout');
+	const studioHref = `${resolveAppPath('/player/armory')}?tab=studio`;
+	const albumHref = `${resolveAppPath('/player/armory')}?tab=album`;
+	const quartermasterHref = `${resolveAppPath('/player/armory')}?tab=quartermaster`;
+	const hqHref = resolveAppPath('/player/dashboard');
+	const trainHref = resolveAppPath('/player/workout');
 
 	const loadoutSub = $derived(
 		rankLabel ?
