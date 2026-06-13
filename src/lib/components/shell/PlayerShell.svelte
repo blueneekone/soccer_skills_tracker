@@ -8,6 +8,7 @@
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { licenseEntitlementStore } from '$lib/stores/licenseEntitlement.svelte.js';
 	import { vanguardFlags } from '$lib/services/remoteConfig.svelte.js';
+	import { handleSignOut } from '$lib/auth/signOutFlow.js';
 	import '$lib/styles/player-shell.css';
 	import '$lib/styles/player-dossier.css';
 	import '$lib/styles/player-modal-scrim.css';
@@ -63,7 +64,17 @@
 		void goto('/player/settings');
 	}
 
+	let signingOut = $state(false);
 
+	async function disconnect() {
+		if (signingOut) return;
+		signingOut = true;
+		try {
+			await handleSignOut();
+		} finally {
+			signingOut = false;
+		}
+	}
 </script>
 
 <AlertsDrawer />
@@ -104,6 +115,19 @@
 				<div class="ps-rail__divider" aria-hidden="true"></div>
 			{/if}
 		{/each}
+		<div class="ps-rail__spacer" aria-hidden="true"></div>
+		<button
+			type="button"
+			class="ps-rail__link ps-rail__link--sign-out"
+			disabled={signingOut}
+			onclick={() => void disconnect()}
+			aria-label={signingOut ? 'Signing out' : 'Sign out'}
+			title="Sign out"
+		>
+			<span class="ps-rail__icon" aria-hidden="true">
+				<Icon name="nav.sign-out" size={24} />
+			</span>
+		</button>
 	</nav>
 
 	<div class="ps-stack">

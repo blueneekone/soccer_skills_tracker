@@ -1,18 +1,56 @@
 /**
  * Landing Page — Pure Data Module
- * All marketing copy, card definitions, and metric constants.
- * No Svelte runes. No side effects. Import-only.
+ * Marketing copy aligned with docs/vision/COMPETITIVE_LAUNCH_ASSESSMENT.md
  */
 import type { IconName } from '$lib/icons/registry.js';
 
-// ── Hero copy (sub-10-word locked headline + A/B alternates) ─────────────
-export const HERO_HEADLINE = 'Run your club like a Mission Control.';
+/** External win message — canonical positioning (also in competitive-launch rule). */
+export const WIN_MESSAGE =
+	'TeamSnap runs your season. SportsEngine runs your league. GotSport runs your state paperwork. SSTracker runs your athletes\' development — with the compliance architecture youth sports actually needs in 2026.';
+
+export const HERO_HEADLINE = 'The club platform built for athlete development.';
 export const HERO_SUBHEADLINE =
-	'Zero-liability PII, RL adaptive training, and an Octalysis RPG loop — built for elite youth clubs.';
-export const HERO_HEADLINE_VARIANTS = [
-	'Mission Control for elite youth clubs.',
-	'The Player OS your club already runs.',
-] as const;
+	'Schedules and chat got youth sports started. SSTracker closes the loop — train, progress, comply, and communicate safely across every persona.';
+
+export const HERO_BADGE = 'SSTRACKER · CLUB OPERATING SYSTEM';
+
+export interface CompareRow {
+	id: string;
+	platform: string;
+	tagline: string;
+}
+
+/** Category framing — not a feature checklist; sets buyer context. */
+export const COMPARE_ROWS: CompareRow[] = [
+	{ id: 'teamsnap', platform: 'TeamSnap', tagline: 'Runs your season — schedules, RSVPs, parent app.' },
+	{ id: 'sportsengine', platform: 'SportsEngine', tagline: 'Runs your league — registration, eligibility, NGB tools.' },
+	{ id: 'gotsport', platform: 'GotSport', tagline: 'Runs your state paperwork — roster rules and governing bodies.' },
+	{ id: 'sstracker', platform: 'SSTracker', tagline: 'Runs your athletes\' development — with household-first compliance.' },
+];
+
+export interface MoatPillar {
+	id: string;
+	title: string;
+	body: string;
+}
+
+export const MOAT_PILLARS: MoatPillar[] = [
+	{
+		id: 'develop',
+		title: 'Development OS',
+		body: 'Coach intents, locked prescriptions, XP and skill progression, adaptive homework — not a static drill PDF.',
+	},
+	{
+		id: 'comply',
+		title: 'Compliance architecture',
+		body: 'Households, VPC consent, SafeSport-native comms, coach clearance, and minor retention — built in, not bolted on.',
+	},
+	{
+		id: 'operate',
+		title: 'Club operations',
+		body: 'Director field ops, team logistics, guardian-linked rosters, parent lounge, and payments on one tenant.',
+	},
+];
 
 export interface StakeholderCard {
 	id: string;
@@ -22,19 +60,16 @@ export interface StakeholderCard {
 	body: string;
 	features: string[];
 	accentLabel: string;
-	/** Asymmetric placement on lg+ (grid-line syntax for a 12-col template). */
 	gridLg: { col: string; row: string };
 }
 
 export interface RevenueEngine {
 	id: string;
-	/** Uppercase row key in pricing readout panel */
 	readoutKey: string;
 	label: string;
 	value: string;
 	descriptor: string;
 	href: string;
-	/** Terminal-style status token */
 	status: string;
 }
 
@@ -48,43 +83,43 @@ export const STAKEHOLDERS: StakeholderCard[] = [
 		id: 'directors',
 		role: 'DIRECTORS',
 		roleClass: 'stakeholder-card--directors',
-		headline: 'Headless Ingestion. Zero-Liability Compliance.',
-		body: 'Upload any CSV, JSON, or PDF league roster and our headless ingestion pipeline automatically provisions player profiles and distributes invite codes. Embed Checkr background checks directly in the onboarding flow — staff clearance is tracked, time-locked, and burnt after 24 hours.',
+		headline: 'One club command surface.',
+		body: 'Field ops calendar, deployment windows, household linking, compliance audit, and club broadcasts — scoped to your tenant with registrar and director roles.',
 		features: [
-			'Headless CSV / JSON / PDF ingestion',
-			'Embedded Checkr staff onboarding',
-			'Zero-liability PII burn protocol',
+			'Deployment calendar + family announce',
+			'Household linker + VPC audit',
+			'Coach clearance matrix',
 			'Multi-team tenant isolation',
 		],
-		accentLabel: 'CLUB COMMAND',
+		accentLabel: 'DIRECTOR OS',
 		gridLg: { col: '1 / 8', row: '1 / 2' },
 	},
 	{
 		id: 'coaches',
 		role: 'COACHES',
 		roleClass: 'stakeholder-card--coaches',
-		headline: 'RL Adaptive Workouts. Intent-Based Triggers.',
-		body: 'Assign a single macro-goal and our Reinforcement Learning engine autonomously generates individualized daily drills per player — adjusting volume and difficulty based on continuous physiological feedback and historical adherence. Stop writing training plans. Start commanding outcomes.',
+		headline: 'Intent, not inbox chaos.',
+		body: 'Assign bounties with prescriptions, design team drills spatially, see guardian and VPC status on the roster, and run logistics — schedule, RSVP headcounts, attendance — without gamification chrome.',
 		features: [
-			'RL-adaptive workout generation',
-			'Intent-based homework triggers',
-			'Real-time adherence telemetry',
-			'Tactical War Room SVG canvas',
+			'Intent Engine + drill library',
+			'Guardian-linked roster grid',
+			'Team logistics hub',
+			'Match-day + scouting pipeline',
 		],
-		accentLabel: 'COACH COMMAND',
+		accentLabel: 'COACH OS',
 		gridLg: { col: '8 / 13', row: '1 / 2' },
 	},
 	{
 		id: 'athletes',
 		role: 'ATHLETES',
 		roleClass: 'stakeholder-card--athletes',
-		headline: 'The Octalysis RPG Loop. Real Rewards.',
-		body: 'Level up through the Composite Snowflake skill tree, earn XP on every verified rep, maintain daily streaks to prevent skill decay, and unlock Tremendous API gift-card bounties verified by computer vision. Every session is a boss fight. Every milestone is a real-world reward.',
+		headline: 'Train like it counts.',
+		body: 'Player HQ surfaces missions, telemetry, and adaptive homework. Coach-locked sessions keep prescriptions honest. Progress is visible — not buried in a team chat thread.',
 		features: [
-			'Composite Snowflake skill tree',
-			'Octalysis 8-core drive loop',
-			'Daily streaks + Grit XP system',
-			'CV-verified Tremendous bounties',
+			'Train + XP + streak loop',
+			'Coach bounty handoff',
+			'Adaptive homework (RL-ready)',
+			'Armory + stats investigation',
 		],
 		accentLabel: 'PLAYER OS',
 		gridLg: { col: '1 / 4', row: '2 / 3' },
@@ -93,15 +128,15 @@ export const STAKEHOLDERS: StakeholderCard[] = [
 		id: 'parents',
 		role: 'PARENTS',
 		roleClass: 'stakeholder-card--parents',
-		headline: 'COPPA 2.0 Hardened. Emotionally Intelligent.',
-		body: 'Consent is bound to on-device hardware biometrics via WebAuthn attestation. Access is granted through passwordless Email Magic Uplinks — no SMS, no SIM-swap risk. Post-match, "The Car Ride Home Protocol" fires push notifications with empathetic conversation anchors before your child gets in the car.',
+		headline: 'Co-op partner, not spectator.',
+		body: 'Household hub, VPC ceremony, event RSVP, co-op logging, proof review, and Parent Lounge — SafeSport-monitored comms with your club.',
 		features: [
-			'WebAuthn biometric COPPA 2.0 consent',
-			'Passwordless Email Magic Uplinks',
-			'Car Ride Home Protocol (EQ perimeter)',
-			'Household co-op bounty dashboard',
+			'Household + VPC golden path',
+			'Event availability (RSVP)',
+			'Co-op + car ride debrief',
+			'Parent Lounge per team',
 		],
-		accentLabel: 'FAMILY SHIELD',
+		accentLabel: 'PARENT OS',
 		gridLg: { col: '4 / 13', row: '2 / 3' },
 	},
 ];
@@ -112,7 +147,7 @@ export const REVENUE_ENGINES: RevenueEngine[] = [
 		readoutKey: 'BASE_PLATFORM',
 		label: '$0',
 		value: 'BASE PLATFORM FEE',
-		descriptor: 'No seat licenses. No monthly minimums. No off-season friction. Clubs pay nothing until athletes transact.',
+		descriptor: 'No seat licenses. No monthly minimums. Clubs pay on transaction volume — aligned incentives as you grow.',
 		href: '/pricing',
 		status: 'OK',
 	},
@@ -121,7 +156,7 @@ export const REVENUE_ENGINES: RevenueEngine[] = [
 		readoutKey: 'TX_MICRO',
 		label: '< 1%',
 		value: 'TRANSACTION MICRO-FEE',
-		descriptor: 'A fractional percentage on registration volume only. The more your club grows, the more our incentives align with yours.',
+		descriptor: 'Fractional fee on registration and club payments only — not a tax on every feature click.',
 		href: '/pricing',
 		status: 'OK',
 	},
@@ -129,39 +164,31 @@ export const REVENUE_ENGINES: RevenueEngine[] = [
 		id: 'ancillary',
 		readoutKey: 'ANCILLARY',
 		label: '+',
-		value: 'ANCILLARY REVENUE ENGINES',
-		descriptor: 'Digital ticketing sales and hotel block rebates turn your management software into a profit center for your NGB.',
+		value: 'EVENT & REBATE ENGINES',
+		descriptor: 'Optional tournament ticketing and travel rebate workflows when your club is ready — not required on day one.',
 		href: '/pricing',
 		status: 'OPT-IN',
 	},
 ];
 
 export const TRUST_BADGES: TrustBadge[] = [
-	{ label: 'COPPA 2.0', sublabel: 'COMPLIANT' },
-	{ label: 'WebAuthn', sublabel: 'BIOMETRIC CONSENT' },
-	{ label: 'Checkr', sublabel: 'ZERO-LIABILITY BGC' },
-	{ label: 'Tremendous', sublabel: 'CV-VERIFIED REWARDS' },
-	{ label: 'PII BURN', sublabel: '24H PROTOCOL' },
-	{ label: 'TENANT ISO', sublabel: 'ZERO-TRUST CORE' },
+	{ label: 'COPPA / VPC', sublabel: 'HOUSEHOLD CONSENT' },
+	{ label: 'SafeSport', sublabel: 'COMMS POLICY' },
+	{ label: 'WebAuthn', sublabel: 'PASSKEY READY' },
+	{ label: 'Checkr-ready', sublabel: 'STAFF CLEARANCE' },
+	{ label: 'PII burn', sublabel: 'RETENTION PROTOCOL' },
+	{ label: 'Tenant ISO', sublabel: 'CLUB SCOPED DATA' },
 ];
 
-export const PLATFORM_METRICS = [
-	{ value: 4200, label: 'ATHLETES DEPLOYED', suffix: '+' },
-	{ value: 312, label: 'CLUBS ACTIVE', suffix: '' },
-	{ value: 18, label: 'COUNTRIES', suffix: '' },
-	{ value: 99.98, label: 'UPTIME SLA', suffix: '%' },
-] as const;
-
 export const FINAL_CTA_FEATURES = [
-	'Universal roster ingestion',
-	'RL-adaptive training engine',
-	'Octalysis RPG progression',
-	'COPPA 2.0 & SafeSport compliant',
-	'WebAuthn biometric consent',
-	'Tremendous bounty integration',
+	'Player development loop',
+	'Household-first compliance',
+	'Coach intent + logistics',
+	'Director field operations',
+	'SafeSport-native comms',
+	'Guardian-linked rosters',
 ] as const;
 
-// ── Client Logo Bar ───────────────────────────────────────────────────────
 export interface LogoMark {
 	id: string;
 	name: string;
@@ -169,15 +196,6 @@ export interface LogoMark {
 	width: number;
 	height: number;
 }
-
-export const ANCHOR_CLUBS: LogoMark[] = [
-	{ id: 'club-1', name: 'Nexus FC', src: '/marketing/clients/nexus-fc.svg', width: 120, height: 40 },
-	{ id: 'club-2', name: 'Apex United', src: '/marketing/clients/apex-united.svg', width: 120, height: 40 },
-	{ id: 'club-3', name: 'Vanguard SC', src: '/marketing/clients/vanguard-sc.svg', width: 120, height: 40 },
-	{ id: 'club-4', name: 'Meridian Athletic', src: '/marketing/clients/meridian-athletic.svg', width: 120, height: 40 },
-	{ id: 'club-5', name: 'Zenith Academy', src: '/marketing/clients/zenith-academy.svg', width: 120, height: 40 },
-	{ id: 'club-6', name: 'Forge Elite', src: '/marketing/clients/forge-elite.svg', width: 120, height: 40 },
-];
 
 export const INTEGRATIONS: LogoMark[] = [
 	{ id: 'int-firebase', name: 'Firebase', src: '/marketing/integrations/firebase.svg', width: 100, height: 28 },
@@ -187,7 +205,6 @@ export const INTEGRATIONS: LogoMark[] = [
 	{ id: 'int-googlemaps', name: 'Google Maps', src: '/marketing/integrations/google-maps.svg', width: 110, height: 28 },
 ];
 
-// ── Feature Bento Grid 2.0 ────────────────────────────────────────────────
 export interface FeatureCell {
 	id: string;
 	eyebrow: string;
@@ -195,69 +212,67 @@ export interface FeatureCell {
 	body: string;
 	href: string;
 	accentColor: string;
-	/** Lucide registry token rendered via <Icon> in the bento cell. */
 	icon: IconName;
-	/** Asymmetric placement on lg+ (grid line syntax for a 12-col template). Single column stacks by DOM order. */
 	gridLg: { col: string; row: string };
 }
 
 export const FEATURE_BENTO: FeatureCell[] = [
 	{
-		id: 'rl-workouts',
+		id: 'develop',
 		gridLg: { col: '1 / 8', row: '1 / 3' },
-		eyebrow: 'ADAPTIVE AI ENGINE',
-		headline: 'RL Workouts That Learn You.',
-		body: 'A Reinforcement Learning policy adjusts drill volume, intensity, and sequence in real time based on physiological feedback and historical adherence — not a static template.',
-		href: '/features#rl-workouts',
+		eyebrow: 'DEVELOPMENT OS',
+		headline: 'Coach intent → Player Train.',
+		body: 'Deploy bounties with prescriptions. Athletes log sessions; XP and streaks update on HQ. Adaptive homework suggests the next drill when your policy allows.',
+		href: '/features#development',
 		accentColor: '#6366f1',
 		icon: 'data.activity',
 	},
 	{
-		id: 'skill-tree',
+		id: 'household',
 		gridLg: { col: '8 / 13', row: '1 / 2' },
-		eyebrow: 'OCTALYSIS RPG',
-		headline: 'Composite Snowflake Skill Tree.',
-		body: 'Synthetic Authored Nodes map 50+ skill axes to 5,000+ raw drills. Fog of War masks advanced nodes until earned.',
-		href: '/features#skill-tree',
-		accentColor: '#8b5cf6',
-		icon: 'data.radar',
-	},
-	{
-		id: 'coppa',
-		gridLg: { col: '8 / 13', row: '2 / 3' },
-		eyebrow: 'COMPLIANCE',
-		headline: 'WebAuthn COPPA 2.0.',
-		body: 'Biometric enclave attestation binds parental consent to hardware. Four-layer teen ad-block. Zero SMS exposure.',
-		href: '/features#coppa',
+		eyebrow: 'HOUSEHOLD GRAPH',
+		headline: 'Guardian ↔ athlete, everywhere.',
+		body: 'Linked on admin roster, coach grid, and global users. Directors repair broken links. Comms and VPC resolve through one household — not scattered profiles.',
+		href: '/features#household',
 		accentColor: '#10b981',
-		icon: 'sys.fingerprint',
+		icon: 'user.group',
 	},
 	{
-		id: 'cell-routing',
+		id: 'comms',
+		gridLg: { col: '8 / 13', row: '2 / 3' },
+		eyebrow: 'SAFESPORT COMMS',
+		headline: 'Parent Lounge + policy.',
+		body: 'Coach→minor DMs blocked. Parent CC on broadcasts. Household threads for families. Monitored channels — not a free-for-all team chat.',
+		href: '/features#comms',
+		accentColor: '#14b8a6',
+		icon: 'status.shield-check',
+	},
+	{
+		id: 'logistics',
 		gridLg: { col: '1 / 5', row: '3 / 4' },
-		eyebrow: 'INFRASTRUCTURE',
-		headline: 'Cell-Based Tenant Routing.',
-		body: 'Large NGBs land in isolated Firestore cells. No noisy-neighbor throttling. Backend-issued JWT selects the cell.',
-		href: '/features#architecture',
+		eyebrow: 'TEAM OPS',
+		headline: 'Schedule · RSVP · Attendance.',
+		body: 'Practice and game events with reminders. Parents confirm availability. Coaches see headcounts before arrival — not just post-hoc roll call.',
+		href: '/features#logistics',
 		accentColor: '#06b6d4',
-		icon: 'sys.server',
+		icon: 'sys.calendar',
 	},
 	{
-		id: 'bounties',
+		id: 'drills',
 		gridLg: { col: '5 / 9', row: '3 / 4' },
-		eyebrow: 'EMBEDDED FINANCE',
-		headline: 'Tremendous Bounty Escrow.',
-		body: 'Parents fund real-world rewards. CV-verified biomechanics triggers atomic Firestore payout. No manual verification.',
-		href: '/features#bounties',
+		eyebrow: 'DRILL LIBRARY',
+		headline: 'Team · club · platform.',
+		body: 'Spatial designer saves to your team. Share with the club when ready. Intent Engine picks from scoped catalogs — not a global junk drawer.',
+		href: '/features#drills',
 		accentColor: '#f59e0b',
-		icon: 'sys.escrow',
+		icon: 'sys.map-pin',
 	},
 	{
 		id: 'pricing',
 		gridLg: { col: '9 / 13', row: '3 / 4' },
-		eyebrow: 'ENTERPRISE PRICING',
-		headline: '$0 Platform Fee. Always.',
-		body: 'No seat licenses. No monthly minimums. A fractional micro-percentage on transaction volume only. Revenue that scales with your club.',
+		eyebrow: 'PRICING',
+		headline: '$0 platform fee.',
+		body: 'Grow without seat-tax friction. Transaction-aligned pricing when families register and pay through your club.',
 		href: '/pricing',
 		accentColor: '#6366f1',
 		icon: 'sys.dollar',

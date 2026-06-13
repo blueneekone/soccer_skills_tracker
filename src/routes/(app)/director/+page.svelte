@@ -10,6 +10,7 @@
 	import UplinkTerminal from './dashboard/UplinkTerminal.svelte';
 	import IntakePanopticon from './dashboard/IntakePanopticon.svelte';
 	import VpcApprovalQueue from '$lib/components/director/os/VpcApprovalQueue.svelte';
+	import HouseholdLinkerPanel from '$lib/components/director/HouseholdLinkerPanel.svelte';
 	import RegistrarInviteTab from '$lib/components/director/RegistrarInviteTab.svelte';
 	import TransferPortal from '$lib/components/player/TransferPortal.svelte';
 	import PlaybookTab from '$lib/components/director/PlaybookTab.svelte';
@@ -164,6 +165,7 @@
 				<ComplianceTab {clubId} />
 	{:else if activeTab === 'household'}
 		<div class="tw-flex tw-flex-col tw-gap-6 tw-w-full">
+			<HouseholdLinkerPanel {clubId} />
 			<UplinkTerminal currentClubId={clubId} {clubTeams} />
 			<IntakePanopticon currentClubId={clubId} />
 			<VpcApprovalQueue {clubId} />

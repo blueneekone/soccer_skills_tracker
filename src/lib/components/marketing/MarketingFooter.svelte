@@ -6,8 +6,8 @@
 				<polygon points="14,1 27,8 27,24 14,31 1,24 1,8" stroke="#14b8a6" stroke-width="1.5" fill="rgba(20, 184, 166,0.05)"/>
 			</svg>
 			<div>
-				<p class="mf-brand__name">VANGUARD COMMAND</p>
-				<p class="mf-brand__tagline">The Operating System for Elite Human Performance.</p>
+				<p class="mf-brand__name">SSTRACKER</p>
+				<p class="mf-brand__tagline">Club platform for athlete development & compliance.</p>
 			</div>
 		</div>
 
@@ -36,7 +36,7 @@
 	</div>
 
 	<div class="mf-bottom">
-		<p class="mf-copyright">© {new Date().getFullYear()} Vanguard Command. All rights reserved.</p>
+		<p class="mf-copyright">© {new Date().getFullYear()} SSTracker. All rights reserved.</p>
 		<p class="mf-stack">Built on Firebase · Svelte 5 · Zero-Trust Architecture</p>
 	</div>
 </footer>

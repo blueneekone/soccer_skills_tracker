@@ -59,6 +59,10 @@
 				<th class="gu-th">Name / Email</th>
 				<th class="gu-th">Global Role</th>
 				<th class="gu-th">Associated Club</th>
+				{#if activeTab === 'parents_players'}
+					<th class="gu-th">Household</th>
+					<th class="gu-th">VPC</th>
+				{/if}
 				<th class="gu-th">Last Active</th>
 				<th class="gu-th gu-th--right">Actions</th>
 			</tr>
@@ -66,11 +70,11 @@
 		<tbody>
 			{#if loading && rows.length === 0}
 				<tr>
-					<td colspan="6" class="gu-td-empty">Loading users…</td>
+					<td colspan={activeTab === 'parents_players' ? 8 : 6} class="gu-td-empty">Loading users…</td>
 				</tr>
 			{:else if rows.length === 0}
 				<tr>
-					<td colspan="6" class="gu-td-empty">
+					<td colspan={activeTab === 'parents_players' ? 8 : 6} class="gu-td-empty">
 						{#if searchApplied}
 							No users in this segment match the search.
 						{:else}
@@ -124,6 +128,33 @@
 								<span class="gu-muted">—</span>
 							{/if}
 						</td>
+						{#if activeTab === 'parents_players'}
+							<td class="gu-td">
+								<span
+									class="gu-household"
+									class:gu-household--warn={(row.householdGraphLabel || '').includes('Unlinked') ||
+										(row.householdGraphLabel || '').includes('No guardian')}
+									title={row.householdId || ''}
+								>
+									{row.householdGraphLabel || '—'}
+								</span>
+							</td>
+							<td class="gu-td">
+								<span
+									class:gu-vpc--ok={row.vpcStatus === 'verified'}
+									class:gu-vpc--pending={row.vpcStatus === 'pending_parent' ||
+										row.vpcStatus === 'pending'}
+								>
+									{row.vpcStatus === 'verified'
+										? 'Verified'
+										: row.vpcStatus === 'pending_parent' || row.vpcStatus === 'pending'
+											? 'Pending'
+											: row.role === 'player'
+												? '—'
+												: 'N/A'}
+								</span>
+							</td>
+						{/if}
 						<td class="gu-td">
 							<span class="gu-muted" title={row.lastActiveSource || ''}>
 								{formatLastActive(row.lastActiveAt)}
@@ -231,3 +262,34 @@
 		</button>
 	</div>
 </footer>
+
+<style>
+	.gu-household {
+		font-size: 0.75rem;
+		font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+		color: var(--text-secondary);
+		max-width: 220px;
+		display: inline-block;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+		vertical-align: bottom;
+	}
+
+	.gu-household--warn {
+		color: var(--danger-red, #b91c1c);
+		font-weight: 700;
+	}
+
+	.gu-vpc--ok {
+		color: #059669;
+		font-weight: 700;
+		font-size: 0.75rem;
+	}
+
+	.gu-vpc--pending {
+		color: #d97706;
+		font-weight: 600;
+		font-size: 0.75rem;
+	}
+</style>

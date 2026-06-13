@@ -1,7 +1,7 @@
 # SSTracker — Delivery Roadmap
 
 **Architecture:** [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)  
-**Last updated:** 2026-06-10  
+**Last updated:** 2026-06-13  
 **Current sprint:** **LAUNCH-functional-os Done** · **LAUNCH-audit-fixes Done** · **LAUNCH-f4-matchday Done** · **Epic 4 Done (4.1–4.12)** · **Epic 5 Done (5.1–5.6; 5.4 provider scaffold)** · **Epic 2.2 Done** · **DEPLOY-O-bundle Done** · **dev deploy 2026-06-11** (hosting + rules + systematic backend + comms on `sports-skill-tracker-dev`) · **next:** **Platform visual system** (owner reopened tonight — layout tokens from [`references/ui/`](docs/vision/references/ui/) only; no Gemini bust art) · Launch portrait: `defaultPortraitV2` SVG + profile initials · **TABLED (post-launch):** Flow asset generation, Avatar Studio **3.6b+** · **Deferred (post-launch — owner art):** 3.5m-gemini-ingest, 3.5m-gate · **3.5k Done** · **3.5h Done** · **3.5j Done** · **LAUNCH-defer-avatar Done**  
 **Note:** **3.5l-gate** closed in error — automated regression ≠ human VA; Phase 2 visual **rejected by product owner**  
 *Phase 7 · G1–G10 Done · Sprint 2.20 Done — Player OS premium foundation locked*
@@ -1426,6 +1426,12 @@ Loadout art (3.2+) consumed by 2.12 hero identity column.
 | **LAUNCH-epic55** | **Done** | FCM / messaging infra audit guards | `epic55MessagingAudit.test.ts` |
 | **LAUNCH-epic22** | **Done** | Passport PII vault seal/unseal + director compliance matrix hydrate | `epic22VaultWiring.test.ts` |
 | **LAUNCH-cohesion-lb** | **Done** | 3 cohesion launch-blockers resolved: CLB-1 SweetAlert2 → `PlayerDiegeticOverlay` on `/tracker`; CLB-2 raw Chart.js radar → `VanguardProtocolPanel` (all roles) on `/stats`; CLB-3 coach XP/Level chrome removed from `SquadTelemetryView` + `CoachSquadReadinessCard`. Polish-tier cohesion deferred to tracked polish epic | `src/lib/__tests__/launchCohesionLb.test.ts` (14 guards) |
+| **LAUNCH-household-graph** | **Done** | Guardian denorm on `player_lookup`; admin roster + coach grid + global users household columns; director `HouseholdLinkerPanel` | `householdGraphLaunch.test.ts` · `rosterMergeGuardians.test.ts` · deploy **`npm run deploy:compliance`** |
+| **LAUNCH-rsvp** | **Done** | Pre-event RSVP (going/out/maybe) on `team_workouts` scheduled events; parent dashboard + coach schedule headcounts | `scheduleRsvp.test.ts` · deploy **`npm run deploy:core`** + rules |
+| **LAUNCH-marketing-revamp** | **Done** | Landing page SSTracker copy + `CompetitivePositionPanel` (canonical win message) + integrations bar; remove Nexus Command marketing chrome | `marketingLanding.test.ts` |
+| **LAUNCH-registration-lite** | **Done** | Director registration link + `/register/[clubId]` + parent checkout (`playerEmail` on `createRegistrationIntent`) | `registrationLaunch.test.ts` · deploy **`npm run deploy:core`** + **`npm run deploy:commerce`** |
+| **LAUNCH-roster-invite** | **Done** | Name-only roster → guardian magic uplink → `claimRosterSpot` household link | `rosterInviteLaunch.test.ts` · deploy **`npm run deploy:core`** |
+| **LAUNCH-tryouts-os** | **In progress** | End-to-end tryout cycle — **Phase A Done** (program + public registration + waitlist) | `tryoutsLaunch.test.ts` · deploy **`npm run deploy:core`** + rules |
 | **XP-verify** | **Done** | XP algorithm tests + client/server parity (`level.js` ↔ `gamificationWorkoutXp.js`) | `levelXp.test.ts`, `gamificationWorkoutXp.test.js`, `trainingOpsXp.test.js` |
 | **3.5m-frame** | **Done** | Art-well recess + holo inset — unified portrait clip, xMidYMid bust centering | `playerLoadoutSprint35mFrame.test.ts` |
 | **3.5m-art** | **Superseded** | Agent modular SVG bust redraw — human VA failed; owner Gemini + ingest replaces | `playerLoadoutSprint35mArt.test.ts` (historical) |
@@ -1434,6 +1440,52 @@ Loadout art (3.2+) consumed by 2.12 hero identity column.
 | **3.5m-hair** | **Superseded** | Folded into Gemini bust + ingest | — |
 | **3.5m-gate** | **Deferred (post-launch — owner art)** | Portrait stability gate — full regression + **product owner** human VA | [`s35m-gate-manifest.json`](docs/vision/va-screenshots/s35m-gate-manifest.json) |
 | **3.6b+** | **Deferred (post-launch — owner art)** | Avatar Studio PNG layer stack — Photopea slice from `references/character/` | [`character/AVATAR_REFERENCE_INDEX.md`](docs/vision/references/character/AVATAR_REFERENCE_INDEX.md), [`.cursor/rules/avatar-builder-deferred.mdc`](.cursor/rules/avatar-builder-deferred.mdc) |
+
+---
+
+## Sprint LAUNCH-tryouts-os scope — **Planned**
+
+**Goal:** Give clubs a **tryout lifecycle OS** — not a signup form and a prayer. Owner pain: prior-season tryouts were chaotic (no single source of truth for registration, field times, check-in, callbacks, or parent updates). Competitors offer fragments (TeamSnap registration + schedule, SE eval forms, GotSport roster rules); **none own the full tryout → callback → offer → roster pipeline** tied to development data.
+
+**Positioning:** Club moat — extends Field Ops, registration-lite, scouting assessments, and SafeSport comms. Coach OS stays flat/analytical on eval surfaces; Player OS optional post-offer (no gamification chrome on staff eval grids).
+
+**Problem today (SSTracker):** Marketing UTM copy mentions tryouts; no `tryout_programs` model, no session check-in, no callback round scheduling, no eval plan templates, no automated tryout comms loop.
+
+### Phased delivery (build in order)
+
+| Phase | Sprint slice | Scope | Reuse |
+|-------|--------------|-------|-------|
+| **A** | **LAUNCH-tryouts-a** | **Done** | Director **tryout program** + public **`/tryouts/[programId]`** registration + waitlist when full | `tryoutsLaunch.test.ts` |
+| **B** | **LAUNCH-tryouts-b** | **Session schedule** — assign tryout blocks to **facilities/fields** (Field Ops). Parent/player **RSVP to assigned session** (extend LAUNCH-rsvp). Staff **check-in** (present / no-show / late) at gate. | `DeploymentCalendar`, `team_workouts`, `setEventRsvp` |
+| **C** | **LAUNCH-tryouts-c** | **Tryout plan** — station template (drills from team/club library, time boxes, evaluator roles). Coach **session eval sheet** → writes **`scouting_assessments`** (or `tryout_evaluations`) per athlete. | `/coach/scouting`, drill library, Intent Engine drills |
+| **D** | **LAUNCH-tryouts-d** | **Callbacks** — director/coach flags athletes for round 2; auto-schedule callback sessions. **Pipeline states:** registered → checked-in → evaluated → callback → offered → accepted → roster row. | household graph, roster-invite |
+| **E** | **LAUNCH-tryouts-e** | **Automated comms** — registration confirm, session reminder (7/1/0 day), check-in QR/link, callback invite, offer/decline, waitlist promotion. Parent + player push where policy allows. | Epic 4 comms, `push_gameReminders`, Parent Lounge policy |
+
+### Acceptance (club director VA)
+
+1. Director publishes Spring Tryouts program and copies a single registration link.
+2. Parent registers two athletes, receives session assignments and reminders.
+3. Registrar/coach checks in athletes on field tablet; no-show visible in real time.
+4. Coaches run station plan and submit eval scores; director sees ranked callback list.
+5. Callback round scheduled; parents notified automatically; accepted players land on team roster (or name-only → guardian invite).
+
+### Data model (sketch — implement in Phase A)
+
+- `tryout_programs/{programId}` — clubId, name, ageBands[], registrationWindow, fee?, status
+- `tryout_programs/{programId}/registrations/{id}` — player/guardian, assignedSessionId, pipelineStatus
+- `tryout_programs/{programId}/sessions/{sessionId}` — facilityId, start/end, capacity, field label
+- `tryout_programs/{programId}/evaluations/{playerKey}` — rubric scores, evaluator, callback flag
+
+### Verify (when slices land)
+
+```bash
+npm test -- src/lib/director/__tests__/tryoutsLaunch.test.ts
+npm run check
+```
+
+### Competitive note
+
+See [`docs/vision/COMPETITIVE_LAUNCH_ASSESSMENT.md`](docs/vision/COMPETITIVE_LAUNCH_ASSESSMENT.md) — **Tryout lifecycle OS** row (🏆 target moat).
 
 ---
 

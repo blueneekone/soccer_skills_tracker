@@ -45,6 +45,8 @@ const logger = require('firebase-functions/logger');
 const admin = require('firebase-admin');
 const {defineSecret, defineString} = require('firebase-functions/params');
 
+const {normEmail} = require('./src/utils/formatters');
+
 const {loadActivePolicy, computePlatformFee} = require('./pricingEngine');
 const {recordPlatformFee} = require('./feeLedger');
 const {getRegistryDb} = require('./cellRouter');
@@ -102,13 +104,55 @@ exports.createRegistrationIntent = onCall(
       const role = request.auth.token.role ?? '';
       const tenantId = request.auth.token.clubId ?? request.auth.token.tenantId ?? '';
       const callerUid = request.auth.uid;
-      const callerEmail = (request.auth.token.email ?? '').toLowerCase();
+      const callerEmail = normEmail(request.auth.token.email ?? '');
 
       if (role !== 'parent' && role !== 'player') {
         throw new HttpsError('permission-denied', 'Only parents and players can initiate registration payment.');
       }
 
-      const {seasonId, feeAmountDollars, feeType: rawFeeType} = request.data ?? {};
+      const {seasonId, feeAmountDollars, feeType: rawFeeType, playerEmail: rawPlayerEmail} =
+        request.data ?? {};
+
+      /** @type {string} */
+      let playerEmail = normEmail(rawPlayerEmail) || callerEmail;
+
+      if (role === 'player') {
+        if (playerEmail !== callerEmail) {
+          throw new HttpsError('permission-denied', 'Players may only register themselves.');
+        }
+      } else if (role === 'parent' && playerEmail !== callerEmail) {
+        const tokenHousehold =
+          typeof request.auth.token.householdId === 'string' ?
+            request.auth.token.householdId.trim() :
+            '';
+        let hid = tokenHousehold;
+        if (!hid) {
+          const pSnap = await db.collection('users').doc(callerEmail).get();
+          hid =
+            pSnap.exists && typeof pSnap.data().householdId === 'string' ?
+              pSnap.data().householdId.trim() :
+              '';
+        }
+        if (!hid) {
+          throw new HttpsError(
+              'failed-precondition',
+              'Link your household before paying for an athlete.',
+          );
+        }
+        const hSnap = await db.collection('households').doc(hid).get();
+        if (!hSnap.exists) {
+          throw new HttpsError('not-found', 'Household not found.');
+        }
+        const players = (hSnap.data().playerEmails || [])
+            .map((x) => normEmail(String(x || '')))
+            .filter(Boolean);
+        if (!players.includes(playerEmail)) {
+          throw new HttpsError(
+              'permission-denied',
+              'You may only pay registration for a household-linked athlete.',
+          );
+        }
+      }
 
       // Validate and normalise feeType (default: season_registration)
       const feeType =
@@ -157,6 +201,12 @@ exports.createRegistrationIntent = onCall(
       const platformFeeCents = fee.platformFeeCents;
 
       const stripeClient = getStripe();
+      const playerSnap = await db.collection('users').doc(playerEmail).get();
+      const playerUid =
+        playerSnap.exists && typeof playerSnap.data().uid === 'string' ?
+          playerSnap.data().uid :
+          callerUid;
+
       const paymentIntent = await stripeClient.paymentIntents.create({
         amount: feeAmountCents,
         currency: 'usd',
@@ -165,23 +215,24 @@ exports.createRegistrationIntent = onCall(
         receipt_email: callerEmail || undefined,
         metadata: {
           tenantId,
-          playerUid: callerUid,
-          playerEmail: callerEmail,
+          playerUid,
+          playerEmail,
           seasonId,
           type: feeType,
           policyId: policy.id,
           policyVersion: String(policy.version),
           rateBp: String(fee.rateBp),
         },
-        description: `Season registration â€” ${orgSnap.data()?.name ?? tenantId}`,
+        description: `Season registration — ${orgSnap.data()?.name ?? tenantId}`,
       });
 
       // Pre-create the registration document as 'pending'
       const regRef = db.collection('season_registrations').doc();
       await regRef.set({
         registrationId: regRef.id,
-        playerId: callerUid,
-        playerEmail: callerEmail,
+        playerId: playerUid,
+        playerEmail,
+        paidByEmail: callerEmail !== playerEmail ? callerEmail : null,
         tenantId,
         seasonId,
         feeType, // Sprint 9.6: persisted for audit trail and fee-type-specific reporting

@@ -135,6 +135,56 @@
 			deployState === 'idle'
 	);
 
+	/** @type {Record<string, import('$lib/household/rosterGuardianEnrich.js').GuardianMeta>} */
+	let guardianByEmail = $state({});
+
+	// ── Guardian denorm from player_lookup ────────────────────────────────
+	$effect(() => {
+		if (!browser) return;
+		const emails = roster
+			.map((p) => (typeof p.email === 'string' && p.email ? p.email : p.id))
+			.filter(Boolean);
+		if (emails.length === 0) {
+			guardianByEmail = {};
+			return;
+		}
+		let cancelled = false;
+		void (async () => {
+			const { fetchGuardiansFromPlayerLookup } = await import(
+				'$lib/household/fetchPlayerLookupGuardians.js'
+			);
+			const map = await fetchGuardiansFromPlayerLookup(db, emails);
+			if (!cancelled) {
+				guardianByEmail = Object.fromEntries(map);
+			}
+		})();
+		return () => {
+			cancelled = true;
+		};
+	});
+
+	/**
+	 * @param {RosterPlayer} player
+	 */
+	function guardianLine(player) {
+		const em = (typeof player.email === 'string' && player.email ? player.email : player.id).toLowerCase();
+		const meta = guardianByEmail[em];
+		if (!meta || meta.parentEmails.length === 0) return 'Unlinked';
+		return meta.parentEmails.join(', ');
+	}
+
+	/**
+	 * @param {RosterPlayer} player
+	 */
+	function vpcLine(player) {
+		const em = (typeof player.email === 'string' && player.email ? player.email : player.id).toLowerCase();
+		const meta = guardianByEmail[em];
+		const s = meta?.vpcStatus || '';
+		if (s === 'verified') return 'Verified';
+		if (s === 'pending_parent' || s === 'pending') return 'Pending';
+		return '—';
+	}
+
 	// ── Firestore roster listener ─────────────────────────────────────────
 	$effect(() => {
 		if (!browser) return;
@@ -366,6 +416,8 @@
 						<thead>
 							<tr>
 								<th>OPERATIVE</th>
+								<th>GUARDIAN</th>
+								<th>VPC</th>
 								<th>POSITION</th>
 								<th>TIER</th>
 								<th class="tw-text-[#14b8a6]/50">VAN</th>
@@ -390,6 +442,21 @@
 										</span>
 										<span class="tw-block tw-text-[8px] tw-text-white/25 tw-tracking-[0.15em] tw-mt-0.5 tw-uppercase">
 											{player.id}
+										</span>
+									</td>
+
+									<!-- Guardian -->
+									<td class="tw-text-[10px] tw-text-white/50 tw-font-mono tw-max-w-[140px] tw-truncate" title={guardianLine(player)}>
+										<span class:tw-text-[#ff6666]={guardianLine(player) === 'Unlinked'}>
+											{guardianLine(player)}
+										</span>
+									</td>
+
+									<!-- VPC -->
+									<td class="tw-text-[10px] tw-uppercase tw-tracking-widest">
+										<span class:tw-text-emerald-400={vpcLine(player) === 'Verified'}
+											class:tw-text-amber-400={vpcLine(player) === 'Pending'}>
+											{vpcLine(player)}
 										</span>
 									</td>
 

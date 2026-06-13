@@ -1331,11 +1331,21 @@ exports.parentProvisionOperative = onCall({region: REGION}, async (request) => {
   const plRef = db().collection('player_lookup').doc(childEmail);
   const batch = db().batch();
   batch.set(uRef, userPayload, {merge: true});
+  const householdParents = (h.parentEmails || [])
+      .map((x) => normEmail(String(x || '')))
+      .filter(Boolean);
+  if (!householdParents.includes(parentEmail)) {
+    householdParents.push(parentEmail);
+  }
   batch.set(plRef, {
     clubId,
     teamId: currentTeamId,
     playerName: childName,
     role: 'player',
+    householdId: hid,
+    parentEmails: householdParents,
+    parentProvisionerEmail: parentEmail,
+    vpcStatus: userPayload.vpcStatus || 'pending_parent',
   }, {merge: true});
   batch.set(
       hRef,

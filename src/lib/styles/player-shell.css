@@ -303,6 +303,36 @@
 	filter: grayscale(0.5);
 }
 
+.ps-rail__spacer {
+	display: none;
+}
+
+.ps-rail__link--sign-out {
+	appearance: none;
+	background: transparent;
+	border: 1px solid transparent;
+	cursor: pointer;
+	font: inherit;
+}
+
+.ps-rail__link--sign-out:disabled {
+	cursor: not-allowed;
+	opacity: 0.45;
+}
+
+.ps-rail__link--sign-out .ps-rail__icon {
+	color: rgba(248, 113, 113, 0.62);
+}
+
+.ps-rail__link--sign-out:hover:not(:disabled) {
+	background: rgba(248, 113, 113, 0.1);
+	border-color: rgba(248, 113, 113, 0.28);
+}
+
+.ps-rail__link--sign-out:hover:not(:disabled) .ps-rail__icon {
+	color: rgba(248, 113, 113, 0.92);
+}
+
 .ps-rail__divider {
 	display: none;
 	flex-shrink: 0;
@@ -486,6 +516,12 @@
 
 	.ps-rail__divider {
 		display: block;
+	}
+
+	.ps-rail__spacer {
+		display: block;
+		flex: 1 1 auto;
+		min-height: 8px;
 	}
 
 	/* Sprint 2.9 — desktop dossier rail tokens */

@@ -15,6 +15,10 @@ export function mapUserDocumentToRow(id: string, raw: Record<string, unknown>): 
 	const roles = Array.isArray(raw.roles) ?
 			(raw.roles.filter((x) => typeof x === 'string') as string[])
 		:	[];
+	const householdId =
+		typeof raw.householdId === 'string' && raw.householdId.trim() ? raw.householdId.trim() : '';
+	const vpcStatus =
+		typeof raw.vpcStatus === 'string' && raw.vpcStatus.trim() ? raw.vpcStatus.trim() : null;
 
 	const candidates = [
 		{ k: 'lastActivityDate', v: toEpochMs(raw.lastActivityDate) },
@@ -38,6 +42,8 @@ export function mapUserDocumentToRow(id: string, raw: Record<string, unknown>): 
 		status,
 		uid,
 		roles,
+		householdId,
+		vpcStatus,
 	};
 }
 

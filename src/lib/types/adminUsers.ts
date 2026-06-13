@@ -16,6 +16,12 @@ export type GlobalUserRow = {
 	status?: string;
 	uid?: string;
 	roles?: string[];
+	/** users.householdId when set */
+	householdId?: string;
+	/** users.vpcStatus for minors */
+	vpcStatus?: string | null;
+	/** Enriched one-line parent↔athlete graph (admin users page). */
+	householdGraphLabel?: string;
 };
 
 export type GlobalUsersRoleFilter =

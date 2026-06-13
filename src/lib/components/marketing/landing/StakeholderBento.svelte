@@ -11,8 +11,8 @@
 				One platform.<br />Every stakeholder.
 			</h2>
 			<p class="sb-sub">
-				Nexus Command delivers tailored intelligence to every role — from the director's compliance
-				dashboard to the athlete's RPG skill tree.
+				Director, coach, player, and parent workspaces share one household graph and one compliance
+				model — without blending gamification into staff tools.
 			</p>
 		</div>
 		<div class="sb-grid">

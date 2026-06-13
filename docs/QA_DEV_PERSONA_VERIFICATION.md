@@ -1,6 +1,7 @@
 # Dev QA — phased pair-programming (Coach · Parent · Player)
 
-**Environment:** `sports-skill-tracker-dev` (backend) · **Primary QA URL:** https://sstracker.app (canonical; Firebase/auth tied to main domain — not `*.web.app` alone)  
+**Environment:** `sports-skill-tracker-dev` (backend + **hosting for https://sstracker.app**) · Production hosting: `https://soccer-skills-tracker.web.app` only  
+**Primary QA URL:** https://sstracker.app (custom domain on **dev** Firebase project — deploy hosting with `firebase use sports-skill-tracker-dev`)  
 **Branch:** `dev`  
 **Authority:** [`FUNCTIONAL_MVP.md`](vision/FUNCTIONAL_MVP.md) · [`FUNCTIONS_DEPLOY.md`](FUNCTIONS_DEPLOY.md)
 
@@ -33,6 +34,7 @@ Run before any human QA. Agent can execute; you confirm green checks.
 | 0.6 | `npm run deploy:backend:systematic` (core → rl → platform → commerce → compliance → integrations; ~15–25 min) | [ ] |
 | 0.7 | `npm run deploy:comms` (default monolith messaging batch) | [ ] |
 | 0.8 | `firebase deploy --only hosting` | [ ] |
+| 0.8a | **For sstracker.app QA:** `firebase use sports-skill-tracker-dev` before hosting deploy (custom domain is on **dev**, not `soccer-skills-tracker`) | [ ] |
 | 0.9 | Hard refresh https://sstracker.app/login | [ ] |
 
 **Sign out (all personas):**
@@ -41,7 +43,7 @@ Run before any human QA. Agent can execute; you confirm green checks.
 |---------|------|
 | Player | `/player/settings` → **Danger** → **Sign out** |
 | Parent | `/parent/household` → Sign out (footer) |
-| Coach / Director / Admin | Sidebar **Sign out** or header **Disconnect** |
+| Coach / Director / Admin | Sidebar **System actions** → **Sign out** |
 
 **Stuck without deploy?** Incognito window, or browser DevTools → Application → Clear site data for `sstracker.app`.
 
@@ -84,6 +86,10 @@ npm run build
 **Account:** super_admin  
 **Goal:** Tenant exists; admin verification routes stable.
 
+**Full checklist:** [`QA_GLOBAL_ADMIN_VERIFICATION.md`](QA_GLOBAL_ADMIN_VERIFICATION.md) — sections **A–N** (shell, every admin route, context switcher, director pivots, deep links).
+
+**Minimum smoke (if time-boxed):**
+
 | # | Step | Expected | Pass |
 |---|------|----------|------|
 | 1.1 | Sign in → passkey if prompted | Lands on admin shell | [ ] |
@@ -91,8 +97,9 @@ npm run build
 | 1.3 | `/admin/audit-log` | Loads **once**; table or error (not infinite "Decrypting…") | [ ] |
 | 1.4 | `/admin/coach-clearance` | SIEM panopticon; breadcrumb; matrix or empty | [ ] |
 | 1.5 | Confirm QA club/team/users exist | `qa_launch_2026` visible in org tools | [ ] |
+| 1.6 | Shell chrome | Sign out under System actions only; org search icon not overlapping text | [ ] |
 
-**Report to agent:** pass/fail per row + any console errors.
+**Report to agent:** pass/fail per row + section letters from the full Global Admin doc + any console errors.
 
 ---
 

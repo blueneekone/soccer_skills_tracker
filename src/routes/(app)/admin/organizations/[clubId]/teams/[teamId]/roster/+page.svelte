@@ -20,6 +20,12 @@
 	import type { IconName } from '$lib/icons/registry.js';
 	import { mergeAdminRoster } from '$lib/admin/rosterMerge.js';
 	import type { RosterRow, LinkedRosterInput } from '$lib/admin/rosterMerge.js';
+	import {
+		fetchGuardiansByPlayerEmails,
+		parseGuardianMeta,
+	} from '$lib/household/rosterGuardianEnrich.js';
+	import { enterprisePlayerDrawer } from '$lib/stores/enterprisePlayerDrawer.svelte.js';
+	import RosterGuardianInviteModal from '$lib/components/admin/RosterGuardianInviteModal.svelte';
 
 	/**
 	 * @type {{
@@ -61,6 +67,11 @@
 	let rosterHasMore = $state(false);
 	let rosterLoadingMore = $state(false);
 
+	let invitePlayerName = $state('');
+	let showInviteModal = $state(false);
+
+	const adminClubId = $derived(ctx?.clubId ?? page.params.clubId ?? '');
+
 	// ── Search ───────────────────────────────────────────────────────────────────
 	let rosterSearch = $state('');
 
@@ -68,13 +79,89 @@
 		const q = rosterSearch.trim().toLowerCase();
 		if (!q) return roster;
 		return roster.filter((r) =>
-			[r.playerName, r.email, r.ageGroup || ''].join(' ').toLowerCase().includes(q),
+			[
+				r.playerName,
+				r.email,
+				r.ageGroup || '',
+				r.parentEmails.join(' '),
+				r.householdId || '',
+				r.vpcStatus || '',
+			]
+				.join(' ')
+				.toLowerCase()
+				.includes(q),
 		);
 	});
 
 	// ── Age group helper ─────────────────────────────────────────────────────────
+	/** @param {Record<string, unknown>} data */
+	function linkedRowFromLookup(data, docId) {
+		const guardian = parseGuardianMeta(data);
+		return {
+			email: String(data.email ?? docId),
+			playerName: String(data.playerName ?? data.displayName ?? ''),
+			ageGroup: data.ageGroup
+				? String(data.ageGroup)
+				: parseAgeGroup(String(data.teamName ?? '')),
+			teamId: String(data.teamId ?? ''),
+			parentEmails: guardian.parentEmails,
+			householdId: guardian.householdId,
+			vpcStatus: guardian.vpcStatus,
+		};
+	}
+
+	/** Backfill guardian fields for legacy player_lookup rows. */
+	async function enrichLinkedRows(rows) {
+		const needs = rows.filter((r) => r.email && r.parentEmails.length === 0).map((r) => r.email);
+		if (needs.length === 0) return rows;
+		const meta = await fetchGuardiansByPlayerEmails(db, needs);
+		return rows.map((r) => {
+			if (!r.email || r.parentEmails.length > 0) return r;
+			const g = meta.get(r.email.toLowerCase());
+			if (!g) return r;
+			return {
+				...r,
+				parentEmails: g.parentEmails,
+				householdId: g.householdId,
+				vpcStatus: g.vpcStatus ?? r.vpcStatus,
+			};
+		});
+	}
+
+	/** @param {string | null | undefined} status */
+	function vpcLabel(status) {
+		const s = String(status || '').trim().toLowerCase();
+		if (s === 'verified') return 'Verified';
+		if (s === 'pending_parent' || s === 'pending') return 'Pending';
+		if (!s) return '—';
+		return status;
+	}
+
+	/** @param {RosterRow} r */
+	function openAthleteDrawer(r) {
+		if (r.nameOnly || !r.email) return;
+		enterprisePlayerDrawer.open(
+			{
+				id: r.email,
+				displayName: r.playerName || r.email,
+				teamId: r.teamId,
+				teamLabel: teamName,
+				statsDocId: r.email,
+				playerEmail: r.email,
+				jersey: null,
+				ageGroup: r.ageGroup,
+				position: null,
+				status: r.vpcStatus === 'verified' ? 'active' : 'pending',
+				lastActiveLabel: '—',
+				source: 'admin',
+			},
+			undefined,
+			{ focusCompliance: true },
+		);
+	}
+
 	/** @param {string} teamName */
-	function parseAgeGroup(teamName: string) {
+	function parseAgeGroup(teamName) {
 		if (!teamName) return null;
 		const m = String(teamName).match(/\bU\s*(\d{1,2})\b/i);
 		return m ? `U${m[1]}` : null;
@@ -124,23 +211,20 @@
 
 				if (cancelled || gen !== rosterFetchGen) return;
 
+				const rawDocs = rosterSnap.docs;
+				const rosterHasMorePage = rawDocs.length > ROSTER_PAGE_SIZE;
+				const pageDocs = rawDocs.slice(0, ROSTER_PAGE_SIZE);
+				const rosterLast = pageDocs.at(-1) ?? null;
+				const linkedRows = pageDocs.map((d) => linkedRowFromLookup(d.data(), d.id));
+				const enrichedRows = await enrichLinkedRows(linkedRows);
+
+				if (cancelled || gen !== rosterFetchGen) return;
+
 				untrack(() => {
 					// ── player_lookup (email-linked) ─────────────────────────────────
-					const rawDocs = rosterSnap.docs;
-					rosterHasMore = rawDocs.length > ROSTER_PAGE_SIZE;
-					const pageDocs = rawDocs.slice(0, ROSTER_PAGE_SIZE);
-					rosterLastDoc = pageDocs.at(-1) ?? null;
-					emailLinkedRows = pageDocs.map((d) => {
-						const data = d.data();
-						return {
-							email: String(data.email ?? d.id),
-							playerName: String(data.playerName ?? data.displayName ?? ''),
-							ageGroup: data.ageGroup
-								? String(data.ageGroup)
-								: parseAgeGroup(String(data.teamName ?? '')),
-							teamId: String(data.teamId ?? ''),
-						};
-					});
+					rosterHasMore = rosterHasMorePage;
+					rosterLastDoc = rosterLast;
+					emailLinkedRows = enrichedRows;
 
 					// ── rosters/{tid} (name-only players) ────────────────────────────
 					nameOnlyNames = Array.isArray(rostersDocSnap.data()?.players)
@@ -194,25 +278,35 @@
 			rosterHasMore = snap.docs.length > ROSTER_PAGE_SIZE;
 			const pageDocs = snap.docs.slice(0, ROSTER_PAGE_SIZE);
 			rosterLastDoc = pageDocs.at(-1) ?? rosterLastDoc;
-			const newLinked: LinkedRosterInput[] = pageDocs.map((d) => {
-				const data = d.data();
-				return {
-					email: String(data.email ?? d.id),
-					playerName: String(data.playerName ?? data.displayName ?? ''),
-					ageGroup: data.ageGroup
-						? String(data.ageGroup)
-						: parseAgeGroup(String(data.teamName ?? '')),
-					teamId: String(data.teamId ?? ''),
-				};
-			});
-			emailLinkedRows = [...emailLinkedRows, ...newLinked];
+			const newLinked = pageDocs.map((d) => linkedRowFromLookup(d.data(), d.id));
+			const enriched = await enrichLinkedRows(newLinked);
+			emailLinkedRows = [...emailLinkedRows, ...enriched];
 		} catch (e) {
 			rosterErr = e instanceof Error ? e.message : 'Failed to load more roster entries.';
 		} finally {
 			rosterLoadingMore = false;
 		}
 	}
+	function openInviteModal(name: string, e: MouseEvent) {
+		e.stopPropagation();
+		invitePlayerName = name;
+		showInviteModal = true;
+	}
+
+	function closeInviteModal() {
+		showInviteModal = false;
+		invitePlayerName = '';
+	}
 </script>
+
+{#if showInviteModal && invitePlayerName}
+	<RosterGuardianInviteModal
+		playerName={invitePlayerName}
+		teamId={teamId}
+		clubId={adminClubId}
+		onclose={closeInviteModal}
+	/>
+{/if}
 
 <div class="roster-page">
 
@@ -274,21 +368,23 @@
 				<tr>
 					<th class="roster-dt__th" scope="col">Athlete</th>
 					<th class="roster-dt__th" scope="col">Email</th>
+					<th class="roster-dt__th" scope="col">Guardian(s)</th>
+					<th class="roster-dt__th" scope="col">VPC</th>
 					<th class="roster-dt__th" scope="col">Age Group</th>
-					<th class="roster-dt__th" scope="col">Team ID</th>
+					<th class="roster-dt__th" scope="col">Household</th>
 				</tr>
 			</thead>
 			<tbody>
 				{#if rosterLoading}
 					<tr>
-						<td colspan="4" class="roster-dt__td-loading">
+						<td colspan="6" class="roster-dt__td-loading">
 							<span class="roster-spinner" aria-hidden="true"></span>
 							Loading roster…
 						</td>
 					</tr>
 				{:else if filteredRoster.length === 0}
 					<tr>
-						<td colspan="4" class="roster-dt__td-empty">
+						<td colspan="6" class="roster-dt__td-empty">
 							{roster.length === 0
 								? 'No athletes assigned to this team yet.'
 								: 'No athletes match your filter.'}
@@ -296,22 +392,53 @@
 					</tr>
 				{:else}
 					{#each filteredRoster as r (r.key)}
-						<tr class="roster-dt__row">
+						<tr
+							class="roster-dt__row"
+							class:roster-dt__row--linked={!r.nameOnly && !!r.email}
+							role={!r.nameOnly && r.email ? 'button' : undefined}
+							tabindex={!r.nameOnly && r.email ? 0 : undefined}
+							onclick={() => openAthleteDrawer(r)}
+							onkeydown={(e) => e.key === 'Enter' && openAthleteDrawer(r)}
+						>
 							<td class="roster-dt__td roster-dt__td--name">
 								<span class="roster-player-name">{r.playerName}</span>
 							</td>
-						<td class="roster-dt__td roster-dt__td--mono">
-							{#if r.nameOnly}
-								<span class="roster-no-account" title="Player added by name only — no account yet">No account</span>
-							{:else}
-								{r.email}
-							{/if}
-						</td>
+							<td class="roster-dt__td roster-dt__td--mono">
+								{#if r.nameOnly}
+									<span class="roster-no-account" title="Player added by name only — no account yet">No account</span>
+									<button
+										type="button"
+										class="roster-invite-btn"
+										onclick={(e) => openInviteModal(r.playerName, e)}
+									>
+										Invite guardian
+									</button>
+								{:else}
+									{r.email}
+								{/if}
+							</td>
+							<td class="roster-dt__td roster-dt__td--mono">
+								{#if r.parentEmails.length > 0}
+									{r.parentEmails.join(', ')}
+								{:else if r.nameOnly}
+									<span class="roster-gap" title="Name-only roster entry">—</span>
+								{:else}
+									<span class="roster-gap roster-gap--warn" title="No guardian linked to this athlete">Unlinked</span>
+								{/if}
+							</td>
+							<td class="roster-dt__td roster-dt__td--muted">
+								<span
+									class:roster-vpc--ok={r.vpcStatus === 'verified'}
+									class:roster-vpc--pending={r.vpcStatus === 'pending_parent' || r.vpcStatus === 'pending'}
+								>
+									{vpcLabel(r.vpcStatus)}
+								</span>
+							</td>
 							<td class="roster-dt__td roster-dt__td--muted">
 								{r.ageGroup || '—'}
 							</td>
 							<td class="roster-dt__td roster-dt__td--mono roster-dt__td--muted">
-								{r.teamId}
+								{r.householdId || '—'}
 							</td>
 						</tr>
 					{/each}
@@ -507,7 +634,7 @@
 
 	.roster-dt {
 		width: 100%;
-		min-width: 540px;
+		min-width: 720px;
 		border-collapse: collapse;
 		font-size: 0.8125rem;
 		letter-spacing: -0.01em;
@@ -545,6 +672,28 @@
 	.roster-dt__row:last-child { border-bottom: none; }
 
 	.roster-dt__row:hover { background: rgba(0, 0, 0, 0.018); }
+
+	.roster-dt__row--linked {
+		cursor: pointer;
+	}
+
+	.roster-gap--warn {
+		color: var(--danger-red, #b91c1c);
+		font-weight: 700;
+		font-size: 0.6875rem;
+		text-transform: uppercase;
+		letter-spacing: 0.05em;
+	}
+
+	.roster-vpc--ok {
+		color: #059669;
+		font-weight: 700;
+	}
+
+	.roster-vpc--pending {
+		color: #d97706;
+		font-weight: 600;
+	}
 
 	:global(html.dark) .roster-dt__row {
 		border-bottom-color: rgba(255, 255, 255, 0.05);
@@ -613,6 +762,23 @@
 		border: 1px solid rgba(0, 0, 0, 0.10);
 		border-radius: 4px;
 		padding: 1px 6px;
+	}
+
+	.roster-invite-btn {
+		display: block;
+		margin-top: 4px;
+		border: 1px solid rgba(20, 184, 166, 0.45);
+		border-radius: 4px;
+		padding: 2px 8px;
+		font-size: 0.6875rem;
+		font-weight: 700;
+		background: transparent;
+		color: #0d9488;
+		cursor: pointer;
+	}
+
+	:global(html.dark) .roster-invite-btn {
+		color: #14b8a6;
 	}
 
 	:global(html.dark) .roster-no-account {

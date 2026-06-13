@@ -24,12 +24,12 @@
 <nav class="mn-root" class:mn-root--scrolled={scrolled} aria-label="Site navigation">
 	<div class="mn-inner">
 		<!-- Brand -->
-		<a href="/" class="mn-brand" aria-label="SSTracker Nexus Command — home">
+		<a href="/" class="mn-brand" aria-label="SSTracker home">
 			<svg class="mn-brand__hex" viewBox="0 0 28 32" fill="none" aria-hidden="true">
 				<polygon points="14,1 27,8 27,24 14,31 1,24 1,8" stroke="var(--vanguard-cyan)" stroke-width="1.5" fill="color-mix(in srgb, var(--vanguard-cyan) 6%, transparent)"/>
 				<polygon points="14,7 22,12 22,20 14,25 6,20 6,12" stroke="var(--vanguard-cyan)" stroke-width="0.7" fill="color-mix(in srgb, var(--vanguard-cyan) 4%, transparent)" opacity="0.6"/>
 			</svg>
-			<span class="mn-brand__text">SSTRACKER<span class="mn-brand__sub">NEXUS COMMAND</span></span>
+			<span class="mn-brand__text">SSTRACKER<span class="mn-brand__sub">CLUB OS</span></span>
 		</a>
 
 		<!-- Desktop links -->
@@ -48,7 +48,7 @@
 		<!-- Desktop CTAs -->
 		<div class="mn-ctas">
 			<a href="/login" class="tw-vanguard-btn-secondary mn-cta-size">Sign In</a>
-			<a href="/setup" class="tw-vanguard-btn-primary mn-cta-size">Deploy Club →</a>
+			<a href="/setup" class="tw-vanguard-btn-primary mn-cta-size">Start club →</a>
 		</div>
 
 		<!-- Mobile hamburger -->
@@ -81,7 +81,7 @@
 			{/each}
 			<div class="mn-mobile__sep" aria-hidden="true"></div>
 			<a href="/login" class="mn-mobile__link" onclick={() => (mobileOpen = false)} role="menuitem">Sign In</a>
-			<a href="/setup" class="mn-mobile__cta" onclick={() => (mobileOpen = false)} role="menuitem">Deploy Club →</a>
+			<a href="/setup" class="mn-mobile__cta" onclick={() => (mobileOpen = false)} role="menuitem">Start club →</a>
 		</div>
 	{/if}
 </nav>

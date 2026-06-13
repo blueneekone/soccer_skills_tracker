@@ -125,6 +125,9 @@
 						<li class="ops-list__item">
 							<strong>{ev.name || ev.eventKind || 'Event'}</strong>
 							<span class="ops-muted">{formatStart(ev)}</span>
+							<span class="ops-rsvp">
+								RSVP — Going: {Number(ev.rsvpGoing ?? 0)} · Out: {Number(ev.rsvpNotGoing ?? 0)} · Maybe: {Number(ev.rsvpMaybe ?? 0)}
+							</span>
 							{#if ev.reminderOffsets?.length}
 								<span class="ops-tag">Reminders: {JSON.stringify(ev.reminderOffsets)}</span>
 							{/if}
@@ -169,5 +172,6 @@
 	.ops-list__item { border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px 12px; display: flex; flex-direction: column; gap: 4px; background: #f8fafc; }
 	.ops-muted { font-size: 12px; color: #64748b; margin: 0; }
 	.ops-tag { font-size: 11px; color: #475569; font-family: ui-monospace, monospace; }
+	.ops-rsvp { font-size: 11px; color: #0f766e; font-weight: 600; }
 	.ops-facility { margin-top: 8px; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
 </style>

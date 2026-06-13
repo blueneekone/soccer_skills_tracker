@@ -1,6 +1,7 @@
 <script lang="ts">
 	import Icon from '$lib/components/ui/Icon.svelte';
 	import type { IconName } from '$lib/icons/registry.js';
+	import AdminConsoleSearch from '$lib/components/admin/AdminConsoleSearch.svelte';
 	import OrganizationsEnterpriseFilter from '$lib/components/admin/OrganizationsEnterpriseFilter.svelte';
 	import type { AdminClub, AdminClubTierKey } from '$lib/types/adminOrganizations.js';
 
@@ -66,15 +67,11 @@
 		</div>
 	</div>
 	<div class="adm-toolbar__right">
-		<div class="adm-search-wrap">
-			<Icon name={'action.search' as IconName} class="adm-search-icon" aria-hidden="true" />
-			<input
-				type="search"
-				class="adm-search tw-text-sm"
+		<div class="adm-toolbar__search-flex">
+			<AdminConsoleSearch
 				bind:value={orgSearch}
 				placeholder="Filter organizations…"
-				autocomplete="off"
-				aria-label="Filter organizations"
+				ariaLabel="Filter organizations"
 			/>
 		</div>
 

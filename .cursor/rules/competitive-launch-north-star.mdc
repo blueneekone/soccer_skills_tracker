@@ -1,0 +1,48 @@
+---
+description: Launch north star — competitive gaps, moat, and sprint priority vs TeamSnap/SportsEngine/GotSport
+alwaysApply: true
+---
+
+# Competitive launch north star
+
+**Full matrix:** [`docs/vision/COMPETITIVE_LAUNCH_ASSESSMENT.md`](../../docs/vision/COMPETITIVE_LAUNCH_ASSESSMENT.md)
+
+## Position
+
+SSTracker wins on **development OS + SafeSport/COPPA architecture**. We lose parent daily-use wars until **RSVP, registration-lite, and mobile/push** ship.
+
+## Moat (extend — do not trade away)
+
+- Player Train → XP → coach intent/bounties → RL homework
+- Household-gated comms (no coach→minor unsupervised DM)
+- VPC/consent records + minor retention
+- Coach spatial drills + three-tier drill library
+- **Tryout lifecycle OS** — registration through callback/roster with eval plans + automated comms (see **LAUNCH-tryouts-os**)
+
+## Table stakes (close before launch QA)
+
+1. **LAUNCH-household-graph** — guardian on admin/coach/global users roster (deploy `compliance` CF to dev)
+2. **LAUNCH-rsvp** — pre-event going/not/maybe (TeamSnap Premium parity)
+3. **LAUNCH-registration-lite** — club program + parent pay (SE/GotSport minimum)
+4. **LAUNCH-roster-invite** — name-only athlete → guardian invite
+5. **LAUNCH-tryouts-os** — tryout registration → field sessions → check-in → eval plan → callbacks → roster (club moat; phased A–E in ROADMAP)
+
+## Reject for launch scope
+
+- Live streaming, website builder, NGB export (unless owner reopens soccer GTM)
+- Player OS visual research / avatar PNG tracks
+- QA checklists for broken linkage — fix product first
+
+## Sprint discipline
+
+- One **LAUNCH-*** slice per session; cite wave from assessment doc
+- New features must map to matrix row (parity vs moat)
+- After household/RSVP changes: `npm run deploy:compliance` or `deploy:core` as documented in [`docs/FUNCTIONS_DEPLOY.md`](../../docs/FUNCTIONS_DEPLOY.md)
+
+## Competitors (quick reference)
+
+| Platform | They win on | We beat them on |
+|----------|-------------|-----------------|
+| TeamSnap ONE | Parent mobile, RSVP, reg, streaming | Development loop, compliance depth |
+| SportsEngine HQ | Eligibility matrix, NGB, enterprise reg | Player OS, SafeSport comms model |
+| GotSport | State roster/governing body | Gamified development, RL, intent engine |

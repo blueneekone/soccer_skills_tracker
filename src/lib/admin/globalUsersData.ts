@@ -11,6 +11,7 @@ import {
 	type Query,
 } from 'firebase/firestore';
 import { GLOBAL_USERS_PAGE_SIZE, normalizeEmailPrefix, roleFilterForTab } from '$lib/admin/globalUsersDisplay.js';
+import { enrichUsersWithHouseholdGraph } from '$lib/admin/enrichUsersHouseholdGraph.js';
 import { mapUserDocumentToRow, sliceUsersPage } from '$lib/admin/globalUsersMapper.js';
 import type { GlobalUsersPageResult, GlobalUsersTab } from '$lib/types/adminUsers.js';
 
@@ -66,7 +67,9 @@ export async function fetchUsersPage(
 	const mapped = snap.docs.map((d) =>
 		mapUserDocumentToRow(d.id, (d.data() || {}) as Record<string, unknown>),
 	);
-	return sliceUsersPage(mapped, pageSize);
+	const sliced = sliceUsersPage(mapped, pageSize);
+	const enriched = await enrichUsersWithHouseholdGraph(db, sliced.rows);
+	return { rows: enriched, hasNextPage: sliced.hasNextPage };
 }
 
 export async function loadClubNameMap(db: Firestore): Promise<Map<string, string>> {

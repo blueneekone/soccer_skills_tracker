@@ -561,6 +561,40 @@ describe('Player/parent launch — discoverability and payment refresh', () => {
 		expect(src).toMatch(/label:\s*'Comms'/);
 	});
 
+	it('PlayerShell rail exposes always-visible sign out for QA account switching', () => {
+		const src = readFileSync(join(ROOT, 'lib/components/shell/PlayerShell.svelte'), 'utf-8');
+		expect(src).toMatch(/handleSignOut/);
+		expect(src).toMatch(/nav\.sign-out/);
+		expect(src).toMatch(/aria-label=\{signingOut \? 'Signing out' : 'Sign out'\}/);
+	});
+
+	it('EnterpriseConsoleShell exposes sign out under System actions only (not top bar)', () => {
+		const src = readFileSync(join(ROOT, 'lib/components/shell/EnterpriseConsoleShell.svelte'), 'utf-8');
+		const systemBlock =
+			src.match(/class="ec-sidebar__system"[\s\S]*?<\/div>\s*<\/div>\s*<\/aside>/)?.[0] ?? '';
+		expect(systemBlock).toMatch(/ec-nav-link--sign-out/);
+		expect(systemBlock).toMatch(/Sign out/);
+		expect(src).not.toMatch(/ec-topbar__right[\s\S]*?aria-label="Sign out"/);
+	});
+
+	it('admin toolbar pages use AdminConsoleSearch flex cluster (not overlay adm-search-wrap)', () => {
+		const orgToolbar = readFileSync(
+			join(ROOT, 'lib/components/admin/OrganizationsToolbar.svelte'),
+			'utf-8',
+		);
+		const auditPage = readFileSync(join(ROOT, 'routes/(app)/admin/audit-log/+page.svelte'), 'utf-8');
+		const recruitersPage = readFileSync(
+			join(ROOT, 'routes/(app)/admin/recruiters/+page.svelte'),
+			'utf-8',
+		);
+		expect(orgToolbar).toMatch(/AdminConsoleSearch/);
+		expect(auditPage).toMatch(/AdminConsoleSearch/);
+		expect(recruitersPage).toMatch(/AdminConsoleSearch/);
+		expect(orgToolbar).not.toMatch(/adm-search-wrap/);
+		expect(auditPage).not.toMatch(/adm-search-wrap/);
+		expect(recruitersPage).not.toMatch(/adm-search-wrap/);
+	});
+
 	it('OperativeQuickOps links Today\'s quests to /player/tracker', () => {
 		const src = readFileSync(
 			join(ROOT, 'lib/components/player/dashboard/OperativeQuickOps.svelte'),

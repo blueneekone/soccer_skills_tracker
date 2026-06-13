@@ -13,6 +13,7 @@
 	/** Epic 17 — static vault + facility drawer (logistics map, address, routing URL). */
 	import FacilityMapVault from '$lib/components/field-ops/FacilityMapVault.svelte';
 	import DeploymentCalendar from '$lib/components/director/os/DeploymentCalendar.svelte';
+	import TryoutsProgramsPanel from '$lib/components/director/os/TryoutsProgramsPanel.svelte';
 	import { syncFacilityToLegacyField } from '$lib/director/fieldOps/syncFacilityToLegacyField.js';
 
 	let { clubId: clubIdProp = '' } = $props();
@@ -474,6 +475,7 @@
 </script>
 
 <div class="director-field-ops-map field-ops-root">
+	<TryoutsProgramsPanel clubId={resolvedClubId} />
 	<header class="director-field-ops-z4-head">
 		<h3 class="director-field-ops-z4-head__title">Field ops</h3>
 		<p class="director-field-ops-z4-head__lede">

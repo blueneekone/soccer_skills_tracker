@@ -138,11 +138,15 @@ export class CommerceEngine {
 		try {
 			const fns = getFunctions(undefined, 'us-east1');
 			const createFn = httpsCallable<
-				{ seasonId: string; feeAmountDollars: number },
+				{ seasonId: string; feeAmountDollars: number; playerEmail?: string },
 				{ clientSecret: string; registrationId: string; feeAmountCents: number }
 			>(fns, 'createRegistrationIntent');
 
-			const res = await createFn({ seasonId: this.seasonId, feeAmountDollars });
+			const res = await createFn({
+				seasonId: this.seasonId,
+				feeAmountDollars,
+				playerEmail: this.playerEmail,
+			});
 			this.clientSecret = res.data.clientSecret;
 			this.registrationId = res.data.registrationId;
 			this.feeAmountCents = res.data.feeAmountCents;

@@ -5,7 +5,7 @@
 
 <section class="ts-root" aria-label="Platform compliance and security certifications">
 	<div class="ts-inner">
-		<span class="ts-headline">ENTERPRISE TRUST LAYER</span>
+		<span class="ts-headline">COMPLIANCE & TRUST</span>
 		<div class="ts-badges" role="list">
 			{#each TRUST_BADGES as badge (badge.label)}
 				<div class="ts-badge vanguard-card tw-border-slate-800" role="listitem">

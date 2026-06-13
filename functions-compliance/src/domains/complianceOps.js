@@ -12,6 +12,7 @@ const {
   assertParent,
   assertClubStaff,
 } = require('../middleware/authBouncers');
+const {stampAllPlayerLookupGuardians, stampPlayerLookupGuardians} = require('./householdGraph');
 
 const REGION = 'us-east1';
 
@@ -525,6 +526,10 @@ exports.linkHousehold = onCall({region: REGION}, async (request) => {
   }
 
   let householdId = existingHouseholdId;
+  /** @type {string[]} */
+  let mergedParents = parents;
+  /** @type {string[]} */
+  let mergedPlayers = players;
   const batch = db().batch();
   const now = admin.firestore.FieldValue.serverTimestamp();
 
@@ -538,11 +543,11 @@ exports.linkHousehold = onCall({region: REGION}, async (request) => {
     if (hData.clubId !== effectiveClubId) {
       throw new HttpsError('permission-denied', 'Household club mismatch.');
     }
-    const mergedParents = [...new Set([
+    mergedParents = [...new Set([
       ...(hData.parentEmails || []),
       ...parents,
     ])];
-    const mergedPlayers = [...new Set([
+    mergedPlayers = [...new Set([
       ...(hData.playerEmails || []),
       ...players,
     ])];
@@ -565,8 +570,8 @@ exports.linkHousehold = onCall({region: REGION}, async (request) => {
     );
     batch.set(hRef, {
       clubId: effectiveClubId,
-      parentEmails: parents,
-      playerEmails: players,
+      parentEmails: mergedParents,
+      playerEmails: mergedPlayers,
       playerNames,
       createdAt: now,
       updatedAt: now,
@@ -580,6 +585,14 @@ exports.linkHousehold = onCall({region: REGION}, async (request) => {
         {merge: true},
     );
   }
+
+  stampAllPlayerLookupGuardians(
+      batch,
+      mergedPlayers,
+      householdId,
+      mergedParents,
+      userMap,
+  );
 
   const auditRef = db().collection('security_audit').doc();
   batch.set(auditRef, {
@@ -1012,6 +1025,15 @@ exports.parentGrantVpcConsent = onCall({region: REGION}, async (request) => {
     consentRecordId: consentRef.id,
     actorUid: request.auth.uid,
     at: now,
+  });
+
+  const householdParents = (h.parentEmails || [])
+      .map((x) => normEmail(String(x || '')))
+      .filter(Boolean);
+  stampPlayerLookupGuardians(batch, playerEmail, {
+    householdId: actor.householdId,
+    parentEmails: householdParents.length > 0 ? householdParents : [actor.email],
+    vpcStatus: 'verified',
   });
 
   await batch.commit();

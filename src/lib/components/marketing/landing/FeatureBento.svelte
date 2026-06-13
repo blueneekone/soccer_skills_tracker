@@ -25,12 +25,12 @@
 <section class="fb-section" bind:this={sectionEl} aria-labelledby="fb-heading">
 	<div class="fb-inner">
 		<div class="fb-header">
-			<span class="fb-eyebrow">PLATFORM CAPABILITIES</span>
+			<span class="fb-eyebrow">PLATFORM</span>
 			<h2 class="fb-h2" id="fb-heading">
-				Every feature.<br />One Mission Control.
+				Development, compliance,<br />and ops — connected.
 			</h2>
 			<p class="fb-sub">
-				Six enterprise systems — unified under a single Vanguard Protocol deployment.
+				Not another team chat app. The loops competitors cannot copy without rebuilding from scratch.
 			</p>
 		</div>
 

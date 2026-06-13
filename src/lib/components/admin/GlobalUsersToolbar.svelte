@@ -1,6 +1,7 @@
 <script lang="ts">
 	import Icon from '$lib/components/ui/Icon.svelte';
 	import type { IconName } from '$lib/icons/registry.js';
+	import AdminConsoleSearch from '$lib/components/admin/AdminConsoleSearch.svelte';
 
 	interface Props {
 		searchInput: string;
@@ -61,39 +62,17 @@
 			</button>
 		</div>
 		<div class="adm-toolbar__search-flex">
-			<div class="gu-search" role="search">
-				<Icon name={'action.search' as IconName} aria-hidden="true" />
-				<input
-					type="search"
-					value={searchInput}
-					oninput={(e) => onSearchInput(e.currentTarget.value)}
-					onkeydown={onSearchKey}
-					placeholder="Search by email prefix (press Enter)"
-					aria-label="Search users by email"
-					autocomplete="off"
-					spellcheck="false"
-				/>
-				{#if searchApplied}
-					<button
-						type="button"
-						class="gu-search__clear"
-						onclick={onClearSearch}
-						aria-label="Clear search"
-						title="Clear search"
-					>
-						<Icon name={'sys.close' as IconName} aria-hidden="true" />
-					</button>
-				{/if}
-				<button
-					type="button"
-					class="gu-search__submit"
-					onclick={onRunSearch}
-					disabled={loading}
-					aria-label="Run search"
-				>
-					Search
-				</button>
-			</div>
+			<AdminConsoleSearch
+				bind:value={searchInput}
+				placeholder="Search by email prefix (press Enter)"
+				ariaLabel="Search users by email"
+				showClear={Boolean(searchApplied)}
+				submitLabel="Search"
+				loading={loading}
+				onSearch={onRunSearch}
+				onClear={onClearSearch}
+				onkeydown={onSearchKey}
+			/>
 		</div>
 	</div>
 </div>

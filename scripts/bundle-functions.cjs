@@ -25,7 +25,13 @@ const CODEBASES = {
   },
   core: {
     folder: 'functions-core',
-    seeds: ['src/domains/trainingOps.js'],
+    seeds: [
+      'src/domains/trainingOps.js',
+      'src/domains/scheduleOps.js',
+      'src/domains/registrationOps.js',
+      'src/domains/rosterOps.js',
+      'src/domains/tryoutsOps.js',
+    ],
   },
   rl: {
     folder: 'functions-rl',

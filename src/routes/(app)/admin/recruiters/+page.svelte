@@ -25,6 +25,7 @@
 	import '$lib/styles/enterprise-console.css';
 	import Icon from '$lib/components/ui/Icon.svelte';
 	import type { IconName } from '$lib/icons/registry.js';
+	import AdminConsoleSearch from '$lib/components/admin/AdminConsoleSearch.svelte';
 
 	// ── Types ────────────────────────────────────────────────────────────────
 	/**
@@ -455,18 +456,12 @@
 			</div>
 		</div>
 		<div class="adm-toolbar__right">
-			<div class="adm-search-wrap adm-search--narrow">
-				<Icon name={"action.search" as IconName} class="adm-search-icon" aria-hidden="true" />
-				<input
-					type="search"
-					class="adm-search tw-text-sm"
-					bind:value={searchInput}
-					placeholder="Search by email, scout name, or agency"
-					aria-label="Filter recruiters"
-					autocomplete="off"
-					spellcheck="false"
-				/>
-			</div>
+			<AdminConsoleSearch
+				bind:value={searchInput}
+				narrow
+				placeholder="Search by email, scout name, or agency"
+				ariaLabel="Filter recruiters"
+			/>
 			<button
 				type="button"
 				class="ar-toolbar-refresh"

@@ -612,6 +612,19 @@ service cloud.firestore {
               && userDoc().teamId == resource.data.teamId));
     }
 
+    function teamWorkoutRsvpReadOk(eventId, playerEmail) {
+      return exists(/databases/$(database)/documents/team_workouts/$(eventId))
+        && get(/databases/$(database)/documents/team_workouts/$(eventId)).data.keys().hasAll(['teamId'])
+        && (
+          isSuper()
+          || sameTeam(get(/databases/$(database)/documents/team_workouts/$(eventId)).data.teamId)
+          || directorScopedToTeam(get(/databases/$(database)/documents/team_workouts/$(eventId)).data.teamId)
+          || coachStaffCanAccessTeam(get(/databases/$(database)/documents/team_workouts/$(eventId)).data.teamId)
+          || emailKey() == playerEmail.lower()
+          || (isParent() && parentHouseholdAllowsChildEmail(playerEmail))
+        );
+    }
+
     // Epic 3.1: longitudinal player metrics (users/{playerKey} must match teamId on doc).
     function metricsPlayerUserTeamMatches(playerKey, tid) {
       return exists(/databases/$(database)/documents/users/$(playerKey))
@@ -1583,6 +1596,11 @@ service cloud.firestore {
       allow update, delete: if isSuper()
         || directorScopedToTeam(resource.data.teamId)
         || (isCoach() && sameTeam(resource.data.teamId));
+
+      match /rsvps/{playerEmail} {
+        allow read: if authed() && teamWorkoutRsvpReadOk(docId, playerEmail);
+        allow write: if false;
+      }
     }
 
     match /schedules/{docId} {
@@ -3781,6 +3799,26 @@ service cloud.firestore {
             && resource.data.clubId == tokenClub()
             && request.resource.data.clubId == tokenClub())
       );
+    }
+
+    // tryout_programs/{programId} — LAUNCH-tryouts-a (CF writes; staff reads)
+    match /tryout_programs/{programId} {
+      allow get, list: if authed() && (
+        isPlatformAdmin()
+        || ((isDirector() || isRegistrar() || isCoach())
+            && resource.data.clubId == tokenClub())
+      );
+      allow create, update, delete: if false;
+
+      match /registrations/{registrationId} {
+        allow get, list: if authed() && (
+          isPlatformAdmin()
+          || ((isDirector() || isRegistrar() || isCoach())
+              && get(/databases/$(database)/documents/tryout_programs/$(programId)).data.clubId
+                  == tokenClub())
+        );
+        allow create, update, delete: if false;
+      }
     }
 
     match /{document=**} {

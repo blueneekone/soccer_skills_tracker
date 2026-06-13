@@ -14,6 +14,13 @@
 	let seasonName = $state('');
 	let feeAmountDollars = $state('');
 	let registrationDeadline = $state('');
+	let registrationOpen = $state(true);
+
+	const registrationLink = $derived(
+		typeof window !== 'undefined' && clubId ?
+			`${window.location.origin}/register/${encodeURIComponent(clubId)}` :
+			'',
+	);
 
 	$effect(() => {
 		if (!clubId) {
@@ -36,6 +43,7 @@
 						: '';
 				registrationDeadline =
 					typeof raw?.registrationDeadline === 'string' ? raw.registrationDeadline : '';
+				registrationOpen = raw?.registrationOpen !== false;
 			} catch (e) {
 				err = e instanceof Error ? e.message : 'Could not load active season.';
 			} finally {
@@ -67,13 +75,27 @@
 			if (registrationDeadline.trim()) {
 				activeSeason.registrationDeadline = registrationDeadline.trim();
 			}
+			activeSeason.registrationOpen = registrationOpen;
 
 			await updateDoc(doc(db, 'organizations', clubId), { activeSeason });
-			ok = 'Active season saved. Payment reminders use registrationDeadline at 7/3/1/0 days.';
+			ok = 'Active season saved. Share the parent registration link below.';
 		} catch (e) {
 			err = e instanceof Error ? e.message : 'Could not save active season.';
 		} finally {
 			saving = false;
+		}
+	}
+
+	let copyLabel = $state('Copy link');
+
+	async function copyRegistrationLink() {
+		if (!registrationLink) return;
+		try {
+			await navigator.clipboard.writeText(registrationLink);
+			copyLabel = 'Copied';
+			setTimeout(() => (copyLabel = 'Copy link'), 2000);
+		} catch {
+			copyLabel = 'Copy failed';
 		}
 	}
 
@@ -109,7 +131,20 @@
 				<span class="season-label">Registration deadline</span>
 				<input class="season-input" type="date" bind:value={registrationDeadline} />
 			</label>
+			<label class="season-field season-field--check">
+				<input type="checkbox" bind:checked={registrationOpen} />
+				<span class="season-label">Registration open (public link active)</span>
+			</label>
 		</div>
+
+		{#if registrationLink && seasonId.trim()}
+			<div class="season-link-row">
+				<code class="season-link">{registrationLink}</code>
+				<button type="button" class="season-btn season-btn--ghost" onclick={() => void copyRegistrationLink()}>
+					{copyLabel}
+				</button>
+			</div>
+		{/if}
 
 		{#if err}<p class="season-err" role="alert">{err}</p>{/if}
 		{#if ok}<p class="season-ok" role="status">{ok}</p>{/if}
@@ -215,5 +250,36 @@
 	.season-btn:disabled {
 		opacity: 0.5;
 		cursor: not-allowed;
+	}
+
+	.season-field--check {
+		flex-direction: row;
+		align-items: center;
+		gap: 8px;
+		grid-column: 1 / -1;
+	}
+
+	.season-field--check input {
+		width: auto;
+	}
+
+	.season-link-row {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 10px;
+	}
+
+	.season-link {
+		font-family: var(--font-mono, monospace);
+		font-size: 11px;
+		color: #94a3b8;
+		word-break: break-all;
+	}
+
+	.season-btn--ghost {
+		background: transparent;
+		border: 1px solid #334155;
+		color: #e2e8f0;
 	}
 </style>

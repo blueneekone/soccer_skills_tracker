@@ -295,6 +295,10 @@ exports.mintMagicUplink = onCall({region: REGION}, async (request) => {
     ...(teamId     && {teamId}),
     ...(householdId && {householdId}),
     ...(tenantId   && {tenantId}),
+    ...(typeof data.pendingRosterPlayerName === 'string' &&
+      data.pendingRosterPlayerName.trim() && {
+      pendingRosterPlayerName: data.pendingRosterPlayerName.trim().slice(0, 200),
+    }),
   };
 
   const batch = db().batch();
@@ -466,6 +470,9 @@ exports.redeemMagicUplink = onCall({region: REGION}, async (request) => {
       ...baselineClaims,
       onboardedVia: 'magic_uplink',
       uplinkTokenId: tokenId,
+      ...(uplink.pendingRosterPlayerName && {
+        pendingRosterPlayerName: uplink.pendingRosterPlayerName,
+      }),
     }, {merge: true});
   });
 

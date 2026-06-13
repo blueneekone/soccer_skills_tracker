@@ -13,6 +13,8 @@
 	import CarRideArena from './CarRideArena.svelte';
 	import CarRideHUD from './CarRideHUD.svelte';
 	import ProofReviewQueue from '$lib/components/parent/ProofReviewQueue.svelte';
+	import UpcomingEventsRsvp from '$lib/components/parent/UpcomingEventsRsvp.svelte';
+	import ClaimRosterSpot from '$lib/components/parent/ClaimRosterSpot.svelte';
 	import '$lib/styles/parent-bounty-funding-panel.css';
 
 	const engine = new CoOpEngine();
@@ -23,6 +25,7 @@
 	let resolvedHouseholdId = $state('');
 	/** email → display name map for household children — built from households doc. */
 	let childNames = $state<Record<string, string>>({});
+	let childEmails = $state<string[]>([]);
 
 	onMount(async () => {
 		const user = authStore.user;
@@ -34,22 +37,21 @@
 		const clubId = (profile?.clubId as string | undefined) ?? tenantId;
 
 		// Resolve child emails from the households doc — the authoritative source.
-		// parentProvisionOperative writes to households/{id}.playerEmails; the parent profile doc is never updated.
-		let childEmails: string[] = [];
+		let resolvedChildren: string[] = [];
 		if (householdId) {
 			try {
 				const hSnap = await getDoc(doc(db, 'households', householdId));
 				if (hSnap.exists()) {
 					const hData = hSnap.data();
 					const raw: unknown[] = hData.playerEmails ?? [];
-					childEmails = raw
+					resolvedChildren = raw
 						.map((e) => String(e ?? '').trim().toLowerCase())
 						.filter(Boolean);
 
 					// Build email→name map for ProofReviewQueue (uses playerNames parallel array).
 					const rawNames: unknown[] = hData.playerNames ?? [];
 					const nameMap: Record<string, string> = {};
-					childEmails.forEach((em, i) => {
+					resolvedChildren.forEach((em, i) => {
 						const nm =
 							typeof rawNames[i] === 'string' && (rawNames[i] as string).trim()
 								? (rawNames[i] as string).trim()
@@ -63,13 +65,11 @@
 			}
 		}
 
+		childEmails = resolvedChildren;
 		resolvedHouseholdId = householdId;
-		await engine.init(parentEmail, householdId, childEmails);
-
-		// Phase 4, Epic 8 — Car Ride Home Protocol.
+		await engine.init(parentEmail, householdId, resolvedChildren);
 		// Use the first linked child email for pending fixture detection.
-		// The FCM deep link may supply a ?fixtureId= query param to pre-target.
-		const linkedPlayerEmail = childEmails[0] ?? '';
+		const linkedPlayerEmail = resolvedChildren[0] ?? '';
 		const urlFixtureId = get(page).url.searchParams.get('fixtureId') ?? null;
 
 		await carRideEngine.init(linkedPlayerEmail, tenantId, clubId, urlFixtureId);
@@ -92,6 +92,14 @@
 					<CarRideArena engine={carRideEngine} />
 				</div>
 			{/if}
+
+			<div class="bento-span-12 tw-min-w-0">
+				<ClaimRosterSpot />
+			</div>
+
+			<div class="bento-span-12 tw-min-w-0">
+				<UpcomingEventsRsvp {childEmails} {childNames} />
+			</div>
 
 			<div class="bento-span-8 tw-min-w-0">
 				<CoOpArena {engine} />

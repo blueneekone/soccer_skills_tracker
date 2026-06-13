@@ -11,3 +11,17 @@ exports.logTrainingSession = trainingOps.logTrainingSession;
 exports.secureDeployIntent = trainingOps.secureDeployIntent;
 exports.secureCancelIntent = trainingOps.secureCancelIntent;
 exports.secureExtendIntent = trainingOps.secureExtendIntent;
+
+const scheduleOps = require('./src/domains/scheduleOps');
+exports.setEventRsvp = scheduleOps.setEventRsvp;
+
+const registrationOps = require('./src/domains/registrationOps');
+exports.getPublicRegistrationProgram = registrationOps.getPublicRegistrationProgram;
+
+const rosterOps = require('./src/domains/rosterOps');
+exports.claimRosterSpot = rosterOps.claimRosterSpot;
+
+const tryoutsOps = require('./src/domains/tryoutsOps');
+exports.upsertTryoutProgram = tryoutsOps.upsertTryoutProgram;
+exports.getPublicTryoutProgram = tryoutsOps.getPublicTryoutProgram;
+exports.registerForTryout = tryoutsOps.registerForTryout;

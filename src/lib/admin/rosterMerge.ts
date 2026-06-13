@@ -20,6 +20,12 @@ export interface RosterRow {
 	teamId: string;
 	/** True when the player was added to the roster without an account/email. */
 	nameOnly: boolean;
+	/** Linked guardian emails (denormalized from households / player_lookup). */
+	parentEmails: string[];
+	/** Household document id when linked. */
+	householdId: string | null;
+	/** VPC / consent status when known. */
+	vpcStatus: string | null;
 }
 
 export interface LinkedRosterInput {
@@ -27,6 +33,9 @@ export interface LinkedRosterInput {
 	playerName: string;
 	ageGroup: string | null;
 	teamId: string;
+	parentEmails?: string[];
+	householdId?: string | null;
+	vpcStatus?: string | null;
 }
 
 /**
@@ -55,6 +64,11 @@ export function mergeAdminRoster(
 		ageGroup: r.ageGroup,
 		teamId: r.teamId,
 		nameOnly: false,
+		parentEmails: Array.isArray(r.parentEmails)
+			? r.parentEmails.filter((e) => typeof e === 'string' && e.trim())
+			: [],
+		householdId: r.householdId?.trim() ? r.householdId.trim() : null,
+		vpcStatus: r.vpcStatus?.trim() ? r.vpcStatus.trim() : null,
 	}));
 
 	const nameOnlyRows: RosterRow[] = rosterNames
@@ -67,6 +81,9 @@ export function mergeAdminRoster(
 			ageGroup: null,
 			teamId,
 			nameOnly: true,
+			parentEmails: [],
+			householdId: null,
+			vpcStatus: null,
 		}));
 
 	return [...emailRows, ...nameOnlyRows].sort((a, b) =>

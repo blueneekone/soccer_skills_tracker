@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { base } from '$app/paths';
 	import { browser } from '$app/environment';
-	import { HERO_HEADLINE, HERO_SUBHEADLINE } from './landingContent.js';
+	import { HERO_HEADLINE, HERO_SUBHEADLINE, HERO_BADGE } from './landingContent.js';
 
 	let eyebrowVisible = $state(false);
 	let videoEl: HTMLVideoElement;
@@ -33,26 +33,18 @@
 		if (stageEl) io.observe(stageEl);
 		return () => io.disconnect();
 	});
-
-	function handleWatchTour(e: MouseEvent) {
-		e.preventDefault();
-		if (videoEl && videoEl.src) {
-			videoEl.play().catch(() => {});
-		}
-		stageEl?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-	}
 </script>
 
-<section class="hero" aria-label="Nexus Command — Mission Control for Elite Youth Sports Clubs">
+<section class="hero" aria-label="SSTracker — club platform for athlete development">
 	<div class="hero__inner">
 		<div class="hero__copy">
 			<span
 				class="hero__badge"
 				class:hero__badge--visible={eyebrowVisible}
-				aria-label="Nexus Command version 5.0 Enterprise"
+				aria-label="SSTracker club operating system"
 			>
 				<span class="hero__badge-dot" aria-hidden="true"></span>
-				NEXUS COMMAND · v5.0 ENTERPRISE
+				{HERO_BADGE}
 			</span>
 
 			<h1 class="hero__h1">{HERO_HEADLINE}</h1>
@@ -61,15 +53,15 @@
 
 			<div class="hero__ctas">
 				<a href="{base}/setup" class="tw-vanguard-btn-primary">
-					DEPLOY YOUR CLUB →
+					Start your club →
 				</a>
-				<button type="button" class="tw-vanguard-btn-secondary" onclick={handleWatchTour}>
-					WATCH 60-SEC TOUR
-				</button>
+				<a href="{base}/features" class="tw-vanguard-btn-secondary">
+					See the platform
+				</a>
 			</div>
 
 			<p class="hero__disclaimer">
-				$0 base fee · COPPA 2.0 hardened · WebAuthn biometric consent
+				Household-first compliance · SafeSport-native comms · $0 platform fee
 			</p>
 		</div>
 
@@ -77,7 +69,7 @@
 			<div class="hero__stage vanguard-surface tw-border-slate-800">
 				<div class="hero__status-bar" aria-hidden="true">
 					<span class="hero__status-dot"></span>
-					<span class="hero__status-label">NEXUS COMMAND · TACTICAL_DISPLAY_01 · LIVE</span>
+					<span class="hero__status-label">SSTRACKER · PLAYER HQ · PREVIEW</span>
 					<span class="hero__status-meta">SYNC OK</span>
 				</div>
 
@@ -136,7 +128,7 @@
 						<img
 							class="hero__poster"
 							src="/marketing/hero-poster.svg"
-							alt="Nexus Command Player OS dashboard — skill tree, XP metrics, and adaptive workout feed"
+							alt="SSTracker Player HQ — missions, telemetry, and training loop preview"
 							width="1280"
 							height="720"
 							fetchpriority="high"

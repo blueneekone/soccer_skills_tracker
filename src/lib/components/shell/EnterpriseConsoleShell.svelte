@@ -219,9 +219,14 @@
 						<Icon name="status.warning" size={18} />
 						<span class="ec-nav-link__label">Report Anomaly</span>
 					</button>
-					<button type="button" class="ec-nav-link" onclick={() => void handleSignOut()}>
+					<button
+						type="button"
+						class="ec-nav-link ec-nav-link--sign-out"
+						disabled={disconnectBusy}
+						onclick={() => void disconnect()}
+					>
 						<Icon name="nav.sign-out" size={18} />
-						<span class="ec-nav-link__label">Sign out</span>
+						<span class="ec-nav-link__label">{disconnectBusy ? 'Signing out…' : 'Sign out'}</span>
 					</button>
 				</div>
 			</div>
@@ -296,7 +301,7 @@
 					</span>
 					<Icon name="nav.chevron-down" size={10} />
 				</button>
-				<!-- User identity: avatar + name + disconnect -->
+				<!-- User identity: avatar + name -->
 				<div class="tw-flex tw-min-w-0 tw-items-center tw-gap-2 tw-pl-1">
 					<VanguardAvatar
 						seed={authStore.user?.uid || authStore.user?.email || 'nexus'}
@@ -308,16 +313,6 @@
 					>
 						{authStore.userProfile?.playerName || authStore.user?.email?.split('@')[0] || 'Account'}
 					</span>
-					<button
-						type="button"
-						class="tw-ml-1 tw-flex tw-h-8 tw-w-8 tw-shrink-0 tw-items-center tw-justify-center tw-rounded-md tw-border tw-border-red-500/20 tw-bg-transparent tw-text-red-500/50 tw-transition-colors tw-duration-150 hover:tw-border-red-500/50 hover:tw-bg-red-950/40 hover:tw-text-red-400 disabled:tw-cursor-not-allowed disabled:tw-opacity-30 focus-visible:tw-outline-none focus-visible:tw-ring-1 focus-visible:tw-ring-red-500 focus-visible:tw-ring-offset-1 focus-visible:tw-ring-offset-slate-900"
-						disabled={disconnectBusy}
-						onclick={disconnect}
-						aria-label="Disconnect — sign out"
-						title="Disconnect"
-					>
-						<Icon name="nav.sign-out" size={14} />
-					</button>
 				</div>
 			</div>
 		</header>
@@ -433,6 +428,18 @@
 	:global(.ec-nav-link--anomaly:hover) {
 		color: rgba(251, 191, 36, 0.9) !important;
 		background: rgba(251, 191, 36, 0.06) !important;
+	}
+
+	:global(.ec-nav-link--sign-out) {
+		color: rgba(248, 113, 113, 0.62) !important;
+	}
+	:global(.ec-nav-link--sign-out:hover:not(:disabled)) {
+		color: rgba(248, 113, 113, 0.92) !important;
+		background: rgba(248, 113, 113, 0.08) !important;
+	}
+	:global(.ec-nav-link--sign-out:disabled) {
+		opacity: 0.55;
+		cursor: not-allowed;
 	}
 
 	/* ── Anomaly Report Modal ─────────────────────────────────────────────── */

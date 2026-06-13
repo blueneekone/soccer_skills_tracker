@@ -181,6 +181,20 @@ exports.sendCoachPlayerMessage      = operativeOps.sendCoachPlayerMessage;
 exports.sendChannelMessage          = operativeOps.sendChannelMessage;
 exports.sendHouseholdMessage        = operativeOps.sendHouseholdMessage;
 
+const scheduleOps = require('./src/domains/scheduleOps');
+exports.setEventRsvp                = scheduleOps.setEventRsvp;
+
+const registrationOps = require('./src/domains/registrationOps');
+exports.getPublicRegistrationProgram = registrationOps.getPublicRegistrationProgram;
+
+const rosterOps = require('./src/domains/rosterOps');
+exports.claimRosterSpot             = rosterOps.claimRosterSpot;
+
+const tryoutsOps = require('./src/domains/tryoutsOps');
+exports.upsertTryoutProgram         = tryoutsOps.upsertTryoutProgram;
+exports.getPublicTryoutProgram      = tryoutsOps.getPublicTryoutProgram;
+exports.registerForTryout           = tryoutsOps.registerForTryout;
+
 // ── Epic 4.4 W1: Parent Lounge channel provisioning ──────────────────────────
 const commsChannelOps = require('./src/domains/commsChannelOps');
 exports.coachProvisionParentLounge  = commsChannelOps.coachProvisionParentLounge;

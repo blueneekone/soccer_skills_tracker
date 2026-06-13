@@ -15,6 +15,7 @@
 	import '$lib/styles/enterprise-console.css';
 	import Icon from '$lib/components/ui/Icon.svelte';
 	import type { IconName } from '$lib/icons/registry.js';
+	import AdminConsoleSearch from '$lib/components/admin/AdminConsoleSearch.svelte';
 
 	export const ssr = false;
 
@@ -155,29 +156,21 @@
 			</div>
 		</div>
 		<div class="adm-toolbar__right">
-			<div class="adm-search-wrap">
-				<Icon name={"action.search" as IconName} class="adm-search-icon" aria-hidden="true" />
-				<input
-					type="search"
-					class="adm-search tw-text-sm"
+			<div class="adm-toolbar__search-flex">
+				<AdminConsoleSearch
 					bind:value={searchQuery}
 					placeholder="Search events…"
-					autocomplete="off"
-					aria-label="Search audit log"
+					ariaLabel="Search audit log"
 				/>
 			</div>
-			<div class="al-toolbar__filter">
-				<label class="al-toolbar__filter-label" for="al-action-filter">Filters</label>
-				<input
-					id="al-action-filter"
-					type="search"
-					class="al-filter-input"
-					bind:value={actionFilter}
-					placeholder="Action…"
-					autocomplete="off"
-					aria-label="Filter audit log by action"
-				/>
-			</div>
+			<AdminConsoleSearch
+				bind:value={actionFilter}
+				compact
+				icon="action.filter"
+				placeholder="Action…"
+				ariaLabel="Filter audit log by action"
+				showClear={false}
+			/>
 			<button
 				type="button"
 				class="al-toolbar-refresh"

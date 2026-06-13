@@ -4,17 +4,17 @@
 
 <section class="fc-root" aria-labelledby="fc-heading">
 	<div class="fc-inner">
-		<span class="fc-eyebrow">DEPLOY NOW</span>
+		<span class="fc-eyebrow">GET STARTED</span>
 		<h2 class="fc-h2" id="fc-heading">
-			Your club's command centre<br />is ready for deployment.
+			Launch your club on SSTracker<br />in minutes — not months.
 		</h2>
 		<p class="fc-sub">
-			$0 base fee. No credit card required. Migrate an existing roster in minutes with universal
-			CSV ingestion.
+			$0 platform fee. No credit card required. Import your roster and connect guardians on day
+			one.
 		</p>
 		<div class="fc-actions">
 			<a href="/setup" class="tw-vanguard-btn-primary">
-				DEPLOY YOUR CLUB →
+				Start your club →
 			</a>
 			<a href="/pricing" class="fc-link-cta">VIEW PRICING →</a>
 		</div>
