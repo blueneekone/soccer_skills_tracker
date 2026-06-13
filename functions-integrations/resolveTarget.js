@@ -8,6 +8,8 @@ const EXPORT_NAMES = Object.freeze([
   'searchPodcasts',
   'getPodcastEpisodes',
   'getWeatherConditions',
+  'evaluateFieldWeatherLock',
+  'refreshClubWeatherLock',
   'getUploadToken',
   'deleteAllPlayerMedia',
   'facilityWeatherWebhook',

@@ -1420,7 +1420,7 @@ Loadout art (3.2+) consumed by 2.12 hero identity column.
 | **LAUNCH-scouting** | **Done** | `/coach/scouting` live squad from `player_lookup`; assessments → `teams/{teamId}/scouting_assessments` | `coachScouting.test.ts` |
 | **LAUNCH-forge-nameonly** | **Done** | Intent Engine shows name-only roster rows disabled with “add email to assign” hint; not intent-targetable | `intentModule.test.ts` |
 | **LAUNCH-epic53** | **Done** | Director Field Ops deployment calendar — create practice/match/tournament; announce toggle → Epic 4.5 comms | `epic53DeploymentCalendar.test.ts` |
-| **LAUNCH-epic54** | **Partial** | Weather lock scaffold — scheduled `evaluateFieldWeatherLock`, `field_weather_status`, Field Ops banner + deployment block | `epic54WeatherLock.test.ts` |
+| **LAUNCH-epic54** | **Done** | Weather lock — scheduled `evaluateFieldWeatherLock`, director `refreshClubWeatherLock`, `field_weather_status`, Field Ops banner + deployment block; live on dev (`WEATHER_LOCK_ENABLED=true`) | `epic54WeatherLock.test.ts` · deploy **`npm run deploy:integrations`** |
 | **LAUNCH-epic52** | **Done** | Registrar → Director compliance matrix; `/registrar` redirect; team-scoped `loadComplianceTable` | `epic52RegistrarConsolidation.test.ts` |
 | **LAUNCH-epic51** | **Done** | COPPA / household / VPC gate inventory + regression guards | `epic51CoppaSignup.test.ts` |
 | **LAUNCH-epic55** | **Done** | FCM / messaging infra audit guards | `epic55MessagingAudit.test.ts` |

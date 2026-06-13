@@ -35,6 +35,20 @@ if (!target || target === 'getWeatherConditions') {
   exports.getWeatherConditions = require('./weather').getWeatherConditions;
 }
 
+if (
+  !target ||
+  target === 'evaluateFieldWeatherLock' ||
+  target === 'refreshClubWeatherLock'
+) {
+  const weatherLockHandlers = require('./src/domains/weatherOps');
+  if (!target || target === 'evaluateFieldWeatherLock') {
+    exports.evaluateFieldWeatherLock = weatherLockHandlers.evaluateFieldWeatherLock;
+  }
+  if (!target || target === 'refreshClubWeatherLock') {
+    exports.refreshClubWeatherLock = weatherLockHandlers.refreshClubWeatherLock;
+  }
+}
+
 if (!target || target === 'getUploadToken' || target === 'deleteAllPlayerMedia') {
   const uploadTokenHandlers = require('./uploadTokens');
   if (!target || target === 'getUploadToken') {

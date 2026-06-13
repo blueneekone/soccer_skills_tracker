@@ -45,6 +45,31 @@
 	color: #94a3b8;
 }
 
+.director-os-root .director-field-ops-weather-refresh {
+	margin-top: 0.65rem;
+	padding: 0.35rem 0.65rem;
+	font-family: ui-monospace, 'Geist Mono', monospace;
+	font-size: 10px;
+	font-weight: 600;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: var(--pd-data-cyan, #14b8a6);
+	background: transparent;
+	border: 1px solid color-mix(in srgb, var(--pd-data-cyan, #14b8a6) 45%, var(--pd-grey-trim, #334155));
+	cursor: pointer;
+}
+
+.director-os-root .director-field-ops-weather-refresh:disabled {
+	opacity: 0.55;
+	cursor: not-allowed;
+}
+
+.director-os-root .director-field-ops-weather-refresh__msg {
+	margin: 0.4rem 0 0;
+	font-size: 0.75rem;
+	color: #94a3b8;
+}
+
 /* ── Z3 weather lock / advisory ────────────────────────────────────────────── */
 .director-os-root .director-field-ops-z3-weather {
 	padding: 0.65rem 0.85rem;

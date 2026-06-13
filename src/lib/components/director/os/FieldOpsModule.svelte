@@ -103,6 +103,28 @@
 
 	const directorUpsertField = httpsCallable(functions, 'directorUpsertField');
 	const secureBookField = httpsCallable(functions, 'secureBookField');
+	const refreshClubWeatherLock = httpsCallable(functions, 'refreshClubWeatherLock');
+
+	let weatherRefreshing = $state(false);
+	let weatherRefreshMsg = $state(/** @type {string | null} */ (null));
+
+	async function handleRefreshWeatherLock() {
+		if (!resolvedClubId || isReadOnly || weatherRefreshing) return;
+		weatherRefreshing = true;
+		weatherRefreshMsg = null;
+		try {
+			const res = await refreshClubWeatherLock({ clubId: resolvedClubId });
+			const data = /** @type {{ facilities?: number; locked?: number; advisory?: number }} */ (
+				res.data || {}
+			);
+			weatherRefreshMsg = `Weather scan complete — ${data.facilities ?? 0} field(s), ${data.locked ?? 0} locked, ${data.advisory ?? 0} advisory.`;
+		} catch (err) {
+			weatherRefreshMsg =
+				err instanceof Error ? err.message : 'Weather refresh failed — try again.';
+		} finally {
+			weatherRefreshing = false;
+		}
+	}
 
 	/** Minutes from midnight; 6:00–22:00 = 32 half-hour slots */
 	const DAY_START_MIN = 6 * 60;
@@ -481,6 +503,19 @@
 		<p class="director-field-ops-z4-head__lede">
 			Master schedule for your pitches — conflicts are blocked server-side.
 		</p>
+		{#if resolvedClubId && !isReadOnly}
+			<button
+				type="button"
+				class="director-field-ops-weather-refresh"
+				disabled={weatherRefreshing}
+				onclick={handleRefreshWeatherLock}
+			>
+				{weatherRefreshing ? 'Scanning weather…' : 'Refresh weather lock'}
+			</button>
+			{#if weatherRefreshMsg}
+				<p class="director-field-ops-weather-refresh__msg" role="status">{weatherRefreshMsg}</p>
+			{/if}
+		{/if}
 	</header>
 
 	{#if weatherLockedFacilities.length > 0}

@@ -10,6 +10,7 @@
  */
 
 const {onSchedule} = require('firebase-functions/v2/scheduler');
+const {onCall, HttpsError} = require('firebase-functions/v2/https');
 const logger = require('firebase-functions/logger');
 const admin = require('firebase-admin');
 const {
@@ -88,11 +89,15 @@ async function writeFacilityWeatherStatus(clubId, facilityId, coords) {
   return evalResult.status;
 }
 
-async function runWeatherLockPass() {
-  const enabled = process.env.WEATHER_LOCK_ENABLED === 'true';
+/**
+ * @param {{ clubId?: string, force?: boolean }} [options]
+ */
+async function runWeatherLockPass(options = {}) {
+  const {clubId: filterClubId, force = false} = options;
+  const enabled = force || process.env.WEATHER_LOCK_ENABLED === 'true';
   if (!enabled) {
     logger.info('[evaluateFieldWeatherLock] disabled via WEATHER_LOCK_ENABLED');
-    return {clubs: 0, facilities: 0, locked: 0, advisory: 0};
+    return {enabled: false, clubs: 0, facilities: 0, locked: 0, advisory: 0};
   }
 
   const tomorrowKey = (process.env.TOMORROW_IO_API_KEY || '').trim();
@@ -112,7 +117,18 @@ async function runWeatherLockPass() {
   let locked = 0;
   let advisory = 0;
 
-  const clubsSnap = await db().collection('clubs').limit(500).get();
+  /** @type {{ docs: FirebaseFirestore.QueryDocumentSnapshot[] }} */
+  let clubsSnap;
+  if (filterClubId) {
+    const clubDoc = await db().collection('clubs').doc(filterClubId).get();
+    if (!clubDoc.exists) {
+      return {enabled: true, clubs: 0, facilities: 0, locked: 0, advisory: 0, notFound: true};
+    }
+    clubsSnap = {docs: [clubDoc]};
+  } else {
+    clubsSnap = await db().collection('clubs').limit(500).get();
+  }
+
   for (const clubDoc of clubsSnap.docs) {
     clubs += 1;
     const facSnap = await clubDoc.ref.collection('facilities').get();
@@ -129,8 +145,48 @@ async function runWeatherLockPass() {
     }
   }
 
-  return {clubs, facilities, locked, advisory};
+  return {enabled: true, clubs, facilities, locked, advisory};
 }
+
+exports.refreshClubWeatherLock = onCall(
+    {region: REGION, timeoutSeconds: 120},
+    async (request) => {
+      if (!request.auth) {
+        throw new HttpsError('unauthenticated', 'Sign in required.');
+      }
+
+      const role = request.auth.token.role || '';
+      const clubId =
+        typeof request.data?.clubId === 'string' ? request.data.clubId.trim() : '';
+      const tokenClub =
+        typeof request.auth.token.clubId === 'string' ?
+          request.auth.token.clubId.trim() :
+          '';
+
+      if (!['director', 'global_admin', 'super_admin'].includes(role)) {
+        throw new HttpsError(
+            'permission-denied',
+            'Weather lock refresh is restricted to directors.',
+        );
+      }
+
+      if (role === 'director') {
+        const scopeClub = clubId || tokenClub;
+        if (!scopeClub || (tokenClub && scopeClub !== tokenClub)) {
+          throw new HttpsError('permission-denied', 'Director may only refresh their club.');
+        }
+        const result = await runWeatherLockPass({clubId: scopeClub, force: true});
+        return {ok: true, clubId: scopeClub, ...result};
+      }
+
+      if (!clubId) {
+        throw new HttpsError('invalid-argument', 'clubId is required.');
+      }
+
+      const result = await runWeatherLockPass({clubId, force: true});
+      return {ok: true, clubId, ...result};
+    },
+);
 
 exports.haversineKm = haversineKm;
 exports.resolveFacilityCoords = resolveFacilityCoords;

@@ -78,6 +78,8 @@ const CODEBASES = {
       'integrations.js',
       'weather.js',
       'uploadTokens.js',
+      'src/domains/weatherOps.js',
+      'src/domains/weatherEvaluation.js',
       'src/domains/facilityWeatherWebhook.js',
     ],
     preserve: ['resolveTarget.js'],

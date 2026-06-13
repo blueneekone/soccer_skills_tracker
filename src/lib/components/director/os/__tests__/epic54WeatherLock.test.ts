@@ -37,10 +37,19 @@ describe('Epic 5.4 — field weather lock', () => {
 		expect(status.provider).toBe('aegis');
 	});
 
-	it('functions index re-exports evaluateFieldWeatherLock', () => {
-		const idx = readFileSync(INDEX, 'utf8');
-		expect(idx).toMatch(/weatherOps/);
+	it('weatherOps exports refreshClubWeatherLock director callable', () => {
+		const src = readFileSync(WEATHER_OPS, 'utf8');
+		expect(src).toMatch(/exports\.refreshClubWeatherLock\s*=/);
+		expect(src).toMatch(/runWeatherLockPass/);
+	});
+
+	it('integrations codebase bundles and deploys weather lock functions', () => {
+		const idx = readFileSync(join(ROOT, 'functions-integrations/index.js'), 'utf8');
 		expect(idx).toMatch(/evaluateFieldWeatherLock/);
+		expect(idx).toMatch(/refreshClubWeatherLock/);
+		const pkg = readFileSync(join(ROOT, 'package.json'), 'utf8');
+		expect(pkg).toMatch(/integrations:evaluateFieldWeatherLock/);
+		expect(pkg).toMatch(/integrations:refreshClubWeatherLock/);
 	});
 
 	it('firestore.rules defines field_weather_status director read, CF-only write', () => {
@@ -54,6 +63,8 @@ describe('Epic 5.4 — field weather lock', () => {
 		expect(src).toMatch(/field_weather_status/);
 		expect(src).toMatch(/Weather lock active/);
 		expect(src).toMatch(/Weather advisory/);
+		expect(src).toMatch(/refreshClubWeatherLock/);
+		expect(src).toMatch(/Refresh weather lock/);
 	});
 
 	it('DeploymentCalendar blocks schedule on locked facilities', () => {
