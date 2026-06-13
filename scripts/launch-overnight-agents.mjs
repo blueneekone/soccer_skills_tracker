@@ -79,7 +79,7 @@ function loadPrompt(agentFile) {
 }
 
 function branchForPrompt(promptText) {
-	const m = promptText.match(/Branch:\s*`?(overnight\/[^\s`]+)`?/);
+	const m = promptText.match(/(?:\*\*)?Branch:(?:\*\*)?\s*`?(overnight\/[^\s`*]+)`?/);
 	if (!m) {
 		throw new Error('Prompt file missing "Branch: overnight/..." line');
 	}

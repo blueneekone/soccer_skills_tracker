@@ -1,1 +1,162 @@
-[]
+[
+  {
+    "agentFile": "01-docs-dataroom",
+    "branch": "overnight/docs-dataroom",
+    "agentId": "bc-9333e696-2b78-484a-bff1-3fa8db2972d2",
+    "url": "https://cursor.com/agents/bc-9333e696-2b78-484a-bff1-3fa8db2972d2",
+    "runId": "run-715847c2-6388-4967-84cb-7692197c558a",
+    "launchedAt": "2026-06-13T10:16:55.196Z"
+  },
+  {
+    "agentFile": "02-launch-p0",
+    "branch": "overnight/launch-p0",
+    "agentId": "bc-5b0bd7e4-fec6-47ab-9309-4305c14b7e1b",
+    "url": "https://cursor.com/agents/bc-5b0bd7e4-fec6-47ab-9309-4305c14b7e1b",
+    "runId": "run-e5aafeb3-24e0-45c6-bcde-8b9cbec214d5",
+    "launchedAt": "2026-06-13T10:16:59.768Z"
+  },
+  {
+    "agentFile": "03-p2-reg-roster",
+    "branch": "overnight/p2-reg-roster",
+    "agentId": "bc-b6283d5c-908d-4e71-9561-1a6f5532c256",
+    "url": "https://cursor.com/agents/bc-b6283d5c-908d-4e71-9561-1a6f5532c256",
+    "runId": "run-b081d5e3-9296-4531-9181-1f8aac8d60fc",
+    "launchedAt": "2026-06-13T10:17:04.243Z"
+  },
+  {
+    "agentFile": "04-p2-payments",
+    "branch": "overnight/p2-payments",
+    "agentId": "bc-6a5258db-6006-49a6-8781-9f2b82d566f6",
+    "url": "https://cursor.com/agents/bc-6a5258db-6006-49a6-8781-9f2b82d566f6",
+    "runId": "run-4dc73ecb-cde2-4f11-857e-097245c8f0cb",
+    "launchedAt": "2026-06-13T10:17:08.780Z"
+  },
+  {
+    "agentFile": "05-p2-tournament",
+    "branch": "overnight/p2-tournament",
+    "agentId": "bc-cbadd6d2-236c-4eab-b858-e6ab43992c5e",
+    "url": "https://cursor.com/agents/bc-cbadd6d2-236c-4eab-b858-e6ab43992c5e",
+    "runId": "run-2db35ed1-362f-475d-99ee-b0e3cf1a3db9",
+    "launchedAt": "2026-06-13T10:17:13.512Z"
+  },
+  {
+    "agentFile": "06-p2-checkr",
+    "branch": "overnight/p2-checkr",
+    "agentId": "bc-54bfbe34-0387-4d0a-a316-e656fb16c976",
+    "url": "https://cursor.com/agents/bc-54bfbe34-0387-4d0a-a316-e656fb16c976",
+    "runId": "run-7c47c743-e51e-4fa8-8aea-aeca44bccd6b",
+    "launchedAt": "2026-06-13T10:17:18.092Z"
+  },
+  {
+    "agentFile": "07-p2-tracker-nav",
+    "branch": "overnight/p2-tracker-nav",
+    "agentId": "bc-91283d85-4fa0-426a-89a7-73c72c9a6407",
+    "url": "https://cursor.com/agents/bc-91283d85-4fa0-426a-89a7-73c72c9a6407",
+    "runId": "run-b9d3e426-074b-48fa-835c-28cb3d365ac8",
+    "launchedAt": "2026-06-13T10:17:22.396Z"
+  },
+  {
+    "agentFile": "08-check-routes",
+    "branch": "overnight/check-routes",
+    "agentId": "bc-8366b727-7686-4197-9cd4-097ba0696c82",
+    "url": "https://cursor.com/agents/bc-8366b727-7686-4197-9cd4-097ba0696c82",
+    "runId": "run-55f98316-9ad8-4bf6-8476-11625bf0d8a5",
+    "launchedAt": "2026-06-13T10:17:27.357Z"
+  },
+  {
+    "agentFile": "09-check-components",
+    "branch": "overnight/check-components",
+    "agentId": "bc-a4e10346-f277-40fc-9bc7-d8461f7406b7",
+    "url": "https://cursor.com/agents/bc-a4e10346-f277-40fc-9bc7-d8461f7406b7",
+    "runId": "run-3262089e-b1b4-43a2-b63c-ab4fa098b30d",
+    "launchedAt": "2026-06-13T10:17:31.989Z"
+  },
+  {
+    "agentFile": "10-check-stores",
+    "branch": "overnight/check-stores",
+    "agentId": "bc-c3553392-c219-474b-b427-ea88838a10e1",
+    "url": "https://cursor.com/agents/bc-c3553392-c219-474b-b427-ea88838a10e1",
+    "runId": "run-9d5da7ab-ab71-44d4-a292-3fd1faf26173",
+    "launchedAt": "2026-06-13T10:17:36.356Z"
+  },
+  {
+    "agentFile": "11-check-coach-dir",
+    "branch": "overnight/check-coach-dir",
+    "agentId": "bc-3355dbb1-c18d-4e36-927f-f8d3864e39c2",
+    "url": "https://cursor.com/agents/bc-3355dbb1-c18d-4e36-927f-f8d3864e39c2",
+    "runId": "run-15f1604a-23d1-4cdc-874b-7dbc86726e95",
+    "launchedAt": "2026-06-13T10:17:40.793Z"
+  },
+  {
+    "agentFile": "13-check-player",
+    "branch": "overnight/check-player",
+    "agentId": "bc-467f7672-58f9-4edb-bf32-7f4cd6756a96",
+    "url": "https://cursor.com/agents/bc-467f7672-58f9-4edb-bf32-7f4cd6756a96",
+    "runId": "run-879d3509-dbfc-4386-9ade-ff0e1f82ce17",
+    "launchedAt": "2026-06-13T10:17:45.324Z"
+  },
+  {
+    "agentFile": "14-fed-ngb",
+    "branch": "overnight/fed-ngb",
+    "agentId": "bc-d8849696-86fc-46ac-becf-a1cad555df21",
+    "url": "https://cursor.com/agents/bc-d8849696-86fc-46ac-becf-a1cad555df21",
+    "runId": "run-c8df60cc-7511-4e51-82c2-c577bd4c51a7",
+    "launchedAt": "2026-06-13T10:17:49.697Z"
+  },
+  {
+    "agentFile": "15-live-stream",
+    "branch": "overnight/live-stream",
+    "agentId": "bc-e5263dad-50ce-49fc-9c9e-f37549aa7640",
+    "url": "https://cursor.com/agents/bc-e5263dad-50ce-49fc-9c9e-f37549aa7640",
+    "runId": "run-f7ef7bdc-a67c-4369-8d9c-b26135906772",
+    "launchedAt": "2026-06-13T10:17:54.208Z"
+  },
+  {
+    "agentFile": "16-marketing-acq",
+    "branch": "overnight/marketing-acq",
+    "agentId": "bc-fbcba966-b93d-43a9-bd20-05824dca23aa",
+    "url": "https://cursor.com/agents/bc-fbcba966-b93d-43a9-bd20-05824dca23aa",
+    "runId": "run-8eedf463-48d1-462a-b546-92235ff81811",
+    "launchedAt": "2026-06-13T10:17:58.946Z"
+  },
+  {
+    "agentFile": "17-native-shell",
+    "branch": "overnight/native-shell",
+    "agentId": "bc-f14820b9-c6ce-469f-8168-2353bef2bca2",
+    "url": "https://cursor.com/agents/bc-f14820b9-c6ce-469f-8168-2353bef2bca2",
+    "runId": "run-35577184-65ff-4db8-94b1-212cbf3df7de",
+    "launchedAt": "2026-06-13T10:18:03.298Z"
+  },
+  {
+    "agentFile": "18-gemini-ingest-1",
+    "branch": "overnight/gemini-ingest-1",
+    "agentId": "bc-db7d7b78-d5e2-4ad4-a330-2a5ce8f058a7",
+    "url": "https://cursor.com/agents/bc-db7d7b78-d5e2-4ad4-a330-2a5ce8f058a7",
+    "runId": "run-d3d1e59b-0323-401d-88ff-b7a2179ec95f",
+    "launchedAt": "2026-06-13T10:18:07.563Z"
+  },
+  {
+    "agentFile": "19-gemini-ingest-2",
+    "branch": "overnight/gemini-ingest-2",
+    "agentId": "bc-fa87ed58-189b-438f-8e0d-9cb24bfd867a",
+    "url": "https://cursor.com/agents/bc-fa87ed58-189b-438f-8e0d-9cb24bfd867a",
+    "runId": "run-39256a38-e41b-4294-856b-fa5f4c0a6456",
+    "launchedAt": "2026-06-13T10:18:12.232Z"
+  },
+  {
+    "agentFile": "20-gemini-ingest-3",
+    "branch": "overnight/gemini-ingest-3",
+    "agentId": "bc-128dca65-d547-489c-b9b2-c53b87e2578e",
+    "url": "https://cursor.com/agents/bc-128dca65-d547-489c-b9b2-c53b87e2578e",
+    "runId": "run-e36e9ae9-f83d-464b-8448-d406495a0c99",
+    "launchedAt": "2026-06-13T10:18:16.650Z"
+  },
+  {
+    "agentFile": "21-orch",
+    "branch": "overnight/orch",
+    "agentId": "bc-a2841115-639c-4d55-88a2-303bbb16b22d",
+    "url": "https://cursor.com/agents/bc-a2841115-639c-4d55-88a2-303bbb16b22d",
+    "runId": "run-cd8c34a5-7b3e-42fc-aba3-b7b6a450db50",
+    "launchedAt": "2026-06-13T10:18:23.000Z"
+  }
+]
