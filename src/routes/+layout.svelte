@@ -8,6 +8,7 @@
 	import { page } from '$app/state';
 	import { themeStore } from '$lib/stores/theme.svelte.js';
 	import PwaInstallPrompt from '$lib/components/ui/PwaInstallPrompt.svelte';
+	import NativeShellRedirect from '$lib/components/native/NativeShellRedirect.svelte';
 	import VanguardVFX from '../components/VanguardVFX.svelte';
 	import { fade } from 'svelte/transition';
 
@@ -30,4 +31,5 @@
 		</div>
 	{/key}
 </div>
+<NativeShellRedirect />
 <PwaInstallPrompt />
