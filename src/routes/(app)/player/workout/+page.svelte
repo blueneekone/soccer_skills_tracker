@@ -2,7 +2,6 @@
   import { browser } from '$app/environment';
   import { goto } from '$app/navigation';
   import { page } from '$app/state';
-  import { resolve } from '$app/paths';
   import { untrack } from 'svelte';
   import Icon from '$lib/components/ui/Icon.svelte';
   import { httpsCallable } from 'firebase/functions';
@@ -16,7 +15,7 @@
   import { calculateTrainingSessionEarnedXp, getLevelProgressFromTotalXp } from '$lib/gamification/level.js';
   import { buildWorkoutDrillType, executePlayerWorkoutLog, expectedWorkoutXp, intensityApiFromStep, validatePlayerWorkoutLog, workoutLogErrorMessage } from '$lib/player/workoutLog.js';
   import { formatAttributeLabel, loadQuestProgress, markQuestCompletedAfterWorkoutLog, saveQuestProgress } from '$lib/player/dashboard/activeBounties.js';
-  import { attributeIdToWorkoutFocus, buildPolicyHintsFromResult, clearMissionHandoff, COACH_INTENT_HINT, formatSuggestedDrillLine, isMissionHandoffStale, readMissionHandoff, resolveHandoffDurationMinutes, resolveHandoffTargetRpe, resolveDrillById, resolveHeuristicDrill, type MissionHandoff } from '$lib/player/workout/coachMissionFlow.js';
+  import { attributeIdToWorkoutFocus, buildPolicyHintsFromResult, clearMissionHandoff, COACH_INTENT_HINT, formatSuggestedDrillLine, isMissionHandoffStale, readMissionHandoff, resolveHandoffDurationMinutes, resolveHandoffTargetRpe, resolveDrillById, resolveHeuristicDrill, type MissionHandoff, type WorkoutFocus } from '$lib/player/workout/coachMissionFlow.js';
   import type { PrescriptionDrillEntry } from '$lib/types/intent.js';
   import { resolveTeamDrillById as resolveTeamLibraryDrill } from '$lib/coach/teamDrillLibrary.js';
   import { clampFreeLogDurationMinutes, FREE_LOG_DURATION_MAX_MINUTES, isCoachDirectedHandoff, SESSION_NOTES_MAX_LENGTH } from '$lib/player/workout/workoutSessionConstants.js';
@@ -70,7 +69,7 @@
   });
 
   /** @type {'technical' | 'physical' | 'tactical' | 'recovery'} */
-  let selectedFocus = $state('technical');
+  let selectedFocus = $state<WorkoutFocus>('technical');
   let selectedDrill = $state(/** @type {string | null} */ (null));
   let intensity = $state(5);
   let duration = $state(30);
@@ -86,7 +85,7 @@
 
   /** Diegetic overlay state machine (Wave D — replaces legacy commit modals). */
   let overlayOpen = $state(false);
-  let overlayVariant = $state(/** @type {'success' | 'error' | 'confirm'} */ ('error'));
+  let overlayVariant = $state<'success' | 'error' | 'confirm'>('error');
   let overlayTitle = $state('');
   let overlayMessage = $state('');
 
@@ -659,10 +658,8 @@
       role: authStore.role,
       profile,
     });
-    if (!gate.ok) {
-      if (gate.title) {
-        showDiegeticError(gate.title, gate.text);
-      }
+    if (gate.ok === false) {
+      showDiegeticError(gate.title, gate.text);
       return;
     }
     if (!selectedDrill && !isCoachDirectedSession) return;
@@ -746,7 +743,7 @@
 
   {#if hasCoachIntents && !activeMissionId}
     <p class="pw-hq-link pw-mono">
-      <a href={resolve('/player/dashboard')}>Coach missions on HQ →</a>
+      <a href="/player/dashboard">Coach missions on HQ →</a>
       <span class="pw-dim"> · accept a mission, then start session here</span>
       <button
         type="button"

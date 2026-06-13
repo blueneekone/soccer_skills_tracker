@@ -300,8 +300,7 @@
 		flashErr = '';
 		try {
 			const ref = doc(db, 'recruiters', row.id);
-			/** @type {Record<string, unknown>} */
-			const patch = {
+			const patch: Record<string, unknown> = {
 				verificationStatus: next,
 				verificationUpdatedAt: serverTimestamp(),
 				verificationUpdatedBy: authStore.user?.email || 'super_admin'
@@ -470,7 +469,7 @@
 				title={loading ? 'Syncing…' : 'Refresh'}
 				aria-label="Refresh recruiter list from Firestore"
 			>
-				<Icon name={"nav.refresh" as IconName} class="tw-text-lg {loading ? 'ar-toolbar-sync__spin' : ''}" aria-hidden="true" />
+				<Icon name={"nav.refresh" as IconName} class="tw-text-lg {loading ? 'ar-toolbar-sync__spin' : ''}" />
 			</button>
 			<div class="ar-tabs" role="tablist" aria-label="Verification filter">
 				<button
@@ -572,7 +571,7 @@
 									{/if}
 									{#if row.region}
 										<span class="ar-agency__meta">
-										<Icon name={"sys.map-pin" as IconName} aria-hidden="true" />
+										<Icon name={"sys.map-pin" as IconName} />
 											{row.region}
 										</span>
 									{/if}
@@ -597,12 +596,12 @@
 								class="ar-verify-pill ar-verify-pill--{row.verificationStatus}"
 							>
 								{#if row.verificationStatus === 'verified'}
-									<Icon name={"status.seal-check" as IconName} aria-hidden="true" />
+									<Icon name={"status.seal-check" as IconName} />
 								{:else}
 									{#if row.verificationStatus === 'rejected'}
-									<Icon name={"sys.ban" as IconName} aria-hidden="true" />
+									<Icon name={"sys.ban" as IconName} />
 								{:else}
-									<Icon name={"sys.hourglass" as IconName} aria-hidden="true" />
+									<Icon name={"sys.hourglass" as IconName} />
 								{/if}
 								{/if}
 								{row.verificationStatus}
@@ -612,14 +611,14 @@
 							<td class="ar-td">
 							<span class="ar-vet-pill ar-vet-pill--{row.vettingStatus}">
 								{#if row.vettingStatus === 'cleared'}
-									<Icon name={"status.shield-check" as IconName} aria-hidden="true" />
+									<Icon name={"status.shield-check" as IconName} />
 								{:else if row.vettingStatus === 'processing'}
-									<Icon name={"status.loading" as IconName} class="ar-vet-pill__spin" aria-hidden="true" />
+									<Icon name={"status.loading" as IconName} class="ar-vet-pill__spin" />
 								{:else}
 									{#if row.vettingStatus === 'flagged'}
-									<Icon name={"status.warning-octagon" as IconName} aria-hidden="true" />
+									<Icon name={"status.warning-octagon" as IconName} />
 								{:else}
-									<Icon name={"sys.hourglass" as IconName} aria-hidden="true" />
+									<Icon name={"sys.hourglass" as IconName} />
 								{/if}
 								{/if}
 								{row.vettingStatus}
@@ -666,7 +665,7 @@
 												onclick={() => approve(row)}
 												disabled={busyFor === row.id}
 											>
-										<Icon name={"status.verified" as IconName} aria-hidden="true" />
+										<Icon name={"status.verified" as IconName} />
 											Approve
 											</button>
 										{/if}
@@ -677,7 +676,7 @@
 												onclick={() => openReject(row)}
 												disabled={busyFor === row.id}
 											>
-										<Icon name={"sys.close" as IconName} aria-hidden="true" />
+										<Icon name={"sys.close" as IconName} />
 											Reject
 											</button>
 										{/if}
@@ -691,7 +690,7 @@
 												aria-label="More actions for {row.email}"
 												disabled={busyFor === row.id}
 											>
-												<Icon name={"nav.more-v" as IconName} aria-hidden="true" />
+												<Icon name={"nav.more-v" as IconName} />
 											</button>
 											{#if openMenuFor === row.id}
 												<div
@@ -707,7 +706,7 @@
 														class="ar-menu__item"
 														onclick={() => runBackgroundCheck(row)}
 													>
-														<Icon name={"status.shield-check" as IconName} aria-hidden="true" />
+														<Icon name={"status.shield-check" as IconName} />
 														<span class="ar-menu__item-body">
 															<span class="ar-menu__item-label">Run Background Check</span>
 															<span class="ar-menu__item-hint">Checkr API — Sprint 2.9</span>
@@ -720,7 +719,7 @@
 															class="ar-menu__item"
 															onclick={() => { closeMenu(); resetPending(row); }}
 														>
-															<Icon name={"nav.rotate-ccw" as IconName} aria-hidden="true" />
+															<Icon name={"nav.rotate-ccw" as IconName} />
 															<span class="ar-menu__item-body">
 																<span class="ar-menu__item-label">Reset to Pending</span>
 																<span class="ar-menu__item-hint">Return to queue</span>
@@ -733,7 +732,7 @@
 														class="ar-menu__item"
 														onclick={() => closeMenu()}
 													>
-														<Icon name={"comm.send" as IconName} aria-hidden="true" />
+														<Icon name={"comm.send" as IconName} />
 														<span class="ar-menu__item-body">
 															<span class="ar-menu__item-label">Email Scout</span>
 															<span class="ar-menu__item-hint">{row.email}</span>
@@ -762,7 +761,6 @@
 						: t.tone === 'warn'
 							? ("status.warning" as IconName)
 							: ("status.info" as IconName)}
-					aria-hidden="true"
 				/>
 				<span>{t.text}</span>
 			</div>

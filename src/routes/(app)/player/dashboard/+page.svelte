@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { browser } from '$app/environment';
-	import { resolve } from '$app/paths';
 	import { goto } from '$app/navigation';
 	import Icon from '$lib/components/ui/Icon.svelte';
 	import type { IconName } from '$lib/icons/registry.js';
@@ -385,7 +384,7 @@
 		aria-live="polite"
 		aria-busy="true"
 	>
-		<Icon name="status.loading" class="tw-animate-spin tw-text-4xl" style="color: var(--pd-text-muted, rgba(255, 255, 255, 0.5));" />
+		<Icon name="status.loading" class="tw-animate-spin tw-text-4xl tw-text-[color:var(--pd-text-muted,rgba(255,255,255,0.5))]" />
 		<span class="tw-sr-only">Loading player dashboard</span>
 	</div>
 {:else if !activePlayer}
@@ -462,7 +461,7 @@
 						lastTrainingUtc={lastTrainingUtc}
 						profileIncomplete={!hasArmoryProfile}
 						cardMetadata={hqCardMetadata}
-						onProfileSetup={() => void goto(resolve('/player/armory?tab=studio'))}
+						onProfileSetup={() => void goto('/player/armory?tab=studio')}
 					/>
 				{/snippet}
 				{#snippet metrics()}
@@ -599,7 +598,7 @@
 
 		<div class="bento-mt-lg tw-flex tw-flex-wrap tw-items-center tw-gap-3">
 			<a
-				href={resolve('/player/armory?tab=studio')}
+				href="/player/armory?tab=studio"
 				class="init-modal__cta init-modal__cta--primary tw-inline-flex tw-min-h-[44px] tw-w-fit tw-items-center tw-justify-center tw-gap-2 tw-px-5 tw-font-mono tw-text-[0.5625rem] tw-font-bold tw-uppercase tw-tracking-[0.14em] tw-no-underline tw-transition-all tw-duration-150 active:tw-scale-[0.98]"
 				data-sveltekit-preload-data="hover"
 				onclick={() => (showInitModal = false)}

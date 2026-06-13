@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { browser } from '$app/environment';
-	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import Icon from '$lib/components/ui/Icon.svelte';
@@ -58,7 +57,7 @@
 	let operativeLoadout = $state(defaultOperativeLoadout());
 	let ownedCosmetics = $state(/** @type {string[]} */ ([]));
 
-	let ownedSeasonOneCardIds = $state(/** @type {Set<string>} */ (new Set()));
+	let ownedSeasonOneCardIds = $state(new Set<string>());
 
 	let selectedAlbumSetId = $state(
 		seasonOneSets[0]?.id ?? 'street_kings',
@@ -269,7 +268,7 @@
 
 	/** Diegetic overlay state (Wave E — replaces legacy deployment toasts). */
 	let overlayOpen = $state(false);
-	let overlayVariant = $state(/** @type {'success' | 'error' | 'confirm'} */ ('error'));
+	let overlayVariant = $state<'success' | 'error' | 'confirm'>('error');
 	let overlayTitle = $state('');
 	let overlayMessage = $state('');
 	let overlayAutoDismissMs = $state(0);
@@ -523,9 +522,9 @@
 								<p class="pd-empty-state__title">Insufficient TC</p>
 								<p class="pd-empty-state__lede">
 									Earn credits via
-									<a href={resolve('/player/dashboard')} class="qa-insufficient__link">HQ missions</a>
+									<a href="/player/dashboard" class="qa-insufficient__link">HQ missions</a>
 									or
-									<a href={resolve('/player/workout')} class="qa-insufficient__link">training sessions</a>.
+									<a href="/player/workout" class="qa-insufficient__link">training sessions</a>.
 								</p>
 							</div>
 						</div>

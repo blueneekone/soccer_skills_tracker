@@ -40,6 +40,7 @@
 	let rsvpSubmitting = $state(false);
 	let rsvpErr = $state('');
 	let rsvpOk = $state('');
+	let rsvpStatus = $state<'going' | 'not_going' | 'maybe' | ''>('');
 
 	$effect(() => {
 		const id = programId.trim();

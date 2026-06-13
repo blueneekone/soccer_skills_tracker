@@ -3,15 +3,21 @@
 	import { commitDrillCompletion, commitGritAward } from '$lib/services/writes.svelte';
 	import { dopamineOnCommit } from '$lib/services/dopamine.svelte.js';
 
-	/**
-	 * @type {{ drillId: string, drillTitle: string, baseXp?: number, attributeId: string, complexityRank?: 1 | 2 | 3 }}
-	 *
-	 * complexityRank: drill difficulty rank from the Composite Snowflake taxonomy.
-	 *   1 = beginner node, 2 = intermediate, 3 = advanced.
-	 *   Only rank-3 drills show the "LOG GRIT" button (Epic 7 gate).
-	 *   Defaults to 1 so legacy callers that omit the prop never see the button.
-	 */
-	let { drillId, drillTitle, baseXp = 25, attributeId, complexityRank = 1 } = $props();
+	interface Props {
+		drillId: string;
+		drillTitle: string;
+		baseXp?: number;
+		attributeId: string;
+		complexityRank?: 1 | 2 | 3;
+	}
+
+	let {
+		drillId,
+		drillTitle,
+		baseXp = 25,
+		attributeId,
+		complexityRank = 1 as 1 | 2 | 3,
+	}: Props = $props();
 
 	let isCompleting = $state(false);
 	let gritMode = $state(false);

@@ -8,16 +8,9 @@
 	import '$lib/styles/enterprise-console.css';
 	import Icon from '$lib/components/ui/Icon.svelte';
 	import type { IconName } from '$lib/icons/registry.js';
+	import { ADMIN_CLUB_CTX_KEY, type AdminClubCtx } from '../adminClubCtx.js';
 
-	/**
-	 * @type {{
-	 *   clubDoc: Record<string, unknown> & { id: string } | null,
-	 *   clubId: string,
-	 *   clubLoading: boolean,
-	 *   clubErr: string,
-	 * }}
-	 */
-	const ctx = getContext('adminClubCtx');
+	const ctx = getContext<AdminClubCtx>(ADMIN_CLUB_CTX_KEY);
 
 	// ── Teams for this club (derived from global store) ─────────────────────────
 	const clubTeams = $derived(
@@ -84,7 +77,7 @@
 	<div class="teams-page__toolbar">
 		<div class="teams-page__toolbar-left">
 			<h2 class="teams-page__title">
-				<Icon name={"user.group" as IconName} aria-hidden="true" />
+				<Icon name={"user.group" as IconName} />
 				Teams
 			</h2>
 			{#if !ctx.clubLoading && ctx.clubDoc}
@@ -99,7 +92,7 @@
 			onclick={() => (showAddForm = !showAddForm)}
 			aria-expanded={showAddForm}
 		>
-			<Icon name={showAddForm ? ("sys.close" as IconName) : ("action.add" as IconName)} aria-hidden="true" />
+			<Icon name={showAddForm ? ("sys.close" as IconName) : ("action.add" as IconName)} />
 			{showAddForm ? 'Cancel' : 'Add Team'}
 		</button>
 	</div>
@@ -199,7 +192,7 @@
 									href="/admin/organizations/{ctx.clubId}/teams/{t.id}/roster"
 									aria-label="View roster for {t.name || t.id}"
 								>
-								<Icon name={"user.group" as IconName} aria-hidden="true" />
+								<Icon name={"user.group" as IconName} />
 								View Roster
 								</a>
 							</td>

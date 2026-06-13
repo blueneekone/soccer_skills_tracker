@@ -10,19 +10,11 @@
 	import '$lib/styles/enterprise-console.css';
 	import Icon from '$lib/components/ui/Icon.svelte';
 	import type { IconName } from '$lib/icons/registry.js';
+	import { ADMIN_CLUB_CTX_KEY, type AdminClubCtx } from './adminClubCtx.js';
 
 	const generateLicenseFn = httpsCallable(functions, 'generateLicense');
 
-	/**
-	 * @type {{
-	 *   clubDoc: Record<string, unknown> & { id: string } | null,
-	 *   clubId: string,
-	 *   clubLoading: boolean,
-	 *   clubErr: string,
-	 *   setClubDoc: (d: Record<string, unknown> & { id: string }) => void,
-	 * }}
-	 */
-	const ctx = getContext('adminClubCtx');
+	const ctx = getContext<AdminClubCtx>(ADMIN_CLUB_CTX_KEY);
 
 	// ── License entitlement ──────────────────────────────────────────────────────
 	/** @type {Record<string, unknown> | null} */
@@ -149,7 +141,7 @@
 				maxSeats: Number(licenseMaxSeats) || 10,
 				durationMonths: Number(licenseDurationMonths) || 12,
 			});
-			const data = /** @type {{ ok?: boolean, licenseKey?: string }} */ (res.data);
+			const data = res.data as { ok?: boolean; licenseKey?: string } | undefined;
 			if (data?.ok && data.licenseKey) {
 				licenseOk = `License created: ${data.licenseKey}`;
 				licenseType = 'subscription';
@@ -217,7 +209,7 @@
 		<div class="cd-loading">Loading organization…</div>
 	{:else if ctx.clubErr}
 		<div class="cd-err" role="alert">
-			<Icon name={"status.warning-circle" as IconName} aria-hidden="true" />
+			<Icon name={"status.warning-circle" as IconName} />
 			{ctx.clubErr}
 			<a href="/admin/organizations" class="cd-err__back">← Back to Organizations</a>
 		</div>
@@ -234,7 +226,7 @@
 				/>
 			{:else}
 				<div class="cd-identity__logo-fallback" aria-hidden="true">
-					<Icon name={"org.building" as IconName} aria-hidden="true" />
+					<Icon name={"org.building" as IconName} />
 				</div>
 			{/if}
 			<div class="cd-identity__text">
@@ -269,13 +261,13 @@
 		<!-- ── Strike 2: Operations & Contact (Google-Places demographics) ────── -->
 		<div class="card">
 			<div class="card-header">
-				<Icon name={"sys.map-pin" as IconName} aria-hidden="true" /> Operations &amp; Contact
+				<Icon name={"sys.map-pin" as IconName} /> Operations &amp; Contact
 			</div>
 			<div class="card-body">
 				<div class="cd-ops">
 					<div class="cd-ops__row">
 						<span class="cd-ops__label">
-							<Icon name={"sys.map-pin" as IconName} aria-hidden="true" />
+							<Icon name={"sys.map-pin" as IconName} />
 							Verified Address
 						</span>
 						{#if typeof ctx.clubDoc.verifiedAddress === 'string' && ctx.clubDoc.verifiedAddress.trim()}
@@ -288,7 +280,7 @@
 					</div>
 					<div class="cd-ops__row">
 						<span class="cd-ops__label">
-							<Icon name={"comm.phone" as IconName} aria-hidden="true" />
+							<Icon name={"comm.phone" as IconName} />
 							Phone Number
 						</span>
 						{#if typeof ctx.clubDoc.phoneNumber === 'string' && ctx.clubDoc.phoneNumber.trim()}
@@ -301,7 +293,7 @@
 					</div>
 					<div class="cd-ops__row">
 						<span class="cd-ops__label">
-							<Icon name={"sport.soccer" as IconName} aria-hidden="true" />
+							<Icon name={"sport.soccer" as IconName} />
 							Primary Facility
 						</span>
 						{#if typeof ctx.clubDoc.primaryFacility === 'string' && ctx.clubDoc.primaryFacility.trim()}
@@ -317,12 +309,12 @@
 		<!-- ── Licensing & Entitlement ────────────────────────────────────────── -->
 		<div class="card border-gold">
 			<div class="card-header bg-gold-header">
-				<Icon name={"sys.credit-card" as IconName} aria-hidden="true" /> Licensing & Entitlement
+				<Icon name={"sys.credit-card" as IconName} /> Licensing & Entitlement
 			</div>
 			<div class="card-body">
 				{#if ctx.clubDoc.isInfinite === true}
 				<p class="cd-license__infinite">
-					<Icon name={"sys.infinity" as IconName} aria-hidden="true" />
+					<Icon name={"sys.infinity" as IconName} />
 						This organization has an infinite / promotional license — no seat cap enforcement.
 					</p>
 				{:else if entitlementLoading}
@@ -399,7 +391,7 @@
 		<!-- ── Edit organization ──────────────────────────────────────────────── -->
 		<div class="card">
 			<div class="card-header">
-				<Icon name={"action.edit" as IconName} aria-hidden="true" /> Edit Organization
+				<Icon name={"action.edit" as IconName} /> Edit Organization
 			</div>
 			<div class="card-body">
 				{#if editErr}
@@ -450,7 +442,7 @@
 		<!-- ── Assign Director ────────────────────────────────────────────────── -->
 		<div class="card">
 			<div class="card-header">
-				<Icon name={"user.settings" as IconName} aria-hidden="true" /> Assign Director
+				<Icon name={"user.settings" as IconName} /> Assign Director
 			</div>
 			<div class="card-body">
 				{#if assignDirErr}
@@ -482,7 +474,7 @@
 		<!-- ── Danger zone ─────────────────────────────────────────────────────── -->
 		<div class="cd-danger">
 			<p class="cd-danger__label">
-				<Icon name={"status.warning" as IconName} aria-hidden="true" />
+				<Icon name={"status.warning" as IconName} />
 				Danger Zone
 			</p>
 			<p class="cd-danger__hint">
@@ -494,7 +486,7 @@
 				class="delete-btn cd-danger__btn"
 				onclick={deleteCurrentClub}
 			>
-				<Icon name={"action.delete" as IconName} aria-hidden="true" />
+				<Icon name={"action.delete" as IconName} />
 				Delete organization "{ctx.clubDoc.name || ctx.clubId}"
 			</button>
 		</div>

@@ -21,6 +21,7 @@
 		loadDrillTitlesForFocus,
 		WORKOUT_FOCUS_AREAS,
 	} from '$lib/player/workout/focusDrillCatalog.js';
+	import type { WorkoutFocus } from '$lib/player/workout/coachMissionFlow.js';
 
 	const TELEMETRY_INTEL = {
 		title: 'GUARDIAN TELEMETRY',
@@ -51,8 +52,7 @@
 	let childProfile = $state(null);
 	let childProfileLoading = $state(false);
 
-	/** @type {'technical' | 'physical' | 'tactical' | 'recovery'} */
-	let selectedFocus = $state('technical');
+	let selectedFocus = $state<WorkoutFocus>('technical');
 	let selectedDrill = $state(/** @type {string | null} */ (null));
 	let intensity = $state(5);
 	let duration = $state(30);
@@ -301,7 +301,7 @@
 			}),
 			{ kind: 'drill' },
 		);
-			const payload = res.data;
+			const payload = res.data as { earnedXP?: number; athleteUid?: string } | undefined;
 			const earned = payload && typeof payload.earnedXP === 'number' ? payload.earnedXP : 0;
 			const athUid =
 				payload && typeof payload.athleteUid === 'string' && payload.athleteUid ? payload.athleteUid : '';

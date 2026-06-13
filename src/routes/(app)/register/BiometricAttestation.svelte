@@ -10,7 +10,7 @@
     onComplete: () => void;
   };
 
-  const { inviteToken = '', childEmail = '', onComplete } = $props<Props>();
+  const { inviteToken = '', childEmail = '', onComplete }: Props = $props();
 
   type FlowStatus = 'checking' | 'ready' | 'authenticating' | 'verifying' | 'success' | 'error' | 'fallback';
 
@@ -58,7 +58,7 @@
 
       const credential = await navigator.credentials.create({
         publicKey: {
-          challenge: challengeBytes,
+          challenge: challengeBytes as BufferSource,
           rp: { name: rpName, id: window.location.hostname },
           user: {
             id: userIdBytes,

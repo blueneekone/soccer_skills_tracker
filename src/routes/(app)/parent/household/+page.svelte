@@ -72,7 +72,7 @@
 	let gtActionBusyKey = $state(null);
 
 	/** @type {false | { code: string; expiresAt: number; displayName: string }} */
-	let otpDialog = $state(/** @type {false | { code: string; expiresAt: number; displayName: string }} */ (false));
+	let otpDialog = $state<false | { code: string; expiresAt: number; displayName: string }>(false);
 
 	/** Ticks so countdown text updates every second. */
 	let otpCountdownTick = $state(0);
@@ -97,9 +97,10 @@
 	});
 
 	const otpSecondsLeft = $derived.by(() => {
-		if (!otpDialog || typeof otpDialog !== 'object' || !('expiresAt' in otpDialog)) return 0;
+		const dialog = otpDialog;
+		if (dialog === false) return 0;
 		void otpCountdownTick;
-		return Math.max(0, Math.ceil((otpDialog.expiresAt - Date.now()) / 1000));
+		return Math.max(0, Math.ceil((dialog.expiresAt - Date.now()) / 1000));
 	});
 
 	const otpCountdownLabel = $derived.by(() => {
@@ -300,8 +301,7 @@
 		lastDispatch = '';
 		try {
 			const teamCodeOpt = teamDispatchCode.trim();
-			/** @type {Record<string, string>} */
-			const payload = {
+			const payload: Record<string, string> = {
 				childName: childName.trim(),
 				operativeCallsign: oper,
 			};
@@ -358,13 +358,12 @@
 		otpGenBusyKey = row.email;
 		try {
 			const res = await generatePlayerOTP({ childEmail: row.email });
-			const data = res && typeof res === 'object' && 'data' in res ? res.data : res;
-			const code =
-				data && typeof data === 'object' && data.code != null ? String(data.code) : '';
-			const iso =
-				data && typeof data === 'object' && data.expiresAt != null ?
-					String(data.expiresAt) :
-					'';
+			const data = (res && typeof res === 'object' && 'data' in res ? res.data : res) as {
+				code?: unknown;
+				expiresAt?: unknown;
+			} | null;
+			const code = data && typeof data === 'object' && data.code != null ? String(data.code) : '';
+			const iso = data && typeof data === 'object' && data.expiresAt != null ? String(data.expiresAt) : '';
 			if (!code) {
 				throw new Error('No code returned.');
 			}
@@ -746,7 +745,7 @@
 	{/if}
 </div>
 
-{#if otpDialog}
+{#if otpDialog !== false}
 	<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
 	<div
 		class="phh-otp-backdrop"

@@ -8,7 +8,7 @@
   import type { IconName } from '$lib/icons/registry.js';
 
   type Props = { currentClubId: string };
-  const { currentClubId } = $props<Props>();
+  const { currentClubId }: Props = $props();
 
   type PendingNode = {
     email: string;

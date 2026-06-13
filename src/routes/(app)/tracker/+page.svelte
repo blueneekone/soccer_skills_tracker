@@ -265,7 +265,7 @@
 		if (!workoutAccuracyAck) {
 			return alert('Confirm the accuracy checkbox to submit your workout log.');
 		}
-		const mins = parseInt(totalMinutes || 0);
+		const mins = parseInt(String(totalMinutes || 0), 10);
 		if (mins <= 0) return alert('Enter how many minutes you trained.');
 		if (!profile?.teamId || !profile?.playerName) return alert('User profile is incomplete.');
 		if (authStore.role !== 'player') {

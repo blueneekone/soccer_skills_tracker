@@ -148,3 +148,11 @@ Agents append entries below. Do not edit prior rows.
 - **Files:** `rlPolicyCache.ts` (parse `ExplanationCode` union), `CoachMissionDrillExecutionPanel.svelte` (complexityRank cast via unknown)
 - **Tests:** `npm test -- src/lib/player/workout/__tests__/coachMissionFlow.test.ts src/lib/player/__tests__/ src/lib/player/dashboard/__tests__/ src/lib/hud/__tests__/` — 115 passed
 - **Build:** `npm run build` — ok
+
+## 08-check-routes — 2026-06-13
+
+- **Branch:** `overnight/check-routes`
+- **Scope:** `src/routes/**` (24 files, 200 → 0 check errors)
+- **Repo total:** 391 → 191 check errors
+- **Fixes:** typed `AdminClubCtx` context; removed invalid `aria-hidden` on `Icon`; TS interfaces for Firestore/CF payloads; `WorkoutFocus`/`OverlayVariant` state types; `$props()` rune fixes; `rsvpStatus` state; plain path hrefs (avoid `resolve()` arity)
+- **Verify:** `npm test -- src/routes/(app)/admin/organizations/__tests__ src/routes/(app)/parent/household/__tests__ src/routes/(app)/admin/overview/__tests__` (14 passed); `npm run check` (routes 0); `npm run build` (ok)

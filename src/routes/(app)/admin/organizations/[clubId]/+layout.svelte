@@ -6,6 +6,7 @@
 	import '$lib/styles/enterprise-console.css';
 	import Icon from '$lib/components/ui/Icon.svelte';
 	import type { IconName } from '$lib/icons/registry.js';
+	import { ADMIN_CLUB_CTX_KEY, type AdminClubCtx } from './adminClubCtx.js';
 
 	/** @type {{ children: import('svelte').Snippet }} */
 	let { children } = $props();
@@ -52,7 +53,7 @@
 
 	// Expose reactive club data to all child pages via Svelte context.
 	// Getter properties ensure children always read the current $state value.
-	setContext('adminClubCtx', {
+	setContext<AdminClubCtx>(ADMIN_CLUB_CTX_KEY, {
 		get clubDoc()     { return clubDoc; },
 		get clubId()      { return clubId; },
 		get clubLoading() { return clubLoading; },
@@ -65,10 +66,10 @@
 <!-- Breadcrumb navigation sub-header -->
 <nav class="club-layout__breadcrumb" aria-label="Breadcrumb">
 	<a class="club-layout__bc-link" href="/admin/organizations">
-		<Icon name={"org.building" as IconName} aria-hidden="true" />
+		<Icon name={"org.building" as IconName} />
 		Organizations
 	</a>
-	<Icon name={"nav.chevron-right" as IconName} class="club-layout__bc-sep" aria-hidden="true" />
+	<Icon name={"nav.chevron-right" as IconName} class="club-layout__bc-sep" />
 	{#if clubLoading}
 		<span class="club-layout__bc-current club-layout__bc-current--loading">Loading…</span>
 	{:else if clubErr}
@@ -87,7 +88,7 @@
 		role="tab"
 		aria-selected={page.url.pathname === `/admin/organizations/${clubId}`}
 	>
-		<Icon name={"status.info" as IconName} aria-hidden="true" />
+		<Icon name={"status.info" as IconName} />
 		Overview
 	</a>
 	<a
@@ -97,7 +98,7 @@
 		role="tab"
 		aria-selected={page.url.pathname.startsWith(`/admin/organizations/${clubId}/teams`)}
 	>
-		<Icon name={"user.group" as IconName} aria-hidden="true" />
+		<Icon name={"user.group" as IconName} />
 		Teams
 	</a>
 </div>

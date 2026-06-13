@@ -35,9 +35,14 @@
 			try {
 				const fn = httpsCallable(functions, 'getPublicRecruitProfile');
 				const res = await fn({ playerKey: key });
-				const payload = /** @type {{ ok?: boolean, displayName?: string | null, clubName?: string | null, seasons?: unknown, playerKey?: string, operativeAvatar?: { v?: unknown, seed?: unknown, parts?: unknown } } | undefined} */ (
-					res.data
-				);
+				const payload = res.data as {
+					ok?: boolean;
+					displayName?: string | null;
+					clubName?: string | null;
+					seasons?: unknown;
+					playerKey?: string;
+					operativeAvatar?: { v?: unknown; seed?: unknown; parts?: unknown };
+				} | undefined;
 				if (cancelled) return;
 				if (payload?.ok === true && typeof payload.playerKey === 'string') {
 					displayName = typeof payload.displayName === 'string' ? payload.displayName : '';

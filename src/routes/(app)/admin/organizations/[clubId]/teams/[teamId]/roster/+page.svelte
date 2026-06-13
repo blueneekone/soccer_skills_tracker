@@ -26,16 +26,9 @@
 	} from '$lib/household/rosterGuardianEnrich.js';
 	import { enterprisePlayerDrawer } from '$lib/stores/enterprisePlayerDrawer.svelte.js';
 	import RosterGuardianInviteModal from '$lib/components/admin/RosterGuardianInviteModal.svelte';
+	import { ADMIN_CLUB_CTX_KEY, type AdminClubCtx } from '../../../adminClubCtx.js';
 
-	/**
-	 * @type {{
-	 *   clubDoc: Record<string, unknown> & { id: string } | null,
-	 *   clubId: string,
-	 *   clubLoading: boolean,
-	 *   clubErr: string,
-	 * }}
-	 */
-	const ctx = getContext('adminClubCtx');
+	const ctx = getContext<AdminClubCtx>(ADMIN_CLUB_CTX_KEY);
 
 	const teamId = $derived(page.params.teamId || '');
 	const authReady = $derived(!authStore.isLoading && authStore.isAuthenticated);
@@ -313,10 +306,10 @@
 	<!-- ── Extended breadcrumb (Organizations > Club > Teams > Team > Roster) ──── -->
 	<nav class="roster-breadcrumb" aria-label="Breadcrumb">
 	<a class="roster-bc__link" href="/admin/organizations/{ctx.clubId}/teams">
-		<Icon name={"user.group" as IconName} aria-hidden="true" />
+		<Icon name={"user.group" as IconName} />
 		Teams
 	</a>
-	<Icon name={"nav.chevron-right" as IconName} class="roster-bc__sep" aria-hidden="true" />
+	<Icon name={"nav.chevron-right" as IconName} class="roster-bc__sep" />
 	{#if teamLoading}
 		<span class="roster-bc__current roster-bc__current--loading">Loading…</span>
 	{:else if teamErr && !teamDoc}
@@ -324,7 +317,7 @@
 	{:else}
 		<span class="roster-bc__current">{teamName}</span>
 	{/if}
-	<Icon name={"nav.chevron-right" as IconName} class="roster-bc__sep" aria-hidden="true" />
+	<Icon name={"nav.chevron-right" as IconName} class="roster-bc__sep" />
 		<span class="roster-bc__leaf">Roster</span>
 	</nav>
 
@@ -332,7 +325,7 @@
 	<div class="roster-toolbar">
 		<div class="roster-toolbar__left">
 			<h2 class="roster-toolbar__title">
-				<Icon name={"user.group" as IconName} aria-hidden="true" />
+				<Icon name={"user.group" as IconName} />
 				Roster
 			</h2>
 			{#if !rosterLoading}
@@ -342,7 +335,7 @@
 			{/if}
 		</div>
 		<div class="roster-search-wrap">
-			<Icon name={"action.search" as IconName} class="roster-search-icon" aria-hidden="true" />
+			<Icon name={"action.search" as IconName} class="roster-search-icon" />
 			<input
 				type="search"
 				class="roster-search"
@@ -356,7 +349,7 @@
 
 	{#if rosterErr}
 	<p class="roster-err" role="alert">
-		<Icon name={"status.warning-circle" as IconName} aria-hidden="true" />
+		<Icon name={"status.warning-circle" as IconName} />
 		{rosterErr}
 		</p>
 	{/if}
