@@ -25,7 +25,7 @@ export function parseLoginStartData(data: unknown): LoginStartPayload {
 
   if (typeof record.challenge === 'string') {
     return {
-      options: record as PublicKeyCredentialRequestOptionsJSON,
+      options: record as unknown as PublicKeyCredentialRequestOptionsJSON,
       uid: null,
     };
   }
