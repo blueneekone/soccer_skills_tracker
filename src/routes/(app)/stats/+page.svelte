@@ -43,6 +43,14 @@
 	 * @typedef {{ id: string; title: string; icon: IconName; unlocked: boolean; tier?: 'standard' | 'elite' }} BadgeDef
 	 */
 
+	interface BadgeDef {
+		id: string;
+		title: string;
+		icon: IconName;
+		unlocked: boolean;
+		tier?: 'standard' | 'elite';
+	}
+
 	/** Monthly XP chart rows — mirrored on `player_stats` when recruit profile is private. */
 	function parseMonthlyPerformance(mp) {
 		return Array.isArray(mp) ?
@@ -104,103 +112,98 @@
 			[];
 	}
 
-	/**
-	 * @param {number} level
-	 * @param {number} totalXp
-	 * @returns {BadgeDef[]}
-	 */
-	function computeBadges(level, totalXp) {
+	function computeBadges(level: number, totalXp: number): BadgeDef[] {
 		const lv = Math.max(1, Math.floor(level || 1));
 		const xp = Math.max(0, Math.floor(totalXp || 0));
 		return [
 		{
 			id: 'streak',
 			title: '100_DAY_STREAK',
-			icon: /** @type {IconName} */ ('game.flame'),
+			icon: 'game.flame',
 			unlocked: lv >= 8 || xp >= 12000,
 			tier: 'elite',
 		},
 		{
 			id: 'marksman',
 			title: 'ELITE_MARKSMAN',
-			icon: /** @type {IconName} */ ('data.target'),
+			icon: 'data.target',
 			unlocked: lv >= 14 || xp >= 28000,
 			tier: 'elite',
 		},
 		{
 			id: 'vector',
 			title: 'VECTOR_ACE',
-			icon: /** @type {IconName} */ ('data.radar'),
+			icon: 'data.radar',
 			unlocked: lv >= 6 || xp >= 9000,
 			tier: 'standard',
 		},
 		{
 			id: 'iron',
 			title: 'IRON_LUNGS',
-			icon: /** @type {IconName} */ ('env.wind'),
+			icon: 'env.wind',
 			unlocked: lv >= 10 || xp >= 18000,
 			tier: 'standard',
 		},
 		{
 			id: 'ghost',
 			title: 'GHOST_PRESS',
-			icon: /** @type {IconName} */ ('game.ghost'),
+			icon: 'game.ghost',
 			unlocked: lv >= 18 || xp >= 42000,
 			tier: 'elite',
 		},
 		{
 			id: 'crown',
 			title: 'DYNASTY_MODE',
-			icon: /** @type {IconName} */ ('game.crown'),
+			icon: 'game.crown',
 			unlocked: lv >= 22 || xp >= 55000,
 			tier: 'elite',
 		},
 		{
 			id: 'sword',
 			title: 'BLADE_RUNNER',
-			icon: /** @type {IconName} */ ('game.sword'),
+			icon: 'game.sword',
 			unlocked: lv >= 16 || xp >= 38000,
 			tier: 'standard',
 		},
 		{
 			id: 'lock',
 			title: 'ZERO_DAY_PROTOCOL',
-			icon: /** @type {IconName} */ ('status.shield-check'),
+			icon: 'status.shield-check',
 			unlocked: lv >= 12 || xp >= 24000,
 			tier: 'standard',
 		},
 		{
 			id: 'flame',
 			title: 'COMBUSTION_99',
-			icon: /** @type {IconName} */ ('game.flame'),
+			icon: 'game.flame',
 			unlocked: lv >= 26 || xp >= 72000,
 			tier: 'elite',
 		},
 		{
 			id: 'medal',
 			title: 'ORBITAL_STRIKE',
-			icon: /** @type {IconName} */ ('game.medal'),
+			icon: 'game.medal',
 			unlocked: lv >= 20 || xp >= 48000,
 			tier: 'elite',
 		},
 		{
 			id: 'timer',
 			title: 'CHRONO_LOCK',
-			icon: /** @type {IconName} */ ('sys.timer'),
+			icon: 'sys.timer',
 			unlocked: lv >= 24 || xp >= 62000,
 			tier: 'standard',
 		},
 		{
 			id: 'code',
 			title: 'OVERRIDE_KEY',
-			icon: /** @type {IconName} */ ('sys.key'),
+			icon: 'sys.key',
 			unlocked: lv >= 30 || xp >= 95000,
 			tier: 'elite',
 		},
 		];
 	}
 
-	let badges = $state(/** @type {BadgeDef[]} */ (computeBadges(1, 0)));
+	let badges = $state<BadgeDef[]>(computeBadges(1, 0));
 
 	/** @type {Record<string, unknown> | null} */
 	let playerStatsSnapshot = $state(null);

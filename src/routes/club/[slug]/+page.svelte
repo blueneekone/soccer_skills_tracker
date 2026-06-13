@@ -76,8 +76,7 @@
 		(async () => {
 			try {
 				const res = await getPublicClubLanding({ slug });
-				/** @type {Record<string, unknown>} */
-				const data = res.data || {};
+				const data = (res.data ?? {}) as Record<string, unknown>;
 				if (cancelled) return;
 				if (data.ok !== true || data.notFound === true) {
 					status = 'missing';

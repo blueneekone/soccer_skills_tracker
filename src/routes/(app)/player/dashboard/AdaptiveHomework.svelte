@@ -11,7 +11,6 @@
 		setDoc,
 	} from 'firebase/firestore';
 	import { goto } from '$app/navigation';
-	import { resolve } from '$app/paths';
 	import { httpsCallable } from 'firebase/functions';
 	import { db, functions } from '$lib/firebase.js';
 	import { stashCoachIntentHandoffForAssignment, buildPolicyHintsFromResult } from '$lib/player/workout/coachMissionFlow.js';
@@ -22,31 +21,51 @@
 	import TacticalDrillBoard from '$lib/components/tactical/TacticalDrillBoard.svelte';
 	import MorningReadinessCard from '$lib/components/player/MorningReadinessCard.svelte';
 
-	/** @typedef {{ id: string; targetAttributeId: string; requiredXp: number; teamId: string; scope?: string; targetUids?: string[]; priority?: number; status?: string; prescription?: Record<string, unknown> }} Assignment */
-	/** @typedef {{ id: string; title: string; attributeId: string; tier: string; mediaType: string; payload?: string }} Drill */
+	interface Assignment {
+		id: string;
+		targetAttributeId: string;
+		requiredXp: number;
+		teamId: string;
+		scope?: string;
+		targetUids?: string[];
+		priority?: number;
+		status?: string;
+		prescription?: Record<string, unknown>;
+	}
 
-	/**
-	 * @typedef {{
-	 *   mode: 'policy'|'heuristic';
-	 *   recommendedDrillId: string|null;
-	 *   recommendedDurationMinutes: number|null;
-	 *   recommendedTargetRpe: number|null;
-	 *   policyVersion: number|null;
-	 *   explorationFlag: boolean;
-	 *   explanationCode: string|null;
-	 *   explanationText: string|null;
-	 * }} PolicyResult
-	 */
+	interface Drill {
+		id: string;
+		title: string;
+		attributeId: string;
+		tier: string;
+		mediaType: string;
+		payload?: string;
+	}
 
-	/** @type {Assignment[]} */
-	let assignments = $state([]);
-	/** @type {Drill | null} */
-	let suggestedDrill = $state(null);
+	type TacticalPayloadKey =
+		| 'svg_sole_taps'
+		| 'svg_inside_outside_cut'
+		| 'svg_speed_ladder'
+		| 'svg_shoulder_check';
+	type TacticalTierKey = 'beginner' | 'intermediate' | 'advanced';
+
+	interface PolicyResult {
+		mode: 'policy' | 'heuristic';
+		recommendedDrillId: string | null;
+		recommendedDurationMinutes: number | null;
+		recommendedTargetRpe: number | null;
+		policyVersion: number | null;
+		explorationFlag: boolean;
+		explanationCode: string | null;
+		explanationText: string | null;
+	}
+
+	let assignments = $state<Assignment[]>([]);
+	let suggestedDrill = $state<Drill | null>(null);
 	let isLoading = $state(true);
 
 	// RL policy state
-	/** @type {PolicyResult | null} */
-	let policyResult = $state(null);
+	let policyResult = $state<PolicyResult | null>(null);
 	let showTooltip = $state(false);
 
 	// Morning Readiness Card — shown once per UTC day until player submits.
@@ -129,8 +148,7 @@
 		const unsub = onSnapshot(
 			q,
 			(snap) => {
-				/** @type {Assignment[]} */
-				const all = snap.docs.map((d) => ({ id: d.id, .../** @type {any} */ (d.data()) }));
+				const all: Assignment[] = snap.docs.map((d) => ({ id: d.id, ...d.data() } as Assignment));
 				// Scope-filter: keep team-wide intents and player-scoped ones that include this uid.
 				assignments = all.filter((a) => {
 					if (!a.scope || a.scope === 'team') return true;
@@ -192,7 +210,7 @@
 				.then((snap) => {
 					if (cancelled) return;
 					if (snap.exists()) {
-						suggestedDrill = { id: snap.id, .../** @type {any} */ (snap.data()) };
+						suggestedDrill = { id: snap.id, ...snap.data() } as Drill;
 					} else {
 						// Recommended drill not found — fall through to heuristic
 						policyResult = null;
@@ -223,8 +241,7 @@
 
 				if (cancelled) return;
 
-				/** @type {Drill[]} */
-				const drills = snap.docs.map((d) => ({ id: d.id, .../** @type {any} */ (d.data()) }));
+				const drills: Drill[] = snap.docs.map((d) => ({ id: d.id, ...d.data() } as Drill));
 
 				drills.sort((a, b) => {
 					if (a.mediaType === 'tactical_svg' && b.mediaType !== 'tactical_svg') return -1;
@@ -256,7 +273,7 @@
 			:	null,
 			policyHints: buildPolicyHintsFromResult(policyResult),
 		});
-		void goto(resolve('/player/workout'));
+		void goto('/player/workout');
 	}
 </script>
 
@@ -386,9 +403,9 @@
 
 					{#if suggestedDrill.mediaType === 'tactical_svg' && suggestedDrill.payload}
 						<TacticalDrillBoard
-							payload={/** @type {any} */ (suggestedDrill.payload)}
+							payload={suggestedDrill.payload as TacticalPayloadKey}
 							title={suggestedDrill.title}
-							tier={/** @type {any} */ (suggestedDrill.tier)}
+							tier={suggestedDrill.tier as TacticalTierKey}
 						/>
 					{/if}
 				</div>

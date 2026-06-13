@@ -13,8 +13,7 @@
 	);
 
 	let household = $state(/** @type {Record<string, unknown> | null} */ (null));
-	/** @type {Record<string, string>} maps playerEmail -> their vpcStatus */
-	let playerStatuses = $state({});
+	let playerStatuses = $state<Record<string, string>>({});
 	let loadErr = $state('');
 	let loadingHousehold = $state(true);
 
@@ -71,16 +70,16 @@
 				}
 				household = snap.data();
 
-				const emails = Array.isArray(household?.playerEmails)
+				const emails: string[] = Array.isArray(household?.playerEmails)
 					? [...new Set(
-						household.playerEmails
+						(household.playerEmails as unknown[])
 							.map((e) => String(e || '').trim().toLowerCase())
 							.filter(Boolean)
 					)]
 					: [];
 
 			if (emails.length > 0) {
-				const statusMap = {};
+				const statusMap: Record<string, string> = {};
 				const resolved = await Promise.all(
 					emails.map((em) => resolvePlayerVpcStatus(em))
 				);
