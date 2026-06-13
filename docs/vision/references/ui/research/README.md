@@ -1,8 +1,8 @@
 # Gemini Deep Research — UI visual system
 
-**Status:** **ACTIVE** — owner reopened Platform visual system (`ROADMAP.md` · 2026-06-11)
+**Status:** **TABLED (post-launch visual system)** — functional launch gate closed; see [`ROADMAP.md`](../../../../ROADMAP.md) · owner QA next
 
-Gemini Deep Research exports and derived engineering notes live here. Agents may **read** this folder for token/layout authority during visual sprints. Do **not** wire PNG chrome from §C into production bundles until an explicit sprint scopes asset ingest.
+Gemini Deep Research exports and derived engineering notes live here. Agents may **read** this folder for token/layout authority during **post-launch** visual sprints only. Do **not** wire PNG chrome from §C into production bundles until an explicit sprint scopes asset ingest.
 
 ## Ingested artifacts
 

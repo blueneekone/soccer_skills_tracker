@@ -2,7 +2,7 @@
 
 **Architecture:** [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)  
 **Last updated:** 2026-06-13  
-**Current sprint:** **LAUNCH-functional-os Done** · **LAUNCH-audit-fixes Done** · **LAUNCH-f4-matchday Done** · **Epic 4 Done (4.1–4.12)** · **Epic 5 Done (5.1–5.6; 5.4 provider scaffold)** · **Epic 2.2 Done** · **DEPLOY-O-bundle Done** · **dev deploy 2026-06-11** (hosting + rules + systematic backend + comms on `sports-skill-tracker-dev`) · **next:** **Platform visual system** (owner reopened tonight — layout tokens from [`references/ui/`](docs/vision/references/ui/) only; no Gemini bust art) · Launch portrait: `defaultPortraitV2` SVG + profile initials · **TABLED (post-launch):** Flow asset generation, Avatar Studio **3.6b+** · **Deferred (post-launch — owner art):** 3.5m-gemini-ingest, 3.5m-gate · **3.5k Done** · **3.5h Done** · **3.5j Done** · **LAUNCH-defer-avatar Done**  
+**Current sprint:** **LAUNCH-functional-os Done** · **LAUNCH-wave2-complete Done** · **Epic 4 Done (4.1–4.12)** · **Epic 5 Done (5.1–5.6; 5.4 weather lock Done)** · **Epic 2.2 Done** · **DEPLOY-O-bundle Done** · **dev deploy 2026-06-13** (hosting + integrations weather lock on `sports-skill-tracker-dev`) · **next:** **Owner QA** on live-fire dev · Launch portrait: `defaultPortraitV2` SVG + profile initials · **TABLED (post-launch):** Platform visual system (Gemini research — layout tokens from [`references/ui/`](docs/vision/references/ui/) only; no bust art) · Flow asset generation, Avatar Studio **3.6b+** · **Deferred (post-launch — owner art):** 3.5m-gemini-ingest, 3.5m-gate · **3.5k Done** · **3.5h Done** · **3.5j Done** · **LAUNCH-defer-avatar Done**  
 **Note:** **3.5l-gate** closed in error — automated regression ≠ human VA; Phase 2 visual **rejected by product owner**  
 *Phase 7 · G1–G10 Done · Sprint 2.20 Done — Player OS premium foundation locked*
 
@@ -1438,6 +1438,7 @@ Loadout art (3.2+) consumed by 2.12 hero identity column.
 | **LAUNCH-parent-week** | **Done** | Parent dashboard “This week” schedule strip with quick RSVP for primary household athlete | `parentWeekSchedule.test.ts` · deploy **hosting** |
 | **LAUNCH-parent-pwa** | **Done** | PWA install prompt (SSTracker branding) + parent nav Settings/Messages for mobile adoption path | `parentPwaLaunch.test.ts` · deploy **hosting** |
 | **LAUNCH-wave2-complete** | **Done** | Wave 2 parent adoption parity gate — ical + push + week strip + PWA; competitive matrix synced | `launchWave2Complete.test.ts` |
+| **LAUNCH-qa-ready** | **Done** | Functional launch gate closed — personaFunctionalMvp green; ROADMAP + research README aligned for owner QA | `personaFunctionalMvp.test.ts` |
 | **XP-verify** | **Done** | XP algorithm tests + client/server parity (`level.js` ↔ `gamificationWorkoutXp.js`) | `levelXp.test.ts`, `gamificationWorkoutXp.test.js`, `trainingOpsXp.test.js` |
 | **3.5m-frame** | **Done** | Art-well recess + holo inset — unified portrait clip, xMidYMid bust centering | `playerLoadoutSprint35mFrame.test.ts` |
 | **3.5m-art** | **Superseded** | Agent modular SVG bust redraw — human VA failed; owner Gemini + ingest replaces | `playerLoadoutSprint35mArt.test.ts` (historical) |
@@ -1449,7 +1450,7 @@ Loadout art (3.2+) consumed by 2.12 hero identity column.
 
 ---
 
-## Sprint LAUNCH-tryouts-os scope — **Planned**
+## Sprint LAUNCH-tryouts-os scope — **Done**
 
 **Goal:** Give clubs a **tryout lifecycle OS** — not a signup form and a prayer. Owner pain: prior-season tryouts were chaotic (no single source of truth for registration, field times, check-in, callbacks, or parent updates). Competitors offer fragments (TeamSnap registration + schedule, SE eval forms, GotSport roster rules); **none own the full tryout → callback → offer → roster pipeline** tied to development data.
 

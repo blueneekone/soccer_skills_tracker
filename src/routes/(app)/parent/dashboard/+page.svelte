@@ -69,7 +69,7 @@
 
 		childEmails = resolvedChildren;
 		resolvedHouseholdId = householdId;
-		await engine.init(parentEmail, householdId, resolvedChildren);
+		await engine.init(parentEmail, householdId, childEmails);
 		// Use the first linked child email for pending fixture detection.
 		const linkedPlayerEmail = resolvedChildren[0] ?? '';
 		const urlFixtureId = get(page).url.searchParams.get('fixtureId') ?? null;
