@@ -49,10 +49,20 @@ Use these names — **not** IdentityModule, TelemetryPanel, or BentoGrid:
 
 ## Verify before done
 
+**Per ROADMAP slice (mandatory loop — do not batch slices):**
+
+1. `npm test -- <paths from ROADMAP sprint>`
+2. `npm run build` (skip `npm run check` only if failures are pre-existing and unrelated to the slice)
+3. **Deploy to `sports-skill-tracker-dev`** — this Firebase project **is production / live-fire** for owner QA (not a throwaway sandbox). Default: hosting + rules + the sprint's `deploy:*` script(s).
+4. **One git commit per slice** — commit immediately after deploy succeeds; never combine multiple ROADMAP rows (e.g. LAUNCH-rsvp + LAUNCH-tryouts-a) into one commit.
+
 ```bash
 npm test -- <paths from ROADMAP sprint>
-npm run check
 npm run build
+# deploy (example tryouts slice):
+npm run deploy:core
+firebase deploy --only firestore:rules,hosting
+git commit -m "<slice id>: <why>"
 ```
 
 **Large Cloud Functions deploys:** use `npm run deploy:core` and `npm run deploy:rl` (not full `firebase deploy --only functions`) — see [`docs/FUNCTIONS_DEPLOY.md`](../../docs/FUNCTIONS_DEPLOY.md).
