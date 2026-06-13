@@ -9,7 +9,7 @@
 		size?: number;
 		strokeWidth?: number;
 		class?: string;
-		'aria-hidden'?: boolean | string | undefined;
+		'aria-hidden'?: boolean | 'true' | 'false' | undefined;
 		'aria-label'?: string | undefined;
 		role?: string | undefined;
 	};

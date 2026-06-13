@@ -11,7 +11,7 @@
     "prebuild": "node scripts/check-no-phosphor.mjs && node scripts/check-file-budget.mjs",
     "build": "vite build",
     "preview": "vite preview",
-    "check": "svelte-check --tsconfig ./jsconfig.json",
+    "check": "svelte-check --tsconfig ./jsconfig.json --threshold error",
     "test": "vitest run",
     "test:firestore-rules": "npx firebase-tools@latest emulators:exec --only firestore --project sst-sprint-13-rules \"vitest run src/lib/security/__tests__/firestoreTenantIsolation.test.ts src/lib/security/__tests__/loopIntegrityGuards.test.ts src/lib/security/__tests__/firestoreRulesSprint412.test.ts\"",
     "deploy:comms": "firebase deploy --only \"functions:safeSportBroadcast,functions:clubSportBroadcast,functions:reportMessageIncident,functions:sendCoachPlayerMessage,functions:sendChannelMessage,functions:sendHouseholdMessage,functions:onTeamBroadcastCreated,functions:onDeploymentCalendarEntryCreated,functions:sendScheduledEventReminders,functions:sendRegistrationPaymentReminders,functions:coachProvisionParentLounge,functions:registerDeviceToken\"",
@@ -34,7 +34,6 @@
     "deploy:integrations": "firebase deploy --only \"functions:integrations:processMedia,functions:integrations:ingestRoster,functions:integrations:getSoccerNews,functions:integrations:searchPodcasts,functions:integrations:getPodcastEpisodes,functions:integrations:getWeatherConditions,functions:integrations:evaluateFieldWeatherLock,functions:integrations:refreshClubWeatherLock,functions:integrations:getUploadToken,functions:integrations:deleteAllPlayerMedia,functions:integrations:facilityWeatherWebhook\"",
     "deploy:platform": "firebase deploy --only \"functions:platform:apiGateway,functions:platform:bootstrapCellRegistry,functions:platform:registerDedicatedCell,functions:platform:activateCell,functions:platform:provisionTenantCell,functions:platform:peekTenantCell,functions:platform:startTenantMigration,functions:platform:markExportComplete,functions:platform:markImportComplete,functions:platform:verifyTenantOnCell,functions:platform:executeCutover,functions:platform:rollbackTenantMigration,functions:platform:flagTenantForPromotion,functions:platform:acknowledgePromotionFlag,functions:platform:evaluateCellPromotions,functions:platform:purgeGatewayCaches,functions:platform:seedSyntheticTenant,functions:platform:purgeSyntheticTenant,functions:platform:syncUserClaims,functions:platform:listTeamsForClub,functions:platform:logSecurityAudit,functions:platform:generateLicense,functions:platform:directorSaveClubBranding,functions:platform:directorInviteCoach,functions:platform:claimCoachInvite,functions:platform:secureAllocateTeamSeats,functions:platform:secureAddPlayer,functions:platform:secureRemovePlayer,functions:platform:secureUpdateJersey,functions:platform:directorUpsertField,functions:platform:secureBookField,functions:platform:onAnalyticsUserWritten,functions:platform:onAnalyticsClubWritten,functions:platform:onAnalyticsLicenseWritten,functions:platform:assignTenantClaims,functions:platform:impersonateUserFn,functions:platform:purgeUserDataFn\"",
     "deploy": "npm run lint:functions && firebase deploy",
-    "launch:overnight": "node scripts/launch-overnight-agents.mjs",
     "launch:overnight": "node scripts/launch-overnight-agents.mjs"
   },
   "devDependencies": {

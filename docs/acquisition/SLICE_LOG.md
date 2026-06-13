@@ -62,4 +62,14 @@ Agents append entries below. Do not edit prior rows.
 - **Tests:** `npm test -- src/lib/player/workout/__tests__/coachMissionFlow.test.ts src/lib/player/__tests__/ src/lib/player/dashboard/__tests__/ src/lib/hud/__tests__/` — 115 passed
 - **Build:** `npm run build` — ok
 
+## Agent 22 — check-final (2026-06-13)
+
+- **Branch:** `overnight/check-final`
+- **Phase:** PHASE 2 — merged agents 08–13, fixed remaining 17 errors
+- **Check (repo):** 168 → 0 errors (162 warnings unchanged)
+- **Files (7):** `SportSoccerBallIcon.svelte`, `resolveAppPath.ts`, `organizationsLoad.ts`, `ArmoryEngine.svelte.ts`, `overviewCharts.ts`, `package.json`, `.github/workflows/ci.yml` + `deploy.yml`
+- **Fixes:** Booleanish aria-hidden; resolve double-cast; Firestore row typing; armory doc fields; Chart.js `border.display` (replaces removed `drawBorder`); CI typecheck job; dedupe `launch:overnight` script
+- **Tests:** `npm test -- src/lib/admin/__tests__ src/routes/(app)/admin/overview/__tests__ src/routes/(app)/admin/organizations/__tests__` — 47 passed
+- **Build:** `npm run build` — ok
+
 ---

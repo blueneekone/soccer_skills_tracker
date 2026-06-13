@@ -10,6 +10,6 @@
 | 11-check-coach-dir | coach/**, director/**, compliance/** | 8 | 0 | 2026-06-13 |
 | 12-check-parent-admin | parent/**, admin/** | TBD | — | — |
 | 13-check-player | player/**, gamification/**, hud/** | 2 | 0 | 2026-06-13 |
-| 22-check-final | full repo | 391 | 168 | 2026-06-13 |
+| 22-check-final | full repo | 168 | 0 | 2026-06-13 |
 
 Agents 08–13: log `npm run check` error count at start and after each commit batch.
