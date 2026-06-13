@@ -35,12 +35,12 @@ describe('Sprint 3.5i-b — resolveBodyScaleFromAgeBand', () => {
 });
 
 describe('Sprint 3.5i-b — band-aware defaults', () => {
-	it("defaultPortraitV2('teen') uses portrait_face_teen_* when catalog exists", () => {
+	it("defaultPortraitV2('teen') uses Gemini-ingested precomposed match parts when catalog exists", () => {
 		const teen = defaultPortraitV2('teen');
 		expect(teen.bodyScale).toBe('teen');
-		expect(teen.parts.face).toBe('portrait_face_teen_medium_default');
+		expect(teen.parts.face).toBe('portrait_face_teen_light_default');
 		expect(teen.parts.hair).toBe('portrait_hair_teen_long');
-		expect(teen.parts.kit).toBe('portrait_kit_default');
+		expect(teen.parts.kit).toBe('portrait_kit_away');
 
 		const catalog = getPortraitPartCatalog();
 		expect(catalog.some((row) => row.id === teen.parts.face)).toBe(true);
@@ -57,8 +57,9 @@ describe('Sprint 3.5i-b — band-aware defaults', () => {
 			undefined,
 			'teen',
 		);
-		expect(normalized.face).toBe('portrait_face_teen_medium_default');
+		expect(normalized.face).toBe('portrait_face_teen_light_default');
 		expect(normalized.hair).toBe('portrait_hair_teen_long');
+		expect(normalized.kit).toBe('portrait_kit_away');
 	});
 
 	it('getPortraitPartsForSlot(face, catalog, teen) includes teen rows and legacy starters', () => {
@@ -86,7 +87,8 @@ describe('Sprint 3.5i-b — read-repair bodyScale migration', () => {
 		);
 		expect(didMigrate).toBe(true);
 		expect(operativeAvatar.bodyScale).toBe('teen');
-		expect(operativeAvatar.parts.face).toBe('portrait_face_teen_medium_default');
+		expect(operativeAvatar.parts.face).toBe('portrait_face_teen_light_default');
+		expect(operativeAvatar.parts.kit).toBe('portrait_kit_away');
 	});
 
 	it('v2 passthrough without ageBand does not force bodyScale migration', () => {

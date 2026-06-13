@@ -1,0 +1,18 @@
+[
+	{
+		"id": "precomposed_bust_teen_long_light_away",
+		"label": "Teen · Long · Light · Away",
+		"assetPath": "/portrait/approved/bust_teen_long_light_away.jpeg",
+		"contentHash": "9860e9064c27a0479e8d2d08af885a8188197689fd50f66ace3ebd30c59c49cf",
+		"ageBand": "teen",
+		"hair": "long",
+		"tone": "light",
+		"kit": "away",
+		"matchParts": {
+			"face": "portrait_face_teen_light_default",
+			"hair": "portrait_hair_teen_long",
+			"kit": "portrait_kit_away"
+		},
+		"defaultForBodyScale": "teen"
+	}
+]

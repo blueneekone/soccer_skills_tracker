@@ -85,9 +85,9 @@ const DEFAULT_PARTS_BY_SCALE: Record<BodyScale, Record<PortraitPartSlot, string>
 		kit: 'portrait_kit_default',
 	},
 	teen: {
-		face: 'portrait_face_teen_medium_default',
+		face: 'portrait_face_teen_light_default',
 		hair: 'portrait_hair_teen_long',
-		kit: 'portrait_kit_default',
+		kit: 'portrait_kit_away',
 	},
 	adult: {
 		face: 'portrait_face_default',

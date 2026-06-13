@@ -8,7 +8,7 @@ Log every owner-approved bust PNG before Composer ingest. Composer agents **must
 
 | File | Source | Date | License | Owner ☑ | Notes |
 |------|--------|------|---------|---------|-------|
-| *(placeholder — replace on first approved bust)* | Google Gemini Pro Art | — | Owner verifies Gemini commercial terms | ☐ | Example: `bust_teen_ponytail_medium_home.png` per GEMINI_ART_BRIEF.md |
+| `bust_teen_long_light_away.jpeg` | Google Gemini Pro Art | 2026-06-13 | Owner verifies Gemini commercial terms | ☑ | Meg character · long hair · light tone · away kit · first Gemini ingest (agent 18) |
 
 ---
 

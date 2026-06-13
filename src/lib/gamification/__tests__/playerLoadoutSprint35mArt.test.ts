@@ -69,10 +69,9 @@ describe('Sprint 3.5m-art — compose pipeline', () => {
 		const src = readFileSync(RENDERER, 'utf-8');
 		expect(src).toMatch(/xMidYMid meet/);
 		const svg = renderLayeredPortraitSvg(defaultPortraitV2('teen'), 128);
-		expect(svg).toMatch(/data-portrait-layer="kit"/);
-		expect(svg).toMatch(/data-portrait-layer="face"/);
-		expect(svg).toMatch(/data-portrait-layer="hair"/);
-		expect(svg.match(/<path\b/g)?.length ?? 0).toBeGreaterThan(3);
+		expect(svg).toMatch(/data-precomposed-bust=/);
+		expect(svg).toMatch(/xMidYMid meet/);
+		expect(svg).toMatch(/<image\b/);
 	});
 
 	it('legacy face×hair×kit sample combos produce substantial SVG output', () => {
@@ -86,7 +85,7 @@ describe('Sprint 3.5m-art — compose pipeline', () => {
 			},
 		];
 		for (const parts of combos) {
-			const svg = renderLayeredPortraitSvg({ v: 2, parts, bodyScale: 'teen' }, 128);
+			const svg = renderLayeredPortraitSvg({ v: 2, parts }, 128);
 			expect(svg.length).toBeGreaterThan(200);
 			expect(svg).toMatch(/<path\b/);
 		}

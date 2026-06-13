@@ -1,4 +1,5 @@
 import portraitPartsManifest from './portraitParts.manifest.json';
+import precomposedBustsManifest from './precomposedBusts.manifest.json';
 import {
 	defaultPortraitV2,
 	getPortraitPartsForSlot,
@@ -59,6 +60,13 @@ export function renderPortraitPartLayer(partId, size = 128) {
 }
 
 /**
+ * @returns {typeof precomposedBustsManifest}
+ */
+export function getPrecomposedBustCatalog() {
+	return precomposedBustsManifest;
+}
+
+/**
  * Resolve part id for a slot — equipped value, slot default from catalog, or global v2 defaults.
  *
  * @param {Partial<Record<PortraitPartSlot, string | null>>} parts
@@ -78,6 +86,54 @@ function resolvePartId(parts, slot, bodyScale) {
 }
 
 /**
+ * Resolve equipped parts to catalog ids, then match a precomposed Gemini bust if present.
+ *
+ * @param {OperativePortraitV2} portrait
+ * @param {readonly string[]} [ownedIds]
+ * @returns {import('./precomposedBusts.manifest.json')[number] | null}
+ */
+export function resolvePrecomposedBust(portrait, ownedIds = undefined) {
+	const busts = getPrecomposedBustCatalog();
+	if (!busts.length) return null;
+
+	const catalog = getPortraitPartCatalog();
+	const bodyScale = portrait.bodyScale;
+	const parts = normalizePortraitParts(portrait.parts ?? {}, catalog, ownedIds, bodyScale);
+	/** @type {Record<PortraitPartSlot, string | null>} */
+	const resolved = {
+		face: resolvePartId(parts, 'face', bodyScale),
+		hair: resolvePartId(parts, 'hair', bodyScale),
+		kit: resolvePartId(parts, 'kit', bodyScale),
+	};
+
+	for (const bust of busts) {
+		if (
+			bust.matchParts.face === resolved.face &&
+			bust.matchParts.hair === resolved.hair &&
+			bust.matchParts.kit === resolved.kit
+		) {
+			return bust;
+		}
+	}
+
+	return null;
+}
+
+/**
+ * @param {import('./precomposedBusts.manifest.json')[number]} bust
+ * @param {number} [size]
+ * @returns {string}
+ */
+export function renderPrecomposedBustSvg(bust, size = 128) {
+	const s = Math.max(1, Math.floor(Number(size) || 128));
+	const assetAttr = bust.assetPath ?
+		` data-portrait-asset="${bust.assetPath}"` :
+		'';
+
+	return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${s} ${s}" width="${s}" height="${s}" overflow="visible" preserveAspectRatio="xMidYMid meet" class="layered-portrait precomposed-bust" data-portrait-version="2" data-precomposed-bust="${bust.id}" aria-hidden="true">\n\t<image href="${bust.assetPath}" width="${s}" height="${s}" preserveAspectRatio="xMidYMid meet"${assetAttr}/>\n</svg>`;
+}
+
+/**
  * Deterministic layered SVG portrait from v2 schema + catalog assets.
  *
  * @param {OperativePortraitV2} portrait
@@ -86,6 +142,9 @@ function resolvePartId(parts, slot, bodyScale) {
  * @returns {string}
  */
 export function renderLayeredPortraitSvg(portrait, size = 128, ownedIds = undefined) {
+	const precomposed = resolvePrecomposedBust(portrait, ownedIds);
+	if (precomposed) return renderPrecomposedBustSvg(precomposed, size);
+
 	const s = Math.max(1, Math.floor(Number(size) || 128));
 	const catalog = getPortraitPartCatalog();
 	const bodyScale = portrait.bodyScale;

@@ -1,0 +1,12 @@
+[
+	{
+		"id": "precomposed_bust_teen_long_light_away",
+		"file": "approved/bust_teen_long_light_away.jpeg",
+		"label": "Teen · Long · Light · Away",
+		"ageBand": "teen",
+		"hair": "long",
+		"tone": "light",
+		"kit": "away",
+		"defaultForBodyScale": "teen"
+	}
+]
