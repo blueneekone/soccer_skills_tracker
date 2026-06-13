@@ -3,7 +3,11 @@
  * TTL ~24h so transitionRecorder can match workout_logs without duplicate callable spam.
  */
 
-import type { GetAdaptiveWorkoutPolicyResult, PolicyMode } from '$lib/types/rlPolicy.js';
+import type {
+	ExplanationCode,
+	GetAdaptiveWorkoutPolicyResult,
+	PolicyMode,
+} from '$lib/types/rlPolicy.js';
 
 export const RL_POLICY_CACHE_KEY = 'player_rl_policy_cache_v1';
 export const RL_POLICY_CACHE_TTL_MS = 86_400_000;
@@ -16,8 +20,23 @@ export type RlPolicyCacheEntry = {
 
 const inflightBySport = new Map<string, Promise<GetAdaptiveWorkoutPolicyResult | null>>();
 
+const EXPLANATION_CODES = new Set<ExplanationCode>([
+	'RESTING',
+	'BUILDING',
+	'PEAK',
+	'RECOVERY_FORCED',
+	'COACH_PRIORITY',
+	'EXPLORATION',
+]);
+
 function parsePolicyMode(value: unknown): PolicyMode | null {
 	return value === 'policy' || value === 'heuristic' ? value : null;
+}
+
+function parseExplanationCode(value: unknown): ExplanationCode | null {
+	return typeof value === 'string' && EXPLANATION_CODES.has(value as ExplanationCode) ?
+			(value as ExplanationCode)
+		:	null;
 }
 
 export function normalizePolicyResult(raw: unknown): GetAdaptiveWorkoutPolicyResult | null {
@@ -48,8 +67,7 @@ export function normalizePolicyResult(raw: unknown): GetAdaptiveWorkoutPolicyRes
 				:	Math.floor(Number(p.policyVersion))
 			:	null,
 		explorationFlag: p.explorationFlag === true,
-		explanationCode:
-			typeof p.explanationCode === 'string' ? p.explanationCode : null,
+		explanationCode: parseExplanationCode(p.explanationCode),
 		explanationText:
 			typeof p.explanationText === 'string' ? p.explanationText : null,
 	};
