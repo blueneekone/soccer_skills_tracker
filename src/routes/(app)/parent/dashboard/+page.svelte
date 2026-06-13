@@ -14,6 +14,7 @@
 	import CarRideHUD from './CarRideHUD.svelte';
 	import ProofReviewQueue from '$lib/components/parent/ProofReviewQueue.svelte';
 	import UpcomingEventsRsvp from '$lib/components/parent/UpcomingEventsRsvp.svelte';
+	import ParentNotificationPanel from '$lib/components/parent/ParentNotificationPanel.svelte';
 	import ClaimRosterSpot from '$lib/components/parent/ClaimRosterSpot.svelte';
 	import '$lib/styles/parent-bounty-funding-panel.css';
 
@@ -95,6 +96,10 @@
 
 			<div class="bento-span-12 tw-min-w-0">
 				<ClaimRosterSpot />
+			</div>
+
+			<div class="bento-span-12 tw-min-w-0">
+				<ParentNotificationPanel />
 			</div>
 
 			<div class="bento-span-12 tw-min-w-0">
