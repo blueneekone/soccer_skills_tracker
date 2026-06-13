@@ -7,7 +7,7 @@
 | 08-check-routes | src/routes/** | TBD | — | — |
 | 09-check-components | src/lib/components/** | TBD | — | — |
 | 10-check-stores | src/lib/stores/**, auth/** | TBD | — | — |
-| 11-check-coach-dir | coach/**, director/**, compliance/** | TBD | — | — |
+| 11-check-coach-dir | coach/**, director/**, compliance/** | 8 | 0 | 2026-06-13 |
 | 12-check-parent-admin | parent/**, admin/** | TBD | — | — |
 | 13-check-player | player/**, gamification/**, hud/** | TBD | — | — |
 | 22-check-final | full repo | TBD | — | — |

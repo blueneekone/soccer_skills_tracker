@@ -67,7 +67,7 @@
 		<div class="tw-flex tw-items-center tw-gap-3 tw-flex-wrap">
 			{#if showDrillLibraryLink}
 				<a
-					href={resolve('/coach/drills')}
+					href={resolve('/(app)/coach/drills', {})}
 					class="tw-text-[10px] tw-tracking-widest tw-uppercase tw-text-[#14b8a6]/70 tw-no-underline tw-border tw-border-[#14b8a6]/25 tw-rounded tw-px-2.5 tw-py-1 hover:tw-border-[#14b8a6]/50 hover:tw-text-[#14b8a6]"
 				>
 					Drill library →
