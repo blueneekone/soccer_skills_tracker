@@ -115,6 +115,12 @@ export interface TournamentEventDoc {
 	 * Capped at 50 elements via `arrayUnion` to prevent unbounded growth.
 	 */
 	hotelRebates?: HotelRebateSummary[];
+	/**
+	 * Optional single-elimination bracket embedded on the event doc.
+	 * Directors edit via the event builder; buyers see a read-only view
+	 * when the event is published and at least one match exists.
+	 */
+	bracket?: TournamentBracket;
 	createdAt?: unknown;
 	updatedAt?: unknown;
 	/** UID of the director who last published the event. */
@@ -133,6 +139,42 @@ export interface HotelRebateSummary {
 	recordedAt: unknown;
 }
 
+// ── Tournament bracket (P2) ───────────────────────────────────────────────
+
+export type BracketFormat = 'single_elimination';
+export type BracketMatchStatus = 'pending' | 'live' | 'final';
+export type BracketTeamSize = 4 | 8 | 16 | 32;
+
+/** One entrant in the bracket tree. */
+export interface BracketTeam {
+	id: string;
+	name: string;
+	seed?: number;
+}
+
+/** One node in a single-elimination tree. */
+export interface BracketMatch {
+	id: string;
+	/** 0 = opening round; increases toward the final. */
+	round: number;
+	/** Position within the round (0-based, left-to-right). */
+	slot: number;
+	homeTeamId: string | null;
+	awayTeamId: string | null;
+	homeScore?: number | null;
+	awayScore?: number | null;
+	winnerId?: string | null;
+	status: BracketMatchStatus;
+}
+
+/** Embedded bracket map on `tournament_events/{eventId}`. */
+export interface TournamentBracket {
+	format: BracketFormat;
+	teamSize: BracketTeamSize;
+	teams: BracketTeam[];
+	matches: BracketMatch[];
+}
+
 // ── Form payloads (used by the Director event builder) ────────────────────
 
 /**
@@ -149,6 +191,8 @@ export interface UpsertTournamentEventPayload {
 	eventEndAt?: string;
 	/** Director sets each tier's label, price, capacity.  soldCount is ignored. */
 	ticketTiers: Record<string, Omit<TicketTier, 'soldCount'>>;
+	/** Optional bracket payload — validated server-side. */
+	bracket?: TournamentBracket | null;
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────

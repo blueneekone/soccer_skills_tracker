@@ -38,6 +38,12 @@ const MAX_DESCRIPTION_LENGTH = 500;
 /** Maximum `hotelRebates` array elements before arrayUnion is rejected. */
 const MAX_HOTEL_REBATES_PER_EVENT = 50;
 
+/** Supported single-elimination bracket sizes. */
+const BRACKET_TEAM_SIZES = [4, 8, 16, 32];
+
+/** Maximum team name length in bracket. */
+const MAX_BRACKET_TEAM_NAME_LENGTH = 48;
+
 // ── Computed helpers ──────────────────────────────────────────────────────
 
 /**
@@ -123,6 +129,72 @@ function validateTierMap(tierMap) {
 	return errors;
 }
 
+/**
+ * Validate an optional embedded tournament bracket.
+ * Returns an array of error strings (empty = valid). Null/absent = no bracket.
+ * @param {object|null|undefined} bracket
+ * @returns {string[]}
+ */
+function validateBracket(bracket) {
+	if (bracket == null) return [];
+	if (typeof bracket !== 'object' || Array.isArray(bracket)) {
+		return ['bracket must be an object or null.'];
+	}
+	const errors = [];
+	if (bracket.format !== 'single_elimination') {
+		errors.push('bracket.format must be single_elimination.');
+	}
+	if (!BRACKET_TEAM_SIZES.includes(bracket.teamSize)) {
+		errors.push(`bracket.teamSize must be one of ${BRACKET_TEAM_SIZES.join(', ')}.`);
+	}
+	if (!Array.isArray(bracket.teams) || bracket.teams.length !== bracket.teamSize) {
+		errors.push('bracket.teams length must match teamSize.');
+	}
+	if (!Array.isArray(bracket.matches)) {
+		errors.push('bracket.matches must be an array.');
+		return errors;
+	}
+
+	const teamIds = new Set();
+	for (const team of bracket.teams ?? []) {
+		if (!team || typeof team.id !== 'string' || !/^[a-z0-9_]{1,32}$/.test(team.id)) {
+			errors.push('Each bracket team needs a valid id.');
+		}
+		if (typeof team.name !== 'string' || !team.name.trim()) {
+			errors.push('Each bracket team needs a name.');
+		} else if (team.name.length > MAX_BRACKET_TEAM_NAME_LENGTH) {
+			errors.push(`Bracket team name exceeds ${MAX_BRACKET_TEAM_NAME_LENGTH} chars.`);
+		}
+		if (team?.id) teamIds.add(team.id);
+	}
+
+	const expectedMatches = bracket.teamSize - 1;
+	if (bracket.matches.length !== expectedMatches) {
+		errors.push(`bracket must have ${expectedMatches} matches for ${bracket.teamSize} teams.`);
+	}
+
+	for (const match of bracket.matches) {
+		if (!match || typeof match.id !== 'string') {
+			errors.push('Each bracket match needs an id.');
+			continue;
+		}
+		if (!['pending', 'live', 'final'].includes(match.status)) {
+			errors.push(`Match ${match.id}: invalid status.`);
+		}
+		for (const side of ['homeTeamId', 'awayTeamId']) {
+			const tid = match[side];
+			if (tid != null && !teamIds.has(tid)) {
+				errors.push(`Match ${match.id}: unknown ${side} ${tid}.`);
+			}
+		}
+		if (match.winnerId != null && !teamIds.has(match.winnerId)) {
+			errors.push(`Match ${match.id}: unknown winnerId.`);
+		}
+	}
+
+	return errors;
+}
+
 // ── Exports ───────────────────────────────────────────────────────────────
 
 module.exports = {
@@ -134,8 +206,11 @@ module.exports = {
 	MAX_LABEL_LENGTH,
 	MAX_DESCRIPTION_LENGTH,
 	MAX_HOTEL_REBATES_PER_EVENT,
+	BRACKET_TEAM_SIZES,
+	MAX_BRACKET_TEAM_NAME_LENGTH,
 	totalRemainingCapacity,
 	labelToTierId,
 	validateTier,
 	validateTierMap,
+	validateBracket,
 };
