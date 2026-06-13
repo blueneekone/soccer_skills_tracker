@@ -2,6 +2,7 @@
 	import { functions } from '$lib/firebase.js';
 	import { httpsCallable } from 'firebase/functions';
 	import { authStore } from '$lib/stores/auth.svelte.js';
+	import { handleSignOut } from '$lib/auth/signOutFlow.js';
 	import { teamsStore } from '$lib/stores/teams.svelte.js';
 	import { themeStore } from '$lib/stores/theme.svelte.js';
 	import { fcmService } from '$lib/services/messaging.svelte.js';
@@ -180,6 +181,7 @@
 
 	let resetSent = $state(false);
 	let resetError = $state('');
+	let signingOut = $state(false);
 
 	async function handlePasswordReset() {
 		resetError = '';
@@ -189,6 +191,16 @@
 			return;
 		}
 		resetSent = true;
+	}
+
+	async function handleDisconnect() {
+		if (signingOut) return;
+		signingOut = true;
+		try {
+			await handleSignOut();
+		} finally {
+			signingOut = false;
+		}
 	}
 
 	const armoryStudioHref = '/player/armory?tab=studio';
@@ -470,6 +482,17 @@
 
 {:else if activeTab === 'danger'}
 	<div class="ps-settings-panel pd-os-deck">
+		<section class="pd-panel-section">
+			<span class="pd-panel-eyebrow ps-settings-eyebrow--danger">Session</span>
+			<p class="ps-settings-hint">
+				End this operative session and return to the login screen. Use this before switching
+				accounts during QA or on a shared device.
+			</p>
+			<PlayerOsButton variant="danger" onclick={handleDisconnect} disabled={signingOut}>
+				{signingOut ? 'Signing out…' : 'Sign out'}
+			</PlayerOsButton>
+		</section>
+
 		<section class="pd-panel-section">
 			<span class="pd-panel-eyebrow ps-settings-eyebrow--danger">Password reset</span>
 			<p class="ps-settings-hint">Send a password reset link to {email}.</p>

@@ -111,6 +111,16 @@ describe('Sprint LAUNCH-nav — FUNCTIONAL_MVP settings + gaps', () => {
 		expect(doc).toMatch(/Resolved \(LAUNCH-nav\).*\/coach\/forge/s);
 		expect(doc).toMatch(/Resolved \(LAUNCH-nav\).*\/parent\/dashboard/s);
 	});
+
+	it('PlayerSettingsPanel danger tab exposes handleSignOut for QA account switching', () => {
+		const panel = readFileSync(
+			join(ROOT, 'lib/components/player/PlayerSettingsPanel.svelte'),
+			'utf-8',
+		);
+		expect(panel).toMatch(/handleSignOut/);
+		expect(panel).toMatch(/Sign out/);
+		expect(panel).toMatch(/activeTab === 'danger'/);
+	});
 });
 
 describe('Sprint LAUNCH-functional-os — launch-focus rule', () => {

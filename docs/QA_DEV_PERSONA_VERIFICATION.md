@@ -1,7 +1,6 @@
 # Dev QA — phased pair-programming (Coach · Parent · Player)
 
-**Environment:** `sports-skill-tracker-dev`  
-**URL:** https://sports-skill-tracker-dev.web.app  
+**Environment:** `sports-skill-tracker-dev` (backend) · **Primary QA URL:** https://sstracker.app (canonical; Firebase/auth tied to main domain — not `*.web.app` alone)  
 **Branch:** `dev`  
 **Authority:** [`FUNCTIONAL_MVP.md`](vision/FUNCTIONAL_MVP.md) · [`FUNCTIONS_DEPLOY.md`](FUNCTIONS_DEPLOY.md)
 
@@ -34,7 +33,17 @@ Run before any human QA. Agent can execute; you confirm green checks.
 | 0.6 | `npm run deploy:backend:systematic` (core → rl → platform → commerce → compliance → integrations; ~15–25 min) | [ ] |
 | 0.7 | `npm run deploy:comms` (default monolith messaging batch) | [ ] |
 | 0.8 | `firebase deploy --only hosting` | [ ] |
-| 0.9 | Hard refresh https://sports-skill-tracker-dev.web.app/login | [ ] |
+| 0.9 | Hard refresh https://sstracker.app/login | [ ] |
+
+**Sign out (all personas):**
+
+| Persona | Path |
+|---------|------|
+| Player | `/player/settings` → **Danger** → **Sign out** |
+| Parent | `/parent/household` → Sign out (footer) |
+| Coach / Director / Admin | Sidebar **Sign out** or header **Disconnect** |
+
+**Stuck without deploy?** Incognito window, or browser DevTools → Application → Clear site data for `sstracker.app`.
 
 **Automated smoke (local, optional):**
 
