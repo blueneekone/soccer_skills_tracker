@@ -100,6 +100,11 @@ describe('Sprint LAUNCH-nav — workspaceNav discoverability', () => {
 	it('athlete household Settings links to /player/settings', () => {
 		expect(nav).toMatch(/href:\s*'\/player\/settings'/);
 	});
+
+	it('athlete household links Tracker to /player/tracker', () => {
+		expect(nav).toMatch(/label:\s*'Tracker'/);
+		expect(nav).toMatch(/href:\s*'\/player\/tracker'/);
+	});
 });
 
 describe('Sprint LAUNCH-nav — FUNCTIONAL_MVP settings + gaps', () => {
@@ -559,6 +564,13 @@ describe('Player/parent launch — discoverability and payment refresh', () => {
 		const src = readFileSync(join(ROOT, 'lib/components/shell/PlayerShell.svelte'), 'utf-8');
 		expect(src).toMatch(/href:\s*'\/messages'/);
 		expect(src).toMatch(/label:\s*'Comms'/);
+	});
+
+	it('PlayerShell bottom rail includes Tracker → /player/tracker', () => {
+		const src = readFileSync(join(ROOT, 'lib/components/shell/PlayerShell.svelte'), 'utf-8');
+		expect(src).toMatch(/href:\s*'\/player\/tracker'/);
+		expect(src).toMatch(/label:\s*'Tracker'/);
+		expect(src).toMatch(/icon:\s*'game\.zap'/);
 	});
 
 	it('PlayerShell rail exposes always-visible sign out for QA account switching', () => {

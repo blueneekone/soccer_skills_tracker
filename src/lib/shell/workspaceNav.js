@@ -50,13 +50,14 @@ const coachLinks = [
 ];
 
 /**
- * Player OS — labels match PlayerShell (HQ / Train / Stats / Settings).
+ * Player OS — labels match PlayerShell (HQ / Train / Tracker / Stats / Settings).
  * Primary player routes use PlayerShell; these links cover enterprise-shell edge cases.
  * @type {ShellNavItem[]}
  */
 const athleteHouseholdLinks = [
 	{ tab: '', label: 'HQ',     icon: 'content.grid',       href: '/player/dashboard' },
 	{ tab: '', label: 'Train',  icon: 'content.checks',   href: '/player/workout' },
+	{ tab: '', label: 'Tracker', icon: 'game.zap',        href: '/player/tracker' },
 	{ tab: '', label: 'Stats',  icon: 'data.chart-bar-2',   href: '/stats' },
 	{ tab: '', label: 'Settings', icon: 'sys.settings',   href: '/player/settings' },
 ];
