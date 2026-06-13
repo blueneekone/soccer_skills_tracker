@@ -493,7 +493,7 @@
 				disabled={coppaSigned || actionBusy || loadBusy}
 				onclick={signWaiver}
 			>
-				{coppaSigned ? 'Waiver on file' : 'Sign waiver &amp; authorize'}
+				{coppaSigned ? 'Waiver on file' : 'Sign waiver & authorize'}
 			</button>
 		</section>
 
@@ -682,7 +682,8 @@
 						bind:value={teamDispatchCode}
 					/>
 					<p class="tw-mt-1 tw-text-xs tw-text-slate-400">
-						Your 6-digit team code (Provided by your coach).
+						Optional team dispatch code from your coach (e.g. AB-1K2M). Links your operative to the
+						roster when you provision credentials.
 					</p>
 				</div>
 			</div>

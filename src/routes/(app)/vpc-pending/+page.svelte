@@ -109,13 +109,14 @@
 						Select <em>Parent / guardian</em> during setup.
 					</li>
 					<li>
-						<strong>Link to your athlete</strong> — your club director will link your household
-						after the parent account is set up.
+						<strong>Sign the household waiver</strong> at
+						<em>Parent dashboard → Household</em>, then add your athlete with operative credentials.
 					</li>
 					<li>
 						<strong>Complete the consent ceremony</strong> at
 						<em>Parent dashboard → Consent (VPC)</em>. They must review the data-use disclosure
-						and sign the digital attestation in the app.
+						and sign the digital attestation in the app. Your account unlocks automatically when
+						they finish.
 					</li>
 				</ol>
 			{/if}
@@ -142,8 +143,7 @@
 		</div>
 
 		<p class="vpc-pending__footer-note">
-			Questions? Ask your parent or guardian, or contact your club director for help linking
-			your household.
+			Questions? Ask your parent or guardian to sign in and complete the steps above.
 		</p>
 	</div>
 </div>

@@ -33,6 +33,10 @@ const DEFAULT_KEEP =
 	'ecwaechtler@gmail.com,ecwaechtler+parent@gmail.com,ecwaechtler+coach@gmail.com';
 const DEFAULT_QA_CLUB = 'qa_launch_2026';
 const DEFAULT_QA_TEAM = 'qa_launch_2026_ppc';
+/** Deterministic team dispatch code for QA provisioning (XX-XXXX). */
+const DEFAULT_QA_INVITE_CODE = 'QA-PP26';
+/** Stable household doc id for the QA parent account. */
+const DEFAULT_QA_HOUSEHOLD_ID = 'qa_launch_2026_parent_hh';
 const PARENT_EMAIL = 'ecwaechtler+parent@gmail.com';
 const BATCH_SIZE = 450;
 
@@ -741,11 +745,28 @@ async function provision(db, auth, keepClubIds, teamIdArg) {
 				clubId: qaClub,
 				name: 'QA Launch PPC',
 				coachEmail,
+				inviteCode: DEFAULT_QA_INVITE_CODE,
 				updatedAt: new Date().toISOString(),
 			},
 			{ merge: true },
 		);
-	log(`[provision] teams/${qaTeam} clubId=${qaClub}`);
+	log(`[provision] teams/${qaTeam} clubId=${qaClub} inviteCode=${DEFAULT_QA_INVITE_CODE}`);
+
+	await db
+		.collection('households')
+		.doc(DEFAULT_QA_HOUSEHOLD_ID)
+		.set(
+			{
+				clubId: qaClub,
+				parentEmails: [PARENT_EMAIL],
+				playerEmails: [],
+				playerNames: [],
+				coppaSigned: false,
+				updatedAt: new Date().toISOString(),
+			},
+			{ merge: true },
+		);
+	log(`[provision] households/${DEFAULT_QA_HOUSEHOLD_ID} parent=${PARENT_EMAIL}`);
 
 	const profiles = [
 		{
@@ -758,6 +779,7 @@ async function provision(db, auth, keepClubIds, teamIdArg) {
 			email: PARENT_EMAIL,
 			role: 'parent',
 			clubId: qaClub,
+			householdId: DEFAULT_QA_HOUSEHOLD_ID,
 			playerName:
 				(typeof snapshots[PARENT_EMAIL]?.playerName === 'string' && snapshots[PARENT_EMAIL].playerName) ||
 				'QA Player',
@@ -789,13 +811,30 @@ async function provision(db, auth, keepClubIds, teamIdArg) {
 					role: p.role,
 					clubId: p.clubId || null,
 					teamId: p.teamId || null,
+					householdId: p.householdId || null,
 					playerName: p.playerName || null,
 					uid: uid || null,
 					updatedAt: new Date().toISOString(),
 				},
 				{ merge: true },
 			);
-		log(`[provision] users/${p.email} role=${p.role} clubId=${p.clubId || '—'} teamId=${p.teamId || '—'}`);
+		log(
+			`[provision] users/${p.email} role=${p.role} clubId=${p.clubId || '—'} teamId=${p.teamId || '—'} householdId=${p.householdId || '—'}`,
+		);
+		if (uid && p.householdId) {
+			try {
+				const rec = await auth.getUser(uid);
+				await auth.setCustomUserClaims(uid, {
+					...(rec.customClaims || {}),
+					householdId: p.householdId,
+				});
+				log(`[provision] Auth claims householdId=${p.householdId} for ${p.email}`);
+			} catch (claimErr) {
+				log(
+					`[provision] WARN: could not set householdId claim for ${p.email}: ${claimErr.message || claimErr}`,
+				);
+			}
+		}
 	}
 
 	await db
