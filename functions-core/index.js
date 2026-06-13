@@ -41,3 +41,6 @@ exports.dispatchTryoutComms = tryoutsOps.dispatchTryoutComms;
 const eligibilityOps = require('./src/domains/eligibilityOps');
 exports.upsertClubEligibilityMatrix = eligibilityOps.upsertClubEligibilityMatrix;
 exports.getClubEligibilityMatrix = eligibilityOps.getClubEligibilityMatrix;
+
+const ngbExportOps = require('./src/domains/ngbExportOps');
+exports.exportStateRoster = ngbExportOps.exportStateRoster;

@@ -11,6 +11,7 @@
 	import { isSubscriptionReadOnly } from '$lib/auth/billing.js';
 	import Icon from '$lib/components/ui/Icon.svelte';
 	import type { IconName } from '$lib/icons/registry.js';
+	import StateRosterExportPanel from '$lib/components/director/StateRosterExportPanel.svelte';
 
 	let { clubId = '' } = $props();
 
@@ -257,6 +258,8 @@
 <!-- ══════════════════════════════════════════════════════════════════════ -->
 <!-- ADAPTIVE DENSITY MATRIX — DIRECTOR TEAMS HUB                          -->
 <!-- ══════════════════════════════════════════════════════════════════════ -->
+
+<StateRosterExportPanel {clubId} />
 
 <!-- ── Control Bar ──────────────────────────────────────────────────────── -->
 <div class="tt-control-bar">

@@ -211,6 +211,9 @@ const eligibilityOps = require('./src/domains/eligibilityOps');
 exports.upsertClubEligibilityMatrix = eligibilityOps.upsertClubEligibilityMatrix;
 exports.getClubEligibilityMatrix    = eligibilityOps.getClubEligibilityMatrix;
 
+const ngbExportOps = require('./src/domains/ngbExportOps');
+exports.exportStateRoster = ngbExportOps.exportStateRoster;
+
 // ── Epic 4.4 W1: Parent Lounge channel provisioning ──────────────────────────
 const commsChannelOps = require('./src/domains/commsChannelOps');
 exports.coachProvisionParentLounge  = commsChannelOps.coachProvisionParentLounge;
