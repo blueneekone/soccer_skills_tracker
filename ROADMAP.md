@@ -2,7 +2,7 @@
 
 **Architecture:** [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)  
 **Last updated:** 2026-06-13  
-**Current sprint:** **LAUNCH-functional-os Done** · **LAUNCH-wave2-complete Done** · **Epic 4 Done (4.1–4.12)** · **Epic 5 Done (5.1–5.6; 5.4 weather lock Done)** · **Epic 2.2 Done** · **DEPLOY-O-bundle Done** · **dev deploy 2026-06-13** (hosting + integrations weather lock on `sports-skill-tracker-dev`) · **next:** **Owner QA** on live-fire dev · Launch portrait: `defaultPortraitV2` SVG + profile initials · **TABLED (post-launch):** Platform visual system (Gemini research — layout tokens from [`references/ui/`](docs/vision/references/ui/) only; no bust art) · Flow asset generation, Avatar Studio **3.6b+** · **Deferred (post-launch — owner art):** 3.5m-gemini-ingest, 3.5m-gate · **3.5k Done** · **3.5h Done** · **3.5j Done** · **LAUNCH-defer-avatar Done**  
+**Current sprint:** **LAUNCH-functional-os Done** · **LAUNCH-wave2-complete Done** · **next:** **LAUNCH-deploy-dev** (full backend to `sports-skill-tracker-dev`) then **P2 parity** (payments polish, registration→roster UX, tournaments) · **Owner QA** after deploy checklist · **TABLED (post-launch):** Platform visual system (Gemini research) · Player OS **6j/6i** · Flow asset generation, Avatar Studio **3.6b+**  
 **Note:** **3.5l-gate** closed in error — automated regression ≠ human VA; Phase 2 visual **rejected by product owner**  
 *Phase 7 · G1–G10 Done · Sprint 2.20 Done — Player OS premium foundation locked*
 
@@ -1437,8 +1437,10 @@ Loadout art (3.2+) consumed by 2.12 hero identity column.
 | **LAUNCH-parent-push** | **Done** | Parent dashboard push enable + notification preference matrix (game, messages, announcements, payments) | `parentPushLaunch.test.ts` · deploy **hosting** |
 | **LAUNCH-parent-week** | **Done** | Parent dashboard “This week” schedule strip with quick RSVP for primary household athlete | `parentWeekSchedule.test.ts` · deploy **hosting** |
 | **LAUNCH-parent-pwa** | **Done** | PWA install prompt (SSTracker branding) + parent nav Settings/Messages for mobile adoption path | `parentPwaLaunch.test.ts` · deploy **hosting** |
-| **LAUNCH-wave2-complete** | **Done** | Wave 2 parent adoption parity gate — ical + push + week strip + PWA; competitive matrix synced | `launchWave2Complete.test.ts` |
-| **LAUNCH-qa-ready** | **Done** | Functional launch gate closed — personaFunctionalMvp green; ROADMAP + research README aligned for owner QA | `personaFunctionalMvp.test.ts` |
+| **LAUNCH-wave2-complete** | **Done** | Wave 2 parent adoption parity — ical + push + week strip + PWA; competitive matrix synced | `launchWave2Complete.test.ts` |
+| **LAUNCH-qa-ready** | **Partial** | Wave 2 test gate only — **not** full launch closure; see remaining backlog below | `launchWave2Complete.test.ts` |
+| **LAUNCH-vpc-ux** | **Done** | Household minors skip email ConsentOverlay; in-app VPC path only | `roleDerivations.test.ts` · merged PR #13 |
+| **LAUNCH-deploy-dev** | **Done** | Full `deploy:*` + Firestore rules to `sports-skill-tracker-dev` (2026-06-13) | operator deploy log |
 | **XP-verify** | **Done** | XP algorithm tests + client/server parity (`level.js` ↔ `gamificationWorkoutXp.js`) | `levelXp.test.ts`, `gamificationWorkoutXp.test.js`, `trainingOpsXp.test.js` |
 | **3.5m-frame** | **Done** | Art-well recess + holo inset — unified portrait clip, xMidYMid bust centering | `playerLoadoutSprint35mFrame.test.ts` |
 | **3.5m-art** | **Superseded** | Agent modular SVG bust redraw — human VA failed; owner Gemini + ingest replaces | `playerLoadoutSprint35mArt.test.ts` (historical) |

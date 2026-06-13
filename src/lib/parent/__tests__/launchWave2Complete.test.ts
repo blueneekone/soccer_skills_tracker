@@ -20,12 +20,12 @@ describe('Launch Wave 2 — parent adoption complete', () => {
 		}
 	});
 
-	it('competitive assessment marks Wave 2 Done', () => {
+	it('competitive assessment marks Wave 2 Done and gate partial', () => {
 		const doc = readFileSync(
 			join(ROOT, 'docs/vision/COMPETITIVE_LAUNCH_ASSESSMENT.md'),
 			'utf8',
 		);
 		expect(doc).toMatch(/Wave 2 — Parent adoption parity — \*\*Done\*\*/);
-		expect(doc).toMatch(/Launch functional gate.*Closed/s);
+		expect(doc).toMatch(/Launch functional gate.*Partial/s);
 	});
 });

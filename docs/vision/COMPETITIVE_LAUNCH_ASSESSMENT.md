@@ -16,7 +16,7 @@ This document is the **canonical competitive gap matrix** for launch. Agents and
 | **Beat competitors on** | Athlete development loop, SafeSport-native comms, COPPA/VPC depth, coach intent + prescriptions, RL homework, tactical drill designer, **tryout lifecycle OS (reg → eval → callback → roster)** |
 | **At parity (launch functional track)** | Guardian roster visibility, RSVP, registration-lite, roster invite, eligibility matrix, parent calendar export, push prefs, PWA install path |
 | **Behind on table stakes** | Native app store binaries (web+PWA only), NGB/state roster export |
-| **Launch functional gate** | **Closed** — Wave 0–2 + tryouts + eligibility shipped; owner QA on `sports-skill-tracker-dev` |
+| **Launch functional gate** | **Partial** — Wave 0–2 code shipped; **full deploy checklist + P2 polish** remain before owner QA |
 
 **Positioning:** SSTracker is **not** “another TeamSnap.” It is the **development + compliance OS** clubs adopt when they outgrow chat-and-schedule tools — but parents still expect RSVP, schedules, and payments on day one.
 
