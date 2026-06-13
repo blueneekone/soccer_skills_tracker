@@ -382,7 +382,7 @@
 			aria-selected={activeTab === 'access'}
 			onclick={() => (activeTab = 'access')}
 		>
-			<Icon name={"status.shield-check" as IconName} aria-hidden="true" />
+			<Icon name={"status.shield-check" as IconName} />
 			<span>Access Control</span>
 		</button>
 		<button
@@ -393,7 +393,7 @@
 			aria-selected={activeTab === 'flags'}
 			onclick={() => (activeTab = 'flags')}
 		>
-		<Icon name={"nav.toggle-on" as IconName} aria-hidden="true" />
+		<Icon name={"nav.toggle-on" as IconName} />
 		<span>Feature Flags</span>
 		</button>
 		<button
@@ -404,7 +404,7 @@
 			aria-selected={activeTab === 'integrations'}
 			onclick={() => (activeTab = 'integrations')}
 		>
-		<Icon name={"sys.plug-zap" as IconName} aria-hidden="true" />
+		<Icon name={"sys.plug-zap" as IconName} />
 		<span>External Integrations</span>
 	</button>
 	</div>
@@ -415,7 +415,7 @@
 	{#if activeTab === 'access'}
 		<section class="ss-section" aria-labelledby="ss-access-heading">
 			<div class="ss-section__label">
-				<Icon name={"game.crown" as IconName} aria-hidden="true" />
+				<Icon name={"game.crown" as IconName} />
 				<h2 id="ss-access-heading" class="ss-section__heading">System Administrators</h2>
 			</div>
 			<p class="ss-section__desc">
@@ -471,7 +471,7 @@
 	{#if activeTab === 'flags'}
 		<section class="ss-section" aria-labelledby="ss-flags-heading">
 			<div class="ss-section__label ss-section__label--danger">
-				<Icon name={"status.warning-octagon" as IconName} aria-hidden="true" />
+				<Icon name={"status.warning-octagon" as IconName} />
 				<h2 id="ss-flags-heading" class="ss-section__heading">Global Kill Switch</h2>
 			</div>
 			<p class="ss-section__desc">
@@ -578,7 +578,7 @@
 	{#if activeTab === 'integrations'}
 		<section class="ss-section" aria-labelledby="ss-int-heading">
 			<div class="ss-section__label">
-			<Icon name={"sys.plug-zap" as IconName} aria-hidden="true" />
+			<Icon name={"sys.plug-zap" as IconName} />
 			<h2 id="ss-int-heading" class="ss-section__heading">External Integrations (API)</h2>
 			</div>
 			<p class="ss-section__desc">
@@ -611,7 +611,7 @@
 			     breadcrumb if hammered via DevTools so we capture demand signal.
 			     ══════════════════════════════════════════════════════════════ -->
 			<div class="ss-section__label ss-section__label--pad">
-				<Icon name={"game.rocket" as IconName} aria-hidden="true" />
+				<Icon name={"game.rocket" as IconName} />
 				<h2 class="ss-section__heading">Upcoming Integrations</h2>
 				<span class="ss-upcoming__header-chip">Roadmap</span>
 			</div>
@@ -645,7 +645,7 @@
 						<p class="ss-upcoming-card__desc">{spec.description}</p>
 						<div class="ss-upcoming-card__foot">
 							<span class="ss-upcoming-card__status">
-							<Icon name={"sys.lock-simple" as IconName} aria-hidden="true" />
+							<Icon name={"sys.lock-simple" as IconName} />
 								Not enabled
 							</span>
 							<button
@@ -656,7 +656,7 @@
 								onclick={() => onUpcomingIntegrationClick(spec)}
 								title="Disabled — ships in {spec.sprintEta}"
 							>
-								<Icon name={"sys.plug" as IconName} aria-hidden="true" />
+								<Icon name={"sys.plug" as IconName} />
 								Connect
 							</button>
 						</div>
@@ -665,7 +665,7 @@
 			</div>
 
 			<div class="ss-section__label ss-section__label--pad">
-				<Icon name={"data.activity" as IconName} aria-hidden="true" />
+				<Icon name={"data.activity" as IconName} />
 				<h2 class="ss-section__heading">Webhook Status Log</h2>
 			</div>
 			<p class="ss-section__desc">

@@ -521,12 +521,12 @@
 					{/if}
 				{#if feedLoading && liveFeed.length === 0}
 					<div class="cc-feed-empty">
-						<Icon name={"status.loading" as IconName} class="cc-spin" aria-hidden="true" />
+						<Icon name={"status.loading" as IconName} class="cc-spin" />
 						Loading audit streamâ€¦
 					</div>
 				{:else if liveFeed.length === 0}
 					<div class="cc-feed-empty">
-						<Icon name={"env.moon" as IconName} aria-hidden="true" />
+						<Icon name={"env.moon" as IconName} />
 						No audit events yet.
 					</div>
 					{:else}
@@ -564,7 +564,7 @@
 
 				<div class="cc-platform-note bento-span-12 tw-min-w-0">
 					<p>
-					<Icon name={"status.info" as IconName} aria-hidden="true" />
+					<Icon name={"status.info" as IconName} />
 					KPI tiles above are fixed for executive review; charts on other tabs still hydrate from
 						<code class="cc-code">analytics/platform_totals</code> when available.
 					</p>

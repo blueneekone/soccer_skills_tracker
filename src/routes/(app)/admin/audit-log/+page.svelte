@@ -145,7 +145,7 @@
 	<div class="adm-toolbar al-page__toolbar">
 		<div class="adm-toolbar__left">
 			<h1 class="adm-toolbar__title adm-toolbar__title--icon">
-				<Icon name={"status.shield-check" as IconName} aria-hidden="true" />
+				<Icon name={"status.shield-check" as IconName} />
 				Security Audit Log
 			</h1>
 			<div class="adm-toolbar__meta">
@@ -179,14 +179,14 @@
 				title={loading ? 'Loading…' : 'Refresh audit log'}
 				aria-label="Refresh audit log"
 			>
-			<Icon name={"nav.refresh" as IconName} class="tw-text-lg {loading ? 'al-refresh-spin' : ''}" aria-hidden="true" />
+			<Icon name={"nav.refresh" as IconName} class="tw-text-lg {loading ? 'al-refresh-spin' : ''}" />
 			</button>
 		</div>
 	</div>
 
 	{#if loadErr}
 		<div class="al-err" role="alert">
-			<Icon name={"status.warning-circle" as IconName} aria-hidden="true" />
+			<Icon name={"status.warning-circle" as IconName} />
 			{loadErr}
 		</div>
 	{/if}

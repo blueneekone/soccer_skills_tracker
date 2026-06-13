@@ -304,7 +304,7 @@
 			{clubsLoading}
 			filteredCount={filteredClubs.length}
 			totalCount={clubs.length}
-			bind:filterOpen
+			filterOpen={filterOpen}
 			{filterActiveCount}
 			bind:filterVerification
 			bind:filterStates
