@@ -7,6 +7,119 @@ const {normEmail} = require('../utils/formatters');
 
 const REGION = 'us-east1';
 const db = () => admin.firestore();
+const PLATFORM_URL =
+  process.env.PLATFORM_URL || 'https://sports-skill-tracker-dev.web.app';
+const PLATFORM_NAME = 'SSTracker';
+
+const COMMS_TEMPLATES = new Set([
+  'registration_confirm',
+  'session_assigned',
+  'offer_sent',
+  'waitlist_promoted',
+]);
+
+/**
+ * @param {{ headline: string, body: string, ctaUrl?: string, ctaLabel?: string }} o
+ */
+function buildTryoutMailHtml({headline, body, ctaUrl, ctaLabel}) {
+  const cta = ctaUrl ?
+    `<p style="margin-top:20px"><a href="${ctaUrl}" style="background:#14b8a6;color:#0f172a;padding:10px 16px;border-radius:8px;text-decoration:none;font-weight:700">${ctaLabel || 'Open tryout portal'}</a></p>` :
+    '';
+  return `<div style="font-family:system-ui,sans-serif;color:#0f172a;line-height:1.5">
+    <h2 style="margin:0 0 12px">${headline}</h2>
+    <p>${body}</p>${cta}
+    <p style="margin-top:24px;font-size:12px;color:#64748b">${PLATFORM_NAME}</p>
+  </div>`;
+}
+
+/**
+ * @param {{ to: string, subject: string, html: string, programId: string, registrationId?: string, template: string }} o
+ */
+async function queueTryoutMail({to, subject, html, programId, registrationId, template}) {
+  const mailRef = await db().collection('mail').add({
+    to: [to],
+    message: {subject, html},
+    mailType: 'transactional',
+  });
+  await db().collection('tryout_programs').doc(programId).collection('comms').add({
+    template,
+    registrationId: registrationId || null,
+    mailDocId: mailRef.id,
+    to,
+    sentAt: admin.firestore.FieldValue.serverTimestamp(),
+  });
+  return mailRef.id;
+}
+
+/**
+ * @param {string} programId
+ * @param {string} registrationId
+ * @param {string} template
+ */
+async function sendTryoutCommsForRegistration(programId, registrationId, template) {
+  if (!COMMS_TEMPLATES.has(template)) return null;
+  const programRef = db().collection('tryout_programs').doc(programId);
+  const regRef = programRef.collection('registrations').doc(registrationId);
+  const [pSnap, rSnap] = await Promise.all([programRef.get(), regRef.get()]);
+  if (!pSnap.exists || !rSnap.exists) return null;
+  const p = pSnap.data();
+  const r = rSnap.data();
+  const to = normEmail(r.guardianEmail);
+  if (!to) return null;
+
+  const programName = typeof p.name === 'string' ? p.name : 'Tryouts';
+  const playerName = typeof r.playerName === 'string' ? r.playerName : 'your athlete';
+  const portalUrl = `${PLATFORM_URL}/tryouts/${encodeURIComponent(programId)}`;
+
+  /** @type {{ subject: string, headline: string, body: string }} */
+  let copy;
+  if (template === 'registration_confirm') {
+    copy = {
+      subject: `[${PLATFORM_NAME}] Tryout registration received — ${programName}`,
+      headline: 'Registration confirmed',
+      body: `${playerName} is registered for <strong>${programName}</strong>. ` +
+        `Your confirmation code is <strong>${registrationId}</strong>. ` +
+        'We will email session details when the club assigns your tryout block.',
+    };
+  } else if (template === 'waitlist_promoted') {
+    copy = {
+      subject: `[${PLATFORM_NAME}] Tryout waitlist — ${programName}`,
+      headline: 'You are on the waitlist',
+      body: `${playerName} is waitlisted for <strong>${programName}</strong>. ` +
+        'The club will contact you if a spot opens.',
+    };
+  } else if (template === 'session_assigned') {
+    const when = r.sessionStartAt || 'TBD';
+    const where = r.sessionFieldLabel || 'See club message';
+    copy = {
+      subject: `[${PLATFORM_NAME}] Tryout session assigned — ${programName}`,
+      headline: 'Tryout session scheduled',
+      body: `${playerName}'s tryout block: <strong>${when}</strong> at <strong>${where}</strong>. ` +
+        `Confirmation code: <strong>${registrationId}</strong>. Please RSVP on the tryout portal.`,
+    };
+  } else {
+    copy = {
+      subject: `[${PLATFORM_NAME}] Roster offer — ${programName}`,
+      headline: 'Roster offer',
+      body: `Congratulations — ${playerName} has been offered a roster spot from ` +
+        `<strong>${programName}</strong>. Accept or decline on the tryout portal.`,
+    };
+  }
+
+  return queueTryoutMail({
+    to,
+    subject: copy.subject,
+    html: buildTryoutMailHtml({
+      headline: copy.headline,
+      body: copy.body,
+      ctaUrl: portalUrl,
+      ctaLabel: 'Open tryout portal',
+    }),
+    programId,
+    registrationId,
+    template,
+  });
+}
 
 const PIPELINE = {
   REGISTERED: 'registered',
@@ -312,6 +425,13 @@ exports.registerForTryout = onCall(
         return {registrationId: regRef.id, pipelineStatus};
       });
 
+      const mailTemplate =
+        result.pipelineStatus === PIPELINE.WAITLISTED ?
+          'waitlist_promoted' :
+          'registration_confirm';
+      void sendTryoutCommsForRegistration(programId, result.registrationId, mailTemplate)
+          .catch(() => undefined);
+
       return {ok: true, ...result, programId};
     },
 );
@@ -480,6 +600,11 @@ exports.assignTryoutSession = onCall({region: REGION}, async (request) => {
     }, {merge: true});
   }
   await batch.commit();
+
+  for (const ref of regRefs) {
+    void sendTryoutCommsForRegistration(programId, ref.id, 'session_assigned')
+        .catch(() => undefined);
+  }
 
   return {ok: true, programId, sessionId, assignedCount: regRefs.length};
 });
@@ -823,6 +948,11 @@ exports.setTryoutPipelineStatus = onCall({region: REGION}, async (request) => {
     updatedAt: now,
   }, {merge: true});
 
+  if (nextStatus === PIPELINE.OFFERED) {
+    void sendTryoutCommsForRegistration(programId, registrationId, 'offer_sent')
+        .catch(() => undefined);
+  }
+
   return {ok: true, programId, registrationId, pipelineStatus: nextStatus};
 });
 
@@ -1028,4 +1158,68 @@ exports.promoteTryoutToRoster = onCall({region: REGION}, async (request) => {
     guardianEmail: normEmail(reg.guardianEmail),
     pipelineStatus: PIPELINE.ROSTER_PENDING,
   };
+});
+
+/**
+ * Staff: manually dispatch tryout comms template to one or many registrations.
+ */
+exports.dispatchTryoutComms = onCall({region: REGION}, async (request) => {
+  if (!request.auth) {
+    throw new HttpsError('unauthenticated', 'Sign in required.');
+  }
+
+  const role = request.auth.token.role || '';
+  const tokenClub =
+    typeof request.auth.token.clubId === 'string' ?
+      request.auth.token.clubId.trim() :
+      '';
+  const allowed = ['director', 'registrar', 'coach', 'super_admin', 'global_admin'].includes(role);
+  if (!allowed) {
+    throw new HttpsError('permission-denied', 'Staff access required.');
+  }
+
+  const data = request.data || {};
+  const programId =
+    typeof data.programId === 'string' ? data.programId.trim() : '';
+  const template =
+    typeof data.template === 'string' ? data.template.trim() : '';
+  const registrationId =
+    typeof data.registrationId === 'string' ? data.registrationId.trim() : '';
+  const ageBand =
+    typeof data.ageBand === 'string' ? data.ageBand.trim().slice(0, 32) : '';
+
+  if (!programId || !COMMS_TEMPLATES.has(template)) {
+    throw new HttpsError(
+        'invalid-argument',
+        'programId and template (registration_confirm|session_assigned|offer_sent|waitlist_promoted) are required.',
+    );
+  }
+
+  const programRef = db().collection('tryout_programs').doc(programId);
+  const programSnap = await programRef.get();
+  if (!programSnap.exists) {
+    throw new HttpsError('not-found', 'Tryout program not found.');
+  }
+  const clubId = programSnap.data().clubId || '';
+  if (!staffCanAccessClub(role, tokenClub, clubId)) {
+    throw new HttpsError('permission-denied', 'Program must belong to your club.');
+  }
+
+  /** @type {string[]} */
+  let ids = registrationId ? [registrationId] : [];
+  if (!ids.length && ageBand) {
+    const q = await programRef.collection('registrations').where('ageBand', '==', ageBand).get();
+    ids = q.docs.map((d) => d.id);
+  }
+  if (!ids.length) {
+    throw new HttpsError('not-found', 'No registrations matched.');
+  }
+
+  let sent = 0;
+  for (const id of ids.slice(0, 500)) {
+    const mailId = await sendTryoutCommsForRegistration(programId, id, template);
+    if (mailId) sent++;
+  }
+
+  return {ok: true, programId, template, sentCount: sent};
 });

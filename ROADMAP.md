@@ -1431,7 +1431,7 @@ Loadout art (3.2+) consumed by 2.12 hero identity column.
 | **LAUNCH-marketing-revamp** | **Done** | Landing page SSTracker copy + `CompetitivePositionPanel` (canonical win message) + integrations bar; remove Nexus Command marketing chrome | `marketingLanding.test.ts` |
 | **LAUNCH-registration-lite** | **Done** | Director registration link + `/register/[clubId]` + parent checkout (`playerEmail` on `createRegistrationIntent`) | `registrationLaunch.test.ts` · deploy **`npm run deploy:core`** + **`npm run deploy:commerce`** |
 | **LAUNCH-roster-invite** | **Done** | Name-only roster → guardian magic uplink → `claimRosterSpot` household link | `rosterInviteLaunch.test.ts` · deploy **`npm run deploy:core`** |
-| **LAUNCH-tryouts-os** | **In progress** | End-to-end tryout cycle — **Phase A–D Done** (through roster promotion + guardian invite) | `tryoutsLaunch.test.ts` · deploy **`npm run deploy:core`** + rules |
+| **LAUNCH-tryouts-os** | **Done** | End-to-end tryout cycle — Phases **A–E** (reg → session → eval → callback/offer → roster + guardian email comms) | `tryoutsLaunch.test.ts` · deploy **`npm run deploy:core`** + rules |
 | **XP-verify** | **Done** | XP algorithm tests + client/server parity (`level.js` ↔ `gamificationWorkoutXp.js`) | `levelXp.test.ts`, `gamificationWorkoutXp.test.js`, `trainingOpsXp.test.js` |
 | **3.5m-frame** | **Done** | Art-well recess + holo inset — unified portrait clip, xMidYMid bust centering | `playerLoadoutSprint35mFrame.test.ts` |
 | **3.5m-art** | **Superseded** | Agent modular SVG bust redraw — human VA failed; owner Gemini + ingest replaces | `playerLoadoutSprint35mArt.test.ts` (historical) |
@@ -1459,7 +1459,7 @@ Loadout art (3.2+) consumed by 2.12 hero identity column.
 | **B** | **LAUNCH-tryouts-b** | **Done** | Field **session blocks**, age-band assignment, guardian **session RSVP**, staff **gate check-in** | `tryoutsLaunch.test.ts` |
 | **C** | **LAUNCH-tryouts-c** | **Done** | **Tryout plan** station template + coach **eval sheet** → `evaluations` subcollection | `tryoutsLaunch.test.ts` |
 | **D** | **LAUNCH-tryouts-d** | **Done** | **Callbacks** + **offers** + guardian accept/decline + **roster promotion** + magic-link invite | `tryoutsLaunch.test.ts` |
-| **E** | **LAUNCH-tryouts-e** | **Automated comms** — registration confirm, session reminder (7/1/0 day), check-in QR/link, callback invite, offer/decline, waitlist promotion. Parent + player push where policy allows. | Epic 4 comms, `push_gameReminders`, Parent Lounge policy |
+| **E** | **LAUNCH-tryouts-e** | **Done** | **Automated guardian emails** — registration confirm, session assigned, offer sent, waitlist; manual resend via `dispatchTryoutComms` | `tryoutsLaunch.test.ts` |
 
 ### Acceptance (club director VA)
 

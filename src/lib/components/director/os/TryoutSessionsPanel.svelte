@@ -53,6 +53,7 @@
 	const setTryoutPipelineStatus = httpsCallable(functions, 'setTryoutPipelineStatus');
 	const promoteTryoutToRoster = httpsCallable(functions, 'promoteTryoutToRoster');
 	const mintMagicUplink = httpsCallable(functions, 'mintMagicUplink');
+	const dispatchTryoutComms = httpsCallable(functions, 'dispatchTryoutComms');
 
 	let promoteTeamId = $state('');
 
@@ -276,6 +277,26 @@
 			saving = false;
 		}
 	}
+
+	async function notifyBand(template: string) {
+		if (!programId.trim() || !assignAgeBand.trim() || saving) return;
+		err = '';
+		ok = '';
+		saving = true;
+		try {
+			const res = await dispatchTryoutComms({
+				programId: programId.trim(),
+				template,
+				ageBand: assignAgeBand.trim(),
+			});
+			const data = res.data as { sentCount?: number };
+			ok = `Sent ${data.sentCount ?? 0} ${template.replace('_', ' ')} emails.`;
+		} catch (e) {
+			err = e instanceof Error ? e.message : 'Notification dispatch failed.';
+		} finally {
+			saving = false;
+		}
+	}
 </script>
 
 <div class="tryout-sessions">
@@ -346,6 +367,14 @@
 				onclick={() => void assignByAgeBand()}
 			>
 				Assign athletes
+			</button>
+			<button
+				type="button"
+				class="tryouts-btn tryouts-btn--ghost tryouts-btn--compact"
+				disabled={!assignAgeBand.trim() || saving}
+				onclick={() => void notifyBand('session_assigned')}
+			>
+				Email session notice
 			</button>
 		</div>
 	{/if}

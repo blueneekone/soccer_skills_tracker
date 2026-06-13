@@ -35,3 +35,4 @@ exports.setTryoutPipelineStatus = tryoutsOps.setTryoutPipelineStatus;
 exports.respondTryoutOffer = tryoutsOps.respondTryoutOffer;
 exports.getPublicTryoutRegistration = tryoutsOps.getPublicTryoutRegistration;
 exports.promoteTryoutToRoster = tryoutsOps.promoteTryoutToRoster;
+exports.dispatchTryoutComms = tryoutsOps.dispatchTryoutComms;

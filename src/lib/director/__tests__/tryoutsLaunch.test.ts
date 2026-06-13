@@ -139,3 +139,25 @@ describe('LAUNCH-tryouts-d — callbacks, offers, roster pipeline', () => {
 		expect(page).toMatch(/respondTryoutOffer/);
 	});
 });
+
+describe('LAUNCH-tryouts-e — automated comms', () => {
+	it('exports dispatchTryoutComms and mail hooks in tryoutsOps', () => {
+		const ops = readFileSync(join(ROOT, 'functions/src/domains/tryoutsOps.js'), 'utf-8');
+		expect(ops).toMatch(/exports\.dispatchTryoutComms/);
+		expect(ops).toMatch(/registration_confirm/);
+		expect(ops).toMatch(/collection\('mail'\)/);
+	});
+
+	it('Firestore rules gate tryout comms audit subcollection', () => {
+		const rules = readFileSync(join(ROOT, 'firestore.rules'), 'utf-8');
+		expect(rules).toMatch(/match \/comms\/\{commId\}/);
+	});
+
+	it('TryoutSessionsPanel can resend session notices', () => {
+		const panel = readFileSync(
+			join(ROOT, 'src/lib/components/director/os/TryoutSessionsPanel.svelte'),
+			'utf-8',
+		);
+		expect(panel).toMatch(/dispatchTryoutComms/);
+	});
+});

@@ -204,6 +204,7 @@ exports.setTryoutPipelineStatus     = tryoutsOps.setTryoutPipelineStatus;
 exports.respondTryoutOffer          = tryoutsOps.respondTryoutOffer;
 exports.getPublicTryoutRegistration   = tryoutsOps.getPublicTryoutRegistration;
 exports.promoteTryoutToRoster       = tryoutsOps.promoteTryoutToRoster;
+exports.dispatchTryoutComms         = tryoutsOps.dispatchTryoutComms;
 
 // ── Epic 4.4 W1: Parent Lounge channel provisioning ──────────────────────────
 const commsChannelOps = require('./src/domains/commsChannelOps');
