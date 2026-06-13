@@ -12,6 +12,7 @@ const PIPELINE = {
   REGISTERED: 'registered',
   WAITLISTED: 'waitlisted',
   CHECKED_IN: 'checked_in',
+  EVALUATED: 'evaluated',
 };
 
 const CHECK_IN = {
@@ -589,4 +590,162 @@ exports.checkInTryoutRegistration = onCall({region: REGION}, async (request) => 
   }, {merge: true});
 
   return {ok: true, programId, registrationId, checkInStatus, pipelineStatus};
+});
+
+const EVAL_KEYS = ['pace', 'technique', 'tacticalVision', 'physicality', 'mentality'];
+
+/**
+ * @param {unknown} v
+ * @param {number} fallback
+ */
+function clampScore(v, fallback = 50) {
+  const n = Number(v);
+  if (!Number.isFinite(n)) return fallback;
+  return Math.min(100, Math.max(0, Math.round(n)));
+}
+
+/**
+ * Director/registrar: station template for tryout eval rotations (Phase C).
+ */
+exports.upsertTryoutPlan = onCall({region: REGION}, async (request) => {
+  if (!request.auth) {
+    throw new HttpsError('unauthenticated', 'Sign in required.');
+  }
+
+  const role = request.auth.token.role || '';
+  const tokenClub =
+    typeof request.auth.token.clubId === 'string' ?
+      request.auth.token.clubId.trim() :
+      '';
+  const allowed = ['director', 'registrar', 'super_admin', 'global_admin'].includes(role);
+  if (!allowed) {
+    throw new HttpsError('permission-denied', 'Director or registrar access required.');
+  }
+
+  const data = request.data || {};
+  const programId =
+    typeof data.programId === 'string' ? data.programId.trim() : '';
+  if (!programId) {
+    throw new HttpsError('invalid-argument', 'programId is required.');
+  }
+
+  const programRef = db().collection('tryout_programs').doc(programId);
+  const programSnap = await programRef.get();
+  if (!programSnap.exists) {
+    throw new HttpsError('not-found', 'Tryout program not found.');
+  }
+  const clubId = programSnap.data().clubId || '';
+  if (!staffCanAccessClub(role, tokenClub, clubId)) {
+    throw new HttpsError('permission-denied', 'Program must belong to your club.');
+  }
+
+  const stationsRaw = Array.isArray(data.stations) ? data.stations : [];
+  const stations = stationsRaw.slice(0, 12).map((row, idx) => {
+    const r = row && typeof row === 'object' ? row : {};
+    const label =
+      typeof r.label === 'string' ? r.label.trim().slice(0, 120) : `Station ${idx + 1}`;
+    const durationMin = clampScore(r.durationMin, 10);
+    const evaluatorRole =
+      typeof r.evaluatorRole === 'string' ?
+        r.evaluatorRole.trim().slice(0, 64) :
+        'Evaluator';
+    return {id: `s${idx + 1}`, label, durationMin, evaluatorRole};
+  });
+
+  const now = admin.firestore.FieldValue.serverTimestamp();
+  await programRef.set({
+    evalPlan: {stations, updatedAt: now},
+    updatedAt: now,
+    updatedBy: request.auth.uid,
+  }, {merge: true});
+
+  return {ok: true, programId, stationCount: stations.length};
+});
+
+/**
+ * Coach/staff: lock tryout eval sheet for a registration (Phase C).
+ */
+exports.submitTryoutEvaluation = onCall({region: REGION}, async (request) => {
+  if (!request.auth) {
+    throw new HttpsError('unauthenticated', 'Sign in required.');
+  }
+
+  const role = request.auth.token.role || '';
+  const tokenClub =
+    typeof request.auth.token.clubId === 'string' ?
+      request.auth.token.clubId.trim() :
+      '';
+  const allowed = ['director', 'registrar', 'coach', 'super_admin', 'global_admin'].includes(role);
+  if (!allowed) {
+    throw new HttpsError('permission-denied', 'Staff access required.');
+  }
+
+  const data = request.data || {};
+  const programId =
+    typeof data.programId === 'string' ? data.programId.trim() : '';
+  const registrationId =
+    typeof data.registrationId === 'string' ? data.registrationId.trim() : '';
+  if (!programId || !registrationId) {
+    throw new HttpsError('invalid-argument', 'programId and registrationId are required.');
+  }
+
+  const programRef = db().collection('tryout_programs').doc(programId);
+  const regRef = programRef.collection('registrations').doc(registrationId);
+  const [programSnap, regSnap] = await Promise.all([programRef.get(), regRef.get()]);
+  if (!programSnap.exists || !regSnap.exists) {
+    throw new HttpsError('not-found', 'Program or registration not found.');
+  }
+  const clubId = programSnap.data().clubId || '';
+  if (!staffCanAccessClub(role, tokenClub, clubId)) {
+    throw new HttpsError('permission-denied', 'Program must belong to your club.');
+  }
+
+  const reg = regSnap.data();
+  if (reg.pipelineStatus === PIPELINE.WAITLISTED) {
+    throw new HttpsError('failed-precondition', 'Waitlisted athletes cannot be evaluated.');
+  }
+
+  /** @type {Record<string, number>} */
+  const scores = {};
+  for (const key of EVAL_KEYS) {
+    scores[key] = clampScore(data[key], 50);
+  }
+  const overallGrade = Math.round(
+      EVAL_KEYS.reduce((sum, k) => sum + scores[k], 0) / EVAL_KEYS.length,
+  );
+  const notes =
+    typeof data.notes === 'string' ? data.notes.trim().slice(0, 2000) : '';
+
+  const now = admin.firestore.FieldValue.serverTimestamp();
+  const actorEmail = normEmail(request.auth.token.email || '');
+
+  const evalPayload = {
+    programId,
+    clubId,
+    registrationId,
+    playerName: reg.playerName || '',
+    ageBand: reg.ageBand || '',
+    ...scores,
+    overallGrade,
+    ...(notes ? {notes} : {}),
+    lockedAt: now,
+    lockedBy: request.auth.uid,
+    lockedByEmail: actorEmail || null,
+  };
+
+  await db().runTransaction(async (tx) => {
+    tx.set(
+        programRef.collection('evaluations').doc(registrationId),
+        evalPayload,
+        {merge: true},
+    );
+    tx.set(regRef, {
+      pipelineStatus: PIPELINE.EVALUATED,
+      evaluatedAt: now,
+      overallGrade,
+      updatedAt: now,
+    }, {merge: true});
+  });
+
+  return {ok: true, programId, registrationId, overallGrade};
 });

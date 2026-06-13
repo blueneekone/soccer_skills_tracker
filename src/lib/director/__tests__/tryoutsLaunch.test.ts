@@ -80,3 +80,39 @@ describe('LAUNCH-tryouts-b — sessions, RSVP, check-in', () => {
 		expect(page).toMatch(/setTryoutSessionRsvp/);
 	});
 });
+
+describe('LAUNCH-tryouts-c — eval plan + coach sheets', () => {
+	it('exports eval plan callables from tryoutsOps', () => {
+		const ops = readFileSync(join(ROOT, 'functions/src/domains/tryoutsOps.js'), 'utf-8');
+		expect(ops).toMatch(/exports\.upsertTryoutPlan/);
+		expect(ops).toMatch(/exports\.submitTryoutEvaluation/);
+		expect(ops).toMatch(/evaluated/);
+	});
+
+	it('Firestore rules gate tryout evaluations subcollection', () => {
+		const rules = readFileSync(join(ROOT, 'firestore.rules'), 'utf-8');
+		expect(rules).toMatch(/match \/evaluations\/\{registrationId\}/);
+	});
+
+	it('TryoutSessionsPanel saves eval plan', () => {
+		const panel = readFileSync(
+			join(ROOT, 'src/lib/components/director/os/TryoutSessionsPanel.svelte'),
+			'utf-8',
+		);
+		expect(panel).toMatch(/upsertTryoutPlan/);
+	});
+
+	it('Coach scouting mounts tryout eval panel', () => {
+		const page = readFileSync(
+			join(ROOT, 'src/routes/(app)/coach/scouting/+page.svelte'),
+			'utf-8',
+		);
+		expect(page).toMatch(/CoachTryoutEvalPanel/);
+		expect(
+			readFileSync(
+				join(ROOT, 'src/lib/coach/scouting/CoachTryoutEvalPanel.svelte'),
+				'utf-8',
+			),
+		).toMatch(/submitTryoutEvaluation/);
+	});
+});

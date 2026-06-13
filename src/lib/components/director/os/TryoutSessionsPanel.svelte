@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { browser } from '$app/environment';
 	import { db, functions } from '$lib/firebase.js';
-	import { collection, onSnapshot, query } from 'firebase/firestore';
+	import { collection, onSnapshot, query, doc } from 'firebase/firestore';
 	import { httpsCallable } from 'firebase/functions';
 
 	let {
@@ -47,6 +47,19 @@
 	const upsertTryoutSession = httpsCallable(functions, 'upsertTryoutSession');
 	const assignTryoutSession = httpsCallable(functions, 'assignTryoutSession');
 	const checkInTryoutRegistration = httpsCallable(functions, 'checkInTryoutRegistration');
+	const upsertTryoutPlan = httpsCallable(functions, 'upsertTryoutPlan');
+
+	interface PlanStation {
+		label: string;
+		durationMin: string;
+		evaluatorRole: string;
+	}
+
+	let planStations = $state<PlanStation[]>([
+		{ label: 'Technical', durationMin: '15', evaluatorRole: 'Coach' },
+		{ label: 'Small-sided', durationMin: '20', evaluatorRole: 'Coach' },
+		{ label: 'Athletic', durationMin: '10', evaluatorRole: 'Evaluator' },
+	]);
 
 	$effect(() => {
 		const pid = programId.trim();
@@ -99,6 +112,54 @@
 			unsubR();
 		};
 	});
+
+	$effect(() => {
+		const pid = programId.trim();
+		if (!pid || !browser) return;
+		const ref = doc(db, 'tryout_programs', pid);
+		const unsub = onSnapshot(ref, (snap) => {
+			const plan = snap.data()?.evalPlan;
+			const stations = plan?.stations;
+			if (Array.isArray(stations) && stations.length) {
+				planStations = stations.map((s: Record<string, unknown>) => ({
+					label: String(s.label || ''),
+					durationMin: String(s.durationMin ?? 10),
+					evaluatorRole: String(s.evaluatorRole || 'Evaluator'),
+				}));
+			}
+		});
+		return () => unsub();
+	});
+
+	async function savePlan() {
+		if (!programId.trim() || saving) return;
+		err = '';
+		ok = '';
+		saving = true;
+		try {
+			await upsertTryoutPlan({
+				programId: programId.trim(),
+				stations: planStations.map((s) => ({
+					label: s.label.trim(),
+					durationMin: Number(s.durationMin) || 10,
+					evaluatorRole: s.evaluatorRole.trim() || 'Evaluator',
+				})),
+			});
+			ok = 'Tryout eval plan saved.';
+		} catch (e) {
+			err = e instanceof Error ? e.message : 'Could not save eval plan.';
+		} finally {
+			saving = false;
+		}
+	}
+
+	function addStation() {
+		if (planStations.length >= 12) return;
+		planStations = [
+			...planStations,
+			{ label: `Station ${planStations.length + 1}`, durationMin: '10', evaluatorRole: 'Evaluator' },
+		];
+	}
 
 	async function saveSession() {
 		if (!programId.trim() || saving) return;
@@ -279,6 +340,26 @@
 	{:else}
 		<p class="tryouts-muted">No registrations yet.</p>
 	{/if}
+
+	<section class="tryout-plan">
+		<h4 class="tryout-sessions__title">Eval station plan</h4>
+		<p class="tryouts-muted">Rotation template for coaches — time boxes and evaluator roles.</p>
+		{#each planStations as station, i (i)}
+			<div class="tryout-plan__row">
+				<input class="tryouts-input" type="text" bind:value={station.label} placeholder="Station label" />
+				<input class="tryouts-input" type="number" min="5" max="60" bind:value={station.durationMin} placeholder="Min" />
+				<input class="tryouts-input" type="text" bind:value={station.evaluatorRole} placeholder="Role" />
+			</div>
+		{/each}
+		<div class="tryout-plan__actions">
+			<button type="button" class="tryouts-btn tryouts-btn--ghost tryouts-btn--compact" onclick={addStation}>
+				Add station
+			</button>
+			<button type="button" class="tryouts-btn tryouts-btn--compact" disabled={saving} onclick={() => void savePlan()}>
+				{saving ? 'Saving…' : 'Save eval plan'}
+			</button>
+		</div>
+	</section>
 </div>
 
 <style>
@@ -422,5 +503,31 @@
 		display: flex;
 		flex-wrap: wrap;
 		gap: 0.25rem;
+	}
+
+	.tryout-plan {
+		margin-top: 1rem;
+		padding-top: 0.75rem;
+		border-top: 1px solid #334155;
+	}
+
+	.tryout-plan__row {
+		display: grid;
+		gap: 0.35rem;
+		grid-template-columns: 1fr;
+		margin-bottom: 0.45rem;
+	}
+
+	@media (min-width: 720px) {
+		.tryout-plan__row {
+			grid-template-columns: 2fr 1fr 1fr;
+		}
+	}
+
+	.tryout-plan__actions {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.5rem;
+		margin-top: 0.35rem;
 	}
 </style>
