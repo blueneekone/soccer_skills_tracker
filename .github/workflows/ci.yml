@@ -41,7 +41,7 @@ jobs:
   #   playerDashboard.hud.test, workout.layout.test
   #     → Component CSS token checks that diverged from current markup.
   #
-  # This command runs the 117 confirmed-green files verified 2026-06-09.
+  # This command runs the 129 confirmed-green files verified 2026-06-13 (PHASE 2).
   # ─────────────────────────────────────────────────────────────────────────────
   unit:
     name: Unit Tests (vitest)
@@ -61,24 +61,31 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Run curated vitest suites (117 green files)
+      - name: Run curated vitest suites (129 green files)
         run: |
           npx vitest run \
             "src/lib/__tests__" \
             "src/lib/admin/__tests__" \
             "src/lib/auth/__tests__" \
             "src/lib/coach/__tests__" \
+            "src/lib/coach/comms/__tests__" \
+            "src/lib/coach/logistics/__tests__" \
+            "src/lib/coach/scouting/__tests__/coachScouting.test" \
             "src/lib/coach/intent/__tests__" \
             "src/lib/compliance/__tests__" \
             "src/lib/components/hud/__tests__" \
             "src/lib/components/ui/__tests__" \
+            "src/lib/components/director/os/__tests__" \
+            "src/lib/components/marketing/__tests__" \
             "src/lib/components/player/skill-tree/__tests__" \
             "src/lib/director/__tests__" \
+            "src/lib/household/__tests__" \
             "src/lib/hud/__tests__" \
             "src/lib/parent/__tests__" \
             "src/lib/player/__tests__" \
             "src/lib/player/dashboard/__tests__" \
             "src/lib/player/workout/__tests__" \
+            "src/lib/registrar/__tests__" \
             "src/lib/services/__tests__" \
             "src/lib/states/war-room/__tests__" \
             "src/lib/stores/auth/__tests__" \
@@ -86,7 +93,9 @@ jobs:
             "src/lib/types/__tests__" \
             "src/lib/security/__tests__/firestoreRulesSprint21.test" \
             "src/lib/security/__tests__/firestoreRulesSprint22.test" \
+            "src/lib/security/__tests__/firestoreRulesSprint412.test" \
             "src/lib/security/__tests__/firestoreTenantIsolation.test" \
+            "src/lib/security/__tests__/loopIntegrityGuards.test" \
             "src/lib/security/__tests__/storageRulesB4c.test" \
             "src/lib/gamification/__tests__/levelXp.test" \
             "src/lib/gamification/__tests__/loadoutSchema.test" \
