@@ -1,4 +1,5 @@
 import { db, functions } from '$lib/firebase.js';
+import { normalizeLiveStreamUrl } from '$lib/live-stream/liveStreamEmbed.js';
 import { addDoc, collection, query, where, getDocs, serverTimestamp, Timestamp } from 'firebase/firestore';
 import { httpsCallable } from 'firebase/functions';
 
@@ -49,6 +50,7 @@ export function computeReminderFields(keys) {
  * @param {string} [o.fieldId]
  * @param {string} [o.scheduleDate] YYYY-MM-DD when linked to a field day
  * @param {boolean} [o.announceToTeam] When true, fires a team_broadcasts entry via safeSportBroadcast after save. Default false. Broadcast failure is non-fatal.
+ * @param {string} [o.liveStreamUrl] Allowlisted YouTube/Vimeo/Mux watch URL (optional)
  * @returns {Promise<void>}
  */
 export async function saveTeamScheduledEvent({
@@ -62,6 +64,7 @@ export async function saveTeamScheduledEvent({
 	fieldId = null,
 	scheduleDate = null,
 	announceToTeam = false,
+	liveStreamUrl = '',
 }) {
 	if (!teamId) {
 		throw new Error('teamId is required');
@@ -109,6 +112,14 @@ export async function saveTeamScheduledEvent({
 	}
 	if (scheduleDate) {
 		payload.scheduleDate = String(scheduleDate).slice(0, 12);
+	}
+	const streamRaw = typeof liveStreamUrl === 'string' ? liveStreamUrl.trim() : '';
+	if (streamRaw) {
+		const streamNorm = normalizeLiveStreamUrl(streamRaw);
+		if (!streamNorm) {
+			throw new Error('Live stream URL must be a YouTube, Vimeo, or Mux link.');
+		}
+		payload.liveStreamUrl = streamNorm;
 	}
 
 	await addDoc(collection(db, 'team_workouts'), payload);

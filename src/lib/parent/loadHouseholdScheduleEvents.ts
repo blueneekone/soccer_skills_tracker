@@ -8,6 +8,13 @@ export type HouseholdScheduleEvent = {
 	kind: string;
 	startMs: number;
 	endMs: number | null;
+	liveStreamUrl: string | null;
+};
+
+export type HouseholdMatchStream = {
+	teamId: string;
+	matchId: string;
+	liveStreamUrl: string;
 };
 
 /**
@@ -49,6 +56,10 @@ function parseScheduledEvent(
 	const endMsRaw = Number(data.endTimestamp);
 	const endMs = Number.isFinite(endMsRaw) && endMsRaw > startMs ? endMsRaw : null;
 
+	const liveRaw = data.liveStreamUrl;
+	const liveStreamUrl =
+		typeof liveRaw === 'string' && liveRaw.trim() ? liveRaw.trim().slice(0, 512) : null;
+
 	return {
 		id: docId,
 		teamId,
@@ -56,7 +67,36 @@ function parseScheduledEvent(
 		kind: String(data.eventKind || 'practice'),
 		startMs,
 		endMs,
+		liveStreamUrl,
 	};
+}
+
+/** Today's match-day session id — mirrors CoachMatchDayView. */
+export function buildMatchSessionId(teamId: string, when: Date = new Date()): string {
+	const d = when;
+	const ds = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+	return `md_${teamId}_${ds}`.slice(0, 128);
+}
+
+/**
+ * Load live stream URLs from today's match_sessions for household teams.
+ */
+export async function loadHouseholdMatchStreams(
+	childEmails: string[],
+): Promise<HouseholdMatchStream[]> {
+	const teamIds = await resolveTeamIdsForChildEmails(childEmails);
+	if (teamIds.length === 0) return [];
+
+	const found: HouseholdMatchStream[] = [];
+	for (const teamId of teamIds) {
+		const matchId = buildMatchSessionId(teamId);
+		const snap = await getDoc(doc(db, 'teams', teamId, 'match_sessions', matchId));
+		if (!snap.exists()) continue;
+		const url = snap.data()?.liveStreamUrl;
+		if (typeof url !== 'string' || !url.trim()) continue;
+		found.push({ teamId, matchId, liveStreamUrl: url.trim().slice(0, 512) });
+	}
+	return found;
 }
 
 /**

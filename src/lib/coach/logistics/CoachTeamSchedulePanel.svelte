@@ -11,6 +11,7 @@
 	let notify30m = $state(true);
 	let notifyMorning = $state(false);
 	let announceToTeam = $state(false);
+	let liveStreamUrl = $state('');
 	let saving = $state(false);
 	let err = $state('');
 	let ok = $state('');
@@ -48,8 +49,10 @@
 				reminderKeys: keys,
 				source: 'coach_form',
 				announceToTeam,
+				liveStreamUrl,
 			});
 			ok = 'Event saved.';
+			liveStreamUrl = '';
 			await workoutsStore.loadForTeam(teamId);
 		} catch (e) {
 			err = e instanceof Error ? e.message : 'Could not save event.';
@@ -85,6 +88,16 @@
 			<label class="ops-field">
 				<span class="ops-label">Start</span>
 				<input class="ops-input" type="datetime-local" bind:value={startLocal} required />
+			</label>
+			<label class="ops-field">
+				<span class="ops-label">Live stream URL (optional)</span>
+				<input
+					class="ops-input"
+					type="url"
+					bind:value={liveStreamUrl}
+					maxlength="512"
+					placeholder="https://youtube.com/watch?v=… or Vimeo / Mux"
+				/>
 			</label>
 			<fieldset class="ops-fieldset">
 				<legend class="ops-label">Reminders</legend>
@@ -128,6 +141,9 @@
 							<span class="ops-rsvp">
 								RSVP — Going: {Number(ev.rsvpGoing ?? 0)} · Out: {Number(ev.rsvpNotGoing ?? 0)} · Maybe: {Number(ev.rsvpMaybe ?? 0)}
 							</span>
+							{#if ev.liveStreamUrl}
+								<span class="ops-stream">Live stream linked</span>
+							{/if}
 							{#if ev.reminderOffsets?.length}
 								<span class="ops-tag">Reminders: {JSON.stringify(ev.reminderOffsets)}</span>
 							{/if}
@@ -173,5 +189,6 @@
 	.ops-muted { font-size: 12px; color: #64748b; margin: 0; }
 	.ops-tag { font-size: 11px; color: #475569; font-family: ui-monospace, monospace; }
 	.ops-rsvp { font-size: 11px; color: #0f766e; font-weight: 600; }
+	.ops-stream { font-size: 11px; color: #b91c1c; font-weight: 600; }
 	.ops-facility { margin-top: 8px; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
 </style>

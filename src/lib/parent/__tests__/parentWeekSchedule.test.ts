@@ -19,6 +19,7 @@ describe('LAUNCH-parent-week — filterEventsThisWeek', () => {
 		kind: 'practice',
 		startMs: 0,
 		endMs: null,
+		liveStreamUrl: null,
 	};
 
 	it('includes events within 7 days from today', () => {

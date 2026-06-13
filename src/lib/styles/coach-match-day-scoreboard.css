@@ -376,3 +376,61 @@
 	color: var(--pd-grey-trim, #334155);
 	white-space: nowrap;
 }
+
+.coach-os-root .coach-match-stream {
+	padding: 0.65rem 0.85rem 0;
+	display: flex;
+	flex-direction: column;
+	gap: 0.35rem;
+}
+
+.coach-os-root .coach-match-stream__label {
+	font-size: 8px;
+	font-weight: 700;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: var(--pd-grey-trim, #334155);
+}
+
+.coach-os-root .coach-match-stream__row {
+	display: flex;
+	gap: 0.35rem;
+}
+
+.coach-os-root .coach-match-stream__input {
+	flex: 1;
+	min-width: 0;
+	font-size: 10px;
+	padding: 0.35rem 0.45rem;
+	background: #0f172a;
+	border: 1px solid var(--pd-grey-trim, #334155);
+	color: #e2e8f0;
+}
+
+.coach-os-root .coach-match-stream__save {
+	font-size: 9px;
+	font-weight: 700;
+	text-transform: uppercase;
+	padding: 0.35rem 0.5rem;
+	border: 1px solid var(--pd-data-cyan, #14b8a6);
+	background: transparent;
+	color: var(--pd-data-cyan, #14b8a6);
+	cursor: pointer;
+}
+
+.coach-os-root .coach-match-stream__save:disabled {
+	opacity: 0.45;
+	cursor: not-allowed;
+}
+
+.coach-os-root .coach-match-stream__err {
+	margin: 0;
+	font-size: 9px;
+	color: #f87171;
+}
+
+.coach-os-root .coach-match-stream__ok {
+	margin: 0;
+	font-size: 9px;
+	color: var(--pd-data-cyan, #14b8a6);
+}
