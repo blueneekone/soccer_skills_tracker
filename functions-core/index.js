@@ -31,3 +31,7 @@ exports.setTryoutSessionRsvp = tryoutsOps.setTryoutSessionRsvp;
 exports.checkInTryoutRegistration = tryoutsOps.checkInTryoutRegistration;
 exports.upsertTryoutPlan = tryoutsOps.upsertTryoutPlan;
 exports.submitTryoutEvaluation = tryoutsOps.submitTryoutEvaluation;
+exports.setTryoutPipelineStatus = tryoutsOps.setTryoutPipelineStatus;
+exports.respondTryoutOffer = tryoutsOps.respondTryoutOffer;
+exports.getPublicTryoutRegistration = tryoutsOps.getPublicTryoutRegistration;
+exports.promoteTryoutToRoster = tryoutsOps.promoteTryoutToRoster;

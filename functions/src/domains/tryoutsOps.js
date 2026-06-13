@@ -13,6 +13,20 @@ const PIPELINE = {
   WAITLISTED: 'waitlisted',
   CHECKED_IN: 'checked_in',
   EVALUATED: 'evaluated',
+  CALLBACK: 'callback',
+  OFFERED: 'offered',
+  ACCEPTED: 'accepted',
+  DECLINED: 'declined',
+  ROSTER_PENDING: 'roster_pending',
+  ROSTERED: 'rostered',
+};
+
+/** @type {Record<string, Set<string>>} */
+const STAFF_PIPELINE = {
+  [PIPELINE.EVALUATED]: new Set([PIPELINE.CALLBACK, PIPELINE.OFFERED, PIPELINE.DECLINED]),
+  [PIPELINE.CALLBACK]: new Set([PIPELINE.OFFERED, PIPELINE.DECLINED]),
+  [PIPELINE.OFFERED]: new Set([PIPELINE.DECLINED]),
+  [PIPELINE.ACCEPTED]: new Set([PIPELINE.ROSTER_PENDING]),
 };
 
 const CHECK_IN = {
@@ -748,4 +762,270 @@ exports.submitTryoutEvaluation = onCall({region: REGION}, async (request) => {
   });
 
   return {ok: true, programId, registrationId, overallGrade};
+});
+
+/**
+ * Staff: advance tryout pipeline (callback / offer / decline).
+ */
+exports.setTryoutPipelineStatus = onCall({region: REGION}, async (request) => {
+  if (!request.auth) {
+    throw new HttpsError('unauthenticated', 'Sign in required.');
+  }
+
+  const role = request.auth.token.role || '';
+  const tokenClub =
+    typeof request.auth.token.clubId === 'string' ?
+      request.auth.token.clubId.trim() :
+      '';
+  const allowed = ['director', 'registrar', 'coach', 'super_admin', 'global_admin'].includes(role);
+  if (!allowed) {
+    throw new HttpsError('permission-denied', 'Staff access required.');
+  }
+
+  const data = request.data || {};
+  const programId =
+    typeof data.programId === 'string' ? data.programId.trim() : '';
+  const registrationId =
+    typeof data.registrationId === 'string' ? data.registrationId.trim() : '';
+  const nextStatusRaw =
+    typeof data.pipelineStatus === 'string' ? data.pipelineStatus.trim() : '';
+  const nextStatus = nextStatusRaw.toLowerCase();
+
+  if (!programId || !registrationId) {
+    throw new HttpsError('invalid-argument', 'programId and registrationId are required.');
+  }
+
+  const programRef = db().collection('tryout_programs').doc(programId);
+  const regRef = programRef.collection('registrations').doc(registrationId);
+  const [programSnap, regSnap] = await Promise.all([programRef.get(), regRef.get()]);
+  if (!programSnap.exists || !regSnap.exists) {
+    throw new HttpsError('not-found', 'Program or registration not found.');
+  }
+  const clubId = programSnap.data().clubId || '';
+  if (!staffCanAccessClub(role, tokenClub, clubId)) {
+    throw new HttpsError('permission-denied', 'Program must belong to your club.');
+  }
+
+  const current = regSnap.data().pipelineStatus || PIPELINE.REGISTERED;
+  const allowedNext = STAFF_PIPELINE[current];
+  if (!allowedNext || !allowedNext.has(nextStatus)) {
+    throw new HttpsError(
+        'failed-precondition',
+        `Cannot move from ${current} to ${nextStatus}.`,
+    );
+  }
+
+  const now = admin.firestore.FieldValue.serverTimestamp();
+  await regRef.set({
+    pipelineStatus: nextStatus,
+    pipelineUpdatedAt: now,
+    pipelineUpdatedBy: request.auth.uid,
+    updatedAt: now,
+  }, {merge: true});
+
+  return {ok: true, programId, registrationId, pipelineStatus: nextStatus};
+});
+
+/**
+ * Public: guardian accepts or declines a roster offer.
+ */
+exports.respondTryoutOffer = onCall(
+    {region: REGION, invoker: 'public'},
+    async (request) => {
+      const data = request.data || {};
+      const programId =
+        typeof data.programId === 'string' ? data.programId.trim() : '';
+      const registrationId =
+        typeof data.registrationId === 'string' ? data.registrationId.trim() : '';
+      const guardianEmail = normEmail(data.guardianEmail);
+      const responseRaw =
+        typeof data.response === 'string' ? data.response.trim() : '';
+      const response = responseRaw.toLowerCase();
+
+      if (!programId || !registrationId || !guardianEmail) {
+        throw new HttpsError(
+            'invalid-argument',
+            'programId, registrationId, and guardianEmail are required.',
+        );
+      }
+      if (response !== PIPELINE.ACCEPTED && response !== PIPELINE.DECLINED) {
+        throw new HttpsError('invalid-argument', 'response must be accepted or declined.');
+      }
+
+      const regRef = db()
+          .collection('tryout_programs')
+          .doc(programId)
+          .collection('registrations')
+          .doc(registrationId);
+      const snap = await regRef.get();
+      if (!snap.exists) {
+        throw new HttpsError('not-found', 'Registration not found.');
+      }
+      const reg = snap.data();
+      if (normEmail(reg.guardianEmail) !== guardianEmail) {
+        throw new HttpsError('permission-denied', 'Guardian email does not match registration.');
+      }
+      if (reg.pipelineStatus !== PIPELINE.OFFERED) {
+        throw new HttpsError('failed-precondition', 'No open offer for this registration.');
+      }
+
+      const now = admin.firestore.FieldValue.serverTimestamp();
+      await regRef.set({
+        pipelineStatus: response,
+        offerRespondedAt: now,
+        updatedAt: now,
+      }, {merge: true});
+
+      return {ok: true, programId, registrationId, pipelineStatus: response};
+    },
+);
+
+/**
+ * Public: lookup registration status for guardian (offer / RSVP follow-up).
+ */
+exports.getPublicTryoutRegistration = onCall(
+    {region: REGION, invoker: 'public'},
+    async (request) => {
+      const data = request.data || {};
+      const programId =
+        typeof data.programId === 'string' ? data.programId.trim() : '';
+      const registrationId =
+        typeof data.registrationId === 'string' ? data.registrationId.trim() : '';
+      const guardianEmail = normEmail(data.guardianEmail);
+
+      if (!programId || !registrationId || !guardianEmail) {
+        throw new HttpsError(
+            'invalid-argument',
+            'programId, registrationId, and guardianEmail are required.',
+        );
+      }
+
+      const regRef = db()
+          .collection('tryout_programs')
+          .doc(programId)
+          .collection('registrations')
+          .doc(registrationId);
+      const snap = await regRef.get();
+      if (!snap.exists) {
+        return {ok: false, notFound: true};
+      }
+      const reg = snap.data();
+      if (normEmail(reg.guardianEmail) !== guardianEmail) {
+        throw new HttpsError('permission-denied', 'Guardian email does not match registration.');
+      }
+
+      return {
+        ok: true,
+        programId,
+        registrationId,
+        playerName: reg.playerName || '',
+        pipelineStatus: reg.pipelineStatus || PIPELINE.REGISTERED,
+        assignedSessionId: reg.assignedSessionId || null,
+        sessionStartAt: reg.sessionStartAt || null,
+        sessionFieldLabel: reg.sessionFieldLabel || null,
+        sessionRsvpStatus: reg.sessionRsvpStatus || null,
+      };
+    },
+);
+
+/**
+ * Director/registrar: add accepted athlete to team roster pipeline (name-only row).
+ */
+exports.promoteTryoutToRoster = onCall({region: REGION}, async (request) => {
+  if (!request.auth) {
+    throw new HttpsError('unauthenticated', 'Sign in required.');
+  }
+
+  const role = request.auth.token.role || '';
+  const tokenClub =
+    typeof request.auth.token.clubId === 'string' ?
+      request.auth.token.clubId.trim() :
+      '';
+  const allowed = ['director', 'registrar', 'super_admin', 'global_admin'].includes(role);
+  if (!allowed) {
+    throw new HttpsError('permission-denied', 'Director or registrar access required.');
+  }
+
+  const data = request.data || {};
+  const programId =
+    typeof data.programId === 'string' ? data.programId.trim() : '';
+  const registrationId =
+    typeof data.registrationId === 'string' ? data.registrationId.trim() : '';
+  const teamId =
+    typeof data.teamId === 'string' ? data.teamId.trim() : '';
+
+  if (!programId || !registrationId || !teamId) {
+    throw new HttpsError(
+        'invalid-argument',
+        'programId, registrationId, and teamId are required.',
+    );
+  }
+
+  const programRef = db().collection('tryout_programs').doc(programId);
+  const regRef = programRef.collection('registrations').doc(registrationId);
+  const [programSnap, regSnap, teamSnap] = await Promise.all([
+    programRef.get(),
+    regRef.get(),
+    db().collection('teams').doc(teamId).get(),
+  ]);
+  if (!programSnap.exists || !regSnap.exists || !teamSnap.exists) {
+    throw new HttpsError('not-found', 'Program, registration, or team not found.');
+  }
+
+  const clubId = programSnap.data().clubId || '';
+  const teamClub =
+    typeof teamSnap.data().clubId === 'string' ? teamSnap.data().clubId.trim() : '';
+  if (teamClub && teamClub !== clubId) {
+    throw new HttpsError('failed-precondition', 'Team must belong to the tryout program club.');
+  }
+  if (!staffCanAccessClub(role, tokenClub, clubId)) {
+    throw new HttpsError('permission-denied', 'Program must belong to your club.');
+  }
+
+  const reg = regSnap.data();
+  if (reg.pipelineStatus !== PIPELINE.ACCEPTED) {
+    throw new HttpsError(
+        'failed-precondition',
+        'Athlete must accept the offer before roster promotion.',
+    );
+  }
+
+  const playerName =
+    typeof reg.playerName === 'string' ? reg.playerName.trim().slice(0, 200) : '';
+  if (!playerName) {
+    throw new HttpsError('failed-precondition', 'Registration missing player name.');
+  }
+
+  const rosterRef = db().collection('rosters').doc(teamId);
+  const now = admin.firestore.FieldValue.serverTimestamp();
+
+  await db().runTransaction(async (tx) => {
+    const rosterSnap = await tx.get(rosterRef);
+    const players = rosterSnap.exists && Array.isArray(rosterSnap.data().players) ?
+      rosterSnap.data().players.filter((x) => typeof x === 'string') :
+      [];
+    const norm = playerName.toLowerCase();
+    if (!players.some((n) => String(n).trim().toLowerCase() === norm)) {
+      tx.set(rosterRef, {
+        players: [...players, playerName],
+        updatedAt: now,
+      }, {merge: true});
+    }
+    tx.set(regRef, {
+      pipelineStatus: PIPELINE.ROSTER_PENDING,
+      rosterTeamId: teamId,
+      rosterPromotedAt: now,
+      updatedAt: now,
+    }, {merge: true});
+  });
+
+  return {
+    ok: true,
+    programId,
+    registrationId,
+    teamId,
+    playerName,
+    guardianEmail: normEmail(reg.guardianEmail),
+    pipelineStatus: PIPELINE.ROSTER_PENDING,
+  };
 });

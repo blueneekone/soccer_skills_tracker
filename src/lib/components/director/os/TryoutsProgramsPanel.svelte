@@ -190,7 +190,7 @@
 							</div>
 						</div>
 						{#if expandedProgramId === p.id}
-							<TryoutSessionsPanel programId={p.id} programName={p.name} ageBands={p.ageBands} />
+							<TryoutSessionsPanel programId={p.id} programName={p.name} ageBands={p.ageBands} clubId={clubId} />
 						{/if}
 					</li>
 				{/each}

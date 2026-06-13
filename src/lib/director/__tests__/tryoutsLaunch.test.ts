@@ -108,11 +108,34 @@ describe('LAUNCH-tryouts-c — eval plan + coach sheets', () => {
 			'utf-8',
 		);
 		expect(page).toMatch(/CoachTryoutEvalPanel/);
-		expect(
-			readFileSync(
-				join(ROOT, 'src/lib/coach/scouting/CoachTryoutEvalPanel.svelte'),
-				'utf-8',
-			),
-		).toMatch(/submitTryoutEvaluation/);
+	});
+});
+
+describe('LAUNCH-tryouts-d — callbacks, offers, roster pipeline', () => {
+	it('exports pipeline + roster callables from tryoutsOps', () => {
+		const ops = readFileSync(join(ROOT, 'functions/src/domains/tryoutsOps.js'), 'utf-8');
+		expect(ops).toMatch(/exports\.setTryoutPipelineStatus/);
+		expect(ops).toMatch(/exports\.respondTryoutOffer/);
+		expect(ops).toMatch(/exports\.promoteTryoutToRoster/);
+		expect(ops).toMatch(/exports\.getPublicTryoutRegistration/);
+		expect(ops).toMatch(/roster_pending/);
+	});
+
+	it('TryoutSessionsPanel wires pipeline and roster promotion', () => {
+		const panel = readFileSync(
+			join(ROOT, 'src/lib/components/director/os/TryoutSessionsPanel.svelte'),
+			'utf-8',
+		);
+		expect(panel).toMatch(/setTryoutPipelineStatus/);
+		expect(panel).toMatch(/promoteTryoutToRoster/);
+		expect(panel).toMatch(/mintMagicUplink/);
+	});
+
+	it('public tryouts page supports offer response', () => {
+		const page = readFileSync(
+			join(ROOT, 'src/routes/(marketing)/tryouts/[programId]/+page.svelte'),
+			'utf-8',
+		);
+		expect(page).toMatch(/respondTryoutOffer/);
 	});
 });

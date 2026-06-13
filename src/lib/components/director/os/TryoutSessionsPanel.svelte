@@ -8,6 +8,7 @@
 		programId = '',
 		programName = 'Tryouts',
 		ageBands = [] as string[],
+		clubId = '',
 	} = $props();
 
 	interface SessionRow {
@@ -22,6 +23,7 @@
 		id: string;
 		playerName: string;
 		ageBand: string;
+		guardianEmail: string;
 		guardianName: string;
 		pipelineStatus: string;
 		assignedSessionId: string | null;
@@ -48,6 +50,11 @@
 	const assignTryoutSession = httpsCallable(functions, 'assignTryoutSession');
 	const checkInTryoutRegistration = httpsCallable(functions, 'checkInTryoutRegistration');
 	const upsertTryoutPlan = httpsCallable(functions, 'upsertTryoutPlan');
+	const setTryoutPipelineStatus = httpsCallable(functions, 'setTryoutPipelineStatus');
+	const promoteTryoutToRoster = httpsCallable(functions, 'promoteTryoutToRoster');
+	const mintMagicUplink = httpsCallable(functions, 'mintMagicUplink');
+
+	let promoteTeamId = $state('');
 
 	interface PlanStation {
 		label: string;
@@ -95,6 +102,7 @@
 						id: d.id,
 						playerName: String(x.playerName || ''),
 						ageBand: String(x.ageBand || ''),
+						guardianEmail: String(x.guardianEmail || ''),
 						guardianName: String(x.guardianName || ''),
 						pipelineStatus: String(x.pipelineStatus || ''),
 						assignedSessionId:
@@ -226,6 +234,48 @@
 			saving = false;
 		}
 	}
+
+	async function setPipeline(registrationId: string, pipelineStatus: string) {
+		if (!programId.trim() || saving) return;
+		err = '';
+		ok = '';
+		saving = true;
+		try {
+			await setTryoutPipelineStatus({ programId: programId.trim(), registrationId, pipelineStatus });
+			ok = `Pipeline updated → ${pipelineStatus.replace('_', ' ')}.`;
+		} catch (e) {
+			err = e instanceof Error ? e.message : 'Pipeline update failed.';
+		} finally {
+			saving = false;
+		}
+	}
+
+	async function promoteToRoster(registrationId: string, guardianEmail: string, playerName: string) {
+		if (!programId.trim() || !promoteTeamId.trim() || !clubId.trim() || saving) return;
+		err = '';
+		ok = '';
+		saving = true;
+		try {
+			await promoteTryoutToRoster({
+				programId: programId.trim(),
+				registrationId,
+				teamId: promoteTeamId.trim(),
+			});
+			await mintMagicUplink({
+				targetEmail: guardianEmail,
+				purpose: 'parent',
+				role: 'parent',
+				clubId: clubId.trim(),
+				teamId: promoteTeamId.trim(),
+				pendingRosterPlayerName: playerName,
+			});
+			ok = `Roster row created for ${playerName} — guardian invite sent.`;
+		} catch (e) {
+			err = e instanceof Error ? e.message : 'Roster promotion failed.';
+		} finally {
+			saving = false;
+		}
+	}
 </script>
 
 <div class="tryout-sessions">
@@ -303,6 +353,13 @@
 	{#if err}<p class="tryouts-err" role="alert">{err}</p>{/if}
 	{#if ok}<p class="tryouts-ok" role="status">{ok}</p>{/if}
 
+	<div class="tryout-roster-promote">
+		<label class="tryouts-field">
+			<span class="tryouts-label">Team ID for roster offers</span>
+			<input class="tryouts-input" type="text" bind:value={promoteTeamId} placeholder="team doc id" />
+		</label>
+	</div>
+
 	{#if loading}
 		<p class="tryouts-muted">Loading sessions…</p>
 	{:else if registrations.length}
@@ -311,8 +368,10 @@
 				<tr>
 					<th>Athlete</th>
 					<th>Band</th>
+					<th>Pipeline</th>
 					<th>Session RSVP</th>
 					<th>Check-in</th>
+					<th>Actions</th>
 				</tr>
 			</thead>
 			<tbody>
@@ -323,6 +382,7 @@
 							<span class="tryout-checkin__sub">{r.guardianName}</span>
 						</td>
 						<td>{r.ageBand}</td>
+						<td>{r.pipelineStatus.replace('_', ' ')}</td>
 						<td>{r.sessionRsvpStatus ?? '—'}</td>
 						<td class="tryout-checkin__actions">
 							{#if r.checkInStatus}
@@ -331,6 +391,14 @@
 								<button type="button" class="tryouts-btn tryouts-btn--ghost tryouts-btn--xs" disabled={saving} onclick={() => void checkIn(r.id, 'present')}>Present</button>
 								<button type="button" class="tryouts-btn tryouts-btn--ghost tryouts-btn--xs" disabled={saving} onclick={() => void checkIn(r.id, 'late')}>Late</button>
 								<button type="button" class="tryouts-btn tryouts-btn--ghost tryouts-btn--xs" disabled={saving} onclick={() => void checkIn(r.id, 'no_show')}>No-show</button>
+							{/if}
+						</td>
+						<td class="tryout-checkin__actions">
+							{#if r.pipelineStatus === 'evaluated' || r.pipelineStatus === 'callback'}
+								<button type="button" class="tryouts-btn tryouts-btn--ghost tryouts-btn--xs" disabled={saving} onclick={() => void setPipeline(r.id, 'callback')}>Callback</button>
+								<button type="button" class="tryouts-btn tryouts-btn--ghost tryouts-btn--xs" disabled={saving} onclick={() => void setPipeline(r.id, 'offered')}>Offer</button>
+							{:else if r.pipelineStatus === 'accepted'}
+								<button type="button" class="tryouts-btn tryouts-btn--ghost tryouts-btn--xs" disabled={saving || !promoteTeamId.trim()} onclick={() => void promoteToRoster(r.id, r.guardianEmail, r.playerName)}>Promote</button>
 							{/if}
 						</td>
 					</tr>

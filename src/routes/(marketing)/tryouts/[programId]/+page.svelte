@@ -33,7 +33,10 @@
 	let submitErr = $state('');
 	let submitOk = $state('');
 	let registrationId = $state('');
-	let rsvpStatus = $state('');
+	let offerErr = $state('');
+	let offerOk = $state('');
+	let offerSubmitting = $state(false);
+	let pipelineStatus = $state('');
 	let rsvpSubmitting = $state(false);
 	let rsvpErr = $state('');
 	let rsvpOk = $state('');
@@ -84,6 +87,7 @@
 			});
 			const data = res.data as { pipelineStatus?: string; registrationId?: string };
 			registrationId = typeof data.registrationId === 'string' ? data.registrationId : '';
+			pipelineStatus = data.pipelineStatus === 'waitlisted' ? 'waitlisted' : 'registered';
 			submitOk =
 				data.pipelineStatus === 'waitlisted'
 					? 'You are on the waitlist. The club will contact you if a spot opens.'
@@ -119,6 +123,33 @@
 			rsvpErr = e instanceof Error ? e.message : 'RSVP failed.';
 		} finally {
 			rsvpSubmitting = false;
+		}
+	}
+
+	async function respondOffer(response: 'accepted' | 'declined') {
+		if (!registrationId.trim() || !guardianEmail.trim()) return;
+		offerErr = '';
+		offerOk = '';
+		offerSubmitting = true;
+		try {
+			const fns = getFunctions(undefined, 'us-east1');
+			const fn = httpsCallable(fns, 'respondTryoutOffer');
+			const res = await fn({
+				programId: programId.trim(),
+				registrationId: registrationId.trim(),
+				guardianEmail: guardianEmail.trim(),
+				response,
+			});
+			const data = res.data as { pipelineStatus?: string };
+			pipelineStatus = data.pipelineStatus ?? response;
+			offerOk =
+				response === 'accepted'
+					? 'Offer accepted — the club will send roster next steps.'
+					: 'Offer declined.';
+		} catch (e) {
+			offerErr = e instanceof Error ? e.message : 'Could not respond to offer.';
+		} finally {
+			offerSubmitting = false;
 		}
 	}
 </script>
@@ -265,6 +296,37 @@
 					{#if rsvpErr}<p class="tw-mt-2 tw-text-sm tw-text-red-400" role="alert">{rsvpErr}</p>{/if}
 					{#if rsvpOk}<p class="tw-mt-2 tw-text-sm tw-text-teal-400" role="status">{rsvpOk}</p>{/if}
 				</section>
+
+				{#if pipelineStatus === 'offered'}
+					<section class="ty-rsvp tw-mt-6 tw-rounded-xl tw-border tw-border-amber-800/60 tw-bg-amber-950/30 tw-p-4">
+						<h2 class="tw-m-0 tw-text-sm tw-font-bold tw-uppercase tw-tracking-wide tw-text-amber-300">
+							Roster offer
+						</h2>
+						<p class="tw-mt-2 tw-text-sm tw-text-slate-300">
+							The club has offered a roster spot. Accept or decline below.
+						</p>
+						<div class="tw-mt-3 tw-flex tw-flex-wrap tw-gap-2">
+							<button
+								type="button"
+								class="tw-vanguard-btn-primary"
+								disabled={offerSubmitting}
+								onclick={() => void respondOffer('accepted')}
+							>
+								Accept offer
+							</button>
+							<button
+								type="button"
+								class="ty-rsvp-btn"
+								disabled={offerSubmitting}
+								onclick={() => void respondOffer('declined')}
+							>
+								Decline
+							</button>
+						</div>
+						{#if offerErr}<p class="tw-mt-2 tw-text-sm tw-text-red-400" role="alert">{offerErr}</p>{/if}
+						{#if offerOk}<p class="tw-mt-2 tw-text-sm tw-text-teal-400" role="status">{offerOk}</p>{/if}
+					</section>
+				{/if}
 			{/if}
 		{/if}
 	{/if}
