@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { browser } from '$app/environment';
-	import { resolve } from '$app/paths';
+	import { resolveAppPath } from '$lib/components/_shared/resolveAppPath.js';
 	import { goto } from '$app/navigation';
 	import {
 		collection,
@@ -13,7 +13,7 @@
 	} from 'firebase/firestore';
 	import { db } from '$lib/firebase.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
-	import { dopamineOnCommit } from '$lib/services/dopamine.svelte.js';
+	import { dopamineExplosion } from '$lib/services/dopamine.svelte.js';
 	import HudSeededRingCanvas from '$lib/components/hud/HudSeededRingCanvas.svelte';
 	import { deduplicateById } from '$lib/utils/deduplicateMissions.js';
 	import {
@@ -327,8 +327,15 @@
 						const scopedRows = uniqueDocs
 							.map((d) => ({ id: d.id, ...d.data() }))
 							.filter((row) => {
-								if (!row.scope || row.scope === 'team') return true;
-								return Array.isArray(row.targetUids) && row.targetUids.includes(uid);
+								const scoped = row as {
+									id: string;
+									scope?: string;
+									targetUids?: string[];
+								};
+								if (!scoped.scope || scoped.scope === 'team') return true;
+								return (
+									Array.isArray(scoped.targetUids) && scoped.targetUids.includes(uid)
+								);
 							});
 						applyCoachIntents(scopedRows);
 					},
@@ -348,8 +355,15 @@
 						const scopedRows = uniqueDocs
 							.map((d) => ({ id: d.id, ...d.data() }))
 							.filter((row) => {
-								if (!row.scope || row.scope === 'team') return true;
-								return Array.isArray(row.targetUids) && row.targetUids.includes(uid);
+								const scoped = row as {
+									id: string;
+									scope?: string;
+									targetUids?: string[];
+								};
+								if (!scoped.scope || scoped.scope === 'team') return true;
+								return (
+									Array.isArray(scoped.targetUids) && scoped.targetUids.includes(uid)
+								);
 							});
 						applyCoachIntents(scopedRows);
 					})
@@ -510,7 +524,7 @@
 		if (quest.source === 'coach_intent' || quest.source === 'coach_homework') {
 			stashQuestHandoff(quest);
 		}
-		goto(resolve(quest.actionHref));
+		goto(resolveAppPath(quest.actionHref));
 		if (!deferUntilLog && questsProp === undefined) {
 			internalQuests = patchQuestLifecycle(internalQuests);
 		}
@@ -550,7 +564,7 @@
 		}
 
 		questProgress = markQuestClaimed(quest.id, questProgress);
-		dopamineOnCommit();
+		void dopamineExplosion('grit');
 		if (questsProp === undefined) {
 			internalQuests = internalQuests.filter((q) => q.id !== quest.id);
 		}

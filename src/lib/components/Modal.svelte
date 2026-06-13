@@ -9,8 +9,8 @@
 		title = '',
 		maxWidth = '500px',
 		certStyle = false,
+		titleSlot = undefined,
 		children,
-		titleSlot
 	} = $props();
 
 	const close = () => {

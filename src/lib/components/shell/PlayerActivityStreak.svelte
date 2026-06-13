@@ -37,7 +37,7 @@
 
 	type StreakMode = 'loading' | 'empty' | 'active' | 'at_risk' | 'frozen' | 'broken';
 
-	let mode = $derived<StreakMode>(() => {
+	const mode = $derived.by((): StreakMode => {
 		if (loading) return 'loading';
 		if (!vanguardFlags.streakEnforcementEnabled) {
 			return streakDays <= 0 ? 'empty' : 'active';
@@ -49,7 +49,7 @@
 	});
 
 	/** Countdown string for at_risk: "X days left" */
-	let graceCountdown = $derived(() => {
+	let graceCountdown = $derived.by(() => {
 		if (!gracePeriodEndsUtc) return '';
 		const ms = Date.parse(gracePeriodEndsUtc) - Date.now();
 		if (ms <= 0) return 'today';
@@ -57,11 +57,11 @@
 		return `${days} day${days === 1 ? '' : 's'}`;
 	});
 
-	let freezesAvailable = $derived(() =>
+	let freezesAvailable = $derived.by(() =>
 		armory ? armory.freezesAvailable : 0,
 	);
 
-	let freezePending = $derived(() =>
+	let freezePending = $derived.by(() =>
 		armory ? armory.freezeClaimPending : false,
 	);
 
