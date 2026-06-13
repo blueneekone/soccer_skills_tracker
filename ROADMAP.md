@@ -1431,7 +1431,7 @@ Loadout art (3.2+) consumed by 2.12 hero identity column.
 | **LAUNCH-marketing-revamp** | **Done** | Landing page SSTracker copy + `CompetitivePositionPanel` (canonical win message) + integrations bar; remove Nexus Command marketing chrome | `marketingLanding.test.ts` |
 | **LAUNCH-registration-lite** | **Done** | Director registration link + `/register/[clubId]` + parent checkout (`playerEmail` on `createRegistrationIntent`) | `registrationLaunch.test.ts` · deploy **`npm run deploy:core`** + **`npm run deploy:commerce`** |
 | **LAUNCH-roster-invite** | **Done** | Name-only roster → guardian magic uplink → `claimRosterSpot` household link | `rosterInviteLaunch.test.ts` · deploy **`npm run deploy:core`** |
-| **LAUNCH-tryouts-os** | **In progress** | End-to-end tryout cycle — **Phase A Done** (program + public registration + waitlist) | `tryoutsLaunch.test.ts` · deploy **`npm run deploy:core`** + rules |
+| **LAUNCH-tryouts-os** | **In progress** | End-to-end tryout cycle — **Phase A–B Done** (program, registration, sessions, RSVP, gate check-in) | `tryoutsLaunch.test.ts` · deploy **`npm run deploy:core`** + rules |
 | **XP-verify** | **Done** | XP algorithm tests + client/server parity (`level.js` ↔ `gamificationWorkoutXp.js`) | `levelXp.test.ts`, `gamificationWorkoutXp.test.js`, `trainingOpsXp.test.js` |
 | **3.5m-frame** | **Done** | Art-well recess + holo inset — unified portrait clip, xMidYMid bust centering | `playerLoadoutSprint35mFrame.test.ts` |
 | **3.5m-art** | **Superseded** | Agent modular SVG bust redraw — human VA failed; owner Gemini + ingest replaces | `playerLoadoutSprint35mArt.test.ts` (historical) |
@@ -1456,7 +1456,7 @@ Loadout art (3.2+) consumed by 2.12 hero identity column.
 | Phase | Sprint slice | Scope | Reuse |
 |-------|--------------|-------|-------|
 | **A** | **LAUNCH-tryouts-a** | **Done** | Director **tryout program** + public **`/tryouts/[programId]`** registration + waitlist when full | `tryoutsLaunch.test.ts` |
-| **B** | **LAUNCH-tryouts-b** | **Session schedule** — assign tryout blocks to **facilities/fields** (Field Ops). Parent/player **RSVP to assigned session** (extend LAUNCH-rsvp). Staff **check-in** (present / no-show / late) at gate. | `DeploymentCalendar`, `team_workouts`, `setEventRsvp` |
+| **B** | **LAUNCH-tryouts-b** | **Done** | Field **session blocks**, age-band assignment, guardian **session RSVP**, staff **gate check-in** | `tryoutsLaunch.test.ts` |
 | **C** | **LAUNCH-tryouts-c** | **Tryout plan** — station template (drills from team/club library, time boxes, evaluator roles). Coach **session eval sheet** → writes **`scouting_assessments`** (or `tryout_evaluations`) per athlete. | `/coach/scouting`, drill library, Intent Engine drills |
 | **D** | **LAUNCH-tryouts-d** | **Callbacks** — director/coach flags athletes for round 2; auto-schedule callback sessions. **Pipeline states:** registered → checked-in → evaluated → callback → offered → accepted → roster row. | household graph, roster-invite |
 | **E** | **LAUNCH-tryouts-e** | **Automated comms** — registration confirm, session reminder (7/1/0 day), check-in QR/link, callback invite, offer/decline, waitlist promotion. Parent + player push where policy allows. | Epic 4 comms, `push_gameReminders`, Parent Lounge policy |

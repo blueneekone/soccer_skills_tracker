@@ -42,3 +42,41 @@ describe('LAUNCH-tryouts-a — program + public registration', () => {
 		expect(page).toMatch(/registerForTryout/);
 	});
 });
+
+describe('LAUNCH-tryouts-b — sessions, RSVP, check-in', () => {
+	it('exports session + check-in callables from tryoutsOps', () => {
+		const ops = readFileSync(join(ROOT, 'functions/src/domains/tryoutsOps.js'), 'utf-8');
+		expect(ops).toMatch(/exports\.upsertTryoutSession/);
+		expect(ops).toMatch(/exports\.assignTryoutSession/);
+		expect(ops).toMatch(/exports\.setTryoutSessionRsvp/);
+		expect(ops).toMatch(/exports\.checkInTryoutRegistration/);
+		expect(ops).toMatch(/checked_in/);
+	});
+
+	it('functions-core wires tryout phase B callables', () => {
+		const idx = readFileSync(join(ROOT, 'functions-core/index.js'), 'utf-8');
+		expect(idx).toMatch(/upsertTryoutSession/);
+		expect(idx).toMatch(/checkInTryoutRegistration/);
+	});
+
+	it('Firestore rules gate tryout sessions subcollection', () => {
+		const rules = readFileSync(join(ROOT, 'firestore.rules'), 'utf-8');
+		expect(rules).toMatch(/match \/sessions\/\{sessionId\}/);
+	});
+
+	it('Field Ops mounts TryoutSessionsPanel via TryoutsProgramsPanel', () => {
+		const panel = readFileSync(
+			join(ROOT, 'src/lib/components/director/os/TryoutsProgramsPanel.svelte'),
+			'utf-8',
+		);
+		expect(panel).toMatch(/TryoutSessionsPanel/);
+	});
+
+	it('public tryouts page supports session RSVP', () => {
+		const page = readFileSync(
+			join(ROOT, 'src/routes/(marketing)/tryouts/[programId]/+page.svelte'),
+			'utf-8',
+		);
+		expect(page).toMatch(/setTryoutSessionRsvp/);
+	});
+});

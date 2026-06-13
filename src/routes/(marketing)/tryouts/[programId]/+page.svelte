@@ -32,6 +32,11 @@
 	let submitting = $state(false);
 	let submitErr = $state('');
 	let submitOk = $state('');
+	let registrationId = $state('');
+	let rsvpStatus = $state('');
+	let rsvpSubmitting = $state(false);
+	let rsvpErr = $state('');
+	let rsvpOk = $state('');
 
 	$effect(() => {
 		const id = programId.trim();
@@ -77,17 +82,43 @@
 				guardianEmail: guardianEmail.trim(),
 				guardianPhone: guardianPhone.trim() || undefined,
 			});
-			const data = res.data as { pipelineStatus?: string };
+			const data = res.data as { pipelineStatus?: string; registrationId?: string };
+			registrationId = typeof data.registrationId === 'string' ? data.registrationId : '';
 			submitOk =
 				data.pipelineStatus === 'waitlisted'
 					? 'You are on the waitlist. The club will contact you if a spot opens.'
-					: 'Registration received. Watch your email for session details from the club.';
+					: registrationId
+						? 'Registration received. Save your confirmation code below — use it to RSVP once the club assigns your session time.'
+						: 'Registration received. Watch your email for session details from the club.';
 			playerName = '';
 			guardianPhone = '';
 		} catch (e) {
 			submitErr = e instanceof Error ? e.message : 'Registration failed.';
 		} finally {
 			submitting = false;
+		}
+	}
+
+	async function submitSessionRsvp(status: 'going' | 'not_going' | 'maybe') {
+		if (!registrationId.trim() || !guardianEmail.trim()) return;
+		rsvpErr = '';
+		rsvpOk = '';
+		rsvpSubmitting = true;
+		try {
+			const fns = getFunctions(undefined, 'us-east1');
+			const fn = httpsCallable(fns, 'setTryoutSessionRsvp');
+			await fn({
+				programId: programId.trim(),
+				registrationId: registrationId.trim(),
+				guardianEmail: guardianEmail.trim(),
+				status,
+			});
+			rsvpStatus = status;
+			rsvpOk = 'Session RSVP saved. See you at the field.';
+		} catch (e) {
+			rsvpErr = e instanceof Error ? e.message : 'RSVP failed.';
+		} finally {
+			rsvpSubmitting = false;
 		}
 	}
 </script>
@@ -193,6 +224,48 @@
 					{submitting ? 'Submitting…' : 'Register for tryouts'}
 				</button>
 			</form>
+
+			{#if registrationId}
+				<section class="ty-rsvp tw-mt-8 tw-rounded-xl tw-border tw-border-slate-800 tw-bg-slate-900/50 tw-p-4">
+					<h2 class="tw-m-0 tw-text-sm tw-font-bold tw-uppercase tw-tracking-wide tw-text-slate-400">
+						Session RSVP
+					</h2>
+					<p class="tw-mt-2 tw-text-sm tw-text-slate-400">
+						Confirmation code: <code class="tw-font-mono tw-text-teal-300">{registrationId}</code>
+					</p>
+					<p class="tw-text-sm tw-text-slate-500">
+						After the club assigns your tryout block, confirm attendance below (same guardian email).
+					</p>
+					<div class="tw-mt-3 tw-flex tw-flex-wrap tw-gap-2">
+						<button
+							type="button"
+							class="tw-vanguard-btn-primary"
+							disabled={rsvpSubmitting || rsvpStatus === 'going'}
+							onclick={() => void submitSessionRsvp('going')}
+						>
+							Going
+						</button>
+						<button
+							type="button"
+							class="ty-rsvp-btn"
+							disabled={rsvpSubmitting || rsvpStatus === 'maybe'}
+							onclick={() => void submitSessionRsvp('maybe')}
+						>
+							Maybe
+						</button>
+						<button
+							type="button"
+							class="ty-rsvp-btn"
+							disabled={rsvpSubmitting || rsvpStatus === 'not_going'}
+							onclick={() => void submitSessionRsvp('not_going')}
+						>
+							Can&apos;t make it
+						</button>
+					</div>
+					{#if rsvpErr}<p class="tw-mt-2 tw-text-sm tw-text-red-400" role="alert">{rsvpErr}</p>{/if}
+					{#if rsvpOk}<p class="tw-mt-2 tw-text-sm tw-text-teal-400" role="status">{rsvpOk}</p>{/if}
+				</section>
+			{/if}
 		{/if}
 	{/if}
 </div>
@@ -220,5 +293,21 @@
 		text-transform: none;
 		letter-spacing: normal;
 		font-weight: 400;
+	}
+
+	.ty-rsvp-btn {
+		border: 1px solid #334155;
+		border-radius: 8px;
+		padding: 0.45rem 0.85rem;
+		background: transparent;
+		color: #e2e8f0;
+		font-size: 0.8125rem;
+		font-weight: 700;
+		cursor: pointer;
+	}
+
+	.ty-rsvp-btn:disabled {
+		opacity: 0.5;
+		cursor: not-allowed;
 	}
 </style>

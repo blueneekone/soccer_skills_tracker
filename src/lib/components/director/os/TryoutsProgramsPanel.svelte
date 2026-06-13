@@ -3,6 +3,7 @@
 	import { db, functions } from '$lib/firebase.js';
 	import { collection, query, where, onSnapshot } from 'firebase/firestore';
 	import { httpsCallable } from 'firebase/functions';
+	import TryoutSessionsPanel from './TryoutSessionsPanel.svelte';
 
 	let { clubId = '' } = $props();
 
@@ -13,10 +14,12 @@
 		waitlistCount: number;
 		registrationOpen: boolean;
 		capacity: number | null;
+		ageBands: string[];
 	}
 
 	let programs = $state<TryoutProgramRow[]>([]);
 	let loading = $state(true);
+	let expandedProgramId = $state('');
 
 	let name = $state('');
 	let ageBandsInput = $state('U10, U12, U14');
@@ -54,6 +57,7 @@
 						waitlistCount: Number(x.waitlistCount) || 0,
 						registrationOpen: x.registrationOpen !== false,
 						capacity: Number.isFinite(cap) && cap > 0 ? cap : null,
+						ageBands: Array.isArray(x.ageBands) ? x.ageBands.map(String) : [],
 					};
 				})
 					.sort((a, b) => a.name.localeCompare(b.name));
@@ -121,7 +125,7 @@
 <section class="tryouts-panel" aria-labelledby="tryouts-panel-title">
 	<h3 id="tryouts-panel-title" class="tryouts-panel__title">Tryout programs</h3>
 	<p class="tryouts-panel__sub">
-		Publish registration for tryout cycles — public link, capacity, and waitlist (Phase A).
+		Publish registration, schedule field sessions, assign athletes, and run gate check-in.
 	</p>
 
 	{#if !clubId}
@@ -163,17 +167,31 @@
 			<ul class="tryouts-list">
 				{#each programs as p (p.id)}
 					<li class="tryouts-list__item">
-						<div>
-							<strong>{p.name}</strong>
-							<span class="tryouts-list__meta">
-								{p.registrationCount} registered
-								{#if p.waitlistCount > 0}· {p.waitlistCount} waitlisted{/if}
-								{#if p.capacity != null}· cap {p.capacity}{/if}
-							</span>
+						<div class="tryouts-list__head">
+							<div>
+								<strong>{p.name}</strong>
+								<span class="tryouts-list__meta">
+									{p.registrationCount} registered
+									{#if p.waitlistCount > 0}· {p.waitlistCount} waitlisted{/if}
+									{#if p.capacity != null}· cap {p.capacity}{/if}
+								</span>
+							</div>
+							<div class="tryouts-list__actions">
+								<button type="button" class="tryouts-btn tryouts-btn--ghost" onclick={() => void copyLink(p.id)}>
+									{copyLabel} link
+								</button>
+								<button
+									type="button"
+									class="tryouts-btn tryouts-btn--ghost"
+									onclick={() => (expandedProgramId = expandedProgramId === p.id ? '' : p.id)}
+								>
+									{expandedProgramId === p.id ? 'Hide sessions' : 'Sessions & check-in'}
+								</button>
+							</div>
 						</div>
-						<button type="button" class="tryouts-btn tryouts-btn--ghost" onclick={() => void copyLink(p.id)}>
-							{copyLabel} link
-						</button>
+						{#if expandedProgramId === p.id}
+							<TryoutSessionsPanel programId={p.id} programName={p.name} ageBands={p.ageBands} />
+						{/if}
 					</li>
 				{/each}
 			</ul>
@@ -302,9 +320,7 @@
 
 	.tryouts-list__item {
 		display: flex;
-		flex-wrap: wrap;
-		align-items: center;
-		justify-content: space-between;
+		flex-direction: column;
 		gap: 0.5rem;
 		padding: 0.55rem 0.65rem;
 		border-radius: 8px;
@@ -312,6 +328,21 @@
 		background: #1e293b;
 		font-size: 0.8125rem;
 		color: #e2e8f0;
+	}
+
+	.tryouts-list__head {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		justify-content: space-between;
+		gap: 0.5rem;
+		width: 100%;
+	}
+
+	.tryouts-list__actions {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.35rem;
 	}
 
 	.tryouts-list__meta {

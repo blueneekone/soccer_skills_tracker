@@ -3819,6 +3819,16 @@ service cloud.firestore {
         );
         allow create, update, delete: if false;
       }
+
+      match /sessions/{sessionId} {
+        allow get, list: if authed() && (
+          isPlatformAdmin()
+          || ((isDirector() || isRegistrar() || isCoach())
+              && get(/databases/$(database)/documents/tryout_programs/$(programId)).data.clubId
+                  == tokenClub())
+        );
+        allow create, update, delete: if false;
+      }
     }
 
     match /{document=**} {

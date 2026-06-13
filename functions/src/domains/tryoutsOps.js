@@ -11,7 +11,29 @@ const db = () => admin.firestore();
 const PIPELINE = {
   REGISTERED: 'registered',
   WAITLISTED: 'waitlisted',
+  CHECKED_IN: 'checked_in',
 };
+
+const CHECK_IN = {
+  PRESENT: 'present',
+  NO_SHOW: 'no_show',
+  LATE: 'late',
+};
+
+const RSVP = new Set(['going', 'not_going', 'maybe']);
+
+/**
+ * @param {string} role
+ * @param {string} tokenClub
+ * @param {string} clubId
+ */
+function staffCanAccessClub(role, tokenClub, clubId) {
+  if (role === 'super_admin' || role === 'global_admin') return true;
+  if (role === 'director' || role === 'registrar' || role === 'coach') {
+    return Boolean(tokenClub && tokenClub === clubId);
+  }
+  return false;
+}
 
 /**
  * @param {FirebaseFirestore.DocumentData | undefined} data
@@ -278,3 +300,293 @@ exports.registerForTryout = onCall(
       return {ok: true, ...result, programId};
     },
 );
+
+/**
+ * Director/registrar: schedule a tryout field session (Phase B).
+ */
+exports.upsertTryoutSession = onCall({region: REGION}, async (request) => {
+  if (!request.auth) {
+    throw new HttpsError('unauthenticated', 'Sign in required.');
+  }
+
+  const role = request.auth.token.role || '';
+  const tokenClub =
+    typeof request.auth.token.clubId === 'string' ?
+      request.auth.token.clubId.trim() :
+      '';
+  const allowed = ['director', 'registrar', 'super_admin', 'global_admin'].includes(role);
+  if (!allowed) {
+    throw new HttpsError('permission-denied', 'Director or registrar access required.');
+  }
+
+  const data = request.data || {};
+  const programId =
+    typeof data.programId === 'string' ? data.programId.trim() : '';
+  const sessionId =
+    typeof data.sessionId === 'string' ? data.sessionId.trim() : '';
+  const title =
+    typeof data.title === 'string' ? data.title.trim().slice(0, 200) : 'Tryout session';
+  const fieldLabel =
+    typeof data.fieldLabel === 'string' ? data.fieldLabel.trim().slice(0, 200) : '';
+  const startAt =
+    typeof data.startAt === 'string' ? data.startAt.trim().slice(0, 32) : '';
+  const endAt =
+    typeof data.endAt === 'string' ? data.endAt.trim().slice(0, 32) : '';
+
+  if (!programId || !fieldLabel || !startAt) {
+    throw new HttpsError(
+        'invalid-argument',
+        'programId, fieldLabel, and startAt are required.',
+    );
+  }
+
+  const programRef = db().collection('tryout_programs').doc(programId);
+  const programSnap = await programRef.get();
+  if (!programSnap.exists) {
+    throw new HttpsError('not-found', 'Tryout program not found.');
+  }
+  const clubId = programSnap.data().clubId || '';
+  if (!staffCanAccessClub(role, tokenClub, clubId)) {
+    throw new HttpsError('permission-denied', 'Program must belong to your club.');
+  }
+
+  const ageBandsRaw = Array.isArray(data.ageBands) ? data.ageBands : [];
+  const ageBands = ageBandsRaw
+      .map((b) => (typeof b === 'string' ? b.trim().slice(0, 32) : ''))
+      .filter(Boolean)
+      .slice(0, 24);
+
+  const now = admin.firestore.FieldValue.serverTimestamp();
+  const payload = {
+    programId,
+    clubId,
+    title,
+    fieldLabel,
+    startAt,
+    ...(endAt ? {endAt} : {}),
+    ...(ageBands.length ? {ageBands} : {}),
+    updatedAt: now,
+    updatedBy: request.auth.uid,
+  };
+
+  let ref;
+  if (sessionId) {
+    ref = programRef.collection('sessions').doc(sessionId);
+    const snap = await ref.get();
+    if (!snap.exists) {
+      throw new HttpsError('not-found', 'Tryout session not found.');
+    }
+    await ref.set(payload, {merge: true});
+  } else {
+    ref = programRef.collection('sessions').doc();
+    await ref.set({...payload, createdAt: now});
+  }
+
+  return {ok: true, programId, sessionId: ref.id};
+});
+
+/**
+ * Director/registrar: assign registered athletes to a session (by age band or ids).
+ */
+exports.assignTryoutSession = onCall({region: REGION}, async (request) => {
+  if (!request.auth) {
+    throw new HttpsError('unauthenticated', 'Sign in required.');
+  }
+
+  const role = request.auth.token.role || '';
+  const tokenClub =
+    typeof request.auth.token.clubId === 'string' ?
+      request.auth.token.clubId.trim() :
+      '';
+  const allowed = ['director', 'registrar', 'super_admin', 'global_admin'].includes(role);
+  if (!allowed) {
+    throw new HttpsError('permission-denied', 'Director or registrar access required.');
+  }
+
+  const data = request.data || {};
+  const programId =
+    typeof data.programId === 'string' ? data.programId.trim() : '';
+  const sessionId =
+    typeof data.sessionId === 'string' ? data.sessionId.trim() : '';
+  const ageBand =
+    typeof data.ageBand === 'string' ? data.ageBand.trim().slice(0, 32) : '';
+  const registrationIdsRaw = Array.isArray(data.registrationIds) ?
+    data.registrationIds :
+    [];
+
+  if (!programId || !sessionId) {
+    throw new HttpsError('invalid-argument', 'programId and sessionId are required.');
+  }
+
+  const programRef = db().collection('tryout_programs').doc(programId);
+  const sessionRef = programRef.collection('sessions').doc(sessionId);
+  const [programSnap, sessionSnap] = await Promise.all([
+    programRef.get(),
+    sessionRef.get(),
+  ]);
+  if (!programSnap.exists || !sessionSnap.exists) {
+    throw new HttpsError('not-found', 'Program or session not found.');
+  }
+  const clubId = programSnap.data().clubId || '';
+  if (!staffCanAccessClub(role, tokenClub, clubId)) {
+    throw new HttpsError('permission-denied', 'Program must belong to your club.');
+  }
+
+  const regCol = programRef.collection('registrations');
+  let regRefs = registrationIdsRaw
+      .map((id) => (typeof id === 'string' ? id.trim() : ''))
+      .filter(Boolean)
+      .slice(0, 500)
+      .map((id) => regCol.doc(id));
+
+  if (!regRefs.length && ageBand) {
+    const q = await regCol.where('ageBand', '==', ageBand).get();
+    regRefs = q.docs
+        .filter((d) => {
+          const st = d.data().pipelineStatus;
+          return st === PIPELINE.REGISTERED || st === PIPELINE.CHECKED_IN;
+        })
+        .map((d) => d.ref);
+  }
+
+  if (!regRefs.length) {
+    throw new HttpsError('not-found', 'No registrations matched for assignment.');
+  }
+
+  const now = admin.firestore.FieldValue.serverTimestamp();
+  const batch = db().batch();
+  for (const ref of regRefs) {
+    batch.set(ref, {
+      assignedSessionId: sessionId,
+      sessionTitle: sessionSnap.data().title || 'Tryout session',
+      sessionStartAt: sessionSnap.data().startAt || null,
+      sessionFieldLabel: sessionSnap.data().fieldLabel || null,
+      updatedAt: now,
+    }, {merge: true});
+  }
+  await batch.commit();
+
+  return {ok: true, programId, sessionId, assignedCount: regRefs.length};
+});
+
+/**
+ * Public: guardian RSVPs to an assigned tryout session.
+ */
+exports.setTryoutSessionRsvp = onCall(
+    {region: REGION, invoker: 'public'},
+    async (request) => {
+      const data = request.data || {};
+      const programId =
+        typeof data.programId === 'string' ? data.programId.trim() : '';
+      const registrationId =
+        typeof data.registrationId === 'string' ? data.registrationId.trim() : '';
+      const guardianEmail = normEmail(data.guardianEmail);
+      const statusRaw = typeof data.status === 'string' ? data.status.trim() : '';
+      const status = statusRaw.toLowerCase();
+
+      if (!programId || !registrationId || !guardianEmail || !RSVP.has(status)) {
+        throw new HttpsError(
+            'invalid-argument',
+            'programId, registrationId, guardianEmail, and status (going|not_going|maybe) are required.',
+        );
+      }
+
+      const regRef = db()
+          .collection('tryout_programs')
+          .doc(programId)
+          .collection('registrations')
+          .doc(registrationId);
+      const snap = await regRef.get();
+      if (!snap.exists) {
+        throw new HttpsError('not-found', 'Registration not found.');
+      }
+      const reg = snap.data();
+      if (normEmail(reg.guardianEmail) !== guardianEmail) {
+        throw new HttpsError('permission-denied', 'Guardian email does not match registration.');
+      }
+      if (!reg.assignedSessionId) {
+        throw new HttpsError(
+            'failed-precondition',
+            'No tryout session assigned yet — check back after the club publishes your time slot.',
+        );
+      }
+
+      await regRef.set({
+        sessionRsvpStatus: status,
+        sessionRsvpAt: admin.firestore.FieldValue.serverTimestamp(),
+      }, {merge: true});
+
+      return {
+        ok: true,
+        programId,
+        registrationId,
+        status,
+        assignedSessionId: reg.assignedSessionId,
+      };
+    },
+);
+
+/**
+ * Staff gate check-in for a registered athlete.
+ */
+exports.checkInTryoutRegistration = onCall({region: REGION}, async (request) => {
+  if (!request.auth) {
+    throw new HttpsError('unauthenticated', 'Sign in required.');
+  }
+
+  const role = request.auth.token.role || '';
+  const tokenClub =
+    typeof request.auth.token.clubId === 'string' ?
+      request.auth.token.clubId.trim() :
+      '';
+  const allowed = ['director', 'registrar', 'coach', 'super_admin', 'global_admin'].includes(role);
+  if (!allowed) {
+    throw new HttpsError('permission-denied', 'Staff access required.');
+  }
+
+  const data = request.data || {};
+  const programId =
+    typeof data.programId === 'string' ? data.programId.trim() : '';
+  const registrationId =
+    typeof data.registrationId === 'string' ? data.registrationId.trim() : '';
+  const checkInStatusRaw =
+    typeof data.checkInStatus === 'string' ? data.checkInStatus.trim() : '';
+  const checkInStatus = checkInStatusRaw.toLowerCase();
+
+  if (!programId || !registrationId) {
+    throw new HttpsError('invalid-argument', 'programId and registrationId are required.');
+  }
+  if (!Object.values(CHECK_IN).includes(checkInStatus)) {
+    throw new HttpsError(
+        'invalid-argument',
+        'checkInStatus must be present, no_show, or late.',
+    );
+  }
+
+  const programRef = db().collection('tryout_programs').doc(programId);
+  const regRef = programRef.collection('registrations').doc(registrationId);
+  const [programSnap, regSnap] = await Promise.all([programRef.get(), regRef.get()]);
+  if (!programSnap.exists || !regSnap.exists) {
+    throw new HttpsError('not-found', 'Program or registration not found.');
+  }
+  const clubId = programSnap.data().clubId || '';
+  if (!staffCanAccessClub(role, tokenClub, clubId)) {
+    throw new HttpsError('permission-denied', 'Program must belong to your club.');
+  }
+
+  const now = admin.firestore.FieldValue.serverTimestamp();
+  const pipelineStatus =
+    checkInStatus === CHECK_IN.NO_SHOW ?
+      regSnap.data().pipelineStatus || PIPELINE.REGISTERED :
+      PIPELINE.CHECKED_IN;
+
+  await regRef.set({
+    checkInStatus,
+    checkInAt: now,
+    checkInBy: request.auth.uid,
+    pipelineStatus,
+    updatedAt: now,
+  }, {merge: true});
+
+  return {ok: true, programId, registrationId, checkInStatus, pipelineStatus};
+});

@@ -194,6 +194,10 @@ const tryoutsOps = require('./src/domains/tryoutsOps');
 exports.upsertTryoutProgram         = tryoutsOps.upsertTryoutProgram;
 exports.getPublicTryoutProgram      = tryoutsOps.getPublicTryoutProgram;
 exports.registerForTryout           = tryoutsOps.registerForTryout;
+exports.upsertTryoutSession         = tryoutsOps.upsertTryoutSession;
+exports.assignTryoutSession         = tryoutsOps.assignTryoutSession;
+exports.setTryoutSessionRsvp        = tryoutsOps.setTryoutSessionRsvp;
+exports.checkInTryoutRegistration   = tryoutsOps.checkInTryoutRegistration;
 
 // ── Epic 4.4 W1: Parent Lounge channel provisioning ──────────────────────────
 const commsChannelOps = require('./src/domains/commsChannelOps');

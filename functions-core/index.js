@@ -25,3 +25,7 @@ const tryoutsOps = require('./src/domains/tryoutsOps');
 exports.upsertTryoutProgram = tryoutsOps.upsertTryoutProgram;
 exports.getPublicTryoutProgram = tryoutsOps.getPublicTryoutProgram;
 exports.registerForTryout = tryoutsOps.registerForTryout;
+exports.upsertTryoutSession = tryoutsOps.upsertTryoutSession;
+exports.assignTryoutSession = tryoutsOps.assignTryoutSession;
+exports.setTryoutSessionRsvp = tryoutsOps.setTryoutSessionRsvp;
+exports.checkInTryoutRegistration = tryoutsOps.checkInTryoutRegistration;
