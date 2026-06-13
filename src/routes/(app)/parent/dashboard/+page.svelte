@@ -14,6 +14,7 @@
 	import CarRideHUD from './CarRideHUD.svelte';
 	import ProofReviewQueue from '$lib/components/parent/ProofReviewQueue.svelte';
 	import UpcomingEventsRsvp from '$lib/components/parent/UpcomingEventsRsvp.svelte';
+	import LiveStreamWatch from '$lib/components/parent/LiveStreamWatch.svelte';
 	import ParentNotificationPanel from '$lib/components/parent/ParentNotificationPanel.svelte';
 	import ParentWeekScheduleStrip from '$lib/components/parent/ParentWeekScheduleStrip.svelte';
 	import ClaimRosterSpot from '$lib/components/parent/ClaimRosterSpot.svelte';
@@ -109,6 +110,10 @@
 
 			<div class="bento-span-12 tw-min-w-0">
 				<UpcomingEventsRsvp {childEmails} {childNames} />
+			</div>
+
+			<div class="bento-span-12 tw-min-w-0">
+				<LiveStreamWatch {childEmails} />
 			</div>
 
 			<div class="bento-span-8 tw-min-w-0">

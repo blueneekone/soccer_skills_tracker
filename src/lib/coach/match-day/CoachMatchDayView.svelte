@@ -12,11 +12,13 @@
 		query,
 		serverTimestamp,
 		setDoc,
+		deleteField,
 		where,
 	} from 'firebase/firestore';
 	import { db } from '$lib/firebase.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { CoachTeamScope } from '$lib/coach/context/coachTeamScope.svelte.js';
+	import { normalizeLiveStreamUrl } from '$lib/live-stream/liveStreamEmbed.js';
 
 	/**
 	 * @typedef {{ id: string; shortId: string; name: string; role: string }} Operative
@@ -92,6 +94,11 @@
 
 	/** @type {string | null} */
 	let flashActionId = $state(null);
+
+	let liveStreamUrl = $state('');
+	let liveStreamDraft = $state('');
+	let liveStreamErr = $state('');
+	let liveStreamSaving = $state(false);
 
 	$effect(() => {
 		if (!browser) return;
@@ -174,6 +181,13 @@
 					const data = sessionSnap.data();
 					if (typeof data.homeScore === 'number') homeScore = Math.max(0, data.homeScore);
 					if (typeof data.awayScore === 'number') awayScore = Math.max(0, data.awayScore);
+					const stream =
+						typeof data.liveStreamUrl === 'string' ? data.liveStreamUrl.trim() : '';
+					liveStreamUrl = stream;
+					liveStreamDraft = stream;
+				} else {
+					liveStreamUrl = '';
+					liveStreamDraft = '';
 				}
 
 				const snap = await getDocs(
@@ -222,6 +236,68 @@
 		const uid = authStore.user?.uid;
 		if (!tid || !mid || !uid) return;
 		try {
+			/** @type {Record<string, unknown>} */
+			const payload = {
+				teamId: tid,
+				clubId: teamScope.teamClubId || '',
+				matchId: mid,
+				homeScore,
+				awayScore,
+				updatedBy: uid,
+				updatedAt: serverTimestamp(),
+			};
+			if (liveStreamUrl) {
+				payload.liveStreamUrl = liveStreamUrl;
+			}
+			await setDoc(doc(db, 'teams', tid, 'match_sessions', mid), payload, { merge: true });
+		} catch (e) {
+			console.error('[MatchDay] persist session', e);
+		}
+	}
+
+	async function saveLiveStreamUrl() {
+		const tid = teamScope.selectedTeamId?.trim();
+		const mid = sessionMatchId;
+		const uid = authStore.user?.uid;
+		if (!tid || !mid || !uid) return;
+
+		const raw = liveStreamDraft.trim();
+		liveStreamErr = '';
+		if (!raw) {
+			liveStreamUrl = '';
+			liveStreamSaving = true;
+			try {
+				await setDoc(
+					doc(db, 'teams', tid, 'match_sessions', mid),
+					{
+						teamId: tid,
+						matchId: mid,
+						homeScore,
+						awayScore,
+						liveStreamUrl: deleteField(),
+						updatedBy: uid,
+						updatedAt: serverTimestamp(),
+					},
+					{ merge: true },
+				);
+			} catch (e) {
+				liveStreamErr = e instanceof Error ? e.message : 'Could not clear stream URL.';
+			} finally {
+				liveStreamSaving = false;
+			}
+			return;
+		}
+
+		const normalized = normalizeLiveStreamUrl(raw);
+		if (!normalized) {
+			liveStreamErr = 'Use a YouTube, Vimeo, or Mux watch link.';
+			return;
+		}
+
+		liveStreamSaving = true;
+		try {
+			liveStreamUrl = normalized;
+			liveStreamDraft = normalized;
 			await setDoc(
 				doc(db, 'teams', tid, 'match_sessions', mid),
 				{
@@ -230,13 +306,16 @@
 					matchId: mid,
 					homeScore,
 					awayScore,
+					liveStreamUrl: normalized,
 					updatedBy: uid,
 					updatedAt: serverTimestamp(),
 				},
 				{ merge: true },
 			);
 		} catch (e) {
-			console.error('[MatchDay] persist session', e);
+			liveStreamErr = e instanceof Error ? e.message : 'Could not save stream URL.';
+		} finally {
+			liveStreamSaving = false;
 		}
 	}
 
@@ -458,6 +537,35 @@
 		<p class="coach-match-z4-strap__period">{matchPeriodLabel}</p>
 		<p class="coach-match-z4-strap__team">{activeTeamLabel}</p>
 	</header>
+
+	<div class="coach-match-stream" aria-labelledby="coach-match-stream-h">
+		<label id="coach-match-stream-h" class="coach-match-stream__label" for="coach-match-stream-url">
+			Live stream (YouTube / Vimeo / Mux)
+		</label>
+		<div class="coach-match-stream__row">
+			<input
+				id="coach-match-stream-url"
+				class="coach-match-stream__input"
+				type="url"
+				bind:value={liveStreamDraft}
+				maxlength="512"
+				placeholder="Paste watch URL for parents"
+			/>
+			<button
+				type="button"
+				class="coach-match-stream__save"
+				disabled={liveStreamSaving}
+				onclick={() => void saveLiveStreamUrl()}
+			>
+				{liveStreamSaving ? 'Saving…' : 'Save stream'}
+			</button>
+		</div>
+		{#if liveStreamErr}
+			<p class="coach-match-stream__err" role="alert">{liveStreamErr}</p>
+		{:else if liveStreamUrl}
+			<p class="coach-match-stream__ok" role="status">Stream linked — parents can watch live.</p>
+		{/if}
+	</div>
 
 	<div class="coach-match-main">
 		<div class="coach-match-z2-row" aria-label="Scoreboard">

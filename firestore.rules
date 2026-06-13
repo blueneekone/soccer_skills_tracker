@@ -1340,6 +1340,8 @@ service cloud.firestore {
           isSuper()
           || directorScopedToTeam(teamId)
           || coachStaffCanAccessTeam(teamId)
+          || sameTeam(teamId)
+          || (isParent() && userDoc().keys().hasAll(['teamId']) && userDoc().teamId == teamId)
         );
         allow create, update: if coachStaffCanAccessTeam(teamId)
           && request.resource.data.teamId == teamId
@@ -1355,7 +1357,10 @@ service cloud.firestore {
           && request.resource.data.awayScore <= 99
           && request.resource.data.updatedBy == request.auth.uid
           && request.resource.data.updatedAt == request.time
-          && request.resource.data.keys().size() <= 10;
+          && (!request.resource.data.keys().hasAny(['liveStreamUrl'])
+              || (request.resource.data.liveStreamUrl is string
+                  && request.resource.data.liveStreamUrl.size() <= 512))
+          && request.resource.data.keys().size() <= 11;
         allow delete: if false;
       }
 
