@@ -1,8 +1,13 @@
 <script>
 	import { db } from '$lib/firebase.js';
-	import { doc, updateDoc } from 'firebase/firestore';
+	import { doc, updateDoc, getDoc } from 'firebase/firestore';
 	import { teamsStore } from '$lib/stores/teams.svelte.js';
 	import { loadComplianceTable } from '$lib/registrar/loadComplianceRows.js';
+	import ClubEligibilityMatrixPanel from '$lib/components/director/ClubEligibilityMatrixPanel.svelte';
+	import {
+		normalizeEligibilityMatrix,
+		blockerLabel,
+	} from '$lib/director/evaluateClubEligibility.js';
 
 	let { clubId = '' } = $props();
 
@@ -10,6 +15,9 @@
 	let rows = $state([]);
 	let loading = $state(false);
 	let loadErr = $state('');
+
+	/** @type {Record<string, boolean>} */
+	let matrix = $state(normalizeEligibilityMatrix(null));
 
 	const clubTeams = $derived(
 		teamsStore.teams
@@ -25,7 +33,9 @@
 		loading = true;
 		loadErr = '';
 		try {
-			rows = await loadComplianceTable(clubTeams);
+			const clubSnap = await getDoc(doc(db, 'clubs', clubId));
+			matrix = normalizeEligibilityMatrix(clubSnap.data()?.eligibilityMatrix);
+			rows = await loadComplianceTable(clubTeams, matrix);
 		} catch (e) {
 			console.error('[ComplianceTab]', e);
 			loadErr = e instanceof Error ? e.message : 'Could not load compliance matrix.';
@@ -44,9 +54,7 @@
 		if (!email) return;
 		try {
 			await updateDoc(doc(db, 'passports', email), { clearanceStatus: newStatus });
-			rows = rows.map((row) =>
-				row.email === email ? { ...row, clearanceStatus: newStatus } : row,
-			);
+			await load();
 		} catch (e) {
 			alert('Error: ' + (e instanceof Error ? e.message : String(e)));
 		}
@@ -54,6 +62,8 @@
 </script>
 
 <div class="compliance-tab">
+	<ClubEligibilityMatrixPanel {clubId} onSaved={() => void load()} />
+
 	<div class="card">
 		<div class="card-header bg-red-header">Player compliance matrix</div>
 		<div class="card-body p-0 overflow-x-auto">
@@ -67,16 +77,17 @@
 						<th>Medical info</th>
 						<th>Waiver</th>
 						<th>Passport</th>
+						<th>Eligible</th>
 						<th>Official status</th>
 					</tr>
 				</thead>
 				<tbody>
 					{#if loading}
-						<tr><td colspan="8" class="text-center">Loading compliance matrix…</td></tr>
+						<tr><td colspan="9" class="text-center">Loading compliance matrix…</td></tr>
 					{:else if loadErr}
-						<tr><td colspan="8" class="text-center">{loadErr}</td></tr>
+						<tr><td colspan="9" class="text-center">{loadErr}</td></tr>
 					{:else if rows.length === 0}
-						<tr><td colspan="8" class="text-center">No roster players found for your club.</td></tr>
+						<tr><td colspan="9" class="text-center">No roster players found for your club.</td></tr>
 					{:else}
 						{#each rows as row (row.key)}
 							<tr>
@@ -99,6 +110,21 @@
 								</td>
 								<td>{row.waiverLabel}</td>
 								<td>{row.passportLabel}</td>
+								<td class="text-sm-sub">
+									{#if row.eligible === true}
+										<span class="eligible-yes">Eligible</span>
+									{:else if row.eligible === false}
+										<span class="eligible-no">Blocked</span>
+										{#if row.blockers?.length}
+											<br />
+											<span class="blocker-list">
+												{row.blockers.map((b) => blockerLabel(b)).join(' · ')}
+											</span>
+										{/if}
+									{:else}
+										—
+									{/if}
+								</td>
 								<td>
 									{#if row.email}
 										<select
@@ -129,4 +155,7 @@
 	.status-select             { margin: 0; padding: 4px; border-radius: 6px; font-weight: 700; font-size: 0.85rem; width: auto; }
 	.status-select--suspended  { color: #b91c1c; }
 	.status-select--clear      { color: #047857; }
+	.eligible-yes { color: #047857; font-weight: 700; }
+	.eligible-no { color: #b91c1c; font-weight: 700; }
+	.blocker-list { font-size: 0.75rem; color: #64748b; }
 </style>

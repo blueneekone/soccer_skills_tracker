@@ -31,6 +31,7 @@ const CODEBASES = {
       'src/domains/registrationOps.js',
       'src/domains/rosterOps.js',
       'src/domains/tryoutsOps.js',
+      'src/domains/eligibilityOps.js',
     ],
   },
   rl: {

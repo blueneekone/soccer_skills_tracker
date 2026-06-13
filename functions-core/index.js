@@ -36,3 +36,7 @@ exports.respondTryoutOffer = tryoutsOps.respondTryoutOffer;
 exports.getPublicTryoutRegistration = tryoutsOps.getPublicTryoutRegistration;
 exports.promoteTryoutToRoster = tryoutsOps.promoteTryoutToRoster;
 exports.dispatchTryoutComms = tryoutsOps.dispatchTryoutComms;
+
+const eligibilityOps = require('./src/domains/eligibilityOps');
+exports.upsertClubEligibilityMatrix = eligibilityOps.upsertClubEligibilityMatrix;
+exports.getClubEligibilityMatrix = eligibilityOps.getClubEligibilityMatrix;

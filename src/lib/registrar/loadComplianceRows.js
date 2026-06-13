@@ -1,6 +1,10 @@
 import { db } from '$lib/firebase.js';
 import { collection, doc, getDoc, query, where, getDocs } from 'firebase/firestore';
 import { hydrateSensitiveFieldsFromDoc } from '$lib/services/vault.svelte.ts';
+import {
+	normalizeEligibilityMatrix,
+	evaluateClubEligibility,
+} from '$lib/director/evaluateClubEligibility.js';
 
 /**
  * @typedef {object} RegistrarRosterRow
@@ -22,6 +26,9 @@ import { hydrateSensitiveFieldsFromDoc } from '$lib/services/vault.svelte.ts';
  * @property {string | null} emergencyName
  * @property {string | null} emergencyPhone
  * @property {string | null} medicalNotes
+ * @property {boolean | null} eligible
+ * @property {string[]} blockers
+ * @property {string | null} vpcStatus
  */
 
 /**
@@ -105,9 +112,11 @@ async function fetchPassportUserCache(emails) {
 
 /**
  * @param {Array<{ id: string, name?: string }>} teams
+ * @param {Record<string, boolean> | null | undefined} [matrixRaw]
  * @returns {Promise<RegistrarRosterRow[]>}
  */
-export async function loadComplianceTable(teams) {
+export async function loadComplianceTable(teams, matrixRaw) {
+	const matrix = normalizeEligibilityMatrix(matrixRaw);
 	/** @type {RegistrarRosterRow[]} */
 	const out = [];
 	for (const t of teams) {
@@ -157,9 +166,26 @@ export async function loadComplianceTable(teams) {
 					])
 				:	{};
 			const userData = em ? cache.users[em] ?? null : null;
+			const isMinor = userData?.isMinor === true;
+			const vpcStatus =
+				typeof userData?.vpcStatus === 'string' ? userData.vpcStatus : null;
 			const dobRaw = passportData?.dateOfBirth ?? userData?.dateOfBirth ?? null;
 			const pc = passportCell(passportData);
 			const wc = waiverCell(passportData);
+			const eligibility = evaluateClubEligibility(
+				{
+					hasSignedWaiver: passportData?.hasSignedWaiver === true,
+					passportKind: pc.kind,
+					guardianLinked: Boolean(em),
+					clearanceStatus:
+						typeof passportData?.clearanceStatus === 'string' ?
+							passportData.clearanceStatus
+						:	null,
+					isMinor,
+					vpcStatus,
+				},
+				matrix,
+			);
 			out.push({
 				key: `${teamId}::${playerName}`,
 				playerName,
@@ -182,6 +208,9 @@ export async function loadComplianceTable(teams) {
 				emergencyName: pii.emergencyName ?? null,
 				emergencyPhone: pii.emergencyPhone ?? null,
 				medicalNotes: pii.medicalNotes ?? null,
+				eligible: eligibility.eligible,
+				blockers: eligibility.blockers,
+				vpcStatus,
 			});
 		}
 	}
