@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { resolve } from '$app/paths';
+	import { resolveAppPath } from '$lib/components/_shared/resolveAppPath.js';
 	import Icon from '$lib/components/ui/Icon.svelte';
 	import { PLAYER_COMMAND_CENTER_LINKS } from '$lib/player/dashboard/playerCommandCenterLinks.js';
 
@@ -60,7 +60,7 @@
 				{#each PLAYER_COMMAND_CENTER_LINKS as link (link.href)}
 					<li>
 						<a
-							href={resolve(link.href)}
+							href={resolveAppPath(link.href)}
 							class="pcc-drawer__link"
 							data-sveltekit-preload-data="hover"
 							onclick={close}

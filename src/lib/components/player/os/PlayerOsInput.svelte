@@ -13,7 +13,7 @@
 		type?: string;
 		readonly?: boolean;
 		placeholder?: string;
-		autocomplete?: string;
+		autocomplete?: import('svelte/elements').HTMLInputAttributes['autocomplete'];
 		class?: string;
 	} = $props();
 </script>
@@ -25,5 +25,5 @@
 	bind:value
 	{readonly}
 	{placeholder}
-	autocomplete={autocomplete as string | undefined}
+	autocomplete={autocomplete}
 />

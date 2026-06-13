@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { resolve } from '$app/paths';
+	import { resolveAppPath } from '$lib/components/_shared/resolveAppPath.js';
 	import Icon from '$lib/components/ui/Icon.svelte';
 
 	let {
@@ -26,7 +26,7 @@
 <div class="ibm-holo-bezel" data-region="identity-telemetry-bezel">
 	<div class="ibm-holo-bezel__rail">
 		<a
-			href={resolve('/player/workout')}
+			href={resolveAppPath('/player/workout')}
 			class="ibm-holo-bezel__streak"
 			class:ibm-holo-bezel__streak--active={currentStreak > 0}
 			class:ibm-holo-bezel__streak--at-risk={streakAtRisk}
@@ -41,7 +41,7 @@
 		</a>
 
 		<a
-			href={resolve('/stats')}
+			href={resolveAppPath('/stats')}
 			class="ibm-holo-bezel__xp"
 			class:ibm-holo-bezel__xp--filled={totalXp > 0}
 			aria-label="Career XP {xpLabel} earned — view stats"

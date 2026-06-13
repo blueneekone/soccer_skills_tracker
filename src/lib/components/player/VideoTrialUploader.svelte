@@ -26,8 +26,8 @@
 	 * @param {File} file
 	 * @returns {Promise<number>}
 	 */
-	function getVideoDurationSec(file) {
-		return new Promise((resolve, reject) => {
+	function getVideoDurationSec(file: File): Promise<number> {
+		return new Promise((done, reject) => {
 			const url = URL.createObjectURL(file);
 			const v = document.createElement('video');
 			v.preload = 'metadata';
@@ -37,7 +37,7 @@
 			v.onloadedmetadata = () => {
 				URL.revokeObjectURL(url);
 				const d = v.duration;
-				resolve(Number.isFinite(d) ? d : 0);
+				done(Number.isFinite(d) ? d : 0);
 			};
 			v.onerror = () => {
 				URL.revokeObjectURL(url);
@@ -88,7 +88,7 @@
 		progress = 0;
 		try {
 			const task = uploadBytesResumable(storageRef, file, { contentType: file.type });
-			await new Promise((resolve, reject) => {
+			await new Promise<void>((done, reject) => {
 				task.on(
 					'state_changed',
 					(snap) => {
@@ -97,7 +97,7 @@
 							tBytes > 0 ? Math.round((100 * snap.bytesTransferred) / tBytes) : 0;
 					},
 					reject,
-					resolve,
+					() => done(),
 				);
 			});
 			const videoUrl = await getDownloadURL(storageRef);
