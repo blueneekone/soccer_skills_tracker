@@ -15,6 +15,7 @@
 	import ProofReviewQueue from '$lib/components/parent/ProofReviewQueue.svelte';
 	import UpcomingEventsRsvp from '$lib/components/parent/UpcomingEventsRsvp.svelte';
 	import ParentNotificationPanel from '$lib/components/parent/ParentNotificationPanel.svelte';
+	import ParentWeekScheduleStrip from '$lib/components/parent/ParentWeekScheduleStrip.svelte';
 	import ClaimRosterSpot from '$lib/components/parent/ClaimRosterSpot.svelte';
 	import '$lib/styles/parent-bounty-funding-panel.css';
 
@@ -96,6 +97,10 @@
 
 			<div class="bento-span-12 tw-min-w-0">
 				<ClaimRosterSpot />
+			</div>
+
+			<div class="bento-span-12 tw-min-w-0">
+				<ParentWeekScheduleStrip {childEmails} {childNames} />
 			</div>
 
 			<div class="bento-span-12 tw-min-w-0">

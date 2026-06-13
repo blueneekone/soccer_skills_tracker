@@ -99,3 +99,14 @@ export async function loadHouseholdScheduleEvents(
 	found.sort((a, b) => a.startMs - b.startMs);
 	return found.slice(0, maxEvents);
 }
+
+/** Events starting within the next 7 calendar days (local time). */
+export function filterEventsThisWeek(
+	events: HouseholdScheduleEvent[],
+	nowMs: number = Date.now(),
+): HouseholdScheduleEvent[] {
+	const start = new Date(nowMs);
+	start.setHours(0, 0, 0, 0);
+	const weekEnd = start.getTime() + 7 * 86_400_000;
+	return events.filter((ev) => ev.startMs >= start.getTime() && ev.startMs < weekEnd);
+}

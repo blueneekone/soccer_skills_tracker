@@ -1435,6 +1435,7 @@ Loadout art (3.2+) consumed by 2.12 hero identity column.
 | **LAUNCH-eligibility-matrix** | **Done** | Director-configurable player eligibility gates on compliance matrix (waiver, passport, VPC, guardian, SafeSport) | `eligibilityLaunch.test.ts` · deploy **`npm run deploy:core`** |
 | **LAUNCH-parent-ical** | **Done** | Parent household `.ics` export — import team schedule into Apple/Google/Outlook from dashboard RSVP panel | `parentCalendarExport.test.ts` · deploy **hosting** |
 | **LAUNCH-parent-push** | **Done** | Parent dashboard push enable + notification preference matrix (game, messages, announcements, payments) | `parentPushLaunch.test.ts` · deploy **hosting** |
+| **LAUNCH-parent-week** | **Done** | Parent dashboard “This week” schedule strip with quick RSVP for primary household athlete | `parentWeekSchedule.test.ts` · deploy **hosting** |
 | **XP-verify** | **Done** | XP algorithm tests + client/server parity (`level.js` ↔ `gamificationWorkoutXp.js`) | `levelXp.test.ts`, `gamificationWorkoutXp.test.js`, `trainingOpsXp.test.js` |
 | **3.5m-frame** | **Done** | Art-well recess + holo inset — unified portrait clip, xMidYMid bust centering | `playerLoadoutSprint35mFrame.test.ts` |
 | **3.5m-art** | **Superseded** | Agent modular SVG bust redraw — human VA failed; owner Gemini + ingest replaces | `playerLoadoutSprint35mArt.test.ts` (historical) |
