@@ -8,7 +8,7 @@ function mapVpcRows(
 ): VpcRequestRow[] {
 	const rows: VpcRequestRow[] = [];
 	snap.forEach((d) => {
-		const data = d.data();
+		const data = d.data() as Record<string, unknown>;
 		rows.push({
 			clubId: typeof data.clubId === 'string' ? data.clubId : '',
 			status: typeof data.status === 'string' ? data.status : '',
