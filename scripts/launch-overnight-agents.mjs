@@ -7,13 +7,11 @@
  *   $env:GITHUB_REPO_URL = "https://github.com/YOUR_USER/soccer_skills_tracker"
  *
  * Usage:
- *   node scripts/launch-overnight-agents.mjs --wave 1
- *   node scripts/launch-overnight-agents.mjs --wave late
- *   node scripts/launch-overnight-agents.mjs --wave 2
- *   node scripts/launch-overnight-agents.mjs --wave 3a
+ *   node scripts/launch-overnight-agents.mjs --wave 3a [--dry-run]
  *   node scripts/launch-overnight-agents.mjs --wave 3b
- *   node scripts/launch-overnight-agents.mjs --agent 14-fed-ngb
- *   node scripts/launch-overnight-agents.mjs --wave 1 --dry-run
+ *   node scripts/launch-overnight-agents.mjs --wave 3c
+ *   node scripts/launch-overnight-agents.mjs --wave orch
+ *   node scripts/launch-overnight-agents.mjs --agent payment-webhook
  */
 
 import fs from 'fs';
@@ -57,6 +55,7 @@ const WAVE_LATE = ['12-check-parent-admin'];
 const WAVE_2 = ['22-check-final', '23-vitest-ci', '24-deploy-verify'];
 
 const WAVE_3A = [
+	'smoke-dev-script',
 	'deploy-gha-dev',
 	'payment-webhook',
 	'eligibility-ux',
@@ -74,15 +73,18 @@ const WAVE_3A = [
 	'diegetic-modals',
 ];
 
-const WAVE_3B = ['live-deploy-dev', 'post-deploy-smoke'];
+const WAVE_3B = ['live-deploy-dev', 'post-deploy-guards'];
+
+const WAVE_3C = ['gemini-ingest-2', 'gemini-ingest-3'];
+
+const WAVE_ORCH = ['orch-wave3'];
 
 function parseArgs() {
 	const args = process.argv.slice(2);
 	const out = { wave: null, agent: null, dryRun: false };
 	for (let i = 0; i < args.length; i++) {
 		if (args[i] === '--wave') {
-			const v = args[++i];
-			out.wave = v === 'late' ? 'late' : Number(v);
+			out.wave = args[++i];
 		} else if (args[i] === '--agent') {
 			out.agent = args[++i];
 		} else if (args[i] === '--dry-run') {
@@ -95,22 +97,22 @@ function parseArgs() {
 function loadPrompt(agentFile) {
 	const p = path.join(AGENTS_DIR, `${agentFile}.md`);
 	if (!fs.existsSync(p)) {
-		throw new Error(`Missing ${p}. Run RUNNER-0 first.`);
+		throw new Error(`Missing ${p}. See WAVE_3_MANIFEST.md.`);
 	}
 	return fs.readFileSync(p, 'utf8');
 }
 
 function branchForPrompt(promptText) {
-	const m = promptText.match(/(?:\*\*)?Branch:(?:\*\*)?\s*`?((?:overnight|closure|owner)\/[^\s`*]+)`?/);
+	const m = promptText.match(/(?:\*\*)?Branch:(?:\*\*)?\s*`?(closure\/[^\s`*]+)`?/);
 	if (!m) {
-		throw new Error('Prompt file missing "Branch: overnight/... | closure/... | owner/..." line');
+		throw new Error(`Prompt ${promptText.slice(0, 40)}… missing Branch: closure/...`);
 	}
 	return m[1];
 }
 
 async function createCloudAgent(agentFile, promptText) {
 	const branch = branchForPrompt(promptText);
-	const name = `overnight-${agentFile}`.slice(0, 100);
+	const name = `closure-${agentFile}`.slice(0, 100);
 
 	const body = {
 		name,
@@ -150,16 +152,16 @@ function sleep(ms) {
 }
 
 async function main() {
-	if (!API_KEY) {
-		console.error('Missing CURSOR_API_KEY. Set it in PowerShell: $env:CURSOR_API_KEY = "..."');
+	if (!API_KEY && !process.argv.includes('--dry-run')) {
+		console.error('Missing CURSOR_API_KEY. Set: $env:CURSOR_API_KEY = "..."');
 		process.exit(1);
 	}
-	if (!REPO_URL || !REPO_URL.startsWith('https://github.com/')) {
+	if (!REPO_URL.startsWith('https://github.com/') && !process.argv.includes('--dry-run')) {
 		console.error('Missing GITHUB_REPO_URL. Example: https://github.com/you/soccer_skills_tracker');
 		process.exit(1);
 	}
 	if (!fs.existsSync(AGENTS_DIR)) {
-		console.error(`Missing ${AGENTS_DIR}. Run RUNNER-0 first.`);
+		console.error(`Missing ${AGENTS_DIR}`);
 		process.exit(1);
 	}
 
@@ -168,19 +170,23 @@ async function main() {
 
 	if (agent) {
 		queue = [agent];
-	} else if (wave === 1) {
+	} else if (wave === '1') {
 		queue = WAVE_1;
 	} else if (wave === 'late') {
 		queue = WAVE_LATE;
-	} else if (wave === 2) {
+	} else if (wave === '2') {
 		queue = WAVE_2;
-	} else if (wave === '3a' || wave === 3) {
+	} else if (wave === '3a' || wave === '3') {
 		queue = WAVE_3A;
 	} else if (wave === '3b') {
 		queue = WAVE_3B;
+	} else if (wave === '3c') {
+		queue = WAVE_3C;
+	} else if (wave === 'orch') {
+		queue = WAVE_ORCH;
 	} else {
 		console.error(
-			'Usage: --wave 1 | --wave late | --wave 2 | --wave 3a | --wave 3b | --agent payment-webhook [--dry-run]',
+			'Usage: --wave 1|late|2|3a|3b|3c|orch | --agent <slice-id> [--dry-run]',
 		);
 		process.exit(1);
 	}
@@ -194,7 +200,10 @@ async function main() {
 	for (const id of queue) {
 		const prompt = loadPrompt(id);
 		const branch = branchForPrompt(prompt);
-		console.log(`\n→ ${id} on ${branch}`);
+		const preview = prompt.split('\n').slice(0, 6).join('\n');
+		console.log(`\n→ ${id}`);
+		console.log(`  branch: ${branch}`);
+		console.log(`  prompt preview:\n${preview.split('\n').map((l) => `    ${l}`).join('\n')}`);
 
 		if (dryRun) continue;
 
@@ -212,7 +221,7 @@ async function main() {
 		await sleep(3000);
 	}
 
-	console.log('\nDone. See docs/acquisition/LAUNCHED_AGENTS.json and cursor.com/agents');
+	console.log('\nDone. See docs/acquisition/LAUNCHED_AGENTS.json');
 }
 
 main().catch((err) => {

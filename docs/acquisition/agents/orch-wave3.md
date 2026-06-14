@@ -1,21 +1,33 @@
 # Agent — orch-wave3
 
+**Slice ID:** orch-wave3  
 **Branch:** `closure/orch-wave3`
 
-**Owns:** `docs/acquisition/SLICE_LOG.md`, `docs/acquisition/PARALLEL_STATUS.md`, `ROADMAP.md` (current sprint line only), `docs/acquisition/TRACTION.md`, `docs/acquisition/GAP_CLOSURE_PLAN.md` (header only)
+**Owns:**
+- `docs/acquisition/SLICE_LOG.md`
+- `docs/acquisition/PARALLEL_STATUS.md`
+- `docs/acquisition/PLATFORM_GAP_REGISTER.md` (summary counts only)
+- `ROADMAP.md` (sprint line)
+- `docs/acquisition/TRACTION.md` (post-merge refresh)
 
 ## Task
 
-Wave 3 orchestrator (register M-04):
+Register **M-04**: poll SLICE_LOG; merge `closure/*` → `dev` in WAVE_3_MANIFEST dependency order; update PARALLEL_STATUS; verify register row counts match agent .md file count (21).
 
-1. Poll `SLICE_LOG.md` for all `closure/*` branches — merge to `dev` in WAVE_3_MANIFEST dependency order.
-2. Update `PARALLEL_STATUS.md` board (Done / Blocked / Owner).
-3. Sync ROADMAP current sprint line → point to PLATFORM_GAP_REGISTER + Wave 3 fleet status.
-4. Refresh TRACTION LAUNCH-deploy-dev row from register resolved truth.
-5. Update register summary counts if rows moved Done.
+**Do not ask owner** for merge approval — merge when slice tests + check + build green.
 
-**Do not** relaunch agents 01–24.
+## AutomatedVerify
+
+```bash
+npm test -- src/lib/parent/__tests__/launchWave2Complete.test.ts src/lib/gamification/__tests__/personaFunctionalMvp.test.ts
+npm run check
+npm run build
+```
+
+## ManualQaId
+
+QA-503
 
 ---
 
-Universal rules: Append SLICE_LOG.md only. Do NOT build rejects R-01–R-03. Do not ask questions.
+Universal rules: Unattended overnight — do not ask questions. Append SLICE_LOG only. If FIREBASE_TOKEN missing, log Blocked and stop slice (do not claim Done). Each commit: npm test (slice), npm run check, npm run build. Permanent rejects #1–#3. Manual testing is OWNER_QA_CHECKLIST only — you ship code + automated verify.

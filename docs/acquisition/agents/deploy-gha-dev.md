@@ -1,19 +1,31 @@
 # Agent — deploy-gha-dev
 
+**Slice ID:** deploy-gha-dev  
 **Branch:** `closure/deploy-gha-dev`
 
-**Owns:** `.github/workflows/deploy.yml`
+**Owns:**
+- `.github/workflows/deploy.yml`
 
 ## Task
 
-Complete dev-target deploy workflow (register A-04):
+Register **A-04**: workflow_dispatch dev target uses `sports-skill-tracker-dev`; completion echo must not say "production" when environment=dev.
 
-1. Ensure `FIREBASE_PROJECT_ID` env resolves to `sports-skill-tracker-dev` when `workflow_dispatch` input `environment=dev` (merge any uncommitted fix on dev).
-2. Fix deploy job completion echo — must print dev URL `https://sstracker.app` when dev, prod URL when prod (no hardcoded “VANGUARD deployed to production” for dev runs).
-3. Confirm all `--project` flags use `${{ env.FIREBASE_PROJECT_ID }}` (rules, storage, functions loop, hosting).
+1. Verify `FIREBASE_PROJECT_ID` conditional for dev vs prod.
+2. Fix completion/summary strings to reflect dev deploy.
+3. Optional: add post-deploy `npm run smoke:dev` job when secret available.
 
-**Acceptance:** Dry-read workflow YAML — zero `soccer-skills-tracker` hardcodes outside prod branch of ternary.
+**Acceptance:** deploy.yml dev path targets correct project; `npm run check` passes.
+
+## AutomatedVerify
+
+```bash
+npm run check
+```
+
+## ManualQaId
+
+QA-000d
 
 ---
 
-Universal rules: Append SLICE_LOG.md only. Do NOT build drag-and-drop club website CMS, App Store submission, or shallow COPPA checkbox. Each commit: npm test (slice if applicable), npm run check, npm run build. Do not ask questions.
+Universal rules: Unattended overnight — do not ask questions. Append SLICE_LOG only. If FIREBASE_TOKEN missing, log Blocked and stop slice (do not claim Done). Each commit: npm test (slice), npm run check, npm run build. Permanent rejects #1–#3. Manual testing is OWNER_QA_CHECKLIST only — you ship code + automated verify.

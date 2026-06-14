@@ -17,8 +17,9 @@
 | [TRACTION.md](./TRACTION.md) | Investor / acquirer | Build status, test coverage, launch gate |
 | [LIMITATIONS.md](./LIMITATIONS.md) | Legal / eng | Honest scope boundaries |
 | [NOTABLE_GAPS.md](./NOTABLE_GAPS.md) | Product / GTM | Intentional non-parity vs TeamSnap / SportsEngine |
-| [PLATFORM_GAP_REGISTER.md](./PLATFORM_GAP_REGISTER.md) | Eng / owner | **Canonical** full-platform gap register (all sections A–M) |
-| [WAVE_3_MANIFEST.md](./WAVE_3_MANIFEST.md) | Eng / agents | Parallel closure fleet — slice IDs, merge order, agent prompts |
+| [PLATFORM_GAP_REGISTER.md](./PLATFORM_GAP_REGISTER.md) | Eng / owner | **Canonical** gap register — BuildOwner, AutomatedVerify, ManualQaId |
+| [WAVE_3_MANIFEST.md](./WAVE_3_MANIFEST.md) | Eng / agents | Wave 3 unattended closure — 3A/3B/3C + orch |
+| [OWNER_QA_CHECKLIST.md](../vision/OWNER_QA_CHECKLIST.md) | Owner | **Canonical** manual QA (QA-xxx IDs) — run after `npm run smoke:dev` |
 | [GAP_CLOSURE_PLAN.md](./GAP_CLOSURE_PLAN.md) | Eng / owner | Historical pre-QA backlog (superseded by register for execution) |
 | [DOC_SYNC_REPORT.md](./DOC_SYNC_REPORT.md) | Eng | Audit log of doc sync vs merged code |
 | [SECURITY.md](./SECURITY.md) | InfoSec / compliance | Architecture, COPPA, SafeSport, cells |
@@ -36,7 +37,8 @@ These live outside `docs/acquisition/` and are **source of truth** for engineeri
 |----------|------|--------|
 | **Architecture** | [`docs/ARCHITECTURE.md`](../ARCHITECTURE.md) | Four-tier stack, cell routing, Cloud Functions v2, Trinity pattern |
 | **Functional MVP** | [`docs/vision/FUNCTIONAL_MVP.md`](../vision/FUNCTIONAL_MVP.md) | Player · Parent · Coach launch checklist + VPC golden path |
-| **QA / Dev personas** | [`docs/QA_DEV_PERSONA_VERIFICATION.md`](../QA_DEV_PERSONA_VERIFICATION.md) | Phased pair-program QA on `sports-skill-tracker-dev` |
+| **Owner QA checklist** | [`docs/vision/OWNER_QA_CHECKLIST.md`](../vision/OWNER_QA_CHECKLIST.md) | Canonical manual QA · QA-xxx cross-ref to gap register |
+| **QA / Dev personas (legacy)** | [`docs/QA_DEV_PERSONA_VERIFICATION.md`](../QA_DEV_PERSONA_VERIFICATION.md) | Superseded by OWNER_QA_CHECKLIST — phased notes retained |
 | **Functions deploy** | [`docs/FUNCTIONS_DEPLOY.md`](../FUNCTIONS_DEPLOY.md) | Multi-codebase deploy playbook (`core`, `rl`, `compliance`, …) |
 | **Functional audit** | [`docs/FUNCTIONAL_AUDIT_BACKLOG.md`](../FUNCTIONAL_AUDIT_BACKLOG.md) | A–F backlog closed 2026-06-10; deploy checklist remains |
 

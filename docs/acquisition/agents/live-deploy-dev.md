@@ -1,20 +1,34 @@
 # Agent — live-deploy-dev
 
+**Slice ID:** live-deploy-dev  
 **Branch:** `closure/live-deploy-dev`
 
-**Owns:** operator deploy only — `scripts/deploy-dev-full.cjs`, `package.json` deploy scripts (no logic change unless verify fails)
+**Owns:**
+- `scripts/deploy-dev-full.cjs`
+- `scripts/deploy-dev-and-smoke.cjs`
+- `package.json` deploy scripts (fix only if verify fails)
 
 ## Task
 
-Register **A-01**, **A-06** — live deploy to `sports-skill-tracker-dev`:
+Register **A-01**, **A-06** — live deploy to `sports-skill-tracker-dev` (agent-only; not owner):
 
-1. `npm run build`
-2. `npm run deploy:dev` (or sequential `deploy:core`, `deploy:rl`, `deploy:commerce`, `deploy:compliance`, `deploy:integrations`, `deploy:platform`, `deploy:comms`, default functions, firestore rules, storage, hosting per FUNCTIONS_DEPLOY.md)
-3. `npm run deploy:dev:verify` green
+1. `npm run deploy:dev:smoke` (build + deploy:dev + deploy:dev:verify + smoke:dev)
+2. Or sequential: `npm run build` → `npm run deploy:dev` → `npm run deploy:dev:verify` → `npm run smoke:dev`
+3. All codebases per [`FUNCTIONS_DEPLOY.md`](../../FUNCTIONS_DEPLOY.md): core, rl, commerce, compliance, integrations, platform, default + rules + storage + hosting
 4. Append SLICE_LOG with deploy timestamp + commit SHA
 
-**Blocked without:** `FIREBASE_CI_TOKEN` or local `firebase login`.
+**Blocked without:** `FIREBASE_TOKEN` / `FIREBASE_CI_TOKEN` or `firebase login` — log Blocked, do not claim Done.
+
+## AutomatedVerify
+
+```bash
+npm run deploy:dev:smoke
+```
+
+## ManualQaId
+
+QA-000b
 
 ---
 
-Universal rules: Append SLICE_LOG.md only. Do NOT build rejects R-01–R-03. Do not ask questions.
+Universal rules: Unattended overnight — do not ask questions. Append SLICE_LOG only. If FIREBASE_TOKEN missing, log Blocked and stop slice (do not claim Done). Each commit: npm test (slice), npm run check, npm run build. Permanent rejects #1–#3. Manual testing is OWNER_QA_CHECKLIST only — you ship code + automated verify.

@@ -209,3 +209,20 @@ Agents append entries below. Do not edit prior rows.
 **Register counts:** 95 total · 38 Done · 24 Agent · 28 Owner · 2 Blocked · 3 Rejected  
 **Verify:** `npm run check` · `npm test -- src/lib/parent/__tests__/launchWave2Complete.test.ts src/lib/gamification/__tests__/personaFunctionalMvp.test.ts`  
 **Next:** launch Wave 3A agents (`node scripts/launch-overnight-agents.mjs --wave 3a`)
+
+---
+
+## platform-gap-register-v2 — 2026-06-14 (BUILD vs MANUAL QA split)
+
+**Branch:** dev  
+**Status:** Done  
+**Created:** `docs/vision/OWNER_QA_CHECKLIST.md`, `scripts/smoke-dev-callables.mjs`, `scripts/deploy-dev-and-smoke.cjs`, `docs/acquisition/agents/smoke-dev-script.md`, `docs/acquisition/agents/post-deploy-guards.md`  
+**Updated:** `PLATFORM_GAP_REGISTER.md` (BuildOwner + AutomatedVerify + ManualQaId columns), `WAVE_3_MANIFEST.md` (unattended rules, 3A/3B/3C/orch), all 21 Wave 3 agent prompts, `launch-overnight-agents.mjs` (--wave 3a|3b|3c|orch), `package.json` (smoke:dev, deploy:dev:smoke), `QA_DEV_PERSONA_VERIFICATION.md` (superseded banner), `INDEX.md`, `GAP_CLOSURE_PLAN.md`, `ROADMAP.md`  
+**Removed:** `agents/post-deploy-smoke.md` → renamed `post-deploy-guards.md`  
+**Completion checklist:**
+- Agent .md files (Wave 3 slices): **21** (= manifest Agent slice count)
+- `launch-overnight-agents.mjs` updated: **yes** (WAVE_3A, WAVE_3B, WAVE_3C, WAVE_ORCH, --wave 3a|3b|3c|orch)
+- `smoke:dev` script added: **yes** (`scripts/smoke-dev-callables.mjs`)
+- OWNER_QA_CHECKLIST QA-id count: **47** (QA-000–QA-507)
+- PLATFORM_GAP_REGISTER row count: **86** (sections A–M + rejects)
+**Verify:** `npm run check` · `npm test -- src/lib/parent/__tests__/launchWave2Complete.test.ts src/lib/gamification/__tests__/personaFunctionalMvp.test.ts` · `node scripts/launch-overnight-agents.mjs --wave 3a --dry-run`

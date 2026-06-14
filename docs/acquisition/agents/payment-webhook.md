@@ -1,19 +1,35 @@
 # Agent — payment-webhook
 
+**Slice ID:** payment-webhook  
 **Branch:** `closure/payment-webhook`
 
-**Owns:** `functions/commerce.js`, `functions-commerce/**`, `functions/__tests__/*commerce*`, `functions/__tests__/*registration*webhook*`
+**Owns:**
+- `functions/commerce.js`
+- `functions-commerce/**`
+- `functions/__tests__/*commerce*`
 
 ## Task
 
-Fix register **B-01**: `handleRegistrationWebhook` / Stripe PI success must set `users/{email}.activeSeasonStatus = 'active'` **only when all installments for the season registration are paid**, not on the first partial installment.
+Register **B-01**: `handleRegistrationWebhook` / Stripe PI success must set `activeSeasonStatus = 'active'` **only when all installments paid**, not first partial.
 
-1. Read installment ledger logic in `src/lib/parent/paymentInstallments.ts` and `loadSeasonPaymentLedger.ts` — mirror aggregation server-side.
-2. Update webhook handler to compare cumulative paid cents vs total fee before unlocking season.
-3. Add/update functions unit test proving partial PI does not unlock; final installment does.
+1. Mirror installment ledger from `src/lib/parent/paymentInstallments.ts` server-side.
+2. Add functions unit test: partial PI → status unchanged; final installment → unlock.
 
-**Acceptance:** Test demonstrates partial → `activeSeasonStatus` unchanged; full ledger paid → `active`.
+**Acceptance:** Tests prove partial vs full ledger behavior.
+
+## AutomatedVerify
+
+```bash
+npm test -- src/lib/parent/__tests__/paymentInstallments.test.ts
+node --test functions/__tests__/commerce*.test.js
+npm run check
+npm run build
+```
+
+## ManualQaId
+
+QA-202
 
 ---
 
-Universal rules: Append SLICE_LOG.md only. Do NOT build rejects R-01–R-03. Each commit: `npm test -- src/lib/parent/__tests__/paymentInstallments.test.ts` + webhook tests, npm run check, npm run build. Do not ask questions.
+Universal rules: Unattended overnight — do not ask questions. Append SLICE_LOG only. If FIREBASE_TOKEN missing, log Blocked and stop slice (do not claim Done). Each commit: npm test (slice), npm run check, npm run build. Permanent rejects #1–#3. Manual testing is OWNER_QA_CHECKLIST only — you ship code + automated verify.

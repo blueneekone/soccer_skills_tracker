@@ -1,20 +1,31 @@
 # Agent — fed-phase2
 
+**Slice ID:** fed-phase2  
 **Branch:** `closure/fed-phase2`
 
-**Owns:** `functions-core/**/ngbExportOps.js`, `src/lib/director/**/StateRosterExportPanel*`, `docs/acquisition/FEDERATION_ROADMAP.md`
+**Owns:**
+- `functions-core/**/ngbExportOps.js`
+- `src/lib/director/**/StateRosterExportPanel*`
+- `docs/acquisition/FEDERATION_ROADMAP.md`
 
 ## Task
 
-Implement register **C-02** Federation Phase 2 (format adapters):
+Register **C-02**, **C-03**: implement Federation Phase 2 format adapters per FEDERATION_ROADMAP; document Phase 3 sync job stubs if not in scope.
 
-1. Add `formatAdapterRegistry` with at least one US Soccer / state-association CSV column map atop Phase 1 row model.
-2. Director export panel: picker for export profile / body template.
-3. Unit tests per adapter in `ngbExportLaunch.test.ts`.
-4. Mark Phase 2 progress in `FEDERATION_ROADMAP.md` (this file only in docs/acquisition).
+**Acceptance:** Export panel supports next adapter; `ngbExportLaunch.test.ts` extended.
 
-**Acceptance:** Callable returns transformed CSV for selected adapter; tests pass; `npm run deploy:core` script unchanged.
+## AutomatedVerify
+
+```bash
+npm test -- src/lib/director/__tests__/ngbExportLaunch.test.ts
+npm run check
+npm run build
+```
+
+## ManualQaId
+
+QA-206
 
 ---
 
-Universal rules: Append SLICE_LOG.md only. Do NOT build rejects R-01–R-03 or GotSport CMS. Each commit: `npm test -- src/lib/director/__tests__/ngbExportLaunch.test.ts`, npm run check, npm run build. Do not ask questions.
+Universal rules: Unattended overnight — do not ask questions. Append SLICE_LOG only. If FIREBASE_TOKEN missing, log Blocked and stop slice (do not claim Done). Each commit: npm test (slice), npm run check, npm run build. Permanent rejects #1–#3. Manual testing is OWNER_QA_CHECKLIST only — you ship code + automated verify.

@@ -1,5 +1,7 @@
 # Dev QA — phased pair-programming (Coach · Parent · Player)
 
+> **Superseded for owner sign-off by:** [`docs/vision/OWNER_QA_CHECKLIST.md`](vision/OWNER_QA_CHECKLIST.md) (canonical manual QA with QA-xxx IDs). This doc remains for historical phased pair-program notes.
+
 **Environment:** `sports-skill-tracker-dev` (backend + **hosting for https://sstracker.app**) · Production hosting: `https://soccer-skills-tracker.web.app` only  
 **Primary QA URL:** https://sstracker.app (custom domain on **dev** Firebase project — deploy hosting with `firebase use sports-skill-tracker-dev`)  
 **Branch:** `dev`  

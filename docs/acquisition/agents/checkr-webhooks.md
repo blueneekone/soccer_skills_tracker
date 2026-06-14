@@ -1,19 +1,32 @@
 # Agent — checkr-webhooks
 
+**Slice ID:** checkr-webhooks  
 **Branch:** `closure/checkr-webhooks`
 
-**Owns:** `functions/compliance.js`, `functions-compliance/**`, `functions/__tests__/complianceCheckr.guard.test.js`, `src/lib/compliance/**`
+**Owns:**
+- `functions/compliance.js`
+- `functions-compliance/**`
+- `src/lib/compliance/**`
 
 ## Task
 
-Harden register **D-01** Checkr webhook lifecycle:
+Register **D-01**: harden Checkr webhook lifecycle (`checkrWebhook`, `backgroundCheckCallback`) — idempotency, signature validation, status transitions.
 
-1. Verify `checkrWebhook` / `backgroundCheckCallback` handle report.completed, report.updated, candidate.created — idempotent writes to coach clearance docs.
-2. Surface webhook failure/retry states in director panopticon (neutral copy, no Ankored strings).
-3. Extend guard tests for each event type + signature verification failure path.
+**Acceptance:** Guard tests pass; no Ankored user strings.
 
-**Acceptance:** Guard tests pass; no duplicate clearance flips on webhook retry.
+## AutomatedVerify
+
+```bash
+node --test functions/__tests__/complianceCheckr.guard.test.js
+npm test -- src/lib/compliance/__tests__/checkrCoachClearance.urls.test.ts
+npm run check
+npm run build
+```
+
+## ManualQaId
+
+QA-204
 
 ---
 
-Universal rules: Append SLICE_LOG.md only. Do NOT build rejects R-01–R-03. Each commit: `node --test functions/__tests__/complianceCheckr.guard.test.js` + clearance URL tests, npm run check, npm run build. Do not ask questions.
+Universal rules: Unattended overnight — do not ask questions. Append SLICE_LOG only. If FIREBASE_TOKEN missing, log Blocked and stop slice (do not claim Done). Each commit: npm test (slice), npm run check, npm run build. Permanent rejects #1–#3. Manual testing is OWNER_QA_CHECKLIST only — you ship code + automated verify.

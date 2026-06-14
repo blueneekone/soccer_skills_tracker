@@ -1,20 +1,30 @@
 # Agent — eligibility-ux
 
+**Slice ID:** eligibility-ux  
 **Branch:** `closure/eligibility-ux`
 
-**Owns:** `src/lib/components/director/**/ClubEligibilityMatrixPanel*`, `src/lib/director/evaluateClubEligibility.js`, `src/lib/director/__tests__/eligibilityLaunch.test.ts`
+**Owns:**
+- `src/lib/components/director/**/ClubEligibilityMatrixPanel*`
+- `src/lib/director/**`
 
 ## Task
 
-Close register **B-04** director UX edge cases on eligibility matrix:
+Register **B-04**: polish director eligibility matrix UX edge cases (empty state, save errors, matrix validation feedback).
 
-1. Empty matrix / first-time club — clear empty state + save CTA.
-2. Invalid rule rows — inline validation before `upsertClubEligibilityMatrix` callable.
-3. Read-only registrar view vs director edit — no dead buttons.
-4. Extend `eligibilityLaunch.test.ts` guards for each fix (max 5 files).
+**Acceptance:** `eligibilityLaunch.test.ts` green; no regressions on `upsertClubEligibilityMatrix`.
 
-**Acceptance:** Director can configure matrix without console errors on empty club; tests pass.
+## AutomatedVerify
+
+```bash
+npm test -- src/lib/director/__tests__/eligibilityLaunch.test.ts
+npm run check
+npm run build
+```
+
+## ManualQaId
+
+none
 
 ---
 
-Universal rules: Append SLICE_LOG.md only. Do NOT build rejects R-01–R-03. Each commit: `npm test -- src/lib/director/__tests__/eligibilityLaunch.test.ts`, npm run check, npm run build. Do not ask questions.
+Universal rules: Unattended overnight — do not ask questions. Append SLICE_LOG only. If FIREBASE_TOKEN missing, log Blocked and stop slice (do not claim Done). Each commit: npm test (slice), npm run check, npm run build. Permanent rejects #1–#3. Manual testing is OWNER_QA_CHECKLIST only — you ship code + automated verify.

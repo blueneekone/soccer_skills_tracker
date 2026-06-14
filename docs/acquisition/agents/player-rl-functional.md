@@ -1,19 +1,31 @@
 # Agent — player-rl-functional
 
+**Slice ID:** player-rl-functional  
 **Branch:** `closure/player-rl-functional`
 
-**Owns:** `src/lib/gamification/__tests__/playerRlFunctional.test.ts`, `functions-rl/index.js`, `functions/index.js` (re-export assertions only)
+**Owns:**
+- `src/lib/gamification/__tests__/playerRlFunctional.test.ts`
+- `functions-rl/index.js`
+- `functions/index.js` (re-export wiring if needed)
 
 ## Task
 
-Fix register **G-03** export drift:
+Register **G-03**: fix `playerRlFunctional.test.ts` export drift — RL exports live in `functions-rl/index.js`, not monolith-only expectations.
 
-1. Update `playerRlFunctional.test.ts` to assert `getAdaptiveWorkoutPolicy` and `rlOnWorkoutLogCreated` exported from **`functions-rl/index.js`** (split codebase), not monolith-only.
-2. Optionally assert monolith `functions/index.js` re-exports if present — match actual deploy wiring per `deploy:rl`.
-3. Do not change RL behavior — test alignment only.
+**Acceptance:** `playerRlFunctional.test.ts` passes without skip.
 
-**Acceptance:** `npm test -- src/lib/gamification/__tests__/playerRlFunctional.test.ts` green locally.
+## AutomatedVerify
+
+```bash
+npm test -- src/lib/gamification/__tests__/playerRlFunctional.test.ts
+npm run check
+npm run build
+```
+
+## ManualQaId
+
+none
 
 ---
 
-Universal rules: Append SLICE_LOG.md only. Do NOT build rejects R-01–R-03. Each commit: playerRlFunctional test path, npm run check, npm run build. Do not ask questions.
+Universal rules: Unattended overnight — do not ask questions. Append SLICE_LOG only. If FIREBASE_TOKEN missing, log Blocked and stop slice (do not claim Done). Each commit: npm test (slice), npm run check, npm run build. Permanent rejects #1–#3. Manual testing is OWNER_QA_CHECKLIST only — you ship code + automated verify.

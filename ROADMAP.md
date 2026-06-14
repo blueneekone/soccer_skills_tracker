@@ -2,7 +2,7 @@
 
 **Architecture:** [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)  
 **Last updated:** 2026-06-14  
-**Current sprint:** **LAUNCH-functional-os Done** · **Wave 3 closure fleet** — execute [`PLATFORM_GAP_REGISTER.md`](docs/acquisition/PLATFORM_GAP_REGISTER.md) via [`WAVE_3_MANIFEST.md`](docs/acquisition/WAVE_3_MANIFEST.md) (`closure/*` branches) → **Owner QA** · **TABLED (post-launch):** Platform visual system (Gemini research) · Flow asset generation · Player OS **6j/6i** · Avatar Studio **3.6b+**  
+**Current sprint:** **LAUNCH-functional-os Done** · **Wave 3 unattended closure** — [`PLATFORM_GAP_REGISTER.md`](docs/acquisition/PLATFORM_GAP_REGISTER.md) · [`WAVE_3_MANIFEST.md`](docs/acquisition/WAVE_3_MANIFEST.md) · `node scripts/launch-overnight-agents.mjs --wave 3a` → **Owner QA** [`OWNER_QA_CHECKLIST.md`](docs/vision/OWNER_QA_CHECKLIST.md) after `npm run smoke:dev` · **TABLED (post-launch):** Platform visual system (Gemini research) · Flow asset generation · Player OS **6j/6i** · Avatar Studio **3.6b+**  
 **Note:** **3.5l-gate** closed in error — automated regression ≠ human VA; Phase 2 visual **rejected by product owner**  
 *Phase 7 · G1–G10 Done · Sprint 2.20 Done — Player OS premium foundation locked*
 

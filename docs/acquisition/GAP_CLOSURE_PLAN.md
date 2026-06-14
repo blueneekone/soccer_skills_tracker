@@ -1,6 +1,6 @@
 # Gap closure plan
 
-> **Execution superseded by:** [`PLATFORM_GAP_REGISTER.md`](./PLATFORM_GAP_REGISTER.md) + [`WAVE_3_MANIFEST.md`](./WAVE_3_MANIFEST.md) (2026-06-14). Historical Done rows below remain valid evidence; do not add new backlog here.
+> **Execution superseded by:** [`PLATFORM_GAP_REGISTER.md`](./PLATFORM_GAP_REGISTER.md) + [`WAVE_3_MANIFEST.md`](./WAVE_3_MANIFEST.md) + [`OWNER_QA_CHECKLIST.md`](../vision/OWNER_QA_CHECKLIST.md) (2026-06-14). Historical Done rows below remain valid evidence; do not add new backlog here. No "owner runs deploy" — use `npm run deploy:dev:smoke` / `npm run smoke:dev`.
 
 **Last updated:** 2026-06-13  
 **Branch baseline:** dev @ `7adb90ae`

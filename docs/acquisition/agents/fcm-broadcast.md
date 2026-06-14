@@ -1,19 +1,31 @@
 # Agent — fcm-broadcast
 
+**Slice ID:** fcm-broadcast  
 **Branch:** `closure/fcm-broadcast`
 
-**Owns:** `docs/FCM_AND_MESSAGING_MATRIX.md`, `docs/WEATHER_LOCK_DESIGN.md` (TOMORROW_IO note only), `src/lib/services/__tests__/commsSprint48.test.ts`, `src/lib/services/__tests__/commsSprint49.test.ts`
+**Owns:**
+- `docs/FCM_AND_MESSAGING_MATRIX.md`
+- `src/lib/services/__tests__/commsSprint48.test.ts`
+- `src/lib/services/__tests__/commsSprint49.test.ts`
 
 ## Task
 
-Sync docs to code truth (register **D-08**, **D-06**):
+Register **D-06**, **D-08**: sync FCM matrix doc with shipped `DirectorClubBroadcastComposer`, `clubSportBroadcast`, `onTeamBroadcastCreated`; fix stale TOMORROW_IO copy references.
 
-1. Update `FCM_AND_MESSAGING_MATRIX.md` — document `clubSportBroadcast`, `DirectorClubBroadcastComposer`, `onTeamBroadcastCreated` FCM fan-out (no longer a product gap).
-2. Resolve TOMORROW_IO stale language: optional enrich only; AEGIS Open-Meteo + NWS is primary path.
-3. Add matrix row for director club broadcast if missing.
+**Acceptance:** Matrix reflects code; comms sprint tests pass.
 
-**Acceptance:** Matrix no longer lists director broadcast composer as gap; comms sprint tests still pass.
+## AutomatedVerify
+
+```bash
+npm test -- src/lib/services/__tests__/commsSprint48.test.ts src/lib/services/__tests__/commsSprint49.test.ts
+npm run check
+npm run build
+```
+
+## ManualQaId
+
+QA-210
 
 ---
 
-Universal rules: Append SLICE_LOG.md only. Do NOT build rejects R-01–R-03. Each commit: `npm test -- src/lib/services/__tests__/commsSprint48.test.ts src/lib/services/__tests__/commsSprint49.test.ts`, npm run check, npm run build. Do not ask questions.
+Universal rules: Unattended overnight — do not ask questions. Append SLICE_LOG only. If FIREBASE_TOKEN missing, log Blocked and stop slice (do not claim Done). Each commit: npm test (slice), npm run check, npm run build. Permanent rejects #1–#3. Manual testing is OWNER_QA_CHECKLIST only — you ship code + automated verify.
