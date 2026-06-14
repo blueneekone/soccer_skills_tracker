@@ -25,6 +25,7 @@ env:
   # Set VITE_USE_PROD=true so the SvelteKit build uses the production
   # Firebase config (soccer-skills-tracker), not the dev project.
   VITE_USE_PROD: ${{ github.event.inputs.environment != 'dev' && 'true' || 'false' }}
+  FIREBASE_PROJECT_ID: ${{ github.event.inputs.environment == 'dev' && 'sports-skill-tracker-dev' || 'soccer-skills-tracker' }}
 
 jobs:
   # ─────────────────────────────────────────────────────────────────────────
@@ -55,12 +56,12 @@ jobs:
           VITE_USE_PROD: ${{ env.VITE_USE_PROD }}
 
       - name: Validate Firestore security rules
-        run: npx firebase-tools deploy --only firestore:rules --dry-run --project soccer-skills-tracker
+        run: npx firebase-tools deploy --only firestore:rules --dry-run --project ${{ env.FIREBASE_PROJECT_ID }}
         env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_CI_TOKEN }}
 
       - name: Validate Storage security rules
-        run: npx firebase-tools deploy --only storage --dry-run --project soccer-skills-tracker
+        run: npx firebase-tools deploy --only storage --dry-run --project ${{ env.FIREBASE_PROJECT_ID }}
         env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_CI_TOKEN }}
 
@@ -111,7 +112,7 @@ jobs:
     needs: build
     environment:
       name: ${{ github.event.inputs.environment == 'dev' && 'development' || 'production' }}
-      url: https://soccer.sstracker.app
+      url: ${{ github.event.inputs.environment == 'dev' && 'https://sstracker.app' || 'https://soccer.sstracker.app' }}
 
     steps:
       - name: Checkout
@@ -142,12 +143,12 @@ jobs:
       # Step 1: Security rules first — if rules are broken, abort before
       # touching Hosting or Functions.
       - name: Deploy Firestore security rules
-        run: npx firebase-tools deploy --only firestore:rules --project soccer-skills-tracker
+        run: npx firebase-tools deploy --only firestore:rules --project ${{ env.FIREBASE_PROJECT_ID }}
         env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_CI_TOKEN }}
 
       - name: Deploy Storage security rules
-        run: npx firebase-tools deploy --only storage --project soccer-skills-tracker
+        run: npx firebase-tools deploy --only storage --project ${{ env.FIREBASE_PROJECT_ID }}
         env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_CI_TOKEN }}
 
@@ -155,7 +156,7 @@ jobs:
       - name: Deploy Functions (core → rl → commerce → compliance → integrations → platform → default)
         run: |
           set -e
-          PROJECT=soccer-skills-tracker
+          PROJECT=${{ env.FIREBASE_PROJECT_ID }}
           for codebase in core rl commerce compliance integrations platform default; do
             echo "Deploying functions codebase: ${codebase}"
             npx firebase-tools deploy --only "functions:${codebase}" --project "${PROJECT}"
@@ -166,12 +167,17 @@ jobs:
 
       # Step 3: Hosting (only after Functions are live to avoid 404 on new CF routes)
       - name: Deploy to Firebase Hosting
-        run: npx firebase-tools deploy --only hosting --project soccer-skills-tracker
+        run: npx firebase-tools deploy --only hosting --project ${{ env.FIREBASE_PROJECT_ID }}
         env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_CI_TOKEN }}
 
       - name: 🎉 Deployment complete
         run: |
-          echo "VANGUARD deployed to production"
-          echo "Hosting: https://soccer.sstracker.app"
+          if [ "${{ github.event.inputs.environment }}" = "dev" ]; then
+            echo "VANGUARD deployed to sports-skill-tracker-dev"
+            echo "Hosting: https://sstracker.app"
+          else
+            echo "VANGUARD deployed to soccer-skills-tracker"
+            echo "Hosting: https://soccer.sstracker.app"
+          fi
           echo "Commit: ${{ github.sha }}"

@@ -3,7 +3,7 @@
 **Product:** Sports Skill Tracker (SSTracker / Nexus Command)  
 **Stage:** Pre-commercial launch · functional OS + overnight P2 merged · owner QA pending  
 **Live QA environment:** [https://sstracker.app](https://sstracker.app) (Firebase project `sports-skill-tracker-dev`)  
-**Last updated:** 2026-06-13 · post-overnight doc sync
+**Last updated:** 2026-06-14 · platform gap register + Wave 3 manifest
 
 ---
 
@@ -17,7 +17,9 @@
 | [TRACTION.md](./TRACTION.md) | Investor / acquirer | Build status, test coverage, launch gate |
 | [LIMITATIONS.md](./LIMITATIONS.md) | Legal / eng | Honest scope boundaries |
 | [NOTABLE_GAPS.md](./NOTABLE_GAPS.md) | Product / GTM | Intentional non-parity vs TeamSnap / SportsEngine |
-| [GAP_CLOSURE_PLAN.md](./GAP_CLOSURE_PLAN.md) | Eng / owner | Pre-QA backlog — remaining work before FUNCTIONAL_MVP sign-off |
+| [PLATFORM_GAP_REGISTER.md](./PLATFORM_GAP_REGISTER.md) | Eng / owner | **Canonical** full-platform gap register (all sections A–M) |
+| [WAVE_3_MANIFEST.md](./WAVE_3_MANIFEST.md) | Eng / agents | Parallel closure fleet — slice IDs, merge order, agent prompts |
+| [GAP_CLOSURE_PLAN.md](./GAP_CLOSURE_PLAN.md) | Eng / owner | Historical pre-QA backlog (superseded by register for execution) |
 | [DOC_SYNC_REPORT.md](./DOC_SYNC_REPORT.md) | Eng | Audit log of doc sync vs merged code |
 | [SECURITY.md](./SECURITY.md) | InfoSec / compliance | Architecture, COPPA, SafeSport, cells |
 | [TRANSFER.md](./TRANSFER.md) | Acquirer ops | Handoff checklist — repos, Firebase, secrets |
@@ -54,7 +56,7 @@ These live outside `docs/acquisition/` and are **source of truth** for engineeri
 | [`MERGE_ORDER.md`](./MERGE_ORDER.md) | Branch merge sequence → `overnight/base` → `dev` |
 | [`PARALLEL_STATUS.md`](./PARALLEL_STATUS.md) | Final agent status board |
 | [`PARALLEL_SUMMARY.md`](./PARALLEL_SUMMARY.md) | Phase 1 + 2 summary |
-| [`GAP_CLOSURE_PLAN.md`](./GAP_CLOSURE_PLAN.md) | **Next:** pre-owner-QA backlog |
+| [`PLATFORM_GAP_REGISTER.md`](./PLATFORM_GAP_REGISTER.md) + [`WAVE_3_MANIFEST.md`](./WAVE_3_MANIFEST.md) | **Next:** Wave 3 closure fleet |
 
 ---
 
@@ -65,7 +67,7 @@ These live outside `docs/acquisition/` and are **source of truth** for engineeri
 3. [`ARCHITECTURE.md`](../ARCHITECTURE.md) + [SECURITY.md](./SECURITY.md)
 4. [DEMO_SCRIPT.md](./DEMO_SCRIPT.md) on https://sstracker.app with QA tenant
 5. [`FUNCTIONAL_MVP.md`](../vision/FUNCTIONAL_MVP.md) + [`QA_DEV_PERSONA_VERIFICATION.md`](../QA_DEV_PERSONA_VERIFICATION.md)
-6. [GAP_CLOSURE_PLAN.md](./GAP_CLOSURE_PLAN.md) — remaining pre-QA work
+6. [PLATFORM_GAP_REGISTER.md](./PLATFORM_GAP_REGISTER.md) + [WAVE_3_MANIFEST.md](./WAVE_3_MANIFEST.md) — closure backlog + agent fleet
 7. [TRANSFER.md](./TRANSFER.md) + [`FUNCTIONS_DEPLOY.md`](../FUNCTIONS_DEPLOY.md)
 
 ---

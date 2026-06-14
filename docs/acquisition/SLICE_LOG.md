@@ -197,3 +197,15 @@ Agents append entries below. Do not edit prior rows.
 **Updated:** NOTABLE_GAPS, COMPETITIVE_LAUNCH_ASSESSMENT, PROSPECTUS, TRACTION, PARALLEL_STATUS, PARALLEL_SUMMARY, INDEX, CHECK_ZERO_STATUS, ROADMAP sprint line  
 **check:** 0  
 **Next:** execute GAP_CLOSURE_PLAN slice 1 (owner live deploy)
+
+---
+
+## platform-gap-register — 2026-06-14
+
+**Branch:** dev @ `42a3bffbf879fb64c3fabfcff3f7f0e780351af3`  
+**Status:** Done  
+**Created:** `PLATFORM_GAP_REGISTER.md`, `WAVE_3_MANIFEST.md`, 22 agent prompts under `docs/acquisition/agents/` (Wave 3 closure fleet)  
+**Updated:** `GAP_CLOSURE_PLAN.md` (superseded header), `INDEX.md`, `ROADMAP.md` sprint line, `scripts/launch-overnight-agents.mjs` (--wave 3a/3b), `.github/workflows/deploy.yml` (dev FIREBASE_PROJECT_ID + completion echo)  
+**Register counts:** 95 total · 38 Done · 24 Agent · 28 Owner · 2 Blocked · 3 Rejected  
+**Verify:** `npm run check` · `npm test -- src/lib/parent/__tests__/launchWave2Complete.test.ts src/lib/gamification/__tests__/personaFunctionalMvp.test.ts`  
+**Next:** launch Wave 3A agents (`node scripts/launch-overnight-agents.mjs --wave 3a`)

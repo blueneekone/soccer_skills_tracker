@@ -1,9 +1,11 @@
 # Gap closure plan
 
+> **Execution superseded by:** [`PLATFORM_GAP_REGISTER.md`](./PLATFORM_GAP_REGISTER.md) + [`WAVE_3_MANIFEST.md`](./WAVE_3_MANIFEST.md) (2026-06-14). Historical Done rows below remain valid evidence; do not add new backlog here.
+
 **Last updated:** 2026-06-13  
 **Branch baseline:** dev @ `7adb90ae`
 
-Authoritative backlog for remaining work before owner QA. Every row must reach **Done**, **Partial-with-acceptance**, or **Intentional reject** before [`FUNCTIONAL_MVP.md`](../vision/FUNCTIONAL_MVP.md) human sign-off begins.
+Historical backlog for remaining work before owner QA (pre-register). Every row must reach **Done**, **Partial-with-acceptance**, or **Intentional reject** before [`FUNCTIONAL_MVP.md`](../vision/FUNCTIONAL_MVP.md) human sign-off begins.
 
 ---
 

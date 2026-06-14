@@ -10,6 +10,8 @@
  *   node scripts/launch-overnight-agents.mjs --wave 1
  *   node scripts/launch-overnight-agents.mjs --wave late
  *   node scripts/launch-overnight-agents.mjs --wave 2
+ *   node scripts/launch-overnight-agents.mjs --wave 3a
+ *   node scripts/launch-overnight-agents.mjs --wave 3b
  *   node scripts/launch-overnight-agents.mjs --agent 14-fed-ngb
  *   node scripts/launch-overnight-agents.mjs --wave 1 --dry-run
  */
@@ -54,6 +56,26 @@ const WAVE_1 = [
 const WAVE_LATE = ['12-check-parent-admin'];
 const WAVE_2 = ['22-check-final', '23-vitest-ci', '24-deploy-verify'];
 
+const WAVE_3A = [
+	'deploy-gha-dev',
+	'payment-webhook',
+	'eligibility-ux',
+	'fcm-broadcast',
+	'checkr-webhooks',
+	'fed-phase2',
+	'tournament-p2',
+	'player-rl-functional',
+	'vitest-batch-hud',
+	'vitest-batch-loadout',
+	'vitest-batch-misc',
+	'functional-mvp-doc-sync',
+	'player-os-6f',
+	'player-os-6j',
+	'diegetic-modals',
+];
+
+const WAVE_3B = ['live-deploy-dev', 'post-deploy-smoke'];
+
 function parseArgs() {
 	const args = process.argv.slice(2);
 	const out = { wave: null, agent: null, dryRun: false };
@@ -79,9 +101,9 @@ function loadPrompt(agentFile) {
 }
 
 function branchForPrompt(promptText) {
-	const m = promptText.match(/(?:\*\*)?Branch:(?:\*\*)?\s*`?(overnight\/[^\s`*]+)`?/);
+	const m = promptText.match(/(?:\*\*)?Branch:(?:\*\*)?\s*`?((?:overnight|closure|owner)\/[^\s`*]+)`?/);
 	if (!m) {
-		throw new Error('Prompt file missing "Branch: overnight/..." line');
+		throw new Error('Prompt file missing "Branch: overnight/... | closure/... | owner/..." line');
 	}
 	return m[1];
 }
@@ -152,8 +174,14 @@ async function main() {
 		queue = WAVE_LATE;
 	} else if (wave === 2) {
 		queue = WAVE_2;
+	} else if (wave === '3a' || wave === 3) {
+		queue = WAVE_3A;
+	} else if (wave === '3b') {
+		queue = WAVE_3B;
 	} else {
-		console.error('Usage: --wave 1 | --wave late | --wave 2 | --agent 14-fed-ngb [--dry-run]');
+		console.error(
+			'Usage: --wave 1 | --wave late | --wave 2 | --wave 3a | --wave 3b | --agent payment-webhook [--dry-run]',
+		);
 		process.exit(1);
 	}
 
