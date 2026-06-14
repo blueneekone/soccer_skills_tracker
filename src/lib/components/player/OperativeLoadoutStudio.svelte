@@ -27,7 +27,7 @@
 		type LoadoutSlotId,
 		type OperativeLoadoutV1,
 	} from '$lib/gamification/loadoutSchema.js';
-	import Swal from 'sweetalert2';
+	import PlayerDiegeticOverlay from '$lib/components/player/PlayerDiegeticOverlay.svelte';
 
 	type UnifiedTab = PortraitPartSlot | LoadoutSlotId;
 
@@ -80,6 +80,33 @@
 	let selectedTab = $state<UnifiedTab>('face');
 	let portraitSlot = $state<PortraitPartSlot>('face');
 	let identitySyncBusy = $state(false);
+
+	let overlayOpen = $state(false);
+	let overlayVariant = $state<'success' | 'error'>('error');
+	let overlayTitle = $state('');
+	let overlayMessage = $state('');
+	let overlayAutoDismissMs = $state(0);
+
+	function closeOverlay() {
+		overlayOpen = false;
+		overlayAutoDismissMs = 0;
+	}
+
+	function showDiegeticError(title: string, message: string) {
+		overlayVariant = 'error';
+		overlayTitle = title;
+		overlayMessage = message;
+		overlayAutoDismissMs = 0;
+		overlayOpen = true;
+	}
+
+	function showDiegeticSuccess(message: string, autoDismissMs = 4000) {
+		overlayVariant = 'success';
+		overlayTitle = 'Identity synced';
+		overlayMessage = message;
+		overlayAutoDismissMs = autoDismissMs;
+		overlayOpen = true;
+	}
 
 	$effect(() => {
 		if (initialPortraitPart && isPortraitTab(initialPortraitPart)) {
@@ -178,21 +205,14 @@
 		if (identitySyncBusy) return;
 		const emailKey = playerEmailKey.trim().toLowerCase();
 		if (!emailKey) {
-			void Swal.fire({
-				text: 'Sign in to sync your identity.',
-				icon: 'error',
-				background: '#05050a',
-				color: '#e5e5e5',
-			});
+			showDiegeticError('Sign in required', 'Sign in to sync your identity.');
 			return;
 		}
 		if (operativeAvatar == null) {
-			void Swal.fire({
-				text: 'Invalid portrait configuration — select catalog parts before saving.',
-				icon: 'error',
-				background: '#05050a',
-				color: '#e5e5e5',
-			});
+			showDiegeticError(
+				'Invalid portrait',
+				'Invalid portrait configuration — select catalog parts before saving.',
+			);
 			return;
 		}
 
@@ -217,30 +237,10 @@
 					:	null,
 			});
 
-			void Swal.fire({
-				text: 'Identity synced to Command.',
-				icon: 'success',
-				toast: true,
-				position: 'top-end',
-				showConfirmButton: false,
-				timer: 4000,
-				timerProgressBar: true,
-				background: '#05050a',
-				color: '#e5e5e5',
-			});
+			showDiegeticSuccess('Identity synced to Command.');
 		} catch (e) {
 			const msg = e instanceof Error ? e.message : 'Could not sync identity.';
-			void Swal.fire({
-				text: msg,
-				icon: 'error',
-				toast: true,
-				position: 'top-end',
-				showConfirmButton: false,
-				timer: 5000,
-				timerProgressBar: true,
-				background: '#05050a',
-				color: '#e5e5e5',
-			});
+			showDiegeticError('Sync failed', msg);
 		} finally {
 			identitySyncBusy = false;
 		}
@@ -382,6 +382,17 @@
 		</div>
 	</div>
 </section>
+
+<PlayerDiegeticOverlay
+	open={overlayOpen}
+	variant={overlayVariant}
+	title={overlayTitle}
+	message={overlayMessage}
+	autoDismissMs={overlayAutoDismissMs}
+	onConfirm={closeOverlay}
+	onCancel={closeOverlay}
+	onClose={closeOverlay}
+/>
 
 <style>
 	.ols-root {

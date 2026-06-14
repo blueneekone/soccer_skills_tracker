@@ -226,3 +226,14 @@ Agents append entries below. Do not edit prior rows.
 - OWNER_QA_CHECKLIST QA-id count: **47** (QA-000–QA-507)
 - PLATFORM_GAP_REGISTER row count: **86** (sections A–M + rejects)
 **Verify:** `npm run check` · `npm test -- src/lib/parent/__tests__/launchWave2Complete.test.ts src/lib/gamification/__tests__/personaFunctionalMvp.test.ts` · `node scripts/launch-overnight-agents.mjs --wave 3a --dry-run`
+
+---
+
+## diegetic-modals — 2026-06-14
+
+**Branch:** `closure/diegetic-modals`  
+**Status:** Done  
+**Gaps closed:** J-03 (OperativeLoadoutStudio Swal → PlayerDiegeticOverlay), J-09 (Train RPE pw-loadbar conduit + native pw-range)  
+**Files:** `OperativeLoadoutStudio.svelte`, `player/workout/+page.svelte`, `player-terminal.css`, `playerHudSprint244/250.test.ts`, `PLATFORM_GAP_REGISTER.md`  
+**Verify:** `npm test -- src/lib/components/player/dashboard/__tests__/playerHudSprint244.test.ts src/lib/components/player/dashboard/__tests__/playerHudSprint250.test.ts` · `npm run check` · `npm run build`  
+**Manual QA:** QA-305, QA-306 (owner checklist)

@@ -141,6 +141,15 @@ describe('Phase 7 · G4 — Wave D/D′ commit + accent canon', () => {
 		expect(terminalCss).toMatch(/\.player-hud-root \.pw-range::-moz-range-thumb/);
 	});
 
+	it('J-09 — Train sliders pair pw-loadbar conduit with native pw-range', () => {
+		expect(terminalCss).toMatch(/J-09 — pw-loadbar visual conduit/);
+		expect(terminalCss).toMatch(/\.player-hud-root \.pw-loadbar/);
+		expect(terminalCss).toMatch(/\.player-hud-root \.pw-loadbar__fill/);
+		expect(workoutSrc).toMatch(/pw-loadbar pw-loadbar--rpe/);
+		expect(workoutSrc).toMatch(/class="pw-range pw-range--rpe"/);
+		expect(workoutSrc).toMatch(/pw-loadbar__scan/);
+	});
+
 	it('transmit CTA uses pw-exec--transmit with :active press in hud CSS', () => {
 		expect(workoutSrc).toMatch(/pw-exec pw-exec--transmit/);
 		expect(hudCss).toMatch(/\.player-hud-root \.pw-theater \.pw-exec\.pw-exec--transmit:active:not\(:disabled\)/);

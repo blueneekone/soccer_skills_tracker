@@ -1088,11 +1088,16 @@
                   <span class="pw-mono pw-telem">{intensity} / 10</span>
                 </div>
                 <div
-                  class="pw-gauge__bar pw-gauge__bar--rpe"
-                  style:--gauge={`${intensityGaugePct}%`}
-                  aria-label="RPE"
+                  class="pw-loadbar pw-loadbar--rpe"
+                  style:--fill={`${intensityGaugePct}%`}
+                  role="progressbar"
+                  aria-valuenow={intensity}
+                  aria-valuemin="1"
+                  aria-valuemax="10"
+                  aria-label="RPE intensity"
                 >
-                  <div class="pw-gauge__bar-fill"></div>
+                  <div class="pw-loadbar__fill"></div>
+                  <div class="pw-loadbar__scan" aria-hidden="true"></div>
                 </div>
                 <input
                   class="pw-range pw-range--rpe"
