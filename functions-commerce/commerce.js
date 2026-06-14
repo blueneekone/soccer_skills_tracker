@@ -14,7 +14,7 @@
  *  (captured client-side with confirmCardPayment)
  *  â†“ payment.succeeded webhook
  *  season_registrations/{id}.paymentStatus = 'paid'
- *  users/{email}.activeSeasonStatus = 'active'
+ *  users/{email}.activeSeasonStatus = 'active' (only when installment ledger is fully paid)
  *
  * COLLECTIONS
  * â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -50,6 +50,10 @@ const {normEmail} = require('./src/utils/formatters');
 const {loadActivePolicy, computePlatformFee} = require('./pricingEngine');
 const {recordPlatformFee} = require('./feeLedger');
 const {getRegistryDb} = require('./cellRouter');
+const {
+  readStoredInstallmentPlan,
+  shouldUnlockSeasonAfterPayment,
+} = require('./paymentInstallments');
 
 const STRIPE_SECRET_KEY = defineSecret('STRIPE_SECRET_KEY');
 const STRIPE_WEBHOOK_SECRET_REG = defineSecret('STRIPE_WEBHOOK_SECRET_REG');
@@ -323,6 +327,59 @@ exports.handleRegistrationWebhook = onRequest(
     },
 );
 
+/**
+ * Load season registrations + installment prefs and decide full-season unlock.
+ * @param {{tenantId: string, playerEmail: string, seasonId: string,
+ *     paidByEmail: string|null,
+ *     currentPayment: {registrationId: string, feeAmountCents: number}|null}} args
+ */
+async function resolveSeasonUnlockContext(args) {
+  const {tenantId, playerEmail, seasonId, paidByEmail, currentPayment} = args;
+
+  const [orgSnap, regsSnap, parentSnap] = await Promise.all([
+    db.doc(`organizations/${tenantId}`).get(),
+    db.collection('season_registrations')
+        .where('playerEmail', '==', playerEmail)
+        .where('tenantId', '==', tenantId)
+        .where('seasonId', '==', seasonId)
+        .get(),
+    db.doc(`users/${paidByEmail || playerEmail}`).get(),
+  ]);
+
+  const orgData = orgSnap.exists ? orgSnap.data() : null;
+  const activeSeason =
+    orgData?.activeSeason && typeof orgData.activeSeason === 'object' ?
+      orgData.activeSeason :
+      null;
+  const registrationDeadline =
+    activeSeason && typeof activeSeason.registrationDeadline === 'string' ?
+      activeSeason.registrationDeadline :
+      null;
+
+  const registrations = regsSnap.docs.map((docSnap) => {
+    const data = docSnap.data();
+    return {
+      registrationId: docSnap.id,
+      paymentStatus: data.paymentStatus ?? 'none',
+      feeAmountCents: Number(data.feeAmountCents) || 0,
+      paidAt: data.paidAt?.toMillis?.() ?? null,
+      createdAt: data.createdAt?.toMillis?.() ?? null,
+    };
+  });
+
+  const storedPlan = parentSnap.exists ?
+    readStoredInstallmentPlan(parentSnap.data(), tenantId, seasonId, playerEmail) :
+    null;
+
+  return shouldUnlockSeasonAfterPayment({
+    registrations,
+    activeSeason,
+    storedPlan,
+    currentPayment,
+    registrationDeadline,
+  });
+}
+
 async function handlePaymentSucceeded(pi) {
   const {tenantId, playerUid, playerEmail, seasonId} = pi.metadata ?? {};
   if (!tenantId || !playerUid) {
@@ -348,7 +405,11 @@ async function handlePaymentSucceeded(pi) {
   const policyVersion = Number(pi.metadata?.policyVersion) || 0;
   const rateBp = Number(pi.metadata?.rateBp) || 0;
 
+  let regData = null;
+  let regId = null;
   if (!regSnap.empty) {
+    regData = regSnap.docs[0].data();
+    regId = regSnap.docs[0].id;
     batch.update(regSnap.docs[0].ref, {
       paymentStatus: 'paid',
       paidAt: admin.firestore.FieldValue.serverTimestamp(),
@@ -357,17 +418,42 @@ async function handlePaymentSucceeded(pi) {
     // If the registration doc captured a more authoritative fee at intent
     // creation, prefer that over the Stripe-roundtripped value (defensive
     // against any rounding skew the API might introduce).
-    const regFee = Number(regSnap.docs[0].data()?.platformFeeCents);
+    const regFee = Number(regData?.platformFeeCents);
     if (Number.isFinite(regFee) && regFee >= 0) platformFeeCents = regFee;
   }
 
-  // Unlock the player's active season status
-  if (playerEmail) {
-    batch.update(db.doc(`users/${playerEmail}`), {
-      activeSeasonStatus: 'active',
-      activeSeasonId: seasonId ?? null,
-      seasonPaidAt: admin.firestore.FieldValue.serverTimestamp(),
+  const feeType =
+    typeof pi.metadata?.type === 'string' && pi.metadata.type.trim() ?
+      pi.metadata.type.trim() :
+      'season_registration';
+
+  // Unlock the player's active season only when the installment ledger is fully paid.
+  if (playerEmail && seasonId && feeType === 'season_registration') {
+    const unlock = await resolveSeasonUnlockContext({
+      tenantId,
+      playerEmail: normEmail(playerEmail),
+      seasonId,
+      paidByEmail: regData?.paidByEmail ? normEmail(regData.paidByEmail) : null,
+      currentPayment: regId ?
+        {registrationId: regId, feeAmountCents: grossCents} :
+        null,
     });
+    if (unlock.shouldUnlock) {
+      batch.update(db.doc(`users/${playerEmail}`), {
+        activeSeasonStatus: 'active',
+        activeSeasonId: seasonId ?? null,
+        seasonPaidAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+    } else {
+      logger.info('[webhook] partial season payment — activeSeasonStatus unchanged', {
+        piId: pi.id,
+        playerEmail,
+        seasonId,
+        reason: unlock.reason,
+        paidCents: unlock.ledger?.paidCents ?? null,
+        totalFeeCents: unlock.ledger?.totalFeeCents ?? null,
+      });
+    }
   }
 
   // Immutable audit log
@@ -388,9 +474,9 @@ async function handlePaymentSucceeded(pi) {
   recordPlatformFee(batch, db, {
     tenantId,
     transactionType: 'season_registration',
-    sourceDocPath: regSnap.empty ?
-      `season_registrations/unknown_${pi.id}` :
-      `season_registrations/${regSnap.docs[0].id}`,
+    sourceDocPath: regId ?
+      `season_registrations/${regId}` :
+      `season_registrations/unknown_${pi.id}`,
     grossCents,
     platformFeeCents,
     netCents: grossCents - platformFeeCents,

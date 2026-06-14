@@ -226,3 +226,30 @@ Agents append entries below. Do not edit prior rows.
 - OWNER_QA_CHECKLIST QA-id count: **47** (QA-000–QA-507)
 - PLATFORM_GAP_REGISTER row count: **86** (sections A–M + rejects)
 **Verify:** `npm run check` · `npm test -- src/lib/parent/__tests__/launchWave2Complete.test.ts src/lib/gamification/__tests__/personaFunctionalMvp.test.ts` · `node scripts/launch-overnight-agents.mjs --wave 3a --dry-run`
+
+---
+
+## payment-webhook — 2026-06-14 (B-01)
+
+**Branch:** `closure/payment-webhook`  
+**Slice:** Payment webhook full-season unlock — gate `activeSeasonStatus` on installment ledger  
+**Register:** B-01 · ManualQaId QA-202
+
+### Shipped
+- `functions/paymentInstallments.js` — server mirror of client ledger helpers + `shouldUnlockSeasonAfterPayment`
+- `functions/commerce.js` — `handlePaymentSucceeded` sets `activeSeasonStatus = 'active'` only when ledger `effectiveStatus === 'paid'`
+- `functions/__tests__/commerceWebhookInstallments.test.js` — partial PI unchanged; final installment unlocks
+- `scripts/bundle-functions.cjs` — bundle `paymentInstallments.js` into `functions-commerce`
+
+### Verify
+- `npm test -- src/lib/parent/__tests__/paymentInstallments.test.ts` — 8 passed
+- `node --test functions/__tests__/commerceWebhookInstallments.test.js` — 10 passed
+- `npm run check` — 0 errors
+- `npm run build` — ok
+
+### Deploy
+- `npm run deploy:commerce` — **Blocked** (non-interactive CI missing `APP_BASE_URL`, `STRIPE_PRICE_*` dotenv params; owner deploy required)
+
+| Slice | Branch | Tests | Check | Build | Deploy | Notes |
+|-------|--------|-------|-------|-------|--------|-------|
+| payment-webhook | closure/payment-webhook | 18 pass | 0 errors | pass | blocked | QA-202 owner partial→full installment walkthrough |
