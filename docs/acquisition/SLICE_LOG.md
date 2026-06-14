@@ -226,3 +226,20 @@ Agents append entries below. Do not edit prior rows.
 - OWNER_QA_CHECKLIST QA-id count: **47** (QA-000–QA-507)
 - PLATFORM_GAP_REGISTER row count: **86** (sections A–M + rejects)
 **Verify:** `npm run check` · `npm test -- src/lib/parent/__tests__/launchWave2Complete.test.ts src/lib/gamification/__tests__/personaFunctionalMvp.test.ts` · `node scripts/launch-overnight-agents.mjs --wave 3a --dry-run`
+
+---
+
+## fed-phase2 — closure/fed-phase2 (2026-06-14)
+
+**Slice:** C-02 format adapters + C-03 Phase 3 stubs  
+**Branch:** `closure/fed-phase2`  
+**Status:** Done
+
+- `ngbFormatAdapters.js` — `formatAdapterRegistry` (`csv_v1`, `us_soccer_roster`, `gotsport_roster`) + `export_profiles` custom mapping
+- `ngbExportOps.js` — `formatId` on `exportStateRoster`; `listNgbExportFormats` callable
+- `federationSyncOps.js` — Phase 3 sync job stubs (not deployed)
+- `StateRosterExportPanel` — federation format picker
+- `FEDERATION_ROADMAP.md` Phase 2 Done; Phase 3 stub documented
+- `PLATFORM_GAP_REGISTER` C-02, C-03 → Done
+
+**Verify:** `npm test -- src/lib/director/__tests__/ngbExportLaunch.test.ts` · `node functions/__tests__/ngbFormatAdapters.test.js` · `npm run check` · `npm run build`

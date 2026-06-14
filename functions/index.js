@@ -213,6 +213,7 @@ exports.getClubEligibilityMatrix    = eligibilityOps.getClubEligibilityMatrix;
 
 const ngbExportOps = require('./src/domains/ngbExportOps');
 exports.exportStateRoster = ngbExportOps.exportStateRoster;
+exports.listNgbExportFormats = ngbExportOps.listNgbExportFormats;
 
 // ── Epic 4.4 W1: Parent Lounge channel provisioning ──────────────────────────
 const commsChannelOps = require('./src/domains/commsChannelOps');

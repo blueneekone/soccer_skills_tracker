@@ -42,17 +42,27 @@ npm test -- src/lib/director/__tests__/ngbExportLaunch.test.ts
 npm run deploy:core
 ```
 
-## Phase 2 — Format adapters (planned)
+## Phase 2 — Format adapters (**Done**)
 
-Per-body CSV/XML/JSON transforms on top of the Phase 1 row model:
+Per-body CSV transforms on top of the Phase 1 row model:
 
-- US Soccer / state association roster templates
-- GotSport-style column maps
-- Custom club `export_profiles/{bodyId}` field mapping stored in Firestore
+- **Built-in adapters** (`formatAdapterRegistry` in `functions/src/domains/ngbFormatAdapters.js`):
+  - `csv_v1` — universal columns (Phase 1 default)
+  - `us_soccer_roster` — US Soccer / state association roster template
+  - `gotsport_roster` — GotSport-style column map
+- **Custom club profiles** — `clubs/{clubId}/export_profiles/{bodyId}` field mapping (`columns: [{ header, field }]`)
+- **Callables:** `exportStateRoster` accepts `formatId` (+ optional `exportProfileId`); `listNgbExportFormats` lists built-ins + club profiles for the director picker
+- **UI:** `StateRosterExportPanel` format selector on Director Portal → Roster tab
 
-**Deliverables:** `formatAdapterRegistry`, unit tests per adapter, director picker for export profile.
+**Verify:**
 
-## Phase 3 — Sync jobs (planned)
+```bash
+npm test -- src/lib/director/__tests__/ngbExportLaunch.test.ts
+node functions/__tests__/ngbFormatAdapters.test.js
+npm run deploy:core
+```
+
+## Phase 3 — Sync jobs (stub — not deployed)
 
 Scheduled + on-demand push to federation endpoints where APIs exist:
 
@@ -60,7 +70,9 @@ Scheduled + on-demand push to federation endpoints where APIs exist:
 - Retry queue in `federation_sync_jobs/{clubId}`
 - Audit trail in `security_audit` (no raw guardian PII in logs)
 
-**Deliverables:** `onSchedule` reconciliation, director sync status panel, failure alerts.
+**Stubs (Phase 3 slice):** `functions/src/domains/federationSyncOps.js` — `reconcileFederationSync`, `enqueueFederationSyncJob`, `getFederationSyncStatus` (not wired to `functions-core/index.js` until reconciliation ships).
+
+**Deliverables (future):** `onSchedule` reconciliation, director sync status panel, failure alerts.
 
 ## Phase 4 — API per body (planned)
 

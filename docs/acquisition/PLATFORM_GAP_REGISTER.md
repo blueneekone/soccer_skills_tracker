@@ -61,8 +61,8 @@
 | Id | Gap | BuildOwner | Closure slice | AutomatedVerify | ManualQaId | Status |
 |----|-----|------------|---------------|-----------------|------------|--------|
 | C-01 | NGB CSV v1 (`exportStateRoster`) | Done | — | `ngbExportLaunch.test.ts` | QA-206 | Done |
-| C-02 | Federation Phase 2 — format adapters | Agent | `closure/fed-phase2` | `npm test -- src/lib/director/__tests__/ngbExportLaunch.test.ts` | QA-206 | Agent |
-| C-03 | Federation Phase 3 — sync jobs | Agent | `closure/fed-phase2` | same | none | Agent |
+| C-02 | Federation Phase 2 — format adapters | Done | `closure/fed-phase2` | `ngbExportLaunch.test.ts` | QA-206 | Done |
+| C-03 | Federation Phase 3 — sync jobs | Done | `closure/fed-phase2` | same | none | Done (stubs) |
 | C-04 | Federation Phase 4 — API per body | Done | — | none | QA-505 | Done |
 | C-05 | State roster export demo packet for acquirer | Done | — | `ngbExportLaunch.test.ts` | QA-206 | Done |
 

@@ -3,49 +3,17 @@
 const {onCall, HttpsError} = require('firebase-functions/v2/https');
 const admin = require('firebase-admin');
 const {normEmail} = require('../utils/formatters');
+const {
+  CSV_HEADERS,
+  escapeCsvCell,
+  rowsToCsv,
+  listBuiltinFormatAdapters,
+  resolveExportAdapter,
+} = require('./ngbFormatAdapters');
 
 const REGION = 'us-east1';
 const db = () => admin.firestore();
 const MAX_EXPORT_ROWS = 500;
-
-/** Phase 1 CSV v1 — universal state-roster columns (NGB-agnostic). */
-const CSV_HEADERS = [
-  'player_name',
-  'player_email',
-  'team_id',
-  'team_name',
-  'jersey_number',
-  'date_of_birth',
-  'household_id',
-  'guardian_emails',
-  'primary_guardian_email',
-  'vpc_status',
-  'club_id',
-];
-
-/**
- * @param {unknown} value
- * @return {string}
- */
-function escapeCsvCell(value) {
-  const s = value == null ? '' : String(value);
-  if (/[",\n\r]/.test(s)) {
-    return `"${s.replace(/"/g, '""')}"`;
-  }
-  return s;
-}
-
-/**
- * @param {Array<Record<string, string>>} rows
- * @return {string}
- */
-function rowsToCsv(rows) {
-  const lines = [CSV_HEADERS.join(',')];
-  for (const row of rows) {
-    lines.push(CSV_HEADERS.map((h) => escapeCsvCell(row[h] ?? '')).join(','));
-  }
-  return `${lines.join('\n')}\n`;
-}
 
 /**
  * @param {unknown} raw
@@ -101,7 +69,48 @@ async function resolveTargetTeams(clubId, teamId) {
 }
 
 /**
- * Director/registrar: export linked roster rows as CSV v1 for state/NGB filing.
+ * @param {string} clubId
+ * @param {string} exportProfileId
+ * @return {Promise<Record<string, unknown> | null>}
+ */
+async function loadExportProfile(clubId, exportProfileId) {
+  const profileId =
+    typeof exportProfileId === 'string' ? exportProfileId.trim() : '';
+  if (!profileId) return null;
+
+  const snap = await db()
+      .collection('clubs')
+      .doc(clubId)
+      .collection('export_profiles')
+      .doc(profileId)
+      .get();
+  if (!snap.exists) {
+    throw new HttpsError('not-found', 'Export profile not found.');
+  }
+  return snap.data() || {};
+}
+
+/**
+ * @param {string} clubId
+ * @param {string} teamId
+ * @param {string} formatId
+ * @param {string} extension
+ * @return {string}
+ */
+function buildExportFilename(clubId, teamId, formatId, extension) {
+  const safeFormat = formatId.replace(/[^a-z0-9_-]+/gi, '-').replace(/^-+|-+$/g, '');
+  const base = teamId ?
+    `state-roster-${clubId}-${teamId}` :
+    `state-roster-${clubId}`;
+  return safeFormat && safeFormat !== 'csv_v1' ?
+    `${base}-${safeFormat}.${extension}` :
+    `${base}.${extension}`;
+}
+
+/**
+ * Director/registrar: export linked roster rows for state/NGB filing.
+ * Phase 2: optional formatId (csv_v1, us_soccer_roster, gotsport_roster)
+ * or profile:{bodyId} with export_profiles/{bodyId} field mapping.
  */
 exports.exportStateRoster = onCall({region: REGION}, async (request) => {
   if (!request.auth) {
@@ -137,15 +146,44 @@ exports.exportStateRoster = onCall({region: REGION}, async (request) => {
 
   const teamId =
     typeof data.teamId === 'string' && data.teamId.trim() ? data.teamId.trim() : '';
+  const formatId =
+    typeof data.formatId === 'string' && data.formatId.trim() ?
+      data.formatId.trim() :
+      'csv_v1';
+  const exportProfileId =
+    typeof data.exportProfileId === 'string' && data.exportProfileId.trim() ?
+      data.exportProfileId.trim() :
+      '';
+
+  let customProfile = null;
+  if (formatId.startsWith('profile:')) {
+    const profileKey = formatId.slice('profile:'.length).trim() || exportProfileId;
+    if (!profileKey) {
+      throw new HttpsError('invalid-argument', 'exportProfileId is required for profile formats.');
+    }
+    customProfile = await loadExportProfile(clubId, profileKey);
+  } else if (exportProfileId) {
+    customProfile = await loadExportProfile(clubId, exportProfileId);
+  }
+
+  const adapter = resolveExportAdapter(formatId, customProfile);
+  if (!adapter) {
+    throw new HttpsError('invalid-argument', `Unknown export format: ${formatId}`);
+  }
+
   const teams = await resolveTargetTeams(clubId, teamId || undefined);
   if (teams.length === 0) {
+    const emptyCsv = adapter.transform([]);
     return {
       ok: true,
       clubId,
       teamId: teamId || null,
+      formatId: adapter.id,
+      formatLabel: adapter.label,
       rowCount: 0,
-      csv: rowsToCsv([]),
-      filename: `state-roster-${clubId}.csv`,
+      csv: emptyCsv,
+      filename: buildExportFilename(clubId, teamId, adapter.id, adapter.extension),
+      mimeType: adapter.mimeType,
     };
   }
 
@@ -280,18 +318,69 @@ exports.exportStateRoster = onCall({region: REGION}, async (request) => {
         };
       });
 
-  const filename = teamId ?
-    `state-roster-${clubId}-${teamId}.csv` :
-    `state-roster-${clubId}.csv`;
+  const csv = adapter.transform(exportRows);
+  const filename = buildExportFilename(clubId, teamId, adapter.id, adapter.extension);
 
   return {
     ok: true,
     clubId,
     teamId: teamId || null,
+    formatId: adapter.id,
+    formatLabel: adapter.label,
     rowCount: exportRows.length,
-    csv: rowsToCsv(exportRows),
+    csv,
     filename,
+    mimeType: adapter.mimeType,
   };
+});
+
+/** Callable metadata for director export profile picker (no auth beyond director). */
+exports.listNgbExportFormats = onCall({region: REGION}, async (request) => {
+  if (!request.auth) {
+    throw new HttpsError('unauthenticated', 'Sign in required.');
+  }
+
+  const role = request.auth.token.role || '';
+  const allowed = ['director', 'registrar', 'super_admin', 'global_admin'].includes(role);
+  if (!allowed) {
+    throw new HttpsError('permission-denied', 'Director or registrar access required.');
+  }
+
+  const data = request.data || {};
+  const clubId = typeof data.clubId === 'string' ? data.clubId.trim() : '';
+  const tokenClub =
+    typeof request.auth.token.clubId === 'string' ?
+      request.auth.token.clubId.trim() :
+      '';
+
+  if (role === 'director' || role === 'registrar') {
+    if (!clubId || !tokenClub || tokenClub !== clubId) {
+      throw new HttpsError('permission-denied', 'Club scope required.');
+    }
+  }
+
+  const formats = listBuiltinFormatAdapters();
+
+  if (clubId) {
+    const profilesSnap = await db()
+        .collection('clubs')
+        .doc(clubId)
+        .collection('export_profiles')
+        .get();
+    profilesSnap.forEach((docSnap) => {
+      const profile = docSnap.data() || {};
+      const label =
+        typeof profile.label === 'string' && profile.label.trim() ?
+          profile.label.trim() :
+          docSnap.id;
+      formats.push({
+        id: `profile:${docSnap.id}`,
+        label,
+      });
+    });
+  }
+
+  return {ok: true, formats};
 });
 
 module.exports.escapeCsvCell = escapeCsvCell;
