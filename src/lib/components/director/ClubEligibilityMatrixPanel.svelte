@@ -3,6 +3,10 @@
 	import { functions } from '$lib/firebase.js';
 	import { httpsCallable } from 'firebase/functions';
 	import { DEFAULT_ELIGIBILITY_MATRIX } from '$lib/director/evaluateClubEligibility.js';
+	import {
+		describeEligibilityMatrixValidation,
+		formatEligibilityCallableError,
+	} from '$lib/director/eligibilityMatrixUi.js';
 
 	let { clubId = '', onSaved = () => {} } = $props();
 
@@ -11,6 +15,7 @@
 	let saving = $state(false);
 	let err = $state('');
 	let ok = $state('');
+	let isDefault = $state(true);
 
 	const getClubEligibilityMatrix = httpsCallable(functions, 'getClubEligibilityMatrix');
 	const upsertClubEligibilityMatrix = httpsCallable(functions, 'upsertClubEligibilityMatrix');
@@ -44,22 +49,33 @@
 			},
 		];
 
+	const validation = $derived(describeEligibilityMatrixValidation(matrix));
+	const hasClub = $derived(Boolean(clubId.trim()));
+
 	$effect(() => {
 		const cid = clubId.trim();
 		if (!cid || !browser) {
 			matrix = { ...DEFAULT_ELIGIBILITY_MATRIX };
+			isDefault = true;
 			loading = false;
+			err = '';
+			ok = '';
 			return;
 		}
 		loading = true;
 		err = '';
+		ok = '';
 		void (async () => {
 			try {
 				const res = await getClubEligibilityMatrix({ clubId: cid });
-				const data = res.data as { matrix?: Record<string, boolean> };
+				const data = res.data as {
+					matrix?: Record<string, boolean>;
+					isDefault?: boolean;
+				};
 				matrix = { ...DEFAULT_ELIGIBILITY_MATRIX, ...(data.matrix || {}) };
+				isDefault = data.isDefault !== false;
 			} catch (e) {
-				err = e instanceof Error ? e.message : 'Could not load eligibility matrix.';
+				err = formatEligibilityCallableError(e, 'Could not load eligibility matrix.');
 			} finally {
 				loading = false;
 			}
@@ -67,16 +83,17 @@
 	});
 
 	async function saveMatrix() {
-		if (!clubId.trim() || saving) return;
+		if (!hasClub || saving) return;
 		err = '';
 		ok = '';
 		saving = true;
 		try {
 			await upsertClubEligibilityMatrix({ clubId: clubId.trim(), matrix });
 			ok = 'Eligibility requirements saved.';
+			isDefault = false;
 			onSaved();
 		} catch (e) {
-			err = e instanceof Error ? e.message : 'Could not save eligibility matrix.';
+			err = formatEligibilityCallableError(e, 'Could not save eligibility matrix.');
 		} finally {
 			saving = false;
 		}
@@ -90,14 +107,28 @@
 		compliance matrix (SportsEngine-style org rules).
 	</p>
 
-	{#if loading}
-		<p class="em-panel__muted">Loading requirements…</p>
+	{#if !hasClub}
+		<p class="em-panel__empty" role="status">Select a club to configure eligibility requirements.</p>
+	{:else if loading}
+		<p class="em-panel__muted" aria-busy="true">Loading requirements…</p>
 	{:else}
+		{#if isDefault}
+			<p class="em-panel__note" role="status">Using platform defaults — save to persist club-specific rules.</p>
+		{/if}
+
+		<p
+			class="em-panel__validation"
+			class:em-panel__validation--warn={validation.level === 'warn'}
+			role={validation.level === 'warn' ? 'alert' : 'status'}
+		>
+			{validation.message}
+		</p>
+
 		<ul class="em-panel__list">
 			{#each toggles as t (t.key)}
 				<li class="em-panel__row">
 					<label class="em-panel__check">
-						<input type="checkbox" bind:checked={matrix[t.key]} />
+						<input type="checkbox" bind:checked={matrix[t.key]} disabled={saving} />
 						<span>
 							<strong>{t.label}</strong>
 							<span class="em-panel__hint">{t.hint}</span>
@@ -107,7 +138,12 @@
 			{/each}
 		</ul>
 
-		<button type="button" class="em-panel__save" disabled={saving} onclick={() => void saveMatrix()}>
+		<button
+			type="button"
+			class="em-panel__save"
+			disabled={saving}
+			onclick={() => void saveMatrix()}
+		>
 			{saving ? 'Saving…' : 'Save requirements'}
 		</button>
 	{/if}
@@ -181,11 +217,30 @@
 
 	.em-panel__save:disabled {
 		opacity: 0.5;
+		cursor: not-allowed;
 	}
 
-	.em-panel__muted {
+	.em-panel__muted,
+	.em-panel__empty {
 		font-size: 0.8125rem;
 		color: #64748b;
+	}
+
+	.em-panel__note {
+		margin: 0 0 0.55rem;
+		font-size: 0.75rem;
+		color: #94a3b8;
+	}
+
+	.em-panel__validation {
+		margin: 0 0 0.65rem;
+		font-size: 0.75rem;
+		font-weight: 600;
+		color: #14b8a6;
+	}
+
+	.em-panel__validation--warn {
+		color: #fbbf24;
 	}
 
 	.em-panel__err {

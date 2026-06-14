@@ -226,3 +226,18 @@ Agents append entries below. Do not edit prior rows.
 - OWNER_QA_CHECKLIST QA-id count: **47** (QA-000–QA-507)
 - PLATFORM_GAP_REGISTER row count: **86** (sections A–M + rejects)
 **Verify:** `npm run check` · `npm test -- src/lib/parent/__tests__/launchWave2Complete.test.ts src/lib/gamification/__tests__/personaFunctionalMvp.test.ts` · `node scripts/launch-overnight-agents.mjs --wave 3a --dry-run`
+
+---
+
+## eligibility-ux (B-04) — 2026-06-14
+
+**Branch:** `closure/eligibility-ux`  
+**Status:** Done  
+**Slice:** Director eligibility matrix UX edge cases
+
+**Shipped:**
+- `eligibilityMatrixUi.js` — active gate count, validation summary, callable error formatting
+- `ClubEligibilityMatrixPanel.svelte` — empty state (no club), default-matrix note, validation feedback banner, improved save/load errors
+- `eligibilityLaunch.test.ts` — B-04 guard tests (empty state, validation, error helper, upsert regression)
+
+**Verify:** `npm test -- src/lib/director/__tests__/eligibilityLaunch.test.ts` (9 passed) · `npm run check` (0 errors) · `npm run build`
