@@ -1,9 +1,9 @@
 # SSTracker — Acquisition Data Room
 
 **Product:** Sports Skill Tracker (SSTracker / Nexus Command)  
-**Stage:** Pre-commercial launch · functional OS complete · deploy QA pending  
+**Stage:** Pre-commercial launch · functional OS + overnight P2 merged · owner QA pending  
 **Live QA environment:** [https://sstracker.app](https://sstracker.app) (Firebase project `sports-skill-tracker-dev`)  
-**Last updated:** 2026-06-13 · Agent 01 — docs dataroom
+**Last updated:** 2026-06-13 · post-overnight doc sync
 
 ---
 
@@ -17,6 +17,8 @@
 | [TRACTION.md](./TRACTION.md) | Investor / acquirer | Build status, test coverage, launch gate |
 | [LIMITATIONS.md](./LIMITATIONS.md) | Legal / eng | Honest scope boundaries |
 | [NOTABLE_GAPS.md](./NOTABLE_GAPS.md) | Product / GTM | Intentional non-parity vs TeamSnap / SportsEngine |
+| [GAP_CLOSURE_PLAN.md](./GAP_CLOSURE_PLAN.md) | Eng / owner | Pre-QA backlog — remaining work before FUNCTIONAL_MVP sign-off |
+| [DOC_SYNC_REPORT.md](./DOC_SYNC_REPORT.md) | Eng | Audit log of doc sync vs merged code |
 | [SECURITY.md](./SECURITY.md) | InfoSec / compliance | Architecture, COPPA, SafeSport, cells |
 | [TRANSFER.md](./TRANSFER.md) | Acquirer ops | Handoff checklist — repos, Firebase, secrets |
 | [FAQ.md](./FAQ.md) | All | Common diligence questions |
@@ -44,13 +46,15 @@ These live outside `docs/acquisition/` and are **source of truth** for engineeri
 
 ---
 
-## Overnight parallel work
+## Overnight parallel work (complete — merged to dev)
 
 | File | Purpose |
 |------|---------|
 | [`SLICE_LOG.md`](./SLICE_LOG.md) | Append-only agent progress (do not edit prior rows) |
 | [`MERGE_ORDER.md`](./MERGE_ORDER.md) | Branch merge sequence → `overnight/base` → `dev` |
-| [`PARALLEL_STATUS.md`](./PARALLEL_STATUS.md) | Orchestrator status board |
+| [`PARALLEL_STATUS.md`](./PARALLEL_STATUS.md) | Final agent status board |
+| [`PARALLEL_SUMMARY.md`](./PARALLEL_SUMMARY.md) | Phase 1 + 2 summary |
+| [`GAP_CLOSURE_PLAN.md`](./GAP_CLOSURE_PLAN.md) | **Next:** pre-owner-QA backlog |
 
 ---
 
@@ -61,7 +65,8 @@ These live outside `docs/acquisition/` and are **source of truth** for engineeri
 3. [`ARCHITECTURE.md`](../ARCHITECTURE.md) + [SECURITY.md](./SECURITY.md)
 4. [DEMO_SCRIPT.md](./DEMO_SCRIPT.md) on https://sstracker.app with QA tenant
 5. [`FUNCTIONAL_MVP.md`](../vision/FUNCTIONAL_MVP.md) + [`QA_DEV_PERSONA_VERIFICATION.md`](../QA_DEV_PERSONA_VERIFICATION.md)
-6. [TRANSFER.md](./TRANSFER.md) + [`FUNCTIONS_DEPLOY.md`](../FUNCTIONS_DEPLOY.md)
+6. [GAP_CLOSURE_PLAN.md](./GAP_CLOSURE_PLAN.md) — remaining pre-QA work
+7. [TRANSFER.md](./TRANSFER.md) + [`FUNCTIONS_DEPLOY.md`](../FUNCTIONS_DEPLOY.md)
 
 ---
 

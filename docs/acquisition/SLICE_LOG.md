@@ -186,3 +186,14 @@ Agents append entries below. Do not edit prior rows.
 | deploy gates | `npm run deploy:dev:verify` green — bundle, `test:functions-deploy` (58), `predeploy:integrations`, env copy to split codebases |
 | live deploy | **Blocked** — `firebase deploy --project sports-skill-tracker-dev` requires owner `FIREBASE_CI_TOKEN`; operator run: `npm run build && npm run deploy:dev` |
 | artifacts | `.firebaserc` dev alias · `scripts/deploy-dev-verify.cjs` · `scripts/deploy-dev-full.cjs` · `npm run deploy:dev` / `deploy:dev:verify` |
+
+---
+
+## doc-sync (Phase 3) — 2026-06-13
+
+**Branch:** dev  
+**Status:** Done  
+**Created:** `GAP_CLOSURE_PLAN.md`, `DOC_SYNC_REPORT.md`  
+**Updated:** NOTABLE_GAPS, COMPETITIVE_LAUNCH_ASSESSMENT, PROSPECTUS, TRACTION, PARALLEL_STATUS, PARALLEL_SUMMARY, INDEX, CHECK_ZERO_STATUS, ROADMAP sprint line  
+**check:** 0  
+**Next:** execute GAP_CLOSURE_PLAN slice 1 (owner live deploy)

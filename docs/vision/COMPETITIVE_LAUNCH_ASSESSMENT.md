@@ -1,7 +1,7 @@
 # Competitive Launch Assessment — SSTracker vs. Market
 
 **Authority:** Product owner launch north star · [`ROADMAP.md`](../../ROADMAP.md) · [`FUNCTIONAL_MVP.md`](FUNCTIONAL_MVP.md)  
-**Last updated:** 2026-06-13  
+**Last updated:** 2026-06-13 · post-overnight merge + doc sync  
 **Benchmarks:** [TeamSnap ONE](https://www.teamsnap.com/one) · [SportsEngine HQ](https://www.sportsengine.com/hq/) · [GotSport](https://home.gotsport.com/software/)  
 **Cursor rule:** [`.cursor/rules/competitive-launch-north-star.mdc`](../../.cursor/rules/competitive-launch-north-star.mdc)
 
@@ -15,8 +15,8 @@ This document is the **canonical competitive gap matrix** for launch. Agents and
 |-----------|---------|
 | **Beat competitors on** | Athlete development loop, SafeSport-native comms, COPPA/VPC depth, coach intent + prescriptions, RL homework, tactical drill designer, **tryout lifecycle OS (reg → eval → callback → roster)** |
 | **At parity (launch functional track)** | Guardian roster visibility, RSVP, registration-lite, roster invite, eligibility matrix, parent calendar export, push prefs, PWA install path |
-| **Behind on table stakes** | Native app store binaries (web+PWA only), NGB/state roster export |
-| **Launch functional gate** | **Partial** — Wave 0–2 code shipped; **LAUNCH-deploy-dev Done**; **overnight P2 polish + check=0** remain before owner QA |
+| **Behind on table stakes** | App Store / Play Store binaries (Capacitor shell shipped; submission deferred) |
+| **Launch functional gate** | **Partial** — overnight P2 + check=0 merged to dev; **owner live deploy confirm + FUNCTIONAL_MVP QA** remain — see [`GAP_CLOSURE_PLAN.md`](../acquisition/GAP_CLOSURE_PLAN.md) |
 
 **Positioning:** SSTracker is **not** “another TeamSnap.” It is the **development + compliance OS** clubs adopt when they outgrow chat-and-schedule tools — but parents still expect RSVP, schedules, and payments on day one.
 
@@ -45,26 +45,26 @@ Legend: ✅ Shipped · 🟡 Partial · ❌ Gap · 🏆 SSTracker leads
 | Category | TeamSnap | SportsEngine | GotSport | SSTracker | Launch priority |
 |----------|----------|--------------|----------|-----------|-----------------|
 | **Online registration + cart** | ✅ | ✅ | ✅ | ✅ LAUNCH-registration-lite | — |
-| **Integrated payments / installments** | ✅ | ✅ | ✅ | 🟡 Parent payments route | P2 polish |
-| **Drag-drop roster from registration** | ✅ | ✅ | ✅ | 🟡 Admin roster + player_lookup | P2 |
+| **Integrated payments / installments** | ✅ | ✅ | ✅ | ✅ Installments UX shipped | — |
+| **Drag-drop roster from registration** | ✅ | ✅ | ✅ | 🟡 Assign panel (not drag UI) | Accept v1 |
 | **Guardian on roster row** | ✅ | ✅ | ✅ | ✅ LAUNCH-household-graph | — |
 | **Pre-event RSVP / availability** | ✅ Premium | ✅ | ✅ | ✅ LAUNCH-rsvp | — |
 | **Tryout lifecycle OS** | 🟡 | 🟡 | 🟡 | ✅ LAUNCH-tryouts-os | — |
 | **Schedule + calendar sync** | ✅ | ✅ | ✅ | ✅ team_workouts + `.ics` export | — |
 | **Team / org messaging** | ✅ | ✅ | ✅ | ✅ SafeSport + Parent Lounge + Epic 4 | Maintain |
-| **Native parent mobile app** | ✅ | ✅ | ✅ | 🟡 PWA + web (no store binary) | Post-launch |
+| **Native parent mobile app** | ✅ | ✅ | ✅ | 🟡 PWA + Capacitor shell (no store binary) | Acquirer |
 | **Push notifications** | ✅ | ✅ | ✅ | ✅ FCM + parent dashboard prefs | — |
 | **Eligibility matrix (configurable)** | 🟡 | ✅ | ✅ | ✅ LAUNCH-eligibility-matrix | — |
-| **Background check integration** | Partner | NCSI | ✅ | 🟡 Coach clearance track | P2 vendor hook |
+| **Background check integration** | Partner | NCSI | ✅ | 🟡 Checkr embed + panopticon | Acquirer NCSI |
 | **Practice / drill content** | ✅ Pro plans | 🟡 | 🟡 | 🏆 Intent Engine + spatial designer + drill library | Market |
 | **Player development / stats** | 🟡 | 🟡 | 🟡 | 🏆 XP, skill tree, telemetry, RL homework | Market |
 | **COPPA / minor consent** | Checkbox | Membership rules | Docs | 🏆 Household + VPC ceremony + retention burn | Market |
 | **SafeSport minor DM policy** | 🟡 | 🟡 | 🟡 | 🏆 Enforced in rules + callables | Market |
 | **Facility / field scheduling** | 🟡 | ✅ | 🟡 | ✅ Field ops + weather lock | — |
-| **Tournaments / brackets** | ✅ | ✅ | ✅ | 🟡 tournament_events + ticketing | P2 |
-| **Club website builder** | ✅ | ✅ | ✅ | ❌ | P3 post-launch |
-| **NGB / state roster export** | Some | ✅ | 🏆 38 bodies | ❌ | P3 unless soccer GTM |
-| **Live streaming** | ✅ Free | ✅ | 🟡 | ❌ | P3 |
+| **Tournaments / brackets** | ✅ | ✅ | ✅ | 🟡 Single-elim bracket panel | Accept v1 |
+| **Club website builder** | ✅ | ✅ | ✅ | ❌ **Rejected** | P3 reject |
+| **NGB / state roster export** | Some | ✅ | 🏆 38 bodies | 🟡 CSV v1 export | P3 unless soccer GTM |
+| **Live streaming** | ✅ Free | ✅ | 🟡 | 🟡 URL embed MVP | P3 CDN |
 
 ---
 

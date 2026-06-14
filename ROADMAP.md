@@ -2,7 +2,7 @@
 
 **Architecture:** [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)  
 **Last updated:** 2026-06-13  
-**Current sprint:** **LAUNCH-functional-os Done** · **LAUNCH-deploy-dev Done** · overnight P2 + Phase 2 merged on `overnight/base` (`check=0`, CI vitest expanded) → **Owner QA** · **TABLED (post-launch):** Platform visual system (Gemini research) · Player OS **6j/6i** · Flow asset generation, Avatar Studio **3.6b+**  
+**Current sprint:** **Overnight Phase 1 + 2 merged to dev** (`check=0`, CI vitest expanded, P2 parity shipped) · **doc sync Done** · next = execute [`GAP_CLOSURE_PLAN.md`](docs/acquisition/GAP_CLOSURE_PLAN.md) slices → **Owner QA** · **TABLED (post-launch):** Platform visual system (Gemini research) · Player OS **6j/6i** · Flow asset generation, Avatar Studio **3.6b+**  
 **Note:** **3.5l-gate** closed in error — automated regression ≠ human VA; Phase 2 visual **rejected by product owner**  
 *Phase 7 · G1–G10 Done · Sprint 2.20 Done — Player OS premium foundation locked*
 
@@ -1441,7 +1441,7 @@ Loadout art (3.2+) consumed by 2.12 hero identity column.
 | **LAUNCH-qa-ready** | **Partial** | Wave 2 test gate only — **not** full launch closure; see remaining backlog below | `launchWave2Complete.test.ts` |
 | **LAUNCH-vpc-ux** | **Done** | Household minors skip email ConsentOverlay; in-app VPC path only | `roleDerivations.test.ts` · merged PR #13 |
 | **LAUNCH-deploy-dev** | **Done** | Full `deploy:*` + Firestore rules to `sports-skill-tracker-dev` (2026-06-13) | operator deploy log |
-| **ACQ-overnight-wave** | **In progress** | 24 parallel Cloud Agents on `overnight/*` — P2 parity, check burn-down, acquisition data room; orchestrator poll cycle 1 | [`docs/acquisition/PARALLEL_SUMMARY.md`](docs/acquisition/PARALLEL_SUMMARY.md) · [`SLICE_LOG.md`](docs/acquisition/SLICE_LOG.md) |
+| **ACQ-overnight-wave** | **Done** | Phase 1 + 2 merged to dev; doc sync complete; remaining = [`GAP_CLOSURE_PLAN.md`](docs/acquisition/GAP_CLOSURE_PLAN.md) | [`PARALLEL_SUMMARY.md`](docs/acquisition/PARALLEL_SUMMARY.md) · [`DOC_SYNC_REPORT.md`](docs/acquisition/DOC_SYNC_REPORT.md) |
 | **XP-verify** | **Done** | XP algorithm tests + client/server parity (`level.js` ↔ `gamificationWorkoutXp.js`) | `levelXp.test.ts`, `gamificationWorkoutXp.test.js`, `trainingOpsXp.test.js` |
 | **3.5m-frame** | **Done** | Art-well recess + holo inset — unified portrait clip, xMidYMid bust centering | `playerLoadoutSprint35mFrame.test.ts` |
 | **3.5m-art** | **Superseded** | Agent modular SVG bust redraw — human VA failed; owner Gemini + ingest replaces | `playerLoadoutSprint35mArt.test.ts` (historical) |

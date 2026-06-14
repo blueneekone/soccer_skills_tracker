@@ -1,16 +1,16 @@
 # Parallel overnight summary
 
-**Last poll:** 2026-06-13 · **Orchestrator:** agent 21-orch · **Base:** `843e44b`
+**Last poll:** 2026-06-13 (closed) · **Orchestrator:** agent 21-orch · **Dev baseline:** `7adb90ae`
 
 ## Phase status
 
-| Phase | Agents | Done | In flight | Blocked | Pending |
-|-------|--------|------|-----------|---------|---------|
-| **1 — parallel features** | 01–20 | 0 | 0 | 1 (12 waits on 04) | 19 |
-| **2 — check / CI / deploy** | 22–24 | 0 | 0 | 3 (deps) | 3 |
-| **Orchestrator** | 21 | 1 | 0 | 0 | 0 |
+| Phase | Agents | Done | Blocked | Partial |
+|-------|--------|------|---------|---------|
+| **1 — parallel features** | 01–20 | 17 | 2 (19–20 gemini ingest) | 0 |
+| **2 — check / CI / deploy** | 22–24 | 2 (22, 23) | 0 | 1 (24 live deploy) |
+| **Orchestrator** | 21 | 1 | 0 | 0 |
 
-**Phase 1 quiesced:** No — all feature branches remain at RUNNER-0 bootstrap; no agent has appended a slice entry beyond orchestrator poll.
+**Phase 1 + Phase 2 quiesced:** Yes — all branches merged to `dev` except gemini-ingest-2/3 (Blocked, no assets). Orchestrator poll closed.
 
 ## Launch gate (ROADMAP / COMPETITIVE sync)
 
@@ -18,40 +18,42 @@
 |------|--------|-------|
 | LAUNCH-functional-os | Done | Three-persona MVP |
 | LAUNCH-wave2-complete | Done | Parent adoption parity |
-| LAUNCH-deploy-dev | Done | Full deploy to `sports-skill-tracker-dev` (2026-06-13) |
-| LAUNCH-qa-ready | Partial | Wave 2 test gate only |
-| Launch functional gate (competitive) | Partial | Deploy done; overnight P2 + `check=0` + owner QA remain |
+| LAUNCH-deploy-dev | Done (scripts) / owner confirm | Prior operator deploy 2026-06-13; agent 24 live deploy needs `FIREBASE_CI_TOKEN` for overnight callables |
+| LAUNCH-qa-ready | Partial | Regression tests green; owner FUNCTIONAL_MVP QA pending |
+| Launch functional gate (competitive) | Partial | Overnight P2 + check=0 merged; execute [`GAP_CLOSURE_PLAN.md`](./GAP_CLOSURE_PLAN.md) → owner QA |
 
-**Current sprint (post-sync):** overnight P2 parity wave (agents 02–07, 14–17) + svelte-check burn-down (08–13) → Phase 2 (22–24) → merge `overnight/base` → `dev`.
+**Current sprint:** doc sync complete · next = **GAP_CLOSURE_PLAN slice 1** (owner live deploy) → owner QA
 
-## P2 / acquisition targets (Phase 1)
+## P2 / acquisition targets (Phase 1 — merged)
 
-Maps to [`COMPETITIVE_LAUNCH_ASSESSMENT.md`](../vision/COMPETITIVE_LAUNCH_ASSESSMENT.md) P2 rows:
-
-| Competitive row | Overnight agent | Branch |
-|-----------------|-----------------|--------|
-| Integrated payments / installments | 04-p2-payments | overnight/p2-payments |
-| Drag-drop roster from registration | 03-p2-reg-roster | overnight/p2-reg-roster |
-| Tournaments / brackets | 05-p2-tournament | overnight/p2-tournament |
-| Background check integration | 06-p2-checkr | overnight/p2-checkr |
-| Native parent mobile app | 17-native-shell | overnight/native-shell |
-| NGB / state roster export | 14-fed-ngb | overnight/fed-ngb |
-| Live streaming | 15-live-stream | overnight/live-stream |
+| Competitive row | Agent | Status |
+|-----------------|-------|--------|
+| Integrated payments / installments | 04-p2-payments | **Done** |
+| Registration → roster assign | 03-p2-reg-roster | **Done** |
+| Tournaments / brackets | 05-p2-tournament | **Done** (single-elim v1) |
+| Background check integration | 06-p2-checkr | **Done** (Checkr polish) |
+| Player tracker nav | 07-p2-tracker-nav | **Done** |
+| Native parent mobile shell | 17-native-shell | **Done** (Capacitor; no store binary) |
+| NGB / state roster export | 14-fed-ngb | **Done** (CSV v1) |
+| Live streaming embed | 15-live-stream | **Done** (URL embed MVP) |
+| Marketing /acquisition route | 16-marketing-acq | **Done** |
+| svelte-check zero | 08–13, 22 | **Done** |
+| CI vitest expansion | 23-vitest-ci | **Done** |
 
 **Intentional gaps (not building):** club website builder CMS — see [`NOTABLE_GAPS.md`](NOTABLE_GAPS.md).
 
 ## Avatar ingest (deferred track)
 
-- **Manifest:** [`AVATAR_MANIFEST.md`](AVATAR_MANIFEST.md) — 16 JPEG refs copied; one rename candidate `bust_teen_long_light_away.jpeg`
-- **Agents 18–20:** wire approved bust PNGs per [`avatar-builder-deferred.mdc`](../../.cursor/rules/avatar-builder-deferred.mdc) owner pause — ingest agents may log **Blocked** if no owner-approved asset
+- **Manifest:** [`AVATAR_MANIFEST.md`](AVATAR_MANIFEST.md) — 16 JPEG refs; one wired as holo default
+- **Agent 18:** **Done** — `bust_teen_long_light_away.jpeg`
+- **Agents 19–20:** **Blocked** — no owner-approved second/third PNG
 
-## Next orchestrator actions
+## Next actions
 
-1. Re-poll `SLICE_LOG.md` on each `overnight/*` branch after Wave 1 agents land commits
-2. Update [`PARALLEL_STATUS.md`](PARALLEL_STATUS.md) row statuses (Pending → In progress → Done / Blocked)
-3. Refresh this summary when Phase 1 quiesces (all 01–20 Done or Blocked)
-4. Sync ROADMAP overnight rows and COMPETITIVE P2 status as slices close
+1. Owner executes [`GAP_CLOSURE_PLAN.md`](./GAP_CLOSURE_PLAN.md) slice 1 — live deploy confirm
+2. Owner QA on `qa_launch_2026` per [`FUNCTIONAL_MVP.md`](../vision/FUNCTIONAL_MVP.md)
+3. Optional agent slices: payment webhook, federation Phase 2, vitest burn-down
 
 ## Merge order
 
-See [`MERGE_ORDER.md`](MERGE_ORDER.md). Agent 12 starts after agent 04 merges. Phase 2 agents 22–24 run after check branches 08–13 land on `overnight/base`.
+See [`MERGE_ORDER.md`](./MERGE_ORDER.md). Phase 1 + Phase 2 merged to `dev` 2026-06-13.

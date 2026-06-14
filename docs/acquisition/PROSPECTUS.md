@@ -1,7 +1,7 @@
 # SSTracker — Acquisition Prospectus
 
 **Confidential — for qualified acquirer diligence**  
-**Version:** 2026-06-13 · Branch `overnight/docs-dataroom`
+**Version:** 2026-06-13 · Branch `dev` · post-overnight merge
 
 ---
 
@@ -9,7 +9,7 @@
 
 SSTracker (internal codename **Nexus Command**) is a **compliance-first youth sports development platform** targeting clubs that have outgrown schedule-and-chat tools but cannot sacrifice **SafeSport** and **COPPA** rigor. The codebase delivers a full **Player · Parent · Coach · Director** workspace on **SvelteKit 5 + Firebase**, with table-stakes club ops (RSVP, registration, tryouts, eligibility) **shipped in code** and a differentiated **Train → XP → coach intent** loop competitors do not replicate.
 
-**Acquisition thesis:** Buy a **launch-ready functional OS** with architectural moat (cell routing, household graph, RL homework path) rather than rebuild from TeamSnap/SportsEngine APIs. Remaining work is **deploy completeness**, **P2 polish** (payments UX, registration→roster), and **go-to-market** — not greenfield product invention.
+**Acquisition thesis:** Buy a **launch-ready functional OS** with architectural moat (cell routing, household graph, RL homework path) rather than rebuild from TeamSnap/SportsEngine APIs. Overnight P2 parity + `check=0` merged to dev. Remaining work is **owner live deploy confirm**, **FUNCTIONAL_MVP QA**, and **go-to-market** — not greenfield product invention.
 
 **Win message:** *The development OS for clubs that have outgrown schedule-and-chat — with SafeSport-native comms and COPPA depth competitors cannot match.*
 
@@ -31,8 +31,9 @@ Authority: [`COMPETITIVE_LAUNCH_ASSESSMENT.md`](../vision/COMPETITIVE_LAUNCH_ASS
 
 See full matrix in [`COMPETITIVE_LAUNCH_ASSESSMENT.md`](../vision/COMPETITIVE_LAUNCH_ASSESSMENT.md). Summary:
 
-- **At parity (functional):** RSVP, registration-lite, roster invite, tryouts OS, eligibility matrix, parent calendar/push, PWA
-- **Behind:** Native App Store binaries, NGB/state roster export (deferred unless soccer GTM)
+- **At parity (functional):** RSVP, registration-lite, roster invite, tryouts OS, eligibility matrix, parent calendar/push, PWA, payment installments, roster assign panel
+- **Partial (accept v1):** Capacitor native shell, NGB CSV export, live stream embed, tournament brackets, Checkr embed
+- **Behind:** App Store / Play Store binaries (intentional — acquirer)
 - **Leads:** Player development, COPPA/VPC, SafeSport DM policy, coach spatial drills, RL homework
 
 ---
@@ -96,7 +97,7 @@ Detailed in [SECURITY.md](./SECURITY.md). Highlights:
 - **SafeSport** — `sendCoachPlayerMessage` blocks coach→minor unsupervised DM; household threads for parent visibility
 - **Minor retention** — purge queue + scheduled burn (`functions-compliance`)
 - **WebAuthn / passkeys** — parent magic-link → passkey enrollment path
-- **Coach clearance** — Checkr embed + director panopticon (vendor hooks partial — see [NOTABLE_GAPS.md](./NOTABLE_GAPS.md))
+- **Coach clearance** — Checkr embed + director panopticon shipped; NCSI vendor parity = acquirer ([NOTABLE_GAPS.md](./NOTABLE_GAPS.md))
 
 Golden path QA: [`FUNCTIONAL_MVP.md`](../vision/FUNCTIONAL_MVP.md) § Permanent VPC golden path
 
@@ -133,10 +134,12 @@ Team + club drill libraries with coach spatial designer persisting to `teams/{te
 |--------|--------|
 | Functional audit A–F | **Done** ([`FUNCTIONAL_AUDIT_BACKLOG.md`](../FUNCTIONAL_AUDIT_BACKLOG.md)) |
 | LAUNCH Wave 0–2 | **Done** (household, RSVP, reg, tryouts, parent parity) |
+| Overnight P2 + check=0 | **Done** — merged to dev 2026-06-13 |
 | Player OS Phase 7 G1–G10 | **Done** — instrument cohesion signed off |
-| Deploy all `deploy:*` targets | **Operator checklist pending** |
+| Deploy scripts + verify gates | **Done** (`npm run deploy:dev:verify`) |
+| Owner live deploy confirm | **Partial** — owner `FIREBASE_CI_TOKEN` for overnight callables |
 | Owner human QA on FUNCTIONAL_MVP | **Pending** |
-| Pre-existing TS debt (`npm run check`) | Known — outside functional MVP paths |
+| TypeScript (`npm run check`) | **0 errors** — CI gate |
 
 Regression: `personaFunctionalMvp.test.ts` includes functional audit A–F guards.
 
@@ -165,11 +168,13 @@ Handoff: [TRANSFER.md](./TRANSFER.md)
 
 Not blockers for **code acquisition**; blockers for **commercial launch**:
 
-1. **LAUNCH-deploy-dev** — run full `deploy:backend:systematic` + rules + hosting on dev
-2. **P2 polish** — payments UX, registration→roster drag UX, tournament brackets polish
-3. **Owner QA** — phased walkthrough [`QA_DEV_PERSONA_VERIFICATION.md`](../QA_DEV_PERSONA_VERIFICATION.md)
-4. **Capacitor shell** — native store binaries (agent 17 track)
-5. **Deferred** — avatar PNG art, platform visual redesign, NGB export (owner GTM decision)
+1. **Owner live deploy confirm** — run `npm run deploy:dev` if overnight callables not yet live on dev
+2. **Owner QA** — phased walkthrough [`QA_DEV_PERSONA_VERIFICATION.md`](../QA_DEV_PERSONA_VERIFICATION.md)
+3. **Payment webhook follow-up** — full-season unlock when all installments paid (see [`GAP_CLOSURE_PLAN.md`](./GAP_CLOSURE_PLAN.md))
+4. **Deferred** — avatar PNG art (owner approval), platform visual redesign, federation API Phases 2–4 (owner GTM decision)
+5. **Acquirer** — App Store / Play Store binaries, NCSI vendor parity, club website CMS (rejected)
+
+Full backlog: [`GAP_CLOSURE_PLAN.md`](./GAP_CLOSURE_PLAN.md)
 
 ---
 
@@ -180,8 +185,9 @@ See [LIMITATIONS.md](./LIMITATIONS.md) and [NOTABLE_GAPS.md](./NOTABLE_GAPS.md).
 - Pre-revenue / pre-scale user base
 - Firebase vendor concentration
 - Split codebase deploy complexity
-- Federation API gap vs GotSport for state-governing-body GTM
+- Federation API Phases 2–4 gap vs GotSport for state-governing-body GTM (CSV v1 shipped)
 - No club website builder (intentional)
+- App Store / Play Store distribution (intentional — acquirer)
 
 ---
 

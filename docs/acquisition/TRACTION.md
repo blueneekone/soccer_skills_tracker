@@ -1,7 +1,7 @@
 # SSTracker — Traction & Launch Status
 
 **Purpose:** Factual build and quality signals for acquirer diligence — not inflated metrics.  
-**Last updated:** 2026-06-13
+**Last updated:** 2026-06-13 · post-overnight merge + doc sync
 
 ---
 
@@ -12,7 +12,7 @@
 | Paying clubs | **None documented in repo** (pre-commercial) |
 | MAU / DAU | **Not tracked** in repository |
 | ARR / MRR | **$0** — no billing production path sign-off |
-| App Store ratings | N/A — no store binaries |
+| App Store ratings | N/A — no store binaries (Capacitor shell in repo) |
 
 **Interpretation:** Acquisition value is **technology + architecture + launch-ready functional OS**, not recurring revenue.
 
@@ -30,7 +30,8 @@ Source: [`ROADMAP.md`](../../ROADMAP.md) · [`COMPETITIVE_LAUNCH_ASSESSMENT.md`]
 | LAUNCH Wave 2 — parent push, calendar, PWA | **Done** | Parent dashboard parity |
 | Player OS Phase 7 (G1–G10) | **Done** | `playerOsCohesion.test.ts`, G10 manifest |
 | Functional audit A–F | **Done** | [`FUNCTIONAL_AUDIT_BACKLOG.md`](../FUNCTIONAL_AUDIT_BACKLOG.md) |
-| LAUNCH-deploy-dev | **Pending** | Operator deploy checklist |
+| Overnight P2 + check=0 + CI vitest | **Done** | Merged to dev 2026-06-13; [`SLICE_LOG.md`](./SLICE_LOG.md) |
+| LAUNCH-deploy-dev | **Partial** | Prior operator deploy 2026-06-13; `npm run deploy:dev:verify` green; agent 24 live deploy requires owner `FIREBASE_CI_TOKEN` for overnight callables |
 | Owner FUNCTIONAL_MVP QA | **Pending** | Checkboxes in [`FUNCTIONAL_MVP.md`](../vision/FUNCTIONAL_MVP.md) |
 
 ---
@@ -40,7 +41,8 @@ Source: [`ROADMAP.md`](../../ROADMAP.md) · [`COMPETITIVE_LAUNCH_ASSESSMENT.md`]
 | Signal | Detail |
 |--------|--------|
 | Version | `5.0.0` ([`package.json`](../../package.json)) |
-| Unit tests | Vitest — persona guards, player HUD sprints, comms sprints, firestore rules |
+| Type-check | `npm run check` → **0 errors** (CI gate) |
+| Unit tests | Vitest — 129 green files in CI allowlist; persona + launch guards pass |
 | Key regression | `personaFunctionalMvp.test.ts` — includes functional audit A–F block |
 | E2E | Playwright scaffold (`npm run test:e2e`) |
 | Functions deploy guards | `functionsDeploy.guard.test.js`, `verify-codebase-deps.cjs` |
@@ -50,7 +52,8 @@ Source: [`ROADMAP.md`](../../ROADMAP.md) · [`COMPETITIVE_LAUNCH_ASSESSMENT.md`]
 
 ```bash
 npm test -- src/lib/gamification/__tests__/personaFunctionalMvp.test.ts
-npm run check    # expect pre-existing TS debt
+npm test -- src/lib/parent/__tests__/launchWave2Complete.test.ts
+npm run check    # 0 errors gate
 npm run build
 ```
 
@@ -74,27 +77,24 @@ From [`COMPETITIVE_LAUNCH_ASSESSMENT.md`](../vision/COMPETITIVE_LAUNCH_ASSESSMEN
 | Dimension | Verdict |
 |-----------|---------|
 | Beat competitors on | Development loop, SafeSport comms, COPPA/VPC, coach intent, RL homework, tryout OS |
-| At parity | RSVP, registration-lite, roster invite, eligibility, parent calendar/push, PWA |
-| Behind | Native store apps, NGB export |
-| Launch gate | **Partial** — code shipped; deploy + QA remain |
+| At parity | RSVP, registration, roster invite, eligibility, parent calendar/push, PWA, payment installments |
+| Partial (accept v1) | Roster assign panel, tournament brackets, Checkr embed, NGB CSV export, live stream embed, Capacitor shell |
+| Behind | App Store / Play Store binaries |
+| Launch gate | **Partial** — execute [`GAP_CLOSURE_PLAN.md`](./GAP_CLOSURE_PLAN.md) → owner QA |
 
 ---
 
-## Overnight parallel sprint (2026-06)
+## Overnight parallel sprint (2026-06) — complete
 
-Multiple agents executing launch gaps in parallel — progress in [`SLICE_LOG.md`](./SLICE_LOG.md):
+Phase 1 + Phase 2 merged to `dev`. Progress in [`SLICE_LOG.md`](./SLICE_LOG.md) · status in [`PARALLEL_SUMMARY.md`](./PARALLEL_SUMMARY.md).
 
-| Agent track | Branch focus |
-|-------------|--------------|
-| 01 | Data room (this document set) |
-| 02 | Launch P0 |
-| 03–07 | P2 reg, payments, tournament, Checkr, tracker nav |
-| 08–13 | Route/component/store audits |
-| 14 | Federation / NGB export |
-| 17 | Native Capacitor shell |
-| 24 | Deploy verify |
-
-Merge order: [`MERGE_ORDER.md`](./MERGE_ORDER.md)
+| Track | Outcome |
+|-------|---------|
+| P0 + P2 parity (02–07) | Done |
+| svelte-check burn-down (08–13, 22) | Done (check=0) |
+| Federation, live stream, marketing, native shell (14–17) | Done |
+| CI vitest + deploy scripts (23–24) | Done / Partial (live deploy = owner) |
+| Gemini ingest 2/3 (19–20) | Blocked (no owner assets) |
 
 ---
 
@@ -108,11 +108,12 @@ Merge order: [`MERGE_ORDER.md`](./MERGE_ORDER.md)
 
 ---
 
-## Next milestones (post-acquisition)
+## Next milestones (pre-close)
 
-1. Green Phase 0 deploy on dev — [`QA_DEV_PERSONA_VERIFICATION.md`](../QA_DEV_PERSONA_VERIFICATION.md)
-2. First paying pilot club (outside QA tenant)
-3. App Store binary via Capacitor (agent 17)
-4. Federation CSV/export for soccer GTM (agent 14)
+1. Owner live deploy confirm — [`GAP_CLOSURE_PLAN.md`](./GAP_CLOSURE_PLAN.md) slice 1
+2. Owner QA on `qa_launch_2026` — [`FUNCTIONAL_MVP.md`](../vision/FUNCTIONAL_MVP.md)
+3. First paying pilot club (outside QA tenant)
+4. App Store binary via Capacitor (acquirer)
+5. Federation Phase 2+ if soccer GTM proceeds
 
-→ [DEMO_SCRIPT.md](./DEMO_SCRIPT.md) · [PROSPECTUS.md](./PROSPECTUS.md)
+→ [DEMO_SCRIPT.md](./DEMO_SCRIPT.md) · [PROSPECTUS.md](./PROSPECTUS.md) · [GAP_CLOSURE_PLAN.md](./GAP_CLOSURE_PLAN.md)

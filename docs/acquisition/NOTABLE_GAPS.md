@@ -2,7 +2,7 @@
 
 **Purpose:** Transparent non-parity vs TeamSnap, SportsEngine, and GotSport for acquirer diligence.  
 **Authority:** [`COMPETITIVE_LAUNCH_ASSESSMENT.md`](../vision/COMPETITIVE_LAUNCH_ASSESSMENT.md) · [`.cursor/rules/competitive-launch-north-star.mdc`](../../.cursor/rules/competitive-launch-north-star.mdc)  
-**Last updated:** 2026-06-13
+**Last updated:** 2026-06-13 · post-overnight doc sync
 
 ---
 
@@ -11,15 +11,15 @@
 | Gap | Status | SSTracker alternative | Launch priority |
 |-----|--------|----------------------|-----------------|
 | Club website builder (TeamSnap/SportsEngine drag-and-drop CMS) | **DEFINITE GAP — not building** | `/club/{slug}`, `/register/{clubId}`, `/tryouts/{programId}` | P3 reject |
-| Native iOS/Android App Store binaries | **In progress (agent 17)** | PWA + Capacitor shell MVP; store submission = acquirer | Post-launch |
-| GotSport-grade federation API (38 bodies) | **Partial overnight track** | CSV export v1 + `FEDERATION_ROADMAP.md` (agent 14) | P3 unless soccer GTM |
-| Live streaming CDN (TeamSnap-class) | **MVP embed only (agent 15)** | YouTube/Vimeo/Mux URL on events | P3 |
-| Avatar PNG / character bust art | **Deferred post-launch** | `defaultPortraitV2` SVG + profile initials | Tabled |
+| Native iOS/Android App Store binaries | **Partial — Capacitor shell shipped** | PWA + Capacitor MVP ([`NATIVE_SHELL.md`](../NATIVE_SHELL.md)); store submission = acquirer | Post-launch |
+| GotSport-grade federation API (38 bodies) | **Partial — CSV v1 shipped** | `exportStateRoster` + `FEDERATION_ROADMAP.md` Phases 2–4 | P3 unless soccer GTM |
+| Live streaming CDN (TeamSnap-class) | **Partial — embed MVP shipped** | YouTube/Vimeo/Mux URL on `team_workouts` + match sessions | P3 |
+| Avatar PNG / character bust art | **Deferred post-launch** | One JPEG wired; `defaultPortraitV2` SVG + profile initials | Tabled |
 | Platform visual redesign (Gemini research) | **Read-only** | Functional chrome + Player OS Phase 7 cohesion | Tabled |
-| NGB / state roster export packet | **Not shipped** | Manual CSV + future federation roadmap | Owner GTM decision |
-| Background check vendor parity (NCSI) | **Partial** | Checkr embed + webhooks; director panopticon | P2 |
-| Tournament brackets polish | **Partial** | `tournament_events` + ticketing callables | P2 |
-| Registration → drag-drop roster UX | **Partial** | Admin roster + `player_lookup`; not GotSport drag UI | P2 |
+| NGB / state roster export packet | **Partial — CSV v1** | Director `StateRosterExportPanel`; not 38-body API sync | Owner GTM decision |
+| Background check vendor parity (NCSI) | **Partial — Checkr polish shipped** | Checkr embed + webhooks; director panopticon; not NCSI parity | P2 accept or acquirer |
+| Tournament brackets polish | **Partial — single-elim shipped** | `TournamentBracketPanel` on `tournament_events` | P2 accept v1 |
+| Registration → drag-drop roster UX | **Partial — assign panel shipped** | `RegistrationRosterAssignPanel`; not GotSport drag UI | P2 accept v1 |
 
 ---
 
@@ -38,11 +38,15 @@ These are **product owner decisions**, not backlog oversights:
 
 | Feature | Shipped | Gap |
 |---------|---------|-----|
-| Stripe registration | `createRegistrationIntent`, webhooks | Parent payments UX polish (P2) |
+| Stripe registration + installments | `createRegistrationIntent`, `paymentInstallments.ts`, `/parent/payments` | Full-season unlock on partial payment webhook follow-up |
+| Registration → roster | `assignSeasonRegistrationToRoster` CF + director assign panel | Drag-drop GotSport UX |
 | Eligibility matrix | `upsertClubEligibilityMatrix` | Director UX edge cases |
-| Push notifications | FCM + parent prefs | Requires user opt-in; no store push without native shell |
+| Push notifications | FCM + parent prefs | Store push certs require acquirer native distribution |
 | RL adaptive homework | HQ mount + callables | Launch default heuristic only (`abPercent: 0`) |
 | Field weather lock | Open-Meteo + NWS + scheduled eval | Not commercial weather SLA |
+| Federation export | CSV v1 callable | API sync Phases 2–4 per roadmap |
+| Live stream | URL embed MVP | CDN / production tooling |
+| Native shell | Capacitor 6 parent-first WebView | App Store / Play binaries |
 
 ---
 
@@ -52,29 +56,33 @@ Full feature matrix: [`COMPETITIVE_LAUNCH_ASSESSMENT.md`](../vision/COMPETITIVE_
 
 | Competitor | They still win on | We still win on |
 |------------|-------------------|-----------------|
-| TeamSnap ONE | Parent mobile adoption, streaming | Development loop, compliance |
+| TeamSnap ONE | Parent mobile adoption, streaming CDN | Development loop, compliance |
 | SportsEngine HQ | Enterprise reg, NGB integrations | Player OS, SafeSport comms |
 | GotSport | State roster / governing body sync | Gamified development, tryout OS depth |
 
 ---
 
-## Overnight agents addressing gaps
+## Overnight agents (Phase 1 + 2 — merged to dev)
 
-| Agent | Branch | Gap focus |
-|-------|--------|-----------|
-| 14 | `overnight/fed-ngb` | Federation CSV / roadmap |
-| 15 | `overnight/live-stream` | Event stream embed |
-| 17 | `overnight/native-shell` | Capacitor store shell |
-| 04 | `overnight/p2-payments` | Payments polish |
-| 05 | `overnight/p2-tournament` | Tournament UX |
-| 06 | `overnight/p2-checkr` | Checkr vendor hook |
+All overnight feature + check + CI agents merged 2026-06-13. Remaining work: [`GAP_CLOSURE_PLAN.md`](./GAP_CLOSURE_PLAN.md).
 
-Progress: [`SLICE_LOG.md`](./SLICE_LOG.md) · [`PARALLEL_STATUS.md`](./PARALLEL_STATUS.md)
+| Agent | Branch | Outcome |
+|-------|--------|---------|
+| 01–07 | P0 + P2 parity | **Done** |
+| 08–13, 22 | svelte-check burn-down | **Done** (check=0) |
+| 14–17 | Federation, live stream, marketing, native shell | **Done** |
+| 18 | gemini-ingest-1 | **Done** (one bust JPEG) |
+| 19–20 | gemini-ingest-2/3 | **Blocked** (no owner assets) |
+| 23 | vitest-ci | **Done** (129 green files) |
+| 24 | deploy-verify | **Partial** (scripts green; live deploy = owner) |
+
+Progress: [`SLICE_LOG.md`](./SLICE_LOG.md) · [`DOC_SYNC_REPORT.md`](./DOC_SYNC_REPORT.md)
 
 ---
 
 ## Related documents
 
+- [GAP_CLOSURE_PLAN.md](./GAP_CLOSURE_PLAN.md) — pre-QA backlog
 - [LIMITATIONS.md](./LIMITATIONS.md) — operational limits
 - [PROSPECTUS.md](./PROSPECTUS.md) § Risk factors
 - [FAQ.md](./FAQ.md) — "What is intentionally NOT built?"
