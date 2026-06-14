@@ -63,12 +63,13 @@ describe('/player/armory — Sprint 2.7.1 vector avatar studio', () => {
 	});
 
 	it('persists operativeAvatar to Firestore on save (via Studio)', () => {
-		expect(studioSrc).toMatch(/updateDoc[\s\S]*operativeAvatar/);
-		expect(studioSrc).toMatch(/UPDATE OPERATIVE/);
+		expect(studioSrc).toMatch(/syncOperativeIdentityToFirestore/);
+		expect(studioSrc).toMatch(/operativeAvatar/);
+		expect(studioSrc).toMatch(/SYNC IDENTITY/);
 	});
 
 	it('copy describes layered portrait part picker studio (no 3D / GLB)', () => {
-		expect(studioSrc).toMatch(/PART PICKER|part picker/i);
+		expect(studioSrc).toMatch(/OperativePortraitPartPicker/);
 		expect(studioSrc).not.toMatch(/3D PREVIEW|base_alpha\.glb|base_bravo\.glb|Drag to orbit/i);
 	});
 });

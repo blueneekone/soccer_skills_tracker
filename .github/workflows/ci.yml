@@ -85,7 +85,7 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Run curated vitest suites (129 green files)
+      - name: Run curated vitest suites (135 green files)
         run: |
           npx vitest run \
             "src/lib/__tests__" \
@@ -117,6 +117,7 @@ jobs:
             "src/lib/types/__tests__" \
             "src/lib/security/__tests__/firestoreRulesSprint21.test" \
             "src/lib/security/__tests__/firestoreRulesSprint22.test" \
+            "src/lib/security/__tests__/firestoreRulesSprint13.test" \
             "src/lib/security/__tests__/firestoreRulesSprint412.test" \
             "src/lib/security/__tests__/firestoreTenantIsolation.test" \
             "src/lib/security/__tests__/loopIntegrityGuards.test" \
@@ -125,6 +126,7 @@ jobs:
             "src/lib/gamification/__tests__/loadoutSchema.test" \
             "src/lib/gamification/__tests__/personaFunctionalMvp.test" \
             "src/lib/gamification/__tests__/playerLaunchDeferAvatar.test" \
+            "src/lib/gamification/__tests__/playerRlFunctional.test" \
             "src/lib/gamification/__tests__/playerLoadoutSprint30.test" \
             "src/lib/gamification/__tests__/playerLoadoutSprint311.test" \
             "src/lib/gamification/__tests__/playerLoadoutSprint33.test" \
@@ -186,8 +188,12 @@ jobs:
             "armoryCommandDeck.test" \
             "armoryLoadoutStudio.test" \
             "armoryRouteGuards.test" \
+            "armory.layout.test" \
+            "armoryAvatar.test" \
             "playerDashboard.layout.test" \
-            "playerDashboard.slice5.test"
+            "playerDashboard.hud.test" \
+            "playerDashboard.slice5.test" \
+            "workout.layout.test"
 
   # ─────────────────────────────────────────────────────────────────────────────
   # JOB 2 — Functions guards (node --test, no Java / no emulator)

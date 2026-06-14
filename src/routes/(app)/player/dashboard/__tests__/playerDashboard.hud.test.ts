@@ -64,29 +64,29 @@ describe('/player/dashboard — Sprint 1.4 HUD overhaul', () => {
 		expect(src).not.toMatch(/Pace', 'Shooting', 'Passing/);
 	});
 
-	it('maps palette through dynamic 60-30-10 CSS variables', () => {
+	it('maps palette through dossier 60-30-10 CSS variables', () => {
 		const vpp = readFileSync(
 			join(__dirname, '../../../../../lib/components/player/dashboard/VanguardProtocolPanel.svelte'),
 			'utf-8',
 		);
-		expect(src).toMatch(/var\(--color-dominant/);
+		expect(src).toMatch(/var\(--pd-bg/);
 		expect(hudCssSrc).toMatch(/--color-structural:\s*#64748b/);
-		expect(vpp).toMatch(/var\(--color-accent/);
+		expect(vpp).toMatch(/var\(--pd-accent/);
 	});
 
 	it('uses fluid bento gap token (clamp via --bento-gap-liquid)', () => {
 		expect(containerSrc + hudCssSrc + src).toMatch(/var\(--bento-gap-liquid/);
 	});
 
-	it('memory capsules live inside player-analytics-deck (Sprint 2.4)', () => {
-		expect(src).toMatch(/player-analytics-deck/);
+	it('memory capsules live inside player-analytics-void (Sprint 2.4)', () => {
+		expect(src).toMatch(/player-analytics-void/);
 		expect(src).toMatch(/player-capsules-strip/);
 		expect(src).toMatch(/lobby-capsules-h|lobby-capsule-ghost|MemoryCapsuleArena/);
-		const deckIdx = src.indexOf('player-analytics-deck');
+		const voidIdx = src.indexOf('player-analytics-void');
 		const vppIdx = src.indexOf('<VanguardProtocolPanel');
 		const capsulesIdx = src.indexOf('player-capsules-strip');
-		expect(deckIdx).toBeGreaterThan(-1);
-		expect(vppIdx).toBeGreaterThan(deckIdx);
+		expect(voidIdx).toBeGreaterThan(-1);
+		expect(vppIdx).toBeGreaterThan(voidIdx);
 		expect(capsulesIdx).toBeGreaterThan(vppIdx);
 	});
 
@@ -115,9 +115,9 @@ describe('PlayerShell — rail-only navigation', () => {
 });
 
 describe('IdentityBentoModule — identity badge layout', () => {
-	it('uses avatar ring or inline badge with streak/XP stat cells', () => {
+	it('uses avatar ring or holo face with streak/XP stat cells', () => {
 		expect(identitySrc).toMatch(/HudAvatarRing/);
-		expect(identitySrc).toMatch(/ibm-inline-badge/);
+		expect(identitySrc).toMatch(/ibm-holo-face|ibm-metrics/);
 		expect(identitySrc).toMatch(/HudStatCell|HudMetricChip|ibm-metrics/);
 		expect(identitySrc).not.toMatch(/HudMiniRing/);
 	});

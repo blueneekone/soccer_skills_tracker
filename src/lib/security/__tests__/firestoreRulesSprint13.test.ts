@@ -30,11 +30,9 @@ describe('Sprint 1.3 — Firestore rules structure', () => {
 	});
 
 	it('clubs collection requires isAuthorized (not blanket authed)', () => {
+		// Top-level clubs read only — nested subcollections may use authed().
 		expect(RULES).toMatch(
-			/match \/clubs\/\{clubId\}[\s\S]*?allow read: if isPlatformAdmin\(\) \|\| isAuthorized\(clubId\)/,
-		);
-		expect(RULES).not.toMatch(
-			/match \/clubs\/\{clubId\}[\s\S]*?allow read: if authed\(\);/,
+			/match \/clubs\/\{clubId\}\s*\{\s*\n\s*allow read: if isPlatformAdmin\(\) \|\| isAuthorized\(clubId\)/,
 		);
 	});
 

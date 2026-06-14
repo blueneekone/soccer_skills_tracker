@@ -226,3 +226,25 @@ Agents append entries below. Do not edit prior rows.
 - OWNER_QA_CHECKLIST QA-id count: **47** (QA-000–QA-507)
 - PLATFORM_GAP_REGISTER row count: **86** (sections A–M + rejects)
 **Verify:** `npm run check` · `npm test -- src/lib/parent/__tests__/launchWave2Complete.test.ts src/lib/gamification/__tests__/personaFunctionalMvp.test.ts` · `node scripts/launch-overnight-agents.mjs --wave 3a --dry-run`
+
+---
+
+## vitest-batch-misc — 2026-06-14
+
+**Branch:** `closure/vitest-batch-misc`  
+**Status:** Done  
+**Gaps closed:** G-06 Done · G-02 partial (−6 suites; 55 red remain for hud/loadout batches)
+
+**Fixed/retired misc excluded suites (6 files → CI allowlist 129 → 135):**
+- `playerRlFunctional.test.ts` — RL exports moved to `functions-rl/index.js`; AdaptiveHomework `goto('/player/workout')`
+- `firestoreRulesSprint13.test.ts` — clubs top-level read guard (removed obsolete nested `authed()` negative)
+- `armory.layout.test.ts` — `.qa-card` backdrop guard reads dossier CSS when page has no local rule
+- `armoryAvatar.test.ts` — `syncOperativeIdentityToFirestore` + `OperativePortraitPartPicker` (replaces UPDATE OPERATIVE)
+- `workout.layout.test.ts` — pw-theater train layout (replaces 12-col bento span guards)
+- `playerDashboard.hud.test.ts` — `--pd-*` tokens, `player-analytics-void`, holo face metrics
+
+**Verify:**
+- `npx vitest run` (6 slice paths): 52 passed
+- `npx vitest run src/lib/security/__tests__/firestoreRulesSprint13.test.ts`: 6 passed
+- `npm run check`: 0 errors
+- `npm run build`: pass
