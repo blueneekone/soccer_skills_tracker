@@ -11,6 +11,7 @@ import {
 	coachClearanceStepLabel,
 	formatClearanceSource,
 	deriveCoachClearanceStep,
+	mapCheckrReportStatus,
 } from '../checkrCoachClearance.js';
 
 describe('checkrCoachClearance — dashboard URLs', () => {
@@ -74,6 +75,13 @@ describe('checkrCoachClearance — clearance status sub-label', () => {
 });
 
 describe('checkrCoachClearance — native status labels', () => {
+	it('maps Checkr report result/status to Vanguard clearance status', () => {
+		expect(mapCheckrReportStatus('clear', 'complete')).toBe('cleared');
+		expect(mapCheckrReportStatus('consider', 'complete')).toBe('flagged');
+		expect(mapCheckrReportStatus(null, 'suspended')).toBe('flagged');
+		expect(mapCheckrReportStatus(null, 'pending')).toBe('pending');
+	});
+
 	it('maps clearance steps to human-readable labels', () => {
 		expect(coachClearanceStepLabel('not_started')).toBe('Not started');
 		expect(coachClearanceStepLabel('invited')).toBe('Invitation sent');

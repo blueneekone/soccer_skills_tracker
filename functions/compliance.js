@@ -525,16 +525,165 @@ exports.checkrSessionTokens = onRequest(
 );
 
 // ── 1. backgroundCheckCallback / checkrWebhook ───────────────────────────────
+
+/** Clearance validity window — mirrored in clearanceExpiry.js + backgroundCheck.ts */
+const CLEARANCE_VALIDITY_DAYS = 365;
+const CLEARANCE_VALIDITY_MS = CLEARANCE_VALIDITY_DAYS * 24 * 60 * 60 * 1000;
+
+/** Checkr lifecycle events we process; others ack 200 to stop retries. */
+const CHECKR_WEBHOOK_EVENT_TYPES = new Set([
+  'report.completed',
+  'report.suspended',
+  'report.resumed',
+]);
+
+/**
+ * Map Checkr report result/status → Vanguard clearance status.
+ * @param {string|undefined|null} checkrResult  e.g. clear, consider
+ * @param {string|undefined|null} checkrStatus  e.g. suspended, pending, complete
+ * @returns {'pending'|'cleared'|'flagged'}
+ */
+function mapCheckrReportStatus(checkrResult, checkrStatus) {
+  const outcome = String(checkrResult || checkrStatus || '').toLowerCase().trim();
+  if (outcome === 'clear') return 'cleared';
+  if (outcome === 'consider' || outcome === 'suspended') return 'flagged';
+  return 'pending';
+}
+
+/**
+ * Timing-safe HMAC verification for Checkr webhook payloads.
+ * Accepts plain hex or `sha256=<hex>` signature headers.
+ *
+ * @param {Buffer|string} rawBody
+ * @param {string|undefined|null} signatureHeader
+ * @param {string} secret
+ * @returns {boolean}
+ */
+function verifyCheckrWebhookSignature(rawBody, signatureHeader, secret) {
+  if (!secret) return true;
+  if (!rawBody) return false;
+
+  const sigRaw = String(signatureHeader || '').trim();
+  if (!sigRaw) return false;
+
+  const sigHex = sigRaw.startsWith('sha256=') ? sigRaw.slice('sha256='.length) : sigRaw;
+  let provided;
+  try {
+    provided = Buffer.from(sigHex, 'hex');
+  } catch {
+    return false;
+  }
+
+  const expected = crypto
+    .createHmac('sha256', secret)
+    .update(rawBody)
+    .digest();
+
+  if (provided.length !== expected.length) return false;
+  return crypto.timingSafeEqual(provided, expected);
+}
+
+/**
+ * Whether a webhook should advance clearance from current → next.
+ * Blocks accidental downgrades (cleared → pending) on stale events.
+ *
+ * @param {string|undefined|null} currentStatus
+ * @param {'pending'|'cleared'|'flagged'} nextStatus
+ * @returns {boolean}
+ */
+function shouldApplyClearanceTransition(currentStatus, nextStatus) {
+  const current = typeof currentStatus === 'string' ? currentStatus : 'pending';
+  if (current === nextStatus) return true;
+  if (current === 'cleared' && nextStatus === 'pending') return false;
+  return true;
+}
+
+/**
+ * Normalize Checkr webhook JSON into a Vanguard processing shape.
+ * Supports native Checkr `data.object` payloads and legacy test envelopes.
+ *
+ * @param {Record<string, unknown>|null|undefined} body
+ * @returns {{
+ *   eventType: string,
+ *   reportId: string,
+ *   candidateId: string|null,
+ *   checkrResult: string,
+ *   checkrStatus: string,
+ *   email: string,
+ * }|null}
+ */
+function normalizeCheckrWebhookPayload(body) {
+  if (!body || typeof body !== 'object') return null;
+
+  const eventType = typeof body.type === 'string' ? body.type : '';
+  const data = (typeof body.data === 'object' && body.data !== null)
+    ? /** @type {Record<string, unknown>} */ (body.data)
+    : {};
+
+  const reportObj = (typeof data.object === 'object' && data.object !== null)
+    ? /** @type {Record<string, unknown>} */ (data.object)
+    : data;
+
+  const reportId = String(
+    reportObj.id ||
+    reportObj.reportId ||
+    data.reportId ||
+    '',
+  ).trim();
+
+  const candidateIdRaw = reportObj.candidate_id || reportObj.candidateId || data.candidateId;
+  const candidateId = typeof candidateIdRaw === 'string' && candidateIdRaw.trim()
+    ? candidateIdRaw.trim()
+    : null;
+
+  const checkrResult = String(reportObj.result || data.result || data.status || '').trim();
+  const checkrStatus = String(reportObj.status || data.reportStatus || '').trim();
+
+  const emailRaw = data.email || reportObj.email;
+  const email = typeof emailRaw === 'string' ? emailRaw.toLowerCase().trim() : '';
+
+  if (!eventType || !reportId) return null;
+
+  return {
+    eventType,
+    reportId,
+    candidateId,
+    checkrResult,
+    checkrStatus,
+    email,
+  };
+}
+
+/**
+ * Resolve the coach email for a Checkr webhook — direct email or candidate lookup.
+ *
+ * @param {string} emailHint
+ * @param {string|null} candidateId
+ * @returns {Promise<string|null>}
+ */
+async function resolveCheckrWebhookEmail(emailHint, candidateId) {
+  if (emailHint) return emailHint;
+  if (!candidateId) return null;
+
+  const snap = await db()
+    .collection('users')
+    .where('clearance.checkrCandidateId', '==', candidateId)
+    .limit(1)
+    .get();
+
+  if (snap.empty) return null;
+  return snap.docs[0].id;
+}
+
 /**
  * HTTP webhook consumed by Checkr.
- * Expected POST body shape:
+ * Native payload shape:
+ *   { type: 'report.completed', data: { object: { id, result, status, candidate_id } } }
+ * Legacy test envelope:
  *   { type: 'report.completed', data: { email, status, reportId } }
  *
- * Checkr status → Vanguard status mapping:
- *   'clear'     → 'cleared'
- *   'consider'  → 'flagged'
- *   'suspended' → 'flagged'
- *   anything else → 'pending'
+ * Checkr status → Vanguard status mapping via `mapCheckrReportStatus`.
+ * Idempotency: dedupe on `checkr_webhook_events/{reportId}`.
  *
  * Signature verification uses HMAC-SHA256 with the BGC_WEBHOOK_SECRET.
  * Header expected: X-Checkr-Signature (or X-Bgc-Signature as fallback).
@@ -550,74 +699,128 @@ async function _checkrWebhookHandler(req, res) {
 
     // ── Signature verification ────────────────────────────────────────────
     const secret = BGC_WEBHOOK_SECRET.value();
+    const rawBody = Buffer.isBuffer(req.rawBody)
+      ? req.rawBody
+      : (typeof req.rawBody === 'string' ? Buffer.from(req.rawBody, 'utf8') : null);
+
     if (secret) {
-      const sig = String(
+      if (!rawBody) {
+        res.status(400).json({ error: 'Missing raw body buffer' });
+        return;
+      }
+      const sigHeader =
         req.headers['x-checkr-signature'] ||
-        req.headers['x-bgc-signature'] ||
-        '',
-      );
-      const rawBody = typeof req.rawBody === 'string' || Buffer.isBuffer(req.rawBody)
-        ? req.rawBody
-        : JSON.stringify(req.body);
-      const expected = crypto
-        .createHmac('sha256', secret)
-        .update(rawBody)
-        .digest('hex');
-      if (!sig || sig !== expected) {
-        logger.warn('[compliance] HMAC mismatch on BGC callback', { sig });
+        req.headers['x-bgc-signature'];
+      if (!verifyCheckrWebhookSignature(rawBody, String(sigHeader || ''), secret)) {
+        logger.warn('[compliance] HMAC mismatch on Checkr webhook');
         res.status(401).json({ error: 'Invalid signature' });
         return;
       }
     }
 
-    const { type, data } = req.body || {};
-    if (!type || !data) {
-      res.status(400).json({ error: 'Missing type or data' });
+    /** @type {Record<string, unknown>} */
+    let parsedBody = req.body || {};
+    if (rawBody && (!parsedBody || typeof parsedBody !== 'object' || !parsedBody.type)) {
+      try {
+        parsedBody = JSON.parse(rawBody.toString('utf8'));
+      } catch {
+        res.status(400).json({ error: 'Invalid JSON' });
+        return;
+      }
+    }
+
+    const normalized = normalizeCheckrWebhookPayload(parsedBody);
+    if (!normalized) {
+      res.status(400).json({ error: 'Missing type or report id' });
       return;
     }
 
-    // ── Payload extraction ────────────────────────────────────────────────
-    const { email, status, reportId } = data;
-    if (typeof email !== 'string' || !email) {
-      res.status(400).json({ error: 'data.email is required' });
-      return;
-    }
-    if (typeof status !== 'string' || !status) {
-      res.status(400).json({ error: 'data.status is required' });
+    const { eventType, reportId, candidateId, checkrResult, checkrStatus } = normalized;
+
+    if (!CHECKR_WEBHOOK_EVENT_TYPES.has(eventType)) {
+      res.status(200).json({ ok: true, ignored: true, eventType });
       return;
     }
 
-    const normalizedEmail = email.toLowerCase().trim();
+    const normalizedEmail = await resolveCheckrWebhookEmail(normalized.email, candidateId);
+    if (!normalizedEmail) {
+      res.status(400).json({ error: 'Cannot resolve coach email for report' });
+      return;
+    }
 
-    // ── Status normalisation ──────────────────────────────────────────────
-    const clearanceStatus =
-      status === 'clear' ? 'cleared' :
-      status === 'consider' || status === 'suspended' ? 'flagged' :
-      'pending';
+    const clearanceStatus = mapCheckrReportStatus(checkrResult, checkrStatus);
+
+    // ── Idempotency — dedupe on report.id ─────────────────────────────────
+    const eventRef = db().collection('checkr_webhook_events').doc(reportId);
+    const existingEvent = await eventRef.get();
+    if (existingEvent.exists) {
+      const prior = existingEvent.data() || {};
+      logger.info('[compliance] Checkr webhook duplicate', {
+        reportId,
+        email: normalizedEmail,
+        priorStatus: prior.clearanceStatus,
+      });
+      res.status(200).json({
+        ok: true,
+        duplicate: true,
+        status: prior.clearanceStatus || clearanceStatus,
+      });
+      return;
+    }
 
     // ── Firestore write (status + Checkr reference only — Zero-Trust) ───
     try {
       const userRef = db().collection('users').doc(normalizedEmail);
-      await userRef.set(
-        {
-          clearance: {
-            status: clearanceStatus,
-            checkrCandidateId: reportId || null,
-            lastVerified: admin.firestore.FieldValue.serverTimestamp(),
-          },
-        },
-        { merge: true },
-      );
+      const userSnap = await userRef.get();
+      const existingCl = userSnap.exists && typeof userSnap.data()?.clearance === 'object'
+        ? userSnap.data().clearance
+        : {};
+      const currentStatus = typeof existingCl.status === 'string' ? existingCl.status : 'pending';
 
-      // ── Re-stamp JWT claim ──────────────────────────────────────────────
+      if (!shouldApplyClearanceTransition(currentStatus, clearanceStatus)) {
+        logger.info('[compliance] Checkr webhook transition blocked', {
+          email: normalizedEmail,
+          currentStatus,
+          clearanceStatus,
+          reportId,
+        });
+        res.status(200).json({ ok: true, ignored: true, reason: 'transition_blocked' });
+        return;
+      }
+
+      const now = admin.firestore.FieldValue.serverTimestamp();
+      const clearancePatch = {
+        status: clearanceStatus,
+        source: 'checkr',
+        lastVerified: now,
+        checkrReportId: reportId,
+      };
+
+      if (candidateId) {
+        clearancePatch.checkrCandidateId = candidateId;
+      } else if (typeof existingCl.checkrCandidateId === 'string') {
+        clearancePatch.checkrCandidateId = existingCl.checkrCandidateId;
+      }
+
+      if (clearanceStatus === 'cleared') {
+        clearancePatch.clearedAt = now;
+        clearancePatch.expiresAt = admin.firestore.Timestamp.fromMillis(
+          Date.now() + CLEARANCE_VALIDITY_MS,
+        );
+      }
+
+      await userRef.set({ clearance: clearancePatch }, { merge: true });
+
+      // ── Re-stamp JWT claim + force token refresh ────────────────────────
       const userRecord = await auth().getUserByEmail(normalizedEmail).catch(() => null);
       if (userRecord) {
         await stampClearanceClaim(userRecord.uid, normalizedEmail);
+        await auth().revokeRefreshTokens(userRecord.uid).catch((revokeErr) => {
+          logger.warn('[compliance] revokeRefreshTokens failed (non-fatal)', revokeErr);
+        });
       }
 
       // ── Org-level Compliance Vault write ────────────────────────────────
-      // Attach the BGC receipt to the parent-org boundary so sibling
-      // divisions can query upstream and avoid duplicate screening fees.
       try {
         const freshUserSnap = await db().collection('users').doc(normalizedEmail).get();
         const orgId = freshUserSnap.exists ? (freshUserSnap.data()?.orgId || '') : '';
@@ -626,39 +829,50 @@ async function _checkrWebhookHandler(req, res) {
             .collection('orgs').doc(orgId)
             .collection('compliance_vault').doc(normalizedEmail)
             .set({
-              status:     clearanceStatus,
-              userId:     normalizedEmail,
-              clubId:     freshUserSnap.data()?.clubId || null,
-              reportId:   reportId || null,
-              source:     'checkr',
-              lastVerified: admin.firestore.FieldValue.serverTimestamp(),
+              status: clearanceStatus,
+              userId: normalizedEmail,
+              clubId: freshUserSnap.data()?.clubId || null,
+              reportId,
+              source: 'checkr',
+              lastVerified: now,
             }, { merge: true });
           logger.info('[compliance] Org-vault updated', { orgId, email: normalizedEmail, clearanceStatus });
         }
       } catch (vaultWriteErr) {
-        // Non-fatal: vault write failure must not roll back the user clearance.
         logger.warn('[compliance] Org-vault write failed (non-fatal)', vaultWriteErr);
       }
 
-      // ── Audit log ───────────────────────────────────────────────────────
+      // ── Idempotency record + audit log ──────────────────────────────────
+      await eventRef.set({
+        reportId,
+        eventType,
+        targetEmail: normalizedEmail,
+        clearanceStatus,
+        candidateId: candidateId || null,
+        source: 'checkr_webhook',
+        processedAt: now,
+      });
+
       await db().collection('audit_logs').add({
         action: 'background_check_callback',
         targetEmail: normalizedEmail,
         clearanceStatus,
-        reportId: reportId || null,
+        reportId,
+        eventType,
         source: 'checkr_webhook',
-        timestamp: admin.firestore.FieldValue.serverTimestamp(),
+        timestamp: now,
       });
 
-      logger.info('[compliance] BGC callback processed', {
+      logger.info('[compliance] Checkr webhook processed', {
         email: normalizedEmail,
         clearanceStatus,
         reportId,
+        eventType,
       });
 
       res.status(200).json({ ok: true, status: clearanceStatus });
     } catch (err) {
-      logger.error('[compliance] BGC callback error', err);
+      logger.error('[compliance] Checkr webhook error', err);
       res.status(500).json({ error: 'Internal Server Error' });
     }
 }

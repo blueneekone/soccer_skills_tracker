@@ -226,3 +226,15 @@ Agents append entries below. Do not edit prior rows.
 - OWNER_QA_CHECKLIST QA-id count: **47** (QA-000–QA-507)
 - PLATFORM_GAP_REGISTER row count: **86** (sections A–M + rejects)
 **Verify:** `npm run check` · `npm test -- src/lib/parent/__tests__/launchWave2Complete.test.ts src/lib/gamification/__tests__/personaFunctionalMvp.test.ts` · `node scripts/launch-overnight-agents.mjs --wave 3a --dry-run`
+
+---
+
+## checkr-webhooks (D-01) — 2026-06-14
+
+**Branch:** `closure/checkr-webhooks`  
+**Status:** Done  
+**Gap:** D-01 — Checkr webhook lifecycle hardening  
+**Changed:** `functions/compliance.js`, `functions-compliance/compliance.js`, `functions/__tests__/complianceCheckr.guard.test.js`, `src/lib/compliance/checkrCoachClearance.ts`, `src/lib/compliance/__tests__/checkrCoachClearance.urls.test.ts`, `docs/acquisition/PLATFORM_GAP_REGISTER.md`  
+**Hardening:** timing-safe HMAC signature verification (`verifyCheckrWebhookSignature`), idempotency on `checkr_webhook_events/{reportId}`, native Checkr `data.object` payload normalization, status transition guards, `clearedAt`/`expiresAt` on cleared, `revokeRefreshTokens` after claim stamp  
+**Verify:** `node --test functions/__tests__/complianceCheckr.guard.test.js` (32 pass) · `npm test -- src/lib/compliance/__tests__/checkrCoachClearance.urls.test.ts` (11 pass) · `npm run check` (0 errors) · `npm run build` (pass)  
+**ManualQaId:** QA-204 (owner checklist — webhook path documented)

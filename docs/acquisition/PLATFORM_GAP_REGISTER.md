@@ -72,7 +72,7 @@
 
 | Id | Gap | BuildOwner | Closure slice | AutomatedVerify | ManualQaId | Status |
 |----|-----|------------|---------------|-----------------|------------|--------|
-| D-01 | Checkr embed + webhook lifecycle completeness | Agent | `closure/checkr-webhooks` | `node --test functions/__tests__/complianceCheckr.guard.test.js` | QA-204 | Agent |
+| D-01 | Checkr embed + webhook lifecycle completeness | Done | `closure/checkr-webhooks` | `node --test functions/__tests__/complianceCheckr.guard.test.js` | QA-204 | Done |
 | D-02 | NCSI vendor parity (vs Checkr) | Done | — | none | QA-504 | Done |
 | D-03 | Live stream URL embed MVP | Done | — | `liveStreamLaunch.test.ts` | QA-207 | Done |
 | D-04 | Live stream match-day / schedule wiring | Done | — | `liveStreamLaunch.test.ts` | QA-207 | Done |
