@@ -14,6 +14,30 @@ concurrency:
 
 jobs:
   # ─────────────────────────────────────────────────────────────────────────────
+  # JOB 0 — Type-check (svelte-check, full repo — must stay at 0 errors)
+  # ─────────────────────────────────────────────────────────────────────────────
+  typecheck:
+    name: Type-check (svelte-check)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run svelte-check (0 errors gate)
+        run: npm run check
+
+  # ─────────────────────────────────────────────────────────────────────────────
   # JOB 1 — Unit tests (vitest, no emulator needed)
   #
   # Full `npm test` is NOT green: 61 files / 113 tests carry pre-existing

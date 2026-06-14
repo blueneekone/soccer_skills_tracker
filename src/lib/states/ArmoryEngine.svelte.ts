@@ -222,6 +222,9 @@ type FirestoreArmoryDoc = {
 	totalXP?: number;
 	stats?: Partial<ScoutsSix>;
 	xpHistory?: XpHistoryEntry[];
+	lastActiveUtc?: string;
+	decayState?: DecayStateDoc;
+	streakFreeze?: StreakFreezeDoc;
 };
 
 // ── Engine class ─────────────────────────────────────────────────────────────

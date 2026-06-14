@@ -50,7 +50,7 @@ jobs:
 
       - name: Type-check (svelte-check)
         # Fail the pipeline on errors; allow existing pre-existing warnings.
-        run: npx svelte-check --output human --threshold error
+        run: npm run check
         env:
           VITE_USE_PROD: ${{ env.VITE_USE_PROD }}
 
