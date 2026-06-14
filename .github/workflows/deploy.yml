@@ -22,8 +22,8 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  # Set VITE_USE_PROD=true so the SvelteKit build uses the production
-  # Firebase config (soccer-skills-tracker), not the dev project.
+  # workflow_dispatch dev → sports-skill-tracker-dev; prod or push-to-main → soccer-skills-tracker (A-04)
+  DEPLOY_TARGET: ${{ github.event.inputs.environment == 'dev' && 'dev' || 'prod' }}
   VITE_USE_PROD: ${{ github.event.inputs.environment != 'dev' && 'true' || 'false' }}
   FIREBASE_PROJECT_ID: ${{ github.event.inputs.environment == 'dev' && 'sports-skill-tracker-dev' || 'soccer-skills-tracker' }}
 
@@ -106,13 +106,13 @@ jobs:
   # JOB 3 — Deploy (sequential: Rules → codebases → default → Hosting)
   # ─────────────────────────────────────────────────────────────────────────
   deploy:
-    name: 🔥 Deploy to Firebase
+    name: 🔥 Deploy (${{ env.FIREBASE_PROJECT_ID }})
     runs-on: ubuntu-latest
     timeout-minutes: 20
     needs: build
     environment:
-      name: ${{ github.event.inputs.environment == 'dev' && 'development' || 'production' }}
-      url: ${{ github.event.inputs.environment == 'dev' && 'https://sstracker.app' || 'https://soccer.sstracker.app' }}
+      name: ${{ env.DEPLOY_TARGET == 'dev' && 'development' || 'production' }}
+      url: ${{ env.DEPLOY_TARGET == 'dev' && 'https://sstracker.app' || 'https://soccer.sstracker.app' }}
 
     steps:
       - name: Checkout
@@ -173,11 +173,66 @@ jobs:
 
       - name: 🎉 Deployment complete
         run: |
-          if [ "${{ github.event.inputs.environment }}" = "dev" ]; then
-            echo "VANGUARD deployed to sports-skill-tracker-dev"
+          if [ "${{ env.DEPLOY_TARGET }}" = "dev" ]; then
+            echo "VANGUARD deployed to sports-skill-tracker-dev (development)"
             echo "Hosting: https://sstracker.app"
+            {
+              echo "## Deploy complete — development"
+              echo ""
+              echo "- **Project:** \`sports-skill-tracker-dev\`"
+              echo "- **Hosting:** https://sstracker.app"
+              echo "- **Commit:** \`${{ github.sha }}\`"
+            } >> "$GITHUB_STEP_SUMMARY"
           else
-            echo "VANGUARD deployed to soccer-skills-tracker"
+            echo "VANGUARD deployed to soccer-skills-tracker (production)"
             echo "Hosting: https://soccer.sstracker.app"
+            {
+              echo "## Deploy complete — production"
+              echo ""
+              echo "- **Project:** \`soccer-skills-tracker\`"
+              echo "- **Hosting:** https://soccer.sstracker.app"
+              echo "- **Commit:** \`${{ github.sha }}\`"
+            } >> "$GITHUB_STEP_SUMMARY"
           fi
           echo "Commit: ${{ github.sha }}"
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # JOB 4 — Post-deploy smoke (dev only, when FIREBASE_CI_TOKEN is configured)
+  # ─────────────────────────────────────────────────────────────────────────
+  smoke-dev:
+    name: 🧪 Smoke (dev)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: deploy
+    if: env.DEPLOY_TARGET == 'dev' && secrets.FIREBASE_CI_TOKEN != ''
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Cloud Functions dependencies (smoke export guard)
+        run: |
+          for dir in functions functions-core functions-rl functions-commerce functions-compliance functions-integrations functions-platform; do
+            npm ci --prefix "$dir"
+          done
+
+      - name: Download build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: sveltekit-build
+          path: build/
+
+      - name: Run post-deploy smoke
+        run: npm run smoke:dev
+        env:
+          SMOKE_FIREBASE_PROJECT: sports-skill-tracker-dev
+          SMOKE_HOSTING_URL: https://sstracker.app

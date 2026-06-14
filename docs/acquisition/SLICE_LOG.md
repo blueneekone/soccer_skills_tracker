@@ -226,3 +226,20 @@ Agents append entries below. Do not edit prior rows.
 - OWNER_QA_CHECKLIST QA-id count: **47** (QA-000–QA-507)
 - PLATFORM_GAP_REGISTER row count: **86** (sections A–M + rejects)
 **Verify:** `npm run check` · `npm test -- src/lib/parent/__tests__/launchWave2Complete.test.ts src/lib/gamification/__tests__/personaFunctionalMvp.test.ts` · `node scripts/launch-overnight-agents.mjs --wave 3a --dry-run`
+
+---
+
+## deploy-gha-dev (A-04) — 2026-06-14
+
+**Branch:** `closure/deploy-gha-dev`  
+**Slice:** `deploy-gha-dev` · **Register:** A-04 · **ManualQaId:** QA-000d  
+**Status:** **Done**
+
+**Shipped:**
+- `DEPLOY_TARGET` + `FIREBASE_PROJECT_ID` env: `workflow_dispatch` **dev** → `sports-skill-tracker-dev`; **prod** or `push` to `main` → `soccer-skills-tracker`
+- `VITE_USE_PROD` mirrors target (`false` for dev builds)
+- Deploy job name + GitHub environment URL keyed to target project
+- Completion echo + `GITHUB_STEP_SUMMARY`: dev path says **development** / `sports-skill-tracker-dev` (never bare "production")
+- Optional `smoke-dev` job after deploy when `DEPLOY_TARGET=dev` and `FIREBASE_CI_TOKEN` secret is set (`npm run smoke:dev`)
+
+**Verify:** `npm run check` (0 errors) · `npm run build` (pass)
