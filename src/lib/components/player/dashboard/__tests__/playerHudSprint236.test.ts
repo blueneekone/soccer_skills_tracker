@@ -20,7 +20,7 @@ const visualReadmeSrc = existsSync(VISUAL_README) ? readFileSync(VISUAL_README, 
 const e2eSpecSrc = existsSync(E2E_SPEC) ? readFileSync(E2E_SPEC, 'utf-8') : '';
 
 function playerVppBlock() {
-	return statsSrc.match(/\{#if isPlayerRole\}\s*<section[\s\S]*?VanguardProtocolPanel[\s\S]*?<\/section>/)?.[0] ?? '';
+	return statsSrc.match(/<section[\s\S]*?stats-analytics-void[\s\S]*?VanguardProtocolPanel[\s\S]*?<\/section>/)?.[0] ?? '';
 }
 
 describe('Sprint 2.22 slice 6g — Stats HUD material scope', () => {
@@ -50,8 +50,9 @@ describe('Sprint 2.22 slice 6g — Stats HUD material scope', () => {
 });
 
 describe('Sprint 2.22 slice 6g — Stats void + workout band CSS', () => {
-	it('player-dashboard-hud.css contains Sprint 2.22 slice 6g block', () => {
-		expect(hudCssSrc).toMatch(/Sprint 2\.22 slice 6g — Stats investigation workspace/);
+	it('player-dashboard-hud.css contains stats analytics void + workout band rules', () => {
+		expect(hudCssSrc).toMatch(/\.stats-analytics-void\.pd-os-deck--recessed/);
+		expect(hudCssSrc).toMatch(/\.stats-workout-band \.pd-os-deck__well\.dossier-workout__chart/);
 	});
 
 	it('.player-hud-root .stats-analytics-void.pd-os-deck--recessed uses recessed void island', () => {
@@ -72,11 +73,10 @@ describe('Sprint 2.22 slice 6g — Stats void + workout band CSS', () => {
 	});
 
 	it('stats analytics void mirrors 6f-b inspector whisper rules (Wave C Z1 wells)', () => {
-		const block6g = hudCssSrc.match(/Sprint 2\.22 slice 6g[\s\S]*$/)?.[0] ?? '';
-		expect(block6g).toMatch(/\.stats-analytics-void \.vpp-body:has\(\.vpp-inspector--idle\)/);
-		expect(block6g).toMatch(/minmax\(120px,\s*200px\)/);
-		expect(block6g).toMatch(
-			/\.stats-analytics-void \.vpp-inspector--premium[\s\S]*?--pd-z1-well-bg/,
+		expect(hudCssSrc).toMatch(/:is\(\.player-analytics-void, \.stats-analytics-void\) \.vpp-body:has\(\.vpp-inspector--idle\)/);
+		expect(hudCssSrc).toMatch(/minmax\(120px,\s*200px\)/);
+		expect(hudCssSrc).toMatch(
+			/:is\(\.player-analytics-void, \.stats-analytics-void\) \.vpp-inspector--premium[\s\S]*?--pd-z1-well-bg/,
 		);
 	});
 });

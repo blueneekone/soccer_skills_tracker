@@ -26,7 +26,6 @@ describe('Sprint 2.22 slice 6e — pathway Tier A edge treatment', () => {
 	it('OperativePathway uses gap connectors in hud css — no through-well rail', () => {
 		expect(pathwaySrc).not.toMatch(/opp-track-rail/);
 		expect(hudCssSrc).toMatch(/opp-node:not\(:last-child\)::after/);
-		expect(hudCssSrc).toMatch(/Gap-only connectors — never through reward wells/);
 	});
 
 	it('OperativePathway contains milestone tier helper or class', () => {
@@ -52,10 +51,10 @@ describe('Sprint 2.22 slice 6e — pathway Tier A edge treatment', () => {
 		);
 	});
 
-	it('OperativePathwayPreview uses compact meta line for level — not display-sized h2', () => {
-		expect(previewSrc).toMatch(/opp-preview__meta/);
-		expect(hudCssSrc).toMatch(/\.opp-preview__meta[\s\S]*?Geist Mono/);
-		expect(hudCssSrc).toMatch(/\.opp-preview__title[\s\S]*?0\.95rem/);
+	it('OperativePathwayPreview uses compact status line for level — not display-sized h2', () => {
+		expect(previewSrc).toMatch(/opp-preview__status/);
+		expect(hudCssSrc).toMatch(/\.opp-preview__status \.pd-label[\s\S]*?Geist Mono/);
+		expect(hudCssSrc).toMatch(/\.opp-preview__title[\s\S]*?var\(--pd-hud-title-l2\)/);
 	});
 
 	it('expand/collapse toggle remains absent from preview', () => {

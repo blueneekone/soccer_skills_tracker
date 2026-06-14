@@ -53,7 +53,7 @@ describe('Wave B — OperativeHub hero command deck', () => {
 
 	it('player-dashboard-hud.css demotes matte hero slab + documents Wave B void deck', () => {
 		expect(hudCss).toMatch(/Player OS Wave B — HQ command deck/);
-		expect(hudCss).toMatch(/\.operative-hub\.pd-os-deck--hero[\s\S]*?--pd-os-deck-fill/);
+		expect(hudCss).toMatch(/\.operative-hub\.pd-os-deck--hero[\s\S]*?--pd-os-hero-fill/);
 		expect(hudCss).toMatch(/\.operative-hub\.pd-os-deck--hero[\s\S]*?overflow:\s*visible/);
 	});
 
@@ -83,7 +83,7 @@ describe('Wave B — identity void + single gold focal', () => {
 
 	it('identity stage trench lightened for Z3 holo visibility', () => {
 		expect(hudCss).toMatch(/Wave B — lighter void trench/);
-		expect(hudCss).toMatch(/rgba\(0, 0, 0, 0\.1\) 0%, rgba\(0, 0, 0, 0\.34\)/);
+		expect(hudCss).toMatch(/\.operative-hub__identity-stage[\s\S]*?background:\s*transparent/);
 	});
 
 	it('single-gold discipline: hero mission demotes rank bar full-saturation gold', () => {
@@ -113,7 +113,7 @@ describe('Wave B — analytics void + Quick Ops pathway kit', () => {
 
 	it('VPP chart well uses Z1 inset without extra ::before/::after frame stacks', () => {
 		expect(dossierCss).not.toMatch(/\.pd-os-deck::before/);
-		expect(hudCss).toMatch(/player-analytics-void \.vpp-chart--premium[\s\S]*--pd-z1-well-bg/);
+		expect(hudCss).toMatch(/:is\(\.player-analytics-void, \.stats-analytics-void\) \.vpp-chart--premium[\s\S]*--pd-z1-well-bg/);
 		expect(hudCss).not.toMatch(/\.player-analytics-void \.vpp-chart--premium::before/);
 	});
 

@@ -8,6 +8,7 @@ import { join } from 'node:path';
 
 const ROOT = join(__dirname, '..', '..', '..', '..', '..');
 const SHELL_CSS = join(ROOT, 'lib/styles/player-shell.css');
+const HUD_CSS = join(ROOT, 'lib/styles/player-dashboard-hud.css');
 const SHELL = join(ROOT, 'lib/components/shell/PlayerShell.svelte');
 const STATS_PAGE = join(ROOT, 'routes/(app)/stats/+page.svelte');
 const ARMORY_PAGE = join(ROOT, 'routes/(app)/player/armory/+page.svelte');
@@ -15,6 +16,7 @@ const PLAYER_OS = join(ROOT, '..', 'docs/vision/PLAYER_OS.md');
 const ROADMAP = join(ROOT, '..', 'ROADMAP.md');
 
 const shellCssSrc = existsSync(SHELL_CSS) ? readFileSync(SHELL_CSS, 'utf-8') : '';
+const hudCssSrc = existsSync(HUD_CSS) ? readFileSync(HUD_CSS, 'utf-8') : '';
 const shellSrc = existsSync(SHELL) ? readFileSync(SHELL, 'utf-8') : '';
 const statsSrc = existsSync(STATS_PAGE) ? readFileSync(STATS_PAGE, 'utf-8') : '';
 const armorySrc = existsSync(ARMORY_PAGE) ? readFileSync(ARMORY_PAGE, 'utf-8') : '';
@@ -33,9 +35,9 @@ describe('Sprint 2.9 — player-shell.css dossier rail + shell rules', () => {
 		expect(shellCssSrc).toMatch(/ps-rail__link--active[\s\S]*20,\s*184,\s*166/);
 	});
 
-	it('aligns scrollbar thumb to gold/teal dossier blend', () => {
-		expect(shellCssSrc).toMatch(/scrollbar-color[\s\S]*14b8a6|#14b8a6/);
-		expect(shellCssSrc).toMatch(/::-webkit-scrollbar-thumb[\s\S]*251,\s*191,\s*36[\s\S]*20,\s*184,\s*166/);
+	it('aligns pathway scroll thumb to dossier teal accent (player-dashboard-hud.css)', () => {
+		expect(hudCssSrc).toMatch(/scrollbar-color[\s\S]*14b8a6|#14b8a6/);
+		expect(hudCssSrc).toMatch(/opp-preview--void[\s\S]*?scrollbar/);
 	});
 
 	it('softens ps-ambient for dossier context via ps-root--dossier', () => {

@@ -10,11 +10,13 @@ const ROOT = join(__dirname, '..', '..', '..', '..', '..');
 const BOUNTIES = join(ROOT, 'lib/components/hud/ActiveBounties.svelte');
 const HUD_TELEMETRY = join(ROOT, 'lib/styles/hud-telemetry.css');
 const HUD_CSS = join(ROOT, 'lib/styles/player-dashboard-hud.css');
+const MISSIONS_CSS = join(ROOT, 'lib/styles/player-missions.css');
 const ACTIVE_BOUNTIES_TS = join(ROOT, 'lib/player/dashboard/activeBounties.ts');
 
 const bountiesSrc = existsSync(BOUNTIES) ? readFileSync(BOUNTIES, 'utf-8') : '';
 const telemetryCssSrc = existsSync(HUD_TELEMETRY) ? readFileSync(HUD_TELEMETRY, 'utf-8') : '';
 const hudCssSrc = existsSync(HUD_CSS) ? readFileSync(HUD_CSS, 'utf-8') : '';
+const missionsCssSrc = existsSync(MISSIONS_CSS) ? readFileSync(MISSIONS_CSS, 'utf-8') : '';
 const activeBountiesTsSrc = existsSync(ACTIVE_BOUNTIES_TS)
 	? readFileSync(ACTIVE_BOUNTIES_TS, 'utf-8')
 	: '';
@@ -40,13 +42,13 @@ describe('Sprint 1.9 — ActiveBounties embedded deck mode', () => {
 		expect(bountiesSrc).toMatch(/embedded\s*=\s*false|embedded\?:/);
 	});
 
-	it('embedded path uses questHudCtaShort instead of bracket questTerminalCmd', () => {
+	it('embedded path uses questHudCtaFor (wraps questHudCtaShort) — no bracket questTerminalCmd', () => {
 		expect(bountiesSrc).toMatch(/questHudCtaShort/);
+		expect(embeddedSnippet).toMatch(/questHudCtaFor\(quest\)/);
 		expect(embeddedSnippet).not.toMatch(/questTerminalCmd/);
 		expect(embeddedSnippet).not.toMatch(/\[ ACCEPT MISSION \]/);
 		expect(embeddedSnippet).not.toMatch(/\[ COMPLETE MISSION \]/);
 		expect(embeddedSnippet).not.toMatch(/\[ CLAIM REWARD \]/);
-		expect(embeddedSnippet).toMatch(/questHudCtaShort/);
 	});
 
 	it('embedded row does not render HudSeededRingCanvas at size 48', () => {
@@ -63,19 +65,19 @@ describe('Sprint 1.9 — ActiveBounties embedded deck mode', () => {
 		expect(embeddedTemplateBlock).not.toMatch(/quest-log__title">Active missions</i);
 	});
 
-	it('embedded feed renders continuous rail deck via visibleQuests', () => {
+	it('embedded feed renders continuous rail deck via embeddedFeed', () => {
 		expect(bountiesSrc).toMatch(/quest-log__feed--embedded/);
-		expect(embeddedTemplateBlock).toMatch(/\{#each visibleQuests as quest/);
+		expect(embeddedTemplateBlock).toMatch(/\{#each embeddedFeed as quest/);
 		expect(bountiesSrc).toMatch(/resolveHeroQuest/);
 	});
 
-	it('quest-row__title-text retains ellipsis + nowrap in embedded line', () => {
+	it('quest-row__title-text retains ellipsis + nowrap in embedded rail line', () => {
 		expect(embeddedSnippet).toMatch(/quest-row__title-text/);
-		expect(bountiesSrc).toMatch(
-			/\.quest-row--embedded\s+\.quest-row__title-text[\s\S]*?text-overflow:\s*ellipsis/,
+		expect(missionsCssSrc).toMatch(
+			/\.quest-row--rail[\s\S]*?\.quest-row__title-text[\s\S]*?text-overflow:\s*ellipsis/,
 		);
-		expect(bountiesSrc).toMatch(
-			/\.quest-row--embedded\s+\.quest-row__title-text[\s\S]*?white-space:\s*nowrap/,
+		expect(missionsCssSrc).toMatch(
+			/\.quest-row--rail[\s\S]*?\.quest-row__title-text[\s\S]*?white-space:\s*nowrap/,
 		);
 	});
 
@@ -114,12 +116,11 @@ describe('Sprint 1.9 — activeBounties compact CTA helper', () => {
 });
 
 describe('Sprint 2.22 slice 6b-revise — mission rail overview on embedded HQ', () => {
-	it('embedded block uses rail-only visibleQuests feed — no hero cards', () => {
-		expect(embeddedTemplateBlock).toMatch(/\{#each visibleQuests as quest/);
+	it('embedded block uses embeddedFeed rail rows (Wave B hero row class allowed)', () => {
+		expect(embeddedTemplateBlock).toMatch(/\{#each embeddedFeed as quest/);
 		expect(embeddedTemplateBlock).toMatch(/\{@render questRowEmbedded\(quest\)/);
 		expect(embeddedTemplateBlock).not.toMatch(/\{@render questHeroCard/);
 		expect(embeddedTemplateBlock).not.toMatch(/\{@render questSecondaryCard/);
-		expect(embeddedTemplateBlock).not.toMatch(/\{#if primaryHeroQuest\}/);
 	});
 
 	it('rail rows show reward copy and promoted class for bounties', () => {

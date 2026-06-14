@@ -27,7 +27,7 @@ describe('Sprint 2.22 slice 3 — HQ Quick Ops deck', () => {
 	it('+page.svelte order: OperativeQuickOps after OperativeHub and before player-analytics-deck', () => {
 		const hubClose = pageSrc.indexOf('</OperativeHub>');
 		const quickOps = pageSrc.indexOf('<OperativeQuickOps');
-		const analytics = pageSrc.indexOf('player-analytics-deck');
+		const analytics = pageSrc.indexOf('player-analytics-void');
 		expect(hubClose).toBeGreaterThan(-1);
 		expect(quickOps).toBeGreaterThan(-1);
 		expect(analytics).toBeGreaterThan(-1);
@@ -46,9 +46,9 @@ describe('Sprint 2.22 slice 3 — HQ Quick Ops deck', () => {
 		expect(quickOpsSrc).not.toMatch(/label:\s*'Pathway'/);
 	});
 
-	it('player-dashboard-hud.css .oqo-deck__grid uses repeat(3, 1fr) at 768px', () => {
+	it('player-dashboard-hud.css .oqo-deck__grid uses repeat(3, 1fr) at all breakpoints', () => {
 		expect(hudCssSrc).toMatch(
-			/@media \(min-width: 768px\)[\s\S]*?\.oqo-deck__grid[\s\S]*?repeat\(3,\s*1fr\)/,
+			/\.oqo-deck__grid[\s\S]*?grid-template-columns:\s*repeat\(3,\s*minmax\(0,\s*1fr\)\)/,
 		);
 	});
 

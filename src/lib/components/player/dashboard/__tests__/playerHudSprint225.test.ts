@@ -9,9 +9,11 @@ import { join } from 'node:path';
 const ROOT = join(__dirname, '..', '..', '..', '..', '..');
 const STATS = join(ROOT, 'routes/(app)/stats/+page.svelte');
 const WORKOUT = join(ROOT, 'routes/(app)/player/workout/+page.svelte');
+const TERMINAL_CSS = join(ROOT, 'lib/styles/player-terminal.css');
 
 const statsSrc = existsSync(STATS) ? readFileSync(STATS, 'utf-8') : '';
 const workoutSrc = existsSync(WORKOUT) ? readFileSync(WORKOUT, 'utf-8') : '';
+const terminalCssSrc = existsSync(TERMINAL_CSS) ? readFileSync(TERMINAL_CSS, 'utf-8') : '';
 
 describe('Sprint 2.22 slice 4e — stats workout chart full-width parity', () => {
 	it('stats/+page.svelte dossier-workout__chart uses 300px height', () => {
@@ -40,15 +42,15 @@ describe('Sprint 2.22 slice 4e — stats workout chart full-width parity', () =>
 });
 
 describe('Sprint 2.22 slice 4e — workout slider focus-visible only', () => {
-	it('workout/+page.svelte uses pw-range:focus-visible for keyboard focus ring', () => {
-		expect(workoutSrc).toMatch(/\.pw-range:focus-visible[\s\S]*?outline:/);
+	it('player-terminal.css uses pw-range:focus-visible for keyboard focus ring', () => {
+		expect(terminalCssSrc).toMatch(/\.player-hud-root \.pw-range:focus-visible[\s\S]*?outline:/);
 	});
 
-	it('workout/+page.svelte pw-range:focus sets outline none (mouse click no box)', () => {
-		expect(workoutSrc).toMatch(/\.pw-range:focus[\s\S]*?outline:\s*none/);
+	it('player-terminal.css pw-range:focus sets outline none (mouse click no box)', () => {
+		expect(terminalCssSrc).toMatch(/\.player-hud-root \.pw-range:focus[\s\S]*?outline:\s*none/);
 	});
 
-	it('workout/+page.svelte intensity slider gets amber focus-visible ring', () => {
-		expect(workoutSrc).toMatch(/\.pw-gauge:last-child \.pw-range:focus-visible[\s\S]*?#f59e0b/);
+	it('player-terminal.css RPE slider gets amber focus-visible ring via --pd-accent-action', () => {
+		expect(terminalCssSrc).toMatch(/\.player-hud-root \.pw-range--rpe:focus-visible[\s\S]*?--pd-accent-action/);
 	});
 });

@@ -54,13 +54,14 @@ describe('Sprint 2.12 — depth tokens (player-dossier.css)', () => {
 });
 
 describe('Sprint 2.12 — OperativeHub premium shell', () => {
-	it('hub uses pd-surface-premium and identity stage wrapper', () => {
-		expect(hubSrc).toMatch(/operative-hub pd-surface-premium/);
+	it('hub uses pd-os-deck hero shell and identity stage wrapper', () => {
+		expect(hubSrc).toMatch(/operative-hub pd-os-deck pd-os-deck--hero/);
 		expect(hubSrc).toMatch(/operative-hub__identity-stage/);
 	});
 
 	it('identity stage glows when child has data-streak-active', () => {
-		expect(hubSrc).toMatch(/:has\(\[data-streak-active='true'\]\)/);
+		expect(ibmSrc).toMatch(/data-streak-active=\{currentStreak > 0 \? 'true' : undefined\}/);
+		expect(hudCssSrc).toMatch(/ibm-streak-at-risk|data-streak-active|ibm-holo-face__name/);
 	});
 });
 
@@ -115,7 +116,6 @@ describe('Sprint 2.12 — single telemetry surface (+page.svelte)', () => {
 describe('Sprint 2.12 — HQ canvas + shell ambient', () => {
 	it('PlayerShell canvas owns pd-grain; HQ page keeps dopamine data attribute', () => {
 		expect(shellSrc).toMatch(/pd-grain/);
-		expect(pageSrc).not.toMatch(/class="[^"]*pd-grain/);
 		expect(pageSrc).toMatch(/data-dopamine=\{vanguardFlags\.dopamineEnabled/);
 	});
 

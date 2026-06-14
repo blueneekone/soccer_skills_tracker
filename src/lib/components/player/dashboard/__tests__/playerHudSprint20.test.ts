@@ -49,10 +49,10 @@ describe('Sprint 2.0 — HudMetricsPanel clickable vector strip', () => {
 });
 
 describe('Sprint 2.0 — shared selectedAxis state in +page.svelte', () => {
-	it('binds selectedAxis between HudMetricsPanel and VanguardProtocolPanel', () => {
+	it('binds selectedAxis on VanguardProtocolPanel (+page collapsed vectors — no HudMetricsPanel)', () => {
 		expect(pageSrc).toMatch(/selectedVanguardAxis|selectedAxis/);
-		expect(pageSrc).toMatch(/HudMetricsPanel[\s\S]*?bind:selectedAxis/);
 		expect(pageSrc).toMatch(/VanguardProtocolPanel[\s\S]*?bind:selectedAxis/);
+		expect(pageSrc).not.toMatch(/HudMetricsPanel[\s\S]*?bind:selectedAxis/);
 	});
 });
 
@@ -62,8 +62,8 @@ describe('Sprint 2.0 — memory capsule compact ghost', () => {
 	});
 
 	it('uses compact single-line ghost for empty capsule state', () => {
-		expect(pageSrc).toMatch(/GHOST PROFILE|Ghost profile/i);
-		expect(pageSrc).toMatch(/AWAITING FIRST CAPSULE|awaiting first capsule/i);
+		expect(pageSrc).toMatch(/Ghost profile/i);
+		expect(pageSrc).toMatch(/Awaiting first memory capsule/i);
 	});
 });
 

@@ -108,10 +108,10 @@ describe('Sprint 2.22 slice 4d-fix-b — teal hover + identity metrics row + typ
 	it('HQ eyebrow font-size is strictly smaller than section title', () => {
 		const typoBlock =
 			hudCssSrc.match(
-				/Sprint 2\.22 slice 4d-fix-b — HUD eyebrow\/title hierarchy[\s\S]*?\.player-hud-root \.vpp-root--premium \.vpp-title[\s\S]*?\}/,
+				/Sprint 2\.22 slice 4d-fix-b — HUD eyebrow\/title hierarchy[\s\S]*?\.player-hud-root \.quest-log__title--embedded[\s\S]*?\}/,
 			)?.[0] ?? '';
 		expect(typoBlock).toMatch(/\.oqo-deck__eyebrow[\s\S]*?var\(--pd-hud-eyebrow-l3\)/);
 		expect(typoBlock).toMatch(/\.oqo-deck__title[\s\S]*?var\(--pd-hud-title-l2\)/);
-		expect(typoBlock).toMatch(/\.player-hud-root \.vpp-root--premium \.vpp-title[\s\S]*?var\(--pd-hud-title-l2\)/);
+		expect(typoBlock).toMatch(/\.pd-hq-section-head__title[\s\S]*?var\(--pd-hud-title-l2\)/);
 	});
 });

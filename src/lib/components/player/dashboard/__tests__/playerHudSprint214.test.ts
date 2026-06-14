@@ -49,9 +49,9 @@ describe('Sprint 2.14 — VPP premium CSS + empty state', () => {
 		expect(vppSrc).toMatch(/vpp-inspector__empty--dossier/);
 	});
 
-	it('player-analytics-deck nests premium capsules strip', () => {
-		expect(hudCssSrc).toMatch(/\.player-capsules-strip--premium/);
-		expect(pageSrc).toMatch(/player-capsules-strip--premium/);
+	it('player-analytics-void nests capsules strip in void band', () => {
+		expect(hudCssSrc).toMatch(/\.player-capsules-strip--void|\.player-capsules-strip--premium/);
+		expect(pageSrc).toMatch(/player-capsules-strip--void|player-capsules-strip--premium/);
 		expect(pageSrc).toMatch(/pd-empty-state/);
 	});
 });
@@ -77,8 +77,8 @@ describe('Sprint 2.14 — shared pd-panel utilities + secondary routes', () => {
 	});
 
 	it('Armory, Workout, Skill Tree reference internal premium classes', () => {
-		expect(armorySrc).toMatch(/qa-workspace--premium/);
-		expect(workoutSrc).toMatch(/pd-panel-section/);
+		expect(armorySrc).toMatch(/qa-card pd-os-deck/);
+		expect(workoutSrc).toMatch(/pw-theater pd-os-deck pd-os-deck--hero/);
 		expect(skillTreeSrc).toMatch(/pd-panel-section/);
 	});
 });
@@ -86,7 +86,7 @@ describe('Sprint 2.14 — shared pd-panel utilities + secondary routes', () => {
 describe('Sprint 2.14 — Identity rank shimmer + memory capsule dossier frame', () => {
 	it('rank bar shimmer when XP > 0', () => {
 		expect(ibmSrc).toMatch(/ibm-rank-bar--has-xp=\{embedded && totalXp > 0\}/);
-		expect(hudCssSrc).toMatch(/\.ibm-rank-bar--has-xp[\s\S]*?ibm-rank-fill-shimmer/);
+		expect(hudCssSrc).toMatch(/\.ibm-rank-bar--has-xp[\s\S]*?ibm-rank-progress__fill::after/);
 	});
 
 	it('MemoryCapsuleArena dossier premium frame', () => {
@@ -105,9 +105,9 @@ describe('Sprint 2.14 — Sprint 2.12.1 regression (incomplete profile hero inta
 });
 
 describe('Sprint 2.14 — docs + ROADMAP', () => {
-	it('ROADMAP marks 2.14 Done and current sprint 2.16', () => {
+	it('ROADMAP marks 2.14 Done (current sprint tracked in LAUNCH-functional-os)', () => {
 		expect(roadmapSrc).toMatch(/\|\s*2\.14\s*\|\s*Done/i);
-		expect(roadmapSrc).toMatch(/\*\*Current sprint:\*\*\s*\*\*2\.16\*\*/);
+		expect(roadmapSrc).toMatch(/\*\*Current sprint:\*\* \*\*LAUNCH-functional-os/);
 	});
 
 	it('PLAYER_OS.md marks 2.14 shipped', () => {

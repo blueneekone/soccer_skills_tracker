@@ -44,11 +44,6 @@ jobs:
   # failures (unrelated to this slice). Root causes documented below:
   #
   # EXCLUDED suites and their pre-existing failure reasons:
-  #   playerHudSprint14, 18–21, 24–25, 27–29, 210–214, 216–217, 219,
-  #   222–225, 227–243, 246, 249, 256, 260, 282, 312–313
-  #     → CSS token / Svelte prop-pass guards written for superseded sprint
-  #       markup that has since been reworked; e.g. missing --bento-pad-liquid,
-  #       railQuests prop rename, embedded branch markup divergence.
   #   playerLoadoutSprint31, 32, 34, 35c, 35e, 35f, 35gVision, 35h,
   #   35i-fix, 35i-a, 35i-b, 35mArt
   #     → Mix of ROADMAP text state checks, SVG layer geometry assertions,
@@ -65,7 +60,9 @@ jobs:
   #   playerDashboard.hud.test, workout.layout.test
   #     → Component CSS token checks that diverged from current markup.
   #
-  # This command runs the 129 confirmed-green files verified 2026-06-13 (PHASE 2).
+  # playerHudSprint* (78 files) + playerOsCohesion — green as of vitest-batch-hud (G-02).
+  #
+  # This command runs the confirmed-green curated suites (PHASE 2 + G-02 expansion).
   # ─────────────────────────────────────────────────────────────────────────────
   unit:
     name: Unit Tests (vitest)
@@ -85,7 +82,7 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Run curated vitest suites (129 green files)
+      - name: Run curated vitest suites (G-02 HUD batch expanded)
         run: |
           npx vitest run \
             "src/lib/__tests__" \
@@ -138,41 +135,7 @@ jobs:
             "src/lib/gamification/__tests__/playerLoadoutSprint35mDocsGemini.test" \
             "src/lib/gamification/__tests__/playerLoadoutSprint35mFrame.test" \
             "src/lib/gamification/__tests__/playerLoadoutSprint35mRef.test" \
-            "playerHudSprint15.test" \
-            "playerHudSprint16.test" \
-            "playerHudSprint17.test" \
-            "playerHudSprint2101.test" \
-            "playerHudSprint2102.test" \
-            "playerHudSprint215.test" \
-            "playerHudSprint2161.test" \
-            "playerHudSprint218.test" \
-            "playerHudSprint22.test" \
-            "playerHudSprint220.test" \
-            "playerHudSprint226.test" \
-            "playerHudSprint23.test" \
-            "playerHudSprint232.test" \
-            "playerHudSprint235.test" \
-            "playerHudSprint237.test" \
-            "playerHudSprint239.test" \
-            "playerHudSprint240.test" \
-            "playerHudSprint241.test" \
-            "playerHudSprint244.test" \
-            "playerHudSprint245.test" \
-            "playerHudSprint247.test" \
-            "playerHudSprint248.test" \
-            "playerHudSprint250.test" \
-            "playerHudSprint251.test" \
-            "playerHudSprint252.test" \
-            "playerHudSprint253.test" \
-            "playerHudSprint254.test" \
-            "playerHudSprint255.test" \
-            "playerHudSprint257.test" \
-            "playerHudSprint258.test" \
-            "playerHudSprint259.test" \
-            "playerHudSprint26.test" \
-            "playerHudSprint281.test" \
-            "playerHudSprint31.test" \
-            "playerHudSprint311.test" \
+            "src/lib/components/player/dashboard/__tests__/playerHudSprint" \
             "playerOsCohesion.test" \
             "src/routes/(app)/admin/coach-clearance/__tests__" \
             "src/routes/(app)/admin/organizations/__tests__" \

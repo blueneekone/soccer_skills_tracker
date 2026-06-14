@@ -54,9 +54,9 @@ describe('Sprint 2.17 — HQ layering wired in CSS', () => {
 		);
 	});
 
-	it('operative hub pd-surface-premium uses Z2 panel shadow', () => {
+	it('operative hub pd-os-deck--hero uses Z3 raised shadow', () => {
 		expect(hudCssSrc).toMatch(
-			/\.operative-hub\.pd-surface-premium[\s\S]*?var\(--pd-z2-panel-shadow/,
+			/\.operative-hub\.pd-os-deck--hero[\s\S]*?var\(--pd-z3-raised-shadow/,
 		);
 	});
 

@@ -35,12 +35,10 @@ describe('Sprint 2.5 — OperativeHub 8+4 command strip', () => {
 		expect(hubSrc).not.toMatch(/operative-hub__quests[\s\S]*?bento-span-12/);
 	});
 
-	it('background is flat dossier panel surface (NOT rgba(2, 2, 2, 0.7) glass)', () => {
-		const hubBlock = hubSrc.match(/\.operative-hub\s*\{[\s\S]*?\}/)?.[0] ?? '';
-		expect(hubBlock).not.toMatch(/rgba\(2,\s*2,\s*2,\s*0\.7\)/);
-		expect(hubBlock).not.toMatch(/backdrop-filter:\s*blur/);
-		// superseded by 2.8 Player Dossier
-		expect(hubBlock).toMatch(/var\(--pd-panel|#05050a/);
+	it('hub uses pd-os-deck hero fill in CSS (flat dossier — not rgba glass)', () => {
+		expect(hubSrc).toMatch(/pd-os-deck--hero/);
+		expect(hudCssSrc).toMatch(/\.operative-hub\.pd-os-deck--hero[\s\S]*?--pd-os-hero-fill/);
+		expect(hubSrc).not.toMatch(/rgba\(2,\s*2,\s*2,\s*0\.7\)/);
 	});
 });
 
@@ -50,9 +48,9 @@ describe('Sprint 2.5 — IdentityBentoModule conditional avatar', () => {
 		expect(identitySrc).toMatch(/profileIncomplete|ibm-root--badge-only/);
 	});
 
-	it('renders inline badge when profile incomplete', () => {
-		expect(identitySrc).toMatch(/ibm-inline-badge/);
-		expect(identitySrc).toMatch(/ibm-inline-badge__initials/);
+	it('renders silhouette initials ring when profile incomplete', () => {
+		expect(identitySrc).toMatch(/ibm-silhouette-ring/);
+		expect(identitySrc).toMatch(/ibm-silhouette-ring__initials/);
 	});
 
 	it('branches layout on profileIncomplete', () => {
@@ -74,8 +72,8 @@ describe('Sprint 2.5 — +page.svelte wiring', () => {
 		expect(pageSrc).toMatch(/profileIncomplete=\{!hasArmoryProfile\}/);
 	});
 
-	it('has player-analytics-deck with VanguardProtocolPanel', () => {
-		expect(pageSrc).toMatch(/player-analytics-deck/);
+	it('has player-analytics-void with VanguardProtocolPanel', () => {
+		expect(pageSrc).toMatch(/player-analytics-void/);
 		expect(pageSrc).toMatch(/<VanguardProtocolPanel/);
 	});
 

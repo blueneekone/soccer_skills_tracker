@@ -47,8 +47,8 @@ describe('Sprint 2.22 slice 6j-a — pd-os-deck depth kit (translatable)', () =>
 		expect(pathwaySrc).not.toMatch(/pg-bracket/);
 		expect(pageSrc).toMatch(/player-analytics-void pd-os-deck pd-os-deck--recessed/);
 		expect(hudCss).toMatch(/\.operative-hub \.hcs-scanlines[\s\S]*display:\s*none/);
-		expect(hudCss).toMatch(/player-analytics-void \.vpp-chart--premium[\s\S]*--pd-z1-well-bg/);
-		expect(hudCss).toMatch(/player-analytics-void \.vpp-inspector--premium[\s\S]*--pd-z1-well-bg/);
+		expect(hudCss).toMatch(/:is\(\.player-analytics-void, \.stats-analytics-void\) \.vpp-chart--premium[\s\S]*--pd-z1-well-bg/);
+		expect(hudCss).toMatch(/:is\(\.player-analytics-void, \.stats-analytics-void\) \.vpp-inspector--premium[\s\S]*--pd-z1-well-bg/);
 	});
 
 	it('OperativeQuickOps uses pd-os-deck without pd-page-panel on deck', () => {

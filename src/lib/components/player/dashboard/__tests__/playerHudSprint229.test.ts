@@ -45,7 +45,7 @@ describe('Sprint 2.22 slice 6c — analytics void island', () => {
 
 	it('void context demotes vpp-head--premium matte frame', () => {
 		expect(hudCssSrc).toMatch(
-			/\.player-analytics-void\s+\.vpp-head--premium[\s\S]*?background:\s*transparent/,
+			/:is\(\.player-analytics-void, \.stats-analytics-void\) \.vpp-head--premium[\s\S]*?background:\s*transparent/,
 		);
 	});
 

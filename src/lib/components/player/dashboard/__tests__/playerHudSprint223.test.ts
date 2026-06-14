@@ -128,7 +128,7 @@ describe('Sprint 2.22 slice 4c — HQ native pathway scroll', () => {
 
 	it('OperativePathwayPreview section title shows Mission rewards pathway once', () => {
 		expect(previewSrc).toMatch(/Mission rewards pathway/);
-		expect(previewSrc).toMatch(/opp-preview__meta/);
+		expect(previewSrc).toMatch(/opp-preview__status/);
 		expect(previewSrc).toMatch(/aria-label="Mission rewards pathway"/);
 	});
 

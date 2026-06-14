@@ -30,7 +30,7 @@ const WAVE_C_TOUCHED = [statsSrc, trackerSrc, hudCss, dossierCss].join('\n');
 
 function playerVppBlock() {
 	return (
-		statsSrc.match(/\{#if isPlayerRole\}\s*<section[\s\S]*?VanguardProtocolPanel[\s\S]*?<\/section>/)?.[0] ??
+		statsSrc.match(/<section[\s\S]*?stats-analytics-void[\s\S]*?VanguardProtocolPanel[\s\S]*?<\/section>/)?.[0] ??
 		''
 	);
 }
@@ -103,7 +103,7 @@ describe('Wave C — Stats workout hero band + diegetic chips', () => {
 	it('preserves 6g chart resize guard selectors and data-only patch effects', () => {
 		expect(statsSrc).toMatch(/workoutChartInst\.update\('none'\)/);
 		expect(statsSrc).toMatch(/workoutChartInst\.resize\(\)/);
-		expect(statsSrc).toMatch(/\.dossier-workout__chart,\s*\n\s*\.dossier-radar__chart[\s\S]*?min-height:\s*300px/);
+		expect(statsSrc).toMatch(/\.dossier-workout__chart[\s\S]*?min-height:\s*300px/);
 		expect(hudCss).toMatch(/\.stats-workout-band \.pd-os-deck__well\.dossier-workout__chart[\s\S]*?min-height:\s*300px/);
 	});
 });

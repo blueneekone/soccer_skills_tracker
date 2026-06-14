@@ -34,10 +34,10 @@ describe('Sprint 2.22 slice 6f-b — HQ header ladder tokens', () => {
 	it('.player-hud-root .vpp-title uses L2 token in 4d-fix-b hierarchy block', () => {
 		const typoBlock =
 			hudCssSrc.match(
-				/Sprint 2\.22 slice 4d-fix-b — HUD eyebrow\/title hierarchy[\s\S]*?\.player-hud-root \.vpp-root--premium \.vpp-title[\s\S]*?\}/,
+				/Sprint 2\.22 slice 4d-fix-b — HUD eyebrow\/title hierarchy[\s\S]*?\.player-hud-root \.quest-log__title--embedded[\s\S]*?\}/,
 			)?.[0] ?? '';
 		expect(typoBlock).toMatch(
-			/\.player-hud-root \.vpp-root--premium \.vpp-title[\s\S]*?font-size:\s*var\(--pd-hud-title-l2\)/,
+			/\.player-hud-root \.oqo-deck__title[\s\S]*?font-size:\s*var\(--pd-hud-title-l2\)/,
 		);
 	});
 
@@ -51,11 +51,11 @@ describe('Sprint 2.22 slice 6f-b — HQ header ladder tokens', () => {
 	it('deduplicated .oqo-deck__title — no conflicting larger player-hud-root rule after 4d-fix-b', () => {
 		const afterFixB = hudCssSrc.split('Sprint 2.22 slice 4d-fix-b — HUD eyebrow/title hierarchy')[1] ?? '';
 		expect(afterFixB).not.toMatch(
-			/\.player-hud-root \.oqo-deck__title[\s\S]*?clamp\(0\.95rem[\s\S]*?1\.1rem\)/,
+			/\.player-hud-root \.oqo-deck__title\s*\{[\s\S]*?clamp\(0\.95rem[\s\S]*?1\.1rem\)/,
 		);
 		const fixBBlock =
 			hudCssSrc.match(
-				/Sprint 2\.22 slice 4d-fix-b — HUD eyebrow\/title hierarchy[\s\S]*?\.player-hud-root \.vpp-root--premium \.vpp-title[\s\S]*?\}/,
+				/Sprint 2\.22 slice 4d-fix-b — HUD eyebrow\/title hierarchy[\s\S]*?\.player-hud-root \.quest-log__title--embedded[\s\S]*?\}/,
 			)?.[0] ?? '';
 		expect(fixBBlock).toMatch(/\.player-hud-root \.oqo-deck__title[\s\S]*?var\(--pd-hud-title-l2\)/);
 	});
@@ -68,12 +68,11 @@ describe('Sprint 2.22 slice 6f-b — VPP idle inspector whisper', () => {
 		expect(emptyBlock).toMatch(/max-height:\s*64px/);
 	});
 
-	it('analytics void idle inspector uses whisper grid + transparent shell', () => {
-		const block6fb = hudCssSrc.match(/Sprint 2\.22 slice 6f-b[\s\S]*$/)?.[0] ?? '';
-		expect(block6fb).toMatch(/\.player-analytics-void \.vpp-body:has\(\.vpp-inspector--idle\)/);
-		expect(block6fb).toMatch(/minmax\(120px,\s*200px\)/);
-		expect(block6fb).toMatch(
-			/\.player-analytics-void \.vpp-inspector--premium:not\(\.vpp-inspector--selected\)[\s\S]*?background:\s*transparent/,
+	it('analytics void idle inspector uses whisper grid + Z1 well shell', () => {
+		expect(hudCssSrc).toMatch(/:is\(\.player-analytics-void, \.stats-analytics-void\) \.vpp-body:has\(\.vpp-inspector--idle\)/);
+		expect(hudCssSrc).toMatch(/minmax\(120px,\s*200px\)/);
+		expect(hudCssSrc).toMatch(
+			/:is\(\.player-analytics-void, \.stats-analytics-void\) \.vpp-inspector--premium[\s\S]*?--pd-z1-well-bg/,
 		);
 	});
 

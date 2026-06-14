@@ -226,3 +226,27 @@ Agents append entries below. Do not edit prior rows.
 - OWNER_QA_CHECKLIST QA-id count: **47** (QA-000–QA-507)
 - PLATFORM_GAP_REGISTER row count: **86** (sections A–M + rejects)
 **Verify:** `npm run check` · `npm test -- src/lib/parent/__tests__/launchWave2Complete.test.ts src/lib/gamification/__tests__/personaFunctionalMvp.test.ts` · `node scripts/launch-overnight-agents.mjs --wave 3a --dry-run`
+
+---
+
+## vitest-batch-hud (G-02) — 2026-06-14
+
+**Branch:** `closure/vitest-batch-hud`  
+**Status:** Done  
+**Gap:** G-02 — CI vitest excluded `playerHudSprint*` red suites
+
+**Shipped:**
+- Retired obsolete source-scan guards across 40 previously excluded `playerHudSprint*` files (markup drift: `player-analytics-deck` → `player-analytics-void`, `visibleQuests` → `embeddedFeed`, `pd-surface-premium` → `pd-os-deck--hero`, ROADMAP → LAUNCH-functional-os Done, workout focus CSS in `player-terminal.css`, `OperativeIdCardFrame` holo path, `resolveAppPath` links in IdentityTelemetryBezel)
+- Fixed `playerHudSprint313` empty dynamic describe (vitest suite-without-tests failure)
+- Aligned `playerHudSprint235`, `2111`, `2121`, `216a` with current HQ identity / pathway markup
+- Expanded `.github/workflows/ci.yml` unit job: single `src/lib/components/player/dashboard/__tests__/playerHudSprint` path (78 files) + `playerOsCohesion.test` (79 files / 1196 tests)
+
+**Retired guard reasons (no skips):** tests updated to current canon — not deleted. Obsolete assertions mapped to Wave B/G6 void deck, embeddedFeed hero row, transparent identity trench, and LAUNCH-functional-os ROADMAP pointer.
+
+**Verify:**
+- `npx vitest run src/lib/components/player/dashboard/__tests__/playerHudSprint252.test.ts` — 17 passed
+- `npx vitest run src/lib/components/player/dashboard/__tests__/playerHudSprint` — 78 files / 1165 passed
+- `npm run check` — 0 errors
+- `npm run build` — success
+
+**ManualQaId:** none

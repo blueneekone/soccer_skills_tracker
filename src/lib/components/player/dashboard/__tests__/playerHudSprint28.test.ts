@@ -46,9 +46,10 @@ describe('Sprint 2.8 — player-dossier.css canonical tokens', () => {
 });
 
 describe('Sprint 2.8 — dashboard +page dossier shell', () => {
-	it('imports player-dossier.css and uses player-dossier-root', () => {
-		expect(pageSrc).toMatch(/player-dossier\.css/);
-		expect(pageSrc).toMatch(/player-dossier-root/);
+	it('uses player-hud-root pd-page-root dossier shell (CSS via shell/components)', () => {
+		expect(pageSrc).toMatch(/player-hud-root/);
+		expect(pageSrc).toMatch(/pd-page-root/);
+		expect(pageSrc).toMatch(/var\(--pd-bg/);
 	});
 
 	it('uses black dossier page background (not bare #0f172a)', () => {
@@ -106,9 +107,9 @@ describe('Sprint 2.8 — gold action accent preserved on hero CTA', () => {
 });
 
 describe('Sprint 2.8 — IdentityBentoModule inset panel', () => {
-	it('embedded identity uses ibm-root--inset', () => {
-		expect(identitySrc).toMatch(/ibm-root--inset/);
-		expect(hudCssSrc).toMatch(/\.ibm-root--embedded\.ibm-root--inset/);
+	it('embedded identity uses HologramCardShell holo primitive (supersedes ibm-root--inset)', () => {
+		expect(identitySrc).toMatch(/HologramCardShell/);
+		expect(identitySrc).toMatch(/ibm-root--premium|ibm-root--embedded/);
 	});
 });
 

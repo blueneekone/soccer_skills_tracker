@@ -49,13 +49,13 @@ describe('Sprint 2.16a — HQ structure (Option B)', () => {
 describe('Sprint 2.16a — HUDContainer direct grid children', () => {
 	const hudBlock = hudContainerBlock(hqPageSrc);
 
-	it('pd-strap, hub wrapper, and analytics deck are direct bento-span-12 children', () => {
+	it('pd-strap, OperativeHub, and analytics void are direct HUDContainer children', () => {
 		expect(hudBlock).toMatch(
 			/<header class="[^"]*pd-strap[^"]*bento-span-12[^"]*"/,
 		);
-		expect(hudBlock).toMatch(/<div class="bento-span-12 tw-min-w-0">[\s\S]*?OperativeHub/);
+		expect(hudBlock).toMatch(/<OperativeHub/);
 		expect(hudBlock).toMatch(
-			/<section[\s\S]*?class="[^"]*bento-span-12[^"]*player-analytics-deck/,
+			/<section[\s\S]*?class="[^"]*bento-span-12[^"]*player-analytics-void/,
 		);
 	});
 
@@ -77,14 +77,14 @@ describe('Sprint 2.16a — CSS width reconciliation', () => {
 });
 
 describe('Sprint 2.16a — no regression on 2.16 deliverables', () => {
-	it('ActiveBounties embedded rail still uses railQuests', () => {
+	it('ActiveBounties embedded rail still uses embeddedFeed', () => {
 		const embedded = embeddedBountiesBlock(bountiesSrc);
-		expect(embedded).toMatch(/\{#each railQuests as quest/);
+		expect(embedded).toMatch(/\{#each embeddedFeed as quest/);
 	});
 
 	it('stats player path still uses VanguardProtocolPanel', () => {
 		expect(statsPageSrc).toMatch(/import VanguardProtocolPanel/);
-		expect(statsPageSrc).toMatch(/\{#if isPlayerRole\}[\s\S]*?VanguardProtocolPanel/);
+		expect(statsPageSrc).toMatch(/stats-analytics-void[\s\S]*?VanguardProtocolPanel/);
 	});
 });
 

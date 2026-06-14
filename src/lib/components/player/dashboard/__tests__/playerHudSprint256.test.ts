@@ -70,9 +70,9 @@ describe('Phase 7 · G7 — void head integration CSS (G8: vpp-head transparent 
 		);
 	});
 
-	it('player-capsules-strip__eyebrow uses --pd-accent-data-bright (telemetry family parity)', () => {
+	it('player-capsules-strip__eyebrow uses shared telemetry eyebrow ladder (pd-hud-eyebrow-l3)', () => {
 		expect(hudCss).toMatch(
-			/\.player-hud-root \.player-capsules-strip__eyebrow[\s\S]*?color:\s*var\(--pd-accent-data-bright/,
+			/\.player-hud-root \.player-capsules-strip__eyebrow[\s\S]*?var\(--pd-hud-eyebrow-l3/,
 		);
 	});
 });
