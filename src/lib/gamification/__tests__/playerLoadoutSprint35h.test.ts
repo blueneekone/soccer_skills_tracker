@@ -121,11 +121,11 @@ describe('Sprint 3.5h — server recruit payload v2-only', () => {
 });
 
 describe('Sprint 3.5h — ROADMAP + vision', () => {
-	it('ROADMAP marks 3.5h Done and next 3.5i-fix', () => {
+	it('ROADMAP marks 3.5h Done; 3.5i superseded by 3.5l-a phase', () => {
 		const doc = readFileSync(ROADMAP, 'utf-8');
-		expect(doc).toMatch(/\|\s*3\.5h\s*\|\s*\*\*Done\*\*/i);
+		expect(doc).toMatch(/\|\s*\*\*3\.5h\*\*\s*\|\s*\*\*Done\*\*/i);
 		expect(doc).toMatch(/playerLoadoutSprint35h\.test\.ts/);
-		expect(doc).toMatch(/3\.5i-fix|Next.*3\.5i/i);
+		expect(doc).toMatch(/3\.5l-a|3\.5i.*Superseded/i);
 	});
 
 	it('PORTRAIT_ART_DIRECTION.md documents Bauhaus retired in 3.5h', () => {

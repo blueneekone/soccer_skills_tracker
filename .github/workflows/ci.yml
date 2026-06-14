@@ -51,9 +51,9 @@ jobs:
   #       railQuests prop rename, embedded branch markup divergence.
   #   playerLoadoutSprint31, 32, 34, 35c, 35e, 35f, 35gVision, 35h,
   #   35i-fix, 35i-a, 35i-b, 35mArt
-  #     → Mix of ROADMAP text state checks, SVG layer geometry assertions,
-  #       and OperativeLoadoutStudio slot-picker checks for unshipped/superseded
-  #       avatar sprints (avatar-builder-deferred track).
+  #     → Triage 2026-06-14 (vitest-batch-loadout): ROADMAP handoff drift,
+  #       Studio SYNC IDENTITY migration, precomposed bust pipeline, and
+  #       superseded 3.5i→3.5l-a assertions updated — all green in CI now.
   #   playerRlFunctional
   #     → Expects functions/index.js to export getAdaptiveWorkoutPolicy and
   #       rlOnWorkoutLogCreated; those exports were removed/renamed.
@@ -65,7 +65,7 @@ jobs:
   #   playerDashboard.hud.test, workout.layout.test
   #     → Component CSS token checks that diverged from current markup.
   #
-  # This command runs the 129 confirmed-green files verified 2026-06-13 (PHASE 2).
+  # This command runs the 142 confirmed-green files verified 2026-06-14 (G-02 loadout batch).
   # ─────────────────────────────────────────────────────────────────────────────
   unit:
     name: Unit Tests (vitest)
@@ -85,7 +85,7 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Run curated vitest suites (129 green files)
+      - name: Run curated vitest suites (142 green files)
         run: |
           npx vitest run \
             "src/lib/__tests__" \
@@ -126,17 +126,30 @@ jobs:
             "src/lib/gamification/__tests__/personaFunctionalMvp.test" \
             "src/lib/gamification/__tests__/playerLaunchDeferAvatar.test" \
             "src/lib/gamification/__tests__/playerLoadoutSprint30.test" \
+            "src/lib/gamification/__tests__/playerLoadoutSprint31.test" \
             "src/lib/gamification/__tests__/playerLoadoutSprint311.test" \
+            "src/lib/gamification/__tests__/playerLoadoutSprint32.test" \
             "src/lib/gamification/__tests__/playerLoadoutSprint33.test" \
+            "src/lib/gamification/__tests__/playerLoadoutSprint34.test" \
             "src/lib/gamification/__tests__/playerLoadoutSprint35a.test" \
             "src/lib/gamification/__tests__/playerLoadoutSprint35b.test" \
+            "src/lib/gamification/__tests__/playerLoadoutSprint35c.test" \
             "src/lib/gamification/__tests__/playerLoadoutSprint35d.test" \
+            "src/lib/gamification/__tests__/playerLoadoutSprint35e.test" \
+            "src/lib/gamification/__tests__/playerLoadoutSprint35f.test" \
             "src/lib/gamification/__tests__/playerLoadoutSprint35g.test" \
+            "src/lib/gamification/__tests__/playerLoadoutSprint35gVision.test" \
+            "src/lib/gamification/__tests__/playerLoadoutSprint35h.test" \
+            "src/lib/gamification/__tests__/playerLoadoutSprint35iFix.test" \
+            "src/lib/gamification/__tests__/playerLoadoutSprint35iA.test" \
+            "src/lib/gamification/__tests__/playerLoadoutSprint35iB.test" \
             "src/lib/gamification/__tests__/playerLoadoutSprint35j.test" \
             "src/lib/gamification/__tests__/playerLoadoutSprint35k.test" \
             "src/lib/gamification/__tests__/playerLoadoutSprint35lA.test" \
+            "src/lib/gamification/__tests__/playerLoadoutSprint35mArt.test" \
             "src/lib/gamification/__tests__/playerLoadoutSprint35mDocsGemini.test" \
             "src/lib/gamification/__tests__/playerLoadoutSprint35mFrame.test" \
+            "src/lib/gamification/__tests__/playerLoadoutSprint35mGeminiIngest.test" \
             "src/lib/gamification/__tests__/playerLoadoutSprint35mRef.test" \
             "playerHudSprint15.test" \
             "playerHudSprint16.test" \

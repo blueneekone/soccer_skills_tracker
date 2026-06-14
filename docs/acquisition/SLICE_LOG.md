@@ -226,3 +226,27 @@ Agents append entries below. Do not edit prior rows.
 - OWNER_QA_CHECKLIST QA-id count: **47** (QA-000–QA-507)
 - PLATFORM_GAP_REGISTER row count: **86** (sections A–M + rejects)
 **Verify:** `npm run check` · `npm test -- src/lib/parent/__tests__/launchWave2Complete.test.ts src/lib/gamification/__tests__/personaFunctionalMvp.test.ts` · `node scripts/launch-overnight-agents.mjs --wave 3a --dry-run`
+
+---
+
+## vitest-batch-loadout — G-02 — 2026-06-14
+
+**Branch:** `closure/vitest-batch-loadout`  
+**Slice:** vitest-batch-loadout  
+**Status:** Done  
+**Register:** G-02 (loadout batch — 13 formerly excluded `playerLoadoutSprint*` suites)
+
+**Triage:**
+- Updated 14 test files for ROADMAP handoff drift (3.5i→3.5l-a superseded, 3.5m-art Superseded), Studio `SYNC IDENTITY` + `syncOperativeIdentityToFirestore`, armory `readRepairOperativeAvatar`, `redeemQuartermasterDigital` CF path, precomposed bust pipeline, and relaxed post-3.5m SVG geometry guards.
+- Expanded CI allowlist: 129 → **142** green vitest files (+13 loadout paths including `playerLoadoutSprint35mGeminiIngest.test.ts`).
+
+**Still excluded (48 red — hud + misc batches):** playerHudSprint14/18–21/24–25/27–29/210–214/216–217/219/222–225/227–243/246/249/256/260/282/312–313, playerRlFunctional, firestoreRulesSprint13, armory.layout/Avatar, playerDashboard.hud, workout.layout
+
+**Verify:**
+- `npx vitest run src/lib/gamification/__tests__/playerLoadoutSprint35mArt.test.ts` — 8 passed
+- `npx vitest run src/lib/gamification/__tests__/playerLoadoutSprint` — 26 files / 373 passed
+- `npm run check` — 0 errors
+- `npm run build` — ok
+
+**ManualQaId:** none
+

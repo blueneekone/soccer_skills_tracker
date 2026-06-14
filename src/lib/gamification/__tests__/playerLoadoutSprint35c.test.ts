@@ -36,14 +36,12 @@ describe('Sprint 3.5c — OperativeLoadoutStudio integration', () => {
 		expect(studioSrc).not.toMatch(/slider/i);
 		expect(studioSrc).not.toMatch(/randomize/i);
 		expect(studioSrc).not.toMatch(/VECTOR STUDIO/i);
-		expect(studioSrc).toMatch(/PART PICKER/i);
+		expect(studioSrc).toMatch(/IDENTITY PARTS|UNIFIED PICKER/i);
 	});
 
-	it('saveOperativeAvatarConfig persists parseOperativePortrait v2 to Firestore', () => {
-		expect(studioSrc).toMatch(/parseOperativePortrait/);
-		expect(studioSrc).toMatch(/OPERATIVE_PORTRAIT_V2_VERSION/);
-		expect(studioSrc).toMatch(/updateDoc[\s\S]*operativeAvatar:\s*parsed/);
-		expect(studioSrc).toMatch(/UPDATE OPERATIVE/);
+	it('syncOperativeIdentityToFirestore persists portrait v2 + loadout to Firestore', () => {
+		expect(studioSrc).toMatch(/syncOperativeIdentityToFirestore/);
+		expect(studioSrc).toMatch(/SYNC IDENTITY/);
 	});
 });
 
@@ -85,8 +83,8 @@ describe('Sprint 3.5c — Armory page hydrate', () => {
 		expect(armorySrc).toMatch(/defaultOwnedPortraitParts/);
 	});
 
-	it('hydrates operativeAvatar via parseOperativePortrait', () => {
-		expect(armorySrc).toMatch(/parseOperativePortrait/);
+	it('hydrates operativeAvatar via readRepairOperativeAvatar', () => {
+		expect(armorySrc).toMatch(/readRepairOperativeAvatar/);
 		expect(armorySrc).not.toMatch(/parseOperativeAvatar\(profile/);
 	});
 });
@@ -96,7 +94,7 @@ describe('Sprint 3.5c — ROADMAP + vision', () => {
 		const doc = readFileSync(ROADMAP, 'utf-8');
 		expect(doc).toMatch(/\|\s*3\.5c\s*\|\s*\*\*Done\*\*/i);
 		expect(doc).toMatch(/playerLoadoutSprint35c\.test\.ts/);
-		expect(doc).toMatch(/3\.5c closed|Sprint 3\.5c/i);
+		expect(doc).toMatch(/Armory Studio v2|visual part picker/i);
 	});
 
 	it('OPERATIVE_LOADOUT.md documents Studio v2 visual part picker', () => {

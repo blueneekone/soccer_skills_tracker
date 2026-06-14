@@ -129,11 +129,11 @@ describe('Sprint 3.5i-a — Studio picker wiring', () => {
 });
 
 describe('Sprint 3.5i-a — ROADMAP + vision + VA', () => {
-	it('ROADMAP marks 3.5i-a Done and next 3.5i-b', () => {
+	it('ROADMAP marks 3.5i Superseded — absorbed into 3.5l-a portrait quality phase', () => {
 		const doc = readFileSync(ROADMAP, 'utf-8');
-		expect(doc).toMatch(/\|\s*3\.5i-a\s*\|\s*\*\*Done\*\*/i);
-		expect(doc).toMatch(/playerLoadoutSprint35iA\.test\.ts/);
-		expect(doc).toMatch(/3\.5i-b|Next.*3\.5i-b/i);
+		expect(doc).toMatch(/\|\s*\*\*3\.5i\*\*\s*\|\s*\*\*Superseded\*\*/i);
+		expect(doc).toMatch(/\|\s*\*\*3\.5l-a\*\*\s*\|\s*\*\*Done\*\*/i);
+		expect(doc).toMatch(/playerLoadoutSprint35lA\.test\.ts/);
 	});
 
 	it('PORTRAIT_REPRESENTATION.md documents tone + presentation tags', () => {

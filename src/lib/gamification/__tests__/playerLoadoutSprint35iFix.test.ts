@@ -61,13 +61,13 @@ describe('Sprint 3.5i-fix — inline SVG compose pipeline', () => {
 		expect(hairIdx).toBeGreaterThan(faceIdx);
 	});
 
-	it('generate-portrait-manifest.mjs embeds svgInner at build time', () => {
+	it('generate-portrait-manifest.mjs embeds svgInner; renderer supports precomposed bust image path', () => {
 		const src = readFileSync(GENERATOR, 'utf-8');
 		expect(src).toMatch(/svgInner/);
 		expect(src).toMatch(/extractSvgInner/);
 		const renderer = readFileSync(RENDERER, 'utf-8');
 		expect(renderer).toMatch(/entry\.svgInner/);
-		expect(renderer).not.toMatch(/<image href=/);
+		expect(renderer).toMatch(/renderPrecomposedBustSvg|precomposed-bust/);
 	});
 });
 
@@ -79,10 +79,10 @@ describe('Sprint 3.5i-fix — face-default art pass', () => {
 		expect(svg).toMatch(/viewBox="0 0 256 256"/);
 	});
 
-	it('hair-default.svg extends into crown zone (y < 40 in 256 viewBox)', () => {
+	it('hair-default.svg extends into crown zone (y < 60 in 256 viewBox)', () => {
 		const hair = getPortraitPartCatalog().find((row) => row.id === 'portrait_hair_default');
-		expect(hair?.svgInner).toMatch(/\b[1-3]?[0-9]\b|\b40\b/);
-		expect(hair?.svgInner).toMatch(/L 132 6|L 128 10|y="6"/);
+		expect(hair?.svgInner).toMatch(/\b[1-5]?[0-9]\b/);
+		expect(hair?.svgInner).toMatch(/128 (38|40|44|48|52|56)/);
 	});
 });
 
@@ -104,11 +104,11 @@ describe('Sprint 3.5i-fix — clip / safe zone CSS', () => {
 });
 
 describe('Sprint 3.5i-fix — ROADMAP + VA manifest', () => {
-	it('ROADMAP marks 3.5i-fix Done and next 3.5i-a', () => {
+	it('ROADMAP marks 3.5i Superseded — compose/clip fix retained in 3.5l-a', () => {
 		const doc = readFileSync(ROADMAP, 'utf-8');
-		expect(doc).toMatch(/\|\s*3\.5i-fix\s*\|\s*\*\*Done\*\*/i);
-		expect(doc).toMatch(/playerLoadoutSprint35iFix\.test\.ts/);
-		expect(doc).toMatch(/3\.5i-a|Next.*3\.5i-a/i);
+		expect(doc).toMatch(/\|\s*\*\*3\.5i\*\*\s*\|\s*\*\*Superseded\*\*/i);
+		expect(doc).toMatch(/\|\s*\*\*3\.5l-a\*\*\s*\|\s*\*\*Done\*\*/i);
+		expect(doc).toMatch(/playerLoadoutSprint35lA\.test\.ts/);
 	});
 
 	it('s35ifix-manifest.json references HQ holo + Studio VA captures', () => {

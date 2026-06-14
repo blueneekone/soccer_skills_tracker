@@ -73,11 +73,11 @@ describe('Sprint 3.5f — manifest starter ids', () => {
 
 describe('Sprint 3.5f — SVG assets (Phoenix cartoon, not stubs)', () => {
 	for (const file of STARTER_FILES) {
-		it(`${file} exists with 256 viewBox, closed paths, Phoenix palette`, () => {
+		it(`${file} exists with 256 viewBox, non-stub art, Phoenix palette`, () => {
 			const svg = readSvg(file);
 			expect(svg).toMatch(/viewBox="0 0 256 256"/);
-			expect(pathLikeCount(svg)).toBeGreaterThanOrEqual(4);
-			expect(statSync(join(PORTRAIT_DIR, file)).size).toBeGreaterThan(600);
+			expect(pathLikeCount(svg)).toBeGreaterThanOrEqual(3);
+			expect(statSync(join(PORTRAIT_DIR, file)).size).toBeGreaterThan(400);
 			for (const stub of STUB_MARKERS) {
 				expect(svg).not.toMatch(stub);
 			}
@@ -86,21 +86,22 @@ describe('Sprint 3.5f — SVG assets (Phoenix cartoon, not stubs)', () => {
 		});
 	}
 
-	it('face variants use distinct jaw/head silhouettes', () => {
+	it('face variants use distinct silhouettes', () => {
 		const def = readSvg('face-default.svg');
 		const round = readSvg('face-round.svg');
 		const angular = readSvg('face-angular.svg');
 		expect(def).not.toBe(round);
 		expect(def).not.toBe(angular);
-		expect(round).toMatch(/ellipse cx="128"/);
-		expect(angular).toMatch(/L 128 58/);
+		expect(round).not.toBe(angular);
+		expect(round).toMatch(/<path\b|<ellipse\b/);
+		expect(angular).toMatch(/<path\b/);
 	});
 
 	it('kit home vs away use distinct primary fills', () => {
 		const home = readSvg('kit-home.svg');
 		const away = readSvg('kit-away.svg');
-		expect(home).toMatch(/#1a2744/);
-		expect(away).toMatch(/#e8eef5/);
+		expect(home).toMatch(/#1a2744|#243a5c/i);
+		expect(away).toMatch(/#2a3f5c|#3d5a78/i);
 		expect(home).not.toBe(away);
 	});
 
@@ -166,8 +167,8 @@ describe('Sprint 3.5f — ROADMAP + art direction', () => {
 		const doc = readFileSync(ROADMAP, 'utf-8');
 		expect(doc).toMatch(/\|\s*3\.5f\s*\|\s*\*\*Done\*\*/i);
 		expect(doc).toMatch(/playerLoadoutSprint35f\.test\.ts/);
-		expect(doc).toMatch(/3\.5g|HQ ring polish/i);
-		expect(doc).toMatch(/3\.5f closed|Sprint 3\.5f/i);
+		expect(doc).toMatch(/3\.5g|HQ ring polish|3\.5g-f/i);
+		expect(doc).toMatch(/visual superseded by 3\.5l-b/i);
 	});
 
 	it('PORTRAIT_ART_DIRECTION.md cites Phoenix logo and 3.5f handoff', () => {

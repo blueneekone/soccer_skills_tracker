@@ -132,11 +132,11 @@ describe('Sprint 3.5i-b — wiring guards', () => {
 });
 
 describe('Sprint 3.5i-b — ROADMAP + vision', () => {
-	it('ROADMAP marks 3.5i-b Done and next 3.5k', () => {
+	it('ROADMAP marks 3.5i Superseded — 3.5k collectible metadata shipped', () => {
 		const doc = readFileSync(ROADMAP, 'utf-8');
-		expect(doc).toMatch(/\|\s*3\.5i-b\s*\|\s*\*\*Done\*\*/i);
-		expect(doc).toMatch(/playerLoadoutSprint35iB\.test\.ts/);
-		expect(doc).toMatch(/Next:\s*3\.5k/i);
+		expect(doc).toMatch(/\|\s*\*\*3\.5i\*\*\s*\|\s*\*\*Superseded\*\*/i);
+		expect(doc).toMatch(/\|\s*\*\*3\.5k\*\*\s*\|\s*\*\*Done\*\*/i);
+		expect(doc).toMatch(/playerLoadoutSprint35k\.test\.ts/);
 	});
 
 	it('PORTRAIT_REPRESENTATION documents under13 → youth mapping', () => {

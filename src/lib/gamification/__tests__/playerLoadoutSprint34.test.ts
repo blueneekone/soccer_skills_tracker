@@ -108,13 +108,13 @@ describe('Sprint 3.4 — manifest + ceremonies', () => {
 });
 
 describe('Sprint 3.4 — ROADMAP + vision', () => {
-	it('ROADMAP marks 3.4 Done and points to 3.5a next', () => {
+	it('ROADMAP marks 3.4 Done in Epic 3 sprint table', () => {
 		const doc = readFileSync(ROADMAP, 'utf-8');
 		expect(doc).toMatch(/\|\s*3\.4\s*\|\s*\*\*Done\*\*/i);
 		expect(doc).toMatch(/playerLoadoutSprint34\.test\.ts/);
 		expect(doc).toMatch(/s34-manifest\.json/);
-		expect(doc).toMatch(/Sprint 3\.4 closed/i);
 		expect(doc).toMatch(/\|\s*3\.3\s*\|\s*Done/i);
+		expect(doc).toMatch(/\|\s*3\.5a\s*\|\s*\*\*Done\*\*/i);
 	});
 
 	it('VA manifest references s34 armory + HQ screenshots', () => {
