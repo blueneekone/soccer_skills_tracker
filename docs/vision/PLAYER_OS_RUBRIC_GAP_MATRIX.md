@@ -40,7 +40,7 @@ Principles **P1–P8** map to rubric §1 (3-second judgment → Trust). **Person
 | Fixed ambient + rail | Pass | `ps-ambient` / `ps-rail` `position: fixed`; rail links `min-height: 44px`. |
 | Z0 canvas | Pass | `#000` dossier tokens; grid/glow/scanlines on ambient only. |
 | Route continuity | Partial | Shared `player-dossier-root pd-grain pd-chrome-root`; `data-dopamine` on canvas. Motion sign-off (layer enter, route continuity) still ☐ in VA. |
-| Visual discipline | Partial | `:global(.bento-card/.card/.ec-panel)` injects generic card chrome that can fight route-specific void work. |
+| Visual discipline | Pass | 6j closure (J-10): generic `:global(.bento-card/.card/.ec-panel)` scoped off `ps-root--dossier` + `player-dossier-root`; route CSS owns void-first material. |
 | P1 3-second | Partial | Atmosphere reads cinematic; bottom dock / left rail competes with first content on mobile. |
 
 ### HQ — `/player/dashboard`
@@ -48,7 +48,7 @@ Principles **P1–P8** map to rubric §1 (3-second judgment → Trust). **Person
 | Check | Score | Evidence |
 |-------|:-----:|----------|
 | Identity Z3 hero | Partial | `HologramCardShell` + operative portrait (6a/6f-c). Embedded `ibm-root--inset` / identity stage still adds a Z1 well frame around the holo shell. |
-| Void ≥40% / matte ≤35% | Partial | Analytics void island (6c) demotes deck slab; **OperativeHub** remains `pd-os-deck--hero` (Z2 matte wrapper). Void contract not measured/signed (6i). |
+| Void ≥40% / matte ≤35% | Partial | Analytics void island (6c) + void-friendly OperativeHub `--pd-os-hero-fill` (6j closure); tokens documented — formal pixel sample remains **6i**. |
 | One gold focal | Partial | Coach mission gold accent + streak-at-risk gold on identity stage — risk of dual gold focal per viewport. |
 | Tier A / anti-patterns | Partial | VPP uses `AttributeRadar` + `pdDataBloom` (good). **OperativeHub** scoped `overflow: hidden` conflicts with Sprint 2.20c guard intent (clip risk). Init modal uses flat `pd-panel`. |
 | Must-feel (VA) | Fail | Identity Z3 + void + mission rail + document scroll directionally correct; 1280/390 ☐. |
@@ -59,9 +59,9 @@ Principles **P1–P8** map to rubric §1 (3-second judgment → Trust). **Person
 
 | Check | Score | Evidence |
 |-------|:-----:|----------|
-| Investigation workspace | Fail | Radar band uses `stats-analytics-void` + `VanguardProtocolPanel` (6g), but **achievement matrix** (`dossier-badges`) and **seg toggles** remain matte `pd-page-panel` / plain `dossier-seg` — reads admin-form vs HQ void. |
+| Investigation workspace | Partial | Radar band uses `stats-analytics-void` + VPP (6g); achievement matrix + seg toggles use edge-lit `pd-os-deck` rows and `stats-chip` rail (Wave C / 6j closure). |
 | Radar full-width, no nested borders | Partial | VPP chart well is clean (2.20b removed extra `::before`/`::after`). Workout band uses Chart.js canvas in Z1 well — functional, not cinematic. |
-| Diegetic kit | Fail | Period toggles are not `pd-os-tab-trail`; badge grid is not edge-lit Z2 rows (6l target). |
+| Diegetic kit | Partial | Period toggles use `stats-chip` rail; badge grid uses edge-lit Z2 `stats-achievement-row` decks (6j closure). |
 | Typography | Partial | `PlayerOsPageStrap` present; body hints still mono-heavy admin copy. |
 | Must-feel (VA) | Fail | ROADMAP **6l** explicitly defers cinematic investigation workspace; all VA boxes ☐. |
 
@@ -126,8 +126,8 @@ Principles **P1–P8** map to rubric §1 (3-second judgment → Trust). **Person
 
 | Rank | Blocker | Instrument | Routes | Mandate | Why it fails the 3-second test |
 |:----:|---------|------------|--------|---------|--------------------------------|
-| **1** | **Stats reads flat admin dashboard**, not investigation workspace | Telemetry | `/stats` | BUILD §1 Diegetic Player UX · Wave C | First screen is grey panels + Chart.js + badge grid — same weight as Coach/Director analytics, not Player void + emissive telemetry. |
-| **2** | **Void contract unsigned; HQ hub still matte-heavy** | Identity + Frame | HQ, Shell | BUILD §1 12-col liquid bento + clamp() · BUILD §2 reject “Eradicate dead space” | OperativeHub Z2 deck + unknown void % — first paint feels “boxed panels on black” vs Skill Tree / Tron void. |
+| **1** | **Stats reads flat admin dashboard**, not investigation workspace | Telemetry | `/stats` | BUILD §1 Diegetic Player UX · Wave C | Wave C + 6j closure shipped diegetic chips + edge-lit rows; VA sign-off still ☐. |
+| **2** | **Void contract unsigned; HQ hub still matte-heavy** | Identity + Frame | HQ, Shell | BUILD §1 12-col liquid bento + clamp() · BUILD §2 reject “Eradicate dead space” | Void-friendly hero fill + void-first bento tokens shipped (6j closure); pixel sample remains **6i**. |
 | **3** | **Armory header + accent sprawl breaks persona skin** | Navigation | `/player/armory` | BUILD §2 neon cyan reject · Wave E | Custom strap + cyan `#00d4ff` reads separate product; breaks “one command deck” continuity from HQ. |
 | **4** | **Train breaks diegetic trust at commit time** | Execute | `/player/workout` | BUILD §2 SweetAlert2 reject · BUILD §1 Verified-commit ceremony | SweetAlert popups + unstylized range inputs snap user out of terminal fantasy on the primary action. |
 | **5** | **No formal VA / void sign-off gate** | All types | All routes | BUILD §3 Wave F · BUILD §1 Performance = premium | Epic 3.4 / 4.1 launch blocked; teams cannot prove ≥40% void / ≤35% matte / emissive ≥15% without **6i** measurement. |

@@ -50,6 +50,10 @@
 		color-mix(in srgb, #030308 62%, #000) 42%,
 		#000000 100%
 	);
+	/* Sprint 2.22 slice 6j closure — void/matte contract tokens (FOUNDATION §3 / voidContract.ts) */
+	--pd-void-contract-black-min: 40%;
+	--pd-void-contract-matte-max: 35%;
+	--pd-void-contract-emissive-min: 15%;
 	/* Phase 7 · G5 — Cross-route frame token kit (Z2 plate + hero/recessed variants) */
 	--pd-os-frame-fill: var(--pd-depth-panel-gradient);
 	--pd-os-frame-highlight: linear-gradient(180deg, rgba(255, 255, 255, 0.05) 0%, transparent 24%);

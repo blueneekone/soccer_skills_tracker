@@ -1,32 +1,52 @@
 /**
- * playerHudSprint234.test.ts — Sprint 2.22 slice 6j-a HQ Z2 depth + pd-os-deck kit
+ * playerHudSprint234.test.ts — Sprint 2.22 slice 6j (HQ Z2 depth + closure J-02/J-06/J-07/J-10)
  */
 
 import { describe, it, expect } from 'vitest';
 import { readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
+import {
+	VOID_CONTRACT_THRESHOLDS,
+	evaluateVoidContract,
+} from '$lib/player/visual/voidContract.js';
 
 const ROOT = join(__dirname, '..', '..', '..', '..', '..');
 const HUD_CSS = join(ROOT, 'lib/styles/player-dashboard-hud.css');
 const DOSSIER_CSS = join(ROOT, 'lib/styles/player-dossier.css');
+const SHELL_CSS = join(ROOT, 'lib/styles/player-shell.css');
 const MISSIONS_CSS = join(ROOT, 'lib/styles/player-missions.css');
 const QUICK_OPS = join(ROOT, 'lib/components/player/dashboard/OperativeQuickOps.svelte');
 const HUB = join(ROOT, 'lib/components/player/dashboard/OperativeHub.svelte');
 const PATHWAY = join(ROOT, 'lib/components/player/dashboard/OperativePathwayPreview.svelte');
 const PAGE = join(ROOT, 'routes/(app)/player/dashboard/+page.svelte');
+const STATS = join(ROOT, 'routes/(app)/stats/+page.svelte');
+const SETTINGS_PAGE = join(ROOT, 'routes/(app)/player/settings/+page.svelte');
+const SETTINGS_PANEL = join(ROOT, 'lib/components/player/PlayerSettingsPanel.svelte');
+const SHELL = join(ROOT, 'lib/components/shell/PlayerShell.svelte');
 const ROADMAP = join(ROOT, '..', 'ROADMAP.md');
+const GAP_MATRIX = join(ROOT, '..', 'docs/vision/PLAYER_OS_RUBRIC_GAP_MATRIX.md');
+const GAP_REGISTER = join(ROOT, '..', 'docs/acquisition/PLATFORM_GAP_REGISTER.md');
 const VISUAL_README = join(ROOT, '..', 'docs/visual-acceptance/sprint-2.22-slice-6j-a/README.md');
+const CLOSURE_VA = join(ROOT, '..', 'docs/visual-acceptance/sprint-2.22-slice-6j/README.md');
 const E2E_SPEC = join(ROOT, '..', 'e2e/player-hq-slice-6j-a.visual.spec.ts');
 
 const hudCss = existsSync(HUD_CSS) ? readFileSync(HUD_CSS, 'utf-8') : '';
 const dossierCss = existsSync(DOSSIER_CSS) ? readFileSync(DOSSIER_CSS, 'utf-8') : '';
+const shellCss = existsSync(SHELL_CSS) ? readFileSync(SHELL_CSS, 'utf-8') : '';
 const missionsCss = existsSync(MISSIONS_CSS) ? readFileSync(MISSIONS_CSS, 'utf-8') : '';
 const quickOpsSrc = existsSync(QUICK_OPS) ? readFileSync(QUICK_OPS, 'utf-8') : '';
 const hubSrc = existsSync(HUB) ? readFileSync(HUB, 'utf-8') : '';
 const pathwaySrc = existsSync(PATHWAY) ? readFileSync(PATHWAY, 'utf-8') : '';
 const pageSrc = existsSync(PAGE) ? readFileSync(PAGE, 'utf-8') : '';
+const statsSrc = existsSync(STATS) ? readFileSync(STATS, 'utf-8') : '';
+const settingsPageSrc = existsSync(SETTINGS_PAGE) ? readFileSync(SETTINGS_PAGE, 'utf-8') : '';
+const settingsPanelSrc = existsSync(SETTINGS_PANEL) ? readFileSync(SETTINGS_PANEL, 'utf-8') : '';
+const shellSrc = existsSync(SHELL) ? readFileSync(SHELL, 'utf-8') : '';
 const roadmapSrc = existsSync(ROADMAP) ? readFileSync(ROADMAP, 'utf-8') : '';
+const gapMatrixSrc = existsSync(GAP_MATRIX) ? readFileSync(GAP_MATRIX, 'utf-8') : '';
+const gapRegisterSrc = existsSync(GAP_REGISTER) ? readFileSync(GAP_REGISTER, 'utf-8') : '';
 const visualReadmeSrc = existsSync(VISUAL_README) ? readFileSync(VISUAL_README, 'utf-8') : '';
+const closureVaSrc = existsSync(CLOSURE_VA) ? readFileSync(CLOSURE_VA, 'utf-8') : '';
 const e2eSpecSrc = existsSync(E2E_SPEC) ? readFileSync(E2E_SPEC, 'utf-8') : '';
 
 describe('Sprint 2.22 slice 6j-a — pd-os-deck depth kit (translatable)', () => {
@@ -47,8 +67,12 @@ describe('Sprint 2.22 slice 6j-a — pd-os-deck depth kit (translatable)', () =>
 		expect(pathwaySrc).not.toMatch(/pg-bracket/);
 		expect(pageSrc).toMatch(/player-analytics-void pd-os-deck pd-os-deck--recessed/);
 		expect(hudCss).toMatch(/\.operative-hub \.hcs-scanlines[\s\S]*display:\s*none/);
-		expect(hudCss).toMatch(/player-analytics-void \.vpp-chart--premium[\s\S]*--pd-z1-well-bg/);
-		expect(hudCss).toMatch(/player-analytics-void \.vpp-inspector--premium[\s\S]*--pd-z1-well-bg/);
+		expect(hudCss).toMatch(
+			/:is\(\.player-analytics-void, \.stats-analytics-void\) \.vpp-chart--premium[\s\S]*--pd-z1-well-bg/,
+		);
+		expect(hudCss).toMatch(
+			/:is\(\.player-analytics-void, \.stats-analytics-void\) \.vpp-inspector--premium[\s\S]*--pd-z1-well-bg/,
+		);
 	});
 
 	it('OperativeQuickOps uses pd-os-deck without pd-page-panel on deck', () => {
@@ -159,5 +183,113 @@ describe('Sprint 2.22 slice 6j-a — visual acceptance + ROADMAP', () => {
 		expect(roadmapSrc).toMatch(/\|\s*\*\*6j-a\*\*\s*\|[^|]*\|\s*\*\*Done\*\*\s*\|/);
 		expect(roadmapSrc).toMatch(/\|\s*\*\*6j-b\*\*\s*\|[^|]*\|\s*\*\*Done\*\*\s*\|/);
 		expect(roadmapSrc).toMatch(/Sprint 2\.22 slice 6j-a scope/);
+	});
+});
+
+describe('Sprint 2.22 slice 6j closure — J-02 Z2 depth (remaining routes)', () => {
+	it('player-dossier.css documents 6j closure void-first deck tokens', () => {
+		expect(dossierCss).toMatch(/Sprint 2\.22 slice 6j closure — void\/matte contract tokens/);
+		expect(dossierCss).toMatch(/--pd-void-contract-black-min:\s*40%/);
+		expect(dossierCss).toMatch(/--pd-void-contract-matte-max:\s*35%/);
+	});
+
+	it('Settings route uses pd-os-deck panels (6j-b parity)', () => {
+		expect(settingsPageSrc).toMatch(/pd-route-stack/);
+		expect(settingsPanelSrc).toMatch(/ps-settings-panel pd-os-deck/);
+	});
+
+	it('HQ bento-card surfaces use void-first gradient — not solid matte slab', () => {
+		expect(hudCss).toMatch(
+			/\.player-hud-root \.bento-card[\s\S]*--pd-depth-panel-gradient/,
+		);
+		const bentoBlock = pageSrc.match(/\.bento-card\s*\{([^}]+)\}/s)?.[1] ?? '';
+		expect(bentoBlock).toMatch(/--pd-depth-panel-gradient/);
+		expect(bentoBlock).not.toMatch(/background:\s*var\(--pd-panel/);
+	});
+});
+
+describe('Sprint 2.22 slice 6j closure — J-06 HQ void ≥40% / matte ≤35%', () => {
+	it('voidContract thresholds match FOUNDATION §3', () => {
+		expect(VOID_CONTRACT_THRESHOLDS.blackCanvasMinRatio).toBe(0.4);
+		expect(VOID_CONTRACT_THRESHOLDS.mattePanelMaxRatio).toBe(0.35);
+	});
+
+	it('evaluateVoidContract enforces matte ≤35% guard', () => {
+		const pass = evaluateVoidContract({
+			blackCanvasRatio: 0.45,
+			mattePanelRatio: 0.32,
+			emissiveRatio: 0.2,
+		});
+		expect(pass.mattePanelPass).toBe(true);
+		expect(pass.allPixelRatiosPass).toBe(true);
+
+		const fail = evaluateVoidContract({
+			blackCanvasRatio: 0.45,
+			mattePanelRatio: 0.38,
+			emissiveRatio: 0.2,
+		});
+		expect(fail.mattePanelPass).toBe(false);
+	});
+
+	it('OperativeHub hero deck uses void-friendly --pd-os-hero-fill', () => {
+		expect(hudCss).toMatch(/void-friendly hub \(FOUNDATION §3\)/);
+		expect(hudCss).toMatch(/\.operative-hub\.pd-os-deck--hero[\s\S]*--pd-os-hero-fill/);
+		expect(dossierCss).toMatch(/--pd-os-hero-fill:/);
+	});
+
+	it('6j closure VA README documents void/matte token contract', () => {
+		expect(existsSync(CLOSURE_VA)).toBe(true);
+		expect(closureVaSrc).toMatch(/Void contract/);
+		expect(closureVaSrc).toMatch(/≥\s*40%/);
+		expect(closureVaSrc).toMatch(/≤\s*35%/);
+		expect(closureVaSrc).toMatch(/--pd-depth-panel-gradient/);
+	});
+});
+
+describe('Sprint 2.22 slice 6j closure — J-07 Stats investigation rubric alignment', () => {
+	it('player stats uses diegetic investigation deck — not matte pd-page-panel', () => {
+		expect(statsSrc).toMatch(/stats-analytics-void pd-os-deck pd-os-deck--recessed/);
+		expect(statsSrc).toMatch(/class:stats-chip-rail=\{isPlayerRole\}/);
+		expect(statsSrc).toMatch(/class:stats-achievement-row=\{isPlayerRole\}/);
+		expect(statsSrc).toMatch(/class:pd-page-panel=\{!isPlayerRole\}/);
+	});
+
+	it('stats achievement rows use edge-lit pd-os-deck pattern', () => {
+		expect(dossierCss).toMatch(/Player OS Wave C — Stats achievement edge-lit rows/);
+		expect(hudCss).toMatch(/\.stats-chip-rail/);
+	});
+
+	it('gap matrix no longer marks Stats investigation / diegetic kit as Fail', () => {
+		const statsSection = gapMatrixSrc.match(/### Stats[\s\S]*?### Train/)?.[0] ?? '';
+		expect(statsSection).toMatch(/Investigation workspace \| Partial/);
+		expect(statsSection).toMatch(/Diegetic kit \| Partial/);
+		expect(statsSection).not.toMatch(/Investigation workspace \| Fail/);
+		expect(statsSection).not.toMatch(/Diegetic kit \| Fail/);
+	});
+});
+
+describe('Sprint 2.22 slice 6j closure — J-10 PlayerShell bento-card injection', () => {
+	it('PlayerShell.svelte does not inject generic bento-card chrome', () => {
+		expect(shellSrc).not.toMatch(/bento-card/);
+		expect(shellSrc).toMatch(/player-dossier-root/);
+		expect(shellSrc).toMatch(/ps-root--dossier/);
+	});
+
+	it('player-shell.css scopes generic pp-card chrome off dossier routes', () => {
+		expect(shellCss).toMatch(
+			/\.ps-root:not\(\.ps-root--dossier\):not\(:has\(\.player-dossier-root\)\)\s+:global\(\.bento-card\)/,
+		);
+		expect(shellCss).toMatch(/6j closure — dossier routes own material/);
+	});
+
+	it('PLATFORM_GAP_REGISTER marks J-02, J-06, J-07, J-10 Done', () => {
+		expect(gapRegisterSrc).toMatch(/\| J-02 \|.*\| Done \|/);
+		expect(gapRegisterSrc).toMatch(/\| J-06 \|.*\| Done \|/);
+		expect(gapRegisterSrc).toMatch(/\| J-07 \|.*\| Done \|/);
+		expect(gapRegisterSrc).toMatch(/\| J-10 \|.*\| Done \|/);
+	});
+
+	it('ROADMAP marks slice 6j Done', () => {
+		expect(roadmapSrc).toMatch(/slice 6j scope[\s\S]*?\*\*Done\*\*/);
 	});
 });

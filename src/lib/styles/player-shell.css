@@ -539,7 +539,7 @@
 }
 
 /* ─── In-shell content: modern cards ─────────────────────────── */
-/* Wave A — Player OS dossier routes own material; skip generic pp-card chrome injection */
+/* Sprint 2.22 slice 6j closure — dossier routes own material; skip generic pp-card chrome injection (J-10) */
 .ps-root:not(.ps-root--dossier):not(:has(.player-dossier-root)) :global(.bento-card),
 .ps-root:not(.ps-root--dossier):not(:has(.player-dossier-root)) :global(.card),
 .ps-root:not(.ps-root--dossier):not(:has(.player-dossier-root)) :global(.ec-panel) {

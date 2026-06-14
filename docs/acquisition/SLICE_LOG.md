@@ -226,3 +226,27 @@ Agents append entries below. Do not edit prior rows.
 - OWNER_QA_CHECKLIST QA-id count: **47** (QA-000–QA-507)
 - PLATFORM_GAP_REGISTER row count: **86** (sections A–M + rejects)
 **Verify:** `npm run check` · `npm test -- src/lib/parent/__tests__/launchWave2Complete.test.ts src/lib/gamification/__tests__/personaFunctionalMvp.test.ts` · `node scripts/launch-overnight-agents.mjs --wave 3a --dry-run`
+
+---
+
+## player-os-6j — 2026-06-14
+
+**Branch:** `closure/player-os-6j`  
+**Status:** Done  
+**Gaps closed:** J-02, J-06, J-07, J-10
+
+**Shipped:**
+- Extended `playerHudSprint234.test.ts` — 29 guards (6j-a regression + closure rubric)
+- Void/matte contract tokens in `player-dossier.css` (`--pd-void-contract-*`)
+- Void-first `--pd-depth-panel-gradient` on dossier `.bento-card` (HUD + HQ page)
+- PlayerShell generic `.bento-card` chrome scoped off dossier routes (J-10 comment)
+- Stats rubric gap matrix Fail → Partial (investigation workspace + diegetic kit)
+- VA notes: `docs/visual-acceptance/sprint-2.22-slice-6j/README.md`
+- `PLATFORM_GAP_REGISTER` J-02/J-06/J-07/J-10 → Done; ROADMAP 6j → Done
+
+**Verify:**
+- `npm test -- src/lib/components/player/dashboard/__tests__/playerHudSprint234.test.ts` — 29 passed
+- `npm run check` — 0 errors
+- `npm run build` — ok
+
+**Manual QA:** QA-303, QA-304, QA-307 (owner checklist)

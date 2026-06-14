@@ -22,12 +22,12 @@
 	--player-hud-avatar-size: clamp(52px, 12vw, 72px);
 }
 
-/* Sprint 2.8 — lifted dossier bento cards (no outer chamfer) */
+/* Sprint 2.8 — lifted dossier bento cards (void-first fill; no solid matte slab) */
 .player-hud-root .bento-card,
 .player-dossier-root .bento-card {
 	border-radius: 0;
 	border: 1px solid var(--player-hud-border, var(--pd-line, rgba(255, 255, 255, 0.1)));
-	background: var(--player-hud-surface, var(--pd-panel, #05050a));
+	background: var(--pd-depth-panel-gradient, var(--player-hud-surface, var(--pd-panel, #05050a)));
 }
 
 .player-hud-root .ibm-meta {
