@@ -145,7 +145,7 @@ Requires **`abPercent > 0`** and player in rollout cohort — at launch default 
 
 ## Gaps (read-only audit — 2026-06-01)
 
-Scan covered `/player/*` (dashboard, workout, armory, stats, settings, tracker), `/parent/*` (dashboard, household, vpc, log-workout, messages), and `/coach` subroutes. No broken imports or compile blockers found on these paths in this sprint (project-wide `npm run check` still reports pre-existing TS debt outside this scope).
+Scan covered `/player/*` (dashboard, workout, armory, stats, settings, tracker), `/parent/*` (dashboard, household, vpc, log-workout, messages), and `/coach` subroutes. No broken imports or compile blockers found on these paths in this sprint. Project-wide **`npm run check` = 0 errors** (see [`CHECK_ZERO_STATUS.md`](../acquisition/CHECK_ZERO_STATUS.md)).
 
 | Gap | Severity | Route / surface | Notes | Suggested sprint |
 |-----|----------|-----------------|-------|------------------|
@@ -157,7 +157,7 @@ Scan covered `/player/*` (dashboard, workout, armory, stats, settings, tracker),
 | Scouting mock data | **Resolved (LAUNCH-scouting)** | `/coach/scouting` | Wired to `player_lookup` recruit pipeline; mock prospects removed. | — |
 | Match-day mock fallback | **Resolved (LAUNCH-functional-os)** | `/coach/match-day` | `MOCK_OPERATIVES` removed; roster is `player_lookup`-only with explicit empty state (select-team / no-roster copy). | — |
 | Dual player settings paths | **Documented (LAUNCH-nav)** | `/player/settings` vs `/settings` | PlayerShell + `workspaceNav` athlete links → `/player/settings`; `/settings` = cross-role terminal (see Player OS section above). | — |
-| Player tracker off shell nav | Discoverability | `/player/tracker` | Route renders; not in PlayerShell bottom nav (HQ/Stats/Train/Armory/Settings only). | Low — document or add link |
+| Player tracker off shell nav | **Resolved (07-p2-tracker-nav)** | `/player/tracker` | Tracker in `PlayerShell` bottom rail + `workspaceNav` athlete links (`personaFunctionalMvp.test.ts`). | — |
 | Enterprise player nav label | **Resolved (LAUNCH-nav)** | `workspaceNav` athlete links | Labels aligned to HQ / Train / Stats / Settings (PlayerShell parity). | — |
 
 ### Not gaps (expected / deferred)

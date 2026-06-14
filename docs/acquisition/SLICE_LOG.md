@@ -226,3 +226,13 @@ Agents append entries below. Do not edit prior rows.
 - OWNER_QA_CHECKLIST QA-id count: **47** (QA-000–QA-507)
 - PLATFORM_GAP_REGISTER row count: **86** (sections A–M + rejects)
 **Verify:** `npm run check` · `npm test -- src/lib/parent/__tests__/launchWave2Complete.test.ts src/lib/gamification/__tests__/personaFunctionalMvp.test.ts` · `node scripts/launch-overnight-agents.mjs --wave 3a --dry-run`
+
+---
+
+## functional-mvp-doc-sync — 2026-06-14
+
+**Branch:** `closure/functional-mvp-doc-sync`  
+**Status:** Done  
+**Gap register:** F-05, F-06, A-05 → Done  
+**Updated:** `FUNCTIONAL_MVP.md` (tracker nav + check debt gaps resolved), `COMPETITIVE_LAUNCH_ASSESSMENT.md` (launch gate → `PLATFORM_GAP_REGISTER.md`), `PLAYER_OS_RUBRIC_GAP_MATRIX.md` (tracker nav note), `PLATFORM_GAP_REGISTER.md`  
+**Verify:** `npm test -- src/lib/gamification/__tests__/personaFunctionalMvp.test.ts src/lib/parent/__tests__/launchWave2Complete.test.ts` · `npm run check` · `npm run build`

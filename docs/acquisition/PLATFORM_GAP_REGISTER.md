@@ -39,7 +39,7 @@
 | A-02 | Post-deploy callable smoke (overnight CFs live) | Agent | `closure/post-deploy-guards` | `npm run smoke:dev` | none | Agent |
 | A-03 | WebAuthn `RP_ID` / `RP_ORIGIN` → `sstracker.app` | Done | — | `launchP0Fixes.test.ts` | QA-131 | Done |
 | A-04 | `deploy.yml` dev target `sports-skill-tracker-dev` (not prod hardcode) | Agent | `closure/deploy-gha-dev` | `npm run check` | QA-000d | Agent |
-| A-05 | `LAUNCH-qa-ready` closure (tests + docs aligned) | Agent | `closure/functional-mvp-doc-sync` | `npm test -- src/lib/parent/__tests__/launchWave2Complete.test.ts` | none | Agent |
+| A-05 | `LAUNCH-qa-ready` closure (tests + docs aligned) | Done | `closure/functional-mvp-doc-sync` | `npm test -- src/lib/parent/__tests__/launchWave2Complete.test.ts` | none | Done |
 | A-06 | Deploy-completeness (all `deploy:*` on target project) | Agent | `closure/live-deploy-dev` | `npm run deploy:dev:verify` | QA-000b | Agent |
 
 ---
@@ -103,8 +103,8 @@
 | F-02 | Parent OS FUNCTIONAL_MVP checklist | Done | — | `epic51CoppaSignup.test.ts` | QA-121–QA-125, QA-130–QA-134 | Done |
 | F-03 | Coach OS FUNCTIONAL_MVP checklist | Done | — | `coachModule.test.ts` | QA-141–QA-146, QA-161–QA-163 | Done |
 | F-04 | Cross-persona + RL Epic 8 AC-2 | Done | — | `playerRlFunctional.test.ts` | QA-151–QA-155 | Done |
-| F-05 | Stale FUNCTIONAL_MVP gap rows (tracker nav, check debt) | Agent | `closure/functional-mvp-doc-sync` | `personaFunctionalMvp.test.ts` | none | Agent |
-| F-06 | COMPETITIVE_LAUNCH_ASSESSMENT stale Partial row | Agent | `closure/functional-mvp-doc-sync` | `launchWave2Complete.test.ts` | none | Agent |
+| F-05 | Stale FUNCTIONAL_MVP gap rows (tracker nav, check debt) | Done | `closure/functional-mvp-doc-sync` | `personaFunctionalMvp.test.ts` | none | Done |
+| F-06 | COMPETITIVE_LAUNCH_ASSESSMENT stale Partial row | Done | `closure/functional-mvp-doc-sync` | `launchWave2Complete.test.ts` | none | Done |
 | F-07 | `personaFunctionalMvp.test.ts` regression guard | Done | — | `npm test -- src/lib/gamification/__tests__/personaFunctionalMvp.test.ts` | none | Done |
 | F-08 | `launchWave2Complete.test.ts` Wave 2 gate | Done | — | `launchWave2Complete.test.ts` | none | Done |
 

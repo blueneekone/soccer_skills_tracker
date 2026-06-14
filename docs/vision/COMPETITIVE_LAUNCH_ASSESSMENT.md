@@ -1,7 +1,7 @@
 # Competitive Launch Assessment — SSTracker vs. Market
 
 **Authority:** Product owner launch north star · [`ROADMAP.md`](../../ROADMAP.md) · [`FUNCTIONAL_MVP.md`](FUNCTIONAL_MVP.md)  
-**Last updated:** 2026-06-13 · post-overnight merge + doc sync  
+**Last updated:** 2026-06-14 · functional-mvp-doc-sync (F-06)  
 **Benchmarks:** [TeamSnap ONE](https://www.teamsnap.com/one) · [SportsEngine HQ](https://www.sportsengine.com/hq/) · [GotSport](https://home.gotsport.com/software/)  
 **Cursor rule:** [`.cursor/rules/competitive-launch-north-star.mdc`](../../.cursor/rules/competitive-launch-north-star.mdc)
 
@@ -16,7 +16,7 @@ This document is the **canonical competitive gap matrix** for launch. Agents and
 | **Beat competitors on** | Athlete development loop, SafeSport-native comms, COPPA/VPC depth, coach intent + prescriptions, RL homework, tactical drill designer, **tryout lifecycle OS (reg → eval → callback → roster)** |
 | **At parity (launch functional track)** | Guardian roster visibility, RSVP, registration-lite, roster invite, eligibility matrix, parent calendar export, push prefs, PWA install path |
 | **Behind on table stakes** | App Store / Play Store binaries (Capacitor shell shipped; submission deferred) |
-| **Launch functional gate** | **Partial** — overnight P2 + check=0 merged to dev; **owner live deploy confirm + FUNCTIONAL_MVP QA** remain — see [`GAP_CLOSURE_PLAN.md`](../acquisition/GAP_CLOSURE_PLAN.md) |
+| **Launch functional gate** | **Partial** — code + check=0 on dev; remaining closure tracked in [`PLATFORM_GAP_REGISTER.md`](../acquisition/PLATFORM_GAP_REGISTER.md) (owner live deploy + FUNCTIONAL_MVP human QA) |
 
 **Positioning:** SSTracker is **not** “another TeamSnap.” It is the **development + compliance OS** clubs adopt when they outgrow chat-and-schedule tools — but parents still expect RSVP, schedules, and payments on day one.
 

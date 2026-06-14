@@ -26,7 +26,7 @@ Principles **P1–P8** map to rubric §1 (3-second judgment → Trust). **Person
 
 - **VA column = Fail** on every shippable route because reference-matrix 1280px / 390px boxes and void-contract sign-off remain unchecked in `PLAYER_OS_VISUAL_ACCEPTANCE.md` (blocked on **6i** after **6l**).
 - **Skill tree** is the Tier A benchmark; treat **VA = Partial** only because formal screenshot sign-off is still open — material canon is met in code.
-- **Tracker** is not in `PlayerShell` `NAV_LINKS` (HQ, Stats, Train, Armory, Settings only); reachable via deep links / Quick Ops context, not primary nav.
+- **Tracker** — **Resolved (07-p2-tracker-nav):** in `PlayerShell` `NAV_LINKS` (HQ, Stats, Train, Tracker, Armory, Settings) + `workspaceNav` athlete links; Quick Ops still deep-links to `/player/tracker`.
 
 ---
 
@@ -106,7 +106,7 @@ Principles **P1–P8** map to rubric §1 (3-second judgment → Trust). **Person
 |-------|:-----:|----------|
 | Not a log list | Partial | Stat row + optional `MemoryCapsuleArena`; no trend timeline / replay log primitive. |
 | Capsule Tier A | Partial | Arena uses dossier mode; ghost uses `pd-os-deck__well` (6j-b). |
-| Discovery | Partial | Route exists but **absent from shell rail** — personalization / journey continuity gap. |
+| Discovery | Pass | Tracker in `PlayerShell` bottom rail since agent 07 (`07-p2-tracker-nav`); Quick Ops + enterprise nav parity. |
 | Must-feel (VA) | Fail | Matrix ☐. |
 
 **Key files:** `tracker/+page.svelte`, `HudStatCell.svelte`, `MemoryCapsuleArena.svelte`, `player-dashboard-hud.css`, `player-dossier.css`
