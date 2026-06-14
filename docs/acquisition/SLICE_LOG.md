@@ -226,3 +226,15 @@ Agents append entries below. Do not edit prior rows.
 - OWNER_QA_CHECKLIST QA-id count: **47** (QA-000–QA-507)
 - PLATFORM_GAP_REGISTER row count: **86** (sections A–M + rejects)
 **Verify:** `npm run check` · `npm test -- src/lib/parent/__tests__/launchWave2Complete.test.ts src/lib/gamification/__tests__/personaFunctionalMvp.test.ts` · `node scripts/launch-overnight-agents.mjs --wave 3a --dry-run`
+
+---
+
+## smoke-dev-script — 2026-06-14
+
+**Branch:** `closure/smoke-dev-script` @ `32cb61d`  
+**Status:** Done  
+**Gaps closed:** M-06, A-02  
+**Updated:** `scripts/smoke-dev-callables.mjs` (401/403-only pass rule), `PLATFORM_GAP_REGISTER.md` (M-06, A-02 → Done)  
+**Artifacts:** `docs/acquisition/DEPLOY_RECORD.json` (generated on smoke run)  
+**Smoke probes:** hosting `https://sstracker.app` (/login, /acquisition, /privacy) · callables `logTrainingSession`, `createRegistrationIntent`, `assignSeasonRegistrationToRoster`, `exportStateRoster`, `parentGrantVpcConsent`, `parentSignCoppaWaiver`, `registerDeviceToken` — all HTTP 401 (live)  
+**Verify:** `npm run smoke:dev` · `npm run check` · `npm run build`

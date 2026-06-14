@@ -77,12 +77,16 @@ async function probeCallable(name, region) {
 	} catch (err) {
 		fail(`Callable ${name} unreachable at ${url}: ${err instanceof Error ? err.message : err}`);
 	}
-	// Unauthenticated callable → 401/403; CORS preflight quirks → 400/404 on wrong name
 	if (status === 404) {
 		fail(`Callable ${name} not found (HTTP 404) — deploy may be stale`);
 	}
 	if (status >= 500) {
 		fail(`Callable ${name} server error HTTP ${status}`);
+	}
+	if (status !== 401 && status !== 403) {
+		fail(
+			`Callable ${name} unexpected HTTP ${status} (expected 401/403 unauthenticated — endpoint missing or misconfigured)`,
+		);
 	}
 	console.log(`  OK callable ${name} → HTTP ${status} (endpoint live)`);
 }
