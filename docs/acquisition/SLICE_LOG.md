@@ -226,3 +226,20 @@ Agents append entries below. Do not edit prior rows.
 - OWNER_QA_CHECKLIST QA-id count: **47** (QA-000–QA-507)
 - PLATFORM_GAP_REGISTER row count: **86** (sections A–M + rejects)
 **Verify:** `npm run check` · `npm test -- src/lib/parent/__tests__/launchWave2Complete.test.ts src/lib/gamification/__tests__/personaFunctionalMvp.test.ts` · `node scripts/launch-overnight-agents.mjs --wave 3a --dry-run`
+
+---
+
+## fcm-broadcast — 2026-06-14
+
+**Branch:** `closure/fcm-broadcast`  
+**Slice:** fcm-broadcast (D-06, D-08)  
+**Status:** Done
+
+**Shipped:**
+- Synced `FCM_AND_MESSAGING_MATRIX.md` with shipped director broadcast stack: `DirectorClubBroadcastComposer`, `clubSportBroadcast`, `commitTeamBroadcast`, `onTeamBroadcastCreated` → `sendFcmToUids` (`push_announcements`); removed stale pre-ship gap copy; registered D-06/D-08 closure rows.
+- Fixed stale TOMORROW_IO doc strings: `WEATHER_LOCK_DESIGN.md` (Tomorrow.io now documented as optional in `weatherOps.js` / `facilityWeatherWebhook.js`); `EPIC5_STATUS.md` (TOMORROW_IO optional, not required for AEGIS deploy).
+- Added D-06/D-08 guard tests in `commsSprint48.test.ts` and `commsSprint49.test.ts`.
+
+**Verify:** `npm test -- src/lib/services/__tests__/commsSprint48.test.ts src/lib/services/__tests__/commsSprint49.test.ts` · `npm run check` · `npm run build`
+
+**ManualQaId:** QA-210 (owner checklist only)

@@ -31,4 +31,4 @@ Concise sprint-by-sprint checkpoint against roadmap intent. Evidence is grounded
 | **5.1** COPPA / signup matrix | **Done (doc + gates)** | [`docs/COPPA_SIGNUP_MATRIX.md`](COPPA_SIGNUP_MATRIX.md); `epic51CoppaSignup.test.ts`. |
 | **5.5** Messaging audit | **Done (inventory)** | [`docs/FCM_AND_MESSAGING_MATRIX.md`](FCM_AND_MESSAGING_MATRIX.md); `epic55MessagingAudit.test.ts`. |
 
-**Manual / follow-up:** Bind `TOMORROW_IO_API_KEY` + deploy `evaluateFieldWeatherLock`; deploy Firestore rules/indexes for deployment calendar + weather status.
+**Manual / follow-up:** Deploy `evaluateFieldWeatherLock` with `WEATHER_LOCK_ENABLED=true` on dev (`npm run deploy:integrations`); optional `TOMORROW_IO_API_KEY` only for future strike-radius enrich / webhook path — not required for AEGIS baseline.
