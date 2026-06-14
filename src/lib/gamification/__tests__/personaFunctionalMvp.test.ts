@@ -45,8 +45,8 @@ describe('Sprint LAUNCH-functional-os — ROADMAP', () => {
 	});
 
 	it('ROADMAP next build order includes Epic 5 after Epic 4 comms complete', () => {
-		expect(roadmap).toMatch(/Epic 4 Done \(4\.1–4\.12\)/);
-		expect(roadmap).toMatch(/Epic 5 Done/);
+		expect(roadmap).toMatch(/Epic 4\.1–4\.12 Done/);
+		expect(roadmap).toMatch(/Epic 4\/5\/2\.2 done/i);
 	});
 
 	it('ROADMAP defers owner QA until all epics complete', () => {
@@ -71,7 +71,7 @@ describe('Sprint LAUNCH-functional-os — research README', () => {
 		expect(readme).toMatch(/TABLED/i);
 		expect(readme).toMatch(/post-launch visual system/i);
 		expect(readme).toMatch(/Gemini Deep Research/i);
-		expect(readme).toMatch(/Do not wire/i);
+		expect(readme).toMatch(/wire PNG chrome/i);
 	});
 });
 
@@ -283,7 +283,7 @@ describe('T0-10 — Parent dashboard resolves children from households doc', () 
 		const src = readFileSync(DASHBOARD, 'utf-8');
 		expect(src).toMatch(/engine\.init\s*\(\s*parentEmail\s*,\s*householdId\s*,\s*childEmails/);
 		expect(src).toMatch(/carRideEngine\.init\s*\(\s*linkedPlayerEmail/);
-		expect(src).toMatch(/childEmails\[0\]/);
+		expect(src).toMatch(/resolvedChildren\[0\]/);
 	});
 });
 
