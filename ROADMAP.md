@@ -647,13 +647,13 @@ npm run build
 
 ---
 
-## Sprint 2.22 slice 6f scope — Armory Studio dossier hologram — **In progress**
+## Sprint 2.22 slice 6f scope — Armory Studio dossier hologram — **Done**
 
 **Goal:** Wrap the **Dossier Card Preview** in Armory Studio with `HologramCardShell` so the operative card reads as a **Tier A Z3 collectible** — same material language as HQ identity (6a), at full Studio scale.
 
-**Delivered (in progress):**
+**Delivered:**
 
-- **`HologramCardShell`** wraps `ProPlayerCard` in `OperativeLoadoutStudio` (`compact={false}` full scale)
+- **`HologramCardShell`** wraps `OperativeIdCardFrame` in `OperativeLoadoutStudio` (full Studio scale; teal `--pd-accent-data` holo accent)
 - **Void-friendly dossier row** — demote matte `ols-dossier-panel` slab; holo shell carries visual weight
 - **Portrait + workshop panels** unchanged
 - **Tests:** `playerHudSprint232.test.ts`

@@ -151,14 +151,14 @@
 
 | Id | Gap | BuildOwner | Closure slice | AutomatedVerify | ManualQaId | Status |
 |----|-----|------------|---------------|-----------------|------------|--------|
-| J-01 | Sprint 6f Armory hologram visual acceptance | Agent | `closure/player-os-6f` | `playerHudSprint252.test.ts` | QA-301, QA-302 | Agent |
+| J-01 | Sprint 6f Armory hologram visual acceptance | Agent | `closure/player-os-6f` | `playerHudSprint252.test.ts` | QA-301, QA-302 | Done |
 | J-02 | Sprint 6j Z2 depth / void / edge-lit (remaining routes) | Agent | `closure/player-os-6j` | `playerHudSprint234.test.ts` | QA-303, QA-307 | Agent |
 | J-03 | Swal → diegetic modal (`OperativeLoadoutStudio`) | Agent | `closure/diegetic-modals` | `playerHudSprint244.test.ts` | QA-306 | Agent |
 | J-04 | VA screenshot sign-off (1280/390 matrix) | Done | — | none | QA-308 | Done |
 | J-05 | Platform visual system (Gemini research) | Done | — | none | QA-507 | Done |
 | J-06 | HQ void ≥40% / matte ≤35% | Agent | `closure/player-os-6j` | rubric guards | QA-303 | Agent |
 | J-07 | Stats investigation rubric Fail rows (stale) | Agent | `closure/player-os-6j` | `playerHudSprint234.test.ts` | QA-304 | Agent |
-| J-08 | Armory qa-strap / accent canon (#00d4ff) | Agent | `closure/player-os-6f` | `playerHudSprint252.test.ts` | QA-302 | Agent |
+| J-08 | Armory qa-strap / accent canon (#00d4ff) | Agent | `closure/player-os-6f` | `playerHudSprint252.test.ts` | QA-302 | Done |
 | J-09 | Train diegetic sliders | Agent | `closure/diegetic-modals` | `playerHudSprint250.test.ts` | QA-305 | Agent |
 | J-10 | PlayerShell generic `.bento-card` injection | Agent | `closure/player-os-6j` | `playerHudSprint234.test.ts` | QA-307 | Agent |
 
