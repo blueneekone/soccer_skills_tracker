@@ -226,3 +226,23 @@ Agents append entries below. Do not edit prior rows.
 - OWNER_QA_CHECKLIST QA-id count: **47** (QA-000–QA-507)
 - PLATFORM_GAP_REGISTER row count: **86** (sections A–M + rejects)
 **Verify:** `npm run check` · `npm test -- src/lib/parent/__tests__/launchWave2Complete.test.ts src/lib/gamification/__tests__/personaFunctionalMvp.test.ts` · `node scripts/launch-overnight-agents.mjs --wave 3a --dry-run`
+
+---
+
+## tournament-p2 — 2026-06-14
+
+**Branch:** `closure/tournament-p2`  
+**Slice:** E-02 seeding UX polish + E-04 public buyer read-only bracket polish  
+**ManualQaId:** QA-203
+
+**Shipped:**
+- Classic bracket seed order (`bracketSeedOrder`, `firstRoundPairings`) — #1 vs lowest seed in round one
+- Director seeding: move up/down, shuffle seeds, round-1 pairing preview before generate
+- Public buyer page: dedicated `bracket-section` glass panel with heading and live-results subtitle; seed labels on readonly match rows
+
+**Verify:**
+- `npm test -- src/lib/tournament/__tests__/p2TournamentBracket.test.ts` — 12 passed
+- `npm run check` — 0 errors
+- `npm run build` — ok
+
+**Register:** E-02, E-04 → Done in `PLATFORM_GAP_REGISTER.md`

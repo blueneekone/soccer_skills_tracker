@@ -89,9 +89,9 @@
 | Id | Gap | BuildOwner | Closure slice | AutomatedVerify | ManualQaId | Status |
 |----|-----|------------|---------------|-----------------|------------|--------|
 | E-01 | Single-elim bracket (4/8/16/32) | Done | — | `p2TournamentBracket.test.ts` | QA-203 | Done |
-| E-02 | Tournament seeding UX polish | Agent | `closure/tournament-p2` | `p2TournamentBracket.test.ts` | QA-203 | Agent |
+| E-02 | Tournament seeding UX polish | Done | `closure/tournament-p2` | `p2TournamentBracket.test.ts` | QA-203 | Done |
 | E-03 | Double-elimination bracket | Done | — | none | none | Done |
-| E-04 | Public tournament buyer UX polish | Agent | `closure/tournament-p2` | `p2TournamentBracket.test.ts` | QA-203 | Agent |
+| E-04 | Public tournament buyer UX polish | Done | `closure/tournament-p2` | `p2TournamentBracket.test.ts` | QA-203 | Done |
 
 ---
 

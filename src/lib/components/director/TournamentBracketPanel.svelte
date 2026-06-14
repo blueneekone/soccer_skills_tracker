@@ -5,11 +5,15 @@
 		advanceWinner,
 		bracketHasStarted,
 		defaultTeams,
+		firstRoundPairings,
 		generateSingleEliminationBracket,
 		matchesByRound,
+		moveTeamInList,
+		reseedTeams,
 		roundLabel,
 		roundsForTeamCount,
 		setMatchLive,
+		shuffleTeamList,
 		teamNameMap,
 	} from '$lib/tournament/tournamentBracket.js';
 
@@ -26,8 +30,22 @@
 	let scoreDrafts = $state<Record<string, { home: string; away: string }>>({});
 
 	const names = $derived(bracket ? teamNameMap(bracket) : new Map<string, string>());
+	const seeds = $derived(
+		bracket ? new Map(bracket.teams.map((t) => [t.id, t.seed])) : new Map<string, number>(),
+	);
 	const rounds = $derived(bracket ? matchesByRound(bracket) : []);
 	const totalRounds = $derived(bracket ? roundsForTeamCount(bracket.teamSize) : 0);
+	const pairingPreview = $derived(
+		!bracket && draftTeams.length > 0
+			? firstRoundPairings(
+					draftTeams.map((t, i) => ({
+						id: t.id,
+						name: t.name.trim() || `Team ${i + 1}`,
+						seed: i + 1,
+					})),
+				)
+			: [],
+	);
 	const champion = $derived(
 		bracket?.matches.find((m) => m.round === totalRounds - 1 && m.slot === 0)?.winnerId ?? null,
 	);
@@ -47,6 +65,40 @@
 		if (!bracket) {
 			draftTeams = defaultTeams(size).map((t) => ({ id: t.id, name: t.name }));
 		}
+	}
+
+	function moveTeam(index: number, direction: -1 | 1) {
+		const nextIndex = index + direction;
+		if (nextIndex < 0 || nextIndex >= draftTeams.length) return;
+		draftTeams = moveTeamInList(draftTeams, index, nextIndex);
+		if (bracket) {
+			const teams = reseedTeams(
+				moveTeamInList(bracket.teams, index, nextIndex).map((t, i) => ({
+					...t,
+					name: draftTeams[i]?.name.trim() || t.name,
+				})),
+			);
+			emit(generateSingleEliminationBracket(teams));
+		}
+	}
+
+	function shuffleSeeds() {
+		draftTeams = shuffleTeamList(draftTeams);
+		if (bracket) {
+			const teams = reseedTeams(
+				shuffleTeamList(bracket.teams).map((t, i) => ({
+					...t,
+					name: draftTeams[i]?.name.trim() || t.name,
+				})),
+			);
+			emit(generateSingleEliminationBracket(teams));
+		}
+	}
+
+	function previewLabel(teamId: string): string {
+		const idx = draftTeams.findIndex((t) => t.id === teamId);
+		const name = idx >= 0 ? draftTeams[idx].name.trim() || `Team ${idx + 1}` : teamId;
+		return `#${idx + 1} ${name}`;
 	}
 
 	function generateBracket() {
@@ -106,7 +158,10 @@
 
 	function teamLabel(teamId: string | null): string {
 		if (!teamId) return 'TBD';
-		return names.get(teamId) ?? teamId;
+		const seed = seeds.get(teamId);
+		const name = names.get(teamId) ?? teamId;
+		if (seed != null && readonly) return `#${seed} ${name}`;
+		return name;
 	}
 
 	function statusClass(status: BracketMatch['status']): string {
@@ -147,6 +202,13 @@
 				</select>
 			</div>
 
+			<div class="setup-toolbar">
+				<p class="setup-hint">Reorder seeds before generating — #1 plays the lowest seed in round one.</p>
+				<button type="button" class="btn-ghost btn-shuffle" onclick={shuffleSeeds}>
+					Shuffle seeds
+				</button>
+			</div>
+
 			<div class="team-grid">
 				{#each draftTeams as team, idx (team.id)}
 					<div class="team-row">
@@ -159,9 +221,40 @@
 							maxlength="48"
 							oninput={(e) => updateTeamName(idx, e.currentTarget.value)}
 						/>
+						<div class="seed-actions">
+							<button
+								type="button"
+								class="btn-seed-move"
+								aria-label="Move seed up"
+								disabled={idx === 0}
+								onclick={() => moveTeam(idx, -1)}
+							>
+								↑
+							</button>
+							<button
+								type="button"
+								class="btn-seed-move"
+								aria-label="Move seed down"
+								disabled={idx === draftTeams.length - 1}
+								onclick={() => moveTeam(idx, 1)}
+							>
+								↓
+							</button>
+						</div>
 					</div>
 				{/each}
 			</div>
+
+			{#if pairingPreview.length > 0}
+				<div class="pairing-preview" aria-label="First round pairings preview">
+					<span class="pairing-kicker">Round 1 preview</span>
+					<ul class="pairing-list">
+						{#each pairingPreview as [homeId, awayId]}
+							<li>{previewLabel(homeId)} vs {previewLabel(awayId)}</li>
+						{/each}
+					</ul>
+				</div>
+			{/if}
 
 			<button type="button" class="btn-generate" onclick={generateBracket}>Generate bracket</button>
 		</div>
@@ -286,6 +379,52 @@
 		gap: 1rem;
 	}
 
+	.setup-toolbar {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 0.75rem;
+		flex-wrap: wrap;
+	}
+
+	.setup-hint {
+		margin: 0;
+		font-size: 0.8rem;
+		color: var(--vanguard-text-muted, #94a3b8);
+		max-width: 36rem;
+	}
+
+	.btn-shuffle {
+		flex-shrink: 0;
+	}
+
+	.pairing-preview {
+		padding: 0.75rem 1rem;
+		border-radius: 12px;
+		background: rgba(99, 102, 241, 0.08);
+		border: 1px solid rgba(99, 102, 241, 0.2);
+	}
+
+	.pairing-kicker {
+		display: block;
+		font-size: 0.72rem;
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.05em;
+		color: #a5b4fc;
+		margin-bottom: 0.45rem;
+	}
+
+	.pairing-list {
+		margin: 0;
+		padding-left: 1.1rem;
+		font-size: 0.82rem;
+		color: var(--vanguard-text-primary, #e2e8f0);
+		display: flex;
+		flex-direction: column;
+		gap: 0.25rem;
+	}
+
 	.setup-row {
 		display: flex;
 		flex-direction: column;
@@ -327,6 +466,36 @@
 		display: flex;
 		align-items: center;
 		gap: 0.5rem;
+	}
+
+	.seed-actions {
+		display: flex;
+		flex-direction: column;
+		gap: 0.15rem;
+		flex-shrink: 0;
+	}
+
+	.btn-seed-move {
+		background: rgba(255, 255, 255, 0.05);
+		border: 1px solid rgba(255, 255, 255, 0.12);
+		border-radius: 6px;
+		color: var(--vanguard-text-muted, #94a3b8);
+		width: 1.75rem;
+		height: 1.35rem;
+		font-size: 0.75rem;
+		line-height: 1;
+		cursor: pointer;
+		padding: 0;
+	}
+
+	.btn-seed-move:hover:not(:disabled) {
+		border-color: rgba(99, 102, 241, 0.45);
+		color: #c7d2fe;
+	}
+
+	.btn-seed-move:disabled {
+		opacity: 0.35;
+		cursor: not-allowed;
 	}
 
 	.seed-pill {

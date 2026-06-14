@@ -144,7 +144,13 @@
 		</header>
 
 		{#if bracketHasStarted(event.bracket)}
-			<TournamentBracketPanel bracket={event.bracket ?? null} readonly />
+			<section class="bracket-section glass-panel" aria-labelledby="buyer-bracket-heading">
+				<header class="bracket-section-header">
+					<h2 id="buyer-bracket-heading" class="bracket-section-title">Tournament Bracket</h2>
+					<p class="bracket-section-subtitle">Live results — updated as matches finish</p>
+				</header>
+				<TournamentBracketPanel bracket={event.bracket ?? null} readonly />
+			</section>
 		{/if}
 
 		<div class="checkout-grid">
@@ -364,6 +370,40 @@
 		font-size: 0.82rem;
 		font-weight: 600;
 		white-space: nowrap;
+	}
+
+	.bracket-section {
+		display: flex;
+		flex-direction: column;
+		gap: 0.5rem;
+	}
+
+	.bracket-section-header {
+		margin-bottom: 0.25rem;
+	}
+
+	.bracket-section-title {
+		margin: 0;
+		font-size: clamp(1.1rem, 2.5vw, 1.35rem);
+		font-weight: 700;
+		color: var(--vanguard-text-primary, #e2e8f0);
+	}
+
+	.bracket-section-subtitle {
+		margin: 0.35rem 0 0;
+		font-size: 0.82rem;
+		color: var(--vanguard-text-muted, #94a3b8);
+	}
+
+	.bracket-section :global(.bracket-panel) {
+		background: transparent;
+		border: none;
+		padding: 0;
+		box-shadow: none;
+	}
+
+	.bracket-section :global(.panel-header) {
+		display: none;
 	}
 
 	.checkout-grid {
