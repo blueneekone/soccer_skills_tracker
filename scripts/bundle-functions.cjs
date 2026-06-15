@@ -47,6 +47,7 @@ const CODEBASES = {
     folder: 'functions-commerce',
     seeds: [
       'commerce.js',
+      'paymentInstallments.js',
       'ticketing.js',
       'ticketReceipts.js',
       'subscription.js',
