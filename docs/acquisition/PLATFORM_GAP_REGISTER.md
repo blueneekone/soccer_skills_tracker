@@ -36,7 +36,7 @@
 | Id | Gap | BuildOwner | Closure slice | AutomatedVerify | ManualQaId | Status |
 |----|-----|------------|---------------|-----------------|------------|--------|
 | A-01 | Live Firebase deploy to `sports-skill-tracker-dev` (all codebases + rules + hosting) | Agent | `closure/live-deploy-dev` | `npm run deploy:dev:smoke` | none | Agent |
-| A-02 | Post-deploy callable smoke (overnight CFs live) | Agent | `closure/post-deploy-guards` | `npm run smoke:dev` | none | Agent |
+| A-02 | Post-deploy callable smoke (overnight CFs live) | Done | `closure/smoke-dev-script` | `npm run smoke:dev` | none | Done |
 | A-03 | WebAuthn `RP_ID` / `RP_ORIGIN` → `sstracker.app` | Done | — | `launchP0Fixes.test.ts` | QA-131 | Done |
 | A-04 | `deploy.yml` dev target `sports-skill-tracker-dev` (not prod hardcode) | Agent | `closure/deploy-gha-dev` | `npm run check` | QA-000d | Agent |
 | A-05 | `LAUNCH-qa-ready` closure (tests + docs aligned) | Agent | `closure/functional-mvp-doc-sync` | `npm test -- src/lib/parent/__tests__/launchWave2Complete.test.ts` | none | Agent |
@@ -195,7 +195,7 @@
 | M-03 | Legal / IP review | Done | — | none | QA-501 | Done |
 | M-04 | TRACTION / PROSPECTUS refresh post-closure | Agent | `closure/orch-wave3` | register row count audit | QA-503 | Agent |
 | M-05 | Acquisition data room baseline | Done | — | `INDEX.md` | none | Done |
-| M-06 | Automated smoke script (`smoke:dev`) | Agent | `closure/smoke-dev-script` | `npm run smoke:dev` | QA-000c | Agent |
+| M-06 | Automated smoke script (`smoke:dev`) | Done | `closure/smoke-dev-script` | `npm run smoke:dev` · `npm run check` · `npm run build` | QA-000c | Done |
 
 ---
 
