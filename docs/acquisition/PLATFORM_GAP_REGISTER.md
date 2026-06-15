@@ -80,7 +80,7 @@
 | D-06 | TOMORROW_IO optional enrich — stale doc strings | Done | `closure/fcm-broadcast` | `npm test -- src/lib/services/__tests__/commsSprint48.test.ts` | none | Done |
 | D-07 | FCM parent push prefs | Done | — | `epic55MessagingAudit.test.ts` | QA-210 | Done |
 | D-08 | FCM director broadcast + push fan-out | Done | `closure/fcm-broadcast` | `commsSprint49.test.ts` | QA-210 | Done |
-| D-09 | FCM `registerDeviceToken` live post-deploy | Agent | `closure/post-deploy-guards` | `npm run smoke:dev` | QA-210 | Agent |
+| D-09 | FCM `registerDeviceToken` live post-deploy | Done | `closure/post-deploy-guards` | `npm run smoke:dev` | QA-210 | Done |
 
 ---
 
@@ -129,7 +129,7 @@
 |----|-----|------------|---------------|-----------------|------------|--------|
 | H-01 | Capacitor 6 shell (ios/android) | Done | — | `nativeShellLaunch.test.ts` | QA-209 | Done |
 | H-02 | PWA install path | Done | — | `personaFunctionalMvp.test.ts` | none | Done |
-| H-03 | Push FCM token registration post-deploy | Agent | `closure/post-deploy-guards` | `npm run smoke:dev` | QA-210 | Agent |
+| H-03 | Push FCM token registration post-deploy | Done | `closure/post-deploy-guards` | `npm run smoke:dev` | QA-210 | Done |
 | H-04 | Deep links / parent-first routing MVP | Done | — | `NATIVE_SHELL.md` guards | QA-209 | Done |
 | H-05 | Store binaries / listing metadata | Rejected | — | none | none | Rejected |
 
@@ -203,13 +203,13 @@
 
 | BuildOwner | Count |
 |------------|------:|
-| Done | 76 |
-| Agent | 4 |
+| Done | 78 |
+| Agent | 2 |
 | Blocked | 2 |
 | Rejected | 4 |
 | **Total rows** | **86** |
 
-**Open Agent rows (Wave 3B):** A-01, A-06 (`live-deploy-dev`) · D-09, H-03 (`post-deploy-guards`).
+**Open Agent rows (Wave 3B):** A-01, A-06 (`live-deploy-dev`).
 
 *(Sections A–M + R-01–R-03; H-05 duplicates R-02 reject scope.)*
 

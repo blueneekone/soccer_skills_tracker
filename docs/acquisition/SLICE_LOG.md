@@ -58,4 +58,20 @@ Agents append entries below. Do not edit prior rows.
 - `npm run check` — 0 errors
 - `npm run build` — ok
 
-**Next:** launch Wave 3B (`live-deploy-dev`, `post-deploy-guards`)
+**Manual QA:** QA-000c, QA-210 (owner checklist)
+
+## post-deploy-guards — 2026-06-14
+
+**Branch:** `closure/post-deploy-guards`  
+**Status:** Done  
+**Gaps closed:** D-09, H-03 (A-02 already Done via smoke-dev-script)
+
+**Shipped:**
+- Expanded `launchWave2Complete.test.ts` — post-deploy smoke + deploy script guards (5 tests)
+- `.gitignore` — exclude generated `DEPLOY_RECORD.json`
+
+**Verify:**
+- `npm run smoke:dev` — SMOKE OK
+- `npm test -- src/lib/parent/__tests__/launchWave2Complete.test.ts src/lib/gamification/__tests__/personaFunctionalMvp.test.ts` — pass
+- `npm run check` — 0 errors
+- `npm run build` — ok

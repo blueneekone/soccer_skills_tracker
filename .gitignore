@@ -71,6 +71,9 @@ node_modules/
 .env.local
 .env*.local
 
+# Generated on npm run smoke:dev (agent deploy audit)
+docs/acquisition/DEPLOY_RECORD.json
+
 # Firebase Admin service account credentials (NEVER COMMIT)
 serviceAccountKey.json
 **/serviceAccountKey.json
