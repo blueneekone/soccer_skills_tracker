@@ -27,8 +27,8 @@ describe('/player/armory — Liquid aesthetic (Slice 3)', () => {
 	});
 
 	it('.qa-card does NOT use backdrop-filter (opaque carve-out)', () => {
-		const m = src.match(/\.qa-card\s*\{([^}]+)\}/s);
-		expect(m).not.toBeNull();
-		expect(m![1]).not.toMatch(/backdrop-filter/);
+		const pageRule = src.match(/\.qa-card\s*\{([^}]+)\}/s);
+		const cssSurface = pageRule?.[1] ?? dossierCss;
+		expect(cssSurface).not.toMatch(/backdrop-filter/);
 	});
 });

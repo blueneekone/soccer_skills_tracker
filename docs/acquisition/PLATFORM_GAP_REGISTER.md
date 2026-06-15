@@ -115,11 +115,11 @@
 | Id | Gap | BuildOwner | Closure slice | AutomatedVerify | ManualQaId | Status |
 |----|-----|------------|---------------|-----------------|------------|--------|
 | G-01 | `npm run check` = 0 errors | Done | — | `npm run check` | QA-000 | Done |
-| G-02 | CI vitest: 61 excluded red suites | Agent | `closure/vitest-batch-hud`, `vitest-batch-loadout`, `vitest-batch-misc` | expand CI allowlist + `npx vitest run` | none | Agent |
+| G-02 | CI vitest: 55 excluded red suites | Agent | `closure/vitest-batch-hud`, `vitest-batch-loadout` | expand CI allowlist + `npx vitest run` | none | Agent |
 | G-03 | `playerRlFunctional` export drift | Agent | `closure/player-rl-functional` | `playerRlFunctional.test.ts` | none | Agent |
 | G-04 | `loopIntegrityGuards` emulator tests in CI | Done | — | `test:firestore-rules` (emulator job) | none | Done |
 | G-05 | Firestore rules CI sprint412 | Done | — | `firestoreRulesSprint412.test.ts` | none | Done |
-| G-06 | `firestoreRulesSprint13` obsolete guard | Agent | `closure/vitest-batch-misc` | `npx vitest run firestoreRulesSprint13` | none | Agent |
+| G-06 | `firestoreRulesSprint13` obsolete guard | Done | `closure/vitest-batch-misc` | `npx vitest run firestoreRulesSprint13` | none | Done |
 
 ---
 
