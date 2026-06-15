@@ -7,8 +7,17 @@ import {
 	normalizeEligibilityMatrix,
 	blockerLabel,
 } from '$lib/director/evaluateClubEligibility.js';
+import {
+	countActiveEligibilityGates,
+	describeEligibilityMatrixValidation,
+	formatEligibilityCallableError,
+} from '$lib/director/eligibilityMatrixUi.js';
 
 const ROOT = join(process.cwd());
+const PANEL_SRC = readFileSync(
+	join(ROOT, 'src/lib/components/director/ClubEligibilityMatrixPanel.svelte'),
+	'utf-8',
+);
 
 describe('LAUNCH-eligibility-matrix — org-configurable requirements', () => {
 	it('exports eligibility callables from eligibilityOps', () => {
@@ -72,5 +81,62 @@ describe('LAUNCH-eligibility-matrix — org-configurable requirements', () => {
 		expect(clear.eligible).toBe(true);
 		expect(blockerLabel('vpc_not_verified')).toMatch(/VPC/i);
 		expect(DEFAULT_ELIGIBILITY_MATRIX.requireWaiver).toBe(true);
+	});
+});
+
+describe('B-04 — ClubEligibilityMatrixPanel UX edge cases', () => {
+	it('shows empty state when no club is selected', () => {
+		expect(PANEL_SRC).toMatch(/Select a club to configure eligibility requirements/);
+		expect(PANEL_SRC).toMatch(/\{#if !hasClub\}/);
+	});
+
+	it('formats callable save/load errors for directors', () => {
+		expect(PANEL_SRC).toContain('formatEligibilityCallableError');
+		expect(
+			formatEligibilityCallableError(
+				{ code: 'functions/permission-denied', message: 'Matrix must belong to your club.' },
+				'fallback',
+			),
+		).toBe('Matrix must belong to your club.');
+		expect(formatEligibilityCallableError(new Error('network'), 'Could not save.')).toBe('network');
+		expect(formatEligibilityCallableError(null, 'Could not save.')).toBe('Could not save.');
+	});
+
+	it('surfaces matrix validation feedback (active gate count + zero-gate warning)', () => {
+		expect(PANEL_SRC).toContain('describeEligibilityMatrixValidation');
+		expect(PANEL_SRC).toMatch(/em-panel__validation/);
+		expect(PANEL_SRC).toMatch(/role=\{validation\.level === 'warn' \? 'alert' : 'status'\}/);
+
+		const allOff = normalizeEligibilityMatrix({
+			requireWaiver: false,
+			requirePassportVerified: false,
+			requireVpcForMinors: false,
+			requireGuardianLinked: false,
+			requireSafeSportClearance: false,
+		});
+		expect(countActiveEligibilityGates(allOff)).toBe(0);
+		expect(describeEligibilityMatrixValidation(allOff)).toMatchObject({
+			level: 'warn',
+			activeCount: 0,
+		});
+
+		const partial = normalizeEligibilityMatrix({
+			requireWaiver: true,
+			requirePassportVerified: false,
+			requireVpcForMinors: true,
+			requireGuardianLinked: false,
+			requireSafeSportClearance: false,
+		});
+		expect(describeEligibilityMatrixValidation(partial)).toMatchObject({
+			level: 'ok',
+			activeCount: 2,
+			message: '2 of 5 gates active.',
+		});
+	});
+
+	it('does not regress upsertClubEligibilityMatrix wiring', () => {
+		expect(PANEL_SRC).toMatch(/upsertClubEligibilityMatrix/);
+		const ops = readFileSync(join(ROOT, 'functions/src/domains/eligibilityOps.js'), 'utf-8');
+		expect(ops).toMatch(/exports\.upsertClubEligibilityMatrix/);
 	});
 });
