@@ -9,6 +9,7 @@ import { join } from 'node:path';
 
 const ROOT = join(__dirname, '..', '..', '..');
 const FUNCTIONS_INDEX = join(ROOT, '..', 'functions/index.js');
+const FUNCTIONS_RL_INDEX = join(ROOT, '..', 'functions-rl/index.js');
 const ADAPTIVE_HOMEWORK = join(ROOT, 'routes/(app)/player/dashboard/AdaptiveHomework.svelte');
 const DASHBOARD_PAGE = join(ROOT, 'routes/(app)/player/dashboard/+page.svelte');
 const FUNCTIONAL_MVP = join(ROOT, '..', 'docs/vision/FUNCTIONAL_MVP.md');
@@ -21,11 +22,19 @@ const TRANSITION_GUARD = join(ROOT, '..', 'functions/__tests__/transitionRecorde
 const TRANSITION_RECORDER = join(ROOT, '..', 'functions/src/ml/transitionRecorder.js');
 
 describe('Sprint RL-audit — getAdaptiveWorkoutPolicy export', () => {
-	it('functions/index.js exports getAdaptiveWorkoutPolicy', () => {
-		expect(existsSync(FUNCTIONS_INDEX)).toBe(true);
-		const index = readFileSync(FUNCTIONS_INDEX, 'utf-8');
+	it('functions-rl/index.js exports getAdaptiveWorkoutPolicy and rlOnWorkoutLogCreated', () => {
+		expect(existsSync(FUNCTIONS_RL_INDEX)).toBe(true);
+		const index = readFileSync(FUNCTIONS_RL_INDEX, 'utf-8');
 		expect(index).toMatch(/exports\.getAdaptiveWorkoutPolicy\s*=\s*rlOps\.getAdaptiveWorkoutPolicy/);
 		expect(index).toMatch(/exports\.rlOnWorkoutLogCreated\s*=\s*transitionRecorder\.onWorkoutLogCreated/);
+	});
+
+	it('functions/index.js does not re-export RL callables (DEPLOY-N split codebase)', () => {
+		expect(existsSync(FUNCTIONS_INDEX)).toBe(true);
+		const index = readFileSync(FUNCTIONS_INDEX, 'utf-8');
+		expect(index).not.toMatch(/exports\.getAdaptiveWorkoutPolicy/);
+		expect(index).not.toMatch(/exports\.rlOnWorkoutLogCreated/);
+		expect(index).toMatch(/DEPLOY-N: RL → functions-rl\//);
 	});
 });
 
@@ -51,7 +60,7 @@ describe('PRESCRIPTION-hq-cta — AdaptiveHomework Train handoff', () => {
 		const src = readFileSync(ADAPTIVE_HOMEWORK, 'utf-8');
 		expect(src).toMatch(/Log on Train/);
 		expect(src).toMatch(/stashCoachIntentHandoffForAssignment/);
-		expect(src).toMatch(/goto\(resolve\('\/player\/workout'\)\)/);
+		expect(src).toMatch(/goto\('\/player\/workout'\)/);
 	});
 
 	it('coachMissionFlow exposes stashCoachIntentHandoffForAssignment using MISSION_HANDOFF_KEY', () => {
@@ -142,8 +151,8 @@ describe('Sprint RL-transition-guards — transition pipeline wiring', () => {
 		expect(src).toMatch(/nextState:\s*null/);
 	});
 
-	it('functions/index.js exports rlOnWorkoutLogCreated from transitionRecorder', () => {
-		const index = readFileSync(FUNCTIONS_INDEX, 'utf-8');
+	it('functions-rl/index.js exports rlOnWorkoutLogCreated from transitionRecorder', () => {
+		const index = readFileSync(FUNCTIONS_RL_INDEX, 'utf-8');
 		expect(index).toMatch(/exports\.rlOnWorkoutLogCreated\s*=\s*transitionRecorder\.onWorkoutLogCreated/);
 		expect(index).toMatch(/exports\.rlOnPhysioReportCreated\s*=\s*transitionRecorder\.onPhysioReportCreated/);
 	});
