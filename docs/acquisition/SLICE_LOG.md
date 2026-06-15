@@ -85,3 +85,12 @@ Agents append entries below. Do not edit prior rows.
 **Commit:** `8550bb45` (pre-deploy) · deploy completed 2026-06-14  
 **Change:** `deploy-dev-full.cjs` — `--force` on `functions:default` (orphan RL monolith cleanup)  
 **Verify:** `npm run deploy:dev` · `npm run smoke:dev` — all callables HTTP 401 (live)
+
+## wave4-manifest-bootstrap — 2026-06-15
+
+**Slice:** wave4-manifest-bootstrap  
+**Status:** Done  
+**Created:** `WAVE_4_MANIFEST.md`, 8 agent `.md` files, `bootstrap-competitive-branches.mjs`  
+**Updated:** `launch-overnight-agents.mjs`, `OWNER_QA_CHECKLIST`, `PLATFORM_GAP_REGISTER` header, `INDEX.md`, `ROADMAP` sprint line  
+**Verify:** `npm run check` · `node scripts/launch-overnight-agents.mjs --wave 4a --dry-run` (4 agents)  
+**Note:** Owner runs `node scripts/bootstrap-competitive-branches.mjs` locally before first `--wave 4a` launch

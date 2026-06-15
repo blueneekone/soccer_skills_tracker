@@ -3,7 +3,7 @@
 **Product:** Sports Skill Tracker (SSTracker / Nexus Command)  
 **Stage:** Pre-commercial launch · functional OS + overnight P2 merged · owner QA pending  
 **Live QA environment:** [https://sstracker.app](https://sstracker.app) (Firebase project `sports-skill-tracker-dev`)  
-**Last updated:** 2026-06-14 · platform gap register + Wave 3 manifest
+**Last updated:** 2026-06-15 · Wave 4 competitive manifest bootstrap
 
 ---
 
@@ -19,6 +19,7 @@
 | [NOTABLE_GAPS.md](./NOTABLE_GAPS.md) | Product / GTM | Intentional non-parity vs TeamSnap / SportsEngine |
 | [PLATFORM_GAP_REGISTER.md](./PLATFORM_GAP_REGISTER.md) | Eng / owner | **Canonical** gap register — BuildOwner, AutomatedVerify, ManualQaId |
 | [WAVE_3_MANIFEST.md](./WAVE_3_MANIFEST.md) | Eng / agents | Wave 3 unattended closure — 3A/3B/3C + orch |
+| [WAVE_4_MANIFEST.md](./WAVE_4_MANIFEST.md) | Eng / agents | **Wave 4 competitive parity** — 4A/4B/4C + orch4 |
 | [OWNER_QA_CHECKLIST.md](../vision/OWNER_QA_CHECKLIST.md) | Owner | **Canonical** manual QA (QA-xxx IDs) — run after `npm run smoke:dev` |
 | [GAP_CLOSURE_PLAN.md](./GAP_CLOSURE_PLAN.md) | Eng / owner | Historical pre-QA backlog (superseded by register for execution) |
 | [DOC_SYNC_REPORT.md](./DOC_SYNC_REPORT.md) | Eng | Audit log of doc sync vs merged code |
@@ -58,7 +59,7 @@ These live outside `docs/acquisition/` and are **source of truth** for engineeri
 | [`MERGE_ORDER.md`](./MERGE_ORDER.md) | Branch merge sequence → `overnight/base` → `dev` |
 | [`PARALLEL_STATUS.md`](./PARALLEL_STATUS.md) | Final agent status board |
 | [`PARALLEL_SUMMARY.md`](./PARALLEL_SUMMARY.md) | Phase 1 + 2 summary |
-| [`PLATFORM_GAP_REGISTER.md`](./PLATFORM_GAP_REGISTER.md) + [`WAVE_3_MANIFEST.md`](./WAVE_3_MANIFEST.md) | **Next:** Wave 3 closure fleet |
+| [`PLATFORM_GAP_REGISTER.md`](./PLATFORM_GAP_REGISTER.md) + [`WAVE_4_MANIFEST.md`](./WAVE_4_MANIFEST.md) | **Next:** Wave 4 competitive fleet |
 
 ---
 
@@ -69,7 +70,7 @@ These live outside `docs/acquisition/` and are **source of truth** for engineeri
 3. [`ARCHITECTURE.md`](../ARCHITECTURE.md) + [SECURITY.md](./SECURITY.md)
 4. [DEMO_SCRIPT.md](./DEMO_SCRIPT.md) on https://sstracker.app with QA tenant
 5. [`FUNCTIONAL_MVP.md`](../vision/FUNCTIONAL_MVP.md) + [`QA_DEV_PERSONA_VERIFICATION.md`](../QA_DEV_PERSONA_VERIFICATION.md)
-6. [PLATFORM_GAP_REGISTER.md](./PLATFORM_GAP_REGISTER.md) + [WAVE_3_MANIFEST.md](./WAVE_3_MANIFEST.md) — closure backlog + agent fleet
+6. [PLATFORM_GAP_REGISTER.md](./PLATFORM_GAP_REGISTER.md) + [WAVE_4_MANIFEST.md](./WAVE_4_MANIFEST.md) — competitive parity backlog + agent fleet
 7. [TRANSFER.md](./TRANSFER.md) + [`FUNCTIONS_DEPLOY.md`](../FUNCTIONS_DEPLOY.md)
 
 ---

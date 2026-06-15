@@ -111,6 +111,10 @@ Accounts: `ecwaechtler@gmail.com` (super_admin) · `ecwaechtler+parent@gmail.com
 - [ ] **QA-208** `/acquisition` marketing landing — CTA + footer links
 - [ ] **QA-209** Capacitor shell — `npm run native:prepare`; WebView loads sstracker.app (simulator optional)
 - [ ] **QA-210** FCM push — parent grants notification permission; director broadcast receives push (device)
+- [ ] **QA-221** Director drag-drop roster — paid registrant dragged onto team roster slot (GotSport-style; `comp-roster-dragdrop`)
+- [ ] **QA-222** Tournament public bracket — director seed order + double-elim; buyer read-only bracket on marketing event page
+- [ ] **QA-223** Federation sync status — director `StateRosterExportPanel` shows last sync time + pending/failed badge
+- [ ] **QA-224** Live stream on schedule/match-day — coach sets `liveStreamUrl` on event; parent/player prominent watch link
 
 ---
 

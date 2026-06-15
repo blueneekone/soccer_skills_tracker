@@ -11,6 +11,10 @@
  *   node scripts/launch-overnight-agents.mjs --wave 3b
  *   node scripts/launch-overnight-agents.mjs --wave 3c
  *   node scripts/launch-overnight-agents.mjs --wave orch
+ *   node scripts/launch-overnight-agents.mjs --wave 4a [--dry-run]
+ *   node scripts/launch-overnight-agents.mjs --wave 4b
+ *   node scripts/launch-overnight-agents.mjs --wave 4c
+ *   node scripts/launch-overnight-agents.mjs --wave orch4
  *   node scripts/launch-overnight-agents.mjs --agent payment-webhook
  */
 
@@ -26,7 +30,7 @@ const API = 'https://api.cursor.com/v1/agents';
 
 const REPO_URL = process.env.GITHUB_REPO_URL ?? '';
 const API_KEY = process.env.CURSOR_API_KEY ?? '';
-const MODEL_ID = process.env.CURSOR_AGENT_MODEL ?? 'composer-2';
+const MODEL_ID = process.env.CURSOR_AGENT_MODEL ?? 'composer-2.5';
 
 const WAVE_1 = [
 	'01-docs-dataroom',
@@ -79,6 +83,19 @@ const WAVE_3C = ['gemini-ingest-2', 'gemini-ingest-3'];
 
 const WAVE_ORCH = ['orch-wave3'];
 
+const WAVE_4A = [
+	'comp-competitive-doc-sync',
+	'comp-roster-dragdrop',
+	'comp-tournament-brackets',
+	'comp-checkr-lifecycle',
+];
+
+const WAVE_4B = ['comp-federation-phase3', 'comp-streaming-schedule'];
+
+const WAVE_4C = ['comp-capacitor-polish'];
+
+const WAVE_ORCH4 = ['orch-wave4'];
+
 function parseArgs() {
 	const args = process.argv.slice(2);
 	const out = { wave: null, agent: null, dryRun: false };
@@ -97,22 +114,27 @@ function parseArgs() {
 function loadPrompt(agentFile) {
 	const p = path.join(AGENTS_DIR, `${agentFile}.md`);
 	if (!fs.existsSync(p)) {
-		throw new Error(`Missing ${p}. See WAVE_3_MANIFEST.md.`);
+		throw new Error(`Missing ${p}. See WAVE_3_MANIFEST.md or WAVE_4_MANIFEST.md.`);
 	}
 	return fs.readFileSync(p, 'utf8');
 }
 
 function branchForPrompt(promptText) {
-	const m = promptText.match(/(?:\*\*)?Branch:(?:\*\*)?\s*`?(closure\/[^\s`*]+)`?/);
+	const m = promptText.match(
+		/(?:\*\*)?Branch:(?:\*\*)?\s*`?((?:closure|competitive)\/[^\s`*]+)`?/,
+	);
 	if (!m) {
-		throw new Error(`Prompt ${promptText.slice(0, 40)}… missing Branch: closure/...`);
+		throw new Error(
+			`Prompt ${promptText.slice(0, 40)}… missing Branch: closure/... or competitive/...`,
+		);
 	}
 	return m[1];
 }
 
 async function createCloudAgent(agentFile, promptText) {
 	const branch = branchForPrompt(promptText);
-	const name = `closure-${agentFile}`.slice(0, 100);
+	const prefix = branch.startsWith('competitive/') ? 'competitive-' : 'closure-';
+	const name = `${prefix}${agentFile}`.slice(0, 100);
 
 	const body = {
 		name,
@@ -184,9 +206,17 @@ async function main() {
 		queue = WAVE_3C;
 	} else if (wave === 'orch') {
 		queue = WAVE_ORCH;
+	} else if (wave === '4a') {
+		queue = WAVE_4A;
+	} else if (wave === '4b') {
+		queue = WAVE_4B;
+	} else if (wave === '4c') {
+		queue = WAVE_4C;
+	} else if (wave === 'orch4') {
+		queue = WAVE_ORCH4;
 	} else {
 		console.error(
-			'Usage: --wave 1|late|2|3a|3b|3c|orch | --agent <slice-id> [--dry-run]',
+			'Usage: --wave 1|late|2|3a|3b|3c|orch|4a|4b|4c|orch4 | --agent <slice-id> [--dry-run]',
 		);
 		process.exit(1);
 	}
