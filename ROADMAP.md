@@ -636,7 +636,7 @@ npm run build
 | **6f-c** | HQ identity telemetry bezel — interactive streak/XP on hologram card (replaces stat chips) | **Done** |
 | **6g** | Stats investigation workspace parity | **Done** |
 | **6h** | Train / Tracker terminal chrome pass | **Done** |
-| **6j** | Player OS Z2 depth + edge-lit interactivity pass | **In progress** |
+| **6j** | Player OS Z2 depth + edge-lit interactivity pass | **Done** |
 | **6j-a** | HQ panel depth — Quick Ops, OperativeHub, mission rail, capsules ghost | **Done** |
 | **6j-b** | Routes pd-os-deck depth — Train, Tracker, Armory, Settings | **Done** |
 | **6k** | Coach mission HQ → Train handoff hardening | **Done** |
@@ -1045,7 +1045,7 @@ npm run build
 
 ---
 
-## Sprint 2.22 slice 6j scope — Player OS Z2 depth + edge-lit interactivity — **In progress**
+## Sprint 2.22 slice 6j scope — Player OS Z2 depth + edge-lit interactivity — **Done**
 
 **Goal:** Reduce flat matte-panel dominance across Player OS routes. Promote **edge-lit Z2** surfaces (top highlight + teal/gold hairline + reduced fill opacity) and **light interactivity** (hover border brighten, focus-visible, subtle translate — gated by `prefers-reduced-motion` and `data-dopamine="off"`). Align with `PLAYER_OS_FOUNDATION.md` §2 — void > emissive edges > glass > matte fill.
 
