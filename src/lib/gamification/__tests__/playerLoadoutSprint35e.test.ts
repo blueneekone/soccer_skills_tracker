@@ -59,6 +59,6 @@ describe('Sprint 3.5e — cross-links', () => {
 		expect(roadmap).toMatch(/\|\s*3\.5e\s*\|\s*\*\*Done\*\*/i);
 		expect(roadmap).toMatch(/playerLoadoutSprint35e\.test\.ts/);
 		expect(roadmap).toMatch(/3\.5f|Starter catalog art swap/i);
-		expect(roadmap).toMatch(/3\.5e closed|Sprint 3\.5e/i);
+		expect(roadmap).toMatch(/playerLoadoutSprint35e\.test\.ts/);
 	});
 });

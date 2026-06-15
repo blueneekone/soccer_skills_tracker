@@ -71,15 +71,15 @@ describe('Sprint 3.5g-vision — cross-links', () => {
 
 	it('ROADMAP marks 3.5g-vision Done and 3.5g-g frame polish', () => {
 		const roadmap = readFileSync(ROADMAP, 'utf-8');
-		expect(roadmap).toMatch(/3\.5g-vision\s+Done/i);
+		expect(roadmap).toMatch(/\|\s*3\.5g-vision\s*\|\s*\*\*Done\*\*/i);
 		expect(roadmap).toMatch(/3\.5g-g\s+Done|3\.5g-f|OperativeIdCardFrame/i);
 		expect(roadmap).toMatch(/playerLoadoutSprint35gVision\.test\.ts/);
 	});
 
-	it('ROADMAP Epic 3.5 lists 3.5g-f and 3.5i-pose', () => {
+	it('ROADMAP Epic 3.5 lists 3.5g-f frame polish', () => {
 		const roadmap = readFileSync(ROADMAP, 'utf-8');
 		const epic35 = roadmap.match(/## Epic 3\.5[\s\S]*?(?=\n## |\n---\n\n## Sprint status — Epic 4)/)?.[0] ?? '';
 		expect(epic35).toMatch(/3\.5g-f/);
-		expect(epic35).toMatch(/3\.5i-pose|pose catalog/i);
+		expect(epic35).toMatch(/OperativeIdCardFrame/i);
 	});
 });

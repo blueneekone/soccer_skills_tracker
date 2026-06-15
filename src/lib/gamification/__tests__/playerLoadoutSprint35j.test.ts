@@ -97,7 +97,7 @@ describe('Sprint 3.5j-a — dossier hero + deep links', () => {
 	});
 
 	it('dashboard onProfileSetup navigates to ?tab=studio', () => {
-		expect(dashboardSrc).toMatch(/goto\(resolve\('\/player\/armory\?tab=studio'\)\)/);
+		expect(dashboardSrc).toMatch(/onProfileSetup=\{?\(\)\s*=>\s*void\s+goto\('\/player\/armory\?tab=studio'\)/);
 	});
 });
 

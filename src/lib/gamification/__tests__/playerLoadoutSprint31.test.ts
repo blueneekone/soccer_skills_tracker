@@ -32,8 +32,8 @@ describe('Sprint 3.1 Part B — OperativeLoadoutStudio', () => {
 		expect(existsSync(STUDIO)).toBe(true);
 		expect(studioSrc).toMatch(/OperativeLoadoutPreview/);
 		expect(studioSrc).toMatch(/LOADOUT_SLOTS|canEquipItem/);
-		expect(studioSrc).toMatch(/SYNC LOADOUT/);
-		expect(studioSrc).toMatch(/updateDoc[\s\S]*operativeLoadout/);
+		expect(studioSrc).toMatch(/SYNC IDENTITY/);
+		expect(studioSrc).toMatch(/syncOperativeIdentityToFirestore/);
 	});
 
 	it('loadoutSchema exports getOwnedCatalogForSlot', () => {
@@ -55,10 +55,10 @@ describe('Sprint 3.1 Part B — Armory studio workspace', () => {
 });
 
 describe('Sprint 3.1 Part B — TC redeem grants ownedCosmetics', () => {
-	it('processDeploymentRequest arrayUnions catalog digital ids', () => {
-		expect(armoryJsSrc).toMatch(/ownedCosmetics/);
-		expect(armoryJsSrc).toMatch(/arrayUnion/);
+	it('processDeploymentRequest routes digital loadout SKUs to redeemQuartermasterDigital CF', () => {
 		expect(armoryJsSrc).toMatch(/getLoadoutCatalog/);
+		expect(armoryJsSrc).toMatch(/redeemQuartermasterDigital/);
+		expect(armoryJsSrc).toMatch(/LOADOUT_CATALOG_IDS/);
 	});
 });
 

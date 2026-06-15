@@ -128,10 +128,10 @@ describe('Sprint 3.2 — vision docs', () => {
 		expect(doc).toMatch(/\|\s*\*\*3\.2\*\*[\s\S]*?\|\s*\*\*Done\*\*/i);
 	});
 
-	it('ROADMAP.md marks 3.2 Done and current sprint → 3.3', () => {
+	it('ROADMAP.md marks 3.2 Done in Epic 3 sprint table', () => {
 		const roadmap = existsSync(ROADMAP) ? readFileSync(ROADMAP, 'utf-8') : '';
 		expect(roadmap).toMatch(/\|\s*3\.2\s*\|\s*Done/i);
-		expect(roadmap).toMatch(/Current sprint:\*\* \*\*3\.3/i);
+		expect(roadmap).toMatch(/playerLoadoutSprint32\.test\.ts/);
 		expect(roadmap).not.toMatch(/\|\s*3\.2\s*\|\s*Planned[\s\S]*?blocked until 2\.11\.1/i);
 	});
 });
