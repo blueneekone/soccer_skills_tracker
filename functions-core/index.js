@@ -44,3 +44,4 @@ exports.getClubEligibilityMatrix = eligibilityOps.getClubEligibilityMatrix;
 
 const ngbExportOps = require('./src/domains/ngbExportOps');
 exports.exportStateRoster = ngbExportOps.exportStateRoster;
+exports.listNgbExportFormats = ngbExportOps.listNgbExportFormats;

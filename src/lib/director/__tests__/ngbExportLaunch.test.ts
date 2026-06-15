@@ -41,7 +41,7 @@ describe('LAUNCH-fed-ngb — state roster CSV export', () => {
 		expect(panel).toMatch(/exportStateRoster/);
 		expect(panel).toMatch(/clubId/);
 		expect(panel).toMatch(/teamId/);
-		expect(panel).toMatch(/Download CSV/);
+		expect(panel).toMatch(/Download export/);
 		expect(panel).toMatch(/player_lookup/);
 	});
 
@@ -64,5 +64,77 @@ describe('LAUNCH-fed-ngb — state roster CSV export', () => {
 		expect(ops).toMatch(/guardian_emails/);
 		expect(ops).toMatch(/household_id/);
 		expect(ops).toMatch(/vpc_status/);
+	});
+});
+
+describe('fed-phase2 — Federation format adapters (C-02)', () => {
+	it('formatAdapterRegistry ships built-in adapters', () => {
+		const adapters = readFileSync(
+			join(ROOT, 'functions/src/domains/ngbFormatAdapters.js'),
+			'utf-8',
+		);
+		expect(adapters).toMatch(/formatAdapterRegistry/);
+		expect(adapters).toMatch(/csv_v1/);
+		expect(adapters).toMatch(/us_soccer_roster/);
+		expect(adapters).toMatch(/gotsport_roster/);
+		expect(adapters).toMatch(/buildCustomProfileAdapter/);
+	});
+
+	it('exportStateRoster accepts formatId and export_profiles', () => {
+		const ops = readFileSync(join(ROOT, 'functions/src/domains/ngbExportOps.js'), 'utf-8');
+		expect(ops).toMatch(/formatId/);
+		expect(ops).toMatch(/resolveExportAdapter/);
+		expect(ops).toMatch(/export_profiles/);
+		expect(ops).toMatch(/exports\.listNgbExportFormats/);
+	});
+
+	it('functions-core wires listNgbExportFormats', () => {
+		const idx = readFileSync(join(ROOT, 'functions-core/index.js'), 'utf-8');
+		expect(idx).toMatch(/listNgbExportFormats/);
+	});
+
+	it('deploy:core includes listNgbExportFormats', () => {
+		const pkg = readFileSync(join(ROOT, 'package.json'), 'utf-8');
+		expect(pkg).toMatch(/functions:core:listNgbExportFormats/);
+	});
+
+	it('StateRosterExportPanel offers format picker with federation adapters', () => {
+		const panel = readFileSync(
+			join(ROOT, 'src/lib/components/director/StateRosterExportPanel.svelte'),
+			'utf-8',
+		);
+		expect(panel).toMatch(/formatId/);
+		expect(panel).toMatch(/us_soccer_roster/);
+		expect(panel).toMatch(/gotsport_roster/);
+		expect(panel).toMatch(/listNgbExportFormats/);
+		expect(panel).toMatch(/export_profiles/);
+	});
+
+	it('ngbFormatAdapters unit tests cover adapters', () => {
+		const testFile = readFileSync(
+			join(ROOT, 'functions/__tests__/ngbFormatAdapters.test.js'),
+			'utf-8',
+		);
+		expect(testFile).toMatch(/us_soccer_roster/);
+		expect(testFile).toMatch(/gotsport_roster/);
+		expect(testFile).toMatch(/export_profiles/);
+	});
+});
+
+describe('fed-phase2 — Federation sync stubs (C-03)', () => {
+	it('federationSyncOps documents Phase 3 stubs', () => {
+		const ops = readFileSync(
+			join(ROOT, 'functions/src/domains/federationSyncOps.js'),
+			'utf-8',
+		);
+		expect(ops).toMatch(/Phase 3/);
+		expect(ops).toMatch(/federation_sync_jobs/);
+		expect(ops).toMatch(/reconcileFederationSync/);
+	});
+
+	it('FEDERATION_ROADMAP marks Phase 3 sync job stubs', () => {
+		const doc = readFileSync(join(ROOT, 'docs/acquisition/FEDERATION_ROADMAP.md'), 'utf-8');
+		expect(doc).toMatch(/federationSyncOps/);
+		expect(doc).toMatch(/stub/i);
 	});
 });

@@ -8,12 +8,23 @@
 
 	let { clubId = '' } = $props();
 
+	type ExportFormatOption = { id: string; label: string };
+
+	const BUILTIN_FORMATS: ExportFormatOption[] = [
+		{ id: 'csv_v1', label: 'CSV v1 (universal)' },
+		{ id: 'us_soccer_roster', label: 'US Soccer / state association roster' },
+		{ id: 'gotsport_roster', label: 'GotSport roster template' },
+	];
+
 	let teamId = $state('');
+	let formatId = $state('csv_v1');
+	let formatOptions = $state<ExportFormatOption[]>([...BUILTIN_FORMATS]);
 	let busy = $state(false);
 	let err = $state('');
 	let ok = $state('');
 
 	const exportStateRoster = httpsCallable(functions, 'exportStateRoster');
+	const listNgbExportFormats = httpsCallable(functions, 'listNgbExportFormats');
 
 	const clubTeams = $derived(
 		teamsStore.teams
@@ -23,12 +34,44 @@
 	);
 
 	$effect(() => {
-		if (!clubId) teamId = '';
+		if (!clubId) {
+			teamId = '';
+			formatOptions = [...BUILTIN_FORMATS];
+			formatId = 'csv_v1';
+		}
 	});
 
-	function downloadCsv(csv: string, filename: string) {
+	$effect(() => {
+		const id = clubId.trim();
+		if (!id) return;
+		void loadFormatOptions(id);
+	});
+
+	async function loadFormatOptions(activeClubId: string) {
+		try {
+			const res = await listNgbExportFormats({ clubId: activeClubId });
+			const data = res.data as { formats?: ExportFormatOption[] };
+			const remote = Array.isArray(data.formats) ? data.formats : [];
+			const merged = [...BUILTIN_FORMATS];
+			for (const fmt of remote) {
+				if (!fmt?.id || merged.some((m) => m.id === fmt.id)) continue;
+				merged.push({
+					id: fmt.id,
+					label: typeof fmt.label === 'string' ? fmt.label : fmt.id,
+				});
+			}
+			formatOptions = merged;
+			if (!merged.some((m) => m.id === formatId)) {
+				formatId = 'csv_v1';
+			}
+		} catch {
+			formatOptions = [...BUILTIN_FORMATS];
+		}
+	}
+
+	function downloadExport(content: string, filename: string, mimeType: string) {
 		if (!browser) return;
-		const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+		const blob = new Blob([content], { type: mimeType || 'text/csv;charset=utf-8' });
 		const url = URL.createObjectURL(blob);
 		const anchor = document.createElement('a');
 		anchor.href = url;
@@ -45,24 +88,35 @@
 		try {
 			const res = await exportStateRoster({
 				clubId: clubId.trim(),
+				formatId,
 				...(teamId.trim() ? { teamId: teamId.trim() } : {}),
 			});
 			const data = res.data as {
 				csv?: string;
 				filename?: string;
 				rowCount?: number;
+				formatLabel?: string;
+				mimeType?: string;
 			};
 			const csv = typeof data.csv === 'string' ? data.csv : '';
 			if (!csv) {
 				err = 'Export returned no data.';
 				return;
 			}
-			downloadCsv(csv, data.filename || 'state-roster.csv');
+			downloadExport(
+				csv,
+				data.filename || 'state-roster.csv',
+				data.mimeType || 'text/csv;charset=utf-8',
+			);
 			const count = typeof data.rowCount === 'number' ? data.rowCount : 0;
+			const label =
+				typeof data.formatLabel === 'string' && data.formatLabel.trim()
+					? data.formatLabel.trim()
+					: formatId;
 			ok =
 				count === 0
-					? 'Export complete — no linked players on file for this scope.'
-					: `Export complete — ${count} player${count === 1 ? '' : 's'} downloaded.`;
+					? `Export complete (${label}) — no linked players on file for this scope.`
+					: `Export complete (${label}) — ${count} player${count === 1 ? '' : 's'} downloaded.`;
 		} catch (e) {
 			err = e instanceof Error ? e.message : 'Could not export state roster.';
 		} finally {
@@ -75,15 +129,29 @@
 	<header class="sre-panel__head">
 		<h3 id="sre-panel-title" class="sre-panel__title">
 			<Icon name={'action.download' as IconName} size={18} aria-hidden="true" />
-			State roster export (CSV v1)
+			State roster export
 		</h3>
 		<p class="sre-panel__sub">
 			Download linked players from <code>player_lookup</code> with household guardian fields for
-			state association / NGB filing. Name-only roster rows without accounts are excluded.
+			state association / NGB filing. Choose a federation format adapter or a club
+			<code>export_profiles</code> mapping. Name-only roster rows without accounts are excluded.
 		</p>
 	</header>
 
 	<div class="sre-panel__controls">
+		<label class="sre-panel__field">
+			<span class="sre-panel__label">Format</span>
+			<select
+				class="sre-panel__select"
+				bind:value={formatId}
+				disabled={!clubId || busy}
+			>
+				{#each formatOptions as fmt (fmt.id)}
+					<option value={fmt.id}>{fmt.label}</option>
+				{/each}
+			</select>
+		</label>
+
 		<label class="sre-panel__field">
 			<span class="sre-panel__label">Scope</span>
 			<select class="sre-panel__select" bind:value={teamId} disabled={!clubId || busy}>
@@ -100,7 +168,7 @@
 			disabled={!clubId || busy}
 			onclick={() => void runExport()}
 		>
-			{busy ? 'Exporting…' : 'Download CSV'}
+			{busy ? 'Exporting…' : 'Download export'}
 		</button>
 	</div>
 
