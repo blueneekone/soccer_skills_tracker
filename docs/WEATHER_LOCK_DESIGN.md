@@ -34,4 +34,5 @@ distance_km = 2 * R * asin( sqrt( sin²(Δφ/2) + cos φ1 cos φ2 sin²(Δλ/2) 
 ## References in repo
 
 - Field metadata: `FieldOpsModule.svelte`, `FacilityMapVault.svelte`, `exports.directorUpsertField` in `functions/index.js`.
-- No `Tomorrow.io` string in code at time of writing — implementation remains future work.
+- **AEGIS (shipped):** `weatherOps.js` (`evaluateFieldWeatherLock`, `refreshClubWeatherLock`) — Open-Meteo + NWS; runs when `WEATHER_LOCK_ENABLED=true` with **no API key**.
+- **Tomorrow.io (optional):** `TOMORROW_IO_API_KEY` in `weatherOps.js` logs reserved enrich hook; `facilityWeatherWebhook.js` handles real-time webhook + FCM when configured. Neither is required for baseline lock evaluation.

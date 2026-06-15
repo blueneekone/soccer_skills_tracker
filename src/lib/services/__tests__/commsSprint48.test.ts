@@ -13,6 +13,9 @@ const COMPOSER = join(ROOT, 'components', 'director', 'DirectorClubBroadcastComp
 const COMMS_SVC = join(ROOT, 'services', 'comms.svelte.ts');
 const DIRECTOR_PAGE = join(ROOT, '..', 'routes', '(app)', 'director', '+page.svelte');
 const NAV = join(ROOT, 'shell', 'workspaceNav.js');
+const MATRIX = join(ROOT, '..', '..', 'docs', 'FCM_AND_MESSAGING_MATRIX.md');
+const WEATHER_DESIGN = join(ROOT, '..', '..', 'docs', 'WEATHER_LOCK_DESIGN.md');
+const EPIC5_STATUS = join(ROOT, '..', '..', 'docs', 'EPIC5_STATUS.md');
 
 const comms = readFileSync(COMMS, 'utf8');
 const indexJs = readFileSync(INDEX, 'utf8');
@@ -20,6 +23,9 @@ const composer = readFileSync(COMPOSER, 'utf8');
 const commsSvc = readFileSync(COMMS_SVC, 'utf8');
 const directorPage = readFileSync(DIRECTOR_PAGE, 'utf8');
 const nav = readFileSync(NAV, 'utf8');
+const matrix = readFileSync(MATRIX, 'utf8');
+const weatherDesign = readFileSync(WEATHER_DESIGN, 'utf8');
+const epic5Status = readFileSync(EPIC5_STATUS, 'utf8');
 
 describe('Epic 4.8 — clubSportBroadcast callable', () => {
 	it('exports clubSportBroadcast from comms.js', () => {
@@ -75,5 +81,33 @@ describe('Epic 4.8 — safeSportBroadcast refactor safety', () => {
 		const block = comms.slice(comms.indexOf('exports.safeSportBroadcast'));
 		const end = block.indexOf('exports.clubSportBroadcast');
 		expect(block.slice(0, end)).toMatch(/return commitTeamBroadcast\(/);
+	});
+});
+
+describe('D-06 — TOMORROW_IO optional enrich doc sync', () => {
+	it('WEATHER_LOCK_DESIGN does not claim Tomorrow.io is absent from code', () => {
+		expect(weatherDesign).not.toMatch(/No `Tomorrow\.io` string in code/);
+		expect(weatherDesign).toMatch(/optional|TOMORROW_IO_API_KEY/i);
+		expect(weatherDesign).toMatch(/weatherOps\.js|facilityWeatherWebhook/);
+	});
+
+	it('EPIC5_STATUS does not require TOMORROW_IO for weather lock deploy', () => {
+		expect(epic5Status).toMatch(/optional.*TOMORROW_IO_API_KEY/i);
+		expect(epic5Status).not.toMatch(/Bind `TOMORROW_IO_API_KEY` \+ deploy/);
+	});
+});
+
+describe('D-08 — FCM matrix documents director broadcast stack', () => {
+	it('FCM_AND_MESSAGING_MATRIX lists clubSportBroadcast + onTeamBroadcastCreated + composer', () => {
+		expect(matrix).toMatch(/DirectorClubBroadcastComposer/);
+		expect(matrix).toMatch(/clubSportBroadcast/);
+		expect(matrix).toMatch(/onTeamBroadcastCreated/);
+		expect(matrix).toMatch(/commitTeamBroadcast/);
+		expect(matrix).toMatch(/push_announcements/);
+	});
+
+	it('removes stale pre-ship broadcast gap copy', () => {
+		expect(matrix).not.toMatch(/not arbitrary director broadcast composer/);
+		expect(matrix).not.toMatch(/roadmap item may imply additional UX/);
 	});
 });
