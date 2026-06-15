@@ -1,7 +1,7 @@
 # SSTracker — Traction & Launch Status
 
 **Purpose:** Factual build and quality signals for acquirer diligence — not inflated metrics.  
-**Last updated:** 2026-06-13 · post-overnight merge + doc sync
+**Last updated:** 2026-06-14 · post-Wave 3A merge @ `de753d91`
 
 ---
 
@@ -30,9 +30,11 @@ Source: [`ROADMAP.md`](../../ROADMAP.md) · [`COMPETITIVE_LAUNCH_ASSESSMENT.md`]
 | LAUNCH Wave 2 — parent push, calendar, PWA | **Done** | Parent dashboard parity |
 | Player OS Phase 7 (G1–G10) | **Done** | `playerOsCohesion.test.ts`, G10 manifest |
 | Functional audit A–F | **Done** | [`FUNCTIONAL_AUDIT_BACKLOG.md`](../FUNCTIONAL_AUDIT_BACKLOG.md) |
-| Overnight P2 + check=0 + CI vitest | **Done** | Merged to dev 2026-06-13; [`SLICE_LOG.md`](./SLICE_LOG.md) |
-| LAUNCH-deploy-dev | **Partial** | Prior operator deploy 2026-06-13; `npm run deploy:dev:verify` green; agent 24 live deploy requires owner `FIREBASE_CI_TOKEN` for overnight callables |
-| Owner FUNCTIONAL_MVP QA | **Pending** | Checkboxes in [`FUNCTIONAL_MVP.md`](../vision/FUNCTIONAL_MVP.md) |
+| Overnight P2 + check=0 + CI vitest | **Done** | Merged to dev 2026-06-13; Wave 3A closure merged 2026-06-14 |
+| Wave 3A gap closure (16 slices) | **Done** | [`PLATFORM_GAP_REGISTER.md`](./PLATFORM_GAP_REGISTER.md) — 76/86 rows Done |
+| LAUNCH-deploy-dev | **Partial** | `npm run smoke:dev` green; Wave 3B `live-deploy-dev` for full Firebase deploy |
+| LAUNCH-qa-ready | **Done** | `functional-mvp-doc-sync` — F-05/F-06/A-05 closed |
+| Owner FUNCTIONAL_MVP QA | **Pending** | Checkboxes in [`OWNER_QA_CHECKLIST.md`](../vision/OWNER_QA_CHECKLIST.md) |
 
 ---
 
@@ -42,7 +44,7 @@ Source: [`ROADMAP.md`](../../ROADMAP.md) · [`COMPETITIVE_LAUNCH_ASSESSMENT.md`]
 |--------|--------|
 | Version | `5.0.0` ([`package.json`](../../package.json)) |
 | Type-check | `npm run check` → **0 errors** (CI gate) |
-| Unit tests | Vitest — 129 green files in CI allowlist; persona + launch guards pass |
+| Unit tests | Vitest — **142** green files in CI allowlist; persona + launch guards pass |
 | Key regression | `personaFunctionalMvp.test.ts` — includes functional audit A–F block |
 | E2E | Playwright scaffold (`npm run test:e2e`) |
 | Functions deploy guards | `functionsDeploy.guard.test.js`, `verify-codebase-deps.cjs` |
@@ -78,9 +80,26 @@ From [`COMPETITIVE_LAUNCH_ASSESSMENT.md`](../vision/COMPETITIVE_LAUNCH_ASSESSMEN
 |-----------|---------|
 | Beat competitors on | Development loop, SafeSport comms, COPPA/VPC, coach intent, RL homework, tryout OS |
 | At parity | RSVP, registration, roster invite, eligibility, parent calendar/push, PWA, payment installments |
-| Partial (accept v1) | Roster assign panel, tournament brackets, Checkr embed, NGB CSV export, live stream embed, Capacitor shell |
+| Partial (accept v1) | Live deploy confirm (Wave 3B) |
 | Behind | App Store / Play Store binaries |
-| Launch gate | **Partial** — execute [`GAP_CLOSURE_PLAN.md`](./GAP_CLOSURE_PLAN.md) → owner QA |
+| Launch gate | **Partial** — 4 Agent rows (3B deploy) → owner QA |
+
+---
+
+## Wave 3 closure sprint (2026-06-14) — 3A complete
+
+16 `closure/*` branches merged to `dev`. Progress in [`SLICE_LOG.md`](./SLICE_LOG.md) · status in [`PARALLEL_STATUS.md`](./PARALLEL_STATUS.md).
+
+| Track | Outcome |
+|-------|---------|
+| Commerce + eligibility (payment-webhook, eligibility-ux) | Done |
+| Integrations (fcm-broadcast, checkr-webhooks, smoke-dev-script) | Done |
+| Federation + tournament P2 | Done |
+| Player OS 6f/6j + diegetic modals | Done |
+| Vitest burn-down (129→142 CI files) + RL export fix | Done |
+| Doc sync (functional-mvp, orch-wave3) | Done |
+| Wave 3B (live-deploy-dev, post-deploy-guards) | **Pending launch** |
+| Gemini ingest 2/3 (3C) | Blocked (no owner assets) |
 
 ---
 
@@ -110,10 +129,10 @@ Phase 1 + Phase 2 merged to `dev`. Progress in [`SLICE_LOG.md`](./SLICE_LOG.md) 
 
 ## Next milestones (pre-close)
 
-1. Owner live deploy confirm — [`GAP_CLOSURE_PLAN.md`](./GAP_CLOSURE_PLAN.md) slice 1
-2. Owner QA on `qa_launch_2026` — [`FUNCTIONAL_MVP.md`](../vision/FUNCTIONAL_MVP.md)
+1. Wave 3B live deploy — `node scripts/launch-overnight-agents.mjs --wave 3b` (requires `FIREBASE_TOKEN`)
+2. Owner QA on `qa_launch_2026` — [`OWNER_QA_CHECKLIST.md`](../vision/OWNER_QA_CHECKLIST.md)
 3. First paying pilot club (outside QA tenant)
 4. App Store binary via Capacitor (acquirer)
-5. Federation Phase 2+ if soccer GTM proceeds
+5. Federation Phase 4 API if soccer GTM proceeds
 
 → [DEMO_SCRIPT.md](./DEMO_SCRIPT.md) · [PROSPECTUS.md](./PROSPECTUS.md) · [GAP_CLOSURE_PLAN.md](./GAP_CLOSURE_PLAN.md)

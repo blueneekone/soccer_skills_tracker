@@ -1,16 +1,18 @@
 # Parallel overnight summary
 
-**Last poll:** 2026-06-13 (closed) · **Orchestrator:** agent 21-orch · **Dev baseline:** `7adb90ae`
+**Last poll:** 2026-06-14 (Wave 3A closed) · **Orchestrator:** orch-wave3 · **Dev baseline:** `de753d91`
 
 ## Phase status
 
 | Phase | Agents | Done | Blocked | Partial |
 |-------|--------|------|---------|---------|
 | **1 — parallel features** | 01–20 | 17 | 2 (19–20 gemini ingest) | 0 |
-| **2 — check / CI / deploy** | 22–24 | 2 (22, 23) | 0 | 1 (24 live deploy) |
-| **Orchestrator** | 21 | 1 | 0 | 0 |
+| **2 — check / CI / deploy** | 22–24 | 2 (22, 23) | 0 | 1 (24 live deploy → 3B) |
+| **3A — gap closure** | 16 + orch | 17 | 0 | 0 |
+| **3B — deploy smoke** | 2 | 0 | 0 | pending launch |
+| **3C — avatar ingest** | 2 | 0 | 2 (no PNG #2/#3) | 0 |
 
-**Phase 1 + Phase 2 quiesced:** Yes — all branches merged to `dev` except gemini-ingest-2/3 (Blocked, no assets). Orchestrator poll closed.
+**Wave 3A quiesced:** Yes — all 16 `closure/*` branches merged to `dev`; orch-wave3 doc sync complete.
 
 ## Launch gate (ROADMAP / COMPETITIVE sync)
 
@@ -18,42 +20,51 @@
 |------|--------|-------|
 | LAUNCH-functional-os | Done | Three-persona MVP |
 | LAUNCH-wave2-complete | Done | Parent adoption parity |
-| LAUNCH-deploy-dev | Done (scripts) / owner confirm | Prior operator deploy 2026-06-13; agent 24 live deploy needs `FIREBASE_CI_TOKEN` for overnight callables |
-| LAUNCH-qa-ready | Partial | Regression tests green; owner FUNCTIONAL_MVP QA pending |
-| Launch functional gate (competitive) | Partial | Overnight P2 + check=0 merged; execute [`GAP_CLOSURE_PLAN.md`](./GAP_CLOSURE_PLAN.md) → owner QA |
+| LAUNCH-qa-ready | Done | `functional-mvp-doc-sync` — tests + docs aligned |
+| LAUNCH-deploy-dev | Partial | Scripts + smoke green; **Wave 3B** `live-deploy-dev` for full live deploy |
+| Launch functional gate (competitive) | Partial | 4 Agent register rows remain (3B); owner QA pending |
 
-**Current sprint:** doc sync complete · next = **GAP_CLOSURE_PLAN slice 1** (owner live deploy) → owner QA
+**Current sprint:** Wave 3B deploy closure → owner QA [`OWNER_QA_CHECKLIST.md`](../vision/OWNER_QA_CHECKLIST.md)
 
-## P2 / acquisition targets (Phase 1 — merged)
+## Wave 3A outcomes (merged 2026-06-14)
+
+| Track | Agent slices | Status |
+|-------|--------------|--------|
+| Commerce / eligibility | payment-webhook, eligibility-ux | **Done** |
+| Integrations | fcm-broadcast, checkr-webhooks, smoke-dev-script | **Done** |
+| Federation / tournament | fed-phase2, tournament-p2 | **Done** |
+| Player OS premium | player-os-6f, player-os-6j, diegetic-modals | **Done** |
+| Engineering | vitest-batch-*, player-rl-functional, deploy-gha-dev | **Done** (CI 142 green files) |
+| Doc sync | functional-mvp-doc-sync, orch-wave3 | **Done** |
+
+## P2 / acquisition targets (overnight — merged)
 
 | Competitive row | Agent | Status |
 |-----------------|-------|--------|
-| Integrated payments / installments | 04-p2-payments | **Done** |
+| Integrated payments / installments | 04-p2-payments + payment-webhook | **Done** |
 | Registration → roster assign | 03-p2-reg-roster | **Done** |
-| Tournaments / brackets | 05-p2-tournament | **Done** (single-elim v1) |
-| Background check integration | 06-p2-checkr | **Done** (Checkr polish) |
+| Tournaments / brackets | 05-p2-tournament + tournament-p2 | **Done** |
+| Background check integration | 06-p2-checkr + checkr-webhooks | **Done** |
 | Player tracker nav | 07-p2-tracker-nav | **Done** |
 | Native parent mobile shell | 17-native-shell | **Done** (Capacitor; no store binary) |
-| NGB / state roster export | 14-fed-ngb | **Done** (CSV v1) |
-| Live streaming embed | 15-live-stream | **Done** (URL embed MVP) |
+| NGB / state roster export | 14-fed-ngb + fed-phase2 | **Done** |
+| Live streaming embed | 15-live-stream | **Done** |
 | Marketing /acquisition route | 16-marketing-acq | **Done** |
 | svelte-check zero | 08–13, 22 | **Done** |
-| CI vitest expansion | 23-vitest-ci | **Done** |
-
-**Intentional gaps (not building):** club website builder CMS — see [`NOTABLE_GAPS.md`](NOTABLE_GAPS.md).
+| CI vitest expansion | 23 + vitest-batch-* | **Done** (142 files) |
 
 ## Avatar ingest (deferred track)
 
 - **Manifest:** [`AVATAR_MANIFEST.md`](AVATAR_MANIFEST.md) — 16 JPEG refs; one wired as holo default
-- **Agent 18:** **Done** — `bust_teen_long_light_away.jpeg`
-- **Agents 19–20:** **Blocked** — no owner-approved second/third PNG
+- **Agent 18 / I-01:** **Done** — `bust_teen_long_light_away.jpeg`
+- **Agents 19–20 / 3C:** **Blocked** — no owner-approved second/third PNG
 
 ## Next actions
 
-1. Owner executes [`GAP_CLOSURE_PLAN.md`](./GAP_CLOSURE_PLAN.md) slice 1 — live deploy confirm
-2. Owner QA on `qa_launch_2026` per [`FUNCTIONAL_MVP.md`](../vision/FUNCTIONAL_MVP.md)
-3. Optional agent slices: payment webhook, federation Phase 2, vitest burn-down
+1. Launch Wave 3B: `node scripts/launch-overnight-agents.mjs --wave 3b` (requires `FIREBASE_TOKEN` / `CURSOR_API_KEY`)
+2. Owner QA on `qa_launch_2026` per [`OWNER_QA_CHECKLIST.md`](../vision/OWNER_QA_CHECKLIST.md)
+3. Optional 3C auto-skip when owner drops PNG #2/#3 in `static/portrait/approved/`
 
 ## Merge order
 
-See [`MERGE_ORDER.md`](./MERGE_ORDER.md). Phase 1 + Phase 2 merged to `dev` 2026-06-13.
+Overnight Phase 1+2 → `dev` 2026-06-13 · Wave 3A → `dev` 2026-06-14. See [`WAVE_3_MANIFEST.md`](./WAVE_3_MANIFEST.md).

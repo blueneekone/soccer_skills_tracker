@@ -35,3 +35,27 @@ Agents append entries below. Do not edit prior rows.
 **Artifacts:** `docs/acquisition/DEPLOY_RECORD.json` (generated on smoke run)  
 **Smoke probes:** hosting `https://sstracker.app` (/login, /acquisition, /privacy) · callables `logTrainingSession`, `createRegistrationIntent`, `assignSeasonRegistrationToRoster`, `exportStateRoster`, `parentGrantVpcConsent`, `parentSignCoppaWaiver`, `registerDeviceToken` — all HTTP 401 (live)  
 **Verify:** `npm run smoke:dev` · `npm run check` · `npm run build`
+
+## orch-wave3 — 2026-06-14
+
+**Branch:** `closure/orch-wave3` (local merge on `dev`)  
+**Status:** Done  
+**Gaps closed:** M-04  
+**Dev tip:** `de753d91`
+
+**Merged (16 Wave 3A branches, dependency order):**
+`functional-mvp-doc-sync` · `deploy-gha-dev` · `payment-webhook` · `eligibility-ux` · `fcm-broadcast` · `checkr-webhooks` · `fed-phase2` · `tournament-p2` · `player-rl-functional` · `vitest-batch-misc` · `vitest-batch-loadout` · `vitest-batch-hud` · `diegetic-modals` · `player-os-6f` · `player-os-6j` · `smoke-dev-script`
+
+**Doc sync:**
+- `PLATFORM_GAP_REGISTER.md` — 76 Done / 4 Agent (3B) / 2 Blocked / 4 Rejected
+- `PARALLEL_STATUS.md` — Wave 3A table + overnight 01–24
+- `PARALLEL_SUMMARY.md` — phase status + next = 3B
+- `TRACTION.md` — post-3A refresh
+- `ROADMAP.md` — sprint line → Wave 3B
+
+**Verify:**
+- `npm test -- src/lib/parent/__tests__/launchWave2Complete.test.ts src/lib/gamification/__tests__/personaFunctionalMvp.test.ts` — 78 passed
+- `npm run check` — 0 errors
+- `npm run build` — ok
+
+**Next:** launch Wave 3B (`live-deploy-dev`, `post-deploy-guards`)

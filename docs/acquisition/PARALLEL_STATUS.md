@@ -1,8 +1,40 @@
 # Parallel overnight agents — status
 
-**Last updated:** 2026-06-13 · **Poll cycle:** closed · **Orchestrator:** agent 21-orch  
-**Phase 1 + Phase 2:** complete · merged to `dev` @ `7adb90ae`  
-**Next action:** [`GAP_CLOSURE_PLAN.md`](./GAP_CLOSURE_PLAN.md) slice 1 (owner live deploy)
+**Last updated:** 2026-06-14 · **Poll cycle:** Wave 3A closed · **Orchestrator:** orch-wave3  
+**Overnight baseline:** merged to `dev` @ `7adb90ae` (2026-06-13)  
+**Wave 3A baseline:** merged to `dev` @ `de753d91` (2026-06-14)  
+**Next action:** launch Wave 3B — `node scripts/launch-overnight-agents.mjs --wave 3b`
+
+---
+
+## Wave 3A — closure (2026-06-14)
+
+| ID | Branch | Status | Register gaps |
+|----|--------|--------|---------------|
+| functional-mvp-doc-sync | closure/functional-mvp-doc-sync | **Done** | F-05, F-06, A-05 |
+| deploy-gha-dev | closure/deploy-gha-dev | **Done** | A-04 |
+| payment-webhook | closure/payment-webhook | **Done** | B-01 |
+| eligibility-ux | closure/eligibility-ux | **Done** | B-04 |
+| fcm-broadcast | closure/fcm-broadcast | **Done** | D-06, D-08 |
+| checkr-webhooks | closure/checkr-webhooks | **Done** | D-01 |
+| fed-phase2 | closure/fed-phase2 | **Done** | C-02, C-03 |
+| tournament-p2 | closure/tournament-p2 | **Done** | E-02, E-04 |
+| player-rl-functional | closure/player-rl-functional | **Done** | G-03 |
+| vitest-batch-misc | closure/vitest-batch-misc | **Done** | G-02, G-06 |
+| vitest-batch-loadout | closure/vitest-batch-loadout | **Done** | G-02 |
+| vitest-batch-hud | closure/vitest-batch-hud | **Done** | G-02 |
+| diegetic-modals | closure/diegetic-modals | **Done** | J-03, J-09 |
+| player-os-6f | closure/player-os-6f | **Done** | J-01, J-08 |
+| player-os-6j | closure/player-os-6j | **Done** | J-02, J-06, J-07, J-10 |
+| smoke-dev-script | closure/smoke-dev-script | **Done** | M-06, A-02 |
+| orch-wave3 | closure/orch-wave3 | **Done** | M-04 (merge + doc sync) |
+
+**Wave 3B (pending):** `live-deploy-dev`, `post-deploy-guards`  
+**Wave 3C (blocked):** `gemini-ingest-2`, `gemini-ingest-3` — no owner PNG #2/#3
+
+---
+
+## Overnight agents 01–24 (2026-06-13)
 
 | ID | Branch | Status | Owner paths |
 |----|--------|--------|-------------|
@@ -29,6 +61,6 @@
 | 21-orch | overnight/orch | **Done** | SLICE_LOG poll, PARALLEL_SUMMARY, ROADMAP sync |
 | 22-check-final | overnight/check-final | **Done** | full repo check=0 + CI typecheck gate |
 | 23-vitest-ci | overnight/vitest-ci | **Done** | CI vitest allowlist 129 green files |
-| 24-deploy-verify | overnight/deploy-verify | **Partial** | deploy:dev scripts green; live Firebase = owner token |
+| 24-deploy-verify | overnight/deploy-verify | **Partial** | deploy:dev scripts green; live Firebase = Wave 3B |
 
-**Summary:** [`PARALLEL_SUMMARY.md`](PARALLEL_SUMMARY.md) · **Slice log:** [`SLICE_LOG.md`](SLICE_LOG.md) · **Gap backlog:** [`GAP_CLOSURE_PLAN.md`](GAP_CLOSURE_PLAN.md)
+**Summary:** [`PARALLEL_SUMMARY.md`](./PARALLEL_SUMMARY.md) · **Slice log:** [`SLICE_LOG.md`](./SLICE_LOG.md) · **Gap register:** [`PLATFORM_GAP_REGISTER.md`](./PLATFORM_GAP_REGISTER.md)

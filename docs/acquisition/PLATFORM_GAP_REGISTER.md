@@ -1,6 +1,6 @@
 # Platform gap register
 
-**Last updated:** 2026-06-14  
+**Last updated:** 2026-06-14 (Wave 3A merged @ `de753d91`)  
 **Branch baseline:** dev  
 **Scope:** ALL platform gaps except permanent rejects #1–#3  
 **Execution:** [`WAVE_3_MANIFEST.md`](./WAVE_3_MANIFEST.md) · agent prompts [`agents/`](./agents/) · manual QA [`OWNER_QA_CHECKLIST.md`](../vision/OWNER_QA_CHECKLIST.md)
@@ -38,8 +38,8 @@
 | A-01 | Live Firebase deploy to `sports-skill-tracker-dev` (all codebases + rules + hosting) | Agent | `closure/live-deploy-dev` | `npm run deploy:dev:smoke` | none | Agent |
 | A-02 | Post-deploy callable smoke (overnight CFs live) | Done | `closure/smoke-dev-script` | `npm run smoke:dev` | none | Done |
 | A-03 | WebAuthn `RP_ID` / `RP_ORIGIN` → `sstracker.app` | Done | — | `launchP0Fixes.test.ts` | QA-131 | Done |
-| A-04 | `deploy.yml` dev target `sports-skill-tracker-dev` (not prod hardcode) | Agent | `closure/deploy-gha-dev` | `npm run check` | QA-000d | Agent |
-| A-05 | `LAUNCH-qa-ready` closure (tests + docs aligned) | Agent | `closure/functional-mvp-doc-sync` | `npm test -- src/lib/parent/__tests__/launchWave2Complete.test.ts` | none | Agent |
+| A-04 | `deploy.yml` dev target `sports-skill-tracker-dev` (not prod hardcode) | Done | `closure/deploy-gha-dev` | `npm run check` | QA-000d | Done |
+| A-05 | `LAUNCH-qa-ready` closure (tests + docs aligned) | Done | `closure/functional-mvp-doc-sync` | `npm test -- src/lib/parent/__tests__/launchWave2Complete.test.ts` | none | Done |
 | A-06 | Deploy-completeness (all `deploy:*` on target project) | Agent | `closure/live-deploy-dev` | `npm run deploy:dev:verify` | QA-000b | Agent |
 
 ---
@@ -48,10 +48,10 @@
 
 | Id | Gap | BuildOwner | Closure slice | AutomatedVerify | ManualQaId | Status |
 |----|-----|------------|---------------|-----------------|------------|--------|
-| B-01 | Payment webhook: `activeSeasonStatus` only when ALL installments paid | Agent | `closure/payment-webhook` | `npm test -- src/lib/parent/__tests__/paymentInstallments.test.ts` | QA-202 | Agent |
+| B-01 | Payment webhook: `activeSeasonStatus` only when ALL installments paid | Done | `closure/payment-webhook` | `npm test -- src/lib/parent/__tests__/paymentInstallments.test.ts` | QA-202 | Done |
 | B-02 | Registration → roster (`assignSeasonRegistrationToRoster` + assign panel) | Done | — | `registrationLaunch.test.ts` | QA-201 | Done |
 | B-03 | Registration drag-drop UX (GotSport-style; not R-01 CMS) | Done | — | `registrationLaunch.test.ts` (assign panel sufficient) | none | Done |
-| B-04 | Eligibility matrix director UX edge cases | Agent | `closure/eligibility-ux` | `npm test -- src/lib/director/__tests__/eligibilityLaunch.test.ts` | none | Agent |
+| B-04 | Eligibility matrix director UX edge cases | Done | `closure/eligibility-ux` | `npm test -- src/lib/director/__tests__/eligibilityLaunch.test.ts` | none | Done |
 | B-05 | Stripe Connect edge cases on dev tenant | Done | — | `paymentInstallments.test.ts` | QA-202 | Done |
 
 ---
@@ -61,8 +61,8 @@
 | Id | Gap | BuildOwner | Closure slice | AutomatedVerify | ManualQaId | Status |
 |----|-----|------------|---------------|-----------------|------------|--------|
 | C-01 | NGB CSV v1 (`exportStateRoster`) | Done | — | `ngbExportLaunch.test.ts` | QA-206 | Done |
-| C-02 | Federation Phase 2 — format adapters | Agent | `closure/fed-phase2` | `npm test -- src/lib/director/__tests__/ngbExportLaunch.test.ts` | QA-206 | Agent |
-| C-03 | Federation Phase 3 — sync jobs | Agent | `closure/fed-phase2` | same | none | Agent |
+| C-02 | Federation Phase 2 — format adapters | Done | `closure/fed-phase2` | `npm test -- src/lib/director/__tests__/ngbExportLaunch.test.ts` | QA-206 | Done |
+| C-03 | Federation Phase 3 — sync jobs | Done | `closure/fed-phase2` | same | none | Done |
 | C-04 | Federation Phase 4 — API per body | Done | — | none | QA-505 | Done |
 | C-05 | State roster export demo packet for acquirer | Done | — | `ngbExportLaunch.test.ts` | QA-206 | Done |
 
@@ -72,14 +72,14 @@
 
 | Id | Gap | BuildOwner | Closure slice | AutomatedVerify | ManualQaId | Status |
 |----|-----|------------|---------------|-----------------|------------|--------|
-| D-01 | Checkr embed + webhook lifecycle completeness | Agent | `closure/checkr-webhooks` | `node --test functions/__tests__/complianceCheckr.guard.test.js` | QA-204 | Agent |
+| D-01 | Checkr embed + webhook lifecycle completeness | Done | `closure/checkr-webhooks` | `node --test functions/__tests__/complianceCheckr.guard.test.js` | QA-204 | Done |
 | D-02 | NCSI vendor parity (vs Checkr) | Done | — | none | QA-504 | Done |
 | D-03 | Live stream URL embed MVP | Done | — | `liveStreamLaunch.test.ts` | QA-207 | Done |
 | D-04 | Live stream match-day / schedule wiring | Done | — | `liveStreamLaunch.test.ts` | QA-207 | Done |
 | D-05 | Weather lock Open-Meteo + NWS | Done | — | `epic54WeatherLock.test.ts` | none | Done |
-| D-06 | TOMORROW_IO optional enrich — stale doc strings | Agent | `closure/fcm-broadcast` | `npm test -- src/lib/services/__tests__/commsSprint48.test.ts` | none | Agent |
+| D-06 | TOMORROW_IO optional enrich — stale doc strings | Done | `closure/fcm-broadcast` | `npm test -- src/lib/services/__tests__/commsSprint48.test.ts` | none | Done |
 | D-07 | FCM parent push prefs | Done | — | `epic55MessagingAudit.test.ts` | QA-210 | Done |
-| D-08 | FCM director broadcast + push fan-out | Agent | `closure/fcm-broadcast` | `commsSprint49.test.ts` | QA-210 | Agent |
+| D-08 | FCM director broadcast + push fan-out | Done | `closure/fcm-broadcast` | `commsSprint49.test.ts` | QA-210 | Done |
 | D-09 | FCM `registerDeviceToken` live post-deploy | Agent | `closure/post-deploy-guards` | `npm run smoke:dev` | QA-210 | Agent |
 
 ---
@@ -89,9 +89,9 @@
 | Id | Gap | BuildOwner | Closure slice | AutomatedVerify | ManualQaId | Status |
 |----|-----|------------|---------------|-----------------|------------|--------|
 | E-01 | Single-elim bracket (4/8/16/32) | Done | — | `p2TournamentBracket.test.ts` | QA-203 | Done |
-| E-02 | Tournament seeding UX polish | Agent | `closure/tournament-p2` | `p2TournamentBracket.test.ts` | QA-203 | Agent |
+| E-02 | Tournament seeding UX polish | Done | `closure/tournament-p2` | `p2TournamentBracket.test.ts` | QA-203 | Done |
 | E-03 | Double-elimination bracket | Done | — | none | none | Done |
-| E-04 | Public tournament buyer UX polish | Agent | `closure/tournament-p2` | `p2TournamentBracket.test.ts` | QA-203 | Agent |
+| E-04 | Public tournament buyer UX polish | Done | `closure/tournament-p2` | `p2TournamentBracket.test.ts` | QA-203 | Done |
 
 ---
 
@@ -103,8 +103,8 @@
 | F-02 | Parent OS FUNCTIONAL_MVP checklist | Done | — | `epic51CoppaSignup.test.ts` | QA-121–QA-125, QA-130–QA-134 | Done |
 | F-03 | Coach OS FUNCTIONAL_MVP checklist | Done | — | `coachModule.test.ts` | QA-141–QA-146, QA-161–QA-163 | Done |
 | F-04 | Cross-persona + RL Epic 8 AC-2 | Done | — | `playerRlFunctional.test.ts` | QA-151–QA-155 | Done |
-| F-05 | Stale FUNCTIONAL_MVP gap rows (tracker nav, check debt) | Agent | `closure/functional-mvp-doc-sync` | `personaFunctionalMvp.test.ts` | none | Agent |
-| F-06 | COMPETITIVE_LAUNCH_ASSESSMENT stale Partial row | Agent | `closure/functional-mvp-doc-sync` | `launchWave2Complete.test.ts` | none | Agent |
+| F-05 | Stale FUNCTIONAL_MVP gap rows (tracker nav, check debt) | Done | `closure/functional-mvp-doc-sync` | `personaFunctionalMvp.test.ts` | none | Done |
+| F-06 | COMPETITIVE_LAUNCH_ASSESSMENT stale Partial row | Done | `closure/functional-mvp-doc-sync` | `launchWave2Complete.test.ts` | none | Done |
 | F-07 | `personaFunctionalMvp.test.ts` regression guard | Done | — | `npm test -- src/lib/gamification/__tests__/personaFunctionalMvp.test.ts` | none | Done |
 | F-08 | `launchWave2Complete.test.ts` Wave 2 gate | Done | — | `launchWave2Complete.test.ts` | none | Done |
 
@@ -115,11 +115,11 @@
 | Id | Gap | BuildOwner | Closure slice | AutomatedVerify | ManualQaId | Status |
 |----|-----|------------|---------------|-----------------|------------|--------|
 | G-01 | `npm run check` = 0 errors | Done | — | `npm run check` | QA-000 | Done |
-| G-02 | CI vitest: 61 excluded red suites | Agent | `closure/vitest-batch-hud`, `vitest-batch-loadout`, `vitest-batch-misc` | expand CI allowlist + `npx vitest run` | none | Agent |
-| G-03 | `playerRlFunctional` export drift | Agent | `closure/player-rl-functional` | `playerRlFunctional.test.ts` | none | Agent |
+| G-02 | CI vitest: 61 excluded red suites | Done | `closure/vitest-batch-hud`, `vitest-batch-loadout`, `vitest-batch-misc` | expand CI allowlist + `npx vitest run` | none | Done |
+| G-03 | `playerRlFunctional` export drift | Done | `closure/player-rl-functional` | `playerRlFunctional.test.ts` | none | Done |
 | G-04 | `loopIntegrityGuards` emulator tests in CI | Done | — | `test:firestore-rules` (emulator job) | none | Done |
 | G-05 | Firestore rules CI sprint412 | Done | — | `firestoreRulesSprint412.test.ts` | none | Done |
-| G-06 | `firestoreRulesSprint13` obsolete guard | Agent | `closure/vitest-batch-misc` | `npx vitest run firestoreRulesSprint13` | none | Agent |
+| G-06 | `firestoreRulesSprint13` obsolete guard | Done | `closure/vitest-batch-misc` | `npx vitest run firestoreRulesSprint13` | none | Done |
 
 ---
 
@@ -151,16 +151,16 @@
 
 | Id | Gap | BuildOwner | Closure slice | AutomatedVerify | ManualQaId | Status |
 |----|-----|------------|---------------|-----------------|------------|--------|
-| J-01 | Sprint 6f Armory hologram visual acceptance | Agent | `closure/player-os-6f` | `playerHudSprint252.test.ts` | QA-301, QA-302 | Agent |
-| J-02 | Sprint 6j Z2 depth / void / edge-lit (remaining routes) | Agent | `closure/player-os-6j` | `playerHudSprint234.test.ts` | QA-303, QA-307 | Done |
-| J-03 | Swal → diegetic modal (`OperativeLoadoutStudio`) | Agent | `closure/diegetic-modals` | `playerHudSprint244.test.ts` | QA-306 | Agent |
+| J-01 | Sprint 6f Armory hologram visual acceptance | Done | `closure/player-os-6f` | `playerHudSprint252.test.ts` | QA-301, QA-302 | Done |
+| J-02 | Sprint 6j Z2 depth / void / edge-lit (remaining routes) | Done | `closure/player-os-6j` | `playerHudSprint234.test.ts` | QA-303, QA-307 | Done |
+| J-03 | Swal → diegetic modal (`OperativeLoadoutStudio`) | Done | `closure/diegetic-modals` | `playerHudSprint244.test.ts` | QA-306 | Done |
 | J-04 | VA screenshot sign-off (1280/390 matrix) | Done | — | none | QA-308 | Done |
 | J-05 | Platform visual system (Gemini research) | Done | — | none | QA-507 | Done |
-| J-06 | HQ void ≥40% / matte ≤35% | Agent | `closure/player-os-6j` | rubric guards | QA-303 | Done |
-| J-07 | Stats investigation rubric Fail rows (stale) | Agent | `closure/player-os-6j` | `playerHudSprint234.test.ts` | QA-304 | Done |
-| J-08 | Armory qa-strap / accent canon (#00d4ff) | Agent | `closure/player-os-6f` | `playerHudSprint252.test.ts` | QA-302 | Agent |
-| J-09 | Train diegetic sliders | Agent | `closure/diegetic-modals` | `playerHudSprint250.test.ts` | QA-305 | Agent |
-| J-10 | PlayerShell generic `.bento-card` injection | Agent | `closure/player-os-6j` | `playerHudSprint234.test.ts` | QA-307 | Done |
+| J-06 | HQ void ≥40% / matte ≤35% | Done | `closure/player-os-6j` | rubric guards | QA-303 | Done |
+| J-07 | Stats investigation rubric Fail rows (stale) | Done | `closure/player-os-6j` | `playerHudSprint234.test.ts` | QA-304 | Done |
+| J-08 | Armory qa-strap / accent canon (#00d4ff) | Done | `closure/player-os-6f` | `playerHudSprint252.test.ts` | QA-302 | Done |
+| J-09 | Train diegetic sliders | Done | `closure/diegetic-modals` | `playerHudSprint250.test.ts` | QA-305 | Done |
+| J-10 | PlayerShell generic `.bento-card` injection | Done | `closure/player-os-6j` | `playerHudSprint234.test.ts` | QA-307 | Done |
 
 ---
 
@@ -193,7 +193,7 @@
 | M-01 | FUNCTIONAL_MVP human QA on `qa_launch_2026` | Done | — | `personaFunctionalMvp.test.ts` | Phase 1 QA-1xx | Done |
 | M-02 | DEMO_SCRIPT live recording | Done | — | none | QA-402, QA-502 | Done |
 | M-03 | Legal / IP review | Done | — | none | QA-501 | Done |
-| M-04 | TRACTION / PROSPECTUS refresh post-closure | Agent | `closure/orch-wave3` | register row count audit | QA-503 | Agent |
+| M-04 | TRACTION / PROSPECTUS refresh post-closure | Done | `closure/orch-wave3` | register row count audit | QA-503 | Done |
 | M-05 | Acquisition data room baseline | Done | — | `INDEX.md` | none | Done |
 | M-06 | Automated smoke script (`smoke:dev`) | Done | `closure/smoke-dev-script` | `npm run smoke:dev` · `npm run check` · `npm run build` | QA-000c | Done |
 
@@ -203,11 +203,13 @@
 
 | BuildOwner | Count |
 |------------|------:|
-| Done | 52 |
-| Agent | 28 |
+| Done | 76 |
+| Agent | 4 |
 | Blocked | 2 |
 | Rejected | 4 |
 | **Total rows** | **86** |
+
+**Open Agent rows (Wave 3B):** A-01, A-06 (`live-deploy-dev`) · D-09, H-03 (`post-deploy-guards`).
 
 *(Sections A–M + R-01–R-03; H-05 duplicates R-02 reject scope.)*
 
