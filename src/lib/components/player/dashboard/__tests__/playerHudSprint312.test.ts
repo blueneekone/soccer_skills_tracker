@@ -39,13 +39,14 @@ describe('Sprint 3.1.2 — mission Accept gold (no cyan hero setup class)', () =
 	});
 
 	it('embedded accept in ActiveBounties does not use #22d3ee', () => {
-		const acceptBlock = bountiesSrc.match(/\.quest-row__cmd--accept[\s\S]*?\}/)?.[0] ?? '';
+		const acceptBlock =
+			hudCssSrc.match(/\.player-hud-root \.quest-row__cmd--embedded\.quest-row__cmd--accept[\s\S]*?\}/)?.[0] ?? '';
 		expect(acceptBlock).not.toMatch(/#22d3ee/);
-		expect(acceptBlock).toMatch(/#fbbf24|var\(--color-accent/);
+		expect(acceptBlock).toMatch(/#fbbf24|var\(--pd-accent-action/);
 	});
 
 	it('player-hud quest-hero__cta hover stays gold', () => {
-		expect(hudCssSrc).toMatch(/\.player-hud-root \.quest-hero__cta:hover[\s\S]*?--pd-accent-action/);
+		expect(hudCssSrc).toMatch(/\.player-hud-root \.quest-hero--gold \.quest-hero__cta:hover[\s\S]*?--pd-accent-action/);
 	});
 
 	it('telemetry embedded accept hover does not bleed cyan', () => {

@@ -64,21 +64,21 @@ describe('Sprint 2.7 — IdentityBentoModule profile banner', () => {
 });
 
 describe('Sprint 2.7 — HudMetricsPanel collapsed vectors', () => {
-	it('embedded empty vectors hidden when !telemetryReady (Sprint 2.11.1 — single VPP surface)', () => {
-		expect(hmpSrc).toMatch(/\{#if !embedded \|\| telemetryReady\}/);
-		expect(pageSrc).toMatch(/\{#if telemetryReady\}[\s\S]*?HudMetricsPanel/);
+	it('collapsed hub vectors when !telemetryReady (inline strip — no HudMetricsPanel on page)', () => {
+		expect(pageSrc).toMatch(/hmp-vectors-collapsed/);
+		expect(pageSrc).toMatch(/\{#if !telemetryReady\}/);
 	});
 });
 
 describe('Sprint 2.7 — compact analytics deck', () => {
-	it('+page applies player-analytics-deck--compact when no telemetry', () => {
-		expect(pageSrc).toMatch(/player-analytics-deck--compact/);
+	it('+page applies player-analytics-void--compact when no telemetry', () => {
+		expect(pageSrc).toMatch(/player-analytics-void--compact/);
 		expect(pageSrc).toMatch(/hasVanguardTelemetry|telemetryReady/);
 	});
 
 	it('VanguardProtocolPanel or page supports compact mode', () => {
 		expect(vppSrc + pageSrc).toMatch(/compact/);
-		expect(hudCssSrc).toMatch(/player-analytics-deck--compact/);
+		expect(hudCssSrc).toMatch(/player-analytics-void--compact|player-analytics-deck--compact/);
 	});
 });
 

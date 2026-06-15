@@ -54,8 +54,8 @@ describe('Sprint 2.10 — +page.svelte wiring', () => {
 		expect(pageSrc).toMatch(/HqWorldContextStrip[\s\S]*inline/);
 	});
 
-	it('queries schedules collection with one listener and defensive fallback', () => {
-		expect(pageSrc).toMatch(/collection\(db,\s*['"]schedules['"]\)/);
+	it('queries team_workouts collection with listener and defensive fallback', () => {
+		expect(pageSrc).toMatch(/collection\(db,\s*['"]team_workouts['"]\)/);
 		expect(pageSrc).toMatch(/onSnapshot/);
 		expect(pageSrc).toMatch(/pickNextScheduleEvent|loadLegacyScheduleFallback/);
 	});

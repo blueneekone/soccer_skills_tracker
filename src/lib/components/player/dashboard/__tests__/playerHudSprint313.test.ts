@@ -65,13 +65,15 @@ describe('Sprint 3.1.3 — cross-file bento span guard', () => {
 	const spansUsed = [...studioSrc.matchAll(/bento-span-(\d+)/g)].map((m) => Number(m[1]));
 	const required = [3, 4, 5].filter((n) => spansUsed.includes(n));
 
-	for (const n of required) {
-		it(`app.css defines .bento-span-${n} { grid-column: span ${n}`, () => {
+	it('OperativeLoadoutStudio bento spans have matching app.css grid-column rules', () => {
+		for (const n of required) {
 			expect(appCssSrc).toMatch(
 				new RegExp(`\\.bento-span-${n}\\s*\\{\\s*grid-column:\\s*span\\s+${n};\\s*\\}`),
 			);
-		});
-	}
+		}
+		// Studio currently uses bento-span-12 only — guard still passes when spans are added.
+		expect(spansUsed.length).toBeGreaterThan(0);
+	});
 });
 
 // ── T1-7 regression guard: ArmoryEngine armory.stats uid vs email key ────────

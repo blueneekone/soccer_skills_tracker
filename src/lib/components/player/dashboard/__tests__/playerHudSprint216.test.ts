@@ -56,24 +56,24 @@ describe('Sprint 2.16 — HQ pd-content-wrap', () => {
 describe('Sprint 2.16 — Stats player VPP parity', () => {
 	it('stats player path imports and uses VanguardProtocolPanel', () => {
 		expect(statsPageSrc).toMatch(/import VanguardProtocolPanel/);
-		expect(statsPageSrc).toMatch(/\{#if isPlayerRole\}[\s\S]*?VanguardProtocolPanel/);
+		expect(statsPageSrc).toMatch(/stats-analytics-void[\s\S]*?VanguardProtocolPanel/);
 	});
 
 	it('stats player template does not expose RDR_S6 or radarTag in player dossier path', () => {
 		const playerVppSection =
-			statsPageSrc.match(/\{#if isPlayerRole\}\s*<section[\s\S]*?VanguardProtocolPanel/)?.[0] ??
+			statsPageSrc.match(/<section[\s\S]*?stats-analytics-void[\s\S]*?VanguardProtocolPanel/)?.[0] ??
 			'';
 		expect(playerVppSection).not.toMatch(/RDR_S6/);
 		expect(playerVppSection).not.toMatch(/radarTag/);
 		expect(playerVppSection).not.toMatch(/SRC=PLAYER_STATS/);
-		expect(statsPageSrc).toMatch(/\{:else\}[\s\S]*radarTag/);
+		expect(statsPageSrc).not.toMatch(/radarTag/);
 	});
 });
 
 describe('Sprint 2.16 — ActiveBounties hero dedupe', () => {
 	it('embedded rail feed uses visibleQuests rail rows (6b-revise), not tier-split loops', () => {
 		const embedded = embeddedBountiesBlock(bountiesSrc);
-		expect(embedded).toMatch(/\{#each visibleQuests as quest/);
+		expect(embedded).toMatch(/\{#each embeddedFeed as quest/);
 		expect(embedded).not.toMatch(/\{#each visibleDailies as quest/);
 		expect(embedded).not.toMatch(/\{#each visibleBounties as quest/);
 		expect(activeBountiesTsSrc).toMatch(/export function excludeHeroFromRailQuests/);

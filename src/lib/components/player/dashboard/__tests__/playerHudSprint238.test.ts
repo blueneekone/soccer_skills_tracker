@@ -71,15 +71,15 @@ describe('Sprint 2.22 slice 6j-b — Train workout route', () => {
 	});
 
 	it('exec section spans full width (no duplicate coach intent sidebar)', () => {
-		expect(workoutSrc).toMatch(/pw-exec tw-min-w-0 bento-span-12/);
+		expect(workoutSrc).toMatch(/pw-theater__body tw-min-w-0 bento-span-12/);
 		expect(workoutSrc).not.toMatch(/pw-panel--threat/);
 	});
 
 	it('execution form sits flush on hero deck (no nested terminal well)', () => {
 		expect(workoutSrc).not.toMatch(/pw-terminal-well/);
 		expect(workoutSrc).not.toMatch(/pg-terminal-chrome/);
-		expect(workoutSrc).toMatch(/pw-theater pd-os-deck pd-os-deck--hero[\s\S]*pg-bracket pg-bracket--tl/);
-		expect(hudCss).toMatch(/\.pw-theater\.pd-os-deck--hero > \.pg-bracket/);
+		expect(workoutSrc).toMatch(/pw-theater pd-os-deck pd-os-deck--hero[\s\S]*pw-theater__body/);
+		expect(hudCss).toMatch(/\.pw-theater\.pd-os-deck--hero/);
 	});
 
 	it('threat and exec surfaces flush inside hero deck (no nested deck shadow)', () => {
@@ -99,9 +99,9 @@ describe('Sprint 2.22 slice 6j-b — Train workout route', () => {
 		expect(hudCss).toMatch(/\.pw-theater \.pw-focus__btn:hover[\s\S]*?--pd-emissive-teal/);
 	});
 
-	it('hero deck keeps corner brackets; no duplicate coach sidebar or scanline', () => {
+	it('hero deck keeps pd-os-deck hero shell; no duplicate coach sidebar or scanline', () => {
 		const exec = execTerminalBlock();
-		expect(exec).toMatch(/pg-bracket pg-bracket--tl/);
+		expect(exec).toMatch(/pw-theater pd-os-deck pd-os-deck--hero/);
 		expect(workoutSrc).not.toMatch(/pg-scanline/);
 		expect(workoutSrc).not.toMatch(/pw-panel--threat/);
 	});

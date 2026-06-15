@@ -81,8 +81,8 @@ describe('Phase 7 · G10 + Sprint 2.20 — void contract closure', () => {
 		expect(roadmapSrc).toMatch(/Epic 1 premium track 2\.12\.1–2\.20 Done/);
 	});
 
-	it('ROADMAP current sprint is Epic 3 · Sprint 3.5a', () => {
-		expect(roadmapSrc).toMatch(/Current sprint:\*\* \*\*Epic 3 · Sprint 3\.5a/);
+	it('ROADMAP current sprint is LAUNCH-functional-os Done', () => {
+		expect(roadmapSrc).toMatch(/Current sprint:\*\* \*\*LAUNCH-functional-os Done\*\*/);
 	});
 
 	it('PLAYER_OS_VISUAL_ACCEPTANCE void contract pixel rows reference 2.20e', () => {

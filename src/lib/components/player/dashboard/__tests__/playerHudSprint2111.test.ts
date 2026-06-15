@@ -71,9 +71,9 @@ describe('Sprint 2.11.1 — dashboard loading + single telemetry surface', () =>
 });
 
 describe('Sprint 2.11.1 — HQ density + operative hub alignment', () => {
-	it('operative-hub missions align-self start in css', () => {
-		expect(hudCssSrc).toMatch(/\.operative-hub__missions[\s\S]*?align-self:\s*start/);
-		expect(hubSrc).toMatch(/align-self:\s*start/);
+	it('operative-hub missions align-self stretch in css (missions column fills hub height)', () => {
+		expect(hudCssSrc).toMatch(/\.operative-hub \.operative-hub__missions[\s\S]*?align-self:\s*stretch/);
+		expect(hubSrc).toMatch(/align-self:\s*stretch/);
 	});
 
 	it('player-hud-root sets bento gap liquid (212 premium: clamp 12–20px)', () => {

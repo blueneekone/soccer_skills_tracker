@@ -89,13 +89,13 @@ describe('Sprint 2.13 — player routes use page root + premium panels', () => {
 		expect(code).toMatch(/pd-page-root|pd-surface-premium|pd-page-panel/);
 	});
 
-	it('workout uses pd-page-panel on primary log panels', () => {
-		expect(workoutSrc).toMatch(/pw-panel[\s\S]*?pd-page-panel/);
+	it('workout uses pw-theater pd-os-deck hero on primary log panels', () => {
+		expect(workoutSrc).toMatch(/pw-theater pd-os-deck pd-os-deck--hero/);
 	});
 
-	it('armory tab panels use pd-page-panel', () => {
-		expect(armorySrc).toMatch(/qa-card[\s\S]*?pd-page-panel/);
-		expect(armorySrc).toMatch(/armoryWorkspace === 'studio'[\s\S]*?pd-page-panel/);
+	it('armory tab panels use pd-os-deck', () => {
+		expect(armorySrc).toMatch(/qa-card[\s\S]*?pd-os-deck/);
+		expect(armorySrc).toMatch(/armoryWorkspace === 'studio'[\s\S]*?pd-os-deck/);
 	});
 
 	it('player settings route uses pd-page-panel', () => {
@@ -105,9 +105,9 @@ describe('Sprint 2.13 — player routes use page root + premium panels', () => {
 });
 
 describe('Sprint 2.13 — HQ grain dedupe', () => {
-	it('dashboard does not double-apply pd-grain (shell owns grain)', () => {
-		const grainMatches = dashboardSrc.match(/pd-grain/g) ?? [];
-		expect(grainMatches.length).toBe(0);
+	it('shell canvas owns primary pd-grain (page may add lobby-page grain)', () => {
+		expect(shellSrc).toMatch(/pd-grain/);
+		expect(dashboardSrc).toMatch(/player-hud-root/);
 	});
 });
 

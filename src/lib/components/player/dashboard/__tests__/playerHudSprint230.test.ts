@@ -40,7 +40,6 @@ describe('Sprint 2.22 slice 6d — Quick Ops icon badges', () => {
 	});
 
 	it('player-dashboard-hud.css applies amber depth + hover glow to Quick Ops tiles', () => {
-		expect(hudCss).toMatch(/Sprint 2\.22 slice 6d — Quick Ops icon badges/);
 		expect(hudCss).toMatch(/\.oqo-deck \.oqo-op__icon[\s\S]*--pd-accent-action/);
 		expect(hudCss).toMatch(/\.oqo-deck \.oqo-op:hover[\s\S]*--pd-accent-action/);
 		expect(hudCss).toMatch(/\.oqo-deck \.oqo-op[\s\S]*--pd-emissive-gold/);

@@ -56,13 +56,13 @@ describe('Sprint 2.11 — workout dossier remap (no SIEM canvas)', () => {
 		expect(workoutSrc).toMatch(/Train \/ Log session/);
 	});
 
-	it('maps surfaces to --pd-bg and premium panel tokens', () => {
-		expect(workoutSrc).toMatch(/var\(--pd-bg\)/);
-		expect(workoutSrc).toMatch(/pd-page-panel|pd-panel/);
+	it('maps surfaces to player-hud-root + pd-os-deck hero theater', () => {
+		expect(workoutSrc).toMatch(/player-hud-root/);
+		expect(workoutSrc).toMatch(/pd-os-deck--hero|pd-os-deck/);
 	});
 
-	it('primary CTA uses teal qa-btn--ready pattern', () => {
-		expect(workoutSrc).toMatch(/qa-btn--ready/);
+	it('execute well uses pw-theater execute band (supersedes qa-btn--ready)', () => {
+		expect(workoutSrc).toMatch(/pw-theater__execute/);
 	});
 });
 

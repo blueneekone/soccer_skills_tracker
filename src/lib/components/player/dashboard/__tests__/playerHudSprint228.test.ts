@@ -37,8 +37,8 @@ const embeddedSnippet = (() => {
 })();
 
 describe('Sprint 2.22 slice 6b-revise — HQ mission rail overview (no hero cards)', () => {
-	it('embedded block uses visibleQuests feed with questRowEmbedded only', () => {
-		expect(embeddedTemplateBlock).toMatch(/\{#each visibleQuests as quest/);
+	it('embedded block uses embeddedFeed with questRowEmbedded only', () => {
+		expect(embeddedTemplateBlock).toMatch(/\{#each embeddedFeed as quest/);
 		expect(embeddedTemplateBlock).toMatch(/\{@render questRowEmbedded\(quest\)/);
 		expect(embeddedTemplateBlock).toMatch(/quest-log__feed--embedded/);
 	});
@@ -53,7 +53,7 @@ describe('Sprint 2.22 slice 6b-revise — HQ mission rail overview (no hero card
 	it('questRowEmbedded applies quest-row--promoted via isPromotedQuest', () => {
 		expect(bountiesSrc).toMatch(/isPromotedQuest/);
 		expect(activeBountiesTsSrc).toMatch(/export function isPromotedQuest/);
-		expect(embeddedSnippet).toMatch(/quest-row--promoted=\{isPromotedQuest\(quest\)\}/);
+		expect(embeddedSnippet).toMatch(/quest-row--promoted=\{!heroQuest && isPromotedQuest\(quest\)\}/);
 	});
 
 	it('questRowEmbedded shows inline xp on compact widths and lede for wide desktop', () => {

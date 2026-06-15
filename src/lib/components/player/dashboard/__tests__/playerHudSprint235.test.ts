@@ -43,12 +43,12 @@ describe('Sprint 2.22 slice 6f-c — IdentityTelemetryBezel component', () => {
 
 	it('streak control uses flame icon and links to workout route', () => {
 		expect(bezelSrc).toMatch(/game\.flame/);
-		expect(bezelSrc).toMatch(/resolve\('\/player\/workout'\)/);
+		expect(bezelSrc).toMatch(/resolveAppPath\('\/player\/workout'\)/);
 		expect(bezelSrc).toMatch(/aria-label=\{streakAriaLabel\}/);
 	});
 
 	it('career XP readout links to stats (no rank progress bar on holo card)', () => {
-		expect(bezelSrc).toMatch(/resolve\('\/stats'\)/);
+		expect(bezelSrc).toMatch(/resolveAppPath\('\/stats'\)/);
 		expect(bezelSrc).toMatch(/ibm-holo-bezel__xp-tag/);
 		expect(bezelSrc).toMatch(/CAREER/);
 		expect(bezelSrc).not.toMatch(/rankProgressPercent/);

@@ -50,7 +50,7 @@ const g3IdleInspectorRule =
 
 function playerStatsVppBlock() {
 	return (
-		statsSrc.match(/\{#if isPlayerRole\}\s*<section[\s\S]*?VanguardProtocolPanel[\s\S]*?<\/section>/)?.[0] ??
+		statsSrc.match(/<section[\s\S]*?stats-analytics-void[\s\S]*?VanguardProtocolPanel[\s\S]*?<\/section>/)?.[0] ??
 		''
 	);
 }

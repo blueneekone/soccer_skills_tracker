@@ -28,15 +28,9 @@ const pageSrc = existsSync(PAGE) ? readFileSync(PAGE, 'utf-8') : '';
 const roadmapSrc = existsSync(ROADMAP) ? readFileSync(ROADMAP, 'utf-8') : '';
 
 describe('Sprint 2.12.1 — IBM premium + inset coexist', () => {
-	it('identity stage owns Z1 recessed well (not stripped by ibm-root--premium)', () => {
-		expect(hudCssSrc).toMatch(
-			/\.operative-hub__identity-stage[\s\S]*?background:\s*var\(--pd-z1-well-bg/,
-		);
-		expect(hudCssSrc).toMatch(
-			/\.operative-hub__identity-stage[\s\S]*?box-shadow:\s*var\(--pd-z1-inset-shadow/,
-		);
+	it('identity stage transparent trench for holo Z3 (Wave B / G6 superseded Z1 well)', () => {
+		expect(hudCssSrc).toMatch(/\.operative-hub__identity-stage[\s\S]*?background:\s*transparent/);
 		expect(hudCssSrc).toMatch(/\.ibm-root--premium[\s\S]*?background:\s*transparent/);
-		expect(hudCssSrc).toMatch(/\.ibm-root--embedded\.ibm-root--inset[\s\S]*?background:\s*transparent/);
 	});
 
 	it('incomplete profile keeps rank bar and metrics visible', () => {
@@ -85,9 +79,9 @@ describe('Sprint 2.12.1 — stronger depth tokens', () => {
 });
 
 describe('Sprint 2.12.1 — ActiveBounties hero dedupe', () => {
-	it('excludeHeroFromRailQuests helper exported (6b-revise rail uses visibleQuests directly)', () => {
+	it('embeddedFeed includes hero row (Wave B — excludeHeroFromRailQuests optional)', () => {
 		expect(activeBountiesTsSrc).toMatch(/export function excludeHeroFromRailQuests/);
-		expect(bountiesSrc).toMatch(/\{#each visibleQuests as quest/);
+		expect(bountiesSrc).toMatch(/\{#each embeddedFeed as quest/);
 	});
 });
 

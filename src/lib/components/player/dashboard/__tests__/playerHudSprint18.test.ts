@@ -62,8 +62,9 @@ describe('Sprint 1.8 — HudMetricsPanel embedded flush + Vanguard vectors only'
 		expect(metricsSrc).toMatch(/\.hmp-root--embedded[\s\S]*?backdrop-filter:\s*none/);
 	});
 
-	it('+page passes embedded={true} to HudMetricsPanel inside OperativeHub', () => {
-		expect(pageSrc).toMatch(/HudMetricsPanel[\s\S]*?embedded=\{true\}/);
+	it('+page collapses hub vectors when !telemetryReady (VPP owns radar — no HudMetricsPanel on page)', () => {
+		expect(pageSrc).toMatch(/hmp-vectors-collapsed/);
+		expect(pageSrc).not.toMatch(/<HudMetricsPanel/);
 	});
 
 	it('HudMetricsPanel shows Vanguard vector labels (PAC, ACC, POW, COMP, STM, AGI)', () => {
@@ -85,9 +86,9 @@ describe('Sprint 1.8 — HudMetricsPanel embedded flush + Vanguard vectors only'
 });
 
 describe('Sprint 1.8 — OperativeHub unified glass shell', () => {
-	it('OperativeHub uses dossier line border and liquid shadow token (superseded by 2.8 Player Dossier)', () => {
-		expect(operativeSrc).toMatch(/var\(--pd-line|--pd-panel/);
-		expect(operativeSrc).toMatch(/var\(--shadow-liquid\)/);
+	it('OperativeHub uses pd-os-deck hero material (superseded by 2.8 Player Dossier + Wave B)', () => {
+		expect(operativeSrc).toMatch(/pd-os-deck--hero/);
+		expect(hudCssSrc).toMatch(/\.operative-hub\.pd-os-deck--hero[\s\S]*?--pd-os-hero-fill/);
 	});
 
 	it('OperativeHub cells preserve min-width: 0 for flex/grid shrink', () => {

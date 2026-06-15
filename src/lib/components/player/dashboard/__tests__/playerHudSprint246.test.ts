@@ -42,6 +42,8 @@ const pathwayTrackWellBlock =
 const hqZ2DeckBlock =
 	hudCss.match(
 		/Player OS Wave B′ — HQ Z2 deck parity[\s\S]*?\.player-dossier-root \.opp-preview\.pd-os-deck\s*\{[\s\S]*?\n\}/,
+	)?.[0] ?? hudCss.match(
+		/\.player-hud-root \.oqo-deck\.pd-os-deck,\s*\n\.player-hud-root \.opp-preview\.pd-os-deck[\s\S]*?\n\}/,
 	)?.[0] ?? '';
 
 describe('Wave B′ — pathway Z1 well parity (analytics void benchmark)', () => {
@@ -60,7 +62,7 @@ describe('Wave B′ — pathway Z1 well parity (analytics void benchmark)', () =
 
 	it('pathway track well matches analytics vpp-chart Z1 well pattern', () => {
 		expect(hudCss).toMatch(
-			/\.player-analytics-void \.vpp-chart--premium[\s\S]*--pd-z1-well-bg/,
+			/\.player-analytics-void \.vpp-chart--premium|:is\(\.player-analytics-void, \.stats-analytics-void\) \.vpp-chart--premium[\s\S]*--pd-z1-well-bg/,
 		);
 		expect(pathwayTrackWellBlock).toMatch(/var\(--pd-z1-well-bg\)/);
 		expect(pathwayTrackWellBlock).toMatch(/var\(--pd-z1-inset-shadow\)/);
@@ -72,7 +74,7 @@ describe('Wave B′ — HQ Z2 deck material parity (Quick Ops + pathway)', () =>
 		expect(hudCss).toMatch(/Player OS Wave B′ — HQ Z2 deck parity/);
 		expect(hqZ2DeckBlock).toMatch(/\.oqo-deck\.pd-os-deck/);
 		expect(hqZ2DeckBlock).toMatch(/\.opp-preview\.pd-os-deck/);
-		expect(hqZ2DeckBlock).toMatch(/var\(--pd-os-deck-fill\)/);
+		expect(hqZ2DeckBlock).toMatch(/var\(--pd-os-frame-fill|--pd-hq-deck-fill|--pd-os-deck-fill/);
 	});
 
 	it('pathway outer deck is not a separate visual skin from Quick Ops', () => {

@@ -49,11 +49,11 @@ describe('Sprint 2.22 slice 6a — IdentityBentoModule HQ wiring', () => {
 		expect(ibmSrc).not.toMatch(/VanguardCard/);
 	});
 
-	it('embedded branch uses OperativeLoadoutPreview inside HologramCardShell', () => {
+	it('embedded branch uses OperativeIdCardFrame inside HologramCardShell', () => {
 		expect(embeddedBodyBlock).toMatch(/HologramCardShell/);
-		expect(embeddedBodyBlock).toMatch(/OperativeLoadoutPreview/);
+		expect(embeddedBodyBlock).toMatch(/OperativeIdCardFrame/);
 		expect(embeddedBodyBlock).toMatch(/ibm-holo-face/);
-		expect(embeddedBodyBlock).toMatch(/ibm-holo-face__name/);
+		expect(hudCssSrc).toMatch(/ibm-holo-face__name/);
 	});
 
 	it('embedded branch keeps ibm-rings identity beside hologram card with telemetry bezel', () => {

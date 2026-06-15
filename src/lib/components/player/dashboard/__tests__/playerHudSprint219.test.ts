@@ -129,7 +129,7 @@ describe('Sprint 2.19 — route continuity', () => {
 describe('Sprint 2.19 — gate lift docs', () => {
 	it('ROADMAP marks 2.19 Done and unblocks Epic 3.4 / 4.1', () => {
 		expect(roadmapSrc).toMatch(/\|\s*2\.19\s*\|\s*Done/i);
-		expect(roadmapSrc).toMatch(/Unblocked after 2\.19 Done|unblocked after 2\.19 Done/i);
+		expect(roadmapSrc).toMatch(/unblocked.*2\.19 Done|2\.19 Done.*unblocked/i);
 		expect(roadmapSrc).not.toMatch(/Blocked until 2\.19 Done/i);
 	});
 

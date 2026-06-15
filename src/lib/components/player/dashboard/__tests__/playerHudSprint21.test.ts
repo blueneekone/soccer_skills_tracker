@@ -87,11 +87,10 @@ describe('Sprint 2.1 — player-dashboard-hud.css palette', () => {
 });
 
 describe('Sprint 2.1 — capsule section header mono pass', () => {
-	it('lobby-eyebrow and/or lobby-capsules-h use tw-font-mono pattern', () => {
-		expect(pageSrc).toMatch(/lobby-eyebrow[\s\S]*?tw-font-mono|tw-font-mono[\s\S]*?lobby-eyebrow/);
-		expect(pageSrc).toMatch(
-			/lobby-capsules-h|id="lobby-capsules-h"[\s\S]*?tw-font-mono|tw-font-mono[\s\S]*?lobby-capsules-h/,
-		);
+	it('capsule section uses pd-hq-section-head typography (supersedes lobby-eyebrow tw-font-mono)', () => {
+		expect(pageSrc).toMatch(/player-capsules-strip__head/);
+		expect(pageSrc).toMatch(/pd-hq-section-head__title|pd-label/);
+		expect(pageSrc).toMatch(/id="lobby-capsules-h"|lobby-capsules-h/);
 	});
 });
 

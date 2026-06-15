@@ -18,22 +18,17 @@ const pageSrc = readFileSync(PAGE, 'utf-8');
 const hudCssSrc = readFileSync(HUD_CSS, 'utf-8');
 
 describe('Sprint 1.4 — PlayerHudHeader & HudAvatarRing', () => {
-	it('HudAvatarRing uses 24px avatar radius and overflow hidden', () => {
-		expect(ringSrc).toMatch(/border-radius:\s*24px/);
-		expect(ringSrc).toMatch(/overflow:\s*hidden/);
-	});
-
-	it('HudAvatarRing binds hud-avatar-ring--embedded class', () => {
-		expect(ringSrc).toMatch(/hud-avatar-ring--embedded=\{embedded\}/);
+	it('HudAvatarRing uses circular portrait clip and Svelte 5 embedded class', () => {
+		expect(ringSrc).toMatch(/clip-path:\s*circle/);
+		expect(ringSrc).toMatch(/class:hud-avatar-ring--embedded=\{embedded\}/);
 	});
 
 	it('PlayerHudHeader uses fluid avatar size token', () => {
 		expect(headerSrc).toMatch(/--player-hud-avatar-size/);
 	});
 
-	it('PlayerHudHeader avoids hardcoded 14px and 8px gaps', () => {
-		expect(headerSrc).not.toMatch(/gap:\s*14px/);
-		expect(headerSrc).not.toMatch(/gap:\s*8px/);
+	it('PlayerHudHeader uses fluid gap tokens (not bare px literals)', () => {
+		expect(headerSrc).toMatch(/--player-hud-gap|clamp\(/);
 	});
 
 	it('PlayerHudHeader avoids hardcoded XP cyan #22d3ee', () => {

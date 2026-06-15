@@ -23,7 +23,8 @@ const playerOsSrc = existsSync(PLAYER_OS) ? readFileSync(PLAYER_OS, 'utf-8') : '
 
 describe('Sprint 2.4 — player-hud-root structural token remap', () => {
 	it('.player-hud-root sets --color-structural to slate (not global #3b82f6)', () => {
-		const rootBlock = hudCssSrc.match(/\.player-hud-root\s*\{[\s\S]*?\}/)?.[0] ?? '';
+		const rootBlock =
+			hudCssSrc.match(/\.player-hud-root,\s*\n\.player-dossier-root\s*\{[\s\S]*?\}/)?.[0] ?? '';
 		expect(rootBlock).toMatch(/--color-structural:\s*#64748b/);
 		expect(rootBlock).not.toMatch(/--color-structural:\s*#3b82f6/);
 	});
@@ -76,9 +77,9 @@ describe('Sprint 2.4 — HudMetricsPanel embedded empty state', () => {
 });
 
 describe('Sprint 2.4 — +page.svelte two-band analytics deck', () => {
-	it('has player-analytics-deck wrapper combining VPP + capsules', () => {
-		expect(pageSrc).toMatch(/player-analytics-deck/);
-		expect(pageSrc).toMatch(/<VanguardProtocolPanel[\s\S]*?player-capsules-strip|player-analytics-deck[\s\S]*?<VanguardProtocolPanel/);
+	it('has player-analytics-void wrapper combining VPP + capsules', () => {
+		expect(pageSrc).toMatch(/player-analytics-void/);
+		expect(pageSrc).toMatch(/<VanguardProtocolPanel[\s\S]*?player-capsules-strip|player-analytics-void[\s\S]*?<VanguardProtocolPanel/);
 	});
 
 	it('does NOT have two separate top-level bento-card sections for telemetry AND capsules', () => {

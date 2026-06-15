@@ -17,15 +17,15 @@ const hudCssSrc = existsSync(HUD_CSS) ? readFileSync(HUD_CSS, 'utf-8') : '';
 const playerOsSrc = existsSync(PLAYER_OS) ? readFileSync(PLAYER_OS, 'utf-8') : '';
 
 const compactBlock =
-	hudCssSrc.match(/\.player-analytics-deck--compact[\s\S]*?\.player-hud-root \.player-capsules-strip/)?.[0] ?? '';
+	hudCssSrc.match(/\.player-analytics-void--compact[\s\S]*?\.player-hud-root \.player-capsules-strip/)?.[0] ?? '';
 
 describe('Sprint 2.8.2 — compact radar stays hero-readable', () => {
 	it('compact .vpp-chart must NOT cap radar at 168px', () => {
 		const chartBlock =
-			compactBlock.match(/\.player-analytics-deck--compact \.vpp-chart[\s\S]*?(?=\.player-analytics-deck--compact \.vpp-body)/)?.[0] ??
+			compactBlock.match(/\.player-analytics-void--compact \.vpp-chart[\s\S]*?(?=\.player-analytics-void--compact \.vpp-body)/)?.[0] ??
 			'';
 		expect(chartBlock).not.toMatch(/max-width:\s*168px/);
-		expect(hudCssSrc).not.toMatch(/player-analytics-deck--compact[\s\S]*?max-width:\s*168px/);
+		expect(hudCssSrc).not.toMatch(/player-analytics-void--compact[\s\S]*?max-width:\s*168px/);
 	});
 
 	it('asserts min chart target min(100%, 260px) desktop and min(100%, 220px) mobile in hud css', () => {
@@ -42,8 +42,8 @@ describe('Sprint 2.8.2 — compact radar stays hero-readable', () => {
 });
 
 describe('Sprint 2.8.2 — +page compact deck wiring', () => {
-	it('+page still applies player-analytics-deck--compact when !telemetryReady', () => {
-		expect(pageSrc).toMatch(/player-analytics-deck--compact=\{!telemetryReady\}/);
+	it('+page still applies player-analytics-void--compact when !telemetryReady', () => {
+		expect(pageSrc).toMatch(/player-analytics-void--compact=\{!telemetryReady\}/);
 		expect(pageSrc).toMatch(/compact=\{!telemetryReady\}/);
 		expect(pageSrc).toMatch(/telemetryReady\s*=\s*\$derived\(hasVanguardTelemetry/);
 	});
