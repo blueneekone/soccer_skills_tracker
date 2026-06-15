@@ -39,7 +39,7 @@
 | A-02 | Post-deploy callable smoke (overnight CFs live) | Agent | `closure/post-deploy-guards` | `npm run smoke:dev` | none | Agent |
 | A-03 | WebAuthn `RP_ID` / `RP_ORIGIN` → `sstracker.app` | Done | — | `launchP0Fixes.test.ts` | QA-131 | Done |
 | A-04 | `deploy.yml` dev target `sports-skill-tracker-dev` (not prod hardcode) | Agent | `closure/deploy-gha-dev` | `npm run check` | QA-000d | Agent |
-| A-05 | `LAUNCH-qa-ready` closure (tests + docs aligned) | Done | `closure/functional-mvp-doc-sync` | `npm test -- src/lib/parent/__tests__/launchWave2Complete.test.ts` | none | Done |
+| A-05 | `LAUNCH-qa-ready` closure (tests + docs aligned) | Agent | `closure/functional-mvp-doc-sync` | `npm test -- src/lib/parent/__tests__/launchWave2Complete.test.ts` | none | Agent |
 | A-06 | Deploy-completeness (all `deploy:*` on target project) | Agent | `closure/live-deploy-dev` | `npm run deploy:dev:verify` | QA-000b | Agent |
 
 ---
@@ -61,8 +61,8 @@
 | Id | Gap | BuildOwner | Closure slice | AutomatedVerify | ManualQaId | Status |
 |----|-----|------------|---------------|-----------------|------------|--------|
 | C-01 | NGB CSV v1 (`exportStateRoster`) | Done | — | `ngbExportLaunch.test.ts` | QA-206 | Done |
-| C-02 | Federation Phase 2 — format adapters | Done | `closure/fed-phase2` | `ngbExportLaunch.test.ts` | QA-206 | Done |
-| C-03 | Federation Phase 3 — sync jobs | Done | `closure/fed-phase2` | same | none | Done (stubs) |
+| C-02 | Federation Phase 2 — format adapters | Agent | `closure/fed-phase2` | `npm test -- src/lib/director/__tests__/ngbExportLaunch.test.ts` | QA-206 | Agent |
+| C-03 | Federation Phase 3 — sync jobs | Agent | `closure/fed-phase2` | same | none | Agent |
 | C-04 | Federation Phase 4 — API per body | Done | — | none | QA-505 | Done |
 | C-05 | State roster export demo packet for acquirer | Done | — | `ngbExportLaunch.test.ts` | QA-206 | Done |
 
@@ -72,7 +72,7 @@
 
 | Id | Gap | BuildOwner | Closure slice | AutomatedVerify | ManualQaId | Status |
 |----|-----|------------|---------------|-----------------|------------|--------|
-| D-01 | Checkr embed + webhook lifecycle completeness | Done | `closure/checkr-webhooks` | `node --test functions/__tests__/complianceCheckr.guard.test.js` | QA-204 | Done |
+| D-01 | Checkr embed + webhook lifecycle completeness | Agent | `closure/checkr-webhooks` | `node --test functions/__tests__/complianceCheckr.guard.test.js` | QA-204 | Agent |
 | D-02 | NCSI vendor parity (vs Checkr) | Done | — | none | QA-504 | Done |
 | D-03 | Live stream URL embed MVP | Done | — | `liveStreamLaunch.test.ts` | QA-207 | Done |
 | D-04 | Live stream match-day / schedule wiring | Done | — | `liveStreamLaunch.test.ts` | QA-207 | Done |
@@ -89,9 +89,9 @@
 | Id | Gap | BuildOwner | Closure slice | AutomatedVerify | ManualQaId | Status |
 |----|-----|------------|---------------|-----------------|------------|--------|
 | E-01 | Single-elim bracket (4/8/16/32) | Done | — | `p2TournamentBracket.test.ts` | QA-203 | Done |
-| E-02 | Tournament seeding UX polish | Done | `closure/tournament-p2` | `p2TournamentBracket.test.ts` | QA-203 | Done |
+| E-02 | Tournament seeding UX polish | Agent | `closure/tournament-p2` | `p2TournamentBracket.test.ts` | QA-203 | Agent |
 | E-03 | Double-elimination bracket | Done | — | none | none | Done |
-| E-04 | Public tournament buyer UX polish | Done | `closure/tournament-p2` | `p2TournamentBracket.test.ts` | QA-203 | Done |
+| E-04 | Public tournament buyer UX polish | Agent | `closure/tournament-p2` | `p2TournamentBracket.test.ts` | QA-203 | Agent |
 
 ---
 
@@ -103,8 +103,8 @@
 | F-02 | Parent OS FUNCTIONAL_MVP checklist | Done | — | `epic51CoppaSignup.test.ts` | QA-121–QA-125, QA-130–QA-134 | Done |
 | F-03 | Coach OS FUNCTIONAL_MVP checklist | Done | — | `coachModule.test.ts` | QA-141–QA-146, QA-161–QA-163 | Done |
 | F-04 | Cross-persona + RL Epic 8 AC-2 | Done | — | `playerRlFunctional.test.ts` | QA-151–QA-155 | Done |
-| F-05 | Stale FUNCTIONAL_MVP gap rows (tracker nav, check debt) | Done | `closure/functional-mvp-doc-sync` | `personaFunctionalMvp.test.ts` | none | Done |
-| F-06 | COMPETITIVE_LAUNCH_ASSESSMENT stale Partial row | Done | `closure/functional-mvp-doc-sync` | `launchWave2Complete.test.ts` | none | Done |
+| F-05 | Stale FUNCTIONAL_MVP gap rows (tracker nav, check debt) | Agent | `closure/functional-mvp-doc-sync` | `personaFunctionalMvp.test.ts` | none | Agent |
+| F-06 | COMPETITIVE_LAUNCH_ASSESSMENT stale Partial row | Agent | `closure/functional-mvp-doc-sync` | `launchWave2Complete.test.ts` | none | Agent |
 | F-07 | `personaFunctionalMvp.test.ts` regression guard | Done | — | `npm test -- src/lib/gamification/__tests__/personaFunctionalMvp.test.ts` | none | Done |
 | F-08 | `launchWave2Complete.test.ts` Wave 2 gate | Done | — | `launchWave2Complete.test.ts` | none | Done |
 
@@ -115,11 +115,11 @@
 | Id | Gap | BuildOwner | Closure slice | AutomatedVerify | ManualQaId | Status |
 |----|-----|------------|---------------|-----------------|------------|--------|
 | G-01 | `npm run check` = 0 errors | Done | — | `npm run check` | QA-000 | Done |
-| G-02 | CI vitest: 55 excluded red suites | Agent | `closure/vitest-batch-hud`, `vitest-batch-loadout` | expand CI allowlist + `npx vitest run` | none | Agent |
+| G-02 | CI vitest: 61 excluded red suites | Agent | `closure/vitest-batch-hud`, `vitest-batch-loadout`, `vitest-batch-misc` | expand CI allowlist + `npx vitest run` | none | Agent |
 | G-03 | `playerRlFunctional` export drift | Agent | `closure/player-rl-functional` | `playerRlFunctional.test.ts` | none | Agent |
 | G-04 | `loopIntegrityGuards` emulator tests in CI | Done | — | `test:firestore-rules` (emulator job) | none | Done |
 | G-05 | Firestore rules CI sprint412 | Done | — | `firestoreRulesSprint412.test.ts` | none | Done |
-| G-06 | `firestoreRulesSprint13` obsolete guard | Done | `closure/vitest-batch-misc` | `npx vitest run firestoreRulesSprint13` | none | Done |
+| G-06 | `firestoreRulesSprint13` obsolete guard | Agent | `closure/vitest-batch-misc` | `npx vitest run firestoreRulesSprint13` | none | Agent |
 
 ---
 
@@ -151,15 +151,15 @@
 
 | Id | Gap | BuildOwner | Closure slice | AutomatedVerify | ManualQaId | Status |
 |----|-----|------------|---------------|-----------------|------------|--------|
-| J-01 | Sprint 6f Armory hologram visual acceptance | Agent | `closure/player-os-6f` | `playerHudSprint252.test.ts` | QA-301, QA-302 | Agent |
+| J-01 | Sprint 6f Armory hologram visual acceptance | Agent | `closure/player-os-6f` | `playerHudSprint252.test.ts` | QA-301, QA-302 | Done |
 | J-02 | Sprint 6j Z2 depth / void / edge-lit (remaining routes) | Agent | `closure/player-os-6j` | `playerHudSprint234.test.ts` | QA-303, QA-307 | Agent |
-| J-03 | Swal → diegetic modal (`OperativeLoadoutStudio`) | Agent | `closure/diegetic-modals` | `playerHudSprint244.test.ts` | QA-306 | Done |
+| J-03 | Swal → diegetic modal (`OperativeLoadoutStudio`) | Agent | `closure/diegetic-modals` | `playerHudSprint244.test.ts` | QA-306 | Agent |
 | J-04 | VA screenshot sign-off (1280/390 matrix) | Done | — | none | QA-308 | Done |
 | J-05 | Platform visual system (Gemini research) | Done | — | none | QA-507 | Done |
 | J-06 | HQ void ≥40% / matte ≤35% | Agent | `closure/player-os-6j` | rubric guards | QA-303 | Agent |
 | J-07 | Stats investigation rubric Fail rows (stale) | Agent | `closure/player-os-6j` | `playerHudSprint234.test.ts` | QA-304 | Agent |
-| J-08 | Armory qa-strap / accent canon (#00d4ff) | Agent | `closure/player-os-6f` | `playerHudSprint252.test.ts` | QA-302 | Agent |
-| J-09 | Train diegetic sliders | Agent | `closure/diegetic-modals` | `playerHudSprint250.test.ts` | QA-305 | Done |
+| J-08 | Armory qa-strap / accent canon (#00d4ff) | Agent | `closure/player-os-6f` | `playerHudSprint252.test.ts` | QA-302 | Done |
+| J-09 | Train diegetic sliders | Agent | `closure/diegetic-modals` | `playerHudSprint250.test.ts` | QA-305 | Agent |
 | J-10 | PlayerShell generic `.bento-card` injection | Agent | `closure/player-os-6j` | `playerHudSprint234.test.ts` | QA-307 | Agent |
 
 ---
