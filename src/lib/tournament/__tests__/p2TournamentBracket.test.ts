@@ -7,8 +7,12 @@ import { describe, expect, it } from 'vitest';
 import {
 	advanceWinner,
 	bracketHasStarted,
+	bracketSeedOrder,
 	defaultTeams,
+	firstRoundPairings,
 	generateSingleEliminationBracket,
+	moveTeamInList,
+	reseedTeams,
 	roundLabel,
 } from '$lib/tournament/tournamentBracket.js';
 
@@ -27,7 +31,22 @@ describe('P2 tournament bracket — pure logic', () => {
 		expect(bracket.matches).toHaveLength(7);
 		expect(bracket.matches.filter((m) => m.round === 0)).toHaveLength(4);
 		expect(bracket.matches[0].homeTeamId).toBe('team_1');
-		expect(bracket.matches[0].awayTeamId).toBe('team_2');
+		expect(bracket.matches[0].awayTeamId).toBe('team_8');
+	});
+
+	it('uses classic bracket seed order for first-round pairings', () => {
+		expect(bracketSeedOrder(8)).toEqual([1, 8, 4, 5, 2, 7, 3, 6]);
+		const teams = defaultTeams(8);
+		const pairings = firstRoundPairings(teams);
+		expect(pairings[0]).toEqual(['team_1', 'team_8']);
+		expect(pairings[1]).toEqual(['team_4', 'team_5']);
+	});
+
+	it('reorders draft teams and reseeds after move', () => {
+		const moved = moveTeamInList(defaultTeams(4), 0, 2);
+		const reseeded = reseedTeams(moved);
+		expect(reseeded.map((t) => t.seed)).toEqual([1, 2, 3, 4]);
+		expect(reseeded[2].id).toBe('team_1');
 	});
 
 	it('advances winner into the next round slot', () => {
@@ -65,6 +84,8 @@ describe('P2 tournament bracket — director + buyer wiring', () => {
 		expect(src).toMatch(/TournamentBracketPanel/);
 		expect(src).toMatch(/readonly/);
 		expect(src).toMatch(/bracketHasStarted/);
+		expect(src).toMatch(/bracket-section/);
+		expect(src).toMatch(/buyer-bracket-heading/);
 	});
 
 	it('bracket panel supports setup, generate, and round columns', () => {
@@ -73,6 +94,9 @@ describe('P2 tournament bracket — director + buyer wiring', () => {
 		expect(src).toMatch(/bracket-tree/);
 		expect(src).toMatch(/advanceWinner/);
 		expect(src).toMatch(/readonly/);
+		expect(src).toMatch(/Shuffle seeds/);
+		expect(src).toMatch(/pairing-preview/);
+		expect(src).toMatch(/moveTeam/);
 	});
 
 	it('tournamentEvent types embed optional bracket on event doc', () => {

@@ -44,6 +44,53 @@ export function defaultTeams(count: BracketTeamSize): BracketTeam[] {
 	}));
 }
 
+/** Classic bracket slot order (1-indexed seeds) for single-elimination first round. */
+export function bracketSeedOrder(teamCount: number): number[] {
+	if (teamCount === 2) return [1, 2];
+	const half = bracketSeedOrder(teamCount / 2);
+	const order: number[] = [];
+	for (const seed of half) {
+		order.push(seed);
+		order.push(teamCount + 1 - seed);
+	}
+	return order;
+}
+
+/** First-round pairings from ordered teams (respects seed numbers on each team). */
+export function firstRoundPairings(teams: BracketTeam[]): Array<[string, string]> {
+	const order = bracketSeedOrder(teams.length);
+	const bySeed = new Map(teams.map((t) => [t.seed, t.id]));
+	const pairings: Array<[string, string]> = [];
+	for (let slot = 0; slot < order.length; slot += 2) {
+		const homeId = bySeed.get(order[slot]);
+		const awayId = bySeed.get(order[slot + 1]);
+		if (homeId && awayId) pairings.push([homeId, awayId]);
+	}
+	return pairings;
+}
+
+export function moveTeamInList<T>(list: T[], fromIndex: number, toIndex: number): T[] {
+	if (fromIndex === toIndex || fromIndex < 0 || toIndex < 0) return list;
+	if (fromIndex >= list.length || toIndex >= list.length) return list;
+	const next = [...list];
+	const [item] = next.splice(fromIndex, 1);
+	next.splice(toIndex, 0, item);
+	return next;
+}
+
+export function shuffleTeamList<T>(list: T[]): T[] {
+	const next = [...list];
+	for (let i = next.length - 1; i > 0; i--) {
+		const j = Math.floor(Math.random() * (i + 1));
+		[next[i], next[j]] = [next[j], next[i]];
+	}
+	return next;
+}
+
+export function reseedTeams(teams: BracketTeam[]): BracketTeam[] {
+	return teams.map((team, index) => ({ ...team, seed: index + 1 }));
+}
+
 export function generateSingleEliminationBracket(teams: BracketTeam[]): TournamentBracket {
 	const teamCount = teams.length;
 	if (!isPowerOfTwo(teamCount) || teamCount < 2 || teamCount > 32) {
@@ -65,8 +112,9 @@ export function generateSingleEliminationBracket(teams: BracketTeam[]): Tourname
 				status: 'pending',
 			};
 			if (round === 0) {
-				match.homeTeamId = teams[slot * 2]?.id ?? null;
-				match.awayTeamId = teams[slot * 2 + 1]?.id ?? null;
+				const [homeId, awayId] = firstRoundPairings(teams)[slot] ?? [null, null];
+				match.homeTeamId = homeId;
+				match.awayTeamId = awayId;
 			}
 			matches.push(match);
 		}
