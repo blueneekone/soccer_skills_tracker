@@ -9,7 +9,7 @@
 | **1 — parallel features** | 01–20 | 17 | 2 (19–20 gemini ingest) | 0 |
 | **2 — check / CI / deploy** | 22–24 | 2 (22, 23) | 0 | 1 (24 live deploy → 3B) |
 | **3A — gap closure** | 16 + orch | 17 | 0 | 0 |
-| **3B — deploy smoke** | 2 | 0 | 0 | pending launch |
+| **3B — deploy smoke** | 2 | 2 | 0 | 0 |
 | **3C — avatar ingest** | 2 | 0 | 2 (no PNG #2/#3) | 0 |
 
 **Wave 3A quiesced:** Yes — all 16 `closure/*` branches merged to `dev`; orch-wave3 doc sync complete.
@@ -21,10 +21,10 @@
 | LAUNCH-functional-os | Done | Three-persona MVP |
 | LAUNCH-wave2-complete | Done | Parent adoption parity |
 | LAUNCH-qa-ready | Done | `functional-mvp-doc-sync` — tests + docs aligned |
-| LAUNCH-deploy-dev | Partial | Scripts + smoke green; **Wave 3B** `live-deploy-dev` for full live deploy |
-| Launch functional gate (competitive) | Partial | 4 Agent register rows remain (3B); owner QA pending |
+| LAUNCH-deploy-dev | Done | Full live deploy 2026-06-14; smoke green |
+| Launch functional gate (competitive) | Partial | Owner FUNCTIONAL_MVP QA pending |
 
-**Current sprint:** Wave 3B deploy closure → owner QA [`OWNER_QA_CHECKLIST.md`](../vision/OWNER_QA_CHECKLIST.md)
+**Current sprint:** Wave 3B complete → owner QA [`OWNER_QA_CHECKLIST.md`](../vision/OWNER_QA_CHECKLIST.md)
 
 ## Wave 3A outcomes (merged 2026-06-14)
 
@@ -61,9 +61,8 @@
 
 ## Next actions
 
-1. Launch Wave 3B: `node scripts/launch-overnight-agents.mjs --wave 3b` (requires `FIREBASE_TOKEN` / `CURSOR_API_KEY`)
-2. Owner QA on `qa_launch_2026` per [`OWNER_QA_CHECKLIST.md`](../vision/OWNER_QA_CHECKLIST.md)
-3. Optional 3C auto-skip when owner drops PNG #2/#3 in `static/portrait/approved/`
+1. Owner QA on `qa_launch_2026` per [`OWNER_QA_CHECKLIST.md`](../vision/OWNER_QA_CHECKLIST.md)
+2. Optional 3C auto-skip when owner drops PNG #2/#3 in `static/portrait/approved/`
 
 ## Merge order
 

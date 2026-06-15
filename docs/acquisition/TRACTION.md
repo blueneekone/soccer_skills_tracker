@@ -32,7 +32,7 @@ Source: [`ROADMAP.md`](../../ROADMAP.md) · [`COMPETITIVE_LAUNCH_ASSESSMENT.md`]
 | Functional audit A–F | **Done** | [`FUNCTIONAL_AUDIT_BACKLOG.md`](../FUNCTIONAL_AUDIT_BACKLOG.md) |
 | Overnight P2 + check=0 + CI vitest | **Done** | Merged to dev 2026-06-13; Wave 3A closure merged 2026-06-14 |
 | Wave 3A gap closure (16 slices) | **Done** | [`PLATFORM_GAP_REGISTER.md`](./PLATFORM_GAP_REGISTER.md) — 76/86 rows Done |
-| LAUNCH-deploy-dev | **Partial** | `npm run smoke:dev` green; Wave 3B `live-deploy-dev` for full Firebase deploy |
+| LAUNCH-deploy-dev | **Done** | Full deploy to `sports-skill-tracker-dev` 2026-06-14; `npm run smoke:dev` green |
 | LAUNCH-qa-ready | **Done** | `functional-mvp-doc-sync` — F-05/F-06/A-05 closed |
 | Owner FUNCTIONAL_MVP QA | **Pending** | Checkboxes in [`OWNER_QA_CHECKLIST.md`](../vision/OWNER_QA_CHECKLIST.md) |
 

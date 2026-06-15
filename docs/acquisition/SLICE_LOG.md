@@ -75,3 +75,13 @@ Agents append entries below. Do not edit prior rows.
 - `npm test -- src/lib/parent/__tests__/launchWave2Complete.test.ts src/lib/gamification/__tests__/personaFunctionalMvp.test.ts` — pass
 - `npm run check` — 0 errors
 - `npm run build` — ok
+
+## live-deploy-dev — 2026-06-14
+
+**Branch:** `closure/live-deploy-dev`  
+**Status:** Done  
+**Gaps closed:** A-01, A-06  
+**Deploy target:** `sports-skill-tracker-dev` @ https://sstracker.app  
+**Commit:** `8550bb45` (pre-deploy) · deploy completed 2026-06-14  
+**Change:** `deploy-dev-full.cjs` — `--force` on `functions:default` (orphan RL monolith cleanup)  
+**Verify:** `npm run deploy:dev` · `npm run smoke:dev` — all callables HTTP 401 (live)

@@ -49,7 +49,7 @@ function main() {
   run('npm run deploy:backend:systematic');
   run(`npx firebase-tools deploy --project ${DEV_PROJECT} --only firestore:rules,storage`);
   run(`npx firebase-tools deploy --project ${DEV_PROJECT} --only hosting`);
-  run(`npx firebase-tools deploy --project ${DEV_PROJECT} --only functions:default`);
+  run(`npx firebase-tools deploy --project ${DEV_PROJECT} --only functions:default --force`);
   console.log(`\nFull dev deploy complete: ${DEV_PROJECT}\n`);
 }
 

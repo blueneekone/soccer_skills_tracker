@@ -35,12 +35,12 @@
 
 | Id | Gap | BuildOwner | Closure slice | AutomatedVerify | ManualQaId | Status |
 |----|-----|------------|---------------|-----------------|------------|--------|
-| A-01 | Live Firebase deploy to `sports-skill-tracker-dev` (all codebases + rules + hosting) | Agent | `closure/live-deploy-dev` | `npm run deploy:dev:smoke` | none | Agent |
+| A-01 | Live Firebase deploy to `sports-skill-tracker-dev` (all codebases + rules + hosting) | Done | `closure/live-deploy-dev` | `npm run deploy:dev:smoke` | none | Done |
 | A-02 | Post-deploy callable smoke (overnight CFs live) | Done | `closure/smoke-dev-script` | `npm run smoke:dev` | none | Done |
 | A-03 | WebAuthn `RP_ID` / `RP_ORIGIN` → `sstracker.app` | Done | — | `launchP0Fixes.test.ts` | QA-131 | Done |
 | A-04 | `deploy.yml` dev target `sports-skill-tracker-dev` (not prod hardcode) | Done | `closure/deploy-gha-dev` | `npm run check` | QA-000d | Done |
 | A-05 | `LAUNCH-qa-ready` closure (tests + docs aligned) | Done | `closure/functional-mvp-doc-sync` | `npm test -- src/lib/parent/__tests__/launchWave2Complete.test.ts` | none | Done |
-| A-06 | Deploy-completeness (all `deploy:*` on target project) | Agent | `closure/live-deploy-dev` | `npm run deploy:dev:verify` | QA-000b | Agent |
+| A-06 | Deploy-completeness (all `deploy:*` on target project) | Done | `closure/live-deploy-dev` | `npm run deploy:dev:verify` | QA-000b | Done |
 
 ---
 
@@ -203,13 +203,13 @@
 
 | BuildOwner | Count |
 |------------|------:|
-| Done | 78 |
-| Agent | 2 |
+| Done | 80 |
+| Agent | 0 |
 | Blocked | 2 |
 | Rejected | 4 |
 | **Total rows** | **86** |
 
-**Open Agent rows (Wave 3B):** A-01, A-06 (`live-deploy-dev`).
+**Wave 3B complete** — all Agent rows closed; remaining Blocked = avatar ingest 3C only.
 
 *(Sections A–M + R-01–R-03; H-05 duplicates R-02 reject scope.)*
 

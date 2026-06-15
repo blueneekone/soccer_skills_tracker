@@ -3,7 +3,7 @@
 **Last updated:** 2026-06-14 · **Poll cycle:** Wave 3A closed · **Orchestrator:** orch-wave3  
 **Overnight baseline:** merged to `dev` @ `7adb90ae` (2026-06-13)  
 **Wave 3A baseline:** merged to `dev` @ `de753d91` (2026-06-14)  
-**Next action:** launch Wave 3B — `node scripts/launch-overnight-agents.mjs --wave 3b`
+**Next action:** Owner QA — [`OWNER_QA_CHECKLIST.md`](../vision/OWNER_QA_CHECKLIST.md) on `qa_launch_2026`
 
 ---
 
@@ -29,7 +29,13 @@
 | smoke-dev-script | closure/smoke-dev-script | **Done** | M-06, A-02 |
 | orch-wave3 | closure/orch-wave3 | **Done** | M-04 (merge + doc sync) |
 
-**Wave 3B (pending):** `live-deploy-dev`, `post-deploy-guards`  
+## Wave 3B — deploy closure (2026-06-14)
+
+| ID | Branch | Status | Register gaps |
+|----|--------|--------|---------------|
+| post-deploy-guards | closure/post-deploy-guards | **Done** | D-09, H-03 |
+| live-deploy-dev | closure/live-deploy-dev | **Done** | A-01, A-06 |
+
 **Wave 3C (blocked):** `gemini-ingest-2`, `gemini-ingest-3` — no owner PNG #2/#3
 
 ---
