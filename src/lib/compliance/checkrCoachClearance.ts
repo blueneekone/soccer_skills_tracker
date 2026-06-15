@@ -10,7 +10,7 @@
  * Production: prefer Firestore `clubs/{clubId}` fields via `checkrClubConfig.ts`.
  */
 
-import type { ClearanceDoc } from '$lib/types/backgroundCheck.js';
+import type { ClearanceDoc, BackgroundCheckStatus } from '$lib/types/backgroundCheck.js';
 import type { ClubCheckrConfig } from './checkrClubConfig.js';
 
 export type CheckrEmbedStyles = Record<string, Record<string, string>>;
@@ -40,6 +40,22 @@ export type CoachClearanceStepState =
 	| 'in_progress'
 	| 'cleared'
 	| 'flagged';
+
+/**
+ * Map Checkr report result/status → Vanguard clearance status.
+ * Mirrors `mapCheckrReportStatus` in `functions/compliance.js`.
+ */
+export function mapCheckrReportStatus(
+	checkrResult?: string | null,
+	checkrStatus?: string | null,
+): BackgroundCheckStatus {
+	const outcome = String(checkrResult || checkrStatus || '')
+		.toLowerCase()
+		.trim();
+	if (outcome === 'clear') return 'cleared';
+	if (outcome === 'consider' || outcome === 'suspended') return 'flagged';
+	return 'pending';
+}
 
 export function deriveCoachClearanceStep(clearance?: ClearanceDoc | null): CoachClearanceStepState {
 	if (!clearance) return 'not_started';

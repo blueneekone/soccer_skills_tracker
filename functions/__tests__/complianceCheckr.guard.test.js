@@ -333,3 +333,43 @@ describe('CHECKR-FIX — firebase.json CSP and rewrite', () => {
     assert.equal(rewrite.function.functionId, 'checkrSessionTokens');
   });
 });
+
+describe('D-01 — Checkr webhook lifecycle hardening', () => {
+  it('exports both checkrWebhook and backgroundCheckCallback handlers', () => {
+    assert.match(complianceSrc, /exports\.backgroundCheckCallback\s*=/);
+    assert.match(complianceSrc, /exports\.checkrWebhook\s*=/);
+    assert.match(complianceIndexSrc, /backgroundCheckCallback/);
+    assert.match(complianceIndexSrc, /checkrWebhook/);
+  });
+
+  it('verifies webhook signatures with timing-safe HMAC compare', () => {
+    assert.match(complianceSrc, /function verifyCheckrWebhookSignature/);
+    assert.match(complianceSrc, /timingSafeEqual/);
+    assert.match(complianceSrc, /sha256=/);
+    assert.match(complianceSrc, /x-checkr-signature/);
+    assert.match(complianceSrc, /BGC_WEBHOOK_SECRET/);
+  });
+
+  it('dedupes webhook replays on checkr_webhook_events report id', () => {
+    assert.match(complianceSrc, /checkr_webhook_events/);
+    assert.match(complianceSrc, /duplicate:\s*true/);
+    assert.match(complianceSrc, /function normalizeCheckrWebhookPayload/);
+  });
+
+  it('maps Checkr report result/status and guards clearance transitions', () => {
+    assert.match(complianceSrc, /function mapCheckrReportStatus/);
+    assert.match(complianceSrc, /function shouldApplyClearanceTransition/);
+    assert.match(complianceSrc, /clearedAt/);
+    assert.match(complianceSrc, /expiresAt/);
+    assert.match(complianceSrc, /revokeRefreshTokens/);
+    assert.match(complianceSrc, /report\.completed/);
+    assert.match(complianceSrc, /report\.suspended/);
+    assert.match(complianceSrc, /report\.resumed/);
+  });
+
+  it('resolves coach email from candidate_id when webhook omits email', () => {
+    assert.match(complianceSrc, /function resolveCheckrWebhookEmail/);
+    assert.match(complianceSrc, /clearance\.checkrCandidateId/);
+    assert.match(complianceSrc, /data\.object/);
+  });
+});
