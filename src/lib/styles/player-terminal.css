@@ -99,6 +99,76 @@
 }
 
 /* Wave D — Train diegetic range sliders (conduit track + terminal thumb) */
+/* J-09 — pw-loadbar visual conduit pairs with native pw-range interaction */
+.player-hud-root .pw-loadbar {
+	--fill: 0%;
+	position: relative;
+	height: 0.35rem;
+	width: 100%;
+	background: var(--pd-bg, #000);
+	border: 1px solid var(--pd-line, rgba(255, 255, 255, 0.1));
+	margin-bottom: 0.35rem;
+	overflow: hidden;
+}
+
+.player-hud-root .pw-loadbar--data {
+	border-color: color-mix(in srgb, var(--pd-accent-data, #14b8a6) 28%, var(--pd-line));
+}
+
+.player-hud-root .pw-loadbar--rpe {
+	border-color: color-mix(in srgb, var(--pd-accent-action, #fbbf24) 28%, var(--pd-line));
+}
+
+.player-hud-root .pw-loadbar__fill {
+	height: 100%;
+	width: var(--fill);
+	transition: width 0.2s ease;
+	background: var(--pd-accent-data, #14b8a6);
+	box-shadow: 0 0 10px color-mix(in srgb, var(--pd-accent-data, #14b8a6) 35%, transparent);
+}
+
+.player-hud-root .pw-loadbar--rpe .pw-loadbar__fill {
+	background: var(--pd-accent-action, #fbbf24);
+	box-shadow: 0 0 10px color-mix(in srgb, var(--pd-accent-action, #fbbf24) 35%, transparent);
+}
+
+.player-hud-root .pw-loadbar__scan {
+	position: absolute;
+	inset: 0;
+	background: linear-gradient(
+		90deg,
+		transparent,
+		color-mix(in srgb, var(--pd-accent-data, #14b8a6) 18%, transparent),
+		transparent
+	);
+	animation: pw-loadbar-scan 2.5s linear infinite;
+	pointer-events: none;
+}
+
+.player-hud-root .pw-loadbar--rpe .pw-loadbar__scan {
+	background: linear-gradient(
+		90deg,
+		transparent,
+		color-mix(in srgb, var(--pd-accent-action, #fbbf24) 18%, transparent),
+		transparent
+	);
+}
+
+@keyframes pw-loadbar-scan {
+	0% {
+		transform: translateX(-100%);
+	}
+	100% {
+		transform: translateX(100%);
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.player-hud-root .pw-loadbar__scan {
+		animation: none;
+	}
+}
+
 .player-hud-root .pw-range {
 	-webkit-appearance: none;
 	appearance: none;

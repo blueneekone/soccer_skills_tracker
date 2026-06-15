@@ -17,6 +17,7 @@ import PlayerDiegeticOverlay from '$lib/components/player/PlayerDiegeticOverlay.
 
 const ROOT = join(__dirname, '..', '..', '..', '..', '..');
 const WORKOUT = join(ROOT, 'routes/(app)/player/workout/+page.svelte');
+const LOADOUT_STUDIO = join(ROOT, 'lib/components/player/OperativeLoadoutStudio.svelte');
 const SETTINGS_PANEL = join(ROOT, 'lib/components/player/PlayerSettingsPanel.svelte');
 const OVERLAY = join(ROOT, 'lib/components/player/PlayerDiegeticOverlay.svelte');
 const TERMINAL_CSS = join(ROOT, 'lib/styles/player-terminal.css');
@@ -24,6 +25,7 @@ const HUD_CSS = join(ROOT, 'lib/styles/player-dashboard-hud.css');
 const ROADMAP = join(ROOT, '..', 'ROADMAP.md');
 
 const workoutSrc = existsSync(WORKOUT) ? readFileSync(WORKOUT, 'utf-8') : '';
+const loadoutStudioSrc = existsSync(LOADOUT_STUDIO) ? readFileSync(LOADOUT_STUDIO, 'utf-8') : '';
 const settingsPanelSrc = existsSync(SETTINGS_PANEL) ? readFileSync(SETTINGS_PANEL, 'utf-8') : '';
 const overlaySrc = existsSync(OVERLAY) ? readFileSync(OVERLAY, 'utf-8') : '';
 const terminalCss = existsSync(TERMINAL_CSS) ? readFileSync(TERMINAL_CSS, 'utf-8') : '';
@@ -59,6 +61,21 @@ describe('Wave D — Train Swal removal + diegetic overlay', () => {
 		expect(workoutSrc).toMatch(/showDiegeticError/);
 		expect(workoutSrc).toMatch(/workoutLogErrorMessage/);
 		expect(workoutSrc).toMatch(/validatePlayerWorkoutLog/);
+	});
+});
+
+describe('J-03 — OperativeLoadoutStudio Swal removal + diegetic overlay', () => {
+	it('OperativeLoadoutStudio.svelte has no sweetalert2 / Swal import or usage', () => {
+		expect(loadoutStudioSrc).not.toMatch(/\bsweetalert2\b/i);
+		expect(loadoutStudioSrc).not.toMatch(/\bSwal\b/);
+		expect(loadoutStudioSrc).not.toMatch(/Swal\.fire/);
+	});
+
+	it('OperativeLoadoutStudio imports and uses PlayerDiegeticOverlay for identity sync', () => {
+		expect(loadoutStudioSrc).toMatch(/import PlayerDiegeticOverlay/);
+		expect(loadoutStudioSrc).toMatch(/<PlayerDiegeticOverlay/);
+		expect(loadoutStudioSrc).toMatch(/showDiegeticError|showDiegeticSuccess/);
+		expect(loadoutStudioSrc).toMatch(/syncIdentity/);
 	});
 });
 
