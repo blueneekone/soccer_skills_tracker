@@ -17,9 +17,9 @@
 | Avatar PNG / character bust art | **Deferred post-launch** | One JPEG wired; `defaultPortraitV2` SVG + profile initials | Tabled |
 | Platform visual redesign (Gemini research) | **Read-only** | Functional chrome + Player OS Phase 7 cohesion | Tabled |
 | NGB / state roster export packet | **Partial — CSV v1** | Director `StateRosterExportPanel`; not 38-body API sync | Owner GTM decision |
-| Background check vendor parity (NCSI) | **Partial — Checkr lifecycle shipped** | Checkr embed + webhooks + panopticon; NCSI iframe = acquirer swap (D-02 Partial) | P2 Wave 4 |
-| Tournament brackets polish | **Partial — single-elim; double-elim Wave 4** | `TournamentBracketPanel` on `tournament_events` | P2 Wave 4 |
-| Registration → drag-drop roster UX | **Partial — assign panel; drag-drop Wave 4** | `RegistrationRosterAssignPanel`; GotSport drag in `comp-roster-dragdrop` | P2 Wave 4 |
+| Background check vendor parity (NCSI) | **Partial — Checkr lifecycle complete** | Checkr webhooks + panopticon live matrix; NCSI iframe = acquirer vendor swap (D-02 Partial) | P2 Wave 4 Done |
+| Tournament brackets polish | **Partial — single + double-elim shipped** | `TournamentBracketPanel` on `tournament_events` | P2 Wave 4 Done |
+| Registration → drag-drop roster UX | **Done — drag-drop assign panel** | `RegistrationRosterAssignPanel` GotSport-style DnD | P2 Wave 4 Done |
 
 ---
 

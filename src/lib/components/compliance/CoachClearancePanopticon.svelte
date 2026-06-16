@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { db } from '$lib/firebase.js';
-	import { collection, query, where, getDocs } from 'firebase/firestore';
+	import { collection, query, where, getDocs, onSnapshot } from 'firebase/firestore';
 	import { getFunctions, httpsCallable } from 'firebase/functions';
 	import { getApp } from 'firebase/app';
 	import Icon from '$lib/components/ui/Icon.svelte';
@@ -67,11 +67,12 @@
 		rowActions = next;
 	}
 
-	// ── Load coaches ─────────────────────────────────────────────────────────
+	// ── Load coaches (live — webhook updates clearance without manual refresh) ─
 	$effect(() => {
 		if (authStore.isLoading) return;
 		if (!authStore.isAuthenticated) {
 			loading = false;
+			coaches = [];
 			return;
 		}
 		const clubId = effectiveClubId;
@@ -92,8 +93,11 @@
 				where('clubId', '==', clubId),
 			);
 		}
-		getDocs(q)
-			.then((snap) => {
+		loading = true;
+		loadError = '';
+		const unsub = onSnapshot(
+			q,
+			(snap) => {
 				coaches = snap.docs.map((d) => {
 					const data = (d.data() ?? {}) as Record<string, unknown>;
 					return {
@@ -108,13 +112,14 @@
 					};
 				});
 				initRowActions(coaches);
-			})
-			.catch((e) => {
-				loadError = e.message ?? 'Failed to load coaches.';
-			})
-			.finally(() => {
 				loading = false;
-			});
+			},
+			(e) => {
+				loadError = e.message ?? 'Failed to load coaches.';
+				loading = false;
+			},
+		);
+		return () => unsub();
 	});
 
 	// ── Filtered rows ─────────────────────────────────────────────────────────

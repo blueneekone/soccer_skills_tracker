@@ -372,4 +372,15 @@ describe('D-01 — Checkr webhook lifecycle hardening', () => {
     assert.match(complianceSrc, /clearance\.checkrCandidateId/);
     assert.match(complianceSrc, /data\.object/);
   });
+
+  it('writes audit_logs row on successful webhook processing', () => {
+    assert.match(complianceSrc, /collection\('audit_logs'\)\.add/);
+    assert.match(complianceSrc, /source:\s*'checkr_webhook'/);
+    assert.match(complianceSrc, /action:\s*'background_check_callback'/);
+  });
+
+  it('director panopticon uses onSnapshot for live clearance matrix refresh', () => {
+    assert.match(panopticonSrc, /onSnapshot/);
+    assert.match(panopticonSrc, /clearance/);
+  });
 });
