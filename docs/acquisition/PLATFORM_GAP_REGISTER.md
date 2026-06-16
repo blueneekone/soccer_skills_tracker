@@ -66,7 +66,7 @@ Doc-sync slice `comp-competitive-doc-sync` reopens **D-02** (NCSI Partial), **C-
 |----|-----|------------|---------------|-----------------|------------|--------|
 | B-01 | Payment webhook: `activeSeasonStatus` only when ALL installments paid | Done | `closure/payment-webhook` | `npm test -- src/lib/parent/__tests__/paymentInstallments.test.ts` | QA-202 | Done |
 | B-02 | Registration → roster (`assignSeasonRegistrationToRoster` + assign panel) | Done | — | `registrationLaunch.test.ts` | QA-201 | Done |
-| B-03 | Registration drag-drop UX (GotSport-style; not R-01 CMS) | Agent | `competitive/comp-roster-dragdrop` | `registrationRosterDragDrop.test.ts` | QA-221 | Agent |
+| B-03 | Registration drag-drop UX (GotSport-style; not R-01 CMS) | Done | `competitive/comp-roster-dragdrop` | `registrationRosterDragDrop.test.ts` | QA-221 | Done |
 | B-04 | Eligibility matrix director UX edge cases | Done | `closure/eligibility-ux` | `npm test -- src/lib/director/__tests__/eligibilityLaunch.test.ts` | none | Done |
 | B-05 | Stripe Connect edge cases on dev tenant | Done | — | `paymentInstallments.test.ts` | QA-202 | Done |
 
@@ -78,7 +78,7 @@ Doc-sync slice `comp-competitive-doc-sync` reopens **D-02** (NCSI Partial), **C-
 |----|-----|------------|---------------|-----------------|------------|--------|
 | C-01 | NGB CSV v1 (`exportStateRoster`) | Done | — | `ngbExportLaunch.test.ts` | QA-206 | Done |
 | C-02 | Federation Phase 2 — format adapters | Done | `closure/fed-phase2` | `npm test -- src/lib/director/__tests__/ngbExportLaunch.test.ts` | QA-206 | Done |
-| C-03 | Federation Phase 3 — sync jobs | Agent | `competitive/comp-federation-phase3` | `ngbExportLaunch.test.ts` | QA-223 | Agent |
+| C-03 | Federation Phase 3 — sync jobs | Done | `competitive/comp-federation-phase3` | `ngbExportLaunch.test.ts` | QA-223 | Done |
 | C-04 | Federation Phase 4 — API per body | Partial | — | none | QA-505 | Partial |
 | C-05 | State roster export demo packet for acquirer | Done | — | `ngbExportLaunch.test.ts` | QA-206 | Done |
 
@@ -90,8 +90,8 @@ Doc-sync slice `comp-competitive-doc-sync` reopens **D-02** (NCSI Partial), **C-
 |----|-----|------------|---------------|-----------------|------------|--------|
 | D-01 | Checkr embed + webhook lifecycle completeness | Done | `closure/checkr-webhooks` | `node --test functions/__tests__/complianceCheckr.guard.test.js` | QA-204 | Done |
 | D-02 | NCSI vendor parity (vs Checkr) | Partial | — | none | QA-504 | Partial |
-| D-03 | Live stream URL embed MVP | Agent | `competitive/comp-streaming-schedule` | `liveStreamLaunch.test.ts` | QA-224 | Agent |
-| D-04 | Live stream match-day / schedule wiring | Agent | `competitive/comp-streaming-schedule` | `liveStreamLaunch.test.ts` | QA-224 | Agent |
+| D-03 | Live stream URL embed MVP | Done | `competitive/comp-streaming-schedule` | `liveStreamLaunch.test.ts` | QA-224 | Done |
+| D-04 | Live stream match-day / schedule wiring | Done | `competitive/comp-streaming-schedule` | `liveStreamLaunch.test.ts` | QA-224 | Done |
 | D-05 | Weather lock Open-Meteo + NWS | Done | — | `epic54WeatherLock.test.ts` | none | Done |
 | D-06 | TOMORROW_IO optional enrich — stale doc strings | Done | `closure/fcm-broadcast` | `npm test -- src/lib/services/__tests__/commsSprint48.test.ts` | none | Done |
 | D-07 | FCM parent push prefs | Done | — | `epic55MessagingAudit.test.ts` | QA-210 | Done |
@@ -106,7 +106,7 @@ Doc-sync slice `comp-competitive-doc-sync` reopens **D-02** (NCSI Partial), **C-
 |----|-----|------------|---------------|-----------------|------------|--------|
 | E-01 | Single-elim bracket (4/8/16/32) | Done | — | `p2TournamentBracket.test.ts` | QA-203 | Done |
 | E-02 | Tournament seeding UX polish | Done | `closure/tournament-p2` | `p2TournamentBracket.test.ts` | QA-203 | Done |
-| E-03 | Double-elimination bracket | Agent | `competitive/comp-tournament-brackets` | `p2TournamentBracket.test.ts` | QA-222 | Agent |
+| E-03 | Double-elimination bracket | Done | `competitive/comp-tournament-brackets` | `p2TournamentBracket.test.ts` | QA-222 | Done |
 | E-04 | Public tournament buyer UX polish | Done | `closure/tournament-p2` | `p2TournamentBracket.test.ts` | QA-203 | Done |
 
 ---
@@ -219,13 +219,13 @@ Doc-sync slice `comp-competitive-doc-sync` reopens **D-02** (NCSI Partial), **C-
 
 | BuildOwner | Count |
 |------------|------:|
-| Done | 75 |
-| Agent | 5 |
+| Done | 80 |
+| Agent | 0 |
 | Blocked | 2 |
 | Rejected | 4 |
 | **Total rows** | **86** |
 
-**Wave 4 in progress** — 5 Agent rows on `competitive/*` slices; Blocked = avatar ingest 3C only.
+**Wave 4 closed** — orch-wave4 merged 2026-06-15; owner QA next on `qa_launch_2026`.
 
 *(Sections A–M + R-01–R-03; H-05 duplicates R-02 reject scope.)*
 

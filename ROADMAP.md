@@ -2,7 +2,7 @@
 
 **Architecture:** [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)  
 **Last updated:** 2026-06-15  
-**Current sprint:** **LAUNCH-functional-os Done** · **Wave 3B Done** · **Wave 4 competitive fleet** [`WAVE_4_MANIFEST.md`](docs/acquisition/WAVE_4_MANIFEST.md) · Owner QA [`OWNER_QA_CHECKLIST.md`](docs/vision/OWNER_QA_CHECKLIST.md) on `qa_launch_2026` · **TABLED (post-launch):** Platform visual system (Gemini research) · Flow asset generation · Avatar Studio **3.6b+**  
+**Current sprint:** **LAUNCH-functional-os Done** · **Wave 3B Done** · **Wave 4 Done** · Owner QA [`OWNER_QA_CHECKLIST.md`](docs/vision/OWNER_QA_CHECKLIST.md) on `qa_launch_2026` · **TABLED (post-launch):** Platform visual system (Gemini research) · Flow asset generation · Avatar Studio **3.6b+**  
 **Note:** **3.5l-gate** closed in error — automated regression ≠ human VA; Phase 2 visual **rejected by product owner**  
 *Phase 7 · G1–G10 Done · Sprint 2.20 Done — Player OS premium foundation locked*
 

@@ -16,7 +16,7 @@ This document is the **canonical competitive gap matrix** for launch. Agents and
 | **Beat competitors on** | Athlete development loop, SafeSport-native comms, COPPA/VPC depth, coach intent + prescriptions, RL homework, tactical drill designer, **tryout lifecycle OS (reg → eval → callback → roster)** |
 | **At parity (launch functional track)** | Guardian roster visibility, RSVP, registration-lite, roster invite, eligibility matrix, parent calendar export, push prefs, PWA install path |
 | **Behind on table stakes** | App Store / Play Store binaries (Capacitor shell shipped; R-02 rejected) · GotSport drag-drop roster · double-elim brackets · NGB Phase 3 sync (Wave 4 slices) |
-| **Launch functional gate** | **Partial** — Wave 3B deploy green; **Wave 4 competitive fleet in progress** ([`WAVE_4_MANIFEST.md`](../acquisition/WAVE_4_MANIFEST.md)); owner QA after orch-wave4 |
+| **Launch functional gate** | **Partial** — Wave 4 code merged; owner FUNCTIONAL_MVP + competitive QA (QA-221–224) remain |
 
 **Positioning:** SSTracker is **not** “another TeamSnap.” It is the **development + compliance OS** clubs adopt when they outgrow chat-and-schedule tools — but parents still expect RSVP, schedules, and payments on day one.
 
@@ -46,7 +46,7 @@ Legend: ✅ Shipped · 🟡 Partial · ❌ Gap · 🏆 SSTracker leads
 |----------|----------|--------------|----------|-----------|-----------------|
 | **Online registration + cart** | ✅ | ✅ | ✅ | ✅ LAUNCH-registration-lite | — |
 | **Integrated payments / installments** | ✅ | ✅ | ✅ | ✅ Installments UX shipped | — |
-| **Drag-drop roster from registration** | ✅ | ✅ | ✅ | 🟡 Assign panel (not drag UI) | Accept v1 |
+| **Drag-drop roster from registration** | ✅ | ✅ | ✅ | ✅ comp-roster-dragdrop | — |
 | **Guardian on roster row** | ✅ | ✅ | ✅ | ✅ LAUNCH-household-graph | — |
 | **Pre-event RSVP / availability** | ✅ Premium | ✅ | ✅ | ✅ LAUNCH-rsvp | — |
 | **Tryout lifecycle OS** | 🟡 | 🟡 | 🟡 | ✅ LAUNCH-tryouts-os | — |
@@ -61,10 +61,10 @@ Legend: ✅ Shipped · 🟡 Partial · ❌ Gap · 🏆 SSTracker leads
 | **COPPA / minor consent** | Checkbox | Membership rules | Docs | 🏆 Household + VPC ceremony + retention burn | Market |
 | **SafeSport minor DM policy** | 🟡 | 🟡 | 🟡 | 🏆 Enforced in rules + callables | Market |
 | **Facility / field scheduling** | 🟡 | ✅ | 🟡 | ✅ Field ops + weather lock | — |
-| **Tournaments / brackets** | ✅ | ✅ | ✅ | 🟡 Single-elim bracket panel | Accept v1 |
+| **Tournaments / brackets** | ✅ | ✅ | ✅ | ✅ Single + double-elim | — |
 | **Club website builder** | ✅ | ✅ | ✅ | ❌ **Rejected** | P3 reject |
-| **NGB / state roster export** | Some | ✅ | 🏆 38 bodies | 🟡 CSV v1 export | P3 unless soccer GTM |
-| **Live streaming** | ✅ Free | ✅ | 🟡 | 🟡 URL embed MVP | P3 CDN |
+| **NGB / state roster export** | Some | ✅ | 🏆 38 bodies | 🟡 CSV v1 + Phase 3 sync queue | P3 unless soccer GTM |
+| **Live streaming** | ✅ Free | ✅ | 🟡 | ✅ URL embed + schedule/match-day | P3 CDN limitation |
 
 ---
 

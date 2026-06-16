@@ -1,7 +1,7 @@
 # SSTracker — Traction & Launch Status
 
 **Purpose:** Factual build and quality signals for acquirer diligence — not inflated metrics.  
-**Last updated:** 2026-06-15 · Wave 3B Done · Wave 4 competitive fleet in progress
+**Last updated:** 2026-06-15 · orch-wave4 merge · Wave 3B + Wave 4 Done
 
 ---
 
@@ -33,9 +33,8 @@ Source: [`ROADMAP.md`](../../ROADMAP.md) · [`COMPETITIVE_LAUNCH_ASSESSMENT.md`]
 | Overnight P2 + check=0 + CI vitest | **Done** | Merged to dev 2026-06-13; Wave 3A closure merged 2026-06-14 |
 | Wave 3A gap closure (16 slices) | **Done** | [`PLATFORM_GAP_REGISTER.md`](./PLATFORM_GAP_REGISTER.md) — 76/86 rows Done |
 | Wave 3B deploy + smoke | **Done** | `live-deploy-dev` + `post-deploy-guards` · `npm run smoke:dev` green 2026-06-15 |
-| Wave 4 competitive parity | **In progress** | [`WAVE_4_MANIFEST.md`](./WAVE_4_MANIFEST.md) · `competitive/*` fleet |
-| LAUNCH-qa-ready | **Done** | `functional-mvp-doc-sync` — F-05/F-06/A-05 closed |
-| Owner FUNCTIONAL_MVP QA | **Pending** | Checkboxes in [`OWNER_QA_CHECKLIST.md`](../vision/OWNER_QA_CHECKLIST.md) |
+| Wave 4 competitive parity | **Done** | orch-wave4 merge — B-03, E-03, C-03, D-03, D-04 closed |
+| Owner FUNCTIONAL_MVP QA | **Pending** | Checkboxes in [`OWNER_QA_CHECKLIST.md`](../vision/OWNER_QA_CHECKLIST.md) Phase 0–4 |
 
 ---
 

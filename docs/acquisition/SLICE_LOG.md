@@ -109,3 +109,57 @@ Agents append entries below. Do not edit prior rows.
 **Branch:** `dev`  
 **Status:** Done  
 **Verify:** `npm run deploy:dev:verify` · `npm run smoke:dev` — SMOKE OK (hosting + 7 callables HTTP 401 live)
+
+## comp-competitive-doc-sync — 2026-06-15
+
+**Branch:** `competitive/comp-competitive-doc-sync` @ `ee8bc40c`  
+**Status:** Done  
+**Verify:** `npm test -- src/lib/parent/__tests__/launchWave2Complete.test.ts` · `npm run check` · `npm run build`
+
+## comp-roster-dragdrop — 2026-06-15
+
+**Branch:** `competitive/comp-roster-dragdrop` @ `5d7f693d`  
+**Status:** Done · **Gap:** B-03  
+**Verify:** `registrationLaunch.test.ts` · `registrationRosterDragDrop.test.ts` · check · build
+
+## comp-tournament-brackets — 2026-06-15
+
+**Branch:** `competitive/comp-tournament-brackets` @ `212e68ee`  
+**Status:** Done · **Gaps:** E-02, E-03, E-04  
+**Verify:** `p2TournamentBracket.test.ts` · check · build
+
+## comp-checkr-lifecycle — 2026-06-15
+
+**Branch:** `competitive/comp-checkr-lifecycle` @ `2e65c65e`  
+**Status:** Done · **Gap:** D-01 extend (D-02 stays Partial)  
+**Verify:** `complianceCheckr.guard.test.js` · check · build
+
+## comp-federation-phase3 — 2026-06-15
+
+**Branch:** `competitive/comp-federation-phase3` @ `4278300d`  
+**Status:** Done · **Gap:** C-03 (C-04 stays Partial)  
+**Verify:** `ngbExportLaunch.test.ts` · `ngbFormatAdapters.test.js` · check · build
+
+## comp-streaming-schedule — 2026-06-15
+
+**Branch:** `competitive/comp-streaming-schedule` @ `be0e2961`  
+**Status:** Done · **Gaps:** D-03, D-04  
+**Verify:** `liveStreamLaunch.test.ts` · check · build
+
+## comp-capacitor-polish — 2026-06-15
+
+**Branch:** `competitive/comp-capacitor-polish`  
+**Status:** Skipped  
+**Reason:** `nativeShellLaunch.test.ts` already green on dev baseline; no delta required (R-02 store submission remains Rejected)
+
+## gemini-ingest-2 — 2026-06-15
+
+**Slice:** gemini-ingest-2 (Wave 3C)  
+**Status:** Blocked  
+**Reason:** No owner-approved PNG #2 in `static/portrait/approved/` (JPEGs only)
+
+## gemini-ingest-3 — 2026-06-15
+
+**Slice:** gemini-ingest-3 (Wave 3C)  
+**Status:** Blocked  
+**Reason:** No owner-approved PNG #3 in `static/portrait/approved/`

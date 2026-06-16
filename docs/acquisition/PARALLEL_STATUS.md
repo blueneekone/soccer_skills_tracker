@@ -1,9 +1,9 @@
 # Parallel overnight agents — status
 
-**Last updated:** 2026-06-14 · **Poll cycle:** Wave 3A closed · **Orchestrator:** orch-wave3  
-**Overnight baseline:** merged to `dev` @ `7adb90ae` (2026-06-13)  
-**Wave 3A baseline:** merged to `dev` @ `de753d91` (2026-06-14)  
-**Next action:** Owner QA — [`OWNER_QA_CHECKLIST.md`](../vision/OWNER_QA_CHECKLIST.md) on `qa_launch_2026`
+**Last updated:** 2026-06-15 · orch-wave4 merge @ competitive/orch-wave4  
+**Poll cycle:** Wave 4 closed · **Orchestrator:** orch-wave4  
+**Wave 4 baseline:** merged to `dev` (2026-06-15)  
+**Next action:** Owner QA — [`OWNER_QA_CHECKLIST.md`](../vision/OWNER_QA_CHECKLIST.md) Phase 0–4 on `qa_launch_2026`
 
 ---
 
@@ -37,6 +37,19 @@
 | live-deploy-dev | closure/live-deploy-dev | **Done** | A-01, A-06 |
 
 **Wave 3C (blocked):** `gemini-ingest-2`, `gemini-ingest-3` — no owner PNG #2/#3
+
+## Wave 4 — competitive parity (2026-06-15)
+
+| ID | Branch | Status | Register gaps |
+|----|--------|--------|---------------|
+| comp-competitive-doc-sync | competitive/comp-competitive-doc-sync | **Done** | D-02/C-04 Partial truth |
+| comp-roster-dragdrop | competitive/comp-roster-dragdrop | **Done** | B-03 |
+| comp-tournament-brackets | competitive/comp-tournament-brackets | **Done** | E-03 |
+| comp-checkr-lifecycle | competitive/comp-checkr-lifecycle | **Done** | D-01 extend |
+| comp-federation-phase3 | competitive/comp-federation-phase3 | **Done** | C-03 |
+| comp-streaming-schedule | competitive/comp-streaming-schedule | **Done** | D-03, D-04 |
+| comp-capacitor-polish | competitive/comp-capacitor-polish | **Skipped** | nativeShellLaunch tests green on dev |
+| orch-wave4 | competitive/orch-wave4 | **Done** | merge + register sync |
 
 ---
 
