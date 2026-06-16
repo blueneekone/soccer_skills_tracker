@@ -2,12 +2,15 @@
 	import type { BracketMatch, TournamentBracket } from '$lib/types/tournamentEvent.js';
 	import {
 		BRACKET_TEAM_SIZES,
+		DOUBLE_ELIM_MIN_TEAMS,
 		advanceWinner,
 		bracketHasStarted,
 		defaultTeams,
 		firstRoundPairings,
+		generateDoubleEliminationBracket,
 		generateSingleEliminationBracket,
 		matchesByRound,
+		matchesForSide,
 		moveTeamInList,
 		reseedTeams,
 		roundLabel,
@@ -16,6 +19,7 @@
 		shuffleTeamList,
 		teamNameMap,
 	} from '$lib/tournament/tournamentBracket.js';
+	import type { BracketFormat, BracketSide } from '$lib/types/tournamentEvent.js';
 
 	interface Props {
 		bracket: TournamentBracket | null;
@@ -26,6 +30,7 @@
 	let { bracket = null, readonly = false, onchange }: Props = $props();
 
 	let teamSize = $state<4 | 8 | 16 | 32>(8);
+	let bracketFormat = $state<BracketFormat>('single_elimination');
 	let draftTeams = $state<{ id: string; name: string }[]>([]);
 	let scoreDrafts = $state<Record<string, { home: string; away: string }>>({});
 
@@ -46,8 +51,33 @@
 				)
 			: [],
 	);
+	const isDoubleElim = $derived(bracket?.format === 'double_elimination');
+
+	function buildBracketFromTeams(teams: ReturnType<typeof reseedTeams>) {
+		if (bracketFormat === 'double_elimination') {
+			return generateDoubleEliminationBracket(teams);
+		}
+		return generateSingleEliminationBracket(teams);
+	}
+
+	function sideRoundGroups(side: BracketSide) {
+		if (!bracket) return [];
+		const sideMatches = matchesForSide(bracket, side);
+		const maxRound = sideMatches.reduce((max, m) => Math.max(max, m.round), 0);
+		const grouped: BracketMatch[][] = [];
+		for (let round = 0; round <= maxRound; round++) {
+			const roundMatches = sideMatches
+				.filter((m) => m.round === round)
+				.sort((a, b) => a.slot - b.slot);
+			if (roundMatches.length) grouped.push(roundMatches);
+		}
+		return grouped;
+	}
+
 	const champion = $derived(
-		bracket?.matches.find((m) => m.round === totalRounds - 1 && m.slot === 0)?.winnerId ?? null,
+		bracket?.matches.find((m) => m.side === 'grand_final' && m.winnerId)?.winnerId ??
+			bracket?.matches.find((m) => m.round === totalRounds - 1 && m.slot === 0)?.winnerId ??
+			null,
 	);
 
 	$effect(() => {
@@ -78,7 +108,7 @@
 					name: draftTeams[i]?.name.trim() || t.name,
 				})),
 			);
-			emit(generateSingleEliminationBracket(teams));
+			emit(buildBracketFromTeams(teams));
 		}
 	}
 
@@ -91,7 +121,7 @@
 					name: draftTeams[i]?.name.trim() || t.name,
 				})),
 			);
-			emit(generateSingleEliminationBracket(teams));
+			emit(buildBracketFromTeams(teams));
 		}
 	}
 
@@ -107,7 +137,7 @@
 			name: t.name.trim() || `Team ${i + 1}`,
 			seed: i + 1,
 		}));
-		emit(generateSingleEliminationBracket(teams));
+		emit(buildBracketFromTeams(teams));
 	}
 
 	function clearBracket() {
@@ -175,9 +205,9 @@
 			<h2 class="panel-title">Tournament Bracket</h2>
 			<p class="panel-subtitle">
 				{#if readonly}
-					Live single-elimination results
+					{isDoubleElim ? 'Double-elimination results' : 'Live single-elimination results'}
 				{:else}
-					Seed teams and advance winners through the bracket
+					Seed teams and advance winners — single or double elimination
 				{/if}
 			</p>
 		</div>
@@ -189,6 +219,23 @@
 	{#if !readonly && !bracketHasStarted(bracket)}
 		<div class="setup-block">
 			<div class="setup-row">
+				<label class="field-label" for="bracket-format">Format</label>
+				<select
+					id="bracket-format"
+					class="field-input field-select"
+					bind:value={bracketFormat}
+					onchange={() => {
+						if (bracketFormat === 'double_elimination' && teamSize < DOUBLE_ELIM_MIN_TEAMS) {
+							syncTeamSize(8);
+						}
+					}}
+				>
+					<option value="single_elimination">Single elimination</option>
+					<option value="double_elimination">Double elimination (8+ teams)</option>
+				</select>
+			</div>
+
+			<div class="setup-row">
 				<label class="field-label" for="bracket-size">Bracket size</label>
 				<select
 					id="bracket-size"
@@ -197,7 +244,9 @@
 					onchange={(e) => syncTeamSize(Number(e.currentTarget.value) as 4 | 8 | 16 | 32)}
 				>
 					{#each BRACKET_TEAM_SIZES as size}
-						<option value={size}>{size} teams</option>
+						<option value={size} disabled={bracketFormat === 'double_elimination' && size < DOUBLE_ELIM_MIN_TEAMS}>
+							{size} teams
+						</option>
 					{/each}
 				</select>
 			</div>
@@ -259,6 +308,9 @@
 			<button type="button" class="btn-generate" onclick={generateBracket}>Generate bracket</button>
 		</div>
 	{:else if bracket}
+		{#if isDoubleElim}
+			<p class="format-badge">Double elimination · minimum {DOUBLE_ELIM_MIN_TEAMS} teams</p>
+		{/if}
 		{#if champion}
 			<div class="champion-banner">
 				<span class="champion-kicker">Champion</span>
@@ -267,6 +319,42 @@
 		{/if}
 
 		<div class="bracket-scroll" role="region" aria-label="Tournament bracket">
+			{#if isDoubleElim}
+				{#each [
+					{ side: 'winners' as BracketSide, title: 'Winners bracket' },
+					{ side: 'losers' as BracketSide, title: 'Losers bracket' },
+					{ side: 'grand_final' as BracketSide, title: 'Grand final' },
+				] as section (section.side)}
+					{@const sectionRounds = sideRoundGroups(section.side)}
+					{#if sectionRounds.length > 0}
+						<div class="bracket-side-block">
+							<h3 class="bracket-side-title">{section.title}</h3>
+							<div class="bracket-tree" style:--rounds={sectionRounds.length}>
+								{#each sectionRounds as roundMatches, roundIdx}
+									<div class="bracket-round">
+										<h3 class="round-label">{roundLabel(roundIdx, sectionRounds.length)}</h3>
+										<div class="round-matches">
+											{#each roundMatches as match (match.id)}
+												<article class="match-card">
+													<div class="match-meta">
+														<span class={statusClass(match.status)}>{match.status}</span>
+													</div>
+													<div class="team-slot">
+														<span class="team-name">{teamLabel(match.homeTeamId)}</span>
+													</div>
+													<div class="team-slot">
+														<span class="team-name">{teamLabel(match.awayTeamId)}</span>
+													</div>
+												</article>
+											{/each}
+										</div>
+									</div>
+								{/each}
+							</div>
+						</div>
+					{/if}
+				{/each}
+			{:else}
 			<div class="bracket-tree" style:--rounds={totalRounds}>
 				{#each rounds as roundMatches, roundIdx}
 					<div class="bracket-round">
@@ -339,6 +427,7 @@
 					</div>
 				{/each}
 			</div>
+			{/if}
 		</div>
 	{:else}
 		<div class="empty-bracket">No bracket configured for this event.</div>
@@ -371,6 +460,26 @@
 		margin: 0.25rem 0 0;
 		font-size: 0.82rem;
 		color: var(--vanguard-text-muted, #94a3b8);
+	}
+
+	.format-badge {
+		margin: 0;
+		font-size: 0.78rem;
+		font-weight: 700;
+		letter-spacing: 0.06em;
+		text-transform: uppercase;
+		color: #fbbf24;
+	}
+
+	.bracket-side-block {
+		margin-bottom: 1.25rem;
+	}
+
+	.bracket-side-title {
+		margin: 0 0 0.5rem;
+		font-size: 0.9rem;
+		font-weight: 700;
+		color: #e2e8f0;
 	}
 
 	.setup-block {

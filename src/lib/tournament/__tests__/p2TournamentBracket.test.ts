@@ -9,8 +9,11 @@ import {
 	bracketHasStarted,
 	bracketSeedOrder,
 	defaultTeams,
+	expectedDoubleElimMatchCount,
 	firstRoundPairings,
+	generateDoubleEliminationBracket,
 	generateSingleEliminationBracket,
+	matchesForSide,
 	moveTeamInList,
 	reseedTeams,
 	roundLabel,
@@ -69,6 +72,20 @@ describe('P2 tournament bracket — pure logic', () => {
 		expect(bracketHasStarted(null)).toBe(false);
 		expect(bracketHasStarted(generateSingleEliminationBracket(defaultTeams(4)))).toBe(true);
 	});
+
+	it('generates double-elimination bracket for 8 teams with losers + grand final', () => {
+		const bracket = generateDoubleEliminationBracket(defaultTeams(8));
+		expect(bracket.format).toBe('double_elimination');
+		expect(bracket.teamSize).toBe(8);
+		expect(bracket.matches).toHaveLength(expectedDoubleElimMatchCount(8));
+		expect(matchesForSide(bracket, 'winners')).toHaveLength(7);
+		expect(matchesForSide(bracket, 'losers')).toHaveLength(6);
+		expect(matchesForSide(bracket, 'grand_final')).toHaveLength(1);
+	});
+
+	it('rejects double-elimination below 8 teams', () => {
+		expect(() => generateDoubleEliminationBracket(defaultTeams(4))).toThrow(/8/);
+	});
 });
 
 describe('P2 tournament bracket — director + buyer wiring', () => {
@@ -97,6 +114,8 @@ describe('P2 tournament bracket — director + buyer wiring', () => {
 		expect(src).toMatch(/Shuffle seeds/);
 		expect(src).toMatch(/pairing-preview/);
 		expect(src).toMatch(/moveTeam/);
+		expect(src).toMatch(/double_elimination/);
+		expect(src).toMatch(/bracketFormat/);
 	});
 
 	it('tournamentEvent types embed optional bracket on event doc', () => {
@@ -104,6 +123,7 @@ describe('P2 tournament bracket — director + buyer wiring', () => {
 		expect(src).toMatch(/bracket\?:\s*TournamentBracket/);
 		expect(src).toMatch(/interface TournamentBracket/);
 		expect(src).toMatch(/single_elimination/);
+		expect(src).toMatch(/double_elimination/);
 	});
 });
 
@@ -120,5 +140,6 @@ describe('P2 tournament bracket — commerce handlers', () => {
 		expect(src).toMatch(/function validateBracket/);
 		expect(src).toMatch(/BRACKET_TEAM_SIZES/);
 		expect(src).toMatch(/single_elimination/);
+		expect(src).toMatch(/double_elimination/);
 	});
 });

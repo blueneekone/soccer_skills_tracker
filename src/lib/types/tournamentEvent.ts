@@ -141,7 +141,8 @@ export interface HotelRebateSummary {
 
 // ── Tournament bracket (P2) ───────────────────────────────────────────────
 
-export type BracketFormat = 'single_elimination';
+export type BracketFormat = 'single_elimination' | 'double_elimination';
+export type BracketSide = 'winners' | 'losers' | 'grand_final';
 export type BracketMatchStatus = 'pending' | 'live' | 'final';
 export type BracketTeamSize = 4 | 8 | 16 | 32;
 
@@ -152,13 +153,15 @@ export interface BracketTeam {
 	seed?: number;
 }
 
-/** One node in a single-elimination tree. */
+/** One node in a single- or double-elimination tree. */
 export interface BracketMatch {
 	id: string;
-	/** 0 = opening round; increases toward the final. */
+	/** 0 = opening round; increases toward the final within each side. */
 	round: number;
 	/** Position within the round (0-based, left-to-right). */
 	slot: number;
+	/** Winners / losers / grand_final — omitted on legacy single-elim rows. */
+	side?: BracketSide;
 	homeTeamId: string | null;
 	awayTeamId: string | null;
 	homeScore?: number | null;
