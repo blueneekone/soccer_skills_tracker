@@ -2,9 +2,17 @@
 
 **Canonical manual testing** for product owner sign-off. Automated gates run via agents/CI — owner confirms pass and executes human-only steps below.
 
-**Environment:** `sports-skill-tracker-dev` · **URL:** https://sstracker.app  
+**Environment:** `sports-skill-tracker-dev`  
+**Primary QA URLs:** [https://sports-skill-tracker-dev.web.app](https://sports-skill-tracker-dev.web.app) (preferred if custom domain SSL fails) · [https://sstracker.app](https://sstracker.app) (custom domain — may SSL-fail on some clients)  
 **Tenant:** club `qa_launch_2026` · team `qa_launch_2026_ppc`  
 **Provision:** `node scripts/dev-tenant-reset.mjs --provision`
+
+**Accounts:** `ecwaechtler@gmail.com` (super_admin) · `ecwaechtler+parent@gmail.com` · `ecwaechtler+coach@gmail.com` · operative via household
+
+**Session rules:**
+
+- **Sign out or use incognito between persona switches** — stale auth cookies cause false failures.
+- **Do not start Phase 5 (Player) until Phase 3 VPC (QA-132) passes** — minors cannot reach Player OS until household waiver + VPC complete.
 
 **Prerequisite:** Do not start manual QA until automated gates are green:
 
@@ -14,7 +22,7 @@ npm run deploy:dev:verify
 npm run smoke:dev
 ```
 
-Cross-reference: [`PLATFORM_GAP_REGISTER.md`](../acquisition/PLATFORM_GAP_REGISTER.md) `ManualQaId` column · [`FUNCTIONAL_MVP.md`](./FUNCTIONAL_MVP.md)
+Cross-reference: [`PLATFORM_GAP_REGISTER.md`](../acquisition/PLATFORM_GAP_REGISTER.md) `ManualQaId` column · [`FUNCTIONAL_MVP.md`](./FUNCTIONAL_MVP.md) · [`DEMO_SCRIPT.md`](../acquisition/DEMO_SCRIPT.md) (exec cut order)
 
 > **Supersedes phased pair-program flow:** [`QA_DEV_PERSONA_VERIFICATION.md`](../QA_DEV_PERSONA_VERIFICATION.md) — use this checklist for sign-off; prior doc retained for historical phase notes.
 
@@ -22,150 +30,201 @@ Cross-reference: [`PLATFORM_GAP_REGISTER.md`](../acquisition/PLATFORM_GAP_REGIST
 
 ## Phase 0 — Automated gates (agent/CI runs; owner confirms pass)
 
-- [ ] **QA-000** `npm run check` exits 0
-- [ ] **QA-000b** `npm run deploy:dev:verify` green
-- [ ] **QA-000c** `npm run smoke:dev` green (post-deploy; hosting + callable probes)
-- [ ] **QA-000d** CI green on latest `dev` push (`.github/workflows/ci.yml`)
+**Gate:** Do not proceed until all four commands pass on latest `dev` deploy.
+
+- [x] **QA-000** `npm run check` exits 0 — gap register G-01
+- [x] **QA-000b** `npm run deploy:dev:verify` green — gap register A-06
+- [x] **QA-000c** `npm run smoke:dev` green (post-deploy; hosting + callable probes) — gap register M-06
+- [x] **QA-000d** CI green on latest `dev` push (`.github/workflows/ci.yml`) — gap register A-04
 
 ---
 
-## Phase 1 — VPC golden path & persona functional MVP
+## Phase 1 — Site access & environment
 
-Accounts: `ecwaechtler@gmail.com` (super_admin) · `ecwaechtler+parent@gmail.com` · `ecwaechtler+coach@gmail.com` · operative via household.
+**Gate:** Do not proceed until hosting loads, auth works, legal pages render, and tenant provision succeeds.
 
-### Player OS
-
-| ID | Persona | URL | Steps | Expected | Automated pre-check |
-|----|---------|-----|-------|----------|-------------------|
-| QA-101 | Player | `/player/dashboard` | Sign in post-VPC child | HQ loads identity, missions rail, telemetry | `personaFunctionalMvp.test.ts` |
-| QA-102 | Player | `/player/workout` | Free log workout | XP/streak updates on HQ after log | `coachMissionFlow.test.ts` |
-| QA-103 | Player | `/player/workout` | 3×25 reps, bilateral **off** | 75 reps to `logTrainingSession` | — |
-| QA-104 | Player | `/player/workout` | 1×10 reps, bilateral **on** | 20 reps (10×2) | — |
-| QA-105 | Player | `/player/workout` | 30 min + RPE 5, time-only prescription | Session logs; rep count 0 OK | — |
-| QA-106 | Player | `/player/dashboard` | View mission rail | Coach-assigned bounty visible | — |
-| QA-107 | Player | `/player/dashboard` → Train | Accept intent → Start session | Train **locked by coach**; notes editable only | `coachMissionFlow.test.ts` |
-| QA-108 | Player | `/player/workout` | Free log (no mission) | Duration max **120 min** | — |
-| QA-109 | Player | `/player/armory` | SYNC IDENTITY | Default portrait or initials OK | — |
-| QA-110 | Player | `/player/armory` | Album/set bonus path | 3.4 collectible path still works | — |
-| QA-111 | Player | `/player/settings`, billing gates | Attempt gated routes pre/post VPC | VPC/billing gates correct | `epic51CoppaSignup.test.ts` |
-| QA-112 | Player | `/player/tracker` | Open from shell nav | Tracker route reachable | `personaFunctionalMvp.test.ts` |
-
-### Parent OS
-
-| ID | Persona | URL | Steps | Expected | Automated pre-check |
-|----|---------|-----|-------|----------|-------------------|
-| QA-121 | Parent | `/parent/household` | Sign in → waiver | Household + linked operatives | `launchP0Fixes.test.ts` |
-| QA-122 | Parent | `/parent/vpc` | VPC ceremony per child | Child training routes unlock | `epic51CoppaSignup.test.ts` |
-| QA-123 | Parent | `/parent/log-workout` | Co-op log | Counts toward child progress | — |
-| QA-124 | Parent | `/parent/dashboard` | Bounty terminal | Visible/functional | — |
-| QA-125 | Parent | `/parent/dashboard` | Car Ride debrief | Surfaces when fixture pending | — |
-
-**VPC golden path (ordered):**
-
-- [ ] **QA-130** Admin bootstrap — super_admin confirms `qa_launch_2026` club/team/users
-- [ ] **QA-131** Parent sign-in → passkey → household waiver on `/parent/household`
-- [ ] **QA-132** VPC on `/parent/vpc` — auto-finalizes `vpcStatus`, `consent_records`
-- [ ] **QA-133** Child operative login → Train/HQ (no `/vpc-pending` block)
-- [ ] **QA-134** Coach assigns bounty → appears on player HQ → child trains
-
-### Coach OS
-
-| ID | Persona | URL | Steps | Expected | Automated pre-check |
-|----|---------|-----|-------|----------|-------------------|
-| QA-141 | Coach | `/coach` | Sign in cleared coach | Squad/roster loads | — |
-| QA-142 | Coach | `/coach/forge` | Deploy intent/bounty | Appears on player HQ | `intentModule.test.ts` |
-| QA-143 | Coach | `/coach/forge` | Sub-drill picker | Team + club drills (not global only) | `personaFunctionalMvp.test.ts` |
-| QA-144 | Coach | `/coach/drills` | Spatial designer save | Persists to `teams/{teamId}/drills` | — |
-| QA-145 | Coach | `/coach/match-day` | Open match-day | Roster from `player_lookup`; empty state OK | — |
-| QA-146 | Coach | `/coach/logistics` | Compose announcement | Parents receive (Epic 4.1) | `commsSprint41.test.ts` |
-
-### Cross-persona & RL
-
-| ID | Persona | URL | Steps | Expected | Automated pre-check |
-|----|---------|-----|-------|----------|-------------------|
-| QA-151 | Coach → Player | HQ handoff | Coach bounty → player mission | 6k path works | `personaFunctionalMvp.test.ts` |
-| QA-152 | Parent → Player | Co-op log | Parent logs for child | XP path updates | — |
-| QA-153 | Coach → Player | `/messages` | Coach→minor DM attempt | Blocked (SafeSport) | `commsSprint42.test.ts` |
-| QA-154 | Player | `/player/dashboard` | Adaptive homework band | Visible (heuristic OK at `abPercent: 0`) | `playerRlFunctional.test.ts` |
-| QA-155 | Super admin | `/admin/rl-policy` | Optional: `abPercent > 0` smoke | Policy pill + `rl_transitions` (launch default skips) | — |
-
-### Coach clearance (Phase 1 extension)
-
-| ID | Persona | URL | Steps | Expected |
-|----|---------|-----|-------|----------|
-| QA-161 | Coach | `/compliance` | Uncleared coach sign-in | Redirect to compliance SIEM |
-| QA-162 | Director | `/director/compliance` | Clearance matrix | Loads once; audit log below |
-| QA-163 | Coach | `/coach` | Post-clearance | Lands on coach HQ |
+- [ ] **QA-010** Hosting reachable — `/login` loads on active QA URL (web.app OK if sstracker.app SSL fails)
+- [ ] **QA-011** Auth — magic link + Google sign-in for parent account
+- [ ] **QA-012** Legal pages — `/privacy` (and terms if routed) load
+- [ ] **QA-013** Provision — `node scripts/dev-tenant-reset.mjs --provision` succeeds
 
 ---
 
-## Phase 2 — P2 overnight features (manual eyes)
+## Phase 2 — Admin bootstrap
 
-- [ ] **QA-201** Director registration assign panel — paid registrant → team assign (`RegistrationRosterAssignPanel`)
-- [ ] **QA-202** Parent installments UI — `/parent/payments` schedule + partial status
-- [ ] **QA-203** Tournament bracket — director seed/score; public read-only bracket on published event
-- [ ] **QA-204** Checkr embed — coach clearance iframe loads; webhook path documented
-- [ ] **QA-205** Player tracker nav — bottom rail + enterprise shell parity
-- [ ] **QA-206** Federation CSV export — director/registrar `exportStateRoster` download
-- [ ] **QA-207** Live stream embed — schedule URL → parent watch (teen external-link fallback)
+**Gate:** Do not proceed until super_admin confirms QA tenant club/team/users exist.
+
+- [ ] **QA-130** Admin bootstrap — super_admin confirms `qa_launch_2026` club/team/users provisioned
+
+---
+
+## Phase 3 — Parent onboarding & VPC (UNLOCK GATE — blocks all player QA)
+
+**Gate:** Do not proceed to Phase 5 (Player) until **QA-132** passes and **QA-133** confirms child can reach player routes without `/vpc-pending`.
+
+Order strictly (matches [`FUNCTIONAL_MVP.md`](./FUNCTIONAL_MVP.md) VPC golden path § and [`DEMO_SCRIPT.md`](../acquisition/DEMO_SCRIPT.md) exec cut steps 1–2):
+
+- [ ] **QA-131** Parent sign-in → passkey (if RP origin matches) → `/parent/household` — gap register A-03
+- [ ] **QA-121** Household + linked operatives + waiver on `/parent/household` — `parentSignCoppaWaiver` / `households.coppaSigned` — gap register F-02 · pre-check: `launchP0Fixes.test.ts`
+- [ ] **QA-122** VPC ceremony `/parent/vpc` per child — gap register F-02 · pre-check: `epic51CoppaSignup.test.ts`
+- [ ] **QA-132** VPC auto-finalizes `vpcStatus`, `consent_records` (no director approval step) — gap register F-02
+- [ ] **QA-133** Child operative login — no `/vpc-pending` block; can reach player routes — gap register F-02
+- [ ] **QA-111** Training routes **blocked before** VPC and **unlocked after** — `/player/settings`, billing gates — gap register F-01 · pre-check: `epic51CoppaSignup.test.ts`
+
+---
+
+## Phase 4 — Coach clearance (before coach HQ if testing fresh uncleared coach)
+
+**Gate:** Do not proceed to coach HQ demo until clearance path verified (skip if coach already cleared on tenant).
+
+- [ ] **QA-161** Uncleared coach sign-in → `/compliance` redirect — gap register F-03
+- [ ] **QA-204** Checkr embed loads; webhook path documented — gap register D-01 · pre-check: `complianceCheckr.guard.test.js`
+- [ ] **QA-162** Director compliance matrix + audit log on `/director/compliance` — gap register F-03
+- [ ] **QA-163** Cleared coach lands on `/coach` — gap register F-03
+
+---
+
+## Phase 5 — Coach → Player development loop (core acquisition demo)
+
+**Gate:** Do not start this phase until Phase 3 **QA-132** passes. Sign out / incognito when switching coach → player.
+
+Order (matches [`DEMO_SCRIPT.md`](../acquisition/DEMO_SCRIPT.md) exec cut steps 3–4):
+
+- [ ] **QA-141** Coach HQ `/coach` — squad/roster loads — gap register F-03
+- [ ] **QA-142** Forge deploy intent/bounty on `/coach/forge` — appears on player HQ — gap register F-03 · pre-check: `intentModule.test.ts`
+- [ ] **QA-143** Sub-drill picker — team + club drills (not global only) — gap register F-03 · pre-check: `personaFunctionalMvp.test.ts`
+- [ ] **QA-144** Spatial designer save on `/coach/drills` — persists to `teams/{teamId}/drills` — gap register F-03 (optional same session)
+- [ ] **QA-134** Coach bounty → player HQ mission rail — gap register F-02
+- [ ] **QA-106** Mission rail visible on `/player/dashboard` — gap register F-01
+- [ ] **QA-101** Player HQ loads post-VPC — identity, missions rail, telemetry — gap register F-01 · pre-check: `personaFunctionalMvp.test.ts`
+- [ ] **QA-107** Accept intent → Train **locked by coach**; notes editable only — gap register K-03 · pre-check: `coachMissionFlow.test.ts`
+- [ ] **QA-102** Free log workout on `/player/workout` — XP/streak updates on HQ — gap register F-01 · pre-check: `coachMissionFlow.test.ts`
+- [ ] **QA-103** Workout smoke — 3×25 reps, bilateral **off** → 75 reps to `logTrainingSession`
+- [ ] **QA-104** Workout smoke — 1×10 reps, bilateral **on** → 20 reps (10×2)
+- [ ] **QA-105** Workout smoke — 30 min + RPE 5, time-only prescription — session logs; rep count 0 OK
+- [ ] **QA-108** Free log (no mission) — duration max **120 min**
+- [ ] **QA-151** Coach → Player HQ handoff — coach bounty → player mission 6k path — gap register F-04 · pre-check: `personaFunctionalMvp.test.ts`
+- [ ] **QA-154** Adaptive homework band on `/player/dashboard` — visible (heuristic OK at `abPercent: 0`) — gap register F-04 · pre-check: `playerRlFunctional.test.ts`
+
+---
+
+## Phase 6 — Parent table-stakes parity
+
+**Gate:** Do not proceed until Phase 5 core loop passes (coach bounty → player XP).
+
+- [ ] **QA-123** Co-op log on `/parent/log-workout` — counts toward child progress — gap register F-02
+- [ ] **QA-124** Dashboard bounty terminal on `/parent/dashboard` — visible/functional — gap register F-02
+- [ ] **QA-125** Car Ride debrief on `/parent/dashboard` — surfaces when fixture pending — gap register F-02
+- [ ] **QA-202** Parent installments `/parent/payments` — schedule + partial status — gap register B-01, B-05 · pre-check: `paymentInstallments.test.ts`
+- [ ] **QA-210** FCM push prefs + director broadcast (device) — gap register D-07, D-08, D-09, H-03 · pre-check: `commsSprint49.test.ts`
+- [ ] **QA-152** Parent co-op → child XP path — gap register F-04
+
+---
+
+## Phase 7 — Comms & SafeSport
+
+**Gate:** Do not proceed until Phase 5 player loop verified.
+
+- [ ] **QA-146** Coach logistics announcement on `/coach/logistics` — parents receive — gap register F-03 · pre-check: `commsSprint41.test.ts`
+- [ ] **QA-153** Coach → minor DM blocked on `/messages` — SafeSport — gap register F-04 · pre-check: `commsSprint42.test.ts`
+
+### Exec cut verification (DEMO_SCRIPT steps 1–6 — checklist only; steps live in phases above)
+
+- [ ] **QA-401** Exec cut step 1 — Parent household (Phase 3: QA-121)
+- [ ] **QA-402** Exec cut step 2 — VPC ceremony (Phase 3: QA-122, QA-132)
+- [ ] **QA-403** Exec cut step 3 — Coach intent deploy (Phase 5: QA-142)
+- [ ] **QA-404** Exec cut step 4 — Player Train + XP (Phase 5: QA-107, QA-102–105)
+- [ ] **QA-405** Exec cut step 5 — Parent dashboard parity (Phase 6: QA-124–125)
+- [ ] **QA-406** Exec cut step 6 — Messages SafeSport (above)
+
+---
+
+## Phase 8 — Director / club ops (competitive + sell diligence)
+
+**Gate:** Do not proceed until Phase 5–7 functional paths pass.
+
+- [ ] **QA-201** Director registration assign panel — paid registrant → team assign — gap register B-02 · pre-check: `registrationLaunch.test.ts`
+- [ ] **QA-221** Drag-drop roster — GotSport-style paid registrant onto team slot — gap register B-03 · pre-check: `registrationRosterDragDrop.test.ts`
+- [ ] **QA-202** Cross-ref payments if not done in Phase 6 — `/parent/payments` — gap register B-01
+- [ ] **QA-203** Tournament bracket — director seed/score; public read-only bracket — gap register E-01, E-02, E-04 · pre-check: `p2TournamentBracket.test.ts`
+- [ ] **QA-222** Double-elim public marketing bracket — gap register E-03 · pre-check: `p2TournamentBracket.test.ts`
+- [ ] **QA-206** Federation CSV export — director/registrar `exportStateRoster` download — gap register C-01, C-02, C-05 · pre-check: `ngbExportLaunch.test.ts`
+- [ ] **QA-223** Federation sync status panel — last sync time + pending/failed badge — gap register C-03 · pre-check: `ngbExportLaunch.test.ts`
+- [ ] **QA-224** Live stream on schedule/match-day — coach sets `liveStreamUrl`; parent/player watch link — gap register D-03, D-04 · pre-check: `liveStreamLaunch.test.ts`
+- [ ] **QA-207** Live stream embed fallback — teen external link when embed blocked — gap register D-03 · pre-check: `liveStreamLaunch.test.ts`
+- [ ] **QA-145** Coach match-day roster on `/coach/match-day` — roster from `player_lookup`; empty state OK — gap register F-03
+- [ ] **QA-225** Eligibility matrix — director configure + enforce on registration
+- [ ] **QA-226** Public tryout flow — register → RSVP narrative if provisioned (`/tryouts/{programId}`)
+- [ ] **QA-227** Public registration — `/register/{clubId}` or club landing CTA
+- [ ] **QA-228** Director VPC read-only audit queue — `VpcApprovalQueue` / `consent_records`; no approve action required
+- [ ] **QA-229** End-to-end paid registration → assign/drag to roster
+
+---
+
+## Phase 9 — Player depth (after core loop)
+
+**Gate:** Do not proceed until Phase 5 core loop passes.
+
+- [ ] **QA-109** Armory SYNC IDENTITY on `/player/armory` — default portrait or initials OK — gap register I-01
+- [ ] **QA-110** Armory album/set bonus path — 3.4 collectible path still works
+- [ ] **QA-112** Tracker nav — `/player/tracker` reachable from shell — gap register F-01 · pre-check: `personaFunctionalMvp.test.ts`
+- [ ] **QA-205** Tracker shell parity — bottom rail + enterprise shell — gap register F-01
+- [ ] **QA-155** Optional RL policy `/admin/rl-policy` — `abPercent > 0` smoke — gap register K-02 · **waivable:** heuristic only at launch (`abPercent: 0`)
+
+---
+
+## Phase 10 — Acquisition & install surfaces
+
+**Gate:** Do not proceed until Phase 5–8 sell-critical paths pass or are waived with reason.
+
 - [ ] **QA-208** `/acquisition` marketing landing — CTA + footer links
-- [ ] **QA-209** Capacitor shell — `npm run native:prepare`; WebView loads sstracker.app (simulator optional)
-- [ ] **QA-210** FCM push — parent grants notification permission; director broadcast receives push (device)
-- [ ] **QA-221** Director drag-drop roster — paid registrant dragged onto team roster slot (GotSport-style; `comp-roster-dragdrop`)
-- [ ] **QA-222** Tournament public bracket — director seed order + double-elim; buyer read-only bracket on marketing event page
-- [ ] **QA-223** Federation sync status — director `StateRosterExportPanel` shows last sync time + pending/failed badge
-- [ ] **QA-224** Live stream on schedule/match-day — coach sets `liveStreamUrl` on event; parent/player prominent watch link
+- [ ] **QA-209** Capacitor shell — `npm run native:prepare`; WebView loads active QA URL — gap register H-01, H-04 · pre-check: `nativeShellLaunch.test.ts`
+- [ ] **QA-401–405** Exec cut walkthrough — subset of phases above; checklist only (see Phase 7 subsection; no duplicate steps)
+- [ ] **QA-230** PWA install prompt — Android `beforeinstallprompt` or iOS Add to Home Screen
 
 ---
 
-## Phase 3 — Player OS visual VA (if register lists open 6f/6j items)
+## Phase 11 — Player OS visual VA (waivable for functional sale)
 
-Screenshot / must-feel sign-off on https://sstracker.app at **1280px** and **390px**:
+**Gate:** Required only if claiming premium visual OS; **waivable if selling functional OS**.
 
-- [ ] **QA-301** Armory hologram dossier (6f) — holo frame + bust well; no broken PNG stack
-- [ ] **QA-302** Armory accent canon — `#00d4ff` / qa-strap per mandates
-- [ ] **QA-303** HQ void ≥40% / matte ≤35% (6j rubric)
-- [ ] **QA-304** Stats investigation workspace — telemetry band (no nav tile chrome)
-- [ ] **QA-305** Train diegetic sliders — `pw-loadbar` vs native range
-- [ ] **QA-306** OperativeLoadoutStudio — Swal replaced with diegetic overlay
-- [ ] **QA-307** PlayerShell — no generic `.bento-card` chrome injection on Player routes
-- [ ] **QA-308** Full VA matrix — [`PLAYER_OS_VISUAL_ACCEPTANCE.md`](./PLAYER_OS_VISUAL_ACCEPTANCE.md) rows owner signs
+Screenshot / must-feel sign-off on active QA URL at **1280px** and **390px**:
 
----
+- [ ] **QA-301** Armory hologram dossier (6f) — holo frame + bust well; no broken PNG stack — gap register J-01
+- [ ] **QA-302** Armory accent canon — `#00d4ff` / qa-strap per mandates — gap register J-08
+- [ ] **QA-303** HQ void ≥40% / matte ≤35% (6j rubric) — gap register J-06
+- [ ] **QA-304** Stats investigation workspace — telemetry band (no nav tile chrome) — gap register J-07
+- [ ] **QA-305** Train diegetic sliders — `pw-loadbar` vs native range — gap register J-09
+- [ ] **QA-306** OperativeLoadoutStudio — Swal replaced with diegetic overlay — gap register J-03
+- [ ] **QA-307** PlayerShell — no generic `.bento-card` chrome injection on Player routes — gap register J-10
+- [ ] **QA-308** Full VA matrix — [`PLAYER_OS_VISUAL_ACCEPTANCE.md`](./PLAYER_OS_VISUAL_ACCEPTANCE.md) rows owner signs — gap register J-04
 
-## Phase 4 — Acquisition smoke (demo script)
-
-Walk [`DEMO_SCRIPT.md`](../acquisition/DEMO_SCRIPT.md) — owner records video separately; checklist is pass/fail per step.
-
-- [ ] **QA-401** Exec cut step 1 — Parent household
-- [ ] **QA-402** Exec cut step 2 — VPC ceremony
-- [ ] **QA-403** Exec cut step 3 — Coach intent deploy
-- [ ] **QA-404** Exec cut step 4 — Player Train + XP
-- [ ] **QA-405** Exec cut step 5 — Parent dashboard parity
-- [ ] **QA-406** Exec cut step 6 — Messages SafeSport gate
+> **Note:** Waivable if selling functional OS; required for premium visual claim.
 
 ---
 
-## Phase 5 — Owner-only diligence (not agent build)
+## Phase 12 — Owner diligence (not agent build)
 
-- [ ] **QA-501** Legal / IP review (independent acquirer diligence)
-- [ ] **QA-502** Demo video recorded from DEMO_SCRIPT
-- [ ] **QA-503** TRACTION / PROSPECTUS / ONE_PAGER refreshed post Wave 3 merge
-- [ ] **QA-504** NCSI vendor parity documented (acquirer swap) — no build unless reopened
-- [ ] **QA-505** Federation Phase 4 API credentials — acquirer GTM decision
-- [ ] **QA-506** Holo VA bust variants — [`AVATAR_MANIFEST.md`](../acquisition/AVATAR_MANIFEST.md)
-- [ ] **QA-507** Platform visual system (Gemini research) — read-only; sign waiver if deferring
+**Gate:** Agent build complete; acquirer / legal review only.
+
+- [ ] **QA-501** Legal / IP review (independent acquirer diligence) — gap register M-03
+- [ ] **QA-502** Demo video recorded from [`DEMO_SCRIPT.md`](../acquisition/DEMO_SCRIPT.md) — gap register M-02
+- [ ] **QA-503** TRACTION / PROSPECTUS / ONE_PAGER refreshed post Wave 3 merge — gap register M-04, L-04
+- [ ] **QA-504** NCSI vendor parity documented (acquirer swap) — **Partial** per [`NOTABLE_GAPS.md`](../acquisition/NOTABLE_GAPS.md) (Checkr lifecycle complete; NCSI iframe = acquirer vendor swap) — gap register D-02 · no build unless reopened
+- [ ] **QA-505** Federation Phase 4 API credentials — **Partial** per [`NOTABLE_GAPS.md`](../acquisition/NOTABLE_GAPS.md) (CSV v1 + Phase 3 sync shipped; 38-body API = acquirer GTM decision) — gap register C-04
+- [ ] **QA-506** Holo VA bust variants — **Blocked** (post-launch busts) — [`AVATAR_MANIFEST.md`](../acquisition/AVATAR_MANIFEST.md) · gap register I-02, I-03
+- [ ] **QA-507** Platform visual system (Gemini research) — read-only; sign waiver if deferring — gap register J-05
 
 ---
 
 ## Sign-off
 
-| Field | Value |
-|-------|-------|
-| Date | |
-| Git commit SHA | |
-| Deploy record | [`DEPLOY_RECORD.json`](../acquisition/DEPLOY_RECORD.json) |
-| All QA-xxx checked or waived | |
+| Field                        | Value                                                     |
+| ---------------------------- | --------------------------------------------------------- |
+| Date                         |                                                           |
+| Git commit SHA               |                                                           |
+| Deploy record                | [`DEPLOY_RECORD.json`](../acquisition/DEPLOY_RECORD.json) |
+| All QA-xxx checked or waived |                                                           |
 
 **Waived items (reason required):**
 
