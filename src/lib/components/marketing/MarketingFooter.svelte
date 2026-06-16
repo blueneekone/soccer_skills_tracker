@@ -3,7 +3,7 @@
 		<!-- Brand block -->
 		<div class="mf-brand">
 			<svg class="mf-brand__hex" viewBox="0 0 28 32" fill="none" aria-hidden="true">
-				<polygon points="14,1 27,8 27,24 14,31 1,24 1,8" stroke="#14b8a6" stroke-width="1.5" fill="rgba(20, 184, 166,0.05)"/>
+				<polygon points="14,1 27,8 27,24 14,31 1,24 1,8" stroke="#fbbf24" stroke-width="1.5" fill="rgba(251, 191, 36, 0.05)"/>
 			</svg>
 			<div>
 				<p class="mf-brand__name">SSTRACKER</p>
@@ -26,12 +26,11 @@
 				<a href="/terms" class="mf-link">Terms of Service</a>
 			</div>
 			<div class="mf-col">
-				<h4 class="mf-col__title">PLATFORM STATUS</h4>
-				<div class="mf-status">
-					<span class="mf-status__dot" aria-hidden="true"></span>
-					<span class="mf-status__label">All systems operational</span>
-				</div>
-				<p class="mf-uptime">99.98% uptime · 30 days</p>
+				<h4 class="mf-col__title">LAUNCH STATUS</h4>
+				<p class="mf-status__label">
+					Pre-commercial · functional OS on dev QA — owner acceptance pending
+				</p>
+				<a href="/login" class="mf-link mf-link--accent">Sign in to QA tenant →</a>
 			</div>
 		</div>
 	</div>
@@ -44,8 +43,8 @@
 
 <style>
 	.mf-root {
-		border-top: 1px solid rgb(30 41 59);
-		background: rgb(2 6 23);
+		border-top: 1px solid #334155;
+		background: #020202;
 		font-family: 'Geist Mono', ui-monospace, monospace;
 	}
 	.mf-inner {
@@ -70,7 +69,7 @@
 		height: 28px;
 		flex-shrink: 0;
 		margin-top: 2px;
-		filter: drop-shadow(0 0 4px rgba(20, 184, 166, 0.4));
+		filter: drop-shadow(0 0 4px rgba(251, 191, 36, 0.35));
 	}
 	.mf-brand__name {
 		margin: 0;
@@ -117,33 +116,20 @@
 		display: flex;
 		align-items: center;
 	}
-	.mf-link:hover { color: rgba(20, 184, 166, 0.7); }
+	.mf-link:hover { color: rgba(251, 191, 36, 0.85); }
+	.mf-link--accent {
+		color: rgba(251, 191, 36, 0.65);
+		margin-top: 0.35rem;
+	}
 
 	/* Status */
-	.mf-status {
-		display: flex;
-		align-items: center;
-		gap: 0.4rem;
-	}
-	.mf-status__dot {
-		width: 6px;
-		height: 6px;
-		border-radius: 50%;
-		background: #22c55e;
-		box-shadow: 0 0 6px rgba(34, 197, 94, 0.7);
-		animation: mf-pulse 2s ease-in-out infinite;
-		flex-shrink: 0;
-	}
 	.mf-status__label {
-		font-size: 0.52rem;
-		color: rgba(34, 197, 94, 0.7);
-		letter-spacing: 0.04em;
-	}
-	.mf-uptime {
 		margin: 0;
-		font-size: 0.45rem;
-		color: rgba(255, 255, 255, 0.18);
-		letter-spacing: 0.06em;
+		font-size: 0.52rem;
+		color: rgba(148, 163, 184, 0.85);
+		letter-spacing: 0.04em;
+		line-height: 1.6;
+		max-width: 220px;
 	}
 
 	/* Bottom bar */
@@ -167,12 +153,7 @@
 	.mf-stack {
 		margin: 0;
 		font-size: 0.45rem;
-		color: rgba(20, 184, 166, 0.25);
+		color: rgba(148, 163, 184, 0.35);
 		letter-spacing: 0.08em;
-	}
-
-	@keyframes mf-pulse {
-		0%, 100% { opacity: 1; }
-		50% { opacity: 0.5; }
 	}
 </style>

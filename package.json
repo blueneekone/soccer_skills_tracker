@@ -10,6 +10,7 @@
     "check:file-budget": "node scripts/check-file-budget.mjs",
     "prebuild": "node scripts/check-no-phosphor.mjs && node scripts/check-file-budget.mjs",
     "build": "vite build",
+    "build:acquisition-pdfs": "node scripts/build-acquisition-pdfs.mjs",
     "preview": "vite preview",
     "check": "svelte-check --tsconfig ./jsconfig.json --threshold error",
     "test": "vitest run",

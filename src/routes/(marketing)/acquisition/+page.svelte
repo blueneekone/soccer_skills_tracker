@@ -6,6 +6,11 @@
 		ACQ_HIGHLIGHTS,
 		ACQ_LIMITATIONS,
 		ACQ_CONTACT_EMAIL,
+		ACQ_PDF_EXECUTIVE_BRIEF,
+		ACQ_PDF_PROSPECTUS,
+		ACQ_TRACTION_STRIP,
+		ACQ_WAVE4_WINS,
+		ACQ_DATA_ROOM_LINKS,
 		MOAT_PILLARS,
 		WIN_MESSAGE,
 	} from '$lib/components/marketing/acquisition/acquisitionContent.js';
@@ -29,11 +34,49 @@
 		<p class="acq-eyebrow">{ACQ_BADGE}</p>
 		<h1 class="acq-h1">{ACQ_HEADLINE}</h1>
 		<p class="acq-lede">{ACQ_SUBHEAD}</p>
+		<div class="acq-hero__actions">
+			<a class="tw-vanguard-btn-primary" href={ACQ_PDF_EXECUTIVE_BRIEF} download>
+				Download executive brief (PDF)
+			</a>
+			<a class="acq-btn-secondary" href={ACQ_PDF_PROSPECTUS} download>
+				Download full prospectus (PDF)
+			</a>
+			<a
+				class="acq-cta__ghost"
+				href="mailto:{ACQ_CONTACT_EMAIL}?subject=SSTracker%20acquisition%20inquiry"
+			>
+				Contact acquisition →
+			</a>
+		</div>
 	</header>
 
 	<blockquote class="acq-win">
 		<p>{WIN_MESSAGE}</p>
 	</blockquote>
+
+	<section class="acq-section" aria-labelledby="acq-traction-heading">
+		<h2 id="acq-traction-heading" class="acq-h2">Launch status (factual)</h2>
+		<div class="acq-traction">
+			{#each ACQ_TRACTION_STRIP as row (row.label)}
+				<div class="acq-traction__row">
+					<span class="acq-traction__label">{row.label}</span>
+					<span class="acq-traction__value">{row.value}</span>
+				</div>
+			{/each}
+		</div>
+	</section>
+
+	<section class="acq-section" aria-labelledby="acq-wave4-heading">
+		<h2 id="acq-wave4-heading" class="acq-h2">Wave 4 competitive wins</h2>
+		<ul class="acq-list">
+			{#each ACQ_WAVE4_WINS as win (win.id)}
+				<li class="acq-list__item">
+					<strong>{win.title}</strong>
+					<span>{win.body}</span>
+				</li>
+			{/each}
+		</ul>
+	</section>
 
 	<section class="acq-section" aria-labelledby="acq-moat-heading">
 		<h2 id="acq-moat-heading" class="acq-h2">Moat pillars</h2>
@@ -72,14 +115,37 @@
 		</div>
 	</section>
 
+	<section class="acq-section" aria-labelledby="acq-dataroom-heading">
+		<h2 id="acq-dataroom-heading" class="acq-h2">Full data room (repo docs)</h2>
+		<p class="acq-dataroom-lede">
+			Paths below match the diligence index — bundle for NDA zip or GitHub read-only access.
+		</p>
+		<ul class="acq-dataroom">
+			{#each ACQ_DATA_ROOM_LINKS as link (link.path)}
+				<li>
+					<code>{link.path}</code>
+					{#if link.audience}
+						<span class="acq-dataroom__audience">{link.audience}</span>
+					{/if}
+					<span class="acq-dataroom__label">{link.label}</span>
+				</li>
+			{/each}
+		</ul>
+	</section>
+
 	<footer class="acq-cta">
-		<p class="acq-cta__copy">Request the data room, demo script, and technical transfer pack.</p>
+		<p class="acq-cta__copy">Request demo access, QA tenant provisioning, or technical transfer pack.</p>
 		<div class="acq-cta__actions">
 			<a class="tw-vanguard-btn-primary" href="mailto:{ACQ_CONTACT_EMAIL}?subject=SSTracker%20acquisition%20inquiry">
 				Contact acquisition →
 			</a>
 			<a class="acq-cta__ghost" href="/">Back to landing</a>
 		</div>
+		<!-- Prerender crawl targets for PDF print routes (not primary UX) -->
+		<nav class="acq-print-crawl" aria-hidden="true" hidden>
+			<a href="/acquisition/print/executive-brief">Print executive brief</a>
+			<a href="/acquisition/print/prospectus">Print prospectus</a>
+		</nav>
 	</footer>
 </div>
 
@@ -106,7 +172,7 @@
 		font-size: 0.6875rem;
 		font-weight: 700;
 		letter-spacing: 0.22em;
-		color: var(--vanguard-text-eyebrow, #a5b4fc);
+		color: #fbbf24;
 	}
 
 	.acq-h1 {
@@ -126,10 +192,40 @@
 		color: var(--vanguard-text-2, #e2e8f0);
 	}
 
+	.acq-hero__actions {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 0.75rem;
+		margin-top: 0.5rem;
+	}
+
+	.acq-btn-secondary {
+		display: inline-flex;
+		align-items: center;
+		min-height: 40px;
+		padding: 0 1rem;
+		border: 1px solid #334155;
+		border-radius: 4px;
+		font-family: var(--font-mono);
+		font-size: 0.6875rem;
+		font-weight: 700;
+		letter-spacing: 0.08em;
+		color: #fbbf24;
+		text-decoration: none;
+		background: rgb(2 2 2 / 0.6);
+		transition: border-color 150ms ease, background 150ms ease;
+	}
+
+	.acq-btn-secondary:hover {
+		border-color: #fbbf24;
+		background: rgb(251 191 36 / 0.08);
+	}
+
 	.acq-win {
 		margin: 0;
 		padding: clamp(1.25rem, 3vw, 1.75rem);
-		border-left: 3px solid var(--vanguard-accent, #6366f1);
+		border-left: 3px solid #fbbf24;
 		background: rgb(15 23 42 / 0.45);
 		border-radius: 0 8px 8px 0;
 	}
@@ -157,6 +253,41 @@
 		color: rgb(148 163 184 / 0.85);
 	}
 
+	.acq-traction {
+		display: flex;
+		flex-direction: column;
+		gap: 0.5rem;
+		border: 1px solid #334155;
+		border-radius: 8px;
+		overflow: hidden;
+	}
+
+	.acq-traction__row {
+		display: grid;
+		grid-template-columns: minmax(140px, 34%) 1fr;
+		gap: 0.75rem;
+		padding: 0.65rem 1rem;
+		border-bottom: 1px solid rgb(51 65 85 / 0.6);
+		font-size: 0.8125rem;
+	}
+
+	.acq-traction__row:last-child {
+		border-bottom: none;
+	}
+
+	.acq-traction__label {
+		font-family: var(--font-mono);
+		font-size: 0.625rem;
+		font-weight: 700;
+		letter-spacing: 0.08em;
+		color: #fbbf24;
+	}
+
+	.acq-traction__value {
+		color: var(--vanguard-text-3, #cbd5e1);
+		line-height: 1.5;
+	}
+
 	.acq-grid {
 		display: grid;
 		grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
@@ -165,9 +296,9 @@
 
 	.acq-card {
 		padding: 1.25rem;
-		border: 1px solid rgb(51 65 85);
+		border: 1px solid #334155;
 		border-radius: 8px;
-		background: rgb(2 6 23 / 0.6);
+		background: rgb(2 2 2 / 0.6);
 	}
 
 	.acq-h3 {
@@ -218,7 +349,7 @@
 		padding: 1rem;
 		border: 1px solid rgb(51 65 85 / 0.7);
 		border-radius: 8px;
-		background: rgb(2 6 23 / 0.4);
+		background: rgb(2 2 2 / 0.4);
 	}
 
 	.acq-limit__label {
@@ -235,7 +366,7 @@
 		font-size: 0.625rem;
 		font-weight: 700;
 		letter-spacing: 0.12em;
-		color: var(--vanguard-text-eyebrow, #a5b4fc);
+		color: #fbbf24;
 	}
 
 	.acq-limit__note {
@@ -243,6 +374,48 @@
 		font-size: 0.8125rem;
 		line-height: 1.55;
 		color: var(--vanguard-text-3, #cbd5e1);
+	}
+
+	.acq-dataroom-lede {
+		margin: 0;
+		font-size: 0.875rem;
+		color: var(--vanguard-text-3, #cbd5e1);
+	}
+
+	.acq-dataroom {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+		display: flex;
+		flex-direction: column;
+		gap: 0.45rem;
+		font-size: 0.8125rem;
+	}
+
+	.acq-dataroom li {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: baseline;
+		gap: 0.5rem;
+		padding: 0.45rem 0;
+		border-bottom: 1px solid rgb(30 41 59);
+	}
+
+	.acq-dataroom code {
+		font-family: var(--font-mono);
+		font-size: 0.6875rem;
+		color: #94a3b8;
+	}
+
+	.acq-dataroom__audience {
+		font-family: var(--font-mono);
+		font-size: 0.5625rem;
+		letter-spacing: 0.1em;
+		color: #64748b;
+	}
+
+	.acq-dataroom__label {
+		color: var(--vanguard-text-2, #e2e8f0);
 	}
 
 	.acq-cta {
@@ -279,5 +452,11 @@
 
 	.acq-cta__ghost:hover {
 		color: var(--vanguard-text-1, #ffffff);
+	}
+
+	@media (max-width: 640px) {
+		.acq-traction__row {
+			grid-template-columns: 1fr;
+		}
 	}
 </style>

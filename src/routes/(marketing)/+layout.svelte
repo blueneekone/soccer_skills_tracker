@@ -3,15 +3,19 @@
 	import MarketingFooter from '$lib/components/marketing/MarketingFooter.svelte';
 	import { browser } from '$app/environment';
 	import { goto } from '$app/navigation';
+	import { page } from '$app/state';
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { applyLoginWaterfall } from '$lib/auth/loginRouting.js';
 
 	let { children } = $props();
 
+	const isPrintRoute = $derived(page.url.pathname.includes('/acquisition/print/'));
+
 	// Client-side auth redirect — if already logged in, skip marketing and go to dashboard.
 	// Runs only after hydration so it doesn't block pre-rendering.
 	$effect(() => {
 		if (!browser) return;
+		if (isPrintRoute) return;
 		if (authStore.isLoading) return;
 		if (authStore.isAuthenticated && authStore.isProfileComplete) {
 			goto(applyLoginWaterfall(authStore.role, authStore.userProfile), { replaceState: true });
@@ -34,10 +38,14 @@
 	<meta name="theme-color" content="#020617" />
 </svelte:head>
 
-<MarketingNav />
+{#if !isPrintRoute}
+	<MarketingNav />
+{/if}
 
-<main class="tw-min-h-dvh tw-bg-slate-950">
+<main class="tw-min-h-dvh" class:tw-bg-slate-950={!isPrintRoute}>
 	{@render children()}
 </main>
 
-<MarketingFooter />
+{#if !isPrintRoute}
+	<MarketingFooter />
+{/if}

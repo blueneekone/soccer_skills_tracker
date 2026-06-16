@@ -18,7 +18,14 @@ const config = {
 			// Deep-link anchors in FeatureBento (#rl-workouts, #skill-tree, etc.)
 			// target IDs on /features that will be wired in a future sprint.
 			// Warn rather than error so the marketing landing build does not block.
-			handleMissingId: 'warn'
+			handleMissingId: 'warn',
+			handleHttpError: ({ path, message }) => {
+				// Acquisition PDFs are generated post-build via npm run build:acquisition-pdfs
+				if (path.startsWith('/acquisition/sstracker-') && path.endsWith('.pdf')) {
+					return;
+				}
+				throw new Error(message);
+			},
 		}
 	},
 	preprocess: vitePreprocess()

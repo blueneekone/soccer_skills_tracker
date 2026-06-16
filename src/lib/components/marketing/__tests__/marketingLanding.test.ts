@@ -46,6 +46,10 @@ describe('LAUNCH-marketing-revamp — landing wiring', () => {
 		expect(read(MARKETING_NAV)).not.toMatch(/NEXUS COMMAND/i);
 	});
 
+	it('nav includes Acquisition link', () => {
+		expect(read(MARKETING_NAV)).toContain("href: '/acquisition'");
+	});
+
 	it('landingContent has four-way category compare including SSTracker', () => {
 		expect(COMPARE_ROWS).toHaveLength(4);
 		expect(COMPARE_ROWS.some((r) => r.id === 'sstracker')).toBe(true);

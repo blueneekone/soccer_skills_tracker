@@ -1,9 +1,8 @@
 <script lang="ts">
 	/**
-	 * Pricing page — Vanguard Command
-	 * Three tiers: Base Camp · Vanguard Pro · Enterprise
-	 * Stripe mock checkout: captures tenantId + sets subscriptionStatus in Firestore.
-	 * Pre-rendered (SSR).
+	 * Pricing page — SSTracker (pre-commercial)
+	 * Illustrative tiers — production billing not sign-off yet (see TRACTION.md).
+	 * Stripe stub checkout for QA only.
 	 */
 	import { browser } from '$app/environment';
 	import { authStore } from '$lib/stores/auth.svelte.js';
@@ -49,46 +48,45 @@
 		},
 		{
 			id: 'pro',
-			name: 'VANGUARD PRO',
-			tagline: 'Full clubs with unlimited AI analysis and recruiter access.',
+			name: 'CLUB PRO',
+			tagline: 'Full clubs — development OS + director ops (illustrative tier).',
 			price: '$299',
-			priceSub: '/ month per club',
-			accentColor: '#14b8a6',
-			badge: 'MOST POPULAR',
+			priceSub: '/ month per club · not billed in prod yet',
+			accentColor: '#fbbf24',
+			badge: 'TARGET TIER',
 			features: [
-				{ label: 'Unlimited players', highlight: true },
+				{ label: 'Unlimited players (when billing live)', highlight: true },
 				{ label: 'Everything in Base Camp' },
-				{ label: 'AI Biomechanics analysis', highlight: true },
-				{ label: 'AEGIS weather & lightning safety' },
-				{ label: 'Media Vault (EXIF-stripped)', highlight: true },
-				{ label: 'PDF roster ingestion (Gemini AI)' },
-				{ label: 'Director Mission Control' },
-				{ label: 'Scholar academic tracking' },
-				{ label: 'Priority support (< 4h)' },
+				{ label: 'Tryout lifecycle OS + registration-lite' },
+				{ label: 'Field weather lock (Open-Meteo + NWS)' },
+				{ label: 'Media pipeline stub (EXIF strip + quarantine path)', highlight: true },
+				{ label: 'Director compliance + eligibility matrix' },
+				{ label: 'Parent push + calendar parity' },
+				{ label: 'QA support — no production SLA yet' },
 			],
-			cta: 'DEPLOY YOUR CLUB',
+			cta: 'JOIN QA WAITLIST',
 			ctaHref: '/setup?tier=pro',
 			priceId: 'price_vanguard_pro',
 		},
 		{
 			id: 'enterprise',
 			name: 'ENTERPRISE',
-			tagline: 'Multi-club organisations, D1 programs, and national federations.',
+			tagline: 'Multi-club orgs and federation-scale tenants (custom).',
 			price: 'Custom',
 			priceSub: 'contact for pricing',
-			accentColor: '#f59e0b',
+			accentColor: '#334155',
 			features: [
-				{ label: 'Unlimited clubs & players', highlight: true },
-				{ label: 'Everything in Vanguard Pro' },
-				{ label: 'Recruiter Nexus + Digital Handshake', highlight: true },
-				{ label: 'Global talent feed access' },
-				{ label: 'Custom domain + white-labelling' },
-				{ label: 'SLA 99.99% uptime guarantee' },
-				{ label: 'Dedicated success engineer' },
-				{ label: 'SOC 2 audit report on request' },
+				{ label: 'Multi-club tenant isolation', highlight: true },
+				{ label: 'Everything in Club Pro' },
+				{ label: 'Cell routing + dedicated shard path' },
+				{ label: 'Federation CSV export (API Phases 2–4 roadmap)' },
+				{ label: 'Custom domain + white-labelling (planned)' },
+				{ label: 'No uptime SLA until commercial launch' },
+				{ label: 'Dedicated success engineer (post-close)' },
+				{ label: 'Security review pack on request' },
 			],
-			cta: 'CONTACT SALES',
-			ctaHref: 'mailto:sales@vanguardcommand.app',
+			cta: 'CONTACT ACQUISITION',
+			ctaHref: 'mailto:acquisition@sstracker.com',
 			priceId: 'price_enterprise',
 		},
 	];
@@ -166,17 +164,23 @@
 </script>
 
 <svelte:head>
-	<title>Pricing — Vanguard Command</title>
-	<meta name="description" content="Base Camp, Vanguard Pro, and Enterprise plans for clubs of every size. Start your 30-day free trial." />
+	<title>Pricing — SSTracker (pre-commercial)</title>
+	<meta name="description" content="Illustrative SSTracker pricing tiers. Production billing and paid pilots are not live yet — see acquisition brief for stage." />
 </svelte:head>
 
 <div class="pricing-root">
+	<div class="pricing-banner" role="status">
+		<strong>Pre-commercial.</strong> Tiers below are illustrative — no production billing path sign-off yet ($0 ARR documented).
+		Registration and Stripe callables exist for QA on dev only.
+	</div>
+
 	<!-- ── Header ────────────────────────────────────────────────────────────── -->
 	<header class="pricing-header" use:reveal>
-		<span class="pricing-eyebrow">SUBSCRIPTION TIERS</span>
-		<h1 class="pricing-h1">Choose your command tier.</h1>
+		<span class="pricing-eyebrow">ILLUSTRATIVE PRICING</span>
+		<h1 class="pricing-h1">Transaction-aligned club pricing (target).</h1>
 		<p class="pricing-sub">
-			All plans include a 30-day free trial. No credit card required. Cancel any time.
+			$0 platform fee target · fractional fee on registration payments when billing goes live.
+			QA clubs use dev tenant provisioning — not self-serve paid checkout yet.
 		</p>
 	</header>
 
@@ -248,9 +252,9 @@
 		<div class="faq__grid">
 			{#each [
 				{ q: 'Can I switch plans later?', a: 'Yes. Upgrade or downgrade at any time. Prorated billing is applied automatically.' },
-				{ q: 'How does the free trial work?', a: '30 full days of the chosen tier. No card needed. At day 30, downgrade to free or activate a subscription.' },
+				{ q: 'Is billing live?', a: 'No. Stripe registration and stub subscription callables exist for QA on sports-skill-tracker-dev. Paid pilots are post-owner QA.' },
 				{ q: 'Is COPPA compliance automatic?', a: 'Yes. The parental consent gate, PII burn protocol, and SafeSport messaging rules activate on your account automatically for any athlete under 13.' },
-				{ q: 'Do you offer academic / non-profit pricing?', a: 'Contact sales@vanguardcommand.app with proof of status. We offer 40% discount for accredited school programs.' },
+				{ q: 'Strategic acquisition?', a: 'See /acquisition for PDF briefs and data room paths. acquisition@sstracker.com for diligence.' },
 			] as item}
 				<div class="faq__item">
 					<h3 class="faq__q">{item.q}</h3>
@@ -265,8 +269,8 @@
 		<p class="pricing-cta-strip__text">
 			Not sure which tier is right for your club?
 		</p>
-		<a href="mailto:hello@vanguardcommand.app" class="pricing-cta-strip__link">
-			Talk to us → hello@vanguardcommand.app
+		<a href="/acquisition" class="pricing-cta-strip__link">
+			Acquisition brief + PDFs → /acquisition
 		</a>
 	</div>
 </div>
@@ -279,7 +283,23 @@
 		padding: 8rem 1.5rem 4rem;
 		max-width: 1180px;
 		margin: 0 auto;
-		font-family: 'JetBrains Mono', monospace;
+		font-family: 'Geist Mono', ui-monospace, monospace;
+	}
+
+	.pricing-banner {
+		margin-bottom: 2rem;
+		padding: 0.85rem 1rem;
+		border: 1px solid rgb(251 191 36 / 0.35);
+		border-radius: 6px;
+		background: rgb(251 191 36 / 0.06);
+		font-size: 0.62rem;
+		line-height: 1.65;
+		color: rgb(226 232 240 / 0.85);
+	}
+
+	.pricing-banner strong {
+		color: #fbbf24;
+		letter-spacing: 0.06em;
 	}
 
 	/* ── Header ──────────────────────────────────────────────────────────────── */
@@ -295,7 +315,7 @@
 		font-size: 0.48rem;
 		font-weight: 700;
 		letter-spacing: 0.3em;
-		color: rgba(20, 184, 166, 0.55);
+		color: rgba(251, 191, 36, 0.65);
 		margin-bottom: 1rem;
 	}
 	.pricing-h1 {
@@ -336,15 +356,15 @@
 		gap: 1.25rem;
 	}
 	.tier-card--featured {
-		border-color: rgba(20, 184, 166, 0.35);
-		background: rgba(20, 184, 166, 0.04);
-		box-shadow: 0 0 48px rgba(20, 184, 166, 0.12);
+		border-color: rgba(251, 191, 36, 0.35);
+		background: rgba(251, 191, 36, 0.04);
+		box-shadow: 0 0 48px rgba(251, 191, 36, 0.12);
 	}
 	.tier-card:hover:not(.tier-card--featured) {
 		border-color: color-mix(in srgb, var(--accent) 30%, transparent);
 	}
 	.tier-card--featured:hover {
-		box-shadow: 0 0 72px rgba(20, 184, 166, 0.22);
+		box-shadow: 0 0 72px rgba(251, 191, 36, 0.22);
 	}
 
 	/* Badge */
@@ -355,12 +375,12 @@
 		transform: translateX(-50%);
 		padding: 3px 14px;
 		border-radius: 20px;
-		background: rgba(20, 184, 166, 0.12);
-		border: 1px solid rgba(20, 184, 166, 0.45);
+		background: rgba(251, 191, 36, 0.12);
+		border: 1px solid rgba(251, 191, 36, 0.45);
 		font-size: 0.45rem;
 		font-weight: 900;
 		letter-spacing: 0.2em;
-		color: #14b8a6;
+		color: #fbbf24;
 		white-space: nowrap;
 	}
 
@@ -537,7 +557,7 @@
 		letter-spacing: 0.06em;
 		transition: color 0.15s;
 	}
-	.pricing-cta-strip__link:hover { color: #14b8a6; }
+	.pricing-cta-strip__link:hover { color: #fbbf24; }
 
 	/* ── Keyframes ───────────────────────────────────────────────────────────── */
 	@keyframes tier-dot {

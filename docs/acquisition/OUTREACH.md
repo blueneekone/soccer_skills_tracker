@@ -48,7 +48,7 @@ Wave 0–2 table stakes (RSVP, registration-lite, eligibility, parent calendar/p
 Best,  
 [Founder]
 
-Attach: [ONE_PAGER.md](./ONE_PAGER.md) (export PDF) · link to [INDEX.md](./INDEX.md)
+Attach: [ONE_PAGER.md](./ONE_PAGER.md) · PDF: https://sports-skill-tracker-dev.web.app/acquisition/sstracker-executive-brief.pdf · link to [INDEX.md](./INDEX.md) and [/acquisition](https://sstracker.app/acquisition)
 
 ---
 
@@ -77,7 +77,7 @@ Happy to walk through the VPC golden path and coach→player intent loop in one 
 Send:
 
 1. [INDEX.md](./INDEX.md) — diligence order
-2. [PROSPECTUS.md](./PROSPECTUS.md)
+2. [PROSPECTUS.md](./PROSPECTUS.md) — or PDF: https://sports-skill-tracker-dev.web.app/acquisition/sstracker-prospectus.pdf
 3. [DEMO_SCRIPT.md](./DEMO_SCRIPT.md) + QA tenant provision instructions
 4. [`ARCHITECTURE.md`](../ARCHITECTURE.md)
 5. [SECURITY.md](./SECURITY.md)
@@ -113,9 +113,11 @@ More: [FAQ.md](./FAQ.md)
 
 ## Materials export
 
-For PDF data room zip, include:
+For PDF data room zip, include hosted PDFs plus repo docs:
 
 ```
+https://sports-skill-tracker-dev.web.app/acquisition/sstracker-executive-brief.pdf
+https://sports-skill-tracker-dev.web.app/acquisition/sstracker-prospectus.pdf
 docs/acquisition/INDEX.md
 docs/acquisition/ONE_PAGER.md
 docs/acquisition/PROSPECTUS.md

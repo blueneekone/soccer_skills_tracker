@@ -10,6 +10,7 @@
 	const links = [
 		{ href: '/features', label: 'Features' },
 		{ href: '/pricing', label: 'Pricing' },
+		{ href: '/acquisition', label: 'Acquisition' },
 		{ href: '/privacy', label: 'Privacy' },
 	];
 
@@ -26,8 +27,8 @@
 		<!-- Brand -->
 		<a href="/" class="mn-brand" aria-label="SSTracker home">
 			<svg class="mn-brand__hex" viewBox="0 0 28 32" fill="none" aria-hidden="true">
-				<polygon points="14,1 27,8 27,24 14,31 1,24 1,8" stroke="var(--vanguard-cyan)" stroke-width="1.5" fill="color-mix(in srgb, var(--vanguard-cyan) 6%, transparent)"/>
-				<polygon points="14,7 22,12 22,20 14,25 6,20 6,12" stroke="var(--vanguard-cyan)" stroke-width="0.7" fill="color-mix(in srgb, var(--vanguard-cyan) 4%, transparent)" opacity="0.6"/>
+				<polygon points="14,1 27,8 27,24 14,31 1,24 1,8" stroke="#fbbf24" stroke-width="1.5" fill="color-mix(in srgb, #fbbf24 6%, transparent)"/>
+				<polygon points="14,7 22,12 22,20 14,25 6,20 6,12" stroke="#334155" stroke-width="0.7" fill="color-mix(in srgb, #334155 20%, transparent)" opacity="0.8"/>
 			</svg>
 			<span class="mn-brand__text">SSTRACKER<span class="mn-brand__sub">CLUB OS</span></span>
 		</a>
@@ -124,7 +125,7 @@
 	.mn-brand__hex {
 		width: 28px;
 		height: 32px;
-		filter: drop-shadow(0 0 6px color-mix(in srgb, var(--vanguard-cyan) 50%, transparent));
+		filter: drop-shadow(0 0 6px color-mix(in srgb, #fbbf24 40%, transparent));
 	}
 	.mn-brand__text {
 		font-family: 'JetBrains Mono', monospace;
@@ -139,7 +140,7 @@
 		font-size: 0.45rem;
 		font-weight: 500;
 		letter-spacing: 0.25em;
-		color: color-mix(in srgb, var(--vanguard-cyan) 60%, transparent);
+		color: color-mix(in srgb, #94a3b8 80%, transparent);
 		margin-top: 1px;
 	}
 
@@ -165,7 +166,7 @@
 		color: rgba(255, 255, 255, 0.9);
 		background: rgba(255, 255, 255, 0.05);
 	}
-	.mn-link--active { color: var(--vanguard-cyan); }
+	.mn-link--active { color: #fbbf24; }
 
 	/* CTAs */
 	.mn-ctas {

@@ -7,6 +7,17 @@
 
 ---
 
+## Downloadable PDFs (hosted)
+
+| Document | URL |
+|----------|-----|
+| Executive brief | https://sports-skill-tracker-dev.web.app/acquisition/sstracker-executive-brief.pdf · https://sstracker.app/acquisition/sstracker-executive-brief.pdf |
+| Full prospectus | https://sports-skill-tracker-dev.web.app/acquisition/sstracker-prospectus.pdf · https://sstracker.app/acquisition/sstracker-prospectus.pdf |
+
+Regenerate: `npm run build:acquisition-pdfs` (requires Playwright Chromium)
+
+---
+
 ## Start here
 
 | Document | Audience | Purpose |
@@ -80,3 +91,4 @@ These live outside `docs/acquisition/` and are **source of truth** for engineeri
 - **QA tenant:** club `qa_launch_2026`, team `qa_launch_2026_ppc` — provision via `node scripts/dev-tenant-reset.mjs --provision`
 - **Firebase projects:** dev `sports-skill-tracker-dev` · prod alias `soccer-skills-tracker` (see [`.firebaserc`](../../.firebaserc))
 - **Regression guard:** `npm test -- src/lib/gamification/__tests__/personaFunctionalMvp.test.ts`
+- **Acquisition PDFs:** `/acquisition/sstracker-executive-brief.pdf` · `/acquisition/sstracker-prospectus.pdf` — build via `npm run build:acquisition-pdfs`
