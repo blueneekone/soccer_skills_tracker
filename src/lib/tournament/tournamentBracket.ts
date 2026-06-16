@@ -4,12 +4,14 @@
  */
 import type {
 	BracketMatch,
+	BracketSide,
 	BracketTeam,
 	BracketTeamSize,
 	TournamentBracket,
 } from '$lib/types/tournamentEvent.js';
 
 export const BRACKET_TEAM_SIZES: BracketTeamSize[] = [4, 8, 16, 32];
+export const DOUBLE_ELIM_MIN_TEAMS = 8;
 
 export function isPowerOfTwo(n: number): boolean {
 	return Number.isInteger(n) && n > 0 && (n & (n - 1)) === 0;
@@ -126,6 +128,79 @@ export function generateSingleEliminationBracket(teams: BracketTeam[]): Tourname
 		teams,
 		matches,
 	};
+}
+
+/** Losers-bracket round slot counts for double-elim (8-team → [2,2,1,1]). */
+export function losersRoundSlots(teamCount: number): number[] {
+	const total = teamCount - 2;
+	const rounds: number[] = [];
+	let remaining = total;
+	let slots = Math.max(1, teamCount / 4);
+	while (remaining > 0) {
+		const take = Math.min(remaining, Math.max(1, Math.floor(slots)));
+		rounds.push(take);
+		remaining -= take;
+		slots = Math.max(1, Math.floor(slots / 2));
+	}
+	return rounds;
+}
+
+export function generateLosersBracketMatches(teamCount: number): BracketMatch[] {
+	const matches: BracketMatch[] = [];
+	const roundSlots = losersRoundSlots(teamCount);
+	for (let round = 0; round < roundSlots.length; round++) {
+		for (let slot = 0; slot < roundSlots[round]; slot++) {
+			matches.push({
+				id: `lb_r${round}_s${slot}`,
+				round,
+				slot,
+				side: 'losers',
+				homeTeamId: null,
+				awayTeamId: null,
+				status: 'pending',
+			});
+		}
+	}
+	return matches;
+}
+
+/** Double-elimination bracket — minimum 8 teams (2×teamSize − 2 matches incl. grand final). */
+export function generateDoubleEliminationBracket(teams: BracketTeam[]): TournamentBracket {
+	const teamCount = teams.length;
+	if (teamCount < DOUBLE_ELIM_MIN_TEAMS || !isPowerOfTwo(teamCount) || teamCount > 32) {
+		throw new Error('Double elimination requires a power-of-2 team count between 8 and 32.');
+	}
+
+	const winners = generateSingleEliminationBracket(teams);
+	const winnersMatches = winners.matches.map((m) => ({ ...m, side: 'winners' as BracketSide }));
+	const losersMatches = generateLosersBracketMatches(teamCount);
+	const grandFinal: BracketMatch = {
+		id: 'gf_s0',
+		round: 0,
+		slot: 0,
+		side: 'grand_final',
+		homeTeamId: null,
+		awayTeamId: null,
+		status: 'pending',
+	};
+
+	return {
+		format: 'double_elimination',
+		teamSize: teamCount as BracketTeamSize,
+		teams,
+		matches: [...winnersMatches, ...losersMatches, grandFinal],
+	};
+}
+
+export function expectedDoubleElimMatchCount(teamCount: number): number {
+	return teamCount * 2 - 2;
+}
+
+export function matchesForSide(
+	bracket: TournamentBracket,
+	side: BracketSide,
+): BracketMatch[] {
+	return bracket.matches.filter((m) => (m.side ?? 'winners') === side);
 }
 
 export function teamNameMap(bracket: TournamentBracket): Map<string, string> {
