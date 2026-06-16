@@ -45,3 +45,7 @@ exports.getClubEligibilityMatrix = eligibilityOps.getClubEligibilityMatrix;
 const ngbExportOps = require('./src/domains/ngbExportOps');
 exports.exportStateRoster = ngbExportOps.exportStateRoster;
 exports.listNgbExportFormats = ngbExportOps.listNgbExportFormats;
+
+const federationSyncOps = require('./src/domains/federationSyncOps');
+exports.getFederationSyncStatus = federationSyncOps.getFederationSyncStatus;
+exports.enqueueFederationSyncJob = federationSyncOps.enqueueFederationSyncJob;
