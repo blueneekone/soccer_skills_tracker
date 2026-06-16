@@ -1,7 +1,7 @@
 # Competitive Launch Assessment — SSTracker vs. Market
 
 **Authority:** Product owner launch north star · [`ROADMAP.md`](../../ROADMAP.md) · [`FUNCTIONAL_MVP.md`](FUNCTIONAL_MVP.md)  
-**Last updated:** 2026-06-14 · functional-mvp-doc-sync (F-06)  
+**Last updated:** 2026-06-15 · comp-competitive-doc-sync (Wave 4 in progress)  
 **Benchmarks:** [TeamSnap ONE](https://www.teamsnap.com/one) · [SportsEngine HQ](https://www.sportsengine.com/hq/) · [GotSport](https://home.gotsport.com/software/)  
 **Cursor rule:** [`.cursor/rules/competitive-launch-north-star.mdc`](../../.cursor/rules/competitive-launch-north-star.mdc)
 
@@ -15,8 +15,8 @@ This document is the **canonical competitive gap matrix** for launch. Agents and
 |-----------|---------|
 | **Beat competitors on** | Athlete development loop, SafeSport-native comms, COPPA/VPC depth, coach intent + prescriptions, RL homework, tactical drill designer, **tryout lifecycle OS (reg → eval → callback → roster)** |
 | **At parity (launch functional track)** | Guardian roster visibility, RSVP, registration-lite, roster invite, eligibility matrix, parent calendar export, push prefs, PWA install path |
-| **Behind on table stakes** | App Store / Play Store binaries (Capacitor shell shipped; submission deferred) |
-| **Launch functional gate** | **Partial** — code + check=0 on dev; remaining closure tracked in [`PLATFORM_GAP_REGISTER.md`](../acquisition/PLATFORM_GAP_REGISTER.md) (owner live deploy + FUNCTIONAL_MVP human QA) |
+| **Behind on table stakes** | App Store / Play Store binaries (Capacitor shell shipped; R-02 rejected) · GotSport drag-drop roster · double-elim brackets · NGB Phase 3 sync (Wave 4 slices) |
+| **Launch functional gate** | **Partial** — Wave 3B deploy green; **Wave 4 competitive fleet in progress** ([`WAVE_4_MANIFEST.md`](../acquisition/WAVE_4_MANIFEST.md)); owner QA after orch-wave4 |
 
 **Positioning:** SSTracker is **not** “another TeamSnap.” It is the **development + compliance OS** clubs adopt when they outgrow chat-and-schedule tools — but parents still expect RSVP, schedules, and payments on day one.
 

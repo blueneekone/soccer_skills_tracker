@@ -79,7 +79,7 @@ Doc-sync slice `comp-competitive-doc-sync` reopens **D-02** (NCSI Partial), **C-
 | C-01 | NGB CSV v1 (`exportStateRoster`) | Done | — | `ngbExportLaunch.test.ts` | QA-206 | Done |
 | C-02 | Federation Phase 2 — format adapters | Done | `closure/fed-phase2` | `npm test -- src/lib/director/__tests__/ngbExportLaunch.test.ts` | QA-206 | Done |
 | C-03 | Federation Phase 3 — sync jobs | Agent | `competitive/comp-federation-phase3` | `ngbExportLaunch.test.ts` | QA-223 | Agent |
-| C-04 | Federation Phase 4 — API per body | Done | — | none | QA-505 | Done |
+| C-04 | Federation Phase 4 — API per body | Partial | — | none | QA-505 | Partial |
 | C-05 | State roster export demo packet for acquirer | Done | — | `ngbExportLaunch.test.ts` | QA-206 | Done |
 
 ---
@@ -89,7 +89,7 @@ Doc-sync slice `comp-competitive-doc-sync` reopens **D-02** (NCSI Partial), **C-
 | Id | Gap | BuildOwner | Closure slice | AutomatedVerify | ManualQaId | Status |
 |----|-----|------------|---------------|-----------------|------------|--------|
 | D-01 | Checkr embed + webhook lifecycle completeness | Done | `closure/checkr-webhooks` | `node --test functions/__tests__/complianceCheckr.guard.test.js` | QA-204 | Done |
-| D-02 | NCSI vendor parity (vs Checkr) | Done | — | none | QA-504 | Done |
+| D-02 | NCSI vendor parity (vs Checkr) | Partial | — | none | QA-504 | Partial |
 | D-03 | Live stream URL embed MVP | Agent | `competitive/comp-streaming-schedule` | `liveStreamLaunch.test.ts` | QA-224 | Agent |
 | D-04 | Live stream match-day / schedule wiring | Agent | `competitive/comp-streaming-schedule` | `liveStreamLaunch.test.ts` | QA-224 | Agent |
 | D-05 | Weather lock Open-Meteo + NWS | Done | — | `epic54WeatherLock.test.ts` | none | Done |

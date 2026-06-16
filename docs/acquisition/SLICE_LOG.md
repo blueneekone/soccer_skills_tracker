@@ -94,3 +94,18 @@ Agents append entries below. Do not edit prior rows.
 **Updated:** `launch-overnight-agents.mjs`, `OWNER_QA_CHECKLIST`, `PLATFORM_GAP_REGISTER` header, `INDEX.md`, `ROADMAP` sprint line  
 **Verify:** `npm run check` · `node scripts/launch-overnight-agents.mjs --wave 4a --dry-run` (4 agents)  
 **Note:** Owner runs `node scripts/bootstrap-competitive-branches.mjs` locally before first `--wave 4a` launch
+
+## wave3b-orchestrator-bootstrap — 2026-06-15
+
+**Slice:** wave3b-orchestrator-bootstrap (Step 0)  
+**Branch:** `dev`  
+**Status:** Done  
+**Shipped:** `git checkout dev` · `git pull origin dev` · `npm run check` · `npm run build` · `node scripts/bootstrap-competitive-branches.mjs` (8/8 competitive branches)  
+**Verify:** check 0 errors · build ok
+
+## wave3b-verify — 2026-06-15
+
+**Slice:** wave3b-verify (Step 1)  
+**Branch:** `dev`  
+**Status:** Done  
+**Verify:** `npm run deploy:dev:verify` · `npm run smoke:dev` — SMOKE OK (hosting + 7 callables HTTP 401 live)

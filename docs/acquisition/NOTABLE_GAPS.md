@@ -2,7 +2,7 @@
 
 **Purpose:** Transparent non-parity vs TeamSnap, SportsEngine, and GotSport for acquirer diligence.  
 **Authority:** [`COMPETITIVE_LAUNCH_ASSESSMENT.md`](../vision/COMPETITIVE_LAUNCH_ASSESSMENT.md) · [`.cursor/rules/competitive-launch-north-star.mdc`](../../.cursor/rules/competitive-launch-north-star.mdc)  
-**Last updated:** 2026-06-13 · post-overnight doc sync
+**Last updated:** 2026-06-15 · Wave 4 competitive fleet in progress (`comp-competitive-doc-sync`)
 
 ---
 
@@ -12,14 +12,14 @@
 |-----|--------|----------------------|-----------------|
 | Club website builder (TeamSnap/SportsEngine drag-and-drop CMS) | **DEFINITE GAP — not building** | `/club/{slug}`, `/register/{clubId}`, `/tryouts/{programId}` | P3 reject |
 | Native iOS/Android App Store binaries | **Partial — Capacitor shell shipped** | PWA + Capacitor MVP ([`NATIVE_SHELL.md`](../NATIVE_SHELL.md)); store submission = acquirer | Post-launch |
-| GotSport-grade federation API (38 bodies) | **Partial — CSV v1 shipped** | `exportStateRoster` + `FEDERATION_ROADMAP.md` Phases 2–4 | P3 unless soccer GTM |
+| GotSport-grade federation API (38 bodies) | **Partial — CSV v1 + Phase 3 sync Wave 4** | `exportStateRoster` + `FEDERATION_ROADMAP.md`; C-04 Phase 4 API remains Partial | P3 unless soccer GTM |
 | Live streaming CDN (TeamSnap-class) | **Partial — embed MVP shipped** | YouTube/Vimeo/Mux URL on `team_workouts` + match sessions | P3 |
 | Avatar PNG / character bust art | **Deferred post-launch** | One JPEG wired; `defaultPortraitV2` SVG + profile initials | Tabled |
 | Platform visual redesign (Gemini research) | **Read-only** | Functional chrome + Player OS Phase 7 cohesion | Tabled |
 | NGB / state roster export packet | **Partial — CSV v1** | Director `StateRosterExportPanel`; not 38-body API sync | Owner GTM decision |
-| Background check vendor parity (NCSI) | **Partial — Checkr polish shipped** | Checkr embed + webhooks; director panopticon; not NCSI parity | P2 accept or acquirer |
-| Tournament brackets polish | **Partial — single-elim shipped** | `TournamentBracketPanel` on `tournament_events` | P2 accept v1 |
-| Registration → drag-drop roster UX | **Partial — assign panel shipped** | `RegistrationRosterAssignPanel`; not GotSport drag UI | P2 accept v1 |
+| Background check vendor parity (NCSI) | **Partial — Checkr lifecycle shipped** | Checkr embed + webhooks + panopticon; NCSI iframe = acquirer swap (D-02 Partial) | P2 Wave 4 |
+| Tournament brackets polish | **Partial — single-elim; double-elim Wave 4** | `TournamentBracketPanel` on `tournament_events` | P2 Wave 4 |
+| Registration → drag-drop roster UX | **Partial — assign panel; drag-drop Wave 4** | `RegistrationRosterAssignPanel`; GotSport drag in `comp-roster-dragdrop` | P2 Wave 4 |
 
 ---
 
@@ -38,9 +38,9 @@ These are **product owner decisions**, not backlog oversights:
 
 | Feature | Shipped | Gap |
 |---------|---------|-----|
-| Stripe registration + installments | `createRegistrationIntent`, `paymentInstallments.ts`, `/parent/payments` | Full-season unlock on partial payment webhook follow-up |
-| Registration → roster | `assignSeasonRegistrationToRoster` CF + director assign panel | Drag-drop GotSport UX |
-| Eligibility matrix | `upsertClubEligibilityMatrix` | Director UX edge cases |
+| Stripe registration + installments | `createRegistrationIntent`, `paymentInstallments.ts`, `/parent/payments` | Webhook follow-up closed Wave 3A (`closure/payment-webhook`) |
+| Registration → roster | `assignSeasonRegistrationToRoster` CF + director assign panel | Drag-drop GotSport UX — Wave 4 `comp-roster-dragdrop` |
+| Eligibility matrix | `upsertClubEligibilityMatrix` | Director UX edge cases closed Wave 3A |
 | Push notifications | FCM + parent prefs | Store push certs require acquirer native distribution |
 | RL adaptive homework | HQ mount + callables | Launch default heuristic only (`abPercent: 0`) |
 | Field weather lock | Open-Meteo + NWS + scheduled eval | Not commercial weather SLA |
