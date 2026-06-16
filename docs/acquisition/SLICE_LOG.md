@@ -163,3 +163,19 @@ Agents append entries below. Do not edit prior rows.
 **Slice:** gemini-ingest-3 (Wave 3C)  
 **Status:** Blocked  
 **Reason:** No owner-approved PNG #3 in `static/portrait/approved/`
+
+## orch-wave4 — 2026-06-15
+
+**Branch:** `competitive/orch-wave4` @ `2f2151fd` → merged to `dev`  
+**Status:** Done  
+**Merged:** comp-competitive-doc-sync · comp-roster-dragdrop · comp-tournament-brackets · comp-checkr-lifecycle · comp-federation-phase3 · comp-streaming-schedule  
+**Doc sync:** PARALLEL_STATUS · PLATFORM_GAP_REGISTER (80 Done / 0 Agent / 2 Blocked / 4 Rejected) · TRACTION · COMPETITIVE_LAUNCH_ASSESSMENT · ROADMAP  
+**Verify:** `launchWave2Complete.test.ts` + `personaFunctionalMvp.test.ts` (81 pass) · check · build
+
+## wave4-post-deploy — 2026-06-15
+
+**Branch:** `dev` @ `2f2151fd` (+ bundle fix pending push)  
+**Status:** Blocked (live redeploy) · smoke green  
+**Deploy:** `npm run deploy:dev:smoke` failed — Firebase deploy auth (no CI token in agent env)  
+**Smoke:** `npm run smoke:dev` — SMOKE OK after `bundle-functions.cjs` includes `federationSyncOps.js`  
+**Note:** New `getFederationSyncStatus` / `enqueueFederationSyncJob` callables require owner `npm run deploy:core` before live QA
