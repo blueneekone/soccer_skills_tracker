@@ -121,20 +121,34 @@ describe('fed-phase2 — Federation format adapters (C-02)', () => {
 	});
 });
 
-describe('fed-phase2 — Federation sync stubs (C-03)', () => {
-	it('federationSyncOps documents Phase 3 stubs', () => {
+describe('fed-phase3 — Federation sync jobs (C-03)', () => {
+	it('federationSyncOps exports Phase 3 callables with job queue', () => {
 		const ops = readFileSync(
 			join(ROOT, 'functions/src/domains/federationSyncOps.js'),
 			'utf-8',
 		);
-		expect(ops).toMatch(/Phase 3/);
+		expect(ops).toMatch(/exports\.getFederationSyncStatus/);
+		expect(ops).toMatch(/exports\.enqueueFederationSyncJob/);
 		expect(ops).toMatch(/federation_sync_jobs/);
-		expect(ops).toMatch(/reconcileFederationSync/);
+		expect(ops).toMatch(/security_audit/);
+		expect(ops).toMatch(/phase:\s*3/);
 	});
 
-	it('FEDERATION_ROADMAP marks Phase 3 sync job stubs', () => {
-		const doc = readFileSync(join(ROOT, 'docs/acquisition/FEDERATION_ROADMAP.md'), 'utf-8');
-		expect(doc).toMatch(/federationSyncOps/);
-		expect(doc).toMatch(/stub/i);
+	it('functions-core wires federation sync callables', () => {
+		const idx = readFileSync(join(ROOT, 'functions-core/index.js'), 'utf-8');
+		expect(idx).toMatch(/getFederationSyncStatus/);
+		expect(idx).toMatch(/enqueueFederationSyncJob/);
+		expect(idx).toMatch(/federationSyncOps/);
+	});
+
+	it('StateRosterExportPanel shows federation sync status and queue action', () => {
+		const panel = readFileSync(
+			join(ROOT, 'src/lib/components/director/StateRosterExportPanel.svelte'),
+			'utf-8',
+		);
+		expect(panel).toMatch(/getFederationSyncStatus/);
+		expect(panel).toMatch(/enqueueFederationSyncJob/);
+		expect(panel).toMatch(/Queue federation sync/);
+		expect(panel).toMatch(/sre-panel__sync-badge/);
 	});
 });

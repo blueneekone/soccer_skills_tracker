@@ -22,9 +22,16 @@
 	let busy = $state(false);
 	let err = $state('');
 	let ok = $state('');
+	let syncStatus = $state('never_synced');
+	let syncBusy = $state(false);
+	let syncErr = $state('');
+	let syncOk = $state('');
+	let lastSyncLabel = $state('Never synced');
 
 	const exportStateRoster = httpsCallable(functions, 'exportStateRoster');
 	const listNgbExportFormats = httpsCallable(functions, 'listNgbExportFormats');
+	const getFederationSyncStatus = httpsCallable(functions, 'getFederationSyncStatus');
+	const enqueueFederationSyncJob = httpsCallable(functions, 'enqueueFederationSyncJob');
 
 	const clubTeams = $derived(
 		teamsStore.teams
@@ -45,7 +52,59 @@
 		const id = clubId.trim();
 		if (!id) return;
 		void loadFormatOptions(id);
+		void refreshSyncStatus(id);
 	});
+
+	function formatSyncTimestamp(ms: number | null): string {
+		if (!ms) return 'Never synced';
+		return new Date(ms).toLocaleString(undefined, {
+			month: 'short',
+			day: 'numeric',
+			year: 'numeric',
+			hour: 'numeric',
+			minute: '2-digit',
+		});
+	}
+
+	async function refreshSyncStatus(activeClubId: string) {
+		syncErr = '';
+		try {
+			const res = await getFederationSyncStatus({ clubId: activeClubId });
+			const data = res.data as {
+				status?: string;
+				lastSyncAt?: number | null;
+				pendingCount?: number;
+				failedCount?: number;
+			};
+			syncStatus = typeof data.status === 'string' ? data.status : 'unknown';
+			lastSyncLabel = formatSyncTimestamp(
+				typeof data.lastSyncAt === 'number' ? data.lastSyncAt : null,
+			);
+		} catch (e) {
+			syncErr = e instanceof Error ? e.message : 'Could not load federation sync status.';
+		}
+	}
+
+	async function runSyncJob() {
+		if (!clubId.trim() || syncBusy) return;
+		syncErr = '';
+		syncOk = '';
+		syncBusy = true;
+		try {
+			const res = await enqueueFederationSyncJob({ clubId: clubId.trim() });
+			const data = res.data as { status?: string; message?: string };
+			syncStatus = typeof data.status === 'string' ? data.status : 'queued';
+			syncOk =
+				typeof data.message === 'string' && data.message.trim()
+					? data.message.trim()
+					: 'Federation sync job queued.';
+			await refreshSyncStatus(clubId.trim());
+		} catch (e) {
+			syncErr = e instanceof Error ? e.message : 'Could not enqueue federation sync.';
+		} finally {
+			syncBusy = false;
+		}
+	}
 
 	async function loadFormatOptions(activeClubId: string) {
 		try {
@@ -136,6 +195,20 @@
 			state association / NGB filing. Choose a federation format adapter or a club
 			<code>export_profiles</code> mapping. Name-only roster rows without accounts are excluded.
 		</p>
+		<div class="sre-panel__sync" aria-live="polite">
+			<span class="sre-panel__sync-badge" data-status={syncStatus}>{syncStatus.replace(/_/g, ' ')}</span>
+			<span class="sre-panel__sync-meta">Last sync: {lastSyncLabel}</span>
+			<button
+				type="button"
+				class="sre-panel__sync-btn"
+				disabled={!clubId || syncBusy}
+				onclick={() => void runSyncJob()}
+			>
+				{syncBusy ? 'Queueing…' : 'Queue federation sync'}
+			</button>
+		</div>
+		{#if syncErr}<p class="sre-panel__err" role="alert">{syncErr}</p>{/if}
+		{#if syncOk}<p class="sre-panel__ok" role="status">{syncOk}</p>{/if}
 	</header>
 
 	<div class="sre-panel__controls">
@@ -209,6 +282,63 @@
 	.sre-panel__sub code {
 		font-size: 0.78rem;
 		color: #cbd5e1;
+	}
+
+	.sre-panel__sync {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.55rem;
+		align-items: center;
+		margin-top: 0.65rem;
+	}
+
+	.sre-panel__sync-badge {
+		display: inline-flex;
+		padding: 0.2rem 0.55rem;
+		border-radius: 999px;
+		font-size: 0.72rem;
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.05em;
+		border: 1px solid #334155;
+		color: #e2e8f0;
+	}
+
+	.sre-panel__sync-badge[data-status='queued'],
+	.sre-panel__sync-badge[data-status='running'] {
+		border-color: rgba(251, 191, 36, 0.45);
+		color: #fbbf24;
+	}
+
+	.sre-panel__sync-badge[data-status='failed'] {
+		border-color: rgba(248, 113, 113, 0.45);
+		color: #f87171;
+	}
+
+	.sre-panel__sync-badge[data-status='completed'] {
+		border-color: rgba(52, 211, 153, 0.45);
+		color: #34d399;
+	}
+
+	.sre-panel__sync-meta {
+		font-size: 0.78rem;
+		color: #94a3b8;
+	}
+
+	.sre-panel__sync-btn {
+		padding: 0.35rem 0.75rem;
+		border: 1px solid #334155;
+		border-radius: 8px;
+		background: #020617;
+		color: #e2e8f0;
+		font-size: 0.75rem;
+		font-weight: 700;
+		cursor: pointer;
+	}
+
+	.sre-panel__sync-btn:disabled {
+		opacity: 0.45;
+		cursor: not-allowed;
 	}
 
 	.sre-panel__controls {
