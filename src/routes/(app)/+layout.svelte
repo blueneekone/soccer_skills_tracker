@@ -29,7 +29,7 @@
 	import ConsentOverlay from '$lib/components/coppa/ConsentOverlay.svelte';
 	import ReportAnomaly from '$lib/components/alpha/ReportAnomaly.svelte';
 	import InstallPrompt from '$lib/components/pwa/InstallPrompt.svelte';
-import Icon from '$lib/components/ui/Icon.svelte';
+	import VanguardAppMark from '$lib/components/ui/VanguardAppMark.svelte';
 	import MiniPlayer from '$lib/components/media/MiniPlayer.svelte';
 	import VanguardVFX from '../../components/VanguardVFX.svelte';
 	import LoadoutUnlockCeremony from '$lib/components/player/LoadoutUnlockCeremony.svelte';
@@ -451,10 +451,10 @@ import Icon from '$lib/components/ui/Icon.svelte';
 		aria-label="Verifying your session with Firebase"
 	>
 		<div class="auth-splash__mark" aria-hidden="true">
-			<Icon name="sys.hexagon" size={48} />
+			<VanguardAppMark size={48} />
 		</div>
 		<div class="auth-splash__spinner" aria-hidden="true"></div>
-		<p class="auth-splash__label">SSTRACKER</p>
+		<p class="auth-splash__label">VANGUARD</p>
 	</div>
 {:else if maintenanceLockout}
 	<!-- Sprint 2.7: Global Kill Switch — full-screen maintenance UI. -->
@@ -528,7 +528,7 @@ import Icon from '$lib/components/ui/Icon.svelte';
 		align-items: center;
 		gap: 1.25rem;
 		min-height: 100dvh;
-		background: var(--sst-bg, #0a0a0a);
+		background: #020202;
 		color: #fafafa;
 	}
 
@@ -542,32 +542,28 @@ import Icon from '$lib/components/ui/Icon.svelte';
 		height: 4rem;
 		align-items: center;
 		justify-content: center;
-		border-radius: 1rem;
-		border: 1px solid rgba(20, 184, 166, 0.2);
-		background: linear-gradient(145deg, rgba(20, 184, 166, 0.15), rgba(168, 85, 247, 0.12));
-		box-shadow: 0 0 2rem -0.5rem rgba(20, 184, 166, 0.35);
+		clip-path: polygon(12% 0, 88% 0, 100% 12%, 100% 88%, 88% 100%, 12% 100%, 0 88%, 0 12%);
+		border: 1px solid #334155;
+		background: #05050a;
+		box-shadow: 0 0 1.5rem -0.25rem rgba(251, 191, 36, 0.18);
 		animation: authPulse 1.6s ease-in-out infinite;
-	}
-
-	.auth-splash__mark .ph {
-		font-size: 1.6rem;
-		color: #14b8a6;
 	}
 
 	.auth-splash__label {
 		margin: 0;
+		font-family: 'Geist Mono', ui-monospace, monospace;
 		font-size: 0.7rem;
-		font-weight: 800;
+		font-weight: 700;
 		letter-spacing: 0.32em;
 		text-transform: uppercase;
-		color: rgba(250, 250, 250, 0.5);
+		color: rgba(251, 191, 36, 0.55);
 	}
 
 	.auth-splash__spinner {
 		width: 2.5rem;
 		height: 2.5rem;
 		border: 3px solid rgba(250, 250, 250, 0.12);
-		border-top-color: #f0c75e;
+		border-top-color: #fbbf24;
 		border-radius: 50%;
 		animation: authSpin 0.75s linear infinite;
 	}

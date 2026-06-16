@@ -33,6 +33,7 @@ const SVG_STROKE_ALLOWLIST = [
 	'src/lib/components/player/dashboard/AttributeRadar.svelte',
 	'SkillTreeArena.svelte',
 	'VanguardPrism.svelte',
+	'VanguardAppMark.svelte',
 	'RevenueLedgerModule.svelte',
 	'FeatureBento.svelte',
 	'MiniPlayer.svelte',

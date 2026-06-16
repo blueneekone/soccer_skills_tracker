@@ -66,8 +66,8 @@ messaging.onBackgroundMessage(function (payload) {
 
 	var options = {
 		body:    body,
-		icon:    '/Images/Phoenixes_Logo_2026.png',
-		badge:   '/Images/Phoenixes_Logo_2026.png',
+		icon:    '/icons/icon-192.png',
+		badge:   '/icons/icon-192.png',
 		vibrate: VIBRATE_PATTERNS[category] || VIBRATE_PATTERNS['default'],
 		// Car Ride Home gets its own tag so it never collapses with other categories.
 		tag:     kind === 'car_ride_home' ? 'car_ride_home' : category,

@@ -44,7 +44,7 @@ const logger = require('firebase-functions/logger');
 const admin = require('firebase-admin');
 
 const REGION = 'us-east1';
-const APP_ICON = '/Images/Phoenixes_Logo_2026.png';
+const APP_ICON = '/icons/icon-192.png';
 
 const db = admin.firestore();
 
