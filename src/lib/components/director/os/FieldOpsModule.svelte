@@ -10,6 +10,7 @@
 	import { licenseEntitlementStore } from '$lib/stores/licenseEntitlement.svelte.js';
 	import { isSubscriptionReadOnly } from '$lib/auth/billing.js';
 	import { saveTeamScheduledEvent } from '$lib/stores/workouts.svelte.js';
+	import { normalizeLiveStreamUrl } from '$lib/live-stream/liveStreamEmbed.js';
 	/** Epic 17 — static vault + facility drawer (logistics map, address, routing URL). */
 	import FacilityMapVault from '$lib/components/field-ops/FacilityMapVault.svelte';
 	import DeploymentCalendar from '$lib/components/director/os/DeploymentCalendar.svelte';
@@ -162,6 +163,7 @@
 	let notifyMorning = $state(false);
 	/** Opt-in: fires a team_broadcasts entry via safeSportBroadcast after event save. Default OFF. */
 	let announceToTeam = $state(false);
+	let liveStreamUrl = $state('');
 	let booking = $state(false);
 	let conflictMsg = $state(/** @type {string | null} */ (null));
 	let dragTeamId = $state(/** @type {string | null} */ (null));
@@ -420,8 +422,10 @@
 				source: 'field_booking',
 				fieldId,
 				scheduleDate,
-				announceToTeam
+				announceToTeam,
+				liveStreamUrl: normalizeLiveStreamUrl(liveStreamUrl) ?? '',
 			});
+			liveStreamUrl = '';
 			} catch (e2) {
 				const msg2 =
 					e2 && typeof e2 === 'object' && 'message' in e2 ?
@@ -687,6 +691,15 @@
 				<label class="director-field-ops-field-label">
 					End
 					<input type="time" bind:value={endTimeInput} class="director-field-ops-control" />
+				</label>
+				<label class="director-field-ops-field-label director-field-ops-z2-form__span">
+					Live stream URL
+					<input
+						type="url"
+						class="director-field-ops-control"
+						placeholder="YouTube, Vimeo, or Mux watch link"
+						bind:value={liveStreamUrl}
+					/>
 				</label>
 				<div class="director-field-ops-z2-form__span" role="group" aria-label="Notification triggers">
 					<span class="director-field-ops-teams__label">Notification triggers</span>
