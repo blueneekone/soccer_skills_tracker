@@ -14,6 +14,8 @@
 - **Sign out or use incognito between persona switches** — stale auth cookies cause false failures.
 - **Do not start Phase 5 (Player) until Phase 3 VPC (QA-132) passes** — minors cannot reach Player OS until household waiver + VPC complete.
 
+**Owner workflow:** Log issues in each phase notes block as you go. Do not stop mid-QA to fix — batch P0/P1 items for a single agent session after Phase 8 or at sign-off.
+
 **Prerequisite:** Do not start manual QA until automated gates are green:
 
 ```bash
@@ -37,6 +39,34 @@ Cross-reference: [`PLATFORM_GAP_REGISTER.md`](../acquisition/PLATFORM_GAP_REGIST
 - [x] **QA-000c** `npm run smoke:dev` green (post-deploy; hosting + callable probes) — gap register M-06
 - [x] **QA-000d** CI green on latest `dev` push (`.github/workflows/ci.yml`) — gap register A-04
 
+### Phase 0 — Owner notes
+
+| Field | Value |
+| --- | --- |
+| Phase result | Pass / Pass with issues / Blocked / Waived |
+| Date completed | |
+| Tester/browser | |
+
+**Issues found**
+
+```
+QA-xxx: [P0|P1|P2] — what happened — expected vs actual
+```
+
+**Waivers this phase**
+
+```
+QA-xxx: reason
+```
+
+- [ ] **Continue to next phase?** Yes / No
+
+**Owner freeform**
+
+```
+
+```
+
 ---
 
 ## Phase 1 — Site access & environment
@@ -48,6 +78,34 @@ Cross-reference: [`PLATFORM_GAP_REGISTER.md`](../acquisition/PLATFORM_GAP_REGIST
 - [ ] **QA-012** Legal pages — `/privacy` (and terms if routed) load
 - [ ] **QA-013** Provision — `node scripts/dev-tenant-reset.mjs --provision` succeeds
 
+### Phase 1 — Owner notes
+
+| Field | Value |
+| --- | --- |
+| Phase result | Pass / Pass with issues / Blocked / Waived |
+| Date completed | |
+| Tester/browser | |
+
+**Issues found**
+
+```
+QA-xxx: [P0|P1|P2] — what happened — expected vs actual
+```
+
+**Waivers this phase**
+
+```
+QA-xxx: reason
+```
+
+- [ ] **Continue to next phase?** Yes / No
+
+**Owner freeform**
+
+```
+
+```
+
 ---
 
 ## Phase 2 — Admin bootstrap
@@ -55,6 +113,34 @@ Cross-reference: [`PLATFORM_GAP_REGISTER.md`](../acquisition/PLATFORM_GAP_REGIST
 **Gate:** Do not proceed until super_admin confirms QA tenant club/team/users exist.
 
 - [ ] **QA-130** Admin bootstrap — super_admin confirms `qa_launch_2026` club/team/users provisioned
+
+### Phase 2 — Owner notes
+
+| Field | Value |
+| --- | --- |
+| Phase result | Pass / Pass with issues / Blocked / Waived |
+| Date completed | |
+| Tester/browser | |
+
+**Issues found**
+
+```
+QA-xxx: [P0|P1|P2] — what happened — expected vs actual
+```
+
+**Waivers this phase**
+
+```
+QA-xxx: reason
+```
+
+- [ ] **Continue to next phase?** Yes / No
+
+**Owner freeform**
+
+```
+
+```
 
 ---
 
@@ -71,6 +157,34 @@ Order strictly (matches [`FUNCTIONAL_MVP.md`](./FUNCTIONAL_MVP.md) VPC golden pa
 - [ ] **QA-133** Child operative login — no `/vpc-pending` block; can reach player routes — gap register F-02
 - [ ] **QA-111** Training routes **blocked before** VPC and **unlocked after** — `/player/settings`, billing gates — gap register F-01 · pre-check: `epic51CoppaSignup.test.ts`
 
+### Phase 3 — Owner notes
+
+| Field | Value |
+| --- | --- |
+| Phase result | Pass / Pass with issues / Blocked / Waived |
+| Date completed | |
+| Tester/browser | |
+
+**Issues found**
+
+```
+QA-xxx: [P0|P1|P2] — what happened — expected vs actual
+```
+
+**Waivers this phase**
+
+```
+QA-xxx: reason
+```
+
+- [ ] **Continue to next phase?** Yes / No
+
+**Owner freeform**
+
+```
+
+```
+
 ---
 
 ## Phase 4 — Coach clearance (before coach HQ if testing fresh uncleared coach)
@@ -81,6 +195,34 @@ Order strictly (matches [`FUNCTIONAL_MVP.md`](./FUNCTIONAL_MVP.md) VPC golden pa
 - [ ] **QA-204** Checkr embed loads; webhook path documented — gap register D-01 · pre-check: `complianceCheckr.guard.test.js`
 - [ ] **QA-162** Director compliance matrix + audit log on `/director/compliance` — gap register F-03
 - [ ] **QA-163** Cleared coach lands on `/coach` — gap register F-03
+
+### Phase 4 — Owner notes
+
+| Field | Value |
+| --- | --- |
+| Phase result | Pass / Pass with issues / Blocked / Waived |
+| Date completed | |
+| Tester/browser | |
+
+**Issues found**
+
+```
+QA-xxx: [P0|P1|P2] — what happened — expected vs actual
+```
+
+**Waivers this phase**
+
+```
+QA-xxx: reason
+```
+
+- [ ] **Continue to next phase?** Yes / No
+
+**Owner freeform**
+
+```
+
+```
 
 ---
 
@@ -106,6 +248,34 @@ Order (matches [`DEMO_SCRIPT.md`](../acquisition/DEMO_SCRIPT.md) exec cut steps 
 - [ ] **QA-151** Coach → Player HQ handoff — coach bounty → player mission 6k path — gap register F-04 · pre-check: `personaFunctionalMvp.test.ts`
 - [ ] **QA-154** Adaptive homework band on `/player/dashboard` — visible (heuristic OK at `abPercent: 0`) — gap register F-04 · pre-check: `playerRlFunctional.test.ts`
 
+### Phase 5 — Owner notes
+
+| Field | Value |
+| --- | --- |
+| Phase result | Pass / Pass with issues / Blocked / Waived |
+| Date completed | |
+| Tester/browser | |
+
+**Issues found**
+
+```
+QA-xxx: [P0|P1|P2] — what happened — expected vs actual
+```
+
+**Waivers this phase**
+
+```
+QA-xxx: reason
+```
+
+- [ ] **Continue to next phase?** Yes / No
+
+**Owner freeform**
+
+```
+
+```
+
 ---
 
 ## Phase 6 — Parent table-stakes parity
@@ -118,6 +288,34 @@ Order (matches [`DEMO_SCRIPT.md`](../acquisition/DEMO_SCRIPT.md) exec cut steps 
 - [ ] **QA-202** Parent installments `/parent/payments` — schedule + partial status — gap register B-01, B-05 · pre-check: `paymentInstallments.test.ts`
 - [ ] **QA-210** FCM push prefs + director broadcast (device) — gap register D-07, D-08, D-09, H-03 · pre-check: `commsSprint49.test.ts`
 - [ ] **QA-152** Parent co-op → child XP path — gap register F-04
+
+### Phase 6 — Owner notes
+
+| Field | Value |
+| --- | --- |
+| Phase result | Pass / Pass with issues / Blocked / Waived |
+| Date completed | |
+| Tester/browser | |
+
+**Issues found**
+
+```
+QA-xxx: [P0|P1|P2] — what happened — expected vs actual
+```
+
+**Waivers this phase**
+
+```
+QA-xxx: reason
+```
+
+- [ ] **Continue to next phase?** Yes / No
+
+**Owner freeform**
+
+```
+
+```
 
 ---
 
@@ -136,6 +334,34 @@ Order (matches [`DEMO_SCRIPT.md`](../acquisition/DEMO_SCRIPT.md) exec cut steps 
 - [ ] **QA-404** Exec cut step 4 — Player Train + XP (Phase 5: QA-107, QA-102–105)
 - [ ] **QA-405** Exec cut step 5 — Parent dashboard parity (Phase 6: QA-124–125)
 - [ ] **QA-406** Exec cut step 6 — Messages SafeSport (above)
+
+### Phase 7 — Owner notes
+
+| Field | Value |
+| --- | --- |
+| Phase result | Pass / Pass with issues / Blocked / Waived |
+| Date completed | |
+| Tester/browser | |
+
+**Issues found**
+
+```
+QA-xxx: [P0|P1|P2] — what happened — expected vs actual
+```
+
+**Waivers this phase**
+
+```
+QA-xxx: reason
+```
+
+- [ ] **Continue to next phase?** Yes / No
+
+**Owner freeform**
+
+```
+
+```
 
 ---
 
@@ -159,6 +385,34 @@ Order (matches [`DEMO_SCRIPT.md`](../acquisition/DEMO_SCRIPT.md) exec cut steps 
 - [ ] **QA-228** Director VPC read-only audit queue — `VpcApprovalQueue` / `consent_records`; no approve action required
 - [ ] **QA-229** End-to-end paid registration → assign/drag to roster
 
+### Phase 8 — Owner notes
+
+| Field | Value |
+| --- | --- |
+| Phase result | Pass / Pass with issues / Blocked / Waived |
+| Date completed | |
+| Tester/browser | |
+
+**Issues found**
+
+```
+QA-xxx: [P0|P1|P2] — what happened — expected vs actual
+```
+
+**Waivers this phase**
+
+```
+QA-xxx: reason
+```
+
+- [ ] **Continue to next phase?** Yes / No
+
+**Owner freeform**
+
+```
+
+```
+
 ---
 
 ## Phase 9 — Player depth (after core loop)
@@ -171,6 +425,34 @@ Order (matches [`DEMO_SCRIPT.md`](../acquisition/DEMO_SCRIPT.md) exec cut steps 
 - [ ] **QA-205** Tracker shell parity — bottom rail + enterprise shell — gap register F-01
 - [ ] **QA-155** Optional RL policy `/admin/rl-policy` — `abPercent > 0` smoke — gap register K-02 · **waivable:** heuristic only at launch (`abPercent: 0`)
 
+### Phase 9 — Owner notes
+
+| Field | Value |
+| --- | --- |
+| Phase result | Pass / Pass with issues / Blocked / Waived |
+| Date completed | |
+| Tester/browser | |
+
+**Issues found**
+
+```
+QA-xxx: [P0|P1|P2] — what happened — expected vs actual
+```
+
+**Waivers this phase**
+
+```
+QA-xxx: reason
+```
+
+- [ ] **Continue to next phase?** Yes / No
+
+**Owner freeform**
+
+```
+
+```
+
 ---
 
 ## Phase 10 — Acquisition & install surfaces
@@ -181,6 +463,34 @@ Order (matches [`DEMO_SCRIPT.md`](../acquisition/DEMO_SCRIPT.md) exec cut steps 
 - [ ] **QA-209** Capacitor shell — `npm run native:prepare`; WebView loads active QA URL — gap register H-01, H-04 · pre-check: `nativeShellLaunch.test.ts`
 - [ ] **QA-401–405** Exec cut walkthrough — subset of phases above; checklist only (see Phase 7 subsection; no duplicate steps)
 - [ ] **QA-230** PWA install prompt — Android `beforeinstallprompt` or iOS Add to Home Screen
+
+### Phase 10 — Owner notes
+
+| Field | Value |
+| --- | --- |
+| Phase result | Pass / Pass with issues / Blocked / Waived |
+| Date completed | |
+| Tester/browser | |
+
+**Issues found**
+
+```
+QA-xxx: [P0|P1|P2] — what happened — expected vs actual
+```
+
+**Waivers this phase**
+
+```
+QA-xxx: reason
+```
+
+- [ ] **Continue to next phase?** Yes / No
+
+**Owner freeform**
+
+```
+
+```
 
 ---
 
@@ -201,6 +511,34 @@ Screenshot / must-feel sign-off on active QA URL at **1280px** and **390px**:
 
 > **Note:** Waivable if selling functional OS; required for premium visual claim.
 
+### Phase 11 — Owner notes
+
+| Field | Value |
+| --- | --- |
+| Phase result | Pass / Pass with issues / Blocked / Waived |
+| Date completed | |
+| Tester/browser | |
+
+**Issues found**
+
+```
+QA-xxx: [P0|P1|P2] — what happened — expected vs actual
+```
+
+**Waivers this phase**
+
+```
+QA-xxx: reason
+```
+
+- [ ] **Continue to next phase?** Yes / No
+
+**Owner freeform**
+
+```
+
+```
+
 ---
 
 ## Phase 12 — Owner diligence (not agent build)
@@ -214,6 +552,34 @@ Screenshot / must-feel sign-off on active QA URL at **1280px** and **390px**:
 - [ ] **QA-505** Federation Phase 4 API credentials — **Partial** per [`NOTABLE_GAPS.md`](../acquisition/NOTABLE_GAPS.md) (CSV v1 + Phase 3 sync shipped; 38-body API = acquirer GTM decision) — gap register C-04
 - [ ] **QA-506** Holo VA bust variants — **Blocked** (post-launch busts) — [`AVATAR_MANIFEST.md`](../acquisition/AVATAR_MANIFEST.md) · gap register I-02, I-03
 - [ ] **QA-507** Platform visual system (Gemini research) — read-only; sign waiver if deferring — gap register J-05
+
+### Phase 12 — Owner notes
+
+| Field | Value |
+| --- | --- |
+| Phase result | Pass / Pass with issues / Blocked / Waived |
+| Date completed | |
+| Tester/browser | |
+
+**Issues found**
+
+```
+QA-xxx: [P0|P1|P2] — what happened — expected vs actual
+```
+
+**Waivers this phase**
+
+```
+QA-xxx: reason
+```
+
+- [ ] **Continue to next phase?** Yes / No
+
+**Owner freeform**
+
+```
+
+```
 
 ---
 
