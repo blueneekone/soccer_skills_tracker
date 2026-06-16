@@ -106,4 +106,24 @@ describe('LAUNCH-live-stream — wiring', () => {
 		expect(loader).toMatch(/liveStreamUrl/);
 		expect(loader).toMatch(/loadHouseholdMatchStreams/);
 	});
+
+	it('director FieldOpsModule persists liveStreamUrl on field bookings', () => {
+		const mod = readFileSync(
+			join(ROOT, 'src/lib/components/director/os/FieldOpsModule.svelte'),
+			'utf8',
+		);
+		expect(mod).toMatch(/liveStreamUrl/);
+		expect(mod).toMatch(/normalizeLiveStreamUrl/);
+		expect(mod).toMatch(/Live stream URL/);
+	});
+
+	it('ParentWeekScheduleStrip shows prominent Watch live on event rows', () => {
+		const strip = readFileSync(
+			join(ROOT, 'src/lib/components/parent/ParentWeekScheduleStrip.svelte'),
+			'utf8',
+		);
+		expect(strip).toMatch(/Watch live/);
+		expect(strip).toMatch(/parseLiveStreamUrl/);
+		expect(strip).toMatch(/liveStreamUrl/);
+	});
 });

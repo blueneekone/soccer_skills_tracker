@@ -6,6 +6,7 @@
 		filterEventsThisWeek,
 		type HouseholdScheduleEvent,
 	} from '$lib/parent/loadHouseholdScheduleEvents.js';
+	import { parseLiveStreamUrl } from '$lib/live-stream/liveStreamEmbed.js';
 
 	let {
 		childEmails = [],
@@ -120,6 +121,16 @@
 					<div class="parent-week__meta">
 						<strong>{ev.name}</strong>
 						<span class="parent-week__kind">{ev.kind}</span>
+						{#if ev.liveStreamUrl && parseLiveStreamUrl(ev.liveStreamUrl)}
+							<a
+								class="parent-week__watch"
+								href={ev.liveStreamUrl}
+								target="_blank"
+								rel="noopener noreferrer"
+							>
+								Watch live
+							</a>
+						{/if}
 					</div>
 					<div class="parent-week__actions" role="group" aria-label="RSVP">
 						{#each [
@@ -225,6 +236,19 @@
 		text-transform: uppercase;
 		letter-spacing: 0.06em;
 		color: #64748b;
+	}
+
+	.parent-week__watch {
+		display: inline-flex;
+		margin-top: 0.15rem;
+		font-size: 0.72rem;
+		font-weight: 700;
+		color: #fbbf24;
+		text-decoration: none;
+	}
+
+	.parent-week__watch:hover {
+		text-decoration: underline;
 	}
 
 	.parent-week__actions {
