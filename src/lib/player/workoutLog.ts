@@ -39,7 +39,7 @@ export function validatePlayerWorkoutLog(input: {
 	selectedDrill: string | null;
 	logSubmitting: boolean;
 	role: string | null | undefined;
-	profile: { teamId?: unknown; playerName?: unknown } | null | undefined;
+	profile: { teamId?: unknown; playerName?: unknown; vpcStatus?: unknown; clubId?: unknown } | null | undefined;
 }): WorkoutLogBlock {
 	if (!input.selectedFocus || !input.selectedDrill || input.logSubmitting) {
 		return { ok: false, title: '', text: '', icon: 'info' };
@@ -52,11 +52,25 @@ export function validatePlayerWorkoutLog(input: {
 			icon: 'info',
 		};
 	}
-	if (!input.profile?.teamId || !input.profile?.playerName) {
+	const playerName =
+		typeof input.profile?.playerName === 'string' ? input.profile.playerName.trim() : '';
+	if (!playerName) {
 		return {
 			ok: false,
 			title: 'Profile incomplete',
-			text: 'Team and player name are required.',
+			text: 'Player display name is required.',
+			icon: 'warning',
+		};
+	}
+	const teamId =
+		typeof input.profile?.teamId === 'string' ? input.profile.teamId.trim() : '';
+	const vpc = input.profile?.vpcStatus;
+	const vpcOk = vpc === 'verified' || vpc === 'not_required';
+	if (!teamId && !vpcOk) {
+		return {
+			ok: false,
+			title: 'VPC required',
+			text: 'Parent VPC clearance is required before training without a team.',
 			icon: 'warning',
 		};
 	}

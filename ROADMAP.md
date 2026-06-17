@@ -1441,7 +1441,7 @@ Loadout art (3.2+) consumed by 2.12 hero identity column.
 | **LAUNCH-qa-ready** | **Partial** | Wave 2 test gate only — **not** full launch closure; see remaining backlog below | `launchWave2Complete.test.ts` |
 | **LAUNCH-qa-reset-operatives** | **Done** | QA tenant reset — `purge-operatives` on provision + `QA-PP26` in DEMO_SCRIPT / OWNER_QA | `launchP0Fixes.test.ts` · **hosting** |
 | **LAUNCH-parent-link-team** | **Done** | `parentLinkOperativeToTeam` callable + household link UI | `launchP0Fixes.test.ts` · deploy **`npm run deploy:compliance`** |
-| **LAUNCH-player-teamless-train** | **Planned** | Setup gate + `logTrainingSession` without `teamId` after VPC | `loginWorkflow.test.ts` · `workoutLog.test.ts` · deploy **`npm run deploy:core`** + **hosting** |
+| **LAUNCH-player-teamless-train** | **Done** | Setup gate + `logTrainingSession` without `teamId` after VPC | `loginWorkflow.test.ts` · `workoutLog.test.ts` · deploy **`npm run deploy:core`** + **hosting** |
 | **LAUNCH-staff-roster-transfer** | **Planned** | Staff `registrarTransferPlayer` UI; tryouts promote links existing operative | `tryoutsLaunch.test.ts` · `epic52RegistrarConsolidation.test.ts` · deploy **`npm run deploy:compliance`** + **`npm run deploy:core`** + **hosting** |
 | **LAUNCH-vpc-ux** | **Done** | Household minors skip email ConsentOverlay; in-app VPC path only | `roleDerivations.test.ts` · merged PR #13 |
 | **LAUNCH-deploy-dev** | **Done** | Full `deploy:*` + Firestore rules to `sports-skill-tracker-dev` (2026-06-13) | operator deploy log |

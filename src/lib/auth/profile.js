@@ -50,13 +50,31 @@ export function fallbackPlayerName(baseProfile, email) {
 }
 
 /**
+ * Player / operative completeness: team linked OR VPC verified for teamless training.
+ * @param {Record<string, unknown>} profile
+ */
+function isPlayerProfileComplete(profile) {
+	const isPlayer =
+		profile.role === 'player' || userDocHasPlayerRole(profile);
+	if (!isPlayer) return false;
+	const name =
+		(typeof profile.playerName === 'string' && profile.playerName.trim()) ||
+		(typeof profile.name === 'string' && profile.name.trim()) ||
+		'';
+	if (!name) return false;
+	const tid = typeof profile.teamId === 'string' ? profile.teamId.trim() : '';
+	if (tid && tid !== 'admin') return true;
+	const vpc = profile.vpcStatus;
+	return vpc === 'verified' || vpc === 'not_required';
+}
+
+/**
  * @param {Record<string, unknown> | null | undefined} profile
  */
 export function isProfileComplete(profile) {
 	if (!profile) return false;
 	if (isAccountSuspendedProfile(/** @type {Record<string, unknown>} */ (profile))) return false;
-	if (userDocHasPlayerRole(/** @type {Record<string, unknown>} */ (profile))) return true;
-	if (profile.role === 'player' && profile.teamId) return true;
+	if (isPlayerProfileComplete(/** @type {Record<string, unknown>} */ (profile))) return true;
 	if (profile.role === 'super_admin' || profile.role === 'global_admin') return true;
 	if (profile.role === 'director') return true;
 	if (profile.role === 'registrar' && profile.clubId) return true;
@@ -151,11 +169,24 @@ export async function resolveUserProfile(db, firebaseUser, forceTokenRefresh = t
 	}
 
 	if (userSnap.exists()) {
+		let merged = { ...baseProfile, role, playerName: fbName };
+		if (!merged.teamId || String(merged.teamId).trim() === '') {
+			const plSnap = await getDoc(doc(db, 'player_lookup', emailKey));
+			if (plSnap.exists()) {
+				const pl = plSnap.data() || {};
+				if (typeof pl.teamId === 'string' && pl.teamId.trim()) {
+					merged = { ...merged, teamId: pl.teamId.trim() };
+				}
+				if (!merged.clubId && typeof pl.clubId === 'string' && pl.clubId.trim()) {
+					merged = { ...merged, clubId: pl.clubId.trim() };
+				}
+			}
+		}
 		return {
 			role,
 			tenantId: resolvedTenantId,
 			cellId,
-			profile: { ...baseProfile, role, playerName: fbName }
+			profile: merged,
 		};
 	}
 

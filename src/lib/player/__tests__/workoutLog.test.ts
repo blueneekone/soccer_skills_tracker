@@ -20,6 +20,28 @@ describe('workoutLog', () => {
 		expect(buildWorkoutDrillType('Technical', long)).toHaveLength(200);
 	});
 
+	it('validatePlayerWorkoutLog allows VPC-verified teamless players', () => {
+		const result = validatePlayerWorkoutLog({
+			selectedFocus: 'technical',
+			selectedDrill: 'Juggling',
+			logSubmitting: false,
+			role: 'player',
+			profile: { playerName: 'Ace', vpcStatus: 'verified', clubId: 'c1' },
+		});
+		expect(result.ok).toBe(true);
+	});
+
+	it('validatePlayerWorkoutLog blocks teamless player before VPC', () => {
+		const result = validatePlayerWorkoutLog({
+			selectedFocus: 'technical',
+			selectedDrill: 'Juggling',
+			logSubmitting: false,
+			role: 'player',
+			profile: { playerName: 'Ace', vpcStatus: 'pending_parent' },
+		});
+		expect(result.ok).toBe(false);
+	});
+
 	it('validatePlayerWorkoutLog blocks non-players', () => {
 		const result = validatePlayerWorkoutLog({
 			selectedFocus: 'technical',

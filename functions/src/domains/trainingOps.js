@@ -671,12 +671,32 @@ exports.logTrainingSession = onCall(LAUNCH_CORE_CALLABLE_OPTS, async (request) =
     );
   }
   const u = uSnap.data();
-  const teamId = u.teamId || null;
-  const playerName = u.playerName || null;
-  if (!teamId || teamId === 'admin' || !playerName) {
+  const playerName =
+      typeof u.playerName === 'string' && u.playerName.trim() ?
+        u.playerName.trim() :
+        null;
+  if (!playerName) {
     throw new HttpsError(
         'failed-precondition',
-        'Athlete profile is missing team or display name.',
+        'Athlete profile is missing display name.',
+    );
+  }
+  const rawTeamId = typeof u.teamId === 'string' ? u.teamId.trim() : '';
+  const teamId =
+      rawTeamId && rawTeamId !== 'admin' ? rawTeamId : null;
+  const vpcStatus = typeof u.vpcStatus === 'string' ? u.vpcStatus : '';
+  const clubIdFromUser =
+      typeof u.clubId === 'string' && u.clubId.trim() ? u.clubId.trim() : '';
+  const teamlessOk =
+      !teamId &&
+      (vpcStatus === 'verified' || vpcStatus === 'not_required') &&
+      !!clubIdFromUser;
+  if (!teamId && !teamlessOk) {
+    throw new HttpsError(
+        'failed-precondition',
+        vpcStatus !== 'verified' && vpcStatus !== 'not_required' ?
+          'VPC clearance is required before training without a team.' :
+          'Athlete profile is missing team or display name.',
     );
   }
 
@@ -712,8 +732,8 @@ exports.logTrainingSession = onCall(LAUNCH_CORE_CALLABLE_OPTS, async (request) =
   const logRef = db().collection('workout_logs').doc();
   const logId = logRef.id;
   const psRef = db().collection('player_stats').doc(athleteUid);
-  const tsRef = db().collection('team_stats').doc(teamId);
-  const teamRef = db().collection('teams').doc(teamId);
+  const tsRef = teamId ? db().collection('team_stats').doc(teamId) : null;
+  const teamRef = teamId ? db().collection('teams').doc(teamId) : null;
 
   /**
    * @type {{
@@ -731,12 +751,10 @@ exports.logTrainingSession = onCall(LAUNCH_CORE_CALLABLE_OPTS, async (request) =
   };
 
   await db().runTransaction(async (tx) => {
-    const [psSnap, tsSnap, teamSnap, uSnapTx] = await Promise.all([
-      tx.get(psRef),
-      tx.get(tsRef),
-      tx.get(teamRef),
-      tx.get(uRef),
-    ]);
+    const psSnap = await tx.get(psRef);
+    const uSnapTx = await tx.get(uRef);
+    const tsSnap = tsRef ? await tx.get(tsRef) : null;
+    const teamSnap = teamRef ? await tx.get(teamRef) : null;
     if (!uSnapTx.exists) {
       throw new HttpsError(
           'failed-precondition',
@@ -864,12 +882,18 @@ exports.logTrainingSession = onCall(LAUNCH_CORE_CALLABLE_OPTS, async (request) =
     tx.set(logRef, logDoc);
 
     const psSetData = {
-      teamId,
+      teamId: teamId || null,
       // T1-10: denormalize clubId onto player_stats so the Firestore read rule can use
       // tokenClubMatchesDoc() (zero gets) instead of teamClubId() (1 get).
-      clubId: (teamSnap.exists && typeof teamSnap.data().clubId === 'string' && teamSnap.data().clubId.trim())
-        ? teamSnap.data().clubId.trim()
-        : null,
+      clubId:
+        teamSnap && teamSnap.exists &&
+        typeof teamSnap.data().clubId === 'string' &&
+        teamSnap.data().clubId.trim() ?
+          teamSnap.data().clubId.trim() :
+          (typeof uSnapTx.data()?.clubId === 'string' &&
+          uSnapTx.data().clubId.trim() ?
+            uSnapTx.data().clubId.trim() :
+            null),
       playerName,
       total_xp: admin.firestore.FieldValue.increment(earned),
       current_level: lv.level,
@@ -917,43 +941,47 @@ exports.logTrainingSession = onCall(LAUNCH_CORE_CALLABLE_OPTS, async (request) =
     tx.update(uRef, uUpdateData);
 
     const clubId =
-        teamSnap.exists &&
+        teamId && teamSnap && teamSnap.exists &&
         typeof teamSnap.data().clubId === 'string' &&
         teamSnap.data().clubId.trim() ?
           teamSnap.data().clubId.trim() :
-          null;
+          (typeof uTxData.clubId === 'string' && uTxData.clubId.trim() ?
+            uTxData.clubId.trim() :
+            null);
 
-    const nowDate = new Date();
-    const monthKey =
-        `${nowDate.getUTCFullYear()}-` +
-        `${String(nowDate.getUTCMonth() + 1).padStart(2, '0')}`;
+    if (teamId && tsRef) {
+      const nowDate = new Date();
+      const monthKey =
+          `${nowDate.getUTCFullYear()}-` +
+          `${String(nowDate.getUTCMonth() + 1).padStart(2, '0')}`;
 
-    let totalSessions = 1;
-    if (tsSnap.exists) {
-      const sd = tsSnap.data() || {};
-      const prevKey = sd.stats_month_key;
-      if (prevKey === monthKey) {
-        const prev =
-            typeof sd.total_sessions_this_month === 'number' &&
-            !Number.isNaN(sd.total_sessions_this_month) ?
-              sd.total_sessions_this_month :
-              0;
-        totalSessions = prev + 1;
+      let totalSessions = 1;
+      if (tsSnap && tsSnap.exists) {
+        const sd = tsSnap.data() || {};
+        const prevKey = sd.stats_month_key;
+        if (prevKey === monthKey) {
+          const prev =
+              typeof sd.total_sessions_this_month === 'number' &&
+              !Number.isNaN(sd.total_sessions_this_month) ?
+                sd.total_sessions_this_month :
+                0;
+          totalSessions = prev + 1;
+        }
       }
-    }
 
-    tx.set(
-        tsRef,
-        {
-          teamId,
-          clubId: clubId || null,
-          last_activity_timestamp: now,
-          total_sessions_this_month: totalSessions,
-          stats_month_key: monthKey,
-          updatedAt: now,
-        },
-        {merge: true},
-    );
+      tx.set(
+          tsRef,
+          {
+            teamId,
+            clubId: clubId || null,
+            last_activity_timestamp: now,
+            total_sessions_this_month: totalSessions,
+            stats_month_key: monthKey,
+            updatedAt: now,
+          },
+          {merge: true},
+      );
+    }
 
     out.totalXp = newTotal;
     out.level = lv.level;

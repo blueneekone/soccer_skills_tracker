@@ -128,7 +128,18 @@ describe('isProfileComplete — player role completeness gate', () => {
 	});
 
 	it('player without teamId is NOT complete (should land on /setup)', () => {
-		expect(isProfileComplete({ role: 'player' })).toBe(false);
+		expect(isProfileComplete({ role: 'player', playerName: 'Ace' })).toBe(false);
+	});
+
+	it('player without teamId is complete after VPC verified (teamless train path)', () => {
+		expect(
+			isProfileComplete({
+				role: 'player',
+				playerName: 'Ace',
+				vpcStatus: 'verified',
+				clubId: 'qa_launch_2026',
+			}),
+		).toBe(true);
 	});
 
 	it('player with empty string teamId is NOT complete', () => {
@@ -168,7 +179,17 @@ describe('isProfileComplete — player role completeness gate', () => {
 	});
 
 	it('COPPA child provisioned via roles[] array is complete', () => {
-		expect(isProfileComplete({ roles: ['player'], teamId: 't2' })).toBe(true);
+		expect(isProfileComplete({ roles: ['player'], teamId: 't2', playerName: 'Kid' })).toBe(true);
+	});
+
+	it('COPPA child via roles[] without team completes after VPC', () => {
+		expect(
+			isProfileComplete({
+				roles: ['player'],
+				playerName: 'Kid',
+				vpcStatus: 'verified',
+			}),
+		).toBe(true);
 	});
 });
 
@@ -192,6 +213,17 @@ describe('setup/+page.svelte player branch structural guard', () => {
 
 	it('player branch shows a not-linked message without a team redirect', () => {
 		expect(setupSrc).toContain("isn't linked to a team yet");
+	});
+});
+
+describe('LAUNCH-player-teamless-train — VPC teamless training guards', () => {
+	it('logTrainingSession allows teamless path when VPC verified', () => {
+		const ops = readFileSync(
+			resolve(process.cwd(), 'functions/src/domains/trainingOps.js'),
+			'utf8',
+		);
+		expect(ops).toMatch(/teamlessOk/);
+		expect(ops).toMatch(/VPC clearance is required before training without a team/);
 	});
 
 	it('player branch offers sign-out, not role-write actions', () => {
