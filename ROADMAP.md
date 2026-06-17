@@ -1439,6 +1439,10 @@ Loadout art (3.2+) consumed by 2.12 hero identity column.
 | **LAUNCH-parent-pwa** | **Done** | PWA install prompt (SSTracker branding) + parent nav Settings/Messages for mobile adoption path | `parentPwaLaunch.test.ts` · deploy **hosting** |
 | **LAUNCH-wave2-complete** | **Done** | Wave 2 parent adoption parity — ical + push + week strip + PWA; competitive matrix synced | `launchWave2Complete.test.ts` |
 | **LAUNCH-qa-ready** | **Partial** | Wave 2 test gate only — **not** full launch closure; see remaining backlog below | `launchWave2Complete.test.ts` |
+| **LAUNCH-qa-reset-operatives** | **Planned** | QA tenant reset — `purge-operatives` on provision + `QA-PP26` in DEMO_SCRIPT / OWNER_QA | `launchP0Fixes.test.ts` · **hosting** |
+| **LAUNCH-parent-link-team** | **Planned** | `parentLinkOperativeToTeam` callable + household link UI | `launchP0Fixes.test.ts` · deploy **`npm run deploy:compliance`** |
+| **LAUNCH-player-teamless-train** | **Planned** | Setup gate + `logTrainingSession` without `teamId` after VPC | `loginWorkflow.test.ts` · `workoutLog.test.ts` · deploy **`npm run deploy:core`** + **hosting** |
+| **LAUNCH-staff-roster-transfer** | **Planned** | Staff `registrarTransferPlayer` UI; tryouts promote links existing operative | `tryoutsLaunch.test.ts` · `epic52RegistrarConsolidation.test.ts` · deploy **`npm run deploy:compliance`** + **`npm run deploy:core`** + **hosting** |
 | **LAUNCH-vpc-ux** | **Done** | Household minors skip email ConsentOverlay; in-app VPC path only | `roleDerivations.test.ts` · merged PR #13 |
 | **LAUNCH-deploy-dev** | **Done** | Full `deploy:*` + Firestore rules to `sports-skill-tracker-dev` (2026-06-13) | operator deploy log |
 | **ACQ-overnight-wave** | **Done** | Phase 1 + 2 merged to dev; doc sync complete; remaining = [`GAP_CLOSURE_PLAN.md`](docs/acquisition/GAP_CLOSURE_PLAN.md) | [`PARALLEL_SUMMARY.md`](docs/acquisition/PARALLEL_SUMMARY.md) · [`DOC_SYNC_REPORT.md`](docs/acquisition/DOC_SYNC_REPORT.md) |

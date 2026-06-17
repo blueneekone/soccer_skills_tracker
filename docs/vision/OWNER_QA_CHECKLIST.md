@@ -5,7 +5,9 @@
 **Environment:** `sports-skill-tracker-dev`  
 **Primary QA URLs:** [https://sports-skill-tracker-dev.web.app](https://sports-skill-tracker-dev.web.app) (preferred if custom domain SSL fails) · [https://sstracker.app](https://sstracker.app) (custom domain — may SSL-fail on some clients)  
 **Tenant:** club `qa_launch_2026` · team `qa_launch_2026_ppc`  
-**Provision:** `node scripts/dev-tenant-reset.mjs --provision`
+**Provision:** `node scripts/dev-tenant-reset.mjs --provision --club-id qa_launch_2026 --team-id qa_launch_2026_ppc` (auto-purges stale operatives)
+
+**Team dispatch code (QA):** `QA-PP26` on team `qa_launch_2026_ppc`
 
 **Accounts:** `ecwaechtler@gmail.com` (super_admin) · `ecwaechtler+parent@gmail.com` · `ecwaechtler+coach@gmail.com` · operative via household
 
@@ -24,9 +26,9 @@ npm run deploy:dev:verify
 npm run smoke:dev
 ```
 
-Cross-reference: [`PLATFORM_GAP_REGISTER.md`](../acquisition/PLATFORM_GAP_REGISTER.md) `ManualQaId` column · [`FUNCTIONAL_MVP.md`](./FUNCTIONAL_MVP.md) · [`DEMO_SCRIPT.md`](../acquisition/DEMO_SCRIPT.md) (exec cut order)
+Cross-reference: `[PLATFORM_GAP_REGISTER.md](../acquisition/PLATFORM_GAP_REGISTER.md)` `ManualQaId` column · `[FUNCTIONAL_MVP.md](./FUNCTIONAL_MVP.md)` · `[DEMO_SCRIPT.md](../acquisition/DEMO_SCRIPT.md)` (exec cut order)
 
-> **Supersedes phased pair-program flow:** [`QA_DEV_PERSONA_VERIFICATION.md`](../QA_DEV_PERSONA_VERIFICATION.md) — use this checklist for sign-off; prior doc retained for historical phase notes.
+> **Supersedes phased pair-program flow:** `[QA_DEV_PERSONA_VERIFICATION.md](../QA_DEV_PERSONA_VERIFICATION.md)` — use this checklist for sign-off; prior doc retained for historical phase notes.
 
 ---
 
@@ -41,25 +43,27 @@ Cross-reference: [`PLATFORM_GAP_REGISTER.md`](../acquisition/PLATFORM_GAP_REGIST
 
 ### Phase 0 — Owner notes
 
-| Field | Value |
-| --- | --- |
-| Phase result | Pass / Pass with issues / Blocked / Waived |
-| Date completed | |
-| Tester/browser | |
+
+| Field          | Value                 |
+| -------------- | --------------------- |
+| Phase result   | Pass                  |
+| Date completed | 06/17/2026            |
+| Tester/browser | Evan Waechtler/Chrome |
+
 
 **Issues found**
 
 ```
-QA-xxx: [P0|P1|P2] — what happened — expected vs actual
+
 ```
 
 **Waivers this phase**
 
 ```
-QA-xxx: reason
+
 ```
 
-- [ ] **Continue to next phase?** Yes / No
+- [x] **Continue to next phase?** Yes / No
 
 **Owner freeform**
 
@@ -73,32 +77,34 @@ QA-xxx: reason
 
 **Gate:** Do not proceed until hosting loads, auth works, legal pages render, and tenant provision succeeds.
 
-- [ ] **QA-010** Hosting reachable — `/login` loads on active QA URL (web.app OK if sstracker.app SSL fails)
-- [ ] **QA-011** Auth — magic link + Google sign-in for parent account
-- [ ] **QA-012** Legal pages — `/privacy` (and terms if routed) load
-- [ ] **QA-013** Provision — `node scripts/dev-tenant-reset.mjs --provision` succeeds
+- [x] **QA-010** Hosting reachable — `/login` loads on active QA URL (web.app OK if sstracker.app SSL fails)
+- [x] **QA-011** Auth — magic link + Google sign-in for parent account
+- [x] **QA-012** Legal pages — `/privacy` (and terms if routed) load
+- [x] **QA-013** Provision — `node scripts/dev-tenant-reset.mjs --provision` succeeds
 
 ### Phase 1 — Owner notes
 
-| Field | Value |
-| --- | --- |
-| Phase result | Pass / Pass with issues / Blocked / Waived |
-| Date completed | |
-| Tester/browser | |
+
+| Field          | Value                 |
+| -------------- | --------------------- |
+| Phase result   | Pass with issues      |
+| Date completed | 06/17/2026            |
+| Tester/browser | Evan Waechtler/Chrome |
+
 
 **Issues found**
 
 ```
-QA-xxx: [P0|P1|P2] — what happened — expected vs actual
+
 ```
 
 **Waivers this phase**
 
 ```
-QA-xxx: reason
+
 ```
 
-- [ ] **Continue to next phase?** Yes / No
+- [x] **Continue to next phase?** Yes / No
 
 **Owner freeform**
 
@@ -112,26 +118,28 @@ QA-xxx: reason
 
 **Gate:** Do not proceed until super_admin confirms QA tenant club/team/users exist.
 
-- [ ] **QA-130** Admin bootstrap — super_admin confirms `qa_launch_2026` club/team/users provisioned
+- [x] **QA-130** Admin bootstrap — super_admin confirms `qa_launch_2026` club/team/users provisioned
 
 ### Phase 2 — Owner notes
 
-| Field | Value |
-| --- | --- |
-| Phase result | Pass / Pass with issues / Blocked / Waived |
-| Date completed | |
-| Tester/browser | |
+
+| Field          | Value                 |
+| -------------- | --------------------- |
+| Phase result   | Pass                  |
+| Date completed | 06/17/2026            |
+| Tester/browser | Evan Waechtler/Chrome |
+
 
 **Issues found**
 
 ```
-QA-xxx: [P0|P1|P2] — what happened — expected vs actual
+
 ```
 
 **Waivers this phase**
 
 ```
-QA-xxx: reason
+
 ```
 
 - [ ] **Continue to next phase?** Yes / No
@@ -148,44 +156,61 @@ QA-xxx: reason
 
 **Gate:** Do not proceed to Phase 5 (Player) until **QA-132** passes and **QA-133** confirms child can reach player routes without `/vpc-pending`.
 
-Order strictly (matches [`FUNCTIONAL_MVP.md`](./FUNCTIONAL_MVP.md) VPC golden path § and [`DEMO_SCRIPT.md`](../acquisition/DEMO_SCRIPT.md) exec cut steps 1–2):
+Order strictly (matches `[FUNCTIONAL_MVP.md](./FUNCTIONAL_MVP.md)` VPC golden path § and `[DEMO_SCRIPT.md](../acquisition/DEMO_SCRIPT.md)` exec cut steps 1–2):
 
-- [ ] **QA-131** Parent sign-in → passkey (if RP origin matches) → `/parent/household` — gap register A-03
-- [ ] **QA-121** Household + linked operatives + waiver on `/parent/household` — `parentSignCoppaWaiver` / `households.coppaSigned` — gap register F-02 · pre-check: `launchP0Fixes.test.ts`
-- [ ] **QA-122** VPC ceremony `/parent/vpc` per child — gap register F-02 · pre-check: `epic51CoppaSignup.test.ts`
-- [ ] **QA-132** VPC auto-finalizes `vpcStatus`, `consent_records` (no director approval step) — gap register F-02
-- [ ] **QA-133** Child operative login — no `/vpc-pending` block; can reach player routes — gap register F-02
-- [ ] **QA-111** Training routes **blocked before** VPC and **unlocked after** — `/player/settings`, billing gates — gap register F-01 · pre-check: `epic51CoppaSignup.test.ts`
+- [x] **QA-131** Parent sign-in → passkey (if RP origin matches) → `/parent/household` — gap register A-03
+- [x] **QA-121** Household + linked operatives + waiver on `/parent/household` — `parentSignCoppaWaiver` / `households.coppaSigned` — gap register F-02 · pre-check: `launchP0Fixes.test.ts`
+- [x] **QA-122** VPC ceremony `/parent/vpc` per child — gap register F-02 · pre-check: `epic51CoppaSignup.test.ts`
+- [x] **QA-132** VPC auto-finalizes `vpcStatus`, `consent_records` (no director approval step) — gap register F-02
+- [x] **QA-133** Child operative login — no `/vpc-pending` block; can reach player routes — gap register F-02
+- [x] **QA-111** Training routes **blocked before** VPC and **unlocked after** — `/player/settings`, billing gates — gap register F-01 · pre-check: `epic51CoppaSignup.test.ts`
 
 ### Phase 3 — Owner notes
 
-| Field | Value |
-| --- | --- |
-| Phase result | Pass / Pass with issues / Blocked / Waived |
-| Date completed | |
-| Tester/browser | |
+
+| Field          | Value                 |
+| -------------- | --------------------- |
+| Phase result   | Pass with issues      |
+| Date completed | 06/17/2026            |
+| Tester/browser | Evan Waechtler/Chrome |
+
 
 **Issues found**
 
 ```
-QA-xxx: [P0|P1|P2] — what happened — expected vs actual
+QA-131b [P2/P3]: Passkey fails in installed PWA/desktop app on same machine; browser on sstracker.app OK. Likely PWA/WebView vs extension-mediated WebAuthn. Workaround: browser for QA; magic link in installed app.
+
+QA-121: [P1] — Reused operative callsign from prior test session fails provision
+("That Operative Callsign is already in use"). dev-tenant-reset --provision clears
+household playerEmails but does not purge orphaned @operative.local Auth/users docs.
+Workaround: new callsign. Fix: provision/reset should clean QA operatives or document manual purge.
 ```
 
 **Waivers this phase**
 
 ```
-QA-xxx: reason
+
 ```
 
-- [ ] **Continue to next phase?** Yes / No
+- [x] **Continue to next phase?** Yes / No
 
 **Owner freeform**
 
 ```
+Please see the error message below:
 
+Uncaught (in promise) Yi: Unable to validate origin with rpId
+    at Qi (content.js:1:160953)
+    at async So.findCredentials (content.js:1:248754)
+    at async e.<computed> [as findCredentials] (content.js:1:161488)
+    at async content.js:386:251605
+
+"MINOR ACCOUNTS LOCKED" error for COPPA & LIABILITY even though waiver is signed and form shows the date and time signed.
+
+Privacy Log popped when adding the operative by a new callsign (which makes sense now because that's for parents to see if someone accessed their child's data...got it). The link for the query index error popped too. It overflowed outside of the context box. We will need a way for parents to enable/disable the ability to get push notifications whenever their child's data is accessed outside the established baseline.
+
+Complete Profile error appears when authenticating player even though they're linked to a team already.
 ```
-
----
 
 ## Phase 4 — Coach clearance (before coach HQ if testing fresh uncleared coach)
 
@@ -198,11 +223,13 @@ QA-xxx: reason
 
 ### Phase 4 — Owner notes
 
-| Field | Value |
-| --- | --- |
-| Phase result | Pass / Pass with issues / Blocked / Waived |
-| Date completed | |
-| Tester/browser | |
+
+| Field          | Value                                      |
+| -------------- | ------------------------------------------ |
+| Phase result   | Pass / Pass with issues / Blocked / Waived |
+| Date completed |                                            |
+| Tester/browser |                                            |
+
 
 **Issues found**
 
@@ -230,7 +257,7 @@ QA-xxx: reason
 
 **Gate:** Do not start this phase until Phase 3 **QA-132** passes. Sign out / incognito when switching coach → player.
 
-Order (matches [`DEMO_SCRIPT.md`](../acquisition/DEMO_SCRIPT.md) exec cut steps 3–4):
+Order (matches `[DEMO_SCRIPT.md](../acquisition/DEMO_SCRIPT.md)` exec cut steps 3–4):
 
 - [ ] **QA-141** Coach HQ `/coach` — squad/roster loads — gap register F-03
 - [ ] **QA-142** Forge deploy intent/bounty on `/coach/forge` — appears on player HQ — gap register F-03 · pre-check: `intentModule.test.ts`
@@ -250,11 +277,13 @@ Order (matches [`DEMO_SCRIPT.md`](../acquisition/DEMO_SCRIPT.md) exec cut steps 
 
 ### Phase 5 — Owner notes
 
-| Field | Value |
-| --- | --- |
-| Phase result | Pass / Pass with issues / Blocked / Waived |
-| Date completed | |
-| Tester/browser | |
+
+| Field          | Value                                      |
+| -------------- | ------------------------------------------ |
+| Phase result   | Pass / Pass with issues / Blocked / Waived |
+| Date completed |                                            |
+| Tester/browser |                                            |
+
 
 **Issues found**
 
@@ -291,11 +320,13 @@ QA-xxx: reason
 
 ### Phase 6 — Owner notes
 
-| Field | Value |
-| --- | --- |
-| Phase result | Pass / Pass with issues / Blocked / Waived |
-| Date completed | |
-| Tester/browser | |
+
+| Field          | Value                                      |
+| -------------- | ------------------------------------------ |
+| Phase result   | Pass / Pass with issues / Blocked / Waived |
+| Date completed |                                            |
+| Tester/browser |                                            |
+
 
 **Issues found**
 
@@ -337,11 +368,13 @@ QA-xxx: reason
 
 ### Phase 7 — Owner notes
 
-| Field | Value |
-| --- | --- |
-| Phase result | Pass / Pass with issues / Blocked / Waived |
-| Date completed | |
-| Tester/browser | |
+
+| Field          | Value                                      |
+| -------------- | ------------------------------------------ |
+| Phase result   | Pass / Pass with issues / Blocked / Waived |
+| Date completed |                                            |
+| Tester/browser |                                            |
+
 
 **Issues found**
 
@@ -387,11 +420,13 @@ QA-xxx: reason
 
 ### Phase 8 — Owner notes
 
-| Field | Value |
-| --- | --- |
-| Phase result | Pass / Pass with issues / Blocked / Waived |
-| Date completed | |
-| Tester/browser | |
+
+| Field          | Value                                      |
+| -------------- | ------------------------------------------ |
+| Phase result   | Pass / Pass with issues / Blocked / Waived |
+| Date completed |                                            |
+| Tester/browser |                                            |
+
 
 **Issues found**
 
@@ -427,11 +462,13 @@ QA-xxx: reason
 
 ### Phase 9 — Owner notes
 
-| Field | Value |
-| --- | --- |
-| Phase result | Pass / Pass with issues / Blocked / Waived |
-| Date completed | |
-| Tester/browser | |
+
+| Field          | Value                                      |
+| -------------- | ------------------------------------------ |
+| Phase result   | Pass / Pass with issues / Blocked / Waived |
+| Date completed |                                            |
+| Tester/browser |                                            |
+
 
 **Issues found**
 
@@ -466,11 +503,13 @@ QA-xxx: reason
 
 ### Phase 10 — Owner notes
 
-| Field | Value |
-| --- | --- |
-| Phase result | Pass / Pass with issues / Blocked / Waived |
-| Date completed | |
-| Tester/browser | |
+
+| Field          | Value                                      |
+| -------------- | ------------------------------------------ |
+| Phase result   | Pass / Pass with issues / Blocked / Waived |
+| Date completed |                                            |
+| Tester/browser |                                            |
+
 
 **Issues found**
 
@@ -507,17 +546,19 @@ Screenshot / must-feel sign-off on active QA URL at **1280px** and **390px**:
 - [ ] **QA-305** Train diegetic sliders — `pw-loadbar` vs native range — gap register J-09
 - [ ] **QA-306** OperativeLoadoutStudio — Swal replaced with diegetic overlay — gap register J-03
 - [ ] **QA-307** PlayerShell — no generic `.bento-card` chrome injection on Player routes — gap register J-10
-- [ ] **QA-308** Full VA matrix — [`PLAYER_OS_VISUAL_ACCEPTANCE.md`](./PLAYER_OS_VISUAL_ACCEPTANCE.md) rows owner signs — gap register J-04
+- [ ] **QA-308** Full VA matrix — `[PLAYER_OS_VISUAL_ACCEPTANCE.md](./PLAYER_OS_VISUAL_ACCEPTANCE.md)` rows owner signs — gap register J-04
 
 > **Note:** Waivable if selling functional OS; required for premium visual claim.
 
 ### Phase 11 — Owner notes
 
-| Field | Value |
-| --- | --- |
-| Phase result | Pass / Pass with issues / Blocked / Waived |
-| Date completed | |
-| Tester/browser | |
+
+| Field          | Value                                      |
+| -------------- | ------------------------------------------ |
+| Phase result   | Pass / Pass with issues / Blocked / Waived |
+| Date completed |                                            |
+| Tester/browser |                                            |
+
 
 **Issues found**
 
@@ -546,20 +587,22 @@ QA-xxx: reason
 **Gate:** Agent build complete; acquirer / legal review only.
 
 - [ ] **QA-501** Legal / IP review (independent acquirer diligence) — gap register M-03
-- [ ] **QA-502** Demo video recorded from [`DEMO_SCRIPT.md`](../acquisition/DEMO_SCRIPT.md) — gap register M-02
+- [ ] **QA-502** Demo video recorded from `[DEMO_SCRIPT.md](../acquisition/DEMO_SCRIPT.md)` — gap register M-02
 - [ ] **QA-503** TRACTION / PROSPECTUS / ONE_PAGER refreshed post Wave 3 merge — gap register M-04, L-04
-- [ ] **QA-504** NCSI vendor parity documented (acquirer swap) — **Partial** per [`NOTABLE_GAPS.md`](../acquisition/NOTABLE_GAPS.md) (Checkr lifecycle complete; NCSI iframe = acquirer vendor swap) — gap register D-02 · no build unless reopened
-- [ ] **QA-505** Federation Phase 4 API credentials — **Partial** per [`NOTABLE_GAPS.md`](../acquisition/NOTABLE_GAPS.md) (CSV v1 + Phase 3 sync shipped; 38-body API = acquirer GTM decision) — gap register C-04
-- [ ] **QA-506** Holo VA bust variants — **Blocked** (post-launch busts) — [`AVATAR_MANIFEST.md`](../acquisition/AVATAR_MANIFEST.md) · gap register I-02, I-03
+- [ ] **QA-504** NCSI vendor parity documented (acquirer swap) — **Partial** per `[NOTABLE_GAPS.md](../acquisition/NOTABLE_GAPS.md)` (Checkr lifecycle complete; NCSI iframe = acquirer vendor swap) — gap register D-02 · no build unless reopened
+- [ ] **QA-505** Federation Phase 4 API credentials — **Partial** per `[NOTABLE_GAPS.md](../acquisition/NOTABLE_GAPS.md)` (CSV v1 + Phase 3 sync shipped; 38-body API = acquirer GTM decision) — gap register C-04
+- [ ] **QA-506** Holo VA bust variants — **Blocked** (post-launch busts) — `[AVATAR_MANIFEST.md](../acquisition/AVATAR_MANIFEST.md)` · gap register I-02, I-03
 - [ ] **QA-507** Platform visual system (Gemini research) — read-only; sign waiver if deferring — gap register J-05
 
 ### Phase 12 — Owner notes
 
-| Field | Value |
-| --- | --- |
-| Phase result | Pass / Pass with issues / Blocked / Waived |
-| Date completed | |
-| Tester/browser | |
+
+| Field          | Value                                      |
+| -------------- | ------------------------------------------ |
+| Phase result   | Pass / Pass with issues / Blocked / Waived |
+| Date completed |                                            |
+| Tester/browser |                                            |
+
 
 **Issues found**
 
@@ -585,12 +628,14 @@ QA-xxx: reason
 
 ## Sign-off
 
+
 | Field                        | Value                                                     |
 | ---------------------------- | --------------------------------------------------------- |
 | Date                         |                                                           |
 | Git commit SHA               |                                                           |
-| Deploy record                | [`DEPLOY_RECORD.json`](../acquisition/DEPLOY_RECORD.json) |
+| Deploy record                | `[DEPLOY_RECORD.json](../acquisition/DEPLOY_RECORD.json)` |
 | All QA-xxx checked or waived |                                                           |
+
 
 **Waived items (reason required):**
 

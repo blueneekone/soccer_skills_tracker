@@ -27,13 +27,16 @@ Full checklist: [`FUNCTIONS_DEPLOY.md`](../FUNCTIONS_DEPLOY.md) · [`QA_DEV_PERS
 ### QA tenant
 
 ```bash
-node scripts/dev-tenant-reset.mjs --provision
+node scripts/dev-tenant-reset.mjs --provision --club-id qa_launch_2026 --team-id qa_launch_2026_ppc
 ```
+
+Provision **auto-purges** orphaned `@operative.local` Auth/users rows so operative callsigns can be reused between QA sessions.
 
 | Field | Value |
 |-------|-------|
 | Club | `qa_launch_2026` |
 | Team | `qa_launch_2026_ppc` |
+| Team dispatch code | `QA-PP26` (coach → parent household link) |
 
 | Role | Account |
 |------|---------|
@@ -69,6 +72,7 @@ Use **incognito** or sign out between persona switches ([`QA_DEV_PERSONA_VERIFIC
 2. **Household** — `/parent/household`
    - Show linked operative(s)
    - Sign household waiver if not already (`parentSignCoppaWaiver`)
+   - **Team link:** enter dispatch code `QA-PP26` when provisioning or use **Link to team** for an existing operative
 3. **VPC** — `/parent/vpc`
    - Grant consent per child (`parentGrantVpcConsent`)
    - Explain: auto-finalizes `vpcStatus`, writes `consent_records` + `security_audit`

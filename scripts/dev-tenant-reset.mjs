@@ -17,6 +17,16 @@
  *   node scripts/dev-tenant-reset.mjs
  *   node scripts/dev-tenant-reset.mjs --execute --club-id qa_launch_2026
  *   node scripts/dev-tenant-reset.mjs --provision --club-id qa_launch_2026 --team-id qa_launch_2026_ppc
+ *   node scripts/dev-tenant-reset.mjs --provision --purge-operatives --club-id qa_launch_2026
+ *
+ * --purge-operatives (provision or dry-run with --execute omitted):
+ *   Deletes orphaned *@operative.local Auth users and Firestore rows (users, player_lookup,
+ *   operative_dispatches) not listed on the QA parent household playerEmails.
+ *   Preserves DEFAULT_KEEP emails only. Does NOT run on --execute unless paired with
+ *   --purge-operatives (execute already deletes non-keep Auth; this cleans provision leftovers).
+ *
+ * --execute SAFETY: Owner must reply "approved execute" in chat before running writes.
+ *   Never run --execute against soccer-skills-tracker (prod). sports-skill-tracker-dev only.
  */
 
 import fs from 'node:fs';
@@ -114,6 +124,8 @@ const ARTIFACT_DATE =
 	flagVal('--artifact-date', '') || new Date().toISOString().slice(0, 10).replace(/-/g, '');
 const ARTIFACT_DIR = path.join(REPO_ROOT, 'artifacts', `firestore-reset-${ARTIFACT_DATE}`);
 const INCLUDE_AUDIT = hasFlag('--include-audit-collections');
+/** Purge QA child operatives (*@operative.local) before provision or on explicit flag. */
+const PURGE_OPERATIVES = hasFlag('--purge-operatives');
 
 function normEmail(v) {
 	if (typeof v !== 'string') return '';
@@ -675,6 +687,97 @@ async function runResetPlan(auth, db, inv, dryRun) {
 	return { total, keepClubIds };
 }
 
+/**
+ * Collect child emails to keep during operative purge (QA parent household only).
+ * @param {import('firebase-admin').firestore.Firestore} db
+ */
+async function collectKeptOperativeEmails(db) {
+	const keep = new Set();
+	const hh = await paginateCollection(db, 'households');
+	for (const d of hh) {
+		const data = d.data() || {};
+		const parents = Array.isArray(data.parentEmails) ?
+			data.parentEmails.map(normEmail) :
+			[];
+		if (!parents.includes(PARENT_EMAIL)) continue;
+		const pe = Array.isArray(data.playerEmails) ? data.playerEmails : [];
+		for (const e of pe) {
+			const em = normEmail(String(e || ''));
+			if (em && em.endsWith('@operative.local')) keep.add(em);
+		}
+	}
+	return keep;
+}
+
+/**
+ * Remove orphaned minor operative Auth + Firestore artifacts.
+ * @param {import('firebase-admin').firestore.Firestore} db
+ * @param {import('firebase-admin').auth.Auth} auth
+ * @param {boolean} dryRun
+ */
+async function purgeOperatives(db, auth, dryRun) {
+	const keepChildEmails = await collectKeptOperativeEmails(db);
+	let total = 0;
+
+	let pageToken;
+	do {
+		const res = await auth.listUsers(1000, pageToken);
+		for (const u of res.users) {
+			const em = normEmail(u.email || '');
+			if (!em || !em.endsWith('@operative.local')) continue;
+			if (KEEP_EMAILS.has(em) || keepChildEmails.has(em)) continue;
+			if (!dryRun) await auth.deleteUser(u.uid);
+			total++;
+		}
+		pageToken = res.pageToken;
+	} while (pageToken);
+	log(`${dryRun ? '[dry-run]' : '[execute]'} Auth operative purge: ${total}`);
+
+	const users = await paginateCollection(db, 'users');
+	const userRemove = users.filter((d) => {
+		const em = userEmailFromDoc(d);
+		return em.endsWith('@operative.local') && !KEEP_EMAILS.has(em) && !keepChildEmails.has(em);
+	});
+	for (const d of userRemove) {
+		if (!dryRun) await deleteSubcollections(db, d.ref, false, `users/${d.id}`);
+	}
+	total += await deleteRefs(
+		db,
+		userRemove.map((d) => d.ref),
+		'users (@operative.local)',
+		dryRun,
+	);
+
+	const pl = await paginateCollection(db, 'player_lookup');
+	const plRemove = pl.filter((d) => {
+		const em = normEmail(d.id);
+		return em.endsWith('@operative.local') && !KEEP_EMAILS.has(em) && !keepChildEmails.has(em);
+	});
+	total += await deleteRefs(
+		db,
+		plRemove.map((d) => d.ref),
+		'player_lookup (@operative.local)',
+		dryRun,
+	);
+
+	const disp = await paginateCollection(db, 'operative_dispatches');
+	const dispRemove = disp.filter((d) => {
+		const em = normEmail(d.data()?.childEmail);
+		return em.endsWith('@operative.local') && !KEEP_EMAILS.has(em) && !keepChildEmails.has(em);
+	});
+	total += await deleteRefs(
+		db,
+		dispRemove.map((d) => d.ref),
+		'operative_dispatches (@operative.local)',
+		dryRun,
+	);
+
+	log(
+		`${dryRun ? '[dry-run]' : '[execute]'} purge-operatives total=${total} keptChildren=${keepChildEmails.size}`,
+	);
+	return total;
+}
+
 async function provision(db, auth, keepClubIds, teamIdArg) {
 	const snapPath = path.join(ARTIFACT_DIR, 'kept-user-snapshot.json');
 	/** @type {Record<string, object>} */
@@ -904,6 +1007,8 @@ async function main() {
 		if (!EXECUTE) {
 			log('[provision] Running provision (writes) — use after execute + owner approval');
 		}
+		// QA re-provision: always purge stale operatives so callsign reuse succeeds.
+		await purgeOperatives(db, auth, false);
 		await provision(db, auth, keepClubIds, TEAM_ID_ARG);
 		appendExecutionLog(
 			`provision clubs=${clubLabel} teamId=${TEAM_ID_ARG || DEFAULT_QA_TEAM}`,
@@ -916,6 +1021,15 @@ async function main() {
 	log(`Would delete users docs: ${deleteUsersN}`);
 	log(`Would delete ALL teams: ${teamsN}`);
 	log(`Keep clubIds: ${clubLabel}`);
+
+	if (PURGE_OPERATIVES && !PROVISION) {
+		await purgeOperatives(db, auth, !EXECUTE);
+		if (!EXECUTE) {
+			log('[purge-operatives] dry-run complete (pair with --provision or --execute as needed)');
+			process.exit(0);
+		}
+		appendExecutionLog('purge-operatives complete');
+	}
 
 	if (!EXECUTE) {
 		console.log('\n*** DRY-RUN — no writes. Owner must reply: approved execute ***\n');

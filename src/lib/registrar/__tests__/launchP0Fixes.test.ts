@@ -44,3 +44,27 @@ describe('LAUNCH-p0 — dev tenant reset provision', () => {
 		expect(src).toMatch(/collection\('households'\)/);
 	});
 });
+
+describe('LAUNCH-qa-reset-operatives — purge + QA dispatch code', () => {
+	it('dev-tenant-reset documents purge-operatives and preserves three keep emails', () => {
+		const src = readFileSync(TENANT_RESET, 'utf8');
+		expect(src).toMatch(/--purge-operatives/);
+		expect(src).toMatch(/purgeOperatives/);
+		expect(src).toMatch(/@operative\.local/);
+		expect(src).toMatch(
+			/ecwaechtler@gmail\.com,ecwaechtler\+parent@gmail\.com,ecwaechtler\+coach@gmail\.com/,
+		);
+		expect(src).toMatch(/approved execute/);
+	});
+
+	it('QA invite code is QA-PP26', () => {
+		const src = readFileSync(TENANT_RESET, 'utf8');
+		expect(src).toMatch(/DEFAULT_QA_INVITE_CODE\s*=\s*'QA-PP26'/);
+	});
+
+	it('DEMO_SCRIPT documents QA-PP26 team dispatch code', () => {
+		const demo = readFileSync(join(ROOT, 'docs/acquisition/DEMO_SCRIPT.md'), 'utf8');
+		expect(demo).toMatch(/QA-PP26/);
+		expect(demo).toMatch(/qa_launch_2026_ppc/);
+	});
+});
