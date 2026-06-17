@@ -68,3 +68,24 @@ describe('LAUNCH-qa-reset-operatives — purge + QA dispatch code', () => {
 		expect(demo).toMatch(/qa_launch_2026_ppc/);
 	});
 });
+
+describe('LAUNCH-parent-link-team — parentLinkOperativeToTeam + household UI', () => {
+	it('operativeOps exports parentLinkOperativeToTeam callable', () => {
+		const ops = readFileSync(join(ROOT, 'functions/src/domains/operativeOps.js'), 'utf8');
+		expect(ops).toMatch(/exports\.parentLinkOperativeToTeam/);
+		expect(ops).toMatch(/teamInviteCode/);
+		expect(ops).toMatch(/resolveTeamByInviteCodeForClub/);
+	});
+
+	it('functions-compliance wires parentLinkOperativeToTeam', () => {
+		const idx = readFileSync(join(ROOT, 'functions-compliance/index.js'), 'utf8');
+		expect(idx).toMatch(/parentLinkOperativeToTeam/);
+	});
+
+	it('household page calls parentLinkOperativeToTeam with dispatch code', () => {
+		const src = readFileSync(HOUSEHOLD, 'utf8');
+		expect(src).toMatch(/parentLinkOperativeToTeam/);
+		expect(src).toMatch(/linkOperativeTeam/);
+		expect(src).toMatch(/QA-PP26/);
+	});
+});

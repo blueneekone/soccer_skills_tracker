@@ -37,6 +37,7 @@
 
 	const parentSignCoppaWaiver = httpsCallable(functions, 'parentSignCoppaWaiver');
 	const parentProvisionOperative = httpsCallable(functions, 'parentProvisionOperative');
+	const parentLinkOperativeToTeam = httpsCallable(functions, 'parentLinkOperativeToTeam');
 	const generatePlayerOTP = httpsCallable(functions, 'generatePlayerOTP');
 
 	const role = $derived(authStore.role);
@@ -70,6 +71,12 @@
 
 	/** @type {string | null} */
 	let gtActionBusyKey = $state(null);
+
+	/** @type {Record<string, string>} */
+	let linkTeamCodes = $state({});
+
+	/** @type {string | null} */
+	let linkTeamBusyKey = $state(null);
 
 	/** @type {false | { code: string; expiresAt: number; displayName: string }} */
 	let otpDialog = $state<false | { code: string; expiresAt: number; displayName: string }>(false);
@@ -187,6 +194,42 @@
 			actErr = e && typeof e === 'object' && 'message' in e ? String(/** @type {*} */ (e).message) : 'Deny failed';
 		} finally {
 			gtActionBusyKey = null;
+		}
+	}
+
+	/**
+	 * @param {HouseholdOperativeRow} row
+	 */
+	async function linkOperativeTeam(row) {
+		actErr = '';
+		if (!coppaSigned) {
+			actErr = 'Sign the waiver before linking an operative to a team.';
+			return;
+		}
+		const em = row.email;
+		if (!em.endsWith('@operative.local')) return;
+		const code = (linkTeamCodes[em] || '').trim();
+		if (!code) {
+			actErr = 'Enter the team dispatch code from your coach (e.g. QA-PP26).';
+			return;
+		}
+		linkTeamBusyKey = em;
+		try {
+			await parentLinkOperativeToTeam({
+				childEmail: em,
+				teamInviteCode: code,
+			});
+			linkTeamCodes = { ...linkTeamCodes, [em]: '' };
+			await authStore.refresh({ silent: true });
+			await refreshHouseholdOperatives();
+			actErr = '';
+		} catch (e) {
+			actErr =
+				e && typeof e === 'object' && 'message' in e ?
+					String(/** @type {*} */ (e).message)
+				:	'Team link failed.';
+		} finally {
+			linkTeamBusyKey = null;
 		}
 	}
 
@@ -593,6 +636,44 @@
 											</div>
 										</div>
 									{/if}
+									<div
+										class="tw-mt-2 tw-border tw-border-cyan-500/25 tw-bg-cyan-950/10 tw-px-2.5 tw-py-2.5"
+									>
+										<p class="phh-eyebrow tw-mb-1 !tw-text-[0.55rem] tw-text-cyan-200/80">
+											Link to team roster
+										</p>
+										<p class="tw-m-0 tw-mb-2 tw-text-xs tw-leading-relaxed tw-text-white/50">
+											Enter your coach&apos;s dispatch code (e.g. QA-PP26) to add this operative to
+											the team roster for Forge and schedule sync.
+										</p>
+										<div class="tw-flex tw-flex-col tw-gap-2 sm:tw-flex-row sm:tw-items-center">
+											<input
+												class="phh-input phh-input--cyan tw-min-h-[2.75rem] tw-flex-1"
+												type="text"
+												autocomplete="off"
+												spellcheck="false"
+												placeholder="e.g. QA-PP26"
+												value={linkTeamCodes[row.email] ?? ''}
+												oninput={(e) => {
+													linkTeamCodes = {
+														...linkTeamCodes,
+														[row.email]: e.currentTarget.value,
+													};
+												}}
+											/>
+											<button
+												type="button"
+												class="phh-btn phh-btn--cyan tw-min-h-[2.75rem] tw-shrink-0 tw-px-4 tw-text-xs"
+												disabled={!coppaSigned ||
+													linkTeamBusyKey !== null ||
+													actionBusy ||
+													gtActionBusyKey !== null}
+												onclick={() => linkOperativeTeam(row)}
+											>
+												{linkTeamBusyKey === row.email ? 'Linking…' : 'Link team'}
+											</button>
+										</div>
+									</div>
 								{:else}
 									<p class="phh-mono tw-m-0 tw-text-xs tw-text-white/40">
 										{row.callsign ? `Callsign: ${row.callsign}` : row.email}

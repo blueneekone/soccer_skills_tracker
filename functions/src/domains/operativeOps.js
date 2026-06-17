@@ -49,6 +49,46 @@ function normTeamInviteCode(raw) {
 }
 
 /**
+ * Resolve a team doc from dispatch code within a parent club scope.
+ * @param {string} teamCodeNorm
+ * @param {string} clubId
+ * @return {Promise<{teamRef: FirebaseFirestore.DocumentReference, teamId: string}>}
+ */
+async function resolveTeamByInviteCodeForClub(teamCodeNorm, clubId) {
+  if (!teamCodeNorm) {
+    throw new HttpsError('invalid-argument', 'teamInviteCode is required.');
+  }
+  const tq = await db()
+      .collection('teams')
+      .where('inviteCode', '==', teamCodeNorm)
+      .limit(2)
+      .get();
+  if (tq.empty) {
+    throw new HttpsError(
+        'not-found',
+        'No team matches this team dispatch code. Check with the coach and try again.',
+    );
+  }
+  if (tq.size > 1) {
+    throw new HttpsError(
+        'failed-precondition',
+        'Multiple teams share this code. Contact the club to resolve.',
+    );
+  }
+  const tdoc = tq.docs[0];
+  const tData = tdoc.data();
+  const tidClub =
+      typeof tData.clubId === 'string' ? tData.clubId.trim() : '';
+  if (tidClub !== clubId) {
+    throw new HttpsError(
+        'permission-denied',
+        'That team is not in your club. Use a code from your organization.',
+    );
+  }
+  return {teamRef: tdoc.ref, teamId: tdoc.id};
+}
+
+/**
  * @param {number} n Length
  * @return {string} Random A–Z0-9 string
  */
@@ -1402,6 +1442,181 @@ exports.parentProvisionOperative = onCall({region: REGION}, async (request) => {
     teamId: teamIdForUser || null,
     message:
       'Share this dispatch code with your athlete. It is also stored server-side for Operative sign-in.',
+  };
+});
+
+/**
+ * Parent: link an existing household operative to a team via dispatch code.
+ * Requires COPPA signature; does not re-provision Auth or dispatch credentials.
+ */
+exports.parentLinkOperativeToTeam = onCall({region: REGION}, async (request) => {
+  const actor = assertParent(request);
+  const data = request.data || {};
+  const childEmailRaw = normEmail(data.childEmail);
+  const rawCallsign =
+      typeof data.operativeCallsign === 'string' ?
+        data.operativeCallsign.trim().slice(0, 200) :
+        '';
+  let childEmail = childEmailRaw;
+  if (!childEmail && rawCallsign) {
+    const operSlug = normOperativeCallsignSlug(rawCallsign);
+    if (operSlug.length < 2) {
+      throw new HttpsError(
+          'invalid-argument',
+          'Operative Callsign must yield at least two letters or numbers.',
+      );
+    }
+    childEmail = normEmail(`${operSlug}@operative.local`);
+  }
+  if (!childEmail || !childEmail.endsWith('@operative.local')) {
+    throw new HttpsError(
+        'invalid-argument',
+        'childEmail or operativeCallsign is required.',
+    );
+  }
+  const teamCodeNorm = normTeamInviteCode(data.teamInviteCode);
+  const parentEmail = actor.email;
+  const pRef = db().collection('users').doc(parentEmail);
+  const pSnap = await pRef.get();
+  if (!pSnap.exists || pSnap.data().role !== 'parent') {
+    throw new HttpsError('permission-denied', 'Only parent accounts may link operatives.');
+  }
+  const pu = pSnap.data();
+  const hid =
+      typeof pu.householdId === 'string' ? pu.householdId.trim() : '';
+  if (!hid) {
+    throw new HttpsError(
+        'failed-precondition',
+        'Sign the household waiver before linking operatives to a team.',
+    );
+  }
+  const hRef = db().collection('households').doc(hid);
+  const hSnap = await hRef.get();
+  if (!hSnap.exists) {
+    throw new HttpsError('not-found', 'Household not found.');
+  }
+  const h = hSnap.data();
+  if (!h.coppaSigned) {
+    throw new HttpsError(
+        'failed-precondition',
+        'COPPA waiver is not on file. Sign the waiver first.',
+    );
+  }
+  const parentList = Array.isArray(h.parentEmails) ? h.parentEmails.map(normEmail) : [];
+  if (!parentList.includes(parentEmail)) {
+    throw new HttpsError('permission-denied', 'You are not an authorized parent on this household.');
+  }
+  const clubId = typeof pu.clubId === 'string' ? pu.clubId.trim() : '';
+  if (!clubId || h.clubId !== clubId) {
+    throw new HttpsError('failed-precondition', 'Club scope mismatch.');
+  }
+  const householdPlayers = (h.playerEmails || []).map(normEmail);
+  if (!householdPlayers.includes(childEmail)) {
+    throw new HttpsError(
+        'permission-denied',
+        'That operative is not in your household.',
+    );
+  }
+  const {teamRef, teamId: teamIdForUser} =
+      await resolveTeamByInviteCodeForClub(teamCodeNorm, clubId);
+
+  const uRef = db().collection('users').doc(childEmail);
+  const uSnap = await uRef.get();
+  if (!uSnap.exists) {
+    throw new HttpsError('not-found', 'Operative profile not found.');
+  }
+  const u = uSnap.data() || {};
+  const playerName =
+      typeof u.playerName === 'string' && u.playerName.trim() ?
+        u.playerName.trim() :
+        '';
+  if (!playerName) {
+    throw new HttpsError('failed-precondition', 'Operative missing display name.');
+  }
+  const existingTeam =
+      typeof u.teamId === 'string' && u.teamId.trim() ? u.teamId.trim() : '';
+  if (existingTeam === teamIdForUser) {
+    return {
+      ok: true,
+      noop: true,
+      childEmail,
+      teamId: teamIdForUser,
+      teamLinked: true,
+    };
+  }
+
+  let childUid = '';
+  try {
+    const rec = await admin.auth().getUserByEmail(childEmail);
+    childUid = rec.uid;
+  } catch (e) {
+    if (e && e.code === 'auth/user-not-found') {
+      throw new HttpsError('not-found', 'Operative Auth account not found.');
+    }
+    throw e;
+  }
+
+  const now = admin.firestore.FieldValue.serverTimestamp();
+  const plRef = db().collection('player_lookup').doc(childEmail);
+  const householdParents = (h.parentEmails || [])
+      .map((x) => normEmail(String(x || '')))
+      .filter(Boolean);
+  const batch = db().batch();
+  batch.set(
+      uRef,
+      {
+        teamId: teamIdForUser,
+        clubId,
+        householdId: hid,
+        updatedAt: now,
+      },
+      {merge: true},
+  );
+  batch.set(
+      plRef,
+      {
+        clubId,
+        teamId: teamIdForUser,
+        playerName,
+        role: 'player',
+        householdId: hid,
+        parentEmails: householdParents,
+        parentProvisionerEmail: parentEmail,
+        updatedAt: now,
+      },
+      {merge: true},
+  );
+  batch.update(teamRef, {
+    playerUids: admin.firestore.FieldValue.arrayUnion(childUid),
+    updatedAt: now,
+  });
+  batch.set(
+      db().collection('rosters').doc(teamIdForUser),
+      {
+        players: admin.firestore.FieldValue.arrayUnion(playerName),
+      },
+      {merge: true},
+  );
+  await batch.commit();
+
+  try {
+    await provisionLoungesForParentHousehold({
+      parentEmail,
+      childEmails: [childEmail],
+      parentClubId: clubId,
+    });
+  } catch (loungeErr) {
+    logger.warn('[parentLinkOperativeToTeam] lounge provision failed (non-fatal)', {
+      err: loungeErr instanceof Error ? loungeErr.message : String(loungeErr),
+    });
+  }
+
+  return {
+    ok: true,
+    childEmail,
+    teamId: teamIdForUser,
+    teamLinked: true,
+    inviteCode: teamCodeNorm,
   };
 });
 

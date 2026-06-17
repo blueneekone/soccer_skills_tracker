@@ -56,6 +56,7 @@ exports.parentGrantVpcConsent = complianceOps.parentGrantVpcConsent;
 const operativeOps = require('./src/domains/operativeOps');
 exports.parentSignCoppaWaiver = operativeOps.parentSignCoppaWaiver;
 exports.parentProvisionOperative = operativeOps.parentProvisionOperative;
+exports.parentLinkOperativeToTeam = operativeOps.parentLinkOperativeToTeam;
 exports.operativeSignInWithDispatch = operativeOps.operativeSignInWithDispatch;
 exports.generatePlayerOTP = operativeOps.generatePlayerOTP;
 exports.validatePlayerOTP = operativeOps.validatePlayerOTP;
