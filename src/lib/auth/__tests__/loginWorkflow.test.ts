@@ -124,7 +124,7 @@ describe('T0-3: users doc keyed by normalized email (not UID)', () => {
 // ─────────────────────────────────────────────────────────────────────────────
 describe('isProfileComplete — player role completeness gate', () => {
 	it('player with teamId is complete', () => {
-		expect(isProfileComplete({ role: 'player', teamId: 't1' })).toBe(true);
+		expect(isProfileComplete({ role: 'player', teamId: 't1', playerName: 'Ace' })).toBe(true);
 	});
 
 	it('player without teamId is NOT complete (should land on /setup)', () => {
@@ -217,6 +217,11 @@ describe('setup/+page.svelte player branch structural guard', () => {
 });
 
 describe('LAUNCH-player-teamless-train — VPC teamless training guards', () => {
+	const setupSrc = readFileSync(
+		resolve(process.cwd(), 'src/routes/setup/+page.svelte'),
+		'utf8',
+	);
+
 	it('logTrainingSession allows teamless path when VPC verified', () => {
 		const ops = readFileSync(
 			resolve(process.cwd(), 'functions/src/domains/trainingOps.js'),
