@@ -131,12 +131,44 @@ describe('LAUNCH-tryouts-d — callbacks, offers, roster pipeline', () => {
 		expect(panel).toMatch(/mintMagicUplink/);
 	});
 
+	it('promoteTryoutToRoster links existing household operative by name', () => {
+		const ops = readFileSync(join(ROOT, 'functions/src/domains/tryoutsOps.js'), 'utf-8');
+		expect(ops).toMatch(/linkHouseholdOperativeToTeam/);
+		expect(ops).toMatch(/operativeLinked/);
+	});
+
 	it('public tryouts page supports offer response', () => {
 		const page = readFileSync(
 			join(ROOT, 'src/routes/(marketing)/tryouts/[programId]/+page.svelte'),
 			'utf-8',
 		);
 		expect(page).toMatch(/respondTryoutOffer/);
+	});
+});
+
+describe('LAUNCH-staff-roster-transfer — registrarTransferPlayer UI', () => {
+	it('RegistrarRosterTransferPanel calls registrarTransferPlayer', () => {
+		const panel = readFileSync(
+			join(ROOT, 'src/lib/components/director/RegistrarRosterTransferPanel.svelte'),
+			'utf-8',
+		);
+		expect(panel).toMatch(/registrarTransferPlayer/);
+		expect(panel).toMatch(/targetTeamId/);
+	});
+
+	it('director and admin roster mount RegistrarRosterTransferPanel', () => {
+		const director = readFileSync(join(ROOT, 'src/routes/(app)/director/+page.svelte'), 'utf-8');
+		const admin = readFileSync(
+			join(ROOT, 'src/routes/(app)/admin/organizations/[clubId]/teams/[teamId]/roster/+page.svelte'),
+			'utf-8',
+		);
+		expect(director).toMatch(/RegistrarRosterTransferPanel/);
+		expect(admin).toMatch(/RegistrarRosterTransferPanel/);
+	});
+
+	it('functions-compliance exports registrarTransferPlayer', () => {
+		const idx = readFileSync(join(ROOT, 'functions-compliance/index.js'), 'utf-8');
+		expect(idx).toMatch(/registrarTransferPlayer/);
 	});
 });
 

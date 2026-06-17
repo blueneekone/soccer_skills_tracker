@@ -26,6 +26,7 @@
 	} from '$lib/household/rosterGuardianEnrich.js';
 	import { enterprisePlayerDrawer } from '$lib/stores/enterprisePlayerDrawer.svelte.js';
 	import RosterGuardianInviteModal from '$lib/components/admin/RosterGuardianInviteModal.svelte';
+	import RegistrarRosterTransferPanel from '$lib/components/director/RegistrarRosterTransferPanel.svelte';
 	import { ADMIN_CLUB_CTX_KEY, type AdminClubCtx } from '../../../adminClubCtx.js';
 
 	const ctx = getContext<AdminClubCtx>(ADMIN_CLUB_CTX_KEY);
@@ -345,6 +346,13 @@
 				aria-label="Filter roster"
 			/>
 		</div>
+	</div>
+
+	<div class="bento-mb-md">
+		<RegistrarRosterTransferPanel
+			clubId={adminClubId}
+			targetTeamId={teamId}
+		/>
 	</div>
 
 	{#if rosterErr}

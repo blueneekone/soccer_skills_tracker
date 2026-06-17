@@ -13,6 +13,7 @@
 	import HouseholdLinkerPanel from '$lib/components/director/HouseholdLinkerPanel.svelte';
 	import RegistrarInviteTab from '$lib/components/director/RegistrarInviteTab.svelte';
 	import TransferPortal from '$lib/components/player/TransferPortal.svelte';
+	import RegistrarRosterTransferPanel from '$lib/components/director/RegistrarRosterTransferPanel.svelte';
 	import PlaybookTab from '$lib/components/director/PlaybookTab.svelte';
 	import LicensesTab from '$lib/components/director/LicensesTab.svelte';
 	import ClubLogoMark from '$lib/components/ClubLogoMark.svelte';
@@ -150,6 +151,9 @@
 		<section class="director-console-page__section">
 			{#if activeTab === 'teams'}
 				<TeamsTab {clubId} />
+				<div class="tw-mt-6">
+					<RegistrarRosterTransferPanel {clubId} />
+				</div>
 			{:else if activeTab === 'registrars'}
 				<RegistrarInviteTab {clubId} />
 				<section class="director-console-page__section tw-mt-6" aria-label="Player transfer intake">

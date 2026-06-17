@@ -1059,6 +1059,74 @@ exports.getPublicTryoutRegistration = onCall(
 );
 
 /**
+ * Link an existing household operative (by guardian + display name) to the roster team.
+ * @param {{ guardianEmail: string, playerName: string, teamId: string, clubId: string }} input
+ */
+async function linkHouseholdOperativeToTeam(input) {
+  const gEm = normEmail(input.guardianEmail);
+  const teamId = typeof input.teamId === 'string' ? input.teamId.trim() : '';
+  const clubId = typeof input.clubId === 'string' ? input.clubId.trim() : '';
+  const playerName =
+      typeof input.playerName === 'string' ? input.playerName.trim().slice(0, 200) : '';
+  if (!gEm || !teamId || !playerName) {
+    return {linked: false};
+  }
+  const hhSnap = await db()
+      .collection('households')
+      .where('parentEmails', 'array-contains', gEm)
+      .limit(8)
+      .get();
+  const nameNorm = playerName.toLowerCase();
+  for (const hdoc of hhSnap.docs) {
+    const pe = Array.isArray(hdoc.data().playerEmails) ?
+      hdoc.data().playerEmails :
+      [];
+    for (const raw of pe) {
+      const childEmail = normEmail(String(raw || ''));
+      if (!childEmail.endsWith('@operative.local')) continue;
+      const uRef = db().collection('users').doc(childEmail);
+      const uSnap = await uRef.get();
+      if (!uSnap.exists) continue;
+      const u = uSnap.data() || {};
+      const pn =
+          typeof u.playerName === 'string' ? u.playerName.trim().toLowerCase() : '';
+      if (pn !== nameNorm) continue;
+      if (u.teamId === teamId) {
+        return {linked: true, noop: true, childEmail};
+      }
+      let childUid = '';
+      try {
+        const rec = await admin.auth().getUserByEmail(childEmail);
+        childUid = rec.uid;
+      } catch (e) {
+        if (e && e.code === 'auth/user-not-found') continue;
+        throw e;
+      }
+      const now = admin.firestore.FieldValue.serverTimestamp();
+      const batch = db().batch();
+      batch.set(uRef, {teamId, clubId, updatedAt: now}, {merge: true});
+      batch.set(
+          db().collection('player_lookup').doc(childEmail),
+          {
+            clubId,
+            teamId,
+            playerName: u.playerName,
+            updatedAt: now,
+          },
+          {merge: true},
+      );
+      batch.update(db().collection('teams').doc(teamId), {
+        playerUids: admin.firestore.FieldValue.arrayUnion(childUid),
+        updatedAt: now,
+      });
+      await batch.commit();
+      return {linked: true, childEmail, teamId};
+    }
+  }
+  return {linked: false};
+}
+
+/**
  * Director/registrar: add accepted athlete to team roster pipeline (name-only row).
  */
 exports.promoteTryoutToRoster = onCall({region: REGION}, async (request) => {
@@ -1149,14 +1217,32 @@ exports.promoteTryoutToRoster = onCall({region: REGION}, async (request) => {
     }, {merge: true});
   });
 
+  const guardianEmail = normEmail(reg.guardianEmail);
+  let operativeLink = {linked: false};
+  try {
+    operativeLink = await linkHouseholdOperativeToTeam({
+      guardianEmail,
+      playerName,
+      teamId,
+      clubId,
+    });
+  } catch (linkErr) {
+    console.warn(
+        '[promoteTryoutToRoster] operative link failed (non-fatal)',
+        linkErr instanceof Error ? linkErr.message : linkErr,
+    );
+  }
+
   return {
     ok: true,
     programId,
     registrationId,
     teamId,
     playerName,
-    guardianEmail: normEmail(reg.guardianEmail),
+    guardianEmail,
     pipelineStatus: PIPELINE.ROSTER_PENDING,
+    operativeLinked: operativeLink.linked === true,
+    operativeEmail: operativeLink.childEmail || null,
   };
 });
 

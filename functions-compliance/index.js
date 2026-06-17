@@ -52,6 +52,7 @@ exports.processMinorRetentionQueue = complianceOps.processMinorRetentionQueue;
 exports.purgeExpiredMinorData = complianceOps.purgeExpiredMinorData;
 exports.linkHousehold = complianceOps.linkHousehold;
 exports.parentGrantVpcConsent = complianceOps.parentGrantVpcConsent;
+exports.registrarTransferPlayer = complianceOps.registrarTransferPlayer;
 
 const operativeOps = require('./src/domains/operativeOps');
 exports.parentSignCoppaWaiver = operativeOps.parentSignCoppaWaiver;
