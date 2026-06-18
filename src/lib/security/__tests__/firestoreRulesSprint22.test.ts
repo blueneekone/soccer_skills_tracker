@@ -61,15 +61,17 @@ describe('T0-7 — team_assignments list rule tenant guard', () => {
 		expect(teamAssignmentsListBlock).toContain('allow list:');
 	});
 
-	it('list rule player branch requires tokenTeam() guard — own-team access only (T0-7)', () => {
-		// A player MUST be limited to their own team — bare isPlayer() is not sufficient.
-		expect(teamAssignmentsListBlock).toMatch(
-			/isPlayer\(\)[\s\S]*?resource\.data\.teamId\s*==\s*tokenTeam\(\)/,
-		);
+	it('list rule player branch uses playerCanListTeamAssignment — JWT + profile fallback (QA-142)', () => {
+		expect(teamAssignmentsListBlock).toContain('playerCanListTeamAssignment()');
+		expect(RULES).toMatch(/function playerIntentTeamOk\(data\)/);
+		expect(RULES).toMatch(/data\.teamId == tokenTeam\(\)/);
+		expect(RULES).toMatch(/data\.teamId == userDoc\(\)\.teamId/);
 	});
 
-	it('list rule player branch requires tenantId == tokenClub() guard — cross-tenant defence (T0-7)', () => {
-		expect(teamAssignmentsListBlock).toMatch(/resource\.data\.tenantId\s*==\s*tokenClub\(\)/);
+	it('list rule player branch requires tenant guard via playerIntentTenantOk (T0-7)', () => {
+		expect(RULES).toMatch(/function playerIntentTenantOk\(data\)/);
+		expect(RULES).toMatch(/data\.tenantId == tokenClub\(\)/);
+		expect(RULES).toMatch(/data\.tenantId == userDoc\(\)\.clubId/);
 	});
 
 	it('list rule player branch is NOT a bare isPlayer() call — regression guard (T0-7)', () => {

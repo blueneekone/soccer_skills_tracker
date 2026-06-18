@@ -848,6 +848,40 @@ service cloud.firestore {
       );
     }
 
+    // Epic 8 — player intent read when JWT claims lag users/{email} (QA-142).
+    function playerIntentTeamOk(data) {
+      return (tokenTeam() != null && data.teamId == tokenTeam())
+        || (userDoc().keys().hasAll(['teamId']) && data.teamId == userDoc().teamId);
+    }
+
+    function playerIntentTenantOk(data) {
+      return (tokenClub() != null && data.tenantId == tokenClub())
+        || (userDoc().keys().hasAll(['clubId']) && data.tenantId == userDoc().clubId)
+        || (data.keys().hasAll(['teamId'])
+            && data.teamId != null
+            && exists(/databases/$(database)/documents/teams/$(data.teamId))
+            && userDoc().keys().hasAll(['clubId'])
+            && teamClubId(data.teamId) == userDoc().clubId);
+    }
+
+    function playerCanListTeamAssignment() {
+      return isPlayer()
+        && playerIntentTeamOk(resource.data)
+        && playerIntentTenantOk(resource.data);
+    }
+
+    function playerCanGetTeamAssignment() {
+      return isPlayer()
+        && resource.data.status == 'active'
+        && (
+          (resource.data.scope == 'team'
+            && playerIntentTeamOk(resource.data)
+            && playerIntentTenantOk(resource.data))
+          || (resource.data.scope == 'players'
+            && request.auth.uid in resource.data.targetUids)
+        );
+    }
+
     function canReadUsersDocument(userId) {
       return authed() && (
         emailKey() == userId.lower()
@@ -3729,27 +3763,14 @@ service cloud.firestore {
           && resource.data.tenantId == tokenClub()
         )
         // Player reads team-wide intent on their team
-        || (
-          isPlayer()
-          && resource.data.status == 'active'
-          && (
-            (resource.data.scope == 'team' && resource.data.teamId == tokenTeam())
-            || (resource.data.scope == 'players' && request.auth.uid in resource.data.targetUids)
-          )
-        )
+        || playerCanGetTeamAssignment()
       );
 
       allow list: if authed() && (
         isSuper()
         || (isCoach() || isDirector()) && tokenClub() != null
-        // T0-7: player list scoped to own team + tenant only (cross-tenant enumeration fix)
-        || (
-          isPlayer()
-          && tokenTeam() != null
-          && tokenClub() != null
-          && resource.data.teamId == tokenTeam()
-          && resource.data.tenantId == tokenClub()
-        )
+        // T0-7: player list scoped to own team + tenant (JWT or users/{email} fallback)
+        || playerCanListTeamAssignment()
       );
 
       // All writes are Admin SDK only (callable functions).

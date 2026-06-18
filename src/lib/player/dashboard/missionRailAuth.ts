@@ -30,7 +30,9 @@ export async function refreshClaimsIfProfileTeamStale(
 		const claimClub = claimClubId(tr.claims as Record<string, unknown>);
 		const teamStale = Boolean(teamId && !claimTeamId);
 		const clubStale = Boolean(clubId && !claimClub);
-		if (teamStale || clubStale) {
+		const teamMismatch = Boolean(teamId && claimTeamId && claimTeamId !== teamId);
+		const clubMismatch = Boolean(clubId && claimClub && claimClub !== clubId);
+		if (teamStale || clubStale || teamMismatch || clubMismatch) {
 			await authStore.refreshClaims();
 			return true;
 		}

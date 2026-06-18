@@ -239,6 +239,19 @@ describe.skipIf(!process.env.FIRESTORE_EMULATOR_HOST)(
 			await assertFails(getDoc(doc(db, 'team_assignments/intent-1')));
 		});
 
+		it('G2b: player with stale JWT but matching users/{email} profile reads intent — succeeds (QA-142)', async () => {
+			// JWT lacks teamId/clubId; users/player@club-a.com has team-a / club-a.
+			const db = env
+				.authenticatedContext('uid-player-a', token({
+					email: 'player@club-a.com',
+					role: 'player',
+					clubId: null,
+					teamId: null,
+				}))
+				.firestore();
+			await assertSucceeds(getDoc(doc(db, 'team_assignments/intent-1')));
+		});
+
 		// ── G3 — parentProvisionOperative seeded fields ──────────────────────────
 		// Rule: canReadUsersDocument → parentHouseholdAllowsChildEmail(userId.lower())
 		//   = isParent() && tokenHousehold()!=null && households/hh.playerEmails.hasAny([childKey])
