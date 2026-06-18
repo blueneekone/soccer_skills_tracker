@@ -62,6 +62,7 @@ describe('LAUNCH-forge-nameonly — Intent Engine roster hints', () => {
 	it('IntentEngine canDeploy requires assignable roster (D9 — no silent empty deploy)', () => {
 		const src = readFileSync(ENGINE, 'utf-8');
 		expect(src).toMatch(/assignableRosterCount/);
+		expect(src).toMatch(/draftScope === 'team'\s*\?\s*\n?\s*this\.assignableRosterCount > 0/);
 		expect(src).toMatch(/selectedAssignableCount/);
 		expect(src).toMatch(/nameOnlyRosterCount/);
 	});

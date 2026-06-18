@@ -625,3 +625,12 @@ function timestampToMillis(ts: unknown): number {
 	if (typeof t.seconds === 'number') return t.seconds * 1000;
 	return 0;
 }
+
+/** Team-wide or UID-targeted coach intents visible on the player mission rail. */
+export function intentAssignmentVisibleToPlayer(
+	row: { scope?: string; targetUids?: string[] },
+	playerUid: string,
+): boolean {
+	if (!row.scope || row.scope === 'team') return true;
+	return Array.isArray(row.targetUids) && row.targetUids.includes(playerUid);
+}

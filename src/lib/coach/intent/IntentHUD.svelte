@@ -564,7 +564,7 @@
 			>
 				{#if draftScope === 'team'}
 					{nameOnlyRosterCount} name-only {nameOnlyRosterCount === 1 ? 'entry' : 'entries'} —
-					included in squad-wide deploy; link accounts on Daily Intel for individual targeting.
+					excluded from deploy until player accounts are linked on Daily Intel.
 				{:else}
 					{nameOnlyRosterCount} name-only roster {nameOnlyRosterCount === 1 ? 'entry' : 'entries'} —
 					link player accounts on Daily Intel before individual assignment.
@@ -574,6 +574,11 @@
 		{#if draftScope === 'players' && !isLoadingRoster && assignableRosterCount === 0}
 			<p class="tw-font-mono tw-text-[9px] tw-tracking-wide tw-text-slate-500 tw-uppercase" role="status">
 				No assignable players — sync roster emails on Daily Intel first.
+			</p>
+		{/if}
+		{#if draftScope === 'team' && !isLoadingRoster && assignableRosterCount === 0 && roster.length > 0}
+			<p class="tw-font-mono tw-text-[9px] tw-tracking-wide tw-text-slate-500 tw-uppercase" role="status">
+				No linked player accounts — link accounts on Daily Intel before squad deploy.
 			</p>
 		{/if}
 		{#if draftScope === 'team' && !isLoadingRoster && roster.length === 0}

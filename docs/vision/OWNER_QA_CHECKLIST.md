@@ -179,11 +179,6 @@ Order strictly (matches `[FUNCTIONAL_MVP.md](./FUNCTIONAL_MVP.md)` VPC golden pa
 
 ```
 QA-131b [P2/P3]: Passkey fails in installed PWA/desktop app on same machine; browser on sstracker.app OK. Likely PWA/WebView vs extension-mediated WebAuthn. Workaround: browser for QA; magic link in installed app.
-
-QA-121: [P1] — Reused operative callsign from prior test session fails provision
-("That Operative Callsign is already in use"). dev-tenant-reset --provision clears
-household playerEmails but does not purge orphaned @operative.local Auth/users docs.
-Workaround: new callsign. Fix: provision/reset should clean QA operatives or document manual purge.
 ```
 
 **Waivers this phase**
@@ -216,34 +211,34 @@ Complete Profile error appears when authenticating player even though they're li
 
 **Gate:** Do not proceed to coach HQ demo until clearance path verified (skip if coach already cleared on tenant).
 
-- [ ] **QA-161** Uncleared coach sign-in → `/compliance` redirect — gap register F-03
-- [ ] **QA-204** Checkr embed loads; webhook path documented — gap register D-01 · pre-check: `complianceCheckr.guard.test.js`
-- [ ] **QA-162** Director compliance matrix + audit log on `/director/compliance` — gap register F-03
-- [ ] **QA-163** Cleared coach lands on `/coach` — gap register F-03
+- [x] **QA-161** Uncleared coach sign-in → `/compliance` redirect — gap register F-03
+- [x] **QA-204** Checkr embed loads; webhook path documented — gap register D-01 · pre-check: `complianceCheckr.guard.test.js`
+- [x] **QA-162** Director compliance matrix + audit log on `/director/compliance` — gap register F-03
+- [x] **QA-163** Cleared coach lands on `/coach` — gap register F-03
 
 ### Phase 4 — Owner notes
 
 
-| Field          | Value                                      |
-| -------------- | ------------------------------------------ |
-| Phase result   | Pass / Pass with issues / Blocked / Waived |
-| Date completed |                                            |
-| Tester/browser |                                            |
+| Field          | Value |
+| -------------- | ----- |
+| Phase result   | Pass  |
+| Date completed |       |
+| Tester/browser |       |
 
 
 **Issues found**
 
 ```
-QA-xxx: [P0|P1|P2] — what happened — expected vs actual
+
 ```
 
 **Waivers this phase**
 
 ```
-QA-xxx: reason
+
 ```
 
-- [ ] **Continue to next phase?** Yes / No
+- [x] **Continue to next phase?** Yes / No
 
 **Owner freeform**
 
@@ -259,7 +254,7 @@ QA-xxx: reason
 
 Order (matches `[DEMO_SCRIPT.md](../acquisition/DEMO_SCRIPT.md)` exec cut steps 3–4):
 
-- [ ] **QA-141** Coach HQ `/coach` — squad/roster loads — gap register F-03
+- [x] **QA-141** Coach HQ `/coach` — squad/roster loads — gap register F-03
 - [ ] **QA-142** Forge deploy intent/bounty on `/coach/forge` — appears on player HQ — gap register F-03 · pre-check: `intentModule.test.ts`
 - [ ] **QA-143** Sub-drill picker — team + club drills (not global only) — gap register F-03 · pre-check: `personaFunctionalMvp.test.ts`
 - [ ] **QA-144** Spatial designer save on `/coach/drills` — persists to `teams/{teamId}/drills` — gap register F-03 (optional same session)
@@ -278,17 +273,17 @@ Order (matches `[DEMO_SCRIPT.md](../acquisition/DEMO_SCRIPT.md)` exec cut steps 
 ### Phase 5 — Owner notes
 
 
-| Field          | Value                                      |
-| -------------- | ------------------------------------------ |
-| Phase result   | Pass / Pass with issues / Blocked / Waived |
-| Date completed |                                            |
-| Tester/browser |                                            |
+| Field          | Value   |
+| -------------- | ------- |
+| Phase result   | Blocked |
+| Date completed |         |
+| Tester/browser |         |
 
 
 **Issues found**
 
 ```
-QA-xxx: [P0|P1|P2] — what happened — expected vs actual
+QA-142: |P5] — full forge creation tool didn't show up on mobile version. After I switched to the desktop version I was able to fill everything out. However, I cannot assign the bounty to the squad nor individual players — expected I could push a drill via mobile and desktop vs actual button never activates
 ```
 
 **Waivers this phase**
@@ -302,7 +297,9 @@ QA-xxx: reason
 **Owner freeform**
 
 ```
+The Forge is really hard to use on mobile. We need to ensure we focus on the mobile UI experience because we want this to be easy to use anytime anywhere.
 
+When creating a bounty in The Forge, the slider for "Priority" goes above the 100% threshold. Instead of numbers, want to make that a toggle switch so players know whether or not it is priority versus other workouts they're doing. I am unable to assign a drill to the squad nor a player. The player roster doesn't show up under the selection dropdown and the button for creating a drill never activates after all areas are filled. 
 ```
 
 ---

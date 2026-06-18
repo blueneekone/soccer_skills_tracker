@@ -88,4 +88,12 @@ describe('LAUNCH-parent-link-team — parentLinkOperativeToTeam + household UI',
 		expect(src).toMatch(/linkOperativeTeam/);
 		expect(src).toMatch(/QA-PP26/);
 	});
+
+	it('parentLinkOperativeToTeam stamps JWT teamId + clubId immediately after link', () => {
+		const ops = readFileSync(join(ROOT, 'functions/src/domains/operativeOps.js'), 'utf8');
+		expect(ops).toMatch(/stampOperativeTeamClaims/);
+		expect(ops).toMatch(/buildBaseCustomClaims/);
+		expect(ops).toMatch(/setCustomUserClaims\(childUid/);
+		expect(ops).toMatch(/await stampOperativeTeamClaims\(childUid, u, teamIdForUser, clubId, hid\)/);
+	});
 });

@@ -166,6 +166,26 @@ describe('Sprint LAUNCH-functional-os — Coach→Player bounty handoff', () => 
 		expect(src).toMatch(/stashMissionHandoff/);
 	});
 
+	it('QA-142 ActiveBounties refreshes stale JWT team scope before mission subscribe', () => {
+		const authSync = join(ROOT, 'lib/player/dashboard/missionRailAuth.ts');
+		const src = readFileSync(ACTIVE_BOUNTIES, 'utf-8');
+		const sync = readFileSync(authSync, 'utf-8');
+		expect(sync).toMatch(/getIdTokenResult/);
+		expect(sync).toMatch(/refreshClaimsIfProfileTeamStale/);
+		expect(src).toMatch(/MissionRailClaimsSync/);
+		expect(src).toMatch(/createMissionSnapshotRetryHandler/);
+		expect(src).toMatch(/missionClaimsSync\.claimsSyncNonce/);
+		expect(src).toMatch(/Mission sync blocked/);
+	});
+
+	it('QA-142 parentLinkOperativeToTeam stamps custom claims on link', () => {
+		expect(existsSync(OPERATIVE_OPS)).toBe(true);
+		const ops = readFileSync(OPERATIVE_OPS, 'utf-8');
+		expect(ops).toMatch(/stampOperativeTeamClaims/);
+		expect(ops).toMatch(/setCustomUserClaims/);
+		expect(ops).toMatch(/teamId: teamIdForUser/);
+	});
+
 	it('Train page logs sessions and records quest progress after coach handoff', () => {
 		expect(existsSync(WORKOUT_PAGE)).toBe(true);
 		const src = readFileSync(WORKOUT_PAGE, 'utf-8');
@@ -442,12 +462,13 @@ describe('Functional audit backlog A–F — regression guards', () => {
 		expect(src).not.toMatch(/demo mode/i);
 	});
 
-	it('D9 team-scope Forge deploy allows name-only roster squads', () => {
+	it('D9 team-scope Forge deploy requires assignable roster (not name-only void)', () => {
 		const engine = readFileSync(join(ROOT, 'lib/coach/intent/IntentEngine.svelte.ts'), 'utf-8');
 		const hud = readFileSync(join(ROOT, 'lib/coach/intent/IntentHUD.svelte'), 'utf-8');
-		expect(engine).toMatch(/draftScope === 'team'\s*\?\s*\n?\s*this\.roster\.length > 0/);
+		expect(engine).toMatch(/draftScope === 'team'\s*\?\s*\n?\s*this\.assignableRosterCount > 0/);
 		expect(hud).toMatch(/draftScope === 'team'/);
-		expect(hud).toMatch(/included in squad-wide deploy/);
+		expect(hud).toMatch(/assignableRosterCount === 0 && roster\.length > 0/);
+		expect(hud).toMatch(/excluded from deploy until player accounts are linked/);
 	});
 
 	it('F2 coach nav includes Field Station and War Room', () => {

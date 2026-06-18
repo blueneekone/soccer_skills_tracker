@@ -12,6 +12,8 @@
 		where,
 	} from 'firebase/firestore';
 	import { db } from '$lib/firebase.js';
+	import { createMissionSnapshotRetryHandler } from '$lib/player/dashboard/missionRailAuth.js';
+	import { MissionRailClaimsSync } from '$lib/player/dashboard/missionRailClaims.svelte.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { dopamineExplosion } from '$lib/services/dopamine.svelte.js';
 	import HudSeededRingCanvas from '$lib/components/hud/HudSeededRingCanvas.svelte';
@@ -40,6 +42,7 @@
 		resolveHeroQuest,
 		selectPrimaryBounty,
 		sortQuestLog,
+		intentAssignmentVisibleToPlayer,
 		type QuestTask,
 	} from '$lib/player/dashboard/activeBounties.js';
 	import {
@@ -84,6 +87,8 @@
 	>({});
 	let refreshNonce = $state(0);
 	let isRefreshing = $state(false);
+	let missionSyncBlocked = $state(false);
+	const missionClaimsSync = new MissionRailClaimsSync();
 	let lastCoachIntentIds = $state<string[]>([]);
 	/** Flat completion records for cadence progress — fetched once per uid, not real-time. */
 	let cadenceCompletions = $state<Array<{ attributeId: string; loggedAtMs: number }>>([]);
@@ -104,7 +109,7 @@
 		showAllQuests ? dedupedQuests : dedupedQuests.slice(0, maxVisibleQuests()),
 	);
 	const hiddenCount = $derived(Math.max(0, dedupedQuests.length - maxVisibleQuests()));
-	const showEmpty = $derived(!loading && dedupedQuests.length === 0);
+	const showEmpty = $derived(!loading && dedupedQuests.length === 0 && !missionSyncBlocked);
 	const heroQuest = $derived(
 		embedded ? resolveHeroQuest(dedupedQuests, { lastTrainingUtc }) : null,
 	);
@@ -239,6 +244,8 @@
 		typeof authStore.userProfile?.teamId === 'string' ? authStore.userProfile.teamId.trim() : '',
 	);
 
+	$effect(() => missionClaimsSync.watch(teamId));
+
 	$effect(() => {
 		if (questsProp !== undefined) return;
 
@@ -249,6 +256,7 @@
 		}
 
 		void refreshNonce;
+		void missionClaimsSync.claimsSyncNonce;
 
 		const uid = playerUid;
 		const email = playerEmail;
@@ -319,32 +327,32 @@
 				where('status', '==', 'active'),
 				orderBy('priority', 'asc'),
 			);
+			const handleIntentSnapshotError = createMissionSnapshotRetryHandler(
+				() => {
+					isRefreshing = true;
+					void authStore.refreshClaims().finally(() => { refreshNonce += 1; });
+				},
+				() => {
+					missionSyncBlocked = true;
+					syncCoachIntentRemoval(new Set());
+					intents = [];
+					intentDataById = {};
+					merge();
+				},
+			);
+			const mapIntentRows = (docs: { id: string; data: () => Record<string, unknown> }[]) =>
+				docs
+					.map((d) => ({ id: d.id, ...d.data() }))
+					.filter((row) => intentAssignmentVisibleToPlayer(row, uid));
 			unsubs.push(
 				onSnapshot(
 					intentQ,
 					(snap) => {
+						missionSyncBlocked = false;
 						const uniqueDocs = [...new Map(snap.docs.map((d) => [d.id, d])).values()];
-						const scopedRows = uniqueDocs
-							.map((d) => ({ id: d.id, ...d.data() }))
-							.filter((row) => {
-								const scoped = row as {
-									id: string;
-									scope?: string;
-									targetUids?: string[];
-								};
-								if (!scoped.scope || scoped.scope === 'team') return true;
-								return (
-									Array.isArray(scoped.targetUids) && scoped.targetUids.includes(uid)
-								);
-							});
-						applyCoachIntents(scopedRows);
+						applyCoachIntents(mapIntentRows(uniqueDocs));
 					},
-					() => {
-						syncCoachIntentRemoval(new Set());
-						intents = [];
-						intentDataById = {};
-						merge();
-					},
+					handleIntentSnapshotError,
 				),
 			);
 
@@ -352,20 +360,7 @@
 				void getDocs(intentQ)
 					.then((snap) => {
 						const uniqueDocs = [...new Map(snap.docs.map((d) => [d.id, d])).values()];
-						const scopedRows = uniqueDocs
-							.map((d) => ({ id: d.id, ...d.data() }))
-							.filter((row) => {
-								const scoped = row as {
-									id: string;
-									scope?: string;
-									targetUids?: string[];
-								};
-								if (!scoped.scope || scoped.scope === 'team') return true;
-								return (
-									Array.isArray(scoped.targetUids) && scoped.targetUids.includes(uid)
-								);
-							});
-						applyCoachIntents(scopedRows);
+						applyCoachIntents(mapIntentRows(uniqueDocs));
 					})
 					.catch(() => {
 						/* snapshot error handler covers persistent failures */
@@ -817,7 +812,9 @@
 			</button>
 		{/if}
 	{:else}
-		<p class="quest-log__placeholder" aria-hidden="true">NO ACTIVE MISSIONS</p>
+		<p class="quest-log__placeholder" role={missionSyncBlocked ? 'status' : undefined} aria-hidden={missionSyncBlocked ? undefined : 'true'}>
+			{missionSyncBlocked ? 'Mission sync blocked — sign out and back in' : 'NO ACTIVE MISSIONS'}
+		</p>
 	{/if}
 </section>
 

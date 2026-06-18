@@ -21,8 +21,45 @@ const {
 } = require('./commsPolicy');
 const {sendFcmToUids} = require('./notificationOps');
 const {provisionLoungesForParentHousehold} = require('./commsChannelOps');
+const {buildBaseCustomClaims} = require('../auth/customClaims');
 
 const REGION = 'us-east1';
+
+/**
+ * Stamp JWT team scope immediately after parent links operative (do not wait for syncUserClaims).
+ * @param {string} childUid
+ * @param {Record<string, unknown>} userDoc users/{email} snapshot data
+ * @param {string} teamId
+ * @param {string} clubId
+ * @param {string} householdId
+ */
+async function stampOperativeTeamClaims(childUid, userDoc, teamId, clubId, householdId) {
+  let existingClaims = {};
+  try {
+    const authUser = await admin.auth().getUser(childUid);
+    existingClaims = authUser.customClaims || {};
+  } catch (err) {
+    logger.warn('[stampOperativeTeamClaims] read existing claims failed', {
+      childUid,
+      err: err instanceof Error ? err.message : String(err),
+    });
+  }
+  const mergedUserData = {
+    ...(userDoc && typeof userDoc === 'object' ? userDoc : {}),
+    role: 'player',
+    teamId,
+    clubId,
+    householdId,
+  };
+  const baseClaims = buildBaseCustomClaims(mergedUserData);
+  if (!baseClaims) return;
+  await admin.auth().setCustomUserClaims(childUid, {
+    ...existingClaims,
+    ...baseClaims,
+    vpcVerified: existingClaims.vpcVerified === true || baseClaims.vpcVerified === true,
+    minor: existingClaims.minor === true || baseClaims.minor === true,
+  });
+}
 
 /** Lazy Firestore accessor — defers init until first call. */
 const db = () => admin.firestore();
@@ -1533,18 +1570,6 @@ exports.parentLinkOperativeToTeam = onCall({region: REGION}, async (request) => 
   if (!playerName) {
     throw new HttpsError('failed-precondition', 'Operative missing display name.');
   }
-  const existingTeam =
-      typeof u.teamId === 'string' && u.teamId.trim() ? u.teamId.trim() : '';
-  if (existingTeam === teamIdForUser) {
-    return {
-      ok: true,
-      noop: true,
-      childEmail,
-      teamId: teamIdForUser,
-      teamLinked: true,
-    };
-  }
-
   let childUid = '';
   try {
     const rec = await admin.auth().getUserByEmail(childEmail);
@@ -1554,6 +1579,18 @@ exports.parentLinkOperativeToTeam = onCall({region: REGION}, async (request) => 
       throw new HttpsError('not-found', 'Operative Auth account not found.');
     }
     throw e;
+  }
+  const existingTeam =
+      typeof u.teamId === 'string' && u.teamId.trim() ? u.teamId.trim() : '';
+  if (existingTeam === teamIdForUser) {
+    await stampOperativeTeamClaims(childUid, u, teamIdForUser, clubId, hid);
+    return {
+      ok: true,
+      noop: true,
+      childEmail,
+      teamId: teamIdForUser,
+      teamLinked: true,
+    };
   }
 
   const now = admin.firestore.FieldValue.serverTimestamp();
@@ -1598,6 +1635,8 @@ exports.parentLinkOperativeToTeam = onCall({region: REGION}, async (request) => 
       {merge: true},
   );
   await batch.commit();
+
+  await stampOperativeTeamClaims(childUid, u, teamIdForUser, clubId, hid);
 
   try {
     await provisionLoungesForParentHousehold({

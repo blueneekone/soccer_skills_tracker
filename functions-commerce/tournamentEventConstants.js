@@ -141,11 +141,8 @@ function validateBracket(bracket) {
 		return ['bracket must be an object or null.'];
 	}
 	const errors = [];
-	if (bracket.format !== 'single_elimination' && bracket.format !== 'double_elimination') {
-		errors.push('bracket.format must be single_elimination or double_elimination.');
-	}
-	if (bracket.format === 'double_elimination' && bracket.teamSize < 8) {
-		errors.push('double_elimination requires at least 8 teams.');
+	if (bracket.format !== 'single_elimination') {
+		errors.push('bracket.format must be single_elimination.');
 	}
 	if (!BRACKET_TEAM_SIZES.includes(bracket.teamSize)) {
 		errors.push(`bracket.teamSize must be one of ${BRACKET_TEAM_SIZES.join(', ')}.`);
@@ -171,12 +168,9 @@ function validateBracket(bracket) {
 		if (team?.id) teamIds.add(team.id);
 	}
 
-	const expectedMatches =
-		bracket.format === 'double_elimination'
-			? bracket.teamSize * 2 - 2
-			: bracket.teamSize - 1;
+	const expectedMatches = bracket.teamSize - 1;
 	if (bracket.matches.length !== expectedMatches) {
-		errors.push(`bracket must have ${expectedMatches} matches for ${bracket.teamSize} teams (${bracket.format}).`);
+		errors.push(`bracket must have ${expectedMatches} matches for ${bracket.teamSize} teams.`);
 	}
 
 	for (const match of bracket.matches) {
