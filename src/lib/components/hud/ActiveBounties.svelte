@@ -12,7 +12,8 @@
 		where,
 	} from 'firebase/firestore';
 	import { db } from '$lib/firebase.js';
-	import { createMissionSnapshotRetryHandler } from '$lib/player/dashboard/missionRailAuth.js';
+	import { MissionSnapshotRetryGate } from '$lib/player/dashboard/missionRailAuth.js';
+	import { fetchCoachIntentQuests, mapCoachIntentRows, coachIntentRemovalDelta, applyCoachIntentPurge, applyCoachIntentRefetch } from '$lib/player/dashboard/missionRailCoachIntents.js';
 	import { MissionRailClaimsSync } from '$lib/player/dashboard/missionRailClaims.svelte.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { dopamineExplosion } from '$lib/services/dopamine.svelte.js';
@@ -20,7 +21,6 @@
 	import { deduplicateById } from '$lib/utils/deduplicateMissions.js';
 	import {
 		buildDailyQuests,
-		bountyFromCoachIntent,
 		bountyFromHomeworkAssignment,
 		bountyFromParentBounty,
 		countCadenceSessionsInWindow,
@@ -30,7 +30,6 @@
 		markQuestClaimed,
 		markQuestCompleted,
 		maxVisibleQuests,
-		purgeCoachIntentIds,
 		formatQuestRewardLabel,
 		isPromotedQuest,
 		questCtaLabel,
@@ -88,7 +87,9 @@
 	let refreshNonce = $state(0);
 	let isRefreshing = $state(false);
 	let missionSyncBlocked = $state(false);
+	let hasQuestLogLoaded = $state(false);
 	const missionClaimsSync = new MissionRailClaimsSync();
+	const missionRetryGate = new MissionSnapshotRetryGate();
 	let lastCoachIntentIds = $state<string[]>([]);
 	/** Flat completion records for cadence progress — fetched once per uid, not real-time. */
 	let cadenceCompletions = $state<Array<{ attributeId: string; loggedAtMs: number }>>([]);
@@ -243,33 +244,29 @@
 	const teamId = $derived(
 		typeof authStore.userProfile?.teamId === 'string' ? authStore.userProfile.teamId.trim() : '',
 	);
+	const clubId = $derived(
+		typeof authStore.userProfile?.clubId === 'string' ? authStore.userProfile.clubId.trim() : '',
+	);
 
-	$effect(() => missionClaimsSync.watch(teamId));
+	$effect(() => missionClaimsSync.watch(teamId, clubId));
 
 	$effect(() => {
 		if (questsProp !== undefined) return;
 
-		if (!browser || authStore.isLoading || authStore.role !== 'player') {
+		if (!browser || authStore.isLoading || authStore.role !== 'player' || !playerUid) {
 			internalLoading = false;
 			internalQuests = [];
+			hasQuestLogLoaded = false;
+			missionRetryGate.reset();
 			return;
 		}
-
-		void refreshNonce;
-		void missionClaimsSync.claimsSyncNonce;
 
 		const uid = playerUid;
 		const email = playerEmail;
 		const tid = teamId;
 		const profile = authStore.userProfile;
 
-		if (!uid) {
-			internalLoading = false;
-			internalQuests = [];
-			return;
-		}
-
-		internalLoading = true;
+		if (!hasQuestLogLoaded) internalLoading = true;
 		questProgress = loadQuestProgress();
 
 		/** @type {QuestTask[]} */
@@ -292,29 +289,26 @@
 			);
 			internalQuests = sortQuestLog(merged);
 			internalLoading = false;
+			hasQuestLogLoaded = true;
 		};
 
 		const syncCoachIntentRemoval = (activeIds: Set<string>) => {
-			const removed = lastCoachIntentIds.filter((id) => !activeIds.has(id));
-			lastCoachIntentIds = [...activeIds];
+			const { removed, nextIds } = coachIntentRemovalDelta(lastCoachIntentIds, activeIds);
+			lastCoachIntentIds = nextIds;
 			if (removed.length === 0) return;
-			questProgress = purgeCoachIntentIds(questProgress, removed);
-			const handoff = readMissionHandoff();
-			if (handoff?.source === 'coach_intent' && removed.includes(handoff.missionId)) {
-				clearMissionHandoff();
-			}
+			questProgress = applyCoachIntentPurge(questProgress, removed);
 		};
 
 		const applyCoachIntents = (scopedRows: Array<{ id: string } & Record<string, unknown>>) => {
-			const activeIds = new Set(scopedRows.map((row) => row.id));
-			syncCoachIntentRemoval(activeIds);
 			const progress = loadQuestProgress();
-			intentDataById = Object.fromEntries(
-				scopedRows.map((row) => [row.id, row as Record<string, unknown>]),
+			const { quests, intentDataById: nextIntentData, activeIds } = mapCoachIntentRows(
+				scopedRows,
+				progress,
+				uid,
 			);
-			intents = scopedRows
-				.map((row) => bountyFromCoachIntent(row.id, row, progress, uid))
-				.filter((b): b is QuestTask => b != null);
+			syncCoachIntentRemoval(activeIds);
+			intentDataById = nextIntentData;
+			intents = quests;
 			merge();
 		};
 
@@ -327,19 +321,24 @@
 				where('status', '==', 'active'),
 				orderBy('priority', 'asc'),
 			);
-			const handleIntentSnapshotError = createMissionSnapshotRetryHandler(
-				() => {
-					isRefreshing = true;
-					void authStore.refreshClaims().finally(() => { refreshNonce += 1; });
-				},
-				() => {
-					missionSyncBlocked = true;
-					syncCoachIntentRemoval(new Set());
-					intents = [];
-					intentDataById = {};
-					merge();
-				},
-			);
+			const handleIntentSnapshotError = () => {
+				missionRetryGate.onError(
+					() => {
+						isRefreshing = true;
+						void authStore.refreshClaims().finally(() => {
+							refreshNonce += 1;
+						});
+					},
+					() => {
+						missionSyncBlocked = true;
+						isRefreshing = false;
+						syncCoachIntentRemoval(new Set());
+						intents = [];
+						intentDataById = {};
+						merge();
+					},
+				);
+			};
 			const mapIntentRows = (docs: { id: string; data: () => Record<string, unknown> }[]) =>
 				docs
 					.map((d) => ({ id: d.id, ...d.data() }))
@@ -349,26 +348,14 @@
 					intentQ,
 					(snap) => {
 						missionSyncBlocked = false;
+						missionRetryGate.onSuccess();
+						isRefreshing = false;
 						const uniqueDocs = [...new Map(snap.docs.map((d) => [d.id, d])).values()];
 						applyCoachIntents(mapIntentRows(uniqueDocs));
 					},
 					handleIntentSnapshotError,
 				),
 			);
-
-			if (refreshNonce > 0) {
-				void getDocs(intentQ)
-					.then((snap) => {
-						const uniqueDocs = [...new Map(snap.docs.map((d) => [d.id, d])).values()];
-						applyCoachIntents(mapIntentRows(uniqueDocs));
-					})
-					.catch(() => {
-						/* snapshot error handler covers persistent failures */
-					})
-					.finally(() => {
-						isRefreshing = false;
-					});
-			}
 		}
 
 		const hwQ = query(
@@ -427,6 +414,37 @@
 		return () => {
 			for (const u of unsubs) u();
 		};
+	});
+
+	$effect(() => {
+		if (questsProp !== undefined) return;
+		void refreshNonce;
+		void missionClaimsSync.claimsSyncNonce;
+		if (!browser || authStore.isLoading || authStore.role !== 'player') return;
+		const tid = teamId;
+		if (!tid || (refreshNonce === 0 && missionClaimsSync.claimsSyncNonce === 0)) return;
+		isRefreshing = true;
+		void fetchCoachIntentQuests(db, tid, playerUid, loadQuestProgress())
+			.then((snapshot) => {
+				missionSyncBlocked = false;
+				missionRetryGate.onSuccess();
+				const applied = applyCoachIntentRefetch({
+					snapshot,
+					lastCoachIntentIds,
+					internalQuests,
+					questProgress,
+				});
+				lastCoachIntentIds = applied.lastCoachIntentIds;
+				questProgress = applied.questProgress;
+				intentDataById = applied.intentDataById;
+				internalQuests = applied.internalQuests;
+				internalLoading = false;
+				hasQuestLogLoaded = true;
+			})
+			.catch(() => {})
+			.finally(() => {
+				isRefreshing = false;
+			});
 	});
 
 	function refreshQuestLog() {

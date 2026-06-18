@@ -160,8 +160,13 @@ describe('Sprint LAUNCH-functional-os — Coach→Player bounty handoff', () => 
 	it('ActiveBounties subscribes to team_assignments and deduplicates missions', () => {
 		expect(existsSync(ACTIVE_BOUNTIES)).toBe(true);
 		const src = readFileSync(ACTIVE_BOUNTIES, 'utf-8');
+		const coachIntents = readFileSync(
+			join(ROOT, 'lib/player/dashboard/missionRailCoachIntents.ts'),
+			'utf-8',
+		);
 		expect(src).toMatch(/team_assignments/);
-		expect(src).toMatch(/bountyFromCoachIntent/);
+		expect(coachIntents).toMatch(/bountyFromCoachIntent/);
+		expect(src).toMatch(/fetchCoachIntentQuests|mapCoachIntentRows/);
 		expect(src).toMatch(/deduplicateById/);
 		expect(src).toMatch(/stashMissionHandoff/);
 	});
@@ -173,7 +178,7 @@ describe('Sprint LAUNCH-functional-os — Coach→Player bounty handoff', () => 
 		expect(sync).toMatch(/getIdTokenResult/);
 		expect(sync).toMatch(/refreshClaimsIfProfileTeamStale/);
 		expect(src).toMatch(/MissionRailClaimsSync/);
-		expect(src).toMatch(/createMissionSnapshotRetryHandler/);
+		expect(src).toMatch(/MissionSnapshotRetryGate/);
 		expect(src).toMatch(/missionClaimsSync\.claimsSyncNonce/);
 		expect(src).toMatch(/Mission sync blocked/);
 	});

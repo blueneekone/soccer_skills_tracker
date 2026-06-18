@@ -6,11 +6,11 @@ import { refreshClaimsIfProfileTeamStale } from '$lib/player/dashboard/missionRa
 export class MissionRailClaimsSync {
 	claimsSyncNonce = $state(0);
 
-	watch(profileTeamId: string) {
+	watch(profileTeamId: string, profileClubId = '') {
 		if (!browser || authStore.isLoading || authStore.role !== 'player') return;
-		if (!profileTeamId) return;
+		if (!profileTeamId.trim() && !profileClubId.trim()) return;
 		let cancelled = false;
-		void refreshClaimsIfProfileTeamStale(profileTeamId).then((refreshed) => {
+		void refreshClaimsIfProfileTeamStale(profileTeamId, profileClubId).then((refreshed) => {
 			if (refreshed && !cancelled) this.claimsSyncNonce += 1;
 		});
 		return () => {
