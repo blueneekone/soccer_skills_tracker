@@ -37,8 +37,8 @@
 	const myTeams = $derived(teamScope.myTeams);
 	const currentTeam = $derived(teamScope.currentTeam);
 
-	const tenantId = $derived(authStore.tenantId);
-	const clubId = $derived(authStore.tenantId);
+	const tenantId = $derived(teamScope.teamClubId || authStore.tenantId);
+	const clubId = $derived(teamScope.teamClubId || authStore.tenantId);
 	const sportId = $derived(sportsConfigStore.currentSportConfig?.sportId ?? 'soccer');
 
 	$effect(() => {
@@ -128,6 +128,7 @@
 	isLoadingDrills={engine.isLoadingDrills}
 	deployPhase={engine.deployPhase}
 	deployError={engine.deployError}
+	rosterError={engine.rosterError}
 	isLoadingRoster={engine.isLoadingRoster}
 	assignableRosterCount={engine.assignableRosterCount}
 	nameOnlyRosterCount={engine.nameOnlyRosterCount}

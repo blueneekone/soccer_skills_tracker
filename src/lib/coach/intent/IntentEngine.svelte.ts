@@ -79,6 +79,7 @@ export class IntentEngine {
 	isLoadingIntents = $state(false);
 	isLoadingRoster = $state(false);
 	error = $state('');
+	rosterError = $state('');
 
 	// ── Draft form state ────────────────────────────────────────────────────────
 	draftAttributeId = $state('');
@@ -522,8 +523,9 @@ export class IntentEngine {
 	private async _loadRoster() {
 		if (!this._teamId) return;
 		this.isLoadingRoster = true;
+		this.rosterError = '';
 		try {
-			const [snap, teamSnap, rosterSnap] = await Promise.all([
+			const [usersResult, teamSnap, rosterSnap] = await Promise.allSettled([
 				getDocs(
 					query(
 						collection(db, 'users'),
@@ -534,13 +536,23 @@ export class IntentEngine {
 				getDoc(doc(db, 'teams', this._teamId)),
 				getDoc(doc(db, 'rosters', this._teamId)),
 			]);
-			const teamPlayerUids = Array.isArray(teamSnap.data()?.playerUids)
-				? teamSnap
+
+			if (usersResult.status === 'rejected') {
+				console.error('[IntentEngine] roster users query error:', usersResult.reason);
+				this.rosterError =
+					'Could not load squad roster — refresh or re-sign in if this persists.';
+			}
+			const snap = usersResult.status === 'fulfilled' ? usersResult.value : null;
+			const teamDoc = teamSnap.status === 'fulfilled' ? teamSnap.value : null;
+			const rosterDoc = rosterSnap.status === 'fulfilled' ? rosterSnap.value : null;
+
+			const teamPlayerUids = Array.isArray(teamDoc?.data()?.playerUids)
+				? teamDoc!
 						.data()!
 						.playerUids.filter((u): u is string => typeof u === 'string' && u.trim().length > 0)
 				: [];
 
-			const rows: RosterEntry[] = snap.docs.map((d) => {
+			const rows: RosterEntry[] = (snap?.docs ?? []).map((d) => {
 				const x = d.data();
 				const authUid =
 					typeof x.uid === 'string' && x.uid.trim() && !x.uid.includes('@') ?
@@ -570,8 +582,8 @@ export class IntentEngine {
 			}
 
 			const rosterNames =
-				rosterSnap.exists() && Array.isArray(rosterSnap.data()?.players) ?
-					rosterSnap.data()!.players
+				rosterDoc?.exists() && Array.isArray(rosterDoc.data()?.players) ?
+					rosterDoc.data()!.players
 						.filter((n): n is string => typeof n === 'string' && n.trim().length > 0)
 						.map((n) => n.trim())
 				:	[];
@@ -620,6 +632,7 @@ export class IntentEngine {
 			});
 		} catch (e) {
 			console.error('[IntentEngine] roster load error:', e);
+			this.rosterError = 'Could not load squad roster — refresh or re-sign in if this persists.';
 			this.roster = [];
 		} finally {
 			this.isLoadingRoster = false;

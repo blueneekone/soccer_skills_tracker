@@ -59,6 +59,21 @@ describe('LAUNCH-forge-nameonly — Intent Engine roster hints', () => {
 		expect(src).toMatch(/assignable !== false/);
 	});
 
+	it('canReadUsersDocument lets coach staff read players on staffed teams', () => {
+		const src = readFileSync(join(process.cwd(), 'firestore.rules'), 'utf-8');
+		expect(src).toMatch(
+			/isCoach\(\)[\s\S]*?coachStaffCanAccessTeam\(resource\.data\.get\('teamId', null\)\)/,
+		);
+		expect(src).toMatch(
+			/match \/rosters\/\{teamId\}[\s\S]*?coachStaffCanAccessTeam\(teamId\)/,
+		);
+	});
+
+	it('CoachIntentEngineView resolves tenant from team club scope', () => {
+		const src = readFileSync(join(ROOT, 'CoachIntentEngineView.svelte'), 'utf-8');
+		expect(src).toMatch(/teamScope\.teamClubId/);
+	});
+
 	it('IntentEngine canDeploy requires assignable roster (D9 — no silent empty deploy)', () => {
 		const src = readFileSync(ENGINE, 'utf-8');
 		expect(src).toMatch(/assignableRosterCount/);

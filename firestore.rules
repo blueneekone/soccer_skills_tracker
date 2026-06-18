@@ -855,9 +855,9 @@ service cloud.firestore {
         || parentHouseholdAllowsChildEmail(userId.lower())
         || (isDirector() && tokenClubMatchesDoc(resource.data))
         || (isRegistrar() && tokenClubMatchesDoc(resource.data))
-        || (isCoach() && tokenClub() != null
-            && resource.data.get('teamId', null) == tokenTeam()
-            && tokenClubMatchesDoc(resource.data))
+        || (isCoach() && resource.data.get('teamId', null) != null
+            && coachStaffCanAccessTeam(resource.data.get('teamId', null))
+            && workoutInTokenClub(resource.data))
       );
     }
 
@@ -1536,6 +1536,7 @@ service cloud.firestore {
       allow read: if authed() && (
         isSuper()
         || (sameTeam(teamId) && isCleared())
+        || (coachStaffCanAccessTeam(teamId) && isCleared())
         || (isDirector() && exists(/databases/$(database)/documents/teams/$(teamId))
           && teamClubId(teamId) == tokenClub())
         || registrarTeamInClub(teamId)

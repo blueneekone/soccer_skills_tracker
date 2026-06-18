@@ -38,6 +38,7 @@
 	draftRequiresParentVerification = $bindable(false),
 		deployPhase = 'idle' as DeployPhase,
 		deployError = '',
+		rosterError = '',
 		isLoadingRoster = false,
 		assignableRosterCount = 0,
 		nameOnlyRosterCount = 0,
@@ -473,6 +474,44 @@
 			</div>
 		</div>
 
+		{#if draftScope === 'team'}
+			<div class="tw-flex tw-flex-col tw-gap-1.5">
+				<span class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-[#14b8a6]/40 tw-uppercase">
+					SQUAD ROSTER
+				</span>
+				<div
+					class="tw-flex tw-flex-col tw-gap-px tw-overflow-y-auto tw-rounded-lg tw-border tw-border-[#14b8a6]/10"
+					style="max-height:120px;"
+				>
+					{#if isLoadingRoster}
+						{#each [0, 1] as i (i)}
+							<div class="tw-h-7 tw-w-full tw-bg-[#05050a] tw-animate-pulse"></div>
+						{/each}
+					{:else if roster.length === 0}
+						<p class="tw-px-3 tw-py-2 tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-[#14b8a6]/35 tw-uppercase">
+							No operatives on this squad yet.
+						</p>
+					{:else}
+						{#each roster as player (player.rosterKey)}
+							<div class="tw-flex tw-items-center tw-justify-between tw-gap-2 tw-px-3 tw-py-1.5">
+								<span
+									class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-uppercase tw-truncate"
+									class:tw-text-slate-500={player.assignable === false}
+									class:tw-text-[#14b8a6]={player.assignable !== false}
+									style={player.assignable === false ? '' : 'opacity:0.75;'}
+								>
+									{player.playerName}
+								</span>
+								{#if player.assignable === false}
+									<span class="tw-shrink-0 tw-font-mono tw-text-[8px] tw-text-amber-500/80">NAME ONLY</span>
+								{/if}
+							</div>
+						{/each}
+					{/if}
+				</div>
+			</div>
+		{/if}
+
 		<!-- ── Roster multi-select ────────────────────────── -->
 		{#if draftScope === 'players'}
 			<div class="tw-flex tw-flex-col tw-gap-2">
@@ -581,7 +620,12 @@
 				No linked player accounts — link accounts on Daily Intel before squad deploy.
 			</p>
 		{/if}
-		{#if draftScope === 'team' && !isLoadingRoster && roster.length === 0}
+		{#if rosterError}
+			<p class="tw-font-mono tw-text-[9px] tw-tracking-wide tw-text-[#ff3040] tw-uppercase" role="alert">
+				{rosterError}
+			</p>
+		{/if}
+		{#if draftScope === 'team' && !isLoadingRoster && roster.length === 0 && !rosterError}
 			<p class="tw-font-mono tw-text-[9px] tw-tracking-wide tw-text-slate-500 tw-uppercase" role="status">
 				No roster entries — add players on Daily Intel or sync the squad list first.
 			</p>
