@@ -23,7 +23,7 @@ Route: `/coach` and sub-routes
 | Area | Surfaces | Purpose |
 |------|----------|---------|
 | Squad hub | `SquadTelemetryView` | Roster density, activity, readiness |
-| The Forge | `/coach/forge` | Intent deploy (Epic 8) — `$lib/coach/intent` |
+| The Forge | `/coach/forge` | Intent deploy (Epic 8) — inline deploy panel + active-intent list (`$lib/coach/intent`); **no** fixed slide-out HUD |
 | Drills | `/coach/drills` | Drill library, spatial designer, platform basics |
 | Match-day | `/coach/match-day` | Cartridge simulator, lineup |
 | Tactical | `/coach/tactical` | Trinity tactical board |

@@ -93,54 +93,67 @@
 		</div>
 	</header>
 
-	<main class="tw-px-5 tw-py-6 tw-pb-52">
-		<IntentArena
-			intents={engine.enrichedIntents}
-			isLoading={engine.isLoadingIntents}
-			isRefreshing={engine.isRefreshing}
-			cancellingIntentIds={engine.cancellingIntentIds}
-			mutationError={engine.mutationError}
-			onCancel={(id) => engine.cancelIntent(id)}
-			onExtend={(id, days) => engine.extendIntent(id, days)}
-			onRefresh={() => engine.refreshIntents()}
-		/>
+	<main class="tw-px-5 tw-py-6">
+		<div
+			class="tw-mx-auto tw-grid tw-w-full tw-max-w-6xl tw-grid-cols-1 tw-gap-6 xl:tw-grid-cols-12"
+		>
+			<section class="tw-min-w-0 xl:tw-col-span-5" aria-label="Deploy intent">
+				<IntentHUD
+					attributes={engine.attributes}
+					roster={engine.roster}
+					bind:draftAttributeId={engine.draftAttributeId}
+					bind:draftRequiredXp={engine.draftRequiredXp}
+					bind:draftDurationDays={engine.draftDurationDays}
+					bind:draftScope={engine.draftScope}
+					bind:draftTargetUids={engine.draftTargetUids}
+					bind:draftPriority={engine.draftPriority}
+					bind:draftPrescriptionSets={engine.draftPrescriptionSets}
+					bind:draftPrescriptionRepsPerSet={engine.draftPrescriptionRepsPerSet}
+					bind:draftPrescriptionBilateral={engine.draftPrescriptionBilateral}
+					bind:draftPrescriptionDurationMin={engine.draftPrescriptionDurationMin}
+					bind:draftPrescriptionTargetRpe={engine.draftPrescriptionTargetRpe}
+					bind:draftCadenceSessionsPerWindow={engine.draftCadenceSessionsPerWindow}
+					bind:draftDrillId={engine.draftDrillId}
+					bind:draftDrillTitle={engine.draftDrillTitle}
+					availableDrills={engine.availableDrills}
+					isLoadingDrills={engine.isLoadingDrills}
+					deployPhase={engine.deployPhase}
+					deployError={engine.deployError}
+					rosterError={engine.rosterError}
+					isLoadingRoster={engine.isLoadingRoster}
+					assignableRosterCount={engine.assignableRosterCount}
+					nameOnlyRosterCount={engine.nameOnlyRosterCount}
+					canDeploy={engine.canDeploy}
+					bind:draftBundleDrills={engine.draftBundleDrills}
+					bind:draftRequiresParentVerification={engine.draftRequiresParentVerification}
+					onDeploy={() => engine.deployIntent()}
+					onToggleUid={(uid) => engine.toggleDraftUid(uid)}
+					onSelectAll={() => engine.selectAllRosterUids()}
+					onClearSelection={() => engine.clearRosterSelection()}
+					onAttributeChange={() => engine.onAttributeChanged()}
+					onAddBundleDrill={() => engine.addBundleDrill()}
+					onRemoveBundleDrill={(i) => engine.removeBundleDrill(i)}
+					onUpdateBundleDrill={(i, patch) => engine.updateBundleDrill(i, patch)}
+				/>
+			</section>
+
+			<section class="tw-min-w-0 xl:tw-col-span-7" aria-label="Active tactical intents">
+				<h2
+					class="tw-mb-4 tw-mt-0 tw-font-mono tw-text-[11px] tw-tracking-widest tw-text-[#14b8a6]/70 tw-uppercase"
+				>
+					Active intents
+				</h2>
+				<IntentArena
+					intents={engine.enrichedIntents}
+					isLoading={engine.isLoadingIntents}
+					isRefreshing={engine.isRefreshing}
+					cancellingIntentIds={engine.cancellingIntentIds}
+					mutationError={engine.mutationError}
+					onCancel={(id) => engine.cancelIntent(id)}
+					onExtend={(id, days) => engine.extendIntent(id, days)}
+					onRefresh={() => engine.refreshIntents()}
+				/>
+			</section>
+		</div>
 	</main>
 </div>
-
-<IntentHUD
-	attributes={engine.attributes}
-	roster={engine.roster}
-	bind:draftAttributeId={engine.draftAttributeId}
-	bind:draftRequiredXp={engine.draftRequiredXp}
-	bind:draftDurationDays={engine.draftDurationDays}
-	bind:draftScope={engine.draftScope}
-	bind:draftTargetUids={engine.draftTargetUids}
-	bind:draftPriority={engine.draftPriority}
-	bind:draftPrescriptionSets={engine.draftPrescriptionSets}
-	bind:draftPrescriptionRepsPerSet={engine.draftPrescriptionRepsPerSet}
-	bind:draftPrescriptionBilateral={engine.draftPrescriptionBilateral}
-	bind:draftPrescriptionDurationMin={engine.draftPrescriptionDurationMin}
-	bind:draftPrescriptionTargetRpe={engine.draftPrescriptionTargetRpe}
-	bind:draftCadenceSessionsPerWindow={engine.draftCadenceSessionsPerWindow}
-	bind:draftDrillId={engine.draftDrillId}
-	bind:draftDrillTitle={engine.draftDrillTitle}
-	availableDrills={engine.availableDrills}
-	isLoadingDrills={engine.isLoadingDrills}
-	deployPhase={engine.deployPhase}
-	deployError={engine.deployError}
-	rosterError={engine.rosterError}
-	isLoadingRoster={engine.isLoadingRoster}
-	assignableRosterCount={engine.assignableRosterCount}
-	nameOnlyRosterCount={engine.nameOnlyRosterCount}
-	canDeploy={engine.canDeploy}
-	bind:draftBundleDrills={engine.draftBundleDrills}
-	bind:draftRequiresParentVerification={engine.draftRequiresParentVerification}
-	onDeploy={() => engine.deployIntent()}
-	onToggleUid={(uid) => engine.toggleDraftUid(uid)}
-	onSelectAll={() => engine.selectAllRosterUids()}
-	onClearSelection={() => engine.clearRosterSelection()}
-	onAttributeChange={() => engine.onAttributeChanged()}
-	onAddBundleDrill={() => engine.addBundleDrill()}
-	onRemoveBundleDrill={(i) => engine.removeBundleDrill(i)}
-	onUpdateBundleDrill={(i, patch) => engine.updateBundleDrill(i, patch)}
-/>

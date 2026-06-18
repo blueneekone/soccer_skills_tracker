@@ -13,7 +13,7 @@
 
 - [ ] Sign in as `coach` role on a team with ≥ 4 players
 - [ ] Navigate to `/coach/forge`
-- [ ] Verify page loads with the `[ INTENT ENGINE ]` header and fixed HUD panel
+- [ ] Verify page loads with deploy panel **inline** in the page (no fixed slide-out HUD)
 - [ ] Select attribute (e.g. "Pace"), set Required XP to 300, Duration 14 days
 - [ ] Set Scope to **OPERATIVES** and select exactly 4 players from roster
 - [ ] Click **[ DEPLOY TACTICAL INTENT ]**

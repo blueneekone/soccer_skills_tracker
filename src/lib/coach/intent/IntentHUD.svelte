@@ -72,22 +72,20 @@
 	);
 </script>
 
-<!-- Root: fixed bottom-right, pointer-events-none so it doesn't block map/canvas below -->
-<div class="tw-fixed tw-bottom-6 tw-right-6 tw-z-50 tw-w-80 tw-pointer-events-none">
-
-	<!-- Glass card: pointer-events-auto restores interactivity for the panel itself -->
+<!-- Inline deploy panel — full-width on mobile; no fixed slide-out HUD -->
+<div class="tw-w-full tw-min-w-0">
 	<div
-		class="tw-pointer-events-auto tw-bg-[#020202]/95 tw-backdrop-blur-xl tw-border tw-border-[#14b8a6]/20
+		class="tw-w-full tw-bg-[#05050a] tw-border tw-border-[#14b8a6]/20
 		       tw-rounded-2xl tw-p-5 tw-flex tw-flex-col tw-gap-4"
 	>
-		<!-- ── Header ──────────────────────────────────────── -->
+		<!-- ── Section head ───────────────────────────────── -->
 		<div class="tw-flex tw-flex-col tw-gap-0.5">
-			<span class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-[#14b8a6]/60 tw-uppercase">
-				[ // INTENT ENGINE ]
-			</span>
-			<span class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-white/30 tw-uppercase">
-				[ ASSIGNMENT TERMINAL ]
-			</span>
+			<h2 class="tw-m-0 tw-font-mono tw-text-[11px] tw-tracking-widest tw-text-[#14b8a6] tw-uppercase">
+				Deploy intent
+			</h2>
+			<p class="tw-m-0 tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-white/30 tw-uppercase">
+				Assignment terminal
+			</p>
 		</div>
 
 		<div class="tw-h-px tw-w-full tw-bg-[#14b8a6]/10"></div>
