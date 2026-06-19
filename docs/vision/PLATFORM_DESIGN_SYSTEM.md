@@ -12,10 +12,11 @@ Sits **below** registry (routes/tiers), **above** persona foundations (material 
 |-------|-----|------|
 | 1 | [`PRODUCT_SURFACE_REGISTRY.md`](./PRODUCT_SURFACE_REGISTRY.md) | Routes, tiers, `layout_pattern`, `workflow_id` |
 | 2 | [`PLATFORM_WORKFLOW_CANON.md`](./PLATFORM_WORKFLOW_CANON.md) | Gold path steps + UX states |
-| 3 | **This file** | Shared primitives, shell contract, layout catalog |
-| 4 | Persona foundations | Player / Coach / Parent material vocabulary |
-| 5 | [`PLATFORM_BUILD_MANDATES.md`](./PLATFORM_BUILD_MANDATES.md) | Accept / reject mandates |
-| 6 | [`PLATFORM_EXPERIENCE_RUBRIC.md`](./PLATFORM_EXPERIENCE_RUBRIC.md) | Pass/fail quality bar |
+| 3 | [`PLATFORM_NAVIGATION_CANON.md`](./PLATFORM_NAVIGATION_CANON.md) | Field/desk breakpoints, Option A tabs, skin separation |
+| 4 | **This file** | Shared primitives, shell contract, layout catalog |
+| 5 | Persona foundations | Player / Coach / Parent material vocabulary |
+| 6 | [`PLATFORM_BUILD_MANDATES.md`](./PLATFORM_BUILD_MANDATES.md) | Accept / reject mandates |
+| 7 | [`PLATFORM_EXPERIENCE_RUBRIC.md`](./PLATFORM_EXPERIENCE_RUBRIC.md) | Pass/fail quality bar |
 
 **Hard rule:** Same rubric, **different skin** per persona — never one gamified shell everywhere.
 
@@ -51,6 +52,8 @@ Expand [`PLATFORM_EXPERIENCE_RUBRIC.md`](./PLATFORM_EXPERIENCE_RUBRIC.md) §3 in
 
 **Rule:** Do not mount PlayerShell on Coach or Parent Tier 1 routes.
 
+**Navigation law:** Field vs desk chrome, Option A bottom tabs, overflow drawer rules, and content inset — [`PLATFORM_NAVIGATION_CANON.md`](./PLATFORM_NAVIGATION_CANON.md). Registry §2 + `workspaceNav.js` remain href source of truth.
+
 ---
 
 ## §3 Persona skin forks
@@ -62,6 +65,8 @@ Expand [`PLATFORM_EXPERIENCE_RUBRIC.md`](./PLATFORM_EXPERIENCE_RUBRIC.md) §3 in
 | **Parent trust** | Co-op partner calm | Navy lounge well | 8px chamfer (soft radius OK on trust cards) | Cyan + amber pending | None — co-op logging only |
 | **Director ops** | Enterprise command | Dense tab shell | Flat tables | Grey trim + amber alerts | None |
 | **Admin console** | Platform bootstrap | Form-forward | Flat | Neutral | None |
+
+**Staff admin mobile field skin (NAV-CANON):** Coach, director, admin, registrar, and recruiter roles use `enterprise-console.css` on nav chrome — flat admin bottom bar, no player blur/glow dock, zero gold. See [`PLATFORM_NAVIGATION_CANON.md`](./PLATFORM_NAVIGATION_CANON.md) §4.
 
 Foundation docs: [`PLAYER_OS_FOUNDATION.md`](./PLAYER_OS_FOUNDATION.md) · [`COACH_OS_FOUNDATION.md`](./COACH_OS_FOUNDATION.md) · [`PARENT_OS_FOUNDATION.md`](./PARENT_OS_FOUNDATION.md)
 

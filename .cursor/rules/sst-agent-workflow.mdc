@@ -9,6 +9,7 @@ alwaysApply: true
 
 - Read [`docs/vision/PRODUCT_SURFACE_REGISTRY.md`](../../docs/vision/PRODUCT_SURFACE_REGISTRY.md) — confirm **current tier**, `nav_visible`, `workflow_id`, and `layout_pattern` for every route you touch; do not add nav links for Tier 2/3 without owner registry update.
 - Read [`docs/vision/PLATFORM_WORKFLOW_CANON.md`](../../docs/vision/PLATFORM_WORKFLOW_CANON.md) — gold path step ids + UX states for the route's `workflow_id`.
+- Read [`docs/vision/PLATFORM_NAVIGATION_CANON.md`](../../docs/vision/PLATFORM_NAVIGATION_CANON.md) — field/desk breakpoints, Option A tabs, staff-admin bucket, skin separation before any shell / nav / layout work.
 - Read [`docs/vision/PLATFORM_DESIGN_SYSTEM.md`](../../docs/vision/PLATFORM_DESIGN_SYSTEM.md) + persona **foundation_doc** from registry — shell contract + layout pattern before pixels.
 - Read **`ROADMAP.md`** — current sprint section only. Do not invent sprint numbers or component names from archived roadmaps.
 - For any **Player UX / layout / pixel** work: read [`docs/vision/PLAYER_OS_INSTRUMENT_TAXONOMY.md`](../../docs/vision/PLAYER_OS_INSTRUMENT_TAXONOMY.md) and [`docs/vision/AGENT_PLAYER_UX_SPRINT_TEMPLATE.md`](../../docs/vision/AGENT_PLAYER_UX_SPRINT_TEMPLATE.md) **before** coding — classify instrument(s) and cohesion scope (Frame | Inner | Both).
@@ -65,6 +66,8 @@ Use these names — **not** IdentityModule, TelemetryPanel, or BentoGrid:
 ```bash
 npm test -- <paths from ROADMAP sprint>
 npm run build
+# nav / shell canon slices:
+npm test -- src/lib/platform/__tests__/platformNavigationCanon.test.ts src/lib/platform/__tests__/productSurfaceRegistry.test.ts
 # deploy (example tryouts slice):
 npm run deploy:core
 firebase deploy --only firestore:rules,hosting

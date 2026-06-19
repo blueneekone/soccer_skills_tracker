@@ -126,6 +126,7 @@ describe('PRODUCT_SURFACE_REGISTRY gospel guards', () => {
 		const vision = join(ROOT, '..', 'docs/vision');
 		for (const file of [
 			'PLATFORM_WORKFLOW_CANON.md',
+			'PLATFORM_NAVIGATION_CANON.md',
 			'PLATFORM_DESIGN_SYSTEM.md',
 			'COACH_OS_FOUNDATION.md',
 			'PARENT_OS_FOUNDATION.md',
