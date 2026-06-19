@@ -258,7 +258,62 @@
 	z-index: 1;
 	padding-bottom: clamp(4px, 0.8vw, 6px);
 	border-bottom: 1px solid color-mix(in srgb, var(--pd-accent-data, #14b8a6) 18%, var(--pd-line));
-	text-align: center;
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) 4.35rem;
+	align-items: center;
+	gap: clamp(4px, 0.65vw, 6px);
+}
+
+.player-hud-root .quest-log-panel--premium .quest-log__title--embedded {
+	grid-column: 1;
+	margin: 0;
+	text-align: left;
+}
+
+.player-hud-root .quest-log__refresh--rail-chip {
+	width: 100%;
+	min-width: 0;
+	max-width: 4.35rem;
+	min-height: 26px;
+	margin: 0;
+	padding: clamp(4px, 0.7vw, 6px) 0.2rem;
+	justify-self: end;
+	font-family: 'Geist Mono', ui-monospace, monospace;
+	font-size: clamp(0.38rem, 0.75vw, 0.44rem);
+	font-weight: 800;
+	letter-spacing: 0.04em;
+	text-transform: uppercase;
+	color: color-mix(in srgb, var(--pd-accent-data, #14b8a6) 92%, #fff);
+	background: color-mix(in srgb, var(--pd-accent-data, #14b8a6) 7%, var(--pd-panel, #05050a));
+	border: 1px solid color-mix(in srgb, var(--pd-accent-data, #14b8a6) 50%, transparent);
+	border-radius: 0;
+	cursor: pointer;
+	box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--pd-accent-data, #14b8a6) 12%, transparent);
+	clip-path: polygon(
+		0 3px,
+		3px 0,
+		calc(100% - 3px) 0,
+		100% 3px,
+		100% calc(100% - 3px),
+		calc(100% - 3px) 100%,
+		3px 100%,
+		0 calc(100% - 3px)
+	);
+	transition:
+		border-color 0.15s ease,
+		background 0.15s ease,
+		color 0.15s ease;
+}
+
+.player-hud-root .quest-log__refresh--rail-chip:hover:not(:disabled) {
+	border-color: color-mix(in srgb, var(--pd-accent-data, #14b8a6) 85%, #fff);
+	background: color-mix(in srgb, var(--pd-accent-data, #14b8a6) 16%, var(--pd-panel, #05050a));
+	color: #fff;
+}
+
+.player-hud-root .quest-log__refresh--rail-chip:disabled {
+	opacity: 0.45;
+	cursor: not-allowed;
 }
 
 /* Sprint 2.14 / 2.17 — hero mission Z3 raised vs compact rows Z2 flush */
@@ -580,47 +635,30 @@
 	align-self: center;
 	justify-self: center;
 	margin-right: clamp(6px, 1vw, 10px);
-}
-
-.player-hud-root .quest-row--rail.quest-row--embedded .quest-row__status--idle {
-	border-radius: 50%;
-	background: rgb(148 163 184 / 0.35);
-	box-shadow: none;
-}
-
-.player-hud-root .quest-row--rail.quest-row--embedded:not(.quest-row--promoted) .quest-row__status:not(.quest-row__status--idle) {
 	background: var(--pd-accent-data, #14b8a6);
-	box-shadow: none;
-	animation: none;
+	box-shadow: 0 0 6px color-mix(in srgb, var(--pd-accent-data, #14b8a6) 45%, transparent);
 }
 
-.player-hud-root .quest-row--rail.quest-row--embedded.quest-row--promoted .quest-row__status:not(.quest-row__status--idle) {
-	background: var(--pd-accent-action, #fbbf24);
-	box-shadow: none;
-	animation: none;
+.player-hud-root .quest-row--rail.quest-row--embedded .quest-row__status--priority {
+	animation: quest-rail-dot-pulse-cyan 2.8s ease-in-out infinite;
 }
 
-@keyframes quest-rail-dot-pulse-teal {
+@keyframes quest-rail-dot-pulse-cyan {
 	0%,
 	100% {
 		opacity: 1;
-		box-shadow: 0 0 6px color-mix(in srgb, var(--pd-accent-data, #14b8a6) 55%, transparent);
+		box-shadow: 0 0 6px color-mix(in srgb, var(--pd-accent-data, #14b8a6) 50%, transparent);
 	}
+
 	50% {
-		opacity: 0.55;
-		box-shadow: 0 0 12px color-mix(in srgb, var(--pd-accent-data, #14b8a6) 75%, transparent);
+		opacity: 0.45;
+		box-shadow: 0 0 12px color-mix(in srgb, var(--pd-accent-data, #14b8a6) 80%, transparent);
 	}
 }
 
-@keyframes quest-rail-dot-pulse-gold {
-	0%,
-	100% {
-		opacity: 1;
-		box-shadow: 0 0 6px color-mix(in srgb, var(--pd-accent-action, #fbbf24) 55%, transparent);
-	}
-	50% {
-		opacity: 0.55;
-		box-shadow: 0 0 12px color-mix(in srgb, var(--pd-accent-action, #fbbf24) 75%, transparent);
+@media (prefers-reduced-motion: reduce) {
+	.player-hud-root .quest-row--rail.quest-row--embedded .quest-row__status--priority {
+		animation: none;
 	}
 }
 
@@ -717,6 +755,45 @@
 	background: color-mix(in srgb, #22c55e 6%, transparent);
 }
 
+.player-hud-root .quest-row--rail.quest-row--embedded.quest-row--state-accept .quest-row__cmd--rail-chip:not(:disabled) {
+	border-color: color-mix(in srgb, #ef4444 55%, transparent);
+	background: color-mix(in srgb, #ef4444 8%, var(--pd-panel, #05050a));
+	color: color-mix(in srgb, #ef4444 92%, #fff);
+	box-shadow: inset 0 0 0 1px color-mix(in srgb, #ef4444 14%, transparent);
+}
+
+.player-hud-root .quest-row--rail.quest-row--embedded.quest-row--state-accept .quest-row__cmd--rail-chip:not(:disabled):hover {
+	border-color: color-mix(in srgb, #ef4444 78%, #fff);
+	background: color-mix(in srgb, #ef4444 16%, var(--pd-panel, #05050a));
+	color: #fff;
+}
+
+.player-hud-root .quest-row--rail.quest-row--embedded.quest-row--state-progress .quest-row__cmd--rail-chip:not(:disabled) {
+	border-color: color-mix(in srgb, #f59e0b 55%, transparent);
+	background: color-mix(in srgb, #f59e0b 8%, var(--pd-panel, #05050a));
+	color: color-mix(in srgb, #f59e0b 92%, #fff);
+	box-shadow: inset 0 0 0 1px color-mix(in srgb, #f59e0b 14%, transparent);
+}
+
+.player-hud-root .quest-row--rail.quest-row--embedded.quest-row--state-progress .quest-row__cmd--rail-chip:not(:disabled):hover {
+	border-color: color-mix(in srgb, #f59e0b 78%, #fff);
+	background: color-mix(in srgb, #f59e0b 16%, var(--pd-panel, #05050a));
+	color: #fff;
+}
+
+.player-hud-root .quest-row--rail.quest-row--embedded.quest-row--state-done .quest-row__cmd--rail-chip:not(:disabled) {
+	border-color: color-mix(in srgb, #22c55e 55%, transparent);
+	background: color-mix(in srgb, #22c55e 8%, var(--pd-panel, #05050a));
+	color: color-mix(in srgb, #22c55e 92%, #fff);
+	box-shadow: inset 0 0 0 1px color-mix(in srgb, #22c55e 14%, transparent);
+}
+
+.player-hud-root .quest-row--rail.quest-row--embedded.quest-row--state-done .quest-row__cmd--rail-chip:not(:disabled):hover {
+	border-color: color-mix(in srgb, #22c55e 78%, #fff);
+	background: color-mix(in srgb, #22c55e 16%, var(--pd-panel, #05050a));
+	color: #fff;
+}
+
 .player-hud-root .quest-row--rail.quest-row--embedded:not(.quest-row--promoted) .quest-row__sender {
 	color: var(--pd-accent-action, #fbbf24);
 	font-size: clamp(0.48rem, 1vw, 0.52rem);
@@ -763,65 +840,6 @@
 	color: color-mix(in srgb, var(--pd-accent-action, #fbbf24) 88%, #fde68a);
 }
 
-.player-hud-root .quest-row--rail.quest-row--embedded.quest-row--hero .quest-row__cmd--rail-chip {
-	border-color: color-mix(in srgb, var(--pd-accent-action, #fbbf24) 72%, transparent);
-	background: color-mix(in srgb, var(--pd-accent-action, #fbbf24) 14%, var(--pd-panel, #05050a));
-	color: var(--pd-accent-action, #fbbf24);
-	box-shadow:
-		inset 0 0 0 1px color-mix(in srgb, var(--pd-accent-action, #fbbf24) 22%, transparent),
-		var(--pd-emissive-gold, 0 0 12px color-mix(in srgb, var(--pd-accent-action, #fbbf24) 28%, transparent));
-}
-
-.player-hud-root .quest-row--rail.quest-row--embedded.quest-row--hero .quest-row__cmd--rail-chip:hover {
-	border-color: color-mix(in srgb, var(--pd-accent-action, #fbbf24) 92%, #fff);
-	background: color-mix(in srgb, var(--pd-accent-action, #fbbf24) 22%, var(--pd-panel, #05050a));
-	color: color-mix(in srgb, var(--pd-accent-action, #fbbf24) 96%, #fff);
-	box-shadow:
-		inset 0 0 0 1px color-mix(in srgb, var(--pd-accent-action, #fbbf24) 32%, transparent),
-		var(--pd-emissive-gold, 0 0 18px color-mix(in srgb, var(--pd-accent-action, #fbbf24) 38%, transparent));
-}
-
-.player-hud-root .quest-row--rail.quest-row--embedded.quest-row--hero .quest-row__status:not(.quest-row__status--idle) {
-	background: var(--pd-accent-action, #fbbf24);
-	box-shadow: var(--pd-emissive-gold, 0 0 8px color-mix(in srgb, var(--pd-accent-action, #fbbf24) 45%, transparent));
-}
-
-.player-hud-root .quest-row--rail.quest-row--embedded:not(.quest-row--promoted):not(.quest-row--hero) .quest-row__cmd--rail-chip {
-	border-color: color-mix(in srgb, var(--pd-accent-data, #14b8a6) 50%, transparent);
-	background: color-mix(in srgb, var(--pd-accent-data, #14b8a6) 7%, var(--pd-panel, #05050a));
-	color: color-mix(in srgb, var(--pd-accent-data, #14b8a6) 92%, #fff);
-	text-shadow: none;
-	box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--pd-accent-data, #14b8a6) 12%, transparent);
-}
-
-.player-hud-root .quest-row--rail.quest-row--embedded:not(.quest-row--promoted) .quest-row__cmd--rail-chip:hover {
-	border-color: color-mix(in srgb, var(--pd-accent-data, #14b8a6) 85%, #fff);
-	background: color-mix(in srgb, var(--pd-accent-data, #14b8a6) 16%, var(--pd-panel, #05050a));
-	color: #fff;
-	box-shadow:
-		inset 0 0 0 1px color-mix(in srgb, var(--pd-accent-data, #14b8a6) 25%, transparent),
-		0 0 8px color-mix(in srgb, var(--pd-accent-data, #14b8a6) 22%, transparent);
-	text-shadow: none;
-}
-
-.player-hud-root .quest-row--rail.quest-row--embedded.quest-row--promoted .quest-row__cmd--rail-chip {
-	border-color: color-mix(in srgb, var(--pd-accent-action, #fbbf24) 55%, transparent);
-	background: color-mix(in srgb, var(--pd-accent-action, #fbbf24) 8%, var(--pd-panel, #05050a));
-	color: var(--pd-accent-action, #fbbf24);
-	text-shadow: none;
-	box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--pd-accent-action, #fbbf24) 14%, transparent);
-}
-
-.player-hud-root .quest-row--rail.quest-row--embedded.quest-row--promoted .quest-row__cmd--rail-chip:hover {
-	border-color: color-mix(in srgb, var(--pd-accent-action, #fbbf24) 90%, #fff);
-	background: color-mix(in srgb, var(--pd-accent-action, #fbbf24) 18%, var(--pd-panel, #05050a));
-	color: color-mix(in srgb, var(--pd-accent-action, #fbbf24) 95%, #fff);
-	box-shadow:
-		inset 0 0 0 1px color-mix(in srgb, var(--pd-accent-action, #fbbf24) 28%, transparent),
-		0 0 8px color-mix(in srgb, var(--pd-accent-action, #fbbf24) 26%, transparent);
-	text-shadow: none;
-}
-
 .player-hud-root .quest-row--rail .quest-row__cmd--rail-chip:focus-visible {
 	outline: 2px solid color-mix(in srgb, var(--pd-accent-data, #14b8a6) 45%, transparent);
 	outline-offset: 2px;
@@ -831,10 +849,10 @@
 	outline-color: color-mix(in srgb, var(--pd-accent-action, #fbbf24) 45%, transparent);
 }
 
-/* Wide desktop / full screen — stack reward under title so copy breathes (identity column unchanged) */
-.player-hud-root .quest-row__lede--rail-wide {
-	display: none;
-	margin: 0;
+/* Reward subtext — always under title on embedded rail */
+.player-hud-root .quest-row--rail .quest-row__lede--rail-wide {
+	display: block;
+	margin: 0.1rem 0 0;
 	font-family: 'Geist Mono', ui-monospace, monospace;
 	font-size: clamp(0.46rem, 0.9vw, 0.52rem);
 	font-weight: 600;
@@ -868,16 +886,6 @@
 }
 
 @media (min-width: 1280px) {
-	.player-hud-root .quest-row--rail .quest-row__sep--reward,
-	.player-hud-root .quest-row--rail .quest-row__xp--inline {
-		display: none;
-	}
-
-	.player-hud-root .quest-row__lede--rail-wide {
-		display: block;
-		margin-top: 0.12rem;
-	}
-
 	.player-hud-root .quest-row__hint,
 	.player-hud-root .quest-row__drill {
 		display: block;

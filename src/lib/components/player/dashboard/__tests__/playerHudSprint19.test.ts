@@ -74,12 +74,21 @@ describe('Sprint 1.9 — ActiveBounties embedded deck mode', () => {
 
 	it('quest-row__title-text retains ellipsis + nowrap in embedded rail line', () => {
 		expect(embeddedSnippet).toMatch(/quest-row__title-text/);
+		expect(embeddedSnippet).toMatch(/quest-row__lede--rail-wide/);
+		expect(embeddedSnippet).not.toMatch(/quest-row__xp--inline/);
 		expect(missionsCssSrc).toMatch(
 			/\.quest-row--rail[\s\S]*?\.quest-row__title-text[\s\S]*?text-overflow:\s*ellipsis/,
 		);
 		expect(missionsCssSrc).toMatch(
 			/\.quest-row--rail[\s\S]*?\.quest-row__title-text[\s\S]*?white-space:\s*nowrap/,
 		);
+	});
+
+	it('embedded row uses cyan priority dot pulse for high-priority missions', () => {
+		expect(embeddedSnippet).toMatch(/isHighPriorityQuest/);
+		expect(embeddedSnippet).toMatch(/quest-row__status--priority/);
+		expect(missionsCssSrc).toMatch(/quest-row__status--priority/);
+		expect(missionsCssSrc).toMatch(/quest-rail-dot-pulse-cyan/);
 	});
 
 	it('embedded view-all uses plain text without brackets', () => {

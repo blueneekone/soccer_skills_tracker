@@ -244,6 +244,11 @@ export function isPromotedQuest(quest: QuestTask): boolean {
 	);
 }
 
+/** Coach Forge high-priority toggle (priority 1) — rail status dot slow pulse. */
+export function isHighPriorityQuest(quest: QuestTask): boolean {
+	return quest.sortKey <= 1;
+}
+
 /** @deprecated Slice 6b — embedded primary hero is always gold; retained for non-embedded/tests. */
 export function pickHeroCardAccent(
 	quest: QuestTask,

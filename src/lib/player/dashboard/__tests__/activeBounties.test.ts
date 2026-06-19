@@ -20,6 +20,7 @@ import {
 	resolveQuestLifecycle,
 	resolveHeroQuest,
 	excludeHeroFromRailQuests,
+	isHighPriorityQuest,
 	maxVisibleQuests,
 	purgeCoachIntentIds,
 	type QuestTask,
@@ -312,6 +313,25 @@ describe('B2 — formatCadenceProgress', () => {
 
 	it('zero-completed state', () => {
 		expect(formatCadenceProgress(0, 3, 7)).toBe('0/3 sessions this week');
+	});
+});
+
+describe('B2 — isHighPriorityQuest', () => {
+	it('flags coach intents with sortKey 1', () => {
+		const quest: QuestTask = {
+			id: 'i1',
+			tier: 'bounty',
+			source: 'coach_intent',
+			senderLabel: 'Coach',
+			title: 'Pace',
+			axisId: 'PAC',
+			sortKey: 1,
+			xpReward: 100,
+			lifecycle: 'accept',
+			actionHref: '/player/workout',
+		};
+		expect(isHighPriorityQuest(quest)).toBe(true);
+		expect(isHighPriorityQuest({ ...quest, sortKey: 100 })).toBe(false);
 	});
 });
 

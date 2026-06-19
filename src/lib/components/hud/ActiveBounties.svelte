@@ -35,6 +35,7 @@
 		maxVisibleQuests,
 		formatQuestRewardLabel,
 		isPromotedQuest,
+		isHighPriorityQuest,
 		questCtaLabel,
 		shouldDeferQuestCompletionUntilWorkoutLog,
 		questHudCtaFor,
@@ -630,21 +631,17 @@
 		class:quest-row--state-progress={borderState === 'progress'}
 		class:quest-row--state-done={borderState === 'done'}
 	>
-		{#if quest.lifecycle === 'accept'}
-			<span class="quest-row__status" aria-hidden="true"></span>
-		{:else}
-			<span class="quest-row__status quest-row__status--idle" aria-hidden="true"></span>
-		{/if}
+		<span
+			class="quest-row__status"
+			class:quest-row__status--priority={isHighPriorityQuest(quest)}
+			aria-hidden="true"
+		></span>
 
 		<div class="hud-bounty-row__copy quest-row__copy quest-row__copy--embedded">
 			<p class="quest-row__line" title={quest.title}>
 				<span class="quest-row__sender">{quest.senderLabel}</span>
 				<span class="quest-row__sep" aria-hidden="true">·</span>
 				<span class="quest-row__title-text">{quest.title}</span>
-				{#if formatQuestRewardLabel(quest)}
-					<span class="quest-row__sep quest-row__sep--reward" aria-hidden="true">·</span>
-					<span class="quest-row__xp quest-row__xp--inline">{formatQuestRewardLabel(quest)}</span>
-				{/if}
 			</p>
 			{#if formatQuestRewardLabel(quest)}
 				<p class="quest-row__lede quest-row__lede--rail-wide">{formatQuestRewardLabel(quest)}</p>
@@ -761,7 +758,7 @@
 				<h2 class="quest-log__title quest-log__title--embedded">ACTIVE MISSIONS</h2>
 				<button
 					type="button"
-					class="quest-log__refresh pw-mono"
+					class="quest-log__refresh quest-log__refresh--rail-chip pw-mono"
 					disabled={loading || isRefreshing}
 					onclick={refreshQuestLog}
 				>
@@ -790,7 +787,7 @@
 					<h2 class="quest-log__title">Active missions</h2>
 					<button
 						type="button"
-						class="quest-log__refresh pw-mono"
+						class="quest-log__refresh quest-log__refresh--rail-chip pw-mono"
 						disabled={loading || isRefreshing}
 						onclick={refreshQuestLog}
 					>
