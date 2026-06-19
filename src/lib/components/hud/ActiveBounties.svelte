@@ -642,6 +642,14 @@
 				<span class="quest-row__sender">{quest.senderLabel}</span>
 				<span class="quest-row__sep" aria-hidden="true">·</span>
 				<span class="quest-row__title-text">{quest.title}</span>
+				{#if quest.cadence && quest.targetAttributeId}
+					{@const completed = countCadenceSessionsInWindow(cadenceCompletions, quest.targetAttributeId, quest.cadence.windowDays)}
+					{@const cadenceAria = formatCadenceAriaLabel(completed, quest.cadence.sessionsPerWindow, quest.cadence.windowDays, { loggedToday: rail.loggedToday })}
+					<span class="quest-row__sep quest-row__sep--cadence" aria-hidden="true">·</span>
+					<span class="quest-row__cadence-badge pw-mono" title={cadenceAria} aria-label={cadenceAria}>
+						{formatCadenceProgressCompact(completed, quest.cadence.sessionsPerWindow)}
+					</span>
+				{/if}
 			</p>
 			{#if formatQuestRewardLabel(quest)}
 				<p class="quest-row__lede quest-row__lede--rail-wide">{formatQuestRewardLabel(quest)}</p>
@@ -650,13 +658,6 @@
 				<p class="quest-row__hint">{COACH_INTENT_HINT}</p>
 				{#if drillPreviewByQuestId[quest.id]?.line}
 					<p class="quest-row__drill">{drillPreviewByQuestId[quest.id].line}</p>
-				{/if}
-				{#if quest.cadence && quest.targetAttributeId}
-					{@const completed = countCadenceSessionsInWindow(cadenceCompletions, quest.targetAttributeId, quest.cadence.windowDays)}
-					{@const cadenceAria = formatCadenceAriaLabel(completed, quest.cadence.sessionsPerWindow, quest.cadence.windowDays, { loggedToday: rail.loggedToday })}
-					<span class="quest-row__cadence-badge pw-mono" title={cadenceAria} aria-label={cadenceAria}>
-						{formatCadenceProgressCompact(completed, quest.cadence.sessionsPerWindow)}
-					</span>
 				{/if}
 				{#if quest.intentXpEarned != null}
 					<p class="quest-row__intent-xp pw-mono">{quest.intentXpEarned.toLocaleString()} / {quest.xpReward.toLocaleString()} mission XP</p>

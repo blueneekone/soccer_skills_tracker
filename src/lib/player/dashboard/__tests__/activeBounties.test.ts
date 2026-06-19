@@ -17,6 +17,7 @@ import {
 	questHudCtaFor,
 	questTerminalCmd,
 	formatQuestRewardLabel,
+	questUsesPerCompletionReward,
 	resolveQuestLifecycle,
 	resolveHeroQuest,
 	excludeHeroFromRailQuests,
@@ -252,7 +253,7 @@ describe('activeBounties', () => {
 		expect(rail.some((q) => q.id === 'daily-streak-check')).toBe(true);
 	});
 
-	it('formatQuestRewardLabel uses earn-on-completion copy for accept state', () => {
+	it('formatQuestRewardLabel uses earn-on-completion copy for single-session daily habits', () => {
 		const quest: QuestTask = {
 			id: 'daily-training-log',
 			tier: 'daily',
@@ -268,6 +269,31 @@ describe('activeBounties', () => {
 		expect(formatQuestRewardLabel(quest)).toBe('Earn +35 XP on completion');
 		expect(formatQuestRewardLabel({ ...quest, lifecycle: 'claim' })).toBe('+35 XP');
 		expect(formatQuestRewardLabel({ ...quest, lifecycle: 'complete' })).toMatch(/\+35 XP/);
+	});
+
+	it('formatQuestRewardLabel uses per-completion copy for coach and multi-session quests', () => {
+		const coachIntent: QuestTask = {
+			id: 'intent-1',
+			tier: 'bounty',
+			source: 'coach_intent',
+			senderLabel: 'Coach Challenge',
+			title: 'Pace · 500 XP goal',
+			axisId: 'PAC',
+			xpReward: 500,
+			lifecycle: 'accept',
+			actionHref: '/player/workout',
+			sortKey: 1,
+			cadence: { sessionsPerWindow: 5, windowDays: 14 },
+		};
+		expect(formatQuestRewardLabel(coachIntent)).toBe('Earn +500 XP per completion');
+		expect(
+			formatQuestRewardLabel({
+				...coachIntent,
+				source: 'daily_habit',
+				cadence: { sessionsPerWindow: 3, windowDays: 7 },
+			}),
+		).toBe('Earn +500 XP per completion');
+		expect(questUsesPerCompletionReward({ ...coachIntent, cadence: undefined })).toBe(true);
 	});
 });
 

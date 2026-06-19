@@ -74,6 +74,7 @@ describe('Sprint 1.9 — ActiveBounties embedded deck mode', () => {
 
 	it('quest-row__title-text retains ellipsis + nowrap in embedded rail line', () => {
 		expect(embeddedSnippet).toMatch(/quest-row__title-text/);
+		expect(embeddedSnippet).toMatch(/quest-row__cadence-badge/);
 		expect(embeddedSnippet).toMatch(/quest-row__lede--rail-wide/);
 		expect(embeddedSnippet).not.toMatch(/quest-row__xp--inline/);
 		expect(missionsCssSrc).toMatch(

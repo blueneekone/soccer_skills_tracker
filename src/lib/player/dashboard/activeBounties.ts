@@ -206,24 +206,38 @@ export function maxVisibleQuests(): number {
 }
 
 /** Lifecycle-aware reward copy — accept state must not imply XP already earned. */
+export function questUsesPerCompletionReward(quest: QuestTask): boolean {
+	if (
+		quest.source === 'coach_intent' ||
+		quest.source === 'coach_homework' ||
+		quest.source === 'parent_bounty'
+	) {
+		return true;
+	}
+	return (quest.cadence?.sessionsPerWindow ?? 0) > 1;
+}
+
 export function formatQuestRewardLabel(quest: QuestTask): string {
 	if (quest.xpReward <= 0) {
 		if (!quest.rewardLabel) return '';
 		if (quest.lifecycle === 'accept') {
-			return `Earn ${quest.rewardLabel} on completion`;
+			return questUsesPerCompletionReward(quest)
+				? `Earn ${quest.rewardLabel} per completion`
+				: `Earn ${quest.rewardLabel} on completion`;
 		}
 		return quest.rewardLabel;
 	}
 
 	const xp = quest.xpReward.toLocaleString();
+	const earnPhrase = questUsesPerCompletionReward(quest) ? 'per completion' : 'on completion';
 	switch (quest.lifecycle) {
 		case 'accept':
-			return `Earn +${xp} XP on completion`;
+			return `Earn +${xp} XP ${earnPhrase}`;
 		case 'complete':
 			if (quest.source === 'daily_habit' && quest.actionHref.includes('/player/workout')) {
 				return `+${xp} XP ready — log session to finish`;
 			}
-			return `+${xp} XP`;
+			return questUsesPerCompletionReward(quest) ? `+${xp} XP per session` : `+${xp} XP`;
 		case 'claim':
 			return `+${xp} XP`;
 	}
