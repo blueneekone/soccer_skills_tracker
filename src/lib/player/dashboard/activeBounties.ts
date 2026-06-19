@@ -543,6 +543,24 @@ export function formatCadenceProgress(
 	return `${completed}/${sessionsPerWindow} sessions ${windowLabel}`;
 }
 
+/** Minimal chip for mission rail / homework — full context in title/aria. */
+export function formatCadenceProgressCompact(completed: number, sessionsPerWindow: number): string {
+	return `${completed}/${sessionsPerWindow}`;
+}
+
+export function formatCadenceAriaLabel(
+	completed: number,
+	sessionsPerWindow: number,
+	windowDays: number,
+	opts: { loggedToday?: boolean } = {},
+): string {
+	const base = formatCadenceProgress(completed, sessionsPerWindow, windowDays);
+	if (opts.loggedToday && completed < sessionsPerWindow) {
+		return `${base}. Session logged today — resume tomorrow.`;
+	}
+	return base;
+}
+
 /** Hint after today's session when cadence goal not yet met. */
 export function formatCadenceResumeHint(
 	loggedToday: boolean,

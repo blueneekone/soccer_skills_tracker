@@ -25,8 +25,8 @@
 		bountyFromParentBounty,
 		countCadenceSessionsInWindow,
 		coachIntentRailCta,
-		formatCadenceProgress,
-		formatCadenceResumeHint,
+		formatCadenceProgressCompact,
+		formatCadenceAriaLabel,
 		loadQuestProgress,
 		markQuestAccepted,
 		markQuestClaimed,
@@ -651,25 +651,17 @@
 					<p class="quest-row__drill">{drillPreviewByQuestId[quest.id].line}</p>
 				{/if}
 				{#if quest.cadence && quest.targetAttributeId}
-					{@const completed = countCadenceSessionsInWindow(
-						cadenceCompletions,
-						quest.targetAttributeId,
-						quest.cadence.windowDays,
-					)}
-					<p class="quest-row__cadence pw-mono" aria-label="Cadence progress">
-						{formatCadenceProgress(completed, quest.cadence.sessionsPerWindow, quest.cadence.windowDays)}
-						{#if formatCadenceResumeHint(rail.loggedToday, completed, quest.cadence.sessionsPerWindow)}
-							· {formatCadenceResumeHint(rail.loggedToday, completed, quest.cadence.sessionsPerWindow)}
-						{/if}
-					</p>
+					{@const completed = countCadenceSessionsInWindow(cadenceCompletions, quest.targetAttributeId, quest.cadence.windowDays)}
+					{@const cadenceAria = formatCadenceAriaLabel(completed, quest.cadence.sessionsPerWindow, quest.cadence.windowDays, { loggedToday: rail.loggedToday })}
+					<span class="quest-row__cadence-badge pw-mono" title={cadenceAria} aria-label={cadenceAria}>
+						{formatCadenceProgressCompact(completed, quest.cadence.sessionsPerWindow)}
+					</span>
 				{/if}
 				{#if quest.intentXpEarned != null}
 					<p class="quest-row__intent-xp pw-mono">{quest.intentXpEarned.toLocaleString()} / {quest.xpReward.toLocaleString()} mission XP</p>
 				{/if}
 				{#if approvedIntentIds.has(quest.id)}
-					<span class="quest-row__parent-verified" aria-label="Parent-verified">
-						Parent-verified
-					</span>
+					<span class="quest-row__parent-verified" aria-label="Parent-verified">Parent-verified</span>
 				{/if}
 			{:else if quest.source === 'coach_homework'}
 				<p class="quest-row__drill">Assigned drill: {quest.title}</p>

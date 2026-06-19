@@ -7,7 +7,9 @@ import {
 	countCadenceSessionsInWindow,
 	coachIntentCtaDisabled,
 	coachIntentSessionLoggedToday,
+	formatCadenceAriaLabel,
 	formatCadenceProgress,
+	formatCadenceProgressCompact,
 	formatCadenceResumeHint,
 	questCtaLabel,
 	questHudCtaShort,
@@ -309,6 +311,29 @@ describe('B2 — formatCadenceProgress', () => {
 
 	it('zero-completed state', () => {
 		expect(formatCadenceProgress(0, 3, 7)).toBe('0/3 sessions this week');
+	});
+});
+
+describe('B2 — formatCadenceProgressCompact', () => {
+	it('shows session count only', () => {
+		expect(formatCadenceProgressCompact(2, 5)).toBe('2/5');
+		expect(formatCadenceProgressCompact(0, 3)).toBe('0/3');
+	});
+});
+
+describe('B2 — formatCadenceAriaLabel', () => {
+	it('mirrors full progress string', () => {
+		expect(formatCadenceAriaLabel(2, 5, 14)).toBe('2/5 sessions in 14 days');
+	});
+
+	it('appends logged-today hint when cadence incomplete', () => {
+		expect(formatCadenceAriaLabel(1, 5, 7, { loggedToday: true })).toBe(
+			'1/5 sessions this week. Session logged today — resume tomorrow.',
+		);
+	});
+
+	it('omits logged-today hint when cadence met', () => {
+		expect(formatCadenceAriaLabel(5, 5, 7, { loggedToday: true })).toBe('5/5 sessions this week');
 	});
 });
 

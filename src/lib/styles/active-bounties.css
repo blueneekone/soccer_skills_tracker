@@ -400,15 +400,24 @@
 	background: rgba(20, 184, 166, 0.06);
 }
 
+.quest-row__cadence-badge {
+	display: inline-block;
+	margin-top: 0.2rem;
+	padding: 0.1rem 0.35rem;
+	font-size: 0.5rem;
+	font-weight: 700;
+	letter-spacing: 0.1em;
+	color: rgba(20, 184, 166, 0.8);
+	border: 1px solid rgba(20, 184, 166, 0.28);
+	border-radius: 3px;
+	background: rgba(20, 184, 166, 0.06);
+}
+
 .quest-row__intent-xp {
 	margin: 0.15rem 0 0;
 	font-size: 0.55rem;
 	letter-spacing: 0.08em;
 	text-transform: uppercase;
-	color: rgba(148, 163, 184, 0.75);
-}
-
-.quest-row__intent-xp {
 	color: rgba(20, 184, 166, 0.65);
 }
 

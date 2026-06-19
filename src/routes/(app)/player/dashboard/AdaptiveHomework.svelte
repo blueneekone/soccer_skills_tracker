@@ -19,8 +19,8 @@
 	import {
 		coachIntentSessionLoggedToday,
 		countCadenceSessionsInWindow,
-		formatCadenceProgress,
-		formatCadenceResumeHint,
+		formatCadenceAriaLabel,
+		formatCadenceProgressCompact,
 	} from '$lib/player/dashboard/activeBounties.js';
 	import { ensureRlPolicyCached, readRlPolicyCache } from '$lib/player/workout/rlPolicyCache.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
@@ -509,21 +509,23 @@
 			</button>
 
 			{#if activeCadence}
-				<p class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-teal-400/70">
-					{formatCadenceProgress(
+				<span
+					class="tw-inline-flex tw-font-mono tw-text-[8px] tw-font-bold tw-tracking-widest tw-px-1.5 tw-py-0.5 tw-rounded tw-border tw-border-teal-500/30 tw-text-teal-400/80"
+					title={formatCadenceAriaLabel(
 						cadenceCompleted,
 						activeCadence.sessionsPerWindow,
 						activeCadence.windowDays,
+						{ loggedToday: homeworkLoggedToday },
 					)}
-				</p>
-				{@const resumeHint = formatCadenceResumeHint(
-					homeworkLoggedToday,
-					cadenceCompleted,
-					activeCadence.sessionsPerWindow,
-				)}
-				{#if resumeHint}
-					<p class="tw-font-mono tw-text-[9px] tw-text-white/35">{resumeHint}</p>
-				{/if}
+					aria-label={formatCadenceAriaLabel(
+						cadenceCompleted,
+						activeCadence.sessionsPerWindow,
+						activeCadence.windowDays,
+						{ loggedToday: homeworkLoggedToday },
+					)}
+				>
+					{formatCadenceProgressCompact(cadenceCompleted, activeCadence.sessionsPerWindow)}
+				</span>
 			{/if}
 
 			<!-- XP progress bar (mission-scoped when intentXpByUid present) -->
