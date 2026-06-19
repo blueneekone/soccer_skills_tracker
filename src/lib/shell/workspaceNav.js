@@ -77,6 +77,87 @@ const recruiterLinks = [
 	{ tab: '', label: 'Recruiter Search', icon: 'action.search', href: '/recruiter' },
 ];
 
+/** Cross-persona comms — coach/parent field primary tabs (NAV-CANON §3c). */
+/** @type {ShellNavItem} */
+const messagesNavItem = { tab: '', label: 'Messages', icon: 'comm.chat', href: '/messages' };
+
+/** @param {string} pathname @param {string} role @param {string} [activeContext] @returns {WorkspaceContext} */
+function resolveWorkspaceContext(pathname, role, activeContext = '') {
+	const inferred = inferWorkspaceContextFromPathname(pathname);
+	const raw = (activeContext || '').trim();
+	/** @type {WorkspaceContext} */
+	let ctx = raw || inferred;
+	if (role === 'super_admin' || role === 'global_admin') {
+		ctx = inferred;
+	}
+	const allowed = new Set(['admin', 'director', 'coach', 'registrar', 'recruiter', 'household']);
+	if (!allowed.has(ctx)) {
+		ctx = inferred;
+	}
+	return ctx;
+}
+
+/**
+ * Option A field primary tabs (≤5) — no duplicates in overflow drawer.
+ * @param {ShellNavItem[]} links
+ * @param {WorkspaceContext} ctx
+ * @param {string} role
+ * @returns {ShellNavItem[]}
+ */
+function buildPrimaryFieldNavLinks(links, ctx, role) {
+	switch (ctx) {
+		case 'coach': {
+			const pick = (/** @type {string} */ href) => links.find((l) => l.href === href);
+			return [pick('/coach'), pick('/coach/forge'), messagesNavItem].filter(Boolean);
+		}
+		case 'household':
+			if (role === 'parent') {
+				const order = [
+					'/parent/household',
+					'/parent/vpc',
+					'/parent/dashboard',
+					'/messages',
+				];
+				return order.map((href) => links.find((l) => l.href === href)).filter(Boolean);
+			}
+			break;
+		case 'recruiter':
+			return links.slice(0, 5);
+		case 'admin':
+		case 'director':
+		case 'registrar':
+			return links.slice(0, 5);
+	}
+	return links.slice(0, 5);
+}
+
+/**
+ * Field-mode bottom tab links (<1024px).
+ * @param {string} pathname
+ * @param {string} role
+ * @param {string} [activeContext]
+ * @returns {ShellNavItem[]}
+ */
+export function getPrimaryFieldNavLinks(pathname, role, activeContext = '') {
+	const nav = getWorkspaceNav(pathname, role, activeContext);
+	const ctx = resolveWorkspaceContext(pathname, role, activeContext);
+	return buildPrimaryFieldNavLinks(nav.links, ctx, role);
+}
+
+/**
+ * Field-mode hamburger drawer links — Tier 2+ only; excludes primary tab hrefs.
+ * @param {string} pathname
+ * @param {string} role
+ * @param {string} [activeContext]
+ * @returns {ShellNavItem[]}
+ */
+export function getOverflowFieldNavLinks(pathname, role, activeContext = '') {
+	const nav = getWorkspaceNav(pathname, role, activeContext);
+	const primary = getPrimaryFieldNavLinks(pathname, role, activeContext);
+	const primaryHrefs = new Set(primary.map((l) => l.href));
+	return nav.links.filter((l) => !primaryHrefs.has(l.href));
+}
+
 /**
  * When `activeContext` is not yet set, infer from URL (first paint / deep link).
  * @param {string} pathname

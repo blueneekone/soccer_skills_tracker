@@ -8,7 +8,12 @@
 	import CommandPalette from '$lib/components/shell/CommandPalette.svelte';
 	import MobileTabBar from '$lib/components/shell/MobileTabBar.svelte';
 	import MobileDirectorFab from '$lib/components/shell/MobileDirectorFab.svelte';
-	import { getWorkspaceNav, isShellNavActive } from '$lib/shell/workspaceNav.js';
+	import {
+		getWorkspaceNav,
+		getPrimaryFieldNavLinks,
+		getOverflowFieldNavLinks,
+		isShellNavActive,
+	} from '$lib/shell/workspaceNav.js';
 	import { workspaceContextStore } from '$lib/stores/workspaceContext.svelte.js';
 	import '$lib/styles/enterprise-console.css';
 	import PlayerDetailDrawer from '$lib/components/shell/PlayerDetailDrawer.svelte';
@@ -44,8 +49,23 @@
 		getWorkspaceNav(page.url.pathname, authStore.role, workspaceContextStore.activeContext),
 	);
 	const links = $derived(nav.links);
+	const primaryFieldLinks = $derived.by(() =>
+		getPrimaryFieldNavLinks(
+			page.url.pathname,
+			authStore.role,
+			workspaceContextStore.activeContext,
+		),
+	);
+	const overflowLinks = $derived.by(() =>
+		getOverflowFieldNavLinks(
+			page.url.pathname,
+			authStore.role,
+			workspaceContextStore.activeContext,
+		),
+	);
 	const workspaceLabel = $derived(nav.workspaceLabel);
 	const showBilling = $derived(nav.showBilling);
+	const tabBarAccent = $derived(authStore.role === 'coach' ? 'cyan' : 'neutral');
 
 	function navActive(item: { tab?: string; label: string; icon: string; href: string }) {
 		return isShellNavActive(page.url.pathname, page.url.searchParams, item);
@@ -77,9 +97,20 @@
 
 	const sidebarCollapsedDesktop = $derived(!workspaceContextStore.isSidebarOpen && isDesktop);
 
-	const MANAGEMENT_ROLES = new Set(['director', 'super_admin', 'global_admin', 'registrar', 'coach']);
+	const drawerLinks = $derived(isDesktop ? links : overflowLinks);
+
+	const FIELD_CHROME_ROLES = new Set([
+		'coach',
+		'director',
+		'admin',
+		'global_admin',
+		'super_admin',
+		'registrar',
+		'recruiter',
+		'parent',
+	]);
 	const showMobileChrome = $derived(
-		!isDesktop && MANAGEMENT_ROLES.has(authStore.role ?? ''),
+		!isDesktop && FIELD_CHROME_ROLES.has(authStore.role ?? ''),
 	);
 
 	function toggleDesktopSidebar() {
@@ -183,7 +214,7 @@
 					<!-- Sprint 9.1: data-sveltekit-reload on every workspace nav anchor guarantees
 					     native browser navigation (full document request) so deploys never leave
 					     the user stuck on a stale SvelteKit client graph without a refresh. -->
-					{#each links as item (item.href)}
+					{#each drawerLinks as item (item.href)}
 						<a
 							class="ec-nav-link"
 							class:ec-nav-link--active={navActive(item)}
@@ -326,9 +357,11 @@
 	<!-- Mobile bottom tab bar + FAB — only for management roles on mobile viewports -->
 	{#if showMobileChrome}
 		<MobileTabBar
-			links={links}
+			links={primaryFieldLinks}
 			pathname={page.url.pathname}
 			searchParams={page.url.searchParams}
+			variant="enterprise"
+			accent={tabBarAccent}
 		/>
 		<MobileDirectorFab pathname={page.url.pathname} />
 	{/if}

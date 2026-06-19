@@ -434,6 +434,24 @@
 				/>
 			</div>
 		</header>
+		<div class="pd-hq-glance-band bento-span-12" aria-label="Operative glance stats">
+			<div class="pd-hq-glance-band__cell">
+				<span class="pd-hq-glance-band__label">LVL</span>
+				<span class="pd-hq-glance-band__value">{String(osLevel).padStart(2, '0')}</span>
+			</div>
+			<div class="pd-hq-glance-band__cell">
+				<span class="pd-hq-glance-band__label">Rank</span>
+				<span class="pd-hq-glance-band__value">{rankProgress.rank}</span>
+			</div>
+			<div class="pd-hq-glance-band__cell">
+				<span class="pd-hq-glance-band__label">Streak</span>
+				<span class="pd-hq-glance-band__value">{streak}d</span>
+			</div>
+			<div class="pd-hq-glance-band__cell">
+				<span class="pd-hq-glance-band__label">Bounties</span>
+				<span class="pd-hq-glance-band__value">{coachBountyCount}</span>
+			</div>
+		</div>
 		<OperativeHub>
 				{#snippet identity()}
 					<IdentityBentoModule

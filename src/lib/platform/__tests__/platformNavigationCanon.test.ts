@@ -13,7 +13,10 @@ const AGENT_WORKFLOW = join(ROOT, '..', '.cursor/rules/sst-agent-workflow.mdc');
 const MOBILE_TAB_BAR = join(ROOT, 'lib/components/shell/MobileTabBar.svelte');
 const PLAYER_SHELL = join(ROOT, 'lib/components/shell/PlayerShell.svelte');
 const ENTERPRISE_SHELL = join(ROOT, 'lib/components/shell/EnterpriseConsoleShell.svelte');
+const PLAYER_PRIMARY_NAV = join(ROOT, 'lib/player/shell/playerPrimaryNav.ts');
 const WORKSPACE_NAV = join(ROOT, 'lib/shell/workspaceNav.js');
+const PLAYER_SHELL_CSS = join(ROOT, 'lib/styles/player-shell.css');
+const ENTERPRISE_CONSOLE_CSS = join(ROOT, 'lib/styles/enterprise-console.css');
 
 const STAFF_ADMIN_ROLES = [
 	'coach',
@@ -25,12 +28,8 @@ const STAFF_ADMIN_ROLES = [
 	'recruiter',
 ];
 
-/** Count href entries in PlayerShell NAV_LINKS array */
-function parsePlayerShellNavLinkCount(src: string): number {
-	const block = src.match(/const NAV_LINKS[^=]*=\s*\[([\s\S]*?)\];/);
-	expect(block).toBeTruthy();
-	return [...block![1].matchAll(/href:\s*['"`]/g)].length;
-}
+const PLAYER_FIELD_LABELS = ['HQ', 'Train', 'Stats'];
+const COACH_FIELD_LABELS = ['Daily Intel', 'The Forge', 'Messages'];
 
 /** Parse registry §1 player Tier 1 nav_visible routes */
 function parsePlayerTier1NavRoutes(registrySrc: string): string[] {
@@ -94,32 +93,69 @@ describe('PLATFORM_NAVIGATION_CANON gospel guards', () => {
 	});
 });
 
-describe('NAV-IMPL debt (expected fail until implementation slice)', () => {
-	it.fails('PlayerShell NAV_LINKS capped at 4 primary field tabs (+ More)', () => {
-		const playerShell = readFileSync(PLAYER_SHELL, 'utf-8');
-		const count = parsePlayerShellNavLinkCount(playerShell);
-		expect(count, 'NAV-IMPL: split to playerPrimaryNav.ts — max 4 primary + More sheet').toBeLessThanOrEqual(
-			4,
-		);
+describe('NAV-IMPL implementation guards', () => {
+	const playerShell = readFileSync(PLAYER_SHELL, 'utf-8');
+	const playerNav = readFileSync(PLAYER_PRIMARY_NAV, 'utf-8');
+	const enterprise = readFileSync(ENTERPRISE_SHELL, 'utf-8');
+	const mobileTabBar = readFileSync(MOBILE_TAB_BAR, 'utf-8');
+	const playerShellCss = readFileSync(PLAYER_SHELL_CSS, 'utf-8');
+	const workspaceNav = readFileSync(WORKSPACE_NAV, 'utf-8');
+
+	it('PlayerShell uses playerPrimaryNav — max 3 primary field tabs + More', () => {
+		expect(playerShell).toContain('playerPrimaryNav');
+		expect(playerShell).not.toMatch(/const NAV_LINKS/);
+		expect(playerShell).toMatch(/ps-field-bar/);
+		expect(playerShell).toMatch(/ps-more-sheet/);
+		const primaryCount = [...playerNav.matchAll(/playerPrimaryFieldNav[^[]*\[[\s\S]*?\];/g)][0]?.[0].match(
+			/href:/g,
+		)?.length;
+		expect(primaryCount).toBe(3);
 	});
 
-	it.fails('EnterpriseConsoleShell overflow drawer excludes primary tab href duplicates', () => {
-		const enterprise = readFileSync(ENTERPRISE_SHELL, 'utf-8');
-		// Canon §1: sidebar drawer on field must not list same hrefs as MobileTabBar primary tabs.
-		// Current impl passes full `links` to both sidebar {#each} and MobileTabBar (first 5).
-		expect(
-			enterprise,
-			'NAV-IMPL: filter sidebar drawer links to exclude MobileTabBar primary hrefs on field',
-		).toMatch(/overflowLinks|primaryTabLinks|fieldDrawerLinks|excludePrimary/i);
+	it('playerPrimaryNav overflow includes settings and messages', () => {
+		expect(playerNav).toMatch(/href:\s*['"]\/player\/settings['"]/);
+		expect(playerNav).toMatch(/href:\s*['"]\/messages['"]/);
 	});
 
-	it.fails('recruiter role receives staff field chrome (MobileTabBar)', () => {
-		const enterprise = readFileSync(ENTERPRISE_SHELL, 'utf-8');
-		const rolesBlock = enterprise.match(/MANAGEMENT_ROLES\s*=\s*new Set\(\[([\s\S]*?)\]\)/);
-		expect(rolesBlock).toBeTruthy();
-		expect(rolesBlock![1], 'NAV-IMPL: add recruiter to MANAGEMENT_ROLES for field chrome').toContain(
-			'recruiter',
-		);
+	it('Player shell rail breakpoint is 1024px (not 768px)', () => {
+		expect(playerShellCss).toMatch(/@media\s*\(\s*min-width:\s*1024px\s*\)/);
+		expect(playerShellCss).not.toMatch(/@media\s*\(\s*min-width:\s*768px\s*\)/);
+	});
+
+	it('EnterpriseConsoleShell splits primary tabs from overflow drawer on field', () => {
+		expect(enterprise).toMatch(/getPrimaryFieldNavLinks/);
+		expect(enterprise).toMatch(/getOverflowFieldNavLinks/);
+		expect(enterprise).toMatch(/drawerLinks/);
+		expect(enterprise).toMatch(/primaryFieldLinks/);
+	});
+
+	it('recruiter and parent receive field chrome', () => {
+		expect(enterprise).toMatch(/FIELD_CHROME_ROLES/);
+		expect(enterprise).toContain("'recruiter'");
+		expect(enterprise).toContain("'parent'");
+	});
+
+	it('MobileTabBar enterprise variant — no player-shell.css cross-import', () => {
+		expect(mobileTabBar).toMatch(/mobile-tab-bar--enterprise/);
+		expect(mobileTabBar).not.toMatch(/player-shell\.css/);
+		expect(enterprise).toMatch(/variant="enterprise"/);
+		expect(mobileTabBar).not.toMatch(/enterprise-console\.css/);
+	});
+
+	it('coach primary field labels differ from player labels', () => {
+		for (const label of PLAYER_FIELD_LABELS) {
+			expect(workspaceNav).toContain(`label: '${label === 'Stats' ? 'Stats' : label}'`);
+		}
+		for (const label of COACH_FIELD_LABELS) {
+			expect(workspaceNav).toContain(label);
+		}
+		expect(COACH_FIELD_LABELS).not.toContain('HQ');
+		expect(COACH_FIELD_LABELS).not.toContain('Train');
+	});
+
+	it('workspaceNav exports field nav split helpers', () => {
+		expect(workspaceNav).toContain('export function getPrimaryFieldNavLinks');
+		expect(workspaceNav).toContain('export function getOverflowFieldNavLinks');
 	});
 });
 

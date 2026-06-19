@@ -66,9 +66,14 @@ describe('Sprint 2.16.1 — legacy /settings player redirect', () => {
 });
 
 describe('Sprint 2.16.1 — PlayerShell nav + billing gate', () => {
-	it('NAV_LINKS includes /player/settings', () => {
-		expect(shellSrc).toMatch(/href:\s*['"]\/player\/settings['"]/);
-		expect(shellSrc).not.toMatch(/href:\s*['"]\/settings['"][\s\S]*?label:\s*['"]Settings['"]/);
+	it('playerPrimaryNav includes /player/settings', () => {
+		expect(shellSrc).toMatch(/playerPrimaryNav/);
+		const navSrc = readFileSync(
+			join(ROOT, 'lib/player/shell/playerPrimaryNav.ts'),
+			'utf-8',
+		);
+		expect(navSrc).toMatch(/href:\s*['"]\/player\/settings['"]/);
+		expect(navSrc).not.toMatch(/href:\s*['"]\/settings['"][\s\S]*?label:\s*['"]Settings['"]/);
 	});
 
 	it('billing gate redirects to /player/settings when Train blocked', () => {

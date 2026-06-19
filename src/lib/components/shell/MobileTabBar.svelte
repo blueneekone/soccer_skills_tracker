@@ -14,14 +14,29 @@
 		links: NavLink[];
 		pathname: string;
 		searchParams: URLSearchParams;
+		/** `enterprise` = flat admin SIEM chrome (staff/parent); default = legacy blur bar */
+		variant?: 'default' | 'enterprise';
+		/** Active tab accent — coach cyan; staff admin neutral grey */
+		accent?: 'cyan' | 'neutral';
 	}
 
-	let { links, pathname, searchParams }: Props = $props();
+	let {
+		links,
+		pathname,
+		searchParams,
+		variant = 'default',
+		accent = 'cyan',
+	}: Props = $props();
 
 	const visibleLinks = $derived(links.slice(0, 5));
 </script>
 
-<nav class="mobile-tab-bar" aria-label="Main navigation">
+<nav
+	class="mobile-tab-bar"
+	class:mobile-tab-bar--enterprise={variant === 'enterprise'}
+	class:mobile-tab-bar--accent-neutral={variant === 'enterprise' && accent === 'neutral'}
+	aria-label="Main navigation"
+>
 	<div
 		role="tablist"
 		class="tw-flex tw-flex-row tw-items-stretch tw-justify-around tw-w-full tw-h-full"
@@ -57,6 +72,13 @@
 		box-shadow: 0 -4px 32px rgba(0, 0, 0, 0.6);
 	}
 
+	.mobile-tab-bar--enterprise {
+		background: #0f172a;
+		backdrop-filter: none;
+		border-top: 1px solid rgba(148, 163, 184, 0.22);
+		box-shadow: none;
+	}
+
 	@media (min-width: 1024px) {
 		.mobile-tab-bar {
 			display: none;
@@ -82,6 +104,10 @@
 
 	.tab-item--active {
 		color: #14b8a6;
+	}
+
+	.mobile-tab-bar--accent-neutral .tab-item--active {
+		color: #cbd5e1;
 	}
 
 	.tab-label {

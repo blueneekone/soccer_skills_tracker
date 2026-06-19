@@ -208,8 +208,8 @@
 	}
 }
 
-/* ─── Icon rail (mobile: bottom dock) ────────────────────────── */
-.ps-rail {
+/* ─── Field mode: full-width bottom tab bar (Option A) ───────── */
+.ps-field-bar {
 	position: fixed;
 	bottom: 0;
 	left: 0;
@@ -218,22 +218,245 @@
 	display: flex;
 	align-items: stretch;
 	justify-content: space-around;
-	gap: 2px;
-	margin: 10px 12px calc(10px + env(safe-area-inset-bottom, 0px));
-	padding: 6px 6px;
-	height: var(--pp-bottomnav-height);
-	max-width: min(560px, calc(100vw - 24px));
-	margin-left: auto;
-	margin-right: auto;
-	background: rgba(12, 12, 16, 0.78);
-	border: 1px solid var(--pp-border-glow);
-	border-radius: var(--pp-dock-radius);
-	box-shadow:
-		0 0 0 1px rgba(0, 0, 0, 0.35) inset,
-		0 24px 48px -20px rgba(0, 0, 0, 0.85);
-	-webkit-backdrop-filter: blur(var(--vanguard-blur-lg)) saturate(1.8);
-	backdrop-filter: blur(var(--vanguard-blur-lg)) saturate(1.8);
+	gap: 0;
+	margin: 0;
+	padding: 0 0 env(safe-area-inset-bottom, 0px);
+	min-height: calc(var(--pp-bottomnav-height) + env(safe-area-inset-bottom, 0px));
+	width: 100%;
+	max-width: none;
+	border-radius: 0;
+	border: none;
+	border-top: 1px solid var(--pp-border);
+	background: rgba(5, 5, 10, 0.96);
+	box-shadow: 0 -1px 0 rgba(255, 255, 255, 0.04);
 	box-sizing: border-box;
+}
+
+.ps-field-bar__tab {
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 2px;
+	min-width: 0;
+	min-height: 44px;
+	padding: 6px 4px;
+	text-decoration: none;
+	color: var(--pp-text-secondary);
+	border: none;
+	background: transparent;
+	font: inherit;
+	cursor: pointer;
+	box-sizing: border-box;
+}
+
+.ps-field-bar__label {
+	font-size: 0.58rem;
+	font-weight: 600;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	line-height: 1;
+	color: inherit;
+}
+
+.ps-field-bar__icon {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	color: #94a3b8;
+}
+
+.ps-field-bar__tab--hub-active {
+	color: var(--pp-accent);
+}
+
+.ps-field-bar__tab--hub-active .ps-field-bar__icon {
+	color: var(--pp-accent);
+	filter: drop-shadow(0 0 8px rgba(251, 191, 36, 0.45));
+}
+
+.ps-field-bar__tab--active {
+	color: var(--pp-accent-cool);
+}
+
+.ps-field-bar__tab--active .ps-field-bar__icon {
+	color: var(--pp-accent-cool);
+}
+
+.ps-field-bar__tab--gated {
+	opacity: 0.45;
+	cursor: not-allowed;
+}
+
+.ps-field-bar__tab:active:not(.ps-field-bar__tab--gated) {
+	transform: scale(0.96);
+}
+
+/* More sheet */
+.ps-more-backdrop {
+	position: fixed;
+	inset: 0;
+	z-index: 70;
+	background: rgba(0, 0, 0, 0.55);
+}
+
+.ps-more-sheet {
+	position: fixed;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	z-index: 75;
+	max-height: min(70dvh, 420px);
+	display: flex;
+	flex-direction: column;
+	border-top: 1px solid var(--pp-border);
+	background: rgba(8, 8, 12, 0.98);
+	padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.ps-more-sheet__head {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 0.75rem 1rem;
+	border-bottom: 1px solid var(--pp-border);
+}
+
+.ps-more-sheet__title {
+	font-size: 0.65rem;
+	font-weight: 700;
+	letter-spacing: 0.16em;
+	text-transform: uppercase;
+	color: var(--pp-text-secondary);
+}
+
+.ps-more-sheet__close {
+	appearance: none;
+	border: none;
+	background: transparent;
+	color: var(--pp-text-secondary);
+	cursor: pointer;
+	padding: 0.25rem;
+}
+
+.ps-more-sheet__nav {
+	display: flex;
+	flex-direction: column;
+	padding: 0.5rem;
+	overflow-y: auto;
+}
+
+.ps-more-sheet__link {
+	display: flex;
+	align-items: center;
+	gap: 0.65rem;
+	min-height: 44px;
+	padding: 0.5rem 0.75rem;
+	border-radius: 8px;
+	text-decoration: none;
+	color: var(--pp-text-secondary);
+}
+
+.ps-more-sheet__link--active {
+	color: var(--pp-accent-cool);
+	background: rgba(20, 184, 166, 0.08);
+}
+
+.ps-more-sheet__sign-out {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 0.5rem;
+	margin: 0.5rem 1rem 1rem;
+	min-height: 44px;
+	border: 1px solid rgba(248, 113, 113, 0.28);
+	border-radius: 8px;
+	background: rgba(248, 113, 113, 0.08);
+	color: rgba(248, 113, 113, 0.9);
+	font: inherit;
+	cursor: pointer;
+}
+
+.ps-more-sheet__sign-out:disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
+}
+
+/* ─── Desk: fixed left icon rail (≥1024px) ───────────────────── */
+.ps-rail {
+	display: none;
+}
+
+@media (min-width: 1024px) {
+	.ps-root {
+		--pp-bottomnav-height: 0px;
+	}
+
+	.ps-field-bar {
+		display: none;
+	}
+
+	.ps-rail {
+		display: flex;
+		position: fixed;
+		left: 0;
+		top: 0;
+		bottom: 0;
+		z-index: 55;
+		flex-direction: column;
+		justify-content: flex-start;
+		align-items: stretch;
+		gap: 8px;
+		width: var(--pp-rail-width);
+		min-width: var(--pp-rail-width);
+		height: 100dvh;
+		max-width: none;
+		margin: 0;
+		padding: 16px 10px;
+		border-radius: 0;
+		border: none;
+		border-right: 1px solid var(--pp-border);
+		background: rgba(8, 8, 12, 0.94);
+		box-shadow: 4px 0 40px -16px rgba(0, 0, 0, 0.75);
+	}
+
+	.ps-stack {
+		margin-left: var(--pp-rail-width);
+		width: calc(100% - var(--pp-rail-width));
+	}
+
+	.ps-canvas {
+		padding: 0;
+		padding-bottom: 28px;
+	}
+
+	.ps-rail__link {
+		flex: 0 0 auto;
+		padding: 14px 8px;
+	}
+
+	.ps-rail__divider {
+		display: block;
+	}
+
+	.ps-rail__spacer {
+		display: block;
+		flex: 1 1 auto;
+		min-height: 8px;
+	}
+
+	.ps-root:has(.player-dossier-root) .ps-rail,
+	.ps-root.ps-root--dossier .ps-rail {
+		background: rgba(5, 5, 10, 0.98);
+		border-right: 1px solid rgba(255, 255, 255, 0.1);
+		box-shadow: 4px 0 32px -14px rgba(0, 0, 0, 0.85);
+	}
+
+	.ps-root:has(.player-dossier-root) .ps-rail__divider,
+	.ps-root.ps-root--dossier .ps-rail__divider {
+		background: rgba(255, 255, 255, 0.1);
+	}
 }
 
 .ps-rail__link {
@@ -366,16 +589,16 @@
 	color: var(--pp-accent-cool);
 }
 
-/* Sprint 2.9 — dossier rail: dark panel, pd-line borders, Armory-tab active language */
-.ps-root:has(.player-dossier-root) .ps-rail,
-.ps-root.ps-root--dossier .ps-rail {
-	background: rgba(5, 5, 10, 0.94);
-	border-color: rgba(255, 255, 255, 0.1);
-	-webkit-backdrop-filter: blur(14px) saturate(1.35);
-	backdrop-filter: blur(14px) saturate(1.35);
-	box-shadow:
-		0 0 0 1px rgba(0, 0, 0, 0.45) inset,
-		0 20px 40px -18px rgba(0, 0, 0, 0.88);
+/* Dossier rail tokens apply on desk rail only (NAV-IMPL ≥1024) */
+@media (min-width: 1024px) {
+	.ps-root:has(.player-dossier-root) .ps-rail,
+	.ps-root.ps-root--dossier .ps-rail {
+		background: rgba(5, 5, 10, 0.94);
+		border-color: rgba(255, 255, 255, 0.1);
+		box-shadow:
+			0 0 0 1px rgba(0, 0, 0, 0.45) inset,
+			4px 0 32px -14px rgba(0, 0, 0, 0.88);
+	}
 }
 
 .ps-root:has(.player-dossier-root) .ps-rail__link--hub-active,
@@ -468,74 +691,6 @@
 	background: linear-gradient(135deg, var(--pp-accent-cool, #14b8a6), var(--pp-accent, #fbbf24));
 	border-color: color-mix(in srgb, var(--pp-accent-cool, #14b8a6) 45%, transparent);
 	box-shadow: 0 6px 16px -8px color-mix(in srgb, var(--pp-accent-cool, #14b8a6) 45%, transparent);
-}
-
-/* ─── Tablet+: fixed 80px left rail ──────────────────────────── */
-@media (min-width: 768px) {
-	.ps-root {
-		--pp-bottomnav-height: 0px;
-	}
-
-	.ps-rail {
-		position: fixed;
-		left: 0;
-		top: 0;
-		bottom: 0;
-		z-index: 55;
-		flex-direction: column;
-		justify-content: flex-start;
-		align-items: stretch;
-		gap: 8px;
-		width: var(--pp-rail-width);
-		min-width: var(--pp-rail-width);
-		height: 100dvh;
-		max-width: none;
-		margin: 0;
-		padding: 16px 10px;
-		border-radius: 0;
-		border: none;
-		border-right: 1px solid var(--pp-border);
-		background: rgba(8, 8, 12, 0.94);
-		box-shadow: 4px 0 40px -16px rgba(0, 0, 0, 0.75);
-	}
-
-	.ps-stack {
-		margin-left: var(--pp-rail-width);
-		width: calc(100% - var(--pp-rail-width));
-	}
-
-	.ps-canvas {
-		padding: 0;
-		padding-bottom: 28px;
-	}
-
-	.ps-rail__link {
-		flex: 0 0 auto;
-		padding: 14px 8px;
-	}
-
-	.ps-rail__divider {
-		display: block;
-	}
-
-	.ps-rail__spacer {
-		display: block;
-		flex: 1 1 auto;
-		min-height: 8px;
-	}
-
-	/* Sprint 2.9 — desktop dossier rail tokens */
-	.ps-root:has(.player-dossier-root) .ps-rail,
-	.ps-root.ps-root--dossier .ps-rail {
-		background: rgba(5, 5, 10, 0.98);
-		border-right: 1px solid rgba(255, 255, 255, 0.1);
-		box-shadow: 4px 0 32px -14px rgba(0, 0, 0, 0.85);
-	}
-
-	.ps-root:has(.player-dossier-root) .ps-rail__divider,
-	.ps-root.ps-root--dossier .ps-rail__divider {
-		background: rgba(255, 255, 255, 0.1);
-	}
 }
 
 /* ─── In-shell content: modern cards ─────────────────────────── */
