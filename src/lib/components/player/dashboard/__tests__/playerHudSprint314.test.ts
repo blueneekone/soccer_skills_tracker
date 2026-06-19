@@ -50,8 +50,10 @@ describe('QA-142 — coach mission Train handoff', () => {
 		expect(readinessHook).toMatch(/physioForTransmit/);
 		expect(dashboardSrc).toMatch(/TrainReadinessHqLine/);
 		const hqLine = readFileSync(join(ROOT, 'lib/player/workout/TrainReadinessHqLine.svelte'), 'utf-8');
-		expect(hqLine).toMatch(/hq-readiness-prompt/);
+		expect(hqLine).toMatch(/hq-readiness/);
+		expect(hqLine).toMatch(/submitPhysioSelfReport/);
 		expect(hqLine).toMatch(/showReadinessStrip/);
+		expect(hqLine).not.toMatch(/goto\(/);
 	});
 
 	it('logTrainingSession writes drill_completions for cadence when attributeId is set', () => {

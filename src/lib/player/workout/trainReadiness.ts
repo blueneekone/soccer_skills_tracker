@@ -47,3 +47,25 @@ export function normalizeTrainReadinessInput(input: TrainReadinessInput): TrainR
 		restingFeel: Math.max(1, Math.min(5, Math.round(Number(input.restingFeel) || 3))),
 	};
 }
+
+/** Persist daily physio from HQ or Train — one doc per UTC day. */
+export async function submitTrainReadinessReport(
+	input: TrainReadinessInput,
+	submitFn: (payload: {
+		sleepHours: number;
+		soreness: number;
+		mood: number;
+		restingFeel: number;
+	}) => Promise<unknown>,
+): Promise<void> {
+	const normalized = normalizeTrainReadinessInput(input);
+	if (!isValidTrainReadinessInput(normalized)) {
+		throw new Error('Invalid readiness values.');
+	}
+	await submitFn({
+		sleepHours: normalized.sleepHoursLastNight,
+		soreness: normalized.soreness,
+		mood: normalized.mood,
+		restingFeel: normalized.restingFeel,
+	});
+}
