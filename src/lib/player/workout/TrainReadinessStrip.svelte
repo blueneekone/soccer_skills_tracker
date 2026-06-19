@@ -92,7 +92,7 @@
 
 <style>
 	.pw-readiness {
-		margin-top: 0.75rem;
+		margin: 0 0 0.75rem;
 		padding: 0.85rem 1rem;
 		border: 1px solid rgba(20, 184, 166, 0.22);
 		background: rgba(20, 184, 166, 0.05);

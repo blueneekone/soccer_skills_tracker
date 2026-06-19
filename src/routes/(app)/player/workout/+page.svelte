@@ -782,6 +782,14 @@
 
   <div class="pw-theater pd-os-deck pd-os-deck--hero bento-span-12">
     <div class="pw-theater__z4-scan" aria-hidden="true"></div>
+    {#if trainReadiness.showReadinessStrip}
+      <TrainReadinessStrip
+        bind:sleepHoursLastNight={trainReadiness.readinessSleepHours}
+        bind:soreness={trainReadiness.readinessSoreness}
+        bind:mood={trainReadiness.readinessMood}
+        bind:restingFeel={trainReadiness.readinessRestingFeel}
+      />
+    {/if}
     {#if activeMissionId}
       <div class="pw-mission-armed pd-os-deck__well" aria-live="polite">
         <div class="pw-mission-armed__head">
@@ -1124,15 +1132,6 @@
         </div>
       </div>
     </div>
-
-    {#if trainReadiness.showReadinessStrip}
-      <TrainReadinessStrip
-        bind:sleepHoursLastNight={trainReadiness.readinessSleepHours}
-        bind:soreness={trainReadiness.readinessSoreness}
-        bind:mood={trainReadiness.readinessMood}
-        bind:restingFeel={trainReadiness.readinessRestingFeel}
-      />
-    {/if}
 
     <div class="pw-theater__transmit">
       {#if isBundleMode}

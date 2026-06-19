@@ -44,6 +44,10 @@ describe('QA-142 — coach mission Train handoff', () => {
 		expect(workoutSrc).toMatch(/useTrainReadinessStrip/);
 		expect(readinessHook).toMatch(/physio_self_reports/);
 		expect(readinessHook).toMatch(/physioForTransmit/);
+		const stripIdx = workoutSrc.indexOf('TrainReadinessStrip');
+		const transmitIdx = workoutSrc.indexOf('pw-theater__transmit');
+		expect(stripIdx).toBeGreaterThan(-1);
+		expect(transmitIdx).toBeGreaterThan(stripIdx);
 	});
 
 	it('logTrainingSession writes drill_completions for cadence when attributeId is set', () => {

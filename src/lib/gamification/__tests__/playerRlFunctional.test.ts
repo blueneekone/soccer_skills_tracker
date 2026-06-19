@@ -173,6 +173,12 @@ describe('Sprint RL-transition-guards — transition pipeline wiring', () => {
 		expect(src).toMatch(/TrainReadinessStrip/);
 		expect(src).toMatch(/useTrainReadinessStrip/);
 		expect(hook).toMatch(/physioForTransmit/);
+		const stripIdx = src.indexOf('TrainReadinessStrip');
+		const transmitIdx = src.indexOf('pw-theater__transmit');
+		const configureIdx = src.indexOf('Configure session');
+		expect(stripIdx).toBeGreaterThan(-1);
+		expect(transmitIdx).toBeGreaterThan(stripIdx);
+		expect(configureIdx).toBeGreaterThan(stripIdx);
 	});
 });
 
