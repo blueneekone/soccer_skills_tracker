@@ -48,15 +48,11 @@
 		type QuestTask,
 	} from '$lib/player/dashboard/activeBounties.js';
 	import {
-		buildCoachHomeworkHandoff,
 		COACH_INTENT_HINT,
 		formatSuggestedDrillLine,
-		readCachedPolicyHints,
 		resolveHeuristicDrill,
-		stashMissionHandoff,
-		stashCoachIntentHandoffForAssignment,
+		stashQuestTrainHandoff,
 	} from '$lib/player/workout/coachMissionFlow.js';
-	import { repairIntentPrescription } from '$lib/types/intent.js';
 	import '$lib/styles/active-bounties.css';
 	import MissionHeroModal from '$lib/components/hud/MissionHeroModal.svelte';
 
@@ -473,43 +469,11 @@
 	}
 
 	function stashQuestHandoff(quest: QuestTask) {
-		if (quest.source === 'coach_intent') {
-			const row = intentDataById[quest.id] ?? {};
-			const targetAttributeId =
-				(typeof row.targetAttributeId === 'string' ? row.targetAttributeId.trim() : '') ||
-				(typeof quest.targetAttributeId === 'string' ? quest.targetAttributeId.trim() : '');
-			const requiredXp = Math.max(0, Math.floor(Number(row.requiredXp) || 0));
-			const preview = drillPreviewByQuestId[quest.id];
-			const prescription = repairIntentPrescription(row.prescription);
-			const coachDrill = prescription?.drillTitle
-				? {
-					id: prescription.teamDrillId ?? prescription.clubDrillId ?? prescription.drillId ?? preview?.id ?? quest.id,
-					title: prescription.drillTitle,
-				}
-				: preview ? { id: preview.id, title: preview.title }
-				: targetAttributeId ? { id: quest.id, title: quest.title }
-				: null;
-			stashCoachIntentHandoffForAssignment({
-				missionId: quest.id,
-				targetAttributeId,
-				requiredXp,
-				prescription,
-				drill: coachDrill,
-				policyHints: readCachedPolicyHints(),
-			});
-			return;
-		}
-		if (quest.source === 'coach_homework') {
-			const row = homeworkDataById[quest.id] ?? {};
-			stashMissionHandoff(
-				buildCoachHomeworkHandoff({
-					missionId: quest.id,
-					drillTitle: quest.title,
-					targetAttributeId:
-						typeof row.targetAttributeId === 'string' ? row.targetAttributeId : undefined,
-				}),
-			);
-		}
+		stashQuestTrainHandoff(quest, {
+			intentRow: intentDataById[quest.id],
+			homeworkRow: homeworkDataById[quest.id],
+			drillPreview: drillPreviewByQuestId[quest.id] ?? null,
+		});
 	}
 
 	function shouldOpenMissionHeroModal(quest: QuestTask): boolean {

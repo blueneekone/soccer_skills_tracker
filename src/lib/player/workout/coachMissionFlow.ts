@@ -430,6 +430,64 @@ export function stashCoachIntentHandoffForAssignment(input: {
 	);
 }
 
+/** Stash sessionStorage handoff when player accepts or starts a mission-rail quest. */
+export function stashQuestTrainHandoff(
+	quest: {
+		id: string;
+		source: string;
+		title: string;
+		targetAttributeId?: string;
+	},
+	ctx: {
+		intentRow?: Record<string, unknown>;
+		homeworkRow?: Record<string, unknown>;
+		drillPreview?: { id: string; title: string } | null;
+	},
+): void {
+	if (quest.source === 'coach_intent') {
+		const row = ctx.intentRow ?? {};
+		const targetAttributeId =
+			(typeof row.targetAttributeId === 'string' ? row.targetAttributeId.trim() : '') ||
+			(typeof quest.targetAttributeId === 'string' ? quest.targetAttributeId.trim() : '');
+		const requiredXp = Math.max(0, Math.floor(Number(row.requiredXp) || 0));
+		const preview = ctx.drillPreview;
+		const prescription = repairIntentPrescription(row.prescription);
+		const coachDrill = prescription?.drillTitle
+			? {
+					id:
+						prescription.teamDrillId ??
+						prescription.clubDrillId ??
+						prescription.drillId ??
+						preview?.id ??
+						quest.id,
+					title: prescription.drillTitle,
+				}
+			: preview ? { id: preview.id, title: preview.title }
+			: targetAttributeId ? { id: quest.id, title: quest.title }
+			: null;
+		stashCoachIntentHandoffForAssignment({
+			missionId: quest.id,
+			targetAttributeId,
+			requiredXp,
+			prescription,
+			drill: coachDrill,
+			policyHints: readCachedPolicyHints(),
+		});
+		return;
+	}
+	if (quest.source === 'coach_homework') {
+		const row = ctx.homeworkRow ?? {};
+		stashMissionHandoff(
+			buildCoachHomeworkHandoff({
+				missionId: quest.id,
+				drillTitle: quest.title,
+				targetAttributeId:
+					typeof row.targetAttributeId === 'string' ? row.targetAttributeId : undefined,
+			}),
+		);
+	}
+}
+
 export function buildCoachHomeworkHandoff(input: {
 	missionId: string;
 	drillTitle: string;
