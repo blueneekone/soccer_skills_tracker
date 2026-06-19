@@ -113,6 +113,7 @@
   let armedHandoff = $state(null);
   /** @type {Array<Record<string, unknown> & { id: string }>} */
   let incomingMissions = $state([]);
+  let incomingMissionsReady = $state(false);
   let missionSyncRefreshing = $state(false);
   let missionRefreshNonce = $state(0);
 
@@ -252,16 +253,15 @@
     isBundleMode && bundleStepIdx === bundleDrills.length - 1,
   );
 
-  /**
-   * @param {MissionHandoff} handoff
-   */
   async function applyMissionHandoff(handoff) {
     if (isMissionHandoffStale(handoff)) {
       clearMissionHandoff();
       return;
     }
     activeMissionId = handoff.missionId;
-    armedHandoff = handoff;
+    let resolvedDrillTitle = handoff.drillTitle ?? '';
+    let resolvedDrillId = handoff.drillId ?? handoff.missionId;
+    const pickDrill = (title, id) => { selectedDrill = title; resolvedDrillTitle = title; resolvedDrillId = id; };
     if (handoff.focusArea) {
       selectedFocus = handoff.focusArea;
     } else if (handoff.targetAttributeId) {
@@ -283,17 +283,18 @@
       const row = teamId ?
         await resolveTeamLibraryDrill(db, teamId, drillId, clubId || undefined)
       :	null;
-      if (row?.title) selectedDrill = row.title;
+      if (row?.title) pickDrill(row.title, drillId);
     } else if (handoff.prescription?.drillId) {
       const drill = await resolveDrillById(db, handoff.prescription.drillId);
-      if (drill?.title) selectedDrill = drill.title;
+      if (drill?.title) pickDrill(drill.title, drill.id);
     } else if (handoff.drillTitle) {
-      selectedDrill = handoff.drillTitle;
+      pickDrill(handoff.drillTitle, resolvedDrillId);
     } else if (handoff.targetAttributeId) {
       const frustration = String(profile?.recentFrustration ?? 'low');
       const drill = await resolveHeuristicDrill(db, handoff.targetAttributeId, frustration);
-      if (drill?.title) selectedDrill = drill.title;
+      if (drill?.title) pickDrill(drill.title, drill.id);
     }
+    armedHandoff = { ...handoff, drillId: resolvedDrillId, drillTitle: resolvedDrillTitle || handoff.drillTitle };
     if (handoff.prescription) {
       workoutSets = handoff.prescription.sets;
       workoutRepsPerSet = handoff.prescription.repsPerSet ?? 0;
@@ -377,14 +378,12 @@
     });
   });
 
-  // RL inference on Train for non-coach sessions only (coach prescription is authoritative).
   $effect(() => {
     if (!browser) return;
     if (authStore.role !== 'player') return;
     const missionId = activeMissionId;
     if (!missionId) return;
     if (isCoachDirectedHandoff(armedHandoff?.source)) return;
-
     const sportId = sportsConfigStore.currentSportConfig?.sportId ?? 'soccer';
     let cancelled = false;
 
@@ -409,15 +408,14 @@
     };
   });
 
-  // Drop armed state if coach intent was cancelled server-side.
   $effect(() => {
     if (!armedHandoff || armedHandoff.source !== 'coach_intent') return;
+    if (!incomingMissionsReady) return;
     if (!incomingMissions.some((m) => m.id === armedHandoff.missionId)) {
       clearArmedMission();
     }
   });
 
-  // Epic 8: subscribe to active team_assignments for HQ link + armed mission goal XP.
   $effect(() => {
     if (!browser) return;
     void missionRefreshNonce;
@@ -427,8 +425,10 @@
       : '';
     if (authStore.role !== 'player' || !uid || !teamId) {
       incomingMissions = [];
+      incomingMissionsReady = false;
       return;
     }
+    incomingMissionsReady = false;
     const qy = query(
       collection(db, 'team_assignments'),
       where('teamId', '==', teamId),
@@ -445,6 +445,7 @@
           if (!m.scope || m.scope === 'team') return true;
           return Array.isArray(m.targetUids) && m.targetUids.includes(uid);
         });
+      incomingMissionsReady = true;
     };
     const unsub = onSnapshot(
       qy,

@@ -10,10 +10,11 @@
 		getDoc,
 		setDoc,
 	} from 'firebase/firestore';
+	import { browser } from '$app/environment';
 	import { goto } from '$app/navigation';
 	import { httpsCallable } from 'firebase/functions';
 	import { db, functions } from '$lib/firebase.js';
-	import { stashCoachIntentHandoffForAssignment, buildPolicyHintsFromResult } from '$lib/player/workout/coachMissionFlow.js';
+	import { stashCoachIntentHandoffForAssignment, buildPolicyHintsFromResult, readMissionHandoff, isMissionHandoffStale } from '$lib/player/workout/coachMissionFlow.js';
 	import { ensureRlPolicyCached, readRlPolicyCache } from '$lib/player/workout/rlPolicyCache.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { sportsConfigStore } from '$lib/stores/sportsConfigStore.svelte.js';
@@ -70,6 +71,18 @@
 
 	// Morning Readiness Card — shown once per UTC day until player submits.
 	let showReadinessCard = $state(false);
+	let coachTrainHandoffPending = $state(false);
+
+	$effect(() => {
+		if (!browser) {
+			coachTrainHandoffPending = false;
+			return;
+		}
+		const handoff = readMissionHandoff();
+		coachTrainHandoffPending = Boolean(
+			handoff?.missionId && !isMissionHandoffStale(handoff),
+		);
+	});
 
 	$effect(() => {
 		const uid = authStore.user?.uid;
@@ -281,7 +294,7 @@
 	class="vanguard-surface tw-flex tw-flex-col tw-gap-5 tw-p-6"
 >
 	<!-- Morning Readiness Card (Phase 3, Epic 4 — RL S2) -->
-	{#if showReadinessCard}
+	{#if showReadinessCard && !coachTrainHandoffPending}
 		<MorningReadinessCard onSubmitted={() => { showReadinessCard = false; }} />
 		<div class="tw-w-full tw-h-px tw-bg-slate-800/60"></div>
 	{/if}
