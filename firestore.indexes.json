@@ -223,6 +223,14 @@
       ]
     },
     {
+      "collectionGroup": "users",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "teamId", "order": "ASCENDING" },
+        { "fieldPath": "role", "order": "ASCENDING" }
+      ]
+    },
+    {
       "collectionGroup": "trial_scores",
       "queryScope": "COLLECTION",
       "fields": [
@@ -438,6 +446,15 @@
         { "fieldPath": "clubId", "order": "ASCENDING" },
         { "fieldPath": "createdAt", "order": "DESCENDING" }
       ]
+    },
+    {
+      "collectionGroup": "season_registrations",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "tenantId", "order": "ASCENDING" },
+        { "fieldPath": "seasonId", "order": "ASCENDING" },
+        { "fieldPath": "paymentStatus", "order": "ASCENDING" }
+      ]
     }
   ],
   "fieldOverrides": [
@@ -469,15 +486,6 @@
           "order": "ASCENDING",
           "queryScope": "COLLECTION"
         }
-      ]
-    },
-    {
-      "collectionGroup": "season_registrations",
-      "queryScope": "COLLECTION",
-      "fields": [
-        { "fieldPath": "tenantId", "order": "ASCENDING" },
-        { "fieldPath": "seasonId", "order": "ASCENDING" },
-        { "fieldPath": "paymentStatus", "order": "ASCENDING" }
       ]
     }
   ]

@@ -96,4 +96,11 @@ describe('LAUNCH-parent-link-team — parentLinkOperativeToTeam + household UI',
 		expect(ops).toMatch(/setCustomUserClaims\(childUid/);
 		expect(ops).toMatch(/await stampOperativeTeamClaims\(childUid, u, teamIdForUser, clubId, hid\)/);
 	});
+
+	it('parentLinkOperativeToTeam sets role player on users merge', () => {
+		const ops = readFileSync(join(ROOT, 'functions/src/domains/operativeOps.js'), 'utf8');
+		const fnBlock = ops.slice(ops.indexOf('exports.parentLinkOperativeToTeam'));
+		expect(fnBlock).toMatch(/batch\.set\(\s*\n?\s*uRef,/);
+		expect(fnBlock).toMatch(/role:\s*'player'/);
+	});
 });

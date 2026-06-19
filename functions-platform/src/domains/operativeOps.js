@@ -1605,6 +1605,7 @@ exports.parentLinkOperativeToTeam = onCall({region: REGION}, async (request) => 
         teamId: teamIdForUser,
         clubId,
         householdId: hid,
+        role: 'player',
         updatedAt: now,
       },
       {merge: true},

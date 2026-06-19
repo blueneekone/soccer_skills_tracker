@@ -635,3 +635,25 @@ export function intentAssignmentVisibleToPlayer(
 	if (!row.scope || row.scope === 'team') return true;
 	return Array.isArray(row.targetUids) && row.targetUids.includes(playerUid);
 }
+
+/** GP-ACQ-04a — empty mission rail explains coach Forge deploy path (not silent blank). */
+export const COACH_MISSION_RAIL_HINT =
+	'Coach missions appear here when your coach deploys from Forge.';
+
+/** Copy for mission rail when no bounties / sync blocked (GP-ACQ-04a failure_state). */
+export function missionRailEmptyCopy(opts: { missionSyncBlocked: boolean }): string {
+	if (opts.missionSyncBlocked) {
+		return 'Mission sync blocked — sign out and back in';
+	}
+	return COACH_MISSION_RAIL_HINT;
+}
+
+/** Server-side fulfillment gate before local claim dismisses a coach intent bounty. */
+export function coachIntentReadyToClaim(
+	intentRow: Record<string, unknown> | undefined,
+	playerUid: string,
+): boolean {
+	if (!playerUid) return false;
+	const fulfilledBy = Array.isArray(intentRow?.fulfilledByUids) ? intentRow.fulfilledByUids : [];
+	return fulfilledBy.includes(playerUid);
+}

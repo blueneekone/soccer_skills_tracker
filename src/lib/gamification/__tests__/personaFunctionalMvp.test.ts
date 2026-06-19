@@ -180,7 +180,8 @@ describe('Sprint LAUNCH-functional-os — Coach→Player bounty handoff', () => 
 		expect(src).toMatch(/MissionRailClaimsSync/);
 		expect(src).toMatch(/MissionSnapshotRetryGate/);
 		expect(src).toMatch(/missionClaimsSync\.claimsSyncNonce/);
-		expect(src).toMatch(/Mission sync blocked/);
+		expect(src).toMatch(/missionRailEmptyCopy/);
+		expect(src).toMatch(/missionSyncBlocked/);
 	});
 
 	it('QA-142 parentLinkOperativeToTeam stamps custom claims on link', () => {
@@ -205,6 +206,15 @@ describe('Sprint LAUNCH-functional-os — Coach→Player bounty handoff', () => 
 		// G1 source-level guard: targetAttributeId must be forwarded into executePlayerWorkoutLog
 		// so the server can write xpByAttribute and trigger intent lifecycle fulfillment.
 		expect(src).toMatch(/targetAttributeId/);
+		expect(src).toMatch(/playerEngine\.bumpBy/);
+		expect(src).toMatch(/authStore\.refresh/);
+	});
+
+	it('GP-ACQ-04a ActiveBounties explains coach assign path when rail has no bounties', () => {
+		const src = readFileSync(ACTIVE_BOUNTIES, 'utf-8');
+		expect(src).toMatch(/missionRailEmptyCopy/);
+		expect(src).toMatch(/showCoachAssignHint/);
+		expect(src).not.toMatch(/NO ACTIVE MISSIONS/);
 	});
 
 	it('IntentEngine loads team drill library for coach sub-drill picker', () => {
@@ -469,17 +479,17 @@ describe('Functional audit backlog A–F — regression guards', () => {
 
 	it('D9 team-scope Forge deploy requires assignable roster (not name-only void)', () => {
 		const engine = readFileSync(join(ROOT, 'lib/coach/intent/IntentEngine.svelte.ts'), 'utf-8');
-		const hud = readFileSync(join(ROOT, 'lib/coach/intent/IntentHUD.svelte'), 'utf-8');
+		const hud = readFileSync(join(ROOT, 'lib/coach/intent/ForgeDeployPanel.svelte'), 'utf-8');
 		expect(engine).toMatch(/draftScope === 'team'\s*\?\s*\n?\s*this\.assignableRosterCount > 0/);
 		expect(hud).toMatch(/draftScope === 'team'/);
 		expect(hud).toMatch(/assignableRosterCount === 0 && roster\.length > 0/);
 		expect(hud).toMatch(/excluded from deploy until player accounts are linked/);
 	});
 
-	it('F2 coach nav includes Field Station and War Room', () => {
+	it('F2 coach nav includes Field Station; War Room excluded per PRODUCT_SURFACE_REGISTRY', () => {
 		const nav = readFileSync(WORKSPACE_NAV, 'utf-8');
 		expect(nav).toMatch(/href:\s*'\/coach\/drills'/);
-		expect(nav).toMatch(/href:\s*'\/coach\/tactical'/);
+		expect(nav).not.toMatch(/href:\s*'\/coach\/tactical'/);
 	});
 
 	it('F5 parent log-workout loads drills from Firestore', () => {

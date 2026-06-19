@@ -59,6 +59,12 @@ Route: `/parent/dashboard` (12-col bento where migrated)
 - Clear compliance copy for COPPA/VPC steps.
 - Bento spacing tokens aligned with platform grid; no arcade chrome.
 
+## Foundation & layout canon
+
+- **Material vocabulary:** [`PARENT_OS_FOUNDATION.md`](./PARENT_OS_FOUNDATION.md) — trust-first grammar, VPC/household zones, co-op patterns.
+- **Visual acceptance:** [`PARENT_OS_VISUAL_ACCEPTANCE.md`](./PARENT_OS_VISUAL_ACCEPTANCE.md) — Tier 1 routes, 390px first.
+- **Workflow steps:** [`PLATFORM_WORKFLOW_CANON.md`](./PLATFORM_WORKFLOW_CANON.md) GP-PARENT, GP-ACQ steps 1–2, 5.
+
 ## Design criteria
 
 Platform bar: [`PLATFORM_EXPERIENCE_RUBRIC.md`](./PLATFORM_EXPERIENCE_RUBRIC.md) §2 — **Parent row**.

@@ -4,8 +4,11 @@ import {
 	sortQuestLog,
 	bountyFromCoachIntent,
 	buildDailyQuests,
+	coachIntentReadyToClaim,
 	countCadenceSessionsInWindow,
 	formatCadenceProgress,
+	missionRailEmptyCopy,
+	COACH_MISSION_RAIL_HINT,
 	questCtaLabel,
 	questHudCtaShort,
 	questHudCtaFor,
@@ -439,5 +442,30 @@ describe('B4b — advisory parent-verified badge: bountyFromCoachIntent is unaff
 		expect(badgeSection).not.toMatch(/xpReward\s*=/);
 		expect(badgeSection).not.toMatch(/lifecycle\s*=/);
 		expect(badgeSection).not.toMatch(/sortKey\s*=/);
+	});
+
+	it('GP-ACQ-04a: missionRailEmptyCopy explains coach Forge deploy path', () => {
+		expect(missionRailEmptyCopy({ missionSyncBlocked: false })).toBe(COACH_MISSION_RAIL_HINT);
+		expect(missionRailEmptyCopy({ missionSyncBlocked: false })).toMatch(/Forge/);
+		expect(missionRailEmptyCopy({ missionSyncBlocked: true })).toMatch(/sign out/i);
+	});
+
+	it('GP-ACQ-04a: coachIntentReadyToClaim gates claim on fulfilledByUids', () => {
+		expect(coachIntentReadyToClaim(undefined, 'uid-a')).toBe(false);
+		expect(coachIntentReadyToClaim({ fulfilledByUids: ['uid-b'] }, 'uid-a')).toBe(false);
+		expect(coachIntentReadyToClaim({ fulfilledByUids: ['uid-a'] }, 'uid-a')).toBe(true);
+	});
+
+	it('source-scan: GP-ACQ-04a coach assign hint in ActiveBounties mission rail', () => {
+		const { readFileSync } = require('fs');
+		const { join } = require('path');
+		const AB_SRC = readFileSync(
+			join(__dirname, '../../../components/hud/ActiveBounties.svelte'),
+			'utf-8',
+		);
+		expect(AB_SRC).toMatch(/missionRailEmptyCopy/);
+		expect(AB_SRC).toMatch(/showCoachAssignHint/);
+		expect(AB_SRC).toMatch(/coachIntentReadyToClaim/);
+		expect(AB_SRC).not.toMatch(/NO ACTIVE MISSIONS/);
 	});
 });

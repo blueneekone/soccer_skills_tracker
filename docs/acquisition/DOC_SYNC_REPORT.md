@@ -77,3 +77,179 @@
 |---------|--------|
 | `npm run check` | **0 errors**, 167 warnings in 58 files |
 | `npm test -- src/lib/parent/__tests__/launchWave2Complete.test.ts src/lib/gamification/__tests__/personaFunctionalMvp.test.ts` | **78 passed** (2 files) |
+
+---
+
+## PARA Lane 1 — PRODUCT_SURFACE_REGISTRY (2026-06-18)
+
+**Slice:** Canonical product surface registry + doc reconciliation + War Room nav demotion.
+
+### Files created
+
+| File | Purpose |
+|------|---------|
+| `docs/vision/PRODUCT_SURFACE_REGISTRY.md` | Gospel truth — §0 rules, §1 master table (15 Tier 1 rows), §2 nav policy, §3 contradictions, §4 owner sign-off |
+| `src/lib/platform/__tests__/productSurfaceRegistry.test.ts` | Registry + workspaceNav guard tests |
+
+### Files updated
+
+| File | Change summary |
+|------|----------------|
+| `docs/PERSONA_ECOSYSTEM.md` | Coach scope line; registry link in document roles |
+| `docs/vision/COACH_OS.md` | Home zones table from registry Tier 1/2/3 |
+| `docs/vision/PLATFORM_BUILD_MANDATES.md` | Registry #1 in §0 authority stack for routes/nav |
+| `docs/vision/FUNCTIONAL_MVP.md` | Tier 1 required vs Tier 2 optional sections |
+| `docs/vision/OWNER_QA_CHECKLIST.md` | Tier authority header (Phase 11 = visual VA; Tier 2 waivers) |
+| `ROADMAP.md` | TABLED post-acquisition list from registry Tier 3 + demoted surfaces |
+| `docs/acquisition/INDEX.md` | Registry linked as gospel in Start here + technical diligence |
+| `src/lib/shell/workspaceNav.js` | War Room removed from `coachLinks` |
+| `src/routes/(app)/coach/+page.svelte` | War Room HQ hero hidden (`warRoomHqVisible = false`) |
+| `src/lib/gamification/__tests__/personaFunctionalMvp.test.ts` | F2 guard — War Room excluded from nav |
+| `.cursor/rules/sst-agent-workflow.mdc` | Read registry before coding; no Tier 2/3 nav without owner update |
+
+### Contradiction appendix summary (registry wins)
+
+| # | Conflict | Resolution |
+|---|----------|------------|
+| 1 | COACH_OS home zones listed Tactical as equal pillar | Tier 2; nav + HQ hero hidden |
+| 2 | FUNCTIONAL_AUDIT F2 added War Room to nav | Removed from `coachLinks` |
+| 3 | FUNCTIONAL_MVP Coach primary routes over-scoped | Tier 1 = `/coach` + `/coach/forge` only |
+| 4 | PERSONA_ECOSYSTEM Coach scope included tactical board | Tier 2 demoted; link registry §0 |
+| 5 | DEMO_SCRIPT full demo vs exec cut | Exec cut routes = Tier 1; Field Station Tier 2 |
+| 6 | FUNCTIONAL_MVP Player primary included Armory | Tier 1 player = dashboard, workout, stats |
+| 7 | OWNER_QA Phase 5 bundled QA-143/144 with QA-142 | QA-143/144 optional Tier 2 waivers |
+| 8 | PLATFORM_BUILD_MANDATES was sole authority #1 | Registry #1 routes/nav; mandates #2 UX build/reject |
+| 9 | ROADMAP open Coach tactical hardening | War Room tabled for acquisition |
+
+**Contradiction count:** 9
+
+### Verify (PARA Lane 1)
+
+| Command | Result |
+|---------|--------|
+| `npm test -- src/lib/platform/__tests__/productSurfaceRegistry.test.ts src/lib/gamification/__tests__/personaFunctionalMvp.test.ts` | **83 passed** (2 files) |
+| `npm run check` | **1 pre-existing error** — `ActiveBounties.svelte:346` (unrelated to registry slice) |
+| `npm run build` | **Pass** |
+
+---
+
+## PARA — Platform Design & Workflow Canon (2026-06-18)
+
+**Slice:** Platform-wide design + workflow documentation — Tier 1 persona spec depth parity with Player OS. **Docs only** — no UI code.
+
+### Files created
+
+| File | Purpose |
+|------|---------|
+| `docs/vision/PLATFORM_WORKFLOW_CANON.md` | Gold paths + UX states per Tier 1 workflow step |
+| `docs/vision/PLATFORM_DESIGN_SYSTEM.md` | Shared primitives, persona forks, layout catalog |
+| `docs/vision/COACH_OS_FOUNDATION.md` | Coach material vocabulary — Forge full-page workbench; reject Trinity HUD Tier 1 |
+| `docs/vision/PARENT_OS_FOUNDATION.md` | Parent material vocabulary — lounge shell + trust contract |
+| `docs/vision/COACH_OS_VISUAL_ACCEPTANCE.md` | Tier 1 coach VA — 390px first |
+| `docs/vision/PARENT_OS_VISUAL_ACCEPTANCE.md` | Tier 1 parent VA — 390px first |
+| `docs/vision/references/ui/research/blueprints/coach-forge-workbench-v1.md` | VS-3-Forge CDO blueprint |
+| `docs/vision/AGENT_COACH_UX_SPRINT_TEMPLATE.md` | Coach UX sprint procedure |
+| `docs/vision/AGENT_PARENT_UX_SPRINT_TEMPLATE.md` | Parent UX sprint procedure |
+
+### Files updated
+
+| File | Change summary |
+|------|----------------|
+| `docs/vision/PRODUCT_SURFACE_REGISTRY.md` | §1 columns: `workflow_id`, `layout_pattern`, `foundation_doc`, `va_doc` |
+| `docs/vision/references/ui/research/PLATFORM_VISUAL_REDESIGN_PLAN.md` | Phase 1 Tier 1 all personas before Player modals; VS-3-Forge added |
+| `docs/PERSONA_ECOSYSTEM.md` | Document roles table + Coach/Parent foundation links |
+| `docs/vision/PLATFORM_BUILD_MANDATES.md` | §0 read order expanded; reject Trinity HUD on Coach Tier 1 |
+| `.cursor/rules/sst-agent-workflow.mdc` | Platform canon read order; Coach/Parent sprint templates |
+| `src/lib/platform/__tests__/productSurfaceRegistry.test.ts` | Registry column + Tier 1 workflow guards |
+
+### Verify (PARA platform canon)
+
+| Command | Result |
+|---------|--------|
+| `npm test -- src/lib/platform/__tests__/productSurfaceRegistry.test.ts` | **11 passed** |
+
+**Out of scope this slice:** UI code, deploy, Forge roster functional fix (next session VS-3-Forge build).
+
+---
+
+## STRUCTURE-SPRINT — Break the QA circle (Milestone B + C) (2026-06-18)
+
+**Slice:** Platform-wide workflow + design canon — Tier 1 persona spec depth parity with Player OS. **Docs only** — owner QA paused until §4 exit criteria.
+
+### Files created / substantively authored
+
+| File | Purpose |
+|------|---------|
+| `docs/vision/PLATFORM_WORKFLOW_CANON.md` | GP-ACQ / GP-COACH / GP-PARENT / GP-GATE gold paths; §3 Forge criteria; §4 QA resume gate |
+| `docs/vision/PLATFORM_DESIGN_SYSTEM.md` | Shell contract, layout catalog (`full-page-workbench`, etc.), mobile-first §5 |
+| `docs/vision/COACH_OS_FOUNDATION.md` | Forge workbench; reject IntentHUD Tier 1 |
+| `docs/vision/PARENT_OS_FOUNDATION.md` | Trust-first parent grammar |
+| `docs/vision/COACH_OS_VISUAL_ACCEPTANCE.md` | Tier 1 coach VA matrix |
+| `docs/vision/PARENT_OS_VISUAL_ACCEPTANCE.md` | Tier 1 parent VA matrix |
+| `docs/vision/references/ui/research/blueprints/coach-forge-workbench-v1.md` | VS-3-Forge blueprint → `ForgeDeployPanel.svelte` |
+| `docs/vision/AGENT_COACH_UX_SPRINT_TEMPLATE.md` | Coach sprint procedure |
+| `docs/vision/AGENT_PARENT_UX_SPRINT_TEMPLATE.md` | Parent sprint procedure |
+
+### Files updated
+
+| File | Change summary |
+|------|----------------|
+| `docs/vision/PRODUCT_SURFACE_REGISTRY.md` | §1 columns: `workflow_id`, `layout_pattern`, `foundation_doc`, `va_doc` — all 15 Tier 1 rows populated |
+| `docs/vision/OWNER_QA_CHECKLIST.md` | **QA status: PAUSED (structure sprint)** banner; link to workflow canon §4 |
+| `docs/PERSONA_ECOSYSTEM.md` | Document roles table — workflow canon, design system, foundations, VA docs |
+| `docs/vision/PLATFORM_BUILD_MANDATES.md` | Reject `trinity-shell-glass-hud` + fixed overlay deploy on Coach Tier 1 |
+| `docs/vision/references/ui/research/PLATFORM_VISUAL_REDESIGN_PLAN.md` | P0 Tier 1 all personas; VS-3-Forge before Player modals |
+| `docs/vision/COACH_OS.md` | Foundation + Forge blueprint links; `full-page-workbench` |
+| `docs/vision/PARENT_OS.md` | Foundation + VA links |
+| `docs/acquisition/INDEX.md` | Vision/design canon section |
+| `.cursor/rules/sst-agent-workflow.mdc` | Read order: registry → workflow canon → design system + foundation → ROADMAP |
+| `src/lib/platform/__tests__/productSurfaceRegistry.test.ts` | Gold path + IntentHUD reject guards |
+
+### Contradiction resolutions
+
+| Conflict | Resolution |
+|----------|------------|
+| Forge UX = floating IntentHUD vs acquisition QA | **Registry + workflow canon** — `coach-forge-workbench` / `full-page-workbench`; HUD overlay documented as debt only |
+| Owner QA Phase 5 blocked on Forge mobile | **PAUSED** until canon §4 signed; optional STRUCTURE-Forge-impl before resume |
+| Layout pattern naming (registry vs catalog) | **Both** — registry `coach-forge-workbench` maps to catalog `full-page-workbench` in design system §4 |
+
+### Verify (STRUCTURE-SPRINT)
+
+| Command | Result |
+|---------|--------|
+| `npm test -- src/lib/platform/__tests__/productSurfaceRegistry.test.ts` | **13 passed** |
+| `npm run check` | **1 pre-existing error** (`ActiveBounties.svelte` — unrelated to structure sprint) |
+| `npm run build` | **Pass** |
+
+---
+
+## DOC-HYGIENE-2026 — Registry + workflow canon cleanup (pre–WORKFLOW-INTEGRITY audit)
+
+**Slice:** Docs-only. Prepares canon for WORKFLOW-INTEGRITY GP-ACQ audit slice next. No UI code, no workflow logic fixes.
+
+### Owner-approved clarifications
+
+1. **§0 nav rule** — Tier 1 = pre-acquisition required for functional sign-off (not “only Tier 1 in sidebar”); Tier 2+ sidebar links intentional and waivable.
+2. **`/stats` (PS-PL03)** — Tier 1 player nav; optional for 15-min exec cut; GP-ACQ-04c added to workflow canon.
+3. **VS-3-Forge shipped** — `ForgeDeployPanel.svelte` + `coach-forge-workbench.css`; removed stale IntentHUD “current debt” language.
+
+### Files updated
+
+| File | Change summary |
+|------|----------------|
+| `docs/vision/PRODUCT_SURFACE_REGISTRY.md` | §0 rule 5 reworded; PS-PL03 notes → GP-ACQ-04c |
+| `docs/vision/PLATFORM_WORKFLOW_CANON.md` | GP-ACQ-04c row; §3 Forge regression criteria; §4 row 7 live verify |
+| `docs/vision/PLATFORM_DESIGN_SYSTEM.md` | §4 shipped ForgeDeployPanel; §6 regression guard |
+| `docs/vision/COACH_OS_FOUNDATION.md` | VS-3-Forge shipped; scroll contract regression verify |
+| `docs/vision/references/ui/research/blueprints/coach-forge-workbench-v1.md` | Status Shipped; components done |
+| `docs/acquisition/DOC_SYNC_REPORT.md` | This entry |
+
+### Verify (DOC-HYGIENE-2026)
+
+| Command | Result |
+|---------|--------|
+| `npm test -- src/lib/platform/__tests__/productSurfaceRegistry.test.ts` | **13 passed** |
+| `npm run check` | **1 pre-existing error** (`ActiveBounties.svelte` — unrelated) |
+| `npm run build` | **Pass** |
+
+**Out of scope:** WORKFLOW-INTEGRITY audit, GP-ACQ code fixes, deploy.

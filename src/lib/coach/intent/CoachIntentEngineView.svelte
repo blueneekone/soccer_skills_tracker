@@ -8,7 +8,8 @@
 	import { CoachTeamScope } from '$lib/coach/context/coachTeamScope.svelte.js';
 	import { IntentEngine } from './IntentEngine.svelte.js';
 	import IntentArena from './IntentArena.svelte';
-	import IntentHUD from './IntentHUD.svelte';
+	import ForgeDeployPanel from './ForgeDeployPanel.svelte';
+	import '$lib/styles/coach-forge-workbench.css';
 
 	let {
 		titleLead = 'INTENT',
@@ -48,7 +49,7 @@
 	});
 </script>
 
-<div class="tw-relative tw-min-h-screen tw-w-full tw-bg-[#020202] tw-font-mono">
+<div class="tw-relative tw-min-h-screen tw-w-full tw-bg-[#020202] tw-font-mono coach-forge-workbench">
 	<header
 		class="tw-bg-[#020202] tw-border-b tw-border-[#14b8a6]/10 tw-px-5 tw-py-4 tw-flex tw-items-center tw-justify-between tw-gap-4 tw-flex-wrap"
 	>
@@ -83,7 +84,7 @@
 			{#if myTeams.length > 1}
 				<select
 					bind:value={teamScope.selectedTeamId}
-					class="tw-bg-[#020202] tw-border tw-border-[#14b8a6]/20 tw-text-white/80 tw-rounded-lg tw-px-3 tw-py-2 tw-font-mono tw-text-xs tw-outline-none tw-cursor-pointer hover:tw-border-[#14b8a6]/40 tw-transition-colors"
+					class="tw-bg-[#020202] tw-border tw-border-[#14b8a6]/20 tw-text-white/80 tw-rounded-lg tw-px-3 tw-py-2 tw-font-mono tw-text-xs tw-outline-none tw-cursor-pointer hover:tw-border-[#14b8a6]/40 tw-transition-colors tw-min-h-[44px]"
 				>
 					{#each myTeams as team (team.id)}
 						<option value={team.id}>{team.name}</option>
@@ -94,11 +95,9 @@
 	</header>
 
 	<main class="tw-px-5 tw-py-6">
-		<div
-			class="tw-mx-auto tw-grid tw-w-full tw-max-w-6xl tw-grid-cols-1 tw-gap-6 xl:tw-grid-cols-12"
-		>
-			<section class="tw-min-w-0 xl:tw-col-span-5" aria-label="Deploy intent">
-				<IntentHUD
+		<div class="coach-forge-workbench__grid">
+			<section class="coach-forge-workbench__deploy" aria-label="Deploy intent">
+				<ForgeDeployPanel
 					attributes={engine.attributes}
 					roster={engine.roster}
 					bind:draftAttributeId={engine.draftAttributeId}
@@ -106,7 +105,7 @@
 					bind:draftDurationDays={engine.draftDurationDays}
 					bind:draftScope={engine.draftScope}
 					bind:draftTargetUids={engine.draftTargetUids}
-					bind:draftPriority={engine.draftPriority}
+					bind:draftPriorityMission={engine.draftPriorityMission}
 					bind:draftPrescriptionSets={engine.draftPrescriptionSets}
 					bind:draftPrescriptionRepsPerSet={engine.draftPrescriptionRepsPerSet}
 					bind:draftPrescriptionBilateral={engine.draftPrescriptionBilateral}
@@ -134,15 +133,11 @@
 					onAddBundleDrill={() => engine.addBundleDrill()}
 					onRemoveBundleDrill={(i) => engine.removeBundleDrill(i)}
 					onUpdateBundleDrill={(i, patch) => engine.updateBundleDrill(i, patch)}
+					onRefreshRoster={() => engine.refreshRoster()}
 				/>
 			</section>
 
-			<section class="tw-min-w-0 xl:tw-col-span-7" aria-label="Active tactical intents">
-				<h2
-					class="tw-mb-4 tw-mt-0 tw-font-mono tw-text-[11px] tw-tracking-widest tw-text-[#14b8a6]/70 tw-uppercase"
-				>
-					Active intents
-				</h2>
+			<section class="coach-forge-workbench__arena" aria-label="Active intents">
 				<IntentArena
 					intents={engine.enrichedIntents}
 					isLoading={engine.isLoadingIntents}
@@ -151,7 +146,10 @@
 					mutationError={engine.mutationError}
 					onCancel={(id) => engine.cancelIntent(id)}
 					onExtend={(id, days) => engine.extendIntent(id, days)}
-					onRefresh={() => engine.refreshIntents()}
+					onRefresh={async () => {
+						await engine.refreshIntents();
+						await engine.refreshRoster();
+					}}
 				/>
 			</section>
 		</div>

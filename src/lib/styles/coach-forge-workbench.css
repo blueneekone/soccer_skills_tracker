@@ -1,0 +1,54 @@
+/**
+ * VS-3-Forge — full-page workbench layout for /coach/forge
+ * Deploy column in document flow — no fixed HUD overlay.
+ */
+
+.coach-forge-workbench {
+	width: 100%;
+}
+
+.coach-forge-workbench__grid {
+	display: grid;
+	gap: 1.5rem;
+	grid-template-columns: 1fr;
+	align-items: start;
+}
+
+.coach-forge-workbench__deploy {
+	order: 1;
+}
+
+.coach-forge-workbench__arena {
+	order: 2;
+	min-width: 0;
+}
+
+@media (min-width: 768px) {
+	.coach-forge-workbench__grid {
+		grid-template-columns: minmax(0, 1fr) min(320px, 34%);
+		gap: 1.25rem;
+	}
+
+	.coach-forge-workbench__deploy {
+		order: 2;
+		position: sticky;
+		top: 1rem;
+		max-height: calc(100dvh - 6rem);
+		overflow-y: auto;
+	}
+
+	.coach-forge-workbench__arena {
+		order: 1;
+	}
+}
+
+.coach-forge-deploy-panel {
+	border-radius: 8px;
+	border: 1px solid rgba(20, 184, 166, 0.2);
+	background: var(--pd-navy-panel, #05050a);
+}
+
+.coach-forge-deploy-panel__roster-scroll {
+	max-height: min(240px, 40vh);
+	overflow-y: auto;
+}

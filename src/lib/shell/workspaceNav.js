@@ -41,7 +41,7 @@ const coachLinks = [
 	{ label: 'Daily Intel',       href: '/coach',               icon: 'content.grid' },
 	{ label: 'The Forge',         href: '/coach/forge',         icon: 'game.dumbbell' },
 	{ label: 'Field Station',     href: '/coach/drills',        icon: 'content.checks' },
-	{ label: 'War Room',          href: '/coach/tactical',      icon: 'data.target' },
+	// War Room (/coach/tactical) — Tier 2 per PRODUCT_SURFACE_REGISTRY PS-C04; deep-link only
 	{ label: 'Tactics board',     href: '/coach/tactics-board', icon: 'action.edit' },
 	{ label: 'Match Day',         href: '/coach/match-day',     icon: 'data.activity' },
 	{ label: 'Proving Grounds',   href: '/coach/scouting',      icon: 'data.target' },

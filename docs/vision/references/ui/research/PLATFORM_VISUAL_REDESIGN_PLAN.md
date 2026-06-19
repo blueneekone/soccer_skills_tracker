@@ -86,11 +86,28 @@ Design (Ask / CDO blueprint) → ROADMAP row → Agent build → npm test + chec
 
 ---
 
-### Phase 1 — Player OS net-new surfaces (3–4 sprints)
+### Phase 1 — Tier 1 all personas (Coach + Parent + Forge) — **before Player modals**
+
+**Goal:** Acquisition-critical surfaces at spec depth parity with Player OS foundation docs. **390px first** on Coach Forge and Parent VPC.
+
+| Sprint | Scope | Blueprint | Proof |
+|--------|-------|-----------|-------|
+| **VS-3a** | Coach shell token skin — Daily Intel | `coach-shell-dashboard-v1.md` | `coachModule.test.ts` · `COACH_OS_VISUAL_ACCEPTANCE` |
+| **VS-3-Forge** | **Forge full-page workbench** — inline deploy column; **reject Trinity HUD overlay** | `coach-forge-workbench-v1.md` | `intentModule.test.ts` · Forge 390px VA |
+| **VS-4a** | Parent lounge shell — household + dashboard | `parent-lounge-shell.md` | `personaFunctionalMvp.test.ts` |
+| **VS-4b** | Parent VPC trust band | `parent-vpc-trust-band.md` | `launchP0Fixes.test.ts` · VPC 390px VA |
+
+**Exit:** Tier 1 coach (`PS-C01`, `PS-C02`) + parent (`PS-P01`–`P03`) VA rows ☑ at 390px per foundation docs.
+
+**Do not:** ship VS-1a Player modals until Phase 1 Tier 1 persona exit above is ☑ or explicitly waived.
+
+---
+
+### Phase 2 — Player OS net-new surfaces (3–4 sprints)
 
 **Goal:** CDO blueprints → shippable components without breaking HQ frame.
 
-Player **inline** hero (`OperativeHub`) stays; modals are **additive**.
+Player **inline** hero (`OperativeHub`) stays; modals are **additive**. Runs **after** Phase 1 Tier 1 persona pass.
 
 | Sprint | Component | Blueprint | Wire to | Proof |
 |--------|-----------|-----------|---------|-------|
@@ -103,7 +120,7 @@ Player **inline** hero (`OperativeHub`) stays; modals are **additive**.
 
 ---
 
-### Phase 2 — Player OS cohesion audit (2 sprints)
+### Phase 3 — Player OS cohesion audit (2 sprints)
 
 **Goal:** Align remaining Player routes with chosen CDO grammar where Phase 7 left emissive glow.
 
@@ -114,38 +131,36 @@ Player **inline** hero (`OperativeHub`) stays; modals are **additive**.
 
 ---
 
-### Phase 3 — Coach OS visual dialect (4–6 sprints)
+### Phase 4 — Coach OS Tier 2 visual dialect (4–6 sprints)
 
-**Goal:** SIEM flat analytics per persona matrix — **no gamification chrome**.
+**Goal:** SIEM flat analytics on Tier 2 coach routes — **no gamification chrome**.
 
-Functional War Room **keeps** behavior; skin changes incrementally.
+Functional War Room **keeps** behavior; skin changes incrementally. Tier 1 (`/coach`, `/coach/forge`) covered in Phase 1.
 
 | Sprint | Scope | Notes |
 |--------|-------|-------|
-| **VS-3a** | Coach token skin: void base, grey trim borders, cyan primary (no gold) | Dashboard + shell |
 | **VS-3b** | `/coach/tactical` pitch board — remove rounded-xl, glow, gradient (CDO sanitization) | Highest conflict with today |
 | **VS-3c** | Drill library cards — chamfer 8px, navy panel, mono labels | `CoachDrillsView` |
 | **VS-3d** | Z4 HUD chrome — Commit Session / Export strip | `TacticalHUD` |
 | **VS-3e** | Motion cap 100ms on tactical interactions (CDO) vs `--motion-fast` 150ms — **pick one** | Document in checklist |
-| **VS-3f** | Coach VA pass — bento 12-col preserved | Screenshot gate |
+| **VS-3f** | Coach Tier 2 VA pass — bento 12-col preserved | Screenshot gate |
 
 **Exit:** CDO `COACH_TACTICS_STRATAGEM_V1` ≥80% on `/coach/tactical` route only.
 
 ---
 
-### Phase 4 — Parent OS trust skin (2–3 sprints)
+### Phase 5 — Parent OS Tier 2 + billing (1–2 sprints)
 
-**Goal:** Calm navy, 24px radius, VPC trust marker per §H #6.
+**Goal:** Extend parent skin to Tier 2 routes after Tier 1 VA.
 
 | Sprint | Scope |
 |--------|-------|
-| **VS-4a** | Parent lounge shell tokens — soft radius, no operative jargon |
-| **VS-4b** | VPC / billing bands — trust shield prominence (owner pick) |
-| **VS-4c** | Parent VA — household, vpc, payments |
+| **VS-4c** | Parent VA — payments, log-workout |
+| **VS-4d** | Billing bands — trust shield prominence (owner pick) |
 
 ---
 
-### Phase 5 — Director OS (2 sprints)
+### Phase 6 — Director OS (2 sprints)
 
 **Goal:** Club ops SIEM — align with Coach flat grammar, no Player chrome.
 
@@ -156,7 +171,7 @@ Functional War Room **keeps** behavior; skin changes incrementally.
 
 ---
 
-### Phase 6 — Shared + launch polish (1–2 sprints)
+### Phase 7 — Shared + launch polish (1–2 sprints)
 
 | Sprint | Scope |
 |--------|-------|
@@ -182,10 +197,12 @@ Functional War Room **keeps** behavior; skin changes incrementally.
 
 | Priority | Blueprint | Phase |
 |----------|-----------|-------|
-| P0 | HQ Mission Hero Modal | VS-1a |
-| P0 | Skill Tier Unlock Modal | VS-1b |
-| P1 | Coach Tactics Stratagem V1 | VS-3b–d (split) |
-| P2 | Parent VPC trust band | VS-4b |
+| **P0** | Coach Forge Workbench V1 | VS-3-Forge |
+| **P0** | Parent VPC trust band | VS-4b |
+| **P0** | Coach shell dashboard | VS-3a |
+| P1 | HQ Mission Hero Modal | VS-1a (after Phase 1) |
+| P1 | Skill Tier Unlock Modal | VS-1b |
+| P2 | Coach Tactics Stratagem V1 | VS-3b–d (split) |
 | P2 | Director field ops panel | VS-5a |
 
 **Workflow:** Generate in Gemini → paste to `blueprints/` → normalize tokens → one sprint each.
@@ -219,11 +236,14 @@ Add rows under a new section **Platform Visual System (VS-*)** in `ROADMAP.md`:
 
 ---
 
-## 10. Recommended first three sprints (start here)
+## 10. Recommended first four sprints (start here)
 
 1. **VS-0a** — Token aliases + owner checklist  
-2. **VS-1a** — Mission Hero Modal (highest user-visible ROI)  
-3. **VS-3a** — Coach shell token skin (biggest persona gap vs Player)
+2. **VS-3a** — Coach shell token skin (Daily Intel)  
+3. **VS-3-Forge** — Forge full-page workbench (390px P1 — owner QA blocked)  
+4. **VS-4a** — Parent lounge shell  
+
+**Then:** VS-4b VPC · **then** VS-1a Player modals (Phase 2).
 
 ---
 

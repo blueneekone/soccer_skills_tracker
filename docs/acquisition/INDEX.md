@@ -23,6 +23,7 @@ Regenerate: `npm run build:acquisition-pdfs` (requires Playwright Chromium)
 | Document | Audience | Purpose |
 |----------|----------|---------|
 | [ONE_PAGER.md](./ONE_PAGER.md) | Exec / first touch | 60-second product + moat summary |
+| [PRODUCT_SURFACE_REGISTRY.md](../vision/PRODUCT_SURFACE_REGISTRY.md) | Owner / eng / agents | **Gospel truth** — routes, nav, demo + QA tiers |
 | [PROSPECTUS.md](./PROSPECTUS.md) | Acquirer diligence | Full product, market, and technical narrative |
 | [DEMO_SCRIPT.md](./DEMO_SCRIPT.md) | Sales / QA | Persona walkthrough on dev tenant |
 | [TRACTION.md](./TRACTION.md) | Investor / acquirer | Build status, test coverage, launch gate |
@@ -49,6 +50,7 @@ These live outside `docs/acquisition/` and are **source of truth** for engineeri
 |----------|------|--------|
 | **Architecture** | [`docs/ARCHITECTURE.md`](../ARCHITECTURE.md) | Four-tier stack, cell routing, Cloud Functions v2, Trinity pattern |
 | **Functional MVP** | [`docs/vision/FUNCTIONAL_MVP.md`](../vision/FUNCTIONAL_MVP.md) | Player · Parent · Coach launch checklist + VPC golden path |
+| **Product surface registry** | [`docs/vision/PRODUCT_SURFACE_REGISTRY.md`](../vision/PRODUCT_SURFACE_REGISTRY.md) | Gospel truth for routes, nav, demo/QA tiers |
 | **Owner QA checklist** | [`docs/vision/OWNER_QA_CHECKLIST.md`](../vision/OWNER_QA_CHECKLIST.md) | Canonical manual QA · QA-xxx cross-ref to gap register |
 | **QA / Dev personas (legacy)** | [`docs/QA_DEV_PERSONA_VERIFICATION.md`](../QA_DEV_PERSONA_VERIFICATION.md) | Superseded by OWNER_QA_CHECKLIST — phased notes retained |
 | **Functions deploy** | [`docs/FUNCTIONS_DEPLOY.md`](../FUNCTIONS_DEPLOY.md) | Multi-codebase deploy playbook (`core`, `rl`, `compliance`, …) |
@@ -59,6 +61,16 @@ These live outside `docs/acquisition/` and are **source of truth** for engineeri
 - [`ROADMAP.md`](../../ROADMAP.md) — sprint delivery tracker (orchestrator may sync from `SLICE_LOG.md`)
 - [`docs/PERSONA_ECOSYSTEM.md`](../PERSONA_ECOSYSTEM.md) — roles, routes, handoffs
 - [`docs/vision/COMPETITIVE_LAUNCH_ASSESSMENT.md`](../vision/COMPETITIVE_LAUNCH_ASSESSMENT.md) — parity matrix vs TeamSnap / SportsEngine / GotSport
+
+### Vision / design canon (platform workflow)
+
+| Document | Purpose |
+|----------|---------|
+| [`PRODUCT_SURFACE_REGISTRY.md`](../vision/PRODUCT_SURFACE_REGISTRY.md) | Gospel truth — routes, tiers, workflow_id, layout_pattern |
+| [`PLATFORM_WORKFLOW_CANON.md`](../vision/PLATFORM_WORKFLOW_CANON.md) | Gold paths GP-ACQ / GP-COACH / GP-PARENT / GP-GATE |
+| [`PLATFORM_DESIGN_SYSTEM.md`](../vision/PLATFORM_DESIGN_SYSTEM.md) | Shared primitives, shell contract, layout catalog |
+| [`COACH_OS_FOUNDATION.md`](../vision/COACH_OS_FOUNDATION.md) · [`PARENT_OS_FOUNDATION.md`](../vision/PARENT_OS_FOUNDATION.md) | Persona material vocabulary |
+| [`COACH_OS_VISUAL_ACCEPTANCE.md`](../vision/COACH_OS_VISUAL_ACCEPTANCE.md) · [`PARENT_OS_VISUAL_ACCEPTANCE.md`](../vision/PARENT_OS_VISUAL_ACCEPTANCE.md) | Tier 1 visual sign-off matrices |
 
 ---
 

@@ -9,14 +9,16 @@
 
 | Order | Doc | Role |
 |-------|-----|------|
-| 1 | **This file** | What to build / what to never build |
-| 2 | [`PLAYER_OS_INSTRUMENT_TAXONOMY.md`](./PLAYER_OS_INSTRUMENT_TAXONOMY.md) | Instrument types; cohesion (shared frame) vs differentiation (inner primitive) |
-| 3 | [`AGENT_PLAYER_UX_SPRINT_TEMPLATE.md`](./AGENT_PLAYER_UX_SPRINT_TEMPLATE.md) | Player UX sprint fields + build prompt skeleton |
-| 4 | [`PLATFORM_EXPERIENCE_RUBRIC.md`](./PLATFORM_EXPERIENCE_RUBRIC.md) | Pass/fail quality bar (Affective) |
-| 5 | [`PLAYER_OS_RUBRIC_GAP_MATRIX.md`](./PLAYER_OS_RUBRIC_GAP_MATRIX.md) | Current audit gaps |
-| 6 | [`PLAYER_OS_FOUNDATION.md`](./PLAYER_OS_FOUNDATION.md) | Player material vocabulary (Z-depth, void, Tier A) |
-| 7 | [`PLAYER_OS_VISUAL_ACCEPTANCE.md`](../PLAYER_OS_VISUAL_ACCEPTANCE.md) | Sign-off checklist |
-| 8 | [`ROADMAP.md`](../../ROADMAP.md) | When + proof tests |
+| 1 | [`PRODUCT_SURFACE_REGISTRY.md`](./PRODUCT_SURFACE_REGISTRY.md) | **Routes & nav gospel** — tier, nav_visible, workflow_id, layout_pattern |
+| 2 | [`PLATFORM_WORKFLOW_CANON.md`](./PLATFORM_WORKFLOW_CANON.md) | Gold paths + UX states per Tier 1 step |
+| 3 | **This file** | What to build / what to never build |
+| 4 | Persona foundation — [`PLAYER_OS_FOUNDATION.md`](./PLAYER_OS_FOUNDATION.md) · [`COACH_OS_FOUNDATION.md`](./COACH_OS_FOUNDATION.md) · [`PARENT_OS_FOUNDATION.md`](./PARENT_OS_FOUNDATION.md) | Material vocabulary per persona |
+| 5 | Persona sprint template — [`AGENT_PLAYER_UX_SPRINT_TEMPLATE.md`](./AGENT_PLAYER_UX_SPRINT_TEMPLATE.md) · [`AGENT_COACH_UX_SPRINT_TEMPLATE.md`](./AGENT_COACH_UX_SPRINT_TEMPLATE.md) · [`AGENT_PARENT_UX_SPRINT_TEMPLATE.md`](./AGENT_PARENT_UX_SPRINT_TEMPLATE.md) | Sprint procedure |
+| 6 | [`PLAYER_OS_INSTRUMENT_TAXONOMY.md`](./PLAYER_OS_INSTRUMENT_TAXONOMY.md) | Player instrument types (Player routes only) |
+| 7 | [`PLATFORM_DESIGN_SYSTEM.md`](./PLATFORM_DESIGN_SYSTEM.md) | Shared primitives + layout catalog |
+| 8 | [`PLATFORM_EXPERIENCE_RUBRIC.md`](./PLATFORM_EXPERIENCE_RUBRIC.md) | Pass/fail quality bar (Affective) |
+| 9 | Persona VA — [`PLAYER_OS_VISUAL_ACCEPTANCE.md`](../PLAYER_OS_VISUAL_ACCEPTANCE.md) · [`COACH_OS_VISUAL_ACCEPTANCE.md`](./COACH_OS_VISUAL_ACCEPTANCE.md) · [`PARENT_OS_VISUAL_ACCEPTANCE.md`](./PARENT_OS_VISUAL_ACCEPTANCE.md) | Sign-off checklists |
+| 10 | [`ROADMAP.md`](../../ROADMAP.md) | When + proof tests |
 
 **Note:** The historical enterprise strategy PDF is **not** binding for UX. This doc supersedes PDF visuals/psychology for implementation.
 
@@ -49,6 +51,8 @@
 | **SweetAlert2 on any Player route** (`/player/*`, `/stats` player path) | Snaps user out of diegetic terminal fantasy at commit time. Use diegetic overlay (Wave D). | Modal success/error pattern | Train Swal Fail |
 | **Hook/FOMO anxiety/scarcity loops for minors** as Player UI drivers | Exploitative engagement; conflicts with Car Ride Home intent and rewards philosophy. | Variable-reward anxiety hooks | PLAYER_OS.md § Rewards |
 | **One tactical/gamified skin on Coach or Parent routes** | Persona boundary — Coach = flat sideline analytics; Parent = co-op partner. | Unified gamified shell | PERSONA_ECOSYSTEM |
+| **Trinity HUD overlay / `trinity-shell-glass-hud` on Coach Tier 1 routes** (`/coach`, `/coach/forge`) | Fixed bottom glass panel / corner overlay blocks mobile deploy — Forge must be `full-page-workbench` per [`COACH_OS_FOUNDATION.md`](./COACH_OS_FOUNDATION.md) §9 | Vanguard Trinity HUD pattern | Owner QA-142 Forge mobile P1 |
+| **Fixed overlay deploy panels on Coach Tier 1** | `IntentHUD` `tw-fixed tw-bottom-*` violates workbench canon — use inline `ForgeDeployPanel` in document flow | Corner HUD deploy | `IntentHUD.svelte` |
 | **`preventDefault` right-click radial menus** | Unless a future sprint explicitly scopes context menus — default off. | Radial command deck | — |
 | **Tier A primitive wrapped in Tier B matte frame** | Double-border stacks kill bloom and void; FOUNDATION §9 anti-pattern. | Nested panel frames | FOUNDATION §9 |
 | **Inner `overflow: auto` scroll regions on Player OS routes** | Breaks scroll physics contract; use document scroll + allowed exceptions only. | Scrollable widget panels | PlayerShell Pass guard |

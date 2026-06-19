@@ -71,6 +71,9 @@
 		return () => clearInterval(id);
 	});
 
+	/** PRODUCT_SURFACE_REGISTRY PS-C04: Tier 2 — route retained; no HQ hero pre-acquisition */
+	const warRoomHqVisible = false;
+
 	function enterWarRoom() {
 		void goto('/coach/tactical');
 	}
@@ -201,6 +204,7 @@
 				<SquadTelemetryView teamId={effectiveTeamId} teams={myTeams} />
 			</div>
 
+			{#if warRoomHqVisible}
 			<button
 				type="button"
 				class="coach-os-panel coach-os-war-room war-room-card bento-span-8 bento-cell tw-group tw-relative tw-flex tw-min-h-[320px] tw-min-w-0 tw-flex-col tw-justify-between tw-overflow-hidden tw-p-6 tw-text-left focus-visible:tw-outline focus-visible:tw-outline-2 focus-visible:tw-outline-offset-2 focus-visible:tw-outline-[#06b6d4]"
@@ -256,6 +260,7 @@
 					</span>
 				</div>
 			</button>
+			{/if}
 
 			<!-- FACILITY OPS & STAGING — secondary ops (4 cols @ 64rem+) -->
 			<article

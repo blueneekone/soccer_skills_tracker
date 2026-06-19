@@ -121,6 +121,17 @@
 	color: rgb(148 163 184 / 0.28);
 }
 
+.quest-log__coach-hint {
+	margin: 0 0 0.35rem;
+	padding: 0.35rem 0;
+	font-family: 'Geist Mono', ui-monospace, monospace;
+	font-size: 0.55rem;
+	font-weight: 600;
+	line-height: 1.45;
+	letter-spacing: 0.04em;
+	color: rgb(148 163 184 / 0.72);
+}
+
 .quest-log__feed {
 	margin: 0;
 	padding: 0;

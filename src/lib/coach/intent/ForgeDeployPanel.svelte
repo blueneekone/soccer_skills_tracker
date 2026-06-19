@@ -20,7 +20,7 @@
 		draftDurationDays = $bindable(7),
 		draftScope = $bindable<'team' | 'players'>('team'),
 		draftTargetUids = $bindable<string[]>([]),
-		draftPriority = $bindable(100),
+		draftPriorityMission = $bindable(false),
 		draftPrescriptionSets = $bindable(3),
 		draftPrescriptionRepsPerSet = $bindable(10),
 		draftPrescriptionBilateral = $bindable(false),
@@ -51,6 +51,7 @@
 		onAddBundleDrill = () => {},
 		onRemoveBundleDrill = (_index: number) => {},
 		onUpdateBundleDrill = (_index: number, _patch: Partial<{ drillId: string; drillTitle: string; sets: number; repsPerSet: number }>) => {},
+		onRefreshRoster = (() => {}) as () => void | Promise<void>,
 	} = $props();
 
 	const deployBtnLabel = $derived(
@@ -70,26 +71,62 @@
 				? 'rgba(255,48,64,0.45)'
 				: 'rgba(20, 184, 166,0.25)',
 	);
+
+	const selectedAssignableCount = $derived(
+		draftTargetUids.filter((key) =>
+			roster.some((r) => r.rosterKey === key && r.assignable !== false),
+		).length,
+	);
+
+	const deployBlockReason = $derived.by(() => {
+		if (canDeploy || deployPhase !== 'idle') return '';
+		if (!draftAttributeId) return 'Select a target attribute to deploy.';
+		if (draftRequiredXp < 1) return 'Set XP bounty to at least 1.';
+		if (draftDurationDays < 1) return 'Set duration to at least 1 day.';
+		if (draftScope === 'team' && assignableRosterCount === 0) {
+			return 'No assignable operatives on squad — link player accounts first.';
+		}
+		if (draftScope === 'players' && selectedAssignableCount === 0) {
+			return 'Select at least one assignable operative.';
+		}
+		return '';
+	});
 </script>
 
-<!-- Inline deploy panel — full-width on mobile; no fixed slide-out HUD -->
-<div class="tw-w-full tw-min-w-0">
-	<div
-		class="tw-w-full tw-bg-[#05050a] tw-border tw-border-[#14b8a6]/20
-		       tw-rounded-2xl tw-p-5 tw-flex tw-flex-col tw-gap-4"
-	>
-		<!-- ── Section head ───────────────────────────────── -->
+<!-- Full-page workbench deploy column — document flow, not fixed overlay -->
+<section
+	class="coach-forge-deploy-panel tw-w-full tw-p-5 tw-flex tw-flex-col tw-gap-4"
+	aria-label="Deploy intent workbench"
+>		<!-- ── Header ──────────────────────────────────────── -->
 		<div class="tw-flex tw-flex-col tw-gap-0.5">
-			<h2 class="tw-m-0 tw-font-mono tw-text-[11px] tw-tracking-widest tw-text-[#14b8a6] tw-uppercase">
-				Deploy intent
-			</h2>
-			<p class="tw-m-0 tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-white/30 tw-uppercase">
-				Assignment terminal
-			</p>
+			<span class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-[#14b8a6]/60 tw-uppercase">
+				[ DEPLOY WORKBENCH ]
+			</span>
 		</div>
 
 		<div class="tw-h-px tw-w-full tw-bg-[#14b8a6]/10"></div>
 
+		{#if rosterError}
+			<div
+				class="tw-flex tw-flex-col tw-gap-2 tw-rounded-lg tw-border tw-border-[#ff3040]/30 tw-bg-[#ff3040]/5 tw-p-3"
+				role="alert"
+			>
+				<p
+					class="tw-font-mono tw-text-[9px] tw-tracking-wide tw-text-[#ff3040] tw-leading-relaxed tw-uppercase"
+				>
+					{rosterError}
+				</p>
+				<button
+					type="button"
+					class="tw-self-start tw-font-mono tw-text-[9px] tw-tracking-widest tw-uppercase
+					       tw-text-[#14b8a6] tw-border tw-border-[#14b8a6]/30 tw-rounded tw-px-2.5 tw-py-1.5
+					       tw-min-h-[44px] hover:tw-border-[#14b8a6]/60"
+					onclick={() => onRefreshRoster()}
+				>
+					Refresh roster
+				</button>
+			</div>
+		{/if}
 		<!-- ── Attribute picker ───────────────────────────── -->
 		<div class="tw-flex tw-flex-col tw-gap-1.5">
 			<label for="hud-attr" class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-[#14b8a6]/40 tw-uppercase">
@@ -424,25 +461,33 @@
 		Player sees optional "Send proof" prompt after logging. Advisory — XP is never gated.
 	</p>
 
-	<!-- ── Priority (secondary row) ─────────────────── -->
-		<div class="tw-flex tw-items-center tw-gap-3">
-			<label for="hud-pri" class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-[#14b8a6]/30 tw-uppercase tw-shrink-0">
-				PRIORITY
-			</label>
-			<input
-				id="hud-pri"
-				type="range"
-				min="1"
-				max="200"
-				step="5"
-				bind:value={draftPriority}
-				class="tw-flex-1 tw-accent-[#14b8a6] tw-h-px tw-cursor-pointer"
-			/>
-			<span class="tw-font-mono tw-text-[10px] tw-tracking-wider tw-text-[#14b8a6]/50 tw-w-8 tw-text-right tw-shrink-0">
-				{draftPriority}
-			</span>
-		</div>
-
+	<!-- ── Priority mission toggle ──────────────────── -->
+	<div class="tw-flex tw-items-center tw-justify-between tw-gap-3 tw-min-h-[44px]">
+		<label for="forge-priority" class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-[#14b8a6]/40 tw-uppercase tw-leading-relaxed">
+			Priority mission
+		</label>
+		<button
+			id="forge-priority"
+			type="button"
+			role="switch"
+			aria-checked={draftPriorityMission}
+			onclick={() => (draftPriorityMission = !draftPriorityMission)}
+			class="tw-w-11 tw-h-6 tw-rounded-full tw-border tw-transition-all tw-shrink-0 tw-flex tw-items-center tw-justify-center"
+			style={draftPriorityMission
+				? 'background:rgba(20,184,166,0.25); border-color:#14b8a6;'
+				: 'background:transparent; border-color:rgba(20,184,166,0.2);'}
+		>
+			<span
+				class="tw-block tw-w-3 tw-h-3 tw-rounded-full tw-transition-transform"
+				style={draftPriorityMission
+					? 'background:#14b8a6; transform:translateX(8px);'
+					: 'background:rgba(20,184,166,0.3); transform:translateX(-8px);'}
+			></span>
+		</button>
+	</div>
+	<p class="tw-font-mono tw-text-[8px] tw-text-white/20 tw-leading-relaxed tw-mt-[-4px]">
+		When on, this mission ranks above other active workouts for the player.
+	</p>
 		<!-- ── Scope toggle ───────────────────────────────── -->
 		<div class="tw-flex tw-flex-col tw-gap-1.5">
 			<span class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-[#14b8a6]/40 tw-uppercase">
@@ -472,60 +517,32 @@
 			</div>
 		</div>
 
-		{#if draftScope === 'team'}
-			<div class="tw-flex tw-flex-col tw-gap-1.5">
+		<!-- ── Squad roster (always visible — GP-ACQ-03) ─── -->
+		<div class="tw-flex tw-flex-col tw-gap-2">
+			<div class="tw-flex tw-items-center tw-justify-between tw-gap-2">
 				<span class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-[#14b8a6]/40 tw-uppercase">
-					SQUAD ROSTER
+					Squad roster
 				</span>
-				<div
-					class="tw-flex tw-flex-col tw-gap-px tw-overflow-y-auto tw-rounded-lg tw-border tw-border-[#14b8a6]/10"
-					style="max-height:120px;"
-				>
-					{#if isLoadingRoster}
-						{#each [0, 1] as i (i)}
-							<div class="tw-h-7 tw-w-full tw-bg-[#05050a] tw-animate-pulse"></div>
-						{/each}
-					{:else if roster.length === 0}
-						<p class="tw-px-3 tw-py-2 tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-[#14b8a6]/35 tw-uppercase">
-							No operatives on this squad yet.
-						</p>
-					{:else}
-						{#each roster as player (player.rosterKey)}
-							<div class="tw-flex tw-items-center tw-justify-between tw-gap-2 tw-px-3 tw-py-1.5">
-								<span
-									class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-uppercase tw-truncate"
-									class:tw-text-slate-500={player.assignable === false}
-									class:tw-text-[#14b8a6]={player.assignable !== false}
-									style={player.assignable === false ? '' : 'opacity:0.75;'}
-								>
-									{player.playerName}
-								</span>
-								{#if player.assignable === false}
-									<span class="tw-shrink-0 tw-font-mono tw-text-[8px] tw-text-amber-500/80">NAME ONLY</span>
-								{/if}
-							</div>
-						{/each}
-					{/if}
-				</div>
+				<span class="tw-font-mono tw-text-[9px] tw-text-[#14b8a6]/30">
+					{assignableRosterCount} assignable · {roster.length} total
+				</span>
 			</div>
-		{/if}
 
-		<!-- ── Roster multi-select ────────────────────────── -->
-		{#if draftScope === 'players'}
-			<div class="tw-flex tw-flex-col tw-gap-2">
-				<!-- Select all / clear -->
+			{#if draftScope === 'players'}
 				<div class="tw-flex tw-items-center tw-gap-2">
 					<button
+						type="button"
 						class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-uppercase
-						       tw-text-[#14b8a6]/50 hover:tw-text-[#14b8a6] tw-transition-colors"
+						       tw-text-[#14b8a6]/50 hover:tw-text-[#14b8a6] tw-transition-colors tw-min-h-[44px]"
 						onclick={onSelectAll}
 					>
 						SELECT ALL
 					</button>
 					<span class="tw-text-[#14b8a6]/20">·</span>
 					<button
+						type="button"
 						class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-uppercase
-						       tw-text-[#14b8a6]/50 hover:tw-text-[#ff3040] tw-transition-colors"
+						       tw-text-[#14b8a6]/50 hover:tw-text-[#ff3040] tw-transition-colors tw-min-h-[44px]"
 						onclick={onClearSelection}
 					>
 						CLEAR
@@ -534,64 +551,79 @@
 						{draftTargetUids.length} selected
 					</span>
 				</div>
+			{/if}
 
-				<!-- Player list -->
-				<div
-					class="tw-flex tw-flex-col tw-gap-px tw-overflow-y-auto tw-rounded-lg
-					       tw-border tw-border-[#14b8a6]/10"
-					style="max-height:160px;"
-				>
-					{#if isLoadingRoster}
-						{#each [0, 1, 2] as i (i)}
-							<div class="tw-h-7 tw-w-full tw-bg-[#05050a] tw-animate-pulse"></div>
-						{/each}
-					{:else if roster.length === 0}
-						<p class="tw-px-3 tw-py-2 tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-[#14b8a6]/35 tw-uppercase">
-							No operatives on this squad yet.
-						</p>
-					{:else}
-						{#each roster as player (player.rosterKey)}
-							{@const isChecked = draftTargetUids.includes(player.rosterKey)}
-							{@const canSelect = player.assignable !== false}
-							{#if canSelect}
-								<label
-									class="tw-flex tw-items-center tw-gap-2.5 tw-px-3 tw-py-1.5 tw-cursor-pointer
-									       tw-transition-colors hover:tw-bg-[#14b8a6]/5"
-									style={isChecked ? 'background:rgba(20, 184, 166,0.07);' : ''}
+			<div
+				class="coach-forge-deploy-panel__roster-scroll tw-flex tw-flex-col tw-gap-px tw-rounded-lg
+				       tw-border tw-border-[#14b8a6]/10"
+			>
+				{#if isLoadingRoster}
+					{#each [0, 1, 2] as i (i)}
+						<div class="tw-h-9 tw-w-full tw-bg-[#05050a] tw-animate-pulse"></div>
+					{/each}
+				{:else if roster.length === 0}
+					<p class="tw-px-3 tw-py-3 tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-[#14b8a6]/35 tw-uppercase">
+						No operatives on this squad yet — add players on Daily Intel.
+					</p>
+				{:else}
+					{#each roster as player (player.rosterKey)}
+						{@const isChecked = draftTargetUids.includes(player.rosterKey)}
+						{@const canSelect = player.assignable !== false}
+						{#if draftScope === 'players' && canSelect}
+							<label
+								class="tw-flex tw-items-center tw-gap-2.5 tw-px-3 tw-py-2 tw-cursor-pointer
+								       tw-transition-colors hover:tw-bg-[#14b8a6]/5 tw-min-h-[44px]"
+								style={isChecked ? 'background:rgba(20, 184, 166,0.07);' : ''}
+							>
+								<input
+									type="checkbox"
+									checked={isChecked}
+									onchange={() => onToggleUid(player.rosterKey)}
+									class="tw-accent-[#14b8a6] tw-w-4 tw-h-4 tw-shrink-0"
+								/>
+								<span
+									class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-uppercase tw-truncate"
+									style={isChecked ? 'color:#14b8a6;' : 'color:rgba(20, 184, 166,0.45);'}
 								>
-									<input
-										type="checkbox"
-										checked={isChecked}
-										onchange={() => onToggleUid(player.rosterKey)}
-										class="tw-accent-[#14b8a6] tw-w-3 tw-h-3 tw-shrink-0"
-									/>
-									<span
-										class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-uppercase tw-truncate"
-										style={isChecked ? 'color:#14b8a6;' : 'color:rgba(20, 184, 166,0.45);'}
-									>
-										{player.playerName}
-									</span>
-								</label>
-							{:else}
-								<div
-									class="tw-flex tw-flex-col tw-gap-0.5 tw-px-3 tw-py-1.5 tw-opacity-50"
-									title="Add email to assign — name-only roster entry"
+									{player.playerName}
+								</span>
+							</label>
+						{:else if draftScope === 'players'}
+							<div
+								class="tw-flex tw-flex-col tw-gap-0.5 tw-px-3 tw-py-2 tw-opacity-50 tw-min-h-[44px]"
+								title="Add email to assign — name-only roster entry"
+							>
+								<span
+									class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-uppercase tw-truncate tw-text-slate-500"
 								>
-									<span
-										class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-uppercase tw-truncate tw-text-slate-500"
-									>
-										{player.playerName}
-									</span>
-									<span class="tw-font-mono tw-text-[8px] tw-tracking-wide tw-text-amber-500/80">
-										Add email to assign
-									</span>
-								</div>
-							{/if}
-						{/each}
-					{/if}
-				</div>
+									{player.playerName}
+								</span>
+								<span class="tw-font-mono tw-text-[8px] tw-tracking-wide tw-text-amber-500/80">
+									Add email to assign
+								</span>
+							</div>
+						{:else}
+							<div
+								class="tw-flex tw-items-center tw-gap-2 tw-px-3 tw-py-2 tw-min-h-[44px]"
+								class:tw-opacity-50={!canSelect}
+							>
+								<span
+									class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-uppercase tw-truncate"
+									style={canSelect ? 'color:rgba(20,184,166,0.7);' : 'color:rgba(148,163,184,0.7);'}
+								>
+									{player.playerName}
+								</span>
+								{#if canSelect}
+									<span class="tw-ml-auto tw-font-mono tw-text-[8px] tw-text-[#14b8a6]/50">IN SCOPE</span>
+								{:else}
+									<span class="tw-ml-auto tw-font-mono tw-text-[8px] tw-text-amber-500/80">Add email</span>
+								{/if}
+							</div>
+						{/if}
+					{/each}
+				{/if}
 			</div>
-		{/if}
+		</div>
 
 		<!-- ── Name-only roster advisory (D9) ─────────────── -->
 		{#if nameOnlyRosterCount > 0}
@@ -618,12 +650,7 @@
 				No linked player accounts — link accounts on Daily Intel before squad deploy.
 			</p>
 		{/if}
-		{#if rosterError}
-			<p class="tw-font-mono tw-text-[9px] tw-tracking-wide tw-text-[#ff3040] tw-uppercase" role="alert">
-				{rosterError}
-			</p>
-		{/if}
-		{#if draftScope === 'team' && !isLoadingRoster && roster.length === 0 && !rosterError}
+		{#if draftScope === 'team' && !isLoadingRoster && roster.length === 0}
 			<p class="tw-font-mono tw-text-[9px] tw-tracking-wide tw-text-slate-500 tw-uppercase" role="status">
 				No roster entries — add players on Daily Intel or sync the squad list first.
 			</p>
@@ -636,8 +663,13 @@
 					{deployError}
 				</p>
 			{/if}
+			{#if !canDeploy && deployBlockReason}
+				<p class="tw-font-mono tw-text-[8px] tw-tracking-wide tw-text-slate-500 tw-uppercase" role="status">
+					{deployBlockReason}
+				</p>
+			{/if}
 			<button
-				class="tw-w-full tw-py-2.5 tw-rounded-xl tw-font-mono tw-text-[10px] tw-tracking-widest
+				class="tw-w-full tw-min-h-[44px] tw-py-3 tw-rounded-lg tw-font-mono tw-text-[10px] tw-tracking-widest
 				       tw-uppercase tw-border tw-transition-all tw-flex tw-items-center tw-justify-center tw-gap-2
 				       disabled:tw-opacity-30 disabled:tw-cursor-not-allowed
 				       enabled:hover:tw-brightness-125 active:tw-scale-[0.98]"
@@ -657,6 +689,4 @@
 		<div class="tw-font-mono tw-text-[8px] tw-tracking-widest tw-text-white/10 tw-uppercase tw-text-center">
 			[ NEXUS INTENT ENGINE v1 ]
 		</div>
-	</div>
-
-</div>
+</section>

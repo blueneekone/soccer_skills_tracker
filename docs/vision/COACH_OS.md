@@ -18,16 +18,19 @@ Team coaches responsible for athlete development, session planning, and match-da
 
 ## Home screen zones
 
-Route: `/coach` and sub-routes
+Route: `/coach` and sub-routes · **Tier authority:** [`PRODUCT_SURFACE_REGISTRY.md`](./PRODUCT_SURFACE_REGISTRY.md)
 
-| Area | Surfaces | Purpose |
-|------|----------|---------|
-| Squad hub | `SquadTelemetryView` | Roster density, activity, readiness |
-| The Forge | `/coach/forge` | Intent deploy (Epic 8) — inline deploy panel + active-intent list (`$lib/coach/intent`); **no** fixed slide-out HUD |
-| Drills | `/coach/drills` | Drill library, spatial designer, platform basics |
-| Match-day | `/coach/match-day` | Cartridge simulator, lineup |
-| Tactical | `/coach/tactical` | Trinity tactical board |
-| Scouting | `/coach/scouting` | Evaluations, notes |
+| Area | Route | Tier | Nav | Purpose |
+|------|-------|------|-----|---------|
+| Squad hub | `/coach` | 1 | visible | `SquadTelemetryView` — roster density, activity, readiness |
+| The Forge | `/coach/forge` | 1 | visible | Intent deploy (Epic 8) — `$lib/coach/intent` |
+| Field Station | `/coach/drills` | 2 | visible | Drill library, spatial designer — optional QA (QA-143/144) |
+| Team Ops | `/coach/logistics` | 2 | visible | SafeSport parent announcements |
+| Match-day | `/coach/match-day` | 2 | visible | Cartridge simulator, lineup |
+| Proving Grounds | `/coach/scouting` | 2 | visible | Evaluations, recruit pipeline |
+| War Room | `/coach/tactical` | 2 | **hidden** | Trinity tactical board — deep-link only pre-acquisition |
+| Tactics board | `/coach/tactics-board` | 2 | visible | FacilityScheduler / command board |
+| Trial Builder | `/coach/trial-builder` | 3 | visible | Post-acquisition tryout tooling |
 
 ---
 
@@ -56,6 +59,13 @@ Route: `/coach` and sub-routes
 - Flat analytical modules; Switzer/Geist Mono tables.
 - Liquid glass acceptable on **coach** surfaces; **no** chamfered Player OS military corners.
 - 12-col bento on primary coach dashboard where migrated.
+
+## Foundation & layout canon
+
+- **Material vocabulary:** [`COACH_OS_FOUNDATION.md`](./COACH_OS_FOUNDATION.md) — SIEM modules, density, Forge workbench layout.
+- **Visual acceptance:** [`COACH_OS_VISUAL_ACCEPTANCE.md`](./COACH_OS_VISUAL_ACCEPTANCE.md) — Tier 1 routes, 390px first.
+- **Forge layout:** `full-page-workbench` (`coach-forge-workbench`) — inline deploy column in document flow; **reject** fixed `IntentHUD` Trinity HUD overlay on Tier 1. Blueprint: [`coach-forge-workbench-v1.md`](./references/ui/research/blueprints/coach-forge-workbench-v1.md).
+- **Workflow steps:** [`PLATFORM_WORKFLOW_CANON.md`](./PLATFORM_WORKFLOW_CANON.md) GP-ACQ-03, GP-COACH-02.
 
 ## Design criteria
 

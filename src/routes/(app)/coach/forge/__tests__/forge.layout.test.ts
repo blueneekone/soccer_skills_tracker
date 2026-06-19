@@ -25,18 +25,11 @@ describe('/coach/forge — Intent Engine shell', () => {
 		expect(barrel).toMatch(/CoachIntentEngineView/);
 	});
 
-	it('shared intent view inlines deploy panel (no fixed slide-out HUD)', () => {
+	it('shared intent view wires IntentArena and inline ForgeDeployPanel', () => {
 		expect(viewSrc).toMatch(/IntentArena/);
-		expect(viewSrc).toMatch(/IntentHUD/);
+		expect(viewSrc).toMatch(/ForgeDeployPanel/);
 		expect(viewSrc).toMatch(/refreshIntents/);
-		expect(viewSrc).not.toMatch(/tw-fixed tw-bottom/);
-		expect(viewSrc).not.toMatch(/tw-pb-52/);
-	});
-
-	it('IntentHUD is inline full-width deploy panel', () => {
-		const hud = readFileSync(join(process.cwd(), 'src/lib/coach/intent/IntentHUD.svelte'), 'utf-8');
-		expect(hud).not.toMatch(/tw-fixed tw-bottom/);
-		expect(hud).toMatch(/tw-w-full tw-min-w-0/);
+		expect(viewSrc).not.toMatch(/IntentHUD/);
 	});
 });
 

@@ -1,17 +1,20 @@
 # Functional MVP — Player · Parent · Coach
 
 **Sprint:** **LAUNCH-functional-os**  
-**Authority:** [`ROADMAP.md`](../ROADMAP.md) · [`PERSONA_ECOSYSTEM.md`](../PERSONA_ECOSYSTEM.md) · [`COMMS_HUB.md`](COMMS_HUB.md)  
+**Authority:** [`PRODUCT_SURFACE_REGISTRY.md`](PRODUCT_SURFACE_REGISTRY.md) · [`ROADMAP.md`](../ROADMAP.md) · [`PERSONA_ECOSYSTEM.md`](../PERSONA_ECOSYSTEM.md) · [`COMMS_HUB.md`](COMMS_HUB.md)  
 **Launch bar:** functionality over pixels — visual research and avatar art are **TABLED** (see [`references/ui/research/README.md`](references/ui/research/README.md)).
+
+**Tier 1 (required):** Surfaces marked Tier 1 in [`PRODUCT_SURFACE_REGISTRY.md`](PRODUCT_SURFACE_REGISTRY.md) §1 — must pass owner QA or explicit waiver.  
+**Tier 2 (optional):** Shipped routes marked Tier 2 — waivable without blocking functional sale.
 
 Use checkboxes during QA; leave unchecked until human sign-off on a real tenant + test household.
 
 ---
 
-## Player OS
+## Player OS — Tier 1 (required)
 
-- [ ] Login → HQ loads missions, identity, telemetry
-- [ ] Train → log workout → XP/streak updates on HQ
+- [ ] Login → HQ loads missions, identity, telemetry (`/player/dashboard`)
+- [ ] Train → log workout → XP/streak updates on HQ (`/player/workout`)
 - [ ] **XP smoke — Train prescription volume** (armed mission or free log; confirm EST. YIELD before transmit matches post-log earned XP):
   - [ ] 3 sets × 25 reps, **bilateral off** → **75** total reps sent to `logTrainingSession` (rep component in earned XP)
   - [ ] 1 set × 10 reps, **bilateral on** → **20** total reps (10 × 2 sides)
@@ -19,25 +22,36 @@ Use checkboxes during QA; leave unchecked until human sign-off on a real tenant 
 - [ ] Coach-assigned bounty appears on HQ rail
 - [ ] Accept coach intent → **Start session** → Train shows **locked by coach** (read-only focus/drill/duration/RPE; session notes editable only)
 - [ ] Free log (no armed mission) — duration input max **120 min** (not 1440 slider)
-- [ ] Armory Studio SYNC IDENTITY (default portrait OK)
-- [ ] Album/set bonus path (3.4) still works
+- [ ] Stats telemetry loads (`/stats`)
 - [ ] VPC/billing gates behave correctly
 
-**Primary routes:** `/player/dashboard`, `/player/workout`, `/player/armory`, `/stats`, `/player/settings`
+**Tier 1 routes:** `/player/dashboard`, `/player/workout`, `/stats`
+
+## Player OS — Tier 2 (optional / waivable)
+
+- [ ] Armory Studio SYNC IDENTITY (default portrait OK) — `/player/armory`
+- [ ] Album/set bonus path (3.4) still works
+- [ ] Tracker shell parity — `/player/tracker`
+- [ ] Player settings diegetic path — `/player/settings`
 
 **Settings paths:** Player OS shell nav uses **`/player/settings`** (PlayerSettingsPanel, diegetic strap). **`/settings`** remains the cross-role Settings Terminal (profile, notifications, billing, family unit) for staff and parents — reachable from enterprise shell or direct URL; not linked from PlayerShell bottom rail.
 
 ---
 
-## Parent OS
+## Parent OS — Tier 1 (required)
 
-- [ ] Household + linked operatives
-- [ ] VPC consent flow unlocks child training routes
-- [ ] Co-op workout log counts toward child progress where configured
+- [ ] Household + linked operatives (`/parent/household`)
+- [ ] VPC consent flow unlocks child training routes (`/parent/vpc`)
+- [ ] Dashboard co-op / schedule strip loads (`/parent/dashboard`)
+
+**Tier 1 routes:** `/parent/household`, `/parent/vpc`, `/parent/dashboard`, `/messages`
+
+## Parent OS — Tier 2 (optional / waivable)
+
+- [ ] Co-op workout log counts toward child progress where configured (`/parent/log-workout`)
 - [ ] Bounty terminal visible/functional
 - [ ] Car Ride debrief when fixture pending
-
-**Primary routes:** `/parent/household`, `/parent/vpc`, `/parent/dashboard`, `/parent/log-workout`, `/messages`
+- [ ] Payments / push prefs (`/parent/payments`)
 
 ### Permanent VPC golden path
 
@@ -54,18 +68,22 @@ Production QA tenant: club **`qa_launch_2026`**, team **`qa_launch_2026_ppc`** (
 
 ---
 
-## Coach OS
+## Coach OS — Tier 1 (required)
 
-- [ ] Squad/roster view loads
-- [ ] Assign drill/bounty → appears on player HQ
-- [ ] Intent Engine sub-drill picker loads **team + club** drills (not global catalog)
-- [ ] Team drill spatial designer saves to `teams/{teamId}/drills`
+- [ ] Squad/roster view loads (`/coach`)
+- [ ] Assign drill/bounty via Forge → appears on player HQ (`/coach/forge`)
+
+**Tier 1 routes:** `/coach`, `/coach/forge`
+
+## Coach OS — Tier 2 (optional / waivable)
+
+- [ ] Intent Engine sub-drill picker loads **team + club** drills (not global catalog) — QA-143
+- [ ] Team drill spatial designer saves to `teams/{teamId}/drills` — QA-144
 - [ ] (Optional) **Share with director** on team drill — full promote workflow tracked as **LAUNCH-club-drill-promote**
 - [ ] (Optional) Coach intent deploy may include `prescription` on `team_assignments` — `sets`, optional `repsPerSet` (omit for time-only), `bilateral` (doubles effective reps per side), optional `targetDurationMin` / `targetRpe` (1–10), `teamDrillId` / `clubDrillId`. Train locks prescription when armed from HQ handoff.
-- [ ] Match-day / development routes reachable
-- [ ] (After 4.1) Logistics compose + send to parents
-
-**Primary routes:** `/coach`, `/coach/forge` (Intent Engine), `/coach/drills`, `/coach/match-day`, `/coach/scouting`, `/coach/logistics`
+- [ ] Match-day / development routes reachable (`/coach/match-day`, `/coach/scouting`)
+- [ ] Logistics compose + send to parents (`/coach/logistics`)
+- [ ] War Room tactical board deep-link only (`/coach/tactical`) — not acquisition nav
 
 ---
 

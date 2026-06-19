@@ -7,10 +7,15 @@ alwaysApply: true
 
 ## Before coding
 
+- Read [`docs/vision/PRODUCT_SURFACE_REGISTRY.md`](../../docs/vision/PRODUCT_SURFACE_REGISTRY.md) — confirm **current tier**, `nav_visible`, `workflow_id`, and `layout_pattern` for every route you touch; do not add nav links for Tier 2/3 without owner registry update.
+- Read [`docs/vision/PLATFORM_WORKFLOW_CANON.md`](../../docs/vision/PLATFORM_WORKFLOW_CANON.md) — gold path step ids + UX states for the route's `workflow_id`.
+- Read [`docs/vision/PLATFORM_DESIGN_SYSTEM.md`](../../docs/vision/PLATFORM_DESIGN_SYSTEM.md) + persona **foundation_doc** from registry — shell contract + layout pattern before pixels.
 - Read **`ROADMAP.md`** — current sprint section only. Do not invent sprint numbers or component names from archived roadmaps.
 - For any **Player UX / layout / pixel** work: read [`docs/vision/PLAYER_OS_INSTRUMENT_TAXONOMY.md`](../../docs/vision/PLAYER_OS_INSTRUMENT_TAXONOMY.md) and [`docs/vision/AGENT_PLAYER_UX_SPRINT_TEMPLATE.md`](../../docs/vision/AGENT_PLAYER_UX_SPRINT_TEMPLATE.md) **before** coding — classify instrument(s) and cohesion scope (Frame | Inner | Both).
-- For any **UX / pixel / copy** work: read [`docs/vision/PLATFORM_BUILD_MANDATES.md`](../../docs/vision/PLATFORM_BUILD_MANDATES.md) (what to build / reject), then [`docs/vision/PLATFORM_EXPERIENCE_RUBRIC.md`](../../docs/vision/PLATFORM_EXPERIENCE_RUBRIC.md), then the persona vision doc from [`docs/PERSONA_ECOSYSTEM.md`](../../docs/PERSONA_ECOSYSTEM.md).
-- Check **`docs/vision/PLAYER_OS_FOUNDATION.md`** for material primitive canon before any **Player** premium-surface change.
+- For any **Coach UX / layout / pixel** work: read [`docs/vision/COACH_OS_FOUNDATION.md`](../../docs/vision/COACH_OS_FOUNDATION.md) and [`docs/vision/AGENT_COACH_UX_SPRINT_TEMPLATE.md`](../../docs/vision/AGENT_COACH_UX_SPRINT_TEMPLATE.md) — **reject Trinity HUD overlay on Tier 1** (`/coach`, `/coach/forge`).
+- For any **Parent UX / layout / pixel** work: read [`docs/vision/PARENT_OS_FOUNDATION.md`](../../docs/vision/PARENT_OS_FOUNDATION.md) and [`docs/vision/AGENT_PARENT_UX_SPRINT_TEMPLATE.md`](../../docs/vision/AGENT_PARENT_UX_SPRINT_TEMPLATE.md) — 390px first.
+- For any **UX / pixel / copy** work: read [`docs/vision/PLATFORM_BUILD_MANDATES.md`](../../docs/vision/PLATFORM_BUILD_MANDATES.md), then [`docs/vision/PLATFORM_DESIGN_SYSTEM.md`](../../docs/vision/PLATFORM_DESIGN_SYSTEM.md), then [`docs/vision/PLATFORM_EXPERIENCE_RUBRIC.md`](../../docs/vision/PLATFORM_EXPERIENCE_RUBRIC.md), then the persona vision doc from [`docs/PERSONA_ECOSYSTEM.md`](../../docs/PERSONA_ECOSYSTEM.md).
+- Check persona **foundation_doc** from registry: [`PLAYER_OS_FOUNDATION.md`](../../docs/vision/PLAYER_OS_FOUNDATION.md) · [`COACH_OS_FOUNDATION.md`](../../docs/vision/COACH_OS_FOUNDATION.md) · [`PARENT_OS_FOUNDATION.md`](../../docs/vision/PARENT_OS_FOUNDATION.md).
 - Check [`docs/PERSONA_ECOSYSTEM.md`](../../docs/PERSONA_ECOSYSTEM.md) for persona boundaries when UX intent matters.
 
 ## Scope discipline
@@ -36,6 +41,7 @@ Use these names — **not** IdentityModule, TelemetryPanel, or BentoGrid:
 
 - Do **not** refactor `teamsStore` for mission dedup — use `deduplicateById` in `ActiveBounties`.
 - Do **not** add gamification chrome to Coach OS routes.
+- Do **not** ship Trinity HUD overlay (`IntentHUD` fixed bottom panel) on Coach Tier 1 routes — Forge = full-page workbench per [`COACH_OS_FOUNDATION.md`](../../docs/vision/COACH_OS_FOUNDATION.md).
 - Do **not** implement planned roles (`team_manager`, etc.) in JWT/route code unless a sprint explicitly says so.
 - Do **not** wrap Tier A primitives (VanguardCard / SkillTreeArena / pdDataBloom / ProvingGrounds) in Tier B matte panels with multiple decorative borders.
 - Do **not** introduce inner `overflow: auto` regions on Player OS routes (use native document scroll).

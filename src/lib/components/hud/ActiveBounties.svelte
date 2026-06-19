@@ -23,6 +23,7 @@
 		buildDailyQuests,
 		bountyFromHomeworkAssignment,
 		bountyFromParentBounty,
+		coachIntentReadyToClaim,
 		countCadenceSessionsInWindow,
 		formatCadenceProgress,
 		loadQuestProgress,
@@ -30,6 +31,8 @@
 		markQuestClaimed,
 		markQuestCompleted,
 		maxVisibleQuests,
+		missionRailEmptyCopy,
+		purgeCoachIntentIds,
 		formatQuestRewardLabel,
 		isPromotedQuest,
 		questCtaLabel,
@@ -114,6 +117,12 @@
 	);
 	const visibleBounties = $derived(visibleQuests.filter((q) => q.tier === 'bounty'));
 	const visibleDailies = $derived(visibleQuests.filter((q) => q.tier === 'daily'));
+	const showCoachAssignHint = $derived(
+		!loading && !missionSyncBlocked && visibleBounties.length === 0,
+	);
+	const missionRailEmptyMessage = $derived(
+		missionRailEmptyCopy({ missionSyncBlocked }),
+	);
 	const embeddedFeed = $derived(
 		heroQuest ?
 			[heroQuest, ...visibleQuests.filter((q) => q.id !== heroQuest.id)]
@@ -574,6 +583,8 @@
 			return;
 		}
 
+		if (quest.source === 'coach_intent' && !coachIntentReadyToClaim(intentDataById[quest.id], authStore.user?.uid ?? '')) return;
+
 		questProgress = markQuestClaimed(quest.id, questProgress);
 		void dopamineExplosion('grit');
 		if (questsProp === undefined) {
@@ -739,6 +750,12 @@
 	</div>
 {/snippet}
 
+{#snippet coachAssignHintBlock()}
+	{#if showCoachAssignHint}
+		<p class="quest-log__coach-hint bento-span-12" role="status">{missionRailEmptyMessage}</p>
+	{/if}
+{/snippet}
+
 <section
 	class="quest-log quest-log-panel"
 	class:hud-telemetry-root={!embedded}
@@ -771,6 +788,7 @@
 				class="quest-log__feed quest-log__feed--embedded bento-grid bento-grid--12col bento-grid--liquid"
 				aria-label="Active missions"
 			>
+				{@render coachAssignHintBlock()}
 				{#each embeddedFeed as quest (quest.id)}
 					<div
 						class="bento-span-12 quest-terminal-row quest-terminal-row--embedded"
@@ -798,6 +816,7 @@
 			</header>
 
 			<div class="quest-log__feed bento-grid bento-grid--12col bento-grid--liquid" aria-label="Active mission queue">
+				{@render coachAssignHintBlock()}
 				{#if visibleBounties.length > 0}
 					<p class="quest-log__section-tag">// PRIORITY DIRECTIVES</p>
 					{#each visibleBounties as quest (quest.id)}
@@ -828,8 +847,8 @@
 			</button>
 		{/if}
 	{:else}
-		<p class="quest-log__placeholder" role={missionSyncBlocked ? 'status' : undefined} aria-hidden={missionSyncBlocked ? undefined : 'true'}>
-			{missionSyncBlocked ? 'Mission sync blocked — sign out and back in' : 'NO ACTIVE MISSIONS'}
+		<p class="quest-log__placeholder" role="status">
+			{missionRailEmptyMessage}
 		</p>
 	{/if}
 </section>

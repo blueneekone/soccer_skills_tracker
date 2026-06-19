@@ -87,7 +87,8 @@ export class IntentEngine {
 	draftDurationDays = $state(7);
 	draftScope = $state<IntentScope>('team');
 	draftTargetUids = $state<string[]>([]);
-	draftPriority = $state(100);
+	/** Boolean priority toggle — high (10) vs normal (100) for orderBy priority asc. */
+	draftPriorityMission = $state(false);
 	draftPrescriptionSets = $state(3);
 	draftPrescriptionRepsPerSet = $state(10);
 	draftPrescriptionBilateral = $state(false);
@@ -261,7 +262,7 @@ export class IntentEngine {
 		this.draftDurationDays = 7;
 		this.draftScope = 'team';
 		this.draftTargetUids = [];
-		this.draftPriority = 100;
+		this.draftPriorityMission = false;
 		this.draftPrescriptionSets = 3;
 		this.draftPrescriptionRepsPerSet = 10;
 		this.draftPrescriptionBilateral = false;
@@ -392,7 +393,7 @@ export class IntentEngine {
 							this.roster.some((r) => r.rosterKey === key && r.assignable),
 						)
 					:	[],
-				priority: this.draftPriority,
+				priority: this.draftPriorityMission ? 10 : 100,
 				prescription: this.buildDeployPrescription(),
 			});
 			this.deployPhase = 'success';
@@ -439,11 +440,17 @@ export class IntentEngine {
 			const snap = await getDocs(q);
 			this._applyIntentSnapshot(snap.docs);
 			this._subscribeIntents();
+			await this.refreshRoster();
 		} catch (e) {
 			this.mutationError = this._formatCallableError(e, 'Refresh failed.');
 		} finally {
 			this.isRefreshing = false;
 		}
+	}
+
+	async refreshRoster() {
+		if (!this._teamId) return;
+		await this._loadRoster();
 	}
 
 	async extendIntent(intentId: string, additionalDays: number) {
@@ -520,56 +527,158 @@ export class IntentEngine {
 		);
 	}
 
+	private _userDocToRosterEntry(docId: string, x: Record<string, unknown>): RosterEntry {
+		const authUid =
+			typeof x.uid === 'string' && x.uid.trim() && !x.uid.includes('@') ?
+				x.uid.trim()
+			:	'';
+		return {
+			uid: authUid,
+			rosterKey: authUid || docId,
+			email: docId,
+			playerName: typeof x.playerName === 'string' && x.playerName.trim()
+				? x.playerName.trim()
+				: docId,
+			xpByAttribute: (x.xpByAttribute as Record<string, number>) || {},
+			assignable: Boolean(authUid || docId.includes('@')),
+			nameOnly: false,
+		};
+	}
+
+	private _formatRosterError(e: unknown): string {
+		const msg = e instanceof Error ? e.message : String(e);
+		if (/index/i.test(msg)) {
+			return `Roster load failed: ${msg}. Run firebase deploy --only firestore:indexes if this persists.`;
+		}
+		return `Roster load failed: ${msg}`;
+	}
+
+	private async _resolveRosterFallback(
+		teamPlayerUids: string[],
+		rows: RosterEntry[],
+	): Promise<RosterEntry[]> {
+		const claimedUids = new Set(rows.map((r) => r.uid).filter(Boolean));
+		const existingEmails = new Set(rows.map((r) => r.email.toLowerCase()).filter(Boolean));
+		const fallbackRows = [...rows];
+
+		try {
+			const linkSnap = await getDocs(
+				query(collection(db, 'player_lookup'), where('teamId', '==', this._teamId)),
+			);
+			for (const linkDoc of linkSnap.docs) {
+				const email = linkDoc.id;
+				if (existingEmails.has(email.toLowerCase())) continue;
+				const userSnap = await getDoc(doc(db, 'users', email));
+				if (!userSnap.exists()) continue;
+				const row = this._userDocToRosterEntry(email, userSnap.data());
+				if (!row.assignable) continue;
+				fallbackRows.push(row);
+				existingEmails.add(email.toLowerCase());
+				if (row.uid) claimedUids.add(row.uid);
+			}
+		} catch (e) {
+			console.warn('[IntentEngine] player_lookup fallback error:', e);
+		}
+
+		const orphanUids = teamPlayerUids.filter((u) => !claimedUids.has(u));
+		for (const playerUid of orphanUids) {
+			try {
+				const uidSnap = await getDocs(
+					query(collection(db, 'users'), where('uid', '==', playerUid)),
+				);
+				for (const d of uidSnap.docs) {
+					if (existingEmails.has(d.id.toLowerCase())) continue;
+					const row = this._userDocToRosterEntry(d.id, d.data());
+					if (!row.assignable) continue;
+					fallbackRows.push(row);
+					existingEmails.add(d.id.toLowerCase());
+					claimedUids.add(playerUid);
+				}
+			} catch (e) {
+				console.warn('[IntentEngine] uid fallback error for', playerUid, e);
+			}
+		}
+
+		return fallbackRows;
+	}
+
+	private _finalizeRoster(rows: RosterEntry[], rosterNames: string[]) {
+		const merged = mergeAdminRoster(
+			rows.map((r) => ({
+				email: r.email,
+				playerName: r.playerName,
+				ageGroup: null,
+				teamId: this._teamId,
+			})),
+			rosterNames,
+			this._teamId,
+		);
+
+		const byEmail = new Map(rows.map((r) => [r.email.toLowerCase(), r]));
+		const byName = new Map(rows.map((r) => [r.playerName.trim().toLowerCase(), r]));
+
+		this.roster = merged.map((m) => {
+			if (m.nameOnly) {
+				return {
+					uid: '',
+					rosterKey: m.key,
+					email: '',
+					playerName: m.playerName,
+					xpByAttribute: {},
+					assignable: false,
+					nameOnly: true,
+				};
+			}
+			const linked =
+				(m.email && byEmail.get(m.email.toLowerCase())) ||
+				byName.get(m.playerName.trim().toLowerCase());
+			if (linked) {
+				return { ...linked, assignable: Boolean(linked.uid || linked.email), nameOnly: false };
+			}
+			return {
+				uid: '',
+				rosterKey: m.email || m.key,
+				email: m.email,
+				playerName: m.playerName,
+				xpByAttribute: {},
+				assignable: Boolean(m.email),
+				nameOnly: false,
+			};
+		});
+	}
+
 	private async _loadRoster() {
 		if (!this._teamId) return;
 		this.isLoadingRoster = true;
 		this.rosterError = '';
+		let teamPlayerUids: string[] = [];
+		let rosterNames: string[] = [];
+		let rows: RosterEntry[] = [];
+		let queryFailed = false;
+
 		try {
-			const [usersResult, teamSnap, rosterSnap] = await Promise.allSettled([
-				getDocs(
-					query(
-						collection(db, 'users'),
-						where('teamId', '==', this._teamId),
-						where('role', '==', 'player'),
-					),
-				),
+			const [teamSnap, rosterSnap] = await Promise.all([
 				getDoc(doc(db, 'teams', this._teamId)),
 				getDoc(doc(db, 'rosters', this._teamId)),
 			]);
-
-			if (usersResult.status === 'rejected') {
-				console.error('[IntentEngine] roster users query error:', usersResult.reason);
-				this.rosterError =
-					'Could not load squad roster — refresh or re-sign in if this persists.';
-			}
-			const snap = usersResult.status === 'fulfilled' ? usersResult.value : null;
-			const teamDoc = teamSnap.status === 'fulfilled' ? teamSnap.value : null;
-			const rosterDoc = rosterSnap.status === 'fulfilled' ? rosterSnap.value : null;
-
-			const teamPlayerUids = Array.isArray(teamDoc?.data()?.playerUids)
-				? teamDoc!
+			teamPlayerUids = Array.isArray(teamSnap.data()?.playerUids)
+				? teamSnap
 						.data()!
 						.playerUids.filter((u): u is string => typeof u === 'string' && u.trim().length > 0)
 				: [];
+			rosterNames =
+				rosterSnap.exists() && Array.isArray(rosterSnap.data()?.players) ?
+					rosterSnap.data()!.players
+						.filter((n): n is string => typeof n === 'string' && n.trim().length > 0)
+						.map((n) => n.trim())
+				:	[];
 
-			const rows: RosterEntry[] = (snap?.docs ?? []).map((d) => {
-				const x = d.data();
-				const authUid =
-					typeof x.uid === 'string' && x.uid.trim() && !x.uid.includes('@') ?
-						x.uid.trim()
-					:	'';
-				return {
-					uid: authUid,
-					rosterKey: authUid || d.id,
-					email: d.id,
-					playerName: typeof x.playerName === 'string' && x.playerName.trim()
-						? x.playerName.trim()
-						: d.id,
-					xpByAttribute: (x.xpByAttribute as Record<string, number>) || {},
-					assignable: Boolean(authUid || d.id.includes('@')),
-					nameOnly: false,
-				};
-			});
+			const snap = await getDocs(
+				query(collection(db, 'users'), where('teamId', '==', this._teamId)),
+			);
+			rows = snap.docs
+				.filter((d) => d.data().role === 'player')
+				.map((d) => this._userDocToRosterEntry(d.id, d.data()));
 
 			const claimedUids = new Set(rows.map((r) => r.uid).filter(Boolean));
 			const orphanUids = teamPlayerUids.filter((u) => !claimedUids.has(u));
@@ -580,60 +689,27 @@ export class IntentEngine {
 				missingUidRows[0].rosterKey = resolvedUid;
 				missingUidRows[0].assignable = true;
 			}
-
-			const rosterNames =
-				rosterDoc?.exists() && Array.isArray(rosterDoc.data()?.players) ?
-					rosterDoc.data()!.players
-						.filter((n): n is string => typeof n === 'string' && n.trim().length > 0)
-						.map((n) => n.trim())
-				:	[];
-
-			const merged = mergeAdminRoster(
-				rows.map((r) => ({
-					email: r.email,
-					playerName: r.playerName,
-					ageGroup: null,
-					teamId: this._teamId,
-				})),
-				rosterNames,
-				this._teamId,
-			);
-
-			const byEmail = new Map(rows.map((r) => [r.email.toLowerCase(), r]));
-			const byName = new Map(rows.map((r) => [r.playerName.trim().toLowerCase(), r]));
-
-			this.roster = merged.map((m) => {
-				if (m.nameOnly) {
-					return {
-						uid: '',
-						rosterKey: m.key,
-						email: '',
-						playerName: m.playerName,
-						xpByAttribute: {},
-						assignable: false,
-						nameOnly: true,
-					};
-				}
-				const linked =
-					(m.email && byEmail.get(m.email.toLowerCase())) ||
-					byName.get(m.playerName.trim().toLowerCase());
-				if (linked) {
-					return { ...linked, assignable: Boolean(linked.uid || linked.email), nameOnly: false };
-				}
-				return {
-					uid: '',
-					rosterKey: m.email || m.key,
-					email: m.email,
-					playerName: m.playerName,
-					xpByAttribute: {},
-					assignable: Boolean(m.email),
-					nameOnly: false,
-				};
-			});
 		} catch (e) {
+			queryFailed = true;
 			console.error('[IntentEngine] roster load error:', e);
-			this.rosterError = 'Could not load squad roster — refresh or re-sign in if this persists.';
+			this.rosterError = this._formatRosterError(e);
+			rows = [];
+		}
+
+		const assignableCount = rows.filter((r) => r.assignable).length;
+		if ((queryFailed || assignableCount === 0) && teamPlayerUids.length > 0) {
+			rows = await this._resolveRosterFallback(teamPlayerUids, rows);
+			if (rows.some((r) => r.assignable)) {
+				this.rosterError = '';
+			}
+		}
+
+		try {
+			this._finalizeRoster(rows, rosterNames);
+		} catch (e) {
+			console.error('[IntentEngine] roster merge error:', e);
 			this.roster = [];
+			this.rosterError = this._formatRosterError(e);
 		} finally {
 			this.isLoadingRoster = false;
 		}

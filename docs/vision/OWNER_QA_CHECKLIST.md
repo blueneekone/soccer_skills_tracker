@@ -2,6 +2,14 @@
 
 **Canonical manual testing** for product owner sign-off. Automated gates run via agents/CI — owner confirms pass and executes human-only steps below.
 
+> **Tier authority:** [`PRODUCT_SURFACE_REGISTRY.md`](./PRODUCT_SURFACE_REGISTRY.md) — **Phase 11** = Tier 1 Player OS visual rubric (waivable for functional sale). **Tier 2** QA items (e.g. QA-143/144 Field Station, Phase 9 player depth) may be waived per registry §0 without blocking acquisition sign-off.
+
+## QA status: PAUSED (structure sprint)
+
+Manual QA **Phases 5–11** are paused until [`PLATFORM_WORKFLOW_CANON.md`](./PLATFORM_WORKFLOW_CANON.md) **§4** exit criteria are met. **Phases 0–3 progress is preserved.** Do not resume Field Station polish, Player OS visual waves, or War Room work in this window.
+
+**Resume at Phase 5 only** after owner signs workflow canon + Forge blueprint ([`coach-forge-workbench-v1.md`](./references/ui/research/blueprints/coach-forge-workbench-v1.md)). Optional recommended: `STRUCTURE-Forge-impl` (inline deploy panel, QA-142 functional fix) before Phase 5 re-run.
+
 **Environment:** `sports-skill-tracker-dev`  
 **Primary QA URLs:** [https://sports-skill-tracker-dev.web.app](https://sports-skill-tracker-dev.web.app) (preferred if custom domain SSL fails) · [https://sstracker.app](https://sstracker.app) (custom domain — may SSL-fail on some clients)  
 **Tenant:** club `qa_launch_2026` · team `qa_launch_2026_ppc`  

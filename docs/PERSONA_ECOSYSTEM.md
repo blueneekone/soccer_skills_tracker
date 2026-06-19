@@ -6,10 +6,18 @@
 
 | Doc | Purpose |
 |-----|---------|
-| [`docs/vision/PLATFORM_BUILD_MANDATES.md`](./vision/PLATFORM_BUILD_MANDATES.md) | **Build contract** — accepted vs rejected UX mandates (supersedes enterprise PDF visuals for Player OS) |
-| [`docs/vision/PLAYER_OS_INSTRUMENT_TAXONOMY.md`](./vision/PLAYER_OS_INSTRUMENT_TAXONOMY.md) | **Player instrument types** — cohesion (shared frame) vs differentiation (inner primitive) |
-| [`docs/vision/AGENT_PLAYER_UX_SPRINT_TEMPLATE.md`](./vision/AGENT_PLAYER_UX_SPRINT_TEMPLATE.md) | **Player UX sprint procedure** — mandatory fields + build prompt |
-| [`docs/vision/PLATFORM_EXPERIENCE_RUBRIC.md`](./vision/PLATFORM_EXPERIENCE_RUBRIC.md) | **Platform pass/fail criteria** — universal premium experience bar (all personas) |
+| [`docs/vision/PRODUCT_SURFACE_REGISTRY.md`](./vision/PRODUCT_SURFACE_REGISTRY.md) | **Gospel truth** — routes, nav, demo/QA tiers, workflow_id, layout_pattern (§0 wins on conflicts) |
+| [`docs/vision/PLATFORM_WORKFLOW_CANON.md`](./vision/PLATFORM_WORKFLOW_CANON.md) | **Gold paths** — UX states per Tier 1 workflow step |
+| [`docs/vision/PLATFORM_DESIGN_SYSTEM.md`](./vision/PLATFORM_DESIGN_SYSTEM.md) | **Shared primitives** — persona forks + layout catalog |
+| [`docs/vision/PLATFORM_BUILD_MANDATES.md`](./vision/PLATFORM_BUILD_MANDATES.md) | **Build contract** — accepted vs rejected UX mandates |
+| [`docs/vision/PLAYER_OS_INSTRUMENT_TAXONOMY.md`](./vision/PLAYER_OS_INSTRUMENT_TAXONOMY.md) | **Player instrument types** — cohesion vs differentiation |
+| [`docs/vision/AGENT_PLAYER_UX_SPRINT_TEMPLATE.md`](./vision/AGENT_PLAYER_UX_SPRINT_TEMPLATE.md) | **Player UX sprint procedure** |
+| [`docs/vision/AGENT_COACH_UX_SPRINT_TEMPLATE.md`](./vision/AGENT_COACH_UX_SPRINT_TEMPLATE.md) | **Coach UX sprint procedure** |
+| [`docs/vision/AGENT_PARENT_UX_SPRINT_TEMPLATE.md`](./vision/AGENT_PARENT_UX_SPRINT_TEMPLATE.md) | **Parent UX sprint procedure** |
+| [`docs/vision/PLAYER_OS_FOUNDATION.md`](./vision/PLAYER_OS_FOUNDATION.md) | **Player material vocabulary** |
+| [`docs/vision/COACH_OS_FOUNDATION.md`](./vision/COACH_OS_FOUNDATION.md) | **Coach material vocabulary** — Forge workbench canon |
+| [`docs/vision/PARENT_OS_FOUNDATION.md`](./vision/PARENT_OS_FOUNDATION.md) | **Parent material vocabulary** |
+| [`docs/vision/PLATFORM_EXPERIENCE_RUBRIC.md`](./vision/PLATFORM_EXPERIENCE_RUBRIC.md) | **Platform pass/fail criteria** — all personas |
 | [`ROADMAP.md`](../ROADMAP.md) | **When** to build — sprint status, proof tests, file lists |
 | [`docs/vision/`](./vision/) | **Why / how it should feel** — persona UX north stars |
 | [`docs/ARCHITECTURE.md`](./ARCHITECTURE.md) | **System design** — cells, Trinity pattern, data model |
@@ -49,13 +57,15 @@ Planned JWT roles (`team_manager`, expanded `recruiter`/`tutor`) are documented 
 - **Scope:** Verifiable Parental Consent (VPC), household provisioning, co-op workout logging, Car Ride debrief, bounty terminal, billing visibility.
 - **UX:** Partner/coach-in-the-car — supportive, not gamified. Uses flat **Directive + Telemetry** instrument subset only (no Player `pd-os-deck` frame or gamification chrome).
 - **Vision:** [`docs/vision/PARENT_OS.md`](./vision/PARENT_OS.md)
+- **Foundation:** [`docs/vision/PARENT_OS_FOUNDATION.md`](./vision/PARENT_OS_FOUNDATION.md) · **VA:** [`docs/vision/PARENT_OS_VISUAL_ACCEPTANCE.md`](./vision/PARENT_OS_VISUAL_ACCEPTANCE.md)
 - **Experience criteria:** [`PLATFORM_EXPERIENCE_RUBRIC.md`](./vision/PLATFORM_EXPERIENCE_RUBRIC.md) §2 — Parent row
 
 ### Coach
 
-- **Scope:** Squad telemetry, drill assignment, tactical board, Forge, match-day, scouting evaluations — **development and tactics**.
+- **Scope:** Squad telemetry, Forge intent deploy, drill assignment, match-day, scouting — **development loop**. Tactical board (`/coach/tactical`) is **Tier 2** per [`PRODUCT_SURFACE_REGISTRY.md`](./vision/PRODUCT_SURFACE_REGISTRY.md) §0 — not acquisition demo scope.
 - **UX:** High-density flat analytics (`SquadTelemetryView`, mono tables). **Telemetry + Execute** instrument subset — flat sideline skin; no Player navigation tiles or void deck frame.
 - **Vision:** [`docs/vision/COACH_OS.md`](./vision/COACH_OS.md)
+- **Foundation:** [`docs/vision/COACH_OS_FOUNDATION.md`](./vision/COACH_OS_FOUNDATION.md) · **VA:** [`docs/vision/COACH_OS_VISUAL_ACCEPTANCE.md`](./vision/COACH_OS_VISUAL_ACCEPTANCE.md) — Forge = full-page workbench; reject Trinity HUD on Tier 1
 - **Experience criteria:** [`PLATFORM_EXPERIENCE_RUBRIC.md`](./vision/PLATFORM_EXPERIENCE_RUBRIC.md) §2 — Coach row
 
 ### Team Manager (planned)
