@@ -95,4 +95,43 @@ describe('workoutLog', () => {
 		expect(captured?.subjectiveRpe).toBe(7);
 		expect(captured?.intensity).toBe('medium');
 	});
+
+	it('executePlayerWorkoutLog forwards physio fields for Train readiness strip', async () => {
+		let captured: Record<string, unknown> | undefined;
+		const logTrainingSession = vi.fn(async (data: Record<string, unknown>) => {
+			captured = data;
+			return { data: { earnedXP: 42, totalXp: 500, level: 3 } };
+		});
+
+		await executePlayerWorkoutLog({
+			drillType: '[Technical] Juggling (Player workout)',
+			durationMin: 30,
+			totalReps: 0,
+			intensityCall: 'medium',
+			focusLabel: 'Technical',
+			selectedDrill: 'Juggling',
+			activeMissionId: null,
+			missionSource: null,
+			totalXpHud: 458,
+			oldLevel: 3,
+			intensityStep: 7,
+			physio: {
+				sleepHoursLastNight: 7.5,
+				soreness: 2,
+				mood: 4,
+				restingFeel: 3,
+			},
+			authUser: { uid: 'player-1', email: 'ace@example.com' },
+			profile: { teamId: 'team-1', playerName: 'Ace' },
+			logTrainingSession,
+			writePlayerOsWorkout: vi.fn(),
+			commitWorkoutCompletion: vi.fn(),
+			dopamineOnCommit: vi.fn(async (p) => p),
+		});
+
+		expect(captured?.sleepHoursLastNight).toBe(7.5);
+		expect(captured?.soreness).toBe(2);
+		expect(captured?.mood).toBe(4);
+		expect(captured?.restingFeel).toBe(3);
+	});
 });

@@ -14,14 +14,12 @@
 	import { goto } from '$app/navigation';
 	import { httpsCallable } from 'firebase/functions';
 	import { db, functions } from '$lib/firebase.js';
-	import { stashCoachIntentHandoffForAssignment, buildPolicyHintsFromResult, readMissionHandoff, isMissionHandoffStale } from '$lib/player/workout/coachMissionFlow.js';
+	import { stashCoachIntentHandoffForAssignment, buildPolicyHintsFromResult } from '$lib/player/workout/coachMissionFlow.js';
 	import { ensureRlPolicyCached, readRlPolicyCache } from '$lib/player/workout/rlPolicyCache.js';
-	import { isTrainingToday } from '$lib/player/dashboard/playerHudMetrics.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { sportsConfigStore } from '$lib/stores/sportsConfigStore.svelte.js';
 	import { getRpgSportConfig } from '$lib/config/sports.js';
 	import TacticalDrillBoard from '$lib/components/tactical/TacticalDrillBoard.svelte';
-	import MorningReadinessCard from '$lib/components/player/MorningReadinessCard.svelte';
 
 	interface Assignment {
 		id: string;
@@ -69,60 +67,6 @@
 	// RL policy state
 	let policyResult = $state<PolicyResult | null>(null);
 	let showTooltip = $state(false);
-
-	// Morning Readiness Card — shown once per UTC day until player submits.
-	let showReadinessCard = $state(false);
-	let coachTrainHandoffPending = $state(false);
-	let lastTrainingUtc = $state<string | null>(null);
-
-	$effect(() => {
-		if (!browser) {
-			coachTrainHandoffPending = false;
-			return;
-		}
-		const handoff = readMissionHandoff();
-		coachTrainHandoffPending = Boolean(
-			handoff?.missionId && !isMissionHandoffStale(handoff),
-		);
-	});
-
-	$effect(() => {
-		const uid = authStore.user?.uid;
-		if (!uid) {
-			lastTrainingUtc = null;
-			return;
-		}
-		const ref = doc(db, 'player_stats', uid);
-		return onSnapshot(
-			ref,
-			(snap) => {
-				const raw = snap.data()?.last_training_utc;
-				lastTrainingUtc = typeof raw === 'string' ? raw : null;
-			},
-			() => {
-				lastTrainingUtc = null;
-			},
-		);
-	});
-
-	const trainedToday = $derived(isTrainingToday(lastTrainingUtc));
-	const hasActiveCoachIntents = $derived(assignments.length > 0);
-	const shouldShowReadiness = $derived(
-		showReadinessCard &&
-			!coachTrainHandoffPending &&
-			!hasActiveCoachIntents &&
-			!trainedToday,
-	);
-
-	$effect(() => {
-		const uid = authStore.user?.uid;
-		if (!uid) { showReadinessCard = false; return; }
-		const dateUtc = new Date().toISOString().slice(0, 10);
-		const ref = doc(db, 'physio_self_reports', uid, 'daily', dateUtc);
-		getDoc(ref)
-			.then((snap) => { showReadinessCard = !snap.exists(); })
-			.catch(() => { showReadinessCard = false; });
-	});
 
 	const playerProfile = $derived(/** @type {Record<string, unknown>} */ (authStore.userProfile));
 	const playerTeamId = $derived(String(playerProfile?.teamId ?? ''));
@@ -323,12 +267,6 @@
 <div
 	class="vanguard-surface tw-flex tw-flex-col tw-gap-5 tw-p-6"
 >
-	<!-- Morning Readiness Card (Phase 3, Epic 4 — RL S2) -->
-	{#if shouldShowReadiness}
-		<MorningReadinessCard onSubmitted={() => { showReadinessCard = false; }} />
-		<div class="tw-w-full tw-h-px tw-bg-slate-800/60"></div>
-	{/if}
-
 	<!-- Header -->
 	<div class="tw-flex tw-items-start tw-justify-between tw-gap-3">
 		<div class="tw-flex tw-flex-col tw-gap-0.5">

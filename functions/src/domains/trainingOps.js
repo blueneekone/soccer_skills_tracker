@@ -852,6 +852,12 @@ exports.logTrainingSession = onCall(LAUNCH_CORE_CALLABLE_OPTS, async (request) =
         Number(data.sleepHoursLastNight) <= 12 ?
           Number(data.sleepHoursLastNight) :
           null;
+    const restingFeel =
+        Number.isFinite(Number(data.restingFeel)) &&
+        Number(data.restingFeel) >= 1 &&
+        Number(data.restingFeel) <= 5 ?
+          Math.round(Number(data.restingFeel)) :
+          null;
     const sessionNotes =
         typeof data.sessionNotes === 'string' ?
           data.sessionNotes.trim().slice(0, 500) :
@@ -874,6 +880,7 @@ exports.logTrainingSession = onCall(LAUNCH_CORE_CALLABLE_OPTS, async (request) =
       soreness,
       mood,
       sleepHoursLastNight,
+      restingFeel,
     };
     if (sessionNotes) logDoc.sessionNotes = sessionNotes;
     if (assignmentIdRaw) logDoc.assignmentId = assignmentIdRaw;
@@ -972,6 +979,35 @@ exports.logTrainingSession = onCall(LAUNCH_CORE_CALLABLE_OPTS, async (request) =
       };
       if (intentIdRaw) dcDoc.intentId = intentIdRaw;
       tx.set(dcRef, dcDoc);
+    }
+
+    // RL physio: first workout log of the UTC day mirrors daily self-report (Train strip).
+    const physioComplete =
+        verificationMethod === 'player_self_log' &&
+        soreness != null &&
+        mood != null &&
+        sleepHoursLastNight != null &&
+        restingFeel != null;
+    if (physioComplete) {
+      const physioRef = db()
+          .collection('physio_self_reports')
+          .doc(athleteUid)
+          .collection('daily')
+          .doc(todayStr);
+      const physioSnap = await tx.get(physioRef);
+      if (!physioSnap.exists) {
+        tx.set(physioRef, {
+          uid: athleteUid,
+          dateUtc: todayStr,
+          sleepHours: sleepHoursLastNight,
+          soreness,
+          mood,
+          restingFeel,
+          source: 'logTrainingSession',
+          workoutLogId: logId,
+          createdAt: now,
+        });
+      }
     }
 
     if (teamId && tsRef) {

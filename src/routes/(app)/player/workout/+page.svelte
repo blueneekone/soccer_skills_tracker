@@ -34,6 +34,8 @@
   import IntelModal from '$lib/components/ui/IntelModal.svelte';
   import PlayerOsPageStrap from '$lib/components/player/PlayerOsPageStrap.svelte';
   import CoachMissionDrillExecutionPanel from '$lib/player/workout/CoachMissionDrillExecutionPanel.svelte';
+  import TrainReadinessStrip from '$lib/player/workout/TrainReadinessStrip.svelte';
+  import { useTrainReadinessStrip } from '$lib/player/workout/useTrainReadinessStrip.svelte.js';
   import '$lib/styles/player-dashboard-hud.css';
   import '$lib/styles/player-terminal.css';
   import '$lib/styles/player-train-theater.css';
@@ -131,6 +133,11 @@
   let proofUploadProgress = $state(/** @type {number | null} */ (null));
   /** Any upload/validation error shown to the player. */
   let proofMediaError = $state('');
+
+  const trainReadiness = useTrainReadinessStrip(
+    () => authStore.user?.uid,
+    () => authStore.role,
+  );
 
   const PROOF_IMAGE_MAX = 10 * 1024 * 1024;  // 10 MB
   const PROOF_VIDEO_MAX = 50 * 1024 * 1024;  // 50 MB
@@ -606,6 +613,7 @@
         oldLevel,
         intensityStep: stepRpe,
         sessionNotes: isLastStep ? sessionNotes : '',
+        physio: isLastStep ? trainReadiness.physioForTransmit() : undefined,
         authUser: { uid: user.uid, email: user.email },
         profile,
         logTrainingSession,
@@ -696,6 +704,7 @@
         // Raw RPE 1–10 → logTrainingSession.subjectiveRpe (RL telemetry); intensityCall stays for XP.
         intensityStep: intensity,
         sessionNotes,
+        physio: trainReadiness.physioForTransmit(),
         authUser: { uid: user.uid, email: user.email },
         profile,
         logTrainingSession,
@@ -1115,6 +1124,15 @@
         </div>
       </div>
     </div>
+
+    {#if trainReadiness.showReadinessStrip}
+      <TrainReadinessStrip
+        bind:sleepHoursLastNight={trainReadiness.readinessSleepHours}
+        bind:soreness={trainReadiness.readinessSoreness}
+        bind:mood={trainReadiness.readinessMood}
+        bind:restingFeel={trainReadiness.readinessRestingFeel}
+      />
+    {/if}
 
     <div class="pw-theater__transmit">
       {#if isBundleMode}

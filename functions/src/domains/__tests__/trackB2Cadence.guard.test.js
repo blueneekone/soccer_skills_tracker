@@ -162,8 +162,9 @@ describe('B2 — intent lifecycle cadence fulfillment gate (source-scan)', () =>
     assert.match(SRC, /exports\.onDrillCompletionIntentLifecycle/);
   });
 
-  it('logTrainingSession writes drill_completions when attributeId is present', () => {
-    assert.match(SRC, /if \(attributeIdRaw\)/);
-    assert.match(SRC, /collection\('drill_completions'\)/);
+  it('logTrainingSession mirrors complete physio payload to physio_self_reports', () => {
+    assert.match(SRC, /physio_self_reports/);
+    assert.match(SRC, /source: 'logTrainingSession'/);
+    assert.match(SRC, /restingFeel != null/);
   });
 });

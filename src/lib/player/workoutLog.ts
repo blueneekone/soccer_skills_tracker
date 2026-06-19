@@ -1,6 +1,8 @@
 import type { HttpsCallableResult } from 'firebase/functions';
 import { calculateTrainingSessionEarnedXp } from '$lib/gamification/level.js';
 import type { MissionHandoffSource } from '$lib/player/workout/coachMissionFlow.js';
+import type { TrainReadinessInput } from '$lib/player/workout/trainReadiness.js';
+import { normalizeTrainReadinessInput } from '$lib/player/workout/trainReadiness.js';
 
 export type WorkoutIntensityApi = 'low' | 'medium' | 'high';
 
@@ -214,6 +216,8 @@ export async function executePlayerWorkoutLog(deps: {
 	sessionNotes?: string;
 	/** Forwarded from MissionHandoff.targetAttributeId for coach-intent XP routing. */
 	targetAttributeId?: string;
+	/** First Train transmit of the UTC day — mirrors to physio_self_reports on server. */
+	physio?: TrainReadinessInput;
 	authUser: { uid: string; email?: string | null };
 	profile: { teamId?: unknown; playerName?: unknown };
 	logTrainingSession: (data: {
@@ -227,6 +231,11 @@ export async function executePlayerWorkoutLog(deps: {
 		sessionNotes?: string;
 		/** Coach intent target attribute — triggers xpByAttribute increment on server for intent lifecycle. */
 		attributeId?: string;
+		intentId?: string;
+		sleepHoursLastNight?: number;
+		soreness?: number;
+		mood?: number;
+		restingFeel?: number;
 	}) => Promise<HttpsCallableResult<WorkoutSessionPayload>>;
 	writePlayerOsWorkout: (args: {
 		emailKey: string;
@@ -253,6 +262,7 @@ export async function executePlayerWorkoutLog(deps: {
 			deps.activeMissionId
 		:	undefined;
 	const reps = Math.max(0, Math.floor(Number(deps.totalReps) || 0));
+	const physio = deps.physio ? normalizeTrainReadinessInput(deps.physio) : null;
 	const res = await deps.logTrainingSession({
 		drillType: deps.drillType,
 		duration: deps.durationMin,
@@ -264,6 +274,14 @@ export async function executePlayerWorkoutLog(deps: {
 		...(deps.targetAttributeId?.trim() ? { attributeId: deps.targetAttributeId.trim() } : {}),
 		...(deps.activeMissionId && deps.missionSource === 'coach_intent' ?
 			{ intentId: deps.activeMissionId }
+		:	{}),
+		...(physio ?
+			{
+				sleepHoursLastNight: physio.sleepHoursLastNight,
+				soreness: physio.soreness,
+				mood: physio.mood,
+				restingFeel: physio.restingFeel,
+			}
 		:	{}),
 	});
 	const payload = res.data;

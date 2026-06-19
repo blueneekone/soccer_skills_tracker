@@ -30,12 +30,20 @@ describe('QA-142 — coach mission Train handoff', () => {
 		expect(bountiesSrc).toMatch(/quest\.targetAttributeId/);
 	});
 
-	it('Morning Readiness defers when a coach Train handoff is pending', () => {
-		expect(adaptiveSrc).toMatch(/coachTrainHandoffPending/);
-		expect(adaptiveSrc).toMatch(/readMissionHandoff/);
-		expect(adaptiveSrc).toMatch(/shouldShowReadiness/);
-		expect(adaptiveSrc).toMatch(/hasActiveCoachIntents/);
-		expect(adaptiveSrc).toMatch(/trainedToday/);
+	it('Adaptive Homework no longer gates on Morning Readiness', () => {
+		expect(adaptiveSrc).not.toMatch(/MorningReadinessCard/);
+		expect(adaptiveSrc).not.toMatch(/shouldShowReadiness/);
+	});
+
+	it('Train page shows inline readiness strip wired to workout log', () => {
+		const readinessHook = readFileSync(
+			join(ROOT, 'lib/player/workout/useTrainReadinessStrip.svelte.ts'),
+			'utf-8',
+		);
+		expect(workoutSrc).toMatch(/TrainReadinessStrip/);
+		expect(workoutSrc).toMatch(/useTrainReadinessStrip/);
+		expect(readinessHook).toMatch(/physio_self_reports/);
+		expect(readinessHook).toMatch(/physioForTransmit/);
 	});
 
 	it('logTrainingSession writes drill_completions for cadence when attributeId is set', () => {
