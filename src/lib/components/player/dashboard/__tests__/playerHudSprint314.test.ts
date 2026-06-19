@@ -40,10 +40,18 @@ describe('QA-142 — coach mission Train handoff', () => {
 			join(ROOT, 'lib/player/workout/useTrainReadinessStrip.svelte.ts'),
 			'utf-8',
 		);
+		const dashboardSrc = readFileSync(
+			join(ROOT, 'routes/(app)/player/dashboard/+page.svelte'),
+			'utf-8',
+		);
 		expect(workoutSrc).toMatch(/TrainReadinessStrip/);
 		expect(workoutSrc).toMatch(/useTrainReadinessStrip/);
 		expect(readinessHook).toMatch(/physio_self_reports/);
 		expect(readinessHook).toMatch(/physioForTransmit/);
+		expect(dashboardSrc).toMatch(/TrainReadinessHqLine/);
+		const hqLine = readFileSync(join(ROOT, 'lib/player/workout/TrainReadinessHqLine.svelte'), 'utf-8');
+		expect(hqLine).toMatch(/hq-readiness-prompt/);
+		expect(hqLine).toMatch(/showReadinessStrip/);
 	});
 
 	it('logTrainingSession writes drill_completions for cadence when attributeId is set', () => {

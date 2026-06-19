@@ -7,7 +7,7 @@ import {
 	type TrainReadinessInput,
 } from '$lib/player/workout/trainReadiness.js';
 
-/** Daily physio strip on Train — shown until physio_self_reports exists for UTC day. */
+/** Daily physio on Train (full strip) + HQ one-liner until physio_self_reports exists for UTC day. */
 export function useTrainReadinessStrip(
 	getUid: () => string | undefined,
 	getRole: () => string | null | undefined,

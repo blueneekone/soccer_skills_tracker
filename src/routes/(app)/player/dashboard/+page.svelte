@@ -43,6 +43,7 @@
 	} from '$lib/avatars/portraitReadRepair.js';
 	import { fetchClubDisplayName } from '$lib/player/fetchClubDisplayName.js';
 	import AdaptiveHomework from './AdaptiveHomework.svelte';
+	import TrainReadinessHqLine from '$lib/player/workout/TrainReadinessHqLine.svelte';
 	import { ArmoryEngine } from '$lib/states/ArmoryEngine.svelte.js';
 	import PlayerActivityStreak from '$lib/components/shell/PlayerActivityStreak.svelte';
 
@@ -434,6 +435,7 @@
 				/>
 			</div>
 		</header>
+		<TrainReadinessHqLine />
 		<OperativeHub>
 				{#snippet identity()}
 					<IdentityBentoModule
