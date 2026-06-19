@@ -34,6 +34,8 @@
   import IntelModal from '$lib/components/ui/IntelModal.svelte';
   import PlayerOsPageStrap from '$lib/components/player/PlayerOsPageStrap.svelte';
   import CoachMissionDrillExecutionPanel from '$lib/player/workout/CoachMissionDrillExecutionPanel.svelte';
+  import TrainReadinessStrip from '$lib/player/workout/TrainReadinessStrip.svelte';
+  import { useTrainReadinessStrip } from '$lib/player/workout/useTrainReadinessStrip.svelte.js';
   import '$lib/styles/player-dashboard-hud.css';
   import '$lib/styles/player-terminal.css';
   import '$lib/styles/player-train-theater.css';
@@ -113,6 +115,7 @@
   let armedHandoff = $state(null);
   /** @type {Array<Record<string, unknown> & { id: string }>} */
   let incomingMissions = $state([]);
+  let incomingMissionsReady = $state(false);
   let missionSyncRefreshing = $state(false);
   let missionRefreshNonce = $state(0);
 
@@ -130,6 +133,11 @@
   let proofUploadProgress = $state(/** @type {number | null} */ (null));
   /** Any upload/validation error shown to the player. */
   let proofMediaError = $state('');
+
+  const trainReadiness = useTrainReadinessStrip(
+    () => authStore.user?.uid,
+    () => authStore.role,
+  );
 
   const PROOF_IMAGE_MAX = 10 * 1024 * 1024;  // 10 MB
   const PROOF_VIDEO_MAX = 50 * 1024 * 1024;  // 50 MB
@@ -252,16 +260,15 @@
     isBundleMode && bundleStepIdx === bundleDrills.length - 1,
   );
 
-  /**
-   * @param {MissionHandoff} handoff
-   */
   async function applyMissionHandoff(handoff) {
     if (isMissionHandoffStale(handoff)) {
       clearMissionHandoff();
       return;
     }
     activeMissionId = handoff.missionId;
-    armedHandoff = handoff;
+    let resolvedDrillTitle = handoff.drillTitle ?? '';
+    let resolvedDrillId = handoff.drillId ?? handoff.missionId;
+    const pickDrill = (title, id) => { selectedDrill = title; resolvedDrillTitle = title; resolvedDrillId = id; };
     if (handoff.focusArea) {
       selectedFocus = handoff.focusArea;
     } else if (handoff.targetAttributeId) {
@@ -283,17 +290,18 @@
       const row = teamId ?
         await resolveTeamLibraryDrill(db, teamId, drillId, clubId || undefined)
       :	null;
-      if (row?.title) selectedDrill = row.title;
+      if (row?.title) pickDrill(row.title, drillId);
     } else if (handoff.prescription?.drillId) {
       const drill = await resolveDrillById(db, handoff.prescription.drillId);
-      if (drill?.title) selectedDrill = drill.title;
+      if (drill?.title) pickDrill(drill.title, drill.id);
     } else if (handoff.drillTitle) {
-      selectedDrill = handoff.drillTitle;
+      pickDrill(handoff.drillTitle, resolvedDrillId);
     } else if (handoff.targetAttributeId) {
       const frustration = String(profile?.recentFrustration ?? 'low');
       const drill = await resolveHeuristicDrill(db, handoff.targetAttributeId, frustration);
-      if (drill?.title) selectedDrill = drill.title;
+      if (drill?.title) pickDrill(drill.title, drill.id);
     }
+    armedHandoff = { ...handoff, drillId: resolvedDrillId, drillTitle: resolvedDrillTitle || handoff.drillTitle };
     if (handoff.prescription) {
       workoutSets = handoff.prescription.sets;
       workoutRepsPerSet = handoff.prescription.repsPerSet ?? 0;
@@ -377,14 +385,12 @@
     });
   });
 
-  // RL inference on Train for non-coach sessions only (coach prescription is authoritative).
   $effect(() => {
     if (!browser) return;
     if (authStore.role !== 'player') return;
     const missionId = activeMissionId;
     if (!missionId) return;
     if (isCoachDirectedHandoff(armedHandoff?.source)) return;
-
     const sportId = sportsConfigStore.currentSportConfig?.sportId ?? 'soccer';
     let cancelled = false;
 
@@ -409,15 +415,14 @@
     };
   });
 
-  // Drop armed state if coach intent was cancelled server-side.
   $effect(() => {
     if (!armedHandoff || armedHandoff.source !== 'coach_intent') return;
+    if (!incomingMissionsReady) return;
     if (!incomingMissions.some((m) => m.id === armedHandoff.missionId)) {
       clearArmedMission();
     }
   });
 
-  // Epic 8: subscribe to active team_assignments for HQ link + armed mission goal XP.
   $effect(() => {
     if (!browser) return;
     void missionRefreshNonce;
@@ -427,8 +432,10 @@
       : '';
     if (authStore.role !== 'player' || !uid || !teamId) {
       incomingMissions = [];
+      incomingMissionsReady = false;
       return;
     }
+    incomingMissionsReady = false;
     const qy = query(
       collection(db, 'team_assignments'),
       where('teamId', '==', teamId),
@@ -445,6 +452,7 @@
           if (!m.scope || m.scope === 'team') return true;
           return Array.isArray(m.targetUids) && m.targetUids.includes(uid);
         });
+      incomingMissionsReady = true;
     };
     const unsub = onSnapshot(
       qy,
@@ -605,6 +613,7 @@
         oldLevel,
         intensityStep: stepRpe,
         sessionNotes: isLastStep ? sessionNotes : '',
+        physio: isLastStep ? trainReadiness.physioForTransmit() : undefined,
         authUser: { uid: user.uid, email: user.email },
         profile,
         logTrainingSession,
@@ -695,6 +704,7 @@
         // Raw RPE 1–10 → logTrainingSession.subjectiveRpe (RL telemetry); intensityCall stays for XP.
         intensityStep: intensity,
         sessionNotes,
+        physio: trainReadiness.physioForTransmit(),
         authUser: { uid: user.uid, email: user.email },
         profile,
         logTrainingSession,
@@ -1114,6 +1124,15 @@
         </div>
       </div>
     </div>
+
+    {#if trainReadiness.showReadinessStrip}
+      <TrainReadinessStrip
+        bind:sleepHoursLastNight={trainReadiness.readinessSleepHours}
+        bind:soreness={trainReadiness.readinessSoreness}
+        bind:mood={trainReadiness.readinessMood}
+        bind:restingFeel={trainReadiness.readinessRestingFeel}
+      />
+    {/if}
 
     <div class="pw-theater__transmit">
       {#if isBundleMode}

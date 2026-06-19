@@ -369,7 +369,12 @@ export function buildCoachIntentHandoff(input: {
 		:	undefined;
 	const drillTitle =
 		input.drill?.title ?? rx?.drillTitle ?? undefined;
-	const drillId = input.drill?.id ?? rx?.drillId ?? undefined;
+	const drillId =
+		input.drill?.id ??
+		rx?.drillId ??
+		rx?.teamDrillId ??
+		rx?.clubDrillId ??
+		input.missionId;
 	const videoUrl = rx?.videoUrl ?? undefined;
 	const cues = rx?.cues ?? undefined;
 	const cadence = rx?.cadence ?? undefined;

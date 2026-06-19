@@ -255,7 +255,8 @@ export function markQuestCompletedAfterWorkoutLog(
 	source: ActiveBountySource,
 	store: QuestProgressStore,
 ): QuestProgressStore {
-	if (source === 'coach_intent') return store;
+	// Coach intents stay active until server fulfilledByUids; keep Start session CTA.
+	if (source === 'coach_intent') return markQuestAccepted(id, store);
 	return markQuestCompleted(id, store);
 }
 

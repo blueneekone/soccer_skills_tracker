@@ -160,8 +160,19 @@ describe('Sprint RL-transition-guards — transition pipeline wiring', () => {
 		expect(doc).toMatch(/Transition pipeline smoke/);
 		expect(doc).toMatch(/rl_transitions/);
 		expect(doc).toMatch(/nextState: null/);
-		expect(doc).toMatch(/Morning Readiness/);
+		expect(doc).toMatch(/physio_self_reports/);
 		expect(doc).toMatch(/abPercent: 0/);
+	});
+
+	it('Train page mounts readiness strip before transmit', () => {
+		const src = readFileSync(TRAIN_PAGE, 'utf-8');
+		const hook = readFileSync(
+			join(ROOT, 'lib/player/workout/useTrainReadinessStrip.svelte.ts'),
+			'utf-8',
+		);
+		expect(src).toMatch(/TrainReadinessStrip/);
+		expect(src).toMatch(/useTrainReadinessStrip/);
+		expect(hook).toMatch(/physioForTransmit/);
 	});
 });
 

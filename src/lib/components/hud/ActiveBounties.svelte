@@ -46,14 +46,12 @@
 	} from '$lib/player/dashboard/activeBounties.js';
 	import {
 		buildCoachHomeworkHandoff,
-		buildCoachIntentHandoff,
-		clearMissionHandoff,
 		COACH_INTENT_HINT,
 		formatSuggestedDrillLine,
 		readCachedPolicyHints,
-		readMissionHandoff,
 		resolveHeuristicDrill,
 		stashMissionHandoff,
+		stashCoachIntentHandoffForAssignment,
 	} from '$lib/player/workout/coachMissionFlow.js';
 	import { repairIntentPrescription } from '$lib/types/intent.js';
 	import '$lib/styles/active-bounties.css';
@@ -148,7 +146,8 @@
 				coachIntents.map(async (quest) => {
 					const row = rows[quest.id] ?? {};
 					const targetAttributeId =
-						typeof row.targetAttributeId === 'string' ? row.targetAttributeId.trim() : '';
+						(typeof row.targetAttributeId === 'string' ? row.targetAttributeId.trim() : '') ||
+						(typeof quest.targetAttributeId === 'string' ? quest.targetAttributeId.trim() : '');
 					if (!targetAttributeId) return;
 					const drill = await resolveHeuristicDrill(db, targetAttributeId, frustration);
 					if (!drill) return;
@@ -185,14 +184,14 @@
 		);
 		if (!hasCadenceQuests) return;
 		const windowStart = Timestamp.fromMillis(Date.now() - 30 * 86_400_000);
-		void getDocs(
-			query(
-				collection(db, 'drill_completions'),
-				where('playerUid', '==', uid),
-				where('loggedAt', '>=', windowStart),
-			),
-		)
-			.then((snap) => {
+		const q = query(
+			collection(db, 'drill_completions'),
+			where('playerUid', '==', uid),
+			where('loggedAt', '>=', windowStart),
+		);
+		const unsub = onSnapshot(
+			q,
+			(snap) => {
 				cadenceCompletions = snap.docs.map((d) => {
 					const data = d.data();
 					const attrId = typeof data.attributeId === 'string' ? data.attributeId : '';
@@ -207,10 +206,12 @@
 									: 0;
 					return { attributeId: attrId, loggedAtMs: ms };
 				});
-			})
-		.catch(() => {
-			/* non-fatal: cadence count stays at 0 */
-		});
+			},
+			() => {
+				/* non-fatal: cadence count stays at 0 */
+			},
+		);
+		return unsub;
 	});
 
 	// B4b — subscribe to player's own approved completion_verifications for advisory badge.
@@ -466,35 +467,27 @@
 		if (quest.source === 'coach_intent') {
 			const row = intentDataById[quest.id] ?? {};
 			const targetAttributeId =
-				typeof row.targetAttributeId === 'string' ? row.targetAttributeId.trim() : '';
+				(typeof row.targetAttributeId === 'string' ? row.targetAttributeId.trim() : '') ||
+				(typeof quest.targetAttributeId === 'string' ? quest.targetAttributeId.trim() : '');
 			const requiredXp = Math.max(0, Math.floor(Number(row.requiredXp) || 0));
 			const preview = drillPreviewByQuestId[quest.id];
 			const prescription = repairIntentPrescription(row.prescription);
-			const coachDrill =
-				prescription?.drillTitle ?
-					{
-						id:
-							prescription.teamDrillId ??
-							prescription.clubDrillId ??
-							preview?.id ??
-							'',
-						title: prescription.drillTitle,
-					}
-				: preview ?
-					{ id: preview.id, title: preview.title }
-				:	null;
-			stashMissionHandoff(
-				buildCoachIntentHandoff({
-					missionId: quest.id,
-					targetAttributeId,
-					requiredXp,
-					drill: coachDrill,
-					prescription,
-					durationMinutes: prescription?.targetDurationMin ?? null,
-					targetRpe: prescription?.targetRpe ?? null,
-					policyHints: readCachedPolicyHints(),
-				}),
-			);
+			const coachDrill = prescription?.drillTitle
+				? {
+					id: prescription.teamDrillId ?? prescription.clubDrillId ?? prescription.drillId ?? preview?.id ?? quest.id,
+					title: prescription.drillTitle,
+				}
+				: preview ? { id: preview.id, title: preview.title }
+				: targetAttributeId ? { id: quest.id, title: quest.title }
+				: null;
+			stashCoachIntentHandoffForAssignment({
+				missionId: quest.id,
+				targetAttributeId,
+				requiredXp,
+				prescription,
+				drill: coachDrill,
+				policyHints: readCachedPolicyHints(),
+			});
 			return;
 		}
 		if (quest.source === 'coach_homework') {
@@ -511,7 +504,12 @@
 	}
 
 	function shouldOpenMissionHeroModal(quest: QuestTask): boolean {
-		return quest.lifecycle === 'complete' && quest.actionHref.includes('/player/workout');
+		return (
+			quest.source !== 'coach_intent' &&
+			quest.source !== 'coach_homework' &&
+			quest.lifecycle === 'complete' &&
+			quest.actionHref.includes('/player/workout')
+		);
 	}
 
 	function formatMissionId(id: string): string {

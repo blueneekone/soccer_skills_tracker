@@ -10,6 +10,7 @@
 		getDoc,
 		setDoc,
 	} from 'firebase/firestore';
+	import { browser } from '$app/environment';
 	import { goto } from '$app/navigation';
 	import { httpsCallable } from 'firebase/functions';
 	import { db, functions } from '$lib/firebase.js';
@@ -19,7 +20,6 @@
 	import { sportsConfigStore } from '$lib/stores/sportsConfigStore.svelte.js';
 	import { getRpgSportConfig } from '$lib/config/sports.js';
 	import TacticalDrillBoard from '$lib/components/tactical/TacticalDrillBoard.svelte';
-	import MorningReadinessCard from '$lib/components/player/MorningReadinessCard.svelte';
 
 	interface Assignment {
 		id: string;
@@ -67,19 +67,6 @@
 	// RL policy state
 	let policyResult = $state<PolicyResult | null>(null);
 	let showTooltip = $state(false);
-
-	// Morning Readiness Card — shown once per UTC day until player submits.
-	let showReadinessCard = $state(false);
-
-	$effect(() => {
-		const uid = authStore.user?.uid;
-		if (!uid) { showReadinessCard = false; return; }
-		const dateUtc = new Date().toISOString().slice(0, 10);
-		const ref = doc(db, 'physio_self_reports', uid, 'daily', dateUtc);
-		getDoc(ref)
-			.then((snap) => { showReadinessCard = !snap.exists(); })
-			.catch(() => { showReadinessCard = false; });
-	});
 
 	const playerProfile = $derived(/** @type {Record<string, unknown>} */ (authStore.userProfile));
 	const playerTeamId = $derived(String(playerProfile?.teamId ?? ''));
@@ -280,12 +267,6 @@
 <div
 	class="vanguard-surface tw-flex tw-flex-col tw-gap-5 tw-p-6"
 >
-	<!-- Morning Readiness Card (Phase 3, Epic 4 — RL S2) -->
-	{#if showReadinessCard}
-		<MorningReadinessCard onSubmitted={() => { showReadinessCard = false; }} />
-		<div class="tw-w-full tw-h-px tw-bg-slate-800/60"></div>
-	{/if}
-
 	<!-- Header -->
 	<div class="tw-flex tw-items-start tw-justify-between tw-gap-3">
 		<div class="tw-flex tw-flex-col tw-gap-0.5">

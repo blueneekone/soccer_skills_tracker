@@ -85,6 +85,14 @@ describe('coachMissionFlow', () => {
 		expect(read?.prescription?.repsPerSet).toBe(12);
 	});
 
+	it('buildCoachIntentHandoff falls back drillId to missionId when drill is unknown', () => {
+		const handoff = buildCoachIntentHandoff({
+			missionId: 'intent-fallback-1',
+			targetAttributeId: 'dribbling',
+		});
+		expect(handoff.drillId).toBe('intent-fallback-1');
+	});
+
 	it('resolveHandoffDurationMinutes prefers prescription over policy hints', () => {
 		const handoff = buildCoachIntentHandoff({
 			missionId: 'intent-rx-2',

@@ -151,3 +151,20 @@ describe('B2 — source-scan: trainingOps.js normalizePrescription enforces cade
     assert.match(SRC, /windowDays must be an integer 1/);
   });
 });
+
+describe('B2 — intent lifecycle cadence fulfillment gate (source-scan)', () => {
+  it('gates intent fulfillment on cadence session count when prescription has cadence', () => {
+    assert.match(SRC, /countCadenceSessionsForAttribute/);
+    assert.match(SRC, /sessionCount < cadence\.sessionsPerWindow/);
+  });
+
+  it('exports onDrillCompletionIntentLifecycle for final-session fulfillment', () => {
+    assert.match(SRC, /exports\.onDrillCompletionIntentLifecycle/);
+  });
+
+  it('logTrainingSession mirrors complete physio payload to physio_self_reports', () => {
+    assert.match(SRC, /physio_self_reports/);
+    assert.match(SRC, /source: 'logTrainingSession'/);
+    assert.match(SRC, /restingFeel != null/);
+  });
+});
