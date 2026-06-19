@@ -113,6 +113,7 @@
   let armedHandoff = $state(null);
   /** @type {Array<Record<string, unknown> & { id: string }>} */
   let incomingMissions = $state([]);
+  let incomingMissionsReady = $state(false);
   let missionSyncRefreshing = $state(false);
   let missionRefreshNonce = $state(0);
 
@@ -409,14 +410,13 @@
     };
   });
 
-  // Drop armed state if coach intent was cancelled server-side.
   $effect(() => {
     if (!armedHandoff || armedHandoff.source !== 'coach_intent') return;
+    if (!incomingMissionsReady) return;
     if (!incomingMissions.some((m) => m.id === armedHandoff.missionId)) {
       clearArmedMission();
     }
   });
-
   // Epic 8: subscribe to active team_assignments for HQ link + armed mission goal XP.
   $effect(() => {
     if (!browser) return;
@@ -427,8 +427,10 @@
       : '';
     if (authStore.role !== 'player' || !uid || !teamId) {
       incomingMissions = [];
+      incomingMissionsReady = false;
       return;
     }
+    incomingMissionsReady = false;
     const qy = query(
       collection(db, 'team_assignments'),
       where('teamId', '==', teamId),
@@ -445,6 +447,7 @@
           if (!m.scope || m.scope === 'team') return true;
           return Array.isArray(m.targetUids) && m.targetUids.includes(uid);
         });
+      incomingMissionsReady = true;
     };
     const unsub = onSnapshot(
       qy,

@@ -466,7 +466,8 @@
 		if (quest.source === 'coach_intent') {
 			const row = intentDataById[quest.id] ?? {};
 			const targetAttributeId =
-				typeof row.targetAttributeId === 'string' ? row.targetAttributeId.trim() : '';
+				(typeof row.targetAttributeId === 'string' ? row.targetAttributeId.trim() : '') ||
+				(typeof quest.targetAttributeId === 'string' ? quest.targetAttributeId.trim() : '');
 			const requiredXp = Math.max(0, Math.floor(Number(row.requiredXp) || 0));
 			const preview = drillPreviewByQuestId[quest.id];
 			const prescription = repairIntentPrescription(row.prescription);
