@@ -400,6 +400,23 @@
 	background: rgba(20, 184, 166, 0.06);
 }
 
+/* Coach high-priority toggle — gold alert on player mission rail */
+.quest-row__priority-alert {
+	display: inline-block;
+	margin-top: 0.25rem;
+	margin-right: 0.35rem;
+	padding: 0.1rem 0.4rem;
+	font-size: 0.5rem;
+	font-weight: 700;
+	letter-spacing: 0.12em;
+	text-transform: uppercase;
+	color: rgba(251, 191, 36, 0.95);
+	border: 1px solid rgba(251, 191, 36, 0.45);
+	border-radius: 3px;
+	background: rgba(251, 191, 36, 0.08);
+	box-shadow: 0 0 12px rgba(251, 191, 36, 0.15);
+}
+
 @media (max-width: 640px) {
 	.quest-row {
 		flex-wrap: wrap;

@@ -42,7 +42,10 @@ import type {
 	ExtendIntentInput,
 	ExtendIntentResult,
 } from '$lib/types/intent.js';
-import { INTENT_MIGRATION_DEFAULTS } from '$lib/types/intent.js';
+import {
+	INTENT_MIGRATION_DEFAULTS,
+	priorityFromCoachToggle,
+} from '$lib/types/intent.js';
 import {
 	loadTeamDrillsForIntent,
 	type TeamDrillPickerRow,
@@ -87,7 +90,8 @@ export class IntentEngine {
 	draftDurationDays = $state(7);
 	draftScope = $state<IntentScope>('team');
 	draftTargetUids = $state<string[]>([]);
-	draftPriority = $state(100);
+	/** When true, deploys with high sort priority so players see the mission first. */
+	draftHighPriority = $state(false);
 	draftPrescriptionSets = $state(3);
 	draftPrescriptionRepsPerSet = $state(10);
 	draftPrescriptionBilateral = $state(false);
@@ -261,7 +265,7 @@ export class IntentEngine {
 		this.draftDurationDays = 7;
 		this.draftScope = 'team';
 		this.draftTargetUids = [];
-		this.draftPriority = 100;
+		this.draftHighPriority = false;
 		this.draftPrescriptionSets = 3;
 		this.draftPrescriptionRepsPerSet = 10;
 		this.draftPrescriptionBilateral = false;
@@ -392,7 +396,7 @@ export class IntentEngine {
 							this.roster.some((r) => r.rosterKey === key && r.assignable),
 						)
 					:	[],
-				priority: this.draftPriority,
+				priority: priorityFromCoachToggle(this.draftHighPriority),
 				prescription: this.buildDeployPrescription(),
 			});
 			this.deployPhase = 'success';

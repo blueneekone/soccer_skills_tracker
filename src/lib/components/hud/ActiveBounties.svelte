@@ -32,6 +32,7 @@
 		maxVisibleQuests,
 		formatQuestRewardLabel,
 		isPromotedQuest,
+		isHighPriorityCoachQuest,
 		questCtaLabel,
 		shouldDeferQuestCompletionUntilWorkoutLog,
 		questHudCtaFor,
@@ -626,6 +627,7 @@
 		class:quest-row--bounty={quest.tier === 'bounty'}
 		class:quest-row--hero={heroQuest?.id === quest.id}
 		class:quest-row--promoted={!heroQuest && isPromotedQuest(quest)}
+		class:quest-row--high-priority={isHighPriorityCoachQuest(quest)}
 	>
 		{#if quest.lifecycle === 'accept'}
 			<span class="quest-row__status" aria-hidden="true"></span>
@@ -648,6 +650,7 @@
 			{/if}
 			{#if quest.source === 'coach_intent'}
 				<p class="quest-row__hint">{COACH_INTENT_HINT}</p>
+				{#if quest.isHighPriority}<span class="quest-row__priority-alert" aria-label="Coach priority mission">Priority</span>{/if}
 				{#if drillPreviewByQuestId[quest.id]?.line}
 					<p class="quest-row__drill">{drillPreviewByQuestId[quest.id].line}</p>
 				{/if}

@@ -20,7 +20,7 @@
 		draftDurationDays = $bindable(7),
 		draftScope = $bindable<'team' | 'players'>('team'),
 		draftTargetUids = $bindable<string[]>([]),
-		draftPriority = $bindable(100),
+		draftHighPriority = $bindable(false),
 		draftPrescriptionSets = $bindable(3),
 		draftPrescriptionRepsPerSet = $bindable(10),
 		draftPrescriptionBilateral = $bindable(false),
@@ -424,24 +424,33 @@
 		Player sees optional "Send proof" prompt after logging. Advisory — XP is never gated.
 	</p>
 
-	<!-- ── Priority (secondary row) ─────────────────── -->
-		<div class="tw-flex tw-items-center tw-gap-3">
-			<label for="hud-pri" class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-[#14b8a6]/30 tw-uppercase tw-shrink-0">
-				PRIORITY
-			</label>
-			<input
-				id="hud-pri"
-				type="range"
-				min="1"
-				max="200"
-				step="5"
-				bind:value={draftPriority}
-				class="tw-flex-1 tw-accent-[#14b8a6] tw-h-px tw-cursor-pointer"
-			/>
-			<span class="tw-font-mono tw-text-[10px] tw-tracking-wider tw-text-[#14b8a6]/50 tw-w-8 tw-text-right tw-shrink-0">
-				{draftPriority}
-			</span>
-		</div>
+	<!-- ── High priority toggle ─────────────────────── -->
+	<div class="tw-flex tw-items-center tw-justify-between tw-gap-3">
+		<label for="hud-high-priority" class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-[#14b8a6]/40 tw-uppercase tw-leading-relaxed">
+			High priority <span class="tw-text-white/20">(opt)</span>
+		</label>
+		<button
+			id="hud-high-priority"
+			type="button"
+			role="switch"
+			aria-checked={draftHighPriority}
+			onclick={() => (draftHighPriority = !draftHighPriority)}
+			class="tw-w-8 tw-h-4 tw-rounded-full tw-border tw-transition-all tw-shrink-0"
+			style={draftHighPriority
+				? 'background:rgba(251,191,36,0.25); border-color:#fbbf24;'
+				: 'background:transparent; border-color:rgba(20,184,166,0.2);'}
+		>
+			<span
+				class="tw-block tw-w-2.5 tw-h-2.5 tw-rounded-full tw-transition-transform"
+				style={draftHighPriority
+					? 'background:#fbbf24; transform:translateX(18px);'
+					: 'background:rgba(20,184,166,0.3); transform:translateX(2px);'}
+			></span>
+		</button>
+	</div>
+	<p class="tw-font-mono tw-text-[8px] tw-text-white/20 tw-leading-relaxed tw-mt-[-4px]">
+		Surfaces first on player dashboards with a priority alert.
+	</p>
 
 		<!-- ── Scope toggle ───────────────────────────────── -->
 		<div class="tw-flex tw-flex-col tw-gap-1.5">

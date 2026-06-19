@@ -2,6 +2,7 @@
  * Quest log model — dailies + coach/parent bounties for Player OS dashboard.
  */
 
+import { isHighPriorityIntent } from '$lib/types/intent.js';
 import { isTrainingToday } from './playerHudMetrics.js';
 import type { VanguardAxisId } from './vanguardProtocol.js';
 
@@ -25,6 +26,8 @@ export type QuestTask = {
 	actionHref: string;
 	/** Lower = surfaced earlier within the same tier. */
 	sortKey: number;
+	/** Coach marked high priority in The Forge — surfaces first with alert styling. */
+	isHighPriority?: boolean;
 	/**
 	 * Per-assignment cadence config when coach set one.
 	 * Distinct from the global streak — do NOT reuse streak chrome/labels.
@@ -173,6 +176,11 @@ export function formatQuestRewardLabel(quest: QuestTask): string {
 /** @deprecated Slice 6b-revise — embedded UI uses rail-only feed; retained for tests. */
 export function splitEmbeddedMissionDeck(deck: readonly QuestTask[]) {
 	return { primary: deck[0] ?? null, secondary: deck.slice(1) };
+}
+
+/** Coach intent flagged high priority in The Forge. */
+export function isHighPriorityCoachQuest(quest: QuestTask): boolean {
+	return quest.source === 'coach_intent' && quest.isHighPriority === true;
 }
 
 /** Coach/parent bounty or tier bounty — gold rail accent on HQ overview. */
@@ -539,6 +547,7 @@ export function bountyFromCoachIntent(
 		actionHref: '/player/workout',
 		sortKey: priority,
 		targetAttributeId,
+		isHighPriority: isHighPriorityIntent(priority),
 		...(cadence ? { cadence } : {}),
 	};
 }

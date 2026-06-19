@@ -47,6 +47,25 @@ describe('activeBounties', () => {
 		expect(sortQuestLog([daily, bounty])[0]?.tier).toBe('bounty');
 	});
 
+	it('marks coach intents as high priority when sort rank is below normal', () => {
+		const progress = { acceptedIds: [], completedIds: [], claimedIds: [], claimedDateUtc: '2026-01-01' };
+		const high = bountyFromCoachIntent(
+			'i-high',
+			{ targetAttributeId: 'pace', requiredXp: 200, priority: 1 },
+			progress,
+		)!;
+		const normal = bountyFromCoachIntent(
+			'i-normal',
+			{ targetAttributeId: 'pace', requiredXp: 200, priority: 100 },
+			progress,
+		)!;
+		expect(high.isHighPriority).toBe(true);
+		expect(high.sortKey).toBe(1);
+		expect(normal.isHighPriority).toBe(false);
+		expect(normal.sortKey).toBe(100);
+		expect(sortQuestLog([normal, high])[0]?.id).toBe('i-high');
+	});
+
 	it('maps lifecycle to CTA labels', () => {
 		expect(questCtaLabel('accept')).toBe('Accept');
 		expect(questCtaLabel('complete')).toBe('Complete');
@@ -421,6 +440,18 @@ describe('B4b — advisory parent-verified badge: bountyFromCoachIntent is unaff
 		);
 		expect(AB_SRC).toMatch(/quest-row__parent-verified/);
 		expect(AB_SRC).toMatch(/approvedIntentIds\.has\(quest\.id\)/);
+	});
+
+	it('source-scan: ActiveBounties.svelte shows priority alert for high-priority coach intents', () => {
+		const { readFileSync } = require('fs');
+		const { join } = require('path');
+		const AB_SRC = readFileSync(
+			join(__dirname, '../../../components/hud/ActiveBounties.svelte'),
+			'utf-8',
+		);
+		expect(AB_SRC).toMatch(/quest-row__priority-alert/);
+		expect(AB_SRC).toMatch(/quest\.isHighPriority/);
+		expect(AB_SRC).toMatch(/quest-row--high-priority/);
 	});
 
 	it('source-scan: badge does NOT alter xpReward, lifecycle, or sortKey (advisory only)', () => {

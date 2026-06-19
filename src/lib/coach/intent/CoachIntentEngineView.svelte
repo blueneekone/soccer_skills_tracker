@@ -106,7 +106,7 @@
 					bind:draftDurationDays={engine.draftDurationDays}
 					bind:draftScope={engine.draftScope}
 					bind:draftTargetUids={engine.draftTargetUids}
-					bind:draftPriority={engine.draftPriority}
+					bind:draftHighPriority={engine.draftHighPriority}
 					bind:draftPrescriptionSets={engine.draftPrescriptionSets}
 					bind:draftPrescriptionRepsPerSet={engine.draftPrescriptionRepsPerSet}
 					bind:draftPrescriptionBilateral={engine.draftPrescriptionBilateral}

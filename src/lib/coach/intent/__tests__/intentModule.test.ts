@@ -81,4 +81,19 @@ describe('LAUNCH-forge-nameonly — Intent Engine roster hints', () => {
 		expect(src).toMatch(/selectedAssignableCount/);
 		expect(src).toMatch(/nameOnlyRosterCount/);
 	});
+
+	it('IntentHUD uses high-priority toggle instead of numeric priority slider', () => {
+		const hud = readFileSync(HUD, 'utf-8');
+		expect(hud).toMatch(/draftHighPriority/);
+		expect(hud).toMatch(/role="switch"/);
+		expect(hud).toMatch(/hud-high-priority/);
+		expect(hud).not.toMatch(/hud-pri/);
+		expect(hud).not.toMatch(/bind:value=\{draftPriority\}/);
+	});
+
+	it('IntentEngine maps high-priority toggle to sort rank on deploy', () => {
+		const src = readFileSync(ENGINE, 'utf-8');
+		expect(src).toMatch(/draftHighPriority/);
+		expect(src).toMatch(/priorityFromCoachToggle/);
+	});
 });

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { isHighPriorityIntent } from '$lib/types/intent.js';
 	interface RosterRow {
 		uid: string;
 		playerName: string;
@@ -119,13 +120,15 @@
 						{intent.daysRemaining}d remaining
 					</span>
 
-					<!-- Priority badge -->
-					<span
-						class="tw-px-2 tw-py-0.5 tw-rounded tw-font-mono tw-text-[9px] tw-tracking-widest tw-uppercase
-						       tw-border tw-border-[#a855f7]/30 tw-text-[#a855f7]/70"
-					>
-						P{intent.priority}
-					</span>
+					<!-- Priority badge (high-priority toggle only) -->
+					{#if isHighPriorityIntent(intent.priority)}
+						<span
+							class="tw-px-2 tw-py-0.5 tw-rounded tw-font-mono tw-text-[9px] tw-tracking-widest tw-uppercase
+							       tw-border tw-border-[#fbbf24]/40 tw-text-[#fbbf24]/90"
+						>
+							Priority
+						</span>
+					{/if}
 				</div>
 
 				<!-- Progress bar -->

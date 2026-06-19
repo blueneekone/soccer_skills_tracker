@@ -203,6 +203,19 @@ export const INTENT_MIGRATION_DEFAULTS: Partial<IntentDoc> = {
   intentVersion: 1,
 };
 
+/** Default sort rank for normal coach intents (lower = surfaced first). */
+export const INTENT_PRIORITY_NORMAL = 100;
+/** Sort rank when coach marks intent as high priority in The Forge. */
+export const INTENT_PRIORITY_HIGH = 1;
+
+export function isHighPriorityIntent(priority: number): boolean {
+  return Number.isFinite(priority) && priority < INTENT_PRIORITY_NORMAL;
+}
+
+export function priorityFromCoachToggle(highPriority: boolean): number {
+  return highPriority ? INTENT_PRIORITY_HIGH : INTENT_PRIORITY_NORMAL;
+}
+
 /**
  * Repair a single bundle drill entry (B3). Same per-field guards as the
  * top-level prescription — sets required int 1–99; other fields optional.
