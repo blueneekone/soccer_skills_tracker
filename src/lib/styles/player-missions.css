@@ -386,10 +386,6 @@
 }
 
 .player-hud-root .quest-row--rail .quest-row__title-text {
-	display: block;
-	overflow: hidden;
-	text-overflow: ellipsis;
-	white-space: nowrap;
 	line-height: 1.35;
 }
 
@@ -616,6 +612,80 @@
 	justify-content: flex-start;
 	min-width: 0;
 	max-width: 100%;
+}
+
+.player-hud-root .quest-row--rail .quest-row__marquee {
+	flex: 1 1 auto;
+	min-width: 0;
+}
+
+.player-hud-root .overflow-marquee {
+	overflow: hidden;
+}
+
+.player-hud-root .overflow-marquee__track {
+	display: inline-flex;
+	min-width: 100%;
+}
+
+.player-hud-root .overflow-marquee__segment {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.2rem;
+	white-space: nowrap;
+	flex-shrink: 0;
+}
+
+.player-hud-root .overflow-marquee--active .overflow-marquee__track {
+	animation: quest-line-marquee var(--quest-marquee-duration, 14s) linear infinite;
+}
+
+.player-hud-root .overflow-marquee--active .overflow-marquee__segment--clone {
+	padding-left: 2rem;
+}
+
+@keyframes quest-line-marquee {
+	from {
+		transform: translateX(0);
+	}
+
+	to {
+		transform: translateX(-50%);
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.player-hud-root .overflow-marquee--active .overflow-marquee__track {
+		animation: none;
+	}
+
+	.player-hud-root .overflow-marquee--active {
+		overflow-x: auto;
+	}
+}
+
+.player-hud-root .quest-row--rail.quest-row--embedded.quest-row--logged-today {
+	border-color: color-mix(in srgb, #22c55e 48%, var(--pd-line, rgba(255, 255, 255, 0.1)));
+	border-left-color: color-mix(in srgb, #22c55e 88%, #fff);
+	box-shadow:
+		inset 0 1px 0 rgba(255, 255, 255, 0.04),
+		inset 0 0 0 1px color-mix(in srgb, #22c55e 14%, transparent),
+		0 2px 6px rgba(0, 0, 0, 0.28);
+}
+
+.player-hud-root .quest-row--rail.quest-row--embedded.quest-row--logged-today .quest-row__cmd--rail-chip:disabled {
+	cursor: not-allowed;
+	border-color: color-mix(in srgb, #22c55e 38%, transparent);
+	color: color-mix(in srgb, #22c55e 78%, #94a3b8);
+	background: color-mix(in srgb, #22c55e 6%, transparent);
+}
+
+.player-hud-root .quest-row--rail .overflow-marquee__segment .quest-row__title-text {
+	display: inline;
+	overflow: visible;
+	text-overflow: clip;
+	flex-shrink: 0;
+	min-width: max-content;
 }
 
 .player-hud-root .quest-row--rail .quest-row__title-text {
@@ -869,6 +939,15 @@
 		white-space: normal;
 		line-height: 1.35;
 		flex: 1 1 auto;
+	}
+
+	.player-hud-root .quest-row--rail .overflow-marquee__segment .quest-row__title-text {
+		display: inline;
+		-webkit-line-clamp: unset;
+		-webkit-box-orient: unset;
+		overflow: visible;
+		white-space: nowrap;
+		flex: 0 0 auto;
 	}
 
 	.player-hud-root .quest-row--rail.quest-row--embedded:not(.quest-row--promoted) .quest-row__lede--rail-wide {

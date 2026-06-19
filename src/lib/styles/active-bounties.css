@@ -421,15 +421,8 @@
 	color: rgba(20, 184, 166, 0.65);
 }
 
-.player-hud-root .quest-row--rail.quest-row--embedded.quest-row--logged-today {
-	opacity: 0.72;
-}
-
 .player-hud-root .quest-row--rail.quest-row--embedded.quest-row--logged-today .quest-row__cmd--rail-chip:disabled {
-	opacity: 0.55;
 	cursor: not-allowed;
-	border-color: rgba(100, 116, 139, 0.35);
-	color: rgba(148, 163, 184, 0.85);
 }
 
 @media (max-width: 640px) {

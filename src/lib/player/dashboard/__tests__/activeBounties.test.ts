@@ -509,7 +509,7 @@ describe('cadence intelligence — per-day sessions', () => {
 				todayMs,
 			),
 		).toBe(true);
-		expect(questHudCtaFor(quest, { sessionLoggedToday: true })).toBe('Logged today');
+		expect(questHudCtaFor(quest, { sessionLoggedToday: true })).toBe('Logged');
 		expect(coachIntentCtaDisabled(quest, true)).toBe(true);
 	});
 

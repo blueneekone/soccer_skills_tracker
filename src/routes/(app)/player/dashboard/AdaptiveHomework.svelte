@@ -500,12 +500,12 @@
 			<button
 				type="button"
 				class="tw-w-full tw-py-2.5 tw-rounded-xl tw-font-mono tw-text-[10px] tw-tracking-widest tw-uppercase tw-border tw-transition-colors {homeworkLoggedToday
-					? 'tw-border-slate-600/50 tw-text-slate-500 tw-bg-slate-800/40'
+					? 'tw-border-green-500/45 tw-text-green-400/80 tw-bg-green-500/10'
 					: 'tw-border-teal-500/35 tw-text-teal-400 tw-bg-teal-500/10 hover:tw-bg-teal-500/20'}"
 				disabled={homeworkLoggedToday}
 				onclick={logOnTrain}
 			>
-				{homeworkLoggedToday ? 'Logged today — resume tomorrow' : 'Log on Train'}
+				{homeworkLoggedToday ? 'Logged' : 'Log on Train'}
 			</button>
 
 			{#if activeCadence}

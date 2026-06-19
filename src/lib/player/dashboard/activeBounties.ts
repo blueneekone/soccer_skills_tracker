@@ -128,7 +128,7 @@ export function questHudCtaFor(
 		quest.source === 'coach_intent' &&
 		quest.lifecycle === 'complete'
 	) {
-		return 'Logged today';
+		return 'Logged';
 	}
 	if (
 		quest.lifecycle === 'complete' &&

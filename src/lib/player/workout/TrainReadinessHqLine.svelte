@@ -43,14 +43,8 @@
 
 {#if readiness.showReadinessStrip}
 	<details class="hq-readiness bento-span-12">
-		<summary class="hq-readiness__summary">
-			<span class="hq-ticker" aria-hidden="true">
-				<span class="hq-ticker__track pd-mono">
-					Pre-session check · tap to log sleep &amp; energy · once per day ·
-					Pre-session check · tap to log sleep &amp; energy · once per day ·
-				</span>
-			</span>
-			<span class="hq-readiness__sr-only">Pre-session check, tap to log sleep and energy</span>
+	<summary class="hq-readiness__summary">
+			<span class="hq-readiness__summary-text pd-mono">Pre-session check · tap to log sleep &amp; energy</span>
 		</summary>
 		<div class="hq-readiness__panel" role="group" aria-label="Pre-session check-in">
 			<div class="hq-readiness__row">

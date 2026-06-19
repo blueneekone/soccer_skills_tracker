@@ -19,6 +19,7 @@
 	import { dopamineExplosion } from '$lib/services/dopamine.svelte.js';
 	import HudSeededRingCanvas from '$lib/components/hud/HudSeededRingCanvas.svelte';
 	import { deduplicateById } from '$lib/utils/deduplicateMissions.js';
+	import { overflowMarquee } from '$lib/actions/overflowMarquee.js';
 	import {
 		buildDailyQuests,
 		bountyFromHomeworkAssignment,
@@ -636,11 +637,17 @@
 			<p class="quest-row__line" title={quest.title}>
 				<span class="quest-row__sender">{quest.senderLabel}</span>
 				<span class="quest-row__sep" aria-hidden="true">·</span>
-				<span class="quest-row__title-text">{quest.title}</span>
-				{#if formatQuestRewardLabel(quest)}
-					<span class="quest-row__sep quest-row__sep--reward" aria-hidden="true">·</span>
-					<span class="quest-row__xp quest-row__xp--inline">{formatQuestRewardLabel(quest)}</span>
-				{/if}
+				<span class="quest-row__marquee overflow-marquee" use:overflowMarquee>
+					<span class="overflow-marquee__track">
+						<span class="overflow-marquee__segment">
+							<span class="quest-row__title-text">{quest.title}</span>
+							{#if formatQuestRewardLabel(quest)}
+								<span class="quest-row__sep quest-row__sep--reward" aria-hidden="true">·</span>
+								<span class="quest-row__xp quest-row__xp--inline">{formatQuestRewardLabel(quest)}</span>
+							{/if}
+						</span>
+					</span>
+				</span>
 			</p>
 			{#if formatQuestRewardLabel(quest)}
 				<p class="quest-row__lede quest-row__lede--rail-wide">{formatQuestRewardLabel(quest)}</p>
