@@ -262,6 +262,9 @@ export async function executePlayerWorkoutLog(deps: {
 		...(assignmentId ? { assignmentId } : {}),
 		...(deps.sessionNotes?.trim() ? { sessionNotes: deps.sessionNotes.trim() } : {}),
 		...(deps.targetAttributeId?.trim() ? { attributeId: deps.targetAttributeId.trim() } : {}),
+		...(deps.activeMissionId && deps.missionSource === 'coach_intent' ?
+			{ intentId: deps.activeMissionId }
+		:	{}),
 	});
 	const payload = res.data;
 	const earned = payload && typeof payload.earnedXP === 'number' ? payload.earnedXP : 0;

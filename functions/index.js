@@ -146,6 +146,7 @@ exports.analyzeTacticWithAI           = trainingOps.analyzeTacticWithAI;
 exports.onRepCreatedApplyGamificationXp = trainingOps.onRepCreatedApplyGamificationXp;
 // Epic 8 — intent lifecycle (not in functions-core launch slice)
 exports.onUserXpUpdateIntentLifecycle = trainingOps.onUserXpUpdateIntentLifecycle;
+exports.onDrillCompletionIntentLifecycle = trainingOps.onDrillCompletionIntentLifecycle;
 exports.scheduledExpireIntents        = trainingOps.scheduledExpireIntents;
 // B4a/B4b — advisory completion proof (player submits; parent reviews)
 exports.submitCompletionProof         = trainingOps.submitCompletionProof;

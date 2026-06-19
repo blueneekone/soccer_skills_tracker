@@ -24,8 +24,8 @@ describe('QA-142 — coach mission Train handoff', () => {
 	});
 
 	it('coach missions skip MissionHeroModal and stash via stashCoachIntentHandoffForAssignment', () => {
-		expect(bountiesSrc).toMatch(/coach_intent.*coach_homework/s);
-		expect(bountiesSrc).toMatch(/return false/);
+		expect(bountiesSrc).toMatch(/shouldOpenMissionHeroModal/);
+		expect(bountiesSrc).toMatch(/quest\.source !== 'coach_intent'/);
 		expect(bountiesSrc).toMatch(/stashCoachIntentHandoffForAssignment/);
 		expect(bountiesSrc).toMatch(/quest\.targetAttributeId/);
 	});
@@ -33,7 +33,34 @@ describe('QA-142 — coach mission Train handoff', () => {
 	it('Morning Readiness defers when a coach Train handoff is pending', () => {
 		expect(adaptiveSrc).toMatch(/coachTrainHandoffPending/);
 		expect(adaptiveSrc).toMatch(/readMissionHandoff/);
-		expect(adaptiveSrc).toMatch(/showReadinessCard && !coachTrainHandoffPending/);
+		expect(adaptiveSrc).toMatch(/shouldShowReadiness/);
+		expect(adaptiveSrc).toMatch(/hasActiveCoachIntents/);
+		expect(adaptiveSrc).toMatch(/trainedToday/);
+	});
+
+	it('logTrainingSession writes drill_completions for cadence when attributeId is set', () => {
+		const trainingOps = readFileSync(
+			join(ROOT, '..', 'functions/src/domains/trainingOps.js'),
+			'utf-8',
+		);
+		expect(trainingOps).toMatch(/drill_completions/);
+		expect(trainingOps).toMatch(/countCadenceSessionsForAttribute/);
+		expect(trainingOps).toMatch(/onDrillCompletionIntentLifecycle/);
+	});
+
+	it('workout log marks coach intent accepted after session (Start session again)', () => {
+		const activeBounties = readFileSync(
+			join(ROOT, 'lib/player/dashboard/activeBounties.ts'),
+			'utf-8',
+		);
+		expect(activeBounties).toMatch(/source === 'coach_intent'/);
+		expect(activeBounties).toMatch(/markQuestAccepted/);
+	});
+
+	it('ActiveBounties subscribes to drill_completions for cadence progress', () => {
+		expect(bountiesSrc).toMatch(/onSnapshot/);
+		expect(bountiesSrc).toMatch(/drill_completions/);
+		expect(bountiesSrc).toMatch(/formatCadenceProgress/);
 	});
 
 	it('buildCoachIntentHandoff always carries a drillId fallback for execution panel', () => {

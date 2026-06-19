@@ -184,14 +184,14 @@
 		);
 		if (!hasCadenceQuests) return;
 		const windowStart = Timestamp.fromMillis(Date.now() - 30 * 86_400_000);
-		void getDocs(
-			query(
-				collection(db, 'drill_completions'),
-				where('playerUid', '==', uid),
-				where('loggedAt', '>=', windowStart),
-			),
-		)
-			.then((snap) => {
+		const q = query(
+			collection(db, 'drill_completions'),
+			where('playerUid', '==', uid),
+			where('loggedAt', '>=', windowStart),
+		);
+		const unsub = onSnapshot(
+			q,
+			(snap) => {
 				cadenceCompletions = snap.docs.map((d) => {
 					const data = d.data();
 					const attrId = typeof data.attributeId === 'string' ? data.attributeId : '';
@@ -206,10 +206,12 @@
 									: 0;
 					return { attributeId: attrId, loggedAtMs: ms };
 				});
-			})
-		.catch(() => {
-			/* non-fatal: cadence count stays at 0 */
-		});
+			},
+			() => {
+				/* non-fatal: cadence count stays at 0 */
+			},
+		);
+		return unsub;
 	});
 
 	// B4b — subscribe to player's own approved completion_verifications for advisory badge.

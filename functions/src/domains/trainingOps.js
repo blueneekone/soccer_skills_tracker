@@ -597,6 +597,11 @@ exports.logTrainingSession = onCall(LAUNCH_CORE_CALLABLE_OPTS, async (request) =
         data.attributeId.trim().toLowerCase().replace(/[^a-z0-9_]/g, '').slice(0, 60) :
         '';
 
+  const intentIdRaw =
+      typeof data.intentId === 'string' ?
+        data.intentId.trim().slice(0, 128) :
+        '';
+
   /** @type {string} */
   let playerEmail;
   /** @type {string|null} */
@@ -948,6 +953,26 @@ exports.logTrainingSession = onCall(LAUNCH_CORE_CALLABLE_OPTS, async (request) =
           (typeof uTxData.clubId === 'string' && uTxData.clubId.trim() ?
             uTxData.clubId.trim() :
             null);
+
+    // B2 cadence: audit row feeds HQ progress + intent lifecycle session gate.
+    if (attributeIdRaw) {
+      const dcRef = db().collection('drill_completions').doc();
+      const dcDoc = {
+        playerUid: athleteUid,
+        userKey: playerEmail,
+        clubId: clubId || clubIdFromUser || null,
+        drillId: intentIdRaw || 'player_workout_log',
+        drillTitle: drillType,
+        attributeId: attributeIdRaw,
+        xpAwarded: earned,
+        outcome: 'success',
+        loggedAt: now,
+        source: 'logTrainingSession',
+        workoutLogId: logId,
+      };
+      if (intentIdRaw) dcDoc.intentId = intentIdRaw;
+      tx.set(dcRef, dcDoc);
+    }
 
     if (teamId && tsRef) {
       const nowDate = new Date();
@@ -2533,6 +2558,138 @@ exports.onRepCreatedApplyGamificationXp = onDocumentCreated(
 // ── Epic 8: Intent lifecycle trigger ─────────────────────────────────────────
 
 /**
+ * Read normalized cadence from a stored intent prescription (B2).
+ * @param {unknown} prescription
+ * @returns {{ sessionsPerWindow: number, windowDays: number } | undefined}
+ */
+function cadenceFromIntentPrescription(prescription) {
+  if (!prescription || typeof prescription !== 'object' || Array.isArray(prescription)) {
+    return undefined;
+  }
+  const raw = /** @type {{ cadence?: unknown }} */ (prescription).cadence;
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return undefined;
+  const spw = Number(/** @type {{ sessionsPerWindow?: unknown }} */ (raw).sessionsPerWindow);
+  const wd = Number(/** @type {{ windowDays?: unknown }} */ (raw).windowDays);
+  if (
+    !Number.isFinite(spw) || spw < 1 || spw > 21 || Math.floor(spw) !== spw ||
+    !Number.isFinite(wd) || wd < 1 || wd > 30 || Math.floor(wd) !== wd
+  ) {
+    return undefined;
+  }
+  return {sessionsPerWindow: Math.floor(spw), windowDays: Math.floor(wd)};
+}
+
+/**
+ * Count attribute-scoped sessions inside a rolling cadence window.
+ * @param {string} uid
+ * @param {string} attributeId
+ * @param {number} windowDays
+ * @returns {Promise<number>}
+ */
+async function countCadenceSessionsForAttribute(uid, attributeId, windowDays) {
+  const windowStart = admin.firestore.Timestamp.fromMillis(
+      Date.now() - windowDays * 86_400_000,
+  );
+  const snap = await db()
+      .collection('drill_completions')
+      .where('playerUid', '==', uid)
+      .where('loggedAt', '>=', windowStart)
+      .get();
+  return snap.docs.filter((d) => d.data().attributeId === attributeId).length;
+}
+
+/**
+ * When XP + cadence (if any) are met, append uid to fulfilledByUids.
+ * @param {{
+ *   uid: string,
+ *   teamId: string,
+ *   xpByAttribute: Record<string, number>,
+ *   attributeFilter?: string[],
+ * }} input
+ */
+async function tryFulfillActiveIntentsForPlayer(input) {
+  const {uid, teamId, xpByAttribute} = input;
+  const attrFilter = input.attributeFilter;
+  if (!uid || !teamId) return;
+
+  const intentsSnap = await db()
+      .collection('team_assignments')
+      .where('teamId', '==', teamId)
+      .where('status', '==', 'active')
+      .get();
+  if (intentsSnap.empty) return;
+
+  const firestoreBatch = db().batch();
+  let batchHasWork = false;
+
+  for (const intentDoc of intentsSnap.docs) {
+    const intent = intentDoc.data();
+    const attrId = intent.targetAttributeId;
+    if (!attrId) continue;
+    if (attrFilter && !attrFilter.includes(attrId)) continue;
+
+    const scope = intent.scope || 'team';
+    const targetUids = Array.isArray(intent.targetUids) ? intent.targetUids : [];
+    const inScope = scope === 'team' || targetUids.includes(uid);
+    if (!inScope) continue;
+
+    const requiredXp = Number(intent.requiredXp) || 0;
+    const playerXp = Number(xpByAttribute[attrId] || 0);
+    if (playerXp < requiredXp) continue;
+
+    const cadence = cadenceFromIntentPrescription(intent.prescription);
+    if (cadence) {
+      const sessionCount = await countCadenceSessionsForAttribute(
+          uid,
+          attrId,
+          cadence.windowDays,
+      );
+      if (sessionCount < cadence.sessionsPerWindow) continue;
+    }
+
+    const alreadyFulfilled = Array.isArray(intent.fulfilledByUids) &&
+      intent.fulfilledByUids.includes(uid);
+    if (alreadyFulfilled) continue;
+
+    const newFulfilled = [...(intent.fulfilledByUids || []), uid];
+
+    let intentComplete = false;
+    if (scope === 'team') {
+      const rosterSnap = await db()
+          .collection('users')
+          .where('teamId', '==', teamId)
+          .where('role', '==', 'player')
+          .get();
+      const rosterUids = rosterSnap.docs.map((d) => d.data().uid || d.id);
+      intentComplete = rosterUids.length > 0 &&
+        rosterUids.every((ru) => newFulfilled.includes(ru));
+    } else {
+      intentComplete = targetUids.length > 0 &&
+        targetUids.every((tu) => newFulfilled.includes(tu));
+    }
+
+    firestoreBatch.update(intentDoc.ref, {
+      fulfilledByUids: newFulfilled,
+      ...(intentComplete ? {
+        status: 'fulfilled',
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      } : {
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      }),
+    });
+    batchHasWork = true;
+
+    if (intentComplete) {
+      logger.info(`[intentLifecycle] Intent ${intentDoc.id} fully fulfilled.`);
+    }
+  }
+
+  if (batchHasWork) {
+    await firestoreBatch.commit();
+  }
+}
+
+/**
  * Fires when a user doc is updated. If xpByAttribute changed, check all active
  * intents where this player is in scope. For each intent where the player's XP
  * for the target attribute now meets requiredXp, append their uid to
@@ -2564,80 +2721,55 @@ exports.onUserXpUpdateIntentLifecycle = onDocumentUpdated(
         const teamId = typeof after.teamId === 'string' ? after.teamId.trim() : '';
         if (!teamId) return;
 
-        // Query active intents for this team where a changed attribute matches.
-        // Firestore does not support OR on different fields, so query by teamId+status
-        // and filter in memory — the result set is small (< 20 active intents per team).
-        const intentsSnap = await db()
-          .collection('team_assignments')
-          .where('teamId', '==', teamId)
-          .where('status', '==', 'active')
-          .get();
-
-        if (intentsSnap.empty) return;
-
-        const firestoreBatch = db().batch();
-        let batchHasWork = false;
-
-        for (const intentDoc of intentsSnap.docs) {
-          const intent = intentDoc.data();
-          const attrId = intent.targetAttributeId;
-          if (!changedAttrs.includes(attrId)) continue;
-
-          // Check if this player is in scope.
-          const scope = intent.scope || 'team';
-          const targetUids = Array.isArray(intent.targetUids) ? intent.targetUids : [];
-          const inScope = scope === 'team' || targetUids.includes(uid);
-          if (!inScope) continue;
-
-          const requiredXp = Number(intent.requiredXp) || 0;
-          const playerXp = Number((xpAfter)[attrId] || 0);
-          if (playerXp < requiredXp) continue;
-
-          // Player has met the threshold.
-          const alreadyFulfilled = Array.isArray(intent.fulfilledByUids) &&
-            intent.fulfilledByUids.includes(uid);
-          if (alreadyFulfilled) continue;
-
-          const newFulfilled = [...(intent.fulfilledByUids || []), uid];
-
-          // Determine whether ALL targets are now fulfilled.
-          let intentComplete = false;
-          if (scope === 'team') {
-            // Team-wide: check all roster players.
-            const rosterSnap = await db()
-              .collection('users')
-              .where('teamId', '==', teamId)
-              .where('role', '==', 'player')
-              .get();
-            const rosterUids = rosterSnap.docs.map((d) => d.data().uid || d.id);
-            intentComplete = rosterUids.length > 0 &&
-              rosterUids.every((ru) => newFulfilled.includes(ru));
-          } else {
-            intentComplete = targetUids.length > 0 &&
-              targetUids.every((tu) => newFulfilled.includes(tu));
-          }
-
-          firestoreBatch.update(intentDoc.ref, {
-            fulfilledByUids: newFulfilled,
-            ...(intentComplete ? {
-              status: 'fulfilled',
-              updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-            } : {
-              updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-            }),
-          });
-          batchHasWork = true;
-
-          if (intentComplete) {
-            logger.info(`[intentLifecycle] Intent ${intentDoc.id} fully fulfilled.`);
-          }
-        }
-
-        if (batchHasWork) {
-          await firestoreBatch.commit();
-        }
+        await tryFulfillActiveIntentsForPlayer({
+          uid,
+          teamId,
+          xpByAttribute: xpAfter,
+          attributeFilter: changedAttrs,
+        });
       } catch (e) {
         logger.error('[onUserXpUpdateIntentLifecycle] error:', e);
+      }
+    },
+);
+
+/**
+ * B2 cadence: when a drill completion lands, re-check intents whose XP threshold
+ * was already met but session count was not (e.g. final session of N).
+ */
+exports.onDrillCompletionIntentLifecycle = onDocumentCreated(
+    {
+      document: 'drill_completions/{recordId}',
+      region: REGION,
+    },
+    async (event) => {
+      try {
+        const data = event.data && event.data.data ? event.data.data() : null;
+        if (!data) return;
+
+        const uid = typeof data.playerUid === 'string' ? data.playerUid.trim() : '';
+        const userKey = typeof data.userKey === 'string' ? data.userKey.trim().toLowerCase() : '';
+        const attributeId = typeof data.attributeId === 'string' ? data.attributeId.trim() : '';
+        if (!uid || !userKey || !attributeId) return;
+
+        const userSnap = await db().collection('users').doc(userKey).get();
+        if (!userSnap.exists) return;
+        const user = userSnap.data() || {};
+        const teamId = typeof user.teamId === 'string' ? user.teamId.trim() : '';
+        if (!teamId) return;
+
+        const xpByAttribute = user.xpByAttribute && typeof user.xpByAttribute === 'object' ?
+          user.xpByAttribute :
+          {};
+
+        await tryFulfillActiveIntentsForPlayer({
+          uid,
+          teamId,
+          xpByAttribute,
+          attributeFilter: [attributeId],
+        });
+      } catch (e) {
+        logger.error('[onDrillCompletionIntentLifecycle] error:', e);
       }
     },
 );
