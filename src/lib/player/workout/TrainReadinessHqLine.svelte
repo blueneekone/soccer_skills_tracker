@@ -43,8 +43,9 @@
 
 {#if readiness.showReadinessStrip}
 	<details class="hq-readiness bento-span-12">
-	<summary class="hq-readiness__summary">
+		<summary class="hq-readiness__summary">
 			<span class="hq-readiness__summary-text pd-mono">Pre-session check · tap to log sleep &amp; energy</span>
+			<span class="hq-readiness__chevron" aria-hidden="true">▼</span>
 		</summary>
 		<div class="hq-readiness__panel" role="group" aria-label="Pre-session check-in">
 			<div class="hq-readiness__row">

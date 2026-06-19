@@ -95,16 +95,32 @@ export function questCtaLabel(lifecycle: QuestLifecycle): string {
 	}
 }
 
-/** Compact HUD CTA for embedded mission deck (no brackets). */
+/** Compact HUD CTA for embedded mission deck (fixed-width rail chips). */
 export function questHudCtaShort(lifecycle: QuestLifecycle): string {
 	switch (lifecycle) {
 		case 'accept':
-			return 'Accept →';
+			return 'Accept';
 		case 'complete':
-			return 'Complete →';
+			return 'Complete';
 		case 'claim':
-			return 'Claim →';
+			return 'Claim';
 	}
+}
+
+export type QuestRailBorderState = 'accept' | 'progress' | 'done';
+
+/** Mission rail outline: red = unaccepted, amber = in progress, green = done / logged today. */
+export function questRailBorderState(
+	quest: QuestTask,
+	opts: { loggedToday?: boolean } = {},
+): QuestRailBorderState {
+	if (quest.lifecycle === 'accept') return 'accept';
+	if (quest.lifecycle === 'claim') return 'done';
+	if (quest.lifecycle === 'complete') {
+		if (opts.loggedToday && quest.source === 'coach_intent') return 'done';
+		return 'progress';
+	}
+	return 'progress';
 }
 
 /** True when Complete should navigate to Train without marking quest completed yet. */
@@ -137,7 +153,7 @@ export function questHudCtaFor(
 			quest.source === 'coach_homework' ||
 			quest.source === 'daily_habit')
 	) {
-		return 'Start session →';
+		return 'Train';
 	}
 	return questHudCtaShort(quest.lifecycle);
 }

@@ -53,6 +53,7 @@ describe('QA-142 — coach mission Train handoff', () => {
 		expect(hqLine).toMatch(/hq-readiness/);
 		expect(hqLine).toMatch(/submitPhysioSelfReport/);
 		expect(hqLine).toMatch(/showReadinessStrip/);
+		expect(hqLine).toMatch(/hq-readiness__chevron/);
 		expect(hqLine).not.toMatch(/goto\(/);
 	});
 

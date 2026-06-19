@@ -421,10 +421,6 @@
 	color: rgba(20, 184, 166, 0.65);
 }
 
-.player-hud-root .quest-row--rail.quest-row--embedded.quest-row--logged-today .quest-row__cmd--rail-chip:disabled {
-	cursor: not-allowed;
-}
-
 @media (max-width: 640px) {
 	.quest-row {
 		flex-wrap: wrap;

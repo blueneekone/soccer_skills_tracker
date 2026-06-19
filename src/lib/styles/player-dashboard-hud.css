@@ -136,6 +136,19 @@
 	text-overflow: ellipsis;
 }
 
+.player-hud-root .hq-readiness__chevron {
+	flex-shrink: 0;
+	margin-left: 0.35rem;
+	font-size: 0.4rem;
+	line-height: 1;
+	color: var(--pd-text-muted, rgba(148, 163, 184, 0.75));
+	transition: transform 0.15s ease;
+}
+
+.player-hud-root .hq-readiness[open] .hq-readiness__chevron {
+	transform: rotate(180deg);
+}
+
 .player-hud-root .hq-readiness__summary::-webkit-details-marker {
 	display: none;
 }

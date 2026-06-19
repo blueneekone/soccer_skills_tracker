@@ -19,13 +19,13 @@
 	import { dopamineExplosion } from '$lib/services/dopamine.svelte.js';
 	import HudSeededRingCanvas from '$lib/components/hud/HudSeededRingCanvas.svelte';
 	import { deduplicateById } from '$lib/utils/deduplicateMissions.js';
-	import { overflowMarquee } from '$lib/actions/overflowMarquee.js';
 	import {
 		buildDailyQuests,
 		bountyFromHomeworkAssignment,
 		bountyFromParentBounty,
 		countCadenceSessionsInWindow,
 		coachIntentRailCta,
+		questRailBorderState,
 		formatCadenceProgressCompact,
 		formatCadenceAriaLabel,
 		loadQuestProgress,
@@ -619,13 +619,16 @@
 
 {#snippet questRowEmbedded(quest: QuestTask)}
 	{@const rail = coachIntentRailCta(quest, cadenceCompletions)}
+	{@const borderState = questRailBorderState(quest, { loggedToday: rail.loggedToday })}
 	<div
 		class="hud-bounty-row quest-row quest-row--embedded quest-row--premium quest-row--rail"
 		class:quest-row--habit={quest.tier === 'daily'}
 		class:quest-row--bounty={quest.tier === 'bounty'}
 		class:quest-row--hero={heroQuest?.id === quest.id}
 		class:quest-row--promoted={!heroQuest && isPromotedQuest(quest)}
-		class:quest-row--logged-today={rail.loggedToday}
+		class:quest-row--state-accept={borderState === 'accept'}
+		class:quest-row--state-progress={borderState === 'progress'}
+		class:quest-row--state-done={borderState === 'done'}
 	>
 		{#if quest.lifecycle === 'accept'}
 			<span class="quest-row__status" aria-hidden="true"></span>
@@ -637,17 +640,11 @@
 			<p class="quest-row__line" title={quest.title}>
 				<span class="quest-row__sender">{quest.senderLabel}</span>
 				<span class="quest-row__sep" aria-hidden="true">·</span>
-				<span class="quest-row__marquee overflow-marquee" use:overflowMarquee>
-					<span class="overflow-marquee__track">
-						<span class="overflow-marquee__segment">
-							<span class="quest-row__title-text">{quest.title}</span>
-							{#if formatQuestRewardLabel(quest)}
-								<span class="quest-row__sep quest-row__sep--reward" aria-hidden="true">·</span>
-								<span class="quest-row__xp quest-row__xp--inline">{formatQuestRewardLabel(quest)}</span>
-							{/if}
-						</span>
-					</span>
-				</span>
+				<span class="quest-row__title-text">{quest.title}</span>
+				{#if formatQuestRewardLabel(quest)}
+					<span class="quest-row__sep quest-row__sep--reward" aria-hidden="true">·</span>
+					<span class="quest-row__xp quest-row__xp--inline">{formatQuestRewardLabel(quest)}</span>
+				{/if}
 			</p>
 			{#if formatQuestRewardLabel(quest)}
 				<p class="quest-row__lede quest-row__lede--rail-wide">{formatQuestRewardLabel(quest)}</p>

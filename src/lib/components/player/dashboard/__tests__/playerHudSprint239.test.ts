@@ -37,9 +37,9 @@ describe('Sprint 2.22 — coach mission HQ → Train handoff', () => {
 		expect(bountiesSrc).not.toMatch(/player_active_mission_id/);
 	});
 
-	it('activeBounties exports questHudCtaFor with Start session label', () => {
+	it('activeBounties exports questHudCtaFor with Train label', () => {
 		expect(activeBountiesTsSrc).toMatch(/export function questHudCtaFor/);
-		expect(activeBountiesTsSrc).toMatch(/Start session →/);
+		expect(activeBountiesTsSrc).toMatch(/return 'Train'/);
 	});
 
 	it('workout page reads handoff and shows armed banner instead of duplicate intent sidebar', () => {

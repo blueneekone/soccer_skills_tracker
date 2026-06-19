@@ -12,6 +12,7 @@ import {
 	formatCadenceProgressCompact,
 	formatCadenceResumeHint,
 	questCtaLabel,
+	questRailBorderState,
 	questHudCtaShort,
 	questHudCtaFor,
 	questTerminalCmd,
@@ -61,12 +62,12 @@ describe('activeBounties', () => {
 	});
 
 	it('maps lifecycle to compact embedded HUD CTAs', () => {
-		expect(questHudCtaShort('accept')).toBe('Accept →');
-		expect(questHudCtaShort('complete')).toBe('Complete →');
-		expect(questHudCtaShort('claim')).toBe('Claim →');
+		expect(questHudCtaShort('accept')).toBe('Accept');
+		expect(questHudCtaShort('complete')).toBe('Complete');
+		expect(questHudCtaShort('claim')).toBe('Claim');
 	});
 
-	it('uses Start session CTA for Train-bound coach missions in complete state', () => {
+	it('uses Train CTA for Train-bound coach missions in complete state', () => {
 		const coachIntent: QuestTask = {
 			id: 'i1',
 			tier: 'bounty',
@@ -79,8 +80,8 @@ describe('activeBounties', () => {
 			actionHref: '/player/workout',
 			sortKey: 1,
 		};
-		expect(questHudCtaFor(coachIntent)).toBe('Start session →');
-		expect(questHudCtaFor({ ...coachIntent, lifecycle: 'accept' })).toBe('Accept →');
+		expect(questHudCtaFor(coachIntent)).toBe('Train');
+		expect(questHudCtaFor({ ...coachIntent, lifecycle: 'accept' })).toBe('Accept');
 	});
 
 	it('progresses accept → complete → claim', () => {
@@ -311,6 +312,29 @@ describe('B2 — formatCadenceProgress', () => {
 
 	it('zero-completed state', () => {
 		expect(formatCadenceProgress(0, 3, 7)).toBe('0/3 sessions this week');
+	});
+});
+
+describe('B2 — questRailBorderState', () => {
+	const coachQuest = (id: string): QuestTask => ({
+		id,
+		title: 'Pace',
+		senderLabel: 'Coach',
+		lifecycle: 'complete',
+		source: 'coach_intent',
+		tier: 'bounty',
+		axisId: 'PAC',
+		sortKey: 1,
+		xpReward: 100,
+		actionHref: '/player/workout',
+		targetAttributeId: 'pace',
+	});
+
+	it('maps lifecycle to red / amber / green outlines', () => {
+		expect(questRailBorderState({ ...coachQuest('a'), lifecycle: 'accept' })).toBe('accept');
+		expect(questRailBorderState(coachQuest('b'))).toBe('progress');
+		expect(questRailBorderState(coachQuest('c'), { loggedToday: true })).toBe('done');
+		expect(questRailBorderState({ ...coachQuest('d'), lifecycle: 'claim' })).toBe('done');
 	});
 });
 

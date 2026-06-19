@@ -44,7 +44,8 @@ describe('Sprint 1.9 — ActiveBounties embedded deck mode', () => {
 
 	it('embedded path uses questHudCtaFor (wraps questHudCtaShort) — no bracket questTerminalCmd', () => {
 		expect(bountiesSrc).toMatch(/questHudCtaShort/);
-		expect(embeddedSnippet).toMatch(/questHudCtaFor\(quest\)/);
+		expect(embeddedSnippet).toMatch(/coachIntentRailCta/);
+		expect(embeddedSnippet).toMatch(/\{rail\.label\}/);
 		expect(embeddedSnippet).not.toMatch(/questTerminalCmd/);
 		expect(embeddedSnippet).not.toMatch(/\[ ACCEPT MISSION \]/);
 		expect(embeddedSnippet).not.toMatch(/\[ COMPLETE MISSION \]/);
@@ -107,11 +108,11 @@ describe('Sprint 1.9 — embedded mission deck CSS', () => {
 });
 
 describe('Sprint 1.9 — activeBounties compact CTA helper', () => {
-	it('exports questHudCtaShort with arrow labels', () => {
+	it('exports questHudCtaShort with compact labels', () => {
 		expect(activeBountiesTsSrc).toMatch(/export function questHudCtaShort/);
-		expect(activeBountiesTsSrc).toMatch(/Accept →/);
-		expect(activeBountiesTsSrc).toMatch(/Complete →/);
-		expect(activeBountiesTsSrc).toMatch(/Claim →/);
+		expect(activeBountiesTsSrc).toMatch(/return 'Accept'/);
+		expect(activeBountiesTsSrc).toMatch(/return 'Complete'/);
+		expect(activeBountiesTsSrc).toMatch(/return 'Claim'/);
 	});
 });
 

@@ -387,6 +387,9 @@
 
 .player-hud-root .quest-row--rail .quest-row__title-text {
 	line-height: 1.35;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
 }
 
 .player-hud-root .quest-row--rail .quest-row__line {
@@ -473,7 +476,7 @@
 /* Sprint 2.22 slice 6j-a — matte idle rows; emissive glow on hover only */
 .player-hud-root .quest-row--rail.quest-row--embedded {
 	display: grid;
-	grid-template-columns: auto minmax(0, 1fr) minmax(0, max-content);
+	grid-template-columns: auto minmax(0, 1fr) 4.35rem;
 	gap: clamp(4px, 0.65vw, 6px);
 	align-items: center;
 	box-sizing: border-box;
@@ -481,7 +484,8 @@
 	max-width: 100%;
 	overflow: visible;
 	border: 1px solid color-mix(in srgb, var(--pd-line, rgba(255, 255, 255, 0.1)) 92%, transparent);
-	border-left: 2px solid color-mix(in srgb, var(--pd-accent-data, #14b8a6) 36%, var(--pd-line, rgba(255, 255, 255, 0.1)));
+	border-left-width: 2px;
+	border-left-color: color-mix(in srgb, var(--pd-accent-data, #14b8a6) 36%, var(--pd-line, rgba(255, 255, 255, 0.1)));
 	background: color-mix(in srgb, var(--pd-panel, #05050a) 90%, #000);
 	box-shadow:
 		inset 0 1px 0 rgba(255, 255, 255, 0.04),
@@ -495,6 +499,33 @@
 		border-left-color 0.18s ease,
 		box-shadow 0.18s ease,
 		transform 0.18s ease;
+}
+
+.player-hud-root .quest-row--rail.quest-row--embedded.quest-row--state-accept {
+	border-color: color-mix(in srgb, #ef4444 52%, var(--pd-line, rgba(255, 255, 255, 0.1)));
+	border-left-color: color-mix(in srgb, #ef4444 90%, #fff);
+	box-shadow:
+		inset 0 1px 0 rgba(255, 255, 255, 0.04),
+		inset 0 0 0 1px color-mix(in srgb, #ef4444 12%, transparent),
+		0 2px 6px rgba(0, 0, 0, 0.28);
+}
+
+.player-hud-root .quest-row--rail.quest-row--embedded.quest-row--state-progress {
+	border-color: color-mix(in srgb, #f59e0b 50%, var(--pd-line, rgba(255, 255, 255, 0.1)));
+	border-left-color: color-mix(in srgb, #f59e0b 88%, #fff);
+	box-shadow:
+		inset 0 1px 0 rgba(255, 255, 255, 0.04),
+		inset 0 0 0 1px color-mix(in srgb, #f59e0b 12%, transparent),
+		0 2px 6px rgba(0, 0, 0, 0.28);
+}
+
+.player-hud-root .quest-row--rail.quest-row--embedded.quest-row--state-done {
+	border-color: color-mix(in srgb, #22c55e 48%, var(--pd-line, rgba(255, 255, 255, 0.1)));
+	border-left-color: color-mix(in srgb, #22c55e 88%, #fff);
+	box-shadow:
+		inset 0 1px 0 rgba(255, 255, 255, 0.04),
+		inset 0 0 0 1px color-mix(in srgb, #22c55e 14%, transparent),
+		0 2px 6px rgba(0, 0, 0, 0.28);
 }
 
 .player-hud-root .quest-row--rail .quest-row__reward--embedded {
@@ -614,83 +645,12 @@
 	max-width: 100%;
 }
 
-.player-hud-root .quest-row--rail .quest-row__marquee {
+.player-hud-root .quest-row--rail .quest-row__title-text {
 	flex: 1 1 auto;
 	min-width: 0;
-}
-
-.player-hud-root .overflow-marquee {
 	overflow: hidden;
-}
-
-.player-hud-root .overflow-marquee__track {
-	display: inline-flex;
-	min-width: 100%;
-}
-
-.player-hud-root .overflow-marquee__segment {
-	display: inline-flex;
-	align-items: center;
-	gap: 0.2rem;
+	text-overflow: ellipsis;
 	white-space: nowrap;
-	flex-shrink: 0;
-}
-
-.player-hud-root .overflow-marquee--active .overflow-marquee__track {
-	animation: quest-line-marquee var(--quest-marquee-duration, 14s) linear infinite;
-}
-
-.player-hud-root .overflow-marquee--active .overflow-marquee__segment--clone {
-	padding-left: 2rem;
-}
-
-@keyframes quest-line-marquee {
-	from {
-		transform: translateX(0);
-	}
-
-	to {
-		transform: translateX(-50%);
-	}
-}
-
-@media (prefers-reduced-motion: reduce) {
-	.player-hud-root .overflow-marquee--active .overflow-marquee__track {
-		animation: none;
-	}
-
-	.player-hud-root .overflow-marquee--active {
-		overflow-x: auto;
-	}
-}
-
-.player-hud-root .quest-row--rail.quest-row--embedded.quest-row--logged-today {
-	border-color: color-mix(in srgb, #22c55e 48%, var(--pd-line, rgba(255, 255, 255, 0.1)));
-	border-left-color: color-mix(in srgb, #22c55e 88%, #fff);
-	box-shadow:
-		inset 0 1px 0 rgba(255, 255, 255, 0.04),
-		inset 0 0 0 1px color-mix(in srgb, #22c55e 14%, transparent),
-		0 2px 6px rgba(0, 0, 0, 0.28);
-}
-
-.player-hud-root .quest-row--rail.quest-row--embedded.quest-row--logged-today .quest-row__cmd--rail-chip:disabled {
-	cursor: not-allowed;
-	border-color: color-mix(in srgb, #22c55e 38%, transparent);
-	color: color-mix(in srgb, #22c55e 78%, #94a3b8);
-	background: color-mix(in srgb, #22c55e 6%, transparent);
-}
-
-.player-hud-root .quest-row--rail .overflow-marquee__segment .quest-row__title-text {
-	display: inline;
-	overflow: visible;
-	text-overflow: clip;
-	flex-shrink: 0;
-	min-width: max-content;
-}
-
-.player-hud-root .quest-row--rail .quest-row__title-text {
-	flex: 0 1 auto;
-	min-width: 0;
 	font-size: clamp(0.5rem, 1vw, 0.58rem);
 	font-weight: 700;
 }
@@ -716,17 +676,19 @@
 	align-self: center;
 	justify-self: end;
 	flex-shrink: 0;
+	width: 100%;
+	min-width: 0;
+	max-width: 4.35rem;
 	min-height: 26px;
-	max-width: 100%;
 	margin-left: clamp(4px, 0.55vw, 6px);
 	margin-right: clamp(2px, 0.35vw, 4px);
-	padding: clamp(4px, 0.7vw, 6px) clamp(7px, 1vw, 10px);
+	padding: clamp(4px, 0.7vw, 6px) 0.2rem;
 	border: 1px solid transparent;
 	background: transparent;
 	font-family: 'Geist Mono', ui-monospace, monospace;
-	font-size: clamp(0.44rem, 0.85vw, 0.5rem);
+	font-size: clamp(0.42rem, 0.8vw, 0.48rem);
 	font-weight: 800;
-	letter-spacing: 0.06em;
+	letter-spacing: 0.04em;
 	text-transform: uppercase;
 	text-decoration: none;
 	white-space: nowrap;
@@ -746,6 +708,13 @@
 		3px 100%,
 		0 calc(100% - 3px)
 	);
+}
+
+.player-hud-root .quest-row--rail.quest-row--embedded.quest-row--state-done .quest-row__cmd--rail-chip:disabled {
+	cursor: not-allowed;
+	border-color: color-mix(in srgb, #22c55e 38%, transparent);
+	color: color-mix(in srgb, #22c55e 78%, #94a3b8);
+	background: color-mix(in srgb, #22c55e 6%, transparent);
 }
 
 .player-hud-root .quest-row--rail.quest-row--embedded:not(.quest-row--promoted) .quest-row__sender {
@@ -777,21 +746,12 @@
 
 .player-hud-root .quest-row--rail.quest-row--embedded.quest-row--promoted {
 	border-left-width: 3px;
-	border-left-color: var(--pd-accent-action, #fbbf24);
-	box-shadow:
-		inset 0 1px 0 rgba(255, 255, 255, 0.04),
-		0 2px 6px rgba(0, 0, 0, 0.28);
 }
 
 /* Player OS Wave B — single gold hero mission row (SDT competence focal; idle CTA owns gold) */
 .player-hud-root .quest-row--rail.quest-row--embedded.quest-row--hero {
 	border-left-width: 3px;
-	border-left-color: color-mix(in srgb, var(--pd-accent-action, #fbbf24) 92%, #fff);
 	background: color-mix(in srgb, var(--pd-panel, #05050a) 88%, #000);
-	box-shadow:
-		inset 0 1px 0 rgba(255, 255, 255, 0.05),
-		inset 3px 0 0 color-mix(in srgb, var(--pd-accent-action, #fbbf24) 38%, transparent),
-		0 4px 10px rgba(0, 0, 0, 0.32);
 }
 
 .player-hud-root .quest-row--rail.quest-row--embedded.quest-row--hero .quest-row__sender,
@@ -936,18 +896,10 @@
 		-webkit-box-orient: vertical;
 		-webkit-line-clamp: 2;
 		overflow: hidden;
+		text-overflow: ellipsis;
 		white-space: normal;
 		line-height: 1.35;
 		flex: 1 1 auto;
-	}
-
-	.player-hud-root .quest-row--rail .overflow-marquee__segment .quest-row__title-text {
-		display: inline;
-		-webkit-line-clamp: unset;
-		-webkit-box-orient: unset;
-		overflow: visible;
-		white-space: nowrap;
-		flex: 0 0 auto;
 	}
 
 	.player-hud-root .quest-row--rail.quest-row--embedded:not(.quest-row--promoted) .quest-row__lede--rail-wide {
