@@ -163,6 +163,12 @@ export interface IntentDoc {
 
   /**
    * @since 1
+   * Per-player XP earned toward this intent (incremented on each log with intentId).
+   */
+  intentXpByUid?: Record<string, number>;
+
+  /**
+   * @since 1
    * Schema version stamp. Absent on pre-v1 documents; read-repair writes 1.
    */
   intentVersion: 1;

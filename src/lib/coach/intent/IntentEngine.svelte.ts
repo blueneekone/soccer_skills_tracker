@@ -307,7 +307,8 @@ export class IntentEngine {
 		}
 		const sessionsPerWindow = Math.floor(Number(this.draftCadenceSessionsPerWindow) || 0);
 		if (sessionsPerWindow >= 1 && sessionsPerWindow <= 21) {
-			rx.cadence = { sessionsPerWindow, windowDays: 7 };
+			const windowDays = Math.min(30, Math.max(1, Math.floor(Number(this.draftDurationDays) || 7)));
+			rx.cadence = { sessionsPerWindow, windowDays };
 		}
 		// B4a: emit requiresParentVerification only when coach opts in.
 		if (this.draftRequiresParentVerification === true) {

@@ -9,12 +9,19 @@
 		doc,
 		getDoc,
 		setDoc,
+		Timestamp,
 	} from 'firebase/firestore';
 	import { browser } from '$app/environment';
 	import { goto } from '$app/navigation';
 	import { httpsCallable } from 'firebase/functions';
 	import { db, functions } from '$lib/firebase.js';
 	import { stashCoachIntentHandoffForAssignment, buildPolicyHintsFromResult } from '$lib/player/workout/coachMissionFlow.js';
+	import {
+		coachIntentSessionLoggedToday,
+		countCadenceSessionsInWindow,
+		formatCadenceProgress,
+		formatCadenceResumeHint,
+	} from '$lib/player/dashboard/activeBounties.js';
 	import { ensureRlPolicyCached, readRlPolicyCache } from '$lib/player/workout/rlPolicyCache.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { sportsConfigStore } from '$lib/stores/sportsConfigStore.svelte.js';
@@ -31,6 +38,7 @@
 		priority?: number;
 		status?: string;
 		prescription?: Record<string, unknown>;
+		intentXpByUid?: Record<string, number>;
 	}
 
 	interface Drill {
@@ -63,6 +71,7 @@
 	let assignments = $state<Assignment[]>([]);
 	let suggestedDrill = $state<Drill | null>(null);
 	let isLoading = $state(true);
+	let cadenceCompletions = $state<Array<{ attributeId: string; loggedAtMs: number; intentId?: string }>>([]);
 
 	// RL policy state
 	let policyResult = $state<PolicyResult | null>(null);
@@ -86,8 +95,58 @@
 
 	const playerAttributeXp = $derived.by(() => {
 		if (!activeAssignment || !playerProfile) return 0;
+		const uid = playerUid;
+		const intentMap = activeAssignment.intentXpByUid;
+		if (uid && intentMap && typeof intentMap === 'object') {
+			return Math.max(0, Math.floor(Number(intentMap[uid]) || 0));
+		}
 		const xpMap = /** @type {Record<string, number>} */ (playerProfile.xpByAttribute ?? {});
 		return Number(xpMap[activeAssignment.targetAttributeId] ?? 0);
+	});
+
+	const activeCadence = $derived.by(() => {
+		const rx = activeAssignment?.prescription;
+		if (!rx || typeof rx !== 'object' || Array.isArray(rx)) return undefined;
+		const c = (rx as Record<string, unknown>).cadence;
+		if (!c || typeof c !== 'object' || Array.isArray(c)) return undefined;
+		const spw = typeof (c as Record<string, unknown>).sessionsPerWindow === 'number'
+			? Math.floor((c as Record<string, unknown>).sessionsPerWindow as number)
+			: 0;
+		const wd = typeof (c as Record<string, unknown>).windowDays === 'number'
+			? Math.floor((c as Record<string, unknown>).windowDays as number)
+			: 0;
+		return spw >= 1 && spw <= 21 && wd >= 1 && wd <= 30
+			? { sessionsPerWindow: spw, windowDays: wd }
+			: undefined;
+	});
+
+	const cadenceCompleted = $derived.by(() => {
+		if (!activeAssignment || !activeCadence) return 0;
+		return countCadenceSessionsInWindow(
+			cadenceCompletions,
+			activeAssignment.targetAttributeId,
+			activeCadence.windowDays,
+		);
+	});
+
+	const homeworkLoggedToday = $derived.by(() => {
+		if (!activeAssignment) return false;
+		return coachIntentSessionLoggedToday(
+			{
+				id: activeAssignment.id,
+				tier: 'bounty',
+				source: 'coach_intent',
+				senderLabel: 'Coach Challenge',
+				title: '',
+				axisId: 'STM',
+				xpReward: activeAssignment.requiredXp,
+				lifecycle: 'complete',
+				actionHref: '/player/workout',
+				sortKey: 0,
+				targetAttributeId: activeAssignment.targetAttributeId,
+			},
+			cadenceCompletions,
+		);
 	});
 
 	const xpProgressPct = $derived.by(() => {
@@ -149,6 +208,44 @@
 			}
 		);
 
+		return unsub;
+	});
+
+	$effect(() => {
+		const uid = playerUid;
+		if (!uid || !activeAssignment) {
+			cadenceCompletions = [];
+			return;
+		}
+		const windowStart = Timestamp.fromMillis(Date.now() - 30 * 86_400_000);
+		const q = query(
+			collection(db, 'drill_completions'),
+			where('playerUid', '==', uid),
+			where('loggedAt', '>=', windowStart),
+		);
+		const unsub = onSnapshot(
+			q,
+			(snap) => {
+				cadenceCompletions = snap.docs.map((d) => {
+					const data = d.data();
+					const ts = data.loggedAt;
+					const ms =
+						ts instanceof Timestamp
+							? ts.toMillis()
+							: typeof ts?.toMillis === 'function'
+								? ts.toMillis()
+								: 0;
+					return {
+						attributeId: typeof data.attributeId === 'string' ? data.attributeId : '',
+						loggedAtMs: ms,
+						intentId: typeof data.intentId === 'string' ? data.intentId : undefined,
+					};
+				});
+			},
+			() => {
+				cadenceCompletions = [];
+			},
+		);
 		return unsub;
 	});
 
@@ -402,19 +499,38 @@
 
 			<button
 				type="button"
-				class="tw-w-full tw-py-2.5 tw-rounded-xl tw-font-mono tw-text-[10px] tw-tracking-widest
-				       tw-uppercase tw-border tw-border-teal-500/35 tw-text-teal-400 tw-bg-teal-500/10
-				       hover:tw-bg-teal-500/20 tw-transition-colors"
+				class="tw-w-full tw-py-2.5 tw-rounded-xl tw-font-mono tw-text-[10px] tw-tracking-widest tw-uppercase tw-border tw-transition-colors {homeworkLoggedToday
+					? 'tw-border-slate-600/50 tw-text-slate-500 tw-bg-slate-800/40'
+					: 'tw-border-teal-500/35 tw-text-teal-400 tw-bg-teal-500/10 hover:tw-bg-teal-500/20'}"
+				disabled={homeworkLoggedToday}
 				onclick={logOnTrain}
 			>
-				Log on Train
+				{homeworkLoggedToday ? 'Logged today — resume tomorrow' : 'Log on Train'}
 			</button>
 
-			<!-- XP progress bar -->
+			{#if activeCadence}
+				<p class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-teal-400/70">
+					{formatCadenceProgress(
+						cadenceCompleted,
+						activeCadence.sessionsPerWindow,
+						activeCadence.windowDays,
+					)}
+				</p>
+				{@const resumeHint = formatCadenceResumeHint(
+					homeworkLoggedToday,
+					cadenceCompleted,
+					activeCadence.sessionsPerWindow,
+				)}
+				{#if resumeHint}
+					<p class="tw-font-mono tw-text-[9px] tw-text-white/35">{resumeHint}</p>
+				{/if}
+			{/if}
+
+			<!-- XP progress bar (mission-scoped when intentXpByUid present) -->
 			<div class="tw-flex tw-flex-col tw-gap-1.5">
 				<div class="tw-flex tw-justify-between tw-items-center">
 					<span class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-white/30">
-						XP PROGRESS
+						MISSION XP
 					</span>
 					<span class="tw-font-mono tw-text-[9px] tw-text-teal-400/60">{xpProgressPct}%</span>
 				</div>

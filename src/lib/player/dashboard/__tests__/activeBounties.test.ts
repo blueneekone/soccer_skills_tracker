@@ -5,7 +5,10 @@ import {
 	bountyFromCoachIntent,
 	buildDailyQuests,
 	countCadenceSessionsInWindow,
+	coachIntentCtaDisabled,
+	coachIntentSessionLoggedToday,
 	formatCadenceProgress,
+	formatCadenceResumeHint,
 	questCtaLabel,
 	questHudCtaShort,
 	questHudCtaFor,
@@ -297,15 +300,15 @@ describe('B2 — countCadenceSessionsInWindow', () => {
 
 describe('B2 — formatCadenceProgress', () => {
 	it('uses "this week" label for 7-day windows', () => {
-		expect(formatCadenceProgress(2, 3, 7)).toBe('2/3 this week');
+		expect(formatCadenceProgress(2, 3, 7)).toBe('2/3 sessions this week');
 	});
 
 	it('uses "in Nd" label for non-7-day windows', () => {
-		expect(formatCadenceProgress(1, 5, 14)).toBe('1/5 in 14d');
+		expect(formatCadenceProgress(1, 5, 14)).toBe('1/5 sessions in 14 days');
 	});
 
 	it('zero-completed state', () => {
-		expect(formatCadenceProgress(0, 3, 7)).toBe('0/3 this week');
+		expect(formatCadenceProgress(0, 3, 7)).toBe('0/3 sessions this week');
 	});
 });
 
@@ -439,5 +442,73 @@ describe('B4b — advisory parent-verified badge: bountyFromCoachIntent is unaff
 		expect(badgeSection).not.toMatch(/xpReward\s*=/);
 		expect(badgeSection).not.toMatch(/lifecycle\s*=/);
 		expect(badgeSection).not.toMatch(/sortKey\s*=/);
+	});
+});
+
+describe('cadence intelligence — per-day sessions', () => {
+	const coachQuest = (id: string): QuestTask => ({
+		id,
+		tier: 'bounty',
+		source: 'coach_intent',
+		senderLabel: 'Coach Challenge',
+		title: 'Pace · 200 XP goal',
+		axisId: 'PAC',
+		xpReward: 200,
+		lifecycle: 'complete',
+		actionHref: '/player/workout',
+		sortKey: 1,
+		targetAttributeId: 'pace',
+		cadence: { sessionsPerWindow: 5, windowDays: 14 },
+	});
+
+	it('countCadenceSessionsInWindow counts distinct UTC days only', () => {
+		const day1 = Date.parse('2026-06-10T12:00:00.000Z');
+		const day1b = Date.parse('2026-06-10T20:00:00.000Z');
+		const day2 = Date.parse('2026-06-11T09:00:00.000Z');
+		const now = Date.parse('2026-06-15T00:00:00.000Z');
+		const completions = [
+			{ attributeId: 'pace', loggedAtMs: day1 },
+			{ attributeId: 'pace', loggedAtMs: day1b },
+			{ attributeId: 'pace', loggedAtMs: day2 },
+		];
+		expect(countCadenceSessionsInWindow(completions, 'pace', 14, now)).toBe(2);
+	});
+
+	it('coachIntentSessionLoggedToday matches intentId for today', () => {
+		const todayMs = Date.now();
+		const quest = coachQuest('intent-1');
+		expect(
+			coachIntentSessionLoggedToday(
+				quest,
+				[{ attributeId: 'pace', loggedAtMs: todayMs, intentId: 'intent-1' }],
+				todayMs,
+			),
+		).toBe(true);
+		expect(questHudCtaFor(quest, { sessionLoggedToday: true })).toBe('Logged today');
+		expect(coachIntentCtaDisabled(quest, true)).toBe(true);
+	});
+
+	it('formatCadenceResumeHint after today session', () => {
+		expect(formatCadenceResumeHint(true, 1, 5)).toBe('Session logged — resume tomorrow');
+		expect(formatCadenceResumeHint(false, 1, 5)).toBeNull();
+		expect(formatCadenceResumeHint(true, 5, 5)).toBeNull();
+	});
+
+	it('bountyFromCoachIntent surfaces intentXpByUid for player', () => {
+		const bounty = bountyFromCoachIntent(
+			'intent-x',
+			{
+				targetAttributeId: 'pace',
+				requiredXp: 300,
+				intentXpByUid: { player1: 120 },
+			},
+			{ acceptedIds: [], completedIds: [], claimedIds: [], claimedDateUtc: '2026-01-01' },
+			'player1',
+		)!;
+		expect(bounty.intentXpEarned).toBe(120);
+	});
+
+	it('formatCadenceProgress uses session wording', () => {
+		expect(formatCadenceProgress(2, 5, 14)).toContain('2/5 sessions');
 	});
 });

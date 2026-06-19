@@ -739,6 +739,12 @@ exports.logTrainingSession = onCall(LAUNCH_CORE_CALLABLE_OPTS, async (request) =
   const psRef = db().collection('player_stats').doc(athleteUid);
   const tsRef = teamId ? db().collection('team_stats').doc(teamId) : null;
   const teamRef = teamId ? db().collection('teams').doc(teamId) : null;
+  const intentRef = intentIdRaw ?
+    db().collection('team_assignments').doc(intentIdRaw) :
+    null;
+  const cadenceMarkRef = attributeIdRaw ?
+    db().collection('cadence_day_marks').doc(`${athleteUid}_${attributeIdRaw}_${todayStr}`) :
+    null;
 
   /**
    * @type {{
@@ -760,6 +766,8 @@ exports.logTrainingSession = onCall(LAUNCH_CORE_CALLABLE_OPTS, async (request) =
     const uSnapTx = await tx.get(uRef);
     const tsSnap = tsRef ? await tx.get(tsRef) : null;
     const teamSnap = teamRef ? await tx.get(teamRef) : null;
+    const intentSnap = intentRef ? await tx.get(intentRef) : null;
+    const cadenceMarkSnap = cadenceMarkRef ? await tx.get(cadenceMarkRef) : null;
     if (!uSnapTx.exists) {
       throw new HttpsError(
           'failed-precondition',
@@ -884,6 +892,8 @@ exports.logTrainingSession = onCall(LAUNCH_CORE_CALLABLE_OPTS, async (request) =
     };
     if (sessionNotes) logDoc.sessionNotes = sessionNotes;
     if (assignmentIdRaw) logDoc.assignmentId = assignmentIdRaw;
+    if (intentIdRaw) logDoc.intentId = intentIdRaw;
+    if (attributeIdRaw) logDoc.attributeId = attributeIdRaw;
     if (verifiedByUid) {
       logDoc.verifiedByUid = verifiedByUid;
       logDoc.verifiedByEmail = verifiedByEmail;
@@ -961,8 +971,8 @@ exports.logTrainingSession = onCall(LAUNCH_CORE_CALLABLE_OPTS, async (request) =
             uTxData.clubId.trim() :
             null);
 
-    // B2 cadence: audit row feeds HQ progress + intent lifecycle session gate.
-    if (attributeIdRaw) {
+    // B2 cadence: one session tick per UTC day per attribute (XP still awards every log).
+    if (attributeIdRaw && cadenceMarkRef && cadenceMarkSnap && !cadenceMarkSnap.exists) {
       const dcRef = db().collection('drill_completions').doc();
       const dcDoc = {
         playerUid: athleteUid,
@@ -978,7 +988,23 @@ exports.logTrainingSession = onCall(LAUNCH_CORE_CALLABLE_OPTS, async (request) =
         workoutLogId: logId,
       };
       if (intentIdRaw) dcDoc.intentId = intentIdRaw;
+      tx.set(cadenceMarkRef, {
+        playerUid: athleteUid,
+        attributeId: attributeIdRaw,
+        dateUtc: todayStr,
+        intentId: intentIdRaw || null,
+        workoutLogId: logId,
+        createdAt: now,
+      });
       tx.set(dcRef, dcDoc);
+    }
+
+    // Intent-scoped XP progress (mission delta — not lifetime attribute total).
+    if (intentIdRaw && intentRef && intentSnap && intentSnap.exists) {
+      tx.update(intentRef, {
+        [`intentXpByUid.${athleteUid}`]: admin.firestore.FieldValue.increment(earned),
+        updatedAt: now,
+      });
     }
 
     // RL physio: first workout log of the UTC day mirrors daily self-report (Train strip).
@@ -2254,6 +2280,7 @@ exports.secureDeployIntent = onCall(LAUNCH_CORE_CALLABLE_OPTS, async (request) =
     priority,
     status: 'active',
     fulfilledByUids: [],
+    intentXpByUid: {},
     intentVersion: 1,
     createdAt: admin.firestore.FieldValue.serverTimestamp(),
     expiresAt,
@@ -2631,7 +2658,20 @@ async function countCadenceSessionsForAttribute(uid, attributeId, windowDays) {
       .where('playerUid', '==', uid)
       .where('loggedAt', '>=', windowStart)
       .get();
-  return snap.docs.filter((d) => d.data().attributeId === attributeId).length;
+  const days = new Set();
+  for (const d of snap.docs) {
+    const data = d.data();
+    if (data.attributeId !== attributeId) continue;
+    const loggedAt = data.loggedAt;
+    let ms = Date.now();
+    if (loggedAt && typeof loggedAt.toMillis === 'function') {
+      ms = loggedAt.toMillis();
+    } else if (loggedAt instanceof Date) {
+      ms = loggedAt.getTime();
+    }
+    days.add(new Date(ms).toISOString().slice(0, 10));
+  }
+  return days.size;
 }
 
 /**
@@ -2670,7 +2710,15 @@ async function tryFulfillActiveIntentsForPlayer(input) {
     if (!inScope) continue;
 
     const requiredXp = Number(intent.requiredXp) || 0;
-    const playerXp = Number(xpByAttribute[attrId] || 0);
+    const intentXpMap =
+      intent.intentXpByUid &&
+      typeof intent.intentXpByUid === 'object' &&
+      !Array.isArray(intent.intentXpByUid) ?
+        intent.intentXpByUid :
+        null;
+    const playerXp = intentXpMap != null ?
+      Number(intentXpMap[uid] || 0) :
+      Number(xpByAttribute[attrId] || 0);
     if (playerXp < requiredXp) continue;
 
     const cadence = cadenceFromIntentPrescription(intent.prescription);

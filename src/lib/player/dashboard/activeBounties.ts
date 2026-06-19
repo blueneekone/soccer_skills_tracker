@@ -32,6 +32,8 @@ export type QuestTask = {
 	cadence?: { sessionsPerWindow: number; windowDays: number };
 	/** targetAttributeId from the intent — used to count completions per window. */
 	targetAttributeId?: string;
+	/** XP earned toward this coach intent (server intentXpByUid). */
+	intentXpEarned?: number;
 };
 
 export type QuestProgressStore = {
@@ -117,7 +119,17 @@ export function shouldDeferQuestCompletionUntilWorkoutLog(quest: QuestTask): boo
 }
 
 /** Lifecycle + route-aware CTA (Train-bound missions use Start session). */
-export function questHudCtaFor(quest: QuestTask): string {
+export function questHudCtaFor(
+	quest: QuestTask,
+	opts: { sessionLoggedToday?: boolean } = {},
+): string {
+	if (
+		opts.sessionLoggedToday &&
+		quest.source === 'coach_intent' &&
+		quest.lifecycle === 'complete'
+	) {
+		return 'Logged today';
+	}
 	if (
 		quest.lifecycle === 'complete' &&
 		quest.actionHref.includes('/player/workout') &&
@@ -128,6 +140,37 @@ export function questHudCtaFor(quest: QuestTask): string {
 		return 'Start session →';
 	}
 	return questHudCtaShort(quest.lifecycle);
+}
+
+/** Coach intent already logged today — grey out until next UTC day. */
+export function coachIntentSessionLoggedToday(
+	quest: QuestTask,
+	completions: ReadonlyArray<{ attributeId: string; loggedAtMs: number; intentId?: string }>,
+	now = Date.now(),
+): boolean {
+	if (quest.source !== 'coach_intent' || quest.lifecycle !== 'complete') return false;
+	const today = utcDateFromMs(now);
+	return completions.some((c) => {
+		if (utcDateFromMs(c.loggedAtMs) !== today) return false;
+		if (c.intentId && c.intentId === quest.id) return true;
+		return !c.intentId && quest.targetAttributeId === c.attributeId;
+	});
+}
+
+export function coachIntentCtaDisabled(quest: QuestTask, sessionLoggedToday: boolean): boolean {
+	return sessionLoggedToday && quest.source === 'coach_intent' && quest.lifecycle === 'complete';
+}
+
+export function coachIntentRailCta(
+	quest: QuestTask,
+	completions: ReadonlyArray<{ attributeId: string; loggedAtMs: number; intentId?: string }>,
+): { label: string; disabled: boolean; loggedToday: boolean } {
+	const loggedToday = coachIntentSessionLoggedToday(quest, completions);
+	return {
+		loggedToday,
+		disabled: coachIntentCtaDisabled(quest, loggedToday),
+		label: questHudCtaFor(quest, { sessionLoggedToday: loggedToday }),
+	};
 }
 
 /** Bracketed terminal command label for Player OS SIEM HUD. */
@@ -298,6 +341,10 @@ function emptyProgress(): QuestProgressStore {
 
 function utcDateString(): string {
 	return new Date().toISOString().slice(0, 10);
+}
+
+export function utcDateFromMs(ms: number): string {
+	return new Date(ms).toISOString().slice(0, 10);
 }
 
 export function mapAttributeToVanguardAxis(raw: string): VanguardAxisId {
@@ -475,9 +522,12 @@ export function countCadenceSessionsInWindow(
 	now = Date.now(),
 ): number {
 	const windowStart = now - windowDays * 86_400_000;
-	return completions.filter(
-		(c) => c.attributeId === attributeId && c.loggedAtMs >= windowStart,
-	).length;
+	const days = new Set<string>();
+	for (const c of completions) {
+		if (c.attributeId !== attributeId || c.loggedAtMs < windowStart) continue;
+		days.add(utcDateFromMs(c.loggedAtMs));
+	}
+	return days.size;
 }
 
 /**
@@ -489,8 +539,18 @@ export function formatCadenceProgress(
 	sessionsPerWindow: number,
 	windowDays: number,
 ): string {
-	const windowLabel = windowDays === 7 ? 'this week' : `in ${windowDays}d`;
-	return `${completed}/${sessionsPerWindow} ${windowLabel}`;
+	const windowLabel = windowDays === 7 ? 'this week' : `in ${windowDays} days`;
+	return `${completed}/${sessionsPerWindow} sessions ${windowLabel}`;
+}
+
+/** Hint after today's session when cadence goal not yet met. */
+export function formatCadenceResumeHint(
+	loggedToday: boolean,
+	completed: number,
+	sessionsPerWindow: number,
+): string | null {
+	if (!loggedToday || completed >= sessionsPerWindow) return null;
+	return 'Session logged — resume tomorrow';
 }
 
 export function bountyFromCoachIntent(
@@ -508,6 +568,14 @@ export function bountyFromCoachIntent(
 	const attrLabel = formatAttributeLabel(targetAttributeId);
 	const fulfilledBy = Array.isArray(data.fulfilledByUids) ? data.fulfilledByUids : [];
 	const playerFulfilled = Boolean(playerUid && fulfilledBy.includes(playerUid));
+	const intentXpMap =
+		data.intentXpByUid != null &&
+		typeof data.intentXpByUid === 'object' &&
+		!Array.isArray(data.intentXpByUid)
+			? (data.intentXpByUid as Record<string, number>)
+			: null;
+	const intentXpEarned =
+		playerUid && intentXpMap != null ? Math.max(0, Math.floor(Number(intentXpMap[playerUid]) || 0)) : undefined;
 	const rx = data.prescription;
 	const cadence =
 		rx != null &&
@@ -539,6 +607,7 @@ export function bountyFromCoachIntent(
 		actionHref: '/player/workout',
 		sortKey: priority,
 		targetAttributeId,
+		...(intentXpEarned != null ? { intentXpEarned } : {}),
 		...(cadence ? { cadence } : {}),
 	};
 }

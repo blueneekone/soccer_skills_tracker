@@ -167,4 +167,18 @@ describe('B2 — intent lifecycle cadence fulfillment gate (source-scan)', () =>
     assert.match(SRC, /source: 'logTrainingSession'/);
     assert.match(SRC, /restingFeel != null/);
   });
+
+  it('counts cadence sessions as distinct UTC days', () => {
+    assert.match(SRC, /days\.add\(new Date\(ms\)\.toISOString\(\)\.slice\(0, 10\)\)/);
+  });
+
+  it('writes at most one drill_completions row per attribute per UTC day', () => {
+    assert.match(SRC, /cadence_day_marks/);
+    assert.match(SRC, /!cadenceMarkSnap\.exists/);
+  });
+
+  it('tracks intent-scoped XP on team_assignments.intentXpByUid', () => {
+    assert.match(SRC, /intentXpByUid/);
+    assert.match(SRC, /intentXpMap != null/);
+  });
 });

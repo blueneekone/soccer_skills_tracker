@@ -608,7 +608,7 @@
         selectedDrill: drillName,
         activeMissionId: stepMissionId,
         missionSource: stepMissionSource,
-        targetAttributeId: armedHandoff?.targetAttributeId ?? undefined,
+        targetAttributeId: isLastStep ? (armedHandoff?.targetAttributeId ?? undefined) : undefined,
         totalXpHud,
         oldLevel,
         intensityStep: stepRpe,

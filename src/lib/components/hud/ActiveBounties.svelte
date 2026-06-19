@@ -24,7 +24,9 @@
 		bountyFromHomeworkAssignment,
 		bountyFromParentBounty,
 		countCadenceSessionsInWindow,
+		coachIntentRailCta,
 		formatCadenceProgress,
+		formatCadenceResumeHint,
 		loadQuestProgress,
 		markQuestAccepted,
 		markQuestClaimed,
@@ -89,13 +91,7 @@
 	const missionClaimsSync = new MissionRailClaimsSync();
 	const missionRetryGate = new MissionSnapshotRetryGate();
 	let lastCoachIntentIds = $state<string[]>([]);
-	/** Flat completion records for cadence progress — fetched once per uid, not real-time. */
-	let cadenceCompletions = $state<Array<{ attributeId: string; loggedAtMs: number }>>([]);
-	/**
-	 * B4b advisory badge: intentIds that have an 'approved' completion_verifications record
-	 * for this player. Subscribed player-own only (playerUid == auth.uid). Read-only display —
-	 * does NOT affect XP, progress, or intent fulfilment.
-	 */
+	let cadenceCompletions = $state<Array<{ attributeId: string; loggedAtMs: number; intentId?: string }>>([]);
 	let approvedIntentIds = $state<Set<string>>(new Set());
 	let missionModalQuest = $state<QuestTask | null>(null);
 
@@ -179,10 +175,8 @@
 		if (!browser || authStore.isLoading || authStore.role !== 'player') return;
 		const uid = authStore.user?.uid ?? '';
 		if (!uid) return;
-		const hasCadenceQuests = dedupedQuests.some(
-			(q) => q.source === 'coach_intent' && q.cadence,
-		);
-		if (!hasCadenceQuests) return;
+		const hasCoachIntentQuests = dedupedQuests.some((q) => q.source === 'coach_intent');
+		if (!hasCoachIntentQuests) return;
 		const windowStart = Timestamp.fromMillis(Date.now() - 30 * 86_400_000);
 		const q = query(
 			collection(db, 'drill_completions'),
@@ -204,7 +198,11 @@
 								: typeof ts?.seconds === 'number'
 									? ts.seconds * 1000
 									: 0;
-					return { attributeId: attrId, loggedAtMs: ms };
+					return {
+						attributeId: attrId,
+						loggedAtMs: ms,
+						intentId: typeof data.intentId === 'string' ? data.intentId : undefined,
+					};
 				});
 			},
 			() => {
@@ -214,8 +212,7 @@
 		return unsub;
 	});
 
-	// B4b — subscribe to player's own approved completion_verifications for advisory badge.
-	// Reads are player-own only (playerUid == auth.uid); no XP or progress logic is touched.
+	// B4b — approved completion_verifications (advisory badge only).
 	$effect(() => {
 		if (!browser || authStore.isLoading || authStore.role !== 'player') return;
 		const uid = authStore.user?.uid ?? '';
@@ -552,8 +549,8 @@
 		missionModalQuest = null;
 	}
 
-	/** @param {QuestTask} quest */
 	function handleQuestAction(quest: QuestTask) {
+		if (coachIntentRailCta(quest, cadenceCompletions).disabled) return;
 		if (quest.lifecycle === 'accept') {
 			questProgress = markQuestAccepted(quest.id, questProgress);
 			if (quest.source === 'coach_intent' || quest.source === 'coach_homework') {
@@ -620,12 +617,14 @@
 {/snippet}
 
 {#snippet questRowEmbedded(quest: QuestTask)}
+	{@const rail = coachIntentRailCta(quest, cadenceCompletions)}
 	<div
 		class="hud-bounty-row quest-row quest-row--embedded quest-row--premium quest-row--rail"
 		class:quest-row--habit={quest.tier === 'daily'}
 		class:quest-row--bounty={quest.tier === 'bounty'}
 		class:quest-row--hero={heroQuest?.id === quest.id}
 		class:quest-row--promoted={!heroQuest && isPromotedQuest(quest)}
+		class:quest-row--logged-today={rail.loggedToday}
 	>
 		{#if quest.lifecycle === 'accept'}
 			<span class="quest-row__status" aria-hidden="true"></span>
@@ -659,7 +658,13 @@
 					)}
 					<p class="quest-row__cadence pw-mono" aria-label="Cadence progress">
 						{formatCadenceProgress(completed, quest.cadence.sessionsPerWindow, quest.cadence.windowDays)}
+						{#if formatCadenceResumeHint(rail.loggedToday, completed, quest.cadence.sessionsPerWindow)}
+							· {formatCadenceResumeHint(rail.loggedToday, completed, quest.cadence.sessionsPerWindow)}
+						{/if}
 					</p>
+				{/if}
+				{#if quest.intentXpEarned != null}
+					<p class="quest-row__intent-xp pw-mono">{quest.intentXpEarned.toLocaleString()} / {quest.xpReward.toLocaleString()} mission XP</p>
 				{/if}
 				{#if approvedIntentIds.has(quest.id)}
 					<span class="quest-row__parent-verified" aria-label="Parent-verified">
@@ -682,10 +687,11 @@
 			class:quest-row__cmd--accept={quest.lifecycle === 'accept'}
 			class:quest-row__cmd--complete={quest.lifecycle === 'complete'}
 			class:quest-row__cmd--claim={quest.lifecycle === 'claim'}
+			disabled={rail.disabled}
 			aria-label={questCtaLabel(quest.lifecycle)}
 			onclick={() => handleQuestAction(quest)}
 		>
-			{questHudCtaFor(quest)}
+			{rail.label}
 		</button>
 	</div>
 {/snippet}
@@ -839,7 +845,5 @@
 	missionId={missionModalQuest ? formatMissionId(missionModalQuest.id) : ''}
 	title={missionModalQuest?.title ?? ''}
 	readout={missionModalQuest ? buildMissionModalReadout(missionModalQuest) : ''}
-	onEngage={engageMissionModal}
-	onTerminate={terminateMissionModal}
+	onEngage={engageMissionModal} onTerminate={terminateMissionModal}
 />
-
