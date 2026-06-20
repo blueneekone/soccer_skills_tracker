@@ -118,7 +118,7 @@
 
 	const sidebarCollapsedDesktop = $derived(!workspaceContextStore.isSidebarOpen && isDesktop);
 
-	const drawerLinks = $derived(isDesktop ? links : []);
+	const drawerLinks = $derived(links);
 
 	const FIELD_CHROME_ROLES = new Set([
 		'coach',

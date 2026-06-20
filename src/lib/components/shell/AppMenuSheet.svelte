@@ -101,6 +101,14 @@
 			document.body.style.overflow = prev;
 		};
 	});
+
+	$effect(() => {
+		if (!open || !import.meta.env.DEV || catalog.length > 0) return;
+		console.warn('[AppMenuSheet] empty nav catalog — check getNavCatalog(personaKey)', {
+			personaKey,
+			catalogLength: catalog.length,
+		});
+	});
 </script>
 
 {#if open}

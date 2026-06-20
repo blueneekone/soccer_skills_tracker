@@ -1,9 +1,7 @@
 /**
- * NAV-OPTION-D — customizable bottom pin slots (localStorage + Firestore sync).
+ * NAV-OPTION-D — customizable bottom pin slots (localStorage only, v1).
  */
 import { browser } from '$app/environment';
-import { db } from '$lib/firebase.js';
-import { doc, updateDoc } from 'firebase/firestore';
 import {
 	getDefaultPins,
 	isHrefAllowedForPersona,
@@ -40,43 +38,9 @@ function writeLocalPins(uid: string, personaKey: NavPersonaKey, pins: PinTriple)
 	}
 }
 
-async function persistFirestore(
-	email: string,
-	personaKey: NavPersonaKey,
-	pins: PinTriple,
-	existing?: Record<string, PinTriple>,
-): Promise<void> {
-	const normalized = email.trim().toLowerCase();
-	if (!normalized) return;
-	try {
-		await updateDoc(doc(db, 'users', normalized), {
-			mobileNavPins: { ...(existing ?? {}), [personaKey]: pins },
-		});
-	} catch (err) {
-		console.warn('[navPins] Firestore sync failed (best-effort)', err);
-	}
-}
-
-let firestoreSyncTimer: ReturnType<typeof setTimeout> | null = null;
-
-function scheduleFirestoreSync(
-	email: string,
-	personaKey: NavPersonaKey,
-	pins: PinTriple,
-	existing?: Record<string, PinTriple>,
-): void {
-	if (firestoreSyncTimer) clearTimeout(firestoreSyncTimer);
-	firestoreSyncTimer = setTimeout(() => {
-		firestoreSyncTimer = null;
-		void persistFirestore(email, personaKey, pins, existing);
-	}, 500);
-}
-
 let pins = $state<PinTriple>([null, null, null]);
 let activePersonaKey = $state<NavPersonaKey>('player');
 let activeUid = $state('');
-let activeEmail = $state('');
-let firestoreSnapshot = $state<Record<string, PinTriple>>({});
 
 function applyPins(next: PinTriple): void {
 	pins = next;
@@ -85,9 +49,6 @@ function applyPins(next: PinTriple): void {
 function savePins(next: PinTriple): void {
 	applyPins(next);
 	if (activeUid) writeLocalPins(activeUid, activePersonaKey, next);
-	if (activeEmail) {
-		scheduleFirestoreSync(activeEmail, activePersonaKey, next, firestoreSnapshot);
-	}
 }
 
 export const navPinsStore = {
@@ -99,21 +60,16 @@ export const navPinsStore = {
 	},
 	hydrate(
 		uid: string,
-		email: string,
+		_email: string,
 		personaKey: NavPersonaKey,
-		profilePins?: Record<string, PinTriple> | null,
+		_profilePins?: Record<string, PinTriple> | null,
 	): void {
 		activeUid = uid;
-		activeEmail = email;
 		activePersonaKey = personaKey;
-		firestoreSnapshot = profilePins ?? {};
 
-		const fromFirestore = profilePins?.[personaKey];
 		const fromLocal = readLocalPins(uid, personaKey);
-		const raw = fromFirestore ?? fromLocal ?? getDefaultPins(personaKey);
+		const raw = fromLocal ?? getDefaultPins(personaKey);
 		applyPins(sanitizePins(raw, personaKey));
-
-		if (fromFirestore && uid) writeLocalPins(uid, personaKey, pins);
 	},
 	setPin(slotIndex: 0 | 1 | 2, href: string | null): void {
 		if (href !== null && !isHrefAllowedForPersona(href, activePersonaKey)) return;

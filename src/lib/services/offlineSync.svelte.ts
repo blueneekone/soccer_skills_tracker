@@ -59,6 +59,9 @@ class SyncStatus {
 	/** Cleanup callbacks for the listeners installed by `init()`. */
 	private _cleanup: Array<() => void> = [];
 
+	/** Skip overlapping flush calls while waitForPendingWrites is in flight. */
+	private _flushInFlight = false;
+
 	init(): void {
 		if (!browser || this._initialised) return;
 		this._initialised = true;
@@ -103,8 +106,9 @@ class SyncStatus {
 	 * keeps showing until the next successful flush.
 	 */
 	private async _flush(): Promise<void> {
-		if (!browser) return;
+		if (!browser || this._flushInFlight) return;
 
+		this._flushInFlight = true;
 		this.isSyncing = true;
 		try {
 			// Phase 1, Epic 1 — Cell-Based Routing, Session F.
@@ -139,6 +143,8 @@ class SyncStatus {
 				err,
 			);
 			this.isSyncing = false;
+		} finally {
+			this._flushInFlight = false;
 		}
 	}
 }

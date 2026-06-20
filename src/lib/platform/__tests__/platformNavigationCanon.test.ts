@@ -276,6 +276,18 @@ describe('NAV-OPTION-D-POLISH guards', () => {
 		expect(offlineSync).toMatch(/SYNC_FLUSH_TIMEOUT_MS\s*=\s*10_000/);
 		expect(fieldMenuSwipe).toContain('FIELD_MENU_EDGE_ZONE_PX');
 	});
+
+	it('FIELD-CHROME-HOTFIX-3 — desk sidebar links not gated by isDesktop', () => {
+		expect(enterprise).toMatch(/const drawerLinks = \$derived\(links\)/);
+		expect(enterprise).not.toMatch(/drawerLinks = \$derived\(isDesktop \? links/);
+	});
+
+	it('FIELD-CHROME-HOTFIX-3 — OfflineBanner offline-only (no syncing pill)', () => {
+		expect(offlineBanner).toMatch(/!syncStatus\.isOnline \? 'offline' : 'hidden'/);
+		expect(offlineBanner).not.toContain('Syncing pending changes');
+		expect(offlineBanner).not.toMatch(/ob-root--syncing/);
+		expect(offlineSync).toContain('_flushInFlight');
+	});
 });
 
 describe('workspaceNav alignment with canon staff bucket', () => {

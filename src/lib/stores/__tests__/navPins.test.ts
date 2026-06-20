@@ -16,21 +16,11 @@ vi.stubGlobal('localStorage', {
 	},
 });
 
-const updateDocMock = vi.fn().mockResolvedValue(undefined);
-vi.mock('$lib/firebase.js', () => ({
-	db: {},
-}));
-vi.mock('firebase/firestore', () => ({
-	doc: vi.fn(() => ({})),
-	updateDoc: (...args: unknown[]) => updateDocMock(...args),
-}));
-
 import { navPinsStore } from '$lib/stores/navPins.svelte.js';
 
 describe('navPins store (NAV-OPTION-D)', () => {
 	beforeEach(() => {
 		storage.clear();
-		updateDocMock.mockClear();
 		navPinsStore.hydrate('uid-test', 'player@test.com', 'player', null);
 	});
 
@@ -38,12 +28,11 @@ describe('navPins store (NAV-OPTION-D)', () => {
 		expect(navPinsStore.pins).toEqual(['/player/dashboard', '/player/workout', '/stats']);
 	});
 
-	it('setPin swaps a slot and persists to localStorage', () => {
+	it('setPin swaps a slot and persists to localStorage only', () => {
 		navPinsStore.setPin(2, '/player/tracker');
 		expect(navPinsStore.pins[2]).toBe('/player/tracker');
 		const raw = storage.get('vanguard_nav_pins_v1:uid-test:player');
 		expect(raw).toContain('/player/tracker');
-		expect(updateDocMock).toHaveBeenCalled();
 	});
 
 	it('resetToDefaults restores canon pins', () => {
@@ -57,17 +46,23 @@ describe('navPins store (NAV-OPTION-D)', () => {
 		expect(navPinsStore.pins[1]).toBe('/player/workout');
 	});
 
-	it('merges Firestore profile pins on hydrate', () => {
+	it('prefers localStorage over Firestore profile on hydrate', () => {
+		storage.set(
+			'vanguard_nav_pins_v1:uid-test:player',
+			JSON.stringify(['/player/settings', '/player/workout', '/stats']),
+		);
 		navPinsStore.hydrate('uid-test', 'player@test.com', 'player', {
 			player: ['/stats', '/player/workout', '/player/dashboard'],
 		});
-		expect(navPinsStore.pins).toEqual(['/stats', '/player/workout', '/player/dashboard']);
+		expect(navPinsStore.pins).toEqual(['/player/settings', '/player/workout', '/stats']);
 	});
 
-	it('sanitizes invalid Firestore pins to defaults per slot', () => {
-		navPinsStore.hydrate('uid-test', 'player@test.com', 'player', {
-			player: ['/coach', null, '/stats'],
-		});
+	it('sanitizes invalid local pins to defaults per slot', () => {
+		storage.set(
+			'vanguard_nav_pins_v1:uid-test:player',
+			JSON.stringify(['/coach', null, '/stats']),
+		);
+		navPinsStore.hydrate('uid-test', 'player@test.com', 'player', null);
 		expect(navPinsStore.pins[0]).toBe('/player/dashboard');
 		expect(navPinsStore.pins[2]).toBe('/stats');
 	});
