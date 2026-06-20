@@ -7,6 +7,8 @@ export type PinSlotIndex = 0 | 1 | 2 | 3;
 let open = $state(false);
 let mode = $state<FieldMenuMode>('browse');
 let pickSlotIndex = $state<PinSlotIndex>(0);
+/** Set synchronously on open — AppMenuSheet dismiss guard (400ms) before backdrop mounts. */
+let openedAt = $state(0);
 
 export const fieldMenu = {
 	get open(): boolean {
@@ -18,11 +20,16 @@ export const fieldMenu = {
 	get pickSlotIndex(): PinSlotIndex {
 		return pickSlotIndex;
 	},
+	get openedAt(): number {
+		return openedAt;
+	},
 	openBrowse(): void {
+		openedAt = Date.now();
 		mode = 'browse';
 		open = true;
 	},
 	openPickPin(slotIndex: PinSlotIndex): void {
+		openedAt = Date.now();
 		mode = 'pick-pin';
 		pickSlotIndex = slotIndex;
 		open = true;

@@ -28,6 +28,7 @@
 		fetchHouseholdClearance,
 		guardsPassForHouseholdLoad,
 		normalizeHouseholdId,
+		shouldClearLoadBusy,
 	} from '$lib/parent/loadHouseholdClearance.js';
 
 	const DISPATCH_CODE_INTEL = {
@@ -56,6 +57,7 @@
 	let loadErr = $state('');
 	let loadBusy = $state(false);
 	let loadGeneration = $state(0);
+	let lastFetchHid = $state('');
 	let actionBusy = $state(false);
 	let actErr = $state('');
 
@@ -247,8 +249,7 @@
 	});
 
 	$effect(() => {
-		// re-fetch when token/profile updates after waiver
-		void profile?.householdId;
+		// Stable household id only — avoid restart loops on unrelated profile object churn.
 		const hid = normalizeHouseholdId(profile?.householdId);
 
 		if (
@@ -268,31 +269,36 @@
 		}
 
 		const gen = ++loadGeneration;
-		const abortController = new AbortController();
-		loadErr = '';
+		if (hid !== lastFetchHid) {
+			loadErr = '';
+			lastFetchHid = hid;
+		}
 		loadBusy = true;
+
+		let cancelled = false;
 
 		void (async () => {
 			try {
-				const result = await fetchHouseholdClearance(getActiveDb(), hid, {
-					signal: abortController.signal,
-				});
-				if (gen !== loadGeneration) return;
+				// Match /parent/vpc — default `db` for households/{id} reads (not getActiveDb cell routing).
+				const result = await fetchHouseholdClearance(db, hid);
+				if (cancelled || gen !== loadGeneration) return;
 				householdId = result.householdId;
 				coppaSigned = result.coppaSigned;
 				coppaAt = result.coppaAt;
 				operativeRows = result.operativeRows;
 				loadErr = result.loadErr;
 			} catch (e) {
-				if (abortController.signal.aborted || gen !== loadGeneration) return;
+				if (cancelled || gen !== loadGeneration) return;
 				loadErr = e instanceof Error ? e.message : 'Read failed';
 			} finally {
-				loadBusy = false;
+				if (shouldClearLoadBusy(!cancelled && gen === loadGeneration)) {
+					loadBusy = false;
+				}
 			}
 		})();
 
 		return () => {
-			abortController.abort();
+			cancelled = true;
 		};
 	});
 
@@ -309,7 +315,7 @@
 			await authStore.refresh({ silent: true });
 			const hid = (authStore.userProfile?.householdId || '').toString() || householdId;
 			if (hid) {
-				const snap = await getDoc(doc(getActiveDb(), 'households', hid));
+				const snap = await getDoc(doc(db, 'households', hid));
 				if (snap.exists()) {
 					const x = snap.data() || {};
 					coppaSigned = x.coppaSigned === true;
@@ -369,7 +375,7 @@
 			teamDispatchCode = '';
 			await authStore.refresh({ silent: true });
 			if (householdId) {
-				const hs = await getDoc(doc(getActiveDb(), 'households', householdId));
+				const hs = await getDoc(doc(db, 'households', householdId));
 				if (hs.exists()) {
 					operativeRows = await buildEnrichedOperativeRows(getActiveDb(), hs.data() || {});
 				}

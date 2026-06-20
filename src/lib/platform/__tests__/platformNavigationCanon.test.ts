@@ -265,6 +265,7 @@ describe('NAV-OPTION-D-POLISH guards', () => {
 		expect(pinBar).toContain('showMenuSlot');
 		expect(pinBar).toContain('MENU_PIN_HREF');
 		expect(pinBar).toMatch(/ontouchstart=\{openMenuFromPin\}/);
+		expect(pinBar).toMatch(/isActive\(href\)[\s\S]*preventDefault/);
 	});
 
 	it('ReportAnomaly trigger hidden on field viewports', () => {

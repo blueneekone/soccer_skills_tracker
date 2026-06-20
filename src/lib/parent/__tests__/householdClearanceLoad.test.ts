@@ -46,9 +46,10 @@ describe('householdClearanceLoad guards', () => {
 		}
 	});
 
-	it('shouldClearLoadBusy always true so finally always clears loadBusy', () => {
+	it('shouldClearLoadBusy only when generation is still latest (stale runs keep busy)', () => {
 		expect(shouldClearLoadBusy(true)).toBe(true);
-		expect(shouldClearLoadBusy(false)).toBe(true);
+		expect(shouldClearLoadBusy(false)).toBe(false);
+		expect(shouldClearLoadBusy()).toBe(false);
 	});
 
 	it('normalizeHouseholdId trims and rejects empty', () => {
@@ -100,5 +101,27 @@ describe('fetchHouseholdClearance', () => {
 		const result = await fetchHouseholdClearance(db, 'hh-ok');
 		expect(buildEnrichedOperativeRows).toHaveBeenCalled();
 		expect(result.coppaSigned).toBe(true);
+	});
+
+	it('abort signal does not disarm timeout — stale run still returns loadErr after budget', async () => {
+		vi.useFakeTimers();
+		vi.mocked(getDoc).mockImplementation(() => new Promise(() => {}));
+		vi.mocked(buildEnrichedOperativeRows).mockResolvedValue([]);
+
+		const controller = new AbortController();
+		const db = {} as import('firebase/firestore').Firestore;
+		const pending = fetchHouseholdClearance(db, 'hh-abort', {
+			signal: controller.signal,
+			timeoutMs: 50,
+		});
+		controller.abort();
+		await vi.advanceTimersByTimeAsync(60);
+		const result = await pending;
+		expect(result.loadErr).toBe('Household read timed out');
+		vi.useRealTimers();
+	});
+
+	it('simulated stale generation must not clear loadBusy via shouldClearLoadBusy', () => {
+		expect(shouldClearLoadBusy(false)).toBe(false);
 	});
 });

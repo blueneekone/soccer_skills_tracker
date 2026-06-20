@@ -25,9 +25,9 @@ export function guardsPassForHouseholdLoad(input: {
 	return input.browser && !input.authLoading && !!input.userEmail;
 }
 
-/** loadBusy always clears in the page $effect finally — stale runs ignore results via generation. */
-export function shouldClearLoadBusy(_isLatestGeneration?: boolean): boolean {
-	return true;
+/** Page $effect finally — only the latest generation may clear loadBusy (stale runs ignore). */
+export function shouldClearLoadBusy(isLatestGeneration?: boolean): boolean {
+	return isLatestGeneration === true;
 }
 
 export async function fetchHouseholdClearance(
@@ -57,11 +57,15 @@ export async function fetchHouseholdClearance(
 		timeoutId = setTimeout(() => reject(new Error('household clearance timeout')), timeoutMs);
 	});
 
-	const onAbort = () => {
-		if (timeoutId !== undefined) clearTimeout(timeoutId);
-	};
-
-	options?.signal?.addEventListener('abort', onAbort, { once: true });
+	// Abort does not cancel the timeout — stale runs must still complete within budget so
+	// generation guards can settle (Firestore getDoc ignores AbortSignal).
+	options?.signal?.addEventListener(
+		'abort',
+		() => {
+			/* no-op: keep timeout armed */
+		},
+		{ once: true },
+	);
 
 	try {
 		const result = await Promise.race([
@@ -115,6 +119,5 @@ export async function fetchHouseholdClearance(
 		};
 	} finally {
 		if (timeoutId !== undefined) clearTimeout(timeoutId);
-		options?.signal?.removeEventListener('abort', onAbort);
 	}
 }

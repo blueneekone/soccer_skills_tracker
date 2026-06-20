@@ -38,6 +38,18 @@ describe('field menu sheet portal guards', () => {
 		expect(fieldMenuStore).toContain('close()');
 	});
 
+	it('openBrowse/openPickPin set openedAt synchronously before open=true (dismiss guard)', () => {
+		expect(fieldMenuStore).toMatch(
+			/openBrowse\(\):\s*void\s*\{[\s\S]*?openedAt\s*=\s*Date\.now\(\);[\s\S]*?open\s*=\s*true;/,
+		);
+		expect(fieldMenuStore).toMatch(
+			/openPickPin\([\s\S]*?\):\s*void\s*\{[\s\S]*?openedAt\s*=\s*Date\.now\(\);[\s\S]*?open\s*=\s*true;/,
+		);
+		expect(fieldMenuStore).toContain('get openedAt()');
+		expect(menuSheet).toContain('fieldMenu.openedAt');
+		expect(menuSheet).not.toMatch(/\$effect\(\(\)\s*=>\s*\{\s*if\s*\(open\)\s*openedAt/);
+	});
+
 	it('shells wire fieldMenu store — no local menuSheetOpen state', () => {
 		expect(enterprise).toContain("import { fieldMenu } from '$lib/stores/fieldMenu.svelte.js'");
 		expect(playerShell).toContain("import { fieldMenu } from '$lib/stores/fieldMenu.svelte.js'");
@@ -52,6 +64,12 @@ describe('field menu sheet portal guards', () => {
 		expect(enterprise).toContain('showMenuSlot={showMenuSlot}');
 		expect(playerShell).toContain('showMenuSlot={showMenuSlot}');
 		expect(enterprise).toContain('MENU_PIN_HREF');
+	});
+
+	it('MobilePinBar portals to modal host and sits above dashboard overlays', () => {
+		expect(pinBar).toContain("import { portal } from '$lib/actions/portal.js'");
+		expect(pinBar).toMatch(/use:portal[\s\S]*mobile-pin-bar/);
+		expect(pinBar).toMatch(/z-index:\s*10001/);
 	});
 
 	it('Menu pin uses ontouchstart + stopPropagation iOS tap fix', () => {
@@ -70,8 +88,9 @@ describe('field menu sheet portal guards', () => {
 		expect(menuSheet).toContain("import { portal } from '$lib/actions/portal.js'");
 		expect(menuSheet).toMatch(/\{#if open\}[\s\S]*use:portal/);
 		expect(menuSheet).toMatch(/use:portal[\s\S]*app-menu-backdrop/);
-		expect(menuSheet).toMatch(/z-index:\s*9998/);
-		expect(menuSheet).toMatch(/z-index:\s*9999/);
+		expect(menuSheet).toMatch(/z-index:\s*10002/);
+		expect(menuSheet).toMatch(/z-index:\s*10003/);
+		expect(menuSheet).toContain('dismissSheet');
 	});
 
 	it('enterprise sidebar collapse is not gated by isDesktop', () => {

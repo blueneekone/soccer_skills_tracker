@@ -11,6 +11,7 @@
 	} from '$lib/shell/navPinCatalog.js';
 	import type { FieldQuickAction } from '$lib/shell/fieldQuickActions.js';
 	import type { IconName } from '$lib/icons/registry.js';
+	import { fieldMenu } from '$lib/stores/fieldMenu.svelte.js';
 
 	interface Props {
 		open: boolean;
@@ -83,6 +84,11 @@
 		}
 	}
 
+	function dismissSheet() {
+		if (Date.now() - fieldMenu.openedAt < 400) return;
+		onDismiss();
+	}
+
 	function onSheetTouchStart(e: TouchEvent) {
 		const t = e.touches[0];
 		if (t) dragStartY = t.clientY;
@@ -91,7 +97,7 @@
 	function onSheetTouchEnd(e: TouchEvent) {
 		const t = e.changedTouches[0];
 		if (!t) return;
-		if (t.clientY - dragStartY >= 44) onDismiss();
+		if (t.clientY - dragStartY >= 44) dismissSheet();
 	}
 
 	$effect(() => {
@@ -120,7 +126,7 @@
 		class="app-menu-backdrop"
 		class:app-menu-backdrop--player={skin === 'player'}
 		role="presentation"
-		onclick={onDismiss}
+		onclick={dismissSheet}
 	></div>
 
 	<div
@@ -277,7 +283,7 @@
 	.app-menu-backdrop {
 		position: fixed;
 		inset: 0;
-		z-index: 9998;
+		z-index: 10002;
 		background: rgba(0, 0, 0, 0.55);
 		backdrop-filter: blur(4px);
 	}
@@ -291,7 +297,7 @@
 		left: 0;
 		right: 0;
 		bottom: 0;
-		z-index: 9999;
+		z-index: 10003;
 		max-height: min(88vh, 640px);
 		display: flex;
 		flex-direction: column;

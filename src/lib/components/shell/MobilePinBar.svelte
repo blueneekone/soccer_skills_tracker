@@ -1,5 +1,6 @@
 <script lang="ts">
 	import Icon from '$lib/components/ui/Icon.svelte';
+	import { portal } from '$lib/actions/portal.js';
 	import {
 		findCatalogItem,
 		getMenuPinItem,
@@ -45,6 +46,7 @@
 	const LONG_PRESS_MS = 500;
 	let longPressTimer: ReturnType<typeof setTimeout> | null = null;
 	let longPressSlot = $state<0 | 1 | 2 | 3 | null>(null);
+	let menuOpenedViaTouchAt = 0;
 
 	function resolvePinItem(href: string | null): NavPinItem | null {
 		if (!href) return null;
@@ -76,113 +78,129 @@
 
 	function handleNavClick(href: string, e: MouseEvent) {
 		e.stopPropagation();
+		if (isActive(href)) {
+			e.preventDefault();
+			return;
+		}
 		onNavClick?.(href, e);
 	}
 
 	function openMenuFromPin(e: Event) {
 		e.stopPropagation();
+		if (e.type === 'touchstart') {
+			if (e.cancelable) e.preventDefault();
+			menuOpenedViaTouchAt = Date.now();
+			onMenuOpen();
+			return;
+		}
+		if (e.type === 'click' && Date.now() - menuOpenedViaTouchAt < 700) {
+			return;
+		}
 		onMenuOpen();
 	}
 </script>
 
-<!-- svelte-ignore a11y_no_static_element_interactions -->
-<nav
-	class="mobile-pin-bar"
-	class:mobile-pin-bar--enterprise={variant === 'enterprise' || variant === 'parent-trust'}
-	class:mobile-pin-bar--player={variant === 'player'}
-	class:mobile-pin-bar--parent-trust={variant === 'parent-trust'}
-	class:mobile-pin-bar--accent-neutral={accent === 'neutral'}
-	class:mobile-pin-bar--accent-gold={accent === 'gold'}
-	aria-label="Main navigation"
->
-	<div class="mobile-pin-bar__row" role="tablist">
-		{#each pins as href, slotIndex (slotIndex)}
-			{@const item = resolvePinItem(href)}
-			{@const slot = slotIndex as 0 | 1 | 2 | 3}
-			{#if item}
-				{#if item.href === MENU_PIN_HREF}
+<div class="mobile-pin-bar-portal" use:portal>
+	<!-- svelte-ignore a11y_no_static_element_interactions -->
+	<nav
+		class="mobile-pin-bar"
+		class:mobile-pin-bar--enterprise={variant === 'enterprise' || variant === 'parent-trust'}
+		class:mobile-pin-bar--player={variant === 'player'}
+		class:mobile-pin-bar--parent-trust={variant === 'parent-trust'}
+		class:mobile-pin-bar--accent-neutral={accent === 'neutral'}
+		class:mobile-pin-bar--accent-gold={accent === 'gold'}
+		aria-label="Main navigation"
+	>
+		<div class="mobile-pin-bar__row" role="tablist">
+			{#each pins as href, slotIndex (slotIndex)}
+				{@const item = resolvePinItem(href)}
+				{@const slot = slotIndex as 0 | 1 | 2 | 3}
+				{#if item}
+					{#if item.href === MENU_PIN_HREF}
+						<button
+							type="button"
+							role="tab"
+							aria-selected={false}
+							aria-label={item.label}
+							class="mobile-pin-bar__slot mobile-pin-bar__slot--pin mobile-pin-bar__slot--menu"
+							ontouchstart={openMenuFromPin}
+							onclick={openMenuFromPin}
+						>
+							<Icon name={item.icon as IconName} size={22} />
+							<span class="mobile-pin-bar__label">{item.label}</span>
+						</button>
+					{:else}
+						{@const active = isActive(item.href)}
+						{@const gated = gatedHrefs.has(item.href)}
+						<a
+							href={item.href}
+							role="tab"
+							aria-selected={active}
+							aria-label={item.label}
+							aria-disabled={gated ? 'true' : undefined}
+							aria-current={active ? 'page' : undefined}
+							class="mobile-pin-bar__slot mobile-pin-bar__slot--pin"
+							class:mobile-pin-bar__slot--active={active}
+							class:mobile-pin-bar__slot--gated={gated}
+							data-sveltekit-reload
+							data-sveltekit-preload-data="hover"
+							onpointerdown={() => onPinPointerDown(slot)}
+							onpointerup={onPinPointerUp}
+							onpointerleave={onPinPointerUp}
+							onpointercancel={onPinPointerUp}
+							onclick={(e) => handleNavClick(item.href, e)}
+						>
+							<Icon name={item.icon as IconName} size={22} />
+							<span class="mobile-pin-bar__label">{item.label}</span>
+						</a>
+					{/if}
+				{:else}
 					<button
 						type="button"
-						role="tab"
-						aria-selected={false}
-						aria-label={item.label}
-						class="mobile-pin-bar__slot mobile-pin-bar__slot--pin mobile-pin-bar__slot--menu"
+						class="mobile-pin-bar__slot mobile-pin-bar__slot--empty"
+						aria-label="Pin a route — long press to customize"
 						onpointerdown={() => onPinPointerDown(slot)}
 						onpointerup={onPinPointerUp}
 						onpointerleave={onPinPointerUp}
 						onpointercancel={onPinPointerUp}
-						ontouchstart={openMenuFromPin}
-						onclick={openMenuFromPin}
+						onclick={(e) => {
+							e.stopPropagation();
+							onPinLongPress(slot);
+						}}
 					>
-						<Icon name={item.icon as IconName} size={22} />
-						<span class="mobile-pin-bar__label">{item.label}</span>
+						<Icon name="action.add" size={20} />
+						<span class="mobile-pin-bar__label">Pin</span>
 					</button>
-				{:else}
-					{@const active = isActive(item.href)}
-					{@const gated = gatedHrefs.has(item.href)}
-					<a
-						href={item.href}
-						role="tab"
-						aria-selected={active}
-						aria-label={item.label}
-						aria-disabled={gated ? 'true' : undefined}
-						class="mobile-pin-bar__slot mobile-pin-bar__slot--pin"
-						class:mobile-pin-bar__slot--active={active}
-						class:mobile-pin-bar__slot--gated={gated}
-						data-sveltekit-reload
-						data-sveltekit-preload-data="hover"
-						onpointerdown={() => onPinPointerDown(slot)}
-						onpointerup={onPinPointerUp}
-						onpointerleave={onPinPointerUp}
-						onpointercancel={onPinPointerUp}
-						onclick={(e) => handleNavClick(item.href, e)}
-					>
-						<Icon name={item.icon as IconName} size={22} />
-						<span class="mobile-pin-bar__label">{item.label}</span>
-					</a>
 				{/if}
-			{:else}
+			{/each}
+
+			{#if showMenuSlot}
 				<button
 					type="button"
-					class="mobile-pin-bar__slot mobile-pin-bar__slot--empty"
-					aria-label="Pin a route — long press to customize"
-					onpointerdown={() => onPinPointerDown(slot)}
-					onpointerup={onPinPointerUp}
-					onpointerleave={onPinPointerUp}
-					onpointercancel={onPinPointerUp}
-					onclick={(e) => {
-						e.stopPropagation();
-						onPinLongPress(slot);
-					}}
+					class="mobile-pin-bar__slot mobile-pin-bar__slot--menu"
+					aria-label="Open menu"
+					ontouchstart={openMenuFromPin}
+					onclick={openMenuFromPin}
 				>
-					<Icon name="action.add" size={20} />
-					<span class="mobile-pin-bar__label">Pin</span>
+					<Icon name="nav.menu" size={22} />
+					<span class="mobile-pin-bar__label">Menu</span>
 				</button>
 			{/if}
-		{/each}
-
-		{#if showMenuSlot}
-			<button
-				type="button"
-				class="mobile-pin-bar__slot mobile-pin-bar__slot--menu"
-				aria-label="Open menu"
-				ontouchstart={openMenuFromPin}
-				onclick={openMenuFromPin}
-			>
-				<Icon name="nav.menu" size={22} />
-				<span class="mobile-pin-bar__label">Menu</span>
-			</button>
-		{/if}
-	</div>
-</nav>
+		</div>
+	</nav>
+</div>
 
 <style>
-	.mobile-pin-bar {
+	.mobile-pin-bar-portal {
 		position: fixed;
-		bottom: 0;
-		left: 0;
-		right: 0;
-		z-index: 950;
+		inset: auto 0 0 0;
+		z-index: 10001;
+		pointer-events: none;
+	}
+
+	.mobile-pin-bar {
+		position: relative;
+		pointer-events: auto;
 		min-height: calc(56px + env(safe-area-inset-bottom, 0px));
 		padding-bottom: env(safe-area-inset-bottom, 0px);
 		background: rgba(2, 2, 2, 0.88);
@@ -206,7 +224,7 @@
 	}
 
 	@media (min-width: 1024px) {
-		.mobile-pin-bar {
+		.mobile-pin-bar-portal {
 			display: none;
 		}
 	}
