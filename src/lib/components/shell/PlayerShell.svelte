@@ -9,14 +9,16 @@
 	import { licenseEntitlementStore } from '$lib/stores/licenseEntitlement.svelte.js';
 	import { vanguardFlags } from '$lib/services/remoteConfig.svelte.js';
 	import { handleSignOut } from '$lib/auth/signOutFlow.js';
+	import MobilePinBar from '$lib/components/shell/MobilePinBar.svelte';
+	import AppMenuSheet from '$lib/components/shell/AppMenuSheet.svelte';
 	import {
-		playerPrimaryFieldNav,
-		playerOverflowNav,
 		playerRailNav,
 		PLAYER_HQ_HREF,
 		isPlayerHubActive,
 		isPlayerNavActive,
 	} from '$lib/player/shell/playerPrimaryNav.js';
+	import { getNavCatalog } from '$lib/shell/navPinCatalog.js';
+	import { navPinsStore } from '$lib/stores/navPins.svelte.js';
 	import '$lib/styles/player-shell.css';
 	import '$lib/styles/player-dossier.css';
 	import '$lib/styles/player-modal-scrim.css';
@@ -48,24 +50,57 @@
 	}
 
 	let signingOut = $state(false);
-	let moreOpen = $state(false);
+	let menuSheetOpen = $state(false);
+	let menuSheetMode = $state<'browse' | 'pick-pin'>('browse');
+	let pickSlotIndex = $state<0 | 1 | 2>(0);
 	let isDesktop = $state(false);
+
+	const playerCatalog = $derived(getNavCatalog('player'));
+	const gatedHrefs = $derived(
+		playerOsGate.blocked ? PRIMARY_LOCK_HREFS : new Set<string>(),
+	);
+
+	function playerShellNavActive(href: string): boolean {
+		if (href === PLAYER_HQ_HREF) return isPlayerHubActive(page.url.pathname);
+		return isPlayerNavActive(href, page.url.pathname);
+	}
+
+	function openMenuBrowse() {
+		menuSheetMode = 'browse';
+		menuSheetOpen = true;
+	}
+
+	function openMenuPickPin(slotIndex: 0 | 1 | 2) {
+		menuSheetMode = 'pick-pin';
+		pickSlotIndex = slotIndex;
+		menuSheetOpen = true;
+	}
+
+	function closeMenuSheet() {
+		menuSheetOpen = false;
+		menuSheetMode = 'browse';
+	}
 
 	$effect(() => {
 		if (typeof window === 'undefined') return;
 		const mq = window.matchMedia('(min-width: 1024px)');
 		const onChange = () => {
 			isDesktop = mq.matches;
-			if (mq.matches) moreOpen = false;
+			if (mq.matches) closeMenuSheet();
 		};
 		onChange();
 		mq.addEventListener('change', onChange);
 		return () => mq.removeEventListener('change', onChange);
 	});
 
-	function closeMoreSheet() {
-		moreOpen = false;
-	}
+	$effect(() => {
+		const uid = authStore.user?.uid ?? '';
+		const email = authStore.user?.email ?? '';
+		const profilePins = authStore.userProfile?.mobileNavPins as
+			| Record<string, [string | null, string | null, string | null]>
+			| undefined;
+		navPinsStore.hydrate(uid, email, 'player', profilePins ?? null);
+	});
 
 	async function disconnect() {
 		if (signingOut) return;
@@ -74,7 +109,7 @@
 			await handleSignOut();
 		} finally {
 			signingOut = false;
-			closeMoreSheet();
+			closeMenuSheet();
 		}
 	}
 </script>
@@ -133,86 +168,35 @@
 			</button>
 		</nav>
 	{:else}
-		<nav class="ps-field-bar" aria-label="Player navigation">
-			{#each playerPrimaryFieldNav as link, index (link.href)}
-				{@const path = page.url.pathname}
-				{@const isHub = link.href === PLAYER_HQ_HREF}
-				{@const hubActive = isHub && isPlayerHubActive(path)}
-				{@const routeActive = !isHub && isPlayerNavActive(link.href, path)}
-				{@const gated = playerOsGate.blocked && PRIMARY_LOCK_HREFS.has(link.href)}
-				<a
-					class="ps-field-bar__tab"
-					class:ps-field-bar__tab--hub-active={hubActive}
-					class:ps-field-bar__tab--active={routeActive}
-					class:ps-field-bar__tab--gated={gated}
-					href={link.href}
-					aria-label={link.label}
-					aria-current={hubActive || routeActive ? 'page' : undefined}
-					aria-disabled={gated ? 'true' : undefined}
-					data-sveltekit-preload-data="hover"
-					data-sveltekit-reload
-					onclick={(e) => onNavClick(link.href, e)}
-				>
-					<span class="ps-field-bar__icon" aria-hidden="true">
-						<Icon name={link.icon} size={22} />
-					</span>
-					<span class="ps-field-bar__label">{link.label}</span>
-				</a>
-			{/each}
-			<button
-				type="button"
-				class="ps-field-bar__tab ps-field-bar__tab--more"
-				aria-label="More navigation"
-				aria-expanded={moreOpen}
-				aria-controls="ps-more-sheet"
-				onclick={() => (moreOpen = true)}
-			>
-				<span class="ps-field-bar__icon" aria-hidden="true">
-					<Icon name="nav.menu" size={22} />
-				</span>
-				<span class="ps-field-bar__label">More</span>
-			</button>
-		</nav>
-
-		{#if moreOpen}
-			<!-- svelte-ignore a11y_click_events_have_key_events -->
-			<!-- svelte-ignore a11y_no_static_element_interactions -->
-			<div class="ps-more-backdrop" role="presentation" onclick={closeMoreSheet}></div>
-			<div id="ps-more-sheet" class="ps-more-sheet" role="dialog" aria-modal="true" aria-label="More navigation">
-				<header class="ps-more-sheet__head">
-					<span class="ps-more-sheet__title">More</span>
-					<button type="button" class="ps-more-sheet__close icon-tap" onclick={closeMoreSheet} aria-label="Close">
-						<Icon name="sys.close" size={20} />
-					</button>
-				</header>
-				<nav class="ps-more-sheet__nav" aria-label="Secondary player routes">
-					{#each playerOverflowNav as link (link.href)}
-						{@const path = page.url.pathname}
-						{@const active = isPlayerNavActive(link.href, path)}
-						<a
-							class="ps-more-sheet__link"
-							class:ps-more-sheet__link--active={active}
-							href={link.href}
-							data-sveltekit-preload-data="hover"
-							data-sveltekit-reload
-							onclick={closeMoreSheet}
-						>
-							<Icon name={link.icon} size={20} />
-							<span>{link.label}</span>
-						</a>
-					{/each}
-				</nav>
-				<button
-					type="button"
-					class="ps-more-sheet__sign-out"
-					disabled={signingOut}
-					onclick={() => void disconnect()}
-				>
-					<Icon name="nav.sign-out" size={18} />
-					<span>{signingOut ? 'Signing out…' : 'Sign out'}</span>
-				</button>
-			</div>
-		{/if}
+		<MobilePinBar
+			pins={navPinsStore.pins}
+			catalog={playerCatalog}
+			personaKey="player"
+			pathname={page.url.pathname}
+			searchParams={page.url.searchParams}
+			isActive={playerShellNavActive}
+			variant="player"
+			accent="gold"
+			gatedHrefs={gatedHrefs}
+			onNavClick={onNavClick}
+			onMenuOpen={openMenuBrowse}
+			onPinLongPress={openMenuPickPin}
+			onSwipeUp={openMenuBrowse}
+		/>
+		<AppMenuSheet
+			open={menuSheetOpen}
+			personaKey="player"
+			catalog={playerCatalog}
+			pinnedHrefs={navPinsStore.pins.filter(Boolean) as string[]}
+			mode={menuSheetMode}
+			pickSlotIndex={pickSlotIndex}
+			skin="player"
+			pathname={page.url.pathname}
+			isActive={playerShellNavActive}
+			onDismiss={closeMenuSheet}
+			onPickPin={(href) => navPinsStore.setPin(pickSlotIndex, href)}
+			onResetDefaults={() => navPinsStore.resetToDefaults()}
+		/>
 	{/if}
 
 	<div class="ps-stack">

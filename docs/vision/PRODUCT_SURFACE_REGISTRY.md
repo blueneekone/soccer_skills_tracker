@@ -13,7 +13,7 @@
 3. **Tier 2** — Shipped code may exist; not in primary nav (deep-link OK); **waivable** in QA without blocking functional sale.
 4. **Tier 3** — Tabled post-acquisition; agents **do not** extend, nav-link, or prioritize without owner registry update.
 5. **Nav policy** — **Tier 1** = pre-acquisition required for functional sign-off (or explicit waiver in §4). **Tier 2+** routes may remain in sidebar per §2; they are waivable and not exec-cut blockers per §0 rules 2–3. `nav_visible=false` = hidden from primary nav (deep-link only) — e.g. War Room PS-C04. Do not remove Tier 2 coach/parent links from §2; they are intentional and waivable.
-6. **Nav chrome** — Layout law (field/desk breakpoints, Option A tabs, overflow drawer, skin separation) → [`PLATFORM_NAVIGATION_CANON.md`](./PLATFORM_NAVIGATION_CANON.md). This registry §2 remains **href source of truth**; shells must not duplicate nav arrays.
+6. **Nav chrome** — Layout law (field/desk breakpoints, Option D pin bar + AppMenuSheet, skin separation) → [`PLATFORM_NAVIGATION_CANON.md`](./PLATFORM_NAVIGATION_CANON.md). This registry §2 remains **href source of truth**; `navPinCatalog.ts` + shells must not duplicate nav arrays.
 
 ---
 
@@ -80,7 +80,7 @@ Source: `[src/lib/shell/workspaceNav.js](../../src/lib/shell/workspaceNav.js)`
 
 ### Staff admin bucket (NAV-CANON)
 
-Roles using `EnterpriseConsoleShell` with **admin interface skin** on all viewports: `coach`, `director`, `admin`, `global_admin`, `super_admin`, `registrar`, **`recruiter`**. Field chrome: Option A bottom tabs (≤5 Tier 1) + overflow drawer — see [`PLATFORM_NAVIGATION_CANON.md`](./PLATFORM_NAVIGATION_CANON.md) §3c–§4.
+Roles using `EnterpriseConsoleShell` with **admin interface skin** on all viewports: `coach`, `director`, `admin`, `global_admin`, `super_admin`, `registrar`, **`recruiter`**. Field chrome: Option D bottom pin bar (3 customizable pins + Menu) + AppMenuSheet — see [`PLATFORM_NAVIGATION_CANON.md`](./PLATFORM_NAVIGATION_CANON.md) §3c–§4.
 
 ### Coach (`coachLinks`) — allowed
 

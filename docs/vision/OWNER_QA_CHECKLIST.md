@@ -344,23 +344,22 @@ Complete Profile error appears when authenticating player even though they're li
 
 ---
 
-## Phase 4b — Platform navigation chrome (NAV-IMPL)
+## Phase 4b — Platform navigation chrome (NAV-OPTION-D)
 
 **Gate:** Run on live dev @ **390px** (phone or DevTools) and spot-check **1280px**. Authority: [`PLATFORM_NAVIGATION_CANON.md`](./PLATFORM_NAVIGATION_CANON.md). **Do not proceed to Phase 5 sign-off until Phase 4b passes** (Session B).
 
 > **Id choice:** QA-161/162/163 are coach clearance + director compliance (Phase 4). Nav chrome uses **QA-NAV-01–07** to avoid collision.
 
-- [ ] **QA-NAV-01** **Player** @390px — Bottom tabs: **HQ · Train · Stats · More**; More sheet has Tracker / Comms / Armory / Settings; glance band on HQ @390px without scroll
+- [ ] **QA-NAV-01** **Player** @390px — Bottom pins: **HQ · Train · Stats** + **Menu** slot; sheet has Tracker / Comms / Armory / Settings + Sign out; **no top bar**; glance band on HQ @390px without scroll
   - **@1280px:** Left rail; no bottom bar
-- [ ] **QA-NAV-02** **Coach** @390px — Bottom tabs: **Daily Intel · Forge · Messages**; overflow drawer has Tier 2 only (no duplicate Forge)
+- [ ] **QA-NAV-02** **Coach** @390px — Default pins: **Daily Intel · Forge · Messages**; sheet has Tier 2 ops; **no** mobile header or sidebar drawer
   - **@1280px:** Left sidebar; admin flat bar styling
-- [ ] **QA-NAV-03** **Parent** @390px — Bottom tabs: **Household · VPC · Command · Messages**; trust skin on content
-  - **@1280px:** Same tab set; sidebar desk mode
-- [ ] **QA-NAV-04** **Director/Admin** (optional) @390px — Field tabs + overflow; staff-admin skin
-  - **@1280px:** Sidebar
-- [ ] **QA-NAV-05** **Cross-cutting** — One primary nav surface — no sidebar + bottom bar showing same hrefs on field viewport
-- [ ] **QA-NAV-06** **Player** — Safe-area inset + **44px** minimum touch targets on tab bar
-- [ ] **QA-NAV-07** **Coach Forge @390px** — Deploy form in document flow (Forge §3) — nav-specific viewport; ties to QA-142
+- [ ] **QA-NAV-03** **Parent** @390px — Default pins: **Household · VPC · Command**; sheet has Messages, Log Workout, Payments; trust skin on content
+  - **@1280px:** Sidebar desk mode
+- [ ] **QA-NAV-04** **Pin customize** — Long-press pin slot → pick route → persists after reload (localStorage + Firestore)
+- [ ] **QA-NAV-05** **Cross-cutting** @390px — **No top mobile header** on any persona; one primary nav surface (pin bar + sheet only)
+- [ ] **QA-NAV-06** **Menu / swipe-up** — Swipe-up from bottom edge opens same AppMenuSheet as Menu tab
+- [ ] **QA-NAV-07** **Coach Forge @390px** — Deploy form in document flow with extra vertical space from removed top bar — ties to QA-142
   - **@1280px:** Workbench column layout
 
 ### Phase 4b — Owner notes

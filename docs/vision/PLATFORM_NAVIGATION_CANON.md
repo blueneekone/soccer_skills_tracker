@@ -1,8 +1,8 @@
 # Platform Navigation Canon
 
 **Navigation layout law** — app-native mobile-first chrome for all personas, persona-locked skins, single primary nav surface per viewport.  
-**Project:** `sports-skill-tracker-dev` · **Slice:** NAV-CANON  
-**Nav link source of truth:** [`PRODUCT_SURFACE_REGISTRY.md`](./PRODUCT_SURFACE_REGISTRY.md) §2 → [`workspaceNav.js`](../../src/lib/shell/workspaceNav.js) (enterprise) + `playerPrimaryNav.ts` (player, NAV-IMPL)
+**Project:** `sports-skill-tracker-dev` · **Slice:** NAV-OPTION-D  
+**Nav link source of truth:** [`PRODUCT_SURFACE_REGISTRY.md`](./PRODUCT_SURFACE_REGISTRY.md) §2 → [`navPinCatalog.ts`](../../src/lib/shell/navPinCatalog.ts) (field pins + AppMenuSheet) · [`workspaceNav.js`](../../src/lib/shell/workspaceNav.js) (desk sidebar)
 
 ---
 
@@ -12,13 +12,13 @@
 |-------|-----|------|
 | 1 | [`PRODUCT_SURFACE_REGISTRY.md`](./PRODUCT_SURFACE_REGISTRY.md) | Routes, tiers, `nav_visible`, nav href tables |
 | 2 | [`PLATFORM_WORKFLOW_CANON.md`](./PLATFORM_WORKFLOW_CANON.md) | Gold path steps + UX states |
-| 3 | **This file** | Shell chrome grammar, breakpoints, Option A field mode, skin separation |
+| 3 | **This file** | Shell chrome grammar, breakpoints, Option D field mode, skin separation |
 | 4 | [`PLATFORM_DESIGN_SYSTEM.md`](./PLATFORM_DESIGN_SYSTEM.md) | Shared primitives, layout catalog |
 | 5 | Persona foundations | Player / Coach / Parent material vocabulary |
 | 6 | [`PLATFORM_BUILD_MANDATES.md`](./PLATFORM_BUILD_MANDATES.md) | Accept / reject mandates |
 | 7 | [`PLATFORM_EXPERIENCE_RUBRIC.md`](./PLATFORM_EXPERIENCE_RUBRIC.md) | Pass/fail quality bar |
 
-**Hard rule:** Registry §2 defines *which* links exist; this canon defines *how* they mount in chrome — never duplicate nav arrays in shell components.
+**Hard rule:** Registry §2 defines *which* links exist; `navPinCatalog.ts` defines field pins + sheet catalogs; this canon defines *how* they mount in chrome — never duplicate nav arrays in shell components.
 
 ---
 
@@ -26,11 +26,11 @@
 
 Exactly **one persistent primary navigation surface** per viewport.
 
-- **Field mode (<1024px):** full-width fixed bottom tab bar (Option A) — max **5** Tier 1 primary links.
-- **Overflow:** hamburger drawer / More sheet lists Tier 2+ (`nav_visible=true`) and system actions only — **no duplicate hrefs** from the bottom bar.
+- **Field mode (<1024px):** full-width fixed **bottom pin bar** (Option D) — **3 user-customizable pins** + fixed **Menu** slot.
+- **Full nav:** **AppMenuSheet** (Menu tap + swipe-up from bottom edge) — all Tier 1 + Tier 2 catalog items + system actions.
 - **Desk mode (≥1024px):** left sidebar (enterprise) or left rail (player) — bottom bar hidden.
 
-Reject: sidebar drawer + bottom tabs both listing the same primary hrefs on field viewports.
+Reject: top mobile header + bottom bar + off-canvas sidebar on field viewports (triple chrome).
 
 ---
 
@@ -39,11 +39,11 @@ Reject: sidebar drawer + bottom tabs both listing the same primary hrefs on fiel
 | Token | Value | Meaning |
 |-------|-------|---------|
 | `--shell-field-max` | `1023.98px` | Last pixel of field / mobile chrome |
-| `--shell-desktop-min` | `1024px` | Desk sidebar / rail; hide bottom tab bar |
+| `--shell-desktop-min` | `1024px` | Desk sidebar / rail; hide bottom pin bar |
 
 All shells flip at **1024px**. Deprecate Player **768px** rail flip — target `--shell-desktop-min` for rail vs bottom bar (NAV-IMPL).
 
-Implementation hooks: `MobileTabBar.svelte` `@media (min-width: 1024px) { display: none }`, `EnterpriseConsoleShell` `matchMedia('(min-width: 1024px)')`.
+Implementation hooks: `MobilePinBar.svelte` `@media (min-width: 1024px) { display: none }`, `EnterpriseConsoleShell` `matchMedia('(min-width: 1024px)')`.
 
 ---
 
@@ -53,10 +53,12 @@ Navigation separates **chrome grammar** (interaction) from **skin grammar** (vis
 
 ### §3a Chrome grammar (universal field mode)
 
-- App-native, mobile-first, **Option A**
-- Full-width fixed bottom tab bar with safe-area inset
-- **44px** minimum touch targets on tab items
-- Hamburger / More overflow for Tier 2+ — never duplicate primary tab hrefs
+- App-native, mobile-first, **Option D**
+- Full-width fixed bottom pin bar: **3 customizable pins** + **Menu** slot with safe-area inset
+- **44px** minimum touch targets on bar items
+- **AppMenuSheet** for full catalog — pins are a subset of catalog only (duplicate href highlight OK)
+- Long-press pin slot → sheet in **pick-pin** mode; **Reset to defaults** in sheet footer
+- Persistence: `localStorage` + Firestore `users/{email}.mobileNavPins[personaKey]`
 - Native document scroll; content inset reserves space for fixed chrome (see §6)
 
 ### §3b Skin grammar (persona-locked)
@@ -67,7 +69,7 @@ Navigation separates **chrome grammar** (interaction) from **skin grammar** (vis
 | Player | Dossier (`player-shell.css`, `--pd-*`) | Enterprise flat admin bar styling |
 | Parent | Trust lounge (`parent-lounge-shell.css` on content) | Admin SIEM table density on tab labels; Player gold dock |
 
-**Never** apply Player dock styling to `MobileTabBar` on staff routes. **Never** apply admin SIEM styling to Player or Parent trust surfaces.
+**Never** apply Player dock styling to staff pin bar routes. **Never** apply admin SIEM styling to Player or Parent trust surfaces.
 
 ---
 
@@ -75,10 +77,10 @@ Navigation separates **chrome grammar** (interaction) from **skin grammar** (vis
 
 | Persona / roles | Shell | Field chrome (<1024) | Field skin | Desk (≥1024) |
 |-----------------|-------|----------------------|------------|--------------|
-| Coach | `EnterpriseConsoleShell` | Tabs: Daily Intel · Forge · Messages; overflow drawer | Admin SIEM | Left sidebar |
-| Director, Admin, Registrar, **Recruiter** | `EnterpriseConsoleShell` | Primary tabs (≤5 from registry); overflow drawer | Admin console | Left sidebar |
-| Player | `PlayerShell` | HQ · Train · Stats · More | Dossier | Left rail |
-| Parent | `EnterpriseConsoleShell` | Household · VPC · Command · Messages; overflow drawer | Trust lounge | Left sidebar |
+| Coach | `EnterpriseConsoleShell` | Pins: Daily Intel · Forge · Messages; Menu sheet | Admin SIEM | Left sidebar |
+| Director, Admin, Registrar, **Recruiter** | `EnterpriseConsoleShell` | Default pins from §4 table; Menu sheet | Admin console | Left sidebar |
+| Player | `PlayerShell` | Pins: HQ · Train · Stats; Menu sheet | Dossier | Left rail |
+| Parent | `EnterpriseConsoleShell` | Pins: Household · VPC · Command; Menu sheet | Trust lounge | Left sidebar |
 
 ### Staff admin bucket (explicit)
 
@@ -88,32 +90,60 @@ All use `EnterpriseConsoleShell` with **admin interface skin** on mobile **and**
 
 ---
 
-## §4 Staff admin mobile field spec
+## §4 Option D — bottom pin bar + AppMenuSheet
 
-- CSS: `enterprise-console.css` tokens on nav chrome only — **not** `player-shell.css`
-- Full-width fixed bottom bar: flat admin background, 1px top border — **no floating pill**, no player blur/glow dock
-- Active tab: cyan (coach) or neutral/grey (director / admin / registrar / recruiter) — **zero gold**
-- Mobile header + workspace switcher retained
-- Overflow drawer: Tier 2+ `nav_visible=true` + system actions — **not** primary tab duplicates
-- Nav arrays: [`workspaceNav.js`](../../src/lib/shell/workspaceNav.js) only — no inline duplicate arrays in shells
+**Source:** [`navPinCatalog.ts`](../../src/lib/shell/navPinCatalog.ts) · **Components:** `MobilePinBar.svelte`, `AppMenuSheet.svelte`
+
+### Default pins (3 slots)
+
+| Persona | Slot 1 | Slot 2 | Slot 3 |
+|---------|--------|--------|--------|
+| player | `/player/dashboard` HQ | `/player/workout` Train | `/stats` Stats |
+| coach | `/coach` Daily Intel | `/coach/forge` The Forge | `/messages` Messages |
+| parent | `/parent/household` | `/parent/vpc` | `/parent/dashboard` |
+| director | `/director?tab=home` | `/director?tab=teams` | `/director?tab=field` |
+| admin | `/admin/overview` | `/admin/organizations` | `/admin/users` |
+| registrar | `/director?tab=home` | `/director?tab=teams` | `/director?tab=licenses` |
+| recruiter | `/recruiter` | `/messages` | *(optional empty)* |
+
+### AppMenuSheet catalogs (per persona)
+
+Sheet sections (top → bottom). Items on bottom pins also appear in sheet (dim/highlight OK).
+
+**Player:** Primary (Tier 1) · More routes (Tracker, Comms, Armory, Settings) · System (Sign out)
+
+**Coach:** Tier 1 / exec · Operations (Tier 2) · System (Sign out, Support, Report anomaly). **Excluded:** War Room `/coach/tactical` — deep-link only.
+
+**Parent:** Tier 1 · Co-op (Tier 2) · System (Sign out, Support)
+
+**Director / Registrar:** Command · Compliance & ops · Workspace switcher · Billing (when `showBilling`) · System
+
+**Admin:** Platform · Workspace switcher · System
+
+**Recruiter:** Search · Cross-persona (Messages) · System
+
+### Field mode rules (all personas)
+
+- **No** `ec-mobile-header` on field viewports
+- **No** off-canvas `ec-sidebar` on field viewports
+- Menu tap **or** swipe-up (44px threshold) opens `AppMenuSheet`
+- Desk ≥1024: left sidebar unchanged (`workspaceNav.js`)
 
 ---
 
 ## §4b Player mobile field spec
 
-- Full-width bottom bar with dossier tokens (`player-shell.css`)
-- Primary tabs (max 4 + More): HQ · Train · Stats from registry §2; More sheet for Tier 2 + messages
-- Sign-out in More sheet (not primary tab row)
-- Source: `playerPrimaryNav.ts` (NAV-IMPL) — retire inline `NAV_LINKS` array in `PlayerShell.svelte`
+- Bottom pin bar with dossier tokens (`player-shell.css`)
+- Default pins: HQ · Train · Stats from registry §2; sheet for Tier 2 + sign-out
+- Source: `navPinCatalog.ts` + `playerPrimaryNav.ts` overflow merge
 
 ---
 
 ## §4c Parent mobile field spec
 
-- Same Option A chrome grammar as enterprise field mode
+- Same Option D chrome grammar as enterprise field mode
 - Content skin: `parent-lounge-shell.css` — trust tone, co-op partner calm
-- Nav chrome uses enterprise field pattern; tab labels **not** SIEM table density
-- Primary tabs: Household · VPC · Command · Messages (registry §2); overflow for Tier 2 parent links
+- Default pins: Household · VPC · Co-op Command; sheet for Messages, Log Workout, Payments
 
 ---
 
@@ -133,8 +163,8 @@ Full radar / telemetry bands below fold. Gold path: GP-ACQ-04a · QA-101, QA-106
 
 | Shell | Field bottom inset | Desk inset |
 |-------|-------------------|------------|
-| `EnterpriseConsoleShell` | `padding-bottom` for tab bar + safe-area | Sidebar width only |
-| `PlayerShell` | `--pp-bottomnav-height` for dossier dock | `--pp-rail-width` left rail |
+| `EnterpriseConsoleShell` | `padding-bottom` for pin bar + safe-area (+ director FAB when present) | Sidebar width only |
+| `PlayerShell` | `--pp-bottomnav-height` for dossier pin bar | `--pp-rail-width` left rail |
 | Parent (enterprise chrome) | Same as enterprise field | Same as enterprise desk |
 
 **Forbid** route-level `tw-fixed tw-bottom-*` nav — chrome lives in shells only.
@@ -145,12 +175,15 @@ Full radar / telemetry bands below fold. Gold path: GP-ACQ-04a · QA-101, QA-106
 
 | Anti-pattern | Why rejected |
 |--------------|--------------|
-| Sidebar + bottom bar with same hrefs on field viewports | Violates §1 golden rule |
-| Player 7-icon floating dock | Exceeds Option A max-5 primary; mixes Tier 2 into tab row |
-| Player styling on `MobileTabBar` for staff routes | Breaks §3b skin separation |
+| Top header + bottom bar + mobile sidebar on field | Violates §1 golden rule (triple chrome) |
+| `ec-mobile-header` on field viewports | Option D — bottom bar only |
+| Mobile off-canvas `ec-sidebar` | Full nav via AppMenuSheet |
+| Player 7-icon floating dock | Exceeds Option D pin model |
+| Player styling on staff pin bar | Breaks §3b skin separation |
 | Gold / gamification on staff nav | Coach SIEM boundary — gold is Player focal only |
 | Player labels on coach tabs ("HQ", "Train") | Persona vocabulary leak |
-| Nav arrays outside canonical modules | Drift from registry §2 |
+| Nav arrays outside `navPinCatalog.ts` / `workspaceNav.js` | Drift from registry §2 |
+| War Room `/coach/tactical` in coach sheet | Tier 2 deep-link only |
 | 768px Player rail breakpoint | Deprecate — target 1024px per §2 |
 | Recruiter excluded from staff field chrome | Staff admin bucket includes recruiter |
 
@@ -162,16 +195,16 @@ Before sign-off on shell / nav / layout work:
 
 | Viewport | Persona | Checks |
 |----------|---------|--------|
-| **390px** | Coach | QA-141 — field tabs + drawer; no duplicate hrefs; deploy path not blocked |
-| **390px** | Player | QA-101 — glance band + missions rail above fold |
-| **390px** | Parent | QA-121–125 — trust lounge content; enterprise field chrome |
-| **390px** | Staff admin | Recruiter field chrome if applicable |
+| **390px** | Coach | QA-NAV-02 — pin bar + sheet; no mobile header/sidebar |
+| **390px** | Player | QA-NAV-01 — glance band + pin customize |
+| **390px** | Parent | QA-NAV-03 — trust lounge content; Option D chrome |
+| **390px** | Staff admin | QA-NAV-04 pin persistence; recruiter if applicable |
 | **1280px** | All | Sidebar/rail visible; bottom bar hidden |
 
 **Automated guards:** `src/lib/platform/__tests__/platformNavigationCanon.test.ts`
 
 ```bash
-npm test -- src/lib/platform/__tests__/platformNavigationCanon.test.ts src/lib/platform/__tests__/productSurfaceRegistry.test.ts
+npm test -- src/lib/platform/__tests__/platformNavigationCanon.test.ts src/lib/shell/__tests__/navPinCatalog.test.ts src/lib/stores/__tests__/navPins.test.ts
 ```
 
 ---

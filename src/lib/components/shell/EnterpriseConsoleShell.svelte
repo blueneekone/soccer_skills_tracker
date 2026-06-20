@@ -6,14 +6,18 @@
 	import { enterprisePlayerDrawer } from '$lib/stores/enterprisePlayerDrawer.svelte.js';
 	import WorkspaceContextSwitcher from '$lib/components/shell/WorkspaceContextSwitcher.svelte';
 	import CommandPalette from '$lib/components/shell/CommandPalette.svelte';
-	import MobileTabBar from '$lib/components/shell/MobileTabBar.svelte';
+	import MobilePinBar from '$lib/components/shell/MobilePinBar.svelte';
+	import AppMenuSheet from '$lib/components/shell/AppMenuSheet.svelte';
 	import MobileDirectorFab from '$lib/components/shell/MobileDirectorFab.svelte';
 	import {
 		getWorkspaceNav,
-		getPrimaryFieldNavLinks,
-		getOverflowFieldNavLinks,
 		isShellNavActive,
 	} from '$lib/shell/workspaceNav.js';
+	import {
+		getNavCatalog,
+		resolveNavPersonaKey,
+	} from '$lib/shell/navPinCatalog.js';
+	import { navPinsStore } from '$lib/stores/navPins.svelte.js';
 	import { workspaceContextStore } from '$lib/stores/workspaceContext.svelte.js';
 	import '$lib/styles/enterprise-console.css';
 	import PlayerDetailDrawer from '$lib/components/shell/PlayerDetailDrawer.svelte';
@@ -49,36 +53,43 @@
 		getWorkspaceNav(page.url.pathname, authStore.role, workspaceContextStore.activeContext),
 	);
 	const links = $derived(nav.links);
-	const primaryFieldLinks = $derived.by(() =>
-		getPrimaryFieldNavLinks(
-			page.url.pathname,
-			authStore.role,
-			workspaceContextStore.activeContext,
-		),
+	const navPersonaKey = $derived(
+		resolveNavPersonaKey(authStore.role, workspaceContextStore.activeContext),
 	);
-	const overflowLinks = $derived.by(() =>
-		getOverflowFieldNavLinks(
-			page.url.pathname,
-			authStore.role,
-			workspaceContextStore.activeContext,
-		),
-	);
+	const navCatalog = $derived(getNavCatalog(navPersonaKey));
 	const workspaceLabel = $derived(nav.workspaceLabel);
 	const showBilling = $derived(nav.showBilling);
 	const tabBarAccent = $derived(authStore.role === 'coach' ? 'cyan' : 'neutral');
+	const pinBarSkin = $derived(authStore.role === 'parent' ? 'parent-trust' : 'enterprise');
 
 	function navActive(item: { tab?: string; label: string; icon: string; href: string }) {
 		return isShellNavActive(page.url.pathname, page.url.searchParams, item);
 	}
 
-	let mobileNavOpen = $state(false);
-
-	function closeMobileNav() {
-		mobileNavOpen = false;
+	function shellNavActive(href: string): boolean {
+		const item = navCatalog.find((c) => c.href === href);
+		if (!item) return false;
+		return isShellNavActive(page.url.pathname, page.url.searchParams, item);
 	}
 
-	function toggleMobileNav() {
-		mobileNavOpen = !mobileNavOpen;
+	let menuSheetOpen = $state(false);
+	let menuSheetMode = $state<'browse' | 'pick-pin'>('browse');
+	let pickSlotIndex = $state<0 | 1 | 2>(0);
+
+	function openMenuBrowse() {
+		menuSheetMode = 'browse';
+		menuSheetOpen = true;
+	}
+
+	function openMenuPickPin(slotIndex: 0 | 1 | 2) {
+		menuSheetMode = 'pick-pin';
+		pickSlotIndex = slotIndex;
+		menuSheetOpen = true;
+	}
+
+	function closeMenuSheet() {
+		menuSheetOpen = false;
+		menuSheetMode = 'browse';
 	}
 
 	let isDesktop = $state(false);
@@ -88,16 +99,25 @@
 		const mq = window.matchMedia('(min-width: 1024px)');
 		const onChange = () => {
 			isDesktop = mq.matches;
-			if (mq.matches) mobileNavOpen = false;
+			if (mq.matches) closeMenuSheet();
 		};
 		onChange();
 		mq.addEventListener('change', onChange);
 		return () => mq.removeEventListener('change', onChange);
 	});
 
+	$effect(() => {
+		const uid = authStore.user?.uid ?? '';
+		const email = authStore.user?.email ?? '';
+		const profilePins = authStore.userProfile?.mobileNavPins as
+			| Record<string, [string | null, string | null, string | null]>
+			| undefined;
+		navPinsStore.hydrate(uid, email, navPersonaKey, profilePins ?? null);
+	});
+
 	const sidebarCollapsedDesktop = $derived(!workspaceContextStore.isSidebarOpen && isDesktop);
 
-	const drawerLinks = $derived(isDesktop ? links : overflowLinks);
+	const drawerLinks = $derived(isDesktop ? links : []);
 
 	const FIELD_CHROME_ROLES = new Set([
 		'coach',
@@ -126,6 +146,7 @@
 	let anomalySent = $state(false);
 
 	function openAnomaly() {
+		closeMenuSheet();
 		anomalyText = '';
 		anomalySent = false;
 		anomalyOpen = true;
@@ -167,46 +188,14 @@
 </script>
 
 <div class="ec-root" data-sidebar-collapsed={sidebarCollapsedDesktop} data-vanguard-os="tactical">
-	<!-- Field mode: fixed bar with club mark + menu (< lg only, see CSS) -->
-	<header class="ec-mobile-header">
-		<div class="ec-mobile-header__brand">
-			<WorkspaceContextSwitcher variant="mobile" />
-		</div>
-		<button
-			type="button"
-			class="ec-mobile-header__hamburger icon-tap"
-			onclick={toggleMobileNav}
-			aria-expanded={mobileNavOpen}
-			aria-controls="ec-workspace-nav"
-			aria-label={mobileNavOpen ? 'Close menu' : 'Open menu'}
-		>
-			<Icon name="nav.menu" size={24} />
-		</button>
-	</header>
-
-	<div
-		class="ec-nav-backdrop"
-		class:ec-nav-backdrop--open={mobileNavOpen}
-		role="presentation"
-		aria-hidden={!mobileNavOpen}
-		onclick={closeMobileNav}
-	></div>
-
 	<div class="ec-root__body">
 		<aside
 			id="ec-workspace-nav"
 			class="ec-sidebar"
-			class:ec-sidebar--open={mobileNavOpen}
 			class:ec-sidebar--collapsed-desktop={sidebarCollapsedDesktop}
 			aria-label="Workspace navigation"
 		>
 			<div class="ec-sidebar__panel">
-				<div class="ec-sidebar__mobile-top">
-				<button type="button" class="ec-sidebar__close-btn icon-tap" onclick={closeMobileNav}>
-					<Icon name="sys.close" size={20} />
-					Close
-				</button>
-				</div>
 				<div class="ec-sidebar__brand ec-sidebar__brand--switcher">
 					<WorkspaceContextSwitcher variant="sidebar" />
 				</div>
@@ -221,7 +210,6 @@
 							href={item.href}
 							data-sveltekit-reload
 							data-sveltekit-preload-data="hover"
-							onclick={closeMobileNav}
 						>
 							<Icon name={item.icon as IconName} size={18} />
 							<span class="ec-nav-link__label">{item.label}</span>
@@ -229,7 +217,7 @@
 					{/each}
 					{#if showBilling}
 						<p class="ec-nav-section">Billing</p>
-						<a class="ec-nav-link" href="/upgrade" data-sveltekit-reload onclick={closeMobileNav}>
+						<a class="ec-nav-link" href="/upgrade" data-sveltekit-reload>
 							<Icon name="sys.credit-card" size={18} />
 							<span class="ec-nav-link__label">Plans & Billing</span>
 						</a>
@@ -356,12 +344,35 @@
 
 	<!-- Mobile bottom tab bar + FAB — only for management roles on mobile viewports -->
 	{#if showMobileChrome}
-		<MobileTabBar
-			links={primaryFieldLinks}
+		<MobilePinBar
+			pins={navPinsStore.pins}
+			catalog={navCatalog}
+			personaKey={navPersonaKey}
 			pathname={page.url.pathname}
 			searchParams={page.url.searchParams}
-			variant="enterprise"
+			isActive={shellNavActive}
+			variant={pinBarSkin}
 			accent={tabBarAccent}
+			onMenuOpen={openMenuBrowse}
+			onPinLongPress={openMenuPickPin}
+			onSwipeUp={openMenuBrowse}
+		/>
+		<AppMenuSheet
+			open={menuSheetOpen}
+			personaKey={navPersonaKey}
+			catalog={navCatalog}
+			pinnedHrefs={navPinsStore.pins.filter(Boolean) as string[]}
+			mode={menuSheetMode}
+			pickSlotIndex={pickSlotIndex}
+			skin={pinBarSkin}
+			showBilling={showBilling}
+			pathname={page.url.pathname}
+			isActive={shellNavActive}
+			onDismiss={closeMenuSheet}
+			onPickPin={(href) => navPinsStore.setPin(pickSlotIndex, href)}
+			onResetDefaults={() => navPinsStore.resetToDefaults()}
+			onReportAnomaly={openAnomaly}
+			showReportAnomaly={true}
 		/>
 		<MobileDirectorFab pathname={page.url.pathname} />
 	{/if}

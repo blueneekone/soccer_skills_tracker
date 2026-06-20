@@ -10,7 +10,9 @@ const NAV_CANON = join(VISION, 'PLATFORM_NAVIGATION_CANON.md');
 const DESIGN_SYSTEM = join(VISION, 'PLATFORM_DESIGN_SYSTEM.md');
 const REGISTRY = join(VISION, 'PRODUCT_SURFACE_REGISTRY.md');
 const AGENT_WORKFLOW = join(ROOT, '..', '.cursor/rules/sst-agent-workflow.mdc');
-const MOBILE_TAB_BAR = join(ROOT, 'lib/components/shell/MobileTabBar.svelte');
+const MOBILE_PIN_BAR = join(ROOT, 'lib/components/shell/MobilePinBar.svelte');
+const APP_MENU_SHEET = join(ROOT, 'lib/components/shell/AppMenuSheet.svelte');
+const NAV_PIN_CATALOG = join(ROOT, 'lib/shell/navPinCatalog.ts');
 const PLAYER_SHELL = join(ROOT, 'lib/components/shell/PlayerShell.svelte');
 const ENTERPRISE_SHELL = join(ROOT, 'lib/components/shell/EnterpriseConsoleShell.svelte');
 const PLAYER_PRIMARY_NAV = join(ROOT, 'lib/player/shell/playerPrimaryNav.ts');
@@ -27,9 +29,6 @@ const STAFF_ADMIN_ROLES = [
 	'registrar',
 	'recruiter',
 ];
-
-const PLAYER_FIELD_LABELS = ['HQ', 'Train', 'Stats'];
-const COACH_FIELD_LABELS = ['Daily Intel', 'The Forge', 'Messages'];
 
 /** Parse registry §1 player Tier 1 nav_visible routes */
 function parsePlayerTier1NavRoutes(registrySrc: string): string[] {
@@ -51,16 +50,19 @@ function parsePlayerTier1NavRoutes(registrySrc: string): string[] {
 describe('PLATFORM_NAVIGATION_CANON gospel guards', () => {
 	const canonSrc = readFileSync(NAV_CANON, 'utf-8');
 
-	it('canon exists with two-axis contract, Option A, and 1024px breakpoints', () => {
+	it('canon exists with two-axis contract, Option D, and 1024px breakpoints', () => {
 		expect(canonSrc.length).toBeGreaterThan(500);
 		expect(canonSrc).toContain('## §3 Two-axis contract');
 		expect(canonSrc).toContain('Chrome grammar');
 		expect(canonSrc).toContain('Skin grammar');
-		expect(canonSrc).toMatch(/Option A/i);
+		expect(canonSrc).toMatch(/Option D/i);
+		expect(canonSrc).not.toMatch(/Option A bottom tab/i);
 		expect(canonSrc).toContain('--shell-field-max');
 		expect(canonSrc).toContain('1023.98px');
 		expect(canonSrc).toContain('--shell-desktop-min');
 		expect(canonSrc).toContain('1024px');
+		expect(canonSrc).toContain('AppMenuSheet');
+		expect(canonSrc).toContain('navPinCatalog');
 	});
 
 	it('staff-admin bucket includes recruiter and all canonical roles', () => {
@@ -78,13 +80,13 @@ describe('PLATFORM_NAVIGATION_CANON gospel guards', () => {
 		expect(workflow).toContain('PLATFORM_NAVIGATION_CANON.md');
 	});
 
-	it('MobileTabBar is hidden at desktop breakpoint (≥1024px)', () => {
-		const tabBar = readFileSync(MOBILE_TAB_BAR, 'utf-8');
-		expect(tabBar).toMatch(/@media\s*\(\s*min-width:\s*1024px\s*\)/);
-		expect(tabBar).toMatch(/display:\s*none/);
+	it('MobilePinBar is hidden at desktop breakpoint (≥1024px)', () => {
+		const pinBar = readFileSync(MOBILE_PIN_BAR, 'utf-8');
+		expect(pinBar).toMatch(/@media\s*\(\s*min-width:\s*1024px\s*\)/);
+		expect(pinBar).toMatch(/display:\s*none/);
 	});
 
-	it('registry Player Tier 1 nav routes match canon primary tabs', () => {
+	it('registry Player Tier 1 nav routes match canon default pins', () => {
 		const registrySrc = readFileSync(REGISTRY, 'utf-8');
 		const tier1Routes = parsePlayerTier1NavRoutes(registrySrc);
 		expect(tier1Routes).toEqual(['/player/dashboard', '/player/workout', '/stats']);
@@ -93,23 +95,29 @@ describe('PLATFORM_NAVIGATION_CANON gospel guards', () => {
 	});
 });
 
-describe('NAV-IMPL implementation guards', () => {
+describe('NAV-OPTION-D implementation guards', () => {
 	const playerShell = readFileSync(PLAYER_SHELL, 'utf-8');
 	const playerNav = readFileSync(PLAYER_PRIMARY_NAV, 'utf-8');
 	const enterprise = readFileSync(ENTERPRISE_SHELL, 'utf-8');
-	const mobileTabBar = readFileSync(MOBILE_TAB_BAR, 'utf-8');
+	const pinBar = readFileSync(MOBILE_PIN_BAR, 'utf-8');
+	const menuSheet = readFileSync(APP_MENU_SHEET, 'utf-8');
+	const navCatalog = readFileSync(NAV_PIN_CATALOG, 'utf-8');
 	const playerShellCss = readFileSync(PLAYER_SHELL_CSS, 'utf-8');
+	const enterpriseCss = readFileSync(ENTERPRISE_CONSOLE_CSS, 'utf-8');
 	const workspaceNav = readFileSync(WORKSPACE_NAV, 'utf-8');
 
-	it('PlayerShell uses playerPrimaryNav — max 3 primary field tabs + More', () => {
-		expect(playerShell).toContain('playerPrimaryNav');
-		expect(playerShell).not.toMatch(/const NAV_LINKS/);
-		expect(playerShell).toMatch(/ps-field-bar/);
-		expect(playerShell).toMatch(/ps-more-sheet/);
-		const primaryCount = [...playerNav.matchAll(/playerPrimaryFieldNav[^[]*\[[\s\S]*?\];/g)][0]?.[0].match(
-			/href:/g,
-		)?.length;
-		expect(primaryCount).toBe(3);
+	it('navPinCatalog exports persona catalogs and default pins', () => {
+		expect(navCatalog).toContain('export function getNavCatalog');
+		expect(navCatalog).toContain('export function getDefaultPins');
+		expect(navCatalog).toContain('export function isHrefAllowedForPersona');
+	});
+
+	it('PlayerShell uses MobilePinBar + AppMenuSheet on field', () => {
+		expect(playerShell).toContain('MobilePinBar');
+		expect(playerShell).toContain('AppMenuSheet');
+		expect(playerShell).toContain('navPinsStore');
+		expect(playerShell).not.toMatch(/ps-field-bar/);
+		expect(playerShell).not.toMatch(/ps-more-sheet/);
 	});
 
 	it('playerPrimaryNav overflow includes settings and messages', () => {
@@ -122,11 +130,19 @@ describe('NAV-IMPL implementation guards', () => {
 		expect(playerShellCss).not.toMatch(/@media\s*\(\s*min-width:\s*768px\s*\)/);
 	});
 
-	it('EnterpriseConsoleShell splits primary tabs from overflow drawer on field', () => {
-		expect(enterprise).toMatch(/getPrimaryFieldNavLinks/);
-		expect(enterprise).toMatch(/getOverflowFieldNavLinks/);
-		expect(enterprise).toMatch(/drawerLinks/);
-		expect(enterprise).toMatch(/primaryFieldLinks/);
+	it('EnterpriseConsoleShell uses MobilePinBar + AppMenuSheet — no mobile header chrome', () => {
+		expect(enterprise).toContain('MobilePinBar');
+		expect(enterprise).toContain('AppMenuSheet');
+		expect(enterprise).toContain('navPinsStore');
+		expect(enterprise).not.toContain('MobileTabBar');
+		expect(enterprise).not.toMatch(/ec-mobile-header__hamburger/);
+		expect(enterprise).not.toMatch(/mobileNavOpen/);
+	});
+
+	it('field mode hides ec-mobile-header and mobile sidebar in CSS', () => {
+		expect(enterpriseCss).toMatch(/\.ec-mobile-header\s*\{[^}]*display:\s*none\s*!important/s);
+		expect(enterpriseCss).toMatch(/max-width:\s*1023\.98px[\s\S]*\.ec-sidebar\s*\{[^}]*display:\s*none\s*!important/s);
+		expect(enterpriseCss).not.toMatch(/padding-top:\s*calc\(56px/);
 	});
 
 	it('recruiter and parent receive field chrome', () => {
@@ -135,27 +151,25 @@ describe('NAV-IMPL implementation guards', () => {
 		expect(enterprise).toContain("'parent'");
 	});
 
-	it('MobileTabBar enterprise variant — no player-shell.css cross-import', () => {
-		expect(mobileTabBar).toMatch(/mobile-tab-bar--enterprise/);
-		expect(mobileTabBar).not.toMatch(/player-shell\.css/);
-		expect(enterprise).toMatch(/variant="enterprise"/);
-		expect(mobileTabBar).not.toMatch(/enterprise-console\.css/);
+	it('MobilePinBar enterprise variant — no player-shell.css cross-import', () => {
+		expect(pinBar).toMatch(/mobile-pin-bar--enterprise/);
+		expect(pinBar).not.toMatch(/player-shell\.css/);
+		expect(enterprise).toMatch(/variant=\{pinBarSkin\}/);
 	});
 
-	it('coach primary field labels differ from player labels', () => {
-		for (const label of PLAYER_FIELD_LABELS) {
-			expect(workspaceNav).toContain(`label: '${label === 'Stats' ? 'Stats' : label}'`);
-		}
-		for (const label of COACH_FIELD_LABELS) {
-			expect(workspaceNav).toContain(label);
-		}
-		expect(COACH_FIELD_LABELS).not.toContain('HQ');
-		expect(COACH_FIELD_LABELS).not.toContain('Train');
+	it('AppMenuSheet supports browse and pick-pin modes', () => {
+		expect(menuSheet).toMatch(/pick-pin/);
+		expect(menuSheet).toContain('Reset to');
 	});
 
-	it('workspaceNav exports field nav split helpers', () => {
-		expect(workspaceNav).toContain('export function getPrimaryFieldNavLinks');
-		expect(workspaceNav).toContain('export function getOverflowFieldNavLinks');
+	it('coach catalog source excludes tactical war room in navPinCatalog', () => {
+		expect(navCatalog).toContain('/coach/tactical');
+		expect(navCatalog).toMatch(/tactical/);
+	});
+
+	it('workspaceNav still exports desk sidebar link arrays', () => {
+		expect(workspaceNav).toContain('export const coachLinks');
+		expect(workspaceNav).toContain('export function getWorkspaceNav');
 	});
 });
 

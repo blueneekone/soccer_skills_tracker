@@ -316,3 +316,40 @@
 |---------|--------|
 | `npm test -- src/lib/platform/__tests__/ownerQaWorkflowCoverage.test.ts src/lib/platform/__tests__/productSurfaceRegistry.test.ts` | **19 passed** (2 files) |
 | `npm run check` | **0 errors**, 169 warnings |
+
+---
+
+## NAV-OPTION-D — Bottom pin bar + AppMenuSheet (2026-06-19)
+
+**Slice:** Replace Option A mobile chrome with Option D — 3 customizable pins + Menu sheet; remove mobile top header and off-canvas sidebar.
+
+### Files created
+
+| File | Purpose |
+|------|---------|
+| `src/lib/shell/navPinCatalog.ts` | Persona catalogs, default pins, href validation |
+| `src/lib/stores/navPins.svelte.ts` | Pin state + localStorage + Firestore sync |
+| `src/lib/components/shell/MobilePinBar.svelte` | Field bottom bar (3 pins + Menu) |
+| `src/lib/components/shell/AppMenuSheet.svelte` | Full nav sheet (browse + pick-pin modes) |
+| `src/lib/shell/__tests__/navPinCatalog.test.ts` | Catalog + default pin guards |
+| `src/lib/stores/__tests__/navPins.test.ts` | Pin swap, reset, invalid href rejection |
+
+### Files updated
+
+| File | Change summary |
+|------|----------------|
+| `EnterpriseConsoleShell.svelte` | MobilePinBar + AppMenuSheet; desk sidebar only @≥1024 |
+| `PlayerShell.svelte` | Replace ps-field-bar / ps-more-sheet with Option D chrome |
+| `enterprise-console.css` | Hide ec-mobile-header + mobile sidebar @ field |
+| `workspaceNav.js` | Export link arrays for navPinCatalog merge |
+| `PLATFORM_NAVIGATION_CANON.md` | Option D replaces Option A |
+| `PRODUCT_SURFACE_REGISTRY.md` §2 | Staff bucket → Option D |
+| `OWNER_QA_CHECKLIST.md` Phase 4b | QA-NAV-01–07 Option D criteria |
+| `platformNavigationCanon.test.ts` | AppMenuSheet / navPinCatalog / no mobile header guards |
+
+### Verify (NAV-OPTION-D)
+
+| Command | Result |
+|---------|--------|
+| `npm test -- src/lib/shell/__tests__/navPinCatalog.test.ts src/lib/stores/__tests__/navPins.test.ts src/lib/platform/__tests__/platformNavigationCanon.test.ts` | **34 passed** (3 files) |
+| `npm run build` | **pass** |

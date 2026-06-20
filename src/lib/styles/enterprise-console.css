@@ -470,71 +470,35 @@ html.dark .ec-nav-section {
 	border-top-color: rgba(255, 255, 255, 0.08);
 }
 
-/* Field mode: stacked shell + off-canvas nav — must follow base .ec-sidebar */
+/* Field mode: bottom pin bar only — no top header / off-canvas sidebar (NAV-OPTION-D) */
 @media (max-width: 1023.98px) {
 	.ec-root {
 		flex-direction: column;
 	}
 
 	.ec-mobile-header {
-		display: flex;
-		position: fixed;
-		top: 0;
-		left: 0;
-		right: 0;
-		z-index: 1000;
-		padding-top: env(safe-area-inset-top);
-		min-height: calc(56px + env(safe-area-inset-top));
-		height: auto;
+		display: none !important;
 	}
 
 	.ec-nav-backdrop {
-		display: block;
-		top: calc(56px + env(safe-area-inset-top));
+		display: none !important;
 	}
 
 	.ec-root__body {
 		flex-direction: column;
 		flex: 1 1 auto;
 		min-height: 0;
-		padding-top: calc(56px + env(safe-area-inset-top));
+		padding-top: 0;
 		position: relative;
 		width: 100%;
 	}
 
 	.ec-sidebar {
-		position: fixed;
-		top: calc(56px + env(safe-area-inset-top));
-		left: 0;
-		bottom: 0;
-		width: min(16rem, 88vw);
-		max-width: min(16rem, 88vw);
-		min-width: 0;
-		height: auto;
-		max-height: none;
-		z-index: 999;
-		transform: translate3d(-100%, 0, 0);
-		transition: transform var(--motion-base) ease-out;
-		box-shadow: none;
-		border-right: 1px solid var(--ec-sidebar-border, #e5e5e5);
-	}
-
-	.ec-sidebar__panel {
-		width: 100%;
-		max-width: 100%;
-		height: 100%;
-	}
-
-	html.dark .ec-sidebar {
-		border-right-color: rgba(255, 255, 255, 0.1);
-	}
-
-	.ec-sidebar--open {
-		transform: translate3d(0, 0, 0);
+		display: none !important;
 	}
 
 	.ec-sidebar__mobile-top {
-		display: block;
+		display: none !important;
 	}
 
 	.ec-topbar {
@@ -549,9 +513,9 @@ html.dark .ec-nav-section {
 	}
 
 	.ec-canvas {
-		/* 8rem reserves space for MobileTabBar + MobileDirectorFab — not bento rhythm */
 		padding: 0;
-		padding-bottom: calc(8rem + env(safe-area-inset-bottom, 0px));
+		/* MobilePinBar + MobileDirectorFab */
+		padding-bottom: calc(7rem + env(safe-area-inset-bottom, 0px));
 	}
 }
 

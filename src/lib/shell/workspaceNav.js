@@ -8,7 +8,7 @@
  */
 
 /** @type {ShellNavItem[]} */
-const adminLinks = [
+export const adminLinks = [
 	{ label: 'Overview',        icon: 'data.chart-line',   href: '/admin/overview' },
 	{ label: 'Organizations',   icon: 'org.building',      href: '/admin/organizations' },
 	{ label: 'Global Users',    icon: 'content.globe',     href: '/admin/users' },
@@ -19,7 +19,7 @@ const adminLinks = [
 ];
 
 /** @type {ShellNavItem[]} */
-const directorLinks = [
+export const directorLinks = [
 	{ tab: 'home',       label: 'Overview',          icon: 'nav.home',           href: '/director?tab=home' },
 	{ tab: 'teams',      label: 'Roster & Teams',    icon: 'user.group',         href: '/director?tab=teams' },
 	{ tab: 'field',      label: 'Field Ops',         icon: 'sys.map-pin',        href: '/director?tab=field' },
@@ -37,7 +37,7 @@ const directorLinks = [
 ];
 
 /** @type {ShellNavItem[]} */
-const coachLinks = [
+export const coachLinks = [
 	{ label: 'Daily Intel',       href: '/coach',               icon: 'content.grid' },
 	{ label: 'The Forge',         href: '/coach/forge',         icon: 'game.dumbbell' },
 	{ label: 'Field Station',     href: '/coach/drills',        icon: 'content.checks' },
@@ -63,7 +63,7 @@ const athleteHouseholdLinks = [
 ];
 
 /** @type {ShellNavItem[]} */
-const parentLinks = [
+export const parentLinks = [
 	{ tab: '', label: 'Household',      icon: 'nav.home',            href: '/parent/household' },
 	{ tab: '', label: 'Co-op Command',  icon: 'content.grid',        href: '/parent/dashboard' },
 	{ tab: '', label: 'Consent (VPC)',  icon: 'status.shield-check', href: '/parent/vpc' },
@@ -73,13 +73,13 @@ const parentLinks = [
 ];
 
 /** @type {ShellNavItem[]} */
-const recruiterLinks = [
+export const recruiterLinks = [
 	{ tab: '', label: 'Recruiter Search', icon: 'action.search', href: '/recruiter' },
 ];
 
 /** Cross-persona comms — coach/parent field primary tabs (NAV-CANON §3c). */
 /** @type {ShellNavItem} */
-const messagesNavItem = { tab: '', label: 'Messages', icon: 'comm.chat', href: '/messages' };
+export const messagesNavItem = { tab: '', label: 'Messages', icon: 'comm.chat', href: '/messages' };
 
 /** @param {string} pathname @param {string} role @param {string} [activeContext] @returns {WorkspaceContext} */
 function resolveWorkspaceContext(pathname, role, activeContext = '') {
