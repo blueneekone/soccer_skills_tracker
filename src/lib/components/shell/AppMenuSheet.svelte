@@ -53,6 +53,7 @@
 
 	let signingOut = $state(false);
 	let dragStartY = $state(0);
+	let sheetTouchEngaged = $state(false);
 	let backdropInteractive = $state(false);
 
 	const pinnedSet = $derived(new Set(pinnedHrefs.filter(Boolean)));
@@ -99,13 +100,22 @@
 
 	function onSheetTouchStart(e: TouchEvent) {
 		const t = e.touches[0];
-		if (t) dragStartY = t.clientY;
+		if (!t) return;
+		dragStartY = t.clientY;
+		sheetTouchEngaged = true;
 	}
 
 	function onSheetTouchEnd(e: TouchEvent) {
+		if (!sheetTouchEngaged) return;
+		sheetTouchEngaged = false;
+		if (fieldMenuDismissBlocked()) return;
 		const t = e.changedTouches[0];
 		if (!t) return;
 		if (t.clientY - dragStartY >= 44) dismissSheet();
+	}
+
+	function onSheetTouchCancel() {
+		sheetTouchEngaged = false;
 	}
 
 	$effect(() => {
@@ -120,6 +130,7 @@
 	$effect(() => {
 		if (!open) {
 			backdropInteractive = false;
+			sheetTouchEngaged = false;
 			return;
 		}
 		backdropInteractive = false;
@@ -160,6 +171,7 @@
 		aria-label={mode === 'pick-pin' ? `Choose pin for slot ${pickSlotIndex + 1}` : 'App menu'}
 		ontouchstart={onSheetTouchStart}
 		ontouchend={onSheetTouchEnd}
+		ontouchcancel={onSheetTouchCancel}
 	>
 		<div class="app-menu-sheet__handle" aria-hidden="true"></div>
 

@@ -40,21 +40,21 @@ describe('field menu sheet portal guards', () => {
 
 	it('openBrowse/openPickPin set openedAt synchronously before open=true (dismiss guard)', () => {
 		expect(fieldMenuStore).toMatch(
-			/openBrowse\(\):\s*void\s*\{[\s\S]*?openedAt\s*=\s*Date\.now\(\);[\s\S]*?open\s*=\s*true;/,
+			/openBrowse\(\):\s*void\s*\{[\s\S]*?fieldMenuState\.openedAt\s*=\s*Date\.now\(\);[\s\S]*?fieldMenuState\.open\s*=\s*true;/,
 		);
 		expect(fieldMenuStore).toMatch(
-			/openPickPin\([\s\S]*?\):\s*void\s*\{[\s\S]*?openedAt\s*=\s*Date\.now\(\);[\s\S]*?open\s*=\s*true;/,
+			/openPickPin\([\s\S]*?\):\s*void\s*\{[\s\S]*?fieldMenuState\.openedAt\s*=\s*Date\.now\(\);[\s\S]*?fieldMenuState\.open\s*=\s*true;/,
 		);
 		expect(fieldMenuStore).toContain('get openedAt()');
 		expect(menuSheet).toContain('fieldMenuDismissBlocked()');
 		expect(menuSheet).not.toMatch(/\$effect\(\(\)\s*=>\s*\{\s*if\s*\(open\)\s*openedAt/);
 	});
 
-	it('shells wire fieldMenu store — no local menuSheetOpen state', () => {
-		expect(enterprise).toContain("import { fieldMenu } from '$lib/stores/fieldMenu.svelte.js'");
-		expect(playerShell).toContain("import { fieldMenu } from '$lib/stores/fieldMenu.svelte.js'");
-		expect(enterprise).toContain('open={fieldMenu.open}');
-		expect(playerShell).toContain('open={fieldMenu.open}');
+	it('shells wire fieldMenuState — no local menuSheetOpen state', () => {
+		expect(enterprise).toContain("import { fieldMenu, fieldMenuState } from '$lib/stores/fieldMenu.svelte.js'");
+		expect(playerShell).toContain("import { fieldMenu, fieldMenuState } from '$lib/stores/fieldMenu.svelte.js'");
+		expect(enterprise).toContain('open={fieldMenuState.open}');
+		expect(playerShell).toContain('open={fieldMenuState.open}');
 		expect(enterprise).not.toContain('menuSheetOpen');
 		expect(playerShell).not.toContain('menuSheetOpen');
 	});
@@ -110,6 +110,13 @@ describe('field menu sheet portal guards', () => {
 		expect(menuSheet).toContain('FIELD_MENU_DISMISS_GUARD_MS');
 		expect(menuSheet).toMatch(/app-menu-backdrop--inert/);
 		expect(menuSheet).toMatch(/onpointerdown=\{onBackdropPointerDown\}/);
+	});
+
+	it('AppMenuSheet swipe-dismiss requires touchstart on sheet (pin-bar open retarget guard)', () => {
+		expect(menuSheet).toContain('sheetTouchEngaged');
+		expect(menuSheet).toMatch(/onSheetTouchStart[\s\S]*sheetTouchEngaged\s*=\s*true/);
+		expect(menuSheet).toMatch(/onSheetTouchEnd[\s\S]*if\s*\(!sheetTouchEngaged\)\s*return/);
+		expect(menuSheet).toContain('ontouchcancel={onSheetTouchCancel}');
 	});
 
 	it('AppMenuSheet has no desk-only display:none (field-only mount)', () => {

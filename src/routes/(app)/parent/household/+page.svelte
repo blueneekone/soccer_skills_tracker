@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { browser } from '$app/environment';
 	import { goto } from '$app/navigation';
+	import { untrack } from 'svelte';
 	import { httpsCallable } from 'firebase/functions';
 	import {
 		collection,
@@ -65,8 +66,10 @@
 	let coppaSigned = $state(false);
 	let loadErr = $state('');
 	let loadBusy = $state(false);
-	let loadGeneration = $state(0);
-	let lastFetchHid = $state('');
+	/** Monotonic fetch generation — not reactive (must not retrigger clearance $effect). */
+	let clearanceFetchGeneration = 0;
+	/** Last hid fetched — not reactive (avoid $effect loop on assignment). */
+	let clearanceLastFetchHid = '';
 	let actionBusy = $state(false);
 	let actErr = $state('');
 
@@ -266,12 +269,15 @@
 			return;
 		}
 
-		const gen = ++loadGeneration;
-		if (hid !== lastFetchHid) {
-			loadErr = '';
-			lastFetchHid = hid;
-		}
-		loadBusy = true;
+		const gen = untrack(() => {
+			const g = ++clearanceFetchGeneration;
+			if (hid !== clearanceLastFetchHid) {
+				loadErr = '';
+				clearanceLastFetchHid = hid;
+			}
+			loadBusy = true;
+			return g;
+		});
 
 		let cancelled = false;
 
@@ -279,17 +285,17 @@
 			try {
 				// Match /parent/vpc — default `db` for households/{id} reads (not getActiveDb cell routing).
 				const result = await fetchHouseholdClearance(db, hid);
-				if (cancelled || gen !== loadGeneration) return;
+				if (cancelled || gen !== clearanceFetchGeneration) return;
 				householdId = result.householdId;
 				coppaSigned = result.coppaSigned;
 				coppaAt = result.coppaAt;
 				operativeRows = result.operativeRows;
 				loadErr = result.loadErr;
 			} catch (e) {
-				if (cancelled || gen !== loadGeneration) return;
+				if (cancelled || gen !== clearanceFetchGeneration) return;
 				loadErr = e instanceof Error ? e.message : 'Read failed';
 			} finally {
-				if (shouldClearLoadBusy(!cancelled && gen === loadGeneration)) {
+				if (shouldClearLoadBusy(!cancelled && gen === clearanceFetchGeneration)) {
 					loadBusy = false;
 				}
 			}

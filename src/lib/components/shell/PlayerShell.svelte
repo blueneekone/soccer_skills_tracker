@@ -19,7 +19,7 @@
 	} from '$lib/player/shell/playerPrimaryNav.js';
 	import { getNavCatalog, getPickPinCatalog, MENU_PIN_HREF } from '$lib/shell/navPinCatalog.js';
 	import { navPinsStore } from '$lib/stores/navPins.svelte.js';
-	import { fieldMenu } from '$lib/stores/fieldMenu.svelte.js';
+	import { fieldMenu, fieldMenuState } from '$lib/stores/fieldMenu.svelte.js';
 	import { createFieldMenuSwipeHandlers } from '$lib/shell/fieldMenuSwipe.js';
 	import '$lib/styles/player-shell.css';
 	import '$lib/styles/player-dossier.css';
@@ -211,12 +211,12 @@
 		showMenuSlot={showMenuSlot}
 	/>
 	<AppMenuSheet
-		open={fieldMenu.open}
+		open={fieldMenuState.open}
 		personaKey="player"
 		catalog={menuSheetCatalog}
 		pinnedHrefs={navPinsStore.pins.filter(Boolean) as string[]}
-		mode={fieldMenu.mode}
-		pickSlotIndex={fieldMenu.pickSlotIndex}
+		mode={fieldMenuState.mode}
+		pickSlotIndex={fieldMenuState.pickSlotIndex}
 		skin="player"
 		pathname={page.url.pathname}
 		isActive={playerShellNavActive}

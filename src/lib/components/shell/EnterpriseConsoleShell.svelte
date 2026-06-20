@@ -21,7 +21,7 @@
 		resolveNavPersonaKey,
 	} from '$lib/shell/navPinCatalog.js';
 	import { navPinsStore } from '$lib/stores/navPins.svelte.js';
-	import { fieldMenu } from '$lib/stores/fieldMenu.svelte.js';
+	import { fieldMenu, fieldMenuState } from '$lib/stores/fieldMenu.svelte.js';
 	import { workspaceContextStore } from '$lib/stores/workspaceContext.svelte.js';
 	import '$lib/styles/enterprise-console.css';
 	import PlayerDetailDrawer from '$lib/components/shell/PlayerDetailDrawer.svelte';
@@ -125,7 +125,7 @@
 	const showMenuSlot = $derived(!navPinsStore.pins.includes(MENU_PIN_HREF));
 
 	const fieldMenuSwipe = createFieldMenuSwipeHandlers(() => {
-		if (showFieldChrome && !fieldMenu.open) fieldMenu.openBrowse();
+		if (showFieldChrome && !fieldMenuState.open) fieldMenu.openBrowse();
 	});
 
 	function toggleDesktopSidebar() {
@@ -366,12 +366,12 @@
 		showMenuSlot={showMenuSlot}
 	/>
 	<AppMenuSheet
-		open={fieldMenu.open}
+		open={fieldMenuState.open}
 		personaKey={navPersonaKey}
 		catalog={menuSheetCatalog}
 		pinnedHrefs={navPinsStore.pins.filter(Boolean) as string[]}
-		mode={fieldMenu.mode}
-		pickSlotIndex={fieldMenu.pickSlotIndex}
+		mode={fieldMenuState.mode}
+		pickSlotIndex={fieldMenuState.pickSlotIndex}
 		skin={pinBarSkin}
 		showBilling={showBilling}
 		pathname={page.url.pathname}

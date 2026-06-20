@@ -39,7 +39,7 @@ describe('parent Tier-1 nav + workflow integration guards', () => {
 		expect(shell).toContain("'parent'");
 		expect(shell).toContain('FIELD_CHROME_ROLES');
 		expect(shell).toContain('onMenuOpen={() => fieldMenu.openBrowse()}');
-		expect(shell).toContain('open={fieldMenu.open}');
+		expect(shell).toContain('open={fieldMenuState.open}');
 		expect(shell).toMatch(/pinBarSkin = \$derived\(authStore\.role === 'parent' \? 'parent-trust'/);
 	});
 
@@ -51,7 +51,7 @@ describe('parent Tier-1 nav + workflow integration guards', () => {
 
 	it('fieldMenu.openBrowse sets openedAt before open=true (anti ghost-dismiss on Tier-1 parent routes)', () => {
 		expect(fieldMenu).toMatch(
-			/openBrowse\(\):\s*void\s*\{[\s\S]*?openedAt\s*=\s*Date\.now\(\);[\s\S]*?open\s*=\s*true;/,
+			/openBrowse\(\):\s*void\s*\{[\s\S]*?fieldMenuState\.openedAt\s*=\s*Date\.now\(\);[\s\S]*?fieldMenuState\.open\s*=\s*true;/,
 		);
 		expect(fieldMenu).toContain('fieldMenuDismissBlocked');
 		expect(fieldMenu).toContain('FIELD_MENU_DISMISS_GUARD_MS');
@@ -61,6 +61,9 @@ describe('parent Tier-1 nav + workflow integration guards', () => {
 		expect(householdPage).toContain('const clearanceHid = $derived(normalizeHouseholdId');
 		expect(householdPage).toContain('const clearanceLoadReady = $derived');
 		expect(householdPage).toContain('shouldClearLoadBusy');
+		expect(householdPage).toContain('clearanceFetchGeneration');
+		expect(householdPage).toContain('clearanceLastFetchHid');
+		expect(householdPage).toMatch(/untrack\(\(\)\s*=>\s*\{[\s\S]*loadBusy = true/);
 		expect(householdPage).toMatch(/fetchHouseholdClearance\(db,\s*hid\)/);
 		expect(householdPage).not.toMatch(/fetchHouseholdClearance\(getActiveDb\(\)/);
 	});

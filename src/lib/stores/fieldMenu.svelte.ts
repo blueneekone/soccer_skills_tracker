@@ -7,42 +7,47 @@ export type PinSlotIndex = 0 | 1 | 2 | 3;
 /** Backdrop / swipe dismiss blocked for this long after open (ghost-tap on parent Tier-1). */
 export const FIELD_MENU_DISMISS_GUARD_MS = 400;
 
-let open = $state(false);
-let mode = $state<FieldMenuMode>('browse');
-let pickSlotIndex = $state<PinSlotIndex>(0);
-/** Set synchronously on open — AppMenuSheet dismiss guard before backdrop mounts. */
-let openedAt = $state(0);
+/**
+ * Reactive menu state — shells bind AppMenuSheet to fieldMenuState.open (not fieldMenu.open getter).
+ */
+export const fieldMenuState = $state({
+	open: false,
+	mode: 'browse' as FieldMenuMode,
+	pickSlotIndex: 0 as PinSlotIndex,
+	/** Set synchronously on open — AppMenuSheet dismiss guard before backdrop mounts. */
+	openedAt: 0,
+});
 
 export function fieldMenuDismissBlocked(): boolean {
-	return open && Date.now() - openedAt < FIELD_MENU_DISMISS_GUARD_MS;
+	return fieldMenuState.open && Date.now() - fieldMenuState.openedAt < FIELD_MENU_DISMISS_GUARD_MS;
 }
 
 export const fieldMenu = {
 	get open(): boolean {
-		return open;
+		return fieldMenuState.open;
 	},
 	get mode(): FieldMenuMode {
-		return mode;
+		return fieldMenuState.mode;
 	},
 	get pickSlotIndex(): PinSlotIndex {
-		return pickSlotIndex;
+		return fieldMenuState.pickSlotIndex;
 	},
 	get openedAt(): number {
-		return openedAt;
+		return fieldMenuState.openedAt;
 	},
 	openBrowse(): void {
-		openedAt = Date.now();
-		mode = 'browse';
-		open = true;
+		fieldMenuState.openedAt = Date.now();
+		fieldMenuState.mode = 'browse';
+		fieldMenuState.open = true;
 	},
 	openPickPin(slotIndex: PinSlotIndex): void {
-		openedAt = Date.now();
-		mode = 'pick-pin';
-		pickSlotIndex = slotIndex;
-		open = true;
+		fieldMenuState.openedAt = Date.now();
+		fieldMenuState.mode = 'pick-pin';
+		fieldMenuState.pickSlotIndex = slotIndex;
+		fieldMenuState.open = true;
 	},
 	close(): void {
-		open = false;
-		mode = 'browse';
+		fieldMenuState.open = false;
+		fieldMenuState.mode = 'browse';
 	},
 };
