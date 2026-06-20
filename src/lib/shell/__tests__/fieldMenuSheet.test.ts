@@ -14,6 +14,7 @@ describe('field menu sheet portal guards', () => {
 	const playerShell = readFileSync(join(ROOT, 'lib/components/shell/PlayerShell.svelte'), 'utf-8');
 	const menuSheet = readFileSync(join(ROOT, 'lib/components/shell/AppMenuSheet.svelte'), 'utf-8');
 	const pinBar = readFileSync(join(ROOT, 'lib/components/shell/MobilePinBar.svelte'), 'utf-8');
+	const fieldMenuStore = readFileSync(join(ROOT, 'lib/stores/fieldMenu.svelte.ts'), 'utf-8');
 
 	it('AppMenuSheet is not nested inside ec-root or ps-root', () => {
 		for (const [label, src, rootMarker, chromeGuard] of [
@@ -30,11 +31,38 @@ describe('field menu sheet portal guards', () => {
 		}
 	});
 
-	it('Menu button wires onMenuOpen and pin bar stops event propagation', () => {
-		expect(pinBar).toMatch(
-			/mobile-pin-bar__slot--menu[\s\S]*stopPropagation[\s\S]*onMenuOpen/,
+	it('fieldMenu store exposes browse/pick-pin open helpers', () => {
+		expect(fieldMenuStore).toContain('export const fieldMenu');
+		expect(fieldMenuStore).toContain('openBrowse()');
+		expect(fieldMenuStore).toContain('openPickPin(');
+		expect(fieldMenuStore).toContain('close()');
+	});
+
+	it('shells wire fieldMenu store — no local menuSheetOpen state', () => {
+		expect(enterprise).toContain("import { fieldMenu } from '$lib/stores/fieldMenu.svelte.js'");
+		expect(playerShell).toContain("import { fieldMenu } from '$lib/stores/fieldMenu.svelte.js'");
+		expect(enterprise).toContain('open={fieldMenu.open}');
+		expect(playerShell).toContain('open={fieldMenu.open}');
+		expect(enterprise).not.toContain('menuSheetOpen');
+		expect(playerShell).not.toContain('menuSheetOpen');
+	});
+
+	it('MobilePinBar showMenuSlot defaults off; shells do not force showMenuSlot', () => {
+		expect(pinBar).toMatch(/showMenuSlot\s*=\s*false/);
+		expect(enterprise).not.toContain('showMenuSlot={true}');
+		expect(playerShell).not.toContain('showMenuSlot={true}');
+	});
+
+	it('Menu pin uses ontouchstart + stopPropagation iOS tap fix', () => {
+		expect(pinBar).toContain('ontouchstart={openMenuFromPin}');
+		expect(pinBar).toMatch(/openMenuFromPin[\s\S]*stopPropagation/);
+		expect(pinBar).toContain('MENU_PIN_HREF');
+	});
+
+	it('pin bar does not stopPropagation at nav root (swipe + tap reach handlers)', () => {
+		expect(pinBar).not.toMatch(
+			/<nav[\s\S]*?aria-label="Main navigation"[\s\S]*?ontouchstart=\{\(e\) => e\.stopPropagation\(\)\}/,
 		);
-		expect(pinBar).toContain('stopPropagation');
 	});
 
 	it('AppMenuSheet portals open state via use:portal', () => {

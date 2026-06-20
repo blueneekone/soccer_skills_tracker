@@ -33,7 +33,11 @@ export type NavPinItem = {
 	tab?: string;
 };
 
-export type PinTriple = [string | null, string | null, string | null];
+export const MENU_PIN_HREF = '__field_menu__';
+
+export type PinQuad = [string | null, string | null, string | null, string | null];
+/** @deprecated alias — use PinQuad */
+export type PinTriple = PinQuad;
 
 type ShellLink = { href: string; label: string; icon: string; tab?: string };
 
@@ -47,15 +51,24 @@ const DIRECTOR_COMMAND_TABS = new Set([
 	'playbook',
 ]);
 
-const DEFAULT_PINS: Record<NavPersonaKey, PinTriple> = {
-	player: ['/player/dashboard', '/player/workout', '/stats'],
-	coach: ['/coach', '/coach/forge', '/messages'],
-	parent: ['/parent/household', '/parent/vpc', '/parent/dashboard'],
-	director: ['/director?tab=home', '/director?tab=teams', '/director?tab=field'],
-	admin: ['/admin/overview', '/admin/organizations', '/admin/users'],
-	registrar: ['/director?tab=home', '/director?tab=teams', '/director?tab=licenses'],
-	recruiter: ['/recruiter', '/messages', null],
+const DEFAULT_PINS: Record<NavPersonaKey, PinQuad> = {
+	player: ['/player/dashboard', '/player/workout', '/stats', null],
+	coach: ['/coach', '/coach/forge', '/messages', null],
+	parent: ['/parent/household', '/parent/vpc', '/parent/dashboard', null],
+	director: ['/director?tab=home', '/director?tab=teams', '/director?tab=field', null],
+	admin: ['/admin/overview', '/admin/organizations', '/admin/users', null],
+	registrar: ['/director?tab=home', '/director?tab=teams', '/director?tab=licenses', null],
+	recruiter: ['/recruiter', '/messages', null, null],
 };
+
+export function getMenuPinItem(): NavPinItem {
+	return {
+		href: MENU_PIN_HREF,
+		label: 'Menu',
+		icon: 'nav.menu',
+		section: 'System',
+	};
+}
 
 function mapLinks(links: ShellLink[], section: string): NavPinItem[] {
 	return links.map(({ href, label, icon, tab }) => ({
@@ -143,12 +156,17 @@ export function getNavCatalog(personaKey: NavPersonaKey): NavPinItem[] {
 	return CATALOGS[personaKey] ?? CATALOGS.player;
 }
 
-export function getDefaultPins(personaKey: NavPersonaKey): PinTriple {
+export function getDefaultPins(personaKey: NavPersonaKey): PinQuad {
 	const defaults = DEFAULT_PINS[personaKey] ?? DEFAULT_PINS.player;
-	return [...defaults] as PinTriple;
+	return [...defaults] as PinQuad;
+}
+
+export function getPickPinCatalog(personaKey: NavPersonaKey): NavPinItem[] {
+	return [...getNavCatalog(personaKey), getMenuPinItem()];
 }
 
 export function isHrefAllowedForPersona(href: string, personaKey: NavPersonaKey): boolean {
+	if (href === MENU_PIN_HREF) return true;
 	return getNavCatalog(personaKey).some((item) => item.href === href);
 }
 
@@ -159,10 +177,10 @@ export function findCatalogItem(
 	return getNavCatalog(personaKey).find((item) => item.href === href);
 }
 
-export function sanitizePins(raw: readonly (string | null)[], personaKey: NavPersonaKey): PinTriple {
+export function sanitizePins(raw: readonly (string | null)[], personaKey: NavPersonaKey): PinQuad {
 	const defaults = getDefaultPins(personaKey);
-	const result: PinTriple = [null, null, null];
-	for (let i = 0; i < 3; i++) {
+	const result: PinQuad = [null, null, null, null];
+	for (let i = 0; i < 4; i++) {
 		const candidate = raw[i] ?? defaults[i];
 		if (candidate && isHrefAllowedForPersona(candidate, personaKey)) {
 			result[i] = candidate;

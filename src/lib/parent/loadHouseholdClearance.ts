@@ -25,9 +25,9 @@ export function guardsPassForHouseholdLoad(input: {
 	return input.browser && !input.authLoading && !!input.userEmail;
 }
 
-/** Whether a completed fetch generation should clear loadBusy (ignore stale runs). */
-export function shouldClearLoadBusy(isLatestGeneration: boolean): boolean {
-	return isLatestGeneration;
+/** loadBusy always clears in the page $effect finally — stale runs ignore results via generation. */
+export function shouldClearLoadBusy(_isLatestGeneration?: boolean): boolean {
+	return true;
 }
 
 export async function fetchHouseholdClearance(
@@ -64,36 +64,43 @@ export async function fetchHouseholdClearance(
 	options?.signal?.addEventListener('abort', onAbort, { once: true });
 
 	try {
-		const snap = await Promise.race([getDoc(doc(db, 'households', hid)), timeoutPromise]);
+		const result = await Promise.race([
+			(async (): Promise<HouseholdClearanceResult> => {
+				const snap = await getDoc(doc(db, 'households', hid));
 
-		if (options?.signal?.aborted) {
-			throw new DOMException('Aborted', 'AbortError');
-		}
+				if (options?.signal?.aborted) {
+					throw new DOMException('Aborted', 'AbortError');
+				}
 
-		if (!snap.exists()) {
-			return {
-				householdId: hid,
-				coppaSigned: false,
-				coppaAt: null,
-				operativeRows: [],
-				loadErr: '',
-			};
-		}
+				if (!snap.exists()) {
+					return {
+						householdId: hid,
+						coppaSigned: false,
+						coppaAt: null,
+						operativeRows: [],
+						loadErr: '',
+					};
+				}
 
-		const d = snap.data() || {};
-		const operativeRows = await buildEnrichedOperativeRows(db, d);
+				const d = snap.data() || {};
+				const operativeRows = await buildEnrichedOperativeRows(db, d);
 
-		if (options?.signal?.aborted) {
-			throw new DOMException('Aborted', 'AbortError');
-		}
+				if (options?.signal?.aborted) {
+					throw new DOMException('Aborted', 'AbortError');
+				}
 
-		return {
-			householdId: hid,
-			coppaSigned: d.coppaSigned === true,
-			coppaAt: d.coppaSignedAt ?? null,
-			operativeRows,
-			loadErr: '',
-		};
+				return {
+					householdId: hid,
+					coppaSigned: d.coppaSigned === true,
+					coppaAt: d.coppaSignedAt ?? null,
+					operativeRows,
+					loadErr: '',
+				};
+			})(),
+			timeoutPromise,
+		]);
+
+		return result;
 	} catch (e) {
 		if (e instanceof DOMException && e.name === 'AbortError') {
 			throw e;

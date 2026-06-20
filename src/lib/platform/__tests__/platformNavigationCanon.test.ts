@@ -215,9 +215,11 @@ describe('NAV-OPTION-D-POLISH guards', () => {
 		expect(fieldMenuSwipe).toContain("closest('.mobile-pin-bar')");
 	});
 
-	it('shells pass showMenuSlot on field', () => {
-		expect(playerShell).toContain('showMenuSlot={true}');
-		expect(enterprise).toContain('showMenuSlot={true}');
+	it('shells use fieldMenu store — showMenuSlot not forced on field', () => {
+		expect(playerShell).toContain('fieldMenu.openBrowse');
+		expect(enterprise).toContain('fieldMenu.openBrowse');
+		expect(playerShell).not.toContain('showMenuSlot={true}');
+		expect(enterprise).not.toContain('showMenuSlot={true}');
 	});
 
 	it('MobilePinBar + AppMenuSheet are siblings outside ec-root / ps-root (portal field chrome)', () => {
@@ -260,11 +262,10 @@ describe('NAV-OPTION-D-POLISH guards', () => {
 		expect(fieldQuickActions).toContain('getFieldQuickActions');
 	});
 
-	it('MobilePinBar Menu slot wires onclick to onMenuOpen', () => {
+	it('MobilePinBar Menu opens via __field_menu__ pin or optional showMenuSlot', () => {
 		expect(pinBar).toContain('showMenuSlot');
-		expect(pinBar).toMatch(
-			/mobile-pin-bar__slot--menu[\s\S]*stopPropagation[\s\S]*onMenuOpen/,
-		);
+		expect(pinBar).toContain('MENU_PIN_HREF');
+		expect(pinBar).toMatch(/ontouchstart=\{openMenuFromPin\}/);
 	});
 
 	it('ReportAnomaly trigger hidden on field viewports', () => {

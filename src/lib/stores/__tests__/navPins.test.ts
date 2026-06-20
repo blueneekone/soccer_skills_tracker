@@ -24,8 +24,13 @@ describe('navPins store (NAV-OPTION-D)', () => {
 		navPinsStore.hydrate('uid-test', 'player@test.com', 'player', null);
 	});
 
-	it('hydrates with persona defaults when no saved pins', () => {
-		expect(navPinsStore.pins).toEqual(['/player/dashboard', '/player/workout', '/stats']);
+	it('hydrates with persona defaults when no saved pins (3 routes + empty 4th slot)', () => {
+		expect(navPinsStore.pins).toEqual([
+			'/player/dashboard',
+			'/player/workout',
+			'/stats',
+			null,
+		]);
 	});
 
 	it('setPin swaps a slot and persists to localStorage only', () => {
@@ -38,7 +43,12 @@ describe('navPins store (NAV-OPTION-D)', () => {
 	it('resetToDefaults restores canon pins', () => {
 		navPinsStore.setPin(0, '/player/settings');
 		navPinsStore.resetToDefaults();
-		expect(navPinsStore.pins).toEqual(['/player/dashboard', '/player/workout', '/stats']);
+		expect(navPinsStore.pins).toEqual([
+			'/player/dashboard',
+			'/player/workout',
+			'/stats',
+			null,
+		]);
 	});
 
 	it('rejects invalid href for persona', () => {
@@ -54,16 +64,30 @@ describe('navPins store (NAV-OPTION-D)', () => {
 		navPinsStore.hydrate('uid-test', 'player@test.com', 'player', {
 			player: ['/stats', '/player/workout', '/player/dashboard'],
 		});
-		expect(navPinsStore.pins).toEqual(['/player/settings', '/player/workout', '/stats']);
+		expect(navPinsStore.pins).toEqual(['/player/settings', '/player/workout', '/stats', null]);
 	});
 
 	it('sanitizes invalid local pins to defaults per slot', () => {
 		storage.set(
 			'vanguard_nav_pins_v1:uid-test:player',
-			JSON.stringify(['/coach', null, '/stats']),
+			JSON.stringify(['/coach', null, '/stats', null]),
 		);
 		navPinsStore.hydrate('uid-test', 'player@test.com', 'player', null);
 		expect(navPinsStore.pins[0]).toBe('/player/dashboard');
 		expect(navPinsStore.pins[2]).toBe('/stats');
+	});
+
+	it('allows Menu pseudo-pin on slot 4', () => {
+		navPinsStore.setPin(3, '__field_menu__');
+		expect(navPinsStore.pins[3]).toBe('__field_menu__');
+	});
+
+	it('migrates legacy 3-slot localStorage to 4 slots', () => {
+		storage.set(
+			'vanguard_nav_pins_v1:uid-test:player',
+			JSON.stringify(['/player/settings', '/player/workout', '/stats']),
+		);
+		navPinsStore.hydrate('uid-test', 'player@test.com', 'player', null);
+		expect(navPinsStore.pins).toEqual(['/player/settings', '/player/workout', '/stats', null]);
 	});
 });

@@ -16,9 +16,11 @@
 	} from '$lib/shell/workspaceNav.js';
 	import {
 		getNavCatalog,
+		getPickPinCatalog,
 		resolveNavPersonaKey,
 	} from '$lib/shell/navPinCatalog.js';
 	import { navPinsStore } from '$lib/stores/navPins.svelte.js';
+	import { fieldMenu } from '$lib/stores/fieldMenu.svelte.js';
 	import { workspaceContextStore } from '$lib/stores/workspaceContext.svelte.js';
 	import '$lib/styles/enterprise-console.css';
 	import PlayerDetailDrawer from '$lib/components/shell/PlayerDetailDrawer.svelte';
@@ -58,6 +60,9 @@
 		resolveNavPersonaKey(authStore.role, workspaceContextStore.activeContext),
 	);
 	const navCatalog = $derived(getNavCatalog(navPersonaKey));
+	const menuSheetCatalog = $derived(
+		fieldMenu.mode === 'pick-pin' ? getPickPinCatalog(navPersonaKey) : navCatalog,
+	);
 	const workspaceLabel = $derived(nav.workspaceLabel);
 	const showBilling = $derived(nav.showBilling);
 	const tabBarAccent = $derived(authStore.role === 'coach' ? 'cyan' : 'neutral');
@@ -73,26 +78,6 @@
 		return isShellNavActive(page.url.pathname, page.url.searchParams, item);
 	}
 
-	let menuSheetOpen = $state(false);
-	let menuSheetMode = $state<'browse' | 'pick-pin'>('browse');
-	let pickSlotIndex = $state<0 | 1 | 2>(0);
-
-	function openMenuBrowse() {
-		menuSheetMode = 'browse';
-		menuSheetOpen = true;
-	}
-
-	function openMenuPickPin(slotIndex: 0 | 1 | 2) {
-		menuSheetMode = 'pick-pin';
-		pickSlotIndex = slotIndex;
-		menuSheetOpen = true;
-	}
-
-	function closeMenuSheet() {
-		menuSheetOpen = false;
-		menuSheetMode = 'browse';
-	}
-
 	let isDesktop = $state(false);
 
 	$effect(() => {
@@ -100,7 +85,7 @@
 		const mq = window.matchMedia('(min-width: 1024px)');
 		const onChange = () => {
 			isDesktop = mq.matches;
-			if (mq.matches) closeMenuSheet();
+			if (mq.matches) fieldMenu.close();
 		};
 		onChange();
 		mq.addEventListener('change', onChange);
@@ -111,7 +96,7 @@
 		const uid = authStore.user?.uid ?? '';
 		const email = authStore.user?.email ?? '';
 		const profilePins = authStore.userProfile?.mobileNavPins as
-			| Record<string, [string | null, string | null, string | null]>
+			| Record<string, [string | null, string | null, string | null, string | null]>
 			| undefined;
 		navPinsStore.hydrate(uid, email, navPersonaKey, profilePins ?? null);
 	});
@@ -135,7 +120,7 @@
 	const fieldQuickActions = $derived(getFieldQuickActions(page.url.pathname));
 
 	const fieldMenuSwipe = createFieldMenuSwipeHandlers(() => {
-		if (showFieldChrome) openMenuBrowse();
+		if (showFieldChrome) fieldMenu.openBrowse();
 	});
 
 	function toggleDesktopSidebar() {
@@ -151,7 +136,7 @@
 	let anomalySent = $state(false);
 
 	function openAnomaly() {
-		closeMenuSheet();
+		fieldMenu.close();
 		anomalyText = '';
 		anomalySent = false;
 		anomalyOpen = true;
@@ -371,23 +356,22 @@
 		isActive={shellNavActive}
 		variant={pinBarSkin}
 		accent={tabBarAccent}
-		onMenuOpen={openMenuBrowse}
-		onPinLongPress={openMenuPickPin}
-		showMenuSlot={true}
+		onMenuOpen={() => fieldMenu.openBrowse()}
+		onPinLongPress={(slotIndex) => fieldMenu.openPickPin(slotIndex)}
 	/>
 	<AppMenuSheet
-		open={menuSheetOpen}
+		open={fieldMenu.open}
 		personaKey={navPersonaKey}
-		catalog={navCatalog}
+		catalog={menuSheetCatalog}
 		pinnedHrefs={navPinsStore.pins.filter(Boolean) as string[]}
-		mode={menuSheetMode}
-		pickSlotIndex={pickSlotIndex}
+		mode={fieldMenu.mode}
+		pickSlotIndex={fieldMenu.pickSlotIndex}
 		skin={pinBarSkin}
 		showBilling={showBilling}
 		pathname={page.url.pathname}
 		isActive={shellNavActive}
-		onDismiss={closeMenuSheet}
-		onPickPin={(href) => navPinsStore.setPin(pickSlotIndex, href)}
+		onDismiss={() => fieldMenu.close()}
+		onPickPin={(href) => navPinsStore.setPin(fieldMenu.pickSlotIndex, href)}
 		onResetDefaults={() => navPinsStore.resetToDefaults()}
 		onReportAnomaly={openAnomaly}
 		showReportAnomaly={true}

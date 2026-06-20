@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import {
 	fetchHouseholdClearance,
 	guardsPassForHouseholdLoad,
@@ -6,6 +6,18 @@ import {
 	normalizeHouseholdId,
 	HOUSEHOLD_CLEARANCE_TIMEOUT_MS,
 } from '$lib/parent/loadHouseholdClearance.js';
+
+vi.mock('$lib/parent/householdOperatives.js', () => ({
+	buildEnrichedOperativeRows: vi.fn(),
+}));
+
+import { buildEnrichedOperativeRows } from '$lib/parent/householdOperatives.js';
+import { doc, getDoc } from 'firebase/firestore';
+
+vi.mock('firebase/firestore', () => ({
+	doc: vi.fn((_db, _col, id) => ({ id })),
+	getDoc: vi.fn(),
+}));
 
 describe('householdClearanceLoad guards', () => {
 	it('guardsPassForHouseholdLoad rejects SSR, auth loading, and missing email', () => {
@@ -34,9 +46,9 @@ describe('householdClearanceLoad guards', () => {
 		}
 	});
 
-	it('shouldClearLoadBusy only for the latest generation', () => {
+	it('shouldClearLoadBusy always true so finally always clears loadBusy', () => {
 		expect(shouldClearLoadBusy(true)).toBe(true);
-		expect(shouldClearLoadBusy(false)).toBe(false);
+		expect(shouldClearLoadBusy(false)).toBe(true);
 	});
 
 	it('normalizeHouseholdId trims and rejects empty', () => {
@@ -60,5 +72,33 @@ describe('fetchHouseholdClearance', () => {
 			loadErr: '',
 			operativeRows: [],
 		});
+	});
+
+	it('times out when buildEnrichedOperativeRows exceeds the 15s budget', async () => {
+		vi.mocked(getDoc).mockResolvedValue({
+			exists: () => true,
+			data: () => ({ coppaSigned: false, playerEmails: ['kid@operative.local'] }),
+		} as never);
+		vi.mocked(buildEnrichedOperativeRows).mockImplementation(
+			() => new Promise(() => {}),
+		);
+
+		const db = {} as import('firebase/firestore').Firestore;
+		const result = await fetchHouseholdClearance(db, 'hh-timeout', { timeoutMs: 50 });
+		expect(result.loadErr).toBe('Household read timed out');
+		expect(result.operativeRows).toEqual([]);
+	});
+
+	it('wraps getDoc and enrich in a single timeout race', async () => {
+		vi.mocked(getDoc).mockResolvedValue({
+			exists: () => true,
+			data: () => ({ coppaSigned: true, coppaSignedAt: null, playerEmails: [] }),
+		} as never);
+		vi.mocked(buildEnrichedOperativeRows).mockResolvedValue([]);
+
+		const db = {} as import('firebase/firestore').Firestore;
+		const result = await fetchHouseholdClearance(db, 'hh-ok');
+		expect(buildEnrichedOperativeRows).toHaveBeenCalled();
+		expect(result.coppaSigned).toBe(true);
 	});
 });

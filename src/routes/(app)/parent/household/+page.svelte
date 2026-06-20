@@ -13,10 +13,9 @@
 		where,
 		writeBatch,
 	} from 'firebase/firestore';
-	import { db, functions } from '$lib/firebase.js';
+	import { db, functions, getActiveDb } from '$lib/firebase.js';
 	import IntelModal from '$lib/components/ui/IntelModal.svelte';
 	import { lockBody, unlockBody } from '$lib/utils/modalLock.js';
-	import { handleSignOut } from '$lib/auth/signOutFlow.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import ParentPrivacyDashboard from '$lib/components/compliance/ParentPrivacyDashboard.svelte';
 	import TransferPortal from '$lib/components/player/TransferPortal.svelte';
@@ -29,7 +28,6 @@
 		fetchHouseholdClearance,
 		guardsPassForHouseholdLoad,
 		normalizeHouseholdId,
-		shouldClearLoadBusy,
 	} from '$lib/parent/loadHouseholdClearance.js';
 
 	const DISPATCH_CODE_INTEL = {
@@ -126,7 +124,7 @@
 
 	/** @returns {Promise<void>} */
 	async function refreshHouseholdOperatives() {
-		operativeRows = await loadHouseholdOperativeRows(db, householdId);
+		operativeRows = await loadHouseholdOperativeRows(getActiveDb(), householdId);
 	}
 
 	/**
@@ -264,6 +262,11 @@
 			return;
 		}
 
+		if (!hid) {
+			loadBusy = false;
+			return;
+		}
+
 		const gen = ++loadGeneration;
 		const abortController = new AbortController();
 		loadErr = '';
@@ -271,7 +274,7 @@
 
 		void (async () => {
 			try {
-				const result = await fetchHouseholdClearance(db, hid, {
+				const result = await fetchHouseholdClearance(getActiveDb(), hid, {
 					signal: abortController.signal,
 				});
 				if (gen !== loadGeneration) return;
@@ -284,9 +287,7 @@
 				if (abortController.signal.aborted || gen !== loadGeneration) return;
 				loadErr = e instanceof Error ? e.message : 'Read failed';
 			} finally {
-				if (shouldClearLoadBusy(gen === loadGeneration)) {
-					loadBusy = false;
-				}
+				loadBusy = false;
 			}
 		})();
 
@@ -308,7 +309,7 @@
 			await authStore.refresh({ silent: true });
 			const hid = (authStore.userProfile?.householdId || '').toString() || householdId;
 			if (hid) {
-				const snap = await getDoc(doc(db, 'households', hid));
+				const snap = await getDoc(doc(getActiveDb(), 'households', hid));
 				if (snap.exists()) {
 					const x = snap.data() || {};
 					coppaSigned = x.coppaSigned === true;
@@ -368,9 +369,9 @@
 			teamDispatchCode = '';
 			await authStore.refresh({ silent: true });
 			if (householdId) {
-				const hs = await getDoc(doc(db, 'households', householdId));
+				const hs = await getDoc(doc(getActiveDb(), 'households', householdId));
 				if (hs.exists()) {
-					operativeRows = await buildEnrichedOperativeRows(db, hs.data() || {});
+					operativeRows = await buildEnrichedOperativeRows(getActiveDb(), hs.data() || {});
 				}
 			}
 		} catch (e) {
@@ -464,15 +465,6 @@
 	data-region="household-clearance"
 >
 	<header class="phh-page-head bento-mb-lg">
-		<div class="phh-page-head__actions">
-			<button
-				type="button"
-				class="phh-sign-out"
-				onclick={() => void handleSignOut()}
-			>
-				Secure Sign Out
-			</button>
-		</div>
 		<div class="tw-text-center">
 			<p class="phh-eyebrow tw-mb-1">Parent OS · TIER-0 ACCESS</p>
 			<h1 class="phh-title tw-mb-2 tw-text-xl tw-font-extrabold tw-tracking-tight tw-text-white md:tw-text-2xl">
@@ -537,7 +529,7 @@
 				type="button"
 				class="phh-btn tw-w-full tw-min-h-[3.25rem] tw-px-4 tw-text-base tw-font-extrabold tw-uppercase tw-tracking-widest"
 				class:phh-btn--dim={coppaSigned}
-				disabled={coppaSigned || actionBusy || loadBusy}
+				disabled={coppaSigned || actionBusy}
 				onclick={signWaiver}
 			>
 				{coppaSigned ? 'Waiver on file' : 'Sign waiver & authorize'}
@@ -881,34 +873,6 @@
 	}
 	.phh-page-head {
 		position: relative;
-	}
-	.phh-page-head__actions {
-		display: flex;
-		justify-content: flex-end;
-		margin-bottom: 0.5rem;
-	}
-	.phh-sign-out {
-		font-size: 0.58rem;
-		font-weight: 800;
-		letter-spacing: 0.12em;
-		text-transform: uppercase;
-		font-family: ui-monospace, 'Cascadia Code', 'SFMono-Regular', Menlo, Consolas, monospace;
-		color: rgba(255, 255, 255, 0.5);
-		background: rgba(0, 0, 0, 0.4);
-		border: 1px solid rgba(255, 255, 255, 0.1);
-		border-radius: 0.25rem;
-		padding: 0.4rem 0.75rem;
-		cursor: pointer;
-		touch-action: manipulation;
-		transition:
-			color 0.15s ease,
-			border-color 0.15s ease,
-			box-shadow 0.15s ease;
-	}
-	.phh-sign-out:hover {
-		color: #fecaca;
-		border-color: rgba(248, 113, 113, 0.45);
-		box-shadow: 0 0 18px rgba(248, 113, 113, 0.12);
 	}
 	.phh-eyebrow {
 		font-size: 0.6rem;

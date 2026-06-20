@@ -26,8 +26,8 @@
 
 Exactly **one persistent primary navigation surface** per viewport.
 
-- **Field mode (<1024px):** full-width fixed **bottom pin bar** (Option D) — **3 user-customizable pins** + optional **Menu** slot (`showMenuSlot`, default off in `MobilePinBar`; shells pass `true`).
-- **Full nav:** **AppMenuSheet** (Menu tap when slot enabled + **swipe-up from bottom-edge** on `ps-root` / `ec-root`) — all Tier 1 + Tier 2 catalog items + system actions.
+- **Field mode (<1024px):** full-width fixed **bottom pin bar** (Option D) — **4 customizable pin slots** (default: 3 routes + empty 4th). **Swipe-up** from bottom edge opens `AppMenuSheet`; optional **Menu** pin (`__field_menu__`) or legacy fixed Menu slot (`showMenuSlot`, default off).
+- **Full nav:** **AppMenuSheet** (swipe-up from `ec-shell-outer` / `ps-shell-outer`, optional Menu pin, or fixed Menu slot when enabled) — all Tier 1 + Tier 2 catalog items + system actions.
 - **Desk mode (≥1024px):** left sidebar (enterprise) or left rail (player) — bottom bar hidden.
 
 Reject: top mobile header + bottom bar + off-canvas sidebar on field viewports (triple chrome).
@@ -54,7 +54,7 @@ Navigation separates **chrome grammar** (interaction) from **skin grammar** (vis
 ### §3a Chrome grammar (universal field mode)
 
 - App-native, mobile-first, **Option D**
-- Full-width fixed bottom pin bar: **3 customizable pins** + optional **Menu** slot (`showMenuSlot`)
+- Full-width fixed bottom pin bar: **4 customizable pin slots** (default: 3 routes + empty 4th) + optional legacy **Menu** slot (`showMenuSlot`, default off)
 - **44px** minimum touch targets on bar items
 - **AppMenuSheet** for full catalog — pins are a subset of catalog only (duplicate href highlight OK)
 - **Bottom-edge swipe detector** on shell roots (`fieldMenuSwipe.ts`, 80px zone, 44px threshold) — not limited to pin bar width
@@ -95,17 +95,19 @@ All use `EnterpriseConsoleShell` with **admin interface skin** on mobile **and**
 
 **Source:** [`navPinCatalog.ts`](../../src/lib/shell/navPinCatalog.ts) · **Components:** `MobilePinBar.svelte`, `AppMenuSheet.svelte`
 
-### Default pins (3 slots)
+### Default pins (4 slots — slot 4 empty by default)
 
-| Persona | Slot 1 | Slot 2 | Slot 3 |
-|---------|--------|--------|--------|
-| player | `/player/dashboard` HQ | `/player/workout` Train | `/stats` Stats |
-| coach | `/coach` Daily Intel | `/coach/forge` The Forge | `/messages` Messages |
-| parent | `/parent/household` | `/parent/vpc` | `/parent/dashboard` |
-| director | `/director?tab=home` | `/director?tab=teams` | `/director?tab=field` |
-| admin | `/admin/overview` | `/admin/organizations` | `/admin/users` |
-| registrar | `/director?tab=home` | `/director?tab=teams` | `/director?tab=licenses` |
-| recruiter | `/recruiter` | `/messages` | *(optional empty)* |
+| Persona | Slot 1 | Slot 2 | Slot 3 | Slot 4 |
+|---------|--------|--------|--------|--------|
+| player | `/player/dashboard` HQ | `/player/workout` Train | `/stats` Stats | *(empty — pin Menu or any route)* |
+| coach | `/coach` Daily Intel | `/coach/forge` The Forge | `/messages` Messages | *(empty)* |
+| parent | `/parent/household` | `/parent/vpc` | `/parent/dashboard` | *(empty)* |
+| director | `/director?tab=home` | `/director?tab=teams` | `/director?tab=field` | *(empty)* |
+| admin | `/admin/overview` | `/admin/organizations` | `/admin/users` | *(empty)* |
+| registrar | `/director?tab=home` | `/director?tab=teams` | `/director?tab=licenses` | *(empty)* |
+| recruiter | `/recruiter` | `/messages` | *(optional empty)* | *(empty)* |
+
+**Menu as pin:** Long-press an empty slot (or any slot) → pick **Menu** from System section (`MENU_PIN_HREF = __field_menu__`) to pin the sheet opener on slot 4. Fixed Menu slot (`showMenuSlot`) remains available but **default off** — shells use swipe + optional Menu pin instead.
 
 ### AppMenuSheet catalogs (per persona)
 
@@ -130,7 +132,7 @@ Sheet sections (top → bottom). Items on bottom pins also appear in sheet (dim/
 - **No** floating `ReportAnomaly` alpha trigger on field — anomaly via **AppMenuSheet** (field) or **desktop sidebar** only
 - **No** `ec-cmd-trigger` / ⌘K command palette on field — desk ≥1024 only
 - **No** `MobileDirectorFab` on field — route quick actions live in **AppMenuSheet → Quick actions**
-- Menu tap (when `showMenuSlot`) **or** swipe-up from bottom edge opens `AppMenuSheet`
+- **Swipe-up from bottom edge** on `ec-shell-outer` / `ps-shell-outer` opens `AppMenuSheet` (always). Optional **Menu pin** (`__field_menu__`) or legacy fixed Menu slot (`showMenuSlot`) also opens sheet.
 - `OfflineBanner` sits **above** pin bar on field: `bottom: calc(56px + safe-area + 8px)` — not visually merged with nav chrome
 - Desk ≥1024: left sidebar unchanged (`workspaceNav.js`); floating alpha + ⌘K palette OK on desk
 

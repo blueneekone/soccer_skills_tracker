@@ -17,8 +17,9 @@
 		isPlayerHubActive,
 		isPlayerNavActive,
 	} from '$lib/player/shell/playerPrimaryNav.js';
-	import { getNavCatalog } from '$lib/shell/navPinCatalog.js';
+	import { getNavCatalog, getPickPinCatalog } from '$lib/shell/navPinCatalog.js';
 	import { navPinsStore } from '$lib/stores/navPins.svelte.js';
+	import { fieldMenu } from '$lib/stores/fieldMenu.svelte.js';
 	import { createFieldMenuSwipeHandlers } from '$lib/shell/fieldMenuSwipe.js';
 	import '$lib/styles/player-shell.css';
 	import '$lib/styles/player-dossier.css';
@@ -51,12 +52,12 @@
 	}
 
 	let signingOut = $state(false);
-	let menuSheetOpen = $state(false);
-	let menuSheetMode = $state<'browse' | 'pick-pin'>('browse');
-	let pickSlotIndex = $state<0 | 1 | 2>(0);
 	let isDesktop = $state(false);
 
 	const playerCatalog = $derived(getNavCatalog('player'));
+	const menuSheetCatalog = $derived(
+		fieldMenu.mode === 'pick-pin' ? getPickPinCatalog('player') : playerCatalog,
+	);
 	const gatedHrefs = $derived(
 		playerOsGate.blocked ? PRIMARY_LOCK_HREFS : new Set<string>(),
 	);
@@ -66,24 +67,8 @@
 		return isPlayerNavActive(href, page.url.pathname);
 	}
 
-	function openMenuBrowse() {
-		menuSheetMode = 'browse';
-		menuSheetOpen = true;
-	}
-
-	function openMenuPickPin(slotIndex: 0 | 1 | 2) {
-		menuSheetMode = 'pick-pin';
-		pickSlotIndex = slotIndex;
-		menuSheetOpen = true;
-	}
-
-	function closeMenuSheet() {
-		menuSheetOpen = false;
-		menuSheetMode = 'browse';
-	}
-
 	const fieldMenuSwipe = createFieldMenuSwipeHandlers(() => {
-		if (!isDesktop) openMenuBrowse();
+		if (!isDesktop) fieldMenu.openBrowse();
 	});
 
 	$effect(() => {
@@ -91,7 +76,7 @@
 		const mq = window.matchMedia('(min-width: 1024px)');
 		const onChange = () => {
 			isDesktop = mq.matches;
-			if (mq.matches) closeMenuSheet();
+			if (mq.matches) fieldMenu.close();
 		};
 		onChange();
 		mq.addEventListener('change', onChange);
@@ -102,7 +87,7 @@
 		const uid = authStore.user?.uid ?? '';
 		const email = authStore.user?.email ?? '';
 		const profilePins = authStore.userProfile?.mobileNavPins as
-			| Record<string, [string | null, string | null, string | null]>
+			| Record<string, [string | null, string | null, string | null, string | null]>
 			| undefined;
 		navPinsStore.hydrate(uid, email, 'player', profilePins ?? null);
 	});
@@ -114,7 +99,7 @@
 			await handleSignOut();
 		} finally {
 			signingOut = false;
-			closeMenuSheet();
+			fieldMenu.close();
 		}
 	}
 </script>
@@ -217,22 +202,21 @@
 		accent="gold"
 		gatedHrefs={gatedHrefs}
 		onNavClick={onNavClick}
-		onMenuOpen={openMenuBrowse}
-		onPinLongPress={openMenuPickPin}
-		showMenuSlot={true}
+		onMenuOpen={() => fieldMenu.openBrowse()}
+		onPinLongPress={(slotIndex) => fieldMenu.openPickPin(slotIndex)}
 	/>
 	<AppMenuSheet
-		open={menuSheetOpen}
+		open={fieldMenu.open}
 		personaKey="player"
-		catalog={playerCatalog}
+		catalog={menuSheetCatalog}
 		pinnedHrefs={navPinsStore.pins.filter(Boolean) as string[]}
-		mode={menuSheetMode}
-		pickSlotIndex={pickSlotIndex}
+		mode={fieldMenu.mode}
+		pickSlotIndex={fieldMenu.pickSlotIndex}
 		skin="player"
 		pathname={page.url.pathname}
 		isActive={playerShellNavActive}
-		onDismiss={closeMenuSheet}
-		onPickPin={(href) => navPinsStore.setPin(pickSlotIndex, href)}
+		onDismiss={() => fieldMenu.close()}
+		onPickPin={(href) => navPinsStore.setPin(fieldMenu.pickSlotIndex, href)}
 		onResetDefaults={() => navPinsStore.resetToDefaults()}
 	/>
 {/if}

@@ -18,7 +18,7 @@
 		catalog: NavPinItem[];
 		pinnedHrefs: string[];
 		mode?: 'browse' | 'pick-pin';
-		pickSlotIndex?: 0 | 1 | 2;
+		pickSlotIndex?: 0 | 1 | 2 | 3;
 		skin?: 'enterprise' | 'player' | 'parent-trust';
 		showBilling?: boolean;
 		pathname: string;

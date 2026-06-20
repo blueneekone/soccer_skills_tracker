@@ -2,14 +2,16 @@
 	import Icon from '$lib/components/ui/Icon.svelte';
 	import {
 		findCatalogItem,
+		getMenuPinItem,
+		MENU_PIN_HREF,
 		type NavPersonaKey,
 		type NavPinItem,
-		type PinTriple,
+		type PinQuad,
 	} from '$lib/shell/navPinCatalog.js';
 	import type { IconName } from '$lib/icons/registry.js';
 
 	interface Props {
-		pins: PinTriple;
+		pins: PinQuad;
 		catalog: NavPinItem[];
 		personaKey: NavPersonaKey;
 		pathname: string;
@@ -20,7 +22,7 @@
 		gatedHrefs?: Set<string>;
 		onNavClick?: (href: string, e: MouseEvent) => void;
 		onMenuOpen: () => void;
-		onPinLongPress: (slotIndex: 0 | 1 | 2) => void;
+		onPinLongPress: (slotIndex: 0 | 1 | 2 | 3) => void;
 		showMenuSlot?: boolean;
 	}
 
@@ -42,10 +44,11 @@
 
 	const LONG_PRESS_MS = 500;
 	let longPressTimer: ReturnType<typeof setTimeout> | null = null;
-	let longPressSlot = $state<0 | 1 | 2 | null>(null);
+	let longPressSlot = $state<0 | 1 | 2 | 3 | null>(null);
 
 	function resolvePinItem(href: string | null): NavPinItem | null {
 		if (!href) return null;
+		if (href === MENU_PIN_HREF) return getMenuPinItem();
 		return findCatalogItem(personaKey, href) ?? catalog.find((c) => c.href === href) ?? null;
 	}
 
@@ -57,7 +60,7 @@
 		longPressSlot = null;
 	}
 
-	function onPinPointerDown(slotIndex: 0 | 1 | 2) {
+	function onPinPointerDown(slotIndex: 0 | 1 | 2 | 3) {
 		clearLongPressTimer();
 		longPressSlot = slotIndex;
 		longPressTimer = setTimeout(() => {
@@ -72,7 +75,13 @@
 	}
 
 	function handleNavClick(href: string, e: MouseEvent) {
+		e.stopPropagation();
 		onNavClick?.(href, e);
+	}
+
+	function openMenuFromPin(e: Event) {
+		e.stopPropagation();
+		onMenuOpen();
 	}
 </script>
 
@@ -85,37 +94,53 @@
 	class:mobile-pin-bar--accent-neutral={accent === 'neutral'}
 	class:mobile-pin-bar--accent-gold={accent === 'gold'}
 	aria-label="Main navigation"
-	ontouchstart={(e) => e.stopPropagation()}
-	ontouchend={(e) => e.stopPropagation()}
-	onclick={(e) => e.stopPropagation()}
 >
 	<div class="mobile-pin-bar__row" role="tablist">
 		{#each pins as href, slotIndex (slotIndex)}
 			{@const item = resolvePinItem(href)}
-			{@const slot = slotIndex as 0 | 1 | 2}
+			{@const slot = slotIndex as 0 | 1 | 2 | 3}
 			{#if item}
-				{@const active = isActive(item.href)}
-				{@const gated = gatedHrefs.has(item.href)}
-				<a
-					href={item.href}
-					role="tab"
-					aria-selected={active}
-					aria-label={item.label}
-					aria-disabled={gated ? 'true' : undefined}
-					class="mobile-pin-bar__slot mobile-pin-bar__slot--pin"
-					class:mobile-pin-bar__slot--active={active}
-					class:mobile-pin-bar__slot--gated={gated}
-					data-sveltekit-reload
-					data-sveltekit-preload-data="hover"
-					onpointerdown={() => onPinPointerDown(slot)}
-					onpointerup={onPinPointerUp}
-					onpointerleave={onPinPointerUp}
-					onpointercancel={onPinPointerUp}
-					onclick={(e) => handleNavClick(item.href, e)}
-				>
-					<Icon name={item.icon as IconName} size={22} />
-					<span class="mobile-pin-bar__label">{item.label}</span>
-				</a>
+				{#if item.href === MENU_PIN_HREF}
+					<button
+						type="button"
+						role="tab"
+						aria-selected={false}
+						aria-label={item.label}
+						class="mobile-pin-bar__slot mobile-pin-bar__slot--pin mobile-pin-bar__slot--menu"
+						onpointerdown={() => onPinPointerDown(slot)}
+						onpointerup={onPinPointerUp}
+						onpointerleave={onPinPointerUp}
+						onpointercancel={onPinPointerUp}
+						ontouchstart={openMenuFromPin}
+						onclick={openMenuFromPin}
+					>
+						<Icon name={item.icon as IconName} size={22} />
+						<span class="mobile-pin-bar__label">{item.label}</span>
+					</button>
+				{:else}
+					{@const active = isActive(item.href)}
+					{@const gated = gatedHrefs.has(item.href)}
+					<a
+						href={item.href}
+						role="tab"
+						aria-selected={active}
+						aria-label={item.label}
+						aria-disabled={gated ? 'true' : undefined}
+						class="mobile-pin-bar__slot mobile-pin-bar__slot--pin"
+						class:mobile-pin-bar__slot--active={active}
+						class:mobile-pin-bar__slot--gated={gated}
+						data-sveltekit-reload
+						data-sveltekit-preload-data="hover"
+						onpointerdown={() => onPinPointerDown(slot)}
+						onpointerup={onPinPointerUp}
+						onpointerleave={onPinPointerUp}
+						onpointercancel={onPinPointerUp}
+						onclick={(e) => handleNavClick(item.href, e)}
+					>
+						<Icon name={item.icon as IconName} size={22} />
+						<span class="mobile-pin-bar__label">{item.label}</span>
+					</a>
+				{/if}
 			{:else}
 				<button
 					type="button"
@@ -125,7 +150,10 @@
 					onpointerup={onPinPointerUp}
 					onpointerleave={onPinPointerUp}
 					onpointercancel={onPinPointerUp}
-					onclick={() => onPinLongPress(slot)}
+					onclick={(e) => {
+						e.stopPropagation();
+						onPinLongPress(slot);
+					}}
 				>
 					<Icon name="action.add" size={20} />
 					<span class="mobile-pin-bar__label">Pin</span>
@@ -138,10 +166,8 @@
 				type="button"
 				class="mobile-pin-bar__slot mobile-pin-bar__slot--menu"
 				aria-label="Open menu"
-				onclick={(e) => {
-					e.stopPropagation();
-					onMenuOpen();
-				}}
+				ontouchstart={openMenuFromPin}
+				onclick={openMenuFromPin}
 			>
 				<Icon name="nav.menu" size={22} />
 				<span class="mobile-pin-bar__label">Menu</span>
