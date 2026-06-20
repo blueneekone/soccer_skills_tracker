@@ -99,7 +99,10 @@
 		const profilePins = authStore.userProfile?.mobileNavPins as
 			| Record<string, [string | null, string | null, string | null, string | null]>
 			| undefined;
-		navPinsStore.hydrate(uid, email, navPersonaKey, profilePins ?? null);
+		const profilePinsUpdatedAt = authStore.userProfile?.mobileNavPinsUpdatedAt as
+			| Record<string, number>
+			| undefined;
+		navPinsStore.hydrate(uid, email, navPersonaKey, profilePins ?? null, profilePinsUpdatedAt ?? null);
 	});
 
 	const sidebarCollapsedDesktop = $derived(!workspaceContextStore.isSidebarOpen);

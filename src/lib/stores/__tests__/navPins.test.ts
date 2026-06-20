@@ -2,6 +2,15 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('$app/environment', () => ({ browser: true }));
 
+const updateDocMock = vi.fn().mockResolvedValue(undefined);
+vi.mock('$lib/firebase.js', () => ({
+	db: {},
+}));
+vi.mock('firebase/firestore', () => ({
+	doc: vi.fn(() => ({})),
+	updateDoc: (...args: unknown[]) => updateDocMock(...args),
+}));
+
 const storage = new Map<string, string>();
 vi.stubGlobal('localStorage', {
 	getItem: (key: string) => storage.get(key) ?? null,
@@ -21,6 +30,7 @@ import { navPinsStore } from '$lib/stores/navPins.svelte.js';
 describe('navPins store (NAV-OPTION-D)', () => {
 	beforeEach(() => {
 		storage.clear();
+		updateDocMock.mockClear();
 		navPinsStore.hydrate('uid-test', 'player@test.com', 'player', null);
 	});
 
@@ -33,11 +43,17 @@ describe('navPins store (NAV-OPTION-D)', () => {
 		]);
 	});
 
-	it('setPin swaps a slot and persists to localStorage only', () => {
+	it('setPin swaps a slot and persists to localStorage + Firestore', async () => {
 		navPinsStore.setPin(2, '/player/tracker');
 		expect(navPinsStore.pins[2]).toBe('/player/tracker');
 		const raw = storage.get('vanguard_nav_pins_v1:uid-test:player');
 		expect(raw).toContain('/player/tracker');
+		await vi.waitFor(() => {
+			expect(updateDocMock).toHaveBeenCalled();
+		});
+		const patch = updateDocMock.mock.calls.at(-1)?.[1] as Record<string, unknown>;
+		expect(patch['mobileNavPins.player']).toEqual(navPinsStore.pins);
+		expect(typeof patch['mobileNavPinsUpdatedAt.player']).toBe('number');
 	});
 
 	it('resetToDefaults restores canon pins', () => {
@@ -56,7 +72,20 @@ describe('navPins store (NAV-OPTION-D)', () => {
 		expect(navPinsStore.pins[1]).toBe('/player/workout');
 	});
 
-	it('prefers localStorage over Firestore profile on hydrate', () => {
+	it('hydrates from Firestore profile when local is empty (cross-device)', () => {
+		navPinsStore.hydrate('uid-test', 'player@test.com', 'player', {
+			player: ['/player/settings', '/player/workout', '/stats', '__field_menu__'],
+		});
+		expect(navPinsStore.pins).toEqual([
+			'/player/settings',
+			'/player/workout',
+			'/stats',
+			'__field_menu__',
+		]);
+		expect(storage.get('vanguard_nav_pins_v1:uid-test:player')).toContain('/player/settings');
+	});
+
+	it('prefers localStorage over Firestore profile on hydrate when timestamps tie', () => {
 		storage.set(
 			'vanguard_nav_pins_v1:uid-test:player',
 			JSON.stringify(['/player/settings', '/player/workout', '/stats']),

@@ -3060,6 +3060,9 @@ service cloud.firestore {
     //  preferences — User can read/write their own preferences sub-map.
     //                No other user or role may write another user's preferences.
     //
+    //  mobileNavPins / mobileNavPinsUpdatedAt — Option D field pin bar (NAV-OPTION-D).
+    //                Self-update only; persona-keyed pin quads + updatedAt for cross-device sync.
+    //
     // IMPLEMENTATION NOTE
     // ───────────────────
     // Firestore security rules cannot enforce "this specific arrayUnion value
