@@ -197,11 +197,14 @@
 
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 <div
+	class="ec-shell-outer"
+	ontouchstart={fieldMenuSwipe.onTouchStart}
+	ontouchend={fieldMenuSwipe.onTouchEnd}
+>
+<div
 	class="ec-root"
 	data-sidebar-collapsed={sidebarCollapsedDesktop}
 	data-vanguard-os="tactical"
-	ontouchstart={fieldMenuSwipe.onTouchStart}
-	ontouchend={fieldMenuSwipe.onTouchEnd}
 >
 	<div class="ec-root__body">
 		<aside
@@ -358,41 +361,41 @@
 		</div>
 	</div>
 	</div>
+</div>
 
-	<!-- Mobile bottom tab bar + FAB — only for management roles on mobile viewports -->
-	{#if showMobileChrome}
-		<MobilePinBar
-			pins={navPinsStore.pins}
-			catalog={navCatalog}
-			personaKey={navPersonaKey}
-			pathname={page.url.pathname}
-			searchParams={page.url.searchParams}
-			isActive={shellNavActive}
-			variant={pinBarSkin}
-			accent={tabBarAccent}
-			onMenuOpen={openMenuBrowse}
-			onPinLongPress={openMenuPickPin}
-			showMenuSlot={true}
-		/>
-		<AppMenuSheet
-			open={menuSheetOpen}
-			personaKey={navPersonaKey}
-			catalog={navCatalog}
-			pinnedHrefs={navPinsStore.pins.filter(Boolean) as string[]}
-			mode={menuSheetMode}
-			pickSlotIndex={pickSlotIndex}
-			skin={pinBarSkin}
-			showBilling={showBilling}
-			pathname={page.url.pathname}
-			isActive={shellNavActive}
-			onDismiss={closeMenuSheet}
-			onPickPin={(href) => navPinsStore.setPin(pickSlotIndex, href)}
-			onResetDefaults={() => navPinsStore.resetToDefaults()}
-			onReportAnomaly={openAnomaly}
-			showReportAnomaly={true}
-			quickActions={fieldQuickActions}
-		/>
-	{/if}
+{#if showMobileChrome}
+	<MobilePinBar
+		pins={navPinsStore.pins}
+		catalog={navCatalog}
+		personaKey={navPersonaKey}
+		pathname={page.url.pathname}
+		searchParams={page.url.searchParams}
+		isActive={shellNavActive}
+		variant={pinBarSkin}
+		accent={tabBarAccent}
+		onMenuOpen={openMenuBrowse}
+		onPinLongPress={openMenuPickPin}
+		showMenuSlot={true}
+	/>
+	<AppMenuSheet
+		open={menuSheetOpen}
+		personaKey={navPersonaKey}
+		catalog={navCatalog}
+		pinnedHrefs={navPinsStore.pins.filter(Boolean) as string[]}
+		mode={menuSheetMode}
+		pickSlotIndex={pickSlotIndex}
+		skin={pinBarSkin}
+		showBilling={showBilling}
+		pathname={page.url.pathname}
+		isActive={shellNavActive}
+		onDismiss={closeMenuSheet}
+		onPickPin={(href) => navPinsStore.setPin(pickSlotIndex, href)}
+		onResetDefaults={() => navPinsStore.resetToDefaults()}
+		onReportAnomaly={openAnomaly}
+		showReportAnomaly={true}
+		quickActions={fieldQuickActions}
+	/>
+{/if}
 </div>
 
 <!-- Global Command Palette (Cmd+K) -->

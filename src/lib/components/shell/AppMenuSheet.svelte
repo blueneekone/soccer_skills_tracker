@@ -300,13 +300,6 @@
 		border-top-color: rgba(148, 163, 184, 0.28);
 	}
 
-	@media (min-width: 1024px) {
-		.app-menu-backdrop,
-		.app-menu-sheet {
-			display: none;
-		}
-	}
-
 	.app-menu-sheet__handle {
 		width: 36px;
 		height: 4px;

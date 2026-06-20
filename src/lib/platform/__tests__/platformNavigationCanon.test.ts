@@ -24,6 +24,7 @@ const REPORT_ANOMALY = join(ROOT, 'lib/components/alpha/ReportAnomaly.svelte');
 const OFFLINE_SYNC = join(ROOT, 'lib/services/offlineSync.svelte.ts');
 const FIELD_MENU_SWIPE = join(ROOT, 'lib/shell/fieldMenuSwipe.ts');
 const FIELD_QUICK_ACTIONS = join(ROOT, 'lib/shell/fieldQuickActions.ts');
+const PARENT_LAYOUT = join(ROOT, 'routes/(app)/parent/+layout.svelte');
 const PARENT_LOUNGE_SHELL_CSS = join(ROOT, 'lib/styles/parent-lounge-shell.css');
 
 const STAFF_ADMIN_ROLES = [
@@ -204,11 +205,47 @@ describe('NAV-OPTION-D-POLISH guards', () => {
 		expect(pinBar).not.toContain('onSwipeUp');
 	});
 
-	it('shell roots wire bottom-edge swipe + showMenuSlot on field', () => {
-		expect(playerShell).toContain('fieldMenuSwipe');
+	it('shell roots wire bottom-edge swipe on shell-outer (not ec-root / ps-root)', () => {
+		expect(playerShell).toContain('ps-shell-outer');
+		expect(playerShell).toMatch(/ps-shell-outer[\s\S]*fieldMenuSwipe/);
+		expect(playerShell).not.toMatch(/class="ps-root[\s\S]*ontouchstart=\{fieldMenuSwipe/);
+		expect(enterprise).toContain('ec-shell-outer');
+		expect(enterprise).toMatch(/ec-shell-outer[\s\S]*fieldMenuSwipe/);
+		expect(enterprise).not.toMatch(/class="ec-root"[\s\S]*ontouchstart=\{fieldMenuSwipe/);
+		expect(fieldMenuSwipe).toContain("closest('.mobile-pin-bar')");
+	});
+
+	it('shells pass showMenuSlot on field', () => {
 		expect(playerShell).toContain('showMenuSlot={true}');
-		expect(enterprise).toContain('fieldMenuSwipe');
 		expect(enterprise).toContain('showMenuSlot={true}');
+	});
+
+	it('MobilePinBar + AppMenuSheet are siblings outside ec-root / ps-root (portal field chrome)', () => {
+		const mobilePinInEnterprise = enterprise.indexOf('<MobilePinBar');
+		expect(mobilePinInEnterprise).toBeGreaterThan(enterprise.indexOf('class="ec-root"'));
+		expect(enterprise.slice(enterprise.indexOf('class="ec-root"'), mobilePinInEnterprise)).not.toContain(
+			'<MobilePinBar',
+		);
+		expect(enterprise).toMatch(/\{#if showMobileChrome\}[\s\S]*<MobilePinBar/);
+
+		const psRootOpen = playerShell.indexOf('class="ps-root');
+		const mobilePinInPlayer = playerShell.indexOf('<MobilePinBar');
+		expect(mobilePinInPlayer).toBeGreaterThan(psRootOpen);
+		expect(playerShell.slice(psRootOpen, mobilePinInPlayer)).not.toContain('<MobilePinBar');
+		expect(playerShell).toMatch(/\{#if !isDesktop\}[\s\S]*<MobilePinBar/);
+	});
+
+	it('parent layout has no duplicate z4 top nav — desk sidebar + field pin bar only', () => {
+		const parentLayout = readFileSync(PARENT_LAYOUT, 'utf-8');
+		expect(parentLayout).not.toContain('parent-lounge-z4-nav');
+		expect(parentLayout).toContain('parent-lounge-z1-well');
+		const parentShellCss = readFileSync(PARENT_LOUNGE_SHELL_CSS, 'utf-8');
+		expect(parentShellCss).not.toContain('.parent-lounge-z4-nav');
+		expect(parentShellCss).toMatch(
+			/max-width:\s*1023\.98px[\s\S]*padding-bottom:\s*calc\(56px \+ env\(safe-area-inset-bottom/,
+		);
+		expect(canonSrc).toMatch(/Parent.*desk.*sidebar/i);
+		expect(canonSrc).toMatch(/Option D/i);
 	});
 
 	it('enterprise field removes MobileDirectorFab and desk-only cmd trigger', () => {
@@ -238,13 +275,6 @@ describe('NAV-OPTION-D-POLISH guards', () => {
 		expect(offlineSync).toContain('SYNC_FLUSH_TIMEOUT_MS');
 		expect(offlineSync).toMatch(/SYNC_FLUSH_TIMEOUT_MS\s*=\s*10_000/);
 		expect(fieldMenuSwipe).toContain('FIELD_MENU_EDGE_ZONE_PX');
-	});
-
-	it('parent lounge z4 nav hidden on field viewports', () => {
-		const parentShellCss = readFileSync(PARENT_LOUNGE_SHELL_CSS, 'utf-8');
-		expect(parentShellCss).toMatch(
-			/max-width:\s*1023\.98px[\s\S]*\.parent-lounge-z4-nav[\s\S]*display:\s*none\s*!important/,
-		);
 	});
 });
 

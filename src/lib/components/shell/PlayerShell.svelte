@@ -123,9 +123,12 @@
 
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 <div
-	class="ps-root ps-root--dossier tw-w-full tw-max-w-[100vw] tw-overflow-x-hidden"
+	class="ps-shell-outer"
 	ontouchstart={fieldMenuSwipe.onTouchStart}
 	ontouchend={fieldMenuSwipe.onTouchEnd}
+>
+<div
+	class="ps-root ps-root--dossier tw-w-full tw-max-w-[100vw] tw-overflow-x-hidden"
 >
 	<div class="ps-ambient" aria-hidden="true">
 		<div class="ps-ambient__grid"></div>
@@ -178,35 +181,7 @@
 			</button>
 		</nav>
 	{:else}
-		<MobilePinBar
-			pins={navPinsStore.pins}
-			catalog={playerCatalog}
-			personaKey="player"
-			pathname={page.url.pathname}
-			searchParams={page.url.searchParams}
-			isActive={playerShellNavActive}
-			variant="player"
-			accent="gold"
-			gatedHrefs={gatedHrefs}
-			onNavClick={onNavClick}
-			onMenuOpen={openMenuBrowse}
-			onPinLongPress={openMenuPickPin}
-			showMenuSlot={true}
-		/>
-		<AppMenuSheet
-			open={menuSheetOpen}
-			personaKey="player"
-			catalog={playerCatalog}
-			pinnedHrefs={navPinsStore.pins.filter(Boolean) as string[]}
-			mode={menuSheetMode}
-			pickSlotIndex={pickSlotIndex}
-			skin="player"
-			pathname={page.url.pathname}
-			isActive={playerShellNavActive}
-			onDismiss={closeMenuSheet}
-			onPickPin={(href) => navPinsStore.setPin(pickSlotIndex, href)}
-			onResetDefaults={() => navPinsStore.resetToDefaults()}
-		/>
+		<!-- Field pin bar + sheet are siblings of ps-root (see ps-shell-outer) -->
 	{/if}
 
 	<div class="ps-stack">
@@ -228,4 +203,37 @@
 			</main>
 		</div>
 	</div>
+</div>
+
+{#if !isDesktop}
+	<MobilePinBar
+		pins={navPinsStore.pins}
+		catalog={playerCatalog}
+		personaKey="player"
+		pathname={page.url.pathname}
+		searchParams={page.url.searchParams}
+		isActive={playerShellNavActive}
+		variant="player"
+		accent="gold"
+		gatedHrefs={gatedHrefs}
+		onNavClick={onNavClick}
+		onMenuOpen={openMenuBrowse}
+		onPinLongPress={openMenuPickPin}
+		showMenuSlot={true}
+	/>
+	<AppMenuSheet
+		open={menuSheetOpen}
+		personaKey="player"
+		catalog={playerCatalog}
+		pinnedHrefs={navPinsStore.pins.filter(Boolean) as string[]}
+		mode={menuSheetMode}
+		pickSlotIndex={pickSlotIndex}
+		skin="player"
+		pathname={page.url.pathname}
+		isActive={playerShellNavActive}
+		onDismiss={closeMenuSheet}
+		onPickPin={(href) => navPinsStore.setPin(pickSlotIndex, href)}
+		onResetDefaults={() => navPinsStore.resetToDefaults()}
+	/>
+{/if}
 </div>

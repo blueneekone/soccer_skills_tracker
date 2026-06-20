@@ -21,6 +21,14 @@
 	--icon-size-xl: 24px;
 }
 
+.ec-shell-outer {
+	display: flex;
+	flex-direction: column;
+	width: 100%;
+	max-width: 100%;
+	min-height: 100dvh;
+}
+
 .ec-root {
 	display: flex;
 	flex-direction: row;

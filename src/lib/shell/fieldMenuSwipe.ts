@@ -11,6 +11,8 @@ export function createFieldMenuSwipeHandlers(onSwipeUp: () => void) {
 	function onTouchStart(e: TouchEvent) {
 		const t = e.touches[0];
 		if (!t || typeof window === 'undefined') return;
+		const target = e.target;
+		if (target instanceof Element && target.closest('.mobile-pin-bar')) return;
 		touchStartInEdge = t.clientY >= window.innerHeight - FIELD_MENU_EDGE_ZONE_PX;
 		if (!touchStartInEdge) return;
 		touchStartY = t.clientY;

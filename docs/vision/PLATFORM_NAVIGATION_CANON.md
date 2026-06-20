@@ -146,8 +146,9 @@ Sheet sections (top → bottom). Items on bottom pins also appear in sheet (dim/
 
 ## §4c Parent mobile field spec
 
-- Same Option D chrome grammar as enterprise field mode
-- Content skin: `parent-lounge-shell.css` — trust tone, co-op partner calm
+- **Desk (≥1024px):** `ec-sidebar` + `parentLinks` from `workspaceNav.js` only — **no** `parent-lounge-z4-nav` top tabs in `parent/+layout.svelte`
+- **Field (<1024px):** Same Option D chrome grammar as enterprise field mode — pin bar + `AppMenuSheet` only
+- Content skin: `parent-lounge-shell.css` — trust tone, co-op partner calm; Z1 well + Z2 panels (no route-level top nav)
 - Default pins: Household · VPC · Co-op Command; sheet for Messages, Log Workout, Payments
 
 ---
@@ -196,7 +197,9 @@ Full radar / telemetry bands below fold. Gold path: GP-ACQ-04a · QA-101, QA-106
 | Floating alpha `ReportAnomaly` on field | AppMenuSheet + desk sidebar only |
 | `ec-cmd-trigger` / ⌘K on field | Desk-only search & jump |
 | `MobileDirectorFab` on field | Quick actions in AppMenuSheet |
-| Pin-bar-only swipe-up | Root bottom-edge detector on `ps-root` / `ec-root` |
+| Pin-bar-only swipe-up | Bottom-edge detector on `ec-shell-outer` / `ps-shell-outer` (not inside `ec-root` / `ps-root`) |
+| `parent-lounge-z4-nav` duplicate top tabs | Parent desk = `ec-sidebar` only; field = Option D pin bar |
+| `MobilePinBar` / `AppMenuSheet` inside `ec-root` | `overflow:hidden` + `isolation:isolate` clips sheet — mount as shell-outer siblings |
 
 ---
 

@@ -1,7 +1,7 @@
 /**
  * VS-4a — PARENT_LOUNGE_SHELL
  * Parent OS SIEM admin shell (/parent/*).
- * Z0 void · Z1 well · Z2 panels · Z4 chrome nav.
+ * Z0 void · Z1 well · Z2 panels — nav via ec-sidebar (desk) or Option D pin bar (field).
  */
 
 .parent-os-root.parent-lounge-shell {
@@ -21,45 +21,6 @@
 	background: var(--pd-void-base, #000000);
 	color: #e2e8f0;
 	font-family: 'Geist', ui-sans-serif, system-ui, sans-serif;
-}
-
-/* ── Z4 chrome nav ─────────────────────────────────────────────────────────── */
-.parent-os-root .parent-lounge-z4-nav {
-	position: sticky;
-	top: 0;
-	z-index: 20;
-	display: flex;
-	flex-wrap: wrap;
-	gap: 0.25rem;
-	padding: 0.5rem var(--parent-lounge-inset, 16px);
-	background: var(--pd-void-base, #000000);
-	border-bottom: 1px solid var(--pd-grey-trim, #334155);
-}
-
-.parent-os-root .parent-lounge-z4-nav__link {
-	display: inline-flex;
-	align-items: center;
-	min-height: 36px;
-	padding: 0 0.75rem;
-	font-family: ui-monospace, 'Geist Mono', monospace;
-	font-size: 10px;
-	font-weight: 700;
-	letter-spacing: 0.1em;
-	text-transform: uppercase;
-	text-decoration: none;
-	color: #94a3b8;
-	border: 1px solid transparent;
-	border-radius: 0;
-	box-shadow: none;
-}
-
-.parent-os-root .parent-lounge-z4-nav__link:hover {
-	color: var(--pd-data-cyan, #14b8a6);
-}
-
-.parent-os-root .parent-lounge-z4-nav__link--active {
-	color: var(--pd-data-cyan, #14b8a6);
-	border-bottom: 2px solid var(--pd-data-cyan, #14b8a6);
 }
 
 /* ── Z1 well ───────────────────────────────────────────────────────────────── */
@@ -103,7 +64,6 @@
 }
 
 /* Typography */
-.parent-os-root .parent-lounge-z4-nav__title,
 .parent-os-root .parent-lounge-page-title {
 	margin: 0;
 	font-family: ui-monospace, 'Geist Mono', monospace;
@@ -233,12 +193,8 @@
 	margin-bottom: 1rem;
 }
 
-/* Field mode (<1024px): Option D pin bar + AppMenuSheet only — hide desk sticky tabs */
+/* Field mode (<1024px): Option D pin bar only — inset well for bottom chrome */
 @media (max-width: 1023.98px) {
-	.parent-os-root .parent-lounge-z4-nav {
-		display: none !important;
-	}
-
 	.parent-os-root .parent-lounge-z1-well {
 		margin: 0;
 		padding: var(--parent-lounge-inset, 16px);

@@ -3,6 +3,12 @@
  * Scoped tokens; child routes should avoid stacking competing full-page backgrounds.
  */
 
+.ps-shell-outer {
+	width: 100%;
+	max-width: 100%;
+	min-height: 100dvh;
+}
+
 .ps-root {
 	--pp-bg: #050508;
 	--pp-surface: rgba(14, 14, 18, 0.82);

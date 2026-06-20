@@ -241,19 +241,17 @@ describe('VS-4a — Parent lounge shell', () => {
 		expect(shellCss).toContain('.parent-lounge-shell');
 		expect(shellCss).toContain('.parent-lounge-z1-well');
 		expect(shellCss).toContain('.parent-lounge-z2-panel');
-		expect(shellCss).toContain('.parent-lounge-z4-nav__link--active');
+		expect(shellCss).not.toContain('.parent-lounge-z4-nav');
 		expect(shellCss).toMatch(/--parent-lounge-gutter:\s*24px/);
 		expect(shellCss).not.toMatch(/#fbbf24|--pd-action-gold/);
 		expect(shellCss).not.toMatch(/backdrop-filter:\s*blur/);
 		expect(shellCss).not.toMatch(/border-radius:\s*24px|border-radius:\s*999/);
 	});
 
-	it('parent layout wraps routes with lounge shell and nav', () => {
+	it('parent layout wraps routes with lounge well only (nav via ec-sidebar / Option D)', () => {
 		expect(parentLayout).toContain('parent-lounge-shell.css');
-		expect(parentLayout).toMatch(/parent-lounge-z4-nav/);
+		expect(parentLayout).not.toMatch(/parent-lounge-z4-nav/);
 		expect(parentLayout).toMatch(/parent-lounge-z1-well/);
-		expect(parentLayout).toMatch(/\/parent\/household/);
-		expect(parentLayout).toMatch(/\/parent\/dashboard/);
 	});
 
 	it('dashboard and household use Z2 panels and 12-col grid', () => {

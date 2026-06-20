@@ -85,6 +85,9 @@
 	class:mobile-pin-bar--accent-neutral={accent === 'neutral'}
 	class:mobile-pin-bar--accent-gold={accent === 'gold'}
 	aria-label="Main navigation"
+	ontouchstart={(e) => e.stopPropagation()}
+	ontouchend={(e) => e.stopPropagation()}
+	onclick={(e) => e.stopPropagation()}
 >
 	<div class="mobile-pin-bar__row" role="tablist">
 		{#each pins as href, slotIndex (slotIndex)}
