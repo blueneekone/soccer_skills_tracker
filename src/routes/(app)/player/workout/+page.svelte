@@ -14,7 +14,8 @@
   import { dopamineOnCommit, dopamineOnCallable } from '$lib/services/dopamine.svelte.js';
   import { calculateTrainingSessionEarnedXp, getLevelProgressFromTotalXp } from '$lib/gamification/level.js';
   import { buildWorkoutDrillType, executePlayerWorkoutLog, expectedWorkoutXp, intensityApiFromStep, validatePlayerWorkoutLog, workoutLogErrorMessage } from '$lib/player/workoutLog.js';
-  import { formatAttributeLabel, loadQuestProgress, markQuestCompletedAfterWorkoutLog, saveQuestProgress } from '$lib/player/dashboard/activeBounties.js';
+  import { formatAttributeLabel, loadQuestProgress, markQuestCompletedAfterWorkoutLog, saveQuestProgress, WORKOUT_HQ_RETURN_PATH } from '$lib/player/dashboard/activeBounties.js';
+  import { resolveAppPath } from '$lib/components/_shared/resolveAppPath.js';
   import { attributeIdToWorkoutFocus, buildPolicyHintsFromResult, clearMissionHandoff, COACH_INTENT_HINT, formatSuggestedDrillLine, isMissionHandoffStale, readMissionHandoff, resolveHandoffDurationMinutes, resolveHandoffTargetRpe, resolveDrillById, resolveHeuristicDrill, type MissionHandoff, type WorkoutFocus } from '$lib/player/workout/coachMissionFlow.js';
   import type { PrescriptionDrillEntry } from '$lib/types/intent.js';
   import { resolveTeamDrillById as resolveTeamLibraryDrill } from '$lib/coach/teamDrillLibrary.js';
@@ -90,9 +91,15 @@
   let overlayVariant = $state<'success' | 'error' | 'confirm'>('error');
   let overlayTitle = $state('');
   let overlayMessage = $state('');
+  /** GP-ACQ-04b — navigate to HQ after success overlay when session logged. */
+  let pendingHqReturn = $state(false);
 
   function closeOverlay() {
     overlayOpen = false;
+    if (pendingHqReturn) {
+      pendingHqReturn = false;
+      void goto(resolveAppPath(WORKOUT_HQ_RETURN_PATH));
+    }
   }
 
   function showDiegeticError(title: string, message: string) {
@@ -102,10 +109,13 @@
     overlayOpen = true;
   }
 
-  function showDiegeticSuccess(title: string, message: string) {
+  function showDiegeticSuccess(title: string, message: string, opts: { returnToHq?: boolean } = {}) {
     overlayVariant = 'success';
     overlayTitle = title;
-    overlayMessage = message;
+    overlayMessage = opts.returnToHq
+      ? `${message} · Return to HQ to see updated XP.`
+      : message;
+    pendingHqReturn = opts.returnToHq === true;
     overlayOpen = true;
   }
 
@@ -640,6 +650,7 @@
         showDiegeticSuccess(
           'Bundle complete',
           `All ${bundleDrills.length} drills logged · +${result.earned} XP · Level ${result.level ?? '—'}`,
+          { returnToHq: true },
         );
         sessionNotes = '';
         await authStore.refresh({ silent: true });
@@ -729,6 +740,7 @@
       showDiegeticSuccess(
         'Command executed',
         `+${result.earned} XP · Level ${result.level ?? '—'}${result.missionCloseNote}`,
+        { returnToHq: true },
       );
       // B4a: advisory proof affordance — non-blocking, only when coach opted in.
       if (activeMissionId && armedHandoff?.requiresParentVerification) {
@@ -1259,6 +1271,7 @@
     variant={overlayVariant}
     title={overlayTitle}
     message={overlayMessage}
+    confirmLabel={pendingHqReturn ? 'Return to HQ' : 'Acknowledge'}
     onConfirm={closeOverlay}
     onCancel={closeOverlay}
   />

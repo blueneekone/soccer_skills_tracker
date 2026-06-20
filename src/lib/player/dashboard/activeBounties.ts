@@ -627,13 +627,18 @@ function timestampToMillis(ts: unknown): number {
 	return 0;
 }
 
+/** GP-ACQ-04b — HQ path after Train log so XP pulse lands on identity band. */
+export const WORKOUT_HQ_RETURN_PATH = '/player/dashboard';
+
 /** Team-wide or UID-targeted coach intents visible on the player mission rail. */
 export function intentAssignmentVisibleToPlayer(
-	row: { scope?: string; targetUids?: string[] },
+	row: Record<string, unknown>,
 	playerUid: string,
 ): boolean {
-	if (!row.scope || row.scope === 'team') return true;
-	return Array.isArray(row.targetUids) && row.targetUids.includes(playerUid);
+	const scope = typeof row.scope === 'string' ? row.scope : undefined;
+	if (!scope || scope === 'team') return true;
+	const targetUids = row.targetUids;
+	return Array.isArray(targetUids) && targetUids.includes(playerUid);
 }
 
 /** GP-ACQ-04a — empty mission rail explains coach Forge deploy path (not silent blank). */

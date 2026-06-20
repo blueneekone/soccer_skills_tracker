@@ -468,4 +468,22 @@ describe('B4b — advisory parent-verified badge: bountyFromCoachIntent is unaff
 		expect(AB_SRC).toMatch(/coachIntentReadyToClaim/);
 		expect(AB_SRC).not.toMatch(/NO ACTIVE MISSIONS/);
 	});
+
+	it('GP-ACQ-04b: WORKOUT_HQ_RETURN_PATH targets player HQ', async () => {
+		const { WORKOUT_HQ_RETURN_PATH } = await import('../activeBounties.js');
+		expect(WORKOUT_HQ_RETURN_PATH).toBe('/player/dashboard');
+	});
+
+	it('source-scan: GP-ACQ-04b Train success returns to HQ for XP pulse', () => {
+		const { readFileSync } = require('fs');
+		const { join } = require('path');
+		const WORKOUT_SRC = readFileSync(
+			join(__dirname, '../../../../routes/(app)/player/workout/+page.svelte'),
+			'utf-8',
+		);
+		expect(WORKOUT_SRC).toMatch(/WORKOUT_HQ_RETURN_PATH/);
+		expect(WORKOUT_SRC).toMatch(/pendingHqReturn/);
+		expect(WORKOUT_SRC).toMatch(/returnToHq:\s*true/);
+		expect(WORKOUT_SRC).toMatch(/goto\(resolveAppPath\(WORKOUT_HQ_RETURN_PATH\)\)/);
+	});
 });
