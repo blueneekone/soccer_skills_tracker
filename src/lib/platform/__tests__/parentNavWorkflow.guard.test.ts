@@ -53,6 +53,8 @@ describe('parent Tier-1 nav + workflow integration guards', () => {
 		expect(fieldMenu).toMatch(
 			/openBrowse\(\):\s*void\s*\{[\s\S]*?openedAt\s*=\s*Date\.now\(\);[\s\S]*?open\s*=\s*true;/,
 		);
+		expect(fieldMenu).toContain('fieldMenuDismissBlocked');
+		expect(fieldMenu).toContain('FIELD_MENU_DISMISS_GUARD_MS');
 	});
 
 	it('household clearance uses stable hid derived + generation-guarded loadBusy', () => {

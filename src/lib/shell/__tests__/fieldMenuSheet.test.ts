@@ -46,7 +46,7 @@ describe('field menu sheet portal guards', () => {
 			/openPickPin\([\s\S]*?\):\s*void\s*\{[\s\S]*?openedAt\s*=\s*Date\.now\(\);[\s\S]*?open\s*=\s*true;/,
 		);
 		expect(fieldMenuStore).toContain('get openedAt()');
-		expect(menuSheet).toContain('fieldMenu.openedAt');
+		expect(menuSheet).toContain('fieldMenuDismissBlocked()');
 		expect(menuSheet).not.toMatch(/\$effect\(\(\)\s*=>\s*\{\s*if\s*\(open\)\s*openedAt/);
 	});
 
@@ -106,11 +106,10 @@ describe('field menu sheet portal guards', () => {
 
 	it('AppMenuSheet dismissSheet respects 400ms guard after synchronous openedAt', () => {
 		expect(menuSheet).toContain('function dismissSheet()');
-		expect(menuSheet).toMatch(/Date\.now\(\)\s*-\s*fieldMenu\.openedAt\s*<\s*400/);
-		// Behavioral: if openedAt were 0, backdrop would dismiss immediately — store must set timestamp on open.
-		const openedAt = Date.now();
-		expect(openedAt - openedAt).toBe(0);
-		expect(openedAt - (openedAt - 500)).toBeGreaterThanOrEqual(400);
+		expect(menuSheet).toContain('fieldMenuDismissBlocked()');
+		expect(menuSheet).toContain('FIELD_MENU_DISMISS_GUARD_MS');
+		expect(menuSheet).toMatch(/app-menu-backdrop--inert/);
+		expect(menuSheet).toMatch(/onpointerdown=\{onBackdropPointerDown\}/);
 	});
 
 	it('AppMenuSheet has no desk-only display:none (field-only mount)', () => {

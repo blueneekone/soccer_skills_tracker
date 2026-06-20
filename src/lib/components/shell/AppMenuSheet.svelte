@@ -11,7 +11,7 @@
 	} from '$lib/shell/navPinCatalog.js';
 	import type { FieldQuickAction } from '$lib/shell/fieldQuickActions.js';
 	import type { IconName } from '$lib/icons/registry.js';
-	import { fieldMenu } from '$lib/stores/fieldMenu.svelte.js';
+	import { fieldMenu, fieldMenuDismissBlocked, FIELD_MENU_DISMISS_GUARD_MS } from '$lib/stores/fieldMenu.svelte.js';
 
 	interface Props {
 		open: boolean;
@@ -53,6 +53,7 @@
 
 	let signingOut = $state(false);
 	let dragStartY = $state(0);
+	let backdropInteractive = $state(false);
 
 	const pinnedSet = $derived(new Set(pinnedHrefs.filter(Boolean)));
 	const sections = $derived(catalogSections(catalog));
@@ -85,8 +86,15 @@
 	}
 
 	function dismissSheet() {
-		if (Date.now() - fieldMenu.openedAt < 400) return;
+		if (fieldMenuDismissBlocked()) return;
 		onDismiss();
+	}
+
+	function onBackdropPointerDown(e: PointerEvent) {
+		if (fieldMenuDismissBlocked()) {
+			e.preventDefault();
+			e.stopPropagation();
+		}
 	}
 
 	function onSheetTouchStart(e: TouchEvent) {
@@ -110,6 +118,18 @@
 	});
 
 	$effect(() => {
+		if (!open) {
+			backdropInteractive = false;
+			return;
+		}
+		backdropInteractive = false;
+		const id = setTimeout(() => {
+			backdropInteractive = true;
+		}, FIELD_MENU_DISMISS_GUARD_MS);
+		return () => clearTimeout(id);
+	});
+
+	$effect(() => {
 		if (!open || !import.meta.env.DEV || catalog.length > 0) return;
 		console.warn('[AppMenuSheet] empty nav catalog — check getNavCatalog(personaKey)', {
 			personaKey,
@@ -125,7 +145,9 @@
 	<div
 		class="app-menu-backdrop"
 		class:app-menu-backdrop--player={skin === 'player'}
+		class:app-menu-backdrop--inert={!backdropInteractive}
 		role="presentation"
+		onpointerdown={onBackdropPointerDown}
 		onclick={dismissSheet}
 	></div>
 
@@ -286,6 +308,10 @@
 		z-index: 10002;
 		background: rgba(0, 0, 0, 0.55);
 		backdrop-filter: blur(4px);
+	}
+
+	.app-menu-backdrop--inert {
+		pointer-events: none;
 	}
 
 	.app-menu-backdrop--player {

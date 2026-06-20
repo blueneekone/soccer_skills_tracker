@@ -255,6 +255,9 @@
 		cursor: pointer;
 		transition: color 150ms ease, transform 150ms ease;
 		-webkit-tap-highlight-color: transparent;
+		-webkit-touch-callout: none;
+		user-select: none;
+		touch-action: manipulation;
 	}
 
 	.mobile-pin-bar__slot:active {

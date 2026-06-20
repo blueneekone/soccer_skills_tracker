@@ -122,7 +122,7 @@
 	const showMenuSlot = $derived(!navPinsStore.pins.includes(MENU_PIN_HREF));
 
 	const fieldMenuSwipe = createFieldMenuSwipeHandlers(() => {
-		if (showFieldChrome) fieldMenu.openBrowse();
+		if (showFieldChrome && !fieldMenu.open) fieldMenu.openBrowse();
 	});
 
 	function toggleDesktopSidebar() {

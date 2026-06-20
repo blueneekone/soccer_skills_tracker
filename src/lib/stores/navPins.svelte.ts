@@ -46,8 +46,14 @@ function writeLocalPins(uid: string, personaKey: NavPersonaKey, pins: PinQuad): 
 let pins = $state<PinQuad>([null, null, null, null]);
 let activePersonaKey = $state<NavPersonaKey>('player');
 let activeUid = $state('');
+let hydratedSessionKey = $state('');
+
+function pinsEqual(a: PinQuad, b: PinQuad): boolean {
+	return a[0] === b[0] && a[1] === b[1] && a[2] === b[2] && a[3] === b[3];
+}
 
 function applyPins(next: PinQuad): void {
+	if (pinsEqual(pins, next)) return;
 	pins = next;
 }
 
@@ -69,12 +75,19 @@ export const navPinsStore = {
 		personaKey: NavPersonaKey,
 		_profilePins?: Record<string, PinQuad> | null,
 	): void {
+		const sessionKey = `${uid}:${personaKey}`;
 		activeUid = uid;
 		activePersonaKey = personaKey;
 
 		const fromLocal = readLocalPins(uid, personaKey);
 		const raw = fromLocal ?? getDefaultPins(personaKey);
-		applyPins(sanitizePins(raw, personaKey));
+		const next = sanitizePins(raw, personaKey);
+
+		// Skip re-apply when auth profile object churns but pins unchanged (household clearance load).
+		if (sessionKey === hydratedSessionKey && pinsEqual(pins, next)) return;
+
+		applyPins(next);
+		hydratedSessionKey = sessionKey;
 	},
 	setPin(slotIndex: 0 | 1 | 2 | 3, href: string | null): void {
 		if (href !== null && !isHrefAllowedForPersona(href, activePersonaKey)) return;

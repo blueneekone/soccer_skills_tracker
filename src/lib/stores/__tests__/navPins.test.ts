@@ -100,4 +100,27 @@ describe('navPins store (NAV-OPTION-D)', () => {
 			'__field_menu__',
 		]);
 	});
+
+	it('hydrate skips re-apply when session and pins unchanged (profile object churn)', () => {
+		navPinsStore.setPin(0, '/player/settings');
+		const afterSet = [...navPinsStore.pins];
+		navPinsStore.hydrate('uid-test', 'player@test.com', 'player', {
+			player: ['/player/dashboard', '/player/workout', '/stats', '__field_menu__'],
+		});
+		expect(navPinsStore.pins).toEqual(afterSet);
+	});
+
+	it('setPin round-trips through localStorage on reload hydrate', () => {
+		navPinsStore.setPin(1, '/player/tracker');
+		storage.clear();
+		storage.set(
+			'vanguard_nav_pins_v1:uid-test:player',
+			JSON.stringify(navPinsStore.pins),
+		);
+		navPinsStore.hydrate('uid-reload', 'player@test.com', 'player', null);
+		expect(navPinsStore.pins[1]).toBe('/player/workout');
+
+		navPinsStore.hydrate('uid-test', 'player@test.com', 'player', null);
+		expect(navPinsStore.pins[1]).toBe('/player/tracker');
+	});
 });
