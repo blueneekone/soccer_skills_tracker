@@ -69,6 +69,19 @@ function isPlayerProfileComplete(profile) {
 }
 
 /**
+ * Parent completeness: club linked OR provisioned household (returning QA parent).
+ * @param {Record<string, unknown>} profile
+ */
+function isParentProfileComplete(profile) {
+	if (profile.role !== 'parent') return false;
+	const clubId = typeof profile.clubId === 'string' ? profile.clubId.trim() : '';
+	if (clubId) return true;
+	const householdId =
+		typeof profile.householdId === 'string' ? profile.householdId.trim() : '';
+	return householdId.length > 0;
+}
+
+/**
  * @param {Record<string, unknown> | null | undefined} profile
  */
 export function isProfileComplete(profile) {
@@ -79,7 +92,7 @@ export function isProfileComplete(profile) {
 	if (profile.role === 'director') return true;
 	if (profile.role === 'registrar' && profile.clubId) return true;
 	if (profile.role === 'coach' && profile.teamId) return true;
-	if (profile.role === 'parent' && profile.clubId) return true;
+	if (isParentProfileComplete(/** @type {Record<string, unknown>} */ (profile))) return true;
 	if (profile.playerName && profile.teamId) return true;
 	return false;
 }
@@ -179,6 +192,28 @@ export async function resolveUserProfile(db, firebaseUser, forceTokenRefresh = t
 				}
 				if (!merged.clubId && typeof pl.clubId === 'string' && pl.clubId.trim()) {
 					merged = { ...merged, clubId: pl.clubId.trim() };
+				}
+			}
+		}
+		// Parent re-entry: heal clubId from household when provisioned without club on users doc.
+		const effectiveRole = typeof merged.role === 'string' ? merged.role : role;
+		if (effectiveRole === 'parent') {
+			const hid =
+				typeof merged.householdId === 'string' ? merged.householdId.trim() : '';
+			const hasClub =
+				typeof merged.clubId === 'string' && merged.clubId.trim().length > 0;
+			if (hid && !hasClub) {
+				try {
+					const hhSnap = await getDoc(doc(db, 'households', hid));
+					if (hhSnap.exists()) {
+						const hhClub =
+							typeof hhSnap.data()?.clubId === 'string' ?
+								hhSnap.data().clubId.trim() :
+								'';
+						if (hhClub) merged = { ...merged, clubId: hhClub };
+					}
+				} catch {
+					/* non-fatal — householdId alone still satisfies isProfileComplete */
 				}
 			}
 		}

@@ -202,6 +202,122 @@ exports.listTeamsForClub = onCall({region: REGION}, async (request) => {
 });
 
 /**
+ * Normalize team dispatch codes (e.g. QA-PP26) for Firestore lookup.
+ * @param {unknown} raw
+ * @return {string}
+ */
+function normTeamInviteCode(raw) {
+  if (raw == null || typeof raw !== 'string') {
+    return '';
+  }
+  const t = raw.trim();
+  if (!t) {
+    return '';
+  }
+  return t
+      .toUpperCase()
+      .replace(/[^A-Z0-9]/g, '')
+      .replace(/^(.{2})(.{4})$/, '$1-$2');
+}
+
+/**
+ * Parent setup: clubs open to self-join (joinable flag) or all clubs on dev project.
+ * Auth required — Admin SDK bypasses tenant-scoped Firestore rules.
+ */
+exports.listJoinableClubs = onCall({region: REGION}, async (request) => {
+  if (!request.auth) {
+    throw new HttpsError('unauthenticated', 'Sign in required.');
+  }
+  const projectId =
+      process.env.GCLOUD_PROJECT || process.env.GCP_PROJECT || '';
+  const isDevProject = projectId === 'sports-skill-tracker-dev';
+
+  const snap = await db().collection('clubs').limit(200).get();
+  /** @type {Array<{id: string, name: string, slug?: string}>} */
+  const clubs = [];
+  snap.forEach((d) => {
+    const data = d.data() || {};
+    const joinable =
+        data.joinable === true || data.publicRegistration === true;
+    if (joinable || isDevProject) {
+      clubs.push({
+        id: d.id,
+        name: typeof data.name === 'string' && data.name.trim() ?
+          data.name.trim() :
+          d.id,
+        ...(typeof data.slug === 'string' && data.slug.trim() ?
+          {slug: data.slug.trim()} :
+          {}),
+      });
+    }
+  });
+  clubs.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+  return {clubs};
+});
+
+/**
+ * Parent setup: resolve team dispatch code → club + team (GP-GATE-03).
+ */
+exports.resolveDispatchCode = onCall({region: REGION}, async (request) => {
+  if (!request.auth) {
+    throw new HttpsError('unauthenticated', 'Sign in required.');
+  }
+  const raw = request.data && request.data.dispatchCode;
+  const codeNorm = normTeamInviteCode(raw);
+  if (!codeNorm) {
+    throw new HttpsError('invalid-argument', 'dispatchCode is required.');
+  }
+
+  const tq = await db().collection('teams')
+      .where('inviteCode', '==', codeNorm)
+      .limit(2)
+      .get();
+  if (tq.empty) {
+    throw new HttpsError(
+        'not-found',
+        'No team matches this dispatch code. Ask your coach for the correct code.',
+    );
+  }
+  if (tq.size > 1) {
+    throw new HttpsError(
+        'failed-precondition',
+        'Multiple teams share this code. Contact the club to resolve.',
+    );
+  }
+
+  const tdoc = tq.docs[0];
+  const tData = tdoc.data() || {};
+  const clubId =
+      typeof tData.clubId === 'string' ? tData.clubId.trim() : '';
+  if (!clubId) {
+    throw new HttpsError(
+        'failed-precondition',
+        'Team is not linked to a club.',
+    );
+  }
+
+  const clubSnap = await db().collection('clubs').doc(clubId).get();
+  const clubData = clubSnap.exists() ? clubSnap.data() || {} : {};
+  const clubName =
+      typeof clubData.name === 'string' && clubData.name.trim() ?
+        clubData.name.trim() :
+        clubId;
+  const teamName =
+      typeof tData.name === 'string' && tData.name.trim() ?
+        tData.name.trim() :
+        tdoc.id;
+
+  return {
+    ok: true,
+    clubId,
+    teamId: tdoc.id,
+    clubName,
+    teamName,
+    dispatchCode: codeNorm,
+  };
+});
+
+/**
  * super_admin only (client direct security_audit writes disabled in rules).
  */
 exports.logSecurityAudit = onCall({region: REGION}, async (request) => {

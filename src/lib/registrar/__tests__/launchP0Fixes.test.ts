@@ -69,6 +69,27 @@ describe('LAUNCH-qa-reset-operatives — purge + QA dispatch code', () => {
 	});
 });
 
+describe('SETUP-UNBLOCK — parent setup gate callables', () => {
+	it('adminOps exports listJoinableClubs and resolveDispatchCode', () => {
+		const ops = readFileSync(join(ROOT, 'functions/src/domains/adminOps.js'), 'utf8');
+		expect(ops).toMatch(/exports\.listJoinableClubs/);
+		expect(ops).toMatch(/exports\.resolveDispatchCode/);
+		expect(ops).toMatch(/sports-skill-tracker-dev/);
+	});
+
+	it('functions-platform wires listJoinableClubs + resolveDispatchCode', () => {
+		const idx = readFileSync(join(ROOT, 'functions-platform/index.js'), 'utf8');
+		expect(idx).toMatch(/listJoinableClubs/);
+		expect(idx).toMatch(/resolveDispatchCode/);
+	});
+
+	it('profile.js parent complete with householdId', () => {
+		const profile = readFileSync(join(ROOT, 'src/lib/auth/profile.js'), 'utf8');
+		expect(profile).toMatch(/isParentProfileComplete/);
+		expect(profile).toMatch(/householdId/);
+		expect(profile).toMatch(/households', hid\)/);
+	});
+});
 describe('LAUNCH-parent-link-team — parentLinkOperativeToTeam + household UI', () => {
 	it('operativeOps exports parentLinkOperativeToTeam callable', () => {
 		const ops = readFileSync(join(ROOT, 'functions/src/domains/operativeOps.js'), 'utf8');

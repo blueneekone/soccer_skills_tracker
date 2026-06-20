@@ -174,7 +174,16 @@ describe('isProfileComplete — player role completeness gate', () => {
 		expect(isProfileComplete({ role: 'parent', clubId: 'club-1' })).toBe(true);
 	});
 
-	it('parent without clubId is NOT complete', () => {
+	it('parent with householdId but no clubId is complete (provisioned re-entry)', () => {
+		expect(
+			isProfileComplete({
+				role: 'parent',
+				householdId: 'qa_launch_2026_parent_hh',
+			}),
+		).toBe(true);
+	});
+
+	it('parent without clubId or householdId is NOT complete', () => {
 		expect(isProfileComplete({ role: 'parent' })).toBe(false);
 	});
 
@@ -251,5 +260,41 @@ describe('LAUNCH-player-teamless-train — VPC teamless training guards', () => 
 		// Everything after {:else} must contain completeSetup (the parent/coach submit handler).
 		const afterElse = setupSrc.slice(setupSrc.indexOf('{:else}'));
 		expect(afterElse).toContain('completeSetup');
+	});
+});
+
+describe('SETUP-UNBLOCK — setup wizard + joinable clubs callable', () => {
+	const setupSrc = readFileSync(
+		resolve(process.cwd(), 'src/routes/setup/+page.svelte'),
+		'utf8',
+	);
+	const teamsSrc = readFileSync(
+		resolve(process.cwd(), 'src/lib/stores/teams.svelte.js'),
+		'utf8',
+	);
+
+	it('setup page uses listJoinableClubs callable (not teamsStore setup getDocs)', () => {
+		expect(setupSrc).toContain("httpsCallable(functions, 'listJoinableClubs')");
+		expect(setupSrc).not.toContain("teamsStore.load('parent'");
+		expect(setupSrc).not.toContain("scope: 'setup'");
+	});
+
+	it('setup page uses resolveDispatchCode callable for GP-GATE-03', () => {
+		expect(setupSrc).toContain("httpsCallable");
+		expect(setupSrc).toContain("'resolveDispatchCode'");
+		expect(setupSrc).toMatch(/QA-PP26/);
+	});
+
+	it('setup page shows stepped progress indicator', () => {
+		expect(setupSrc).toContain('setup-progress');
+		expect(setupSrc).toMatch(/Step \$\{wizardStep\} of \$\{totalSteps\}/);
+	});
+
+	it('teams store setup scope does not client-read full clubs collection', () => {
+		expect(teamsSrc).toMatch(/scope === 'setup'/);
+		expect(teamsSrc).toMatch(/listJoinableClubs callable/);
+		expect(teamsSrc).not.toMatch(
+			/scope === 'setup'[\s\S]*?getDocs\(collection\(db, 'clubs'\)\)/,
+		);
 	});
 });

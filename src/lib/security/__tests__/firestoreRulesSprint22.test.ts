@@ -330,6 +330,17 @@ describe('T0-5 — setup page: coach path uses claimCoachInvite, not direct setD
 	});
 });
 
+describe('SETUP-UNBLOCK — setup wizard uses callables not client clubs query', () => {
+	it('setup page declares listJoinableClubs and resolveDispatchCode callables', () => {
+		expect(SETUP_PAGE).toContain("'listJoinableClubs'");
+		expect(SETUP_PAGE).toContain("'resolveDispatchCode'");
+	});
+
+	it('setup page does not load teamsStore with setup scope', () => {
+		expect(SETUP_PAGE).not.toContain('teamsStore');
+	});
+});
+
 // ─────────────────────────────────────────────────────────────────────────────
 // T1-10 — player_stats: director read path stays within the 10-get() budget
 //

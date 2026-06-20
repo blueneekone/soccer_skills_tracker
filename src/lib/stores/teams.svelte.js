@@ -60,10 +60,8 @@ function createTeamsStore() {
 			return out;
 		}
 		if (scope === 'setup') {
-			const clubsSnap = await getDocs(collection(db, 'clubs'));
-			const out = [];
-			clubsSnap.forEach((d) => out.push({ id: d.id, ...d.data() }));
-			return out;
+			// Deprecated: parent /setup uses listJoinableClubs callable (tenant rules block client reads).
+			return [];
 		}
 		return [];
 	}
