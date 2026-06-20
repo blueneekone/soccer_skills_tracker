@@ -116,7 +116,7 @@
 		navPinsStore.hydrate(uid, email, navPersonaKey, profilePins ?? null);
 	});
 
-	const sidebarCollapsedDesktop = $derived(!workspaceContextStore.isSidebarOpen && isDesktop);
+	const sidebarCollapsedDesktop = $derived(!workspaceContextStore.isSidebarOpen);
 
 	const drawerLinks = $derived(links);
 
@@ -130,14 +130,12 @@
 		'recruiter',
 		'parent',
 	]);
-	const showMobileChrome = $derived(
-		!isDesktop && FIELD_CHROME_ROLES.has(authStore.role ?? ''),
-	);
+	const showFieldChrome = $derived(FIELD_CHROME_ROLES.has(authStore.role ?? ''));
 
 	const fieldQuickActions = $derived(getFieldQuickActions(page.url.pathname));
 
 	const fieldMenuSwipe = createFieldMenuSwipeHandlers(() => {
-		if (showMobileChrome) openMenuBrowse();
+		if (showFieldChrome) openMenuBrowse();
 	});
 
 	function toggleDesktopSidebar() {
@@ -210,7 +208,7 @@
 		<aside
 			id="ec-workspace-nav"
 			class="ec-sidebar"
-			class:ec-sidebar--collapsed-desktop={sidebarCollapsedDesktop}
+			class:ec-sidebar--collapsed-desktop={!workspaceContextStore.isSidebarOpen}
 			aria-label="Workspace navigation"
 		>
 			<div class="ec-sidebar__panel">
@@ -363,7 +361,7 @@
 	</div>
 </div>
 
-{#if showMobileChrome}
+{#if showFieldChrome}
 	<MobilePinBar
 		pins={navPinsStore.pins}
 		catalog={navCatalog}

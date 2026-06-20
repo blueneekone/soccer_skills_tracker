@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { handleSignOut } from '$lib/auth/signOutFlow.js';
+	import { portal } from '$lib/actions/portal.js';
 	import WorkspaceContextSwitcher from '$lib/components/shell/WorkspaceContextSwitcher.svelte';
 	import Icon from '$lib/components/ui/Icon.svelte';
 	import {
@@ -112,6 +113,7 @@
 </script>
 
 {#if open}
+	<div class="app-menu-portal" use:portal>
 	<!-- svelte-ignore a11y_click_events_have_key_events -->
 	<!-- svelte-ignore a11y_no_static_element_interactions -->
 	<div
@@ -268,13 +270,14 @@
 			</footer>
 		{/if}
 	</div>
+	</div>
 {/if}
 
 <style>
 	.app-menu-backdrop {
 		position: fixed;
 		inset: 0;
-		z-index: 960;
+		z-index: 9998;
 		background: rgba(0, 0, 0, 0.55);
 		backdrop-filter: blur(4px);
 	}
@@ -288,7 +291,7 @@
 		left: 0;
 		right: 0;
 		bottom: 0;
-		z-index: 970;
+		z-index: 9999;
 		max-height: min(88vh, 640px);
 		display: flex;
 		flex-direction: column;

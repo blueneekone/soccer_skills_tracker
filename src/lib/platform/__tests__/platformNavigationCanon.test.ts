@@ -226,7 +226,7 @@ describe('NAV-OPTION-D-POLISH guards', () => {
 		expect(enterprise.slice(enterprise.indexOf('class="ec-root"'), mobilePinInEnterprise)).not.toContain(
 			'<MobilePinBar',
 		);
-		expect(enterprise).toMatch(/\{#if showMobileChrome\}[\s\S]*<MobilePinBar/);
+		expect(enterprise).toMatch(/\{#if showFieldChrome\}[\s\S]*<MobilePinBar/);
 
 		const psRootOpen = playerShell.indexOf('class="ps-root');
 		const mobilePinInPlayer = playerShell.indexOf('<MobilePinBar');
@@ -262,7 +262,9 @@ describe('NAV-OPTION-D-POLISH guards', () => {
 
 	it('MobilePinBar Menu slot wires onclick to onMenuOpen', () => {
 		expect(pinBar).toContain('showMenuSlot');
-		expect(pinBar).toMatch(/mobile-pin-bar__slot--menu[\s\S]*onclick=\{onMenuOpen\}/);
+		expect(pinBar).toMatch(
+			/mobile-pin-bar__slot--menu[\s\S]*stopPropagation[\s\S]*onMenuOpen/,
+		);
 	});
 
 	it('ReportAnomaly trigger hidden on field viewports', () => {
@@ -275,6 +277,18 @@ describe('NAV-OPTION-D-POLISH guards', () => {
 		expect(offlineSync).toContain('SYNC_FLUSH_TIMEOUT_MS');
 		expect(offlineSync).toMatch(/SYNC_FLUSH_TIMEOUT_MS\s*=\s*10_000/);
 		expect(fieldMenuSwipe).toContain('FIELD_MENU_EDGE_ZONE_PX');
+	});
+
+	it('FIELD-CHROME-HOTFIX-4 — field chrome + collapse decoupled from isDesktop', () => {
+		expect(enterprise).toMatch(/const showFieldChrome = \$derived\(FIELD_CHROME_ROLES\.has/);
+		expect(enterprise).not.toMatch(/showMobileChrome/);
+		expect(enterprise).not.toMatch(
+			/sidebarCollapsedDesktop = \$derived\(!workspaceContextStore\.isSidebarOpen && isDesktop\)/,
+		);
+		expect(enterprise).toMatch(
+			/class:ec-sidebar--collapsed-desktop=\{!workspaceContextStore\.isSidebarOpen\}/,
+		);
+		expect(menuSheet).toMatch(/\{#if open\}[\s\S]*use:portal/);
 	});
 
 	it('FIELD-CHROME-HOTFIX-3 — desk sidebar links not gated by isDesktop', () => {

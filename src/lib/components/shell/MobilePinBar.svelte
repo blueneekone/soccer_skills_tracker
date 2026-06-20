@@ -138,7 +138,10 @@
 				type="button"
 				class="mobile-pin-bar__slot mobile-pin-bar__slot--menu"
 				aria-label="Open menu"
-				onclick={onMenuOpen}
+				onclick={(e) => {
+					e.stopPropagation();
+					onMenuOpen();
+				}}
 			>
 				<Icon name="nav.menu" size={22} />
 				<span class="mobile-pin-bar__label">Menu</span>
