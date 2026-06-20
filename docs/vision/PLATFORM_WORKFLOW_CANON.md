@@ -185,7 +185,7 @@ Before UX or functional work on a route:
 
 | step_id | route | code path | status | gap / fix |
 |---------|-------|-----------|--------|-----------|
-| GP-ACQ-01 | `/parent/household` | `parent/household/+page.svelte` · household graph | **Pass** | Owner Phase 3 QA-121/131 |
+| GP-ACQ-01 | `/parent/household` | `parent/household/+page.svelte` · household graph | **Pending QA** | NAV-WORKFLOW-INTEGRITY: clearance SCANNING + Menu pin on Tier-1 parent routes — owner retest QA-121 + Phase 4b @390px |
 | GP-ACQ-02 | `/parent/vpc` | `parent/vpc/+page.svelte` · consent_records | **Pass** | Owner Phase 3 QA-132 |
 | GP-ACQ-03 | `/coach/forge` | `ForgeDeployPanel.svelte` · `team_assignments` write | **Pass** | VS-3-Forge shipped; owner PS-C02 signed 06/19 — re-run QA-142 on live |
 | GP-ACQ-04a | `/player/dashboard` | `ActiveBounties.svelte` · accept → stash handoff · `Start session →` CTA | **Pass** | `missionRailEmptyCopy` + `coachIntentReadyToClaim` guards |

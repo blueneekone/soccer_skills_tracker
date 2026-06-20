@@ -12,7 +12,7 @@ Sits **below** registry (routes/tiers), **above** persona foundations (material 
 |-------|-----|------|
 | 1 | [`PRODUCT_SURFACE_REGISTRY.md`](./PRODUCT_SURFACE_REGISTRY.md) | Routes, tiers, `layout_pattern`, `workflow_id` |
 | 2 | [`PLATFORM_WORKFLOW_CANON.md`](./PLATFORM_WORKFLOW_CANON.md) | Gold path steps + UX states |
-| 3 | [`PLATFORM_NAVIGATION_CANON.md`](./PLATFORM_NAVIGATION_CANON.md) | Field/desk breakpoints, Option A tabs, skin separation |
+| 3 | [`PLATFORM_NAVIGATION_CANON.md`](./PLATFORM_NAVIGATION_CANON.md) | Field/desk breakpoints, Option D pin bar + AppMenuSheet, skin separation |
 | 4 | **This file** | Shared primitives, shell contract, layout catalog |
 | 5 | Persona foundations | Player / Coach / Parent material vocabulary |
 | 6 | [`PLATFORM_BUILD_MANDATES.md`](./PLATFORM_BUILD_MANDATES.md) | Accept / reject mandates |
@@ -52,7 +52,7 @@ Expand [`PLATFORM_EXPERIENCE_RUBRIC.md`](./PLATFORM_EXPERIENCE_RUBRIC.md) §3 in
 
 **Rule:** Do not mount PlayerShell on Coach or Parent Tier 1 routes.
 
-**Navigation law:** Field vs desk chrome, Option A bottom tabs, overflow drawer rules, and content inset — [`PLATFORM_NAVIGATION_CANON.md`](./PLATFORM_NAVIGATION_CANON.md). Registry §2 + `workspaceNav.js` remain href source of truth.
+**Navigation law:** Field vs desk chrome, Option D bottom pin bar + AppMenuSheet, pin customization, and content inset — [`PLATFORM_NAVIGATION_CANON.md`](./PLATFORM_NAVIGATION_CANON.md). Registry §2 + `navPinCatalog.ts` remain href source of truth.
 
 ---
 

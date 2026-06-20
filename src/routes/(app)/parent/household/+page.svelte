@@ -48,6 +48,15 @@
 	const role = $derived(authStore.role);
 	const profile = $derived(authStore.userProfile);
 	const userEmail = $derived((authStore.user?.email || '').toLowerCase());
+	/** Stable string only — effect must not restart on unrelated profile/auth object churn. */
+	const clearanceHid = $derived(normalizeHouseholdId(profile?.householdId));
+	const clearanceLoadReady = $derived(
+		guardsPassForHouseholdLoad({
+			browser,
+			authLoading: authStore.isLoading,
+			userEmail,
+		}),
+	);
 
 	/** @type {string} */
 	let householdId = $state('');
@@ -249,21 +258,10 @@
 	});
 
 	$effect(() => {
-		// Stable household id only — avoid restart loops on unrelated profile object churn.
-		const hid = normalizeHouseholdId(profile?.householdId);
+		const hid = clearanceHid;
+		const ready = clearanceLoadReady;
 
-		if (
-			!guardsPassForHouseholdLoad({
-				browser,
-				authLoading: authStore.isLoading,
-				userEmail,
-			})
-		) {
-			loadBusy = false;
-			return;
-		}
-
-		if (!hid) {
+		if (!ready || !hid) {
 			loadBusy = false;
 			return;
 		}

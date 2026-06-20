@@ -255,7 +255,7 @@ Compact lookup — full criteria in [`PLATFORM_WORKFLOW_CANON.md`](./PLATFORM_WO
 Order strictly (matches `[FUNCTIONAL_MVP.md](./FUNCTIONAL_MVP.md)` VPC golden path § and `[DEMO_SCRIPT.md](../acquisition/DEMO_SCRIPT.md)` exec cut steps 1–2):
 
 - [x] **QA-131** Parent sign-in → passkey (if RP origin matches) → `/parent/household` — gap register A-03
-- [x] **QA-121** Household + linked operatives + waiver on `/parent/household` — `parentSignCoppaWaiver` / `households.coppaSigned` — gap register F-02 · pre-check: `launchP0Fixes.test.ts` · **FIELD-CHROME-HOTFIX-1:** clearance row must exit `SCANNING…` within ~2s (shows `PENDING SIGNATURE` or `SIGNED`; never stuck)
+- [x] **QA-121** Household + linked operatives + waiver on `/parent/household` — `parentSignCoppaWaiver` / `households.coppaSigned` — gap register F-02 · pre-check: `launchP0Fixes.test.ts` · **FIELD-CHROME-HOTFIX-1:** clearance row must exit `SCANNING…` within ~2s (shows `PENDING SIGNATURE` or `SIGNED`; never stuck) · **NAV-WORKFLOW-INTEGRITY (06/20): owner live retest required** — prior pass may be invalid if clearance stuck SCANNING or Menu pin dead on `/parent/household` @390px; re-verify after deploy
 - [x] **QA-122** VPC ceremony `/parent/vpc` per child — gap register F-02 · pre-check: `epic51CoppaSignup.test.ts`
 - [x] **QA-132** VPC auto-finalizes `vpcStatus`, `consent_records` (no director approval step) — gap register F-02
 - [x] **QA-133** Child operative login — no `/vpc-pending` block; can reach player routes — gap register F-02
@@ -365,6 +365,7 @@ Complete Profile error appears when authenticating player even though they're li
 
 ### Phase 4b — Owner notes
 
+> **BLOCKED (NAV-WORKFLOW-INTEGRITY — 2026-06-20):** Owner-reported P0 on live dev @390px — clearance stuck `SCANNING…` on `/parent/household`; Menu pin (slot 4) does not open/stay open on `/parent/household` and `/parent/dashboard`. Code + behavioral guards shipped in this slice; **do not check QA-NAV-01–08 below until owner retest passes.** Agents must not mark Phase 4b complete.
 
 | Field          | Value                                      |
 | -------------- | ------------------------------------------ |

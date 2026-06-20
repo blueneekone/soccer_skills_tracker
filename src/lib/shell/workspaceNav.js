@@ -98,7 +98,7 @@ function resolveWorkspaceContext(pathname, role, activeContext = '') {
 }
 
 /**
- * Option A field primary tabs (≤5) — no duplicates in overflow drawer.
+ * Option D field primary pins (≤4 slots) — catalog in navPinCatalog.ts; no duplicate nav arrays here.
  * @param {ShellNavItem[]} links
  * @param {WorkspaceContext} ctx
  * @param {string} role

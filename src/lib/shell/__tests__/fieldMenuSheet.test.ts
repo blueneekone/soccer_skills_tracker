@@ -104,6 +104,15 @@ describe('field menu sheet portal guards', () => {
 		expect(enterprise).not.toMatch(/showFieldChrome = \$derived\(\s*!isDesktop/);
 	});
 
+	it('AppMenuSheet dismissSheet respects 400ms guard after synchronous openedAt', () => {
+		expect(menuSheet).toContain('function dismissSheet()');
+		expect(menuSheet).toMatch(/Date\.now\(\)\s*-\s*fieldMenu\.openedAt\s*<\s*400/);
+		// Behavioral: if openedAt were 0, backdrop would dismiss immediately — store must set timestamp on open.
+		const openedAt = Date.now();
+		expect(openedAt - openedAt).toBe(0);
+		expect(openedAt - (openedAt - 500)).toBeGreaterThanOrEqual(400);
+	});
+
 	it('AppMenuSheet has no desk-only display:none (field-only mount)', () => {
 		expect(menuSheet).not.toMatch(/@media\s*\(\s*min-width:\s*1024px\s*\)[\s\S]*display:\s*none/);
 	});

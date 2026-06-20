@@ -80,11 +80,15 @@ describe('PLATFORM_NAVIGATION_CANON gospel guards', () => {
 		}
 	});
 
-	it('design system and agent workflow reference navigation canon', () => {
+	it('design system and agent workflow reference navigation canon (Option D, not Option A)', () => {
 		const design = readFileSync(DESIGN_SYSTEM, 'utf-8');
 		const workflow = readFileSync(AGENT_WORKFLOW, 'utf-8');
 		expect(design).toContain('PLATFORM_NAVIGATION_CANON.md');
 		expect(workflow).toContain('PLATFORM_NAVIGATION_CANON.md');
+		expect(design).toMatch(/Option D/i);
+		expect(workflow).toMatch(/Option D pin bar \+ AppMenuSheet/i);
+		expect(design).not.toMatch(/Option A tabs/i);
+		expect(workflow).not.toMatch(/Option A tabs/i);
 	});
 
 	it('MobilePinBar is hidden at desktop breakpoint (≥1024px)', () => {

@@ -26,7 +26,7 @@
 
 Exactly **one persistent primary navigation surface** per viewport.
 
-- **Field mode (<1024px):** full-width fixed **bottom pin bar** (Option D) — **4 customizable pin slots** (default: 3 routes + empty 4th). **Swipe-up** from bottom edge opens `AppMenuSheet`; optional **Menu** pin (`__field_menu__`) or legacy fixed Menu slot (`showMenuSlot`, default off).
+- **Field mode (<1024px):** full-width fixed **bottom pin bar** (Option D) — **4 customizable pin slots** (default: 3 routes + **Menu** in slot 4). **Swipe-up** from bottom edge opens `AppMenuSheet`; slot 4 uses **Menu** pin (`MENU_PIN_HREF` / `__field_menu__`); legacy fixed Menu slot (`showMenuSlot`) auto-enables only when no Menu pin is assigned.
 - **Full nav:** **AppMenuSheet** (swipe-up from `ec-shell-outer` / `ps-shell-outer`, optional Menu pin, or fixed Menu slot when enabled) — all Tier 1 + Tier 2 catalog items + system actions.
 - **Desk mode (≥1024px):** left sidebar (enterprise) or left rail (player) — bottom bar hidden.
 
@@ -54,7 +54,7 @@ Navigation separates **chrome grammar** (interaction) from **skin grammar** (vis
 ### §3a Chrome grammar (universal field mode)
 
 - App-native, mobile-first, **Option D**
-- Full-width fixed bottom pin bar: **4 customizable pin slots** (default: 3 routes + empty 4th) + optional legacy **Menu** slot (`showMenuSlot`, default off)
+- Full-width fixed bottom pin bar: **4 customizable pin slots** (default: 3 routes + **Menu** in slot 4) + legacy fixed **Menu** slot (`showMenuSlot`) when no Menu pin assigned
 - **44px** minimum touch targets on bar items
 - **AppMenuSheet** for full catalog — pins are a subset of catalog only (duplicate href highlight OK)
 - **Bottom-edge swipe detector** on shell roots (`fieldMenuSwipe.ts`, 80px zone, 44px threshold) — not limited to pin bar width
@@ -95,7 +95,7 @@ All use `EnterpriseConsoleShell` with **admin interface skin** on mobile **and**
 
 **Source:** [`navPinCatalog.ts`](../../src/lib/shell/navPinCatalog.ts) · **Components:** `MobilePinBar.svelte`, `AppMenuSheet.svelte`
 
-### Default pins (4 slots — slot 4 empty by default)
+### Default pins (4 slots — slot 4 Menu by default)
 
 | Persona | Slot 1 | Slot 2 | Slot 3 | Slot 4 |
 |---------|--------|--------|--------|--------|

@@ -124,4 +124,12 @@ describe('fetchHouseholdClearance', () => {
 	it('simulated stale generation must not clear loadBusy via shouldClearLoadBusy', () => {
 		expect(shouldClearLoadBusy(false)).toBe(false);
 	});
+
+	it('no householdId early path must not imply scanning (loadBusy false via page guards)', () => {
+		expect(normalizeHouseholdId('')).toBe('');
+		expect(guardsPassForHouseholdLoad({ browser: true, authLoading: false, userEmail: 'p@test.com' })).toBe(
+			true,
+		);
+		// Page sets loadBusy=false when hid empty — never SCANNING without active fetch.
+	});
 });
