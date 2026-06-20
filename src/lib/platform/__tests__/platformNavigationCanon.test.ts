@@ -215,11 +215,10 @@ describe('NAV-OPTION-D-POLISH guards', () => {
 		expect(fieldMenuSwipe).toContain("closest('.mobile-pin-bar')");
 	});
 
-	it('shells use fieldMenu store — showMenuSlot not forced on field', () => {
-		expect(playerShell).toContain('fieldMenu.openBrowse');
-		expect(enterprise).toContain('fieldMenu.openBrowse');
-		expect(playerShell).not.toContain('showMenuSlot={true}');
-		expect(enterprise).not.toContain('showMenuSlot={true}');
+	it('shells show fixed Menu slot when pins omit menu pseudo-route', () => {
+		expect(playerShell).toContain('showMenuSlot={showMenuSlot}');
+		expect(enterprise).toContain('showMenuSlot={showMenuSlot}');
+		expect(playerShell).toContain('!navPinsStore.pins.includes(MENU_PIN_HREF)');
 	});
 
 	it('MobilePinBar + AppMenuSheet are siblings outside ec-root / ps-root (portal field chrome)', () => {

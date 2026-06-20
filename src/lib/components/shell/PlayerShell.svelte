@@ -17,7 +17,7 @@
 		isPlayerHubActive,
 		isPlayerNavActive,
 	} from '$lib/player/shell/playerPrimaryNav.js';
-	import { getNavCatalog, getPickPinCatalog } from '$lib/shell/navPinCatalog.js';
+	import { getNavCatalog, getPickPinCatalog, MENU_PIN_HREF } from '$lib/shell/navPinCatalog.js';
 	import { navPinsStore } from '$lib/stores/navPins.svelte.js';
 	import { fieldMenu } from '$lib/stores/fieldMenu.svelte.js';
 	import { createFieldMenuSwipeHandlers } from '$lib/shell/fieldMenuSwipe.js';
@@ -61,6 +61,7 @@
 	const gatedHrefs = $derived(
 		playerOsGate.blocked ? PRIMARY_LOCK_HREFS : new Set<string>(),
 	);
+	const showMenuSlot = $derived(!navPinsStore.pins.includes(MENU_PIN_HREF));
 
 	function playerShellNavActive(href: string): boolean {
 		if (href === PLAYER_HQ_HREF) return isPlayerHubActive(page.url.pathname);
@@ -204,6 +205,7 @@
 		onNavClick={onNavClick}
 		onMenuOpen={() => fieldMenu.openBrowse()}
 		onPinLongPress={(slotIndex) => fieldMenu.openPickPin(slotIndex)}
+		showMenuSlot={showMenuSlot}
 	/>
 	<AppMenuSheet
 		open={fieldMenu.open}

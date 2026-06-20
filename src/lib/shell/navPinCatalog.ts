@@ -52,13 +52,13 @@ const DIRECTOR_COMMAND_TABS = new Set([
 ]);
 
 const DEFAULT_PINS: Record<NavPersonaKey, PinQuad> = {
-	player: ['/player/dashboard', '/player/workout', '/stats', null],
-	coach: ['/coach', '/coach/forge', '/messages', null],
-	parent: ['/parent/household', '/parent/vpc', '/parent/dashboard', null],
-	director: ['/director?tab=home', '/director?tab=teams', '/director?tab=field', null],
-	admin: ['/admin/overview', '/admin/organizations', '/admin/users', null],
-	registrar: ['/director?tab=home', '/director?tab=teams', '/director?tab=licenses', null],
-	recruiter: ['/recruiter', '/messages', null, null],
+	player: ['/player/dashboard', '/player/workout', '/stats', MENU_PIN_HREF],
+	coach: ['/coach', '/coach/forge', '/messages', MENU_PIN_HREF],
+	parent: ['/parent/household', '/parent/vpc', '/parent/dashboard', MENU_PIN_HREF],
+	director: ['/director?tab=home', '/director?tab=teams', '/director?tab=field', MENU_PIN_HREF],
+	admin: ['/admin/overview', '/admin/organizations', '/admin/users', MENU_PIN_HREF],
+	registrar: ['/director?tab=home', '/director?tab=teams', '/director?tab=licenses', MENU_PIN_HREF],
+	recruiter: ['/recruiter', '/messages', null, MENU_PIN_HREF],
 };
 
 export function getMenuPinItem(): NavPinItem {

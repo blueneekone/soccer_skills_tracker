@@ -99,15 +99,15 @@ All use `EnterpriseConsoleShell` with **admin interface skin** on mobile **and**
 
 | Persona | Slot 1 | Slot 2 | Slot 3 | Slot 4 |
 |---------|--------|--------|--------|--------|
-| player | `/player/dashboard` HQ | `/player/workout` Train | `/stats` Stats | *(empty — pin Menu or any route)* |
-| coach | `/coach` Daily Intel | `/coach/forge` The Forge | `/messages` Messages | *(empty)* |
-| parent | `/parent/household` | `/parent/vpc` | `/parent/dashboard` | *(empty)* |
-| director | `/director?tab=home` | `/director?tab=teams` | `/director?tab=field` | *(empty)* |
-| admin | `/admin/overview` | `/admin/organizations` | `/admin/users` | *(empty)* |
-| registrar | `/director?tab=home` | `/director?tab=teams` | `/director?tab=licenses` | *(empty)* |
-| recruiter | `/recruiter` | `/messages` | *(optional empty)* | *(empty)* |
+| player | `/player/dashboard` HQ | `/player/workout` Train | `/stats` Stats | **Menu** (`__field_menu__`) |
+| coach | `/coach` Daily Intel | `/coach/forge` The Forge | `/messages` Messages | **Menu** |
+| parent | `/parent/household` | `/parent/vpc` | `/parent/dashboard` | **Menu** |
+| director | `/director?tab=home` | `/director?tab=teams` | `/director?tab=field` | **Menu** |
+| admin | `/admin/overview` | `/admin/organizations` | `/admin/users` | **Menu** |
+| registrar | `/director?tab=home` | `/director?tab=teams` | `/director?tab=licenses` | **Menu** |
+| recruiter | `/recruiter` | `/messages` | *(optional empty)* | **Menu** |
 
-**Menu as pin:** Long-press an empty slot (or any slot) → pick **Menu** from System section (`MENU_PIN_HREF = __field_menu__`) to pin the sheet opener on slot 4. Fixed Menu slot (`showMenuSlot`) remains available but **default off** — shells use swipe + optional Menu pin instead.
+**Menu as pin:** Slot 4 defaults to **Menu** (`MENU_PIN_HREF = __field_menu__`). Long-press any slot to swap for another route. If all four slots are routes (no Menu pin), shells auto-enable the legacy fixed **Menu** button (`showMenuSlot`) so the sheet is always reachable. Swipe-up from shell outer also opens the sheet.
 
 ### AppMenuSheet catalogs (per persona)
 

@@ -17,6 +17,7 @@
 	import {
 		getNavCatalog,
 		getPickPinCatalog,
+		MENU_PIN_HREF,
 		resolveNavPersonaKey,
 	} from '$lib/shell/navPinCatalog.js';
 	import { navPinsStore } from '$lib/stores/navPins.svelte.js';
@@ -118,6 +119,7 @@
 	const showFieldChrome = $derived(FIELD_CHROME_ROLES.has(authStore.role ?? ''));
 
 	const fieldQuickActions = $derived(getFieldQuickActions(page.url.pathname));
+	const showMenuSlot = $derived(!navPinsStore.pins.includes(MENU_PIN_HREF));
 
 	const fieldMenuSwipe = createFieldMenuSwipeHandlers(() => {
 		if (showFieldChrome) fieldMenu.openBrowse();
@@ -358,6 +360,7 @@
 		accent={tabBarAccent}
 		onMenuOpen={() => fieldMenu.openBrowse()}
 		onPinLongPress={(slotIndex) => fieldMenu.openPickPin(slotIndex)}
+		showMenuSlot={showMenuSlot}
 	/>
 	<AppMenuSheet
 		open={fieldMenu.open}

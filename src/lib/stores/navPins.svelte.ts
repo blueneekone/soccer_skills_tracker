@@ -5,6 +5,7 @@ import { browser } from '$app/environment';
 import {
 	getDefaultPins,
 	isHrefAllowedForPersona,
+	MENU_PIN_HREF,
 	sanitizePins,
 	type NavPersonaKey,
 	type PinQuad,
@@ -25,7 +26,7 @@ function readLocalPins(uid: string, personaKey: NavPersonaKey): PinQuad | null {
 		if (!Array.isArray(parsed) || (parsed.length !== 3 && parsed.length !== 4)) return null;
 		const padded =
 			parsed.length === 3 ?
-				([...(parsed as (string | null)[]), null] as (string | null)[])
+				([...(parsed as (string | null)[]), MENU_PIN_HREF] as (string | null)[])
 			:	(parsed as (string | null)[]);
 		return sanitizePins(padded, personaKey);
 	} catch {

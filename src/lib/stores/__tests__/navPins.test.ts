@@ -24,12 +24,12 @@ describe('navPins store (NAV-OPTION-D)', () => {
 		navPinsStore.hydrate('uid-test', 'player@test.com', 'player', null);
 	});
 
-	it('hydrates with persona defaults when no saved pins (3 routes + empty 4th slot)', () => {
+	it('hydrates with persona defaults when no saved pins (3 routes + Menu on slot 4)', () => {
 		expect(navPinsStore.pins).toEqual([
 			'/player/dashboard',
 			'/player/workout',
 			'/stats',
-			null,
+			'__field_menu__',
 		]);
 	});
 
@@ -47,7 +47,7 @@ describe('navPins store (NAV-OPTION-D)', () => {
 			'/player/dashboard',
 			'/player/workout',
 			'/stats',
-			null,
+			'__field_menu__',
 		]);
 	});
 
@@ -64,7 +64,12 @@ describe('navPins store (NAV-OPTION-D)', () => {
 		navPinsStore.hydrate('uid-test', 'player@test.com', 'player', {
 			player: ['/stats', '/player/workout', '/player/dashboard'],
 		});
-		expect(navPinsStore.pins).toEqual(['/player/settings', '/player/workout', '/stats', null]);
+		expect(navPinsStore.pins).toEqual([
+			'/player/settings',
+			'/player/workout',
+			'/stats',
+			'__field_menu__',
+		]);
 	});
 
 	it('sanitizes invalid local pins to defaults per slot', () => {
@@ -88,6 +93,11 @@ describe('navPins store (NAV-OPTION-D)', () => {
 			JSON.stringify(['/player/settings', '/player/workout', '/stats']),
 		);
 		navPinsStore.hydrate('uid-test', 'player@test.com', 'player', null);
-		expect(navPinsStore.pins).toEqual(['/player/settings', '/player/workout', '/stats', null]);
+		expect(navPinsStore.pins).toEqual([
+			'/player/settings',
+			'/player/workout',
+			'/stats',
+			'__field_menu__',
+		]);
 	});
 });

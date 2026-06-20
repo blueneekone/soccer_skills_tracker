@@ -47,10 +47,11 @@ describe('field menu sheet portal guards', () => {
 		expect(playerShell).not.toContain('menuSheetOpen');
 	});
 
-	it('MobilePinBar showMenuSlot defaults off; shells do not force showMenuSlot', () => {
+	it('MobilePinBar showMenuSlot defaults off; shells show fixed Menu when no menu pin', () => {
 		expect(pinBar).toMatch(/showMenuSlot\s*=\s*false/);
-		expect(enterprise).not.toContain('showMenuSlot={true}');
-		expect(playerShell).not.toContain('showMenuSlot={true}');
+		expect(enterprise).toContain('showMenuSlot={showMenuSlot}');
+		expect(playerShell).toContain('showMenuSlot={showMenuSlot}');
+		expect(enterprise).toContain('MENU_PIN_HREF');
 	});
 
 	it('Menu pin uses ontouchstart + stopPropagation iOS tap fix', () => {
