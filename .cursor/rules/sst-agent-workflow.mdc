@@ -67,7 +67,7 @@ Use these names — **not** IdentityModule, TelemetryPanel, or BentoGrid:
 npm test -- <paths from ROADMAP sprint>
 npm run build
 # nav / shell canon slices:
-npm test -- src/lib/platform/__tests__/platformNavigationCanon.test.ts src/lib/platform/__tests__/productSurfaceRegistry.test.ts
+npm test -- src/lib/platform/__tests__/ownerQaWorkflowCoverage.test.ts src/lib/platform/__tests__/productSurfaceRegistry.test.ts
 # deploy (example tryouts slice):
 npm run deploy:core
 firebase deploy --only firestore:rules,hosting

@@ -116,7 +116,9 @@ Owner Phase 5 notes (QA-142) are **acceptance input** for VS-3-Forge (shipped):
 
 ## §4 QA resume gate
 
-Manual QA **Phases 5–11** remain **PAUSED** until owner initials all rows below. Phases 0–3 progress is preserved. Resume at **Phase 5** after owner signs §4 exit criteria.
+Manual QA **Phases 5–11** resume at **Phase 5** after owner signs §4 exit criteria below. Phases 0–4 progress preserved. **WORKFLOW-INTEGRITY** (2026-06-19): GP-ACQ code-path audit + P0 fixes shipped — see **§8** audit table.
+
+### §4 exit criteria (owner sign-off)
 
 | # | Exit criterion | Owner ☐ | Agent evidence |
 |---|----------------|:-------:|----------------|
@@ -126,9 +128,9 @@ Manual QA **Phases 5–11** remain **PAUSED** until owner initials all rows belo
 | 4 | [`coach-forge-workbench-v1.md`](./references/ui/research/blueprints/coach-forge-workbench-v1.md) signed — full-page workbench, not floating HUD | | Blueprint merged |
 | 5 | GP-ACQ steps 1–6 match [`DEMO_SCRIPT.md`](../acquisition/DEMO_SCRIPT.md) exec cut table | | Step table §2 |
 | 6 | `npm test -- src/lib/platform/__tests__/productSurfaceRegistry.test.ts` green | | CI / local |
-| 7 | Verify VS-3-Forge on live (`ForgeDeployPanel`); workflow-integrity audit next | | Live dev QA-142 pass |
+| 7 | Verify VS-3-Forge on live (`ForgeDeployPanel`); GP-ACQ audit §8 table | | WORKFLOW-INTEGRITY Done — owner live retest pending |
 
-**Resume link:** [`OWNER_QA_CHECKLIST.md`](./OWNER_QA_CHECKLIST.md) Phase 5 — Coach → Player development loop.
+**Resume link:** [`OWNER_QA_CHECKLIST.md`](./OWNER_QA_CHECKLIST.md) — **Phase 4b** (NAV-IMPL chrome) then **Phase 5** Coach → Player development loop; optional capstone **Phase 13** full workflow sweep before registry §4 sign-off.
 
 ---
 
@@ -174,6 +176,27 @@ Before UX or functional work on a route:
 2. Find step in gold path tables (§2) for `qa_ids` and mobile_notes.
 3. Read `foundation_doc` + `va_doc` for pixel sign-off.
 4. Extend sprint tests — never delete prior guards.
+
+---
+
+## §8 GP-ACQ integrity audit (WORKFLOW-INTEGRITY)
+
+**Environment:** live dev · `sports-skill-tracker-dev` · slice date 2026-06-19
+
+| step_id | route | code path | status | gap / fix |
+|---------|-------|-----------|--------|-----------|
+| GP-ACQ-01 | `/parent/household` | `parent/household/+page.svelte` · household graph | **Pass** | Owner Phase 3 QA-121/131 |
+| GP-ACQ-02 | `/parent/vpc` | `parent/vpc/+page.svelte` · consent_records | **Pass** | Owner Phase 3 QA-132 |
+| GP-ACQ-03 | `/coach/forge` | `ForgeDeployPanel.svelte` · `team_assignments` write | **Pass** | VS-3-Forge shipped; owner PS-C02 signed 06/19 — re-run QA-142 on live |
+| GP-ACQ-04a | `/player/dashboard` | `ActiveBounties.svelte` · accept → stash handoff · `Start session →` CTA | **Pass** | `missionRailEmptyCopy` + `coachIntentReadyToClaim` guards |
+| GP-ACQ-04b | `/player/workout` | `coachMissionFlow.ts` handoff · locked prescription · `WORKOUT_HQ_RETURN_PATH` after log | **Pass** | **Fixed:** success overlay → HQ return; `elite_xp_pulse` + `authStore.refresh` |
+| GP-ACQ-04c | `/stats` | `stats/+page.svelte` · telemetry bands | **Pass** | Waivable exec cut; owner PS-PL03 signed |
+| GP-ACQ-05 | `/parent/dashboard` | RSVP strip + bounty terminal | **Pending QA** | Phase 6 gate |
+| GP-ACQ-06 | `/messages` | SafeSport household threads | **Pass** | Owner PS-X01 signed |
+
+**Handoff chain (04a→04b):** Accept on mission rail → `stashQuestTrainHandoff` → `Start session →` → `/player/workout` reads `player_mission_handoff_v1` → `executePlayerWorkoutLog` → acknowledge overlay → `/player/dashboard` XP pulse.
+
+**Owner retest:** [`OWNER_QA_CHECKLIST.md`](./OWNER_QA_CHECKLIST.md) — workflow-mapped checklist with Tier 1 coverage matrix + gold path step index. **Phase 4b** (QA-NAV-01–07) then **Phase 5** — QA-142 live re-verify on 390px + desktop; QA-102 GP-ACQ-04b HQ return after Train log. Optional **Phase 13** capstone before registry §4 initials.
 
 ---
 

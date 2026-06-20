@@ -253,3 +253,66 @@
 | `npm run build` | **Pass** |
 
 **Out of scope:** WORKFLOW-INTEGRITY audit, GP-ACQ code fixes, deploy.
+
+---
+
+## WORKFLOW-INTEGRITY — GP-ACQ audit + doc sync (2026-06-19)
+
+**Slice:** GP-ACQ code-path audit table canonized; P0 fixes shipped in prior session (GP-ACQ-04b HQ return); owner Phase 5 live retest pending.
+
+### Code shipped (prior session — not this doc slice)
+
+| Fix | Files | GP-ACQ step |
+|-----|-------|-------------|
+| Train log → HQ return + XP pulse | `activeBounties.ts`, `workout/+page.svelte` | GP-ACQ-04b |
+| Mission rail empty copy + claim guards | `activeBounties.ts`, `activeBounties.test.ts` | GP-ACQ-04a |
+
+### Files updated (this slice)
+
+| File | Change summary |
+|------|----------------|
+| `docs/vision/PLATFORM_WORKFLOW_CANON.md` | §8 GP-ACQ audit table; §4 row 7 → WORKFLOW-INTEGRITY Done — owner live retest pending |
+| `docs/vision/OWNER_QA_CHECKLIST.md` | Lift PAUSED / STRUCTURE-Forge-impl banner; Phase 5 QA-142 re-verify wording |
+| `docs/acquisition/DOC_SYNC_REPORT.md` | This entry |
+
+### Contradiction resolutions
+
+| Conflict | Resolution |
+|----------|------------|
+| Owner QA Phase 5 blocked on Forge mobile | **WORKFLOW-INTEGRITY Done** — VS-3-Forge shipped; QA-142 is live re-verify, not code blocker |
+| GP-ACQ audit location | **§8** canonical table; §4 exit criteria row 7 references §8 |
+| STRUCTURE-Forge-impl prerequisite | **Superseded** — `ForgeDeployPanel.svelte` shipped; no impl slice before Phase 5 resume |
+
+### Verify (WORKFLOW-INTEGRITY-DOC)
+
+| Command | Result |
+|---------|--------|
+| `npm test -- src/lib/platform/__tests__/productSurfaceRegistry.test.ts` | **13 passed** |
+
+---
+
+## QA-DOC-ALIGN — Workflow-mapped owner checklist (2026-06-19)
+
+**Slice:** Align `OWNER_QA_CHECKLIST.md` with full platform workflow map — gold paths, Tier 1 coverage matrix, Phase 4b nav chrome, Phase 13 capstone. Docs-only + test guard.
+
+### Files updated
+
+| File | Change summary |
+|------|----------------|
+| `docs/vision/OWNER_QA_CHECKLIST.md` | Platform workflow map; Tier 1 matrix + gold path index; Phase 4b (QA-NAV-01–07); Phase 5–7/9/11 surgical refresh; Phase 13 capstone |
+| `docs/vision/PLATFORM_WORKFLOW_CANON.md` | §4 resume link → Phase 4b + Phase 13; §8 owner retest → refreshed checklist |
+| `docs/acquisition/INDEX.md` | OWNER_QA_CHECKLIST noted as workflow-aligned owner bible |
+| `.cursor/rules/sst-agent-workflow.mdc` | Verify block includes `ownerQaWorkflowCoverage.test.ts` |
+
+### Files created
+
+| File | Purpose |
+|------|---------|
+| `src/lib/platform/__tests__/ownerQaWorkflowCoverage.test.ts` | Tier 1 qa_id + GP-ACQ step coverage guards; stale nav string rejection |
+
+### Verify (QA-DOC-ALIGN)
+
+| Command | Result |
+|---------|--------|
+| `npm test -- src/lib/platform/__tests__/ownerQaWorkflowCoverage.test.ts src/lib/platform/__tests__/productSurfaceRegistry.test.ts` | **19 passed** (2 files) |
+| `npm run check` | **0 errors**, 169 warnings |

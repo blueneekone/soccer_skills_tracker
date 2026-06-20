@@ -4,11 +4,13 @@
 
 > **Tier authority:** [`PRODUCT_SURFACE_REGISTRY.md`](./PRODUCT_SURFACE_REGISTRY.md) — **Phase 11** = Tier 1 Player OS visual rubric (waivable for functional sale). **Tier 2** QA items (e.g. QA-143/144 Field Station, Phase 9 player depth) may be waived per registry §0 without blocking acquisition sign-off.
 
-## QA status: PAUSED (structure sprint)
+## QA status: Phases 0–4 complete · Phase 4b + 5 = acquisition P0 · Phases 6–12 = depth/diligence
 
-Manual QA **Phases 5–11** are paused until [`PLATFORM_WORKFLOW_CANON.md`](./PLATFORM_WORKFLOW_CANON.md) **§4** exit criteria are met. **Phases 0–3 progress is preserved.** Do not resume Field Station polish, Player OS visual waves, or War Room work in this window.
+**Phases 0–4 progress preserved** (checkmarks + owner notes below). **Acquisition P0** = **Phase 4b** (NAV-IMPL chrome) + **Phase 5** (core loop). **Depth/diligence** = Phases 6–12 + optional **Phase 13** capstone.
 
-**Resume at Phase 5 only** after owner signs workflow canon + Forge blueprint ([`coach-forge-workbench-v1.md`](./references/ui/research/blueprints/coach-forge-workbench-v1.md)). Optional recommended: `STRUCTURE-Forge-impl` (inline deploy panel, QA-142 functional fix) before Phase 5 re-run.
+[`PLATFORM_WORKFLOW_CANON.md`](./PLATFORM_WORKFLOW_CANON.md) **§8** WORKFLOW-INTEGRITY audit shipped — owner **live retest Phase 5** still required for sign-off. **VS-3-Forge shipped** (`ForgeDeployPanel.svelte`) — re-run QA-142 on live @390px + desktop. **WORKFLOW-INTEGRITY** (06/19): GP-ACQ-04b HQ return after Train log shipped.
+
+**15-minute exec cut:** Session A below → Phase 5 exec-cut lap + Phase 6 (QA-124/125) + Phase 7 (QA-153/406).
 
 **Environment:** `sports-skill-tracker-dev`  
 **Primary QA URLs:** [https://sports-skill-tracker-dev.web.app](https://sports-skill-tracker-dev.web.app) (preferred if custom domain SSL fails) · [https://sstracker.app](https://sstracker.app) (custom domain — may SSL-fail on some clients)  
@@ -37,6 +39,92 @@ npm run smoke:dev
 Cross-reference: `[PLATFORM_GAP_REGISTER.md](../acquisition/PLATFORM_GAP_REGISTER.md)` `ManualQaId` column · `[FUNCTIONAL_MVP.md](./FUNCTIONAL_MVP.md)` · `[DEMO_SCRIPT.md](../acquisition/DEMO_SCRIPT.md)` (exec cut order)
 
 > **Supersedes phased pair-program flow:** `[QA_DEV_PERSONA_VERIFICATION.md](../QA_DEV_PERSONA_VERIFICATION.md)` — use this checklist for sign-off; prior doc retained for historical phase notes.
+
+---
+
+## Platform workflow map (how QA maps to the product)
+
+One-page guide — run phases in order below; use **Session A** for the 15-minute exec cut.
+
+### Prerequisite chain
+
+From [`PLATFORM_WORKFLOW_CANON.md`](./PLATFORM_WORKFLOW_CANON.md) §1:
+
+`GP-GATE` → `GP-PARENT` (steps 1–2) **unlocks player routes** → `GP-COACH`/Forge step 3 feeds `GP-ACQ` player steps → `GP-PARENT` dashboard step 5 → `GP-ACQ` messages step 6.
+
+Sign out or incognito between persona switches.
+
+### Four gold paths
+
+| Gold path | Purpose | Primary phases | Exec cut? |
+|-----------|---------|----------------|-----------|
+| **GP-GATE** | Trust/compliance gates | 1, 3, 4 | Yes (implicit) |
+| **GP-PARENT** | Co-op partner loop | 3, 6 | Steps 1–2, 5 |
+| **GP-COACH** | Sideline daily loop | 4, 5 | Step 3 |
+| **GP-ACQ** | Full acquisition narrative | 3, 5, 6, 7 | Steps 1–6 |
+
+### Recommended owner sessions
+
+| Session | Scope | Time | Phases / steps |
+|---------|-------|------|----------------|
+| **A — Exec cut** | P0 acquisition narrative | ~45–60 min | 3 (if not done) → **5** (core) → **6** (QA-124/125) → **7** (QA-153/406) — maps GP-ACQ-01 through GP-ACQ-06 |
+| **B — Navigation + mobile** | P0 NAV-IMPL chrome | ~30 min | **Phase 4b** — all personas @390px + spot @1280px |
+| **C — Depth + diligence** | P1/P2 waivable | As time allows | Phases 8–12 |
+
+### UX state reminder
+
+Every step should show **Entry / Loading / Empty / Blocked / Error / Success** behavior per [`PLATFORM_WORKFLOW_CANON.md`](./PLATFORM_WORKFLOW_CANON.md) §6. Owner notes: log **expected vs actual**; cite `step_id` (e.g. GP-ACQ-04b) when filing issues.
+
+### Tier 1 coverage matrix (registry → QA)
+
+Authority: [`PRODUCT_SURFACE_REGISTRY.md`](./PRODUCT_SURFACE_REGISTRY.md) §1 — **15 Tier 1 rows**. Tier 2 items stay waivable per registry §0; do not demote Tier 1 to optional.
+
+| Registry id | Route | workflow_id | Gold path step(s) | QA id(s) | Phase | Tier | Waivable? |
+|-------------|-------|-------------|-------------------|----------|-------|------|-----------|
+| PS-A01 | `/login` | `WF-TRUST-LOGIN` | GP-GATE-01 | QA-010, QA-011 | 1 | 1 | No |
+| PS-A02 | `/home` | `WF-TRUST-ROUTER` | GP-GATE-02 | QA-010 | 1 | 1 | No |
+| PS-A03 | `/setup` | `WF-TRUST-SETUP` | GP-GATE-03 | QA-013 | 1 | 1 | No |
+| PS-A04 | `/vpc-pending` | `WF-VPC-GATE` | GP-GATE-04 | QA-133 | 3 | 1 | No |
+| PS-A05 | `/compliance` | `WF-TRUST-COACH-CLEARANCE` | GP-GATE-05 | QA-161, QA-204 | 4 | 1 | No |
+| PS-A06 | `/privacy` | `WF-TRUST-PRIVACY` | GP-GATE-06 | QA-012 | 1 | 1 | No |
+| PS-P01 | `/parent/household` | `WF-PARENT-HOUSEHOLD` | GP-PARENT-01, GP-ACQ-01 | QA-121, QA-131, QA-401 | 3 | 1 | No |
+| PS-P02 | `/parent/vpc` | `WF-PARENT-VPC` | GP-PARENT-02, GP-ACQ-02 | QA-122, QA-132, QA-402 | 3 | 1 | No |
+| PS-P03 | `/parent/dashboard` | `WF-PARENT-COOP` | GP-PARENT-04, GP-ACQ-05 | QA-124, QA-125, QA-405 | 6 | 1 | No |
+| PS-C01 | `/coach` | `WF-COACH-INTEL` | GP-COACH-01, GP-COACH-04 | QA-141, QA-163 | 5 | 1 | No |
+| PS-C02 | `/coach/forge` | `WF-COACH-FORGE` | GP-COACH-02, GP-ACQ-03 | QA-142, QA-134, QA-403 | 5 | 1 | No |
+| PS-PL01 | `/player/dashboard` | `WF-PLAYER-HQ` | GP-ACQ-04a, GP-COACH-03 | QA-101, QA-106, QA-151, QA-154, QA-404 | 5 | 1 | No |
+| PS-PL02 | `/player/workout` | `WF-PLAYER-TRAIN` | GP-ACQ-04b | QA-102–108, QA-107 | 5 | 1 | No |
+| PS-PL03 | `/stats` | `WF-PLAYER-STATS` | GP-ACQ-04c | QA-304 | 11 | 1 | No (waivable exec cut only) |
+| PS-X01 | `/messages` | `WF-COMMS-SAFESPORT` | GP-ACQ-06 | QA-153, QA-406 | 7 | 1 | No |
+
+### Gold path step index (step_id → QA)
+
+Compact lookup — full criteria in [`PLATFORM_WORKFLOW_CANON.md`](./PLATFORM_WORKFLOW_CANON.md) §2.
+
+| step_id | Route | Success (canon, one line) | QA id(s) | Phase |
+|---------|-------|---------------------------|----------|-------|
+| GP-GATE-01 | `/login` | Redirect to `/home` after authenticate | QA-010, QA-011 | 1 |
+| GP-GATE-02 | `/home` | Persona workspace redirect | QA-010 | 1 |
+| GP-GATE-03 | `/setup` | Router resumes after profile provision | QA-013 | 1 |
+| GP-GATE-04 | `/vpc-pending` | Blocked copy + parent hint; no training routes | QA-133 | 3 |
+| GP-GATE-05 | `/compliance` | Redirect to `/coach` when cleared | QA-161, QA-204 | 4 |
+| GP-GATE-06 | `/privacy` | Page renders | QA-012 | 1 |
+| GP-ACQ-01 | `/parent/household` | Linked operative(s) visible; waiver state clear | QA-121, QA-131, QA-401 | 3 |
+| GP-ACQ-02 | `/parent/vpc` | `consent_records` written; child unlocks | QA-122, QA-132, QA-402 | 3 |
+| GP-ACQ-03 | `/coach/forge` | Deploy intent with prescription to player (§3 Forge) | QA-142, QA-134, QA-403 | 5 |
+| GP-ACQ-04a | `/player/dashboard` | Coach intent in ActiveBounties; Train CTA arms | QA-101, QA-106, QA-151, QA-404 | 5 |
+| GP-ACQ-04b | `/player/workout` | XP/streak updates on HQ return | QA-102–108, QA-107 | 5 |
+| GP-ACQ-04c | `/stats` | Radar + chart bands load; calm investigation workspace | QA-304 | 11 |
+| GP-ACQ-05 | `/parent/dashboard` | RSVP strip + bounty terminal visible | QA-124, QA-125, QA-405 | 6 |
+| GP-ACQ-06 | `/messages` | Household threads load; coach→minor DM blocked | QA-153, QA-406 | 7 |
+| GP-COACH-01 | `/coach` | ≥3 roster signals or explicit empty; Forge link obvious | QA-141, QA-163 | 5 |
+| GP-COACH-02 | `/coach/forge` | §3 Forge criteria | QA-142, QA-134 | 5 |
+| GP-COACH-03 | `/player/dashboard` | Bounty accepted; XP on return | QA-101, QA-107, QA-151 | 5 |
+| GP-COACH-04 | `/coach` | Telemetry reflects logged session | QA-141 | 5 |
+| GP-PARENT-01 | `/parent/household` | Waiver timestamp; team dispatch linked | QA-121, QA-131 | 3 |
+| GP-PARENT-02 | `/parent/vpc` | Per-child grant success | QA-122, QA-132 | 3 |
+| GP-PARENT-03 | `/parent/log-workout` | XP counts toward player progress | QA-123 | 6 |
+| GP-PARENT-04 | `/parent/dashboard` | Co-op Command bands visible | QA-124, QA-125 | 6 |
 
 ---
 
@@ -256,48 +344,45 @@ Complete Profile error appears when authenticating player even though they're li
 
 ---
 
-## Phase 5 — Coach → Player development loop (core acquisition demo)
+## Phase 4b — Platform navigation chrome (NAV-IMPL)
 
-**Gate:** Do not start this phase until Phase 3 **QA-132** passes. Sign out / incognito when switching coach → player.
+**Gate:** Run on live dev @ **390px** (phone or DevTools) and spot-check **1280px**. Authority: [`PLATFORM_NAVIGATION_CANON.md`](./PLATFORM_NAVIGATION_CANON.md). **Do not proceed to Phase 5 sign-off until Phase 4b passes** (Session B).
 
-Order (matches `[DEMO_SCRIPT.md](../acquisition/DEMO_SCRIPT.md)` exec cut steps 3–4):
+> **Id choice:** QA-161/162/163 are coach clearance + director compliance (Phase 4). Nav chrome uses **QA-NAV-01–07** to avoid collision.
 
-- [x] **QA-141** Coach HQ `/coach` — squad/roster loads — gap register F-03
-- [ ] **QA-142** Forge deploy intent/bounty on `/coach/forge` — appears on player HQ — gap register F-03 · pre-check: `intentModule.test.ts`
-- [ ] **QA-143** Sub-drill picker — team + club drills (not global only) — gap register F-03 · pre-check: `personaFunctionalMvp.test.ts`
-- [ ] **QA-144** Spatial designer save on `/coach/drills` — persists to `teams/{teamId}/drills` — gap register F-03 (optional same session)
-- [ ] **QA-134** Coach bounty → player HQ mission rail — gap register F-02
-- [ ] **QA-106** Mission rail visible on `/player/dashboard` — gap register F-01
-- [ ] **QA-101** Player HQ loads post-VPC — identity, missions rail, telemetry — gap register F-01 · pre-check: `personaFunctionalMvp.test.ts`
-- [ ] **QA-107** Accept intent → Train **locked by coach**; notes editable only — gap register K-03 · pre-check: `coachMissionFlow.test.ts`
-- [ ] **QA-102** Free log workout on `/player/workout` — XP/streak updates on HQ — gap register F-01 · pre-check: `coachMissionFlow.test.ts`
-- [ ] **QA-103** Workout smoke — 3×25 reps, bilateral **off** → 75 reps to `logTrainingSession`
-- [ ] **QA-104** Workout smoke — 1×10 reps, bilateral **on** → 20 reps (10×2)
-- [ ] **QA-105** Workout smoke — 30 min + RPE 5, time-only prescription — session logs; rep count 0 OK
-- [ ] **QA-108** Free log (no mission) — duration max **120 min**
-- [ ] **QA-151** Coach → Player HQ handoff — coach bounty → player mission 6k path — gap register F-04 · pre-check: `personaFunctionalMvp.test.ts`
-- [ ] **QA-154** Adaptive homework band on `/player/dashboard` — visible (heuristic OK at `abPercent: 0`) — gap register F-04 · pre-check: `playerRlFunctional.test.ts`
+- [ ] **QA-NAV-01** **Player** @390px — Bottom tabs: **HQ · Train · Stats · More**; More sheet has Tracker / Comms / Armory / Settings; glance band on HQ @390px without scroll
+  - **@1280px:** Left rail; no bottom bar
+- [ ] **QA-NAV-02** **Coach** @390px — Bottom tabs: **Daily Intel · Forge · Messages**; overflow drawer has Tier 2 only (no duplicate Forge)
+  - **@1280px:** Left sidebar; admin flat bar styling
+- [ ] **QA-NAV-03** **Parent** @390px — Bottom tabs: **Household · VPC · Command · Messages**; trust skin on content
+  - **@1280px:** Same tab set; sidebar desk mode
+- [ ] **QA-NAV-04** **Director/Admin** (optional) @390px — Field tabs + overflow; staff-admin skin
+  - **@1280px:** Sidebar
+- [ ] **QA-NAV-05** **Cross-cutting** — One primary nav surface — no sidebar + bottom bar showing same hrefs on field viewport
+- [ ] **QA-NAV-06** **Player** — Safe-area inset + **44px** minimum touch targets on tab bar
+- [ ] **QA-NAV-07** **Coach Forge @390px** — Deploy form in document flow (Forge §3) — nav-specific viewport; ties to QA-142
+  - **@1280px:** Workbench column layout
 
-### Phase 5 — Owner notes
+### Phase 4b — Owner notes
 
 
-| Field          | Value   |
-| -------------- | ------- |
-| Phase result   | Blocked |
-| Date completed |         |
-| Tester/browser |         |
+| Field          | Value                                      |
+| -------------- | ------------------------------------------ |
+| Phase result   | Pass / Pass with issues / Blocked / Waived |
+| Date completed |                                            |
+| Tester/browser |                                            |
 
 
 **Issues found**
 
 ```
-QA-142: |P5] — full forge creation tool didn't show up on mobile version. After I switched to the desktop version I was able to fill everything out. However, I cannot assign the bounty to the squad nor individual players — expected I could push a drill via mobile and desktop vs actual button never activates
+QA-NAV-xx: [P0|P1|P2] — step_id if applicable — expected vs actual
 ```
 
 **Waivers this phase**
 
 ```
-QA-xxx: reason
+QA-NAV-xx: reason (Tier 1 nav items not waivable for acquisition sign-off)
 ```
 
 - [ ] **Continue to next phase?** Yes / No
@@ -305,9 +390,86 @@ QA-xxx: reason
 **Owner freeform**
 
 ```
-The Forge is really hard to use on mobile. We need to ensure we focus on the mobile UI experience because we want this to be easy to use anytime anywhere.
 
-When creating a bounty in The Forge, the slider for "Priority" goes above the 100% threshold. Instead of numbers, want to make that a toggle switch so players know whether or not it is priority versus other workouts they're doing. I am unable to assign a drill to the squad nor a player. The player roster doesn't show up under the selection dropdown and the button for creating a drill never activates after all areas are filled. 
+```
+
+---
+
+## Phase 5 — Coach → Player development loop (core acquisition demo)
+
+**Gate:** Phase 3 **QA-132** passed · **Phase 4b** nav chrome passed. Sign out / incognito when switching coach → player. **VS-3-Forge shipped** — QA-142 is a live re-verify (mobile document-flow deploy form + roster scope), not a code blocker. **GP-ACQ-04b** HQ return after Train log shipped in WORKFLOW-INTEGRITY.
+
+### Exec cut lap (Session A — 15 min narrative)
+
+Maps [`DEMO_SCRIPT.md`](../acquisition/DEMO_SCRIPT.md) steps 3–4 + cross-refs Phases 6–7 for full GP-ACQ:
+
+- [ ] **QA-403** / GP-ACQ-03 — Coach Forge deploy (detail: QA-142 below)
+- [ ] **QA-404** / GP-ACQ-04a–04b — Player accept → Train → XP on HQ (detail: QA-101, QA-106, QA-107, QA-102–105)
+- [ ] **QA-405** / GP-ACQ-05 — Parent dashboard parity → Phase 6 QA-124/125
+- [ ] **QA-406** / GP-ACQ-06 — Messages SafeSport → Phase 7 QA-153
+
+Full exec cut steps 1–2 live in **Phase 3** (QA-401, QA-402). Consolidated sign-off rows also in **Phase 7** — see Phase 5 for step detail.
+
+Order (matches exec cut steps 3–4 + GP-COACH observe loop):
+
+- [x] **[GP-COACH-01]** **QA-141** Coach HQ `/coach` — squad/roster loads — gap register F-03
+  - **Success (canon):** ≥3 roster signals or explicit empty; Forge link obvious
+- [ ] **[GP-COACH-02 / GP-ACQ-03]** **QA-142** Forge deploy intent/bounty on `/coach/forge` — appears on player HQ — gap register F-03 · pre-check: `intentModule.test.ts` · **Re-verify on live** (VS-3-Forge shipped)
+  - **Success (canon):** Deploy intent with prescription to player — see workflow canon §3 Forge criteria
+  - **Mobile:** 390px P1 — full deploy form in document flow; no fixed corner HUD
+- [ ] **[GP-COACH-02]** **QA-143** Sub-drill picker — team + club drills (not global only) — gap register F-03 · pre-check: `personaFunctionalMvp.test.ts` · **Tier 2 waiver** (Field Station; not exec-cut gate)
+- [ ] **[GP-COACH-02]** **QA-144** Spatial designer save on `/coach/drills` — persists to `teams/{teamId}/drills` — gap register F-03 · **Tier 2 waiver** (optional same session)
+- [ ] **[GP-COACH-02 / GP-ACQ-03]** **QA-134** Coach bounty → player HQ mission rail — gap register F-02
+- [ ] **[GP-ACQ-04a]** **QA-106** Mission rail visible on `/player/dashboard` — gap register F-01
+  - **Success (canon):** Coach intent in ActiveBounties; Train CTA arms
+  - **Mobile:** Mission rail readable without horizontal scroll
+- [ ] **[GP-ACQ-04a / GP-COACH-03]** **QA-101** Player HQ loads post-VPC — identity, missions rail, telemetry — gap register F-01 · pre-check: `personaFunctionalMvp.test.ts`
+  - **Success (canon):** Coach intent in ActiveBounties; Train CTA arms
+  - **Mobile:** Mission rail readable without horizontal scroll
+- [ ] **[GP-ACQ-04b]** **QA-107** Accept intent → Train **locked by coach**; notes editable only — gap register K-03 · pre-check: `coachMissionFlow.test.ts`
+  - **Success (canon):** XP/streak updates on HQ return
+  - **Mobile:** Execute theater; prescription read-only when armed
+- [ ] **[GP-ACQ-04b]** **QA-102** Free log workout on `/player/workout` — XP/streak updates on HQ — gap register F-01 · pre-check: `coachMissionFlow.test.ts` · **GP-ACQ-04b:** success overlay → Return to HQ
+  - **Success (canon):** XP/streak updates on HQ return
+  - **Mobile:** Execute theater; prescription read-only when armed
+- [ ] **[GP-ACQ-04b]** **QA-103** Workout smoke — 3×25 reps, bilateral **off** → 75 reps to `logTrainingSession`
+- [ ] **[GP-ACQ-04b]** **QA-104** Workout smoke — 1×10 reps, bilateral **on** → 20 reps (10×2)
+- [ ] **[GP-ACQ-04b]** **QA-105** Workout smoke — 30 min + RPE 5, time-only prescription — session logs; rep count 0 OK
+- [ ] **[GP-ACQ-04b]** **QA-108** Free log (no mission) — duration max **120 min**
+- [ ] **[GP-COACH-03]** **QA-151** Coach → Player HQ handoff — coach bounty → player mission 6k path — gap register F-04 · pre-check: `personaFunctionalMvp.test.ts`
+- [ ] **[GP-ACQ-04a]** **QA-154** Adaptive homework band on `/player/dashboard` — visible (heuristic OK at `abPercent: 0`) — gap register F-04 · pre-check: `playerRlFunctional.test.ts`
+- [ ] **[GP-COACH-04]** **QA-141** (observe) Coach HQ — telemetry reflects logged session after player Train
+
+### Phase 5 — Owner notes
+
+
+| Field          | Value              |
+| -------------- | ------------------ |
+| Phase result   | Ready for re-run   |
+| Date completed |                    |
+| Tester/browser |                    |
+
+
+**Issues found (prior session — pre VS-3-Forge / WORKFLOW-INTEGRITY)**
+
+```
+QA-142 [P5]: Forge mobile UX + deploy button never activated — addressed in VS-3-Forge (full-page workbench, boolean priority, deployBlockReason). Re-verify on live.
+GP-ACQ-04b [P0]: Train log did not return to HQ for XP pulse — fixed WORKFLOW-INTEGRITY (success overlay → /player/dashboard).
+```
+
+**Waivers this phase**
+
+```
+QA-143/144: Tier 2 Field Station — waivable per registry §0 for exec cut
+```
+
+- [ ] **Continue to next phase?** Yes / No
+
+**Owner freeform**
+
+```
+Prior Forge feedback (mobile priority slider, roster dropdown) — verify VS-3-Forge on 390px before signing QA-142.
+After accept bounty → Start session → log → acknowledge overlay should land on HQ with updated XP.
 ```
 
 ---
@@ -316,12 +478,20 @@ When creating a bounty in The Forge, the slider for "Priority" goes above the 10
 
 **Gate:** Do not proceed until Phase 5 core loop passes (coach bounty → player XP).
 
-- [ ] **QA-123** Co-op log on `/parent/log-workout` — counts toward child progress — gap register F-02
-- [ ] **QA-124** Dashboard bounty terminal on `/parent/dashboard` — visible/functional — gap register F-02
-- [ ] **QA-125** Car Ride debrief on `/parent/dashboard` — surfaces when fixture pending — gap register F-02
-- [ ] **QA-202** Parent installments `/parent/payments` — schedule + partial status — gap register B-01, B-05 · pre-check: `paymentInstallments.test.ts`
-- [ ] **QA-210** FCM push prefs + director broadcast (device) — gap register D-07, D-08, D-09, H-03 · pre-check: `commsSprint49.test.ts`
-- [ ] **QA-152** Parent co-op → child XP path — gap register F-04
+Maps **GP-ACQ-05** and **GP-PARENT-03/04**. **GP-ACQ-05 audit status:** **Pending QA** per workflow canon §8 — owner Phase 6 gate.
+
+- [ ] **[GP-PARENT-03]** **QA-123** Co-op log on `/parent/log-workout` — counts toward child progress — gap register F-02 · **Tier 2 — waivable**
+  - **Success (canon):** XP counts toward player progress
+  - **Mobile:** Mobile form usable @390px
+- [ ] **[GP-PARENT-04 / GP-ACQ-05]** **QA-124** Dashboard bounty terminal on `/parent/dashboard` — visible/functional — gap register F-02
+  - **Success (canon):** RSVP strip + bounty terminal visible
+  - **Mobile:** RSVP + bounty above fold on 390px
+- [ ] **[GP-PARENT-04 / GP-ACQ-05]** **QA-125** Car Ride debrief on `/parent/dashboard` — surfaces when fixture pending — gap register F-02
+  - **Success (canon):** Co-op Command bands visible
+  - **Mobile:** RSVP + bounty above fold on 390px
+- [ ] **QA-202** Parent installments `/parent/payments` — schedule + partial status — gap register B-01, B-05 · pre-check: `paymentInstallments.test.ts` · **Tier 2 — waivable**
+- [ ] **QA-210** FCM push prefs + director broadcast (device) — gap register D-07, D-08, D-09, H-03 · pre-check: `commsSprint49.test.ts` · **Tier 2 — waivable**
+- [ ] **[GP-PARENT-03]** **QA-152** Parent co-op → child XP path — gap register F-04 · **Tier 2 — waivable**
 
 ### Phase 6 — Owner notes
 
@@ -359,17 +529,21 @@ QA-xxx: reason
 
 **Gate:** Do not proceed until Phase 5 player loop verified.
 
-- [ ] **QA-146** Coach logistics announcement on `/coach/logistics` — parents receive — gap register F-03 · pre-check: `commsSprint41.test.ts`
-- [ ] **QA-153** Coach → minor DM blocked on `/messages` — SafeSport — gap register F-04 · pre-check: `commsSprint42.test.ts`
+- [ ] **QA-146** Coach logistics announcement on `/coach/logistics` — parents receive — gap register F-03 · pre-check: `commsSprint41.test.ts` · **Tier 2 — waivable**
+- [ ] **[GP-ACQ-06]** **QA-153** Coach → minor DM blocked on `/messages` — SafeSport — gap register F-04 · pre-check: `commsSprint42.test.ts`
+  - **Success (canon):** Household threads load; coach→minor DM blocked with policy copy
+  - **Mobile:** Thread list usable one-handed
 
-### Exec cut verification (DEMO_SCRIPT steps 1–6 — checklist only; steps live in phases above)
+### Exec cut verification (DEMO_SCRIPT steps 1–6 — sign-off rows only)
 
-- [ ] **QA-401** Exec cut step 1 — Parent household (Phase 3: QA-121)
-- [ ] **QA-402** Exec cut step 2 — VPC ceremony (Phase 3: QA-122, QA-132)
-- [ ] **QA-403** Exec cut step 3 — Coach intent deploy (Phase 5: QA-142)
-- [ ] **QA-404** Exec cut step 4 — Player Train + XP (Phase 5: QA-107, QA-102–105)
-- [ ] **QA-405** Exec cut step 5 — Parent dashboard parity (Phase 6: QA-124–125)
-- [ ] **QA-406** Exec cut step 6 — Messages SafeSport (above)
+Detail lives in Phases 3, 5, 6 above — check here for consolidated exec-cut sign-off:
+
+- [ ] **QA-401** Exec cut step 1 — Parent household (Phase 3: QA-121) · GP-ACQ-01
+- [ ] **QA-402** Exec cut step 2 — VPC ceremony (Phase 3: QA-122, QA-132) · GP-ACQ-02
+- [ ] **QA-403** Exec cut step 3 — Coach intent deploy (Phase 5: QA-142) · GP-ACQ-03
+- [ ] **QA-404** Exec cut step 4 — Player Train + XP (Phase 5: QA-107, QA-102–105) · GP-ACQ-04a–04b
+- [ ] **QA-405** Exec cut step 5 — Parent dashboard parity (Phase 6: QA-124–125) · GP-ACQ-05
+- [ ] **[GP-ACQ-06]** **QA-406** Exec cut step 6 — Messages SafeSport — **closes GP-ACQ-06** (QA-153 above)
 
 ### Phase 7 — Owner notes
 
@@ -459,10 +633,11 @@ QA-xxx: reason
 
 **Gate:** Do not proceed until Phase 5 core loop passes.
 
-- [ ] **QA-109** Armory SYNC IDENTITY on `/player/armory` — default portrait or initials OK — gap register I-01
-- [ ] **QA-110** Armory album/set bonus path — 3.4 collectible path still works
-- [ ] **QA-112** Tracker nav — `/player/tracker` reachable from shell — gap register F-01 · pre-check: `personaFunctionalMvp.test.ts`
-- [ ] **QA-205** Tracker shell parity — bottom rail + enterprise shell — gap register F-01
+- [ ] **QA-109** Armory SYNC IDENTITY on `/player/armory` — default portrait or initials OK — gap register I-01 · **Tier 2 — waivable**
+- [ ] **QA-110** Armory album/set bonus path — 3.4 collectible path still works · **Tier 2 — waivable**
+- [ ] **QA-112** Tracker nav — `/player/tracker` reachable from **Player More sheet** (HQ · Train · Stats · More → Tracker) — gap register F-01 · pre-check: `personaFunctionalMvp.test.ts` · **Tier 2 — waivable**
+  - **Success (canon):** Deep-link from More sheet; not in primary bottom tab row
+- [ ] **QA-205** Tracker shell parity — PlayerShell dossier chrome on `/player/tracker`; More sheet entry only (no duplicate primary tab) — gap register F-01 · **Tier 2 — waivable**
 - [ ] **QA-155** Optional RL policy `/admin/rl-policy` — `abPercent > 0` smoke — gap register K-02 · **waivable:** heuristic only at launch (`abPercent: 0`)
 
 ### Phase 9 — Owner notes
@@ -503,7 +678,7 @@ QA-xxx: reason
 
 - [ ] **QA-208** `/acquisition` marketing landing — CTA + footer links
 - [ ] **QA-209** Capacitor shell — `npm run native:prepare`; WebView loads active QA URL — gap register H-01, H-04 · pre-check: `nativeShellLaunch.test.ts`
-- [ ] **QA-401–405** Exec cut walkthrough — subset of phases above; checklist only (see Phase 7 subsection; no duplicate steps)
+- [ ] **QA-401–405** Exec cut walkthrough — see **Phase 5 exec-cut lap** + **Phase 7** sign-off rows (QA-401–406); no duplicate steps here
 - [ ] **QA-230** PWA install prompt — Android `beforeinstallprompt` or iOS Add to Home Screen
 
 ### Phase 10 — Owner notes
@@ -547,7 +722,7 @@ Screenshot / must-feel sign-off on active QA URL at **1280px** and **390px**:
 - [ ] **QA-301** Armory hologram dossier (6f) — holo frame + bust well; no broken PNG stack — gap register J-01
 - [ ] **QA-302** Armory accent canon — `#00d4ff` / qa-strap per mandates — gap register J-08
 - [ ] **QA-303** HQ void ≥40% / matte ≤35% (6j rubric) — gap register J-06
-- [ ] **QA-304** Stats investigation workspace — telemetry band (no nav tile chrome) — gap register J-07
+- [ ] **QA-304** Stats investigation workspace — telemetry band (no nav tile chrome) — gap register J-07 · **also satisfies GP-ACQ-04c** (optional exec cut; required full Tier 1 sign-off per registry §4)
 - [ ] **QA-305** Train diegetic sliders — `pw-loadbar` vs native range — gap register J-09
 - [ ] **QA-306** OperativeLoadoutStudio — Swal replaced with diegetic overlay — gap register J-03
 - [ ] **QA-307** PlayerShell — no generic `.bento-card` chrome injection on Player routes — gap register J-10
@@ -622,6 +797,69 @@ QA-xxx: reason
 ```
 
 - [ ] **Continue to next phase?** Yes / No
+
+**Owner freeform**
+
+```
+
+```
+
+---
+
+## Phase 13 — Full platform workflow sweep (optional capstone)
+
+**Gate:** Phase 5 core loop + **Phase 4b** nav chrome pass first. Single ordered pass before final sign-off — checkboxes only; cite `step_id` in owner notes if any row fails.
+
+| ☐ | step_id | Persona switch | Route | Action | Pass if | QA ref |
+|---|---------|----------------|-------|--------|---------|--------|
+| ☐ | GP-GATE-01 | any | `/login` | Authenticate | Redirect to `/home` | QA-010, QA-011 |
+| ☐ | GP-GATE-02 | any | `/home` | Role router | Persona workspace redirect | QA-010 |
+| ☐ | GP-GATE-03 | any | `/setup` | Complete provision (if needed) | Router resumes | QA-013 |
+| ☐ | GP-GATE-04 | player | `/vpc-pending` | Spot-check block (if minor pre-VPC) | Blocked copy + parent hint | QA-133 |
+| ☐ | GP-GATE-05 | coach | `/compliance` | Spot-check clearance (if uncleared) | Redirect to `/coach` when cleared | QA-161 |
+| ☐ | GP-GATE-06 | any | `/privacy` | Read legal | Page renders | QA-012 |
+| ☐ | GP-ACQ-01 | **parent** | `/parent/household` | View household graph | Linked operative(s); waiver clear | QA-121, QA-401 |
+| ☐ | GP-ACQ-02 | **parent** | `/parent/vpc` | Grant VPC per child | Child unlocks | QA-122, QA-402 |
+| ☐ | GP-ACQ-03 | **coach** | `/coach/forge` | Deploy intent to player | Bounty on player HQ | QA-142, QA-403 |
+| ☐ | GP-ACQ-04a | **player** | `/player/dashboard` | Accept bounty | Train CTA armed | QA-101, QA-404 |
+| ☐ | GP-ACQ-04b | **player** | `/player/workout` | Log session | XP on HQ return | QA-102, QA-404 |
+| ☐ | GP-ACQ-04c | **player** | `/stats` | View telemetry (optional) | Radar + charts load | QA-304 |
+| ☐ | GP-ACQ-05 | **parent** | `/parent/dashboard` | Co-op / schedule strip | RSVP + bounty terminal | QA-124, QA-405 |
+| ☐ | GP-ACQ-06 | **any** | `/messages` | SafeSport comms | Coach→minor DM blocked | QA-153, QA-406 |
+| ☐ | GP-COACH-01 | **coach** | `/coach` | Scan squad hub | Roster signals or empty state | QA-141 |
+| ☐ | GP-COACH-02 | **coach** | `/coach/forge` | Deploy prescription | §3 Forge criteria | QA-142 |
+| ☐ | GP-COACH-03 | **player** | `/player/dashboard` | Fulfill bounty → Train | XP on return | QA-107, QA-151 |
+| ☐ | GP-COACH-04 | **coach** | `/coach` | Observe activity | Telemetry reflects session | QA-141 |
+| ☐ | GP-PARENT-01 | **parent** | `/parent/household` | Link operative + waiver | Waiver timestamp | QA-121 |
+| ☐ | GP-PARENT-02 | **parent** | `/parent/vpc` | VPC ceremony | Per-child grant | QA-122 |
+| ☐ | GP-PARENT-03 | **parent** | `/parent/log-workout` | Co-op log (**waivable** Tier 2) | XP toward child | QA-123 |
+| ☐ | GP-PARENT-04 | **parent** | `/parent/dashboard` | Car Ride + RSVP + bounty | Co-op bands visible | QA-124, QA-125 |
+| ☐ | Phase 4b | all personas | — | NAV-IMPL chrome @390px + spot 1280px | QA-NAV-01–07 pass | Phase 4b |
+| ☐ | **Sign-off** | owner | — | Registry §4 Tier 1 table initials | All 15 Tier 1 rows Pass or Waive | [`PRODUCT_SURFACE_REGISTRY.md`](./PRODUCT_SURFACE_REGISTRY.md) §4 |
+
+### Phase 13 — Owner notes
+
+
+| Field          | Value                                      |
+| -------------- | ------------------------------------------ |
+| Phase result   | Pass / Pass with issues / Blocked / Waived |
+| Date completed |                                            |
+| Tester/browser |                                            |
+
+
+**Issues found**
+
+```
+step_id: [P0|P1|P2] — expected vs actual
+```
+
+**Waivers this phase**
+
+```
+step_id / QA-id: reason
+```
+
+- [ ] **Continue to sign-off?** Yes / No
 
 **Owner freeform**
 
