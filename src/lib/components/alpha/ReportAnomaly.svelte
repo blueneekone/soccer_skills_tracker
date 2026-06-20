@@ -246,6 +246,13 @@
 		line-height: 1;
 	}
 
+	/* Field mode: pin bar + AppMenuSheet own anomaly — no floating alpha trigger */
+	@media (max-width: 1023.98px) {
+		.ra-trigger {
+			display: none;
+		}
+	}
+
 	/* ─── Backdrop ──────────────────────────────────────────────────────────── */
 	.ra-backdrop {
 		position: fixed;
@@ -272,6 +279,15 @@
 			inset 0 1px 0 rgba(20, 184, 166, 0.1);
 		overflow: hidden;
 		font-family: var(--font-mono);
+	}
+
+	@media (max-width: 1023.98px) {
+		.ra-modal {
+			left: 0.75rem;
+			right: 0.75rem;
+			bottom: calc(56px + env(safe-area-inset-bottom, 0px) + 3.25rem);
+			width: min(420px, calc(100vw - 1.5rem));
+		}
 	}
 
 	/* ─── Modal header ──────────────────────────────────────────────────────── */

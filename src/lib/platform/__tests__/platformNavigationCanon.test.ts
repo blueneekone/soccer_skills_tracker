@@ -19,6 +19,12 @@ const PLAYER_PRIMARY_NAV = join(ROOT, 'lib/player/shell/playerPrimaryNav.ts');
 const WORKSPACE_NAV = join(ROOT, 'lib/shell/workspaceNav.js');
 const PLAYER_SHELL_CSS = join(ROOT, 'lib/styles/player-shell.css');
 const ENTERPRISE_CONSOLE_CSS = join(ROOT, 'lib/styles/enterprise-console.css');
+const OFFLINE_BANNER = join(ROOT, 'lib/components/shell/OfflineBanner.svelte');
+const REPORT_ANOMALY = join(ROOT, 'lib/components/alpha/ReportAnomaly.svelte');
+const OFFLINE_SYNC = join(ROOT, 'lib/services/offlineSync.svelte.ts');
+const FIELD_MENU_SWIPE = join(ROOT, 'lib/shell/fieldMenuSwipe.ts');
+const FIELD_QUICK_ACTIONS = join(ROOT, 'lib/shell/fieldQuickActions.ts');
+const PARENT_LOUNGE_SHELL_CSS = join(ROOT, 'lib/styles/parent-lounge-shell.css');
 
 const STAFF_ADMIN_ROLES = [
 	'coach',
@@ -170,6 +176,75 @@ describe('NAV-OPTION-D implementation guards', () => {
 	it('workspaceNav still exports desk sidebar link arrays', () => {
 		expect(workspaceNav).toContain('export const coachLinks');
 		expect(workspaceNav).toContain('export function getWorkspaceNav');
+	});
+});
+
+describe('NAV-OPTION-D-POLISH guards', () => {
+	const playerShell = readFileSync(PLAYER_SHELL, 'utf-8');
+	const enterprise = readFileSync(ENTERPRISE_SHELL, 'utf-8');
+	const pinBar = readFileSync(MOBILE_PIN_BAR, 'utf-8');
+	const menuSheet = readFileSync(APP_MENU_SHEET, 'utf-8');
+	const offlineBanner = readFileSync(OFFLINE_BANNER, 'utf-8');
+	const reportAnomaly = readFileSync(REPORT_ANOMALY, 'utf-8');
+	const offlineSync = readFileSync(OFFLINE_SYNC, 'utf-8');
+	const fieldMenuSwipe = readFileSync(FIELD_MENU_SWIPE, 'utf-8');
+	const fieldQuickActions = readFileSync(FIELD_QUICK_ACTIONS, 'utf-8');
+	const canonSrc = readFileSync(NAV_CANON, 'utf-8');
+
+	it('canon documents field polish — no floating alpha, no cmd trigger on field', () => {
+		expect(canonSrc).toContain('NAV-OPTION-D-POLISH');
+		expect(canonSrc).toMatch(/No.*floating.*ReportAnomaly/i);
+		expect(canonSrc).toMatch(/ec-cmd-trigger.*field|No.*ec-cmd-trigger/i);
+		expect(canonSrc).toContain('fieldMenuSwipe');
+	});
+
+	it('MobilePinBar showMenuSlot is optional (default off)', () => {
+		expect(pinBar).toContain('showMenuSlot');
+		expect(pinBar).toMatch(/showMenuSlot\s*=\s*false/);
+		expect(pinBar).not.toContain('onSwipeUp');
+	});
+
+	it('shell roots wire bottom-edge swipe + showMenuSlot on field', () => {
+		expect(playerShell).toContain('fieldMenuSwipe');
+		expect(playerShell).toContain('showMenuSlot={true}');
+		expect(enterprise).toContain('fieldMenuSwipe');
+		expect(enterprise).toContain('showMenuSlot={true}');
+	});
+
+	it('enterprise field removes MobileDirectorFab and desk-only cmd trigger', () => {
+		expect(enterprise).not.toContain('MobileDirectorFab');
+		expect(enterprise).toMatch(/\{#if isDesktop\}[\s\S]*ec-cmd-trigger/);
+		expect(enterprise).toMatch(/if \(!isDesktop\) return/);
+	});
+
+	it('AppMenuSheet accepts quick actions for former FAB routes', () => {
+		expect(menuSheet).toContain('quickActions');
+		expect(enterprise).toContain('fieldQuickActions');
+		expect(fieldQuickActions).toContain('getFieldQuickActions');
+	});
+
+	it('MobilePinBar Menu slot wires onclick to onMenuOpen', () => {
+		expect(pinBar).toContain('showMenuSlot');
+		expect(pinBar).toMatch(/mobile-pin-bar__slot--menu[\s\S]*onclick=\{onMenuOpen\}/);
+	});
+
+	it('ReportAnomaly trigger hidden on field viewports', () => {
+		expect(reportAnomaly).toMatch(/max-width:\s*1023\.98px[\s\S]*\.ra-trigger[\s\S]*display:\s*none/);
+	});
+
+	it('OfflineBanner field position above pin bar + sync timeout cap', () => {
+		expect(offlineBanner).toMatch(/max-width:\s*1023\.98px[\s\S]*calc\(56px \+ env\(safe-area-inset-bottom/);
+		expect(offlineBanner).toMatch(/max-width:\s*1023\.98px[\s\S]*z-index:\s*940/);
+		expect(offlineSync).toContain('SYNC_FLUSH_TIMEOUT_MS');
+		expect(offlineSync).toMatch(/SYNC_FLUSH_TIMEOUT_MS\s*=\s*10_000/);
+		expect(fieldMenuSwipe).toContain('FIELD_MENU_EDGE_ZONE_PX');
+	});
+
+	it('parent lounge z4 nav hidden on field viewports', () => {
+		const parentShellCss = readFileSync(PARENT_LOUNGE_SHELL_CSS, 'utf-8');
+		expect(parentShellCss).toMatch(
+			/max-width:\s*1023\.98px[\s\S]*\.parent-lounge-z4-nav[\s\S]*display:\s*none\s*!important/,
+		);
 	});
 });
 

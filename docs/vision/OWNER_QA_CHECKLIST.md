@@ -255,7 +255,7 @@ Compact lookup — full criteria in [`PLATFORM_WORKFLOW_CANON.md`](./PLATFORM_WO
 Order strictly (matches `[FUNCTIONAL_MVP.md](./FUNCTIONAL_MVP.md)` VPC golden path § and `[DEMO_SCRIPT.md](../acquisition/DEMO_SCRIPT.md)` exec cut steps 1–2):
 
 - [x] **QA-131** Parent sign-in → passkey (if RP origin matches) → `/parent/household` — gap register A-03
-- [x] **QA-121** Household + linked operatives + waiver on `/parent/household` — `parentSignCoppaWaiver` / `households.coppaSigned` — gap register F-02 · pre-check: `launchP0Fixes.test.ts`
+- [x] **QA-121** Household + linked operatives + waiver on `/parent/household` — `parentSignCoppaWaiver` / `households.coppaSigned` — gap register F-02 · pre-check: `launchP0Fixes.test.ts` · **FIELD-CHROME-HOTFIX-1:** clearance row must exit `SCANNING…` within ~2s (shows `PENDING SIGNATURE` or `SIGNED`; never stuck)
 - [x] **QA-122** VPC ceremony `/parent/vpc` per child — gap register F-02 · pre-check: `epic51CoppaSignup.test.ts`
 - [x] **QA-132** VPC auto-finalizes `vpcStatus`, `consent_records` (no director approval step) — gap register F-02
 - [x] **QA-133** Child operative login — no `/vpc-pending` block; can reach player routes — gap register F-02
@@ -344,7 +344,7 @@ Complete Profile error appears when authenticating player even though they're li
 
 ---
 
-## Phase 4b — Platform navigation chrome (NAV-OPTION-D)
+## Phase 4b — Platform navigation chrome (NAV-OPTION-D + polish)
 
 **Gate:** Run on live dev @ **390px** (phone or DevTools) and spot-check **1280px**. Authority: [`PLATFORM_NAVIGATION_CANON.md`](./PLATFORM_NAVIGATION_CANON.md). **Do not proceed to Phase 5 sign-off until Phase 4b passes** (Session B).
 
@@ -357,10 +357,11 @@ Complete Profile error appears when authenticating player even though they're li
 - [ ] **QA-NAV-03** **Parent** @390px — Default pins: **Household · VPC · Command**; sheet has Messages, Log Workout, Payments; trust skin on content
   - **@1280px:** Sidebar desk mode
 - [ ] **QA-NAV-04** **Pin customize** — Long-press pin slot → pick route → persists after reload (localStorage + Firestore)
-- [ ] **QA-NAV-05** **Cross-cutting** @390px — **No top mobile header** on any persona; one primary nav surface (pin bar + sheet only)
-- [ ] **QA-NAV-06** **Menu / swipe-up** — Swipe-up from bottom edge opens same AppMenuSheet as Menu tab
+- [ ] **QA-NAV-05** **Cross-cutting** @390px — **No top mobile header** on any persona; one primary nav surface (pin bar + sheet only); **no floating alpha ReportAnomaly**; **no ⌘K / search trigger** in topbar
+- [ ] **QA-NAV-06** **Menu / swipe-up** — Swipe-up from **bottom edge** (not only pin bar) opens same AppMenuSheet as Menu tab
 - [ ] **QA-NAV-07** **Coach Forge @390px** — Deploy form in document flow with extra vertical space from removed top bar — ties to QA-142
-  - **@1280px:** Workbench column layout
+  - **@1280px:** Workbench column layout; ⌘K palette + sidebar Report Anomaly available
+- [ ] **QA-NAV-08** **Field chrome polish** @390px — Offline banner **above** pin bar (not overlapping nav); director/coach **quick actions** in AppMenuSheet (no floating FAB); sync banner clears within ~15s if hung
 
 ### Phase 4b — Owner notes
 

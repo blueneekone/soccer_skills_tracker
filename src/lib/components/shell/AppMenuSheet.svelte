@@ -8,6 +8,7 @@
 		type NavPersonaKey,
 		type NavPinItem,
 	} from '$lib/shell/navPinCatalog.js';
+	import type { FieldQuickAction } from '$lib/shell/fieldQuickActions.js';
 	import type { IconName } from '$lib/icons/registry.js';
 
 	interface Props {
@@ -26,6 +27,7 @@
 		onResetDefaults?: () => void;
 		onReportAnomaly?: () => void;
 		showReportAnomaly?: boolean;
+		quickActions?: FieldQuickAction[];
 	}
 
 	let {
@@ -44,6 +46,7 @@
 		onResetDefaults,
 		onReportAnomaly,
 		showReportAnomaly = false,
+		quickActions = [],
 	}: Props = $props();
 
 	let signingOut = $state(false);
@@ -195,6 +198,26 @@
 						<Icon name="sys.credit-card" size={20} />
 						<span>Plans & Billing</span>
 					</a>
+				</section>
+			{/if}
+
+			{#if mode === 'browse' && quickActions.length > 0}
+				<section class="app-menu-sheet__section">
+					<p class="app-menu-sheet__section-label">Quick actions</p>
+					<nav class="app-menu-sheet__nav" aria-label="Quick actions">
+						{#each quickActions as action (action.href)}
+							<a
+								class="app-menu-sheet__link app-menu-sheet__link--quick"
+								href={action.href}
+								data-sveltekit-reload
+								data-sveltekit-preload-data="hover"
+								onclick={() => onDismiss()}
+							>
+								<Icon name={action.icon} size={20} />
+								<span>{action.label}</span>
+							</a>
+						{/each}
+					</nav>
 				</section>
 			{/if}
 
@@ -396,6 +419,14 @@
 
 	.app-menu-sheet__link--anomaly {
 		color: rgba(251, 191, 36, 0.75);
+	}
+
+	.app-menu-sheet__link--quick {
+		color: #5eead4;
+	}
+
+	.app-menu-sheet--player .app-menu-sheet__link--quick {
+		color: rgba(251, 191, 36, 0.85);
 	}
 
 	.app-menu-sheet__link--sign-out {

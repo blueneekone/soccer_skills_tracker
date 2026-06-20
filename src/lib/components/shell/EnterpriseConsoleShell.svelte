@@ -8,7 +8,8 @@
 	import CommandPalette from '$lib/components/shell/CommandPalette.svelte';
 	import MobilePinBar from '$lib/components/shell/MobilePinBar.svelte';
 	import AppMenuSheet from '$lib/components/shell/AppMenuSheet.svelte';
-	import MobileDirectorFab from '$lib/components/shell/MobileDirectorFab.svelte';
+	import { getFieldQuickActions } from '$lib/shell/fieldQuickActions.js';
+	import { createFieldMenuSwipeHandlers } from '$lib/shell/fieldMenuSwipe.js';
 	import {
 		getWorkspaceNav,
 		isShellNavActive,
@@ -133,6 +134,12 @@
 		!isDesktop && FIELD_CHROME_ROLES.has(authStore.role ?? ''),
 	);
 
+	const fieldQuickActions = $derived(getFieldQuickActions(page.url.pathname));
+
+	const fieldMenuSwipe = createFieldMenuSwipeHandlers(() => {
+		if (showMobileChrome) openMenuBrowse();
+	});
+
 	function toggleDesktopSidebar() {
 		workspaceContextStore.toggleSidebar();
 	}
@@ -177,6 +184,7 @@
 		if (typeof window === 'undefined') return;
 		/** @param {KeyboardEvent} e */
 		function onGlobalKey(e) {
+			if (!isDesktop) return;
 			if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
 				e.preventDefault();
 				cmdPaletteOpen = true;
@@ -187,7 +195,14 @@
 	});
 </script>
 
-<div class="ec-root" data-sidebar-collapsed={sidebarCollapsedDesktop} data-vanguard-os="tactical">
+<!-- svelte-ignore a11y_no_static_element_interactions -->
+<div
+	class="ec-root"
+	data-sidebar-collapsed={sidebarCollapsedDesktop}
+	data-vanguard-os="tactical"
+	ontouchstart={fieldMenuSwipe.onTouchStart}
+	ontouchend={fieldMenuSwipe.onTouchEnd}
+>
 	<div class="ec-root__body">
 		<aside
 			id="ec-workspace-nav"
@@ -270,19 +285,21 @@
 					<strong>{workspaceLabel}</strong> / Console
 				{/if}
 			</div>
-			<!-- Dead-center Command Palette trigger — absolute so it ignores sidebar-rail width -->
-			<button
-				type="button"
-				class="ec-cmd-trigger"
-				onclick={() => (cmdPaletteOpen = true)}
-				aria-label="Open command palette"
-				aria-keyshortcuts="Meta+K Control+K"
-				aria-haspopup="dialog"
-			>
-				<Icon name="action.search" size={14} class="ec-cmd-trigger__icon" />
-				<span class="ec-cmd-trigger__text">Search &amp; jump to…</span>
-				<kbd class="ec-cmd-trigger__kbd">⌘K</kbd>
-			</button>
+			<!-- Command Palette trigger — desk only; field uses AppMenuSheet (no search/jump on field) -->
+			{#if isDesktop}
+				<button
+					type="button"
+					class="ec-cmd-trigger"
+					onclick={() => (cmdPaletteOpen = true)}
+					aria-label="Open command palette"
+					aria-keyshortcuts="Meta+K Control+K"
+					aria-haspopup="dialog"
+				>
+					<Icon name="action.search" size={14} class="ec-cmd-trigger__icon" />
+					<span class="ec-cmd-trigger__text">Search &amp; jump to…</span>
+					<kbd class="ec-cmd-trigger__kbd">⌘K</kbd>
+				</button>
+			{/if}
 			<div class="ec-topbar__right">
 				<button
 					type="button"
@@ -355,7 +372,7 @@
 			accent={tabBarAccent}
 			onMenuOpen={openMenuBrowse}
 			onPinLongPress={openMenuPickPin}
-			onSwipeUp={openMenuBrowse}
+			showMenuSlot={true}
 		/>
 		<AppMenuSheet
 			open={menuSheetOpen}
@@ -373,8 +390,8 @@
 			onResetDefaults={() => navPinsStore.resetToDefaults()}
 			onReportAnomaly={openAnomaly}
 			showReportAnomaly={true}
+			quickActions={fieldQuickActions}
 		/>
-		<MobileDirectorFab pathname={page.url.pathname} />
 	{/if}
 </div>
 

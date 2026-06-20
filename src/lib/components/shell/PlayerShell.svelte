@@ -19,6 +19,7 @@
 	} from '$lib/player/shell/playerPrimaryNav.js';
 	import { getNavCatalog } from '$lib/shell/navPinCatalog.js';
 	import { navPinsStore } from '$lib/stores/navPins.svelte.js';
+	import { createFieldMenuSwipeHandlers } from '$lib/shell/fieldMenuSwipe.js';
 	import '$lib/styles/player-shell.css';
 	import '$lib/styles/player-dossier.css';
 	import '$lib/styles/player-modal-scrim.css';
@@ -81,6 +82,10 @@
 		menuSheetMode = 'browse';
 	}
 
+	const fieldMenuSwipe = createFieldMenuSwipeHandlers(() => {
+		if (!isDesktop) openMenuBrowse();
+	});
+
 	$effect(() => {
 		if (typeof window === 'undefined') return;
 		const mq = window.matchMedia('(min-width: 1024px)');
@@ -116,7 +121,12 @@
 
 <AlertsDrawer />
 
-<div class="ps-root ps-root--dossier tw-w-full tw-max-w-[100vw] tw-overflow-x-hidden">
+<!-- svelte-ignore a11y_no_static_element_interactions -->
+<div
+	class="ps-root ps-root--dossier tw-w-full tw-max-w-[100vw] tw-overflow-x-hidden"
+	ontouchstart={fieldMenuSwipe.onTouchStart}
+	ontouchend={fieldMenuSwipe.onTouchEnd}
+>
 	<div class="ps-ambient" aria-hidden="true">
 		<div class="ps-ambient__grid"></div>
 		<div class="ps-ambient__glow ps-ambient__glow--a"></div>
@@ -181,7 +191,7 @@
 			onNavClick={onNavClick}
 			onMenuOpen={openMenuBrowse}
 			onPinLongPress={openMenuPickPin}
-			onSwipeUp={openMenuBrowse}
+			showMenuSlot={true}
 		/>
 		<AppMenuSheet
 			open={menuSheetOpen}

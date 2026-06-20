@@ -25,6 +25,12 @@
 		buildEnrichedOperativeRows,
 		loadHouseholdOperativeRows,
 	} from '$lib/parent/householdOperatives.js';
+	import {
+		fetchHouseholdClearance,
+		guardsPassForHouseholdLoad,
+		normalizeHouseholdId,
+		shouldClearLoadBusy,
+	} from '$lib/parent/loadHouseholdClearance.js';
 
 	const DISPATCH_CODE_INTEL = {
 		title: 'DISPATCH CODES',
@@ -50,7 +56,8 @@
 	let coppaAt = $state(null);
 	let coppaSigned = $state(false);
 	let loadErr = $state('');
-	let loadBusy = $state(true);
+	let loadBusy = $state(false);
+	let loadGeneration = $state(0);
 	let actionBusy = $state(false);
 	let actErr = $state('');
 
@@ -244,49 +251,47 @@
 	$effect(() => {
 		// re-fetch when token/profile updates after waiver
 		void profile?.householdId;
-		if (!browser) return;
-		if (authStore.isLoading) return;
-		if (!userEmail) return;
-		let cancelled = false;
+		const hid = normalizeHouseholdId(profile?.householdId);
+
+		if (
+			!guardsPassForHouseholdLoad({
+				browser,
+				authLoading: authStore.isLoading,
+				userEmail,
+			})
+		) {
+			loadBusy = false;
+			return;
+		}
+
+		const gen = ++loadGeneration;
+		const abortController = new AbortController();
 		loadErr = '';
 		loadBusy = true;
-		(async () => {
+
+		void (async () => {
 			try {
-				const p = profile;
-				const hid = p?.householdId && String(p.householdId).trim() ? String(p.householdId) : '';
-				if (!hid) {
-					if (!cancelled) {
-						householdId = '';
-						coppaAt = null;
-						coppaSigned = false;
-						operativeRows = [];
-						loadBusy = false;
-					}
-					return;
-				}
-				if (cancelled) return;
-				const snap = await getDoc(doc(db, 'households', hid));
-				if (cancelled) return;
-				householdId = hid;
-				if (snap.exists()) {
-					const d = snap.data() || {};
-					coppaSigned = d.coppaSigned === true;
-					coppaAt = d.coppaSignedAt ?? null;
-					operativeRows = await buildEnrichedOperativeRows(db, d);
-				} else {
-					coppaSigned = false;
-					coppaAt = null;
-					operativeRows = [];
-				}
+				const result = await fetchHouseholdClearance(db, hid, {
+					signal: abortController.signal,
+				});
+				if (gen !== loadGeneration) return;
+				householdId = result.householdId;
+				coppaSigned = result.coppaSigned;
+				coppaAt = result.coppaAt;
+				operativeRows = result.operativeRows;
+				loadErr = result.loadErr;
 			} catch (e) {
-				if (!cancelled) loadErr = e instanceof Error ? e.message : 'Read failed';
+				if (abortController.signal.aborted || gen !== loadGeneration) return;
+				loadErr = e instanceof Error ? e.message : 'Read failed';
 			} finally {
-				if (!cancelled) loadBusy = false;
+				if (shouldClearLoadBusy(gen === loadGeneration)) {
+					loadBusy = false;
+				}
 			}
 		})();
 
 		return () => {
-			cancelled = true;
+			abortController.abort();
 		};
 	});
 

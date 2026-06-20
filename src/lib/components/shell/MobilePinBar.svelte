@@ -21,7 +21,7 @@
 		onNavClick?: (href: string, e: MouseEvent) => void;
 		onMenuOpen: () => void;
 		onPinLongPress: (slotIndex: 0 | 1 | 2) => void;
-		onSwipeUp?: () => void;
+		showMenuSlot?: boolean;
 	}
 
 	let {
@@ -37,14 +37,10 @@
 		onNavClick,
 		onMenuOpen,
 		onPinLongPress,
-		onSwipeUp,
+		showMenuSlot = false,
 	}: Props = $props();
 
 	const LONG_PRESS_MS = 500;
-	const SWIPE_THRESHOLD_PX = 44;
-
-	let touchStartY = $state(0);
-	let touchStartX = $state(0);
 	let longPressTimer: ReturnType<typeof setTimeout> | null = null;
 	let longPressSlot = $state<0 | 1 | 2 | null>(null);
 
@@ -75,22 +71,6 @@
 		clearLongPressTimer();
 	}
 
-	function onBarTouchStart(e: TouchEvent) {
-		const t = e.touches[0];
-		if (!t) return;
-		touchStartY = t.clientY;
-		touchStartX = t.clientX;
-	}
-
-	function onBarTouchEnd(e: TouchEvent) {
-		if (!onSwipeUp) return;
-		const t = e.changedTouches[0];
-		if (!t) return;
-		const dy = touchStartY - t.clientY;
-		const dx = Math.abs(t.clientX - touchStartX);
-		if (dy >= SWIPE_THRESHOLD_PX && dx < dy) onSwipeUp();
-	}
-
 	function handleNavClick(href: string, e: MouseEvent) {
 		onNavClick?.(href, e);
 	}
@@ -105,8 +85,6 @@
 	class:mobile-pin-bar--accent-neutral={accent === 'neutral'}
 	class:mobile-pin-bar--accent-gold={accent === 'gold'}
 	aria-label="Main navigation"
-	ontouchstart={onBarTouchStart}
-	ontouchend={onBarTouchEnd}
 >
 	<div class="mobile-pin-bar__row" role="tablist">
 		{#each pins as href, slotIndex (slotIndex)}
@@ -152,15 +130,17 @@
 			{/if}
 		{/each}
 
-		<button
-			type="button"
-			class="mobile-pin-bar__slot mobile-pin-bar__slot--menu"
-			aria-label="Open menu"
-			onclick={onMenuOpen}
-		>
-			<Icon name="nav.menu" size={22} />
-			<span class="mobile-pin-bar__label">Menu</span>
-		</button>
+		{#if showMenuSlot}
+			<button
+				type="button"
+				class="mobile-pin-bar__slot mobile-pin-bar__slot--menu"
+				aria-label="Open menu"
+				onclick={onMenuOpen}
+			>
+				<Icon name="nav.menu" size={22} />
+				<span class="mobile-pin-bar__label">Menu</span>
+			</button>
+		{/if}
 	</div>
 </nav>
 

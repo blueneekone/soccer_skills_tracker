@@ -93,9 +93,15 @@
 		to   { opacity: 1; transform: translate(-50%, 0); }
 	}
 
+	@media (max-width: 1023.98px) {
+		.ob-root {
+			bottom: calc(56px + env(safe-area-inset-bottom, 0px) + 8px);
+			z-index: 940;
+		}
+	}
+
 	@media (max-width: 640px) {
 		.ob-root {
-			bottom: 12px;
 			padding: 6px 12px;
 			font-size: 0.75rem;
 		}

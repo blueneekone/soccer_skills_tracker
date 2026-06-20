@@ -232,3 +232,16 @@
 .parent-os-root .parent-lounge-page-head {
 	margin-bottom: 1rem;
 }
+
+/* Field mode (<1024px): Option D pin bar + AppMenuSheet only — hide desk sticky tabs */
+@media (max-width: 1023.98px) {
+	.parent-os-root .parent-lounge-z4-nav {
+		display: none !important;
+	}
+
+	.parent-os-root .parent-lounge-z1-well {
+		margin: 0;
+		padding: var(--parent-lounge-inset, 16px);
+		padding-bottom: calc(56px + env(safe-area-inset-bottom, 0px) + var(--parent-lounge-inset, 16px));
+	}
+}

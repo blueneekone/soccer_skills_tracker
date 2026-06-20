@@ -1,7 +1,7 @@
 # Platform Navigation Canon
 
 **Navigation layout law** — app-native mobile-first chrome for all personas, persona-locked skins, single primary nav surface per viewport.  
-**Project:** `sports-skill-tracker-dev` · **Slice:** NAV-OPTION-D  
+**Project:** `sports-skill-tracker-dev` · **Slice:** NAV-OPTION-D · **Polish:** NAV-OPTION-D-POLISH  
 **Nav link source of truth:** [`PRODUCT_SURFACE_REGISTRY.md`](./PRODUCT_SURFACE_REGISTRY.md) §2 → [`navPinCatalog.ts`](../../src/lib/shell/navPinCatalog.ts) (field pins + AppMenuSheet) · [`workspaceNav.js`](../../src/lib/shell/workspaceNav.js) (desk sidebar)
 
 ---
@@ -26,8 +26,8 @@
 
 Exactly **one persistent primary navigation surface** per viewport.
 
-- **Field mode (<1024px):** full-width fixed **bottom pin bar** (Option D) — **3 user-customizable pins** + fixed **Menu** slot.
-- **Full nav:** **AppMenuSheet** (Menu tap + swipe-up from bottom edge) — all Tier 1 + Tier 2 catalog items + system actions.
+- **Field mode (<1024px):** full-width fixed **bottom pin bar** (Option D) — **3 user-customizable pins** + optional **Menu** slot (`showMenuSlot`, default off in `MobilePinBar`; shells pass `true`).
+- **Full nav:** **AppMenuSheet** (Menu tap when slot enabled + **swipe-up from bottom-edge** on `ps-root` / `ec-root`) — all Tier 1 + Tier 2 catalog items + system actions.
 - **Desk mode (≥1024px):** left sidebar (enterprise) or left rail (player) — bottom bar hidden.
 
 Reject: top mobile header + bottom bar + off-canvas sidebar on field viewports (triple chrome).
@@ -54,9 +54,10 @@ Navigation separates **chrome grammar** (interaction) from **skin grammar** (vis
 ### §3a Chrome grammar (universal field mode)
 
 - App-native, mobile-first, **Option D**
-- Full-width fixed bottom pin bar: **3 customizable pins** + **Menu** slot with safe-area inset
+- Full-width fixed bottom pin bar: **3 customizable pins** + optional **Menu** slot (`showMenuSlot`)
 - **44px** minimum touch targets on bar items
 - **AppMenuSheet** for full catalog — pins are a subset of catalog only (duplicate href highlight OK)
+- **Bottom-edge swipe detector** on shell roots (`fieldMenuSwipe.ts`, 80px zone, 44px threshold) — not limited to pin bar width
 - Long-press pin slot → sheet in **pick-pin** mode; **Reset to defaults** in sheet footer
 - Persistence: `localStorage` + Firestore `users/{email}.mobileNavPins[personaKey]`
 - Native document scroll; content inset reserves space for fixed chrome (see §6)
@@ -126,8 +127,12 @@ Sheet sections (top → bottom). Items on bottom pins also appear in sheet (dim/
 
 - **No** `ec-mobile-header` on field viewports
 - **No** off-canvas `ec-sidebar` on field viewports
-- Menu tap **or** swipe-up (44px threshold) opens `AppMenuSheet`
-- Desk ≥1024: left sidebar unchanged (`workspaceNav.js`)
+- **No** floating `ReportAnomaly` alpha trigger on field — anomaly via **AppMenuSheet** (field) or **desktop sidebar** only
+- **No** `ec-cmd-trigger` / ⌘K command palette on field — desk ≥1024 only
+- **No** `MobileDirectorFab` on field — route quick actions live in **AppMenuSheet → Quick actions**
+- Menu tap (when `showMenuSlot`) **or** swipe-up from bottom edge opens `AppMenuSheet`
+- `OfflineBanner` sits **above** pin bar on field: `bottom: calc(56px + safe-area + 8px)` — not visually merged with nav chrome
+- Desk ≥1024: left sidebar unchanged (`workspaceNav.js`); floating alpha + ⌘K palette OK on desk
 
 ---
 
@@ -163,9 +168,11 @@ Full radar / telemetry bands below fold. Gold path: GP-ACQ-04a · QA-101, QA-106
 
 | Shell | Field bottom inset | Desk inset |
 |-------|-------------------|------------|
-| `EnterpriseConsoleShell` | `padding-bottom` for pin bar + safe-area (+ director FAB when present) | Sidebar width only |
+| `EnterpriseConsoleShell` | `padding-bottom` for pin bar + safe-area | Sidebar width only |
 | `PlayerShell` | `--pp-bottomnav-height` for dossier pin bar | `--pp-rail-width` left rail |
 | Parent (enterprise chrome) | Same as enterprise field | Same as enterprise desk |
+
+**OfflineBanner (field):** fixed above pin bar — `calc(56px + env(safe-area-inset-bottom) + 8px)`; sync state capped at 15s if `waitForPendingWrites` hangs.
 
 **Forbid** route-level `tw-fixed tw-bottom-*` nav — chrome lives in shells only.
 
@@ -186,6 +193,10 @@ Full radar / telemetry bands below fold. Gold path: GP-ACQ-04a · QA-101, QA-106
 | War Room `/coach/tactical` in coach sheet | Tier 2 deep-link only |
 | 768px Player rail breakpoint | Deprecate — target 1024px per §2 |
 | Recruiter excluded from staff field chrome | Staff admin bucket includes recruiter |
+| Floating alpha `ReportAnomaly` on field | AppMenuSheet + desk sidebar only |
+| `ec-cmd-trigger` / ⌘K on field | Desk-only search & jump |
+| `MobileDirectorFab` on field | Quick actions in AppMenuSheet |
+| Pin-bar-only swipe-up | Root bottom-edge detector on `ps-root` / `ec-root` |
 
 ---
 

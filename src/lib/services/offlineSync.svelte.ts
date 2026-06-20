@@ -40,6 +40,9 @@ import { browser } from '$app/environment';
 import { getActiveDb } from '$lib/firebase.js';
 import { waitForPendingWrites } from 'firebase/firestore';
 
+/** Cap sync banner duration when waitForPendingWrites hangs (field polish). */
+const SYNC_FLUSH_TIMEOUT_MS = 10_000;
+
 class SyncStatus {
 	/** Mirrors `navigator.onLine`; defaults true on SSR so flagged UI is hidden. */
 	isOnline = $state(true);
@@ -112,7 +115,12 @@ class SyncStatus {
 			// at a time, so a single waitForPendingWrites against the
 			// active cell is the correct contract.
 			const db = getActiveDb();
-			await waitForPendingWrites(db);
+			await Promise.race([
+				waitForPendingWrites(db),
+				new Promise<never>((_, reject) => {
+					setTimeout(() => reject(new Error('sync flush timeout')), SYNC_FLUSH_TIMEOUT_MS);
+				}),
+			]);
 			const flushedAt = new Date();
 			this.lastSyncedAt = flushedAt;
 			this.isSyncing = false;
@@ -123,7 +131,13 @@ class SyncStatus {
 				}),
 			);
 		} catch (err) {
-			console.warn('[offlineSync] waitForPendingWrites failed — will retry on next reconnect:', err);
+			const timedOut = err instanceof Error && err.message === 'sync flush timeout';
+			console.warn(
+				timedOut
+					? '[offlineSync] waitForPendingWrites timed out — clearing sync banner'
+					: '[offlineSync] waitForPendingWrites failed — will retry on next reconnect:',
+				err,
+			);
 			this.isSyncing = false;
 		}
 	}

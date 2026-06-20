@@ -57,6 +57,21 @@ async function persistFirestore(
 	}
 }
 
+let firestoreSyncTimer: ReturnType<typeof setTimeout> | null = null;
+
+function scheduleFirestoreSync(
+	email: string,
+	personaKey: NavPersonaKey,
+	pins: PinTriple,
+	existing?: Record<string, PinTriple>,
+): void {
+	if (firestoreSyncTimer) clearTimeout(firestoreSyncTimer);
+	firestoreSyncTimer = setTimeout(() => {
+		firestoreSyncTimer = null;
+		void persistFirestore(email, personaKey, pins, existing);
+	}, 500);
+}
+
 let pins = $state<PinTriple>([null, null, null]);
 let activePersonaKey = $state<NavPersonaKey>('player');
 let activeUid = $state('');
@@ -71,7 +86,7 @@ function savePins(next: PinTriple): void {
 	applyPins(next);
 	if (activeUid) writeLocalPins(activeUid, activePersonaKey, next);
 	if (activeEmail) {
-		void persistFirestore(activeEmail, activePersonaKey, next, firestoreSnapshot);
+		scheduleFirestoreSync(activeEmail, activePersonaKey, next, firestoreSnapshot);
 	}
 }
 
