@@ -15,6 +15,7 @@ export function baseRowsFromHousehold(d: Record<string, unknown>): HouseholdOper
 	const pe = Array.isArray(d.playerEmails) ? d.playerEmails : [];
 	const pnames = Array.isArray(d.playerNames) ? d.playerNames : [];
 	const pcall = Array.isArray(d.playerCallsigns) ? d.playerCallsigns : [];
+	const seen = new Set<string>();
 	return pe
 		.map((em, i) => {
 			const email = String(em || '')
@@ -33,7 +34,11 @@ export function baseRowsFromHousehold(d: Record<string, unknown>): HouseholdOper
 				name: nm || (email ? email.split('@')[0] : 'Operative'),
 			};
 		})
-		.filter((r) => r.email);
+		.filter((r) => {
+			if (!r.email || seen.has(r.email)) return false;
+			seen.add(r.email);
+			return true;
+		});
 }
 
 /** Loads gamertag + dispatch metadata for one operative row. */

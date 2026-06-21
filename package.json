@@ -14,6 +14,8 @@
     "preview": "vite preview",
     "check": "svelte-check --tsconfig ./jsconfig.json --threshold error",
     "test": "vitest run",
+    "test:regression:acquisition": "vitest run src/lib/platform/__tests__/acquisitionRegression.guard.test.ts src/lib/registrar/__tests__/launchP0Fixes.test.ts src/lib/parent/__tests__/householdOperatives.test.ts src/lib/parent/__tests__/householdClearanceLoad.test.ts src/lib/player/dashboard/__tests__/activeBounties.test.ts src/lib/shell/__tests__/fieldMenuSheet.test.ts src/lib/platform/__tests__/parentNavWorkflow.guard.test.ts src/lib/gamification/__tests__/personaFunctionalMvp.test.ts",
+    "audit:pre-deploy": "node scripts/regression-audit.cjs",
     "test:firestore-rules": "npx firebase-tools@latest emulators:exec --only firestore --project sst-sprint-13-rules \"vitest run src/lib/security/__tests__/firestoreTenantIsolation.test.ts src/lib/security/__tests__/loopIntegrityGuards.test.ts src/lib/security/__tests__/firestoreRulesSprint412.test.ts\"",
     "deploy:comms": "firebase deploy --only \"functions:safeSportBroadcast,functions:clubSportBroadcast,functions:reportMessageIncident,functions:sendCoachPlayerMessage,functions:sendChannelMessage,functions:sendHouseholdMessage,functions:onTeamBroadcastCreated,functions:onDeploymentCalendarEntryCreated,functions:sendScheduledEventReminders,functions:sendRegistrationPaymentReminders,functions:coachProvisionParentLounge,functions:registerDeviceToken\"",
     "deploy:comms-triggers": "firebase deploy --only \"functions:onTeamBroadcastCreated,functions:onDeploymentCalendarEntryCreated\"",

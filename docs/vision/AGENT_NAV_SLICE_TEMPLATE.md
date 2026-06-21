@@ -8,18 +8,29 @@ Authority: [`PLATFORM_NAVIGATION_CANON.md`](./PLATFORM_NAVIGATION_CANON.md) · [
 
 ## Before merge
 
-1. Run behavioral guards (not string-only):
+1. Run acquisition regression bundle (behavioral + guards — fail closed):
 
 ```bash
-npm test -- src/lib/platform/__tests__/platformNavigationCanon.test.ts \
-  src/lib/platform/__tests__/parentNavWorkflow.guard.test.ts \
-  src/lib/shell/__tests__/fieldMenuSheet.test.ts \
-  src/lib/parent/__tests__/householdClearanceLoad.test.ts
+npm run test:regression:acquisition && npm run build
+```
+
+Optional full local audit (includes `npm run check`):
+
+```bash
+npm run audit:pre-deploy
+```
+
+Nav-only slices may additionally run:
+
+```bash
+npm test -- src/lib/platform/__tests__/platformNavigationCanon.test.ts
 ```
 
 2. Deploy hosting to `sports-skill-tracker-dev` if shell/nav/parent routes changed.
 
-3. **Do not** check Phase 4b boxes or mark GP-ACQ-01 **Pass** — owner retest only.
+3. **After deploy:** `npm run smoke:dev` (network probes — complements vitest bundle).
+
+4. **Do not** mark slice done or check Phase 4b boxes if regression bundle regressed. **Do not** mark GP-ACQ-01 **Pass** — owner retest only.
 
 ---
 

@@ -59,11 +59,14 @@ Use these names — **not** IdentityModule, TelemetryPanel, or BentoGrid:
 **Per ROADMAP slice (mandatory loop — do not batch slices):**
 
 1. `npm test -- <paths from ROADMAP sprint>`
-2. `npm run build` (skip `npm run check` only if failures are pre-existing and unrelated to the slice)
-3. **Deploy to `sports-skill-tracker-dev`** — this Firebase project **is production / live-fire** for owner QA (not a throwaway sandbox). Default: hosting + rules + the sprint's `deploy:*` script(s).
-4. **One git commit per slice** — commit immediately after deploy succeeds; never combine multiple ROADMAP rows (e.g. LAUNCH-rsvp + LAUNCH-tryouts-a) into one commit.
+2. **Before merge/deploy:** `npm run test:regression:acquisition && npm run build` (or `npm run audit:pre-deploy` for check + build). **Fail closed** — do not mark slice done if regression bundle regressed.
+3. **After deploy:** `npm run smoke:dev` (network probes complement vitest guards).
+4. `npm run build` (skip `npm run check` only if failures are pre-existing and unrelated to the slice; `audit:pre-deploy` runs check when used)
+5. **Deploy to `sports-skill-tracker-dev`** — this Firebase project **is production / live-fire** for owner QA (not a throwaway sandbox). Default: hosting + rules + the sprint's `deploy:*` script(s).
+6. **One git commit per slice** — commit immediately after deploy succeeds; never combine multiple ROADMAP rows (e.g. LAUNCH-rsvp + LAUNCH-tryouts-a) into one commit.
 
 ```bash
+npm run test:regression:acquisition && npm run build
 npm test -- <paths from ROADMAP sprint>
 npm run build
 # nav / shell canon slices:

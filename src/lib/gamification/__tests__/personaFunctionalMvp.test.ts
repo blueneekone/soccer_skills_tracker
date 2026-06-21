@@ -168,7 +168,7 @@ describe('Sprint LAUNCH-functional-os — Coach→Player bounty handoff', () => 
 		expect(coachIntents).toMatch(/bountyFromCoachIntent/);
 		expect(src).toMatch(/fetchCoachIntentQuests|mapCoachIntentRows/);
 		expect(src).toMatch(/deduplicateById/);
-		expect(src).toMatch(/stashMissionHandoff/);
+		expect(src).toMatch(/stashQuestTrainHandoff/);
 	});
 
 	it('QA-142 ActiveBounties refreshes stale JWT team scope before mission subscribe', () => {
@@ -597,16 +597,20 @@ describe('Functional audit — E-series coach/director mounts', () => {
 
 describe('Player/parent launch — discoverability and payment refresh', () => {
 	it('PlayerShell bottom rail includes Comms → /messages', () => {
-		const src = readFileSync(join(ROOT, 'lib/components/shell/PlayerShell.svelte'), 'utf-8');
-		expect(src).toMatch(/href:\s*'\/messages'/);
-		expect(src).toMatch(/label:\s*'Comms'/);
+		const nav = readFileSync(join(ROOT, 'lib/player/shell/playerPrimaryNav.ts'), 'utf-8');
+		const shell = readFileSync(join(ROOT, 'lib/components/shell/PlayerShell.svelte'), 'utf-8');
+		expect(nav).toMatch(/href:\s*'\/messages'/);
+		expect(nav).toMatch(/label:\s*'Comms'/);
+		expect(shell).toContain('playerRailNav');
 	});
 
 	it('PlayerShell bottom rail includes Tracker → /player/tracker', () => {
-		const src = readFileSync(join(ROOT, 'lib/components/shell/PlayerShell.svelte'), 'utf-8');
-		expect(src).toMatch(/href:\s*'\/player\/tracker'/);
-		expect(src).toMatch(/label:\s*'Tracker'/);
-		expect(src).toMatch(/icon:\s*'game\.zap'/);
+		const nav = readFileSync(join(ROOT, 'lib/player/shell/playerPrimaryNav.ts'), 'utf-8');
+		const shell = readFileSync(join(ROOT, 'lib/components/shell/PlayerShell.svelte'), 'utf-8');
+		expect(nav).toMatch(/href:\s*'\/player\/tracker'/);
+		expect(nav).toMatch(/label:\s*'Tracker'/);
+		expect(nav).toMatch(/icon:\s*'game\.zap'/);
+		expect(shell).toContain('playerRailNav');
 	});
 
 	it('PlayerShell rail exposes always-visible sign out for QA account switching', () => {
