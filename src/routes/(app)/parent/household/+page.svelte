@@ -44,6 +44,7 @@
 	const parentSignCoppaWaiver = httpsCallable(functions, 'parentSignCoppaWaiver');
 	const parentProvisionOperative = httpsCallable(functions, 'parentProvisionOperative');
 	const parentLinkOperativeToTeam = httpsCallable(functions, 'parentLinkOperativeToTeam');
+	const parentReconcileHousehold = httpsCallable(functions, 'parentReconcileHousehold');
 	const generatePlayerOTP = httpsCallable(functions, 'generatePlayerOTP');
 
 	const role = $derived(authStore.role);
@@ -284,6 +285,11 @@
 		void (async () => {
 			try {
 				// Match /parent/vpc — default `db` for households/{id} reads (not getActiveDb cell routing).
+				try {
+					await parentReconcileHousehold({});
+				} catch {
+					/* non-fatal — still load household doc below */
+				}
 				const result = await fetchHouseholdClearance(db, hid);
 				if (cancelled || gen !== clearanceFetchGeneration) return;
 				householdId = result.householdId;

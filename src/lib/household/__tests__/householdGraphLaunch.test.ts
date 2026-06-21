@@ -43,6 +43,26 @@ describe('LAUNCH-household-graph — guardian visibility', () => {
 		expect(src).toMatch(/stampAllPlayerLookupGuardians/);
 	});
 
+	it('generatePlayerOTP reconciles household membership before rejecting', () => {
+		const membership = readFileSync(
+			join(process.cwd(), 'functions/src/domains/householdMembership.js'),
+			'utf-8',
+		);
+		const ops = readFileSync(
+			join(process.cwd(), 'functions/src/domains/operativeOps.js'),
+			'utf-8',
+		);
+		const page = readFileSync(
+			join(ROOT, 'routes/(app)/parent/household/+page.svelte'),
+			'utf-8',
+		);
+		expect(membership).toMatch(/repairHouseholdMembership/);
+		expect(membership).toMatch(/reconcileParentHouseholdGraph/);
+		expect(ops).toMatch(/parentReconcileHousehold/);
+		expect(ops).toMatch(/assertChildInParentHousehold\(actor, childUid, childEm\)/);
+		expect(page).toMatch(/parentReconcileHousehold/);
+	});
+
 	it('coach CommandCenter shows guardian and VPC roster columns', () => {
 		const src = readFileSync(
 			join(ROOT, 'lib/components/coach/CommandCenter.svelte'),
