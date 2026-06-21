@@ -2,6 +2,7 @@ import { browser } from '$app/environment';
 import { goto } from '$app/navigation';
 import { signOut } from 'firebase/auth';
 import { auth } from '$lib/firebase.js';
+import { fieldMenu } from '$lib/stores/fieldMenu.svelte.js';
 import { brandingStore } from '$lib/stores/branding.svelte.js';
 import { clubBrandingStore } from '$lib/stores/clubBranding.svelte.js';
 import { teamsStore } from '$lib/stores/teams.svelte.js';
@@ -34,6 +35,7 @@ export async function handleSignOut(opts = {}) {
 	}
 
 	try {
+		fieldMenu.close();
 		await goto(loginPath, { replaceState: true });
 		await signOut(auth);
 	} catch (e) {

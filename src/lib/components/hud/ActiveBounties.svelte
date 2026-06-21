@@ -12,10 +12,13 @@
 		where,
 	} from 'firebase/firestore';
 	import { db } from '$lib/firebase.js';
-	import { MissionSnapshotRetryGate } from '$lib/player/dashboard/missionRailAuth.js';
+	import {
+		MissionSnapshotRetryGate,
+	} from '$lib/player/dashboard/missionRailAuth.js';
 	import { fetchCoachIntentQuests, mapCoachIntentRows, coachIntentRemovalDelta, applyCoachIntentPurge, applyCoachIntentRefetch } from '$lib/player/dashboard/missionRailCoachIntents.js';
 	import { MissionRailClaimsSync } from '$lib/player/dashboard/missionRailClaims.svelte.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
+	import { workspaceContextStore } from '$lib/stores/workspaceContext.svelte.js';
 	import { dopamineExplosion } from '$lib/services/dopamine.svelte.js';
 	import HudSeededRingCanvas from '$lib/components/hud/HudSeededRingCanvas.svelte';
 	import { deduplicateById } from '$lib/utils/deduplicateMissions.js';
@@ -247,14 +250,18 @@
 
 	const playerUid = $derived(authStore.user?.uid ?? '');
 	const playerEmail = $derived((authStore.user?.email || '').toLowerCase());
-	const teamId = $derived(
+	const profileTeamId = $derived(
 		typeof authStore.userProfile?.teamId === 'string' ? authStore.userProfile.teamId.trim() : '',
+	);
+	const teamId = $derived(
+		missionClaimsSync.resolveTeamId(profileTeamId, workspaceContextStore.activeTeamId),
 	);
 	const clubId = $derived(
 		typeof authStore.userProfile?.clubId === 'string' ? authStore.userProfile.clubId.trim() : '',
 	);
 
-	$effect(() => missionClaimsSync.watch(teamId, clubId));
+	$effect(() => missionClaimsSync.watch(profileTeamId, clubId));
+	$effect(() => missionClaimsSync.watchClaimsAheadOfProfile(profileTeamId));
 
 	$effect(() => {
 		if (questsProp !== undefined) return;

@@ -62,6 +62,46 @@ export class MissionSnapshotRetryGate {
 	}
 }
 
+/** Prefer profile team, then workspace cache, then JWT (operative link may stamp claims first). */
+export function pickMissionRailTeamId(
+	profileTeamId: string,
+	workspaceTeamId = '',
+	claimTeamId = '',
+): string {
+	for (const raw of [profileTeamId, workspaceTeamId, claimTeamId]) {
+		const t = raw.trim();
+		if (t && t !== 'admin') return t;
+	}
+	return '';
+}
+
+/** Read teamId from current ID token without forcing refresh. */
+export async function readTokenTeamId(): Promise<string> {
+	if (!browser || !auth.currentUser) return '';
+	try {
+		const tr = await getIdTokenResult(auth.currentUser, false);
+		return typeof tr.claims.teamId === 'string' ? tr.claims.teamId.trim() : '';
+	} catch {
+		return '';
+	}
+}
+
+/** Refresh profile when JWT has team scope but Firestore profile does not (parent team-link handoff). */
+export async function refreshProfileIfClaimsTeamAhead(
+	profileTeamId: string,
+): Promise<boolean> {
+	if (!browser || !auth.currentUser) return false;
+	if (profileTeamId.trim()) return false;
+	try {
+		const claimTeam = await readTokenTeamId();
+		if (!claimTeam || claimTeam === 'admin') return false;
+		await authStore.refresh({ silent: true });
+		return true;
+	} catch {
+		return false;
+	}
+}
+
 /** @deprecated Prefer MissionSnapshotRetryGate — factory resets state on every call. */
 export function createMissionSnapshotRetryHandler(
 	onRetry: () => void,

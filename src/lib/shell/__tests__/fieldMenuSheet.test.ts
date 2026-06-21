@@ -122,4 +122,18 @@ describe('field menu sheet portal guards', () => {
 	it('AppMenuSheet has no desk-only display:none (field-only mount)', () => {
 		expect(menuSheet).not.toMatch(/@media\s*\(\s*min-width:\s*1024px\s*\)[\s\S]*display:\s*none/);
 	});
+
+	it('signOut closes field menu before navigation (signOutFlow + AppMenuSheet)', () => {
+		const signOutFlow = readFileSync(join(ROOT, 'lib/auth/signOutFlow.js'), 'utf-8');
+		expect(signOutFlow).toMatch(/fieldMenu\.close\(\)/);
+		expect(signOutFlow).toMatch(/fieldMenu\.close\(\)[\s\S]*goto\(loginPath/);
+		expect(menuSheet).toMatch(/async function disconnect\(\)[\s\S]*fieldMenu\.close\(\)/);
+	});
+
+	it('browse mode exposes Pin to bar / Unpin wired to navPinsStore', () => {
+		expect(menuSheet).toContain('navPinsStore');
+		expect(menuSheet).toMatch(/Pin to bar/);
+		expect(menuSheet).toMatch(/Unpin/);
+		expect(menuSheet).toMatch(/navPinsStore\.setPin/);
+	});
 });

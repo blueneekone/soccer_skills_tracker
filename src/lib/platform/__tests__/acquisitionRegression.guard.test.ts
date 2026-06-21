@@ -140,10 +140,11 @@ describe('NAV / menu Phase 4b — field chrome regression guards', () => {
 		expect(fieldMenu.openedAt).toBe(Date.now());
 	});
 
-	it('sign-out flow closes field menu sheet (AppMenuSheet disconnect → onDismiss)', () => {
+	it('sign-out flow closes field menu sheet (signOutFlow closes before goto)', () => {
 		expect(menuSheet).toContain("import { handleSignOut } from '$lib/auth/signOutFlow.js'");
-		expect(menuSheet).toMatch(/async function disconnect\(\)[\s\S]*await handleSignOut\(\)[\s\S]*onDismiss\(\)/);
-		expect(readFileSync(SIGN_OUT_FLOW, 'utf-8')).toContain('export async function handleSignOut');
+		expect(menuSheet).toMatch(/async function disconnect\(\)[\s\S]*fieldMenu\.close\(\)/);
+		const signOutFlow = readFileSync(SIGN_OUT_FLOW, 'utf-8');
+		expect(signOutFlow).toMatch(/fieldMenu\.close\(\)[\s\S]*goto\(loginPath/);
 	});
 
 	it('AppMenuSheet dismissSheet respects fieldMenuDismissBlocked', () => {
@@ -162,7 +163,11 @@ describe('NAV / menu Phase 4b — field chrome regression guards', () => {
 			pinBar.includes('onPinLongPress') &&
 			pinBar.includes('LONG_PRESS_MS') &&
 			/long press/i.test(pinBar);
-		expect(hasPickPinMode || hasLongPressPinBar).toBe(true);
+		const hasBrowsePinActions =
+			menuSheet.includes('Pin to bar') &&
+			menuSheet.includes('Unpin') &&
+			menuSheet.includes('navPinsStore.setPin');
+		expect(hasPickPinMode || hasLongPressPinBar || hasBrowsePinActions).toBe(true);
 		expect(pinBar).toMatch(/aria-label="Pin a route — long press to customize"/);
 	});
 });

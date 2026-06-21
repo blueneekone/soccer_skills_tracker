@@ -125,3 +125,13 @@ describe('LAUNCH-parent-link-team — parentLinkOperativeToTeam + household UI',
 		expect(fnBlock).toMatch(/role:\s*'player'/);
 	});
 });
+
+describe('PARENT-DISPATCH-6064 — household page Firestore db consistency', () => {
+	it('household operative reads use default db — not getActiveDb cell routing', () => {
+		const src = readFileSync(HOUSEHOLD, 'utf8');
+		expect(src).toMatch(/fetchHouseholdClearance\(db,\s*hid\)/);
+		expect(src).toMatch(/loadHouseholdOperativeRows\(db,\s*householdId\)/);
+		expect(src).toMatch(/buildEnrichedOperativeRows\(db,\s*hs\.data\(\)/);
+		expect(src).not.toMatch(/getActiveDb\(\)/);
+	});
+});

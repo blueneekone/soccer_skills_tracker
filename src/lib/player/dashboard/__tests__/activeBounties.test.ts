@@ -486,4 +486,21 @@ describe('B4b — advisory parent-verified badge: bountyFromCoachIntent is unaff
 		expect(WORKOUT_SRC).toMatch(/returnToHq:\s*true/);
 		expect(WORKOUT_SRC).toMatch(/goto\(resolveAppPath\(WORKOUT_HQ_RETURN_PATH\)\)/);
 	});
+
+	it('GP-ACQ-03: ActiveBounties resolves teamId via pickMissionRailTeamId + fetchCoachIntentQuests', () => {
+		const { readFileSync } = require('fs');
+		const { join } = require('path');
+		const AB_SRC = readFileSync(
+			join(__dirname, '../../../components/hud/ActiveBounties.svelte'),
+			'utf-8',
+		);
+		const RAIL_SRC = readFileSync(
+			join(__dirname, '../missionRailCoachIntents.ts'),
+			'utf-8',
+		);
+		expect(AB_SRC).toMatch(/missionClaimsSync\.resolveTeamId/);
+		expect(AB_SRC).toMatch(/fetchCoachIntentQuests\(db,\s*tid/);
+		expect(AB_SRC).toMatch(/deduplicateById\(sortedQuests\)/);
+		expect(RAIL_SRC).toMatch(/collection\(db,\s*['"]team_assignments['"]\)/);
+	});
 });

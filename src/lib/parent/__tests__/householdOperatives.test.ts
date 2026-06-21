@@ -25,4 +25,15 @@ describe('householdOperatives', () => {
 		expect(rows[0]?.callsign).toBe('nova');
 		expect(rows[0]?.name).toBe('nova');
 	});
+
+	it('baseRowsFromHousehold dedupes duplicate playerEmails by normalized email', () => {
+		const rows = baseRowsFromHousehold({
+			playerEmails: ['ace@operative.local', 'ACE@operative.local', 'ace@operative.local'],
+			playerNames: ['Ace One', 'Ace Two', 'Ace Three'],
+			playerCallsigns: ['ace_one', 'ace_two', 'ace_three'],
+		});
+		expect(rows).toHaveLength(1);
+		expect(rows[0]?.email).toBe('ace@operative.local');
+		expect(rows[0]?.name).toBe('Ace One');
+	});
 });

@@ -12,6 +12,7 @@
 	import type { FieldQuickAction } from '$lib/shell/fieldQuickActions.js';
 	import type { IconName } from '$lib/icons/registry.js';
 	import { fieldMenu, fieldMenuDismissBlocked, FIELD_MENU_DISMISS_GUARD_MS } from '$lib/stores/fieldMenu.svelte.js';
+	import { navPinsStore } from '$lib/stores/navPins.svelte.js';
 
 	interface Props {
 		open: boolean;
@@ -75,14 +76,40 @@
 		onDismiss();
 	}
 
+	function pinSlotIndexForHref(href: string): 0 | 1 | 2 | 3 | -1 {
+		const idx = navPinsStore.pins.findIndex((p) => p === href);
+		return idx >= 0 ? (idx as 0 | 1 | 2 | 3) : -1;
+	}
+
+	function firstEmptyPinSlot(): 0 | 1 | 2 | 3 | null {
+		for (let i = 0; i < 4; i++) {
+			if (navPinsStore.pins[i] === null) return i as 0 | 1 | 2 | 3;
+		}
+		return null;
+	}
+
+	function pinToBar(href: string, e: MouseEvent) {
+		e.preventDefault();
+		e.stopPropagation();
+		const slot = firstEmptyPinSlot();
+		if (slot !== null) navPinsStore.setPin(slot, href);
+	}
+
+	function unpinFromBar(href: string, e: MouseEvent) {
+		e.preventDefault();
+		e.stopPropagation();
+		const idx = pinSlotIndexForHref(href);
+		if (idx >= 0) navPinsStore.setPin(idx, null);
+	}
+
 	async function disconnect() {
 		if (signingOut) return;
 		signingOut = true;
 		try {
+			fieldMenu.close();
 			await handleSignOut();
 		} finally {
 			signingOut = false;
-			onDismiss();
 		}
 	}
 
@@ -215,21 +242,37 @@
 									{/if}
 								</button>
 							{:else}
-								<a
-									class="app-menu-sheet__link"
-									class:app-menu-sheet__link--active={active}
-									class:app-menu-sheet__link--pinned-dim={pinned}
-									href={item.href}
-									data-sveltekit-reload
-									data-sveltekit-preload-data="hover"
-									onclick={() => onDismiss()}
-								>
-									<Icon name={item.icon as IconName} size={20} />
-									<span>{item.label}</span>
+								<div class="app-menu-sheet__link-row">
+									<a
+										class="app-menu-sheet__link"
+										class:app-menu-sheet__link--active={active}
+										class:app-menu-sheet__link--pinned-dim={pinned}
+										href={item.href}
+										data-sveltekit-reload
+										data-sveltekit-preload-data="hover"
+										onclick={() => onDismiss()}
+									>
+										<Icon name={item.icon as IconName} size={20} />
+										<span>{item.label}</span>
+									</a>
 									{#if pinned}
-										<span class="app-menu-sheet__badge app-menu-sheet__badge--dim">Pin</span>
+										<button
+											type="button"
+											class="app-menu-sheet__pin-action"
+											onclick={(e) => unpinFromBar(item.href, e)}
+										>
+											Unpin
+										</button>
+									{:else}
+										<button
+											type="button"
+											class="app-menu-sheet__pin-action"
+											onclick={(e) => pinToBar(item.href, e)}
+										>
+											Pin to bar
+										</button>
 									{/if}
-								</a>
+								</div>
 							{/if}
 						{/each}
 					</nav>
@@ -427,6 +470,44 @@
 		display: flex;
 		flex-direction: column;
 		gap: 2px;
+	}
+
+	.app-menu-sheet__link-row {
+		display: flex;
+		align-items: stretch;
+		gap: 4px;
+	}
+
+	.app-menu-sheet__link-row .app-menu-sheet__link {
+		flex: 1 1 auto;
+		min-width: 0;
+	}
+
+	.app-menu-sheet__pin-action {
+		flex-shrink: 0;
+		align-self: center;
+		min-height: 36px;
+		padding: 0 10px;
+		border: 1px solid rgba(148, 163, 184, 0.25);
+		border-radius: 6px;
+		background: rgba(15, 23, 42, 0.6);
+		color: #94a3b8;
+		font-family: monospace;
+		font-size: 9px;
+		font-weight: 600;
+		letter-spacing: 0.06em;
+		text-transform: uppercase;
+		cursor: pointer;
+	}
+
+	.app-menu-sheet__pin-action:hover {
+		border-color: rgba(20, 184, 166, 0.45);
+		color: #5eead4;
+	}
+
+	.app-menu-sheet--player .app-menu-sheet__pin-action:hover {
+		border-color: rgba(251, 191, 36, 0.45);
+		color: #fbbf24;
 	}
 
 	.app-menu-sheet__link {

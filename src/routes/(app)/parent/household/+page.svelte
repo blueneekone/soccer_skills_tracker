@@ -14,7 +14,7 @@
 		where,
 		writeBatch,
 	} from 'firebase/firestore';
-	import { db, functions, getActiveDb } from '$lib/firebase.js';
+	import { db, functions } from '$lib/firebase.js';
 	import IntelModal from '$lib/components/ui/IntelModal.svelte';
 	import { lockBody, unlockBody } from '$lib/utils/modalLock.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
@@ -139,7 +139,7 @@
 
 	/** @returns {Promise<void>} */
 	async function refreshHouseholdOperatives() {
-		operativeRows = await loadHouseholdOperativeRows(getActiveDb(), householdId);
+		operativeRows = await loadHouseholdOperativeRows(db, householdId);
 	}
 
 	/**
@@ -387,7 +387,7 @@
 			if (householdId) {
 				const hs = await getDoc(doc(db, 'households', householdId));
 				if (hs.exists()) {
-					operativeRows = await buildEnrichedOperativeRows(getActiveDb(), hs.data() || {});
+					operativeRows = await buildEnrichedOperativeRows(db, hs.data() || {});
 				}
 			}
 		} catch (e) {
