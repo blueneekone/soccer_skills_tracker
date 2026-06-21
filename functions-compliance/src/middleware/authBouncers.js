@@ -184,6 +184,53 @@ function assertParent(request) {
 }
 
 /**
+ * Parent actor with householdId from Firestore users/{email} when present.
+ * JWT `householdId` can lag after waiver sign, household graph updates, or
+ * failed claim fast-paths — the household page reads Firestore, so callables
+ * must match.
+ * @param {any} request Callable request
+ * @return {Promise<{ email: string, householdId: string }>}
+ */
+async function assertParentAsync(request) {
+  if (!request.auth) {
+    throw new HttpsError('unauthenticated', 'Sign in required.');
+  }
+  if (request.auth.token.role !== 'parent') {
+    throw new HttpsError(
+        'permission-denied',
+        'Only parent accounts may use this action.',
+    );
+  }
+  const email = normEmail(request.auth.token.email);
+  if (!email) {
+    throw new HttpsError('invalid-argument', 'No email on session.');
+  }
+  const jwtHid =
+    typeof request.auth.token.householdId === 'string' ?
+      request.auth.token.householdId.trim() :
+      '';
+  let docHid = '';
+  try {
+    const pSnap = await db().collection('users').doc(email).get();
+    if (pSnap.exists) {
+      const raw = pSnap.data()?.householdId;
+      docHid = typeof raw === 'string' ? raw.trim() : '';
+    }
+  } catch {
+    /* fall through to JWT */
+  }
+  const householdId = docHid || jwtHid;
+  if (!householdId) {
+    throw new HttpsError(
+        'failed-precondition',
+        'Your account must be linked to a household. ' +
+        'Ask your director to connect parent and player emails.',
+    );
+  }
+  return {email, householdId};
+}
+
+/**
  * Assert caller is club staff for roster transfers.
  * @param {any} request Callable request
  * @return {Object} Actor with role, clubId, email
@@ -383,6 +430,7 @@ module.exports = {
   assertSuperAdmin,
   assertCanSecureAddPlayer,
   assertParent,
+  assertParentAsync,
   assertClubStaff,
   assertCoachMessageSender,
   assertActorCanAccessTeam,

@@ -11,6 +11,7 @@ const {normEmail, normOperativeCallsignSlug, computeAgeYears} =
 const {
   assertSuperAdmin,
   assertParent,
+  assertParentAsync,
   assertCoachMessageSender,
 } = require('../middleware/authBouncers');
 const {
@@ -717,7 +718,7 @@ async function assertHouseholdThreadActor(request) {
   }
 
   if (role === 'parent') {
-    const actor = assertParent(request);
+    const actor = await assertParentAsync(request);
     return {email: actor.email, householdId: actor.householdId, role: 'parent'};
   }
 
@@ -1724,7 +1725,7 @@ exports.generatePlayerOTP = onCall({region: REGION}, async (request) => {
         'childUid or childEmail is required.',
     );
   }
-  const actor = assertParent(request);
+  const actor = await assertParentAsync(request);
   await assertChildInParentHousehold(actor, childUid);
   const parentUid = request.auth.uid;
   const nowMs = Date.now();
