@@ -23,6 +23,7 @@ const {
 const {sendFcmToUids} = require('./notificationOps');
 const {provisionLoungesForParentHousehold} = require('./commsChannelOps');
 const {buildBaseCustomClaims} = require('../auth/customClaims');
+const {assertChildInParentHousehold} = require('./householdMembership');
 
 const REGION = 'us-east1';
 
@@ -254,56 +255,6 @@ async function resolveUserUidFromUsernameOrCallsign(raw) {
   const em = q.docs[0].id;
   const rec = await admin.auth().getUserByEmail(em);
   return rec.uid;
-}
-
-/**
- * @param {{ email: string, householdId: string }} actor
- * @param {string} childUid
- */
-async function assertChildInParentHousehold(actor, childUid) {
-  let childUser;
-  try {
-    childUser = await admin.auth().getUser(childUid);
-  } catch (e) {
-    if (e && e.code === 'auth/user-not-found') {
-      throw new HttpsError('not-found', 'Child account not found.');
-    }
-    throw e;
-  }
-  const childEm = normEmail(childUser.email);
-  if (!childEm) {
-    throw new HttpsError('failed-precondition', 'Child has no email on file.');
-  }
-  const hSnap = await db().collection('households').doc(actor.householdId).get();
-  if (!hSnap.exists) {
-    throw new HttpsError('not-found', 'Household not found.');
-  }
-  const h = hSnap.data();
-  const players = (h.playerEmails || [])
-      .map((x) => normEmail(String(x)))
-      .filter(Boolean);
-  if (!players.includes(childEm)) {
-    throw new HttpsError(
-        'permission-denied',
-        'That player is not linked to your household.',
-    );
-  }
-  const parents = (h.parentEmails || [])
-      .map((x) => normEmail(String(x)))
-      .filter(Boolean);
-  if (!parents.includes(actor.email)) {
-    throw new HttpsError(
-        'permission-denied',
-        'You are not an authorized parent on this household.',
-    );
-  }
-  const uSnap = await db().collection('users').doc(childEm).get();
-  if (uSnap.exists) {
-    const r = uSnap.data().role;
-    if (r && r !== 'player') {
-      throw new HttpsError('failed-precondition', 'Target account is not a player.');
-    }
-  }
 }
 
 // ── Exported callable functions ──────────────────────────────────────────────
@@ -1726,7 +1677,7 @@ exports.generatePlayerOTP = onCall({region: REGION}, async (request) => {
     );
   }
   const actor = await assertParentAsync(request);
-  await assertChildInParentHousehold(actor, childUid);
+  await assertChildInParentHousehold(actor, childUid, childEm);
   const parentUid = request.auth.uid;
   const nowMs = Date.now();
   const tenMin = 10 * 60 * 1000;
