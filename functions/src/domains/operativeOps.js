@@ -23,7 +23,8 @@ const {
 const {sendFcmToUids} = require('./notificationOps');
 const {provisionLoungesForParentHousehold} = require('./commsChannelOps');
 const {buildBaseCustomClaims} = require('../auth/customClaims');
-const {assertChildInParentHousehold} = require('./householdMembership');
+const {assertChildInParentHousehold, reconcileParentHouseholdGraph} =
+  require('./householdMembership');
 
 const REGION = 'us-east1';
 
@@ -1698,6 +1699,21 @@ exports.generatePlayerOTP = onCall({region: REGION}, async (request) => {
     return {code, expiresAt: expiresAt.toDate().toISOString()};
   }
   throw new HttpsError('unavailable', 'Could not issue a unique code. Try again.');
+});
+
+/**
+ * Parent: sync households.playerEmails from player_lookup/users denorm so
+ * Household Clearance shows the same athletes admin already lists.
+ */
+exports.parentReconcileHousehold = onCall({region: REGION}, async (request) => {
+  const actor = await assertParentAsync(request);
+  const result = await reconcileParentHouseholdGraph(actor.email);
+  return {
+    ok: true,
+    householdId: result.householdId,
+    playerEmails: result.playerEmails,
+    repaired: result.repaired,
+  };
 });
 
 /**

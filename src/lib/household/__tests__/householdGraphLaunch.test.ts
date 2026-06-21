@@ -52,10 +52,15 @@ describe('LAUNCH-household-graph — guardian visibility', () => {
 			join(process.cwd(), 'functions/src/domains/operativeOps.js'),
 			'utf-8',
 		);
+		const page = readFileSync(
+			join(ROOT, 'routes/(app)/parent/household/+page.svelte'),
+			'utf-8',
+		);
 		expect(membership).toMatch(/repairHouseholdMembership/);
-		expect(membership).toMatch(/linkedOnLookup/);
-		expect(ops).toMatch(/householdMembership/);
+		expect(membership).toMatch(/reconcileParentHouseholdGraph/);
+		expect(ops).toMatch(/parentReconcileHousehold/);
 		expect(ops).toMatch(/assertChildInParentHousehold\(actor, childUid, childEm\)/);
+		expect(page).toMatch(/parentReconcileHousehold/);
 	});
 
 	it('coach CommandCenter shows guardian and VPC roster columns', () => {

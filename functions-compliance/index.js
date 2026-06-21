@@ -61,3 +61,4 @@ exports.parentLinkOperativeToTeam = operativeOps.parentLinkOperativeToTeam;
 exports.operativeSignInWithDispatch = operativeOps.operativeSignInWithDispatch;
 exports.generatePlayerOTP = operativeOps.generatePlayerOTP;
 exports.validatePlayerOTP = operativeOps.validatePlayerOTP;
+exports.parentReconcileHousehold = operativeOps.parentReconcileHousehold;

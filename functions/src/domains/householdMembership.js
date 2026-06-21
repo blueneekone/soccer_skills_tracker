@@ -287,9 +287,169 @@ async function assertChildInParentHousehold(actor, childUid, requestedChildEmail
   }
 }
 
+/**
+ * Discover linked players from player_lookup + users and heal canonical
+ * households.playerEmails so Parent OS matches admin-visible linkage.
+ * @param {string} parentEmail
+ * @return {Promise<{ householdId: string, playerEmails: string[], repaired: boolean }>}
+ */
+async function reconcileParentHouseholdGraph(parentEmail) {
+  const parent = normEmail(parentEmail);
+  if (!parent) {
+    return {householdId: '', playerEmails: [], repaired: false};
+  }
+
+  let hid = (await readUserHouseholdContext(parent)).householdId;
+
+  if (!hid) {
+    const byParentOnly = await db()
+        .collection('player_lookup')
+        .where('parentEmails', 'array-contains', parent)
+        .limit(12)
+        .get();
+    const hidSet = new Set();
+    for (const row of byParentOnly.docs) {
+      const plHid =
+        typeof row.data().householdId === 'string' ?
+          row.data().householdId.trim() :
+          '';
+      if (plHid) hidSet.add(plHid);
+    }
+    if (hidSet.size === 1) {
+      hid = [...hidSet][0];
+    } else {
+      return {householdId: '', playerEmails: [], repaired: false};
+    }
+  }
+
+  const hRef = db().collection('households').doc(hid);
+  const hSnap = await hRef.get();
+  if (!hSnap.exists) {
+    return {householdId: hid, playerEmails: [], repaired: false};
+  }
+
+  const h = hSnap.data() || {};
+  const existingPlayers = emailList(h.playerEmails);
+  const existingParents = emailList(h.parentEmails);
+  const discovered = new Set(existingPlayers);
+
+  const byHid = await db()
+      .collection('player_lookup')
+      .where('householdId', '==', hid)
+      .get();
+  for (const row of byHid.docs) {
+    const em = normEmail(row.id);
+    const parents = emailList(row.data().parentEmails);
+    if (em && (parents.length === 0 || parents.includes(parent))) {
+      discovered.add(em);
+    }
+  }
+
+  const byParent = await db()
+      .collection('player_lookup')
+      .where('parentEmails', 'array-contains', parent)
+      .get();
+  for (const row of byParent.docs) {
+    const em = normEmail(row.id);
+    const plHid =
+      typeof row.data().householdId === 'string' ?
+        row.data().householdId.trim() :
+        '';
+    if (em && (!plHid || plHid === hid)) {
+      discovered.add(em);
+    }
+  }
+
+  /** @type {string[]} */
+  const verified = [];
+  for (const childEm of discovered) {
+    const childCtx = await readUserHouseholdContext(childEm);
+    const lookup = await readPlayerLookupGuardians(childEm);
+    const linkedViaUsers = childCtx.householdId === hid;
+    const linkedViaLookup =
+      lookup.parentEmails.includes(parent) &&
+      (!lookup.householdId || lookup.householdId === hid);
+    if (linkedViaUsers || linkedViaLookup || existingPlayers.includes(childEm)) {
+      verified.push(childEm);
+    }
+  }
+
+  const mergedPlayers = [...new Set([...existingPlayers, ...verified])];
+  const mergedParents = existingParents.includes(parent) ?
+    existingParents :
+    [...existingParents, parent];
+  const nameSet = new Set(
+      Array.isArray(h.playerNames) ?
+        h.playerNames.filter((x) => typeof x === 'string' && x.trim()) :
+        [],
+  );
+
+  for (const childEm of mergedPlayers) {
+    if (!nameSet.size || [...nameSet].length < mergedPlayers.length) {
+      const childCtx = await readUserHouseholdContext(childEm);
+      if (childCtx.playerName) {
+        nameSet.add(childCtx.playerName);
+      }
+    }
+  }
+
+  const needsHouseholdRepair =
+    mergedPlayers.length !== existingPlayers.length ||
+    mergedParents.length !== existingParents.length;
+  const parentNeedsHid = (await readUserHouseholdContext(parent)).householdId !== hid;
+
+  if (!needsHouseholdRepair && !parentNeedsHid) {
+    return {householdId: hid, playerEmails: mergedPlayers, repaired: false};
+  }
+
+  const now = admin.firestore.FieldValue.serverTimestamp();
+  const batch = db().batch();
+  batch.set(
+      hRef,
+      {
+        playerEmails: mergedPlayers,
+        parentEmails: mergedParents,
+        playerNames: [...nameSet],
+        updatedAt: now,
+      },
+      {merge: true},
+  );
+  batch.set(
+      db().collection('users').doc(parent),
+      {householdId: hid, updatedAt: now},
+      {merge: true},
+  );
+  for (const childEm of mergedPlayers) {
+    batch.set(
+        db().collection('users').doc(childEm),
+        {householdId: hid, role: 'player', updatedAt: now},
+        {merge: true},
+    );
+    stampPlayerLookupGuardians(batch, childEm, {
+      householdId: hid,
+      parentEmails: mergedParents,
+    });
+  }
+  batch.set(db().collection('security_audit').doc(), {
+    action: 'reconcileParentHouseholdGraph',
+    householdId: hid,
+    parentEmail: parent,
+    playerEmails: mergedPlayers,
+    at: now,
+  });
+  await batch.commit();
+  logger.info('[reconcileParentHouseholdGraph] healed household roster', {
+    householdId: hid,
+    parentEmail: parent,
+    playerCount: mergedPlayers.length,
+  });
+  return {householdId: hid, playerEmails: mergedPlayers, repaired: true};
+}
+
 module.exports = {
   assertChildInParentHousehold,
   repairHouseholdMembership,
+  reconcileParentHouseholdGraph,
   resolveParentHouseholdId,
   readUserHouseholdContext,
   readPlayerLookupGuardians,

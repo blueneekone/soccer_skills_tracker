@@ -159,6 +159,7 @@ describe('functionsDeploy guard — codebase indexes', () => {
       'operativeSignInWithDispatch',
       'generatePlayerOTP',
       'validatePlayerOTP',
+      'parentReconcileHousehold',
     ]) {
       assertExportLine(name, src);
     }
