@@ -5,6 +5,13 @@
 import { describe, expect, it } from 'vitest';
 import { existsSync, readFileSync } from 'fs';
 import { join } from 'path';
+import {
+	computeIntentEarnedXp,
+	computeIntentProgressPct,
+	intentXpFulfilled,
+	resolveIntentBaselineXp,
+	buildXpBaselineSnapshot,
+} from '../intentProgress.js';
 
 const ROOT = join(process.cwd(), 'src/lib/coach/intent');
 
@@ -156,5 +163,85 @@ describe('VS-3-Forge — full-page workbench (QA-142)', () => {
 		const src = readFileSync(CSS, 'utf-8');
 		expect(src).toMatch(/coach-forge-workbench__deploy/);
 		expect(src).toMatch(/768px/);
+	});
+});
+
+describe('FORGE-INTENT-XP-BASELINE — delta progress helpers', () => {
+	it('300 current, 300 baseline, 150 required → 0% progress, not fulfilled', () => {
+		const earned = computeIntentEarnedXp(300, 300);
+		expect(earned).toBe(0);
+		expect(computeIntentProgressPct(earned, 150)).toBe(0);
+		expect(intentXpFulfilled(earned, 150)).toBe(false);
+	});
+
+	it('resolveIntentBaselineXp matches uid, email, or rosterKey', () => {
+		const baseline = { 'auth-1': 300, 'player@example.com': 300 };
+		expect(
+			resolveIntentBaselineXp(baseline, {
+				uid: 'auth-1',
+				email: 'player@example.com',
+				rosterKey: 'auth-1',
+			}),
+		).toBe(300);
+		expect(
+			resolveIntentBaselineXp(baseline, {
+				uid: '',
+				email: 'player@example.com',
+				rosterKey: 'player@example.com',
+			}),
+		).toBe(300);
+	});
+
+	it('buildXpBaselineSnapshot keys uid and email for Forge roster rows', () => {
+		const snap = buildXpBaselineSnapshot(
+			[
+				{
+					uid: 'auth-1',
+					email: 'player@example.com',
+					rosterKey: 'auth-1',
+					xpByAttribute: { pace: 300 },
+				},
+			],
+			'pace',
+		);
+		expect(snap['auth-1']).toBe(300);
+		expect(snap['player@example.com']).toBe(300);
+	});
+
+	it('IntentEngine uses xpBaselineByUid delta via intentProgress helpers', () => {
+		const src = readFileSync(join(ROOT, 'IntentEngine.svelte.ts'), 'utf-8');
+		expect(src).toMatch(/resolveIntentBaselineXp/);
+		expect(src).toMatch(/buildXpBaselineSnapshot/);
+		expect(src).toMatch(/_deployBaselineByIntentId/);
+		expect(src).not.toMatch(/currentXp \/ intent\.requiredXp/);
+	});
+
+	it('IntentArena labels progress since deploy', () => {
+		const src = readFileSync(join(ROOT, 'IntentArena.svelte'), 'utf-8');
+		expect(src).toMatch(/Progress since deploy/);
+	});
+});
+
+describe('FORGE-DEDUP-DEPLOY — single-flight deploy + clientDeployId', () => {
+	const ENGINE = join(ROOT, 'IntentEngine.svelte.ts');
+	const PANEL = join(ROOT, 'ForgeDeployPanel.svelte');
+
+	it('IntentEngine deployIntent uses synchronous in-flight guard before await', () => {
+		const src = readFileSync(ENGINE, 'utf-8');
+		expect(src).toMatch(/_deployInFlight/);
+		expect(src).toMatch(/if \(this\._deployInFlight \|\| this\.deployPhase !== 'idle'\) return;/);
+		expect(src).toMatch(/this\._deployInFlight = true;/);
+		expect(src).toMatch(/this\._deployInFlight = false;/);
+	});
+
+	it('IntentEngine deployIntent passes clientDeployId from crypto.randomUUID()', () => {
+		const src = readFileSync(ENGINE, 'utf-8');
+		expect(src).toMatch(/const clientDeployId = crypto\.randomUUID\(\)/);
+		expect(src).toMatch(/clientDeployId,/);
+	});
+
+	it('ForgeDeployPanel deploy button is type=button and disabled while saving', () => {
+		const src = readFileSync(PANEL, 'utf-8');
+		expect(src).toMatch(/type="button"[\s\S]*disabled=\{!canDeploy \|\| deployPhase === 'saving'\}/);
 	});
 });

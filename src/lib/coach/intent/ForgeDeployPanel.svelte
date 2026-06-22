@@ -669,12 +669,13 @@
 				</p>
 			{/if}
 			<button
+				type="button"
 				class="tw-w-full tw-min-h-[44px] tw-py-3 tw-rounded-lg tw-font-mono tw-text-[10px] tw-tracking-widest
 				       tw-uppercase tw-border tw-transition-all tw-flex tw-items-center tw-justify-center tw-gap-2
 				       disabled:tw-opacity-30 disabled:tw-cursor-not-allowed
 				       enabled:hover:tw-brightness-125 active:tw-scale-[0.98]"
 				style="border-color:{deployBorderColor}; color:{deployPhase === 'success' ? '#2dd4bf' : deployPhase === 'error' ? '#ff3040' : '#14b8a6'};"
-				disabled={!canDeploy}
+				disabled={!canDeploy || deployPhase === 'saving'}
 				onclick={onDeploy}
 			>
 				{#if deployPhase === 'idle'}

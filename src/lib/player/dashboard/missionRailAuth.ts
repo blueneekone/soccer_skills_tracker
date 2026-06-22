@@ -20,17 +20,22 @@ export async function refreshClaimsIfProfileTeamStale(
 	profileClubId = '',
 ): Promise<boolean> {
 	if (!browser || !auth.currentUser) return false;
-	const teamId = profileTeamId.trim();
-	const clubId = profileClubId.trim();
-	if (!teamId && !clubId) return false;
 	try {
 		const tr = await getIdTokenResult(auth.currentUser, false);
 		const claimTeamId =
 			typeof tr.claims.teamId === 'string' ? tr.claims.teamId.trim() : '';
 		const claimClub = claimClubId(tr.claims as Record<string, unknown>);
-		const teamStale = Boolean(teamId && !claimTeamId);
-		const clubStale = Boolean(clubId && !claimClub);
-		if (teamStale || clubStale) {
+		const profileTeam = profileTeamId.trim();
+		const profileClub = profileClubId.trim();
+		const effectiveTeam = profileTeam || claimTeamId;
+		if (!effectiveTeam && !profileClub && !claimClub) return false;
+
+		const teamStale = Boolean(profileTeam && claimTeamId !== profileTeam);
+		const clubStale = Boolean(profileClub && !claimClub);
+		// List rule requires tokenClub even when profile.clubId is unset.
+		const listNeedsClub = Boolean(effectiveTeam && !claimClub);
+
+		if (teamStale || clubStale || listNeedsClub) {
 			await authStore.refreshClaims();
 			return true;
 		}
@@ -68,7 +73,19 @@ export function pickMissionRailTeamId(
 	workspaceTeamId = '',
 	claimTeamId = '',
 ): string {
-	for (const raw of [profileTeamId, workspaceTeamId, claimTeamId]) {
+	const profile = profileTeamId.trim();
+	const workspace = workspaceTeamId.trim();
+	const claim = claimTeamId.trim();
+
+	// team_assignments list rules filter on tokenTeam() — query must match JWT team or snapshot is silently empty.
+	if (claim && claim !== 'admin') {
+		if (profile && profile !== claim) return claim;
+		if (profile) return profile;
+		if (workspace && workspace !== 'admin') return workspace;
+		return claim;
+	}
+
+	for (const raw of [profile, workspace, claim]) {
 		const t = raw.trim();
 		if (t && t !== 'admin') return t;
 	}
@@ -86,6 +103,27 @@ export async function readTokenTeamId(): Promise<string> {
 	}
 }
 
+/** Read clubId / tenantId from current ID token without forcing refresh. */
+export async function readTokenClubId(): Promise<string> {
+	if (!browser || !auth.currentUser) return '';
+	try {
+		const tr = await getIdTokenResult(auth.currentUser, false);
+		return claimClubId(tr.claims as Record<string, unknown>);
+	} catch {
+		return '';
+	}
+}
+
+/** True when profile and JWT disagree on team — Firestore list rules gate on tokenTeam(). */
+export function missionRailTeamScopeMismatch(
+	profileTeamId: string,
+	tokenTeamId: string,
+): boolean {
+	const profile = profileTeamId.trim();
+	const token = tokenTeamId.trim();
+	return Boolean(profile && token && profile !== token);
+}
+
 /** Refresh profile when JWT has team scope but Firestore profile does not (parent team-link handoff). */
 export async function refreshProfileIfClaimsTeamAhead(
 	profileTeamId: string,
@@ -95,6 +133,23 @@ export async function refreshProfileIfClaimsTeamAhead(
 	try {
 		const claimTeam = await readTokenTeamId();
 		if (!claimTeam || claimTeam === 'admin') return false;
+		await authStore.refresh({ silent: true });
+		return true;
+	} catch {
+		return false;
+	}
+}
+
+/** Reload profile when JWT team differs from Firestore (stale profile causes silent empty intent list). */
+export async function refreshProfileIfClaimsTeamMismatch(
+	profileTeamId: string,
+): Promise<boolean> {
+	if (!browser || !auth.currentUser) return false;
+	const profile = profileTeamId.trim();
+	if (!profile) return false;
+	try {
+		const claimTeam = await readTokenTeamId();
+		if (!claimTeam || claimTeam === 'admin' || claimTeam === profile) return false;
 		await authStore.refresh({ silent: true });
 		return true;
 	} catch {

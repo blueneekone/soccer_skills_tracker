@@ -3,6 +3,7 @@ import {
 	applyCoachIntentPurge,
 	applyCoachIntentRefetch,
 	coachIntentRemovalDelta,
+	mapCoachIntentRows,
 	mergeCoachIntentsIntoQuestLog,
 } from '../missionRailCoachIntents.js';
 import type { QuestTask } from '../activeBounties.js';
@@ -122,5 +123,65 @@ describe('missionRailCoachIntents — GP-ACQ-03 cancel sync', () => {
 		expect(storage.has(MISSION_HANDOFF_KEY)).toBe(false);
 
 		vi.unstubAllGlobals();
+	});
+});
+
+describe('FORGE-MISSION-RAIL-VISIBILITY — coach intent merge', () => {
+	const progress = {
+		acceptedIds: [],
+		completedIds: [],
+		claimedIds: [],
+		claimedDateUtc: '2026-01-01',
+	};
+
+	it('mapCoachIntentRows maps active team-scope snapshot to coach quest', () => {
+		const snapshot = mapCoachIntentRows(
+			[
+				{
+					id: 'intent-live',
+					targetAttributeId: 'pace',
+					requiredXp: 200,
+					priority: 10,
+					scope: 'team',
+					status: 'active',
+				},
+			],
+			progress,
+			'player-uid',
+		);
+		expect(snapshot.quests).toHaveLength(1);
+		expect(snapshot.quests[0]?.source).toBe('coach_intent');
+		expect(snapshot.quests[0]?.lifecycle).toBe('accept');
+		expect(snapshot.activeIds.has('intent-live')).toBe(true);
+	});
+
+	it('mergeCoachIntentsIntoQuestLog drops coach rows when snapshot empty', () => {
+		const existing = [coachQuest('intent-gone'), dailyQuest('daily-training-log')];
+		const merged = mergeCoachIntentsIntoQuestLog([], existing, progress);
+		expect(merged.some((q) => q.source === 'coach_intent')).toBe(false);
+		expect(merged.some((q) => q.id === 'daily-training-log')).toBe(true);
+	});
+
+	it('mergeCoachIntentsIntoQuestLog keeps active coach intent despite stale claimedIds', () => {
+		const progressWithStaleClaim = { ...progress, claimedIds: ['intent-live'] };
+		const merged = mergeCoachIntentsIntoQuestLog(
+			[coachQuest('intent-live')],
+			[dailyQuest('daily-training-log')],
+			progressWithStaleClaim,
+		);
+		expect(merged.some((q) => q.id === 'intent-live')).toBe(true);
+	});
+
+	it('source-scan: ActiveBounties exposes mission rail diagnostic state', () => {
+		const { readFileSync } = require('fs');
+		const { join } = require('path');
+		const src = readFileSync(
+			join(__dirname, '../../../components/hud/ActiveBounties.svelte'),
+			'utf-8',
+		);
+		expect(src).toMatch(/data-mission-rail-state/);
+		expect(src).toMatch(/intentSnapshotCount/);
+		expect(src).toMatch(/coachIntentListenerAttached/);
+		expect(src).toMatch(/subscribeCoachIntentSnapshot/);
 	});
 });

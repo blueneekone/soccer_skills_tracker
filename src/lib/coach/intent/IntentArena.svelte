@@ -175,7 +175,7 @@
 				<div class="tw-w-full tw-flex tw-flex-col tw-gap-1">
 					<div class="tw-flex tw-items-center tw-justify-between">
 						<span class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-[#14b8a6]/40 tw-uppercase">
-							overall progress
+							Progress since deploy
 						</span>
 						<span class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-[#14b8a6]">
 							{intent.overallProgressPct}%

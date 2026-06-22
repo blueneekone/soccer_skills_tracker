@@ -12,6 +12,7 @@ import {
 	questHudCtaBlockedCadence,
 	missionRailEmptyCopy,
 	COACH_MISSION_RAIL_HINT,
+	resolveMissionRailEmptyReason,
 	questCtaLabel,
 	questHudCtaShort,
 	questHudCtaFor,
@@ -22,8 +23,63 @@ import {
 	excludeHeroFromRailQuests,
 	maxVisibleQuests,
 	purgeCoachIntentIds,
+	intentAssignmentVisibleToPlayer,
+	questVisibleInMissionRail,
 	type QuestTask,
 } from '../activeBounties.js';
+
+describe('FORGE-MISSION-RAIL-VISIBILITY — coach intent visibility', () => {
+	const progress = {
+		acceptedIds: [],
+		completedIds: [],
+		claimedIds: [],
+		claimedDateUtc: '2026-01-01',
+	};
+
+	it('intentAssignmentVisibleToPlayer allows team scope for any player', () => {
+		expect(intentAssignmentVisibleToPlayer({ scope: 'team' }, 'uid-a')).toBe(true);
+		expect(intentAssignmentVisibleToPlayer({}, 'uid-a')).toBe(true);
+	});
+
+	it('intentAssignmentVisibleToPlayer requires uid in targetUids for players scope', () => {
+		expect(
+			intentAssignmentVisibleToPlayer({ scope: 'players', targetUids: ['uid-a'] }, 'uid-a'),
+		).toBe(true);
+		expect(
+			intentAssignmentVisibleToPlayer({ scope: 'players', targetUids: ['uid-b'] }, 'uid-a'),
+		).toBe(false);
+	});
+
+	it('bountyFromCoachIntent maps active row with accept lifecycle', () => {
+		const bounty = bountyFromCoachIntent(
+			'intent-a',
+			{ targetAttributeId: 'pace', requiredXp: 200, priority: 10, scope: 'team' },
+			progress,
+			'uid-a',
+		);
+		expect(bounty?.source).toBe('coach_intent');
+		expect(bounty?.senderLabel).toBe('Coach Challenge');
+		expect(bounty?.lifecycle).toBe('accept');
+	});
+
+	it('questVisibleInMissionRail keeps active coach intent when claimedIds is stale', () => {
+		const quest: QuestTask = {
+			id: 'intent-a',
+			tier: 'bounty',
+			source: 'coach_intent',
+			senderLabel: 'Coach Challenge',
+			title: 'Pace · 200 XP goal',
+			axisId: 'PAC',
+			xpReward: 200,
+			lifecycle: 'accept',
+			actionHref: '/player/workout',
+			sortKey: 10,
+		};
+		const store = { ...progress, claimedIds: ['intent-a'] };
+		expect(questVisibleInMissionRail(quest, store, new Set(['intent-a']))).toBe(true);
+		expect(questVisibleInMissionRail(quest, store, new Set())).toBe(false);
+	});
+});
 
 describe('activeBounties', () => {
 	it('maps sport attribute ids to Vanguard axis codes', () => {
@@ -513,9 +569,59 @@ describe('B4b — advisory parent-verified badge: bountyFromCoachIntent is unaff
 	});
 
 	it('GP-ACQ-04a: missionRailEmptyCopy explains coach Forge deploy path', () => {
-		expect(missionRailEmptyCopy({ missionSyncBlocked: false })).toBe(COACH_MISSION_RAIL_HINT);
-		expect(missionRailEmptyCopy({ missionSyncBlocked: false })).toMatch(/Forge/);
-		expect(missionRailEmptyCopy({ missionSyncBlocked: true })).toMatch(/sign out/i);
+		expect(missionRailEmptyCopy({ reason: 'no_intents' })).toBe(COACH_MISSION_RAIL_HINT);
+		expect(missionRailEmptyCopy({ reason: 'no_intents' })).toMatch(/Forge/);
+		expect(missionRailEmptyCopy({ reason: 'sync_blocked' })).toMatch(/sign out/i);
+		expect(missionRailEmptyCopy({ reason: 'no_team' })).toMatch(/Awaiting team assignment/i);
+		expect(missionRailEmptyCopy({ reason: 'team_link_mismatch' })).toMatch(/Team link mismatch/i);
+		expect(missionRailEmptyCopy({ reason: 'scoped_out' })).toMatch(/other operatives/i);
+	});
+
+	it('resolveMissionRailEmptyReason distinguishes failure modes', () => {
+		expect(
+			resolveMissionRailEmptyReason({
+				missionSyncBlocked: true,
+				authLoaded: true,
+				teamIdUsed: 'team-a',
+				intentSnapshotCount: 0,
+				intentScopedCount: 0,
+				profileTeamId: 'team-a',
+				tokenTeamId: 'team-a',
+			}),
+		).toBe('sync_blocked');
+		expect(
+			resolveMissionRailEmptyReason({
+				missionSyncBlocked: false,
+				authLoaded: true,
+				teamIdUsed: '',
+				intentSnapshotCount: 0,
+				intentScopedCount: 0,
+				profileTeamId: '',
+				tokenTeamId: '',
+			}),
+		).toBe('no_team');
+		expect(
+			resolveMissionRailEmptyReason({
+				missionSyncBlocked: false,
+				authLoaded: true,
+				teamIdUsed: 'team-jwt',
+				intentSnapshotCount: 0,
+				intentScopedCount: 0,
+				profileTeamId: 'team-profile',
+				tokenTeamId: 'team-jwt',
+			}),
+		).toBe('team_link_mismatch');
+		expect(
+			resolveMissionRailEmptyReason({
+				missionSyncBlocked: false,
+				authLoaded: true,
+				teamIdUsed: 'team-a',
+				intentSnapshotCount: 2,
+				intentScopedCount: 0,
+				profileTeamId: 'team-a',
+				tokenTeamId: 'team-a',
+			}),
+		).toBe('scoped_out');
 	});
 
 	it('GP-ACQ-04a: coachIntentReadyToClaim gates claim on fulfilledByUids', () => {
@@ -531,7 +637,10 @@ describe('B4b — advisory parent-verified badge: bountyFromCoachIntent is unaff
 			join(__dirname, '../../../components/hud/ActiveBounties.svelte'),
 			'utf-8',
 		);
-		expect(AB_SRC).toMatch(/missionRailEmptyCopy/);
+		expect(AB_SRC).toMatch(/missionRailDiagnostics/);
+		expect(AB_SRC).toMatch(/data-mission-rail-state/);
+		expect(AB_SRC).toMatch(/buildMissionRailDiagnostic/);
+		expect(AB_SRC).toMatch(/logMissionRailSnapshotOnce/);
 		expect(AB_SRC).toMatch(/showCoachAssignHint/);
 		expect(AB_SRC).toMatch(/coachIntentReadyToClaim/);
 		expect(AB_SRC).not.toMatch(/NO ACTIVE MISSIONS/);

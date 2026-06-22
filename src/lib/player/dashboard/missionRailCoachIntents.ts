@@ -1,6 +1,7 @@
 import {
 	collection,
 	getDocsFromServer,
+	onSnapshot,
 	orderBy,
 	query,
 	where,
@@ -11,6 +12,7 @@ import {
 	bountyFromCoachIntent,
 	intentAssignmentVisibleToPlayer,
 	purgeCoachIntentIds,
+	questVisibleInMissionRail,
 	sortQuestLog,
 	type QuestProgressStore,
 	type QuestTask,
@@ -71,6 +73,41 @@ export function coachIntentQuery(db: Firestore, teamId: string) {
 	);
 }
 
+type IntentDocRow = { id: string } & Record<string, unknown>;
+
+/** Live team_assignments listener for player mission rail (scoped to operative visibility). */
+export function subscribeCoachIntentSnapshot(
+	db: Firestore,
+	teamId: string,
+	playerUid: string,
+	handlers: {
+		onRows: (scopedRows: IntentDocRow[], rawCount: number, scopedCount: number) => void;
+		onEmpty: () => void;
+		onError: (err: unknown) => void;
+		onSuccess: () => void;
+	},
+): () => void {
+	const mapIntentRows = (docs: { id: string; data: () => Record<string, unknown> }[]) =>
+		docs
+			.map((d) => ({ id: d.id, ...d.data() }))
+			.filter((row) => intentAssignmentVisibleToPlayer(row, playerUid));
+	return onSnapshot(
+		coachIntentQuery(db, teamId),
+		(snap) => {
+			handlers.onSuccess();
+			const uniqueDocs = [...new Map(snap.docs.map((d) => [d.id, d])).values()];
+			const rawCount = uniqueDocs.length;
+			if (rawCount === 0) {
+				handlers.onEmpty();
+				return;
+			}
+			const scopedRows = mapIntentRows(uniqueDocs);
+			handlers.onRows(scopedRows, rawCount, scopedRows.length);
+		},
+		handlers.onError,
+	);
+}
+
 /** Prefer server read on refresh so cancelled intents drop off after coach Forge cancel. */
 export async function fetchCoachIntentDocsFromServer(
 	db: Firestore,
@@ -102,7 +139,10 @@ export function mergeCoachIntentsIntoQuestLog(
 	// Empty snapshot must drop all prior coach_intent rows (cancel / expire).
 	const nonCoach = existing.filter((q) => q.source !== 'coach_intent');
 	const merged = coachIntents.length === 0 ? nonCoach : [...coachIntents, ...nonCoach];
-	return sortQuestLog(merged.filter((q) => !progress.claimedIds.includes(q.id)));
+	const activeCoachIntentIds = new Set(coachIntents.map((q) => q.id));
+	return sortQuestLog(
+		merged.filter((q) => questVisibleInMissionRail(q, progress, activeCoachIntentIds)),
+	);
 }
 
 export function applyCoachIntentRefetch(input: {

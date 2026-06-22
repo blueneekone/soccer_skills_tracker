@@ -3751,13 +3751,18 @@ service cloud.firestore {
       allow list: if authed() && (
         isSuper()
         || (isCoach() || isDirector()) && tokenClub() != null
-        // T0-7: player list scoped to own team + tenant only (cross-tenant enumeration fix)
+        // T0-7: player list scoped to own team + tenant when club claim present.
+        // FORGE-MISSION-RAIL-VISIBILITY: operatives with teamId but no clubId JWT
+        // claim (legacy profiles) may still list intents on their team.
         || (
           isPlayer()
           && tokenTeam() != null
-          && tokenClub() != null
           && resource.data.teamId == tokenTeam()
-          && resource.data.tenantId == tokenClub()
+          && (
+            tokenClub() == null
+            || resource.data.tenantId == tokenClub()
+            || resource.data.get('clubId', '') == tokenClub()
+          )
         )
       );
 

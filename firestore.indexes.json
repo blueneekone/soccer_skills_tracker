@@ -407,6 +407,16 @@
       ]
     },
     {
+      "collectionGroup": "team_assignments",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "teamId", "order": "ASCENDING" },
+        { "fieldPath": "tenantId", "order": "ASCENDING" },
+        { "fieldPath": "assignedByUid", "order": "ASCENDING" },
+        { "fieldPath": "clientDeployId", "order": "ASCENDING" }
+      ]
+    },
+    {
       "collectionGroup": "team_broadcasts",
       "queryScope": "COLLECTION",
       "fields": [

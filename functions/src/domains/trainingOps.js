@@ -2271,9 +2271,46 @@ exports.secureDeployIntent = onCall(LAUNCH_CORE_CALLABLE_OPTS, async (request) =
     targetUids = resolvedUids;
   }
 
+  const clientDeployId = typeof data.clientDeployId === 'string'
+    ? data.clientDeployId.trim().slice(0, 64)
+    : '';
+  if (clientDeployId) {
+    const dupSnap = await db().collection('team_assignments')
+        .where('teamId', '==', teamId)
+        .where('tenantId', '==', tenantId)
+        .where('assignedByUid', '==', request.auth.uid)
+        .where('clientDeployId', '==', clientDeployId)
+        .limit(1)
+        .get();
+    if (!dupSnap.empty && dupSnap.docs.length > 0) {
+      const existing = dupSnap.docs[0];
+      const existingData = existing.data();
+      const existingExpires = existingData.expiresAt;
+      const expiresIso = existingExpires && typeof existingExpires.toDate === 'function'
+        ? existingExpires.toDate().toISOString()
+        : '';
+      return {
+        intentId: existing.id,
+        status: existingData.status || 'active',
+        expiresAt: expiresIso,
+        targetCount: existingData.scope === 'players'
+          ? (Array.isArray(existingData.targetUids) ? existingData.targetUids.length : 0)
+          : 0,
+      };
+    }
+  }
+
   const expiresAt = admin.firestore.Timestamp.fromMillis(
     Date.now() + durationDays * 86_400_000,
   );
+
+  // Snapshot per-player XP baseline for delta progress/fulfillment since deploy.
+  const xpBaselineByUid = await captureXpBaselineForIntent({
+    teamId,
+    targetAttributeId,
+    scope,
+    targetUids,
+  });
 
   const intentRef = db().collection('team_assignments').doc();
   const intentId = intentRef.id;
@@ -2291,15 +2328,17 @@ exports.secureDeployIntent = onCall(LAUNCH_CORE_CALLABLE_OPTS, async (request) =
     priority,
     status: 'active',
     fulfilledByUids: [],
+    xpBaselineByUid,
     intentVersion: 1,
     createdAt: admin.firestore.FieldValue.serverTimestamp(),
     expiresAt,
     updatedAt: admin.firestore.FieldValue.serverTimestamp(),
   };
   if (prescription) intentPayload.prescription = prescription;
+  if (clientDeployId) intentPayload.clientDeployId = clientDeployId;
   await intentRef.set(intentPayload);
 
-  await db().collection('security_audit').add({
+  const auditRow = {
     action: 'secureDeployIntent',
     intentId,
     teamId,
@@ -2312,7 +2351,9 @@ exports.secureDeployIntent = onCall(LAUNCH_CORE_CALLABLE_OPTS, async (request) =
     hasPrescription: Boolean(prescription),
     actorUid: request.auth.uid,
     at: admin.firestore.FieldValue.serverTimestamp(),
-  });
+  };
+  if (clientDeployId) auditRow.clientDeployId = clientDeployId;
+  await db().collection('security_audit').add(auditRow);
 
   return {
     intentId,
@@ -2703,7 +2744,76 @@ function rosterAuthUidsFromUserDocs(docs) {
   return [...uids];
 }
 
+/**
+ * Snapshot xpByAttribute[targetAttributeId] for in-scope roster players at deploy.
+ * Keys by auth uid and users/{email} doc id so Forge roster rows resolve either way.
+ * @param {{ teamId: string, targetAttributeId: string, scope: string, targetUids: string[] }} input
+ */
+async function captureXpBaselineForIntent(input) {
+  const {teamId, targetAttributeId, scope, targetUids} = input;
+  const rosterSnap = await db().collection('users').where('teamId', '==', teamId).get();
+  const playerDocs = rosterSnap.docs.filter((d) => d.data().role === 'player');
+  const inScopeAuthUids = scope === 'players'
+    ? new Set(targetUids)
+    : new Set(rosterAuthUidsFromUserDocs(playerDocs));
+  const xpBaselineByUid = {};
+
+  const writeBaselineKeys = (keys, xp) => {
+    for (const key of keys) {
+      if (key) xpBaselineByUid[key] = xp;
+    }
+  };
+
+  for (const d of playerDocs) {
+    const data = d.data();
+    const authUid =
+      typeof data.uid === 'string' && data.uid.trim() && !data.uid.includes('@') ?
+        data.uid.trim() :
+        '';
+    const inScope =
+      scope === 'team' ?
+        true :
+        (authUid && inScopeAuthUids.has(authUid));
+    if (!inScope) continue;
+    const xp = Number(data.xpByAttribute?.[targetAttributeId] ?? 0);
+    writeBaselineKeys([authUid, d.id.includes('@') ? d.id : ''], xp);
+  }
+
+  for (const uid of inScopeAuthUids) {
+    if (xpBaselineByUid[uid] !== undefined) continue;
+    const q = await db().collection('users').where('uid', '==', uid).limit(3).get();
+    if (q.empty) {
+      xpBaselineByUid[uid] = 0;
+      continue;
+    }
+    for (const d of q.docs) {
+      const xp = Number(d.data().xpByAttribute?.[targetAttributeId] ?? 0);
+      const authUid =
+        typeof d.data().uid === 'string' && d.data().uid.trim() && !d.data().uid.includes('@') ?
+          d.data().uid.trim() :
+          uid;
+      writeBaselineKeys([authUid, d.id.includes('@') ? d.id : ''], xp);
+    }
+  }
+
+  return xpBaselineByUid;
+}
+
+exports.captureXpBaselineForIntent = captureXpBaselineForIntent;
+
+/** XP earned since deploy baseline — mirrored from client intentProgress.ts */
+function computeIntentEarnedXp(currentXp, baselineXp) {
+  return Math.max(0, Number(currentXp) - Number(baselineXp || 0));
+}
+
+/** Whether earned XP meets intent requirement — mirrored from client intentProgress.ts */
+function intentXpFulfilled(earned, requiredXp) {
+  return requiredXp > 0 && earned >= requiredXp;
+}
+
 exports.rosterAuthUidsFromUserDocs = rosterAuthUidsFromUserDocs;
+exports.computeIntentEarnedXp = computeIntentEarnedXp;
+exports.intentXpFulfilled = intentXpFulfilled;
 
 /**
  * When XP + cadence (if any) are met, append uid to fulfilledByUids.
@@ -2742,7 +2852,9 @@ async function tryFulfillActiveIntentsForPlayer(input) {
 
     const requiredXp = Number(intent.requiredXp) || 0;
     const playerXp = Number(xpByAttribute[attrId] || 0);
-    if (playerXp < requiredXp) continue;
+    const baselineXp = Number(intent.xpBaselineByUid?.[uid] ?? 0);
+    const earnedXp = computeIntentEarnedXp(playerXp, baselineXp);
+    if (!intentXpFulfilled(earnedXp, requiredXp)) continue;
 
     const cadence = cadenceFromIntentPrescription(intent.prescription);
     if (cadence) {
@@ -2795,6 +2907,8 @@ async function tryFulfillActiveIntentsForPlayer(input) {
     await firestoreBatch.commit();
   }
 }
+
+exports.tryFulfillActiveIntentsForPlayer = tryFulfillActiveIntentsForPlayer;
 
 /**
  * Fires when a user doc is updated. If xpByAttribute changed, check all active

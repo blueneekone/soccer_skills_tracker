@@ -68,8 +68,9 @@ describe('T0-7 — team_assignments list rule tenant guard', () => {
 		);
 	});
 
-	it('list rule player branch requires tenantId == tokenClub() guard — cross-tenant defence (T0-7)', () => {
+	it('list rule player branch requires tenantId == tokenClub() when club claim present (T0-7)', () => {
 		expect(teamAssignmentsListBlock).toMatch(/resource\.data\.tenantId\s*==\s*tokenClub\(\)/);
+		expect(teamAssignmentsListBlock).toMatch(/tokenClub\(\)\s*==\s*null/);
 	});
 
 	it('list rule player branch is NOT a bare isPlayer() call — regression guard (T0-7)', () => {
@@ -85,6 +86,29 @@ describe('T0-7 — team_assignments list rule tenant guard', () => {
 	it('list rule preserves coach/director branch with tokenClub() guard', () => {
 		expect(teamAssignmentsListBlock).toMatch(
 			/\(isCoach\(\) \|\| isDirector\(\)\) && tokenClub\(\) != null/,
+		);
+	});
+});
+
+describe('FORGE-MISSION-RAIL-VISIBILITY — player mission rail list access', () => {
+	const teamAssignmentsListBlock = (() => {
+		const blockMatch = RULES.match(
+			/match \/team_assignments\/\{intentId\}\s*\{[\s\S]*?\n\s*\}/,
+		);
+		if (!blockMatch) return '';
+		const listMatch = blockMatch[0].match(/allow list:\s*if[\s\S]*?;/);
+		return listMatch ? listMatch[0] : '';
+	})();
+
+	it('player list does not require tokenClub() != null (team-only JWT operatives)', () => {
+		expect(teamAssignmentsListBlock).not.toMatch(
+			/isPlayer\(\)[\s\S]*?tokenClub\(\)\s*!=\s*null[\s\S]*?resource\.data\.teamId\s*==\s*tokenTeam\(\)/,
+		);
+	});
+
+	it('player list still requires resource.data.teamId == tokenTeam()', () => {
+		expect(teamAssignmentsListBlock).toMatch(
+			/isPlayer\(\)[\s\S]*?resource\.data\.teamId\s*==\s*tokenTeam\(\)/,
 		);
 	});
 });

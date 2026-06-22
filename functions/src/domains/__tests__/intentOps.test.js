@@ -31,6 +31,14 @@ let mockDocUpdate = jest.fn();
 let mockDocSet = jest.fn();
 let mockCollectionAdd = jest.fn();
 let mockQueryGet = jest.fn();
+let mockBatchUpdate = jest.fn();
+let mockBatchCommit = jest.fn().mockResolvedValue(undefined);
+
+const makeQueryChain = () => ({
+  where: () => makeQueryChain(),
+  limit: () => makeQueryChain(),
+  get: mockQueryGet,
+});
 
 jest.mock('firebase-admin', () => ({
   firestore: Object.assign(
@@ -49,11 +57,11 @@ jest.mock('firebase-admin', () => ({
           mockCollectionAdd(data);
           return Promise.resolve({ id: 'audit-id' });
         },
-        where: () => ({ where: () => ({ get: mockQueryGet }) }),
+        where: () => makeQueryChain(),
       }),
       batch: () => ({
-        update: jest.fn(),
-        commit: jest.fn().mockResolvedValue(undefined),
+        update: mockBatchUpdate,
+        commit: mockBatchCommit,
       }),
     }),
     {
@@ -180,6 +188,8 @@ beforeAll(() => {
 beforeEach(() => {
   mockCapturedDocWrites = [];
   jest.clearAllMocks();
+  mockBatchUpdate.mockClear();
+  mockBatchCommit.mockResolvedValue(undefined);
   // Re-wire the resolvers used by default.
   mockDocGet.mockResolvedValue({
     exists: true,
@@ -188,7 +198,7 @@ beforeEach(() => {
   mockDocSet.mockResolvedValue(undefined);
   mockDocUpdate.mockResolvedValue(undefined);
   mockCollectionAdd.mockResolvedValue({ id: 'audit-id' });
-  mockQueryGet.mockResolvedValue({ docs: [] });
+  mockQueryGet.mockResolvedValue({ empty: true, docs: [] });
   const authBouncers = require('../middleware/authBouncers');
   authBouncers.assertCanSecureAddPlayer.mockResolvedValue({ clubId: 'club-abc' });
 });
@@ -344,6 +354,75 @@ describe('secureDeployIntent', () => {
     const teamAssignWrite = mockCapturedDocWrites.find((w) => w.collection === 'team_assignments');
     expect(teamAssignWrite?.data.prescription.cues).toBeUndefined();
   });
+
+  it('writes xpBaselineByUid snapshot at deploy for team scope', async () => {
+    mockQueryGet.mockResolvedValue({
+      docs: [
+        {id: 'player-1', data: () => ({uid: 'player-1', role: 'player', xpByAttribute: {pace: 300}})},
+        {id: 'player-2', data: () => ({uid: 'player-2', role: 'player', xpByAttribute: {pace: 150}})},
+      ],
+    });
+    const req = makeCoachRequest({targetAttributeId: 'pace', requiredXp: 150});
+    await trainingOps.secureDeployIntent(req);
+    const teamAssignWrite = mockCapturedDocWrites.find((w) => w.collection === 'team_assignments');
+    expect(teamAssignWrite?.data.xpBaselineByUid['player-1']).toBe(300);
+    expect(teamAssignWrite?.data.xpBaselineByUid['player-2']).toBe(150);
+  });
+
+  it('writes xpBaselineByUid keyed by email doc id when player uid is missing', async () => {
+    mockQueryGet.mockResolvedValue({
+      docs: [
+        {
+          id: 'qa@example.com',
+          data: () => ({role: 'player', xpByAttribute: {pace: 280}}),
+        },
+      ],
+    });
+    const req = makeCoachRequest({targetAttributeId: 'pace', requiredXp: 150});
+    await trainingOps.secureDeployIntent(req);
+    const teamAssignWrite = mockCapturedDocWrites.find((w) => w.collection === 'team_assignments');
+    expect(teamAssignWrite?.data.xpBaselineByUid['qa@example.com']).toBe(280);
+  });
+
+  it('persists clientDeployId on intent and security_audit', async () => {
+    const req = makeCoachRequest({ clientDeployId: 'deploy-uuid-abc' });
+    await trainingOps.secureDeployIntent(req);
+    const teamAssignWrite = mockCapturedDocWrites.find((w) => w.collection === 'team_assignments');
+    expect(teamAssignWrite?.data.clientDeployId).toBe('deploy-uuid-abc');
+    expect(mockCollectionAdd).toHaveBeenCalledWith(
+      expect.objectContaining({ clientDeployId: 'deploy-uuid-abc' }),
+    );
+  });
+
+  it('second call with same clientDeployId returns same intentId without a second write', async () => {
+    const clientDeployId = 'deploy-id-dedup-test';
+    mockQueryGet.mockResolvedValueOnce({ empty: true, docs: [] });
+    mockQueryGet.mockResolvedValueOnce({ docs: [] });
+
+    const req = makeCoachRequest({ clientDeployId });
+    const first = await trainingOps.secureDeployIntent(req);
+    const writesAfterFirst = mockCapturedDocWrites.length;
+    const firstIntentId = first.intentId;
+
+    mockQueryGet.mockResolvedValueOnce({
+      empty: false,
+      docs: [{
+        id: firstIntentId,
+        data: () => ({
+          status: 'active',
+          scope: 'team',
+          targetUids: [],
+          expiresAt: { toDate: () => new Date('2026-06-28T00:00:00.000Z') },
+        }),
+      }],
+    });
+
+    const second = await trainingOps.secureDeployIntent(req);
+    expect(second.intentId).toBe(firstIntentId);
+    expect(second.status).toBe('active');
+    expect(mockCapturedDocWrites.length).toBe(writesAfterFirst);
+    expect(mockCollectionAdd).toHaveBeenCalledTimes(1);
+  });
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -430,5 +509,72 @@ describe('rosterAuthUidsFromUserDocs', () => {
     );
     expect(src).toMatch(/rosterAuthUidsFromUserDocs\(rosterSnap\.docs\)/);
     expect(src).not.toMatch(/d\.data\(\)\.uid \|\| d\.id/);
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// FORGE-INTENT-XP-BASELINE — delta fulfillment since deploy
+// ─────────────────────────────────────────────────────────────────────────────
+
+describe('tryFulfillActiveIntentsForPlayer — delta XP baseline', () => {
+  it('does not fulfill when lifetime XP meets required but earned since baseline does not', async () => {
+    mockQueryGet.mockResolvedValue({
+      docs: [{
+        id: 'intent-1',
+        ref: {path: 'team_assignments/intent-1'},
+        data: () => ({
+          targetAttributeId: 'pace',
+          requiredXp: 150,
+          scope: 'players',
+          targetUids: ['player-1'],
+          fulfilledByUids: [],
+          xpBaselineByUid: {'player-1': 300},
+        }),
+      }],
+    });
+    await trainingOps.tryFulfillActiveIntentsForPlayer({
+      uid: 'player-1',
+      teamId: 'team-xyz',
+      xpByAttribute: {pace: 300},
+    });
+    expect(mockBatchUpdate).not.toHaveBeenCalled();
+    expect(mockBatchCommit).not.toHaveBeenCalled();
+  });
+
+  it('fulfills when earned XP since baseline meets required', async () => {
+    mockQueryGet.mockResolvedValue({
+      docs: [{
+        id: 'intent-1',
+        ref: {path: 'team_assignments/intent-1'},
+        data: () => ({
+          targetAttributeId: 'pace',
+          requiredXp: 150,
+          scope: 'players',
+          targetUids: ['player-1'],
+          fulfilledByUids: [],
+          xpBaselineByUid: {'player-1': 300},
+        }),
+      }],
+    });
+    await trainingOps.tryFulfillActiveIntentsForPlayer({
+      uid: 'player-1',
+      teamId: 'team-xyz',
+      xpByAttribute: {pace: 450},
+    });
+    expect(mockBatchUpdate).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({
+        fulfilledByUids: ['player-1'],
+        status: 'fulfilled',
+      }),
+    );
+    expect(mockBatchCommit).toHaveBeenCalled();
+  });
+
+  it('computeIntentEarnedXp and intentXpFulfilled mirror client delta formula', () => {
+    expect(trainingOps.computeIntentEarnedXp(300, 300)).toBe(0);
+    expect(trainingOps.intentXpFulfilled(0, 150)).toBe(false);
+    expect(trainingOps.computeIntentEarnedXp(450, 300)).toBe(150);
+    expect(trainingOps.intentXpFulfilled(150, 150)).toBe(true);
   });
 });

@@ -640,16 +640,78 @@ export function intentAssignmentVisibleToPlayer(
 	return Array.isArray(targetUids) && targetUids.includes(playerUid);
 }
 
+/** Keep active coach intents visible even when stale claimedIds would hide them. */
+export function questVisibleInMissionRail(
+	quest: QuestTask,
+	progress: QuestProgressStore,
+	activeCoachIntentIds: ReadonlySet<string> = new Set(),
+): boolean {
+	if (!progress.claimedIds.includes(quest.id)) return true;
+	return quest.source === 'coach_intent' && activeCoachIntentIds.has(quest.id);
+}
+
 /** GP-ACQ-04a — empty mission rail explains coach Forge deploy path (not silent blank). */
 export const COACH_MISSION_RAIL_HINT =
 	'Coach missions appear here when your coach deploys from Forge.';
 
-/** Copy for mission rail when no bounties / sync blocked (GP-ACQ-04a failure_state). */
-export function missionRailEmptyCopy(opts: { missionSyncBlocked: boolean }): string {
-	if (opts.missionSyncBlocked) {
-		return 'Mission sync blocked — sign out and back in';
+export type MissionRailEmptyReason =
+	| 'sync_blocked'
+	| 'no_team'
+	| 'team_link_mismatch'
+	| 'scoped_out'
+	| 'no_intents';
+
+/** Resolve why the coach bounty rail is empty (distinct copy per failure mode). */
+export function resolveMissionRailEmptyReason(input: {
+	missionSyncBlocked: boolean;
+	authLoaded: boolean;
+	teamIdUsed: string;
+	intentSnapshotCount: number;
+	intentScopedCount: number;
+	profileTeamId: string;
+	tokenTeamId: string;
+	serverRefetchCount?: number | null;
+}): MissionRailEmptyReason {
+	if (input.missionSyncBlocked) return 'sync_blocked';
+	if (input.authLoaded && !input.teamIdUsed.trim()) return 'no_team';
+	if (
+		input.profileTeamId.trim() &&
+		input.tokenTeamId.trim() &&
+		input.profileTeamId.trim() !== input.tokenTeamId.trim()
+	) {
+		return 'team_link_mismatch';
 	}
-	return COACH_MISSION_RAIL_HINT;
+	if (
+		input.intentSnapshotCount === 0 &&
+		typeof input.serverRefetchCount === 'number' &&
+		input.serverRefetchCount > 0
+	) {
+		return 'team_link_mismatch';
+	}
+	if (input.intentSnapshotCount > 0 && input.intentScopedCount === 0) return 'scoped_out';
+	return 'no_intents';
+}
+
+/** Copy for mission rail when no bounties / sync blocked (GP-ACQ-04a failure_state). */
+export function missionRailEmptyCopy(opts: {
+	missionSyncBlocked?: boolean;
+	reason?: MissionRailEmptyReason;
+}): string {
+	const reason =
+		opts.reason ??
+		(opts.missionSyncBlocked ? 'sync_blocked' : 'no_intents');
+	switch (reason) {
+		case 'sync_blocked':
+			return 'Mission sync blocked — sign out and back in';
+		case 'no_team':
+			return 'Awaiting team assignment — link your operative profile to a squad';
+		case 'team_link_mismatch':
+			return 'Team link mismatch — contact your coach to sync roster and club access';
+		case 'scoped_out':
+			return 'Coach missions on your squad target other operatives — ask your coach if you should be included';
+		case 'no_intents':
+			return COACH_MISSION_RAIL_HINT;
+	}
 }
 
 /** Server-side fulfillment gate before local claim dismisses a coach intent bounty. */
@@ -660,4 +722,30 @@ export function coachIntentReadyToClaim(
 	if (!playerUid) return false;
 	const fulfilledBy = Array.isArray(intentRow?.fulfilledByUids) ? intentRow.fulfilledByUids : [];
 	return fulfilledBy.includes(playerUid);
+}
+
+export function formatMissionRailId(id: string): string {
+	const normalized = id.trim().toUpperCase().replace(/[^A-Z0-9_-]/g, '_');
+	return normalized.length > 24 ? `${normalized.slice(0, 24)}…` : normalized;
+}
+
+export function buildMissionRailModalReadout(
+	quest: QuestTask,
+	drillLine?: string,
+): string {
+	const parts: string[] = [];
+	if (quest.senderLabel) parts.push(quest.senderLabel);
+	if (drillLine) parts.push(drillLine);
+	const reward = formatQuestRewardLabel(quest);
+	if (reward) parts.push(reward);
+	return parts.join(' · ') || 'Confirm mission parameters before training handoff.';
+}
+
+export function shouldOpenMissionRailHeroModal(quest: QuestTask): boolean {
+	return (
+		quest.source !== 'coach_intent' &&
+		quest.source !== 'coach_homework' &&
+		quest.lifecycle === 'complete' &&
+		quest.actionHref.includes('/player/workout')
+	);
 }

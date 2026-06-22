@@ -162,6 +162,14 @@ export interface IntentDoc {
   fulfilledByUids: string[];
 
   /**
+   * @since 1 (FORGE-INTENT-XP-BASELINE)
+   * Auth uid → xpByAttribute[targetAttributeId] snapshot at deploy time.
+   * Progress and fulfillment use delta (current − baseline). Legacy intents
+   * without this field treat baseline as 0 per uid.
+   */
+  xpBaselineByUid?: Record<string, number>;
+
+  /**
    * @since 1
    * Schema version stamp. Absent on pre-v1 documents; read-repair writes 1.
    */
@@ -187,6 +195,12 @@ export interface IntentDoc {
    * Absent on legacy intents; use repairIntentPrescription on read.
    */
   prescription?: IntentPrescription;
+
+  /**
+   * @since 1 (FORGE-DEDUP-DEPLOY)
+   * Client idempotency key from deployIntent(); server dedupes same-key retries.
+   */
+  clientDeployId?: string;
 }
 
 /**
@@ -366,6 +380,8 @@ export interface DeployIntentInput {
   priority?: number;
   /** Optional structured drill prescription (validated server-side on deploy). */
   prescription?: IntentPrescription;
+  /** Client-generated idempotency key — dedupes accidental double-invoke on one click. */
+  clientDeployId?: string;
 }
 
 export interface DeployIntentResult {

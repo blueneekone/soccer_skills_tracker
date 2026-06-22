@@ -49,6 +49,13 @@ import {
 } from '$lib/coach/teamDrillLibrary.js';
 import { mergeAdminRoster } from '$lib/admin/rosterMerge.js';
 import { dedupeRosterEntries } from '$lib/coach/rosterDisplayDedupe.js';
+import {
+	computeIntentEarnedXp,
+	computeIntentProgressPct,
+	resolveIntentBaselineXp,
+	buildXpBaselineSnapshot,
+	mergeIntentBaselines,
+} from '$lib/coach/intent/intentProgress.js';
 
 export type DeployPhase = 'idle' | 'saving' | 'success' | 'error';
 
@@ -124,12 +131,21 @@ export class IntentEngine {
 
 	// ── Subscriptions ────────────────────────────────────────────────────────────
 	private _unsubIntents: Unsubscribe | null = null;
+	/** Synchronous guard — blocks double-invoke before deployPhase reactivity flushes. */
+	private _deployInFlight = false;
+	/** Client deploy cache until Firestore snapshot includes xpBaselineByUid. */
+	private _deployBaselineByIntentId = new Map<string, Record<string, number>>();
 
 	// ── Derived: enriched intents with per-player progress ────────────────────
 	enrichedIntents = $derived.by((): EnrichedIntent[] => {
 		const sportConfig = getRpgSportConfig(this._sportId);
 		return this.intents.map((raw): EnrichedIntent => {
 			const intent: IntentDoc = { ...INTENT_MIGRATION_DEFAULTS, ...raw } as IntentDoc;
+			const intentKey = typeof intent.intentId === 'string' ? intent.intentId : '';
+			const effectiveBaseline = mergeIntentBaselines(
+				this._deployBaselineByIntentId.get(intentKey),
+				intent.xpBaselineByUid,
+			);
 			const attr = sportConfig.attributes.find((a: { id: string }) => a.id === intent.targetAttributeId);
 			const attributeName = attr?.name ?? intent.targetAttributeId;
 			const attributeHexColor = attr?.hexColor ?? '#14b8a6';
@@ -148,9 +164,9 @@ export class IntentEngine {
 
 			const rosterRows: IntentRosterRow[] = scopedRoster.map((r) => {
 				const currentXp = Number(r.xpByAttribute?.[intent.targetAttributeId] ?? 0);
-				const progressPct = intent.requiredXp > 0
-					? Math.min(100, Math.round((currentXp / intent.requiredXp) * 100))
-					: 0;
+				const baselineXp = resolveIntentBaselineXp(effectiveBaseline, r);
+				const earnedXp = computeIntentEarnedXp(currentXp, baselineXp);
+				const progressPct = computeIntentProgressPct(earnedXp, intent.requiredXp);
 				return {
 					uid: r.uid,
 					playerName: r.playerName,
@@ -373,15 +389,37 @@ export class IntentEngine {
 	}
 
 	async deployIntent() {
-		if (!this.canDeploy) return;
+		if (this._deployInFlight || this.deployPhase !== 'idle') return;
+		if (
+			!this.draftAttributeId ||
+			this.draftRequiredXp < 1 ||
+			this.draftDurationDays < 1 ||
+			(this.draftScope === 'team'
+				? this.assignableRosterCount === 0
+				: this.selectedAssignableCount === 0)
+		) {
+			return;
+		}
+
+		this._deployInFlight = true;
 		this.deployPhase = 'saving';
 		this.deployError = '';
+		const clientDeployId = crypto.randomUUID();
 		try {
+			const scopedRoster =
+				this.draftScope === 'team'
+					? this.roster.filter((r) => r.assignable || r.uid || r.email)
+					: this.roster.filter((r) =>
+							this.draftTargetUids.some(
+								(key) => key === r.rosterKey || key === r.uid || key === r.email,
+							),
+						);
+			const deployBaselines = buildXpBaselineSnapshot(scopedRoster, this.draftAttributeId);
 			const fn = httpsCallable<DeployIntentInput, DeployIntentResult>(
 				functions,
 				'secureDeployIntent',
 			);
-			await fn({
+			const deployResult = await fn({
 				teamId: this._teamId,
 				tenantId: this._tenantId,
 				clubId: this._clubId,
@@ -397,12 +435,18 @@ export class IntentEngine {
 					:	[],
 				priority: this.draftPriorityMission ? 10 : 100,
 				prescription: this.buildDeployPrescription(),
+				clientDeployId,
 			});
+			if (deployResult.data.intentId) {
+				this._deployBaselineByIntentId.set(deployResult.data.intentId, deployBaselines);
+			}
 			this.deployPhase = 'success';
 			setTimeout(() => this.resetDraft(), 2500);
 		} catch (e) {
 			this.deployPhase = 'error';
 			this.deployError = (e as Error).message ?? 'Deploy failed.';
+		} finally {
+			this._deployInFlight = false;
 		}
 	}
 
