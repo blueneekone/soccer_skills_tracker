@@ -62,6 +62,17 @@ describe('FORGE-MISSION-RAIL-VISIBILITY — coach intent visibility', () => {
 		expect(bounty?.lifecycle).toBe('accept');
 	});
 
+	it('bountyFromCoachIntent read-repairs attributeId alias', () => {
+		const bounty = bountyFromCoachIntent(
+			'intent-b',
+			{ attributeId: 'ball_mastery', requiredXp: 100, priority: 5 },
+			progress,
+			'uid-a',
+		);
+		expect(bounty?.source).toBe('coach_intent');
+		expect(bounty?.axisId).toBe('ACC');
+	});
+
 	it('questVisibleInMissionRail keeps active coach intent when claimedIds is stale', () => {
 		const quest: QuestTask = {
 			id: 'intent-a',
@@ -575,6 +586,7 @@ describe('B4b — advisory parent-verified badge: bountyFromCoachIntent is unaff
 		expect(missionRailEmptyCopy({ reason: 'no_team' })).toMatch(/Awaiting team assignment/i);
 		expect(missionRailEmptyCopy({ reason: 'team_link_mismatch' })).toMatch(/Team link mismatch/i);
 		expect(missionRailEmptyCopy({ reason: 'scoped_out' })).toMatch(/other operatives/i);
+		expect(missionRailEmptyCopy({ reason: 'mapping_incomplete' })).toMatch(/REFRESH/i);
 	});
 
 	it('resolveMissionRailEmptyReason distinguishes failure modes', () => {
@@ -622,6 +634,19 @@ describe('B4b — advisory parent-verified badge: bountyFromCoachIntent is unaff
 				tokenTeamId: 'team-a',
 			}),
 		).toBe('scoped_out');
+		expect(
+			resolveMissionRailEmptyReason({
+				missionSyncBlocked: false,
+				authLoaded: true,
+				teamIdUsed: 'team-a',
+				intentSnapshotCount: 1,
+				intentScopedCount: 1,
+				mappedQuestCount: 0,
+				visibleBountyCount: 0,
+				profileTeamId: 'team-a',
+				tokenTeamId: 'team-a',
+			}),
+		).toBe('mapping_incomplete');
 	});
 
 	it('GP-ACQ-04a: coachIntentReadyToClaim gates claim on fulfilledByUids', () => {
@@ -676,7 +701,7 @@ describe('B4b — advisory parent-verified badge: bountyFromCoachIntent is unaff
 			'utf-8',
 		);
 		expect(AB_SRC).toMatch(/missionClaimsSync\.resolveTeamId/);
-		expect(AB_SRC).toMatch(/fetchCoachIntentQuests\(db,\s*tid/);
+		expect(AB_SRC).toMatch(/runCoachIntentRefetch/);
 		expect(AB_SRC).toMatch(/deduplicateById\(sortedQuests\)/);
 		expect(RAIL_SRC).toMatch(/collection\(db,\s*['"]team_assignments['"]\)/);
 		expect(RAIL_SRC).toMatch(/getDocsFromServer/);

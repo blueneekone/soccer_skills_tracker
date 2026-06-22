@@ -1,19 +1,16 @@
 <script lang="ts">
 	import { browser } from '$app/environment';
+	import { untrack } from 'svelte';
 	import { resolveAppPath } from '$lib/components/_shared/resolveAppPath.js';
 	import { goto } from '$app/navigation';
-	import {
-		collection,
-		onSnapshot,
-		query,
-		where,
-	} from 'firebase/firestore';
+	import { onSnapshot, query, where, collection } from 'firebase/firestore';
 	import { db } from '$lib/firebase.js';
 	import {
 		MissionSnapshotRetryGate,
 	} from '$lib/player/dashboard/missionRailAuth.js';
-	import { fetchCoachIntentQuests, mapCoachIntentRows, coachIntentRemovalDelta, applyCoachIntentPurge, applyCoachIntentRefetch, subscribeCoachIntentSnapshot } from '$lib/player/dashboard/missionRailCoachIntents.js';
+	import { applyCoachIntentPurge, runCoachIntentRefetch } from '$lib/player/dashboard/missionRailCoachIntents.js';
 	import { MissionRailClaimsSync } from '$lib/player/dashboard/missionRailClaims.svelte.js';
+	import { attachMissionQuestSubscriptions } from '$lib/player/dashboard/missionRailQuestSubscriptions.js';
 	import {
 		buildMissionRailDiagnostic,
 		logMissionRailSnapshotOnce,
@@ -26,9 +23,6 @@
 	import HudSeededRingCanvas from '$lib/components/hud/HudSeededRingCanvas.svelte';
 	import { deduplicateById } from '$lib/utils/deduplicateMissions.js';
 	import {
-		buildDailyQuests,
-		bountyFromHomeworkAssignment,
-		bountyFromParentBounty,
 		coachIntentReadyToClaim,
 		countCadenceSessionsInWindow,
 		formatCadenceProgress,
@@ -40,7 +34,6 @@
 		markQuestClaimed,
 		markQuestCompleted,
 		maxVisibleQuests,
-		purgeCoachIntentIds,
 		formatQuestRewardLabel,
 		isPromotedQuest,
 		questCtaLabel,
@@ -53,7 +46,6 @@
 		selectPrimaryBounty,
 		sortQuestLog,
 		type QuestTask,
-		questVisibleInMissionRail,
 		formatMissionRailId,
 		buildMissionRailModalReadout,
 		shouldOpenMissionRailHeroModal,
@@ -102,19 +94,15 @@
 	let hasQuestLogLoaded = $state(false);
 	let intentSnapshotCount = $state(0);
 	let intentScopedCount = $state(0);
+	let mappedIntentQuestCount = $state(0);
 	let coachIntentListenerAttached = $state(false);
 	let serverRefetchIntentCount = $state<number | null>(null);
 	let missionRailLogKey = $state('');
 	const missionClaimsSync = new MissionRailClaimsSync();
 	const missionRetryGate = new MissionSnapshotRetryGate();
 	let lastCoachIntentIds = $state<string[]>([]);
-	/** Flat completion records for cadence progress — fetched once per uid, not real-time. */
 	let cadenceCompletions = $state<CadenceCompletionRow[]>([]);
-	/**
-	 * B4b advisory badge: intentIds that have an 'approved' completion_verifications record
-	 * for this player. Subscribed player-own only (playerUid == auth.uid). Read-only display —
-	 * does NOT affect XP, progress, or intent fulfilment.
-	 */
+	/** B4b — parent-verified badge from completion_verifications (read-only). */
 	let approvedIntentIds = $state<Set<string>>(new Set());
 	let missionModalQuest = $state<QuestTask | null>(null);
 
@@ -158,6 +146,8 @@
 			teamIdUsed: teamId,
 			intentSnapshotCount,
 			intentScopedCount,
+			mappedQuestCount: mappedIntentQuestCount,
+			visibleBountyCount: visibleBounties.length,
 			profileTeamId,
 			tokenTeamId: missionClaimsSync.tokenTeamId,
 			tokenClubId: missionClaimsSync.tokenClubId,
@@ -283,7 +273,7 @@
 	$effect(() => {
 		if (questsProp !== undefined) return;
 
-		void refreshNonce; void missionClaimsSync.claimsSyncNonce; void missionClaimsSync.tokenTeamId;
+		void missionClaimsSync.claimsSyncNonce; void missionClaimsSync.tokenTeamId;
 
 		if (!browser || authStore.isLoading || authStore.role !== 'player' || !playerUid) {
 			internalLoading = false;
@@ -292,169 +282,84 @@
 			missionRetryGate.reset();
 			intentSnapshotCount = 0;
 			intentScopedCount = 0;
+			mappedIntentQuestCount = 0;
 			coachIntentListenerAttached = false;
 			serverRefetchIntentCount = null;
 			return;
 		}
 
-		const uid = playerUid;
-		const email = playerEmail;
-		const tid = teamId;
 		const profile = authStore.userProfile;
-
-		if (!hasQuestLogLoaded) internalLoading = true;
-		questProgress = loadQuestProgress();
-
-		/** @type {QuestTask[]} */
-		let intents: QuestTask[] = [];
-		/** @type {QuestTask[]} */
-		let homework: QuestTask[] = [];
-		/** @type {QuestTask[]} */
-		let parentRows: QuestTask[] = [];
-		/** @type {Set<string>} */
-		let activeCoachIntentIds = new Set<string>();
-
-		const merge = () => {
-			const progress = loadQuestProgress();
-			const dailies = buildDailyQuests(
-				profile && typeof profile === 'object' ?
-					/** @type {Record<string, unknown>} */ (profile)
-				:	null,
-				progress,
-			);
-			const merged = [...intents, ...homework, ...parentRows, ...dailies].filter((q) =>
-				questVisibleInMissionRail(q, progress, activeCoachIntentIds));
-			internalQuests = sortQuestLog(merged);
-			internalLoading = false;
-			hasQuestLogLoaded = true;
-		};
-
-		const syncCoachIntentRemoval = (activeIds: Set<string>) => {
-			activeCoachIntentIds = activeIds;
-			const { removed, nextIds } = coachIntentRemovalDelta(lastCoachIntentIds, activeIds);
-			lastCoachIntentIds = nextIds;
-			if (removed.length === 0) return;
-			questProgress = applyCoachIntentPurge(questProgress, removed);
-		};
-
-		const applyCoachIntents = (scopedRows: Array<{ id: string } & Record<string, unknown>>) => {
-			const progress = loadQuestProgress();
-			const { quests, intentDataById: nextIntentData, activeIds } = mapCoachIntentRows(
-				scopedRows,
-				progress,
-				uid,
-			);
-			syncCoachIntentRemoval(activeIds);
-			intentDataById = nextIntentData;
-			intents = quests;
-			merge();
-		};
-
-		const unsubs: Array<() => void> = [];
-
-		if (tid) {
-			coachIntentListenerAttached = true;
-			unsubs.push(
-				subscribeCoachIntentSnapshot(db, tid, uid, {
-					onSuccess: () => {
-						missionSyncBlocked = false;
-						missionRetryGate.onSuccess();
-						isRefreshing = false;
-					},
-					onEmpty: () => {
-						intentSnapshotCount = 0;
-						intentScopedCount = 0;
-						syncCoachIntentRemoval(new Set());
-						intentDataById = {};
-						intents = [];
-						merge();
-					},
-					onRows: (scopedRows, rawCount, scopedCount) => {
-						intentSnapshotCount = rawCount;
-						intentScopedCount = scopedCount;
-						applyCoachIntents(scopedRows);
-					},
-					onError: (err) => {
-						console.error('[ActiveBounties] team_assignments snapshot error:', err, {
-							teamId: tid,
-							clubId,
-						});
-						missionRetryGate.onError(
-							() => {
-								isRefreshing = true;
-								void authStore.refreshClaims().finally(() => {
-									refreshNonce += 1;
-								});
-							},
-							() => {
-								missionSyncBlocked = true;
-								isRefreshing = false;
-								coachIntentListenerAttached = false;
-								intentSnapshotCount = 0;
-								intentScopedCount = 0;
-								syncCoachIntentRemoval(new Set());
-								intents = [];
-								intentDataById = {};
-								merge();
-							},
-						);
-					},
-				}),
-			);
-		} else {
-			coachIntentListenerAttached = false;
-			intentSnapshotCount = 0;
-			intentScopedCount = 0;
-		}
-
-		const hwQ = query(collection(db, 'assignments'), where('playerId', '==', uid), where('status', '==', 'pending'));
-		unsubs.push(onSnapshot(hwQ, (snap) => {
-			const progress = loadQuestProgress();
-			const uniqueDocs = [...new Map(snap.docs.map((d) => [d.id, d])).values()];
-			const rows = uniqueDocs.map((d) => ({ id: d.id, ...d.data() }));
-			homeworkDataById = Object.fromEntries(rows.map((row) => [row.id, row as Record<string, unknown>]));
-			homework = rows.map((row) => bountyFromHomeworkAssignment(row.id, row, progress)).filter((b): b is QuestTask => b != null);
-			merge();
-		}, () => { homework = []; homeworkDataById = {}; merge(); }));
-
-		if (email) {
-			const bountyQ = query(collection(db, 'bounties'), where('playerEmail', '==', email), where('status', 'in', ['active', 'verified']));
-			unsubs.push(onSnapshot(bountyQ, (snap) => {
-				const progress = loadQuestProgress();
-				const uniqueDocs = [...new Map(snap.docs.map((d) => [d.id, d])).values()];
-				parentRows = uniqueDocs.map((d) => bountyFromParentBounty(d.id, d.data(), progress)).filter((b): b is QuestTask => b != null);
-				merge();
-			}, () => { parentRows = []; merge(); }));
-		}
-
-		return () => {
-			for (const u of unsubs) u();
-		};
+		return attachMissionQuestSubscriptions({
+			db,
+			uid: playerUid,
+			email: playerEmail,
+			tid: teamId,
+			jwtTeam: missionClaimsSync.tokenTeamId,
+			tenantFilter: (missionClaimsSync.tokenClubId || clubId || '').trim(),
+			tokenClub: missionClaimsSync.tokenClubId,
+			profileTeamId,
+			profile: profile && typeof profile === 'object' ? profile as Record<string, unknown> : null,
+			clubId,
+			hasQuestLogLoaded,
+			sink: {
+				setInternalQuests: (q) => { internalQuests = q; },
+				setInternalLoading: (v) => { internalLoading = v; },
+				setHasQuestLogLoaded: (v) => { hasQuestLogLoaded = v; },
+				setQuestProgress: (p) => { questProgress = p; },
+				setIntentDataById: (d) => { intentDataById = d; },
+				setHomeworkDataById: (d) => { homeworkDataById = d; },
+				setIntentSnapshotCount: (n) => { intentSnapshotCount = n; },
+				setIntentScopedCount: (n) => { intentScopedCount = n; },
+				setMappedIntentQuestCount: (n) => { mappedIntentQuestCount = n; },
+				setCoachIntentListenerAttached: (v) => { coachIntentListenerAttached = v; },
+				setMissionSyncBlocked: (v) => { missionSyncBlocked = v; },
+				setIsRefreshing: (v) => { isRefreshing = v; },
+				getLastCoachIntentIds: () => lastCoachIntentIds,
+				setLastCoachIntentIds: (ids) => { lastCoachIntentIds = ids; },
+				getQuestProgress: () => questProgress,
+				loadQuestProgress,
+				missionRetryGate,
+				refreshClaims: () => authStore.refreshClaims(),
+				bumpRefreshNonce: () => { refreshNonce += 1; },
+			},
+		});
 	});
 
 	$effect(() => {
 		if (questsProp !== undefined) return;
-		void refreshNonce;
-		void missionClaimsSync.claimsSyncNonce;
-		if (!browser || authStore.isLoading || authStore.role !== 'player') return;
+		const nonce = refreshNonce;
+		const claimsNonce = missionClaimsSync.claimsSyncNonce;
 		const tid = teamId;
-		if (!tid || (refreshNonce === 0 && missionClaimsSync.claimsSyncNonce === 0)) return;
+		const uid = playerUid;
+		if (!browser || authStore.isLoading || authStore.role !== 'player') return;
+		if (!tid || (nonce === 0 && claimsNonce === 0)) return;
+
+		const refetchPayload = untrack(() => ({
+			lastCoachIntentIds,
+			internalQuests,
+			questProgress,
+			intentDataById,
+			listenerScopedCount: intentScopedCount,
+			mappedIntentQuestCount,
+		}));
+
 		isRefreshing = true;
-		void fetchCoachIntentQuests(db, tid, playerUid, loadQuestProgress())
-			.then((snapshot) => {
+		void runCoachIntentRefetch({
+			db,
+			teamId: tid,
+			playerUid: uid,
+			tenantId: (missionClaimsSync.tokenClubId || clubId || '').trim(),
+			...refetchPayload,
+		})
+			.then((applied) => {
 				missionSyncBlocked = false;
 				missionRetryGate.onSuccess();
-				serverRefetchIntentCount = snapshot.quests.length;
-				const applied = applyCoachIntentRefetch({
-					snapshot,
-					lastCoachIntentIds,
-					internalQuests,
-					questProgress,
-				});
+				serverRefetchIntentCount = applied.serverRefetchIntentCount;
 				lastCoachIntentIds = applied.lastCoachIntentIds;
 				questProgress = applied.questProgress;
 				intentDataById = applied.intentDataById;
 				internalQuests = applied.internalQuests;
+				mappedIntentQuestCount = applied.mappedIntentQuestCount;
 				internalLoading = false;
 				hasQuestLogLoaded = true;
 			})

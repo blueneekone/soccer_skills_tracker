@@ -64,10 +64,22 @@ export function applyCoachIntentPurge(
 	return next;
 }
 
-export function coachIntentQuery(db: Firestore, teamId: string) {
+export function coachIntentQuery(db: Firestore, teamId: string, tenantId = '') {
+	const coll = collection(db, 'team_assignments');
+	const tid = teamId.trim();
+	const club = tenantId.trim();
+	if (club) {
+		return query(
+			coll,
+			where('teamId', '==', tid),
+			where('tenantId', '==', club),
+			where('status', '==', 'active'),
+			orderBy('priority', 'asc'),
+		);
+	}
 	return query(
-		collection(db, 'team_assignments'),
-		where('teamId', '==', teamId),
+		coll,
+		where('teamId', '==', tid),
 		where('status', '==', 'active'),
 		orderBy('priority', 'asc'),
 	);
@@ -80,6 +92,7 @@ export function subscribeCoachIntentSnapshot(
 	db: Firestore,
 	teamId: string,
 	playerUid: string,
+	tenantId: string,
 	handlers: {
 		onRows: (scopedRows: IntentDocRow[], rawCount: number, scopedCount: number) => void;
 		onEmpty: () => void;
@@ -92,7 +105,7 @@ export function subscribeCoachIntentSnapshot(
 			.map((d) => ({ id: d.id, ...d.data() }))
 			.filter((row) => intentAssignmentVisibleToPlayer(row, playerUid));
 	return onSnapshot(
-		coachIntentQuery(db, teamId),
+		coachIntentQuery(db, teamId, tenantId),
 		(snap) => {
 			handlers.onSuccess();
 			const uniqueDocs = [...new Map(snap.docs.map((d) => [d.id, d])).values()];
@@ -112,8 +125,9 @@ export function subscribeCoachIntentSnapshot(
 export async function fetchCoachIntentDocsFromServer(
 	db: Firestore,
 	teamId: string,
+	tenantId = '',
 ): Promise<QuerySnapshot> {
-	return getDocsFromServer(coachIntentQuery(db, teamId));
+	return getDocsFromServer(coachIntentQuery(db, teamId, tenantId));
 }
 
 /** One-shot team_assignments read for post-claims-refresh mission rail sync. */
@@ -122,8 +136,9 @@ export async function fetchCoachIntentQuests(
 	teamId: string,
 	playerUid: string,
 	progress: QuestProgressStore,
+	tenantId = '',
 ): Promise<CoachIntentSnapshot> {
-	const snap = await fetchCoachIntentDocsFromServer(db, teamId);
+	const snap = await fetchCoachIntentDocsFromServer(db, teamId, tenantId);
 	const uniqueDocs = [...new Map(snap.docs.map((d) => [d.id, d])).values()];
 	const scopedRows = uniqueDocs
 		.map((d) => ({ id: d.id, ...d.data() }))
@@ -135,13 +150,30 @@ export function mergeCoachIntentsIntoQuestLog(
 	coachIntents: readonly QuestTask[],
 	existing: readonly QuestTask[],
 	progress: QuestProgressStore,
+	opts: {
+		/** Live listener scoped rows — when > 0, empty refetch must not strip coach rows. */
+		listenerScopedCount?: number;
+		/** Active intent ids from Firestore (may exceed mapped quests when mapping fails). */
+		activeIds?: ReadonlySet<string>;
+	} = {},
 ): QuestTask[] {
-	// Empty snapshot must drop all prior coach_intent rows (cancel / expire).
 	const nonCoach = existing.filter((q) => q.source !== 'coach_intent');
-	const merged = coachIntents.length === 0 ? nonCoach : [...coachIntents, ...nonCoach];
-	const activeCoachIntentIds = new Set(coachIntents.map((q) => q.id));
+	const listenerScopedCount = opts.listenerScopedCount ?? 0;
+	const activeIds = opts.activeIds ?? new Set(coachIntents.map((q) => q.id));
+
+	let coachRows: QuestTask[];
+	if (coachIntents.length > 0) {
+		coachRows = [...coachIntents];
+	} else if (listenerScopedCount > 0 || activeIds.size > 0) {
+		// Server/refetch race or mapping gap — keep listener coach rows until empty is confirmed.
+		coachRows = existing.filter((q) => q.source === 'coach_intent' && activeIds.has(q.id));
+	} else {
+		coachRows = [];
+	}
+
+	const merged = [...coachRows, ...nonCoach];
 	return sortQuestLog(
-		merged.filter((q) => questVisibleInMissionRail(q, progress, activeCoachIntentIds)),
+		merged.filter((q) => questVisibleInMissionRail(q, progress, activeIds)),
 	);
 }
 
@@ -150,13 +182,37 @@ export function applyCoachIntentRefetch(input: {
 	lastCoachIntentIds: readonly string[];
 	internalQuests: readonly QuestTask[];
 	questProgress: QuestProgressStore;
+	intentDataById: Record<string, Record<string, unknown>>;
+	/** Live listener scoped row count — authoritative until listener reports zero. */
+	listenerScopedCount: number;
 }): {
 	lastCoachIntentIds: string[];
 	intentDataById: Record<string, Record<string, unknown>>;
 	internalQuests: QuestTask[];
 	questProgress: QuestProgressStore;
+	skippedEmptyRefetch: boolean;
 } {
-	const { snapshot, lastCoachIntentIds, internalQuests, questProgress } = input;
+	const {
+		snapshot,
+		lastCoachIntentIds,
+		internalQuests,
+		questProgress,
+		intentDataById,
+		listenerScopedCount,
+	} = input;
+
+	const emptyServerSnapshot =
+		snapshot.quests.length === 0 && snapshot.activeIds.size === 0;
+	if (emptyServerSnapshot && listenerScopedCount > 0) {
+		return {
+			lastCoachIntentIds: [...lastCoachIntentIds],
+			intentDataById,
+			questProgress,
+			internalQuests: [...internalQuests],
+			skippedEmptyRefetch: true,
+		};
+	}
+
 	const { removed, nextIds } = coachIntentRemovalDelta(lastCoachIntentIds, snapshot.activeIds);
 	const orphanCoachIds = internalQuests
 		.filter((q) => q.source === 'coach_intent' && !snapshot.activeIds.has(q.id))
@@ -164,10 +220,75 @@ export function applyCoachIntentRefetch(input: {
 	const purgeIds = [...new Set([...removed, ...orphanCoachIds])];
 	const purgedProgress =
 		purgeIds.length > 0 ? applyCoachIntentPurge(questProgress, purgeIds) : questProgress;
+
+	const mergedIntentData =
+		Object.keys(snapshot.intentDataById).length > 0 ? snapshot.intentDataById : intentDataById;
+
 	return {
 		lastCoachIntentIds: nextIds,
-		intentDataById: snapshot.intentDataById,
+		intentDataById: mergedIntentData,
 		questProgress: purgedProgress,
-		internalQuests: mergeCoachIntentsIntoQuestLog(snapshot.quests, internalQuests, purgedProgress),
+		internalQuests: mergeCoachIntentsIntoQuestLog(
+			snapshot.quests,
+			internalQuests,
+			purgedProgress,
+			{
+				listenerScopedCount,
+				activeIds: snapshot.activeIds,
+			},
+		),
+		skippedEmptyRefetch: false,
+	};
+}
+
+/** Post-claims / manual refresh — applies server snapshot without clobbering live listener rows. */
+export async function runCoachIntentRefetch(input: {
+	db: Firestore;
+	teamId: string;
+	playerUid: string;
+	tenantId?: string;
+	lastCoachIntentIds: readonly string[];
+	internalQuests: readonly QuestTask[];
+	questProgress: QuestProgressStore;
+	intentDataById: Record<string, Record<string, unknown>>;
+	listenerScopedCount: number;
+	mappedIntentQuestCount: number;
+}): Promise<{
+	lastCoachIntentIds: string[];
+	intentDataById: Record<string, Record<string, unknown>>;
+	internalQuests: QuestTask[];
+	questProgress: QuestProgressStore;
+	mappedIntentQuestCount: number;
+	serverRefetchIntentCount: number;
+}> {
+	const snapshot = await fetchCoachIntentQuests(
+		input.db,
+		input.teamId,
+		input.playerUid,
+		input.questProgress,
+		input.tenantId ?? '',
+	);
+	const applied = applyCoachIntentRefetch({
+		snapshot,
+		lastCoachIntentIds: input.lastCoachIntentIds,
+		internalQuests: input.internalQuests,
+		questProgress: input.questProgress,
+		intentDataById: input.intentDataById,
+		listenerScopedCount: input.listenerScopedCount,
+	});
+	if (applied.skippedEmptyRefetch) {
+		console.info(
+			'[ActiveBounties] coach intent refetch empty — preserving listener coach rows',
+			{ listenerScopedCount: input.listenerScopedCount, serverQuestCount: snapshot.quests.length },
+		);
+	}
+	const coachMapped = applied.internalQuests.filter((q) => q.source === 'coach_intent').length;
+	return {
+		lastCoachIntentIds: applied.lastCoachIntentIds,
+		intentDataById: applied.intentDataById,
+		questProgress: applied.questProgress,
+		internalQuests: applied.internalQuests,
+		mappedIntentQuestCount: Math.max(input.mappedIntentQuestCount, coachMapped),
+		serverRefetchIntentCount: snapshot.quests.length,
 	};
 }

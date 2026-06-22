@@ -105,7 +105,7 @@ describe('GP-ACQ-03 / GP-ACQ-04a — coach intent → player mission rail', () =
 		expect(rail).toMatch(/getDocsFromServer/);
 		expect(rail).toMatch(/fetchCoachIntentDocsFromServer/);
 		expect(bounties).toMatch(/fetchCoachIntentQuests/);
-		expect(bounties).toMatch(/applyCoachIntentRefetch/);
+		expect(bounties).toMatch(/runCoachIntentRefetch/);
 		expect(bounties).toMatch(/coach intent refetch failed/);
 	});
 

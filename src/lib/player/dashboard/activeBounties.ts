@@ -492,14 +492,21 @@ export function formatCadenceProgress(
 	return `${completed}/${sessionsPerWindow} ${windowLabel}`;
 }
 
+function readCoachIntentTargetAttributeId(data: Record<string, unknown>): string {
+	const direct =
+		typeof data.targetAttributeId === 'string' ? data.targetAttributeId.trim() : '';
+	if (direct) return direct;
+	const alias = typeof data.attributeId === 'string' ? data.attributeId.trim() : '';
+	return alias;
+}
+
 export function bountyFromCoachIntent(
 	id: string,
 	data: Record<string, unknown>,
 	progress: QuestProgressStore,
 	playerUid = '',
 ): QuestTask | null {
-	const targetAttributeId =
-		typeof data.targetAttributeId === 'string' ? data.targetAttributeId.trim() : '';
+	const targetAttributeId = readCoachIntentTargetAttributeId(data);
 	if (!targetAttributeId) return null;
 	const requiredXp = Math.max(0, Math.floor(Number(data.requiredXp) || 0));
 	const priority = Number.isFinite(Number(data.priority)) ? Number(data.priority) : 100;
@@ -659,6 +666,7 @@ export type MissionRailEmptyReason =
 	| 'no_team'
 	| 'team_link_mismatch'
 	| 'scoped_out'
+	| 'mapping_incomplete'
 	| 'no_intents';
 
 /** Resolve why the coach bounty rail is empty (distinct copy per failure mode). */
@@ -668,6 +676,8 @@ export function resolveMissionRailEmptyReason(input: {
 	teamIdUsed: string;
 	intentSnapshotCount: number;
 	intentScopedCount: number;
+	mappedQuestCount?: number;
+	visibleBountyCount?: number;
 	profileTeamId: string;
 	tokenTeamId: string;
 	serverRefetchCount?: number | null;
@@ -689,6 +699,13 @@ export function resolveMissionRailEmptyReason(input: {
 		return 'team_link_mismatch';
 	}
 	if (input.intentSnapshotCount > 0 && input.intentScopedCount === 0) return 'scoped_out';
+	if (
+		input.intentScopedCount > 0 &&
+		(input.mappedQuestCount ?? 0) === 0 &&
+		(input.visibleBountyCount ?? 0) === 0
+	) {
+		return 'mapping_incomplete';
+	}
 	return 'no_intents';
 }
 
@@ -709,6 +726,8 @@ export function missionRailEmptyCopy(opts: {
 			return 'Team link mismatch — contact your coach to sync roster and club access';
 		case 'scoped_out':
 			return 'Coach missions on your squad target other operatives — ask your coach if you should be included';
+		case 'mapping_incomplete':
+			return 'Coach mission sync incomplete — tap REFRESH';
 		case 'no_intents':
 			return COACH_MISSION_RAIL_HINT;
 	}

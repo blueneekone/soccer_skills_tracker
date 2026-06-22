@@ -10,6 +10,8 @@ export type MissionRailDiagnostic = {
 	tokenClub: string;
 	intentSnapshotCount: number;
 	intentScopedCount: number;
+	mappedQuestCount: number;
+	visibleBountyCount: number;
 	listenerAttached: boolean;
 	emptyReason: MissionRailEmptyReason;
 };
@@ -20,6 +22,8 @@ export function buildMissionRailDiagnostic(input: {
 	teamIdUsed: string;
 	intentSnapshotCount: number;
 	intentScopedCount: number;
+	mappedQuestCount: number;
+	visibleBountyCount: number;
 	profileTeamId: string;
 	tokenTeamId: string;
 	tokenClubId: string;
@@ -32,6 +36,8 @@ export function buildMissionRailDiagnostic(input: {
 		teamIdUsed: input.teamIdUsed,
 		intentSnapshotCount: input.intentSnapshotCount,
 		intentScopedCount: input.intentScopedCount,
+		mappedQuestCount: input.mappedQuestCount,
+		visibleBountyCount: input.visibleBountyCount,
 		profileTeamId: input.profileTeamId,
 		tokenTeamId: input.tokenTeamId,
 		serverRefetchCount: input.serverRefetchCount,
@@ -42,6 +48,8 @@ export function buildMissionRailDiagnostic(input: {
 		tokenClub: input.tokenClubId,
 		intentSnapshotCount: input.intentSnapshotCount,
 		intentScopedCount: input.intentScopedCount,
+		mappedQuestCount: input.mappedQuestCount,
+		visibleBountyCount: input.visibleBountyCount,
 		listenerAttached: input.listenerAttached,
 		emptyReason,
 	};

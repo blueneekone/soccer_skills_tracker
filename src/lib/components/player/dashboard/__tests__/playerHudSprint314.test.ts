@@ -91,7 +91,7 @@ describe('QA-142 — coach mission Train handoff', () => {
 		expect(rail).toMatch(/getDocsFromServer/);
 		expect(rail).toMatch(/fetchCoachIntentDocsFromServer/);
 		expect(bountiesSrc).toMatch(/fetchCoachIntentQuests/);
-		expect(bountiesSrc).toMatch(/applyCoachIntentRefetch/);
+		expect(bountiesSrc).toMatch(/runCoachIntentRefetch/);
 		expect(bountiesSrc).toMatch(/uniqueDocs\.length === 0/);
 	});
 });

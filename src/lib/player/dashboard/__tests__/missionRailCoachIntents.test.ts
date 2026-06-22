@@ -46,6 +46,18 @@ function dailyQuest(id: string): QuestTask {
 	};
 }
 
+function refetchInput(overrides: Partial<Parameters<typeof applyCoachIntentRefetch>[0]> = {}) {
+	return {
+		snapshot: { quests: [], intentDataById: {}, activeIds: new Set<string>() },
+		lastCoachIntentIds: [] as string[],
+		internalQuests: [] as QuestTask[],
+		questProgress: baseProgress,
+		intentDataById: {},
+		listenerScopedCount: 0,
+		...overrides,
+	};
+}
+
 describe('missionRailCoachIntents — GP-ACQ-03 cancel sync', () => {
 	it('coachIntentRemovalDelta detects removed ids', () => {
 		const { removed, nextIds } = coachIntentRemovalDelta(['intent-a', 'intent-b'], new Set(['intent-b']));
@@ -62,15 +74,31 @@ describe('missionRailCoachIntents — GP-ACQ-03 cancel sync', () => {
 
 	it('applyCoachIntentRefetch uses purged questProgress when merging', () => {
 		const existing = [coachQuest('intent-a'), dailyQuest('daily-training-log')];
-		const applied = applyCoachIntentRefetch({
-			snapshot: { quests: [], intentDataById: {}, activeIds: new Set() },
-			lastCoachIntentIds: ['intent-a'],
-			internalQuests: existing,
-			questProgress: baseProgress,
-		});
+		const applied = applyCoachIntentRefetch(
+			refetchInput({
+				lastCoachIntentIds: ['intent-a'],
+				internalQuests: existing,
+			}),
+		);
 		expect(applied.questProgress.acceptedIds).toEqual([]);
 		expect(applied.questProgress.completedIds).toEqual([]);
 		expect(applied.internalQuests.some((q) => q.source === 'coach_intent')).toBe(false);
+		expect(applied.skippedEmptyRefetch).toBe(false);
+	});
+
+	it('applyCoachIntentRefetch preserves listener coach rows when server refetch is empty', () => {
+		const existing = [coachQuest('intent-a'), dailyQuest('daily-training-log')];
+		const applied = applyCoachIntentRefetch(
+			refetchInput({
+				lastCoachIntentIds: ['intent-a'],
+				internalQuests: existing,
+				intentDataById: { 'intent-a': { targetAttributeId: 'pace' } },
+				listenerScopedCount: 1,
+			}),
+		);
+		expect(applied.skippedEmptyRefetch).toBe(true);
+		expect(applied.internalQuests.some((q) => q.id === 'intent-a')).toBe(true);
+		expect(applied.questProgress.acceptedIds).toEqual(['intent-a']);
 	});
 
 	it('applyCoachIntentRefetch purges orphan coach_intent ids not tracked in lastCoachIntentIds', () => {
@@ -81,12 +109,12 @@ describe('missionRailCoachIntents — GP-ACQ-03 cancel sync', () => {
 			claimedIds: [],
 			claimedDateUtc: '2026-01-01',
 		};
-		const applied = applyCoachIntentRefetch({
-			snapshot: { quests: [], intentDataById: {}, activeIds: new Set() },
-			lastCoachIntentIds: [],
-			internalQuests: existing,
-			questProgress: progress,
-		});
+		const applied = applyCoachIntentRefetch(
+			refetchInput({
+				internalQuests: existing,
+				questProgress: progress,
+			}),
+		);
 		expect(applied.questProgress.acceptedIds).toEqual([]);
 		expect(applied.internalQuests.some((q) => q.id === 'intent-stale')).toBe(false);
 	});
@@ -100,6 +128,7 @@ describe('missionRailCoachIntents — GP-ACQ-03 cancel sync', () => {
 		);
 		expect(src).toMatch(/getDocsFromServer/);
 		expect(src).not.toMatch(/getDocs\(/);
+		expect(src).toMatch(/where\('tenantId', '==', club\)/);
 	});
 
 	it('applyCoachIntentPurge clears sessionStorage handoff for removed missionId', () => {
@@ -155,11 +184,22 @@ describe('FORGE-MISSION-RAIL-VISIBILITY — coach intent merge', () => {
 		expect(snapshot.activeIds.has('intent-live')).toBe(true);
 	});
 
-	it('mergeCoachIntentsIntoQuestLog drops coach rows when snapshot empty', () => {
+	it('mergeCoachIntentsIntoQuestLog drops coach rows when snapshot empty and listener idle', () => {
 		const existing = [coachQuest('intent-gone'), dailyQuest('daily-training-log')];
-		const merged = mergeCoachIntentsIntoQuestLog([], existing, progress);
+		const merged = mergeCoachIntentsIntoQuestLog([], existing, progress, {
+			listenerScopedCount: 0,
+		});
 		expect(merged.some((q) => q.source === 'coach_intent')).toBe(false);
 		expect(merged.some((q) => q.id === 'daily-training-log')).toBe(true);
+	});
+
+	it('mergeCoachIntentsIntoQuestLog keeps coach row when listener still has scoped rows', () => {
+		const existing = [coachQuest('intent-live'), dailyQuest('daily-training-log')];
+		const merged = mergeCoachIntentsIntoQuestLog([], existing, progress, {
+			listenerScopedCount: 1,
+			activeIds: new Set(['intent-live']),
+		});
+		expect(merged.some((q) => q.id === 'intent-live')).toBe(true);
 	});
 
 	it('mergeCoachIntentsIntoQuestLog keeps active coach intent despite stale claimedIds', () => {
