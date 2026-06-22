@@ -7,6 +7,9 @@ import {
 	coachIntentReadyToClaim,
 	countCadenceSessionsInWindow,
 	formatCadenceProgress,
+	hasCadenceCreditToday,
+	questCadenceBlockedToday,
+	questHudCtaBlockedCadence,
 	missionRailEmptyCopy,
 	COACH_MISSION_RAIL_HINT,
 	questCtaLabel,
@@ -150,18 +153,18 @@ describe('activeBounties', () => {
 		expect(hero?.id).toBe('daily-training-log');
 	});
 
-	it('resolveHeroQuest still picks daily-training-log when claimed but last_training_utc is stale', () => {
-		const streakCheck: QuestTask = {
-			id: 'daily-streak-check',
+	it('resolveHeroQuest prefers coach_intent over daily training when coach bounty present', () => {
+		const trainingLog: QuestTask = {
+			id: 'daily-training-log',
 			tier: 'daily',
 			source: 'daily_habit',
 			senderLabel: 'Daily Habit',
-			title: 'Protect your 5-day streak',
-			axisId: 'PAC',
-			xpReward: 20,
+			title: "Log today's training session",
+			axisId: 'STM',
+			xpReward: 35,
 			lifecycle: 'accept',
 			actionHref: '/player/workout',
-			sortKey: 1,
+			sortKey: 0,
 		};
 		const bounty: QuestTask = {
 			id: 'coach-intent-1',
@@ -176,12 +179,11 @@ describe('activeBounties', () => {
 			sortKey: 10,
 		};
 		const now = new Date(Date.UTC(2026, 4, 21));
-		// daily-training-log absent — filtered by buildDailyQuests claimedIds
-		const hero = resolveHeroQuest([bounty, streakCheck], {
+		const hero = resolveHeroQuest([bounty, trainingLog], {
 			lastTrainingUtc: '2026-05-20',
 			now,
 		});
-		expect(hero?.id).toBe('daily-training-log');
+		expect(hero?.id).toBe('coach-intent-1');
 	});
 
 	it('resolveHeroQuest prefers streak quest when trained today', () => {
@@ -215,6 +217,27 @@ describe('activeBounties', () => {
 			now,
 		});
 		expect(hero?.id).toBe('daily-streak-check');
+	});
+
+	it('resolveHeroQuest synthesizes daily-training-log when stale last_training_utc and no coach bounty', () => {
+		const streakCheck: QuestTask = {
+			id: 'daily-streak-check',
+			tier: 'daily',
+			source: 'daily_habit',
+			senderLabel: 'Daily Habit',
+			title: 'Protect your 5-day streak',
+			axisId: 'PAC',
+			xpReward: 20,
+			lifecycle: 'accept',
+			actionHref: '/player/workout',
+			sortKey: 1,
+		};
+		const now = new Date(Date.UTC(2026, 4, 21));
+		const hero = resolveHeroQuest([streakCheck], {
+			lastTrainingUtc: '2026-05-20',
+			now,
+		});
+		expect(hero?.id).toBe('daily-training-log');
 	});
 
 	it('excludeHeroFromRailQuests removes hero id from embedded rail feed', () => {
@@ -270,9 +293,10 @@ describe('activeBounties', () => {
 describe('B2 — countCadenceSessionsInWindow', () => {
 	const NOW = 1_720_000_000_000; // fixed reference time
 
-	it('counts completions matching attribute within window', () => {
+	it('counts distinct UTC days matching attribute within window', () => {
 		const completions = [
 			{ attributeId: 'ball_mastery', loggedAtMs: NOW - 1 * 86_400_000 },
+			{ attributeId: 'ball_mastery', loggedAtMs: NOW - 1 * 86_400_000 + 3_600_000 },
 			{ attributeId: 'ball_mastery', loggedAtMs: NOW - 3 * 86_400_000 },
 			{ attributeId: 'pace', loggedAtMs: NOW - 1 * 86_400_000 },
 		];
@@ -295,6 +319,50 @@ describe('B2 — countCadenceSessionsInWindow', () => {
 			{ attributeId: 'pace', loggedAtMs: NOW - 7 * 86_400_000 },
 		];
 		expect(countCadenceSessionsInWindow(completions, 'pace', 7, NOW)).toBe(1);
+	});
+});
+
+describe('B2 — hasCadenceCreditToday + questCadenceBlockedToday', () => {
+	const NOW = Date.UTC(2026, 5, 21, 15, 0, 0);
+
+	it('hasCadenceCreditToday matches attribute + intent on same UTC day', () => {
+		const completions = [
+			{
+				attributeId: 'ball_mastery',
+				loggedAtMs: NOW - 2 * 3_600_000,
+				intentId: 'intent-a',
+			},
+		];
+		expect(hasCadenceCreditToday(completions, 'ball_mastery', 'intent-a', NOW)).toBe(true);
+		expect(hasCadenceCreditToday(completions, 'ball_mastery', 'intent-b', NOW)).toBe(false);
+	});
+
+	it('questCadenceBlockedToday gates complete-state cadence missions only', () => {
+		const quest: QuestTask = {
+			id: 'intent-a',
+			tier: 'bounty',
+			source: 'coach_intent',
+			senderLabel: 'Coach Challenge',
+			title: 'Ball Mastery',
+			axisId: 'ACC',
+			xpReward: 200,
+			lifecycle: 'complete',
+			actionHref: '/player/workout',
+			sortKey: 1,
+			targetAttributeId: 'ball_mastery',
+			cadence: { sessionsPerWindow: 5, windowDays: 7 },
+		};
+		const completions = [
+			{ attributeId: 'ball_mastery', loggedAtMs: NOW, intentId: 'intent-a' },
+		];
+		expect(questCadenceBlockedToday(quest, completions, NOW)).toBe(true);
+		expect(questCadenceBlockedToday({ ...quest, lifecycle: 'accept' }, completions, NOW)).toBe(
+			false,
+		);
+	});
+
+	it('questHudCtaBlockedCadence returns tomorrow copy', () => {
+		expect(questHudCtaBlockedCadence()).toBe('Next session tomorrow');
 	});
 });
 
@@ -502,5 +570,23 @@ describe('B4b — advisory parent-verified badge: bountyFromCoachIntent is unaff
 		expect(AB_SRC).toMatch(/fetchCoachIntentQuests\(db,\s*tid/);
 		expect(AB_SRC).toMatch(/deduplicateById\(sortedQuests\)/);
 		expect(RAIL_SRC).toMatch(/collection\(db,\s*['"]team_assignments['"]\)/);
+		expect(RAIL_SRC).toMatch(/getDocsFromServer/);
+	});
+
+	it('P5-AEGIS: weather service uses us-east1 functions export, not us-central1', () => {
+		const { readFileSync } = require('fs');
+		const { join } = require('path');
+		const WEATHER_SRC = readFileSync(
+			join(__dirname, '../../../services/weather.svelte.ts'),
+			'utf-8',
+		);
+		const FIREBASE_SRC = readFileSync(
+			join(__dirname, '../../../firebase.js'),
+			'utf-8',
+		);
+		expect(WEATHER_SRC).toMatch(/from '\$lib\/firebase\.js'/);
+		expect(WEATHER_SRC).toMatch(/httpsCallable\(functions,\s*'getWeatherConditions'\)/);
+		expect(WEATHER_SRC).not.toMatch(/us-central1/);
+		expect(FIREBASE_SRC).toMatch(/getFunctions\(app,\s*'us-east1'\)/);
 	});
 });

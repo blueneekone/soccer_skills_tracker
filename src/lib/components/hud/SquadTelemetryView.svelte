@@ -23,6 +23,7 @@
 	import { enterprisePlayerDrawer } from '$lib/stores/enterprisePlayerDrawer.svelte.js';
 	import LiveTelemetrySection from '$lib/components/coach/LiveTelemetrySection.svelte';
 	import IntelModal from '$lib/components/ui/IntelModal.svelte';
+	import { buildCoachRosterDisplayNames } from '$lib/coach/rosterDisplayDedupe.js';
 
 	const DISPATCH_INTEL = {
 		title: 'DISPATCH PROTOCOL',
@@ -237,6 +238,7 @@
 				getDoc(doc(db, 'rosters', tid)),
 				getDocs(query(collection(db, 'player_lookup'), where('teamId', '==', tid))),
 				getDoc(doc(db, 'teams', tid)),
+				getDocs(query(collection(db, 'users'), where('teamId', '==', tid))),
 			]);
 
 			/** @type {import('firebase/firestore').QuerySnapshot | null} */
@@ -269,6 +271,14 @@
 				teamSnap = settled[3].value;
 			} else {
 				console.error('[SquadTelemetry] teams', settled[3].reason);
+			}
+
+			/** @type {import('firebase/firestore').QuerySnapshot | null} */
+			let usersSnap = null;
+			if (settled[4].status === 'fulfilled') {
+				usersSnap = settled[4].value;
+			} else {
+				console.error('[SquadTelemetry] users', settled[4].reason);
 			}
 
 			if (teamSnap?.exists()) {
@@ -304,40 +314,18 @@
 			}
 			nameToEmail = em;
 
-			const combined = new Set([...rosterNames, ...Object.keys(playerStats), ...Object.keys(em)]);
+			const userDocs = usersSnap ?
+				usersSnap.docs.map((d) => ({ id: d.id, data: d.data() }))
+			:	[];
 
-			/** @type {string[]} */
-			const userDocKeys = [
-				...new Set(
-					Object.values(em)
-						.map((x) => (typeof x === 'string' ? usersCollectionKey(x) : ''))
-						.filter(Boolean),
-				),
-			];
-
-			const userSnaps =
-				userDocKeys.length === 0 ?
-					[]
-				:	await Promise.all(userDocKeys.map((key) => getUserDocOrRestrictedPlaceholder(key)));
-
-			/** @type {Record<string, import('firebase/firestore').DocumentSnapshot | ReturnType<typeof restrictedUserSnapshotPlaceholder>>} */
-			const userSnapByEmail = {};
-			for (let i = 0; i < userDocKeys.length; i++) {
-				const key = userDocKeys[i];
-				const sn = userSnaps[i];
-				if (sn && sn.exists()) {
-					userSnapByEmail[key] = sn;
-				}
-			}
-
-		/** @type {string[]} */
-		const nextPlayers = [];
-		for (const rawName of combined) {
-			const name = typeof rawName === 'string' ? rawName : String(rawName);
-			nextPlayers.push(name);
-		}
-		nextPlayers.sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
-		players = nextPlayers;
+			const nextPlayers = buildCoachRosterDisplayNames({
+				userDocs,
+				rosterNames,
+				statsKeys: Object.keys(playerStats),
+				statsByKey: playerStats,
+				linkedNameToEmail: em,
+			});
+			players = nextPlayers;
 
 			/** @type {Record<string, 'compliant' | 'unverified'>} */
 			const nextCompliance = {};

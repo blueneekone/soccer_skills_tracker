@@ -837,6 +837,28 @@
 	color: color-mix(in srgb, var(--pd-accent-data, #14b8a6) 88%, #94a3b8);
 }
 
+/* B2 cadence progress — teal mono, compact @390px */
+.player-hud-root .quest-row__cadence {
+	display: block;
+	margin: 0.12rem 0 0;
+	font-family: 'Geist Mono', ui-monospace, monospace;
+	font-size: clamp(0.44rem, 0.85vw, 0.5rem);
+	font-weight: 600;
+	line-height: 1.35;
+	letter-spacing: 0.04em;
+	color: color-mix(in srgb, var(--pd-accent-data, #14b8a6) 88%, #94a3b8);
+}
+
+.player-hud-root .quest-row__cmd--cadence-blocked,
+.player-hud-root .quest-row__cmd--cadence-blocked:hover {
+	opacity: 0.55;
+	cursor: not-allowed;
+	color: color-mix(in srgb, #94a3b8 88%, var(--pd-text-muted, rgba(255, 255, 255, 0.5)));
+	border-color: color-mix(in srgb, #64748b 40%, transparent);
+	box-shadow: none;
+	text-shadow: none;
+}
+
 @media (min-width: 1280px) {
 	.player-hud-root .quest-row--rail .quest-row__sep--reward,
 	.player-hud-root .quest-row--rail .quest-row__xp--inline {

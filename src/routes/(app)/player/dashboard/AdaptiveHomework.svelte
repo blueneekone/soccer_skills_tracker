@@ -4,17 +4,21 @@
 		query,
 		where,
 		onSnapshot,
-		getDocs,
 		orderBy,
 		doc,
-		getDoc,
 		setDoc,
 	} from 'firebase/firestore';
 	import { browser } from '$app/environment';
 	import { goto } from '$app/navigation';
 	import { httpsCallable } from 'firebase/functions';
 	import { db, functions } from '$lib/firebase.js';
-	import { stashCoachIntentHandoffForAssignment, buildPolicyHintsFromResult } from '$lib/player/workout/coachMissionFlow.js';
+	import {
+		buildPolicyHintsFromResult,
+		pickWeakestAttributeId,
+		resolveAdaptiveDrill,
+		stashCoachIntentHandoffForAssignment,
+	} from '$lib/player/workout/coachMissionFlow.js';
+	import { repairIntentPrescription } from '$lib/types/intent.js';
 	import { ensureRlPolicyCached, readRlPolicyCache } from '$lib/player/workout/rlPolicyCache.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { sportsConfigStore } from '$lib/stores/sportsConfigStore.svelte.js';
@@ -63,31 +67,42 @@
 	let assignments = $state<Assignment[]>([]);
 	let suggestedDrill = $state<Drill | null>(null);
 	let isLoading = $state(true);
+	let soloTargetAttributeId = $state<string | null>(null);
 
-	// RL policy state
 	let policyResult = $state<PolicyResult | null>(null);
 	let showTooltip = $state(false);
 
 	const playerProfile = $derived(/** @type {Record<string, unknown>} */ (authStore.userProfile));
 	const playerTeamId = $derived(String(playerProfile?.teamId ?? ''));
+	const playerClubId = $derived(
+		typeof playerProfile?.clubId === 'string' && playerProfile.clubId.trim() ?
+			playerProfile.clubId.trim()
+		: typeof authStore.tenantId === 'string' ?
+			authStore.tenantId
+		: '',
+	);
 	const recentFrustration = $derived(String(playerProfile?.recentFrustration ?? 'low'));
 	const playerTier = $derived(playerProfile?.calculatedTier ? String(playerProfile.calculatedTier) : 'beginner');
+	const sportId = $derived(sportsConfigStore.currentSportConfig?.sportId ?? 'soccer');
 
-	// Highest-priority intent (lowest priority number wins — already sorted asc by onSnapshot query).
 	const activeAssignment = $derived(/** @type {Assignment | null} */ (assignments[0] ?? null));
-	// Queue depth: remaining intents after the active one.
 	const queueCount = $derived(Math.max(0, assignments.length - 1));
+	const isSoloMode = $derived(!activeAssignment && !!soloTargetAttributeId);
+
+	const displayAttributeId = $derived(
+		activeAssignment?.targetAttributeId ?? soloTargetAttributeId ?? '',
+	);
 
 	const activeAttribute = $derived.by(() => {
-		if (!activeAssignment) return null;
-		const rpgCfg = getRpgSportConfig(sportsConfigStore.currentSportConfig?.sportId);
-		return rpgCfg.attributes.find((a) => a.id === activeAssignment.targetAttributeId) ?? null;
+		if (!displayAttributeId) return null;
+		const rpgCfg = getRpgSportConfig(sportId);
+		return rpgCfg.attributes.find((a) => a.id === displayAttributeId) ?? null;
 	});
 
 	const playerAttributeXp = $derived.by(() => {
-		if (!activeAssignment || !playerProfile) return 0;
+		if (!displayAttributeId || !playerProfile) return 0;
 		const xpMap = /** @type {Record<string, number>} */ (playerProfile.xpByAttribute ?? {});
-		return Number(xpMap[activeAssignment.targetAttributeId] ?? 0);
+		return Number(xpMap[displayAttributeId] ?? 0);
 	});
 
 	const xpProgressPct = $derived.by(() => {
@@ -95,11 +110,8 @@
 		return Math.min(100, Math.round((playerAttributeXp / activeAssignment.requiredXp) * 100));
 	});
 
-	// Whether to show the policy-recommended drill or fall back to heuristic
 	const isPolicyMode = $derived(policyResult?.mode === 'policy' && !!policyResult.recommendedDrillId);
 
-	// Lazy migration write-back: if calculatedTier is missing, patch Firestore non-blocking.
-	// User docs are keyed by lowercased email (not uid) across the app.
 	$effect(() => {
 		const profile = playerProfile;
 		const email = authStore.user?.email?.toLowerCase();
@@ -109,12 +121,8 @@
 		});
 	});
 
-	// Epic 8: uid for scope filtering
 	const playerUid = $derived(authStore.user?.uid ?? '');
 
-	// Real-time subscription to ALL active intents this player is scoped into.
-	// Filters: status==='active', scope==='team' OR uid in targetUids.
-	// Sorted client-side by priority asc (lowest priority number = highest priority).
 	$effect(() => {
 		const teamId = playerTeamId;
 		const uid = playerUid;
@@ -136,7 +144,6 @@
 			q,
 			(snap) => {
 				const all: Assignment[] = snap.docs.map((d) => ({ id: d.id, ...d.data() } as Assignment));
-				// Scope-filter: keep team-wide intents and player-scoped ones that include this uid.
 				assignments = all.filter((a) => {
 					if (!a.scope || a.scope === 'team') return true;
 					return Array.isArray(a.targetUids) && uid && a.targetUids.includes(uid);
@@ -152,24 +159,36 @@
 		return unsub;
 	});
 
-	// Call getAdaptiveWorkoutPolicy on mount / assignment change — shared 24h session cache.
+	$effect(() => {
+		const profile = playerProfile;
+		const sid = sportId;
+		if (activeAssignment) {
+			soloTargetAttributeId = null;
+			return;
+		}
+		const rpgCfg = getRpgSportConfig(sid);
+		const attrIds = rpgCfg.attributes.map((a) => a.id);
+		const xpMap = /** @type {Record<string, number>} */ (profile?.xpByAttribute ?? {});
+		soloTargetAttributeId = pickWeakestAttributeId(xpMap, attrIds);
+	});
+
 	$effect(() => {
 		const _assignment = activeAssignment;
-		const sportId = sportsConfigStore.currentSportConfig?.sportId ?? 'soccer';
+		const sid = sportId;
 		let cancelled = false;
 
 		async function loadPolicy() {
-			const cached = readRlPolicyCache(sportId);
+			const cached = readRlPolicyCache(sid);
 			if (cached) {
 				if (!cancelled) policyResult = cached;
 				return;
 			}
 			try {
 				const result = await ensureRlPolicyCached({
-					sportId,
-					fetchPolicy: async (sid) => {
+					sportId: sid,
+					fetchPolicy: async (sport) => {
 						const getPolicy = httpsCallable(functions, 'getAdaptiveWorkoutPolicy');
-						const res = await getPolicy({ sportId: sid });
+						const res = await getPolicy({ sportId: sport });
 						return res.data;
 					},
 				});
@@ -183,62 +202,48 @@
 		return () => { cancelled = true; };
 	});
 
-	// Fetch the policy-recommended drill from global_drills when in policy mode.
-	// Falls through to heuristic when policy recommends null or lookup fails.
 	$effect(() => {
-		const policy = policyResult;
 		const assignment = activeAssignment;
+		const soloAttr = soloTargetAttributeId;
+		const targetAttr = assignment?.targetAttributeId ?? soloAttr;
+		const policy = policyResult;
 		const frustration = recentFrustration;
+		const teamId = playerTeamId;
+		const clubId = playerClubId;
+		const sid = sportId;
 		let cancelled = false;
 
-		// Policy mode: fetch the specific recommended drill
-		if (policy?.mode === 'policy' && policy.recommendedDrillId) {
-			getDoc(doc(db, 'global_drills', policy.recommendedDrillId))
-				.then((snap) => {
-					if (cancelled) return;
-					if (snap.exists()) {
-						suggestedDrill = { id: snap.id, ...snap.data() } as Drill;
-					} else {
-						// Recommended drill not found — fall through to heuristic
-						policyResult = null;
-					}
-				})
-				.catch(() => {
-					if (!cancelled) policyResult = null;
-				});
-			return () => { cancelled = true; };
-		}
-
-		// Heuristic mode (existing logic)
-		if (!assignment) {
+		if (!targetAttr) {
 			suggestedDrill = null;
 			return;
 		}
 
 		async function fetchDrill() {
 			try {
-				/** @type {import('firebase/firestore').QueryConstraint[]} */
-				const constraints = [where('attributeId', '==', assignment.targetAttributeId)];
-				if (frustration === 'high') {
-					constraints.push(where('tier', '==', 'beginner'));
-				}
-
-				const q = query(collection(db, 'global_drills'), ...constraints);
-				const snap = await getDocs(q);
-
-				if (cancelled) return;
-
-				const drills: Drill[] = snap.docs.map((d) => ({ id: d.id, ...d.data() } as Drill));
-
-				drills.sort((a, b) => {
-					if (a.mediaType === 'tactical_svg' && b.mediaType !== 'tactical_svg') return -1;
-					if (b.mediaType === 'tactical_svg' && a.mediaType !== 'tactical_svg') return 1;
-					return 0;
+				const resolved = await resolveAdaptiveDrill(db, {
+					teamId,
+					clubId,
+					targetAttributeId: targetAttr,
+					prescription: repairIntentPrescription(assignment?.prescription),
+					recentFrustration: frustration,
+					sportId: sid,
+					recommendedDrillId:
+						policy?.mode === 'policy' ? policy.recommendedDrillId : null,
 				});
-
-				suggestedDrill = drills[0] ?? null;
+				if (cancelled) return;
+				if (resolved) {
+					suggestedDrill = {
+						id: resolved.id,
+						title: resolved.title,
+						attributeId: resolved.attributeId,
+						tier: resolved.tier ?? playerTier,
+						mediaType: resolved.mediaType ?? 'text',
+					};
+				} else {
+					suggestedDrill = null;
+				}
 			} catch (err) {
-				console.error('[AdaptiveHomework] drills query error:', err);
+				console.error('[AdaptiveHomework] adaptive drill resolve error:', err);
 				if (!cancelled) suggestedDrill = null;
 			}
 		}
@@ -248,18 +253,27 @@
 	});
 
 	function logOnTrain() {
-		const assignment = activeAssignment;
-		if (!assignment) return;
-		stashCoachIntentHandoffForAssignment({
-			missionId: assignment.id,
-			targetAttributeId: assignment.targetAttributeId,
-			requiredXp: assignment.requiredXp,
-			prescription: assignment.prescription,
-			drill: suggestedDrill ?
-				{ id: suggestedDrill.id, title: suggestedDrill.title }
-			:	null,
-			policyHints: buildPolicyHintsFromResult(policyResult),
-		});
+		if (activeAssignment) {
+			stashCoachIntentHandoffForAssignment({
+				missionId: activeAssignment.id,
+				targetAttributeId: activeAssignment.targetAttributeId,
+				requiredXp: activeAssignment.requiredXp,
+				prescription: activeAssignment.prescription,
+				drill: suggestedDrill ?
+					{ id: suggestedDrill.id, title: suggestedDrill.title }
+				:	null,
+				policyHints: buildPolicyHintsFromResult(policyResult),
+			});
+		} else if (soloTargetAttributeId && suggestedDrill) {
+			stashCoachIntentHandoffForAssignment({
+				missionId: `solo-focus-${soloTargetAttributeId}`,
+				targetAttributeId: soloTargetAttributeId,
+				drill: { id: suggestedDrill.id, title: suggestedDrill.title },
+				policyHints: buildPolicyHintsFromResult(policyResult),
+			});
+		} else {
+			return;
+		}
 		void goto('/player/workout');
 	}
 </script>
@@ -267,7 +281,6 @@
 <div
 	class="vanguard-surface tw-flex tw-flex-col tw-gap-5 tw-p-6"
 >
-	<!-- Header -->
 	<div class="tw-flex tw-items-start tw-justify-between tw-gap-3">
 		<div class="tw-flex tw-flex-col tw-gap-0.5">
 			<span class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-teal-400/60">
@@ -277,7 +290,6 @@
 				[ EQ-SCAFFOLDED DRILL QUEUE ]
 			</span>
 		</div>
-		<!-- Queue depth pill: shows remaining intents behind the active one -->
 		{#if queueCount > 0}
 			<span
 				class="tw-shrink-0 tw-font-mono tw-text-[9px] tw-tracking-widest tw-px-2 tw-py-0.5 tw-rounded tw-bg-[#6366f1]/15 tw-text-[#6366f1] tw-border tw-border-[#6366f1]/30"
@@ -298,7 +310,7 @@
 				[ SYNCING TACTICAL DATA... ]
 			</span>
 		</div>
-	{:else if !activeAssignment}
+	{:else if !activeAssignment && !isSoloMode}
 		<div
 			class="tw-w-full tw-py-8 tw-px-4 tw-rounded-xl tw-bg-[#020202] tw-border tw-border-white/5 tw-text-center"
 		>
@@ -308,22 +320,30 @@
 		</div>
 	{:else}
 		<div class="tw-flex tw-flex-col tw-gap-4">
-			<!-- Assignment target: attribute name + XP badge -->
+			{#if isSoloMode}
+				<p class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-teal-400/50">
+					[ SOLO FOCUS · NO COACH INTENT ]
+				</p>
+			{/if}
+
 			<div class="tw-flex tw-items-center tw-justify-between tw-gap-3">
 				<span class="tw-font-mono tw-text-xs tw-text-white/60 tw-tracking-wider">
-					{activeAttribute?.name ?? activeAssignment.targetAttributeId}
+					{activeAttribute?.name ?? displayAttributeId}
 				</span>
-				{#if activeAttribute}
+				{#if activeAssignment && activeAttribute}
 					<span
 						class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-px-2 tw-py-0.5 tw-rounded tw-shrink-0"
 						style="color:{activeAttribute.hexColor}; border: 1px solid {activeAttribute.hexColor}40; background: {activeAttribute.hexColor}10"
 					>
 						{activeAssignment.requiredXp} XP
 					</span>
+				{:else if isSoloMode}
+					<span class="tw-font-mono tw-text-[9px] tw-text-white/30 tw-tracking-wider">
+						Weakest attribute
+					</span>
 				{/if}
 			</div>
 
-			<!-- EQ scaffolding protection mode banner -->
 			{#if recentFrustration === 'high'}
 				<div
 					class="tw-w-full tw-py-1.5 tw-px-3 tw-rounded-lg tw-border tw-border-slate-700/70 tw-bg-slate-800"
@@ -334,7 +354,6 @@
 				</div>
 			{/if}
 
-			<!-- Suggested drill card -->
 			{#if suggestedDrill}
 				<div
 					class="tw-flex tw-flex-col tw-gap-3 tw-p-4 tw-rounded-xl tw-bg-[#020202] tw-border tw-border-slate-800/60"
@@ -344,7 +363,6 @@
 							{suggestedDrill.title}
 						</span>
 						<div class="tw-flex tw-flex-col tw-items-end tw-gap-1 tw-shrink-0">
-							<!-- AI pill (policy mode only) -->
 							{#if isPolicyMode}
 								<button
 									type="button"
@@ -366,7 +384,6 @@
 						</div>
 					</div>
 
-					<!-- Explanation tooltip (policy mode) -->
 					{#if isPolicyMode && showTooltip && policyResult?.explanationText}
 						<div
 							class="tw-w-full tw-p-3 tw-rounded-lg tw-bg-[#a855f7]/8 tw-border tw-border-[#a855f7]/20"
@@ -405,32 +422,34 @@
 				class="tw-w-full tw-py-2.5 tw-rounded-xl tw-font-mono tw-text-[10px] tw-tracking-widest
 				       tw-uppercase tw-border tw-border-teal-500/35 tw-text-teal-400 tw-bg-teal-500/10
 				       hover:tw-bg-teal-500/20 tw-transition-colors"
+				disabled={!suggestedDrill}
 				onclick={logOnTrain}
 			>
-				Log on Train
+				{isSoloMode ? 'Train solo focus' : 'Log on Train'}
 			</button>
 
-			<!-- XP progress bar -->
-			<div class="tw-flex tw-flex-col tw-gap-1.5">
-				<div class="tw-flex tw-justify-between tw-items-center">
-					<span class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-white/30">
-						XP PROGRESS
-					</span>
-					<span class="tw-font-mono tw-text-[9px] tw-text-teal-400/60">{xpProgressPct}%</span>
+			{#if activeAssignment}
+				<div class="tw-flex tw-flex-col tw-gap-1.5">
+					<div class="tw-flex tw-justify-between tw-items-center">
+						<span class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-white/30">
+							XP PROGRESS
+						</span>
+						<span class="tw-font-mono tw-text-[9px] tw-text-teal-400/60">{xpProgressPct}%</span>
+					</div>
+					<div class="tw-w-full tw-h-1 tw-bg-slate-700/60 tw-rounded-full tw-overflow-hidden">
+						<div
+							class="tw-h-full tw-bg-teal-500 tw-rounded-full tw-transition-all tw-duration-700"
+							style="width:{xpProgressPct}%"
+						></div>
+					</div>
+					<div class="tw-flex tw-justify-between">
+						<span class="tw-font-mono tw-text-[9px] tw-text-white/20">{playerAttributeXp} XP</span>
+						<span class="tw-font-mono tw-text-[9px] tw-text-white/20">
+							{activeAssignment.requiredXp} REQ
+						</span>
+					</div>
 				</div>
-				<div class="tw-w-full tw-h-1 tw-bg-slate-700/60 tw-rounded-full tw-overflow-hidden">
-					<div
-						class="tw-h-full tw-bg-teal-500 tw-rounded-full tw-transition-all tw-duration-700"
-						style="width:{xpProgressPct}%"
-					></div>
-				</div>
-				<div class="tw-flex tw-justify-between">
-					<span class="tw-font-mono tw-text-[9px] tw-text-white/20">{playerAttributeXp} XP</span>
-					<span class="tw-font-mono tw-text-[9px] tw-text-white/20">
-						{activeAssignment.requiredXp} REQ
-					</span>
-				</div>
-			</div>
+			{/if}
 		</div>
 	{/if}
 </div>

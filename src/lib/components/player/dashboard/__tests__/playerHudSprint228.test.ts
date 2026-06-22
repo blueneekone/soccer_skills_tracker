@@ -53,7 +53,9 @@ describe('Sprint 2.22 slice 6b-revise — HQ mission rail overview (no hero card
 	it('questRowEmbedded applies quest-row--promoted via isPromotedQuest', () => {
 		expect(bountiesSrc).toMatch(/isPromotedQuest/);
 		expect(activeBountiesTsSrc).toMatch(/export function isPromotedQuest/);
-		expect(embeddedSnippet).toMatch(/quest-row--promoted=\{!heroQuest && isPromotedQuest\(quest\)\}/);
+		expect(embeddedSnippet).toMatch(
+			/quest-row--promoted=\{isPromotedQuest\(quest\) && heroQuest\?\.id !== quest\.id\}/,
+		);
 	});
 
 	it('questRowEmbedded shows inline xp on compact widths and lede for wide desktop', () => {

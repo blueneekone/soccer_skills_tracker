@@ -14,6 +14,10 @@ export const ACQ_BADGE = 'SSTRACKER · ACQUISITION BRIEF';
 
 export const ACQ_PDF_EXECUTIVE_BRIEF = '/acquisition/sstracker-executive-brief.pdf';
 export const ACQ_PDF_PROSPECTUS = '/acquisition/sstracker-prospectus.pdf';
+export const ACQ_PDF_DIRECTOR_TRUST_BRIEF = '/acquisition/sstracker-director-trust-brief.pdf';
+
+export const DIRECTOR_TRUST_BRIEF_LEAD =
+	'Registration resilience for club directors — payment separation, household VPC, and tenant-scoped compliance when statewide registration goes offline.';
 
 export interface AcquisitionHighlight {
 	id: string;
@@ -167,6 +171,98 @@ export interface PrintSection {
 	tableHeaders?: [string, string];
 	tableRows?: [string, string][];
 }
+
+/** Director trust brief — registration resilience one-pager for club directors */
+export const DIRECTOR_TRUST_BRIEF_SECTIONS: PrintSection[] = [
+	{
+		id: 'moment',
+		title: 'The moment every director felt (June 2026)',
+		paragraphs: [
+			'Utah Soccer Federation suspended registration on Sports Connect (Stack Sports) after families reported unauthorized credit card charges following youth sign-ups. Registration and admin flows were taken offline during investigation. Stack Sports stated it was not aware of a confirmed breach while reviewing the reports (FOX 13, June 2026).',
+			'Whether the root cause is fraud, credential abuse, or a third-party integration, the operational lesson is the same: when one vendor owns statewide registration + payments + family PII, your club inherits concentration risk—and parents hear about problems on their card statements, not from your compliance dashboard.',
+		],
+	},
+	{
+		id: 'needs',
+		title: 'What directors actually need',
+		tableHeaders: ['Need', 'Legacy vs SSTracker'],
+		tableRows: [
+			[
+				'Payment safety',
+				'Legacy: High-volume registration hub; card flows centralized in vendor checkout. · SSTracker: Stripe Connect — card data handled by Stripe; platform fee ledger tied to paymentIntent, not stored PANs.',
+			],
+			[
+				'Minor protection',
+				'Legacy: Registration checkbox + scattered profiles. · SSTracker: Household graph + VPC ceremony — parent-granted consent; consent_records + security_audit; training routes blocked until VPC verified.',
+			],
+			[
+				'Data blast radius',
+				'Legacy: App-layer permissions; cross-club exposure on compromise. · SSTracker: Tenant-scoped Firestore rules + JWT claims — clubId / role on token; cross-tenant reads blocked at the database layer.',
+			],
+			[
+				'Coach access',
+				'Legacy: Team chat / DM models vary by product. · SSTracker: SafeSport by design — coach→minor unsupervised DMs blocked; parent CC on broadcasts; monitored channels.',
+			],
+			[
+				'Staff screening',
+				'Legacy: Manual or bolt-on. · SSTracker: Checkr-ready clearance — sensitive PII stays in vendor iframe, not your club database.',
+			],
+			[
+				'Teen privacy (COPPA 2.0)',
+				'Legacy: Analytics/marketing add-ons. · SSTracker: Four-layer teen ad block — rules, Cloud Functions, client suppression, egress whitelist.',
+			],
+			[
+				'Accountability',
+				'Legacy: Vendor investigation after families report fraud. · SSTracker: Append-only audit — consent logs, security events; privileged writes via Cloud Functions only.',
+			],
+		],
+	},
+	{
+		id: 'surfaces',
+		title: 'Your director surfaces on day one',
+		bullets: [
+			'Field ops & deployment calendar — season windows without gamification chrome',
+			'Household linker + VPC audit queue — read-only consent queue; repair broken guardian links',
+			'Coach clearance matrix — staff eligibility before roster assignment',
+			'Registration programs + roster assign — season sign-up wired to placement (not a separate spreadsheet)',
+			'Club broadcasts — SafeSport-monitored parent comms',
+			'Multi-team tenant isolation — one club, scoped data; federation-scale without shared PII pools',
+		],
+		paragraphs: [
+			'Development loop (why clubs stay): Coach Forge → player Train → XP on HQ → parent visibility — on the same tenant as compliance, not a bolt-on PDF.',
+		],
+	},
+	{
+		id: 'pci',
+		title: 'Why PCI marketing wasn\'t enough',
+		paragraphs: [
+			'Sports Connect publicly describes PCI-aligned payment handling and not storing card data on-platform—language many registration vendors use. Compliance statements don\'t replace architecture:',
+		],
+		bullets: [
+			'Concentration — One statewide registration pipe = one outage stops the season.',
+			'Detection lag — Issuers and parents surface fraud before your board gets a dashboard alert.',
+			'Youth + money + PII — The highest-risk data mix belongs behind household consent and tenant walls, not a monolithic signup funnel.',
+			'Enforcement vs. policy — SSTracker gates minors in Firestore rules and callables, not only in terms of service.',
+		],
+	},
+	{
+		id: 'trust',
+		title: 'Trust stack (at a glance)',
+		paragraphs: [
+			'COPPA / VPC · SafeSport comms · WebAuthn passkeys · Checkr-ready clearance · PII retention protocol · Tenant-isolated Firestore · Stripe Connect payments',
+		],
+	},
+	{
+		id: 'next',
+		title: 'Next step',
+		paragraphs: [
+			'Live demo on your tenant — household VPC golden path, coach bounty → player Train, director compliance audit.',
+			'Contact: acquisition@sstracker.com · QA environment: https://sstracker.app',
+			'Privacy architecture: sstracker.app/privacy · Full acquisition brief: sstracker.app/acquisition',
+			'Disclaimer: This brief describes SSTracker architectural choices for club evaluation. It does not assert that Stack Sports or Sports Connect failed specific security controls, and it does not claim SSTracker holds PCI, SOC 2, or other third-party certifications unless separately documented. Utah incident references reflect public news reporting as of May 2026; confirm current status with your counsel before external distribution.',
+		],
+	},
+];
 
 /** Executive brief — ONE_PAGER + traction + Wave 4 + limitations */
 export const EXECUTIVE_BRIEF_SECTIONS: PrintSection[] = [

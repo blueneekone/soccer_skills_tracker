@@ -14,6 +14,21 @@ export const HERO_SUBHEADLINE =
 
 export const HERO_BADGE = 'SSTRACKER · CLUB OPERATING SYSTEM';
 
+/** Trust campaign hero — Option A (director-facing, Utah 2026). Wired in LandingHero.svelte. */
+export const HERO_TRUST_BADGE = 'SSTRACKER · TRUST & REGISTRATION · 2026';
+export const HERO_TRUST_HEADLINE = "When statewide registration pauses, development shouldn't.";
+export const HERO_TRUST_SUBHEADLINE =
+	'In June 2026, Utah families reported unauthorized card activity after youth soccer registration—and sign-ups stopped while the platform investigated. SSTracker separates season payments (Stripe Connect), minor consent (household VPC), and athlete development on tenant-scoped infrastructure. One registration outage shouldn\'t freeze your entire club OS.';
+
+export const HERO_TRUST_MICRO_STRIP = [
+	'Stripe Connect · cards at processor',
+	'VPC + consent audit trail',
+	'SafeSport · no coach→minor DMs',
+] as const;
+
+export const HERO_TRUST_LEGAL =
+	'SSTracker does not comment on Stack Sports\' investigation. Utah reports described potential unauthorized charges; a formal breach was not publicly confirmed at time of writing.';
+
 export interface CompareRow {
 	id: string;
 	platform: string;

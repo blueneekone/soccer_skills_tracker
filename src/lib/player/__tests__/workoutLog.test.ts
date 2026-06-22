@@ -96,6 +96,48 @@ describe('workoutLog', () => {
 		expect(captured?.intensity).toBe('medium');
 	});
 
+	it('validatePlayerWorkoutLog returns readable message when drill missing', () => {
+		const result = validatePlayerWorkoutLog({
+			selectedFocus: 'technical',
+			selectedDrill: null,
+			logSubmitting: false,
+			role: 'player',
+			profile: { teamId: 't1', playerName: 'Ace' },
+		});
+		expect(result.ok).toBe(false);
+		if (!result.ok) {
+			expect(result.title).toBe('Select a drill');
+			expect(result.text.length).toBeGreaterThan(0);
+		}
+	});
+
+	it('validatePlayerWorkoutLog returns readable message when focus missing', () => {
+		const result = validatePlayerWorkoutLog({
+			selectedFocus: null,
+			selectedDrill: 'Juggling',
+			logSubmitting: false,
+			role: 'player',
+			profile: { teamId: 't1', playerName: 'Ace' },
+		});
+		expect(result.ok).toBe(false);
+		if (!result.ok) {
+			expect(result.title).toBe('Select a focus area');
+		}
+	});
+
+	it('buildCoachHomeworkHandoff carries assignment drillId', async () => {
+		const { buildCoachHomeworkHandoff } = await import('$lib/player/workout/coachMissionFlow.js');
+		const handoff = buildCoachHomeworkHandoff({
+			missionId: 'hw-1',
+			drillTitle: 'Wall Passing',
+			drillId: 'drill-platform-1',
+			targetAttributeId: 'ball_mastery',
+		});
+		expect(handoff.source).toBe('coach_homework');
+		expect(handoff.drillId).toBe('drill-platform-1');
+		expect(handoff.drillTitle).toBe('Wall Passing');
+	});
+
 	it('executePlayerWorkoutLog forwards physio fields for Train readiness strip', async () => {
 		let captured: Record<string, unknown> | undefined;
 		const logTrainingSession = vi.fn(async (data: Record<string, unknown>) => {

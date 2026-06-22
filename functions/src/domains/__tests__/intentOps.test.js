@@ -382,14 +382,53 @@ describe('secureCancelIntent', () => {
     await expect(trainingOps.secureCancelIntent(req)).rejects.toMatchObject({ code: 'failed-precondition' });
   });
 
-  it('cancels an active intent and writes audit row', async () => {
+	it('cancels an active intent and writes audit row', async () => {
     const req = makeCoachRequest();
-    req.data = { intentId: 'x', teamId: 'team-xyz', tenantId: 'club-abc' };
+    req.data = { intentId: 'intent-xyz', teamId: 'team-xyz', tenantId: 'club-abc' };
     const result = await trainingOps.secureCancelIntent(req);
-    expect(result.status).toBe('cancelled');
-    expect(mockDocUpdate).toHaveBeenCalledWith(expect.objectContaining({ status: 'cancelled' }));
-    expect(mockCollectionAdd).toHaveBeenCalledWith(
-      expect.objectContaining({ action: 'secureCancelIntent' }),
+    expect(result).toEqual({ intentId: 'intent-xyz', status: 'cancelled' });
+    expect(mockDocUpdate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        status: 'cancelled',
+        lastModifiedByUid: 'coach-uid-1',
+      }),
     );
+    expect(mockCollectionAdd).toHaveBeenCalledWith(
+      expect.objectContaining({ action: 'secureCancelIntent', intentId: 'intent-xyz' }),
+    );
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// rosterAuthUidsFromUserDocs — team-scope fulfillment gate (P5-C)
+// ─────────────────────────────────────────────────────────────────────────────
+
+describe('rosterAuthUidsFromUserDocs', () => {
+  it('includes only valid auth uid fields — skips email doc-id fallback', () => {
+    const docs = [
+      {id: 'auth-uid-1', data: () => ({uid: 'auth-uid-1', role: 'player'})},
+      {id: 'ghost@example.com', data: () => ({role: 'player'})},
+      {id: 'also-ghost@example.com', data: () => ({uid: '', role: 'player'})},
+    ];
+    expect(trainingOps.rosterAuthUidsFromUserDocs(docs)).toEqual(['auth-uid-1']);
+  });
+
+  it('dedupes duplicate uid values', () => {
+    const docs = [
+      {id: 'uid-a', data: () => ({uid: 'uid-a'})},
+      {id: 'legacy@example.com', data: () => ({uid: 'uid-a'})},
+    ];
+    expect(trainingOps.rosterAuthUidsFromUserDocs(docs)).toEqual(['uid-a']);
+  });
+
+  it('trainingOps team-scope path uses rosterAuthUidsFromUserDocs', () => {
+    const fs = require('fs');
+    const path = require('path');
+    const src = fs.readFileSync(
+      path.join(__dirname, '../trainingOps.js'),
+      'utf-8',
+    );
+    expect(src).toMatch(/rosterAuthUidsFromUserDocs\(rosterSnap\.docs\)/);
+    expect(src).not.toMatch(/d\.data\(\)\.uid \|\| d\.id/);
   });
 });

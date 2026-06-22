@@ -49,4 +49,4 @@ Svelte 5 Runes · SvelteKit · Firebase (Auth, Firestore cells, Functions v2, Ho
 
 → [INDEX.md](./INDEX.md) · [`ARCHITECTURE.md`](../ARCHITECTURE.md) · [PROSPECTUS.md](./PROSPECTUS.md) · [DEMO_SCRIPT.md](./DEMO_SCRIPT.md)
 
-**PDF downloads:** [Executive brief](https://sports-skill-tracker-dev.web.app/acquisition/sstracker-executive-brief.pdf) · [Prospectus](https://sports-skill-tracker-dev.web.app/acquisition/sstracker-prospectus.pdf) · Web hub: [/acquisition](https://sstracker.app/acquisition)
+**PDF downloads:** [Executive brief](https://sports-skill-tracker-dev.web.app/acquisition/sstracker-executive-brief.pdf) · [Prospectus](https://sports-skill-tracker-dev.web.app/acquisition/sstracker-prospectus.pdf) · [Director trust brief](https://sports-skill-tracker-dev.web.app/acquisition/sstracker-director-trust-brief.pdf) · Web hub: [/acquisition](https://sstracker.app/acquisition)

@@ -31,6 +31,10 @@ const ROUTES = [
 		path: '/acquisition/print/prospectus.html',
 		out: 'sstracker-prospectus.pdf',
 	},
+	{
+		path: '/acquisition/print/director-trust-brief.html',
+		out: 'sstracker-director-trust-brief.pdf',
+	},
 ];
 
 function run(cmd, args, opts = {}) {

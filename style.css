@@ -516,6 +516,46 @@ html.dark .input-field:focus {
     box-shadow: 0 0 0 1px #fafafa;
 }
 
+/* Dark auth surfaces (/login) — always navy regardless of theme preference */
+.login-surface {
+    color-scheme: dark;
+}
+.login-surface input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="submit"]):not([type="button"]):not([type="reset"]):not([type="color"]),
+.login-surface select,
+.login-surface textarea {
+    color: var(--vanguard-text-primary, #e2e8f0);
+    caret-color: var(--vanguard-text-primary, #e2e8f0);
+}
+.login-surface input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="submit"]):not([type="button"]):not([type="reset"]):not([type="color"]):focus,
+.login-surface select:focus,
+.login-surface textarea:focus {
+    border-color: rgba(20, 184, 166, 0.5);
+    box-shadow: 0 0 0 1px rgba(20, 184, 166, 0.5);
+}
+.login-surface input#op-callsign,
+.login-surface input#op-code-otp {
+    color: #2dd4bf;
+    caret-color: #2dd4bf;
+}
+.login-surface input:-webkit-autofill,
+.login-surface input:-webkit-autofill:hover,
+.login-surface input:-webkit-autofill:focus,
+.login-surface input:-webkit-autofill:active {
+    -webkit-text-fill-color: var(--vanguard-text-primary, #e2e8f0);
+    -webkit-box-shadow: 0 0 0 1000px rgba(0, 0, 0, 0.4) inset;
+    transition: background-color 5000s ease-in-out 0s;
+}
+.login-surface input#op-callsign:-webkit-autofill,
+.login-surface input#op-callsign:-webkit-autofill:hover,
+.login-surface input#op-callsign:-webkit-autofill:focus,
+.login-surface input#op-callsign:-webkit-autofill:active,
+.login-surface input#op-code-otp:-webkit-autofill,
+.login-surface input#op-code-otp:-webkit-autofill:hover,
+.login-surface input#op-code-otp:-webkit-autofill:focus,
+.login-surface input#op-code-otp:-webkit-autofill:active {
+    -webkit-text-fill-color: #2dd4bf;
+}
+
 select {
     appearance: none;
     -webkit-appearance: none;

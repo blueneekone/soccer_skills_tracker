@@ -1,6 +1,6 @@
 # Platform gap register
 
-**Last updated:** 2026-06-15 (Wave 4 competitive rebuild bootstrap)  
+**Last updated:** 2026-06-21 (post-QA dark-surface contrast doc-sync)  
 **Branch baseline:** dev  
 **Scope:** ALL platform gaps except permanent rejects #1–#3  
 **Execution:** [`WAVE_4_MANIFEST.md`](./WAVE_4_MANIFEST.md) · [`WAVE_3_MANIFEST.md`](./WAVE_3_MANIFEST.md) · agent prompts [`agents/`](./agents/) · manual QA [`OWNER_QA_CHECKLIST.md`](../vision/OWNER_QA_CHECKLIST.md)
@@ -215,19 +215,29 @@ Doc-sync slice `comp-competitive-doc-sync` reopens **D-02** (NCSI Partial), **C-
 
 ---
 
+## U. UX — theme & dark-surface contrast (post-QA)
+
+Deferred until after owner GP-ACQ sign-off. Plan: [`POST_QA_DARK_SURFACE_CONTRAST_PLAN.md`](../vision/POST_QA_DARK_SURFACE_CONTRAST_PLAN.md).
+
+| Id | Gap | BuildOwner | Closure slice | AutomatedVerify | ManualQaId | Status |
+|----|-----|------------|---------------|-----------------|------------|--------|
+| U-01 | Dark-surface text contrast + theme toggle coherence (forced-dark shells vs `:root` light tokens when `html.dark` off) | Agent (post-QA) | `post-qa/dark-surface-contrast` | `contrastDarkSurfaces.guard.test.ts` · `loginWorkflow.test.ts` | QA-CONTRAST-01 | Blocked: owner QA in progress |
+
+---
+
 ## Register summary
 
 | BuildOwner | Count |
 |------------|------:|
 | Done | 80 |
 | Agent | 0 |
-| Blocked | 2 |
+| Blocked | 3 |
 | Rejected | 4 |
-| **Total rows** | **86** |
+| **Total rows** | **87** |
 
 **Wave 4 closed** — orch-wave4 merged 2026-06-15; owner QA next on `qa_launch_2026`.
 
-*(Sections A–M + R-01–R-03; H-05 duplicates R-02 reject scope.)*
+*(Sections A–M, U + R-01–R-03; H-05 duplicates R-02 reject scope.)*
 
 ---
 

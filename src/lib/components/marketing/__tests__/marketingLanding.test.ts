@@ -9,6 +9,7 @@ import { join } from 'node:path';
 import {
 	WIN_MESSAGE,
 	HERO_HEADLINE,
+	HERO_TRUST_HEADLINE,
 	COMPARE_ROWS,
 } from '../landing/landingContent.js';
 
@@ -54,6 +55,14 @@ describe('LAUNCH-marketing-revamp — landing wiring', () => {
 		expect(COMPARE_ROWS).toHaveLength(4);
 		expect(COMPARE_ROWS.some((r) => r.id === 'sstracker')).toBe(true);
 		expect(HERO_HEADLINE).toContain('athlete development');
+		expect(HERO_TRUST_HEADLINE).toContain('registration pauses');
+	});
+
+	it('LandingHero wires trust campaign hero copy', () => {
+		const src = read(LANDING_HERO);
+		expect(src).toContain('HERO_TRUST_HEADLINE');
+		expect(src).toContain('HERO_TRUST_MICRO_STRIP');
+		expect(src).toContain('HERO_TRUST_LEGAL');
 	});
 });
 

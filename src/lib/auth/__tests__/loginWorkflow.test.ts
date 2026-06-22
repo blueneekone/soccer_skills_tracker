@@ -263,6 +263,24 @@ describe('LAUNCH-player-teamless-train — VPC teamless training guards', () => 
 	});
 });
 
+describe('LOGIN-INPUT-CONTRAST-FIX — dark auth surface input guard', () => {
+	const loginSrc = readFileSync(
+		resolve(process.cwd(), 'src/routes/login/+page.svelte'),
+		'utf8',
+	);
+	const styleSrc = readFileSync(resolve(process.cwd(), 'style.css'), 'utf8');
+
+	it('login page wraps content in login-surface', () => {
+		expect(loginSrc).toContain('login-surface');
+	});
+
+	it('style.css forces light input text on login-surface (beats global --input-text)', () => {
+		expect(styleSrc).toMatch(/\.login-surface[\s\S]*--vanguard-text-primary/);
+		expect(styleSrc).toContain('-webkit-text-fill-color');
+		expect(styleSrc).toContain('color-scheme: dark');
+	});
+});
+
 describe('SETUP-UNBLOCK — setup wizard + joinable clubs callable', () => {
 	const setupSrc = readFileSync(
 		resolve(process.cwd(), 'src/routes/setup/+page.svelte'),

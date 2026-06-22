@@ -116,6 +116,9 @@ export function shouldDeferQuestCompletionUntilWorkoutLog(quest: QuestTask): boo
 	);
 }
 
+/** Compact HUD CTA when cadence assignment already credited today (UTC). */
+export { questHudCtaBlockedCadence } from './cadenceCompletions.js';
+
 /** Lifecycle + route-aware CTA (Train-bound missions use Start session). */
 export function questHudCtaFor(quest: QuestTask): string {
 	if (
@@ -392,6 +395,13 @@ export function resolveHeroQuest(
 	opts: { lastTrainingUtc?: string | null; now?: Date } = {},
 ): QuestTask | null {
 	const { lastTrainingUtc, now } = opts;
+
+	// Coach assignment = competence focal — prefer over daily synthesis.
+	const coachIntents = items.filter((q) => q.source === 'coach_intent');
+	if (coachIntents.length > 0) {
+		return sortQuestLog(coachIntents)[0] ?? null;
+	}
+
 	const trainedToday = isTrainingToday(lastTrainingUtc, now);
 
 	if (!trainedToday) {
@@ -462,23 +472,12 @@ export function buildDailyQuests(
 	return [trainingLog, streakCheck].filter((q) => !progress.claimedIds.includes(q.id));
 }
 
-/**
- * Count drill completion records for a given attribute within a rolling window.
- * Operates on a pre-fetched array — no Firestore calls.
- * Caveat: a session matching the attribute may count toward multiple active intents
- * for the same attribute (expected and acceptable for display purposes).
- */
-export function countCadenceSessionsInWindow(
-	completions: Array<{ attributeId: string; loggedAtMs: number }>,
-	attributeId: string,
-	windowDays: number,
-	now = Date.now(),
-): number {
-	const windowStart = now - windowDays * 86_400_000;
-	return completions.filter(
-		(c) => c.attributeId === attributeId && c.loggedAtMs >= windowStart,
-	).length;
-}
+export {
+	countCadenceSessionsInWindow,
+	hasCadenceCreditToday,
+	questCadenceBlockedToday,
+	utcDayFromMs,
+} from './cadenceCompletions.js';
 
 /**
  * Compact cadence progress label for the mission card.

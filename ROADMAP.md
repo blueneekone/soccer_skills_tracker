@@ -14,6 +14,7 @@
 - Admin RL policy console (`/admin/rl-policy`) — waivable at launch
 - Future personas: `/team-manager`, `/tutor`, expanded `/recruiter`
 - Marketing home `/` and non-acquisition marketing depth  
+**Post-QA (after owner sign-off):** Dark-surface text contrast + theme toggle coherence — see [`docs/vision/POST_QA_DARK_SURFACE_CONTRAST_PLAN.md`](docs/vision/POST_QA_DARK_SURFACE_CONTRAST_PLAN.md) · gap U-01  
 **Note:** **3.5l-gate** closed in error — automated regression ≠ human VA; Phase 2 visual **rejected by product owner**  
 *Phase 7 · G1–G10 Done · Sprint 2.20 Done — Player OS premium foundation locked*
 

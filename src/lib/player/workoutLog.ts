@@ -43,8 +43,29 @@ export function validatePlayerWorkoutLog(input: {
 	role: string | null | undefined;
 	profile: { teamId?: unknown; playerName?: unknown; vpcStatus?: unknown; clubId?: unknown } | null | undefined;
 }): WorkoutLogBlock {
-	if (!input.selectedFocus || !input.selectedDrill || input.logSubmitting) {
-		return { ok: false, title: '', text: '', icon: 'info' };
+	if (input.logSubmitting) {
+		return {
+			ok: false,
+			title: 'Session in progress',
+			text: 'Wait for the current transmit to finish.',
+			icon: 'info',
+		};
+	}
+	if (!input.selectedFocus) {
+		return {
+			ok: false,
+			title: 'Select a focus area',
+			text: 'Choose technical, physical, tactical, or recovery before transmitting.',
+			icon: 'info',
+		};
+	}
+	if (!input.selectedDrill) {
+		return {
+			ok: false,
+			title: 'Select a drill',
+			text: 'Pick a sub-drill from the catalog or accept a coach mission first.',
+			icon: 'info',
+		};
 	}
 	if (input.role !== 'player') {
 		return {

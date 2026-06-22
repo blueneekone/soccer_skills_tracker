@@ -144,6 +144,7 @@
 					isRefreshing={engine.isRefreshing}
 					cancellingIntentIds={engine.cancellingIntentIds}
 					mutationError={engine.mutationError}
+					mutationSuccess={engine.mutationSuccess}
 					onCancel={(id) => engine.cancelIntent(id)}
 					onExtend={(id, days) => engine.extendIntent(id, days)}
 					onRefresh={async () => {

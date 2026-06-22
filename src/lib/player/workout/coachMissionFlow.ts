@@ -17,6 +17,12 @@ import {
 	type IntentPrescription,
 	type PrescriptionDrillEntry,
 } from '$lib/types/intent.js';
+import {
+	categoryToAttributeId,
+	loadTeamDrillsForIntent,
+	resolveTeamDrillById,
+} from '$lib/coach/teamDrillLibrary.js';
+import { loadPlatformBasics } from '$lib/coach/platformDrillLibrary.js';
 import { readRlPolicyCache } from './rlPolicyCache.js';
 
 export type WorkoutFocus = 'technical' | 'physical' | 'tactical' | 'recovery';
@@ -430,8 +436,28 @@ export function stashCoachIntentHandoffForAssignment(input: {
 	);
 }
 
+/** Pick the RPG attribute with the lowest xpByAttribute total (solo adaptive focus). */
+export function pickWeakestAttributeId(
+	xpByAttribute: Record<string, number> | undefined,
+	attributeIds: string[],
+	fallback = 'ball_mastery',
+): string {
+	if (!attributeIds.length) return fallback;
+	let weakest = attributeIds[0];
+	let minXp = Infinity;
+	for (const id of attributeIds) {
+		const xp = Math.max(0, Math.floor(Number(xpByAttribute?.[id]) || 0));
+		if (xp < minXp) {
+			minXp = xp;
+			weakest = id;
+		}
+	}
+	return weakest;
+}
+
 /** Stash sessionStorage handoff when player accepts or starts a mission-rail quest. */
-export function stashQuestTrainHandoff(
+export async function stashQuestTrainHandoff(
+	firestore: Firestore | null,
 	quest: {
 		id: string;
 		source: string;
@@ -442,8 +468,9 @@ export function stashQuestTrainHandoff(
 		intentRow?: Record<string, unknown>;
 		homeworkRow?: Record<string, unknown>;
 		drillPreview?: { id: string; title: string } | null;
+		clubId?: string;
 	},
-): void {
+): Promise<void> {
 	if (quest.source === 'coach_intent') {
 		const row = ctx.intentRow ?? {};
 		const targetAttributeId =
@@ -477,10 +504,26 @@ export function stashQuestTrainHandoff(
 	}
 	if (quest.source === 'coach_homework') {
 		const row = ctx.homeworkRow ?? {};
+		const drillId =
+			typeof row.drillId === 'string' && row.drillId.trim() ? row.drillId.trim() : undefined;
+		let drillTitle =
+			typeof row.drillTitle === 'string' && row.drillTitle.trim() ?
+				row.drillTitle.trim()
+			: typeof row.title === 'string' && row.title.trim() ?
+				row.title.trim()
+			: quest.title;
+		const teamId =
+			typeof row.teamId === 'string' && row.teamId.trim() ? row.teamId.trim() : '';
+		const clubId = typeof ctx.clubId === 'string' ? ctx.clubId.trim() : '';
+		if (firestore && drillId && drillTitle === quest.title) {
+			const resolved = await resolveDrillTitleById(firestore, drillId, { teamId, clubId });
+			if (resolved) drillTitle = resolved;
+		}
 		stashMissionHandoff(
 			buildCoachHomeworkHandoff({
 				missionId: quest.id,
-				drillTitle: quest.title,
+				drillTitle,
+				drillId,
 				targetAttributeId:
 					typeof row.targetAttributeId === 'string' ? row.targetAttributeId : undefined,
 			}),
@@ -491,6 +534,7 @@ export function stashQuestTrainHandoff(
 export function buildCoachHomeworkHandoff(input: {
 	missionId: string;
 	drillTitle: string;
+	drillId?: string;
 	targetAttributeId?: string;
 	durationMinutes?: number | null;
 	targetRpe?: number | null;
@@ -500,11 +544,144 @@ export function buildCoachHomeworkHandoff(input: {
 		missionId: input.missionId,
 		source: 'coach_homework',
 		targetAttributeId: input.targetAttributeId,
+		drillId: input.drillId ?? input.missionId,
 		drillTitle: input.drillTitle,
 		durationMinutes: input.durationMinutes ?? 30,
 		targetRpe: input.targetRpe ?? 5,
 		focusArea,
 	};
+}
+
+async function resolveDrillTitleById(
+	firestore: Firestore,
+	drillId: string,
+	opts: { teamId?: string; clubId?: string },
+): Promise<string | null> {
+	const id = drillId.trim();
+	if (!id) return null;
+	const teamId = String(opts.teamId || '').trim();
+	const clubId = String(opts.clubId || '').trim();
+	if (teamId) {
+		const teamRow = await resolveTeamDrillById(firestore, teamId, id, clubId || undefined);
+		if (teamRow?.title) return teamRow.title;
+	}
+	try {
+		const platformSnap = await getDoc(doc(firestore, 'drills', id));
+		if (platformSnap.exists()) {
+			const data = platformSnap.data();
+			if (typeof data.title === 'string' && data.title.trim()) return data.title.trim();
+		}
+	} catch {
+		/* fall through */
+	}
+	const globalDrill = await resolveDrillById(firestore, id);
+	return globalDrill?.title ?? null;
+}
+
+export type AdaptiveDrillResolveInput = {
+	teamId?: string;
+	clubId?: string;
+	targetAttributeId: string;
+	prescription?: IntentPrescription | null;
+	recentFrustration?: string;
+	sportId?: string;
+	recommendedDrillId?: string | null;
+};
+
+/** Resolve drill title/id across team → club → platform → global (club-first cascade). */
+export async function resolveAdaptiveDrill(
+	firestore: Firestore,
+	input: AdaptiveDrillResolveInput,
+): Promise<SuggestedDrill | null> {
+	const attr = String(input.targetAttributeId || '').trim();
+	if (!attr) return null;
+	const teamId = String(input.teamId || '').trim();
+	const clubId = String(input.clubId || '').trim();
+	const sportId = (input.sportId || 'soccer').trim();
+	const frustration = input.recentFrustration === 'high' ? 'high' : 'low';
+	const rx = input.prescription ? repairIntentPrescription(input.prescription) : undefined;
+
+	const rxDrillId = rx?.teamDrillId ?? rx?.clubDrillId;
+	if (rxDrillId && teamId) {
+		const row = await resolveTeamDrillById(firestore, teamId, rxDrillId, clubId || undefined);
+		if (row) {
+			return {
+				id: row.id,
+				title: row.title,
+				attributeId: row.attributeId || attr,
+			};
+		}
+	}
+	if (rx?.drillId) {
+		const byId = await resolveDrillByIdAcrossLibraries(firestore, rx.drillId, {
+			teamId,
+			clubId,
+			sportId,
+		});
+		if (byId) return byId;
+	}
+	if (input.recommendedDrillId) {
+		const byPolicy = await resolveDrillByIdAcrossLibraries(firestore, input.recommendedDrillId, {
+			teamId,
+			clubId,
+			sportId,
+		});
+		if (byPolicy) return byPolicy;
+	}
+	if (teamId) {
+		const teamRows = await loadTeamDrillsForIntent(firestore, teamId, {
+			attributeId: attr,
+			clubId: clubId || undefined,
+		});
+		if (teamRows.length) {
+			const pick = teamRows[0];
+			return { id: pick.id, title: pick.title, attributeId: pick.attributeId };
+		}
+	}
+	try {
+		const platform = await loadPlatformBasics(firestore, sportId);
+		const match = platform.filter((p) => categoryToAttributeId(p.category) === attr);
+		if (match.length) {
+			return { id: match[0].id, title: match[0].title, attributeId: attr };
+		}
+	} catch {
+		/* platform optional */
+	}
+	return resolveHeuristicDrill(firestore, attr, frustration);
+}
+
+async function resolveDrillByIdAcrossLibraries(
+	firestore: Firestore,
+	drillId: string,
+	opts: { teamId?: string; clubId?: string; sportId?: string },
+): Promise<SuggestedDrill | null> {
+	const id = String(drillId || '').trim();
+	if (!id) return null;
+	const teamId = String(opts.teamId || '').trim();
+	const clubId = String(opts.clubId || '').trim();
+	if (teamId) {
+		const teamRow = await resolveTeamDrillById(firestore, teamId, id, clubId || undefined);
+		if (teamRow) {
+			return { id: teamRow.id, title: teamRow.title, attributeId: teamRow.attributeId };
+		}
+	}
+	try {
+		const platformSnap = await getDoc(doc(firestore, 'drills', id));
+		if (platformSnap.exists()) {
+			const data = platformSnap.data();
+			return {
+				id: platformSnap.id,
+				title: typeof data.title === 'string' ? data.title : 'Suggested drill',
+				attributeId:
+					typeof data.attributeId === 'string' ?
+						data.attributeId
+					: categoryToAttributeId(typeof data.category === 'string' ? data.category : ''),
+			};
+		}
+	} catch {
+		/* fall through */
+	}
+	return resolveDrillById(firestore, id);
 }
 
 export async function resolveHeuristicDrill(

@@ -5,6 +5,8 @@ import {
 	where,
 	type Firestore,
 } from 'firebase/firestore';
+import { categoryToAttributeId, loadTeamDrillsForIntent } from '$lib/coach/teamDrillLibrary.js';
+import { loadPlatformBasics } from '$lib/coach/platformDrillLibrary.js';
 import {
 	attributeIdToWorkoutFocus,
 	type WorkoutFocus,
@@ -41,13 +43,13 @@ function drillDocTitle(data: Record<string, unknown>): string {
 }
 
 /**
- * Load drill titles for a focus band from global_drills + team library,
+ * Load drill titles for a focus band — team → club → platform → global_drills,
  * falling back to authored defaults when nothing resolves.
  */
 export async function loadDrillTitlesForFocus(
 	firestore: Firestore,
 	focus: WorkoutFocus,
-	opts: { teamId?: string; attributeId?: string } = {},
+	opts: { teamId?: string; clubId?: string; sportId?: string; attributeId?: string } = {},
 ): Promise<string[]> {
 	const seen = new Set<string>();
 	const add = (title: string) => {
@@ -59,6 +61,34 @@ export async function loadDrillTitlesForFocus(
 		opts.attributeId?.trim() ?
 			[opts.attributeId.trim()]
 		:	FOCUS_ATTRIBUTE_IDS[focus];
+	const teamId = String(opts.teamId || '').trim();
+	const clubId = String(opts.clubId || '').trim();
+	const sportId = (opts.sportId || 'soccer').trim();
+
+	if (teamId && teamId !== 'admin') {
+		for (const attrId of attrIds.slice(0, 4)) {
+			try {
+				const rows = await loadTeamDrillsForIntent(firestore, teamId, {
+					attributeId: attrId,
+					clubId: clubId || undefined,
+				});
+				for (const row of rows) add(row.title);
+			} catch {
+				// Team/club library optional.
+			}
+		}
+	}
+
+	try {
+		const platform = await loadPlatformBasics(firestore, sportId);
+		for (const row of platform) {
+			if (attrIds.includes(categoryToAttributeId(row.category))) {
+				add(row.title);
+			}
+		}
+	} catch {
+		// Platform basics optional.
+	}
 
 	for (const attrId of attrIds.slice(0, 4)) {
 		try {
@@ -69,24 +99,7 @@ export async function loadDrillTitlesForFocus(
 				add(drillDocTitle(docSnap.data() as Record<string, unknown>));
 			}
 		} catch {
-			// Rules or offline — continue with other sources.
-		}
-	}
-
-	const teamId = String(opts.teamId || '').trim();
-	if (teamId && teamId !== 'admin') {
-		try {
-			const snap = await getDocs(collection(firestore, 'teams', teamId, 'drills'));
-			for (const docSnap of snap.docs) {
-				const data = docSnap.data() as Record<string, unknown>;
-				const attr =
-					typeof data.attributeId === 'string' ? data.attributeId.trim() : '';
-				if (!attr || attributeIdToWorkoutFocus(attr) === focus) {
-					add(drillDocTitle(data));
-				}
-			}
-		} catch {
-			// Team library optional.
+			// global_drills last resort.
 		}
 	}
 

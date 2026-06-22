@@ -23,10 +23,10 @@ describe('QA-142 — coach mission Train handoff', () => {
 		expect(workoutSrc).toMatch(/if \(!incomingMissionsReady\) return;/);
 	});
 
-	it('coach missions skip MissionHeroModal and stash via stashCoachIntentHandoffForAssignment', () => {
+	it('coach missions skip MissionHeroModal and stash via stashQuestTrainHandoff', () => {
 		expect(bountiesSrc).toMatch(/shouldOpenMissionHeroModal/);
 		expect(bountiesSrc).toMatch(/quest\.source !== 'coach_intent'/);
-		expect(bountiesSrc).toMatch(/stashCoachIntentHandoffForAssignment/);
+		expect(bountiesSrc).toMatch(/stashQuestTrainHandoff/);
 		expect(bountiesSrc).toMatch(/quest\.targetAttributeId/);
 	});
 
@@ -65,13 +65,33 @@ describe('QA-142 — coach mission Train handoff', () => {
 		expect(activeBounties).toMatch(/markQuestAccepted/);
 	});
 
-	it('ActiveBounties subscribes to drill_completions for cadence progress', () => {
-		expect(bountiesSrc).toMatch(/onSnapshot/);
-		expect(bountiesSrc).toMatch(/drill_completions/);
+	it('ActiveBounties subscribes to cadence completions for mission progress', () => {
+		expect(bountiesSrc).toMatch(/subscribePlayerCadenceCompletions/);
 		expect(bountiesSrc).toMatch(/formatCadenceProgress/);
+	});
+
+	it('workout page omits DrillExecution panel — coach sessions are Transmit-only', () => {
+		expect(workoutSrc).not.toMatch(/CoachMissionDrillExecutionPanel/);
+		expect(workoutSrc).not.toMatch(/DrillExecution/);
+		expect(workoutSrc).toMatch(/EXEC_COMMIT|logWorkout/);
+	});
+
+	it('workout page captures parent-proof intent before clearArmedMission', () => {
+		expect(workoutSrc).toMatch(/const proofIntentId = activeMissionId/);
+		expect(workoutSrc).toMatch(/const needsProof = armedHandoff\?\.requiresParentVerification === true/);
+		expect(workoutSrc).toMatch(/armParentProofAfterLog\(proofIntentId, needsProof\)/);
 	});
 
 	it('buildCoachIntentHandoff always carries a drillId fallback for execution panel', () => {
 		expect(flowSrc).toMatch(/input\.missionId/);
+	});
+
+	it('GP-ACQ-03 / QA-142: mission rail refresh uses getDocsFromServer after coach cancel', () => {
+		const rail = readFileSync(join(ROOT, 'lib/player/dashboard/missionRailCoachIntents.ts'), 'utf-8');
+		expect(rail).toMatch(/getDocsFromServer/);
+		expect(rail).toMatch(/fetchCoachIntentDocsFromServer/);
+		expect(bountiesSrc).toMatch(/fetchCoachIntentQuests/);
+		expect(bountiesSrc).toMatch(/applyCoachIntentRefetch/);
+		expect(bountiesSrc).toMatch(/uniqueDocs\.length === 0/);
 	});
 });

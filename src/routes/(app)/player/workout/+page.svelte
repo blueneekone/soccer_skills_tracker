@@ -15,8 +15,14 @@
   import { calculateTrainingSessionEarnedXp, getLevelProgressFromTotalXp } from '$lib/gamification/level.js';
   import { buildWorkoutDrillType, executePlayerWorkoutLog, expectedWorkoutXp, intensityApiFromStep, validatePlayerWorkoutLog, workoutLogErrorMessage } from '$lib/player/workoutLog.js';
   import { formatAttributeLabel, loadQuestProgress, markQuestCompletedAfterWorkoutLog, saveQuestProgress, WORKOUT_HQ_RETURN_PATH } from '$lib/player/dashboard/activeBounties.js';
+  import {
+    armedCadenceBlockedToday,
+    CADENCE_LIMIT_ERROR,
+    subscribePlayerCadenceCompletions,
+    type CadenceCompletionRow,
+  } from '$lib/player/dashboard/cadenceCompletions.js';
   import { resolveAppPath } from '$lib/components/_shared/resolveAppPath.js';
-  import { attributeIdToWorkoutFocus, buildPolicyHintsFromResult, clearMissionHandoff, COACH_INTENT_HINT, formatSuggestedDrillLine, isMissionHandoffStale, readMissionHandoff, resolveHandoffDurationMinutes, resolveHandoffTargetRpe, resolveDrillById, resolveHeuristicDrill, type MissionHandoff, type WorkoutFocus } from '$lib/player/workout/coachMissionFlow.js';
+  import { attributeIdToWorkoutFocus, buildPolicyHintsFromResult, clearMissionHandoff, COACH_INTENT_HINT, formatSuggestedDrillLine, isMissionHandoffStale, readMissionHandoff, resolveAdaptiveDrill, resolveHandoffDurationMinutes, resolveHandoffTargetRpe, resolveDrillById, type MissionHandoff, type WorkoutFocus } from '$lib/player/workout/coachMissionFlow.js';
   import type { PrescriptionDrillEntry } from '$lib/types/intent.js';
   import { resolveTeamDrillById as resolveTeamLibraryDrill } from '$lib/coach/teamDrillLibrary.js';
   import { clampFreeLogDurationMinutes, FREE_LOG_DURATION_MAX_MINUTES, isCoachDirectedHandoff, SESSION_NOTES_MAX_LENGTH } from '$lib/player/workout/workoutSessionConstants.js';
@@ -34,7 +40,6 @@
   import PlayerDiegeticOverlay from '$lib/components/player/PlayerDiegeticOverlay.svelte';
   import IntelModal from '$lib/components/ui/IntelModal.svelte';
   import PlayerOsPageStrap from '$lib/components/player/PlayerOsPageStrap.svelte';
-  import CoachMissionDrillExecutionPanel from '$lib/player/workout/CoachMissionDrillExecutionPanel.svelte';
   import TrainReadinessStrip from '$lib/player/workout/TrainReadinessStrip.svelte';
   import { useTrainReadinessStrip } from '$lib/player/workout/useTrainReadinessStrip.svelte.js';
   import '$lib/styles/player-dashboard-hud.css';
@@ -128,6 +133,8 @@
   let incomingMissionsReady = $state(false);
   let missionSyncRefreshing = $state(false);
   let missionRefreshNonce = $state(0);
+  /** Drill completions for cadence anti-cheat on armed coach missions. */
+  let cadenceCompletions = $state<CadenceCompletionRow[]>([]);
 
   // B4a/B4c — advisory parent-proof state (inner Execute band; never gates XP).
   /** intentId captured after a successful log when requiresParentVerification is set. */
@@ -270,6 +277,13 @@
     isBundleMode && bundleStepIdx === bundleDrills.length - 1,
   );
 
+  function armParentProofAfterLog(missionId: string | null, needsProof: boolean) {
+    if (missionId && needsProof) {
+      pendingProofIntentId = missionId;
+      proofSubmitted = false;
+    }
+  }
+
   async function applyMissionHandoff(handoff) {
     if (isMissionHandoffStale(handoff)) {
       clearMissionHandoff();
@@ -278,6 +292,14 @@
     activeMissionId = handoff.missionId;
     let resolvedDrillTitle = handoff.drillTitle ?? '';
     let resolvedDrillId = handoff.drillId ?? handoff.missionId;
+    const teamId =
+      typeof authStore.userProfile?.teamId === 'string' ? authStore.userProfile.teamId : '';
+    const clubId =
+      typeof authStore.userProfile?.clubId === 'string' ?
+        authStore.userProfile.clubId
+      : typeof authStore.tenantId === 'string' ?
+        authStore.tenantId
+      : '';
     const pickDrill = (title, id) => { selectedDrill = title; resolvedDrillTitle = title; resolvedDrillId = id; };
     if (handoff.focusArea) {
       selectedFocus = handoff.focusArea;
@@ -285,16 +307,6 @@
       selectedFocus = attributeIdToWorkoutFocus(handoff.targetAttributeId);
     }
     if (handoff.prescription?.teamDrillId || handoff.prescription?.clubDrillId) {
-      const teamId =
-        typeof authStore.userProfile?.teamId === 'string' ?
-          authStore.userProfile.teamId
-        : '';
-      const clubId =
-        typeof authStore.userProfile?.clubId === 'string' ?
-          authStore.userProfile.clubId
-        : typeof authStore.tenantId === 'string' ?
-          authStore.tenantId
-        : '';
       const drillId =
         handoff.prescription.teamDrillId ?? handoff.prescription.clubDrillId ?? '';
       const row = teamId ?
@@ -307,8 +319,14 @@
     } else if (handoff.drillTitle) {
       pickDrill(handoff.drillTitle, resolvedDrillId);
     } else if (handoff.targetAttributeId) {
-      const frustration = String(profile?.recentFrustration ?? 'low');
-      const drill = await resolveHeuristicDrill(db, handoff.targetAttributeId, frustration);
+      const drill = await resolveAdaptiveDrill(db, {
+        teamId,
+        clubId,
+        targetAttributeId: handoff.targetAttributeId,
+        prescription: handoff.prescription,
+        recentFrustration: String(profile?.recentFrustration ?? 'low'),
+        sportId: sportsConfigStore.currentSportConfig?.sportId ?? 'soccer',
+      });
       if (drill?.title) pickDrill(drill.title, drill.id);
     }
     armedHandoff = { ...handoff, drillId: resolvedDrillId, drillTitle: resolvedDrillTitle || handoff.drillTitle };
@@ -545,6 +563,27 @@
 
   const armedPrescription = $derived(armedHandoff?.prescription ?? null);
 
+  const armedCadenceBlocked = $derived(
+    armedCadenceBlockedToday(
+      armedPrescription?.cadence,
+      armedHandoff?.targetAttributeId,
+      activeMissionId,
+      cadenceCompletions,
+    ),
+  );
+
+  $effect(() => {
+    if (!browser || authStore.isLoading || authStore.role !== 'player') return;
+    const uid = authStore.user?.uid ?? '';
+    if (!uid || !armedPrescription?.cadence) {
+      cadenceCompletions = [];
+      return;
+    }
+    return subscribePlayerCadenceCompletions(db, uid, (rows) => {
+      cadenceCompletions = rows;
+    });
+  });
+
   const coachPrescriptionLine = $derived.by(() => {
     if (!armedPrescription) return '';
     return formatPrescriptionVolumeLine(
@@ -581,9 +620,14 @@
    * Wired: logTrainingSession callable (XP + drill_completions), persistPlayerOsWorkout.
    * Simplified: per-step dopamine animation runs once on final step only (no spam).
    */
+  function showCadenceLimitError() {
+    showDiegeticError(CADENCE_LIMIT_ERROR.title, CADENCE_LIMIT_ERROR.text);
+  }
+
   async function logBundleStep() {
     const drill = currentBundleDrill;
     if (!drill || logSubmitting) return;
+    if (armedCadenceBlocked) return showCadenceLimitError();
     const drillName = drill.drillTitle || lockedCoachDrillLabel || 'Bundle drill';
     const drillType = buildWorkoutDrillType(focusLabel, drillName);
     const stepSets = drill.sets ?? 1;
@@ -633,12 +677,15 @@
       });
 
       if (isLastStep) {
+        const proofIntentId = activeMissionId;
+        const needsProof = armedHandoff?.requiresParentVerification === true;
         if (result.clearMission) {
           recordQuestProgressAfterLog(armedHandoff);
           clearArmedMission();
         } else {
           recordQuestProgressAfterLog(null);
         }
+        armParentProofAfterLog(proofIntentId, needsProof);
         if (result.levelUpFrom != null && result.levelUpTo != null) {
           window.dispatchEvent(
             new CustomEvent('phoenix:level-up', {
@@ -671,6 +718,7 @@
   }
 
   async function logWorkout() {
+    if (armedCadenceBlocked) return showCadenceLimitError();
     const gate = validatePlayerWorkoutLog({
       selectedFocus,
       selectedDrill: isCoachDirectedSession ? lockedCoachDrillLabel : selectedDrill,
@@ -689,13 +737,16 @@
 
     const drillType = buildWorkoutDrillType(focusLabel, drillName);
     const dMin = isCoachDirectedSession
-      ? Math.max(1, Math.floor(Number(duration) || 0))
+      ? Math.max(1, Math.min(FREE_LOG_DURATION_MAX_MINUTES, Math.floor(Number(duration) || 0)))
       : clampFreeLogDurationMinutes(duration);
     const intensityCall = intensityApiFromStep(intensity);
     const expectedXp = expectedWorkoutXp(dMin, intensity, totalWorkoutReps);
     const oldLevel = getLevelProgressFromTotalXp(totalXpHud).level;
     const user = authStore.user;
     if (!user) return;
+
+    const proofIntentId = activeMissionId;
+    const needsProof = armedHandoff?.requiresParentVerification === true;
 
     logSubmitting = true;
     playerEngine.bumpBy(expectedXp);
@@ -742,11 +793,7 @@
         `+${result.earned} XP · Level ${result.level ?? '—'}${result.missionCloseNote}`,
         { returnToHq: true },
       );
-      // B4a: advisory proof affordance — non-blocking, only when coach opted in.
-      if (activeMissionId && armedHandoff?.requiresParentVerification) {
-        pendingProofIntentId = activeMissionId;
-        proofSubmitted = false;
-      }
+      armParentProofAfterLog(proofIntentId, needsProof);
       sessionNotes = '';
       await authStore.refresh({ silent: true });
     } catch (e) {
@@ -825,7 +872,7 @@
         {/if}
         {#if armedPrescription?.cadence}
           <p class="pw-mission-armed__drill pw-mono pw-dim" aria-label="Cadence requirement">
-            Cadence: {armedPrescription.cadence.sessionsPerWindow} session{armedPrescription.cadence.sessionsPerWindow !== 1 ? 's' : ''} / {armedPrescription.cadence.windowDays === 7 ? 'week' : `${armedPrescription.cadence.windowDays} days`}
+            Cadence: {armedPrescription.cadence.sessionsPerWindow} session{armedPrescription.cadence.sessionsPerWindow !== 1 ? 's' : ''} / {armedPrescription.cadence.windowDays === 7 ? 'week' : `${armedPrescription.cadence.windowDays} days`}{#if armedCadenceBlocked}<span class="pw-dim"> · next session tomorrow</span>{/if}
           </p>
         {/if}
         {#if isBundleMode}
@@ -835,8 +882,6 @@
         {/if}
       </div>
     {/if}
-
-    <CoachMissionDrillExecutionPanel {armedHandoff} armedMissionTitle={armedMissionTitle} />
 
     <div class="pw-exec__command" aria-labelledby="pw-exec-heading">
       <div class="pw-panel__head pw-panel__head--row">
@@ -866,6 +911,8 @@
       >
         {#if logSubmitting}
           ◉ TRANSMITTING…
+        {:else if armedCadenceBlocked}
+          ◉ CADENCE HOLD<span class="pw-dim"> · NEXT SESSION TOMORROW</span>
         {:else if activeMissionId}
           ◉ ARMED: {armedMissionTitle.toUpperCase()}<span class="pw-dim"> · EXECUTION SYNCS TO FILE ON TRANSMIT</span>
         {:else}
@@ -1005,11 +1052,6 @@
               {/if}
               {#if armedPrescription?.videoUrl}
                 <a class="pw-link pw-mono pw-dim" href={armedPrescription.videoUrl} target="_blank" rel="noopener noreferrer">Watch demo</a>
-              {/if}
-              {#if armedPrescription?.cadence}
-                <p class="pw-mono pw-data pw-dim" aria-label="Cadence requirement">
-                  Cadence: {armedPrescription.cadence.sessionsPerWindow} session{armedPrescription.cadence.sessionsPerWindow !== 1 ? 's' : ''} / {armedPrescription.cadence.windowDays === 7 ? 'week' : `${armedPrescription.cadence.windowDays} days`}
-                </p>
               {/if}
               <dl class="pw-mono pw-data tw-grid tw-grid-cols-2 tw-gap-2 tw-text-sm">
                 <div>
@@ -1151,7 +1193,7 @@
         <button
           type="button"
           class="pw-exec pw-exec--alt"
-          disabled={logSubmitting || !currentBundleDrill}
+          disabled={logSubmitting || !currentBundleDrill || armedCadenceBlocked}
           onclick={logBundleStep}
         >
           {#if logSubmitting}
@@ -1172,11 +1214,13 @@
         <button
           type="button"
           class="pw-exec pw-exec--transmit pw-exec-commit"
-          disabled={(!selectedDrill && !isCoachDirectedSession) || logSubmitting}
+          disabled={(!selectedDrill && !isCoachDirectedSession) || logSubmitting || armedCadenceBlocked}
           onclick={logWorkout}
         >
           {#if logSubmitting}
             <span class="pw-mono">Logging…</span>
+          {:else if armedCadenceBlocked}
+            <span class="pw-mono">Next session tomorrow</span>
           {:else}
             <Icon name="game.zap" />
             <span>EXEC_COMMIT</span>

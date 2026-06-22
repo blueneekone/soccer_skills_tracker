@@ -46,10 +46,11 @@ describe('Sprint RL-audit — AdaptiveHomework callable wiring', () => {
 		expect(src).toMatch(/SUGGESTED BY AI/);
 	});
 
-	it('heuristic fallback does not require policy mode', () => {
+	it('AdaptiveHomework uses adaptive drill cascade (not global_drills-only)', () => {
 		const src = readFileSync(ADAPTIVE_HOMEWORK, 'utf-8');
-		expect(src).toMatch(/mode === 'policy'/);
-		expect(src).toMatch(/global_drills/);
+		expect(src).toMatch(/resolveAdaptiveDrill/);
+		expect(src).toMatch(/loadTeamDrillsForIntent|resolveAdaptiveDrill/);
+		expect(src).not.toMatch(/collection\(db,\s*'global_drills'\)/);
 	});
 });
 

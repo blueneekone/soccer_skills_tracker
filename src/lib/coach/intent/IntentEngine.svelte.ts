@@ -48,6 +48,7 @@ import {
 	type TeamDrillPickerRow,
 } from '$lib/coach/teamDrillLibrary.js';
 import { mergeAdminRoster } from '$lib/admin/rosterMerge.js';
+import { dedupeRosterEntries } from '$lib/coach/rosterDisplayDedupe.js';
 
 export type DeployPhase = 'idle' | 'saving' | 'success' | 'error';
 
@@ -117,6 +118,7 @@ export class IntentEngine {
 	deployPhase = $state<DeployPhase>('idle');
 	deployError = $state('');
 	mutationError = $state('');
+	mutationSuccess = $state('');
 	isRefreshing = $state(false);
 	cancellingIntentIds = $state<string[]>([]);
 
@@ -407,6 +409,7 @@ export class IntentEngine {
 	async cancelIntent(intentId: string) {
 		if (!intentId || this.cancellingIntentIds.includes(intentId)) return;
 		this.mutationError = '';
+		this.mutationSuccess = '';
 		this.cancellingIntentIds = [...this.cancellingIntentIds, intentId];
 		try {
 			const fn = httpsCallable<CancelIntentInput, CancelIntentResult>(
@@ -415,9 +418,22 @@ export class IntentEngine {
 			);
 			await fn({ intentId, teamId: this._teamId, tenantId: this._tenantId });
 			this._removeIntentFromList(intentId);
+			this._subscribeIntents();
+			this.mutationSuccess = 'Intent cancelled.';
+			setTimeout(() => {
+				if (this.mutationSuccess === 'Intent cancelled.') {
+					this.mutationSuccess = '';
+				}
+			}, 4000);
 		} catch (e) {
 			if (this._isIntentAlreadyInactiveError(e)) {
 				this._removeIntentFromList(intentId);
+				this.mutationSuccess = 'Intent already inactive.';
+				setTimeout(() => {
+					if (this.mutationSuccess === 'Intent already inactive.') {
+						this.mutationSuccess = '';
+					}
+				}, 4000);
 				return;
 			}
 			this.mutationError = this._formatCallableError(e, 'Cancel failed.');
@@ -478,7 +494,7 @@ export class IntentEngine {
 	}
 
 	private _applyIntentSnapshot(docs: Array<{ id: string; data: () => Record<string, unknown> }>) {
-		this.intents = docs.map((d) => ({ intentId: d.id, ...d.data() }) as IntentDoc);
+		this.intents = docs.map((d) => ({ ...d.data(), intentId: d.id }) as IntentDoc);
 	}
 
 	private _formatCallableError(e: unknown, fallback: string): string {
@@ -617,7 +633,8 @@ export class IntentEngine {
 		const byEmail = new Map(rows.map((r) => [r.email.toLowerCase(), r]));
 		const byName = new Map(rows.map((r) => [r.playerName.trim().toLowerCase(), r]));
 
-		this.roster = merged.map((m) => {
+		this.roster = dedupeRosterEntries(
+			merged.map((m) => {
 			if (m.nameOnly) {
 				return {
 					uid: '',
@@ -644,7 +661,8 @@ export class IntentEngine {
 				assignable: Boolean(m.email),
 				nameOnly: false,
 			};
-		});
+		}),
+		);
 	}
 
 	private async _loadRoster() {
@@ -679,6 +697,7 @@ export class IntentEngine {
 			rows = snap.docs
 				.filter((d) => d.data().role === 'player')
 				.map((d) => this._userDocToRosterEntry(d.id, d.data()));
+			rows = dedupeRosterEntries(rows);
 
 			const claimedUids = new Set(rows.map((r) => r.uid).filter(Boolean));
 			const orphanUids = teamPlayerUids.filter((u) => !claimedUids.has(u));

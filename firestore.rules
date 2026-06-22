@@ -1659,6 +1659,12 @@ service cloud.firestore {
       allow create, update, delete: if false;
     }
 
+    // RL admin seed catalog — read-only for authenticated players/coaches (last-resort adaptive fallback).
+    match /global_drills/{drillId} {
+      allow read: if authed();
+      allow create, update, delete: if false;
+    }
+
     // Sprint 2.6.4: Dopamine Engine — homework / assignments.
     //
     // Canonical write path is the `secureAssignHomework` Cloud Function

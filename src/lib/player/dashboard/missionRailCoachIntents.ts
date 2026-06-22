@@ -1,10 +1,11 @@
 import {
 	collection,
-	getDocs,
+	getDocsFromServer,
 	orderBy,
 	query,
 	where,
 	type Firestore,
+	type QuerySnapshot,
 } from 'firebase/firestore';
 import {
 	bountyFromCoachIntent,
@@ -61,6 +62,23 @@ export function applyCoachIntentPurge(
 	return next;
 }
 
+export function coachIntentQuery(db: Firestore, teamId: string) {
+	return query(
+		collection(db, 'team_assignments'),
+		where('teamId', '==', teamId),
+		where('status', '==', 'active'),
+		orderBy('priority', 'asc'),
+	);
+}
+
+/** Prefer server read on refresh so cancelled intents drop off after coach Forge cancel. */
+export async function fetchCoachIntentDocsFromServer(
+	db: Firestore,
+	teamId: string,
+): Promise<QuerySnapshot> {
+	return getDocsFromServer(coachIntentQuery(db, teamId));
+}
+
 /** One-shot team_assignments read for post-claims-refresh mission rail sync. */
 export async function fetchCoachIntentQuests(
 	db: Firestore,
@@ -68,13 +86,7 @@ export async function fetchCoachIntentQuests(
 	playerUid: string,
 	progress: QuestProgressStore,
 ): Promise<CoachIntentSnapshot> {
-	const intentQ = query(
-		collection(db, 'team_assignments'),
-		where('teamId', '==', teamId),
-		where('status', '==', 'active'),
-		orderBy('priority', 'asc'),
-	);
-	const snap = await getDocs(intentQ);
+	const snap = await fetchCoachIntentDocsFromServer(db, teamId);
 	const uniqueDocs = [...new Map(snap.docs.map((d) => [d.id, d])).values()];
 	const scopedRows = uniqueDocs
 		.map((d) => ({ id: d.id, ...d.data() }))
@@ -87,10 +99,10 @@ export function mergeCoachIntentsIntoQuestLog(
 	existing: readonly QuestTask[],
 	progress: QuestProgressStore,
 ): QuestTask[] {
+	// Empty snapshot must drop all prior coach_intent rows (cancel / expire).
 	const nonCoach = existing.filter((q) => q.source !== 'coach_intent');
-	return sortQuestLog(
-		[...coachIntents, ...nonCoach].filter((q) => !progress.claimedIds.includes(q.id)),
-	);
+	const merged = coachIntents.length === 0 ? nonCoach : [...coachIntents, ...nonCoach];
+	return sortQuestLog(merged.filter((q) => !progress.claimedIds.includes(q.id)));
 }
 
 export function applyCoachIntentRefetch(input: {
@@ -106,10 +118,16 @@ export function applyCoachIntentRefetch(input: {
 } {
 	const { snapshot, lastCoachIntentIds, internalQuests, questProgress } = input;
 	const { removed, nextIds } = coachIntentRemovalDelta(lastCoachIntentIds, snapshot.activeIds);
+	const orphanCoachIds = internalQuests
+		.filter((q) => q.source === 'coach_intent' && !snapshot.activeIds.has(q.id))
+		.map((q) => q.id);
+	const purgeIds = [...new Set([...removed, ...orphanCoachIds])];
+	const purgedProgress =
+		purgeIds.length > 0 ? applyCoachIntentPurge(questProgress, purgeIds) : questProgress;
 	return {
 		lastCoachIntentIds: nextIds,
 		intentDataById: snapshot.intentDataById,
-		questProgress: removed.length > 0 ? applyCoachIntentPurge(questProgress, removed) : questProgress,
-		internalQuests: mergeCoachIntentsIntoQuestLog(snapshot.quests, internalQuests, questProgress),
+		questProgress: purgedProgress,
+		internalQuests: mergeCoachIntentsIntoQuestLog(snapshot.quests, internalQuests, purgedProgress),
 	};
 }

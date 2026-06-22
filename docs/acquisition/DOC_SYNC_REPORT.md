@@ -353,3 +353,30 @@
 |---------|--------|
 | `npm test -- src/lib/shell/__tests__/navPinCatalog.test.ts src/lib/stores/__tests__/navPins.test.ts src/lib/platform/__tests__/platformNavigationCanon.test.ts` | **34 passed** (3 files) |
 | `npm run build` | **pass** |
+
+---
+
+## POST-QA-DOC-DARK-SURFACE-THEME-PLAN (2026-06-21)
+
+**Slice:** Documentation-only — dark-surface text contrast + theme toggle coherence plan; implementation deferred until after GP-ACQ sign-off. **No code changes.**
+
+### Files created
+
+| File | Purpose |
+|------|---------|
+| `docs/vision/POST_QA_DARK_SURFACE_CONTRAST_PLAN.md` | Post-QA plan: product truth, root cause, surface inventory, systemic fix, guard tests, manual QA matrix C-01–C-08 |
+
+### Files updated
+
+| File | Change summary |
+|------|----------------|
+| `docs/acquisition/PLATFORM_GAP_REGISTER.md` | Section U — U-01 row; Last updated 2026-06-21; register summary counts |
+| `docs/vision/OWNER_QA_CHECKLIST.md` | Post-QA fixes subsection — QA-CONTRAST-01–04 (do not block exec cut) |
+| `ROADMAP.md` | TABLED block — post-QA dark-surface contrast bullet + U-01 link |
+| `docs/acquisition/NOTABLE_GAPS.md` | Summary matrix row — theme toggle vs forced-dark shells → Post-QA U-01 |
+
+### Verify
+
+| Command | Result |
+|---------|--------|
+| `npm run check` | **1 pre-existing error** (`AppMenuSheet.svelte:102` — unrelated to doc slice); 171 warnings |

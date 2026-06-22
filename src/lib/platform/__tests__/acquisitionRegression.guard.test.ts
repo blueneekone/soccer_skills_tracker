@@ -99,6 +99,16 @@ describe('GP-ACQ-03 / GP-ACQ-04a — coach intent → player mission rail', () =
 		expect(src).toMatch(/where\(\s*['"]status['"],\s*['"]==['"],\s*['"]active['"]\)/);
 	});
 
+	it('GP-ACQ-03 / QA-142: refresh path uses getDocsFromServer for coach intent refetch', () => {
+		const rail = readFileSync(MISSION_RAIL, 'utf-8');
+		const bounties = readFileSync(ACTIVE_BOUNTIES, 'utf-8');
+		expect(rail).toMatch(/getDocsFromServer/);
+		expect(rail).toMatch(/fetchCoachIntentDocsFromServer/);
+		expect(bounties).toMatch(/fetchCoachIntentQuests/);
+		expect(bounties).toMatch(/applyCoachIntentRefetch/);
+		expect(bounties).toMatch(/coach intent refetch failed/);
+	});
+
 	it('ActiveBounties imports deduplicateById and coachIntentReadyToClaim', () => {
 		const src = readFileSync(ACTIVE_BOUNTIES, 'utf-8');
 		expect(src).toMatch(/import[\s\S]*deduplicateById[\s\S]*deduplicateMissions/);

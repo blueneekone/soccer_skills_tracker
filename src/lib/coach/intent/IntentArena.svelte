@@ -30,12 +30,30 @@
 		isRefreshing = false,
 		cancellingIntentIds = [] as string[],
 		mutationError = '',
+		mutationSuccess = '',
 		onCancel = (_intentId: string) => {},
 		onExtend = (_intentId: string, _days: number) => {},
 		onRefresh = () => {},
 	} = $props();
 
 	const MAX_PILLS = 12;
+
+	const duplicateAttributeWarnings = $derived.by(() => {
+		const counts = new Map<string, number>();
+		for (const intent of intents) {
+			const id = intent.targetAttributeId?.trim();
+			if (!id) continue;
+			counts.set(id, (counts.get(id) ?? 0) + 1);
+		}
+		return [...counts.entries()]
+			.filter(([, count]) => count > 1)
+			.map(([attributeId, count]) => ({
+				attributeId,
+				count,
+				label:
+					intents.find((i) => i.targetAttributeId === attributeId)?.attributeName ?? attributeId,
+			}));
+	});
 </script>
 
 <div class="tw-flex tw-flex-col tw-gap-3 tw-w-full">
@@ -55,13 +73,38 @@
 		</button>
 	</div>
 
+	<!-- Duplicate attribute warning -->
+	{#if duplicateAttributeWarnings.length > 0}
+		<div
+			class="tw-w-full tw-px-4 tw-py-2 tw-rounded-lg tw-border tw-border-[#fbbf24]/40 tw-bg-[#fbbf24]/10
+			       tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-[#fbbf24] tw-uppercase"
+			role="status"
+		>
+			{#each duplicateAttributeWarnings as dup (dup.attributeId)}
+				<p>[ WARN ] {dup.count} active intents target {dup.label} — players see separate mission rows.</p>
+			{/each}
+		</div>
+	{/if}
+
 	<!-- Mutation error banner -->
 	{#if mutationError}
 		<div
 			class="tw-w-full tw-px-4 tw-py-2 tw-rounded-lg tw-border tw-border-[#ff3040]/40 tw-bg-[#ff3040]/10
 			       tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-[#ff3040] tw-uppercase"
+			role="alert"
 		>
 			[ ERR ] {mutationError}
+		</div>
+	{/if}
+
+	<!-- Cancel / mutation success toast -->
+	{#if mutationSuccess}
+		<div
+			class="tw-w-full tw-px-4 tw-py-2 tw-rounded-lg tw-border tw-border-[#14b8a6]/40 tw-bg-[#14b8a6]/10
+			       tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-[#14b8a6] tw-uppercase"
+			role="status"
+		>
+			[ OK ] {mutationSuccess}
 		</div>
 	{/if}
 

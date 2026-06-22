@@ -2,7 +2,7 @@
 
 **Purpose:** Transparent non-parity vs TeamSnap, SportsEngine, and GotSport for acquirer diligence.  
 **Authority:** [`COMPETITIVE_LAUNCH_ASSESSMENT.md`](../vision/COMPETITIVE_LAUNCH_ASSESSMENT.md) · [`.cursor/rules/competitive-launch-north-star.mdc`](../../.cursor/rules/competitive-launch-north-star.mdc)  
-**Last updated:** 2026-06-15 · Wave 4 competitive fleet in progress (`comp-competitive-doc-sync`)
+**Last updated:** 2026-06-21 · post-QA dark-surface contrast doc-sync
 
 ---
 
@@ -20,6 +20,7 @@
 | Background check vendor parity (NCSI) | **Partial — Checkr lifecycle complete** | Checkr webhooks + panopticon live matrix; NCSI iframe = acquirer vendor swap (D-02 Partial) | P2 Wave 4 Done |
 | Tournament brackets polish | **Partial — single + double-elim shipped** | `TournamentBracketPanel` on `tournament_events` | P2 Wave 4 Done |
 | Registration → drag-drop roster UX | **Done — drag-drop assign panel** | `RegistrationRosterAssignPanel` GotSport-style DnD | P2 Wave 4 Done |
+| Theme light/dark toggle vs forced-dark shells | **Partial — dark-first** | `themeStore` + `style.css` token split; `.login-surface` partial fix | Post-QA U-01 |
 
 ---
 

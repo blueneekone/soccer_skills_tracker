@@ -1,13 +1,16 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import {
 	attributeIdToWorkoutFocus,
+	buildCoachHomeworkHandoff,
 	buildCoachIntentHandoff,
 	buildPolicyHintsFromResult,
 	formatSuggestedDrillLine,
 	MISSION_HANDOFF_KEY,
 	parseBundleDrills,
 	parseCadence,
+	pickWeakestAttributeId,
 	readMissionHandoff,
+	resolveAdaptiveDrill,
 	resolveHandoffDurationMinutes,
 	resolveHandoffTargetRpe,
 	stashMissionHandoff,
@@ -417,5 +420,52 @@ describe('coachMissionFlow', () => {
 		expect(read?.policyHints?.recommendedDrillId).toBe('drill-ai-1');
 		expect(read?.policyHints?.recommendedDurationMinutes).toBe(28);
 		expect(read?.policyHints?.recommendedTargetRpe).toBe(7);
+	});
+
+	it('buildCoachHomeworkHandoff includes drillId from assignment row', () => {
+		const handoff = buildCoachHomeworkHandoff({
+			missionId: 'hw-42',
+			drillTitle: 'Cone weave',
+			drillId: 'platform-drill-9',
+			targetAttributeId: 'dribbling',
+		});
+		expect(handoff.drillId).toBe('platform-drill-9');
+		expect(handoff.source).toBe('coach_homework');
+	});
+
+	it('pickWeakestAttributeId selects lowest xp attribute', () => {
+		expect(
+			pickWeakestAttributeId(
+				{ ball_mastery: 500, pace: 50, stamina: 200 },
+				['ball_mastery', 'pace', 'stamina'],
+			),
+		).toBe('pace');
+	});
+
+	it('resolveAdaptiveDrill prefers team library before global_drills', async () => {
+		const firestore = {} as import('firebase/firestore').Firestore;
+		const teamMod = await import('$lib/coach/teamDrillLibrary.js');
+		const platformMod = await import('$lib/coach/platformDrillLibrary.js');
+		vi.spyOn(teamMod, 'resolveTeamDrillById').mockResolvedValue(null);
+		vi.spyOn(teamMod, 'loadTeamDrillsForIntent').mockResolvedValue([
+			{
+				id: 'team-drill-1',
+				title: 'Team cone weave',
+				attributeId: 'ball_mastery',
+				durationMinutes: 15,
+				scope: 'team',
+			},
+		]);
+		vi.spyOn(platformMod, 'loadPlatformBasics').mockResolvedValue([]);
+
+		const result = await resolveAdaptiveDrill(firestore, {
+			teamId: 'team-a',
+			clubId: 'club-a',
+			targetAttributeId: 'ball_mastery',
+		});
+
+		expect(result?.id).toBe('team-drill-1');
+		expect(result?.title).toBe('Team cone weave');
+		vi.restoreAllMocks();
 	});
 });

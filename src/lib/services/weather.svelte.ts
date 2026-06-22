@@ -36,7 +36,8 @@
  */
 
 import { browser } from '$app/environment';
-import { getFunctions, httpsCallable } from 'firebase/functions';
+import { httpsCallable } from 'firebase/functions';
+import { functions } from '$lib/firebase.js';
 
 // ── Public types ─────────────────────────────────────────────────────────────
 
@@ -159,10 +160,7 @@ export class WeatherAegis {
 		this._lat = lat;
 		this._lng = lng;
 		this._role = role;
-		this._weatherFn = httpsCallable(
-			getFunctions(undefined, 'us-central1'),
-			'getWeatherConditions',
-		);
+		this._weatherFn = httpsCallable(functions, 'getWeatherConditions');
 
 		this.active = true;
 		this._startPolling();

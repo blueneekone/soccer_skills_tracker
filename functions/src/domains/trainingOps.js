@@ -729,8 +729,45 @@ exports.logTrainingSession = onCall(LAUNCH_CORE_CALLABLE_OPTS, async (request) =
     );
   }
 
-  const now = admin.firestore.FieldValue.serverTimestamp();
   const todayStr = new Date().toISOString().slice(0, 10);
+
+  // B2 cadence anti-cheat: one credited session per UTC day per cadence assignment.
+  if (attributeIdRaw && intentIdRaw) {
+    const intentRef = db().collection('team_assignments').doc(intentIdRaw);
+    const intentSnap = await intentRef.get();
+    if (intentSnap.exists) {
+      const cadence = cadenceFromIntentPrescription(intentSnap.data().prescription);
+      if (cadence) {
+        const todayStartMs = Date.UTC(
+            parseInt(todayStr.slice(0, 4), 10),
+            parseInt(todayStr.slice(5, 7), 10) - 1,
+            parseInt(todayStr.slice(8, 10), 10),
+        );
+        const todayStart = admin.firestore.Timestamp.fromMillis(todayStartMs);
+        const tomorrowStart = admin.firestore.Timestamp.fromMillis(todayStartMs + 86_400_000);
+        const existingSnap = await db()
+            .collection('drill_completions')
+            .where('playerUid', '==', athleteUid)
+            .where('attributeId', '==', attributeIdRaw)
+            .where('loggedAt', '>=', todayStart)
+            .where('loggedAt', '<', tomorrowStart)
+            .get();
+        const hasToday = existingSnap.docs.some((d) => {
+          const row = d.data();
+          if (row.intentId && row.intentId !== intentIdRaw) return false;
+          return true;
+        });
+        if (hasToday) {
+          throw new HttpsError(
+              'failed-precondition',
+              'Cadence limit: one session per day toward this assignment.',
+          );
+        }
+      }
+    }
+  }
+
+  const now = admin.firestore.FieldValue.serverTimestamp();
   const yesterdayStr = utcYmdAddDays(todayStr, -1);
   const weekKey = utcWeekMondayKey();
 
@@ -2631,8 +2668,42 @@ async function countCadenceSessionsForAttribute(uid, attributeId, windowDays) {
       .where('playerUid', '==', uid)
       .where('loggedAt', '>=', windowStart)
       .get();
-  return snap.docs.filter((d) => d.data().attributeId === attributeId).length;
+  const distinctDays = new Set();
+  for (const d of snap.docs) {
+    const row = d.data();
+    if (row.attributeId !== attributeId) continue;
+    const loggedAt = row.loggedAt;
+    const ms =
+      loggedAt && typeof loggedAt.toMillis === 'function' ?
+        loggedAt.toMillis() :
+        typeof loggedAt?.seconds === 'number' ?
+          loggedAt.seconds * 1000 :
+          0;
+    if (ms > 0) {
+      distinctDays.add(new Date(ms).toISOString().slice(0, 10));
+    }
+  }
+  return distinctDays.size;
 }
+
+/**
+ * Team-scope intent completion: auth uids only (no email doc-id fallback).
+ * @param {Array<{ id: string, data: () => Record<string, unknown> }>} docs
+ * @return {string[]}
+ */
+function rosterAuthUidsFromUserDocs(docs) {
+  const uids = new Set();
+  for (const d of docs) {
+    const raw = d.data().uid;
+    if (typeof raw !== 'string') continue;
+    const uid = raw.trim();
+    if (!uid || uid.includes('@')) continue;
+    uids.add(uid);
+  }
+  return [...uids];
+}
+
+exports.rosterAuthUidsFromUserDocs = rosterAuthUidsFromUserDocs;
 
 /**
  * When XP + cadence (if any) are met, append uid to fulfilledByUids.
@@ -2696,7 +2767,7 @@ async function tryFulfillActiveIntentsForPlayer(input) {
           .where('teamId', '==', teamId)
           .where('role', '==', 'player')
           .get();
-      const rosterUids = rosterSnap.docs.map((d) => d.data().uid || d.id);
+      const rosterUids = rosterAuthUidsFromUserDocs(rosterSnap.docs);
       intentComplete = rosterUids.length > 0 &&
         rosterUids.every((ru) => newFulfilled.includes(ru));
     } else {

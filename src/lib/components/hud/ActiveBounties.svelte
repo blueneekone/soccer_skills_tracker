@@ -8,7 +8,6 @@
 		onSnapshot,
 		orderBy,
 		query,
-		Timestamp,
 		where,
 	} from 'firebase/firestore';
 	import { db } from '$lib/firebase.js';
@@ -29,6 +28,9 @@
 		coachIntentReadyToClaim,
 		countCadenceSessionsInWindow,
 		formatCadenceProgress,
+		hasCadenceCreditToday,
+		questCadenceBlockedToday,
+		questHudCtaBlockedCadence,
 		loadQuestProgress,
 		markQuestAccepted,
 		markQuestClaimed,
@@ -56,6 +58,10 @@
 		resolveHeuristicDrill,
 		stashQuestTrainHandoff,
 	} from '$lib/player/workout/coachMissionFlow.js';
+	import {
+		subscribePlayerCadenceCompletions,
+		type CadenceCompletionRow,
+	} from '$lib/player/dashboard/cadenceCompletions.js';
 	import '$lib/styles/active-bounties.css';
 	import MissionHeroModal from '$lib/components/hud/MissionHeroModal.svelte';
 
@@ -92,7 +98,7 @@
 	const missionRetryGate = new MissionSnapshotRetryGate();
 	let lastCoachIntentIds = $state<string[]>([]);
 	/** Flat completion records for cadence progress — fetched once per uid, not real-time. */
-	let cadenceCompletions = $state<Array<{ attributeId: string; loggedAtMs: number }>>([]);
+	let cadenceCompletions = $state<CadenceCompletionRow[]>([]);
 	/**
 	 * B4b advisory badge: intentIds that have an 'approved' completion_verifications record
 	 * for this player. Subscribed player-own only (playerUid == auth.uid). Read-only display —
@@ -191,35 +197,9 @@
 			(q) => q.source === 'coach_intent' && q.cadence,
 		);
 		if (!hasCadenceQuests) return;
-		const windowStart = Timestamp.fromMillis(Date.now() - 30 * 86_400_000);
-		const q = query(
-			collection(db, 'drill_completions'),
-			where('playerUid', '==', uid),
-			where('loggedAt', '>=', windowStart),
-		);
-		const unsub = onSnapshot(
-			q,
-			(snap) => {
-				cadenceCompletions = snap.docs.map((d) => {
-					const data = d.data();
-					const attrId = typeof data.attributeId === 'string' ? data.attributeId : '';
-					const ts = data.loggedAt;
-					const ms =
-						ts instanceof Timestamp
-							? ts.toMillis()
-							: typeof ts?.toMillis === 'function'
-								? ts.toMillis()
-								: typeof ts?.seconds === 'number'
-									? ts.seconds * 1000
-									: 0;
-					return { attributeId: attrId, loggedAtMs: ms };
-				});
-			},
-			() => {
-				/* non-fatal: cadence count stays at 0 */
-			},
-		);
-		return unsub;
+		return subscribePlayerCadenceCompletions(db, uid, (rows) => {
+			cadenceCompletions = rows;
+		});
 	});
 
 	// B4b — subscribe to player's own approved completion_verifications for advisory badge.
@@ -364,6 +344,13 @@
 						missionRetryGate.onSuccess();
 						isRefreshing = false;
 						const uniqueDocs = [...new Map(snap.docs.map((d) => [d.id, d])).values()];
+						if (uniqueDocs.length === 0) {
+							syncCoachIntentRemoval(new Set());
+							intentDataById = {};
+							intents = [];
+							merge();
+							return;
+						}
 						applyCoachIntents(mapIntentRows(uniqueDocs));
 					},
 					handleIntentSnapshotError,
@@ -454,7 +441,18 @@
 				internalLoading = false;
 				hasQuestLogLoaded = true;
 			})
-			.catch(() => {})
+			.catch((err) => {
+				console.error('[ActiveBounties] coach intent refetch failed:', err);
+				missionSyncBlocked = true;
+				if (lastCoachIntentIds.length > 0) {
+					questProgress = applyCoachIntentPurge(questProgress, lastCoachIntentIds);
+				}
+				lastCoachIntentIds = [];
+				intentDataById = {};
+				internalQuests = internalQuests.filter((q) => q.source !== 'coach_intent');
+				internalLoading = false;
+				hasQuestLogLoaded = true;
+			})
 			.finally(() => {
 				isRefreshing = false;
 			});
@@ -476,10 +474,11 @@
 	}
 
 	function stashQuestHandoff(quest: QuestTask) {
-		stashQuestTrainHandoff(quest, {
+		void stashQuestTrainHandoff(db, quest, {
 			intentRow: intentDataById[quest.id],
 			homeworkRow: homeworkDataById[quest.id],
 			drillPreview: drillPreviewByQuestId[quest.id] ?? null,
+			clubId: String(authStore.userProfile?.clubId ?? authStore.tenantId ?? ''),
 		});
 	}
 
@@ -546,6 +545,7 @@
 		}
 
 		if (quest.lifecycle === 'complete') {
+			if (questCadenceBlockedToday(quest, cadenceCompletions)) return;
 			if (shouldOpenMissionHeroModal(quest)) {
 				missionModalQuest = quest;
 				return;
@@ -602,12 +602,13 @@
 {/snippet}
 
 {#snippet questRowEmbedded(quest: QuestTask)}
+	{@const cadenceBlocked = questCadenceBlockedToday(quest, cadenceCompletions)}
 	<div
 		class="hud-bounty-row quest-row quest-row--embedded quest-row--premium quest-row--rail"
 		class:quest-row--habit={quest.tier === 'daily'}
 		class:quest-row--bounty={quest.tier === 'bounty'}
 		class:quest-row--hero={heroQuest?.id === quest.id}
-		class:quest-row--promoted={!heroQuest && isPromotedQuest(quest)}
+		class:quest-row--promoted={isPromotedQuest(quest) && heroQuest?.id !== quest.id}
 	>
 		{#if quest.lifecycle === 'accept'}
 			<span class="quest-row__status" aria-hidden="true"></span>
@@ -664,10 +665,12 @@
 			class:quest-row__cmd--accept={quest.lifecycle === 'accept'}
 			class:quest-row__cmd--complete={quest.lifecycle === 'complete'}
 			class:quest-row__cmd--claim={quest.lifecycle === 'claim'}
-			aria-label={questCtaLabel(quest.lifecycle)}
+			class:quest-row__cmd--cadence-blocked={cadenceBlocked}
+			disabled={cadenceBlocked}
+			aria-label={cadenceBlocked ? questHudCtaBlockedCadence() : questCtaLabel(quest.lifecycle)}
 			onclick={() => handleQuestAction(quest)}
 		>
-			{questHudCtaFor(quest)}
+			{cadenceBlocked ? questHudCtaBlockedCadence() : questHudCtaFor(quest)}
 		</button>
 	</div>
 {/snippet}

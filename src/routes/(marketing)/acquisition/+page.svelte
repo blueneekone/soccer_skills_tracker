@@ -8,6 +8,7 @@
 		ACQ_CONTACT_EMAIL,
 		ACQ_PDF_EXECUTIVE_BRIEF,
 		ACQ_PDF_PROSPECTUS,
+		ACQ_PDF_DIRECTOR_TRUST_BRIEF,
 		ACQ_TRACTION_STRIP,
 		ACQ_WAVE4_WINS,
 		ACQ_DATA_ROOM_LINKS,
@@ -40,6 +41,9 @@
 			</a>
 			<a class="acq-btn-secondary" href={ACQ_PDF_PROSPECTUS} download>
 				Download full prospectus (PDF)
+			</a>
+			<a class="acq-btn-secondary" href={ACQ_PDF_DIRECTOR_TRUST_BRIEF} download>
+				Director trust brief (PDF)
 			</a>
 			<a
 				class="acq-cta__ghost"
@@ -145,6 +149,7 @@
 		<nav class="acq-print-crawl" aria-hidden="true" hidden>
 			<a href="/acquisition/print/executive-brief">Print executive brief</a>
 			<a href="/acquisition/print/prospectus">Print prospectus</a>
+			<a href="/acquisition/print/director-trust-brief">Print director trust brief</a>
 		</nav>
 	</footer>
 </div>

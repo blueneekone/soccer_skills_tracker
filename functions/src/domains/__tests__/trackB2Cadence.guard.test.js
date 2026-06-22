@@ -167,4 +167,14 @@ describe('B2 — intent lifecycle cadence fulfillment gate (source-scan)', () =>
     assert.match(SRC, /source: 'logTrainingSession'/);
     assert.match(SRC, /restingFeel != null/);
   });
+
+  it('logTrainingSession rejects second cadence session same UTC day', () => {
+    assert.match(SRC, /Cadence limit: one session per day toward this assignment/);
+    assert.match(SRC, /cadenceFromIntentPrescription\(intentSnap\.data\(\)\.prescription\)/);
+  });
+
+  it('countCadenceSessionsForAttribute counts distinct UTC days', () => {
+    assert.match(SRC, /distinctDays\.add\(new Date\(ms\)\.toISOString\(\)\.slice\(0, 10\)\)/);
+    assert.match(SRC, /return distinctDays\.size/);
+  });
 });

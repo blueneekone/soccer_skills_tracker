@@ -1,7 +1,13 @@
 <script lang="ts">
 	import { base } from '$app/paths';
 	import { browser } from '$app/environment';
-	import { HERO_HEADLINE, HERO_SUBHEADLINE, HERO_BADGE } from './landingContent.js';
+	import {
+		HERO_TRUST_BADGE,
+		HERO_TRUST_HEADLINE,
+		HERO_TRUST_SUBHEADLINE,
+		HERO_TRUST_MICRO_STRIP,
+		HERO_TRUST_LEGAL,
+	} from './landingContent.js';
 
 	let eyebrowVisible = $state(false);
 	let videoEl: HTMLVideoElement;
@@ -44,24 +50,30 @@
 				aria-label="SSTracker club operating system"
 			>
 				<span class="hero__badge-dot" aria-hidden="true"></span>
-				{HERO_BADGE}
+				{HERO_TRUST_BADGE}
 			</span>
 
-			<h1 class="hero__h1">{HERO_HEADLINE}</h1>
+			<h1 class="hero__h1">{HERO_TRUST_HEADLINE}</h1>
 
-			<p class="hero__sub">{HERO_SUBHEADLINE}</p>
+			<p class="hero__sub">{HERO_TRUST_SUBHEADLINE}</p>
 
 			<div class="hero__ctas">
 				<a href="{base}/setup" class="tw-vanguard-btn-primary">
 					Start your club →
 				</a>
-				<a href="{base}/features" class="tw-vanguard-btn-secondary">
-					See the platform
+				<a href="{base}/acquisition" class="tw-vanguard-btn-secondary">
+					Director trust brief →
 				</a>
 			</div>
 
+			<ul class="hero__trust-strip" aria-label="Platform trust signals">
+				{#each HERO_TRUST_MICRO_STRIP as chip (chip)}
+					<li>{chip}</li>
+				{/each}
+			</ul>
+
 			<p class="hero__disclaimer">
-				Household-first compliance · SafeSport-native comms · $0 platform fee
+				{HERO_TRUST_LEGAL}
 			</p>
 		</div>
 
@@ -255,6 +267,24 @@
 		flex-wrap: wrap;
 	}
 
+	.hero__trust-strip {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.5rem 0.85rem;
+		list-style: none;
+		margin: 0;
+		padding: 0;
+	}
+
+	.hero__trust-strip li {
+		font-size: var(--vanguard-text-eyebrow-size, 0.6875rem);
+		color: var(--vanguard-text-eyebrow, #a5b4fc);
+		letter-spacing: 0.06em;
+		padding: 0.25rem 0.65rem;
+		border: 1px solid rgb(30 41 59);
+		border-radius: 9999px;
+		background: rgb(15 23 42 / 0.45);
+	}
 
 	.hero__disclaimer {
 		font-size: var(--vanguard-text-eyebrow-size, 0.6875rem);
