@@ -48,6 +48,54 @@ function normalizeCadence(rawCadence) {
   return {sessionsPerWindow: Math.floor(spw), windowDays: Math.floor(wd)};
 }
 
+/**
+ * Behavioral mirror of applyHighXpCadenceDefault in trainingOps.js.
+ * @param {object|undefined} prescription
+ * @param {number|undefined} requiredXp
+ * @returns {object|undefined}
+ */
+function applyHighXpCadenceDefaultMirror(prescription, requiredXp) {
+  const req = Math.floor(Number(requiredXp) || 0);
+  if (req < 300) return prescription;
+  const existing = prescription ? normalizeCadence(prescription.cadence) : undefined;
+  if (existing) return prescription;
+  const base = prescription || {sets: 1, bilateral: false};
+  return {...base, cadence: {sessionsPerWindow: 5, windowDays: 7}};
+}
+
+describe('BOUNTY-CADENCE-SERVER — high requiredXp default cadence (behavioral mirror)', () => {
+  it('injects 5×/7 when requiredXp >= 300 and prescription has no cadence', () => {
+    assert.deepEqual(
+        applyHighXpCadenceDefaultMirror({sets: 3, bilateral: false}, 500),
+        {sets: 3, bilateral: false, cadence: {sessionsPerWindow: 5, windowDays: 7}},
+    );
+  });
+
+  it('creates minimal prescription when absent and requiredXp >= 300', () => {
+    assert.deepEqual(
+        applyHighXpCadenceDefaultMirror(undefined, 300),
+        {sets: 1, bilateral: false, cadence: {sessionsPerWindow: 5, windowDays: 7}},
+    );
+  });
+
+  it('preserves explicit coach cadence when requiredXp >= 300', () => {
+    const rx = {
+      sets: 2,
+      bilateral: false,
+      cadence: {sessionsPerWindow: 3, windowDays: 7},
+    };
+    assert.deepEqual(applyHighXpCadenceDefaultMirror(rx, 500), rx);
+  });
+
+  it('does not inject cadence when requiredXp < 300', () => {
+    assert.deepEqual(
+        applyHighXpCadenceDefaultMirror({sets: 3, bilateral: false}, 150),
+        {sets: 3, bilateral: false},
+    );
+    assert.equal(applyHighXpCadenceDefaultMirror(undefined, 150), undefined);
+  });
+});
+
 describe('B2 — normalizePrescription cadence trust boundary (behavioral mirror)', () => {
   it('omits cadence when absent (undefined)', () => {
     assert.equal(normalizeCadence(undefined), undefined);
@@ -168,13 +216,65 @@ describe('B2 — intent lifecycle cadence fulfillment gate (source-scan)', () =>
     assert.match(SRC, /restingFeel != null/);
   });
 
+  it('logTrainingSession reads physioRef before any tx.set (Firestore tx rule)', () => {
+    const fnStart = SRC.indexOf('exports.logTrainingSession');
+    const txStart = SRC.indexOf('await db().runTransaction(async (tx) => {', fnStart);
+    const txEnd = SRC.indexOf(
+        "logger.error('logTrainingSession: transaction failed'",
+        txStart,
+    );
+    const txBlock = SRC.slice(txStart, txEnd);
+    const physioGet = txBlock.indexOf('tx.get(physioRef)');
+    const firstSet = txBlock.search(/\btx\.set\s*\(/);
+    assert.ok(physioGet >= 0);
+    assert.ok(firstSet >= 0);
+    assert.ok(physioGet < firstSet);
+  });
+
   it('logTrainingSession rejects second cadence session same UTC day', () => {
     assert.match(SRC, /Cadence limit: one session per day toward this assignment/);
-    assert.match(SRC, /cadenceFromIntentPrescription\(intentSnap\.data\(\)\.prescription\)/);
+    assert.match(SRC, /cadenceFromIntentPrescription\(intentData\.prescription\)/);
+  });
+
+  it('logTrainingSession enforces daily cap for high requiredXp without cadence', () => {
+    assert.match(SRC, /HIGH_XP_CADENCE_THRESHOLD/);
+    assert.match(SRC, /enforceDailyCreditCap/);
+    assert.match(SRC, /requiredXp >= HIGH_XP_CADENCE_THRESHOLD/);
+  });
+
+  it('secureDeployIntent applies applyHighXpCadenceDefault via normalizePrescription', () => {
+    assert.match(SRC, /function applyHighXpCadenceDefault/);
+    assert.match(SRC, /normalizePrescription\(data\.prescription, requiredXp\)/);
+    assert.match(SRC, /applyHighXpCadenceDefault: injecting 5×\/week cadence/);
   });
 
   it('countCadenceSessionsForAttribute counts distinct UTC days', () => {
     assert.match(SRC, /distinctDays\.add\(new Date\(ms\)\.toISOString\(\)\.slice\(0, 10\)\)/);
     assert.match(SRC, /return distinctDays\.size/);
+  });
+});
+
+describe('B2 — logTrainingSession cadence query error handling (source-scan)', () => {
+  it('wraps cadence pre-check query in try/catch', () => {
+    assert.match(SRC, /rethrowFirestoreQueryError\('Cadence limit check'/);
+  });
+
+  it('wraps cadence assignment intentRef.get in try/catch', () => {
+    assert.match(SRC, /rethrowFirestoreQueryError\('Cadence assignment lookup'/);
+  });
+
+  it('maps Firestore index failures to failed-precondition HttpsError', () => {
+    assert.match(SRC, /function rethrowFirestoreQueryError/);
+    assert.match(SRC, /drill_completions index/);
+  });
+
+  it('firestore.indexes.json defines playerUid + attributeId + loggedAt composite', () => {
+    const indexesPath = join(__dirname, '..', '..', '..', '..', 'firestore.indexes.json');
+    const indexesSrc = readFileSync(indexesPath, 'utf-8');
+    assert.match(indexesSrc, /"collectionGroup": "drill_completions"/);
+    assert.match(
+        indexesSrc,
+        /"fieldPath": "playerUid"[\s\S]*"fieldPath": "attributeId"[\s\S]*"fieldPath": "loggedAt"/,
+    );
   });
 });

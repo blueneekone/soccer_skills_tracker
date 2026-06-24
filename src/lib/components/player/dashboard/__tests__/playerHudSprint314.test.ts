@@ -23,11 +23,42 @@ describe('QA-142 — coach mission Train handoff', () => {
 		expect(workoutSrc).toMatch(/if \(!incomingMissionsReady\) return;/);
 	});
 
-	it('coach missions skip MissionHeroModal and stash via stashQuestTrainHandoff', () => {
-		expect(bountiesSrc).toMatch(/shouldOpenMissionHeroModal/);
-		expect(bountiesSrc).toMatch(/quest\.source !== 'coach_intent'/);
+	it('coach missions skip MissionHeroModal; Start session stashes via stashQuestTrainHandoff', () => {
+		const activeBountiesTs = readFileSync(
+			join(ROOT, 'lib/player/dashboard/activeBounties.ts'),
+			'utf-8',
+		);
+		expect(bountiesSrc).toMatch(/shouldOpenMissionRailHeroModal/);
+		expect(activeBountiesTs).toMatch(/quest\.source !== 'coach_intent'/);
 		expect(bountiesSrc).toMatch(/stashQuestTrainHandoff/);
-		expect(bountiesSrc).toMatch(/quest\.targetAttributeId/);
+		expect(bountiesSrc).toMatch(/stashQuestHandoff\(quest,\s*true\)/);
+		expect(bountiesSrc).toMatch(/missionHandoff:\s*navHandoff/);
+	});
+
+	it('TRAIN-MISSION-ARM-EXPLICIT — Accept on HQ does not write mission handoff', () => {
+		const acceptBlock = bountiesSrc.slice(
+			bountiesSrc.indexOf("quest.lifecycle === 'accept'"),
+			bountiesSrc.indexOf("quest.lifecycle === 'complete'"),
+		);
+		expect(acceptBlock).not.toMatch(/stashQuestHandoff|stashQuestTrainHandoff/);
+	});
+
+	it('TRAIN-MISSION-ARM-EXPLICIT — shell Train entry does not auto-arm from sessionStorage alone', () => {
+		expect(workoutSrc).toMatch(/resolveWorkoutMountHandoff/);
+		expect(workoutSrc).toMatch(/resolveWorkoutMountHandoff\([\s\S]*missionHandoff/);
+		expect(workoutSrc).not.toMatch(/incomingMissions\.some\(\(m\) => m\.id === activeMissionId\)/);
+	});
+
+	it('TRAIN-MISSION-ARM-EXPLICIT — Train mission strip Continue arms explicit handoff', () => {
+		expect(workoutSrc).toMatch(/trainMissionStripItems/);
+		expect(workoutSrc).toMatch(/TrainMissionStrip/);
+		expect(workoutSrc).toMatch(/continueTrainMission/);
+		expect(workoutSrc).toMatch(/continueCoachIntentOnTrain/);
+	});
+
+	it('TRAIN-MISSION-ARM-EXPLICIT — isCoachDirectedSession requires armed coach handoff', () => {
+		expect(workoutSrc).toMatch(/armedHandoff\.missionId === activeMissionId/);
+		expect(workoutSrc).toMatch(/isCoachDirectedHandoff\(armedHandoff\.source\)/);
 	});
 
 	it('Adaptive Homework no longer gates on Morning Readiness', () => {
@@ -68,6 +99,17 @@ describe('QA-142 — coach mission Train handoff', () => {
 	it('ActiveBounties subscribes to cadence completions for mission progress', () => {
 		expect(bountiesSrc).toMatch(/subscribePlayerCadenceCompletions/);
 		expect(bountiesSrc).toMatch(/formatCadenceProgress/);
+		expect(bountiesSrc).toMatch(/hasCoachIntentQuests/);
+	});
+
+	it('BOUNTY-DAILY-ACK: Train success appends cadence week note for coach_intent', () => {
+		const constants = readFileSync(
+			join(ROOT, 'lib/player/workout/workoutSessionConstants.ts'),
+			'utf-8',
+		);
+		expect(constants).toMatch(/coachCadenceLogSuccessSuffix/);
+		expect(workoutSrc).toMatch(/coachCadenceLogSuccessSuffix/);
+		expect(workoutSrc).toMatch(/cadenceWeekNote/);
 	});
 
 	it('workout page omits DrillExecution panel — coach sessions are Transmit-only', () => {
@@ -82,6 +124,11 @@ describe('QA-142 — coach mission Train handoff', () => {
 		expect(workoutSrc).toMatch(/armParentProofAfterLog\(proofIntentId, needsProof\)/);
 	});
 
+	it('workout page shows B4 pre-commit advisory when parent verification is armed', () => {
+		expect(workoutSrc).toMatch(/requiresParentVerification === true/);
+		expect(workoutSrc).toMatch(/After transmit, optional proof for parent — XP not gated/);
+	});
+
 	it('buildCoachIntentHandoff always carries a drillId fallback for execution panel', () => {
 		expect(flowSrc).toMatch(/input\.missionId/);
 	});
@@ -90,8 +137,7 @@ describe('QA-142 — coach mission Train handoff', () => {
 		const rail = readFileSync(join(ROOT, 'lib/player/dashboard/missionRailCoachIntents.ts'), 'utf-8');
 		expect(rail).toMatch(/getDocsFromServer/);
 		expect(rail).toMatch(/fetchCoachIntentDocsFromServer/);
-		expect(bountiesSrc).toMatch(/fetchCoachIntentQuests/);
 		expect(bountiesSrc).toMatch(/runCoachIntentRefetch/);
-		expect(bountiesSrc).toMatch(/uniqueDocs\.length === 0/);
+		expect(bountiesSrc).toMatch(/attachMissionQuestSubscriptions/);
 	});
 });

@@ -24,9 +24,12 @@
 	import { deduplicateById } from '$lib/utils/deduplicateMissions.js';
 	import {
 		coachIntentReadyToClaim,
+		coachIntentCreditedToday,
+		computeCoachIntentEarnedXp,
+		COACH_INTENT_TODAY_COMPLETE,
 		countCadenceSessionsInWindow,
 		formatCadenceProgress,
-		hasCadenceCreditToday,
+		formatIntentXpProgressLine,
 		questCadenceBlockedToday,
 		questHudCtaBlockedCadence,
 		loadQuestProgress,
@@ -139,6 +142,11 @@
 	const playerAuthLoaded = $derived(
 		browser && !authStore.isLoading && authStore.role === 'player' && Boolean(playerUid),
 	);
+	const playerXpByAttribute = $derived(
+		authStore.userProfile?.xpByAttribute && typeof authStore.userProfile.xpByAttribute === 'object'
+			? (authStore.userProfile.xpByAttribute as Record<string, number>)
+			: {},
+	);
 	const missionRailDiagnostic = $derived(
 		buildMissionRailDiagnostic({
 			missionSyncBlocked,
@@ -221,10 +229,8 @@
 		if (!browser || authStore.isLoading || authStore.role !== 'player') return;
 		const uid = authStore.user?.uid ?? '';
 		if (!uid) return;
-		const hasCadenceQuests = dedupedQuests.some(
-			(q) => q.source === 'coach_intent' && q.cadence,
-		);
-		if (!hasCadenceQuests) return;
+		const hasCoachIntentQuests = dedupedQuests.some((q) => q.source === 'coach_intent');
+		if (!hasCoachIntentQuests) return;
 		return subscribePlayerCadenceCompletions(db, uid, (rows) => {
 			cadenceCompletions = rows;
 		});
@@ -396,24 +402,28 @@
 		}));
 	}
 
-	function stashQuestHandoff(quest: QuestTask) {
-		void stashQuestTrainHandoff(db, quest, {
+	function stashQuestHandoff(quest: QuestTask, armExplicit = false) {
+		return stashQuestTrainHandoff(db, quest, {
 			intentRow: intentDataById[quest.id],
 			homeworkRow: homeworkDataById[quest.id],
 			drillPreview: drillPreviewByQuestId[quest.id] ?? null,
 			clubId: String(authStore.userProfile?.clubId ?? authStore.tenantId ?? ''),
+			armExplicit,
 		});
 	}
 
-	function completeQuestHandoff(quest: QuestTask) {
+	async function completeQuestHandoff(quest: QuestTask) {
 		const deferUntilLog = shouldDeferQuestCompletionUntilWorkoutLog(quest);
 		if (!deferUntilLog) {
 			questProgress = markQuestCompleted(quest.id, questProgress);
 		}
+		let navHandoff = null;
 		if (quest.source === 'coach_intent' || quest.source === 'coach_homework') {
-			stashQuestHandoff(quest);
+			navHandoff = await stashQuestHandoff(quest, true);
 		}
-		goto(resolveAppPath(quest.actionHref));
+		goto(resolveAppPath('/player/workout'), {
+			state: navHandoff ? { missionHandoff: navHandoff } : undefined,
+		});
 		if (!deferUntilLog && questsProp === undefined) {
 			internalQuests = patchQuestLifecycle(internalQuests);
 		}
@@ -434,9 +444,6 @@
 	function handleQuestAction(quest: QuestTask) {
 		if (quest.lifecycle === 'accept') {
 			questProgress = markQuestAccepted(quest.id, questProgress);
-			if (quest.source === 'coach_intent' || quest.source === 'coach_homework') {
-				stashQuestHandoff(quest);
-			}
 			if (questsProp === undefined) {
 				internalQuests = patchQuestLifecycle(internalQuests);
 			}
@@ -464,20 +471,48 @@
 </script>
 
 {#snippet questCardContent(quest: QuestTask)}
+	{@const cadenceBlocked = questCadenceBlockedToday(quest, cadenceCompletions)}
+	{@const intentRow = quest.source === 'coach_intent' ? intentDataById[quest.id] : undefined}
+	{@const coachRequiredXp =
+		quest.source === 'coach_intent'
+			? Math.max(0, Math.floor(Number(intentRow?.requiredXp) || quest.xpReward || 0))
+			: 0}
+	{@const coachEarnedXp =
+		quest.source === 'coach_intent'
+			? computeCoachIntentEarnedXp(intentRow, playerUid, playerXpByAttribute, playerEmail)
+			: 0}
+	{@const coachXpProgressLine =
+		quest.source === 'coach_intent'
+			? formatIntentXpProgressLine(coachEarnedXp, coachRequiredXp)
+			: ''}
+	{@const creditedToday =
+		quest.source === 'coach_intent' ? coachIntentCreditedToday(quest, cadenceCompletions) : false}
 	{#if quest.senderLabel}
 		<p class="quest-hero__sender">{quest.senderLabel}</p>
 	{/if}
 	<h3 class="quest-hero__title">{quest.title}</h3>
+	{#if coachXpProgressLine}
+		<p class="quest-row__cadence pw-mono quest-hero__xp-progress" aria-label="XP progress">
+			{coachXpProgressLine}
+		</p>
+	{/if}
+	{#if creditedToday}
+		<p class="quest-row__cadence quest-row__cadence--today pw-mono" role="status">
+			{COACH_INTENT_TODAY_COMPLETE}
+		</p>
+	{/if}
 	{#if formatQuestRewardLabel(quest)}
 		<p class="quest-hero__reward">{formatQuestRewardLabel(quest)}</p>
 	{/if}
 	<button
 		type="button"
 		class="quest-hero__cta"
-		aria-label={questCtaLabel(quest.lifecycle)}
+		class:quest-hero__cta--cadence-blocked={cadenceBlocked}
+		disabled={cadenceBlocked}
+		aria-label={cadenceBlocked ? questHudCtaBlockedCadence() : questCtaLabel(quest.lifecycle)}
 		onclick={() => handleQuestAction(quest)}
 	>
-		{questHudCtaFor(quest)}
+		{cadenceBlocked ? questHudCtaBlockedCadence() : questHudCtaFor(quest)}
 	</button>
 {/snippet}
 
@@ -502,6 +537,21 @@
 
 {#snippet questRowEmbedded(quest: QuestTask)}
 	{@const cadenceBlocked = questCadenceBlockedToday(quest, cadenceCompletions)}
+	{@const intentRow = quest.source === 'coach_intent' ? intentDataById[quest.id] : undefined}
+	{@const coachRequiredXp =
+		quest.source === 'coach_intent'
+			? Math.max(0, Math.floor(Number(intentRow?.requiredXp) || quest.xpReward || 0))
+			: 0}
+	{@const coachEarnedXp =
+		quest.source === 'coach_intent'
+			? computeCoachIntentEarnedXp(intentRow, playerUid, playerXpByAttribute, playerEmail)
+			: 0}
+	{@const coachXpProgressLine =
+		quest.source === 'coach_intent'
+			? formatIntentXpProgressLine(coachEarnedXp, coachRequiredXp)
+			: ''}
+	{@const creditedToday =
+		quest.source === 'coach_intent' ? coachIntentCreditedToday(quest, cadenceCompletions) : false}
 	<div
 		class="hud-bounty-row quest-row quest-row--embedded quest-row--premium quest-row--rail"
 		class:quest-row--habit={quest.tier === 'daily'}
@@ -529,6 +579,14 @@
 				<p class="quest-row__lede quest-row__lede--rail-wide">{formatQuestRewardLabel(quest)}</p>
 			{/if}
 			{#if quest.source === 'coach_intent'}
+				{#if coachXpProgressLine}
+					<p class="quest-row__cadence pw-mono" aria-label="XP progress">{coachXpProgressLine}</p>
+				{/if}
+				{#if creditedToday}
+					<p class="quest-row__cadence quest-row__cadence--today pw-mono" role="status">
+						{COACH_INTENT_TODAY_COMPLETE}
+					</p>
+				{/if}
 				<p class="quest-row__hint">{COACH_INTENT_HINT}</p>
 				{#if drillPreviewByQuestId[quest.id]?.line}
 					<p class="quest-row__drill">{drillPreviewByQuestId[quest.id].line}</p>

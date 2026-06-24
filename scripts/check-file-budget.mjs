@@ -34,7 +34,7 @@ const LIMITS = {
 
 /** Grandfather ceilings (relative to ROOT) */
 const GRANDFATHER = new Map([
-	['src/routes/(app)/player/workout/+page.svelte', 1335],
+	['src/routes/(app)/player/workout/+page.svelte', 1350],
 	['src/routes/(app)/player/armory/+page.svelte', 950],
 	['src/lib/components/hud/ActiveBounties.svelte', 850],
 	['src/lib/components/stats/ProPlayerCard.svelte', 700],

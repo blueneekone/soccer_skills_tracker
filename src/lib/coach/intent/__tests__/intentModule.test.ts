@@ -5,6 +5,7 @@
 import { describe, expect, it } from 'vitest';
 import { existsSync, readFileSync } from 'fs';
 import { join } from 'path';
+import { IntentEngine } from '../IntentEngine.svelte.js';
 import {
 	computeIntentEarnedXp,
 	computeIntentProgressPct,
@@ -219,6 +220,51 @@ describe('FORGE-INTENT-XP-BASELINE — delta progress helpers', () => {
 	it('IntentArena labels progress since deploy', () => {
 		const src = readFileSync(join(ROOT, 'IntentArena.svelte'), 'utf-8');
 		expect(src).toMatch(/Progress since deploy/);
+	});
+});
+
+describe('FORGE-CADENCE-DEFAULT — smart cadence in buildDeployPrescription', () => {
+	const ENGINE = join(ROOT, 'IntentEngine.svelte.ts');
+	const PANEL = join(ROOT, 'ForgeDeployPanel.svelte');
+
+	it('buildDeployPrescription emits cadence 5/7 when requiredXp >= 300 and slider 0', () => {
+		const engine = new IntentEngine();
+		engine.draftRequiredXp = 500;
+		engine.draftCadenceSessionsPerWindow = 0;
+		expect(engine.buildDeployPrescription().cadence).toEqual({
+			sessionsPerWindow: 5,
+			windowDays: 7,
+		});
+	});
+
+	it('explicit slider 3 wins over multi-day default', () => {
+		const engine = new IntentEngine();
+		engine.draftRequiredXp = 500;
+		engine.draftCadenceSessionsPerWindow = 3;
+		expect(engine.buildDeployPrescription().cadence).toEqual({
+			sessionsPerWindow: 3,
+			windowDays: 7,
+		});
+	});
+
+	it('requiredXp < 300 → no cadence when slider 0', () => {
+		const engine = new IntentEngine();
+		engine.draftRequiredXp = 150;
+		engine.draftCadenceSessionsPerWindow = 0;
+		expect(engine.buildDeployPrescription().cadence).toBeUndefined();
+	});
+
+	it('ForgeDeployPanel explains cadence for multi-day goals and default hint', () => {
+		const src = readFileSync(PANEL, 'utf-8');
+		expect(src).toMatch(/Recommended for multi-day XP goals/);
+		expect(src).toMatch(/One credited session per UTC day/);
+		expect(src).toMatch(/Deploy will default to 5×\/week/);
+	});
+
+	it('IntentEngine buildDeployPrescription applies 5\/7 default at requiredXp >= 300', () => {
+		const src = readFileSync(ENGINE, 'utf-8');
+		expect(src).toMatch(/draftRequiredXp >= 300/);
+		expect(src).toMatch(/sessionsPerWindow: 5, windowDays: 7/);
 	});
 });
 

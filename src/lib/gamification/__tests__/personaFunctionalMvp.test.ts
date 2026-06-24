@@ -164,9 +164,14 @@ describe('Sprint LAUNCH-functional-os — Coach→Player bounty handoff', () => 
 			join(ROOT, 'lib/player/dashboard/missionRailCoachIntents.ts'),
 			'utf-8',
 		);
-		expect(src).toMatch(/team_assignments/);
+		const questSubs = readFileSync(
+			join(ROOT, 'lib/player/dashboard/missionRailQuestSubscriptions.ts'),
+			'utf-8',
+		);
+		expect(coachIntents).toMatch(/team_assignments/);
 		expect(coachIntents).toMatch(/bountyFromCoachIntent/);
-		expect(src).toMatch(/fetchCoachIntentQuests|mapCoachIntentRows/);
+		expect(src).toMatch(/attachMissionQuestSubscriptions|runCoachIntentRefetch/);
+		expect(questSubs).toMatch(/team_assignments|fetchCoachIntentQuests|mapCoachIntentRows/);
 		expect(src).toMatch(/deduplicateById/);
 		expect(src).toMatch(/stashQuestTrainHandoff/);
 	});
@@ -180,7 +185,7 @@ describe('Sprint LAUNCH-functional-os — Coach→Player bounty handoff', () => 
 		expect(src).toMatch(/MissionRailClaimsSync/);
 		expect(src).toMatch(/MissionSnapshotRetryGate/);
 		expect(src).toMatch(/missionClaimsSync\.claimsSyncNonce/);
-		expect(src).toMatch(/missionRailEmptyCopy/);
+		expect(src).toMatch(/missionRailEmptyMessageFor|missionRailEmptyMessage/);
 		expect(src).toMatch(/missionSyncBlocked/);
 	});
 
@@ -200,7 +205,7 @@ describe('Sprint LAUNCH-functional-os — Coach→Player bounty handoff', () => 
 		expect(src).toMatch(/from '\$lib\/firebase\.js'/);
 		expect(src).toMatch(/isCoachDirectedSession/);
 		expect(src).toMatch(/lockedCoachDrillLabel/);
-		expect(src).toMatch(/incomingMissions\.some/);
+		expect(src).toMatch(/shouldAutoArmHandoff|armedHandoff\.missionId === activeMissionId/);
 		expect(src).toMatch(/FREE_LOG_DURATION_MAX_MINUTES/);
 		expect(src).toMatch(/sessionNotes/);
 		// G1 source-level guard: targetAttributeId must be forwarded into executePlayerWorkoutLog
@@ -212,7 +217,7 @@ describe('Sprint LAUNCH-functional-os — Coach→Player bounty handoff', () => 
 
 	it('GP-ACQ-04a ActiveBounties explains coach assign path when rail has no bounties', () => {
 		const src = readFileSync(ACTIVE_BOUNTIES, 'utf-8');
-		expect(src).toMatch(/missionRailEmptyCopy/);
+		expect(src).toMatch(/missionRailEmptyMessageFor|missionRailEmptyMessage/);
 		expect(src).toMatch(/showCoachAssignHint/);
 		expect(src).not.toMatch(/NO ACTIVE MISSIONS/);
 	});
@@ -564,14 +569,11 @@ describe('Functional audit — E-series coach/director mounts', () => {
 		expect(director).toMatch(/TransferPortal/);
 	});
 
-	it('player workout mounts DrillExecution for coach missions', () => {
+	it('player workout uses transmit-only coach session (no DrillExecution panel)', () => {
 		const src = readFileSync(join(ROOT, 'routes/(app)/player/workout/+page.svelte'), 'utf-8');
-		expect(src).toMatch(/CoachMissionDrillExecutionPanel/);
-		const panel = readFileSync(
-			join(ROOT, 'lib/player/workout/CoachMissionDrillExecutionPanel.svelte'),
-			'utf-8',
-		);
-		expect(panel).toMatch(/DrillExecution/);
+		expect(src).not.toMatch(/CoachMissionDrillExecutionPanel/);
+		expect(src).toMatch(/EXEC_COMMIT|logWorkout/);
+		expect(src).toMatch(/isCoachDirectedSession/);
 	});
 
 	it('ActionInbox has no coach mock fallback rows', () => {

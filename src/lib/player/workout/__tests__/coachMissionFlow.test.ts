@@ -1,9 +1,12 @@
 import { describe, expect, it, vi } from 'vitest';
+import { resolveWorkoutMountHandoff } from '../applyWorkoutMountHandoff.js';
 import {
 	attributeIdToWorkoutFocus,
 	buildCoachHomeworkHandoff,
 	buildCoachIntentHandoff,
 	buildPolicyHintsFromResult,
+	clearMissionHandoff,
+	clearNonExplicitMissionHandoff,
 	formatSuggestedDrillLine,
 	MISSION_HANDOFF_KEY,
 	parseBundleDrills,
@@ -13,6 +16,7 @@ import {
 	resolveAdaptiveDrill,
 	resolveHandoffDurationMinutes,
 	resolveHandoffTargetRpe,
+	shouldAutoArmHandoff,
 	stashMissionHandoff,
 } from '../coachMissionFlow.js';
 
@@ -420,6 +424,83 @@ describe('coachMissionFlow', () => {
 		expect(read?.policyHints?.recommendedDrillId).toBe('drill-ai-1');
 		expect(read?.policyHints?.recommendedDurationMinutes).toBe(28);
 		expect(read?.policyHints?.recommendedTargetRpe).toBe(7);
+	});
+
+	it('TRAIN-MISSION-ARM-EXPLICIT — shouldAutoArmHandoff requires armExplicit true', () => {
+		const store = new Map<string, string>();
+		const sessionStorage = {
+			getItem: (k: string) => store.get(k) ?? null,
+			setItem: (k: string, v: string) => { store.set(k, v); },
+			removeItem: (k: string) => { store.delete(k); },
+		};
+		// @ts-expect-error test shim
+		globalThis.sessionStorage = sessionStorage;
+
+		stashMissionHandoff(
+			buildCoachIntentHandoff({
+				missionId: 'accept-only-1',
+				targetAttributeId: 'pace',
+			}),
+		);
+		expect(shouldAutoArmHandoff(readMissionHandoff())).toBe(false);
+
+		stashMissionHandoff({
+			...buildCoachIntentHandoff({
+				missionId: 'start-session-1',
+				targetAttributeId: 'pace',
+			}),
+			armExplicit: true,
+		});
+		expect(shouldAutoArmHandoff(readMissionHandoff())).toBe(true);
+	});
+
+	it('TRAIN-MISSION-ARM-EXPLICIT — resolveWorkoutMountHandoff arms nav explicit handoff only', () => {
+		const store = new Map<string, string>();
+		const sessionStorage = {
+			getItem: (k: string) => store.get(k) ?? null,
+			setItem: (k: string, v: string) => { store.set(k, v); },
+			removeItem: (k: string) => { store.delete(k); },
+		};
+		// @ts-expect-error test shim
+		globalThis.sessionStorage = sessionStorage;
+
+		stashMissionHandoff(
+			buildCoachIntentHandoff({
+				missionId: 'stale-accept',
+				targetAttributeId: 'pace',
+			}),
+		);
+		expect(resolveWorkoutMountHandoff(null)).toBeNull();
+		expect(store.has(MISSION_HANDOFF_KEY)).toBe(false);
+
+		const explicit = {
+			...buildCoachIntentHandoff({
+				missionId: 'nav-explicit',
+				targetAttributeId: 'pace',
+			}),
+			armExplicit: true as const,
+		};
+		expect(resolveWorkoutMountHandoff(explicit)?.missionId).toBe('nav-explicit');
+	});
+
+	it('TRAIN-MISSION-ARM-EXPLICIT — clearNonExplicitMissionHandoff drops accept-only stash', () => {
+		const store = new Map<string, string>();
+		const sessionStorage = {
+			getItem: (k: string) => store.get(k) ?? null,
+			setItem: (k: string, v: string) => { store.set(k, v); },
+			removeItem: (k: string) => { store.delete(k); },
+		};
+		// @ts-expect-error test shim
+		globalThis.sessionStorage = sessionStorage;
+
+		stashMissionHandoff(
+			buildCoachIntentHandoff({
+				missionId: 'legacy-accept',
+				targetAttributeId: 'ball_mastery',
+			}),
+		);
+		clearNonExplicitMissionHandoff();
+		expect(store.has(MISSION_HANDOFF_KEY)).toBe(false);
 	});
 
 	it('buildCoachHomeworkHandoff includes drillId from assignment row', () => {

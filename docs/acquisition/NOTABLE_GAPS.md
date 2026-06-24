@@ -2,7 +2,7 @@
 
 **Purpose:** Transparent non-parity vs TeamSnap, SportsEngine, and GotSport for acquirer diligence.  
 **Authority:** [`COMPETITIVE_LAUNCH_ASSESSMENT.md`](../vision/COMPETITIVE_LAUNCH_ASSESSMENT.md) · [`.cursor/rules/competitive-launch-north-star.mdc`](../../.cursor/rules/competitive-launch-north-star.mdc)  
-**Last updated:** 2026-06-21 · post-QA dark-surface contrast doc-sync
+**Last updated:** 2026-06-23 · post-cadence doc-sync (ACQ-DOCS-CURRICULUM)
 
 ---
 
@@ -21,6 +21,8 @@
 | Tournament brackets polish | **Partial — single + double-elim shipped** | `TournamentBracketPanel` on `tournament_events` | P2 Wave 4 Done |
 | Registration → drag-drop roster UX | **Done — drag-drop assign panel** | `RegistrationRosterAssignPanel` GotSport-style DnD | P2 Wave 4 Done |
 | Theme light/dark toggle vs forced-dark shells | **Partial — dark-first** | `themeStore` + `style.css` token split; `.login-surface` partial fix | Post-QA U-01 |
+| Curriculum AI / PD web ingest | **Planned post-close** | Team/club/platform drill libraries + Forge intents today; no licensed PD search | Not launch blocker |
+| RL drill candidates club-scoped | **Partial** | Client `resolveAdaptiveDrill` team-first; server `getAdaptiveWorkoutPolicy` seeds `global_drills` | Post-close ops + CF candidate filter |
 
 ---
 

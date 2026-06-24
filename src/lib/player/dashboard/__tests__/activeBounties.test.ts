@@ -5,8 +5,12 @@ import {
 	bountyFromCoachIntent,
 	buildDailyQuests,
 	coachIntentReadyToClaim,
+	coachIntentCreditedToday,
+	COACH_INTENT_TODAY_COMPLETE,
+	computeCoachIntentEarnedXp,
 	countCadenceSessionsInWindow,
 	formatCadenceProgress,
+	formatIntentXpProgressLine,
 	hasCadenceCreditToday,
 	questCadenceBlockedToday,
 	questHudCtaBlockedCadence,
@@ -433,6 +437,99 @@ describe('B2 — hasCadenceCreditToday + questCadenceBlockedToday', () => {
 	});
 });
 
+describe('BOUNTY-DAILY-ACK — XP progress + today complete helpers', () => {
+	const NOW = Date.UTC(2026, 5, 21, 15, 0, 0);
+
+	const cadenceQuest: QuestTask = {
+		id: 'intent-a',
+		tier: 'bounty',
+		source: 'coach_intent',
+		senderLabel: 'Coach Challenge',
+		title: 'Ball Mastery · 500 XP goal',
+		axisId: 'ACC',
+		xpReward: 500,
+		lifecycle: 'complete',
+		actionHref: '/player/workout',
+		sortKey: 1,
+		targetAttributeId: 'ball_mastery',
+		cadence: { sessionsPerWindow: 5, windowDays: 7 },
+	};
+
+	it('formatIntentXpProgressLine formats earned vs required', () => {
+		expect(formatIntentXpProgressLine(240, 500)).toBe('240 / 500 XP');
+		expect(formatIntentXpProgressLine(0, 500)).toBe('0 / 500 XP');
+		expect(formatIntentXpProgressLine(240, 0)).toBe('');
+	});
+
+	it('computeCoachIntentEarnedXp uses xpBaselineByUid delta', () => {
+		const earned = computeCoachIntentEarnedXp(
+			{
+				targetAttributeId: 'ball_mastery',
+				xpBaselineByUid: { 'uid-a': 300 },
+			},
+			'uid-a',
+			{ ball_mastery: 540 },
+		);
+		expect(earned).toBe(240);
+	});
+
+	it('computeCoachIntentEarnedXp returns 0 without baseline or attribute', () => {
+		expect(computeCoachIntentEarnedXp(undefined, 'uid-a', { pace: 100 })).toBe(0);
+		expect(
+			computeCoachIntentEarnedXp({ targetAttributeId: 'pace' }, '', { pace: 100 }),
+		).toBe(0);
+	});
+
+	it('coachIntentCreditedToday true when cadence credit exists today', () => {
+		const completions = [
+			{ attributeId: 'ball_mastery', loggedAtMs: NOW, intentId: 'intent-a' },
+		];
+		expect(coachIntentCreditedToday(cadenceQuest, completions, NOW)).toBe(true);
+	});
+
+	it('coachIntentCreditedToday false without cadence or prior credit', () => {
+		expect(coachIntentCreditedToday({ ...cadenceQuest, cadence: undefined }, [], NOW)).toBe(
+			false,
+		);
+		expect(coachIntentCreditedToday(cadenceQuest, [], NOW)).toBe(false);
+	});
+
+	it('COACH_INTENT_TODAY_COMPLETE is acknowledgment copy (not claim)', () => {
+		expect(COACH_INTENT_TODAY_COMPLETE).toMatch(/Today's session complete/);
+		expect(COACH_INTENT_TODAY_COMPLETE).not.toMatch(/claim/i);
+	});
+
+	it('source-scan: questCardContent applies cadenceBlocked to hero CTA', () => {
+		const { readFileSync } = require('fs');
+		const { join } = require('path');
+		const AB_SRC = readFileSync(
+			join(__dirname, '../../../components/hud/ActiveBounties.svelte'),
+			'utf-8',
+		);
+		const heroBlock = AB_SRC.slice(
+			AB_SRC.indexOf('{#snippet questCardContent'),
+			AB_SRC.indexOf('{#snippet questHeroCard'),
+		);
+		expect(heroBlock).toMatch(/questCadenceBlockedToday/);
+		expect(heroBlock).toMatch(/disabled=\{cadenceBlocked\}/);
+		expect(heroBlock).toMatch(/questHudCtaBlockedCadence/);
+		expect(heroBlock).toMatch(/formatIntentXpProgressLine/);
+		expect(heroBlock).toMatch(/COACH_INTENT_TODAY_COMPLETE/);
+	});
+
+	it('source-scan: cadence completions subscribe when any coach_intent exists', () => {
+		const { readFileSync } = require('fs');
+		const { join } = require('path');
+		const AB_SRC = readFileSync(
+			join(__dirname, '../../../components/hud/ActiveBounties.svelte'),
+			'utf-8',
+		);
+		expect(AB_SRC).toMatch(/hasCoachIntentQuests/);
+		expect(AB_SRC).toMatch(/q\.source === 'coach_intent'/);
+		expect(AB_SRC).not.toMatch(/q\.source === 'coach_intent' && q\.cadence/);
+	});
+});
+
 describe('B2 — formatCadenceProgress', () => {
 	it('uses "this week" label for 7-day windows', () => {
 		expect(formatCadenceProgress(2, 3, 7)).toBe('2/3 this week');
@@ -722,5 +819,30 @@ describe('B4b — advisory parent-verified badge: bountyFromCoachIntent is unaff
 		expect(WEATHER_SRC).toMatch(/httpsCallable\(functions,\s*'getWeatherConditions'\)/);
 		expect(WEATHER_SRC).not.toMatch(/us-central1/);
 		expect(FIREBASE_SRC).toMatch(/getFunctions\(app,\s*'us-east1'\)/);
+	});
+
+	it('TRAIN-MISSION-ARM-EXPLICIT — Accept does not stash on HQ (source scan)', () => {
+		const { readFileSync } = require('fs');
+		const { join } = require('path');
+		const AB_SRC = readFileSync(
+			join(__dirname, '../../../components/hud/ActiveBounties.svelte'),
+			'utf-8',
+		);
+		const acceptBlock = AB_SRC.slice(
+			AB_SRC.indexOf("quest.lifecycle === 'accept'"),
+			AB_SRC.indexOf("quest.lifecycle === 'complete'"),
+		);
+		expect(acceptBlock).not.toMatch(/stashQuestHandoff|stashQuestTrainHandoff/);
+	});
+
+	it('TRAIN-MISSION-ARM-EXPLICIT — Start session stashes with armExplicit and nav state', () => {
+		const { readFileSync } = require('fs');
+		const { join } = require('path');
+		const AB_SRC = readFileSync(
+			join(__dirname, '../../../components/hud/ActiveBounties.svelte'),
+			'utf-8',
+		);
+		expect(AB_SRC).toMatch(/stashQuestHandoff\(quest,\s*true\)/);
+		expect(AB_SRC).toMatch(/state:\s*navHandoff\s*\?\s*\{\s*missionHandoff:\s*navHandoff\s*\}/);
 	});
 });

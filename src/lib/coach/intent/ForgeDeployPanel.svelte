@@ -78,6 +78,31 @@
 		).length,
 	);
 
+	/** Tracks prior XP so we only auto-seed cadence when crossing the multi-day threshold. */
+	let prevRequiredXp = draftRequiredXp;
+	$effect(() => {
+		if (
+			draftRequiredXp >= 300 &&
+			prevRequiredXp < 300 &&
+			draftCadenceSessionsPerWindow === 0
+		) {
+			draftCadenceSessionsPerWindow = 5;
+		}
+		prevRequiredXp = draftRequiredXp;
+	});
+
+	const cadenceDisplayLabel = $derived(
+		draftCadenceSessionsPerWindow > 0
+			? `${draftCadenceSessionsPerWindow}×/wk`
+			: draftRequiredXp >= 300
+				? '5×/wk default'
+				: 'off',
+	);
+
+	const showCadenceDefaultHint = $derived(
+		draftCadenceSessionsPerWindow === 0 && draftRequiredXp >= 300,
+	);
+
 	const deployBlockReason = $derived.by(() => {
 		if (canDeploy || deployPhase !== 'idle') return '';
 		if (!draftAttributeId) return 'Select a target attribute to deploy.';
@@ -416,7 +441,7 @@
 				Sessions / week <span class="tw-text-white/20">(opt)</span>
 			</label>
 			<span class="tw-font-mono tw-text-[11px] tw-tracking-wider tw-text-[#14b8a6]/60">
-				{draftCadenceSessionsPerWindow > 0 ? `${draftCadenceSessionsPerWindow}×/wk` : 'off'}
+				{cadenceDisplayLabel}
 			</span>
 		</div>
 		<input
@@ -429,8 +454,13 @@
 			class="tw-w-full tw-accent-[#14b8a6] tw-h-1 tw-rounded-full tw-cursor-pointer"
 		/>
 		<p class="tw-font-mono tw-text-[8px] tw-text-white/20 tw-leading-relaxed">
-			Repeat frequency goal shown on player mission card. 0 = one-shot (default).
+			Recommended for multi-day XP goals. One credited session per UTC day — caps how fast players can finish.
 		</p>
+		{#if showCadenceDefaultHint}
+			<p class="tw-font-mono tw-text-[8px] tw-text-[#14b8a6]/45 tw-leading-relaxed" role="status">
+				Deploy will default to 5×/week unless you set Sessions/week.
+			</p>
+		{/if}
 	</div>
 
 	<!-- ── Parent verification opt-in (B4a) ──────────── -->

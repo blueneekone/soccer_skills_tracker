@@ -58,7 +58,7 @@ Use **incognito** or sign out between persona switches ([`QA_DEV_PERSONA_VERIFIC
 | 1 | Parent | Sign in → `/parent/household` | Household graph — one guardian, linked operatives |
 | 2 | Parent | `/parent/vpc` — grant VPC | COPPA ceremony; server writes consent records (no director approval step) |
 | 3 | Coach | `/coach/forge` — deploy intent to player | Coach prescription: sets/reps/RPE |
-| 4 | Player | `/player/dashboard` — accept bounty → Train | Locked-by-coach Train; log workout → XP on HQ |
+| 4 | Player | `/player/dashboard` — accept bounty → **Start session** → Train | Locked-by-coach Train after explicit arm; log workout → XP + cadence on HQ. **Talk track:** *"Multi-day assignments credit one session per UTC day — coach sets frequency in Forge; player sees X/N this week on HQ."* Optional 30s: point at **Adaptive homework** band — *"Heuristic drill from coach intent + club libraries; RL ramp is ops-controlled (`abPercent`)."* |
 | 5 | Parent | `/parent/dashboard` — co-op / schedule strip | Parent parity: RSVP, push prefs, `.ics` export |
 | 6 | Any | `/messages` | SafeSport — no coach→minor unsupervised DM |
 

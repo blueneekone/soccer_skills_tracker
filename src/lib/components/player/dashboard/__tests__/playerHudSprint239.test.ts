@@ -28,8 +28,9 @@ describe('Sprint 2.22 — coach mission HQ → Train handoff', () => {
 		expect(flowSrc).toMatch(/export const COACH_INTENT_HINT/);
 	});
 
-	it('ActiveBounties stashes mission handoff and shows drill preview on coach intents', () => {
-		expect(bountiesSrc).toMatch(/stashMissionHandoff/);
+	it('ActiveBounties stashes explicit mission handoff on Start session and shows drill preview', () => {
+		expect(bountiesSrc).toMatch(/stashQuestTrainHandoff/);
+		expect(bountiesSrc).toMatch(/stashQuestHandoff\(quest,\s*true\)/);
 		expect(bountiesSrc).toMatch(/resolveHeuristicDrill/);
 		expect(bountiesSrc).toMatch(/COACH_INTENT_HINT/);
 		expect(bountiesSrc).toMatch(/quest-row__drill/);
@@ -43,7 +44,7 @@ describe('Sprint 2.22 — coach mission HQ → Train handoff', () => {
 	});
 
 	it('workout page reads handoff and shows armed banner instead of duplicate intent sidebar', () => {
-		expect(workoutSrc).toMatch(/readMissionHandoff/);
+		expect(workoutSrc).toMatch(/resolveWorkoutMountHandoff/);
 		expect(workoutSrc).toMatch(/applyMissionHandoff/);
 		expect(workoutSrc).toMatch(/pw-mission-armed/);
 		expect(workoutSrc).toMatch(/Coach missions on HQ/);

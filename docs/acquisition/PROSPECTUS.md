@@ -126,6 +126,32 @@ Authority: [`RL_ADAPTIVE_WORKOUTS.md`](../RL_ADAPTIVE_WORKOUTS.md) · [`FUNCTION
 
 Team + club drill libraries with coach spatial designer persisting to `teams/{teamId}/drills`.
 
+### 6.1 Curriculum intelligence (roadmap)
+
+**Shipped today (honest state for diligence):**
+
+- **Drill libraries** — team (`teams/{teamId}/drills`), club-scoped picks in Forge, platform basics catalog, and `global_drills` heuristic seed
+- **Coach Intent Engine (Forge)** — `team_assignments` + optional `prescription` (sets/reps, cues/video, bundles, cadence)
+- **Train lock** — explicit **Start session** / **Continue** arms coach-directed transmit; Accept alone does not auto-arm (`TRAIN-MISSION-ARM-EXPLICIT`)
+- **B2 per-assignment cadence** — one credited session per **UTC day** per intent (`drill_completions` + server gate in `logTrainingSession`); HQ shows `X/N this week` on mission rail (`BOUNTY-DAILY-ACK`)
+- **RL adaptive homework** — `AdaptiveHomework` on HQ; `getAdaptiveWorkoutPolicy` callable with **heuristic default** at launch (`abPercent: 0`); policy path when ops ramps A/B
+
+**Post-close (not shipped — do not demo as live):**
+
+- Licensed **curriculum / PD ingest** (internet search, unified coach+player curriculum browser)
+- **Club-scoped RL drill candidates** on server (today: client `resolveAdaptiveDrill` prefers team → club → platform → `global_drills`; RL policy CF still seeds from `global_drills`)
+- Unified search across assignments + club drill corpus
+
+**COPPA:** child media and parent proof boundaries unchanged — proof remains advisory; parent-gated Storage; no new child-facing PD web crawl at launch.
+
+### 6.2 Multi-day coach assignments (shipped)
+
+- Coaches set **Sessions/week** in Forge (`prescription.cadence`); **FORGE-CADENCE-DEFAULT** + **BOUNTY-CADENCE-SERVER** auto-default **5×/week** when `requiredXp ≥ 300` and coach leaves cadence off (client + server)
+- **Fulfillment** — XP earned since deploy baseline (`xpBaselineByUid`) **and** distinct session days in rolling window when cadence present
+- **Player HQ** — mission rail shows cadence progress (`1/5 this week`), XP progress line, today's session acknowledgment; second log same UTC day blocked on Train / server
+
+Authority: [`FUNCTIONAL_MVP.md`](../vision/FUNCTIONAL_MVP.md) § GP-ACQ-04c · Track B (`ROADMAP.md`)
+
 ---
 
 ## 7. Build & quality status

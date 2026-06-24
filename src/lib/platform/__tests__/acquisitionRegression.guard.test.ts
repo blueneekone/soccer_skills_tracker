@@ -95,7 +95,7 @@ describe('GP-ACQ-03 / GP-ACQ-04a — coach intent → player mission rail', () =
 	it('fetchCoachIntentQuests queries team_assignments with teamId + status active', () => {
 		const src = readFileSync(MISSION_RAIL, 'utf-8');
 		expect(src).toMatch(/collection\(db,\s*['"]team_assignments['"]\)/);
-		expect(src).toMatch(/where\(\s*['"]teamId['"],\s*['"]==['"],\s*teamId\)/);
+		expect(src).toMatch(/where\(\s*['"]teamId['"],\s*['"]==['"],\s*tid\)/);
 		expect(src).toMatch(/where\(\s*['"]status['"],\s*['"]==['"],\s*['"]active['"]\)/);
 	});
 
@@ -104,7 +104,7 @@ describe('GP-ACQ-03 / GP-ACQ-04a — coach intent → player mission rail', () =
 		const bounties = readFileSync(ACTIVE_BOUNTIES, 'utf-8');
 		expect(rail).toMatch(/getDocsFromServer/);
 		expect(rail).toMatch(/fetchCoachIntentDocsFromServer/);
-		expect(bounties).toMatch(/fetchCoachIntentQuests/);
+		expect(rail).toMatch(/fetchCoachIntentQuests/);
 		expect(bounties).toMatch(/runCoachIntentRefetch/);
 		expect(bounties).toMatch(/coach intent refetch failed/);
 	});
@@ -179,5 +179,58 @@ describe('NAV / menu Phase 4b — field chrome regression guards', () => {
 			menuSheet.includes('navPinsStore.setPin');
 		expect(hasPickPinMode || hasLongPressPinBar || hasBrowsePinActions).toBe(true);
 		expect(pinBar).toMatch(/aria-label="Pin a route — long press to customize"/);
+	});
+});
+
+describe('ACQ-DOCS-CURRICULUM — acquisition dataroom guards', () => {
+	const REPO_ROOT = join(ROOT, '..');
+	const PROSPECTUS = join(REPO_ROOT, 'docs/acquisition/PROSPECTUS.md');
+	const FUNCTIONAL_MVP = join(REPO_ROOT, 'docs/vision/FUNCTIONAL_MVP.md');
+	const NOTABLE_GAPS = join(REPO_ROOT, 'docs/acquisition/NOTABLE_GAPS.md');
+
+	it('PROSPECTUS documents curriculum intelligence roadmap and shipped cadence', () => {
+		const src = readFileSync(PROSPECTUS, 'utf-8');
+		expect(src).toMatch(/Curriculum intelligence \(roadmap\)/);
+		expect(src).toMatch(/Multi-day coach assignments \(shipped\)/);
+		expect(src).toMatch(/one credited session per \*\*UTC day\*\*/i);
+		expect(src).not.toMatch(/PD internet search is shipped/i);
+	});
+
+	it('FUNCTIONAL_MVP includes GP-ACQ-04c multi-day cadence QA', () => {
+		const src = readFileSync(FUNCTIONAL_MVP, 'utf-8');
+		expect(src).toMatch(/GP-ACQ-04c/);
+		expect(src).toMatch(/resolveAdaptiveDrill/);
+	});
+
+	it('NOTABLE_GAPS marks curriculum AI as post-close', () => {
+		const src = readFileSync(NOTABLE_GAPS, 'utf-8');
+		expect(src).toMatch(/Curriculum AI \/ PD web ingest/);
+		expect(src).toMatch(/RL drill candidates club-scoped/);
+	});
+});
+
+describe('ACQ-DOCS-GUARD — acquisition doc source scans', () => {
+	const REPO_ROOT = join(ROOT, '..');
+	const PROSPECTUS = join(REPO_ROOT, 'docs/acquisition/PROSPECTUS.md');
+	const DEMO_SCRIPT = join(REPO_ROOT, 'docs/acquisition/DEMO_SCRIPT.md');
+	const FUNCTIONAL_MVP = join(REPO_ROOT, 'docs/vision/FUNCTIONAL_MVP.md');
+
+	it('PROSPECTUS mentions curriculum intelligence and cadence', () => {
+		const src = readFileSync(PROSPECTUS, 'utf-8');
+		expect(src).toMatch(/Curriculum intelligence/i);
+		expect(src).toMatch(/cadence/i);
+	});
+
+	it('DEMO_SCRIPT mentions multi-day session cadence', () => {
+		const src = readFileSync(DEMO_SCRIPT, 'utf-8');
+		const hasCadenceCopy =
+			/Sessions\/week/i.test(src) || /one session per UTC day/i.test(src);
+		expect(hasCadenceCopy).toBe(true);
+	});
+
+	it('FUNCTIONAL_MVP documents multi-day cadence QA', () => {
+		const src = readFileSync(FUNCTIONAL_MVP, 'utf-8');
+		const hasCadenceQa = /GP-ACQ-04c/.test(src) || /Multi-day cadence/i.test(src);
+		expect(hasCadenceQa).toBe(true);
 	});
 });

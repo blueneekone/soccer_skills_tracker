@@ -246,7 +246,7 @@ Compact lookup — full criteria in `[PLATFORM_WORKFLOW_CANON.md](./PLATFORM_WOR
 
 ```
 
-- [ ] **Continue to next phase?** Yes / No
+- [x] **Continue to next phase?** Yes / No
 
 **Owner freeform**
 
@@ -414,8 +414,8 @@ QA-NAV-06 swipe up, nor swiping down on the menu drawer handle, work.
 
 Maps `[DEMO_SCRIPT.md](../acquisition/DEMO_SCRIPT.md)` steps 3–4 + cross-refs Phases 6–7 for full GP-ACQ:
 
-- [ ] **QA-403** / GP-ACQ-03 — Coach Forge deploy (detail: QA-142 below)
-- [ ] **QA-404** / GP-ACQ-04a–04b — Player accept → Train → XP on HQ (detail: QA-101, QA-106, QA-107, QA-102–105)
+- [x] **QA-403** / GP-ACQ-03 — Coach Forge deploy (detail: QA-142 below)
+- [x] **QA-404** / GP-ACQ-04a–04b — Player accept → Train → XP on HQ (detail: QA-101, QA-106, QA-107, QA-102–105)
 - [ ] **QA-405** / GP-ACQ-05 — Parent dashboard parity → Phase 6 QA-124/125
 - [ ] **QA-406** / GP-ACQ-06 — Messages SafeSport → Phase 7 QA-153
 
@@ -425,19 +425,19 @@ Order (matches exec cut steps 3–4 + GP-COACH observe loop):
 
 - [x] **[GP-COACH-01]** **QA-141** Coach HQ `/coach` — squad/roster loads — gap register F-03
   - **Success (canon):** ≥3 roster signals or explicit empty; Forge link obvious
-- [ ] **[GP-COACH-02 / GP-ACQ-03]** **QA-142** Forge deploy intent/bounty on `/coach/forge` — appears on player HQ — gap register F-03 · pre-check: `intentModule.test.ts` · **Re-verify on live** (VS-3-Forge shipped)
+- [x] **[GP-COACH-02 / GP-ACQ-03]** **QA-142** Forge deploy intent/bounty on `/coach/forge` — appears on player HQ — gap register F-03 · pre-check: `intentModule.test.ts` · **Re-verify on live** (VS-3-Forge shipped)
   - **Success (canon):** Deploy intent with prescription to player — see workflow canon §3 Forge criteria
   - **Mobile:** 390px P1 — full deploy form in document flow; no fixed corner HUD
-- [ ] **[GP-COACH-02]** **QA-143** Sub-drill picker — team + club drills (not global only) — gap register F-03 · pre-check: `personaFunctionalMvp.test.ts` · **Tier 2 waiver** (Field Station; not exec-cut gate)
-- [ ] **[GP-COACH-02]** **QA-144** Spatial designer save on `/coach/drills` — persists to `teams/{teamId}/drills` — gap register F-03 · **Tier 2 waiver** (optional same session)
-- [ ] **[GP-COACH-02 / GP-ACQ-03]** **QA-134** Coach bounty → player HQ mission rail — gap register F-02
-- [ ] **[GP-ACQ-04a]** **QA-106** Mission rail visible on `/player/dashboard` — gap register F-01
+- [x] **[GP-COACH-02]** **QA-143** Sub-drill picker — team + club drills (not global only) — gap register F-03 · pre-check: `personaFunctionalMvp.test.ts` · **Tier 2 waiver** (Field Station; not exec-cut gate)
+- [x] **[GP-COACH-02]** **QA-144** Spatial designer save on `/coach/drills` — persists to `teams/{teamId}/drills` — gap register F-03 · **Tier 2 waiver** (optional same session)
+- [x] **[GP-COACH-02 / GP-ACQ-03]** **QA-134** Coach bounty → player HQ mission rail — gap register F-02
+- [x] **[GP-ACQ-04a]** **QA-106** Mission rail visible on `/player/dashboard` — gap register F-01
   - **Success (canon):** Coach intent in ActiveBounties; Train CTA arms
   - **Mobile:** Mission rail readable without horizontal scroll
-- [ ] **[GP-ACQ-04a / GP-COACH-03]** **QA-101** Player HQ loads post-VPC — identity, missions rail, telemetry — gap register F-01 · pre-check: `personaFunctionalMvp.test.ts`
+- [x] **[GP-ACQ-04a / GP-COACH-03]** **QA-101** Player HQ loads post-VPC — identity, missions rail, telemetry — gap register F-01 · pre-check: `personaFunctionalMvp.test.ts`
   - **Success (canon):** Coach intent in ActiveBounties; Train CTA arms
   - **Mobile:** Mission rail readable without horizontal scroll
-- [ ] **[GP-ACQ-04b]** **QA-107** Accept intent → Train **locked by coach**; notes editable only — gap register K-03 · pre-check: `coachMissionFlow.test.ts`
+- [x] **[GP-ACQ-04b]** **QA-107** Accept intent → Train **locked by coach**; notes editable only — gap register K-03 · pre-check: `coachMissionFlow.test.ts`
   - **Success (canon):** XP/streak updates on HQ return
   - **Mobile:** Execute theater; prescription read-only when armed
 - [ ] **[GP-ACQ-04b]** **QA-102** Free log workout on `/player/workout` — XP/streak updates on HQ — gap register F-01 · pre-check: `coachMissionFlow.test.ts` · **GP-ACQ-04b:** success overlay → Return to HQ

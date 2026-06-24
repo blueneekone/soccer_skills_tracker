@@ -93,6 +93,20 @@ Production QA tenant: club **`qa_launch_2026`**, team **`qa_launch_2026_ppc`** (
 - [ ] Parent co-op → child XP path
 - [ ] No coach→minor unsupervised DM (**4.2 Done** — verify on tenant)
 
+### Coach → player loop — multi-day cadence & drill adaptation
+
+**GP-ACQ-04c — Multi-day cadence QA (human)**
+
+1. Coach deploys intent in Forge with **Sessions/week = 5** (or high-XP goal that auto-defaults to 5×/week).
+2. Player **Accept** on HQ → **Start session** (Accept alone must not auto-arm Train).
+3. Log one session → HQ shows **`1/5 this week`**, XP progress line, **Today's session complete ✓**; CTA **Next session tomorrow**.
+4. Second log same UTC day → blocked on Train or rejected server-side (`Cadence limit: one session per day…`).
+5. Next UTC day → second session credits; cadence count advances.
+
+**Training adaptation (shipped path)**
+
+Canonical drill resolution on Train / HQ handoff: **`coachMissionFlow.resolveAdaptiveDrill`** — team drill library → club drill → platform basics → `global_drills` heuristic fallback. RL policy callable may recommend a drill id when `abPercent > 0`; prescription volume from Forge is never overridden.
+
 ---
 
 ## RL — Adaptive homework & policy path (audit — 2026-06-01, Sprint RL-audit)

@@ -352,3 +352,70 @@ describe('logTrainingSession xpByAttribute field parity (G1)', () => {
     }
   });
 });
+
+describe('LAUNCH-HOTFIX-EXEC-COMMIT-INTERNAL — logTrainingSession error safety', () => {
+  const {readFileSync} = require('node:fs');
+  const {join} = require('node:path');
+  const SRC = readFileSync(join(__dirname, '..', 'trainingOps.js'), 'utf-8');
+
+  it('security_audit write failure is non-fatal after successful transaction', () => {
+    assert.match(SRC, /security_audit write failed \(non-fatal\)/);
+  });
+
+  it('unhandled handler errors surface readable failed-precondition copy', () => {
+    assert.match(SRC, /logTrainingSession: unhandled/);
+    assert.match(SRC, /Transmit failed — try again or ask staff\./);
+  });
+});
+
+describe('LAUNCH-HOTFIX-PHYSIO-TX-READ-ORDER — logTrainingSession Firestore tx reads', () => {
+  const {readFileSync} = require('node:fs');
+  const {join} = require('node:path');
+  const SRC = readFileSync(join(__dirname, '..', 'trainingOps.js'), 'utf-8');
+
+  /** Slice logTrainingSession runTransaction callback (exclusive of post-tx catch). */
+  function logTrainingSessionTxBlock() {
+    const fnStart = SRC.indexOf('exports.logTrainingSession');
+    assert.ok(fnStart >= 0, 'logTrainingSession export missing');
+    const txStart = SRC.indexOf('await db().runTransaction(async (tx) => {', fnStart);
+    assert.ok(txStart >= 0, 'runTransaction block missing');
+    const txEnd = SRC.indexOf(
+        "logger.error('logTrainingSession: transaction failed'",
+        txStart,
+    );
+    assert.ok(txEnd > txStart, 'transaction catch anchor missing');
+    return SRC.slice(txStart, txEnd);
+  }
+
+  it('computes physioComplete before opening the transaction', () => {
+    const fnStart = SRC.indexOf('exports.logTrainingSession');
+    const txStart = SRC.indexOf('await db().runTransaction(async (tx) => {', fnStart);
+    const preTx = SRC.slice(fnStart, txStart);
+    assert.match(preTx, /const physioComplete\s*=/);
+    assert.match(preTx, /verificationMethod === 'player_self_log'/);
+    assert.match(preTx, /restingFeel != null/);
+    assert.match(preTx, /const physioRef = physioComplete/);
+  });
+
+  it('physio tx.get runs before the first tx.set in the transaction', () => {
+    const txBlock = logTrainingSessionTxBlock();
+    const physioGet = txBlock.indexOf('tx.get(physioRef)');
+    const firstSet = txBlock.search(/\btx\.set\s*\(/);
+    assert.ok(physioGet >= 0, 'physio tx.get(physioRef) missing inside transaction');
+    assert.ok(firstSet >= 0, 'tx.set missing inside transaction');
+    assert.ok(
+        physioGet < firstSet,
+        'physio tx.get must precede first tx.set (Firestore read-before-write rule)',
+    );
+  });
+
+  it('writes physio_self_reports only when complete and doc absent', () => {
+    const txBlock = logTrainingSessionTxBlock();
+    assert.match(txBlock, /if \(physioComplete && !physioSnap\.exists\)/);
+    assert.doesNotMatch(
+        txBlock,
+        /tx\.set\([\s\S]*physio_self_reports/,
+        'physioRef must not be constructed inline after writes',
+    );
+  });
+});

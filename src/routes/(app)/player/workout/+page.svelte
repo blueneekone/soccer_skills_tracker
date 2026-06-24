@@ -1,6 +1,6 @@
 <script lang="ts">
   import { browser } from '$app/environment';
-  import { goto } from '$app/navigation';
+  import { goto, replaceState } from '$app/navigation';
   import { page } from '$app/state';
   import { untrack } from 'svelte';
   import Icon from '$lib/components/ui/Icon.svelte';
@@ -22,10 +22,13 @@
     type CadenceCompletionRow,
   } from '$lib/player/dashboard/cadenceCompletions.js';
   import { resolveAppPath } from '$lib/components/_shared/resolveAppPath.js';
-  import { attributeIdToWorkoutFocus, buildPolicyHintsFromResult, clearMissionHandoff, COACH_INTENT_HINT, formatSuggestedDrillLine, isMissionHandoffStale, readMissionHandoff, resolveAdaptiveDrill, resolveHandoffDurationMinutes, resolveHandoffTargetRpe, resolveDrillById, type MissionHandoff, type WorkoutFocus } from '$lib/player/workout/coachMissionFlow.js';
+  import { attributeIdToWorkoutFocus, buildPolicyHintsFromResult, clearMissionHandoff, COACH_INTENT_HINT, formatSuggestedDrillLine, isMissionHandoffStale, resolveAdaptiveDrill, resolveHandoffDurationMinutes, resolveHandoffTargetRpe, resolveDrillById, type MissionHandoff, type WorkoutFocus } from '$lib/player/workout/coachMissionFlow.js';
+  import { resolveWorkoutMountHandoff } from '$lib/player/workout/applyWorkoutMountHandoff.js';
+  import { listTrainMissionStripItems, continueCoachIntentOnTrain } from '$lib/player/workout/trainMissionPicker.js';
+  import TrainMissionStrip from '$lib/player/workout/TrainMissionStrip.svelte';
   import type { PrescriptionDrillEntry } from '$lib/types/intent.js';
   import { resolveTeamDrillById as resolveTeamLibraryDrill } from '$lib/coach/teamDrillLibrary.js';
-  import { clampFreeLogDurationMinutes, FREE_LOG_DURATION_MAX_MINUTES, isCoachDirectedHandoff, SESSION_NOTES_MAX_LENGTH } from '$lib/player/workout/workoutSessionConstants.js';
+  import { clampFreeLogDurationMinutes, coachCadenceLogSuccessSuffix, FREE_LOG_DURATION_MAX_MINUTES, isCoachDirectedHandoff, SESSION_NOTES_MAX_LENGTH } from '$lib/player/workout/workoutSessionConstants.js';
   import { WORKOUT_FOCUS_AREAS } from '$lib/player/workout/focusDrillCatalog.js';
   import {
     useWorkoutDrillCatalog,
@@ -133,6 +136,8 @@
   let incomingMissionsReady = $state(false);
   let missionSyncRefreshing = $state(false);
   let missionRefreshNonce = $state(0);
+  /** Set once per mount — explicit nav/storage handoff only. */
+  let mountHandoffApplied = $state(false);
   /** Drill completions for cadence anti-cheat on armed coach missions. */
   let cadenceCompletions = $state<CadenceCompletionRow[]>([]);
 
@@ -366,10 +371,9 @@
   });
 
   const isCoachDirectedSession = $derived.by(() => {
-    if (!activeMissionId) return false;
-    if (armedHandoff?.source && isCoachDirectedHandoff(armedHandoff.source)) return true;
-    // Handoff payload missing but active coach intent still on file — stay locked.
-    return incomingMissions.some((m) => m.id === activeMissionId);
+    if (!armedHandoff?.armExplicit || !activeMissionId) return false;
+    if (armedHandoff.missionId !== activeMissionId) return false;
+    return isBundleMode || isCoachDirectedHandoff(armedHandoff.source);
   });
 
   const lockedCoachDrillLabel = $derived.by(() => {
@@ -401,16 +405,20 @@
   }
 
   $effect(() => {
-    if (!browser) return;
-    const handoff = readMissionHandoff();
-    if (!handoff?.missionId) return;
-    if (isMissionHandoffStale(handoff)) {
-      clearMissionHandoff();
-      return;
-    }
+    if (!browser || mountHandoffApplied) return;
+
+    const handoff = resolveWorkoutMountHandoff(
+      (page.state as Record<string, unknown> | undefined)?.missionHandoff,
+    );
+    mountHandoffApplied = true;
+    if (!handoff) return;
+
     untrack(() => {
       void applyMissionHandoff(handoff);
     });
+    if ((page.state as Record<string, unknown> | undefined)?.missionHandoff) {
+      replaceState(page.url, { ...page.state, missionHandoff: undefined });
+    }
   });
 
   $effect(() => {
@@ -528,6 +536,16 @@
   }
 
   const hasCoachIntents = $derived(incomingMissions.length > 0);
+
+  const trainMissionStripItems = $derived(
+    !activeMissionId && incomingMissionsReady ?
+      listTrainMissionStripItems(incomingMissions)
+    :	[],
+  );
+
+  function continueTrainMission(missionId: string) {
+    void continueCoachIntentOnTrain(incomingMissions, missionId, applyMissionHandoff);
+  }
 
   const armedMissionTitle = $derived.by(() => {
     if (!activeMissionId) return '';
@@ -679,6 +697,7 @@
       if (isLastStep) {
         const proofIntentId = activeMissionId;
         const needsProof = armedHandoff?.requiresParentVerification === true;
+        const cadenceWeekNote = coachCadenceLogSuccessSuffix(armedHandoff?.source ?? null, armedPrescription?.cadence);
         if (result.clearMission) {
           recordQuestProgressAfterLog(armedHandoff);
           clearArmedMission();
@@ -696,7 +715,7 @@
         void dopamineOnCallable(Promise.resolve(result), { kind: 'drill' });
         showDiegeticSuccess(
           'Bundle complete',
-          `All ${bundleDrills.length} drills logged · +${result.earned} XP · Level ${result.level ?? '—'}`,
+          `All ${bundleDrills.length} drills logged · +${result.earned} XP · Level ${result.level ?? '—'}${cadenceWeekNote}`,
           { returnToHq: true },
         );
         sessionNotes = '';
@@ -746,8 +765,8 @@
     if (!user) return;
 
     const proofIntentId = activeMissionId;
-    const needsProof = armedHandoff?.requiresParentVerification === true;
-
+    const needsProof = armedHandoff?.requiresParentVerification === true,
+      cadenceWeekNote = coachCadenceLogSuccessSuffix(armedHandoff?.source ?? null, armedPrescription?.cadence);
     logSubmitting = true;
     playerEngine.bumpBy(expectedXp);
     try {
@@ -790,7 +809,7 @@
       void dopamineOnCallable(Promise.resolve(result), { kind: 'drill' });
       showDiegeticSuccess(
         'Command executed',
-        `+${result.earned} XP · Level ${result.level ?? '—'}${result.missionCloseNote}`,
+        `+${result.earned} XP · Level ${result.level ?? '—'}${result.missionCloseNote}${cadenceWeekNote}`,
         { returnToHq: true },
       );
       armParentProofAfterLog(proofIntentId, needsProof);
@@ -810,7 +829,7 @@
   <div class="pd-content-wrap pd-route-stack">
   <PlayerOsPageStrap eyebrow="Train / Log session" title="Workout logger" />
 
-  {#if hasCoachIntents && !activeMissionId}
+  {#if hasCoachIntents && !activeMissionId && trainMissionStripItems.length === 0}
     <p class="pw-hq-link pw-mono">
       <a href="/player/dashboard">Coach missions on HQ →</a>
       <span class="pw-dim"> · accept a mission, then start session here</span>
@@ -875,6 +894,11 @@
             Cadence: {armedPrescription.cadence.sessionsPerWindow} session{armedPrescription.cadence.sessionsPerWindow !== 1 ? 's' : ''} / {armedPrescription.cadence.windowDays === 7 ? 'week' : `${armedPrescription.cadence.windowDays} days`}{#if armedCadenceBlocked}<span class="pw-dim"> · next session tomorrow</span>{/if}
           </p>
         {/if}
+        {#if armedHandoff?.requiresParentVerification === true}
+          <p class="pw-mission-armed__drill pw-mono pw-dim" aria-label="Parent verification advisory">
+            After transmit, optional proof for parent — XP not gated.
+          </p>
+        {/if}
         {#if isBundleMode}
           <p class="pw-mission-armed__drill pw-mono" aria-label="Bundle drill sequence">
             Bundle · {bundleDrills.length} drills in sequence
@@ -882,6 +906,8 @@
         {/if}
       </div>
     {/if}
+
+    <TrainMissionStrip missions={trainMissionStripItems} onContinue={continueTrainMission} />
 
     <div class="pw-exec__command" aria-labelledby="pw-exec-heading">
       <div class="pw-panel__head pw-panel__head--row">

@@ -12,3 +12,11 @@ export function isCoachDirectedHandoff(
 ): boolean {
 	return source === 'coach_intent' || source === 'coach_homework';
 }
+
+/** Post-log diegetic suffix when a cadence coach intent session was credited. */
+export function coachCadenceLogSuccessSuffix(
+	source: 'coach_intent' | 'coach_homework' | undefined | null,
+	cadence: { sessionsPerWindow: number; windowDays: number } | undefined | null,
+): string {
+	return source === 'coach_intent' && cadence ? " · Counts toward this week's assignment." : '';
+}

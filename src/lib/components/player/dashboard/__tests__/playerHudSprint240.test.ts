@@ -110,3 +110,40 @@ describe('Sprint 2.22 slice 6k — wiring guards', () => {
 		expect(roadmapSrc).toMatch(/slice 6l scope/);
 	});
 });
+
+describe('TRAIN-MISSION-ARM-EXPLICIT — Accept ≠ arm wiring guards', () => {
+	it('ActiveBounties accept path does not stash handoff', () => {
+		const acceptBlock = bountiesSrc.slice(
+			bountiesSrc.indexOf("quest.lifecycle === 'accept'"),
+			bountiesSrc.indexOf("quest.lifecycle === 'complete'"),
+		);
+		expect(acceptBlock).toMatch(/markQuestAccepted/);
+		expect(acceptBlock).not.toMatch(/stashQuestHandoff|stashQuestTrainHandoff/);
+	});
+
+	it('Start session stashes with armExplicit true and navigation state', () => {
+		expect(bountiesSrc).toMatch(/stashQuestHandoff\(quest,\s*true\)/);
+		expect(bountiesSrc).toMatch(/missionHandoff:\s*navHandoff/);
+	});
+
+	it('workout mount uses resolveWorkoutMountHandoff (explicit arm only)', () => {
+		expect(workoutSrc).toMatch(/resolveWorkoutMountHandoff/);
+		expect(workoutSrc).toMatch(/mountHandoffApplied = true/);
+	});
+
+	it('isCoachDirectedSession requires armExplicit on armed handoff', () => {
+		expect(workoutSrc).toMatch(/armedHandoff\?\.armExplicit/);
+		expect(workoutSrc).toMatch(/armedHandoff\.missionId !== activeMissionId/);
+	});
+
+	it('Train mission strip Continue arms via continueCoachIntentOnTrain', () => {
+		expect(workoutSrc).toMatch(/TrainMissionStrip/);
+		expect(workoutSrc).toMatch(/continueCoachIntentOnTrain/);
+		expect(workoutSrc).toMatch(/listTrainMissionStripItems/);
+	});
+
+	it('successful log clears armed mission', () => {
+		expect(workoutSrc).toMatch(/clearArmedMission\(\)/);
+		expect(workoutSrc).toMatch(/recordQuestProgressAfterLog/);
+	});
+});

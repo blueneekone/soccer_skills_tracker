@@ -10,6 +10,7 @@
 	} from 'firebase/firestore';
 	import { browser } from '$app/environment';
 	import { goto } from '$app/navigation';
+	import { resolveAppPath } from '$lib/components/_shared/resolveAppPath.js';
 	import { httpsCallable } from 'firebase/functions';
 	import { db, functions } from '$lib/firebase.js';
 	import {
@@ -253,8 +254,9 @@
 	});
 
 	function logOnTrain() {
+		let navHandoff = null;
 		if (activeAssignment) {
-			stashCoachIntentHandoffForAssignment({
+			navHandoff = stashCoachIntentHandoffForAssignment({
 				missionId: activeAssignment.id,
 				targetAttributeId: activeAssignment.targetAttributeId,
 				requiredXp: activeAssignment.requiredXp,
@@ -263,18 +265,22 @@
 					{ id: suggestedDrill.id, title: suggestedDrill.title }
 				:	null,
 				policyHints: buildPolicyHintsFromResult(policyResult),
+				armExplicit: true,
 			});
 		} else if (soloTargetAttributeId && suggestedDrill) {
-			stashCoachIntentHandoffForAssignment({
+			navHandoff = stashCoachIntentHandoffForAssignment({
 				missionId: `solo-focus-${soloTargetAttributeId}`,
 				targetAttributeId: soloTargetAttributeId,
 				drill: { id: suggestedDrill.id, title: suggestedDrill.title },
 				policyHints: buildPolicyHintsFromResult(policyResult),
+				armExplicit: true,
 			});
 		} else {
 			return;
 		}
-		void goto('/player/workout');
+		void goto(resolveAppPath('/player/workout'), {
+			state: navHandoff ? { missionHandoff: navHandoff } : undefined,
+		});
 	}
 </script>
 

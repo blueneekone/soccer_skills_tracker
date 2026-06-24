@@ -65,6 +65,21 @@ describe('workoutLog', () => {
 		expect(workoutLogErrorMessage('nope')).toBe('Could not log workout.');
 	});
 
+	it('workoutLogErrorMessage maps functions/internal to diegetic fallback', () => {
+		expect(
+			workoutLogErrorMessage({ code: 'functions/internal', message: 'INTERNAL' }),
+		).toBe('Transmit failed — try again or ask staff.');
+	});
+
+	it('workoutLogErrorMessage passes through failed-precondition server messages', () => {
+		expect(
+			workoutLogErrorMessage({
+				code: 'functions/failed-precondition',
+				message: 'Cadence limit: one session per day toward this assignment.',
+			}),
+		).toBe('Cadence limit: one session per day toward this assignment.');
+	});
+
 	it('executePlayerWorkoutLog passes subjectiveRpe 1–10 alongside intensity bucket', async () => {
 		let captured: Record<string, unknown> | undefined;
 		const logTrainingSession = vi.fn(async (data: Record<string, unknown>) => {

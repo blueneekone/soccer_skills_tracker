@@ -49,6 +49,8 @@ export type MissionHandoff = {
 	focusArea?: WorkoutFocus;
 	/** UTC ms when HQ stashed this handoff (for stale guard). */
 	stashedAt?: number;
+	/** When true, Train mount may auto-apply this handoff (explicit Start session / Continue). */
+	armExplicit?: boolean;
 	/** Coach deploy prescription (PRESCRIPTION-schema). */
 	prescription?: IntentPrescription;
 	/** Policy/heuristic duration+RPE hints — never override prescription volume. */
@@ -260,6 +262,21 @@ export function isMissionHandoffStale(handoff: MissionHandoff): boolean {
 	return Date.now() - stashedAt > MISSION_HANDOFF_MAX_AGE_MS;
 }
 
+/** Only explicit stash paths (Start session, Continue, AdaptiveHomework) may auto-arm Train. */
+export function shouldAutoArmHandoff(handoff: MissionHandoff | null | undefined): boolean {
+	if (!handoff?.missionId?.trim()) return false;
+	if (isMissionHandoffStale(handoff)) return false;
+	return handoff.armExplicit === true;
+}
+
+/** Clears accept-only / legacy sessionStorage handoffs that must not auto-arm Train. */
+export function clearNonExplicitMissionHandoff(): void {
+	const handoff = readMissionHandoff();
+	if (handoff && !shouldAutoArmHandoff(handoff)) {
+		clearMissionHandoff();
+	}
+}
+
 export function stashMissionHandoff(handoff: MissionHandoff): void {
 	if (typeof sessionStorage === 'undefined') return;
 	const payload: MissionHandoff = {
@@ -316,6 +333,7 @@ export function readMissionHandoff(): MissionHandoff | null {
 						Number.isFinite(Number(parsed.stashedAt)) ?
 							Math.floor(Number(parsed.stashedAt))
 						:	undefined,
+					armExplicit: parsed.armExplicit === true ? true : undefined,
 			prescription: repairIntentPrescription(parsed.prescription),
 			policyHints: parsePolicyHints(parsed.policyHints),
 			videoUrl: typeof parsed.videoUrl === 'string' && parsed.videoUrl.trim() ? parsed.videoUrl.trim() : undefined,
@@ -419,21 +437,26 @@ export function stashCoachIntentHandoffForAssignment(input: {
 	durationMinutes?: number | null;
 	targetRpe?: number | null;
 	policyHints?: MissionHandoffPolicyHints | null;
-}): void {
+	armExplicit?: boolean;
+}): MissionHandoff {
 	const prescription = repairIntentPrescription(input.prescription);
 	const policyHints = input.policyHints ?? readCachedPolicyHints();
-	stashMissionHandoff(
-		buildCoachIntentHandoff({
-			missionId: input.missionId,
-			targetAttributeId: input.targetAttributeId,
-			requiredXp: input.requiredXp,
-			drill: input.drill,
-			prescription,
-			durationMinutes: prescription?.targetDurationMin ?? input.durationMinutes ?? null,
-			targetRpe: prescription?.targetRpe ?? input.targetRpe ?? null,
-			policyHints,
-		}),
-	);
+	const handoff = buildCoachIntentHandoff({
+		missionId: input.missionId,
+		targetAttributeId: input.targetAttributeId,
+		requiredXp: input.requiredXp,
+		drill: input.drill,
+		prescription,
+		durationMinutes: prescription?.targetDurationMin ?? input.durationMinutes ?? null,
+		targetRpe: prescription?.targetRpe ?? input.targetRpe ?? null,
+		policyHints,
+	});
+	const payload: MissionHandoff = {
+		...handoff,
+		...(input.armExplicit === true ? { armExplicit: true } : {}),
+	};
+	stashMissionHandoff(payload);
+	return payload;
 }
 
 /** Pick the RPG attribute with the lowest xpByAttribute total (solo adaptive focus). */
@@ -455,7 +478,7 @@ export function pickWeakestAttributeId(
 	return weakest;
 }
 
-/** Stash sessionStorage handoff when player accepts or starts a mission-rail quest. */
+/** Stash sessionStorage handoff when player explicitly starts Train for a mission-rail quest. */
 export async function stashQuestTrainHandoff(
 	firestore: Firestore | null,
 	quest: {
@@ -469,8 +492,10 @@ export async function stashQuestTrainHandoff(
 		homeworkRow?: Record<string, unknown>;
 		drillPreview?: { id: string; title: string } | null;
 		clubId?: string;
+		armExplicit?: boolean;
 	},
-): Promise<void> {
+): Promise<MissionHandoff | null> {
+	const armExplicit = ctx.armExplicit === true;
 	if (quest.source === 'coach_intent') {
 		const row = ctx.intentRow ?? {};
 		const targetAttributeId =
@@ -492,15 +517,15 @@ export async function stashQuestTrainHandoff(
 			: preview ? { id: preview.id, title: preview.title }
 			: targetAttributeId ? { id: quest.id, title: quest.title }
 			: null;
-		stashCoachIntentHandoffForAssignment({
+		return stashCoachIntentHandoffForAssignment({
 			missionId: quest.id,
 			targetAttributeId,
 			requiredXp,
 			prescription,
 			drill: coachDrill,
 			policyHints: readCachedPolicyHints(),
+			armExplicit,
 		});
-		return;
 	}
 	if (quest.source === 'coach_homework') {
 		const row = ctx.homeworkRow ?? {};
@@ -519,16 +544,39 @@ export async function stashQuestTrainHandoff(
 			const resolved = await resolveDrillTitleById(firestore, drillId, { teamId, clubId });
 			if (resolved) drillTitle = resolved;
 		}
-		stashMissionHandoff(
-			buildCoachHomeworkHandoff({
-				missionId: quest.id,
-				drillTitle,
-				drillId,
-				targetAttributeId:
-					typeof row.targetAttributeId === 'string' ? row.targetAttributeId : undefined,
-			}),
-		);
+		const handoff = buildCoachHomeworkHandoff({
+			missionId: quest.id,
+			drillTitle,
+			drillId,
+			targetAttributeId:
+				typeof row.targetAttributeId === 'string' ? row.targetAttributeId : undefined,
+		});
+		const payload: MissionHandoff = {
+			...handoff,
+			...(armExplicit ? { armExplicit: true } : {}),
+		};
+		stashMissionHandoff(payload);
+		return payload;
 	}
+	return null;
+}
+
+/** Train Continue — stash explicit coach intent handoff from team_assignments row. */
+export function stashCoachIntentHandoffFromAssignmentRow(
+	row: Record<string, unknown> & { id: string },
+	policyHints?: MissionHandoffPolicyHints | null,
+): MissionHandoff {
+	const targetAttributeId =
+		typeof row.targetAttributeId === 'string' ? row.targetAttributeId.trim() : '';
+	const requiredXp = Math.max(0, Math.floor(Number(row.requiredXp) || 0));
+	return stashCoachIntentHandoffForAssignment({
+		missionId: row.id,
+		targetAttributeId,
+		requiredXp,
+		prescription: row.prescription,
+		policyHints: policyHints ?? readCachedPolicyHints(),
+		armExplicit: true,
+	});
 }
 
 export function buildCoachHomeworkHandoff(input: {

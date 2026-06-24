@@ -274,6 +274,57 @@ describe('secureDeployIntent', () => {
     );
   });
 
+  it('BOUNTY-CADENCE-SERVER: injects default 5×/7 cadence when requiredXp >= 300', async () => {
+    const req = makeCoachRequest({
+      requiredXp: 500,
+      prescription: { sets: 3, bilateral: false },
+    });
+    await trainingOps.secureDeployIntent(req);
+    const teamAssignWrite = mockCapturedDocWrites.find((w) => w.collection === 'team_assignments');
+    expect(teamAssignWrite?.data.prescription.cadence).toEqual({
+      sessionsPerWindow: 5,
+      windowDays: 7,
+    });
+  });
+
+  it('BOUNTY-CADENCE-SERVER: preserves explicit coach cadence when requiredXp >= 300', async () => {
+    const req = makeCoachRequest({
+      requiredXp: 500,
+      prescription: {
+        sets: 3,
+        bilateral: false,
+        cadence: { sessionsPerWindow: 3, windowDays: 7 },
+      },
+    });
+    await trainingOps.secureDeployIntent(req);
+    const teamAssignWrite = mockCapturedDocWrites.find((w) => w.collection === 'team_assignments');
+    expect(teamAssignWrite?.data.prescription.cadence).toEqual({
+      sessionsPerWindow: 3,
+      windowDays: 7,
+    });
+  });
+
+  it('BOUNTY-CADENCE-SERVER: does not inject cadence when requiredXp < 300', async () => {
+    const req = makeCoachRequest({
+      requiredXp: 200,
+      prescription: { sets: 3, bilateral: false },
+    });
+    await trainingOps.secureDeployIntent(req);
+    const teamAssignWrite = mockCapturedDocWrites.find((w) => w.collection === 'team_assignments');
+    expect(teamAssignWrite?.data.prescription.cadence).toBeUndefined();
+  });
+
+  it('BOUNTY-CADENCE-SERVER: creates prescription with cadence when requiredXp >= 300 and no rx', async () => {
+    const req = makeCoachRequest({ requiredXp: 400 });
+    await trainingOps.secureDeployIntent(req);
+    const teamAssignWrite = mockCapturedDocWrites.find((w) => w.collection === 'team_assignments');
+    expect(teamAssignWrite?.data.prescription).toEqual({
+      sets: 1,
+      bilateral: false,
+      cadence: { sessionsPerWindow: 5, windowDays: 7 },
+    });
+  });
+
   it('allows time-only prescription without repsPerSet', async () => {
     const req = makeCoachRequest({
       prescription: { sets: 1, targetDurationMin: 15, bilateral: false },

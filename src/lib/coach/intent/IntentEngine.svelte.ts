@@ -327,6 +327,9 @@ export class IntentEngine {
 		const sessionsPerWindow = Math.floor(Number(this.draftCadenceSessionsPerWindow) || 0);
 		if (sessionsPerWindow >= 1 && sessionsPerWindow <= 21) {
 			rx.cadence = { sessionsPerWindow, windowDays: 7 };
+		} else if (sessionsPerWindow === 0 && this.draftRequiredXp >= 300) {
+			// FORGE-CADENCE-DEFAULT: multi-day XP goals get 5×/week anti-cheat unless coach opts out (slider 0).
+			rx.cadence = { sessionsPerWindow: 5, windowDays: 7 };
 		}
 		// B4a: emit requiresParentVerification only when coach opts in.
 		if (this.draftRequiresParentVerification === true) {

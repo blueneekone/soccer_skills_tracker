@@ -313,6 +313,15 @@
       ]
     },
     {
+      "collectionGroup": "drill_completions",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "playerUid", "order": "ASCENDING" },
+        { "fieldPath": "attributeId", "order": "ASCENDING" },
+        { "fieldPath": "loggedAt", "order": "ASCENDING" }
+      ]
+    },
+    {
       "collectionGroup": "grit_awards",
       "queryScope": "COLLECTION",
       "fields": [

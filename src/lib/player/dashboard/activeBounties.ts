@@ -4,6 +4,12 @@
 
 import { isTrainingToday } from './playerHudMetrics.js';
 import type { VanguardAxisId } from './vanguardProtocol.js';
+import {
+	computeIntentEarnedXp,
+	resolveIntentBaselineXp,
+} from '$lib/coach/intent/intentProgress.js';
+import type { CadenceCompletionRow } from './cadenceCompletions.js';
+import { hasCadenceCreditToday } from './cadenceCompletions.js';
 
 export type QuestTier = 'daily' | 'bounty';
 export type QuestLifecycle = 'accept' | 'complete' | 'claim';
@@ -491,6 +497,53 @@ export function formatCadenceProgress(
 	const windowLabel = windowDays === 7 ? 'this week' : `in ${windowDays}d`;
 	return `${completed}/${sessionsPerWindow} ${windowLabel}`;
 }
+
+/** XP earned toward a coach intent since deploy baseline (mirrors Forge intentProgress). */
+export function computeCoachIntentEarnedXp(
+	intentRow: Record<string, unknown> | undefined,
+	playerUid: string,
+	xpByAttribute: Record<string, number> | undefined,
+	playerEmail = '',
+): number {
+	if (!intentRow || !playerUid) return 0;
+	const targetAttributeId = readCoachIntentTargetAttributeId(intentRow);
+	if (!targetAttributeId) return 0;
+	const currentXp = Number(xpByAttribute?.[targetAttributeId] ?? 0);
+	const rawBaseline = intentRow.xpBaselineByUid;
+	const xpBaselineByUid =
+		rawBaseline != null && typeof rawBaseline === 'object' && !Array.isArray(rawBaseline)
+			? (rawBaseline as Record<string, number>)
+			: undefined;
+	const baselineXp = resolveIntentBaselineXp(xpBaselineByUid, {
+		uid: playerUid,
+		email: playerEmail,
+		rosterKey: playerUid,
+	});
+	return computeIntentEarnedXp(currentXp, baselineXp);
+}
+
+/** Compact XP progress line for coach-intent mission cards. */
+export function formatIntentXpProgressLine(earned: number, requiredXp: number): string {
+	const required = Math.max(0, Math.floor(Number(requiredXp) || 0));
+	if (required <= 0) return '';
+	const earnedClamped = Math.max(0, Math.floor(Number(earned) || 0));
+	return `${earnedClamped.toLocaleString()} / ${required.toLocaleString()} XP`;
+}
+
+/** True when today's cadence credit exists for this coach-intent quest (UTC day). */
+export function coachIntentCreditedToday(
+	quest: QuestTask,
+	completions: CadenceCompletionRow[],
+	now = Date.now(),
+): boolean {
+	if (quest.source !== 'coach_intent' || !quest.cadence || !quest.targetAttributeId) {
+		return false;
+	}
+	return hasCadenceCreditToday(completions, quest.targetAttributeId, quest.id, now);
+}
+
+/** Status copy when cadence mission already credited today — mission stays active. */
+export const COACH_INTENT_TODAY_COMPLETE = "Today's session complete ✓";
 
 function readCoachIntentTargetAttributeId(data: Record<string, unknown>): string {
 	const direct =

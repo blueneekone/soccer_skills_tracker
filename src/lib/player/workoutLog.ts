@@ -378,7 +378,16 @@ export function expectedWorkoutXp(
 }
 
 export function workoutLogErrorMessage(err: unknown): string {
-	return err && typeof err === 'object' && 'message' in err ?
-			String((err as { message: unknown }).message)
-		:	'Could not log workout.';
+	if (!err || typeof err !== 'object') return 'Could not log workout.';
+	const code = 'code' in err ? String((err as { code?: unknown }).code ?? '') : '';
+	const rawMsg = 'message' in err ? String((err as { message?: unknown }).message ?? '') : '';
+	const msg = rawMsg.trim();
+	const isBareInternal = !msg || /^internal$/i.test(msg);
+
+	if (code === 'functions/internal' || (isBareInternal && code.startsWith('functions/'))) {
+		return 'Transmit failed — try again or ask staff.';
+	}
+	if (code.startsWith('functions/') && msg) return msg;
+	if (msg) return msg;
+	return 'Could not log workout.';
 }

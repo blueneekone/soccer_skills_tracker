@@ -1647,6 +1647,17 @@ npm run check
 
 **Verify (per slice):** `npm test -- <slice test paths>` · `npm run check`. (Emulator round-trip guards deferred — see test-integrity blocker above.)
 
+### Post-close training cadence & curriculum (doc + shipped slices)
+
+| Slice | Status | Notes |
+|-------|--------|-------|
+| **FORGE-CADENCE-DEFAULT** | **Done** | Client default 5×/week when Forge `requiredXp ≥ 300` and Sessions/week = 0 |
+| **BOUNTY-CADENCE-SERVER** | **Done** | Server injects cadence on deploy + daily log gate for high-XP intents without cadence |
+| **BOUNTY-DAILY-ACK** | **Done** | HQ XP progress, today-complete ack, explicit Train arm, mission strip Continue |
+| **TRAIN-MISSION-ARM-EXPLICIT** | **Done** | Accept ≠ arm; Start session / Continue only |
+| **ACQ-DOCS-CURRICULUM** | **Done** | Prospectus + demo + FUNCTIONAL_MVP cadence/curriculum honesty |
+| **CURRICULUM-AI-V0** | **Planned (post-acquisition)** | Licensed PD ingest, unified search, club-scoped RL candidates on server |
+
 ---
 
 ## Sprint XP-verify scope — **Done**

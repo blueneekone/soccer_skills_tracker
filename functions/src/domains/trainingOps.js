@@ -541,9 +541,78 @@ exports.submitWorkoutRep = onCall(
 );
 
 /**
+ * Map Firestore query failures to actionable HttpsError (never bare INTERNAL).
+ * @param {string} context
+ * @param {unknown} err
+ * @returns {never}
+ */
+function rethrowFirestoreQueryError(context, err) {
+  if (err instanceof HttpsError) throw err;
+  const raw =
+      err && typeof err === 'object' && 'message' in err ?
+        String(/** @type {{ message: unknown }} */ (err).message) :
+        String(err);
+  logger.error(`logTrainingSession: ${context}`, err);
+  const needsIndex = /index|FAILED_PRECONDITION|create_composite/i.test(raw);
+  const suffix = needsIndex ?
+    ' If this persists, staff may need to finish building the drill_completions index.' :
+    '';
+  throw new HttpsError(
+      'failed-precondition',
+      `${context} unavailable.${suffix}`,
+  );
+}
+
+/**
+ * Read normalized cadence from a stored intent prescription (B2).
+ * @param {unknown} prescription
+ * @returns {{ sessionsPerWindow: number, windowDays: number } | undefined}
+ */
+function cadenceFromIntentPrescription(prescription) {
+  if (!prescription || typeof prescription !== 'object' || Array.isArray(prescription)) {
+    return undefined;
+  }
+  const raw = /** @type {{ cadence?: unknown }} */ (prescription).cadence;
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return undefined;
+  const spw = Number(/** @type {{ sessionsPerWindow?: unknown }} */ (raw).sessionsPerWindow);
+  const wd = Number(/** @type {{ windowDays?: unknown }} */ (raw).windowDays);
+  if (
+    !Number.isFinite(spw) || spw < 1 || spw > 21 || Math.floor(spw) !== spw ||
+    !Number.isFinite(wd) || wd < 1 || wd > 30 || Math.floor(wd) !== wd
+  ) {
+    return undefined;
+  }
+  return {sessionsPerWindow: Math.floor(spw), windowDays: Math.floor(wd)};
+}
+
+/** Multi-day XP goals without explicit cadence get server-side 5×/7 (FORGE-CADENCE-DEFAULT mirror). */
+const HIGH_XP_CADENCE_THRESHOLD = 300;
+const DEFAULT_HIGH_XP_CADENCE = {sessionsPerWindow: 5, windowDays: 7};
+
+/**
+ * Inject default cadence when requiredXp is high and coach did not set cadence.
+ * Coach explicit cadence always wins.
+ * @param {object|undefined} prescription
+ * @param {number|undefined} requiredXp
+ * @returns {object|undefined}
+ */
+function applyHighXpCadenceDefault(prescription, requiredXp) {
+  const req = Math.floor(Number(requiredXp) || 0);
+  if (req < HIGH_XP_CADENCE_THRESHOLD) return prescription;
+  if (prescription && cadenceFromIntentPrescription(prescription)) return prescription;
+  const base = prescription || {sets: 1, bilateral: false};
+  logger.info(
+      'applyHighXpCadenceDefault: injecting 5×/week cadence for high requiredXp intent',
+      {requiredXp: req},
+  );
+  return {...base, cadence: {...DEFAULT_HIGH_XP_CADENCE}};
+}
+
+/**
  * Epic 2/3: server-side XP, workout_logs, player_stats/{uid}, team_stats.
  */
 exports.logTrainingSession = onCall(LAUNCH_CORE_CALLABLE_OPTS, async (request) => {
+  try {
   if (!request.auth || !request.auth.uid) {
     throw new HttpsError('unauthenticated', 'Sign in required.');
   }
@@ -734,10 +803,20 @@ exports.logTrainingSession = onCall(LAUNCH_CORE_CALLABLE_OPTS, async (request) =
   // B2 cadence anti-cheat: one credited session per UTC day per cadence assignment.
   if (attributeIdRaw && intentIdRaw) {
     const intentRef = db().collection('team_assignments').doc(intentIdRaw);
-    const intentSnap = await intentRef.get();
+    /** @type {FirebaseFirestore.DocumentSnapshot} */
+    let intentSnap;
+    try {
+      intentSnap = await intentRef.get();
+    } catch (e) {
+      rethrowFirestoreQueryError('Cadence assignment lookup', e);
+    }
     if (intentSnap.exists) {
-      const cadence = cadenceFromIntentPrescription(intentSnap.data().prescription);
-      if (cadence) {
+      const intentData = intentSnap.data();
+      const cadence = cadenceFromIntentPrescription(intentData.prescription);
+      const requiredXp = Number(intentData.requiredXp) || 0;
+      const enforceDailyCreditCap =
+        Boolean(cadence) || requiredXp >= HIGH_XP_CADENCE_THRESHOLD;
+      if (enforceDailyCreditCap) {
         const todayStartMs = Date.UTC(
             parseInt(todayStr.slice(0, 4), 10),
             parseInt(todayStr.slice(5, 7), 10) - 1,
@@ -745,13 +824,19 @@ exports.logTrainingSession = onCall(LAUNCH_CORE_CALLABLE_OPTS, async (request) =
         );
         const todayStart = admin.firestore.Timestamp.fromMillis(todayStartMs);
         const tomorrowStart = admin.firestore.Timestamp.fromMillis(todayStartMs + 86_400_000);
-        const existingSnap = await db()
-            .collection('drill_completions')
-            .where('playerUid', '==', athleteUid)
-            .where('attributeId', '==', attributeIdRaw)
-            .where('loggedAt', '>=', todayStart)
-            .where('loggedAt', '<', tomorrowStart)
-            .get();
+        /** @type {FirebaseFirestore.QuerySnapshot} */
+        let existingSnap;
+        try {
+          existingSnap = await db()
+              .collection('drill_completions')
+              .where('playerUid', '==', athleteUid)
+              .where('attributeId', '==', attributeIdRaw)
+              .where('loggedAt', '>=', todayStart)
+              .where('loggedAt', '<', tomorrowStart)
+              .get();
+        } catch (e) {
+          rethrowFirestoreQueryError('Cadence limit check', e);
+        }
         const hasToday = existingSnap.docs.some((d) => {
           const row = d.data();
           if (row.intentId && row.intentId !== intentIdRaw) return false;
@@ -792,11 +877,67 @@ exports.logTrainingSession = onCall(LAUNCH_CORE_CALLABLE_OPTS, async (request) =
     streak: 1,
   };
 
-  await db().runTransaction(async (tx) => {
+  // Subjective physiological fields (Phase 3, Epic 4 — RL pipeline).
+  // Parsed before transaction so physio tx.get can run with other reads.
+  const subjectiveRpe =
+      Number.isFinite(Number(data.subjectiveRpe)) &&
+      Number(data.subjectiveRpe) >= 1 &&
+      Number(data.subjectiveRpe) <= 10 ?
+        Math.round(Number(data.subjectiveRpe)) :
+        null;
+  const soreness =
+      Number.isFinite(Number(data.soreness)) &&
+      Number(data.soreness) >= 1 &&
+      Number(data.soreness) <= 5 ?
+        Math.round(Number(data.soreness)) :
+        null;
+  const mood =
+      Number.isFinite(Number(data.mood)) &&
+      Number(data.mood) >= 1 &&
+      Number(data.mood) <= 5 ?
+        Math.round(Number(data.mood)) :
+        null;
+  const sleepHoursLastNight =
+      Number.isFinite(Number(data.sleepHoursLastNight)) &&
+      Number(data.sleepHoursLastNight) >= 0 &&
+      Number(data.sleepHoursLastNight) <= 12 ?
+        Number(data.sleepHoursLastNight) :
+        null;
+  const restingFeel =
+      Number.isFinite(Number(data.restingFeel)) &&
+      Number(data.restingFeel) >= 1 &&
+      Number(data.restingFeel) <= 5 ?
+        Math.round(Number(data.restingFeel)) :
+        null;
+  const sessionNotes =
+      typeof data.sessionNotes === 'string' ?
+        data.sessionNotes.trim().slice(0, 500) :
+        '';
+
+  const physioComplete =
+      verificationMethod === 'player_self_log' &&
+      soreness != null &&
+      mood != null &&
+      sleepHoursLastNight != null &&
+      restingFeel != null;
+  const physioRef = physioComplete ?
+    db()
+        .collection('physio_self_reports')
+        .doc(athleteUid)
+        .collection('daily')
+        .doc(todayStr) :
+    null;
+
+  try {
+    await db().runTransaction(async (tx) => {
     const psSnap = await tx.get(psRef);
     const uSnapTx = await tx.get(uRef);
     const tsSnap = tsRef ? await tx.get(tsRef) : null;
     const teamSnap = teamRef ? await tx.get(teamRef) : null;
+    let physioSnap = null;
+    if (physioComplete) {
+      physioSnap = await tx.get(physioRef);
+    }
     if (!uSnapTx.exists) {
       throw new HttpsError(
           'failed-precondition',
@@ -862,43 +1003,6 @@ exports.logTrainingSession = onCall(LAUNCH_CORE_CALLABLE_OPTS, async (request) =
     }
 
     const lv = trainingLevelFromTotalXp(newTotal);
-
-    // Subjective physiological fields (Phase 3, Epic 4 — RL pipeline).
-    // All optional; missing values stored as null for backward compatibility.
-    const subjectiveRpe =
-        Number.isFinite(Number(data.subjectiveRpe)) &&
-        Number(data.subjectiveRpe) >= 1 &&
-        Number(data.subjectiveRpe) <= 10 ?
-          Math.round(Number(data.subjectiveRpe)) :
-          null;
-    const soreness =
-        Number.isFinite(Number(data.soreness)) &&
-        Number(data.soreness) >= 1 &&
-        Number(data.soreness) <= 5 ?
-          Math.round(Number(data.soreness)) :
-          null;
-    const mood =
-        Number.isFinite(Number(data.mood)) &&
-        Number(data.mood) >= 1 &&
-        Number(data.mood) <= 5 ?
-          Math.round(Number(data.mood)) :
-          null;
-    const sleepHoursLastNight =
-        Number.isFinite(Number(data.sleepHoursLastNight)) &&
-        Number(data.sleepHoursLastNight) >= 0 &&
-        Number(data.sleepHoursLastNight) <= 12 ?
-          Number(data.sleepHoursLastNight) :
-          null;
-    const restingFeel =
-        Number.isFinite(Number(data.restingFeel)) &&
-        Number(data.restingFeel) >= 1 &&
-        Number(data.restingFeel) <= 5 ?
-          Math.round(Number(data.restingFeel)) :
-          null;
-    const sessionNotes =
-        typeof data.sessionNotes === 'string' ?
-          data.sessionNotes.trim().slice(0, 500) :
-          '';
 
     const logDoc = {
       drillType,
@@ -1019,32 +1123,18 @@ exports.logTrainingSession = onCall(LAUNCH_CORE_CALLABLE_OPTS, async (request) =
     }
 
     // RL physio: first workout log of the UTC day mirrors daily self-report (Train strip).
-    const physioComplete =
-        verificationMethod === 'player_self_log' &&
-        soreness != null &&
-        mood != null &&
-        sleepHoursLastNight != null &&
-        restingFeel != null;
-    if (physioComplete) {
-      const physioRef = db()
-          .collection('physio_self_reports')
-          .doc(athleteUid)
-          .collection('daily')
-          .doc(todayStr);
-      const physioSnap = await tx.get(physioRef);
-      if (!physioSnap.exists) {
-        tx.set(physioRef, {
-          uid: athleteUid,
-          dateUtc: todayStr,
-          sleepHours: sleepHoursLastNight,
-          soreness,
-          mood,
-          restingFeel,
-          source: 'logTrainingSession',
-          workoutLogId: logId,
-          createdAt: now,
-        });
-      }
+    if (physioComplete && !physioSnap.exists) {
+      tx.set(physioRef, {
+        uid: athleteUid,
+        dateUtc: todayStr,
+        sleepHours: sleepHoursLastNight,
+        soreness,
+        mood,
+        restingFeel,
+        source: 'logTrainingSession',
+        workoutLogId: logId,
+        createdAt: now,
+      });
     }
 
     if (teamId && tsRef) {
@@ -1085,18 +1175,30 @@ exports.logTrainingSession = onCall(LAUNCH_CORE_CALLABLE_OPTS, async (request) =
     out.level = lv.level;
     out.streak = streakDays;
   });
+  } catch (e) {
+    if (e instanceof HttpsError) throw e;
+    logger.error('logTrainingSession: transaction failed', e);
+    throw new HttpsError(
+        'failed-precondition',
+        'Training session could not be saved. Retry in a moment or ask staff.',
+    );
+  }
 
-  await db().collection('security_audit').add({
-    action: 'logTrainingSession',
-    logId,
-    teamId,
-    playerEmail,
-    playerName,
-    earnedXP: earned,
-    verificationMethod,
-    actorUid: request.auth.uid,
-    at: admin.firestore.FieldValue.serverTimestamp(),
-  });
+  try {
+    await db().collection('security_audit').add({
+      action: 'logTrainingSession',
+      logId,
+      teamId,
+      playerEmail,
+      playerName,
+      earnedXP: earned,
+      verificationMethod,
+      actorUid: request.auth.uid,
+      at: admin.firestore.FieldValue.serverTimestamp(),
+    });
+  } catch (e) {
+    logger.error('logTrainingSession: security_audit write failed (non-fatal)', e);
+  }
 
   if (assignmentIdRaw) {
     try {
@@ -1132,6 +1234,14 @@ exports.logTrainingSession = onCall(LAUNCH_CORE_CALLABLE_OPTS, async (request) =
     streakDays: out.streak,
     athleteUid,
   };
+  } catch (e) {
+    if (e instanceof HttpsError) throw e;
+    logger.error('logTrainingSession: unhandled', e);
+    throw new HttpsError(
+        'failed-precondition',
+        'Transmit failed — try again or ask staff.',
+    );
+  }
 });
 
 /**
@@ -2054,8 +2164,10 @@ function normalizeDrillEntry(raw, index) {
  * @param {unknown} raw
  * @returns {object|undefined}
  */
-function normalizePrescription(raw) {
-  if (raw === undefined || raw === null) return undefined;
+function normalizePrescription(raw, requiredXp) {
+  if (raw === undefined || raw === null) {
+    return applyHighXpCadenceDefault(undefined, requiredXp);
+  }
   if (typeof raw !== 'object' || Array.isArray(raw)) {
     throw new HttpsError('invalid-argument', 'prescription must be an object.');
   }
@@ -2139,7 +2251,7 @@ function normalizePrescription(raw) {
     }
     out.drills = raw.drills.map((entry, i) => normalizeDrillEntry(entry, i));
   }
-  return out;
+  return applyHighXpCadenceDefault(out, requiredXp);
 }
 
 /**
@@ -2210,7 +2322,7 @@ exports.secureDeployIntent = onCall(LAUNCH_CORE_CALLABLE_OPTS, async (request) =
   const priority = Number.isFinite(Number(data.priority)) && Number(data.priority) >= 1
     ? Math.floor(Number(data.priority))
     : 100;
-  const prescription = normalizePrescription(data.prescription);
+  const prescription = normalizePrescription(data.prescription, requiredXp);
 
   if (!teamId || teamId === 'admin') throw new HttpsError('invalid-argument', 'teamId is required.');
   if (!tenantId) throw new HttpsError('invalid-argument', 'tenantId is required.');
@@ -2670,28 +2782,6 @@ exports.onRepCreatedApplyGamificationXp = onDocumentCreated(
 );
 
 // ── Epic 8: Intent lifecycle trigger ─────────────────────────────────────────
-
-/**
- * Read normalized cadence from a stored intent prescription (B2).
- * @param {unknown} prescription
- * @returns {{ sessionsPerWindow: number, windowDays: number } | undefined}
- */
-function cadenceFromIntentPrescription(prescription) {
-  if (!prescription || typeof prescription !== 'object' || Array.isArray(prescription)) {
-    return undefined;
-  }
-  const raw = /** @type {{ cadence?: unknown }} */ (prescription).cadence;
-  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return undefined;
-  const spw = Number(/** @type {{ sessionsPerWindow?: unknown }} */ (raw).sessionsPerWindow);
-  const wd = Number(/** @type {{ windowDays?: unknown }} */ (raw).windowDays);
-  if (
-    !Number.isFinite(spw) || spw < 1 || spw > 21 || Math.floor(spw) !== spw ||
-    !Number.isFinite(wd) || wd < 1 || wd > 30 || Math.floor(wd) !== wd
-  ) {
-    return undefined;
-  }
-  return {sessionsPerWindow: Math.floor(spw), windowDays: Math.floor(wd)};
-}
 
 /**
  * Count attribute-scoped sessions inside a rolling cadence window.
