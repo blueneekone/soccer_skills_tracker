@@ -256,6 +256,11 @@ describe('Epic 4.5 Slice B — broadcast call wiring', () => {
 		const broadcastBlock = workoutsSrc.slice(workoutsSrc.indexOf('if (announceToTeam)'));
 		expect(broadcastBlock).toMatch(/`New \$\{kindLabel\}: \$\{name\}`/);
 	});
+
+	it('mirrors announce to team_logistics via mirrorScheduleToLogistics', () => {
+		const broadcastBlock = workoutsSrc.slice(workoutsSrc.indexOf('if (announceToTeam)'));
+		expect(broadcastBlock).toMatch(/mirrorScheduleToLogistics/);
+	});
 });
 
 // ── 10. Try/catch isolation — broadcast failure must not break event save ─────
@@ -300,5 +305,13 @@ describe('Epic 4.5 Slice B — FieldOpsModule announce toggle', () => {
 	it('announce checkbox is placed alongside the notify trigger toggles', () => {
 		const notifyBlock = fieldOpsSrc.slice(fieldOpsSrc.indexOf('Notification triggers'));
 		expect(notifyBlock).toMatch(/Announce to team/);
+	});
+});
+
+describe('Epic 4.14 — deployment calendar team_logistics mirror', () => {
+	it('onDeploymentCalendarEntryCreated also posts team_logistics channelType', () => {
+		const triggerBlock = ops.slice(ops.indexOf('onDeploymentCalendarEntryCreated'));
+		expect(triggerBlock).toMatch(/postChannelSystemMessage/);
+		expect(triggerBlock).toMatch(/channelType:\s*['"]team_logistics['"]/);
 	});
 });

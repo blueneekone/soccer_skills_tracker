@@ -46,10 +46,10 @@ VPC captures `consentComms` per child ([`/parent/vpc`](../src/routes/(app)/paren
 |---------|--------------|---------|--------------|--------------|------------------|-------------|------------------|---------|---------------|
 | `announcements` | Team announcements | One-way staff→families; schedule, policy, general team news | coach, director, admin | parents (+ adult players 18+ via push/inbox); minors **not** in interactive inbox | HQ/calendar mirror only | none (reply via Parent Lounge) | `team_broadcasts`, `audit_logs` | **shipped** — 4.13a parent-first `parentRecipientEmails` + `deliveryReport` + hub compose | — |
 | `parent_lounge` | Parent Lounge | Monitored parent↔parent and parent↔coach group context | parent, coach, director | parents on team; staff participants | none (parents only in channel) | threaded group (`sendChannelMessage`) | `clubs/{clubId}/channels/*`, `messaging_audit` | **shipped** — 4.4 provisioning + `ParentLoungePanel` | — |
-| `team_logistics` | Team logistics | TM/coach/event ops — car pool, field change, equipment | coach (TM future) | parents | HQ/calendar mirror only | optional thread → Parent Lounge handoff | `team_broadcasts` (today) → typed channel doc | **partial** — `/coach/logistics` Team Ops tab (4.7); no `type_id` in data model | Phase 2 |
-| `registration` | Registration | Registrar/director transactional — fees, deadlines, eligibility | registrar, director | parents (household-scoped) | none | none | `audit_logs` + registration collections | **partial** — `sendRegistrationPaymentReminders` (4.6); no typed channel | Phase 2 |
-| `tryouts_events` | Tryouts & events | Program-scoped tryout/eval comms | director, coach (tryout lead) | parents (applicant households) | none | none | `audit_logs`, tryout collections | **partial** — trial score push triggers; no unified channel instance | Phase 2 |
-| `match_day` | Match day | Short-lived gameday — call time, field, lineup note | coach, TM (future) | parents + adult players | HQ match-day band only | none | `team_broadcasts` + `push_gameReminders` | **partial** — `sendScheduledEventReminders`, `sendGameRemindersToday` (4.6); not TTL channel | Phase 2 |
+| `team_logistics` | Team logistics | TM/coach/event ops — car pool, field change, equipment | coach (TM future) | parents | HQ/calendar mirror only | optional thread → Parent Lounge handoff | `team_broadcasts` (today) → typed channel doc | **shipped** — 4.14 hub rail + `CommsLogisticsChannel`; messages at `teams/{teamId}/channels/{sub}/messages` | — |
+| `registration` | Registration | Registrar/director transactional — fees, deadlines, eligibility | registrar, director | parents (household-scoped) | none | none | `audit_logs` + registration collections | **shipped** — 4.14 `postChannelSystemMessage` + `CommsRegistrationChannel` | — |
+| `tryouts_events` | Tryouts & events | Program-scoped tryout/eval comms | director, coach (tryout lead) | parents (applicant households) | none | none | `audit_logs`, tryout collections | **shipped** — 4.14 tryout reg hook + `CommsTryoutsEventsChannel` | — |
+| `match_day` | Match day | Short-lived gameday — call time, field, lineup note | coach, TM (future) | parents + adult players | HQ match-day band only | none | `team_broadcasts` + `push_gameReminders` | **shipped** — 4.14 `CommsMatchDayChannel` + schedule mirror | — |
 | `development` | Development feedback | Coach intent / HQ mirror — assignments, bounties, adult mail | coach | adult players (18+); parents via announcements for minors | Forge + `ActiveBounties` — not DM | adult: `in_app_messages` DM; minor: blocked | `in_app_messages`, `messaging_audit` | **partial** — Forge intents + adult-only `sendCoachPlayerMessage`; no typed channel | Phase 2+ |
 | `household` | Household | Parent↔linked operative only | parent, linked player | same `householdId` members | player sees household thread | bilateral thread | `in_app_messages` (household-scoped) | **shipped** — 4.11 `/messages` household panel | — |
 | `staff_internal` | Staff internal | Coach/TM/director/registrar staff-only coordination | coach, director, registrar, TM (future) | staff roles on team/club | none | threaded internal | `messaging_audit` (planned) | **planned** | Phase 3 |
@@ -58,7 +58,9 @@ VPC captures `consentComms` per child ([`/parent/vpc`](../src/routes/(app)/paren
 | `sponsor_partner` | Sponsor & partner | Template-only, director-approved; parents only | director (approve), system (send) | parents opt-in | none | none | `audit_logs` | **planned** | Phase 4 |
 | `emergency` | Emergency | Director break-glass — weather, safety, lockdown | director, admin | all club parents (+ staff) | push + SMS fallback (planned) | none | `audit_logs` (priority flag) | **planned** | Phase 3–4 |
 
-**Shipped vs planned count (honest, post Epic 4.12 + 4.13a):** **4 shipped** (`announcements`, `parent_lounge`, `household`, `club_wide`) · **6 partial** (`team_logistics`, `registration`, `tryouts_events`, `match_day`, `development`, `compliance`) · **3 planned** (`staff_internal`, `sponsor_partner`, `emergency`).
+**Shipped vs planned count (honest, post Epic 4.12 + 4.13a + 4.14):** **8 shipped** (`announcements`, `parent_lounge`, `household`, `club_wide`, `team_logistics`, `registration`, `tryouts_events`, `match_day`) · **2 partial** (`development`, `compliance`) · **3 planned** (`staff_internal`, `sponsor_partner`, `emergency`).
+
+> **Message bus footnote (4.14):** Typed system channels use `clubs/{clubId}/channels/{channelId}/messages`. Team logistics interactive sub-channels remain at `teams/{teamId}/channels/{subChannelId}/messages` with `channelType: team_logistics` on the parent channel doc.
 
 ---
 
@@ -229,7 +231,7 @@ Epic 4.1–4.12 **Done** (2026-06-10) — see [`ROADMAP.md`](../../ROADMAP.md) E
 | Phase | ROADMAP anchor | Scope |
 |-------|----------------|-------|
 | **Phase 1** | **4.13a** *(add to ROADMAP)* | Unified hub shell on `/messages`; **delivery contract** + parent-first audience in `commitTeamBroadcast`; delivery receipt UI; parent dashboard unread strip; deep-link from Team Ops |
-| **Phase 2** | 4.14+ *(planned)* | Typed `team_logistics`, `registration`, `tryouts_events`, `match_day` channel instances; `team_manager` JWT + `/team-manager` comms rail |
+| **Phase 2** | **4.14** *(add to ROADMAP)* | Typed `team_logistics`, `registration`, `tryouts_events`, `match_day` channel instances; coach-delegated TM on logistics (`team_manager` JWT deferred); hub rail + server `postChannelSystemMessage` |
 | **Phase 3** | 4.15+ *(planned)* | `staff_internal`, `compliance` stream; `emergency` break-glass; club-wide spaces in hub (surface existing 4.8 backend) |
 | **Phase 4** | 4.16+ *(planned)* | `sponsor_partner` templates; email/SMS omnichannel fallback; read/ack compliance for critical announcements |
 

@@ -628,6 +628,73 @@ describe('functionsDeploy guard — DEPLOY-O-deps-split', () => {
   });
 });
 
+describe('functionsDeploy guard — DEV-SCHEDULERS-GATE', () => {
+  it('functions/.env.sports-skill-tracker-dev sets SCHEDULERS_ENABLED=false', () => {
+    const dev = readRepo('functions/.env.sports-skill-tracker-dev');
+    assert.match(dev, /^SCHEDULERS_ENABLED=false/m);
+    assert.match(dev, /^WEATHER_LOCK_ENABLED=false/m);
+    assert.match(dev, /^FEATURE_SKILL_DECAY_ENABLED=false/m);
+    assert.match(dev, /^FEATURE_STREAK_ENFORCEMENT_ENABLED=false/m);
+  });
+
+  it('functions/.env.example sets SCHEDULERS_ENABLED=true for production template', () => {
+    const example = readRepo('functions/.env.example');
+    assert.match(example, /^SCHEDULERS_ENABLED=true/m);
+  });
+
+  it('default index does not export evaluateFieldWeatherLock (integrations canonical)', () => {
+    const src = readRepo('functions/index.js');
+    assert.doesNotMatch(
+        src,
+        /exports\.evaluateFieldWeatherLock\s*=/,
+        'evaluateFieldWeatherLock must only export from functions-integrations',
+    );
+  });
+
+  it('default index gates onSchedule exports behind SCHEDULERS_ENABLED', () => {
+    const src = readRepo('functions/index.js');
+    assert.match(src, /exportScheduler\(/);
+    assert.match(src, /process\.env\.SCHEDULERS_ENABLED\s*===\s*'true'/);
+    assert.doesNotMatch(
+        src,
+        /exports\.sendGameRemindersToday\s*=\s*dispatcherHandlers/,
+        'scheduler exports must use exportScheduler',
+    );
+  });
+
+  it('functions-integrations gates evaluateFieldWeatherLock behind SCHEDULERS_ENABLED', () => {
+    const src = readRepo('functions-integrations/index.js');
+    assert.match(src, /process\.env\.SCHEDULERS_ENABLED\s*===\s*'true'/);
+    assert.match(src, /evaluateFieldWeatherLock/);
+  });
+
+  it('functions-rl gates trainRlPolicyNightly behind SCHEDULERS_ENABLED', () => {
+    const src = readRepo('functions-rl/index.js');
+    assert.match(src, /process\.env\.SCHEDULERS_ENABLED\s*===\s*'true'/);
+    assert.match(src, /trainRlPolicyNightly/);
+  });
+
+  it('deploy:comms excludes SCHEDULERS_ENABLED-gated scheduler exports', () => {
+    const pkg = JSON.parse(readRepo('package.json'));
+    const script = pkg.scripts['deploy:comms'];
+    assert.ok(script, 'deploy:comms script must exist');
+    assert.doesNotMatch(
+        script,
+        /sendScheduledEventReminders/,
+        'deploy:comms must not target sendScheduledEventReminders when dev gate is off',
+    );
+    assert.doesNotMatch(
+        script,
+        /sendRegistrationPaymentReminders/,
+        'deploy:comms must not target sendRegistrationPaymentReminders when dev gate is off',
+    );
+    assert.ok(
+        pkg.scripts['deploy:comms-schedulers'],
+        'deploy:comms-schedulers must exist for opt-in scheduler deploy',
+    );
+  });
+});
+
 describe('functionsDeploy guard — WebAuthn RP env', () => {
   it('functions/.env.example documents WEBAUTHN_RP_ID and WEBAUTHN_RP_ORIGIN', () => {
     const example = readRepo('functions/.env.example');

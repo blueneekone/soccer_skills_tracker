@@ -467,6 +467,12 @@ describe('B4a — completion_verifications rules', () => {
 		expect(cvBlock).toMatch(/parentHouseholdAllowsChildEmail\(resource\.data\.userKey\)/);
 	});
 
+	it('parent list query where(householdId) aligns with parentOwnsHouseholdId', () => {
+		expect(cvBlock).toMatch(
+			/isParent\(\)\s*&&\s*parentOwnsHouseholdId\(resource\.data\.householdId\)/,
+		);
+	});
+
 	it('coach/director read is scoped to resource.data.clubId == tokenClub()', () => {
 		expect(cvBlock).toMatch(
 			/\(isCoach\(\) \|\| isDirector\(\)\)[\s\S]*?resource\.data\.clubId\s*==\s*tokenClub\(\)/,
@@ -515,6 +521,12 @@ describe('B4b — completion_verifications: write stays CF-only; parent list ena
 		expect(cvB4bBlock).toMatch(/parentHouseholdAllowsChildEmail\(resource\.data\.userKey\)/);
 	});
 
+	it('(b) parent list query uses parentOwnsHouseholdId(resource.data.householdId)', () => {
+		expect(cvB4bBlock).toMatch(
+			/parentOwnsHouseholdId\(resource\.data\.householdId\)/,
+		);
+	});
+
 	it('(b) player own-record read remains accessible (playerUid match)', () => {
 		expect(cvB4bBlock).toMatch(/request\.auth\.uid\s*==\s*resource\.data\.playerUid/);
 	});
@@ -522,6 +534,51 @@ describe('B4b — completion_verifications: write stays CF-only; parent list ena
 	it('(c) Storage and legacy assignments untouched — completion_verifications rule block has no mediaStoragePath write', () => {
 		// The rules block must never open a client write for mediaStoragePath (B4c territory).
 		expect(cvB4bBlock).not.toMatch(/allow create[\s\S]*?mediaStoragePath/);
+	});
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// PARENT-JWT-PROOF — parentResolvedHouseholdId (Firestore-first household parity)
+// ─────────────────────────────────────────────────────────────────────────────
+describe('PARENT-JWT-PROOF — parentResolvedHouseholdId rules parity', () => {
+	const parentHouseholdFn = (() => {
+		const blockMatch = RULES.match(
+			/function parentHouseholdAllowsChildEmail\(childKey\)\s*\{[\s\S]*?\n    \}/,
+		);
+		return blockMatch ? blockMatch[0] : '';
+	})();
+
+	it('parentResolvedHouseholdId helper exists in firestore.rules', () => {
+		expect(RULES).toMatch(/function parentResolvedHouseholdId\(\)/);
+	});
+
+	it('parentHouseholdAllowsChildEmail uses parentResolvedHouseholdId (not raw tokenHousehold)', () => {
+		expect(parentHouseholdFn).toBeTruthy();
+		expect(parentHouseholdFn).toMatch(/parentResolvedHouseholdId\(\)/);
+		expect(parentHouseholdFn).not.toMatch(/tokenHousehold\(\)/);
+	});
+
+	it('parentResolvedHouseholdId prefers users/{email}.householdId over JWT fallback', () => {
+		expect(RULES).toMatch(
+			/function parentResolvedHouseholdId\(\)[\s\S]*?userDoc\(\)\.householdId[\s\S]*?tokenHousehold\(\)/,
+		);
+	});
+
+	it('parentHouseholdChildOnTeam checks household children (not parent userDoc.teamId)', () => {
+		expect(RULES).toMatch(/function parentHouseholdChildOnTeam\(teamId\)/);
+		const fnBlock = RULES.match(
+			/function canReadScheduleOrWorkoutDoc\(\)\s*\{[\s\S]*?\n    \}/,
+		)?.[0];
+		expect(fnBlock).toBeTruthy();
+		expect(fnBlock).toMatch(/parentHouseholdChildOnTeam\(resource\.data\.teamId\)/);
+		expect(fnBlock).not.toMatch(/userDoc\(\)\.teamId == resource\.data\.teamId/);
+	});
+
+	it('bounties parent read uses parentOwnsHouseholdId (Firestore-first household)', () => {
+		const bountyBlock = RULES.match(/match \/bounties\/\{bountyId\}\s*\{[\s\S]*?\n    \}/)?.[0];
+		expect(bountyBlock).toBeTruthy();
+		expect(bountyBlock).toMatch(/parentOwnsHouseholdId\(resource\.data\.householdId\)/);
+		expect(bountyBlock).not.toMatch(/resource\.data\.householdId == tokenHousehold\(\)/);
 	});
 });
 

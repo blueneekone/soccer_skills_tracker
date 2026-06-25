@@ -2059,8 +2059,9 @@ npm run check
 | 4.11 | **Done** | Household parent↔child threads | `commsSprint411.test.ts` |
 | 4.12 | **Done** | Firestore rules + callable integration tests: `firestoreRulesSprint412.test.ts` (source-scan + emulator) for team_broadcasts, message_incidents, attendance_sessions, messaging_audit; Epic 4 callable export guards; CI via `test:firestore-rules`. `npm run deploy:comms` for default-codebase comms batch. | `firestoreRulesSprint412.test.ts` |
 | 4.13a | **Done** | Phase 1 unified comms hub — parent-first `commitTeamBroadcast` + `deliveryReport`; `CommsHubShell` on `/messages`; `DeliveryReceipt`; Team Ops CTA → hub; `ParentLatestAnnouncements` dashboard strip; `parentRecipientEmails` rules + index | `commsPhase1.test.ts` · `commsSprint41.test.ts` · `commsSprint42.test.ts` · `loopIntegrityGuards.test.ts` · `functions/__tests__/commsPhase1.test.js` |
+| 4.14 | **Done** | Phase 2 typed channels — `channelTypes.ts` + hub rail (`team_logistics`, `registration`, `tryouts_events`, `match_day`); logistics migration off Team Ops; `postChannelSystemMessage` + registration/tryout/calendar hooks; coach-delegated TM on logistics (JWT deferred) | `commsPhase2.test.ts` · `commsSprint47.test.ts` · `commsSprint45.test.ts` · `functions/__tests__/commsPhase2.test.js` |
 
-**Epic 4 runs parallel to Epic 3** after **3.2** ships. **Epic 4.1–4.13a Done.** Comms functions deployed to `sports-skill-tracker-dev` via `npm run deploy:comms`.
+**Epic 4 runs parallel to Epic 3** after **3.2** ships. **Epic 4.1–4.14 Done.** Comms functions deployed to `sports-skill-tracker-dev` via `npm run deploy:comms`.
 
 Vision: [`docs/vision/COMMS_HUB.md`](docs/vision/COMMS_HUB.md) · Compliance map: [`docs/SAFESPORT_COMMS_MATRIX.md`](docs/SAFESPORT_COMMS_MATRIX.md)
 

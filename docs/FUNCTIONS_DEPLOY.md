@@ -92,6 +92,49 @@ firebase deploy --project sports-skill-tracker-dev --only functions:compliance:w
 
 Template: [`functions/.env.example`](../functions/.env.example).
 
+## Dev cost control (**DEV-SCHEDULERS-GATE**)
+
+`sports-skill-tracker-dev` must not register 24/7 Cloud Scheduler jobs unless you explicitly opt in. Set **`SCHEDULERS_ENABLED=false`** in [`functions/.env.sports-skill-tracker-dev`](../functions/.env.sports-skill-tracker-dev) and copy that file into each split codebase `.env` before deploy.
+
+| Approach | What it does | When to use |
+|----------|--------------|-------------|
+| **Gate** (`SCHEDULERS_ENABLED=false`) | Split/default index files skip `onSchedule` exports on deploy — Firebase does not create new Scheduler jobs | Default for dev deploys; copy dev `.env` before any functions deploy |
+| **Pause** (GCP Console) | Existing Cloud Scheduler jobs stay registered but are paused — no invocations | One-time cleanup after gate ships; old jobs persist until paused or deleted |
+
+**After merge:** redeploy affected codebases with dev `.env` **or** pause/delete existing Scheduler jobs once in [Cloud Scheduler](https://console.cloud.google.com/cloudscheduler) for `sports-skill-tracker-dev`. Deploy alone does not remove jobs that were already registered.
+
+**Hotfixes:** do **not** run `npm run deploy:dev` (full backend ladder) for a single callable fix — it redeploys every codebase and is slow/quota-heavy. Use targeted deploy:
+
+```bash
+cp functions/.env.sports-skill-tracker-dev functions-core/.env
+firebase deploy --project sports-skill-tracker-dev --only functions:core:logTrainingSession
+```
+
+**Related dev flags** (runtime no-ops; schedulers still cost money if registered):
+
+| Variable | Dev value | Notes |
+|----------|-----------|-------|
+| `WEATHER_LOCK_ENABLED` | `false` | `evaluateFieldWeatherLock` callable refresh still works via `refreshClubWeatherLock` |
+| `FEATURE_SKILL_DECAY_ENABLED` | `false` | Nightly decay sweep no-op inside handler |
+| `FEATURE_STREAK_ENFORCEMENT_ENABLED` | `false` | Streak break sweep no-op inside handler |
+
+**High-frequency schedulers** (highest dev cost if left running):
+
+| Export | Codebase | Cadence |
+|--------|----------|---------|
+| `evaluateFieldWeatherLock` | `integrations` | every 15 minutes |
+| `sendScheduledEventReminders` | `default` | every 15 minutes |
+| `sendRegistrationPaymentReminders` | `default` | daily 9am MT |
+| `dispatchReengagementAlerts` | `default` | every 30 minutes |
+| `expireCoachInvites` | `default` | every 60 minutes |
+| `scheduledExpireIntents` | `default` | every 60 minutes |
+| `trajectoryMonthlyAggregator` | `default` | hourly |
+| `processPendingDocDeletions` | `compliance` | every 6 hours |
+
+**Deploy:** schedulers are **not** in `npm run deploy:comms` (dev `.env` sets `SCHEDULERS_ENABLED=false`, so those exports are absent during discovery). Opt in with `npm run deploy:comms-schedulers` (sets `SCHEDULERS_ENABLED=true` for the deploy subprocess only).
+
+Production template: `SCHEDULERS_ENABLED=true` in [`functions/.env.example`](../functions/.env.example) (`.env.soccer-skills-tracker`).
+
 ## Bundle before deploy (**DEPLOY-O-bundle**)
 
 All split codebases (`core`, `rl`, `commerce`, `compliance`, `integrations`, `platform`) run `node scripts/bundle-functions.cjs` as a **predeploy** hook in [`firebase.json`](../firebase.json).
@@ -185,6 +228,14 @@ npm run deploy:compliance
 npm run deploy:integrations
 # optional legacy:
 firebase deploy --only functions:default
+```
+
+**Comms batch (`default` codebase):**
+
+```bash
+npm run deploy:comms              # callables + Firestore triggers (always exported)
+npm run deploy:comms-schedulers   # Epic 4.6 schedulers — requires SCHEDULERS_ENABLED opt-in
+npm run deploy:comms-triggers     # push bus triggers only
 ```
 
 **Verify gates:**

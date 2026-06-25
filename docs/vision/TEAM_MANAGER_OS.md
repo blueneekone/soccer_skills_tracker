@@ -94,6 +94,8 @@ Club volunteers or paid staff who run logistics for one or more teams (travel, r
 - Building `/team-manager` routes
 - Replacing coach assignment or tactical flows
 
+**Epic 4.14 (coach-delegated v1):** Team logistics comms post to `team_logistics` via `/messages?channel=team_logistics` using coach credentials. `postChannelSystemMessage` accepts `actorRole: team_manager` when JWT ships; until then coaches delegate on behalf of TM volunteers.
+
 ---
 
 ## ROADMAP link
