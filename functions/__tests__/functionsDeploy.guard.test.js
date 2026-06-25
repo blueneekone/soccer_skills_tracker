@@ -474,6 +474,49 @@ describe('functionsDeploy guard — DEPLOY-O-deps-split', () => {
     );
   });
 
+  it('split codebases bundling omnichannelOps declare @sendgrid/mail (4.16a)', () => {
+    execFileSync(process.execPath, ['scripts/bundle-functions.cjs'], {
+      cwd: REPO_ROOT,
+      stdio: 'pipe',
+    });
+    const splitFolders = [
+      'functions-core',
+      'functions-rl',
+      'functions-commerce',
+      'functions-compliance',
+      'functions-integrations',
+      'functions-platform',
+    ];
+    for (const folder of splitFolders) {
+      const omniPath = path.join(
+          REPO_ROOT,
+          folder,
+          'src',
+          'domains',
+          'omnichannelOps.js',
+      );
+      if (!fs.existsSync(omniPath)) continue;
+      const pkg = JSON.parse(readRepo(`${folder}/package.json`));
+      assert.ok(
+          pkg.dependencies?.['@sendgrid/mail'],
+          `${folder} bundles omnichannelOps and must declare @sendgrid/mail`,
+      );
+    }
+  });
+
+  it('registrationOps/tryoutsOps closure does not bundle omnichannelOps', () => {
+    const {collectClosure} = require('../../scripts/bundle-functions-lib.cjs');
+    const monolithRoot = path.join(REPO_ROOT, 'functions');
+    const rels = collectClosure(monolithRoot, [
+      'src/domains/registrationOps.js',
+      'src/domains/tryoutsOps.js',
+    ]);
+    assert.ok(
+        !rels.has('src/domains/omnichannelOps.js'),
+        'registration/tryouts seeds must not pull omnichannelOps',
+    );
+  });
+
   it('functions-integrations index.js uses resolveTarget for Cloud Run env', () => {
     const src = readRepo('functions-integrations/index.js');
     assert.match(
