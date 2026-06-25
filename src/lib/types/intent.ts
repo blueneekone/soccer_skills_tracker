@@ -17,6 +17,34 @@ import type { FirestoreTimestamp } from '$lib/types/tenant.js';
 
 type AnyTimestamp = FirestoreTimestamp | Date | string | null;
 
+/** Mirror server trainingOps — client infers 5×/week display cadence when requiredXp ≥ this. */
+export const HIGH_XP_CADENCE_THRESHOLD = 300;
+
+export const DEFAULT_HIGH_XP_DISPLAY_CADENCE = {
+	sessionsPerWindow: 5,
+	windowDays: 7,
+} as const;
+
+/**
+ * Client display cadence: explicit prescription.cadence wins; else 5×/week when requiredXp ≥ 300.
+ * Mirrors server applyHighXpCadenceDefault for HQ + Train UI.
+ */
+export function resolveCoachIntentDisplayCadence(
+	requiredXp: number,
+	prescription?: IntentPrescription | null | unknown,
+): { sessionsPerWindow: number; windowDays: number } | undefined {
+	const rx =
+		prescription != null && typeof prescription === 'object'
+			? repairIntentPrescription(prescription)
+			: undefined;
+	if (rx?.cadence) return rx.cadence;
+	const req = Math.max(0, Math.floor(Number(requiredXp) || 0));
+	if (req >= HIGH_XP_CADENCE_THRESHOLD) {
+		return { ...DEFAULT_HIGH_XP_DISPLAY_CADENCE };
+	}
+	return undefined;
+}
+
 // ── Enumerations ──────────────────────────────────────────────────────────────
 
 /**

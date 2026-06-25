@@ -1,14 +1,5 @@
 <script lang="ts">
-	import {
-		collection,
-		query,
-		where,
-		onSnapshot,
-		orderBy,
-		doc,
-		setDoc,
-	} from 'firebase/firestore';
-	import { browser } from '$app/environment';
+	import { doc, setDoc } from 'firebase/firestore';
 	import { goto } from '$app/navigation';
 	import { resolveAppPath } from '$lib/components/_shared/resolveAppPath.js';
 	import { httpsCallable } from 'firebase/functions';
@@ -17,26 +8,13 @@
 		buildPolicyHintsFromResult,
 		pickWeakestAttributeId,
 		resolveAdaptiveDrill,
-		stashCoachIntentHandoffForAssignment,
+		stashAdaptiveHomeworkHandoff,
 	} from '$lib/player/workout/coachMissionFlow.js';
-	import { repairIntentPrescription } from '$lib/types/intent.js';
 	import { ensureRlPolicyCached, readRlPolicyCache } from '$lib/player/workout/rlPolicyCache.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { sportsConfigStore } from '$lib/stores/sportsConfigStore.svelte.js';
 	import { getRpgSportConfig } from '$lib/config/sports.js';
 	import TacticalDrillBoard from '$lib/components/tactical/TacticalDrillBoard.svelte';
-
-	interface Assignment {
-		id: string;
-		targetAttributeId: string;
-		requiredXp: number;
-		teamId: string;
-		scope?: string;
-		targetUids?: string[];
-		priority?: number;
-		status?: string;
-		prescription?: Record<string, unknown>;
-	}
 
 	interface Drill {
 		id: string;
@@ -54,7 +32,7 @@
 		| 'svg_shoulder_check';
 	type TacticalTierKey = 'beginner' | 'intermediate' | 'advanced';
 
-	interface PolicyResult {
+	type PolicyResult = {
 		mode: 'policy' | 'heuristic';
 		recommendedDrillId: string | null;
 		recommendedDurationMinutes: number | null;
@@ -63,12 +41,11 @@
 		explorationFlag: boolean;
 		explanationCode: string | null;
 		explanationText: string | null;
-	}
+	};
 
-	let assignments = $state<Assignment[]>([]);
 	let suggestedDrill = $state<Drill | null>(null);
 	let isLoading = $state(true);
-	let soloTargetAttributeId = $state<string | null>(null);
+	let focusAttributeId = $state<string | null>(null);
 
 	let policyResult = $state<PolicyResult | null>(null);
 	let showTooltip = $state(false);
@@ -86,29 +63,10 @@
 	const playerTier = $derived(playerProfile?.calculatedTier ? String(playerProfile.calculatedTier) : 'beginner');
 	const sportId = $derived(sportsConfigStore.currentSportConfig?.sportId ?? 'soccer');
 
-	const activeAssignment = $derived(/** @type {Assignment | null} */ (assignments[0] ?? null));
-	const queueCount = $derived(Math.max(0, assignments.length - 1));
-	const isSoloMode = $derived(!activeAssignment && !!soloTargetAttributeId);
-
-	const displayAttributeId = $derived(
-		activeAssignment?.targetAttributeId ?? soloTargetAttributeId ?? '',
-	);
-
 	const activeAttribute = $derived.by(() => {
-		if (!displayAttributeId) return null;
+		if (!focusAttributeId) return null;
 		const rpgCfg = getRpgSportConfig(sportId);
-		return rpgCfg.attributes.find((a) => a.id === displayAttributeId) ?? null;
-	});
-
-	const playerAttributeXp = $derived.by(() => {
-		if (!displayAttributeId || !playerProfile) return 0;
-		const xpMap = /** @type {Record<string, number>} */ (playerProfile.xpByAttribute ?? {});
-		return Number(xpMap[displayAttributeId] ?? 0);
-	});
-
-	const xpProgressPct = $derived.by(() => {
-		if (!activeAssignment || activeAssignment.requiredXp <= 0) return 0;
-		return Math.min(100, Math.round((playerAttributeXp / activeAssignment.requiredXp) * 100));
+		return rpgCfg.attributes.find((a) => a.id === focusAttributeId) ?? null;
 	});
 
 	const isPolicyMode = $derived(policyResult?.mode === 'policy' && !!policyResult.recommendedDrillId);
@@ -122,66 +80,27 @@
 		});
 	});
 
-	const playerUid = $derived(authStore.user?.uid ?? '');
-
-	$effect(() => {
-		const teamId = playerTeamId;
-		const uid = playerUid;
-		if (!teamId) {
-			assignments = [];
-			isLoading = false;
-			return;
-		}
-
-		isLoading = true;
-		const q = query(
-			collection(db, 'team_assignments'),
-			where('teamId', '==', teamId),
-			where('status', '==', 'active'),
-			orderBy('priority', 'asc'),
-		);
-
-		const unsub = onSnapshot(
-			q,
-			(snap) => {
-				const all: Assignment[] = snap.docs.map((d) => ({ id: d.id, ...d.data() } as Assignment));
-				assignments = all.filter((a) => {
-					if (!a.scope || a.scope === 'team') return true;
-					return Array.isArray(a.targetUids) && uid && a.targetUids.includes(uid);
-				});
-				isLoading = false;
-			},
-			(err) => {
-				console.error('[AdaptiveHomework] assignments snapshot error:', err);
-				isLoading = false;
-			}
-		);
-
-		return unsub;
-	});
-
 	$effect(() => {
 		const profile = playerProfile;
 		const sid = sportId;
-		if (activeAssignment) {
-			soloTargetAttributeId = null;
-			return;
-		}
 		const rpgCfg = getRpgSportConfig(sid);
 		const attrIds = rpgCfg.attributes.map((a) => a.id);
 		const xpMap = /** @type {Record<string, number>} */ (profile?.xpByAttribute ?? {});
-		soloTargetAttributeId = pickWeakestAttributeId(xpMap, attrIds);
+		focusAttributeId = pickWeakestAttributeId(xpMap, attrIds);
 	});
 
 	$effect(() => {
-		const _assignment = activeAssignment;
 		const sid = sportId;
 		let cancelled = false;
 
 		async function loadPolicy() {
+			isLoading = true;
 			const cached = readRlPolicyCache(sid);
 			if (cached) {
-				if (!cancelled) policyResult = cached;
+				if (!cancelled) {
+					policyResult = cached;
+					isLoading = false;
+				}
 				return;
 			}
 			try {
@@ -196,6 +115,8 @@
 				if (!cancelled) policyResult = result;
 			} catch {
 				if (!cancelled) policyResult = null;
+			} finally {
+				if (!cancelled) isLoading = false;
 			}
 		}
 
@@ -204,9 +125,7 @@
 	});
 
 	$effect(() => {
-		const assignment = activeAssignment;
-		const soloAttr = soloTargetAttributeId;
-		const targetAttr = assignment?.targetAttributeId ?? soloAttr;
+		const targetAttr = focusAttributeId;
 		const policy = policyResult;
 		const frustration = recentFrustration;
 		const teamId = playerTeamId;
@@ -225,7 +144,7 @@
 					teamId,
 					clubId,
 					targetAttributeId: targetAttr,
-					prescription: repairIntentPrescription(assignment?.prescription),
+					prescription: null,
 					recentFrustration: frustration,
 					sportId: sid,
 					recommendedDrillId:
@@ -254,118 +173,77 @@
 	});
 
 	function logOnTrain() {
-		let navHandoff = null;
-		if (activeAssignment) {
-			navHandoff = stashCoachIntentHandoffForAssignment({
-				missionId: activeAssignment.id,
-				targetAttributeId: activeAssignment.targetAttributeId,
-				requiredXp: activeAssignment.requiredXp,
-				prescription: activeAssignment.prescription,
-				drill: suggestedDrill ?
-					{ id: suggestedDrill.id, title: suggestedDrill.title }
-				:	null,
-				policyHints: buildPolicyHintsFromResult(policyResult),
-				armExplicit: true,
-			});
-		} else if (soloTargetAttributeId && suggestedDrill) {
-			navHandoff = stashCoachIntentHandoffForAssignment({
-				missionId: `solo-focus-${soloTargetAttributeId}`,
-				targetAttributeId: soloTargetAttributeId,
-				drill: { id: suggestedDrill.id, title: suggestedDrill.title },
-				policyHints: buildPolicyHintsFromResult(policyResult),
-				armExplicit: true,
-			});
-		} else {
-			return;
-		}
+		if (!focusAttributeId || !suggestedDrill) return;
+		const navHandoff = stashAdaptiveHomeworkHandoff({
+			targetAttributeId: focusAttributeId,
+			drill: { id: suggestedDrill.id, title: suggestedDrill.title },
+			policyHints: buildPolicyHintsFromResult(policyResult),
+		});
 		void goto(resolveAppPath('/player/workout'), {
-			state: navHandoff ? { missionHandoff: navHandoff } : undefined,
+			state: { missionHandoff: navHandoff },
 		});
 	}
 </script>
 
-<div
-	class="vanguard-surface tw-flex tw-flex-col tw-gap-5 tw-p-6"
+<section
+	class="adaptive-homework pd-os-deck bento-span-12 tw-min-w-0 tw-max-w-full"
+	aria-label="Adaptive homework"
+	data-region="adaptive-homework"
 >
-	<div class="tw-flex tw-items-start tw-justify-between tw-gap-3">
-		<div class="tw-flex tw-flex-col tw-gap-0.5">
-			<span class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-teal-400/60">
-				[ // ADAPTIVE HOMEWORK ]
-			</span>
-			<span class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-white/30">
-				[ EQ-SCAFFOLDED DRILL QUEUE ]
-			</span>
+	<header class="pd-hq-section-head adaptive-homework__head">
+		<div class="adaptive-homework__id tw-min-w-0">
+			<h2 class="pd-hq-section-head__title adaptive-homework__title">Adaptive homework</h2>
+			<p class="pd-hq-section-head__eyebrow pd-label adaptive-homework__eyebrow">
+				EQ-scaffolded drill queue
+			</p>
 		</div>
-		{#if queueCount > 0}
-			<span
-				class="tw-shrink-0 tw-font-mono tw-text-[9px] tw-tracking-widest tw-px-2 tw-py-0.5 tw-rounded tw-bg-[#6366f1]/15 tw-text-[#6366f1] tw-border tw-border-[#6366f1]/30"
-				title="{queueCount} more intent{queueCount === 1 ? '' : 's'} queued"
-			>
-				+{queueCount} QUEUED
-			</span>
-		{/if}
-	</div>
+	</header>
 
-	<div class="tw-w-full tw-h-px tw-bg-slate-800/60"></div>
-
+	<div class="pd-os-deck__well adaptive-homework__body tw-flex tw-min-w-0 tw-flex-col tw-gap-4">
 	{#if isLoading}
-		<div class="tw-flex tw-items-center tw-justify-center tw-py-10">
+		<div class="adaptive-homework__status tw-flex tw-items-center tw-justify-center tw-py-8" role="status">
 			<span
-				class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-teal-500/40 tw-animate-pulse"
+				class="tw-font-mono tw-text-[10px] tw-tracking-wide tw-text-teal-500/40 tw-animate-pulse"
 			>
 				[ SYNCING TACTICAL DATA... ]
 			</span>
 		</div>
-	{:else if !activeAssignment && !isSoloMode}
-		<div
-			class="tw-w-full tw-py-8 tw-px-4 tw-rounded-xl tw-bg-[#020202] tw-border tw-border-white/5 tw-text-center"
-		>
-			<span class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-white/20">
-				[ NO ACTIVE TACTICAL INTENTS ]
-			</span>
+	{:else if !focusAttributeId}
+		<div class="adaptive-homework__status tw-py-6 tw-text-center" role="status">
+			<p class="adaptive-homework__status-msg tw-m-0 tw-font-mono tw-text-[10px] tw-tracking-wide tw-text-white/20">
+				[ AWAITING PLAYER PROFILE ]
+			</p>
 		</div>
 	{:else}
-		<div class="tw-flex tw-flex-col tw-gap-4">
-			{#if isSoloMode}
-				<p class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-teal-400/50">
-					[ SOLO FOCUS · NO COACH INTENT ]
-				</p>
-			{/if}
+			<p class="tw-m-0 tw-min-w-0 tw-font-mono tw-text-[9px] tw-leading-relaxed tw-tracking-wide tw-text-teal-400/50 tw-break-words">
+				[ ADAPTIVE FOCUS · NOT A COACH CHALLENGE ]
+			</p>
 
-			<div class="tw-flex tw-items-center tw-justify-between tw-gap-3">
-				<span class="tw-font-mono tw-text-xs tw-text-white/60 tw-tracking-wider">
-					{activeAttribute?.name ?? displayAttributeId}
+			<div class="tw-flex tw-min-w-0 tw-items-center tw-justify-between tw-gap-3">
+				<span class="tw-min-w-0 tw-truncate tw-font-mono tw-text-xs tw-text-white/60 tw-tracking-wide">
+					{activeAttribute?.name ?? focusAttributeId}
 				</span>
-				{#if activeAssignment && activeAttribute}
-					<span
-						class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-px-2 tw-py-0.5 tw-rounded tw-shrink-0"
-						style="color:{activeAttribute.hexColor}; border: 1px solid {activeAttribute.hexColor}40; background: {activeAttribute.hexColor}10"
-					>
-						{activeAssignment.requiredXp} XP
-					</span>
-				{:else if isSoloMode}
-					<span class="tw-font-mono tw-text-[9px] tw-text-white/30 tw-tracking-wider">
-						Weakest attribute
-					</span>
-				{/if}
+				<span class="tw-shrink-0 tw-font-mono tw-text-[9px] tw-text-white/30 tw-tracking-wide">
+					Weakest attribute
+				</span>
 			</div>
 
 			{#if recentFrustration === 'high'}
 				<div
-					class="tw-w-full tw-py-1.5 tw-px-3 tw-rounded-lg tw-border tw-border-slate-700/70 tw-bg-slate-800"
+					class="tw-min-w-0 tw-rounded-lg tw-border tw-border-slate-700/70 tw-bg-slate-800 tw-py-1.5 tw-px-3"
 				>
-					<span class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-slate-400">
+					<p class="tw-m-0 tw-font-mono tw-text-[9px] tw-leading-relaxed tw-tracking-wide tw-text-slate-400 tw-break-words">
 						[ SCAFFOLDING ACTIVE: EQ PROTECTION MODE ]
-					</span>
+					</p>
 				</div>
 			{/if}
 
 			{#if suggestedDrill}
 				<div
-					class="tw-flex tw-flex-col tw-gap-3 tw-p-4 tw-rounded-xl tw-bg-[#020202] tw-border tw-border-slate-800/60"
+					class="tw-flex tw-min-w-0 tw-max-w-full tw-flex-col tw-gap-3 tw-overflow-hidden tw-rounded-xl tw-border tw-border-slate-800/60 tw-bg-[#020202] tw-p-4"
 				>
-					<div class="tw-flex tw-items-start tw-justify-between tw-gap-3">
-						<span class="tw-font-mono tw-text-xs tw-text-white/70 tw-leading-relaxed">
+					<div class="tw-flex tw-min-w-0 tw-items-start tw-justify-between tw-gap-3">
+						<span class="tw-min-w-0 tw-font-mono tw-text-xs tw-text-white/70 tw-leading-relaxed tw-break-words">
 							{suggestedDrill.title}
 						</span>
 						<div class="tw-flex tw-flex-col tw-items-end tw-gap-1 tw-shrink-0">
@@ -414,12 +292,10 @@
 					{/if}
 				</div>
 			{:else}
-				<div
-					class="tw-w-full tw-py-4 tw-px-4 tw-rounded-xl tw-bg-[#020202] tw-border tw-border-white/5 tw-text-center"
-				>
-					<span class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-white/20">
+				<div class="adaptive-homework__status tw-py-6 tw-text-center" role="status">
+					<p class="adaptive-homework__status-msg tw-m-0 tw-font-mono tw-text-[10px] tw-leading-relaxed tw-tracking-wide tw-text-white/20">
 						[ NO DRILLS FOUND FOR TARGET ]
-					</span>
+					</p>
 				</div>
 			{/if}
 
@@ -431,31 +307,8 @@
 				disabled={!suggestedDrill}
 				onclick={logOnTrain}
 			>
-				{isSoloMode ? 'Train solo focus' : 'Log on Train'}
+				Log on Train
 			</button>
-
-			{#if activeAssignment}
-				<div class="tw-flex tw-flex-col tw-gap-1.5">
-					<div class="tw-flex tw-justify-between tw-items-center">
-						<span class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-white/30">
-							XP PROGRESS
-						</span>
-						<span class="tw-font-mono tw-text-[9px] tw-text-teal-400/60">{xpProgressPct}%</span>
-					</div>
-					<div class="tw-w-full tw-h-1 tw-bg-slate-700/60 tw-rounded-full tw-overflow-hidden">
-						<div
-							class="tw-h-full tw-bg-teal-500 tw-rounded-full tw-transition-all tw-duration-700"
-							style="width:{xpProgressPct}%"
-						></div>
-					</div>
-					<div class="tw-flex tw-justify-between">
-						<span class="tw-font-mono tw-text-[9px] tw-text-white/20">{playerAttributeXp} XP</span>
-						<span class="tw-font-mono tw-text-[9px] tw-text-white/20">
-							{activeAssignment.requiredXp} REQ
-						</span>
-					</div>
-				</div>
-			{/if}
-		</div>
 	{/if}
-</div>
+	</div>
+</section>

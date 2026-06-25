@@ -42,7 +42,7 @@ describe('Sprint RL-audit — AdaptiveHomework callable wiring', () => {
 		const src = readFileSync(ADAPTIVE_HOMEWORK, 'utf-8');
 		expect(src).toMatch(/httpsCallable/);
 		expect(src).toMatch(/getAdaptiveWorkoutPolicy/);
-		expect(src).toMatch(/team_assignments/);
+		expect(src).not.toMatch(/team_assignments/);
 		expect(src).toMatch(/SUGGESTED BY AI/);
 	});
 
@@ -55,17 +55,18 @@ describe('Sprint RL-audit — AdaptiveHomework callable wiring', () => {
 });
 
 describe('PRESCRIPTION-hq-cta — AdaptiveHomework Train handoff', () => {
-	it('AdaptiveHomework shows Log on Train and stashes coach intent handoff', () => {
+	it('AdaptiveHomework shows Log on Train and stashes adaptive handoff (not coach intent)', () => {
 		const src = readFileSync(ADAPTIVE_HOMEWORK, 'utf-8');
 		expect(src).toMatch(/Log on Train/);
-		expect(src).toMatch(/stashCoachIntentHandoffForAssignment/);
-		expect(src).toMatch(/goto\('\/player\/workout'\)/);
+		expect(src).toMatch(/stashAdaptiveHomeworkHandoff/);
+		expect(src).not.toMatch(/stashCoachIntentHandoffForAssignment/);
+		expect(src).toMatch(/goto\(resolveAppPath\('\/player\/workout'\)/);
 	});
 
-	it('coachMissionFlow exposes stashCoachIntentHandoffForAssignment using MISSION_HANDOFF_KEY', () => {
+	it('coachMissionFlow exposes stashAdaptiveHomeworkHandoff using MISSION_HANDOFF_KEY', () => {
 		const src = readFileSync(COACH_MISSION_FLOW, 'utf-8');
-		expect(src).toMatch(/export function stashCoachIntentHandoffForAssignment/);
-		expect(src).toMatch(/buildCoachIntentHandoff/);
+		expect(src).toMatch(/export function stashAdaptiveHomeworkHandoff/);
+		expect(src).toMatch(/source: 'adaptive_homework'/);
 		expect(src).toMatch(/MISSION_HANDOFF_KEY/);
 		expect(src).toMatch(/player_mission_handoff_v1/);
 	});
@@ -178,12 +179,12 @@ describe('Sprint RL-transition-guards — transition pipeline wiring', () => {
 });
 
 describe('Sprint RL-audit — HQ visibility', () => {
-	it('player dashboard mounts AdaptiveHomework for assignment + policy path', () => {
+	it('player dashboard mounts AdaptiveHomework for RL policy path', () => {
 		expect(existsSync(DASHBOARD_PAGE)).toBe(true);
 		const page = readFileSync(DASHBOARD_PAGE, 'utf-8');
 		expect(page).toMatch(/import AdaptiveHomework from '\.\/AdaptiveHomework\.svelte'/);
 		expect(page).toMatch(/<AdaptiveHomework\s*\/>/);
-		expect(page).toMatch(/aria-label="Adaptive homework"/);
+		expect(readFileSync(ADAPTIVE_HOMEWORK, 'utf-8')).toMatch(/aria-label="Adaptive homework"/);
 	});
 
 	it('FUNCTIONAL_MVP.md documents RL audit section', () => {

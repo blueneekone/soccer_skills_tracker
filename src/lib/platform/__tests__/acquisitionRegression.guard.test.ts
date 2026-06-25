@@ -215,16 +215,16 @@ describe('ACQ-DOCS-GUARD — acquisition doc source scans', () => {
 	const DEMO_SCRIPT = join(REPO_ROOT, 'docs/acquisition/DEMO_SCRIPT.md');
 	const FUNCTIONAL_MVP = join(REPO_ROOT, 'docs/vision/FUNCTIONAL_MVP.md');
 
-	it('PROSPECTUS mentions curriculum intelligence and cadence', () => {
+	it('PROSPECTUS §6.1–6.2 documents curriculum intelligence and multi-day cadence', () => {
 		const src = readFileSync(PROSPECTUS, 'utf-8');
-		expect(src).toMatch(/Curriculum intelligence/i);
-		expect(src).toMatch(/cadence/i);
+		expect(src).toContain('6.1 Curriculum intelligence');
+		expect(src).toContain('6.2 Multi-day coach assignments');
 	});
 
-	it('DEMO_SCRIPT mentions multi-day session cadence', () => {
+	it('DEMO_SCRIPT talk track cites UTC-day cadence or X/N weekly progress', () => {
 		const src = readFileSync(DEMO_SCRIPT, 'utf-8');
 		const hasCadenceCopy =
-			/Sessions\/week/i.test(src) || /one session per UTC day/i.test(src);
+			/one session per UTC day/i.test(src) || /X\/N this week/i.test(src);
 		expect(hasCadenceCopy).toBe(true);
 	});
 

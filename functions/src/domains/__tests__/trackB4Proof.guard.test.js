@@ -273,8 +273,12 @@ describe('B4b — source-scan: parentReviewCompletionProof body is non-empty', (
 // ── B4b source-scan: parent authentication ────────────────────────────────────
 
 describe('B4b — source-scan: parent authentication gate', () => {
-  it('calls assertParent(request) to enforce parent role', () => {
-    assert.match(reviewCallableBody, /assertParent\s*\(\s*request\s*\)/);
+  it('calls assertParentAsync(request) to enforce parent role with Firestore household parity', () => {
+    assert.match(reviewCallableBody, /await\s+assertParentAsync\s*\(\s*request\s*\)/);
+    assert.doesNotMatch(
+        reviewCallableBody,
+        /(?<!Async)assertParent\s*\(\s*request\s*\)/,
+    );
   });
 });
 

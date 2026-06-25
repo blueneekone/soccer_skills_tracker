@@ -9,7 +9,8 @@ import {
 	resolveIntentBaselineXp,
 } from '$lib/coach/intent/intentProgress.js';
 import type { CadenceCompletionRow } from './cadenceCompletions.js';
-import { hasCadenceCreditToday } from './cadenceCompletions.js';
+import { hasCadenceCreditToday, normalizeCadenceAttributeId } from './cadenceCompletions.js';
+import { resolveCoachIntentDisplayCadence } from '$lib/types/intent.js';
 
 export type QuestTier = 'daily' | 'bounty';
 export type QuestLifecycle = 'accept' | 'complete' | 'claim';
@@ -331,6 +332,26 @@ export function formatAttributeLabel(raw: string): string {
 }
 
 /**
+ * Coach intent lifecycle — server roster is source of truth (coach deploy = assignment).
+ * Session Accept is optional UX; active intents stay `complete` across sign-in.
+ */
+export function resolveCoachIntentLifecycle(
+	questId: string,
+	progress: QuestProgressStore,
+	opts: {
+		readyToClaim?: boolean;
+		/** Belt-and-suspenders: drill_completions exist for this intentId */
+		hasIntentCompletions?: boolean;
+		earnedXp?: number;
+	} = {},
+): QuestLifecycle {
+	if (opts.readyToClaim) return 'claim';
+	if (opts.hasIntentCompletions || (opts.earnedXp ?? 0) > 0) return 'complete';
+	if (progress.acceptedIds.includes(questId)) return 'complete';
+	return 'complete';
+}
+
+/**
  * Resolve Accept → Complete → Claim from local progress + remote status hints.
  */
 export function resolveQuestLifecycle(
@@ -481,6 +502,7 @@ export function buildDailyQuests(
 export {
 	countCadenceSessionsInWindow,
 	hasCadenceCreditToday,
+	normalizeCadenceAttributeId,
 	questCadenceBlockedToday,
 	utcDayFromMs,
 } from './cadenceCompletions.js';
@@ -548,9 +570,9 @@ export const COACH_INTENT_TODAY_COMPLETE = "Today's session complete ✓";
 function readCoachIntentTargetAttributeId(data: Record<string, unknown>): string {
 	const direct =
 		typeof data.targetAttributeId === 'string' ? data.targetAttributeId.trim() : '';
-	if (direct) return direct;
+	if (direct) return normalizeCadenceAttributeId(direct);
 	const alias = typeof data.attributeId === 'string' ? data.attributeId.trim() : '';
-	return alias;
+	return normalizeCadenceAttributeId(alias);
 }
 
 export function bountyFromCoachIntent(
@@ -567,25 +589,7 @@ export function bountyFromCoachIntent(
 	const attrLabel = formatAttributeLabel(targetAttributeId);
 	const fulfilledBy = Array.isArray(data.fulfilledByUids) ? data.fulfilledByUids : [];
 	const playerFulfilled = Boolean(playerUid && fulfilledBy.includes(playerUid));
-	const rx = data.prescription;
-	const cadence =
-		rx != null &&
-		typeof rx === 'object' &&
-		!Array.isArray(rx) &&
-		(rx as Record<string, unknown>).cadence != null &&
-		typeof (rx as Record<string, unknown>).cadence === 'object' &&
-		!Array.isArray((rx as Record<string, unknown>).cadence)
-			? (() => {
-					const c = (rx as Record<string, unknown>).cadence as Record<string, unknown>;
-					const spw =
-						typeof c.sessionsPerWindow === 'number' ? Math.floor(c.sessionsPerWindow) : 0;
-					const wd =
-						typeof c.windowDays === 'number' ? Math.floor(c.windowDays) : 0;
-					return spw >= 1 && spw <= 21 && wd >= 1 && wd <= 30
-						? { sessionsPerWindow: spw, windowDays: wd }
-						: undefined;
-				})()
-			: undefined;
+	const cadence = resolveCoachIntentDisplayCadence(requiredXp, data.prescription);
 	return {
 		id,
 		tier: 'bounty',
@@ -594,7 +598,7 @@ export function bountyFromCoachIntent(
 		title: `${attrLabel} · ${requiredXp > 0 ? `${requiredXp.toLocaleString()} XP goal` : 'Complete your objective'}`,
 		axisId,
 		xpReward: Math.max(requiredXp, 150),
-		lifecycle: resolveQuestLifecycle(id, progress, { readyToClaim: playerFulfilled }),
+		lifecycle: resolveCoachIntentLifecycle(id, progress, { readyToClaim: playerFulfilled }),
 		actionHref: '/player/workout',
 		sortKey: priority,
 		targetAttributeId,

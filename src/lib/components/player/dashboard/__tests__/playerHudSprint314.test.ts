@@ -57,7 +57,7 @@ describe('QA-142 — coach mission Train handoff', () => {
 	});
 
 	it('TRAIN-MISSION-ARM-EXPLICIT — isCoachDirectedSession requires armed coach handoff', () => {
-		expect(workoutSrc).toMatch(/armedHandoff\.missionId === activeMissionId/);
+		expect(workoutSrc).toMatch(/armedHandoff\.missionId\s*!==\s*activeMissionId/);
 		expect(workoutSrc).toMatch(/isCoachDirectedHandoff\(armedHandoff\.source\)/);
 	});
 
@@ -83,7 +83,7 @@ describe('QA-142 — coach mission Train handoff', () => {
 			'utf-8',
 		);
 		expect(trainingOps).toMatch(/drill_completions/);
-		expect(trainingOps).toMatch(/countCadenceSessionsForAttribute/);
+		expect(trainingOps).toMatch(/countCadenceSessionsForIntent/);
 		expect(trainingOps).toMatch(/onDrillCompletionIntentLifecycle/);
 	});
 

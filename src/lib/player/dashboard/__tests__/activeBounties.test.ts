@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import { normalizeCadenceAttributeId } from '../cadenceCompletions.js';
 import {
 	mapAttributeToVanguardAxis,
 	sortQuestLog,
@@ -22,6 +23,7 @@ import {
 	questHudCtaFor,
 	questTerminalCmd,
 	formatQuestRewardLabel,
+	resolveCoachIntentLifecycle,
 	resolveQuestLifecycle,
 	resolveHeroQuest,
 	excludeHeroFromRailQuests,
@@ -54,7 +56,7 @@ describe('FORGE-MISSION-RAIL-VISIBILITY — coach intent visibility', () => {
 		).toBe(false);
 	});
 
-	it('bountyFromCoachIntent maps active row with accept lifecycle', () => {
+	it('COACH-INTENT-PERSIST-ACTIVE: bountyFromCoachIntent maps active row as complete without sessionStorage', () => {
 		const bounty = bountyFromCoachIntent(
 			'intent-a',
 			{ targetAttributeId: 'pace', requiredXp: 200, priority: 10, scope: 'team' },
@@ -63,7 +65,7 @@ describe('FORGE-MISSION-RAIL-VISIBILITY — coach intent visibility', () => {
 		);
 		expect(bounty?.source).toBe('coach_intent');
 		expect(bounty?.senderLabel).toBe('Coach Challenge');
-		expect(bounty?.lifecycle).toBe('accept');
+		expect(bounty?.lifecycle).toBe('complete');
 	});
 
 	it('bountyFromCoachIntent read-repairs attributeId alias', () => {
@@ -391,10 +393,120 @@ describe('B2 — countCadenceSessionsInWindow', () => {
 		];
 		expect(countCadenceSessionsInWindow(completions, 'pace', 7, NOW)).toBe(1);
 	});
+
+	it('filters by intentId when present (ignores other intents same attribute)', () => {
+		const completions = [
+			{ attributeId: 'ball_mastery', loggedAtMs: NOW - 1 * 86_400_000, intentId: 'intent-a' },
+			{ attributeId: 'ball_mastery', loggedAtMs: NOW - 2 * 86_400_000, intentId: 'intent-b' },
+			{ attributeId: 'ball_mastery', loggedAtMs: NOW - 3 * 86_400_000, intentId: 'intent-a' },
+		];
+		expect(countCadenceSessionsInWindow(completions, 'ball_mastery', 7, NOW, 'intent-a')).toBe(2);
+		expect(countCadenceSessionsInWindow(completions, 'ball_mastery', 7, NOW, 'intent-b')).toBe(1);
+	});
+
+	it('intent-scoped count excludes attribute-only rows (cancelled challenge bleed)', () => {
+		const completions = [
+			{ attributeId: 'ball_mastery', loggedAtMs: NOW - 1 * 86_400_000 },
+			{ attributeId: 'ball_mastery', loggedAtMs: NOW - 2 * 86_400_000, intentId: 'old-intent' },
+			{ attributeId: 'ball_mastery', loggedAtMs: NOW, intentId: 'new-intent' },
+		];
+		expect(countCadenceSessionsInWindow(completions, 'ball_mastery', 7, NOW, 'new-intent')).toBe(1);
+	});
+
+	it('normalizeCadenceAttributeId matches server sanitization (case + punctuation)', () => {
+		expect(normalizeCadenceAttributeId('Ball_Mastery')).toBe('ball_mastery');
+		expect(normalizeCadenceAttributeId('Ball-Mastery')).toBe('ballmastery');
+		expect(
+			countCadenceSessionsInWindow(
+				[{ attributeId: 'ballmastery', loggedAtMs: NOW }],
+				'Ball-Mastery',
+				7,
+				NOW,
+			),
+		).toBe(1);
+	});
+});
+
+describe('COACH-INTENT-PERSIST-ACTIVE — coach challenge stays active across sign-in', () => {
+	const emptyProgress = {
+		acceptedIds: [] as string[],
+		completedIds: [] as string[],
+		claimedIds: [] as string[],
+		claimedDateUtc: '2026-06-25',
+	};
+
+	it('active coach intent without sessionStorage acceptedIds → lifecycle complete', () => {
+		const bounty = bountyFromCoachIntent(
+			'intent-persist',
+			{ targetAttributeId: 'ball_mastery', requiredXp: 500, scope: 'team' },
+			emptyProgress,
+			'uid-player',
+		);
+		expect(bounty?.lifecycle).toBe('complete');
+		expect(resolveCoachIntentLifecycle('intent-persist', emptyProgress)).toBe('complete');
+		expect(questHudCtaFor(bounty!)).toBe('Start session →');
+	});
+
+	it('fulfilled coach intent → claim lifecycle', () => {
+		const bounty = bountyFromCoachIntent(
+			'intent-done',
+			{
+				targetAttributeId: 'pace',
+				requiredXp: 200,
+				fulfilledByUids: ['uid-player'],
+			},
+			emptyProgress,
+			'uid-player',
+		);
+		expect(bounty?.lifecycle).toBe('claim');
+	});
+
+	it('with today cadence credit → questCadenceBlockedToday → Next session tomorrow CTA', () => {
+		const NOW = Date.UTC(2026, 5, 21, 15, 0, 0);
+		const bounty = bountyFromCoachIntent(
+			'intent-cadence',
+			{
+				targetAttributeId: 'ball_mastery',
+				requiredXp: 500,
+				prescription: { sets: 2, bilateral: false, cadence: { sessionsPerWindow: 5, windowDays: 7 } },
+			},
+			emptyProgress,
+			'uid-player',
+		)!;
+		expect(bounty.lifecycle).toBe('complete');
+		const completions = [
+			{ attributeId: 'ball_mastery', loggedAtMs: NOW, intentId: 'intent-cadence' },
+		];
+		expect(questCadenceBlockedToday(bounty, completions, NOW)).toBe(true);
+		expect(questHudCtaFor(bounty)).toBe('Start session →');
+		expect(questHudCtaBlockedCadence()).toBe('Next session tomorrow');
+	});
+
+	it('belt-and-suspenders: partial XP progress resolves complete without acceptedIds', () => {
+		expect(
+			resolveCoachIntentLifecycle('intent-xp', emptyProgress, { earnedXp: 42 }),
+		).toBe('complete');
+	});
+
+	it('belt-and-suspenders: drill_completions flag resolves complete without acceptedIds', () => {
+		expect(
+			resolveCoachIntentLifecycle('intent-drill', emptyProgress, {
+				hasIntentCompletions: true,
+			}),
+		).toBe('complete');
+	});
 });
 
 describe('B2 — hasCadenceCreditToday + questCadenceBlockedToday', () => {
 	const NOW = Date.UTC(2026, 5, 21, 15, 0, 0);
+
+	it('hasCadenceCreditToday ignores attribute-only rows when intent scoped', () => {
+		const completions = [
+			{ attributeId: 'ball_mastery', loggedAtMs: NOW, intentId: 'old-intent' },
+			{ attributeId: 'ball_mastery', loggedAtMs: NOW - 3_600_000 },
+		];
+		expect(hasCadenceCreditToday(completions, 'ball_mastery', 'new-intent', NOW)).toBe(false);
+	});
 
 	it('hasCadenceCreditToday matches attribute + intent on same UTC day', () => {
 		const completions = [
@@ -494,6 +606,17 @@ describe('BOUNTY-DAILY-ACK — XP progress + today complete helpers', () => {
 		expect(coachIntentCreditedToday(cadenceQuest, [], NOW)).toBe(false);
 	});
 
+	it('coachIntentCreditedToday works with inferred high-XP cadence (no prescription.cadence)', () => {
+		const inferredQuest: QuestTask = {
+			...cadenceQuest,
+			cadence: { sessionsPerWindow: 5, windowDays: 7 },
+		};
+		const completions = [
+			{ attributeId: 'ball_mastery', loggedAtMs: NOW, intentId: 'intent-a' },
+		];
+		expect(coachIntentCreditedToday(inferredQuest, completions, NOW)).toBe(true);
+	});
+
 	it('COACH_INTENT_TODAY_COMPLETE is acknowledgment copy (not claim)', () => {
 		expect(COACH_INTENT_TODAY_COMPLETE).toMatch(/Today's session complete/);
 		expect(COACH_INTENT_TODAY_COMPLETE).not.toMatch(/claim/i);
@@ -517,16 +640,26 @@ describe('BOUNTY-DAILY-ACK — XP progress + today complete helpers', () => {
 		expect(heroBlock).toMatch(/COACH_INTENT_TODAY_COMPLETE/);
 	});
 
-	it('source-scan: cadence completions subscribe when any coach_intent exists', () => {
+	it('source-scan: cadence subscribe uses playerUid-only query (no composite index hard-fail)', () => {
 		const { readFileSync } = require('fs');
 		const { join } = require('path');
-		const AB_SRC = readFileSync(
-			join(__dirname, '../../../components/hud/ActiveBounties.svelte'),
+		const SRC = readFileSync(join(__dirname, '../cadenceCompletions.ts'), 'utf-8');
+		expect(SRC).toMatch(/where\('playerUid', '==', playerUid\)/);
+		expect(SRC).not.toMatch(/where\('loggedAt', '>=', windowStart\)/);
+		expect(SRC).toMatch(/cadenceCompletionMatchesIntent/);
+		expect(SRC).toMatch(/row\.intentId === scope/);
+	});
+
+	it('source-scan: cadence completions subscribe when coach_intent armed on Train', () => {
+		const { readFileSync } = require('fs');
+		const { join } = require('path');
+		const TRAIN_SRC = readFileSync(
+			join(__dirname, '../../../../routes/(app)/player/workout/+page.svelte'),
 			'utf-8',
 		);
-		expect(AB_SRC).toMatch(/hasCoachIntentQuests/);
-		expect(AB_SRC).toMatch(/q\.source === 'coach_intent'/);
-		expect(AB_SRC).not.toMatch(/q\.source === 'coach_intent' && q\.cadence/);
+		expect(TRAIN_SRC).toMatch(/!activeMissionId \|\| armedHandoff\?\.source !== 'coach_intent'/);
+		expect(TRAIN_SRC).toMatch(/resolveMissionHandoffDisplayCadence/);
+		expect(TRAIN_SRC).toMatch(/armedDisplayCadence/);
 	});
 });
 
@@ -566,13 +699,35 @@ describe('B2 — bountyFromCoachIntent carries cadence', () => {
 		expect(bounty?.targetAttributeId).toBe('ball_mastery');
 	});
 
-	it('cadence absent when prescription has none', () => {
+	it('cadence absent when prescription has none and requiredXp below threshold', () => {
 		const bounty = bountyFromCoachIntent(
 			'intent-nocadence',
 			{ targetAttributeId: 'pace', requiredXp: 100 },
 			progress,
 		);
 		expect(bounty?.cadence).toBeUndefined();
+	});
+
+	it('infers 5×/week display cadence when requiredXp ≥ 300 and prescription has no cadence', () => {
+		const bounty = bountyFromCoachIntent(
+			'intent-high-xp',
+			{ targetAttributeId: 'ball_mastery', requiredXp: 500, prescription: { sets: 2, bilateral: false } },
+			progress,
+		);
+		expect(bounty?.cadence).toEqual({ sessionsPerWindow: 5, windowDays: 7 });
+	});
+
+	it('explicit prescription cadence wins over high-XP default', () => {
+		const bounty = bountyFromCoachIntent(
+			'intent-explicit',
+			{
+				targetAttributeId: 'pace',
+				requiredXp: 500,
+				prescription: { sets: 1, bilateral: false, cadence: { sessionsPerWindow: 3, windowDays: 7 } },
+			},
+			progress,
+		);
+		expect(bounty?.cadence).toEqual({ sessionsPerWindow: 3, windowDays: 7 });
 	});
 
 	it('cadence absent when sessionsPerWindow is out of range', () => {

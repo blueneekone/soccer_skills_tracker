@@ -44,6 +44,7 @@
 		questHudCtaFor,
 		questHudCtaShort,
 		questTerminalCmd,
+		resolveCoachIntentLifecycle,
 		resolveQuestLifecycle,
 		resolveHeroQuest,
 		selectPrimaryBounty,
@@ -394,12 +395,24 @@
 	}
 
 	function patchQuestLifecycle(list: QuestTask[]): QuestTask[] {
-		return list.map((q) => ({
-			...q,
-			lifecycle: resolveQuestLifecycle(q.id, questProgress, {
-				readyToClaim: q.lifecycle === 'claim',
-			}),
-		}));
+		const uid = authStore.user?.uid ?? '';
+		return list.map((q) => {
+			if (q.source === 'coach_intent') {
+				const playerFulfilled = coachIntentReadyToClaim(intentDataById[q.id], uid);
+				return {
+					...q,
+					lifecycle: resolveCoachIntentLifecycle(q.id, questProgress, {
+						readyToClaim: playerFulfilled || q.lifecycle === 'claim',
+					}),
+				};
+			}
+			return {
+				...q,
+				lifecycle: resolveQuestLifecycle(q.id, questProgress, {
+					readyToClaim: q.lifecycle === 'claim',
+				}),
+			};
+		});
 	}
 
 	function stashQuestHandoff(quest: QuestTask, armExplicit = false) {
@@ -501,6 +514,18 @@
 			{COACH_INTENT_TODAY_COMPLETE}
 		</p>
 	{/if}
+	{#if quest.source === 'coach_intent' && quest.cadence && quest.targetAttributeId}
+		{@const completed = countCadenceSessionsInWindow(
+			cadenceCompletions,
+			quest.targetAttributeId,
+			quest.cadence.windowDays,
+			undefined,
+			quest.id,
+		)}
+		<p class="quest-row__cadence pw-mono" aria-label="Cadence progress">
+			{formatCadenceProgress(completed, quest.cadence.sessionsPerWindow, quest.cadence.windowDays)}
+		</p>
+	{/if}
 	{#if formatQuestRewardLabel(quest)}
 		<p class="quest-hero__reward">{formatQuestRewardLabel(quest)}</p>
 	{/if}
@@ -596,6 +621,8 @@
 						cadenceCompletions,
 						quest.targetAttributeId,
 						quest.cadence.windowDays,
+						undefined,
+						quest.id,
 					)}
 					<p class="quest-row__cadence pw-mono" aria-label="Cadence progress">
 						{formatCadenceProgress(completed, quest.cadence.sessionsPerWindow, quest.cadence.windowDays)}

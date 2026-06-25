@@ -485,12 +485,74 @@ exports.sendChannelMessage = onCall({region: REGION}, async (request) => {
     throw new HttpsError('not-found', 'Channel not found.');
   }
   const channel = channelSnap.data();
+  const channelType =
+      typeof channel.channelType === 'string' ? channel.channelType.trim() : '';
 
-  // Verify caller is a current member of this channel.
-  const memberIds = Array.isArray(channel.memberIds) ?
+  /** @type {string[]} */
+  let memberIds = Array.isArray(channel.memberIds) ?
     channel.memberIds.map((e) => normEmail(String(e))).filter(Boolean) :
     [];
-  if (!memberIds.includes(callerEmail)) {
+
+  const STAFF_INTERNAL_ROLES = new Set([
+    'coach',
+    'director',
+    'registrar',
+    'super_admin',
+    'global_admin',
+  ]);
+
+  if (channelType === 'staff_internal') {
+    if (!STAFF_INTERNAL_ROLES.has(callerRole)) {
+      throw new HttpsError(
+          'permission-denied',
+          'Staff internal channels are restricted to club staff.',
+      );
+    }
+
+    const channelTeamId =
+        typeof channel.teamId === 'string' ? channel.teamId.trim() : '';
+    if (!channelTeamId) {
+      throw new HttpsError('failed-precondition', 'Staff channel missing team scope.');
+    }
+
+    const teamSnap = await db().collection('teams').doc(channelTeamId).get();
+    if (!teamSnap.exists) {
+      throw new HttpsError('not-found', 'Team not found.');
+    }
+    const teamClubId =
+        typeof teamSnap.data().clubId === 'string' ? teamSnap.data().clubId.trim() : '';
+    if (!teamClubId || teamClubId !== clubId) {
+      throw new HttpsError(
+          'permission-denied',
+          'Channel does not belong to the specified club.',
+      );
+    }
+
+    const tokenTeamId = request.auth.token.teamId || '';
+    const tokenClubId = request.auth.token.clubId || '';
+    let scoped = false;
+    if (callerRole === 'super_admin' || callerRole === 'global_admin') {
+      scoped = true;
+    } else if (callerRole === 'coach') {
+      scoped = tokenTeamId === channelTeamId || memberIds.includes(callerEmail);
+    } else if (callerRole === 'director' || callerRole === 'registrar') {
+      scoped = tokenClubId === clubId;
+    }
+
+    if (!scoped) {
+      throw new HttpsError(
+          'permission-denied',
+          'You do not have staff scope for this team channel.',
+      );
+    }
+
+    if (!memberIds.includes(callerEmail)) {
+      await channelRef.update({
+        memberIds: admin.firestore.FieldValue.arrayUnion(callerEmail),
+      });
+      memberIds = [...memberIds, callerEmail];
+    }
+  } else if (!memberIds.includes(callerEmail)) {
     throw new HttpsError(
         'permission-denied',
         'You are not a member of this channel.',
@@ -498,7 +560,7 @@ exports.sendChannelMessage = onCall({region: REGION}, async (request) => {
   }
 
   // Sprint 4.2 — staff cannot participate in interactive channels that include minors.
-  if (isStaffRole(callerRole)) {
+  if (isStaffRole(callerRole) && channelType !== 'staff_internal') {
     for (const memberEmail of memberIds) {
       const memberSnap = await db().collection('users').doc(memberEmail).get();
       if (!memberSnap.exists) continue;
@@ -546,7 +608,7 @@ exports.sendChannelMessage = onCall({region: REGION}, async (request) => {
     [];
 
   // SafeSport CC verification and re-enforcement (monitored channels only).
-  if (safesportMonitored) {
+  if (safesportMonitored && channelType !== 'staff_internal') {
     const memberSet = new Set(memberIds);
 
     // Identify every player-role user currently in the channel member list.
@@ -627,7 +689,8 @@ exports.sendChannelMessage = onCall({region: REGION}, async (request) => {
     timestamp: now,
     deleted: false,
     safesportMonitored,
-    ...(safesportMonitored ? {ccParentEmails} : {}),
+    ...(channelType ? {channelType} : {}),
+    ...(safesportMonitored && channelType !== 'staff_internal' ? {ccParentEmails} : {}),
   });
 
   batch.set(db().collection('messaging_audit').doc(), {
@@ -635,9 +698,12 @@ exports.sendChannelMessage = onCall({region: REGION}, async (request) => {
     channelId,
     clubId,
     teamId: channelTeamId || null,
+    channelType: channelType || null,
     fromEmail: callerEmail,
     safesportMonitored,
-    ccParentEmails: safesportMonitored ? ccParentEmails : [],
+    ccParentEmails: safesportMonitored && channelType !== 'staff_internal' ?
+      ccParentEmails :
+      [],
     bodyLength: rawText.length,
     actorUid: callerUid,
     at: now,

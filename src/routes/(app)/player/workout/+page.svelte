@@ -22,7 +22,7 @@
     type CadenceCompletionRow,
   } from '$lib/player/dashboard/cadenceCompletions.js';
   import { resolveAppPath } from '$lib/components/_shared/resolveAppPath.js';
-  import { attributeIdToWorkoutFocus, buildPolicyHintsFromResult, clearMissionHandoff, COACH_INTENT_HINT, formatSuggestedDrillLine, isMissionHandoffStale, resolveAdaptiveDrill, resolveHandoffDurationMinutes, resolveHandoffTargetRpe, resolveDrillById, type MissionHandoff, type WorkoutFocus } from '$lib/player/workout/coachMissionFlow.js';
+  import { attributeIdToWorkoutFocus, buildPolicyHintsFromResult, clearMissionHandoff, COACH_INTENT_HINT, formatSuggestedDrillLine, isMissionHandoffStale, resolveAdaptiveDrill, resolveHandoffDurationMinutes, resolveHandoffTargetRpe, resolveDrillById, resolveMissionHandoffDisplayCadence, type MissionHandoff, type WorkoutFocus } from '$lib/player/workout/coachMissionFlow.js';
   import { resolveWorkoutMountHandoff } from '$lib/player/workout/applyWorkoutMountHandoff.js';
   import { listTrainMissionStripItems, continueCoachIntentOnTrain } from '$lib/player/workout/trainMissionPicker.js';
   import TrainMissionStrip from '$lib/player/workout/TrainMissionStrip.svelte';
@@ -53,7 +53,7 @@
     title: 'TELEMETRY LOGGING',
     instructions: [
       '1. Select your drill or exercise (free log) — coach missions lock the prescription.',
-      '2. Set duration (up to 120 min) and RPE for self-directed sessions.',
+      '2. Set sets, reps, and bilateral for rep-based volume; duration and RPE for self-directed sessions.',
       '3. Add session notes on coach assignments, then transmit to log XP.',
     ],
   };
@@ -549,6 +549,9 @@
 
   const armedMissionTitle = $derived.by(() => {
     if (!activeMissionId) return '';
+    if (armedHandoff?.source === 'adaptive_homework') {
+      return armedHandoff.drillTitle?.trim() || 'Adaptive suggestion';
+    }
     if (armedHandoff?.targetAttributeId) {
       return formatAttributeLabel(armedHandoff.targetAttributeId);
     }
@@ -581,19 +584,13 @@
 
   const armedPrescription = $derived(armedHandoff?.prescription ?? null);
 
-  const armedCadenceBlocked = $derived(
-    armedCadenceBlockedToday(
-      armedPrescription?.cadence,
-      armedHandoff?.targetAttributeId,
-      activeMissionId,
-      cadenceCompletions,
-    ),
-  );
+  const armedDisplayCadence = $derived(resolveMissionHandoffDisplayCadence(armedHandoff, armedGoalXp));
+  const armedCadenceBlocked = $derived(armedCadenceBlockedToday(armedDisplayCadence, armedHandoff?.targetAttributeId, activeMissionId, cadenceCompletions));
 
   $effect(() => {
     if (!browser || authStore.isLoading || authStore.role !== 'player') return;
     const uid = authStore.user?.uid ?? '';
-    if (!uid || !armedPrescription?.cadence) {
+    if (!uid || !activeMissionId || armedHandoff?.source !== 'coach_intent') {
       cadenceCompletions = [];
       return;
     }
@@ -697,7 +694,7 @@
       if (isLastStep) {
         const proofIntentId = activeMissionId;
         const needsProof = armedHandoff?.requiresParentVerification === true;
-        const cadenceWeekNote = coachCadenceLogSuccessSuffix(armedHandoff?.source ?? null, armedPrescription?.cadence);
+        const cadenceWeekNote = coachCadenceLogSuccessSuffix(armedHandoff?.source ?? null, armedDisplayCadence);
         if (result.clearMission) {
           recordQuestProgressAfterLog(armedHandoff);
           clearArmedMission();
@@ -766,7 +763,7 @@
 
     const proofIntentId = activeMissionId;
     const needsProof = armedHandoff?.requiresParentVerification === true,
-      cadenceWeekNote = coachCadenceLogSuccessSuffix(armedHandoff?.source ?? null, armedPrescription?.cadence);
+      cadenceWeekNote = coachCadenceLogSuccessSuffix(armedHandoff?.source ?? null, armedDisplayCadence);
     logSubmitting = true;
     playerEngine.bumpBy(expectedXp);
     try {
@@ -889,9 +886,9 @@
         {#if armedPrescription?.videoUrl}
           <a class="pw-link pw-mono pw-dim" href={armedPrescription.videoUrl} target="_blank" rel="noopener noreferrer">Watch demo</a>
         {/if}
-        {#if armedPrescription?.cadence}
+        {#if armedDisplayCadence}
           <p class="pw-mission-armed__drill pw-mono pw-dim" aria-label="Cadence requirement">
-            Cadence: {armedPrescription.cadence.sessionsPerWindow} session{armedPrescription.cadence.sessionsPerWindow !== 1 ? 's' : ''} / {armedPrescription.cadence.windowDays === 7 ? 'week' : `${armedPrescription.cadence.windowDays} days`}{#if armedCadenceBlocked}<span class="pw-dim"> · next session tomorrow</span>{/if}
+            Cadence: {armedDisplayCadence.sessionsPerWindow} session{armedDisplayCadence.sessionsPerWindow !== 1 ? 's' : ''} / {armedDisplayCadence.windowDays === 7 ? 'week' : `${armedDisplayCadence.windowDays} days`}{#if armedCadenceBlocked}<span class="pw-dim"> · next session tomorrow</span>{/if}
           </p>
         {/if}
         {#if armedHandoff?.requiresParentVerification === true}
@@ -1088,14 +1085,9 @@
                   <dt class="pw-dim tw-text-xs">Target RPE</dt>
                   <dd>{intensity} / 10</dd>
                 </div>
-                {#if totalWorkoutReps > 0}
-                  <div class="tw-col-span-2">
-                    <dt class="pw-dim tw-text-xs">Total reps</dt>
-                    <dd class="pw-green">{totalWorkoutReps}</dd>
-                  </div>
-                {/if}
               </dl>
             </div>
+            {@render volumeControls()}
             <div class="pw-configure-step">
               <label for="pw-session-notes" class="pw-eyebrow pd-panel-eyebrow">
                 Session notes (optional)
@@ -1110,51 +1102,7 @@
               <p class="pw-dim pw-mono tw-text-xs">{sessionNotes.length}/{SESSION_NOTES_MAX_LENGTH}</p>
             </div>
           {:else}
-            {#if armedPrescription}
-              <div class="pw-configure-step" role="group" aria-label="Session volume">
-                <span class="pw-eyebrow pd-panel-eyebrow">Volume (sets × reps)</span>
-                <p class="pw-ghostline pw-mono pw-dim">Coach target · adjust if you did more or less</p>
-                <div class="pw-gauges" style="grid-template-columns: 1fr 1fr;">
-                  <div class="pw-gauge">
-                    <div class="pw-gauge__head">
-                      <span class="pw-eyebrow">Sets</span>
-                      <span class="pw-mono pw-data">{workoutSets}</span>
-                    </div>
-                    <input
-                      class="pw-range"
-                      type="range"
-                      min="1"
-                      max="20"
-                      step="1"
-                      bind:value={workoutSets}
-                      aria-label="Sets completed"
-                    />
-                  </div>
-                  <div class="pw-gauge">
-                    <div class="pw-gauge__head">
-                      <span class="pw-eyebrow">Reps / set</span>
-                      <span class="pw-mono pw-data">{workoutRepsPerSet}</span>
-                    </div>
-                    <input
-                      class="pw-range"
-                      type="range"
-                      min="0"
-                      max="50"
-                      step="1"
-                      bind:value={workoutRepsPerSet}
-                      aria-label="Reps per set"
-                    />
-                  </div>
-                </div>
-                <label class="pw-mono tw-flex tw-items-center tw-gap-2 tw-text-sm">
-                  <input type="checkbox" bind:checked={workoutBilateral} class="tw-accent-teal-400" />
-                  Both sides (doubles rep count for XP)
-                </label>
-                <p class="pw-mono pw-data">
-                  Total reps for log: <span class="pw-green">{totalWorkoutReps}</span>
-                </p>
-              </div>
-            {/if}
+            {@render volumeControls(!!armedPrescription)}
             <div class="pw-gauges">
               <div class="pw-gauge">
                 <div class="pw-gauge__head">
@@ -1346,3 +1294,51 @@
     onCancel={closeOverlay}
   />
 </div>
+
+{#snippet volumeControls(showCoachTargetHint = false)}
+  <div class="pw-configure-step" role="group" aria-label="Session volume">
+    <span class="pw-eyebrow pd-panel-eyebrow">Volume (sets × reps)</span>
+    {#if showCoachTargetHint}
+      <p class="pw-ghostline pw-mono pw-dim">Coach target · adjust if you did more or less</p>
+    {/if}
+    <div class="pw-gauges" style="grid-template-columns: 1fr 1fr;">
+      <div class="pw-gauge">
+        <div class="pw-gauge__head">
+          <span class="pw-eyebrow">Sets</span>
+          <span class="pw-mono pw-data">{workoutSets}</span>
+        </div>
+        <input
+          class="pw-range"
+          type="range"
+          min="1"
+          max="20"
+          step="1"
+          bind:value={workoutSets}
+          aria-label="Sets completed"
+        />
+      </div>
+      <div class="pw-gauge">
+        <div class="pw-gauge__head">
+          <span class="pw-eyebrow">Reps / set</span>
+          <span class="pw-mono pw-data">{workoutRepsPerSet}</span>
+        </div>
+        <input
+          class="pw-range"
+          type="range"
+          min="0"
+          max="50"
+          step="1"
+          bind:value={workoutRepsPerSet}
+          aria-label="Reps per set"
+        />
+      </div>
+    </div>
+    <label class="pw-mono tw-flex tw-items-center tw-gap-2 tw-text-sm">
+      <input type="checkbox" bind:checked={workoutBilateral} class="tw-accent-teal-400" />
+      Both sides (doubles rep count for XP)
+    </label>
+    <p class="pw-mono pw-data">
+      Total reps for log: <span class="pw-green">{totalWorkoutReps}</span>
+    </p>
+  </div>
+{/snippet}

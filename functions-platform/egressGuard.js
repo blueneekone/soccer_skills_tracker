@@ -34,6 +34,7 @@
  *     *.firebaseio.com          — Firebase Realtime Database
  *     api.stripe.com            — Payment processing (no ad data)
  *     *.sendgrid.net            — Transactional email delivery
+ *     api.twilio.com            — Emergency SMS (Epic 4.16a omnichannel)
  *     api.checkr.com            — Background check provider
  *     api.open-meteo.com        — Weather (no user data)
  *     api.weather.gov           — Weather (no user data)
@@ -80,6 +81,7 @@ const EGRESS_WHITELIST = Object.freeze([
   'firebase.google.com',
   'api.stripe.com',
   'sendgrid.net',            // covers *.sendgrid.net
+  'api.twilio.com',          // Epic 4.16a — emergency SMS only
   'api.checkr.com',
   'api.open-meteo.com',
   'api.weather.gov',

@@ -14,6 +14,7 @@ import {
 import {
 	repairIntentPrescription,
 	repairDrillEntry,
+	resolveCoachIntentDisplayCadence,
 	type IntentPrescription,
 	type PrescriptionDrillEntry,
 } from '$lib/types/intent.js';
@@ -27,7 +28,7 @@ import { readRlPolicyCache } from './rlPolicyCache.js';
 
 export type WorkoutFocus = 'technical' | 'physical' | 'tactical' | 'recovery';
 
-export type MissionHandoffSource = 'coach_intent' | 'coach_homework';
+export type MissionHandoffSource = 'coach_intent' | 'coach_homework' | 'adaptive_homework';
 
 /** RL / heuristic hints from getAdaptiveWorkoutPolicy — duration/RPE only on Train. */
 export type MissionHandoffPolicyHints = {
@@ -287,9 +288,12 @@ export function stashMissionHandoff(handoff: MissionHandoff): void {
 	if (handoff.source === 'coach_intent') {
 		sessionStorage.setItem(LEGACY_MISSION_ID_KEY, handoff.missionId);
 		sessionStorage.removeItem(LEGACY_ASSIGNMENT_ID_KEY);
-	} else {
+	} else if (handoff.source === 'coach_homework') {
 		sessionStorage.setItem(LEGACY_ASSIGNMENT_ID_KEY, handoff.missionId);
 		sessionStorage.removeItem(LEGACY_MISSION_ID_KEY);
+	} else {
+		sessionStorage.removeItem(LEGACY_MISSION_ID_KEY);
+		sessionStorage.removeItem(LEGACY_ASSIGNMENT_ID_KEY);
 	}
 }
 
@@ -302,7 +306,10 @@ export function readMissionHandoff(): MissionHandoff | null {
 			if (typeof parsed.missionId === 'string' && parsed.missionId.trim()) {
 				return {
 					missionId: parsed.missionId.trim(),
-					source: parsed.source === 'coach_homework' ? 'coach_homework' : 'coach_intent',
+					source:
+						parsed.source === 'coach_homework' ? 'coach_homework'
+						: parsed.source === 'adaptive_homework' ? 'adaptive_homework'
+						: 'coach_intent',
 					targetAttributeId:
 						typeof parsed.targetAttributeId === 'string' ?
 							parsed.targetAttributeId
@@ -366,6 +373,18 @@ export function clearMissionHandoff(): void {
 	sessionStorage.removeItem(LEGACY_ASSIGNMENT_ID_KEY);
 }
 
+export function resolveMissionHandoffDisplayCadence(
+	handoff: MissionHandoff | null | undefined,
+	requiredXp?: number | null,
+): { sessionsPerWindow: number; windowDays: number } | undefined {
+	if (handoff?.source === 'coach_intent') {
+		const xp =
+			requiredXp != null && requiredXp > 0 ? requiredXp : (handoff.requiredXp ?? 0);
+		return resolveCoachIntentDisplayCadence(xp, handoff.prescription);
+	}
+	return handoff?.prescription?.cadence ?? handoff?.cadence;
+}
+
 export function buildCoachIntentHandoff(input: {
 	missionId: string;
 	targetAttributeId: string;
@@ -401,7 +420,7 @@ export function buildCoachIntentHandoff(input: {
 		input.missionId;
 	const videoUrl = rx?.videoUrl ?? undefined;
 	const cues = rx?.cues ?? undefined;
-	const cadence = rx?.cadence ?? undefined;
+	const cadence = resolveCoachIntentDisplayCadence(input.requiredXp ?? 0, rx);
 	// B3: forward repaired drills[] from prescription to handoff.
 	const drills =
 		Array.isArray(rx?.drills) && rx.drills.length > 0 ? rx.drills : undefined;
@@ -427,7 +446,7 @@ export function buildCoachIntentHandoff(input: {
 	};
 }
 
-/** Build + stash coach intent handoff from HQ surfaces (ActiveBounties, AdaptiveHomework). */
+/** Build + stash coach intent handoff from HQ mission rail (ActiveBounties). */
 export function stashCoachIntentHandoffForAssignment(input: {
 	missionId: string;
 	targetAttributeId: string;
@@ -455,6 +474,50 @@ export function stashCoachIntentHandoffForAssignment(input: {
 		...handoff,
 		...(input.armExplicit === true ? { armExplicit: true } : {}),
 	};
+	stashMissionHandoff(payload);
+	return payload;
+}
+
+/** RL / heuristic adaptive homework — never binds to team_assignments or coach cadence. */
+export function buildAdaptiveHomeworkHandoff(input: {
+	targetAttributeId: string;
+	drill?: Pick<SuggestedDrill, 'id' | 'title'> | null;
+	policyHints?: MissionHandoffPolicyHints | null;
+}): MissionHandoff {
+	const targetAttributeId = input.targetAttributeId.trim();
+	const focusArea = attributeIdToWorkoutFocus(targetAttributeId);
+	const policyHints = input.policyHints ?? undefined;
+	const durationMinutes =
+		policyHints?.recommendedDurationMinutes != null && policyHints.recommendedDurationMinutes > 0
+			? Math.max(1, Math.floor(policyHints.recommendedDurationMinutes))
+			: undefined;
+	const targetRpe =
+		policyHints?.recommendedTargetRpe != null && policyHints.recommendedTargetRpe > 0
+			? Math.max(1, Math.min(10, Math.floor(policyHints.recommendedTargetRpe)))
+			: undefined;
+	const drillId = input.drill?.id ?? `adaptive-${targetAttributeId}`;
+	const drillTitle = input.drill?.title;
+	return {
+		missionId: `adaptive-homework-${targetAttributeId}`,
+		source: 'adaptive_homework',
+		targetAttributeId,
+		drillId,
+		drillTitle,
+		durationMinutes,
+		targetRpe,
+		focusArea,
+		policyHints,
+	};
+}
+
+/** Stash adaptive HQ suggestion for explicit Train arm (no coach intentId / cadence). */
+export function stashAdaptiveHomeworkHandoff(input: {
+	targetAttributeId: string;
+	drill?: Pick<SuggestedDrill, 'id' | 'title'> | null;
+	policyHints?: MissionHandoffPolicyHints | null;
+}): MissionHandoff {
+	const handoff = buildAdaptiveHomeworkHandoff(input);
+	const payload: MissionHandoff = { ...handoff, armExplicit: true };
 	stashMissionHandoff(payload);
 	return payload;
 }

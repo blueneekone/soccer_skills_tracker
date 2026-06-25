@@ -500,9 +500,7 @@
 				{/snippet}
 		</OperativeHub>
 
-		<section class="bento-span-12" aria-label="Adaptive homework">
-			<AdaptiveHomework />
-		</section>
+		<AdaptiveHomework />
 
 		<OperativeQuickOps />
 

@@ -6,9 +6,9 @@
 
 	import { browser } from '$app/environment';
 	import { collection, onSnapshot, orderBy, query, where } from 'firebase/firestore';
-	import { getFunctions, httpsCallable } from 'firebase/functions';
+	import { httpsCallable } from 'firebase/functions';
 	import { ref as storageRef, getDownloadURL } from 'firebase/storage';
-	import { db, storage } from '$lib/firebase.js';
+	import { db, functions, storage } from '$lib/firebase.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
 
 	interface Props {
@@ -97,7 +97,7 @@
 		itemErrors = { ...itemErrors, [verificationId]: '' };
 
 		try {
-			const fn = httpsCallable(getFunctions(undefined, 'us-east1'), 'parentReviewCompletionProof');
+			const fn = httpsCallable(functions, 'parentReviewCompletionProof');
 			await fn({ verificationId, decision });
 			items = items.filter((i) => i.id !== verificationId);
 		} catch (err) {

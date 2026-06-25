@@ -1,7 +1,7 @@
 import {
 	formatAttributeLabel,
 	loadQuestProgress,
-	resolveQuestLifecycle,
+	resolveCoachIntentLifecycle,
 	type QuestProgressStore,
 } from '$lib/player/dashboard/activeBounties.js';
 import {
@@ -16,14 +16,19 @@ export type TrainMissionStripItem = {
 	source: 'coach_intent';
 };
 
-/** Accepted coach intents on file (lifecycle complete) that are still active assignments. */
+/** Active coach intents on roster (lifecycle complete) — no session Accept required. */
 export function listTrainMissionStripItems(
 	incomingMissions: Array<Record<string, unknown> & { id: string }>,
 	progress: QuestProgressStore = loadQuestProgress(),
+	playerUid = '',
 ): TrainMissionStripItem[] {
 	const items: TrainMissionStripItem[] = [];
 	for (const row of incomingMissions) {
-		const lifecycle = resolveQuestLifecycle(row.id, progress);
+		const fulfilledBy = Array.isArray(row.fulfilledByUids) ? row.fulfilledByUids : [];
+		const playerFulfilled = Boolean(playerUid && fulfilledBy.includes(playerUid));
+		const lifecycle = resolveCoachIntentLifecycle(row.id, progress, {
+			readyToClaim: playerFulfilled,
+		});
 		if (lifecycle !== 'complete') continue;
 		const attr =
 			typeof row.targetAttributeId === 'string' ? row.targetAttributeId.trim() : '';

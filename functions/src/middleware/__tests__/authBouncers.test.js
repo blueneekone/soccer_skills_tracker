@@ -74,6 +74,19 @@ console.log('\nauthBouncers — assertParentAsync household resolution\n');
     assert.strictEqual(actor.householdId, 'hh-firestore');
   });
 
+  await test('resolves householdId from Firestore when JWT claim is missing', async () => {
+    const actor = await assertParentAsync({
+      auth: {
+        uid: 'uid-parent3',
+        token: {
+          role: 'parent',
+          email: 'parent@example.com',
+        },
+      },
+    });
+    assert.strictEqual(actor.householdId, 'hh-firestore');
+  });
+
   await test('falls back to JWT householdId when Firestore doc is missing', async () => {
     const actor = await assertParentAsync({
       auth: {

@@ -25,13 +25,20 @@
 		type MessagesTabChannel,
 	} from '$lib/coach/comms/messagesTabChannels.js';
 
-	let { teamId = '', players: _players = [], clubId = '' } = $props();
+	let { teamId = '', players: _players = [], clubId = '', initialChannel = '' } = $props();
 
 	let newChannelOpen = $state(false);
 	let channelCreatedMsg = $state('');
 
 	/** Default landing channel; team defaults live under teams/{teamId}/channels/{id}/messages */
 	let activeChannel = $state('game-day');
+
+	$effect(() => {
+		const seed = typeof initialChannel === 'string' ? initialChannel.trim() : '';
+		if (seed && isDefaultTeamChannelId(seed)) {
+			activeChannel = seed;
+		}
+	});
 
 	/** Live custom channels from clubs/{clubId}/channels filtered by teamId. */
 	let customChannels = $state<MessagesTabChannel[]>([]);

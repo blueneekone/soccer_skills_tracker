@@ -90,6 +90,75 @@ async function parentHasCommsConsent(firestore, parentEmail, playerEmail) {
 }
 
 /**
+ * VPC consent_records gate for sponsor/partner digests (Epic 4.16c).
+ * Requires both consentItems.sponsor and consentItems.comms.
+ * @param {FirebaseFirestore.Firestore} firestore
+ * @param {string} parentEmail
+ * @param {string} playerEmail
+ * @return {Promise<boolean>}
+ */
+async function parentHasSponsorConsent(firestore, parentEmail, playerEmail) {
+  const parent = normEmail(parentEmail);
+  const player = normEmail(playerEmail);
+  if (!parent || !player) return false;
+
+  const snap = await consentRecordsCol(firestore)
+      .where('parentEmail', '==', parent)
+      .where('subjectEmail', '==', player)
+      .orderBy('grantedAt', 'desc')
+      .limit(1)
+      .get();
+
+  if (snap.empty) return false;
+  const items = snap.docs[0].data().consentItems;
+  return items && items.sponsor === true && items.comms === true;
+}
+
+/**
+ * @param {FirebaseFirestore.Firestore} firestore
+ * @param {readonly string[]} parentEmails
+ * @param {string} playerEmail
+ * @return {Promise<string[]>}
+ */
+async function filterParentsWithSponsorConsent(firestore, parentEmails, playerEmail) {
+  const out = [];
+  for (const raw of parentEmails) {
+    const parent = normEmail(String(raw));
+    if (!parent) continue;
+    if (await parentHasSponsorConsent(firestore, parent, playerEmail)) {
+      out.push(parent);
+    }
+  }
+  return [...new Set(out)];
+}
+
+/**
+ * Resolve sponsor digest skip reason for a parent/player pair.
+ * @param {FirebaseFirestore.Firestore} firestore
+ * @param {string} parentEmail
+ * @param {string} playerEmail
+ * @return {Promise<'consent_sponsor_declined'|'consent_comms_declined'|'no_household'>}
+ */
+async function sponsorConsentSkipReason(firestore, parentEmail, playerEmail) {
+  const parent = normEmail(parentEmail);
+  const player = normEmail(playerEmail);
+  if (!parent || !player) return 'no_household';
+
+  const snap = await consentRecordsCol(firestore)
+      .where('parentEmail', '==', parent)
+      .where('subjectEmail', '==', player)
+      .orderBy('grantedAt', 'desc')
+      .limit(1)
+      .get();
+
+  if (snap.empty) return 'consent_comms_declined';
+  const items = snap.docs[0].data().consentItems || {};
+  if (items.comms !== true) return 'consent_comms_declined';
+  if (items.sponsor !== true) return 'consent_sponsor_declined';
+  return 'consent_sponsor_declined';
+}
+
+/**
  * @param {FirebaseFirestore.Firestore} firestore
  * @param {readonly string[]} parentEmails
  * @param {string} playerEmail
@@ -107,6 +176,90 @@ async function filterParentsWithCommsConsent(firestore, parentEmails, playerEmai
   return [...new Set(out)];
 }
 
+/**
+ * Guardian emails for a roster player (household + direct parentEmail).
+ * @param {FirebaseFirestore.Firestore} firestore
+ * @param {Record<string, unknown>} prof
+ * @return {Promise<string[]>}
+ */
+async function resolvePlayerGuardianEmails(firestore, prof) {
+  /** @type {string[]} */
+  const out = [];
+  const householdId = typeof prof.householdId === 'string' ? prof.householdId.trim() : '';
+  if (householdId) {
+    const hSnap = await firestore.collection('households').doc(householdId).get();
+    if (hSnap.exists) {
+      const pe = hSnap.data().parentEmails || [];
+      pe.forEach((p) => {
+        const n = normEmail(String(p));
+        if (n) out.push(n);
+      });
+    }
+  }
+  const directParent = normEmail(String(prof.parentEmail || ''));
+  if (directParent) out.push(directParent);
+  return [...new Set(out)];
+}
+
+/**
+ * Parent-first announcement audience (COMMS_CHANNEL_CANON §6).
+ * consentComms: skip with reason — no transactional bypass for announcements.
+ *
+ * @param {FirebaseFirestore.Firestore} firestore
+ * @param {readonly string[]} playerEmails
+ * @param {ReadonlyMap<string, {isMinor: boolean}>} playerMeta
+ * @param {ReadonlyMap<string, readonly string[]>} parentToPlayers
+ * @return {Promise<{
+ *   parentRecipientEmails: string[],
+ *   ccParentEmails: string[],
+ *   parentDelivered: Array<{email: string, channels: string[]}>,
+ *   parentSkipped: Array<{email: string, reason: string}>,
+ *   parentDeliveredEmails: string[],
+ * }>}
+ */
+async function buildTeamBroadcastAudience(
+    firestore,
+    playerEmails,
+    playerMeta,
+    parentToPlayers,
+    consentFn = parentHasCommsConsent,
+) {
+  const parentRecipientEmails = [...parentToPlayers.keys()].sort();
+  /** @type {Array<{email: string, channels: string[]}>} */
+  const parentDelivered = [];
+  /** @type {Array<{email: string, reason: string}>} */
+  const parentSkipped = [];
+  const ccParentEmailSet = new Set();
+
+  for (const parentEmail of parentRecipientEmails) {
+    const linkedPlayers = parentToPlayers.get(parentEmail) || [];
+    let consented = false;
+    for (const playerEmail of linkedPlayers) {
+      if (await consentFn(firestore, parentEmail, playerEmail)) {
+        consented = true;
+        break;
+      }
+    }
+    if (consented) {
+      parentDelivered.push({email: parentEmail, channels: ['in_app']});
+      for (const playerEmail of linkedPlayers) {
+        const meta = playerMeta.get(playerEmail);
+        if (meta?.isMinor) ccParentEmailSet.add(parentEmail);
+      }
+    } else {
+      parentSkipped.push({email: parentEmail, reason: 'consent_comms_declined'});
+    }
+  }
+
+  return {
+    parentRecipientEmails,
+    ccParentEmails: [...ccParentEmailSet],
+    parentDelivered,
+    parentSkipped,
+    parentDeliveredEmails: parentDelivered.map((p) => p.email),
+  };
+}
+
 module.exports = {
   ADULT_ATHLETE_AGE,
   STAFF_ROLES,
@@ -115,4 +268,9 @@ module.exports = {
   isStaffRole,
   parentHasCommsConsent,
   filterParentsWithCommsConsent,
+  parentHasSponsorConsent,
+  filterParentsWithSponsorConsent,
+  sponsorConsentSkipReason,
+  resolvePlayerGuardianEmails,
+  buildTeamBroadcastAudience,
 };

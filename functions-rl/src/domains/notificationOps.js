@@ -14,6 +14,10 @@ const {
   filterParentsWithCommsConsent,
 } = require('./commsPolicy');
 const {postChannelSystemMessage} = require('./commsChannelOps');
+const {
+  OMNICHANNEL_SECRETS,
+  processTeamBroadcastOmnichannel,
+} = require('./omnichannelOps');
 
 const REGION = 'us-east1';
 
@@ -467,8 +471,9 @@ exports.onTrialScoreAdded = onDocumentCreated(
  * @param {string[]} uids
  * @param {{ title: string, body: string }} notification
  * @param {Record<string, string>} data
+ * @param {{ emergency?: boolean }} [options]
  */
-async function sendFcmToUids(uids, notification, data) {
+async function sendFcmToUids(uids, notification, data, options = {}) {
   if (uids.length === 0) return;
   let tokens = [];
   try {
@@ -479,10 +484,36 @@ async function sendFcmToUids(uids, notification, data) {
   }
   if (tokens.length === 0) return;
   const chunkSize = 500;
+  const emergency = options.emergency === true;
   for (let i = 0; i < tokens.length; i += chunkSize) {
     const chunk = tokens.slice(i, i + chunkSize);
     try {
-      await admin.messaging().sendMulticast({tokens: chunk, notification, data});
+      /** @type {import('firebase-admin/messaging').MulticastMessage} */
+      const message = {
+        tokens: chunk,
+        notification,
+        data: {
+          ...data,
+          ...(emergency ? {priority: 'emergency'} : {}),
+        },
+      };
+      if (emergency) {
+        // Android: high-priority data + notification channel — native app must register
+        // `emergency_alerts` channel (Capacitor) or heads-up may not appear on Oreo+.
+        message.android = {
+          priority: 'high',
+          notification: {
+            channelId: 'emergency_alerts',
+            priority: 'high',
+            defaultSound: true,
+          },
+        };
+        message.apns = {
+          headers: {'apns-priority': '10'},
+          payload: {aps: {sound: 'default'}},
+        };
+      }
+      await admin.messaging().sendEachForMulticast(message);
     } catch (e) {
       logger.error('sendFcmToUids: sendMulticast failed', {err: e});
     }
@@ -657,6 +688,7 @@ exports.onTeamBroadcastCreated = onDocumentCreated(
     {
       document: 'team_broadcasts/{msgId}',
       region: REGION,
+      secrets: OMNICHANNEL_SECRETS,
     },
     async (event) => {
       const msgId = event.params.msgId;
@@ -684,6 +716,11 @@ exports.onTeamBroadcastCreated = onDocumentCreated(
             : typeof data.body === 'string'
               ? data.body.slice(0, 140)
               : '';
+      const isEmergency =
+          data.priority === 'emergency' ||
+          data.source === 'emergency' ||
+          data.broadcastSource === 'emergency';
+      const emergencyTitle = isEmergency ? `🚨 ${pushTitle}` : pushTitle;
       const rawCcParents = Array.isArray(data.parentDeliveredEmails)
         ? data.parentDeliveredEmails
         : Array.isArray(data.ccParentEmails)
@@ -751,11 +788,16 @@ exports.onTeamBroadcastCreated = onDocumentCreated(
       // ── 4. Consented parent emails → Auth UIDs ────────────────────────────
       /** @type {string[]} */
       const parentUids = [];
+      /** @type {Map<string, string>} */
+      const parentUidByEmail = new Map();
       await Promise.all(
           consentedParentEmails.map(async (em) => {
             try {
               const ur = await admin.auth().getUserByEmail(em);
-              if (ur && ur.uid) parentUids.push(ur.uid);
+              if (ur && ur.uid) {
+                parentUids.push(ur.uid);
+                parentUidByEmail.set(em, ur.uid);
+              }
             } catch (_) {
               /* no Auth account for this parent email */
             }
@@ -764,31 +806,52 @@ exports.onTeamBroadcastCreated = onDocumentCreated(
 
       // ── 5. Merge and push ─────────────────────────────────────────────────
       const allUids = [...new Set([...playerUids, ...parentUids])];
-      if (allUids.length === 0) {
+      let fcmAttempted = false;
+      if (allUids.length > 0) {
+        try {
+          await sendFcmToUids(
+              allUids,
+              {title: emergencyTitle, body: pushBody},
+              {
+                category: 'push_announcements',
+                kind: isEmergency ? 'emergency_broadcast' : 'team_broadcast',
+                teamId,
+                msgId,
+              },
+              {emergency: isEmergency},
+          );
+          fcmAttempted = true;
+          logger.info('onTeamBroadcastCreated: push dispatched', {
+            teamId,
+            msgId,
+            playerCount: playerUids.length,
+            parentCount: parentUids.length,
+          });
+        } catch (e) {
+          logger.error('onTeamBroadcastCreated: sendFcmToUids failed', {
+            teamId,
+            msgId,
+            err: e instanceof Error ? e.message : String(e),
+          });
+        }
+      } else {
         logger.info('onTeamBroadcastCreated: no push recipients resolved', {
           teamId,
           msgId,
         });
-        return;
       }
 
       try {
-        await sendFcmToUids(
-            allUids,
-            {title: pushTitle, body: pushBody},
-            {category: 'push_announcements'},
-        );
-        logger.info('onTeamBroadcastCreated: push dispatched', {
-          teamId,
+        await processTeamBroadcastOmnichannel({
           msgId,
-          playerCount: playerUids.length,
-          parentCount: parentUids.length,
+          broadcastData: data,
+          parentUidByEmail,
+          fcmAttempted,
         });
-      } catch (e) {
-        logger.error('onTeamBroadcastCreated: sendFcmToUids failed', {
-          teamId,
+      } catch (omniErr) {
+        logger.warn('onTeamBroadcastCreated: omnichannel fallback failed (non-fatal)', {
           msgId,
-          err: e instanceof Error ? e.message : String(e),
+          err: omniErr instanceof Error ? omniErr.message : String(omniErr),
         });
       }
     },

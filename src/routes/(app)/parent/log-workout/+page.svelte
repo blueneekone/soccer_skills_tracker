@@ -22,6 +22,12 @@
 		WORKOUT_FOCUS_AREAS,
 	} from '$lib/player/workout/focusDrillCatalog.js';
 	import type { WorkoutFocus } from '$lib/player/workout/coachMissionFlow.js';
+	import {
+		deriveHudStreak,
+		deriveHudXp,
+		deriveProfileXp,
+		loadLogWorkoutChildSnapshot,
+	} from '$lib/parent/logWorkoutChildProfile.js';
 
 	const TELEMETRY_INTEL = {
 		title: 'GUARDIAN TELEMETRY',
@@ -51,6 +57,9 @@
 	/** @type {Record<string, unknown> & { email?: string } | null} */
 	let childProfile = $state(null);
 	let childProfileLoading = $state(false);
+	let childProfileError = $state('');
+	let childStatsXp = $state(0);
+	let childStatsStreak = $state(0);
 
 	let selectedFocus = $state<WorkoutFocus>('technical');
 	let selectedDrill = $state(/** @type {string | null} */ (null));
@@ -77,14 +86,16 @@
 		if (rpeGaugeEl) rpeGaugeEl.style.setProperty('--gauge', `${rpePct(intensity)}%`);
 	});
 
-	const childXp = $derived(
-		Math.max(0, Math.floor(Number(childProfile?.totalXp ?? childProfile?.xp) || 0)),
-	);
+	const profileXp = $derived(deriveProfileXp(childProfile));
+	const childXp = $derived(deriveHudXp(profileXp, childStatsXp));
 	const levelProgress = $derived(getLevelProgressFromTotalXp(childXp));
 	const level = $derived(levelProgress.level);
 	const currentXp = $derived(levelProgress.xpIntoLevel);
 	const nextLevelXp = $derived(levelProgress.xpToNext);
-	const streak = $derived(Math.max(0, Math.floor(Number(childProfile?.currentStreak) || 0)));
+	const profileStreak = $derived(
+		Math.max(0, Math.floor(Number(childProfile?.currentStreak) || 0)),
+	);
+	const streak = $derived(deriveHudStreak(profileStreak, childStatsStreak));
 
 	const xpLoadPct = $derived(
 		nextLevelXp > 0 ? Math.min(100, (currentXp / nextLevelXp) * 100) : 100,
@@ -200,28 +211,50 @@
 		};
 	});
 
+	/** @param {import('$lib/parent/logWorkoutChildProfile.js').LogWorkoutChildSnapshot} snap */
+	function applyChildSnapshot(snap) {
+		childProfile = snap.profile;
+		childStatsXp = snap.statsXp;
+		childStatsStreak = snap.statsStreak;
+		childProfileError = snap.error;
+	}
+
+	async function refreshSelectedChildSnapshot(emailKey = selectedChildEmail) {
+		const em = emailKey.trim().toLowerCase();
+		if (!em) {
+			applyChildSnapshot({ profile: null, statsXp: 0, statsStreak: 0, error: '' });
+			return;
+		}
+		const snap = await loadLogWorkoutChildSnapshot(db, em);
+		applyChildSnapshot(snap);
+	}
+
 	$effect(() => {
 		if (!browser) return;
 		const em = selectedChildEmail.trim().toLowerCase();
 		if (!em) {
-			childProfile = null;
+			applyChildSnapshot({ profile: null, statsXp: 0, statsStreak: 0, error: '' });
 			childProfileLoading = false;
 			return;
 		}
 		let cancelled = false;
 		childProfileLoading = true;
+		childProfileError = '';
 		(async () => {
 			try {
-				const snap = await getDoc(doc(db, 'users', em));
+				const snap = await loadLogWorkoutChildSnapshot(db, em);
 				if (cancelled) return;
-				if (!snap.exists()) {
-					childProfile = null;
-					return;
-				}
-				childProfile = { email: em, ...snap.data() };
+				applyChildSnapshot(snap);
 			} catch (e) {
 				console.error('[parent log-workout] child profile', e);
-				if (!cancelled) childProfile = null;
+				if (!cancelled) {
+					applyChildSnapshot({
+						profile: null,
+						statsXp: 0,
+						statsStreak: 0,
+						error: e instanceof Error ? e.message : 'Could not load operative profile.',
+					});
+				}
 			} finally {
 				if (!cancelled) childProfileLoading = false;
 			}
@@ -322,6 +355,8 @@
 					console.error('[Parent OS] users/', emailKey, '/workouts', we);
 				}
 			}
+
+			await refreshSelectedChildSnapshot(emailKey);
 
 			await Swal.fire({
 				text: `Workout Logged. ${playerName} awarded ${earned} XP.`,
@@ -432,6 +467,10 @@
 
 			{#if childProfileLoading}
 				<p class="pw-mono tw-mb-3 tw-text-xs tw-text-cyan-500/80">Syncing operative profile…</p>
+			{:else if childProfileError}
+				<p class="pw-mono tw-mb-3 tw-text-xs tw-text-amber-300/90" role="alert">
+					{childProfileError}
+				</p>
 			{/if}
 
 			<div class="pw-section">

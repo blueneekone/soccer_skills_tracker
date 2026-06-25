@@ -34,6 +34,7 @@ const {
   assertCanSecureAddPlayer,
   assertClubSubscriptionWritable,
   assertParent,
+  assertParentAsync,
   assertCoachMessageSender,
   assertActorCanAccessTeam,
   assertPlayer,
@@ -683,7 +684,7 @@ exports.logTrainingSession = onCall(LAUNCH_CORE_CALLABLE_OPTS, async (request) =
   let verificationMethod;
 
   if (role === 'parent') {
-    const actor = assertParent(request);
+    const actor = await assertParentAsync(request);
     playerEmail = normEmail(data.playerEmail);
     if (!playerEmail) {
       throw new HttpsError(
@@ -839,8 +840,8 @@ exports.logTrainingSession = onCall(LAUNCH_CORE_CALLABLE_OPTS, async (request) =
         }
         const hasToday = existingSnap.docs.some((d) => {
           const row = d.data();
-          if (row.intentId && row.intentId !== intentIdRaw) return false;
-          return true;
+          const rowIntent = typeof row.intentId === 'string' ? row.intentId.trim() : '';
+          return rowIntent === intentIdRaw;
         });
         if (hasToday) {
           throw new HttpsError(
@@ -2694,7 +2695,7 @@ exports.submitCompletionProof = onCall(LAUNCH_CORE_CALLABLE_OPTS, async (request
  */
 exports.parentReviewCompletionProof = onCall(LAUNCH_CORE_CALLABLE_OPTS, async (request) => {
   // 1. Require authenticated parent role (throws unauthenticated / permission-denied if not).
-  const parent = assertParent(request);
+  const parent = await assertParentAsync(request);
 
   // 2. Validate inputs.
   const data = request.data || {};
@@ -2784,13 +2785,15 @@ exports.onRepCreatedApplyGamificationXp = onDocumentCreated(
 // ── Epic 8: Intent lifecycle trigger ─────────────────────────────────────────
 
 /**
- * Count attribute-scoped sessions inside a rolling cadence window.
+ * Count intent-scoped sessions inside a rolling cadence window.
+ * When intentId is set, only drill_completions tagged with that intentId count.
  * @param {string} uid
  * @param {string} attributeId
+ * @param {string|undefined} intentId
  * @param {number} windowDays
  * @returns {Promise<number>}
  */
-async function countCadenceSessionsForAttribute(uid, attributeId, windowDays) {
+async function countCadenceSessionsForIntent(uid, attributeId, intentId, windowDays) {
   const windowStart = admin.firestore.Timestamp.fromMillis(
       Date.now() - windowDays * 86_400_000,
   );
@@ -2799,10 +2802,15 @@ async function countCadenceSessionsForAttribute(uid, attributeId, windowDays) {
       .where('playerUid', '==', uid)
       .where('loggedAt', '>=', windowStart)
       .get();
+  const scopeIntent = typeof intentId === 'string' ? intentId.trim() : '';
   const distinctDays = new Set();
   for (const d of snap.docs) {
     const row = d.data();
     if (row.attributeId !== attributeId) continue;
+    if (scopeIntent) {
+      const rowIntent = typeof row.intentId === 'string' ? row.intentId.trim() : '';
+      if (rowIntent !== scopeIntent) continue;
+    }
     const loggedAt = row.loggedAt;
     const ms =
       loggedAt && typeof loggedAt.toMillis === 'function' ?
@@ -2946,11 +2954,13 @@ async function tryFulfillActiveIntentsForPlayer(input) {
     const earnedXp = computeIntentEarnedXp(playerXp, baselineXp);
     if (!intentXpFulfilled(earnedXp, requiredXp)) continue;
 
-    const cadence = cadenceFromIntentPrescription(intent.prescription);
+    const cadence = cadenceFromIntentPrescription(intent.prescription) ||
+      (requiredXp >= HIGH_XP_CADENCE_THRESHOLD ? {...DEFAULT_HIGH_XP_CADENCE} : undefined);
     if (cadence) {
-      const sessionCount = await countCadenceSessionsForAttribute(
+      const sessionCount = await countCadenceSessionsForIntent(
           uid,
           attrId,
+          intentDoc.id,
           cadence.windowDays,
       );
       if (sessionCount < cadence.sessionsPerWindow) continue;

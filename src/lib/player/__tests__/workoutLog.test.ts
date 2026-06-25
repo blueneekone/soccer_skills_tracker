@@ -71,13 +71,13 @@ describe('workoutLog', () => {
 		).toBe('Transmit failed — try again or ask staff.');
 	});
 
-	it('workoutLogErrorMessage passes through failed-precondition server messages', () => {
+	it('workoutLogErrorMessage maps cadence limit failed-precondition to diegetic copy', () => {
 		expect(
 			workoutLogErrorMessage({
 				code: 'functions/failed-precondition',
 				message: 'Cadence limit: one session per day toward this assignment.',
 			}),
-		).toBe('Cadence limit: one session per day toward this assignment.');
+		).toBe('Next session tomorrow — one credited session per UTC day.');
 	});
 
 	it('executePlayerWorkoutLog passes subjectiveRpe 1–10 alongside intensity bucket', async () => {

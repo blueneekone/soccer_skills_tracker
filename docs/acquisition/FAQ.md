@@ -1,6 +1,6 @@
 # SSTracker — Acquisition FAQ
 
-**Last updated:** 2026-06-13
+**Last updated:** 2026-06-25
 
 ---
 
@@ -8,7 +8,15 @@
 
 ### What is SSTracker?
 
-A multi-tenant youth sports platform combining **club operations** (RSVP, registration, tryouts, eligibility) with a **player development OS** (Train, XP, coach intents, RL homework) and **compliance-first** parent/coach comms.
+A multi-tenant **youth sports operating system** for any team sport — combining **club operations** (RSVP, registration, tryouts, eligibility) with a **player development HUD** (Train, XP, coach intents, cadence, RL homework) and **compliance-first** parent/coach comms. Sport semantics configure via `sports_configs/{sportId}`.
+
+### Is this soccer-only?
+
+**No.** Architecture is **sport-configurable** — attribute trees, drill taxonomy, and copy skin per `sportId` ([`SPORTS_CONFIGS.md`](../SPORTS_CONFIGS.md)). The QA tenant (`qa_launch_2026`) is **soccer-configured** for manual testing; that is the documented gold path, not proof of a soccer-only product. Multiple sports are **not** claimed fully content-complete at launch — claim **platform readiness** + soccer QA path.
+
+### Who should acquire?
+
+**Multi-sport platforms** (TeamSnap, SportsEngine, LeagueApps, GameChanger, Stack Sports, Hudl adjacency) missing the **daily development engagement loop** and **COPPA-native household comms**. Vertical soccer buyers (GotSport adjacency) fit when they want tryout OS + development layer, not federation API as the sole day-one requirement.
 
 ### Who are the competitors?
 

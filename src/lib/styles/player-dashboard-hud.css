@@ -2164,8 +2164,18 @@
 }
 
 .player-hud-root .oqo-deck.pd-os-deck,
-.player-hud-root .opp-preview.pd-os-deck {
+.player-hud-root .opp-preview.pd-os-deck,
+.player-hud-root .adaptive-homework.pd-os-deck {
 	padding: clamp(1rem, 2.1vw, 1.4rem);
+}
+
+.player-hud-root .adaptive-homework__body.pd-os-deck__well {
+	margin-top: 0;
+}
+
+.player-hud-root .adaptive-homework__status-msg {
+	overflow-wrap: anywhere;
+	word-break: break-word;
 }
 
 .player-hud-root .pd-hq-section-head.oqo-deck__head,

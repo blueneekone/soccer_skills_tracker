@@ -193,6 +193,15 @@ async function finalizeWorkoutMission(input: {
 		return { missionCloseNote, clearMission, levelUpFrom, levelUpTo };
 	}
 
+	if (input.missionSource === 'adaptive_homework') {
+		clearMission = true;
+		if (typeof input.payloadLevel === 'number' && input.payloadLevel > input.oldLevel) {
+			levelUpFrom = input.oldLevel;
+			levelUpTo = input.payloadLevel;
+		}
+		return { missionCloseNote, clearMission, levelUpFrom, levelUpTo };
+	}
+
 	try {
 		await input.dopamineOnCommit(
 			input.commitWorkoutCompletion({
@@ -292,7 +301,9 @@ export async function executePlayerWorkoutLog(deps: {
 		subjectiveRpe: Math.max(1, Math.min(10, Math.round(deps.intensityStep))),
 		...(assignmentId ? { assignmentId } : {}),
 		...(deps.sessionNotes?.trim() ? { sessionNotes: deps.sessionNotes.trim() } : {}),
-		...(deps.targetAttributeId?.trim() ? { attributeId: deps.targetAttributeId.trim() } : {}),
+		...(deps.targetAttributeId?.trim() ?
+			{ attributeId: deps.targetAttributeId.trim().toLowerCase().replace(/[^a-z0-9_]/g, '').slice(0, 60) }
+		:	{}),
 		...(deps.activeMissionId && deps.missionSource === 'coach_intent' ?
 			{ intentId: deps.activeMissionId }
 		:	{}),
@@ -387,7 +398,12 @@ export function workoutLogErrorMessage(err: unknown): string {
 	if (code === 'functions/internal' || (isBareInternal && code.startsWith('functions/'))) {
 		return 'Transmit failed — try again or ask staff.';
 	}
-	if (code.startsWith('functions/') && msg) return msg;
+	if (code.startsWith('functions/') && msg) {
+		if (/cadence limit/i.test(msg)) {
+			return 'Next session tomorrow — one credited session per UTC day.';
+		}
+		return msg;
+	}
 	if (msg) return msg;
 	return 'Could not log workout.';
 }

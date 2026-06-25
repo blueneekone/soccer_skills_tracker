@@ -202,7 +202,7 @@ describe('B2 — source-scan: trainingOps.js normalizePrescription enforces cade
 
 describe('B2 — intent lifecycle cadence fulfillment gate (source-scan)', () => {
   it('gates intent fulfillment on cadence session count when prescription has cadence', () => {
-    assert.match(SRC, /countCadenceSessionsForAttribute/);
+    assert.match(SRC, /countCadenceSessionsForIntent/);
     assert.match(SRC, /sessionCount < cadence\.sessionsPerWindow/);
   });
 
@@ -248,9 +248,15 @@ describe('B2 — intent lifecycle cadence fulfillment gate (source-scan)', () =>
     assert.match(SRC, /applyHighXpCadenceDefault: injecting 5×\/week cadence/);
   });
 
-  it('countCadenceSessionsForAttribute counts distinct UTC days', () => {
+  it('countCadenceSessionsForIntent counts distinct UTC days per intentId', () => {
+    assert.match(SRC, /function countCadenceSessionsForIntent/);
+    assert.match(SRC, /rowIntent !== scopeIntent/);
     assert.match(SRC, /distinctDays\.add\(new Date\(ms\)\.toISOString\(\)\.slice\(0, 10\)\)/);
     assert.match(SRC, /return distinctDays\.size/);
+  });
+
+  it('logTrainingSession daily cap matches intentId strictly on drill_completions', () => {
+    assert.match(SRC, /rowIntent === intentIdRaw/);
   });
 });
 
