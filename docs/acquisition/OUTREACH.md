@@ -1,7 +1,7 @@
 # SSTracker — Acquirer Outreach
 
 **Purpose:** Templates and targeting notes for strategic outreach. Customize before sending.  
-**Last updated:** 2026-06-13
+**Last updated:** 2026-06-25
 
 ---
 
@@ -9,32 +9,40 @@
 
 | Tier | Examples | Fit rationale |
 |------|----------|---------------|
-| **A — Strategic platform** | NBC Sports Next (SportsEngine), TeamSnap, LeagueApps | Add development OS + COPPA depth to existing parent base |
+| **A — Strategic platform** | NBC Sports Next (SportsEngine), TeamSnap, LeagueApps, **GameChanger** (Dick's Sporting Goods), **Stack Sports**, **Hudl** (adjacency) | Add development OS + COPPA depth to existing parent base; multi-sport roll-up |
 | **B — Vertical soccer** | GotSport, US Club Soccer tech partners | Tryout OS + household graph; federation export on roadmap |
 | **C — Youth sports roll-up** | Private equity portfolio clubs / multi-club orgs | Standardize compliance + player development across holdings |
 | **D — Fitness / ed-tech adjacency** | Companies expanding into youth sports compliance | VPC architecture transferable to other minor-facing products |
 
-**Not a fit:** Buyers requiring day-one club website CMS or 38-body live federation sync — see [NOTABLE_GAPS.md](./NOTABLE_GAPS.md).
+**Not a fit:** Buyers requiring day-one club website CMS or 38-body live federation sync — see [NOTABLE_GAPS.md](./NOTABLE_GAPS.md). **Also not a fit:** acquirers whose GTM is **soccer federation API only** (GotSport-style state-body sync as the sole value prop) with no interest in the multi-sport development loop.
 
 ---
 
 ## Positioning line
 
-> **SSTracker is the development OS for clubs that have outgrown schedule-and-chat — with SafeSport-native comms and COPPA depth incumbents cannot match.**
+> **The youth sports OS that closes the loop from coach intent → player training → XP/progress → parent visibility — sport-configurable, COPPA-native, with club operations included. Incumbents (TeamSnap, SportsEngine, LeagueApps) own schedule/chat/reg; SSTracker owns daily development engagement plus compliance depth.**
 
 Supporting docs: [ONE_PAGER.md](./ONE_PAGER.md) · [`COMPETITIVE_LAUNCH_ASSESSMENT.md`](../vision/COMPETITIVE_LAUNCH_ASSESSMENT.md)
 
 ---
 
+## LinkedIn / outreach positioning
+
+- **Credibility posts OK** — architecture, COPPA/VPC depth, development-loop demos, multi-sport platform readiness
+- **Private strategic conversations OK** — NDA + data room for qualified buyers
+- **Public "for sale" / auction tone discouraged** — avoid "seeking acquirer" headlines; lead with product vision and diligence availability on request
+
+---
+
 ## Cold email — strategic (short)
 
-**Subject:** Development OS + COPPA architecture — diligence materials available
+**Subject:** Multi-sport youth OS + COPPA architecture — diligence materials available
 
 Hi [Name],
 
-I'm reaching out because [Company] owns parent-facing club ops at scale, while athlete **development loops** and **COPPA-native consent** are still bolted on via spreadsheets and waiver checkboxes.
+I'm reaching out because [Company] owns parent-facing club ops at scale across team sports, while the **daily development loop** — coach intent → player training → XP → parent visibility — is still bolted on via spreadsheets and waiver checkboxes.
 
-We've built **SSTracker** — a shipped Player · Parent · Coach · Director platform on SvelteKit + Firebase with:
+We've built **SSTracker** — a **sport-configurable youth sports operating system** (Player · Parent · Coach · Director) on SvelteKit + Firebase. The same Train/XP/intent HUD works across team sports via `sports_configs`; soccer is our first configured sport and QA path. The platform ships:
 
 - Coach intent → locked Train prescriptions → XP (daily engagement incumbents lack)
 - Household-gated comms (no coach→minor unsupervised DM)
@@ -74,14 +82,16 @@ Happy to walk through the VPC golden path and coach→player intent loop in one 
 
 ## Follow-up — after NDA
 
-Send:
+Send in this order (see also [INDEX.md](./INDEX.md)):
 
-1. [INDEX.md](./INDEX.md) — diligence order
-2. [PROSPECTUS.md](./PROSPECTUS.md) — or PDF: https://sports-skill-tracker-dev.web.app/acquisition/sstracker-prospectus.pdf
-3. [DEMO_SCRIPT.md](./DEMO_SCRIPT.md) + QA tenant provision instructions
-4. [`ARCHITECTURE.md`](../ARCHITECTURE.md)
-5. [SECURITY.md](./SECURITY.md)
-6. [NOTABLE_GAPS.md](./NOTABLE_GAPS.md) — intentional non-parity
+1. **NDA** — [legal/MUTUAL_NDA_TEMPLATE.md](./legal/MUTUAL_NDA_TEMPLATE.md) (counsel-reviewed) or advisor NDA
+2. [ONE_PAGER.md](./ONE_PAGER.md) + executive brief PDF
+3. [PRODUCT_STATE.md](./PRODUCT_STATE.md) + [PERSONA_DILIGENCE.md](./PERSONA_DILIGENCE.md)
+4. [`ARCHITECTURE.md`](../ARCHITECTURE.md) + [ARCHITECTURE_DATA_FLOWS.md](./ARCHITECTURE_DATA_FLOWS.md) + [SECURITY.md](./SECURITY.md)
+5. [DEMO_SCRIPT.md](./DEMO_SCRIPT.md) + live exec cut on `qa_launch_2026`
+6. Full zip — `npm run bundle:dataroom` → `dist/sstracker-dataroom.zip`
+
+Also available: [PROSPECTUS.md](./PROSPECTUS.md) · [NOTABLE_GAPS.md](./NOTABLE_GAPS.md) · [INBOUND_PLAYBOOK.md](./INBOUND_PLAYBOOK.md)
 
 Offer: 45-min technical session + 15-min exec cut (see DEMO_SCRIPT exec section).
 

@@ -1,106 +1,141 @@
 # SSTracker — Acquisition Data Room
 
 **Product:** Sports Skill Tracker (SSTracker / Nexus Command)  
-**Stage:** Pre-commercial launch · functional OS + overnight P2 merged · owner QA pending  
+**Stage:** Pre-commercial launch · functional OS · owner Phase 5 exec-cut QA pending  
 **Live QA environment:** [https://sstracker.app](https://sstracker.app) (Firebase project `sports-skill-tracker-dev`)  
-**Last updated:** 2026-06-15 · Wave 4 competitive manifest bootstrap
+**Last updated:** 2026-06-25 · ACQ-DATAROOM-COMPLETE
 
 ---
 
-## Downloadable PDFs (hosted)
+## Before NDA (public / first touch only)
 
-| Document | URL |
-|----------|-----|
-| Executive brief | https://sports-skill-tracker-dev.web.app/acquisition/sstracker-executive-brief.pdf · https://sstracker.app/acquisition/sstracker-executive-brief.pdf |
-| Full prospectus | https://sports-skill-tracker-dev.web.app/acquisition/sstracker-prospectus.pdf · https://sstracker.app/acquisition/sstracker-prospectus.pdf |
+Share **only** these materials until a mutual NDA is executed:
 
-Regenerate: `npm run build:acquisition-pdfs` (requires Playwright Chromium)
+| Document | Format |
+|----------|--------|
+| [ONE_PAGER.md](./ONE_PAGER.md) | Markdown |
+| Executive brief PDF | https://sstracker.app/acquisition/sstracker-executive-brief.pdf |
 
----
+**Do not send:** full INDEX, repo access, architecture docs, zip bundle, or agent manifests. See [INBOUND_PLAYBOOK.md](./INBOUND_PLAYBOOK.md).
 
-## Start here
-
-| Document | Audience | Purpose |
-|----------|----------|---------|
-| [ONE_PAGER.md](./ONE_PAGER.md) | Exec / first touch | 60-second product + moat summary |
-| [PRODUCT_SURFACE_REGISTRY.md](../vision/PRODUCT_SURFACE_REGISTRY.md) | Owner / eng / agents | **Gospel truth** — routes, nav, demo + QA tiers |
-| [PROSPECTUS.md](./PROSPECTUS.md) | Acquirer diligence | Full product, market, and technical narrative |
-| [DEMO_SCRIPT.md](./DEMO_SCRIPT.md) | Sales / QA | Persona walkthrough on dev tenant |
-| [TRACTION.md](./TRACTION.md) | Investor / acquirer | Build status, test coverage, launch gate |
-| [LIMITATIONS.md](./LIMITATIONS.md) | Legal / eng | Honest scope boundaries |
-| [NOTABLE_GAPS.md](./NOTABLE_GAPS.md) | Product / GTM | Intentional non-parity vs TeamSnap / SportsEngine |
-| [PLATFORM_GAP_REGISTER.md](./PLATFORM_GAP_REGISTER.md) | Eng / owner | **Canonical** gap register — BuildOwner, AutomatedVerify, ManualQaId |
-| [WAVE_3_MANIFEST.md](./WAVE_3_MANIFEST.md) | Eng / agents | Wave 3 unattended closure — 3A/3B/3C + orch |
-| [WAVE_4_MANIFEST.md](./WAVE_4_MANIFEST.md) | Eng / agents | **Wave 4 competitive parity** — 4A/4B/4C + orch4 |
-| [OWNER_QA_CHECKLIST.md](../vision/OWNER_QA_CHECKLIST.md) | Owner | **Workflow-aligned owner bible** — gold path step index, Tier 1 matrix, Phase 4b nav QA (QA-NAV-01–07); run after `npm run smoke:dev` |
-| [GAP_CLOSURE_PLAN.md](./GAP_CLOSURE_PLAN.md) | Eng / owner | Historical pre-QA backlog (superseded by register for execution) |
-| [DOC_SYNC_REPORT.md](./DOC_SYNC_REPORT.md) | Eng | Audit log of doc sync vs merged code |
-| [SECURITY.md](./SECURITY.md) | InfoSec / compliance | Architecture, COPPA, SafeSport, cells |
-| [TRANSFER.md](./TRANSFER.md) | Acquirer ops | Handoff checklist — repos, Firebase, secrets |
-| [FAQ.md](./FAQ.md) | All | Common diligence questions |
-| [OUTREACH.md](./OUTREACH.md) | Founder | Acquirer outreach templates |
+Regenerate PDFs: `npm run build:acquisition-pdfs` (requires Playwright Chromium)
 
 ---
 
-## Technical due diligence (canonical repo docs)
+## After NDA (full data room index)
 
-These live outside `docs/acquisition/` and are **source of truth** for engineering review:
-
-| Document | Path | Covers |
-|----------|------|--------|
-| **Architecture** | [`docs/ARCHITECTURE.md`](../ARCHITECTURE.md) | Four-tier stack, cell routing, Cloud Functions v2, Trinity pattern |
-| **Functional MVP** | [`docs/vision/FUNCTIONAL_MVP.md`](../vision/FUNCTIONAL_MVP.md) | Player · Parent · Coach launch checklist + VPC golden path |
-| **Product surface registry** | [`docs/vision/PRODUCT_SURFACE_REGISTRY.md`](../vision/PRODUCT_SURFACE_REGISTRY.md) | Gospel truth for routes, nav, demo/QA tiers |
-| **Owner QA checklist** | [`docs/vision/OWNER_QA_CHECKLIST.md`](../vision/OWNER_QA_CHECKLIST.md) | Workflow-aligned owner bible · gold paths · Tier 1 matrix · Phase 4b nav |
-| **QA / Dev personas (legacy)** | [`docs/QA_DEV_PERSONA_VERIFICATION.md`](../QA_DEV_PERSONA_VERIFICATION.md) | Superseded by OWNER_QA_CHECKLIST — phased notes retained |
-| **Functions deploy** | [`docs/FUNCTIONS_DEPLOY.md`](../FUNCTIONS_DEPLOY.md) | Multi-codebase deploy playbook (`core`, `rl`, `compliance`, …) |
-| **Functional audit** | [`docs/FUNCTIONAL_AUDIT_BACKLOG.md`](../FUNCTIONAL_AUDIT_BACKLOG.md) | A–F backlog closed 2026-06-10; deploy checklist remains |
-
-### Related authority
-
-- [`ROADMAP.md`](../../ROADMAP.md) — sprint delivery tracker (orchestrator may sync from `SLICE_LOG.md`)
-- [`docs/PERSONA_ECOSYSTEM.md`](../PERSONA_ECOSYSTEM.md) — roles, routes, handoffs
-- [`docs/vision/COMPETITIVE_LAUNCH_ASSESSMENT.md`](../vision/COMPETITIVE_LAUNCH_ASSESSMENT.md) — parity matrix vs TeamSnap / SportsEngine / GotSport
-
-### Vision / design canon (platform workflow)
+### Executive
 
 | Document | Purpose |
 |----------|---------|
-| [`PRODUCT_SURFACE_REGISTRY.md`](../vision/PRODUCT_SURFACE_REGISTRY.md) | Gospel truth — routes, tiers, workflow_id, layout_pattern |
-| [`PLATFORM_WORKFLOW_CANON.md`](../vision/PLATFORM_WORKFLOW_CANON.md) | Gold paths GP-ACQ / GP-COACH / GP-PARENT / GP-GATE |
-| [`PLATFORM_DESIGN_SYSTEM.md`](../vision/PLATFORM_DESIGN_SYSTEM.md) | Shared primitives, shell contract, layout catalog |
-| [`COACH_OS_FOUNDATION.md`](../vision/COACH_OS_FOUNDATION.md) · [`PARENT_OS_FOUNDATION.md`](../vision/PARENT_OS_FOUNDATION.md) | Persona material vocabulary |
-| [`COACH_OS_VISUAL_ACCEPTANCE.md`](../vision/COACH_OS_VISUAL_ACCEPTANCE.md) · [`PARENT_OS_VISUAL_ACCEPTANCE.md`](../vision/PARENT_OS_VISUAL_ACCEPTANCE.md) | Tier 1 visual sign-off matrices |
+| [ONE_PAGER.md](./ONE_PAGER.md) | 60-second product + moat summary |
+| [PROSPECTUS.md](./PROSPECTUS.md) | Full product, market, technical narrative |
+| [Executive brief PDF](https://sstracker.app/acquisition/sstracker-executive-brief.pdf) | Printable exec summary |
+| [Prospectus PDF](https://sstracker.app/acquisition/sstracker-prospectus.pdf) | Printable full prospectus |
+| [VALUATION_FRAMING.md](./VALUATION_FRAMING.md) | Pre-revenue deal framing (not a financial model) |
+| [TRACTION.md](./TRACTION.md) | Build signals · $0 ARR · honest metrics |
+| [FAQ.md](./FAQ.md) | Common diligence questions |
+| [OUTREACH.md](./OUTREACH.md) | Acquirer outreach templates |
+| [INBOUND_PLAYBOOK.md](./INBOUND_PLAYBOOK.md) | LinkedIn / inbound qualify → NDA → zip workflow |
+
+### Product state & vision
+
+| Document | Purpose |
+|----------|---------|
+| [PRODUCT_STATE.md](./PRODUCT_STATE.md) | **Canonical where we are** — shipped / partial / planned |
+| [NOTABLE_GAPS.md](./NOTABLE_GAPS.md) | Intentional non-parity vs TeamSnap / SportsEngine |
+| [LIMITATIONS.md](./LIMITATIONS.md) | Honest scope boundaries |
+| [PLATFORM_GAP_REGISTER.md](./PLATFORM_GAP_REGISTER.md) | Gap register — BuildOwner, ManualQaId |
+| [COMPETITIVE_LAUNCH_ASSESSMENT.md](../vision/COMPETITIVE_LAUNCH_ASSESSMENT.md) | Parity matrix vs incumbents |
+| [FUNCTIONAL_MVP.md](../vision/FUNCTIONAL_MVP.md) | Launch checklist + VPC golden path |
+| [SPORTS_CONFIGS.md](../SPORTS_CONFIGS.md) | Multi-sport `sports_configs` architecture |
+| [ROADMAP.md](../../ROADMAP.md) | Sprint delivery tracker (when, not duplicate tables here) |
+
+### Personas
+
+| Document | Purpose |
+|----------|---------|
+| [PERSONA_DILIGENCE.md](./PERSONA_DILIGENCE.md) | **Acquirer persona matrix** — capabilities + demo scope |
+| [PERSONA_ECOSYSTEM.md](../PERSONA_ECOSYSTEM.md) | Canonical roles, routes, handoffs |
+| [PRODUCT_SURFACE_REGISTRY.md](../vision/PRODUCT_SURFACE_REGISTRY.md) | Gospel truth — routes, tiers, workflow_id |
+
+### Architecture & flows
+
+| Document | Purpose |
+|----------|---------|
+| [ARCHITECTURE.md](../ARCHITECTURE.md) | Four-tier stack, cells, Trinity pattern |
+| [ARCHITECTURE_DATA_FLOWS.md](./ARCHITECTURE_DATA_FLOWS.md) | **Gold-path sequence diagrams** for diligence |
+| [DATA_FLOW.md](../DATA_FLOW.md) | Liability-heavy async loops (CV, COPPA, staff) |
+| [FUNCTIONS_DEPLOY.md](../FUNCTIONS_DEPLOY.md) | Multi-codebase deploy playbook |
+| [CELLS.md](../CELLS.md) · [CELL_ROUTING.md](../CELL_ROUTING.md) | Cell isolation detail |
+
+### Security
+
+| Document | Purpose |
+|----------|---------|
+| [SECURITY.md](./SECURITY.md) | COPPA, SafeSport, cells, subprocessors |
+| [legal/PRIVACY_AND_MINORS_DILIGENCE.md](./legal/PRIVACY_AND_MINORS_DILIGENCE.md) | Privacy counsel brief |
+
+### QA & demo
+
+| Document | Purpose |
+|----------|---------|
+| [OWNER_QA_CHECKLIST.md](../vision/OWNER_QA_CHECKLIST.md) | Owner bible — Phase 5 exec cut = acquisition P0 |
+| [PLATFORM_WORKFLOW_CANON.md](../vision/PLATFORM_WORKFLOW_CANON.md) | GP-ACQ / GP-COACH / GP-PARENT / GP-GATE |
+| [DEMO_SCRIPT.md](./DEMO_SCRIPT.md) | Persona walkthrough on dev tenant |
+| [QA_DEV_PERSONA_VERIFICATION.md](../QA_DEV_PERSONA_VERIFICATION.md) | Legacy phased notes (superseded by owner checklist) |
+
+### Legal
+
+| Document | Purpose |
+|----------|---------|
+| [legal/README.md](./legal/README.md) | Legal diligence checklist |
+| [legal/MUTUAL_NDA_TEMPLATE.md](./legal/MUTUAL_NDA_TEMPLATE.md) | Mutual NDA template — **counsel review required** |
+| [legal/IP_AND_ENTITY_CHECKLIST.md](./legal/IP_AND_ENTITY_CHECKLIST.md) | Entity + IP fill-in |
+| [CAP_TABLE_TEMPLATE.md](./CAP_TABLE_TEMPLATE.md) | Cap table placeholder |
+
+### Operations
+
+| Document | Purpose |
+|----------|---------|
+| [TRANSFER.md](./TRANSFER.md) | Handoff — repos, Firebase, secrets |
+| [FUNCTIONAL_AUDIT_BACKLOG.md](../FUNCTIONAL_AUDIT_BACKLOG.md) | Closed wiring gaps A–F |
+| [DOC_SYNC_REPORT.md](./DOC_SYNC_REPORT.md) | Doc sync audit log |
+
+**Download full zip (post-NDA):** `npm run bundle:dataroom` → `dist/sstracker-dataroom.zip`
 
 ---
 
-## Overnight parallel work (complete — merged to dev)
+## Internal only — do not share with acquirers
 
-| File | Purpose |
-|------|---------|
-| [`SLICE_LOG.md`](./SLICE_LOG.md) | Append-only agent progress (do not edit prior rows) |
-| [`MERGE_ORDER.md`](./MERGE_ORDER.md) | Branch merge sequence → `overnight/base` → `dev` |
-| [`PARALLEL_STATUS.md`](./PARALLEL_STATUS.md) | Final agent status board |
-| [`PARALLEL_SUMMARY.md`](./PARALLEL_SUMMARY.md) | Phase 1 + 2 summary |
-| [`PLATFORM_GAP_REGISTER.md`](./PLATFORM_GAP_REGISTER.md) + [`WAVE_4_MANIFEST.md`](./WAVE_4_MANIFEST.md) | **Next:** Wave 4 competitive fleet |
+| Path | Reason |
+|------|--------|
+| [SLICE_LOG.md](./SLICE_LOG.md) | Agent progress log |
+| [PARALLEL_STATUS.md](./PARALLEL_STATUS.md) · [PARALLEL_SUMMARY.md](./PARALLEL_SUMMARY.md) | Sprint orchestration |
+| [MERGE_ORDER.md](./MERGE_ORDER.md) | Branch merge sequence |
+| [WAVE_3_MANIFEST.md](./WAVE_3_MANIFEST.md) · [WAVE_4_MANIFEST.md](./WAVE_4_MANIFEST.md) | Agent fleet manifests |
+| `docs/acquisition/agents/**` | Agent slice specs |
+| `.cursor/rules/` | Agent constraints |
+| Owner credentials | Use provision script on acquirer-controlled accounts |
 
 ---
 
 ## Recommended diligence order
 
-1. [ONE_PAGER.md](./ONE_PAGER.md) → [PROSPECTUS.md](./PROSPECTUS.md)
-2. [COMPETITIVE_LAUNCH_ASSESSMENT.md](../vision/COMPETITIVE_LAUNCH_ASSESSMENT.md) + [NOTABLE_GAPS.md](./NOTABLE_GAPS.md)
-3. [`ARCHITECTURE.md`](../ARCHITECTURE.md) + [SECURITY.md](./SECURITY.md)
-4. [DEMO_SCRIPT.md](./DEMO_SCRIPT.md) on https://sstracker.app with QA tenant
-5. [`FUNCTIONAL_MVP.md`](../vision/FUNCTIONAL_MVP.md) + [`QA_DEV_PERSONA_VERIFICATION.md`](../QA_DEV_PERSONA_VERIFICATION.md)
-6. [PLATFORM_GAP_REGISTER.md](./PLATFORM_GAP_REGISTER.md) + [WAVE_4_MANIFEST.md](./WAVE_4_MANIFEST.md) — competitive parity backlog + agent fleet
-7. [TRANSFER.md](./TRANSFER.md) + [`FUNCTIONS_DEPLOY.md`](../FUNCTIONS_DEPLOY.md)
+1. **NDA** — [legal/MUTUAL_NDA_TEMPLATE.md](./legal/MUTUAL_NDA_TEMPLATE.md) (counsel-reviewed) or advisor NDA
+2. **ONE_PAGER** + executive brief PDF — first substance after NDA
+3. **PRODUCT_STATE** + **PERSONA_DILIGENCE** — honest shipped vs partial
+4. **ARCHITECTURE** + **ARCHITECTURE_DATA_FLOWS** + **SECURITY** — technical depth
+5. **DEMO_SCRIPT** + live exec cut on https://sstracker.app (`qa_launch_2026`)
+6. **Full zip** — `npm run bundle:dataroom` or VDR upload
+
+Extended path: [PROSPECTUS.md](./PROSPECTUS.md) → [COMPETITIVE_LAUNCH_ASSESSMENT.md](../vision/COMPETITIVE_LAUNCH_ASSESSMENT.md) + [NOTABLE_GAPS.md](./NOTABLE_GAPS.md) → [TRANSFER.md](./TRANSFER.md)
 
 ---
 
 ## Contact / access
 
-- **QA tenant:** club `qa_launch_2026`, team `qa_launch_2026_ppc` — provision via `node scripts/dev-tenant-reset.mjs --provision`
-- **Firebase projects:** dev `sports-skill-tracker-dev` · prod alias `soccer-skills-tracker` (see [`.firebaserc`](../../.firebaserc))
-- **Regression guard:** `npm test -- src/lib/gamification/__tests__/personaFunctionalMvp.test.ts`
-- **Acquisition PDFs:** `/acquisition/sstracker-executive-brief.pdf` · `/acquisition/sstracker-prospectus.pdf` — build via `npm run build:acquisition-pdfs`
+- **QA tenant:** club `qa_launch_2026`, team `qa_launch_2026_ppc` — `node scripts/dev-tenant-reset.mjs --provision`
+- **Firebase projects:** dev `sports-skill-tracker-dev` · prod alias `soccer-skills-tracker` ([`.firebaserc`](../../.firebaserc))
+- **Regression guard:** `npm test -- docs/acquisition/__tests__/acquisitionVisionDocSync.test.ts`
+- **Acquisition PDFs:** `/acquisition/sstracker-executive-brief.pdf` · `/acquisition/sstracker-prospectus.pdf`
