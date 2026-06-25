@@ -22,6 +22,13 @@
 	let sending = $state(false);
 	let err = $state('');
 	let ok = $state('');
+	let submittedClubId = $state('');
+
+	const complianceHref = $derived(
+		submittedClubId
+			? `/messages?channel=compliance&clubId=${encodeURIComponent(submittedClubId)}`
+			: '',
+	);
 
 	const canReport = $derived(Boolean(clubId?.trim()) && reason.trim().length > 0 && !sending);
 
@@ -41,6 +48,7 @@
 				reason: reason.trim(),
 				details: details.trim() || undefined,
 			});
+			submittedClubId = clubId.trim();
 			ok = 'Report submitted. Your club director will review this incident.';
 			reason = '';
 			details = '';
@@ -87,7 +95,16 @@
 		></textarea>
 
 		{#if err}<p class="report-incident__err" role="alert">{err}</p>{/if}
-		{#if ok}<p class="report-incident__ok" role="status">{ok}</p>{/if}
+		{#if ok}
+			<div class="report-incident__ok" role="status">
+				<p>{ok}</p>
+				{#if complianceHref}
+					<a class="report-incident__compliance-link" href={complianceHref}>
+						View compliance channel →
+					</a>
+				{/if}
+			</div>
+		{/if}
 
 		<button type="button" class="report-incident__btn" disabled={!canReport} onclick={() => void submit()}>
 			{sending ? 'Submitting…' : 'Submit report'}

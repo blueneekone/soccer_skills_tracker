@@ -17,6 +17,7 @@ const indexJs = readFileSync(INDEX, 'utf8');
 const rules = readFileSync(RULES, 'utf8');
 const indexes = readFileSync(INDEXES, 'utf8');
 const reportPanel = readFileSync(join(ROOT, 'components', 'comms', 'ReportMessageIncident.svelte'), 'utf8');
+const hubShell = readFileSync(join(ROOT, 'components', 'comms', 'CommsHubShell.svelte'), 'utf8');
 const messagesPage = readFileSync(join(ROOT, '..', 'routes', '(app)', 'messages', '+page.svelte'), 'utf8');
 const compliance = readFileSync(
 	join(ROOT, 'components', 'director', 'DirectorCommsCompliancePanel.svelte'),
@@ -50,10 +51,12 @@ describe('Epic 4.10 — reportMessageIncident callable', () => {
 describe('Epic 4.10 — client report surface', () => {
 	it('ReportMessageIncident calls reportMessageIncident callable', () => {
 		expect(reportPanel).toMatch(/reportMessageIncident/);
+		expect(reportPanel).toMatch(/channel=compliance/);
 	});
 
-	it('mounted on /messages for non-admin users with club context', () => {
-		expect(messagesPage).toMatch(/ReportMessageIncident/);
+	it('mounted via CommsHubShell on /messages', () => {
+		expect(messagesPage).toMatch(/CommsHubShell/);
+		expect(hubShell).toMatch(/ReportMessageIncident/);
 	});
 
 	it('director compliance console lists open incidents', () => {

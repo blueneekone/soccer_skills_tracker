@@ -45,7 +45,7 @@ describe('Sprint LAUNCH-functional-os — ROADMAP', () => {
 	});
 
 	it('ROADMAP next build order includes Epic 5 after Epic 4 comms complete', () => {
-		expect(roadmap).toMatch(/Epic 4\.1–4\.12 Done/);
+		expect(roadmap).toMatch(/Epic 4\.1–4\.15c/);
 		expect(roadmap).toMatch(/Epic 4\/5\/2\.2 done/i);
 	});
 
@@ -205,7 +205,7 @@ describe('Sprint LAUNCH-functional-os — Coach→Player bounty handoff', () => 
 		expect(src).toMatch(/from '\$lib\/firebase\.js'/);
 		expect(src).toMatch(/isCoachDirectedSession/);
 		expect(src).toMatch(/lockedCoachDrillLabel/);
-		expect(src).toMatch(/shouldAutoArmHandoff|armedHandoff\.missionId === activeMissionId/);
+		expect(src).toMatch(/isCoachDirectedHandoff|armedHandoff\.missionId !== activeMissionId/);
 		expect(src).toMatch(/FREE_LOG_DURATION_MAX_MINUTES/);
 		expect(src).toMatch(/sessionNotes/);
 		// G1 source-level guard: targetAttributeId must be forwarded into executePlayerWorkoutLog

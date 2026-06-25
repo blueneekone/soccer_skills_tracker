@@ -17,6 +17,7 @@ export type CommsChannelTypeId =
 	| 'match_day'
 	| 'club_wide'
 	| 'emergency'
+	| 'compliance'
 	| 'outbox'
 	| 'direct_mail';
 
@@ -130,6 +131,15 @@ export const COMMS_CHANNEL_TYPE_REGISTRY: Record<
 		minorVisibility: 'hq_calendar_mirror',
 		replyModel: 'none',
 	},
+	compliance: {
+		id: 'compliance',
+		label: 'Compliance',
+		description: 'VPC, clearance, and incident notices — household-scoped for parents',
+		whoCanPost: ['director', 'registrar', 'admin'],
+		whoCanRead: ['parent', 'director', 'registrar', 'admin'],
+		minorVisibility: 'none',
+		replyModel: 'none',
+	},
 };
 
 /** All Phase 2 typed channel type_ids for guard tests. */
@@ -153,6 +163,7 @@ export function channelTypeFromClubDoc(data: Record<string, unknown>): CommsChan
 		if (id.startsWith('registration-')) return 'registration';
 		if (id.startsWith('tryouts-events-')) return 'tryouts_events';
 		if (id.startsWith('match-day-')) return 'match_day';
+		if (id.startsWith('compliance-')) return 'compliance';
 		return null;
 	}
 	if (raw in COMMS_CHANNEL_TYPE_REGISTRY) return raw as CommsChannelTypeId;

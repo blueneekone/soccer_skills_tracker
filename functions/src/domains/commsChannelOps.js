@@ -323,6 +323,7 @@ const CHANNEL_TYPE_POSTERS = {
   registration: new Set(['registrar', 'director', 'system']),
   tryouts_events: new Set(['coach', 'director', 'system']),
   match_day: new Set(['coach', 'director', 'team_manager', 'system']),
+  compliance: new Set(['director', 'registrar', 'system']),
 };
 
 const MONITORED_CHANNEL_TYPES = new Set(['team_logistics', 'parent_lounge']);
@@ -331,6 +332,7 @@ const COMMS_CHANNEL_LABELS = {
   registration: 'Registration',
   tryouts_events: 'Tryouts & events',
   match_day: 'Match day',
+  compliance: 'Compliance',
 };
 
 /**
@@ -375,6 +377,8 @@ function resolveTypedChannelRefs({
     const normTeamId = String(teamId || '').trim();
     if (!normTeamId) throw new Error('teamId is required for match_day channel.');
     channelId = `match-day-${normTeamId}`;
+  } else if (channelType === 'compliance') {
+    channelId = `compliance-${normClubId}`;
   } else {
     throw new Error(`Unsupported channelType: ${channelType}`);
   }
@@ -444,7 +448,10 @@ exports.postChannelSystemMessage = async ({
   actorEmail = 'system',
   actorUid = 'system',
   guardianEmail = '',
+  parentEmail = '',
   playerEmail = '',
+  incidentId = '',
+  status = '',
 }) => {
   const type = String(channelType || '').trim();
   if (!type || !CHANNEL_TYPE_POSTERS[type]) {
@@ -484,10 +491,13 @@ exports.postChannelSystemMessage = async ({
     channelPayload.type = 'group';
     channelPayload.safesportMonitored = true;
   }
-  if (type === 'registration' || type === 'tryouts_events' || type === 'match_day') {
+  if (type === 'registration' || type === 'tryouts_events' || type === 'match_day' || type === 'compliance') {
     channelPayload.type = 'broadcast';
     channelPayload.name = COMMS_CHANNEL_LABELS[type] || type;
     channelPayload.systemChannel = true;
+  }
+  if (type === 'compliance') {
+    channelPayload.audienceScope = 'club_staff';
   }
   await channelRef.set(channelPayload, {merge: true});
 
@@ -513,6 +523,19 @@ exports.postChannelSystemMessage = async ({
     } else if (gEmail) {
       parentSkipped = [{email: gEmail, reason: 'consent_comms_declined'}];
     }
+  } else if (type === 'compliance' && householdId) {
+    const delivery = await resolveHouseholdParentDelivery(
+        db(),
+        String(householdId).trim(),
+        playerEmail,
+    );
+    parentDelivered = delivery.parentDelivered;
+    parentSkipped = delivery.parentSkipped;
+  } else if (type === 'compliance') {
+    const targetEmail = normEmail(parentEmail || guardianEmail);
+    if (targetEmail) {
+      parentDelivered = [{email: targetEmail, channels: ['in_app']}];
+    }
   }
 
   const messageRef = messagesRef.doc();
@@ -536,6 +559,10 @@ exports.postChannelSystemMessage = async ({
   if (householdId) messagePayload.householdId = String(householdId).trim();
   if (programId) messagePayload.programId = String(programId).trim();
   if (guardianEmail) messagePayload.guardianEmail = normEmail(guardianEmail);
+  const normParentEmail = normEmail(parentEmail || guardianEmail);
+  if (normParentEmail) messagePayload.parentEmail = normParentEmail;
+  if (incidentId) messagePayload.incidentId = String(incidentId).trim();
+  if (status) messagePayload.status = String(status).trim().slice(0, 64);
   if (teamId) messagePayload.teamId = String(teamId).trim();
   if (parentDelivered.length) messagePayload.parentDelivered = parentDelivered;
   if (parentSkipped.length) messagePayload.parentSkipped = parentSkipped;

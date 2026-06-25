@@ -14,6 +14,7 @@
 	import CommsMatchDayChannel from '$lib/components/comms/CommsMatchDayChannel.svelte';
 	import CommsClubWideChannel from '$lib/components/comms/CommsClubWideChannel.svelte';
 	import CommsEmergencyChannel from '$lib/components/comms/CommsEmergencyChannel.svelte';
+	import CommsComplianceChannel from '$lib/components/comms/CommsComplianceChannel.svelte';
 	import ReportMessageIncident from '$lib/components/comms/ReportMessageIncident.svelte';
 	import {
 		COMMS_CHANNEL_TYPE_REGISTRY,
@@ -76,6 +77,13 @@
 	const showMatchDay = $derived(canPersonaReadChannel('match_day', role));
 	const showClubWide = $derived(canPersonaReadChannel('club_wide', role));
 	const showEmergency = $derived(canPersonaPostChannel('emergency', role));
+	const showCompliance = $derived(
+		canPersonaReadChannel('compliance', role) &&
+			(role === 'director' ||
+				role === 'registrar' ||
+				role === 'admin' ||
+				(role === 'parent' && Boolean(householdId))),
+	);
 	const deepLinkClubId = $derived(page.url.searchParams.get('clubId') || clubId || '');
 	const hubClubId = $derived(deepLinkClubId);
 	const hubClubName = $derived(
@@ -127,6 +135,12 @@
 					label: COMMS_CHANNEL_TYPE_REGISTRY.emergency.label,
 				});
 			}
+			if (showCompliance) {
+				list.push({
+					id: 'compliance',
+					label: COMMS_CHANNEL_TYPE_REGISTRY.compliance.label,
+				});
+			}
 			if (showParentLounge || role === 'parent') {
 				list.push({ id: 'parent_lounge', label: 'Parent Lounge' });
 			}
@@ -172,6 +186,9 @@
 			url.searchParams.set('clubId', hubClubId);
 		}
 		if (id === 'emergency' && hubClubId) {
+			url.searchParams.set('clubId', hubClubId);
+		}
+		if (id === 'compliance' && hubClubId) {
 			url.searchParams.set('clubId', hubClubId);
 		}
 		void goto(`${url.pathname}${url.search}`, { replaceState: true, noScroll: true });
@@ -255,6 +272,8 @@
 				clubName={hubClubName}
 				teams={hubClubTeams}
 			/>
+		{:else if activeChannel === 'compliance' && showCompliance}
+			<CommsComplianceChannel clubId={hubClubId} />
 		{:else if activeChannel === 'parent_lounge'}
 			{#if role === 'parent'}
 				{#if parentLoungeLoading}

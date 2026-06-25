@@ -34,6 +34,7 @@ const {
   resolvePlayerGuardianEmails,
   buildTeamBroadcastAudience,
 } = require('./src/domains/commsPolicy');
+const {postChannelSystemMessage} = require('./src/domains/commsChannelOps');
 
 const REGION = 'us-east1';
 const db = admin.firestore();
@@ -791,6 +792,37 @@ exports.reportMessageIncident = onCall({region: REGION}, async (request) => {
     clubId,
     callerEmail,
   });
+
+  try {
+    let reporterHouseholdId = '';
+    if (callerEmail) {
+      const uSnap = await db.collection('users').doc(callerEmail).get();
+      if (uSnap.exists) {
+        const hid = uSnap.data().householdId;
+        if (typeof hid === 'string' && hid.trim()) reporterHouseholdId = hid.trim();
+      }
+    }
+
+    await postChannelSystemMessage({
+      channelType: 'compliance',
+      clubId,
+      subject: 'Incident report received',
+      body:
+        'Your comms concern was received and queued for director review. ' +
+        'Message content is not repeated in this notice for privacy.',
+      sourceCallable: 'reportMessageIncident',
+      actorRole: 'system',
+      parentEmail: callerEmail,
+      householdId: reporterHouseholdId,
+      incidentId: incidentRef.id,
+      status: 'received',
+    });
+  } catch (hookErr) {
+    logger.warn('[reportMessageIncident] compliance channel post failed (non-fatal)', {
+      incidentId: incidentRef.id,
+      err: hookErr instanceof Error ? hookErr.message : String(hookErr),
+    });
+  }
 
   return {success: true, incidentId: incidentRef.id};
 });

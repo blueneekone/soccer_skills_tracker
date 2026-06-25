@@ -900,6 +900,14 @@
 	color: var(--pd-data-cyan, #14b8a6);
 }
 
+.comms-hub .report-incident__compliance-link {
+	display: inline-flex;
+	margin-top: 6px;
+	font-size: 12px;
+	font-weight: 800;
+	color: #0f766e;
+}
+
 .comms-hub .report-incident__btn {
 	align-self: flex-start;
 	border: 1px solid var(--pd-grey-trim, #334155);

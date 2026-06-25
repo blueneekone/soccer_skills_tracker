@@ -642,6 +642,9 @@ service cloud.firestore {
           || (ch.channelType == 'match_day'
             && ch.keys().hasAll(['teamId'])
             && canAccessTeamChannelMatrix(ch.teamId))
+          || (ch.channelType == 'compliance'
+            && isParent()
+            && channelClubScopeOk(clubId))
           || (isDirector() && tokenClub() == clubId)
           || (isRegistrar() && tokenClub() == clubId)
           || isSuper()
@@ -672,6 +675,16 @@ service cloud.firestore {
           || (ch.channelType == 'match_day'
             && ch.keys().hasAll(['teamId'])
             && canAccessTeamChannelMatrix(ch.teamId))
+          || (ch.channelType == 'compliance'
+            && isParent()
+            && channelClubScopeOk(clubId)
+            && (
+              (resource.data.keys().hasAll(['parentEmail'])
+                && resource.data.parentEmail == emailKey())
+              || (resource.data.keys().hasAll(['householdId'])
+                && userDoc().keys().hasAll(['householdId'])
+                && resource.data.householdId == userDoc().householdId)
+            ))
           || isSuper()
           || (isDirector() && tokenClub() == clubId)
           || (isRegistrar() && tokenClub() == clubId)
