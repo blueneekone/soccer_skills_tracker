@@ -645,6 +645,9 @@ service cloud.firestore {
           || (ch.channelType == 'compliance'
             && isParent()
             && channelClubScopeOk(clubId))
+          || (ch.channelType == 'sponsor_partner'
+            && isParent()
+            && channelClubScopeOk(clubId))
           || (isDirector() && tokenClub() == clubId)
           || (isRegistrar() && tokenClub() == clubId)
           || isSuper()
@@ -698,6 +701,13 @@ service cloud.firestore {
                 && userDoc().keys().hasAll(['householdId'])
                 && resource.data.householdId == userDoc().householdId)
             ))
+          || (ch.channelType == 'sponsor_partner'
+            && isParent()
+            && channelClubScopeOk(clubId)
+            && resource.data.keys().hasAll(['parentEmail'])
+            && resource.data.parentEmail == emailKey()
+            && (!resource.data.keys().hasAll(['digestSend'])
+              || resource.data.digestSend != true))
           || isSuper()
           || (isDirector() && tokenClub() == clubId)
           || (isRegistrar() && tokenClub() == clubId)
@@ -1363,6 +1373,16 @@ service cloud.firestore {
         allow delete: if authed()
           && isDirector()
           && tokenClub() == clubId;
+      }
+
+      // Epic 4.16c — sponsor/partner digest templates (director read; writes via callables only).
+      match /sponsor_templates/{templateId} {
+        allow read: if authed()
+          && (
+            isSuper()
+            || (isDirector() && tokenClub() == clubId)
+          );
+        allow create, update, delete: if false;
       }
 
       // Epic 20 — Comms Hub (SafeSport): channels + messages (memberIds = lowercase email keys).

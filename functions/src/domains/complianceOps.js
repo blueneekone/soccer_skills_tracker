@@ -986,6 +986,7 @@ exports.parentGrantVpcConsent = onCall({region: REGION}, async (request) => {
       identity: ci.identity === true,
       analytics: ci.analytics === true,
       comms: ci.comms === true,
+      sponsor: ci.sponsor === true,
     },
     method: 'parent_online_explicit',
     policyVersion: '2026-04',

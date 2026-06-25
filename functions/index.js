@@ -114,6 +114,11 @@ const broadcastAckOps = require('./src/domains/broadcastAckOps');
 exports.acknowledgeBroadcast = broadcastAckOps.acknowledgeBroadcast;
 exports.getBroadcastAckStatus = broadcastAckOps.getBroadcastAckStatus;
 
+const sponsorPartnerOps = require('./src/domains/sponsorPartnerOps');
+exports.createSponsorTemplate = sponsorPartnerOps.createSponsorTemplate;
+exports.approveSponsorTemplate = sponsorPartnerOps.approveSponsorTemplate;
+exports.sendSponsorPartnerDigest = sponsorPartnerOps.sendSponsorPartnerDigest;
+
 // â”€â”€ Epic 5 â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const inviteHandlers = require('./invites');
 // NOTE: syncUserClaims is NOT exported here — the canonical implementation

@@ -86,6 +86,7 @@ export type ParentSkipReason =
 	| 'no_household'
 	| 'not_on_roster'
 	| 'consent_comms_declined'
+	| 'consent_sponsor_declined'
 	| 'not_guardian'
 	| 'push_token_missing';
 
@@ -147,6 +148,20 @@ export interface BroadcastAckStatus {
 	pendingEmails: string[];
 }
 
+/** Epic 4.16c — sponsor/partner digest send result */
+export interface SponsorPartnerSendResult {
+	ok: true;
+	templateId: string;
+	messageIds: string[];
+	recipientCount: number;
+	deliveryReport: {
+		parentDelivered: ParentDeliveredRow[];
+		parentSkipped: ParentSkippedRow[];
+		deliveredCount: number;
+		skippedCount: number;
+	};
+}
+
 /** Custom error thrown when a caller attempts to violate SafeSport policy. */
 export class SafeSportViolation extends Error {
 	constructor(message: string) {
@@ -168,6 +183,7 @@ export class CommsEngine {
 	phase = $state<SendPhase>('idle');
 	lastResult = $state<BroadcastResult | null>(null);
 	lastClubResult = $state<ClubBroadcastResult | null>(null);
+	lastSponsorResult = $state<SponsorPartnerSendResult | null>(null);
 	error = $state('');
 
 	/** True while a message is in-flight. */
@@ -184,6 +200,9 @@ export class CommsEngine {
 	private _coachDmFn: ReturnType<typeof httpsCallable> | null = null;
 	private _ackFn: ReturnType<typeof httpsCallable> | null = null;
 	private _ackStatusFn: ReturnType<typeof httpsCallable> | null = null;
+	private _createSponsorTemplateFn: ReturnType<typeof httpsCallable> | null = null;
+	private _approveSponsorTemplateFn: ReturnType<typeof httpsCallable> | null = null;
+	private _sendSponsorDigestFn: ReturnType<typeof httpsCallable> | null = null;
 
 	constructor() {
 		if (!browser) return;
@@ -196,6 +215,9 @@ export class CommsEngine {
 		this._coachDmFn = httpsCallable(fns, 'sendCoachPlayerMessage');
 		this._ackFn = httpsCallable(fns, 'acknowledgeBroadcast');
 		this._ackStatusFn = httpsCallable(fns, 'getBroadcastAckStatus');
+		this._createSponsorTemplateFn = httpsCallable(fns, 'createSponsorTemplate');
+		this._approveSponsorTemplateFn = httpsCallable(fns, 'approveSponsorTemplate');
+		this._sendSponsorDigestFn = httpsCallable(fns, 'sendSponsorPartnerDigest');
 	}
 
 	/**
@@ -476,11 +498,83 @@ export class CommsEngine {
 		return response.data as BroadcastAckStatus;
 	}
 
+	/** Director creates a sponsor/partner digest template — Epic 4.16c. */
+	async createSponsorTemplate(input: {
+		clubId: string;
+		title: string;
+		partnerName: string;
+		headline: string;
+		body: string;
+		ctaLabel?: string;
+		ctaUrl?: string;
+	}): Promise<{ ok: true; templateId: string; status: string }> {
+		if (!this._createSponsorTemplateFn) {
+			throw new Error('CommsEngine not initialised (SSR context).');
+		}
+		this.phase = 'sending';
+		this.error = '';
+		try {
+			const response = await this._createSponsorTemplateFn(input);
+			this.phase = 'success';
+			return response.data as { ok: true; templateId: string; status: string };
+		} catch (err: unknown) {
+			this.error = err instanceof Error ? err.message : 'Failed to create sponsor template.';
+			this.phase = 'error';
+			throw err;
+		}
+	}
+
+	/** Director approves a draft template — Epic 4.16c. */
+	async approveSponsorTemplate(input: {
+		clubId: string;
+		templateId: string;
+	}): Promise<{ ok: true; templateId: string; status: string }> {
+		if (!this._approveSponsorTemplateFn) {
+			throw new Error('CommsEngine not initialised (SSR context).');
+		}
+		this.phase = 'sending';
+		this.error = '';
+		try {
+			const response = await this._approveSponsorTemplateFn(input);
+			this.phase = 'success';
+			return response.data as { ok: true; templateId: string; status: string };
+		} catch (err: unknown) {
+			this.error = err instanceof Error ? err.message : 'Failed to approve sponsor template.';
+			this.phase = 'error';
+			throw err;
+		}
+	}
+
+	/** Director sends approved template digest to opted-in guardians — Epic 4.16c. */
+	async sendSponsorPartnerDigest(input: {
+		clubId: string;
+		templateId: string;
+	}): Promise<SponsorPartnerSendResult> {
+		if (!this._sendSponsorDigestFn) {
+			throw new Error('CommsEngine not initialised (SSR context).');
+		}
+		this.phase = 'sending';
+		this.error = '';
+		this.lastSponsorResult = null;
+		try {
+			const response = await this._sendSponsorDigestFn(input);
+			const result = response.data as SponsorPartnerSendResult;
+			this.lastSponsorResult = result;
+			this.phase = 'success';
+			return result;
+		} catch (err: unknown) {
+			this.error = err instanceof Error ? err.message : 'Failed to send sponsor digest.';
+			this.phase = 'error';
+			throw err;
+		}
+	}
+
 	/** Reset to idle after displaying success/error feedback. */
 	reset() {
 		this.phase = 'idle';
 		this.error = '';
 		this.lastResult = null;
 		this.lastClubResult = null;
+		this.lastSponsorResult = null;
 	}
 }

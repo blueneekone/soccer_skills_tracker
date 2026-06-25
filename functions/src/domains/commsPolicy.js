@@ -90,6 +90,75 @@ async function parentHasCommsConsent(firestore, parentEmail, playerEmail) {
 }
 
 /**
+ * VPC consent_records gate for sponsor/partner digests (Epic 4.16c).
+ * Requires both consentItems.sponsor and consentItems.comms.
+ * @param {FirebaseFirestore.Firestore} firestore
+ * @param {string} parentEmail
+ * @param {string} playerEmail
+ * @return {Promise<boolean>}
+ */
+async function parentHasSponsorConsent(firestore, parentEmail, playerEmail) {
+  const parent = normEmail(parentEmail);
+  const player = normEmail(playerEmail);
+  if (!parent || !player) return false;
+
+  const snap = await consentRecordsCol(firestore)
+      .where('parentEmail', '==', parent)
+      .where('subjectEmail', '==', player)
+      .orderBy('grantedAt', 'desc')
+      .limit(1)
+      .get();
+
+  if (snap.empty) return false;
+  const items = snap.docs[0].data().consentItems;
+  return items && items.sponsor === true && items.comms === true;
+}
+
+/**
+ * @param {FirebaseFirestore.Firestore} firestore
+ * @param {readonly string[]} parentEmails
+ * @param {string} playerEmail
+ * @return {Promise<string[]>}
+ */
+async function filterParentsWithSponsorConsent(firestore, parentEmails, playerEmail) {
+  const out = [];
+  for (const raw of parentEmails) {
+    const parent = normEmail(String(raw));
+    if (!parent) continue;
+    if (await parentHasSponsorConsent(firestore, parent, playerEmail)) {
+      out.push(parent);
+    }
+  }
+  return [...new Set(out)];
+}
+
+/**
+ * Resolve sponsor digest skip reason for a parent/player pair.
+ * @param {FirebaseFirestore.Firestore} firestore
+ * @param {string} parentEmail
+ * @param {string} playerEmail
+ * @return {Promise<'consent_sponsor_declined'|'consent_comms_declined'|'no_household'>}
+ */
+async function sponsorConsentSkipReason(firestore, parentEmail, playerEmail) {
+  const parent = normEmail(parentEmail);
+  const player = normEmail(playerEmail);
+  if (!parent || !player) return 'no_household';
+
+  const snap = await consentRecordsCol(firestore)
+      .where('parentEmail', '==', parent)
+      .where('subjectEmail', '==', player)
+      .orderBy('grantedAt', 'desc')
+      .limit(1)
+      .get();
+
+  if (snap.empty) return 'consent_comms_declined';
+  const items = snap.docs[0].data().consentItems || {};
+  if (items.comms !== true) return 'consent_comms_declined';
+  if (items.sponsor !== true) return 'consent_sponsor_declined';
+  return 'consent_sponsor_declined';
+}
+
+/**
  * @param {FirebaseFirestore.Firestore} firestore
  * @param {readonly string[]} parentEmails
  * @param {string} playerEmail
@@ -199,6 +268,9 @@ module.exports = {
   isStaffRole,
   parentHasCommsConsent,
   filterParentsWithCommsConsent,
+  parentHasSponsorConsent,
+  filterParentsWithSponsorConsent,
+  sponsorConsentSkipReason,
   resolvePlayerGuardianEmails,
   buildTeamBroadcastAudience,
 };

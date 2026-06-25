@@ -19,6 +19,7 @@ export type CommsChannelTypeId =
 	| 'emergency'
 	| 'compliance'
 	| 'staff_internal'
+	| 'sponsor_partner'
 	| 'outbox'
 	| 'direct_mail';
 
@@ -150,6 +151,15 @@ export const COMMS_CHANNEL_TYPE_REGISTRY: Record<
 		minorVisibility: 'none',
 		replyModel: 'threaded_group',
 	},
+	sponsor_partner: {
+		id: 'sponsor_partner',
+		label: 'Sponsor & partner',
+		description: 'Director-approved partner digests — guardian VPC opt-in only',
+		whoCanPost: ['director', 'admin'],
+		whoCanRead: ['parent', 'director', 'admin'],
+		minorVisibility: 'none',
+		replyModel: 'none',
+	},
 };
 
 /** All Phase 2 typed channel type_ids for guard tests. */
@@ -175,6 +185,7 @@ export function channelTypeFromClubDoc(data: Record<string, unknown>): CommsChan
 		if (id.startsWith('match-day-')) return 'match_day';
 		if (id.startsWith('compliance-')) return 'compliance';
 		if (id.startsWith('staff-internal-')) return 'staff_internal';
+		if (id.startsWith('sponsor-partner-')) return 'sponsor_partner';
 		return null;
 	}
 	if (raw in COMMS_CHANNEL_TYPE_REGISTRY) return raw as CommsChannelTypeId;

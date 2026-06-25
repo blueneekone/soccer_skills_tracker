@@ -16,6 +16,7 @@
 	import CommsEmergencyChannel from '$lib/components/comms/CommsEmergencyChannel.svelte';
 	import CommsComplianceChannel from '$lib/components/comms/CommsComplianceChannel.svelte';
 	import CommsStaffInternalChannel from '$lib/components/comms/CommsStaffInternalChannel.svelte';
+	import CommsSponsorPartnerChannel from '$lib/components/comms/CommsSponsorPartnerChannel.svelte';
 	import ReportMessageIncident from '$lib/components/comms/ReportMessageIncident.svelte';
 	import {
 		COMMS_CHANNEL_TYPE_REGISTRY,
@@ -86,6 +87,12 @@
 				(role === 'parent' && Boolean(householdId))),
 	);
 	const showStaffInternal = $derived(canPersonaReadChannel('staff_internal', role));
+	const showSponsorPartner = $derived(
+		canPersonaReadChannel('sponsor_partner', role) &&
+			(role === 'director' ||
+				role === 'admin' ||
+				(role === 'parent' && Boolean(householdId))),
+	);
 	const deepLinkClubId = $derived(page.url.searchParams.get('clubId') || clubId || '');
 	const hubClubId = $derived(deepLinkClubId);
 	const hubClubName = $derived(
@@ -149,6 +156,12 @@
 					label: COMMS_CHANNEL_TYPE_REGISTRY.staff_internal.label,
 				});
 			}
+			if (showSponsorPartner) {
+				list.push({
+					id: 'sponsor_partner',
+					label: COMMS_CHANNEL_TYPE_REGISTRY.sponsor_partner.label,
+				});
+			}
 			if (showParentLounge || role === 'parent') {
 				list.push({ id: 'parent_lounge', label: 'Parent Lounge' });
 			}
@@ -201,6 +214,9 @@
 		}
 		if (id === 'staff_internal' && deepLinkTeamId) {
 			url.searchParams.set('teamId', deepLinkTeamId);
+		}
+		if (id === 'sponsor_partner' && hubClubId) {
+			url.searchParams.set('clubId', hubClubId);
 		}
 		void goto(`${url.pathname}${url.search}`, { replaceState: true, noScroll: true });
 	}
@@ -291,6 +307,8 @@
 				teamId={deepLinkTeamId}
 				teamName={teamName}
 			/>
+		{:else if activeChannel === 'sponsor_partner' && showSponsorPartner}
+			<CommsSponsorPartnerChannel clubId={hubClubId} />
 		{:else if activeChannel === 'parent_lounge'}
 			{#if role === 'parent'}
 				{#if parentLoungeLoading}

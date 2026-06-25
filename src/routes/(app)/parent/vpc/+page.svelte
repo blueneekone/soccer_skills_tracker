@@ -31,6 +31,7 @@
 	let consentIdentity = $state(false);
 	let consentAnalytics = $state(false);
 	let consentComms = $state(false);
+	let consentSponsor = $state(false);
 
 	// Wizard step 3 state
 	let parentDisplayName = $state('');
@@ -167,6 +168,7 @@
 		consentIdentity = false;
 		consentAnalytics = false;
 		consentComms = false;
+		consentSponsor = false;
 		parentDisplayName = profile?.playerName || '';
 		submitError = '';
 		wizardStage = 'step1';
@@ -208,6 +210,7 @@
 					identity: consentIdentity,
 					analytics: consentAnalytics,
 					comms: consentComms,
+					sponsor: consentSponsor,
 				},
 			});
 			await parentGrantVpcConsentFn(payload);
@@ -493,6 +496,16 @@
 							</div>
 						</label>
 					</li>
+					<li class="parent-vpc-consent-item">
+						<label class="parent-vpc-consent-item__label">
+							<input type="checkbox" bind:checked={consentSponsor} />
+							<div class="parent-vpc-consent-item__text">
+								<strong>Sponsor &amp; partner updates <span class="parent-vpc-optional-tag">Optional</span></strong>
+								<span>Receive director-approved club partner announcements in your guardian inbox.
+								Separate from coach team messages. Never sent to minor accounts.</span>
+							</div>
+						</label>
+					</li>
 				</ul>
 
 				<button
@@ -548,6 +561,7 @@
 						<li>Identity &amp; roster data — <strong>{consentIdentity ? 'Accepted' : 'Declined'}</strong></li>
 						<li>Performance analytics — <strong>{consentAnalytics ? 'Accepted' : 'Declined'}</strong></li>
 						<li>In-app communications — <strong>{consentComms ? 'Accepted' : 'Declined'}</strong></li>
+						<li>Sponsor &amp; partner updates — <strong>{consentSponsor ? 'Accepted' : 'Declined'}</strong></li>
 					</ul>
 					<p class="parent-vpc-attestation-policy">Policy version: 2026-04 &mdash; {new Date().toLocaleDateString()}</p>
 				</div>

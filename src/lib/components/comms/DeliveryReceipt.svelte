@@ -21,6 +21,7 @@
 		no_household: 'No household link',
 		not_on_roster: 'Not on roster',
 		consent_comms_declined: 'Comms consent declined (VPC)',
+		consent_sponsor_declined: 'Sponsor opt-in declined (VPC)',
 		not_guardian: 'Not designated guardian',
 		push_token_missing: 'Push token missing',
 	};
