@@ -31,7 +31,8 @@ const crypto = require('crypto');
 const {logActivity, ACTIVITY_TYPE} = require('./auditLogger');
 const {
   resolveIsMinor,
-  filterParentsWithCommsConsent,
+  resolvePlayerGuardianEmails,
+  buildTeamBroadcastAudience,
 } = require('./src/domains/commsPolicy');
 
 const REGION = 'us-east1';
@@ -74,7 +75,10 @@ async function commitTeamBroadcast({
 
   const playerEmails = rosterSnap.docs.map((d) => normEmail(d.data().email || d.id));
   let hasMinors = false;
-  const ccParentEmailSet = new Set();
+  /** @type {Map<string, Set<string>>} */
+  const parentToPlayers = new Map();
+  /** @type {Map<string, {isMinor: boolean}>} */
+  const playerMeta = new Map();
 
   const profilePromises = playerEmails.map(async (email) => {
     if (!email) return;
@@ -82,32 +86,15 @@ async function commitTeamBroadcast({
       const profSnap = await db.collection('users').doc(email).get();
       if (!profSnap.exists) return;
       const prof = profSnap.data();
-      if (!resolveIsMinor(prof)) return;
-      hasMinors = true;
+      const isMinor = resolveIsMinor(prof);
+      if (isMinor) hasMinors = true;
+      playerMeta.set(email, {isMinor});
 
-      /** @type {string[]} */
-      const parentCandidates = [];
-      const householdId = prof.householdId || '';
-      if (householdId) {
-        const hSnap = await db.collection('households').doc(householdId).get();
-        if (hSnap.exists) {
-          const pe = hSnap.data().parentEmails || [];
-          pe.forEach((p) => {
-            const n = normEmail(String(p));
-            if (n) parentCandidates.push(n);
-          });
-        }
+      const guardians = await resolvePlayerGuardianEmails(db, prof);
+      for (const g of guardians) {
+        if (!parentToPlayers.has(g)) parentToPlayers.set(g, new Set());
+        parentToPlayers.get(g).add(email);
       }
-
-      const directParent = normEmail(prof.parentEmail || '');
-      if (directParent) parentCandidates.push(directParent);
-
-      const consented = await filterParentsWithCommsConsent(
-          db,
-          parentCandidates,
-          email,
-      );
-      consented.forEach((p) => ccParentEmailSet.add(p));
     } catch (err) {
       logger.warn('[commitTeamBroadcast] profile resolution error', {email, err: err.message});
     }
@@ -115,8 +102,28 @@ async function commitTeamBroadcast({
 
   await Promise.all(profilePromises);
 
-  const ccParentEmails = [...ccParentEmailSet];
-  const parentNotified = hasMinors ? ccParentEmails.length > 0 : false;
+  const parentToPlayersFrozen = new Map(
+      [...parentToPlayers.entries()].map(([k, v]) => [k, [...v]]),
+  );
+
+  const audience = await buildTeamBroadcastAudience(
+      db,
+      playerEmails,
+      playerMeta,
+      parentToPlayersFrozen,
+  );
+
+  const {
+    parentRecipientEmails,
+    ccParentEmails,
+    parentDelivered,
+    parentSkipped,
+    parentDeliveredEmails,
+  } = audience;
+
+  const parentNotified = hasMinors
+    ? ccParentEmails.length > 0
+    : parentDelivered.length > 0;
   const messageHash = crypto.createHash('sha256').update(bodyRaw).digest('hex');
 
   const auditId = db.collection('audit_logs').doc().id;
@@ -130,6 +137,9 @@ async function commitTeamBroadcast({
       channelId: channelId || null,
       recipientCount: playerEmails.length,
       hasMinors,
+      parentRecipientEmails,
+      parentDeliveredEmails,
+      parentSkipped,
       ccParentEmails,
       parentNotified,
       messageHash,
@@ -141,6 +151,18 @@ async function commitTeamBroadcast({
   });
 
   const msgRef = db.collection('team_broadcasts').doc();
+
+  const deliveryReport = {
+    messageId: msgRef.id,
+    audienceScope: 'team_parents',
+    rosterAthleteCount: playerEmails.length,
+    parentDelivered,
+    parentSkipped,
+    ccParentEmails,
+    auditLogId: auditId,
+    teamId,
+  };
+
   await msgRef.set({
     teamId,
     teamClubId: teamClubId || null,
@@ -153,6 +175,10 @@ async function commitTeamBroadcast({
     bodyPreview: bodyRaw.slice(0, 140),
     recipientCount: playerEmails.length,
     hasMinors,
+    parentRecipientEmails,
+    parentDeliveredEmails,
+    parentSkipped,
+    deliveryReport,
     ccParentEmails,
     parentNotified,
     messageHash,
@@ -177,6 +203,12 @@ async function commitTeamBroadcast({
     recipientCount: playerEmails.length,
     parentNotified,
     ccParentCount: ccParentEmails.length,
+    parentRecipientCount: parentRecipientEmails.length,
+    parentDeliveredCount: parentDelivered.length,
+    parentSkippedCount: parentSkipped.length,
+    parentRecipientEmails,
+    parentDeliveredEmails,
+    deliveryReport,
   };
 }
 
@@ -418,6 +450,8 @@ exports.clubSportBroadcast = onCall({region: REGION}, async (request) => {
         messageId: r.messageId,
         recipientCount: r.recipientCount,
         ccParentCount: r.ccParentCount,
+        parentDeliveredCount: r.parentDeliveredCount,
+        deliveryReport: r.deliveryReport,
       });
       totalRecipients += r.recipientCount;
       totalCcParents += r.ccParentCount;

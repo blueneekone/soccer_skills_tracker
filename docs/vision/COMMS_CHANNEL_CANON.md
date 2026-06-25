@@ -44,7 +44,7 @@ VPC captures `consentComms` per child ([`/parent/vpc`](../src/routes/(app)/paren
 
 | type_id | display name | purpose | who can post | who receives | minor visibility | reply model | audit collection | shipped | planned phase |
 |---------|--------------|---------|--------------|--------------|------------------|-------------|------------------|---------|---------------|
-| `announcements` | Team announcements | One-way staff→families; schedule, policy, general team news | coach, director, admin | parents (+ adult players 18+ via push/inbox); minors **not** in interactive inbox | HQ/calendar mirror only | none (reply via Parent Lounge) | `team_broadcasts`, `audit_logs` | **partial** — `safeSportBroadcast`, `clubSportBroadcast`, `commitTeamBroadcast`; UX receipt gap | 4.13a delivery fix |
+| `announcements` | Team announcements | One-way staff→families; schedule, policy, general team news | coach, director, admin | parents (+ adult players 18+ via push/inbox); minors **not** in interactive inbox | HQ/calendar mirror only | none (reply via Parent Lounge) | `team_broadcasts`, `audit_logs` | **shipped** — 4.13a parent-first `parentRecipientEmails` + `deliveryReport` + hub compose | — |
 | `parent_lounge` | Parent Lounge | Monitored parent↔parent and parent↔coach group context | parent, coach, director | parents on team; staff participants | none (parents only in channel) | threaded group (`sendChannelMessage`) | `clubs/{clubId}/channels/*`, `messaging_audit` | **shipped** — 4.4 provisioning + `ParentLoungePanel` | — |
 | `team_logistics` | Team logistics | TM/coach/event ops — car pool, field change, equipment | coach (TM future) | parents | HQ/calendar mirror only | optional thread → Parent Lounge handoff | `team_broadcasts` (today) → typed channel doc | **partial** — `/coach/logistics` Team Ops tab (4.7); no `type_id` in data model | Phase 2 |
 | `registration` | Registration | Registrar/director transactional — fees, deadlines, eligibility | registrar, director | parents (household-scoped) | none | none | `audit_logs` + registration collections | **partial** — `sendRegistrationPaymentReminders` (4.6); no typed channel | Phase 2 |
@@ -58,7 +58,7 @@ VPC captures `consentComms` per child ([`/parent/vpc`](../src/routes/(app)/paren
 | `sponsor_partner` | Sponsor & partner | Template-only, director-approved; parents only | director (approve), system (send) | parents opt-in | none | none | `audit_logs` | **planned** | Phase 4 |
 | `emergency` | Emergency | Director break-glass — weather, safety, lockdown | director, admin | all club parents (+ staff) | push + SMS fallback (planned) | none | `audit_logs` (priority flag) | **planned** | Phase 3–4 |
 
-**Shipped vs planned count (honest, post Epic 4.12):** **3 shipped** (`parent_lounge`, `household`, `club_wide`) · **7 partial** (`announcements`, `team_logistics`, `registration`, `tryouts_events`, `match_day`, `development`, `compliance`) · **3 planned** (`staff_internal`, `sponsor_partner`, `emergency`).
+**Shipped vs planned count (honest, post Epic 4.12 + 4.13a):** **4 shipped** (`announcements`, `parent_lounge`, `household`, `club_wide`) · **6 partial** (`team_logistics`, `registration`, `tryouts_events`, `match_day`, `development`, `compliance`) · **3 planned** (`staff_internal`, `sponsor_partner`, `emergency`).
 
 ---
 

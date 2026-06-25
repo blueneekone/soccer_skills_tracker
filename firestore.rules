@@ -189,19 +189,79 @@ service cloud.firestore {
       return get(/databases/$(database)/documents/users/$(emailKey())).data;
     }
 
+    // JWT householdId can lag after household link / VPC / claim sync — prefer users/{email}.
+    function parentResolvedHouseholdId() {
+      return exists(/databases/$(database)/documents/users/$(emailKey()))
+        && userDoc().keys().hasAll(['householdId'])
+        && userDoc().householdId is string
+        && userDoc().householdId != ''
+        ? userDoc().householdId
+        : tokenHousehold();
+    }
+
     function parentHouseholdAllowsChildEmail(childKey) {
       return isParent()
-        && tokenHousehold() != null
-        && exists(/databases/$(database)/documents/households/$(tokenHousehold()))
-        && get(/databases/$(database)/documents/households/$(tokenHousehold())).data.playerEmails.hasAny([childKey]);
+        && parentResolvedHouseholdId() != null
+        && exists(/databases/$(database)/documents/households/$(parentResolvedHouseholdId()))
+        && get(/databases/$(database)/documents/households/$(parentResolvedHouseholdId())).data.playerEmails.hasAny([childKey]);
     }
 
     function parentCanSeePlayerName(name) {
       return isParent()
-        && tokenHousehold() != null
-        && exists(/databases/$(database)/documents/households/$(tokenHousehold()))
-        && get(/databases/$(database)/documents/households/$(tokenHousehold())).data.keys().hasAll(['playerNames'])
-        && get(/databases/$(database)/documents/households/$(tokenHousehold())).data.playerNames.hasAny([name]);
+        && parentResolvedHouseholdId() != null
+        && exists(/databases/$(database)/documents/households/$(parentResolvedHouseholdId()))
+        && get(/databases/$(database)/documents/households/$(parentResolvedHouseholdId())).data.keys().hasAll(['playerNames'])
+        && get(/databases/$(database)/documents/households/$(parentResolvedHouseholdId())).data.playerNames.hasAny([name]);
+    }
+
+    function parentHouseholdDoc() {
+      return get(/databases/$(database)/documents/households/$(parentResolvedHouseholdId())).data;
+    }
+
+    function parentOwnsHouseholdId(householdId) {
+      return isParent()
+        && parentResolvedHouseholdId() != null
+        && parentResolvedHouseholdId() == householdId;
+    }
+
+    function parentChildUserOnTeam(childEmail, teamId) {
+      return childEmail is string
+        && childEmail != ''
+        && exists(/databases/$(database)/documents/users/$(childEmail))
+        && get(/databases/$(database)/documents/users/$(childEmail)).data.get('teamId', null) == teamId;
+    }
+
+    function parentChildLookupOnTeam(childEmail, teamId) {
+      return childEmail is string
+        && childEmail != ''
+        && exists(/databases/$(database)/documents/player_lookup/$(childEmail))
+        && get(/databases/$(database)/documents/player_lookup/$(childEmail)).data.get('teamId', null) == teamId;
+    }
+
+    function parentChildEmailOnTeam(childEmail, teamId) {
+      return parentChildUserOnTeam(childEmail, teamId)
+        || parentChildLookupOnTeam(childEmail, teamId);
+    }
+
+    // Household may list up to 6 linked operatives — mirror resolveTeamIdsForChildEmails.
+    function parentHouseholdChildOnTeam(teamId) {
+      return isParent()
+        && parentResolvedHouseholdId() != null
+        && exists(/databases/$(database)/documents/households/$(parentResolvedHouseholdId()))
+        && (
+          (parentHouseholdDoc().playerEmails.size() > 0
+            && parentChildEmailOnTeam(parentHouseholdDoc().playerEmails[0], teamId))
+          || (parentHouseholdDoc().playerEmails.size() > 1
+            && parentChildEmailOnTeam(parentHouseholdDoc().playerEmails[1], teamId))
+          || (parentHouseholdDoc().playerEmails.size() > 2
+            && parentChildEmailOnTeam(parentHouseholdDoc().playerEmails[2], teamId))
+          || (parentHouseholdDoc().playerEmails.size() > 3
+            && parentChildEmailOnTeam(parentHouseholdDoc().playerEmails[3], teamId))
+          || (parentHouseholdDoc().playerEmails.size() > 4
+            && parentChildEmailOnTeam(parentHouseholdDoc().playerEmails[4], teamId))
+          || (parentHouseholdDoc().playerEmails.size() > 5
+            && parentChildEmailOnTeam(parentHouseholdDoc().playerEmails[5], teamId))
+        );
     }
 
     function sameTeam(teamId) {
@@ -426,7 +486,7 @@ service cloud.firestore {
           || registrarTeamInClub(tid)
           || sameTeam(tid)
           || coachStaffCanAccessTeam(tid)
-          || (isParent() && userDoc().keys().hasAll(['teamId']) && userDoc().teamId == tid)
+          || (isParent() && parentHouseholdChildOnTeam(tid))
         );
     }
 
@@ -438,8 +498,7 @@ service cloud.firestore {
           || coachStaffCanAccessTeam(tid)
           || registrarTeamInClub(tid)
           || sameTeam(tid)
-          || (isParent() && userDoc().keys().hasAll(['teamId'])
-              && userDoc().teamId == tid));
+          || (isParent() && parentHouseholdChildOnTeam(tid)));
     }
 
     function canWriteTeamPracticeLibrary(tid) {
@@ -608,8 +667,7 @@ service cloud.firestore {
           || directorScopedToTeam(resource.data.teamId)
           || registrarTeamInClub(resource.data.teamId)
           || coachStaffCanAccessTeam(resource.data.teamId)
-          || (isParent() && userDoc().keys().hasAll(['teamId'])
-              && userDoc().teamId == resource.data.teamId));
+          || parentHouseholdChildOnTeam(resource.data.teamId));
     }
 
     function teamWorkoutRsvpReadOk(eventId, playerEmail) {
@@ -1082,6 +1140,9 @@ service cloud.firestore {
       allow read: if authed() && (
         isSuper()
         || (resource.data.parentEmails != null && resource.data.parentEmails.hasAny([emailKey()]))
+        || (isParent()
+            && parentResolvedHouseholdId() != null
+            && parentResolvedHouseholdId() == householdId)
         || (tokenHousehold() != null && tokenHousehold() == householdId)
         || (isDirector() && tokenClub() != null
             && resource.data.keys().hasAll(['clubId'])
@@ -1099,7 +1160,8 @@ service cloud.firestore {
       // Sprint 4.11 — household parent↔operative thread (server writes only).
       match /thread_messages/{messageId} {
         allow read: if authed() && (
-          (tokenHousehold() != null && tokenHousehold() == householdId)
+          (parentResolvedHouseholdId() != null && parentResolvedHouseholdId() == householdId)
+          || (tokenHousehold() != null && tokenHousehold() == householdId)
           || (tokenRole() == 'player'
               && userDoc().keys().hasAll(['householdId'])
               && userDoc().householdId == householdId)
@@ -1341,7 +1403,7 @@ service cloud.firestore {
           || directorScopedToTeam(teamId)
           || coachStaffCanAccessTeam(teamId)
           || sameTeam(teamId)
-          || (isParent() && userDoc().keys().hasAll(['teamId']) && userDoc().teamId == teamId)
+          || parentHouseholdChildOnTeam(teamId)
         );
         allow create, update: if coachStaffCanAccessTeam(teamId)
           && request.resource.data.teamId == teamId
@@ -2759,7 +2821,10 @@ service cloud.firestore {
         isPlatformAdmin()
         || (tokenTenant() != '' && resource.data.teamClubId == tokenTenant()
             && (isCoach() || isDirector() || isPlayer()))
-        || (isParent() && emailKey() in resource.data.ccParentEmails)
+        || (isParent() && (
+          emailKey() in resource.data.parentRecipientEmails
+          || emailKey() in resource.data.ccParentEmails
+        ))
       );
       // Created only by Cloud Function (Admin SDK).
       allow create, update, delete: if false;
@@ -3575,18 +3640,14 @@ service cloud.firestore {
     match /bounties/{bountyId} {
       allow get: if authed() && (
         isSuper()
-        || (isParent()
-            && tokenHousehold() != null
-            && resource.data.householdId == tokenHousehold())
+        || (isParent() && parentOwnsHouseholdId(resource.data.householdId))
         || (emailKey() == resource.data.playerEmail)
         || (isCoach()    && tokenClub() != null && resource.data.tenantId == tokenClub())
         || (isDirector() && tokenClub() != null && resource.data.tenantId == tokenClub())
       );
       allow list: if authed() && (
         isSuper()
-        || (isParent()
-            && tokenHousehold() != null
-            && resource.data.householdId == tokenHousehold())
+        || (isParent() && parentOwnsHouseholdId(resource.data.householdId))
         || (emailKey() == resource.data.playerEmail)
         || (isCoach()    && tokenClub() != null && resource.data.tenantId == tokenClub())
         || (isDirector() && tokenClub() != null && resource.data.tenantId == tokenClub())
@@ -3600,18 +3661,14 @@ service cloud.firestore {
     match /bounty_completions/{completionId} {
       allow get: if authed() && (
         isSuper()
-        || (isParent()
-            && tokenHousehold() != null
-            && resource.data.householdId == tokenHousehold())
+        || (isParent() && parentOwnsHouseholdId(resource.data.householdId))
         || (emailKey() == resource.data.playerEmail)
         || (isCoach()    && tokenClub() != null && resource.data.tenantId == tokenClub())
         || (isDirector() && tokenClub() != null && resource.data.tenantId == tokenClub())
       );
       allow list: if authed() && (
         isSuper()
-        || (isParent()
-            && tokenHousehold() != null
-            && resource.data.householdId == tokenHousehold())
+        || (isParent() && parentOwnsHouseholdId(resource.data.householdId))
         || (emailKey() == resource.data.playerEmail)
       );
       allow create, update, delete: if false;
@@ -3623,9 +3680,7 @@ service cloud.firestore {
     match /bounty_audit/{auditId} {
       allow get: if authed() && (
         isSuper()
-        || (isParent()
-            && tokenHousehold() != null
-            && resource.data.householdId == tokenHousehold())
+        || (isParent() && parentOwnsHouseholdId(resource.data.householdId))
       );
       allow list: if authed() && isSuper();
       allow create, update, delete: if false;
@@ -3784,7 +3839,8 @@ service cloud.firestore {
     //
     // List queries are filtered at query level:
     //   player  → where('playerUid','==',uid)
-    //   parent  → where('householdId','==',householdId)
+    //   parent  → where('householdId','==',householdId) — rule MUST match householdId
+    //             (userKey-only checks fail secure-query validation for that filter).
     //   coach   → where('clubId','==',clubId)
     // The rule permits those filtered reads via the same allow get,list block.
     // ─────────────────────────────────────────────────────────────────────────
@@ -3793,6 +3849,7 @@ service cloud.firestore {
       allow get, list: if authed() && (
         isSuper()
         || (request.auth.uid == resource.data.playerUid)
+        || (isParent() && parentOwnsHouseholdId(resource.data.householdId))
         || parentHouseholdAllowsChildEmail(resource.data.userKey)
         || ((isCoach() || isDirector()) && resource.data.clubId == tokenClub())
       );

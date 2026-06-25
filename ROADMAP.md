@@ -1656,6 +1656,7 @@ npm run check
 | **BOUNTY-DAILY-ACK** | **Done** | HQ XP progress, today-complete ack, explicit Train arm, mission strip Continue |
 | **TRAIN-MISSION-ARM-EXPLICIT** | **Done** | Accept ≠ arm; Start session / Continue only |
 | **ACQ-DOCS-CURRICULUM** | **Done** | Prospectus + demo + FUNCTIONAL_MVP cadence/curriculum honesty |
+| **ACQ-VISION-DOC-SYNC** | **Done** | Acquisition + QA docs aligned to multi-sport OS vision (owner-confirmed 2026-05) |
 | **CURRICULUM-AI-V0** | **Planned (post-acquisition)** | Licensed PD ingest, unified search, club-scoped RL candidates on server |
 
 ---
@@ -2057,8 +2058,9 @@ npm run check
 | 4.10 | **Done** | Report message / incident flow: `reportMessageIncident` callable → `message_incidents`; `ReportMessageIncident.svelte` on `/messages`; director queue in compliance console. | `commsSprint410.test.ts` |
 | 4.11 | **Done** | Household parent↔child threads | `commsSprint411.test.ts` |
 | 4.12 | **Done** | Firestore rules + callable integration tests: `firestoreRulesSprint412.test.ts` (source-scan + emulator) for team_broadcasts, message_incidents, attendance_sessions, messaging_audit; Epic 4 callable export guards; CI via `test:firestore-rules`. `npm run deploy:comms` for default-codebase comms batch. | `firestoreRulesSprint412.test.ts` |
+| 4.13a | **Done** | Phase 1 unified comms hub — parent-first `commitTeamBroadcast` + `deliveryReport`; `CommsHubShell` on `/messages`; `DeliveryReceipt`; Team Ops CTA → hub; `ParentLatestAnnouncements` dashboard strip; `parentRecipientEmails` rules + index | `commsPhase1.test.ts` · `commsSprint41.test.ts` · `commsSprint42.test.ts` · `loopIntegrityGuards.test.ts` · `functions/__tests__/commsPhase1.test.js` |
 
-**Epic 4 runs parallel to Epic 3** after **3.2** ships. **Epic 4.1–4.12 Done (2026-06-10).** Comms functions deployed to `sports-skill-tracker-dev` via `npm run deploy:comms`.
+**Epic 4 runs parallel to Epic 3** after **3.2** ships. **Epic 4.1–4.13a Done.** Comms functions deployed to `sports-skill-tracker-dev` via `npm run deploy:comms`.
 
 Vision: [`docs/vision/COMMS_HUB.md`](docs/vision/COMMS_HUB.md) · Compliance map: [`docs/SAFESPORT_COMMS_MATRIX.md`](docs/SAFESPORT_COMMS_MATRIX.md)
 

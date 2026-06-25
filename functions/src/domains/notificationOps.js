@@ -683,9 +683,11 @@ exports.onTeamBroadcastCreated = onDocumentCreated(
             : typeof data.body === 'string'
               ? data.body.slice(0, 140)
               : '';
-      const rawCcParents = Array.isArray(data.ccParentEmails)
-        ? data.ccParentEmails
-        : [];
+      const rawCcParents = Array.isArray(data.parentDeliveredEmails)
+        ? data.parentDeliveredEmails
+        : Array.isArray(data.ccParentEmails)
+          ? data.ccParentEmails
+          : [];
 
       // ── 1. Resolve player emails from player_lookup ──────────────────────
       /** @type {string[]} */
@@ -720,9 +722,8 @@ exports.onTeamBroadcastCreated = onDocumentCreated(
           }),
       );
 
-      // ── 3. Consent-filter CC'd parents (COPPA secondary guard) ───────────
-      // ccParentEmails in the doc are already consent-filtered by the
-      // safeSportBroadcast callable; this is a defence-in-depth re-check.
+      // Parents already consent-filtered at write time (deliveryReport);
+      // ccParentEmails retained for legacy docs and SafeSport minor CC audit.
       /** @type {string[]} */
       const consentedParentEmails = [];
       for (const raw of rawCcParents) {
