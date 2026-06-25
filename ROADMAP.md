@@ -2067,9 +2067,9 @@ npm run check
 | 4.16a | **Done** | Phase 4 omnichannel bus — `omnichannelOps.js` SendGrid email fallback + Twilio emergency SMS; `onTeamBroadcastCreated` merges `deliveryReport` channels; `DeliveryReceipt` channel chips; egress `api.twilio.com` | `commsPhase4a.test.ts` · `functions/__tests__/commsPhase4a.test.js` |
 | 4.16b | **Done** | Read/ack compliance — `broadcastAckOps.js` (`acknowledgeBroadcast`, `getBroadcastAckStatus`); `requiresAck` + `ackDeadline` on `team_broadcasts`; parent inbox CTA + staff outbox rollup | `commsPhase4b.test.ts` · `functions/__tests__/commsPhase4b.test.js` |
 | 4.16c | **Done** | `sponsor_partner` templates + VPC `consentSponsor` opt-in — `sponsorPartnerOps.js` (`createSponsorTemplate`, `approveSponsorTemplate`, `sendSponsorPartnerDigest`); `clubs/{clubId}/sponsor_templates`; dual VPC gate (`consentSponsor` + `consentComms`); `CommsSponsorPartnerChannel` + `DeliveryReceipt` | `commsPhase4c.test.ts` · `functions/__tests__/commsPhase4c.test.js` |
-| 4.16d | **Planned** | consentComms onboarding banner + canon/docs sync | `commsPhase4a.test.ts` (extend) |
+| 4.16d | **Done** | `consentComms` onboarding — `ParentCommsConsentBanner` on `/parent/dashboard`; `consent_records` parent read rule; COMMS canon + SAFESPORT + FCM + PRODUCT_STATE sync | `commsPhase4d.test.ts` |
 
-**Epic 4 runs parallel to Epic 3** after **3.2** ships. **Epic 4.1–4.16c + 4.15d Done.** Comms functions deployed to `sports-skill-tracker-dev` via `npm run deploy:comms`.
+**Epic 4 runs parallel to Epic 3** after **3.2** ships. **Epic 4.1–4.16d Done.** Comms functions deployed to `sports-skill-tracker-dev` via `npm run deploy:comms`.
 
 Vision: [`docs/vision/COMMS_HUB.md`](docs/vision/COMMS_HUB.md) · Compliance map: [`docs/SAFESPORT_COMMS_MATRIX.md`](docs/SAFESPORT_COMMS_MATRIX.md)
 

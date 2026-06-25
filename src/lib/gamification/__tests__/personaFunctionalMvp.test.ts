@@ -45,7 +45,7 @@ describe('Sprint LAUNCH-functional-os — ROADMAP', () => {
 	});
 
 	it('ROADMAP next build order includes Epic 5 after Epic 4 comms complete', () => {
-		expect(roadmap).toMatch(/Epic 4\.1–4\.16c/);
+		expect(roadmap).toMatch(/Epic 4\.1–4\.16d/);
 		expect(roadmap).toMatch(/Epic 4\/5\/2\.2 done/i);
 	});
 

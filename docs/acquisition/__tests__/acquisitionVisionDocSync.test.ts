@@ -109,6 +109,8 @@ describe('ACQ-VISION-DOC-SYNC — acquisition vision language', () => {
 		expect(doc).toMatch(/deliveryReport|DeliveryReport|delivery contract/i);
 		expect(doc).toMatch(/SafeSport/i);
 		expect(doc).toMatch(/announcements|parent_lounge|household|club_wide/);
+		expect(doc).toMatch(/Phase 4.*Done|4\.16d/);
+		expect(doc).toMatch(/ParentCommsConsentBanner/);
 	});
 
 	it('COMMS_HUB.md links to COMMS_CHANNEL_CANON as channel type authority', () => {

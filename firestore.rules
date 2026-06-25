@@ -2193,6 +2193,7 @@ service cloud.firestore {
     match /consent_records/{docId} {
       allow read: if authed() && (
         resource.data.subjectEmail == emailKey()
+        || (isParent() && resource.data.parentEmail == emailKey())
         || isSuper()
         || (isDirector() && tokenClub() != null && resource.data.clubId == tokenClub())
       );

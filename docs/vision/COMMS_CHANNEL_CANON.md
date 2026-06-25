@@ -32,7 +32,7 @@ Coaches, directors, registrars, and future team managers must pass **background 
 
 ### `consentComms` gates push/in-app delivery with visible skip reasons
 
-VPC captures `consentComms` per child ([`/parent/vpc`](../src/routes/(app)/parent/vpc/+page.svelte)). Server paths filter parents via `filterParentsWithCommsConsent` (`commsPolicy.js`) — enforced on broadcast CC and monitored channel repair (Sprint 4.2 Done). Skipped parents appear in `parentSkipped[]` with `consent_comms_declined`. **UX gap:** VPC defaults `consentComms` to `false` — most guardians must opt in explicitly.
+VPC captures `consentComms` per child ([`/parent/vpc`](../src/routes/(app)/parent/vpc/+page.svelte)). Server paths filter parents via `filterParentsWithCommsConsent` (`commsPolicy.js`) — enforced on broadcast CC and monitored channel repair (Sprint 4.2 Done). Skipped parents appear in `parentSkipped[]` with `consent_comms_declined`. **Onboarding:** VPC defaults `consentComms` to `false` (legal/product choice) — [`ParentCommsConsentBanner.svelte`](../src/lib/components/parent/ParentCommsConsentBanner.svelte) on `/parent/dashboard` prompts guardians to opt in (4.16d).
 
 ### One hub route per persona (`/messages`) — no duplicate compose surfaces
 
@@ -56,9 +56,9 @@ VPC captures `consentComms` per child ([`/parent/vpc`](../src/routes/(app)/paren
 | `compliance` | Compliance | VPC, clearance, incidents, audit notices | director, admin | affected parents/staff | none | none | `message_incidents`, `audit_logs`, `consent_records` | **shipped** — 4.15c typed stream + `reportMessageIncident` hook; director console export | — |
 | `club_wide` | Club-wide broadcast | Director fan-out to all/selected teams | director, platform admin | parents + adult players per team | HQ/calendar per team | none | `team_broadcasts` (per-team docs), `audit_logs` | **shipped** — 4.8 `clubSportBroadcast` + 4.15a hub surfacing | — |
 | `sponsor_partner` | Sponsor & partner | Template-only, director-approved; parents only | director (approve), system (send) | parents opt-in (`consentSponsor` + `consentComms`) | none | none | `audit_logs`, `clubs/{clubId}/sponsor_templates` | **shipped** — 4.16c `sponsorPartnerOps` + `CommsSponsorPartnerChannel` | — |
-| `emergency` | Emergency | Director break-glass — weather, safety, lockdown | director, admin | all club parents (+ staff) | push + SMS fallback (planned) | none | `audit_logs` (priority flag) | **shipped** — 4.15b `emergencyClubBroadcast` + high-priority FCM | — |
+| `emergency` | Emergency | Director break-glass — weather, safety, lockdown | director, admin | all club parents (+ staff) | push + SMS fallback (feature flag) | none | `audit_logs` (priority flag) | **shipped** — 4.15b `emergencyClubBroadcast` + high-priority FCM + 4.16a SMS hook | — |
 
-**Shipped vs planned count (honest, post Epic 4.16c):** **12 shipped** (`announcements`, `parent_lounge`, `household`, `club_wide`, `team_logistics`, `registration`, `tryouts_events`, `match_day`, `compliance`, `staff_internal`, `emergency`, `sponsor_partner`) · **1 partial** (`development`).
+**Shipped vs planned count (honest, post Epic 4.16d):** **12 shipped** channel types (see rows above) · **1 partial** (`development`). Phase 3 + Phase 4 comms rows are **shipped** on `sports-skill-tracker-dev`.
 
 > **Message bus footnote (4.14):** Typed system channels use `clubs/{clubId}/channels/{channelId}/messages`. Team logistics interactive sub-channels remain at `teams/{teamId}/channels/{subChannelId}/messages` with `channelType: team_logistics` on the parent channel doc.
 
@@ -86,7 +86,7 @@ Club (tenant / clubId)
 | `admin` | platform | all | break-glass read | compliance export |
 | `recruiter` | clearance-gated | — | read-only prospect threads (future) | PS-X01 minimal |
 | `tutor` | clearance-gated | — | supplemental 1:1 (future, adult/minor policy TBD) | future |
-| sponsor external | — | — | **none** — template digest only (planned) | parents-only receive |
+| sponsor external | — | — | **none** — template digest only (shipped 4.16c) | parents-only receive |
 
 Channel instances are **provisioned** by type (e.g. `commsChannelOps.provisionParentLounge`) — not user-created. Cross-team visibility requires club-level role or explicit channel membership.
 
@@ -127,7 +127,7 @@ interface DeliveryReport {
   parentDelivered: Array<{ email: string; uid?: string; channels: ('in_app' | 'push' | 'email')[] }>;
   parentSkipped: Array<{
     email: string;
-    reason: 'no_household' | 'not_on_roster' | 'consent_comms_declined' | 'not_guardian' | 'push_token_missing';
+    reason: 'no_household' | 'not_on_roster' | 'consent_comms_declined' | 'consent_sponsor_declined' | 'not_guardian' | 'push_token_missing';
   }>;
   /** SafeSport minor CC audit — subset of parentDelivered when minors on roster */
   ccParentEmails: string[];
@@ -142,11 +142,12 @@ interface DeliveryReport {
 |------|---------|
 | `no_household` | Minor on roster has no resolvable `householdId` / guardian link |
 | `not_on_roster` | Target parent not linked to a rostered athlete on this team |
-| `consent_comms_declined` | VPC `consentComms` false or absent |
+| `consent_comms_declined` | VPC `consentComms` false or absent — parent may use dashboard banner → `/parent/vpc` |
+| `consent_sponsor_declined` | VPC `consentSponsor` false or absent (sponsor digests also require `consentComms`) |
 | `not_guardian` | Email on household doc but not designated guardian for athlete |
 | `push_token_missing` | In-app delivery ok; push skipped (informational, not a hard fail) |
 
-**Delivery channels (4.16a):** `parentDelivered[].channels` may include `in_app`, `push`, `email`, `sms`. Email fallback requires `feature_flags/commsEmailFallback`; SMS is **emergency-only** via `feature_flags/commsSmsEmergency`. `email_failed` / `sms_failed` logged in `audit_logs.extra.omnichannelFailures` only — not user-facing skip reasons.
+**Delivery channels (4.16a — shipped):** `parentDelivered[].channels` may include `in_app`, `push`, `email`, `sms`. Email fallback requires `feature_flags/commsEmailFallback`; SMS is **emergency-only** via `feature_flags/commsSmsEmergency`. `onTeamBroadcastCreated` merges omnichannel results into `deliveryReport` via `omnichannelOps.js`. `email_failed` / `sms_failed` logged in `audit_logs.extra.omnichannelFailures` only — not user-facing skip reasons.
 
 ### Client rules
 
@@ -155,9 +156,9 @@ interface DeliveryReport {
 3. Partial delivery is **success** with yellow/amber receipt — not silent failure.
 4. `ccParentEmails` logged in `audit_logs.extra` today — receipt must mirror for staff transparency.
 
-### Current server behavior (gap documentation)
+### Current server behavior
 
-[`commitTeamBroadcast`](../functions/comms.js) resolves parents only via **minor CC path**: for each minor on `player_lookup`, resolve `householdId` → `parentEmails` + `parentEmail`, filter by `consentComms`. **Parents of adult-only rosters** and **non-minor households** are not in `ccParentEmails` — parent delivery is incomplete for parent-targeted announcements. Phase 1 fixes audience resolution to **parent-first** with minor CC as audit subset.
+[`commitTeamBroadcast`](../functions/comms.js) resolves **parent-first** audience with `parentRecipientEmails` + `deliveryReport` (4.13a). Minor CC remains an audit subset in `ccParentEmails`. Parents without `consentComms` are skipped with `consent_comms_declined` — surfaced in delivery receipts and onboarding banner (4.16d).
 
 ---
 
@@ -214,30 +215,25 @@ flowchart LR
 
 | Gap | Detail | Target |
 |-----|--------|--------|
-| **Parent delivery via minor-CC only** | `commitTeamBroadcast` populates `ccParentEmails` only when minors on roster — not full parent audience | 4.13a delivery contract |
-| **Misleading success copy** | `ParentAnnouncementCompose`: CTA "Send to parents" but success says "roster member(s)" | 4.13a receipt UI |
-| **Fragmented compose** | Team Ops (`/coach/logistics`), Director tab, and `/messages` — three surfaces | 4.13a hub shell |
-| **`consentComms` default false** | VPC checkbox defaults off — most parents skipped until opt-in | UX + onboarding prompt |
-| **No sponsor/emergency types** | Registry rows planned only | Phase 3–4 |
-| **`team_manager` JWT not shipped** | 4.7 delivered coach-delegated Team Ops | Phase 2 |
-| **Email/SMS fallback** | FCM-only delivery path | Phase 4 omnichannel |
-| **No typed `type_id` on channels** | Parent Lounge uses doc id convention; broadcasts use `team_broadcasts` without type field | Phase 2 data model |
-| **Director compose duplicate** | `DirectorClubBroadcastComposer` on `/director?tab=comms` vs hub | 4.13a |
+| **`team_manager` JWT not shipped** | 4.7 delivered coach-delegated Team Ops | Phase 2+ |
+| **Compose deep-link consolidation** | Team Ops / Director tab may still deep-link compose — hub is canonical read/send surface | polish |
+| **No typed `type_id` on legacy broadcasts** | `team_broadcasts` uses collection convention; typed channels use `channelType` on club channel docs | data model polish |
+| **`development` channel** | Forge intents + adult-only DM — no typed `development` channel instance | Phase 2+ |
+
+**Resolved (4.13a–4.16d):** parent-first delivery + receipts · unified hub shell · Phase 3 typed streams (`staff_internal`, `compliance`, `emergency`, `club_wide`) · Phase 4 omnichannel + ack + sponsor templates · `consentComms` onboarding banner.
 
 ---
 
 ## 9. Phased roadmap
 
-Epic 4.1–4.12 **Done** (2026-06-10) — see [`ROADMAP.md`](../../ROADMAP.md) Epic 4 table. **Do not re-duplicate** sprint proof columns here.
+Epic 4.1–4.16d **Done** (2026-06-25) — see [`ROADMAP.md`](../../ROADMAP.md) Epic 4 table.
 
-| Phase | ROADMAP anchor | Scope |
-|-------|----------------|-------|
-| **Phase 1** | **4.13a** *(add to ROADMAP)* | Unified hub shell on `/messages`; **delivery contract** + parent-first audience in `commitTeamBroadcast`; delivery receipt UI; parent dashboard unread strip; deep-link from Team Ops |
-| **Phase 2** | **4.14** *(add to ROADMAP)* | Typed `team_logistics`, `registration`, `tryouts_events`, `match_day` channel instances; coach-delegated TM on logistics (`team_manager` JWT deferred); hub rail + server `postChannelSystemMessage` |
-| **Phase 3** | 4.15+ *(planned)* | `staff_internal`, `compliance` stream; `emergency` break-glass; club-wide spaces in hub (surface existing 4.8 backend) |
-| **Phase 4** | 4.16+ *(planned)* | `sponsor_partner` templates; email/SMS omnichannel fallback; read/ack compliance for critical announcements |
-
-**Phase 1 agent checklist:** §6 delivery contract → extend `commitTeamBroadcast` return shape → update `CommsEngine` types → receipt components → guard tests in `commsSprint413*.test.ts`.
+| Phase | ROADMAP anchor | Status |
+|-------|----------------|--------|
+| **Phase 1** | 4.13a | **Done** — hub shell, delivery contract, receipts, parent dashboard strip |
+| **Phase 2** | 4.14 | **Done** — typed logistics, registration, tryouts, match_day |
+| **Phase 3** | 4.15a–4.15d | **Done** — club_wide, emergency, compliance, staff_internal |
+| **Phase 4** | 4.16a–4.16d | **Done** — omnichannel fallback, broadcast ack, sponsor templates, consent onboarding + doc sync |
 
 ---
 

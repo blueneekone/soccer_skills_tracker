@@ -52,7 +52,13 @@ Evidence: Tier 1 routes in [`PRODUCT_SURFACE_REGISTRY.md`](../vision/PRODUCT_SUR
 
 | Surface | Route | Enforcement |
 |---------|-------|-------------|
-| SafeSport messages | `/messages` | `sendCoachPlayerMessage` blocks coach→minor DM; `commsSprint42.test.ts` |
+| Unified comms hub | `/messages` | `CommsHubShell` — typed channels (announcements, Parent Lounge, logistics, registration, tryouts, match day, club-wide, emergency, compliance, staff internal, sponsor partner); `deliveryReport` receipts |
+| Parent onboarding | `/parent/dashboard` | `ParentCommsConsentBanner` when `consentComms` false for linked child → `/parent/vpc` (4.16d) |
+| SafeSport DMs | `/messages` | `sendCoachPlayerMessage` blocks coach→minor DM; `commsSprint42.test.ts` |
+| Broadcast ack | `/messages` announcements | Parent "I have read this" + staff outbox rollup (`broadcastAckOps`, 4.16b) |
+| Omnichannel | server | Email/SMS fallback via `omnichannelOps.js` — **behind** `feature_flags/commsEmailFallback` and `feature_flags/commsSmsEmergency` (4.16a) |
+
+**Evidence:** Epic 4.13a–4.16d guards (`commsPhase4a.test.ts` … `commsPhase4d.test.ts`); [`COMMS_CHANNEL_CANON.md`](../vision/COMMS_CHANNEL_CANON.md) §9 Phase 1–4 **Done**.
 
 ### Club / table stakes (code shipped — Tier 2+ in registry)
 
@@ -86,7 +92,6 @@ Honest partials from [`NOTABLE_GAPS.md`](./NOTABLE_GAPS.md) and [`PLATFORM_GAP_R
 | **Theme light/dark** | Partial | Dark-first; token split incomplete |
 | **Live streaming** | Partial | URL embed MVP only (YouTube/Vimeo/Mux) |
 | **Avatar PNG art** | Deferred | `defaultPortraitV2` SVG + initials fallback |
-| **Comms UX** | Partial | Mid-migration to unified hub per [`COMMS_CHANNEL_CANON.md`](../vision/COMMS_CHANNEL_CANON.md) — fragmented compose (`/coach/logistics`, `/director?tab=comms`), minor-CC-only parent delivery, receipt UX gap; Phase 1 (4.13a) |
 
 ---
 
