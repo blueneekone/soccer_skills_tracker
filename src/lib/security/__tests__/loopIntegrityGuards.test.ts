@@ -133,6 +133,13 @@ describe.skipIf(!process.env.FIRESTORE_EMULATOR_HOST)(
 				await seed(doc(db, 'team_broadcasts/bc-1'), {
 					teamClubId: 'club-a',
 					ccParentEmails: ['parent@test.com'],
+					parentRecipientEmails: ['parent@test.com'],
+				});
+
+				await seed(doc(db, 'team_broadcasts/bc-2'), {
+					teamClubId: 'club-a',
+					parentRecipientEmails: ['parent@test.com'],
+					ccParentEmails: [],
 				});
 
 				// G5: license_entitlements — club subscription doc
@@ -298,6 +305,17 @@ describe.skipIf(!process.env.FIRESTORE_EMULATOR_HOST)(
 			await assertSucceeds(getDoc(doc(db, 'team_broadcasts/bc-1')));
 		});
 
+		it('G4b: parent reads broadcast via parentRecipientEmails only — succeeds', async () => {
+			const db = env
+				.authenticatedContext('parent-uid', token({
+					email: 'parent@test.com',
+					role: 'parent',
+					householdId: 'hh-a',
+				}))
+				.firestore();
+			await assertSucceeds(getDoc(doc(db, 'team_broadcasts/bc-2')));
+		});
+
 		it('G4: cross-club player reads club-a broadcast — denied (tokenTenant mismatch)', async () => {
 			// tokenTenant()='club-b' != teamClubId='club-a'
 			const db = env
@@ -421,10 +439,9 @@ describe.skipIf(!process.env.FIRESTORE_EMULATOR_HOST)(
 			await assertFails(getDoc(doc(db, 'vpc_requests/vpc-1')));
 		});
 
-		// ── G9 — custom-claims / tokenHousehold dependency (Tier-2 Item 3) ───────
-		// Proves syncUserClaims MUST emit householdId — without it, parentHouseholdAllowsChildEmail=false.
-		// Rule: parentHouseholdAllowsChildEmail(userId.lower())
-		//   = isParent() && tokenHousehold()!=null && households/hh.playerEmails.hasAny([childKey])
+		// ── G9 — parent household resolution (JWT vs users/{email}) ───────────────
+		// parentHouseholdAllowsChildEmail uses parentResolvedHouseholdId():
+		//   users/{email}.householdId when present, else tokenHousehold().
 
 		it('G9: parent WITH householdId claim reads child users/{email} doc — succeeds', async () => {
 			// tokenHousehold()='hh-a' → parentHouseholdAllowsChildEmail('child@test.com') = true
@@ -438,22 +455,40 @@ describe.skipIf(!process.env.FIRESTORE_EMULATOR_HOST)(
 			await assertSucceeds(getDoc(doc(db, 'users/child@test.com')));
 		});
 
-		it('G9: parent WITHOUT householdId claim reads child users/{email} doc — denied', async () => {
-			// tokenHousehold()=null → parentHouseholdAllowsChildEmail returns false immediately
-			// Simulates the pre-fix state where syncUserClaims did not emit householdId
+		it('G9: parent WITHOUT JWT or users doc householdId reads child users/{email} doc — denied', async () => {
+			// No users/parent-nohh@test.com seed — parentResolvedHouseholdId() and tokenHousehold() both null
 			const db = env
 				.authenticatedContext('parent-nohh', token({
 					email: 'parent-nohh@test.com',
 					role: 'parent',
-					// householdId intentionally absent — validates the syncUserClaims fix
-					// token() default sets householdId: null, so tokenHousehold() == null → denied
 				}))
 				.firestore();
 			await assertFails(getDoc(doc(db, 'users/child@test.com')));
 		});
 
+		it('G9b: parent WITHOUT JWT householdId but WITH users doc householdId reads child — succeeds', async () => {
+			await env.withSecurityRulesDisabled(async (ctx) => {
+				const db = ctx.firestore();
+				const { setDoc: seed } = await import('firebase/firestore');
+				await seed(doc(db, 'users/parent-firestore-hh@test.com'), {
+					role: 'parent',
+					clubId: 'club-a',
+					householdId: 'hh-a',
+				});
+			});
+			const db = env
+				.authenticatedContext('parent-fs-hh', token({
+					email: 'parent-firestore-hh@test.com',
+					role: 'parent',
+					householdId: null,
+				}))
+				.firestore();
+			await assertSucceeds(getDoc(doc(db, 'users/child@test.com')));
+		});
+
 		// ── G10 — household thread path ──────────────────────────────────────────
-		// Rule: allow read if tokenHousehold()!=null && tokenHousehold()==householdId (path param)
+		// Rule: allow read if parentResolvedHouseholdId()==householdId (path param)
+		//   OR  tokenHousehold()==householdId
 		//   OR  (tokenRole()=='player' && userDoc().householdId==householdId)
 
 		it('G10: parent with matching householdId reads household thread message — succeeds', async () => {
@@ -478,6 +513,100 @@ describe.skipIf(!process.env.FIRESTORE_EMULATOR_HOST)(
 				}))
 				.firestore();
 			await assertFails(getDoc(doc(db, 'households/hh-a/thread_messages/msg-1')));
+		});
+
+		// ── G11 — completion_verifications parent audit queue (ProofReviewQueue) ─
+		// Rule: parentHouseholdAllowsChildEmail(resource.data.userKey) via parentResolvedHouseholdId
+
+		it('G11: parent without JWT householdId reads pending completion_verifications — succeeds', async () => {
+			await env.withSecurityRulesDisabled(async (ctx) => {
+				const db = ctx.firestore();
+				const { setDoc: seed } = await import('firebase/firestore');
+				await seed(doc(db, 'users/parent-firestore-hh@test.com'), {
+					role: 'parent',
+					clubId: 'club-a',
+					householdId: 'hh-a',
+				});
+				await seed(doc(db, 'completion_verifications/cv-pending-1'), {
+					householdId: 'hh-a',
+					userKey: 'child@test.com',
+					status: 'pending',
+					playerUid: 'uid-child',
+					clubId: 'club-a',
+				});
+			});
+			const db = env
+				.authenticatedContext('parent-fs-hh', token({
+					email: 'parent-firestore-hh@test.com',
+					role: 'parent',
+					householdId: null,
+				}))
+				.firestore();
+			await assertSucceeds(getDoc(doc(db, 'completion_verifications/cv-pending-1')));
+		});
+
+		it('G11b: parent lists completion_verifications by householdId query — succeeds', async () => {
+			await env.withSecurityRulesDisabled(async (ctx) => {
+				const db = ctx.firestore();
+				const { setDoc: seed, collection, query, where, getDocs } = await import(
+					'firebase/firestore'
+				);
+				await seed(doc(db, 'users/parent-firestore-hh@test.com'), {
+					role: 'parent',
+					clubId: 'club-a',
+					householdId: 'hh-a',
+				});
+				await seed(doc(db, 'completion_verifications/cv-list-1'), {
+					householdId: 'hh-a',
+					userKey: 'child@test.com',
+					status: 'pending',
+					playerUid: 'uid-child',
+					clubId: 'club-a',
+					createdAt: Date.now(),
+				});
+			});
+			const db = env
+				.authenticatedContext('parent-fs-hh-list', token({
+					email: 'parent-firestore-hh@test.com',
+					role: 'parent',
+					householdId: null,
+				}))
+				.firestore();
+			const { collection, query, where, getDocs } = await import('firebase/firestore');
+			const q = query(
+				collection(db, 'completion_verifications'),
+				where('householdId', '==', 'hh-a'),
+				where('status', '==', 'pending'),
+			);
+			await assertSucceeds(getDocs(q));
+		});
+
+		// ── G12 — parent schedule: team_workouts for child's team (not parent.teamId) ─
+		it('G12: parent without JWT householdId reads child team_workouts — succeeds', async () => {
+			await env.withSecurityRulesDisabled(async (ctx) => {
+				const db = ctx.firestore();
+				const { setDoc: seed } = await import('firebase/firestore');
+				await seed(doc(db, 'users/parent-firestore-hh@test.com'), {
+					role: 'parent',
+					clubId: 'club-a',
+					householdId: 'hh-a',
+				});
+				await seed(doc(db, 'team_workouts/tw-practice-1'), {
+					teamId: 'team-a',
+					recordType: 'scheduled_event',
+					type: 'scheduled',
+					name: 'Practice',
+					startTimestamp: Date.now() + 86_400_000,
+				});
+			});
+			const db = env
+				.authenticatedContext('parent-fs-hh', token({
+					email: 'parent-firestore-hh@test.com',
+					role: 'parent',
+					householdId: null,
+				}))
+				.firestore();
+			await assertSucceeds(getDoc(doc(db, 'team_workouts/tw-practice-1')));
 		});
 	},
 );

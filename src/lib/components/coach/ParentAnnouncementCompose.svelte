@@ -2,6 +2,7 @@
 	import Icon from '$lib/components/ui/Icon.svelte';
 	import type { IconName } from '$lib/icons/registry.js';
 	import { CommsEngine } from '$lib/services/comms.svelte.js';
+	import DeliveryReceipt from '$lib/components/comms/DeliveryReceipt.svelte';
 
 	let {
 		teamId = '',
@@ -19,6 +20,11 @@
 	let body = $state('');
 
 	const canSend = $derived(Boolean(teamId?.trim()) && body.trim().length > 0 && !engine.isSending);
+	const deliveredCount = $derived(
+		engine.lastResult?.deliveryReport?.parentDelivered?.length ??
+			engine.lastResult?.parentDeliveredCount ??
+			0,
+	);
 
 	async function sendAnnouncement() {
 		if (!teamId?.trim() || !body.trim() || engine.isSending) return;
@@ -85,16 +91,18 @@
 		></textarea>
 
 		{#if engine.phase === 'success' && engine.lastResult}
-			<p class="pac-ok" role="status">
-				Sent to {engine.lastResult.recipientCount} roster member{engine.lastResult.recipientCount === 1
-					? ''
-					: 's'}.
-				{#if engine.lastResult.ccParentCount > 0}
-					{engine.lastResult.ccParentCount} linked parent{engine.lastResult.ccParentCount === 1
-						? ''
-						: 's'} notified.
-				{/if}
-			</p>
+			{#if engine.lastResult.deliveryReport}
+				<DeliveryReceipt report={engine.lastResult.deliveryReport} />
+			{:else}
+				<p class="pac-ok" role="status">
+					Announcement published — {deliveredCount} parent{deliveredCount === 1 ? '' : 's'} delivered.
+				</p>
+			{/if}
+			{#if deliveredCount === 0}
+				<p class="pac-warn" role="status">
+					No parents received this announcement — check VPC comms consent and household links.
+				</p>
+			{/if}
 		{:else if engine.error}
 			<p class="pac-err" role="alert">{engine.error}</p>
 		{/if}
@@ -111,7 +119,7 @@
 				disabled={!canSend}
 				onclick={() => void sendAnnouncement()}
 			>
-				{engine.isSending ? 'Sending…' : 'Send to parents'}
+				{engine.isSending ? 'Publishing…' : 'Publish announcement'}
 			</button>
 		</div>
 	{/if}
@@ -239,6 +247,13 @@
 		margin: 0;
 		font-size: 12px;
 		color: #b91c1c;
+	}
+
+	.pac-warn {
+		margin: 0;
+		font-size: 12px;
+		font-weight: 600;
+		color: #b45309;
 	}
 
 	.pac-actions {

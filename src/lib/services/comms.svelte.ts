@@ -72,6 +72,44 @@ export interface ClubBroadcastInput {
 	teamIds?: string[];
 }
 
+export type ParentSkipReason =
+	| 'no_household'
+	| 'not_on_roster'
+	| 'consent_comms_declined'
+	| 'not_guardian'
+	| 'push_token_missing';
+
+export type DeliveryChannel = 'in_app' | 'push' | 'email';
+
+export interface ParentDeliveredRow {
+	email: string;
+	uid?: string;
+	channels: DeliveryChannel[];
+}
+
+export interface ParentSkippedRow {
+	email: string;
+	reason: ParentSkipReason;
+}
+
+/** COMMS_CHANNEL_CANON §6 — normative delivery contract (Epic 4.13a). */
+export interface DeliveryReport {
+	messageId: string;
+	audienceScope:
+		| 'team_parents'
+		| 'team_parents_and_adults'
+		| 'club_parents'
+		| 'channel_members'
+		| 'household';
+	rosterAthleteCount: number;
+	parentDelivered: ParentDeliveredRow[];
+	parentSkipped: ParentSkippedRow[];
+	/** SafeSport minor CC audit — subset of parentDelivered when minors on roster */
+	ccParentEmails: string[];
+	auditLogId?: string;
+	teamId?: string;
+}
+
 export interface BroadcastResult {
 	success: true;
 	messageId: string;
@@ -79,6 +117,12 @@ export interface BroadcastResult {
 	recipientCount: number;
 	parentNotified: boolean;
 	ccParentCount: number;
+	parentRecipientCount?: number;
+	parentDeliveredCount?: number;
+	parentSkippedCount?: number;
+	parentRecipientEmails?: string[];
+	parentDeliveredEmails?: string[];
+	deliveryReport?: DeliveryReport;
 }
 
 /** Custom error thrown when a caller attempts to violate SafeSport policy. */

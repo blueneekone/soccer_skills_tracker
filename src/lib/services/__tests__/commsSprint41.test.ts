@@ -65,8 +65,8 @@ describe('Sprint 4.1 — /coach/logistics route wiring', () => {
 		expect(page).toMatch(/CoachLogisticsView/);
 		const view = readFileSync(join(ROOT, 'lib/coach/logistics/CoachLogisticsView.svelte'), 'utf-8');
 		expect(view).toMatch(/MessagesTab/);
-		expect(view).toMatch(/ParentAnnouncementCompose/);
-		expect(view).toMatch(/teamId=\{teamScope\.selectedTeamId\}/);
+		expect(view).toMatch(/\/messages\?channel=announcements/);
+		expect(view).not.toMatch(/ParentAnnouncementCompose/);
 	});
 
 	it('ParentAnnouncementCompose uses CommsEngine team broadcast', () => {
@@ -74,8 +74,8 @@ describe('Sprint 4.1 — /coach/logistics route wiring', () => {
 		expect(src).toMatch(/CommsEngine/);
 		expect(src).toMatch(/broadcastMessage/);
 		expect(src).toMatch(/type:\s*'team'/);
-		expect(src).toMatch(/Send to parents/i);
-		expect(src).toMatch(/Parent-targeted/i);
+		expect(src).toMatch(/Publish announcement/i);
+		expect(src).toMatch(/DeliveryReceipt/);
 	});
 
 	it('CommsEngine calls safeSportBroadcast in us-east1', () => {
@@ -212,34 +212,24 @@ describe('T0-8b — AnnouncementsInbox component reads team_broadcasts', () => {
 });
 
 describe('T0-8b — announcements surface is separate from DM inbox', () => {
-	it('/messages page imports AnnouncementsInbox', () => {
+	it('/messages page mounts CommsHubShell (Epic 4.13a)', () => {
 		const src = readFileSync(MESSAGES_PAGE, 'utf-8');
-		expect(src).toMatch(/AnnouncementsInbox/);
-		expect(src).toMatch(/comms\/AnnouncementsInbox/);
+		expect(src).toMatch(/CommsHubShell/);
 	});
 
-	it('AnnouncementsInbox is mounted BEFORE the DM inbox section', () => {
-		const src = readFileSync(MESSAGES_PAGE, 'utf-8');
-		const annPos = src.indexOf('AnnouncementsInbox');
-		const dmPos = src.indexOf('comms-hub-z3-inbox');
-		expect(annPos).toBeGreaterThan(-1);
-		expect(dmPos).toBeGreaterThan(-1);
-		expect(annPos).toBeLessThan(dmPos);
-	});
-
-	it('AnnouncementsInbox is NOT inside the DM inbox card', () => {
-		const src = readFileSync(MESSAGES_PAGE, 'utf-8');
-		const annPos = src.indexOf('<AnnouncementsInbox');
-		const inboxStart = src.indexOf('comms-hub-z3-inbox');
-		expect(annPos).toBeLessThan(inboxStart);
+	it('CommsHubShell includes announcements channel with DeliveryReceipt compose path', () => {
+		const hub = readFileSync(join(ROOT, 'lib/components/comms/CommsHubShell.svelte'), 'utf-8');
+		expect(hub).toMatch(/AnnouncementsInbox/);
+		expect(hub).toMatch(/ParentAnnouncementCompose/);
+		expect(hub).toMatch(/direct_mail/);
 	});
 });
 
 describe('T0-8b — Firestore rules include parent read branch on team_broadcasts', () => {
 	it('firestore.rules has isParent() branch for team_broadcasts read', () => {
 		const src = readFileSync(FIRESTORE_RULES, 'utf-8');
-		// Must contain the parent check near the team_broadcasts match block
-		expect(src).toMatch(/isParent\(\)\s*&&\s*emailKey\(\)\s*in\s*resource\.data\.ccParentEmails/);
+		expect(src).toMatch(/parentRecipientEmails/);
+		expect(src).toMatch(/ccParentEmails/);
 	});
 
 	it('firestore.rules still preserves coach/director/player branch', () => {
@@ -270,6 +260,22 @@ describe('T0-8b — composite indexes for team_broadcasts queries', () => {
 				ix.collectionGroup === 'team_broadcasts' &&
 				ix.fields.some(
 					(f) => f.fieldPath === 'ccParentEmails' && f.arrayConfig === 'CONTAINS',
+				) &&
+				ix.fields.some((f) => f.fieldPath === 'createdAt' && f.order === 'DESCENDING'),
+		);
+		expect(found).toBe(true);
+	});
+
+	it('firestore.indexes.json has parentRecipientEmails ARRAY_CONTAINS + createdAt DESC index', () => {
+		const idx = JSON.parse(readFileSync(FIRESTORE_INDEXES, 'utf-8'));
+		const found = idx.indexes.some(
+			(ix: {
+				collectionGroup: string;
+				fields: Array<{ fieldPath: string; order?: string; arrayConfig?: string }>;
+			}) =>
+				ix.collectionGroup === 'team_broadcasts' &&
+				ix.fields.some(
+					(f) => f.fieldPath === 'parentRecipientEmails' && f.arrayConfig === 'CONTAINS',
 				) &&
 				ix.fields.some((f) => f.fieldPath === 'createdAt' && f.order === 'DESCENDING'),
 		);

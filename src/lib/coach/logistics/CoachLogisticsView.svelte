@@ -1,6 +1,5 @@
 <script lang="ts">
 	import MessagesTab from '$lib/components/coach/MessagesTab.svelte';
-	import ParentAnnouncementCompose from '$lib/components/coach/ParentAnnouncementCompose.svelte';
 	import CoachTeamSchedulePanel from '$lib/coach/logistics/CoachTeamSchedulePanel.svelte';
 	import CoachTeamRosterPanel from '$lib/coach/logistics/CoachTeamRosterPanel.svelte';
 	import CoachTeamAttendancePanel from '$lib/coach/logistics/CoachTeamAttendancePanel.svelte';
@@ -72,15 +71,23 @@
 
 		<div class="logistics-stack">
 			{#if activeTab === 'comms'}
-				<ParentAnnouncementCompose
-					teamId={teamScope.selectedTeamId}
-					clubId={teamClubId}
-					teamName={teamLabel}
-				/>
+				<section class="logistics-cta" aria-labelledby="logistics-ann-cta">
+					<h2 id="logistics-ann-cta" class="logistics-section-title">Team announcements</h2>
+					<p class="logistics-section-sub">
+						Parent-targeted broadcasts live in the unified Comms hub — delivery receipts show parents
+						delivered vs skipped.
+					</p>
+					<a
+						class="logistics-cta-link"
+						href="/messages?channel=announcements&teamId={encodeURIComponent(teamScope.selectedTeamId)}"
+					>
+						Publish team announcement →
+					</a>
+				</section>
 				<section class="logistics-channels" aria-labelledby="logistics-channels-heading">
 					<h2 id="logistics-channels-heading" class="logistics-section-title">Team channels</h2>
 					<p class="logistics-section-sub">
-						Staff/participant channel matrix — game day, practice, and general logistics threads.
+						Logistics threads (game day, practice) — full channel migration to Comms hub in Phase 2.
 					</p>
 					<MessagesTab teamId={teamScope.selectedTeamId} clubId={teamClubId} />
 				</section>
@@ -219,6 +226,28 @@
 		margin: 0;
 		font-size: 12px;
 		color: #64748b;
+	}
+
+	.logistics-cta {
+		display: flex;
+		flex-direction: column;
+		gap: 8px;
+		padding: 16px 18px;
+		border: 1px solid #e2e8f0;
+		border-radius: 16px;
+		background: #f8fafc;
+	}
+
+	.logistics-cta-link {
+		display: inline-flex;
+		align-self: flex-start;
+		padding: 10px 16px;
+		border-radius: 12px;
+		font-size: 13px;
+		font-weight: 800;
+		text-decoration: none;
+		color: #0f172a;
+		background: var(--brand-primary, #f59e0b);
 	}
 
 	.qa-mono {

@@ -41,10 +41,17 @@ describe('Sprint 4.2 — block coach→minor paths', () => {
 		expect(src).toMatch(/resolveIsMinor\(memberData\)/);
 	});
 
-	it('safeSportBroadcast filters parent CC via consentComms', () => {
+	it('safeSportBroadcast builds parent-first audience via buildTeamBroadcastAudience', () => {
 		const src = readFileSync(COMMS_FN, 'utf-8');
-		expect(src).toMatch(/filterParentsWithCommsConsent/);
+		expect(src).toMatch(/buildTeamBroadcastAudience/);
+		expect(src).toMatch(/parentRecipientEmails/);
+		expect(src).toMatch(/deliveryReport/);
+	});
+
+	it('safeSportBroadcast still resolves minors for SafeSport CC audit', () => {
+		const src = readFileSync(COMMS_FN, 'utf-8');
 		expect(src).toMatch(/resolveIsMinor/);
+		expect(src).toMatch(/ccParentEmails/);
 	});
 
 	it('CommsEngine exposes sendChannelMessage callable wrapper', () => {

@@ -68,12 +68,71 @@
 				limit(20),
 			);
 		} else if (role === 'parent') {
-			q = query(
+			const seen = new Set<string>();
+			const rows: Announcement[] = [];
+
+			const publish = () => {
+				rows.sort((a, b) => {
+					const at = a.createdAt?.toDate?.()?.getTime() ?? 0;
+					const bt = b.createdAt?.toDate?.()?.getTime() ?? 0;
+					return bt - at;
+				});
+				items = rows.slice(0, 20);
+				loading = false;
+			};
+
+			const mergeRows = (
+				snap: { forEach: (fn: (d: { id: string; data: () => Record<string, unknown> }) => void) => void },
+			) => {
+				snap.forEach((d) => {
+					if (seen.has(d.id)) return;
+					seen.add(d.id);
+					const x = d.data();
+					rows.push({
+						id: d.id,
+						teamId: String(x.teamId || ''),
+						fromEmail: String(x.fromEmail || ''),
+						fromRole: String(x.fromRole || ''),
+						subject: x.subject ? String(x.subject) : null,
+						body: String(x.body || ''),
+						bodyPreview: String(x.bodyPreview || ''),
+						recipientCount: typeof x.recipientCount === 'number' ? x.recipientCount : undefined,
+						hasMinors: x.hasMinors === true,
+						createdAt: x.createdAt as Announcement['createdAt'],
+					});
+				});
+				publish();
+			};
+
+			const qPrimary = query(
+				collection(db, 'team_broadcasts'),
+				where('parentRecipientEmails', 'array-contains', myEmail),
+				orderBy('createdAt', 'desc'),
+				limit(20),
+			);
+			const qLegacy = query(
 				collection(db, 'team_broadcasts'),
 				where('ccParentEmails', 'array-contains', myEmail),
 				orderBy('createdAt', 'desc'),
 				limit(20),
 			);
+
+			const unsubPrimary = onSnapshot(qPrimary, mergeRows, () => {
+				/* legacy query still runs in parallel */
+			});
+			const unsubLegacy = onSnapshot(
+				qLegacy,
+				mergeRows,
+				(e) => {
+					error = e instanceof Error ? e.message : 'Could not load announcements.';
+					loading = false;
+				},
+			);
+
+			return () => {
+				unsubPrimary();
+				unsubLegacy();
+			};
 		} else {
 			// coach / director — see what they sent for their own team
 			q = query(
@@ -137,7 +196,7 @@
 		</h3>
 		<p class="ann-sub">
 			{#if role === 'parent'}
-				Official staff announcements where your account was CC'd (athlete protection policy).
+				Official staff announcements delivered to your guardian account.
 			{:else if role === 'player'}
 				Official announcements from your coaching staff.
 			{:else}
