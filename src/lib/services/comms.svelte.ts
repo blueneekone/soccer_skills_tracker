@@ -79,7 +79,7 @@ export type ParentSkipReason =
 	| 'not_guardian'
 	| 'push_token_missing';
 
-export type DeliveryChannel = 'in_app' | 'push' | 'email';
+export type DeliveryChannel = 'in_app' | 'push' | 'email' | 'sms';
 
 export interface ParentDeliveredRow {
 	email: string;

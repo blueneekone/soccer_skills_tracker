@@ -24,6 +24,13 @@
 		not_guardian: 'Not designated guardian',
 		push_token_missing: 'Push token missing',
 	};
+
+	const channelLabels: Record<string, string> = {
+		in_app: 'in_app',
+		push: 'push',
+		email: 'email',
+		sms: 'sms',
+	};
 </script>
 
 <div
@@ -47,7 +54,16 @@
 	{#if !compact && delivered.length > 0}
 		<ul class="delivery-receipt__list">
 			{#each delivered as row (row.email)}
-				<li class="delivery-receipt__ok">✓ {row.email}</li>
+				<li class="delivery-receipt__ok">
+					✓ {row.email}
+					{#if row.channels?.length}
+						<span class="delivery-receipt__channels">
+							{#each row.channels as ch (ch)}
+								<span class="delivery-receipt__chip">{channelLabels[ch] ?? ch}</span>
+							{/each}
+						</span>
+					{/if}
+				</li>
 			{/each}
 		</ul>
 	{/if}
@@ -115,6 +131,31 @@
 
 	.delivery-receipt__ok {
 		margin: 2px 0;
+	}
+
+	.delivery-receipt__channels {
+		display: inline-flex;
+		flex-wrap: wrap;
+		gap: 4px;
+		margin-left: 6px;
+	}
+
+	.delivery-receipt__chip {
+		font-size: 10px;
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.04em;
+		padding: 1px 6px;
+		border-radius: 4px;
+		background: rgba(15, 23, 42, 0.08);
+		border: 1px solid rgba(15, 23, 42, 0.12);
+		color: #334155;
+	}
+
+	.delivery-receipt--warn .delivery-receipt__chip {
+		background: rgba(146, 64, 14, 0.08);
+		border-color: rgba(146, 64, 14, 0.2);
+		color: #92400e;
 	}
 
 	.delivery-receipt__skip {

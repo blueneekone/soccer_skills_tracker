@@ -146,6 +146,8 @@ interface DeliveryReport {
 | `not_guardian` | Email on household doc but not designated guardian for athlete |
 | `push_token_missing` | In-app delivery ok; push skipped (informational, not a hard fail) |
 
+**Delivery channels (4.16a):** `parentDelivered[].channels` may include `in_app`, `push`, `email`, `sms`. Email fallback requires `feature_flags/commsEmailFallback`; SMS is **emergency-only** via `feature_flags/commsSmsEmergency`. `email_failed` / `sms_failed` logged in `audit_logs.extra.omnichannelFailures` only — not user-facing skip reasons.
+
 ### Client rules
 
 1. **Never** display "Sent to N roster members" when CTA is "Send to parents" — show `parentDelivered.length` and `parentSkipped` breakdown.
