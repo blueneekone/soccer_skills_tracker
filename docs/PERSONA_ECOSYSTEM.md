@@ -1,6 +1,8 @@
 # SSTracker — Persona Ecosystem
 
-**North star:** An addictive, age-appropriate training/gaming HUD for players, with seamless handoffs across parent, coach, team operations, and club administration — all tenant-isolated and compliance-first.
+**North star:** One youth sports **operating system** for **any team sport** — an addictive, age-appropriate training/gaming HUD for players, with seamless handoffs across parent co-op, coach development, team operations, and **club/registrar business** in the same tenant — all tenant-isolated and compliance-first. Sport attribute trees and drill semantics configure per `sportId`; see [`SPORTS_CONFIGS.md`](./SPORTS_CONFIGS.md).
+
+**Acquirer summary:** [`docs/acquisition/PERSONA_DILIGENCE.md`](./acquisition/PERSONA_DILIGENCE.md) — per-persona capabilities matrix, demo scope, and handoffs for M&A diligence.
 
 ## Document roles
 

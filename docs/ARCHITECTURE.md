@@ -3,6 +3,8 @@
 **Status:** Canonical / Source of Truth
 **Companion documents:** [`ROADMAP.md`](../ROADMAP.md), [`PERSONA_ECOSYSTEM.md`](./PERSONA_ECOSYSTEM.md), [`.cursorrules`](../.cursorrules), [`CELLS.md`](./CELLS.md), [`CELL_ROUTING.md`](./CELL_ROUTING.md), [`RL_ADAPTIVE_WORKOUTS.md`](./RL_ADAPTIVE_WORKOUTS.md), [`SPORTS_CONFIGS.md`](./SPORTS_CONFIGS.md)
 
+**See also (acquirer gold paths):** [`docs/acquisition/ARCHITECTURE_DATA_FLOWS.md`](./acquisition/ARCHITECTURE_DATA_FLOWS.md) — sequence-level GP-ACQ / GP-PARENT / GP-COACH walkthroughs with Shipped · Partial · Planned status badges.
+
 > This document defines the immutable architectural perimeter for the Nexus Command platform. Any feature, refactor, or new module must conform to the boundaries described here. Drift away from these contracts is treated as a defect, not a deviation.
 
 ---

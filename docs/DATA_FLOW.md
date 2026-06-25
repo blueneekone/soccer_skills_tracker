@@ -3,6 +3,8 @@
 **Status:** Canonical / Source of Truth
 **Companion documents:** [`ARCHITECTURE.md`](./ARCHITECTURE.md), [`CELL_ROUTING.md`](./CELL_ROUTING.md), [`RL_ADAPTIVE_WORKOUTS.md`](./RL_ADAPTIVE_WORKOUTS.md), [`CLEARANCE.md`](./CLEARANCE.md), [`MAGIC_UPLINKS.md`](./MAGIC_UPLINKS.md), [`COPPA_ATTESTATION.md`](./COPPA_ATTESTATION.md), [`PHONE_VERIFICATION.md`](./PHONE_VERIFICATION.md), [`TEEN_AD_BLOCK.md`](./TEEN_AD_BLOCK.md)
 
+**Acquisition demo gold paths:** For diligence-ready sequence diagrams (GP-ACQ, GP-PARENT, GP-COACH, tryouts, SafeSport) with honest **Shipped · Partial · Planned** labels, see [`docs/acquisition/ARCHITECTURE_DATA_FLOWS.md`](./acquisition/ARCHITECTURE_DATA_FLOWS.md). This document retains the full liability-heavy async loops below (CV, Tremendous escrow, staff onboarding, COPPA) — cross-link rather than duplicate.
+
 > This document maps the asynchronous data loops that power the three highest-liability surfaces of the platform: the Adaptive Workouts → Octalysis Bounty loop, the Zero-Liability Staff Onboarding loop, and the Household Ingestion + COPPA 2.0 compliance loop. Each section below pairs a written walkthrough with a fully self-contained Mermaid sequence diagram. Every actor, function, and collection named here resolves to a sanctioned path defined in `ARCHITECTURE.md` (`getActiveDb()` on the client, `getAdminDb(cellId)` / `getRegistryDb()` on the server, the `apiGateway` ingress, and Firestore triggers under `functions/src/**`).
 >
 > **Compliance invariants enforced by every flow below:**

@@ -1,23 +1,33 @@
 # SSTracker — Acquisition Prospectus
 
 **Confidential — for qualified acquirer diligence**  
-**Version:** 2026-06-13 · Branch `dev` · post-overnight merge
+**Version:** 2026-06-25 · Branch `dev` · cadence E2E verified
 
 ---
 
 ## 1. Executive summary
 
-SSTracker (internal codename **Nexus Command**) is a **compliance-first youth sports development platform** targeting clubs that have outgrown schedule-and-chat tools but cannot sacrifice **SafeSport** and **COPPA** rigor. The codebase delivers a full **Player · Parent · Coach · Director** workspace on **SvelteKit 5 + Firebase**, with table-stakes club ops (RSVP, registration, tryouts, eligibility) **shipped in code** and a differentiated **Train → XP → coach intent** loop competitors do not replicate.
+SSTracker (internal codename **Nexus Command**) is a **compliance-first youth sports operating system** for **any team sport** — one platform where **player training addiction**, **parent co-op**, **coach development**, and **club/registrar ops** share a tenant. Architecture is **sport-configurable** via `sports_configs/{sportId}`; **soccer is the first configured sport** and the QA tenant path, not the product ceiling.
 
-**Acquisition thesis:** Buy a **launch-ready functional OS** with architectural moat (cell routing, household graph, RL homework path) rather than rebuild from TeamSnap/SportsEngine APIs. Overnight P2 parity + `check=0` merged to dev. Remaining work is **owner live deploy confirm**, **FUNCTIONAL_MVP QA**, and **go-to-market** — not greenfield product invention.
+The codebase delivers a full **Player · Parent · Coach · Director** workspace on **SvelteKit 5 + Firebase**, with table-stakes club ops (RSVP, registration, tryouts, eligibility) **shipped in code** and a differentiated **Train → XP → coach intent** loop (sport-agnostic mechanics, per-sport attribute trees) that competitors do not replicate.
 
-**Win message:** *The development OS for clubs that have outgrown schedule-and-chat — with SafeSport-native comms and COPPA depth competitors cannot match.*
+**Acquisition thesis:** Buy a **launch-ready functional OS** with architectural moat (cell routing, household graph, multi-sport config layer, RL homework path) rather than rebuild from TeamSnap/SportsEngine APIs. Overnight P2 parity + `check=0` merged to dev. Remaining work is **owner live deploy confirm**, **FUNCTIONAL_MVP QA**, and **go-to-market** — not greenfield product invention. Do **not** claim multiple sports are fully content-complete at launch; claim **platform readiness** + soccer QA path.
+
+**Win message:** *The youth sports OS that closes the loop from coach intent → player training → XP/progress → parent visibility — sport-configurable, COPPA-native, with club operations included.*
 
 Authority: [`COMPETITIVE_LAUNCH_ASSESSMENT.md`](../vision/COMPETITIVE_LAUNCH_ASSESSMENT.md)
 
 ---
 
 ## 2. Market position
+
+### Strategic acquirer adjacency (multi-sport)
+
+| Buyer type | Examples | Why SSTracker fits |
+|------------|----------|-------------------|
+| **Parent/club ops incumbents** | TeamSnap, NBC Sports Next (SportsEngine), LeagueApps | Add daily development engagement + COPPA depth to existing schedule/reg base |
+| **Video + stats adjacency** | Hudl, GameChanger (Dick's), Stack Sports | Same households; missing Train/XP/intent loop and household-gated comms |
+| **Vertical soccer** | GotSport, US Club Soccer tech partners | Tryout OS + household graph; federation export on roadmap (not day-one GTM requirement) |
 
 ### Competitors (2025–2026)
 
@@ -26,6 +36,7 @@ Authority: [`COMPETITIVE_LAUNCH_ASSESSMENT.md`](../vision/COMPETITIVE_LAUNCH_ASS
 | **TeamSnap ONE** | Parent mobile, RSVP, reg, streaming | Development loop, compliance depth |
 | **SportsEngine HQ** | Eligibility matrix, NGB, enterprise reg | Player OS, SafeSport comms model |
 | **GotSport** | State roster / governing body sync | Gamified development, RL, intent engine |
+| **GameChanger / Stack** | Live stats, scheduling, parent mobile | Train → XP → coach intent; VPC + household comms model |
 
 ### Launch parity matrix
 
@@ -105,9 +116,11 @@ Golden path QA: [`FUNCTIONAL_MVP.md`](../vision/FUNCTIONAL_MVP.md) § Permanent 
 
 ## 6. Differentiated features (moat)
 
+**Sport-agnostic loop:** Train, XP, coach intent, cadence, and RL homework mechanics are **the same HUD engine** across team sports; `sports_configs/{sportId}` supplies attribute trees, drill taxonomy, and copy. **Soccer** is the first configured sport and the documented QA path — not a soccer-only product.
+
 ### Coach Intent Engine + Train lock
 
-Coach assigns intent with optional prescription (`sets`, `repsPerSet`, `bilateral`, duration, RPE). Player accepts on HQ → Train shows **locked by coach** — read-only prescription, editable session notes only.
+Coach assigns intent with optional prescription (`sets`, `repsPerSet`, `bilateral`, duration, RPE). Player accepts on HQ → Train shows **locked by coach** — read-only prescription, editable session notes only. Prescription semantics are sport-neutral; drill libraries resolve team → club → platform per tenant `sportId`.
 
 ### Tryout lifecycle OS
 
@@ -156,15 +169,17 @@ Authority: [`FUNCTIONAL_MVP.md`](../vision/FUNCTIONAL_MVP.md) § GP-ACQ-04c · T
 
 ## 7. Build & quality status
 
+**Canonical product state:** [`PRODUCT_STATE.md`](./PRODUCT_STATE.md) — shipped, partial, planned, commercial reality, and QA open risks.
+
 | Signal | Status |
 |--------|--------|
 | Functional audit A–F | **Done** ([`FUNCTIONAL_AUDIT_BACKLOG.md`](../FUNCTIONAL_AUDIT_BACKLOG.md)) |
 | LAUNCH Wave 0–2 | **Done** (household, RSVP, reg, tryouts, parent parity) |
-| Overnight P2 + check=0 | **Done** — merged to dev 2026-06-13 |
+| Wave 3B + Wave 4 competitive parity | **Done** — live deploy + smoke on dev |
 | Player OS Phase 7 G1–G10 | **Done** — instrument cohesion signed off |
 | Deploy scripts + verify gates | **Done** (`npm run deploy:dev:verify`) |
-| Owner live deploy confirm | **Partial** — owner `FIREBASE_CI_TOKEN` for overnight callables |
-| Owner human QA on FUNCTIONAL_MVP | **Pending** |
+| Multi-sport platform | **Architecture ready** — `sports_configs`; soccer = QA config only |
+| Owner Phase 4b + Phase 5 exec cut | **Pending** — acquisition P0 ([`OWNER_QA_CHECKLIST.md`](../vision/OWNER_QA_CHECKLIST.md)) |
 | TypeScript (`npm run check`) | **0 errors** — CI gate |
 
 Regression: `personaFunctionalMvp.test.ts` includes functional audit A–F guards.
