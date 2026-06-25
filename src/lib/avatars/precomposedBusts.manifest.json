@@ -14,5 +14,20 @@
 			"kit": "portrait_kit_away"
 		},
 		"defaultForBodyScale": "teen"
+	},
+	{
+		"id": "precomposed_bust_demo_teen_home",
+		"label": "Demo · Professional",
+		"assetPath": "/portrait/approved/bust_demo_teen_professional_home.jpeg",
+		"contentHash": "95aff261736099cdf5f45880205207cbbcdb144d6bb0ddc79623980070c36a92",
+		"ageBand": "teen",
+		"hair": "long",
+		"tone": "light",
+		"kit": "home",
+		"matchParts": {
+			"face": "portrait_face_teen_light_default",
+			"hair": "portrait_hair_teen_long",
+			"kit": "portrait_kit_home"
+		}
 	}
 ]

@@ -15,7 +15,11 @@ export default defineConfig({
 	},
 	test: {
 		environment: 'node',
-		include: ['src/**/__tests__/**/*.test.ts'],
+		include: [
+			'src/**/__tests__/**/*.test.ts',
+			'docs/**/__tests__/**/*.test.ts',
+			'scripts/**/__tests__/**/*.test.ts',
+		],
 		alias: {
 			$lib: resolve(__dirname, 'src/lib'),
 			$app: resolve(__dirname, 'src/app-stubs'),

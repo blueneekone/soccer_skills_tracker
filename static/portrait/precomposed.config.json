@@ -8,5 +8,14 @@
 		"tone": "light",
 		"kit": "away",
 		"defaultForBodyScale": "teen"
+	},
+	{
+		"id": "precomposed_bust_demo_teen_home",
+		"file": "approved/bust_demo_teen_professional_home.jpeg",
+		"label": "Demo · Professional",
+		"ageBand": "teen",
+		"hair": "long",
+		"tone": "light",
+		"kit": "home"
 	}
 ]

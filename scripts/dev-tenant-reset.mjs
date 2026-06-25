@@ -18,6 +18,13 @@
  *   node scripts/dev-tenant-reset.mjs --execute --club-id qa_launch_2026
  *   node scripts/dev-tenant-reset.mjs --provision --club-id qa_launch_2026 --team-id qa_launch_2026_ppc
  *   node scripts/dev-tenant-reset.mjs --provision --purge-operatives --club-id qa_launch_2026
+ *   node scripts/dev-tenant-reset.mjs --reset-demo-stats --club-id qa_launch_2026
+ *   node scripts/dev-tenant-reset.mjs --reset-demo-stats --execute --club-id qa_launch_2026
+ *   node scripts/dev-tenant-reset.mjs --reset-demo-stats --execute --keep-operative-email child@operative.local
+ *
+ * --reset-demo-stats:
+ *   Wipe QA club/team stats + mission progress; preserve operative Auth, household link, VPC/consent.
+ *   Does NOT call purgeOperatives or FULL_WIPE_ROOT. Dry-run by default; --execute after owner approval.
  *
  * --purge-operatives (provision or dry-run with --execute omitted):
  *   Deletes orphaned *@operative.local Auth users and Firestore rows (users, player_lookup,
@@ -33,6 +40,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
+import { seedDemoOperativeAvatar } from './lib/seed-demo-operative-avatar.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(__dirname, '..');
@@ -126,6 +134,10 @@ const ARTIFACT_DIR = path.join(REPO_ROOT, 'artifacts', `firestore-reset-${ARTIFA
 const INCLUDE_AUDIT = hasFlag('--include-audit-collections');
 /** Purge QA child operatives (*@operative.local) before provision or on explicit flag. */
 const PURGE_OPERATIVES = hasFlag('--purge-operatives');
+/** Stats-only reset — preserve operative account; wipe gamification + mission artifacts. */
+const RESET_DEMO_STATS = hasFlag('--reset-demo-stats');
+const KEEP_OPERATIVE_EMAIL_ARG = flagVal('--keep-operative-email', '');
+const SKIP_DEMO_AVATAR_SEED = hasFlag('--skip-demo-avatar');
 
 function normEmail(v) {
 	if (typeof v !== 'string') return '';
@@ -778,6 +790,342 @@ async function purgeOperatives(db, auth, dryRun) {
 	return total;
 }
 
+/** Collections wiped or scoped in --reset-demo-stats (never FULL_WIPE_ROOT). */
+const DEMO_STATS_SCOPED_ROOT = [
+	'reps',
+	'drill_completions',
+	'grit_awards',
+	'bounties',
+	'bounty_completions',
+	'assignments',
+	'team_assignments',
+	'active_missions',
+	'missions',
+	'assigned_missions',
+	'team_broadcasts',
+	'in_app_messages',
+	'broadcast_acknowledgements',
+];
+
+function resolveDemoClubId() {
+	const cid = (CLUB_ID_ARG || DEFAULT_QA_CLUB).trim();
+	return cid || DEFAULT_QA_CLUB;
+}
+
+function assertDemoStatsClub(clubId) {
+	if (clubId !== DEFAULT_QA_CLUB) {
+		log(`[reset-demo-stats] ERROR: --club-id must be ${DEFAULT_QA_CLUB} (got ${clubId || '(empty)'})`);
+		process.exit(1);
+	}
+}
+
+/**
+ * @param {import('firebase-admin').firestore.Firestore} db
+ */
+async function resolveKeptOperativeEmail(db) {
+	const explicit = normEmail(KEEP_OPERATIVE_EMAIL_ARG);
+	if (explicit) return explicit;
+	const hh = await db.collection('households').doc(DEFAULT_QA_HOUSEHOLD_ID).get();
+	if (!hh.exists) {
+		throw new Error(
+			`households/${DEFAULT_QA_HOUSEHOLD_ID} missing — run --provision or pass --keep-operative-email`,
+		);
+	}
+	const pe = hh.data()?.playerEmails;
+	if (Array.isArray(pe) && pe.length) {
+		const em = normEmail(String(pe[0] || ''));
+		if (em) return em;
+	}
+	throw new Error(
+		'No operative on QA household playerEmails[0] — link operative or pass --keep-operative-email',
+	);
+}
+
+/**
+ * @param {import('firebase-admin').firestore.Firestore} db
+ * @param {import('firebase-admin').auth.Auth} auth
+ * @param {string} operativeEmail
+ */
+async function resolveOperativeContext(db, auth, operativeEmail) {
+	const userSnap = await db.collection('users').doc(operativeEmail).get();
+	let uid =
+		userSnap.exists && typeof userSnap.data()?.uid === 'string' ?
+			userSnap.data().uid.trim() :
+			'';
+	if (!uid) {
+		try {
+			uid = (await auth.getUserByEmail(operativeEmail)).uid;
+		} catch {
+			uid = '';
+		}
+	}
+	const teamId =
+		userSnap.exists && typeof userSnap.data()?.teamId === 'string' ?
+			userSnap.data().teamId.trim() :
+			'';
+	return { email: operativeEmail, uid, teamId: teamId || TEAM_ID_ARG || DEFAULT_QA_TEAM };
+}
+
+function docMatchesQaScope(data, qaClub, qaTeam) {
+	if (!data || typeof data !== 'object') return false;
+	const teamId = typeof data.teamId === 'string' ? data.teamId.trim() : '';
+	const clubId =
+		(typeof data.clubId === 'string' && data.clubId.trim()) ||
+		(typeof data.tenantId === 'string' && data.tenantId.trim()) ||
+		(typeof data.teamClubId === 'string' && data.teamClubId.trim()) ||
+		'';
+	if (qaTeam && teamId === qaTeam) return true;
+	if (qaClub && clubId === qaClub) return true;
+	return false;
+}
+
+function docMatchesOperative(data, email, uid) {
+	if (!data || typeof data !== 'object') return false;
+	const keys = ['userKey', 'playerEmail', 'childEmail', 'email', 'playerId', 'playerUid', 'uid'];
+	for (const k of keys) {
+		const v = data[k];
+		if (typeof v === 'string') {
+			const n = normEmail(v);
+			if (n && n === email) return true;
+		}
+	}
+	if (uid) {
+		if (data.playerUid === uid || data.playerId === uid || data.uid === uid) return true;
+	}
+	return false;
+}
+
+function shouldDeleteDemoStatsDoc(col, data, ctx) {
+	const { qaClub, qaTeam, operativeEmail, operativeUid } = ctx;
+	if (docMatchesOperative(data, operativeEmail, operativeUid)) return true;
+	if (docMatchesQaScope(data, qaClub, qaTeam)) return true;
+	if (col === 'broadcast_acknowledgements' && operativeUid && data?.uid === operativeUid) return true;
+	if (col === 'broadcast_acknowledgements' && operativeUid && String(data?.docId || '').endsWith(`_${operativeUid}`)) {
+		return true;
+	}
+	return false;
+}
+
+/**
+ * @param {import('firebase-admin').firestore.Firestore} db
+ * @param {string} col
+ * @param {{ qaClub: string; qaTeam: string; operativeEmail: string; operativeUid: string }} ctx
+ */
+async function collectDemoStatsDeletes(db, col, ctx) {
+	if (col === 'player_stats') {
+		const refs = [];
+		if (ctx.operativeUid) refs.push(db.collection('player_stats').doc(ctx.operativeUid));
+		if (ctx.operativeEmail) refs.push(db.collection('player_stats').doc(ctx.operativeEmail));
+		const unique = new Map(refs.map((r) => [r.path, r]));
+		const existing = [];
+		for (const ref of unique.values()) {
+			const snap = await ref.get();
+			if (snap.exists) existing.push(ref);
+		}
+		return existing;
+	}
+
+	const { docs } = await countOrList(db, col);
+	return docs
+		.filter((d) => {
+			if (col === 'broadcast_acknowledgements' && ctx.operativeUid) {
+				if (d.id.endsWith(`_${ctx.operativeUid}`)) return true;
+			}
+			return shouldDeleteDemoStatsDoc(col, d.data() || {}, ctx);
+		})
+		.map((d) => d.ref);
+}
+
+/**
+ * @param {import('firebase-admin').firestore.Firestore} db
+ * @param {string} qaTeam
+ * @param {string} operativeEmail
+ * @param {boolean} dryRun
+ */
+async function resetTeamWorkoutsForDemo(db, qaTeam, operativeEmail, dryRun) {
+	const { docs } = await countOrList(db, 'team_workouts');
+	let deleted = 0;
+	let rsvpCleared = 0;
+	for (const d of docs) {
+		const data = d.data() || {};
+		const teamId = typeof data.teamId === 'string' ? data.teamId.trim() : '';
+		if (teamId !== qaTeam) continue;
+		const isScheduled =
+			data.recordType === 'scheduled_event' || data.type === 'scheduled';
+		if (isScheduled) {
+			const rsvpRef = d.ref.collection('rsvps').doc(operativeEmail);
+			const rsvpSnap = await rsvpRef.get();
+			if (!rsvpSnap.exists) continue;
+			if (!dryRun) await rsvpRef.delete();
+			rsvpCleared++;
+			continue;
+		}
+		if (!dryRun) await d.ref.delete();
+		deleted++;
+	}
+	log(
+		`${dryRun ? '[dry-run]' : '[execute]'} team_workouts team=${qaTeam}: deleteLogs=${deleted} clearRsvp=${rsvpCleared}`,
+	);
+	return deleted + rsvpCleared;
+}
+
+/**
+ * @param {import('firebase-admin').firestore.Firestore} db
+ * @param {string} qaTeam
+ * @param {boolean} dryRun
+ */
+async function resetTeamStatsDoc(db, qaTeam, dryRun) {
+	const ref = db.collection('team_stats').doc(qaTeam);
+	const snap = await ref.get();
+	if (!snap.exists) return 0;
+	if (!dryRun) await ref.delete();
+	log(`${dryRun ? '[dry-run]' : '[execute]'} team_stats/${qaTeam}: deleted`);
+	return 1;
+}
+
+/**
+ * @param {import('firebase-admin').firestore.Firestore} db
+ * @param {import('firebase-admin').auth.Auth} auth
+ * @param {boolean} dryRun
+ */
+async function resetOperativeUserStats(db, operativeEmail, operativeUid, dryRun) {
+	const rootRequire = createRequire(import.meta.url);
+	let adminMod;
+	try {
+		adminMod = rootRequire('firebase-admin');
+	} catch {
+		adminMod = createRequire(path.join(REPO_ROOT, 'functions', 'package.json'))('firebase-admin');
+	}
+	const FieldValue = adminMod.firestore.FieldValue;
+	const userRef = db.collection('users').doc(operativeEmail);
+	const snap = await userRef.get();
+	if (!snap.exists) {
+		log(`[warn] users/${operativeEmail} missing — skip user stat reset`);
+		return 0;
+	}
+	const resetPayload = {
+		xp: 0,
+		totalXp: 0,
+		trainingLevel: 1,
+		currentStreak: 0,
+		longestStreak: 0,
+		xpByAttribute: FieldValue.delete(),
+		ownedSeasonOneCards: FieldValue.delete(),
+		last_training_utc: FieldValue.delete(),
+		updatedAt: new Date().toISOString(),
+	};
+	if (!dryRun) await userRef.set(resetPayload, { merge: true });
+	log(`${dryRun ? '[dry-run]' : '[execute]'} users/${operativeEmail}: stats fields reset`);
+
+	if (operativeUid) {
+		const plRef = db.collection('player_lookup').doc(operativeEmail);
+		const plSnap = await plRef.get();
+		if (plSnap.exists) {
+			const plReset = {
+				total_xp: 0,
+				current_level: 1,
+				updatedAt: new Date().toISOString(),
+			};
+			if (!dryRun) await plRef.set(plReset, { merge: true });
+			log(`${dryRun ? '[dry-run]' : '[execute]'} player_lookup/${operativeEmail}: stats reset`);
+		}
+	}
+	return 1;
+}
+
+/**
+ * @param {import('firebase-admin').firestore.Firestore} db
+ * @param {import('firebase-admin').auth.Auth} auth
+ * @param {boolean} dryRun
+ */
+async function runResetDemoStats(db, auth, dryRun) {
+	const qaClub = resolveDemoClubId();
+	assertDemoStatsClub(qaClub);
+	const qaTeam = TEAM_ID_ARG || DEFAULT_QA_TEAM;
+	const operativeEmail = await resolveKeptOperativeEmail(db);
+	const { uid: operativeUid, teamId } = await resolveOperativeContext(db, auth, operativeEmail);
+
+	/** @type {Set<string>} */
+	const keepAuthEmails = new Set(KEEP_EMAILS);
+	keepAuthEmails.add(operativeEmail);
+
+	log(`[reset-demo-stats] club=${qaClub} team=${qaTeam} operative=${operativeEmail} uid=${operativeUid || '—'}`);
+
+	const ctx = { qaClub, qaTeam, operativeEmail, operativeUid };
+	/** @type {Record<string, number>} */
+	const counts = {};
+	let total = 0;
+
+	for (const col of DEMO_STATS_SCOPED_ROOT) {
+		if (PROTECTED_COLLECTIONS.has(col)) continue;
+		const refs = await collectDemoStatsDeletes(db, col, ctx);
+		counts[col] = refs.length;
+		total += await deleteRefs(db, refs, col, dryRun);
+	}
+
+	const psRefs = await collectDemoStatsDeletes(db, 'player_stats', ctx);
+	counts.player_stats = psRefs.length;
+	total += await deleteRefs(db, psRefs, 'player_stats', dryRun);
+
+	total += await resetTeamWorkoutsForDemo(db, qaTeam, operativeEmail, dryRun);
+	total += await resetTeamStatsDoc(db, qaTeam, dryRun);
+	await resetOperativeUserStats(db, operativeEmail, operativeUid, dryRun);
+
+	let avatarSeeded = false;
+	if (!SKIP_DEMO_AVATAR_SEED && !dryRun) {
+		await seedDemoOperativeAvatar(db, operativeEmail, false);
+		avatarSeeded = true;
+		log(`[execute] demo avatar seeded on users/${operativeEmail}`);
+	} else if (!SKIP_DEMO_AVATAR_SEED && dryRun) {
+		log(`[dry-run] would seed demo avatar on users/${operativeEmail}`);
+	}
+
+	const md = `# Demo stats reset — ${PROJECT_ID}
+
+Generated: ${stamp()}
+Mode: ${dryRun ? 'DRY-RUN' : 'EXECUTE'}
+Club: \`${qaClub}\` · Team: \`${qaTeam}\`
+Kept operative: \`${operativeEmail}\` (uid: \`${operativeUid || '—'}\`)
+
+## Preserved
+
+- Auth user \`${operativeEmail}\` (never deleted in this mode)
+- \`households/${DEFAULT_QA_HOUSEHOLD_ID}\` playerEmails / operative_dispatches for kept operative
+- \`consent_records\`, VPC, and all PROTECTED_COLLECTIONS
+- clubs, teams, organizations, users docs (stats fields reset on operative only)
+
+## Wiped / reset (scoped)
+
+| Collection / action | Docs |
+|---------------------|-----:|
+${Object.entries(counts)
+	.map(([k, v]) => `| ${k} | ${v} |`)
+	.join('\n')}
+| team_workouts (non-scheduled + RSVP clear) | see log |
+| team_stats/${qaTeam} | 1 if existed |
+| users/${operativeEmail} stat fields | merge reset |
+
+## Demo avatar
+
+${SKIP_DEMO_AVATAR_SEED ? '_Skipped (--skip-demo-avatar)_' : dryRun ? '_Would seed after --execute_' : avatarSeeded ? `Seeded precomposed \`precomposed_bust_demo_teen_home\`` : '_Not seeded_'}
+
+Standalone: \`node scripts/seed-demo-operative-avatar.mjs --operative-email ${operativeEmail} --execute\`
+
+## Next
+
+\`\`\`bash
+node scripts/dev-tenant-reset.mjs --reset-demo-stats --execute --club-id ${qaClub}
+node scripts/seed-demo-operative-avatar.mjs --operative-email ${operativeEmail} --execute
+\`\`\`
+`;
+
+	fs.mkdirSync(ARTIFACT_DIR, { recursive: true });
+	fs.writeFileSync(path.join(ARTIFACT_DIR, 'DEMO_STATS_RESET.md'), md);
+	log(`Wrote ${path.join(ARTIFACT_DIR, 'DEMO_STATS_RESET.md')}`);
+
+	return { total, operativeEmail, qaClub, qaTeam, counts };
+}
+
 async function provision(db, auth, keepClubIds, teamIdArg) {
 	const snapPath = path.join(ARTIFACT_DIR, 'kept-user-snapshot.json');
 	/** @type {Record<string, object>} */
@@ -970,9 +1318,11 @@ async function main() {
 			? 'INVENTORY'
 			: REINVENTORY
 				? 'RE-INVENTORY'
-				: PROVISION
-					? 'PROVISION'
-					: 'DRY-RUN';
+				: RESET_DEMO_STATS
+					? 'RESET-DEMO-STATS'
+					: PROVISION
+						? 'PROVISION'
+						: 'DRY-RUN';
 	log(`project=${PROJECT_ID} mode=${modeLabel}`);
 	log(`artifactDir=${ARTIFACT_DIR}`);
 	log(`keepEmails=${[...KEEP_EMAILS].join(', ')}`);
@@ -980,6 +1330,29 @@ async function main() {
 	const admin = resolveAdmin();
 	const db = admin.firestore();
 	const auth = admin.auth();
+
+	if (RESET_DEMO_STATS) {
+		if (PROVISION || PURGE_OPERATIVES) {
+			log('[reset-demo-stats] ERROR: do not combine with --provision or --purge-operatives');
+			process.exit(1);
+		}
+		try {
+			const result = await runResetDemoStats(db, auth, !EXECUTE);
+			appendExecutionLog(
+				`reset-demo-stats ${EXECUTE ? 'EXECUTE' : 'dry-run'} operative=${result.operativeEmail} total=${result.total}`,
+			);
+			if (!EXECUTE) {
+				console.log('\n*** DRY-RUN — no writes. Owner must reply: approved execute ***\n');
+				console.log(
+					`Would reset demo stats for ${result.operativeEmail} on ${result.qaClub}/${result.qaTeam}.`,
+				);
+			}
+		} catch (e) {
+			console.error('[dev-tenant-reset] reset-demo-stats failed:', e.message || e);
+			process.exit(1);
+		}
+		process.exit(0);
+	}
 
 	let inv;
 	try {
