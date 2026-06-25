@@ -60,6 +60,7 @@ async function commitTeamBroadcast({
   subject = '',
   ipAddress,
   broadcastSource = null,
+  priority = null,
 }) {
   const teamSnap = await db.collection('teams').doc(teamId).get();
   if (!teamSnap.exists) {
@@ -146,15 +147,17 @@ async function commitTeamBroadcast({
       subject: subject || null,
       auditId,
       broadcastSource: broadcastSource || null,
+      priority: priority || null,
     },
     ipAddress,
   });
 
   const msgRef = db.collection('team_broadcasts').doc();
 
+  const audienceScope = priority === 'emergency' ? 'club_parents' : 'team_parents';
   const deliveryReport = {
     messageId: msgRef.id,
-    audienceScope: 'team_parents',
+    audienceScope,
     rosterAthleteCount: playerEmails.length,
     parentDelivered,
     parentSkipped,
@@ -184,6 +187,8 @@ async function commitTeamBroadcast({
     messageHash,
     auditLogId: auditId,
     source: broadcastSource || null,
+    broadcastSource: broadcastSource || null,
+    priority: priority || null,
     createdAt: admin.firestore.FieldValue.serverTimestamp(),
   });
 
@@ -319,6 +324,104 @@ exports.safeSportBroadcast = onCall({region: REGION}, async (request) => {
   });
 });
 
+/**
+ * Merge per-team deliveryReport rows into a club-level rollup.
+ * @param {Array<{deliveryReport?: object, recipientCount?: number}>} results
+ * @param {string} clubAuditId
+ * @return {object}
+ */
+function aggregateClubDeliveryReport(results, clubAuditId) {
+  /** @type {Map<string, object>} */
+  const deliveredByEmail = new Map();
+  /** @type {Map<string, object>} */
+  const skippedByEmail = new Map();
+  /** @type {Set<string>} */
+  const ccParents = new Set();
+  let rosterAthleteCount = 0;
+
+  for (const row of results) {
+    const dr = row.deliveryReport;
+    if (!dr || typeof dr !== 'object') continue;
+    rosterAthleteCount += Number(dr.rosterAthleteCount) || Number(row.recipientCount) || 0;
+    for (const p of Array.isArray(dr.ccParentEmails) ? dr.ccParentEmails : []) {
+      const em = normEmail(String(p));
+      if (em) ccParents.add(em);
+    }
+    for (const p of Array.isArray(dr.parentDelivered) ? dr.parentDelivered : []) {
+      const em = normEmail(p.email);
+      if (em && !deliveredByEmail.has(em)) deliveredByEmail.set(em, p);
+    }
+    for (const p of Array.isArray(dr.parentSkipped) ? dr.parentSkipped : []) {
+      const em = normEmail(p.email);
+      if (em && !skippedByEmail.has(em)) skippedByEmail.set(em, p);
+    }
+  }
+
+  return {
+    messageId: clubAuditId,
+    audienceScope: 'club_parents',
+    rosterAthleteCount,
+    parentDelivered: [...deliveredByEmail.values()],
+    parentSkipped: [...skippedByEmail.values()],
+    ccParentEmails: [...ccParents],
+    auditLogId: clubAuditId,
+  };
+}
+
+/**
+ * Resolve teamIds for club fan-out callables.
+ * @return {Promise<string[]>}
+ */
+async function resolveClubFanOutTeamIds({
+  clubId,
+  requestedTeamIds,
+  callerRole,
+  callerClubId,
+}) {
+  /** @type {string[]} */
+  let teamIds = requestedTeamIds;
+  if (teamIds.length === 0) {
+    const teamsSnap = await db.collection('teams').where('clubId', '==', clubId).get();
+    teamIds = teamsSnap.docs.map((d) => d.id);
+  } else {
+    const teamSnaps = await Promise.all(
+        teamIds.map((tid) => db.collection('teams').doc(tid).get()),
+    );
+    for (let i = 0; i < teamSnaps.length; i++) {
+      const snap = teamSnaps[i];
+      const tid = teamIds[i];
+      if (!snap.exists) {
+        throw new HttpsError('not-found', `Team "${tid}" not found.`);
+      }
+      if ((snap.data().clubId || '') !== clubId) {
+        throw new HttpsError(
+            'permission-denied',
+            `Team "${tid}" is not in club "${clubId}".`,
+        );
+      }
+    }
+  }
+
+  if (teamIds.length === 0) {
+    throw new HttpsError('failed-precondition', 'No teams found in this club.');
+  }
+  if (teamIds.length > MAX_CLUB_BROADCAST_TEAMS) {
+    throw new HttpsError(
+        'resource-exhausted',
+        `Club broadcast limited to ${MAX_CLUB_BROADCAST_TEAMS} teams per send.`,
+    );
+  }
+
+  if (callerRole === 'director' && callerClubId !== clubId) {
+    throw new HttpsError(
+        'permission-denied',
+        'Club broadcast is limited to your organisation.',
+    );
+  }
+
+  return teamIds;
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // clubSportBroadcast — Epic 4.8 director club-wide fan-out
 // ─────────────────────────────────────────────────────────────────────────────
@@ -369,46 +472,12 @@ exports.clubSportBroadcast = onCall({region: REGION}, async (request) => {
     throw new HttpsError('invalid-argument', 'Message body exceeds 4000 characters.');
   }
 
-  if (callerRole === 'director' && callerClubId !== clubId) {
-    throw new HttpsError(
-        'permission-denied',
-        'Club broadcast is limited to your organisation.',
-    );
-  }
-
-  /** @type {string[]} */
-  let teamIds = requestedTeamIds;
-  if (teamIds.length === 0) {
-    const teamsSnap = await db.collection('teams').where('clubId', '==', clubId).get();
-    teamIds = teamsSnap.docs.map((d) => d.id);
-  } else {
-    const teamSnaps = await Promise.all(
-        teamIds.map((tid) => db.collection('teams').doc(tid).get()),
-    );
-    for (let i = 0; i < teamSnaps.length; i++) {
-      const snap = teamSnaps[i];
-      const tid = teamIds[i];
-      if (!snap.exists) {
-        throw new HttpsError('not-found', `Team "${tid}" not found.`);
-      }
-      if ((snap.data().clubId || '') !== clubId) {
-        throw new HttpsError(
-            'permission-denied',
-            `Team "${tid}" is not in club "${clubId}".`,
-        );
-      }
-    }
-  }
-
-  if (teamIds.length === 0) {
-    throw new HttpsError('failed-precondition', 'No teams found in this club.');
-  }
-  if (teamIds.length > MAX_CLUB_BROADCAST_TEAMS) {
-    throw new HttpsError(
-        'resource-exhausted',
-        `Club broadcast limited to ${MAX_CLUB_BROADCAST_TEAMS} teams per send.`,
-    );
-  }
+  const teamIds = await resolveClubFanOutTeamIds({
+    clubId,
+    requestedTeamIds,
+    callerRole,
+    callerClubId,
+  });
 
   const clubAuditId = db.collection('audit_logs').doc().id;
   await logActivity(ACTIVITY_TYPE.MESSAGE_BROADCAST, {
@@ -482,6 +551,148 @@ exports.clubSportBroadcast = onCall({region: REGION}, async (request) => {
     successCount,
     totalRecipients,
     totalCcParents,
+    deliveryReport: aggregateClubDeliveryReport(results, clubAuditId),
+    results,
+  };
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// emergencyClubBroadcast — Epic 4.15b director break-glass emergency fan-out
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Director/admin emergency club broadcast — high-priority FCM + optional SMS (4.16a).
+ *
+ * Input:
+ *   clubId    string   — required
+ *   subject   string   — required (max 200)
+ *   body      string   — required (max 4000)
+ *   teamIds   string[] — optional subset; default all teams in club
+ */
+exports.emergencyClubBroadcast = onCall({region: REGION}, async (request) => {
+  if (!request.auth) {
+    throw new HttpsError('unauthenticated', 'Authentication required.');
+  }
+
+  const callerUid = request.auth.uid;
+  const callerEmail = normEmail(request.auth.token.email);
+  const callerRole = request.auth.token.role || '';
+  const callerClubId = request.auth.token.clubId || request.auth.token.tenantId || '';
+
+  const breakGlassRoles = ['director', 'global_admin', 'super_admin'];
+  if (!breakGlassRoles.includes(callerRole)) {
+    throw new HttpsError(
+        'permission-denied',
+        'Only directors may send emergency club broadcasts.',
+    );
+  }
+
+  const data = request.data || {};
+  const clubId = typeof data.clubId === 'string' ? data.clubId.trim() : '';
+  const bodyRaw = typeof data.body === 'string' ? data.body.trim() : '';
+  const subject = typeof data.subject === 'string' ? data.subject.trim().slice(0, 200) : '';
+  const requestedTeamIds = Array.isArray(data.teamIds)
+    ? data.teamIds.filter((t) => typeof t === 'string' && t.trim()).map((t) => t.trim())
+    : [];
+
+  if (!clubId) {
+    throw new HttpsError('invalid-argument', 'clubId is required.');
+  }
+  if (!subject) {
+    throw new HttpsError('invalid-argument', 'Emergency broadcasts require a subject line.');
+  }
+  if (!bodyRaw) {
+    throw new HttpsError('invalid-argument', 'Message body is required.');
+  }
+  if (bodyRaw.length > 4000) {
+    throw new HttpsError('invalid-argument', 'Message body exceeds 4000 characters.');
+  }
+
+  const teamIds = await resolveClubFanOutTeamIds({
+    clubId,
+    requestedTeamIds,
+    callerRole,
+    callerClubId,
+  });
+
+  const clubAuditId = db.collection('audit_logs').doc().id;
+  await logActivity(ACTIVITY_TYPE.MESSAGE_BROADCAST, {
+    actorUid: callerUid,
+    actorEmail: callerEmail,
+    tenantId: clubId,
+    notes: `EMERGENCY club broadcast to ${teamIds.length} team(s) in ${clubId}`,
+    extra: {
+      clubId,
+      teamIds,
+      teamCount: teamIds.length,
+      subject,
+      auditId: clubAuditId,
+      broadcastSource: 'emergency',
+      priority: 'emergency',
+    },
+    ipAddress: request.rawRequest?.ip,
+  });
+
+  /** @type {Array<{teamId: string, messageId?: string, recipientCount?: number, ccParentCount?: number, deliveryReport?: object, error?: string}>} */
+  const results = [];
+  let totalRecipients = 0;
+  let totalCcParents = 0;
+
+  for (const teamId of teamIds) {
+    try {
+      const r = await commitTeamBroadcast({
+        callerUid,
+        callerEmail,
+        callerRole,
+        callerClubId: clubId,
+        teamId,
+        bodyRaw,
+        subject,
+        ipAddress: request.rawRequest?.ip,
+        broadcastSource: 'emergency',
+        priority: 'emergency',
+      });
+      results.push({
+        teamId,
+        messageId: r.messageId,
+        recipientCount: r.recipientCount,
+        ccParentCount: r.ccParentCount,
+        parentDeliveredCount: r.parentDeliveredCount,
+        deliveryReport: r.deliveryReport,
+      });
+      totalRecipients += r.recipientCount;
+      totalCcParents += r.ccParentCount;
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      logger.warn('[emergencyClubBroadcast] team fan-out failed', {teamId, err: msg});
+      results.push({teamId, error: msg});
+    }
+  }
+
+  const successCount = results.filter((r) => r.messageId).length;
+  if (successCount === 0) {
+    throw new HttpsError('internal', 'Emergency broadcast failed for all teams.');
+  }
+
+  const deliveryReport = aggregateClubDeliveryReport(results, clubAuditId);
+
+  logger.info('[emergencyClubBroadcast] emergency broadcast complete', {
+    clubId,
+    teamCount: teamIds.length,
+    successCount,
+    callerEmail,
+  });
+
+  return {
+    success: true,
+    clubId,
+    clubAuditId,
+    teamCount: teamIds.length,
+    successCount,
+    totalRecipients,
+    totalCcParents,
+    priority: 'emergency',
+    deliveryReport,
     results,
   };
 });

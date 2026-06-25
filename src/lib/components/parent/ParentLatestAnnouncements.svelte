@@ -18,6 +18,7 @@
 		subject: string | null;
 		bodyPreview: string;
 		fromEmail: string;
+		priority: string | null;
 		createdAt?: { toDate?: () => Date };
 	};
 
@@ -49,6 +50,7 @@
 							subject: x.subject ? String(x.subject) : null,
 							bodyPreview: String(x.bodyPreview || x.body || ''),
 							fromEmail: String(x.fromEmail || ''),
+							priority: typeof x.priority === 'string' ? x.priority : null,
 							createdAt: x.createdAt as AnnRow['createdAt'],
 						});
 					});
@@ -122,6 +124,9 @@
 		<ul class="parent-ann-strip__list">
 			{#each items as ann (ann.id)}
 				<li class="parent-ann-strip__item">
+					{#if ann.priority === 'emergency'}
+						<span class="parent-ann-strip__emergency-badge">Emergency</span>
+					{/if}
 					{#if ann.subject}
 						<p class="parent-ann-strip__subject">{ann.subject}</p>
 					{/if}
@@ -163,6 +168,20 @@
 	.parent-ann-strip__item {
 		padding-bottom: 10px;
 		border-bottom: 1px solid rgba(148, 163, 184, 0.25);
+	}
+
+	.parent-ann-strip__emergency-badge {
+		display: inline-block;
+		margin-bottom: 4px;
+		padding: 2px 8px;
+		border-radius: 999px;
+		font-size: 10px;
+		font-weight: 800;
+		text-transform: uppercase;
+		letter-spacing: 0.05em;
+		color: #991b1b;
+		background: #fee2e2;
+		border: 1px solid #fca5a5;
 	}
 
 	.parent-ann-strip__subject {

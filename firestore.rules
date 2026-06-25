@@ -2877,6 +2877,8 @@ service cloud.firestore {
     // SafeSport-compliant team/group message records. Created exclusively by
     // the `safeSportBroadcast` Cloud Function. Readable by the sender's team
     // members and their parent CCs. Immutable after creation.
+    // Optional fields (Admin SDK): `priority` ('emergency' for break-glass),
+    // `source` / `broadcastSource` ('club_broadcast' | 'emergency' | …).
     // ─────────────────────────────────────────────────────────────────────────
     match /team_broadcasts/{msgId} {
       // Team members (player, coach, director) within the same club may read.

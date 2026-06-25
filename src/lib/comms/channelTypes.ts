@@ -16,6 +16,7 @@ export type CommsChannelTypeId =
 	| 'tryouts_events'
 	| 'match_day'
 	| 'club_wide'
+	| 'emergency'
 	| 'outbox'
 	| 'direct_mail';
 
@@ -115,6 +116,15 @@ export const COMMS_CHANNEL_TYPE_REGISTRY: Record<
 		id: 'club_wide',
 		label: 'Club-wide broadcast',
 		description: 'Director fan-out to all or selected teams — parents read per-team copies in Announcements',
+		whoCanPost: ['director', 'admin'],
+		whoCanRead: ['parent', 'director', 'admin'],
+		minorVisibility: 'hq_calendar_mirror',
+		replyModel: 'none',
+	},
+	emergency: {
+		id: 'emergency',
+		label: 'Emergency',
+		description: 'Director break-glass — weather, safety, lockdown; high-priority push + SMS when enabled',
 		whoCanPost: ['director', 'admin'],
 		whoCanRead: ['parent', 'director', 'admin'],
 		minorVisibility: 'hq_calendar_mirror',

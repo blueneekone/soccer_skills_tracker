@@ -13,10 +13,12 @@
 	import CommsTryoutsEventsChannel from '$lib/components/comms/CommsTryoutsEventsChannel.svelte';
 	import CommsMatchDayChannel from '$lib/components/comms/CommsMatchDayChannel.svelte';
 	import CommsClubWideChannel from '$lib/components/comms/CommsClubWideChannel.svelte';
+	import CommsEmergencyChannel from '$lib/components/comms/CommsEmergencyChannel.svelte';
 	import ReportMessageIncident from '$lib/components/comms/ReportMessageIncident.svelte';
 	import {
 		COMMS_CHANNEL_TYPE_REGISTRY,
 		canPersonaReadChannel,
+		canPersonaPostChannel,
 		type CommsChannelTypeId,
 	} from '$lib/comms/channelTypes.js';
 	import { teamsStore } from '$lib/stores/teams.svelte.js';
@@ -73,6 +75,7 @@
 	const showTryouts = $derived(canPersonaReadChannel('tryouts_events', role));
 	const showMatchDay = $derived(canPersonaReadChannel('match_day', role));
 	const showClubWide = $derived(canPersonaReadChannel('club_wide', role));
+	const showEmergency = $derived(canPersonaPostChannel('emergency', role));
 	const deepLinkClubId = $derived(page.url.searchParams.get('clubId') || clubId || '');
 	const hubClubId = $derived(deepLinkClubId);
 	const hubClubName = $derived(
@@ -118,6 +121,12 @@
 					label: COMMS_CHANNEL_TYPE_REGISTRY.club_wide.label,
 				});
 			}
+			if (showEmergency) {
+				list.push({
+					id: 'emergency',
+					label: COMMS_CHANNEL_TYPE_REGISTRY.emergency.label,
+				});
+			}
 			if (showParentLounge || role === 'parent') {
 				list.push({ id: 'parent_lounge', label: 'Parent Lounge' });
 			}
@@ -160,6 +169,9 @@
 			url.searchParams.set('programId', deepLinkProgramId);
 		}
 		if (id === 'club_wide' && hubClubId) {
+			url.searchParams.set('clubId', hubClubId);
+		}
+		if (id === 'emergency' && hubClubId) {
 			url.searchParams.set('clubId', hubClubId);
 		}
 		void goto(`${url.pathname}${url.search}`, { replaceState: true, noScroll: true });
@@ -233,6 +245,12 @@
 			<CommsMatchDayChannel clubId={teamClubId} teamId={deepLinkTeamId} />
 		{:else if activeChannel === 'club_wide' && showClubWide}
 			<CommsClubWideChannel
+				clubId={hubClubId}
+				clubName={hubClubName}
+				teams={hubClubTeams}
+			/>
+		{:else if activeChannel === 'emergency' && showEmergency}
+			<CommsEmergencyChannel
 				clubId={hubClubId}
 				clubName={hubClubName}
 				teams={hubClubTeams}

@@ -471,8 +471,9 @@ exports.onTrialScoreAdded = onDocumentCreated(
  * @param {string[]} uids
  * @param {{ title: string, body: string }} notification
  * @param {Record<string, string>} data
+ * @param {{ emergency?: boolean }} [options]
  */
-async function sendFcmToUids(uids, notification, data) {
+async function sendFcmToUids(uids, notification, data, options = {}) {
   if (uids.length === 0) return;
   let tokens = [];
   try {
@@ -483,10 +484,36 @@ async function sendFcmToUids(uids, notification, data) {
   }
   if (tokens.length === 0) return;
   const chunkSize = 500;
+  const emergency = options.emergency === true;
   for (let i = 0; i < tokens.length; i += chunkSize) {
     const chunk = tokens.slice(i, i + chunkSize);
     try {
-      await admin.messaging().sendMulticast({tokens: chunk, notification, data});
+      /** @type {import('firebase-admin/messaging').MulticastMessage} */
+      const message = {
+        tokens: chunk,
+        notification,
+        data: {
+          ...data,
+          ...(emergency ? {priority: 'emergency'} : {}),
+        },
+      };
+      if (emergency) {
+        // Android: high-priority data + notification channel — native app must register
+        // `emergency_alerts` channel (Capacitor) or heads-up may not appear on Oreo+.
+        message.android = {
+          priority: 'high',
+          notification: {
+            channelId: 'emergency_alerts',
+            priority: 'high',
+            defaultSound: true,
+          },
+        };
+        message.apns = {
+          headers: {'apns-priority': '10'},
+          payload: {aps: {sound: 'default'}},
+        };
+      }
+      await admin.messaging().sendEachForMulticast(message);
     } catch (e) {
       logger.error('sendFcmToUids: sendMulticast failed', {err: e});
     }
@@ -689,6 +716,11 @@ exports.onTeamBroadcastCreated = onDocumentCreated(
             : typeof data.body === 'string'
               ? data.body.slice(0, 140)
               : '';
+      const isEmergency =
+          data.priority === 'emergency' ||
+          data.source === 'emergency' ||
+          data.broadcastSource === 'emergency';
+      const emergencyTitle = isEmergency ? `🚨 ${pushTitle}` : pushTitle;
       const rawCcParents = Array.isArray(data.parentDeliveredEmails)
         ? data.parentDeliveredEmails
         : Array.isArray(data.ccParentEmails)
@@ -779,8 +811,14 @@ exports.onTeamBroadcastCreated = onDocumentCreated(
         try {
           await sendFcmToUids(
               allUids,
-              {title: pushTitle, body: pushBody},
-              {category: 'push_announcements'},
+              {title: emergencyTitle, body: pushBody},
+              {
+                category: 'push_announcements',
+                kind: isEmergency ? 'emergency_broadcast' : 'team_broadcast',
+                teamId,
+                msgId,
+              },
+              {emergency: isEmergency},
           );
           fcmAttempted = true;
           logger.info('onTeamBroadcastCreated: push dispatched', {

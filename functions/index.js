@@ -107,6 +107,7 @@ exports.schedulePractice = leagueHandlers.schedulePractice;
 const commsHandlers = require('./comms');
 exports.safeSportBroadcast = commsHandlers.safeSportBroadcast;
 exports.clubSportBroadcast = commsHandlers.clubSportBroadcast;
+exports.emergencyClubBroadcast = commsHandlers.emergencyClubBroadcast;
 exports.reportMessageIncident = commsHandlers.reportMessageIncident;
 
 // â”€â”€ Epic 5 â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
