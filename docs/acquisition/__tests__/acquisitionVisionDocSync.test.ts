@@ -118,4 +118,26 @@ describe('ACQ-VISION-DOC-SYNC — acquisition vision language', () => {
 		expect(doc).toMatch(/COMMS_CHANNEL_CANON\.md/);
 		expect(doc).toMatch(/channel types|channel type/i);
 	});
+
+	it('DEMO_ENV_SECRETS_RUNBOOK.md exists with Tier 1 secret names', () => {
+		const doc = readDoc('docs/acquisition/DEMO_ENV_SECRETS_RUNBOOK.md');
+		expect(doc).toMatch(/Tier 1/);
+		expect(doc).toMatch(/WORKOUT_ATTESTATION_HMAC_SECRET/);
+		expect(doc).toMatch(/WEBAUTHN_RP_ID/);
+		expect(doc).toMatch(/WEBAUTHN_RP_ORIGIN/);
+		expect(doc).toMatch(/APP_BASE_URL/);
+		expect(doc).toMatch(/sports-skill-tracker-dev/);
+		expect(doc).toMatch(/reset-demo-stats/);
+	});
+
+	it('DEMO_SCRIPT.md links DEMO_ENV_SECRETS_RUNBOOK before you start', () => {
+		const doc = readDoc('docs/acquisition/DEMO_SCRIPT.md');
+		const beforeStart = doc.slice(0, doc.indexOf('### Phase 0'));
+		expect(beforeStart).toMatch(/DEMO_ENV_SECRETS_RUNBOOK\.md/);
+	});
+
+	it('INDEX.md links DEMO_ENV_SECRETS_RUNBOOK in QA section', () => {
+		const doc = readDoc('docs/acquisition/INDEX.md');
+		expect(doc).toMatch(/DEMO_ENV_SECRETS_RUNBOOK\.md/);
+	});
 });

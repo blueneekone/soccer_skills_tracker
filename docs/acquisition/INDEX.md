@@ -83,6 +83,7 @@ Regenerate PDFs: `npm run build:acquisition-pdfs` (requires Playwright Chromium)
 | [OWNER_QA_CHECKLIST.md](../vision/OWNER_QA_CHECKLIST.md) | Owner bible — Phase 5 signed 2026-05-22; GP-ACQ-06 pending |
 | [PLATFORM_WORKFLOW_CANON.md](../vision/PLATFORM_WORKFLOW_CANON.md) | GP-ACQ / GP-COACH / GP-PARENT / GP-GATE |
 | [DEMO_SCRIPT.md](./DEMO_SCRIPT.md) | Persona walkthrough on dev tenant |
+| [DEMO_ENV_SECRETS_RUNBOOK.md](./DEMO_ENV_SECRETS_RUNBOOK.md) | **Demo env secrets** — Tier 0–3 operator checklist |
 | [QA_DEV_PERSONA_VERIFICATION.md](../QA_DEV_PERSONA_VERIFICATION.md) | Legacy phased notes (superseded by owner checklist) |
 
 ### Legal
@@ -99,6 +100,7 @@ Regenerate PDFs: `npm run build:acquisition-pdfs` (requires Playwright Chromium)
 | Document | Purpose |
 |----------|---------|
 | [TRANSFER.md](./TRANSFER.md) | Handoff — repos, Firebase, secrets |
+| [DEMO_ENV_SECRETS_RUNBOOK.md](./DEMO_ENV_SECRETS_RUNBOOK.md) | Buyer demo secrets + tenant reset modes |
 | [FUNCTIONAL_AUDIT_BACKLOG.md](../FUNCTIONAL_AUDIT_BACKLOG.md) | Closed wiring gaps A–F |
 | [DOC_SYNC_REPORT.md](./DOC_SYNC_REPORT.md) | Doc sync audit log |
 

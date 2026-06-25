@@ -9,6 +9,8 @@
 
 ## Before you start
 
+**Secrets & env:** [`DEMO_ENV_SECRETS_RUNBOOK.md`](./DEMO_ENV_SECRETS_RUNBOOK.md) — Tier 0–3 checklist before buyer demo.
+
 ### Phase 0 — confirm deploy green
 
 If features fail with "callable not found", backend is not fully deployed. Operator runs:
@@ -27,11 +29,25 @@ Full checklist: [`FUNCTIONS_DEPLOY.md`](../FUNCTIONS_DEPLOY.md) · [`QA_DEV_PERS
 
 ### QA tenant
 
+**First-time / broken tenant** — full provision (purges orphaned operatives, resets household shell):
+
 ```bash
 node scripts/dev-tenant-reset.mjs --provision --club-id qa_launch_2026 --team-id qa_launch_2026_ppc
 ```
 
-Provision **auto-purges** orphaned `@operative.local` Auth/users rows so operative callsigns can be reused between QA sessions.
+**Between demos (same operative)** — stats-only reset; preserves Auth, household `playerEmails`, VPC/consent:
+
+```bash
+node scripts/dev-tenant-reset.mjs --reset-demo-stats --club-id qa_launch_2026
+# Owner replies "approved execute", then:
+node scripts/dev-tenant-reset.mjs --reset-demo-stats --execute --club-id qa_launch_2026
+```
+
+Kept operative: auto-detected from `households/qa_launch_2026_parent_hh` → `playerEmails[0]`, or `--keep-operative-email <child@operative.local>`.  
+Does **not** delete Auth users, `consent_records`, or household links. Wipes XP, missions, bounties, reps, team-scoped comms artifacts.  
+Demo avatar seeds automatically on `--execute` (skip with `--skip-demo-avatar`). Artifact: `artifacts/firestore-reset-{date}/DEMO_STATS_RESET.md`.
+
+Provision **auto-purges** orphaned `@operative.local` Auth/users rows so operative callsigns can be reused between QA sessions (**`--provision` only** — not stats reset).
 
 | Field | Value |
 |-------|-------|
@@ -146,7 +162,7 @@ Use **incognito** or sign out between persona switches ([`QA_DEV_PERSONA_VERIFIC
 |-------|------------|
 | Callable not found | Say: "Deploy grouping — code shipped, needs `deploy:core` on this project" |
 | RL pill missing | Expected at `abPercent: 0` — show Adaptive Homework heuristic list |
-| Empty roster | Run dev-tenant-reset provision; coach must have team selected |
+| Empty roster | Run `--provision` (first time) or `--reset-demo-stats --execute` (repeat) |
 | WebAuthn localhost error | Compliance deploy missing `WEBAUTHN_RP_ID=sstracker.app` — see FUNCTIONS_DEPLOY |
 
 ---
