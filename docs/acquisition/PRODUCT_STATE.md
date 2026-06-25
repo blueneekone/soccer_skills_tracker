@@ -86,6 +86,7 @@ Honest partials from [`NOTABLE_GAPS.md`](./NOTABLE_GAPS.md) and [`PLATFORM_GAP_R
 | **Theme light/dark** | Partial | Dark-first; token split incomplete |
 | **Live streaming** | Partial | URL embed MVP only (YouTube/Vimeo/Mux) |
 | **Avatar PNG art** | Deferred | `defaultPortraitV2` SVG + initials fallback |
+| **Comms UX** | Partial | Mid-migration to unified hub per [`COMMS_CHANNEL_CANON.md`](../vision/COMMS_CHANNEL_CANON.md) — fragmented compose (`/coach/logistics`, `/director?tab=comms`), minor-CC-only parent delivery, receipt UX gap; Phase 1 (4.13a) |
 
 ---
 

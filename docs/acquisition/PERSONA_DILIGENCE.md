@@ -111,6 +111,7 @@ Parents are co-op partners, not spectators. Easy consent, log alongside athlete,
 
 ### Capabilities — partial
 
+- `/messages` (PS-X01) — unified comms hub vision per [`COMMS_CHANNEL_CANON.md`](../vision/COMMS_CHANNEL_CANON.md); Parent Lounge + household + CC inbox shipped; **Phase 1 (4.13a) partial** — delivery receipt, parent-first audience, hub shell consolidation
 - `/parent/log-workout` (Tier 2) — co-op log; parent JWT `householdId` sync risk
 - `/parent/payments` (Tier 2) — Stripe path shipped; production billing sign-off pending
 - Proof review queue — shipped; edge cases under owner QA

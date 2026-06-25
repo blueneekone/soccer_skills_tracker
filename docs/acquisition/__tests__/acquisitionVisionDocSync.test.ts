@@ -102,4 +102,18 @@ describe('ACQ-VISION-DOC-SYNC — acquisition vision language', () => {
 		const doc = readDoc('docs/acquisition/INDEX.md');
 		expect(doc).toMatch(/GP-ACQ-06|exec cut 5\/6|5 of 6/i);
 	});
+
+	it('COMMS_CHANNEL_CANON.md exists with channel registry, deliveryReport, and SafeSport', () => {
+		const doc = readDoc('docs/vision/COMMS_CHANNEL_CANON.md');
+		expect(doc).toMatch(/Channel Type Registry/i);
+		expect(doc).toMatch(/deliveryReport|DeliveryReport|delivery contract/i);
+		expect(doc).toMatch(/SafeSport/i);
+		expect(doc).toMatch(/announcements|parent_lounge|household|club_wide/);
+	});
+
+	it('COMMS_HUB.md links to COMMS_CHANNEL_CANON as channel type authority', () => {
+		const doc = readDoc('docs/vision/COMMS_HUB.md');
+		expect(doc).toMatch(/COMMS_CHANNEL_CANON\.md/);
+		expect(doc).toMatch(/channel types|channel type/i);
+	});
 });

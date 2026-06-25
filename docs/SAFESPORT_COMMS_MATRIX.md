@@ -19,6 +19,14 @@ Epic 2 Sprint 2.3 (*SafeSport messaging CC*) is **absorbed into Epic 4** — see
 
 ---
 
+## Channel type registry
+
+Typed channel definitions, audience matrix, and delivery contract: [`docs/vision/COMMS_CHANNEL_CANON.md`](./vision/COMMS_CHANNEL_CANON.md) §3–§6.
+
+**`consentComms`:** Enforced server-side on broadcast CC + monitored channel paths (Sprint 4.2 Done). **UX gap:** VPC defaults `consentComms` to `false` — most guardians must opt in; skipped parents should appear in delivery receipt (`parentSkipped.reason = consent_comms_declined`) per channel canon §6.
+
+---
+
 ## Platform control map
 
 | Control | Location | Current behavior | Target (Epic 4) |

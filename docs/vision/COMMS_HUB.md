@@ -1,5 +1,7 @@
 # Comms & Team Operations Hub — Vision
 
+> **Implementation authority for channel types:** [`COMMS_CHANNEL_CANON.md`](./COMMS_CHANNEL_CANON.md) — typed channel registry, delivery contract, unified hub shell (Epic 4.13+).
+
 **ROADMAP Epic 4** · **Product delivery spans Epics B, C, D, E**
 
 ---
