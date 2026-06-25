@@ -10,7 +10,7 @@
 	} from 'firebase/firestore';
 	import { db } from '$lib/firebase.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
-	import type { DeliveryReport } from '$lib/services/comms.svelte.js';
+	import { CommsEngine, type BroadcastAckStatus, type DeliveryReport } from '$lib/services/comms.svelte.js';
 
 	type OutboxRow = {
 		id: string;
@@ -22,7 +22,12 @@
 		parentDeliveredCount?: number;
 		parentSkippedCount?: number;
 		recipientCount?: number;
+		requiresAck?: boolean;
+		acknowledgedCount?: number;
+		ackEligibleEmails?: string[];
 	};
+
+	const engine = new CommsEngine();
 
 	const role = $derived(authStore.role);
 	const profile = $derived(authStore.userProfile);
@@ -37,6 +42,33 @@
 	let items = $state<OutboxRow[]>([]);
 	let loading = $state(true);
 	let error = $state('');
+	/** @type {Record<string, BroadcastAckStatus>} */
+	let ackStatusById = $state({});
+	let ackLoadingId = $state('');
+
+	async function loadAckStatus(row: OutboxRow) {
+		if (!row.requiresAck || ackStatusById[row.id] || ackLoadingId === row.id) return;
+		ackLoadingId = row.id;
+		try {
+			const status = await engine.getBroadcastAckStatus({
+				messageId: row.id,
+				teamId: row.teamId,
+			});
+			ackStatusById = { ...ackStatusById, [row.id]: status };
+		} catch {
+			/* non-fatal — show counts from broadcast doc */
+		} finally {
+			ackLoadingId = '';
+		}
+	}
+
+	$effect(() => {
+		for (const row of items) {
+			if (row.requiresAck && !ackStatusById[row.id]) {
+				void loadAckStatus(row);
+			}
+		}
+	});
 
 	$effect(() => {
 		if (!browser || !isStaff || !myEmail) {
@@ -87,6 +119,12 @@
 						parentDeliveredCount: dr?.parentDelivered?.length,
 						parentSkippedCount: dr?.parentSkipped?.length,
 						recipientCount: typeof x.recipientCount === 'number' ? x.recipientCount : undefined,
+						requiresAck: x.requiresAck === true,
+						acknowledgedCount:
+							typeof x.acknowledgedCount === 'number' ? x.acknowledgedCount : 0,
+						ackEligibleEmails: Array.isArray(x.ackEligibleEmails)
+							? x.ackEligibleEmails.map((e) => String(e))
+							: undefined,
 					});
 				});
 				items = rows;
@@ -152,6 +190,26 @@
 							Legacy send — {row.recipientCount} roster athletes
 						{/if}
 					</p>
+					{#if row.requiresAck}
+						{@const ackStatus = ackStatusById[row.id]}
+						{@const total =
+							ackStatus?.totalEligible ??
+							row.ackEligibleEmails?.length ??
+							0}
+						{@const acked =
+							ackStatus?.acknowledgedCount ?? row.acknowledgedCount ?? 0}
+						<p class="outbox-ack">
+							Acknowledgments: {acked}/{total}
+							{#if ackLoadingId === row.id}
+								· loading…
+							{/if}
+						</p>
+						{#if ackStatus?.pendingEmails?.length}
+							<p class="outbox-ack-pending">
+								Pending: {ackStatus.pendingEmails.join(', ')}
+							</p>
+						{/if}
+					{/if}
 				</li>
 			{/each}
 		</ul>
@@ -231,6 +289,21 @@
 		font-size: 11px;
 		font-weight: 600;
 		color: #14b8a6;
+	}
+
+	.outbox-ack {
+		margin: 6px 0 0;
+		font-size: 11px;
+		font-weight: 700;
+		color: #fbbf24;
+	}
+
+	.outbox-ack-pending {
+		margin: 4px 0 0;
+		font-size: 10px;
+		line-height: 1.4;
+		color: #94a3b8;
+		word-break: break-word;
 	}
 
 	.qa-mono {

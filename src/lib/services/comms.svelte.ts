@@ -35,6 +35,10 @@ export interface BroadcastMessageInput {
 	target: BroadcastTarget;
 	body: string;
 	subject?: string;
+	/** Epic 4.16b — require parent read acknowledgment */
+	requiresAck?: boolean;
+	/** ISO string or epoch ms — optional deadline shown to parents */
+	ackDeadline?: string | number;
 }
 
 /** Input for the coach→player direct message callable (adult players only). */
@@ -74,6 +78,8 @@ export interface ClubBroadcastInput {
 	subject?: string;
 	/** When empty/omitted, server fans out to all teams in the club. */
 	teamIds?: string[];
+	requiresAck?: boolean;
+	ackDeadline?: string | number;
 }
 
 export type ParentSkipReason =
@@ -129,6 +135,18 @@ export interface BroadcastResult {
 	deliveryReport?: DeliveryReport;
 }
 
+export interface BroadcastAckStatus {
+	ok: true;
+	messageId: string;
+	teamId: string;
+	requiresAck: boolean;
+	ackDeadline?: unknown;
+	totalEligible: number;
+	acknowledgedCount: number;
+	acknowledgedEmails: string[];
+	pendingEmails: string[];
+}
+
 /** Custom error thrown when a caller attempts to violate SafeSport policy. */
 export class SafeSportViolation extends Error {
 	constructor(message: string) {
@@ -164,6 +182,8 @@ export class CommsEngine {
 	private _channelFn: ReturnType<typeof httpsCallable> | null = null;
 	private _householdFn: ReturnType<typeof httpsCallable> | null = null;
 	private _coachDmFn: ReturnType<typeof httpsCallable> | null = null;
+	private _ackFn: ReturnType<typeof httpsCallable> | null = null;
+	private _ackStatusFn: ReturnType<typeof httpsCallable> | null = null;
 
 	constructor() {
 		if (!browser) return;
@@ -174,6 +194,8 @@ export class CommsEngine {
 		this._channelFn = httpsCallable(fns, 'sendChannelMessage');
 		this._householdFn = httpsCallable(fns, 'sendHouseholdMessage');
 		this._coachDmFn = httpsCallable(fns, 'sendCoachPlayerMessage');
+		this._ackFn = httpsCallable(fns, 'acknowledgeBroadcast');
+		this._ackStatusFn = httpsCallable(fns, 'getBroadcastAckStatus');
 	}
 
 	/**
@@ -225,6 +247,8 @@ export class CommsEngine {
 				subject: input.subject ?? undefined,
 			};
 			if (input.target.clubId) payload.clubId = input.target.clubId;
+			if (input.requiresAck === true) payload.requiresAck = true;
+			if (input.ackDeadline != null) payload.ackDeadline = input.ackDeadline;
 
 			const response = await this._broadcastFn(payload);
 			const result = response.data as BroadcastResult;
@@ -308,6 +332,8 @@ export class CommsEngine {
 			};
 			const teamIds = input.teamIds?.map((t) => t.trim()).filter(Boolean);
 			if (teamIds && teamIds.length > 0) payload.teamIds = teamIds;
+			if (input.requiresAck === true) payload.requiresAck = true;
+			if (input.ackDeadline != null) payload.ackDeadline = input.ackDeadline;
 
 			const response = await this._emergencyBroadcastFn(payload);
 			const result = response.data as ClubBroadcastResult;
@@ -414,6 +440,40 @@ export class CommsEngine {
 			this.phase = 'error';
 			throw err;
 		}
+	}
+
+	/** Parent acknowledges a critical announcement — Epic 4.16b. */
+	async acknowledgeBroadcast(input: {
+		messageId: string;
+		teamId: string;
+	}): Promise<{ ok: true; messageId: string; alreadyAcked?: boolean }> {
+		const messageId = input.messageId?.trim() ?? '';
+		const teamId = input.teamId?.trim() ?? '';
+		if (!messageId || !teamId) {
+			throw new Error('messageId and teamId are required.');
+		}
+		if (!this._ackFn) {
+			throw new Error('CommsEngine not initialised (SSR context).');
+		}
+		const response = await this._ackFn({ messageId, teamId });
+		return response.data as { ok: true; messageId: string; alreadyAcked?: boolean };
+	}
+
+	/** Staff reads acknowledgment rollup for outbox compliance — Epic 4.16b. */
+	async getBroadcastAckStatus(input: {
+		messageId: string;
+		teamId: string;
+	}): Promise<BroadcastAckStatus> {
+		const messageId = input.messageId?.trim() ?? '';
+		const teamId = input.teamId?.trim() ?? '';
+		if (!messageId || !teamId) {
+			throw new Error('messageId and teamId are required.');
+		}
+		if (!this._ackStatusFn) {
+			throw new Error('CommsEngine not initialised (SSR context).');
+		}
+		const response = await this._ackStatusFn({ messageId, teamId });
+		return response.data as BroadcastAckStatus;
 	}
 
 	/** Reset to idle after displaying success/error feedback. */

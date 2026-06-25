@@ -2912,7 +2912,8 @@ service cloud.firestore {
     // the `safeSportBroadcast` Cloud Function. Readable by the sender's team
     // members and their parent CCs. Immutable after creation.
     // Optional fields (Admin SDK): `priority` ('emergency' for break-glass),
-    // `source` / `broadcastSource` ('club_broadcast' | 'emergency' | …).
+    // `source` / `broadcastSource` ('club_broadcast' | 'emergency' | …),
+    // `requiresAck`, `ackDeadline`, `ackEligibleEmails`, `acknowledgedCount` (4.16b).
     // ─────────────────────────────────────────────────────────────────────────
     match /team_broadcasts/{msgId} {
       // Team members (player, coach, director) within the same club may read.
@@ -2928,6 +2929,29 @@ service cloud.firestore {
         ))
       );
       // Created only by Cloud Function (Admin SDK).
+      allow create, update, delete: if false;
+    }
+
+    // Epic 4.16b — parent broadcast acknowledgments (callable writes only; immutable).
+    match /broadcast_acknowledgements/{ackId} {
+      allow get: if authed() && (
+        isPlatformAdmin()
+        || (isParent() && resource.data.parentUid == request.auth.uid)
+        || (isDirector() && resource.data.keys().hasAll(['teamId'])
+            && exists(/databases/$(database)/documents/teams/$(resource.data.teamId))
+            && teamClubId(resource.data.teamId) == tokenClub())
+        || (isRegistrar() && resource.data.keys().hasAll(['teamId'])
+            && exists(/databases/$(database)/documents/teams/$(resource.data.teamId))
+            && teamClubId(resource.data.teamId) == tokenClub())
+        || (isCoach() && resource.data.keys().hasAll(['teamId'])
+            && tokenTeam() == resource.data.teamId)
+      );
+      allow list: if authed() && (
+        isPlatformAdmin()
+        || isDirector()
+        || isRegistrar()
+        || isCoach()
+      );
       allow create, update, delete: if false;
     }
 

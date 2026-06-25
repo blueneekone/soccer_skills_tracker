@@ -18,6 +18,8 @@
 
 	let subject = $state('');
 	let body = $state('');
+	let requiresAck = $state(false);
+	let ackDeadline = $state('');
 
 	const canSend = $derived(Boolean(teamId?.trim()) && body.trim().length > 0 && !engine.isSending);
 	const deliveredCount = $derived(
@@ -37,9 +39,13 @@
 				},
 				subject: subject.trim() || undefined,
 				body: body.trim(),
+				requiresAck: requiresAck || undefined,
+				ackDeadline: requiresAck && ackDeadline ? new Date(ackDeadline).toISOString() : undefined,
 			});
 			subject = '';
 			body = '';
+			requiresAck = false;
+			ackDeadline = '';
 		} catch {
 			/* engine.error surfaced in UI */
 		}
@@ -89,6 +95,21 @@
 			bind:value={body}
 			disabled={engine.isSending}
 		></textarea>
+
+		<label class="pac-check">
+			<input type="checkbox" bind:checked={requiresAck} disabled={engine.isSending} />
+			Require parent acknowledgment
+		</label>
+		{#if requiresAck}
+			<label class="pac-label" for="pac-ack-deadline">Ack deadline <span class="pac-opt">(optional)</span></label>
+			<input
+				id="pac-ack-deadline"
+				class="pac-input"
+				type="datetime-local"
+				bind:value={ackDeadline}
+				disabled={engine.isSending}
+			/>
+		{/if}
 
 		{#if engine.phase === 'success' && engine.lastResult}
 			{#if engine.lastResult.deliveryReport}
@@ -199,6 +220,15 @@
 		text-transform: uppercase;
 		letter-spacing: 0.05em;
 		color: #64748b;
+	}
+
+	.pac-check {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		font-size: 12px;
+		font-weight: 600;
+		color: #334155;
 	}
 
 	.pac-opt {

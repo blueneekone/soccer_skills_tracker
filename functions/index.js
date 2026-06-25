@@ -110,6 +110,10 @@ exports.clubSportBroadcast = commsHandlers.clubSportBroadcast;
 exports.emergencyClubBroadcast = commsHandlers.emergencyClubBroadcast;
 exports.reportMessageIncident = commsHandlers.reportMessageIncident;
 
+const broadcastAckOps = require('./src/domains/broadcastAckOps');
+exports.acknowledgeBroadcast = broadcastAckOps.acknowledgeBroadcast;
+exports.getBroadcastAckStatus = broadcastAckOps.getBroadcastAckStatus;
+
 // â”€â”€ Epic 5 â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const inviteHandlers = require('./invites');
 // NOTE: syncUserClaims is NOT exported here — the canonical implementation

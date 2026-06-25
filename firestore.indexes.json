@@ -460,6 +460,14 @@
       ]
     },
     {
+      "collectionGroup": "broadcast_acknowledgements",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "messageId", "order": "ASCENDING" },
+        { "fieldPath": "acknowledgedAt", "order": "DESCENDING" }
+      ]
+    },
+    {
       "collectionGroup": "audit_logs",
       "queryScope": "COLLECTION",
       "fields": [

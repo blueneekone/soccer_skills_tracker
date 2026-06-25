@@ -35,6 +35,7 @@ const {
   buildTeamBroadcastAudience,
 } = require('./src/domains/commsPolicy');
 const {postChannelSystemMessage} = require('./src/domains/commsChannelOps');
+const {parseAckDeadline} = require('./src/domains/broadcastAckOps');
 
 const REGION = 'us-east1';
 const db = admin.firestore();
@@ -62,6 +63,8 @@ async function commitTeamBroadcast({
   ipAddress,
   broadcastSource = null,
   priority = null,
+  requiresAck = false,
+  ackDeadline = null,
 }) {
   const teamSnap = await db.collection('teams').doc(teamId).get();
   if (!teamSnap.exists) {
@@ -190,6 +193,10 @@ async function commitTeamBroadcast({
     source: broadcastSource || null,
     broadcastSource: broadcastSource || null,
     priority: priority || null,
+    requiresAck: requiresAck === true,
+    ackDeadline: ackDeadline || null,
+    ackEligibleEmails: requiresAck === true ? parentRecipientEmails : [],
+    acknowledgedCount: 0,
     createdAt: admin.firestore.FieldValue.serverTimestamp(),
   });
 
@@ -274,6 +281,8 @@ exports.safeSportBroadcast = onCall({region: REGION}, async (request) => {
   const channelId = typeof data.channelId === 'string' ? data.channelId.trim() : '';
   const bodyRaw = typeof data.body === 'string' ? data.body.trim() : '';
   const subject = typeof data.subject === 'string' ? data.subject.trim().slice(0, 200) : '';
+  const requiresAck = data.requiresAck === true;
+  const ackDeadline = requiresAck ? parseAckDeadline(data.ackDeadline) : null;
 
   if (!teamId) {
     throw new HttpsError(
@@ -322,6 +331,8 @@ exports.safeSportBroadcast = onCall({region: REGION}, async (request) => {
     bodyRaw,
     subject,
     ipAddress: request.rawRequest?.ip,
+    requiresAck,
+    ackDeadline,
   });
 });
 
@@ -595,6 +606,8 @@ exports.emergencyClubBroadcast = onCall({region: REGION}, async (request) => {
   const requestedTeamIds = Array.isArray(data.teamIds)
     ? data.teamIds.filter((t) => typeof t === 'string' && t.trim()).map((t) => t.trim())
     : [];
+  const requiresAck = data.requiresAck === true;
+  const ackDeadline = requiresAck ? parseAckDeadline(data.ackDeadline) : null;
 
   if (!clubId) {
     throw new HttpsError('invalid-argument', 'clubId is required.');
@@ -652,6 +665,8 @@ exports.emergencyClubBroadcast = onCall({region: REGION}, async (request) => {
         ipAddress: request.rawRequest?.ip,
         broadcastSource: 'emergency',
         priority: 'emergency',
+        requiresAck,
+        ackDeadline,
       });
       results.push({
         teamId,

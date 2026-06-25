@@ -18,6 +18,8 @@
 
 	let subject = $state('');
 	let body = $state('');
+	let requiresAck = $state(false);
+	let ackDeadline = $state('');
 	let allTeams = $state(true);
 	/** @type {Set<string>} */
 	let selectedTeamIds = $state(new Set<string>());
@@ -61,9 +63,13 @@
 				subject: subject.trim(),
 				body: body.trim(),
 				teamIds: teamIds as string[] | undefined,
+				requiresAck: requiresAck || undefined,
+				ackDeadline: requiresAck && ackDeadline ? new Date(ackDeadline).toISOString() : undefined,
 			});
 			subject = '';
 			body = '';
+			requiresAck = false;
+			ackDeadline = '';
 		} catch {
 			/* engine.error surfaced in UI */
 		}
@@ -122,6 +128,23 @@
 				</ul>
 			{/if}
 		</fieldset>
+
+		<label class="comms-emergency__check comms-emergency__check--ack">
+			<input type="checkbox" bind:checked={requiresAck} disabled={engine.isSending} />
+			Require parent acknowledgment
+		</label>
+		{#if requiresAck}
+			<label class="comms-emergency__label" for="comms-emergency-ack-deadline">
+				Ack deadline (optional)
+			</label>
+			<input
+				id="comms-emergency-ack-deadline"
+				class="comms-emergency__input"
+				type="datetime-local"
+				bind:value={ackDeadline}
+				disabled={engine.isSending}
+			/>
+		{/if}
 
 		<label class="comms-emergency__label" for="comms-emergency-subject">Subject (required)</label>
 		<input

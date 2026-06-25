@@ -2,6 +2,8 @@
 	import { browser } from '$app/environment';
 	import {
 		collection,
+		doc,
+		getDoc,
 		limit,
 		onSnapshot,
 		orderBy,
@@ -10,6 +12,7 @@
 	} from 'firebase/firestore';
 	import { db } from '$lib/firebase.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
+	import { CommsEngine } from '$lib/services/comms.svelte.js';
 
 	type Announcement = {
 		id: string;
@@ -21,16 +24,85 @@
 		bodyPreview: string;
 		recipientCount?: number;
 		hasMinors?: boolean;
+		requiresAck?: boolean;
+		ackDeadline?: { toDate?: () => Date };
 		createdAt?: { toDate?: () => Date };
 	};
+
+	const engine = new CommsEngine();
 
 	const role = $derived(authStore.role);
 	const profile = $derived(authStore.userProfile);
 	const myEmail = $derived((authStore.user?.email || '').toLowerCase());
+	const myUid = $derived(authStore.user?.uid ?? '');
 
 	let items = $state<Announcement[]>([]);
 	let loading = $state(true);
 	let error = $state('');
+	/** @type {Record<string, boolean>} */
+	let ackedById = $state({});
+	let ackSubmitting = $state('');
+	let ackError = $state('');
+
+	function mapAnnouncement(id: string, x: Record<string, unknown>): Announcement {
+		return {
+			id,
+			teamId: String(x.teamId || ''),
+			fromEmail: String(x.fromEmail || ''),
+			fromRole: String(x.fromRole || ''),
+			subject: x.subject ? String(x.subject) : null,
+			body: String(x.body || ''),
+			bodyPreview: String(x.bodyPreview || ''),
+			recipientCount: typeof x.recipientCount === 'number' ? x.recipientCount : undefined,
+			hasMinors: x.hasMinors === true,
+			requiresAck: x.requiresAck === true,
+			ackDeadline: x.ackDeadline as Announcement['ackDeadline'],
+			createdAt: x.createdAt as Announcement['createdAt'],
+		};
+	}
+
+	async function refreshParentAcks(announcements: Announcement[]) {
+		if (!myUid || role !== 'parent') return;
+		const next: Record<string, boolean> = { ...ackedById };
+		for (const ann of announcements) {
+			if (!ann.requiresAck) continue;
+			try {
+				const snap = await getDoc(doc(db, 'broadcast_acknowledgements', `${ann.id}_${myUid}`));
+				next[ann.id] = snap.exists();
+			} catch {
+				next[ann.id] = false;
+			}
+		}
+		ackedById = next;
+	}
+
+	async function acknowledge(ann: Announcement) {
+		if (!ann.requiresAck || ackedById[ann.id] || ackSubmitting) return;
+		ackError = '';
+		ackSubmitting = ann.id;
+		try {
+			await engine.acknowledgeBroadcast({ messageId: ann.id, teamId: ann.teamId });
+			ackedById = { ...ackedById, [ann.id]: true };
+		} catch (e) {
+			ackError = e instanceof Error ? e.message : 'Could not record acknowledgment.';
+		} finally {
+			ackSubmitting = '';
+		}
+	}
+
+	function fmtDeadline(ts?: { toDate?: () => Date }) {
+		if (!ts || typeof ts.toDate !== 'function') return '';
+		try {
+			return ts.toDate().toLocaleString(undefined, {
+				month: 'short',
+				day: 'numeric',
+				hour: 'numeric',
+				minute: '2-digit',
+			});
+		} catch {
+			return '';
+		}
+	}
 
 	$effect(() => {
 		if (!browser || !myEmail || !role) {
@@ -88,20 +160,10 @@
 					if (seen.has(d.id)) return;
 					seen.add(d.id);
 					const x = d.data();
-					rows.push({
-						id: d.id,
-						teamId: String(x.teamId || ''),
-						fromEmail: String(x.fromEmail || ''),
-						fromRole: String(x.fromRole || ''),
-						subject: x.subject ? String(x.subject) : null,
-						body: String(x.body || ''),
-						bodyPreview: String(x.bodyPreview || ''),
-						recipientCount: typeof x.recipientCount === 'number' ? x.recipientCount : undefined,
-						hasMinors: x.hasMinors === true,
-						createdAt: x.createdAt as Announcement['createdAt'],
-					});
+					rows.push(mapAnnouncement(d.id, x));
 				});
 				publish();
+				void refreshParentAcks(rows.slice(0, 20));
 			};
 
 			const qPrimary = query(
@@ -149,21 +211,11 @@
 				const rows: Announcement[] = [];
 				snap.forEach((d) => {
 					const x = d.data();
-					rows.push({
-						id: d.id,
-						teamId: String(x.teamId || ''),
-						fromEmail: String(x.fromEmail || ''),
-						fromRole: String(x.fromRole || ''),
-						subject: x.subject ? String(x.subject) : null,
-						body: String(x.body || ''),
-						bodyPreview: String(x.bodyPreview || ''),
-						recipientCount: typeof x.recipientCount === 'number' ? x.recipientCount : undefined,
-						hasMinors: x.hasMinors === true,
-						createdAt: x.createdAt,
-					});
+					rows.push(mapAnnouncement(d.id, x));
 				});
 				items = rows;
 				loading = false;
+				void refreshParentAcks(rows);
 			},
 			(e) => {
 				error = e instanceof Error ? e.message : 'Could not load announcements.';
@@ -209,6 +261,8 @@
 		<p class="ann-hint">Loading announcements…</p>
 	{:else if error}
 		<p class="ann-err" role="alert">{error}</p>
+	{:else if ackError}
+		<p class="ann-err" role="alert">{ackError}</p>
 	{:else if items.length === 0}
 		<p class="ann-hint">No team announcements yet.</p>
 	{:else}
@@ -219,6 +273,9 @@
 						<time class="ann-date">{fmtDate(ann.createdAt)}</time>
 						{#if ann.hasMinors}
 							<span class="ann-badge ann-badge--minor">Minor · CC policy</span>
+						{/if}
+						{#if ann.requiresAck}
+							<span class="ann-badge ann-badge--ack">Ack required</span>
 						{/if}
 						{#if ann.recipientCount !== undefined}
 							<span class="ann-badge ann-badge--count">{ann.recipientCount} recipients</span>
@@ -233,6 +290,23 @@
 						{ann.fromEmail}
 						<span class="ann-role-tag">{ann.fromRole}</span>
 					</p>
+					{#if role === 'parent' && ann.requiresAck}
+						{#if ann.ackDeadline}
+							<p class="ann-ack-deadline">Please acknowledge by {fmtDeadline(ann.ackDeadline)}</p>
+						{/if}
+						{#if ackedById[ann.id]}
+							<p class="ann-ack-done" role="status">Acknowledged — thank you.</p>
+						{:else}
+							<button
+								type="button"
+								class="ann-ack-btn"
+								disabled={ackSubmitting === ann.id}
+								onclick={() => void acknowledge(ann)}
+							>
+								{ackSubmitting === ann.id ? 'Recording…' : 'I have read this'}
+							</button>
+						{/if}
+					{/if}
 				</li>
 			{/each}
 		</ul>
