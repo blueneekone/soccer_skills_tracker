@@ -232,6 +232,7 @@ exports.listNgbExportFormats = ngbExportOps.listNgbExportFormats;
 // ── Epic 4.4 W1: Parent Lounge channel provisioning ──────────────────────────
 const commsChannelOps = require('./src/domains/commsChannelOps');
 exports.coachProvisionParentLounge  = commsChannelOps.coachProvisionParentLounge;
+exports.coachProvisionStaffInternal = commsChannelOps.coachProvisionStaffInternal;
 exports.mirrorScheduleToLogistics   = commsChannelOps.mirrorScheduleToLogistics;
 
 // ── Sprint 3.3 — Operative loadout unlock ceremonies ────────────────────────

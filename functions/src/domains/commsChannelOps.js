@@ -124,6 +124,185 @@ exports.provisionParentLoungeChannel = async ({
 };
 
 /**
+ * Epic 4.15d — idempotent upsert of per-team staff-internal channel.
+ * Path: clubs/{clubId}/channels/staff-internal-{teamId}
+ *
+ * @param {{ clubId: string, teamId: string, staffEmails?: string[] }} params
+ * @return {Promise<{ channelId: string }>}
+ */
+exports.provisionStaffInternalChannel = async ({
+  clubId,
+  teamId,
+  staffEmails = [],
+}) => {
+  if (!clubId || typeof clubId !== 'string' || !clubId.trim()) {
+    throw new Error('clubId is required.');
+  }
+  if (!teamId || typeof teamId !== 'string' || !teamId.trim()) {
+    throw new Error('teamId is required.');
+  }
+
+  const normClubId = clubId.trim();
+  const normTeamId = teamId.trim();
+  const channelId = `staff-internal-${normTeamId}`;
+
+  const normStaffEmails = staffEmails
+      .map((e) => normEmail(String(e)))
+      .filter(Boolean);
+
+  const teamSnap = await db().collection('teams').doc(normTeamId).get();
+  if (!teamSnap.exists) {
+    throw new Error('Team not found.');
+  }
+  const teamClubId =
+      typeof teamSnap.data().clubId === 'string' ? teamSnap.data().clubId.trim() : '';
+  if (!teamClubId || teamClubId !== normClubId) {
+    throw new Error('Team is not in the specified club.');
+  }
+
+  /** @type {string[]} */
+  const coachEmails = [];
+  const td = teamSnap.data();
+  if (Array.isArray(td.coachEmails)) {
+    td.coachEmails.forEach((e) => {
+      const n = normEmail(String(e));
+      if (n) coachEmails.push(n);
+    });
+  } else if (typeof td.coachEmail === 'string' && td.coachEmail.trim()) {
+    const n = normEmail(td.coachEmail);
+    if (n) coachEmails.push(n);
+  }
+  if (Array.isArray(td.assistants)) {
+    td.assistants.forEach((e) => {
+      const n = normEmail(String(e));
+      if (n) coachEmails.push(n);
+    });
+  }
+
+  const allStaffEmails = [...new Set([...normStaffEmails, ...coachEmails])];
+  if (allStaffEmails.length === 0) {
+    logger.warn(
+        '[provisionStaffInternalChannel] no-op: no staff emails resolved',
+        {channelId, clubId: normClubId},
+    );
+    return {channelId};
+  }
+
+  const FieldValue = admin.firestore.FieldValue;
+  const channelRef = db()
+      .collection('clubs').doc(normClubId)
+      .collection('channels').doc(channelId);
+
+  const channelSnap = await channelRef.get();
+  if (!channelSnap.exists) {
+    await channelRef.set({
+      type: 'group',
+      channelType: 'staff_internal',
+      name: 'Staff internal',
+      safesportMonitored: true,
+      staffOnly: true,
+      teamId: normTeamId,
+      clubId: normClubId,
+      memberIds: allStaffEmails,
+      createdAt: FieldValue.serverTimestamp(),
+      createdBy: 'server',
+    });
+    logger.info('[provisionStaffInternalChannel] created', {
+      channelId,
+      clubId: normClubId,
+      teamId: normTeamId,
+      memberCount: allStaffEmails.length,
+    });
+  } else {
+    await channelRef.set({
+      memberIds: FieldValue.arrayUnion(...allStaffEmails),
+      channelType: 'staff_internal',
+      staffOnly: true,
+      safesportMonitored: true,
+    }, {merge: true});
+    logger.info('[provisionStaffInternalChannel] upserted members', {
+      channelId,
+      clubId: normClubId,
+      teamId: normTeamId,
+      addedCount: allStaffEmails.length,
+    });
+  }
+
+  return {channelId};
+};
+
+/**
+ * Epic 4.15d — coach/director/registrar-initiated staff-internal provisioning.
+ *
+ * @param {{ teamId: string, staffEmails?: string[] }} data
+ */
+exports.coachProvisionStaffInternal = onCall({region: REGION}, async (request) => {
+  if (!request.auth) {
+    throw new HttpsError('unauthenticated', 'Sign in required.');
+  }
+
+  const role = request.auth.token.role || '';
+  const callerEmail = normEmail(request.auth.token.email);
+  const callerTeamId = request.auth.token.teamId || null;
+  const callerClubId = request.auth.token.clubId || null;
+
+  const STAFF_PROVISION_ROLES = new Set([
+    'coach',
+    'director',
+    'registrar',
+    'super_admin',
+    'global_admin',
+  ]);
+  if (!STAFF_PROVISION_ROLES.has(role)) {
+    throw new HttpsError(
+        'permission-denied',
+        'Only club staff may provision staff-internal channels.',
+    );
+  }
+
+  const data = request.data || {};
+  const teamId = typeof data.teamId === 'string' ? data.teamId.trim() : '';
+  const extraStaffEmails = Array.isArray(data.staffEmails) ? data.staffEmails : [];
+
+  if (!teamId) {
+    throw new HttpsError('invalid-argument', 'teamId is required.');
+  }
+
+  const tSnap = await db().collection('teams').doc(teamId).get();
+  if (!tSnap.exists) {
+    throw new HttpsError('not-found', 'Team not found.');
+  }
+  const clubId = typeof tSnap.data().clubId === 'string' ?
+      tSnap.data().clubId.trim() :
+      '';
+  if (!clubId) {
+    throw new HttpsError('failed-precondition', 'Team has no associated club.');
+  }
+
+  if (role === 'coach' && callerTeamId !== teamId) {
+    throw new HttpsError(
+        'permission-denied',
+        'You can only provision staff channels for your own team.',
+    );
+  }
+  if ((role === 'director' || role === 'registrar') && callerClubId !== clubId) {
+    throw new HttpsError('permission-denied', 'Team is not in your club.');
+  }
+
+  const staffEmails = callerEmail ?
+      [...new Set([callerEmail, ...extraStaffEmails])] :
+      extraStaffEmails;
+
+  const result = await exports.provisionStaffInternalChannel({
+    clubId,
+    teamId,
+    staffEmails,
+  });
+
+  return {ok: true, ...result};
+});
+
+/**
  * Epic 4.4 W1 — coach/director-initiated Parent Lounge provisioning.
  *
  * Auth: coach (own team only), director (own club only), or super_admin.

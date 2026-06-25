@@ -171,6 +171,35 @@ describe.skipIf(!process.env.FIRESTORE_EMULATOR_HOST)(
 					text: 'Hello',
 					sentAt: 0,
 				});
+
+				// G12: staff_internal channel — parents must not read
+				await seed(doc(db, 'teams/team-a'), {
+					clubId: 'club-a',
+					coachEmail: 'coach@club-a.com',
+				});
+				await seed(doc(db, 'users/coach@club-a.com'), {
+					role: 'coach',
+					clubId: 'club-a',
+					teamId: 'team-a',
+					playerName: null,
+				});
+				await seed(doc(db, 'clubs/club-a/channels/staff-internal-team-a'), {
+					channelType: 'staff_internal',
+					type: 'group',
+					teamId: 'team-a',
+					clubId: 'club-a',
+					memberIds: ['coach@club-a.com'],
+					safesportMonitored: true,
+					staffOnly: true,
+				});
+				await seed(doc(db, 'clubs/club-a/channels/staff-internal-team-a/messages/msg-staff-1'), {
+					senderId: 'coach-uid',
+					senderName: 'Coach',
+					senderRole: 'coach',
+					text: 'Internal coordination only',
+					timestamp: 0,
+					deleted: false,
+				});
 			});
 		});
 
@@ -513,6 +542,49 @@ describe.skipIf(!process.env.FIRESTORE_EMULATOR_HOST)(
 				}))
 				.firestore();
 			await assertFails(getDoc(doc(db, 'households/hh-a/thread_messages/msg-1')));
+		});
+
+		// ── G12 — staff_internal channel (Epic 4.15d) ───────────────────────────
+
+		it('G12: parent cannot read staff_internal channel doc — denied', async () => {
+			const db = env
+				.authenticatedContext('parent-uid', token({
+					email: 'parent@test.com',
+					role: 'parent',
+					clubId: 'club-a',
+					householdId: 'hh-a',
+				}))
+				.firestore();
+			await assertFails(getDoc(doc(db, 'clubs/club-a/channels/staff-internal-team-a')));
+		});
+
+		it('G12b: parent cannot read staff_internal message — denied', async () => {
+			const db = env
+				.authenticatedContext('parent-uid', token({
+					email: 'parent@test.com',
+					role: 'parent',
+					clubId: 'club-a',
+					householdId: 'hh-a',
+				}))
+				.firestore();
+			await assertFails(
+				getDoc(doc(db, 'clubs/club-a/channels/staff-internal-team-a/messages/msg-staff-1')),
+			);
+		});
+
+		it('G12c: coach on team reads staff_internal message — succeeds', async () => {
+			const db = env
+				.authenticatedContext('coach-uid', token({
+					email: 'coach@club-a.com',
+					role: 'coach',
+					clubId: 'club-a',
+					teamId: 'team-a',
+					isCleared: true,
+				}))
+				.firestore();
+			await assertSucceeds(
+				getDoc(doc(db, 'clubs/club-a/channels/staff-internal-team-a/messages/msg-staff-1')),
+			);
 		});
 
 		// ── G11 — completion_verifications parent audit queue (ProofReviewQueue) ─

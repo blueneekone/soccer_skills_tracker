@@ -651,6 +651,19 @@ service cloud.firestore {
         );
     }
 
+    // Epic 4.15d — staff_internal: coach/director/registrar on team/club only; no parent/player.
+    function canReadStaffInternalChannel(clubId, channelId) {
+      let ch = commsChannelDocData(clubId, channelId);
+      return ch.get('channelType', '') == 'staff_internal'
+        && ch.keys().hasAll(['teamId'])
+        && (
+          isSuper()
+          || (isDirector() && tokenClub() == clubId)
+          || (isRegistrar() && tokenClub() == clubId)
+          || coachStaffCanAccessTeam(ch.teamId)
+        );
+    }
+
     function canReadTypedSystemChannelMessage(clubId, channelId) {
       let ch = typedSystemChannelDoc(clubId, channelId);
       return ch.keys().hasAll(['channelType', 'systemChannel'])
@@ -1356,9 +1369,13 @@ service cloud.firestore {
       match /channels/{channelId} {
         allow read: if authed()
           && (
-            (resource.data.memberIds is list
+            canReadStaffInternalChannel(clubId, channelId)
+            || (
+              commsChannelDocData(clubId, channelId).get('channelType', '') != 'staff_internal'
+              && resource.data.memberIds is list
               && resource.data.memberIds.hasAny([emailKey()])
-              && channelClubScopeOk(clubId))
+              && channelClubScopeOk(clubId)
+            )
             || canReadTypedSystemChannelDoc(clubId, channelId)
           );
 
@@ -1386,9 +1403,13 @@ service cloud.firestore {
         match /messages/{messageId} {
           allow read: if authed()
             && (
-              (commsChannelDocData(clubId, channelId).memberIds is list
+              canReadStaffInternalChannel(clubId, channelId)
+              || (
+                commsChannelDocData(clubId, channelId).get('channelType', '') != 'staff_internal'
+                && commsChannelDocData(clubId, channelId).memberIds is list
                 && commsChannelDocData(clubId, channelId).memberIds.hasAny([emailKey()])
-                && channelClubScopeOk(clubId))
+                && channelClubScopeOk(clubId)
+              )
               || canReadTypedSystemChannelMessage(clubId, channelId)
             );
 

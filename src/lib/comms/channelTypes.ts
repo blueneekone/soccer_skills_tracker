@@ -18,6 +18,7 @@ export type CommsChannelTypeId =
 	| 'club_wide'
 	| 'emergency'
 	| 'compliance'
+	| 'staff_internal'
 	| 'outbox'
 	| 'direct_mail';
 
@@ -140,6 +141,15 @@ export const COMMS_CHANNEL_TYPE_REGISTRY: Record<
 		minorVisibility: 'none',
 		replyModel: 'none',
 	},
+	staff_internal: {
+		id: 'staff_internal',
+		label: 'Staff internal',
+		description: 'Coach/director/registrar staff-only coordination — no parent or player access',
+		whoCanPost: ['coach', 'director', 'registrar', 'admin'],
+		whoCanRead: ['coach', 'director', 'registrar', 'admin'],
+		minorVisibility: 'none',
+		replyModel: 'threaded_group',
+	},
 };
 
 /** All Phase 2 typed channel type_ids for guard tests. */
@@ -164,6 +174,7 @@ export function channelTypeFromClubDoc(data: Record<string, unknown>): CommsChan
 		if (id.startsWith('tryouts-events-')) return 'tryouts_events';
 		if (id.startsWith('match-day-')) return 'match_day';
 		if (id.startsWith('compliance-')) return 'compliance';
+		if (id.startsWith('staff-internal-')) return 'staff_internal';
 		return null;
 	}
 	if (raw in COMMS_CHANNEL_TYPE_REGISTRY) return raw as CommsChannelTypeId;

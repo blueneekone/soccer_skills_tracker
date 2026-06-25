@@ -15,6 +15,7 @@
 	import CommsClubWideChannel from '$lib/components/comms/CommsClubWideChannel.svelte';
 	import CommsEmergencyChannel from '$lib/components/comms/CommsEmergencyChannel.svelte';
 	import CommsComplianceChannel from '$lib/components/comms/CommsComplianceChannel.svelte';
+	import CommsStaffInternalChannel from '$lib/components/comms/CommsStaffInternalChannel.svelte';
 	import ReportMessageIncident from '$lib/components/comms/ReportMessageIncident.svelte';
 	import {
 		COMMS_CHANNEL_TYPE_REGISTRY,
@@ -84,6 +85,7 @@
 				role === 'admin' ||
 				(role === 'parent' && Boolean(householdId))),
 	);
+	const showStaffInternal = $derived(canPersonaReadChannel('staff_internal', role));
 	const deepLinkClubId = $derived(page.url.searchParams.get('clubId') || clubId || '');
 	const hubClubId = $derived(deepLinkClubId);
 	const hubClubName = $derived(
@@ -141,6 +143,12 @@
 					label: COMMS_CHANNEL_TYPE_REGISTRY.compliance.label,
 				});
 			}
+			if (showStaffInternal) {
+				list.push({
+					id: 'staff_internal',
+					label: COMMS_CHANNEL_TYPE_REGISTRY.staff_internal.label,
+				});
+			}
 			if (showParentLounge || role === 'parent') {
 				list.push({ id: 'parent_lounge', label: 'Parent Lounge' });
 			}
@@ -190,6 +198,9 @@
 		}
 		if (id === 'compliance' && hubClubId) {
 			url.searchParams.set('clubId', hubClubId);
+		}
+		if (id === 'staff_internal' && deepLinkTeamId) {
+			url.searchParams.set('teamId', deepLinkTeamId);
 		}
 		void goto(`${url.pathname}${url.search}`, { replaceState: true, noScroll: true });
 	}
@@ -274,6 +285,12 @@
 			/>
 		{:else if activeChannel === 'compliance' && showCompliance}
 			<CommsComplianceChannel clubId={hubClubId} />
+		{:else if activeChannel === 'staff_internal' && showStaffInternal}
+			<CommsStaffInternalChannel
+				clubId={teamClubId || hubClubId}
+				teamId={deepLinkTeamId}
+				teamName={teamName}
+			/>
 		{:else if activeChannel === 'parent_lounge'}
 			{#if role === 'parent'}
 				{#if parentLoungeLoading}
