@@ -620,6 +620,64 @@ service cloud.firestore {
       return get(/databases/$(database)/documents/clubs/$(clubId)/channels/$(channelId)).data;
     }
 
+    // Epic 4.14 — typed system channel read (registration, tryouts_events, match_day).
+    function typedSystemChannelDoc(clubId, channelId) {
+      return commsChannelDocData(clubId, channelId);
+    }
+
+    function canReadTypedSystemChannelDoc(clubId, channelId) {
+      let ch = typedSystemChannelDoc(clubId, channelId);
+      return ch.keys().hasAll(['channelType', 'systemChannel'])
+        && ch.systemChannel == true
+        && (
+          (ch.channelType == 'registration'
+            && isParent()
+            && userDoc().keys().hasAll(['householdId'])
+            && ch.keys().hasAll(['householdId'])
+            && ch.householdId == userDoc().householdId
+            && channelClubScopeOk(clubId))
+          || (ch.channelType == 'tryouts_events'
+            && isParent()
+            && channelClubScopeOk(clubId))
+          || (ch.channelType == 'match_day'
+            && ch.keys().hasAll(['teamId'])
+            && canAccessTeamChannelMatrix(ch.teamId))
+          || (isDirector() && tokenClub() == clubId)
+          || (isRegistrar() && tokenClub() == clubId)
+          || isSuper()
+        );
+    }
+
+    function canReadTypedSystemChannelMessage(clubId, channelId) {
+      let ch = typedSystemChannelDoc(clubId, channelId);
+      return ch.keys().hasAll(['channelType', 'systemChannel'])
+        && ch.systemChannel == true
+        && (
+          (ch.channelType == 'registration'
+            && isParent()
+            && userDoc().keys().hasAll(['householdId'])
+            && resource.data.keys().hasAll(['householdId'])
+            && resource.data.householdId == userDoc().householdId
+            && channelClubScopeOk(clubId))
+          || (ch.channelType == 'tryouts_events'
+            && isParent()
+            && channelClubScopeOk(clubId)
+            && (
+              !resource.data.keys().hasAll(['guardianEmail'])
+              || resource.data.guardianEmail == emailKey()
+              || (resource.data.keys().hasAll(['householdId'])
+                && userDoc().keys().hasAll(['householdId'])
+                && resource.data.householdId == userDoc().householdId)
+            ))
+          || (ch.channelType == 'match_day'
+            && ch.keys().hasAll(['teamId'])
+            && canAccessTeamChannelMatrix(ch.teamId))
+          || isSuper()
+          || (isDirector() && tokenClub() == clubId)
+          || (isRegistrar() && tokenClub() == clubId)
+        );
+    }
+
     function commsBroadcastWriterOk(clubId, channelId) {
       let ch = commsChannelDocData(clubId, channelId);
       return ch.type != 'broadcast'
@@ -1284,9 +1342,12 @@ service cloud.firestore {
       // Epic 20 — Comms Hub (SafeSport): channels + messages (memberIds = lowercase email keys).
       match /channels/{channelId} {
         allow read: if authed()
-          && resource.data.memberIds is list
-          && resource.data.memberIds.hasAny([emailKey()])
-          && channelClubScopeOk(clubId);
+          && (
+            (resource.data.memberIds is list
+              && resource.data.memberIds.hasAny([emailKey()])
+              && channelClubScopeOk(clubId))
+            || canReadTypedSystemChannelDoc(clubId, channelId)
+          );
 
         allow create: if authed()
           && canCreateCommsChannelInClub(clubId)
@@ -1311,11 +1372,15 @@ service cloud.firestore {
 
         match /messages/{messageId} {
           allow read: if authed()
-            && commsChannelDocData(clubId, channelId).memberIds is list
-            && commsChannelDocData(clubId, channelId).memberIds.hasAny([emailKey()])
-            && channelClubScopeOk(clubId);
+            && (
+              (commsChannelDocData(clubId, channelId).memberIds is list
+                && commsChannelDocData(clubId, channelId).memberIds.hasAny([emailKey()])
+                && channelClubScopeOk(clubId))
+              || canReadTypedSystemChannelMessage(clubId, channelId)
+            );
 
           allow create: if authed()
+            && commsChannelDocData(clubId, channelId).get('systemChannel', false) != true
             && commsChannelDocData(clubId, channelId).memberIds is list
             && commsChannelDocData(clubId, channelId).memberIds.hasAny([emailKey()])
             && channelClubScopeOk(clubId)

@@ -1,5 +1,4 @@
 <script lang="ts">
-	import MessagesTab from '$lib/components/coach/MessagesTab.svelte';
 	import CoachTeamSchedulePanel from '$lib/coach/logistics/CoachTeamSchedulePanel.svelte';
 	import CoachTeamRosterPanel from '$lib/coach/logistics/CoachTeamRosterPanel.svelte';
 	import CoachTeamAttendancePanel from '$lib/coach/logistics/CoachTeamAttendancePanel.svelte';
@@ -87,9 +86,28 @@
 				<section class="logistics-channels" aria-labelledby="logistics-channels-heading">
 					<h2 id="logistics-channels-heading" class="logistics-section-title">Team channels</h2>
 					<p class="logistics-section-sub">
-						Logistics threads (game day, practice) — full channel migration to Comms hub in Phase 2.
+						Logistics threads live in the unified Comms hub — game day, practice, and general.
 					</p>
-					<MessagesTab teamId={teamScope.selectedTeamId} clubId={teamClubId} />
+					<div class="logistics-cta-row">
+						<a
+							class="logistics-cta-link logistics-cta-link--secondary"
+							href="/messages?channel=team_logistics&teamId={encodeURIComponent(teamScope.selectedTeamId)}&sub=game-day"
+						>
+							Game day logistics →
+						</a>
+						<a
+							class="logistics-cta-link logistics-cta-link--secondary"
+							href="/messages?channel=team_logistics&teamId={encodeURIComponent(teamScope.selectedTeamId)}&sub=practice-sessions"
+						>
+							Practice logistics →
+						</a>
+						<a
+							class="logistics-cta-link logistics-cta-link--secondary"
+							href="/messages?channel=team_logistics&teamId={encodeURIComponent(teamScope.selectedTeamId)}&sub=general"
+						>
+							General team channel →
+						</a>
+					</div>
 				</section>
 			{:else if activeTab === 'schedule'}
 				<CoachTeamSchedulePanel teamId={teamScope.selectedTeamId} />
@@ -248,6 +266,18 @@
 		text-decoration: none;
 		color: #0f172a;
 		background: var(--brand-primary, #f59e0b);
+	}
+
+	.logistics-cta-row {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 8px;
+	}
+
+	.logistics-cta-link--secondary {
+		background: #fff;
+		border: 1px solid #e2e8f0;
+		color: #334155;
 	}
 
 	.qa-mono {

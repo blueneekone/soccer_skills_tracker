@@ -8,13 +8,20 @@
 	import ParentLoungePanel from '$lib/components/comms/ParentLoungePanel.svelte';
 	import HouseholdThreadPanel from '$lib/components/comms/HouseholdThreadPanel.svelte';
 	import CommsOutbox from '$lib/components/comms/CommsOutbox.svelte';
+	import CommsLogisticsChannel from '$lib/components/comms/CommsLogisticsChannel.svelte';
+	import CommsRegistrationChannel from '$lib/components/comms/CommsRegistrationChannel.svelte';
+	import CommsTryoutsEventsChannel from '$lib/components/comms/CommsTryoutsEventsChannel.svelte';
+	import CommsMatchDayChannel from '$lib/components/comms/CommsMatchDayChannel.svelte';
 	import ReportMessageIncident from '$lib/components/comms/ReportMessageIncident.svelte';
+	import {
+		COMMS_CHANNEL_TYPE_REGISTRY,
+		canPersonaReadChannel,
+		type CommsChannelTypeId,
+	} from '$lib/comms/channelTypes.js';
 	import type { Snippet } from 'svelte';
 
 	export type CommsChannelId =
-		| 'announcements'
-		| 'parent_lounge'
-		| 'household'
+		| CommsChannelTypeId
 		| 'outbox'
 		| 'direct_mail';
 
@@ -42,7 +49,12 @@
 	const teamClubId = $derived(clubId);
 	const teamName = $derived(teamId);
 
-	const isStaff = $derived(role === 'coach' || role === 'director' || role === 'registrar');
+	const isStaff = $derived(
+		role === 'coach' ||
+			role === 'director' ||
+			role === 'registrar' ||
+			role === 'team_manager',
+	);
 	const showHousehold = $derived(
 		(role === 'parent' || role === 'player') && Boolean(householdId),
 	);
@@ -54,11 +66,39 @@
 	const showCompose = $derived(
 		(role === 'coach' || role === 'director') && teamId && teamId !== 'admin',
 	);
+	const showTeamLogistics = $derived(canPersonaReadChannel('team_logistics', role));
+	const showRegistration = $derived(canPersonaReadChannel('registration', role));
+	const showTryouts = $derived(canPersonaReadChannel('tryouts_events', role));
+	const showMatchDay = $derived(canPersonaReadChannel('match_day', role));
 
 	const channels = $derived(
 		(() => {
 			/** @type {Array<{ id: CommsChannelId, label: string }>} */
 			const list = [{ id: 'announcements' as CommsChannelId, label: 'Announcements' }];
+			if (showTeamLogistics) {
+				list.push({
+					id: 'team_logistics',
+					label: COMMS_CHANNEL_TYPE_REGISTRY.team_logistics.label,
+				});
+			}
+			if (showRegistration) {
+				list.push({
+					id: 'registration',
+					label: COMMS_CHANNEL_TYPE_REGISTRY.registration.label,
+				});
+			}
+			if (showTryouts) {
+				list.push({
+					id: 'tryouts_events',
+					label: COMMS_CHANNEL_TYPE_REGISTRY.tryouts_events.label,
+				});
+			}
+			if (showMatchDay) {
+				list.push({
+					id: 'match_day',
+					label: COMMS_CHANNEL_TYPE_REGISTRY.match_day.label,
+				});
+			}
 			if (showParentLounge || role === 'parent') {
 				list.push({ id: 'parent_lounge', label: 'Parent Lounge' });
 			}
@@ -82,6 +122,8 @@
 	});
 
 	const deepLinkTeamId = $derived(page.url.searchParams.get('teamId') || teamId || '');
+	const deepLinkProgramId = $derived(page.url.searchParams.get('programId') || '');
+	const logisticsSub = $derived(page.url.searchParams.get('sub') || 'game-day');
 
 	let mobilePickerOpen = $state(false);
 
@@ -89,8 +131,14 @@
 		mobilePickerOpen = false;
 		const url = new URL(page.url);
 		url.searchParams.set('channel', id);
-		if (id === 'announcements' && deepLinkTeamId) {
+		if ((id === 'announcements' || id === 'team_logistics' || id === 'match_day') && deepLinkTeamId) {
 			url.searchParams.set('teamId', deepLinkTeamId);
+		}
+		if (id === 'team_logistics' && logisticsSub) {
+			url.searchParams.set('sub', logisticsSub);
+		}
+		if (id === 'tryouts_events' && deepLinkProgramId) {
+			url.searchParams.set('programId', deepLinkProgramId);
 		}
 		void goto(`${url.pathname}${url.search}`, { replaceState: true, noScroll: true });
 	}
@@ -149,6 +197,18 @@
 				/>
 			{/if}
 			<AnnouncementsInbox />
+		{:else if activeChannel === 'team_logistics' && showTeamLogistics}
+			<CommsLogisticsChannel teamId={deepLinkTeamId} clubId={teamClubId} />
+		{:else if activeChannel === 'registration' && showRegistration}
+			<CommsRegistrationChannel clubId={teamClubId} {householdId} />
+		{:else if activeChannel === 'tryouts_events' && showTryouts}
+			<CommsTryoutsEventsChannel
+				clubId={teamClubId}
+				programId={deepLinkProgramId}
+				{householdId}
+			/>
+		{:else if activeChannel === 'match_day' && showMatchDay}
+			<CommsMatchDayChannel clubId={teamClubId} teamId={deepLinkTeamId} />
 		{:else if activeChannel === 'parent_lounge'}
 			{#if role === 'parent'}
 				{#if parentLoungeLoading}

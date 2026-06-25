@@ -66,6 +66,9 @@
 				Director club-wide announcement — fans out to team broadcasts with SafeSport parent CC per roster.
 				Rides the Epic 4.3 push bus (`push_announcements`).
 			</p>
+			<a class="dcb-hub-link" href="/messages?channel=announcements">
+				Open unified Comms hub →
+			</a>
 		</div>
 		<span class="dcb-badge" aria-hidden="true">
 			<Icon name={'status.shield-check' as IconName} size={14} />
@@ -200,6 +203,15 @@
 		line-height: 1.45;
 		color: #94a3b8;
 		max-width: 42rem;
+	}
+
+	.dcb-hub-link {
+		display: inline-flex;
+		margin-top: 8px;
+		font-size: 12px;
+		font-weight: 800;
+		color: #0f172a;
+		text-decoration: none;
 	}
 
 	.dcb-badge {
