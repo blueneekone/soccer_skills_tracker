@@ -60,6 +60,8 @@ export interface ClubBroadcastResult {
 		messageId?: string;
 		recipientCount?: number;
 		ccParentCount?: number;
+		parentDeliveredCount?: number;
+		deliveryReport?: DeliveryReport;
 		error?: string;
 	}>;
 }

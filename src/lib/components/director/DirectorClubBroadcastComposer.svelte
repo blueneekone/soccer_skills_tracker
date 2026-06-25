@@ -1,6 +1,7 @@
 <script lang="ts">
 	import Icon from '$lib/components/ui/Icon.svelte';
 	import type { IconName } from '$lib/icons/registry.js';
+	import DeliveryReceipt from '$lib/components/comms/DeliveryReceipt.svelte';
 	import { CommsEngine } from '$lib/services/comms.svelte.js';
 
 	let {
@@ -66,7 +67,7 @@
 				Director club-wide announcement — fans out to team broadcasts with SafeSport parent CC per roster.
 				Rides the Epic 4.3 push bus (`push_announcements`).
 			</p>
-			<a class="dcb-hub-link" href="/messages?channel=announcements">
+			<a class="dcb-hub-link" href="/messages?channel=club_wide&clubId={encodeURIComponent(clubId)}">
 				Open unified Comms hub →
 			</a>
 		</div>
@@ -148,6 +149,14 @@
 					{engine.lastClubResult.totalCcParents} linked parent{engine.lastClubResult.totalCcParents === 1 ? '' : 's'} notified.
 				{/if}
 			</p>
+			{#each engine.lastClubResult.results.filter((r) => r.deliveryReport) as row (row.teamId)}
+				<div class="dcb-team-receipt">
+					<p class="dcb-team-receipt__label">
+						{teams.find((t) => t.id === row.teamId)?.name || row.teamId}
+					</p>
+					<DeliveryReceipt report={row.deliveryReport!} compact />
+				</div>
+			{/each}
 		{:else if engine.error}
 			<p class="dcb-err" role="alert">{engine.error}</p>
 		{/if}
@@ -354,6 +363,21 @@
 		background: #14b8a6;
 		color: #0f172a;
 		border-color: transparent;
+	}
+
+	.dcb-team-receipt {
+		display: flex;
+		flex-direction: column;
+		gap: 4px;
+	}
+
+	.dcb-team-receipt__label {
+		margin: 0;
+		font-size: 11px;
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.04em;
+		color: #94a3b8;
 	}
 
 	.qa-mono {

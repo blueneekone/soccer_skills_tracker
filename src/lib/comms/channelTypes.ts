@@ -15,6 +15,7 @@ export type CommsChannelTypeId =
 	| 'registration'
 	| 'tryouts_events'
 	| 'match_day'
+	| 'club_wide'
 	| 'outbox'
 	| 'direct_mail';
 
@@ -108,6 +109,15 @@ export const COMMS_CHANNEL_TYPE_REGISTRY: Record<
 		whoCanPost: ['coach', 'team_manager', 'director'],
 		whoCanRead: ['parent', 'coach', 'director', 'team_manager'],
 		minorVisibility: 'hq_match_day',
+		replyModel: 'none',
+	},
+	club_wide: {
+		id: 'club_wide',
+		label: 'Club-wide broadcast',
+		description: 'Director fan-out to all or selected teams — parents read per-team copies in Announcements',
+		whoCanPost: ['director', 'admin'],
+		whoCanRead: ['parent', 'director', 'admin'],
+		minorVisibility: 'hq_calendar_mirror',
 		replyModel: 'none',
 	},
 };

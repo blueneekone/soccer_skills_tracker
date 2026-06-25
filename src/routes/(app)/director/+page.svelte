@@ -20,7 +20,6 @@
 	import Icon from '$lib/components/ui/Icon.svelte';
 	import type { IconName } from '$lib/icons/registry.js';
 	import MissionControl from '$lib/components/director/MissionControl.svelte';
-	import DirectorClubBroadcastComposer from '$lib/components/director/DirectorClubBroadcastComposer.svelte';
 	import DirectorCommsCompliancePanel from '$lib/components/director/DirectorCommsCompliancePanel.svelte';
 	import DirectorRetentionReport from '$lib/components/compliance/DirectorRetentionReport.svelte';
 	import WeatherAlert from '$lib/components/weather/WeatherAlert.svelte';
@@ -144,7 +143,24 @@
 		</section>
 	{:else if activeTab === 'comms'}
 		<section class="director-console-page__section">
-			<DirectorClubBroadcastComposer {clubId} clubName={clubLabel} teams={clubTeams} />
+			<section
+				class="tw-flex tw-flex-col tw-gap-3 tw-p-5 tw-border tw-border-slate-600 tw-rounded-xl tw-bg-slate-900 tw-mb-6"
+				aria-labelledby="director-comms-cta-heading"
+			>
+				<h2 id="director-comms-cta-heading" class="tw-m-0 tw-text-base tw-font-extrabold tw-text-slate-50">
+					Club broadcast
+				</h2>
+				<p class="tw-m-0 tw-text-sm tw-leading-relaxed tw-text-slate-400 tw-max-w-2xl">
+					Compose club-wide announcements in the unified Comms hub — one surface for fan-out,
+					delivery receipts, and SafeSport parent CC per team.
+				</p>
+				<a
+					class="tw-inline-flex tw-mt-1 tw-text-sm tw-font-extrabold tw-text-teal-400 tw-no-underline hover:tw-underline"
+					href="/messages?channel=club_wide&clubId={encodeURIComponent(clubId)}"
+				>
+					Open Comms hub — Club-wide broadcast →
+				</a>
+			</section>
 			<DirectorCommsCompliancePanel {clubId} teams={clubTeams} />
 		</section>
 	{:else}

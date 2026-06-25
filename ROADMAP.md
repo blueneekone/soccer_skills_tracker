@@ -2060,12 +2060,13 @@ npm run check
 | 4.12 | **Done** | Firestore rules + callable integration tests: `firestoreRulesSprint412.test.ts` (source-scan + emulator) for team_broadcasts, message_incidents, attendance_sessions, messaging_audit; Epic 4 callable export guards; CI via `test:firestore-rules`. `npm run deploy:comms` for default-codebase comms batch. | `firestoreRulesSprint412.test.ts` |
 | 4.13a | **Done** | Phase 1 unified comms hub — parent-first `commitTeamBroadcast` + `deliveryReport`; `CommsHubShell` on `/messages`; `DeliveryReceipt`; Team Ops CTA → hub; `ParentLatestAnnouncements` dashboard strip; `parentRecipientEmails` rules + index | `commsPhase1.test.ts` · `commsSprint41.test.ts` · `commsSprint42.test.ts` · `loopIntegrityGuards.test.ts` · `functions/__tests__/commsPhase1.test.js` |
 | 4.14 | **Done** | Phase 2 typed channels — `channelTypes.ts` + hub rail (`team_logistics`, `registration`, `tryouts_events`, `match_day`); logistics migration off Team Ops; `postChannelSystemMessage` + registration/tryout/calendar hooks; coach-delegated TM on logistics (JWT deferred) | `commsPhase2.test.ts` · `commsSprint47.test.ts` · `commsSprint45.test.ts` · `functions/__tests__/commsPhase2.test.js` |
+| 4.15a | **Done** | Phase 3 club-wide hub surfacing — `club_wide` in `channelTypes.ts`; `CommsClubWideChannel` on `/messages` with `DirectorClubBroadcastComposer` + per-team `DeliveryReceipt` + fan-out history; director `/director?tab=comms` CTA → hub deep link | `commsPhase3a.test.ts` · `commsSprint48.test.ts` |
 | 4.16a | **Done** | Phase 4 omnichannel bus — `omnichannelOps.js` SendGrid email fallback + Twilio emergency SMS; `onTeamBroadcastCreated` merges `deliveryReport` channels; `DeliveryReceipt` channel chips; egress `api.twilio.com` | `commsPhase4a.test.ts` · `functions/__tests__/commsPhase4a.test.js` |
 | 4.16b | **Planned** | Read/ack compliance — `broadcastAckOps.js`, `requiresAck` on critical announcements | `commsPhase4b.test.ts` |
 | 4.16c | **Planned** | `sponsor_partner` templates + VPC `consentSponsor` opt-in | `commsPhase4c.test.ts` |
 | 4.16d | **Planned** | consentComms onboarding banner + canon/docs sync | `commsPhase4a.test.ts` (extend) |
 
-**Epic 4 runs parallel to Epic 3** after **3.2** ships. **Epic 4.1–4.14 + 4.16a Done.** Comms functions deployed to `sports-skill-tracker-dev` via `npm run deploy:comms`.
+**Epic 4 runs parallel to Epic 3** after **3.2** ships. **Epic 4.1–4.15a + 4.16a Done.** Comms functions deployed to `sports-skill-tracker-dev` via `npm run deploy:comms`.
 
 Vision: [`docs/vision/COMMS_HUB.md`](docs/vision/COMMS_HUB.md) · Compliance map: [`docs/SAFESPORT_COMMS_MATRIX.md`](docs/SAFESPORT_COMMS_MATRIX.md)
 

@@ -12,12 +12,14 @@
 	import CommsRegistrationChannel from '$lib/components/comms/CommsRegistrationChannel.svelte';
 	import CommsTryoutsEventsChannel from '$lib/components/comms/CommsTryoutsEventsChannel.svelte';
 	import CommsMatchDayChannel from '$lib/components/comms/CommsMatchDayChannel.svelte';
+	import CommsClubWideChannel from '$lib/components/comms/CommsClubWideChannel.svelte';
 	import ReportMessageIncident from '$lib/components/comms/ReportMessageIncident.svelte';
 	import {
 		COMMS_CHANNEL_TYPE_REGISTRY,
 		canPersonaReadChannel,
 		type CommsChannelTypeId,
 	} from '$lib/comms/channelTypes.js';
+	import { teamsStore } from '$lib/stores/teams.svelte.js';
 	import type { Snippet } from 'svelte';
 
 	export type CommsChannelId =
@@ -70,6 +72,17 @@
 	const showRegistration = $derived(canPersonaReadChannel('registration', role));
 	const showTryouts = $derived(canPersonaReadChannel('tryouts_events', role));
 	const showMatchDay = $derived(canPersonaReadChannel('match_day', role));
+	const showClubWide = $derived(canPersonaReadChannel('club_wide', role));
+	const deepLinkClubId = $derived(page.url.searchParams.get('clubId') || clubId || '');
+	const hubClubId = $derived(deepLinkClubId);
+	const hubClubName = $derived(
+		teamsStore.clubs.find((c) => c.id === hubClubId)?.name || hubClubId,
+	);
+	const hubClubTeams = $derived(
+		teamsStore.teams
+			.filter((t) => t.clubId === hubClubId)
+			.map((t) => ({ id: t.id, name: t.name })),
+	);
 
 	const channels = $derived(
 		(() => {
@@ -97,6 +110,12 @@
 				list.push({
 					id: 'match_day',
 					label: COMMS_CHANNEL_TYPE_REGISTRY.match_day.label,
+				});
+			}
+			if (showClubWide) {
+				list.push({
+					id: 'club_wide',
+					label: COMMS_CHANNEL_TYPE_REGISTRY.club_wide.label,
 				});
 			}
 			if (showParentLounge || role === 'parent') {
@@ -139,6 +158,9 @@
 		}
 		if (id === 'tryouts_events' && deepLinkProgramId) {
 			url.searchParams.set('programId', deepLinkProgramId);
+		}
+		if (id === 'club_wide' && hubClubId) {
+			url.searchParams.set('clubId', hubClubId);
 		}
 		void goto(`${url.pathname}${url.search}`, { replaceState: true, noScroll: true });
 	}
@@ -209,6 +231,12 @@
 			/>
 		{:else if activeChannel === 'match_day' && showMatchDay}
 			<CommsMatchDayChannel clubId={teamClubId} teamId={deepLinkTeamId} />
+		{:else if activeChannel === 'club_wide' && showClubWide}
+			<CommsClubWideChannel
+				clubId={hubClubId}
+				clubName={hubClubName}
+				teams={hubClubTeams}
+			/>
 		{:else if activeChannel === 'parent_lounge'}
 			{#if role === 'parent'}
 				{#if parentLoungeLoading}

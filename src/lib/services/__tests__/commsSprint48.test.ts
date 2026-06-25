@@ -69,8 +69,9 @@ describe('Epic 4.8 — client CommsEngine + composer', () => {
 		expect(composer).toMatch(/All teams/);
 	});
 
-	it('mounted on /director?tab=comms', () => {
-		expect(directorPage).toMatch(/DirectorClubBroadcastComposer/);
+	it('mounted on /director?tab=comms via hub deep link (4.15a)', () => {
+		expect(directorPage).not.toMatch(/DirectorClubBroadcastComposer/);
+		expect(directorPage).toMatch(/channel=club_wide/);
 		expect(directorPage).toMatch(/activeTab === 'comms'/);
 		expect(nav).toMatch(/tab:\s*['"]comms['"]/);
 	});
