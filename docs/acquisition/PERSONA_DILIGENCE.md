@@ -2,7 +2,7 @@
 
 **Purpose:** Acquirer-facing consolidation of persona purpose, capabilities, and demo scope.  
 **Authority:** [`PERSONA_ECOSYSTEM.md`](../PERSONA_ECOSYSTEM.md) + vision `*_OS.md` — those files remain canonical; this doc does not replace them.  
-**Last updated:** 2026-06-25 · ACQ-DATAROOM-COMPLETE
+**Last updated:** 2026-05-22 · ACQ-QA-DOC-SYNC
 
 ---
 
@@ -49,12 +49,12 @@ Deliver an addictive, fluid training/gaming HUD that works for all ages with age
 | `/stats` | `WF-PLAYER-STATS` |
 | `/vpc-pending` | `WF-VPC-GATE` |
 
+**Owner-verified (2026-05-22):** Mission accept → Train handoff (QA-151, GP-ACQ-04a→04b); Train volume controls sets/reps/bilateral (QA-103–105).
+
 ### Capabilities — partial
 
 - RL adaptive homework on HQ — heuristic default (`abPercent: 0`)
 - Armory / skill tree — Tier 2/3; avatar PNG deferred
-- Mission accept → Train handoff — sessionStorage; owner QA verify
-- Train volume controls — regression-guarded; Phase 5 sign-off pending
 
 ### Capabilities — planned
 

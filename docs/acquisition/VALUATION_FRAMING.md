@@ -61,7 +61,8 @@ A buyer rebuilding SSTracker's **documented scope** from scratch would need to d
 
 | Factor | Evidence |
 |--------|----------|
-| **Owner Phase 5 QA sign-off** | [`OWNER_QA_CHECKLIST.md`](../vision/OWNER_QA_CHECKLIST.md) exec cut complete |
+| **Owner Phase 5 QA sign-off** | [`OWNER_QA_CHECKLIST.md`](../vision/OWNER_QA_CHECKLIST.md) exec cut steps 1–5 signed **2026-05-22** |
+| **GP-ACQ-06 + demo video** | SafeSport messages live check + recorded exec cut still increase willingness to pay |
 | **First pilot club** | Production tenant with real guardians + coaches |
 | **Clean IP chain** | 100% founder assignment documented — [`legal/IP_AND_ENTITY_CHECKLIST.md`](./legal/IP_AND_ENTITY_CHECKLIST.md) |
 | **Competitive process** | Multiple strategic LOIs |
@@ -76,7 +77,7 @@ A buyer rebuilding SSTracker's **documented scope** from scratch would need to d
 | **Firebase perceived lock-in** | Mitigated by documented cell boundaries in [`ARCHITECTURE.md`](../ARCHITECTURE.md) |
 | **Missing store binaries** | Parent mobile adoption gap vs TeamSnap |
 | **Federation API gap** | If buyer's GTM is soccer state-body sync only |
-| **Open QA findings** | Parent JWT household, Train handoff — see [`PRODUCT_STATE.md`](./PRODUCT_STATE.md) |
+| **Open QA findings** | Parent JWT household (monitoring); GP-ACQ-06 SafeSport deferred — see [`PRODUCT_STATE.md`](./PRODUCT_STATE.md) |
 | **No SOC 2 / no audited financials** | Enterprise procurement friction — see below |
 
 ---

@@ -22,7 +22,7 @@
 | LAUNCH-wave2-complete | Done | Parent adoption parity |
 | LAUNCH-qa-ready | Done | `functional-mvp-doc-sync` — tests + docs aligned |
 | LAUNCH-deploy-dev | Done | Full live deploy 2026-06-14; smoke green |
-| Launch functional gate (competitive) | Partial | Owner FUNCTIONAL_MVP QA pending |
+| Launch functional gate (competitive) | Phase 5 complete, depth QA ongoing | Owner Phase 5 signed 2026-05-22; GP-ACQ-06 + Phases 6–12 remain |
 
 **Current sprint:** Wave 3B complete → owner QA [`OWNER_QA_CHECKLIST.md`](../vision/OWNER_QA_CHECKLIST.md)
 

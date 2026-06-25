@@ -187,12 +187,12 @@ Before UX or functional work on a route:
 |---------|-------|-----------|--------|-----------|
 | GP-ACQ-01 | `/parent/household` | `parent/household/+page.svelte` · household graph | **Pending QA** | NAV-WORKFLOW-INTEGRITY: clearance SCANNING + Menu pin on Tier-1 parent routes — owner retest QA-121 + Phase 4b @390px |
 | GP-ACQ-02 | `/parent/vpc` | `parent/vpc/+page.svelte` · consent_records | **Pass** | Owner Phase 3 QA-132 |
-| GP-ACQ-03 | `/coach/forge` | `ForgeDeployPanel.svelte` · `team_assignments` write | **Pass** | VS-3-Forge shipped; owner PS-C02 signed 06/19 — re-run QA-142 on live |
-| GP-ACQ-04a | `/player/dashboard` | `ActiveBounties.svelte` · accept → stash handoff · `Start session →` CTA | **Pass** | `missionRailEmptyCopy` + `coachIntentReadyToClaim` guards |
-| GP-ACQ-04b | `/player/workout` | `coachMissionFlow.ts` handoff · locked prescription · `WORKOUT_HQ_RETURN_PATH` after log | **Pass** | **Fixed:** success overlay → HQ return; `elite_xp_pulse` + `authStore.refresh` |
+| GP-ACQ-03 | `/coach/forge` | `ForgeDeployPanel.svelte` · `team_assignments` write | **Pass** | Owner signed 2026-05-22 (QA-142, QA-403) |
+| GP-ACQ-04a | `/player/dashboard` | `ActiveBounties.svelte` · accept → stash handoff · `Start session →` CTA | **Pass** | Owner signed 2026-05-22 (QA-151, QA-404) |
+| GP-ACQ-04b | `/player/workout` | `coachMissionFlow.ts` handoff · locked prescription · `WORKOUT_HQ_RETURN_PATH` after log | **Pass** | Owner signed 2026-05-22 (QA-103–105, QA-107) |
 | GP-ACQ-04c | `/stats` | `stats/+page.svelte` · telemetry bands | **Pass** | Waivable exec cut; owner PS-PL03 signed |
-| GP-ACQ-05 | `/parent/dashboard` | RSVP strip + bounty terminal | **Pending QA** | Phase 6 gate |
-| GP-ACQ-06 | `/messages` | SafeSport household threads | **Pass** | Owner PS-X01 signed |
+| GP-ACQ-05 | `/parent/dashboard` | RSVP strip + bounty terminal | **Pass** | Owner signed 2026-05-22 (QA-124, QA-125) |
+| GP-ACQ-06 | `/messages` | SafeSport household threads | **Pending QA** | Owner deferred for demo video — QA-153, QA-406 |
 
 **Handoff chain (04a→04b):** Accept on mission rail → `stashQuestTrainHandoff` → `Start session →` → `/player/workout` reads `player_mission_handoff_v1` → `executePlayerWorkoutLog` → acknowledge overlay → `/player/dashboard` XP pulse.
 

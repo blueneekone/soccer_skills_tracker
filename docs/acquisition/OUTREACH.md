@@ -70,7 +70,7 @@ Sharing a pre-launch asset that may fit [Company]'s youth sports roadmap:
 
 **Stack:** Svelte 5 + Firebase Functions v2 (7 codebases) + cell-based Firestore routing  
 **Moat:** RL adaptive homework path, VPC ceremony with auditable `consent_records`, SafeSport callable enforcement  
-**Status:** Functional audit closed; deploy QA pending on `sports-skill-tracker-dev`
+**Status:** Owner Phase 5 signed 2026-05-22 on `sports-skill-tracker-dev`; demo video + GP-ACQ-06 SafeSport step pending before broad diligence
 
 Data room includes ARCHITECTURE, FUNCTIONAL_MVP, SECURITY, TRANSFER, and a live demo script against https://sstracker.app.
 

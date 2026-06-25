@@ -380,3 +380,47 @@
 | Command | Result |
 |---------|--------|
 | `npm run check` | **1 pre-existing error** (`AppMenuSheet.svelte:102` — unrelated to doc slice); 171 warnings |
+
+---
+
+## ACQ-QA-DOC-SYNC (2026-05-22)
+
+**Slice:** Owner Phase 5 sign-off + acquisition doc alignment — documentation + regression guards only; no product code.
+
+### Owner-confirmed state
+
+| Item | Status |
+|------|--------|
+| Phases 0–5 | Owner sign-off complete on `qa_launch_2026` |
+| Exec cut steps 1–5 (GP-ACQ-01 through GP-ACQ-05) | Complete |
+| GP-ACQ-06 / QA-153 / QA-406 (SafeSport messages) | Deferred — owner verify during demo video recording |
+| Phases 6–12 | In progress — gates/headers updated only |
+| Demo video | **Pending** — not in data room |
+
+### Files touched
+
+| File | Change summary |
+|------|----------------|
+| `docs/vision/OWNER_QA_CHECKLIST.md` | Header; Phase 5 sign-off; Phase 6 partial; Phase 7 GP-ACQ-06 deferred; Phases 8–10 gate text |
+| `docs/acquisition/PRODUCT_STATE.md` | Executive summary; QA table; open risks; path to launch |
+| `docs/acquisition/TRACTION.md` | Owner FUNCTIONAL_MVP QA row |
+| `docs/acquisition/INDEX.md` | Stage line |
+| `docs/acquisition/PROSPECTUS.md` | §7 build status |
+| `docs/acquisition/OUTREACH.md` | Status line |
+| `docs/acquisition/LIMITATIONS.md` | Single-owner QA line |
+| `docs/acquisition/PARALLEL_SUMMARY.md` | Launch functional gate |
+| `docs/acquisition/VALUATION_FRAMING.md` | Increases table |
+| `docs/acquisition/PERSONA_DILIGENCE.md` | Train volume + handoff owner-verified |
+| `docs/acquisition/DEMO_SCRIPT.md` | Owner QA status block |
+| `docs/acquisition/INBOUND_PLAYBOOK.md` | Recorded video pending note |
+| `docs/vision/PLATFORM_WORKFLOW_CANON.md` | §8 GP-ACQ audit status column |
+| `docs/vision/FUNCTIONAL_MVP.md` | Owner sync banner + Tier 1 checkboxes |
+| `docs/acquisition/__tests__/acquisitionVisionDocSync.test.ts` | Phase 5 sign-off guards |
+
+### Verify
+
+| Command | Result |
+|---------|--------|
+| `npm test -- docs/acquisition/__tests__/acquisitionVisionDocSync.test.ts` | **16 passed** |
+| `npm run bundle:dataroom` | **48 files** · 492.3 KB |
+| `npm run check` | **2 pre-existing errors** (unrelated to doc slice) |

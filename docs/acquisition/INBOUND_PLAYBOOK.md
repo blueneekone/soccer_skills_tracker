@@ -30,7 +30,7 @@
 
 - [`ONE_PAGER.md`](./ONE_PAGER.md) or PDF: https://sstracker.app/acquisition/sstracker-executive-brief.pdf
 - One paragraph positioning (from [`OUTREACH.md`](./OUTREACH.md))
-- Offer 15-minute exec cut demo on live QA tenant
+- Offer 15-minute exec cut demo on live QA tenant; recorded exec cut video pending
 
 **Do not send:** repository access, full INDEX, architecture docs, or zip.
 

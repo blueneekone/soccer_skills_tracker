@@ -1,6 +1,7 @@
 # SSTracker — Demo Script
 
 **Environment:** https://sstracker.app (Firebase `sports-skill-tracker-dev`)  
+**Preferred demo URL:** https://sports-skill-tracker-dev.web.app (use when custom domain SSL fails)  
 **Duration:** ~45 minutes (full) · ~15 minutes (exec cut)  
 **Authority:** [`FUNCTIONAL_MVP.md`](../vision/FUNCTIONAL_MVP.md) · [`QA_DEV_PERSONA_VERIFICATION.md`](../QA_DEV_PERSONA_VERIFICATION.md)
 
@@ -47,11 +48,21 @@ Provision **auto-purges** orphaned `@operative.local` Auth/users rows so operati
 
 Use **incognito** or sign out between persona switches ([`QA_DEV_PERSONA_VERIFICATION.md`](../QA_DEV_PERSONA_VERIFICATION.md)).
 
+### Owner QA status (2026-05-22)
+
+| Item | Status |
+|------|--------|
+| Phase 5 owner sign-off | **Complete** on `qa_launch_2026` — exec cut steps 1–5 |
+| Step 6 (SafeSport `/messages`) | **Verify before final video cut** — GP-ACQ-06 / QA-153 / QA-406 |
+| Recorded demo video | **Not yet in data room** — placeholder for future `docs/acquisition/demo/` or static path; do not claim video asset exists |
+
 ---
 
 ## Exec cut (15 min)
 
-**Narrative:** *"Schedule tools stop at the calendar. SSTracker closes the development loop with compliance built in."*
+**Narrative (multi-sport OS — open here):** *"Schedule tools stop at the calendar. SSTracker is the youth sports OS for any team sport — it closes the development loop from coach intent → player training → XP → parent visibility, sport-configurable and COPPA-native. Today's demo runs on our soccer-configured QA tenant; the same HUD engine skins per sport via `sports_configs`."*
+
+**Optional 60s architecture beat (after step 4 or during Q&A):** Point to `sports_configs/{sportId}` in [`SPORTS_CONFIGS.md`](../SPORTS_CONFIGS.md) — club `sport` field selects config; Player HUD, Train, and XP loop are identical; attribute tree and drill taxonomy differ per sport.
 
 | Step | Persona | Action | Talk track |
 |------|---------|--------|------------|

@@ -86,4 +86,20 @@ describe('ACQ-VISION-DOC-SYNC — acquisition vision language', () => {
 		const pkg = readDoc('package.json');
 		expect(pkg).toMatch(/"bundle:dataroom"/);
 	});
+
+	it('PRODUCT_STATE.md does not claim stale Phase 5 exec-cut QA pending', () => {
+		const doc = readDoc('docs/acquisition/PRODUCT_STATE.md');
+		expect(doc).not.toMatch(/Phase 5 exec-cut QA pending/i);
+		expect(doc).toMatch(/Phase 5.*(complete|signed|sign-off)/i);
+	});
+
+	it('OWNER_QA_CHECKLIST.md reflects Phase 5 complete', () => {
+		const doc = readDoc('docs/vision/OWNER_QA_CHECKLIST.md');
+		expect(doc).toMatch(/Phase 5.*complete|Phases 0–5/i);
+	});
+
+	it('INDEX.md reflects partial exec cut (5/6)', () => {
+		const doc = readDoc('docs/acquisition/INDEX.md');
+		expect(doc).toMatch(/GP-ACQ-06|exec cut 5\/6|5 of 6/i);
+	});
 });

@@ -1,9 +1,9 @@
 # SSTracker — Acquisition Data Room
 
 **Product:** Sports Skill Tracker (SSTracker / Nexus Command)  
-**Stage:** Pre-commercial launch · functional OS · owner Phase 5 exec-cut QA pending  
+**Stage:** Pre-commercial launch · functional OS · owner Phase 5 signed · exec cut 5/6 · demo video pending  
 **Live QA environment:** [https://sstracker.app](https://sstracker.app) (Firebase project `sports-skill-tracker-dev`)  
-**Last updated:** 2026-06-25 · ACQ-DATAROOM-COMPLETE
+**Last updated:** 2026-05-22 · ACQ-QA-DOC-SYNC
 
 ---
 
@@ -80,7 +80,7 @@ Regenerate PDFs: `npm run build:acquisition-pdfs` (requires Playwright Chromium)
 
 | Document | Purpose |
 |----------|---------|
-| [OWNER_QA_CHECKLIST.md](../vision/OWNER_QA_CHECKLIST.md) | Owner bible — Phase 5 exec cut = acquisition P0 |
+| [OWNER_QA_CHECKLIST.md](../vision/OWNER_QA_CHECKLIST.md) | Owner bible — Phase 5 signed 2026-05-22; GP-ACQ-06 pending |
 | [PLATFORM_WORKFLOW_CANON.md](../vision/PLATFORM_WORKFLOW_CANON.md) | GP-ACQ / GP-COACH / GP-PARENT / GP-GATE |
 | [DEMO_SCRIPT.md](./DEMO_SCRIPT.md) | Persona walkthrough on dev tenant |
 | [QA_DEV_PERSONA_VERIFICATION.md](../QA_DEV_PERSONA_VERIFICATION.md) | Legacy phased notes (superseded by owner checklist) |

@@ -4,15 +4,16 @@
 
 > **Tier authority:** `[PRODUCT_SURFACE_REGISTRY.md](./PRODUCT_SURFACE_REGISTRY.md)` — **Phase 11** = Tier 1 Player OS visual rubric (waivable for functional sale). **Tier 2** QA items (e.g. QA-143/144 Field Station, Phase 9 player depth) may be waived per registry §0 without blocking acquisition sign-off.
 
-## QA status: Phases 0–4 complete · Phase 4b + 5 = acquisition P0 · Phases 6–12 = depth/diligence
+## QA status: Phases 0–5 complete · GP-ACQ-06 (SafeSport messages) = exec-cut P0 remaining · Phases 6–12 = depth/diligence in progress
 
-**Phases 0–4 progress preserved** (checkmarks + owner notes below). **Acquisition P0** = **Phase 4b** (NAV-IMPL chrome) + **Phase 5** (core loop). **Depth/diligence** = Phases 6–12 + optional **Phase 13** capstone.
+**Phases 0–5 progress preserved** (checkmarks + owner notes below). **Owner Phase 5 sign-off 2026-05-22** on `qa_launch_2026`; **demo video recording pending**. **GP-ACQ-06** (SafeSport messages on `/messages`) intentionally deferred for demo video session. **Depth/diligence** = Phases 6–12 + optional **Phase 13** capstone.
 
-`[PLATFORM_WORKFLOW_CANON.md](./PLATFORM_WORKFLOW_CANON.md)` **§8** WORKFLOW-INTEGRITY audit shipped — owner **live retest Phase 5** still required for sign-off. **VS-3-Forge shipped** (`ForgeDeployPanel.svelte`) — re-run QA-142 on live @390px + desktop. **WORKFLOW-INTEGRITY** (06/19): GP-ACQ-04b HQ return after Train log shipped.
+`[PLATFORM_WORKFLOW_CANON.md](./PLATFORM_WORKFLOW_CANON.md)` **§8** WORKFLOW-INTEGRITY audit shipped — **exec cut steps 1–5 owner-signed 2026-05-22**. **VS-3-Forge shipped** (`ForgeDeployPanel.svelte`) — QA-142 live-verified @390px + desktop. **WORKFLOW-INTEGRITY** (06/19): GP-ACQ-04b HQ return after Train log shipped.
 
 **15-minute exec cut:** Session A below → Phase 5 exec-cut lap + Phase 6 (QA-124/125) + Phase 7 (QA-153/406).
 
 **Environment:** `sports-skill-tracker-dev`  
+**QA framing:** Manual QA validates **sport-agnostic gold paths** on a **soccer-configured** tenant (`qa_launch_2026`) — soccer attributes in the demo do not imply a soccer-only product. Platform readiness is multi-sport via `sports_configs/{sportId}`.  
 **Primary QA URLs:** [https://sports-skill-tracker-dev.web.app](https://sports-skill-tracker-dev.web.app) (preferred if custom domain SSL fails) · [https://sstracker.app](https://sstracker.app) (custom domain — may SSL-fail on some clients)  
 **Tenant:** club `qa_launch_2026` · team `qa_launch_2026_ppc`  
 **Provision:** `node scripts/dev-tenant-reset.mjs --provision --club-id qa_launch_2026 --team-id qa_launch_2026_ppc` (auto-purges stale operatives)
@@ -73,6 +74,8 @@ Sign out or incognito between persona switches.
 | **A — Exec cut**            | P0 acquisition narrative | ~45–60 min     | 3 (if not done) → **5** (core) → **6** (QA-124/125) → **7** (QA-153/406) — maps GP-ACQ-01 through GP-ACQ-06 |
 | **B — Navigation + mobile** | P0 NAV-IMPL chrome       | ~30 min        | **Phase 4b** — all personas @390px + spot @1280px                                                           |
 | **C — Depth + diligence**   | P1/P2 waivable           | As time allows | Phases 8–12                                                                                                 |
+
+**Session A talk track (multi-sport):** Open with the platform vision — SSTracker is a **youth sports OS for any team sport**, not a schedule app. The exec cut exercises **player training addiction + coach intent + parent co-op** on a soccer-configured QA tenant; the same HUD loop skins per `sportId`. Do not describe QA as "soccer product QA."
 
 
 ### UX state reminder
@@ -406,18 +409,22 @@ QA-NAV-06 swipe up, nor swiping down on the menu drawer handle, work.
 
 ---
 
-## Phase 5 — Coach → Player development loop (core acquisition demo)
+## Phase 5 — Player training addiction + coach intent + parent co-op (core acquisition demo)
+
+**Subtitle:** Core acquisition demo = **Player training addiction + coach intent + parent co-op** — not "soccer product QA." Demo uses soccer-configured attributes on `qa_launch_2026`.
 
 **Gate:** Phase 3 **QA-132** passed · **Phase 4b** nav chrome passed. Sign out / incognito when switching coach → player. **VS-3-Forge shipped** — QA-142 is a live re-verify (mobile document-flow deploy form + roster scope), not a code blocker. **GP-ACQ-04b** HQ return after Train log shipped in WORKFLOW-INTEGRITY.
 
 ### Exec cut lap (Session A — 15 min narrative)
 
+**Multi-sport framing:** Narrate the OS vision first; run gold paths on soccer-configured QA data (drill names, attributes) without implying soccer-only scope.
+
 Maps `[DEMO_SCRIPT.md](../acquisition/DEMO_SCRIPT.md)` steps 3–4 + cross-refs Phases 6–7 for full GP-ACQ:
 
 - [x] **QA-403** / GP-ACQ-03 — Coach Forge deploy (detail: QA-142 below)
 - [x] **QA-404** / GP-ACQ-04a–04b — Player accept → Train → XP on HQ (detail: QA-101, QA-106, QA-107, QA-102–105)
-- [ ] **QA-405** / GP-ACQ-05 — Parent dashboard parity → Phase 6 QA-124/125
-- [ ] **QA-406** / GP-ACQ-06 — Messages SafeSport → Phase 7 QA-153
+- [x] **QA-405** / GP-ACQ-05 — Parent dashboard parity → Phase 6 QA-124/125
+- [ ] **QA-406** / GP-ACQ-06 — Messages SafeSport → Phase 7 QA-153 *(owner deferred — verify during demo video recording)*
 
 Full exec cut steps 1–2 live in **Phase 3** (QA-401, QA-402). Consolidated sign-off rows also in **Phase 7** — see Phase 5 for step detail.
 
@@ -440,25 +447,25 @@ Order (matches exec cut steps 3–4 + GP-COACH observe loop):
 - [x] **[GP-ACQ-04b]** **QA-107** Accept intent → Train **locked by coach**; notes editable only — gap register K-03 · pre-check: `coachMissionFlow.test.ts`
   - **Success (canon):** XP/streak updates on HQ return
   - **Mobile:** Execute theater; prescription read-only when armed
-- [ ] **[GP-ACQ-04b]** **QA-102** Free log workout on `/player/workout` — XP/streak updates on HQ — gap register F-01 · pre-check: `coachMissionFlow.test.ts` · **GP-ACQ-04b:** success overlay → Return to HQ
+- [x] **[GP-ACQ-04b]** **QA-102** Free log workout on `/player/workout` — XP/streak updates on HQ — gap register F-01 · pre-check: `coachMissionFlow.test.ts` · **GP-ACQ-04b:** success overlay → Return to HQ
   - **Success (canon):** XP/streak updates on HQ return
   - **Mobile:** Execute theater; prescription read-only when armed
-- [ ] **[GP-ACQ-04b]** **QA-103** Workout smoke — 3×25 reps, bilateral **off** → 75 reps to `logTrainingSession`
-- [ ] **[GP-ACQ-04b]** **QA-104** Workout smoke — 1×10 reps, bilateral **on** → 20 reps (10×2)
-- [ ] **[GP-ACQ-04b]** **QA-105** Workout smoke — 30 min + RPE 5, time-only prescription — session logs; rep count 0 OK
-- [ ] **[GP-ACQ-04b]** **QA-108** Free log (no mission) — duration max **120 min**
-- [ ] **[GP-COACH-03]** **QA-151** Coach → Player HQ handoff — coach bounty → player mission 6k path — gap register F-04 · pre-check: `personaFunctionalMvp.test.ts`
-- [ ] **[GP-ACQ-04a]** **QA-154** Adaptive homework band on `/player/dashboard` — visible (heuristic OK at `abPercent: 0`) — gap register F-04 · pre-check: `playerRlFunctional.test.ts`
-- [ ] **[GP-COACH-04]** **QA-141** (observe) Coach HQ — telemetry reflects logged session after player Train
+- [x] **[GP-ACQ-04b]** **QA-103** Workout smoke — 3×25 reps, bilateral **off** → 75 reps to `logTrainingSession`
+- [x] **[GP-ACQ-04b]** **QA-104** Workout smoke — 1×10 reps, bilateral **on** → 20 reps (10×2)
+- [x] **[GP-ACQ-04b]** **QA-105** Workout smoke — 30 min + RPE 5, time-only prescription — session logs; rep count 0 OK
+- [x] **[GP-ACQ-04b]** **QA-108** Free log (no mission) — duration max **120 min**
+- [x] **[GP-COACH-03]** **QA-151** Coach → Player HQ handoff — coach bounty → player mission 6k path — gap register F-04 · pre-check: `personaFunctionalMvp.test.ts`
+- [x] **[GP-ACQ-04a]** **QA-154** Adaptive homework band on `/player/dashboard` — visible (heuristic OK at `abPercent: 0`) — gap register F-04 · pre-check: `playerRlFunctional.test.ts`
+- [x] **[GP-COACH-04]** **QA-141** (observe) Coach HQ — telemetry reflects logged session after player Train
 
 ### Phase 5 — Owner notes
 
 
-| Field          | Value            |
-| -------------- | ---------------- |
-| Phase result   | Ready for re-run |
-| Date completed |                  |
-| Tester/browser |                  |
+| Field          | Value                 |
+| -------------- | --------------------- |
+| Phase result   | Pass                  |
+| Date completed | 2026-05-22            |
+| Tester/browser | Evan Waechtler/Chrome |
 
 
 **Issues found (prior session — pre VS-3-Forge / WORKFLOW-INTEGRITY)**
@@ -473,12 +480,12 @@ Order (matches exec cut steps 3–4 + GP-COACH observe loop):
 
 ```
 
-- [ ] **Continue to next phase?** Yes / No
+- [x] **Continue to next phase?** Yes / No
 
 **Owner freeform**
 
 ```
-
+Exec cut steps 1–5 signed off; GP-ACQ-06 deferred for demo video session.
 ```
 
 ---
@@ -500,17 +507,17 @@ Authority: `[POST_QA_DARK_SURFACE_CONTRAST_PLAN.md](./POST_QA_DARK_SURFACE_CONTR
 
 ## Phase 6 — Parent table-stakes parity
 
-**Gate:** Do not proceed until Phase 5 core loop passes (coach bounty → player XP).
+**Gate:** Phase 5 core loop passed — Phase 6 depth items remain.
 
-Maps **GP-ACQ-05** and **GP-PARENT-03/04**. **GP-ACQ-05 audit status:** **Pending QA** per workflow canon §8 — owner Phase 6 gate.
+Maps **GP-ACQ-05** and **GP-PARENT-03/04**. **GP-ACQ-05 audit status:** **Pass** (owner signed 2026-05-22) per workflow canon §8 — Phase 6 depth QA continues.
 
 - [ ] **[GP-PARENT-03]** **QA-123** Co-op log on `/parent/log-workout` — counts toward child progress — gap register F-02 · **Tier 2 — waivable**
   - **Success (canon):** XP counts toward player progress
   - **Mobile:** Mobile form usable @390px
-- [ ] **[GP-PARENT-04 / GP-ACQ-05]** **QA-124** Dashboard bounty terminal on `/parent/dashboard` — visible/functional — gap register F-02
+- [x] **[GP-PARENT-04 / GP-ACQ-05]** **QA-124** Dashboard bounty terminal on `/parent/dashboard` — visible/functional — gap register F-02
   - **Success (canon):** RSVP strip + bounty terminal visible
   - **Mobile:** RSVP + bounty above fold on 390px
-- [ ] **[GP-PARENT-04 / GP-ACQ-05]** **QA-125** Car Ride debrief on `/parent/dashboard` — surfaces when fixture pending — gap register F-02
+- [x] **[GP-PARENT-04 / GP-ACQ-05]** **QA-125** Car Ride debrief on `/parent/dashboard` — surfaces when fixture pending — gap register F-02
   - **Success (canon):** Co-op Command bands visible
   - **Mobile:** RSVP + bounty above fold on 390px
 - [ ] **QA-202** Parent installments `/parent/payments` — schedule + partial status — gap register B-01, B-05 · pre-check: `paymentInstallments.test.ts` · **Tier 2 — waivable**
@@ -520,11 +527,11 @@ Maps **GP-ACQ-05** and **GP-PARENT-03/04**. **GP-ACQ-05 audit status:** **Pendin
 ### Phase 6 — Owner notes
 
 
-| Field          | Value                                      |
-| -------------- | ------------------------------------------ |
-| Phase result   | Pass / Pass with issues / Blocked / Waived |
-| Date completed |                                            |
-| Tester/browser |                                            |
+| Field          | Value                 |
+| -------------- | --------------------- |
+| Phase result   | In progress           |
+| Date completed | 2026-05-22 (partial)  |
+| Tester/browser | Evan Waechtler/Chrome |
 
 
 **Issues found**
@@ -539,22 +546,22 @@ QA-xxx: [P0|P1|P2] — what happened — expected vs actual
 QA-xxx: reason
 ```
 
-- [ ] **Continue to next phase?** Yes / No
+- [x] **Continue to next phase?** Yes / No
 
 **Owner freeform**
 
 ```
-
+Exec cut step 5 (QA-124/125) signed; Tier 2 depth rows remain open.
 ```
 
 ---
 
 ## Phase 7 — Comms & SafeSport
 
-**Gate:** Do not proceed until Phase 5 player loop verified.
+**Gate:** Phase 5 complete; owner continuing depth QA — GP-ACQ-06 deferred for demo video.
 
 - [ ] **QA-146** Coach logistics announcement on `/coach/logistics` — parents receive — gap register F-03 · pre-check: `commsSprint41.test.ts` · **Tier 2 — waivable**
-- [ ] **[GP-ACQ-06]** **QA-153** Coach → minor DM blocked on `/messages` — SafeSport — gap register F-04 · pre-check: `commsSprint42.test.ts`
+- [ ] **[GP-ACQ-06]** **QA-153** Coach → minor DM blocked on `/messages` — SafeSport — gap register F-04 · pre-check: `commsSprint42.test.ts` — **Owner deferred — verify during demo video recording**
   - **Success (canon):** Household threads load; coach→minor DM blocked with policy copy
   - **Mobile:** Thread list usable one-handed
 
@@ -562,12 +569,12 @@ QA-xxx: reason
 
 Detail lives in Phases 3, 5, 6 above — check here for consolidated exec-cut sign-off:
 
-- [ ] **QA-401** Exec cut step 1 — Parent household (Phase 3: QA-121) · GP-ACQ-01
-- [ ] **QA-402** Exec cut step 2 — VPC ceremony (Phase 3: QA-122, QA-132) · GP-ACQ-02
-- [ ] **QA-403** Exec cut step 3 — Coach intent deploy (Phase 5: QA-142) · GP-ACQ-03
-- [ ] **QA-404** Exec cut step 4 — Player Train + XP (Phase 5: QA-107, QA-102–105) · GP-ACQ-04a–04b
-- [ ] **QA-405** Exec cut step 5 — Parent dashboard parity (Phase 6: QA-124–125) · GP-ACQ-05
-- [ ] **[GP-ACQ-06]** **QA-406** Exec cut step 6 — Messages SafeSport — **closes GP-ACQ-06** (QA-153 above)
+- [x] **QA-401** Exec cut step 1 — Parent household (Phase 3: QA-121) · GP-ACQ-01
+- [x] **QA-402** Exec cut step 2 — VPC ceremony (Phase 3: QA-122, QA-132) · GP-ACQ-02
+- [x] **QA-403** Exec cut step 3 — Coach intent deploy (Phase 5: QA-142) · GP-ACQ-03
+- [x] **QA-404** Exec cut step 4 — Player Train + XP (Phase 5: QA-107, QA-102–105) · GP-ACQ-04a–04b
+- [x] **QA-405** Exec cut step 5 — Parent dashboard parity (Phase 6: QA-124–125) · GP-ACQ-05
+- [ ] **[GP-ACQ-06]** **QA-406** Exec cut step 6 — Messages SafeSport — **closes GP-ACQ-06** (QA-153 above) — **Owner deferred — verify during demo video recording**
 
 ### Phase 7 — Owner notes
 
@@ -603,7 +610,7 @@ QA-xxx: reason
 
 ## Phase 8 — Director / club ops (competitive + sell diligence)
 
-**Gate:** Do not proceed until Phase 5–7 functional paths pass.
+**Gate:** Phase 5 complete; owner continuing depth QA on Phases 6–7 and beyond.
 
 - [ ] **QA-201** Director registration assign panel — paid registrant → team assign — gap register B-02 · pre-check: `registrationLaunch.test.ts`
 - [ ] **QA-221** Drag-drop roster — GotSport-style paid registrant onto team slot — gap register B-03 · pre-check: `registrationRosterDragDrop.test.ts`
@@ -655,7 +662,7 @@ QA-xxx: reason
 
 ## Phase 9 — Player depth (after core loop)
 
-**Gate:** Do not proceed until Phase 5 core loop passes.
+**Gate:** Phase 5 complete; owner continuing depth QA.
 
 - [ ] **QA-109** Armory SYNC IDENTITY on `/player/armory` — default portrait or initials OK — gap register I-01 · **Tier 2 — waivable**
 - [ ] **QA-110** Armory album/set bonus path — 3.4 collectible path still works · **Tier 2 — waivable**
@@ -698,7 +705,7 @@ QA-xxx: reason
 
 ## Phase 10 — Acquisition & install surfaces
 
-**Gate:** Do not proceed until Phase 5–8 sell-critical paths pass or are waived with reason.
+**Gate:** Phase 5 complete; owner continuing depth QA — Phases 6–8 sell-critical paths pass or waived with reason.
 
 - [ ] **QA-208** `/acquisition` marketing landing — CTA + footer links
 - [ ] **QA-209** Capacitor shell — `npm run native:prepare`; WebView loads active QA URL — gap register H-01, H-04 · pre-check: `nativeShellLaunch.test.ts`

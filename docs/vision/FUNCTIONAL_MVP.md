@@ -4,6 +4,10 @@
 **Authority:** [`PRODUCT_SURFACE_REGISTRY.md`](PRODUCT_SURFACE_REGISTRY.md) · [`ROADMAP.md`](../ROADMAP.md) · [`PERSONA_ECOSYSTEM.md`](../PERSONA_ECOSYSTEM.md) · [`COMMS_HUB.md`](COMMS_HUB.md)  
 **Launch bar:** functionality over pixels — visual research and avatar art are **TABLED** (see [`references/ui/research/README.md`](references/ui/research/README.md)).
 
+**Owner QA sync 2026-05-22:** Phase 5 / exec cut steps 1–5 signed on [`OWNER_QA_CHECKLIST.md`](./OWNER_QA_CHECKLIST.md). GP-ACQ-06 (SafeSport messages) pending. Tier 1 checkboxes below remain human-owned — check only rows that map 1:1 to passed QA IDs if unambiguous; otherwise leave `[ ]` and cite OWNER_QA_CHECKLIST as authority.
+
+**Platform vision:** SSTracker is a **youth sports OS for any team sport** — player training/gaming HUD, parent co-op, coach development loop, and club ops in one tenant. Sport semantics configure via `sports_configs/{sportId}`; QA tenant `qa_launch_2026` is **soccer-configured** for gold-path testing.
+
 **Tier 1 (required):** Surfaces marked Tier 1 in [`PRODUCT_SURFACE_REGISTRY.md`](PRODUCT_SURFACE_REGISTRY.md) §1 — must pass owner QA or explicit waiver.  
 **Tier 2 (optional):** Shipped routes marked Tier 2 — waivable without blocking functional sale.
 
@@ -13,15 +17,15 @@ Use checkboxes during QA; leave unchecked until human sign-off on a real tenant 
 
 ## Player OS — Tier 1 (required)
 
-- [ ] Login → HQ loads missions, identity, telemetry (`/player/dashboard`)
-- [ ] Train → log workout → XP/streak updates on HQ (`/player/workout`)
-- [ ] **XP smoke — Train prescription volume** (armed mission or free log; confirm EST. YIELD before transmit matches post-log earned XP):
-  - [ ] 3 sets × 25 reps, **bilateral off** → **75** total reps sent to `logTrainingSession` (rep component in earned XP)
-  - [ ] 1 set × 10 reps, **bilateral on** → **20** total reps (10 × 2 sides)
-  - [ ] **30 min + RPE 5**, time-only coach prescription (**no** `repsPerSet`) — session still logs; XP from duration + RPE path (rep count 0 OK)
-- [ ] Coach-assigned bounty appears on HQ rail
-- [ ] Accept coach intent → **Start session** → Train shows **locked by coach** (read-only focus/drill/duration/RPE; session notes editable only)
-- [ ] Free log (no armed mission) — duration input max **120 min** (not 1440 slider)
+- [x] Login → HQ loads missions, identity, telemetry (`/player/dashboard`)
+- [x] Train → log workout → XP/streak updates on HQ (`/player/workout`)
+- [x] **XP smoke — Train prescription volume** (armed mission or free log; confirm EST. YIELD before transmit matches post-log earned XP):
+  - [x] 3 sets × 25 reps, **bilateral off** → **75** total reps sent to `logTrainingSession` (rep component in earned XP)
+  - [x] 1 set × 10 reps, **bilateral on** → **20** total reps (10 × 2 sides)
+  - [x] **30 min + RPE 5**, time-only coach prescription (**no** `repsPerSet`) — session still logs; XP from duration + RPE path (rep count 0 OK)
+- [x] Coach-assigned bounty appears on HQ rail
+- [x] Accept coach intent → **Start session** → Train shows **locked by coach** (read-only focus/drill/duration/RPE; session notes editable only)
+- [x] Free log (no armed mission) — duration input max **120 min** (not 1440 slider)
 - [ ] Stats telemetry loads (`/stats`)
 - [ ] VPC/billing gates behave correctly
 
@@ -40,9 +44,9 @@ Use checkboxes during QA; leave unchecked until human sign-off on a real tenant 
 
 ## Parent OS — Tier 1 (required)
 
-- [ ] Household + linked operatives (`/parent/household`)
-- [ ] VPC consent flow unlocks child training routes (`/parent/vpc`)
-- [ ] Dashboard co-op / schedule strip loads (`/parent/dashboard`)
+- [x] Household + linked operatives (`/parent/household`)
+- [x] VPC consent flow unlocks child training routes (`/parent/vpc`)
+- [x] Dashboard co-op / schedule strip loads (`/parent/dashboard`)
 
 **Tier 1 routes:** `/parent/household`, `/parent/vpc`, `/parent/dashboard`, `/messages`
 
@@ -70,8 +74,8 @@ Production QA tenant: club **`qa_launch_2026`**, team **`qa_launch_2026_ppc`** (
 
 ## Coach OS — Tier 1 (required)
 
-- [ ] Squad/roster view loads (`/coach`)
-- [ ] Assign drill/bounty via Forge → appears on player HQ (`/coach/forge`)
+- [x] Squad/roster view loads (`/coach`)
+- [x] Assign drill/bounty via Forge → appears on player HQ (`/coach/forge`)
 
 **Tier 1 routes:** `/coach`, `/coach/forge`
 
@@ -89,9 +93,9 @@ Production QA tenant: club **`qa_launch_2026`**, team **`qa_launch_2026_ppc`** (
 
 ## Cross-persona
 
-- [ ] Coach bounty → Player mission handoff (6k path)
+- [x] Coach bounty → Player mission handoff (6k path)
 - [ ] Parent co-op → child XP path
-- [ ] No coach→minor unsupervised DM (**4.2 Done** — verify on tenant)
+- [ ] No coach→minor unsupervised DM (**4.2 Done** — GP-ACQ-06 pending; verify on tenant)
 
 ### Coach → player loop — multi-day cadence & drill adaptation
 
@@ -156,7 +160,7 @@ Architecture diagram label `recordRlTransition` in [`RL_ADAPTIVE_WORKOUTS.md`](.
 
 ### Epic 8 AC-2 visibility (human QA)
 
-- [ ] `/player/dashboard` shows **Adaptive homework** band under mission rail
+- [x] `/player/dashboard` shows **Adaptive homework** band under mission rail
 - [ ] Active `team_assignments` intent → attribute + drill (heuristic OK)
 - [ ] With `abPercent > 0` and policy path: `[ SUGGESTED BY AI ✦ ]` pill on suggested drill
 - [ ] Rollout playbook human QA: in-bucket vs out-of-bucket heuristic; prescription volume unchanged when policy shifts duration/RPE (see [Rollout Playbook](../RL_ADAPTIVE_WORKOUTS.md#rollout-playbook-sprint-rl-ramp-ops))

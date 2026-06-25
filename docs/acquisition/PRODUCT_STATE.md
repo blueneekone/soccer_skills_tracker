@@ -2,13 +2,13 @@
 
 **Purpose:** Honest state-of-the-union for M&A diligence — what is live, partial, planned, and commercially real today.  
 **Authority:** [`PRODUCT_SURFACE_REGISTRY.md`](../vision/PRODUCT_SURFACE_REGISTRY.md) · [`NOTABLE_GAPS.md`](./NOTABLE_GAPS.md) · [`TRACTION.md`](./TRACTION.md)  
-**Last updated:** 2026-06-25 · ACQ-DATAROOM-COMPLETE
+**Last updated:** 2026-05-22 · ACQ-QA-DOC-SYNC
 
 ---
 
 ## Executive summary
 
-SSTracker is a **multi-sport youth sports operating system** — one tenant for addictive player training, parent co-op, coach development, and club/business management. Sport semantics (attribute trees, drill labels, radar axes) configure per `sportId` via `sports_configs/{sportId}`; the same Train → XP → coach-intent loop applies across team sports. **Soccer is the live QA configuration** (`qa_launch_2026`), not the product ceiling. The platform is **pre-revenue**, functionally built on SvelteKit 5 + Firebase, with Wave 0–4 competitive parity code merged and **owner Phase 5 exec-cut QA pending** before commercial launch.
+SSTracker is a **multi-sport youth sports operating system** — one tenant for addictive player training, parent co-op, coach development, and club/business management. Sport semantics (attribute trees, drill labels, radar axes) configure per `sportId` via `sports_configs/{sportId}`; the same Train → XP → coach-intent loop applies across team sports. **Soccer is the live QA configuration** (`qa_launch_2026`), not the product ceiling. The platform is **pre-revenue**, functionally built on SvelteKit 5 + Firebase, with Wave 0–4 competitive parity code merged and **owner Phase 5 sign-off complete (2026-05-22)**; **GP-ACQ-06 SafeSport messages pending**; **demo video pending** before broad diligence.
 
 ---
 
@@ -82,9 +82,7 @@ Honest partials from [`NOTABLE_GAPS.md`](./NOTABLE_GAPS.md) and [`PLATFORM_GAP_R
 | **Federation / NGB export** | Partial | CSV v1 via `exportStateRoster`; Phase 4 API per governing body not shipped |
 | **RL adaptive homework** | Partial | HQ mount + callables shipped; launch default `abPercent: 0` (heuristic only) — see [`RL_ADAPTIVE_WORKOUTS.md`](../RL_ADAPTIVE_WORKOUTS.md) |
 | **CV bounty + Tremendous escrow** | Partial | Code paths in `DATA_FLOW.md` §1 and `functions-rl/`; not acquisition-demo scope; `feature_cv_bounty_enabled` gated |
-| **Parent co-op log + proof review** | Partial | `/parent/log-workout`, `submitCompletionProof`, `parentReviewCompletionProof` shipped; **parent JWT `householdId` claim sync** can cause permission-denied on operative profile load until re-auth (fix in flight — `logWorkoutChildProfile.ts`) |
-| **Coach → Train handoff** | Partial | Mission accept uses `sessionStorage` handoff (`coachMissionFlow.ts`); owner must verify accept → Train arms on live QA |
-| **Train volume UI** | Partial | Sets/reps/bilateral controls wired with regression guards; owner Phase 5 live verification pending |
+| **Parent co-op log + proof review** | Partial | `/parent/log-workout`, `submitCompletionProof`, `parentReviewCompletionProof` shipped; **parent JWT `householdId` claim sync** can cause permission-denied on operative profile load until re-auth — **monitoring** (does not block demo) |
 | **Theme light/dark** | Partial | Dark-first; token split incomplete |
 | **Live streaming** | Partial | URL embed MVP only (YouTube/Vimeo/Mux) |
 | **Avatar PNG art** | Deferred | `defaultPortraitV2` SVG + initials fallback |
@@ -105,7 +103,7 @@ Honest partials from [`NOTABLE_GAPS.md`](./NOTABLE_GAPS.md) and [`PLATFORM_GAP_R
 | **Platform visual redesign** | Gemini research exports read-only |
 | **Gemini bust / avatar ingest** | Post-launch per `LAUNCH-defer-avatar` |
 
-Path citations: [`ROADMAP.md`](../../ROADMAP.md) current sprint header — LAUNCH-functional-os Done, Wave 3B/4 Done, owner QA pending.
+Path citations: [`ROADMAP.md`](../../ROADMAP.md) current sprint header — LAUNCH-functional-os Done, Wave 3B/4 Done, owner Phase 5 signed 2026-05-22.
 
 ---
 
@@ -132,20 +130,20 @@ Authority: [`OWNER_QA_CHECKLIST.md`](../vision/OWNER_QA_CHECKLIST.md)
 | Phase | Scope | Status |
 |-------|-------|--------|
 | **0–4** | Trust gates, coach clearance, automated deploy gates | **Complete** (owner notes preserved in checklist) |
-| **4b** | NAV-IMPL chrome @390px all personas | **Acquisition P0** — owner retest required |
-| **5** | Core loop exec cut (GP-ACQ-03 through GP-ACQ-04b) | **Acquisition P0** — owner live retest required |
-| **6–7** | Parent dashboard + SafeSport comms | Required for full exec cut narrative |
-| **8–12** | Depth / diligence | Waivable for functional sale |
+| **4b** | NAV-IMPL chrome @390px all personas | **Pass with issues** — QA-NAV-04/06 open ([`OWNER_QA_CHECKLIST.md`](../vision/OWNER_QA_CHECKLIST.md)) |
+| **5** | Core loop exec cut (GP-ACQ-03 through GP-ACQ-04b) | **Complete** (owner signed 2026-05-22) |
+| **GP-ACQ-06** | SafeSport messages (`/messages`) | **Pending** — owner deferred for demo video |
+| **6–12** | Depth / diligence | **In progress** — waivable for functional sale |
 
 ### Known open risks (owner QA findings — not claimed fixed)
 
 Document honestly for acquirer diligence:
 
-1. **Parent JWT household** — `householdId` custom claim may lag after household link; parent co-op log can show permission-denied until sign-out/sign-in. Mitigation copy shipped; claim sync hardening in flight.
-2. **Coach intent accept → Train** — bounty accept persists handoff in `sessionStorage`; owner must confirm GP-ACQ-04a → GP-ACQ-04b on live tenant across mobile + desktop.
-3. **Train volume controls** — sets/reps/bilateral UI regression-guarded in code; Phase 5 owner sign-off on coach-directed and free-log branches pending.
+1. **Parent JWT household** — `householdId` custom claim may lag after household link; parent co-op log can show permission-denied until sign-out/sign-in. Mitigation copy shipped; **monitoring** — does not block exec-cut demo.
+2. **GP-ACQ-06 SafeSport messages** — coach→minor DM block on `/messages` not owner-verified live; deferred for demo video session (QA-153, QA-406).
+3. **NAV-IMPL polish** — QA-NAV-04 pin customize and QA-NAV-06 swipe-up menu remain open (Phase 4b pass with issues).
 
-**Do not claim Phase 5 exec-cut sign-off until owner completes live QA on `qa_launch_2026`.**
+**Do not claim full exec cut 6/6 or demo video in data room until GP-ACQ-06 live check + recording complete.**
 
 ---
 
@@ -167,7 +165,7 @@ Vision docs: [`PERSONA_ECOSYSTEM.md`](../PERSONA_ECOSYSTEM.md) · persona `*_OS.
 
 ## Path to commercial launch
 
-1. **P0 QA + deploy** — Owner Phase 4b + Phase 5 on `qa_launch_2026`; `npm run deploy:dev:verify` + `npm run smoke:dev` green
+1. **GP-ACQ-06 + demo video + Phases 6–12 depth QA** — Owner Phase 5 signed; SafeSport messages live check + recorded exec cut before broad diligence
 2. **First pilot club** — Real club tenant beyond QA; Stripe Connect production path; support playbook
 3. **Store binaries** — Capacitor build → App Store / Play submission (acquirer or post-close ops)
 4. **Optional federation GTM** — Phase 4 API per governing body if soccer state-body strategy proceeds

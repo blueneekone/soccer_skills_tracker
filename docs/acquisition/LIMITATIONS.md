@@ -2,7 +2,7 @@
 
 **Purpose:** Honest scope boundaries for acquirer diligence. Not a bug list — see [`FUNCTIONAL_AUDIT_BACKLOG.md`](../FUNCTIONAL_AUDIT_BACKLOG.md) for closed wiring gaps.
 
-**Last updated:** 2026-06-13 · post-overnight merge + doc sync
+**Last updated:** 2026-05-22 · ACQ-QA-DOC-SYNC
 
 ---
 
@@ -11,7 +11,7 @@
 | Limitation | Detail |
 |------------|--------|
 | Pre-revenue | No production paying clubs documented in repo; QA tenant only |
-| Single-owner QA | Human sign-off on [`FUNCTIONAL_MVP.md`](../vision/FUNCTIONAL_MVP.md) checkboxes pending |
+| Single-owner QA | Phase 5 owner-signed 2026-05-22; full [`FUNCTIONAL_MVP.md`](../vision/FUNCTIONAL_MVP.md) + depth Phases 6–12 ongoing |
 | GTM undefined | Outreach templates in [OUTREACH.md](./OUTREACH.md); no sales pipeline data in repo |
 
 ---

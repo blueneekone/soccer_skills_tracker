@@ -179,7 +179,7 @@ Authority: [`FUNCTIONAL_MVP.md`](../vision/FUNCTIONAL_MVP.md) § GP-ACQ-04c · T
 | Player OS Phase 7 G1–G10 | **Done** — instrument cohesion signed off |
 | Deploy scripts + verify gates | **Done** (`npm run deploy:dev:verify`) |
 | Multi-sport platform | **Architecture ready** — `sports_configs`; soccer = QA config only |
-| Owner Phase 4b + Phase 5 exec cut | **Pending** — acquisition P0 ([`OWNER_QA_CHECKLIST.md`](../vision/OWNER_QA_CHECKLIST.md)) |
+| Owner Phase 4b + Phase 5 exec cut | **Phase 5 Complete (2026-05-22)**; GP-ACQ-06 pending ([`OWNER_QA_CHECKLIST.md`](../vision/OWNER_QA_CHECKLIST.md)) |
 | TypeScript (`npm run check`) | **0 errors** — CI gate |
 
 Regression: `personaFunctionalMvp.test.ts` includes functional audit A–F guards.
