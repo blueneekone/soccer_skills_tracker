@@ -54,6 +54,7 @@ const {
   readStoredInstallmentPlan,
   shouldUnlockSeasonAfterPayment,
 } = require('./paymentInstallments');
+const {postChannelSystemMessage} = require('./src/domains/commsChannelOps');
 
 const STRIPE_SECRET_KEY = defineSecret('STRIPE_SECRET_KEY');
 const STRIPE_WEBHOOK_SECRET_REG = defineSecret('STRIPE_WEBHOOK_SECRET_REG');
@@ -92,6 +93,36 @@ const VALID_FEE_TYPES = /** @type {const} */ ([
   'camp_registration',
 ]);
 
+/** Non-fatal registration channel system post (Epic 4.14). */
+async function notifyRegistrationChannel({
+  tenantId,
+  householdId,
+  playerEmail,
+  subject,
+  body,
+  sourceCallable,
+}) {
+  if (!tenantId || !householdId || !body) return;
+  try {
+    await postChannelSystemMessage({
+      channelType: 'registration',
+      clubId: tenantId,
+      householdId,
+      playerEmail: playerEmail || '',
+      subject,
+      body,
+      sourceCallable,
+      actorRole: 'system',
+    });
+  } catch (err) {
+    logger.warn(`[${sourceCallable}] registration channel post failed (non-fatal)`, {
+      tenantId,
+      householdId,
+      err: err instanceof Error ? err.message : String(err),
+    });
+  }
+}
+
 /**
  * Creates a Stripe PaymentIntent routed to the club's Stripe Connect account.
  *
@@ -119,10 +150,15 @@ exports.createRegistrationIntent = onCall(
 
       /** @type {string} */
       let playerEmail = normEmail(rawPlayerEmail) || callerEmail;
+      let resolvedHouseholdId = '';
 
       if (role === 'player') {
         if (playerEmail !== callerEmail) {
           throw new HttpsError('permission-denied', 'Players may only register themselves.');
+        }
+        const pSnap = await db.collection('users').doc(playerEmail).get();
+        if (pSnap.exists && typeof pSnap.data().householdId === 'string') {
+          resolvedHouseholdId = pSnap.data().householdId.trim();
         }
       } else if (role === 'parent' && playerEmail !== callerEmail) {
         const tokenHousehold =
@@ -155,6 +191,20 @@ exports.createRegistrationIntent = onCall(
               'permission-denied',
               'You may only pay registration for a household-linked athlete.',
           );
+        }
+        resolvedHouseholdId = hid;
+      } else if (role === 'parent') {
+        const tokenHousehold =
+          typeof request.auth.token.householdId === 'string' ?
+            request.auth.token.householdId.trim() :
+            '';
+        if (tokenHousehold) {
+          resolvedHouseholdId = tokenHousehold;
+        } else {
+          const pSnap = await db.collection('users').doc(callerEmail).get();
+          if (pSnap.exists && typeof pSnap.data().householdId === 'string') {
+            resolvedHouseholdId = pSnap.data().householdId.trim();
+          }
         }
       }
 
@@ -256,6 +306,15 @@ exports.createRegistrationIntent = onCall(
         registrationId: regRef.id,
         tenantId,
         feeAmountCents,
+      });
+
+      void notifyRegistrationChannel({
+        tenantId,
+        householdId: resolvedHouseholdId,
+        playerEmail,
+        subject: 'Registration received',
+        body: `Registration payment initiated for ${playerEmail}. Complete checkout to confirm your season registration.`,
+        sourceCallable: 'createRegistrationIntent',
       });
 
       return {
@@ -495,6 +554,22 @@ async function handlePaymentSucceeded(pi) {
     playerEmail,
     platformFeeCents,
     rateBp,
+  });
+
+  let payHouseholdId = '';
+  if (playerEmail) {
+    const uSnap = await db.collection('users').doc(normEmail(playerEmail)).get();
+    if (uSnap.exists && typeof uSnap.data().householdId === 'string') {
+      payHouseholdId = uSnap.data().householdId.trim();
+    }
+  }
+  void notifyRegistrationChannel({
+    tenantId,
+    householdId: payHouseholdId,
+    playerEmail: normEmail(playerEmail || ''),
+    subject: 'Payment received',
+    body: `Registration payment of $${(grossCents / 100).toFixed(2)} was received. Your registrar will confirm roster assignment.`,
+    sourceCallable: 'handleRegistrationWebhook',
   });
 }
 

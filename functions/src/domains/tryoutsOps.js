@@ -1,9 +1,11 @@
 'use strict';
 
 const {onCall, HttpsError} = require('firebase-functions/v2/https');
+const logger = require('firebase-functions/logger');
 const admin = require('firebase-admin');
 const crypto = require('crypto');
 const {normEmail} = require('../utils/formatters');
+const {postChannelSystemMessage} = require('./commsChannelOps');
 
 const REGION = 'us-east1';
 const db = () => admin.firestore();
@@ -431,6 +433,38 @@ exports.registerForTryout = onCall(
           'registration_confirm';
       void sendTryoutCommsForRegistration(programId, result.registrationId, mailTemplate)
           .catch(() => undefined);
+
+      void (async () => {
+        try {
+          const pSnap = await db().collection('tryout_programs').doc(programId).get();
+          if (!pSnap.exists) return;
+          const clubId = typeof pSnap.data().clubId === 'string' ? pSnap.data().clubId.trim() : '';
+          if (!clubId) return;
+          const statusLabel =
+            result.pipelineStatus === PIPELINE.WAITLISTED ? 'waitlisted' : 'registered';
+          let householdId = '';
+          const gSnap = await db().collection('users').doc(guardianEmail).get();
+          if (gSnap.exists && typeof gSnap.data().householdId === 'string') {
+            householdId = gSnap.data().householdId.trim();
+          }
+          await postChannelSystemMessage({
+            channelType: 'tryouts_events',
+            clubId,
+            programId,
+            householdId,
+            guardianEmail,
+            subject: 'Tryout registration received',
+            body: `${playerName} (${ageBand}) is ${statusLabel} for this tryout program.`,
+            sourceCallable: 'registerForTryout',
+            actorRole: 'system',
+          });
+        } catch (tryoutChErr) {
+          logger.warn('[registerForTryout] tryouts_events channel post failed (non-fatal)', {
+            programId,
+            err: tryoutChErr instanceof Error ? tryoutChErr.message : String(tryoutChErr),
+          });
+        }
+      })();
 
       return {ok: true, ...result, programId};
     },

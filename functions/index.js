@@ -9,7 +9,6 @@ wrapFetch();
 const crypto = require('crypto');
 const {onDocumentCreated, onDocumentWritten} =
     require('firebase-functions/v2/firestore');
-const {onSchedule} = require('firebase-functions/v2/scheduler');
 const {onCall, onRequest, HttpsError} = require('firebase-functions/v2/https');
 const logger = require('firebase-functions/logger');
 // DEPLOY-N: slim default codebase — migrated exports live in split packages (see FUNCTIONS_DEPLOY.md).
@@ -21,6 +20,13 @@ const {defineString, defineSecret} = require('firebase-functions/params');
 
 admin.initializeApp();
 const db = admin.firestore();
+
+/** @param {string} name @param {unknown} handler */
+function exportScheduler(name, handler) {
+  if (process.env.SCHEDULERS_ENABLED === 'true') {
+    exports[name] = handler;
+  }
+}
 const ADMIN_EMAIL = defineString('ADMIN_EMAIL');
 /** Set via: firebase functions:secrets:set WORKOUT_ATTESTATION_HMAC_SECRET */
 const WORKOUT_ATTESTATION_HMAC_SECRET = defineSecret(
@@ -60,7 +66,7 @@ const {
 // Daily sweep — flips cleared users past the 365-day validity window to
 // 'expired' and revokes their isCleared JWT claim.
 const clearanceExpiryHandlers = require('./clearanceExpiry');
-exports.expireStaleClearances = clearanceExpiryHandlers.expireStaleClearances;
+exportScheduler('expireStaleClearances', clearanceExpiryHandlers.expireStaleClearances);
 
 // â”€â”€ Epic 11: Pitch Collision Avoidance â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const facilitiesHandlers = require('./facilities');
@@ -78,9 +84,15 @@ exports.confirmPlayerTransfer = transferHandlers.confirmPlayerTransfer;
 // â”€â”€ Epic 12: FCM Notification Dispatcher â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const dispatcherHandlers = require('./dispatcher');
 exports.sendWeatherAlertToTenant = dispatcherHandlers.sendWeatherAlertToTenant;
-exports.sendGameRemindersToday = dispatcherHandlers.sendGameRemindersToday;
-exports.sendScheduledEventReminders = dispatcherHandlers.sendScheduledEventReminders;
-exports.sendRegistrationPaymentReminders = dispatcherHandlers.sendRegistrationPaymentReminders;
+exportScheduler('sendGameRemindersToday', dispatcherHandlers.sendGameRemindersToday);
+exportScheduler(
+    'sendScheduledEventReminders',
+    dispatcherHandlers.sendScheduledEventReminders,
+);
+exportScheduler(
+    'sendRegistrationPaymentReminders',
+    dispatcherHandlers.sendRegistrationPaymentReminders,
+);
 
 // â”€â”€ Hotfix Alpha-3: League & Fixture Management (UTC enforcement) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const leagueHandlers = require('./league');
@@ -147,7 +159,7 @@ exports.onRepCreatedApplyGamificationXp = trainingOps.onRepCreatedApplyGamificat
 // Epic 8 — intent lifecycle (not in functions-core launch slice)
 exports.onUserXpUpdateIntentLifecycle = trainingOps.onUserXpUpdateIntentLifecycle;
 exports.onDrillCompletionIntentLifecycle = trainingOps.onDrillCompletionIntentLifecycle;
-exports.scheduledExpireIntents        = trainingOps.scheduledExpireIntents;
+exportScheduler('scheduledExpireIntents', trainingOps.scheduledExpireIntents);
 // B4a/B4b — advisory completion proof (player submits; parent reviews)
 exports.submitCompletionProof         = trainingOps.submitCompletionProof;
 exports.parentReviewCompletionProof   = trainingOps.parentReviewCompletionProof;
@@ -219,6 +231,7 @@ exports.listNgbExportFormats = ngbExportOps.listNgbExportFormats;
 // ── Epic 4.4 W1: Parent Lounge channel provisioning ──────────────────────────
 const commsChannelOps = require('./src/domains/commsChannelOps');
 exports.coachProvisionParentLounge  = commsChannelOps.coachProvisionParentLounge;
+exports.mirrorScheduleToLogistics   = commsChannelOps.mirrorScheduleToLogistics;
 
 // ── Sprint 3.3 — Operative loadout unlock ceremonies ────────────────────────
 const loadoutOps = require('./src/domains/loadoutOps');
@@ -231,7 +244,7 @@ exports.grantAlbumSetBonus          = loadoutOps.grantAlbumSetBonus;
 // scheduled seat cleanup, and video trial management have been extracted to
 // src/domains/webhooksOps.js.
 const webhooksOps = require('./src/domains/webhooksOps');
-exports.expireCoachInvites           = webhooksOps.expireCoachInvites;
+exportScheduler('expireCoachInvites', webhooksOps.expireCoachInvites);
 exports.submitVideoTrial             = webhooksOps.submitVideoTrial;
 exports.verifyVideoTrial             = webhooksOps.verifyVideoTrial;
 exports.directorOverrideEligibility  = webhooksOps.directorOverrideEligibility;
@@ -252,9 +265,7 @@ exports.onTeamBroadcastCreated       = notificationOps.onTeamBroadcastCreated;
 // Epic 4.5 Slice A — deployment calendar → team broadcast auto-announce
 exports.onDeploymentCalendarEntryCreated = notificationOps.onDeploymentCalendarEntryCreated;
 
-// Epic 5.4 — field weather / lightning lock (scheduled; feature-flagged)
-const weatherOps = require('./src/domains/weatherOps');
-exports.evaluateFieldWeatherLock = weatherOps.evaluateFieldWeatherLock;
+// Epic 5.4 — evaluateFieldWeatherLock: canonical export on functions-integrations only.
 
 // ── Phase 4, Epic 8 — Car Ride Home Protocol ─────────────────────────────────
 // Fires mandatory push notifications to parents 15 minutes post-match and
@@ -279,7 +290,7 @@ const magicUplinkHandlers = require('./magicUplinks');
 exports.mintMagicUplink   = magicUplinkHandlers.mintMagicUplink;
 exports.redeemMagicUplink = magicUplinkHandlers.redeemMagicUplink;
 exports.revokeMagicUplink = magicUplinkHandlers.revokeMagicUplink;
-exports.purgeExpiredUplinks = magicUplinkHandlers.purgeExpiredUplinks;
+exportScheduler('purgeExpiredUplinks', magicUplinkHandlers.purgeExpiredUplinks);
 
 // Phase 3, Epic 4 — Sports_Configs Dynamic Trees.
 // seedBaseSportsConfigs: super_admin callable to cold-boot or re-seed the
@@ -298,7 +309,7 @@ exports.archiveSportsConfig = sportsConfigOps.archiveSportsConfig;
 // pruneOrphanedSports:  weekly scan → sport_audit_report/{yyyy-ww}.
 const clubOps = require('./src/domains/clubOps');
 exports.auditClubSportConfig = clubOps.auditClubSportConfig;
-exports.pruneOrphanedSports  = clubOps.pruneOrphanedSports;
+exportScheduler('pruneOrphanedSports', clubOps.pruneOrphanedSports);
 
 // DEPLOY-N: RL → functions-rl/ (getAdaptiveWorkoutPolicy, initRlPolicy, triggers, …)
 
@@ -308,8 +319,11 @@ exports.pruneOrphanedSports  = clubOps.pruneOrphanedSports;
 // dispatchReengagementAlerts: runs every 30 min to flush the alert queue via FCM.
 // claimStreakFreeze:          onCall — player/parent consumes a streak freeze.
 const lossAvoidance = require('./lossAvoidance');
-exports.enforceLossAvoidance        = lossAvoidance.enforceLossAvoidance;
-exports.dispatchReengagementAlerts  = lossAvoidance.dispatchReengagementAlerts;
+exportScheduler('enforceLossAvoidance', lossAvoidance.enforceLossAvoidance);
+exportScheduler(
+    'dispatchReengagementAlerts',
+    lossAvoidance.dispatchReengagementAlerts,
+);
 exports.claimStreakFreeze           = lossAvoidance.claimStreakFreeze;
 
 // ── Phase 3, Epic 5.4 — Parent Co-Op & Automated Escrow Bounties ─────────────
@@ -357,10 +371,16 @@ exports.tremendousWebhook = tremendousWebhook;
 // getMemoryCapsule: onCall — returns the most recent unacknowledged capsule for
 //   the authenticated player (on-demand "show me my breakthrough" UX).
 const trajectoryAggregatorHandlers = require('./trajectoryAggregator');
-exports.trajectoryMonthlyAggregator = trajectoryAggregatorHandlers.trajectoryMonthlyAggregator;
+exportScheduler(
+    'trajectoryMonthlyAggregator',
+    trajectoryAggregatorHandlers.trajectoryMonthlyAggregator,
+);
 
 const trajectoryPlateauHandlers = require('./trajectoryPlateauDetector');
-exports.trajectoryPlateauDetector = trajectoryPlateauHandlers.trajectoryPlateauDetector;
+exportScheduler(
+    'trajectoryPlateauDetector',
+    trajectoryPlateauHandlers.trajectoryPlateauDetector,
+);
 exports.getMemoryCapsule          = trajectoryPlateauHandlers.getMemoryCapsule;
 
 // ── Phase 4, Epic 7 — Grit XP Daily-Cap Backstop ─────────────────────────────

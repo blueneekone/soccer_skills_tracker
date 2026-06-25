@@ -8,6 +8,8 @@ require('./bootstrapAdmin');
 const trainingOps = require('./src/domains/trainingOps');
 
 exports.logTrainingSession = trainingOps.logTrainingSession;
+exports.submitCompletionProof = trainingOps.submitCompletionProof;
+exports.parentReviewCompletionProof = trainingOps.parentReviewCompletionProof;
 exports.secureDeployIntent = trainingOps.secureDeployIntent;
 exports.secureCancelIntent = trainingOps.secureCancelIntent;
 exports.secureExtendIntent = trainingOps.secureExtendIntent;

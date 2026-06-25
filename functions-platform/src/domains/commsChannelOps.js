@@ -18,6 +18,9 @@ const admin = require('firebase-admin');
 
 const {normEmail} = require('../utils/formatters');
 const {assertCoachMessageSender} = require('../middleware/authBouncers');
+const {
+  filterParentsWithCommsConsent,
+} = require('./commsPolicy');
 
 const REGION = 'us-east1';
 
@@ -313,3 +316,347 @@ exports.provisionLoungesForParentHousehold = async ({
     }
   }
 };
+
+/** Epic 4.14 — typed channel poster roles (server + system). */
+const CHANNEL_TYPE_POSTERS = {
+  team_logistics: new Set(['coach', 'director', 'team_manager', 'system']),
+  registration: new Set(['registrar', 'director', 'system']),
+  tryouts_events: new Set(['coach', 'director', 'system']),
+  match_day: new Set(['coach', 'director', 'team_manager', 'system']),
+};
+
+const MONITORED_CHANNEL_TYPES = new Set(['team_logistics', 'parent_lounge']);
+
+const COMMS_CHANNEL_LABELS = {
+  registration: 'Registration',
+  tryouts_events: 'Tryouts & events',
+  match_day: 'Match day',
+};
+
+/**
+ * Resolve typed channel doc id + message collection ref.
+ * System channels: clubs/{clubId}/channels/{id}/messages
+ * team_logistics sub-channels: teams/{teamId}/channels/{sub}/messages
+ */
+function resolveTypedChannelRefs({
+  channelType,
+  clubId,
+  teamId = '',
+  programId = '',
+  householdId = '',
+  subChannelId = 'general',
+}) {
+  const normClubId = String(clubId || '').trim();
+  if (!normClubId) throw new Error('clubId is required.');
+
+  if (channelType === 'team_logistics') {
+    const normTeamId = String(teamId || '').trim();
+    if (!normTeamId) throw new Error('teamId is required for team_logistics.');
+    const sub = String(subChannelId || 'general').trim() || 'general';
+    const channelRef = db().collection('teams').doc(normTeamId)
+        .collection('channels').doc(sub);
+    return {
+      channelRef,
+      messagesRef: channelRef.collection('messages'),
+      channelId: sub,
+    };
+  }
+
+  let channelId = '';
+  if (channelType === 'registration') {
+    const hid = String(householdId || '').trim();
+    if (!hid) throw new Error('householdId is required for registration channel.');
+    channelId = `registration-${hid}`;
+  } else if (channelType === 'tryouts_events') {
+    const pid = String(programId || '').trim();
+    if (!pid) throw new Error('programId is required for tryouts_events channel.');
+    channelId = `tryouts-events-${pid}`;
+  } else if (channelType === 'match_day') {
+    const normTeamId = String(teamId || '').trim();
+    if (!normTeamId) throw new Error('teamId is required for match_day channel.');
+    channelId = `match-day-${normTeamId}`;
+  } else {
+    throw new Error(`Unsupported channelType: ${channelType}`);
+  }
+
+  const channelRef = db()
+      .collection('clubs').doc(normClubId)
+      .collection('channels').doc(channelId);
+  return {
+    channelRef,
+    messagesRef: channelRef.collection('messages'),
+    channelId,
+  };
+}
+
+/** Build parent delivery arrays for household-scoped system posts. */
+async function resolveHouseholdParentDelivery(firestore, householdId, playerEmail = '') {
+  /** @type {Array<{email: string, channels: string[]}>} */
+  const parentDelivered = [];
+  /** @type {Array<{email: string, reason: string}>} */
+  const parentSkipped = [];
+
+  if (!householdId) {
+    return {parentDelivered, parentSkipped};
+  }
+
+  const hSnap = await firestore.collection('households').doc(householdId).get();
+  if (!hSnap.exists) {
+    return {parentDelivered, parentSkipped};
+  }
+
+  const parentEmails = Array.isArray(hSnap.data().parentEmails) ?
+    hSnap.data().parentEmails.map((e) => normEmail(String(e))).filter(Boolean) :
+    [];
+
+  for (const email of parentEmails) {
+    const consented = await filterParentsWithCommsConsent(
+        firestore,
+        [email],
+        playerEmail || email,
+    );
+    if (consented.includes(email)) {
+      parentDelivered.push({email, channels: ['in_app']});
+    } else {
+      parentSkipped.push({email, reason: 'consent_comms_declined'});
+    }
+  }
+
+  return {parentDelivered, parentSkipped};
+}
+
+/**
+ * Epic 4.14 — post a system message to a typed channel instance.
+ * Messages path: clubs/{clubId}/channels/{channelId}/messages (system types)
+ *   OR teams/{teamId}/channels/{sub}/messages (team_logistics).
+ */
+exports.postChannelSystemMessage = async ({
+  channelType,
+  clubId,
+  teamId = '',
+  programId = '',
+  householdId = '',
+  subChannelId = 'general',
+  body,
+  subject = '',
+  sourceCallable = 'postChannelSystemMessage',
+  actorRole = 'system',
+  actorEmail = 'system',
+  actorUid = 'system',
+  guardianEmail = '',
+  playerEmail = '',
+}) => {
+  const type = String(channelType || '').trim();
+  if (!type || !CHANNEL_TYPE_POSTERS[type]) {
+    throw new Error(`Invalid or unsupported channelType: ${channelType}`);
+  }
+  if (!CHANNEL_TYPE_POSTERS[type].has(actorRole)) {
+    throw new Error(`Role "${actorRole}" cannot post to channelType "${type}".`);
+  }
+  const bodyRaw = String(body || '').trim();
+  if (!bodyRaw) throw new Error('body is required.');
+
+  const {channelRef, messagesRef, channelId} = resolveTypedChannelRefs({
+    channelType: type,
+    clubId,
+    teamId,
+    programId,
+    householdId,
+    subChannelId,
+  });
+
+  const FieldValue = admin.firestore.FieldValue;
+  const now = FieldValue.serverTimestamp();
+  const normClubId = String(clubId || '').trim();
+
+  /** @type {Record<string, unknown>} */
+  const channelPayload = {
+    channelType: type,
+    clubId: normClubId,
+    audienceScope: type === 'registration' ? 'household' : 'channel_members',
+    updatedAt: now,
+  };
+  if (teamId) channelPayload.teamId = String(teamId).trim();
+  if (programId) channelPayload.programId = String(programId).trim();
+  if (householdId) channelPayload.householdId = String(householdId).trim();
+  if (type === 'team_logistics') {
+    channelPayload.name = `Team logistics — ${subChannelId}`;
+    channelPayload.type = 'group';
+    channelPayload.safesportMonitored = true;
+  }
+  if (type === 'registration' || type === 'tryouts_events' || type === 'match_day') {
+    channelPayload.type = 'broadcast';
+    channelPayload.name = COMMS_CHANNEL_LABELS[type] || type;
+    channelPayload.systemChannel = true;
+  }
+  await channelRef.set(channelPayload, {merge: true});
+
+  let parentDelivered = [];
+  let parentSkipped = [];
+  if (type === 'registration' && householdId) {
+    const delivery = await resolveHouseholdParentDelivery(
+        db(),
+        String(householdId).trim(),
+        playerEmail,
+    );
+    parentDelivered = delivery.parentDelivered;
+    parentSkipped = delivery.parentSkipped;
+  } else if (type === 'tryouts_events' && guardianEmail) {
+    const gEmail = normEmail(guardianEmail);
+    const consented = await filterParentsWithCommsConsent(
+        db(),
+        [gEmail],
+        playerEmail || gEmail,
+    );
+    if (consented.includes(gEmail)) {
+      parentDelivered = [{email: gEmail, channels: ['in_app']}];
+    } else if (gEmail) {
+      parentSkipped = [{email: gEmail, reason: 'consent_comms_declined'}];
+    }
+  }
+
+  const messageRef = messagesRef.doc();
+  /** @type {Record<string, unknown>} */
+  const messagePayload = {
+    channelType: type,
+    system: true,
+    sourceCallable,
+    actorRole,
+    actorEmail: normEmail(actorEmail) || 'system',
+    senderId: actorUid,
+    senderName: actorRole === 'system' ? 'System' : actorRole,
+    senderRole: actorRole,
+    subject: subject ? String(subject).trim().slice(0, 200) : null,
+    text: bodyRaw.slice(0, 8000),
+    body: bodyRaw.slice(0, 8000),
+    timestamp: now,
+    createdAt: now,
+    deleted: false,
+  };
+  if (householdId) messagePayload.householdId = String(householdId).trim();
+  if (programId) messagePayload.programId = String(programId).trim();
+  if (guardianEmail) messagePayload.guardianEmail = normEmail(guardianEmail);
+  if (teamId) messagePayload.teamId = String(teamId).trim();
+  if (parentDelivered.length) messagePayload.parentDelivered = parentDelivered;
+  if (parentSkipped.length) messagePayload.parentSkipped = parentSkipped;
+
+  await messageRef.set(messagePayload);
+
+  if (MONITORED_CHANNEL_TYPES.has(type)) {
+    try {
+      await db().collection('messaging_audit').add({
+        action: 'channel_system_post',
+        channelType: type,
+        clubId: normClubId,
+        teamId: teamId || null,
+        channelId,
+        messageId: messageRef.id,
+        actorRole,
+        actorEmail: normEmail(actorEmail) || 'system',
+        sourceCallable,
+        createdAt: now,
+      });
+    } catch (auditErr) {
+      logger.warn('[postChannelSystemMessage] messaging_audit write failed (non-fatal)', {
+        err: auditErr instanceof Error ? auditErr.message : String(auditErr),
+      });
+    }
+  }
+
+  const deliveryReport = {
+    messageId: messageRef.id,
+    channelType: type,
+    audienceScope: channelPayload.audienceScope,
+    parentDelivered,
+    parentSkipped,
+    teamId: teamId || undefined,
+    channelId,
+  };
+
+  logger.info('[postChannelSystemMessage] posted', {
+    channelType: type,
+    channelId,
+    messageId: messageRef.id,
+    sourceCallable,
+  });
+
+  return {
+    messageId: messageRef.id,
+    channelType: type,
+    parentDelivered,
+    parentSkipped,
+    deliveryReport,
+  };
+};
+
+/**
+ * Coach schedule announce → team_logistics sub-channel (+ match_day when game).
+ */
+exports.mirrorScheduleToLogistics = onCall({region: REGION}, async (request) => {
+  const actor = assertCoachMessageSender(request);
+  const data = request.data || {};
+  const teamId = typeof data.teamId === 'string' ? data.teamId.trim() : '';
+  const kind = typeof data.kind === 'string' ? data.kind.trim() : 'practice';
+  const name = typeof data.name === 'string' ? data.name.trim() : 'Event';
+  const subject =
+    typeof data.subject === 'string' && data.subject.trim() ?
+      data.subject.trim() :
+      `New ${kind === 'game' ? 'Game' : 'Practice'}: ${name}`;
+  const body =
+    typeof data.body === 'string' && data.body.trim() ?
+      data.body.trim() :
+      `${name} has been added to the team schedule.`;
+
+  if (!teamId) {
+    throw new HttpsError('invalid-argument', 'teamId is required.');
+  }
+
+  const tSnap = await db().collection('teams').doc(teamId).get();
+  if (!tSnap.exists) {
+    throw new HttpsError('not-found', 'Team not found.');
+  }
+  const clubId = typeof tSnap.data().clubId === 'string' ? tSnap.data().clubId.trim() : '';
+  if (!clubId) {
+    throw new HttpsError('failed-precondition', 'Team has no clubId.');
+  }
+
+  const subChannelId = kind === 'game' ? 'game-day' : 'practice-sessions';
+  const actorRole = actor.role || 'coach';
+
+  const logisticsResult = await exports.postChannelSystemMessage({
+    channelType: 'team_logistics',
+    clubId,
+    teamId,
+    subChannelId,
+    body,
+    subject,
+    sourceCallable: 'mirrorScheduleToLogistics',
+    actorRole,
+    actorEmail: actor.email || '',
+    actorUid: actor.uid || 'system',
+  });
+
+  let matchDayResult = null;
+  if (kind === 'game') {
+    try {
+      matchDayResult = await exports.postChannelSystemMessage({
+        channelType: 'match_day',
+        clubId,
+        teamId,
+        body,
+        subject,
+        sourceCallable: 'mirrorScheduleToLogistics',
+        actorRole,
+        actorEmail: actor.email || '',
+        actorUid: actor.uid || 'system',
+      });
+    } catch (matchErr) {
+      logger.warn('[mirrorScheduleToLogistics] match_day mirror failed (non-fatal)', {
+        teamId,
+        err: matchErr instanceof Error ? matchErr.message : String(matchErr),
+      });
+    }
+  }
+
+  return {ok: true, logistics: logisticsResult, matchDay: matchDayResult};
+});

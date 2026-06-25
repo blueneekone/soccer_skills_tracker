@@ -4,6 +4,7 @@ const {onCall, HttpsError} = require('firebase-functions/v2/https');
 const admin = require('firebase-admin');
 const {normEmail} = require('../utils/formatters');
 const {stampPlayerLookupGuardians} = require('./householdGraph');
+const {postChannelSystemMessage} = require('./commsChannelOps');
 
 const REGION = 'us-east1';
 const db = () => admin.firestore();
@@ -381,7 +382,7 @@ exports.assignSeasonRegistrationToRoster = onCall({region: REGION}, async (reque
       updatedAt: now,
     });
 
-    return {kind: 'ok', playerEmail, playerName, teamId, tenantId};
+    return {kind: 'ok', playerEmail, playerName, teamId, tenantId, householdId};
   });
 
   if (txResult.kind === 'noop') {
@@ -391,6 +392,20 @@ exports.assignSeasonRegistrationToRoster = onCall({region: REGION}, async (reque
       registrationId,
       ...txResult,
     };
+  }
+
+  if (txResult.householdId && txResult.tenantId && txResult.teamId) {
+    void postChannelSystemMessage({
+      channelType: 'registration',
+      clubId: txResult.tenantId,
+      householdId: txResult.householdId,
+      playerEmail: txResult.playerEmail,
+      teamId: txResult.teamId,
+      subject: 'Assigned to team',
+      body: `${txResult.playerName || txResult.playerEmail} was assigned to team ${txResult.teamId}.`,
+      sourceCallable: 'assignSeasonRegistrationToRoster',
+      actorRole: 'system',
+    }).catch(() => undefined);
   }
 
   return {

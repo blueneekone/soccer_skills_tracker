@@ -131,6 +131,8 @@ export async function saveTeamScheduledEvent({
 			const subject = `New ${kindLabel}: ${name}`;
 			const body = `${name} has been added to the team schedule.`;
 			await broadcastFn({ teamId, subject, body });
+			const mirrorFn = httpsCallable(functions, 'mirrorScheduleToLogistics');
+			await mirrorFn({ teamId, kind, name, subject, body });
 		} catch (broadcastErr) {
 			console.error('[workouts] announce broadcast failed (non-fatal):', broadcastErr);
 		}

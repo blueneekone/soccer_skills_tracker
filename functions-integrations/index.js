@@ -41,7 +41,10 @@ if (
   target === 'refreshClubWeatherLock'
 ) {
   const weatherLockHandlers = require('./src/domains/weatherOps');
-  if (!target || target === 'evaluateFieldWeatherLock') {
+  if (
+    process.env.SCHEDULERS_ENABLED === 'true' &&
+    (!target || target === 'evaluateFieldWeatherLock')
+  ) {
     exports.evaluateFieldWeatherLock = weatherLockHandlers.evaluateFieldWeatherLock;
   }
   if (!target || target === 'refreshClubWeatherLock') {

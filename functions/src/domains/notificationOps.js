@@ -13,6 +13,7 @@ const {
   resolveIsMinor,
   filterParentsWithCommsConsent,
 } = require('./commsPolicy');
+const {postChannelSystemMessage} = require('./commsChannelOps');
 
 const REGION = 'us-east1';
 
@@ -945,6 +946,25 @@ exports.onDeploymentCalendarEntryCreated = onDocumentCreated(
             teamId,
             ccParentCount: ccParentEmails.length,
           });
+
+          const logisticsSub = kind === 'match' || kind === 'game' ? 'game-day' : 'practice-sessions';
+          if (clubId) {
+            void postChannelSystemMessage({
+              channelType: 'team_logistics',
+              clubId,
+              teamId,
+              subChannelId: logisticsSub,
+              subject,
+              body,
+              sourceCallable: 'onDeploymentCalendarEntryCreated',
+              actorRole: 'system',
+            }).catch((logErr) => {
+              logger.warn('onDeploymentCalendarEntryCreated: team_logistics mirror failed', {
+                teamId,
+                err: logErr instanceof Error ? logErr.message : String(logErr),
+              });
+            });
+          }
         } catch (err) {
           logger.error('onDeploymentCalendarEntryCreated: per-team error', {
             entryId,

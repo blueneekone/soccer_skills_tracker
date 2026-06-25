@@ -18,4 +18,6 @@ exports.rlOnWorkoutLogCreated = transitionRecorder.onWorkoutLogCreated;
 exports.rlOnPhysioReportCreated = transitionRecorder.onPhysioReportCreated;
 
 const trainer = require('./src/ml/trainer');
-exports.trainRlPolicyNightly = trainer.trainRlPolicyNightly;
+if (process.env.SCHEDULERS_ENABLED === 'true') {
+  exports.trainRlPolicyNightly = trainer.trainRlPolicyNightly;
+}
