@@ -2068,8 +2068,9 @@ npm run check
 | 4.16b | **Done** | Read/ack compliance — `broadcastAckOps.js` (`acknowledgeBroadcast`, `getBroadcastAckStatus`); `requiresAck` + `ackDeadline` on `team_broadcasts`; parent inbox CTA + staff outbox rollup | `commsPhase4b.test.ts` · `functions/__tests__/commsPhase4b.test.js` |
 | 4.16c | **Done** | `sponsor_partner` templates + VPC `consentSponsor` opt-in — `sponsorPartnerOps.js` (`createSponsorTemplate`, `approveSponsorTemplate`, `sendSponsorPartnerDigest`); `clubs/{clubId}/sponsor_templates`; dual VPC gate (`consentSponsor` + `consentComms`); `CommsSponsorPartnerChannel` + `DeliveryReceipt` | `commsPhase4c.test.ts` · `functions/__tests__/commsPhase4c.test.js` |
 | 4.16d | **Done** | `consentComms` onboarding — `ParentCommsConsentBanner` on `/parent/dashboard`; `consent_records` parent read rule; COMMS canon + SAFESPORT + FCM + PRODUCT_STATE sync | `commsPhase4d.test.ts` |
+| COMMS-CLOSE | **Done** | Epic 4.13a–4.16d verification — `commsClose.test.ts` + full phase guard matrix; deploy:comms + hosting/rules/indexes on `sports-skill-tracker-dev`; owner QA script in slice notes | `commsClose.test.ts` · all `commsPhase*.test.ts` · `firestoreRulesSprint412.test.ts` |
 
-**Epic 4 runs parallel to Epic 3** after **3.2** ships. **Epic 4.1–4.16d Done.** Comms functions deployed to `sports-skill-tracker-dev` via `npm run deploy:comms`.
+**Epic 4 runs parallel to Epic 3** after **3.2** ships. **Epic 4.1–4.16d + COMMS-CLOSE Done.** Comms functions deployed to `sports-skill-tracker-dev` via `npm run deploy:comms`.
 
 Vision: [`docs/vision/COMMS_HUB.md`](docs/vision/COMMS_HUB.md) · Compliance map: [`docs/SAFESPORT_COMMS_MATRIX.md`](docs/SAFESPORT_COMMS_MATRIX.md)
 

@@ -63,22 +63,37 @@ describe('Epic 4.12 — comms rules structure (source-scan)', () => {
 });
 
 describe('Epic 4.12 — comms callables exported from default codebase', () => {
-	const exports = [
+	const directExports = [
 		'safeSportBroadcast',
 		'clubSportBroadcast',
+		'emergencyClubBroadcast',
 		'reportMessageIncident',
+		'acknowledgeBroadcast',
+		'getBroadcastAckStatus',
+		'createSponsorTemplate',
+		'approveSponsorTemplate',
+		'sendSponsorPartnerDigest',
 		'sendCoachPlayerMessage',
 		'sendChannelMessage',
 		'sendHouseholdMessage',
 		'onTeamBroadcastCreated',
 		'onDeploymentCalendarEntryCreated',
-		'sendScheduledEventReminders',
-		'sendRegistrationPaymentReminders',
+		'coachProvisionStaffInternal',
 	];
 
-	for (const name of exports) {
+	const schedulerExports = ['sendScheduledEventReminders', 'sendRegistrationPaymentReminders'];
+
+	for (const name of directExports) {
 		it(`exports ${name} from functions/index.js`, () => {
 			expect(INDEX_JS).toMatch(new RegExp(`exports\\.${name}\\s*=`));
+		});
+	}
+
+	for (const name of schedulerExports) {
+		it(`registers ${name} via exportScheduler in functions/index.js`, () => {
+			expect(INDEX_JS).toMatch(
+				new RegExp(`exportScheduler\\([\\s\\S]*?['"]${name}['"]`),
+			);
 		});
 	}
 });
