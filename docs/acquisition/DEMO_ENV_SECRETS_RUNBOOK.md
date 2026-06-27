@@ -28,6 +28,8 @@ npm run deploy:comms
 firebase deploy --only hosting
 ```
 
+**Phase 0 note:** `npm run deploy:comms` must include parent↔coach DM callables (`sendParentCoachMessage`, `listParentCoachDmThreads`) and parent voice session callables (`createParentVoiceSession`, `joinParentVoiceSession`) — required before GP-ACQ-06 live QA on `/messages`.
+
 Full checklist: [`QA_DEV_PERSONA_VERIFICATION.md`](../QA_DEV_PERSONA_VERIFICATION.md) Phase 0
 
 ### QA tenant provision (first-time or broken tenant)

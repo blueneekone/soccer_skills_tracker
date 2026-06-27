@@ -20,6 +20,7 @@ const HUB = join(ROOT, 'lib/components/comms/CommsHubShell.svelte');
 const INDEX = join(ROOT, '..', 'functions/index.js');
 const CANON = join(ROOT, '..', 'docs/vision/COMMS_CHANNEL_CANON.md');
 const RULES = join(ROOT, '..', 'firestore.rules');
+const PKG = join(ROOT, '..', 'package.json');
 
 const opsSrc = readFileSync(OPS, 'utf8');
 const engineSrc = readFileSync(ENGINE, 'utf8');
@@ -90,6 +91,12 @@ describe('COMMS-VOICE-V1 — server module exported', () => {
 	it('index.js exports voice session callables', () => {
 		expect(indexSrc).toContain('createParentVoiceSession');
 		expect(indexSrc).toContain('joinParentVoiceSession');
+	});
+
+	it('deploy:comms includes parent voice session callables', () => {
+		const deployComms = JSON.parse(readFileSync(PKG, 'utf8')).scripts['deploy:comms'] as string;
+		expect(deployComms).toMatch(/createParentVoiceSession/);
+		expect(deployComms).toMatch(/joinParentVoiceSession/);
 	});
 
 	it('parentVoiceSessionOps blocks minors and logs messaging_audit', () => {

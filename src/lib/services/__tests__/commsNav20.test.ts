@@ -97,13 +97,15 @@ describe('COMMS-NAV-2.0 — commsNavCategories module', () => {
 });
 
 describe('COMMS-NAV-2.0 — CommsHubShell nav 2.0 structure', () => {
-	it('imports commsNavCategories and renders space picker + categorized sidebar', () => {
+	it('imports commsNavCategories and renders pivot-derived space context + categorized sidebar', () => {
 		expect(existsSync(NAV)).toBe(true);
 		expect(hubSrc).toMatch(/commsNavCategories/);
 		expect(hubSrc).toMatch(/groupChannelsByCategory/);
-		expect(hubSrc).toMatch(/comms-hub-shell__space-picker/);
+		expect(hubSrc).toMatch(/comms-hub-shell__space-context/);
 		expect(hubSrc).toMatch(/comms-hub-shell__category/);
-		expect(hubSrc).toMatch(/formatCommsSpaceParam|resolveActiveSpace/);
+		expect(hubSrc).toMatch(/resolveActiveSpace/);
+		expect(hubSrc).not.toMatch(/comms-space-select/);
+		expect(hubSrc).not.toMatch(/iconChar/);
 	});
 
 	it('mounts outbox as main-pane tab — not sidebar category row', () => {
@@ -141,7 +143,6 @@ describe('COMMS-NAV-2.0 — CommsHubShell nav 2.0 structure', () => {
 
 describe('COMMS-NAV-2.0 — persona skins + canon sync', () => {
 	it('comms-hub-persona-skins.css defines nav 2.0 rail tokens', () => {
-		expect(skinsSrc).toMatch(/comms-hub-shell__space-picker/);
 		expect(skinsSrc).toMatch(/comms-hub-shell__category/);
 		expect(skinsSrc).toMatch(/comms-hub-shell__main-tabs/);
 	});

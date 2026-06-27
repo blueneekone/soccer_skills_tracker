@@ -2,6 +2,7 @@
 	import CoachTeamSchedulePanel from '$lib/coach/logistics/CoachTeamSchedulePanel.svelte';
 	import CoachTeamRosterPanel from '$lib/coach/logistics/CoachTeamRosterPanel.svelte';
 	import CoachTeamAttendancePanel from '$lib/coach/logistics/CoachTeamAttendancePanel.svelte';
+	import ParentAnnouncementCompose from '$lib/components/coach/ParentAnnouncementCompose.svelte';
 	import { teamsStore } from '$lib/stores/teams.svelte.js';
 	import { CoachTeamScope } from '$lib/coach/context/coachTeamScope.svelte.js';
 
@@ -70,44 +71,25 @@
 
 		<div class="logistics-stack">
 			{#if activeTab === 'comms'}
-				<section class="logistics-cta" aria-labelledby="logistics-ann-cta">
-					<h2 id="logistics-ann-cta" class="logistics-section-title">Team announcements</h2>
+				<ParentAnnouncementCompose
+					teamId={teamScope.selectedTeamId}
+					clubId={teamClubId}
+					teamName={teamLabel}
+				/>
+				<section class="logistics-comms-summary" aria-labelledby="logistics-comms-summary-heading">
+					<h2 id="logistics-comms-summary-heading" class="logistics-section-title">
+						Logistics threads
+					</h2>
 					<p class="logistics-section-sub">
-						Parent-targeted broadcasts live in the unified Comms hub — delivery receipts show parents
-						delivered vs skipped.
+						Game day, practice, and general team channels — one hub for monitored logistics
+						conversation.
 					</p>
 					<a
-						class="logistics-cta-link"
-						href="/messages?channel=announcements&teamId={encodeURIComponent(teamScope.selectedTeamId)}"
+						class="logistics-comms-cta"
+						href="/messages?channel=team_logistics&teamId={encodeURIComponent(teamScope.selectedTeamId)}"
 					>
-						Publish team announcement →
+						Open team comms
 					</a>
-				</section>
-				<section class="logistics-channels" aria-labelledby="logistics-channels-heading">
-					<h2 id="logistics-channels-heading" class="logistics-section-title">Team channels</h2>
-					<p class="logistics-section-sub">
-						Logistics threads live in the unified Comms hub — game day, practice, and general.
-					</p>
-					<div class="logistics-cta-row">
-						<a
-							class="logistics-cta-link logistics-cta-link--secondary"
-							href="/messages?channel=team_logistics&teamId={encodeURIComponent(teamScope.selectedTeamId)}&sub=game-day"
-						>
-							Game day logistics →
-						</a>
-						<a
-							class="logistics-cta-link logistics-cta-link--secondary"
-							href="/messages?channel=team_logistics&teamId={encodeURIComponent(teamScope.selectedTeamId)}&sub=practice-sessions"
-						>
-							Practice logistics →
-						</a>
-						<a
-							class="logistics-cta-link logistics-cta-link--secondary"
-							href="/messages?channel=team_logistics&teamId={encodeURIComponent(teamScope.selectedTeamId)}&sub=general"
-						>
-							General team channel →
-						</a>
-					</div>
 				</section>
 			{:else if activeTab === 'schedule'}
 				<CoachTeamSchedulePanel teamId={teamScope.selectedTeamId} />
@@ -226,11 +208,14 @@
 		min-width: 0;
 	}
 
-	.logistics-channels {
+	.logistics-comms-summary {
 		display: flex;
 		flex-direction: column;
-		gap: 10px;
-		min-width: 0;
+		gap: 8px;
+		padding: 16px 18px;
+		border: 1px solid #e2e8f0;
+		border-radius: 16px;
+		background: #fff;
 	}
 
 	.logistics-section-title {
@@ -246,17 +231,7 @@
 		color: #64748b;
 	}
 
-	.logistics-cta {
-		display: flex;
-		flex-direction: column;
-		gap: 8px;
-		padding: 16px 18px;
-		border: 1px solid #e2e8f0;
-		border-radius: 16px;
-		background: #f8fafc;
-	}
-
-	.logistics-cta-link {
+	.logistics-comms-cta {
 		display: inline-flex;
 		align-self: flex-start;
 		padding: 10px 16px;
@@ -264,20 +239,14 @@
 		font-size: 13px;
 		font-weight: 800;
 		text-decoration: none;
-		color: #0f172a;
-		background: var(--brand-primary, #f59e0b);
-	}
-
-	.logistics-cta-row {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 8px;
-	}
-
-	.logistics-cta-link--secondary {
-		background: #fff;
-		border: 1px solid #e2e8f0;
 		color: #334155;
+		background: #f8fafc;
+		border: 1px solid #e2e8f0;
+	}
+
+	.logistics-comms-cta:hover {
+		border-color: #cbd5e1;
+		background: #f1f5f9;
 	}
 
 	.qa-mono {

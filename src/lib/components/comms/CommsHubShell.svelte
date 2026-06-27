@@ -27,7 +27,6 @@
 	} from '$lib/comms/channelTypes.js';
 	import {
 		groupChannelsByCategory,
-		formatCommsSpaceParam,
 		resolveActiveSpace,
 		type CommsNavChannelRef,
 		type CommsSpaceRef,
@@ -114,6 +113,10 @@
 			.map((t) => ({ id: t.id, name: t.name })),
 	);
 	const deepLinkTeamId = $derived(page.url.searchParams.get('teamId') || teamId || '');
+	const resolvedTeamId = $derived(deepLinkTeamId);
+	const resolvedTeamName = $derived(
+		teamsStore.teams.find((t) => t.id === resolvedTeamId)?.name || resolvedTeamId,
+	);
 	const deepLinkProgramId = $derived(page.url.searchParams.get('programId') || '');
 	const deepLinkCalendarEventId = $derived(page.url.searchParams.get('calendarEventId') || '');
 	const logisticsSub = $derived(page.url.searchParams.get('sub') || 'game-day');
@@ -217,7 +220,13 @@
 		}
 
 		if (role === 'parent') {
-			for (const lounge of parentLounges) {
+			const loungeTeams = parentLounges.length
+				? parentLounges
+				: teamId
+					? [{ clubId: teamClubId, teamId }]
+					: [];
+			for (const lounge of loungeTeams) {
+				if (deepLinkTeamId && lounge.teamId !== deepLinkTeamId) continue;
 				const team = teamsStore.teams.find((t) => t.id === lounge.teamId);
 				spaces.push({
 					kind: 'team',
@@ -225,12 +234,20 @@
 					label: team?.name || lounge.teamId,
 				});
 			}
-			if (!parentLounges.length && teamId) {
-				spaces.push({ kind: 'team', id: teamId, label: teamName || teamId });
+			if (!spaces.some((s) => s.kind === 'team') && deepLinkTeamId) {
+				const team = teamsStore.teams.find((t) => t.id === deepLinkTeamId);
+				spaces.push({
+					kind: 'team',
+					id: deepLinkTeamId,
+					label: team?.name || deepLinkTeamId,
+				});
 			}
-		} else if ((role === 'coach' || role === 'team_manager') && teamId) {
-			const team = teamsStore.teams.find((t) => t.id === teamId);
-			spaces.push({ kind: 'team', id: teamId, label: team?.name || teamName || teamId });
+		} else if (role === 'coach' || role === 'team_manager') {
+			const tId = deepLinkTeamId || teamId;
+			if (tId) {
+				const team = teamsStore.teams.find((t) => t.id === tId);
+				spaces.push({ kind: 'team', id: tId, label: team?.name || teamName || tId });
+			}
 		} else if (isClubStaff && deepLinkTeamId) {
 			const team = teamsStore.teams.find((t) => t.id === deepLinkTeamId);
 			spaces.push({
@@ -248,9 +265,17 @@
 	});
 
 	const activeSpace = $derived(
-		resolveActiveSpace(availableSpaces, page.url.searchParams.get('space')),
+		resolveActiveSpace(
+			availableSpaces,
+			page.url.searchParams.get('space') ||
+				(deepLinkTeamId ? `team:${deepLinkTeamId}` : null) ||
+				(showHousehold && householdId ? `household:${householdId}` : null) ||
+				(hubClubId && (role === 'director' || role === 'registrar' || role === 'admin')
+					? `club:${hubClubId}`
+					: null),
+		),
 	);
-	const showSpacePicker = $derived(role !== 'player' && availableSpaces.length > 0);
+	const showSpaceContext = $derived(role !== 'player' && Boolean(activeSpace));
 
 	const activeChannel = $derived.by(() => {
 		const param = page.url.searchParams.get('channel') as CommsChannelId | null;
@@ -266,16 +291,10 @@
 
 	let mobilePickerOpen = $state(false);
 
-	function selectSpace(space: CommsSpaceRef) {
-		const url = new URL(page.url);
-		url.searchParams.set('space', formatCommsSpaceParam(space));
-		void goto(`${url.pathname}${url.search}`, { replaceState: true, noScroll: true });
-	}
-
-	function onSpacePickerChange(event: Event) {
-		const value = (event.currentTarget as HTMLSelectElement).value;
-		const hit = availableSpaces.find((s) => formatCommsSpaceParam(s) === value);
-		if (hit) selectSpace(hit);
+	function spaceContextLabel(space: CommsSpaceRef): string {
+		if (space.kind === 'club') return `Club · ${space.label}`;
+		if (space.kind === 'household') return 'Household';
+		return `Team · ${space.label}`;
 	}
 
 	function selectChannel(id: CommsChannelId) {
@@ -327,30 +346,13 @@
 	class:comms-hub-shell--player={role === 'player'}
 >
 	<nav class="comms-hub-shell__rail" aria-label="Comms channels">
-		{#if showSpacePicker && activeSpace}
-			<div class="comms-hub-shell__space-picker">
-				<label class="comms-hub-shell__space-label" for="comms-space-select">Space</label>
-				{#if availableSpaces.length === 1}
-					<span class="comms-hub-shell__space-current">{activeSpace.label}</span>
-				{:else}
-					<select
-						id="comms-space-select"
-						class="comms-hub-shell__space-select"
-						value={formatCommsSpaceParam(activeSpace)}
-						onchange={onSpacePickerChange}
-					>
-						{#each availableSpaces as space (formatCommsSpaceParam(space))}
-							<option value={formatCommsSpaceParam(space)}>{space.label}</option>
-						{/each}
-					</select>
-				{/if}
-			</div>
+		{#if showSpaceContext && activeSpace}
+			<p class="comms-hub-shell__space-context">{spaceContextLabel(activeSpace)}</p>
 		{/if}
 
 		{#each categorizedNav as group (group.category.id)}
 			<section class="comms-hub-shell__category" aria-labelledby="comms-cat-{group.category.id}">
 				<h3 id="comms-cat-{group.category.id}" class="comms-hub-shell__category-label">
-					<span class="comms-hub-shell__category-icon" aria-hidden="true">{group.category.iconChar}</span>
 					{group.category.label}
 				</h3>
 				<div class="comms-hub-shell__category-channels">
@@ -372,24 +374,10 @@
 
 	{#if browser}
 		<div class="comms-hub-shell__mobile-picker">
-			{#if showSpacePicker && activeSpace}
-				<div class="comms-hub-shell__space-picker comms-hub-shell__space-picker--mobile">
-					<label class="comms-hub-shell__space-label" for="comms-space-select-mobile">Space</label>
-					{#if availableSpaces.length === 1}
-						<span class="comms-hub-shell__space-current">{activeSpace.label}</span>
-					{:else}
-						<select
-							id="comms-space-select-mobile"
-							class="comms-hub-shell__space-select"
-							value={formatCommsSpaceParam(activeSpace)}
-							onchange={onSpacePickerChange}
-						>
-							{#each availableSpaces as space (formatCommsSpaceParam(space))}
-								<option value={formatCommsSpaceParam(space)}>{space.label}</option>
-							{/each}
-						</select>
-					{/if}
-				</div>
+			{#if showSpaceContext && activeSpace}
+				<p class="comms-hub-shell__space-context comms-hub-shell__space-context--mobile">
+					{spaceContextLabel(activeSpace)}
+				</p>
 			{/if}
 			<button
 				type="button"
@@ -447,14 +435,14 @@
 		{:else if activeChannel === 'announcements'}
 			{#if showCompose}
 				<ParentAnnouncementCompose
-					teamId={deepLinkTeamId}
+					teamId={resolvedTeamId}
 					clubId={teamClubId}
-					teamName={teamName}
+					teamName={resolvedTeamName}
 				/>
 			{/if}
 			<AnnouncementsInbox />
 		{:else if activeChannel === 'team_logistics' && showTeamLogistics}
-			<CommsLogisticsChannel teamId={deepLinkTeamId} clubId={teamClubId} />
+			<CommsLogisticsChannel teamId={resolvedTeamId} clubId={teamClubId} />
 		{:else if activeChannel === 'registration' && showRegistration}
 			<CommsRegistrationChannel clubId={teamClubId} {householdId} />
 		{:else if activeChannel === 'tryouts_events' && showTryouts}
@@ -464,7 +452,7 @@
 				{householdId}
 			/>
 		{:else if activeChannel === 'match_day' && showMatchDay}
-			<CommsMatchDayChannel clubId={teamClubId} teamId={deepLinkTeamId} />
+			<CommsMatchDayChannel clubId={teamClubId} teamId={resolvedTeamId} />
 		{:else if activeChannel === 'club_wide' && showClubWide}
 			<CommsClubWideChannel
 				clubId={hubClubId}
@@ -482,8 +470,8 @@
 		{:else if activeChannel === 'staff_internal' && showStaffInternal}
 			<CommsStaffInternalChannel
 				clubId={teamClubId || hubClubId}
-				teamId={deepLinkTeamId}
-				teamName={teamName}
+				teamId={resolvedTeamId}
+				teamName={resolvedTeamName}
 			/>
 		{:else if activeChannel === 'parent_lounge'}
 			{#if role === 'parent'}
@@ -506,17 +494,17 @@
 				{#if parentLoungeLoading}
 					<p class="comms-hub-muted">Loading teams…</p>
 				{:else if parentLounges.length === 0}
-					<ParentCoachDmPanel clubId={teamClubId} teamId={deepLinkTeamId} teamName={teamName} />
+					<ParentCoachDmPanel clubId={teamClubId} teamId={resolvedTeamId} teamName={resolvedTeamName} />
 				{:else}
 					{#each parentLounges as lounge (`${lounge.clubId}:${lounge.teamId}`)}
 						<ParentCoachDmPanel clubId={lounge.clubId} teamId={lounge.teamId} />
 					{/each}
 				{/if}
-			{:else if (role === 'coach' || role === 'director') && deepLinkTeamId}
+			{:else if (role === 'coach' || role === 'director') && resolvedTeamId}
 				<ParentCoachDmPanel
 					clubId={teamClubId || hubClubId}
-					teamId={deepLinkTeamId}
-					teamName={teamName}
+					teamId={resolvedTeamId}
+					teamName={resolvedTeamName}
 				/>
 			{:else}
 				<p class="comms-hub-muted">Select a team to open parent↔coach messages.</p>
@@ -528,8 +516,8 @@
 				{:else if parentLounges.length === 0}
 					<ParentVoiceSessionLobby
 						clubId={teamClubId}
-						teamId={deepLinkTeamId}
-						teamName={teamName}
+						teamId={resolvedTeamId}
+						teamName={resolvedTeamName}
 						calendarEventId={deepLinkCalendarEventId}
 					/>
 				{:else}
@@ -541,11 +529,11 @@
 						/>
 					{/each}
 				{/if}
-			{:else if (role === 'coach' || role === 'director') && deepLinkTeamId}
+			{:else if (role === 'coach' || role === 'director') && resolvedTeamId}
 				<ParentVoiceSessionLobby
 					clubId={teamClubId || hubClubId}
-					teamId={deepLinkTeamId}
-					teamName={teamName}
+					teamId={resolvedTeamId}
+					teamName={resolvedTeamName}
 					calendarEventId={deepLinkCalendarEventId}
 				/>
 			{:else}
@@ -639,5 +627,19 @@
 			display: block;
 			position: relative;
 		}
+	}
+
+	.comms-hub-shell__space-context {
+		margin: 0 0 8px;
+		padding: 8px 10px;
+		border: 1px solid var(--pd-grey-trim, #334155);
+		background: rgba(15, 23, 42, 0.35);
+		font-size: 11px;
+		font-weight: 700;
+		color: #94a3b8;
+	}
+
+	.comms-hub-shell__space-context--mobile {
+		margin-bottom: 10px;
 	}
 </style>

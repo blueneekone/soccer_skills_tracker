@@ -24,7 +24,8 @@ describe('Epic 4.7 — Team Ops hub (CoachLogisticsView)', () => {
 		expect(logisticsView).toMatch(/CoachTeamRosterPanel/);
 		expect(logisticsView).toMatch(/CoachTeamAttendancePanel/);
 		expect(logisticsView).not.toMatch(/MessagesTab/);
-		expect(logisticsView).toMatch(/channel=team_logistics/);
+		expect(logisticsView).toMatch(/ParentAnnouncementCompose/);
+		expect(logisticsView).toMatch(/Open team comms/);
 	});
 
 	it('uses tab nav with comms | schedule | roster | attendance', () => {

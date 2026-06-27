@@ -3,34 +3,49 @@
   import { goto, replaceState } from '$app/navigation';
   import { page } from '$app/state';
   import { untrack } from 'svelte';
-  import Icon from '$lib/components/ui/Icon.svelte';
   import { httpsCallable } from 'firebase/functions';
-  import { db, functions, storage } from '$lib/firebase.js';
-  import { ref as storageRef, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
+  import { db, functions } from '$lib/firebase.js';
   import { collection, getDocs, onSnapshot, orderBy, query, where } from 'firebase/firestore';
   import { authStore } from '$lib/stores/auth.svelte.js';
   import { playerEngine, writePlayerOsWorkout } from '$lib/stores/playerEngine.svelte.js';
   import { commitWorkoutCompletion } from '$lib/services/writes.svelte';
   import { dopamineOnCommit, dopamineOnCallable } from '$lib/services/dopamine.svelte.js';
-  import { calculateTrainingSessionEarnedXp, getLevelProgressFromTotalXp } from '$lib/gamification/level.js';
-  import { buildWorkoutDrillType, executePlayerWorkoutLog, expectedWorkoutXp, intensityApiFromStep, validatePlayerWorkoutLog, workoutLogErrorMessage } from '$lib/player/workoutLog.js';
-  import { formatAttributeLabel, loadQuestProgress, markQuestCompletedAfterWorkoutLog, saveQuestProgress, WORKOUT_HQ_RETURN_PATH } from '$lib/player/dashboard/activeBounties.js';
+  import { calculateTrainingSessionEarnedXp } from '$lib/gamification/level.js';
+  import { intensityApiFromStep } from '$lib/player/workoutLog.js';
+  import { resolveAppPath } from '$lib/components/_shared/resolveAppPath.js';
+  import {
+    formatAttributeLabel,
+    loadQuestProgress,
+    markQuestCompletedAfterWorkoutLog,
+    saveQuestProgress,
+    WORKOUT_HQ_RETURN_PATH,
+  } from '$lib/player/dashboard/activeBounties.js';
   import {
     armedCadenceBlockedToday,
     CADENCE_LIMIT_ERROR,
     subscribePlayerCadenceCompletions,
     type CadenceCompletionRow,
   } from '$lib/player/dashboard/cadenceCompletions.js';
-  import { resolveAppPath } from '$lib/components/_shared/resolveAppPath.js';
-  import { attributeIdToWorkoutFocus, buildPolicyHintsFromResult, clearMissionHandoff, COACH_INTENT_HINT, formatSuggestedDrillLine, isMissionHandoffStale, resolveAdaptiveDrill, resolveHandoffDurationMinutes, resolveHandoffTargetRpe, resolveDrillById, resolveMissionHandoffDisplayCadence, type MissionHandoff, type WorkoutFocus } from '$lib/player/workout/coachMissionFlow.js';
-  import BenchmarkTrainSession from '$lib/player/workout/BenchmarkTrainSession.svelte';
+  import {
+    attributeIdToWorkoutFocus,
+    buildPolicyHintsFromResult,
+    clearMissionHandoff,
+    formatSuggestedDrillLine,
+    isMissionHandoffStale,
+    resolveAdaptiveDrill,
+    resolveHandoffDurationMinutes,
+    resolveHandoffTargetRpe,
+    resolveDrillById,
+    resolveMissionHandoffDisplayCadence,
+    type MissionHandoff,
+    type WorkoutFocus,
+  } from '$lib/player/workout/coachMissionFlow.js';
   import { resolveTrainBenchmarkContext } from '$lib/player/workout/trainBenchmarkContext.js';
   import { resolveWorkoutMountHandoff } from '$lib/player/workout/applyWorkoutMountHandoff.js';
   import { listTrainMissionStripItems, continueCoachIntentOnTrain } from '$lib/player/workout/trainMissionPicker.js';
-  import TrainMissionStrip from '$lib/player/workout/TrainMissionStrip.svelte';
   import type { PrescriptionDrillEntry } from '$lib/types/intent.js';
   import { resolveTeamDrillById as resolveTeamLibraryDrill } from '$lib/coach/teamDrillLibrary.js';
-  import { clampFreeLogDurationMinutes, coachCadenceLogSuccessSuffix, FREE_LOG_DURATION_MAX_MINUTES, isCoachDirectedHandoff, SESSION_NOTES_MAX_LENGTH } from '$lib/player/workout/workoutSessionConstants.js';
+  import { isCoachDirectedHandoff } from '$lib/player/workout/workoutSessionConstants.js';
   import { WORKOUT_FOCUS_AREAS } from '$lib/player/workout/focusDrillCatalog.js';
   import {
     useWorkoutDrillCatalog,
@@ -42,23 +57,18 @@
     computeWorkoutTotalReps,
     formatPrescriptionVolumeLine,
   } from '$lib/player/workout/workoutPrescription.js';
-  import PlayerDiegeticOverlay from '$lib/components/player/PlayerDiegeticOverlay.svelte';
-  import IntelModal from '$lib/components/ui/IntelModal.svelte';
-  import PlayerOsPageStrap from '$lib/components/player/PlayerOsPageStrap.svelte';
-  import TrainReadinessStrip from '$lib/player/workout/TrainReadinessStrip.svelte';
   import { useTrainReadinessStrip } from '$lib/player/workout/useTrainReadinessStrip.svelte.js';
+  import PlayerWorkoutPageView from '$lib/player/workout/PlayerWorkoutPageView.svelte';
+  import {
+    handleBenchmarkSuccessPayload,
+    runLogBundleStep,
+    runLogWorkout,
+    runSendCompletionProof,
+    validateProofMediaFile,
+  } from '$lib/player/workout/workoutPageSubmit.js';
   import '$lib/styles/player-dashboard-hud.css';
   import '$lib/styles/player-terminal.css';
   import '$lib/styles/player-train-theater.css';
-
-  const TELEMETRY_INTEL = {
-    title: 'TELEMETRY LOGGING',
-    instructions: [
-      '1. Select your drill or exercise (free log) — coach missions lock the prescription.',
-      '2. Set sets, reps, and bilateral for rep-based volume; duration and RPE for self-directed sessions.',
-      '3. Add session notes on coach assignments, then transmit to log XP.',
-    ],
-  };
 
   const logTrainingSession = httpsCallable(functions, 'logTrainingSession');
   const submitCompletionProof = httpsCallable(functions, 'submitCompletionProof');
@@ -81,7 +91,6 @@
     playerEngine.detach();
   });
 
-  /** @type {'technical' | 'physical' | 'tactical' | 'recovery'} */
   let selectedFocus = $state<WorkoutFocus>('technical');
   let selectedDrill = $state(/** @type {string | null} */ (null));
   let intensity = $state(5);
@@ -96,12 +105,10 @@
   let workoutRepsPerSet = $state(0);
   let workoutBilateral = $state(false);
 
-  /** Diegetic overlay state machine (Wave D — replaces legacy commit modals). */
   let overlayOpen = $state(false);
   let overlayVariant = $state<'success' | 'error' | 'confirm'>('error');
   let overlayTitle = $state('');
   let overlayMessage = $state('');
-  /** GP-ACQ-04b — navigate to HQ after success overlay when session logged. */
   let pendingHqReturn = $state(false);
 
   function closeOverlay() {
@@ -129,33 +136,21 @@
     overlayOpen = true;
   }
 
-  /** @type {string | null} */
-  let activeMissionId = $state(null);
-  /** @type {MissionHandoff | null} */
-  let armedHandoff = $state(null);
-  /** @type {Array<Record<string, unknown> & { id: string }>} */
-  let incomingMissions = $state([]);
+  let activeMissionId = $state(/** @type {string | null} */ (null));
+  let armedHandoff = $state(/** @type {MissionHandoff | null} */ (null));
+  let incomingMissions = $state(/** @type {Array<Record<string, unknown> & { id: string }>} */ ([]));
   let incomingMissionsReady = $state(false);
   let missionSyncRefreshing = $state(false);
   let missionRefreshNonce = $state(0);
-  /** Set once per mount — explicit nav/storage handoff only. */
   let mountHandoffApplied = $state(false);
-  /** Drill completions for cadence anti-cheat on armed coach missions. */
   let cadenceCompletions = $state<CadenceCompletionRow[]>([]);
 
-  // B4a/B4c — advisory parent-proof state (inner Execute band; never gates XP).
-  /** intentId captured after a successful log when requiresParentVerification is set. */
   let pendingProofIntentId = $state(/** @type {string | null} */ (null));
   let proofNote = $state('');
   let proofSubmitting = $state(false);
   let proofSubmitted = $state(false);
-
-  // B4c — optional media proof (COPPA-safe; optional/skippable; never gates XP).
-  /** The selected media file to attach (image or short video). Optional — may be null. */
   let proofMediaFile = $state(/** @type {File | null} */ (null));
-  /** Upload progress 0–100 while uploading, null when idle. */
   let proofUploadProgress = $state(/** @type {number | null} */ (null));
-  /** Any upload/validation error shown to the player. */
   let proofMediaError = $state('');
 
   const trainReadiness = useTrainReadinessStrip(
@@ -163,25 +158,15 @@
     () => authStore.role,
   );
 
-  const PROOF_IMAGE_MAX = 10 * 1024 * 1024;  // 10 MB
-  const PROOF_VIDEO_MAX = 50 * 1024 * 1024;  // 50 MB
-
   function onProofFileChange(e: Event) {
     const input = e.target as HTMLInputElement;
     const file = input.files?.[0] ?? null;
     proofMediaError = '';
     proofMediaFile = null;
     if (!file) return;
-    if (!file.type.startsWith('image/') && !file.type.startsWith('video/')) {
-      proofMediaError = 'Only images and video files are supported.';
-      return;
-    }
-    if (file.type.startsWith('image/') && file.size > PROOF_IMAGE_MAX) {
-      proofMediaError = 'Image must be under 10 MB.';
-      return;
-    }
-    if (file.type.startsWith('video/') && file.size > PROOF_VIDEO_MAX) {
-      proofMediaError = 'Video must be under 50 MB.';
+    const err = validateProofMediaFile(file);
+    if (err) {
+      proofMediaError = err;
       return;
     }
     proofMediaFile = file;
@@ -189,59 +174,26 @@
 
   async function sendCompletionProof() {
     if (!pendingProofIntentId || proofSubmitting) return;
-    const trimmed = proofNote.trim().slice(0, 500);
     proofSubmitting = true;
     proofMediaError = '';
-    let mediaStoragePath: string | null = null;
-
     try {
-      // B4c — upload media if a file was chosen (optional; skip entirely if none).
-      if (proofMediaFile) {
-        const playerUid = authStore.user?.uid ?? '';
-        const householdId =
+      await runSendCompletionProof({
+        pendingProofIntentId,
+        proofNote,
+        proofMediaFile,
+        playerUid: authStore.user?.uid ?? '',
+        householdId:
           typeof authStore.userProfile?.householdId === 'string'
             ? authStore.userProfile.householdId.trim()
-            : '';
-
-        if (!playerUid || !householdId) {
-          proofMediaError = 'Profile incomplete — media attachment skipped.';
+            : '',
+        submitCompletionProof,
+        onUploadProgress: (pct) => {
+          proofUploadProgress = pct;
+        },
+        onMediaError: (msg) => {
+          proofMediaError = msg;
           proofMediaFile = null;
-        } else {
-          const mediaId = crypto.randomUUID();
-          const ext = proofMediaFile.name.split('.').pop() ?? 'bin';
-          const storagePath = `households/${householdId}/proof_media/${playerUid}/${mediaId}.${ext}`;
-          const fileRef = storageRef(storage, storagePath);
-          const uploadTask = uploadBytesResumable(fileRef, proofMediaFile);
-          await new Promise<void>((resolve, reject) => {
-            uploadTask.on(
-              'state_changed',
-              (snap) => {
-                proofUploadProgress = Math.round(
-                  (snap.bytesTransferred / snap.totalBytes) * 100,
-                );
-              },
-              (err) => {
-                proofMediaError = 'Media upload failed — proof will be sent as note-only.';
-                console.error('[B4c] upload error', err);
-                reject(err);
-              },
-              () => resolve(),
-            );
-          }).catch(() => {
-            // Upload failed — continue as note-only (advisory, non-blocking).
-            proofMediaFile = null;
-          });
-
-          if (proofMediaFile) {
-            mediaStoragePath = storagePath;
-          }
-        }
-      }
-
-      await submitCompletionProof({
-        intentId: pendingProofIntentId,
-        proofNote: trimmed || null,
-        mediaStoragePath,
+        },
       });
       proofSubmitted = true;
       pendingProofIntentId = null;
@@ -264,22 +216,16 @@
     proofUploadProgress = null;
   }
 
-  // B3 bundle stepper state (inner Execute band — no new frame, no overflow:auto).
-  /** 0-based index of the current bundle step. Reset when armed mission changes. */
   let bundleStepIdx = $state(0);
-  /** True when the armed mission has a multi-drill prescription bundle. */
   const isBundleMode = $derived(
     !!(armedHandoff?.drills?.length && armedHandoff.drills.length > 0),
   );
-  /** Ordered bundle drill entries from handoff (empty array when not in bundle mode). */
   const bundleDrills = $derived(
     /** @type {PrescriptionDrillEntry[]} */ (armedHandoff?.drills ?? []),
   );
-  /** The drill entry for the current bundle step, or null when not in bundle mode. */
   const currentBundleDrill = $derived(
     isBundleMode ? (bundleDrills[bundleStepIdx] ?? null) : null,
   );
-  /** True when the current bundle step is the final step. */
   const isFinalBundleStep = $derived(
     isBundleMode && bundleStepIdx === bundleDrills.length - 1,
   );
@@ -291,7 +237,7 @@
     }
   }
 
-  async function applyMissionHandoff(handoff) {
+  async function applyMissionHandoff(handoff: MissionHandoff) {
     if (isMissionHandoffStale(handoff)) {
       clearMissionHandoff();
       return;
@@ -302,12 +248,16 @@
     const teamId =
       typeof authStore.userProfile?.teamId === 'string' ? authStore.userProfile.teamId : '';
     const clubId =
-      typeof authStore.userProfile?.clubId === 'string' ?
-        authStore.userProfile.clubId
-      : typeof authStore.tenantId === 'string' ?
-        authStore.tenantId
+      typeof authStore.userProfile?.clubId === 'string'
+        ? authStore.userProfile.clubId
+      : typeof authStore.tenantId === 'string'
+        ? authStore.tenantId
       : '';
-    const pickDrill = (title, id) => { selectedDrill = title; resolvedDrillTitle = title; resolvedDrillId = id; };
+    const pickDrill = (title: string, id: string) => {
+      selectedDrill = title;
+      resolvedDrillTitle = title;
+      resolvedDrillId = id;
+    };
     if (handoff.focusArea) {
       selectedFocus = handoff.focusArea;
     } else if (handoff.targetAttributeId) {
@@ -316,9 +266,9 @@
     if (handoff.prescription?.teamDrillId || handoff.prescription?.clubDrillId) {
       const drillId =
         handoff.prescription.teamDrillId ?? handoff.prescription.clubDrillId ?? '';
-      const row = teamId ?
-        await resolveTeamLibraryDrill(db, teamId, drillId, clubId || undefined)
-      :	null;
+      const row = teamId
+        ? await resolveTeamLibraryDrill(db, teamId, drillId, clubId || undefined)
+      : null;
       if (row?.title) pickDrill(row.title, drillId);
     } else if (handoff.prescription?.drillId) {
       const drill = await resolveDrillById(db, handoff.prescription.drillId);
@@ -346,8 +296,7 @@
     intensity = resolveHandoffTargetRpe(handoff);
   }
 
-  /** Merge cached/fetched RL policy into armed handoff — free log only (never override coach prescription). */
-  function applyRlPolicyToArmedSession(result) {
+  function applyRlPolicyToArmedSession(result: unknown) {
     if (!armedHandoff || !result) return;
     if (isCoachDirectedHandoff(armedHandoff.source)) return;
     const hints = buildPolicyHintsFromResult(result);
@@ -366,7 +315,6 @@
     clearMissionHandoff();
   }
 
-  // Reset bundle step index whenever the armed mission changes.
   $effect(() => {
     void armedHandoff?.missionId;
     bundleStepIdx = 0;
@@ -385,7 +333,7 @@
     return 'Coach-assigned drill';
   });
 
-  function recordQuestProgressAfterLog(handoff) {
+  function recordQuestProgressAfterLog(handoff: MissionHandoff | null) {
     let progress = loadQuestProgress();
     if (handoff?.missionId) {
       const source =
@@ -525,10 +473,7 @@
     setDrill: (title) => { selectedDrill = title; },
   });
 
-  /**
-   * @param {'technical' | 'physical' | 'tactical' | 'recovery'} id
-   */
-  function selectFocus(id) {
+  function selectFocus(id: WorkoutFocus) {
     if (isCoachDirectedSession) return;
     if (id !== selectedFocus) {
       selectedDrill = null;
@@ -540,9 +485,9 @@
   const hasCoachIntents = $derived(incomingMissions.length > 0);
 
   const trainMissionStripItems = $derived(
-    !activeMissionId && incomingMissionsReady ?
-      listTrainMissionStripItems(incomingMissions)
-    :	[],
+    !activeMissionId && incomingMissionsReady
+      ? listTrainMissionStripItems(incomingMissions)
+    : [],
   );
 
   function continueTrainMission(missionId: string) {
@@ -633,15 +578,24 @@
     }
   });
 
-  /**
-   * B3: Log a single bundle step via the EXISTING executePlayerWorkoutLog primitive.
-   * Intermediate steps pass activeMissionId=null to prevent premature mission clear.
-   * The final step passes the real activeMissionId/source so clearMission fires normally.
-   * XP accrues on every step via attributeId (coach_intent path on logTrainingSession).
-   *
-   * Wired: logTrainingSession callable (XP + drill_completions), persistPlayerOsWorkout.
-   * Simplified: per-step dopamine animation runs once on final step only (no spam).
-   */
+  const diegetic = {
+    showError: showDiegeticError,
+    showSuccess: showDiegeticSuccess,
+  };
+
+  const submitDeps = {
+    logTrainingSession,
+    writePlayerOsWorkout,
+    commitWorkoutCompletion,
+    dopamineOnCommit,
+    dopamineOnCallable,
+    bumpXp: (delta: number) => playerEngine.bumpBy(delta),
+    refreshProfile: () => authStore.refresh({ silent: true }),
+    recordQuestProgressAfterLog,
+    clearArmedMission,
+    armParentProofAfterLog,
+  };
+
   function showCadenceLimitError() {
     showDiegeticError(CADENCE_LIMIT_ERROR.title, CADENCE_LIMIT_ERROR.text);
   }
@@ -650,748 +604,159 @@
     message: string;
     levelUp: { from: number; to: number; earned: number } | null;
   }) {
-    if (payload.levelUp) {
-      window.dispatchEvent(
-        new CustomEvent('phoenix:level-up', {
-          detail: {
-            from: payload.levelUp.from,
-            to: payload.levelUp.to,
-            earnedXp: payload.levelUp.earned,
-          },
-        }),
-      );
-    }
-    showDiegeticSuccess('Benchmark logged', payload.message, { returnToHq: true });
+    handleBenchmarkSuccessPayload(payload, diegetic);
   }
 
   async function logBundleStep() {
     const drill = currentBundleDrill;
     if (!drill || logSubmitting) return;
     if (armedCadenceBlocked) return showCadenceLimitError();
-    const drillName = drill.drillTitle || lockedCoachDrillLabel || 'Bundle drill';
-    const drillType = buildWorkoutDrillType(focusLabel, drillName);
-    const stepSets = drill.sets ?? 1;
-    const stepReps = drill.repsPerSet ?? 0;
-    const stepBilateral = drill.bilateral === true;
-    const stepTotalReps = stepBilateral ? stepSets * stepReps * 2 : stepSets * stepReps;
-    const stepDuration = Math.max(
-      1,
-      drill.targetDurationMin ?? Math.max(1, Math.floor(duration / Math.max(1, bundleDrills.length))),
-    );
-    const stepRpe = drill.targetRpe ?? intensity;
-    const intensityCall = intensityApiFromStep(stepRpe);
-    const expectedXp = expectedWorkoutXp(stepDuration, stepRpe, stepTotalReps);
     const user = authStore.user;
     if (!user) return;
 
-    const isLastStep = isFinalBundleStep;
-    // Intermediate steps: pass null mission so clearMission stays false.
-    const stepMissionId = isLastStep ? activeMissionId : null;
-    const stepMissionSource = isLastStep ? (armedHandoff?.source ?? null) : null;
-    const oldLevel = getLevelProgressFromTotalXp(totalXpHud).level;
-
-    logSubmitting = true;
-    playerEngine.bumpBy(expectedXp);
-    try {
-      const result = await executePlayerWorkoutLog({
-        drillType,
-        durationMin: stepDuration,
-        totalReps: stepTotalReps,
-        intensityCall,
-        focusLabel,
-        selectedDrill: drillName,
-        activeMissionId: stepMissionId,
-        missionSource: stepMissionSource,
-        targetAttributeId: armedHandoff?.targetAttributeId ?? undefined,
-        totalXpHud,
-        oldLevel,
-        intensityStep: stepRpe,
-        sessionNotes: isLastStep ? sessionNotes : '',
-        physio: isLastStep ? trainReadiness.physioForTransmit() : undefined,
-        authUser: { uid: user.uid, email: user.email },
-        profile,
-        logTrainingSession,
-        writePlayerOsWorkout,
-        commitWorkoutCompletion,
-        dopamineOnCommit,
-      });
-
-      if (isLastStep) {
-        const proofIntentId = activeMissionId;
-        const needsProof = armedHandoff?.requiresParentVerification === true;
-        const cadenceWeekNote = coachCadenceLogSuccessSuffix(armedHandoff?.source ?? null, armedDisplayCadence);
-        if (result.clearMission) {
-          recordQuestProgressAfterLog(armedHandoff);
-          clearArmedMission();
-        } else {
-          recordQuestProgressAfterLog(null);
-        }
-        armParentProofAfterLog(proofIntentId, needsProof);
-        if (result.levelUpFrom != null && result.levelUpTo != null) {
-          window.dispatchEvent(
-            new CustomEvent('phoenix:level-up', {
-              detail: { from: result.levelUpFrom, to: result.levelUpTo, earnedXp: result.earned },
-            }),
-          );
-        }
-        void dopamineOnCallable(Promise.resolve(result), { kind: 'drill' });
-        showDiegeticSuccess(
-          'Bundle complete',
-          `All ${bundleDrills.length} drills logged · +${result.earned} XP · Level ${result.level ?? '—'}${cadenceWeekNote}`,
-          { returnToHq: true },
-        );
-        sessionNotes = '';
-        await authStore.refresh({ silent: true });
-      } else {
-        bundleStepIdx += 1;
-        showDiegeticSuccess(
-          `Drill ${bundleStepIdx} logged`,
-          `+${result.earned} XP · Next: ${bundleDrills[bundleStepIdx]?.drillTitle ?? 'Drill ' + (bundleStepIdx + 1)}`,
-        );
-      }
-    } catch (e) {
-      playerEngine.bumpBy(-expectedXp);
-      console.error(e);
-      showDiegeticError('Step failed', workoutLogErrorMessage(e));
-    } finally {
-      logSubmitting = false;
-    }
+    await runLogBundleStep({
+      ...submitDeps,
+      ...diegetic,
+      currentBundleDrill: drill,
+      bundleDrills,
+      bundleStepIdx,
+      isFinalBundleStep,
+      lockedCoachDrillLabel,
+      focusLabel,
+      duration,
+      intensity,
+      sessionNotes,
+      activeMissionId,
+      armedHandoff,
+      armedDisplayCadence,
+      totalXpHud,
+      profile,
+      authUser: { uid: user.uid, email: user.email },
+      physioForTransmit: () => trainReadiness.physioForTransmit(),
+      setLogSubmitting: (v) => { logSubmitting = v; },
+      setSessionNotes: (v) => { sessionNotes = v; },
+      incrementBundleStep: () => { bundleStepIdx += 1; },
+    });
   }
 
   async function logWorkout() {
     if (armedCadenceBlocked) return showCadenceLimitError();
-    const gate = validatePlayerWorkoutLog({
-      selectedFocus,
-      selectedDrill: isCoachDirectedSession ? lockedCoachDrillLabel : selectedDrill,
-      logSubmitting,
-      role: authStore.role,
-      profile,
-    });
-    if (gate.ok === false) {
-      showDiegeticError(gate.title, gate.text);
-      return;
-    }
-    if (!selectedDrill && !isCoachDirectedSession) return;
-
-    const drillName = isCoachDirectedSession ? lockedCoachDrillLabel : selectedDrill;
-    if (!drillName) return;
-
-    const drillType = buildWorkoutDrillType(focusLabel, drillName);
-    const dMin = isCoachDirectedSession
-      ? Math.max(1, Math.min(FREE_LOG_DURATION_MAX_MINUTES, Math.floor(Number(duration) || 0)))
-      : clampFreeLogDurationMinutes(duration);
-    const intensityCall = intensityApiFromStep(intensity);
-    const expectedXp = expectedWorkoutXp(dMin, intensity, totalWorkoutReps);
-    const oldLevel = getLevelProgressFromTotalXp(totalXpHud).level;
     const user = authStore.user;
     if (!user) return;
 
-    const proofIntentId = activeMissionId;
-    const needsProof = armedHandoff?.requiresParentVerification === true,
-      cadenceWeekNote = coachCadenceLogSuccessSuffix(armedHandoff?.source ?? null, armedDisplayCadence);
-    logSubmitting = true;
-    playerEngine.bumpBy(expectedXp);
-    try {
-      const result = await executePlayerWorkoutLog({
-        drillType,
-        durationMin: dMin,
-        totalReps: totalWorkoutReps,
-        intensityCall,
-        focusLabel,
-        selectedDrill: drillName,
-        activeMissionId,
-        missionSource: armedHandoff?.source ?? null,
-        targetAttributeId: armedHandoff?.targetAttributeId ?? undefined,
-        totalXpHud,
-        oldLevel,
-        // Raw RPE 1–10 → logTrainingSession.subjectiveRpe (RL telemetry); intensityCall stays for XP.
-        intensityStep: intensity,
-        sessionNotes,
-        physio: trainReadiness.physioForTransmit(),
-        authUser: { uid: user.uid, email: user.email },
-        profile,
-        logTrainingSession,
-        writePlayerOsWorkout,
-        commitWorkoutCompletion,
-        dopamineOnCommit,
-      });
-      if (result.clearMission) {
-        recordQuestProgressAfterLog(armedHandoff);
-        clearArmedMission();
-      } else {
-        recordQuestProgressAfterLog(null);
-      }
-      if (result.levelUpFrom != null && result.levelUpTo != null) {
-        window.dispatchEvent(
-          new CustomEvent('phoenix:level-up', {
-            detail: { from: result.levelUpFrom, to: result.levelUpTo, earnedXp: result.earned },
-          }),
-        );
-      }
-      void dopamineOnCallable(Promise.resolve(result), { kind: 'drill' });
-      showDiegeticSuccess(
-        'Command executed',
-        `+${result.earned} XP · Level ${result.level ?? '—'}${result.missionCloseNote}${cadenceWeekNote}`,
-        { returnToHq: true },
-      );
-      armParentProofAfterLog(proofIntentId, needsProof);
-      sessionNotes = '';
-      await authStore.refresh({ silent: true });
-    } catch (e) {
-      playerEngine.bumpBy(-expectedXp);
-      console.error(e);
-      showDiegeticError('Execution failed', workoutLogErrorMessage(e));
-    } finally {
-      logSubmitting = false;
-    }
+    await runLogWorkout({
+      ...submitDeps,
+      ...diegetic,
+      selectedFocus,
+      selectedDrill,
+      isCoachDirectedSession,
+      lockedCoachDrillLabel,
+      logSubmitting,
+      role: authStore.role,
+      focusLabel,
+      duration,
+      intensity,
+      totalWorkoutReps,
+      sessionNotes,
+      activeMissionId,
+      armedHandoff,
+      armedDisplayCadence,
+      totalXpHud,
+      profile,
+      authUser: { uid: user.uid, email: user.email },
+      physioForTransmit: () => trainReadiness.physioForTransmit(),
+      setLogSubmitting: (v) => { logSubmitting = v; },
+      setSessionNotes: (v) => { sessionNotes = v; },
+    });
+  }
+
+  function selectDrill(drill: string) {
+    clearArmedMission();
+    selectedDrill = drill;
   }
 </script>
 
-<div class="pd-page-root player-dossier-root player-hud-root pw-page tw-min-w-0 tw-overflow-x-hidden" data-region="player-workout-log">
-  <div class="pd-content-wrap pd-route-stack">
-  <PlayerOsPageStrap eyebrow="Train / Log session" title="Workout logger" />
-
-  {#if hasCoachIntents && !activeMissionId && trainMissionStripItems.length === 0}
-    <p class="pw-hq-link pw-mono">
-      <a href="/player/dashboard">Coach missions on HQ →</a>
-      <span class="pw-dim"> · accept a mission, then start session here</span>
-      <button
-        type="button"
-        class="pw-mission-armed__clear pw-mono"
-        disabled={missionSyncRefreshing}
-        onclick={refreshMissionSync}
-      >
-        {missionSyncRefreshing ? 'Syncing…' : 'Refresh missions'}
-      </button>
-    </p>
-  {/if}
-
-  {#if activeMissionId}
-    <p class="pw-hq-link pw-mono">
-      <button
-        type="button"
-        class="pw-mission-armed__clear pw-mono"
-        disabled={missionSyncRefreshing}
-        onclick={refreshMissionSync}
-      >
-        {missionSyncRefreshing ? 'Syncing…' : 'Refresh mission status'}
-      </button>
-      <span class="pw-dim"> · clears armed session if coach cancelled</span>
-    </p>
-  {/if}
-
-  <div class="pw-theater pd-os-deck pd-os-deck--hero bento-span-12">
-    <div class="pw-theater__z4-scan" aria-hidden="true"></div>
-    {#if activeMissionId}
-      <div class="pw-mission-armed pd-os-deck__well" aria-live="polite">
-        <div class="pw-mission-armed__head">
-          <span class="pw-eyebrow">Armed mission</span>
-          <button type="button" class="pw-mission-armed__clear pw-mono" onclick={clearArmedMission}>
-            Free log instead
-          </button>
-        </div>
-        <p class="pw-mission-armed__hint">{COACH_INTENT_HINT}</p>
-        <h2 class="pw-mission-armed__title">
-          {armedMissionTitle}
-          {#if armedGoalXp != null && armedGoalXp > 0}
-            <span class="pw-mission-armed__xp pw-green"> · {armedGoalXp.toLocaleString()} XP goal</span>
-          {/if}
-        </h2>
-        {#if armedDrillLine}
-          <p class="pw-mission-armed__drill pw-mono">{armedDrillLine}</p>
-        {/if}
-        {#if coachPrescriptionLine}
-          <p class="pw-mission-armed__drill pw-mono pw-dim">
-            Coach prescription: {coachPrescriptionLine}
-          </p>
-        {/if}
-        {#if armedPrescription?.cues}
-          <p class="pw-mission-armed__drill pw-mono pw-dim">Coaching cues: {armedPrescription.cues}</p>
-        {/if}
-        {#if armedPrescription?.videoUrl}
-          <a class="pw-link pw-mono pw-dim" href={armedPrescription.videoUrl} target="_blank" rel="noopener noreferrer">Watch demo</a>
-        {/if}
-        {#if armedDisplayCadence}
-          <p class="pw-mission-armed__drill pw-mono pw-dim" aria-label="Cadence requirement">
-            Cadence: {armedDisplayCadence.sessionsPerWindow} session{armedDisplayCadence.sessionsPerWindow !== 1 ? 's' : ''} / {armedDisplayCadence.windowDays === 7 ? 'week' : `${armedDisplayCadence.windowDays} days`}{#if armedCadenceBlocked}<span class="pw-dim"> · next session tomorrow</span>{/if}
-          </p>
-        {/if}
-        {#if armedHandoff?.requiresParentVerification === true}
-          <p class="pw-mission-armed__drill pw-mono pw-dim" aria-label="Parent verification advisory">
-            After transmit, optional proof for parent — XP not gated.
-          </p>
-        {/if}
-        {#if isBundleMode}
-          <p class="pw-mission-armed__drill pw-mono" aria-label="Bundle drill sequence">
-            Bundle · {bundleDrills.length} drills in sequence
-          </p>
-        {/if}
-      </div>
-    {/if}
-
-    <TrainMissionStrip missions={trainMissionStripItems} onContinue={continueTrainMission} />
-
-    <div class="pw-exec__command" aria-labelledby="pw-exec-heading">
-      <div class="pw-panel__head pw-panel__head--row">
-        <div class="pw-exec__head-copy">
-          <h2 id="pw-exec-heading" class="pw-title">Configure session</h2>
-          <span class="pw-eyebrow">Execution terminal</span>
-        </div>
-        <div class="tw-flex tw-shrink-0 tw-items-center tw-gap-2">
-          <IntelModal dossierMode title={TELEMETRY_INTEL.title} instructions={TELEMETRY_INTEL.instructions} />
-          <div class="pw-exec__status" role="status">
-            <p class="pd-label pd-mono pw-est">
-              <span class="pw-dim">EST. YIELD</span>
-              <span class="pw-green">+{estimatedLogXp} XP</span>
-              {#if missionBounty != null}
-                <span class="pw-dim">· CAP</span>
-                <span class="pw-telem">{missionBounty} XP</span>
-              {/if}
-            </p>
-          </div>
-        </div>
-      </div>
-      <p
-        class="pw-terminal-state pw-mono"
-        class:pw-terminal-state--armed={!!activeMissionId && !logSubmitting}
-        class:pw-terminal-state--transmitting={logSubmitting}
-        role="status"
-      >
-        {#if logSubmitting}
-          ◉ TRANSMITTING…
-        {:else if armedCadenceBlocked}
-          ◉ CADENCE HOLD<span class="pw-dim"> · NEXT SESSION TOMORROW</span>
-        {:else if activeMissionId}
-          ◉ ARMED: {armedMissionTitle.toUpperCase()}<span class="pw-dim"> · EXECUTION SYNCS TO FILE ON TRANSMIT</span>
-        {:else}
-          ◉ READY TO TRANSMIT
-        {/if}
-      </p>
-    </div>
-
-    <div class="pw-theater__body tw-min-w-0 bento-span-12">
-      <div class="pw-theater__grid">
-        {#if isBenchmarkSession && armedBenchmarkDrill}
-          <BenchmarkTrainSession
-            drill={armedBenchmarkDrill}
-            handoff={armedHandoff}
-            {activeMissionId}
-            coachTargetValue={armedBenchmarkTarget}
-            {totalXpHud}
-            {profile}
-            {cadenceCompletions}
-            {logTrainingSession}
-            {writePlayerOsWorkout}
-            {commitWorkoutCompletion}
-            {dopamineOnCommit}
-            {dopamineOnCallable}
-            bumpXp={(delta) => playerEngine.bumpBy(delta)}
-            authUser={authStore.user ? { uid: authStore.user.uid, email: authStore.user.email } : null}
-            onCadenceBlocked={showCadenceLimitError}
-            onQuestProgress={recordQuestProgressAfterLog}
-            onClearMission={clearArmedMission}
-            onParentProof={armParentProofAfterLog}
-            onRefreshProfile={() => authStore.refresh({ silent: true })}
-            onSuccess={onBenchmarkSuccess}
-            onError={(message) => showDiegeticError('Execution failed', message)}
-          />
-        {:else}
-        <div class="pw-theater__configure pd-os-deck__well">
-          <div class="pw-configure-step">
-            <span class="pw-eyebrow pd-panel-eyebrow">1 · Focus area</span>
-            {#if isCoachDirectedSession}
-              <p class="pw-mono pw-data pw-ghostline">
-                {focusLabel}
-                <span class="pw-dim"> · locked by coach</span>
-              </p>
-            {:else}
-              <div class="pw-focus" role="group" aria-label="Focus area">
-                {#each focusAreas as focus}
-                  <button
-                    type="button"
-                    class="pw-focus__btn"
-                    class:pw-focus__btn--on={selectedFocus === focus.id}
-                    onclick={() => selectFocus(focus.id)}
-                  >
-                    <span class="pw-mono pw-focus__op">{focus.op}</span>
-                    <span class="pw-focus__lab">{focus.label}</span>
-                  </button>
-                {/each}
-              </div>
-            {/if}
-          </div>
-
-          <div class="pw-configure-step">
-            <span class="pw-eyebrow pd-panel-eyebrow">2 · Sub-drill</span>
-            {#if drillCatalog.drillsLoading}
-              <p class="pw-mono tw-text-xs tw-text-zinc-500">Loading drill catalog…</p>
-            {/if}
-            {#if isCoachDirectedSession}
-              <p class="pw-mono pw-data pw-ghostline">
-                {lockedCoachDrillLabel}
-                <span class="pw-dim"> · assigned by coach</span>
-              </p>
-            {:else}
-              <div class="pw-subdrill" role="list">
-                {#each drillCatalog.availableDrills as drill}
-                  <button
-                    type="button"
-                    class="pw-chip"
-                    class:pw-chip--on={selectedDrill === drill}
-                    onclick={() => {
-                      clearArmedMission();
-                      selectedDrill = drill;
-                    }}
-                  >
-                    {drill}
-                  </button>
-                {/each}
-              </div>
-              {#if selectedDrill && !drillCatalog.availableDrills.includes(selectedDrill)}
-                <p class="pw-ghostline">
-                  <span class="pw-eyebrow">Off-catalog transmit</span>
-                  <span class="pw-mono pw-data">{selectedDrill}</span>
-                </p>
-              {/if}
-            {/if}
-          </div>
-        </div>
-
-        <div class="pw-theater__execute pd-os-deck__well">
-          <span class="pw-eyebrow pd-panel-eyebrow">Execute</span>
-          {#if isBundleMode && currentBundleDrill}
-            <!-- B3 bundle stepper — inner Execute band, no new frame (instrument: Execute) -->
-            <div class="pw-configure-step" role="region" aria-label="Bundle drill stepper">
-              <span class="pw-eyebrow pd-panel-eyebrow">
-                Drill {bundleStepIdx + 1} of {bundleDrills.length}
-              </span>
-              <p class="pw-mission-armed__title pw-mono">
-                {currentBundleDrill.drillTitle || 'Bundle drill'}
-              </p>
-              {#if currentBundleDrill.cues}
-                <p class="pw-mono pw-data pw-dim">Cues: {currentBundleDrill.cues}</p>
-              {/if}
-              {#if currentBundleDrill.videoUrl}
-                <a class="pw-link pw-mono pw-dim" href={currentBundleDrill.videoUrl} target="_blank" rel="noopener noreferrer">Watch demo</a>
-              {/if}
-              <dl class="pw-mono pw-data tw-grid tw-grid-cols-2 tw-gap-2 tw-text-sm">
-                <div>
-                  <dt class="pw-dim tw-text-xs">Sets</dt>
-                  <dd>{currentBundleDrill.sets}</dd>
-                </div>
-                {#if currentBundleDrill.repsPerSet}
-                  <div>
-                    <dt class="pw-dim tw-text-xs">Reps / set</dt>
-                    <dd>{currentBundleDrill.repsPerSet}{currentBundleDrill.bilateral ? ' · both sides' : ''}</dd>
-                  </div>
-                {/if}
-                {#if currentBundleDrill.targetRpe}
-                  <div>
-                    <dt class="pw-dim tw-text-xs">Target RPE</dt>
-                    <dd>{currentBundleDrill.targetRpe} / 10</dd>
-                  </div>
-                {/if}
-                {#if currentBundleDrill.targetDurationMin}
-                  <div>
-                    <dt class="pw-dim tw-text-xs">Duration</dt>
-                    <dd>{currentBundleDrill.targetDurationMin} min</dd>
-                  </div>
-                {/if}
-              </dl>
-              {#if isFinalBundleStep}
-                <div class="pw-configure-step">
-                  <label for="pw-bundle-notes" class="pw-eyebrow pd-panel-eyebrow">
-                    Session notes (optional)
-                  </label>
-                  <textarea
-                    id="pw-bundle-notes"
-                    class="pw-field tw-min-h-[72px]"
-                    maxlength={SESSION_NOTES_MAX_LENGTH}
-                    placeholder="How did it feel? Anything your coach should know?"
-                    bind:value={sessionNotes}
-                  ></textarea>
-                  <p class="pw-dim pw-mono tw-text-xs">{sessionNotes.length}/{SESSION_NOTES_MAX_LENGTH}</p>
-                </div>
-              {/if}
-            </div>
-          {:else if isCoachDirectedSession}
-            <div class="pw-configure-step" role="group" aria-label="Coach prescription">
-              <span class="pw-eyebrow pd-panel-eyebrow">Coach prescription</span>
-              {#if coachPrescriptionLine}
-                <p class="pw-mono pw-data">{coachPrescriptionLine}</p>
-              {/if}
-              {#if armedPrescription?.cues}
-                <p class="pw-mono pw-data pw-dim">Coaching cues: {armedPrescription.cues}</p>
-              {/if}
-              {#if armedPrescription?.videoUrl}
-                <a class="pw-link pw-mono pw-dim" href={armedPrescription.videoUrl} target="_blank" rel="noopener noreferrer">Watch demo</a>
-              {/if}
-              <dl class="pw-mono pw-data tw-grid tw-grid-cols-2 tw-gap-2 tw-text-sm">
-                <div>
-                  <dt class="pw-dim tw-text-xs">Duration</dt>
-                  <dd>{duration} min</dd>
-                </div>
-                <div>
-                  <dt class="pw-dim tw-text-xs">Target RPE</dt>
-                  <dd>{intensity} / 10</dd>
-                </div>
-              </dl>
-            </div>
-            {@render volumeControls()}
-            <div class="pw-configure-step">
-              <label for="pw-session-notes" class="pw-eyebrow pd-panel-eyebrow">
-                Session notes (optional)
-              </label>
-              <textarea
-                id="pw-session-notes"
-                class="pw-field tw-min-h-[72px]"
-                maxlength={SESSION_NOTES_MAX_LENGTH}
-                placeholder="How did it feel? Anything your coach should know?"
-                bind:value={sessionNotes}
-              ></textarea>
-              <p class="pw-dim pw-mono tw-text-xs">{sessionNotes.length}/{SESSION_NOTES_MAX_LENGTH}</p>
-            </div>
-          {:else}
-            {@render volumeControls(!!armedPrescription)}
-            <div class="pw-gauges">
-              <div class="pw-gauge">
-                <div class="pw-gauge__head">
-                  <span class="pw-eyebrow">Time on task (min)</span>
-                  <span class="pw-mono pw-data">{duration}</span>
-                </div>
-                <input
-                  class="pw-field"
-                  type="number"
-                  min="1"
-                  max={FREE_LOG_DURATION_MAX_MINUTES}
-                  step="1"
-                  bind:value={duration}
-                  aria-label="Duration in minutes"
-                />
-                <p class="pw-dim pw-mono tw-text-xs">Max {FREE_LOG_DURATION_MAX_MINUTES} min per session</p>
-              </div>
-              <div class="pw-gauge pw-gauge--rpe">
-                <div class="pw-gauge__head">
-                  <span class="pw-eyebrow">RPE (intensity 1–10)</span>
-                  <span class="pw-mono pw-telem">{intensity} / 10</span>
-                </div>
-                <div
-                  class="pw-loadbar pw-loadbar--rpe"
-                  style:--fill={`${intensityGaugePct}%`}
-                  role="progressbar"
-                  aria-valuenow={intensity}
-                  aria-valuemin="1"
-                  aria-valuemax="10"
-                  aria-label="RPE intensity"
-                >
-                  <div class="pw-loadbar__fill"></div>
-                  <div class="pw-loadbar__scan" aria-hidden="true"></div>
-                </div>
-                <input
-                  class="pw-range pw-range--rpe"
-                  type="range"
-                  min="1"
-                  max="10"
-                  step="1"
-                  bind:value={intensity}
-                  aria-label="RPE intensity"
-                />
-              </div>
-            </div>
-          {/if}
-        </div>
-        {/if}
-      </div>
-    </div>
-
-    {#if trainReadiness.showReadinessStrip}
-      <TrainReadinessStrip
-        bind:sleepHoursLastNight={trainReadiness.readinessSleepHours}
-        bind:soreness={trainReadiness.readinessSoreness}
-        bind:mood={trainReadiness.readinessMood}
-        bind:restingFeel={trainReadiness.readinessRestingFeel}
-      />
-    {/if}
-
-    {#if !isBenchmarkSession}
-    <div class="pw-theater__transmit">
-      {#if isBundleMode}
-        <button
-          type="button"
-          class="pw-exec pw-exec--alt"
-          disabled={logSubmitting || !currentBundleDrill || armedCadenceBlocked}
-          onclick={logBundleStep}
-        >
-          {#if logSubmitting}
-            <span class="pw-mono">Logging…</span>
-          {:else if isFinalBundleStep}
-            <Icon name="game.zap" />
-            <span>Complete bundle</span>
-          {:else}
-            <Icon name="game.zap" />
-            <span>Complete &amp; next drill</span>
-          {/if}
-        </button>
-        <p class="pw-mono pw-dim tw-text-xs">
-          Step {bundleStepIdx + 1} of {bundleDrills.length}
-          {isFinalBundleStep ? ' · Final step — completes bundle' : ''}
-        </p>
-      {:else}
-        <button
-          type="button"
-          class="pw-exec pw-exec--transmit pw-exec-commit"
-          disabled={(!selectedDrill && !isCoachDirectedSession) || logSubmitting || armedCadenceBlocked}
-          onclick={logWorkout}
-        >
-          {#if logSubmitting}
-            <span class="pw-mono">Logging…</span>
-          {:else if armedCadenceBlocked}
-            <span class="pw-mono">Next session tomorrow</span>
-          {:else}
-            <Icon name="game.zap" />
-            <span>EXEC_COMMIT</span>
-          {/if}
-        </button>
-        {#if !selectedDrill && !isCoachDirectedSession}
-          <p class="pw-mono pw-locked">Awaiting sub-drill selection</p>
-        {/if}
-      {/if}
-    </div>
-    {/if}
-  </div>
-  </div>
-
-  {#if pendingProofIntentId && !proofSubmitted}
-    <!-- B4a/B4c — advisory proof affordance (Execute band inner addition; never gates XP) -->
-    <div class="pw-theater pd-os-deck pd-os-deck--hero bento-span-12" aria-live="polite">
-      <div class="pd-os-deck__well pw-mission-armed" style="border-color:rgba(20,184,166,0.2);">
-        <div class="pw-mission-armed__head">
-          <span class="pw-eyebrow pw-mono">Parent verification</span>
-          <button type="button" class="pw-mission-armed__clear pw-mono" onclick={dismissProofAffordance}>
-            Skip
-          </button>
-        </div>
-        <p class="pw-mission-armed__hint pw-mono" style="font-size:11px;">
-          Your coach requested proof for this session. Add an optional note and submit — or skip entirely. XP is already awarded.
-        </p>
-        <textarea
-          class="pw-session-notes pw-mono"
-          rows="3"
-          maxlength="500"
-          placeholder="Optional note for your parent…"
-          bind:value={proofNote}
-          disabled={proofSubmitting}
-          style="width:100%; resize:vertical; font-size:11px; background:rgba(20,184,166,0.04); border:1px solid rgba(20,184,166,0.15); border-radius:6px; padding:6px 8px; color:#e2e8f0;"
-        ></textarea>
-
-        <!-- B4c — optional media attachment (COPPA-safe; parent-only visibility; never gates XP) -->
-        <label class="pw-mono" style="display:block; margin-top:8px; font-size:10px; color:rgba(20,184,166,0.6); letter-spacing:0.08em;">
-          ATTACH PHOTO OR SHORT VIDEO <span style="opacity:0.5;">(optional)</span>
-          <input
-            type="file"
-            accept="image/*,video/*"
-            disabled={proofSubmitting}
-            onchange={onProofFileChange}
-            style="display:block; margin-top:4px; font-size:10px; color:#e2e8f0;"
-          />
-        </label>
-        {#if proofMediaFile}
-          <p class="pw-mono" style="font-size:10px; color:rgba(20,184,166,0.7); margin-top:4px;">
-            {proofMediaFile.name} selected
-            {#if proofUploadProgress !== null}
-              · uploading {proofUploadProgress}%
-            {/if}
-          </p>
-        {/if}
-        {#if proofMediaError}
-          <p class="pw-mono" style="font-size:10px; color:rgba(255,80,60,0.8); margin-top:4px;" role="alert">{proofMediaError}</p>
-        {/if}
-
-        <div class="tw-flex tw-gap-2 tw-mt-2">
-          <button
-            type="button"
-            class="pw-exec pw-exec--alt"
-            style="flex:1; font-size:11px;"
-            disabled={proofSubmitting}
-            onclick={sendCompletionProof}
-          >
-            {proofSubmitting ? (proofUploadProgress !== null ? `Uploading ${proofUploadProgress}%…` : 'Sending…') : 'Send proof'}
-          </button>
-          <button
-            type="button"
-            class="pw-mission-armed__clear pw-mono"
-            style="font-size:11px;"
-            disabled={proofSubmitting}
-            onclick={dismissProofAffordance}
-          >
-            Skip
-          </button>
-        </div>
-      </div>
-    </div>
-  {/if}
-
-  {#if proofSubmitted}
-    <p class="pw-mono pw-dim" style="font-size:11px; padding:8px 0;" aria-live="polite">
-      Proof sent to parent.
-    </p>
-  {/if}
-
-  <PlayerDiegeticOverlay
-    open={overlayOpen}
-    variant={overlayVariant}
-    title={overlayTitle}
-    message={overlayMessage}
-    confirmLabel={pendingHqReturn ? 'Return to HQ' : 'Acknowledge'}
-    onConfirm={closeOverlay}
-    onCancel={closeOverlay}
-  />
-</div>
-
-{#snippet volumeControls(showCoachTargetHint = false)}
-  <div class="pw-configure-step" role="group" aria-label="Session volume">
-    <span class="pw-eyebrow pd-panel-eyebrow">Volume (sets × reps)</span>
-    {#if showCoachTargetHint}
-      <p class="pw-ghostline pw-mono pw-dim">Coach target · adjust if you did more or less</p>
-    {/if}
-    <div class="pw-gauges" style="grid-template-columns: 1fr 1fr;">
-      <div class="pw-gauge">
-        <div class="pw-gauge__head">
-          <span class="pw-eyebrow">Sets</span>
-          <span class="pw-mono pw-data">{workoutSets}</span>
-        </div>
-        <input
-          class="pw-range"
-          type="range"
-          min="1"
-          max="20"
-          step="1"
-          bind:value={workoutSets}
-          aria-label="Sets completed"
-        />
-      </div>
-      <div class="pw-gauge">
-        <div class="pw-gauge__head">
-          <span class="pw-eyebrow">Reps / set</span>
-          <span class="pw-mono pw-data">{workoutRepsPerSet}</span>
-        </div>
-        <input
-          class="pw-range"
-          type="range"
-          min="0"
-          max="50"
-          step="1"
-          bind:value={workoutRepsPerSet}
-          aria-label="Reps per set"
-        />
-      </div>
-    </div>
-    <label class="pw-mono tw-flex tw-items-center tw-gap-2 tw-text-sm">
-      <input type="checkbox" bind:checked={workoutBilateral} class="tw-accent-teal-400" />
-      Both sides (doubles rep count for XP)
-    </label>
-    <p class="pw-mono pw-data">
-      Total reps for log: <span class="pw-green">{totalWorkoutReps}</span>
-    </p>
-  </div>
-{/snippet}
+<PlayerWorkoutPageView
+  {hasCoachIntents}
+  {activeMissionId}
+  {trainMissionStripItems}
+  {missionSyncRefreshing}
+  {armedMissionTitle}
+  {armedGoalXp}
+  {armedDrillLine}
+  {coachPrescriptionLine}
+  {armedPrescription}
+  {armedDisplayCadence}
+  {armedCadenceBlocked}
+  {armedHandoff}
+  {isBundleMode}
+  {bundleDrills}
+  {bundleStepIdx}
+  {currentBundleDrill}
+  {isFinalBundleStep}
+  {logSubmitting}
+  {estimatedLogXp}
+  missionBounty={missionBounty}
+  {isBenchmarkSession}
+  {armedBenchmarkDrill}
+  {armedBenchmarkTarget}
+  {totalXpHud}
+  {profile}
+  {cadenceCompletions}
+  {logTrainingSession}
+  {writePlayerOsWorkout}
+  {commitWorkoutCompletion}
+  {dopamineOnCommit}
+  {dopamineOnCallable}
+  bumpXp={(delta) => playerEngine.bumpBy(delta)}
+  authUser={authStore.user ? { uid: authStore.user.uid, email: authStore.user.email } : null}
+  {isCoachDirectedSession}
+  {focusAreas}
+  {selectedFocus}
+  {focusLabel}
+  {drillCatalog}
+  {selectedDrill}
+  {lockedCoachDrillLabel}
+  bind:duration
+  bind:intensity
+  {intensityGaugePct}
+  {totalWorkoutReps}
+  showReadinessStrip={trainReadiness.showReadinessStrip}
+  bind:readinessSleepHours={trainReadiness.readinessSleepHours}
+  bind:readinessSoreness={trainReadiness.readinessSoreness}
+  bind:readinessMood={trainReadiness.readinessMood}
+  bind:readinessRestingFeel={trainReadiness.readinessRestingFeel}
+  {pendingProofIntentId}
+  {proofSubmitted}
+  {proofSubmitting}
+  {proofMediaFile}
+  {proofUploadProgress}
+  {proofMediaError}
+  {overlayOpen}
+  {overlayVariant}
+  {overlayTitle}
+  {overlayMessage}
+  {pendingHqReturn}
+  bind:sessionNotes
+  bind:proofNote
+  bind:workoutSets
+  bind:workoutRepsPerSet
+  bind:workoutBilateral
+  onRefreshMissionSync={refreshMissionSync}
+  onClearArmedMission={clearArmedMission}
+  onContinueTrainMission={continueTrainMission}
+  onSelectFocus={selectFocus}
+  onSelectDrill={selectDrill}
+  onLogBundleStep={logBundleStep}
+  onLogWorkout={logWorkout}
+  onCadenceBlocked={showCadenceLimitError}
+  onQuestProgress={recordQuestProgressAfterLog}
+  onParentProof={armParentProofAfterLog}
+  onRefreshProfile={() => authStore.refresh({ silent: true })}
+  {onBenchmarkSuccess}
+  onBenchmarkError={(message) => showDiegeticError('Execution failed', message)}
+  {onProofFileChange}
+  onSendCompletionProof={sendCompletionProof}
+  onDismissProofAffordance={dismissProofAffordance}
+  onCloseOverlay={closeOverlay}
+/>

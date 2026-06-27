@@ -17,6 +17,7 @@ const ENGINE = join(ROOT, 'lib/services/comms.svelte.ts');
 const PANEL = join(ROOT, 'lib/components/comms/ParentCoachDmPanel.svelte');
 const HUB = join(ROOT, 'lib/components/comms/CommsHubShell.svelte');
 const INDEX = join(ROOT, '..', 'functions/index.js');
+const PKG = join(ROOT, '..', 'package.json');
 
 const opsSrc = readFileSync(OPS, 'utf8');
 const engineSrc = readFileSync(ENGINE, 'utf8');
@@ -79,6 +80,12 @@ describe('COMMS-PARENT-COACH-DM — server module exported', () => {
 	it('index.js exports parent coach DM callables', () => {
 		expect(indexSrc).toContain('sendParentCoachMessage');
 		expect(indexSrc).toContain('listParentCoachDmThreads');
+	});
+
+	it('deploy:comms includes parent coach DM callables', () => {
+		const deployComms = JSON.parse(readFileSync(PKG, 'utf8')).scripts['deploy:comms'] as string;
+		expect(deployComms).toMatch(/sendParentCoachMessage/);
+		expect(deployComms).toMatch(/listParentCoachDmThreads/);
 	});
 
 	it('parentCoachDmOps blocks players at server', () => {

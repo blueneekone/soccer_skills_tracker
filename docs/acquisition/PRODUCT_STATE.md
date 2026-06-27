@@ -52,8 +52,8 @@ Evidence: Tier 1 routes in [`PRODUCT_SURFACE_REGISTRY.md`](../vision/PRODUCT_SUR
 
 | Surface | Route | Enforcement |
 |---------|-------|-------------|
-| Unified comms hub | `/messages` | `CommsHubShell` — typed channels (announcements, Parent Lounge, logistics, registration, tryouts, match day, club-wide, emergency, compliance, staff internal, sponsor partner); `deliveryReport` receipts |
-| Parent onboarding | `/parent/dashboard` | `ParentCommsConsentBanner` when `consentComms` false for linked child → `/parent/vpc` (4.16d) |
+| Unified comms hub | `/messages` | `CommsHubShell` — Nav 2.0 space picker + five categories; typed channels (announcements, **Parent Circle**, household, **parent_coach_dm**, parent voice session, logistics, registration, tryouts, match day, club-wide, emergency, compliance, staff internal); `deliveryReport` + **DeliveryReceipt** on staff sends |
+| Parent onboarding | `/parent/dashboard` | `ParentCommsConsentBanner` when `consentComms` false for linked child → `/parent/vpc` (4.16d); **partner offers** strip (`ParentPartnerOffers`) — not hub chat rail |
 | SafeSport DMs | `/messages` | `sendCoachPlayerMessage` blocks coach→minor DM; `commsSprint42.test.ts` |
 | Broadcast ack | `/messages` announcements | Parent "I have read this" + staff outbox rollup (`broadcastAckOps`, 4.16b) |
 | Omnichannel | server | Email/SMS fallback via `omnichannelOps.js` — **behind** `feature_flags/commsEmailFallback` and `feature_flags/commsSmsEmergency` (4.16a) |

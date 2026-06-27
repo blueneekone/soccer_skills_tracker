@@ -126,7 +126,7 @@ Compact lookup — full criteria in `[PLATFORM_WORKFLOW_CANON.md](./PLATFORM_WOR
 | GP-ACQ-04b   | `/player/workout`     | XP/streak updates on HQ return                          | QA-102–108, QA-107             | 5     |
 | GP-ACQ-04c   | `/stats`              | Radar + chart bands load; calm investigation workspace  | QA-304                         | 11    |
 | GP-ACQ-05    | `/parent/dashboard`   | RSVP strip + bounty terminal visible                    | QA-124, QA-125, QA-405         | 6     |
-| GP-ACQ-06    | `/messages`           | Household threads load; coach→minor DM blocked          | QA-153, QA-406                 | 7     |
+| GP-ACQ-06    | `/messages`           | Nav 2.0 categories; Parent Circle + household threads; parent↔coach DM; coach→minor DM blocked; DeliveryReceipt on staff sends | QA-153, QA-157–160, QA-406 | 7     |
 | GP-COACH-01  | `/coach`              | ≥3 roster signals or explicit empty; Forge link obvious | QA-141, QA-163                 | 5     |
 | GP-COACH-02  | `/coach/forge`        | §3 Forge criteria                                       | QA-142, QA-134                 | 5     |
 | GP-COACH-03  | `/player/dashboard`   | Bounty accepted; XP on return                           | QA-101, QA-107, QA-151         | 5     |
@@ -560,10 +560,22 @@ Exec cut step 5 (QA-124/125) signed; Tier 2 depth rows remain open.
 
 **Gate:** Phase 5 complete; owner continuing depth QA — GP-ACQ-06 deferred for demo video.
 
-- [ ] **QA-146** Coach logistics announcement on `/coach/logistics` — parents receive — gap register F-03 · pre-check: `commsSprint41.test.ts` · **Tier 2 — waivable**
+**Tier 1 (exec cut — QA-153 + QA-157–160 + QA-406):** Nav 2.0 · Parent Circle · parent↔coach DM · household · coach→minor block · DeliveryReceipt.
+
+**Tier 2 (depth — QA-161–164):** Logistics hub deep-link · partner offers rehome · voice session (QA-163 waivable when `feature_flags/commsParentVoice` off).
+
+- [ ] **QA-146** Coach logistics announcement — **deep-link to hub announcements** from `/coach/logistics` (not embedded compose on logistics route) — parents receive via `/messages` — gap register F-03 · pre-check: `commsSprint41.test.ts` · **Tier 2 — waivable**
 - [ ] **[GP-ACQ-06]** **QA-153** Coach → minor DM blocked on `/messages` — SafeSport — gap register F-04 · pre-check: `commsSprint42.test.ts` — **Owner deferred — verify during demo video recording**
-  - **Success (canon):** Household threads load; coach→minor DM blocked with policy copy
+  - **Success (canon):** Nav 2.0 five-category sidebar + space picker load; Parent Circle + household threads visible; parent↔coach DM (**Message coach**) opens bilateral thread; coach→minor DM blocked with policy copy; staff sends show inline **DeliveryReceipt**
   - **Mobile:** Thread list usable one-handed
+- [ ] **QA-157** Comms Nav 2.0 — space picker + five hub categories (Families · Game day · Logistics · Staff · Club ops) on `/messages` — pre-check: `commsNav20.test.ts` — **Tier 1**
+- [ ] **QA-158** Parent Circle — parents post only; coach/director cannot post in lounge — pre-check: `commsParentCircle.test.ts` — **Tier 1**
+- [ ] **QA-159** parent_coach_dm — parent↔coach bilateral DM (**Message coach** / **Message parent**); AD read-only when `includeAdOnParentDms` + disclosure banner — pre-check: `commsParentCoachDm.test.ts` — **Tier 1**
+- [ ] **QA-160** DeliveryReceipt — staff sends return `deliveryReport`; UI shows inline receipt chips — pre-check: `commsPhase4a.test.ts` · `ParentCoachDmPanel` / hub compose surfaces — **Tier 1**
+- [ ] **QA-161** Household threads — parent/player household panel loads on `/messages` — pre-check: `commsSprint411.test.ts` — **Tier 2 — waivable**
+- [ ] **QA-162** Broadcast ack — parent "I have read this" on announcements + staff outbox rollup — pre-check: `commsPhase4b.test.ts` — **Tier 2 — waivable**
+- [ ] **QA-163** Parent voice session — coach schedules parent info session; minors blocked; attendance logged — pre-check: `commsParentVoiceSession.test.ts` — **Tier 2 — waivable if `feature_flags/commsParentVoice` off**
+- [ ] **QA-164** Partner offers — sponsor digest on `/parent/dashboard` strip; **not** hub chat rail — pre-check: `commsSponsorRehome.test.ts` — **Tier 2 — waivable**
 
 ### Exec cut verification (DEMO_SCRIPT steps 1–6 — sign-off rows only)
 
@@ -574,7 +586,7 @@ Detail lives in Phases 3, 5, 6 above — check here for consolidated exec-cut si
 - [x] **QA-403** Exec cut step 3 — Coach intent deploy (Phase 5: QA-142) · GP-ACQ-03
 - [x] **QA-404** Exec cut step 4 — Player Train + XP (Phase 5: QA-107, QA-102–105) · GP-ACQ-04a–04b
 - [x] **QA-405** Exec cut step 5 — Parent dashboard parity (Phase 6: QA-124–125) · GP-ACQ-05
-- [ ] **[GP-ACQ-06]** **QA-406** Exec cut step 6 — Messages SafeSport — **closes GP-ACQ-06** (QA-153 above) — **Owner deferred — verify during demo video recording**
+- [ ] **[GP-ACQ-06]** **QA-406** Exec cut step 6 — Messages SafeSport (Nav 2.0 · Parent Circle · parent↔coach DM · household · coach→minor block · DeliveryReceipt) — **closes GP-ACQ-06** (QA-153 + QA-157–160 above) — **Owner deferred — verify during demo video recording**
 
 ### Phase 7 — Owner notes
 
@@ -857,7 +869,7 @@ QA-xxx: reason
 | ☐   | GP-ACQ-04b   | **player**     | `/player/workout`     | Log session                          | XP on HQ return                   | QA-102, QA-404                                                    |
 | ☐   | GP-ACQ-04c   | **player**     | `/stats`              | View telemetry (optional)            | Radar + charts load               | QA-304                                                            |
 | ☐   | GP-ACQ-05    | **parent**     | `/parent/dashboard`   | Co-op / schedule strip               | RSVP + bounty terminal            | QA-124, QA-405                                                    |
-| ☐   | GP-ACQ-06    | **any**        | `/messages`           | SafeSport comms                      | Coach→minor DM blocked            | QA-153, QA-406                                                    |
+| ☐   | GP-ACQ-06    | **any**        | `/messages`           | SafeSport comms                      | Nav 2.0 · Parent Circle · parent↔coach DM · household · coach→minor block · DeliveryReceipt | QA-153, QA-157–160, QA-406                                         |
 | ☐   | GP-COACH-01  | **coach**      | `/coach`              | Scan squad hub                       | Roster signals or empty state     | QA-141                                                            |
 | ☐   | GP-COACH-02  | **coach**      | `/coach/forge`        | Deploy prescription                  | §3 Forge criteria                 | QA-142                                                            |
 | ☐   | GP-COACH-03  | **player**     | `/player/dashboard`   | Fulfill bounty → Train               | XP on return                      | QA-107, QA-151                                                    |

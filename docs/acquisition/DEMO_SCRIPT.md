@@ -87,7 +87,7 @@ Use **incognito** or sign out between persona switches ([`QA_DEV_PERSONA_VERIFIC
 | 3 | Coach | `/coach/forge` — deploy intent to player | Coach prescription: sets/reps/RPE |
 | 4 | Player | `/player/dashboard` — accept bounty → **Start session** → Train | Locked-by-coach Train after explicit arm; log workout → XP + cadence on HQ. **Talk track:** *"Multi-day assignments credit one session per UTC day — coach sets frequency in Forge; player sees X/N this week on HQ."* Optional 30s: point at **Adaptive homework** band — *"Heuristic drill from coach intent + club libraries; RL ramp is ops-controlled (`abPercent`)."* |
 | 5 | Parent | `/parent/dashboard` — co-op / schedule strip | Parent parity: RSVP, push prefs, `.ics` export |
-| 6 | Any | `/messages` | SafeSport — no coach→minor unsupervised DM |
+| 6 | Any | `/messages` | Nav 2.0 hub · Parent Circle · **Message coach** (parent↔coach DM) · household threads · coach→minor block · **DeliveryReceipt** on staff sends |
 
 ---
 
@@ -150,9 +150,12 @@ Use **incognito** or sign out between persona switches ([`QA_DEV_PERSONA_VERIFIC
 
 ### Act 5 — Comms & safety (3 min)
 
-1. **`/messages`** — Parent Lounge / household threads
-2. Attempt coach→player DM (minor) — **blocked** by policy
-3. Mention Epic 4.2 guards in `commsSprint42.test.ts`
+1. **`/messages`** — Nav 2.0 space picker + Families rail: **Parent Circle** (parents post only), household threads, **Message coach** (parent↔coach DM)
+2. Coach sends team announcement — parent sees inline **DeliveryReceipt** (`deliveryReport` chips)
+3. Attempt coach→player DM (minor) — **blocked** by policy (`commsSprint42.test.ts`)
+4. Optional depth: partner offers on **`/parent/dashboard`** strip (not hub rail); parent voice session lobby when flag on
+
+**Proof point:** SafeSport-native comms — typed channels, parent-first reach, honest delivery semantics.
 
 ---
 

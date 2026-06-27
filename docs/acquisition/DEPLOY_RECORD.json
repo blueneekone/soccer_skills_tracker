@@ -2,8 +2,8 @@
   "project": "sports-skill-tracker-dev",
   "hosting": "https://sstracker.app",
   "region": "us-east1",
-  "checkedAt": "2026-06-26T02:33:18.159Z",
-  "commit": "224324915298f8cb05505056b4b576989ed42e76",
+  "checkedAt": "2026-06-27T04:58:55.384Z",
+  "commit": "c567701183ac5a687d9cef493ec56c7356819388",
   "callablesProbed": [
     "logTrainingSession",
     "createRegistrationIntent",

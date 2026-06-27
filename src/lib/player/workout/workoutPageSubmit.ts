@@ -230,11 +230,11 @@ export async function runLogBundleStep(ctx: BundleStepContext): Promise<void> {
 			ctx.setSessionNotes('');
 			await ctx.refreshProfile();
 		} else {
+			const newIdx = ctx.bundleStepIdx + 1;
 			ctx.incrementBundleStep();
-			const nextIdx = ctx.bundleStepIdx + 1;
 			ctx.showSuccess(
-				`Drill ${nextIdx} logged`,
-				`+${result.earned} XP · Next: ${ctx.bundleDrills[nextIdx]?.drillTitle ?? 'Drill ' + (nextIdx + 1)}`,
+				`Drill ${newIdx} logged`,
+				`+${result.earned} XP · Next: ${ctx.bundleDrills[newIdx]?.drillTitle ?? 'Drill ' + (newIdx + 1)}`,
 			);
 		}
 	} catch (e) {

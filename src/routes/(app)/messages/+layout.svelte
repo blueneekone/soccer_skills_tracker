@@ -21,13 +21,13 @@
 
 	const strapTitle = $derived(
 		role === 'player'
-			? 'Operative Comms'
+			? 'Messages'
 			: role === 'coach'
-				? 'Staff SIEM Inbox'
+				? 'Team messages'
 				: role === 'parent'
-					? 'Parent Lounge'
+					? 'Family messages'
 					: role === 'director'
-						? 'Club Ops Oversight'
+						? 'Club messages'
 						: 'Messages',
 	);
 </script>
