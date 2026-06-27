@@ -9,7 +9,10 @@
  *
  * Channel path: clubs/{clubId}/channels/parent-lounge-{teamId}
  * Doc shape mirrors what sendChannelMessage (operativeOps.js) reads/validates:
- *   type, safesportMonitored, memberIds, ccParentEmails, teamId, clubId, name, createdAt.
+ *   type, channelType, safesportMonitored, memberIds, ccParentEmails, teamId, clubId, name, createdAt.
+ *
+ * COMMS-PARENT-CIRCLE-POLICY: memberIds = parents only; channelType parent_lounge;
+ * coachEmails are used only to strip legacy staff from memberIds on upsert.
  */
 
 const {onCall, HttpsError} = require('firebase-functions/v2/https');
@@ -63,12 +66,12 @@ exports.provisionParentLoungeChannel = async ({
   const normParentEmails = parentEmails
       .map((e) => normEmail(String(e)))
       .filter(Boolean);
+  const parentMemberEmails = [...new Set(normParentEmails)];
+  const coachStripSet = new Set(normCoachEmails);
 
-  const allMemberEmails = [...new Set([...normCoachEmails, ...normParentEmails])];
-
-  if (allMemberEmails.length === 0) {
+  if (parentMemberEmails.length === 0 && coachStripSet.size === 0) {
     logger.warn(
-        '[provisionParentLoungeChannel] no-op: no valid emails provided',
+        '[provisionParentLoungeChannel] no-op: no valid parent or coach emails provided',
         {channelId, clubId: normClubId},
     );
     return {channelId};
@@ -82,31 +85,43 @@ exports.provisionParentLoungeChannel = async ({
   const channelSnap = await channelRef.get();
 
   if (!channelSnap.exists) {
-    // First-time creation: write all base fields.
-    // ccParentEmails initialised to normParentEmails (may be empty at provision
-    // time; sendChannelMessage re-enforces CC on first message send).
+    if (parentMemberEmails.length === 0) {
+      logger.warn(
+          '[provisionParentLoungeChannel] no-op: cannot create without parent emails',
+          {channelId, clubId: normClubId},
+      );
+      return {channelId};
+    }
+    // First-time creation: parents only in memberIds (Parent Circle policy).
     await channelRef.set({
       type: 'group',
-      name: 'Parent Lounge',
+      channelType: 'parent_lounge',
+      name: 'Parent Circle',
       safesportMonitored: true,
       teamId: normTeamId,
       clubId: normClubId,
-      memberIds: allMemberEmails,
+      memberIds: parentMemberEmails,
       ccParentEmails: normParentEmails,
       createdAt: FieldValue.serverTimestamp(),
-      // createdBy: server-provisioned via Admin SDK (no caller uid available).
       createdBy: 'server',
     });
     logger.info('[provisionParentLoungeChannel] created', {
       channelId,
       clubId: normClubId,
       teamId: normTeamId,
-      memberCount: allMemberEmails.length,
+      memberCount: parentMemberEmails.length,
     });
   } else {
-    // Idempotent upsert: arrayUnion new members without touching other fields.
+    const existing = channelSnap.data() || {};
+    let memberIds = Array.isArray(existing.memberIds) ?
+      existing.memberIds.map((e) => normEmail(String(e))).filter(Boolean) :
+      [];
+    memberIds = memberIds.filter((email) => !coachStripSet.has(email));
+    memberIds = [...new Set([...memberIds, ...parentMemberEmails])];
+
     const updatePayload = {
-      memberIds: FieldValue.arrayUnion(...allMemberEmails),
+      channelType: 'parent_lounge',
+      memberIds,
     };
     if (normParentEmails.length > 0) {
       updatePayload.ccParentEmails = FieldValue.arrayUnion(...normParentEmails);
@@ -116,7 +131,8 @@ exports.provisionParentLoungeChannel = async ({
       channelId,
       clubId: normClubId,
       teamId: normTeamId,
-      addedCount: allMemberEmails.length,
+      parentCount: parentMemberEmails.length,
+      strippedCoachCount: coachStripSet.size,
     });
   }
 
@@ -306,8 +322,7 @@ exports.coachProvisionStaffInternal = onCall({region: REGION}, async (request) =
  * Epic 4.4 W1 — coach/director-initiated Parent Lounge provisioning.
  *
  * Auth: coach (own team only), director (own club only), or super_admin.
- * The caller's email is always included in memberIds so they can write via
- * sendChannelMessage immediately after provisioning.
+ * Coaches do not join memberIds — Parent Circle is parent-peer only (COMMS-PARENT-CIRCLE-POLICY).
  *
  * @param {{ teamId: string, coachEmails?: string[], parentEmails?: string[] }} data
  */

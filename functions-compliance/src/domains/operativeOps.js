@@ -485,8 +485,18 @@ exports.sendChannelMessage = onCall({region: REGION}, async (request) => {
     throw new HttpsError('not-found', 'Channel not found.');
   }
   const channel = channelSnap.data();
-  const channelType =
+  let channelType =
       typeof channel.channelType === 'string' ? channel.channelType.trim() : '';
+  if (!channelType && channelId.startsWith('parent-lounge-')) {
+    channelType = 'parent_lounge';
+  }
+
+  if (channelType === 'parent_lounge' && callerRole !== 'parent') {
+    throw new HttpsError(
+        'permission-denied',
+        'Parent Circle is parent-peer only. Staff use Announcements or message your coach.',
+    );
+  }
 
   /** @type {string[]} */
   let memberIds = Array.isArray(channel.memberIds) ?

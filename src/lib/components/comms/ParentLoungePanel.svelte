@@ -22,7 +22,7 @@
 	const channelId = $derived(`parent-lounge-${teamId}`);
 	const myEmail = $derived((authStore.user?.email ?? '').toLowerCase());
 	const myUid = $derived(authStore.user?.uid ?? '');
-	const title = $derived(teamName ? `${teamName} · Parent Lounge` : 'Parent Lounge');
+	const title = $derived(teamName ? `${teamName} · Parent Circle` : 'Parent Circle');
 
 	// ── Engine ────────────────────────────────────────────────────────────────
 
@@ -63,7 +63,7 @@
 		loadErr = '';
 
 		const col = collection(db, 'clubs', cId, 'channels', channelId, 'messages');
-		const q = query(col, orderBy('timestamp', 'asc'), limit(200));
+		const q = query(col, orderBy('timestamp', 'asc'), limit(50));
 
 		const unsub = onSnapshot(
 			q,
@@ -88,7 +88,8 @@
 				const msg = e instanceof Error ? e.message : 'Could not load messages.';
 				// Treat permission-denied gracefully — parent may not yet be in memberIds
 				if (msg.includes('permission') || msg.includes('Missing or insufficient')) {
-					loadErr = 'You do not yet have access to this lounge. Ask your coach to add you.';
+					loadErr =
+						'You do not yet have access to this circle. Link your household or ask your club to verify your parent account.';
 				} else {
 					loadErr = msg;
 				}
@@ -155,7 +156,8 @@
 				<span class="plp-icon" aria-hidden="true">💬</span>{title}
 			</h3>
 			<p class="plp-sub">
-				Group conversation monitored per SafeSport policy. Coaches and parents only.
+				Peer parent lounge — monitored per SafeSport policy. Coaches do not post here; use
+				Announcements or Message coach for staff reach.
 			</p>
 		</div>
 	</header>
@@ -168,7 +170,7 @@
 			bind:this={scrollEl}
 			role="log"
 			aria-live="polite"
-			aria-label="Parent Lounge messages"
+			aria-label="Parent Circle messages"
 		>
 			{#if loading}
 				<p class="plp-hint">Loading messages…</p>
@@ -222,7 +224,7 @@
 				class="plp-input"
 				rows="2"
 				maxlength="8000"
-				placeholder="Message the parent lounge…"
+				placeholder="Message parent peers…"
 				bind:value={draft}
 				disabled={engine.isSending}
 				onkeydown={(e) => {

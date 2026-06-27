@@ -19,6 +19,10 @@ alwaysApply: true
 - Check persona **foundation_doc** from registry: [`PLAYER_OS_FOUNDATION.md`](../../docs/vision/PLAYER_OS_FOUNDATION.md) · [`COACH_OS_FOUNDATION.md`](../../docs/vision/COACH_OS_FOUNDATION.md) · [`PARENT_OS_FOUNDATION.md`](../../docs/vision/PARENT_OS_FOUNDATION.md).
 - Check [`docs/PERSONA_ECOSYSTEM.md`](../../docs/PERSONA_ECOSYSTEM.md) for persona boundaries when UX intent matters.
 
+## Comms slices
+
+Before any comms work, read [`docs/vision/COMMS_PLATFORM_STANDARDS.md`](../../docs/vision/COMMS_PLATFORM_STANDARDS.md) first, then [`docs/vision/COMMS_CHANNEL_CANON.md`](../../docs/vision/COMMS_CHANNEL_CANON.md) §3–§6 and [`docs/SAFESPORT_COMMS_MATRIX.md`](../../docs/SAFESPORT_COMMS_MATRIX.md). Every comms agent prompt must include the COMMS AGENT PREAMBLE block.
+
 ## Scope discipline
 
 - **One slice per session** — touch 5 or fewer files unless the sprint doc explicitly lists more.

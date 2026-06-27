@@ -64,8 +64,11 @@
 	async function refreshParentAcks(announcements: Announcement[]) {
 		if (!myUid || role !== 'parent') return;
 		const next: Record<string, boolean> = { ...ackedById };
-		for (const ann of announcements) {
-			if (!ann.requiresAck) continue;
+		const pending = announcements.filter(
+			(ann) => ann.requiresAck && !(ann.id in ackedById),
+		);
+		if (pending.length === 0) return;
+		for (const ann of pending) {
 			try {
 				const snap = await getDoc(doc(db, 'broadcast_acknowledgements', `${ann.id}_${myUid}`));
 				next[ann.id] = snap.exists();
@@ -74,6 +77,17 @@
 			}
 		}
 		ackedById = next;
+	}
+
+	let ackRefreshTimer: ReturnType<typeof setTimeout> | null = null;
+
+	function scheduleAckRefresh(announcements: Announcement[]) {
+		if (role !== 'parent') return;
+		if (ackRefreshTimer) clearTimeout(ackRefreshTimer);
+		ackRefreshTimer = setTimeout(() => {
+			ackRefreshTimer = null;
+			void refreshParentAcks(announcements);
+		}, 300);
 	}
 
 	async function acknowledge(ann: Announcement) {
@@ -142,6 +156,8 @@
 		} else if (role === 'parent') {
 			const seen = new Set<string>();
 			const rows: Announcement[] = [];
+			let legacyUnsub: (() => void) | null = null;
+			let legacyAttached = false;
 
 			const publish = () => {
 				rows.sort((a, b) => {
@@ -163,7 +179,26 @@
 					rows.push(mapAnnouncement(d.id, x));
 				});
 				publish();
-				void refreshParentAcks(rows.slice(0, 20));
+				scheduleAckRefresh(rows.slice(0, 20));
+			};
+
+			const attachLegacyListener = () => {
+				if (legacyAttached) return;
+				legacyAttached = true;
+				const qLegacy = query(
+					collection(db, 'team_broadcasts'),
+					where('ccParentEmails', 'array-contains', myEmail),
+					orderBy('createdAt', 'desc'),
+					limit(20),
+				);
+				legacyUnsub = onSnapshot(
+					qLegacy,
+					mergeRows,
+					(e) => {
+						error = e instanceof Error ? e.message : 'Could not load announcements.';
+						loading = false;
+					},
+				);
 			};
 
 			const qPrimary = query(
@@ -172,28 +207,27 @@
 				orderBy('createdAt', 'desc'),
 				limit(20),
 			);
-			const qLegacy = query(
-				collection(db, 'team_broadcasts'),
-				where('ccParentEmails', 'array-contains', myEmail),
-				orderBy('createdAt', 'desc'),
-				limit(20),
-			);
 
-			const unsubPrimary = onSnapshot(qPrimary, mergeRows, () => {
-				/* legacy query still runs in parallel */
-			});
-			const unsubLegacy = onSnapshot(
-				qLegacy,
-				mergeRows,
-				(e) => {
-					error = e instanceof Error ? e.message : 'Could not load announcements.';
-					loading = false;
+			const unsubPrimary = onSnapshot(
+				qPrimary,
+				(snap) => {
+					if (snap.size < 20) {
+						attachLegacyListener();
+					}
+					mergeRows(snap);
+				},
+				() => {
+					attachLegacyListener();
 				},
 			);
 
 			return () => {
 				unsubPrimary();
-				unsubLegacy();
+				legacyUnsub?.();
+				if (ackRefreshTimer) {
+					clearTimeout(ackRefreshTimer);
+					ackRefreshTimer = null;
+				}
 			};
 		} else {
 			// coach / director — see what they sent for their own team
@@ -215,7 +249,7 @@
 				});
 				items = rows;
 				loading = false;
-				void refreshParentAcks(rows);
+				scheduleAckRefresh(rows);
 			},
 			(e) => {
 				error = e instanceof Error ? e.message : 'Could not load announcements.';

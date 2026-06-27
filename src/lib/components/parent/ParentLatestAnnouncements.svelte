@@ -12,6 +12,7 @@
 	import { authStore } from '$lib/stores/auth.svelte.js';
 
 	const myEmail = $derived((authStore.user?.email || '').toLowerCase());
+	const CACHE_TTL_MS = 30_000;
 
 	type AnnRow = {
 		id: string;
@@ -21,6 +22,82 @@
 		priority: string | null;
 		createdAt?: { toDate?: () => Date };
 	};
+
+	let annCache: { email: string; fetchedAt: number; rows: AnnRow[] } | null = null;
+
+	function mapAnnRow(id: string, x: Record<string, unknown>): AnnRow {
+		return {
+			id,
+			subject: x.subject ? String(x.subject) : null,
+			bodyPreview: String(x.bodyPreview || x.body || ''),
+			fromEmail: String(x.fromEmail || ''),
+			priority: typeof x.priority === 'string' ? x.priority : null,
+			createdAt: x.createdAt as AnnRow['createdAt'],
+		};
+	}
+
+	async function fetchParentAnnouncements(email: string, maxRows: number): Promise<AnnRow[]> {
+		if (
+			annCache &&
+			annCache.email === email &&
+			Date.now() - annCache.fetchedAt < CACHE_TTL_MS
+		) {
+			return annCache.rows.slice(0, maxRows);
+		}
+
+		const seen = new Set<string>();
+		const rows: AnnRow[] = [];
+
+		const mergeSnap = (snap: {
+			forEach: (fn: (d: { id: string; data: () => Record<string, unknown> }) => void) => void;
+		}) => {
+			snap.forEach((d) => {
+				if (seen.has(d.id)) return;
+				seen.add(d.id);
+				rows.push(mapAnnRow(d.id, d.data()));
+			});
+		};
+
+		const qPrimary = query(
+			collection(db, 'team_broadcasts'),
+			where('parentRecipientEmails', 'array-contains', email),
+			orderBy('createdAt', 'desc'),
+			limit(maxRows),
+		);
+
+		let primaryOk = false;
+		try {
+			const primarySnap = await getDocs(qPrimary);
+			primaryOk = true;
+			mergeSnap(primarySnap);
+		} catch {
+			/* index may be deploying — fall through to legacy */
+		}
+
+		if (!primaryOk || rows.length < maxRows) {
+			const qLegacy = query(
+				collection(db, 'team_broadcasts'),
+				where('ccParentEmails', 'array-contains', email),
+				orderBy('createdAt', 'desc'),
+				limit(maxRows),
+			);
+			try {
+				mergeSnap(await getDocs(qLegacy));
+			} catch {
+				/* legacy index unavailable */
+			}
+		}
+
+		rows.sort((a, b) => {
+			const at = a.createdAt?.toDate?.()?.getTime() ?? 0;
+			const bt = b.createdAt?.toDate?.()?.getTime() ?? 0;
+			return bt - at;
+		});
+
+		const sorted = rows.slice(0, maxRows);
+		annCache = { email, fetchedAt: Date.now(), rows: sorted };
+		return sorted;
+	}
 
 	let items = $state<AnnRow[]>([]);
 	let loading = $state(true);
@@ -35,63 +112,17 @@
 		let cancelled = false;
 		loading = true;
 
-		(async () => {
-			try {
-				const seen = new Set<string>();
-				const rows: AnnRow[] = [];
-
-				const mergeSnap = (snap: { forEach: (fn: (d: { id: string; data: () => Record<string, unknown> }) => void) => void }) => {
-					snap.forEach((d) => {
-						if (seen.has(d.id)) return;
-						seen.add(d.id);
-						const x = d.data();
-						rows.push({
-							id: d.id,
-							subject: x.subject ? String(x.subject) : null,
-							bodyPreview: String(x.bodyPreview || x.body || ''),
-							fromEmail: String(x.fromEmail || ''),
-							priority: typeof x.priority === 'string' ? x.priority : null,
-							createdAt: x.createdAt as AnnRow['createdAt'],
-						});
-					});
-				};
-
-				const qNew = query(
-					collection(db, 'team_broadcasts'),
-					where('parentRecipientEmails', 'array-contains', myEmail),
-					orderBy('createdAt', 'desc'),
-					limit(3),
-				);
-				try {
-					mergeSnap(await getDocs(qNew));
-				} catch {
-					/* index may be deploying — fall through to legacy */
-				}
-
-				if (rows.length < 3) {
-					const qLegacy = query(
-						collection(db, 'team_broadcasts'),
-						where('ccParentEmails', 'array-contains', myEmail),
-						orderBy('createdAt', 'desc'),
-						limit(3),
-					);
-					mergeSnap(await getDocs(qLegacy));
-				}
-
-				rows.sort((a, b) => {
-					const at = a.createdAt?.toDate?.()?.getTime() ?? 0;
-					const bt = b.createdAt?.toDate?.()?.getTime() ?? 0;
-					return bt - at;
-				});
-
-				if (!cancelled) items = rows.slice(0, 3);
-			} catch (e) {
+		void fetchParentAnnouncements(myEmail, 3)
+			.then((rows) => {
+				if (!cancelled) items = rows;
+			})
+			.catch((e) => {
 				console.error('[ParentLatestAnnouncements]', e);
 				if (!cancelled) items = [];
-			} finally {
+			})
+			.finally(() => {
 				if (!cancelled) loading = false;
-			}
-		})();
+			});
 
 		return () => {
 			cancelled = true;

@@ -70,7 +70,7 @@
 		loadErr = '';
 
 		const col = collection(db, 'clubs', cId, 'channels', chId, 'messages');
-		const q = query(col, orderBy('timestamp', 'asc'), limit(200));
+		const q = query(col, orderBy('timestamp', 'asc'), limit(50));
 
 		const unsub = onSnapshot(
 			q,

@@ -21,6 +21,7 @@
 	import type { IconName } from '$lib/icons/registry.js';
 	import MissionControl from '$lib/components/director/MissionControl.svelte';
 	import DirectorCommsCompliancePanel from '$lib/components/director/DirectorCommsCompliancePanel.svelte';
+	import CommsSponsorPartnerChannel from '$lib/components/comms/CommsSponsorPartnerChannel.svelte';
 	import DirectorRetentionReport from '$lib/components/compliance/DirectorRetentionReport.svelte';
 	import WeatherAlert from '$lib/components/weather/WeatherAlert.svelte';
 	import { teamsStore } from '$lib/stores/teams.svelte.js';
@@ -160,6 +161,19 @@
 				>
 					Open Comms hub — Club-wide broadcast →
 				</a>
+			</section>
+			<section
+				class="tw-flex tw-flex-col tw-gap-3 tw-p-5 tw-border tw-border-slate-600 tw-rounded-xl tw-bg-slate-900 tw-mb-6"
+				aria-labelledby="director-sponsor-ops-heading"
+			>
+				<h2 id="director-sponsor-ops-heading" class="tw-m-0 tw-text-base tw-font-extrabold tw-text-slate-50">
+					Partner offers
+				</h2>
+				<p class="tw-m-0 tw-text-sm tw-leading-relaxed tw-text-slate-400 tw-max-w-2xl">
+					Create, approve, and send sponsor digests to opted-in guardians. Parents see delivered
+					offers on their dashboard — not in the Comms hub rail.
+				</p>
+				<CommsSponsorPartnerChannel {clubId} />
 			</section>
 			<DirectorCommsCompliancePanel {clubId} teams={clubTeams} />
 		</section>

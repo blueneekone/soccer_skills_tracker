@@ -10,6 +10,8 @@ import {
 export type CommsChannelTypeId =
 	| 'announcements'
 	| 'parent_lounge'
+	| 'parent_coach_dm'
+	| 'parent_voice_session'
 	| 'household'
 	| 'team_logistics'
 	| 'registration'
@@ -63,12 +65,31 @@ export const COMMS_CHANNEL_TYPE_REGISTRY: Record<
 	},
 	parent_lounge: {
 		id: 'parent_lounge',
-		label: 'Parent Lounge',
-		description: 'Monitored parent↔coach group context',
-		whoCanPost: ['parent', 'coach', 'director'],
+		label: 'Parent Circle',
+		description: 'Monitored parent-only group — parents post; staff monitor via export',
+		whoCanPost: ['parent'],
 		whoCanRead: ['parent', 'coach', 'director'],
 		minorVisibility: 'none',
 		replyModel: 'threaded_group',
+	},
+	parent_coach_dm: {
+		id: 'parent_coach_dm',
+		label: 'Coach messages',
+		description: 'Bilateral parent↔coach thread — staff↔parent only; AD read-only when club flag set',
+		whoCanPost: ['parent', 'coach'],
+		whoCanRead: ['parent', 'coach', 'director'],
+		minorVisibility: 'none',
+		replyModel: 'bilateral',
+	},
+	parent_voice_session: {
+		id: 'parent_voice_session',
+		label: 'Parent voice session',
+		description:
+			'Scheduled parent info sessions — coaches + parents only; attendance logged; no recording in v1',
+		whoCanPost: ['coach', 'director'],
+		whoCanRead: ['parent', 'coach', 'director'],
+		minorVisibility: 'none',
+		replyModel: 'none',
 	},
 	household: {
 		id: 'household',

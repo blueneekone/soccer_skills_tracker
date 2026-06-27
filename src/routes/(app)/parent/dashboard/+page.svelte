@@ -17,6 +17,7 @@
 	import LiveStreamWatch from '$lib/components/parent/LiveStreamWatch.svelte';
 	import ParentNotificationPanel from '$lib/components/parent/ParentNotificationPanel.svelte';
 	import ParentLatestAnnouncements from '$lib/components/parent/ParentLatestAnnouncements.svelte';
+	import ParentPartnerOffers from '$lib/components/parent/ParentPartnerOffers.svelte';
 	import ParentCommsConsentBanner from '$lib/components/parent/ParentCommsConsentBanner.svelte';
 	import ParentWeekScheduleStrip from '$lib/components/parent/ParentWeekScheduleStrip.svelte';
 	import ClaimRosterSpot from '$lib/components/parent/ClaimRosterSpot.svelte';
@@ -112,6 +113,10 @@
 
 			<div class="bento-span-12 tw-min-w-0">
 				<ParentLatestAnnouncements />
+			</div>
+
+			<div class="bento-span-12 tw-min-w-0">
+				<ParentPartnerOffers />
 			</div>
 
 			<div class="bento-span-12 tw-min-w-0">

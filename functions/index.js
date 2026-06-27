@@ -244,6 +244,16 @@ exports.coachProvisionParentLounge  = commsChannelOps.coachProvisionParentLounge
 exports.coachProvisionStaffInternal = commsChannelOps.coachProvisionStaffInternal;
 exports.mirrorScheduleToLogistics   = commsChannelOps.mirrorScheduleToLogistics;
 
+// ── COMMS-PARENT-COACH-DM — bilateral parent↔coach threads ───────────────────
+const parentCoachDmOps = require('./src/domains/parentCoachDmOps');
+exports.sendParentCoachMessage      = parentCoachDmOps.sendParentCoachMessage;
+exports.listParentCoachDmThreads    = parentCoachDmOps.listParentCoachDmThreads;
+
+// ── COMMS-VOICE-V1 — scheduled parent info voice sessions ────────────────────
+const parentVoiceSessionOps = require('./src/domains/parentVoiceSessionOps');
+exports.createParentVoiceSession  = parentVoiceSessionOps.createParentVoiceSession;
+exports.joinParentVoiceSession    = parentVoiceSessionOps.joinParentVoiceSession;
+
 // ── Sprint 3.3 — Operative loadout unlock ceremonies ────────────────────────
 const loadoutOps = require('./src/domains/loadoutOps');
 exports.grantLoadoutCosmetic        = loadoutOps.grantLoadoutCosmetic;

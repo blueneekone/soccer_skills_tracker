@@ -99,7 +99,8 @@
 		e.preventDefault();
 		e.stopPropagation();
 		const idx = pinSlotIndexForHref(href);
-		if (idx >= 0) navPinsStore.setPin(idx, null);
+		if (idx === -1) return;
+		navPinsStore.setPin(idx, null);
 	}
 
 	async function disconnect() {

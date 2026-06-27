@@ -40,7 +40,7 @@
 		loading = true;
 		loadErr = '';
 		const col = collection(db, 'households', householdId.trim(), 'thread_messages');
-		const q = query(col, orderBy('createdAt', 'asc'), limit(200));
+		const q = query(col, orderBy('createdAt', 'asc'), limit(50));
 		const unsub = onSnapshot(
 			q,
 			(snap) => {

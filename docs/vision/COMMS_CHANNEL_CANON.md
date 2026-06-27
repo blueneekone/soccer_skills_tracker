@@ -45,7 +45,9 @@ VPC captures `consentComms` per child ([`/parent/vpc`](../src/routes/(app)/paren
 | type_id | display name | purpose | who can post | who receives | minor visibility | reply model | audit collection | shipped | planned phase |
 |---------|--------------|---------|--------------|--------------|------------------|-------------|------------------|---------|---------------|
 | `announcements` | Team announcements | One-way staff→families; schedule, policy, general team news | coach, director, admin | parents (+ adult players 18+ via push/inbox); minors **not** in interactive inbox | HQ/calendar mirror only | none (reply via Parent Lounge) | `team_broadcasts`, `audit_logs` | **shipped** — 4.13a parent-first `parentRecipientEmails` + `deliveryReport` + hub compose | — |
-| `parent_lounge` | Parent Lounge | Monitored parent↔parent and parent↔coach group context | parent, coach, director | parents on team; staff participants | none (parents only in channel) | threaded group (`sendChannelMessage`) | `clubs/{clubId}/channels/*`, `messaging_audit` | **shipped** — 4.4 provisioning + `ParentLoungePanel` | — |
+| `parent_lounge` | Parent Circle | Monitored parent-only group — parent↔parent discussion; staff monitor via compliance export (no staff posts) | **parent** | parents on team only (`memberIds`); staff monitor via export — not channel members | none (parents only in channel) | threaded group — parents post only (`sendChannelMessage` blocks non-parent) | `clubs/{clubId}/channels/*`, `messaging_audit` | **shipped** — 4.4 + COMMS-PARENT-CIRCLE-POLICY (`channelType`, parents-only `memberIds`, server post guard) | — |
+| `parent_coach_dm` | Parent↔coach DM | Bilateral staff↔parent thread — coach + parent default; AD read-only when `includeAdOnParentDms` | parent, coach | parent + coach (+ director read-only when club flag) | none | bilateral thread | `in_app_messages`, `messaging_audit` | **shipped** — COMMS-PARENT-COACH-DM (`parentCoachDmOps`, hub Families rail) | — |
+| `parent_voice_session` | Parent voice session | Scheduled parent info sessions — coaches + parents only; v1 metadata audit | coach, director (schedule) | parents + coaches on session roster | **none — NO minors** | none (session metadata v1) | `messaging_audit`, `clubs/{clubId}/parent_voice_sessions` | **shipped** — COMMS-VOICE-V1 (`parentVoiceSessionOps`, lobby + calendar link) | — |
 | `team_logistics` | Team logistics | TM/coach/event ops — car pool, field change, equipment | coach (TM future) | parents | HQ/calendar mirror only | optional thread → Parent Lounge handoff | `team_broadcasts` (today) → typed channel doc | **shipped** — 4.14 hub rail + `CommsLogisticsChannel`; messages at `teams/{teamId}/channels/{sub}/messages` | — |
 | `registration` | Registration | Registrar/director transactional — fees, deadlines, eligibility | registrar, director | parents (household-scoped) | none | none | `audit_logs` + registration collections | **shipped** — 4.14 `postChannelSystemMessage` + `CommsRegistrationChannel` | — |
 | `tryouts_events` | Tryouts & events | Program-scoped tryout/eval comms | director, coach (tryout lead) | parents (applicant households) | none | none | `audit_logs`, tryout collections | **shipped** — 4.14 tryout reg hook + `CommsTryoutsEventsChannel` | — |
@@ -58,7 +60,7 @@ VPC captures `consentComms` per child ([`/parent/vpc`](../src/routes/(app)/paren
 | `sponsor_partner` | Sponsor & partner | Template-only, director-approved; parents only | director (approve), system (send) | parents opt-in (`consentSponsor` + `consentComms`) | none | none | `audit_logs`, `clubs/{clubId}/sponsor_templates` | **shipped** — 4.16c `sponsorPartnerOps` + `CommsSponsorPartnerChannel` | — |
 | `emergency` | Emergency | Director break-glass — weather, safety, lockdown | director, admin | all club parents (+ staff) | push + SMS fallback (feature flag) | none | `audit_logs` (priority flag) | **shipped** — 4.15b `emergencyClubBroadcast` + high-priority FCM + 4.16a SMS hook | — |
 
-**Shipped vs planned count (honest, post Epic 4.16d):** **12 shipped** channel types (see rows above) · **1 partial** (`development`). Phase 3 + Phase 4 comms rows are **shipped** on `sports-skill-tracker-dev`.
+**Shipped vs planned count (honest, post COMMS-VOICE-V1):** **14 shipped** channel types · **0 planned** · **1 partial** (`development`). Phase 3 + Phase 4 comms rows are **shipped** on `sports-skill-tracker-dev`.
 
 > **Message bus footnote (4.14):** Typed system channels use `clubs/{clubId}/channels/{channelId}/messages`. Team logistics interactive sub-channels remain at `teams/{teamId}/channels/{subChannelId}/messages` with `channelType: team_logistics` on the parent channel doc.
 
@@ -98,18 +100,18 @@ Legend: **Y** = allowed · **N** = blocked · **C** = conditional (clearance, co
 
 SafeSport rules (explicit): (1) **No coach→minor 1:1 interactive DM** — blocked at callable + rules. (2) **Staff→families** via parent-targeted channels with audit. (3) **Parent visibility** on minor-related comms via CC/announcements, not minor inbox. (4) **Monitored group** (`safesportMonitored`) for Parent Lounge — server-only writes. (5) **Household-only** parent↔minor threads — `householdId` gate.
 
-| Persona | announcements | parent_lounge | team_logistics | registration | tryouts_events | match_day | development | household | staff_internal | compliance | club_wide | sponsor_partner | emergency |
-|---------|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
-| **player** | N | N | N | N | N | C (HQ) | C (HQ/assignments) | C (linked) | N | N | N | N | C (push banner) |
-| **parent** | C (read/CC) | C (member) | C (read) | C (read) | C (read) | C (read) | N | C (household) | N | C (read) | C (read) | C (opt-in) | C (read+push) |
-| **coach** | C (post) | C (post) | C (post) | N | C (tryout lead) | C (post) | C (adult DM) | N | C (future) | N | N | N | N |
-| **team_manager** | C (future) | C (read) | C (future post) | C (future) | C (future) | C (future) | N | N | C (future) | N | N | N | C (future) |
-| **registrar** | N | N | N | C (post) | C (read) | N | N | N | C (future) | C (post) | N | N | N |
-| **director** | C (post) | C (post) | C (post) | C (post) | C (post) | C (post) | N | N | C (post) | C (post) | C (post) | C (approve) | C (post) |
-| **admin** | C | C | C | C | C | C | C | N | C | C | C | C | C |
-| **recruiter** | N | N | N | N | C (future) | N | N | N | N | N | N | N | N |
-| **tutor** | N | N | N | N | N | N | C (future) | N | N | N | N | N | N |
-| **sponsor (external)** | N | N | N | N | N | N | N | N | N | N | N | C (read template) | N |
+| Persona | announcements | parent_lounge | parent_coach_dm | parent_voice_session | team_logistics | registration | tryouts_events | match_day | development | household | staff_internal | compliance | club_wide | sponsor_partner | emergency |
+|---------|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+| **player** | N | N | N | N | N | N | N | C (HQ) | C (HQ/assignments) | C (linked) | N | N | N | N | C (push banner) |
+| **parent** | C (read/CC) | C (member/post) | C (bilateral) | C (join scheduled) | C (read) | C (read) | C (read) | C (read) | N | C (household) | N | C (read) | C (read) | C (opt-in) | C (read+push) |
+| **coach** | C (post) | C (read/monitor) | C (bilateral) | C (host) | C (post) | N | C (tryout lead) | C (post) | C (adult DM) | N | C (post) | N | N | N | N |
+| **team_manager** | C (future) | C (read) | C (future) | C (future) | C (future post) | C (future) | C (future) | C (future) | N | N | C (future) | N | N | N | C (future) |
+| **registrar** | N | N | N | N | N | C (post) | C (read) | N | N | N | C (post) | C (post) | N | N | N |
+| **director** | C (post) | C (read/export) | C (read if `includeAdOnParentDms`) | C (schedule) | C (post) | C (post) | C (post) | C (post) | N | N | C (post) | C (post) | C (post) | C (approve) | C (post) |
+| **admin** | C | C | C | C | C | C | C | C | C | N | C | C | C | C | C |
+| **recruiter** | N | N | N | N | N | N | C (future) | N | N | N | N | N | N | N | N |
+| **tutor** | N | N | N | N | N | N | N | N | C (future) | N | N | N | N | N | N |
+| **sponsor (external)** | N | N | N | N | N | N | N | N | N | N | N | N | N | C (read template) | N |
 
 **Post** = compose/send · **Read** = stream/inbox · **Notify** follows `consentComms` + FCM category (`push_announcements`, `push_messages`, `push_gameReminders`, `push_paymentReminders`).
 
@@ -251,6 +253,9 @@ Epic 4.1–4.16d **Done** (2026-06-25) — see [`ROADMAP.md`](../../ROADMAP.md) 
 
 | Document | Role |
 |----------|------|
+| [`COMMS_PLATFORM_STANDARDS.md`](./COMMS_PLATFORM_STANDARDS.md) | Agent authority — locked policies, drift checklist |
+| [`COMMS_UX_NAV_SPEC.md`](./COMMS_UX_NAV_SPEC.md) | PS-X01 nav 2.0 — space picker, categories |
+| [`COMMS_CALENDAR_INTEGRATION.md`](./COMMS_CALENDAR_INTEGRATION.md) | Event → calendar + broadcast + push + `.ics` |
 | [`COMMS_HUB.md`](./COMMS_HUB.md) | Policy north star, notification categories, persona handoffs |
 | [`SAFESPORT_COMMS_MATRIX.md`](../SAFESPORT_COMMS_MATRIX.md) | Platform control map, callable index, compliance pointers |
 | [`FCM_AND_MESSAGING_MATRIX.md`](../FCM_AND_MESSAGING_MATRIX.md) | Push bus inventory, `onTeamBroadcastCreated` flow |

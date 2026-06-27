@@ -60,6 +60,14 @@ describe('Epic 4.12 — comms rules structure (source-scan)', () => {
 			/match \/messaging_audit\/\{docId\}[\s\S]*?allow create: if false/,
 		);
 	});
+
+	it('parent_voice_sessions is callable-write only (COMMS-VOICE-V1)', () => {
+		expect(RULES).toMatch(/match \/parent_voice_sessions\/\{sessionId\}/);
+		expect(RULES).toMatch(/canReadParentVoiceSessionDoc/);
+		expect(RULES).toMatch(
+			/match \/parent_voice_sessions\/\{sessionId\}[\s\S]*?allow create, update, delete: if false/,
+		);
+	});
 });
 
 describe('Epic 4.12 — comms callables exported from default codebase', () => {
@@ -79,6 +87,8 @@ describe('Epic 4.12 — comms callables exported from default codebase', () => {
 		'onTeamBroadcastCreated',
 		'onDeploymentCalendarEntryCreated',
 		'coachProvisionStaffInternal',
+		'createParentVoiceSession',
+		'joinParentVoiceSession',
 	];
 
 	const schedulerExports = ['sendScheduledEventReminders', 'sendRegistrationPaymentReminders'];

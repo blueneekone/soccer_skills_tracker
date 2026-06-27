@@ -1,6 +1,14 @@
 {
   "indexes": [
     {
+      "collectionGroup": "parent_voice_sessions",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "teamId", "order": "ASCENDING" },
+        { "fieldPath": "scheduledStartTimestamp", "order": "DESCENDING" }
+      ]
+    },
+    {
       "collectionGroup": "team_workouts",
       "queryScope": "COLLECTION",
       "fields": [

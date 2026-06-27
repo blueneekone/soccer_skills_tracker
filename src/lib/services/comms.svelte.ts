@@ -162,6 +162,48 @@ export interface SponsorPartnerSendResult {
 	};
 }
 
+/** COMMS-PARENT-COACH-DM — bilateral parent↔coach send result */
+export interface ParentCoachDmSendResult {
+	ok: true;
+	threadId: string;
+	messageId: string | null;
+	delivered: boolean;
+	includeAdOnParentDms: boolean;
+	deliveryReport?: DeliveryReport | null;
+}
+
+export interface ParentCoachDmThreadRow {
+	threadId: string;
+	clubId: string;
+	teamId: string;
+	parentEmail: string;
+	coachEmail: string;
+	includeAdOnParentDms: boolean;
+	lastMessageAt?: unknown;
+}
+
+/** COMMS-VOICE-V1 — parent voice session schedule result */
+export interface ParentVoiceSessionCreateResult {
+	ok: true;
+	sessionId: string;
+	calendarEventId: string;
+	title: string;
+	deliveryReport: DeliveryReport;
+	recordingEnabled: false;
+}
+
+/** COMMS-VOICE-V1 — parent voice session join/leave result */
+export interface ParentVoiceSessionJoinResult {
+	ok: true;
+	sessionId: string;
+	action: 'join' | 'leave';
+	vendorToken: string | null;
+	vendorEnabled: boolean;
+	metadataOnly: boolean;
+	recordingEnabled: false;
+	disclosure: string;
+}
+
 /** Custom error thrown when a caller attempts to violate SafeSport policy. */
 export class SafeSportViolation extends Error {
 	constructor(message: string) {
@@ -184,6 +226,10 @@ export class CommsEngine {
 	lastResult = $state<BroadcastResult | null>(null);
 	lastClubResult = $state<ClubBroadcastResult | null>(null);
 	lastSponsorResult = $state<SponsorPartnerSendResult | null>(null);
+	lastParentCoachResult = $state<ParentCoachDmSendResult | null>(null);
+	lastVoiceSessionResult = $state<
+		ParentVoiceSessionCreateResult | ParentVoiceSessionJoinResult | null
+	>(null);
 	error = $state('');
 
 	/** True while a message is in-flight. */
@@ -203,6 +249,10 @@ export class CommsEngine {
 	private _createSponsorTemplateFn: ReturnType<typeof httpsCallable> | null = null;
 	private _approveSponsorTemplateFn: ReturnType<typeof httpsCallable> | null = null;
 	private _sendSponsorDigestFn: ReturnType<typeof httpsCallable> | null = null;
+	private _parentCoachSendFn: ReturnType<typeof httpsCallable> | null = null;
+	private _parentCoachListFn: ReturnType<typeof httpsCallable> | null = null;
+	private _createVoiceSessionFn: ReturnType<typeof httpsCallable> | null = null;
+	private _joinVoiceSessionFn: ReturnType<typeof httpsCallable> | null = null;
 
 	constructor() {
 		if (!browser) return;
@@ -218,6 +268,10 @@ export class CommsEngine {
 		this._createSponsorTemplateFn = httpsCallable(fns, 'createSponsorTemplate');
 		this._approveSponsorTemplateFn = httpsCallable(fns, 'approveSponsorTemplate');
 		this._sendSponsorDigestFn = httpsCallable(fns, 'sendSponsorPartnerDigest');
+		this._parentCoachSendFn = httpsCallable(fns, 'sendParentCoachMessage');
+		this._parentCoachListFn = httpsCallable(fns, 'listParentCoachDmThreads');
+		this._createVoiceSessionFn = httpsCallable(fns, 'createParentVoiceSession');
+		this._joinVoiceSessionFn = httpsCallable(fns, 'joinParentVoiceSession');
 	}
 
 	/**
@@ -459,6 +513,144 @@ export class CommsEngine {
 			return response.data as { ok: true; messageId: string };
 		} catch (err: unknown) {
 			this.error = err instanceof Error ? err.message : 'Failed to send direct message.';
+			this.phase = 'error';
+			throw err;
+		}
+	}
+
+	/** Bilateral parent↔coach DM — COMMS-PARENT-COACH-DM. */
+	async sendParentCoachMessage(input: {
+		clubId: string;
+		teamId: string;
+		body: string;
+		parentEmail?: string;
+		coachEmail?: string;
+		threadId?: string;
+	}): Promise<ParentCoachDmSendResult> {
+		const clubId = input.clubId?.trim() ?? '';
+		const teamId = input.teamId?.trim() ?? '';
+		const body = input.body?.trim() ?? '';
+		if (!clubId || !teamId) throw new Error('clubId and teamId are required.');
+		if (!body) throw new Error('Message body is required.');
+		if (body.length > 4000) throw new Error('Message body exceeds 4000 characters.');
+		if (!this._parentCoachSendFn) {
+			throw new Error('CommsEngine not initialised (SSR context).');
+		}
+
+		this.phase = 'sending';
+		this.error = '';
+		this.lastParentCoachResult = null;
+
+		try {
+			const payload: Record<string, unknown> = { clubId, teamId, body };
+			if (input.parentEmail?.trim()) payload.parentEmail = input.parentEmail.trim();
+			if (input.coachEmail?.trim()) payload.coachEmail = input.coachEmail.trim();
+			if (input.threadId?.trim()) payload.threadId = input.threadId.trim();
+
+			const response = await this._parentCoachSendFn(payload);
+			const result = response.data as ParentCoachDmSendResult;
+			this.lastParentCoachResult = result;
+			this.phase = 'success';
+			return result;
+		} catch (err: unknown) {
+			this.error = err instanceof Error ? err.message : 'Failed to send coach message.';
+			this.phase = 'error';
+			throw err;
+		}
+	}
+
+	async listParentCoachDmThreads(input: {
+		clubId: string;
+		teamId?: string;
+	}): Promise<{
+		ok: true;
+		threads: ParentCoachDmThreadRow[];
+		includeAdOnParentDms: boolean;
+		readOnly: boolean;
+	}> {
+		const clubId = input.clubId?.trim() ?? '';
+		if (!clubId) throw new Error('clubId is required.');
+		if (!this._parentCoachListFn) {
+			throw new Error('CommsEngine not initialised (SSR context).');
+		}
+		const payload: Record<string, unknown> = { clubId };
+		if (input.teamId?.trim()) payload.teamId = input.teamId.trim();
+		const response = await this._parentCoachListFn(payload);
+		return response.data as {
+			ok: true;
+			threads: ParentCoachDmThreadRow[];
+			includeAdOnParentDms: boolean;
+			readOnly: boolean;
+		};
+	}
+
+	/** Schedule a parent info voice session linked to a calendar event — COMMS-VOICE-V1. */
+	async createParentVoiceSession(input: {
+		clubId: string;
+		teamId: string;
+		calendarEventId: string;
+		title?: string;
+	}): Promise<ParentVoiceSessionCreateResult> {
+		const clubId = input.clubId?.trim() ?? '';
+		const teamId = input.teamId?.trim() ?? '';
+		const calendarEventId = input.calendarEventId?.trim() ?? '';
+		if (!clubId || !teamId || !calendarEventId) {
+			throw new Error('clubId, teamId, and calendarEventId are required.');
+		}
+		if (!this._createVoiceSessionFn) {
+			throw new Error('CommsEngine not initialised (SSR context).');
+		}
+
+		this.phase = 'sending';
+		this.error = '';
+		this.lastVoiceSessionResult = null;
+
+		try {
+			const payload: Record<string, unknown> = { clubId, teamId, calendarEventId };
+			if (input.title?.trim()) payload.title = input.title.trim();
+			const response = await this._createVoiceSessionFn(payload);
+			const result = response.data as ParentVoiceSessionCreateResult;
+			this.lastVoiceSessionResult = result;
+			this.phase = 'success';
+			return result;
+		} catch (err: unknown) {
+			this.error = err instanceof Error ? err.message : 'Failed to schedule voice session.';
+			this.phase = 'error';
+			throw err;
+		}
+	}
+
+	/** Join or leave a parent voice session — COMMS-VOICE-V1. */
+	async joinParentVoiceSession(input: {
+		clubId: string;
+		sessionId: string;
+		action?: 'join' | 'leave';
+	}): Promise<ParentVoiceSessionJoinResult> {
+		const clubId = input.clubId?.trim() ?? '';
+		const sessionId = input.sessionId?.trim() ?? '';
+		if (!clubId || !sessionId) {
+			throw new Error('clubId and sessionId are required.');
+		}
+		if (!this._joinVoiceSessionFn) {
+			throw new Error('CommsEngine not initialised (SSR context).');
+		}
+
+		this.phase = 'sending';
+		this.error = '';
+		this.lastVoiceSessionResult = null;
+
+		try {
+			const response = await this._joinVoiceSessionFn({
+				clubId,
+				sessionId,
+				action: input.action ?? 'join',
+			});
+			const result = response.data as ParentVoiceSessionJoinResult;
+			this.lastVoiceSessionResult = result;
+			this.phase = 'success';
+			return result;
+		} catch (err: unknown) {
+			this.error = err instanceof Error ? err.message : 'Failed to join voice session.';
 			this.phase = 'error';
 			throw err;
 		}

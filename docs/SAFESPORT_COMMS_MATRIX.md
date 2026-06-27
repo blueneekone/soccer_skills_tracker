@@ -2,7 +2,7 @@
 
 > **Disclaimer:** This document maps **SSTracker platform controls** to our **product policy**. It does **not** claim official certification or endorsement by the U.S. Center for SafeSport. Club compliance officers should validate against their governing body requirements.
 
-**North star policy:** [`docs/vision/COMMS_HUB.md`](./vision/COMMS_HUB.md) — household-only adult↔minor interactive messaging.
+**North star policy:** [`docs/vision/COMMS_HUB.md`](./vision/COMMS_HUB.md) — household-only adult↔minor interactive messaging. **Agent authority:** [`docs/vision/COMMS_PLATFORM_STANDARDS.md`](./vision/COMMS_PLATFORM_STANDARDS.md).
 
 **Channel registry & delivery contract:** [`docs/vision/COMMS_CHANNEL_CANON.md`](./vision/COMMS_CHANNEL_CANON.md) §3–§6 (Epic 4.13a–4.16d **shipped**).
 
@@ -45,6 +45,8 @@ Epic 2 Sprint 2.3 (*SafeSport messaging CC*) is **absorbed into Epic 4** — see
 | **Omnichannel fallback** | [`omnichannelOps.js`](../functions/src/domains/omnichannelOps.js) | Email (`commsEmailFallback` flag); emergency SMS (`commsSmsEmergency` flag); merged on `deliveryReport` |
 | **Clearance gate** | [`docs/CLEARANCE.md`](./CLEARANCE.md), JWT / route policies | Coach/director clearance for PII-adjacent roles |
 | **Household gate** | `households`, `sendHouseholdMessage` | Parent↔operative threads (4.11) |
+| **Parent↔coach DM** | `parentCoachDmOps.js` | Bilateral parent+coach; `includeAdOnParentDms` → director read-only + disclosure banner |
+| **Parent voice session** | `parentVoiceSessionOps.js` | Scheduled sessions — coaches+parents only; join/leave in `messaging_audit`; vendor stub behind `feature_flags/commsParentVoice`; no recording v1 |
 
 ---
 
@@ -85,7 +87,9 @@ Client-direct writes to monitored channels are **blocked** by rules; sends must 
 | [`functions/src/domains/sponsorPartnerOps.js`](../functions/src/domains/sponsorPartnerOps.js) | `createSponsorTemplate`, `approveSponsorTemplate`, `sendSponsorPartnerDigest` |
 | [`functions/src/domains/omnichannelOps.js`](../functions/src/domains/omnichannelOps.js) | SendGrid email + Twilio SMS fallback processors |
 | [`functions/src/domains/operativeOps.js`](../functions/src/domains/operativeOps.js) | `sendCoachPlayerMessage`, `sendChannelMessage`, household provisioning |
-| [`functions/src/domains/commsChannelOps.js`](../functions/src/domains/commsChannelOps.js) | `postChannelSystemMessage`, Parent Lounge / staff_internal provision |
+| [`functions/src/domains/commsChannelOps.js`](../functions/src/domains/commsChannelOps.js) | `postChannelSystemMessage`, Parent Circle / staff_internal provision |
+| `functions/src/domains/parentCoachDmOps.js` | `sendParentCoachMessage`, `listParentCoachDmThreads` — bilateral + AD read-only flag |
+| `functions/src/domains/parentVoiceSessionOps.js` | `createParentVoiceSession`, `joinParentVoiceSession` — attendance audit; vendor stub when flag on; no recording v1 |
 | [`src/lib/services/comms.svelte.ts`](../src/lib/services/comms.svelte.ts) | Client `CommsEngine` — broadcasts, ack, sponsor callables |
 
 ---

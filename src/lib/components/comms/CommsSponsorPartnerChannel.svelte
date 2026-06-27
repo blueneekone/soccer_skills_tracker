@@ -39,7 +39,6 @@
 
 	const engine = new CommsEngine();
 	const role = $derived(authStore.role);
-	const myEmail = $derived((authStore.user?.email || '').toLowerCase());
 	const channelId = $derived(clubId.trim() ? `sponsor-partner-${clubId.trim()}` : '');
 	const def = COMMS_CHANNEL_TYPE_REGISTRY.sponsor_partner;
 	const isDirector = $derived(role === 'director' || role === 'admin');
@@ -53,6 +52,7 @@
 	let templates = $state<SponsorTemplate[]>([]);
 	let messages = $state<SponsorMessage[]>([]);
 	let loadingTemplates = $state(true);
+	let templatesReady = $state(false);
 	let loadingMessages = $state(true);
 	let error = $state('');
 	let confirmSendId = $state('');
@@ -71,9 +71,11 @@
 		if (!browser || !clubId.trim() || !isDirector) {
 			templates = [];
 			loadingTemplates = false;
+			templatesReady = !isDirector;
 			return;
 		}
 		loadingTemplates = true;
+		templatesReady = false;
 		const qy = query(
 			collection(db, 'clubs', clubId.trim(), 'sponsor_templates'),
 			orderBy('createdAt', 'desc'),
@@ -96,19 +98,24 @@
 					};
 				});
 				loadingTemplates = false;
+				templatesReady = true;
 			},
 			(e) => {
 				error = e instanceof Error ? e.message : 'Could not load templates.';
 				loadingTemplates = false;
+				templatesReady = true;
 			},
 		);
 		return () => unsub();
 	});
 
 	$effect(() => {
-		if (!browser || !clubId.trim() || !channelId) {
+		if (!browser || !clubId.trim() || !channelId || !isDirector) {
 			messages = [];
 			loadingMessages = false;
+			return;
+		}
+		if (!templatesReady) {
 			return;
 		}
 		loadingMessages = true;
@@ -143,16 +150,7 @@
 		return () => unsub();
 	});
 
-	const visibleMessages = $derived(
-		isDirector
-			? messages.filter((m) => !m.digestSend)
-			: messages.filter(
-					(m) =>
-						!m.digestSend &&
-						m.parentEmail &&
-						m.parentEmail.toLowerCase() === myEmail,
-				),
-	);
+	const visibleMessages = $derived(messages.filter((m) => !m.digestSend));
 
 	const lastDeliveryReport = $derived.by(() => {
 		const result = engine.lastSponsorResult;
@@ -223,7 +221,12 @@
 		<p class="comms-sponsor__sub">{def.description}</p>
 	</header>
 
-	{#if isDirector}
+	{#if !isDirector}
+		<p class="comms-sponsor__note" role="status">
+			Director ops only — partner templates are managed from the Director portal Comms tab.
+			Guardians receive offers on the parent dashboard when opted in via VPC.
+		</p>
+	{:else}
 		<p class="comms-sponsor__note">
 			Director-approved partner templates only. Guardians must opt in via VPC
 			(<strong>consentSponsor</strong> + in-app comms). Never sent to minor accounts.
@@ -301,39 +304,33 @@
 		{#if lastDeliveryReport}
 			<DeliveryReceipt report={lastDeliveryReport} />
 		{/if}
-	{:else}
-		<p class="comms-sponsor__note">
-			Read-only partner updates when you opted in on VPC. Coach DMs and sponsor digests use separate consent.
-		</p>
-	{/if}
 
-	{#if error}
-		<p class="comms-sponsor__error" role="alert">{error}</p>
-	{/if}
-	{#if engine.error}
-		<p class="comms-sponsor__error" role="alert">{engine.error}</p>
-	{/if}
+		{#if error}
+			<p class="comms-sponsor__error" role="alert">{error}</p>
+		{/if}
+		{#if engine.error}
+			<p class="comms-sponsor__error" role="alert">{engine.error}</p>
+		{/if}
 
-	<h3 class="comms-sponsor__stream-title">{isDirector ? 'Delivered digests' : 'Your partner updates'}</h3>
-	{#if loadingMessages}
-		<p class="comms-sponsor__muted">Loading…</p>
-	{:else if visibleMessages.length === 0}
-		<p class="comms-sponsor__muted">
-			{isDirector ? 'No digests sent yet.' : 'No partner updates — opt in on VPC to receive them.'}
-		</p>
-	{:else}
-		<ul class="comms-sponsor__messages">
-			{#each visibleMessages as m (m.id)}
-				<li class="comms-sponsor__message">
-					<p class="comms-sponsor__message-meta">
-						{#if m.partnerName}<strong>{m.partnerName}</strong> · {/if}
-						{formatDate(m.createdAt)}
-					</p>
-					{#if m.subject}<p class="comms-sponsor__message-subject">{m.subject}</p>{/if}
-					<p class="comms-sponsor__message-body">{m.text}</p>
-				</li>
-			{/each}
-		</ul>
+		<h3 class="comms-sponsor__stream-title">Delivered digests</h3>
+		{#if loadingMessages}
+			<p class="comms-sponsor__muted">Loading…</p>
+		{:else if visibleMessages.length === 0}
+			<p class="comms-sponsor__muted">No digests sent yet.</p>
+		{:else}
+			<ul class="comms-sponsor__messages">
+				{#each visibleMessages as m (m.id)}
+					<li class="comms-sponsor__message">
+						<p class="comms-sponsor__message-meta">
+							{#if m.partnerName}<strong>{m.partnerName}</strong> · {/if}
+							{formatDate(m.createdAt)}
+						</p>
+						{#if m.subject}<p class="comms-sponsor__message-subject">{m.subject}</p>{/if}
+						<p class="comms-sponsor__message-body">{m.text}</p>
+					</li>
+				{/each}
+			</ul>
+		{/if}
 	{/if}
 </section>
 

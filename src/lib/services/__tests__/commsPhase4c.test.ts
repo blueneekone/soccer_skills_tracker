@@ -56,14 +56,14 @@ describe('commsPhase4c — client surfaces', () => {
 		expect(src).toMatch(/whoCanRead: \['parent', 'director', 'admin'\]/);
 	});
 
-	it('CommsHubShell wires sponsor_partner rail', () => {
+	it('CommsHubShell does not wire sponsor_partner hub rail (COMMS-SPONSOR-REHOME)', () => {
 		const src = readFileSync(HUB, 'utf8');
-		expect(src).toMatch(/CommsSponsorPartnerChannel/);
-		expect(src).toMatch(/showSponsorPartner/);
-		expect(src).toMatch(/sponsor_partner/);
+		expect(src).not.toMatch(/CommsSponsorPartnerChannel/);
+		expect(src).not.toMatch(/showSponsorPartner/);
+		expect(src).not.toMatch(/sponsor_partner/);
 	});
 
-	it('CommsSponsorPartnerChannel director editor + parent read-only', () => {
+	it('CommsSponsorPartnerChannel director-only compose + DeliveryReceipt', () => {
 		expect(existsSync(SPONSOR_CH)).toBe(true);
 		const src = readFileSync(SPONSOR_CH, 'utf8');
 		expect(src).toMatch(/createSponsorTemplate/);
@@ -71,6 +71,7 @@ describe('commsPhase4c — client surfaces', () => {
 		expect(src).toMatch(/sendSponsorPartnerDigest/);
 		expect(src).toMatch(/DeliveryReceipt/);
 		expect(src).toMatch(/consentSponsor/);
+		expect(src).toMatch(/Director ops only/);
 	});
 
 	it('CommsEngine exposes sponsor callables', () => {

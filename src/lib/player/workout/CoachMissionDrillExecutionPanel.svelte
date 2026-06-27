@@ -12,7 +12,8 @@
 	} = $props();
 
 	const coachDrillExecution = $derived.by(() => {
-		if (!armedHandoff || !isCoachDirectedHandoff(armedHandoff.source)) return null;
+		if (!armedHandoff || armedHandoff.source === 'adaptive_homework') return null;
+		if (!isCoachDirectedHandoff(armedHandoff.source)) return null;
 		const drillTitle =
 			armedHandoff.drillTitle ??
 			armedHandoff.prescription?.drillTitle ??
