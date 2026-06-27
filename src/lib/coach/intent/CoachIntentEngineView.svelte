@@ -9,6 +9,7 @@
 	import { IntentEngine } from './IntentEngine.svelte.js';
 	import IntentArena from './IntentArena.svelte';
 	import ForgeDeployPanel from './ForgeDeployPanel.svelte';
+	import { BENCHMARK_DRILLS } from '$lib/player/benchmark/benchmarkDrillCatalog.js';
 	import '$lib/styles/coach-forge-workbench.css';
 
 	let {
@@ -41,6 +42,15 @@
 	const tenantId = $derived(teamScope.teamClubId || authStore.tenantId);
 	const clubId = $derived(teamScope.teamClubId || authStore.tenantId);
 	const sportId = $derived(sportsConfigStore.currentSportConfig?.sportId ?? 'soccer');
+
+	const benchmarkDrillOptions = $derived(
+		BENCHMARK_DRILLS.map((d) => ({
+			id: d.id,
+			label: d.label,
+			category: d.category,
+			baseXP: d.baseXP,
+		})),
+	);
 
 	$effect(() => {
 		if (!browser || !teamScope.selectedTeamId || !tenantId) return;
@@ -125,6 +135,12 @@
 					canDeploy={engine.canDeploy}
 					bind:draftBundleDrills={engine.draftBundleDrills}
 					bind:draftRequiresParentVerification={engine.draftRequiresParentVerification}
+					bind:draftMissionKind={engine.draftMissionKind}
+					bind:draftBenchmarkDrillId={engine.draftBenchmarkDrillId}
+					bind:draftBenchmarkTargetValue={engine.draftBenchmarkTargetValue}
+					benchmarkDrills={benchmarkDrillOptions}
+					onMissionKindChange={() => engine.onMissionKindChanged()}
+					onBenchmarkDrillChange={() => engine.onBenchmarkDrillChanged()}
 					onDeploy={() => engine.deployIntent()}
 					onToggleUid={(uid) => engine.toggleDraftUid(uid)}
 					onSelectAll={() => engine.selectAllRosterUids()}

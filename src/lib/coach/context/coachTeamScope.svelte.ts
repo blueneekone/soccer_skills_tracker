@@ -16,9 +16,9 @@ export type CoachTeamRow = {
 export type CoachTeamScopeOptions = {
 	/** Prefer `authStore.userProfile.teamId` when in coach's team list. */
 	preferProfileTeam?: boolean;
-	/** Read `?teamId=` from the current URL (match-day, trial-builder). */
+	/** Read `?teamId=` from the current URL (match-day). */
 	preferUrlTeamId?: () => string | null | undefined;
-	/** When URL team resolves, sync workspace pivot (trial-builder). */
+	/** When URL team resolves, sync workspace pivot. */
 	syncWorkspaceOnUrlTeam?: boolean;
 	/** Include `director` in all-teams access (default true). */
 	includeDirector?: boolean;

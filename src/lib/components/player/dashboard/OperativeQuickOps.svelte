@@ -30,12 +30,6 @@
 			subtitle: 'Physical progression · launch drills',
 		},
 		{
-			label: 'Proving grounds',
-			href: '/player/proving-grounds',
-			icon: 'game.zap',
-			subtitle: 'Benchmark drills · Scouts Six',
-		},
-		{
 			label: 'Media lab',
 			href: '/player/media',
 			icon: 'content.film',

@@ -46,7 +46,6 @@ export const DATA_COLLECTION_ROUTES = [
 	'/challenges',
 	'/passport',
 	'/player/workout',
-	'/player/proving-grounds',
 	'/player/media',
 	'/player/armory',
 	'/player/skill-tree',

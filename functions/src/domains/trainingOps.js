@@ -2242,6 +2242,15 @@ function normalizePrescription(raw, requiredXp) {
   if (cadence) out.cadence = cadence;
   // B4a: optional coach opt-in flag — only emit when strictly true.
   if (raw.requiresParentVerification === true) out.requiresParentVerification = true;
+  const benchmarkDrillId =
+    typeof raw.benchmarkDrillId === 'string' ? raw.benchmarkDrillId.trim() : '';
+  if (benchmarkDrillId) out.benchmarkDrillId = benchmarkDrillId.slice(0, 64);
+  if (raw.benchmarkTargetValue !== undefined && raw.benchmarkTargetValue !== null) {
+    const targetVal = Number(raw.benchmarkTargetValue);
+    if (Number.isFinite(targetVal) && targetVal > 0) {
+      out.benchmarkTargetValue = targetVal;
+    }
+  }
   // B3: validate drills[] bundle entries.
   if (raw.drills !== undefined && raw.drills !== null) {
     if (!Array.isArray(raw.drills)) {
@@ -2324,6 +2333,17 @@ exports.secureDeployIntent = onCall(LAUNCH_CORE_CALLABLE_OPTS, async (request) =
     ? Math.floor(Number(data.priority))
     : 100;
   const prescription = normalizePrescription(data.prescription, requiredXp);
+  const missionKindRaw = typeof data.missionKind === 'string' ? data.missionKind.trim() : 'standard';
+  const missionKind = missionKindRaw === 'benchmark' ? 'benchmark' : 'standard';
+  if (missionKind === 'benchmark') {
+    const benchmarkId =
+      prescription && typeof prescription.benchmarkDrillId === 'string' ?
+        prescription.benchmarkDrillId.trim() :
+        '';
+    if (!benchmarkId) {
+      throw new HttpsError('invalid-argument', 'benchmarkDrillId is required for benchmark missions.');
+    }
+  }
 
   if (!teamId || teamId === 'admin') throw new HttpsError('invalid-argument', 'teamId is required.');
   if (!tenantId) throw new HttpsError('invalid-argument', 'tenantId is required.');
@@ -2448,6 +2468,7 @@ exports.secureDeployIntent = onCall(LAUNCH_CORE_CALLABLE_OPTS, async (request) =
     updatedAt: admin.firestore.FieldValue.serverTimestamp(),
   };
   if (prescription) intentPayload.prescription = prescription;
+  if (missionKind === 'benchmark') intentPayload.missionKind = 'benchmark';
   if (clientDeployId) intentPayload.clientDeployId = clientDeployId;
   await intentRef.set(intentPayload);
 

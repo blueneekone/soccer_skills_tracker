@@ -72,6 +72,10 @@ export type MissionHandoff = {
 	 * affordance after logging the session. Advisory only — never gates XP.
 	 */
 	requiresParentVerification?: boolean;
+	/** SURFACE-MERGE-BENCHMARKS — numeric combine drill executed in Train. */
+	missionKind?: 'standard' | 'benchmark';
+	benchmarkDrillId?: string;
+	benchmarkTargetValue?: number;
 };
 
 /** Handoffs older than this are cleared on Train mount. */
@@ -349,6 +353,18 @@ export function readMissionHandoff(): MissionHandoff | null {
 			drills: parseBundleDrills(parsed.drills),
 			// B4a: strict boolean — undefined when absent or falsy.
 			requiresParentVerification: parsed.requiresParentVerification === true ? true : undefined,
+			missionKind:
+				parsed.missionKind === 'benchmark' ? 'benchmark'
+				: parsed.missionKind === 'standard' ? 'standard'
+				: undefined,
+			benchmarkDrillId:
+				typeof parsed.benchmarkDrillId === 'string' && parsed.benchmarkDrillId.trim() ?
+					parsed.benchmarkDrillId.trim()
+				:	undefined,
+			benchmarkTargetValue:
+				Number.isFinite(Number(parsed.benchmarkTargetValue)) ?
+					Number(parsed.benchmarkTargetValue)
+				:	undefined,
 		};
 			}
 		}
@@ -385,6 +401,26 @@ export function resolveMissionHandoffDisplayCadence(
 	return handoff?.prescription?.cadence ?? handoff?.cadence;
 }
 
+export function isBenchmarkMissionHandoff(
+	handoff: MissionHandoff | null | undefined,
+): boolean {
+	if (!handoff) return false;
+	if (handoff.missionKind === 'benchmark') return true;
+	const rxId = handoff.prescription?.benchmarkDrillId;
+	return typeof rxId === 'string' && rxId.trim().length > 0;
+}
+
+export function resolveBenchmarkDrillIdFromHandoff(
+	handoff: MissionHandoff | null | undefined,
+): string | undefined {
+	if (!handoff) return undefined;
+	return (
+		handoff.benchmarkDrillId?.trim() ||
+		handoff.prescription?.benchmarkDrillId?.trim() ||
+		undefined
+	);
+}
+
 export function buildCoachIntentHandoff(input: {
 	missionId: string;
 	targetAttributeId: string;
@@ -394,6 +430,7 @@ export function buildCoachIntentHandoff(input: {
 	targetRpe?: number | null;
 	prescription?: IntentPrescription | null;
 	policyHints?: MissionHandoffPolicyHints | null;
+	missionKind?: 'standard' | 'benchmark';
 }): MissionHandoff {
 	const focusArea = attributeIdToWorkoutFocus(input.targetAttributeId);
 	const rx = input.prescription ? repairIntentPrescription(input.prescription) : undefined;
@@ -426,6 +463,12 @@ export function buildCoachIntentHandoff(input: {
 		Array.isArray(rx?.drills) && rx.drills.length > 0 ? rx.drills : undefined;
 	// B4a: carry coach opt-in flag — advisory only, never gates XP.
 	const requiresParentVerification = rx?.requiresParentVerification === true ? true : undefined;
+	const missionKind =
+		input.missionKind === 'benchmark' || rx?.benchmarkDrillId ?
+			'benchmark'
+		:	'standard';
+	const benchmarkDrillId = rx?.benchmarkDrillId;
+	const benchmarkTargetValue = rx?.benchmarkTargetValue;
 	return {
 		missionId: input.missionId,
 		source: 'coach_intent',
@@ -438,6 +481,9 @@ export function buildCoachIntentHandoff(input: {
 		focusArea,
 		prescription: rx,
 		policyHints,
+		missionKind,
+		...(benchmarkDrillId ? { benchmarkDrillId } : {}),
+		...(benchmarkTargetValue != null ? { benchmarkTargetValue } : {}),
 		...(videoUrl ? { videoUrl } : {}),
 		...(cues ? { cues } : {}),
 		...(cadence ? { cadence } : {}),
@@ -457,6 +503,7 @@ export function stashCoachIntentHandoffForAssignment(input: {
 	targetRpe?: number | null;
 	policyHints?: MissionHandoffPolicyHints | null;
 	armExplicit?: boolean;
+	missionKind?: 'standard' | 'benchmark';
 }): MissionHandoff {
 	const prescription = repairIntentPrescription(input.prescription);
 	const policyHints = input.policyHints ?? readCachedPolicyHints();
@@ -469,6 +516,7 @@ export function stashCoachIntentHandoffForAssignment(input: {
 		durationMinutes: prescription?.targetDurationMin ?? input.durationMinutes ?? null,
 		targetRpe: prescription?.targetRpe ?? input.targetRpe ?? null,
 		policyHints,
+		missionKind: input.missionKind,
 	});
 	const payload: MissionHandoff = {
 		...handoff,
@@ -588,6 +636,7 @@ export async function stashQuestTrainHandoff(
 			drill: coachDrill,
 			policyHints: readCachedPolicyHints(),
 			armExplicit,
+			missionKind: row.missionKind === 'benchmark' ? 'benchmark' : undefined,
 		});
 	}
 	if (quest.source === 'coach_homework') {

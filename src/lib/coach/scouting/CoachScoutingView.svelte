@@ -1,7 +1,10 @@
 <script lang="ts">
 	import { browser } from '$app/environment';
+	import { goto } from '$app/navigation';
+	import { page } from '$app/state';
 	import { auth, db } from '$lib/firebase.js';
 	import { CoachTeamScope } from '$lib/coach/context/coachTeamScope.svelte.js';
+	import CoachRosterQuickEvalPanel from '$lib/coach/scouting/CoachRosterQuickEvalPanel.svelte';
 	import { teamsStore } from '$lib/stores/teams.svelte.js';
 	import {
 		collection,
@@ -59,10 +62,36 @@
 		};
 	}
 
+	type ScoutingTab = 'prospect-eval' | 'roster-eval';
+
 	const teamScope = new CoachTeamScope({ preferProfileTeam: true });
 	$effect(() => {
 		teamScope.syncSelectedTeam();
 	});
+
+	const activeTab = $derived.by((): ScoutingTab => {
+		const tab = page.url.searchParams.get('tab');
+		return tab === 'roster-eval' ? 'roster-eval' : 'prospect-eval';
+	});
+
+	const sportHint = $derived.by(() => {
+		const team = teamScope.currentTeam;
+		return typeof team?.sport === 'string' && team.sport.trim() ? team.sport.trim() : '';
+	});
+
+	function setScoutingTab(tab: ScoutingTab) {
+		const url = new URL(page.url);
+		if (tab === 'roster-eval') {
+			url.searchParams.set('tab', 'roster-eval');
+		} else {
+			url.searchParams.delete('tab');
+		}
+		const search = url.searchParams.toString();
+		void goto(`${url.pathname}${search ? `?${search}` : ''}`, {
+			replaceState: true,
+			keepFocus: true,
+		});
+	}
 
 	let prospects = $state<Prospect[]>([]);
 	let rosterLoading = $state(true);
@@ -210,23 +239,35 @@
 		<h1
 			class="tw-font-black tw-uppercase tw-tracking-tight tw-text-transparent tw-bg-clip-text tw-bg-gradient-to-r tw-from-cyan-300 tw-via-emerald-300 tw-to-cyan-400 tw-drop-shadow-[0_0_28px_rgba(20, 184, 166,0.35)] md:tw-text-4xl tw-text-2xl"
 		>
-			<span class="tw-text-slate-500 tw-bg-none tw-text-transparent">[</span>
-			<span
-				class="tw-bg-gradient-to-r tw-from-cyan-200 tw-via-emerald-200 tw-to-cyan-300 tw-bg-clip-text tw-text-transparent"
-			>
-				Proving Grounds
-			</span>
-			<span class="tw-text-slate-600"> : </span>
-			<span
-				class="tw-bg-gradient-to-r tw-from-emerald-300 tw-via-cyan-300 tw-to-emerald-400 tw-bg-clip-text tw-text-transparent"
-			>
-				Evaluation Matrix
-			</span>
-			<span class="tw-text-slate-500">]</span>
+			Scouting
 		</h1>
 		<p class="tw-mt-2 tw-text-xs tw-font-semibold tw-uppercase tw-tracking-widest tw-text-slate-500">
-			Live squad from player_lookup · assessments persist to Firestore
+			Prospect matrix · roster quick log · tryout pipeline on same surface
 		</p>
+		<div class="tw-mt-4 tw-flex tw-flex-wrap tw-justify-center tw-gap-2 md:tw-justify-start" role="tablist" aria-label="Scouting modes">
+			<button
+				type="button"
+				role="tab"
+				aria-selected={activeTab === 'prospect-eval'}
+				class="tw-rounded-lg tw-border tw-px-4 tw-py-2 tw-text-[10px] tw-font-bold tw-uppercase tw-tracking-[0.18em] tw-transition {activeTab === 'prospect-eval'
+					? 'tw-border-cyan-500/35 tw-bg-slate-800/50 tw-text-cyan-200'
+					: 'tw-border-white/10 tw-bg-transparent tw-text-slate-500 hover:tw-text-slate-300'}"
+				onclick={() => setScoutingTab('prospect-eval')}
+			>
+				Prospect eval
+			</button>
+			<button
+				type="button"
+				role="tab"
+				aria-selected={activeTab === 'roster-eval'}
+				class="tw-rounded-lg tw-border tw-px-4 tw-py-2 tw-text-[10px] tw-font-bold tw-uppercase tw-tracking-[0.18em] tw-transition {activeTab === 'roster-eval'
+					? 'tw-border-emerald-500/35 tw-bg-slate-800/50 tw-text-emerald-200'
+					: 'tw-border-white/10 tw-bg-transparent tw-text-slate-500 hover:tw-text-slate-300'}"
+				onclick={() => setScoutingTab('roster-eval')}
+			>
+				Roster eval
+			</button>
+		</div>
 	</header>
 
 	{#if !teamsStore.loaded}
@@ -254,7 +295,9 @@
 			{/if}
 		</div>
 
-		{#if rosterLoading}
+		{#if activeTab === 'roster-eval'}
+			<CoachRosterQuickEvalPanel teamId={teamScope.selectedTeamId} sportHint={sportHint} />
+		{:else if rosterLoading}
 			<p class="tw-text-sm tw-text-slate-500">Loading squad…</p>
 		{:else if rosterErr}
 			<p class="tw-text-sm tw-text-red-400" role="alert">{rosterErr}</p>

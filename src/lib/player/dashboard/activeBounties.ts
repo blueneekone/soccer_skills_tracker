@@ -10,7 +10,8 @@ import {
 } from '$lib/coach/intent/intentProgress.js';
 import type { CadenceCompletionRow } from './cadenceCompletions.js';
 import { hasCadenceCreditToday, normalizeCadenceAttributeId } from './cadenceCompletions.js';
-import { resolveCoachIntentDisplayCadence } from '$lib/types/intent.js';
+import { resolveCoachIntentDisplayCadence, type IntentPrescription } from '$lib/types/intent.js';
+import { getBenchmarkDrillById } from '$lib/player/benchmark/benchmarkDrillCatalog.js';
 
 export type QuestTier = 'daily' | 'bounty';
 export type QuestLifecycle = 'accept' | 'complete' | 'claim';
@@ -590,12 +591,22 @@ export function bountyFromCoachIntent(
 	const fulfilledBy = Array.isArray(data.fulfilledByUids) ? data.fulfilledByUids : [];
 	const playerFulfilled = Boolean(playerUid && fulfilledBy.includes(playerUid));
 	const cadence = resolveCoachIntentDisplayCadence(requiredXp, data.prescription);
+	const missionKind = data.missionKind === 'benchmark' ? 'benchmark' : 'standard';
+	const rx = data.prescription as IntentPrescription | undefined;
+	const benchmarkDrill =
+		missionKind === 'benchmark' && rx?.benchmarkDrillId ?
+			getBenchmarkDrillById(rx.benchmarkDrillId)
+		:	undefined;
+	const benchmarkTitle = benchmarkDrill?.label ?? 'Benchmark drill';
 	return {
 		id,
 		tier: 'bounty',
 		source: 'coach_intent',
-		senderLabel: 'Coach Challenge',
-		title: `${attrLabel} · ${requiredXp > 0 ? `${requiredXp.toLocaleString()} XP goal` : 'Complete your objective'}`,
+		senderLabel: missionKind === 'benchmark' ? 'Coach Benchmark' : 'Coach Challenge',
+		title:
+			missionKind === 'benchmark' ?
+				`${benchmarkTitle} · log result in Train`
+			: `${attrLabel} · ${requiredXp > 0 ? `${requiredXp.toLocaleString()} XP goal` : 'Complete your objective'}`,
 		axisId,
 		xpReward: Math.max(requiredXp, 150),
 		lifecycle: resolveCoachIntentLifecycle(id, progress, { readyToClaim: playerFulfilled }),

@@ -44,9 +44,9 @@ export const coachLinks = [
 	// War Room (/coach/tactical) — Tier 2 per PRODUCT_SURFACE_REGISTRY PS-C04; deep-link only
 	{ label: 'Tactics board',     href: '/coach/tactics-board', icon: 'action.edit' },
 	{ label: 'Match Day',         href: '/coach/match-day',     icon: 'data.activity' },
-	{ label: 'Proving Grounds',   href: '/coach/scouting',      icon: 'data.target' },
+	{ label: 'Scouting',          href: '/coach/scouting',      icon: 'data.target' },
 	{ label: 'Team Ops',          href: '/coach/logistics',     icon: 'sys.calendar' },
-	{ label: 'Trial Builder',     href: '/coach/trial-builder', icon: 'action.edit' },
+	// Trial Builder (/coach/trial-builder) — REMOVED per SURFACE-MERGE-TRIAL-EVAL; redirect → /coach/scouting?tab=roster-eval
 ];
 
 /**

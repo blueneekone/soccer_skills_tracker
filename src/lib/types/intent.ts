@@ -59,6 +59,9 @@ export type IntentScope = 'team' | 'players';
  */
 export type IntentStatus = 'active' | 'fulfilled' | 'expired' | 'cancelled';
 
+/** SURFACE-MERGE-BENCHMARKS — Forge assign kind. Default standard homework intent. */
+export type IntentMissionKind = 'standard' | 'benchmark';
+
 /**
  * One drill entry inside a bundle prescription (B3 multi-drill bundles).
  * Mirrors top-level IntentPrescription fields except no `cadence` or nested `drills`.
@@ -128,6 +131,10 @@ export interface IntentPrescription {
 	 * Absent (undefined) = off. Coerced to strict boolean on read-repair.
 	 */
 	requiresParentVerification?: boolean;
+	/** Benchmark drill id from benchmarkDrillCatalog (missionKind benchmark). */
+	benchmarkDrillId?: string;
+	/** Optional coach target numeric result for benchmark missions. */
+	benchmarkTargetValue?: number;
 }
 
 // ── Core document ─────────────────────────────────────────────────────────────
@@ -229,6 +236,12 @@ export interface IntentDoc {
    * Client idempotency key from deployIntent(); server dedupes same-key retries.
    */
   clientDeployId?: string;
+
+  /**
+   * @since 1 (SURFACE-MERGE-BENCHMARKS)
+   * 'benchmark' = numeric combine drill; player executes in Train (not Proving Grounds).
+   */
+  missionKind?: IntentMissionKind;
 }
 
 /**
@@ -378,6 +391,15 @@ export function repairIntentPrescription(raw: unknown): IntentPrescription | und
 	if (p.requiresParentVerification === true) {
 		repaired.requiresParentVerification = true;
 	}
+	if (typeof p.benchmarkDrillId === 'string' && p.benchmarkDrillId.trim()) {
+		repaired.benchmarkDrillId = p.benchmarkDrillId.trim().slice(0, 64);
+	}
+	if (
+		typeof p.benchmarkTargetValue === 'number' &&
+		Number.isFinite(p.benchmarkTargetValue)
+	) {
+		repaired.benchmarkTargetValue = p.benchmarkTargetValue;
+	}
 	return repaired;
 }
 
@@ -408,6 +430,8 @@ export interface DeployIntentInput {
   priority?: number;
   /** Optional structured drill prescription (validated server-side on deploy). */
   prescription?: IntentPrescription;
+  /** Benchmark combine mission (Forge → Train loop). */
+  missionKind?: IntentMissionKind;
   /** Client-generated idempotency key — dedupes accidental double-invoke on one click. */
   clientDeployId?: string;
 }

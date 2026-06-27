@@ -485,8 +485,8 @@ describe('Functional audit backlog A–F — regression guards', () => {
 	it('D9 team-scope Forge deploy requires assignable roster (not name-only void)', () => {
 		const engine = readFileSync(join(ROOT, 'lib/coach/intent/IntentEngine.svelte.ts'), 'utf-8');
 		const hud = readFileSync(join(ROOT, 'lib/coach/intent/ForgeDeployPanel.svelte'), 'utf-8');
-		expect(engine).toMatch(/draftScope === 'team'\s*\?\s*\n?\s*this\.assignableRosterCount > 0/);
-		expect(hud).toMatch(/draftScope === 'team'/);
+		expect(engine).toMatch(/this\.assignableRosterCount > 0/);
+		expect(engine).toMatch(/draftScope === 'team'/);
 		expect(hud).toMatch(/assignableRosterCount === 0 && roster\.length > 0/);
 		expect(hud).toMatch(/excluded from deploy until player accounts are linked/);
 	});
@@ -495,6 +495,25 @@ describe('Functional audit backlog A–F — regression guards', () => {
 		const nav = readFileSync(WORKSPACE_NAV, 'utf-8');
 		expect(nav).toMatch(/href:\s*'\/coach\/drills'/);
 		expect(nav).not.toMatch(/href:\s*'\/coach\/tactical'/);
+	});
+
+	it('COACH-NAV-DEMOTE — Trial Builder excluded; Scouting label on /coach/scouting', () => {
+		const nav = readFileSync(WORKSPACE_NAV, 'utf-8');
+		expect(nav).not.toMatch(/href:\s*'\/coach\/trial-builder'/);
+		expect(nav).toMatch(/label:\s*'Scouting'[\s\S]*href:\s*'\/coach\/scouting'/);
+		expect(nav).not.toMatch(/label:\s*'Proving Grounds'[\s\S]*href:\s*'\/coach\/scouting'/);
+	});
+
+	it('SURFACE-MERGE-TRIAL-EVAL — Scouting mounts roster quick eval; trial-builder redirects', () => {
+		const scouting = readFileSync(join(ROOT, 'lib/coach/scouting/CoachScoutingView.svelte'), 'utf-8');
+		const panel = readFileSync(join(ROOT, 'lib/coach/scouting/CoachRosterQuickEvalPanel.svelte'), 'utf-8');
+		expect(scouting).toMatch(/CoachRosterQuickEvalPanel/);
+		expect(panel).toMatch(/source: 'coach_roster_quick_log'/);
+		const redirect = readFileSync(
+			join(ROOT, 'routes/(app)/coach/trial-builder/+page.server.ts'),
+			'utf-8',
+		);
+		expect(redirect).toMatch(/\/coach\/scouting\?tab=roster-eval/);
 	});
 
 	it('F5 parent log-workout loads drills from Firestore', () => {
@@ -522,10 +541,12 @@ describe('Functional audit backlog A–F — regression guards', () => {
 });
 
 describe('Functional audit — player workout surfaces (E1/E2/E3/E4)', () => {
-	it('proving-grounds route mounts ProvingGrounds with ArmoryEngine', () => {
-		const src = readFileSync(join(ROOT, 'routes/(app)/player/proving-grounds/+page.svelte'), 'utf-8');
-		expect(src).toMatch(/ProvingGrounds/);
-		expect(src).toMatch(/armory\.loadPlayerData/);
+	it('proving-grounds route redirects to Train benchmark mode', () => {
+		const src = readFileSync(
+			join(ROOT, 'routes/(app)/player/proving-grounds/+page.server.ts'),
+			'utf-8',
+		);
+		expect(src).toMatch(/\/player\/workout\?mode=benchmark/);
 	});
 
 	it('media route mounts ClipAnalyzer and MediaVault', () => {

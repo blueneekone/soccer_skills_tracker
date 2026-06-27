@@ -8,8 +8,9 @@
 
 - Platform visual system (Gemini research) · Flow asset generation · Avatar Studio **3.6b+**
 - War Room HQ hero + sidebar nav (`/coach/tactical` — route retained, Tier 2 deep-link)
-- Player `/player/skill-tree`, `/player/proving-grounds`, `/player/media`
-- Coach Trial Builder (`/coach/trial-builder`)
+- Player `/player/skill-tree`, `/player/media`
+- ~~Player `/player/proving-grounds`~~ **REMOVED** — merged into Forge → Train benchmark loop (**SURFACE-MERGE-BENCHMARKS Done**)
+- ~~Coach Trial Builder (`/coach/trial-builder`)~~ **REMOVED** — merged into Scouting roster eval tab (**SURFACE-MERGE-TRIAL-EVAL Done**)
 - Director tournament ops (`/director/events`)
 - Admin RL policy console (`/admin/rl-policy`) — waivable at launch
 - Future personas: `/team-manager`, `/tutor`, expanded `/recruiter`
@@ -1426,10 +1427,13 @@ Loadout art (3.2+) consumed by 2.12 hero identity column.
 | **LAUNCH-functional-os** | **Done** | Three-persona functional MVP — all functional gaps closed (Epic 4/5/2.2 done; match-day `MOCK_OPERATIVES` removed → `player_lookup`-only roster + empty state; scouting + parent-lounge gaps resolved). Remaining open items are post-launch visual/avatar tracks only. | `personaFunctionalMvp.test.ts` · `coachModule.test.ts` |
 | **LAUNCH-drill-library** | **Done** | Three-tier drill library — team `teams/{id}/drills`, club `clubs/{id}/shared_drills`, platform basics (`drills` by `sportId`); Intent Engine team/club picker; spatial designer saves team drills | `personaFunctionalMvp.test.ts`, `teamDrillLibrary.ts`, `platformDrillLibrary.ts` |
 | **LAUNCH-train-lock** | **Done** | Coach-directed Train session — locked focus/drill/duration/RPE; session notes only; free log capped at 120 min | `personaFunctionalMvp.test.ts`, `coachMissionFlow.test.ts` |
+| **SURFACE-MERGE-BENCHMARKS** | **Done** | Fold Proving Grounds into Forge → Train loop — `benchmarkDrillCatalog`, Forge `missionKind: benchmark`, Train `TrainBenchmarkPanel`, `/player/proving-grounds` redirect | `surfaceMergeBenchmarks.test.ts` · `benchmarkDrillCatalog.test.ts` · `coachMissionFlow.test.ts` |
+| **SURFACE-MERGE-TRIAL-EVAL** | **Done** | Fold Trial Builder into Scouting — `CoachRosterQuickEvalPanel`, `/coach/scouting?tab=roster-eval`, `/coach/trial-builder` redirect, PS-C09 removed | `surfaceMergeTrialEval.test.ts` · `coachRosterQuickEval.test.ts` · `coachScouting.test.ts` |
 | **LAUNCH-club-drill-promote** | **Done** | Optional team drill → club workflow — director inbox on Playbook tab; `publishDrillToClub` / `dismissDrillRecommendation` | `coachModule.test.ts` |
 | **LAUNCH-loop-integrity** | **Done** | Tier-0/Tier-1/Tier-2 fragility fixes + Track B — see Functional-loop audit | `loopIntegrityGuards.test.ts`, sprint regression guards |
 | **LAUNCH-test-integrity** | **Done** | Emulator round-trip guards G1–G10 in CI (`test:firestore-rules` + `loopIntegrityGuards.test.ts`); G6 CI job shipped | `loopIntegrityGuards.test.ts`, `firestoreRulesSprint412.test.ts` |
 | **LAUNCH-scouting** | **Done** | `/coach/scouting` live squad from `player_lookup`; assessments → `teams/{teamId}/scouting_assessments` | `coachScouting.test.ts` |
+| **COACH-NAV-DEMOTE** | **Done** | Hide TABLED Trial Builder from coach primary nav; rename Proving Grounds → Scouting on `/coach/scouting` | `productSurfaceRegistry.test.ts` · `personaFunctionalMvp.test.ts` |
 | **LAUNCH-forge-nameonly** | **Done** | Intent Engine shows name-only roster rows disabled with “add email to assign” hint; not intent-targetable | `intentModule.test.ts` |
 | **LAUNCH-epic53** | **Done** | Director Field Ops deployment calendar — create practice/match/tournament; announce toggle → Epic 4.5 comms | `epic53DeploymentCalendar.test.ts` |
 | **LAUNCH-epic54** | **Done** | Weather lock — scheduled `evaluateFieldWeatherLock`, director `refreshClubWeatherLock`, `field_weather_status`, Field Ops banner + deployment block; live on dev (`WEATHER_LOCK_ENABLED=true`) | `epic54WeatherLock.test.ts` · deploy **`npm run deploy:integrations`** |
@@ -2077,8 +2081,12 @@ npm run check
 | COMMS-NAV-2.0 | **Done** | Hub Nav 2.0 — space picker + five-category sidebar per `COMMS_UX_NAV_SPEC.md`; `commsNavCategories.ts`; outbox main-pane tab; lazy channel mount preserved | `commsNav20.test.ts` |
 | COMMS-SPONSOR-REHOME | **Done** | Remove `sponsor_partner` from hub rail — director compose on `/director?tab=comms` (`CommsSponsorPartnerChannel`); parents read `ParentPartnerOffers` strip on `/parent/dashboard`; hub no longer mounts sponsor channel | `commsSponsorRehome.test.ts` |
 | COMMS-VOICE-V1 | **Done** | Scheduled parent info voice sessions — `parentVoiceSessionOps.js` (`createParentVoiceSession`, `joinParentVoiceSession`); `parent_voice_session` in canon + `channelTypes`; lobby UI linked to `team_workouts` calendar event; minors hard-blocked; join/leave `messaging_audit`; vendor stub behind `feature_flags/commsParentVoice`; no recording (COMMS-VOICE-RECORDING follow-up) | `commsParentVoiceSession.test.ts` · `functions/__tests__/commsParentVoiceSession.test.js` |
+| COMMS-PRE-QA-WIRE | **Done** | Pre-QA deploy + checklist sync — `deploy:comms` includes parent DM + voice callables; `OWNER_QA_CHECKLIST` Phase 7 QA-157–164; `DEMO_SCRIPT` Act 5 + `PRODUCT_STATE` comms bullets; `commsQaChecklist.test.ts` | `commsParentCoachDm.test.ts` · `commsParentVoiceSession.test.ts` · `commsQaChecklist.test.ts` |
+| COMMS-UX-RECOVERY | **Shipped — owner VA pending** | Team Ops native compose (no link farm); hub removes space `<select>` + category iconChar; `CommsThreadShell` + `CommsLogisticsThread`; messages strap copy; Part A (**COACH-NAV-DEMOTE**) shipped separately | `commsUxPremium.test.ts` · `commsNav20.test.ts` · `commsPhase2.test.ts` · owner screenshots @390px + desktop |
 
-**Epic 4 runs parallel to Epic 3** after **3.2** ships. **Epic 4.1–4.16d + COMMS-CLOSE + COMMS-STANDARDS-DOC + COMMS-PARENT-CIRCLE-POLICY + COMMS-PARENT-COACH-DM + COMMS-COST-HOTFIX + COMMS-NAV-2.0 + COMMS-SPONSOR-REHOME + COMMS-VOICE-V1 Done.** Comms functions deployed to `sports-skill-tracker-dev` via `npm run deploy:comms`.
+**Epic 4 runs parallel to Epic 3** after **3.2** ships. **Epic 4.1–4.16d + COMMS-CLOSE + COMMS-STANDARDS-DOC + COMMS-PARENT-CIRCLE-POLICY + COMMS-PARENT-COACH-DM + COMMS-COST-HOTFIX + COMMS-NAV-2.0 + COMMS-SPONSOR-REHOME + COMMS-VOICE-V1 + COMMS-PRE-QA-WIRE Done.** Comms functions deployed to `sports-skill-tracker-dev` via `npm run deploy:comms`.
+
+**Owner handoff (GP-ACQ-06 live QA):** After merge, run `firebase deploy --only firestore:rules,firestore:indexes` + `npm run deploy:comms` + `firebase deploy --only hosting` on `sports-skill-tracker-dev` before owner GP-ACQ-06 session.
 
 Vision: [`docs/vision/COMMS_HUB.md`](docs/vision/COMMS_HUB.md) · Standards: [`docs/vision/COMMS_PLATFORM_STANDARDS.md`](docs/vision/COMMS_PLATFORM_STANDARDS.md) · Compliance map: [`docs/SAFESPORT_COMMS_MATRIX.md`](docs/SAFESPORT_COMMS_MATRIX.md)
 

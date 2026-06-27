@@ -23,6 +23,8 @@
   } from '$lib/player/dashboard/cadenceCompletions.js';
   import { resolveAppPath } from '$lib/components/_shared/resolveAppPath.js';
   import { attributeIdToWorkoutFocus, buildPolicyHintsFromResult, clearMissionHandoff, COACH_INTENT_HINT, formatSuggestedDrillLine, isMissionHandoffStale, resolveAdaptiveDrill, resolveHandoffDurationMinutes, resolveHandoffTargetRpe, resolveDrillById, resolveMissionHandoffDisplayCadence, type MissionHandoff, type WorkoutFocus } from '$lib/player/workout/coachMissionFlow.js';
+  import BenchmarkTrainSession from '$lib/player/workout/BenchmarkTrainSession.svelte';
+  import { resolveTrainBenchmarkContext } from '$lib/player/workout/trainBenchmarkContext.js';
   import { resolveWorkoutMountHandoff } from '$lib/player/workout/applyWorkoutMountHandoff.js';
   import { listTrainMissionStripItems, continueCoachIntentOnTrain } from '$lib/player/workout/trainMissionPicker.js';
   import TrainMissionStrip from '$lib/player/workout/TrainMissionStrip.svelte';
@@ -584,6 +586,11 @@
 
   const armedPrescription = $derived(armedHandoff?.prescription ?? null);
 
+  const benchmarkTrain = $derived(resolveTrainBenchmarkContext(armedHandoff));
+  const isBenchmarkSession = $derived(benchmarkTrain.isBenchmarkSession);
+  const armedBenchmarkDrill = $derived(benchmarkTrain.armedBenchmarkDrill);
+  const armedBenchmarkTarget = $derived(benchmarkTrain.armedBenchmarkTarget);
+
   const armedDisplayCadence = $derived(resolveMissionHandoffDisplayCadence(armedHandoff, armedGoalXp));
   const armedCadenceBlocked = $derived(armedCadenceBlockedToday(armedDisplayCadence, armedHandoff?.targetAttributeId, activeMissionId, cadenceCompletions));
 
@@ -637,6 +644,24 @@
    */
   function showCadenceLimitError() {
     showDiegeticError(CADENCE_LIMIT_ERROR.title, CADENCE_LIMIT_ERROR.text);
+  }
+
+  function onBenchmarkSuccess(payload: {
+    message: string;
+    levelUp: { from: number; to: number; earned: number } | null;
+  }) {
+    if (payload.levelUp) {
+      window.dispatchEvent(
+        new CustomEvent('phoenix:level-up', {
+          detail: {
+            from: payload.levelUp.from,
+            to: payload.levelUp.to,
+            earnedXp: payload.levelUp.earned,
+          },
+        }),
+      );
+    }
+    showDiegeticSuccess('Benchmark logged', payload.message, { returnToHq: true });
   }
 
   async function logBundleStep() {
@@ -946,6 +971,31 @@
 
     <div class="pw-theater__body tw-min-w-0 bento-span-12">
       <div class="pw-theater__grid">
+        {#if isBenchmarkSession && armedBenchmarkDrill}
+          <BenchmarkTrainSession
+            drill={armedBenchmarkDrill}
+            handoff={armedHandoff}
+            {activeMissionId}
+            coachTargetValue={armedBenchmarkTarget}
+            {totalXpHud}
+            {profile}
+            {cadenceCompletions}
+            {logTrainingSession}
+            {writePlayerOsWorkout}
+            {commitWorkoutCompletion}
+            {dopamineOnCommit}
+            {dopamineOnCallable}
+            bumpXp={(delta) => playerEngine.bumpBy(delta)}
+            authUser={authStore.user ? { uid: authStore.user.uid, email: authStore.user.email } : null}
+            onCadenceBlocked={showCadenceLimitError}
+            onQuestProgress={recordQuestProgressAfterLog}
+            onClearMission={clearArmedMission}
+            onParentProof={armParentProofAfterLog}
+            onRefreshProfile={() => authStore.refresh({ silent: true })}
+            onSuccess={onBenchmarkSuccess}
+            onError={(message) => showDiegeticError('Execution failed', message)}
+          />
+        {:else}
         <div class="pw-theater__configure pd-os-deck__well">
           <div class="pw-configure-step">
             <span class="pw-eyebrow pd-panel-eyebrow">1 · Focus area</span>
@@ -1150,6 +1200,7 @@
             </div>
           {/if}
         </div>
+        {/if}
       </div>
     </div>
 
@@ -1162,6 +1213,7 @@
       />
     {/if}
 
+    {#if !isBenchmarkSession}
     <div class="pw-theater__transmit">
       {#if isBundleMode}
         <button
@@ -1205,6 +1257,7 @@
         {/if}
       {/if}
     </div>
+    {/if}
   </div>
   </div>
 

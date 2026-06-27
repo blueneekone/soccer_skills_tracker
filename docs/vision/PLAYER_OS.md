@@ -254,6 +254,9 @@ Secondary and in-nav player routes now match HQ / Armory / Stats dossier vocabul
 | `/stats` | `player-dossier-root` | Operative Analytics |
 | `/player/armory` | `player-dossier-root` | Armory workspace |
 | `/player/workout` | `player-dossier-root` | `Train / Log session` |
+
+**Benchmark combine drills (SURFACE-MERGE-BENCHMARKS):** No standalone `/player/proving-grounds` terminal. Coach assigns `missionKind: benchmark` from Forge; player accepts on HQ mission rail and logs numeric results in **Train** (`TrainBenchmarkPanel`). XP flows via `logTrainingSession`; Scouts Six display stats dual-write to `users.armory.stats` until server benchmark fields land on `player_stats`.
+
 | `/player/tracker` | `player-dossier-root` | `Progress / Training tracker` |
 | `/player/skill-tree` | `player-dossier-root` | `Progress / Skill tree` |
 | `/player/settings` | `player-dossier-root ps-settings-root` | `Profile / Settings` |

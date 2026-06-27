@@ -1,3 +1,5 @@
+import type { MissionHandoffSource } from '$lib/player/workout/coachMissionFlow.js';
+
 /** Max minutes for self-directed player workout logs (realistic session cap). */
 export const FREE_LOG_DURATION_MAX_MINUTES = 120;
 
@@ -8,14 +10,14 @@ export function clampFreeLogDurationMinutes(raw: number): number {
 }
 
 export function isCoachDirectedHandoff(
-	source: 'coach_intent' | 'coach_homework' | undefined | null,
+	source: MissionHandoffSource | undefined | null,
 ): boolean {
 	return source === 'coach_intent' || source === 'coach_homework';
 }
 
 /** Post-log diegetic suffix when a cadence coach intent session was credited. */
 export function coachCadenceLogSuccessSuffix(
-	source: 'coach_intent' | 'coach_homework' | undefined | null,
+	source: MissionHandoffSource | undefined | null,
 	cadence: { sessionsPerWindow: number; windowDays: number } | undefined | null,
 ): string {
 	return source === 'coach_intent' && cadence ? " · Counts toward this week's assignment." : '';

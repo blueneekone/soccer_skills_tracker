@@ -166,6 +166,24 @@ describe('PRODUCT_SURFACE_REGISTRY gospel guards', () => {
 		expect(coachHrefs).not.toContain('/coach/tactical');
 	});
 
+	it('COACH-NAV-DEMOTE — Trial Builder excluded; Scouting label on /coach/scouting', () => {
+		const nav = readFileSync(WORKSPACE_NAV, 'utf-8');
+		expect(nav).not.toMatch(/href:\s*'\/coach\/trial-builder'/);
+		expect(nav).toMatch(/label:\s*'Scouting'[\s\S]*href:\s*'\/coach\/scouting'/);
+		expect(nav).not.toMatch(/label:\s*'Proving Grounds'[\s\S]*href:\s*'\/coach\/scouting'/);
+	});
+
+	it('SURFACE-MERGE-TRIAL-EVAL — PS-C09 removed; roster eval merged into Scouting', () => {
+		const trialBuilder = rows.find((r) => r.route === '/coach/trial-builder');
+		expect(trialBuilder).toBeDefined();
+		expect(trialBuilder!.id).toBe('PS-C09');
+		expect(registrySrc).toMatch(/\*\*removed\*\*/);
+		expect(registrySrc).toMatch(/SURFACE-MERGE-TRIAL-EVAL/);
+		const scouting = rows.find((r) => r.route === '/coach/scouting');
+		expect(scouting?.label).toBe('Scouting');
+		expect(registrySrc).toMatch(/roster quick log/);
+	});
+
 	it('PLATFORM_BUILD_MANDATES rejects Trinity HUD on Coach Tier 1', () => {
 		const mandates = readFileSync(
 			join(ROOT, '..', 'docs/vision/PLATFORM_BUILD_MANDATES.md'),

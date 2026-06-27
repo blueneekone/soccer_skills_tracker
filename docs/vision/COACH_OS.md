@@ -27,10 +27,9 @@ Route: `/coach` and sub-routes · **Tier authority:** [`PRODUCT_SURFACE_REGISTRY
 | Field Station | `/coach/drills` | 2 | visible | Drill library, spatial designer — optional QA (QA-143/144) |
 | Team Ops | `/coach/logistics` | 2 | visible | SafeSport parent announcements |
 | Match-day | `/coach/match-day` | 2 | visible | Cartridge simulator, lineup |
-| Proving Grounds | `/coach/scouting` | 2 | visible | Evaluations, recruit pipeline |
+| Scouting | `/coach/scouting` | 2 | visible | Prospect eval matrix, roster quick log (`trials`), tryout pipeline |
 | War Room | `/coach/tactical` | 2 | **hidden** | Trinity tactical board — deep-link only pre-acquisition |
 | Tactics board | `/coach/tactics-board` | 2 | visible | FacilityScheduler / command board |
-| Trial Builder | `/coach/trial-builder` | 3 | visible | Post-acquisition tryout tooling |
 
 ---
 

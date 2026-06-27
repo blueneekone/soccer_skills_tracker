@@ -36,6 +36,13 @@ describe('LAUNCH-scouting — coach Proving Grounds wiring', () => {
 		expect(src).toMatch(/CoachTeamScope/);
 	});
 
+	it('SURFACE-MERGE-TRIAL-EVAL — CoachScoutingView mounts roster quick eval tab', () => {
+		const src = readFileSync(VIEW, 'utf8');
+		expect(src).toMatch(/CoachRosterQuickEvalPanel/);
+		expect(src).toMatch(/roster-eval/);
+		expect(src).toMatch(/setScoutingTab/);
+	});
+
 	it('firestore.rules defines scouting_assessments under teams with coach write', () => {
 		const rules = readFileSync(RULES, 'utf8');
 		expect(rules).toMatch(/match \/scouting_assessments\/\{playerKey\}/);

@@ -52,6 +52,12 @@
 		onRemoveBundleDrill = (_index: number) => {},
 		onUpdateBundleDrill = (_index: number, _patch: Partial<{ drillId: string; drillTitle: string; sets: number; repsPerSet: number }>) => {},
 		onRefreshRoster = (() => {}) as () => void | Promise<void>,
+		draftMissionKind = $bindable('standard' as 'standard' | 'benchmark'),
+		draftBenchmarkDrillId = $bindable(''),
+		draftBenchmarkTargetValue = $bindable(0),
+		benchmarkDrills = [] as Array<{ id: string; label: string; category: string; baseXP: number }>,
+		onMissionKindChange = () => {},
+		onBenchmarkDrillChange = () => {},
 	} = $props();
 
 	const deployBtnLabel = $derived(
@@ -105,6 +111,9 @@
 
 	const deployBlockReason = $derived.by(() => {
 		if (canDeploy || deployPhase !== 'idle') return '';
+		if (draftMissionKind === 'benchmark' && !draftBenchmarkDrillId) {
+			return 'Select a benchmark drill to deploy.';
+		}
 		if (!draftAttributeId) return 'Select a target attribute to deploy.';
 		if (draftRequiredXp < 1) return 'Set XP bounty to at least 1.';
 		if (draftDurationDays < 1) return 'Set duration to at least 1 day.';
@@ -131,6 +140,89 @@
 
 		<div class="tw-h-px tw-w-full tw-bg-[#14b8a6]/10"></div>
 
+		<!-- ── Mission kind ───────────────────────────────── -->
+		<div class="tw-flex tw-flex-col tw-gap-1.5">
+			<span class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-[#14b8a6]/40 tw-uppercase">
+				Mission kind
+			</span>
+			<div class="tw-flex tw-gap-2">
+				<button
+					type="button"
+					class="tw-flex-1 tw-py-1.5 tw-rounded-lg tw-font-mono tw-text-[9px] tw-tracking-widest
+					       tw-uppercase tw-border tw-transition-all tw-min-h-[44px]"
+					style={draftMissionKind === 'standard'
+						? 'border-color:#14b8a6; color:#14b8a6; background:rgba(20, 184, 166,0.1);'
+						: 'border-color:rgba(20, 184, 166,0.2); color:rgba(20, 184, 166,0.35);'}
+					onclick={() => {
+						draftMissionKind = 'standard';
+						onMissionKindChange();
+					}}
+				>
+					Homework
+				</button>
+				<button
+					type="button"
+					class="tw-flex-1 tw-py-1.5 tw-rounded-lg tw-font-mono tw-text-[9px] tw-tracking-widest
+					       tw-uppercase tw-border tw-transition-all tw-min-h-[44px]"
+					style={draftMissionKind === 'benchmark'
+						? 'border-color:#14b8a6; color:#14b8a6; background:rgba(20, 184, 166,0.1);'
+						: 'border-color:rgba(20, 184, 166,0.2); color:rgba(20, 184, 166,0.35);'}
+					onclick={() => {
+						draftMissionKind = 'benchmark';
+						onMissionKindChange();
+					}}
+				>
+					Benchmark
+				</button>
+			</div>
+			<p class="tw-font-mono tw-text-[8px] tw-text-white/20 tw-leading-relaxed">
+				Benchmark missions assign a combine drill — player logs numeric result in Train.
+			</p>
+		</div>
+
+		{#if draftMissionKind === 'benchmark'}
+			<div class="tw-flex tw-flex-col tw-gap-1.5">
+				<label for="hud-benchmark" class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-[#14b8a6]/40 tw-uppercase">
+					Benchmark drill
+				</label>
+				<select
+					id="hud-benchmark"
+					bind:value={draftBenchmarkDrillId}
+					onchange={() => onBenchmarkDrillChange()}
+					class="tw-w-full tw-rounded-lg tw-border tw-border-[#14b8a6]/20 tw-bg-[#020202]
+					       tw-text-[#14b8a6]/80 tw-font-mono tw-text-[10px] tw-tracking-widest
+					       tw-px-3 tw-py-1.5 tw-outline-none tw-appearance-none
+					       focus:tw-border-[#14b8a6] tw-transition-colors"
+				>
+					{#each benchmarkDrills as drill (drill.id)}
+						<option value={drill.id}>
+							[{drill.category}] {drill.label} · {drill.baseXP}+ XP
+						</option>
+					{/each}
+				</select>
+				<div class="tw-flex tw-flex-col tw-gap-1">
+					<label for="hud-benchmark-target" class="tw-font-mono tw-text-[8px] tw-text-[#14b8a6]/35 tw-uppercase">
+						Target result (optional)
+					</label>
+					<input
+						id="hud-benchmark-target"
+						type="number"
+						step="any"
+						min="0"
+						placeholder="Coach target — optional"
+						bind:value={draftBenchmarkTargetValue}
+						class="tw-w-full tw-rounded-lg tw-border tw-border-[#14b8a6]/20 tw-bg-[#020202]
+						       tw-text-[#14b8a6]/80 tw-font-mono tw-text-[10px] tw-tracking-wide
+						       tw-px-2 tw-py-1.5 tw-outline-none focus:tw-border-[#14b8a6]
+						       placeholder:tw-text-white/20"
+					/>
+				</div>
+				<p class="tw-font-mono tw-text-[8px] tw-text-white/25 tw-leading-relaxed">
+					XP bounty auto-seeds from catalog base reward. Attribute maps to Scouts Six stat axis.
+				</p>
+			</div>
+		{/if}
+
 		{#if rosterError}
 			<div
 				class="tw-flex tw-flex-col tw-gap-2 tw-rounded-lg tw-border tw-border-[#ff3040]/30 tw-bg-[#ff3040]/5 tw-p-3"
@@ -152,6 +244,8 @@
 				</button>
 			</div>
 		{/if}
+
+		{#if draftMissionKind === 'standard'}
 		<!-- ── Attribute picker ───────────────────────────── -->
 		<div class="tw-flex tw-flex-col tw-gap-1.5">
 			<label for="hud-attr" class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-[#14b8a6]/40 tw-uppercase">
@@ -170,48 +264,6 @@
 					<option value={attr.id}>{attr.name}</option>
 				{/each}
 			</select>
-		</div>
-
-		<!-- ── XP bounty ──────────────────────────────────── -->
-		<div class="tw-flex tw-flex-col tw-gap-1.5">
-			<div class="tw-flex tw-items-center tw-justify-between">
-				<label for="hud-xp" class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-[#14b8a6]/40 tw-uppercase">
-					XP BOUNTY
-				</label>
-				<span class="tw-font-mono tw-text-[14px] tw-tracking-wider tw-text-[#14b8a6] tw-font-bold">
-					{draftRequiredXp}
-				</span>
-			</div>
-			<input
-				id="hud-xp"
-				type="range"
-				min="50"
-				max="2000"
-				step="25"
-				bind:value={draftRequiredXp}
-				class="tw-w-full tw-accent-[#14b8a6] tw-h-1 tw-rounded-full tw-cursor-pointer"
-			/>
-		</div>
-
-		<!-- ── Duration ───────────────────────────────────── -->
-		<div class="tw-flex tw-flex-col tw-gap-1.5">
-			<div class="tw-flex tw-items-center tw-justify-between">
-				<label for="hud-dur" class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-[#14b8a6]/40 tw-uppercase">
-					DURATION
-				</label>
-				<span class="tw-font-mono tw-text-[14px] tw-tracking-wider tw-text-[#14b8a6] tw-font-bold">
-					{draftDurationDays}d
-				</span>
-			</div>
-			<input
-				id="hud-dur"
-				type="range"
-				min="1"
-				max="90"
-				step="1"
-				bind:value={draftDurationDays}
-				class="tw-w-full tw-accent-[#14b8a6] tw-h-1 tw-rounded-full tw-cursor-pointer"
-			/>
 		</div>
 
 		<!-- ── Prescription volume ──────────────────────── -->
@@ -433,7 +485,51 @@
 		</p>
 	{/if}
 </div>
+		{/if}
 
+		<!-- ── XP bounty ──────────────────────────────────── -->
+		<div class="tw-flex tw-flex-col tw-gap-1.5">
+			<div class="tw-flex tw-items-center tw-justify-between">
+				<label for="hud-xp" class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-[#14b8a6]/40 tw-uppercase">
+					XP BOUNTY
+				</label>
+				<span class="tw-font-mono tw-text-[14px] tw-tracking-wider tw-text-[#14b8a6] tw-font-bold">
+					{draftRequiredXp}
+				</span>
+			</div>
+			<input
+				id="hud-xp"
+				type="range"
+				min="50"
+				max="2000"
+				step="25"
+				bind:value={draftRequiredXp}
+				class="tw-w-full tw-accent-[#14b8a6] tw-h-1 tw-rounded-full tw-cursor-pointer"
+			/>
+		</div>
+
+		<!-- ── Duration ───────────────────────────────────── -->
+		<div class="tw-flex tw-flex-col tw-gap-1.5">
+			<div class="tw-flex tw-items-center tw-justify-between">
+				<label for="hud-dur" class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-[#14b8a6]/40 tw-uppercase">
+					DURATION
+				</label>
+				<span class="tw-font-mono tw-text-[14px] tw-tracking-wider tw-text-[#14b8a6] tw-font-bold">
+					{draftDurationDays}d
+				</span>
+			</div>
+			<input
+				id="hud-dur"
+				type="range"
+				min="1"
+				max="90"
+				step="1"
+				bind:value={draftDurationDays}
+				class="tw-w-full tw-accent-[#14b8a6] tw-h-1 tw-rounded-full tw-cursor-pointer"
+			/>
+		</div>
+
+	{#if draftMissionKind === 'standard'}
 	<!-- ── Cadence (optional sessions / week) ────────── -->
 	<div class="tw-flex tw-flex-col tw-gap-1.5">
 		<div class="tw-flex tw-items-center tw-justify-between">
@@ -462,6 +558,7 @@
 			</p>
 		{/if}
 	</div>
+	{/if}
 
 	<!-- ── Parent verification opt-in (B4a) ──────────── -->
 	<div class="tw-flex tw-items-center tw-justify-between tw-gap-3">

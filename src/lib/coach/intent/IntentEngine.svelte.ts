@@ -56,6 +56,12 @@ import {
 	buildXpBaselineSnapshot,
 	mergeIntentBaselines,
 } from '$lib/coach/intent/intentProgress.js';
+import {
+	BENCHMARK_DRILLS,
+	benchmarkStatKeyToAttributeId,
+	getBenchmarkDrillById,
+} from '$lib/player/benchmark/benchmarkDrillCatalog.js';
+import type { IntentMissionKind } from '$lib/types/intent.js';
 
 export type DeployPhase = 'idle' | 'saving' | 'success' | 'error';
 
@@ -120,6 +126,11 @@ export class IntentEngine {
 		sets: number;
 		repsPerSet: number;
 	}>>([]);
+	/** SURFACE-MERGE-BENCHMARKS — standard homework vs combine benchmark. */
+	draftMissionKind = $state<IntentMissionKind>('standard');
+	draftBenchmarkDrillId = $state(BENCHMARK_DRILLS[0]?.id ?? '');
+	/** 0 = no numeric target; coach may set optional performance goal. */
+	draftBenchmarkTargetValue = $state(0);
 
 	// ── Mutation state ──────────────────────────────────────────────────────────
 	deployPhase = $state<DeployPhase>('idle');
@@ -219,15 +230,23 @@ export class IntentEngine {
 	);
 
 	/** True if draft is ready to deploy. */
-	canDeploy = $derived(
-		!!this.draftAttributeId &&
-		this.draftRequiredXp >= 1 &&
-		this.draftDurationDays >= 1 &&
-		(this.draftScope === 'team' ?
-			this.assignableRosterCount > 0
-		:	this.selectedAssignableCount > 0) &&
-		this.deployPhase === 'idle',
-	);
+	canDeploy = $derived.by(() => {
+		if (
+			!this.draftAttributeId ||
+			this.draftRequiredXp < 1 ||
+			this.draftDurationDays < 1 ||
+			this.deployPhase !== 'idle'
+		) {
+			return false;
+		}
+		if (this.draftMissionKind === 'benchmark') {
+			if (!getBenchmarkDrillById(this.draftBenchmarkDrillId)) return false;
+		}
+		if (this.draftScope === 'team') {
+			return this.assignableRosterCount > 0;
+		}
+		return this.selectedAssignableCount > 0;
+	});
 
 	/** Attributes from the sport config for the attribute picker. */
 	attributes = $derived(getRpgSportConfig(this._sportId).attributes as Array<{ id: string; name: string; hexColor: string }>);
@@ -291,11 +310,55 @@ export class IntentEngine {
 		this.draftDrillTitle = '';
 		this.draftBundleDrills = [];
 		this.draftRequiresParentVerification = false;
+		this.draftMissionKind = 'standard';
+		this.draftBenchmarkDrillId = BENCHMARK_DRILLS[0]?.id ?? '';
+		this.draftBenchmarkTargetValue = 0;
 		this.deployPhase = 'idle';
 		this.deployError = '';
 	}
 
+	onMissionKindChanged() {
+		if (this.draftMissionKind === 'benchmark') {
+			const drill = getBenchmarkDrillById(this.draftBenchmarkDrillId) ?? BENCHMARK_DRILLS[0];
+			if (drill) {
+				this.draftBenchmarkDrillId = drill.id;
+				this.draftAttributeId = benchmarkStatKeyToAttributeId(drill.statKey);
+				this.draftRequiredXp = drill.baseXP;
+				this.draftDrillId = '';
+				this.draftDrillTitle = drill.label;
+				this.draftBundleDrills = [];
+			}
+		}
+	}
+
+	onBenchmarkDrillChanged() {
+		if (this.draftMissionKind !== 'benchmark') return;
+		const drill = getBenchmarkDrillById(this.draftBenchmarkDrillId);
+		if (!drill) return;
+		this.draftAttributeId = benchmarkStatKeyToAttributeId(drill.statKey);
+		this.draftRequiredXp = drill.baseXP;
+		this.draftDrillTitle = drill.label;
+	}
+
 	buildDeployPrescription(): IntentPrescription {
+		if (this.draftMissionKind === 'benchmark') {
+			const drill = getBenchmarkDrillById(this.draftBenchmarkDrillId);
+			if (!drill) {
+				throw new Error('Select a benchmark drill before deploy.');
+			}
+			const rx: IntentPrescription = {
+				sets: 1,
+				bilateral: false,
+				drillTitle: drill.label.slice(0, 200),
+				benchmarkDrillId: drill.id,
+			};
+			const target = Number(this.draftBenchmarkTargetValue);
+			if (Number.isFinite(target) && target > 0) {
+				rx.benchmarkTargetValue = target;
+			}
+			return rx;
+		}
+
 		const sets = Math.max(1, Math.min(99, Math.floor(Number(this.draftPrescriptionSets) || 1)));
 		const repsRaw = Math.floor(Number(this.draftPrescriptionRepsPerSet) || 0);
 		const rx: IntentPrescription = {
@@ -438,6 +501,7 @@ export class IntentEngine {
 					:	[],
 				priority: this.draftPriorityMission ? 10 : 100,
 				prescription: this.buildDeployPrescription(),
+				missionKind: this.draftMissionKind,
 				clientDeployId,
 			});
 			if (deployResult.data.intentId) {

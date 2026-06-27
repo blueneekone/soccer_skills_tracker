@@ -8,6 +8,7 @@ import {
 	clearMissionHandoff,
 	clearNonExplicitMissionHandoff,
 	formatSuggestedDrillLine,
+	isBenchmarkMissionHandoff,
 	MISSION_HANDOFF_KEY,
 	parseBundleDrills,
 	parseCadence,
@@ -548,5 +549,23 @@ describe('coachMissionFlow', () => {
 		expect(result?.id).toBe('team-drill-1');
 		expect(result?.title).toBe('Team cone weave');
 		vi.restoreAllMocks();
+	});
+
+	it('buildCoachIntentHandoff surfaces benchmark mission kind for Forge deploy', () => {
+		const handoff = buildCoachIntentHandoff({
+			missionId: 'intent-benchmark-1',
+			targetAttributeId: 'pace',
+			requiredXp: 350,
+			missionKind: 'benchmark',
+			prescription: {
+				sets: 1,
+				bilateral: false,
+				benchmarkDrillId: 'sprint-30m',
+				drillTitle: '30M SPRINT',
+			},
+		});
+		expect(handoff.missionKind).toBe('benchmark');
+		expect(isBenchmarkMissionHandoff(handoff)).toBe(true);
+		expect(handoff.benchmarkDrillId).toBe('sprint-30m');
 	});
 });
