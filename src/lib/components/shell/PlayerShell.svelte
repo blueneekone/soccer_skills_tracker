@@ -185,7 +185,7 @@
 		<div class="ps-scroll-shell tw-relative">
 			<div class="ps-canvas-bg" aria-hidden="true"></div>
 			<main
-				class="ps-canvas ps-canvas--scroll-inner player-dossier-root pd-grain pd-chrome-root tw-relative tw-z-[1]"
+				class="ps-canvas ps-canvas--scroll-inner player-dossier-root pd-grain pd-chrome-root tw-relative tw-z-[1] bento-grid bento-grid--12col"
 				data-dopamine={vanguardFlags.dopamineEnabled ? 'on' : 'off'}
 			>
 				{@render children?.()}

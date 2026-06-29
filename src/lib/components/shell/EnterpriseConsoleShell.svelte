@@ -344,7 +344,7 @@
 			</div>
 		</header>
 
-		<div class="ec-canvas">
+		<div class="ec-canvas bento-grid bento-grid--12col">
 			{@render children?.()}
 		</div>
 	</div>

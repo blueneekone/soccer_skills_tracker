@@ -11,13 +11,13 @@ Governance Alignment: All code generation must strictly adhere to the Svelte 5 (
 Phase 1: Foundational Stabilization (Epic 1)
 Objective: Establish a pristine, bug-free foundation and implement the core "Billion-Dollar" aesthetic.
 
-[ ] Vite Pipeline & Caching: Transition to cryptographic file-hash versioning ([name].[hash].js) and eradicate legacy ?v= query-string parameters.  
+[x] Vite Pipeline & Caching: Transition to cryptographic file-hash versioning ([name].[hash].js) and eradicate legacy ?v= query-string parameters.  
 
-[ ] Surgical JavaScript Remediation: Repair broken imports, bind authentication endpoints in app.js, and restore the CSV export functionality.  
+[x] Surgical JavaScript Remediation: Repair broken imports, bind authentication endpoints in app.js, and restore the CSV export functionality.  
 
-[ ] Infrastructure Economics: Remove minInstances from Firebase Cloud Functions to enforce a scale-to-zero, pay-as-you-go model.  
+[x] Infrastructure Economics: Remove minInstances from Firebase Cloud Functions to enforce a scale-to-zero, pay-as-you-go model.  
 
-[ ] Bento Grid Migration: Transition all primary SvelteKit layout shells to a padding-neutral 12-column Bento Grid topology using fluid clamp() spacing.  
+[x] Bento Grid Migration: Transition all primary SvelteKit layout shells to a padding-neutral 12-column Bento Grid topology using fluid clamp() spacing.  
 
 Phase 2: The Legal Shield & Security (Epic 2 & Epic 3)
 Objective: Lock down the multi-tenant architecture and achieve strict COPPA 2026 compliance.

@@ -230,7 +230,7 @@ export const exportStatsCSV = (logs, playerName) => {
     let csvContent = "data:text/csv;charset=utf-8,";
     csvContent += "Date,Time,Player,Minutes,Drills / Workout Type\n";
     logs.forEach(log => {
-        const d = log.timestamp ? log.timestamp.toDate() : new Date();
+        const d = safeGetDate(log);
         const dateStr = d.toLocaleDateString();
         const timeStr = d.toLocaleTimeString();
         let drills = "";

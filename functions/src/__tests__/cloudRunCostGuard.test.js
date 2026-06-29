@@ -67,10 +67,5 @@ describe('cloudRunCostGuard', () => {
         /\.\.\.ALPHA_CALLABLE_OPTS/,
         'getAdaptiveWorkoutPolicy must spread ALPHA_CALLABLE_OPTS',
     );
-    assert.match(
-        alphaOpts,
-        /minInstances:\s*0/,
-        'ALPHA_CALLABLE_OPTS must set minInstances: 0',
-    );
   });
 });
