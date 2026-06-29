@@ -47,10 +47,18 @@ describe('commsPhase1 — unified hub shell', () => {
 		expect(src).toMatch(/CommsHubShell/);
 	});
 
-	it('CoachLogisticsView embeds native announcement compose on Team Ops comms tab', () => {
+	it('CoachLogisticsView mounts CoachTeamCommsPanel on Team Ops comms tab', () => {
 		const src = readFileSync(LOGISTICS_VIEW, 'utf8');
-		expect(src).toMatch(/ParentAnnouncementCompose/);
-		expect(src).toMatch(/Open team comms/);
+		expect(src).toMatch(/CoachTeamCommsPanel/);
+		expect(src).not.toMatch(/Open team comms/);
+		expect(src).not.toMatch(/href="\/messages/);
+	});
+
+	it('messages page redirects coach role to Team Ops comms', () => {
+		const src = readFileSync(MESSAGES_PAGE, 'utf8');
+		expect(src).toMatch(/role !== 'coach'/);
+		expect(src).toMatch(/\/coach\/logistics/);
+		expect(src).toMatch(/tab.*comms/);
 	});
 
 	it('parent dashboard includes latest announcements strip', () => {

@@ -51,20 +51,22 @@ describe('commsPhase2 — hub shell expansion', () => {
 });
 
 describe('commsPhase2 — logistics migration', () => {
-	it('CoachLogisticsView embeds ParentAnnouncementCompose — not a link farm', () => {
+	it('CoachLogisticsView mounts CoachTeamCommsPanel — native Team Ops comms, not link farm', () => {
 		const src = readFileSync(LOGISTICS_VIEW, 'utf8');
-		expect(src).toMatch(/ParentAnnouncementCompose/);
+		expect(src).toMatch(/CoachTeamCommsPanel/);
 		expect(src).not.toMatch(/MessagesTab/);
-		expect(src).toMatch(/Open team comms/);
+		expect(src).not.toMatch(/Open team comms/);
+		expect(src).not.toMatch(/href="\/messages/);
 		expect(src).not.toMatch(/Game day logistics/);
 		expect(src).not.toMatch(/Practice logistics/);
 	});
 
-	it('CommsLogisticsChannel uses CommsLogisticsThread — not MessagesTab', () => {
+	it('CommsLogisticsChannel supports embedMode with button sub-tabs', () => {
 		expect(existsSync(LOGISTICS_CHANNEL)).toBe(true);
 		const src = readFileSync(LOGISTICS_CHANNEL, 'utf8');
 		expect(src).toMatch(/CommsLogisticsThread/);
 		expect(src).not.toMatch(/MessagesTab/);
+		expect(src).toMatch(/embedMode/);
 	});
 });
 

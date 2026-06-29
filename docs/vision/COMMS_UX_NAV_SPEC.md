@@ -106,10 +106,13 @@ Full five-category tree under selected team/club space + **Outbox** tab.
 | `?space=team:{teamId}` | Select team space |
 | `?channel=announcements` | Open announcements for current space |
 | `?channel=parent_lounge` | Open Parent Circle |
+| `?channel=parent_coach_dm` | Open parent↔coach DM |
 | `?channel=household` | Open household thread |
 | `?compose=1` | Focus composer when type allows post |
 
-Team Ops (`/coach/logistics`) and Director comms tab link here — **no embedded compose islands** (Epic 4.13a Done).
+**Team Ops embed (`/coach/logistics?tab=comms`):** Coach team comms mount a native **`CommsWorkspaceShell`** (coach-team variant) inside `CoachTeamCommsPanel` — left category rail + main pane. Default channel is **`parent_coach_dm`** (inbox-first). No pill tabs; active channel uses cyan left-border rail affordance per [`COACH_OS_FOUNDATION.md`](./COACH_OS_FOUNDATION.md). Coach `/messages` **redirects** to Team Ops with query params preserved (`channel`, `section`, `sub`, `teamId`).
+
+Director comms tab links to hub deep links for club-wide surfaces — team-scoped coach workflows stay on Team Ops.
 
 ---
 

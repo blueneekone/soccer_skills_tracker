@@ -14,6 +14,14 @@
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { CommsEngine } from '$lib/services/comms.svelte.js';
 
+	let {
+		teamId: teamIdOverride = '',
+		readOnlyStrip = false,
+	}: {
+		teamId?: string;
+		readOnlyStrip?: boolean;
+	} = $props();
+
 	type Announcement = {
 		id: string;
 		teamId: string;
@@ -125,7 +133,7 @@
 			return;
 		}
 
-		const teamId = profile?.teamId ? String(profile.teamId) : '';
+		const teamId = teamIdOverride?.trim() || (profile?.teamId ? String(profile.teamId) : '');
 		const isStaff = role === 'coach' || role === 'director';
 
 		// Roles without an announcements surface
@@ -275,7 +283,7 @@
 	}
 </script>
 
-<section class="ann-root" aria-labelledby="ann-heading">
+<section class="ann-root" class:ann-root--strip={readOnlyStrip} aria-labelledby="ann-heading">
 	<header class="ann-head">
 		<h3 id="ann-heading" class="ann-title">
 			<span class="ann-icon" aria-hidden="true">📣</span> Team Announcements
@@ -285,6 +293,8 @@
 				Official staff announcements delivered to your guardian account.
 			{:else if role === 'player'}
 				Official announcements from your coaching staff.
+			{:else if readOnlyStrip}
+				Read-only record of announcements sent to this team.
 			{:else}
 				Announcements sent to your team — read-only record.
 			{/if}

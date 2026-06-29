@@ -28,8 +28,7 @@ Route: `/coach` and sub-routes · **Tier authority:** [`PRODUCT_SURFACE_REGISTRY
 | Team Ops | `/coach/logistics` | 2 | visible | SafeSport parent announcements |
 | Match-day | `/coach/match-day` | 2 | visible | Cartridge simulator, lineup |
 | Scouting | `/coach/scouting` | 2 | visible | Prospect eval matrix, roster quick log (`trials`), tryout pipeline |
-| War Room | `/coach/tactical` | 2 | **hidden** | Trinity tactical board — deep-link only pre-acquisition |
-| Tactics board | `/coach/tactics-board` | 2 | visible | FacilityScheduler / command board |
+| War Room | `/coach/tactical` | 2 | visible | Tactical board — `TacticalArena` + War Room persistence (`teams/{teamId}/tactics/wr_{uid}`) |
 
 ---
 

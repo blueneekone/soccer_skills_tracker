@@ -58,6 +58,7 @@ exports.directorInviteCoach = adminOps.directorInviteCoach;
 exports.claimCoachInvite = adminOps.claimCoachInvite;
 exports.secureAllocateTeamSeats = adminOps.secureAllocateTeamSeats;
 exports.secureAddPlayer = adminOps.secureAddPlayer;
+exports.secureBulkAddPlayers = adminOps.secureBulkAddPlayers;
 exports.secureRemovePlayer = adminOps.secureRemovePlayer;
 exports.secureUpdateJersey = adminOps.secureUpdateJersey;
 exports.directorUpsertField = adminOps.directorUpsertField;

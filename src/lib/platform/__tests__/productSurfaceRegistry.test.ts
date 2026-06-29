@@ -139,11 +139,11 @@ describe('PRODUCT_SURFACE_REGISTRY gospel guards', () => {
 		}
 	});
 
-	it('War Room is Tier 2 with nav_visible=false', () => {
+	it('War Room is Tier 2 with nav_visible=true', () => {
 		const warRoom = rows.find((r) => r.route === '/coach/tactical');
 		expect(warRoom).toBeDefined();
 		expect(warRoom!.tier).toBe(2);
-		expect(warRoom!.navVisible).toBe(false);
+		expect(warRoom!.navVisible).toBe(true);
 	});
 
 	it('workspaceNav coachLinks hrefs ⊆ registry nav_visible=true coach routes', () => {
@@ -160,10 +160,19 @@ describe('PRODUCT_SURFACE_REGISTRY gospel guards', () => {
 		}
 	});
 
-	it('War Room not in coach sidebar when registry nav_visible=false', () => {
+	it('War Room in coach sidebar when registry nav_visible=true', () => {
 		const navSrc = readFileSync(WORKSPACE_NAV, 'utf-8');
 		const coachHrefs = parseCoachNavHrefs(navSrc);
-		expect(coachHrefs).not.toContain('/coach/tactical');
+		expect(coachHrefs).toContain('/coach/tactical');
+		expect(coachHrefs).not.toContain('/coach/tactics-board');
+	});
+
+	it('WARROOM-SINGLE-SURFACE — PS-C05 removed; tactics-board merged into War Room', () => {
+		const tacticsBoard = rows.find((r) => r.route === '/coach/tactics-board');
+		expect(tacticsBoard).toBeDefined();
+		expect(tacticsBoard!.id).toBe('PS-C05');
+		expect(registrySrc).toMatch(/WARROOM-SINGLE-SURFACE/);
+		expect(registrySrc).toMatch(/redirect → `\/coach\/tactical`/);
 	});
 
 	it('COACH-NAV-DEMOTE — Trial Builder excluded; Scouting label on /coach/scouting', () => {

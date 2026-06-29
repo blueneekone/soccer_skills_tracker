@@ -51,9 +51,10 @@ describe('COMMS-PARENT-COACH-DM — CommsEngine callables', () => {
 });
 
 describe('COMMS-PARENT-COACH-DM — ParentCoachDmPanel UI', () => {
-	it('shows Message coach and Message parent affordances', () => {
+	it('shows Message coach and list-detail thread affordances', () => {
 		expect(panelSrc).toMatch(/Message coach/i);
-		expect(panelSrc).toMatch(/Message parent/i);
+		expect(panelSrc).toMatch(/New message/i);
+		expect(panelSrc).toMatch(/pcdm-thread-row/);
 	});
 
 	it('shows AD disclosure banner when includeAdOnParentDms', () => {

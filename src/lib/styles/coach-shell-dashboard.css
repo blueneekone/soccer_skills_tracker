@@ -179,6 +179,11 @@
 	border-bottom-color: var(--pd-grey-trim, #334155);
 }
 
+.coach-os-root .coach-os-facility {
+	width: 100%;
+	min-width: 0;
+}
+
 /* Actions — chamfer chips, no pills */
 .coach-os-root .media-hub-btn,
 .coach-os-root .coach-os-action-chip {
@@ -222,6 +227,8 @@
 
 /* Squad telemetry SIEM pass (dashboard embed) */
 .coach-os-root .hud-telemetry-root {
+	width: 100%;
+	min-width: 0;
 	--hud-gap: var(--coach-bento-gap, 4px);
 	--hud-radius: 0;
 }

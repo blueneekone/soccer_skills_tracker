@@ -39,6 +39,7 @@ Evidence: Tier 1 routes in [`PRODUCT_SURFACE_REGISTRY.md`](../vision/PRODUCT_SUR
 |---------|-------|-----------------|
 | Daily Intel | `/coach` | Squad telemetry hub |
 | The Forge | `/coach/forge` | `secureDeployIntent` → `team_assignments` |
+| Team Ops comms | `/coach/logistics?tab=comms` | `CoachTeamCommsPanel` + `CommsWorkspaceShell` — parent↔coach DM, announcements (`ParentAnnouncementCompose`), logistics threads; coach `/messages` **redirects** here |
 
 ### Player OS (Tier 1)
 
@@ -52,7 +53,7 @@ Evidence: Tier 1 routes in [`PRODUCT_SURFACE_REGISTRY.md`](../vision/PRODUCT_SUR
 
 | Surface | Route | Enforcement |
 |---------|-------|-------------|
-| Unified comms hub | `/messages` | `CommsHubShell` — Nav 2.0 space picker + five categories; typed channels (announcements, **Parent Circle**, household, **parent_coach_dm**, parent voice session, logistics, registration, tryouts, match day, club-wide, emergency, compliance, staff internal); `deliveryReport` + **DeliveryReceipt** on staff sends |
+| Unified comms hub | `/messages` (parent · director · recruiter) | `CommsHubShell` — Nav 2.0 space picker + five categories; typed channels (announcements, **Parent Circle**, household, **parent_coach_dm**, parent voice session, logistics, registration, tryouts, match day, club-wide, emergency, compliance, staff internal); `deliveryReport` + **DeliveryReceipt** on staff sends. **Coach team scope exception:** native embed on `/coach/logistics?tab=comms` — not PS-X01 primary surface for coach JWT |
 | Parent onboarding | `/parent/dashboard` | `ParentCommsConsentBanner` when `consentComms` false for linked child → `/parent/vpc` (4.16d); **partner offers** strip (`ParentPartnerOffers`) — not hub chat rail |
 | SafeSport DMs | `/messages` | `sendCoachPlayerMessage` blocks coach→minor DM; `commsSprint42.test.ts` |
 | Broadcast ack | `/messages` announcements | Parent "I have read this" + staff outbox rollup (`broadcastAckOps`, 4.16b) |

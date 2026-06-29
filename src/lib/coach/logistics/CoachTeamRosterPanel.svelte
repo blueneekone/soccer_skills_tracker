@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { db } from '$lib/firebase.js';
 	import { collection, onSnapshot, query, where } from 'firebase/firestore';
+	import CoachRosterImportPanel from '$lib/coach/logistics/CoachRosterImportPanel.svelte';
 
 	let { teamId = '' } = $props();
 
@@ -45,10 +46,12 @@
 <div class="ops-panel">
 	<h2 class="ops-panel__title">Roster</h2>
 	<p class="ops-panel__sub">
-		Active squad from <code>player_lookup</code> — registration-linked players on this team.
-		To add or remove players, use the roster tools on
+		Import CSV below or add one player at a time on
 		<a class="ops-link" href="/coach">Daily Intel</a>.
+		Linked players with email appear in the list automatically.
 	</p>
+
+	<CoachRosterImportPanel {teamId} />
 
 	{#if loading}
 		<p class="ops-muted">Loading roster…</p>

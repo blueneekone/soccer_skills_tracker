@@ -78,6 +78,8 @@ const CODEBASES = {
     seeds: [
       'processMedia.js',
       'ingestRoster.js',
+      'src/domains/coachRosterIngestOps.js',
+      'src/domains/rosterIngestParse.js',
       'integrations.js',
       'weather.js',
       'uploadTokens.js',

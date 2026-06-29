@@ -18,9 +18,11 @@
 	let {
 		teamId = '',
 		channelId = 'game-day',
+		embedMode = false,
 	}: {
 		teamId?: string;
 		channelId?: string;
+		embedMode?: boolean;
 	} = $props();
 
 	const myUid = $derived(authStore.user?.uid ?? '');
@@ -155,6 +157,7 @@
 {#if !teamId?.trim()}
 	<p class="plp-hint">Select a team to view logistics threads.</p>
 {:else}
+	<div data-embed-mode={embedMode ? 'team-ops' : undefined} class:coach-team-ops-thread={embedMode}>
 	<CommsThreadShell
 		{title}
 		{subtitle}
@@ -236,4 +239,5 @@
 			{/if}
 		{/snippet}
 	</CommsThreadShell>
+	</div>
 {/if}

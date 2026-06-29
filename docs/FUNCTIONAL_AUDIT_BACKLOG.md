@@ -74,8 +74,8 @@ feature or persistence bug · `P2` = discoverability / empty-state / edge case.
 | E3 | **Done** | MediaVault, TransferPortal | `/player/media`; `/parent/household`; director registrars |
 | E4 | **Done** | DrillExecution, IntrinsicSanctuary | `/player/workout`; `/player/tracker` |
 | E5 | **Done** | PlayerActivityStreak | Player HQ metrics band |
-| E6 | **Done** | NewMessageModal | Team Ops MessagesTab |
-| E7 | **Done** | FacilityScheduler, TacticalCommandBoard | Field Station schedule; `/coach/tactics-board` |
+| E6 | **Done** | NewMessageModal | `CoachTeamCommsPanel` / `CommsWorkspaceShell` on Team Ops Comms tab (`/coach/logistics?tab=comms`) |
+| E7 | **Done** | FacilityScheduler | Field Station schedule (`/coach/drills`). ~~TacticalCommandBoard~~ retired — War Room (`/coach/tactical`, PS-C04) canonical per **WARROOM-SINGLE-SURFACE**; `/coach/tactics-board` redirect only |
 | E8 | **Done** | trial-builder | Coach shell nav |
 | E9 | **Done** | CoachAccountabilityModule | Director compliance context |
 
@@ -84,7 +84,7 @@ feature or persistence bug · `P2` = discoverability / empty-state / edge case.
 | # | Status | Area | Resolution |
 |---|--------|------|------------|
 | F1 | **Done** | Player nav | Comms → `/messages`; HQ quick ops → `/player/tracker` (skill-tree/challenges/passport remain direct URL) |
-| F2 | **Done** | Coach nav | Field Station + War Room in `workspaceNav.js` |
+| F2 | **Done** | Coach nav | Field Station + **War Room** in `workspaceNav.js` (**WARROOM-SINGLE-SURFACE** — PS-C04 visible; PS-C05 removed) |
 | F3 | **Done** | Director nav | Vanguard, Retention, Tournaments in `directorLinks` |
 | F4 | **Done** | Player skill-tree | Unlocked nodes launch Train via HUD + double-click; `workoutDrillPrefill` resolves `skillNode`; HQ quick op link |
 | F5 | **Done** | Parent log-workout drills | `loadDrillTitlesForFocus` from Firestore |

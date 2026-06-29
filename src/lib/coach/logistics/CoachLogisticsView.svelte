@@ -1,8 +1,10 @@
 <script lang="ts">
+	import { dev } from '$app/environment';
 	import CoachTeamSchedulePanel from '$lib/coach/logistics/CoachTeamSchedulePanel.svelte';
 	import CoachTeamRosterPanel from '$lib/coach/logistics/CoachTeamRosterPanel.svelte';
 	import CoachTeamAttendancePanel from '$lib/coach/logistics/CoachTeamAttendancePanel.svelte';
-	import ParentAnnouncementCompose from '$lib/components/coach/ParentAnnouncementCompose.svelte';
+	import CoachTeamCommsPanel from '$lib/coach/logistics/CoachTeamCommsPanel.svelte';
+	import { page } from '$app/state';
 	import { teamsStore } from '$lib/stores/teams.svelte.js';
 	import { CoachTeamScope } from '$lib/coach/context/coachTeamScope.svelte.js';
 
@@ -25,12 +27,22 @@
 		{ id: 'roster', label: 'Roster' },
 		{ id: 'attendance', label: 'Attendance' },
 	] as const;
+
+	const tabFromUrl = $derived(page.url.searchParams.get('tab'));
+
+	$effect(() => {
+		if (tabFromUrl && tabs.some((t) => t.id === tabFromUrl)) {
+			activeTab = tabFromUrl as typeof activeTab;
+		}
+	});
 </script>
 
 <div class="logistics-root">
 	<header class="logistics-head">
 		<div>
-			<p class="logistics-kicker qa-mono">Epic 4.7 · Team ops</p>
+			{#if dev}
+				<p class="logistics-kicker qa-mono">Epic 4.7 · Team ops</p>
+			{/if}
 			<h1 class="logistics-title">Team Ops</h1>
 			<p class="logistics-sub">
 				Coach-delegated logistics — schedule, roster, attendance, and parent-targeted comms (no separate
@@ -71,26 +83,11 @@
 
 		<div class="logistics-stack">
 			{#if activeTab === 'comms'}
-				<ParentAnnouncementCompose
+				<CoachTeamCommsPanel
 					teamId={teamScope.selectedTeamId}
 					clubId={teamClubId}
 					teamName={teamLabel}
 				/>
-				<section class="logistics-comms-summary" aria-labelledby="logistics-comms-summary-heading">
-					<h2 id="logistics-comms-summary-heading" class="logistics-section-title">
-						Logistics threads
-					</h2>
-					<p class="logistics-section-sub">
-						Game day, practice, and general team channels — one hub for monitored logistics
-						conversation.
-					</p>
-					<a
-						class="logistics-comms-cta"
-						href="/messages?channel=team_logistics&teamId={encodeURIComponent(teamScope.selectedTeamId)}"
-					>
-						Open team comms
-					</a>
-				</section>
 			{:else if activeTab === 'schedule'}
 				<CoachTeamSchedulePanel teamId={teamScope.selectedTeamId} />
 			{:else if activeTab === 'roster'}
@@ -147,24 +144,25 @@
 	.logistics-tabs {
 		display: flex;
 		flex-wrap: wrap;
-		gap: 8px;
+		gap: 0;
+		border-bottom: 1px solid var(--pd-grey-trim, #334155);
 	}
 
 	.logistics-tab {
-		border: 1px solid #e2e8f0;
-		border-radius: 999px;
-		padding: 8px 14px;
+		border: none;
+		border-bottom: 2px solid transparent;
+		border-radius: 0;
+		padding: 10px 16px;
 		font-size: 12px;
 		font-weight: 700;
-		background: #fff;
-		color: #475569;
+		background: transparent;
+		color: #94a3b8;
 		cursor: pointer;
 	}
 
 	.logistics-tab--active {
-		background: #0f172a;
-		border-color: #0f172a;
-		color: #fff;
+		border-bottom-color: var(--pd-nav-cyan, #06b6d4);
+		color: #e2e8f0;
 	}
 
 	.logistics-team-label {
@@ -206,47 +204,6 @@
 		flex-direction: column;
 		gap: 20px;
 		min-width: 0;
-	}
-
-	.logistics-comms-summary {
-		display: flex;
-		flex-direction: column;
-		gap: 8px;
-		padding: 16px 18px;
-		border: 1px solid #e2e8f0;
-		border-radius: 16px;
-		background: #fff;
-	}
-
-	.logistics-section-title {
-		margin: 0;
-		font-size: 15px;
-		font-weight: 800;
-		color: var(--text-primary, #0f172a);
-	}
-
-	.logistics-section-sub {
-		margin: 0;
-		font-size: 12px;
-		color: #64748b;
-	}
-
-	.logistics-comms-cta {
-		display: inline-flex;
-		align-self: flex-start;
-		padding: 10px 16px;
-		border-radius: 12px;
-		font-size: 13px;
-		font-weight: 800;
-		text-decoration: none;
-		color: #334155;
-		background: #f8fafc;
-		border: 1px solid #e2e8f0;
-	}
-
-	.logistics-comms-cta:hover {
-		border-color: #cbd5e1;
-		background: #f1f5f9;
 	}
 
 	.qa-mono {

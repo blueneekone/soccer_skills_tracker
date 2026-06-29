@@ -87,7 +87,8 @@ Use **incognito** or sign out between persona switches ([`QA_DEV_PERSONA_VERIFIC
 | 3 | Coach | `/coach/forge` — deploy intent to player | Coach prescription: sets/reps/RPE |
 | 4 | Player | `/player/dashboard` — accept bounty → **Start session** → Train | Locked-by-coach Train after explicit arm; log workout → XP + cadence on HQ. **Talk track:** *"Multi-day assignments credit one session per UTC day — coach sets frequency in Forge; player sees X/N this week on HQ."* Optional 30s: point at **Adaptive homework** band — *"Heuristic drill from coach intent + club libraries; RL ramp is ops-controlled (`abPercent`)."* |
 | 5 | Parent | `/parent/dashboard` — co-op / schedule strip | Parent parity: RSVP, push prefs, `.ics` export |
-| 6 | Any | `/messages` | Nav 2.0 hub · Parent Circle · **Message coach** (parent↔coach DM) · household threads · coach→minor block · **DeliveryReceipt** on staff sends |
+| 6 | Parent | `/messages` | Nav 2.0 hub · Parent Circle · **Message coach** (parent↔coach DM) · household threads · **DeliveryReceipt** on staff sends |
+| 6b | Coach | `/coach/logistics?tab=comms` | **Team Comms** pin or Team Ops → Comms — Parent messages · Broadcast announcement · Logistics threads; `/messages` redirects coach JWT here |
 
 ---
 
@@ -116,8 +117,10 @@ Use **incognito** or sign out between persona switches ([`QA_DEV_PERSONA_VERIFIC
    - Deploy intent with prescription (sets × reps, bilateral, duration, RPE)
 3. **Drill designer** — `/coach/drills`
    - Spatial designer saves to `teams/{teamId}/drills`
-4. **Logistics** — `/coach/logistics`
-   - Compose parent announcement (`safeSportBroadcast`)
+4. **Team Ops → Comms** — `/coach/logistics?tab=comms`
+   - **Team Comms** field pin lands here; coach `/messages` redirects to this tab
+   - **Broadcast:** publish team announcement via embedded `ParentAnnouncementCompose` (Announcements channel)
+   - Optional depth: **Parent messages** (`parent_coach_dm`), **Logistics** threads in `CommsWorkspaceShell`
 
 **Proof point:** Coach intent appears on player HQ within seconds.
 
@@ -150,10 +153,16 @@ Use **incognito** or sign out between persona switches ([`QA_DEV_PERSONA_VERIFIC
 
 ### Act 5 — Comms & safety (3 min)
 
-1. **`/messages`** — Nav 2.0 space picker + Families rail: **Parent Circle** (parents post only), household threads, **Message coach** (parent↔coach DM)
-2. Coach sends team announcement — parent sees inline **DeliveryReceipt** (`deliveryReport` chips)
-3. Attempt coach→player DM (minor) — **blocked** by policy (`commsSprint42.test.ts`)
+**Coach path:** `/coach/logistics?tab=comms` (Team Ops → Comms) — do **not** demo coach browsing `/messages` (coach JWT redirects to Team Ops).
+
+**Parent path:** `/messages` — Nav 2.0 space picker + Families rail.
+
+1. **Coach** — Team Ops → Comms → **Broadcast** (Announcements channel) — parent-targeted `safeSportBroadcast` with inline **DeliveryReceipt**
+2. **Parent** — `/messages` — **Parent Circle** (parents post only), household threads, **Message coach** (parent↔coach DM)
+3. Attempt coach→player DM (minor) — **blocked** by policy (`commsSprint42.test.ts`) — verify from coach Team Ops surfaces or parent hub as applicable
 4. Optional depth: partner offers on **`/parent/dashboard`** strip (not hub rail); parent voice session lobby when flag on
+
+**Note:** If a reviewer hits `/messages` while signed in as coach, they are redirected to `/coach/logistics?tab=comms` — expected behavior.
 
 **Proof point:** SafeSport-native comms — typed channels, parent-first reach, honest delivery semantics.
 

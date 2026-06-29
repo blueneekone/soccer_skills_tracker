@@ -38,7 +38,6 @@ const SVG_STROKE_ALLOWLIST = [
 	'FeatureBento.svelte',
 	'MiniPlayer.svelte',
 	'TacticalDrillBoard.svelte',
-	'TacticalCommandBoard.svelte',
 	'TacticalContextMenu.svelte',
 	'SeasonRegistration.svelte',
 	'ConsentOverlay.svelte',

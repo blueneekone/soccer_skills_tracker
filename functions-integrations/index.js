@@ -13,6 +13,10 @@ if (!target || target === 'ingestRoster') {
   exports.ingestRoster = require('./ingestRoster').ingestRoster;
 }
 
+if (!target || target === 'coachRosterIngest') {
+  exports.coachRosterIngest = require('./src/domains/coachRosterIngestOps').coachRosterIngest;
+}
+
 if (
   !target ||
   target === 'getSoccerNews' ||

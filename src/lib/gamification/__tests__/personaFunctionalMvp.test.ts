@@ -491,10 +491,11 @@ describe('Functional audit backlog A–F — regression guards', () => {
 		expect(hud).toMatch(/excluded from deploy until player accounts are linked/);
 	});
 
-	it('F2 coach nav includes Field Station; War Room excluded per PRODUCT_SURFACE_REGISTRY', () => {
+	it('F2 coach nav includes Field Station and War Room per PRODUCT_SURFACE_REGISTRY', () => {
 		const nav = readFileSync(WORKSPACE_NAV, 'utf-8');
 		expect(nav).toMatch(/href:\s*'\/coach\/drills'/);
-		expect(nav).not.toMatch(/href:\s*'\/coach\/tactical'/);
+		expect(nav).toMatch(/label:\s*'War Room'/);
+		expect(nav).toMatch(/href:\s*'\/coach\/tactical'/);
 	});
 
 	it('COACH-NAV-DEMOTE — Trial Builder excluded; Scouting label on /coach/scouting', () => {
@@ -578,9 +579,18 @@ describe('Functional audit — E-series coach/director mounts', () => {
 		expect(src).toMatch(/FacilityScheduler/);
 	});
 
-	it('coach tactics-board route mounts TacticalCommandBoard', () => {
+	it('coach War Room /coach/tactical mounts TacticalArena + createTacticalWarRoom', () => {
+		const src = readFileSync(join(ROOT, 'routes/(app)/coach/tactical/+page.svelte'), 'utf-8');
+		expect(src).toMatch(/TacticalArena/);
+		expect(src).toMatch(/createTacticalWarRoom/);
+	});
+
+	it('coach tactics-board route redirects to War Room (no legacy command board)', () => {
 		const src = readFileSync(join(ROOT, 'routes/(app)/coach/tactics-board/+page.svelte'), 'utf-8');
-		expect(src).toMatch(/CoachTacticsBoardView|TacticalCommandBoard/);
+		expect(src).toMatch(/goto\(/);
+		expect(src).toMatch(/\/coach\/tactical/);
+		expect(src).toMatch(/replaceState:\s*true/);
+		expect(src).not.toMatch(/CoachTacticsBoardView|TacticalCommandBoard/);
 	});
 
 	it('parent household and director registrars mount TransferPortal', () => {

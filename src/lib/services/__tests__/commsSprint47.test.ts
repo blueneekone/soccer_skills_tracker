@@ -24,8 +24,9 @@ describe('Epic 4.7 — Team Ops hub (CoachLogisticsView)', () => {
 		expect(logisticsView).toMatch(/CoachTeamRosterPanel/);
 		expect(logisticsView).toMatch(/CoachTeamAttendancePanel/);
 		expect(logisticsView).not.toMatch(/MessagesTab/);
-		expect(logisticsView).toMatch(/ParentAnnouncementCompose/);
-		expect(logisticsView).toMatch(/Open team comms/);
+		expect(logisticsView).toMatch(/CoachTeamCommsPanel/);
+		expect(logisticsView).not.toMatch(/Open team comms/);
+		expect(logisticsView).not.toMatch(/href="\/messages/);
 	});
 
 	it('uses tab nav with comms | schedule | roster | attendance', () => {
@@ -87,6 +88,11 @@ describe('Epic 4.7 — Nav + role boundary', () => {
 	it('workspace nav labels coach logistics as Team Ops', () => {
 		expect(nav).toMatch(/label:\s*['"]Team Ops['"]/);
 		expect(nav).toMatch(/href:\s*['"]\/coach\/logistics['"]/);
+	});
+
+	it('coach field pin targets Team Ops comms — not /messages hub', () => {
+		expect(nav).toMatch(/coachTeamCommsNavItem/);
+		expect(nav).toMatch(/\/coach\/logistics\?tab=comms/);
 	});
 
 	it('does not introduce team_manager JWT role in workspace nav', () => {

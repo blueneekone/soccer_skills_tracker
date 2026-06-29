@@ -18,10 +18,10 @@ Staff reach families through **parent-targeted** channels (announcements, Parent
 
 | Persona | Role in comms hub | Key surfaces |
 |---------|-------------------|--------------|
-| **Coach** | Team announcements, adult-player mail (18+), parent↔coach DM *(planned)*; **monitor** Parent Circle (no posts) | `/messages`, `/coach/logistics` → hub deep link |
-| **Team Manager** *(future)* | Logistics broadcasts, schedule-driven reminders — Epic 4.7 | `/coach/logistics`, `/messages` logistics category |
-| **Director** | Club-wide broadcasts, compliance console, optional read-only on parent↔coach DMs when `includeAdOnParentDms` | `/director?tab=comms` → hub, compliance export |
-| **Parent** | Parent Circle (post), announcement inbox, household threads, parent↔coach DM *(planned)*, voice sessions *(planned)* | `/messages`, `/parent/dashboard` strip |
+| **Coach** | Team announcements, adult-player mail (18+), parent↔coach DM; **monitor** Parent Circle (no posts) | **`/coach/logistics?tab=comms`** — `CoachTeamCommsPanel` + `CommsWorkspaceShell` (native embed); `/messages` **redirects** coach JWT to Team Ops |
+| **Team Manager** *(future)* | Logistics broadcasts, schedule-driven reminders — Epic 4.7 | `/coach/logistics?tab=comms`, `/messages` logistics category (coach-delegated v1) |
+| **Director** | Club-wide broadcasts, compliance console, optional read-only on parent↔coach DMs when `includeAdOnParentDms` | `/messages` hub + `/director?tab=comms` audit console |
+| **Parent** | Parent Circle (post), announcement inbox, household threads, parent↔coach DM, voice sessions | `/messages` (PS-X01 canonical), `/parent/dashboard` strip |
 | **Player (minor)** | **No staff inbox** — HQ/calendar mirror + household thread only | HQ notifications, `/messages` household panel |
 | **Adult player (18+)** | Direct coach mail, announcement inbox, push notifications | `/messages` (limited), push |
 
@@ -37,7 +37,7 @@ Staff reach families through **parent-targeted** channels (announcements, Parent
 | Coach → parent (announcement / Parent Lounge) | **Allowed** | Primary staff→family surface |
 | Coach → adult player (18+) | **Allowed** | Age-verified recipient only |
 | Parent ↔ parent (group context) | **Allowed** | **Parent Circle** (`parent_lounge`) — parents post; staff monitor via export |
-| Parent ↔ coach (1:1) | **Allowed** *(planned)* | **`parent_coach_dm`** — bilateral default; AD read-only when club flag set |
+| Parent ↔ coach (1:1) | **Allowed** | **`parent_coach_dm`** — bilateral default; AD read-only when club flag set |
 | Parent ↔ coach (group context) | **Deprecated for staff post** | Staff use announcements + parent↔coach DM — not Parent Circle posts |
 | Parent ↔ linked operative (minor) | **Allowed** | Household thread — `householdId` gate only |
 | Staff → minor inbox (interactive) | **Blocked** | Minors get schedule via HQ/calendar, not staff DMs |
@@ -59,7 +59,7 @@ Staff → parents (+ adult players). One-way or reply-via-Parent-Lounge. Minors 
 
 ### Parent Circle (`parent_lounge`)
 
-**Parents post only** in a monitored group context. Staff **do not post** — they monitor via compliance export and reach families through **announcements** + **parent↔coach DM** *(planned)*.
+**Parents post only** in a monitored group context. Staff **do not post** — they monitor via compliance export and reach families through **announcements** + **parent↔coach DM**.
 
 - Route: `/messages` — Epic 4.4 **Done**
 - Push category: `push_messages`
@@ -74,7 +74,7 @@ Parent ↔ linked operative(s) only. Enforced by shared `householdId` on both us
 | Parent → linked minor | `householdId` match | None in thread body |
 | Parent → linked adult player (18+) | `householdId` match | None in thread body |
 | Cross-household | **Blocked** | — |
-| Coach in household thread | **Blocked** | Use announcements or `parent_coach_dm` *(planned)* |
+| Coach in household thread | **Blocked** | Use announcements or `parent_coach_dm` |
 
 - Sprint: **4.11 Done**
 - Push category: `push_messages` (household-scoped)
@@ -107,7 +107,7 @@ Coach → player **only when recipient is 18+** (server-side age check). Replace
 | Epic | Persona doc | Comms responsibility |
 |------|-------------|----------------------|
 | **B** | [`PARENT_OS.md`](./PARENT_OS.md) | Parent Lounge, announcement inbox, household threads, VPC `consentComms` |
-| **C** | [`COACH_OS.md`](./COACH_OS.md) | `/coach/logistics` compose, MessagesTab mount, parent-targeted send |
+| **C** | [`COACH_OS.md`](./COACH_OS.md) | `/coach/logistics?tab=comms` — `CoachTeamCommsPanel` + `CommsWorkspaceShell`; `ParentAnnouncementCompose` for parent-targeted send |
 | **D** | [`TEAM_MANAGER_OS.md`](./TEAM_MANAGER_OS.md) | TM logistics mode — Epic 4.7 |
 | **E** | [`DIRECTOR_OS.md`](./DIRECTOR_OS.md) | Club broadcast composer, compliance console — Epic 4.8–4.9 |
 

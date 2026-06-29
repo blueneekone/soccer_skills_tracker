@@ -1,4 +1,8 @@
 <script lang="ts">
+	import { browser } from '$app/environment';
+	import { goto } from '$app/navigation';
+	import { page } from '$app/state';
+	import { untrack } from 'svelte';
 	import { collection, query, where, orderBy, limit, getDocs, doc, getDoc } from 'firebase/firestore';
 	import { db } from '$lib/firebase.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
@@ -24,6 +28,21 @@
 
 	let parentLoungeTeams = $state<Array<{ clubId: string; teamId: string }>>([]);
 	let parentLoungeLoading = $state(false);
+
+	$effect(() => {
+		if (!browser || role !== 'coach') return;
+		const params = untrack(() => page.url.searchParams);
+		const qs = new URLSearchParams();
+		qs.set('tab', 'comms');
+		for (const key of ['channel', 'teamId', 'sub', 'section'] as const) {
+			const value = params.get(key);
+			if (value) qs.set(key, value);
+		}
+		if (params.get('channel') === 'parent_coach_dm' && !params.get('section')) {
+			qs.set('section', 'parents');
+		}
+		untrack(() => void goto(`/coach/logistics?${qs.toString()}`, { replaceState: true }));
+	});
 
 	$effect(() => {
 		if (role !== 'parent' || !householdId) {
@@ -198,7 +217,9 @@
 	});
 </script>
 
-{#if role === 'super_admin' || role === 'global_admin'}
+{#if role === 'coach'}
+	<p class="comms-hub-muted">Opening Team Ops comms…</p>
+{:else if role === 'super_admin' || role === 'global_admin'}
 	<p class="comms-hub-muted">
 		Use the Coach tools → Messages tab to send mail as a team staff member. Global admins can review
 		<code>messaging_audit</code> in the Firebase console.

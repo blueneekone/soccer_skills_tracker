@@ -173,9 +173,10 @@ describe('NAV-OPTION-D implementation guards', () => {
 		expect(menuSheet).toContain('Reset to');
 	});
 
-	it('coach catalog source excludes tactical war room in navPinCatalog', () => {
-		expect(navCatalog).toContain('/coach/tactical');
-		expect(navCatalog).toMatch(/tactical/);
+	it('coach catalog source includes War Room in navPinCatalog tier 2', () => {
+		expect(navCatalog).not.toMatch(/l\.href !== '\/coach\/tactical'/);
+		expect(workspaceNav).toMatch(/label:\s*'War Room'/);
+		expect(workspaceNav).toMatch(/href:\s*'\/coach\/tactical'/);
 	});
 
 	it('workspaceNav still exports desk sidebar link arrays', () => {

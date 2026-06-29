@@ -52,10 +52,11 @@ describe('navPinCatalog (NAV-OPTION-D)', () => {
 		expect(getDefaultPins('recruiter')).toEqual(['/recruiter', '/messages', null]);
 	});
 
-	it('coach sheet catalog excludes War Room /coach/tactical', () => {
+	it('coach sheet catalog includes War Room /coach/tactical', () => {
 		const coachCatalog = getNavCatalog('coach');
 		const hrefs = coachCatalog.map((item) => item.href);
-		expect(hrefs).not.toContain('/coach/tactical');
+		expect(hrefs).toContain('/coach/tactical');
+		expect(hrefs).not.toContain('/coach/tactics-board');
 		expect(hrefs).toContain('/coach/drills');
 		expect(hrefs).toContain('/messages');
 	});
@@ -69,7 +70,8 @@ describe('navPinCatalog (NAV-OPTION-D)', () => {
 	});
 
 	it('isHrefAllowedForPersona rejects unknown hrefs', () => {
-		expect(isHrefAllowedForPersona('/coach/tactical', 'coach')).toBe(false);
+		expect(isHrefAllowedForPersona('/coach/tactical', 'coach')).toBe(true);
+		expect(isHrefAllowedForPersona('/coach/tactics-board', 'coach')).toBe(false);
 		expect(isHrefAllowedForPersona('/player/dashboard', 'player')).toBe(true);
 	});
 

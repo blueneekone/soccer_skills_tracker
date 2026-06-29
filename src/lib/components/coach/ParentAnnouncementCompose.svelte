@@ -57,8 +57,8 @@
 		<div class="pac-head-copy">
 			<h2 id="pac-heading" class="pac-title">Parent announcement</h2>
 			<p class="pac-sub">
-				Parent-targeted team broadcast — primary staff→family surface per COMMS_HUB charter.
-				Delivered via SafeSport broadcast; linked guardians auto-CC when minors are on the roster.
+				Send an announcement to parents and guardians on this team. Linked guardian accounts for
+				minors are included automatically.
 			</p>
 		</div>
 		<span class="pac-badge" aria-hidden="true">

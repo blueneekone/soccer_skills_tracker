@@ -17,6 +17,7 @@ const WORKSPACE_NAV = join(ROOT, 'lib/shell/workspaceNav.js');
 const LOGISTICS_PAGE = join(ROOT, 'routes/(app)/coach/logistics/+page.svelte');
 const LOGISTICS_JS = join(ROOT, 'routes/(app)/coach/logistics/+page.js');
 const COMPOSE = join(ROOT, 'lib/components/coach/ParentAnnouncementCompose.svelte');
+const TEAM_COMMS_PANEL = join(ROOT, 'lib/coach/logistics/CoachTeamCommsPanel.svelte');
 const MESSAGES_TAB = join(ROOT, 'lib/components/coach/MessagesTab.svelte');
 const COMMS_SERVICE = join(ROOT, 'lib/services/comms.svelte.ts');
 
@@ -59,14 +60,18 @@ describe('Sprint 4.1 — /coach/logistics route wiring', () => {
 		expect(js).toMatch(/ssr\s*=\s*false/);
 	});
 
-	it('mounts CoachLogisticsView from $lib/coach', () => {
+	it('mounts CoachLogisticsView with native Team Ops Comms embed', () => {
 		const page = readFileSync(LOGISTICS_PAGE, 'utf-8');
 		expect(page).toMatch(/\$lib\/coach\/logistics/);
 		expect(page).toMatch(/CoachLogisticsView/);
 		const view = readFileSync(join(ROOT, 'lib/coach/logistics/CoachLogisticsView.svelte'), 'utf-8');
-		expect(view).toMatch(/MessagesTab/);
-		expect(view).toMatch(/\/messages\?channel=announcements/);
-		expect(view).not.toMatch(/ParentAnnouncementCompose/);
+		expect(view).toMatch(/CoachTeamCommsPanel/);
+		expect(view).toMatch(/activeTab === 'comms'|id: 'comms'/);
+		expect(view).not.toMatch(/MessagesTab/);
+		expect(view).not.toMatch(/href="\/messages/);
+		const panel = readFileSync(TEAM_COMMS_PANEL, 'utf-8');
+		expect(panel).toMatch(/CommsWorkspaceShell|CoachTeamCommsPanel/);
+		expect(panel).toMatch(/ParentAnnouncementCompose/);
 	});
 
 	it('ParentAnnouncementCompose uses CommsEngine team broadcast', () => {
@@ -85,19 +90,23 @@ describe('Sprint 4.1 — /coach/logistics route wiring', () => {
 		expect(src).not.toMatch(/us-central1/);
 	});
 
-	it('workspaceNav links Team Ops to /coach/logistics', () => {
+	it('workspaceNav links Team Ops + Team Comms field pin', () => {
 		const nav = readFileSync(WORKSPACE_NAV, 'utf-8');
 		expect(nav).toMatch(/Team Ops/);
 		expect(nav).toMatch(/href:\s*'\/coach\/logistics'/);
+		expect(nav).toMatch(/coachTeamCommsNavItem/);
+		expect(nav).toMatch(/label:\s*'Team Comms'/);
+		expect(nav).toMatch(/href:\s*'\/coach\/logistics\?tab=comms'/);
 	});
 });
 
 describe('Sprint 4.1 — vision + ROADMAP', () => {
-	it('COMMS_HUB assigns Coach OS /coach/logistics compose to Epic C', () => {
+	it('COMMS_HUB assigns Coach OS Team Ops native comms embed to Epic C', () => {
 		const doc = readFileSync(COMMS_HUB, 'utf-8');
-		expect(doc).toMatch(/\/coach\/logistics/);
+		expect(doc).toMatch(/\/coach\/logistics\?tab=comms/);
 		expect(doc).toMatch(/parent-targeted/i);
-		expect(doc).toMatch(/MessagesTab/i);
+		expect(doc).toMatch(/CoachTeamCommsPanel|CommsWorkspaceShell/);
+		expect(doc).not.toMatch(/MessagesTab/i);
 	});
 
 	it('ROADMAP tracks 4.1 Done with commsSprint41 proof', () => {

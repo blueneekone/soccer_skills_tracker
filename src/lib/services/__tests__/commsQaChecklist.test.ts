@@ -33,8 +33,15 @@ describe('COMMS-PRE-QA-WIRE — OWNER_QA_CHECKLIST Phase 7', () => {
 		);
 	});
 
-	it('marks QA-146 logistics as hub announcements deep-link', () => {
-		expect(checklist).toMatch(/\*\*QA-146\*\*.*deep-link to hub announcements/);
+	it('marks QA-146 logistics as Team Ops Comms embed (not hub deep-link only)', () => {
+		expect(checklist).toMatch(/\*\*QA-146\*\*.*Team Ops Comms tab/);
+		expect(checklist).toMatch(/\*\*QA-146\*\*.*CoachTeamCommsPanel|CommsWorkspaceShell/);
+		expect(checklist).not.toMatch(/\*\*QA-146\*\*.*deep-link to hub announcements/);
+	});
+
+	it('documents coach Team Ops comms flow in Phase 7', () => {
+		expect(checklist).toMatch(/Team Comms.*\/coach\/logistics\?tab=comms|\/coach\/logistics\?tab=comms.*Team Comms/s);
+		expect(checklist).toMatch(/coach.*Team Ops.*parent.*\/messages/si);
 	});
 
 	it('includes Tier 2 comms depth QA-161 through QA-164', () => {

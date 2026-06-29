@@ -75,6 +75,7 @@ Production QA tenant: club **`qa_launch_2026`**, team **`qa_launch_2026_ppc`** (
 ## Coach OS — Tier 1 (required)
 
 - [x] Squad/roster view loads (`/coach`)
+- [x] Bulk roster CSV import on Team Ops (`/coach/logistics?tab=roster` — preview + `secureBulkAddPlayers`)
 - [x] Assign drill/bounty via Forge → appears on player HQ (`/coach/forge`)
 
 **Tier 1 routes:** `/coach`, `/coach/forge`
@@ -86,8 +87,13 @@ Production QA tenant: club **`qa_launch_2026`**, team **`qa_launch_2026_ppc`** (
 - [ ] (Optional) **Share with director** on team drill — full promote workflow tracked as **LAUNCH-club-drill-promote**
 - [ ] (Optional) Coach intent deploy may include `prescription` on `team_assignments` — `sets`, optional `repsPerSet` (omit for time-only), `bilateral` (doubles effective reps per side), optional `targetDurationMin` / `targetRpe` (1–10), `teamDrillId` / `clubDrillId`. Train locks prescription when armed from HQ handoff.
 - [ ] Match-day / development routes reachable (`/coach/match-day`, `/coach/scouting`)
-- [ ] Logistics compose + send to parents (`/coach/logistics`)
-- [ ] War Room tactical board deep-link only (`/coach/tactical`) — not acquisition nav
+- [ ] Logistics compose + send to parents (`/coach/logistics?tab=comms` — Team Ops Comms tab)
+
+**Coach OS — comms acceptance (Team Ops embed):**
+
+- [ ] Team Ops **Comms** tab (`/coach/logistics?tab=comms`) — `CoachTeamCommsPanel` + `CommsWorkspaceShell`: parent↔coach DM (`parent_coach_dm`), team announcements (`ParentAnnouncementCompose` / `safeSportBroadcast`), logistics threads (`team_logistics`)
+- [ ] Coach `/messages` redirects to Team Ops comms with query params preserved — no standalone coach hub inbox
+- [ ] War Room tactical board (`/coach/tactical`) — Tier 2 coach surface; sidebar + HQ hero visible; waivable in acquisition QA
 
 ---
 
@@ -185,7 +191,7 @@ Scan covered `/player/*` (dashboard, workout, armory, stats, settings, tracker),
 
 | Gap | Severity | Route / surface | Notes | Suggested sprint |
 |-----|----------|-----------------|-------|------------------|
-| Logistics nav → missing route | **Resolved (4.1 Done)** | `/coach/logistics` | Route mounts `MessagesTab` + `ParentAnnouncementCompose` (`safeSportBroadcast`). | — |
+| Logistics nav → missing route | **Resolved (4.1 Done)** | `/coach/logistics?tab=comms` | Team Ops Comms tab mounts `CoachTeamCommsPanel` + `CommsWorkspaceShell` (`parent_coach_dm`, announcements, `team_logistics`); coach `/messages` redirects here. | — |
 | Assignments not in coach sidebar | **Resolved (LAUNCH-nav)** | `/coach/forge` | Intent Engine in The Forge (`workspaceNav` coachLinks). | — |
 | Parent Co-op hub off nav | **Resolved (LAUNCH-nav)** | `/parent/dashboard` | Co-op Command in parent sidebar; login still defaults to `/parent/household`. | — |
 | Parent messages read-only | **Resolved (Epic 4.4 Done)** | `/messages` | Staff CC inbox + 4.11 household thread + **Parent Lounge** initiate/reply (`ParentLoungePanel`, `sendChannelMessage`); SafeSport-monitored. | — |
@@ -200,7 +206,7 @@ Scan covered `/player/*` (dashboard, workout, armory, stats, settings, tracker),
 
 - **Avatar PNG layers / Gemini bust ingest** — deferred post-launch (`LAUNCH-defer-avatar`, `3.6b+`).
 - **Platform visual system from Gemini research** — read-only in [`references/ui/research/`](references/ui/research/README.md).
-- **Epic 4.1 logistics compose** — **Done** (`/coach/logistics`, `commsSprint41.test.ts`).
+- **Epic 4.1 logistics compose** — **Done** (`/coach/logistics?tab=comms`, `commsSprint41.test.ts`).
 - **Epic 4.2 SafeSport block** — **Done** (`commsSprint42.test.ts` — coach→minor blocked, `consentComms` enforced).
 - **Epic 4.11 household threads** — **Done** (`commsSprint411.test.ts` — `/messages` household panel).
 

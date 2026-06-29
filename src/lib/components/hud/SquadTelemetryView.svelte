@@ -732,29 +732,84 @@
 
 	const signalCount = $derived(vpcItems.length + trialRows.length);
 
-	// ── Readiness Matrix mock data ─────────────────────────────────────────────
+	/** Lowercase names with pending VPC verification (trial_scores queue). */
+	const vpcPendingNameKeys = $derived.by(() => {
+		/** @type {Set<string>} */
+		const keys = new Set();
+		for (const v of vpcItems) {
+			const n = typeof v.playerName === 'string' ? v.playerName.trim().toLowerCase() : '';
+			if (n) keys.add(n);
+		}
+		return keys;
+	});
+
 	/**
-	 * @type {Array<{ id: string; name: string; number: string; position: string; level: number; xp: number; xpMax: number; stamina: number; hr: number; vpc_approved: boolean; status: 'READY' | 'OFFLINE' | 'INJURY RISK'; skills: number[] }>}
+	 * Live readiness rows from roster — no mock operatives.
+	 * @typedef {'READY' | 'OFFLINE' | 'INJURY RISK'} ReadinessStatus
 	 */
-	const READINESS_ROSTER = [
-		{ id: 'PLR-01', name: 'J. MARTINEZ', number: '1',  position: 'GK', level: 12, xp: 2450, xpMax: 3000, stamina: 88, hr: 72,  vpc_approved: true,  status: 'READY',       skills: [82, 68, 71, 64, 88, 79] },
-		{ id: 'PLR-02', name: 'A. SILVA',    number: '4',  position: 'CB', level: 8,  xp: 1200, xpMax: 2000, stamina: 0,  hr: 0,   vpc_approved: true,  status: 'OFFLINE',     skills: [60, 55, 70, 58, 84, 72] },
-		{ id: 'PLR-03', name: 'K. CHEN',     number: '7',  position: 'LW', level: 15, xp: 4800, xpMax: 5000, stamina: 92, hr: 68,  vpc_approved: false, status: 'READY',       skills: [91, 86, 82, 90, 54, 76] },
-		{ id: 'PLR-04', name: 'M. OKONKWO',  number: '9',  position: 'ST', level: 11, xp: 2100, xpMax: 2500, stamina: 78, hr: 78,  vpc_approved: true,  status: 'READY',       skills: [85, 92, 70, 81, 48, 84] },
-		{ id: 'PLR-05', name: 'R. POPESCU',  number: '10', position: 'CM', level: 9,  xp: 1750, xpMax: 2000, stamina: 0,  hr: 0,   vpc_approved: true,  status: 'OFFLINE',     skills: [74, 70, 88, 82, 66, 71] },
-		{ id: 'PLR-06', name: 'T. NAKAMURA', number: '11', position: 'RW', level: 7,  xp: 900,  xpMax: 1500, stamina: 82, hr: 74,  vpc_approved: false, status: 'READY',       skills: [88, 78, 74, 86, 52, 70] },
-		{ id: 'PLR-07', name: 'D. MENSAH',   number: '3',  position: 'LB', level: 10, xp: 2000, xpMax: 2500, stamina: 90, hr: 70,  vpc_approved: true,  status: 'READY',       skills: [78, 62, 76, 70, 86, 81] },
-		{ id: 'PLR-08', name: 'C. DUBOIS',   number: '5',  position: 'CB', level: 6,  xp: 800,  xpMax: 1500, stamina: 30, hr: 112, vpc_approved: true,  status: 'INJURY RISK', skills: [62, 50, 64, 58, 80, 68] },
-	];
-	const rmReady    = READINESS_ROSTER.filter((p) => p.status === 'READY').length;
-	const rmConsent  = READINESS_ROSTER.filter((p) => !p.vpc_approved).length;
-	const rmOffline  = READINESS_ROSTER.filter((p) => p.status === 'OFFLINE').length;
-	const rmAtRisk   = READINESS_ROSTER.filter((p) => p.status === 'INJURY RISK').length;
-	const SQUAD_UPTIME_PCT = 88;
+	const readinessRoster = $derived.by(() => {
+		const pending = vpcPendingNameKeys;
+		return players.map((name) => {
+			const sid = resolveStatsId(name, playerStats);
+			const stats = playerStats[sid] ?? {};
+			const rowLabel =
+				typeof stats.playerName === 'string' && stats.playerName.trim() ?
+					stats.playerName.trim()
+				:	name;
+			const isLinked = linkedPlayers.has(name) || linkedPlayers.has(rowLabel);
+			const hasVpcPending =
+				pending.has(name.toLowerCase()) || pending.has(rowLabel.toLowerCase());
+			const vpcApproved = isLinked && !hasVpcPending;
+
+			/** @type {ReadinessStatus} */
+			let status = 'OFFLINE';
+			if (isLinked) {
+				const lookupSt =
+					typeof stats.status === 'string' ? stats.status.trim().toUpperCase() : '';
+				status =
+					lookupSt === 'INJURED' || lookupSt === 'INJURY RISK' ? 'INJURY RISK' : 'READY';
+			}
+
+			const jersey = jerseys[name];
+			const number =
+				jersey != null && String(jersey).trim() ? String(jersey).trim() : '—';
+			const position =
+				typeof stats.position === 'string' && stats.position.trim() ?
+					stats.position.trim().toUpperCase().slice(0, 4)
+				:	'—';
+
+			return {
+				id: sid,
+				rosterKey: name,
+				name: rowLabel,
+				number,
+				position,
+				stamina: isLinked ? 75 : 0,
+				hr: 0,
+				vpc_approved: vpcApproved,
+				status,
+			};
+		});
+	});
+
+	const rmReady = $derived(readinessRoster.filter((p) => p.status === 'READY').length);
+	const rmConsent = $derived(readinessRoster.filter((p) => !p.vpc_approved).length);
+	const rmOffline = $derived(readinessRoster.filter((p) => p.status === 'OFFLINE').length);
+	const rmAtRisk = $derived(readinessRoster.filter((p) => p.status === 'INJURY RISK').length);
+	const squadUptimePct = $derived(
+		readinessRoster.length === 0 ?
+			0
+		:	Math.round((rmReady / readinessRoster.length) * 100),
+	);
+	const readinessMatrixLabel = $derived(
+		typeof currentTeam?.name === 'string' && currentTeam.name.trim() ?
+			currentTeam.name.trim().toUpperCase()
+		:	'SQUAD',
+	);
 </script>
 
 <!-- ── SQUAD UPTIME — aggregate readiness ticker (Epic 1.2 bento HUD) ─────── -->
-<div class="hud-telemetry-root bento-grid bento-grid--12col bento-grid--liquid">
+<div class="hud-telemetry-root bento-grid bento-grid--12col bento-grid--liquid tw-w-full tw-min-w-0">
 <section
 	class="bento-span-12 hud-telemetry-panel tw-backdrop-blur-3xl tw-shadow-[inset_0_1px_1px_rgba(255,255,255,0.06),_0_0_30px_rgba(20, 184, 166,0.08)] tw-border-[#14b8a6]/25"
 	aria-label="Squad uptime"
@@ -768,10 +823,10 @@
 		</div>
 		<div class="hud-telemetry-uptime__score">
 			<span class="tw-text-[10px] tw-font-bold tw-uppercase tw-tracking-widest tw-text-white/35 tw-font-mono">READINESS SCORE</span>
-			<span class="tw-text-3xl tw-font-black tw-tabular-nums tw-text-[#14b8a6] tw-drop-shadow-[0_0_12px_rgba(20, 184, 166,0.55)] tw-font-mono">{SQUAD_UPTIME_PCT}%</span>
+			<span class="tw-text-3xl tw-font-black tw-tabular-nums tw-text-[#14b8a6] tw-drop-shadow-[0_0_12px_rgba(20, 184, 166,0.55)] tw-font-mono">{squadUptimePct}%</span>
 		</div>
 		<div class="hud-telemetry-uptime__bar">
-			<div class="hud-telemetry-uptime__bar-fill" style="width: {SQUAD_UPTIME_PCT}%;"></div>
+			<div class="hud-telemetry-uptime__bar-fill" style="width: {squadUptimePct}%;"></div>
 		</div>
 	</div>
 </section>
@@ -788,7 +843,7 @@
 				class="tw-font-mono tw-text-xs tw-font-bold tw-uppercase tw-tracking-[0.2em] tw-text-[#14b8a6] tw-m-0"
 			>
 				<span class="tw-inline-block tw-h-2 tw-w-2 tw-animate-pulse tw-rounded-full tw-bg-[#14b8a6] tw-shadow-[0_0_8px_rgba(20, 184, 166,0.8)] tw-mr-2 tw-align-middle"></span>
-				READINESS MATRIX · ALPHA UNIT
+				READINESS MATRIX · {readinessMatrixLabel}
 			</h2>
 		</div>
 		<div class="hud-telemetry-matrix__stats">
@@ -807,29 +862,48 @@
 		</div>
 	</div>
 
-	<div class="bento-grid bento-grid--12col bento-grid--liquid">
-		{#each READINESS_ROSTER as p (p.id)}
-			{@const staminaFill = Math.max(0, Math.min(1, p.stamina / 100))}
-			<article class="bento-span-3 hud-readiness-card hud-telemetry-panel">
-				<div class="hud-readiness-card__ring hud-telemetry-avatar">
-					<HudSeededRingCanvas
-						uid={p.id}
-						size={64}
-						fill={staminaFill}
-						strokeColor="#14b8a6"
-						showAvatar={true}
-						avatarSeed={p.name}
-						showCenter={false}
-					/>
-				</div>
-				<div class="hud-readiness-card__meta">
-					<p class="tw-font-mono tw-text-[10px] tw-font-black tw-uppercase tw-tracking-wider tw-text-white tw-m-0">{p.name}</p>
-					<p class="tw-font-mono tw-text-[10px] tw-text-[#14b8a6] tw-m-0">{p.position} · #{p.number}</p>
-					<p class="tw-font-mono tw-text-[10px] tw-uppercase tw-tracking-widest tw-m-0" style="color: {p.status === 'READY' ? '#14b8a6' : p.status === 'INJURY RISK' ? '#ff003c' : '#666'}">{p.status}</p>
-				</div>
-			</article>
-		{/each}
-	</div>
+	{#if loading}
+		<p class="tw-font-mono tw-text-[11px] tw-uppercase tw-tracking-widest tw-text-white/40 tw-m-0 tw-py-4">
+			Loading roster…
+		</p>
+	{:else if readinessRoster.length === 0}
+		<p class="tw-font-mono tw-text-[11px] tw-uppercase tw-tracking-widest tw-text-white/40 tw-m-0 tw-py-4">
+			No athletes on roster — ingest below or
+			<a class="tw-text-[#14b8a6] tw-underline tw-underline-offset-2" href="/coach/logistics?tab=roster"
+				>import CSV on Team Ops</a
+			>.
+		</p>
+	{:else}
+		<div class="bento-grid bento-grid--12col bento-grid--liquid">
+			{#each readinessRoster as p (p.id)}
+				{@const staminaFill = Math.max(0, Math.min(1, p.stamina / 100))}
+				<article
+					class="bento-span-3 hud-readiness-card hud-telemetry-panel"
+					role="button"
+					tabindex="0"
+					onclick={() => openDrawer(p.rosterKey)}
+					onkeydown={(e) => e.key === 'Enter' && openDrawer(p.rosterKey)}
+				>
+					<div class="hud-readiness-card__ring hud-telemetry-avatar">
+						<HudSeededRingCanvas
+							uid={p.id}
+							size={64}
+							fill={staminaFill}
+							strokeColor="#14b8a6"
+							showAvatar={true}
+							avatarSeed={p.name}
+							showCenter={false}
+						/>
+					</div>
+					<div class="hud-readiness-card__meta">
+						<p class="tw-font-mono tw-text-[10px] tw-font-black tw-uppercase tw-tracking-wider tw-text-white tw-m-0">{p.name}</p>
+						<p class="tw-font-mono tw-text-[10px] tw-text-[#14b8a6] tw-m-0">{p.position} · #{p.number}</p>
+						<p class="tw-font-mono tw-text-[10px] tw-uppercase tw-tracking-widest tw-m-0" style="color: {p.status === 'READY' ? '#14b8a6' : p.status === 'INJURY RISK' ? '#ff003c' : '#666'}">{p.status}</p>
+					</div>
+				</article>
+			{/each}
+		</div>
+	{/if}
 </section>
 </div>
 
@@ -954,6 +1028,9 @@
 				<input class="stw__inp stw__inp--sm" type="text" placeholder="#" bind:value={addJersey} />
 				<button type="button" class="stw__btn" disabled={addSaving} onclick={addPlayer}>Ingest</button>
 			</div>
+			<p class="stw__import-hint">
+				<a class="stw__import-link" href="/coach/logistics?tab=roster">Import CSV on Team Ops →</a>
+			</p>
 			<div class="stw__tablewrap">
 				<table class="stw__table" aria-label="Roster">
 					<thead>
@@ -1185,6 +1262,20 @@
 		flex-wrap: wrap;
 		gap: 0.35rem;
 		margin: 0.75rem 0;
+	}
+
+	.stw__import-hint {
+		margin: -0.35rem 0 0.65rem;
+		font-size: 0.68rem;
+	}
+	.stw__import-link {
+		color: rgba(0, 212, 255, 0.85);
+		font-weight: 700;
+		text-decoration: underline;
+		text-underline-offset: 2px;
+	}
+	.stw__import-link:hover {
+		color: #67e8f9;
 	}
 
 	.stw__inp {

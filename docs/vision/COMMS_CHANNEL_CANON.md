@@ -34,9 +34,9 @@ Coaches, directors, registrars, and future team managers must pass **background 
 
 VPC captures `consentComms` per child ([`/parent/vpc`](../src/routes/(app)/parent/vpc/+page.svelte)). Server paths filter parents via `filterParentsWithCommsConsent` (`commsPolicy.js`) — enforced on broadcast CC and monitored channel repair (Sprint 4.2 Done). Skipped parents appear in `parentSkipped[]` with `consent_comms_declined`. **Onboarding:** VPC defaults `consentComms` to `false` (legal/product choice) — [`ParentCommsConsentBanner.svelte`](../src/lib/components/parent/ParentCommsConsentBanner.svelte) on `/parent/dashboard` prompts guardians to opt in (4.16d).
 
-### One hub route per persona (`/messages`) — no duplicate compose surfaces
+### One hub route per persona — coach team scope is the exception
 
-[`PRODUCT_SURFACE_REGISTRY.md`](./PRODUCT_SURFACE_REGISTRY.md) **PS-X01** — single Tier-1 comms route for all personas (`WF-COMMS-SAFESPORT`, `comms-hub` layout). Staff **Outbox** and parent **unread stack** live here. **Known gap:** compose also exists on `/coach/logistics` and `/director?tab=comms` — Phase 1 consolidates read/stream into the hub shell; compose may deep-link but must not fork delivery semantics.
+[`PRODUCT_SURFACE_REGISTRY.md`](./PRODUCT_SURFACE_REGISTRY.md) **PS-X01** — Tier-1 comms route for **parent** and **director** personas (`WF-COMMS-SAFESPORT`, `comms-hub` layout). Parent **unread stack** and director **Outbox** live on `/messages`. **Coach team-scoped comms** are canonical on the **Team Ops Comms embed** (`/coach/logistics?tab=comms` — `CoachTeamCommsPanel` + `CommsWorkspaceShell`); coach `/messages` **redirects** to Team Ops with query params preserved. Director compose on `/director?tab=comms` may deep-link to hub club-wide surfaces — delivery semantics must not fork.
 
 ---
 
@@ -166,7 +166,7 @@ interface DeliveryReport {
 
 ## 7. Unified UX shell
 
-**Route:** `/messages` (PS-X01) — all personas; skin per [`PLATFORM_DESIGN_SYSTEM.md`](./PLATFORM_DESIGN_SYSTEM.md).
+**Route:** `/messages` (PS-X01) — parent and director canonical hub; coach JWT redirects to `/coach/logistics?tab=comms` (Team Ops native embed). Skin per [`PLATFORM_DESIGN_SYSTEM.md`](./PLATFORM_DESIGN_SYSTEM.md).
 
 ### Wireframe (prose)
 
@@ -209,7 +209,7 @@ flowchart LR
   Channel --> Receipt
 ```
 
-**Navigation:** Pin bar / AppMenuSheet includes Messages per [`PLATFORM_NAVIGATION_CANON.md`](./PLATFORM_NAVIGATION_CANON.md). No second compose island — `/coach/logistics` may link to hub compose with `?channel=` deep link (Phase 1).
+**Navigation:** Pin bar / AppMenuSheet — coach **Team Comms** field pin → `/coach/logistics?tab=comms` (not `/messages`); parent/director Messages entry → `/messages` per [`PLATFORM_NAVIGATION_CANON.md`](./PLATFORM_NAVIGATION_CANON.md). Coach team channels mount natively in `CommsWorkspaceShell` on Team Ops — no hub deep link for team-scoped coach workflows.
 
 ---
 
@@ -218,11 +218,11 @@ flowchart LR
 | Gap | Detail | Target |
 |-----|--------|--------|
 | **`team_manager` JWT not shipped** | 4.7 delivered coach-delegated Team Ops | Phase 2+ |
-| **Compose deep-link consolidation** | Team Ops / Director tab may still deep-link compose — hub is canonical read/send surface | polish |
+| **Director compose deep-links** | `/director?tab=comms` may still deep-link club-wide hub surfaces (`?channel=club_wide`, etc.) | polish |
 | **No typed `type_id` on legacy broadcasts** | `team_broadcasts` uses collection convention; typed channels use `channelType` on club channel docs | data model polish |
 | **`development` channel** | Forge intents + adult-only DM — no typed `development` channel instance | Phase 2+ |
 
-**Resolved (4.13a–4.16d):** parent-first delivery + receipts · unified hub shell · Phase 3 typed streams (`staff_internal`, `compliance`, `emergency`, `club_wide`) · Phase 4 omnichannel + ack + sponsor templates · `consentComms` onboarding banner.
+**Resolved (4.13a–4.16d):** parent-first delivery + receipts · unified hub shell · Phase 3 typed streams (`staff_internal`, `compliance`, `emergency`, `club_wide`) · Phase 4 omnichannel + ack + sponsor templates · `consentComms` onboarding banner · **coach Team Ops Comms embed** — native `CommsWorkspaceShell` on `/coach/logistics?tab=comms`; coach `/messages` redirect; `MessagesTab` retired from Team Ops.
 
 ---
 

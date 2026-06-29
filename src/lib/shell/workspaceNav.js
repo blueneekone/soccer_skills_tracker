@@ -41,8 +41,8 @@ export const coachLinks = [
 	{ label: 'Daily Intel',       href: '/coach',               icon: 'content.grid' },
 	{ label: 'The Forge',         href: '/coach/forge',         icon: 'game.dumbbell' },
 	{ label: 'Field Station',     href: '/coach/drills',        icon: 'content.checks' },
-	// War Room (/coach/tactical) — Tier 2 per PRODUCT_SURFACE_REGISTRY PS-C04; deep-link only
-	{ label: 'Tactics board',     href: '/coach/tactics-board', icon: 'action.edit' },
+	// War Room (/coach/tactical) — Tier 2 per PRODUCT_SURFACE_REGISTRY PS-C04
+	{ label: 'War Room',          href: '/coach/tactical',      icon: 'action.edit' },
 	{ label: 'Match Day',         href: '/coach/match-day',     icon: 'data.activity' },
 	{ label: 'Scouting',          href: '/coach/scouting',      icon: 'data.target' },
 	{ label: 'Team Ops',          href: '/coach/logistics',     icon: 'sys.calendar' },
@@ -77,9 +77,18 @@ export const recruiterLinks = [
 	{ tab: '', label: 'Recruiter Search', icon: 'action.search', href: '/recruiter' },
 ];
 
-/** Cross-persona comms — coach/parent field primary tabs (NAV-CANON §3c). */
+/** Cross-persona comms — parent field primary tab (NAV-CANON §3c). */
 /** @type {ShellNavItem} */
 export const messagesNavItem = { tab: '', label: 'Messages', icon: 'comm.chat', href: '/messages' };
+
+/** Coach canonical team comms — Team Ops Comms tab (COMMS-TEAMOPS-UNIFY; not /messages hub). */
+/** @type {ShellNavItem} */
+export const coachTeamCommsNavItem = {
+	tab: '',
+	label: 'Team Comms',
+	icon: 'comm.chat',
+	href: '/coach/logistics?tab=comms',
+};
 
 /** @param {string} pathname @param {string} role @param {string} [activeContext] @returns {WorkspaceContext} */
 function resolveWorkspaceContext(pathname, role, activeContext = '') {
@@ -108,7 +117,7 @@ function buildPrimaryFieldNavLinks(links, ctx, role) {
 	switch (ctx) {
 		case 'coach': {
 			const pick = (/** @type {string} */ href) => links.find((l) => l.href === href);
-			return [pick('/coach'), pick('/coach/forge'), messagesNavItem].filter(Boolean);
+			return [pick('/coach'), pick('/coach/forge'), coachTeamCommsNavItem].filter(Boolean);
 		}
 		case 'household':
 			if (role === 'parent') {

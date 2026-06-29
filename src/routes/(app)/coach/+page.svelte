@@ -71,8 +71,8 @@
 		return () => clearInterval(id);
 	});
 
-	/** PRODUCT_SURFACE_REGISTRY PS-C04: Tier 2 — route retained; no HQ hero pre-acquisition */
-	const warRoomHqVisible = false;
+	/** PRODUCT_SURFACE_REGISTRY PS-C04: Tier 2 War Room — sidebar + HQ hero (WARROOM-SINGLE-SURFACE) */
+	const warRoomHqVisible = true;
 
 	function enterWarRoom() {
 		void goto('/coach/tactical');
@@ -262,9 +262,11 @@
 			</button>
 			{/if}
 
-			<!-- FACILITY OPS & STAGING — secondary ops (4 cols @ 64rem+) -->
+			<!-- FACILITY OPS & STAGING — 4 cols beside War Room; full width when War Room hidden -->
 			<article
-				class="coach-os-panel coach-os-facility bento-span-4 bento-cell tw-relative tw-flex tw-min-h-[320px] tw-min-w-0 tw-flex-col tw-overflow-hidden tw-p-5"
+				class="coach-os-panel coach-os-facility bento-cell tw-relative tw-flex tw-min-h-[320px] tw-min-w-0 tw-flex-col tw-overflow-hidden tw-p-5"
+				class:bento-span-12={!warRoomHqVisible}
+				class:bento-span-4={warRoomHqVisible}
 				aria-label="Facility Ops & Staging"
 			>
 				<header class="bento-mb-md tw-flex tw-items-center tw-gap-2 tw-border-b tw-border-white/10 tw-pb-3">

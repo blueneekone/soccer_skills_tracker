@@ -78,7 +78,7 @@ Navigation separates **chrome grammar** (interaction) from **skin grammar** (vis
 
 | Persona / roles | Shell | Field chrome (<1024) | Field skin | Desk (≥1024) |
 |-----------------|-------|----------------------|------------|--------------|
-| Coach | `EnterpriseConsoleShell` | Pins: Daily Intel · Forge · Messages; Menu sheet | Admin SIEM | Left sidebar |
+| Coach | `EnterpriseConsoleShell` | Pins: Daily Intel · Forge · **Team Comms**; Menu sheet | Admin SIEM | Left sidebar |
 | Director, Admin, Registrar, **Recruiter** | `EnterpriseConsoleShell` | Default pins from §4 table; Menu sheet | Admin console | Left sidebar |
 | Player | `PlayerShell` | Pins: HQ · Train · Stats; Menu sheet | Dossier | Left rail |
 | Parent | `EnterpriseConsoleShell` | Pins: Household · VPC · Command; Menu sheet | Trust lounge | Left sidebar |
@@ -100,7 +100,7 @@ All use `EnterpriseConsoleShell` with **admin interface skin** on mobile **and**
 | Persona | Slot 1 | Slot 2 | Slot 3 | Slot 4 |
 |---------|--------|--------|--------|--------|
 | player | `/player/dashboard` HQ | `/player/workout` Train | `/stats` Stats | **Menu** (`__field_menu__`) |
-| coach | `/coach` Daily Intel | `/coach/forge` The Forge | `/messages` Messages | **Menu** |
+| coach | `/coach` Daily Intel | `/coach/forge` The Forge | `/coach/logistics?tab=comms` **Team Comms** | **Menu** |
 | parent | `/parent/household` | `/parent/vpc` | `/parent/dashboard` | **Menu** |
 | director | `/director?tab=home` | `/director?tab=teams` | `/director?tab=field` | **Menu** |
 | admin | `/admin/overview` | `/admin/organizations` | `/admin/users` | **Menu** |
@@ -116,6 +116,8 @@ Sheet sections (top → bottom). Items on bottom pins also appear in sheet (dim/
 **Player:** Primary (Tier 1) · More routes (Tracker, Comms, Armory, Settings) · System (Sign out)
 
 **Coach:** Tier 1 / exec · Operations (Tier 2) · System (Sign out, Support, Report anomaly). **Excluded:** War Room `/coach/tactical` — deep-link only.
+
+**Coach comms routing (COMMS-TEAMOPS-UNIFY):** Primary field pin slot 3 resolves to **`coachTeamCommsNavItem`** in [`workspaceNav.js`](../../src/lib/shell/workspaceNav.js) — label **Team Comms**, href `/coach/logistics?tab=comms` (native `CoachTeamCommsPanel` + `CommsWorkspaceShell`). Coach JWT hitting `/messages` **redirects** to Team Ops with query params preserved (`channel`, `teamId`, `section`, `sub`). **AppMenuSheet** Tier 1 still lists **Messages** (`/messages`) for cross-persona hub access; Tier 2 **Team Ops** (`/coach/logistics`) is the native team-scoped comms surface — prefer the Team Comms pin over Messages for day-to-day coach workflows. Parent, director, and recruiter continue to use `/messages` as the canonical hub.
 
 **Parent:** Tier 1 · Co-op (Tier 2) · System (Sign out, Support)
 

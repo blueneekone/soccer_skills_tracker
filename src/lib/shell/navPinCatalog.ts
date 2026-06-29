@@ -102,7 +102,7 @@ function buildCoachCatalog(): NavPinItem[] {
 		messagesNavItem,
 	];
 	const tier2 = coachLinks.filter(
-		(l) => l.href !== '/coach' && l.href !== '/coach/forge' && l.href !== '/coach/tactical',
+		(l) => l.href !== '/coach' && l.href !== '/coach/forge',
 	);
 	return [
 		...mapLinks(tier1, 'Tier 1 / exec'),

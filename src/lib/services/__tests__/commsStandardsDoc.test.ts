@@ -11,6 +11,7 @@ const STANDARDS = join(REPO, 'docs/vision/COMMS_PLATFORM_STANDARDS.md');
 const UX_NAV = join(REPO, 'docs/vision/COMMS_UX_NAV_SPEC.md');
 const CALENDAR = join(REPO, 'docs/vision/COMMS_CALENDAR_INTEGRATION.md');
 const CANON = join(REPO, 'docs/vision/COMMS_CHANNEL_CANON.md');
+const HUB = join(REPO, 'docs/vision/COMMS_HUB.md');
 const ROADMAP = join(REPO, 'ROADMAP.md');
 
 const STANDARDS_POLICY_STRINGS = [
@@ -90,5 +91,21 @@ describe('COMMS-STANDARDS-DOC — ROADMAP row', () => {
 	it('ROADMAP tracks COMMS-STANDARDS-DOC sprint', () => {
 		const doc = readFileSync(ROADMAP, 'utf8');
 		expect(doc).toContain('COMMS-STANDARDS-DOC');
+	});
+});
+
+describe('COMMS-DOCS-SYNC — coach Team Ops comms embed', () => {
+	it('COMMS_HUB documents CoachTeamCommsPanel or CommsWorkspaceShell for coach team comms', () => {
+		const doc = readFileSync(HUB, 'utf8');
+		expect(
+			doc.includes('CoachTeamCommsPanel') || doc.includes('CommsWorkspaceShell'),
+			'COMMS_HUB must name CoachTeamCommsPanel or CommsWorkspaceShell'
+		).toBe(true);
+		expect(doc).toMatch(/\/coach\/logistics\?tab=comms/);
+	});
+
+	it('COMMS_HUB does not require MessagesTab on /coach/logistics', () => {
+		const doc = readFileSync(HUB, 'utf8');
+		expect(doc).not.toMatch(/\/coach\/logistics.*MessagesTab|MessagesTab.*\/coach\/logistics/s);
 	});
 });
