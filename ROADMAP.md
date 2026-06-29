@@ -22,13 +22,13 @@ Objective: Establish a pristine, bug-free foundation and implement the core "Bil
 Phase 2: The Legal Shield & Security (Epic 2 & Epic 3)
 Objective: Lock down the multi-tenant architecture and achieve strict COPPA 2026 compliance.
 
-[ ] God Mode Licensing Engine: Implement Firebase "Iron Vault" security to enforce strict Role-Based Access Control (RBAC), explicitly preventing standard clients from bypassing seat allocation limits.  
+[x] God Mode Licensing Engine: Implement Firebase "Iron Vault" security to enforce strict Role-Based Access Control (RBAC), explicitly preventing standard clients from bypassing seat allocation limits.  
 
-[ ] Verifiable Parental Consent (VPC): Build unbundled consent flows tied to hardware WebAuthn biometrics (FaceID/TouchID) and passwordless magic links.  
+[x] Verifiable Parental Consent (VPC): Build unbundled consent flows tied to hardware WebAuthn biometrics (FaceID/TouchID) and passwordless magic links.  
 
-[ ] PII Burn Protocol: Integrate the Checkr API for coach background checks, ensuring sensitive data is permanently scrubbed via automated Time-To-Live (TTL) cloud functions after 24 hours.
+[x] PII Burn Protocol: Integrate the Checkr API for coach background checks, ensuring sensitive data is permanently scrubbed via automated Time-To-Live (TTL) cloud functions after 24 hours.
 
-[ ] Cell-Based Tenant Routing: Segment massive National Governing Bodies into isolated Firestore cells to eliminate noisy-neighbor computational throttling.
+[x] Cell-Based Tenant Routing: Segment massive National Governing Bodies into isolated Firestore cells to eliminate noisy-neighbor computational throttling.
 
 Phase 3: The Coach OS & AI Orchestration (Epic 4)
 Objective: Replace static PDFs with an intelligent, actionable sideline ecosystem.
