@@ -53,8 +53,8 @@ Objective: Drive daily engagement using constructive behavioral economics and RP
 Phase 5: Enterprise Scaling & Recruitment (Epic 6)
 Objective: Connect the platform to global governing databases and collegiate networks.
 
-[ ] Affinity Sports API Sync: Build OAuth pipelines to automatically pull down state-level rosters and map digital match-day clearance cards.
+[x] Affinity Sports API Sync: Build OAuth pipelines to automatically pull down state-level rosters and map digital match-day clearance cards.
 
-[ ] NCAA Recruiter Portal: Deploy compound filtering algorithms and Linear Mixed Effects Models (LMM) to create objective, longitudinal Pro Player Cards for collegiate scouts.
+[x] NCAA Recruiter Portal: Deploy compound filtering algorithms and Linear Mixed Effects Models (LMM) to create objective, longitudinal Pro Player Cards for collegiate scouts.
 
-[ ] Omnichannel Marketing Dashboard: Integrate Meta, Google, and TikTok APIs to allow Directors to launch targeted tryout campaigns directly from the Nexus Command interface.
+[x] Omnichannel Marketing Dashboard: Integrate Meta, Google, and TikTok APIs to allow Directors to launch targeted tryout campaigns directly from the Nexus Command interface.
