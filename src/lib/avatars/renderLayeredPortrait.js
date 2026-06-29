@@ -36,6 +36,12 @@ export function getPortraitPartCatalog() {
 	}));
 }
 
+/** Programmatic anchor points for UPA/Rubber Hose geometric parts (Phase 1). */
+export const PORTRAIT_ANCHORS = {
+	NECK_ANCHOR: { x: 0, y: 0 },
+	EYE_ANCHOR: { x: 0, y: -20 },
+};
+
 /**
  * Inline catalog SVG fragment at master viewBox — no nested {@code <svg>} (default overflow:hidden
  * clips hair crown) and no external {@code <image href>} (breaks in {@html} injection).
@@ -56,7 +62,18 @@ export function renderPortraitPartLayer(partId, size = 128) {
 		` data-portrait-asset="${entry.assetPath}"` :
 		'';
 
-	return `<g class="portrait-layer portrait-layer--${variant}" data-portrait-layer="${entry.slot}"${assetAttr} transform="scale(${scale})">${entry.svgInner}</g>`;
+	// Phase 1: Apply programmatic anchor points based on part slot/variant (stub logic for Atompunk).
+	let tx = 0;
+	let ty = 0;
+	if (entry.slot === 'face' && variant.includes('mech-eye')) {
+		tx = PORTRAIT_ANCHORS.EYE_ANCHOR.x;
+		ty = PORTRAIT_ANCHORS.EYE_ANCHOR.y;
+	} else if (entry.slot === 'kit' && variant.includes('atompunk')) {
+		tx = PORTRAIT_ANCHORS.NECK_ANCHOR.x;
+		ty = PORTRAIT_ANCHORS.NECK_ANCHOR.y;
+	}
+
+	return `<g class="portrait-layer portrait-layer--${variant}" data-portrait-layer="${entry.slot}"${assetAttr} transform="scale(${scale}) translate(${tx}, ${ty})">${entry.svgInner}</g>`;
 }
 
 /**

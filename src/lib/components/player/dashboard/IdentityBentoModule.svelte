@@ -97,11 +97,7 @@
 		return (uid || '??').slice(0, 2).toUpperCase();
 	});
 
-	const holoAccent = $derived(
-		currentStreak > 0 || (embedded && totalXp > 0)
-			? 'var(--pd-accent-action, #fbbf24)'
-			: 'var(--pd-accent-data, #14b8a6)',
-	);
+	const holoAccent = $derived('var(--pd-accent-data, #14b8a6)');
 
 	const holoPortraitLayers = $derived(
 		composeOperativePortrait({

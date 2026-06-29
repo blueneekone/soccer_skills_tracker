@@ -119,27 +119,36 @@
 
 	// ── Pure render helpers (no state, safe to call from template) ────────────
 
-	function nodeFill(state: string, hovered: boolean, selected: boolean): string {
-		const boost = hovered || selected ? 0.2 : 0;
-		if (state === 'locked') return `rgba(255,255,255,${(0.04 + boost).toFixed(2)})`;
-		if (state === 'mastered') return `rgba(20, 184, 166,${Math.min(0.55 + boost, 0.9).toFixed(2)})`;
-		return `rgba(20, 184, 166,${Math.min(0.25 + boost, 0.85).toFixed(2)})`;
+	function getRgb(rank: number) {
+		return rank === 1 ? '20, 184, 166' : '217, 119, 6';
 	}
 
-	function nodeStroke(state: string): string {
-		return state === 'locked' ? 'rgba(255,255,255,0.08)' : tierAccent;
+	function getAccent(rank: number) {
+		return rank === 1 ? '#14b8a6' : '#d97706';
+	}
+
+	function nodeFill(state: string, hovered: boolean, selected: boolean, rank: number): string {
+		const boost = hovered || selected ? 0.2 : 0;
+		if (state === 'locked') return `rgba(255,255,255,${(0.04 + boost).toFixed(2)})`;
+		const rgb = getRgb(rank);
+		if (state === 'mastered') return `rgba(${rgb},${Math.min(0.55 + boost, 0.9).toFixed(2)})`;
+		return `rgba(${rgb},${Math.min(0.25 + boost, 0.85).toFixed(2)})`;
+	}
+
+	function nodeStroke(state: string, rank: number): string {
+		return state === 'locked' ? 'rgba(255,255,255,0.08)' : getAccent(rank);
 	}
 
 	function nodeStrokeWidth(hovered: boolean): string {
 		return hovered ? '1.5' : '0.8';
 	}
 
-	function edgeStroke(state: string): string {
-		return state === 'locked' ? 'rgba(255,255,255,0.05)' : 'rgba(20, 184, 166,0.18)';
+	function edgeStroke(state: string, rank: number): string {
+		return state === 'locked' ? 'rgba(255,255,255,0.05)' : `rgba(${getRgb(rank)},0.18)`;
 	}
 
-	function labelFill(state: string): string {
-		return state === 'locked' ? 'rgba(255,255,255,0.4)' : tierAccent;
+	function labelFill(state: string, rank: number): string {
+		return state === 'locked' ? 'rgba(255,255,255,0.4)' : getAccent(rank);
 	}
 
 	function truncate(str: string, max = 12): string {
@@ -214,7 +223,7 @@
 			{#if node.edgePath}
 				<path
 					d={node.edgePath}
-					stroke={edgeStroke(node.state)}
+					stroke={edgeStroke(node.state, node.rank)}
 					stroke-width="0.5"
 					fill="none"
 				/>
@@ -258,8 +267,8 @@
 			<!-- Main hex node -->
 			<polygon
 				points={node.hexPoints}
-				fill={nodeFill(node.state, isHovered, isSelected)}
-				stroke={nodeStroke(node.state)}
+				fill={nodeFill(node.state, isHovered, isSelected, node.rank)}
+				stroke={nodeStroke(node.state, node.rank)}
 				stroke-width={nodeStrokeWidth(isHovered)}
 				filter={bloomFilter(node.state)}
 				class="{isMastered ? 'st-node-mastered' : ''} {isDecaying ? 'st-node-decayed' : ''} {isRevealed ? 'st-node-revealed' : ''} {isSelected ? 'st-node--selected' : ''} tw-cursor-pointer"
@@ -288,7 +297,7 @@
 					font-family="'JetBrains Mono', 'Fira Code', monospace"
 					font-size="8"
 					letter-spacing="0.15em"
-					fill={labelFill(node.state)}
+					fill={labelFill(node.state, node.rank)}
 					class="tw-pointer-events-none tw-select-none"
 				>
 					{truncate(node.label)}
@@ -304,6 +313,7 @@
 				stroke="rgba(255,255,255,0.05)"
 				stroke-width="0.5"
 				class="st-node-fogged tw-pointer-events-none"
+				style="filter: blur(4px);"
 				aria-hidden="true"
 			/>
 		{/each}

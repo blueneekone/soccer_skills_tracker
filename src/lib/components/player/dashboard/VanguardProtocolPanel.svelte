@@ -48,7 +48,7 @@
 	{/if}
 
 	<div class="vpp-body">
-		<div class="vpp-chart vpp-chart--premium" aria-label="Attribute radar">
+		<div class="vpp-chart vpp-chart--premium pd-z1-recessed" aria-label="Attribute radar">
 			<AttributeRadar
 				values={prismValues}
 				{selectedAxis}
