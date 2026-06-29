@@ -1,4 +1,4 @@
-﻿/* eslint-disable quotes */
+/* eslint-disable quotes */
 // Phase 2, Epic 3 — Cell-Level Egress Guard (Layer 4).
 // wrapFetch MUST be the first statement before any other module is required
 // so that outbound fetch calls from all subsequently-loaded modules are
@@ -403,6 +403,10 @@ exportScheduler(
     trajectoryPlateauHandlers.trajectoryPlateauDetector,
 );
 exports.getMemoryCapsule          = trajectoryPlateauHandlers.getMemoryCapsule;
+
+// ── Epic 5.2 — AI Biomechanics Verification (Phase 4) ─────────────────────────
+const cvBiomechanicsVerifierModule = require('./cvBiomechanicsVerifier');
+exports.cvBiomechanicsVerifier = cvBiomechanicsVerifierModule.cvBiomechanicsVerifier;
 
 // ── Phase 4, Epic 7 — Grit XP Daily-Cap Backstop ─────────────────────────────
 //

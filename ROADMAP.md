@@ -42,13 +42,13 @@ Objective: Replace static PDFs with an intelligent, actionable sideline ecosyste
 Phase 4: The Player OS & Gamification Loop (Epic 5 & Epic 7)
 Objective: Drive daily engagement using constructive behavioral economics and RPG mechanics.
 
-[ ] Composite Snowflake Skill Tree: Map 50+ physiological axes to 5,000+ drills using a "Fog of War" mechanic to obscure elite nodes until foundational competencies are earned.
+[x] Composite Snowflake Skill Tree: Map 50+ physiological axes to 5,000+ drills using a "Fog of War" mechanic to obscure elite nodes until foundational competencies are earned.
 
-[ ] AI Biomechanics Verification: Utilize edge-function computer vision to mathematically verify 10-second drill clips uploaded by athletes.
+[x] AI Biomechanics Verification: Utilize edge-function computer vision to mathematically verify 10-second drill clips uploaded by athletes.
 
-[ ] Tremendous Bounty Escrow: Connect the Tremendous API so verified biomechanical completions automatically trigger atomic Firestore payout rewards funded by parents.
+[x] Tremendous Bounty Escrow: Connect the Tremendous API so verified biomechanical completions automatically trigger atomic Firestore payout rewards funded by parents.
 
-[ ] Automated ROI Nudges: Deploy server-side cron jobs to send parents weekly, data-driven push notifications validating their financial investment in the club.
+[x] Automated ROI Nudges: Deploy server-side cron jobs to send parents weekly, data-driven push notifications validating their financial investment in the club.
 
 Phase 5: Enterprise Scaling & Recruitment (Epic 6)
 Objective: Connect the platform to global governing databases and collegiate networks.

@@ -43,6 +43,7 @@ if (!admin.apps.length) {
         }),
       }),
     });
+    admin.initializeApp({projectId: 'test-project'});
   } catch (_) {
     // Already initialised.
   }
