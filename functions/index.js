@@ -96,9 +96,9 @@ exportScheduler(
 
 // â”€â”€ Hotfix Alpha-3: League & Fixture Management (UTC enforcement) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const leagueHandlers = require('./league');
-exports.createFixture    = leagueHandlers.createFixture;
-exports.updateFixture    = leagueHandlers.updateFixture;
-exports.cancelFixture    = leagueHandlers.cancelFixture;
+exports.createFixture = leagueHandlers.createFixture;
+exports.updateFixture = leagueHandlers.updateFixture;
+exports.cancelFixture = leagueHandlers.cancelFixture;
 exports.schedulePractice = leagueHandlers.schedulePractice;
 
 // DEPLOY-N: compliance/COPPA/WebAuthn/vault → functions-compliance/
@@ -124,7 +124,7 @@ const inviteHandlers = require('./invites');
 // NOTE: syncUserClaims is NOT exported here — the canonical implementation
 // lives in adminOps and is exported below (line ~237).  Exporting it twice
 // would silently overwrite the first assignment, creating a dead export.
-exports.consumeInviteCode  = inviteHandlers.consumeInviteCode;
+exports.consumeInviteCode = inviteHandlers.consumeInviteCode;
 exports.generateInviteCode = inviteHandlers.generateInviteCode;
 
 // Phase 2, Epic 3: Teen 13-16 Ad-Block — client beacon + CF write-validator
@@ -142,9 +142,9 @@ exports.getSensitiveDocumentUrl = auditHandlers.getSensitiveDocumentUrl;
 // onWorkoutLogCreated) are removed; the function definitions remain in this
 // file only until remaining callers are migrated.
 const profileTriggers = require('./src/domains/profileTriggers');
-exports.updatePublicProfile        = profileTriggers.updatePublicProfile;
+exports.updatePublicProfile = profileTriggers.updatePublicProfile;
 exports.updatePublicProfileOnTrial = profileTriggers.updatePublicProfileOnTrial;
-exports.onWorkoutLogCreated        = profileTriggers.onWorkoutLogCreated;
+exports.onWorkoutLogCreated = profileTriggers.onWorkoutLogCreated;
 
 // ── Deconstruction Sprint 3: Admin & Rosters Domain ──────────────────────────
 // Administrative logic, seating entrenchment, custom claims, and facility
@@ -154,32 +154,32 @@ const adminOps = require('./src/domains/adminOps');
 // ── Deconstruction Sprint 4: Training & Gamification (partial — default only) ─
 // Launch callables → functions-core/: logTrainingSession, secure*Intent.
 const trainingOps = require('./src/domains/trainingOps');
-exports.commitMatchTelemetry          = trainingOps.commitMatchTelemetry;
-exports.submitWorkoutRep              = trainingOps.submitWorkoutRep;
-exports.secureAssignHomework          = trainingOps.secureAssignHomework;
-exports.secureDeleteHomework          = trainingOps.secureDeleteHomework;
-exports.completeAssignmentStatus      = trainingOps.completeAssignmentStatus;
-exports.onRepCreatedUpdateTeamStats   = trainingOps.onRepCreatedUpdateTeamStats;
-exports.getAccountabilityReport       = trainingOps.getAccountabilityReport;
-exports.getPublicRecruitProfile       = trainingOps.getPublicRecruitProfile;
-exports.getPublicClubLanding          = trainingOps.getPublicClubLanding;
-exports.logPlayerActivity             = trainingOps.logPlayerActivity;
-exports.analyzeTacticWithAI           = trainingOps.analyzeTacticWithAI;
+exports.commitMatchTelemetry = trainingOps.commitMatchTelemetry;
+exports.submitWorkoutRep = trainingOps.submitWorkoutRep;
+exports.secureAssignHomework = trainingOps.secureAssignHomework;
+exports.secureDeleteHomework = trainingOps.secureDeleteHomework;
+exports.completeAssignmentStatus = trainingOps.completeAssignmentStatus;
+exports.onRepCreatedUpdateTeamStats = trainingOps.onRepCreatedUpdateTeamStats;
+exports.getAccountabilityReport = trainingOps.getAccountabilityReport;
+exports.getPublicRecruitProfile = trainingOps.getPublicRecruitProfile;
+exports.getPublicClubLanding = trainingOps.getPublicClubLanding;
+exports.logPlayerActivity = trainingOps.logPlayerActivity;
+exports.analyzeTacticWithAI = trainingOps.analyzeTacticWithAI;
 exports.onRepCreatedApplyGamificationXp = trainingOps.onRepCreatedApplyGamificationXp;
 // Epic 8 — intent lifecycle (not in functions-core launch slice)
 exports.onUserXpUpdateIntentLifecycle = trainingOps.onUserXpUpdateIntentLifecycle;
 exports.onDrillCompletionIntentLifecycle = trainingOps.onDrillCompletionIntentLifecycle;
 exportScheduler('scheduledExpireIntents', trainingOps.scheduledExpireIntents);
 // B4a/B4b — advisory completion proof (player submits; parent reviews)
-exports.submitCompletionProof         = trainingOps.submitCompletionProof;
-exports.parentReviewCompletionProof   = trainingOps.parentReviewCompletionProof;
+exports.submitCompletionProof = trainingOps.submitCompletionProof;
+exports.parentReviewCompletionProof = trainingOps.parentReviewCompletionProof;
 
 const gritHandlers = require('./lib/grit');
 exports.triggerGritAwardUpdate = gritHandlers.triggerGritAwardUpdate;
 
 // DEPLOY-N: admin/cell/gateway → functions-platform/ (createSportModule, publishClubCampaign, …)
-exports.createSportModule         = adminOps.createSportModule;
-exports.publishClubCampaign       = adminOps.publishClubCampaign;
+exports.createSportModule = adminOps.createSportModule;
+exports.publishClubCampaign = adminOps.publishClubCampaign;
 
 // ── Deconstruction Sprint 5: Compliance & VPC Domain ─────────────────────────
 // Household linkages, verifiable consent, minor retention purges, and the
@@ -187,58 +187,58 @@ exports.publishClubCampaign       = adminOps.publishClubCampaign;
 // src/domains/complianceOps.js.
 // DEPLOY-N-household: linkHousehold, parentGrantVpcConsent → functions-compliance/
 const complianceOps = require('./src/domains/complianceOps');
-exports.setPlayerDateOfBirth        = complianceOps.setPlayerDateOfBirth;
-exports.verifyVpcForMinor           = complianceOps.verifyVpcForMinor;
-exports.directorApproveVpc          = complianceOps.directorApproveVpc;
-exports.parentSubmitVpcIntent       = complianceOps.parentSubmitVpcIntent;
-exports.playerSelfReportDob         = complianceOps.playerSelfReportDob;
-exports.registrarTransferPlayer     = complianceOps.registrarTransferPlayer;
-exports.verifyDeviceToken          = notificationOps.verifyDeviceToken;
-exports.resyncDeviceTokens         = notificationOps.resyncDeviceTokens;
+exports.setPlayerDateOfBirth = complianceOps.setPlayerDateOfBirth;
+exports.verifyVpcForMinor = complianceOps.verifyVpcForMinor;
+exports.directorApproveVpc = complianceOps.directorApproveVpc;
+exports.parentSubmitVpcIntent = complianceOps.parentSubmitVpcIntent;
+exports.playerSelfReportDob = complianceOps.playerSelfReportDob;
+exports.registrarTransferPlayer = complianceOps.registrarTransferPlayer;
+exports.verifyDeviceToken = notificationOps.verifyDeviceToken;
+exports.resyncDeviceTokens = notificationOps.resyncDeviceTokens;
 
 // -- Operative Ops Domain (impersonation, purging) ---------------------------
 const operativeOps = require('./src/domains/operativeOps');
-exports.impersonateUserFn          = operativeOps.impersonateUserFn;
-exports.purgeUserDataFn            = operativeOps.purgeUserDataFn;
+exports.impersonateUserFn = operativeOps.impersonateUserFn;
+exports.purgeUserDataFn = operativeOps.purgeUserDataFn;
 
 // ── Deconstruction Sprint 5: Operative & Identity Domain ─────────────────────
 // Custom proxy enclaves, COPPA operatives, SafeSport comms, impersonation,
 // and GDPR wipes have been extracted to src/domains/operativeOps.js.
 // DEPLOY-N-household: parentSignCoppaWaiver, parentProvisionOperative,
 // operativeSignInWithDispatch, generatePlayerOTP, validatePlayerOTP → functions-compliance/
-exports.sendCoachPlayerMessage      = operativeOps.sendCoachPlayerMessage;
-exports.sendChannelMessage          = operativeOps.sendChannelMessage;
-exports.sendHouseholdMessage        = operativeOps.sendHouseholdMessage;
+exports.sendCoachPlayerMessage = operativeOps.sendCoachPlayerMessage;
+exports.sendChannelMessage = operativeOps.sendChannelMessage;
+exports.sendHouseholdMessage = operativeOps.sendHouseholdMessage;
 
 const scheduleOps = require('./src/domains/scheduleOps');
-exports.setEventRsvp                = scheduleOps.setEventRsvp;
+exports.setEventRsvp = scheduleOps.setEventRsvp;
 
 const registrationOps = require('./src/domains/registrationOps');
 exports.getPublicRegistrationProgram = registrationOps.getPublicRegistrationProgram;
 exports.assignSeasonRegistrationToRoster = registrationOps.assignSeasonRegistrationToRoster;
 
 const rosterOps = require('./src/domains/rosterOps');
-exports.claimRosterSpot             = rosterOps.claimRosterSpot;
+exports.claimRosterSpot = rosterOps.claimRosterSpot;
 
 const tryoutsOps = require('./src/domains/tryoutsOps');
-exports.upsertTryoutProgram         = tryoutsOps.upsertTryoutProgram;
-exports.getPublicTryoutProgram      = tryoutsOps.getPublicTryoutProgram;
-exports.registerForTryout           = tryoutsOps.registerForTryout;
-exports.upsertTryoutSession         = tryoutsOps.upsertTryoutSession;
-exports.assignTryoutSession         = tryoutsOps.assignTryoutSession;
-exports.setTryoutSessionRsvp        = tryoutsOps.setTryoutSessionRsvp;
-exports.checkInTryoutRegistration   = tryoutsOps.checkInTryoutRegistration;
-exports.upsertTryoutPlan            = tryoutsOps.upsertTryoutPlan;
-exports.submitTryoutEvaluation      = tryoutsOps.submitTryoutEvaluation;
-exports.setTryoutPipelineStatus     = tryoutsOps.setTryoutPipelineStatus;
-exports.respondTryoutOffer          = tryoutsOps.respondTryoutOffer;
-exports.getPublicTryoutRegistration   = tryoutsOps.getPublicTryoutRegistration;
-exports.promoteTryoutToRoster       = tryoutsOps.promoteTryoutToRoster;
-exports.dispatchTryoutComms         = tryoutsOps.dispatchTryoutComms;
+exports.upsertTryoutProgram = tryoutsOps.upsertTryoutProgram;
+exports.getPublicTryoutProgram = tryoutsOps.getPublicTryoutProgram;
+exports.registerForTryout = tryoutsOps.registerForTryout;
+exports.upsertTryoutSession = tryoutsOps.upsertTryoutSession;
+exports.assignTryoutSession = tryoutsOps.assignTryoutSession;
+exports.setTryoutSessionRsvp = tryoutsOps.setTryoutSessionRsvp;
+exports.checkInTryoutRegistration = tryoutsOps.checkInTryoutRegistration;
+exports.upsertTryoutPlan = tryoutsOps.upsertTryoutPlan;
+exports.submitTryoutEvaluation = tryoutsOps.submitTryoutEvaluation;
+exports.setTryoutPipelineStatus = tryoutsOps.setTryoutPipelineStatus;
+exports.respondTryoutOffer = tryoutsOps.respondTryoutOffer;
+exports.getPublicTryoutRegistration = tryoutsOps.getPublicTryoutRegistration;
+exports.promoteTryoutToRoster = tryoutsOps.promoteTryoutToRoster;
+exports.dispatchTryoutComms = tryoutsOps.dispatchTryoutComms;
 
 const eligibilityOps = require('./src/domains/eligibilityOps');
 exports.upsertClubEligibilityMatrix = eligibilityOps.upsertClubEligibilityMatrix;
-exports.getClubEligibilityMatrix    = eligibilityOps.getClubEligibilityMatrix;
+exports.getClubEligibilityMatrix = eligibilityOps.getClubEligibilityMatrix;
 
 const ngbExportOps = require('./src/domains/ngbExportOps');
 exports.exportStateRoster = ngbExportOps.exportStateRoster;
@@ -246,25 +246,25 @@ exports.listNgbExportFormats = ngbExportOps.listNgbExportFormats;
 
 // ── Epic 4.4 W1: Parent Lounge channel provisioning ──────────────────────────
 const commsChannelOps = require('./src/domains/commsChannelOps');
-exports.coachProvisionParentLounge  = commsChannelOps.coachProvisionParentLounge;
+exports.coachProvisionParentLounge = commsChannelOps.coachProvisionParentLounge;
 exports.coachProvisionStaffInternal = commsChannelOps.coachProvisionStaffInternal;
-exports.mirrorScheduleToLogistics   = commsChannelOps.mirrorScheduleToLogistics;
+exports.mirrorScheduleToLogistics = commsChannelOps.mirrorScheduleToLogistics;
 
 // ── COMMS-PARENT-COACH-DM — bilateral parent↔coach threads ───────────────────
 const parentCoachDmOps = require('./src/domains/parentCoachDmOps');
-exports.sendParentCoachMessage      = parentCoachDmOps.sendParentCoachMessage;
-exports.listParentCoachDmThreads    = parentCoachDmOps.listParentCoachDmThreads;
+exports.sendParentCoachMessage = parentCoachDmOps.sendParentCoachMessage;
+exports.listParentCoachDmThreads = parentCoachDmOps.listParentCoachDmThreads;
 
 // ── COMMS-VOICE-V1 — scheduled parent info voice sessions ────────────────────
 const parentVoiceSessionOps = require('./src/domains/parentVoiceSessionOps');
-exports.createParentVoiceSession  = parentVoiceSessionOps.createParentVoiceSession;
-exports.joinParentVoiceSession    = parentVoiceSessionOps.joinParentVoiceSession;
+exports.createParentVoiceSession = parentVoiceSessionOps.createParentVoiceSession;
+exports.joinParentVoiceSession = parentVoiceSessionOps.joinParentVoiceSession;
 
 // ── Sprint 3.3 — Operative loadout unlock ceremonies ────────────────────────
 const loadoutOps = require('./src/domains/loadoutOps');
-exports.grantLoadoutCosmetic        = loadoutOps.grantLoadoutCosmetic;
-exports.redeemQuartermasterDigital  = loadoutOps.redeemQuartermasterDigital;
-exports.grantAlbumSetBonus          = loadoutOps.grantAlbumSetBonus;
+exports.grantLoadoutCosmetic = loadoutOps.grantLoadoutCosmetic;
+exports.redeemQuartermasterDigital = loadoutOps.redeemQuartermasterDigital;
+exports.grantAlbumSetBonus = loadoutOps.grantAlbumSetBonus;
 
 // -- Deconstruction Sprint 6: Webhooks & Integrations Domain ----------------
 // Affinity eligibility ingestion, Stripe billing, facility weather alerts,
@@ -272,11 +272,11 @@ exports.grantAlbumSetBonus          = loadoutOps.grantAlbumSetBonus;
 // src/domains/webhooksOps.js.
 const webhooksOps = require('./src/domains/webhooksOps');
 exportScheduler('expireCoachInvites', webhooksOps.expireCoachInvites);
-exports.submitVideoTrial             = webhooksOps.submitVideoTrial;
-exports.verifyVideoTrial             = webhooksOps.verifyVideoTrial;
-exports.directorOverrideEligibility  = webhooksOps.directorOverrideEligibility;
-exports.affinityWebhook              = webhooksOps.affinityWebhook;
-exports.mockAffinityPush             = webhooksOps.mockAffinityPush;
+exports.submitVideoTrial = webhooksOps.submitVideoTrial;
+exports.verifyVideoTrial = webhooksOps.verifyVideoTrial;
+exports.directorOverrideEligibility = webhooksOps.directorOverrideEligibility;
+exports.affinityWebhook = webhooksOps.affinityWebhook;
+exports.mockAffinityPush = webhooksOps.mockAffinityPush;
 
 const dunningOps = require('./src/domains/dunningOps');
 exportScheduler('autoChaseEngine', dunningOps.autoChaseEngine);
@@ -285,39 +285,44 @@ exportScheduler('autoChaseEngine', dunningOps.autoChaseEngine);
 // Device token registry, mission/assignment/trial score FCM push loops, and
 // roster UID resolution have been extracted to src/domains/notificationOps.js.
 const notificationOps = require('./src/domains/notificationOps');
-exports.registerDeviceToken          = notificationOps.registerDeviceToken;
-exports.onMissionAssigned            = notificationOps.onMissionAssigned;
-exports.onAssignmentCreated          = notificationOps.onAssignmentCreated;
-exports.onTrialScoreAdded            = notificationOps.onTrialScoreAdded;
-exports.onTrialScoreWritten          = notificationOps.onTrialScoreWritten;
+exports.registerDeviceToken = notificationOps.registerDeviceToken;
+exports.onMissionAssigned = notificationOps.onMissionAssigned;
+exports.onAssignmentCreated = notificationOps.onAssignmentCreated;
+exports.onTrialScoreAdded = notificationOps.onTrialScoreAdded;
+exports.onTrialScoreWritten = notificationOps.onTrialScoreWritten;
 // Epic 4.3 — announcement push loop
-exports.onTeamBroadcastCreated       = notificationOps.onTeamBroadcastCreated;
+exports.onTeamBroadcastCreated = notificationOps.onTeamBroadcastCreated;
 // Epic 4.5 Slice A — deployment calendar → team broadcast auto-announce
 exports.onDeploymentCalendarEntryCreated = notificationOps.onDeploymentCalendarEntryCreated;
 
 // Epic 5.4 — evaluateFieldWeatherLock: canonical export on functions-integrations only.
+const facilityWeatherWebhook = require('./src/domains/facilityWeatherWebhook');
+exports.facilityWeatherWebhook = facilityWeatherWebhook.facilityWeatherWebhook;
 
+const weatherOps = require('./src/domains/weatherOps');
+exports.evaluateFieldWeatherLock = weatherOps.evaluateFieldWeatherLock;
+exports.refreshClubWeatherLock = weatherOps.refreshClubWeatherLock;
 // ── Phase 4, Epic 8 — Car Ride Home Protocol ─────────────────────────────────
 // Fires mandatory push notifications to parents 15 minutes post-match and
 // locks per-player metrics behind an EQ attestation.
 // Requires: Cloud Tasks queue `car-ride-home` in us-east1 (see carRideOps.js).
 const carRideOps = require('./src/domains/carRideOps');
-exports.onMatchResultCreated         = carRideOps.onMatchResultCreated;
-exports.deliverCarRideHomePush       = carRideOps.deliverCarRideHomePush;
+exports.onMatchResultCreated = carRideOps.onMatchResultCreated;
+exports.deliverCarRideHomePush = carRideOps.deliverCarRideHomePush;
 
 // Phone Number Verification (Phase 2, Epic 3 — Native Firebase Phone Auth).
 // Secondary linking: mirrorPhoneVerification stamps phoneVerified JWT claim
 // after client-side linkWithPhoneNumber succeeds.  unlinkPhoneVerification
 // removes the credential and clears the claim.
 const phoneVerificationHandlers = require('./phoneVerification');
-exports.mirrorPhoneVerification  = phoneVerificationHandlers.mirrorPhoneVerification;
-exports.unlinkPhoneVerification  = phoneVerificationHandlers.unlinkPhoneVerification;
+exports.mirrorPhoneVerification = phoneVerificationHandlers.mirrorPhoneVerification;
+exports.unlinkPhoneVerification = phoneVerificationHandlers.unlinkPhoneVerification;
 
 // Magic Uplinks (Phase 2, Epic 3 — Passwordless Magic Uplinks).
 // Single-use, time-locked, email-dispatched invite tokens with scrypt-
 // hashed secrets and custom-token mint on redemption.
 const magicUplinkHandlers = require('./magicUplinks');
-exports.mintMagicUplink   = magicUplinkHandlers.mintMagicUplink;
+exports.mintMagicUplink = magicUplinkHandlers.mintMagicUplink;
 exports.redeemMagicUplink = magicUplinkHandlers.redeemMagicUplink;
 exports.revokeMagicUplink = magicUplinkHandlers.revokeMagicUplink;
 exportScheduler('purgeExpiredUplinks', magicUplinkHandlers.purgeExpiredUplinks);
@@ -330,8 +335,8 @@ const sportsSeeder = require('./src/seeders/sportsSeeder');
 exports.seedBaseSportsConfigs = sportsSeeder.seedBaseSportsConfigs;
 
 const sportsConfigOps = require('./sportsConfigOps');
-exports.upsertSportsConfig  = sportsConfigOps.upsertSportsConfig;
-exports.listSportsConfigs   = sportsConfigOps.listSportsConfigs;
+exports.upsertSportsConfig = sportsConfigOps.upsertSportsConfig;
+exports.listSportsConfigs = sportsConfigOps.listSportsConfigs;
 exports.archiveSportsConfig = sportsConfigOps.archiveSportsConfig;
 
 // Club-sport integrity triggers (Phase 3, Epic 4).
@@ -354,7 +359,7 @@ exportScheduler(
     'dispatchReengagementAlerts',
     lossAvoidance.dispatchReengagementAlerts,
 );
-exports.claimStreakFreeze           = lossAvoidance.claimStreakFreeze;
+exports.claimStreakFreeze = lossAvoidance.claimStreakFreeze;
 
 // ── Phase 3, Epic 5.4 — Parent Co-Op & Automated Escrow Bounties ─────────────
 //
@@ -374,16 +379,16 @@ exports.claimStreakFreeze           = lossAvoidance.claimStreakFreeze;
 // tremendousWebhook:
 //   tremendousWebhook            — HTTPS handler for Tremendous reward status events
 const bountyOpsModule = require('./bountyOps');
-exports.linkTremendousFundingSource  = bountyOpsModule.linkTremendousFundingSource;
+exports.linkTremendousFundingSource = bountyOpsModule.linkTremendousFundingSource;
 exports.listTremendousFundingSources = bountyOpsModule.listTremendousFundingSources;
-exports.createBountyEscrow           = bountyOpsModule.createBountyEscrow;
-exports.voidBounty                   = bountyOpsModule.voidBounty;
+exports.createBountyEscrow = bountyOpsModule.createBountyEscrow;
+exports.voidBounty = bountyOpsModule.voidBounty;
 
 const coOpOpsModule = require('./coOpOps');
 exports.activateTelemetryBoost = coOpOpsModule.activateTelemetryBoost;
 
 const bountyVerificationModule = require('./bountyVerification');
-exports.onSkillTreeNodeWritten  = bountyVerificationModule.onSkillTreeNodeWritten;
+exports.onSkillTreeNodeWritten = bountyVerificationModule.onSkillTreeNodeWritten;
 exports.onAcademicRecordWritten = bountyVerificationModule.onAcademicRecordWritten;
 
 const {tremendousWebhook} = require('./tremendousWebhook');
@@ -411,7 +416,7 @@ exportScheduler(
     'trajectoryPlateauDetector',
     trajectoryPlateauHandlers.trajectoryPlateauDetector,
 );
-exports.getMemoryCapsule          = trajectoryPlateauHandlers.getMemoryCapsule;
+exports.getMemoryCapsule = trajectoryPlateauHandlers.getMemoryCapsule;
 
 // ── Epic 5.2 — AI Biomechanics Verification (Phase 4) ─────────────────────────
 const cvBiomechanicsVerifierModule = require('./cvBiomechanicsVerifier');
