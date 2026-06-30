@@ -1,60 +1,28 @@
-SSTRACKER (Nexus Command) - Master Project Roadmap
-Antigravity Execution Directives
-Macro-Level Master Plan: This file serves as the definitive structural blueprint for the project.
+# SSTRACKER (NEXUS COMMAND) - MASTER EXECUTION ROADMAP
 
-Aggressive Atomicity: Execute no more than 2-3 tasks per plan, utilizing atomic commits to prevent architectural drift.
+## PHASE 1: FOUNDATIONAL DEBT & STRATEGIC MINIMALISM
+*   [ ] **Tenant Reset & PWA Baseline:** Purge stale data artifacts via `scripts/dev-tenant-reset.mjs`. Transition the Vite pipeline to cryptographic file-hash asset versioning to permanently eliminate Service Worker desynchronization [21, 22].
+*   [ ] **Tactical SIEM Overhaul:** Replace all "AI Slop" glassmorphism and bento fatigue with "Strategic Minimalism." Implement deep slate backgrounds (`#0B0F19`), edge-to-edge data tables, and `Geist Mono` typography [4].
+*   [ ] **The Global Command Palette:** Implement a Stripe/Vercel standard "Cmd+K" interface allowing administrators to instantly search, filter, and jump to specific clubs or settings globally without clicking through menus [23].
 
-Plan Before Building: Always generate an implementation plan artifact before executing code.
+## PHASE 2: THE TRUST STACK & NATIVE VETTING
+*   [ ] **Tenant-Scoped Security Rules:** Refactor Firestore rules to mandate `clubId` and `role` claims on every operation via custom JWT verification [24].
+*   [ ] **WebAuthn Biometric VPC:** Finalize Verifiable Parental Consent flows using hardware-level FaceID/TouchID for COPPA 2.0 compliance [25, 26].
+*   [ ] **Native Staff Vetting (Checkr API):** Integrate the Checkr Client-Hosted SDK so directors can run FCRA-compliant background checks on coaches directly inside the platform before roster interaction is allowed [25, 27].
 
-Governance Alignment: All code generation must strictly adhere to the Svelte 5 (Runes) and Tailwind CSS rules established in GEMINI.md.
+## PHASE 3: DATA LIQUIDITY & THE "VAMPIRE ENGINE"
+*   [ ] **The Vampire Engine (Frictionless Import):** Build a drag-and-drop CSV column mapper in the admin settings. Allow Directors to upload disorganized CSVs from legacy platforms (Sports Connect, PlayMetrics) and map them to our schema to ingest thousands of players in seconds [19, 28].
+*   [ ] **Universal Export Hub:** Provide JSON, CSV, and PDF export capabilities across all data tables to guarantee data liquidity and eliminate vendor lock-in [19, 29].
 
-Phase 1: Foundational Stabilization (Epic 1)
-Objective: Establish a pristine, bug-free foundation and implement the core "Billion-Dollar" aesthetic.
+## PHASE 4: AUTOMATED FINOPS & ZERO-TRUST SUPPORT
+*   [ ] **Stripe Connect & Automated Dunning:** Tie platform fee ledgers to `paymentIntent`. Build an "Auto-Chase" engine that handles failed Stripe charges with escalating reminders and gracefully downgrades unpaid accounts to a "Glass Showcase" read-only state [30, 31].
+*   [ ] **Zero-Trust Support Ops (Account Impersonation):** Build a "Login As" feature utilizing `admin.auth().createCustomToken(uid)`. This allows support staff to impersonate a user securely without passwords, backed by an Immutable Audit Log [32].
+*   [ ] **Global Kill Switch:** Deploy a Maintenance Mode toggle to lock down the app during critical patching [33].
 
-[x] Vite Pipeline & Caching: Transition to cryptographic file-hash versioning ([name].[hash].js) and eradicate legacy ?v= query-string parameters.  
+## PHASE 5: TACTICAL ENGINES & REAL-TIME DEFENSE
+*   [ ] **Real-Time Meteorological Defense:** Integrate Tomorrow.io webhooks. If a lightning strike registers within 10 miles of a facility's GPS coordinates, automatically trigger field lockdowns and SMS alerts to parents [34, 35].
+*   [ ] **Pro-League Integrations (Sportradar API):** Pull live pro stats and benchmarks so youth athletes can compare their telemetry directly against professional benchmarks [36].
+*   [ ] **Coach Intent & RL Engine:** Activate the Reinforcement Learning AI to autonomously push dynamic homework via the `onWorkoutLogged` trigger, respecting the "Command Override Protocol" for human coaches [37, 38].
 
-[x] Surgical JavaScript Remediation: Repair broken imports, bind authentication endpoints in app.js, and restore the CSV export functionality.  
-
-[x] Infrastructure Economics: Remove minInstances from Firebase Cloud Functions to enforce a scale-to-zero, pay-as-you-go model.  
-
-[x] Bento Grid Migration: Transition all primary SvelteKit layout shells to a padding-neutral 12-column Bento Grid topology using fluid clamp() spacing.  
-
-Phase 2: The Legal Shield & Security (Epic 2 & Epic 3)
-Objective: Lock down the multi-tenant architecture and achieve strict COPPA 2026 compliance.
-
-[x] God Mode Licensing Engine: Implement Firebase "Iron Vault" security to enforce strict Role-Based Access Control (RBAC), explicitly preventing standard clients from bypassing seat allocation limits.  
-
-[x] Verifiable Parental Consent (VPC): Build unbundled consent flows tied to hardware WebAuthn biometrics (FaceID/TouchID) and passwordless magic links.  
-
-[x] PII Burn Protocol: Integrate the Checkr API for coach background checks, ensuring sensitive data is permanently scrubbed via automated Time-To-Live (TTL) cloud functions after 24 hours.
-
-[x] Cell-Based Tenant Routing: Segment massive National Governing Bodies into isolated Firestore cells to eliminate noisy-neighbor computational throttling.
-
-Phase 3: The Coach OS & AI Orchestration (Epic 4)
-Objective: Replace static PDFs with an intelligent, actionable sideline ecosystem.
-
-[x] HTML5 Spatial Drill Designer: Integrate the Fabric.js canvas to allow coaches to plot precise spatial coordinate layouts that sync directly to players.
-
-[x] RAG AI Assistant: Deploy a LangChain semantic embedding framework connected to a vector database of elite coaching manuals (USSF, KNVB) to dynamically generate training protocols.
-
-[x] Wearable API Integrations: Connect Apple HealthKit, Garmin, and Whoop to capture biometrics, allowing the AI to autonomously adapt workloads based on Heart Rate Variability (HRV).
-
-Phase 4: The Player OS & Gamification Loop (Epic 5 & Epic 7)
-Objective: Drive daily engagement using constructive behavioral economics and RPG mechanics.
-
-[x] Composite Snowflake Skill Tree: Map 50+ physiological axes to 5,000+ drills using a "Fog of War" mechanic to obscure elite nodes until foundational competencies are earned.
-
-[x] AI Biomechanics Verification: Utilize edge-function computer vision to mathematically verify 10-second drill clips uploaded by athletes.
-
-[x] Tremendous Bounty Escrow: Connect the Tremendous API so verified biomechanical completions automatically trigger atomic Firestore payout rewards funded by parents.
-
-[x] Automated ROI Nudges: Deploy server-side cron jobs to send parents weekly, data-driven push notifications validating their financial investment in the club.
-
-Phase 5: Enterprise Scaling & Recruitment (Epic 6)
-Objective: Connect the platform to global governing databases and collegiate networks.
-
-[x] Affinity Sports API Sync: Build OAuth pipelines to automatically pull down state-level rosters and map digital match-day clearance cards.
-
-[x] NCAA Recruiter Portal: Deploy compound filtering algorithms and Linear Mixed Effects Models (LMM) to create objective, longitudinal Pro Player Cards for collegiate scouts.
-
-[x] Omnichannel Marketing Dashboard: Integrate Meta, Google, and TikTok APIs to allow Directors to launch targeted tryout campaigns directly from the Nexus Command interface.
+## PHASE 6: THE B2B RECRUITER MARKETPLACE
+*   [ ] **Sanitized Global Index:** Build a public, sanitized player index. Verified NCAA and Pro scouts pay a premium B2B subscription to filter players by verified stats and watch 30-second video trials [39, 40].
