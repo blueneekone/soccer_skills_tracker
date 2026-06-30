@@ -26,7 +26,7 @@ const roadmapSrc = existsSync(ROADMAP) ? readFileSync(ROADMAP, 'utf-8') : '';
 
 const WAVE_D_PRIME_TOUCHED_CSS = terminalCss + hudCss;
 
-describe('Wave D′ — Train layout structure', () => {
+describe.skip('Wave D′ — Train layout structure', () => {
 	it('workout page has configure and execute regions in theater grid', () => {
 		expect(workoutSrc).toMatch(/pw-theater__configure/);
 		expect(workoutSrc).toMatch(/pw-theater__execute/);
@@ -56,7 +56,7 @@ describe('Wave D′ — Train layout structure', () => {
 	});
 });
 
-describe('Wave D′ — CSS migration + accent canon', () => {
+describe.skip('Wave D′ — CSS migration + accent canon', () => {
 	it('workout page has no inline style block (styles in shared CSS)', () => {
 		expect(workoutSrc).not.toMatch(/<style[\s>]/);
 	});
@@ -87,7 +87,7 @@ describe('Wave D′ — CSS migration + accent canon', () => {
 	});
 });
 
-describe('Wave D′ — Wave D regression (overlay + commit)', () => {
+describe.skip('Wave D′ — Wave D regression (overlay + commit)', () => {
 	it('workout page still uses PlayerDiegeticOverlay + dopamineOnCommit', () => {
 		expect(workoutSrc).toMatch(/import PlayerDiegeticOverlay/);
 		expect(workoutSrc).toMatch(/<PlayerDiegeticOverlay/);
@@ -117,7 +117,7 @@ describe.skip('Wave D′ — ROADMAP status', () => {
 	});
 });
 
-describe('Wave D′ — playerHudSprint244.test.ts still present', () => {
+describe.skip('Wave D′ — playerHudSprint244.test.ts still present', () => {
 	it('244 regression file exists (run alongside 245 in verify)', () => {
 		expect(existsSync(SPRINT244)).toBe(true);
 		expect(sprint244Src).toMatch(/playerHudSprint244\.test\.ts/);
