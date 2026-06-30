@@ -12,7 +12,7 @@
 
 ## PHASE 3: DATA LIQUIDITY & THE "VAMPIRE ENGINE"
 *   [x] **The Vampire Engine (Frictionless Import):** Build a drag-and-drop CSV column mapper in the admin settings. Allow Directors to upload disorganized CSVs from legacy platforms (Sports Connect, PlayMetrics) and map them to our schema to ingest thousands of players in seconds [19, 28].
-*   [ ] **Universal Export Hub:** Provide JSON, CSV, and PDF export capabilities across all data tables to guarantee data liquidity and eliminate vendor lock-in [19, 29].
+*   [x] **Universal Export Hub:** Provide JSON, CSV, and PDF export capabilities across all data tables to guarantee data liquidity and eliminate vendor lock-in [19, 29].
 
 ## PHASE 4: AUTOMATED FINOPS & ZERO-TRUST SUPPORT
 *   [ ] **Stripe Connect & Automated Dunning:** Tie platform fee ledgers to `paymentIntent`. Build an "Auto-Chase" engine that handles failed Stripe charges with escalating reminders and gracefully downgrades unpaid accounts to a "Glass Showcase" read-only state [30, 31].

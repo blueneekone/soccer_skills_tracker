@@ -272,6 +272,9 @@ exports.directorOverrideEligibility  = webhooksOps.directorOverrideEligibility;
 exports.affinityWebhook              = webhooksOps.affinityWebhook;
 exports.mockAffinityPush             = webhooksOps.mockAffinityPush;
 
+const dunningOps = require('./src/domains/dunningOps');
+exportScheduler('autoChaseEngine', dunningOps.autoChaseEngine);
+
 // -- Deconstruction Sprint 6: Notifications & FCM Domain ---------------------
 // Device token registry, mission/assignment/trial score FCM push loops, and
 // roster UID resolution have been extracted to src/domains/notificationOps.js.
