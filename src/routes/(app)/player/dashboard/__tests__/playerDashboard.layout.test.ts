@@ -25,8 +25,8 @@ describe('/player/dashboard — Liquid Bento (Slice 3)', () => {
 	});
 
 	it('Vanguard protocol spans 8 columns with stats snapshot at 4', () => {
-		expect(operativeSrc).toMatch(/bento-span-8/);
-		expect(operativeSrc).toMatch(/bento-span-4/);
+		expect(operativeSrc).toMatch(/tw-col-span-8/);
+		expect(operativeSrc).toMatch(/tw-col-span-4/);
 	});
 
 	it('.bento-card local CSS uses var(--shadow-liquid)', () => {

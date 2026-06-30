@@ -376,11 +376,20 @@ async function syncPublicPlayerProfile(uid) {
     }
   }
 
+  const tier = typeof ps.tier === 'string' ? ps.tier : (typeof u.tier === 'string' ? u.tier : 'ROOKIE');
+  const gpa = typeof u.gpa === 'number' ? u.gpa : null;
+  const stats = ps.stats || u.stats || {};
+  const vanRating = parseInt(stats.VAN || '0', 10) || 0;
+
   await pubRef.set(
       {
         displayName,
         ageGroup,
         position,
+        tier,
+        gpa,
+        vanRating,
+        stats,
         clubId: resolvedClubId || null,
         current_level: currentLevel,
         total_xp: totalXp,

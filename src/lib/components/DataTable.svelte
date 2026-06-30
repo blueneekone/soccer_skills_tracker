@@ -2,7 +2,7 @@
 	let { columns = [], rows = [], emptyText = 'No data found.', children } = $props();
 </script>
 
-<div class="overflow-x-auto">
+<div class="tw-w-full tw-min-w-0 tw-overflow-x-auto">
 	<table class="admin-table">
 		{#if columns.length > 0}
 			<thead>

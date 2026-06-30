@@ -462,7 +462,7 @@ body {
 	 */
 	.bento-grid {
 		display: grid;
-		grid-template-columns: 1fr;
+		grid-template-columns: repeat(auto-fit, minmax(min(100%, clamp(280px, 30vw, 350px)), 1fr));
 		gap: var(--bento-gap-md);
 		width: 100%;
 		box-sizing: border-box;
@@ -613,6 +613,9 @@ body {
 			transparent 85%
 		);
 		-webkit-mask:
+			linear-gradient(#000 0 0) content-box,
+			linear-gradient(#000 0 0);
+		mask:
 			linear-gradient(#000 0 0) content-box,
 			linear-gradient(#000 0 0);
 		-webkit-mask-composite: xor;

@@ -184,7 +184,7 @@
 
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 <div
-	class="ec-shell-outer"
+	class="ec-shell-outer tw-h-screen tw-flex-col"
 	ontouchstart={fieldMenuSwipe.onTouchStart}
 	ontouchend={fieldMenuSwipe.onTouchEnd}
 >
@@ -331,7 +331,7 @@
 			</div>
 		</header>
 
-		<div class="ec-canvas bento-grid bento-grid--12col">
+		<div class="ec-canvas bento-grid bento-grid--12col tw-overflow-y-auto tw-scrollbar-hide tw-min-h-0">
 			{@render children?.()}
 		</div>
 	</div>
@@ -386,7 +386,7 @@
 	<div class="ec-anomaly-backdrop" onclick={() => (anomalyOpen = false)}>
 		<!-- svelte-ignore a11y_click_events_have_key_events -->
 		<!-- svelte-ignore a11y_no_static_element_interactions -->
-		<div class="ec-anomaly-modal" onclick={(e) => e.stopPropagation()} role="dialog" aria-modal="true" aria-label="Report Anomaly">
+		<div class="ec-anomaly-modal" onclick={(e) => e.stopPropagation()} role="dialog" tabindex="-1" aria-modal="true" aria-label="Report Anomaly">
 			<!-- Corner accents -->
 			<div class="ec-anomaly-corner ec-anomaly-corner--tl"></div>
 			<div class="ec-anomaly-corner ec-anomaly-corner--br"></div>
@@ -442,8 +442,7 @@
 {/if}
 
 <style>
-	.ecs-user-label { color: var(--text-secondary); max-width: 140px; }
-	.ecs-empty-msg  { margin: 0; color: var(--text-secondary); }
+
 
 	:global(.ec-sidebar__brand--switcher) {
 		padding: 0;
@@ -642,33 +641,7 @@
 		opacity: 0.3;
 		cursor: not-allowed;
 	}
-	.ec-drawer__meta {
-		margin: 0 0 12px;
-		font-size: 11px;
-		font-family: ui-monospace, monospace;
-		color: var(--text-secondary);
-	}
-	.ec-drawer__text {
-		white-space: pre-wrap;
-		color: var(--text-primary);
-	}
 
-	.ec-drawer__actions {
-		margin: 16px 0 0;
-	}
-
-	.ec-drawer__cta {
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
-		padding: 10px 16px;
-		border-radius: 10px;
-		font-size: 13px;
-		font-weight: 700;
-		text-decoration: none;
-		color: #0f172a;
-		background: var(--brand-primary, #f59e0b);
-	}
 
 	/* Bell button — alerts drawer toggle */
 	.ec-bell-btn {

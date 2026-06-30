@@ -47,7 +47,7 @@
 	data-region="armory-command-deck"
 >
 	<div class="armory-deck__grid bento-grid bento-grid--12col bento-grid--liquid">
-		<article class="armory-deck__cell bento-span-4 tw-min-w-0">
+		<article class="armory-deck__cell tw-col-span-12 xl:tw-col-span-4 tw-min-w-0">
 			<div class="armory-deck__cell-body">
 				<OperativeLoadoutPreview
 					{operativeAvatar}
@@ -65,7 +65,7 @@
 			<a href={studioHref} class="armory-deck__link">Open studio</a>
 		</article>
 
-		<article class="armory-deck__cell bento-span-4 tw-min-w-0">
+		<article class="armory-deck__cell tw-col-span-12 xl:tw-col-span-4 tw-min-w-0">
 			<div class="armory-deck__copy">
 				<p class="armory-deck__eyebrow">Sticker album</p>
 				<h2 class="armory-deck__title">
@@ -84,7 +84,7 @@
 			<a href={albumHref} class="armory-deck__link">View album</a>
 		</article>
 
-		<article class="armory-deck__cell bento-span-4 tw-min-w-0">
+		<article class="armory-deck__cell tw-col-span-12 xl:tw-col-span-4 tw-min-w-0">
 			{#if affordableItem}
 				<div class="armory-deck__copy">
 					<p class="armory-deck__eyebrow">Next action</p>

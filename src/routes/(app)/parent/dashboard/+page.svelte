@@ -131,12 +131,12 @@
 				<LiveStreamWatch {childEmails} />
 			</div>
 
-			<div class="bento-span-8 tw-min-w-0">
+			<div class="tw-col-span-12 xl:tw-col-span-8 tw-min-w-0">
 				<CoOpArena {engine} />
 			</div>
 
 		<aside
-			class="parent-lounge-z2-panel parent-bounty-dispatch-panel bento-span-4 bento-cell tw-min-w-0"
+			class="parent-lounge-z2-panel parent-bounty-dispatch-panel tw-col-span-12 xl:tw-col-span-4 bento-cell tw-min-w-0"
 			aria-label="Parent co-op operations"
 		>
 			<div>

@@ -27,8 +27,8 @@ const playerOsSrc = existsSync(PLAYER_OS) ? readFileSync(PLAYER_OS, 'utf-8') : '
 
 describe('Sprint 2.5 — OperativeHub 8+4 command strip', () => {
 	it('grid has 8+4 command/missions split (main span-8, missions span-4 on md+)', () => {
-		expect(hubSrc).toMatch(/operative-hub__main[\s\S]*?bento-span-8/);
-		expect(hubSrc).toMatch(/operative-hub__missions[\s\S]*?bento-span-4/);
+		expect(hubSrc).toMatch(/operative-hub__main[\s\S]*?tw-col-span-8/);
+		expect(hubSrc).toMatch(/operative-hub__missions[\s\S]*?tw-col-span-4/);
 	});
 
 	it('does NOT use sole bento-span-12 quests row under hub', () => {

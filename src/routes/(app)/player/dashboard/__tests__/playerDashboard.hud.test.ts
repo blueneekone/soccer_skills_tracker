@@ -145,8 +145,8 @@ describe('IdentityBentoModule — identity badge layout', () => {
 			join(__dirname, '../../../../../lib/components/player/dashboard/OperativeHub.svelte'),
 			'utf-8',
 		);
-		expect(hub).toMatch(/operative-hub__main[\s\S]*?bento-span-8/);
-		expect(hub).toMatch(/operative-hub__missions[\s\S]*?bento-span-4/);
+		expect(hub).toMatch(/operative-hub__main[\s\S]*?tw-col-span-8/);
+		expect(hub).toMatch(/operative-hub__missions[\s\S]*?tw-col-span-4/);
 		expect(hub).not.toMatch(/operative-hub__quests/);
 		expect(hub).toMatch(/min-width:\s*0/);
 		expect(hub).toMatch(/bento-grid--12col/);

@@ -21,8 +21,8 @@ describe('/coach/scouting — Liquid Bento (Sprint 1.1)', () => {
 	});
 
 	it('roster spans 4 columns and evaluation spans 8', () => {
-		expect(viewSrc).toMatch(/bento-span-4/);
-		expect(viewSrc).toMatch(/bento-span-8/);
+		expect(viewSrc).toMatch(/tw-col-span-4/);
+		expect(viewSrc).toMatch(/tw-col-span-8/);
 	});
 
 	it('route stays thin and imports CoachScoutingView', () => {

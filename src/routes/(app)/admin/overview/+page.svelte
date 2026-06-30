@@ -478,7 +478,7 @@
 						{@render socMetric(kpi)}
 					</div>
 				{/each}
-					<aside class="cc-soc-aside bento-span-4 tw-min-w-0" aria-label="Automation and orchestration">
+					<aside class="cc-soc-aside tw-col-span-12 xl:tw-col-span-4 tw-min-w-0" aria-label="Automation and orchestration">
 						<div class="cc-soc-aside__head">
 							<span class="cc-soc-aside__eyebrow">SOAR-style</span>
 							<h3 class="cc-soc-aside__title">Playbooks &amp; queue</h3>

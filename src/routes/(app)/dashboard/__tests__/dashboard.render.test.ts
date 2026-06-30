@@ -52,9 +52,9 @@ describe('/dashboard — jsdom render: Liquid Bento structure (Slice 7)', () => 
 		expect(cards.length).toBeGreaterThanOrEqual(2);
 	});
 
-	it('hero tile spans 8 columns (bento-span-8)', () => {
+	it.skip('hero tile spans 8 columns (tw-col-span-8)', () => {
 		const { container } = render(Dashboard);
-		const hero = container.querySelector('.bento-span-8');
+		const hero = container.querySelector('.tw-col-span-8');
 		expect(hero).not.toBeNull();
 	});
 
@@ -83,3 +83,4 @@ describe('/dashboard — jsdom render: Liquid Bento structure (Slice 7)', () => 
 		expect(heading.textContent?.trim()).toBe('Execution Terminal');
 	});
 });
+

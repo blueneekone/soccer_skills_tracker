@@ -235,7 +235,7 @@ describe.skip('Sprint 2.20c — composition hotfix (HQ / Stats / Train)', () => 
 		expect(workoutSrc).toMatch(/pw-theater pd-os-deck pd-os-deck--hero bento-span-12/);
 		expect(workoutSrc).toMatch(/pw-theater__body tw-min-w-0 bento-span-12/);
 		expect(workoutSrc).not.toMatch(/pw-panel--threat/);
-		expect(workoutSrc).not.toMatch(/class:bento-span-8=\{hasCoachIntents\}/);
+		expect(workoutSrc).not.toMatch(/class:tw-col-span-8=\{hasCoachIntents\}/);
 	});
 
 	it('workout/+page.svelte does not duplicate HQ stat telemetry (streak/xp row removed from logger)', () => {

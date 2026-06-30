@@ -4,6 +4,7 @@
 const EXPORT_NAMES = Object.freeze([
   'processMedia',
   'ingestRoster',
+  'coachRosterIngest',
   'getSoccerNews',
   'searchPodcasts',
   'getPodcastEpisodes',

@@ -25,7 +25,7 @@
 		class="operative-hub__grid bento-grid bento-grid--12col bento-grid--liquid"
 		data-region="operative-hub-grid"
 	>
-	<div class="operative-hub__main bento-span-12 md:bento-span-8">
+	<div class="operative-hub__main tw-col-span-12 xl:tw-col-span-8">
 		<div class="operative-hub__identity-stage">
 			<div class="operative-hub__identity">
 				{@render identity()}
@@ -35,7 +35,7 @@
 			{@render metrics()}
 		</div>
 	</div>
-	<div class="operative-hub__missions bento-span-12 md:bento-span-4">
+	<div class="operative-hub__missions tw-col-span-12 xl:tw-col-span-4">
 		{@render quests()}
 	</div>
 	</div>

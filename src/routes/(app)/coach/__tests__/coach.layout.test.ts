@@ -16,13 +16,13 @@ describe('/coach — Liquid Bento (Sprint 1.1)', () => {
 
 	it('War Room HQ gated behind warRoomHqVisible with 8-column span', () => {
 		expect(src).toMatch(/\{#if warRoomHqVisible\}/);
-		expect(src).toMatch(/coach-os-war-room[\s\S]*bento-span-8|bento-span-8[\s\S]*coach-os-war-room/);
+		expect(src).toMatch(/coach-os-war-room[\s\S]*tw-col-span-8|tw-col-span-8[\s\S]*coach-os-war-room/);
 	});
 
 	it('Facility Ops responsive span follows warRoomHqVisible (COACH-NEXUS-BENTO-FIX)', () => {
 		expect(src).toMatch(/const warRoomHqVisible\s*=/);
 		expect(src).toMatch(/coach-os-facility[\s\S]*class:bento-span-12=\{!warRoomHqVisible\}/);
-		expect(src).toMatch(/coach-os-facility[\s\S]*class:bento-span-4=\{warRoomHqVisible\}/);
+		expect(src).toMatch(/coach-os-facility[\s\S]*class:tw-col-span-4=\{warRoomHqVisible\}/);
 	});
 
 	it('squad telemetry spans full width', () => {

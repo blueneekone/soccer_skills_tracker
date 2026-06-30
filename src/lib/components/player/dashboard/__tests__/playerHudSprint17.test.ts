@@ -22,12 +22,12 @@ const hudCssSrc = existsSync(HUD_CSS) ? readFileSync(HUD_CSS, 'utf-8') : '';
 const ellipsisPattern = /text-overflow:\s*ellipsis[\s\S]{0,120}white-space:\s*nowrap|white-space:\s*nowrap[\s\S]{0,120}text-overflow:\s*ellipsis/s;
 
 describe('Sprint 1.7 — OperativeHub bento spans preserved', () => {
-	it('OperativeHub retains bento-span-4 identity column', () => {
-		expect(operativeSrc).toMatch(/bento-span-4/);
+	it('OperativeHub retains tw-col-span-4 identity column', () => {
+		expect(operativeSrc).toMatch(/tw-col-span-4/);
 	});
 
-	it('OperativeHub retains bento-span-8 metrics column', () => {
-		expect(operativeSrc).toMatch(/bento-span-8/);
+	it('OperativeHub retains tw-col-span-8 metrics column', () => {
+		expect(operativeSrc).toMatch(/tw-col-span-8/);
 	});
 
 	it('OperativeHub retains bento-span-12 quests row', () => {
