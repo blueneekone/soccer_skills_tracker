@@ -1,16 +1,21 @@
 <script lang="ts">
 	import { browser } from '$app/environment';
 	import { goto } from '$app/navigation';
+	import { untrack } from 'svelte';
 	import { db } from '$lib/firebase.js';
-	import { collection, getDocs } from 'firebase/firestore';
+	import { doc, getDoc } from 'firebase/firestore';
 	import Icon from '$lib/components/ui/Icon.svelte';
 	import type { IconName } from '$lib/icons/registry.js';
+	import { authStore } from '$lib/stores/auth.svelte.js';
+	import { teamsStore } from '$lib/stores/teams.svelte.js';
+	import { workspaceContextStore } from '$lib/stores/workspaceContext.svelte.js';
+	import { getContextFromHref } from '$lib/auth/loginRouting.js';
 
 	/** @type {{ open: boolean }} */
 	let { open = $bindable(false) } = $props();
 
 	// ── Static jump actions — always shown when query is empty ───────────────────
-	/** @typedef {{ type: string, label: string, sub: string, icon: string, href: string }} CmdItem */
+	/** @typedef {{ type: string, label: string, sub: string, icon: string, href: string, id?: string, isContextSwitch?: boolean }} CmdItem */
 
 	/** @type {CmdItem[]} */
 	const JUMP_ACTIONS = [
@@ -24,42 +29,9 @@
 	let query = $state('');
 	let selectedIdx = $state(0);
 
-	// ── Lazy data cache — loaded once on first open, reused thereafter ───────────
-	/** @type {Array<{ id: string, name?: string, sport?: string, directorEmail?: string }>} */
-	let cachedClubs = $state([]);
-	/** @type {Array<{ id: string, role?: string }>} */
-	let cachedUsers = $state([]);
-	let dataLoaded = $state(false);
-	let dataLoading = $state(false);
-
-	$effect(() => {
-		if (!open) return;
-		if (dataLoaded || dataLoading) return;
-		void preloadSearchData();
-	});
-
-	async function preloadSearchData() {
-		dataLoading = true;
-		try {
-			const [clubsSnap, usersSnap] = await Promise.all([
-				getDocs(collection(db, 'clubs')),
-				getDocs(collection(db, 'users')),
-			]);
-			cachedClubs = clubsSnap.docs.map((d) => ({
-				id: d.id,
-				.../** @type {Record<string,unknown>} */ (d.data()),
-			}));
-			cachedUsers = usersSnap.docs.map((d) => ({
-				id: d.id,
-				.../** @type {Record<string,unknown>} */ (d.data()),
-			}));
-			dataLoaded = true;
-		} catch (e) {
-			console.error('[CommandPalette] preload', e);
-		} finally {
-			dataLoading = false;
-		}
-	}
+	// ── Zero-Trust Data Hydration ────────────────────────────────────────────────
+	// Global fetches are strictly forbidden. The command palette now relies entirely
+	// on the localized, authorized teamsStore state.
 
 	// ── Reset state on close / focus input on open ───────────────────────────────
 	/** @type {HTMLInputElement | null} */
@@ -80,10 +52,26 @@
 	const results = $derived.by(() => {
 		const q = query.trim().toLowerCase();
 
-		if (!q) return JUMP_ACTIONS;
-
 		/** @type {CmdItem[]} */
 		const matched = [];
+
+		if (!q) {
+			matched.push(...JUMP_ACTIONS);
+			
+			// Show user's active divisions/clubs when query is empty as well
+			for (const cl of teamsStore.clubs) {
+				matched.push({
+					type: 'my-club',
+					id: cl.id,
+					label: cl.name || cl.id,
+					sub: 'Switch Workspace Context',
+					icon: 'org.building',
+					href: `/admin/organizations/${encodeURIComponent(cl.id)}`,
+					isContextSwitch: true
+				});
+			}
+			return matched;
+		}
 
 		// Jump actions that match
 		for (const a of JUMP_ACTIONS) {
@@ -92,42 +80,24 @@
 			}
 		}
 
-		// Clubs
-		let clubCount = 0;
-		for (const cl of cachedClubs) {
-			if (clubCount >= 6) break;
+		// User's Teams/Clubs
+		for (const cl of teamsStore.clubs) {
 			const name = (cl.name || '').toLowerCase();
 			const id = (cl.id || '').toLowerCase();
-			const dir = (cl.directorEmail || '').toLowerCase();
-			if (name.includes(q) || id.includes(q) || dir.includes(q)) {
-			matched.push({
-				type: 'org',
-				label: cl.name || cl.id,
-				sub: cl.id,
-				icon: 'org.building',
-				href: `/admin/organizations/${cl.id}`,
-			});
-				clubCount++;
+			if (name.includes(q) || id.includes(q)) {
+				matched.push({
+					type: 'my-club',
+					id: cl.id,
+					label: cl.name || cl.id,
+					sub: 'Switch Workspace Context',
+					icon: 'org.building',
+					href: `/admin/organizations/${encodeURIComponent(cl.id)}`,
+					isContextSwitch: true
+				});
 			}
 		}
 
-		// Users
-		let userCount = 0;
-		for (const u of cachedUsers) {
-			if (userCount >= 5) break;
-			const id = (u.id || '').toLowerCase();
-			const role = (u.role || '').toLowerCase();
-			if (id.includes(q) || role.includes(q)) {
-			matched.push({
-				type: 'user',
-				label: u.id,
-				sub: u.role || 'user',
-				icon: 'user.avatar',
-				href: `/admin/organizations`,
-			});
-				userCount++;
-			}
-		}
+		// Global directory fetch removed due to Zero-Trust constraints.
 
 		return matched;
 	});
@@ -172,9 +142,44 @@
 	}
 
 	/** @param {CmdItem | undefined} item */
-	function activateItem(item) {
+	async function activateItem(item) {
 		if (!item?.href) return;
-		goto(item.href);
+		
+		if (item.isContextSwitch && item.id) {
+			workspaceContextStore.resetScope();
+			const pivotId = `ctx-director-${item.id}`;
+			workspaceContextStore.setPivot(pivotId);
+			const ctx = getContextFromHref(item.href);
+			if (ctx) workspaceContextStore.setActiveContext(ctx);
+
+			// Strict Path-Based Routing - query params are forbidden for clubId
+			workspaceContextStore.setActiveClubId(item.id);
+
+			if (item.id) {
+				const selectedClub = teamsStore.clubs.find((c) => c.id === item.id);
+				if (selectedClub && 'orgId' in selectedClub) {
+					workspaceContextStore.setActiveOrgId(selectedClub.orgId as string);
+				}
+				workspaceContextStore.setActiveDivisionId(item.id);
+
+				const sportId = selectedClub && 'sportId' in selectedClub ? selectedClub.sportId as string : 'soccer';
+				workspaceContextStore.setActiveSportId(sportId);
+				try {
+					const snap = await getDoc(doc(db, 'sports_configs', sportId));
+					if (snap.exists()) {
+						workspaceContextStore.setActiveSportConfig(snap.data() as Record<string, unknown>);
+					} else {
+						workspaceContextStore.setActiveSportConfig(null);
+					}
+				} catch {
+					console.error('[CommandPalette] failed to load sport config');
+				}
+			}
+		}
+		
+		untrack(() => {
+			goto(item.href);
+		});
 		open = false;
 	}
 
@@ -188,13 +193,16 @@
 	function sectionLabel(item, idx) {
 		if (idx === 0) {
 			if (item.type === 'action') return 'Navigation';
-			if (item.type === 'org')    return 'Organizations';
-			if (item.type === 'user')   return 'Users';
+			if (item.type === 'my-club') return 'My Workspaces';
+			if (item.type === 'org')    return 'Global Organizations';
+			if (item.type === 'user')   return 'Global Users';
 		}
 		const prev = results[idx - 1];
 		if (prev && prev.type !== item.type) {
-			if (item.type === 'org')  return 'Organizations';
-			if (item.type === 'user') return 'Users';
+			if (item.type === 'action') return 'Navigation';
+			if (item.type === 'my-club') return 'My Workspaces';
+			if (item.type === 'org')  return 'Global Organizations';
+			if (item.type === 'user') return 'Global Users';
 		}
 		return null;
 	}
@@ -223,11 +231,7 @@
 					aria-controls="cp-results"
 					aria-activedescendant={results.length > 0 ? `cp-item-${selectedIdx}` : undefined}
 				/>
-				{#if dataLoading}
-					<span class="cp-search__spinner" aria-hidden="true"></span>
-				{:else}
-					<kbd class="cp-search__esc">esc</kbd>
-				{/if}
+				<kbd class="cp-search__esc">esc</kbd>
 			</div>
 
 			<!-- ── Results list ─────────────────────────────────────────────── -->
@@ -279,11 +283,6 @@
 				<span class="cp-footer__hint"><kbd>↑↓</kbd> navigate</span>
 				<span class="cp-footer__hint"><kbd>↵</kbd> select</span>
 				<span class="cp-footer__hint"><kbd>esc</kbd> close</span>
-				{#if dataLoaded}
-					<span class="cp-footer__count">
-						{cachedClubs.length} orgs · {cachedUsers.length} users indexed
-					</span>
-				{/if}
 			</div>
 
 		</div>
@@ -502,6 +501,11 @@
 		color: #d97706;
 	}
 
+	.cp-item__icon-wrap--my-club {
+		background: rgba(20, 184, 166, 0.1);
+		color: #0d9488;
+	}
+
 	.cp-item__icon-wrap--user {
 		background: rgba(22, 163, 74, 0.1);
 		color: #16a34a;
@@ -509,6 +513,7 @@
 
 	:global(html.dark) .cp-item__icon-wrap--action { background: rgba(99,102,241,0.15); color: #a5b4fc; }
 	:global(html.dark) .cp-item__icon-wrap--org    { background: rgba(245,158,11,0.12); color: #fbbf24; }
+	:global(html.dark) .cp-item__icon-wrap--my-club{ background: rgba(20,184,166,0.15); color: #2dd4bf; }
 	:global(html.dark) .cp-item__icon-wrap--user   { background: rgba(22,163,74,0.12);  color: #86efac; }
 
 	.cp-item__body {

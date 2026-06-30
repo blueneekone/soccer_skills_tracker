@@ -4,7 +4,6 @@
 	import { handleSignOut } from '$lib/auth/signOutFlow.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { enterprisePlayerDrawer } from '$lib/stores/enterprisePlayerDrawer.svelte.js';
-	import WorkspaceContextSwitcher from '$lib/components/shell/WorkspaceContextSwitcher.svelte';
 	import CommandPalette from '$lib/components/shell/CommandPalette.svelte';
 	import MobilePinBar from '$lib/components/shell/MobilePinBar.svelte';
 	import AppMenuSheet from '$lib/components/shell/AppMenuSheet.svelte';
@@ -203,7 +202,7 @@
 		>
 			<div class="ec-sidebar__panel">
 				<div class="ec-sidebar__brand ec-sidebar__brand--switcher">
-					<WorkspaceContextSwitcher variant="sidebar" />
+					<!-- Removed WorkspaceContextSwitcher per Phase 1 Minimalism Overhaul -->
 				</div>
 				<nav class="ec-sidebar__nav">
 					<!-- Sprint 9.1: data-sveltekit-reload on every workspace nav anchor guarantees
@@ -315,19 +314,7 @@
 				>
 					<Icon name="sys.settings" size={18} />
 				</button>
-				<!-- Context Switcher stub — center topbar identity pill -->
-				<button
-					type="button"
-					class="ec-ctx-stub tw-hidden sm:tw-inline-flex tw-items-center tw-gap-1.5 tw-rounded-md tw-border tw-border-slate-700 tw-bg-slate-800/60 tw-px-2.5 tw-py-1.5 tw-font-mono tw-text-[0.6rem] tw-font-bold tw-uppercase tw-tracking-[0.14em] tw-text-slate-400 tw-transition-colors tw-duration-150 hover:tw-border-slate-600 hover:tw-text-slate-200 focus-visible:tw-outline-none focus-visible:tw-ring-1 focus-visible:tw-ring-teal-500 focus-visible:tw-ring-offset-1 focus-visible:tw-ring-offset-slate-900"
-					aria-label="Switch workspace context"
-					title="Context Switcher — Sprint 2.2"
-				>
-					<span class="tw-h-1.5 tw-w-1.5 tw-rounded-full tw-bg-teal-500" aria-hidden="true"></span>
-					<span class="tw-max-w-[7rem] tw-truncate">
-						{workspaceContextStore.activeContext || authStore.role || 'workspace'}
-					</span>
-					<Icon name="nav.chevron-down" size={10} />
-				</button>
+				<!-- Context Switcher stub removed per Phase 1 Minimalism Overhaul -->
 				<!-- User identity: avatar + name -->
 				<div class="tw-flex tw-min-w-0 tw-items-center tw-gap-2 tw-pl-1">
 					<VanguardAvatar
