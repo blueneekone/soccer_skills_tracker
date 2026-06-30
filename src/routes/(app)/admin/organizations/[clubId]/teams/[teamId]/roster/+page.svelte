@@ -28,6 +28,7 @@
 	import RosterGuardianInviteModal from '$lib/components/admin/RosterGuardianInviteModal.svelte';
 	import RosterIngestPanel from '$lib/components/admin/RosterIngestPanel.svelte';
 	import RegistrarRosterTransferPanel from '$lib/components/director/RegistrarRosterTransferPanel.svelte';
+	import UniversalExportHub from '$lib/components/_shared/UniversalExportHub.svelte';
 	import { ADMIN_CLUB_CTX_KEY, type AdminClubCtx } from '../../../adminClubCtx.js';
 
 	const ctx = getContext<AdminClubCtx>(ADMIN_CLUB_CTX_KEY);
@@ -87,6 +88,15 @@
 				.includes(q),
 		);
 	});
+
+	const EXPORT_COLUMNS = [
+		{ key: 'playerName', label: 'Athlete Name' },
+		{ key: 'email', label: 'Athlete Email' },
+		{ key: 'ageGroup', label: 'Age Group' },
+		{ key: 'vpcStatus', label: 'VPC Status' },
+		{ key: 'parentEmails', label: 'Guardian Emails' },
+		{ key: 'householdId', label: 'Household ID' }
+	];
 
 	// ── Age group helper ─────────────────────────────────────────────────────────
 	/** @param {Record<string, unknown>} data */
@@ -336,16 +346,23 @@
 				</span>
 			{/if}
 		</div>
-		<div class="roster-search-wrap">
-			<Icon name={"action.search" as IconName} class="roster-search-icon" />
-			<input
-				type="search"
-				class="roster-search"
-				bind:value={rosterSearch}
-				placeholder="Filter athletes…"
-				autocomplete="off"
-				aria-label="Filter roster"
+		<div class="roster-toolbar__right">
+			<UniversalExportHub
+				data={filteredRoster}
+				columns={EXPORT_COLUMNS}
+				filename={`Roster-${teamName.replace(/\s+/g, '-')}`}
 			/>
+			<div class="roster-search-wrap">
+				<Icon name={"action.search" as IconName} class="roster-search-icon" />
+				<input
+					type="search"
+					class="roster-search"
+					bind:value={rosterSearch}
+					placeholder="Filter athletes…"
+					autocomplete="off"
+					aria-label="Filter roster"
+				/>
+			</div>
 		</div>
 	</div>
 
@@ -566,6 +583,13 @@
 		font-size: 0.75rem;
 		color: var(--text-secondary);
 		font-variant-numeric: tabular-nums;
+	}
+
+	.roster-toolbar__right {
+		display: flex;
+		align-items: center;
+		gap: 12px;
+		flex-wrap: wrap;
 	}
 
 	/* ── Search ─────────────────────────────────────────────────────── */
