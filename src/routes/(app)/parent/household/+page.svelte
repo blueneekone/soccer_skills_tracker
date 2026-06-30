@@ -486,7 +486,7 @@
 			<h1 class="phh-title tw-mb-2 tw-text-xl tw-font-extrabold tw-tracking-tight tw-text-white md:tw-text-2xl">
 				Household Clearance Center
 			</h1>
-			<p class="tw-mx-auto tw-max-w-prose tw-text-sm tw-text-white/50">
+			<p class="tw-mx-auto tw-max-w-prose tw-text-sm tw-text-[var(--text-secondary)]">
 				Classified provisioning. Minors do not self-register. Digital signatures and dispatch codes
 				are the only valid ingress paths.
 			</p>
@@ -516,7 +516,7 @@
 					Minor accounts locked
 				</h2>
 			</div>
-			<p class="bento-mb-md tw-text-sm tw-leading-relaxed tw-text-white/70">
+			<p class="bento-mb-md tw-text-sm tw-leading-relaxed tw-text-[var(--text-secondary)]">
 				Until you execute the digital signature below, child operative accounts in this household
 				remain <span class="tw-font-semibold tw-text-red-200">inert (no self-initiation)</span>.
 				By signing, you assert parental authority to provision credentials per club policy and
@@ -529,16 +529,16 @@
 				<div class="tw-text-right">
 					{#if coppaSigned}
 						<span class="phh-mono tw-text-cyan-300">SIGNED</span>
-						<div class="phh-mono tw-text-xs tw-text-white/50">{fmtTs(coppaAt)}</div>
+						<div class="phh-mono tw-text-xs tw-text-[var(--text-secondary)]">{fmtTs(coppaAt)}</div>
 					{:else if loadBusy}
-						<span class="phh-mono tw-text-white/40">SCANNING…</span>
+						<span class="phh-mono tw-text-[var(--text-muted)]">SCANNING…</span>
 					{:else}
 						<span class="phh-mono tw-text-amber-400">PENDING SIGNATURE</span>
 					{/if}
 				</div>
 			</div>
 			<p class="phh-eyebrow tw-mb-2">Household / club line</p>
-			<div class="phh-mono tw-mb-3 tw-text-xs tw-break-all tw-text-white/70">
+			<div class="phh-mono tw-mb-3 tw-text-xs tw-break-all tw-text-[var(--text-secondary)]">
 				HH: {householdId || '— (created on sign)'} · Club: {profile?.clubId ? String(profile.clubId) : '—'}
 			</div>
 			<button
@@ -567,7 +567,7 @@
 						Active operatives
 					</h2>
 				</div>
-				<p class="tw-mb-3 tw-text-xs tw-leading-relaxed tw-text-white/50">
+				<p class="tw-mb-3 tw-text-xs tw-leading-relaxed tw-text-[var(--text-secondary)]">
 					Issue a 10-minute clearance code your athlete can enter with their Operative Callsign on
 					the login page.
 				</p>
@@ -589,7 +589,7 @@
 											{row.loginCallsign || '—'}
 										</p>
 										<p
-											class="phh-mono tw-m-0 tw-mt-1 tw-text-[0.65rem] tw-break-all tw-text-white/40"
+											class="phh-mono tw-m-0 tw-mt-1 tw-text-[0.65rem] tw-break-all tw-text-[var(--text-muted)]"
 										>
 											{row.email}
 										</p>
@@ -603,7 +603,7 @@
 													>{row.dispatchCode}</span
 												>
 											{:else}
-												<span class="phh-mono tw-text-xs tw-text-white/35">—</span>
+												<span class="phh-mono tw-text-xs tw-text-[var(--text-muted)]">—</span>
 											{/if}
 										</div>
 									</div>
@@ -655,7 +655,7 @@
 										<p class="phh-eyebrow tw-mb-1 !tw-text-[0.55rem] tw-text-cyan-200/80">
 											Link to team roster
 										</p>
-										<p class="tw-m-0 tw-mb-2 tw-text-xs tw-leading-relaxed tw-text-white/50">
+										<p class="tw-m-0 tw-mb-2 tw-text-xs tw-leading-relaxed tw-text-[var(--text-secondary)]">
 											Enter your coach&apos;s dispatch code (e.g. QA-PP26) to add this operative to
 											the team roster for Forge and schedule sync.
 										</p>
@@ -688,7 +688,7 @@
 										</div>
 									</div>
 								{:else}
-									<p class="phh-mono tw-m-0 tw-text-xs tw-text-white/40">
+									<p class="phh-mono tw-m-0 tw-text-xs tw-text-[var(--text-muted)]">
 										{row.callsign ? `Callsign: ${row.callsign}` : row.email}
 									</p>
 								{/if}
@@ -723,9 +723,9 @@
 					Credential dispatch
 				</h2>
 			</div>
-			<p class="bento-mb-md tw-text-sm tw-text-white/55">
-				Register the minor’s <span class="tw-text-white/80">legal display name</span> and a unique
-				<span class="tw-text-white/80">Operative Callsign</span> (username for sign-in). A proxy
+			<p class="bento-mb-md tw-text-sm tw-text-[var(--text-secondary)]">
+				Register the minor’s <span class="tw-text-[var(--text-primary)]">legal display name</span> and a unique
+				<span class="tw-text-[var(--text-primary)]">Operative Callsign</span> (username for sign-in). A proxy
 				account is created automatically. The engine issues a one-time
 				<span class="phh-mono tw-text-cyan-300">DISPATCH</span> code for Operative login.
 			</p>
@@ -758,7 +758,7 @@
 							for="phh-dispatch-code"
 							class="phh-eyebrow tw-m-0 tw-block tw-text-cyan-300/80"
 						>
-							Dispatch Code <span class="tw-text-white/40">(optional)</span>
+							Dispatch Code <span class="tw-text-[var(--text-muted)]">(optional)</span>
 						</label>
 						<IntelModal
 							title={DISPATCH_CODE_INTEL.title}
@@ -808,7 +808,7 @@
 			aria-labelledby="phh-transfer"
 		>
 			<div class="tw-mb-3">
-				<span class="phh-eyebrow tw-text-white/50">Club transfer</span>
+				<span class="phh-eyebrow tw-text-[var(--text-secondary)]">Club transfer</span>
 				<h2
 					id="phh-transfer"
 					class="tw-m-0 tw-text-sm tw-font-bold tw-uppercase tw-tracking-widest tw-text-white"
@@ -816,7 +816,7 @@
 					Vanguard transfer protocol
 				</h2>
 			</div>
-			<p class="tw-mb-3 tw-text-xs tw-leading-relaxed tw-text-white/50">
+			<p class="tw-mb-3 tw-text-xs tw-leading-relaxed tw-text-[var(--text-secondary)]">
 				Initiate a player transfer to another club. You will receive a token to share with the
 				destination registrar; confirm with their auth code when prompted.
 			</p>
@@ -860,7 +860,7 @@
 			<p class="phh-mono phh-otp-code tw-my-4 tw-text-center tw-tracking-[0.2em] tw-text-[#7dff9a]">
 				{otpDialog.code}
 			</p>
-			<p class="tw-mb-3 tw-text-center tw-text-xs tw-leading-relaxed tw-text-white/45">
+			<p class="tw-mb-3 tw-text-center tw-text-xs tw-leading-relaxed tw-text-[var(--text-secondary)]">
 				This clearance code expires 10 minutes after it is generated.
 			</p>
 			<div
