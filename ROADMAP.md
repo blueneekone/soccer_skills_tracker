@@ -6,7 +6,7 @@
 *   [x] **The Global Command Palette:** Implement a Stripe/Vercel standard "Cmd+K" interface allowing administrators to instantly search, filter, and jump to specific clubs or settings globally without clicking through menus [23].
 
 ## PHASE 2: THE TRUST STACK & NATIVE VETTING
-*   [ ] **Tenant-Scoped Security Rules:** Refactor Firestore rules to mandate `clubId` and `role` claims on every operation via custom JWT verification [24].
+*   [x] **Tenant-Scoped Security Rules:** Refactor Firestore rules to mandate `clubId` and `role` claims on every operation via custom JWT verification [24].
 *   [ ] **WebAuthn Biometric VPC:** Finalize Verifiable Parental Consent flows using hardware-level FaceID/TouchID for COPPA 2.0 compliance [25, 26].
 *   [ ] **Native Staff Vetting (Checkr API):** Integrate the Checkr Client-Hosted SDK so directors can run FCRA-compliant background checks on coaches directly inside the platform before roster interaction is allowed [25, 27].
 

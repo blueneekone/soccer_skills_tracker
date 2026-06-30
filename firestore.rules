@@ -6,7 +6,9 @@ service cloud.firestore {
     // optional playerNames[] (display names linked to child accounts for read-only parent views).
 
     function authed() {
-      return request.auth != null;
+      return request.auth != null
+        && request.auth.token.role != null
+        && (request.auth.token.clubId != null || request.auth.token.role == 'global_admin' || request.auth.token.role == 'super_admin');
     }
 
     function emailKey() {
