@@ -26,6 +26,7 @@ const admin  = require('firebase-admin');
 
 const {syncPublicPlayerProfile} = require('../utils/profileSyncer');
 const {normEmail}               = require('../utils/formatters');
+const {generateAdaptiveHomework} = require('./rlEngine');
 
 const REGION = 'us-east1';
 
@@ -150,6 +151,35 @@ const onWorkoutLogCreated = onDocumentCreated(
         const data = snap.data();
         if (!data || !data.playerId) return;
         await syncPublicPlayerProfile(data.playerId);
+
+        // Command Override Protocol: Check for active coach assignments
+        const activeAssignmentsSnap = await db().collection('assignments')
+            .where('playerUid', '==', data.playerId)
+            .where('status', '==', 'assigned')
+            .limit(1)
+            .get();
+
+        if (!activeAssignmentsSnap.empty) {
+          logger.info('[onWorkoutLogCreated] Command Override active. RL Engine yields.', { playerId: data.playerId });
+          return;
+        }
+
+        // Generate adaptive homework via RL Engine
+        const rlHomework = await generateAdaptiveHomework(data.playerId, data);
+        
+        await db().collection('assignments').add({
+          playerUid: data.playerId,
+          teamId: data.teamId || '',
+          focus: rlHomework.focus,
+          drill: rlHomework.drill,
+          status: 'assigned',
+          missionSource: 'adaptive_homework',
+          assignedBy: 'system',
+          createdAt: admin.firestore.FieldValue.serverTimestamp(),
+          triggerLogId: event.params.logId,
+        });
+
+        logger.info('[onWorkoutLogCreated] Adaptive homework pushed', { playerId: data.playerId });
       } catch (e) {
         logger.error('onWorkoutLogCreated rebuild failed', e);
       }
