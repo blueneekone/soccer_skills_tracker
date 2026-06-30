@@ -25,4 +25,4 @@
 *   [x] **Coach Intent & RL Engine:** Activate the Reinforcement Learning AI to autonomously push dynamic homework via the `onWorkoutLogged` trigger, respecting the "Command Override Protocol" for human coaches [37, 38].
 
 ## PHASE 6: THE B2B RECRUITER MARKETPLACE
-*   [ ] **Sanitized Global Index:** Build a public, sanitized player index. Verified NCAA and Pro scouts pay a premium B2B subscription to filter players by verified stats and watch 30-second video trials [39, 40].
+*   [x] **Sanitized Global Index:** Build a public, sanitized player index. Verified NCAA and Pro scouts pay a premium B2B subscription to filter players by verified stats and watch 30-second video trials [39, 40].

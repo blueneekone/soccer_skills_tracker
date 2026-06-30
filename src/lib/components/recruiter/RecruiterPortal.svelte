@@ -52,7 +52,7 @@
 	// ── Types ─────────────────────────────────────────────────────────────────
 
 	interface PlayerCard {
-		email: string;
+		uid: string;
 		name: string;
 		position: string;
 		tier: string;
@@ -64,6 +64,7 @@
 		stats: Record<string, string>;
 		isWatched: boolean;
 		handshakeStatus: 'none' | 'pending' | 'accepted';
+		verified_video_url?: string | null;
 	}
 
 	interface StatSnapshot {
@@ -145,38 +146,38 @@
 		error = '';
 
 		try {
-			const col = collection(db, 'users');
+			const col = collection(db, 'public_player_profiles');
 			let q = query(
 				col,
-				where('role', '==', 'player'),
-				orderBy('xp', 'desc'),
+				orderBy('total_xp', 'desc'),
 				limit(PAGE_SIZE),
 			);
-			if (lastDoc) q = query(col, where('role', '==', 'player'), orderBy('xp', 'desc'), limit(PAGE_SIZE), startAfter(lastDoc));
+			if (lastDoc) q = query(col, orderBy('total_xp', 'desc'), limit(PAGE_SIZE), startAfter(lastDoc));
 
 			const snap = await getDocs(q);
 			if (snap.empty || snap.docs.length < PAGE_SIZE) hasMore = false;
 			if (!snap.empty) lastDoc = snap.docs[snap.docs.length - 1];
 
 			// Load watched set for badge display
-			const watchedEmails = new Set(watchlist.map((w) => w.email));
+			const watchedUids = new Set(watchlist.map((w) => w.uid));
 
 			const newCards: PlayerCard[] = snap.docs.map((d) => {
 				const data = d.data();
 				const stats = data.stats ?? {};
 				return {
-					email: d.id,
+					uid: d.id,
 					name: (data.displayName || data.name || d.id).toUpperCase(),
 					position: data.position ?? data.classification ?? 'PLAYER',
 					tier: data.tier ?? 'ROOKIE',
-					xp: Number(data.xp ?? 0),
-					vanRating: parseInt(stats.VAN ?? '0', 10) || 0,
+					xp: Number(data.total_xp ?? 0),
+					vanRating: Number(data.vanRating ?? (parseInt(stats.VAN ?? '0', 10) || 0)),
 					gpa: typeof data.gpa === 'number' ? data.gpa : null,
 					teamName: data.teamName,
-					clubName: data.clubName,
+					clubName: data.clubDisplayName || data.clubName,
 					stats,
-					isWatched: watchedEmails.has(d.id),
+					isWatched: watchedUids.has(d.id),
 					handshakeStatus: 'none',
+					verified_video_url: data.verified_video_url || null,
 				};
 			});
 
@@ -200,7 +201,7 @@
 			watchlist = snap.docs.map((d) => {
 				const data = d.data() as Partial<PlayerCard>;
 				return {
-					email: d.id,
+					uid: d.id,
 					name: (data.name ?? d.id).toUpperCase(),
 					position: data.position ?? 'PLAYER',
 					tier: data.tier ?? 'ROOKIE',
@@ -212,6 +213,7 @@
 					stats: data.stats ?? {},
 					isWatched: true,
 					handshakeStatus: data.handshakeStatus ?? 'none',
+					verified_video_url: data.verified_video_url || null,
 				};
 			});
 		} catch {
@@ -223,7 +225,7 @@
 		if (!recruiterEmail || !cards.length) return;
 		await Promise.all(
 			cards.map(async (card) => {
-				const hsId = `${recruiterEmail}__${card.email}`;
+				const hsId = `${recruiterEmail}__${card.uid}`;
 				const ref = doc(db, 'recruiter_handshakes', hsId);
 				const snap = await getDoc(ref);
 				if (snap.exists()) {
@@ -238,11 +240,11 @@
 	async function toggleWatch(player: PlayerCard, ev: MouseEvent): Promise<void> {
 		ev.stopPropagation();
 		if (!recruiterEmail) return;
-		const ref = doc(db, 'recruiter_watchlist', recruiterEmail, 'bookmarks', player.email);
+		const ref = doc(db, 'recruiter_watchlist', recruiterEmail, 'bookmarks', player.uid);
 		if (player.isWatched) {
 			await deleteDoc(ref);
 			player.isWatched = false;
-			watchlist = watchlist.filter((w) => w.email !== player.email);
+			watchlist = watchlist.filter((w) => w.uid !== player.uid);
 		} else {
 			await setDoc(ref, {
 				...player,
@@ -253,7 +255,7 @@
 		}
 		// Sync feed card
 		players = players.map((p) =>
-			p.email === player.email ? { ...p, isWatched: player.isWatched } : p,
+			p.uid === player.uid ? { ...p, isWatched: player.isWatched } : p,
 		);
 	}
 
@@ -265,7 +267,7 @@
 		snapshots = [];
 		snapshotsLoading = true;
 		try {
-			const col = collection(db, 'stat_history', player.email, 'snapshots');
+			const col = collection(db, 'stat_history', player.uid, 'snapshots');
 			const q = query(col, orderBy('capturedAt', 'asc'), limit(8));
 			const snap = await getDocs(q);
 			snapshots = snap.docs.map((d) => {
@@ -294,10 +296,10 @@
 		if (!recruiterEmail || handshakeLoading) return;
 		handshakeLoading = true;
 		try {
-			const hsId = `${recruiterEmail}__${player.email}`;
+			const hsId = `${recruiterEmail}__${player.uid}`;
 			await setDoc(doc(db, 'recruiter_handshakes', hsId), {
 				recruiterEmail,
-				playerEmail: player.email,
+				playerUid: player.uid,
 				playerName: player.name,
 				status: 'pending',
 				requestedAt: serverTimestamp(),
@@ -307,7 +309,7 @@
 				selectedPlayer = { ...selectedPlayer, handshakeStatus: 'pending' };
 			}
 			players = players.map((p) =>
-				p.email === player.email ? { ...p, handshakeStatus: 'pending' } : p,
+				p.uid === player.uid ? { ...p, handshakeStatus: 'pending' } : p,
 			);
 		} finally {
 			handshakeLoading = false;
@@ -497,7 +499,7 @@
 				</div>
 			{:else}
 				<div class="rp-grid">
-					{#each filteredPlayers as player (player.email)}
+					{#each filteredPlayers as player (player.uid)}
 						<!-- svelte-ignore a11y_click_events_have_key_events -->
 						<!-- svelte-ignore a11y_no_static_element_interactions -->
 						<div
@@ -527,6 +529,9 @@
 									</svg>
 								</button>
 							</div>
+							{#if player.verified_video_url}
+								<div class="rp-card__video-badge">▶ VERIFIED TRIAL</div>
+							{/if}
 
 							<!-- VAN + Tier + XP -->
 							<div class="rp-card__metrics">
@@ -608,7 +613,7 @@
 				</div>
 			{:else}
 				<div class="rp-grid">
-					{#each watchlist as player (player.email)}
+					{#each watchlist as player (player.uid)}
 						<!-- svelte-ignore a11y_click_events_have_key_events -->
 						<!-- svelte-ignore a11y_no_static_element_interactions -->
 						<div
@@ -812,6 +817,20 @@
 				</div>
 			{/if}
 		</section>
+
+		<!-- Verified Video Trial -->
+		{#if selectedPlayer.verified_video_url}
+			<section class="rp-detail__section">
+				<h3 class="rp-detail__section-title">VERIFIED 30S TRIAL</h3>
+				<!-- svelte-ignore a11y_media_has_caption -->
+				<video
+					src={selectedPlayer.verified_video_url}
+					controls
+					playsinline
+					class="rp-detail__video"
+				></video>
+			</section>
+		{/if}
 	</aside>
 {/if}
 
@@ -1130,6 +1149,19 @@
 		white-space: nowrap;
 		overflow: hidden;
 		text-overflow: ellipsis;
+	}
+
+	.rp-card__video-badge {
+		font-size: 0.45rem;
+		font-weight: 800;
+		letter-spacing: 0.1em;
+		padding: 2px 6px;
+		border-radius: 4px;
+		background: rgba(20, 184, 166, 0.1);
+		color: #14b8a6;
+		border: 1px solid rgba(20, 184, 166, 0.25);
+		align-self: flex-start;
+		margin-bottom: 2px;
 	}
 
 	.rp-milestone-badge {
@@ -1470,6 +1502,15 @@
 		background: rgba(20, 184, 166, 0.06);
 		border: 1px solid rgba(20, 184, 166, 0.25);
 		color: rgba(20, 184, 166, 0.85);
+	}
+
+	/* ── Video ───────────────────────────────────────────────────────────────── */
+	.rp-detail__video {
+		width: 100%;
+		border-radius: 8px;
+		background: #000;
+		border: 1px solid rgba(255,255,255,0.1);
+		outline: none;
 	}
 
 	/* ── Keyframes ───────────────────────────────────────────────────────────── */
