@@ -173,7 +173,7 @@
 				</p>
 			</div>
 			<div class="tw-flex tw-shrink-0 tw-flex-col tw-items-end tw-gap-1 tw-font-mono coach-os-uplink">
-				<span class="tw-text-[9px] tw-font-semibold tw-uppercase tw-tracking-[0.05em] tw-text-white/40">UPLINK</span>
+				<span class="tw-text-[9px] tw-font-semibold tw-uppercase tw-tracking-[0.05em] tw-text-[var(--text-muted)]">UPLINK</span>
 				<span class="coach-os-uplink tw-text-2xl tw-font-black tw-tabular-nums">{tickerNow}</span>
 			</div>
 		</div>
@@ -246,7 +246,7 @@
 
 				<div class="tw-relative tw-z-10 tw-flex tw-items-end tw-justify-between tw-gap-3">
 					<div class="tw-flex tw-flex-col tw-gap-1 tw-font-mono">
-						<span class="tw-text-[9px] tw-font-bold tw-uppercase tw-tracking-widest tw-text-white/35">ENGINE STATUS</span>
+						<span class="tw-text-[9px] tw-font-bold tw-uppercase tw-tracking-widest tw-text-[var(--text-muted)]">ENGINE STATUS</span>
 						<span class="tw-flex tw-items-center tw-gap-1.5 tw-text-[11px] tw-font-semibold tw-uppercase tw-tracking-[0.05em] tw-text-[#14b8a6]">
 							<span class="coach-os-war-room__status-dot tw-block tw-h-1.5 tw-w-1.5"></span>
 							READY · HOT START
@@ -278,23 +278,23 @@
 
 				<dl class="tw-m-0 tw-flex tw-flex-col tw-gap-3 tw-font-mono tw-text-[11px]">
 					<div class="tw-flex tw-items-baseline tw-justify-between tw-gap-3 tw-border-b tw-border-white/5 tw-pb-2">
-						<dt class="tw-text-[9px] tw-font-bold tw-uppercase tw-tracking-widest tw-text-white/35">PITCH</dt>
+						<dt class="tw-text-[9px] tw-font-bold tw-uppercase tw-tracking-widest tw-text-[var(--text-muted)]">PITCH</dt>
 						<dd class="tw-tabular-nums tw-text-[#14b8a6]/90">{teamNameDisplay}</dd>
 					</div>
 					<div class="tw-flex tw-items-baseline tw-justify-between tw-gap-3 tw-border-b tw-border-white/5 tw-pb-2">
-						<dt class="tw-text-[9px] tw-font-bold tw-uppercase tw-tracking-widest tw-text-white/35">COORDS</dt>
+						<dt class="tw-text-[9px] tw-font-bold tw-uppercase tw-tracking-widest tw-text-[var(--text-muted)]">COORDS</dt>
 						<dd class="tw-tabular-nums tw-text-slate-300">{weatherCoords}</dd>
 					</div>
 					<div class="tw-flex tw-items-baseline tw-justify-between tw-gap-3 tw-border-b tw-border-white/5 tw-pb-2">
-						<dt class="tw-text-[9px] tw-font-bold tw-uppercase tw-tracking-widest tw-text-white/35">ARSENAL</dt>
+						<dt class="tw-text-[9px] tw-font-bold tw-uppercase tw-tracking-widest tw-text-[var(--text-muted)]">ARSENAL</dt>
 						<dd class="tw-tabular-nums tw-text-slate-300">FORGE · ONLINE</dd>
 					</div>
 					<div class="tw-flex tw-items-baseline tw-justify-between tw-gap-3 tw-border-b tw-border-white/5 tw-pb-2">
-						<dt class="tw-text-[9px] tw-font-bold tw-uppercase tw-tracking-widest tw-text-white/35">COMMS</dt>
+						<dt class="tw-text-[9px] tw-font-bold tw-uppercase tw-tracking-widest tw-text-[var(--text-muted)]">COMMS</dt>
 						<dd class="tw-tabular-nums tw-text-[#14b8a6]/90">TEAM OPS · LOGISTICS</dd>
 					</div>
 					<div class="tw-flex tw-items-baseline tw-justify-between tw-gap-3">
-						<dt class="tw-text-[9px] tw-font-bold tw-uppercase tw-tracking-widest tw-text-white/35">EGRESS</dt>
+						<dt class="tw-text-[9px] tw-font-bold tw-uppercase tw-tracking-widest tw-text-[var(--text-muted)]">EGRESS</dt>
 						<dd class="tw-tabular-nums tw-text-slate-300">{effectiveTeamId ? 'ROSTER LINKED' : 'NO TEAM'}</dd>
 					</div>
 				</dl>
