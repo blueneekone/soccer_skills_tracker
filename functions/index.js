@@ -299,6 +299,9 @@ exports.onDeploymentCalendarEntryCreated = notificationOps.onDeploymentCalendarE
 const facilityWeatherWebhook = require('./src/domains/facilityWeatherWebhook');
 exports.facilityWeatherWebhook = facilityWeatherWebhook.facilityWeatherWebhook;
 
+const sportradarOps = require('./src/domains/sportradarOps');
+exportScheduler('syncProBenchmarks', sportradarOps.syncProBenchmarks);
+
 const weatherOps = require('./src/domains/weatherOps');
 exports.evaluateFieldWeatherLock = weatherOps.evaluateFieldWeatherLock;
 exports.refreshClubWeatherLock = weatherOps.refreshClubWeatherLock;

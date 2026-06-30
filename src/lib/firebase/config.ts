@@ -155,9 +155,11 @@ export const db: Firestore = (() => {
 		return initializeFirestore(app, {
 			localCache: persistentLocalCache({
 				tabManager: persistentMultipleTabManager(),
+				cacheSizeBytes: 41943040, // 40MB strict limit for offline cache to prevent IndexedDB QuotaExceededError
 			}),
 		});
-	} catch {
+	} catch (err) {
+		console.warn('[Firebase] persistentLocalCache failed, falling back to non-persistent getFirestore', err);
 		return getFirestore(app);
 	}
 })();

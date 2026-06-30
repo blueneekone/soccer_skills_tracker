@@ -1,5 +1,6 @@
 <script lang="ts">
 	import AttributeRadar from '$lib/components/player/dashboard/AttributeRadar.svelte';
+	import ProBenchmarkCompare from '$lib/components/player/dashboard/ProBenchmarkCompare.svelte';
 	import {
 		buildVanguardProtocolRows,
 		type VanguardAxisId,
@@ -94,6 +95,10 @@
 			{/if}
 		</div>
 	</div>
+
+	{#if !compact}
+		<ProBenchmarkCompare {prismValues} />
+	{/if}
 </section>
 
 <style>
