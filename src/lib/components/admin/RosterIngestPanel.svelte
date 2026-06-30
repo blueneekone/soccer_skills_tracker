@@ -2,6 +2,8 @@
 	import { functions } from '$lib/firebase.js';
 	import { httpsCallable } from 'firebase/functions';
 	import { resolveAppPath } from '$lib/components/_shared/resolveAppPath.js';
+	import Papa from 'papaparse';
+	import VampireColumnMapper from './VampireColumnMapper.svelte';
 
 	type IngestFormat = 'csv' | 'json' | 'pdf';
 
@@ -24,6 +26,12 @@
 	let ok = $state('');
 	let invites = $state<IngestInviteRow[]>([]);
 	let skipped = $state(0);
+
+	// Vampire Engine state
+	let showVampire = $state(false);
+	let csvHeaders = $state<string[]>([]);
+	let csvPreviewRows = $state<Record<string, string>[]>([]);
+	let rawCsvData = $state<Record<string, string>[]>([]);
 
 	function detectFormat(file: File): IngestFormat | null {
 		const name = file.name.toLowerCase();
@@ -68,6 +76,27 @@
 		pendingFile = file;
 		pendingFormat = format;
 		fileName = file.name;
+
+		// If CSV, immediately parse and show Vampire Mapper
+		if (format === 'csv') {
+			file.text().then((txt) => {
+				const parsed = Papa.parse<Record<string, string>>(txt, {
+					header: true,
+					skipEmptyLines: true,
+				});
+				if (parsed.errors.length > 0 && parsed.data.length === 0) {
+					err = 'Failed to parse CSV file.';
+					pendingFile = null;
+					return;
+				}
+				rawCsvData = parsed.data;
+				csvHeaders = parsed.meta.fields || [];
+				csvPreviewRows = parsed.data.slice(0, 3);
+				showVampire = true;
+			}).catch(() => {
+				err = 'Failed to read CSV file.';
+			});
+		}
 	}
 
 	function clearSelection() {
@@ -78,9 +107,13 @@
 		ok = '';
 		invites = [];
 		skipped = 0;
+		showVampire = false;
+		rawCsvData = [];
+		csvHeaders = [];
+		csvPreviewRows = [];
 	}
 
-	async function runIngest() {
+	async function runIngest(mappedData?: Record<string, string>[]) {
 		if (!pendingFile || !pendingFormat || !teamId) return;
 		err = '';
 		ok = '';
@@ -88,12 +121,21 @@
 		skipped = 0;
 		ingesting = true;
 		try {
-			const content =
-				pendingFormat === 'pdf' ?
-					await fileToBase64(pendingFile)
-				:	await pendingFile.text();
+			let content = '';
+			let finalFormat = pendingFormat;
+
+			if (pendingFormat === 'csv' && mappedData) {
+				// We use the mapped JSON payload instead of raw CSV text
+				content = JSON.stringify(mappedData);
+				finalFormat = 'json';
+			} else if (pendingFormat === 'pdf') {
+				content = await fileToBase64(pendingFile);
+			} else {
+				content = await pendingFile.text();
+			}
+
 			const res = await ingestRoster({
-				format: pendingFormat,
+				format: finalFormat,
 				content,
 				teamId,
 			});
@@ -108,9 +150,9 @@
 			skipped = typeof data?.skipped === 'number' ? data.skipped : 0;
 			const processed = typeof data?.processed === 'number' ? data.processed : invites.length;
 			ok = `Ingested ${processed} player${processed === 1 ? '' : 's'}. Distribute invite codes to guardians.`;
-			pendingFile = null;
-			pendingFormat = null;
-			fileName = '';
+			
+			// Auto clear selection on success
+			clearSelection();
 		} catch (e) {
 			const code = (e as { code?: string }).code || '';
 			const msg = (e as { message?: string }).message || 'Ingest failed.';
@@ -121,7 +163,26 @@
 			}
 		} finally {
 			ingesting = false;
+			showVampire = false;
 		}
+	}
+
+	function handleVampireSubmit(mapping: Record<string, string>) {
+		// Convert rawCsvData to JSON array using mapping
+		const mappedData = rawCsvData.map((row) => {
+			const obj: Record<string, string> = {};
+			for (const [targetId, sourceCol] of Object.entries(mapping)) {
+				if (sourceCol && row[sourceCol] !== undefined) {
+					obj[targetId] = row[sourceCol];
+				}
+			}
+			return obj;
+		});
+		void runIngest(mappedData);
+	}
+
+	function handleVampireCancel() {
+		clearSelection();
 	}
 </script>
 
@@ -157,20 +218,35 @@
 	</div>
 
 	<div class="ri-panel__actions">
-		<button
-			type="button"
-			class="ri-btn"
-			disabled={!pendingFile || !teamId || ingesting}
-			onclick={() => void runIngest()}
-		>
-			{ingesting ? 'Ingesting…' : 'Run ingest'}
-		</button>
-		{#if fileName || invites.length > 0}
+		{#if pendingFormat === 'csv' && showVampire}
+			<!-- Vampire handles its own submit/cancel actions -->
+		{:else}
+			<button
+				type="button"
+				class="ri-btn"
+				disabled={!pendingFile || !teamId || ingesting}
+				onclick={() => void runIngest()}
+			>
+				{ingesting ? 'Ingesting…' : 'Run ingest'}
+			</button>
+		{/if}
+		{#if (fileName || invites.length > 0) && !showVampire}
 			<button type="button" class="ri-btn ri-btn--secondary" disabled={ingesting} onclick={clearSelection}>
 				Clear
 			</button>
 		{/if}
 	</div>
+
+	{#if showVampire}
+		<div class="ri-vampire-wrap">
+			<VampireColumnMapper
+				headers={csvHeaders}
+				previewRows={csvPreviewRows}
+				onsubmit={handleVampireSubmit}
+				oncancel={handleVampireCancel}
+			/>
+		</div>
+	{/if}
 
 	{#if err}
 		<p class="ri-err" role="alert">{err}</p>
@@ -356,5 +432,8 @@
 	.ri-code {
 		font-weight: 800;
 		letter-spacing: 0.08em;
+	}
+	.ri-vampire-wrap {
+		margin-top: 0.5rem;
 	}
 </style>

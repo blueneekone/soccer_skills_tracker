@@ -20,7 +20,7 @@ describe('DIRECTOR-ROSTER-INGEST-UI — RosterIngestPanel', () => {
 
 	it('wires ingestRoster callable in the panel', () => {
 		expect(panel).toMatch(/httpsCallable\(functions,\s*['"]ingestRoster['"]\)/);
-		expect(panel).toMatch(/format:\s*pendingFormat/);
+		expect(panel).toMatch(/format:\s*finalFormat/);
 		expect(panel).toMatch(/fileToBase64/);
 		expect(panel).not.toMatch(/secureBulkAddPlayers/);
 	});
