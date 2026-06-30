@@ -1,8 +1,9 @@
 <script lang="ts">
 	import { httpsCallable } from 'firebase/functions';
-	import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
+	import { addDoc, collection, doc, serverTimestamp } from 'firebase/firestore';
 	import { functions, db } from '$lib/firebase.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
+	import { telemetryTracker } from '$lib/services/telemetryTracker.svelte.js';
 	import Swal from 'sweetalert2';
 
 	let {
@@ -63,14 +64,19 @@
 			return;
 		}
 		try {
-			await addDoc(collection(db, 'teams', teamId, 'telemetry_events'), {
-				teamId,
-				matchId,
-				playerId,
-				action: actionType,
-				points,
-				timestamp: serverTimestamp(),
-				loggedBy: uid,
+			telemetryTracker.push({
+				uid,
+				ref: doc(collection(db, 'teams', teamId, 'telemetry_events')),
+				type: 'set',
+				data: {
+					teamId,
+					matchId,
+					playerId,
+					action: actionType,
+					points,
+					timestamp: serverTimestamp(),
+					loggedBy: uid,
+				}
 			});
 			void Swal.fire({
 				icon: 'success',

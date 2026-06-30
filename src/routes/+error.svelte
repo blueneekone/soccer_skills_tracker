@@ -24,7 +24,8 @@
 	import { page } from '$app/state';
 	import { db } from '$lib/firebase.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
-	import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
+	import { telemetryTracker } from '$lib/services/telemetryTracker.svelte.js';
+	import { collection, doc, serverTimestamp } from 'firebase/firestore';
 
 	const isDev = import.meta.env.DEV;
 
@@ -105,7 +106,12 @@
 		void (async () => {
 			try {
 				const payload = buildTelemetryPayload(status, error, url);
-				await addDoc(collection(db, 'system_telemetry'), payload);
+				telemetryTracker.push({
+					uid: authStore.user?.uid || 'ANONYMOUS',
+					ref: doc(collection(db, 'system_telemetry')),
+					type: 'set',
+					data: payload
+				});
 			} catch (telemetryErr) {
 				console.warn('[+error] telemetry write failed', telemetryErr);
 			}

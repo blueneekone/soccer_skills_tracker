@@ -1,6 +1,6 @@
 import { writeBatch, type DocumentReference } from 'firebase/firestore';
-import { db } from '$lib/firebase/config';
-import type { SSTUser } from '$lib/types/user.types';
+import { db } from '$lib/firebase/config.js';
+import type { SSTUser } from '$lib/types/user.types.js';
 
 export type TelemetryMutationType = 'set' | 'update';
 

@@ -4,7 +4,7 @@
 import { describe, expect, it } from 'vitest';
 import { render, fireEvent } from '@testing-library/svelte';
 import '@testing-library/jest-dom/vitest';
-import UniversalExportHub from '$lib/components/_shared/UniversalExportHub.svelte';
+import UniversalExportHub from '../../components/_shared/UniversalExportHub.svelte';
 
 describe('UniversalExportHub', () => {
 	it('renders export buttons', () => {
