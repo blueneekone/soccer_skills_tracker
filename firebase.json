@@ -108,21 +108,6 @@
   },
   "functions": [
     {
-      "source": "functions",
-      "codebase": "default",
-      "predeploy": [
-        "node scripts/sync-functions-vendor.cjs"
-      ],
-      "disallowLegacyRuntimeConfig": true,
-      "ignore": [
-        "node_modules",
-        ".git",
-        "firebase-debug.log",
-        "firebase-debug.*.log",
-        "*.local"
-      ]
-    },
-    {
       "source": "functions-core",
       "codebase": "core",
       "predeploy": [
