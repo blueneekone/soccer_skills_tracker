@@ -1,7 +1,7 @@
 # SSTRACKER (NEXUS COMMAND) - MASTER EXECUTION ROADMAP
 
 ## PHASE 1: FOUNDATIONAL DEBT & STRATEGIC MINIMALISM
-*   [ ] **Tenant Reset & PWA Baseline:** Purge stale data artifacts via `scripts/dev-tenant-reset.mjs`. Transition the Vite pipeline to cryptographic file-hash asset versioning to permanently eliminate Service Worker desynchronization [21, 22].
+*   [x] **Tenant Reset & PWA Baseline:** Purge stale data artifacts via `scripts/dev-tenant-reset.mjs`. Transition the Vite pipeline to cryptographic file-hash asset versioning to permanently eliminate Service Worker desynchronization [21, 22].
 *   [ ] **Tactical SIEM Overhaul:** Replace all "AI Slop" glassmorphism and bento fatigue with "Strategic Minimalism." Implement deep slate backgrounds (`#0B0F19`), edge-to-edge data tables, and `Geist Mono` typography [4].
 *   [ ] **The Global Command Palette:** Implement a Stripe/Vercel standard "Cmd+K" interface allowing administrators to instantly search, filter, and jump to specific clubs or settings globally without clicking through menus [23].
 
