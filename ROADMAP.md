@@ -15,7 +15,7 @@
 *   [x] **Universal Export Hub:** Provide JSON, CSV, and PDF export capabilities across all data tables to guarantee data liquidity and eliminate vendor lock-in [19, 29].
 
 ## PHASE 4: AUTOMATED FINOPS & ZERO-TRUST SUPPORT
-*   [ ] **Stripe Connect & Automated Dunning:** Tie platform fee ledgers to `paymentIntent`. Build an "Auto-Chase" engine that handles failed Stripe charges with escalating reminders and gracefully downgrades unpaid accounts to a "Glass Showcase" read-only state [30, 31].
+*   [x] **Stripe Connect & Automated Dunning:** Tie platform fee ledgers to `paymentIntent`. Build an "Auto-Chase" engine that handles failed Stripe charges with escalating reminders and gracefully downgrades unpaid accounts to a "Glass Showcase" read-only state [30, 31].
 *   [ ] **Zero-Trust Support Ops (Account Impersonation):** Build a "Login As" feature utilizing `admin.auth().createCustomToken(uid)`. This allows support staff to impersonate a user securely without passwords, backed by an Immutable Audit Log [32].
 *   [ ] **Global Kill Switch:** Deploy a Maintenance Mode toggle to lock down the app during critical patching [33].
 

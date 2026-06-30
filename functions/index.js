@@ -193,13 +193,19 @@ exports.directorApproveVpc          = complianceOps.directorApproveVpc;
 exports.parentSubmitVpcIntent       = complianceOps.parentSubmitVpcIntent;
 exports.playerSelfReportDob         = complianceOps.playerSelfReportDob;
 exports.registrarTransferPlayer     = complianceOps.registrarTransferPlayer;
+exports.verifyDeviceToken          = notificationOps.verifyDeviceToken;
+exports.resyncDeviceTokens         = notificationOps.resyncDeviceTokens;
+
+// -- Operative Ops Domain (impersonation, purging) ---------------------------
+const operativeOps = require('./src/domains/operativeOps');
+exports.impersonateUserFn          = operativeOps.impersonateUserFn;
+exports.purgeUserDataFn            = operativeOps.purgeUserDataFn;
 
 // ── Deconstruction Sprint 5: Operative & Identity Domain ─────────────────────
 // Custom proxy enclaves, COPPA operatives, SafeSport comms, impersonation,
 // and GDPR wipes have been extracted to src/domains/operativeOps.js.
 // DEPLOY-N-household: parentSignCoppaWaiver, parentProvisionOperative,
 // operativeSignInWithDispatch, generatePlayerOTP, validatePlayerOTP → functions-compliance/
-const operativeOps = require('./src/domains/operativeOps');
 exports.sendCoachPlayerMessage      = operativeOps.sendCoachPlayerMessage;
 exports.sendChannelMessage          = operativeOps.sendChannelMessage;
 exports.sendHouseholdMessage        = operativeOps.sendHouseholdMessage;
