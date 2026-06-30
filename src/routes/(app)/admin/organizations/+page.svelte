@@ -296,8 +296,8 @@
 	}
 </script>
 
-<div class="orgs-bento-root bento-grid bento-grid--12col bento-grid--liquid">
-	<section class="bento-span-12 orgs-panel orgs3-page">
+<div class="tw-w-full">
+	<section class="tw-w-full orgs-panel orgs3-page">
 		<OrganizationsToolbar
 			{clubs}
 			bind:orgSearch

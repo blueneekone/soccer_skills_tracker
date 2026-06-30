@@ -12,9 +12,8 @@ const src = readFileSync(PAGE, 'utf-8');
 const css = readFileSync(CSS, 'utf-8');
 
 describe('/admin/organizations — Phase B layout', () => {
-	it('uses 12-column liquid bento grid wrapper', () => {
-		expect(src).toMatch(/bento-grid--12col bento-grid--liquid|bento-grid--liquid.*bento-grid--12col/);
-		expect(src).toMatch(/bento-span-12/);
+	it('uses edge-to-edge layout wrapper', () => {
+		expect(src).toMatch(/tw-w-full/);
 	});
 
 	it('delegates markup to granular admin organization components', () => {
@@ -29,9 +28,7 @@ describe('/admin/organizations — Phase B layout', () => {
 		expect(src).toMatch(/admin-organizations\.css/);
 	});
 
-	it('bento root and panel use clamp() spacing tokens', () => {
-		expect(css).toMatch(/\.orgs-bento-root[\s\S]*var\(--bento-pad-liquid,\s*clamp\(/);
-		expect(css).toMatch(/\.orgs-bento-root[\s\S]*var\(--bento-gap-liquid,\s*clamp\(/);
+	it('orgs-panel uses clamp() padding tokens', () => {
 		expect(css).toMatch(/\.orgs-panel[\s\S]*var\(--bento-pad-liquid,\s*clamp\(/);
 	});
 });
