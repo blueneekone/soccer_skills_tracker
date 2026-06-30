@@ -6,7 +6,7 @@ import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 
-const PAGE = join(__dirname, '..', '+page.svelte');
+const PAGE = join(__dirname, '../../../../../lib/player/workout/PlayerWorkoutPageView.svelte');
 const HUD_CSS = join(__dirname, '../../../../../lib/styles/player-dashboard-hud.css');
 const DOSSIER_CSS = join(__dirname, '../../../../../lib/styles/player-dossier.css');
 const src = readFileSync(PAGE, 'utf-8');

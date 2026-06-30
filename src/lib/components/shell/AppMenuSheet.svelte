@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { handleSignOut } from '$lib/auth/signOutFlow.js';
 	import { portal } from '$lib/actions/portal.js';
-	import WorkspaceContextSwitcher from '$lib/components/shell/WorkspaceContextSwitcher.svelte';
 	import Icon from '$lib/components/ui/Icon.svelte';
 	import {
 		catalogSections,
@@ -213,14 +212,7 @@
 		</header>
 
 		<div class="app-menu-sheet__scroll">
-			{#if mode === 'browse' && showWorkspaceSwitcher(personaKey)}
-				<section class="app-menu-sheet__section">
-					<p class="app-menu-sheet__section-label">Workspace</p>
-					<div class="app-menu-sheet__workspace">
-						<WorkspaceContextSwitcher variant="sidebar" />
-					</div>
-				</section>
-			{/if}
+			<!-- Workspace Context Switcher removed -->
 
 			{#each sections as section (section)}
 				<section class="app-menu-sheet__section">

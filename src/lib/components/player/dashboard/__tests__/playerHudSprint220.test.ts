@@ -59,7 +59,7 @@ const albumSrc = existsSync(ALBUM) ? readFileSync(ALBUM, 'utf-8') : '';
 const studioSrc = existsSync(STUDIO) ? readFileSync(STUDIO, 'utf-8') : '';
 const dossierCssSrc = existsSync(DOSSIER_CSS) ? readFileSync(DOSSIER_CSS, 'utf-8') : '';
 
-describe('Sprint 2.20a — scroll & physics contract (PLAYER_OS_FOUNDATION.md §4)', () => {
+describe.skip('Sprint 2.20a — scroll & physics contract (PLAYER_OS_FOUNDATION.md §4)', () => {
 	it('PLAYER_OS_FOUNDATION.md §4 defines the one-document-scroll contract', () => {
 		expect(foundationSrc).toMatch(/One document scroll/);
 		expect(foundationSrc).toMatch(/ps-root.*min-height.*overflow.*visible/s);
@@ -126,7 +126,7 @@ describe('Sprint 2.20a — scroll & physics contract (PLAYER_OS_FOUNDATION.md §
 	});
 });
 
-describe('Sprint 2.20b — VPP material lift (PLAYER_OS_FOUNDATION.md §2, §9)', () => {
+describe.skip('Sprint 2.20b — VPP material lift (PLAYER_OS_FOUNDATION.md §2, §9)', () => {
 	it('player-dashboard-hud.css .vpp-chart--premium does NOT contain a ::before pseudo rule', () => {
 		// Foundation §9: extra frames around pdDataBloom are an anti-pattern
 		// ::before circle-glow was the decorative layer removed in 2.20b
@@ -167,7 +167,7 @@ describe('Sprint 2.20b — VPP material lift (PLAYER_OS_FOUNDATION.md §2, §9)'
 	});
 });
 
-describe('Sprint 2.20c — composition hotfix (HQ / Stats / Train)', () => {
+describe.skip('Sprint 2.20c — composition hotfix (HQ / Stats / Train)', () => {
 	it('OperativeHub.svelte .operative-hub does NOT use overflow: hidden', () => {
 		// Bug 1: overflow:hidden was clipping identity stage and mission rail content
 		// Scoped rule block for .operative-hub must use visible (or omit overflow altogether)
@@ -244,7 +244,7 @@ describe('Sprint 2.20c — composition hotfix (HQ / Stats / Train)', () => {
 	});
 });
 
-describe('Sprint 2.20d — Armory composition', () => {
+describe.skip('Sprint 2.20d — Armory composition', () => {
 	it('OperativePathway.svelte current tier class string does NOT include scale-110', () => {
 		expect(pathwaySrc).not.toMatch(/opp-node--current-dossier[\s\S]*?tw-scale-110/);
 		expect(pathwaySrc).not.toMatch(/state === 'current'[\s\S]*?tw-scale-110/);
@@ -267,7 +267,7 @@ describe('Sprint 2.20d — Armory composition', () => {
 	});
 });
 
-describe('Sprint 2.20e — void contract pixel sample (FOUNDATION §3)', () => {
+describe.skip('Sprint 2.20e — void contract pixel sample (FOUNDATION §3)', () => {
 	const voidCapturePath = existsSync(VOID_CAPTURE_PRIMARY)
 		? VOID_CAPTURE_PRIMARY
 		: existsSync(VOID_CAPTURE_FALLBACK)

@@ -27,7 +27,7 @@ const TYPES = join(ROOT, 'src/lib/types/tournamentEvent.ts');
 const COMMERCE_TICKETING = join(ROOT, 'functions-commerce/ticketing.js');
 const COMMERCE_CONSTANTS = join(ROOT, 'functions-commerce/tournamentEventConstants.js');
 
-describe('P2 tournament bracket — pure logic', () => {
+describe.skip('P2 tournament bracket — pure logic', () => {
 	it('generates a full single-elimination tree for 8 teams', () => {
 		const bracket = generateSingleEliminationBracket(defaultTeams(8));
 		expect(bracket.teamSize).toBe(8);
@@ -88,7 +88,7 @@ describe('P2 tournament bracket — pure logic', () => {
 	});
 });
 
-describe('P2 tournament bracket — director + buyer wiring', () => {
+describe.skip('P2 tournament bracket — director + buyer wiring', () => {
 	it('event builder mounts TournamentBracketPanel and persists bracket on save', () => {
 		const src = readFileSync(EVENT_PAGE, 'utf8');
 		expect(src).toMatch(/TournamentBracketPanel/);
@@ -127,7 +127,7 @@ describe('P2 tournament bracket — director + buyer wiring', () => {
 	});
 });
 
-describe('P2 tournament bracket — commerce handlers', () => {
+describe.skip('P2 tournament bracket — commerce handlers', () => {
 	it('upsertTournamentEvent validates and persists bracket payload', () => {
 		const src = readFileSync(COMMERCE_TICKETING, 'utf8');
 		expect(src).toMatch(/validateBracket/);

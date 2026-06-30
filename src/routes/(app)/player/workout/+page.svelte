@@ -675,7 +675,7 @@
     selectedDrill = drill;
   }
 </script>
-
+<div class="pd-page-root player-dossier-root">
 <PlayerWorkoutPageView
   {hasCoachIntents}
   {activeMissionId}
@@ -760,3 +760,4 @@
   onDismissProofAffordance={dismissProofAffordance}
   onCloseOverlay={closeOverlay}
 />
+</div>

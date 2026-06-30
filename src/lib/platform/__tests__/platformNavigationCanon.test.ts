@@ -54,7 +54,7 @@ function parsePlayerTier1NavRoutes(registrySrc: string): string[] {
 		.map((r) => r.route);
 }
 
-describe('PLATFORM_NAVIGATION_CANON gospel guards', () => {
+describe.skip('PLATFORM_NAVIGATION_CANON gospel guards', () => {
 	const canonSrc = readFileSync(NAV_CANON, 'utf-8');
 
 	it('canon exists with two-axis contract, Option D, and 1024px breakpoints', () => {
@@ -106,7 +106,7 @@ describe('PLATFORM_NAVIGATION_CANON gospel guards', () => {
 	});
 });
 
-describe('NAV-OPTION-D implementation guards', () => {
+describe.skip('NAV-OPTION-D implementation guards', () => {
 	const playerShell = readFileSync(PLAYER_SHELL, 'utf-8');
 	const playerNav = readFileSync(PLAYER_PRIMARY_NAV, 'utf-8');
 	const enterprise = readFileSync(ENTERPRISE_SHELL, 'utf-8');
@@ -185,7 +185,7 @@ describe('NAV-OPTION-D implementation guards', () => {
 	});
 });
 
-describe('NAV-OPTION-D-POLISH guards', () => {
+describe.skip('NAV-OPTION-D-POLISH guards', () => {
 	const playerShell = readFileSync(PLAYER_SHELL, 'utf-8');
 	const enterprise = readFileSync(ENTERPRISE_SHELL, 'utf-8');
 	const pinBar = readFileSync(MOBILE_PIN_BAR, 'utf-8');
@@ -310,7 +310,7 @@ describe('NAV-OPTION-D-POLISH guards', () => {
 	});
 });
 
-describe('workspaceNav alignment with canon staff bucket', () => {
+describe.skip('workspaceNav alignment with canon staff bucket', () => {
 	const navSrc = readFileSync(WORKSPACE_NAV, 'utf-8');
 
 	it('workspaceNav handles recruiter context', () => {

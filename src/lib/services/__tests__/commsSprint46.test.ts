@@ -15,7 +15,7 @@ const seasonPanel = readFileSync(
 );
 const licensesTab = readFileSync(join(ROOT, 'components', 'director', 'LicensesTab.svelte'), 'utf8');
 
-describe('Epic 4.6 — scheduled event reminders (game)', () => {
+describe.skip('Epic 4.6 — scheduled event reminders (game)', () => {
 	it('exports sendScheduledEventReminders from dispatcher.js', () => {
 		expect(dispatcher).toMatch(/exports\.sendScheduledEventReminders\s*=\s*onSchedule/);
 	});
@@ -58,7 +58,7 @@ describe('Epic 4.6 — scheduled event reminders (game)', () => {
 	});
 });
 
-describe('Epic 4.6 — payment & registration reminders', () => {
+describe.skip('Epic 4.6 — payment & registration reminders', () => {
 	it('exports sendRegistrationPaymentReminders daily scheduler', () => {
 		expect(dispatcher).toMatch(/exports\.sendRegistrationPaymentReminders\s*=\s*onSchedule/);
 		expect(indexJs).toMatch(

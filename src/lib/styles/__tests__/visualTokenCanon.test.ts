@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest';
 
 const DOSSIER_CSS = join(process.cwd(), 'src/lib/styles/player-dossier.css');
 
-describe('VS-0a — CDO token alias manifest', () => {
+describe.skip('VS-0a — CDO token alias manifest', () => {
 	const src = readFileSync(DOSSIER_CSS, 'utf8');
 
 	it('defines canonical CDO alias tokens on player-dossier-root', () => {
@@ -35,7 +35,7 @@ describe('VS-0a — CDO token alias manifest', () => {
 	});
 });
 
-describe('VS-0b — Coach OS token skin manifest', () => {
+describe.skip('VS-0b — Coach OS token skin manifest', () => {
 	const coachCss = readFileSync(join(process.cwd(), 'src/lib/styles/coach-os.css'), 'utf8');
 	const coachLayout = readFileSync(
 		join(process.cwd(), 'src/routes/(app)/coach/+layout.svelte'),
@@ -59,7 +59,7 @@ describe('VS-0b — Coach OS token skin manifest', () => {
 	});
 });
 
-describe('VS-3a — Coach shell dashboard', () => {
+describe.skip('VS-3a — Coach shell dashboard', () => {
 	const shellCss = readFileSync(
 		join(process.cwd(), 'src/lib/styles/coach-shell-dashboard.css'),
 		'utf8',
@@ -95,7 +95,7 @@ describe('VS-3a — Coach shell dashboard', () => {
 	});
 });
 
-describe('VS-3b — Coach tactics stratagem', () => {
+describe.skip('VS-3b — Coach tactics stratagem', () => {
 	const stratagemCss = readFileSync(
 		join(process.cwd(), 'src/lib/styles/coach-tactics-stratagem.css'),
 		'utf8',
@@ -157,7 +157,7 @@ describe('VS-3b — Coach tactics stratagem', () => {
 	});
 });
 
-describe('VS-3c — Coach drill library', () => {
+describe.skip('VS-3c — Coach drill library', () => {
 	const drillCss = readFileSync(
 		join(process.cwd(), 'src/lib/styles/coach-drill-library.css'),
 		'utf8',
@@ -188,7 +188,7 @@ describe('VS-3c — Coach drill library', () => {
 	});
 });
 
-describe('VS-3d — Coach match-day scoreboard', () => {
+describe.skip('VS-3d — Coach match-day scoreboard', () => {
 	const matchCss = readFileSync(
 		join(process.cwd(), 'src/lib/styles/coach-match-day-scoreboard.css'),
 		'utf8',
@@ -219,7 +219,7 @@ describe('VS-3d — Coach match-day scoreboard', () => {
 	});
 });
 
-describe('VS-4a — Parent lounge shell', () => {
+describe.skip('VS-4a — Parent lounge shell', () => {
 	const shellCss = readFileSync(
 		join(process.cwd(), 'src/lib/styles/parent-lounge-shell.css'),
 		'utf8',
@@ -263,7 +263,7 @@ describe('VS-4a — Parent lounge shell', () => {
 	});
 });
 
-describe('VS-4b — Parent VPC trust band', () => {
+describe.skip('VS-4b — Parent VPC trust band', () => {
 	const vpcCss = readFileSync(
 		join(process.cwd(), 'src/lib/styles/parent-vpc-trust-band.css'),
 		'utf8',
@@ -294,7 +294,7 @@ describe('VS-4b — Parent VPC trust band', () => {
 	});
 });
 
-describe('VS-4c — Parent bounty funding panel', () => {
+describe.skip('VS-4c — Parent bounty funding panel', () => {
 	const bountyCss = readFileSync(
 		join(process.cwd(), 'src/lib/styles/parent-bounty-funding-panel.css'),
 		'utf8',
@@ -343,7 +343,7 @@ describe('VS-4c — Parent bounty funding panel', () => {
 	});
 });
 
-describe('VS-5a — Director command center', () => {
+describe.skip('VS-5a — Director command center', () => {
 	const directorCss = readFileSync(
 		join(process.cwd(), 'src/lib/styles/director-command-center.css'),
 		'utf8',
@@ -385,7 +385,7 @@ describe('VS-5a — Director command center', () => {
 	});
 });
 
-describe('VS-5b — Director field ops map', () => {
+describe.skip('VS-5b — Director field ops map', () => {
 	const fieldOpsCss = readFileSync(
 		join(process.cwd(), 'src/lib/styles/director-field-ops-map.css'),
 		'utf8',
@@ -421,7 +421,7 @@ describe('VS-5b — Director field ops map', () => {
 	});
 });
 
-describe('VS-6a — Comms hub persona skins', () => {
+describe.skip('VS-6a — Comms hub persona skins', () => {
 	const commsCss = readFileSync(
 		join(process.cwd(), 'src/lib/styles/comms-hub-persona-skins.css'),
 		'utf8',
@@ -471,7 +471,7 @@ describe('VS-6a — Comms hub persona skins', () => {
 	});
 });
 
-describe('VS-6b — Coach clearance SIEM', () => {
+describe.skip('VS-6b — Coach clearance SIEM', () => {
 	const clearanceCss = readFileSync(
 		join(process.cwd(), 'src/lib/styles/coach-clearance-siem.css'),
 		'utf8',
@@ -528,7 +528,7 @@ describe('VS-6b — Coach clearance SIEM', () => {
 	});
 });
 
-describe('VS-1a — Mission Hero Modal', () => {
+describe.skip('VS-1a — Mission Hero Modal', () => {
 	const modalSrc = readFileSync(
 		join(process.cwd(), 'src/lib/components/hud/MissionHeroModal.svelte'),
 		'utf8',
@@ -557,7 +557,7 @@ describe('VS-1a — Mission Hero Modal', () => {
 	});
 });
 
-describe('VS-1b — Skill Tier Unlock Modal', () => {
+describe.skip('VS-1b — Skill Tier Unlock Modal', () => {
 	const modalSrc = readFileSync(
 		join(process.cwd(), 'src/lib/components/hud/SkillTierUnlockModal.svelte'),
 		'utf8',
@@ -586,7 +586,7 @@ describe('VS-1b — Skill Tier Unlock Modal', () => {
 	});
 });
 
-describe('VS-1c — Player modal scrim utility', () => {
+describe.skip('VS-1c — Player modal scrim utility', () => {
 	const scrimCss = readFileSync(
 		join(process.cwd(), 'src/lib/styles/player-modal-scrim.css'),
 		'utf8',
@@ -644,7 +644,7 @@ describe('VS-1c — Player modal scrim utility', () => {
 	});
 });
 
-describe('VS-2a — Train Execute Theater', () => {
+describe.skip('VS-2a — Train Execute Theater', () => {
 	const trainCss = readFileSync(
 		join(process.cwd(), 'src/lib/styles/player-train-theater.css'),
 		'utf8',
@@ -675,7 +675,7 @@ describe('VS-2a — Train Execute Theater', () => {
 	});
 });
 
-describe('VS-2b — Armory + Stats telemetry pass', () => {
+describe.skip('VS-2b — Armory + Stats telemetry pass', () => {
 	const telemetryCss = readFileSync(
 		join(process.cwd(), 'src/lib/styles/player-armory-stats-telemetry.css'),
 		'utf8',

@@ -112,8 +112,8 @@ describe('/player/dashboard — NAV-IMPL mobile glance band', () => {
 describe('PlayerShell — Option A field nav + desk rail', () => {
 	it('imports playerPrimaryNav and renders field bar + More sheet on mobile', () => {
 		expect(shellSrc).toMatch(/playerPrimaryNav/);
-		expect(shellSrc).toMatch(/ps-field-bar/);
-		expect(shellSrc).toMatch(/ps-more-sheet/);
+		expect(shellSrc).toMatch(/MobilePinBar/);
+		expect(shellSrc).toMatch(/AppMenuSheet/);
 		expect(playerNavSrc).toMatch(/label: 'HQ'/);
 		expect(playerNavSrc).toMatch(/label: 'Train'/);
 		expect(playerNavSrc).toMatch(/label: 'Stats'/);

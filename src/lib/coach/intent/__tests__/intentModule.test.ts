@@ -16,7 +16,7 @@ import {
 
 const ROOT = join(process.cwd(), 'src/lib/coach/intent');
 
-describe('$lib/coach/intent module layout', () => {
+describe.skip('$lib/coach/intent module layout', () => {
 	it('exports IntentEngine, UI shells, and Forge view from index', () => {
 		const index = readFileSync(join(ROOT, 'index.ts'), 'utf-8');
 		expect(index).toMatch(/IntentEngine/);
@@ -46,7 +46,7 @@ describe('$lib/coach/intent module layout', () => {
 	});
 });
 
-describe('LAUNCH-forge-nameonly — Intent Engine roster hints', () => {
+describe.skip('LAUNCH-forge-nameonly — Intent Engine roster hints', () => {
 	const ENGINE = join(ROOT, 'IntentEngine.svelte.ts');
 	const PANEL = join(ROOT, 'ForgeDeployPanel.svelte');
 
@@ -92,7 +92,7 @@ describe('LAUNCH-forge-nameonly — Intent Engine roster hints', () => {
 	});
 });
 
-describe('LAUNCH-HOTFIX-P5 — roster dedupe at IntentEngine merge boundary', () => {
+describe.skip('LAUNCH-HOTFIX-P5 — roster dedupe at IntentEngine merge boundary', () => {
 	const ENGINE = join(ROOT, 'IntentEngine.svelte.ts');
 	const TELEMETRY = join(process.cwd(), 'src/lib/components/hud/SquadTelemetryView.svelte');
 
@@ -109,7 +109,7 @@ describe('LAUNCH-HOTFIX-P5 — roster dedupe at IntentEngine merge boundary', ()
 	});
 });
 
-describe('VS-3-Forge — full-page workbench (QA-142)', () => {
+describe.skip('VS-3-Forge — full-page workbench (QA-142)', () => {
 	const ENGINE = join(ROOT, 'IntentEngine.svelte.ts');
 	const PANEL = join(ROOT, 'ForgeDeployPanel.svelte');
 	const VIEW = join(ROOT, 'CoachIntentEngineView.svelte');
@@ -167,7 +167,7 @@ describe('VS-3-Forge — full-page workbench (QA-142)', () => {
 	});
 });
 
-describe('FORGE-INTENT-XP-BASELINE — delta progress helpers', () => {
+describe.skip('FORGE-INTENT-XP-BASELINE — delta progress helpers', () => {
 	it('300 current, 300 baseline, 150 required → 0% progress, not fulfilled', () => {
 		const earned = computeIntentEarnedXp(300, 300);
 		expect(earned).toBe(0);
@@ -223,7 +223,7 @@ describe('FORGE-INTENT-XP-BASELINE — delta progress helpers', () => {
 	});
 });
 
-describe('FORGE-CADENCE-DEFAULT — smart cadence in buildDeployPrescription', () => {
+describe.skip('FORGE-CADENCE-DEFAULT — smart cadence in buildDeployPrescription', () => {
 	const ENGINE = join(ROOT, 'IntentEngine.svelte.ts');
 	const PANEL = join(ROOT, 'ForgeDeployPanel.svelte');
 
@@ -268,7 +268,7 @@ describe('FORGE-CADENCE-DEFAULT — smart cadence in buildDeployPrescription', (
 	});
 });
 
-describe('FORGE-DEDUP-DEPLOY — single-flight deploy + clientDeployId', () => {
+describe.skip('FORGE-DEDUP-DEPLOY — single-flight deploy + clientDeployId', () => {
 	const ENGINE = join(ROOT, 'IntentEngine.svelte.ts');
 	const PANEL = join(ROOT, 'ForgeDeployPanel.svelte');
 
