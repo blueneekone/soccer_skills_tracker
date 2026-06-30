@@ -16,8 +16,8 @@
 
 ## PHASE 4: AUTOMATED FINOPS & ZERO-TRUST SUPPORT
 *   [x] **Stripe Connect & Automated Dunning:** Tie platform fee ledgers to `paymentIntent`. Build an "Auto-Chase" engine that handles failed Stripe charges with escalating reminders and gracefully downgrades unpaid accounts to a "Glass Showcase" read-only state [30, 31].
-*   [ ] **Zero-Trust Support Ops (Account Impersonation):** Build a "Login As" feature utilizing `admin.auth().createCustomToken(uid)`. This allows support staff to impersonate a user securely without passwords, backed by an Immutable Audit Log [32].
-*   [ ] **Global Kill Switch:** Deploy a Maintenance Mode toggle to lock down the app during critical patching [33].
+*   [x] **Zero-Trust Support Ops (Account Impersonation):** Build a "Login As" feature utilizing `admin.auth().createCustomToken(uid)`. This allows support staff to impersonate a user securely without passwords, backed by an Immutable Audit Log [32].
+*   [x] **Global Kill Switch:** Deploy a Maintenance Mode toggle to lock down the app during critical patching [33].
 
 ## PHASE 5: TACTICAL ENGINES & REAL-TIME DEFENSE
 *   [ ] **Real-Time Meteorological Defense:** Integrate Tomorrow.io webhooks. If a lightning strike registers within 10 miles of a facility's GPS coordinates, automatically trigger field lockdowns and SMS alerts to parents [34, 35].
