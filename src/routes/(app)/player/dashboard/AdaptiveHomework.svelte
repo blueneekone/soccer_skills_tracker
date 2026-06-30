@@ -210,7 +210,7 @@
 		</div>
 	{:else if !focusAttributeId}
 		<div class="adaptive-homework__status tw-py-6 tw-text-center" role="status">
-			<p class="adaptive-homework__status-msg tw-m-0 tw-font-mono tw-text-[10px] tw-tracking-wide tw-text-white/20">
+			<p class="adaptive-homework__status-msg tw-m-0 tw-font-mono tw-text-[10px] tw-tracking-wide tw-text-[var(--text-muted)]">
 				[ AWAITING PLAYER PROFILE ]
 			</p>
 		</div>
@@ -220,10 +220,10 @@
 			</p>
 
 			<div class="tw-flex tw-min-w-0 tw-items-center tw-justify-between tw-gap-3">
-				<span class="tw-min-w-0 tw-truncate tw-font-mono tw-text-xs tw-text-white/60 tw-tracking-wide">
+				<span class="tw-min-w-0 tw-truncate tw-font-mono tw-text-xs tw-text-[var(--text-secondary)] tw-tracking-wide">
 					{activeAttribute?.name ?? focusAttributeId}
 				</span>
-				<span class="tw-shrink-0 tw-font-mono tw-text-[9px] tw-text-white/30 tw-tracking-wide">
+				<span class="tw-shrink-0 tw-font-mono tw-text-[9px] tw-text-[var(--text-muted)] tw-tracking-wide">
 					Weakest attribute
 				</span>
 			</div>
@@ -243,7 +243,7 @@
 					class="tw-flex tw-min-w-0 tw-max-w-full tw-flex-col tw-gap-3 tw-overflow-hidden tw-rounded-xl tw-border tw-border-slate-800/60 tw-bg-[#020202] tw-p-4"
 				>
 					<div class="tw-flex tw-min-w-0 tw-items-start tw-justify-between tw-gap-3">
-						<span class="tw-min-w-0 tw-font-mono tw-text-xs tw-text-white/70 tw-leading-relaxed tw-break-words">
+						<span class="tw-min-w-0 tw-font-mono tw-text-xs tw-text-[var(--text-secondary)] tw-leading-relaxed tw-break-words">
 							{suggestedDrill.title}
 						</span>
 						<div class="tw-flex tw-flex-col tw-items-end tw-gap-1 tw-shrink-0">
@@ -262,7 +262,7 @@
 							>
 								{suggestedDrill.mediaType === 'tactical_svg' ? '[ SVG ]' : '[ YT ]'}
 							</span>
-							<span class="tw-font-mono tw-text-[9px] tw-text-white/30 tw-uppercase tw-tracking-wider">
+							<span class="tw-font-mono tw-text-[9px] tw-text-[var(--text-muted)] tw-uppercase tw-tracking-wider">
 								{suggestedDrill.tier}
 							</span>
 						</div>
@@ -276,7 +276,7 @@
 								[ {policyResult.explanationCode} ] {policyResult.explanationText}
 							</p>
 							{#if policyResult.recommendedDurationMinutes}
-								<p class="tw-font-mono tw-text-[9px] tw-text-white/30 tw-m-0 tw-mt-1">
+								<p class="tw-font-mono tw-text-[9px] tw-text-[var(--text-muted)] tw-m-0 tw-mt-1">
 									RECOMMENDED: {policyResult.recommendedDurationMinutes}min · RPE {policyResult.recommendedTargetRpe}
 								</p>
 							{/if}
@@ -293,7 +293,7 @@
 				</div>
 			{:else}
 				<div class="adaptive-homework__status tw-py-6 tw-text-center" role="status">
-					<p class="adaptive-homework__status-msg tw-m-0 tw-font-mono tw-text-[10px] tw-leading-relaxed tw-tracking-wide tw-text-white/20">
+					<p class="adaptive-homework__status-msg tw-m-0 tw-font-mono tw-text-[10px] tw-leading-relaxed tw-tracking-wide tw-text-[var(--text-muted)]">
 						[ NO DRILLS FOUND FOR TARGET ]
 					</p>
 				</div>

@@ -159,7 +159,7 @@
 		<div
 			class="tw-flex tw-items-center tw-justify-center tw-py-8 tw-rounded-xl tw-bg-[#020202] tw-border tw-border-white/5"
 		>
-			<span class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-white/20">
+			<span class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-[var(--text-muted)]">
 				[ NO HISTORICAL DATA — KEEP TRAINING ]
 			</span>
 		</div>
@@ -179,11 +179,11 @@
 
 					<!-- Rep Counts -->
 					<div class="tw-flex tw-gap-4 tw-flex-wrap">
-						<span class="tw-font-mono tw-text-[9px] tw-text-white/40">
-							30 DAYS AGO:&nbsp;<span class="tw-text-white/60">{row.pastCount} REPS</span>
+						<span class="tw-font-mono tw-text-[9px] tw-text-[var(--text-muted)]">
+							30 DAYS AGO:&nbsp;<span class="tw-text-[var(--text-secondary)]">{row.pastCount} REPS</span>
 						</span>
-						<span class="tw-font-mono tw-text-[9px] tw-text-white/40">
-							RECENT:&nbsp;<span class="tw-text-white/60">{row.currentCount} REPS</span>
+						<span class="tw-font-mono tw-text-[9px] tw-text-[var(--text-muted)]">
+							RECENT:&nbsp;<span class="tw-text-[var(--text-secondary)]">{row.currentCount} REPS</span>
 						</span>
 					</div>
 
@@ -197,7 +197,7 @@
 							[▼ {row.delta}]
 						</span>
 					{:else}
-						<span class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-white/50">
+						<span class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-[var(--text-secondary)]">
 							[→ STEADY]
 						</span>
 					{/if}
@@ -208,7 +208,7 @@
 
 	<!-- Privacy Lockout Footer -->
 	<div class="tw-pt-2 tw-border-t tw-border-white/5">
-		<span class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-white/20">
+		<span class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-[var(--text-muted)]">
 			[ ⚠ PEER COMPARISON DISABLED — NEXUS COMMAND PROTOCOL ]
 		</span>
 	</div>

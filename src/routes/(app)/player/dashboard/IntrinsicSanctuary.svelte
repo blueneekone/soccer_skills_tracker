@@ -47,7 +47,7 @@
 		<span class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-slate-300">
 			[ 🔒 SECURE ENCLAVE — PRIVATE ENTRY ]
 		</span>
-		<span class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-white/30">
+		<span class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-[var(--text-muted)]">
 			[ COACHES / PARENTS CANNOT VIEW ]
 		</span>
 	</div>
@@ -56,7 +56,7 @@
 
 	<!-- Question 1: Fun Score -->
 	<div class="tw-flex tw-flex-col tw-gap-3">
-		<span class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-white/60">
+		<span class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-[var(--text-secondary)]">
 			HOW MUCH FUN DID YOU HAVE TODAY?
 		</span>
 		<div class="tw-flex tw-items-center tw-gap-4">
@@ -74,14 +74,14 @@
 			</span>
 		</div>
 		<div class="tw-flex tw-justify-between tw-px-0.5">
-			<span class="tw-font-mono tw-text-[9px] tw-text-white/20">1</span>
-			<span class="tw-font-mono tw-text-[9px] tw-text-white/20">10</span>
+			<span class="tw-font-mono tw-text-[9px] tw-text-[var(--text-muted)]">1</span>
+			<span class="tw-font-mono tw-text-[9px] tw-text-[var(--text-muted)]">10</span>
 		</div>
 	</div>
 
 	<!-- Question 2: Effort Score -->
 	<div class="tw-flex tw-flex-col tw-gap-3">
-		<span class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-white/60">
+		<span class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-[var(--text-secondary)]">
 			HOW HARD DID YOU TRY?
 		</span>
 		<div class="tw-flex tw-items-center tw-gap-4">
@@ -99,8 +99,8 @@
 			</span>
 		</div>
 		<div class="tw-flex tw-justify-between tw-px-0.5">
-			<span class="tw-font-mono tw-text-[9px] tw-text-white/20">1</span>
-			<span class="tw-font-mono tw-text-[9px] tw-text-white/20">10</span>
+			<span class="tw-font-mono tw-text-[9px] tw-text-[var(--text-muted)]">1</span>
+			<span class="tw-font-mono tw-text-[9px] tw-text-[var(--text-muted)]">10</span>
 		</div>
 	</div>
 

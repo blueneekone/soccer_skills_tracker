@@ -33,7 +33,7 @@
 			<p class="pd-mono tw-text-sm tw-text-amber-300/90">Sign in to upload training clips.</p>
 		{:else}
 			<section class="pd-os-deck bento-span-12 tw-mb-4 tw-min-w-0" aria-label="Clip analyzer">
-				<p class="pd-label tw-mb-3 tw-max-w-2xl tw-text-xs tw-leading-relaxed tw-text-white/50">
+				<p class="pd-label tw-mb-3 tw-max-w-2xl tw-text-xs tw-leading-relaxed tw-text-[var(--text-secondary)]">
 					Upload a clip for secure storage and safety scanning. When biomechanics analysis is enabled
 					on the backend, results will appear here for you to confirm before XP is applied.
 				</p>

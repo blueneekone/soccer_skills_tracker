@@ -115,7 +115,7 @@
 			>
 				"EVERY MASTER FAILED MORE TIMES<br />THAN THE BEGINNER EVEN TRIED."
 			</span>
-			<span class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-slate-300/80">
+			<span class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-[var(--text-primary)]">
 				TRAJECTORY SECURED.
 			</span>
 			<span class="tw-font-mono tw-text-2xl tw-text-slate-300 tw-font-bold tw-tracking-widest">
@@ -159,7 +159,7 @@
 		<!-- Log Grit — only shown for rank-3 (advanced) drills, and hidden once daily cap is reached -->
 		{#if complexityRank === 3}
 			{#if gritCapReached}
-				<div class="tw-w-full tw-py-3 tw-px-4 tw-rounded-xl tw-border tw-border-slate-800 tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-slate-300/40 tw-text-center">
+				<div class="tw-w-full tw-py-3 tw-px-4 tw-rounded-xl tw-border tw-border-slate-800 tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-[var(--text-muted)] tw-text-center">
 					[ GRIT CAP REACHED · RESETS TOMORROW ]
 				</div>
 			{:else}
@@ -186,7 +186,7 @@
 
 	<!-- Session Grit Tracker -->
 	<div class="tw-pt-2 tw-border-t tw-border-slate-900">
-		<span class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-slate-300/50">
+		<span class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-[var(--text-secondary)]">
 			[ SESSION GRIT: {totalGritEarned} XP ]
 		</span>
 	</div>
