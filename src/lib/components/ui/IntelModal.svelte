@@ -1,4 +1,4 @@
-﻿<script>
+<script>
 	import { lockBody, unlockBody } from '$lib/utils/modalLock.js';
 	import { fade, fly } from 'svelte/transition';
 	import { cubicOut } from 'svelte/easing';

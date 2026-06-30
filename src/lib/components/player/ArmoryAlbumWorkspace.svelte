@@ -69,7 +69,7 @@
 					:	null}
 				<button
 					type="button"
-					class="album-folder tw-col-span-12 xl:tw-col-span-4 tw-min-w-0 tw-group tw-relative tw-flex tw-flex-col tw-items-stretch tw-rounded-2xl tw-border tw-p-4 tw-text-left tw-transition tw-duration-200 focus:tw-outline-none focus-visible:tw-ring-2 focus-visible:tw-ring-cyan-400/60 {setComplete ?
+					class="album-folder tw-col-span-12 lg:tw-col-span-4 tw-min-w-0 tw-group tw-relative tw-flex tw-flex-col tw-items-stretch tw-rounded-2xl tw-border tw-p-4 tw-text-left tw-transition tw-duration-200 focus:tw-outline-none focus-visible:tw-ring-2 focus-visible:tw-ring-cyan-400/60 {setComplete ?
 						'album-folder--complete'
 					:	''} {selectedAlbumSetId ===
 					set.id ?

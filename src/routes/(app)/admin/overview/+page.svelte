@@ -1,4 +1,4 @@
-﻿<script lang="ts">
+<script lang="ts">
 	import { browser } from '$app/environment';
 	import { db } from '$lib/firebase.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
@@ -14,19 +14,19 @@
 	import Icon from '$lib/components/ui/Icon.svelte';
 	import type { IconName } from '$lib/icons/registry.js';
 
-	/** Strike 16 â€” Tabbed command center (SOAR/SIEM-style statistical surfaces) */
+	/** Strike 16 — Tabbed command center (SOAR/SIEM-style statistical surfaces) */
 	const TAB_IDS = /** @type {const} */ (['executive', 'growth', 'security', 'platform']);
 	const TAB_LABELS = /** @type {const} */ (['Executive', 'Growth', 'Security', 'Platform']);
 
 	/** @type {'executive' | 'growth' | 'security' | 'platform'} */
 	let activeTab = $state('executive');
 
-	/** SOC-style ribbon â€” headline operational telemetry (representative / demo). */
+	/** SOC-style ribbon — headline operational telemetry (representative / demo). */
 	const SOC_RIBBON = /** @type {const} */ ([
-		{ k: 'MTTR', v: '18m', s: 'Incidents Â· rolling 7d p50' },
-		{ k: 'Playbooks', v: '2.4k', s: 'Automation runs Â· 24h' },
-		{ k: 'Detections', v: '847/s', s: 'Rule evaluations Â· pipeline' },
-		{ k: 'Ingest lag', v: '240ms', s: 'Audit + metrics Â· p95' },
+		{ k: 'MTTR', v: '18m', s: 'Incidents · rolling 7d p50' },
+		{ k: 'Playbooks', v: '2.4k', s: 'Automation runs · 24h' },
+		{ k: 'Detections', v: '847/s', s: 'Rule evaluations · pipeline' },
+		{ k: 'Ingest lag', v: '240ms', s: 'Audit + metrics · p95' },
 	]);
 
 	/**
@@ -40,7 +40,7 @@
 		{ label: 'ARR', value: '$510k', hint: 'Annual run rate', band: 'info', delta: '+11%', deltaDir: 'up' },
 		{ label: 'Active Orgs', value: '142', hint: 'Tenant footprint', band: 'low', delta: '+6', deltaDir: 'up' },
 		{ label: 'Total Players', value: '12.4k', hint: 'Platform headcount', band: 'low', delta: '+2.1%', deltaDir: 'up' },
-		{ label: 'WAU/MAU', value: '68%', hint: 'Weekly / monthly', band: 'ok', delta: 'â€”', deltaDir: 'flat' },
+		{ label: 'WAU/MAU', value: '68%', hint: 'Weekly / monthly', band: 'ok', delta: '—', deltaDir: 'flat' },
 		{ label: 'ARPU', value: '$299', hint: 'Blended ARPU', band: 'info', delta: '+$12', deltaDir: 'up' },
 		{ label: 'Gross Retention', value: '98%', hint: 'Logo gross', band: 'ok', delta: '+0.4pp', deltaDir: 'up' },
 		{ label: 'LTV', value: '$12k', hint: 'Cohort average', band: 'info', delta: '+3%', deltaDir: 'up' },
@@ -48,11 +48,11 @@
 
 	/** @type {SocMetric[]} */
 	let strike13Security = $state([
-		{ label: 'WAF Blocks', value: '1,402', hint: 'Edge policy Â· 24h', band: 'info', delta: '+112', deltaDir: 'up' },
-		{ label: 'Failed Auth', value: '45', hint: 'Rolling 24h', band: 'med', delta: 'âˆ’8%', deltaDir: 'down' },
+		{ label: 'WAF Blocks', value: '1,402', hint: 'Edge policy · 24h', band: 'info', delta: '+112', deltaDir: 'up' },
+		{ label: 'Failed Auth', value: '45', hint: 'Rolling 24h', band: 'med', delta: '−8%', deltaDir: 'down' },
 		{ label: 'MFA Bypasses', value: '0', hint: 'Policy exceptions', band: 'ok', delta: '0', deltaDir: 'flat' },
 		{ label: 'Vetting Pending', value: '14', hint: 'Background queue', band: 'med', delta: '+3', deltaDir: 'up' },
-		{ label: 'Flagged Orgs', value: '2', hint: 'Compliance review', band: 'high', delta: 'âˆ’1', deltaDir: 'down' },
+		{ label: 'Flagged Orgs', value: '2', hint: 'Compliance review', band: 'high', delta: '−1', deltaDir: 'down' },
 		{ label: 'API Abuse', value: '12', hint: 'Throttle / WAF', band: 'med', delta: '+2', deltaDir: 'up' },
 		{ label: 'Priv. Escalation', value: '0', hint: 'Elevation attempts', band: 'ok', delta: '0', deltaDir: 'flat' },
 		{ label: 'Suspicious IPs', value: '4', hint: 'Threat intel feed', band: 'high', delta: '+1', deltaDir: 'up' },
@@ -79,7 +79,7 @@
 			value: MOCK_KPI.growth.churn,
 			hint: 'Logo + revenue',
 			band: 'low',
-			delta: 'âˆ’0.1pp',
+			delta: '−0.1pp',
 			deltaDir: 'down',
 		},
 		{
@@ -95,7 +95,7 @@
 			value: `${MOCK_KPI.growth.paybackMo} mo`,
 			hint: 'Months to recover',
 			band: 'med',
-			delta: 'âˆ’1 mo',
+			delta: '−1 mo',
 			deltaDir: 'down',
 		},
 	];
@@ -105,9 +105,9 @@
 		{
 			label: 'API latency',
 			value: MOCK_KPI.platform.apiLatency,
-			hint: 'p50 edge â†’ API',
+			hint: 'p50 edge → API',
 			band: 'ok',
-			delta: 'âˆ’4ms',
+			delta: '−4ms',
 			deltaDir: 'down',
 		},
 		{
@@ -303,7 +303,7 @@
 
 	<header class="cc-hero">
 		<div class="cc-hero__text">
-			<span class="cc-eyebrow">Global admin Â· operations console</span>
+			<span class="cc-eyebrow">Global admin · operations console</span>
 			<h1
 				class="tw-m-0 tw-!text-4xl tw-!font-black tw-!tracking-tighter tw-!text-white md:tw-!text-5xl"
 				style="line-height: 1.08;"
@@ -312,7 +312,7 @@
 			</h1>
 			<p class="cc-lede">
 				Dense statistical surfaces in the spirit of SOAR / SIEM control rooms: KPI ribbons, severity-banded
-				cards, and live audit ingest. Charts â€” MAU <strong class="cc-lede-strong">{mauSource}</strong>, revenue
+				cards, and live audit ingest. Charts — MAU <strong class="cc-lede-strong">{mauSource}</strong>, revenue
 				<strong class="cc-lede-strong">{revenueSource}</strong>, sports
 				<strong class="cc-lede-strong">{sportSource}</strong>.
 			</p>
@@ -322,7 +322,7 @@
 				<span class="cc-live__dot" aria-hidden="true"></span>
 				Live ingest
 			</span>
-			<span class="cc-hero__meta">Last refresh Â· client</span>
+			<span class="cc-hero__meta">Last refresh · client</span>
 		</div>
 	</header>
 
@@ -390,7 +390,7 @@
 					</div>
 						<div>
 							<h2 class="cc-chart-card__title">Master activation (MAU)</h2>
-							<p class="cc-chart-card__sub">Trailing six months Â· enterprise growth signal</p>
+							<p class="cc-chart-card__sub">Trailing six months · enterprise growth signal</p>
 							<span
 								class="cc-src"
 								class:cc-src--live={mauSource === 'live'}
@@ -478,7 +478,7 @@
 						{@render socMetric(kpi)}
 					</div>
 				{/each}
-					<aside class="cc-soc-aside tw-col-span-12 xl:tw-col-span-4 tw-min-w-0" aria-label="Automation and orchestration">
+					<aside class="cc-soc-aside tw-col-span-12 lg:tw-col-span-4 tw-min-w-0" aria-label="Automation and orchestration">
 						<div class="cc-soc-aside__head">
 							<span class="cc-soc-aside__eyebrow">SOAR-style</span>
 							<h3 class="cc-soc-aside__title">Playbooks &amp; queue</h3>
@@ -513,7 +513,7 @@
 						<h2 class="cc-feed-shell__title">Live event stream</h2>
 						<p class="cc-feed-shell__sub">
 							<code class="cc-code">security_audit</code>
-							Â· {liveFeed.length} events ingested
+							· {liveFeed.length} events ingested
 						</p>
 					</header>
 					{#if feedErr}
@@ -522,7 +522,7 @@
 				{#if feedLoading && liveFeed.length === 0}
 					<div class="cc-feed-empty">
 						<Icon name={"status.loading" as IconName} class="cc-spin" />
-						Loading audit streamâ€¦
+						Loading audit stream…
 					</div>
 				{:else if liveFeed.length === 0}
 					<div class="cc-feed-empty">
@@ -778,7 +778,7 @@
 		background: #14b8a6;
 	}
 
-	/* Severity-banded metric tiles — Sprint 1.1: liquid shadow + inner highlight */
+	/* Severity-banded metric tiles � Sprint 1.1: liquid shadow + inner highlight */
 	.cc-soc-card {
 		display: flex;
 		flex-direction: column;
@@ -1460,11 +1460,11 @@
 		flex-shrink: 0;
 	}
 
-	/* â”€â”€ Mobile progressive disclosure (< 768px) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+	/* ── Mobile progressive disclosure (< 768px) ─────────────────────────────
 	   Keep the KPI tiles as the primary surface; collapse the verbose hero
 	   text and compress chart heights so the page is scannable on one screen.
 	   Bottom padding reserves space for the MobileTabBar.
-	 â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+	 ─────────────────────────────────────────────────────────────────────────── */
 	@media (max-width: 767.98px) {
 		.cc-root {
 			padding-bottom: calc(7rem + env(safe-area-inset-bottom, 0px));

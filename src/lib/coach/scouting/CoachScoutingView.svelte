@@ -308,7 +308,7 @@
 		{:else}
 			<div class="bento-grid bento-grid--12col bento-grid--liquid">
 				<div
-					class="tw-col-span-12 xl:tw-col-span-4 tw-flex tw-min-h-[min(70vh,560px)] tw-min-w-0 tw-flex-col tw-rounded-2xl tw-border tw-border-white/5 tw-bg-slate-900/60 tw-p-4 tw-shadow-xl tw-backdrop-blur-md md:tw-min-h-[640px]"
+					class="tw-col-span-12 lg:tw-col-span-4 tw-flex tw-min-h-[min(70vh,560px)] tw-min-w-0 tw-flex-col tw-rounded-2xl tw-border tw-border-white/5 tw-bg-slate-900/60 tw-p-4 tw-shadow-xl tw-backdrop-blur-md md:tw-min-h-[640px]"
 				>
 					<h2 class="tw-mb-3 tw-text-[10px] tw-font-bold tw-uppercase tw-tracking-[0.25em] tw-text-slate-500">
 						Squad roster
@@ -350,7 +350,7 @@
 
 				{#if activeProspect}
 					<div
-						class="tw-col-span-12 xl:tw-col-span-8 tw-flex tw-min-h-[min(70vh,560px)] tw-min-w-0 tw-flex-col tw-rounded-2xl tw-border tw-border-white/5 tw-bg-slate-900/60 tw-p-5 tw-shadow-xl tw-backdrop-blur-md md:tw-min-h-[640px] md:tw-p-6"
+						class="tw-col-span-12 lg:tw-col-span-8 tw-flex tw-min-h-[min(70vh,560px)] tw-min-w-0 tw-flex-col tw-rounded-2xl tw-border tw-border-white/5 tw-bg-slate-900/60 tw-p-5 tw-shadow-xl tw-backdrop-blur-md md:tw-min-h-[640px] md:tw-p-6"
 					>
 						<div
 							class="bento-mb-lg tw-flex tw-flex-col bento-gap-md tw-border-b tw-border-white/5 tw-pb-6 sm:tw-flex-row sm:tw-items-end sm:tw-justify-between"

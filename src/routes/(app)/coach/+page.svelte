@@ -207,7 +207,7 @@
 			{#if warRoomHqVisible}
 			<button
 				type="button"
-				class="coach-os-panel coach-os-war-room war-room-card tw-col-span-12 xl:tw-col-span-8 bento-cell tw-group tw-relative tw-flex tw-min-h-[320px] tw-min-w-0 tw-flex-col tw-justify-between tw-overflow-hidden tw-p-6 tw-text-left focus-visible:tw-outline focus-visible:tw-outline-2 focus-visible:tw-outline-offset-2 focus-visible:tw-outline-[#06b6d4]"
+				class="coach-os-panel coach-os-war-room war-room-card tw-col-span-12 lg:tw-col-span-8 bento-cell tw-group tw-relative tw-flex tw-min-h-[320px] tw-min-w-0 tw-flex-col tw-justify-between tw-overflow-hidden tw-p-6 tw-text-left focus-visible:tw-outline focus-visible:tw-outline-2 focus-visible:tw-outline-offset-2 focus-visible:tw-outline-[#06b6d4]"
 				aria-label="Enter War Room — tactical board"
 				onclick={enterWarRoom}
 			>
@@ -266,7 +266,7 @@
 			<article
 				class="coach-os-panel coach-os-facility bento-cell tw-relative tw-flex tw-min-h-[320px] tw-min-w-0 tw-flex-col tw-overflow-hidden tw-p-5"
 				class:bento-span-12={!warRoomHqVisible}
-				class:tw-col-span-12 xl:tw-col-span-4={warRoomHqVisible}
+				class:tw-col-span-12 lg:tw-col-span-4={warRoomHqVisible}
 				aria-label="Facility Ops & Staging"
 			>
 				<header class="bento-mb-md tw-flex tw-items-center tw-gap-2 tw-border-b tw-border-white/10 tw-pb-3">

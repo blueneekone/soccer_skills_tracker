@@ -96,8 +96,14 @@ html {
 	--vanguard-border-strong: rgba(148, 163, 184, 0.22);
 	--border-slate-800:   #1e293b;          /* Sprint 9.3: 1px opaque border for all non-modal cards */
 	--surface-modal-scrim: rgba(0, 0, 0, 0.75); /* Sprint 9.3: ONLY legitimate modal backdrop use */
-	--vanguard-text-primary:   #e2e8f0; /* Slate-200 */
-	--vanguard-text-secondary: #94a3b8; /* Slate-400 */
+	/* ── 3-Tier Contrast System (Light Mode Default) ── */
+	--text-primary: #0a0a0a;
+	--text-secondary: #52525b;
+	--text-muted: #71717a;
+
+	/* Backward compatibility aliases */
+	--vanguard-text-primary: var(--text-primary);
+	--vanguard-text-secondary: var(--text-secondary);
 	--vanguard-radius:    1.5rem;   /* 24px — primary card/panel radius */
 	--vanguard-radius-sm: 0.75rem;  /* 12px — button/badge radius */
 	--vanguard-radius-md: 1rem;     /* 16px — modal / sub-panel */
@@ -210,6 +216,15 @@ html {
 	--vanguard-z-overlay: 9999;
 	/** Coach workspace header subtract height — matches `--spacing-header` / `theme(spacing.header)` */
 	--vanguard-shell-header: 5rem;
+}
+
+:root.dark, .dark, .dark-form-surface {
+	--text-primary: #fafafa;
+	--text-secondary: #d4d4d8;
+	--text-muted: #a1a1aa;
+
+	--vanguard-text-primary: var(--text-primary);
+	--vanguard-text-secondary: var(--text-secondary);
 }
 
 /**

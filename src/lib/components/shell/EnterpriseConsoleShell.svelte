@@ -184,7 +184,7 @@
 
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 <div
-	class="ec-shell-outer tw-h-screen tw-flex-col"
+	class="ec-shell-outer tw-h-[100dvh] tw-flex-col"
 	ontouchstart={fieldMenuSwipe.onTouchStart}
 	ontouchend={fieldMenuSwipe.onTouchEnd}
 >
@@ -256,7 +256,7 @@
 			</div>
 		</aside>
 
-	<div class="ec-main">
+	<div class="ec-main tw-flex-1 tw-min-h-0 tw-overflow-y-auto">
 		<header class="ec-topbar">
 			<button
 				type="button"
@@ -331,7 +331,7 @@
 			</div>
 		</header>
 
-		<div class="ec-canvas bento-grid bento-grid--12col tw-overflow-y-auto tw-scrollbar-hide tw-min-h-0">
+		<div class="ec-canvas bento-grid tw-grid tw-grid-cols-1 lg:tw-grid-cols-12 tw-overflow-y-auto tw-scrollbar-hide tw-min-h-0">
 			{@render children?.()}
 		</div>
 	</div>

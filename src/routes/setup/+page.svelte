@@ -1,4 +1,4 @@
-ï»¿<script lang="ts">
+<script lang="ts">
 	import { goto } from '$app/navigation';
 	import { auth, db, functions } from '$lib/firebase.js';
 	import Icon from '$lib/components/ui/Icon.svelte';
@@ -180,7 +180,7 @@
 			joinableClubs = Array.isArray(data?.clubs) ? data.clubs : [];
 			if (joinableClubs.length === 0) {
 				clubsLoadError =
-					'No clubs available â€” contact your director or enter a dispatch code from your coach.';
+					'No clubs available — contact your director or enter a dispatch code from your coach.';
 			}
 		} catch (err) {
 			clubsLoadError =
@@ -216,7 +216,7 @@
 			const res = await resolveDispatchCodeCallable({ dispatchCode: raw });
 			const data = res.data;
 			if (!data?.ok || !data.clubId) {
-				errorMsg = 'Invalid dispatch code â€” check with your coach and try again.';
+				errorMsg = 'Invalid dispatch code — check with your coach and try again.';
 				return;
 			}
 			dispatchResolved = {
@@ -261,7 +261,7 @@
 
 		const userEmail = auth.currentUser?.email?.toLowerCase();
 		if (!userEmail) {
-			return (errorMsg = 'No signed-in email â€” try signing in again.');
+			return (errorMsg = 'No signed-in email — try signing in again.');
 		}
 
 		saving = true;
@@ -350,7 +350,7 @@
 							class:setup-progress__step--active={step.id === wizardStep}
 						>
 							<span class="setup-progress__dot" aria-hidden="true">
-								{#if step.id < wizardStep}âœ“{:else}{step.id}{/if}
+								{#if step.id < wizardStep}?{:else}{step.id}{/if}
 							</span>
 							<span class="setup-progress__name">{step.label}</span>
 						</li>
@@ -389,7 +389,7 @@
 					</button>
 				</div>
 				<p class="setup-helper-text tw-mb-5">
-					Club directors are invited by your organization admin â€” use the link you received or contact support.
+					Club directors are invited by your organization admin — use the link you received or contact support.
 				</p>
 			{:else if wizardStep === 2}
 				<label for="setup-name">
@@ -408,7 +408,7 @@
 				/>
 				{#if setupRole === 'parent'}
 					<p class="setup-helper-text">
-						Players under 13 must be created by a parent in the Household Clearance flow â€” you cannot add a
+						Players under 13 must be created by a parent in the Household Clearance flow — you cannot add a
 						"player account" here.
 					</p>
 				{:else}
@@ -469,17 +469,17 @@
 							disabled={resolvingDispatch || !dispatchCode.trim()}
 							onclick={resolveDispatch}
 						>
-							{resolvingDispatch ? 'Checkingâ€¦' : 'Verify'}
+							{resolvingDispatch ? 'Checking…' : 'Verify'}
 						</button>
 					</div>
 					{#if dispatchResolved}
 						<p class="setup-resolved-msg" role="status">
-							Linked to <strong>{dispatchResolved.clubName}</strong> Â· {dispatchResolved.teamName}
+							Linked to <strong>{dispatchResolved.clubName}</strong> · {dispatchResolved.teamName}
 						</p>
 					{/if}
 				{:else}
 					{#if clubsLoading}
-						<p class="setup-helper-text" role="status">Loading clubsâ€¦</p>
+						<p class="setup-helper-text" role="status">Loading clubs…</p>
 					{:else if clubsLoadError}
 						<div class="auth-error-msg" role="alert">{clubsLoadError}</div>
 					{:else}
@@ -489,7 +489,7 @@
 							value={selectedClubId}
 							onchange={(e) => selectClubFromList(e.currentTarget.value)}
 						>
-							<option value="">Select your clubâ€¦</option>
+							<option value="">Select your club…</option>
 							{#each joinableClubs as club (club.id)}
 								<option value={club.id}>{club.name || club.id}</option>
 							{/each}
@@ -542,7 +542,7 @@
 						onclick={completeSetup}
 					>
 						{#if saving}
-							{setupRole === 'coach' ? 'Claiming inviteâ€¦' : 'Saving profileâ€¦'}
+							{setupRole === 'coach' ? 'Claiming invite…' : 'Saving profile…'}
 						{:else}
 							{setupRole === 'coach' ? 'Claim invite' : 'Complete setup'}
 						{/if}
