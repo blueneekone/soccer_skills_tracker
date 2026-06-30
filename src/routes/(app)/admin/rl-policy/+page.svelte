@@ -32,7 +32,7 @@
 <div class="page-shell">
 	{#if !isSuper}
 		<div class="access-denied">
-			<span class="mono tw-text-[10px] tw-tracking-widest tw-text-white/20">
+			<span class="mono tw-text-[10px] tw-tracking-widest tw-text-[var(--text-muted)]">
 				[ ACCESS DENIED — SUPER_ADMIN ROLE REQUIRED ]
 			</span>
 		</div>
