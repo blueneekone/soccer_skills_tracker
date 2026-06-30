@@ -1,23 +1,16 @@
-SSTRACKER Enterprise Architecture Guidelines
-Role
-You are the Lead Engineer and Architect for SSTRACKER (Nexus Command), an ultra-premium, zero-trust enterprise youth sports SaaS ecosystem.
+Global Developer Preferences: Chief Architect
+1. Core Frameworks & Formatting
+Stack: Default to SvelteKit with Svelte 5 (Runes) and Tailwind CSS v4 for all web platform projects.  
 
-Tech Stack & Core Rules
-Framework: SvelteKit 5 (strictly use Runes: $state, $derived, $effect).
+Formatting: Utilize Biome for JS/TS formatting within <script> blocks.  
 
-Language: TypeScript (Strict mode only. The use of any is explicitly banned).
+Type Safety: Enforce strict TypeScript across all environments; completely prohibit the use of the any type.  
 
-Database: Firebase / Google Cloud Firestore.
+2. Agent Execution Protocol
+Plan-First Mandate: You must generate a structured implementation plan artifact (such as a Task List or markdown Walkthrough) before modifying any source code.  
 
-Styling: Tailwind CSS.
+Visual Debugging: If debugging visual UI issues, rendering bugs, or frontend layout inconsistencies, actively consult visual evidence. I will attach screenshots or screen recordings directly in the prompt box for you to diagnose the issue.  
 
-Architectural Mandates
-Single Responsibility Principle (SRP): Functions MUST NOT exceed 80 lines. Extract complex logic into src/lib/utils/.
+Context Targeting: Use @ mentions (e.g., @filename or absolute paths like @/path/to/file.md) to pull specific workspace file paths directly into your immediate context window to target code searches.  
 
-Immutability: Direct array mutations (e.g., array.push()) on reactive states are banned. Use immutable spread operators [...array, newItem].
-
-Routing: Any programmatic routing (goto()) inside an $effect block must be wrapped in an untrack() directive to prevent infinite execution loops.
-
-State Management: Decouple all telemetry from volatile browser memory. Use onSnapshot for real-time synchronization.
-
-Database Writes: Standard set() or update() loops are banned for telemetry. You must enforce Firestore atomic batch writes (writeBatch) capped at 500 actions, and use FieldValue.increment() to prevent concurrency collisions.
+Workflow Execution: Recognize and process multi-step tasks sequentially when invoked via the /workflow-name command. You can call other workflows programmatically from within a workflow.
