@@ -32,6 +32,7 @@ import {
 	initializeFirestore,
 	persistentLocalCache,
 	persistentMultipleTabManager,
+	memoryLocalCache,
 	getFirestore,
 } from 'firebase/firestore';
 import { DEFAULT_CELL_ID, resolveCellId } from '$lib/types/cells';
@@ -106,11 +107,15 @@ export const db = (() => {
 	try {
 		return initializeFirestore(app, {
 			localCache: persistentLocalCache({
+				cacheSizeBytes: 41943040,
 				tabManager: persistentMultipleTabManager(),
 			}),
 		});
-	} catch {
-		return getFirestore(app);
+	} catch (err) {
+		console.warn('[Firestore] Failed to initialize persistent cache. Falling back to memory cache.', err);
+		return initializeFirestore(app, {
+			localCache: memoryLocalCache()
+		});
 	}
 })();
 

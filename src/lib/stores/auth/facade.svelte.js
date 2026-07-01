@@ -1,5 +1,5 @@
 import { auth, db, registerActiveCellResolver } from '$lib/firebase.js';
-import { getIdTokenResult, onAuthStateChanged } from 'firebase/auth';
+import { getIdTokenResult, onAuthStateChanged, signOut, getIdToken } from 'firebase/auth';
 import { resolveUserProfile } from '$lib/auth/profile.js';
 import { workspaceContextStore } from '$lib/stores/workspaceContext.svelte.js';
 import { createAuthGates } from '$lib/stores/auth/authGates.svelte.js';
@@ -16,6 +16,8 @@ import { createUserState } from '$lib/stores/auth/userState.svelte.js';
  * Thin auth facade — composes user / tenant / session modules and wires
  * Firebase lifecycle + role-based routing gates only.
  */
+export const globalFirestoreUnsubs = new Set();
+
 export function createAuthFacade() {
 	const userState = createUserState();
 	const tenantState = createTenantState();
@@ -35,6 +37,10 @@ export function createAuthFacade() {
 
 	function clearAuthState() {
 		detachUserStatusListener();
+		
+		globalFirestoreUnsubs.forEach(unsub => unsub());
+		globalFirestoreUnsubs.clear();
+
 		userState.clearUser();
 		tenantState.clearTenant();
 		sessionState.clearSession();
@@ -45,6 +51,15 @@ export function createAuthFacade() {
 		detachUserStatusListener();
 		if (!firebaseUser) {
 			clearAuthState();
+			return;
+		}
+
+		try {
+			await getIdToken(firebaseUser, true);
+		} catch (tokenError) {
+			console.error('[Auth] Poisoned session detected. Triggering circuit breaker.', tokenError);
+			clearAuthState();
+			await signOut(auth);
 			return;
 		}
 
