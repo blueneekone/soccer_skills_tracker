@@ -271,10 +271,11 @@
 </script>
 
 <div
-	class="cc-root tw-box-border tw-mx-auto tw-flex tw-w-full tw-max-w-[1680px] tw-flex-col"
+	class="cc-root tw-box-border tw-mx-auto tw-w-full tw-max-w-[1680px] tw-grid tw-grid-cols-1 xl:tw-grid-cols-12 tw-gap-8"
 	style="padding: var(--bento-pad-liquid);"
 	data-admin-shell="true"
 >
+	<div class="xl:tw-col-span-8 tw-min-w-0 tw-flex tw-flex-col">
 	{#snippet socMetric(kpi)}
 		<article
 			class="cc-soc-card"
@@ -509,51 +510,7 @@
 						</ul>
 					</aside>
 
-				<article class="cc-feed-shell cc-feed-shell--soc bento-span-12 tw-min-w-0">
-					<header class="cc-feed-shell__head">
-						<h2 class="cc-feed-shell__title">Live event stream</h2>
-						<p class="cc-feed-shell__sub">
-							<code class="cc-code">security_audit</code>
-							· {liveFeed.length} events ingested
-						</p>
-					</header>
-					{#if feedErr}
-						<p class="cc-err cc-err--inline" role="alert">{feedErr}</p>
-					{/if}
-				{#if feedLoading && liveFeed.length === 0}
-					<div class="cc-feed-empty">
-						<Icon name={"status.loading" as IconName} class="cc-spin" />
-						Loading audit stream…
-					</div>
-				{:else if liveFeed.length === 0}
-					<div class="cc-feed-empty">
-						<Icon name={"env.moon" as IconName} />
-						No audit events yet.
-					</div>
-					{:else}
-						<ol class="cc-feed-list">
-							{#each liveFeed as ev (ev.id)}
-								<li class="cc-feed-item cc-feed-item--{actionTone(ev.action)}">
-								<span class="cc-feed-item__icon" aria-hidden="true">
-									<Icon name={actionIcon(ev.action)} />
-								</span>
-									<div class="cc-feed-item__body">
-										<div class="cc-feed-item__row">
-											<span class="cc-feed-item__action">{prettyAction(ev.action)}</span>
-											<span class="cc-feed-item__time">{relativeTime(ev.createdAt)}</span>
-										</div>
-										{#if ev.targetEmail}
-											<span class="cc-feed-item__target">{ev.targetEmail}</span>
-										{/if}
-										{#if ev.details}
-											<span class="cc-feed-item__details">{ev.details}</span>
-										{/if}
-									</div>
-								</li>
-							{/each}
-						</ol>
-					{/if}
-				</article>
+
 			</div>
 		{:else}
 			<div class="cc-panel bento-grid bento-grid--12col bento-grid--liquid tw-grid tw-grid-cols-1 lg:tw-grid-cols-12" id="cc-panel-platform" role="tabpanel" aria-labelledby="cc-tab-platform">
@@ -573,6 +530,79 @@
 			</div>
 		{/if}
 	</div>
+	</div>
+	
+	<aside class="xl:tw-col-span-4 tw-min-w-0 tw-flex tw-flex-col tw-gap-6">
+		<article class="cc-chart-card cc-chart-card--soc">
+			<header class="cc-chart-card__head">
+				<div class="cc-chart-card__icon cc-chart-card__icon--amber" aria-hidden="true">
+					<Icon name={"status.warning" as IconName} />
+				</div>
+				<div>
+					<h2 class="cc-chart-card__title">Action Inbox</h2>
+					<p class="cc-chart-card__sub">Pending workflows</p>
+				</div>
+			</header>
+			<div class="tw-p-4 tw-text-sm tw-text-vanguard-text-secondary">
+				<ul class="tw-space-y-3 tw-m-0 tw-p-0" style="list-style: none;">
+					<li class="tw-flex tw-justify-between tw-items-center">
+						<span>Pending VPC requests</span>
+						<strong class="tw-text-vanguard-text-primary tw-font-mono tw-text-lg">0</strong>
+					</li>
+					<li class="tw-flex tw-justify-between tw-items-center">
+						<span>Past Due Stripe accounts</span>
+						<strong class="tw-text-vanguard-text-primary tw-font-mono tw-text-lg">0</strong>
+					</li>
+				</ul>
+			</div>
+		</article>
+
+		<article class="cc-feed-shell cc-feed-shell--soc">
+			<header class="cc-feed-shell__head">
+				<h2 class="cc-feed-shell__title">Live event stream</h2>
+				<p class="cc-feed-shell__sub">
+					<code class="cc-code">security_audit</code>
+					· {liveFeed.length} events ingested
+				</p>
+			</header>
+			{#if feedErr}
+				<p class="cc-err cc-err--inline" role="alert">{feedErr}</p>
+			{/if}
+			{#if feedLoading && liveFeed.length === 0}
+				<div class="cc-feed-empty">
+					<Icon name={"status.loading" as IconName} class="cc-spin" />
+					Loading audit stream…
+				</div>
+			{:else if liveFeed.length === 0}
+				<div class="cc-feed-empty">
+					<Icon name={"env.moon" as IconName} />
+					No audit events yet.
+				</div>
+			{:else}
+				<ol class="cc-feed-list">
+					{#each liveFeed as ev (ev.id)}
+						<li class="cc-feed-item cc-feed-item--{actionTone(ev.action)}">
+						<span class="cc-feed-item__icon" aria-hidden="true">
+							<Icon name={actionIcon(ev.action)} />
+						</span>
+							<div class="cc-feed-item__body">
+								<div class="cc-feed-item__row">
+									<span class="cc-feed-item__action">{prettyAction(ev.action)}</span>
+									<span class="cc-feed-item__time">{relativeTime(ev.createdAt)}</span>
+								</div>
+								{#if ev.targetEmail}
+									<span class="cc-feed-item__target">{ev.targetEmail}</span>
+								{/if}
+								{#if ev.details}
+									<span class="cc-feed-item__details">{ev.details}</span>
+								{/if}
+							</div>
+						</li>
+					{/each}
+				</ol>
+			{/if}
+		</article>
+	</aside>
 </div>
 
 <style>

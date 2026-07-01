@@ -144,7 +144,6 @@
 					aria-current={hubActive || routeActive ? 'page' : undefined}
 					aria-disabled={gated ? 'true' : undefined}
 					data-sveltekit-preload-data="hover"
-					data-sveltekit-reload
 					onclick={(e) => onNavClick(link.href, e)}
 				>
 					<span class="ps-rail__icon" aria-hidden="true">

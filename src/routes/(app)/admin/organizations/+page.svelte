@@ -23,7 +23,7 @@
 		executeDeleteClub,
 		executeLoginAsDirector,
 	} from '$lib/admin/organizationsActions.js';
-	import EditOrganizationModal from '$lib/components/admin/EditOrganizationModal.svelte';
+	import OrganizationSidecar from '$lib/components/admin/OrganizationSidecar.svelte';
 	import OrganizationsAddForm from '$lib/components/admin/OrganizationsAddForm.svelte';
 	import OrganizationsAlerts from '$lib/components/admin/OrganizationsAlerts.svelte';
 	import OrganizationsDataTable from '$lib/components/admin/OrganizationsDataTable.svelte';
@@ -249,12 +249,10 @@
 
 	function openEdit(cl: AdminClub) {
 		editingClub = cl;
-		showEditModal = true;
 		closeRowMenu();
 	}
 
 	function closeEdit() {
-		showEditModal = false;
 		editingClub = null;
 	}
 
@@ -296,8 +294,9 @@
 	}
 </script>
 
-<div class="tw-w-full">
-	<section class="tw-w-full orgs-panel orgs3-page">
+<div class="tw-grid tw-grid-cols-1 xl:tw-grid-cols-12 tw-gap-6 tw-w-full">
+	<div class="xl:tw-col-span-8 tw-min-w-0">
+		<section class="tw-w-full orgs-panel orgs3-page">
 		<OrganizationsToolbar
 			{clubs}
 			bind:orgSearch
@@ -365,14 +364,23 @@
 			onPrev={() => (orgPage = Math.max(0, orgPage - 1))}
 			onNext={() => (orgPage = Math.min(orgTotalPages - 1, orgPage + 1))}
 		/>
-	</section>
+		</section>
+	</div>
+	
+	<aside class="xl:tw-col-span-4 tw-min-w-0 tw-flex tw-flex-col tw-h-full">
+		<OrganizationSidecar
+			open={editingClub !== null}
+			club={editingClub}
+			onClose={closeEdit}
+			onSaved={(updated) => {
+				clubs = patchClubLocally(clubs, updated);
+			}}
+		/>
+		
+		{#if !editingClub}
+			<div class="cc-chart-card cc-chart-card--soc tw-h-full tw-flex tw-items-center tw-justify-center tw-text-vanguard-text-muted" data-admin-shell="true">
+				Select an organization to view details
+			</div>
+		{/if}
+	</aside>
 </div>
-
-<EditOrganizationModal
-	bind:open={showEditModal}
-	club={editingClub}
-	onClose={closeEdit}
-	onSaved={(updated) => {
-		clubs = patchClubLocally(clubs, updated);
-	}}
-/>

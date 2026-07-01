@@ -241,7 +241,6 @@
 										class:app-menu-sheet__link--active={active}
 										class:app-menu-sheet__link--pinned-dim={pinned}
 										href={item.href}
-										data-sveltekit-reload
 										data-sveltekit-preload-data="hover"
 										onclick={() => onDismiss()}
 									>

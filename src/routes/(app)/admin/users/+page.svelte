@@ -17,7 +17,7 @@
 	} from '$lib/admin/globalUsersDisplay.js';
 	import { fetchUsersCount, fetchUsersPage, loadClubNameMap } from '$lib/admin/globalUsersData.js';
 	import AddAdminModal from '$lib/components/admin/AddAdminModal.svelte';
-	import EditAdminModal from '$lib/components/admin/EditAdminModal.svelte';
+	import UserSidecar from '$lib/components/admin/UserSidecar.svelte';
 	import GlobalUsersDataTable from '$lib/components/admin/GlobalUsersDataTable.svelte';
 	import GlobalUsersDeactivateModal from '$lib/components/admin/GlobalUsersDeactivateModal.svelte';
 	import GlobalUsersPurgeModal from '$lib/components/admin/GlobalUsersPurgeModal.svelte';
@@ -177,12 +177,11 @@
 
 	function openEditAdmin(row: GlobalUserRow) {
 		editingAdmin = row;
-		showEditAdmin = true;
+		editingAdmin = row;
 		openMenuFor = '';
 	}
 
 	function closeEditAdmin() {
-		showEditAdmin = false;
 		editingAdmin = null;
 	}
 
@@ -350,8 +349,10 @@
 	}
 </script>
 
-<div class="gu-root">
-	<GlobalUsersToolbar
+<div class="tw-grid tw-grid-cols-1 xl:tw-grid-cols-12 tw-gap-6 tw-w-full">
+	<div class="xl:tw-col-span-8 tw-min-w-0">
+		<div class="gu-root">
+			<GlobalUsersToolbar
 		bind:searchInput
 		{searchApplied}
 		{loading}
@@ -415,6 +416,26 @@
 		onPrevPage={goPrev}
 		onNextPage={goNext}
 	/>
+		</div>
+	</div>
+	
+	<aside class="xl:tw-col-span-4 tw-min-w-0 tw-flex tw-flex-col tw-h-full">
+		<UserSidecar
+			open={editingAdmin !== null}
+			admin={editingAdmin}
+			onClose={closeEditAdmin}
+			onSaved={(patch) => {
+				rows = patchUserRowLocally(rows, patch as GlobalUserRow);
+				flashOk = `Saved changes for ${patch.email || patch.id}.`;
+			}}
+		/>
+		
+		{#if !editingAdmin}
+			<div class="cc-chart-card cc-chart-card--soc tw-h-full tw-flex tw-items-center tw-justify-center tw-text-vanguard-text-muted" data-admin-shell="true">
+				Select a user to view details
+			</div>
+		{/if}
+	</aside>
 </div>
 
 <AddAdminModal
@@ -423,16 +444,6 @@
 	onGranted={(em) => {
 		flashOk = `${em} granted admin access.`;
 		showAddAdmin = false;
-	}}
-/>
-
-<EditAdminModal
-	bind:open={showEditAdmin}
-	admin={editingAdmin}
-	onClose={closeEditAdmin}
-	onSaved={(patch) => {
-		rows = patchUserRowLocally(rows, patch as GlobalUserRow);
-		flashOk = `Saved changes for ${patch.email || patch.id}.`;
 	}}
 />
 

@@ -213,7 +213,6 @@
 							class="ec-nav-link"
 							class:ec-nav-link--active={navActive(item)}
 							href={item.href}
-							data-sveltekit-reload
 							data-sveltekit-preload-data="hover"
 						>
 							<Icon name={item.icon as IconName} size={18} />

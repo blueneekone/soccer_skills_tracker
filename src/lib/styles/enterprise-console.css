@@ -11,6 +11,11 @@
 	--ec-ops-ambient: rgba(20, 184, 166, 0.03);
 	--ec-ops-glow: none;                    /* was: 0 0 42px rgba(20, 184, 166,0.05) */
 	--ec-ops-border-subtle: rgba(148, 163, 184, 0.14); /* Slate, NOT teal */
+	
+	/* Vanguard Protocol enforced dark mode defaults */
+	--ec-canvas-bg: #0b0f19;
+	--ec-sidebar-bg: #131c2e;
+	--ec-sidebar-border: rgba(148, 163, 184, 0.12);
 
 	/* Icon stroke system — 1.5 mathematically matches Geist Mono cap stroke */
 	--icon-stroke: 1.5;
@@ -238,8 +243,9 @@ html.dark .ec-sidebar__close-btn:hover {
 }
 
 html.dark .ec-sidebar {
-	background: #09090b;
-	border-right-color: rgba(255, 255, 255, 0.1);
+	/* Vanguard rules: no pure black, use the slate-navy variable */
+	background: var(--ec-sidebar-bg);
+	border-right-color: var(--ec-sidebar-border);
 }
 
 @media (min-width: 1024px) {
@@ -382,7 +388,7 @@ html.dark .ec-sidebar__brand {
 }
 
 html.dark .ec-sidebar__system {
-	border-top-color: rgba(255, 255, 255, 0.1);
+	border-top-color: var(--ec-sidebar-border);
 }
 
 .ec-sidebar__system-label {

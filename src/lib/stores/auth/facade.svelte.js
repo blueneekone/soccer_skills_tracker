@@ -25,7 +25,7 @@ export function createAuthFacade() {
 	const gates = createAuthGates(userState, sessionState, tenantState);
 
 	async function hydrateFromFirebaseUser(firebaseUser) {
-		const resolved = await resolveUserProfile(db, firebaseUser, true);
+		const resolved = await resolveUserProfile(db, firebaseUser, false);
 		if (await signOutIfSuspended(resolved)) return false;
 		sessionState.setRole(resolved.role);
 		tenantState.applyResolved(resolved);
@@ -55,7 +55,7 @@ export function createAuthFacade() {
 		}
 
 		try {
-			await getIdToken(firebaseUser, true);
+			await getIdToken(firebaseUser);
 		} catch (tokenError) {
 			console.error('[Auth] Poisoned session detected. Triggering circuit breaker.', tokenError);
 			clearAuthState();
