@@ -178,7 +178,7 @@
 		if (!authReady) return;
 
 		const tid = teamId;
-		if (!tid) {
+		if (typeof tid !== 'string' || tid.trim().length === 0) {
 			untrack(() => {
 				teamErr = 'No team ID in URL.';
 				teamDoc = null;

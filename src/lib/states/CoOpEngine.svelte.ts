@@ -197,6 +197,7 @@ export class CoOpEngine {
 	}
 
 	async #loadHousehold(householdId: string): Promise<void> {
+		if (typeof householdId !== 'string' || householdId.trim().length === 0) return;
 		try {
 			const snap = await getDoc(doc(db, 'households', householdId));
 			if (!snap.exists()) return;
@@ -213,6 +214,7 @@ export class CoOpEngine {
 
 		await Promise.all(
 			childEmails.map(async (email) => {
+				if (typeof email !== 'string' || email.trim().length === 0) return;
 				try {
 					const snap = await getDoc(doc(db, 'users', email));
 					if (!snap.exists()) {

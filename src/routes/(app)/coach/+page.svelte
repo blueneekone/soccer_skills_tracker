@@ -266,7 +266,7 @@
 			<article
 				class="coach-os-panel coach-os-facility bento-cell tw-relative tw-flex tw-min-h-[320px] tw-min-w-0 tw-flex-col tw-overflow-hidden tw-p-5"
 				class:bento-span-12={!warRoomHqVisible}
-				class:tw-col-span-12 lg:tw-col-span-4={warRoomHqVisible}
+				class:tw-col-span-12={warRoomHqVisible} class:lg:tw-col-span-4={warRoomHqVisible}
 				aria-label="Facility Ops & Staging"
 			>
 				<header class="bento-mb-md tw-flex tw-items-center tw-gap-2 tw-border-b tw-border-white/10 tw-pb-3">

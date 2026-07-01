@@ -279,7 +279,7 @@ export const FEATURE_BENTO: FeatureCell[] = [
 		body: 'Migrate off legacy platforms seamlessly. Headless ingestion vacuums existing rosters, schedules, and compliance docs without manual data entry.',
 		href: '/features#ingestion',
 		accentColor: '#06b6d4',
-		icon: 'sys.cloud-arrow-down',
+		icon: 'action.download',
 	},
 	{
 		id: 'car-ride',
@@ -289,7 +289,7 @@ export const FEATURE_BENTO: FeatureCell[] = [
 		body: 'Transform the dreaded "car ride home" into an alignment session. Parents receive coach intent briefings and post-match debrief structures instantly.',
 		href: '/features#parents',
 		accentColor: '#f59e0b',
-		icon: 'comm.chat-bubble-left',
+		icon: 'comm.chat',
 	},
 	{
 		id: 'director-ops',

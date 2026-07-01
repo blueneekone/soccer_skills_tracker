@@ -167,7 +167,7 @@
 
 				const currentPath = untrack(() => page.url.pathname);
 				if (requiresPasskey && !currentPath.startsWith(PASSKEY_ENROLL_ROUTE)) {
-					await goto(PASSKEY_ENROLL_ROUTE, { replaceState: true });
+					await untrack(() => goto(PASSKEY_ENROLL_ROUTE, { replaceState: true }));
 					return;
 				}
 
