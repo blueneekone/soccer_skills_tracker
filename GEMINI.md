@@ -22,3 +22,4 @@
 ## 4. EXECUTION DIRECTIVES
 *   **Plan Before Building:** Always generate an Implementation Plan artifact before writing code [17, 18].
 *   **No Placeholders:** Write every single line of production code. Do not use `// ... existing code`.
+*   **Aggressive Atomicity (Two-File Governance):** Execute no more than 2 to 3 distinct architectural tasks per execution plan. You must generate an Implementation Plan artifact for my approval before modifying any source code. Do not attempt monolithic refactors
