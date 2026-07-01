@@ -158,6 +158,7 @@
 	$effect(() => {
 		if (!browser) return;
 		if (authStore.isLoading || !authStore.isAuthenticated) return;
+		if (!authStore.user || !authStore.tenantId) return; // Strict truthiness guard for IDs
 
 		let destroyed = false;
 		feedLoading = true;
@@ -371,8 +372,8 @@
 		</p>
 
 		{#if activeTab === 'executive'}
-			<section
-				class="cc-panel bento-grid bento-grid--12col bento-grid--liquid tw-grid tw-grid-cols-1 xl:tw-grid-cols-12"
+			<div
+				class="cc-panel bento-grid bento-grid--12col bento-grid--liquid tw-grid tw-grid-cols-1 lg:tw-grid-cols-12"
 				id="cc-panel-executive"
 				role="tabpanel"
 				aria-labelledby="cc-tab-executive"
@@ -408,16 +409,16 @@
 						></canvas>
 					</div>
 				</article>
-			</section>
+			</div>
 		{:else if activeTab === 'growth'}
-			<section class="cc-panel bento-grid bento-grid--12col bento-grid--liquid tw-grid tw-grid-cols-1 xl:tw-grid-cols-12" id="cc-panel-growth" role="tabpanel" aria-labelledby="cc-tab-growth">
+			<div class="cc-panel bento-grid bento-grid--12col bento-grid--liquid tw-grid tw-grid-cols-1 lg:tw-grid-cols-12" id="cc-panel-growth" role="tabpanel" aria-labelledby="cc-tab-growth">
 			{#each GROWTH_TILES as kpi (kpi.label)}
 				<div class="bento-span-3 tw-min-w-0">
 					{@render socMetric(kpi)}
 				</div>
 			{/each}
 
-				<div class="cc-chart-row bento-span-12 bento-grid bento-grid--12col bento-grid--liquid tw-min-w-0 tw-grid tw-grid-cols-1 xl:tw-grid-cols-12">
+				<div class="cc-chart-row bento-span-12 bento-grid bento-grid--12col bento-grid--liquid tw-min-w-0 tw-grid tw-grid-cols-1 lg:tw-grid-cols-12">
 					<article class="cc-chart-card cc-chart-card--half cc-chart-card--soc bento-span-6 tw-min-w-0">
 						<header class="cc-chart-card__head">
 						<div class="cc-chart-card__icon cc-chart-card__icon--emerald" aria-hidden="true">
@@ -470,9 +471,9 @@
 						</div>
 					</article>
 				</div>
-			</section>
+			</div>
 		{:else if activeTab === 'security'}
-			<section class="cc-panel bento-grid bento-grid--12col bento-grid--liquid tw-grid tw-grid-cols-1 xl:tw-grid-cols-12" id="cc-panel-security" role="tabpanel" aria-labelledby="cc-tab-security">
+			<div class="cc-panel bento-grid bento-grid--12col bento-grid--liquid tw-grid tw-grid-cols-1 lg:tw-grid-cols-12" id="cc-panel-security" role="tabpanel" aria-labelledby="cc-tab-security">
 				{#each strike13Security as kpi (kpi.label)}
 					<div class="bento-span-3 tw-min-w-0">
 						{@render socMetric(kpi)}
@@ -553,9 +554,9 @@
 						</ol>
 					{/if}
 				</article>
-			</section>
+			</div>
 		{:else}
-			<section class="cc-panel bento-grid bento-grid--12col bento-grid--liquid tw-grid tw-grid-cols-1 xl:tw-grid-cols-12" id="cc-panel-platform" role="tabpanel" aria-labelledby="cc-tab-platform">
+			<div class="cc-panel bento-grid bento-grid--12col bento-grid--liquid tw-grid tw-grid-cols-1 lg:tw-grid-cols-12" id="cc-panel-platform" role="tabpanel" aria-labelledby="cc-tab-platform">
 			{#each PLATFORM_TILES as kpi (kpi.label)}
 				<div class="bento-span-3 tw-min-w-0">
 					{@render socMetric(kpi)}
@@ -564,12 +565,12 @@
 
 				<div class="cc-platform-note bento-span-12 tw-min-w-0">
 					<p>
-					<Icon name={"status.info" as IconName} />
-					KPI tiles above are fixed for executive review; charts on other tabs still hydrate from
+						<Icon name={"status.info" as IconName} />
+						KPI tiles above are fixed for executive review; charts on other tabs still hydrate from
 						<code class="cc-code">analytics/platform_totals</code> when available.
 					</p>
 				</div>
-			</section>
+			</div>
 		{/if}
 	</div>
 </div>
@@ -1453,11 +1454,6 @@
 		display: flex;
 		align-items: flex-start;
 		gap: 10px;
-	}
-
-	.cc-platform-note i {
-		margin-top: 2px;
-		flex-shrink: 0;
 	}
 
 	/* ── Mobile progressive disclosure (< 768px) ─────────────────────────────

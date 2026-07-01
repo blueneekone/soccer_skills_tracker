@@ -27,68 +27,75 @@
 
 	const TIERS: Tier[] = [
 		{
-			id: 'basecamp',
-			name: 'BASE CAMP',
-			tagline: 'For small clubs and individual teams getting started.',
-			price: '$99',
-			priceSub: '/ month per team',
+			id: 'solo-tutor',
+			name: 'SOLO TUTOR',
+			tagline: 'For individual private trainers.',
+			price: '$49',
+			priceSub: '/ month',
 			accentColor: '#8b5cf6',
 			features: [
-				{ label: 'Up to 30 players' },
+				{ label: 'Private session tracking' },
+				{ label: 'Client progress portal' },
+				{ label: 'Basic scheduling' },
+			],
+			cta: 'START FREE TRIAL',
+			ctaHref: '/setup?tier=tutor',
+			priceId: import.meta.env.PUBLIC_STRIPE_PRICE_TUTOR || 'stripe_price_tutor',
+		},
+		{
+			id: 'single-team',
+			name: 'SINGLE TEAM',
+			tagline: 'For individual teams getting started.',
+			price: '$99',
+			priceSub: '/ month per team',
+			accentColor: '#fbbf24',
+			badge: 'POPULAR',
+			features: [
+				{ label: 'Up to 30 players', highlight: true },
 				{ label: 'Tactical War Room' },
 				{ label: 'XP & Vanguard Rating system' },
 				{ label: 'Roster ingestion (CSV / JSON)' },
 				{ label: 'Coach + parent portals' },
-				{ label: 'COPPA compliance gate' },
-				{ label: 'Community support' },
 			],
 			cta: 'START FREE TRIAL',
-			ctaHref: '/setup?tier=basecamp',
-			priceId: 'price_basecamp',
+			ctaHref: '/setup?tier=team',
+			priceId: import.meta.env.PUBLIC_STRIPE_PRICE_TEAM || 'stripe_price_team',
 		},
 		{
-			id: 'pro',
-			name: 'CLUB PRO',
-			tagline: 'Full clubs — development OS + director ops (illustrative tier).',
+			id: 'pro-club',
+			name: 'PRO CLUB',
+			tagline: 'Full clubs — development OS + director ops.',
 			price: '$299',
-			priceSub: '/ month per club · not billed in prod yet',
-			accentColor: '#fbbf24',
-			badge: 'TARGET TIER',
+			priceSub: '/ month per club',
+			accentColor: '#3b82f6',
 			features: [
-				{ label: 'Unlimited players (when billing live)', highlight: true },
-				{ label: 'Everything in Base Camp' },
+				{ label: 'Unlimited players', highlight: true },
+				{ label: 'Everything in Single Team' },
 				{ label: 'Tryout lifecycle OS + registration-lite' },
 				{ label: 'Field weather lock (Open-Meteo + NWS)' },
-				{ label: 'Media pipeline stub (EXIF strip + quarantine path)', highlight: true },
 				{ label: 'Director compliance + eligibility matrix' },
-				{ label: 'Parent push + calendar parity' },
-				{ label: 'QA support — no production SLA yet' },
 			],
-			cta: 'JOIN QA WAITLIST',
-			ctaHref: '/setup?tier=pro',
-			priceId: 'price_vanguard_pro',
+			cta: 'JOIN WAITLIST',
+			ctaHref: '/setup?tier=club',
+			priceId: import.meta.env.PUBLIC_STRIPE_PRICE_CLUB || 'stripe_price_club',
 		},
 		{
-			id: 'enterprise',
-			name: 'ENTERPRISE',
-			tagline: 'Multi-club orgs and federation-scale tenants (custom).',
-			price: 'Custom',
-			priceSub: 'contact for pricing',
-			accentColor: '#334155',
+			id: 'recruiter-portal',
+			name: 'RECRUITER PORTAL',
+			tagline: 'Scout tracking and talent pipeline.',
+			price: '$199',
+			priceSub: '/ month per seat',
+			accentColor: '#10b981',
 			features: [
-				{ label: 'Multi-club tenant isolation', highlight: true },
-				{ label: 'Everything in Club Pro' },
-				{ label: 'Cell routing + dedicated shard path' },
-				{ label: 'Federation CSV export (API Phases 2–4 roadmap)' },
-				{ label: 'Custom domain + white-labelling (planned)' },
-				{ label: 'No uptime SLA until commercial launch' },
-				{ label: 'Dedicated success engineer (post-close)' },
-				{ label: 'Security review pack on request' },
+				{ label: 'Global talent database' },
+				{ label: 'Advanced filtering and analytics' },
+				{ label: 'Direct messaging' },
+				{ label: 'Custom scouting reports' },
 			],
-			cta: 'CONTACT ACQUISITION',
-			ctaHref: 'mailto:acquisition@sstracker.com',
-			priceId: 'price_enterprise',
-		},
+			cta: 'GET ACCESS',
+			ctaHref: '/setup?tier=recruiter',
+			priceId: import.meta.env.PUBLIC_STRIPE_PRICE_RECRUITER || 'stripe_price_recruiter',
+		}
 	];
 
 	// ── Mock checkout ─────────────────────────────────────────────────────────
@@ -118,26 +125,20 @@
 		checkoutError = '';
 
 		try {
-			// STRIPE STUB — calls Cloud Function which sets subscriptionStatus: 'active'
-			// and stores the priceId against the tenant's Firestore document.
-			// Replace the CF stub with real Stripe Checkout session creation
-			// when going live: create a Stripe Checkout Session → redirect to Stripe.
-		const createSubscription = httpsCallable<
-			{ priceId: string; tenantId: string; tierId: string },
-			{ sessionUrl?: string; status: string }
-		>(functions, 'createSubscription');
+			const createStripeCheckoutSession = httpsCallable<
+				{ priceId: string; tenantId: string; tierId: string },
+				{ sessionUrl?: string; status: string }
+			>(functions, 'createStripeCheckoutSession');
 
-			const result = await createSubscription({
+			const result = await createStripeCheckoutSession({
 				priceId: tier.priceId,
 				tenantId,
 				tierId: tier.id,
 			});
 
 			if (result.data.sessionUrl) {
-				// Production: redirect to Stripe Checkout
 				window.location.href = result.data.sessionUrl;
 			} else {
-				// Stub success — subscription activated in Firestore
 				checkoutPhase = 'success';
 			}
 		} catch (err: unknown) {

@@ -519,12 +519,6 @@
 
 	.roster-bc__link:hover { opacity: 0.78; }
 
-	.roster-bc__sep {
-		font-size: 0.9rem;
-		color: var(--text-secondary);
-		opacity: 0.55;
-		flex-shrink: 0;
-	}
 
 	.roster-bc__current {
 		font-size: 0.85rem;
@@ -599,17 +593,6 @@
 		align-items: center;
 	}
 
-	.roster-search-icon {
-		position: absolute;
-		left: 10px;
-		font-size: 0.875rem;
-		color: rgba(0, 0, 0, 0.3);
-		pointer-events: none;
-	}
-
-	:global(html.dark) .roster-search-icon {
-		color: rgba(255, 255, 255, 0.28);
-	}
 
 	.roster-search {
 		height: 34px;
