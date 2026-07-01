@@ -36,10 +36,10 @@
 
 	/** @type {SocMetric[]} */
 	let strike13Executive = $state([
-		{ label: 'MRR', value: '$42.5k', hint: 'Monthly recurring', band: 'info', delta: '+4.2%', deltaDir: 'up' },
-		{ label: 'ARR', value: '$510k', hint: 'Annual run rate', band: 'info', delta: '+11%', deltaDir: 'up' },
-		{ label: 'Active Orgs', value: '142', hint: 'Tenant footprint', band: 'low', delta: '+6', deltaDir: 'up' },
-		{ label: 'Total Players', value: '12.4k', hint: 'Platform headcount', band: 'low', delta: '+2.1%', deltaDir: 'up' },
+		{ label: 'MRR', value: '$0', hint: 'Monthly recurring', band: 'info', delta: '+4.2%', deltaDir: 'up' },
+		{ label: 'ARR', value: '$0', hint: 'Annual run rate', band: 'info', delta: '+11%', deltaDir: 'up' },
+		{ label: 'Active Orgs', value: '0', hint: 'Tenant footprint', band: 'low', delta: '+6', deltaDir: 'up' },
+		{ label: 'Total Players', value: '0', hint: 'Platform headcount', band: 'low', delta: '+2.1%', deltaDir: 'up' },
 		{ label: 'WAU/MAU', value: '68%', hint: 'Weekly / monthly', band: 'ok', delta: '—', deltaDir: 'flat' },
 		{ label: 'ARPU', value: '$299', hint: 'Blended ARPU', band: 'info', delta: '+$12', deltaDir: 'up' },
 		{ label: 'Gross Retention', value: '98%', hint: 'Logo gross', band: 'ok', delta: '+0.4pp', deltaDir: 'up' },
@@ -175,6 +175,11 @@
 				sportSource = result.sportSource;
 				liveFeed = result.liveFeed;
 				feedErr = result.feedErr;
+				if (result.executive) {
+					strike13Executive[0].value = `$${result.executive.mrr}`;
+					strike13Executive[1].value = `$${result.executive.arr}`;
+					strike13Executive[3].value = `${result.executive.mauTotal}`;
+				}
 				feedLoading = false;
 			})
 			.catch((e) => {

@@ -23,4 +23,5 @@ export type OverviewHydrateResult = {
 	sportSource: 'live' | 'mock';
 	liveFeed: OverviewAuditEvent[];
 	feedErr: string;
+	executive: { mrr: number, arr: number, mauTotal: number };
 };

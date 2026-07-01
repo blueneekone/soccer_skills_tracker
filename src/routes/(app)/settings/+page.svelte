@@ -665,7 +665,7 @@
 		max-width: 740px;
 		margin: 0 auto;
 		font-family: 'JetBrains Mono', 'Space Mono', ui-monospace, monospace;
-		color: #e2e8f0;
+		color: var(--text-secondary, #e2e8f0);
 	}
 
 	/* ── Terminal Header ──────────────────────────────────────────────────── */
@@ -674,8 +674,8 @@
 		align-items: center;
 		justify-content: space-between;
 		padding: 14px 20px 12px;
-		background: rgba(0, 8, 20, 0.9);
-		border: 1px solid rgba(0, 255, 255, 0.15);
+		background: var(--vanguard-surface, rgba(0, 8, 20, 0.9));
+		border: 1px solid var(--vanguard-border, rgba(0, 255, 255, 0.15));
 		border-bottom: none;
 		border-radius: 4px 4px 0 0;
 	}
@@ -714,10 +714,10 @@
 	/* ── Tab Rail ─────────────────────────────────────────────────────────── */
 	.st-tabs {
 		display: flex;
-		background: rgba(0, 6, 16, 0.95);
-		border-left: 1px solid rgba(0, 255, 255, 0.15);
-		border-right: 1px solid rgba(0, 255, 255, 0.15);
-		border-bottom: 1px solid rgba(0, 255, 255, 0.12);
+		background: var(--vanguard-surface-raised, rgba(0, 6, 16, 0.95));
+		border-left: 1px solid var(--vanguard-border, rgba(0, 255, 255, 0.15));
+		border-right: 1px solid var(--vanguard-border, rgba(0, 255, 255, 0.15));
+		border-bottom: 1px solid var(--vanguard-border, rgba(0, 255, 255, 0.12));
 		overflow-x: auto;
 	}
 	.st-tab {
@@ -747,8 +747,8 @@
 
 	/* ── Panel ────────────────────────────────────────────────────────────── */
 	.st-panel {
-		background: rgba(0, 8, 20, 0.9);
-		border: 1px solid rgba(0, 255, 255, 0.12);
+		background: var(--vanguard-surface, rgba(0, 8, 20, 0.9));
+		border: 1px solid var(--vanguard-border, rgba(0, 255, 255, 0.12));
 		border-top: none;
 		border-radius: 0 0 4px 4px;
 		padding: 0;

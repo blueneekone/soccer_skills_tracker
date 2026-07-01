@@ -213,14 +213,14 @@
 					<div class="row-actions">
 						{#if activeTab === 'pending'}
 							<button
-								class="action-btn action-btn--danger"
+								class="btn-primary--danger"
 								disabled={revoking.has(uplink.id)}
 								onclick={() => handleRevoke(uplink.id)}
 							>
 								{revoking.has(uplink.id) ? '…' : 'Revoke'}
 							</button>
 						{/if}
-						<button class="action-btn" onclick={() => openAudit(uplink.id)}>
+						<button class="btn-primary" onclick={() => openAudit(uplink.id)}>
 							Audit
 						</button>
 					</div>
@@ -488,7 +488,7 @@
 		flex-shrink: 0;
 	}
 
-	.action-btn {
+	.btn-primary {
 		padding: 0.4rem 0.8rem;
 		font-family: inherit;
 		font-size: 0.6rem;
@@ -503,23 +503,23 @@
 		transition: background 0.15s, border-color 0.15s;
 	}
 
-	.action-btn:hover:not(:disabled) {
+	.btn-primary:hover:not(:disabled) {
 		background: rgba(20, 184, 166,0.1);
 		border-color: rgba(20, 184, 166,0.4);
 	}
 
-	.action-btn:disabled {
+	.btn-primary:disabled {
 		opacity: 0.4;
 		cursor: not-allowed;
 	}
 
-	.action-btn--danger {
+	.btn-primary--danger {
 		color: rgba(255,77,106,0.8);
 		background: rgba(255,77,106,0.05);
 		border-color: rgba(255,77,106,0.2);
 	}
 
-	.action-btn--danger:hover:not(:disabled) {
+	.btn-primary--danger:hover:not(:disabled) {
 		background: rgba(255,77,106,0.1);
 		border-color: rgba(255,77,106,0.4);
 	}

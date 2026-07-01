@@ -379,7 +379,7 @@
 				</div>
 				<button
 					type="button"
-					class="primary-btn btn-gold"
+					class="btn-primary btn-gold"
 					disabled={licenseBusy}
 					onclick={onGenerateLicense}
 				>
@@ -430,7 +430,7 @@
 
 				<button
 					type="button"
-					class="primary-btn btn-blue"
+					class="btn-primary"
 					onclick={saveClubEdit}
 					disabled={editSaving}
 				>
@@ -461,7 +461,7 @@
 					/>
 					<button
 						type="button"
-						class="primary-btn"
+						class="btn-primary"
 						onclick={assignDirector}
 						disabled={assignDirSaving}
 					>
@@ -483,7 +483,7 @@
 			</p>
 			<button
 				type="button"
-				class="delete-btn cd-danger__btn"
+				class="btn-secondary cd-danger__btn"
 				onclick={deleteCurrentClub}
 			>
 				<Icon name={"action.delete" as IconName} />
@@ -961,7 +961,7 @@
 	}
 
 	/* ── Misc ────────────────────────────────────────────────────── */
-	.delete-btn {
+	.btn-secondary {
 		background: none;
 		border: 1px solid var(--border-strong, rgba(220,38,38,0.4));
 		border-radius: 8px;
@@ -969,7 +969,7 @@
 		color: var(--danger-red, #b91c1c);
 	}
 
-	.delete-btn:hover {
+	.btn-secondary:hover {
 		background: rgba(185, 28, 28, 0.08);
 	}
 </style>

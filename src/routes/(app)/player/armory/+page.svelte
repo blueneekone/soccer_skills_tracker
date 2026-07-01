@@ -508,7 +508,7 @@
 					{#if tacticalCredits >= item.cost}
 						<PlayerOsButton
 							variant="data"
-							class="armory-deploy-btn"
+							class="btn-primary"
 							disabled={armoryBusy}
 							onclick={async () => {
 								await requestDeployment(item);

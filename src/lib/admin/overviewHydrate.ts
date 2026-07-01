@@ -188,5 +188,10 @@ export async function hydrateAdminOverview(db: Firestore): Promise<OverviewHydra
 		sportSource: sport.source,
 		liveFeed: feed.rows,
 		feedErr: feed.err,
+		executive: {
+			mrr: Number(totals?.mrr) || 0,
+			arr: Number(totals?.arr) || 0,
+			mauTotal: Number(totals?.mauTotal) || 0,
+		}
 	};
 }

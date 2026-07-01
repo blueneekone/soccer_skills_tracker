@@ -6,7 +6,7 @@ const STORAGE_KEY = 'sstracker-theme';
 
 function createThemeStore() {
 	/** @type {ThemePreference} */
-	let preference = $state('system');
+	let preference = $state('dark');
 
 	function effectiveDark() {
 		if (!browser) return false;

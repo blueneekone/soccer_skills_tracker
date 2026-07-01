@@ -3,6 +3,6 @@
 	let { children } = $props();
 </script>
 
-<div class="ga-workspace tw-w-full">
+<div class="ga-workspace tw-w-full lg:tw-col-span-12">
 	{@render children()}
 </div>

@@ -5,6 +5,7 @@ export default {
 	corePlugins: {
 		preflight: false
 	},
+	darkMode: 'class',
 	theme: {
 		extend: {
 			colors: {

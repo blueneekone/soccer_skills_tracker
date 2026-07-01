@@ -77,29 +77,29 @@ html {
  */
 :root {
 	/* ── Nexus Command Token Dictionary (canonical) ──────────────────── */
-	--vanguard-bg:        #0b0f19;   /* Slate-900 global background — NO pure black */
+	--vanguard-bg:        #f8fafc;   /* Light mode background */
 
 	/* ── Opaque surface tokens — data cards MUST use these, not glass ── */
-	--vanguard-surface:        #131c2e;  /* Primary card / panel fill */
-	--vanguard-surface-raised: #182236;  /* Elevated rows, table headers */
+	--vanguard-surface:        #ffffff;  /* Primary card / panel fill */
+	--vanguard-surface-raised: #f1f5f9;  /* Elevated rows, table headers */
 
 	/* ── Muted slate-teal accent (replaces Tron neon #14b8a6 / #6366f1) */
-	--vanguard-accent:     #14b8a6;
-	--vanguard-accent-dim: rgba(20, 184, 166, 0.45);
+	--vanguard-accent:     #0d9488;
+	--vanguard-accent-dim: rgba(13, 148, 136, 0.15);
 
 	/* ── DEPRECATED aliases — alias to accent; remove after full migration */
-	--vanguard-cyan:  #14b8a6;  /* was: #6366f1 */
+	--vanguard-cyan:  #0d9488;  /* was: #6366f1 */
 
-	--vanguard-red:       #ff003c;
-	--vanguard-glass:     rgba(19, 28, 46, 0.72);  /* Floating modals / dock only */
-	--vanguard-border:    rgba(148, 163, 184, 0.12); /* Slate-400 @ 12% — thin, NOT teal */
-	--vanguard-border-strong: rgba(148, 163, 184, 0.22);
-	--border-slate-800:   #1e293b;          /* Sprint 9.3: 1px opaque border for all non-modal cards */
-	--surface-modal-scrim: rgba(0, 0, 0, 0.75); /* Sprint 9.3: ONLY legitimate modal backdrop use */
+	--vanguard-red:       #e11d48;
+	--vanguard-glass:     rgba(255, 255, 255, 0.72);  /* Floating modals / dock only */
+	--vanguard-border:    rgba(15, 23, 42, 0.12); /* Thin border for light mode */
+	--vanguard-border-strong: rgba(15, 23, 42, 0.22);
+	--border-slate-800:   #e2e8f0;          /* Sprint 9.3: 1px opaque border for all non-modal cards */
+	--surface-modal-scrim: rgba(255, 255, 255, 0.75); /* Sprint 9.3: ONLY legitimate modal backdrop use */
 	/* ── 3-Tier Contrast System (Vanguard Dark Mode Default) ── */
-	--text-primary: #fafafa;
-	--text-secondary: #d4d4d8;
-	--text-muted: #a1a1aa;
+	--text-primary: #0f172a;
+	--text-secondary: #334155;
+	--text-muted: #64748b;
 
 	/* Backward compatibility aliases */
 	--vanguard-text-primary: var(--text-primary);
@@ -233,11 +233,33 @@ html {
 	color: var(--text-primary);
 }
 
-:root.dark, .dark, .dark-form-surface {
+:root.dark, .dark {
+	--vanguard-bg:        #0b0f19;   /* Slate-900 global background — NO pure black */
+	--vanguard-surface:        #131c2e;  /* Primary card / panel fill */
+	--vanguard-surface-raised: #182236;  /* Elevated rows, table headers */
+	--vanguard-accent:     #14b8a6;
+	--vanguard-accent-dim: rgba(20, 184, 166, 0.45);
+	--vanguard-cyan:  #14b8a6;  /* was: #6366f1 */
+	--vanguard-red:       #ff003c;
+	--vanguard-glass:     rgba(19, 28, 46, 0.72);  /* Floating modals / dock only */
+	--vanguard-border:    rgba(148, 163, 184, 0.12); /* Slate-400 @ 12% — thin, NOT teal */
+	--vanguard-border-strong: rgba(148, 163, 184, 0.22);
+	--border-slate-800:   #1e293b;
+	--surface-modal-scrim: rgba(0, 0, 0, 0.75);
+
 	--text-primary: #fafafa;
 	--text-secondary: #d4d4d8;
 	--text-muted: #a1a1aa;
+}
 
+.dark-form-surface {
+	--text-primary: #fafafa;
+	--text-secondary: #d4d4d8;
+	--text-muted: #a1a1aa;
+	color: var(--text-primary);
+}
+
+:root.dark, .dark, .dark-form-surface {
 	--vanguard-text-primary: var(--text-primary);
 	--vanguard-text-secondary: var(--text-secondary);
 }
@@ -1306,4 +1328,47 @@ html {
 body:has(dialog[open]), 
 body.modal-open {
     overflow: hidden !important;
+}
+
+/* ── Extinction-Level Synchronization: Universal Interactive Classes ── */
+.btn-primary, .btn-secondary {
+	border-radius: 8px;
+	transition: all 150ms ease-in-out;
+	cursor: pointer;
+}
+.btn-primary:active, .btn-secondary:active, .tab-nav:active {
+	transform: scale(0.98);
+}
+
+/* Default Enterprise (Tactical) Styling */
+.btn-primary {
+	background-color: var(--text-primary, #0f172a);
+	color: var(--vanguard-surface, #ffffff);
+	border: 1px solid transparent;
+}
+.btn-primary:hover {
+	opacity: 0.9;
+}
+.btn-secondary {
+	background-color: var(--vanguard-surface-raised, #f1f5f9);
+	color: var(--text-primary, #0f172a);
+	border: 1px solid var(--vanguard-border, rgba(15, 23, 42, 0.12));
+}
+
+/* Player OS Styling */
+.ps-root .btn-primary {
+	background-color: #fbbf24;
+	color: #000000;
+}
+.ps-root .btn-secondary {
+	background-color: rgba(251, 191, 36, 0.1);
+	color: #fbbf24;
+	border: 1px solid rgba(251, 191, 36, 0.2);
+}
+
+/* Universal Tab Navigation */
+.tab-nav {
+	border-radius: 8px;
+	transition: all 150ms ease-in-out;
+	cursor: pointer;
 }
