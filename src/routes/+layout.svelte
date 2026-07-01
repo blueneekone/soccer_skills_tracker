@@ -37,7 +37,16 @@
 			(error) => {
 				console.error('Auth loop detected or token rejected:', error);
 				auth.signOut();
+				if (browser) {
+					try {
+						indexedDB.deleteDatabase('firebaseLocalStorageDb');
+						indexedDB.deleteDatabase('firestore/[DEFAULT]/sports-skill-tracker-dev/main');
+					} catch (e) {
+						console.error('Failed to wipe IndexedDB caches:', e);
+					}
+				}
 				authInitialized = true;
+				untrack(() => goto('/login', { replaceState: true }));
 			}
 		);
 		return unsubscribe;

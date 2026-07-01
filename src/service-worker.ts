@@ -177,34 +177,20 @@ self.addEventListener('fetch', (event: FetchEvent) => {
 	const req = event.request;
 	const url = new URL(req.url);
 
+	// Programmatic bypass: explicitly ignore auth, api, and firestore endpoints
 	if (
 		url.hostname.includes('securetoken.googleapis.com') ||
 		url.hostname.includes('identitytoolkit.googleapis.com') ||
-		url.pathname.includes('/auth/')
+		url.hostname.includes('firestore.googleapis.com') ||
+		url.pathname.includes('/auth/') ||
+		url.pathname.includes('/api/')
 	) {
-		event.respondWith(fetch(req));
-		return;
+		return; // Fallback to raw browser network request
 	}
 
 	if (event.request.method !== 'GET') return;
 
-	// Strategy 1: explicit bypass — hard network pass-through.
-	if (shouldBypass(url)) {
-		return;
-	}
-
-	// Strategy 2: navigation requests — SvelteKit owns HTML; never cache.
-	if (req.mode === 'navigate') return;
-
-	// Never shim JS module requests with a cached response.
-	if (req.destination === 'script') return;
-
-	// Ignore cross-origin requests that are not Firebase/CDN.
-	if (url.origin !== self.location.origin && !isFirebaseEndpoint(url) && !isCdnFont(url)) {
-		return;
-	}
-
-	// Strategy 3: cache-first for hashed precache assets.
+	// Bare-minimum caching: only cache known static precache assets
 	if (PRECACHE_SET.has(url.pathname)) {
 		event.respondWith(
 			caches.open(CACHE_NAME).then(async (cache) => {
@@ -220,61 +206,8 @@ self.addEventListener('fetch', (event: FetchEvent) => {
 		return;
 	}
 
-	// Strategy 4: network-first for Firebase SDK / Firestore / Functions.
-	if (isFirebaseEndpoint(url)) {
-		event.respondWith(
-			caches.open(CACHE_NAME).then(async (cache) => {
-				try {
-					const res = await fetch(req);
-					if (res.status === 200) {
-						cache.put(req, res.clone());
-					}
-					return res;
-				} catch {
-					const cached = await cache.match(req);
-					return cached ?? Response.error();
-				}
-			}),
-		);
-		return;
-	}
-
-	// Strategy 5: stale-while-revalidate for CDN fonts / icon scripts.
-	if (isCdnFont(url)) {
-		event.respondWith(
-			caches.open(CACHE_NAME).then(async (cache) => {
-				const cached = await cache.match(req);
-				const networkFetch = fetch(req).then((res) => {
-					if (res.status === 200) {
-						cache.put(req, res.clone());
-					}
-					return res;
-				});
-				return cached ?? networkFetch;
-			}),
-		);
-		return;
-	}
-
-	// Default: network-first with cache fallback for same-origin assets
-	// not in the precache set (e.g. dynamically generated files).
-	event.respondWith(
-		caches.open(CACHE_NAME).then(async (cache) => {
-			try {
-				const res = await fetch(req);
-				if (res.status === 200 && !res.headers.get('content-type')?.includes('text/html')) {
-					cache.put(req, res.clone());
-				}
-				return res;
-			} catch {
-				const cached = await cache.match(req);
-				if (!cached || cached.headers.get('content-type')?.includes('text/html')) {
-					return Response.error();
-				}
-				return cached;
-			}
-		}),
-	);
+	// Pass-through everything else
+	return;
 });
 
 // ── AEGIS Lightning Alert: background push via postMessage ───────────────────
