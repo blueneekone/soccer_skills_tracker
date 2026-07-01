@@ -22,7 +22,7 @@
 		<p class="pd-hq-section-head__eyebrow pd-label operative-hub__eyebrow">Command</p>
 	</header>
 	<div
-		class="operative-hub__grid bento-grid bento-grid--12col bento-grid--liquid"
+		class="operative-hub__grid bento-grid bento-grid--12col bento-grid--liquid tw-grid tw-grid-cols-1 lg:tw-grid-cols-12"
 		data-region="operative-hub-grid"
 	>
 	<div class="operative-hub__main tw-col-span-12 lg:tw-col-span-8">

@@ -422,7 +422,7 @@
 
 	.rse-filters {
 		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+		grid-template-columns: repeat(auto-fit, minmax(min(100%, clamp(280px, 30vw, 350px)), 1fr));
 		gap: clamp(14px, 3vw, 18px);
 		align-items: end;
 		padding: clamp(16px, 3vw, 22px);

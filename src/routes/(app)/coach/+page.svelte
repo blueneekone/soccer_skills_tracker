@@ -185,7 +185,7 @@
 		style="padding: var(--bento-pad-liquid); padding-bottom: calc(var(--bento-pad-liquid) + env(safe-area-inset-bottom, 0px));"
 	>
 		<div
-			class="bento-grid bento-grid--12col bento-grid--liquid tw-w-full"
+			class="bento-grid bento-grid--12col bento-grid--liquid tw-w-full tw-grid tw-grid-cols-1 lg:tw-grid-cols-12"
 			aria-label="Nexus Command workspace"
 		>
 			<div class="bento-span-12 tw-flex tw-justify-end">

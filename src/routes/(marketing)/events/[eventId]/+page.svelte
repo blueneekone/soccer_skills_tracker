@@ -408,7 +408,7 @@
 
 	.checkout-grid {
 		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(min(100%, 380px), 1fr));
+		grid-template-columns: repeat(auto-fit, minmax(min(100%, clamp(280px, 30vw, 350px)), 1fr));
 		gap: clamp(1rem, 3vw, 1.75rem);
 		align-items: start;
 	}

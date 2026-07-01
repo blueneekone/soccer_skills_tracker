@@ -482,7 +482,7 @@
 	{#if armoryWorkspace === 'quartermaster'}
 		<section
 			id="quartermaster-grid"
-			class="qa-grid bento-grid bento-grid--12col bento-grid--liquid"
+			class="qa-grid bento-grid bento-grid--12col bento-grid--liquid tw-grid tw-grid-cols-1 lg:tw-grid-cols-12"
 			aria-label="Available armory line items"
 		>
 			{#each lineItems as item (item.id)}

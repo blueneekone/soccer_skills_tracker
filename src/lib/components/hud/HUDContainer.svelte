@@ -21,7 +21,7 @@
 </script>
 
 <section
-	class="hud-container bento-grid bento-grid--12col bento-grid--liquid"
+	class="hud-container bento-grid bento-grid--12col bento-grid--liquid tw-grid tw-grid-cols-1 lg:tw-grid-cols-12"
 	data-region="hud-container"
 	aria-label={ariaLabel}
 >

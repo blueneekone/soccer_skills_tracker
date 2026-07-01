@@ -354,7 +354,7 @@
 	/* ── Metric tiles ────────────────────────────────────────────────────── */
 	.mc-tiles {
 		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+		grid-template-columns: repeat(auto-fit, minmax(min(100%, clamp(280px, 30vw, 350px)), 1fr));
 		gap: 1px; /* intentional 1px hairline gap between tiles */
 		background: rgba(255, 255, 255, 0.04);
 		border-radius: 8px;

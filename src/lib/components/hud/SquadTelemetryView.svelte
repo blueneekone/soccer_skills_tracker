@@ -809,7 +809,7 @@
 </script>
 
 <!-- ── SQUAD UPTIME — aggregate readiness ticker (Epic 1.2 bento HUD) ─────── -->
-<div class="hud-telemetry-root bento-grid bento-grid--12col bento-grid--liquid tw-w-full tw-min-w-0">
+<div class="hud-telemetry-root bento-grid bento-grid--12col bento-grid--liquid tw-w-full tw-min-w-0 tw-grid tw-grid-cols-1 lg:tw-grid-cols-12">
 <section
 	class="bento-span-12 hud-telemetry-panel tw-backdrop-blur-3xl tw-shadow-[inset_0_1px_1px_rgba(255,255,255,0.06),_0_0_30px_rgba(20, 184, 166,0.08)] tw-border-[#14b8a6]/25"
 	aria-label="Squad uptime"
@@ -874,7 +874,7 @@
 			>.
 		</p>
 	{:else}
-		<div class="bento-grid bento-grid--12col bento-grid--liquid">
+		<div class="bento-grid bento-grid--12col bento-grid--liquid tw-grid tw-grid-cols-1 lg:tw-grid-cols-12">
 			{#each readinessRoster as p (p.id)}
 				{@const staminaFill = Math.max(0, Math.min(1, p.stamina / 100))}
 				<article

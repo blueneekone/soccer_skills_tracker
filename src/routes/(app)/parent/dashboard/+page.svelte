@@ -87,7 +87,7 @@
 </script>
 
 <div class="parent-lounge-page">
-	<div class="bento-grid bento-grid--12col bento-grid--liquid tw-w-full">
+	<div class="bento-grid bento-grid--12col bento-grid--liquid tw-w-full tw-grid tw-grid-cols-1 lg:tw-grid-cols-12">
 		<header class="bento-span-12 parent-lounge-page-head tw-flex tw-flex-wrap tw-items-center tw-gap-3">
 			<p class="parent-lounge-eyebrow">Parent co-op</p>
 			<h1 class="parent-lounge-page-title">Command dashboard</h1>

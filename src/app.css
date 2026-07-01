@@ -218,6 +218,21 @@ html {
 	--vanguard-shell-header: 5rem;
 }
 
+@media (prefers-color-scheme: dark) {
+	:root {
+		--text-primary: #fafafa;
+		--text-secondary: #d4d4d8;
+		--text-muted: #a1a1aa;
+	}
+}
+
+.dark-form-surface {
+	--text-primary: #fafafa;
+	--text-secondary: #d4d4d8;
+	--text-muted: #a1a1aa;
+	color: var(--text-primary);
+}
+
 :root.dark, .dark, .dark-form-surface {
 	--text-primary: #fafafa;
 	--text-secondary: #d4d4d8;
@@ -666,7 +681,7 @@ body {
 	 * Composes on top of .bento-grid--12col to add:
 	 *   • grid-auto-flow: dense — fills holes left by asymmetric spans
 	 *   • clamp(20px, 4vw, 32px) gap — ROADMAP-specified fluid spacing
-	 * Apply both classes: class="bento-grid bento-grid--12col bento-grid--liquid"
+	 * Apply both classes: class="bento-grid bento-grid--12col bento-grid--liquid tw-grid tw-grid-cols-1 lg:tw-grid-cols-12"
 	 */
 	.bento-grid--liquid {
 		grid-auto-flow: dense;

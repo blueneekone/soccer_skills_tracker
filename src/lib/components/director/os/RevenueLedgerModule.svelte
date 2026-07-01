@@ -217,7 +217,7 @@
 
 	.revenue-ledger__tiles {
 		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(clamp(8rem, 16vw, 12rem), 1fr));
+		grid-template-columns: repeat(auto-fit, minmax(min(100%, clamp(280px, 30vw, 350px)), 1fr));
 		gap: clamp(0.5rem, 1vw, 0.9rem);
 		margin-bottom: 1rem;
 	}

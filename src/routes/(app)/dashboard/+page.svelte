@@ -13,7 +13,7 @@
 	</div>
 
 	<!-- Liquid Bento Grid — Sprint 1.1 -->
-	<div class="bento-grid bento-grid--12col bento-grid--liquid tw-w-full">
+	<div class="bento-grid bento-grid--12col bento-grid--liquid tw-w-full tw-grid tw-grid-cols-1 lg:tw-grid-cols-12">
 
 		<!-- ── Capability Level hero tile (8 cols) ────────────────────────── -->
 		<div

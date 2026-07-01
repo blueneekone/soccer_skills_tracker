@@ -503,7 +503,7 @@
 	{/if}
 
 	<div
-		class="bento-grid bento-grid--12col bento-grid--liquid tw-min-h-0 tw-w-full"
+		class="bento-grid bento-grid--12col bento-grid--liquid tw-min-h-0 tw-w-full tw-grid tw-grid-cols-1 lg:tw-grid-cols-12"
 	>
 		<!-- COPPA & liability block -->
 		<section
@@ -729,7 +729,7 @@
 				account is created automatically. The engine issues a one-time
 				<span class="phh-mono tw-text-cyan-300">DISPATCH</span> code for Operative login.
 			</p>
-			<div class="tw-min-w-0 bento-grid bento-grid--2col bento-grid--liquid">
+			<div class="tw-min-w-0 bento-grid bento-grid--2col bento-grid--liquid tw-grid tw-grid-cols-1 lg:tw-grid-cols-12">
 				<label class="phh-field tw-block tw-w-full">
 					<span class="phh-eyebrow tw-mb-1 tw-block">Operative name</span>
 					<input

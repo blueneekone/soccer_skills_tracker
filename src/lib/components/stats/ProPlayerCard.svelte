@@ -580,7 +580,7 @@
 
 	.pro-card-inner-bento {
 		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+		grid-template-columns: repeat(auto-fit, minmax(min(100%, clamp(280px, 30vw, 350px)), 1fr));
 		gap: clamp(16px, 3vw, 24px);
 		align-items: stretch;
 	}
@@ -617,7 +617,7 @@
 
 	.pro-stats-grid {
 		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+		grid-template-columns: repeat(auto-fit, minmax(min(100%, clamp(280px, 30vw, 350px)), 1fr));
 		gap: clamp(16px, 3vw, 20px);
 	}
 

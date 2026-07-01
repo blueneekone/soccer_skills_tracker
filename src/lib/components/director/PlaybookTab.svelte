@@ -367,7 +367,7 @@
 
 	.pb-tab__grid {
 		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+		grid-template-columns: repeat(auto-fit, minmax(min(100%, clamp(280px, 30vw, 350px)), 1fr));
 		gap: 12px;
 		margin-bottom: 12px;
 	}

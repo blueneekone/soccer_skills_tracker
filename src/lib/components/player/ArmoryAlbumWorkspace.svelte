@@ -58,7 +58,7 @@
 
 	<div>
 		<p class="qa-eyebrow tw-mb-3">Sticker sets</p>
-		<div class="bento-grid bento-grid--12col bento-grid--liquid">
+		<div class="bento-grid bento-grid--12col bento-grid--liquid tw-grid tw-grid-cols-1 lg:tw-grid-cols-12">
 			{#each seasonOneSets as set (set.id)}
 				{@const setCards = getSeasonOneCardsForSet(set.id)}
 				{@const ownedHere = setCards.filter((c) => ownedSeasonOneCardIds.has(c.id)).length}

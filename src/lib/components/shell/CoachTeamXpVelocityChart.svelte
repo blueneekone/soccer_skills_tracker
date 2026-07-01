@@ -259,7 +259,7 @@
 <style>
 	.ec-coach-xp {
 		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+		grid-template-columns: repeat(auto-fit, minmax(min(100%, clamp(280px, 30vw, 350px)), 1fr));
 		gap: 14px;
 		margin-bottom: 16px;
 		align-items: stretch;

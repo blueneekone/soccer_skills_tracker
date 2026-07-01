@@ -248,7 +248,7 @@
 </script>
 
 <section class="ols-root player-dossier-root" aria-label="Operative loadout studio">
-	<div class="ols-grid bento-grid bento-grid--12col bento-grid--liquid">
+	<div class="ols-grid bento-grid bento-grid--12col bento-grid--liquid tw-grid tw-grid-cols-1 lg:tw-grid-cols-12">
 		{#if playerEmailKey}
 			<div class="ols-dossier-panel bento-span-12 tw-min-w-0">
 				<p class="ols-panel-head qa-mono">DOSSIER CARD PREVIEW</p>

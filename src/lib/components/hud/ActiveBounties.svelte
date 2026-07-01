@@ -744,7 +744,7 @@
 			</header>
 
 			<div
-				class="quest-log__feed quest-log__feed--embedded bento-grid bento-grid--12col bento-grid--liquid"
+				class="quest-log__feed quest-log__feed--embedded bento-grid bento-grid--12col bento-grid--liquid tw-grid tw-grid-cols-1 lg:tw-grid-cols-12"
 				aria-label="Active missions"
 			>
 				{@render coachAssignHintBlock()}
@@ -774,7 +774,7 @@
 				</div>
 			</header>
 
-			<div class="quest-log__feed bento-grid bento-grid--12col bento-grid--liquid" aria-label="Active mission queue">
+			<div class="quest-log__feed bento-grid bento-grid--12col bento-grid--liquid tw-grid tw-grid-cols-1 lg:tw-grid-cols-12" aria-label="Active mission queue">
 				{@render coachAssignHintBlock()}
 				{#if visibleBounties.length > 0}
 					<p class="quest-log__section-tag">// PRIORITY DIRECTIVES</p>
