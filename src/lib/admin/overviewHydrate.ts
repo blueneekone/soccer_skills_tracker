@@ -14,22 +14,7 @@ import type {
 	OverviewHydrateResult,
 } from '$lib/types/adminOverview.js';
 
-const MOCK_MAU = [1200, 1400, 1650, 1820, 2140, 2380];
 
-const MOCK_REVENUE_BY_TIER: Record<string, number> = {
-	starter: 4500,
-	pro: 12000,
-	club: 24000,
-	enterprise: 8000,
-};
-
-const MOCK_BY_SPORT: Record<string, number> = {
-	soccer: 1450,
-	basketball: 820,
-	volleyball: 340,
-	baseball: 290,
-	other: 120,
-};
 
 const TIER_DEFS = [
 	{ key: 'starter', label: 'Starter' },
@@ -83,11 +68,11 @@ function hydrateMauSeries(totals: Record<string, unknown> | null): {
 	}
 
 	const hasSignal = values.some((v) => v > 0);
-	if (!hasSignal) values = [...MOCK_MAU];
+	if (!hasSignal) return { series: [], source: 'live' };
 
 	return {
 		series: labels.map(({ label }, i) => ({ label, value: values[i] ?? 0 })),
-		source: hasSignal ? 'live' : 'mock',
+		source: 'live',
 	};
 }
 
@@ -105,23 +90,14 @@ function hydrateRevenueByTier(totals: Record<string, unknown> | null): {
 		}
 	}
 
-	const hasSignal = Object.values(revenue).some((v) => v > 0);
-	const source = hasSignal ? revenue : { ...MOCK_REVENUE_BY_TIER };
-
 	const ordered = TIER_DEFS.map(({ key, label }) => ({
 		label,
-		value: Math.round(source[key] || 0),
+		value: Math.round(revenue[key] || 0),
 	})).filter((s) => s.value > 0);
 
 	return {
-		series:
-			ordered.length ?
-				ordered
-			:	TIER_DEFS.map(({ key, label }) => ({
-					label,
-					value: Math.round(MOCK_REVENUE_BY_TIER[key] || 0),
-				})).filter((s) => s.value > 0),
-		source: hasSignal ? 'live' : 'mock',
+		series: ordered,
+		source: 'live',
 	};
 }
 
@@ -140,23 +116,14 @@ function hydratePlayersBySport(totals: Record<string, unknown> | null): {
 		}
 	}
 
-	const hasSignal = Object.values(bySport).some((v) => v > 0);
-	const sourceMap = hasSignal ? bySport : { ...MOCK_BY_SPORT };
-
-	const ordered = Object.entries(sourceMap)
+	const ordered = Object.entries(bySport)
 		.map(([k, value]) => ({ label: prettySportLabel(k), value }))
 		.filter((s) => s.value > 0)
 		.sort((a, b) => b.value - a.value);
 
 	return {
-		series:
-			ordered.length ?
-				ordered
-			:	Object.entries(MOCK_BY_SPORT).map(([k, v]) => ({
-					label: prettySportLabel(k),
-					value: Math.round(v),
-				})),
-		source: hasSignal ? 'live' : 'mock',
+		series: ordered,
+		source: 'live',
 	};
 }
 
