@@ -174,10 +174,19 @@ self.addEventListener('activate', (event: ExtendableEvent) => {
 // ── Fetch: tiered caching strategies ─────────────────────────────────────────
 
 self.addEventListener('fetch', (event: FetchEvent) => {
-	if (event.request.method !== 'GET') return;
-
 	const req = event.request;
 	const url = new URL(req.url);
+
+	if (
+		url.hostname.includes('securetoken.googleapis.com') ||
+		url.hostname.includes('identitytoolkit.googleapis.com') ||
+		url.pathname.includes('/auth/')
+	) {
+		event.respondWith(fetch(req));
+		return;
+	}
+
+	if (event.request.method !== 'GET') return;
 
 	// Strategy 1: explicit bypass — hard network pass-through.
 	if (shouldBypass(url)) {

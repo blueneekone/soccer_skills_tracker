@@ -12,10 +12,35 @@
 	import VanguardVFX from '../components/VanguardVFX.svelte';
 	import { fade } from 'svelte/transition';
 
+	import { goto } from '$app/navigation';
+	import { onMount, untrack } from 'svelte';
+	import { auth } from '$lib/firebase/config.js';
+	import { onAuthStateChanged } from 'firebase/auth';
+
 	let { children } = $props();
+
+	let authInitialized = $state(false);
 
 	$effect(() => {
 		if (browser) themeStore.init();
+	});
+
+	onMount(() => {
+		const unsubscribe = onAuthStateChanged(
+			auth,
+			(user) => {
+				authInitialized = true;
+				if (!user && page.url.pathname !== '/login') {
+					untrack(() => goto('/login', { replaceState: true }));
+				}
+			},
+			(error) => {
+				console.error('Auth loop detected or token rejected:', error);
+				auth.signOut();
+				authInitialized = true;
+			}
+		);
+		return unsubscribe;
 	});
 </script>
 
@@ -25,11 +50,17 @@
 <div
 	class="vanguard-os-shell tw-relative tw-isolate tw-z-0 tw-min-h-[100dvh] tw-bg-transparent tw-text-slate-300 tw-antialiased"
 >
-	{#key page.url.pathname}
-		<div class="tw-min-h-[100dvh]" in:fade={{ duration: 150 }}>
-			{@render children()}
+	{#if authInitialized}
+		{#key page.url.pathname}
+			<div class="tw-min-h-[100dvh]" in:fade={{ duration: 150 }}>
+				{@render children()}
+			</div>
+		{/key}
+	{:else}
+		<div class="tw-flex tw-items-center tw-justify-center tw-min-h-[100dvh]">
+			<span class="tw-animate-pulse tw-font-mono tw-text-slate-500 tw-text-sm tw-tracking-widest">INITIALIZING SECURE CONTEXT...</span>
 		</div>
-	{/key}
+	{/if}
 </div>
 <NativeShellRedirect />
 <PwaInstallPrompt />
