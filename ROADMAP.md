@@ -63,3 +63,14 @@ Objective: Transform the stabilized functional platform into an addictive, empat
 [ ] Sprint 6.2: The Player's Dopamine Engine. Map Octalysis Core Drive 2 (Accomplishment) to the database. Wire asynchronous HTML5 canvas-confetti bursts to trigger strictly upon a verified Firebase atomic writeBatch commit for workouts. Implement automated Skill Decay (Loss Avoidance) cron jobs that drain a fraction of inactive XP to trigger re-engagement alerts.
 [ ] Sprint 6.3: The Parent OS Trust Perimeter. Implement "The Car Ride Home Protocol." Deploy backend temporal triggers to explicitly embargo raw performance metrics for 15 minutes post-match, firing push notifications that provide parents with empathetic conversation anchors to prioritize the athlete's emotional safety.
 [ ] Sprint 6.4: Visceral Micro-Interactions. Execute a global UI sweep to enforce our "Strategic Minimalism" aesthetics. Ensure every interactive element (buttons, tabs, toggles) utilizes strict 150ms to 250ms hardware-accelerated transitions and custom easing curves to create immediate structural trust.
+
+PHASE 7: Acquisition Packaging & Go-To-Market (GTM) Synchronization
+Objective: Translate the stabilized, ultra-premium technical architecture into high-converting public marketing copy and bulletproof M&A due diligence documentation.
+[ ] Sprint 7.1: The Marketing Site Overhaul. Update the public-facing landing pages to explicitly advertise our unique value propositions: the $0 platform fee model, the Octalysis gamification loop, and the COPPA 2.0 security compliance
+. Ensure the marketing UI matches the internal "Strategic Minimalism" and Liquid Glassmorphism aesthetics, utilizing the 12-column Bento Grid
+.
+[ ] Sprint 7.2: Architectural Documentation Sync. Generate the final, updated ARCHITECTURE.md and DATA_FLOW.md files
+. These must accurately map the new 7-tier split Firebase Cloud Functions, the cell-based multi-tenant isolation, and the strict Svelte 5 / Vanguard Trinity UI patterns
+.
+[ ] Sprint 7.3: M&A Diligence Briefs. Update all core acquisition materials (sstracker-prospectus.pdf, sstracker-executive-brief.pdf, and sstracker-director-trust-brief.pdf)
+. The documentation must highlight the new Emotional Intelligence (EQ) perimeters (like the Car Ride Home protocol), the Peak-End UI interceptors, and our Verifiable Parental Consent (VPC) pathways as primary commercial moats that legacy incumbents completely lack
