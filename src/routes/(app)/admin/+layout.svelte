@@ -3,6 +3,11 @@
 	let { children } = $props();
 </script>
 
-<div class="ga-workspace">
-	{@render children()}
+<div class="ga-workspace tw-grid tw-grid-cols-1 xl:tw-grid-cols-12 tw-gap-6 tw-w-full">
+	<div class="xl:tw-col-span-8 tw-min-w-0">
+		{@render children()}
+	</div>
+	<aside class="xl:tw-col-span-4 tw-min-w-0">
+		<!-- Admin Sidecar Panel -->
+	</aside>
 </div>

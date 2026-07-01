@@ -181,7 +181,6 @@ self.addEventListener('fetch', (event: FetchEvent) => {
 
 	// Strategy 1: explicit bypass — hard network pass-through.
 	if (shouldBypass(url)) {
-		event.respondWith(fetch(req));
 		return;
 	}
 

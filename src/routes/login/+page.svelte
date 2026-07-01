@@ -174,7 +174,7 @@
 						spellcheck={false}
 						placeholder="callsign, name, or email"
 						bind:value={opCallsign}
-						class="tw-h-12 tw-w-full tw-rounded-lg tw-border tw-border-slate-700/50 tw-bg-black/40 tw-px-4 tw-text-center tw-font-mono tw-text-xl tw-tracking-widest tw-text-teal-400 tw-shadow-inner tw-outline-none tw-transition-all tw-placeholder-slate-600 focus:tw-border-teal-500/50 focus:tw-ring-1 focus:tw-ring-teal-500/50"
+						class="tw-h-12 tw-w-full tw-rounded-lg tw-border tw-border-slate-700/50 tw-bg-transparent tw-px-4 tw-text-center tw-font-mono tw-text-xl tw-tracking-widest tw-text-[#fafafa] tw-shadow-inner tw-outline-none tw-transition-all tw-placeholder-slate-400 focus:tw-border-teal-500/50 focus:tw-ring-1 focus:tw-ring-teal-500/50"
 					/>
 				</div>
 
@@ -194,7 +194,7 @@
 						placeholder="XXX-XXX"
 						value={opCode}
 						oninput={handleOtpInput}
-						class="tw-h-12 tw-w-full tw-rounded-lg tw-border tw-border-slate-700/50 tw-bg-black/40 tw-text-center tw-font-mono tw-text-2xl tw-tracking-[0.4em] tw-text-teal-400 tw-shadow-inner tw-outline-none tw-transition-all placeholder:tw-text-sm placeholder:tw-tracking-normal placeholder:tw-text-slate-600 focus:tw-border-teal-500/50 focus:tw-ring-1 focus:tw-ring-teal-500/50"
+						class="tw-h-12 tw-w-full tw-rounded-lg tw-border tw-border-slate-700/50 tw-bg-transparent tw-text-center tw-font-mono tw-text-2xl tw-tracking-[0.4em] tw-text-[#fafafa] tw-shadow-inner tw-outline-none tw-transition-all placeholder:tw-text-sm placeholder:tw-tracking-normal placeholder:tw-text-slate-400 focus:tw-border-teal-500/50 focus:tw-ring-1 focus:tw-ring-teal-500/50"
 					/>
 				</div>
 
@@ -305,7 +305,7 @@
 					autocomplete="email"
 					placeholder="Email address"
 					bind:value={loginEngine.email}
-					class="tw-h-11 tw-w-full tw-rounded-lg tw-border tw-border-slate-700/50 tw-bg-black/20 tw-px-4 tw-text-sm tw-text-slate-200 tw-outline-none tw-transition-all tw-placeholder-slate-600 focus:tw-border-teal-500/50 focus:tw-ring-1 focus:tw-ring-teal-500/50"
+					class="tw-h-11 tw-w-full tw-rounded-lg tw-border tw-border-slate-700/50 tw-bg-transparent tw-px-4 tw-text-sm tw-text-[#fafafa] tw-outline-none tw-transition-all tw-placeholder-slate-400 focus:tw-border-teal-500/50 focus:tw-ring-1 focus:tw-ring-teal-500/50"
 				/>
 
 				<!-- Send Magic Link -->

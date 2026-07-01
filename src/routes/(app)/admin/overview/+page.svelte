@@ -372,7 +372,7 @@
 
 		{#if activeTab === 'executive'}
 			<section
-				class="cc-panel bento-grid bento-grid--12col bento-grid--liquid tw-grid tw-grid-cols-1 lg:tw-grid-cols-12"
+				class="cc-panel bento-grid bento-grid--12col bento-grid--liquid tw-grid tw-grid-cols-1 xl:tw-grid-cols-12"
 				id="cc-panel-executive"
 				role="tabpanel"
 				aria-labelledby="cc-tab-executive"
@@ -410,14 +410,14 @@
 				</article>
 			</section>
 		{:else if activeTab === 'growth'}
-			<section class="cc-panel bento-grid bento-grid--12col bento-grid--liquid tw-grid tw-grid-cols-1 lg:tw-grid-cols-12" id="cc-panel-growth" role="tabpanel" aria-labelledby="cc-tab-growth">
+			<section class="cc-panel bento-grid bento-grid--12col bento-grid--liquid tw-grid tw-grid-cols-1 xl:tw-grid-cols-12" id="cc-panel-growth" role="tabpanel" aria-labelledby="cc-tab-growth">
 			{#each GROWTH_TILES as kpi (kpi.label)}
 				<div class="bento-span-3 tw-min-w-0">
 					{@render socMetric(kpi)}
 				</div>
 			{/each}
 
-				<div class="cc-chart-row bento-span-12 bento-grid bento-grid--12col bento-grid--liquid tw-min-w-0 tw-grid tw-grid-cols-1 lg:tw-grid-cols-12">
+				<div class="cc-chart-row bento-span-12 bento-grid bento-grid--12col bento-grid--liquid tw-min-w-0 tw-grid tw-grid-cols-1 xl:tw-grid-cols-12">
 					<article class="cc-chart-card cc-chart-card--half cc-chart-card--soc bento-span-6 tw-min-w-0">
 						<header class="cc-chart-card__head">
 						<div class="cc-chart-card__icon cc-chart-card__icon--emerald" aria-hidden="true">
@@ -472,7 +472,7 @@
 				</div>
 			</section>
 		{:else if activeTab === 'security'}
-			<section class="cc-panel bento-grid bento-grid--12col bento-grid--liquid tw-grid tw-grid-cols-1 lg:tw-grid-cols-12" id="cc-panel-security" role="tabpanel" aria-labelledby="cc-tab-security">
+			<section class="cc-panel bento-grid bento-grid--12col bento-grid--liquid tw-grid tw-grid-cols-1 xl:tw-grid-cols-12" id="cc-panel-security" role="tabpanel" aria-labelledby="cc-tab-security">
 				{#each strike13Security as kpi (kpi.label)}
 					<div class="bento-span-3 tw-min-w-0">
 						{@render socMetric(kpi)}
@@ -555,7 +555,7 @@
 				</article>
 			</section>
 		{:else}
-			<section class="cc-panel bento-grid bento-grid--12col bento-grid--liquid tw-grid tw-grid-cols-1 lg:tw-grid-cols-12" id="cc-panel-platform" role="tabpanel" aria-labelledby="cc-tab-platform">
+			<section class="cc-panel bento-grid bento-grid--12col bento-grid--liquid tw-grid tw-grid-cols-1 xl:tw-grid-cols-12" id="cc-panel-platform" role="tabpanel" aria-labelledby="cc-tab-platform">
 			{#each PLATFORM_TILES as kpi (kpi.label)}
 				<div class="bento-span-3 tw-min-w-0">
 					{@render socMetric(kpi)}
