@@ -34,7 +34,7 @@
 			</p>
 		</div>
 
-		<div class="fb-grid">
+		<div class="fb-grid tw-grid tw-grid-cols-1 lg:tw-grid-cols-12 tw-gap-4 tw-w-full">
 			{#each FEATURE_BENTO as cell, idx (cell.id)}
 				<a
 					href={cell.href}
@@ -71,6 +71,7 @@
 		padding-block: clamp(4rem, 8vw, 6rem);
 		padding-inline: clamp(1rem, 5vw, 3rem);
 		overflow: hidden;
+		background-color: #0B0F19;
 	}
 
 	.fb-inner {
@@ -119,17 +120,10 @@
 		font-weight: 400;
 	}
 
-	.fb-grid {
-		display: grid;
-		grid-template-columns: repeat(12, minmax(0, 1fr));
-		gap: clamp(0.75rem, 1.25vw, 1.25rem);
-		width: 100%;
-		box-sizing: border-box;
-	}
-
 	@media (max-width: 63.99rem) {
-		.fb-grid {
-			grid-template-columns: 1fr;
+		.fb-cell {
+			grid-column: 1 / -1 !important;
+			grid-row: auto !important;
 		}
 	}
 

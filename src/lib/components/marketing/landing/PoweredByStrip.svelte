@@ -15,7 +15,7 @@
 <style>
 	.pbs-root {
 		border-top: 1px solid rgb(30 41 59);
-		background: rgb(2 6 23);
+		background: #0B0F19;
 		padding-block: 0.65rem;
 		padding-inline: clamp(1rem, 5vw, 3rem);
 	}
@@ -34,7 +34,7 @@
 		font-weight: 500;
 		letter-spacing: 0.28em;
 		text-transform: uppercase;
-		color: rgb(148 163 184 / 0.45);
+		color: #94A3B8;
 	}
 
 	.pbs-kicker {
@@ -45,7 +45,7 @@
 	.pbs-brands {
 		letter-spacing: 0.12em;
 		font-weight: 600;
-		color: rgb(148 163 184 / 0.62);
+		color: #94A3B8;
 	}
 
 	.pbs-dot {

@@ -86,78 +86,20 @@
 				</div>
 
 				<div class="hero__body">
-					<aside class="hero__telemetry" aria-hidden="true">
-						<div class="hero__tel-title">TELEMETRY</div>
-						<dl class="hero__tel-dl">
-							<div class="hero__tel-row">
-								<dt>THREAT</dt>
-								<dd>NOMINAL</dd>
-							</div>
-							<div class="hero__tel-row">
-								<dt>TENANT</dt>
-								<dd>ISO-L3</dd>
-							</div>
-							<div class="hero__tel-row">
-								<dt>PII_RING</dt>
-								<dd>ARMED</dd>
-							</div>
-							<div class="hero__tel-row">
-								<dt>RL_FEED</dt>
-								<dd>ACTIVE</dd>
-							</div>
-							<div class="hero__tel-row">
-								<dt>UPTIME</dt>
-								<dd class="hero__tel-num">99.98%</dd>
-							</div>
-						</dl>
-						<div class="hero__scope">
-							<svg viewBox="0 0 120 80" width="120" height="80" aria-hidden="true">
-								<line x1="0" y1="70" x2="120" y2="70" stroke="rgb(51 65 85)" stroke-width="1" />
-								<line x1="60" y1="70" x2="60" y2="10" stroke="rgb(51 65 85)" stroke-width="1" />
-								<path
-									d="M 10 70 A 50 50 0 0 1 110 70"
-									fill="none"
-									stroke="var(--vanguard-accent)"
-									stroke-width="0.75"
-									stroke-opacity="0.45"
-								/>
-								<circle cx="85" cy="38" r="3" fill="var(--vanguard-accent)" fill-opacity="0.85" />
-								<text
-									x="60"
-									y="8"
-									text-anchor="middle"
-									fill="rgb(100 116 139)"
-									font-size="7"
-									font-family="Geist Mono, ui-monospace, monospace"
-								>
-									RADAR
-								</text>
-							</svg>
-						</div>
-					</aside>
-
-					<div class="hero__media-wrap">
-						<img
-							class="hero__poster"
-							src="/marketing/hero-poster.svg"
-							alt="SSTracker Player HQ — missions, telemetry, and training loop preview"
-							width="1280"
-							height="720"
-							fetchpriority="high"
-							loading="eager"
-							decoding="async"
-						/>
+					<div class="hero__media-wrap tw-w-full">
 						<video
 							bind:this={videoEl}
-							class="hero__video"
-							data-src=""
+							class="hero__video tw-w-full tw-h-auto"
+							data-src="/marketing/hero-demo.mp4"
 							playsinline
 							muted
 							loop
 							preload="none"
 							aria-hidden="true"
+							poster="/marketing/hero-poster.svg"
 						></video>
 					</div>
+
 				</div>
 			</div>
 		</div>

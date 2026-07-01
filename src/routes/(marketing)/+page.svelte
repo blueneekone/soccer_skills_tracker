@@ -30,7 +30,7 @@
 	<link rel="preload" as="image" href="/marketing/hero-poster.svg" fetchpriority="high" type="image/svg+xml" />
 </svelte:head>
 
-<div class="landing-shell tw-flex tw-w-full tw-min-h-dvh tw-flex-col tw-bg-slate-950 tw-text-slate-100">
+<div class="landing-shell tw-flex tw-w-full tw-min-h-dvh tw-flex-col tw-bg-[#0B0F19] tw-text-slate-100">
 	<LandingHero />
 	<CompetitivePositionPanel />
 	<PoweredByStrip />

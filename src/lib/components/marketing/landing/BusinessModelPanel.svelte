@@ -37,7 +37,7 @@
 				<div class="bm-readout__hdr-left">
 					<span class="bm-readout__kicker">REVENUE_CMD</span>
 					<span class="bm-readout__sep" aria-hidden="true">/</span>
-					<span id="bm-readout-title" class="bm-readout__title">The $0 Platform Fee</span>
+					<span id="bm-readout-title" class="bm-readout__title">Stripe Tiered Subscriptions</span>
 				</div>
 				<span class="bm-readout__mode" aria-hidden="true">READOUT · STATIC</span>
 			</header>
@@ -75,7 +75,7 @@
 			<footer class="bm-readout__foot">
 				<span class="bm-readout__hash" aria-hidden="true">CHK: FEES_FULL_DISCLOSURE_V1</span>
 				<p class="bm-readout__note">
-					Clubs pay nothing until athletes transact — then a fractional micro-percentage.
+					Transparent seat licensing and zero hidden fees.
 					<a class="bm-readout__a" href="/pricing">/pricing →</a>
 				</p>
 			</footer>
@@ -120,7 +120,7 @@
 		justify-content: space-between;
 		gap: 0.5rem 1rem;
 		padding: 0.65rem 0.85rem;
-		background: rgb(2 6 23);
+		background: #0B0F19;
 		border-bottom: 1px solid rgb(30 41 59);
 		font-family: 'Geist Mono', ui-monospace, monospace;
 	}
