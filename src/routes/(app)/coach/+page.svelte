@@ -195,7 +195,7 @@
 			{#if warRoomHqVisible}
 			<button
 				type="button"
-				class="coach-os-panel coach-os-war-room war-room-card tw-col-span-12 lg:tw-col-span-8 bento-cell tw-group tw-relative tw-flex tw-min-h-[320px] tw-min-w-0 tw-flex-col tw-justify-between tw-overflow-hidden tw-p-6 tw-text-left focus-visible:tw-outline focus-visible:tw-outline-2 focus-visible:tw-outline-offset-2 focus-visible:tw-outline-[#06b6d4]"
+				class="coach-os-panel coach-os-war-room war-room-card bento-span-8 bento-cell dark-form-surface tw-group tw-relative tw-flex tw-min-h-[320px] tw-min-w-0 tw-flex-col tw-justify-between tw-overflow-hidden tw-p-6 tw-text-left focus-visible:tw-outline focus-visible:tw-outline-2 focus-visible:tw-outline-offset-2 focus-visible:tw-outline-[#06b6d4]"
 				aria-label="Enter War Room — tactical board"
 				onclick={enterWarRoom}
 			>
@@ -252,8 +252,9 @@
 
 			<!-- FACILITY OPS & STAGING — 4 cols beside War Room; full width when War Room hidden -->
 			<article
-				class="coach-os-panel coach-os-facility bento-cell tw-relative tw-flex tw-min-h-[320px] tw-min-w-0 tw-flex-col tw-overflow-hidden tw-p-5 tw-col-span-12"
-				class:lg:tw-col-span-4={warRoomHqVisible}
+				class="coach-os-panel coach-os-facility bento-cell dark-form-surface tw-relative tw-flex tw-min-h-[320px] tw-min-w-0 tw-flex-col tw-overflow-hidden tw-p-5"
+				class:bento-span-4={warRoomHqVisible}
+				class:bento-span-12={!warRoomHqVisible}
 				aria-label="Facility Ops & Staging"
 			>
 				<header class="bento-mb-md tw-flex tw-items-center tw-gap-2 tw-border-b tw-border-white/10 tw-pb-3">
@@ -315,10 +316,10 @@
 			</article>
 
 		<!-- MEDIA HUB — 6 col -->
-		<div class="tw-col-span-12 lg:tw-col-span-6 tw-min-w-0">
+		<div class="bento-span-6 tw-min-w-0">
 			<button
 				type="button"
-				class="coach-os-panel bento-cell tw-relative tw-flex tw-min-h-[220px] tw-h-full tw-w-full tw-flex-col tw-items-center tw-justify-center tw-overflow-hidden tw-p-6 tw-text-center hover:tw-bg-white/[0.03] tw-transition-colors"
+				class="coach-os-panel bento-cell dark-form-surface tw-relative tw-flex tw-min-h-[220px] tw-h-full tw-w-full tw-flex-col tw-items-center tw-justify-center tw-overflow-hidden tw-p-6 tw-text-center hover:tw-bg-white/[0.03] tw-transition-colors"
 				onclick={() => { mediaOpen = true; }}
 				aria-label="Open Media Hub — news and podcasts"
 			>
@@ -334,7 +335,7 @@
 
 		<!-- WEATHER MONITORING — AEGIS live widget (6 col) -->
 		<!-- Kill switch: feature_weather_aegis_enabled (Remote Config) -->
-		<div class="tw-col-span-12 lg:tw-col-span-6 tw-min-w-0">
+		<div class="bento-span-6 tw-min-w-0">
 			{#if vanguardFlags.weatherEnabled}
 				<WeatherWidget lat={fieldLat} lng={fieldLng} coordsLabel={weatherCoords} />
 			{:else}
