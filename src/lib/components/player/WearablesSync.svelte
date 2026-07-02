@@ -34,13 +34,13 @@
 		<p class="text-sm-sub mb-4">Connect your biometrics to allow the AI to autonomously adapt workloads based on Heart Rate Variability (HRV).</p>
 
 		<div class="flex gap-2 mb-4">
-			<button class="primary-btn btn-dark" onclick={syncAppleHealth} disabled={syncing}>
+			<button class="btn-primary btn-dark" onclick={syncAppleHealth} disabled={syncing}>
 				{syncing ? 'Syncing...' : 'Connect Apple HealthKit'}
 			</button>
-			<button class="primary-btn btn-blue" onclick={syncGarmin} disabled={syncing}>
+			<button class="btn-primary" onclick={syncGarmin} disabled={syncing}>
 				{syncing ? 'Syncing...' : 'Connect Garmin'}
 			</button>
-			<button class="primary-btn btn-red" onclick={syncWhoop} disabled={syncing}>
+			<button class="btn-primary" onclick={syncWhoop} disabled={syncing}>
 				{syncing ? 'Syncing...' : 'Connect Whoop'}
 			</button>
 		</div>

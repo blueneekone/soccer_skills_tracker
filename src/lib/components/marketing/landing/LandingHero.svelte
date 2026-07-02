@@ -58,7 +58,7 @@
 			<p class="hero__sub">{HERO_TRUST_SUBHEADLINE}</p>
 
 			<div class="hero__ctas">
-				<a href="{base}/setup" class="tw-vanguard-btn-primary">
+				<a href="{base}/setup" class="tw-btn-primary">
 					Start your club →
 				</a>
 				<a href="{base}/acquisition" class="tw-vanguard-btn-secondary">

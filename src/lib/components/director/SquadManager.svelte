@@ -164,7 +164,7 @@
 						<td class="sm-cell-actions">
 							{#if canManage}
 								<button
-									class="sm-action-btn sm-action-btn--coach"
+									class="sm-btn-primary sm-btn-primary--coach"
 									onclick={() => openAssign(team)}
 								>
 									ASSIGN COACH
@@ -447,7 +447,7 @@
 		text-align: right;
 		white-space: nowrap;
 	}
-	.sm-action-btn {
+	.sm-btn-primary {
 		font-family: inherit;
 		font-size: 8px;
 		letter-spacing: 0.15em;
@@ -456,12 +456,12 @@
 		cursor: pointer;
 		transition: all 0.15s;
 	}
-	.sm-action-btn--coach {
+	.sm-btn-primary--coach {
 		border: 1px solid rgba(168, 85, 247, 0.35);
 		background: rgba(168, 85, 247, 0.07);
 		color: #a855f7;
 	}
-	.sm-action-btn--coach:hover {
+	.sm-btn-primary--coach:hover {
 		background: rgba(168, 85, 247, 0.15);
 		box-shadow: 0 0 10px rgba(168, 85, 247, 0.2);
 	}

@@ -49,7 +49,7 @@
 		<!-- Desktop CTAs -->
 		<div class="mn-ctas">
 			<a href="/login" class="tw-vanguard-btn-secondary mn-cta-size">Sign In</a>
-			<a href="/setup" class="tw-vanguard-btn-primary mn-cta-size">Start club →</a>
+			<a href="/setup" class="tw-btn-primary mn-cta-size">Start club →</a>
 		</div>
 
 		<!-- Mobile hamburger -->

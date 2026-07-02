@@ -74,7 +74,7 @@
 				</div>
 			</div>
 
-			<button class="primary-btn btn-blue w-100" onclick={saveBranding} disabled={saving}>
+			<button class="btn-primary w-100" onclick={saveBranding} disabled={saving}>
 				{saving ? 'Saving...' : 'Save Branding'}
 			</button>
 			<button class="secondary-btn w-100" onclick={resetBranding}>Reset to Default</button>

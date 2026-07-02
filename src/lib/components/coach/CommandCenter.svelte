@@ -500,7 +500,7 @@
 											<!-- Edit profile link -->
 											<a
 												href="/admin/users/{player.id}"
-												class="cc-action-btn cc-action-btn--edit"
+												class="cc-btn-primary cc-btn-primary--edit"
 												title="Edit profile"
 												aria-label="Edit {player.playerName ?? player.id}"
 											>
@@ -508,9 +508,9 @@
 											</a>
 											<!-- Remove player -->
 											<button
-												class="cc-action-btn"
-												class:cc-action-btn--remove={!isConfirming}
-												class:cc-action-btn--confirm={isConfirming}
+												class="cc-btn-primary"
+												class:cc-btn-primary--remove={!isConfirming}
+												class:cc-btn-primary--confirm={isConfirming}
 												onclick={() => handleRemoveClick(player.id)}
 												disabled={isRemoving}
 												title={isConfirming ? 'Click again to confirm' : 'Remove from team'}
@@ -835,7 +835,7 @@
 	}
 
 	/* ── Action buttons ────────────────────────────────────────────────── */
-	.cc-action-btn {
+	.cc-btn-primary {
 		display: inline-flex;
 		align-items: center;
 		justify-content: center;
@@ -851,23 +851,23 @@
 		text-decoration: none;
 	}
 
-	.cc-action-btn--edit:hover {
+	.cc-btn-primary--edit:hover {
 		color: #14b8a6;
 		border-color: rgba(20, 184, 166, 0.4);
 		background: rgba(20, 184, 166, 0.08);
 	}
 
-	.cc-action-btn--remove {
+	.cc-btn-primary--remove {
 		color: rgba(255, 255, 255, 0.25);
 	}
 
-	.cc-action-btn--remove:hover {
+	.cc-btn-primary--remove:hover {
 		color: #ff4444;
 		border-color: rgba(255, 68, 68, 0.4);
 		background: rgba(255, 68, 68, 0.08);
 	}
 
-	.cc-action-btn--confirm {
+	.cc-btn-primary--confirm {
 		font-size: 7px;
 		letter-spacing: 0.12em;
 		width: auto;
@@ -1059,7 +1059,7 @@
 	@media (prefers-reduced-motion: reduce) {
 		.cc-live-dot,
 		.cc-pulse,
-		.cc-action-btn--confirm,
+		.cc-btn-primary--confirm,
 		.cc-deploy-btn--deploying {
 			animation: none;
 		}

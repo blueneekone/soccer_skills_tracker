@@ -97,7 +97,7 @@
 		{/if}
 
 		<div class="btn-row">
-			<button class="primary-btn btn-orange" type="button" onclick={inviteRegistrar} disabled={busy}>
+			<button class="btn-primary" type="button" onclick={inviteRegistrar} disabled={busy}>
 				{busy ? 'Saving…' : 'Save registrar invite'}
 			</button>
 			<button class="secondary-btn" type="button" onclick={revokeInvite} disabled={busy}>

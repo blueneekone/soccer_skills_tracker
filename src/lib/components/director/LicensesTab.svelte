@@ -278,8 +278,8 @@
 													/>
 													<button
 														type="button"
-														class="primary-btn btn-blue team-seat-save"
-														class:primary-btn--readonly={isReadOnly}
+														class="btn-primary team-seat-save"
+														class:btn-primary--readonly={isReadOnly}
 														disabled={seatBusy === tid}
 														onclick={() => saveTeamSeats(tid)}
 													>
@@ -379,7 +379,7 @@
 		margin-bottom: 0;
 	}
 
-	:global(.primary-btn.primary-btn--readonly) {
+	:global(.btn-primary.btn-primary--readonly) {
 		opacity: 0.72;
 		filter: grayscale(0.12);
 		cursor: not-allowed;

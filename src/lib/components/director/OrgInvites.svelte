@@ -345,7 +345,7 @@
 						</div>
 					</div>
 					<button
-						class="oi-action-btn oi-action-btn--secondary"
+						class="oi-btn-primary oi-btn-primary--secondary"
 						onclick={handleGenerate}
 						disabled={genLoading}
 					>
@@ -353,7 +353,7 @@
 					</button>
 				{:else}
 					<button
-						class="oi-action-btn"
+						class="oi-btn-primary"
 						onclick={handleGenerate}
 						disabled={genLoading}
 					>
@@ -806,7 +806,7 @@
 		margin: 0;
 		text-align: center;
 	}
-	.oi-action-btn {
+	.oi-btn-primary {
 		font-family: inherit;
 		font-size: 11px;
 		letter-spacing: 0.18em;
@@ -820,21 +820,21 @@
 		border: 1px solid rgba(20, 184, 166, 0.4);
 		color: #14b8a6;
 	}
-	.oi-action-btn:hover:not(:disabled) {
+	.oi-btn-primary:hover:not(:disabled) {
 		background: rgba(20, 184, 166, 0.18);
 		box-shadow: 0 0 16px rgba(20, 184, 166, 0.25);
 	}
-	.oi-action-btn:disabled {
+	.oi-btn-primary:disabled {
 		opacity: 0.45;
 		cursor: not-allowed;
 	}
-	.oi-action-btn--secondary {
+	.oi-btn-primary--secondary {
 		background: transparent;
 		border-color: rgba(255, 255, 255, 0.1);
 		color: #475569;
 		font-size: 10px;
 	}
-	.oi-action-btn--secondary:hover:not(:disabled) {
+	.oi-btn-primary--secondary:hover:not(:disabled) {
 		border-color: rgba(255, 255, 255, 0.2);
 		color: #94a3b8;
 	}

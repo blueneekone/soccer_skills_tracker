@@ -13,7 +13,7 @@
 			one.
 		</p>
 		<div class="fc-actions">
-			<a href="/setup" class="tw-vanguard-btn-primary">
+			<a href="/setup" class="tw-btn-primary">
 				Start your club →
 			</a>
 			<a href="/pricing" class="fc-link-cta">VIEW PRICING →</a>

@@ -10,7 +10,7 @@
 	} = $props();
 
 	const tabClass = $derived(
-		variant === 'coach' ? 'coach-tab-btn' : variant === 'director' ? 'director-tab' : 'admin-tab'
+		variant === 'coach' ? 'tab-nav-btn' : variant === 'director' ? 'tab-nav' : 'admin-tab'
 	);
 </script>
 
@@ -58,8 +58,8 @@
 
 	@media (min-width: 1024px) {
 		.tab-bar-container :global(.admin-tab),
-		.tab-bar-container :global(.director-tab),
-		.tab-bar-container :global(.coach-tab-btn) {
+		.tab-bar-container :global(.tab-nav),
+		.tab-bar-container :global(.tab-nav-btn) {
 			display: inline-flex;
 			align-items: center;
 			justify-content: center;

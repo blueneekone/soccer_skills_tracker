@@ -24,8 +24,8 @@
 				type="button"
 				role="tab"
 				aria-selected={isActive}
-				class="orgs3-tab"
-				class:orgs3-tab--active={isActive}
+				class="tab-nav"
+				class:tab-nav--active={isActive}
 				data-sport={tab.key}
 				onclick={() => onTabChange(tab.key)}
 			>

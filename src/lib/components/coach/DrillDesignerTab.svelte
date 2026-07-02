@@ -227,7 +227,7 @@ import type { IconName } from '$lib/icons/registry.js';
 				</div>
 			</FocusedWorkspaceWrapper>
 
-			<button class="primary-btn btn-blue w-100" onclick={saveWorkout}>Save to team library</button>
+			<button class="btn-primary w-100" onclick={saveWorkout}>Save to team library</button>
 		</div>
 	</div>
 

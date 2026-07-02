@@ -311,7 +311,7 @@
 							<div role="cell" class="ch-cell ch-cell--actions">
 								{#if row.clearanceStatus !== 'cleared'}
 									<button
-										class="ch-action-btn ch-action-btn--grant"
+										class="ch-btn-primary ch-btn-primary--grant"
 										onclick={() => openOverride(row.email)}
 										title="Grant manual clearance"
 									>
@@ -320,7 +320,7 @@
 								{/if}
 								{#if row.clearanceStatus === 'cleared'}
 									<button
-										class="ch-action-btn ch-action-btn--revoke"
+										class="ch-btn-primary ch-btn-primary--revoke"
 										onclick={() => openRevoke(row.email)}
 										title="Revoke clearance"
 									>
@@ -379,7 +379,7 @@
 
 				<div class="ch-modal__actions">
 					<button
-						class="vanguard-btn-primary"
+						class="btn-primary"
 						onclick={submitOverride}
 						disabled={overrideBusy}
 					>
@@ -744,7 +744,7 @@
 	}
 
 	/* ── Action buttons ────────────────────────────────────────────────── */
-	.ch-action-btn {
+	.ch-btn-primary {
 		font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;
 		font-size: 0.6rem;
 		letter-spacing: 0.1em;
@@ -755,24 +755,24 @@
 		transition: background 0.15s, box-shadow 0.15s;
 	}
 
-	.ch-action-btn--grant {
+	.ch-btn-primary--grant {
 		border-color: rgba(20, 184, 166, 0.4);
 		color: var(--vanguard-cyan);
 		background: rgba(20, 184, 166, 0.06);
 	}
 
-	.ch-action-btn--grant:hover {
+	.ch-btn-primary--grant:hover {
 		background: rgba(20, 184, 166, 0.14);
 		box-shadow: 0 0 8px rgba(20, 184, 166, 0.3);
 	}
 
-	.ch-action-btn--revoke {
+	.ch-btn-primary--revoke {
 		border-color: rgba(255, 0, 60, 0.4);
 		color: var(--vanguard-red);
 		background: rgba(255, 0, 60, 0.06);
 	}
 
-	.ch-action-btn--revoke:hover {
+	.ch-btn-primary--revoke:hover {
 		background: rgba(255, 0, 60, 0.14);
 		box-shadow: 0 0 8px rgba(255, 0, 60, 0.3);
 	}

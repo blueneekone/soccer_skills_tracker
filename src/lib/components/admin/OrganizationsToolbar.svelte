@@ -123,7 +123,7 @@
 
 		<button
 			type="button"
-			class="orgs3-add-btn"
+			class="btn-primary"
 			onclick={onToggleAddForm}
 			aria-expanded={showAddForm}
 		>

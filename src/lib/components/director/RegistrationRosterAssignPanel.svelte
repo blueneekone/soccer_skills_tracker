@@ -359,7 +359,7 @@
 									<td>
 										<button
 											type="button"
-											class="primary-btn btn-blue reg-roster-panel__assign"
+											class="btn-primary reg-roster-panel__assign"
 											disabled={savingId === r.id || isNameOnly(r)}
 											title={isNameOnly(r)
 												? 'Add email to assign — name-only registrant'

@@ -259,7 +259,7 @@
 				<span class="rse-level-val">{minLevel}</span>
 			</div>
 		</div>
-		<button type="button" class="rse-apply primary-btn" onclick={() => runSearch()} disabled={loading}>
+		<button type="button" class="rse-apply btn-primary" onclick={() => runSearch()} disabled={loading}>
 			{loading ? 'Searching…' : 'Apply filters'}
 		</button>
 	</div>
