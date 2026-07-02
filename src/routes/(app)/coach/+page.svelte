@@ -135,7 +135,7 @@
 <WeatherAlert />
 
 <!-- Vanguard root: deep void background, native page scrolling, no overflow traps. -->
-<div class="coach-nexus-canvas tw-relative tw-min-h-screen tw-w-full tw-text-slate-200">
+<div class="coach-nexus-canvas tw-relative tw-flex tw-flex-col tw-h-[100dvh] tw-w-full tw-text-slate-200">
 	<!-- Background ambient grid (decorative only, pointer-events-none) -->
 	<div
 		class="tw-pointer-events-none tw-fixed tw-inset-0 tw-z-0 tw-opacity-[0.08]"
@@ -181,26 +181,14 @@
 
 	<!-- ── BODY — Sprint 1.1: 12-col liquid bento (padding on wrapper, not shell canvas) -->
 	<main
-		class="coach-nexus-main tw-relative tw-z-10 tw-mx-auto tw-box-border tw-min-w-0 tw-w-full tw-max-w-7xl"
+		class="coach-nexus-main tw-relative tw-z-10 tw-mx-auto tw-box-border tw-w-full tw-max-w-7xl tw-flex-1 tw-min-h-0 tw-overflow-y-auto"
 		style="padding: var(--bento-pad-liquid); padding-bottom: calc(var(--bento-pad-liquid) + env(safe-area-inset-bottom, 0px));"
 	>
 		<div
 			class="bento-grid bento-grid--12col bento-grid--liquid tw-w-full tw-grid tw-grid-cols-1 lg:tw-grid-cols-12"
 			aria-label="Nexus Command workspace"
 		>
-			<div class="bento-span-12 tw-flex tw-justify-end">
-				<button
-					type="button"
-					class="media-hub-btn"
-					onclick={() => { mediaOpen = true; }}
-					aria-label="Open Media Hub — news and podcasts"
-				>
-					<span class="media-hub-btn__icon" aria-hidden="true">▶</span>
-					MEDIA HUB
-				</button>
-			</div>
-
-			<div class="bento-span-12 tw-min-w-0">
+			<div class="tw-col-span-12 tw-min-w-0">
 				<SquadTelemetryView teamId={effectiveTeamId} teams={myTeams} />
 			</div>
 
@@ -264,9 +252,8 @@
 
 			<!-- FACILITY OPS & STAGING — 4 cols beside War Room; full width when War Room hidden -->
 			<article
-				class="coach-os-panel coach-os-facility bento-cell tw-relative tw-flex tw-min-h-[320px] tw-min-w-0 tw-flex-col tw-overflow-hidden tw-p-5"
-				class:bento-span-12={!warRoomHqVisible}
-				class:tw-col-span-12={warRoomHqVisible} class:lg:tw-col-span-4={warRoomHqVisible}
+				class="coach-os-panel coach-os-facility bento-cell tw-relative tw-flex tw-min-h-[320px] tw-min-w-0 tw-flex-col tw-overflow-hidden tw-p-5 tw-col-span-12"
+				class:lg:tw-col-span-4={warRoomHqVisible}
 				aria-label="Facility Ops & Staging"
 			>
 				<header class="bento-mb-md tw-flex tw-items-center tw-gap-2 tw-border-b tw-border-white/10 tw-pb-3">
@@ -327,15 +314,33 @@
 				</div>
 			</article>
 
-		<!-- WEATHER MONITORING — AEGIS live widget (full-width row) -->
+		<!-- MEDIA HUB — 6 col -->
+		<div class="tw-col-span-12 lg:tw-col-span-6 tw-min-w-0">
+			<button
+				type="button"
+				class="coach-os-panel bento-cell tw-relative tw-flex tw-min-h-[220px] tw-h-full tw-w-full tw-flex-col tw-items-center tw-justify-center tw-overflow-hidden tw-p-6 tw-text-center hover:tw-bg-white/[0.03] tw-transition-colors"
+				onclick={() => { mediaOpen = true; }}
+				aria-label="Open Media Hub — news and podcasts"
+			>
+				<Icon name="comm.broadcast" class="tw-mb-4 tw-text-4xl tw-text-slate-400" />
+				<h3 class="tw-m-0 tw-font-mono tw-text-lg tw-font-bold tw-uppercase tw-tracking-widest tw-text-white">
+					MEDIA HUB
+				</h3>
+				<p class="tw-mt-2 tw-text-xs tw-text-slate-400">
+					Access tactical podcasts, analysis, and news.
+				</p>
+			</button>
+		</div>
+
+		<!-- WEATHER MONITORING — AEGIS live widget (6 col) -->
 		<!-- Kill switch: feature_weather_aegis_enabled (Remote Config) -->
-		<div class="bento-span-12 tw-min-w-0">
+		<div class="tw-col-span-12 lg:tw-col-span-6 tw-min-w-0">
 			{#if vanguardFlags.weatherEnabled}
 				<WeatherWidget lat={fieldLat} lng={fieldLng} coordsLabel={weatherCoords} />
 			{:else}
 				<div
-					class="coach-os-well font-mono text-xs p-4 text-center"
-					style="color: var(--pd-data-cyan, #14b8a6); opacity: 0.55;"
+					class="coach-os-well font-mono text-xs p-4 text-center tw-flex tw-h-full tw-flex-col tw-items-center tw-justify-center"
+					style="color: var(--pd-data-cyan, #14b8a6); opacity: 0.55; min-height: 220px;"
 				>
 					⏸ AEGIS WEATHER MODULE OFFLINE<br/>
 					<span style="font-size: 9px; opacity: 0.6;">Disabled by platform configuration. Contact your administrator.</span>
