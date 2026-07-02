@@ -1,16 +1,16 @@
 PHASE 0: Global Aesthetic & Layout Synchronization
 Objective: Lock in the multi-billion-dollar SIEM aesthetic and enterprise responsiveness before touching data layers.
-[ ] Sprint 0.1: The Bento Grid Lock. Transition all core layouts to the 12-column asymmetric Bento Grid using fluid clamp() spacing to prevent mobile squishing. Forcefully apply the .dark-form-surface utility to permanently resolve dark-mode contrast barriers
+[x] Sprint 0.1: The Bento Grid Lock. Transition all core layouts to the 12-column asymmetric Bento Grid using fluid clamp() spacing to prevent mobile squishing. Forcefully apply the .dark-form-surface utility to permanently resolve dark-mode contrast barriers
 .
-[ ] Sprint 0.2: Component Standardization. Execute a global sweep to replace fragmented button and tab classes. Purge the legacy 'pills' UI on the Global Users page and standardize all sub-navigation using the horizontal .tab-nav component
+[x] Sprint 0.2: Component Standardization. Execute a global sweep to replace fragmented button and tab classes. Purge the legacy 'pills' UI on the Global Users page and standardize all sub-navigation using the horizontal .tab-nav component
 .
 PHASE 1: Data Plane & Core Architecture Stabilization
 Objective: Eradicate legacy technical debt, enforce Svelte 5 strictness, and lock down the multi-tenant database routing.
 [ ] Sprint 1.1: Svelte 5 Vanguard Trinity Enforcement. Audit all viewports to ensure they strictly fracture into The Shell (+page.svelte), The Brain (*Engine.svelte.ts), The Glass (*Arena.svelte), and The HUD (*HUD.svelte). Enforce the 80-line function maximum
 .
-[ ] Sprint 1.2: PWA Caching & Vite Pipeline. Replace all legacy ?v= query-string cache busting with cryptographic file-hash versioning ([name].[hash].js) within vite.config.js to permanently resolve Service Worker desynchronization
+[x] Sprint 1.2: PWA Caching & Vite Pipeline. Replace all legacy ?v= query-string cache busting with cryptographic file-hash versioning ([name].[hash].js) within vite.config.js to permanently resolve Service Worker desynchronization
 .
-[ ] Sprint 1.3: Cloud Functions Architecture. Ensure all 7 serverless codebases (core, rl, compliance, platform, commerce, integrations, monolith) are correctly split to minimize deployment blast radius. Remove minInstances configurations to return the backend to a true scale-to-zero economic model
+[x] Sprint 1.3: Cloud Functions Architecture. Ensure all 7 serverless codebases (core, rl, compliance, platform, commerce, integrations, monolith) are correctly split to minimize deployment blast radius. Remove minInstances configurations to return the backend to a true scale-to-zero economic model
 .
 [ ] Sprint 1.4: Cell-Based Firestore Isolation. Enforce API gateway routing to isolate large National Governing Bodies into distinct Firestore database cells based on cellId JWT claims, eliminating noisy-neighbor throttling
 .
