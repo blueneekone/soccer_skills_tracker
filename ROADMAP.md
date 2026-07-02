@@ -12,7 +12,7 @@ Objective: Eradicate legacy technical debt, enforce Svelte 5 strictness, and loc
 .
 [x] Sprint 1.3: Cloud Functions Architecture. Ensure all 7 serverless codebases (core, rl, compliance, platform, commerce, integrations, monolith) are correctly split to minimize deployment blast radius. Remove minInstances configurations to return the backend to a true scale-to-zero economic model
 .
-[ ] Sprint 1.4: Cell-Based Firestore Isolation. Enforce API gateway routing to isolate large National Governing Bodies into distinct Firestore database cells based on cellId JWT claims, eliminating noisy-neighbor throttling
+[x] Sprint 1.4: Cell-Based Firestore Isolation. Enforce API gateway routing to isolate large National Governing Bodies into distinct Firestore database cells based on cellId JWT claims, eliminating noisy-neighbor throttling
 .
 PHASE 2: Director OS & Operations Command
 Objective: Perfect the B2B administrative shell, financial routing, and logistical conflict engines.
