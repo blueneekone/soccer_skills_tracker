@@ -82,6 +82,13 @@
 		const input = ev.target as HTMLInputElement;
 		const file = input.files?.[0];
 		if (!file) return;
+
+		// Enforce 50MB file limit on video uploads
+		if (file.type.startsWith('video/') && file.size > 50 * 1024 * 1024) {
+			errorMsg = 'Video must be under 50 MB.';
+			return;
+		}
+
 		selectedFile = file;
 		phase = 'selected';
 		errorMsg = '';
