@@ -16,7 +16,7 @@ Objective: Eradicate legacy technical debt, enforce Svelte 5 strictness, and loc
 .
 PHASE 2: Director OS & Operations Command
 Objective: Perfect the B2B administrative shell, financial routing, and logistical conflict engines.
-[ ] Sprint 2.1: Stripe Connect & Seat Licensing. Implement the Stripe Webhook Bouncer to listen strictly for checkout.session.completed, customer.subscription.updated, and customer.subscription.deleted. Audit the license_entitlements/{clubId} schema to mathematically guarantee active_seats cannot exceed seats_limit via atomic server-side transactions
+[x] Sprint 2.1: Stripe Connect & Seat Licensing. Implement the Stripe Webhook Bouncer to listen strictly for checkout.session.completed, customer.subscription.updated, and customer.subscription.deleted. Audit the license_entitlements/{clubId} schema to mathematically guarantee active_seats cannot exceed seats_limit via atomic server-side transactions
 .
 [ ] Sprint 2.2: Field Ops Conflict Engine. Finalize the secureBookField backend transaction to ensure that double-booking a facility triggers an immediate overlap rejection before writing to the database
 .
