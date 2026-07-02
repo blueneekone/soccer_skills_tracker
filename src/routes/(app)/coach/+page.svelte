@@ -11,6 +11,8 @@
 	import WeatherAlert from '$lib/components/weather/WeatherAlert.svelte';
 	import WeatherWidget from '$lib/components/weather/WeatherWidget.svelte';
 	import { vanguardFlags } from '$lib/services/remoteConfig.svelte.js';
+	import CheckrEmbed from '$lib/components/compliance/CheckrEmbed.svelte';
+	import { deriveCoachClearanceStep } from '$lib/compliance/checkrCoachClearance.js';
 
 	let mediaOpen = $state(false);
 
@@ -20,6 +22,23 @@
 	const clearanceRequired = $derived(role === 'coach' || role === 'recruiter');
 	const isCleared = $derived(authStore.isCleared);
 	const userEmail = $derived((authStore.user?.email || '').trim());
+
+	const clearanceStep = $derived(
+		deriveCoachClearanceStep(
+			/** @type {import('$lib/types/backgroundCheck.js').ClearanceDoc|undefined} */ (
+				authStore.userProfile?.clearance
+			)
+		)
+	);
+	
+	const clearanceContext = $derived({
+		uid: authStore.user?.uid || '',
+		email: userEmail,
+		getSessionTokenHeaders: async () => {
+			const token = await authStore.user?.getIdToken();
+			return { Authorization: `Bearer ${token}` };
+		}
+	});
 
 	const myTeams = $derived.by(() => {
 		if (!teamsStore.loaded) return [];
@@ -106,16 +125,19 @@
 		</div>
 
 		<!-- Status text -->
-		<div class="clearance-gate__status">CLEARANCE PENDING</div>
+		<div class="clearance-gate__status">CLEARANCE {clearanceStep.replace('_', ' ').toUpperCase()}</div>
 		<h1 class="clearance-gate__title">ACCESS RESTRICTED</h1>
-		<p class="clearance-gate__body">
-			Access to Vanguard telemetry is restricted until SafeSport background verification is
-			complete. Your compliance package has been submitted and is awaiting review. You will
-			receive a notification when your clearance is confirmed.
-		</p>
+		
+		<div class="tw-w-full tw-max-w-2xl tw-mx-auto tw-mt-8">
+			{#if clearanceStep === 'not_started'}
+				<CheckrEmbed context={clearanceContext} mode="invitation" />
+			{:else}
+				<CheckrEmbed context={clearanceContext} mode="reports" />
+			{/if}
+		</div>
 
 		<!-- Diagnostic strip -->
-		<div class="clearance-gate__diag">
+		<div class="clearance-gate__diag tw-mt-8">
 			<span>UID: {authStore.user?.uid?.slice(0, 12) ?? '—'}…</span>
 			<span>CLUB: {authStore.tenantId || '—'}</span>
 			<span>STATUS: BGC PENDING</span>

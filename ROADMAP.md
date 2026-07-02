@@ -18,9 +18,9 @@ PHASE 2: Director OS & Operations Command
 Objective: Perfect the B2B administrative shell, financial routing, and logistical conflict engines.
 [x] Sprint 2.1: Stripe Connect & Seat Licensing. Implement the Stripe Webhook Bouncer to listen strictly for checkout.session.completed, customer.subscription.updated, and customer.subscription.deleted. Audit the license_entitlements/{clubId} schema to mathematically guarantee active_seats cannot exceed seats_limit via atomic server-side transactions
 .
-[ ] Sprint 2.2: Field Ops Conflict Engine. Finalize the secureBookField backend transaction to ensure that double-booking a facility triggers an immediate overlap rejection before writing to the database
+[x] Sprint 2.2: Field Ops Conflict Engine. Finalize the secureBookField backend transaction to ensure that double-booking a facility triggers an immediate overlap rejection before writing to the database
 .
-[ ] Sprint 2.3: Checkr Staff Vetting. Wire the Checkr Client-Hosted SDK into the onboarding flow, ensuring that Coach clearance is strictly evaluated via JWT claims before unlocking the Coach OS
+[x] Sprint 2.3: Checkr Staff Vetting. Wire the Checkr Client-Hosted SDK into the onboarding flow, ensuring that Coach clearance is strictly evaluated via JWT claims before unlocking the Coach OS
 .
 [ ] Sprint 2.4: 12-Column Asymmetric Grid. Force the Director OS layout into an 8-column Primary Canvas and a 4-column Sidecar, utilizing minmax clamp math to ensure horizontal data table swiping on mobile devices without squishing
 .
