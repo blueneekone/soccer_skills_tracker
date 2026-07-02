@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { onDestroy } from 'svelte';
-	import { getFirestore, collection, query, where, orderBy, onSnapshot } from 'firebase/firestore';
+	import { collection, query, where, orderBy, onSnapshot } from 'firebase/firestore';
+	import { getActiveDb } from '$lib/firebase';
 
 	interface Props {
 		clubId: string;
@@ -42,7 +43,7 @@
 	$effect(() => {
 		if (!clubId) return;
 		loading = true;
-		const db = getFirestore();
+		const db = getActiveDb();
 		const q = query(
 			collection(db, 'hotel_rebates'),
 			where('tenantId', '==', clubId),

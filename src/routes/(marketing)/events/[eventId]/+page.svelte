@@ -2,7 +2,8 @@
 	import { page } from '$app/state';
 	import { browser } from '$app/environment';
 	import { onDestroy } from 'svelte';
-	import { getFirestore, doc, onSnapshot } from 'firebase/firestore';
+	import { doc, onSnapshot } from 'firebase/firestore';
+	import { getActiveDb } from '$lib/firebase';
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { createTicketCheckout } from '$lib/services/ticketCheckout.svelte.js';
 	import type { TournamentEventDoc, TicketTier } from '$lib/types/tournamentEvent.js';
@@ -34,7 +35,7 @@
 
 	$effect(() => {
 		if (!eventId || !browser) return;
-		const db = getFirestore();
+		const db = getActiveDb();
 		unsubscribe = onSnapshot(doc(db, 'tournament_events', eventId), (snap) => {
 			if (!snap.exists()) {
 				notFound = true;

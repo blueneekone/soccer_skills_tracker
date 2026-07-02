@@ -2,7 +2,8 @@
 	import { onMount, onDestroy } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { getFunctions, httpsCallable } from 'firebase/functions';
-	import { getFirestore, collection, query, where, onSnapshot, orderBy } from 'firebase/firestore';
+	import { collection, query, where, onSnapshot, orderBy } from 'firebase/firestore';
+	import { getActiveDb } from '$lib/firebase';
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import type { TournamentEventDoc } from '$lib/types/tournamentEvent.js';
 
@@ -18,7 +19,7 @@
 	$effect(() => {
 		if (!clubId) return;
 		loading = true;
-		const db = getFirestore();
+		const db = getActiveDb();
 		const q = query(
 			collection(db, 'tournament_events'),
 			where('hostClubId', '==', clubId),

@@ -2,8 +2,8 @@
 // Vanguard Trinity Brain — manages all state for the sports-configs CRUD UI.
 
 import { getFunctions, httpsCallable } from 'firebase/functions';
-import { getFirestore, collection, query, orderBy, limit, getDocs } from 'firebase/firestore';
-import { app } from '$lib/firebase';
+import { collection, query, orderBy, limit, getDocs } from 'firebase/firestore';
+import { app, getActiveDb } from '$lib/firebase';
 import type {
   SportsConfigDoc,
   UpsertSportsConfigInput,
@@ -44,7 +44,7 @@ export class SportsConfigEditorEngine {
   latestAuditReport = $state<AuditReport | null>(null);
 
   private fns = getFunctions(app);
-  private db = getFirestore(app);
+  private db = getActiveDb();
   private _listFn = httpsCallable<{ includeArchived?: boolean }, ListSportsConfigsResult>(this.fns, 'listSportsConfigs');
   private _upsertFn = httpsCallable<UpsertSportsConfigInput, UpsertSportsConfigResult>(this.fns, 'upsertSportsConfig');
   private _archiveFn = httpsCallable<{ sportId: string }, ArchiveSportsConfigResult>(this.fns, 'archiveSportsConfig');

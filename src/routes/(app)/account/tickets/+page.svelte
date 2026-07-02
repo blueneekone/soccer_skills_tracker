@@ -1,7 +1,8 @@
 <script lang="ts">
 	import { onDestroy, tick } from 'svelte';
 	import { browser } from '$app/environment';
-	import { getFirestore, collection, query, where, orderBy, onSnapshot } from 'firebase/firestore';
+	import { collection, query, where, orderBy, onSnapshot } from 'firebase/firestore';
+	import { getActiveDb } from '$lib/firebase';
 	import { authStore } from '$lib/stores/auth.svelte.js';
 
 	interface TicketDoc {
@@ -39,7 +40,7 @@
 	$effect(() => {
 		if (!emailKey || !browser) return;
 		loading = true;
-		const db = getFirestore();
+		const db = getActiveDb();
 		const q = query(
 			collection(db, 'tickets'),
 			where('purchaserEmail', '==', emailKey),

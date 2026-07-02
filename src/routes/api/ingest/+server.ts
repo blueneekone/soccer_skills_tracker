@@ -25,6 +25,7 @@ import { getFirestore, FieldValue } from 'firebase-admin/firestore';
 import { initializeApp, getApps, cert, applicationDefault } from 'firebase-admin/app';
 import { env } from '$env/dynamic/private';
 import crypto from 'crypto';
+import { resolveCellId } from '$lib/types/cells';
 
 // ── Firebase Admin init — lazy, runtime-only ──────────────────────────────────
 //
@@ -41,7 +42,7 @@ import crypto from 'crypto';
 //   2. Local dev / other hosts: set FIREBASE_SERVICE_ACCOUNT_JSON to the JSON
 //      string and the cert() path is used instead.
 
-function getAdminDb() {
+function getAdminDb(cellId?: string) {
 	if (!getApps().length) {
 		const saJson = env.FIREBASE_SERVICE_ACCOUNT_JSON;
 		if (saJson) {
@@ -52,7 +53,7 @@ function getAdminDb() {
 			initializeApp({ credential: applicationDefault() });
 		}
 	}
-	return getFirestore();
+	return getFirestore(resolveCellId(cellId));
 }
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -132,9 +133,6 @@ function mapRow(row: Record<string, string>): ParsedPlayer | null {
 // ── POST handler ──────────────────────────────────────────────────────────────
 
 export const POST: RequestHandler = async ({ request }) => {
-	// Lazy-init Admin SDK — safe to call on every request (idempotent after first call)
-	const db = getAdminDb();
-
 	// Verify Firebase ID token from Authorization header
 	const authHeader = request.headers.get('authorization') ?? '';
 	if (!authHeader.startsWith('Bearer ')) {
@@ -151,6 +149,7 @@ export const POST: RequestHandler = async ({ request }) => {
 
 	const role = decodedToken.role as string ?? '';
 	const tenantId = (decodedToken.clubId ?? decodedToken.tenantId ?? '') as string;
+	const cellId = (decodedToken.cellId ?? '') as string;
 
 	if (!['director', 'super_admin', 'global_admin'].includes(role)) {
 		throw error(403, 'Director role required.');
@@ -158,6 +157,9 @@ export const POST: RequestHandler = async ({ request }) => {
 	if (!tenantId && role === 'director') {
 		throw error(400, 'No tenantId on caller token.');
 	}
+
+	// Lazy-init Admin SDK — safe to call on every request (idempotent after first call)
+	const db = getAdminDb(cellId);
 
 	// Parse multipart form data
 	const formData = await request.formData();

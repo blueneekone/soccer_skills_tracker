@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { onDestroy } from 'svelte';
-	import { getFirestore, collection, query, where, onSnapshot } from 'firebase/firestore';
+	import { collection, query, where, onSnapshot } from 'firebase/firestore';
+	import { getActiveDb } from '$lib/firebase';
 
 	interface Props {
 		clubId: string;
@@ -34,7 +35,7 @@
 	$effect(() => {
 		if (!clubId) return;
 		loading = true;
-		const db = getFirestore();
+		const db = getActiveDb();
 
 		// Listen to all paid tickets for this host club, created today or later.
 		const todayStart = new Date();

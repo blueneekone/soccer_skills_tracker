@@ -3,7 +3,8 @@
 	import { goto } from '$app/navigation';
 	import { onDestroy } from 'svelte';
 	import { getFunctions, httpsCallable } from 'firebase/functions';
-	import { getFirestore, doc, onSnapshot } from 'firebase/firestore';
+	import { doc, onSnapshot } from 'firebase/firestore';
+	import { getActiveDb } from '$lib/firebase';
 	import type { TournamentEventDoc, TicketTier, TournamentBracket } from '$lib/types/tournamentEvent.js';
 	import { labelToTierId } from '$lib/types/tournamentEvent.js';
 	import TournamentBracketPanel from '$lib/components/director/TournamentBracketPanel.svelte';
@@ -40,7 +41,7 @@
 
 	$effect(() => {
 		if (!eventId) return;
-		const db = getFirestore();
+		const db = getActiveDb();
 		unsubscribe = onSnapshot(doc(db, 'tournament_events', eventId), (snap) => {
 			if (!snap.exists()) { loading = false; return; }
 			const data = snap.data() as Omit<TournamentEventDoc, 'id'>;
