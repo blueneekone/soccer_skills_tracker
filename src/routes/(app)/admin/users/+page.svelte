@@ -15,7 +15,7 @@
 
 <div class="tw-grid tw-grid-cols-1 xl:tw-grid-cols-12 tw-gap-6 tw-w-full">
 	<div class="xl:tw-col-span-8 tw-min-w-0">
-		<div class="gu-root">
+		<div class="gu-root dark-form-surface">
 			<AdminUsersHUD {engine} />
 			<AdminUsersArena {engine} />
 		</div>
@@ -33,7 +33,7 @@
 		/>
 		
 		{#if !engine.editingAdmin}
-			<div class="cc-chart-card cc-chart-card--soc tw-h-full tw-flex tw-items-center tw-justify-center tw-text-vanguard-text-muted" data-admin-shell="true">
+			<div class="cc-chart-card cc-chart-card--soc tw-h-full tw-flex tw-items-center tw-justify-center tw-text-vanguard-text-muted dark-form-surface" data-admin-shell="true">
 				Select a user to view details
 			</div>
 		{/if}

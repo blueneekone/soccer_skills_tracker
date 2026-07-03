@@ -8,7 +8,7 @@
 
 {#snippet socMetric(kpi: any)}
 	<article
-		class="cc-soc-card"
+		class="cc-soc-card dark-form-surface"
 		class:cc-soc-card--crit={kpi.band === 'crit'}
 		class:cc-soc-card--high={kpi.band === 'high'}
 		class:cc-soc-card--med={kpi.band === 'med'}

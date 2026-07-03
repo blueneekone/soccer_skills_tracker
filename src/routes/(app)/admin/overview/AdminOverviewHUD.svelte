@@ -54,7 +54,7 @@
 		{/each}
 	</div>
 {:else}
-	<article class="cc-chart-card cc-chart-card--soc">
+	<article class="cc-chart-card cc-chart-card--soc dark-form-surface">
 		<header class="cc-chart-card__head">
 			<div class="cc-chart-card__icon cc-chart-card__icon--amber" aria-hidden="true">
 				<Icon name={"status.warning" as IconName} />
@@ -78,7 +78,7 @@
 		</div>
 	</article>
 
-	<article class="cc-feed-shell cc-feed-shell--soc">
+	<article class="cc-feed-shell cc-feed-shell--soc dark-form-surface">
 		<header class="cc-feed-shell__head">
 			<h2 class="cc-feed-shell__title">Live event stream</h2>
 			<p class="cc-feed-shell__sub">
