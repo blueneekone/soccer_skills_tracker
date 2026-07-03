@@ -10,7 +10,7 @@
 *Objective: Eradicate legacy technical debt, enforce Svelte 5 strictness, and lock down the multi-tenant database routing.*
 * [x] **Sprint 1.1: Svelte 5 Vanguard Trinity Enforcement.** Audit all viewports to ensure they strictly fracture into The Shell (`+page.svelte`), The Brain (`*Engine.svelte.ts`), The Glass (`*Arena.svelte`), and The HUD (`*HUD.svelte`). Enforce the 80-line function maximum [4].
 * [x] **Sprint 1.2: PWA Caching & Vite Pipeline.** Modify `vite.config.js` to utilize cryptographic file-hash versioning (`[name].[hash].js`) to solve the cache poisoning issue. Rewrite the Service Worker config to bypass all requests explicitly destined for Firebase Identity endpoints or `/auth/` routes [10].
-* [ ] **Sprint 1.3: Cloud Functions Architecture.** Ensure all 7 serverless codebases (core, rl, compliance, platform, commerce, integrations, monolith) are correctly split to minimize deployment blast radius. Remove `minInstances` configurations to return the backend to a true scale-to-zero economic model [4].
+* [x] **Sprint 1.3: Cloud Functions Architecture.** Ensure all 7 serverless codebases (core, rl, compliance, platform, commerce, integrations, monolith) are correctly split to minimize deployment blast radius. Remove `minInstances` configurations to return the backend to a true scale-to-zero economic model [4].
 * [ ] **Sprint 1.4: Cell-Based Firestore Isolation.** Enforce API gateway routing to isolate large National Governing Bodies into distinct Firestore database cells based on `cellId` JWT claims, eliminating noisy-neighbor throttling [4].
 
 #### PHASE 2: Director OS & Operations Command
