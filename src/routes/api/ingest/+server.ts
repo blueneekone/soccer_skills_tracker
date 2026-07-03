@@ -19,8 +19,8 @@
  */
 
 import { error, json } from '@sveltejs/kit';
-import type { RequestHandler } from './$types';
-import { getAuth } from 'firebase-admin/auth';
+import type { RequestEvent } from '@sveltejs/kit';
+import { getAuth, type DecodedIdToken } from 'firebase-admin/auth';
 import { getFirestore, FieldValue } from 'firebase-admin/firestore';
 import { initializeApp, getApps, cert, applicationDefault } from 'firebase-admin/app';
 import { env } from '$env/dynamic/private';
@@ -132,7 +132,7 @@ function mapRow(row: Record<string, string>): ParsedPlayer | null {
 
 // ── POST handler ──────────────────────────────────────────────────────────────
 
-export const POST: RequestHandler = async ({ request }) => {
+export const POST = async ({ request }: RequestEvent) => {
 	// Verify Firebase ID token from Authorization header
 	const authHeader = request.headers.get('authorization') ?? '';
 	if (!authHeader.startsWith('Bearer ')) {
@@ -140,7 +140,7 @@ export const POST: RequestHandler = async ({ request }) => {
 	}
 	const idToken = authHeader.slice(7);
 
-	let decodedToken: Awaited<ReturnType<typeof getAuth>['verifyIdToken']>;
+	let decodedToken: DecodedIdToken;
 	try {
 		decodedToken = await getAuth().verifyIdToken(idToken);
 	} catch {
@@ -214,7 +214,7 @@ export const POST: RequestHandler = async ({ request }) => {
 		processed: invites.length,
 		skipped,
 		teamId: teamId ?? null,
-		timestamp: now,
+		timestamp: FieldValue.serverTimestamp(),
 	});
 
 	return json({ processed: invites.length, skipped, invites });
