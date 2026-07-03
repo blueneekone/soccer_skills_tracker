@@ -1317,6 +1317,8 @@ exports.secureAssignHomework = onCall({region: REGION}, async (request) => {
   const batch = db().batch();
   let count = 0;
   const seen = new Set();
+  const targetUids = [];
+
   for (const raw of emailsRaw) {
     const em = normEmail(String(raw || ''));
     if (!em || seen.has(em)) continue;
@@ -1338,22 +1340,64 @@ exports.secureAssignHomework = onCall({region: REGION}, async (request) => {
       logger.warn('secureAssignHomework: no auth user for', em);
       continue;
     }
-    const playerName =
-        typeof u.playerName === 'string' ? u.playerName.trim() : '';
-    const ref = db().collection('assignments').doc();
-    batch.set(ref, {
-      teamId,
-      playerId: uid,
-      player: playerName || 'Player',
-      drillId,
-      drillTitle,
-      dueDate,
-      status: 'pending',
-      assignedBy: request.auth.uid,
-      assignedAt: admin.firestore.FieldValue.serverTimestamp(),
-    });
+    targetUids.push(uid);
     count++;
   }
+
+  if (count === 0) {
+    throw new HttpsError(
+        'failed-precondition',
+        'No valid athlete accounts could be assigned.',
+    );
+  }
+
+  // Sprint 4.2 Intent Engine Integration:
+  // Map homework to the active `team_assignments` inbox of the targeted roster
+  const intentRef = db().collection('team_assignments').doc();
+  const intentId = intentRef.id;
+  const targetAttributeId = drillSnap.data().attributeId || 'foundation';
+  
+  // Optionally capture baseline, defaulting to 0s if function not available
+  let xpBaselineByUid = {};
+  if (typeof captureXpBaselineForIntent === 'function') {
+    xpBaselineByUid = await captureXpBaselineForIntent({
+      teamId,
+      targetAttributeId,
+      scope: 'players',
+      targetUids,
+    });
+  }
+
+  batch.set(intentRef, {
+    intentId,
+    teamId,
+    clubId,
+    assignedByUid: request.auth.uid,
+    targetAttributeId,
+    requiredXp: 150, // Default homework bounty
+    scope: 'players',
+    targetUids,
+    priority: 100,
+    status: 'active',
+    fulfilledByUids: [],
+    xpBaselineByUid,
+    intentVersion: 1,
+    prescription: {
+      sets: 3,
+      repsPerSet: 10,
+      bundleDrills: [{
+        drillId,
+        drillTitle,
+        sets: 3,
+        repsPerSet: 10
+      }]
+    },
+    missionKind: 'standard',
+    source: 'coach_homework',
+    createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    expiresAt: dueDate,
+    updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+  });
 
   if (count === 0) {
     throw new HttpsError(
@@ -2607,6 +2651,109 @@ exports.secureExtendIntent = onCall(LAUNCH_CORE_CALLABLE_OPTS, async (request) =
 });
 
 /**
+ * Sprint 5.1 — Actionable Video Evidence.
+ * Player calls this to explicitly claim an XP bounty.
+ * Enforces the requiredVideoUrls array on all fulfillIntent RPC requests.
+ * Rejects claims that lack a valid YouTube or Hudl evidence URL string.
+ */
+exports.secureFulfillIntent = onCall(LAUNCH_CORE_CALLABLE_OPTS, async (request) => {
+  if (!request.auth || !request.auth.uid) {
+    throw new HttpsError('unauthenticated', 'Sign in required.');
+  }
+  const playerUid = request.auth.uid;
+  const data = request.data || {};
+  const intentId = typeof data.intentId === 'string' ? data.intentId.trim() : '';
+  const teamId = typeof data.teamId === 'string' ? data.teamId.trim() : '';
+
+  if (!intentId) throw new HttpsError('invalid-argument', 'intentId is required.');
+  if (!teamId) throw new HttpsError('invalid-argument', 'teamId is required.');
+
+  // Enforce requiredVideoUrls array
+  const rawUrls = Array.isArray(data.requiredVideoUrls) ? data.requiredVideoUrls : [];
+  let hasValidVideo = false;
+
+  for (const raw of rawUrls) {
+    if (typeof raw !== 'string') continue;
+    const url = raw.trim().toLowerCase();
+    if (
+      url.startsWith('https://youtube.com/') ||
+      url.startsWith('https://www.youtube.com/') ||
+      url.startsWith('https://youtu.be/') ||
+      url.startsWith('https://hudl.com/') ||
+      url.startsWith('https://www.hudl.com/')
+    ) {
+      hasValidVideo = true;
+      break;
+    }
+  }
+
+  if (!hasValidVideo) {
+    throw new HttpsError(
+      'invalid-argument',
+      'A valid YouTube or Hudl evidence URL string is required to claim this XP bounty.',
+    );
+  }
+
+  const intentRef = db().collection('team_assignments').doc(intentId);
+  const snap = await intentRef.get();
+  if (!snap.exists) throw new HttpsError('not-found', 'Intent not found.');
+
+  const intent = snap.data();
+  if (intent.teamId !== teamId) {
+    throw new HttpsError('permission-denied', 'Team mismatch.');
+  }
+  if (intent.status !== 'active') {
+    throw new HttpsError('failed-precondition', `Cannot fulfill — intent is ${intent.status}.`);
+  }
+
+  const scope = intent.scope || 'team';
+  const targetUids = Array.isArray(intent.targetUids) ? intent.targetUids : [];
+  if (scope === 'players' && !targetUids.includes(playerUid)) {
+    throw new HttpsError('permission-denied', 'You are not assigned to this intent.');
+  }
+
+  const alreadyFulfilled = Array.isArray(intent.fulfilledByUids) && intent.fulfilledByUids.includes(playerUid);
+  if (alreadyFulfilled) {
+    throw new HttpsError('failed-precondition', 'You have already fulfilled this intent.');
+  }
+
+  const newFulfilled = [...(intent.fulfilledByUids || []), playerUid];
+  let intentComplete = false;
+
+  if (scope === 'team') {
+    const rosterSnap = await db()
+      .collection('users')
+      .where('teamId', '==', teamId)
+      .where('role', '==', 'player')
+      .get();
+    const rosterUids = rosterAuthUidsFromUserDocs(rosterSnap.docs);
+    intentComplete = rosterUids.length > 0 && rosterUids.every((ru) => newFulfilled.includes(ru));
+  } else {
+    intentComplete = targetUids.length > 0 && targetUids.every((tu) => newFulfilled.includes(tu));
+  }
+
+  await intentRef.update({
+    fulfilledByUids: newFulfilled,
+    ...(intentComplete ? {
+      status: 'fulfilled',
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    } : {
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    }),
+  });
+
+  await db().collection('security_audit').add({
+    action: 'secureFulfillIntent',
+    intentId,
+    playerUid,
+    hasValidVideo,
+    at: admin.firestore.FieldValue.serverTimestamp(),
+  });
+
+  return { fulfilled: true, intentComplete };
+});
+
+/**
  * B4a — Player submits advisory completion proof for a coach-verified intent.
  * Writes to completion_verifications/{auto} via Admin SDK (CF-only path).
  * ADVISORY: does NOT touch XP, workout_logs, or intent fulfilment — those are
@@ -2987,41 +3134,10 @@ async function tryFulfillActiveIntentsForPlayer(input) {
       if (sessionCount < cadence.sessionsPerWindow) continue;
     }
 
-    const alreadyFulfilled = Array.isArray(intent.fulfilledByUids) &&
-      intent.fulfilledByUids.includes(uid);
-    if (alreadyFulfilled) continue;
-
-    const newFulfilled = [...(intent.fulfilledByUids || []), uid];
-
-    let intentComplete = false;
-    if (scope === 'team') {
-      const rosterSnap = await db()
-          .collection('users')
-          .where('teamId', '==', teamId)
-          .where('role', '==', 'player')
-          .get();
-      const rosterUids = rosterAuthUidsFromUserDocs(rosterSnap.docs);
-      intentComplete = rosterUids.length > 0 &&
-        rosterUids.every((ru) => newFulfilled.includes(ru));
-    } else {
-      intentComplete = targetUids.length > 0 &&
-        targetUids.every((tu) => newFulfilled.includes(tu));
-    }
-
-    firestoreBatch.update(intentDoc.ref, {
-      fulfilledByUids: newFulfilled,
-      ...(intentComplete ? {
-        status: 'fulfilled',
-        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-      } : {
-        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-      }),
-    });
-    batchHasWork = true;
-
-    if (intentComplete) {
-      logger.info(`[intentLifecycle] Intent ${intentDoc.id} fully fulfilled.`);
-    }
+  // Sprint 5.1: Actionable Video Evidence.
+    // We no longer automatically fulfill intents.
+    // Players must manually claim bounties and provide a valid video URL via secureFulfillIntent.
+    // We can still log that they met the threshold if desired, but we skip the DB write.
   }
 
   if (batchHasWork) {
