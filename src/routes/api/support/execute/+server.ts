@@ -30,8 +30,8 @@ export async function POST({ request }: RequestEvent) {
 		const auth = getAuth(app);
 		
 		const decodedToken = await auth.verifyIdToken(idToken);
-		const db = getFirestore(app);
-		
+		const cellId = (decodedToken.cellId as string) || '(default)';
+		const db = getFirestore(app, cellId);
 		// Verify if the user is a global or super admin
 		const userDoc = await db.collection('users').doc(decodedToken.uid).get();
 		if (!userDoc.exists) {
