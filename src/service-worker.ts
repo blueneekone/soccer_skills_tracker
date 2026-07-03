@@ -63,6 +63,12 @@ import { build, files, version } from '$service-worker';
 const CACHE_NAME = `sst-pwa-${version}`;
 
 /**
+ * Runtime cache for offline-first routes (Match Day, Check-In).
+ * Scoped by deploy version.
+ */
+const RUNTIME_CACHE = `sst-runtime-${version}`;
+
+/**
  * The complete set of assets to precache at install time.
  *   build = Vite-compiled JS/CSS chunks (hash-named, safe to cache forever)
  *   files = static/* assets (icons, manifest, etc.)
@@ -71,6 +77,13 @@ const PRECACHE: string[] = [...build, ...files];
 
 /** Lookup set for O(1) membership checks in the fetch handler. */
 const PRECACHE_SET = new Set(PRECACHE);
+
+const OFFLINE_ROUTES = ['/coach/match-day', '/director/scan'];
+
+function isOfflineRoute(url: URL): boolean {
+	const p = url.pathname.toLowerCase();
+	return OFFLINE_ROUTES.some((r) => p.startsWith(r));
+}
 
 // ── Bypass predicate ──────────────────────────────────────────────────────────
 
@@ -95,6 +108,13 @@ function shouldBypass(url: URL): boolean {
 
 	if (path.startsWith('/auth/') || path.includes('passkey')) {
 		return true;
+	}
+
+	// Sprint 2.7: Offline-first interception for specific routes
+	// Do NOT bypass if it is an offline route or its associated __data.json
+	const isOfflineData = path.endsWith('__data.json') && OFFLINE_ROUTES.some((r) => path.replace(/__data\.json$/, '').startsWith(r));
+	if (isOfflineRoute(url) || isOfflineData) {
+		return false; 
 	}
 
 	if (
@@ -162,7 +182,7 @@ self.addEventListener('activate', (event: ExtendableEvent) => {
 	event.waitUntil(
 		caches.keys().then(async (keys) => {
 			for (const key of keys) {
-				if (key !== CACHE_NAME) {
+				if (key !== CACHE_NAME && key !== RUNTIME_CACHE) {
 					await caches.delete(key);
 				}
 			}
@@ -177,15 +197,12 @@ self.addEventListener('fetch', (event: FetchEvent) => {
 	const req = event.request;
 	const url = new URL(req.url);
 
-	// Programmatic bypass: explicitly ignore auth, api, and firestore endpoints
-	if (
-		url.hostname.includes('securetoken.googleapis.com') ||
-		url.hostname.includes('identitytoolkit.googleapis.com') ||
-		url.hostname.includes('firestore.googleapis.com') ||
-		url.pathname.includes('/auth/') ||
-		url.pathname.includes('/api/')
-	) {
-		return; // Fallback to raw browser network request
+	// Programmatic bypass
+	if (shouldBypass(url)) {
+		// SvelteKit requires us to respond with fetch directly to avoid
+		// chromium navigation-preload bugs on bypassed routes
+		event.respondWith(fetch(req));
+		return;
 	}
 
 	if (event.request.method !== 'GET') return;
@@ -202,6 +219,28 @@ self.addEventListener('fetch', (event: FetchEvent) => {
 				}
 				return fresh;
 			}),
+		);
+		return;
+	}
+
+	// Sprint 2.7: Stale-While-Revalidate for offline routes
+	const isOfflineData = url.pathname.endsWith('__data.json') && OFFLINE_ROUTES.some((r) => url.pathname.replace(/__data\.json$/, '').startsWith(r));
+	if (isOfflineRoute(url) || isOfflineData) {
+		event.respondWith(
+			caches.open(RUNTIME_CACHE).then(async (cache) => {
+				const cachedResponse = await cache.match(req);
+				const networkPromise = fetch(req).then((networkResponse) => {
+					if (networkResponse && networkResponse.status === 200) {
+						cache.put(req, networkResponse.clone());
+					}
+					return networkResponse;
+				}).catch(() => {
+					// Network failed, we're offline
+				});
+				
+				// Return cached immediately if we have it, else wait for network
+				return cachedResponse || networkPromise as Promise<Response>;
+			})
 		);
 		return;
 	}

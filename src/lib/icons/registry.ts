@@ -30,6 +30,7 @@ import Check from 'lucide-svelte/icons/check';
 import SquareCheck from 'lucide-svelte/icons/square-check';
 import LoaderCircle from 'lucide-svelte/icons/loader-circle';
 import Loader from 'lucide-svelte/icons/loader';
+import Coffee from 'lucide-svelte/icons/coffee';
 
 // Navigation / UI shell
 import Home from 'lucide-svelte/icons/home';
@@ -213,6 +214,7 @@ export const REGISTRY = {
 	'status.check-square':   SquareCheck,      // ph-check-square
 	'status.circle-plus':    CirclePlus,       // ph-plus-circle
 	'status.circle-play':    CirclePlay,       // ph-play-circle
+	'status.inbox-zero':     Coffee,
 
 	// ── Sport icons (Lucide Phase 4 + bespoke where Lucide lacks a glyph) ──
 	'sport.soccer':      SportSoccerBallIcon,

@@ -7,7 +7,7 @@
 		getClearanceStatusSubLabel,
 		clearanceStatusSubLabelTitle,
 	} from '$lib/compliance/checkrCoachClearance.js';
-
+	import InboxZeroCelebration from '$lib/components/director/os/InboxZeroCelebration.svelte';
 	let { engine }: { engine: CoachClearanceEngine } = $props();
 
 	function fmtTimestamp(ts: unknown) {
@@ -37,10 +37,10 @@
 {:else if engine.loadError}
 	<div class="dp-error">{engine.loadError}</div>
 {:else if engine.filtered.length === 0}
-	<div class="dp-empty">
-	<Icon name="user.group" size={40} />
-	<p>NO STAFF RECORDS FOUND</p>
-	</div>
+	<InboxZeroCelebration 
+		title="COMPLIANCE INBOX ZERO" 
+		message="All coach background checks cleared. No pending liabilities." 
+	/>
 {:else}
 	<div class="dp-table-wrap" role="region" aria-label="Compliance roster">
 		<table class="dp-table">

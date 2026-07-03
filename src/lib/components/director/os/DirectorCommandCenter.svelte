@@ -9,6 +9,7 @@
 	import EventReconciliationModule from '$lib/components/director/os/EventReconciliationModule.svelte';
 	import HotelRebatePanel from '$lib/components/director/os/HotelRebatePanel.svelte';
 	import CoachAccountabilityModule from '$lib/components/director/os/CoachAccountabilityModule.svelte';
+	import PaymentRecoveryModule from '$lib/components/director/os/PaymentRecoveryModule.svelte';
 	import WorkspaceSocShell from '$lib/components/workspace/WorkspaceSocShell.svelte';
 	import WorkspaceSocMetricGrid from '$lib/components/workspace/WorkspaceSocMetricGrid.svelte';
 	import Icon from '$lib/components/ui/Icon.svelte';
@@ -164,26 +165,36 @@
 			gridClass="bento-grid bento-grid--12col bento-grid--liquid director-cc-kpi-grid"
 		/>
 
-		<div class="director-cc-z2-panel wsd-surface-accent">
-			<ActionInbox {clubId} />
-		</div>
+		<div class="bento-grid bento-grid--12col bento-grid--liquid tw-w-full tw-grid tw-grid-cols-1 lg:tw-grid-cols-12 tw-gap-6 bento-mt-md">
+			<!-- 8-Column Primary Canvas -->
+			<div class="bento-span-8 tw-flex tw-flex-col tw-gap-6 tw-min-w-0">
+				<div class="director-cc-z2-panel wsd-surface-accent">
+					<ActionInbox {clubId} />
+				</div>
 
-		<div class="director-cc-compliance-band">
-			<div class="director-cc-compliance-band__head">
-				<Icon name="status.shield-check" />
-				<span>Consent audit</span>
+				<RevenueLedgerModule {clubId} />
+
+				<PaymentRecoveryModule {clubId} />
+
+				<EventReconciliationModule {clubId} />
+
+				<DirectorAnalyticsCharts {clubId} />
 			</div>
-			<VpcApprovalQueue {clubId} />
+
+			<!-- 4-Column Sidecar -->
+			<div class="bento-span-4 tw-flex tw-flex-col tw-gap-6 tw-min-w-0">
+				<div class="director-cc-compliance-band">
+					<div class="director-cc-compliance-band__head">
+						<Icon name="status.shield-check" />
+						<span>Consent audit</span>
+					</div>
+					<VpcApprovalQueue {clubId} />
+				</div>
+
+				<HotelRebatePanel {clubId} />
+
+				<CoachAccountabilityModule {clubId} />
+			</div>
 		</div>
-
-		<RevenueLedgerModule {clubId} />
-
-		<EventReconciliationModule {clubId} />
-
-		<HotelRebatePanel {clubId} />
-
-		<CoachAccountabilityModule {clubId} />
-
-		<DirectorAnalyticsCharts {clubId} />
 	</WorkspaceSocShell>
 </section>

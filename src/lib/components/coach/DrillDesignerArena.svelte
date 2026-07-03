@@ -31,10 +31,28 @@
 				spatialCanvas = new Canvas('spatialCanvasEl', { selection: false, preserveObjectStacking: true });
 				engine.spatialCanvas = spatialCanvas;
 				
+				const BASE_WIDTH = 800;
+				const BASE_HEIGHT = 600;
+
 				const resize = () => {
-					if (!dropzone) return;
-					spatialCanvas.setWidth(dropzone.offsetWidth);
-					spatialCanvas.setHeight(dropzone.offsetHeight || dropzone.offsetWidth * 0.75);
+					if (!dropzone || !spatialCanvas) return;
+					const w = dropzone.offsetWidth;
+					const h = dropzone.offsetHeight || dropzone.offsetWidth * 0.75;
+					
+					// Sprint 4.1: SVG bounding-box scaling with preserveAspectRatio="xMidYMid slice"
+					const scaleX = w / BASE_WIDTH;
+					const scaleY = h / BASE_HEIGHT;
+					const scale = Math.max(scaleX, scaleY); // 'slice' = cover the area
+					
+					spatialCanvas.setWidth(w);
+					spatialCanvas.setHeight(h);
+					spatialCanvas.setZoom(scale);
+					
+					// Center the viewport (xMidYMid)
+					const panX = (w - BASE_WIDTH * scale) / 2;
+					const panY = (h - BASE_HEIGHT * scale) / 2;
+					spatialCanvas.absolutePan({ x: -panX, y: -panY });
+					
 					spatialCanvas.renderAll();
 				};
 				resize(); setTimeout(resize, 300);
@@ -62,7 +80,10 @@
 	const onDrop = (e: any) => {
 		e.preventDefault();
 		const type = e.dataTransfer.getData('text/plain');
-		if (type) spawnObject(type, e.offsetX, e.offsetY);
+		if (type && spatialCanvas) {
+			const pointer = spatialCanvas.getPointer(e);
+			spawnObject(type, pointer.x, pointer.y);
+		}
 	};
 </script>
 

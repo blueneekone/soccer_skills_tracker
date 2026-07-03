@@ -801,14 +801,16 @@ export function missionRailEmptyCopy(opts: {
 	}
 }
 
-/** Server-side fulfillment gate before local claim dismisses a coach intent bounty. */
+/** 
+ * Client-side fulfillment gate before local claim allows dismiss.
+ * Sprint 5.1: Players must manually claim with a video URL, so readiness is based on XP.
+ */
 export function coachIntentReadyToClaim(
-	intentRow: Record<string, unknown> | undefined,
-	playerUid: string,
+	earnedXp: number,
+	requiredXp: number,
+	cadenceMet: boolean,
 ): boolean {
-	if (!playerUid) return false;
-	const fulfilledBy = Array.isArray(intentRow?.fulfilledByUids) ? intentRow.fulfilledByUids : [];
-	return fulfilledBy.includes(playerUid);
+	return earnedXp >= requiredXp && cadenceMet;
 }
 
 export function formatMissionRailId(id: string): string {

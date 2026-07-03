@@ -20,6 +20,7 @@
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { workspaceContextStore } from '$lib/stores/workspaceContext.svelte.js';
 	import { dopamineExplosion } from '$lib/services/dopamine.svelte.js';
+	import { commitBountyClaim } from '$lib/services/writes.svelte.js';
 	import HudSeededRingCanvas from '$lib/components/hud/HudSeededRingCanvas.svelte';
 	import { deduplicateById } from '$lib/utils/deduplicateMissions.js';
 	import {
@@ -394,15 +395,57 @@
 		refreshNonce += 1;
 	}
 
+	import { httpsCallable } from 'firebase/functions';
+	import { functions } from '$lib/firebase.js';
+
+	let claimVideoQuest = $state<QuestTask | null>(null);
+	let claimVideoUrl = $state('');
+	let claimVideoBusy = $state(false);
+	let claimVideoError = $state('');
+
+	async function submitClaimVideo() {
+		if (!claimVideoQuest) return;
+		claimVideoBusy = true;
+		claimVideoError = '';
+		try {
+			const fn = httpsCallable(functions, 'secureFulfillIntent');
+			await fn({
+				intentId: claimVideoQuest.id,
+				teamId: authStore.userProfile?.teamId || authStore.tenantId,
+				requiredVideoUrls: [claimVideoUrl],
+			});
+			questProgress = markQuestClaimed(claimVideoQuest.id, questProgress);
+			void dopamineExplosion('grit');
+			if (questsProp === undefined) {
+				internalQuests = internalQuests.filter((q) => q.id !== claimVideoQuest?.id);
+			}
+			claimVideoQuest = null;
+			claimVideoUrl = '';
+		} catch (err) {
+			console.error('[ActiveBounties] claim failed:', err);
+			claimVideoError = (err as Error).message;
+		} finally {
+			claimVideoBusy = false;
+		}
+	}
+
 	function patchQuestLifecycle(list: QuestTask[]): QuestTask[] {
 		const uid = authStore.user?.uid ?? '';
 		return list.map((q) => {
 			if (q.source === 'coach_intent') {
-				const playerFulfilled = coachIntentReadyToClaim(intentDataById[q.id], uid);
+				const intentRow = intentDataById[q.id];
+				const reqXp = Math.max(0, Math.floor(Number(intentRow?.requiredXp) || q.xpReward || 0));
+				const earnedXp = computeCoachIntentEarnedXp(intentRow, uid, playerXpByAttribute, playerEmail);
+				let cadenceMet = true;
+				if (q.cadence && q.targetAttributeId) {
+					const count = countCadenceSessionsInWindow(cadenceCompletions, q.targetAttributeId, q.cadence.windowDays, undefined, q.id);
+					cadenceMet = count >= q.cadence.sessionsPerWindow;
+				}
+				const playerReady = coachIntentReadyToClaim(earnedXp, reqXp, cadenceMet);
 				return {
 					...q,
 					lifecycle: resolveCoachIntentLifecycle(q.id, questProgress, {
-						readyToClaim: playerFulfilled || q.lifecycle === 'claim',
+						readyToClaim: playerReady || q.lifecycle === 'claim',
 					}),
 				};
 			}
@@ -453,8 +496,10 @@
 		missionModalQuest = null;
 	}
 
+	let claimingStandardQuest = $state<string | null>(null);
+
 	/** @param {QuestTask} quest */
-	function handleQuestAction(quest: QuestTask) {
+	async function handleQuestAction(quest: QuestTask) {
 		if (quest.lifecycle === 'accept') {
 			questProgress = markQuestAccepted(quest.id, questProgress);
 			if (questsProp === undefined) {
@@ -473,12 +518,50 @@
 			return;
 		}
 
-		if (quest.source === 'coach_intent' && !coachIntentReadyToClaim(intentDataById[quest.id], authStore.user?.uid ?? '')) return;
+		if (quest.source === 'coach_intent') {
+			const intentRow = intentDataById[quest.id];
+			const uid = authStore.user?.uid ?? '';
+			const reqXp = Math.max(0, Math.floor(Number(intentRow?.requiredXp) || quest.xpReward || 0));
+			const earnedXp = computeCoachIntentEarnedXp(intentRow, uid, playerXpByAttribute, playerEmail);
+			let cadenceMet = true;
+			if (quest.cadence && quest.targetAttributeId) {
+				const count = countCadenceSessionsInWindow(cadenceCompletions, quest.targetAttributeId, quest.cadence.windowDays, undefined, quest.id);
+				cadenceMet = count >= quest.cadence.sessionsPerWindow;
+			}
+			if (!coachIntentReadyToClaim(earnedXp, reqXp, cadenceMet)) return;
 
-		questProgress = markQuestClaimed(quest.id, questProgress);
-		void dopamineExplosion('grit');
-		if (questsProp === undefined) {
-			internalQuests = internalQuests.filter((q) => q.id !== quest.id);
+			// Sprint 5.1: Actionable Video Evidence required
+			claimVideoQuest = quest;
+			claimVideoUrl = '';
+			claimVideoError = '';
+			return;
+		}
+
+		if (claimingStandardQuest === quest.id) return;
+		claimingStandardQuest = quest.id;
+
+		try {
+			// Sprint 5.2: Decoupled telemetry tracking
+			const playerUid = authStore.user?.uid ?? '';
+			const userKey = (authStore.user?.email ?? '').toLowerCase();
+			const xpAwarded = Math.max(0, Math.floor(Number(quest.xpReward) || 0));
+			await commitBountyClaim({
+				playerUid,
+				userKey,
+				questId: quest.id,
+				xpAwarded,
+				reason: `Bounty Claim — ${quest.title}`,
+			});
+
+			questProgress = markQuestClaimed(quest.id, questProgress);
+			void dopamineExplosion('grit');
+			if (questsProp === undefined) {
+				internalQuests = internalQuests.filter((q) => q.id !== quest.id);
+			}
+		} catch (err) {
+			console.error('[ActiveBounties] Non-coach claim failed:', err);
+		} finally {
+			claimingStandardQuest = null;
 		}
 	}
 </script>
@@ -822,4 +905,109 @@
 	onEngage={engageMissionModal}
 	onTerminate={terminateMissionModal}
 />
+
+{#if claimVideoQuest}
+	<div
+		class="hud-modal-backdrop"
+		role="dialog"
+		aria-modal="true"
+		onclick={() => (claimVideoQuest = null)}
+	>
+		<div class="hud-modal-surface dark-form-surface" onclick={(e) => e.stopPropagation()}>
+			<h3 class="hud-modal-title">Submit Video Evidence</h3>
+			<p class="hud-modal-desc">Provide a valid YouTube or Hudl URL to claim your XP bounty.</p>
+			{#if claimVideoError}
+				<p class="hud-modal-error" role="alert">{claimVideoError}</p>
+			{/if}
+			<input
+				type="url"
+				class="hud-modal-input"
+				bind:value={claimVideoUrl}
+				placeholder="https://youtu.be/..."
+				disabled={claimVideoBusy}
+			/>
+			<div class="hud-modal-actions">
+				<button class="hud-modal-btn" onclick={() => (claimVideoQuest = null)} disabled={claimVideoBusy}>Cancel</button>
+				<button class="hud-modal-btn hud-modal-btn--primary" onclick={submitClaimVideo} disabled={claimVideoBusy}>
+					{claimVideoBusy ? 'Submitting...' : 'Submit Evidence'}
+				</button>
+			</div>
+		</div>
+	</div>
+{/if}
+
+<style>
+	.hud-modal-backdrop {
+		position: fixed;
+		inset: 0;
+		background: rgba(0, 0, 0, 0.7);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		z-index: 1000;
+	}
+	.hud-modal-surface {
+		background: var(--color-surface, #18181b);
+		padding: 1.5rem;
+		border-radius: 8px;
+		width: 90%;
+		max-width: 400px;
+		border: 1px solid var(--color-border, #3f3f46);
+	}
+	.hud-modal-title {
+		font-family: var(--font-mono, 'Geist Mono', monospace);
+		font-size: 1.125rem;
+		color: var(--color-text, #fafafa);
+		margin-bottom: 0.5rem;
+	}
+	.hud-modal-desc {
+		font-size: 0.875rem;
+		color: var(--color-text-muted, #a1a1aa);
+		margin-bottom: 1rem;
+	}
+	.hud-modal-error {
+		font-size: 0.875rem;
+		color: #ef4444;
+		margin-bottom: 0.75rem;
+	}
+	.hud-modal-input {
+		width: 100%;
+		padding: 0.5rem;
+		border-radius: 4px;
+		border: 1px solid #3f3f46;
+		background: #000;
+		color: #fafafa;
+		margin-bottom: 1rem;
+	}
+	.hud-modal-actions {
+		display: flex;
+		justify-content: flex-end;
+		gap: 0.75rem;
+	}
+	.hud-modal-btn {
+		padding: 0.5rem 1rem;
+		border-radius: 4px;
+		font-family: var(--font-mono, 'Geist Mono', monospace);
+		font-size: 0.875rem;
+		background: transparent;
+		color: #a1a1aa;
+		border: none;
+		cursor: pointer;
+	}
+	.hud-modal-btn:hover:not(:disabled) {
+		color: #fafafa;
+	}
+	.hud-modal-btn--primary {
+		background: var(--color-accent, #fbbf24);
+		color: #000;
+	}
+	.hud-modal-btn--primary:hover:not(:disabled) {
+		background: #f59e0b;
+		color: #000;
+	}
+	.hud-modal-btn:disabled {
+		opacity: 0.5;
+		cursor: not-allowed;
+	}
+</style>
 

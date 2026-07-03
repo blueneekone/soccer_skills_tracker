@@ -22,6 +22,8 @@ import { doc, onSnapshot } from 'firebase/firestore';
  *   enableVideoProcessing: boolean,
  *   enableRecruiterMarketplace: boolean,
  *   enableLiveScoring: boolean,
+ *   stripeCheckout: boolean,
+ *   checkrVetting: boolean,
  *   updatedAt: unknown,
  *   updatedBy: string,
  * }} FeatureFlags
@@ -36,6 +38,8 @@ function defaults() {
 		enableVideoProcessing: true,
 		enableRecruiterMarketplace: true,
 		enableLiveScoring: true,
+		stripeCheckout: true,
+		checkrVetting: true,
 		updatedAt: null,
 		updatedBy: ''
 	};
@@ -56,6 +60,8 @@ function normalize(raw) {
 		enableVideoProcessing: raw.enableVideoProcessing !== false,
 		enableRecruiterMarketplace: raw.enableRecruiterMarketplace !== false,
 		enableLiveScoring: raw.enableLiveScoring !== false,
+		stripeCheckout: raw.stripeCheckout !== false,
+		checkrVetting: raw.checkrVetting !== false,
 		updatedAt: raw.updatedAt ?? null,
 		updatedBy: typeof raw.updatedBy === 'string' ? raw.updatedBy : ''
 	};
@@ -114,6 +120,8 @@ function createFeatureFlagsStore() {
 		get flags() { return flags; },
 		get maintenanceMode() { return flags.maintenanceMode; },
 		get maintenanceMessage() { return flags.maintenanceMessage; },
+		get stripeCheckout() { return flags.stripeCheckout; },
+		get checkrVetting() { return flags.checkrVetting; },
 		get loaded() { return loaded; },
 		get err() { return err; },
 		subscribe,

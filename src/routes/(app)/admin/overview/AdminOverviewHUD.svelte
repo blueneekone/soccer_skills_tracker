@@ -20,9 +20,7 @@
 			</h1>
 			<p class="cc-lede">
 				Dense statistical surfaces in the spirit of SOAR / SIEM control rooms: KPI ribbons, severity-banded
-				cards, and live audit ingest. Charts — MAU <strong class="cc-lede-strong">{engine.mauSource}</strong>, revenue
-				<strong class="cc-lede-strong">{engine.revenueSource}</strong>, sports
-				<strong class="cc-lede-strong">{engine.sportSource}</strong>.
+				cards, and live audit ingest. Charts — MAU, revenue, sports.
 			</p>
 		</div>
 		<div class="cc-hero__badges">

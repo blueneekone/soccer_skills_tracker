@@ -13,6 +13,8 @@
  *   3. Final fallback: 0 — renders a near-collapsed shape so missing data is obvious.
  */
 
+import { getLevelProgressFromTotalXp } from '../gamification/level.js';
+
 /** @typedef {{ PAC?: string; ACC?: string; AGI?: string; STM?: string; POW?: string; VAN?: string }} ArmoryStats */
 
 /**
@@ -124,6 +126,15 @@ export function deriveVanguardPrism(statsRaw, armoryStats) {
 	/** @param {string[]} keys @returns {number | null} */
 	function pickStat(keys) {
 		if (!statsRaw) return null;
+		
+		const xpMap = statsRaw.xpByAttribute || {};
+		for (const k of keys) {
+			const rawXp = xpMap[k];
+			if (typeof rawXp === 'number' && rawXp > 0) {
+				return getLevelProgressFromTotalXp(rawXp).level;
+			}
+		}
+
 		for (const k of keys) {
 			const v = asRating(statsRaw[k]);
 			if (v !== null) return v;
@@ -134,7 +145,11 @@ export function deriveVanguardPrism(statsRaw, armoryStats) {
 	const pace     = pickStat(['pace', 'speed', 'pac'])            ?? parsePace(armoryStats?.PAC)     ?? 0;
 	const accel    = pickStat(['acceleration', 'accel', 'acc'])    ?? parseAccel(armoryStats?.ACC)    ?? 0;
 	const power    = pickStat(['power', 'strength', 'physical', 'pow']) ?? parsePower(armoryStats?.POW) ?? 0;
-	const vanguard = pickStat(['vanguard', 'van', 'grit', 'composure', 'comp']) ?? parseVanguard(armoryStats?.VAN) ?? 0;
+	
+	const rawStreakDays = Number(statsRaw?.streak_days) || 0;
+	const streakBonus = Math.min(99, Math.floor(rawStreakDays * 5));
+	const vanguard = Math.max(streakBonus, pickStat(['vanguard', 'van', 'grit', 'composure', 'comp']) ?? parseVanguard(armoryStats?.VAN) ?? 0);
+	
 	const stamina  = pickStat(['stamina', 'endurance', 'fitness', 'stm']) ?? parseStamina(armoryStats?.STM) ?? 0;
 	const agility  = pickStat(['agility', 'agi'])                  ?? parseAgility(armoryStats?.AGI)  ?? 0;
 

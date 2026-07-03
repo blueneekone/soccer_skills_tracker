@@ -79,6 +79,8 @@ export const PATHS = {
 	seasons: 'seasons',
 	/** Player stats — streak_days, total_xp, last_training_utc, etc. Doc ID = email key. */
 	playerStats: 'player_stats',
+	/** Sprint 5.2: Decoupled telemetry tracking for quest progress. */
+	telemetryQuestProgress: (uid: string) => `users/${uid}/telemetry/quest_progress`,
 	/**
 	 * Loss Avoidance re-engagement alerts (Epic 5).
 	 * Doc ID convention: `{uid}_{YYYYMMDD}`.
@@ -238,6 +240,8 @@ export interface WorkoutCompletionPayload {
 	 * Defaults to `true`.
 	 */
 	incrementXp?: boolean;
+	/** Optional target attribute (e.g. 'pace') — increments player_stats and users xpByAttribute maps. */
+	attributeId?: string;
 	// ── Subjective physiological fields (Phase 3, Epic 4 — RL pipeline) ──────
 	/** Raw post-workout RPE on a 1-10 Borg scale. Null when not reported. */
 	subjectiveRpe?: number | null;
@@ -270,4 +274,12 @@ export interface MatchCompletionPayload {
 	coachNotes?: string;
 	highlights?: string;
 	recordedBy?: string;
+}
+
+export interface BountyClaimPayload {
+	playerUid: string;
+	userKey: string;
+	questId: string;
+	xpAwarded: number;
+	reason: string;
 }

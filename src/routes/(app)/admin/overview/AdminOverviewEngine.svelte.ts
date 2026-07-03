@@ -14,66 +14,57 @@ export const TAB_IDS = ['executive', 'growth', 'security', 'platform'] as const;
 export type TabId = typeof TAB_IDS[number];
 export const TAB_LABELS = ['Executive', 'Growth', 'Security', 'Platform'] as const;
 
-/** SOC-style ribbon — headline operational telemetry (representative / demo). */
-export const SOC_RIBBON = [
-	{ k: 'MTTR', v: '18m', s: 'Incidents · rolling 7d p50' },
-	{ k: 'Playbooks', v: '2.4k', s: 'Automation runs · 24h' },
-	{ k: 'Detections', v: '847/s', s: 'Rule evaluations · pipeline' },
-	{ k: 'Ingest lag', v: '240ms', s: 'Audit + metrics · p95' },
-] as const;
 
-/** Growth / platform tiles (charts hydrate from Firestore aggregates). */
-export const MOCK_KPI = /** @type {const} */ ({
-	growth: { ltvCac: '4.2', churn: '1.2%', pipelineARR: '$1.8M', paybackMo: '14' },
-	platform: { apiLatency: '42ms', uptime: '99.99%', dbReads: '1.2M', storage: '2.4 TB' },
-});
 
 export class AdminOverviewEngine {
 	activeTab: 'executive' | 'growth' | 'security' | 'platform' = $state('executive');
 
 	strike13Executive = $state([
-		{ label: 'MRR', value: '$0', hint: 'Monthly recurring', band: 'info', delta: '+4.2%', deltaDir: 'up' },
-		{ label: 'ARR', value: '$0', hint: 'Annual run rate', band: 'info', delta: '+11%', deltaDir: 'up' },
-		{ label: 'Active Orgs', value: '0', hint: 'Tenant footprint', band: 'low', delta: '+6', deltaDir: 'up' },
-		{ label: 'Total Players', value: '0', hint: 'Platform headcount', band: 'low', delta: '+2.1%', deltaDir: 'up' },
-		{ label: 'WAU/MAU', value: '68%', hint: 'Weekly / monthly', band: 'ok', delta: '—', deltaDir: 'flat' },
-		{ label: 'ARPU', value: '$299', hint: 'Blended ARPU', band: 'info', delta: '+$12', deltaDir: 'up' },
-		{ label: 'Gross Retention', value: '98%', hint: 'Logo gross', band: 'ok', delta: '+0.4pp', deltaDir: 'up' },
-		{ label: 'LTV', value: '$12k', hint: 'Cohort average', band: 'info', delta: '+3%', deltaDir: 'up' },
+		{ label: 'MRR', value: '$0', hint: 'Monthly recurring', band: 'info', delta: '—', deltaDir: 'flat' },
+		{ label: 'ARR', value: '$0', hint: 'Annual run rate', band: 'info', delta: '—', deltaDir: 'flat' },
+		{ label: 'Active Orgs', value: '0', hint: 'Tenant footprint', band: 'info', delta: '—', deltaDir: 'flat' },
+		{ label: 'Total Players', value: '0', hint: 'Platform headcount', band: 'info', delta: '—', deltaDir: 'flat' },
+		{ label: 'WAU/MAU', value: '0%', hint: 'Weekly / monthly', band: 'info', delta: '—', deltaDir: 'flat' },
+		{ label: 'ARPU', value: '$0', hint: 'Blended ARPU', band: 'info', delta: '—', deltaDir: 'flat' },
+		{ label: 'Gross Retention', value: '0%', hint: 'Logo gross', band: 'info', delta: '—', deltaDir: 'flat' },
+		{ label: 'LTV', value: '$0', hint: 'Cohort average', band: 'info', delta: '—', deltaDir: 'flat' },
 	]);
 
 	strike13Security = $state([
-		{ label: 'WAF Blocks', value: '1,402', hint: 'Edge policy · 24h', band: 'info', delta: '+112', deltaDir: 'up' },
-		{ label: 'Failed Auth', value: '45', hint: 'Rolling 24h', band: 'med', delta: '−8%', deltaDir: 'down' },
-		{ label: 'MFA Bypasses', value: '0', hint: 'Policy exceptions', band: 'ok', delta: '0', deltaDir: 'flat' },
-		{ label: 'Vetting Pending', value: '14', hint: 'Background queue', band: 'med', delta: '+3', deltaDir: 'up' },
-		{ label: 'Flagged Orgs', value: '2', hint: 'Compliance review', band: 'high', delta: '−1', deltaDir: 'down' },
-		{ label: 'API Abuse', value: '12', hint: 'Throttle / WAF', band: 'med', delta: '+2', deltaDir: 'up' },
-		{ label: 'Priv. Escalation', value: '0', hint: 'Elevation attempts', band: 'ok', delta: '0', deltaDir: 'flat' },
-		{ label: 'Suspicious IPs', value: '4', hint: 'Threat intel feed', band: 'high', delta: '+1', deltaDir: 'up' },
+		{ label: 'WAF Blocks', value: '0', hint: 'Edge policy · 24h', band: 'info', delta: '—', deltaDir: 'flat' },
+		{ label: 'Failed Auth', value: '0', hint: 'Rolling 24h', band: 'info', delta: '—', deltaDir: 'flat' },
+		{ label: 'MFA Bypasses', value: '0', hint: 'Policy exceptions', band: 'info', delta: '—', deltaDir: 'flat' },
+		{ label: 'Vetting Pending', value: '0', hint: 'Background queue', band: 'info', delta: '—', deltaDir: 'flat' },
+		{ label: 'Flagged Orgs', value: '0', hint: 'Compliance review', band: 'info', delta: '—', deltaDir: 'flat' },
+		{ label: 'API Abuse', value: '0', hint: 'Throttle / WAF', band: 'info', delta: '—', deltaDir: 'flat' },
+		{ label: 'Priv. Escalation', value: '0', hint: 'Elevation attempts', band: 'info', delta: '—', deltaDir: 'flat' },
+		{ label: 'Suspicious IPs', value: '0', hint: 'Threat intel feed', band: 'info', delta: '—', deltaDir: 'flat' },
 	]);
 
-	GROWTH_TILES = [
-		{ label: 'LTV:CAC', value: MOCK_KPI.growth.ltvCac, hint: 'Blended cohort', band: 'ok', delta: '+0.3', deltaDir: 'up' },
-		{ label: 'Churn', value: MOCK_KPI.growth.churn, hint: 'Logo + revenue', band: 'low', delta: '−0.1pp', deltaDir: 'down' },
-		{ label: 'Pipeline ARR', value: MOCK_KPI.growth.pipelineARR, hint: 'Weighted forecast', band: 'info', delta: '+$180k', deltaDir: 'up' },
-		{ label: 'CAC payback', value: `${MOCK_KPI.growth.paybackMo} mo`, hint: 'Months to recover', band: 'med', delta: '−1 mo', deltaDir: 'down' },
-	];
+	GROWTH_TILES = $state([
+		{ label: 'LTV:CAC', value: '0', hint: 'Blended cohort', band: 'info', delta: '—', deltaDir: 'flat' },
+		{ label: 'Churn', value: '0%', hint: 'Logo + revenue', band: 'info', delta: '—', deltaDir: 'flat' },
+		{ label: 'Pipeline ARR', value: '$0', hint: 'Weighted forecast', band: 'info', delta: '—', deltaDir: 'flat' },
+		{ label: 'CAC payback', value: '0 mo', hint: 'Months to recover', band: 'info', delta: '—', deltaDir: 'flat' },
+	]);
 
-	PLATFORM_TILES = [
-		{ label: 'API latency', value: MOCK_KPI.platform.apiLatency, hint: 'p50 edge → API', band: 'ok', delta: '−4ms', deltaDir: 'down' },
-		{ label: 'Uptime', value: MOCK_KPI.platform.uptime, hint: 'Trailing 30d SLO', band: 'ok', delta: '+0.01%', deltaDir: 'up' },
-		{ label: 'DB reads', value: MOCK_KPI.platform.dbReads, hint: 'Firestore aggregate', band: 'info', delta: '+8%', deltaDir: 'up' },
-		{ label: 'Storage', value: MOCK_KPI.platform.storage, hint: 'Object + media vault', band: 'low', delta: '+120 GB', deltaDir: 'up' },
-	];
+	PLATFORM_TILES = $state([
+		{ label: 'API latency', value: '0ms', hint: 'p50 edge → API', band: 'info', delta: '—', deltaDir: 'flat' },
+		{ label: 'Uptime', value: '0%', hint: 'Trailing 30d SLO', band: 'info', delta: '—', deltaDir: 'flat' },
+		{ label: 'DB reads', value: '0', hint: 'Firestore aggregate', band: 'info', delta: '—', deltaDir: 'flat' },
+		{ label: 'Storage', value: '0 GB', hint: 'Object + media vault', band: 'info', delta: '—', deltaDir: 'flat' },
+	]);
+
+	socRibbon = $state([
+		{ k: 'MTTR', v: '0m', s: 'Incidents · rolling 7d p50' },
+		{ k: 'Playbooks', v: '0', s: 'Automation runs · 24h' },
+		{ k: 'Detections', v: '0/s', s: 'Rule evaluations · pipeline' },
+		{ k: 'Ingest lag', v: '0ms', s: 'Audit + metrics · p95' },
+	]);
 
 	mauSeries = $state<Array<{ label: string, value: number }>>([]);
 	revenueByTier = $state<Array<{ label: string, value: number }>>([]);
 	playersBySport = $state<Array<{ label: string, value: number }>>([]);
-
-	mauSource: 'live' | 'mock' = $state('mock');
-	revenueSource: 'live' | 'mock' = $state('mock');
-	sportSource: 'live' | 'mock' = $state('mock');
 
 	liveFeed = $state<Array<{ id: string, action: string, targetEmail: string, details: string, createdAt: Date | null }>>([]);
 	feedLoading = $state(false);
@@ -98,17 +89,52 @@ export class AdminOverviewEngine {
 					.then((result) => {
 						if (destroyed) return;
 						this.mauSeries = result.mauSeries;
-						this.mauSource = result.mauSource;
 						this.revenueByTier = result.revenueByTier;
-						this.revenueSource = result.revenueSource;
 						this.playersBySport = result.playersBySport;
-						this.sportSource = result.sportSource;
 						this.liveFeed = result.liveFeed;
 						this.feedErr = result.feedErr;
+
 						if (result.executive) {
 							this.strike13Executive[0].value = `$${result.executive.mrr}`;
 							this.strike13Executive[1].value = `$${result.executive.arr}`;
-							this.strike13Executive[3].value = `${result.executive.mauTotal}`;
+							this.strike13Executive[2].value = `${result.executive.activeOrgs}`;
+							this.strike13Executive[3].value = `${result.executive.totalPlayers}`;
+							this.strike13Executive[4].value = `${result.executive.wauMau}%`;
+							this.strike13Executive[5].value = `$${result.executive.arpu}`;
+							this.strike13Executive[6].value = `${result.executive.grossRetention}%`;
+							this.strike13Executive[7].value = `$${result.executive.ltv}`;
+						}
+
+						if (result.security) {
+							this.strike13Security[0].value = `${result.security.wafBlocks}`;
+							this.strike13Security[1].value = `${result.security.failedAuth}`;
+							this.strike13Security[2].value = `${result.security.mfaBypasses}`;
+							this.strike13Security[3].value = `${result.security.vettingPending}`;
+							this.strike13Security[4].value = `${result.security.flaggedOrgs}`;
+							this.strike13Security[5].value = `${result.security.apiAbuse}`;
+							this.strike13Security[6].value = `${result.security.privEscalation}`;
+							this.strike13Security[7].value = `${result.security.suspiciousIps}`;
+						}
+
+						if (result.growth) {
+							this.GROWTH_TILES[0].value = `${result.growth.ltvCac}`;
+							this.GROWTH_TILES[1].value = `${result.growth.churn}%`;
+							this.GROWTH_TILES[2].value = `$${result.growth.pipelineARR}`;
+							this.GROWTH_TILES[3].value = `${result.growth.paybackMo} mo`;
+						}
+
+						if (result.platform) {
+							this.PLATFORM_TILES[0].value = `${result.platform.apiLatency}ms`;
+							this.PLATFORM_TILES[1].value = `${result.platform.uptime}%`;
+							this.PLATFORM_TILES[2].value = `${result.platform.dbReads}`;
+							this.PLATFORM_TILES[3].value = `${result.platform.storage} GB`;
+						}
+
+						if (result.socRibbon) {
+							this.socRibbon[0].v = `${result.socRibbon.mttr}m`;
+							this.socRibbon[1].v = `${result.socRibbon.playbooks}`;
+							this.socRibbon[2].v = `${result.socRibbon.detections}/s`;
+							this.socRibbon[3].v = `${result.socRibbon.ingestLag}ms`;
 						}
 						this.feedLoading = false;
 					})

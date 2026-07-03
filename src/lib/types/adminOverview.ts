@@ -16,12 +16,46 @@ export type OverviewAuditEvent = {
 /** Hydrated analytics payload for `/admin/overview`. */
 export type OverviewHydrateResult = {
 	mauSeries: OverviewChartPoint[];
-	mauSource: 'live' | 'mock';
 	revenueByTier: OverviewChartPoint[];
-	revenueSource: 'live' | 'mock';
 	playersBySport: OverviewChartPoint[];
-	sportSource: 'live' | 'mock';
 	liveFeed: OverviewAuditEvent[];
 	feedErr: string;
-	executive: { mrr: number, arr: number, mauTotal: number };
+	executive: {
+		mrr: number;
+		arr: number;
+		activeOrgs: number;
+		totalPlayers: number;
+		wauMau: number;
+		arpu: number;
+		grossRetention: number;
+		ltv: number;
+	};
+	growth: {
+		ltvCac: number;
+		churn: number;
+		pipelineARR: number;
+		paybackMo: number;
+	};
+	platform: {
+		apiLatency: number;
+		uptime: number;
+		dbReads: number;
+		storage: number;
+	};
+	security: {
+		wafBlocks: number;
+		failedAuth: number;
+		mfaBypasses: number;
+		vettingPending: number;
+		flaggedOrgs: number;
+		apiAbuse: number;
+		privEscalation: number;
+		suspiciousIps: number;
+	};
+	socRibbon: {
+		mttr: number;
+		playbooks: number;
+		detections: number;
+		ingestLag: number;
+	};
 };

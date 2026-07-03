@@ -2,7 +2,6 @@
 	import type { AdminOverviewEngine } from './AdminOverviewEngine.svelte.js';
 	import Icon from '$lib/components/ui/Icon.svelte';
 	import type { IconName } from '$lib/icons/registry.js';
-	import { SOC_RIBBON } from './AdminOverviewEngine.svelte.js';
 
 	let { engine }: { engine: AdminOverviewEngine } = $props();
 </script>
@@ -36,7 +35,7 @@
 
 <div class="cc-body tw-pb-12">
 	<div class="cc-soc-ribbon" aria-label="Operations snapshot">
-		{#each SOC_RIBBON as row (row.k)}
+		{#each engine.socRibbon as row (row.k)}
 			<div class="cc-soc-ribbon__cell">
 				<span class="cc-soc-ribbon__metric">{row.k}</span>
 				<span class="cc-soc-ribbon__value">{row.v}</span>
@@ -77,13 +76,6 @@
 					<div>
 						<h2 class="cc-chart-card__title">Master activation (MAU)</h2>
 						<p class="cc-chart-card__sub">Trailing six months · enterprise growth signal</p>
-						<span
-							class="cc-src"
-							class:cc-src--live={engine.mauSource === 'live'}
-							class:cc-src--mock={engine.mauSource === 'mock'}
-						>
-							{engine.mauSource === 'live' ? 'Live' : 'Synthetic'}
-						</span>
 					</div>
 				</header>
 				<div class="tw-relative tw-h-[350px] tw-min-w-0 tw-w-full">
@@ -112,13 +104,6 @@
 						<div>
 							<h2 class="cc-chart-card__title">Revenue by tier</h2>
 							<p class="cc-chart-card__sub">MRR composition</p>
-							<span
-								class="cc-src"
-								class:cc-src--live={engine.revenueSource === 'live'}
-								class:cc-src--mock={engine.revenueSource === 'mock'}
-							>
-								{engine.revenueSource === 'live' ? 'Live' : 'Synthetic'}
-							</span>
 						</div>
 					</header>
 					<div class="tw-relative tw-h-[350px] tw-min-w-0 tw-w-full">
@@ -138,13 +123,6 @@
 						<div>
 							<h2 class="cc-chart-card__title">Players by sport</h2>
 							<p class="cc-chart-card__sub">Headcount distribution</p>
-							<span
-								class="cc-src"
-								class:cc-src--live={engine.sportSource === 'live'}
-								class:cc-src--mock={engine.sportSource === 'mock'}
-							>
-								{engine.sportSource === 'live' ? 'Live' : 'Synthetic'}
-							</span>
 						</div>
 					</header>
 					<div class="tw-relative tw-h-[350px] tw-min-w-0 tw-w-full">
@@ -203,14 +181,6 @@
 				{@render socMetric(kpi)}
 			</div>
 		{/each}
-
-			<div class="cc-platform-note bento-span-12 tw-min-w-0">
-				<p>
-					<Icon name={"status.info" as IconName} />
-					KPI tiles above are fixed for executive review; charts on other tabs still hydrate from
-					<code class="cc-code">analytics/platform_totals</code> when available.
-				</p>
-			</div>
 		</div>
 	{/if}
 </div>

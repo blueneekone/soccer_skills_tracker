@@ -154,6 +154,7 @@ async function finalizeWorkoutMission(input: {
 	selectedDrill: string;
 	oldLevel: number;
 	payloadLevel: number | undefined;
+	targetAttributeId?: string;
 	commitWorkoutCompletion: (args: {
 		playerUid: string;
 		userKey: string;
@@ -161,6 +162,7 @@ async function finalizeWorkoutMission(input: {
 		xpAwarded: number;
 		reason: string;
 		incrementXp: boolean;
+		attributeId?: string;
 	}) => Promise<unknown>;
 	dopamineOnCommit: (promise: Promise<unknown>, meta: { kind: string }) => Promise<unknown>;
 }): Promise<{ missionCloseNote: string; clearMission: boolean; levelUpFrom: number | null; levelUpTo: number | null }> {
@@ -211,6 +213,7 @@ async function finalizeWorkoutMission(input: {
 				xpAwarded: input.earned,
 				reason: `Workout — ${input.focusLabel} · ${input.selectedDrill}`,
 				incrementXp: false,
+				attributeId: input.targetAttributeId,
 			}),
 			{ kind: 'drill' },
 		);
@@ -284,6 +287,7 @@ export async function executePlayerWorkoutLog(deps: {
 		xpAwarded: number;
 		reason: string;
 		incrementXp: boolean;
+		attributeId?: string;
 	}) => Promise<unknown>;
 	dopamineOnCommit: (promise: Promise<unknown>, meta: { kind: string }) => Promise<unknown>;
 }): Promise<WorkoutLogSuccess> {
@@ -356,6 +360,7 @@ export async function executePlayerWorkoutLog(deps: {
 			selectedDrill: deps.selectedDrill,
 			oldLevel: deps.oldLevel,
 			payloadLevel: payload?.level,
+			targetAttributeId: deps.targetAttributeId,
 			commitWorkoutCompletion: deps.commitWorkoutCompletion,
 			dopamineOnCommit: deps.dopamineOnCommit,
 		});

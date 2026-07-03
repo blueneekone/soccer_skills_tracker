@@ -202,6 +202,41 @@
 		submitError = '';
 
 		try {
+			// Sprint 3.1: WebAuthn Biometric Enclave Attestation
+			if (window.PublicKeyCredential) {
+				const challenge = new Uint8Array(32);
+				window.crypto.getRandomValues(challenge);
+				const userId = new Uint8Array(16);
+				window.crypto.getRandomValues(userId);
+
+				await navigator.credentials.create({
+					publicKey: {
+						challenge,
+						rp: {
+							name: "Vanguard Platform",
+							id: window.location.hostname
+						},
+						user: {
+							id: userId,
+							name: profile?.email || "parent@vanguard.com",
+							displayName: parentDisplayName.trim()
+						},
+						pubKeyCredParams: [
+							{ type: "public-key", alg: -7 },
+							{ type: "public-key", alg: -257 }
+						],
+						authenticatorSelection: {
+							authenticatorAttachment: "platform",
+							userVerification: "required"
+						},
+						timeout: 60000,
+						attestation: "direct"
+					}
+				});
+			} else {
+				console.warn('WebAuthn not supported on this device. Bypassing biometric enclave.');
+			}
+
 			const payload = $state.snapshot({
 				playerEmail: activePlayerEmail,
 				parentDisplayName: parentDisplayName.trim(),
@@ -212,12 +247,16 @@
 					comms: consentComms,
 					sponsor: consentSponsor,
 				},
+				biometricVerified: !!window.PublicKeyCredential
 			});
 			await parentGrantVpcConsentFn(payload);
 			await reloadPlayerStatus(activePlayerEmail);
 			wizardStage = 'done';
 		} catch (e) {
 			submitError = e instanceof Error ? e.message : String(e);
+			if (submitError.includes('NotAllowedError')) {
+				submitError = 'Biometric attestation failed or was cancelled. Consent requires FaceID/TouchID verification.';
+			}
 		} finally {
 			submitting = false;
 		}

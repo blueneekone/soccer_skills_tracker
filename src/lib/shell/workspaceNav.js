@@ -16,6 +16,7 @@ export const adminLinks = [
 	{ label: 'Audit Log',       icon: 'status.shield-check', href: '/admin/audit-log' },
 	{ label: 'Coach clearance', icon: 'status.verified',   href: '/admin/coach-clearance' },
 	{ label: 'System Settings', icon: 'sys.settings-adv',  href: '/admin/system-settings' },
+	{ label: 'Support Terminal', icon: 'game.zap',         href: '/admin/support-terminal' },
 ];
 
 /** @type {ShellNavItem[]} */

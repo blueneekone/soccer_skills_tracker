@@ -4,6 +4,8 @@
   import { db, functions } from '$lib/firebase.js';
   import { httpsCallable } from 'firebase/functions';
   import { SvelteSet } from 'svelte/reactivity';
+  import { dopamineOnCallable } from '$lib/services/dopamine.svelte.js';
+  import InboxZeroHero from '$lib/components/director/os/InboxZeroHero.svelte';
   import Icon from '$lib/components/ui/Icon.svelte';
   import type { IconName } from '$lib/icons/registry.js';
 
@@ -140,10 +142,13 @@
     overrideAttesting = true;
     overrideError     = '';
     try {
-      await outOfBandClearance({
-        targetEmail: overrideTarget.email,
-        clubId:      currentClubId,
-      });
+      await dopamineOnCallable(
+        outOfBandClearance({
+          targetEmail: overrideTarget.email,
+          clubId:      currentClubId,
+        }),
+        { kind: 'adminRelief' }
+      );
       overrideTarget = null;
     } catch (err: unknown) {
       overrideError = (err instanceof Error ? err.message : null) ?? 'Override failed. Try again.';
@@ -182,11 +187,10 @@
 
   <!-- Empty state -->
   {:else if pendingNodes.length === 0}
-    <div class="vp-empty" role="status">
-      <Icon name="status.verified" size={40} class="vp-empty__icon" />
-      <p class="vp-empty__label">ALL HOUSEHOLD NODES VERIFIED</p>
-      <p class="vp-empty__sub">No pending guardian consent locks.</p>
-    </div>
+    <InboxZeroHero 
+      title="ALL HOUSEHOLD NODES VERIFIED" 
+      subtitle="No pending guardian consent locks. The liability loop is sealed." 
+    />
 
   {:else}
     <!-- Column headers -->

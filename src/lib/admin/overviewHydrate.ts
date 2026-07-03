@@ -45,7 +45,6 @@ export function buildMauLabels(): { key: string; label: string }[] {
 
 function hydrateMauSeries(totals: Record<string, unknown> | null): {
 	series: OverviewChartPoint[];
-	source: 'live' | 'mock';
 } {
 	const labels = buildMauLabels();
 	let values: number[] = [];
@@ -67,18 +66,13 @@ function hydrateMauSeries(totals: Record<string, unknown> | null): {
 		});
 	}
 
-	const hasSignal = values.some((v) => v > 0);
-	if (!hasSignal) return { series: [], source: 'live' };
-
 	return {
 		series: labels.map(({ label }, i) => ({ label, value: values[i] ?? 0 })),
-		source: 'live',
 	};
 }
 
 function hydrateRevenueByTier(totals: Record<string, unknown> | null): {
 	series: OverviewChartPoint[];
-	source: 'live' | 'mock';
 } {
 	const revenue: Record<string, number> = {};
 	const raw = totals && (totals.revenueByTier || totals.revenue);
@@ -97,13 +91,11 @@ function hydrateRevenueByTier(totals: Record<string, unknown> | null): {
 
 	return {
 		series: ordered,
-		source: 'live',
 	};
 }
 
 function hydratePlayersBySport(totals: Record<string, unknown> | null): {
 	series: OverviewChartPoint[];
-	source: 'live' | 'mock';
 } {
 	const bySport: Record<string, number> = {};
 	const rawSport = totals?.bySport;
@@ -123,7 +115,6 @@ function hydratePlayersBySport(totals: Record<string, unknown> | null): {
 
 	return {
 		series: ordered,
-		source: 'live',
 	};
 }
 
@@ -181,17 +172,47 @@ export async function hydrateAdminOverview(db: Firestore): Promise<OverviewHydra
 
 	return {
 		mauSeries: mau.series,
-		mauSource: mau.source,
 		revenueByTier: revenue.series,
-		revenueSource: revenue.source,
 		playersBySport: sport.series,
-		sportSource: sport.source,
 		liveFeed: feed.rows,
 		feedErr: feed.err,
 		executive: {
 			mrr: Number(totals?.mrr) || 0,
 			arr: Number(totals?.arr) || 0,
-			mauTotal: Number(totals?.mauTotal) || 0,
-		}
+			activeOrgs: Number(totals?.activeOrgs) || 0,
+			totalPlayers: Number(totals?.totalPlayers) || 0,
+			wauMau: Number(totals?.wauMau) || 0,
+			arpu: Number(totals?.arpu) || 0,
+			grossRetention: Number(totals?.grossRetention) || 0,
+			ltv: Number(totals?.ltv) || 0,
+		},
+		growth: {
+			ltvCac: Number(totals?.ltvCac) || 0,
+			churn: Number(totals?.churn) || 0,
+			pipelineARR: Number(totals?.pipelineARR) || 0,
+			paybackMo: Number(totals?.paybackMo) || 0,
+		},
+		platform: {
+			apiLatency: Number(totals?.apiLatency) || 0,
+			uptime: Number(totals?.uptime) || 0,
+			dbReads: Number(totals?.dbReads) || 0,
+			storage: Number(totals?.storage) || 0,
+		},
+		security: {
+			wafBlocks: Number(totals?.wafBlocks) || 0,
+			failedAuth: Number(totals?.failedAuth) || 0,
+			mfaBypasses: Number(totals?.mfaBypasses) || 0,
+			vettingPending: Number(totals?.vettingPending) || 0,
+			flaggedOrgs: Number(totals?.flaggedOrgs) || 0,
+			apiAbuse: Number(totals?.apiAbuse) || 0,
+			privEscalation: Number(totals?.privEscalation) || 0,
+			suspiciousIps: Number(totals?.suspiciousIps) || 0,
+		},
+		socRibbon: {
+			mttr: Number(totals?.mttr) || 0,
+			playbooks: Number(totals?.playbooks) || 0,
+			detections: Number(totals?.detections) || 0,
+			ingestLag: Number(totals?.ingestLag) || 0,
+		},
 	};
 }

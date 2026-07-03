@@ -6,6 +6,7 @@
   import { browser } from '$app/environment';
   import Icon from '$lib/components/ui/Icon.svelte';
   import type { IconName } from '$lib/icons/registry.js';
+  import InboxZeroCelebration from '$lib/components/director/os/InboxZeroCelebration.svelte';
 
   interface PendingNode {
     id: string;
@@ -178,11 +179,10 @@
 
   <!-- ═══ EMPTY STATE ═══ -->
   {:else if pendingNodes.length === 0}
-    <div class="ip-empty" role="status">
-      <Icon name="status.verified" size={48} class="ip-empty-icon" />
-      <h3 class="ip-empty-title">ALL NODES CLEARED</h3>
-      <p class="ip-empty-sub">No pending guardian verifications.</p>
-    </div>
+    <InboxZeroCelebration 
+      title="ALL NODES CLEARED" 
+      message="No pending guardian verifications. Excellent work." 
+    />
 
   <!-- ═══ DATA GRID ═══ -->
   {:else}

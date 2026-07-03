@@ -47,6 +47,7 @@ import {
 	increment,
 	serverTimestamp,
 	writeBatch,
+	arrayUnion,
 	type WriteBatch,
 } from 'firebase/firestore';
 import {
@@ -276,6 +277,7 @@ export async function commitWorkoutCompletion(
 
 	const userRef = doc(db, PATHS.users, payload.userKey);
 	const historyRef = doc(collection(db, PATHS.userXpHistory(payload.userKey)));
+	const playerStatsRef = doc(db, PATHS.playerStats, payload.userKey);
 
 	if (payload.missionId) {
 		const missionRef = doc(db, PATHS.assignedMissions, payload.missionId);
@@ -290,15 +292,27 @@ export async function commitWorkoutCompletion(
 	// the XP server-side (e.g. legacy `logTrainingSession` callable).
 	const shouldIncrement = payload.incrementXp !== false;
 	if (shouldIncrement) {
-		batch.set(
-			userRef,
-			{
-				armory: {
-					totalXP: increment(payload.xpAwarded),
-				},
+		const userUpdate: any = {
+			armory: {
+				totalXP: increment(payload.xpAwarded),
 			},
-			{ merge: true },
-		);
+		};
+		if (payload.attributeId) {
+			userUpdate.xpByAttribute = {
+				[payload.attributeId]: increment(payload.xpAwarded)
+			};
+			batch.set(
+				playerStatsRef,
+				{
+					xpByAttribute: {
+						[payload.attributeId]: increment(payload.xpAwarded)
+					}
+				},
+				{ merge: true }
+			);
+		}
+		
+		batch.set(userRef, userUpdate, { merge: true });
 	}
 
 	batch.set(historyRef, {
@@ -421,6 +435,57 @@ export async function commitMatchResult(
 		},
 		{ merge: true },
 	);
+
+	return runBatch(batch, batchId);
+}
+
+// ── commitBountyClaim ─────────────────────────────────────────────────────────
+
+/**
+ * Atomically claim a bounty (Sprint 5.2).
+ * Writes to the user's quest_progress telemetry doc, increments XP, and writes history.
+ */
+export async function commitBountyClaim(
+	payload: import('./writes.types.ts').BountyClaimPayload,
+): Promise<BatchWriteResult> {
+	const batchId = nextBatchId('bounty');
+	const db = getActiveDb();
+	const batch = writeBatch(db);
+
+	const userRef = doc(db, PATHS.users, payload.userKey);
+	const historyRef = doc(collection(db, PATHS.userXpHistory(payload.userKey)));
+	const telemetryRef = doc(db, PATHS.telemetryQuestProgress(payload.playerUid), 'claims');
+
+	batch.set(
+		telemetryRef,
+		{
+			claimedIds: arrayUnion(payload.questId),
+			lastClaimedAt: serverTimestamp(),
+		},
+		{ merge: true },
+	);
+
+	if (payload.xpAwarded > 0) {
+		batch.set(
+			userRef,
+			{
+				armory: {
+					totalXP: increment(payload.xpAwarded),
+				},
+			},
+			{ merge: true },
+		);
+
+		batch.set(historyRef, {
+			batchId,
+			date: new Date().toISOString(),
+			amount: payload.xpAwarded,
+			reason: payload.reason,
+			source: 'bounty_claim',
+			questId: payload.questId,
+			loggedAt: serverTimestamp(),
+		});
+	}
 
 	return runBatch(batch, batchId);
 }
