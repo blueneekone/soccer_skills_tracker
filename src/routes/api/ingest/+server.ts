@@ -178,7 +178,7 @@ export const POST: RequestHandler = async ({ request }) => {
 	else throw error(415, 'Unsupported format. Upload .csv, .json, or .pdf.');
 
 	// Parse players
-	let players: ParsedPlayer[] = [];
+	let players: ParsedPlayer[];
 
 	if (format === 'csv') {
 		const text = await file.text();
@@ -201,6 +201,26 @@ export const POST: RequestHandler = async ({ request }) => {
 
 	// Batch write to Firestore
 	const batch = db.batch();
+	const { skipped, invites } = await processPlayersBatch(db, batch, players, tenantId, teamId, decodedToken.uid);
+
+	await batch.commit();
+
+	// Audit log
+	await db.collection('audit_logs').add({
+		action: 'ROSTER_INGESTED',
+		actorUid: decodedToken.uid,
+		tenantId,
+		format,
+		processed: invites.length,
+		skipped,
+		teamId: teamId ?? null,
+		timestamp: now,
+	});
+
+	return json({ processed: invites.length, skipped, invites });
+};
+
+async function processPlayersBatch(db: FirebaseFirestore.Firestore, batch: FirebaseFirestore.WriteBatch, players: ParsedPlayer[], tenantId: string, teamId: string | null, uid: string) {
 	const now = FieldValue.serverTimestamp();
 	const invites: Array<{ email: string; code: string; name: string }> = [];
 	let skipped = 0;
@@ -221,37 +241,26 @@ export const POST: RequestHandler = async ({ request }) => {
 			clubId: tenantId,
 			tenantId,
 			teamId: teamId ?? null,
-			ingestedByUid: decodedToken.uid,
+			ingestedByUid: uid,
 			ingestedAt: now,
 			status: 'invited',
 		};
-		snap.exists ? batch.update(userRef, { ...userData, updatedAt: now }) : batch.set(userRef, { ...userData, createdAt: now, xp: 0, tier: 'ROOKIE' });
-
+		if (snap.exists) {
+			batch.update(userRef, { ...userData, updatedAt: now });
+		} else {
+			batch.set(userRef, { ...userData, createdAt: now, xp: 0, tier: 'ROOKIE' });
+		}
 		const code = generateCode();
 		batch.set(db.doc(`invites/${code}`), {
 			code, tenantId, clubId: tenantId, teamId: teamId ?? null, role: 'player',
 			usageLimit: 1, usageCount: 0, consumedByUids: [],
 			targetEmail: email,
-			createdByUid: decodedToken.uid,
+			createdByUid: uid,
 			createdAt: now,
 			expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
 		});
 		invites.push({ email, code, name: player.displayName ?? email });
 	}
 
-	await batch.commit();
-
-	// Audit log
-	await db.collection('audit_logs').add({
-		action: 'ROSTER_INGESTED',
-		actorUid: decodedToken.uid,
-		tenantId,
-		format,
-		processed: invites.length,
-		skipped,
-		teamId: teamId ?? null,
-		timestamp: now,
-	});
-
-	return json({ processed: invites.length, skipped, invites });
-};
+	return { skipped, invites };
+}
