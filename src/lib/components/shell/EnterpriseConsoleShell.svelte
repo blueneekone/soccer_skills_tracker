@@ -330,7 +330,7 @@
 			</div>
 		</header>
 
-		<div class="ec-canvas bento-grid tw-grid tw-grid-cols-1 lg:tw-grid-cols-12 tw-overflow-y-auto tw-scrollbar-hide tw-min-h-0">
+		<div class="ec-canvas tw-overflow-y-auto tw-scrollbar-hide tw-min-h-0">
 			{@render children?.()}
 		</div>
 	</div>

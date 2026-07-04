@@ -505,328 +505,334 @@
 	<div
 		class="bento-grid bento-grid--12col bento-grid--liquid tw-min-h-0 tw-w-full tw-grid tw-grid-cols-1 lg:tw-grid-cols-12"
 	>
-		<!-- COPPA & liability block -->
-		<section
-			class="phh-surface parent-lounge-z2-panel parent-lounge-z2-panel--warn bento-span-12 tw-min-w-0 tw-px-3 tw-py-4 sm:tw-px-4 md:tw-px-5"
-			aria-labelledby="phh-coppa"
-		>
-			<div class="tw-mb-3 tw-flex tw-flex-col tw-gap-1">
-				<span class="phh-eyebrow tw-text-red-400/90">COPPA &amp; LIABILITY</span>
-				<h2 id="phh-coppa" class="tw-m-0 tw-text-sm tw-font-bold tw-uppercase tw-tracking-widest tw-text-red-200">
-					Minor accounts locked
-				</h2>
-			</div>
-			<p class="bento-mb-md tw-text-sm tw-leading-relaxed tw-text-[var(--text-secondary)]">
-				Until you execute the digital signature below, child operative accounts in this household
-				remain <span class="tw-font-semibold tw-text-red-200">inert (no self-initiation)</span>.
-				By signing, you assert parental authority to provision credentials per club policy and
-				federal child-privacy law.
-			</p>
-			<div
-				class="phh-row tw-mb-3 tw-flex tw-min-h-[3.25rem] tw-flex-col tw-gap-1 tw-border tw-border-white/10 tw-bg-black/60 tw-px-3 tw-py-2.5 sm:tw-flex-row sm:tw-items-center sm:tw-justify-between"
-			>
-				<span class="phh-eyebrow">Clearance file</span>
-				<div class="tw-text-right">
-					{#if coppaSigned}
-						<span class="phh-mono tw-text-cyan-300">SIGNED</span>
-						<div class="phh-mono tw-text-xs tw-text-[var(--text-secondary)]">{fmtTs(coppaAt)}</div>
-					{:else if loadBusy}
-						<span class="phh-mono tw-text-[var(--text-muted)]">SCANNING…</span>
-					{:else}
-						<span class="phh-mono tw-text-amber-400">PENDING SIGNATURE</span>
-					{/if}
-				</div>
-			</div>
-			<p class="phh-eyebrow tw-mb-2">Household / club line</p>
-			<div class="phh-mono tw-mb-3 tw-text-xs tw-break-all tw-text-[var(--text-secondary)]">
-				HH: {householdId || '— (created on sign)'} · Club: {profile?.clubId ? String(profile.clubId) : '—'}
-			</div>
-			<button
-				type="button"
-				class="phh-btn tw-w-full tw-min-h-[3.25rem] tw-px-4 tw-text-base tw-font-extrabold tw-uppercase tw-tracking-widest"
-				class:phh-btn--dim={coppaSigned}
-				disabled={coppaSigned || actionBusy}
-				onclick={signWaiver}
-			>
-				{coppaSigned ? 'Waiver on file' : 'Sign waiver & authorize'}
-			</button>
-		</section>
-
-		<!-- Linked operatives — ephemeral OTP login -->
-		{#if operativeRows.length > 0}
+		<!-- 8-Column Primary Canvas -->
+		<div class="bento-span-8 tw-flex tw-flex-col tw-gap-6 tw-min-w-0">
+			<!-- COPPA & liability block -->
 			<section
-				class="phh-surface parent-lounge-z2-panel bento-span-12 tw-min-w-0 tw-px-3 tw-py-4 sm:tw-px-4 md:tw-px-5"
-				aria-labelledby="phh-active-ops"
+				class="phh-surface parent-lounge-z2-panel parent-lounge-z2-panel--warn tw-min-w-0 tw-px-3 tw-py-4 sm:tw-px-4 md:tw-px-5"
+				aria-labelledby="phh-coppa"
 			>
-				<div class="tw-mb-3">
-					<span class="phh-eyebrow tw-text-cyan-200/80">Household roster</span>
-					<h2
-						id="phh-active-ops"
-						class="tw-m-0 tw-text-sm tw-font-bold tw-uppercase tw-tracking-widest tw-text-white"
-					>
-						Active operatives
+				<div class="tw-mb-3 tw-flex tw-flex-col tw-gap-1">
+					<span class="phh-eyebrow tw-text-red-400/90">COPPA &amp; LIABILITY</span>
+					<h2 id="phh-coppa" class="tw-m-0 tw-text-sm tw-font-bold tw-uppercase tw-tracking-widest tw-text-red-200">
+						Minor accounts locked
 					</h2>
 				</div>
-				<p class="tw-mb-3 tw-text-xs tw-leading-relaxed tw-text-[var(--text-secondary)]">
-					Issue a 10-minute clearance code your athlete can enter with their Operative Callsign on
-					the login page.
+				<p class="bento-mb-md tw-text-sm tw-leading-relaxed tw-text-[var(--text-secondary)]">
+					Until you execute the digital signature below, child operative accounts in this household
+					remain <span class="tw-font-semibold tw-text-red-200">inert (no self-initiation)</span>.
+					By signing, you assert parental authority to provision credentials per club policy and
+					federal child-privacy law.
 				</p>
-				<ul class="tw-m-0 tw-list-none bento-stack-sm tw-p-0">
-					{#each operativeRows as row (row.email)}
-						<li
-							class="tw-flex tw-min-w-0 tw-flex-col tw-gap-2 tw-border tw-border-white/10 tw-bg-black/50 tw-px-3 tw-py-3"
+				<div
+					class="phh-row tw-mb-3 tw-flex tw-min-h-[3.25rem] tw-flex-col tw-gap-1 tw-border tw-border-white/10 tw-bg-black/60 tw-px-3 tw-py-2.5 sm:tw-flex-row sm:tw-items-center sm:tw-justify-between"
+				>
+					<span class="phh-eyebrow">Clearance file</span>
+					<div class="tw-text-right">
+						{#if coppaSigned}
+							<span class="phh-mono tw-text-cyan-300">SIGNED</span>
+							<div class="phh-mono tw-text-xs tw-text-[var(--text-secondary)]">{fmtTs(coppaAt)}</div>
+						{:else if loadBusy}
+							<span class="phh-mono tw-text-[var(--text-muted)]">SCANNING…</span>
+						{:else}
+							<span class="phh-mono tw-text-amber-400">PENDING SIGNATURE</span>
+						{/if}
+					</div>
+				</div>
+				<p class="phh-eyebrow tw-mb-2">Household / club line</p>
+				<div class="phh-mono tw-mb-3 tw-text-xs tw-break-all tw-text-[var(--text-secondary)]">
+					HH: {householdId || '— (created on sign)'} · Club: {profile?.clubId ? String(profile.clubId) : '—'}
+				</div>
+				<button
+					type="button"
+					class="phh-btn tw-w-full tw-min-h-[3.25rem] tw-px-4 tw-text-base tw-font-extrabold tw-uppercase tw-tracking-widest"
+					class:phh-btn--dim={coppaSigned}
+					disabled={coppaSigned || actionBusy}
+					onclick={signWaiver}
+				>
+					{coppaSigned ? 'Waiver on file' : 'Sign waiver & authorize'}
+				</button>
+			</section>
+
+			<!-- Linked operatives — ephemeral OTP login -->
+			{#if operativeRows.length > 0}
+				<section
+					class="phh-surface parent-lounge-z2-panel tw-min-w-0 tw-px-3 tw-py-4 sm:tw-px-4 md:tw-px-5"
+					aria-labelledby="phh-active-ops"
+				>
+					<div class="tw-mb-3">
+						<span class="phh-eyebrow tw-text-cyan-200/80">Household roster</span>
+						<h2
+							id="phh-active-ops"
+							class="tw-m-0 tw-text-sm tw-font-bold tw-uppercase tw-tracking-widest tw-text-white"
 						>
-							<div class="tw-min-w-0">
-								<p class="phh-mono tw-m-0 tw-text-sm tw-font-bold tw-text-cyan-100/90">
-									{row.name}
-								</p>
-								{#if row.email.endsWith('@operative.local')}
-									<div class="phh-cmd-hud tw-mt-2 tw-border tw-border-cyan-500/20 tw-bg-black/60 tw-px-2 tw-py-2">
-										<p class="phh-eyebrow tw-mb-0.5 !tw-text-[0.5rem] tw-text-cyan-200/60">
-											Login Callsign
-										</p>
-										<p class="phh-cmd-callsign phh-mono tw-m-0 tw-text-lg tw-font-black tw-text-cyan-200 sm:tw-text-xl">
-											{row.loginCallsign || '—'}
-										</p>
-										<p
-											class="phh-mono tw-m-0 tw-mt-1 tw-text-[0.65rem] tw-break-all tw-text-[var(--text-muted)]"
-										>
-											{row.email}
-										</p>
-										<div class="tw-mt-2 tw-flex tw-flex-wrap tw-items-baseline tw-gap-2">
-											<span class="phh-eyebrow !tw-m-0 !tw-text-[0.5rem]">Dispatch</span>
-											{#if row.hudErr}
-												<span class="phh-mono tw-text-xs tw-text-amber-300/80">{row.hudErr}</span>
-											{:else if row.dispatchCode}
-												<span
-													class="phh-mono tw-text-sm tw-font-bold tw-tracking-widest tw-text-[#7dff9a]"
-													>{row.dispatchCode}</span
-												>
-											{:else}
-												<span class="phh-mono tw-text-xs tw-text-[var(--text-muted)]">—</span>
-											{/if}
-										</div>
-									</div>
-									{#if row.pendingGamertag}
-										<div
-											class="phh-gt-queue tw-mt-2 tw-border tw-border-amber-500/50 tw-bg-amber-950/20 tw-px-2.5 tw-py-2.5"
-											role="status"
-										>
+							Active operatives
+						</h2>
+					</div>
+					<p class="tw-mb-3 tw-text-xs tw-leading-relaxed tw-text-[var(--text-secondary)]">
+						Issue a 10-minute clearance code your athlete can enter with their Operative Callsign on
+						the login page.
+					</p>
+					<ul class="tw-m-0 tw-list-none bento-stack-sm tw-p-0">
+						{#each operativeRows as row (row.email)}
+							<li
+								class="tw-flex tw-min-w-0 tw-flex-col tw-gap-2 tw-border tw-border-white/10 tw-bg-black/50 tw-px-3 tw-py-3"
+							>
+								<div class="tw-min-w-0">
+									<p class="phh-mono tw-m-0 tw-text-sm tw-font-bold tw-text-cyan-100/90">
+										{row.name}
+									</p>
+									{#if row.email.endsWith('@operative.local')}
+										<div class="phh-cmd-hud tw-mt-2 tw-border tw-border-cyan-500/20 tw-bg-black/60 tw-px-2 tw-py-2">
+											<p class="phh-eyebrow tw-mb-0.5 !tw-text-[0.5rem] tw-text-cyan-200/60">
+												Login Callsign
+											</p>
+											<p class="phh-cmd-callsign phh-mono tw-m-0 tw-text-lg tw-font-black tw-text-cyan-200 sm:tw-text-xl">
+												{row.loginCallsign || '—'}
+											</p>
 											<p
-												class="phh-eyebrow tw-mb-1 !tw-text-[0.55rem] tw-text-amber-200/90"
+												class="phh-mono tw-m-0 tw-mt-1 tw-text-[0.65rem] tw-break-all tw-text-[var(--text-muted)]"
 											>
-												Action required
+												{row.email}
 											</p>
-											<p class="tw-m-0 tw-text-xs tw-leading-relaxed tw-text-amber-50/90">
-												Operative requested a new Gamertag: <span class="tw-font-semibold"
-													>{row.pendingGamertag}</span
-												>. They have
-												<span class="tw-font-semibold">{row.gamertagChangesLeft}</span> changes
-												remaining.
-											</p>
+											<div class="tw-mt-2 tw-flex tw-flex-wrap tw-items-baseline tw-gap-2">
+												<span class="phh-eyebrow !tw-m-0 !tw-text-[0.5rem]">Dispatch</span>
+												{#if row.hudErr}
+													<span class="phh-mono tw-text-xs tw-text-amber-300/80">{row.hudErr}</span>
+												{:else if row.dispatchCode}
+													<span
+														class="phh-mono tw-text-sm tw-font-bold tw-tracking-widest tw-text-[#7dff9a]"
+														>{row.dispatchCode}</span
+													>
+												{:else}
+													<span class="phh-mono tw-text-xs tw-text-[var(--text-muted)]">—</span>
+												{/if}
+											</div>
+										</div>
+										{#if row.pendingGamertag}
 											<div
-												class="tw-mt-2 tw-flex tw-flex-col tw-gap-2 sm:tw-flex-row sm:tw-items-center"
+												class="phh-gt-queue tw-mt-2 tw-border tw-border-amber-500/50 tw-bg-amber-950/20 tw-px-2.5 tw-py-2.5"
+												role="status"
 											>
+												<p
+													class="phh-eyebrow tw-mb-1 !tw-text-[0.55rem] tw-text-amber-200/90"
+												>
+													Action required
+												</p>
+												<p class="tw-m-0 tw-text-xs tw-leading-relaxed tw-text-amber-50/90">
+													Operative requested a new Gamertag: <span class="tw-font-semibold"
+														>{row.pendingGamertag}</span
+													>. They have
+													<span class="tw-font-semibold">{row.gamertagChangesLeft}</span> changes
+													remaining.
+												</p>
+												<div
+													class="tw-mt-2 tw-flex tw-flex-col tw-gap-2 sm:tw-flex-row sm:tw-items-center"
+												>
+													<button
+														type="button"
+														class="phh-gt-approve"
+														disabled={!coppaSigned ||
+															gtActionBusyKey !== null ||
+															actionBusy ||
+															row.gamertagChangesLeft <= 0}
+														onclick={() => approveGamertagForRow(row)}
+													>
+														{gtActionBusyKey === row.email ? '…' : 'Approve'}
+													</button>
+													<button
+														type="button"
+														class="phh-gt-deny"
+														disabled={!coppaSigned || gtActionBusyKey !== null || actionBusy}
+														onclick={() => denyGamertagForRow(row)}
+													>
+														{gtActionBusyKey === row.email ? '…' : 'Deny'}
+													</button>
+												</div>
+											</div>
+										{/if}
+										<div
+											class="tw-mt-2 tw-border tw-border-cyan-500/25 tw-bg-cyan-950/10 tw-px-2.5 tw-py-2.5"
+										>
+											<p class="phh-eyebrow tw-mb-1 !tw-text-[0.55rem] tw-text-cyan-200/80">
+												Link to team roster
+											</p>
+											<p class="tw-m-0 tw-mb-2 tw-text-xs tw-leading-relaxed tw-text-[var(--text-secondary)]">
+												Enter your coach&apos;s dispatch code (e.g. QA-PP26) to add this operative to
+												the team roster for Forge and schedule sync.
+											</p>
+											<div class="tw-flex tw-flex-col tw-gap-2 sm:tw-flex-row sm:tw-items-center">
+												<input
+													class="phh-input phh-input--cyan tw-min-h-[2.75rem] tw-flex-1"
+													type="text"
+													autocomplete="off"
+													spellcheck="false"
+													placeholder="e.g. QA-PP26"
+													value={linkTeamCodes[row.email] ?? ''}
+													oninput={(e) => {
+														linkTeamCodes = {
+															...linkTeamCodes,
+															[row.email]: e.currentTarget.value,
+														};
+													}}
+												/>
 												<button
 													type="button"
-													class="phh-gt-approve"
+													class="phh-btn phh-btn--cyan tw-min-h-[2.75rem] tw-shrink-0 tw-px-4 tw-text-xs"
 													disabled={!coppaSigned ||
-														gtActionBusyKey !== null ||
+														linkTeamBusyKey !== null ||
 														actionBusy ||
-														row.gamertagChangesLeft <= 0}
-													onclick={() => approveGamertagForRow(row)}
+														gtActionBusyKey !== null}
+													onclick={() => linkOperativeTeam(row)}
 												>
-													{gtActionBusyKey === row.email ? '…' : 'Approve'}
-												</button>
-												<button
-													type="button"
-													class="phh-gt-deny"
-													disabled={!coppaSigned || gtActionBusyKey !== null || actionBusy}
-													onclick={() => denyGamertagForRow(row)}
-												>
-													{gtActionBusyKey === row.email ? '…' : 'Deny'}
+													{linkTeamBusyKey === row.email ? 'Linking…' : 'Link team'}
 												</button>
 											</div>
 										</div>
+									{:else}
+										<p class="phh-mono tw-m-0 tw-text-xs tw-text-[var(--text-muted)]">
+											{row.callsign ? `Callsign: ${row.callsign}` : row.email}
+										</p>
 									{/if}
-									<div
-										class="tw-mt-2 tw-border tw-border-cyan-500/25 tw-bg-cyan-950/10 tw-px-2.5 tw-py-2.5"
+								</div>
+								<div class="tw-flex tw-shrink-0 sm:tw-justify-end">
+									<button
+										type="button"
+										class="phh-dispatch-gen tw-w-full sm:tw-w-auto"
+										disabled={!coppaSigned ||
+											otpGenBusyKey !== null ||
+											gtActionBusyKey !== null ||
+											actionBusy}
+										onclick={() => generateOtpForRow(row)}
 									>
-										<p class="phh-eyebrow tw-mb-1 !tw-text-[0.55rem] tw-text-cyan-200/80">
-											Link to team roster
-										</p>
-										<p class="tw-m-0 tw-mb-2 tw-text-xs tw-leading-relaxed tw-text-[var(--text-secondary)]">
-											Enter your coach&apos;s dispatch code (e.g. QA-PP26) to add this operative to
-											the team roster for Forge and schedule sync.
-										</p>
-										<div class="tw-flex tw-flex-col tw-gap-2 sm:tw-flex-row sm:tw-items-center">
-											<input
-												class="phh-input phh-input--cyan tw-min-h-[2.75rem] tw-flex-1"
-												type="text"
-												autocomplete="off"
-												spellcheck="false"
-												placeholder="e.g. QA-PP26"
-												value={linkTeamCodes[row.email] ?? ''}
-												oninput={(e) => {
-													linkTeamCodes = {
-														...linkTeamCodes,
-														[row.email]: e.currentTarget.value,
-													};
-												}}
-											/>
-											<button
-												type="button"
-												class="phh-btn phh-btn--cyan tw-min-h-[2.75rem] tw-shrink-0 tw-px-4 tw-text-xs"
-												disabled={!coppaSigned ||
-													linkTeamBusyKey !== null ||
-													actionBusy ||
-													gtActionBusyKey !== null}
-												onclick={() => linkOperativeTeam(row)}
-											>
-												{linkTeamBusyKey === row.email ? 'Linking…' : 'Link team'}
-											</button>
-										</div>
-									</div>
-								{:else}
-									<p class="phh-mono tw-m-0 tw-text-xs tw-text-[var(--text-muted)]">
-										{row.callsign ? `Callsign: ${row.callsign}` : row.email}
-									</p>
-								{/if}
-							</div>
-							<div class="tw-flex tw-shrink-0 sm:tw-justify-end">
-								<button
-									type="button"
-									class="phh-dispatch-gen tw-w-full sm:tw-w-auto"
-									disabled={!coppaSigned ||
-										otpGenBusyKey !== null ||
-										gtActionBusyKey !== null ||
-										actionBusy}
-									onclick={() => generateOtpForRow(row)}
-								>
-									{otpGenBusyKey === row.email ? 'Working…' : 'Generate clearance code'}
-								</button>
-							</div>
-						</li>
-					{/each}
-				</ul>
-			</section>
-		{/if}
-
-		<!-- Operative generation -->
-		<section
-			class="phh-surface parent-lounge-z2-panel bento-span-12 tw-min-w-0 tw-px-3 tw-py-4 sm:tw-px-4 md:tw-px-5"
-			aria-labelledby="phh-ops"
-		>
-			<div class="tw-mb-3">
-				<span class="phh-eyebrow tw-text-cyan-200/80">Operative generation</span>
-				<h2 id="phh-ops" class="tw-m-0 tw-text-sm tw-font-bold tw-uppercase tw-tracking-widest tw-text-white">
-					Credential dispatch
-				</h2>
-			</div>
-			<p class="bento-mb-md tw-text-sm tw-text-[var(--text-secondary)]">
-				Register the minor’s <span class="tw-text-[var(--text-primary)]">legal display name</span> and a unique
-				<span class="tw-text-[var(--text-primary)]">Operative Callsign</span> (username for sign-in). A proxy
-				account is created automatically. The engine issues a one-time
-				<span class="phh-mono tw-text-cyan-300">DISPATCH</span> code for Operative login.
-			</p>
-			<div class="tw-min-w-0 bento-grid bento-grid--2col bento-grid--liquid tw-grid tw-grid-cols-1 lg:tw-grid-cols-12">
-				<label class="phh-field tw-block tw-w-full">
-					<span class="phh-eyebrow tw-mb-1 tw-block">Operative name</span>
-					<input
-						class="phh-input"
-						type="text"
-						autocomplete="name"
-						placeholder="Full name (minor)"
-						bind:value={childName}
-					/>
-				</label>
-				<label class="phh-field tw-block tw-w-full">
-					<span class="phh-eyebrow tw-mb-1 tw-block"
-						>Operative Callsign <span class="tw-text-red-300/80">(required)</span></span
-					>
-					<input
-						class="phh-input"
-						type="text"
-						autocomplete="username"
-						placeholder="e.g. Red-Fox, striker99"
-						bind:value={operativeCallsign}
-					/>
-				</label>
-				<div class="phh-field tw-block tw-w-full md:tw-col-span-2">
-					<div class="tw-mb-1 tw-flex tw-items-center tw-gap-2">
-						<label
-							for="phh-dispatch-code"
-							class="phh-eyebrow tw-m-0 tw-block tw-text-cyan-300/80"
-						>
-							Dispatch Code <span class="tw-text-[var(--text-muted)]">(optional)</span>
-						</label>
-						<IntelModal
-							title={DISPATCH_CODE_INTEL.title}
-							instructions={DISPATCH_CODE_INTEL.instructions}
-						/>
-					</div>
-					<input
-						id="phh-dispatch-code"
-						class="phh-input phh-input--cyan"
-						type="text"
-						autocomplete="off"
-						spellcheck="false"
-						placeholder="e.g. AB-1K2M"
-						bind:value={teamDispatchCode}
-					/>
-					<p class="tw-mt-1 tw-text-xs tw-text-slate-400">
-						Optional team dispatch code from your coach (e.g. AB-1K2M). Links your operative to the
-						roster when you provision credentials.
-					</p>
-				</div>
-			</div>
-			<div class="bento-mt-md">
-				<button
-					type="button"
-					class="phh-btn phh-btn--cyan tw-w-full tw-min-h-[3.25rem] tw-px-4 tw-text-base tw-font-extrabold tw-uppercase tw-tracking-widest"
-					disabled={!coppaSigned || actionBusy}
-					onclick={provision}
-				>
-					Generate operative credentials
-				</button>
-			</div>
-			{#if lastDispatch}
-				<div
-					class="tw-mt-3 tw-min-w-0 tw-border tw-border-[#2dd4bf]/40 tw-bg-[#05050a] tw-px-3 tw-py-3"
-					role="status"
-				>
-					<p class="phh-eyebrow tw-mb-1 tw-text-[#2dd4bf]">Last dispatch (share once; keep secure)</p>
-					<p class="phh-mono tw-break-all tw-text-lg tw-text-[#7dff9a] sm:tw-text-xl">
-						{lastDispatch}
-					</p>
-				</div>
+										{otpGenBusyKey === row.email ? 'Working…' : 'Generate clearance code'}
+									</button>
+								</div>
+							</li>
+						{/each}
+					</ul>
+				</section>
 			{/if}
-		</section>
+		</div>
 
-		<section
-			class="phh-surface parent-lounge-z2-panel bento-span-12 tw-min-w-0 tw-px-3 tw-py-4 sm:tw-px-4 md:tw-px-5"
-			aria-labelledby="phh-transfer"
-		>
-			<div class="tw-mb-3">
-				<span class="phh-eyebrow tw-text-[var(--text-secondary)]">Club transfer</span>
-				<h2
-					id="phh-transfer"
-					class="tw-m-0 tw-text-sm tw-font-bold tw-uppercase tw-tracking-widest tw-text-white"
-				>
-					Vanguard transfer protocol
-				</h2>
-			</div>
-			<p class="tw-mb-3 tw-text-xs tw-leading-relaxed tw-text-[var(--text-secondary)]">
-				Initiate a player transfer to another club. You will receive a token to share with the
-				destination registrar; confirm with their auth code when prompted.
-			</p>
-			<TransferPortal
-				role="parent"
-				playerEmail={operativeRows[0]?.email && !operativeRows[0].email.endsWith('@operative.local')
-					? operativeRows[0].email
-					: ''}
-			/>
-		</section>
+		<!-- 4-Column Sidecar -->
+		<div class="bento-span-4 tw-flex tw-flex-col tw-gap-6 tw-min-w-0">
+			<!-- Operative generation -->
+			<section
+				class="phh-surface parent-lounge-z2-panel tw-min-w-0 tw-px-3 tw-py-4 sm:tw-px-4 md:tw-px-5"
+				aria-labelledby="phh-ops"
+			>
+				<div class="tw-mb-3">
+					<span class="phh-eyebrow tw-text-cyan-200/80">Operative generation</span>
+					<h2 id="phh-ops" class="tw-m-0 tw-text-sm tw-font-bold tw-uppercase tw-tracking-widest tw-text-white">
+						Credential dispatch
+					</h2>
+				</div>
+				<p class="bento-mb-md tw-text-sm tw-text-[var(--text-secondary)]">
+					Register the minor’s <span class="tw-text-[var(--text-primary)]">legal display name</span> and a unique
+					<span class="tw-text-[var(--text-primary)]">Operative Callsign</span> (username for sign-in). A proxy
+					account is created automatically. The engine issues a one-time
+					<span class="phh-mono tw-text-cyan-300">DISPATCH</span> code for Operative login.
+				</p>
+				<div class="tw-min-w-0 tw-flex tw-flex-col tw-gap-4">
+					<label class="phh-field tw-block tw-w-full">
+						<span class="phh-eyebrow tw-mb-1 tw-block">Operative name</span>
+						<input
+							class="phh-input"
+							type="text"
+							autocomplete="name"
+							placeholder="Full name (minor)"
+							bind:value={childName}
+						/>
+					</label>
+					<label class="phh-field tw-block tw-w-full">
+						<span class="phh-eyebrow tw-mb-1 tw-block"
+							>Operative Callsign <span class="tw-text-red-300/80">(required)</span></span
+						>
+						<input
+							class="phh-input"
+							type="text"
+							autocomplete="username"
+							placeholder="e.g. Red-Fox, striker99"
+							bind:value={operativeCallsign}
+						/>
+					</label>
+					<div class="phh-field tw-block tw-w-full md:tw-col-span-2">
+						<div class="tw-mb-1 tw-flex tw-items-center tw-gap-2">
+							<label
+								for="phh-dispatch-code"
+								class="phh-eyebrow tw-m-0 tw-block tw-text-cyan-300/80"
+							>
+								Dispatch Code <span class="tw-text-[var(--text-muted)]">(optional)</span>
+							</label>
+							<IntelModal
+								title={DISPATCH_CODE_INTEL.title}
+								instructions={DISPATCH_CODE_INTEL.instructions}
+							/>
+						</div>
+						<input
+							id="phh-dispatch-code"
+							class="phh-input phh-input--cyan"
+							type="text"
+							autocomplete="off"
+							spellcheck="false"
+							placeholder="e.g. AB-1K2M"
+							bind:value={teamDispatchCode}
+						/>
+						<p class="tw-mt-1 tw-text-xs tw-text-slate-400">
+							Optional team dispatch code from your coach (e.g. AB-1K2M). Links your operative to the
+							roster when you provision credentials.
+						</p>
+					</div>
+				</div>
+				<div class="bento-mt-md">
+					<button
+						type="button"
+						class="phh-btn phh-btn--cyan tw-w-full tw-min-h-[3.25rem] tw-px-4 tw-text-base tw-font-extrabold tw-uppercase tw-tracking-widest"
+						disabled={!coppaSigned || actionBusy}
+						onclick={provision}
+					>
+						Generate operative credentials
+					</button>
+				</div>
+				{#if lastDispatch}
+					<div
+						class="tw-mt-3 tw-min-w-0 tw-border tw-border-[#2dd4bf]/40 tw-bg-[#05050a] tw-px-3 tw-py-3"
+						role="status"
+					>
+						<p class="phh-eyebrow tw-mb-1 tw-text-[#2dd4bf]">Last dispatch (share once; keep secure)</p>
+						<p class="phh-mono tw-break-all tw-text-lg tw-text-[#7dff9a] sm:tw-text-xl">
+							{lastDispatch}
+						</p>
+					</div>
+				{/if}
+			</section>
+
+			<section
+				class="phh-surface parent-lounge-z2-panel tw-min-w-0 tw-px-3 tw-py-4 sm:tw-px-4 md:tw-px-5"
+				aria-labelledby="phh-transfer"
+			>
+				<div class="tw-mb-3">
+					<span class="phh-eyebrow tw-text-[var(--text-secondary)]">Club transfer</span>
+					<h2
+						id="phh-transfer"
+						class="tw-m-0 tw-text-sm tw-font-bold tw-uppercase tw-tracking-widest tw-text-white"
+					>
+						Vanguard transfer protocol
+					</h2>
+				</div>
+				<p class="tw-mb-3 tw-text-xs tw-leading-relaxed tw-text-[var(--text-secondary)]">
+					Initiate a player transfer to another club. You will receive a token to share with the
+					destination registrar; confirm with their auth code when prompted.
+				</p>
+				<TransferPortal
+					role="parent"
+					playerEmail={operativeRows[0]?.email && !operativeRows[0].email.endsWith('@operative.local')
+						? operativeRows[0].email
+						: ''}
+				/>
+			</section>
+		</div>
 	</div>
 
 	{#if actErr}

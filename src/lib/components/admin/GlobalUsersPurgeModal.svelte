@@ -40,7 +40,7 @@
 	}}
 >
 	<div
-		class="gu-modal"
+		class="gu-modal dark-form-surface"
 		role="dialog"
 		aria-modal="true"
 		aria-labelledby="gu-purge-title"
@@ -90,8 +90,8 @@
 				{/if}
 			</div>
 			<footer class="gu-modal__foot">
-				<button type="button" class="gu-btn gu-btn--ghost" onclick={onClose}>Cancel</button>
-				<button type="button" class="gu-btn gu-btn--danger" onclick={onAdvance}>Continue</button>
+				<button type="button" class="btn-secondary tw-px-4 tw-py-2 tw-text-sm tw-font-bold" onclick={onClose}>Cancel</button>
+				<button type="button" class="btn-primary tw-bg-red-600 hover:tw-bg-red-700 tw-text-white tw-px-4 tw-py-2 tw-text-sm tw-font-bold" onclick={onAdvance}>Continue</button>
 			</footer>
 		{:else}
 			<div class="gu-modal__body">
@@ -116,12 +116,12 @@
 				{/if}
 			</div>
 			<footer class="gu-modal__foot">
-				<button type="button" class="gu-btn gu-btn--ghost" onclick={onClose} disabled={busy}>
+				<button type="button" class="btn-secondary tw-px-4 tw-py-2 tw-text-sm tw-font-bold" onclick={onClose} disabled={busy}>
 					Cancel
 				</button>
 				<button
 					type="button"
-					class="gu-btn gu-btn--danger"
+					class="btn-primary tw-bg-red-600 hover:tw-bg-red-700 tw-text-white tw-px-4 tw-py-2 tw-text-sm tw-font-bold disabled:tw-opacity-50 disabled:tw-cursor-not-allowed"
 					onclick={onConfirm}
 					disabled={busy || typedConfirmation.trim().toLowerCase() !== targetEmail.toLowerCase()}
 				>

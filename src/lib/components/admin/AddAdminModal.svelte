@@ -171,7 +171,7 @@
 	></div>
 
 	<div
-		class="aam-root"
+		class="aam-root dark-form-surface"
 		role="dialog"
 		aria-modal="true"
 		aria-labelledby="aam-title"
@@ -323,13 +323,13 @@
 			<footer class="aam-foot">
 				<button
 					type="button"
-					class="aam-btn aam-btn--ghost"
+					class="btn-secondary tw-px-4 tw-py-2 tw-text-sm tw-font-bold"
 					onclick={() => !saving && onClose?.()}
 					disabled={saving}
 				>
 					Cancel
 				</button>
-				<button type="submit" class="aam-btn aam-btn--primary" disabled={saving}>
+				<button type="submit" class="btn-primary tw-inline-flex tw-items-center tw-gap-2 tw-px-4 tw-py-2 tw-text-sm tw-font-bold" disabled={saving}>
 					<Icon name={"status.shield-check" as IconName} aria-hidden="true" />
 					{saving ? 'Granting…' : 'Grant Access'}
 				</button>

@@ -99,68 +99,45 @@
 				</div>
 			{/if}
 
-			<div class="bento-span-12 tw-min-w-0">
+			<!-- 8-Column Primary Canvas -->
+			<div class="bento-span-8 tw-flex tw-flex-col tw-gap-6 tw-min-w-0">
 				<ClaimRosterSpot />
-			</div>
-
-			<div class="bento-span-12 tw-min-w-0">
 				<ParentWeekScheduleStrip {childEmails} {childNames} />
-			</div>
-
-			<div class="bento-span-12 tw-min-w-0">
-				<ParentCommsConsentBanner {childEmails} />
-			</div>
-
-			<div class="bento-span-12 tw-min-w-0">
-				<ParentLatestAnnouncements />
-			</div>
-
-			<div class="bento-span-12 tw-min-w-0">
-				<ParentPartnerOffers />
-			</div>
-
-			<div class="bento-span-12 tw-min-w-0">
-				<ParentNotificationPanel />
-			</div>
-
-			<div class="bento-span-12 tw-min-w-0">
 				<UpcomingEventsRsvp {childEmails} {childNames} />
-			</div>
-
-			<div class="bento-span-12 tw-min-w-0">
-				<LiveStreamWatch {childEmails} />
-			</div>
-
-			<div class="bento-span-8 tw-min-w-0">
+				<ParentLatestAnnouncements />
 				<CoOpArena {engine} />
-			</div>
-
-		<aside
-			class="parent-lounge-z2-panel parent-bounty-dispatch-panel bento-span-4 bento-cell tw-min-w-0"
-			aria-label="Parent co-op operations"
-		>
-			<div>
-				<p class="parent-lounge-eyebrow">Ops terminal</p>
-				<h2 class="parent-lounge-page-title tw-mt-2 tw-text-sm">Bounty dispatch</h2>
-				<p class="parent-lounge-meta tw-mt-2">
-					Authorize household rewards and post-match protocols from this panel.
-				</p>
-			</div>
-			<button
-				type="button"
-				class="parent-bounty-btn-deploy parent-bounty-btn-deploy--block"
-				onclick={() => (showCreateBounty = true)}
-			>
-				Deploy bounty
-			</button>
-		</aside>
-
-			<!-- B4b — advisory completion proof review queue -->
-			{#if resolvedHouseholdId}
-				<div class="bento-span-12 tw-min-w-0">
+				<!-- B4b — advisory completion proof review queue -->
+				{#if resolvedHouseholdId}
 					<ProofReviewQueue householdId={resolvedHouseholdId} {childNames} />
-				</div>
-			{/if}
+				{/if}
+			</div>
+
+			<!-- 4-Column Sidecar -->
+			<div class="bento-span-4 tw-flex tw-flex-col tw-gap-6 tw-min-w-0">
+				<ParentCommsConsentBanner {childEmails} />
+				<ParentNotificationPanel />
+				<LiveStreamWatch {childEmails} />
+				<ParentPartnerOffers />
+				<aside
+					class="parent-lounge-z2-panel parent-bounty-dispatch-panel bento-cell tw-min-w-0"
+					aria-label="Parent co-op operations"
+				>
+					<div>
+						<p class="parent-lounge-eyebrow">Ops terminal</p>
+						<h2 class="parent-lounge-page-title tw-mt-2 tw-text-sm">Bounty dispatch</h2>
+						<p class="parent-lounge-meta tw-mt-2">
+							Authorize household rewards and post-match protocols from this panel.
+						</p>
+					</div>
+					<button
+						type="button"
+						class="parent-bounty-btn-deploy parent-bounty-btn-deploy--block"
+						onclick={() => (showCreateBounty = true)}
+					>
+						Deploy bounty
+					</button>
+				</aside>
+			</div>
 	</div>
 
 	<!-- HUD overlay (pointer-events-none at root, children opt in) -->

@@ -252,11 +252,11 @@
 <footer class="gu-foot">
 	<div class="gu-foot__info">Page {pageIndex + 1}</div>
 	<div class="gu-foot__ctrls">
-		<button type="button" class="gu-btn gu-btn--ghost" onclick={onPrevPage} disabled={loading || pageIndex === 0}>
+		<button type="button" class="btn-secondary" onclick={onPrevPage} disabled={loading || pageIndex === 0}>
 			<Icon name={'nav.chevron-left' as IconName} aria-hidden="true" />
 			<span>Prev</span>
 		</button>
-		<button type="button" class="gu-btn gu-btn--ghost" onclick={onNextPage} disabled={loading || !hasNextPage}>
+		<button type="button" class="btn-secondary" onclick={onNextPage} disabled={loading || !hasNextPage}>
 			<span>Next</span>
 			<Icon name={'nav.chevron-right' as IconName} aria-hidden="true" />
 		</button>

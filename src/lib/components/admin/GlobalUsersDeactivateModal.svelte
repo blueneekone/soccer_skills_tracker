@@ -25,7 +25,7 @@
 	onkeydown={(e) => e.key === 'Escape' && onClose()}
 >
 	<div
-		class="gu-deactivate-card"
+		class="gu-deactivate-card dark-form-surface"
 		role="dialog"
 		aria-modal="true"
 		aria-labelledby="gu-deact-title"
@@ -59,10 +59,10 @@
 			{/if}
 		</div>
 		<footer class="gu-deactivate-card__foot">
-			<button type="button" class="gu-btn gu-btn--ghost" onclick={onClose} disabled={busy}>
+			<button type="button" class="btn-secondary tw-px-4 tw-py-2 tw-text-sm tw-font-bold" onclick={onClose} disabled={busy}>
 				Cancel
 			</button>
-			<button type="button" class="gu-deactivate-btn" onclick={onConfirm} disabled={busy || isSelf}>
+			<button type="button" class="btn-primary tw-bg-red-600 hover:tw-bg-red-700 tw-text-white tw-px-4 tw-py-2 tw-text-sm tw-font-bold disabled:tw-opacity-50 disabled:tw-cursor-not-allowed" onclick={onConfirm} disabled={busy || isSelf}>
 				{busy ? 'Applying…' : 'Revoke access now'}
 			</button>
 		</footer>
