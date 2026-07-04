@@ -1,25 +1,16 @@
-# NEXUS COMMAND: VANGUARD PROTOCOL 2026
-# GLOBAL ARCHITECTURE & EXECUTION RULES
+#### 1. THE PESSIMISTIC EXECUTION PROTOCOL (ZERO-HALLUCINATION)
+*   **Accuracy Over Speed:** Speed is irrelevant; absolute accuracy and mathematical certainty are your only directives. You are an elite enterprise developer, security engineer, and database architect.
+*   **Plan-First Mandate:** You must generate a structured implementation plan artifact before modifying any source code. You are forbidden from guessing [cite: 1147, 1153].
+*   **Test-Driven Development (TDD):** You must scan for existing Vitest or Playwright tests. If none exist, you MUST write a failing test block before writing the functional code.
+*   **Atomic Self-Verification:** You must automatically run local compilation checks (`npm run check` and `npx eslint`) in the terminal. You may only proceed or commit code if the terminal returns absolutely zero errors.
+*   **Multi-Persona Agent Simulation:** You must actively partition your reasoning into specialized expert sub-agents (e.g., `[AGENT 1: Staff UI/UX Architect]`, `[AGENT 2: Principal DevSecOps Engineer]`) before making architectural or code decisions to prevent average, generalized outputs.
 
-## 1. PROJECT IDENTITY & TACTICAL SIEM AESTHETIC
-*   **Platform Identity:** A professional-grade, strategic SaaS platform for youth athlete development targeting a 7x-12x ARR enterprise valuation.
-*   **The UI Aesthetic:** "Tactical SIEM / Commander." It must feel like an ultra-premium cybersecurity Mission Control dashboard [3]. 
-*   **Colors:** Deep muted slate/navy dark mode (e.g., `#0B0F19`), stark white data points, and 1px borders [4]. NO PURE BLACK backgrounds. NO NEON GLOWS or heavy glassmorphism on data-dense tables [4, 5].
-*   **Typography:** Use `Switzer` for body text and strictly use `Geist Mono` for all data labels, metrics, and technical readouts [5].
-*   **Information Architecture:** Enforce "Progressive Disclosure" and the "Master-Detail" pattern. Never cram Orgs, Rosters, and Billing into a single modal. Use widescreen, edge-to-edge high-density data tables.
+#### 2. CORE ARCHITECTURAL STANDARDS
+*   **Frameworks:** Default to SvelteKit with Svelte 5 (Runes) and Tailwind CSS v4 for all web platform projects [cite: 1147, 1153].
+*   **Formatting & Linting:** Utilize Biome for JS/TS formatting within `<script>` blocks [cite: 1147, 1153].
+*   **Immutability & Types:** Enforce strict TypeScript (the `any` type is permanently banned) and absolute client-side immutability [cite: 1153]. 
 
-## 2. TECH STACK & STRICT SVELTE 5 MANDATES
-*   **Core Stack:** Svelte 5 (Strict Runes), SvelteKit, TypeScript, Tailwind CSS, Firebase v10+ Modular SDK [6, 7].
-*   **Reactivity:** Use Svelte 5 Runes strictly (`$state`, `$derived`, `$effect`). You must use `untrack()` for `goto()` calls inside `$effect` blocks to prevent infinite execution loops [8, 9].
-*   **Formatting:** All functions capped at 80 lines; extract complex transformations to `src/lib/utils/` [10].
-*   **The Vanguard Trinity Pattern:** Fracture all interactive screens into The Shell (`+page.svelte`), The Brain (`*Engine.svelte.ts`), The Glass (`*Arena.svelte`), and The HUD (`*HUD.svelte`) [11].
-
-## 3. ZERO-TRUST DATABASE DEFENSE
-*   **Cell Awareness:** Direct `getFirestore()` calls from the client are strictly prohibited. Access must route through `getActiveDb()` or `getAdminDb(cellId)` to maintain multi-tenant cell routing integrity [10, 12].
-*   **Atomic Safety:** Ban raw `set()` or `update()` in loops; use `increment()` or atomic batches (`writeBatch`) limited to 500 actions to prevent race conditions [13, 14].
-*   **No 1-on-1 Minors:** The Triad Protocol must mathematically block unsupervised adult-to-minor direct messages at the database level, forcing a parent CC [15, 16].
-
-## 4. EXECUTION DIRECTIVES
-*   **Plan Before Building:** Always generate an Implementation Plan artifact before writing code [17, 18].
-*   **No Placeholders:** Write every single line of production code. Do not use `// ... existing code`.
-*   **Aggressive Atomicity (Two-File Governance):** Execute no more than 2 to 3 distinct architectural tasks per execution plan. You must generate an Implementation Plan artifact for my approval before modifying any source code. Do not attempt monolithic refactors
+#### 3. VISUAL DEBUGGING & CONTEXT TARGETING
+*   **Visual Debugging Protocol:** If debugging visual UI issues, rendering bugs, layout drift, or CSS stacking context errors, actively consult visual evidence. I will attach screenshots or screen recordings directly in the prompt box for you to diagnose the CSS box model issue [cite: 1149, 1153].
+*   **Context Targeting:** Use `@` mentions (e.g., `@filename` or absolute paths like `@/path/to/file.md`) to pull specific workspace file paths directly into your immediate context window to target code searches [cite: 1149, 1153].
+*   **Workflow Execution:** Recognize and process multi-step tasks sequentially when invoked via the `/workflow-name` command. You can call other workflows programmatically from within a workflow [cite: 1149, 1153].
