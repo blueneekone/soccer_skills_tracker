@@ -146,42 +146,75 @@ async function runShredPass(runId) {
   let passportsShredded = 0;
   let vaultsDeleted = 0;
 
-  const userSnap = await db().collection('users')
+  // 1. Shred Users
+  let userQuery = db().collection('users')
       .where('lastActiveAt', '<=', cutoffTs)
-      .limit(PAGE_SIZE)
-      .get();
+      .orderBy('lastActiveAt', 'asc')
+      .limit(PAGE_SIZE);
 
+  while (true) {
+    const userSnap = await userQuery.get();
+    if (userSnap.empty) break;
+
+    let ops = 0;
     for (const doc of userSnap.docs) {
-    const data = doc.data();
-    if (data.shredStatus === 'complete') continue;
-    const lastActive = resolveLastActive(data);
-    if (lastActive && lastActive > cutoff) continue;
+      const data = doc.data();
+      if (data.shredStatus === 'complete') continue;
+      
+      await deleteLinkedVaultDocs(data);
+      const patch = buildShredPatch(data, USER_PII_FIELDS);
+      patch.shredRunId = runId;
+      await doc.ref.set(patch, {merge: true});
+      usersShredded++;
+      ops++;
+    }
 
-    await deleteLinkedVaultDocs(data);
-    const patch = buildShredPatch(data, USER_PII_FIELDS);
-    patch.shredRunId = runId;
-    await doc.ref.set(patch, {merge: true});
-    usersShredded++;
+    if (userSnap.size < PAGE_SIZE) break;
+    const lastDoc = userSnap.docs[userSnap.docs.length - 1];
+    userQuery = db().collection('users')
+        .where('lastActiveAt', '<=', cutoffTs)
+        .orderBy('lastActiveAt', 'asc')
+        .startAfter(lastDoc)
+        .limit(PAGE_SIZE);
   }
 
-  const passportSnap = await db().collection('passports')
-      .limit(PAGE_SIZE)
-      .get();
+  // 2. Shred Passports
+  // Since passports do not have a reliable `lastActiveAt`, we must iterate
+  // and check the corresponding user's `lastActiveAt`.
+  // To avoid infinite loops on unshreddable passports, we must track the last document.
+  let passportQuery = db().collection('passports')
+      .orderBy(admin.firestore.FieldPath.documentId())
+      .limit(PAGE_SIZE);
 
-  for (const doc of passportSnap.docs) {
-    const data = doc.data();
-    if (data.shredStatus === 'complete') continue;
-    const emailKey = doc.id.toLowerCase();
-    const userSnapOne = await db().collection('users').doc(emailKey).get();
-    const userData = userSnapOne.exists ? userSnapOne.data() : {};
-    const lastActive = resolveLastActive(userData.lastActiveAt ? userData : data);
-    if (lastActive && lastActive > cutoff) continue;
+  while (true) {
+    const passportSnap = await passportQuery.get();
+    if (passportSnap.empty) break;
 
-    await deleteLinkedVaultDocs(data);
-    const patch = buildShredPatch(data, PASSPORT_PII_FIELDS);
-    patch.shredRunId = runId;
-    await doc.ref.set(patch, {merge: true});
-    passportsShredded++;
+    for (const doc of passportSnap.docs) {
+      const data = doc.data();
+      if (data.shredStatus === 'complete') continue;
+      
+      const emailKey = doc.id.toLowerCase();
+      const userSnapOne = await db().collection('users').doc(emailKey).get();
+      const userData = userSnapOne.exists ? userSnapOne.data() : {};
+      
+      // If the user doesn't exist, we fallback to passport data, but default to NOT shredded if unknown
+      const lastActive = resolveLastActive(userData.lastActiveAt ? userData : data);
+      if (!lastActive || lastActive > cutoff) continue;
+
+      await deleteLinkedVaultDocs(data);
+      const patch = buildShredPatch(data, PASSPORT_PII_FIELDS);
+      patch.shredRunId = runId;
+      await doc.ref.set(patch, {merge: true});
+      passportsShredded++;
+    }
+
+    if (passportSnap.size < PAGE_SIZE) break;
+    const lastDoc = passportSnap.docs[passportSnap.docs.length - 1];
+    passportQuery = db().collection('passports')
+        .orderBy(admin.firestore.FieldPath.documentId())
+        .startAfter(lastDoc)
+        .limit(PAGE_SIZE);
   }
 
   await shredSubCollectionField('eq_attestations', 'parentEmail');

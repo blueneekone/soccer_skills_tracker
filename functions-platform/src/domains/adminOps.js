@@ -949,6 +949,9 @@ exports.secureBookField = onCall({region: REGION}, async (request) => {
       return {kind: 'denied'};
     }
 
+    const dailyLockRef = fieldRef.collection('schedule_locks').doc(scheduleDate);
+    await transaction.get(dailyLockRef); // Force read-lock on daily bucket to serialize concurrent overlapping bookings
+
     const q = fieldRef
         .collection('schedules')
         .where('scheduleDate', '==', scheduleDate);
@@ -985,6 +988,9 @@ exports.secureBookField = onCall({region: REGION}, async (request) => {
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
       createdBy: normEmail(request.auth.token.email) || 'unknown',
     });
+
+    // Write to lock document to trigger Firestore transaction serialization logic
+    transaction.set(dailyLockRef, { lastBookedAt: admin.firestore.FieldValue.serverTimestamp() }, { merge: true });
 
     return {kind: 'ok', scheduleId: scheduleRef.id};
   });

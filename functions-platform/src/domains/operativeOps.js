@@ -663,6 +663,15 @@ exports.sendChannelMessage = onCall({region: REGION}, async (request) => {
     const consentedSet = new Set(consentedParents);
     ccParentEmails = [...consentedSet].sort();
 
+    // Sprint 3.2 SafeSport Block: explicitly block direct 1-on-1 adult-to-minor messages
+    // by ensuring a linked parent's email was successfully resolved and injected into ccParentEmails.
+    if (isStaffRole(callerRole) && playerEmailsInChannel.length > 0 && memberIds.length === 2 && ccParentEmails.length === 0) {
+      throw new HttpsError(
+          'failed-precondition',
+          'SafeSport violation: Direct 1-on-1 messages with a minor are strictly prohibited without a linked parent CC. No verified parent email was found for this athlete.'
+      );
+    }
+
     // Detect parents missing from current memberIds (dropped after creation).
     const missingParents = ccParentEmails.filter((p) => !memberSet.has(p));
     const newParentsFound = ccParentEmails.length > 0 &&

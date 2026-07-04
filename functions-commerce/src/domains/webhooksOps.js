@@ -575,10 +575,6 @@ function isAllowedStripeRedirectUrl(url) {
 async function handleStripeWebhookEvent(stripeClient, event) {
   const type = event.type;
 
-  if (!['checkout.session.completed', 'customer.subscription.updated', 'customer.subscription.deleted'].includes(type)) {
-    return;
-  }
-
   if (type === 'checkout.session.completed') {
     const session = /** @type {import('stripe').Stripe.Checkout.Session} */ (
       event.data.object
@@ -640,34 +636,22 @@ async function handleStripeWebhookEvent(stripeClient, event) {
       );
     }
 
-    const targetSeats = seatsLimitForTier(tierType, quantity);
+    const seats = seatsLimitForTier(tierType, quantity);
     const entRef = db().collection('license_entitlements').doc(clubId);
-    await db().runTransaction(async (t) => {
-      const snap = await t.get(entRef);
-      const active =
-          snap.exists && typeof snap.data().active_seats === 'number' && !Number.isNaN(snap.data().active_seats) ?
-            snap.data().active_seats :
-            0;
-      const reserved =
-          snap.exists && typeof snap.data().reserved_seats === 'number' && !Number.isNaN(snap.data().reserved_seats) ?
-            snap.data().reserved_seats :
-            0;
-      const effectiveSeats = Math.max(targetSeats, active + reserved);
-      
-      t.set(
-          entRef,
-          {
-            tier: tierType,
-            stripe_customer_id: typeof customerId === 'string' ? customerId : String(customerId || ''),
-            stripe_subscription_id: typeof subId === 'string' ? subId : '',
-            subscription_status: 'active',
-            seats_limit: effectiveSeats,
-            updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-            updatedBy: 'stripe:checkout.session.completed',
-          },
-          {merge: true}
-      );
-    });
+    await entRef.set(
+        {
+          tier: tierType,
+          stripe_customer_id: typeof customerId === 'string' ?
+            customerId :
+            String(customerId || ''),
+          stripe_subscription_id: typeof subId === 'string' ? subId : '',
+          subscription_status: 'active',
+          seats_limit: seats,
+          updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+          updatedBy: 'stripe:checkout.session.completed',
+        },
+        {merge: true},
+    );
     return;
   }
 
@@ -714,7 +698,17 @@ async function handleStripeWebhookEvent(stripeClient, event) {
     return;
   }
 
-
+  if (type === 'invoice.payment_failed') {
+    const invoice = /** @type {import('stripe').Stripe.Invoice} */ (
+      event.data.object
+    );
+    const subId = invoice.subscription;
+    if (typeof subId === 'string') {
+      const sub = await stripeClient.subscriptions.retrieve(subId);
+      await syncSubscriptionStatusFromStripeObject(stripeClient, sub, 'past_due');
+    }
+    return;
+  }
 }
 
 /**
@@ -782,22 +776,10 @@ async function syncSubscriptionStatusFromStripeObject(stripeClient, sub, status)
     patch.tier = tierType;
   }
 
-  const entRef = db().collection('license_entitlements').doc(clubId);
-  await db().runTransaction(async (t) => {
-    const snap = await t.get(entRef);
-    if (patch.seats_limit !== undefined) {
-      const active =
-          snap.exists && typeof snap.data().active_seats === 'number' && !Number.isNaN(snap.data().active_seats) ?
-            snap.data().active_seats :
-            0;
-      const reserved =
-          snap.exists && typeof snap.data().reserved_seats === 'number' && !Number.isNaN(snap.data().reserved_seats) ?
-            snap.data().reserved_seats :
-            0;
-      patch.seats_limit = Math.max(patch.seats_limit, active + reserved);
-    }
-    t.set(entRef, patch, {merge: true});
-  });
+  await db()
+      .collection('license_entitlements')
+      .doc(clubId)
+      .set(patch, {merge: true});
 }
 
 // ── Exported functions ────────────────────────────────────────────────────────
@@ -1458,30 +1440,6 @@ exports.stripeWebhook = onRequest(
         const msg = err instanceof Error ? err.message : String(err);
         logger.error(`Webhook signature verification failed: ${msg}`);
         res.status(400).send(`Webhook Error: ${msg}`);
-        return;
-      }
-
-      const eventId = event.id;
-      const bouncerRef = db().collection('stripe_webhook_events').doc(eventId);
-      let duplicate = false;
-      try {
-        duplicate = await db().runTransaction(async (t) => {
-          const doc = await t.get(bouncerRef);
-          if (doc.exists) return true;
-          t.set(bouncerRef, {
-            type: event.type,
-            receivedAt: admin.firestore.FieldValue.serverTimestamp()
-          });
-          return false;
-        });
-      } catch (err) {
-        logger.error('stripeWebhook bouncer error', err);
-        res.status(500).send('Bouncer error');
-        return;
-      }
-      if (duplicate) {
-        logger.info(`Stripe webhook bouncer: duplicate event ${eventId}`);
-        res.status(200).json({received: true, duplicate: true});
         return;
       }
 

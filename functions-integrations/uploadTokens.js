@@ -1,4 +1,4 @@
-﻿/* eslint-disable quotes */
+/* eslint-disable quotes */
 /**
  * uploadTokens.js â€” Secure Direct-to-Cloud Upload Tokens
  * â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -33,8 +33,8 @@ const admin = require('firebase-admin');
 
 const REGION = 'us-east1';
 const UPLOAD_EXPIRY_MINUTES = 15;
-// Max 100 MB for video clips, 8 MB for images
-const SIZE_LIMIT_VIDEO = 100 * 1024 * 1024;
+// Max 50 MB for video clips, 8 MB for images
+const SIZE_LIMIT_VIDEO = 50 * 1024 * 1024;
 const SIZE_LIMIT_IMAGE = 8 * 1024 * 1024;
 
 const ALLOWED_MIME_TYPES = new Set([
