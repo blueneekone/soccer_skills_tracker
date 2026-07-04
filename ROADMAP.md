@@ -9,7 +9,7 @@
 
 #### PHASE 0: Global Aesthetic & Layout Synchronization
 *Objective: Lock in the multi-billion-dollar SIEM aesthetic and enterprise responsiveness before touching data layers.*
-* [ ] **Sprint 0.1: The Bento Grid Lock.** Transition all core layouts to the 12-column asymmetric Bento Grid using fluid `clamp()` spacing to prevent mobile squishing. Forcefully apply the `.dark-form-surface` utility to permanently resolve dark-mode contrast barriers [cite: 1175].
+* [x] **Sprint 0.1: The Bento Grid Lock.** Transition all core layouts to the 12-column asymmetric Bento Grid using fluid `clamp()` spacing to prevent mobile squishing. Forcefully apply the `.dark-form-surface` utility to permanently resolve dark-mode contrast barriers [cite: 1175].
 * [ ] **Sprint 0.2: Component Standardization.** Execute a global sweep to replace fragmented button and tab classes. Purge the legacy 'pills' UI and standardize all sub-navigation using the horizontal `.tab-nav` component. Ensure typography strictly enforces Geist Mono for data and Switzer for body copy.
 
 #### PHASE 1: Data Plane & Core Architecture Stabilization

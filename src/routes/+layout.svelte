@@ -23,12 +23,17 @@
 
 <!-- Base shell: isolate stacking; vanguard-os-shell enforces global HUD chrome + link/button resets -->
 <div
-	class="vanguard-os-shell tw-relative tw-isolate tw-z-0 tw-min-h-[100dvh] tw-bg-transparent tw-text-slate-300 tw-antialiased"
+	class="vanguard-os-shell dark-form-surface tw-relative tw-isolate tw-z-0 tw-min-h-[100dvh] tw-bg-transparent tw-text-slate-300 tw-antialiased"
 >
 	{#key page.url.pathname}
-		<div class="tw-min-h-[100dvh]" in:fade={{ duration: 150 }}>
-			{@render children()}
-		</div>
+		<main class="tw-min-h-[100dvh] bento-grid bento-grid--12col bento-grid--liquid tw-w-full" in:fade={{ duration: 150 }}>
+			<div class="bento-span-8 bento-cell">
+				{@render children()}
+			</div>
+			<aside class="bento-span-4 bento-cell">
+				<!-- Sidecar reserved for global nav/widgets -->
+			</aside>
+		</main>
 	{/key}
 </div>
 <NativeShellRedirect />
