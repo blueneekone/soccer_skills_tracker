@@ -13,12 +13,16 @@ describe('Triple-Pane SIEM Command Architecture', () => {
 			console.error('Could not read +layout.svelte:', err);
 		}
 
-		it('must wrap the app with a 100dvh flex row', () => {
-			expect(layoutContent).toContain('class="tw-flex tw-flex-row tw-w-full tw-h-screen tw-overflow-hidden tw-bg-[#0B0F19]"');
+		it('must wrap the app with a 100dvh flex shell', () => {
+			expect(layoutContent).toContain('class="tw-flex tw-w-full tw-h-screen tw-overflow-hidden tw-bg-[#0B0F19]"');
 		});
 
-		it('must contain the primary canvas with tw-flex-1 to aggressively expand', () => {
-			expect(layoutContent).toMatch(/class="tw-flex-1 tw-overflow-y-auto tw-p-6"/);
+		it('must contain Pane 1 (Left Navigation)', () => {
+			expect(layoutContent).toContain('class="tw-w-64 tw-flex-shrink-0 tw-h-full tw-border-r tw-border-slate-800 tw-z-50"');
+		});
+
+		it('must contain the primary canvas with tw-min-w-0 and tw-min-h-0 to prevent flex blowout', () => {
+			expect(layoutContent).toMatch(/class="tw-flex-1 tw-flex tw-flex-col tw-min-w-0 tw-min-h-0 tw-overflow-y-auto tw-p-6"/);
 		});
 
 		it('must include the global-alert-matrix telemetry rail with tw-w-96', () => {

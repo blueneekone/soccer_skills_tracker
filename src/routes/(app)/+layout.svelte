@@ -462,8 +462,9 @@
 	<!-- Sprint 2.7: Global Kill Switch — full-screen maintenance UI. -->
 	<MaintenanceGate message={featureFlagsStore.maintenanceMessage} />
 {:else if authStore.isAuthenticated && authStore.isProfileComplete && passkeyEligibilityConfirmed && routeGuardResolved && !holdShellForConsent}
-	<div class="tw-flex tw-flex-row tw-w-full tw-h-screen tw-overflow-hidden tw-bg-[#0B0F19]">
-		<main class="tw-flex-1 tw-overflow-y-auto tw-p-6">
+	<div class="tw-flex tw-w-full tw-h-screen tw-overflow-hidden tw-bg-[#0B0F19]">
+		<nav class="tw-w-64 tw-flex-shrink-0 tw-h-full tw-border-r tw-border-slate-800 tw-z-50"></nav>
+		<main class="tw-flex-1 tw-flex tw-flex-col tw-min-w-0 tw-min-h-0 tw-overflow-y-auto tw-p-6">
 			{#if impersonationStore.active}
 				<ImpersonationBanner />
 			{/if}
