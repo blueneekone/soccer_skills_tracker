@@ -462,8 +462,8 @@
 	<!-- Sprint 2.7: Global Kill Switch — full-screen maintenance UI. -->
 	<MaintenanceGate message={featureFlagsStore.maintenanceMessage} />
 {:else if authStore.isAuthenticated && authStore.isProfileComplete && passkeyEligibilityConfirmed && routeGuardResolved && !holdShellForConsent}
-	<div class="triple-pane-wrapper">
-		<div class="triple-pane-core">
+	<div class="tw-flex tw-flex-row tw-w-full tw-h-screen tw-overflow-hidden tw-bg-[#0B0F19]">
+		<main class="tw-flex-1 tw-overflow-y-auto tw-p-6">
 			{#if impersonationStore.active}
 				<ImpersonationBanner />
 			{/if}
@@ -512,15 +512,15 @@
 		</EnterpriseConsoleShell>
 		<PlayerDetailDrawer />
 	{/if}
-		</div>
+		</main>
 		<!-- Sprint 0.1b: Global Alert Matrix for 1920px+ viewports -->
-		<aside class="global-alert-matrix dark-form-surface">
-			<header class="matrix-header">Global Alert Matrix</header>
-			<ul class="matrix-feed">
-				<li class="alert-matrix-item">SafeSport Intercept: Clear</li>
-				<li class="alert-matrix-item">Tomorrow.io: Optimal</li>
-				<li class="alert-matrix-item">VPC Bottlenecks: Nominal</li>
-				<li class="alert-matrix-item">Stripe: Nominal</li>
+		<aside class="tw-hidden 2xl:tw-flex 2xl:tw-flex-col tw-w-96 tw-flex-shrink-0 tw-border-l tw-border-slate-800 tw-bg-[#0B0F19] tw-p-4">
+			<header class="tw-font-mono tw-text-xs tw-tracking-widest tw-uppercase tw-text-slate-400 tw-mb-4">Global Alert Matrix</header>
+			<ul class="tw-flex tw-flex-col tw-gap-2 tw-list-none tw-p-0 tw-m-0">
+				<li class="tw-px-3 tw-py-2 tw-bg-slate-900 tw-border tw-border-slate-800 tw-rounded-md tw-text-sm tw-text-slate-300 hover:tw-bg-slate-800 hover:tw-border-slate-700 tw-transition-colors tw-duration-150 tw-ease-out">SafeSport Intercept: Clear</li>
+				<li class="tw-px-3 tw-py-2 tw-bg-slate-900 tw-border tw-border-slate-800 tw-rounded-md tw-text-sm tw-text-slate-300 hover:tw-bg-slate-800 hover:tw-border-slate-700 tw-transition-colors tw-duration-150 tw-ease-out">Tomorrow.io: Optimal</li>
+				<li class="tw-px-3 tw-py-2 tw-bg-slate-900 tw-border tw-border-slate-800 tw-rounded-md tw-text-sm tw-text-slate-300 hover:tw-bg-slate-800 hover:tw-border-slate-700 tw-transition-colors tw-duration-150 tw-ease-out">VPC Bottlenecks: Nominal</li>
+				<li class="tw-px-3 tw-py-2 tw-bg-slate-900 tw-border tw-border-slate-800 tw-rounded-md tw-text-sm tw-text-slate-300 hover:tw-bg-slate-800 hover:tw-border-slate-700 tw-transition-colors tw-duration-150 tw-ease-out">Stripe: Nominal</li>
 			</ul>
 		</aside>
 	</div>
