@@ -67,6 +67,7 @@
 	} from '$lib/player/dashboard/cadenceCompletions.js';
 	import '$lib/styles/active-bounties.css';
 	import MissionHeroModal from '$lib/components/hud/MissionHeroModal.svelte';
+	import BountyRow from '$lib/components/hud/BountyRow.svelte';
 
 	let {
 		embedded = false,
@@ -566,230 +567,7 @@
 	}
 </script>
 
-{#snippet questCardContent(quest: QuestTask)}
-	{@const cadenceBlocked = questCadenceBlockedToday(quest, cadenceCompletions)}
-	{@const intentRow = quest.source === 'coach_intent' ? intentDataById[quest.id] : undefined}
-	{@const coachRequiredXp =
-		quest.source === 'coach_intent'
-			? Math.max(0, Math.floor(Number(intentRow?.requiredXp) || quest.xpReward || 0))
-			: 0}
-	{@const coachEarnedXp =
-		quest.source === 'coach_intent'
-			? computeCoachIntentEarnedXp(intentRow, playerUid, playerXpByAttribute, playerEmail)
-			: 0}
-	{@const coachXpProgressLine =
-		quest.source === 'coach_intent'
-			? formatIntentXpProgressLine(coachEarnedXp, coachRequiredXp)
-			: ''}
-	{@const creditedToday =
-		quest.source === 'coach_intent' ? coachIntentCreditedToday(quest, cadenceCompletions) : false}
-	{#if quest.senderLabel}
-		<p class="quest-hero__sender">{quest.senderLabel}</p>
-	{/if}
-	<h3 class="quest-hero__title">{quest.title}</h3>
-	{#if coachXpProgressLine}
-		<p class="quest-row__cadence pw-mono quest-hero__xp-progress" aria-label="XP progress">
-			{coachXpProgressLine}
-		</p>
-	{/if}
-	{#if creditedToday}
-		<p class="quest-row__cadence quest-row__cadence--today pw-mono" role="status">
-			{COACH_INTENT_TODAY_COMPLETE}
-		</p>
-	{/if}
-	{#if quest.source === 'coach_intent' && quest.cadence && quest.targetAttributeId}
-		{@const completed = countCadenceSessionsInWindow(
-			cadenceCompletions,
-			quest.targetAttributeId,
-			quest.cadence.windowDays,
-			undefined,
-			quest.id,
-		)}
-		<p class="quest-row__cadence pw-mono" aria-label="Cadence progress">
-			{formatCadenceProgress(completed, quest.cadence.sessionsPerWindow, quest.cadence.windowDays)}
-		</p>
-	{/if}
-	{#if formatQuestRewardLabel(quest)}
-		<p class="quest-hero__reward">{formatQuestRewardLabel(quest)}</p>
-	{/if}
-	<button
-		type="button"
-		class="quest-hero__cta"
-		class:quest-hero__cta--cadence-blocked={cadenceBlocked}
-		disabled={cadenceBlocked}
-		aria-label={cadenceBlocked ? questHudCtaBlockedCadence() : questCtaLabel(quest.lifecycle)}
-		onclick={() => handleQuestAction(quest)}
-	>
-		{cadenceBlocked ? questHudCtaBlockedCadence() : questHudCtaFor(quest)}
-	</button>
-{/snippet}
 
-{#snippet questHeroCard(quest: QuestTask, accent: 'gold' | 'teal', primary = false)}
-	<article
-		class="quest-hero quest-hero--premium"
-		class:quest-hero--primary={primary}
-		class:quest-hero--gold={accent === 'gold'}
-		class:quest-hero--teal={accent === 'teal'}
-		data-partial={quest.lifecycle === 'complete' ? 'true' : undefined}
-		aria-label="Mission"
-	>{@render questCardContent(quest)}</article>
-{/snippet}
-
-{#snippet questSecondaryCard(quest: QuestTask)}
-	<article
-		class="quest-hero quest-hero--compact quest-hero--teal"
-		data-partial={quest.lifecycle === 'complete' ? 'true' : undefined}
-		aria-label="Secondary mission"
-	>{@render questCardContent(quest)}</article>
-{/snippet}
-
-{#snippet questRowEmbedded(quest: QuestTask)}
-	{@const cadenceBlocked = questCadenceBlockedToday(quest, cadenceCompletions)}
-	{@const intentRow = quest.source === 'coach_intent' ? intentDataById[quest.id] : undefined}
-	{@const coachRequiredXp =
-		quest.source === 'coach_intent'
-			? Math.max(0, Math.floor(Number(intentRow?.requiredXp) || quest.xpReward || 0))
-			: 0}
-	{@const coachEarnedXp =
-		quest.source === 'coach_intent'
-			? computeCoachIntentEarnedXp(intentRow, playerUid, playerXpByAttribute, playerEmail)
-			: 0}
-	{@const coachXpProgressLine =
-		quest.source === 'coach_intent'
-			? formatIntentXpProgressLine(coachEarnedXp, coachRequiredXp)
-			: ''}
-	{@const creditedToday =
-		quest.source === 'coach_intent' ? coachIntentCreditedToday(quest, cadenceCompletions) : false}
-	<div
-		class="hud-bounty-row quest-row quest-row--embedded quest-row--premium quest-row--rail"
-		class:quest-row--habit={quest.tier === 'daily'}
-		class:quest-row--bounty={quest.tier === 'bounty'}
-		class:quest-row--hero={heroQuest?.id === quest.id}
-		class:quest-row--promoted={isPromotedQuest(quest) && heroQuest?.id !== quest.id}
-	>
-		{#if quest.lifecycle === 'accept'}
-			<span class="quest-row__status" aria-hidden="true"></span>
-		{:else}
-			<span class="quest-row__status quest-row__status--idle" aria-hidden="true"></span>
-		{/if}
-
-		<div class="hud-bounty-row__copy quest-row__copy quest-row__copy--embedded">
-			<p class="quest-row__line" title={quest.title}>
-				<span class="quest-row__sender">{quest.senderLabel}</span>
-				<span class="quest-row__sep" aria-hidden="true">·</span>
-				<span class="quest-row__title-text">{quest.title}</span>
-				{#if formatQuestRewardLabel(quest)}
-					<span class="quest-row__sep quest-row__sep--reward" aria-hidden="true">·</span>
-					<span class="quest-row__xp quest-row__xp--inline">{formatQuestRewardLabel(quest)}</span>
-				{/if}
-			</p>
-			{#if formatQuestRewardLabel(quest)}
-				<p class="quest-row__lede quest-row__lede--rail-wide">{formatQuestRewardLabel(quest)}</p>
-			{/if}
-			{#if quest.source === 'coach_intent'}
-				{#if coachXpProgressLine}
-					<p class="quest-row__cadence pw-mono" aria-label="XP progress">{coachXpProgressLine}</p>
-				{/if}
-				{#if creditedToday}
-					<p class="quest-row__cadence quest-row__cadence--today pw-mono" role="status">
-						{COACH_INTENT_TODAY_COMPLETE}
-					</p>
-				{/if}
-				<p class="quest-row__hint">{COACH_INTENT_HINT}</p>
-				{#if drillPreviewByQuestId[quest.id]?.line}
-					<p class="quest-row__drill">{drillPreviewByQuestId[quest.id].line}</p>
-				{/if}
-				{#if quest.cadence && quest.targetAttributeId}
-					{@const completed = countCadenceSessionsInWindow(
-						cadenceCompletions,
-						quest.targetAttributeId,
-						quest.cadence.windowDays,
-						undefined,
-						quest.id,
-					)}
-					<p class="quest-row__cadence pw-mono" aria-label="Cadence progress">
-						{formatCadenceProgress(completed, quest.cadence.sessionsPerWindow, quest.cadence.windowDays)}
-					</p>
-				{/if}
-				{#if approvedIntentIds.has(quest.id)}
-					<span class="quest-row__parent-verified" aria-label="Parent-verified">
-						Parent-verified
-					</span>
-				{/if}
-			{:else if quest.source === 'coach_homework'}
-				<p class="quest-row__drill">Assigned drill: {quest.title}</p>
-			{/if}
-		</div>
-
-		<div
-			class="hud-bounty-row__reward quest-row__reward quest-row__reward--embedded"
-			aria-hidden="true"
-		></div>
-
-		<button
-			type="button"
-			class="hud-bounty-row__cmd quest-row__cmd quest-row__cmd--embedded quest-row__cmd--rail-chip"
-			class:quest-row__cmd--accept={quest.lifecycle === 'accept'}
-			class:quest-row__cmd--complete={quest.lifecycle === 'complete'}
-			class:quest-row__cmd--claim={quest.lifecycle === 'claim'}
-			class:quest-row__cmd--cadence-blocked={cadenceBlocked}
-			disabled={cadenceBlocked}
-			aria-label={cadenceBlocked ? questHudCtaBlockedCadence() : questCtaLabel(quest.lifecycle)}
-			onclick={() => handleQuestAction(quest)}
-		>
-			{cadenceBlocked ? questHudCtaBlockedCadence() : questHudCtaFor(quest)}
-		</button>
-	</div>
-{/snippet}
-
-{#snippet questRow(quest: QuestTask, variant: 'bounty' | 'habit')}
-	<div class="hud-bounty-row quest-row" class:quest-row--habit={variant === 'habit'}>
-		<div class="hud-bounty-row__copy quest-row__copy">
-			<p class="quest-row__sender">{quest.senderLabel}</p>
-			<h3 class="quest-row__title" title={quest.title}>
-				{#if quest.lifecycle === 'accept'}
-					<span class="quest-row__status" aria-hidden="true"></span>
-				{/if}
-				<span class="quest-row__title-text">{quest.title}</span>
-			</h3>
-		</div>
-
-		<div class="hud-bounty-row__ring">
-			<HudSeededRingCanvas
-				uid={quest.id}
-				size={48}
-				fill={Math.min(1, quest.xpReward / 500)}
-				strokeColor={variant === 'bounty' ? 'var(--color-accent, #fbbf24)' : 'var(--pd-accent-data, #14b8a6)'}
-				showCenter={false}
-			/>
-		</div>
-
-		<div class="hud-bounty-row__reward quest-row__reward" aria-label="Reward">
-			{#if variant === 'bounty'}
-				<span class="quest-row__axis" title={quest.axisId}>{quest.axisId}</span>
-			{/if}
-			{#if quest.xpReward > 0}
-				<span class="quest-row__xp" class:quest-row__xp--habit={variant === 'habit'}>
-					+{quest.xpReward.toLocaleString()} XP
-				</span>
-			{:else if quest.rewardLabel}
-				<span class="quest-row__xp quest-row__xp--cash">{quest.rewardLabel}</span>
-			{/if}
-		</div>
-
-		<button
-			type="button"
-			class="hud-bounty-row__cmd quest-row__cmd"
-			class:quest-row__cmd--accept={quest.lifecycle === 'accept'}
-			class:quest-row__cmd--complete={quest.lifecycle === 'complete'}
-			class:quest-row__cmd--claim={quest.lifecycle === 'claim'}
-			aria-label={questCtaLabel(quest.lifecycle)}
-			onclick={() => handleQuestAction(quest)}
-		>
-			{questTerminalCmd(quest.lifecycle)}
-		</button>
-	</div>
-{/snippet}
 
 {#snippet coachAssignHintBlock()}
 	{#if showCoachAssignHint}
@@ -837,7 +615,7 @@
 						class:quest-terminal-row--habit={quest.tier === 'daily'}
 						class:quest-terminal-row--bounty={quest.tier === 'bounty'}
 					>
-						{@render questRowEmbedded(quest)}
+						<BountyRow {quest} embedded={true} {cadenceCompletions} intentRow={intentDataById[quest.id]} {playerUid} {playerXpByAttribute} {playerEmail} drillPreview={drillPreviewByQuestId[quest.id]} isParentVerified={approvedIntentIds.has(quest.id)} onAction={handleQuestAction} />
 					</div>
 				{/each}
 			</div>
@@ -863,7 +641,7 @@
 					<p class="quest-log__section-tag">// PRIORITY DIRECTIVES</p>
 					{#each visibleBounties as quest (quest.id)}
 						<div class="bento-span-12 quest-terminal-row quest-terminal-row--bounty">
-							{@render questRow(quest, 'bounty')}
+							<BountyRow {quest} variant="bounty" onAction={handleQuestAction} />
 						</div>
 					{/each}
 				{/if}
@@ -872,7 +650,7 @@
 					<p class="quest-log__section-tag">// ACTIVE DIRECTIVES</p>
 					{#each visibleDailies as quest (quest.id)}
 						<div class="bento-span-12 quest-terminal-row quest-terminal-row--habit">
-							{@render questRow(quest, 'habit')}
+							<BountyRow {quest} variant="habit" onAction={handleQuestAction} />
 						</div>
 					{/each}
 				{/if}
