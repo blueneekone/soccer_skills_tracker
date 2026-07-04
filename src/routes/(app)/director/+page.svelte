@@ -145,7 +145,7 @@
 	{:else if activeTab === 'comms'}
 		<section class="director-console-page__section bento-grid bento-grid--12col bento-grid--liquid tw-w-full tw-grid tw-grid-cols-1 lg:tw-grid-cols-12">
 			<section
-				class="bento-span-6 bento-cell dark-form-surface tw-flex tw-flex-col tw-gap-3 tw-p-5 tw-border tw-border-slate-600 tw-rounded-xl tw-bg-slate-900"
+				class="bento-span-8 bento-cell dark-form-surface tw-flex tw-flex-col tw-gap-3 tw-p-5 tw-border tw-border-slate-600 tw-rounded-xl tw-bg-slate-900"
 				aria-labelledby="director-comms-cta-heading"
 			>
 				<h2 id="director-comms-cta-heading" class="tw-m-0 tw-text-base tw-font-extrabold tw-text-slate-50">
@@ -163,7 +163,7 @@
 				</a>
 			</section>
 			<section
-				class="bento-span-6 bento-cell dark-form-surface tw-flex tw-flex-col tw-gap-3 tw-p-5 tw-border tw-border-slate-600 tw-rounded-xl tw-bg-slate-900"
+				class="bento-span-4 bento-cell dark-form-surface tw-flex tw-flex-col tw-gap-3 tw-p-5 tw-border tw-border-slate-600 tw-rounded-xl tw-bg-slate-900"
 				aria-labelledby="director-sponsor-ops-heading"
 			>
 				<h2 id="director-sponsor-ops-heading" class="tw-m-0 tw-text-base tw-font-extrabold tw-text-slate-50">

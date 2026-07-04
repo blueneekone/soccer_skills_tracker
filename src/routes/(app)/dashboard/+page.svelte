@@ -17,7 +17,7 @@
 
 		<!-- ── Capability Level hero tile (8 cols) ────────────────────────── -->
 		<div
-			class="vanguard-surface vanguard-surface--hero-liquid bento-cell tw-col-span-12 lg:tw-col-span-8 tw-relative tw-flex tw-min-h-[240px] tw-min-w-0 tw-flex-col tw-justify-between tw-overflow-hidden tw-rounded-vanguard"
+			class="vanguard-surface vanguard-surface--hero-liquid bento-cell bento-span-8 tw-relative tw-flex tw-min-h-[240px] tw-min-w-0 tw-flex-col tw-justify-between tw-overflow-hidden tw-rounded-vanguard"
 			aria-label="Current Capability Level"
 		>
 			<!-- Ambient gradient — no neon, strictly per .cursorrules §2 -->
@@ -46,7 +46,7 @@
 
 		<!-- ── Engagement Streak card (4 cols) ────────────────────────────── -->
 		<div
-			class="vanguard-card vanguard-surface--liquid bento-cell tw-col-span-12 lg:tw-col-span-4 tw-flex tw-min-h-[240px] tw-min-w-0 tw-flex-col tw-justify-between tw-rounded-vanguard"
+			class="vanguard-card vanguard-surface--liquid bento-cell bento-span-4 tw-flex tw-min-h-[240px] tw-min-w-0 tw-flex-col tw-justify-between tw-rounded-vanguard"
 			aria-label="Engagement Streak"
 		>
 			<h2 class="tw-font-mono tw-text-xs tw-uppercase tw-tracking-widest tw-text-slate-400">

@@ -96,7 +96,7 @@
 		{/each}
 
 			<div class="cc-chart-row bento-span-12 bento-grid bento-grid--12col bento-grid--liquid tw-min-w-0 tw-grid tw-grid-cols-1 lg:tw-grid-cols-12">
-				<article class="cc-chart-card cc-chart-card--half cc-chart-card--soc bento-span-6 tw-min-w-0">
+				<article class="cc-chart-card cc-chart-card--half cc-chart-card--soc bento-span-8 tw-min-w-0">
 					<header class="cc-chart-card__head">
 					<div class="cc-chart-card__icon cc-chart-card__icon--emerald" aria-hidden="true">
 						<Icon name={"data.chart-pie" as IconName} />
@@ -115,7 +115,7 @@
 					</div>
 				</article>
 
-				<article class="cc-chart-card cc-chart-card--half cc-chart-card--soc bento-span-6 tw-min-w-0">
+				<article class="cc-chart-card cc-chart-card--half cc-chart-card--soc bento-span-4 tw-min-w-0">
 					<header class="cc-chart-card__head">
 						<div class="cc-chart-card__icon cc-chart-card__icon--cyan" aria-hidden="true">
 						<Icon name={"sport.soccer" as IconName} />
@@ -142,7 +142,7 @@
 					{@render socMetric(kpi)}
 				</div>
 			{/each}
-				<aside class="cc-soc-aside tw-col-span-12 lg:tw-col-span-4 tw-min-w-0" aria-label="Automation and orchestration">
+				<aside class="cc-soc-aside bento-span-4 tw-min-w-0" aria-label="Automation and orchestration">
 					<div class="cc-soc-aside__head">
 						<span class="cc-soc-aside__eyebrow">SOAR-style</span>
 						<h3 class="cc-soc-aside__title">Playbooks &amp; queue</h3>

@@ -366,15 +366,16 @@
 		</div>
 	</div>
 
-	<div class="bento-mb-md">
-		<RosterIngestPanel teamId={teamId} clubId={adminClubId} />
-	</div>
-
-	<div class="bento-mb-md">
-		<RegistrarRosterTransferPanel
-			clubId={adminClubId}
-			targetTeamId={teamId}
-		/>
+	<div class="bento-grid bento-grid--12col bento-grid--liquid tw-w-full tw-grid tw-grid-cols-1 lg:tw-grid-cols-12 bento-mb-md">
+		<div class="bento-span-8">
+			<RosterIngestPanel teamId={teamId} clubId={adminClubId} />
+		</div>
+		<div class="bento-span-4">
+			<RegistrarRosterTransferPanel
+				clubId={adminClubId}
+				targetTeamId={teamId}
+			/>
+		</div>
 	</div>
 
 	{#if rosterErr}

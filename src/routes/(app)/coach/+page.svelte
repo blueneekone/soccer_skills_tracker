@@ -337,8 +337,8 @@
 				</div>
 			</article>
 
-		<!-- MEDIA HUB — 6 col -->
-		<div class="bento-span-6 tw-min-w-0">
+		<!-- MEDIA HUB — 8 col -->
+		<div class="bento-span-8 tw-min-w-0">
 			<button
 				type="button"
 				class="coach-os-panel bento-cell dark-form-surface tw-relative tw-flex tw-min-h-[220px] tw-h-full tw-w-full tw-flex-col tw-items-center tw-justify-center tw-overflow-hidden tw-p-6 tw-text-center hover:tw-bg-white/[0.03] tw-transition-colors"
@@ -355,9 +355,9 @@
 			</button>
 		</div>
 
-		<!-- WEATHER MONITORING — AEGIS live widget (6 col) -->
+		<!-- WEATHER MONITORING — AEGIS live widget (4 col) -->
 		<!-- Kill switch: feature_weather_aegis_enabled (Remote Config) -->
-		<div class="bento-span-6 tw-min-w-0">
+		<div class="bento-span-4 tw-min-w-0">
 			{#if vanguardFlags.weatherEnabled}
 				<WeatherWidget lat={fieldLat} lng={fieldLng} coordsLabel={weatherCoords} />
 			{:else}
