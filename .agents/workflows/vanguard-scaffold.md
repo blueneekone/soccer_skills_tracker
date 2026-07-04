@@ -28,4 +28,3 @@ description: Automates the creation of a Svelte 5 Vanguard Trinity component sui
 2. Execute the Vitest suite via JSDOM/Happy DOM against the newly created test blocks [cite: 696].
 3. Pessimistic Execution: If there are ANY Svelte 5 compilation errors, TypeScript `any` violations, or test failures, you must revert the change, slice the logic smaller, and self-heal [cite: 696].
 4. ONLY after mathematically proving the code is stable with 0 errors may you atomically commit the generated files to Git [cite: 696].
-H
