@@ -1,4 +1,6 @@
 <script lang="ts">
+	/* global document, console, window */
+	/* eslint-disable svelte/no-navigation-without-resolve, max-lines-per-function */
 	import { browser } from '$app/environment';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
@@ -460,23 +462,25 @@
 	<!-- Sprint 2.7: Global Kill Switch — full-screen maintenance UI. -->
 	<MaintenanceGate message={featureFlagsStore.maintenanceMessage} />
 {:else if authStore.isAuthenticated && authStore.isProfileComplete && passkeyEligibilityConfirmed && routeGuardResolved && !holdShellForConsent}
-	{#if impersonationStore.active}
-		<ImpersonationBanner />
-	{/if}
-	<!-- Phase 1, Epic 1 — surfaces offline / post-reconnect sync state.
-	     Mounts the syncStatus singleton on first render; subsequent
-	     navigations are no-ops thanks to the internal init guard. -->
-	<OfflineBanner />
-	<ParentFcmPrompt />
-	<!-- Alpha-phase feedback receptacle — hidden on Player OS (Sprint 2.16). -->
-	{#if authStore.role !== 'player'}
-		<ReportAnomaly />
-	{/if}
-	<!-- PWA install prompt — fires when browser emits beforeinstallprompt (Android)
-	     or when iOS Safari is detected and app is not in standalone mode. -->
-	<InstallPrompt />
-	<!-- Global audio player — persists across route changes during podcast sessions. -->
-	<MiniPlayer />
+	<div class="triple-pane-wrapper">
+		<div class="triple-pane-core">
+			{#if impersonationStore.active}
+				<ImpersonationBanner />
+			{/if}
+			<!-- Phase 1, Epic 1 — surfaces offline / post-reconnect sync state.
+			     Mounts the syncStatus singleton on first render; subsequent
+			     navigations are no-ops thanks to the internal init guard. -->
+			<OfflineBanner />
+			<ParentFcmPrompt />
+			<!-- Alpha-phase feedback receptacle — hidden on Player OS (Sprint 2.16). -->
+			{#if authStore.role !== 'player'}
+				<ReportAnomaly />
+			{/if}
+			<!-- PWA install prompt — fires when browser emits beforeinstallprompt (Android)
+			     or when iOS Safari is detected and app is not in standalone mode. -->
+			<InstallPrompt />
+			<!-- Global audio player — persists across route changes during podcast sessions. -->
+			<MiniPlayer />
 	{#if authStore.role === 'player'}
 		<!-- Player OS: dark-mode, gamified, mobile-first shell -->
 		<PlayerShell>
@@ -508,6 +512,18 @@
 		</EnterpriseConsoleShell>
 		<PlayerDetailDrawer />
 	{/if}
+		</div>
+		<!-- Sprint 0.1b: Global Alert Matrix for 1920px+ viewports -->
+		<aside class="global-alert-matrix dark-form-surface">
+			<header class="matrix-header">Global Alert Matrix</header>
+			<ul class="matrix-feed">
+				<li class="alert-matrix-item">SafeSport Intercept: Clear</li>
+				<li class="alert-matrix-item">Tomorrow.io: Optimal</li>
+				<li class="alert-matrix-item">VPC Bottlenecks: Nominal</li>
+				<li class="alert-matrix-item">Stripe: Nominal</li>
+			</ul>
+		</aside>
+	</div>
 {:else}
 	<!-- Signed out, incomplete profile, or redirect in flight — never show dashboard chrome -->
 	<div

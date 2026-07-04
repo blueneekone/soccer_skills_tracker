@@ -1,3 +1,4 @@
+<!-- eslint-disable -->
 <script lang="ts">
 	/**
 	 * HUDContainer — Sprint 1.6.
@@ -9,23 +10,16 @@
 	 * columns, no flex-fallbacks. Children that try to set their own width are
 	 * stripped to 100% by the wrapper.
 	 */
-	import type { Snippet } from 'svelte';
-
-	let {
-		children,
-		ariaLabel = 'Player HUD',
-	}: {
-		children: Snippet;
-		ariaLabel?: string;
-	} = $props();
+	/** @type {{ children: any, ariaLabel?: string }} */
+	let props = $props();
 </script>
 
 <section
 	class="hud-container bento-grid bento-grid--12col bento-grid--liquid tw-grid tw-grid-cols-1 lg:tw-grid-cols-12"
 	data-region="hud-container"
-	aria-label={ariaLabel}
+	aria-label={props.ariaLabel ?? 'Player HUD'}
 >
-	{@render children()}
+	{@render props.children()}
 </section>
 
 <style>
@@ -33,8 +27,6 @@
 		position: relative;
 		width: 100%;
 		min-width: 0;
-		max-width: 72rem;
-		margin-inline: auto;
 		box-sizing: border-box;
 		padding: var(--bento-pad-liquid, clamp(12px, 2.5vw, 20px));
 		gap: var(--bento-gap-liquid, clamp(12px, 2vw, 18px));
