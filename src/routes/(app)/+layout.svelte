@@ -465,7 +465,7 @@
 	<MaintenanceGate message={featureFlagsStore.maintenanceMessage} />
 {:else if authStore.isAuthenticated && authStore.isProfileComplete && passkeyEligibilityConfirmed && routeGuardResolved && !holdShellForConsent}
 	<div class="tw-flex tw-w-full tw-h-screen tw-overflow-hidden tw-bg-[#0B0F19]">
-		<NexusSidebar />
+		
 		<main class="tw-flex-1 tw-flex tw-flex-col tw-min-w-0 tw-min-h-0 tw-overflow-y-auto tw-p-6">
 			{#if impersonationStore.active}
 				<ImpersonationBanner />
