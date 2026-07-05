@@ -9,17 +9,26 @@
 </script>
 
 <div
-	class="cc-root tw-box-border tw-mx-auto tw-w-full tw-max-w-[1680px] tw-grid tw-grid-cols-1 xl:tw-grid-cols-12 tw-gap-8"
+	class="tw-col-span-1 lg:tw-col-span-12 tw-flex tw-flex-col tw-w-full tw-bg-[#0B0F19] tw-text-[#FAFAFA] dark-form-surface cc-root tw-box-border tw-mx-auto tw-max-w-[1680px]"
 	style="padding: var(--bento-pad-liquid);"
 	data-admin-shell="true"
 >
-	<div class="xl:tw-col-span-8 tw-min-w-0 tw-flex tw-flex-col">
-		<AdminOverviewHUD {engine} area="header" />
-		<AdminOverviewArena {engine} />
+	<div class="tw-grid tw-grid-cols-1 xl:tw-grid-cols-12 tw-gap-8 tw-w-full tw-min-w-0">
+		<div class="xl:tw-col-span-8 tw-min-w-0 tw-flex tw-flex-col tw-break-words tw-whitespace-normal">
+			<AdminOverviewHUD {engine} area="header" />
+			<section
+				class="tw-grid tw-w-full tw-min-w-0"
+				style="grid-template-columns: repeat(auto-fit, minmax(min(100%, clamp(280px, 30vw, 350px)), 1fr));"
+			>
+				<div class="tw-min-w-0">
+					<AdminOverviewArena {engine} />
+				</div>
+			</section>
+		</div>
+		<aside class="xl:tw-col-span-4 tw-min-w-0 tw-flex tw-flex-col tw-gap-6 tw-break-words tw-whitespace-normal">
+			<AdminOverviewHUD {engine} area="sidebar" />
+		</aside>
 	</div>
-	<aside class="xl:tw-col-span-4 tw-min-w-0 tw-flex tw-flex-col tw-gap-6">
-		<AdminOverviewHUD {engine} area="sidebar" />
-	</aside>
 </div>
 
 <style>
