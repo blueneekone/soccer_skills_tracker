@@ -17,8 +17,12 @@ describe('Triple-Pane SIEM Command Architecture', () => {
 			expect(layoutContent).toContain('class="tw-flex tw-w-full tw-h-screen tw-overflow-hidden tw-bg-[#0B0F19]"');
 		});
 
-		it('must contain Pane 1 (Left Navigation)', () => {
-			expect(layoutContent).toContain('class="tw-w-64 tw-flex-shrink-0 tw-h-full tw-border-r tw-border-slate-800 tw-z-50"');
+		it('must declare Svelte 5 $props() for route children', () => {
+			expect(layoutContent).toContain('let { children } = $props()');
+		});
+
+		it('must render children() inside the primary canvas for Svelte 5 routing', () => {
+			expect(layoutContent).toContain('{@render children()}');
 		});
 
 		it('must contain the primary canvas with tw-min-w-0 and tw-min-h-0 to prevent flex blowout', () => {
