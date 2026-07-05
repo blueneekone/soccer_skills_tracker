@@ -56,19 +56,20 @@
 	</p>
 
 	{#if engine.activeTab === 'executive'}
-		<div
-			class="cc-panel bento-grid bento-grid--12col bento-grid--liquid tw-grid tw-grid-cols-1 lg:tw-grid-cols-12"
+		<section
+			class="cc-panel bento-grid bento-grid--liquid tw-grid tw-gap-6 tw-w-full"
+			style="grid-template-columns: repeat(auto-fit, minmax(min(100%, clamp(280px, 30vw, 350px)), 1fr));"
 			id="cc-panel-executive"
 			role="tabpanel"
 			aria-labelledby="cc-tab-executive"
 		>
 		{#each engine.strike13Executive as kpi (kpi.label)}
-			<div class="bento-span-3 lg:tw-col-span-3 tw-min-w-0">
+			<div class="bento-span-3 tw-min-w-0">
 				{@render socMetric(kpi)}
 			</div>
 		{/each}
 
-			<article class="cc-chart-card cc-chart-card--soc bento-span-12 lg:tw-col-span-12 tw-min-w-0">
+			<article class="cc-chart-card cc-chart-card--soc bento-span-12 tw-col-span-full tw-min-w-0">
 				<header class="cc-chart-card__head">
 				<div class="cc-chart-card__icon cc-chart-card__icon--indigo" aria-hidden="true">
 					<Icon name={"data.trending" as IconName} />
@@ -86,17 +87,17 @@
 					></canvas>
 				</div>
 			</article>
-		</div>
+		</section>
 	{:else if engine.activeTab === 'growth'}
-		<div class="cc-panel bento-grid bento-grid--12col bento-grid--liquid tw-grid tw-grid-cols-1 lg:tw-grid-cols-12" id="cc-panel-growth" role="tabpanel" aria-labelledby="cc-tab-growth">
+		<section class="cc-panel bento-grid bento-grid--liquid tw-grid tw-gap-6 tw-w-full" style="grid-template-columns: repeat(auto-fit, minmax(min(100%, clamp(280px, 30vw, 350px)), 1fr));" id="cc-panel-growth" role="tabpanel" aria-labelledby="cc-tab-growth">
 		{#each engine.GROWTH_TILES as kpi (kpi.label)}
-			<div class="bento-span-3 lg:tw-col-span-3 tw-min-w-0">
+			<div class="bento-span-3 tw-min-w-0">
 				{@render socMetric(kpi)}
 			</div>
 		{/each}
 
-			<div class="cc-chart-row bento-span-12 bento-grid bento-grid--12col bento-grid--liquid tw-min-w-0 tw-grid tw-grid-cols-1 lg:tw-grid-cols-12">
-				<article class="cc-chart-card cc-chart-card--half cc-chart-card--soc bento-span-8 tw-min-w-0">
+			<div class="cc-chart-row bento-span-12 tw-col-span-full tw-min-w-0 tw-grid tw-grid-cols-1 lg:tw-grid-cols-12 tw-gap-6">
+				<article class="cc-chart-card cc-chart-card--half cc-chart-card--soc lg:tw-col-span-8 tw-min-w-0">
 					<header class="cc-chart-card__head">
 					<div class="cc-chart-card__icon cc-chart-card__icon--emerald" aria-hidden="true">
 						<Icon name={"data.chart-pie" as IconName} />
@@ -115,7 +116,7 @@
 					</div>
 				</article>
 
-				<article class="cc-chart-card cc-chart-card--half cc-chart-card--soc bento-span-4 tw-min-w-0">
+				<article class="cc-chart-card cc-chart-card--half cc-chart-card--soc lg:tw-col-span-4 tw-min-w-0">
 					<header class="cc-chart-card__head">
 						<div class="cc-chart-card__icon cc-chart-card__icon--cyan" aria-hidden="true">
 						<Icon name={"sport.soccer" as IconName} />
@@ -134,15 +135,15 @@
 					</div>
 				</article>
 			</div>
-		</div>
+		</section>
 	{:else if engine.activeTab === 'security'}
-		<div class="cc-panel bento-grid bento-grid--12col bento-grid--liquid tw-grid tw-grid-cols-1 lg:tw-grid-cols-12" id="cc-panel-security" role="tabpanel" aria-labelledby="cc-tab-security">
+		<section class="cc-panel bento-grid bento-grid--liquid tw-grid tw-gap-6 tw-w-full" style="grid-template-columns: repeat(auto-fit, minmax(min(100%, clamp(280px, 30vw, 350px)), 1fr));" id="cc-panel-security" role="tabpanel" aria-labelledby="cc-tab-security">
 			{#each engine.strike13Security as kpi (kpi.label)}
-				<div class="bento-span-3 lg:tw-col-span-3 tw-min-w-0">
+				<div class="bento-span-3 tw-min-w-0">
 					{@render socMetric(kpi)}
 				</div>
 			{/each}
-				<aside class="cc-soc-aside bento-span-4 lg:tw-col-span-4 tw-min-w-0" aria-label="Automation and orchestration">
+				<aside class="cc-soc-aside bento-span-4 tw-col-span-full tw-min-w-0" aria-label="Automation and orchestration">
 					<div class="cc-soc-aside__head">
 						<span class="cc-soc-aside__eyebrow">SOAR-style</span>
 						<h3 class="cc-soc-aside__title">Playbooks &amp; queue</h3>
@@ -173,14 +174,14 @@
 				</aside>
 
 
-		</div>
+		</section>
 	{:else}
-		<div class="cc-panel bento-grid bento-grid--12col bento-grid--liquid tw-grid tw-grid-cols-1 lg:tw-grid-cols-12" id="cc-panel-platform" role="tabpanel" aria-labelledby="cc-tab-platform">
+		<section class="cc-panel bento-grid bento-grid--liquid tw-grid tw-gap-6 tw-w-full" style="grid-template-columns: repeat(auto-fit, minmax(min(100%, clamp(280px, 30vw, 350px)), 1fr));" id="cc-panel-platform" role="tabpanel" aria-labelledby="cc-tab-platform">
 		{#each engine.PLATFORM_TILES as kpi (kpi.label)}
-			<div class="bento-span-3 lg:tw-col-span-3 tw-min-w-0">
+			<div class="bento-span-3 tw-min-w-0">
 				{@render socMetric(kpi)}
 			</div>
 		{/each}
-		</div>
+		</section>
 	{/if}
 </div>

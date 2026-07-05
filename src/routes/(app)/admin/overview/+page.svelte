@@ -17,7 +17,7 @@
 		<div class="xl:tw-col-span-8 tw-min-w-0 tw-flex tw-flex-col tw-break-words tw-whitespace-normal">
 			<AdminOverviewHUD {engine} area="header" />
 			<section
-				class="tw-grid tw-w-full tw-min-w-0"
+				class="tw-w-full tw-min-w-0"
 				style="grid-template-columns: repeat(auto-fit, minmax(min(100%, clamp(280px, 30vw, 350px)), 1fr));"
 			>
 				<div class="tw-min-w-0">
