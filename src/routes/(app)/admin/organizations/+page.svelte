@@ -14,7 +14,7 @@
 
 <div class="tw-grid tw-grid-cols-1 xl:tw-grid-cols-12 tw-gap-6 tw-w-full">
 	<div class="xl:tw-col-span-8 tw-min-w-0">
-		<section class="tw-w-full orgs-panel orgs3-page dark-form-surface">
+		<section class="tw-w-full orgs-panel orgs3-page">
 			<AdminOrgsHUD {engine} />
 			<AdminOrgsArena {engine} />
 		</section>
@@ -31,7 +31,7 @@
 		/>
 		
 		{#if !engine.editingClub}
-			<div class="cc-chart-card cc-chart-card--soc tw-h-full tw-flex tw-items-center tw-justify-center tw-text-vanguard-text-muted dark-form-surface" data-admin-shell="true">
+			<div class="cc-chart-card cc-chart-card--soc tw-h-full tw-flex tw-items-center tw-justify-center tw-text-vanguard-text-muted" data-admin-shell="true">
 				Select an organization to view details
 			</div>
 		{/if}

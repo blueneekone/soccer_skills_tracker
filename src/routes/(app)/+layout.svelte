@@ -385,8 +385,10 @@
 		// must not be present on player routes; remove it reactively on role change.
 		if (authStore.role === 'player') {
 			document.documentElement.classList.remove('enterprise-console-active');
+			document.documentElement.classList.remove('dark');
 		} else {
 			document.documentElement.classList.add('enterprise-console-active');
+			document.documentElement.classList.add('dark');
 		}
 	});
 

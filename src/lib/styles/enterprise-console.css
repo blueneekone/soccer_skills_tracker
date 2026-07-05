@@ -527,7 +527,7 @@ html.dark .ec-nav-section {
 	}
 
 	.ec-canvas {
-		padding: 0;
+		padding: var(--bento-pad-liquid);
 		/* MobilePinBar + MobileDirectorFab */
 		padding-bottom: calc(7rem + env(safe-area-inset-bottom, 0px));
 	}
@@ -763,8 +763,7 @@ html.dark .ec-icon-btn:hover {
 	overflow-x: hidden;
 	overflow-y: auto;
 	-webkit-overflow-scrolling: touch;
-	/* Sprint 1.1 — zero inset; page bento grids own --bento-pad-liquid */
-	padding: 0;
+	padding: var(--bento-pad-liquid);
 	box-sizing: border-box;
 	width: 100%;
 }

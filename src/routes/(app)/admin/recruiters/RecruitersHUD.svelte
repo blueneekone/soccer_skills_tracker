@@ -37,13 +37,13 @@
 		>
 			<Icon name={"nav.refresh" as IconName} class="tw-text-lg {engine.loading ? 'ar-toolbar-sync__spin' : ''}" />
 		</button>
-		<div class="ar-tabs" role="tablist" aria-label="Verification filter">
+		<div class="tw-flex tw-flex-wrap tw-gap-2 tw-rounded-lg tw-border tw-border-slate-800 tw-bg-slate-900/60 tw-p-2" role="tablist" aria-label="Verification filter">
 			<button
 				type="button"
 				role="tab"
 				aria-selected={engine.statusFilter === ''}
-				class="ar-tab"
-				class:ar-tab--on={engine.statusFilter === ''}
+				class="tab-nav focus-visible:tw-outline focus-visible:tw-outline-2 focus-visible:tw-outline-offset-2 focus-visible:tw-outline-teal-500"
+				class:tab-nav--active={engine.statusFilter === ''}
 				onclick={() => (engine.statusFilter = '')}
 			>
 				All <span class="ar-tab__n ar-tab__n--total">{engine.counts.total}</span>
@@ -52,8 +52,8 @@
 				type="button"
 				role="tab"
 				aria-selected={engine.statusFilter === 'pending'}
-				class="ar-tab"
-				class:ar-tab--on={engine.statusFilter === 'pending'}
+				class="tab-nav focus-visible:tw-outline focus-visible:tw-outline-2 focus-visible:tw-outline-offset-2 focus-visible:tw-outline-teal-500"
+				class:tab-nav--active={engine.statusFilter === 'pending'}
 				onclick={() => (engine.statusFilter = 'pending')}
 			>
 				Pending <span class="ar-tab__n ar-tab__n--pending text-amber-500">{engine.counts.pending}</span>
@@ -62,8 +62,8 @@
 				type="button"
 				role="tab"
 				aria-selected={engine.statusFilter === 'verified'}
-				class="ar-tab"
-				class:ar-tab--on={engine.statusFilter === 'verified'}
+				class="tab-nav focus-visible:tw-outline focus-visible:tw-outline-2 focus-visible:tw-outline-offset-2 focus-visible:tw-outline-teal-500"
+				class:tab-nav--active={engine.statusFilter === 'verified'}
 				onclick={() => (engine.statusFilter = 'verified')}
 			>
 				Verified <span class="ar-tab__n ar-tab__n--verified text-emerald-500">{engine.counts.verified}</span>
@@ -72,8 +72,8 @@
 				type="button"
 				role="tab"
 				aria-selected={engine.statusFilter === 'rejected'}
-				class="ar-tab"
-				class:ar-tab--on={engine.statusFilter === 'rejected'}
+				class="tab-nav focus-visible:tw-outline focus-visible:tw-outline-2 focus-visible:tw-outline-offset-2 focus-visible:tw-outline-teal-500"
+				class:tab-nav--active={engine.statusFilter === 'rejected'}
 				onclick={() => (engine.statusFilter = 'rejected')}
 			>
 				Rejected <span class="ar-tab__n ar-tab__n--rejected text-rose-500">{engine.counts.rejected}</span>

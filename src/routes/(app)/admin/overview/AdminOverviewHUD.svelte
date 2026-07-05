@@ -33,7 +33,7 @@
 	</header>
 
 	<div
-		class="cc-tabs tw-flex tw-flex-wrap tw-gap-1 tw-border-b tw-border-white/10 tw-px-0 tw-py-0"
+		class="tw-flex tw-flex-wrap tw-gap-2 tw-rounded-lg tw-border tw-border-slate-800 tw-bg-slate-900/60 tw-p-2 tw-mt-4 tw-mb-6"
 		role="tablist"
 		aria-label="Command center departments"
 	>
@@ -41,8 +41,8 @@
 			<button
 				type="button"
 				id="cc-tab-{tid}"
-				class="cc-tab"
-				class:cc-tab--active={engine.activeTab === tid}
+				class="tab-nav focus-visible:tw-outline focus-visible:tw-outline-2 focus-visible:tw-outline-offset-2 focus-visible:tw-outline-teal-500"
+				class:tab-nav--active={engine.activeTab === tid}
 				role="tab"
 				aria-selected={engine.activeTab === tid}
 				aria-controls="cc-panel-{tid}"
