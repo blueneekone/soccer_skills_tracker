@@ -57,8 +57,7 @@
 
 	{#if engine.activeTab === 'executive'}
 		<section
-			class="cc-panel bento-grid bento-grid--liquid tw-grid tw-gap-6 tw-w-full"
-			style="grid-template-columns: repeat(auto-fit, minmax(min(100%, clamp(280px, 30vw, 350px)), 1fr));"
+			class="cc-panel bento-grid bento-grid--12col bento-grid--liquid tw-grid tw-grid-cols-1 lg:tw-grid-cols-12 tw-w-full"
 			id="cc-panel-executive"
 			role="tabpanel"
 			aria-labelledby="cc-tab-executive"
@@ -89,7 +88,7 @@
 			</article>
 		</section>
 	{:else if engine.activeTab === 'growth'}
-		<section class="cc-panel bento-grid bento-grid--liquid tw-grid tw-gap-6 tw-w-full" style="grid-template-columns: repeat(auto-fit, minmax(min(100%, clamp(280px, 30vw, 350px)), 1fr));" id="cc-panel-growth" role="tabpanel" aria-labelledby="cc-tab-growth">
+		<section class="cc-panel bento-grid bento-grid--12col bento-grid--liquid tw-grid tw-grid-cols-1 lg:tw-grid-cols-12 tw-w-full" id="cc-panel-growth" role="tabpanel" aria-labelledby="cc-tab-growth">
 		{#each engine.GROWTH_TILES as kpi (kpi.label)}
 			<div class="bento-span-3 tw-min-w-0">
 				{@render socMetric(kpi)}
@@ -137,7 +136,7 @@
 			</div>
 		</section>
 	{:else if engine.activeTab === 'security'}
-		<section class="cc-panel bento-grid bento-grid--liquid tw-grid tw-gap-6 tw-w-full" style="grid-template-columns: repeat(auto-fit, minmax(min(100%, clamp(280px, 30vw, 350px)), 1fr));" id="cc-panel-security" role="tabpanel" aria-labelledby="cc-tab-security">
+		<section class="cc-panel bento-grid bento-grid--12col bento-grid--liquid tw-grid tw-grid-cols-1 lg:tw-grid-cols-12 tw-w-full" id="cc-panel-security" role="tabpanel" aria-labelledby="cc-tab-security">
 			{#each engine.strike13Security as kpi (kpi.label)}
 				<div class="bento-span-3 tw-min-w-0">
 					{@render socMetric(kpi)}
@@ -176,7 +175,7 @@
 
 		</section>
 	{:else}
-		<section class="cc-panel bento-grid bento-grid--liquid tw-grid tw-gap-6 tw-w-full" style="grid-template-columns: repeat(auto-fit, minmax(min(100%, clamp(280px, 30vw, 350px)), 1fr));" id="cc-panel-platform" role="tabpanel" aria-labelledby="cc-tab-platform">
+		<section class="cc-panel bento-grid bento-grid--12col bento-grid--liquid tw-grid tw-grid-cols-1 lg:tw-grid-cols-12 tw-w-full" id="cc-panel-platform" role="tabpanel" aria-labelledby="cc-tab-platform">
 		{#each engine.PLATFORM_TILES as kpi (kpi.label)}
 			<div class="bento-span-3 tw-min-w-0">
 				{@render socMetric(kpi)}

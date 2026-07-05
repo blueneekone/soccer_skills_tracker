@@ -466,7 +466,7 @@
 {:else if authStore.isAuthenticated && authStore.isProfileComplete && passkeyEligibilityConfirmed && routeGuardResolved && !holdShellForConsent}
 	<div class="tw-flex tw-w-full tw-h-screen tw-overflow-hidden tw-bg-[#0B0F19]">
 		
-		<main class="tw-flex-1 tw-flex tw-flex-col tw-min-w-0 tw-min-h-0 tw-overflow-y-auto tw-p-6">
+		<main class="tw-flex-1 tw-flex tw-flex-col tw-min-w-0 tw-min-h-0 tw-overflow-hidden">
 			{#if impersonationStore.active}
 				<ImpersonationBanner />
 			{/if}
