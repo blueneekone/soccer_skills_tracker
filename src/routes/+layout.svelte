@@ -26,13 +26,8 @@
 	class="vanguard-os-shell dark-form-surface tw-relative tw-isolate tw-z-0 tw-min-h-[100dvh] tw-bg-transparent tw-text-slate-300 tw-antialiased"
 >
 	{#key page.url.pathname}
-		<main class="tw-min-h-[100dvh] bento-grid bento-grid--12col bento-grid--liquid tw-w-full" in:fade={{ duration: 150 }}>
-			<div class="bento-span-8 bento-cell">
-				{@render children()}
-			</div>
-			<aside class="bento-span-4 bento-cell">
-				<!-- Sidecar reserved for global nav/widgets -->
-			</aside>
+		<main class="tw-w-full tw-min-h-[100dvh] tw-flex tw-flex-col" in:fade={{ duration: 150 }}>
+			{@render children()}
 		</main>
 	{/key}
 </div>
