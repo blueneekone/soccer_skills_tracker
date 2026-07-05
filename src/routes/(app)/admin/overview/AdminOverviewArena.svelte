@@ -63,12 +63,12 @@
 			aria-labelledby="cc-tab-executive"
 		>
 		{#each engine.strike13Executive as kpi (kpi.label)}
-			<div class="bento-span-3 tw-min-w-0">
+			<div class="bento-span-3 lg:tw-col-span-3 tw-min-w-0">
 				{@render socMetric(kpi)}
 			</div>
 		{/each}
 
-			<article class="cc-chart-card cc-chart-card--soc bento-span-12 tw-min-w-0">
+			<article class="cc-chart-card cc-chart-card--soc bento-span-12 lg:tw-col-span-12 tw-min-w-0">
 				<header class="cc-chart-card__head">
 				<div class="cc-chart-card__icon cc-chart-card__icon--indigo" aria-hidden="true">
 					<Icon name={"data.trending" as IconName} />
@@ -90,7 +90,7 @@
 	{:else if engine.activeTab === 'growth'}
 		<div class="cc-panel bento-grid bento-grid--12col bento-grid--liquid tw-grid tw-grid-cols-1 lg:tw-grid-cols-12" id="cc-panel-growth" role="tabpanel" aria-labelledby="cc-tab-growth">
 		{#each engine.GROWTH_TILES as kpi (kpi.label)}
-			<div class="bento-span-3 tw-min-w-0">
+			<div class="bento-span-3 lg:tw-col-span-3 tw-min-w-0">
 				{@render socMetric(kpi)}
 			</div>
 		{/each}
@@ -138,11 +138,11 @@
 	{:else if engine.activeTab === 'security'}
 		<div class="cc-panel bento-grid bento-grid--12col bento-grid--liquid tw-grid tw-grid-cols-1 lg:tw-grid-cols-12" id="cc-panel-security" role="tabpanel" aria-labelledby="cc-tab-security">
 			{#each engine.strike13Security as kpi (kpi.label)}
-				<div class="bento-span-3 tw-min-w-0">
+				<div class="bento-span-3 lg:tw-col-span-3 tw-min-w-0">
 					{@render socMetric(kpi)}
 				</div>
 			{/each}
-				<aside class="cc-soc-aside bento-span-4 tw-min-w-0" aria-label="Automation and orchestration">
+				<aside class="cc-soc-aside bento-span-4 lg:tw-col-span-4 tw-min-w-0" aria-label="Automation and orchestration">
 					<div class="cc-soc-aside__head">
 						<span class="cc-soc-aside__eyebrow">SOAR-style</span>
 						<h3 class="cc-soc-aside__title">Playbooks &amp; queue</h3>
@@ -177,7 +177,7 @@
 	{:else}
 		<div class="cc-panel bento-grid bento-grid--12col bento-grid--liquid tw-grid tw-grid-cols-1 lg:tw-grid-cols-12" id="cc-panel-platform" role="tabpanel" aria-labelledby="cc-tab-platform">
 		{#each engine.PLATFORM_TILES as kpi (kpi.label)}
-			<div class="bento-span-3 tw-min-w-0">
+			<div class="bento-span-3 lg:tw-col-span-3 tw-min-w-0">
 				{@render socMetric(kpi)}
 			</div>
 		{/each}

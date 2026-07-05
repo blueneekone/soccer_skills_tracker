@@ -222,7 +222,7 @@
 					bind:this={inputEl}
 					bind:value={query}
 					type="text"
-					class="cp-search__input"
+					class="cp-search__input tw-pl-10 tw-pr-12"
 					placeholder="Search organizations, users, or jump to…"
 					autocomplete="off"
 					spellcheck="false"

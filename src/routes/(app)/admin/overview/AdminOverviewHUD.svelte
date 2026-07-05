@@ -106,16 +106,16 @@
 					<span class="cc-feed-item__icon" aria-hidden="true">
 						<Icon name={actionIcon(ev.action)} />
 					</span>
-						<div class="cc-feed-item__body">
+						<div class="cc-feed-item__body tw-min-w-0">
 							<div class="cc-feed-item__row">
-								<span class="cc-feed-item__action">{prettyAction(ev.action)}</span>
-								<span class="cc-feed-item__time">{relativeTime(ev.createdAt)}</span>
+								<span class="cc-feed-item__action tw-break-words tw-whitespace-normal">{prettyAction(ev.action)}</span>
+								<span class="cc-feed-item__time tw-whitespace-nowrap tw-flex-shrink-0">{relativeTime(ev.createdAt)}</span>
 							</div>
 							{#if ev.targetEmail}
-								<span class="cc-feed-item__target">{ev.targetEmail}</span>
+								<span class="cc-feed-item__target tw-break-words tw-whitespace-normal">{ev.targetEmail}</span>
 							{/if}
 							{#if ev.details}
-								<span class="cc-feed-item__details">{ev.details}</span>
+								<span class="cc-feed-item__details tw-break-words tw-whitespace-normal">{ev.details}</span>
 							{/if}
 						</div>
 					</li>
