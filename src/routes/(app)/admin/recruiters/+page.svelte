@@ -3,7 +3,7 @@
 	import RecruitersHUD from './RecruitersHUD.svelte';
 	import RecruitersArena from './RecruitersArena.svelte';
 	import '$lib/styles/enterprise-console.css';
-	import '$lib/styles/recruiters.css';
+	
 
 	const engine = new RecruitersEngine();
 	engine.subscribe();

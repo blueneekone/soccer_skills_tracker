@@ -56,7 +56,7 @@
 	</p>
 
 	{#if engine.activeTab === 'executive'}
-		<section
+		<div
 			class="cc-panel bento-grid bento-grid--12col bento-grid--liquid tw-grid tw-grid-cols-1 lg:tw-grid-cols-12 tw-w-full"
 			id="cc-panel-executive"
 			role="tabpanel"
@@ -68,7 +68,7 @@
 			</div>
 		{/each}
 
-			<article class="cc-chart-card cc-chart-card--soc bento-span-12 tw-col-span-full tw-min-w-0">
+			<article class="cc-chart-card cc-chart-card--soc bento-span-12 tw-col-span-full tw-min-w-0 tw-bg-[#0f172a]">
 				<header class="cc-chart-card__head">
 				<div class="cc-chart-card__icon cc-chart-card__icon--indigo" aria-hidden="true">
 					<Icon name={"data.trending" as IconName} />
@@ -80,23 +80,23 @@
 				</header>
 				<div class="tw-relative tw-h-[350px] tw-min-w-0 tw-w-full">
 					<canvas
-						class="cc-canvas-fill"
+						class="cc-canvas-fill tw-bg-[#0f172a]"
 						bind:this={engine.mauCanvasEl}
 						aria-label="Master activation line chart"
 					></canvas>
 				</div>
 			</article>
-		</section>
+		</div>
 	{:else if engine.activeTab === 'growth'}
-		<section class="cc-panel bento-grid bento-grid--12col bento-grid--liquid tw-grid tw-grid-cols-1 lg:tw-grid-cols-12 tw-w-full" id="cc-panel-growth" role="tabpanel" aria-labelledby="cc-tab-growth">
+		<div class="cc-panel bento-grid bento-grid--12col bento-grid--liquid tw-grid tw-grid-cols-1 lg:tw-grid-cols-12 tw-w-full" id="cc-panel-growth" role="tabpanel" aria-labelledby="cc-tab-growth">
 		{#each engine.GROWTH_TILES as kpi (kpi.label)}
 			<div class="bento-span-3 tw-min-w-0">
 				{@render socMetric(kpi)}
 			</div>
 		{/each}
 
-			<div class="cc-chart-row bento-span-12 tw-col-span-full tw-min-w-0 tw-grid tw-grid-cols-1 lg:tw-grid-cols-12 tw-gap-6">
-				<article class="cc-chart-card cc-chart-card--half cc-chart-card--soc lg:tw-col-span-8 tw-min-w-0">
+			<div class="cc-chart-row bento-span-12 tw-col-span-full tw-min-w-0 tw-grid tw-grid-cols-1 lg:tw-grid-cols-12 tw-gap-[clamp(16px,2vw,24px)]">
+				<article class="cc-chart-card cc-chart-card--half cc-chart-card--soc lg:tw-col-span-8 tw-min-w-0 tw-bg-[#0f172a]">
 					<header class="cc-chart-card__head">
 					<div class="cc-chart-card__icon cc-chart-card__icon--emerald" aria-hidden="true">
 						<Icon name={"data.chart-pie" as IconName} />
@@ -108,14 +108,14 @@
 					</header>
 					<div class="tw-relative tw-h-[350px] tw-min-w-0 tw-w-full">
 						<canvas
-							class="cc-canvas-fill"
+							class="cc-canvas-fill tw-bg-[#0f172a]"
 							bind:this={engine.revenueCanvasEl}
 							aria-label="Revenue doughnut chart"
 						></canvas>
 					</div>
 				</article>
 
-				<article class="cc-chart-card cc-chart-card--half cc-chart-card--soc lg:tw-col-span-4 tw-min-w-0">
+				<article class="cc-chart-card cc-chart-card--half cc-chart-card--soc lg:tw-col-span-4 tw-min-w-0 tw-bg-[#0f172a]">
 					<header class="cc-chart-card__head">
 						<div class="cc-chart-card__icon cc-chart-card__icon--cyan" aria-hidden="true">
 						<Icon name={"sport.soccer" as IconName} />
@@ -127,16 +127,16 @@
 					</header>
 					<div class="tw-relative tw-h-[350px] tw-min-w-0 tw-w-full">
 						<canvas
-							class="cc-canvas-fill"
+							class="cc-canvas-fill tw-bg-[#0f172a]"
 							bind:this={engine.sportCanvasEl}
 							aria-label="Players by sport bar chart"
 						></canvas>
 					</div>
 				</article>
 			</div>
-		</section>
+		</div>
 	{:else if engine.activeTab === 'security'}
-		<section class="cc-panel bento-grid bento-grid--12col bento-grid--liquid tw-grid tw-grid-cols-1 lg:tw-grid-cols-12 tw-w-full" id="cc-panel-security" role="tabpanel" aria-labelledby="cc-tab-security">
+		<div class="cc-panel bento-grid bento-grid--12col bento-grid--liquid tw-grid tw-grid-cols-1 lg:tw-grid-cols-12 tw-w-full" id="cc-panel-security" role="tabpanel" aria-labelledby="cc-tab-security">
 			{#each engine.strike13Security as kpi (kpi.label)}
 				<div class="bento-span-3 tw-min-w-0">
 					{@render socMetric(kpi)}
@@ -173,14 +173,14 @@
 				</aside>
 
 
-		</section>
+		</div>
 	{:else}
-		<section class="cc-panel bento-grid bento-grid--12col bento-grid--liquid tw-grid tw-grid-cols-1 lg:tw-grid-cols-12 tw-w-full" id="cc-panel-platform" role="tabpanel" aria-labelledby="cc-tab-platform">
+		<div class="cc-panel bento-grid bento-grid--12col bento-grid--liquid tw-grid tw-grid-cols-1 lg:tw-grid-cols-12 tw-w-full" id="cc-panel-platform" role="tabpanel" aria-labelledby="cc-tab-platform">
 		{#each engine.PLATFORM_TILES as kpi (kpi.label)}
 			<div class="bento-span-3 tw-min-w-0">
 				{@render socMetric(kpi)}
 			</div>
 		{/each}
-		</section>
+		</div>
 	{/if}
 </div>

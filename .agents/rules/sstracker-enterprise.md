@@ -52,9 +52,14 @@ The "I See You" Protocol: Every user interaction must trigger a tactile pulse, h
 The Asymmetric Bento Grid: Symmetrical grids are banned for data-heavy dashboards. You must utilize a 12-column asymmetric Bento Grid topology (e.g., an 8-column Primary Canvas and a 4-column Sidecar) to mimic complex SIEM dashboards [cite: 1152, 1468].
 Anti-Squishing Math: Static margin utility classes (e.g., .mt-4 or .mb-15) are completely deprecated [cite: 897, 930]. Dynamic spatial limits must be enforced exclusively through CSS functions structured precisely as clamp(20px, 4vw, 32px) to prevent layout squishing across devices [cite: 897, 1231].
 100dvh Viewport Flow: The Admin and Director dashboards must transition to an App-like 100dvh Viewport Flow using CSS Grid flex: 1 1 auto; min-height: 0 to prevent double scrollbars and ensure native application feel [cite: 179, 181].
-9. PWA CACHING & VITE PIPELINE
+### 9. AUTOMATED VISUAL REGRESSION & E2E TESTING (PLAYWRIGHT)
+*   **The E2E Mandate:** You must utilize the existing Playwright E2E scaffold for all validation [1, 2]. Playwright End-to-End (E2E) tests must validate core workflows without ever mocking live database calls to ensure true production parity [3].
+*   **Visual QA Loop:** Before committing any changes to UI components, Tailwind classes, or layout architecture, you must execute Playwright's visual regression testing. 
+*   **Execution Protocol:** You must run the Playwright suite to capture automated layout screenshots in a headless environment. If the visual comparison detects any layout drift, CSS squishing, or text bleeding that violates our 12-column Bento Grid constraints, the commit MUST be automatically aborted. You are required to diagnose the CSS box-model failure and generate a surgical fix before re-testing.
+
+10. PWA CACHING & VITE PIPELINE
 File-Hash Versioning: Legacy query-string cache busting configurations (e.g., ?v=1.2) must be completely abandoned [cite: 906, 1204]. The pipeline must implement strict cryptographic file-hash versioning ([name].[hash].js) within vite.config.js to resolve Progressive Web App (PWA) caching desynchronization and fatal parsing exceptions [cite: 887, 1152, 1214].
 Network First / Cache First Strategies: Service workers must utilize a 'Network First' strategy for API calls to guarantee fresh data, and a 'Cache First' strategy for hashed static assets to ensure offline durability [cite: 1639].
-10. INTELLIGENT ERROR RECOVERY
+11. INTELLIGENT ERROR RECOVERY
 Humanized Error Boundaries: Raw, machine-like error codes are strictly banned. You must intercept high-anxiety operational moments (e.g., failed payments, API timeouts) with empathetic, highly actionable recovery interfaces that inform the user exactly how to proceed [cite: 236, 1236].
 Graceful Degradation: If a feature flag is disabled or a data stream is missing, components must gracefully fallback to mock data or a "0" state rather than causing the entire Dashboard SIEM to throw a white screen of death [cite: 1152, 1297].

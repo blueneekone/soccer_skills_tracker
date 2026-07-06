@@ -36,34 +36,41 @@
 	}: Props = $props();
 </script>
 
-<div class="orgs3-dt-container">
-	<table class="orgs3-dt" aria-label="Organizations">
-		<thead class="orgs3-dt__head">
+<div class="v-table-wrap">
+	<table class="v-table" aria-label="Organizations">
+		<thead class="">
 			<tr>
-				<th class="orgs3-dt__th orgs3-dt__th--logo" scope="col" aria-label="Logo"></th>
-				<th class="orgs3-dt__th" scope="col">Organization</th>
-				<th class="orgs3-dt__th" scope="col">Sport</th>
-				<th class="orgs3-dt__th orgs3-dt__th--license" scope="col">License</th>
-				<th class="orgs3-dt__th" scope="col">Director</th>
-				<th class="orgs3-dt__th orgs3-dt__th--center" scope="col">Teams</th>
-				<th class="orgs3-dt__th orgs3-dt__th--compliance" scope="col">Compliance</th>
-				<th class="orgs3-dt__th orgs3-dt__th--actions" scope="col" aria-label="Actions"></th>
+				<th class="v-th v-th--avatar" scope="col" aria-label="Logo"></th>
+				<th class="v-th" scope="col">Organization</th>
+				<th class="v-th" scope="col">Sport</th>
+				<th class="v-th v-th--license" scope="col">License</th>
+				<th class="v-th" scope="col">Director</th>
+				<th class="v-th v-th--center" scope="col">Teams</th>
+				<th class="v-th v-th--compliance" scope="col">Compliance</th>
+				<th class="v-th v-th--actions" scope="col" aria-label="Actions"></th>
 			</tr>
 		</thead>
 		<tbody>
 			{#if clubsLoading}
 				<tr>
-					<td colspan="8" class="orgs3-dt__td-loading" aria-busy="true">
+					<td colspan="8" class="v-td-loading" aria-busy="true">
 						<span class="orgs3-spinner" aria-hidden="true"></span>
 						Loading organizations…
 					</td>
 				</tr>
 			{:else if pagedClubs.length === 0}
 				<tr>
-					<td colspan="8" class="orgs3-dt__td-empty">
-						{totalClubs === 0
-							? 'No organizations registered yet.'
-							: 'No organizations match your filter.'}
+					<td colspan="8">
+						<div class="tw-flex tw-flex-col tw-items-center tw-justify-center tw-p-[clamp(32px,4vw,64px)]">
+							<div class="tw-text-[#A1A1AA] tw-opacity-80 tw-mb-4" aria-hidden="true">
+								<Icon name={'org.building' as IconName} />
+							</div>
+							<p class="tw-font-sans tw-tracking-tight tw-text-[#A1A1AA] tw-text-sm">
+								{totalClubs === 0
+									? 'No organizations registered yet.'
+									: 'No organizations match your filter.'}
+							</p>
+						</div>
 					</td>
 				</tr>
 			{:else}
@@ -72,8 +79,8 @@
 					{@const teamCount = getTeamCount(cl.id)}
 					{@const accent = clubSportAccent(cl?.sport)}
 					{@const licenseMeta = licenseMetaForClub(cl)}
-					<tr class="orgs3-dt__row">
-						<td class="orgs3-dt__td orgs3-dt__td--logo">
+					<tr class="v-tr">
+						<td class="v-td v-td--avatar">
 							{#if typeof cl.logoUrl === 'string' && cl.logoUrl.trim()}
 								<img class="orgs3-logo" src={cl.logoUrl.trim()} alt="" loading="lazy" />
 							{:else}
@@ -87,7 +94,7 @@
 							{/if}
 						</td>
 
-						<td class="orgs3-dt__td orgs3-dt__td--name">
+						<td class="v-td v-td--name">
 							<div class="orgs3-org-primary">
 								<a class="orgs3-org-link" href="/admin/organizations/{cl?.id ?? ''}">
 									<span class="orgs3-org-name-text">
@@ -98,7 +105,7 @@
 							<span class="orgs3-org-id">{cl?.id ?? ''}</span>
 						</td>
 
-						<td class="orgs3-dt__td orgs3-dt__td--muted">
+						<td class="v-td v-td--muted">
 							<span
 								class="orgs3-sport-pill"
 								style="--sport-fg:{accent.fg}; --sport-ring:{accent.ring};"
@@ -107,7 +114,7 @@
 							</span>
 						</td>
 
-						<td class="orgs3-dt__td orgs3-dt__td--license">
+						<td class="v-td v-td--license">
 							<span
 								class="orgs3-license-pill"
 								style="--lic-accent:{licenseMeta.accent};"
@@ -120,15 +127,15 @@
 							</span>
 						</td>
 
-						<td class="orgs3-dt__td orgs3-dt__td--mono orgs3-dt__td--ellipsis">
+						<td class="v-td v-td--mono v-td--ellipsis">
 							{cl?.directorEmail || 'Unassigned'}
 						</td>
 
-						<td class="orgs3-dt__td orgs3-dt__td--num orgs3-dt__td--center">
+						<td class="v-td v-td--num v-td--center">
 							{teamCount}
 						</td>
 
-						<td class="orgs3-dt__td">
+						<td class="v-td">
 							{#if cl.isInfinite === true && !compliance}
 								<span class="orgs3-compliance orgs3-compliance--na" title="Enterprise promo license">
 									<span class="orgs3-compliance__dot"></span>
@@ -169,7 +176,7 @@
 							{/if}
 						</td>
 
-						<td class="orgs3-dt__td orgs3-dt__td--actions">
+						<td class="v-td v-td--actions">
 							<div class="orgs3-row-action-wrap">
 								<a
 									class="orgs3-view-btn"

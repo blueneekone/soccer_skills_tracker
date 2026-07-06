@@ -37,7 +37,7 @@
 		>
 			<Icon name={"nav.refresh" as IconName} class="tw-text-lg {engine.loading ? 'ar-toolbar-sync__spin' : ''}" />
 		</button>
-		<div class="tw-flex tw-flex-wrap tw-gap-2 tw-rounded-lg tw-border tw-border-slate-800 tw-bg-slate-900/60 tw-p-2" role="tablist" aria-label="Verification filter">
+		<div class="tw-flex tw-flex-wrap tw-gap-2 tw-rounded-lg tw-border tw-border-slate-800 tw-bg-[#0B0F19] tw-p-2" role="tablist" aria-label="Verification filter">
 			<button
 				type="button"
 				role="tab"
@@ -83,11 +83,11 @@
 </div>
 
 {#if engine.flashErr}
-	<p class="ar-flash ar-flash--err" role="alert">{engine.flashErr}</p>
+	<p class="v-flash v-flash--err" role="alert">{engine.flashErr}</p>
 {/if}
 {#if engine.flashOk}
-	<p class="ar-flash ar-flash--ok" role="status">{engine.flashOk}</p>
+	<p class="v-flash v-flash--ok" role="status">{engine.flashOk}</p>
 {/if}
 {#if engine.err}
-	<p class="ar-flash ar-flash--err" role="alert">{engine.err}</p>
+	<p class="v-flash v-flash--err" role="alert">{engine.err}</p>
 {/if}

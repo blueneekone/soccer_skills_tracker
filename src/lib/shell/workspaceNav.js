@@ -13,8 +13,8 @@ export const adminLinks = [
 	{ label: 'Organizations',   icon: 'org.building',      href: '/admin/organizations' },
 	{ label: 'Global Users',    icon: 'content.globe',     href: '/admin/users' },
 	{ label: 'Recruiters',      icon: 'sys.binoculars',    href: '/admin/recruiters' },
-	{ label: 'Audit Log',       icon: 'status.shield-check', href: '/admin/audit-log' },
 	{ label: 'Coach clearance', icon: 'status.verified',   href: '/admin/coach-clearance' },
+	{ label: 'Audit Log',       icon: 'status.shield-check', href: '/admin/audit-log' },
 	{ label: 'System Settings', icon: 'sys.settings-adv',  href: '/admin/system-settings' },
 	{ label: 'Support Terminal', icon: 'game.zap',         href: '/admin/support-terminal' },
 ];

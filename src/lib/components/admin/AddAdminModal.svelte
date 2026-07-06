@@ -323,13 +323,13 @@
 			<footer class="aam-foot">
 				<button
 					type="button"
-					class="btn-secondary tw-px-4 tw-py-2 tw-text-sm tw-font-bold"
+					class="btn-secondary tw-px-[clamp(16px,2vw,24px)] tw-py-2 tw-text-sm tw-font-bold"
 					onclick={() => !saving && onClose?.()}
 					disabled={saving}
 				>
 					Cancel
 				</button>
-				<button type="submit" class="btn-primary tw-inline-flex tw-items-center tw-gap-2 tw-px-4 tw-py-2 tw-text-sm tw-font-bold" disabled={saving}>
+				<button type="submit" class="btn-primary tw-inline-flex tw-items-center tw-gap-2 tw-px-[clamp(16px,2vw,24px)] tw-py-2 tw-text-sm tw-font-bold" disabled={saving}>
 					<Icon name={"status.shield-check" as IconName} aria-hidden="true" />
 					{saving ? 'Granting…' : 'Grant Access'}
 				</button>

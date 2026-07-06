@@ -17,7 +17,7 @@
 </svelte:head>
 
 {#if !authStore.isSuper}
-  <div class="tw-flex tw-items-center tw-justify-center tw-min-h-[60vh] tw-text-slate-500">
+  <div class="tw-flex tw-items-center tw-justify-center tw-min-h-[60vh] tw-text-[#A1A1AA]">
     <p>Super-admin access required.</p>
   </div>
 {:else}
@@ -49,7 +49,7 @@
     {#if engine.isLoading && engine.configs.length === 0}
       <div class="sc-loading">
         <span class="sc-loading-pulse"></span>
-        <span class="tw-text-slate-500 tw-text-sm">Loading sport configs…</span>
+        <span class="tw-text-[#A1A1AA] tw-text-sm">Loading sport configs…</span>
       </div>
     {:else}
       <div class="sc-arena-wrap">

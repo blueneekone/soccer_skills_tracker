@@ -53,7 +53,7 @@
 		<div class="gu-page-actions" role="group" aria-label="Page actions">
 			<button
 				type="button"
-				class="btn-primary tw-inline-flex tw-items-center tw-gap-2 tw-h-9 tw-px-4 tw-text-sm tw-font-bold"
+				class="btn-primary tw-inline-flex tw-items-center tw-gap-2 tw-h-9 tw-px-[clamp(16px,2vw,24px)] tw-text-sm tw-font-bold"
 				onclick={onAddAdmin}
 				aria-haspopup="dialog"
 			>

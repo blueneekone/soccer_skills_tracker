@@ -78,8 +78,8 @@
 		<div class="orgs3-filter" bind:this={filterRootEl}>
 			<button
 				type="button"
-				class="orgs3-filter-btn"
-				class:orgs3-filter-btn--active={filterOpen || filterActiveCount > 0}
+				class="v-toolbar-btn"
+				class:v-toolbar-btn--active={filterOpen || filterActiveCount > 0}
 				aria-haspopup="dialog"
 				aria-expanded={filterOpen}
 				onclick={onToggleFilter}
@@ -87,7 +87,7 @@
 				<Icon name={'action.filter' as IconName} aria-hidden="true" />
 				<span>Enterprise Filter</span>
 				{#if filterActiveCount > 0}
-					<span class="orgs3-filter-badge" aria-label="{filterActiveCount} active filters">
+					<span class="v-admin-tab__n" aria-label="{filterActiveCount} active filters">
 						{filterActiveCount}
 					</span>
 				{/if}

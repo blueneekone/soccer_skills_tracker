@@ -30,11 +30,16 @@ Do not mix depth levels [cite: 1053].
 *   **Anti-Squish Math:** All grids MUST use exact fluid clamp math: `grid-template-columns: repeat(auto-fit, minmax(min(100%, clamp(280px, 30vw, 350px)), 1fr));`. All flex children must use `tw-min-w-0` to forbid text bleeding [cite: 1119].
 *   **Viewport Lock:** The `.app-shell` wrapper MUST use `tw-h-[100dvh]` and `tw-flex-col`. 
 
-#### 5. PERSONA EMOTIONAL INVESTMENT MATRIX
-Visual elements from one persona MUST NOT bleed into another. You must design for their specific emotional investment:
-*   **Player OS (Investment: Time, Ego, Identity):** "Mission control that believes in you." Cinematic command deck. Chamfered clip-paths (NO rounded pills) [cite: 1066, 1068]. 
-*   **Coach & Director OS (Investment: Career, Reputation, Operations):** "Absolute executive control." Tactical SIEM/SOAR. Strict 90-degree corners. Edge-to-edge data tables. NO gamification [cite: 1065, 1096].
-*   **Parent OS (Investment: Money, Trust, Child's Safety):** "Safe, compliant, transparent." Flat, calm, adult. 24px border radii. Zero Player arcade chrome [cite: 1065, 1096].
+#### 5. UNIFIED COMPONENT BASELINE & PERSONA THEMING
+To maintain multi-billion-dollar enterprise cohesion, all data tables, list views, and structural Bento Grids MUST share the exact same foundational Svelte components and CSS architecture across the entire platform. 
+
+*   **The Universal Table Standard:** Every data table, regardless of the user, MUST utilize edge-to-edge rendering, crisp 1px borders (`Structural Grey` / `#334155`), and `Geist Mono` typography for all numerical readouts and columns [3, 4]. 
+*   **Contextual Specialization:** You will differentiate the personas ONLY by injecting specialized widgets (graphs, buttons, specialty cards) and applying specific CSS accent trims over the unified foundation.
+
+**Persona Trim Matrix:**
+*   **Player OS (The Gamified HUD):** The core tables remain enterprise-grade, but you MUST inject the specialized Octalysis gamification widgets (e.g., the 6-axis Vanguard Prism radar charts and dynamic XP rings) [5, 6]. Apply chamfered clip-paths to the *outer* specialty cards only, and restrict the UI to exactly ONE Action Gold (`#fbbf24`) primary CTA per viewport [3, 4].
+*   **Coach & Director OS (Tactical SIEM):** Maintain strict 90-degree corners on all core layout panels [7, 8]. Inject high-density specialized widgets required for their workflows, such as the HTML5 Spatial Drill Designer, deployment calendars, and compliance audit feeds [5, 9]. Absolutely NO gamification chamfers or Action Gold CTAs are permitted here [7].
+*   **Parent OS (Compliance Vault):** Maintain the unified tables but apply a calm, flat aesthetic using 24px border radii for the outer panel wrappers to establish structural trust [7, 8]. Inject specialized modules for the Household Graph, Verifiable Parental Consent (VPC) queues, and Stripe billing metrics [5, 9].
 
 #### 6. BEHAVIORAL ECONOMICS (THE PLAYER ENGINE)
 *   **Dopamine Engine:** Visual celebrations (canvas-confetti) trigger ONLY on verified Firestore database commits. Never block the main layout rendering [cite: 1112].
@@ -70,3 +75,11 @@ Legal surfaces (Privacy Policy, Terms, COPPA forms) and Stripe Billing integrati
 *   **Runes Only:** Exclusively use Svelte 5 `$state`, `$derived`, and `$effect`. Legacy Svelte 4 code is banned [cite: 1008].
 *   **Single Responsibility Principle:** Functions must not exceed 80 lines [cite: 1008].
 *   **Zero-Trust Data:** All database queries must be cell-isolated and strictly gated by Firestore Rules utilizing Custom JWT Claims [cite: 1023]. Client-side state is never trusted as the source of truth [cite: 1056].
+
+#### 13. Z4 FLOATING CHROME & CONTEXT MENUS
+*   **Absolute Solidity:** All dropdowns, sub-menus, and context popovers MUST be treated as Z4 Floating Chrome [cite: 1134, 1206]. They MUST utilize a solid background (`tw-bg-[#0B0F19]`), a 1px structural border (`tw-border-slate-800`), and a high Z-index (`tw-z-50`).
+*   **No Bleeding:** Transparent or semi-transparent backgrounds on interactive menus are STRICTLY FORBIDDEN. They must completely obscure the data beneath them.
+
+#### 14. DIEGETIC TERMINALS & AI WORKERS
+*   **Support/Admin Terminals:** A support interface is NEVER just a chat window. It must utilize an asymmetric Bento Grid. The layout must include a "Quick Actions / Telemetry" rail (for system scripts and diagnostic readouts) alongside the conversational interface [cite: 1203]. 
+*   **Public AI Agents:** Public-facing AI chatbots must use our 60-30-10 palette, feature a distinct "AI Agent" avatar, and utilize `Geist Mono` for technical responses.

@@ -19,9 +19,9 @@ export async function mountMauLineChart(
 	if (!target.isConnected) return () => {};
 	mod.Chart.register(...mod.registerables);
 
-	const text = cssVar('--text-primary', '#0f172a');
-	const muted = cssVar('--text-secondary', '#475569');
-	const grid = cssVar('--chart-grid', 'rgba(15,23,42,0.08)');
+	const text = cssVar('--text-primary', '#FAFAFA');
+	const muted = cssVar('--text-secondary', '#A1A1AA');
+	const grid = cssVar('--chart-grid', 'rgba(255,255,255,0.05)');
 
 	const chart = new mod.Chart(target, {
 		type: 'line',
@@ -61,12 +61,12 @@ export async function mountMauLineChart(
 			},
 			scales: {
 				x: {
-					ticks: { color: muted, font: { size: 11, weight: 600 } },
+					ticks: { color: muted, font: { family: 'Geist Mono, monospace', size: 11, weight: 'bold' } },
 					grid: { color: 'transparent' },
 				},
 				y: {
 					beginAtZero: true,
-					ticks: { color: muted, font: { size: 11 }, precision: 0 },
+					ticks: { color: muted, font: { family: 'Geist Mono, monospace', size: 11 }, precision: 0 },
 					grid: { color: grid },
 					border: { display: false },
 				},
@@ -90,7 +90,7 @@ export async function mountRevenueDoughnutChart(
 	if (!target.isConnected) return () => {};
 	mod.Chart.register(...mod.registerables);
 
-	const muted = cssVar('--text-secondary', '#475569');
+	const muted = cssVar('--text-secondary', '#A1A1AA');
 	const palette = ['#14b8a6', '#34d399', '#fbbf24', '#fb7185', '#a78bfa', '#38bdf8'];
 
 	const chart = new mod.Chart(target, {
@@ -157,9 +157,9 @@ export async function mountSportBarChart(
 	if (!target.isConnected) return () => {};
 	mod.Chart.register(...mod.registerables);
 
-	const text = cssVar('--text-primary', '#0f172a');
-	const muted = cssVar('--text-secondary', '#475569');
-	const grid = cssVar('--chart-grid', 'rgba(15,23,42,0.08)');
+	const text = cssVar('--text-primary', '#FAFAFA');
+	const muted = cssVar('--text-secondary', '#A1A1AA');
+	const grid = cssVar('--chart-grid', 'rgba(255,255,255,0.05)');
 
 	const chart = new mod.Chart(target, {
 		type: 'bar',

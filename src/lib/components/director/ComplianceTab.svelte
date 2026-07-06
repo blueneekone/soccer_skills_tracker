@@ -59,95 +59,93 @@
 			alert('Error: ' + (e instanceof Error ? e.message : String(e)));
 		}
 	};
-</script>
+	</script>
 
 <div class="compliance-tab">
 	<ClubEligibilityMatrixPanel {clubId} onSaved={() => void load()} />
 
-	<div class="card">
-		<div class="card-header bg-red-header">Player compliance matrix</div>
-		<div class="card-body p-0 overflow-x-auto">
-			<table class="admin-table">
-				<thead>
-					<tr>
-						<th>Player</th>
-						<th>Team</th>
-						<th>DOB</th>
-						<th>Account</th>
-						<th>Medical info</th>
-						<th>Waiver</th>
-						<th>Passport</th>
-						<th>Eligible</th>
-						<th>Official status</th>
-					</tr>
-				</thead>
-				<tbody>
-					{#if loading}
-						<tr><td colspan="9" class="text-center">Loading compliance matrix…</td></tr>
-					{:else if loadErr}
-						<tr><td colspan="9" class="text-center">{loadErr}</td></tr>
-					{:else if rows.length === 0}
-						<tr><td colspan="9" class="text-center">No roster players found for your club.</td></tr>
-					{:else}
-						{#each rows as row (row.key)}
-							<tr>
-								<td>
-									<b>{row.playerName}</b>
-									{#if row.email}
-										<br /><span class="text-sm-sub">{row.email}</span>
+	<h2 class="tw-text-sm tw-font-semibold tw-uppercase tw-tracking-wider tw-text-[#A1A1AA] tw-mb-[clamp(8px,1vw,12px)]">Player compliance matrix</h2>
+	<div class="v-table-wrap tw-overflow-x-auto">
+		<table class="v-table">
+			<thead>
+				<tr>
+					<th class="v-th">Player</th>
+					<th class="v-th">Team</th>
+					<th class="v-th">DOB</th>
+					<th class="v-th">Account</th>
+					<th class="v-th">Medical info</th>
+					<th class="v-th">Waiver</th>
+					<th class="v-th">Passport</th>
+					<th class="v-th">Eligible</th>
+					<th class="v-th">Official status</th>
+				</tr>
+			</thead>
+			<tbody>
+				{#if loading}
+					<tr><td colspan="9" class="v-td-empty">Loading compliance matrix…</td></tr>
+				{:else if loadErr}
+					<tr><td colspan="9" class="v-td-empty">{loadErr}</td></tr>
+				{:else if rows.length === 0}
+					<tr><td colspan="9" class="v-td-empty">No roster players found for your club.</td></tr>
+				{:else}
+					{#each rows as row (row.key)}
+						<tr class="v-tr">
+							<td class="v-td">
+								<b class="tw-text-[#FAFAFA]">{row.playerName}</b>
+								{#if row.email}
+									<br /><span class="tw-text-xs tw-text-[#A1A1AA] tw-font-mono">{row.email}</span>
+								{/if}
+							</td>
+							<td class="v-td">{row.teamLabel}</td>
+							<td class="v-td tw-font-mono">{row.dobLabel}</td>
+							<td class="v-td">
+								{row.guardianLinked ? 'Linked' : 'Name only'}
+							</td>
+							<td class="v-td">
+								{#if row.emergencyName || row.emergencyPhone}
+									<b>Contact:</b> {row.emergencyName || '—'} ({row.emergencyPhone || '—'})<br />
+								{/if}
+								<b>Notes:</b> {row.medicalNotes || 'None'}
+							</td>
+							<td class="v-td">{row.waiverLabel}</td>
+							<td class="v-td">{row.passportLabel}</td>
+							<td class="v-td">
+								{#if row.eligible === true}
+									<span class="eligible-yes">Eligible</span>
+								{:else if row.eligible === false}
+									<span class="eligible-no">Blocked</span>
+									{#if row.blockers?.length}
+										<br />
+										<span class="blocker-list">
+											{row.blockers.map((b) => blockerLabel(b)).join(' · ')}
+										</span>
 									{/if}
-								</td>
-								<td class="text-sm-sub">{row.teamLabel}</td>
-								<td class="text-sm-sub">{row.dobLabel}</td>
-								<td class="text-sm-sub">
-									{row.guardianLinked ? 'Linked' : 'Name only'}
-								</td>
-								<td class="text-sm-sub">
-									{#if row.emergencyName || row.emergencyPhone}
-										<b>Contact:</b> {row.emergencyName || '—'} ({row.emergencyPhone || '—'})<br />
-									{/if}
-									<b>Notes:</b> {row.medicalNotes || 'None'}
-								</td>
-								<td>{row.waiverLabel}</td>
-								<td>{row.passportLabel}</td>
-								<td class="text-sm-sub">
-									{#if row.eligible === true}
-										<span class="eligible-yes">Eligible</span>
-									{:else if row.eligible === false}
-										<span class="eligible-no">Blocked</span>
-										{#if row.blockers?.length}
-											<br />
-											<span class="blocker-list">
-												{row.blockers.map((b) => blockerLabel(b)).join(' · ')}
-											</span>
-										{/if}
-									{:else}
-										—
-									{/if}
-								</td>
-								<td>
-									{#if row.email}
-										<select
-											value={row.clearanceStatus || 'CLEARED'}
-											onchange={(e) => updateStatus(row.email, e.currentTarget.value)}
-											class="status-select"
-											class:status-select--suspended={row.clearanceStatus === 'RED_CARD'}
-											class:status-select--clear={row.clearanceStatus !== 'RED_CARD'}
-										>
-											<option value="CLEARED">Cleared</option>
-											<option value="PENDING_SAFESPORT">SafeSport pending</option>
-											<option value="RED_CARD">Suspended (red card)</option>
-										</select>
-									{:else}
-										<span class="text-sm-sub">Add email to manage</span>
-									{/if}
-								</td>
-							</tr>
-						{/each}
-					{/if}
-				</tbody>
-			</table>
-		</div>
+								{:else}
+									—
+								{/if}
+							</td>
+							<td class="v-td">
+								{#if row.email}
+									<select
+										value={row.clearanceStatus || 'CLEARED'}
+										onchange={(e) => updateStatus(row.email, e.currentTarget.value)}
+										class="status-select"
+										class:status-select--suspended={row.clearanceStatus === 'RED_CARD'}
+										class:status-select--clear={row.clearanceStatus !== 'RED_CARD'}
+									>
+										<option value="CLEARED">Cleared</option>
+										<option value="PENDING_SAFESPORT">SafeSport pending</option>
+										<option value="RED_CARD">Suspended (red card)</option>
+									</select>
+								{:else}
+									<span class="tw-text-xs tw-text-[#A1A1AA]">Add email to manage</span>
+								{/if}
+							</td>
+						</tr>
+					{/each}
+				{/if}
+			</tbody>
+		</table>
 	</div>
 </div>
 
@@ -159,3 +157,4 @@
 	.eligible-no { color: #b91c1c; font-weight: 700; }
 	.blocker-list { font-size: 0.75rem; color: #64748b; }
 </style>
+

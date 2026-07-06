@@ -42,15 +42,15 @@
 		message="All coach background checks cleared. No pending liabilities." 
 	/>
 {:else}
-	<div class="dp-table-wrap" role="region" aria-label="Compliance roster">
-		<table class="dp-table">
+	<div class="v-table-wrap tw-overflow-x-auto" role="region" aria-label="Compliance roster">
+		<table class="v-table">
 			<thead>
 				<tr>
-					<th>COACH / ROLE</th>
-					<th>CLEARANCE STATUS</th>
-					<th>LAST SYNCED</th>
-					<th>CHECKR</th>
-					<th>ACTIONS</th>
+					<th class="v-th">COACH / ROLE</th>
+					<th class="v-th">CLEARANCE STATUS</th>
+					<th class="v-th">LAST SYNCED</th>
+					<th class="v-th">CHECKR</th>
+					<th class="v-th">ACTIONS</th>
 				</tr>
 			</thead>
 			<tbody>
@@ -67,7 +67,7 @@
 					{@const lastVerified = coach.clearance?.lastVerified}
 					<tr class="dp-row dp-row--{status}">
 						<!-- Coach identity -->
-						<td class="dp-cell dp-cell--identity">
+						<td class="v-td dp-cell dp-cell--identity">
 							<div class="dp-identity__name">
 								{coach.displayName ?? coach.email.split('@')[0]}
 							</div>
@@ -76,24 +76,26 @@
 						</td>
 
 						<!-- Clearance status -->
-						<td class="dp-cell dp-cell--status">
-							<div class="dp-status dp-status--{status}">
+						<td class="v-td dp-cell dp-cell--status">
+							<div class="tw-inline-flex tw-items-center tw-gap-1.5 tw-text-xs tw-font-bold tw-uppercase tw-tracking-wider
+								{status === 'cleared' ? 'tw-text-emerald-400' : status === 'flagged' ? 'tw-text-rose-400' : 'tw-text-amber-400'}">
 							{#if status === 'cleared'}
 								<Icon name="status.verified" />
 							{:else if status === 'flagged'}
 								<Icon name="status.warning-circle" />
 								{:else}
-									<span class="dp-pulse-dot dp-pulse-dot--sm"></span>
+									<span class="tw-inline-block tw-w-2 tw-h-2 tw-rounded-full tw-animate-pulse
+										{status === 'cleared' ? 'tw-bg-emerald-400' : status === 'flagged' ? 'tw-bg-rose-400' : 'tw-bg-amber-400'}"></span>
 								{/if}
 								{status.toUpperCase()}
 							</div>
 							{#if statusSubLabel}
 								<div
-									class="dp-clearance-ref"
+									class="tw-text-[10px] tw-text-[#A1A1AA] tw-font-mono tw-mt-0.5"
 									title={clearanceStatusSubLabelTitle(statusSubLabel.kind)}
 								>
 									{#if statusSubLabel.kind === 'legacyRecordId'}
-										<span class="dp-clearance-ref__legacy">legacy</span>
+										<span class="tw-text-amber-500 tw-mr-1">legacy</span>
 									{/if}
 									{statusSubLabel.value}
 								</div>
@@ -101,12 +103,12 @@
 						</td>
 
 						<!-- Last synced -->
-						<td class="dp-cell dp-cell--synced">
+						<td class="v-td dp-cell dp-cell--synced tw-font-mono">
 							<span class="dp-synced-ts">{fmtTimestamp(lastVerified)}</span>
 						</td>
 
 						<!-- Checkr actions -->
-						<td class="dp-cell dp-cell--dashboard">
+						<td class="v-td dp-cell dp-cell--dashboard">
 							{#if engine.needsScreeningOrder(coach)}
 								<button
 									class="dp-btn dp-btn--order"
@@ -142,7 +144,7 @@
 									href={invitationUrl}
 									target="_blank"
 									rel="noopener noreferrer"
-									class="dp-btn dp-btn--checkr"
+									class="dp-btn dp-btn--checkr tw-text-[#14b8a6] hover:tw-text-[#D4D4D8]"
 									aria-label="Open Checkr invitation for {coach.email}"
 								>
 									<Icon name="nav.external" />
@@ -154,7 +156,7 @@
 									href={getCheckrCandidateDashboardUrl(checkrCandidateId)}
 									target="_blank"
 									rel="noopener noreferrer"
-									class="dp-btn dp-btn--checkr"
+									class="dp-btn dp-btn--checkr tw-text-[#14b8a6] hover:tw-text-[#D4D4D8]"
 									aria-label="Open Checkr candidate for {coach.email}"
 								>
 									<Icon name="nav.external" />
@@ -165,7 +167,7 @@
 								href={checkrDashboardUrl}
 								target="_blank"
 								rel="noopener noreferrer"
-								class="dp-btn dp-btn--checkr"
+								class="dp-btn dp-btn--checkr tw-text-[#14b8a6] hover:tw-text-[#D4D4D8]"
 								aria-label="Open Checkr dashboard"
 							>
 							<Icon name="nav.external" />
@@ -174,7 +176,7 @@
 						</td>
 
 						<!-- Actions -->
-						<td class="dp-cell dp-cell--actions">
+						<td class="v-td dp-cell dp-cell--actions">
 							{#if rs.error}
 								<span class="dp-row-error">{rs.error}</span>
 							{/if}

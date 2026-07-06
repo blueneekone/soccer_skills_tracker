@@ -17,7 +17,7 @@
 </script>
 
 <div
-	class="bento-mb-md tw-flex tw-flex-wrap tw-gap-2 tw-rounded-lg tw-border tw-border-slate-800 tw-bg-slate-900/60 tw-p-2"
+	class="v-admin-tab-nav tw-mb-6"
 	role="tablist"
 	aria-label="User segments by role"
 >
@@ -26,8 +26,8 @@
 			type="button"
 			role="tab"
 			aria-selected={activeTab === tab.id}
-			class="tab-nav focus-visible:tw-outline focus-visible:tw-outline-2 focus-visible:tw-outline-offset-2 focus-visible:tw-outline-teal-500"
-			class:tab-nav--active={activeTab === tab.id}
+			class="v-admin-tab focus-visible:tw-outline focus-visible:tw-outline-2 focus-visible:tw-outline-offset-2 focus-visible:tw-outline-teal-500"
+			class:v-admin-tab--active={activeTab === tab.id}
 			onclick={() => onTabChange(tab.id)}
 		>
 			{tab.label}

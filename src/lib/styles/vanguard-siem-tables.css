@@ -1,0 +1,206 @@
+/* ══════════════════════════════════════════════════════════════════════════
+ * Vanguard SIEM Unified Table Standard (Sprint 2.7)
+ * Enforces absolute layout conformity across all Admin OS surfaces.
+ * Mathematical compliance: 0px radii, Void Black / Navy Slate backgrounds,
+ * Structural Grey borders.
+ * ══════════════════════════════════════════════════════════════════════════
+ */
+
+/* ── Page Root ───────────────────────────────────────────────────────── */
+.v-admin-root {
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
+	padding: 24px;
+	min-height: 100%;
+	background: #0B0F19; /* Void Black */
+	color: #FAFAFA;
+}
+
+/* ── Layout Panels (Sidecars / Popovers) ─────────────────────────────── */
+.v-admin-panel {
+	background: #0f172a; /* Navy Slate */
+	border: 1px solid #334155; /* Structural Grey */
+	border-radius: 0;
+	box-shadow: none;
+}
+
+/* ── Segmented Tab Navigation ────────────────────────────────────────── */
+.v-admin-tab-nav {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+	padding: 8px;
+	background: #0f172a;
+	border: 1px solid #334155;
+	border-radius: 0;
+	width: fit-content;
+}
+
+.v-admin-tab {
+	padding: 0 12px;
+	height: 32px;
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	border-radius: 0;
+	background: transparent;
+	color: #94a3b8; /* Slate 400 */
+	font-size: 0.75rem;
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+	border: 1px solid transparent;
+	cursor: pointer;
+	transition: all 0.12s ease;
+}
+
+.v-admin-tab:hover:not(.v-admin-tab--active) {
+	background: rgba(255, 255, 255, 0.04);
+	color: #f1f5f9;
+}
+
+.v-admin-tab--active {
+	background: #1e293b;
+	color: #f8fafc;
+	border-color: #334155;
+}
+
+.v-admin-tab__n {
+	padding: 0 6px;
+	border-radius: 999px;
+	background: #334155;
+	color: #D4D4D8;
+	font-size: 0.7rem;
+	font-weight: 800;
+	font-variant-numeric: tabular-nums;
+}
+
+.v-admin-tab--active .v-admin-tab__n {
+	background: #000000;
+	color: #fbbf24; /* Action Gold for active count */
+}
+
+/* ── Flash Messages ──────────────────────────────────────────────────── */
+.v-flash {
+	margin: 0;
+	padding: 10px 14px;
+	border-radius: 0;
+	font-size: 0.875rem;
+}
+
+.v-flash--ok {
+	background: rgba(16, 185, 129, 0.1);
+	color: #10b981;
+	border: 1px solid #059669;
+}
+
+.v-flash--err {
+	background: rgba(244, 63, 94, 0.1);
+	color: #f43f5e;
+	border: 1px solid #e11d48;
+}
+
+/* ── Data Tables ─────────────────────────────────────────────────────── */
+.v-table-wrap {
+	width: 100%;
+	border-radius: 0;
+	border: 1px solid #334155; /* Structural Grey */
+	background: #0f172a; /* Navy Slate */
+	overflow-x: auto;
+	overflow-y: visible;
+	-webkit-overflow-scrolling: touch;
+}
+
+.v-table {
+	width: 100%;
+	border-collapse: separate;
+	border-spacing: 0;
+	font-size: 0.875rem;
+	font-variant-numeric: tabular-nums;
+}
+
+.v-th {
+	position: sticky;
+	top: 0;
+	z-index: 1;
+	padding: 10px 14px;
+	text-align: left;
+	font-size: 0.75rem;
+	font-weight: 700;
+	letter-spacing: 0.06em;
+	text-transform: uppercase;
+	color: #A1A1AA;
+	background: #0B0F19; /* Void Black Header */
+	border-bottom: 1px solid #334155;
+	white-space: nowrap;
+}
+
+.v-th--avatar { width: 44px; }
+.v-th--right { text-align: right; }
+.v-th--center { text-align: center; }
+
+.v-td {
+	padding: 10px 14px;
+	border-bottom: 1px solid #1e293b;
+	vertical-align: middle;
+	color: #D4D4D8;
+}
+
+.v-td--avatar { width: 44px; }
+.v-td--right { text-align: right; }
+.v-td--center { text-align: center; }
+
+.v-tr:hover .v-td {
+	background: #0B0F19;
+}
+
+.v-td-empty {
+	padding: 32px 14px;
+	text-align: center;
+	color: #94a3b8;
+	font-size: 0.875rem;
+}
+
+/* ── Universal Toolbar ───────────────────────────────────────────────── */
+.v-admin-toolbar {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 12px;
+	align-items: center;
+}
+
+.v-toolbar-btn {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	height: 38px;
+	padding: 0 14px;
+	border-radius: 0;
+	border: 1px solid #334155;
+	background: #0B0F19;
+	color: #FAFAFA;
+	font: inherit;
+	font-size: 0.875rem;
+	font-weight: 600;
+	cursor: pointer;
+	transition: background 0.12s ease, border-color 0.12s ease;
+}
+
+.v-toolbar-btn:hover {
+	border-color: #fbbf24;
+	background: rgba(251, 191, 36, 0.08);
+	color: #fbbf24;
+}
+
+.v-toolbar-btn--active {
+	border-color: #fbbf24;
+	background: rgba(251, 191, 36, 0.12);
+	color: #fbbf24;
+}
+
+.v-toolbar-btn:disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
+	pointer-events: none;
+}
