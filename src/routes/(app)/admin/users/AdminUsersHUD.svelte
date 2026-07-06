@@ -21,13 +21,13 @@
 />
 
 {#if engine.flashErr}
-	<p class="gu-flash gu-flash--err" role="alert">{engine.flashErr}</p>
+	<p class="v-flash v-flash--err" role="alert">{engine.flashErr}</p>
 {/if}
 {#if engine.flashOk}
-	<p class="gu-flash gu-flash--ok" role="status">{engine.flashOk}</p>
+	<p class="v-flash v-flash--ok" role="status">{engine.flashOk}</p>
 {/if}
 {#if engine.err}
-	<p class="gu-flash gu-flash--err" role="alert">{engine.err}</p>
+	<p class="v-flash v-flash--err" role="alert">{engine.err}</p>
 {/if}
 
 <div class="gu-summary">

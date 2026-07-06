@@ -14,9 +14,9 @@
 	style="padding: var(--bento-pad-liquid);"
 	data-admin-shell="true"
 >
-	<div class="tw-grid tw-grid-cols-1 xl:tw-grid-cols-12 tw-gap-8 tw-w-full tw-min-w-0">
-		<div class="xl:tw-col-span-8 tw-min-w-0 tw-flex tw-flex-col tw-break-words tw-whitespace-normal">
-			<AdminOverviewHUD {engine} area="header" />
+	<div class="tw-grid tw-grid-cols-1 xl:tw-grid-cols-12 tw-gap-[clamp(16px,2vw,24px)] tw-w-full tw-min-w-0">
+		<div class="xl:tw-col-span-12 tw-min-w-0 tw-flex tw-flex-col tw-break-words tw-whitespace-normal">
+			<AdminOverviewHUD {engine} />
 			<section
 				class="tw-w-full tw-min-w-0"
 				style="grid-template-columns: repeat(auto-fit, minmax(min(100%, clamp(280px, 30vw, 350px)), 1fr));"
@@ -26,8 +26,5 @@
 				</div>
 			</section>
 		</div>
-		<aside class="xl:tw-col-span-4 tw-min-w-0 tw-flex tw-flex-col tw-gap-6 tw-break-words tw-whitespace-normal">
-			<AdminOverviewHUD {engine} area="sidebar" />
-		</aside>
 	</div>
 </div>

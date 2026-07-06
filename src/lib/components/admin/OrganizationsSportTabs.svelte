@@ -15,7 +15,7 @@
 	const SPORT_TABS = ADMIN_SPORT_TABS;
 </script>
 
-<div class="orgs3-tabs" role="tablist" aria-label="Filter by sport">
+<div class="v-admin-tab-nav" role="tablist" aria-label="Filter by sport">
 	{#each SPORT_TABS as tab (tab.key)}
 		{@const count = sportCounts[tab.key] ?? 0}
 		{@const isActive = activeSportTab === tab.key}
@@ -24,14 +24,14 @@
 				type="button"
 				role="tab"
 				aria-selected={isActive}
-				class="tab-nav"
-				class:tab-nav--active={isActive}
+				class="v-admin-tab"
+				class:v-admin-tab--active={isActive}
 				data-sport={tab.key}
 				onclick={() => onTabChange(tab.key)}
 			>
 				<Icon name={tab.icon as IconName} aria-hidden="true" />
-				<span class="orgs3-tab__label">{tab.label}</span>
-				<span class="orgs3-tab__count">{count}</span>
+				<span class="v-admin-tab__label">{tab.label}</span>
+				<span class="v-admin-tab__n">{count}</span>
 			</button>
 		{/if}
 	{/each}

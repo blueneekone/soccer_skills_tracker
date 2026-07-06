@@ -42,7 +42,7 @@
 		message="All coach background checks cleared. No pending liabilities." 
 	/>
 {:else}
-	<div class="dp-table-wrap" role="region" aria-label="Compliance roster">
+	<div class="tw-w-full tw-overflow-x-auto" role="region" aria-label="Compliance roster">
 		<table class="dp-table">
 			<thead>
 				<tr>

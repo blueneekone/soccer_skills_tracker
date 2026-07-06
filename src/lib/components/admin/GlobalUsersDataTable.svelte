@@ -49,32 +49,52 @@
 		onPrevPage,
 		onNextPage,
 	}: Props = $props();
+
+	let menuTop = $state(0);
+	let menuRight = $state(0);
+
+	function handleToggle(e: MouseEvent, rowId: string) {
+		e.stopPropagation();
+		const btn = e.currentTarget as HTMLButtonElement;
+		const rect = btn.getBoundingClientRect();
+		menuTop = rect.bottom + 4;
+		menuRight = window.innerWidth - rect.right;
+		onToggleMenu(rowId);
+	}
+
+	function handleWindowClick() {
+		if (openMenuFor) {
+			onToggleMenu(openMenuFor);
+		}
+	}
 </script>
 
-<div class="gu-table-wrap" role="region" aria-label="Global users table" tabindex="-1">
-	<table class="gu-table">
+<svelte:window onclick={handleWindowClick} onscroll={handleWindowClick} />
+
+<div class="v-table-wrap" role="region" aria-label="Global users table" tabindex="-1">
+	<table class="v-table">
 		<thead>
 			<tr>
-				<th class="gu-th gu-th--avatar" aria-label="Avatar"></th>
-				<th class="gu-th">Name / Email</th>
-				<th class="gu-th">Global Role</th>
-				<th class="gu-th">Associated Club</th>
+				<th class="v-th v-th--avatar" aria-label="Avatar"></th>
+				<th class="v-th">Name / Email</th>
+				<th class="v-th">Global Role</th>
+				<th class="v-th">Associated Club</th>
 				{#if activeTab === 'parents_players'}
-					<th class="gu-th">Household</th>
-					<th class="gu-th">VPC</th>
+					<th class="v-th">Household</th>
+					<th class="v-th">VPC</th>
 				{/if}
-				<th class="gu-th">Last Active</th>
-				<th class="gu-th gu-th--right">Actions</th>
+				<th class="v-th">Last Active</th>
+				<th class="v-th v-th--right">Actions</th>
 			</tr>
 		</thead>
 		<tbody>
 			{#if loading && rows.length === 0}
 				<tr>
-					<td colspan={activeTab === 'parents_players' ? 8 : 6} class="gu-td-empty">Loading users…</td>
+					<td colspan={activeTab === 'parents_players' ? 8 : 6} class="v-td-empty">Loading users…</td>
 				</tr>
 			{:else if rows.length === 0}
 				<tr>
-					<td colspan={activeTab === 'parents_players' ? 8 : 6} class="gu-td-empty">
+					<td colspan={activeTab === 'parents_players' ? 8 : 6} class="v-td-empty">
 						{#if searchApplied}
 							No users in this segment match the search.
 						{:else}
@@ -84,8 +104,8 @@
 				</tr>
 			{:else}
 				{#each rows as row (row.id)}
-					<tr class="gu-tr">
-						<td class="gu-td gu-td--avatar">
+					<tr class="v-tr">
+						<td class="v-td v-td--avatar">
 							{#if row.photoURL}
 								<img
 									src={row.photoURL}
@@ -100,7 +120,7 @@
 								</span>
 							{/if}
 						</td>
-						<td class="gu-td">
+						<td class="v-td">
 							<div class="gu-name">
 								<span class="gu-name__primary">
 									{row.displayName || row.playerName || row.email}
@@ -108,7 +128,7 @@
 								<span class="gu-name__email">{row.email}</span>
 							</div>
 						</td>
-						<td class="gu-td">
+						<td class="v-td">
 							<div class="gu-role-cell">
 								<span class="gu-role {roleToneClass(row.role)}">
 									{roleLabel(row.role)}
@@ -118,7 +138,7 @@
 								{/if}
 							</div>
 						</td>
-						<td class="gu-td">
+						<td class="v-td">
 							{#if row.clubId}
 								<span class="gu-club">
 									<Icon name={'org.building' as IconName} aria-hidden="true" />
@@ -129,7 +149,7 @@
 							{/if}
 						</td>
 						{#if activeTab === 'parents_players'}
-							<td class="gu-td">
+							<td class="v-td">
 								<span
 									class="gu-household"
 									class:gu-household--warn={(row.householdGraphLabel || '').includes('Unlinked') ||
@@ -139,7 +159,7 @@
 									{row.householdGraphLabel || '—'}
 								</span>
 							</td>
-							<td class="gu-td">
+							<td class="v-td">
 								<span
 									class:gu-vpc--ok={row.vpcStatus === 'verified'}
 									class:gu-vpc--pending={row.vpcStatus === 'pending_parent' ||
@@ -155,17 +175,17 @@
 								</span>
 							</td>
 						{/if}
-						<td class="gu-td">
+						<td class="v-td">
 							<span class="gu-muted" title={row.lastActiveSource || ''}>
 								{formatLastActive(row.lastActiveAt)}
 							</span>
 						</td>
-						<td class="gu-td gu-td--right">
+						<td class="v-td v-td--right">
 							<div class="gu-actions" data-user-menu>
 								<button
 									type="button"
 									class="gu-icon-btn"
-									onclick={() => onToggleMenu(row.id)}
+									onclick={(e) => handleToggle(e, row.id)}
 									aria-label="Actions for {row.email}"
 									aria-haspopup="menu"
 									aria-expanded={openMenuFor === row.id}
@@ -179,7 +199,14 @@
 								</button>
 
 								{#if openMenuFor === row.id}
-									<div class="gu-menu" role="menu" data-user-menu>
+									<div 
+										class="gu-menu" 
+										role="menu" 
+										data-user-menu 
+										style="position: fixed; top: {menuTop}px; right: {menuRight}px; z-index: 9999;"
+										onclick={(e) => e.stopPropagation()}
+										aria-hidden="false"
+									>
 										<button
 											type="button"
 											class="gu-menu__item"

@@ -100,40 +100,39 @@
 	}
 </script>
 
-{#if engine.activeTab === 'access'}
-	<section class="ss-section" aria-labelledby="ss-access-heading">
-		<div class="ss-section__label">
+<div class="tw-flex tw-flex-col tw-gap-[clamp(32px,4vw,48px)]">
+	<section class="tw-flex tw-flex-col tw-gap-[clamp(16px,2vw,24px)] tw-pl-6 tw-border-l-[3px] tw-border-l-[#14b8a6]" aria-labelledby="ss-access-heading">
+		<div class="tw-flex tw-items-center tw-gap-3 tw-text-[#FAFAFA]">
 			<Icon name={"game.crown" as IconName} />
-			<h2 id="ss-access-heading" class="ss-section__heading">System Administrators</h2>
+			<h2 id="ss-access-heading" class="tw-font-sans tw-tracking-tight tw-text-xl tw-font-bold">System Administrators</h2>
 		</div>
-		<p class="ss-section__desc">
-			Global admins have unrestricted access to all platform data and controls. Grant access
-			only to trusted internal accounts.
+		<p class="tw-text-[#D4D4D8] tw-text-sm">
+			Global admins have unrestricted access to all platform data and controls. Grant access only to trusted internal accounts.
 		</p>
 
 		{#if engine.adminErr}
-			<p class="ss-flash ss-flash--err" role="alert">{engine.adminErr}</p>
+			<p class="v-flash v-flash--err" role="alert">{engine.adminErr}</p>
 		{/if}
 		{#if engine.adminOk}
-			<p class="ss-flash ss-flash--ok" role="status">{engine.adminOk}</p>
+			<p class="v-flash v-flash--ok" role="status">{engine.adminOk}</p>
 		{/if}
 
-		<div class="ss-dt-wrap">
-			<table class="ss-dt">
+		<div class="v-table-wrap">
+			<table class="v-table">
 				<thead>
 					<tr>
-						<th>Admin Email</th>
-						<th class="ss-dt__th-right">Action</th>
+						<th class="v-th">Admin Email</th>
+						<th class="v-th v-th--right">Action</th>
 					</tr>
 				</thead>
 				<tbody>
 					{#each teamsStore.admins as email (email)}
-						<tr class="ss-dt__row">
-							<td class="ss-dt__td-mono">{email}</td>
-							<td class="ss-dt__td-right">
+						<tr class="v-tr">
+							<td class="v-td tw-font-mono tw-tracking-widest">{email}</td>
+							<td class="v-td v-td--right">
 								<button
 									type="button"
-									class="ss-revoke-btn"
+									class="v-toolbar-btn"
 									onclick={() => void engine.removeAdmin(email)}
 									aria-label="Revoke admin access for {email}"
 								>
@@ -143,245 +142,171 @@
 						</tr>
 					{:else}
 						<tr>
-							<td colspan="2" class="ss-dt__td-empty">No super admins loaded.</td>
+							<td colspan="2" class="v-td-empty">No super admins loaded.</td>
 						</tr>
 					{/each}
 				</tbody>
 			</table>
 		</div>
 	</section>
-{/if}
 
-{#if engine.activeTab === 'flags'}
-	<section class="ss-section" aria-labelledby="ss-flags-heading">
-		<div class="ss-section__label ss-section__label--danger">
-			<Icon name={"status.warning-octagon" as IconName} />
-			<h2 id="ss-flags-heading" class="ss-section__heading">Global Kill Switch</h2>
-		</div>
-		<p class="ss-section__desc">
-			Toggles cascade immediately to every authenticated session. Use with operational
-			discipline.
-		</p>
+	<hr class="tw-border-slate-800" />
 
-		{#if engine.flagErr}
-			<p class="ss-flash ss-flash--err" role="alert">{engine.flagErr}</p>
-		{/if}
-		{#if engine.flagOk}
-			<p class="ss-flash ss-flash--ok" role="status">{engine.flagOk}</p>
-		{/if}
-
-		{#if !featureFlagsStore.loaded}
-			<div class="ss-skel">Loading feature flags…</div>
-		{:else}
-			<ul class="ss-flag-list">
-				<!-- Maintenance Mode -->
-				<li class="ss-flag-row ss-flag-row--danger">
-					<div class="ss-flag-meta">
-						<div class="ss-flag-title-row">
-							<strong class="ss-flag-title">{engine.flagLabels.maintenanceMode}</strong>
-							{#if featureFlagsStore.flags.maintenanceMode}
-								<span class="ss-flag-badge ss-flag-badge--on">ACTIVE</span>
-							{:else}
-								<span class="ss-flag-badge ss-flag-badge--off">Off</span>
-							{/if}
-						</div>
-						<p class="ss-flag-desc">{engine.flagDescriptions.maintenanceMode}</p>
-					</div>
-					<label class="ss-switch" aria-label="Toggle maintenance mode">
-						<input
-							type="checkbox"
-							checked={featureFlagsStore.flags.maintenanceMode}
-							disabled={engine.flagSaving === 'maintenanceMode'}
-							onchange={(e) => void engine.toggleFlag('maintenanceMode', /** @type {HTMLInputElement} */ (e.currentTarget).checked)}
-						/>
-						<span class="ss-switch__track"></span>
-					</label>
-				</li>
-
-				{#if featureFlagsStore.flags.maintenanceMode || engine.maintenanceMessageDraft}
-					<li class="ss-flag-sub">
-						<label class="ss-label" for="ss-maint-msg">Maintenance message</label>
-						<textarea
-							id="ss-maint-msg"
-							class="ss-input ss-textarea"
-							bind:value={engine.maintenanceMessageDraft}
-							rows={2}
-							maxlength={500}
-							placeholder="Optional — shown to non-super-admins on the maintenance screen."
-						></textarea>
-						<div class="ss-form-row ss-form-row--end">
-							<button
-								type="button"
-								class="ss-btn ss-btn--ghost"
-								onclick={() => void engine.saveMaintenanceMessage()}
-								disabled={engine.flagSaving === 'maintenanceMessage'}
-							>
-								{engine.flagSaving === 'maintenanceMessage' ? 'Saving…' : 'Save message'}
-							</button>
-						</div>
-					</li>
-				{/if}
-
-				{#each ['enableRagAiCoaching', 'enableVideoProcessing', 'enableRecruiterMarketplace', 'enableLiveScoring'] as flagKey}
-					<li class="ss-flag-row">
-						<div class="ss-flag-meta">
-							<div class="ss-flag-title-row">
-								<strong class="ss-flag-title">{engine.flagLabels[flagKey as keyof typeof engine.flagLabels]}</strong>
-								{#if featureFlagsStore.flags[flagKey as keyof typeof featureFlagsStore.flags]}
-									<span class="ss-flag-badge ss-flag-badge--muted-on">On</span>
-								{:else}
-									<span class="ss-flag-badge ss-flag-badge--off">Off</span>
-								{/if}
-							</div>
-							<p class="ss-flag-desc">{engine.flagDescriptions[flagKey as keyof typeof engine.flagDescriptions]}</p>
-						</div>
-						<label class="ss-switch" aria-label="Toggle {engine.flagLabels[flagKey as keyof typeof engine.flagLabels]}">
-							<input
-								type="checkbox"
-								checked={Boolean(featureFlagsStore.flags[flagKey as keyof typeof featureFlagsStore.flags])}
-								disabled={engine.flagSaving === flagKey}
-								onchange={(e) => void engine.toggleFlag(flagKey as keyof typeof engine.flagLabels, /** @type {HTMLInputElement} */ (e.currentTarget).checked)}
-							/>
-							<span class="ss-switch__track"></span>
-						</label>
-					</li>
-				{/each}
-			</ul>
-		{/if}
-	</section>
-{/if}
-
-{#if engine.activeTab === 'integrations'}
-	<section class="ss-section" aria-labelledby="ss-int-heading">
-		<div class="ss-section__label">
+	<section class="tw-flex tw-flex-col tw-gap-[clamp(16px,2vw,24px)] tw-pl-6 tw-border-l-[3px] tw-border-l-[#14b8a6]" aria-labelledby="ss-int-heading">
+		<div class="tw-flex tw-items-center tw-gap-3 tw-text-[#FAFAFA]">
 			<Icon name={"sys.plug-zap" as IconName} />
-			<h2 id="ss-int-heading" class="ss-section__heading">External Integrations (API)</h2>
+			<h2 id="ss-int-heading" class="tw-font-sans tw-tracking-tight tw-text-xl tw-font-bold">Sport Module Provisioning & Integrations</h2>
 		</div>
-		<p class="ss-section__desc">
-			Pro league data feeds, webhook health, and third-party credentials. API keys are
-			stored in Google Secret Manager — never in Firestore.
+		<p class="tw-text-[#D4D4D8] tw-text-sm">
+			Pro league data feeds, webhook health, and third-party credentials. API keys are stored in Google Secret Manager — never in Firestore.
 		</p>
 
-		<div class="ss-int-grid">
+		<div class="tw-grid tw-grid-cols-1 md:tw-grid-cols-2 tw-gap-[clamp(16px,2vw,24px)]">
 			{#each integrationSpecs as spec (spec.id)}
-				<article class="ss-int-card" aria-labelledby="ss-int-{spec.id}">
-					<header class="ss-int-card__head">
-						<h3 id="ss-int-{spec.id}" class="ss-int-card__title">{spec.label}</h3>
-						<span class="ss-int-card__badge">Secret Manager</span>
+				<article class="tw-flex tw-flex-col tw-gap-2 tw-border tw-border-slate-800 tw-bg-[#0f172a] tw-p-[clamp(16px,2vw,24px)]" aria-labelledby="ss-int-{spec.id}">
+					<header class="tw-flex tw-items-center tw-justify-between">
+						<h3 id="ss-int-{spec.id}" class="tw-font-sans tw-tracking-tight tw-font-bold tw-text-[#FAFAFA]">{spec.label}</h3>
+						<span class="tw-text-[10px] tw-uppercase tw-font-bold tw-tracking-widest tw-bg-slate-800 tw-text-[#D4D4D8] tw-px-2 tw-py-1">Secret Manager</span>
 					</header>
-					<p class="ss-int-card__desc">{spec.description}</p>
-					<div class="ss-int-card__key">
-						<span class="ss-int-card__key-label">Secret</span>
-						<code class="ss-int-card__key-code">{spec.secretName}</code>
+					<p class="tw-text-[#D4D4D8] tw-text-sm">{spec.description}</p>
+					<div class="tw-flex tw-items-center tw-gap-2 tw-mt-auto tw-pt-4">
+						<span class="tw-text-xs tw-text-[#A1A1AA] tw-uppercase tw-font-bold tw-tracking-widest">Secret</span>
+						<code class="tw-font-mono tw-tracking-widest tw-text-xs tw-text-[#14b8a6] tw-bg-slate-900 tw-px-2 tw-py-1">{spec.secretName}</code>
 					</div>
-					<p class="ss-int-card__hint">{spec.statusHint}</p>
+					<p class="tw-text-xs tw-text-[#A1A1AA] tw-mt-2">{spec.statusHint}</p>
 				</article>
 			{/each}
 		</div>
 
-		<div class="ss-section__label ss-section__label--pad">
+		<div class="tw-flex tw-items-center tw-gap-3 tw-text-[#FAFAFA] tw-mt-8">
 			<Icon name={"game.rocket" as IconName} />
-			<h2 class="ss-section__heading">Upcoming Integrations</h2>
-			<span class="ss-upcoming__header-chip">Roadmap</span>
+			<h2 class="tw-font-sans tw-tracking-tight tw-text-xl tw-font-bold">Upcoming Integrations</h2>
+			<span class="tw-text-[10px] tw-uppercase tw-font-bold tw-tracking-widest tw-bg-[#fbbf24] tw-text-[#0B0F19] tw-px-2 tw-py-1">Roadmap</span>
 		</div>
-		<p class="ss-section__desc">
-			Platform-level connectors the Director Onboarding flow will turn on once
-			the handshake ships. Each hook is deliberately disabled until the
-			matching Cloud Function is live — we never render a half-wired OAuth flow.
+		<p class="tw-text-[#D4D4D8] tw-text-sm">
+			Platform-level connectors the Director Onboarding flow will turn on once the handshake ships.
 		</p>
 
-		<div class="ss-upcoming-grid">
+		<div class="tw-grid tw-grid-cols-1 md:tw-grid-cols-2 tw-gap-[clamp(16px,2vw,24px)]">
 			{#each upcomingIntegrations as spec (spec.id)}
-				<article class="ss-upcoming-card" aria-labelledby="ss-upcoming-{spec.id}">
-					<header class="ss-upcoming-card__head">
-					<span
-						class="ss-upcoming-card__icon"
-						style="background: {spec.accent}1f; color: {spec.accent};"
-						aria-hidden="true"
-					>
-					<Icon name={spec.icon as IconName} />
-					</span>
-						<div class="ss-upcoming-card__title-wrap">
-							<h3 id="ss-upcoming-{spec.id}" class="ss-upcoming-card__title">
+				<article class="tw-flex tw-flex-col tw-gap-2 tw-border tw-border-slate-800 tw-bg-[#0f172a] tw-p-[clamp(16px,2vw,24px)]" aria-labelledby="ss-upcoming-{spec.id}">
+					<header class="tw-flex tw-items-start tw-gap-4">
+						<span class="tw-flex tw-items-center tw-justify-center tw-w-10 tw-h-10" style="background: {spec.accent}1f; color: {spec.accent};" aria-hidden="true">
+							<Icon name={spec.icon as IconName} />
+						</span>
+						<div class="tw-flex tw-flex-col tw-gap-1 tw-flex-1">
+							<h3 id="ss-upcoming-{spec.id}" class="tw-font-sans tw-tracking-tight tw-font-bold tw-text-[#FAFAFA]">
 								{spec.label}
 							</h3>
-							<span class="ss-upcoming-card__category">{spec.category}</span>
+							<span class="tw-text-xs tw-text-[#A1A1AA] tw-uppercase tw-font-bold tw-tracking-widest">{spec.category}</span>
 						</div>
-						<span class="ss-upcoming-card__sprint" title="Expected release">
+						<span class="tw-text-xs tw-text-[#A1A1AA] tw-font-mono tw-tracking-widest" title="Expected release">
 							{spec.sprintEta}
 						</span>
 					</header>
-					<p class="ss-upcoming-card__desc">{spec.description}</p>
-					<div class="ss-upcoming-card__foot">
-						<span class="ss-upcoming-card__status">
-						<Icon name={"sys.lock-simple" as IconName} />
+					<p class="tw-text-[#D4D4D8] tw-text-sm tw-mt-2">{spec.description}</p>
+					<div class="tw-flex tw-items-center tw-justify-between tw-mt-auto tw-pt-4">
+						<span class="tw-flex tw-items-center tw-gap-2 tw-text-xs tw-text-[#A1A1AA]">
+							<Icon name={"sys.lock-simple" as IconName} size={14} />
 							Not enabled
 						</span>
 						<button
 							type="button"
-							class="ss-upcoming-card__btn"
+							class="v-toolbar-btn"
 							disabled
 							aria-disabled="true"
 							onclick={() => void onUpcomingIntegrationClick(spec)}
 							title="Disabled — ships in {spec.sprintEta}"
 						>
-							<Icon name={"sys.plug" as IconName} />
+							<Icon name={"sys.plug" as IconName} size={16} />
 							Connect
 						</button>
 					</div>
 				</article>
 			{/each}
 		</div>
+	</section>
 
-		<div class="ss-section__label ss-section__label--pad">
-			<Icon name={"data.activity" as IconName} />
-			<h2 class="ss-section__heading">Webhook Status Log</h2>
+	<hr class="tw-border-slate-800" />
+
+	<section class="tw-flex tw-flex-col tw-gap-[clamp(16px,2vw,24px)] tw-pl-6 tw-border-l-[3px] tw-border-l-[#14b8a6]" aria-labelledby="ss-flags-heading">
+		<div class="tw-flex tw-items-center tw-gap-3 tw-text-[#f43f5e]">
+			<Icon name={"status.warning-octagon" as IconName} />
+			<h2 id="ss-flags-heading" class="tw-font-sans tw-tracking-tight tw-text-xl tw-font-bold">Global Kill Switch</h2>
 		</div>
-		<p class="ss-section__desc">
-			Most-recent webhook deliveries from active integrations. Populated by Cloud Functions
-			writing to <code class="ss-code">config/webhook_status</code>.
+		<p class="tw-text-[#D4D4D8] tw-text-sm">
+			Toggles cascade immediately to every authenticated session. Use with operational discipline.
 		</p>
 
-		<div class="ss-dt-wrap">
-			<table class="ss-dt">
-				<thead>
-					<tr>
-						<th>Integration</th>
-						<th>Status</th>
-						<th>Received</th>
-						<th>Summary</th>
-					</tr>
-				</thead>
-				<tbody>
-					{#if engine.webhookLoading}
+		{#if engine.flagErr}
+			<p class="v-flash v-flash--err" role="alert">{engine.flagErr}</p>
+		{/if}
+		{#if engine.flagOk}
+			<p class="v-flash v-flash--ok" role="status">{engine.flagOk}</p>
+		{/if}
+
+		{#if !featureFlagsStore.loaded}
+			<div class="tw-text-[#A1A1AA] tw-font-mono tw-tracking-widest">Loading feature flags…</div>
+		{:else}
+			<div class="v-table-wrap">
+				<table class="v-table">
+					<thead>
 						<tr>
-							<td colspan="4" class="ss-dt__td-empty">Loading webhook status…</td>
+							<th class="v-th">Feature Flag</th>
+							<th class="v-th">Description</th>
+							<th class="v-th">Status</th>
+							<th class="v-th v-th--right">Toggle</th>
 						</tr>
-					{:else if engine.webhookRows.length === 0}
-						<tr>
-							<td colspan="4" class="ss-dt__td-empty">
-								No webhook events recorded yet.
+					</thead>
+					<tbody>
+						<tr class="v-tr">
+							<td class="v-td tw-font-sans tw-font-bold">{engine.flagLabels.maintenanceMode}</td>
+							<td class="v-td tw-text-sm">{engine.flagDescriptions.maintenanceMode}</td>
+							<td class="v-td">
+								{#if featureFlagsStore.flags.maintenanceMode}
+									<span class="tw-text-[10px] tw-uppercase tw-font-bold tw-tracking-widest tw-bg-[#f43f5e] tw-text-[#FAFAFA] tw-px-2 tw-py-1">ACTIVE</span>
+								{:else}
+									<span class="tw-text-[10px] tw-uppercase tw-font-bold tw-tracking-widest tw-bg-slate-800 tw-text-[#A1A1AA] tw-px-2 tw-py-1">OFF</span>
+								{/if}
+							</td>
+							<td class="v-td v-td--right">
+								<button
+									type="button"
+									class="v-toolbar-btn"
+									disabled={engine.flagSaving === 'maintenanceMode'}
+									onclick={() => void engine.toggleFlag('maintenanceMode', !featureFlagsStore.flags.maintenanceMode)}
+								>
+									Toggle
+								</button>
 							</td>
 						</tr>
-					{:else}
-						{#each engine.webhookRows as row (row.id)}
-							<tr class="ss-dt__row">
-								<td class="ss-dt__td-mono">{row.integration}</td>
-								<td>
-									<span
-										class="ss-status ss-status--{row.status}"
-										aria-label="Status: {row.status}"
-									>
-										{row.status.toUpperCase()}
-									</span>
+						
+						{#each ['enableRagAiCoaching', 'enableVideoProcessing', 'enableRecruiterMarketplace', 'enableLiveScoring'] as flagKey}
+							<tr class="v-tr">
+								<td class="v-td tw-font-sans tw-font-bold">{engine.flagLabels[flagKey as keyof typeof engine.flagLabels]}</td>
+								<td class="v-td tw-text-sm">{engine.flagDescriptions[flagKey as keyof typeof engine.flagDescriptions]}</td>
+								<td class="v-td">
+									{#if featureFlagsStore.flags[flagKey as keyof typeof featureFlagsStore.flags]}
+										<span class="tw-text-[10px] tw-uppercase tw-font-bold tw-tracking-widest tw-bg-[#10b981] tw-text-[#FAFAFA] tw-px-2 tw-py-1">ON</span>
+									{:else}
+										<span class="tw-text-[10px] tw-uppercase tw-font-bold tw-tracking-widest tw-bg-slate-800 tw-text-[#A1A1AA] tw-px-2 tw-py-1">OFF</span>
+									{/if}
 								</td>
-								<td>{formatTs(row.timestamp)}</td>
-								<td>{row.summary || '—'}</td>
+								<td class="v-td v-td--right">
+									<button
+										type="button"
+										class="v-toolbar-btn"
+										disabled={engine.flagSaving === flagKey}
+										onclick={() => void engine.toggleFlag(flagKey as keyof typeof engine.flagLabels, !featureFlagsStore.flags[flagKey as keyof typeof featureFlagsStore.flags])}
+									>
+										Toggle
+									</button>
+								</td>
 							</tr>
 						{/each}
-					{/if}
-				</tbody>
-			</table>
-		</div>
+					</tbody>
+				</table>
+			</div>
+		{/if}
 	</section>
-{/if}
+</div>

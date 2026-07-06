@@ -157,17 +157,26 @@
 </script>
 
 {#if open && club}
+	<!-- Backdrop -->
+	<!-- svelte-ignore a11y_click_events_have_key_events -->
+	<!-- svelte-ignore a11y_no_static_element_interactions -->
+	<div 
+		class="tw-fixed tw-inset-0 tw-bg-black/60 tw-backdrop-blur-sm tw-z-[90] tw-transition-opacity" 
+		onclick={() => !saving && onClose?.()}
+	></div>
+
+	<!-- Drawer -->
 	<div
-		class="cc-chart-card cc-chart-card--soc tw-h-full tw-flex tw-flex-col tw-overflow-y-auto"
+		class="tw-fixed tw-inset-y-0 tw-right-0 tw-z-[100] tw-w-full md:tw-w-[500px] tw-bg-[#0f172a] tw-border-l tw-border-[#334155] tw-flex tw-flex-col tw-overflow-y-auto tw-shadow-2xl tw-transform tw-transition-transform tw-duration-300"
 		data-admin-shell="true"
 	>
-		<header class="cc-chart-card__head tw-shrink-0">
-			<div class="cc-chart-card__icon cc-chart-card__icon--cyan" aria-hidden="true">
+		<header class="tw-flex tw-items-center tw-gap-3 tw-p-[clamp(16px,2vw,24px)] tw-border-b tw-border-[#334155] tw-shrink-0">
+			<div class="tw-bg-cyan-500/20 tw-text-cyan-400 tw-p-2" aria-hidden="true">
 				<Icon name={"action.edit" as IconName} />
 			</div>
 			<div class="tw-flex-1 tw-min-w-0">
-				<h2 class="cc-chart-card__title">Organization Details</h2>
-				<p class="cc-chart-card__sub tw-truncate">
+				<h2 class="tw-text-[#FAFAFA] tw-font-bold tw-text-lg tw-m-0">Organization Details</h2>
+				<p class="tw-text-[#D4D4D8] tw-text-sm tw-truncate tw-m-0 tw-mt-1">
 					{club.id}
 				</p>
 			</div>
@@ -182,7 +191,7 @@
 			</button>
 		</header>
 		
-		<div class="tw-p-4 tw-flex-1 tw-flex tw-flex-col tw-gap-4">
+		<div class="tw-p-[clamp(16px,2vw,24px)] tw-flex-1 tw-flex tw-flex-col tw-gap-[clamp(16px,2vw,24px)]">
 
 		{#if errMsg}
 			<p class="eom-flash eom-flash--err" role="alert">{errMsg}</p>

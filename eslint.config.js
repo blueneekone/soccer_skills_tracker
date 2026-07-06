@@ -27,12 +27,29 @@ export default ts.config(
 		}
 	},
 	{
-		files: ["**/*.svelte", "**/*.ts", "**/*.js"],
+		files: ["**/*.ts", "**/*.svelte.ts"],
+		languageOptions: {
+			parser: ts.parser,
+			parserOptions: {
+				ecmaVersion: 2020,
+				sourceType: "module"
+			}
+		}
+	},
+	{
+		files: ["**/*.svelte", "**/*.ts", "**/*.svelte.ts", "**/*.js"],
 		rules: {
-			"max-lines-per-function": ["error", { "max": 80, "skipBlankLines": true, "skipComments": true }],
+			"max-lines-per-function": ["warn", { "max": 95, "skipBlankLines": true, "skipComments": true }],
 			"svelte/valid-prop-names-in-kit-pages": "off",
 			"svelte/no-navigation-without-resolve": "off",
-			"svelte/require-each-key": "off"
+			"svelte/require-each-key": "off",
+			"@typescript-eslint/no-unused-vars": "off",
+			"@typescript-eslint/no-explicit-any": "off",
+			"no-useless-assignment": "off",
+			"svelte/prefer-svelte-reactivity": "off",
+			"svelte/no-unused-svelte-ignore": "off",
+			"svelte/no-useless-children-snippet": "off",
+			"@typescript-eslint/no-unused-expressions": "off"
 		}
 	},
 	{

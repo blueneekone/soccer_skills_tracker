@@ -171,8 +171,17 @@
 </script>
 
 {#if open && admin}
+	<!-- Backdrop -->
+	<!-- svelte-ignore a11y_click_events_have_key_events -->
+	<!-- svelte-ignore a11y_no_static_element_interactions -->
+	<div 
+		class="tw-fixed tw-inset-0 tw-bg-black/60 tw-backdrop-blur-sm tw-z-[90] tw-transition-opacity" 
+		onclick={() => !saving && onClose?.()}
+	></div>
+
+	<!-- Drawer -->
 	<div
-		class="cc-chart-card cc-chart-card--soc tw-h-full tw-flex tw-flex-col tw-overflow-y-auto"
+		class="tw-fixed tw-inset-y-0 tw-right-0 tw-z-[100] tw-w-full md:tw-w-[500px] cc-chart-card cc-chart-card--soc tw-flex tw-flex-col tw-overflow-y-auto tw-rounded-none md:tw-rounded-l-2xl tw-border-r-0 tw-shadow-2xl tw-transform tw-transition-transform tw-duration-300"
 		data-admin-shell="true"
 	>
 		<header class="cc-chart-card__head tw-shrink-0">
@@ -196,7 +205,7 @@
 			</button>
 		</header>
 		
-		<div class="tw-p-4 tw-flex-1 tw-flex tw-flex-col tw-gap-4">
+		<div class="tw-p-[clamp(16px,2vw,24px)] tw-flex-1 tw-flex tw-flex-col tw-gap-[clamp(16px,2vw,24px)]">
 
 		{#if errMsg}
 			<p class="eam-flash eam-flash--err" role="alert">{errMsg}</p>

@@ -95,7 +95,7 @@
 			</div>
 		{/each}
 
-			<div class="cc-chart-row bento-span-12 tw-col-span-full tw-min-w-0 tw-grid tw-grid-cols-1 lg:tw-grid-cols-12 tw-gap-6">
+			<div class="cc-chart-row bento-span-12 tw-col-span-full tw-min-w-0 tw-grid tw-grid-cols-1 lg:tw-grid-cols-12 tw-gap-[clamp(16px,2vw,24px)]">
 				<article class="cc-chart-card cc-chart-card--half cc-chart-card--soc lg:tw-col-span-8 tw-min-w-0">
 					<header class="cc-chart-card__head">
 					<div class="cc-chart-card__icon cc-chart-card__icon--emerald" aria-hidden="true">

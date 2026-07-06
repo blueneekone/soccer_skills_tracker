@@ -24,7 +24,9 @@
 	<title>{pageTitle} — Compliance</title>
 </svelte:head>
 
-<div class="dp-root coach-clearance-panopticon">
+<div class="tw-flex tw-flex-col tw-w-full tw-min-w-0 tw-gap-[clamp(16px,2vw,24px)] tw-bg-[#0B0F19] tw-text-[#FAFAFA]">
 	<CoachClearanceHUD {engine} {headerLabel} {pageTitle} />
-	<CoachClearanceArena {engine} />
+	<div class="v-table-wrap tw-w-full tw-overflow-x-auto">
+		<CoachClearanceArena {engine} />
+	</div>
 </div>

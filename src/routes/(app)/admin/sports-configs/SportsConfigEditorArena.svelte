@@ -82,7 +82,7 @@
     {#if engine.viewMode === 'list'}
       <div class="arena-empty">
         <Icon name={"status.shield-check" as IconName} size={36} class="tw-text-slate-600" />
-        <p class="tw-text-slate-500 tw-text-sm tw-mt-2">Select a sport to edit or create a new one.</p>
+        <p class="tw-text-[#A1A1AA] tw-text-sm tw-mt-2">Select a sport to edit or create a new one.</p>
       </div>
 
     {:else if engine.dirtyBuffer}
@@ -127,7 +127,7 @@
                 placeholder="sport.soccer"
               />
               {#if engine.dirtyBuffer}
-                <Icon name={resolveIconName(engine.dirtyBuffer as { iconName?: string; iconClass: string })} size={20} class="tw-text-slate-300" />
+                <Icon name={resolveIconName(engine.dirtyBuffer as { iconName?: string; iconClass: string })} size={20} class="tw-text-[#D4D4D8]" />
               {/if}
             </div>
           </label>

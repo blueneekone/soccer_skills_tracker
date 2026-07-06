@@ -15,21 +15,21 @@
 
 <!-- ── Log table ──────────────────────────────────────────────────────────── -->
 <div class="card">
-	<div class="card-body al-table-body">
-		<div class="al-table-wrap">
-			<table class="admin-table al-table">
+	<div class="card-body v-table-body">
+		<div class="v-table-wrap">
+			<table class="admin-table v-table">
 				<thead>
 					<tr>
-						<th class="al-th-ts">Timestamp</th>
-						<th class="al-th-admin">Admin Identity</th>
-						<th class="al-th-action">Action</th>
+						<th class="v-th-ts">Timestamp</th>
+						<th class="v-th-admin">Admin Identity</th>
+						<th class="v-th-action">Action</th>
 						<th>Target / Details</th>
 					</tr>
 				</thead>
 				<tbody>
 					{#if engine.loading && engine.logs.length === 0}
 						<tr>
-							<td colspan="4" class="text-center al-td-loading">
+							<td colspan="4" class="text-center v-td-loading">
 								Decrypting secure audit logs…
 							</td>
 						</tr>
@@ -42,19 +42,19 @@
 					{:else}
 						{#each engine.filteredLogs as log (log.id)}
 							<tr class="al-row">
-								<td class="al-td-ts">
+								<td class="v-td-ts">
 									{engine.rowTimestamp(log)}
 								</td>
-								<td class="al-td-admin">{log.admin || '—'}</td>
-								<td class="al-td-action">
+								<td class="v-td-admin">{log.admin || '—'}</td>
+								<td class="v-td-action">
 									<span class="al-badge {engine.actionSeverityClass(log.action)}">
 										{log.action || '—'}
 									</span>
 								</td>
-								<td class="al-td-detail">
-									<strong class="al-td-target">{log.target || '—'}</strong>
+								<td class="v-td-detail">
+									<strong class="v-td-target">{log.target || '—'}</strong>
 									{#if log.details}
-										<span class="al-td-details-sub">{log.details}</span>
+										<span class="v-td-details-sub">{log.details}</span>
 									{/if}
 								</td>
 							</tr>

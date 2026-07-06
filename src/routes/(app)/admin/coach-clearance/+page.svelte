@@ -16,13 +16,19 @@
 	});
 </script>
 
-<nav class="coach-clearance-admin-bc" aria-label="Breadcrumb">
-	<a class="coach-clearance-admin-bc__link" href="/admin/overview">Global Admin</a>
-	<span class="coach-clearance-admin-bc__sep" aria-hidden="true">/</span>
-	<span class="coach-clearance-admin-bc__current">Coach clearance</span>
-</nav>
+<div class="coach-clearance-shell">
+	<nav class="coach-clearance-admin-bc" aria-label="Breadcrumb">
+		<a class="coach-clearance-admin-bc__link" href="/admin/overview">Global Admin</a>
+		<span class="coach-clearance-admin-bc__sep" aria-hidden="true">/</span>
+		<span class="coach-clearance-admin-bc__current">Coach clearance</span>
+	</nav>
 
-<CoachClearancePanopticon
-	headerLabel="GLOBAL ADMIN — COACH CLEARANCE"
-	pageTitle="Staff Clearance Matrix"
-/>
+	<div class="coach-clearance-page">
+		<div class="coach-clearance-page__inner tw-w-full tw-max-w-none">
+			<CoachClearancePanopticon
+				headerLabel="GLOBAL ADMIN — COACH CLEARANCE"
+				pageTitle="Staff Clearance Matrix"
+			/>
+		</div>
+	</div>
+</div>
