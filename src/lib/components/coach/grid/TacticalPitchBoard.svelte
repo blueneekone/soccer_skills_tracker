@@ -102,7 +102,7 @@
 				? 'tw-cursor-crosshair'
 				: 'tw-cursor-default'}"
 			viewBox="0 0 1600 900"
-			preserveAspectRatio="xMidYMid meet"
+			preserveAspectRatio="xMidYMid slice"
 			role="img"
 			aria-label="Tactical pitch"
 			onpointerdown={onPitchPointerDown}

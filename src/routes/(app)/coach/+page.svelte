@@ -1,20 +1,13 @@
 <script lang="ts">
-	import { goto } from '$app/navigation';
 	import { browser } from '$app/environment';
-	import Icon from '$lib/components/ui/Icon.svelte';
-	import type { IconName } from '$lib/icons/registry.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { teamsStore } from '$lib/stores/teams.svelte.js';
 	import { workspaceContextStore } from '$lib/stores/workspaceContext.svelte.js';
-	import SquadTelemetryView from '$lib/components/coach/SquadTelemetryView.svelte';
-	import MediaCenter from '$lib/components/media/MediaCenter.svelte';
-	import WeatherAlert from '$lib/components/weather/WeatherAlert.svelte';
-	import WeatherWidget from '$lib/components/weather/WeatherWidget.svelte';
-	import { vanguardFlags } from '$lib/services/remoteConfig.svelte.js';
+	import WeatherHub from '$lib/components/coach/WeatherHub.svelte';
+	import SquadMatrix from '$lib/components/coach/SquadMatrix.svelte';
+	import WarRoomGrid from '$lib/components/coach/WarRoomGrid.svelte';
 	import CheckrEmbed from '$lib/components/compliance/CheckrEmbed.svelte';
 	import { deriveCoachClearanceStep } from '$lib/compliance/checkrCoachClearance.js';
-
-	let mediaOpen = $state(false);
 
 	const role = $derived(authStore.role);
 
@@ -70,8 +63,6 @@
 
 	const nexusBadgeLetter = $derived((clubNameDisplay.slice(0, 1) || 'A').toUpperCase());
 
-	// ── Weather Hub: AEGIS live data via WeatherWidget / WeatherAegis ────────
-	// Default field coordinates — replaced by team's actual field location when available.
 	const fieldLat = $derived(activeTeamRow?.fieldLat ?? 41.633);
 	const fieldLng = $derived(activeTeamRow?.fieldLng ?? -111.851);
 	const weatherCoords = $derived(
@@ -89,16 +80,7 @@
 		const id = setInterval(tick, 1000);
 		return () => clearInterval(id);
 	});
-
-	/** PRODUCT_SURFACE_REGISTRY PS-C04: Tier 2 War Room — sidebar + HQ hero (WARROOM-SINGLE-SURFACE) */
-	const warRoomHqVisible = true;
-
-	function enterWarRoom() {
-		void goto('/coach/tactical');
-	}
 </script>
-
-<MediaCenter bind:open={mediaOpen} />
 
 <svelte:head>
 	<title>Nexus Command · Coach OS</title>
@@ -153,12 +135,9 @@
 	</div>
 {:else}
 
-<!-- AEGIS Lightning Alert Banner — coaches/directors only, zero-height when inactive -->
-<WeatherAlert />
-
 <!-- Vanguard root: deep void background, native page scrolling, no overflow traps. -->
 <div class="coach-nexus-canvas tw-relative tw-flex tw-flex-col tw-h-[100dvh] tw-w-full tw-text-slate-200">
-	<!-- Background ambient grid (decorative only, pointer-events-none) -->
+	<!-- Background ambient grid -->
 	<div
 		class="tw-pointer-events-none tw-fixed tw-inset-0 tw-z-0 tw-opacity-[0.08]"
 		style="background-image: linear-gradient(#0f172a 1px, transparent 1px), linear-gradient(90deg, #0f172a 1px, transparent 1px); background-size: 44px 44px;"
@@ -170,14 +149,12 @@
 		class="coach-os-z4-header nexus-banner tw-relative tw-z-10 tw-w-full tw-overflow-visible tw-rounded-t-none"
 		aria-label="Nexus Command"
 	>
-		<!-- Banner backdrop: aspect-ratio drives height, mask-image fades into the page. -->
 		<div class="nexus-banner__media" aria-hidden="true">
 			<div class="nexus-banner__grid"></div>
 			<div class="nexus-banner__glow nexus-banner__glow--a"></div>
 			<div class="nexus-banner__glow nexus-banner__glow--b"></div>
 			<div class="nexus-banner__scanline"></div>
 		</div>
-		<!-- Text overlay — deep backdrop-blur-md per Vanguard spec -->
 		<div
 			class="coach-os-z4-strip vanguard-surface tw-absolute tw-inset-x-4 tw-bottom-4 tw-z-20 tw-flex tw-flex-wrap tw-items-end bento-gap-md tw-px-5 tw-py-4 md:tw-inset-x-8 md:tw-bottom-6"
 		>
@@ -201,180 +178,36 @@
 		</div>
 	</header>
 
-	<!-- ── BODY — Sprint 1.1: 12-col liquid bento (padding on wrapper, not shell canvas) -->
+	<!-- ── BODY — 12-col asymmetric bento ───────────────────────────────────── -->
 	<main
 		class="coach-nexus-main tw-relative tw-z-10 tw-mx-auto tw-box-border tw-w-full tw-max-w-7xl tw-flex-1 tw-min-h-0 tw-overflow-y-auto"
 		style="padding: var(--bento-pad-liquid); padding-bottom: calc(var(--bento-pad-liquid) + env(safe-area-inset-bottom, 0px));"
 	>
-		<div
-			class="bento-grid bento-grid--12col bento-grid--liquid tw-w-full tw-grid tw-grid-cols-1 lg:tw-grid-cols-12"
-			aria-label="Nexus Command workspace"
-		>
-			<div class="tw-col-span-12 tw-min-w-0">
-				<SquadTelemetryView teamId={effectiveTeamId} teams={myTeams} />
+		<div class="tw-grid tw-grid-cols-12 tw-gap-4" aria-label="Nexus Command workspace">
+			<!-- Top Navigation Section (3-section grid) -->
+			<div class="tw-col-span-12 tw-grid tw-grid-cols-3 tw-gap-4 tw-mb-2">
+				<div class="vanguard-panel tw-text-center tw-p-3 tw-font-mono tw-font-bold tw-text-[10px] tw-uppercase tw-tracking-widest tw-text-[#14b8a6]">MISSION CONTROL</div>
+				<div class="vanguard-panel tw-text-center tw-p-3 tw-font-mono tw-font-bold tw-text-[10px] tw-uppercase tw-tracking-widest tw-text-slate-400">FACILITY OPS</div>
+				<div class="vanguard-panel tw-text-center tw-p-3 tw-font-mono tw-font-bold tw-text-[10px] tw-uppercase tw-tracking-widest tw-text-slate-400">WEATHER HUB</div>
 			</div>
 
-			{#if warRoomHqVisible}
-			<button
-				type="button"
-				class="coach-os-panel coach-os-war-room war-room-card bento-span-8 bento-cell dark-form-surface tw-group tw-relative tw-flex tw-min-h-[320px] tw-min-w-0 tw-flex-col tw-justify-between tw-overflow-hidden tw-p-6 tw-text-left focus-visible:tw-outline focus-visible:tw-outline-2 focus-visible:tw-outline-offset-2 focus-visible:tw-outline-[#06b6d4]"
-				aria-label="Enter War Room — tactical board"
-				onclick={enterWarRoom}
-			>
-				<!-- Holographic field backdrop -->
-				<svg
-					class="tw-pointer-events-none tw-absolute tw-inset-0 tw-z-0 tw-h-full tw-w-full tw-opacity-40"
-					viewBox="0 0 100 56"
-					preserveAspectRatio="xMidYMid slice"
-					aria-hidden="true"
-				>
-					<rect x="2" y="2" width="96" height="52" fill="none" stroke="rgba(20, 184, 166,0.25)" stroke-width="0.3" />
-					<line x1="50" y1="2" x2="50" y2="54" stroke="rgba(20, 184, 166,0.2)" stroke-width="0.3" />
-					<circle cx="50" cy="28" r="6" fill="none" stroke="rgba(20, 184, 166,0.2)" stroke-width="0.3" />
-					<rect x="2" y="18" width="10" height="20" fill="none" stroke="rgba(20, 184, 166,0.2)" stroke-width="0.3" />
-					<rect x="88" y="18" width="10" height="20" fill="none" stroke="rgba(20, 184, 166,0.2)" stroke-width="0.3" />
-					<path
-						d="M 18 42 Q 40 18 60 28 T 88 12"
-						fill="none"
-						stroke="#14b8a6"
-						stroke-width="0.5"
-						stroke-linecap="round"
-					/>
-				</svg>
+			<!-- WarRoomGrid (8 cols) -->
+			<div class="tw-col-span-12 lg:tw-col-span-8 tw-min-w-0">
+				<WarRoomGrid />
+			</div>
 
-				<div class="tw-relative tw-z-10">
-					<p class="tw-font-mono tw-text-[10px] tw-font-black tw-uppercase tw-tracking-[0.3em] tw-text-[#14b8a6]/90">
-						PRIMARY GATEWAY
-					</p>
-					<h2 class="tw-mt-2 tw-font-mono tw-text-3xl tw-font-black tw-uppercase tw-tracking-[0.08em] tw-text-white md:tw-text-4xl">
-						WAR ROOM
-					</h2>
-					<p class="tw-mt-2 tw-max-w-md tw-font-mono tw-text-xs tw-tracking-wide tw-text-slate-400">
-						Tactical board · route ink · cartridge deploy. Live engine bound to roster telemetry.
-					</p>
-				</div>
+			<!-- WeatherHub (4 cols) -->
+			<div class="tw-col-span-12 lg:tw-col-span-4 tw-min-w-0">
+				<WeatherHub {fieldLat} {fieldLng} {weatherCoords} />
+			</div>
 
-				<div class="tw-relative tw-z-10 tw-flex tw-items-end tw-justify-between tw-gap-3">
-					<div class="tw-flex tw-flex-col tw-gap-1 tw-font-mono">
-						<span class="tw-text-[9px] tw-font-bold tw-uppercase tw-tracking-widest tw-text-[var(--text-muted)]">ENGINE STATUS</span>
-						<span class="tw-flex tw-items-center tw-gap-1.5 tw-text-[11px] tw-font-semibold tw-uppercase tw-tracking-[0.05em] tw-text-[#14b8a6]">
-							<span class="coach-os-war-room__status-dot tw-block tw-h-1.5 tw-w-1.5"></span>
-							READY · HOT START
-						</span>
-					</div>
-					<span
-						class="coach-os-war-room__cta tw-inline-flex tw-items-center tw-gap-2 tw-px-4 tw-py-2 tw-font-mono tw-text-xs tw-font-semibold tw-uppercase tw-tracking-[0.05em]"
-					>
-						ENTER WAR ROOM
-						<Icon name="nav.arrow-right" />
-					</span>
-				</div>
-			</button>
-			{/if}
-
-			<!-- FACILITY OPS & STAGING — 4 cols beside War Room; full width when War Room hidden -->
-			<article
-				class="coach-os-panel coach-os-facility bento-cell dark-form-surface tw-relative tw-flex tw-min-h-[320px] tw-min-w-0 tw-flex-col tw-overflow-hidden tw-p-5"
-				class:bento-span-4={warRoomHqVisible}
-				class:bento-span-12={!warRoomHqVisible}
-				aria-label="Facility Ops & Staging"
-			>
-				<header class="bento-mb-md tw-flex tw-items-center tw-gap-2 tw-border-b tw-border-white/10 tw-pb-3">
-					<Icon name="comm.broadcast" class="tw-text-base tw-text-[#14b8a6]" />
-					<h2 class="tw-m-0 tw-font-mono tw-text-xs tw-font-black tw-uppercase tw-tracking-[0.2em] tw-text-white">
-						Facility Ops &amp; Staging
-					</h2>
-				</header>
-
-				<dl class="tw-m-0 tw-flex tw-flex-col tw-gap-3 tw-font-mono tw-text-[11px]">
-					<div class="tw-flex tw-items-baseline tw-justify-between tw-gap-3 tw-border-b tw-border-white/5 tw-pb-2">
-						<dt class="tw-text-[9px] tw-font-bold tw-uppercase tw-tracking-widest tw-text-[var(--text-muted)]">PITCH</dt>
-						<dd class="tw-tabular-nums tw-text-[#14b8a6]/90">{teamNameDisplay}</dd>
-					</div>
-					<div class="tw-flex tw-items-baseline tw-justify-between tw-gap-3 tw-border-b tw-border-white/5 tw-pb-2">
-						<dt class="tw-text-[9px] tw-font-bold tw-uppercase tw-tracking-widest tw-text-[var(--text-muted)]">COORDS</dt>
-						<dd class="tw-tabular-nums tw-text-slate-300">{weatherCoords}</dd>
-					</div>
-					<div class="tw-flex tw-items-baseline tw-justify-between tw-gap-3 tw-border-b tw-border-white/5 tw-pb-2">
-						<dt class="tw-text-[9px] tw-font-bold tw-uppercase tw-tracking-widest tw-text-[var(--text-muted)]">ARSENAL</dt>
-						<dd class="tw-tabular-nums tw-text-slate-300">FORGE · ONLINE</dd>
-					</div>
-					<div class="tw-flex tw-items-baseline tw-justify-between tw-gap-3 tw-border-b tw-border-white/5 tw-pb-2">
-						<dt class="tw-text-[9px] tw-font-bold tw-uppercase tw-tracking-widest tw-text-[var(--text-muted)]">COMMS</dt>
-						<dd class="tw-tabular-nums tw-text-[#14b8a6]/90">TEAM OPS · LOGISTICS</dd>
-					</div>
-					<div class="tw-flex tw-items-baseline tw-justify-between tw-gap-3">
-						<dt class="tw-text-[9px] tw-font-bold tw-uppercase tw-tracking-widest tw-text-[var(--text-muted)]">EGRESS</dt>
-						<dd class="tw-tabular-nums tw-text-slate-300">{effectiveTeamId ? 'ROSTER LINKED' : 'NO TEAM'}</dd>
-					</div>
-				</dl>
-
-				<div class="tw-mt-auto tw-flex tw-flex-wrap tw-gap-2 tw-pt-4">
-					<a
-						href="/coach/forge"
-						class="coach-os-action-chip tw-pointer-events-auto tw-inline-flex tw-items-center tw-gap-1.5 tw-no-underline"
-					>
-						<Icon name="sys.hammer" /> FORGE
-					</a>
-					<a
-						href="/coach/match-day"
-						class="coach-os-action-chip tw-pointer-events-auto tw-inline-flex tw-items-center tw-gap-1.5 tw-no-underline"
-					>
-						<Icon name="data.target" /> MATCH LOG
-					</a>
-					<a
-						href="/coach/drills?view=schedule"
-						class="coach-os-action-chip tw-pointer-events-auto tw-inline-flex tw-items-center tw-gap-1.5 tw-no-underline"
-					>
-						<Icon name="sys.calendar" /> BOOK PITCH
-					</a>
-					<a
-						href="/coach/drills?view=schedule"
-						class="coach-os-action-chip tw-pointer-events-auto tw-inline-flex tw-items-center tw-gap-1.5 tw-no-underline"
-					>
-						<Icon name="content.checks" /> FIELD STATION
-					</a>
-				</div>
-			</article>
-
-		<!-- MEDIA HUB — 8 col -->
-		<div class="bento-span-8 tw-min-w-0">
-			<button
-				type="button"
-				class="coach-os-panel bento-cell dark-form-surface tw-relative tw-flex tw-min-h-[220px] tw-h-full tw-w-full tw-flex-col tw-items-center tw-justify-center tw-overflow-hidden tw-p-6 tw-text-center hover:tw-bg-white/[0.03] tw-transition-colors"
-				onclick={() => { mediaOpen = true; }}
-				aria-label="Open Media Hub — news and podcasts"
-			>
-				<Icon name="comm.broadcast" class="tw-mb-4 tw-text-4xl tw-text-slate-400" />
-				<h3 class="tw-m-0 tw-font-mono tw-text-lg tw-font-bold tw-uppercase tw-tracking-widest tw-text-white">
-					MEDIA HUB
-				</h3>
-				<p class="tw-mt-2 tw-text-xs tw-text-slate-400">
-					Access tactical podcasts, analysis, and news.
-				</p>
-			</button>
-		</div>
-
-		<!-- WEATHER MONITORING — AEGIS live widget (4 col) -->
-		<!-- Kill switch: feature_weather_aegis_enabled (Remote Config) -->
-		<div class="bento-span-4 tw-min-w-0">
-			{#if vanguardFlags.weatherEnabled}
-				<WeatherWidget lat={fieldLat} lng={fieldLng} coordsLabel={weatherCoords} />
-			{:else}
-				<div
-					class="coach-os-well font-mono text-xs p-4 text-center tw-flex tw-h-full tw-flex-col tw-items-center tw-justify-center"
-					style="color: var(--pd-data-cyan, #14b8a6); opacity: 0.55; min-height: 220px;"
-				>
-					⏸ AEGIS WEATHER MODULE OFFLINE<br/>
-					<span style="font-size: 9px; opacity: 0.6;">Disabled by platform configuration. Contact your administrator.</span>
-				</div>
-			{/if}
-		</div>
+			<!-- SquadMatrix (12 cols) -->
+			<div class="tw-col-span-12 tw-min-w-0">
+				<SquadMatrix teamId={effectiveTeamId} teams={myTeams} />
+			</div>
 		</div>
 	</main>
 </div>
-
-<!-- Close the {:else} from the clearance gate above -->
 {/if}
 
 <style>
@@ -442,37 +275,6 @@
 		mix-blend-mode: screen;
 	}
 
-	@keyframes warRoomPulse {
-		0%, 100% {
-			box-shadow: inset 0 0 0 1px rgba(20, 184, 166, 0.4), 0 0 30px rgba(20, 184, 166, 0.25);
-			border-color: rgba(20, 184, 166, 0.55);
-		}
-		50% {
-			box-shadow: inset 0 0 0 2px rgba(20, 184, 166, 0.85), 0 0 50px rgba(20, 184, 166, 0.55);
-			border-color: rgba(20, 184, 166, 0.95);
-		}
-	}
-
-	/* ── Media Hub trigger ───────────────────────────────────────────────────── */
-	.media-hub-btn {
-		display: inline-flex; align-items: center; gap: 0.5rem;
-		padding: 0.5rem 1rem; min-height: 44px;
-		background: rgba(20, 184, 166, 0.06);
-		border: 1px solid rgba(20, 184, 166, 0.25);
-		border-radius: 999px;
-		font-family: 'JetBrains Mono', monospace;
-		font-size: 0.62rem; font-weight: 700; letter-spacing: 0.14em;
-		color: rgba(20, 184, 166, 0.75);
-		cursor: pointer; transition: all 0.2s;
-	}
-	.media-hub-btn:hover {
-		background: rgba(20, 184, 166, 0.12);
-		border-color: rgba(20, 184, 166, 0.5);
-		box-shadow: 0 0 16px rgba(20, 184, 166, 0.12);
-		color: #14b8a6;
-	}
-	.media-hub-btn__icon { font-size: 0.6rem; }
-
 	/* ── Epic 14: Clearance Gate ─────────────────────────────────────────────── */
 	.clearance-gate {
 		position: fixed;
@@ -528,16 +330,6 @@
 		letter-spacing: 0.1em;
 		color: #f3f4f6;
 		text-transform: uppercase;
-		position: relative;
-		z-index: 1;
-	}
-
-	.clearance-gate__body {
-		margin: 0;
-		max-width: 36rem;
-		font-size: 0.875rem;
-		color: #6b7280;
-		line-height: 1.7;
 		position: relative;
 		z-index: 1;
 	}

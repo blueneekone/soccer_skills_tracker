@@ -32,47 +32,55 @@
 	}: Props = $props();
 </script>
 
-<div class="adm-toolbar">
-	<div class="adm-toolbar__left">
-		<h1 class="adm-toolbar__title">Global Users</h1>
-		<div class="adm-toolbar__meta">
-			<span class="adm-toolbar__sub">
-				Every account across every tenant. Email-prefix search is server-side; no client
-				enumeration of the full collection.
-			</span>
-			<span class="adm-toolbar__count">
+<div class="tw-flex tw-flex-col tw-gap-4 tw-mb-4 tw-w-full">
+	<!-- Top Row: Title and Metrics -->
+	<div class="tw-flex tw-justify-between tw-items-end tw-border-b tw-border-[#334155] tw-pb-4">
+		<div>
+			<h1 class="tw-text-2xl tw-font-bold tw-text-[#FAFAFA] tw-m-0 tw-leading-none">Global Users</h1>
+			<div class="tw-text-[#94A3B8] tw-text-sm tw-font-mono tw-mt-2">
+				Every account across every tenant. Server-side prefix search.
+			</div>
+		</div>
+		<div class="tw-text-right">
+			<div class="tw-text-[#14b8a6] tw-text-xl tw-font-bold tw-font-mono">
 				{#if loading && rangeEnd === 0}
-					…
+					—
 				{:else}
-					{rangeStart}–{rangeEnd} of {totalLabel} loaded
+					{rangeStart}–{rangeEnd}
 				{/if}
-			</span>
+			</div>
+			<div class="tw-text-[10px] tw-text-[#94A3B8] tw-font-mono tw-uppercase tw-tracking-widest">
+				OF {totalLabel} LOADED
+			</div>
 		</div>
 	</div>
-	<div class="adm-toolbar__right">
-		<div class="gu-page-actions" role="group" aria-label="Page actions">
-			<button
-				type="button"
-				class="btn-primary tw-inline-flex tw-items-center tw-gap-2 tw-h-9 tw-px-[clamp(16px,2vw,24px)] tw-text-sm tw-font-bold"
-				onclick={onAddAdmin}
-				aria-haspopup="dialog"
-			>
-				<Icon name={'user.plus' as IconName} aria-hidden="true" />
-				Add Admin
-			</button>
-		</div>
-		<div class="adm-toolbar__search-flex">
+
+	<!-- Bottom Row: Unified SIEM Action Bar -->
+	<div class="v-admin-toolbar tw-flex tw-flex-wrap tw-items-center tw-justify-between tw-gap-4">
+		<div class="tw-flex-1 tw-min-w-[280px]">
 			<AdminConsoleSearch
 				bind:value={searchInput}
 				placeholder="Search by email prefix (press Enter)"
 				ariaLabel="Search users by email"
 				showClear={Boolean(searchApplied)}
 				submitLabel="Search"
-				loading={loading}
+				{loading}
 				onSearch={onRunSearch}
 				onClear={onClearSearch}
 				onkeydown={onSearchKey}
 			/>
+		</div>
+
+		<div class="tw-flex tw-items-center">
+			<button
+				type="button"
+				class="v-toolbar-btn tw-border-[#14b8a6] tw-text-[#14b8a6] hover:tw-bg-[#14b8a6]/10"
+				onclick={onAddAdmin}
+				aria-haspopup="dialog"
+			>
+				<Icon name={'user.plus' as IconName} aria-hidden="true" />
+				Add Admin
+			</button>
 		</div>
 	</div>
 </div>

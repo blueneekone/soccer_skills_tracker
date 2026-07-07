@@ -7,44 +7,59 @@
 	let { engine }: { engine: AdminAuditEngine } = $props();
 </script>
 
-<div class="adm-toolbar al-page__toolbar">
-	<div class="adm-toolbar__left">
-		<h1 class="adm-toolbar__title adm-toolbar__title--icon">
-			<Icon name={"status.shield-check" as IconName} />
-			Security Audit Log
-		</h1>
-		<div class="adm-toolbar__meta">
-			<span class="adm-toolbar__sub">Immutable platform-level event history.</span>
-			<span class="adm-toolbar__count">
-				Showing {engine.filteredLogs.length} of {engine.totalLoaded} loaded events
-			</span>
+<div class="tw-flex tw-flex-col tw-gap-4 tw-mb-4 tw-w-full">
+	<!-- Top Row: Title and Metrics -->
+	<div class="tw-flex tw-justify-between tw-items-end tw-border-b tw-border-[#334155] tw-pb-4">
+		<div>
+			<h1 class="tw-text-2xl tw-font-bold tw-text-[#FAFAFA] tw-m-0 tw-leading-none tw-flex tw-items-center tw-gap-2">
+				<Icon name={"status.shield-check" as IconName} />
+				Security Audit Log
+			</h1>
+			<div class="tw-text-[#94A3B8] tw-text-sm tw-font-mono tw-mt-2">
+				Immutable platform-level event history.
+			</div>
+		</div>
+		<div class="tw-text-right">
+			<div class="tw-text-[#14b8a6] tw-text-xl tw-font-bold tw-font-mono">
+				{engine.filteredLogs.length}
+			</div>
+			<div class="tw-text-[10px] tw-text-[#94A3B8] tw-font-mono tw-uppercase tw-tracking-widest">
+				OF {engine.totalLoaded} EVENTS
+			</div>
 		</div>
 	</div>
-	<div class="adm-toolbar__right">
-		<div class="adm-toolbar__search-flex">
+
+	<!-- Bottom Row: Unified SIEM Action Bar -->
+	<div class="v-admin-toolbar tw-flex tw-flex-wrap tw-items-center tw-justify-between tw-gap-4">
+		<div class="tw-flex-1 tw-min-w-[280px]">
 			<AdminConsoleSearch
 				bind:value={engine.searchQuery}
 				placeholder="Search events…"
 				ariaLabel="Search audit log"
 			/>
 		</div>
-		<AdminConsoleSearch
-			bind:value={engine.actionFilter}
-			compact
-			icon="action.filter"
-			placeholder="Action…"
-			ariaLabel="Filter audit log by action"
-			showClear={false}
-		/>
-		<button
-			type="button"
-			class="al-toolbar-refresh"
-			onclick={() => engine.loadLogs()}
-			disabled={engine.loading}
-			title={engine.loading ? 'Loading…' : 'Refresh audit log'}
-			aria-label="Refresh audit log"
-		>
-			<Icon name={"nav.refresh" as IconName} class="tw-text-lg {engine.loading ? 'al-refresh-spin' : ''}" />
-		</button>
+
+		<div class="tw-flex tw-items-center tw-gap-2">
+			<div class="tw-w-48">
+				<AdminConsoleSearch
+					bind:value={engine.actionFilter}
+					icon="action.filter"
+					placeholder="Action…"
+					ariaLabel="Filter audit log by action"
+					showClear={false}
+				/>
+			</div>
+			
+			<button
+				type="button"
+				class="v-toolbar-btn tw-px-3"
+				onclick={() => engine.loadLogs()}
+				disabled={engine.loading}
+				title={engine.loading ? 'Loading…' : 'Refresh audit log'}
+				aria-label="Refresh audit log"
+			>
+				<Icon name={"nav.refresh" as IconName} class="tw-text-lg {engine.loading ? 'tw-animate-spin' : ''}" />
+			</button>
+		</div>
 	</div>
 </div>

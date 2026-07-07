@@ -49,6 +49,7 @@
 			stroke-linecap="round"
 			stroke-linejoin="round"
 			marker-end="url(#arrowhead)"
+			filter="url(#neon-glow)"
 			pointer-events="none"
 		/>
 	</g>

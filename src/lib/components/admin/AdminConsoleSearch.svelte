@@ -6,8 +6,6 @@
 		value?: string;
 		placeholder?: string;
 		ariaLabel?: string;
-		narrow?: boolean;
-		compact?: boolean;
 		showClear?: boolean;
 		submitLabel?: string;
 		loading?: boolean;
@@ -22,8 +20,6 @@
 		value = $bindable(''),
 		placeholder = 'Search…',
 		ariaLabel = 'Search',
-		narrow = false,
-		compact = false,
 		showClear = true,
 		submitLabel = '',
 		loading = false,
@@ -42,19 +38,15 @@
 	}
 </script>
 
-<div
-	class="adm-console-search"
-	class:adm-console-search--narrow={narrow}
-	class:adm-console-search--compact={compact}
-	role="search"
->
+<div class="tw-flex tw-items-center tw-h-[38px] tw-bg-[#0B0F19] tw-border tw-border-[#334155] tw-rounded-none tw-w-full tw-max-w-md tw-px-3 tw-transition-colors focus-within:tw-border-[#14b8a6]">
 	{#if icon}
-		<span class="adm-console-search__icon" aria-hidden="true">
+		<span class="tw-text-[#94A3B8] tw-flex-shrink-0 tw-mr-2" aria-hidden="true">
 			<Icon name={icon} size={16} />
 		</span>
 	{/if}
 	<input
 		type="search"
+		class="tw-flex-1 tw-bg-transparent tw-border-none tw-outline-none tw-text-[#FAFAFA] tw-text-sm tw-font-mono tw-placeholder-[#475569] tw-h-full"
 		bind:value
 		{placeholder}
 		aria-label={ariaLabel}
@@ -66,7 +58,7 @@
 	{#if showClear && value.trim()}
 		<button
 			type="button"
-			class="adm-console-search__clear"
+			class="tw-text-[#475569] hover:tw-text-[#FAFAFA] tw-ml-2 tw-transition-colors tw-flex-shrink-0"
 			onclick={clearSearch}
 			aria-label="Clear search"
 			title="Clear search"
@@ -77,7 +69,7 @@
 	{#if hasSubmit}
 		<button
 			type="button"
-			class="adm-console-search__submit"
+			class="tw-ml-3 tw-pl-3 tw-border-l tw-border-[#334155] tw-text-[#14b8a6] hover:tw-text-[#FAFAFA] tw-text-sm tw-font-mono tw-font-bold tw-uppercase tw-tracking-widest tw-transition-colors disabled:tw-opacity-50"
 			onclick={() => onSearch?.()}
 			disabled={loading || disabled}
 			aria-label={submitLabel || 'Run search'}
