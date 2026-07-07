@@ -114,7 +114,7 @@ export class AdminOrgsEngine {
 		);
 	}
 
-	showAddForm = $state(false);
+	isAddModalOpen = $state(false);
 	addClubForm = $state({ ...EMPTY_ADD_CLUB_FORM });
 	clubSaving = $state(false);
 	clubAddErr = $state('');
@@ -135,7 +135,7 @@ export class AdminOrgsEngine {
 			this.clubs = result.clubs;
 			this.complianceMap = result.complianceMap;
 			this.addClubForm = { ...EMPTY_ADD_CLUB_FORM };
-			this.showAddForm = false;
+			this.isAddModalOpen = false;
 		} catch (e) {
 			this.clubAddErr = e instanceof Error ? e.message : 'Could not create club.';
 		} finally {

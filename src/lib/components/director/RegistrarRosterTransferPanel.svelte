@@ -105,30 +105,33 @@
 <style>
 	.rrt-panel {
 		border: 1px solid #334155;
-		background: #0f172a;
-		padding: 1rem 1.25rem;
+		background: #0B0F19;
+		padding: 1.5rem;
+		border-radius: 0;
 	}
 	.rrt-panel__head {
-		margin-bottom: 0.75rem;
+		margin-bottom: 1rem;
 	}
 	.rrt-panel__title {
 		margin: 0;
-		font-size: 0.85rem;
+		font-size: 1rem;
+		font-family: 'Geist Sans', sans-serif;
 		font-weight: 700;
 		text-transform: uppercase;
-		letter-spacing: 0.08em;
-		color: #f8fafc;
+		letter-spacing: -0.02em;
+		color: #FAFAFA;
 	}
 	.rrt-panel__sub {
-		margin: 0.35rem 0 0;
-		font-size: 0.78rem;
-		color: #94a3b8;
-		line-height: 1.45;
+		margin: 0.5rem 0 0;
+		font-size: 0.85rem;
+		font-family: 'Switzer', sans-serif;
+		color: #D4D4D8;
+		line-height: 1.5;
 	}
 	.rrt-panel__grid {
 		display: grid;
-		gap: 0.75rem;
-		margin-bottom: 0.75rem;
+		gap: 1rem;
+		margin-bottom: 1rem;
 	}
 	@media (min-width: 640px) {
 		.rrt-panel__grid {
@@ -138,47 +141,72 @@
 	.rrt-field {
 		display: flex;
 		flex-direction: column;
-		gap: 0.25rem;
+		gap: 0.35rem;
 	}
 	.rrt-label {
-		font-size: 0.65rem;
+		font-family: 'Geist Mono', monospace;
+		font-size: 0.75rem;
 		font-weight: 700;
-		letter-spacing: 0.12em;
+		letter-spacing: 0.05em;
 		text-transform: uppercase;
-		color: #64748b;
+		color: #A1A1AA;
 	}
 	.rrt-input {
-		min-height: 2.5rem;
-		padding: 0.45rem 0.65rem;
+		min-height: 2.75rem;
+		padding: 0.5rem 0.75rem;
 		border: 1px solid #334155;
 		background: #020617;
-		color: #e2e8f0;
+		color: #FAFAFA;
 		font-size: 0.85rem;
+		font-family: 'Geist Mono', monospace;
+		border-radius: 0;
+		transition: border-color 0.15s ease;
+	}
+	.rrt-input:focus {
+		border-color: #FAFAFA;
+		outline: none;
 	}
 	.rrt-btn {
-		min-height: 2.5rem;
-		padding: 0.45rem 1rem;
-		border: 1px solid #fbbf24;
+		width: 100%;
+		min-height: 2.75rem;
+		padding: 0.65rem 1.25rem;
+		border: 1px solid #FAFAFA;
 		background: transparent;
-		color: #fbbf24;
-		font-size: 0.72rem;
-		font-weight: 800;
-		letter-spacing: 0.1em;
+		color: #FAFAFA;
+		font-size: 0.85rem;
+		font-family: 'Geist Sans', sans-serif;
+		font-weight: 700;
 		text-transform: uppercase;
 		cursor: pointer;
+		border-radius: 0;
+		transition: transform 0.15s ease, background 0.15s ease, color 0.15s ease;
+	}
+	@media (min-width: 640px) {
+		.rrt-btn {
+			width: auto;
+		}
+	}
+	.rrt-btn:hover:not(:disabled) {
+		background: #FAFAFA;
+		color: #020617;
+	}
+	.rrt-btn:active:not(:disabled) {
+		transform: scale(0.98);
 	}
 	.rrt-btn:disabled {
 		opacity: 0.5;
 		cursor: not-allowed;
 	}
 	.rrt-err {
-		margin: 0.65rem 0 0;
-		font-size: 0.78rem;
-		color: #fca5a5;
+		margin: 0.75rem 0 0;
+		font-size: 0.85rem;
+		font-weight: 700;
+		color: #ef4444;
 	}
 	.rrt-ok {
-		margin: 0.65rem 0 0;
-		font-size: 0.78rem;
-		color: #86efac;
+		margin: 0.75rem 0 0;
+		font-size: 0.85rem;
+		font-weight: 700;
+		color: #14b8a6;
 	}
 </style>

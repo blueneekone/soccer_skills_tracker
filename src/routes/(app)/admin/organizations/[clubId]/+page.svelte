@@ -15,6 +15,8 @@
 	const generateLicenseFn = httpsCallable(functions, 'generateLicense');
 
 	const ctx = getContext<AdminClubCtx>(ADMIN_CLUB_CTX_KEY);
+	const clubDoc = $derived(ctx.clubDoc);
+	const clubId = $derived(ctx.clubId);
 
 	// ── License entitlement ──────────────────────────────────────────────────────
 	/** @type {Record<string, unknown> | null} */
@@ -22,7 +24,7 @@
 	let entitlementLoading = $state(false);
 
 	$effect(() => {
-		const id = ctx.clubId;
+		const id = clubId;
 		if (!id) return;
 		let cancelled = false;
 		entitlementLoading = true;
@@ -47,7 +49,7 @@
 	const ALLOWED_SPORTS = ['soccer','basketball','baseball','football','volleyball','hockey','lacrosse','generic'];
 
 	$effect(() => {
-		const cl = ctx.clubDoc;
+		const cl = clubDoc;
 		if (!cl) return;
 		const s = typeof cl.sport === 'string' && cl.sport.trim()
 			? cl.sport.trim().toLowerCase()
@@ -59,19 +61,19 @@
 	});
 
 	async function saveClubEdit() {
-		if (!ctx.clubId) return;
+		if (!clubId) return;
 		editSaving = true;
 		editErr = '';
 		editSuccess = '';
 		try {
 			await setDoc(
-				doc(db, 'clubs', ctx.clubId),
+				doc(db, 'clubs', clubId),
 				{ sport: editSport, isInfinite: editInfinite === true },
 				{ merge: true },
 			);
 			await logSecurityEvent(
 				'ADMIN_EDIT_CLUB',
-				ctx.clubId,
+				clubId,
 				`sport=${editSport}; infinite=${editInfinite}`,
 			);
 			await teamsStore.load('super_admin', { scope: 'admin_full', routePath: page.url.pathname });
@@ -84,12 +86,12 @@
 	}
 
 	async function deleteCurrentClub() {
-		if (!ctx.clubId || !ctx.clubDoc) return;
-		const name = String(ctx.clubDoc.name || ctx.clubId);
-		if (!confirm(`WARNING: Permanently delete organization "${name}" (${ctx.clubId})? This cannot be undone.`)) return;
+		if (!clubId || !clubDoc) return;
+		const name = String(clubDoc.name || clubId);
+		if (!confirm(`WARNING: Permanently delete organization "${name}" (${clubId})? This cannot be undone.`)) return;
 		if (!confirm(`FINAL CONFIRMATION: Are you absolutely sure you want to delete this organization?`)) return;
-		await deleteDoc(doc(db, 'clubs', ctx.clubId));
-		await logSecurityEvent('DELETE_CLUB', ctx.clubId, 'Club deleted permanently');
+		await deleteDoc(doc(db, 'clubs', clubId));
+		await logSecurityEvent('DELETE_CLUB', clubId, 'Club deleted permanently');
 		goto('/admin/organizations');
 	}
 
@@ -100,7 +102,7 @@
 	let assignDirOk = $state('');
 
 	async function assignDirector() {
-		if (!assignDirEmail.trim() || !ctx.clubId) {
+		if (!assignDirEmail.trim() || !clubId) {
 			assignDirErr = 'Enter a valid director email.';
 			return;
 		}
@@ -109,9 +111,9 @@
 		assignDirErr = '';
 		assignDirOk = '';
 		try {
-			await setDoc(doc(db, 'clubs', ctx.clubId), { directorEmail: email }, { merge: true });
-			await setDoc(doc(db, 'users', email), { role: 'director', clubId: ctx.clubId }, { merge: true });
-			await logSecurityEvent('ASSIGN_DIRECTOR', email, `Club ID: ${ctx.clubId}`);
+			await setDoc(doc(db, 'clubs', clubId), { directorEmail: email }, { merge: true });
+			await setDoc(doc(db, 'users', email), { role: 'director', clubId: clubId }, { merge: true });
+			await logSecurityEvent('ASSIGN_DIRECTOR', email, `Club ID: ${clubId}`);
 			assignDirOk = `${email} is now director of this organization.`;
 			assignDirEmail = '';
 			await teamsStore.load('super_admin', { scope: 'admin_full', routePath: page.url.pathname });
@@ -131,13 +133,13 @@
 	let licenseOk = $state('');
 
 	async function onGenerateLicense() {
-		if (!ctx.clubId) return;
+		if (!clubId) return;
 		licenseErr = '';
 		licenseOk = '';
 		licenseBusy = true;
 		try {
 			const res = await generateLicenseFn({
-				clubId: ctx.clubId,
+				clubId: clubId,
 				licenseType,
 				maxSeats: Number(licenseMaxSeats) || 10,
 				durationMonths: Number(licenseDurationMonths) || 12,
@@ -200,8 +202,36 @@
 	}
 
 	const teamsCount = $derived(
-		teamsStore.teams.filter((t) => t.clubId === ctx.clubId).length,
+		teamsStore.teams.filter((t) => t.clubId === clubId).length,
 	);
+
+	let deleteModalOpen = $state(false);
+	let deleteConfirmStep = $state(0);
+	let deleteExecuting = $state(false);
+
+	function handleDeleteRequest() {
+		deleteConfirmStep = 1;
+		deleteModalOpen = true;
+	}
+
+	function advanceDelete() {
+		if (deleteConfirmStep === 1) deleteConfirmStep = 2;
+	}
+
+	async function executeDeletion() {
+		if (!clubId || !clubDoc) return;
+		deleteExecuting = true;
+		try {
+			await deleteDoc(doc(db, 'clubs', clubId));
+			await logSecurityEvent('DELETE_CLUB', clubId, 'Club deleted permanently');
+			goto('/admin/organizations');
+		} catch (e) {
+			console.error(e);
+			deleteExecuting = false;
+			deleteModalOpen = false;
+		}
+	}
+
 </script>
 <div class="tw-flex tw-flex-col tw-gap-6 tw-w-full">
 	{#if ctx.clubLoading}
@@ -212,22 +242,22 @@
 			{ctx.clubErr}
 			<a href="/admin/organizations" class="tw-ml-auto tw-text-[#A1A1AA] tw-text-sm hover:tw-text-[#FAFAFA]">← Back to Organizations</a>
 		</div>
-	{:else if ctx.clubDoc}
+	{:else if clubDoc}
 
 		<!-- ── Club identity header ────────────────────────────────────────────── -->
 		<div class="tw-flex tw-items-center tw-gap-4">
-			{#if typeof ctx.clubDoc.logoUrl === 'string' && ctx.clubDoc.logoUrl.trim()}
-				<img class="tw-w-14 tw-h-14 tw-rounded-xl tw-object-cover tw-border tw-border-[#334155] tw-shrink-0" src={ctx.clubDoc.logoUrl.trim()} alt="" loading="lazy" />
+			{#if typeof clubDoc.logoUrl === 'string' && clubDoc.logoUrl.trim()}
+				<img class="tw-w-14 tw-h-14 tw-rounded-xl tw-object-cover tw-border tw-border-[#334155] tw-shrink-0" src={clubDoc.logoUrl.trim()} alt="" loading="lazy" />
 			{:else}
 				<div class="tw-w-14 tw-h-14 tw-rounded-xl tw-bg-[#1E293B] tw-flex tw-items-center tw-justify-center tw-text-2xl tw-text-[#D4D4D8] tw-shrink-0" aria-hidden="true">
 					<Icon name={"org.building" as IconName} />
 				</div>
 			{/if}
 			<div class="tw-flex tw-flex-col tw-gap-1 tw-min-w-0">
-				<h1 class="tw-m-0 tw-text-2xl tw-font-extrabold tw-tracking-tight tw-text-[#FAFAFA]">{ctx.clubDoc.name || ctx.clubId}</h1>
+				<h1 class="tw-m-0 tw-text-2xl tw-font-extrabold tw-tracking-tight tw-text-[#FAFAFA]">{clubDoc.name || clubId}</h1>
 				<div class="tw-flex tw-items-center tw-gap-3">
-					<span class="tw-text-xs tw-text-[#A1A1AA] tw-font-mono">{ctx.clubId}</span>
-					{#if ctx.clubDoc.isInfinite === true}
+					<span class="tw-text-xs tw-text-[#A1A1AA] tw-font-mono">{clubId}</span>
+					{#if clubDoc.isInfinite === true}
 						<span class="tw-inline-flex tw-items-center tw-text-[10px] tw-font-extrabold tw-tracking-wider tw-px-2 tw-py-1 tw-rounded-full tw-text-[#1E293B] tw-bg-[#f59e0b] tw-uppercase">∞ Promo License</span>
 					{/if}
 				</div>
@@ -238,11 +268,11 @@
 		<div class="tw-grid tw-grid-cols-2 lg:tw-grid-cols-4 tw-gap-4">
 			<div class="tw-flex tw-flex-col tw-gap-1 tw-p-4 tw-bg-[#020617] tw-border tw-border-[#334155] tw-rounded-xl">
 				<span class="tw-text-[10px] tw-font-extrabold tw-uppercase tw-tracking-wider tw-text-[#A1A1AA]">Sport</span>
-				<span class="tw-text-sm tw-font-bold tw-text-[#FAFAFA] tw-truncate">{ctx.clubDoc.sport || '—'}</span>
+				<span class="tw-text-sm tw-font-bold tw-text-[#FAFAFA] tw-truncate">{clubDoc.sport || '—'}</span>
 			</div>
 			<div class="tw-flex tw-flex-col tw-gap-1 tw-p-4 tw-bg-[#020617] tw-border tw-border-[#334155] tw-rounded-xl">
 				<span class="tw-text-[10px] tw-font-extrabold tw-uppercase tw-tracking-wider tw-text-[#A1A1AA]">Director</span>
-				<span class="tw-text-sm tw-font-bold tw-text-[#FAFAFA] tw-font-mono tw-truncate">{ctx.clubDoc.directorEmail || '—'}</span>
+				<span class="tw-text-sm tw-font-bold tw-text-[#FAFAFA] tw-font-mono tw-truncate">{clubDoc.directorEmail || '—'}</span>
 			</div>
 			<div class="tw-flex tw-flex-col tw-gap-1 tw-p-4 tw-bg-[#020617] tw-border tw-border-[#334155] tw-rounded-xl">
 				<span class="tw-text-[10px] tw-font-extrabold tw-uppercase tw-tracking-wider tw-text-[#A1A1AA]">Teams</span>
@@ -250,7 +280,7 @@
 			</div>
 			<div class="tw-flex tw-flex-col tw-gap-1 tw-p-4 tw-bg-[#020617] tw-border tw-border-[#334155] tw-rounded-xl">
 				<span class="tw-text-[10px] tw-font-extrabold tw-uppercase tw-tracking-wider tw-text-[#A1A1AA]">Created</span>
-				<span class="tw-text-sm tw-font-bold tw-text-[#FAFAFA] tw-font-mono tw-tabular-nums tw-truncate">{formatCreatedAt(ctx.clubDoc.createdAt)}</span>
+				<span class="tw-text-sm tw-font-bold tw-text-[#FAFAFA] tw-font-mono tw-tabular-nums tw-truncate">{formatCreatedAt(clubDoc.createdAt)}</span>
 			</div>
 		</div>
 
@@ -264,8 +294,8 @@
 					<span class="tw-inline-flex tw-items-center tw-gap-2 tw-text-xs tw-font-extrabold tw-tracking-wider tw-uppercase tw-text-[#A1A1AA]">
 						<Icon name={"sys.map-pin" as IconName} /> Verified Address
 					</span>
-					{#if typeof ctx.clubDoc.verifiedAddress === 'string' && ctx.clubDoc.verifiedAddress.trim()}
-						<span class="tw-text-sm tw-font-bold tw-text-[#FAFAFA]">{ctx.clubDoc.verifiedAddress}</span>
+					{#if typeof clubDoc.verifiedAddress === 'string' && clubDoc.verifiedAddress.trim()}
+						<span class="tw-text-sm tw-font-bold tw-text-[#FAFAFA]">{clubDoc.verifiedAddress}</span>
 					{:else}
 						<span class="tw-text-sm tw-font-bold tw-text-[#A1A1AA]">No verified address on file.</span>
 					{/if}
@@ -274,8 +304,8 @@
 					<span class="tw-inline-flex tw-items-center tw-gap-2 tw-text-xs tw-font-extrabold tw-tracking-wider tw-uppercase tw-text-[#A1A1AA]">
 						<Icon name={"comm.phone" as IconName} /> Phone Number
 					</span>
-					{#if typeof ctx.clubDoc.phoneNumber === 'string' && ctx.clubDoc.phoneNumber.trim()}
-						<a class="tw-text-sm tw-font-bold tw-text-[#14b8a6] hover:tw-underline" href={`tel:${ctx.clubDoc.phoneNumber}`}>{ctx.clubDoc.phoneNumber}</a>
+					{#if typeof clubDoc.phoneNumber === 'string' && clubDoc.phoneNumber.trim()}
+						<a class="tw-text-sm tw-font-bold tw-text-[#14b8a6] hover:tw-underline" href={`tel:${clubDoc.phoneNumber}`}>{clubDoc.phoneNumber}</a>
 					{:else}
 						<span class="tw-text-sm tw-font-bold tw-text-[#A1A1AA]">No phone number on file.</span>
 					{/if}
@@ -284,8 +314,8 @@
 					<span class="tw-inline-flex tw-items-center tw-gap-2 tw-text-xs tw-font-extrabold tw-tracking-wider tw-uppercase tw-text-[#A1A1AA]">
 						<Icon name={"sport.soccer" as IconName} /> Primary Facility
 					</span>
-					{#if typeof ctx.clubDoc.primaryFacility === 'string' && ctx.clubDoc.primaryFacility.trim()}
-						<span class="tw-text-sm tw-font-bold tw-text-[#FAFAFA]">{ctx.clubDoc.primaryFacility}</span>
+					{#if typeof clubDoc.primaryFacility === 'string' && clubDoc.primaryFacility.trim()}
+						<span class="tw-text-sm tw-font-bold tw-text-[#FAFAFA]">{clubDoc.primaryFacility}</span>
 					{:else}
 						<span class="tw-text-sm tw-font-bold tw-text-[#A1A1AA]">No primary facility assigned.</span>
 					{/if}
@@ -294,12 +324,12 @@
 		</div>
 
 		<!-- ── Licensing & Entitlement Bento ────────────────────────────────────────── -->
-		<div class="tw-bg-[#020617] tw-border tw-border-[#334155] tw-rounded-xl tw-overflow-hidden">
+		<div class="tw-bg-[#0B0F19] tw-border tw-border-[#334155] tw-rounded-xl tw-overflow-hidden">
 			<div class="tw-bg-[#0B0F19] tw-px-5 tw-py-4 tw-border-b tw-border-[#334155] tw-flex tw-items-center tw-gap-2 tw-text-[#FAFAFA] tw-font-bold tw-text-sm">
 				<Icon name={"sys.credit-card" as IconName} /> Licensing & Entitlement
 			</div>
 			<div class="tw-p-5">
-				{#if ctx.clubDoc.isInfinite === true}
+				{#if clubDoc.isInfinite === true}
 					<p class="tw-flex tw-items-center tw-gap-2 tw-p-4 tw-bg-[#1E293B] tw-border tw-border-[#f59e0b] tw-rounded-lg tw-text-[#f59e0b] tw-font-bold tw-text-sm tw-m-0 tw-mb-6">
 						<Icon name={"sys.infinity" as IconName} />
 						This organization has an infinite / promotional license — no seat cap enforcement.
@@ -316,6 +346,10 @@
 						<div class="tw-flex tw-items-center tw-justify-between tw-gap-4 tw-flex-wrap">
 							<span class="tw-text-sm tw-font-bold tw-text-[#D4D4D8]">Stripe Subscription ID</span>
 							<code class="tw-font-mono tw-text-xs tw-text-[#FAFAFA] tw-bg-[#1E293B] tw-px-2 tw-py-1 tw-rounded">{typeof entitlement.stripe_subscription_id === 'string' && entitlement.stripe_subscription_id.trim() ? entitlement.stripe_subscription_id : '—'}</code>
+						</div>
+						<div class="tw-flex tw-items-center tw-justify-between tw-gap-4 tw-flex-wrap">
+							<span class="tw-text-sm tw-font-bold tw-text-[#D4D4D8]">Expiration Date</span>
+							<span class="tw-font-mono tw-tabular-nums tw-text-sm tw-font-bold tw-text-[#FAFAFA]">{formatCreatedAt(entitlement.current_period_end || entitlement.expires_at || entitlement.expiration_date)}</span>
 						</div>
 						{#if u.limit > 0}
 							<div class="tw-flex tw-flex-col tw-gap-2 tw-mt-2">
@@ -472,12 +506,55 @@
 			<button
 				type="button"
 				class="tw-inline-flex tw-items-center tw-justify-center tw-gap-2 tw-w-fit tw-px-4 tw-py-2 tw-mt-2 tw-rounded-lg tw-font-bold tw-text-sm tw-border tw-border-[#ef4444] tw-text-[#ef4444] hover:tw-bg-[#ef4444] hover:tw-text-[#1E293B] tw-transition-colors"
-				onclick={deleteCurrentClub}
+				onclick={handleDeleteRequest}
 			>
 				<Icon name={"action.delete" as IconName} />
-				Delete organization "{ctx.clubDoc.name || ctx.clubId}"
+				Delete organization "{clubDoc.name || clubId}"
 			</button>
 		</div>
+
+
+		{#if deleteModalOpen}
+			<!-- svelte-ignore a11y_click_events_have_key_events -->
+			<!-- svelte-ignore a11y_no_static_element_interactions -->
+			<div
+				class="tw-fixed tw-inset-0 tw-z-50 tw-flex tw-items-center tw-justify-center tw-bg-[#020617]/80 tw-backdrop-blur-xl"
+				onclick={() => { if (!deleteExecuting) deleteModalOpen = false; }}
+			>
+				<div
+					class="tw-w-[400px] tw-max-w-[90vw] tw-bg-[#0B0F19] tw-border tw-border-[#334155] tw-rounded-xl tw-p-6 tw-flex tw-flex-col tw-gap-4 tw-shadow-2xl"
+					onclick={(e) => e.stopPropagation()}
+				>
+					{#if deleteConfirmStep === 1}
+						<p class="tw-m-0 tw-flex tw-items-center tw-gap-2 tw-text-xs tw-font-extrabold tw-tracking-wider tw-uppercase tw-text-[#f59e0b]">
+							<Icon name={"status.warning" as IconName} /> Initial Warning
+						</p>
+						<h2 class="tw-m-0 tw-text-lg tw-font-bold tw-text-[#FAFAFA]">Delete Organization?</h2>
+						<p class="tw-m-0 tw-text-sm tw-font-bold tw-text-[#D4D4D8]">
+							You are about to permanently delete <span class="tw-text-[#FAFAFA]">"{ctx.clubDoc.name || ctx.clubId}"</span>. This will destroy the organization metadata.
+						</p>
+						<div class="tw-flex tw-items-center tw-justify-end tw-gap-3 tw-mt-4">
+							<button type="button" class="tw-px-4 tw-py-2 tw-rounded-lg tw-font-bold tw-text-sm tw-bg-[#1E293B] tw-text-[#FAFAFA] hover:tw-bg-[#334155]" onclick={() => deleteModalOpen = false}>Cancel</button>
+							<button type="button" class="tw-px-4 tw-py-2 tw-rounded-lg tw-font-bold tw-text-sm tw-bg-[#f59e0b] tw-text-[#1E293B] hover:tw-bg-[#fbbf24]" onclick={advanceDelete}>Yes, proceed</button>
+						</div>
+					{:else if deleteConfirmStep === 2}
+						<p class="tw-m-0 tw-flex tw-items-center tw-gap-2 tw-text-xs tw-font-extrabold tw-tracking-wider tw-uppercase tw-text-[#ef4444]">
+							<Icon name={"status.warning" as IconName} /> Final Warning
+						</p>
+						<h2 class="tw-m-0 tw-text-lg tw-font-bold tw-text-[#FAFAFA]">Absolute Certainty Required</h2>
+						<p class="tw-m-0 tw-text-sm tw-font-bold tw-text-[#D4D4D8]">
+							This is a destructive action that cannot be undone. Are you absolutely certain you want to annihilate this organization?
+						</p>
+						<div class="tw-flex tw-items-center tw-justify-end tw-gap-3 tw-mt-4">
+							<button type="button" class="tw-px-4 tw-py-2 tw-rounded-lg tw-font-bold tw-text-sm tw-bg-[#1E293B] tw-text-[#FAFAFA] hover:tw-bg-[#334155]" disabled={deleteExecuting} onclick={() => deleteModalOpen = false}>Cancel</button>
+							<button type="button" class="tw-px-4 tw-py-2 tw-rounded-lg tw-font-bold tw-text-sm tw-bg-[#ef4444] tw-text-[#FAFAFA] hover:tw-bg-[#dc2626]" disabled={deleteExecuting} onclick={executeDeletion}>
+								{deleteExecuting ? 'Deleting…' : 'Delete Permanently'}
+							</button>
+						</div>
+					{/if}
+				</div>
+			</div>
+		{/if}
 
 	{/if}
 </div>

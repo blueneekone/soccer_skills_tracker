@@ -285,45 +285,47 @@
 
 <style>
 	.ri-panel {
-		border: 1px solid var(--border-subtle, #e5e5e5);
-		border-radius: 10px;
-		background: var(--glass-bg, #fff);
-		padding: 1rem 1.25rem;
+		border: 1px solid #334155;
+		border-radius: 0;
+		background: #0B0F19;
+		padding: 1.5rem;
 		display: flex;
 		flex-direction: column;
-		gap: 0.75rem;
-	}
-	:global(html.dark) .ri-panel {
-		background: rgba(255, 255, 255, 0.03);
-		border-color: rgba(255, 255, 255, 0.1);
+		gap: 1rem;
 	}
 	.ri-panel__head {
 		display: flex;
 		flex-direction: column;
-		gap: 0.35rem;
+		gap: 0.5rem;
 	}
 	.ri-panel__title {
 		margin: 0;
-		font-size: 0.85rem;
-		font-weight: 800;
+		font-size: 1rem;
+		font-family: 'Geist Sans', sans-serif;
+		font-weight: 700;
 		text-transform: uppercase;
-		letter-spacing: 0.06em;
-		color: var(--text-primary, #0f172a);
+		letter-spacing: -0.02em;
+		color: #FAFAFA;
 	}
 	.ri-panel__sub {
 		margin: 0;
-		font-size: 0.78rem;
-		color: var(--text-secondary, #64748b);
-		line-height: 1.45;
+		font-size: 0.85rem;
+		font-family: 'Switzer', sans-serif;
+		color: #D4D4D8;
+		line-height: 1.5;
 		max-width: 48rem;
 	}
 	.ri-panel__meta {
 		margin: 0;
-		font-size: 0.72rem;
-		color: var(--text-secondary, #64748b);
+		font-size: 0.75rem;
+		font-family: 'Switzer', sans-serif;
+		color: #A1A1AA;
+	}
+	.ri-mono {
+		font-family: 'Geist Mono', monospace;
 	}
 	.ri-link {
-		color: #0d9488;
+		color: #FAFAFA;
 		font-weight: 700;
 		text-decoration: underline;
 		text-underline-offset: 2px;
@@ -332,7 +334,7 @@
 		display: flex;
 		flex-wrap: wrap;
 		align-items: center;
-		gap: 0.75rem;
+		gap: 1rem;
 	}
 	.ri-file-label {
 		cursor: pointer;
@@ -345,28 +347,36 @@
 		overflow: hidden;
 	}
 	.ri-file-name {
-		font-size: 0.8125rem;
+		font-size: 0.85rem;
+		font-family: 'Geist Mono', monospace;
 		font-weight: 700;
-		color: var(--text-primary, #0f172a);
+		color: #FAFAFA;
 	}
 	.ri-muted {
-		font-size: 0.8125rem;
-		color: var(--text-secondary, #64748b);
+		font-size: 0.85rem;
+		font-family: 'Switzer', sans-serif;
+		color: #A1A1AA;
 	}
 	.ri-panel__actions {
 		display: flex;
 		flex-wrap: wrap;
-		gap: 0.5rem;
+		gap: 0.75rem;
 	}
 	.ri-btn {
-		border: none;
-		border-radius: 8px;
-		padding: 0.55rem 1rem;
-		font-size: 0.8125rem;
+		border: 1px solid #FAFAFA;
+		border-radius: 0;
+		padding: 0.65rem 1.25rem;
+		font-size: 0.85rem;
+		font-family: 'Geist Sans', sans-serif;
 		font-weight: 700;
-		background: var(--brand-primary, #d97706);
-		color: #fff;
+		background: #FAFAFA;
+		color: #020617;
 		cursor: pointer;
+		text-transform: uppercase;
+		transition: transform 0.15s ease;
+	}
+	.ri-btn:active:not(:disabled) {
+		transform: scale(0.98);
 	}
 	.ri-btn:disabled {
 		opacity: 0.5;
@@ -374,66 +384,63 @@
 	}
 	.ri-btn--secondary {
 		background: transparent;
-		color: var(--text-primary, #0f172a);
-		border: 1px solid var(--border-subtle, #e5e5e5);
+		color: #FAFAFA;
+		border-color: #334155;
 	}
 	.ri-err {
 		margin: 0;
-		font-size: 0.8125rem;
-		font-weight: 600;
-		color: var(--danger-red, #b91c1c);
+		font-size: 0.85rem;
+		font-weight: 700;
+		color: #ef4444;
 	}
 	.ri-ok {
 		margin: 0;
-		font-size: 0.8125rem;
-		font-weight: 600;
-		color: #15803d;
+		font-size: 0.85rem;
+		font-weight: 700;
+		color: #14b8a6;
 	}
 	.ri-warn {
 		margin: 0;
-		font-size: 0.8125rem;
-		color: #b45309;
+		font-size: 0.85rem;
+		color: #f59e0b;
 	}
 	.ri-table-wrap {
 		overflow-x: auto;
-		border: 1px solid var(--border-subtle, #e5e5e5);
-		border-radius: 8px;
+		border: 1px solid #334155;
 	}
 	.ri-table {
 		width: 100%;
 		border-collapse: collapse;
-		font-size: 0.8125rem;
+		font-size: 0.85rem;
 	}
 	.ri-caption {
 		caption-side: top;
 		text-align: left;
-		padding: 0.5rem 0.75rem;
+		padding: 0.75rem;
 		font-weight: 700;
-		color: var(--text-secondary, #64748b);
-		background: var(--surface-subtle, #f9f9f9);
-		border-bottom: 1px solid var(--border-subtle, #e5e5e5);
+		color: #A1A1AA;
+		background: #020617;
+		border-bottom: 1px solid #334155;
 	}
 	.ri-table th,
 	.ri-table td {
-		padding: 0.5rem 0.75rem;
+		padding: 0.75rem;
 		text-align: left;
-		border-bottom: 1px solid var(--border-subtle, #e5e5e5);
+		border-bottom: 1px solid #334155;
+		color: #FAFAFA;
 	}
 	.ri-table th {
-		font-size: 0.6875rem;
-		text-transform: uppercase;
-		letter-spacing: 0.06em;
-		color: var(--text-secondary, #64748b);
-	}
-	.ri-mono {
-		font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 		font-size: 0.75rem;
+		font-family: 'Geist Mono', monospace;
+		text-transform: uppercase;
+		letter-spacing: 0.05em;
+		color: #A1A1AA;
 	}
 	.ri-code {
-		font-weight: 800;
-		letter-spacing: 0.08em;
+		font-weight: 700;
+		letter-spacing: 0.05em;
 	}
 	.ri-vampire-wrap {
-		margin-top: 0.5rem;
+		margin-top: 0.75rem;
 	}
 </style>

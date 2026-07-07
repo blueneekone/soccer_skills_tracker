@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { AdminOrgsEngine } from './AdminOrgsEngine.svelte.js';
-	import OrganizationsAddForm from '$lib/components/admin/OrganizationsAddForm.svelte';
+	import AddOrganizationModal from '$lib/components/admin/AddOrganizationModal.svelte';
 	import OrganizationsAlerts from '$lib/components/admin/OrganizationsAlerts.svelte';
 	import OrganizationsDataTable from '$lib/components/admin/OrganizationsDataTable.svelte';
 	import OrganizationsPagination from '$lib/components/admin/OrganizationsPagination.svelte';
@@ -8,15 +8,15 @@
 	let { engine }: { engine: AdminOrgsEngine } = $props();
 </script>
 
-{#if engine.showAddForm}
-	<OrganizationsAddForm
+	<AddOrganizationModal
 		bind:form={engine.addClubForm}
 		newSportMode={engine.newSportMode}
 		saving={engine.clubSaving}
 		err={engine.clubAddErr}
+		isOpen={engine.isAddModalOpen}
+		onClose={() => (engine.isAddModalOpen = false)}
 		onSubmit={() => void engine.addClub()}
 	/>
-{/if}
 
 <OrganizationsAlerts clubsErr={engine.clubsErr}  />
 

@@ -64,7 +64,7 @@
 </script>
 
 <!-- Breadcrumb navigation sub-header -->
-<nav class="tw-sticky tw-top-0 tw-z-10 tw-bg-[#020617] tw-py-4 tw-flex tw-items-center tw-gap-2 tw-border-b tw-border-[#334155]" aria-label="Breadcrumb">
+<nav class="tw-bg-[#020617] tw-py-4 tw-flex tw-items-center tw-gap-2 tw-border-b tw-border-[#334155]" aria-label="Breadcrumb">
 	<a class="tw-text-[#D4D4D8] hover:tw-text-[#FAFAFA] tw-font-sans tw-text-sm tw-font-bold tw-flex tw-items-center tw-gap-2 tw-transition-colors" href="/admin/organizations">
 		<Icon name={"org.building" as IconName} />
 		Organizations
@@ -106,6 +106,20 @@
 	>
 		<Icon name={"user.group" as IconName} />
 		Teams
+	</a>
+
+	<a
+		class="tw-flex tw-items-center tw-gap-2 tw-px-4 tw-py-2 tw-rounded-lg tw-font-sans tw-text-sm tw-font-bold tw-transition-colors"
+		class:tw-bg-[#1E293B]={page.url.pathname.startsWith(`/admin/organizations/${clubId}/users`)}
+		class:tw-text-[#FAFAFA]={page.url.pathname.startsWith(`/admin/organizations/${clubId}/users`)}
+		class:tw-text-[#D4D4D8]={!page.url.pathname.startsWith(`/admin/organizations/${clubId}/users`)}
+		class:hover:tw-text-[#FAFAFA]={!page.url.pathname.startsWith(`/admin/organizations/${clubId}/users`)}
+		href="/admin/organizations/{clubId}/users"
+		role="tab"
+		aria-selected={page.url.pathname.startsWith(`/admin/organizations/${clubId}/users`)}
+	>
+		<Icon name={"user.settings" as IconName} />
+		Users
 	</a>
 </div>
 

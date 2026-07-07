@@ -24,7 +24,7 @@
 	import ParentFcmPrompt from '$lib/components/notifications/ParentFcmPrompt.svelte';
 	import EnterpriseConsoleShell from '$lib/components/shell/EnterpriseConsoleShell.svelte';
 	import PlayerShell from '$lib/components/shell/PlayerShell.svelte';
-	import PlayerDetailDrawer from '$lib/components/shell/PlayerDetailDrawer.svelte';
+	import PlayerDetailDrawer from '$lib/components/admin/PlayerDetailDrawer.svelte';
 	import MaintenanceGate from '$lib/components/shell/MaintenanceGate.svelte';
 	import ImpersonationBanner from '$lib/components/shell/ImpersonationBanner.svelte';
 	import OfflineBanner from '$lib/components/shell/OfflineBanner.svelte';

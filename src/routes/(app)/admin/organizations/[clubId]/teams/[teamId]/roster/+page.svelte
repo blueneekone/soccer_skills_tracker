@@ -366,11 +366,11 @@
 		</div>
 	</div>
 
-	<div class="bento-grid bento-grid--12col bento-grid--liquid tw-w-full tw-grid tw-grid-cols-1 lg:tw-grid-cols-12 bento-mb-md">
-		<div class="bento-span-8">
+	<div class="tw-w-full tw-grid tw-grid-cols-1 lg:tw-grid-cols-12 tw-gap-6 tw-mb-8">
+		<div class="tw-col-span-1 lg:tw-col-span-7">
 			<RosterIngestPanel teamId={teamId} clubId={adminClubId} />
 		</div>
-		<div class="bento-span-4">
+		<div class="tw-col-span-1 lg:tw-col-span-5">
 			<RegistrarRosterTransferPanel
 				clubId={adminClubId}
 				targetTeamId={teamId}
@@ -418,7 +418,7 @@
 					{#each filteredRoster as r (r.key)}
 						<tr
 							class="roster-dt__row"
-							class:roster-dt__row--linked={!r.nameOnly && !!r.email}
+							class:ec-table__row-click={!r.nameOnly && !!r.email}
 							role={!r.nameOnly && r.email ? 'button' : undefined}
 							tabindex={!r.nameOnly && r.email ? 0 : undefined}
 							onclick={() => openAthleteDrawer(r)}
@@ -638,20 +638,16 @@
 		width: 100%;
 		overflow-x: auto;
 		-webkit-overflow-scrolling: touch;
-		border-top: 1px solid var(--border-subtle, #e5e5e5);
-		border-bottom: 1px solid var(--border-subtle, #e5e5e5);
-	}
-
-	:global(html.dark) .roster-dt-container {
-		border-color: rgba(255, 255, 255, 0.07);
+		border-top: 1px solid #334155;
+		border-bottom: 1px solid #334155;
 	}
 
 	.roster-dt {
 		width: 100%;
 		min-width: 720px;
 		border-collapse: collapse;
-		font-size: 0.8125rem;
-		letter-spacing: -0.01em;
+		font-size: 0.85rem;
+		font-family: 'Switzer', sans-serif;
 	}
 
 	.roster-dt__head {
@@ -661,90 +657,80 @@
 	}
 
 	.roster-dt__th {
-		padding: 8px 12px;
+		padding: 0.75rem;
 		text-align: left;
-		font-size: 0.6875rem;
-		font-weight: 800;
+		font-size: 0.75rem;
+		font-family: 'Geist Mono', monospace;
+		font-weight: 700;
 		text-transform: uppercase;
-		letter-spacing: 0.07em;
-		color: var(--text-secondary);
-		background: var(--surface-subtle, #f9f9f9);
-		border-bottom: 1px solid var(--border-subtle, #e5e5e5);
+		letter-spacing: 0.05em;
+		color: #A1A1AA;
+		background: #0B0F19;
+		border-bottom: 1px solid #334155;
 		white-space: nowrap;
 	}
 
-	:global(html.dark) .roster-dt__th {
-		background: #0d0d0f;
-		border-bottom-color: rgba(255, 255, 255, 0.07);
-	}
-
 	.roster-dt__row {
-		border-bottom: 1px solid var(--border-subtle, #e5e5e5);
-		transition: background 0.07s ease;
+		border-bottom: 1px solid #334155;
+		transition: background 0.1s ease;
 	}
 
 	.roster-dt__row:last-child { border-bottom: none; }
 
-	.roster-dt__row:hover { background: rgba(0, 0, 0, 0.018); }
+	.roster-dt__row:hover { background: #1E293B; }
 
 	.roster-dt__row--linked {
 		cursor: pointer;
 	}
 
 	.roster-gap--warn {
-		color: var(--danger-red, #b91c1c);
+		color: #ef4444;
 		font-weight: 700;
-		font-size: 0.6875rem;
+		font-size: 0.75rem;
+		font-family: 'Geist Mono', monospace;
 		text-transform: uppercase;
 		letter-spacing: 0.05em;
 	}
 
 	.roster-vpc--ok {
-		color: #059669;
+		color: #10b981;
 		font-weight: 700;
 	}
 
 	.roster-vpc--pending {
-		color: #d97706;
-		font-weight: 600;
-	}
-
-	:global(html.dark) .roster-dt__row {
-		border-bottom-color: rgba(255, 255, 255, 0.05);
-	}
-
-	:global(html.dark) .roster-dt__row:hover {
-		background: rgba(255, 255, 255, 0.025);
+		color: #f59e0b;
+		font-weight: 700;
 	}
 
 	.roster-dt__td {
-		padding: 10px 12px;
+		padding: 0.75rem;
 		vertical-align: middle;
-		color: var(--text-primary);
+		color: #FAFAFA;
 	}
 
-	.roster-dt__td--name { font-weight: 600; }
+	.roster-dt__td--name { font-weight: 700; }
 
 	.roster-dt__td--mono {
-		font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-		font-size: 0.75rem;
+		font-family: 'Geist Mono', monospace;
+		font-size: 0.85rem;
 	}
 
-	.roster-dt__td--muted { color: var(--text-secondary); }
+	.roster-dt__td--muted { color: #A1A1AA; }
 
 	.roster-dt__td-loading,
 	.roster-dt__td-empty {
 		text-align: center;
-		padding: 40px 20px !important;
-		color: var(--text-secondary);
-		font-size: 0.875rem;
+		padding: 3rem 1.5rem !important;
+		color: #A1A1AA;
+		font-size: 0.85rem;
+		font-family: 'Geist Mono', monospace;
 	}
 
 	.roster-dt__td-loading {
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		gap: 10px;
+		gap: 0.75rem;
 	}
 
 	/* ── Loading spinner ────────────────────────────────────────────── */
@@ -753,52 +739,46 @@
 		width: 16px;
 		height: 16px;
 		border-radius: 50%;
-		border: 2px solid rgba(0, 0, 0, 0.1);
-		border-top-color: var(--brand-primary, #f59e0b);
+		border: 2px solid rgba(250, 250, 250, 0.1);
+		border-top-color: #FAFAFA;
 		animation: roster-spin 0.7s linear infinite;
 		flex-shrink: 0;
-	}
-
-	:global(html.dark) .roster-spinner {
-		border-color: rgba(255, 255, 255, 0.1);
-		border-top-color: var(--brand-primary, #f59e0b);
 	}
 
 	/* ── Name-only badge ────────────────────────────────────────────── */
 	.roster-no-account {
 		display: inline-block;
-		font-size: 0.6875rem;
+		font-size: 0.7rem;
+		font-family: 'Geist Mono', monospace;
 		font-weight: 700;
-		letter-spacing: 0.06em;
+		letter-spacing: 0.05em;
 		text-transform: uppercase;
-		color: var(--text-secondary);
-		background: rgba(0, 0, 0, 0.05);
-		border: 1px solid rgba(0, 0, 0, 0.10);
+		color: #A1A1AA;
+		background: #1E293B;
+		border: 1px solid #334155;
 		border-radius: 4px;
-		padding: 1px 6px;
+		padding: 2px 6px;
 	}
 
 	.roster-invite-btn {
 		display: block;
-		margin-top: 4px;
-		border: 1px solid rgba(20, 184, 166, 0.45);
-		border-radius: 4px;
-		padding: 2px 8px;
-		font-size: 0.6875rem;
+		margin-top: 6px;
+		border: 1px solid #14b8a6;
+		border-radius: 0;
+		padding: 4px 10px;
+		font-size: 0.75rem;
+		font-family: 'Geist Mono', monospace;
 		font-weight: 700;
 		background: transparent;
-		color: #0d9488;
-		cursor: pointer;
-	}
-
-	:global(html.dark) .roster-invite-btn {
 		color: #14b8a6;
+		cursor: pointer;
+		text-transform: uppercase;
+		transition: background 0.15s ease, color 0.15s ease;
 	}
 
-	:global(html.dark) .roster-no-account {
-		color: rgba(255, 255, 255, 0.45);
-		background: rgba(255, 255, 255, 0.05);
-		border-color: rgba(255, 255, 255, 0.10);
+	.roster-invite-btn:hover {
+		background: #14b8a6;
+		color: #020617;
 	}
 
 	@keyframes roster-spin { to { transform: rotate(360deg); } }

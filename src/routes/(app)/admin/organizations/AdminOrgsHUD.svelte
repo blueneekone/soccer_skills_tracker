@@ -21,11 +21,11 @@
 	bind:filterTiers={engine.filterTiers}
 	bind:filterRegionQuery={engine.filterRegionQuery}
 	bind:filterRootEl={engine.filterRootEl}
-	showAddForm={engine.showAddForm}
+	showAddForm={engine.isAddModalOpen}
 	onToggleFilter={engine.toggleFilter}
 	onCloseFilter={engine.closeFilter}
 	onResetFilters={engine.resetFilters}
-	onToggleAddForm={() => (engine.showAddForm = !engine.showAddForm)}
+	onToggleAddForm={() => (engine.isAddModalOpen = !engine.isAddModalOpen)}
 	onImportStackSports={engine.importViaStackSports}
 	onFilterVerificationChange={(v) => (engine.filterVerification = v)}
 	onFilterTiersChange={(tiers) => (engine.filterTiers = tiers)}

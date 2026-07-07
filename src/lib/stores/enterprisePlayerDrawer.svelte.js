@@ -54,7 +54,7 @@ function createEnterprisePlayerDrawer() {
 			return consolePayload;
 		},
 		get isOpen() {
-			return consolePayload != null;
+			return consolePayload != null || selected != null;
 		},
 		/**
 		 * Player roster: pass a {@link PlayerDrawerRow} with `statsDocId`.

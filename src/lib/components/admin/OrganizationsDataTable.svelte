@@ -22,40 +22,32 @@
 	}: Props = $props();
 </script>
 
-<div class="tw-w-full">
-	<table class="v-table tw-w-full" aria-label="Organizations">
-		<thead class="tw-sticky tw-top-0 tw-z-10 tw-bg-[#020617] tw-border-b tw-border-[#334155]">
+<div class="v-table-wrap tw-overflow-x-auto">
+	<table class="v-table tw-w-full tw-border-collapse tw-border tw-border-slate-800 tw-rounded-lg" aria-label="Organizations">
+		<thead>
 			<tr>
-				<th class="v-th v-th--avatar" scope="col" aria-label="Logo"></th>
-				<th class="v-th" scope="col">Organization</th>
-				<th class="v-th" scope="col">Sport</th>
-				<th class="v-th v-th--license" scope="col">License</th>
-				<th class="v-th" scope="col">Director</th>
-				<th class="v-th v-th--compliance" scope="col">Compliance</th>
-				<th class="v-th v-th--actions" scope="col" aria-label="Actions"></th>
+				<th class="tw-px-4 tw-py-3 tw-bg-slate-900/70 tw-text-left tw-font-semibold tw-text-xs tw-uppercase tw-tracking-wider tw-text-[#E2E8F0]" scope="col" aria-label="Logo"></th>
+				<th class="tw-px-4 tw-py-3 tw-bg-slate-900/70 tw-text-left tw-font-semibold tw-text-xs tw-uppercase tw-tracking-wider tw-text-[#E2E8F0]" scope="col">Organization</th>
+				<th class="tw-px-4 tw-py-3 tw-bg-slate-900/70 tw-text-left tw-font-semibold tw-text-xs tw-uppercase tw-tracking-wider tw-text-[#E2E8F0]" scope="col">Sport</th>
+				<th class="tw-px-4 tw-py-3 tw-bg-slate-900/70 tw-text-left tw-font-semibold tw-text-xs tw-uppercase tw-tracking-wider tw-text-[#E2E8F0]" scope="col">License</th>
+				<th class="tw-px-4 tw-py-3 tw-bg-slate-900/70 tw-text-left tw-font-semibold tw-text-xs tw-uppercase tw-tracking-wider tw-text-[#E2E8F0]" scope="col">Director</th>
+				<th class="tw-px-4 tw-py-3 tw-bg-slate-900/70 tw-text-left tw-font-semibold tw-text-xs tw-uppercase tw-tracking-wider tw-text-[#E2E8F0]" scope="col">Compliance</th>
+				<th class="tw-px-4 tw-py-3 tw-bg-slate-900/70 tw-text-left tw-font-semibold tw-text-xs tw-uppercase tw-tracking-wider tw-text-[#E2E8F0]" scope="col" aria-label="Actions"></th>
 			</tr>
 		</thead>
 		<tbody>
 			{#if clubsLoading}
 				<tr>
-					<td colspan="7" class="v-td-loading tw-py-2 tw-px-3 tw-text-sm tw-tracking-tight" aria-busy="true">
-						<span class="orgs3-spinner" aria-hidden="true"></span>
+					<td colspan="7" class="v-td-empty tw-px-4 tw-py-2.5 tw-border-t tw-border-slate-900 tw-text-[#E2E8F0] tw-whitespace-nowrap tw-min-w-0 tw-font-mono tw-[font-variant-numeric:tabular-nums]" aria-busy="true">
 						Loading organizations…
 					</td>
 				</tr>
 			{:else if pagedClubs.length === 0}
 				<tr>
-					<td colspan="7" class="tw-py-2 tw-px-3 tw-text-sm tw-tracking-tight">
-						<div class="tw-flex tw-flex-col tw-items-center tw-justify-center tw-p-[clamp(32px,4vw,64px)]">
-							<div class="tw-text-[#A1A1AA] tw-opacity-80 tw-mb-4" aria-hidden="true">
-								<Icon name={'org.building' as IconName} />
-							</div>
-							<p class="tw-font-sans tw-tracking-tight tw-text-[#A1A1AA] tw-text-sm">
-								{totalClubs === 0
-									? 'No organizations registered yet.'
-									: 'No organizations match your filter.'}
-							</p>
-						</div>
+					<td colspan="7" class="v-td-empty tw-px-4 tw-py-2.5 tw-border-t tw-border-slate-900 tw-text-[#E2E8F0] tw-whitespace-nowrap tw-min-w-0 tw-font-mono tw-[font-variant-numeric:tabular-nums]">
+						{totalClubs === 0
+							? 'No organizations registered yet.'
+							: 'No organizations match your filter.'}
 					</td>
 				</tr>
 			{:else}
@@ -64,7 +56,7 @@
 					{@const accent = clubSportAccent(cl?.sport)}
 					{@const licenseMeta = licenseMetaForClub(cl)}
 					<tr class="v-tr">
-						<td class="v-td tw-py-2 tw-px-3 tw-text-sm tw-tracking-tight v-td--avatar">
+						<td class="tw-px-4 tw-py-2.5 tw-border-t tw-border-slate-900 tw-text-[#E2E8F0] tw-whitespace-nowrap tw-min-w-0">
 							{#if typeof cl.logoUrl === 'string' && cl.logoUrl.trim()}
 								<img class="orgs3-logo" src={cl.logoUrl.trim()} alt="" loading="lazy" />
 							{:else}
@@ -78,18 +70,18 @@
 							{/if}
 						</td>
 
-						<td class="v-td tw-py-2 tw-px-3 tw-text-sm tw-tracking-tight v-td--name">
+						<td class="tw-px-4 tw-py-2.5 tw-border-t tw-border-slate-900 tw-text-[#E2E8F0] tw-whitespace-nowrap tw-min-w-0">
 							<div class="orgs3-org-primary">
 								<a class="orgs3-org-link" href="/admin/organizations/{cl?.id ?? ''}">
-									<span class="orgs3-org-name-text">
+									<span class="tw-text-[#FAFAFA] tw-font-bold">
 										{cl?.name || cl?.id || 'Unnamed Organization'}
 									</span>
 								</a>
 							</div>
-							<span class="orgs3-org-id tw-font-mono tw-tabular-nums">{cl?.id ?? ''}</span>
+							<span class="tw-text-[#A1A1AA] tw-font-mono tw-[font-variant-numeric:tabular-nums] tw-text-xs">{cl?.id ?? ''}</span>
 						</td>
 
-						<td class="v-td tw-py-2 tw-px-3 tw-text-sm tw-tracking-tight v-td--muted">
+						<td class="tw-px-4 tw-py-2.5 tw-border-t tw-border-slate-900 tw-text-[#E2E8F0] tw-whitespace-nowrap tw-min-w-0">
 							<span
 								class="orgs3-sport-pill"
 								style="--sport-fg:{accent.fg}; --sport-ring:{accent.ring};"
@@ -98,7 +90,7 @@
 							</span>
 						</td>
 
-						<td class="v-td tw-py-2 tw-px-3 tw-text-sm tw-tracking-tight v-td--license">
+						<td class="tw-px-4 tw-py-2.5 tw-border-t tw-border-slate-900 tw-text-[#E2E8F0] tw-whitespace-nowrap tw-min-w-0">
 							<span
 								class="orgs3-license-pill"
 								style="--lic-accent:{licenseMeta.accent};"
@@ -111,29 +103,29 @@
 							</span>
 						</td>
 
-						<td class="v-td tw-py-2 tw-px-3 tw-text-sm tw-tracking-tight v-td--mono v-td--ellipsis">
-							{cl?.directorEmail || 'Unassigned'}
+						<td class="tw-px-4 tw-py-2.5 tw-border-t tw-border-slate-900 tw-text-[#E2E8F0] tw-whitespace-nowrap tw-min-w-0">
+							<span class="tw-text-[#D4D4D8]">{cl?.directorEmail || 'Unassigned'}</span>
 						</td>
 
-						<td class="v-td tw-py-2 tw-px-3 tw-text-sm tw-tracking-tight">
+						<td class="tw-px-4 tw-py-2.5 tw-border-t tw-border-slate-900 tw-text-[#E2E8F0] tw-whitespace-nowrap tw-min-w-0">
 							<div class="tw-flex tw-items-center tw-gap-2" title={compliance ? `${compliance.verified}/${compliance.total} VPC verified` : ''}>
 								{#if cl.isInfinite === true && !compliance}
 									<div class="tw-w-[6px] tw-h-[6px] tw-rounded-full tw-bg-emerald-400" aria-hidden="true"></div>
-									<span class="tw-font-mono tw-tabular-nums tw-text-[10px] tw-uppercase tw-text-[#A1A1AA]">N/A</span>
+									<span class="tw-font-mono tw-[font-variant-numeric:tabular-nums] tw-text-[10px] tw-uppercase tw-text-[#A1A1AA]">N/A</span>
 								{:else if compliance === null || compliance.status === 'clean'}
 									<div class="tw-w-[6px] tw-h-[6px] tw-rounded-full tw-bg-emerald-400" aria-hidden="true"></div>
-									<span class="tw-font-mono tw-tabular-nums tw-text-[10px] tw-uppercase tw-text-[#FAFAFA]">Compliant</span>
+									<span class="tw-font-mono tw-[font-variant-numeric:tabular-nums] tw-text-[10px] tw-uppercase tw-text-[#FAFAFA]">Compliant</span>
 								{:else if compliance.status === 'watch'}
 									<div class="tw-w-[6px] tw-h-[6px] tw-rounded-full tw-bg-amber-400" aria-hidden="true"></div>
-									<span class="tw-font-mono tw-tabular-nums tw-text-[10px] tw-uppercase tw-text-[#FAFAFA]">Watch</span>
+									<span class="tw-font-mono tw-[font-variant-numeric:tabular-nums] tw-text-[10px] tw-uppercase tw-text-[#FAFAFA]">Watch</span>
 								{:else}
 									<div class="tw-w-[6px] tw-h-[6px] tw-rounded-full tw-bg-rose-400" aria-hidden="true"></div>
-									<span class="tw-font-mono tw-tabular-nums tw-text-[10px] tw-uppercase tw-text-[#FAFAFA]">At Risk</span>
+									<span class="tw-font-mono tw-[font-variant-numeric:tabular-nums] tw-text-[10px] tw-uppercase tw-text-[#FAFAFA]">At Risk</span>
 								{/if}
 							</div>
 						</td>
 
-						<td class="v-td tw-py-2 tw-px-3 tw-text-sm tw-tracking-tight v-td--actions">
+						<td class="tw-px-4 tw-py-2.5 tw-border-t tw-border-slate-900 tw-text-[#E2E8F0] tw-whitespace-nowrap tw-min-w-0">
 							<button class="tw-text-[#14b8a6] hover:tw-text-emerald-400 tw-font-bold tw-text-xs tw-flex tw-items-center tw-gap-1 tw-cursor-pointer" onclick={() => untrack(() => goto(`/admin/organizations/${cl.id}`))} aria-label="View {cl.name || cl.id}">
 								View <Icon name={'nav.arrow-right' as IconName} aria-hidden="true" />
 							</button>
