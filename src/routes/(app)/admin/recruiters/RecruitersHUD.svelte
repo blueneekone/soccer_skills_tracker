@@ -18,18 +18,18 @@
 			</div>
 		</div>
 		<div class="tw-text-right">
-			<div class="tw-text-[#14b8a6] tw-text-xl tw-font-bold tw-font-mono">
+			<div class="tw-text-[#14b8a6] tw-text-xl tw-font-bold tw-font-mono tw-leading-none">
 				{engine.filteredRows.length}
 			</div>
-			<div class="tw-text-[10px] tw-text-[#94A3B8] tw-font-mono tw-uppercase tw-tracking-widest">
+			<div class="tw-text-[10px] tw-text-[#94A3B8] tw-font-mono tw-uppercase tw-tracking-widest tw-mt-1">
 				OF {engine.rows.length} SCOUTS
 			</div>
 		</div>
 	</div>
 
 	<!-- Bottom Row: Unified SIEM Action Bar -->
-	<div class="v-admin-toolbar tw-flex tw-flex-wrap tw-items-center tw-justify-between tw-gap-4">
-		<div class="tw-flex-1 tw-min-w-[280px]">
+	<div class="v-admin-toolbar tw-flex tw-flex-wrap tw-items-center tw-justify-between tw-gap-3">
+		<div class="tw-flex-1 tw-min-w-[320px]">
 			<AdminConsoleSearch
 				bind:value={engine.searchInput}
 				placeholder="Search by email, scout name, or agency"
@@ -37,7 +37,7 @@
 			/>
 		</div>
 
-		<div class="tw-flex tw-items-center tw-gap-4">
+		<div class="tw-flex tw-items-center tw-gap-3">
 			<button
 				type="button"
 				class="v-toolbar-btn tw-px-3"
@@ -49,7 +49,7 @@
 				<Icon name={"nav.refresh" as IconName} class="tw-text-lg {engine.loading ? 'tw-animate-spin' : ''}" />
 			</button>
 			
-			<div class="tw-ml-2">
+			<div class="tw-ml-1">
 				<Tabs
 					tabs={[
 						{ id: '', label: `All (${engine.counts.total})` },
@@ -66,11 +66,11 @@
 </div>
 
 {#if engine.flashErr}
-	<div class="tw-bg-[#0f172a] tw-border tw-border-[var(--vanguard-red,#f43f5e)] tw-text-[var(--vanguard-red,#f43f5e)] tw-px-4 tw-py-2 tw-rounded-lg tw-font-mono tw-text-sm tw-mb-4" role="alert">{engine.flashErr}</div>
+	<div class="tw-bg-[#0f172a] tw-border tw-border-[var(--vanguard-red,#f43f5e)] tw-text-[var(--vanguard-red,#f43f5e)] tw-px-4 tw-py-2 tw-rounded-none tw-font-mono tw-text-sm tw-mb-4" role="alert">{engine.flashErr}</div>
 {/if}
 {#if engine.flashOk}
-	<div class="tw-bg-[#0f172a] tw-border tw-border-[#14b8a6] tw-text-[#14b8a6] tw-px-4 tw-py-2 tw-rounded-lg tw-font-mono tw-text-sm tw-mb-4" role="status">{engine.flashOk}</div>
+	<div class="tw-bg-[#0f172a] tw-border tw-border-[#14b8a6] tw-text-[#14b8a6] tw-px-4 tw-py-2 tw-rounded-none tw-font-mono tw-text-sm tw-mb-4" role="status">{engine.flashOk}</div>
 {/if}
 {#if engine.err}
-	<div class="tw-bg-[#0f172a] tw-border tw-border-[var(--vanguard-red,#f43f5e)] tw-text-[var(--vanguard-red,#f43f5e)] tw-px-4 tw-py-2 tw-rounded-lg tw-font-mono tw-text-sm tw-mb-4" role="alert">{engine.err}</div>
+	<div class="tw-bg-[#0f172a] tw-border tw-border-[var(--vanguard-red,#f43f5e)] tw-text-[var(--vanguard-red,#f43f5e)] tw-px-4 tw-py-2 tw-rounded-none tw-font-mono tw-text-sm tw-mb-4" role="alert">{engine.err}</div>
 {/if}

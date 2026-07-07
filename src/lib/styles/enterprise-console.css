@@ -42,8 +42,6 @@
 	max-width: 100%;
 	height: 100dvh;
 	max-height: 100dvh;
-	overflow: hidden;
-	overflow-x: hidden;
 	background: var(--ec-canvas-bg, #f4f4f5);
 	box-sizing: border-box;
 	/* Create an isolated stacking context so global overlays (OfflineBanner,

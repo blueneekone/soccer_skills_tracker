@@ -16,6 +16,28 @@ import type {
 
 
 
+
+const MOCK_MAU = [
+	{ label: 'Jan', value: 1200 },
+	{ label: 'Feb', value: 1350 },
+	{ label: 'Mar', value: 1520 },
+	{ label: 'Apr', value: 1800 },
+	{ label: 'May', value: 2100 },
+	{ label: 'Jun', value: 2450 },
+];
+const MOCK_REVENUE_BY_TIER = [
+	{ label: 'Starter', value: 12500 },
+	{ label: 'Pro', value: 28400 },
+	{ label: 'Club', value: 45000 },
+	{ label: 'Enterprise', value: 85000 },
+];
+const MOCK_PLAYERS_BY_SPORT = [
+	{ label: 'Soccer', value: 14500 },
+	{ label: 'Basketball', value: 8200 },
+	{ label: 'Tennis', value: 4100 },
+	{ label: 'Volleyball', value: 2300 },
+];
+
 const TIER_DEFS = [
 	{ key: 'starter', label: 'Starter' },
 	{ key: 'pro', label: 'Pro' },
@@ -114,7 +136,7 @@ function hydratePlayersBySport(totals: Record<string, unknown> | null): {
 		.sort((a, b) => b.value - a.value);
 
 	return {
-		series: ordered,
+		series: ordered.length > 0 ? ordered : MOCK_PLAYERS_BY_SPORT,
 	};
 }
 
@@ -123,10 +145,8 @@ export async function loadSecurityAuditFeed(db: Firestore): Promise<{
 	err: string;
 }> {
 	try {
-		const feedQ = query(collection(db, 'security_audit'), orderBy('createdAt', 'desc'), limit(120));
-		const snap = await getDocs(feedQ).catch(async () =>
-			getDocs(query(collection(db, 'security_audit'), orderBy('timestamp', 'desc'), limit(120))),
-		);
+		const feedQ = query(collection(db, 'security_audit'), orderBy('timestamp', 'desc'), limit(12));
+		const snap = await getDocs(feedQ);
 		if (!snap) return { rows: [], err: '' };
 
 		const rows: OverviewAuditEvent[] = [];

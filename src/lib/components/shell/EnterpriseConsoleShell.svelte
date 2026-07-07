@@ -280,18 +280,24 @@
 			</div>
 			<!-- Command Palette trigger — desk only; field uses AppMenuSheet (no search/jump on field) -->
 			{#if isDesktop}
-				<button
-					type="button"
-					class="ec-cmd-trigger"
-					onclick={() => (cmdPaletteOpen = true)}
-					aria-label="Open command palette"
-					aria-keyshortcuts="Meta+K Control+K"
-					aria-haspopup="dialog"
-				>
-					<Icon name="action.search" size={14} class="ec-cmd-trigger__icon" />
-					<span class="ec-cmd-trigger__text">Search &amp; jump to…</span>
-					<kbd class="ec-cmd-trigger__kbd">⌘K</kbd>
-				</button>
+				<div class="tw-flex-1 tw-flex tw-justify-center tw-px-4">
+					<button
+						type="button"
+						class="tw-group tw-flex tw-items-center tw-justify-between tw-w-full tw-max-w-md tw-bg-[#1E293B] tw-border tw-border-[#334155] tw-rounded-md tw-px-3 tw-py-1.5 tw-text-sm tw-text-[#94A3B8] hover:tw-border-[#FAFAFA] hover:tw-text-[#FAFAFA] tw-transition-colors"
+						onclick={() => (cmdPaletteOpen = true)}
+						aria-label="Open command palette"
+						aria-keyshortcuts="Meta+K Control+K"
+						aria-haspopup="dialog"
+					>
+						<span class="tw-flex tw-items-center tw-gap-2">
+							<Icon name="action.search" size={14} aria-hidden="true" />
+							<span class="tw-font-sans tw-tracking-tight">Search &amp; jump to…</span>
+						</span>
+						<kbd class="tw-hidden sm:tw-inline-flex tw-items-center tw-font-mono tw-text-[10px] tw-font-bold tw-text-[#94A3B8] tw-bg-[#0B0F19] tw-border tw-border-[#334155] tw-rounded tw-px-1.5 tw-py-0.5 group-hover:tw-text-[#14b8a6] group-hover:tw-border-[#14b8a6] tw-transition-colors">⌘K</kbd>
+					</button>
+				</div>
+			{:else}
+				<div class="tw-flex-1"></div>
 			{/if}
 			<div class="ec-topbar__right">
 				<button

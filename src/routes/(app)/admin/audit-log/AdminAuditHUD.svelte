@@ -20,18 +20,18 @@
 			</div>
 		</div>
 		<div class="tw-text-right">
-			<div class="tw-text-[#14b8a6] tw-text-xl tw-font-bold tw-font-mono">
+			<div class="tw-text-[#14b8a6] tw-text-xl tw-font-bold tw-font-mono tw-leading-none">
 				{engine.filteredLogs.length}
 			</div>
-			<div class="tw-text-[10px] tw-text-[#94A3B8] tw-font-mono tw-uppercase tw-tracking-widest">
+			<div class="tw-text-[10px] tw-text-[#94A3B8] tw-font-mono tw-uppercase tw-tracking-widest tw-mt-1">
 				OF {engine.totalLoaded} EVENTS
 			</div>
 		</div>
 	</div>
 
 	<!-- Bottom Row: Unified SIEM Action Bar -->
-	<div class="v-admin-toolbar tw-flex tw-flex-wrap tw-items-center tw-justify-between tw-gap-4">
-		<div class="tw-flex-1 tw-min-w-[280px]">
+	<div class="v-admin-toolbar tw-flex tw-flex-wrap tw-items-center tw-justify-between tw-gap-3">
+		<div class="tw-flex-1 tw-min-w-[320px]">
 			<AdminConsoleSearch
 				bind:value={engine.searchQuery}
 				placeholder="Search events…"
@@ -39,7 +39,7 @@
 			/>
 		</div>
 
-		<div class="tw-flex tw-items-center tw-gap-2">
+		<div class="tw-flex tw-items-center tw-gap-3">
 			<div class="tw-w-48">
 				<AdminConsoleSearch
 					bind:value={engine.actionFilter}

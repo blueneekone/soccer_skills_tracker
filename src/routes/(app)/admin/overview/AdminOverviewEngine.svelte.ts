@@ -73,6 +73,13 @@ export class AdminOverviewEngine {
 	mauCanvasEl = $state<HTMLCanvasElement | undefined>(undefined);
 	revenueCanvasEl = $state<HTMLCanvasElement | undefined>(undefined);
 	sportCanvasEl = $state<HTMLCanvasElement | undefined>(undefined);
+	
+	executiveTotals = $state({
+		mrr: 0,
+		activeOrgs: 0,
+		totalPlayers: 0,
+		activeLicenses: 0
+	});
 
 	subscribe() {
 		$effect.root(() => {
@@ -103,6 +110,14 @@ export class AdminOverviewEngine {
 							this.strike13Executive[5].value = `$${result.executive.arpu}`;
 							this.strike13Executive[6].value = `${result.executive.grossRetention}%`;
 							this.strike13Executive[7].value = `$${result.executive.ltv}`;
+							
+							this.executiveTotals = {
+								mrr: result.executive.mrr || 0,
+								activeOrgs: result.executive.activeOrgs || 0,
+								totalPlayers: result.executive.totalPlayers || 0,
+								// Map activeLicenses from arr if missing, or default 0. Assuming it will be added to the db.
+								activeLicenses: (result.executive as any).activeLicenses || 0,
+							};
 						}
 
 						if (result.security) {

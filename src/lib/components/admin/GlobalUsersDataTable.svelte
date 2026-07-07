@@ -199,31 +199,22 @@
 								</button>
 
 								{#if openMenuFor === row.id}
-										<div 
-											class="gu-menu tw-bg-[#0B0F19] tw-border tw-border-slate-800 tw-z-50 tw-opacity-100" 
-											role="menu" 
-											tabindex="-1"
-											data-user-menu 
-											style="position: fixed; top: {menuTop}px; right: {menuRight}px; z-index: 9999;"
-											onclick={(e) => e.stopPropagation()}
-											onkeydown={(e) => { if (e.key === 'Escape') onToggleMenu(row.id) }}
-											aria-hidden="false"
-										>
+									<div class="v-admin-menu" role="menu" tabindex="-1" style="top: {menuTop}px; right: {menuRight}px;">
 										<button
 											type="button"
-											class="gu-menu__item"
+											class="v-admin-menu__item"
 											role="menuitem"
 											onclick={() => onEditAdmin(row)}
 										>
 											<Icon name={'action.edit' as IconName} aria-hidden="true" />
-											<span>Edit {row.role === 'global_admin' || row.role === 'super_admin' ? 'Admin' : 'User'}</span>
+											<span>Edit access & roles</span>
 										</button>
 
-										<div class="gu-menu__sep" aria-hidden="true"></div>
+										<div class="v-admin-menu__sep" aria-hidden="true"></div>
 
 										<button
 											type="button"
-											class="gu-menu__item"
+											class="v-admin-menu__item"
 											role="menuitem"
 											disabled={row.role === 'super_admin' ||
 												row.role === 'global_admin' ||
@@ -231,22 +222,22 @@
 											onclick={() => onLoginAs(row)}
 										>
 											{#if loginAsBusyFor === row.id}
-												<Icon name={'status.loading' as IconName} class="gu-menu__spin" aria-hidden="true" />
+												<Icon name={'status.loading' as IconName} class="v-admin-menu__spin" aria-hidden="true" />
 												<span>Launching session…</span>
 											{:else}
 												<Icon name={'nav.sign-in' as IconName} aria-hidden="true" />
 												<span>Login As</span>
 											{/if}
 											{#if row.role === 'super_admin' || row.role === 'global_admin'}
-												<span class="gu-menu__hint">global admin</span>
+												<span class="v-admin-menu__hint tw-ml-auto tw-text-[#94A3B8] tw-text-[10px] tw-uppercase tw-tracking-widest">global admin</span>
 											{/if}
 										</button>
 
-										<div class="gu-menu__sep" aria-hidden="true"></div>
+										<div class="v-admin-menu__sep" aria-hidden="true"></div>
 
 										<button
 											type="button"
-											class="gu-menu__item gu-menu__item--danger"
+											class="v-admin-menu__item v-admin-menu__item--danger"
 											role="menuitem"
 											onclick={() => onDeactivate(row)}
 											disabled={!canDeactivateUser(row)}
@@ -255,11 +246,11 @@
 											<span>Revoke access / Deactivate</span>
 										</button>
 
-										<div class="gu-menu__sep" aria-hidden="true"></div>
+										<div class="v-admin-menu__sep" aria-hidden="true"></div>
 
 										<button
 											type="button"
-											class="gu-menu__item gu-menu__item--danger"
+											class="v-admin-menu__item v-admin-menu__item--danger"
 											role="menuitem"
 											onclick={() => onPurge(row)}
 											disabled={row.role === 'super_admin' || row.role === 'global_admin'}

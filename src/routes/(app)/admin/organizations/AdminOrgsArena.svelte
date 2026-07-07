@@ -18,21 +18,13 @@
 	/>
 {/if}
 
-<OrganizationsAlerts clubsErr={engine.clubsErr} loginAsDirectorErr={engine.loginAsDirectorErr} />
+<OrganizationsAlerts clubsErr={engine.clubsErr}  />
 
 <OrganizationsDataTable
 	pagedClubs={engine.pagedClubs}
 	totalClubs={engine.clubs.length}
 	clubsLoading={engine.clubsLoading}
-	openRowMenuId={engine.openRowMenuId}
-	loginAsDirectorBusyFor={engine.loginAsDirectorBusyFor}
 	getCompliance={engine.getCompliance}
-	getTeamCount={engine.getTeamCount}
-	onToggleRowMenu={engine.toggleRowMenu}
-	onEdit={engine.openEdit}
-	onCloseRowMenu={engine.closeRowMenu}
-	onLoginAsDirector={(cl) => void engine.loginAsDirector(cl)}
-	onDelete={(id, name) => void engine.deleteClub(id, name)}
 />
 
 <OrganizationsPagination

@@ -2,9 +2,7 @@
 	import { AdminOrgsEngine } from './AdminOrgsEngine.svelte.js';
 	import AdminOrgsHUD from './AdminOrgsHUD.svelte';
 	import AdminOrgsArena from './AdminOrgsArena.svelte';
-	import OrganizationSidecar from '$lib/components/admin/OrganizationSidecar.svelte';
-	import { patchClubLocally } from '$lib/admin/organizationsFilters.js';
-
+		
 	import '$lib/styles/enterprise-console.css';
 	
 
@@ -21,11 +19,3 @@
 	</div>
 </div>
 
-<OrganizationSidecar
-	open={engine.editingClub !== null}
-	club={engine.editingClub}
-	onClose={engine.closeEdit}
-	onSaved={(updated) => {
-		engine.clubs = patchClubLocally(engine.clubs, updated);
-	}}
-/>

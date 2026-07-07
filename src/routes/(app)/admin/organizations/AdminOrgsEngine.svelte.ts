@@ -1,9 +1,6 @@
 import { auth, db, functions } from '$lib/firebase.js';
 import { httpsCallable } from 'firebase/functions';
 import { authStore } from '$lib/stores/auth.svelte.js';
-import { impersonationStore } from '$lib/stores/impersonation.svelte.js';
-import { workspaceContextStore } from '$lib/stores/workspaceContext.svelte.js';
-import { teamsStore } from '$lib/stores/teams.svelte.js';
 import { logSecurityEvent } from '$lib/utils/security.js';
 import { ADMIN_ORG_PAGE_SIZE } from '$lib/admin/organizationsConstants.js';
 import {
@@ -19,8 +16,6 @@ import { loadOrganizationsWithCompliance } from '$lib/admin/organizationsLoad.js
 import {
 	EMPTY_ADD_CLUB_FORM,
 	executeAddClub,
-	executeDeleteClub,
-	executeLoginAsDirector,
 } from '$lib/admin/organizationsActions.js';
 import type { OrgToast } from '$lib/components/admin/OrganizationsToastStack.svelte';
 import type {
@@ -32,7 +27,6 @@ import type {
 
 export class AdminOrgsEngine {
 	createSportModuleFn = httpsCallable(functions, 'createSportModule');
-	impersonateUserFn = httpsCallable(functions, 'impersonateUserFn');
 	PAGE_SIZE = ADMIN_ORG_PAGE_SIZE;
 
 	clubs = $state<AdminClub[]>([]);
@@ -98,10 +92,6 @@ export class AdminOrgsEngine {
 		return this.complianceMap.get(clubId) ?? null;
 	}
 
-	getTeamCount = (clubId: string) => {
-		return teamsStore.teams.filter((t) => t.clubId === clubId).length;
-	}
-
 	toasts = $state<OrgToast[]>([]);
 	toastSeq = 0;
 
@@ -148,63 +138,6 @@ export class AdminOrgsEngine {
 			this.clubAddErr = e instanceof Error ? e.message : 'Could not create club.';
 		} finally {
 			this.clubSaving = false;
-		}
-	}
-
-	openRowMenuId = $state<string | null>(null);
-	editingClub = $state<AdminClub | null>(null);
-	showEditModal = $state(false);
-
-	toggleRowMenu = (id: string) => {
-		this.openRowMenuId = this.openRowMenuId === id ? null : id;
-	}
-	closeRowMenu = () => {
-		this.openRowMenuId = null;
-	}
-
-	openEdit = (cl: AdminClub) => {
-		this.editingClub = cl;
-		this.closeRowMenu();
-	}
-
-	closeEdit = () => {
-		this.editingClub = null;
-	}
-
-	deleteClub = async (id: string, name: string) => {
-		try {
-			const deleted = await executeDeleteClub({ db, id, name });
-			if (deleted) this.clubs = removeClubLocally(this.clubs, id);
-		} catch (e) {
-			this.clubsErr = e instanceof Error ? e.message : 'Could not delete organization.';
-		}
-	}
-
-	loginAsDirectorBusyFor = $state<string | null>(null);
-	loginAsDirectorErr = $state('');
-
-	loginAsDirector = async (cl: AdminClub) => {
-		this.closeRowMenu();
-		this.loginAsDirectorErr = '';
-		this.loginAsDirectorBusyFor = cl.id;
-		try {
-			await executeLoginAsDirector({
-				auth,
-				club: cl,
-				actorEmail: authStore.user?.email || 'unknown',
-				impersonateUserFn: this.impersonateUserFn,
-				onScope: (clubId) => {
-					workspaceContextStore.resetScope();
-					workspaceContextStore.setActiveClubId(clubId);
-					workspaceContextStore.setActiveContext('director');
-				},
-				touchImpersonation: () => impersonationStore.touch(),
-			});
-		} catch (e) {
-			console.error('[admin-organizations] director impersonation failed', e);
-			this.loginAsDirectorErr = e instanceof Error ? e.message : 'Login As Director failed.';
-		} finally {
-			this.loginAsDirectorBusyFor = null;
 		}
 	}
 
@@ -274,25 +207,7 @@ export class AdminOrgsEngine {
 				}
 			});
 
-			$effect(() => {
-				if (!this.openRowMenuId) return;
-				const onDocClick = (ev: MouseEvent) => {
-					const tgt = ev.target as Element | null;
-					if (!tgt) return;
-					if (!tgt.closest?.('.orgs3-row-menu') && !tgt.closest?.('.orgs3-row-actions-btn')) {
-						this.closeRowMenu();
-					}
-				};
-				const onKey = (ev: KeyboardEvent) => {
-					if (ev.key === 'Escape') this.closeRowMenu();
-				};
-				document.addEventListener('mousedown', onDocClick);
-				document.addEventListener('keydown', onKey);
-				return () => {
-					document.removeEventListener('mousedown', onDocClick);
-					document.removeEventListener('keydown', onKey);
-				};
-			});
+
 
 			return () => {};
 		});

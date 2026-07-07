@@ -75,7 +75,7 @@
 		font-weight: 700;
 		letter-spacing: 0.06em;
 		text-transform: uppercase;
-		color: rgba(255, 255, 255, 0.35);
+		color: #A1A1AA;
 		font-variant-numeric: tabular-nums;
 	}
 
@@ -115,7 +115,7 @@
 		font-weight: 800;
 		letter-spacing: 0.1em;
 		text-transform: uppercase;
-		color: rgba(165, 243, 252, 0.85);
+		color: #D4D4D8;
 		margin-bottom: 4px;
 	}
 
@@ -136,7 +136,7 @@
 		font-size: 0.68rem;
 		font-weight: 600;
 		line-height: 1.35;
-		color: rgba(161, 161, 170, 0.95);
+		color: #A1A1AA;
 	}
 
 	.cc-soc-legend {
@@ -153,11 +153,11 @@
 		font-weight: 700;
 		letter-spacing: 0.04em;
 		text-transform: uppercase;
-		color: rgba(255, 255, 255, 0.45);
+		color: #A1A1AA;
 	}
 
 	.cc-soc-legend__title {
-		color: rgba(255, 255, 255, 0.55);
+		color: #A1A1AA;
 		margin-right: 4px;
 	}
 
@@ -258,7 +258,7 @@
 		font-weight: 800;
 		letter-spacing: 0.07em;
 		text-transform: uppercase;
-		color: rgba(161, 161, 170, 0.95);
+		color: #A1A1AA;
 	}
 
 	.cc-soc-card__delta {
@@ -266,7 +266,9 @@
 		font-weight: 800;
 		font-variant-numeric: tabular-nums;
 		white-space: nowrap;
-	}
+	
+	font-family: 'Geist Mono', monospace;
+}
 
 	.cc-soc-card__delta--up {
 		color: #67e8f9;
@@ -291,18 +293,22 @@
 	@media (min-width: 1024px) {
 		.cc-soc-card__value {
 			font-size: 1.5rem;
-		}
+		
+	font-family: 'Geist Mono', monospace;
+}
 	}
 
 	.cc-soc-card--ok .cc-soc-card__value {
 		color: #86efac;
-	}
+	
+	font-family: 'Geist Mono', monospace;
+}
 
 	.cc-soc-card__hint {
 		font-size: 0.72rem;
 		font-weight: 600;
 		line-height: 1.35;
-		color: rgba(113, 113, 122, 0.98);
+		color: #A1A1AA;
 	}
 
 	.cc-soc-split {
@@ -337,7 +343,7 @@
 		font-weight: 800;
 		letter-spacing: 0.12em;
 		text-transform: uppercase;
-		color: rgba(20, 184, 166, 0.85);
+		color: #14b8a6;
 		margin-bottom: 4px;
 	}
 
@@ -354,7 +360,7 @@
 		font-size: 0.75rem;
 		font-weight: 600;
 		line-height: 1.4;
-		color: rgba(161, 161, 170, 0.95);
+		color: #A1A1AA;
 	}
 
 	.cc-soc-aside__list {
@@ -383,7 +389,7 @@
 
 	.cc-soc-aside__k {
 		font-weight: 600;
-		color: rgba(212, 212, 216, 0.95);
+		color: #D4D4D8;
 	}
 
 	.cc-soc-aside__v {
@@ -491,7 +497,7 @@
 		font-weight: 600;
 		letter-spacing: -0.02em;
 		padding: 10px 14px 12px;
-		color: rgba(255, 255, 255, 0.45);
+		color: #A1A1AA;
 		background: transparent;
 		border: none;
 		border-bottom: 2px solid transparent;
@@ -502,7 +508,7 @@
 	}
 
 	.cc-tab:hover {
-		color: rgba(255, 255, 255, 0.72);
+		color: #D4D4D8;
 	}
 
 	.cc-tab:focus-visible {
@@ -513,7 +519,7 @@
 
 	.cc-tab--active {
 		color: #fafafa;
-		border-bottom-color: rgba(255, 255, 255, 0.85);
+		border-bottom-color: #D4D4D8;
 	}
 
 	.cc-body {

@@ -11,7 +11,7 @@
 		<div class="cc-hero__text">
 			<span class="cc-eyebrow">Global admin · operations console</span>
 			<h1
-				class="tw-m-0 tw-!text-4xl tw-!font-black tw-!tracking-tighter tw-!text-white md:tw-!text-5xl"
+				class="tw-m-0 tw-!text-4xl tw-!font-black tw-!tracking-tighter tw-!text-[#FAFAFA] md:tw-!text-5xl"
 				style="line-height: 1.08;"
 			>
 				Command center
