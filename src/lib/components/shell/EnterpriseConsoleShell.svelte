@@ -202,7 +202,11 @@
 		>
 			<div class="ec-sidebar__panel">
 				<div class="ec-sidebar__brand ec-sidebar__brand--switcher">
-					<!-- Removed WorkspaceContextSwitcher per Phase 1 Minimalism Overhaul -->
+					<div class="tw-flex tw-items-center tw-gap-2 tw-px-3 tw-py-2">
+						<span class="tw-font-sans tw-text-sm tw-font-extrabold tw-tracking-widest tw-text-[#FAFAFA] tw-uppercase">SSTracker</span>
+						<span class="tw-text-[#334155]">|</span>
+						<span class="tw-font-sans tw-text-xs tw-font-bold tw-tracking-widest tw-text-[#14b8a6] tw-uppercase">Nexus Command</span>
+					</div>
 				</div>
 				<nav class="ec-sidebar__nav">
 					<!-- Sprint 9.1: data-sveltekit-reload on every workspace nav anchor guarantees

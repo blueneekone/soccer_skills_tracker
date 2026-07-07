@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { AdminUsersEngine } from './AdminUsersEngine.svelte.js';
 	import GlobalUsersToolbar from '$lib/components/admin/GlobalUsersToolbar.svelte';
-	import GlobalUsersRbacTabs from '$lib/components/admin/GlobalUsersRbacTabs.svelte';
+	import Tabs from '$lib/components/ui/Tabs.svelte';
 
 	let { engine }: { engine: AdminUsersEngine } = $props();
 </script>
@@ -49,4 +49,13 @@
 	</span>
 </div>
 
-<GlobalUsersRbacTabs activeTab={engine.activeTab} onTabChange={(tab) => (engine.activeTab = tab)} />
+<Tabs
+	tabs={[
+		{ id: 'admins', label: 'Global Admins' },
+		{ id: 'directors', label: 'Directors' },
+		{ id: 'coaches', label: 'Coaches' },
+		{ id: 'parents_players', label: 'Parents & Players' }
+	]}
+	activeTab={engine.activeTab}
+	onTabChange={(id) => (engine.activeTab = id as typeof engine.activeTab)}
+/>

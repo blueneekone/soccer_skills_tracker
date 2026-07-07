@@ -2,7 +2,8 @@
 	import type { AdminOrgsEngine } from './AdminOrgsEngine.svelte.js';
 	import OrganizationsToolbar from '$lib/components/admin/OrganizationsToolbar.svelte';
 	import OrganizationsToastStack from '$lib/components/admin/OrganizationsToastStack.svelte';
-	import OrganizationsSportTabs from '$lib/components/admin/OrganizationsSportTabs.svelte';
+	import Tabs from '$lib/components/ui/Tabs.svelte';
+	import { ADMIN_SPORT_TABS } from '$lib/admin/organizationsConstants.js';
 
 	let { engine }: { engine: AdminOrgsEngine } = $props();
 </script>
@@ -34,8 +35,13 @@
 
 <OrganizationsToastStack toasts={engine.toasts} />
 
-<OrganizationsSportTabs
-	activeSportTab={engine.activeSportTab}
-	sportCounts={engine.sportCounts}
-	onTabChange={(tab) => (engine.activeSportTab = tab)}
+<Tabs
+	tabs={ADMIN_SPORT_TABS.filter((t) => t.key === 'all' || (engine.sportCounts[t.key] ?? 0) > 0).map(
+		(t) => ({
+			id: t.key,
+			label: t.key === 'all' ? t.label : `${t.label} (${engine.sportCounts[t.key] ?? 0})`
+		})
+	)}
+	activeTab={engine.activeSportTab}
+	onTabChange={(id) => (engine.activeSportTab = id as typeof engine.activeSportTab)}
 />

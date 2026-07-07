@@ -592,17 +592,17 @@
 	}
 
 	.cc-chart-card {
-		border-radius: 16px;
+		border-radius: 0;
 		padding: 16px 18px 18px;
-		background: #ffffff;
-		border: 1px solid var(--glass-border, rgba(0, 0, 0, 0.06));
-		box-shadow: 0 4px 12px -2px rgba(0,0,0,0.05);
+		background: #0f172a;
+		border: 1px solid #1e293b;
+		box-shadow: none;
 	}
 
 	:global(html.dark) .cc-chart-card {
-		background: var(--vanguard-surface, #131c2e);
-		border-color: rgba(255, 255, 255, 0.08);
-		box-shadow: 0 4px 20px -4px rgba(0,0,0,0.4);
+		background: #0f172a;
+		border-color: #1e293b;
+		box-shadow: none;
 	}
 
 	.cc-chart-row {

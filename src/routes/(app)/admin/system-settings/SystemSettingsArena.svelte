@@ -152,6 +152,83 @@
 
 	<hr class="tw-border-slate-800" />
 
+	<!-- ── Global Platform Security ──────────────────────────────────────── -->
+	<section class="tw-flex tw-flex-col tw-gap-[clamp(16px,2vw,24px)] tw-pl-6 tw-border-l-[3px] tw-border-l-amber-500" aria-labelledby="ss-sec-heading">
+		<div class="tw-flex tw-items-center tw-gap-3 tw-text-[#FAFAFA]">
+			<Icon name={"status.shield-check" as IconName} />
+			<h2 id="ss-sec-heading" class="tw-font-sans tw-tracking-tight tw-text-xl tw-font-bold">Global Platform Security</h2>
+		</div>
+		<p class="tw-text-[#D4D4D8] tw-text-sm">
+			Enterprise-wide security controls. Changes take effect immediately across all active sessions.
+		</p>
+
+		{#if engine.secErr}
+			<p class="v-flash v-flash--err" role="alert">{engine.secErr}</p>
+		{/if}
+		{#if engine.secOk}
+			<p class="v-flash v-flash--ok" role="status">{engine.secOk}</p>
+		{/if}
+
+		<div class="tw-grid tw-grid-cols-1 md:tw-grid-cols-3 tw-gap-[clamp(16px,2vw,24px)]">
+			<!-- MFA Toggle -->
+			<div class="tw-bg-[#0f172a] tw-border tw-border-slate-800 tw-p-[clamp(12px,1.5vw,20px)] tw-flex tw-flex-col tw-gap-3">
+				<span class="tw-text-xs tw-font-bold tw-uppercase tw-tracking-widest tw-text-[#A1A1AA]">Enforce Global MFA</span>
+				<p class="tw-text-xs tw-text-[#D4D4D8]">Require multi-factor authentication for all admin and director accounts.</p>
+				<label class="tw-flex tw-items-center tw-gap-3 tw-cursor-pointer">
+					<input
+						type="checkbox"
+						bind:checked={engine.secMfaEnabled}
+						class="tw-w-5 tw-h-5 tw-accent-amber-500"
+					/>
+					<span class="tw-text-sm tw-font-mono tw-text-[#FAFAFA]">{engine.secMfaEnabled ? 'ENABLED' : 'DISABLED'}</span>
+				</label>
+			</div>
+
+			<!-- PII TTL Schedule -->
+			<div class="tw-bg-[#0f172a] tw-border tw-border-slate-800 tw-p-[clamp(12px,1.5vw,20px)] tw-flex tw-flex-col tw-gap-3">
+				<span class="tw-text-xs tw-font-bold tw-uppercase tw-tracking-widest tw-text-[#A1A1AA]">PII Purge (TTL) Schedule</span>
+				<p class="tw-text-xs tw-text-[#D4D4D8]">Automated COPPA-compliant PII overwrite cycle for inactive records.</p>
+				<select
+					bind:value={engine.secPiiTtl}
+					class="tw-bg-[#0B0F19] tw-border tw-border-slate-800 tw-text-[#FAFAFA] tw-text-sm tw-font-mono tw-px-3 tw-py-2"
+				>
+					<option value="24h">24 hours</option>
+					<option value="48h">48 hours</option>
+					<option value="7d">7 days</option>
+					<option value="30d">30 days</option>
+				</select>
+			</div>
+
+			<!-- Session Timeout -->
+			<div class="tw-bg-[#0f172a] tw-border tw-border-slate-800 tw-p-[clamp(12px,1.5vw,20px)] tw-flex tw-flex-col tw-gap-3">
+				<span class="tw-text-xs tw-font-bold tw-uppercase tw-tracking-widest tw-text-[#A1A1AA]">Default Session Timeout</span>
+				<p class="tw-text-xs tw-text-[#D4D4D8]">Maximum idle time before sessions are force-expired platform-wide.</p>
+				<select
+					bind:value={engine.secSessionTimeout}
+					class="tw-bg-[#0B0F19] tw-border tw-border-slate-800 tw-text-[#FAFAFA] tw-text-sm tw-font-mono tw-px-3 tw-py-2"
+				>
+					<option value="30m">30 minutes</option>
+					<option value="1h">1 hour</option>
+					<option value="4h">4 hours</option>
+					<option value="8h">8 hours</option>
+				</select>
+			</div>
+		</div>
+
+		<div class="tw-flex tw-justify-end">
+			<button
+				type="button"
+				class="v-toolbar-btn tw-border-amber-500 tw-text-amber-500 hover:tw-bg-amber-500/10"
+				onclick={() => void engine.saveSecurityConfig()}
+				disabled={engine.secSaving}
+			>
+				{engine.secSaving ? 'Saving…' : 'Save Security Configuration'}
+			</button>
+		</div>
+	</section>
+
+	<hr class="tw-border-slate-800" />
+
 	<section class="tw-flex tw-flex-col tw-gap-[clamp(16px,2vw,24px)] tw-pl-6 tw-border-l-[3px] tw-border-l-[#14b8a6]" aria-labelledby="ss-int-heading">
 		<div class="tw-flex tw-items-center tw-gap-3 tw-text-[#FAFAFA]">
 			<Icon name={"sys.plug-zap" as IconName} />

@@ -43,6 +43,57 @@ export class SystemSettingsEngine {
 	webhookRows = $state<any[]>([]);
 	webhookLoading = $state(false);
 
+	// Global Platform Security
+	secMfaEnabled = $state(false);
+	secPiiTtl = $state('24h');
+	secSessionTimeout = $state('4h');
+	secSaving = $state(false);
+	secErr = $state('');
+	secOk = $state('');
+
+	loadSecurityConfig = async () => {
+		try {
+			const snap = await getDoc(doc(db, 'config', 'platform_security'));
+			if (snap.exists()) {
+				const d = snap.data();
+				this.secMfaEnabled = d?.mfaEnabled === true;
+				this.secPiiTtl = typeof d?.piiTtl === 'string' ? d.piiTtl : '24h';
+				this.secSessionTimeout = typeof d?.sessionTimeout === 'string' ? d.sessionTimeout : '4h';
+			}
+		} catch (e) {
+			console.warn('[system-settings] security config unavailable', e);
+		}
+	}
+
+	saveSecurityConfig = async () => {
+		this.secErr = '';
+		this.secOk = '';
+		this.secSaving = true;
+		try {
+			await setDoc(
+				doc(db, 'config', 'platform_security'),
+				{
+					mfaEnabled: this.secMfaEnabled,
+					piiTtl: this.secPiiTtl,
+					sessionTimeout: this.secSessionTimeout,
+					updatedAt: serverTimestamp(),
+					updatedBy: authStore.user?.email || 'super_admin',
+				},
+				{ merge: true }
+			);
+			await logSecurityEvent(
+				'SECURITY_CONFIG_UPDATE',
+				'platform_security',
+				`MFA=${this.secMfaEnabled}, TTL=${this.secPiiTtl}, timeout=${this.secSessionTimeout}`
+			);
+			this.secOk = 'Platform security configuration saved.';
+		} catch (e) {
+			this.secErr = e instanceof Error ? e.message : 'Could not save security configuration.';
+		} finally {
+			this.secSaving = false;
+		}
+	}
+
 	removeAdmin = async (email: string) => {
 		if (!confirm(`Revoke super admin access for ${email}?`)) return;
 		this.adminErr = '';
@@ -124,6 +175,11 @@ export class SystemSettingsEngine {
 			$effect(() => {
 				if (!featureFlagsStore.loaded) return;
 				this.maintenanceMessageDraft = featureFlagsStore.maintenanceMessage;
+			});
+
+			$effect(() => {
+				if (authStore.isLoading || !authStore.isAuthenticated) return;
+				void this.loadSecurityConfig();
 			});
 
 			$effect(() => {
