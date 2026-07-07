@@ -14,7 +14,7 @@ export async function mountMauLineChart(
 	target: HTMLCanvasElement,
 	series: OverviewChartPoint[],
 	cssVar: CssVarReader,
-): Promise<() => void> {
+): Promise<any> {
 	const mod = await import('chart.js');
 	if (!target.isConnected) return () => {};
 	mod.Chart.register(...mod.registerables);
@@ -51,6 +51,8 @@ export async function mountMauLineChart(
 			plugins: {
 				legend: { display: false },
 				tooltip: {
+					titleFont: { family: 'Geist Mono, monospace' },
+					bodyFont: { family: 'Geist Mono, monospace' },
 					backgroundColor: 'rgba(9,9,11,0.92)',
 					titleColor: '#fafafa',
 					bodyColor: '#d4d4d8',
@@ -75,9 +77,7 @@ export async function mountMauLineChart(
 	});
 	void text;
 
-	return () => {
-		chart.destroy();
-	};
+	return chart;
 }
 
 /** Mounts the revenue-by-tier doughnut chart; returns a destroy callback. */
@@ -85,7 +85,7 @@ export async function mountRevenueDoughnutChart(
 	target: HTMLCanvasElement,
 	series: OverviewChartPoint[],
 	cssVar: CssVarReader,
-): Promise<() => void> {
+): Promise<any> {
 	const mod = await import('chart.js');
 	if (!target.isConnected) return () => {};
 	mod.Chart.register(...mod.registerables);
@@ -125,6 +125,8 @@ export async function mountRevenueDoughnutChart(
 					},
 				},
 				tooltip: {
+					titleFont: { family: 'Geist Mono, monospace' },
+					bodyFont: { family: 'Geist Mono, monospace' },
 					backgroundColor: 'rgba(9,9,11,0.92)',
 					titleColor: '#fafafa',
 					bodyColor: '#d4d4d8',
@@ -142,9 +144,7 @@ export async function mountRevenueDoughnutChart(
 		},
 	});
 
-	return () => {
-		chart.destroy();
-	};
+	return chart;
 }
 
 /** Mounts the players-by-sport bar chart; returns a destroy callback. */
@@ -152,7 +152,7 @@ export async function mountSportBarChart(
 	target: HTMLCanvasElement,
 	series: OverviewChartPoint[],
 	cssVar: CssVarReader,
-): Promise<() => void> {
+): Promise<any> {
 	const mod = await import('chart.js');
 	if (!target.isConnected) return () => {};
 	mod.Chart.register(...mod.registerables);
@@ -184,6 +184,8 @@ export async function mountSportBarChart(
 			plugins: {
 				legend: { display: false },
 				tooltip: {
+					titleFont: { family: 'Geist Mono, monospace' },
+					bodyFont: { family: 'Geist Mono, monospace' },
 					backgroundColor: 'rgba(9,9,11,0.92)',
 					titleColor: '#fafafa',
 					bodyColor: '#d4d4d8',
@@ -214,7 +216,5 @@ export async function mountSportBarChart(
 	});
 	void text;
 
-	return () => {
-		chart.destroy();
-	};
+	return chart;
 }

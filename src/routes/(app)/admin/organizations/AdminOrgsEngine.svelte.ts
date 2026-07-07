@@ -12,7 +12,9 @@ import {
 	removeClubLocally,
 	totalPages,
 } from '$lib/admin/organizationsFilters.js';
-import { loadOrganizationsWithCompliance } from '$lib/admin/organizationsLoad.js';
+import { collection, getDocs, query } from 'firebase/firestore';
+import { buildComplianceMap } from '$lib/admin/organizationsCompliance.js';
+import { normalizeClubDocument, sortClubsByName } from '$lib/admin/organizationsNormalize.js';
 import {
 	EMPTY_ADD_CLUB_FORM,
 	executeAddClub,
@@ -150,12 +152,28 @@ export class AdminOrgsEngine {
 				this.clubsLoading = true;
 				this.clubsErr = '';
 
-				loadOrganizationsWithCompliance(db)
-					.then((result) => {
-						if (cancelled) return;
-						this.clubs = result.clubs;
-						this.complianceMap = result.complianceMap;
-					})
+				Promise.all([
+					getDocs(collection(db, 'clubs')),
+					getDocs(query(collection(db, 'vpc_requests')))
+				])
+				.then(([clubsSnap, vpcSnap]) => {
+					if (cancelled) return;
+					
+					const loaded = clubsSnap.docs.map((d) =>
+						normalizeClubDocument(d.id, (d.data() || {}) as Record<string, unknown>),
+					);
+					this.clubs = sortClubsByName(loaded);
+
+					const rows: any[] = [];
+					vpcSnap.forEach((d) => {
+						const data = d.data() as Record<string, unknown>;
+						rows.push({
+							clubId: typeof data.clubId === 'string' ? data.clubId : '',
+							status: typeof data.status === 'string' ? data.status : '',
+						});
+					});
+					this.complianceMap = buildComplianceMap(rows);
+				})
 					.catch((e) => {
 						if (cancelled) return;
 						this.clubsErr = e instanceof Error ? e.message : 'Could not load organizations.';

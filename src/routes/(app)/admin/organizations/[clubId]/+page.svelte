@@ -87,6 +87,7 @@
 		if (!ctx.clubId || !ctx.clubDoc) return;
 		const name = String(ctx.clubDoc.name || ctx.clubId);
 		if (!confirm(`WARNING: Permanently delete organization "${name}" (${ctx.clubId})? This cannot be undone.`)) return;
+		if (!confirm(`FINAL CONFIRMATION: Are you absolutely sure you want to delete this organization?`)) return;
 		await deleteDoc(doc(db, 'clubs', ctx.clubId));
 		await logSecurityEvent('DELETE_CLUB', ctx.clubId, 'Club deleted permanently');
 		goto('/admin/organizations');
@@ -202,184 +203,167 @@
 		teamsStore.teams.filter((t) => t.clubId === ctx.clubId).length,
 	);
 </script>
-
-<div class="cd-page">
-
+<div class="tw-flex tw-flex-col tw-gap-6 tw-w-full">
 	{#if ctx.clubLoading}
-		<div class="cd-loading">Loading organization…</div>
+		<div class="tw-p-10 tw-text-center tw-text-[#A1A1AA] tw-font-sans tw-text-sm">Loading organization…</div>
 	{:else if ctx.clubErr}
-		<div class="cd-err" role="alert">
+		<div class="tw-flex tw-items-center tw-gap-2 tw-p-5 tw-bg-[#1E293B] tw-border tw-border-[#ef4444] tw-rounded-xl tw-text-[#ef4444] tw-font-sans tw-font-bold" role="alert">
 			<Icon name={"status.warning-circle" as IconName} />
 			{ctx.clubErr}
-			<a href="/admin/organizations" class="cd-err__back">← Back to Organizations</a>
+			<a href="/admin/organizations" class="tw-ml-auto tw-text-[#A1A1AA] tw-text-sm hover:tw-text-[#FAFAFA]">← Back to Organizations</a>
 		</div>
 	{:else if ctx.clubDoc}
 
 		<!-- ── Club identity header ────────────────────────────────────────────── -->
-		<div class="cd-identity">
+		<div class="tw-flex tw-items-center tw-gap-4">
 			{#if typeof ctx.clubDoc.logoUrl === 'string' && ctx.clubDoc.logoUrl.trim()}
-				<img
-					class="cd-identity__logo"
-					src={ctx.clubDoc.logoUrl.trim()}
-					alt=""
-					loading="lazy"
-				/>
+				<img class="tw-w-14 tw-h-14 tw-rounded-xl tw-object-cover tw-border tw-border-[#334155] tw-shrink-0" src={ctx.clubDoc.logoUrl.trim()} alt="" loading="lazy" />
 			{:else}
-				<div class="cd-identity__logo-fallback" aria-hidden="true">
+				<div class="tw-w-14 tw-h-14 tw-rounded-xl tw-bg-[#1E293B] tw-flex tw-items-center tw-justify-center tw-text-2xl tw-text-[#D4D4D8] tw-shrink-0" aria-hidden="true">
 					<Icon name={"org.building" as IconName} />
 				</div>
 			{/if}
-			<div class="cd-identity__text">
-				<h1 class="cd-identity__name">{ctx.clubDoc.name || ctx.clubId}</h1>
-				<span class="cd-identity__id">{ctx.clubId}</span>
-				{#if ctx.clubDoc.isInfinite === true}
-					<span class="cd-identity__promo">∞ PROMO LICENSE</span>
-				{/if}
+			<div class="tw-flex tw-flex-col tw-gap-1 tw-min-w-0">
+				<h1 class="tw-m-0 tw-text-2xl tw-font-extrabold tw-tracking-tight tw-text-[#FAFAFA]">{ctx.clubDoc.name || ctx.clubId}</h1>
+				<div class="tw-flex tw-items-center tw-gap-3">
+					<span class="tw-text-xs tw-text-[#A1A1AA] tw-font-mono">{ctx.clubId}</span>
+					{#if ctx.clubDoc.isInfinite === true}
+						<span class="tw-inline-flex tw-items-center tw-text-[10px] tw-font-extrabold tw-tracking-wider tw-px-2 tw-py-1 tw-rounded-full tw-text-[#1E293B] tw-bg-[#f59e0b] tw-uppercase">∞ Promo License</span>
+					{/if}
+				</div>
 			</div>
 		</div>
 
 		<!-- ── Info bento row ─────────────────────────────────────────────────── -->
-		<div class="cd-bento">
-			<div class="cd-bento__card">
-				<span class="cd-bento__label">Sport</span>
-				<span class="cd-bento__value">{ctx.clubDoc.sport || '—'}</span>
+		<div class="tw-grid tw-grid-cols-2 lg:tw-grid-cols-4 tw-gap-4">
+			<div class="tw-flex tw-flex-col tw-gap-1 tw-p-4 tw-bg-[#020617] tw-border tw-border-[#334155] tw-rounded-xl">
+				<span class="tw-text-[10px] tw-font-extrabold tw-uppercase tw-tracking-wider tw-text-[#A1A1AA]">Sport</span>
+				<span class="tw-text-sm tw-font-bold tw-text-[#FAFAFA] tw-truncate">{ctx.clubDoc.sport || '—'}</span>
 			</div>
-			<div class="cd-bento__card">
-				<span class="cd-bento__label">Director</span>
-				<span class="cd-bento__value cd-bento__value--mono">{ctx.clubDoc.directorEmail || '—'}</span>
+			<div class="tw-flex tw-flex-col tw-gap-1 tw-p-4 tw-bg-[#020617] tw-border tw-border-[#334155] tw-rounded-xl">
+				<span class="tw-text-[10px] tw-font-extrabold tw-uppercase tw-tracking-wider tw-text-[#A1A1AA]">Director</span>
+				<span class="tw-text-sm tw-font-bold tw-text-[#FAFAFA] tw-font-mono tw-truncate">{ctx.clubDoc.directorEmail || '—'}</span>
 			</div>
-			<div class="cd-bento__card">
-				<span class="cd-bento__label">Teams</span>
-				<span class="cd-bento__value">{teamsCount}</span>
+			<div class="tw-flex tw-flex-col tw-gap-1 tw-p-4 tw-bg-[#020617] tw-border tw-border-[#334155] tw-rounded-xl">
+				<span class="tw-text-[10px] tw-font-extrabold tw-uppercase tw-tracking-wider tw-text-[#A1A1AA]">Teams</span>
+				<span class="tw-text-sm tw-font-bold tw-text-[#FAFAFA] tw-font-mono tw-tabular-nums tw-truncate">{teamsCount}</span>
 			</div>
-			<div class="cd-bento__card">
-				<span class="cd-bento__label">Created</span>
-				<span class="cd-bento__value">{formatCreatedAt(ctx.clubDoc.createdAt)}</span>
+			<div class="tw-flex tw-flex-col tw-gap-1 tw-p-4 tw-bg-[#020617] tw-border tw-border-[#334155] tw-rounded-xl">
+				<span class="tw-text-[10px] tw-font-extrabold tw-uppercase tw-tracking-wider tw-text-[#A1A1AA]">Created</span>
+				<span class="tw-text-sm tw-font-bold tw-text-[#FAFAFA] tw-font-mono tw-tabular-nums tw-truncate">{formatCreatedAt(ctx.clubDoc.createdAt)}</span>
 			</div>
 		</div>
 
-		<!-- ── Strike 2: Operations & Contact (Google-Places demographics) ────── -->
-		<div class="card">
-			<div class="card-header">
-				<Icon name={"sys.map-pin" as IconName} /> Operations &amp; Contact
+		<!-- ── Strike 2: Operations & Contact ───────────────────────── -->
+		<div class="tw-bg-[#020617] tw-border tw-border-[#334155] tw-rounded-xl tw-overflow-hidden">
+			<div class="tw-bg-[#0B0F19] tw-px-5 tw-py-4 tw-border-b tw-border-[#334155] tw-flex tw-items-center tw-gap-2 tw-text-[#FAFAFA] tw-font-bold tw-text-sm">
+				<Icon name={"sys.map-pin" as IconName} /> Operations & Contact
 			</div>
-			<div class="card-body">
-				<div class="cd-ops">
-					<div class="cd-ops__row">
-						<span class="cd-ops__label">
-							<Icon name={"sys.map-pin" as IconName} />
-							Verified Address
-						</span>
-						{#if typeof ctx.clubDoc.verifiedAddress === 'string' && ctx.clubDoc.verifiedAddress.trim()}
-							<span class="cd-ops__value">{ctx.clubDoc.verifiedAddress}</span>
-						{:else}
-							<span class="cd-ops__value cd-ops__value--missing">
-								No verified address on file. Edit the organization to add one via Google Places.
-							</span>
-						{/if}
-					</div>
-					<div class="cd-ops__row">
-						<span class="cd-ops__label">
-							<Icon name={"comm.phone" as IconName} />
-							Phone Number
-						</span>
-						{#if typeof ctx.clubDoc.phoneNumber === 'string' && ctx.clubDoc.phoneNumber.trim()}
-							<a class="cd-ops__value cd-ops__value--link" href={`tel:${ctx.clubDoc.phoneNumber}`}>
-								{ctx.clubDoc.phoneNumber}
-							</a>
-						{:else}
-							<span class="cd-ops__value cd-ops__value--missing">No phone number on file.</span>
-						{/if}
-					</div>
-					<div class="cd-ops__row">
-						<span class="cd-ops__label">
-							<Icon name={"sport.soccer" as IconName} />
-							Primary Facility
-						</span>
-						{#if typeof ctx.clubDoc.primaryFacility === 'string' && ctx.clubDoc.primaryFacility.trim()}
-							<span class="cd-ops__value">{ctx.clubDoc.primaryFacility}</span>
-						{:else}
-							<span class="cd-ops__value cd-ops__value--missing">No primary facility assigned.</span>
-						{/if}
-					</div>
+			<div class="tw-p-5 tw-flex tw-flex-col tw-gap-4">
+				<div class="tw-grid tw-grid-cols-1 md:tw-grid-cols-[200px_1fr] tw-gap-4 tw-p-4 tw-bg-[#0B0F19] tw-border tw-border-[#334155] tw-rounded-lg">
+					<span class="tw-inline-flex tw-items-center tw-gap-2 tw-text-xs tw-font-extrabold tw-tracking-wider tw-uppercase tw-text-[#A1A1AA]">
+						<Icon name={"sys.map-pin" as IconName} /> Verified Address
+					</span>
+					{#if typeof ctx.clubDoc.verifiedAddress === 'string' && ctx.clubDoc.verifiedAddress.trim()}
+						<span class="tw-text-sm tw-font-bold tw-text-[#FAFAFA]">{ctx.clubDoc.verifiedAddress}</span>
+					{:else}
+						<span class="tw-text-sm tw-font-bold tw-text-[#A1A1AA]">No verified address on file.</span>
+					{/if}
+				</div>
+				<div class="tw-grid tw-grid-cols-1 md:tw-grid-cols-[200px_1fr] tw-gap-4 tw-p-4 tw-bg-[#0B0F19] tw-border tw-border-[#334155] tw-rounded-lg">
+					<span class="tw-inline-flex tw-items-center tw-gap-2 tw-text-xs tw-font-extrabold tw-tracking-wider tw-uppercase tw-text-[#A1A1AA]">
+						<Icon name={"comm.phone" as IconName} /> Phone Number
+					</span>
+					{#if typeof ctx.clubDoc.phoneNumber === 'string' && ctx.clubDoc.phoneNumber.trim()}
+						<a class="tw-text-sm tw-font-bold tw-text-[#14b8a6] hover:tw-underline" href={`tel:${ctx.clubDoc.phoneNumber}`}>{ctx.clubDoc.phoneNumber}</a>
+					{:else}
+						<span class="tw-text-sm tw-font-bold tw-text-[#A1A1AA]">No phone number on file.</span>
+					{/if}
+				</div>
+				<div class="tw-grid tw-grid-cols-1 md:tw-grid-cols-[200px_1fr] tw-gap-4 tw-p-4 tw-bg-[#0B0F19] tw-border tw-border-[#334155] tw-rounded-lg">
+					<span class="tw-inline-flex tw-items-center tw-gap-2 tw-text-xs tw-font-extrabold tw-tracking-wider tw-uppercase tw-text-[#A1A1AA]">
+						<Icon name={"sport.soccer" as IconName} /> Primary Facility
+					</span>
+					{#if typeof ctx.clubDoc.primaryFacility === 'string' && ctx.clubDoc.primaryFacility.trim()}
+						<span class="tw-text-sm tw-font-bold tw-text-[#FAFAFA]">{ctx.clubDoc.primaryFacility}</span>
+					{:else}
+						<span class="tw-text-sm tw-font-bold tw-text-[#A1A1AA]">No primary facility assigned.</span>
+					{/if}
 				</div>
 			</div>
 		</div>
 
-		<!-- ── Licensing & Entitlement ────────────────────────────────────────── -->
-		<div class="card border-gold">
-			<div class="card-header bg-gold-header">
+		<!-- ── Licensing & Entitlement Bento ────────────────────────────────────────── -->
+		<div class="tw-bg-[#020617] tw-border tw-border-[#334155] tw-rounded-xl tw-overflow-hidden">
+			<div class="tw-bg-[#0B0F19] tw-px-5 tw-py-4 tw-border-b tw-border-[#334155] tw-flex tw-items-center tw-gap-2 tw-text-[#FAFAFA] tw-font-bold tw-text-sm">
 				<Icon name={"sys.credit-card" as IconName} /> Licensing & Entitlement
 			</div>
-			<div class="card-body">
+			<div class="tw-p-5">
 				{#if ctx.clubDoc.isInfinite === true}
-				<p class="cd-license__infinite">
-					<Icon name={"sys.infinity" as IconName} />
+					<p class="tw-flex tw-items-center tw-gap-2 tw-p-4 tw-bg-[#1E293B] tw-border tw-border-[#f59e0b] tw-rounded-lg tw-text-[#f59e0b] tw-font-bold tw-text-sm tw-m-0 tw-mb-6">
+						<Icon name={"sys.infinity" as IconName} />
 						This organization has an infinite / promotional license — no seat cap enforcement.
 					</p>
 				{:else if entitlementLoading}
-					<p class="text-sm-sub">Loading entitlement…</p>
+					<p class="tw-text-sm tw-text-[#A1A1AA] tw-font-bold tw-mb-6">Loading entitlement…</p>
 				{:else if entitlement}
 					{@const u = licenseUsedCount(entitlement)}
-					<div class="cd-license__block">
-						<div class="cd-license__row">
-							<span>Stripe Customer ID</span>
-							<code class="cd-license__mono">{typeof entitlement.stripe_customer_id === 'string' && entitlement.stripe_customer_id.trim() ? entitlement.stripe_customer_id : '—'}</code>
+					<div class="tw-flex tw-flex-col tw-gap-4 tw-mb-6">
+						<div class="tw-flex tw-items-center tw-justify-between tw-gap-4 tw-flex-wrap">
+							<span class="tw-text-sm tw-font-bold tw-text-[#D4D4D8]">Stripe Customer ID</span>
+							<code class="tw-font-mono tw-text-xs tw-text-[#FAFAFA] tw-bg-[#1E293B] tw-px-2 tw-py-1 tw-rounded">{typeof entitlement.stripe_customer_id === 'string' && entitlement.stripe_customer_id.trim() ? entitlement.stripe_customer_id : '—'}</code>
 						</div>
-						<div class="cd-license__row">
-							<span>Stripe Subscription ID</span>
-							<code class="cd-license__mono">{typeof entitlement.stripe_subscription_id === 'string' && entitlement.stripe_subscription_id.trim() ? entitlement.stripe_subscription_id : '—'}</code>
+						<div class="tw-flex tw-items-center tw-justify-between tw-gap-4 tw-flex-wrap">
+							<span class="tw-text-sm tw-font-bold tw-text-[#D4D4D8]">Stripe Subscription ID</span>
+							<code class="tw-font-mono tw-text-xs tw-text-[#FAFAFA] tw-bg-[#1E293B] tw-px-2 tw-py-1 tw-rounded">{typeof entitlement.stripe_subscription_id === 'string' && entitlement.stripe_subscription_id.trim() ? entitlement.stripe_subscription_id : '—'}</code>
 						</div>
 						{#if u.limit > 0}
-							<div class="cd-license__row cd-license__row--gauge">
-								<span>Seat utilization</span>
-								<div class="cd-gauge" title="Seats used vs licensed cap">
-									<div class="cd-gauge__track">
-										<div
-											class="cd-gauge__fill {licenseStressClass(u.pct)}"
-											style="--gauge-fill:{u.pct}%;"
-										></div>
+							<div class="tw-flex tw-flex-col tw-gap-2 tw-mt-2">
+								<span class="tw-text-sm tw-font-bold tw-text-[#D4D4D8]">Seat Utilization</span>
+								<div class="tw-flex tw-flex-col tw-gap-1 tw-w-full">
+									<div class="tw-h-2 tw-rounded-full tw-bg-[#1E293B] tw-overflow-hidden">
+										<div class="tw-h-full tw-rounded-full tw-transition-all tw-duration-200 {licenseStressClass(u.pct)}" style="width: {u.pct}%;"></div>
 									</div>
-									<span class="cd-gauge__label">{u.used} / {u.limit} seats ({Math.round(u.pct)}%)</span>
+									<span class="tw-text-xs tw-font-bold tw-text-[#A1A1AA] tw-font-mono tw-tabular-nums">{u.used} / {u.limit} seats ({Math.round(u.pct)}%)</span>
 								</div>
 							</div>
 						{:else}
-							<p class="text-sm-sub">No seat cap configured yet.</p>
+							<p class="tw-text-sm tw-text-[#A1A1AA] tw-font-bold">No seat cap configured yet.</p>
 						{/if}
 					</div>
 				{:else}
-					<p class="text-sm-sub">No entitlement document found for this organization.</p>
+					<p class="tw-text-sm tw-text-[#A1A1AA] tw-font-bold tw-mb-6">No entitlement document found for this organization.</p>
 				{/if}
 
-				<hr class="cd-divider" />
+				<hr class="tw-border-t tw-border-[#334155] tw-my-6" />
 
-				<p class="cd-section-heading">Generate New License</p>
+				<p class="tw-text-xs tw-font-extrabold tw-tracking-wider tw-uppercase tw-text-[#A1A1AA] tw-mb-4">Generate New License</p>
 				{#if licenseErr}
-					<p class="cd-flash cd-flash--err" role="alert">{licenseErr}</p>
+					<p class="tw-p-4 tw-mb-4 tw-rounded-lg tw-bg-[#1E293B] tw-border tw-border-[#ef4444] tw-text-[#ef4444] tw-font-bold tw-text-sm" role="alert">{licenseErr}</p>
 				{/if}
 				{#if licenseOk}
-					<p class="cd-flash cd-flash--ok">{licenseOk}</p>
+					<p class="tw-p-4 tw-mb-4 tw-rounded-lg tw-bg-[#1E293B] tw-border tw-border-[#10b981] tw-text-[#10b981] tw-font-bold tw-text-sm">{licenseOk}</p>
 				{/if}
-				<div class="cd-license__gen-grid">
-					<div>
-						<label for="cd-lic-type">License type</label>
-						<select id="cd-lic-type" bind:value={licenseType} disabled={licenseBusy}>
+				<div class="tw-grid tw-grid-cols-1 md:tw-grid-cols-3 tw-gap-4 tw-mb-4">
+					<div class="tw-flex tw-flex-col tw-gap-1">
+						<label class="tw-text-xs tw-font-bold tw-text-[#D4D4D8]" for="cd-lic-type">License Type</label>
+						<select id="cd-lic-type" bind:value={licenseType} disabled={licenseBusy} class="tw-w-full tw-px-3 tw-py-2 tw-rounded-lg tw-bg-[#0B0F19] tw-border tw-border-[#334155] tw-text-[#FAFAFA] tw-font-bold tw-text-sm">
 							<option value="subscription">Monthly subscription</option>
 							<option value="trial">Free trial</option>
 						</select>
 					</div>
-					<div>
-						<label for="cd-lic-seats">Seat limit</label>
-						<input id="cd-lic-seats" type="number" min="1" bind:value={licenseMaxSeats} disabled={licenseBusy} />
+					<div class="tw-flex tw-flex-col tw-gap-1">
+						<label class="tw-text-xs tw-font-bold tw-text-[#D4D4D8]" for="cd-lic-seats">Seat Limit</label>
+						<input id="cd-lic-seats" type="number" min="1" bind:value={licenseMaxSeats} disabled={licenseBusy} class="tw-w-full tw-px-3 tw-py-2 tw-rounded-lg tw-bg-[#0B0F19] tw-border tw-border-[#334155] tw-text-[#FAFAFA] tw-font-mono tw-font-bold tw-text-sm" />
 					</div>
-					<div>
-						<label for="cd-lic-months">Duration (months)</label>
-						<input id="cd-lic-months" type="number" min="1" max="120" bind:value={licenseDurationMonths} disabled={licenseBusy} />
+					<div class="tw-flex tw-flex-col tw-gap-1">
+						<label class="tw-text-xs tw-font-bold tw-text-[#D4D4D8]" for="cd-lic-months">Duration (months)</label>
+						<input id="cd-lic-months" type="number" min="1" max="120" bind:value={licenseDurationMonths} disabled={licenseBusy} class="tw-w-full tw-px-3 tw-py-2 tw-rounded-lg tw-bg-[#0B0F19] tw-border tw-border-[#334155] tw-text-[#FAFAFA] tw-font-mono tw-font-bold tw-text-sm" />
 					</div>
 				</div>
 				<button
 					type="button"
-					class="btn-primary btn-gold"
+					class="tw-px-4 tw-py-2 tw-rounded-lg tw-font-bold tw-text-sm tw-transition-colors tw-bg-[#f59e0b] tw-text-[#1E293B] hover:tw-bg-[#fbbf24] disabled:tw-opacity-50"
 					disabled={licenseBusy}
 					onclick={onGenerateLicense}
 				>
@@ -389,48 +373,53 @@
 		</div>
 
 		<!-- ── Edit organization ──────────────────────────────────────────────── -->
-		<div class="card">
-			<div class="card-header">
+		<div class="tw-bg-[#020617] tw-border tw-border-[#334155] tw-rounded-xl tw-overflow-hidden">
+			<div class="tw-bg-[#0B0F19] tw-px-5 tw-py-4 tw-border-b tw-border-[#334155] tw-flex tw-items-center tw-gap-2 tw-text-[#FAFAFA] tw-font-bold tw-text-sm">
 				<Icon name={"action.edit" as IconName} /> Edit Organization
 			</div>
-			<div class="card-body">
+			<div class="tw-p-5">
 				{#if editErr}
-					<p class="cd-flash cd-flash--err" role="alert">{editErr}</p>
+					<p class="tw-p-4 tw-mb-4 tw-rounded-lg tw-bg-[#1E293B] tw-border tw-border-[#ef4444] tw-text-[#ef4444] tw-font-bold tw-text-sm" role="alert">{editErr}</p>
 				{/if}
 				{#if editSuccess}
-					<p class="cd-flash cd-flash--ok">{editSuccess}</p>
+					<p class="tw-p-4 tw-mb-4 tw-rounded-lg tw-bg-[#1E293B] tw-border tw-border-[#10b981] tw-text-[#10b981] tw-font-bold tw-text-sm">{editSuccess}</p>
 				{/if}
-				<label class="cd-edit-label" for="cd-edit-sport">Sport</label>
-				<select id="cd-edit-sport" bind:value={editSport} disabled={editSaving} class="cd-edit-select">
-					<option value="soccer">Soccer</option>
-					<option value="basketball">Basketball</option>
-					<option value="baseball">Baseball</option>
-					<option value="football">Football</option>
-					<option value="volleyball">Volleyball</option>
-					<option value="hockey">Hockey</option>
-					<option value="lacrosse">Lacrosse</option>
-					<option value="generic">Generic</option>
-				</select>
+				
+				<div class="tw-flex tw-flex-col tw-gap-4 tw-mb-6">
+					<div class="tw-flex tw-flex-col tw-gap-1">
+						<label class="tw-text-xs tw-font-extrabold tw-uppercase tw-tracking-wider tw-text-[#A1A1AA]" for="cd-edit-sport">Sport</label>
+						<select id="cd-edit-sport" bind:value={editSport} disabled={editSaving} class="tw-w-full tw-px-3 tw-py-2 tw-rounded-lg tw-bg-[#0B0F19] tw-border tw-border-[#334155] tw-text-[#FAFAFA] tw-font-bold tw-text-sm">
+							<option value="soccer">Soccer</option>
+							<option value="basketball">Basketball</option>
+							<option value="baseball">Baseball</option>
+							<option value="football">Football</option>
+							<option value="volleyball">Volleyball</option>
+							<option value="hockey">Hockey</option>
+							<option value="lacrosse">Lacrosse</option>
+							<option value="generic">Generic</option>
+						</select>
+					</div>
 
-				<div class="cd-edit-toggle">
-					<label class="cd-edit-toggle__label" for="cd-edit-infinite">
-						Grant Infinite License (Promo)
-					</label>
-					<input
-						id="cd-edit-infinite"
-						type="checkbox"
-						bind:checked={editInfinite}
-						disabled={editSaving}
-						class="cd-edit-toggle__check"
-					/>
+					<div class="tw-flex tw-items-center tw-justify-between tw-gap-4 tw-p-4 tw-rounded-lg tw-border tw-border-[#334155] tw-bg-[#0B0F19]">
+						<div class="tw-flex tw-flex-col">
+							<label class="tw-text-sm tw-font-bold tw-text-[#FAFAFA] tw-cursor-pointer" for="cd-edit-infinite">
+								Grant Infinite License (Promo)
+							</label>
+							<span class="tw-text-xs tw-text-[#A1A1AA] tw-font-bold mt-1">Bypasses Stripe billing and seat-cap enforcement for all connected clients.</span>
+						</div>
+						<input
+							id="cd-edit-infinite"
+							type="checkbox"
+							bind:checked={editInfinite}
+							disabled={editSaving}
+							class="tw-w-5 tw-h-5 tw-cursor-pointer"
+						/>
+					</div>
 				</div>
-				<p class="text-sm-sub">
-					Bypasses Stripe billing and seat-cap enforcement for all connected clients.
-				</p>
 
 				<button
 					type="button"
-					class="btn-primary"
+					class="tw-px-4 tw-py-2 tw-rounded-lg tw-font-bold tw-text-sm tw-transition-colors tw-bg-[#14b8a6] tw-text-[#1E293B] hover:tw-bg-[#34d399] disabled:tw-opacity-50"
 					onclick={saveClubEdit}
 					disabled={editSaving}
 				>
@@ -440,28 +429,28 @@
 		</div>
 
 		<!-- ── Assign Director ────────────────────────────────────────────────── -->
-		<div class="card">
-			<div class="card-header">
+		<div class="tw-bg-[#020617] tw-border tw-border-[#334155] tw-rounded-xl tw-overflow-hidden">
+			<div class="tw-bg-[#0B0F19] tw-px-5 tw-py-4 tw-border-b tw-border-[#334155] tw-flex tw-items-center tw-gap-2 tw-text-[#FAFAFA] tw-font-bold tw-text-sm">
 				<Icon name={"user.settings" as IconName} /> Assign Director
 			</div>
-			<div class="card-body">
+			<div class="tw-p-5">
 				{#if assignDirErr}
-					<p class="cd-flash cd-flash--err" role="alert">{assignDirErr}</p>
+					<p class="tw-p-4 tw-mb-4 tw-rounded-lg tw-bg-[#1E293B] tw-border tw-border-[#ef4444] tw-text-[#ef4444] tw-font-bold tw-text-sm" role="alert">{assignDirErr}</p>
 				{/if}
 				{#if assignDirOk}
-					<p class="cd-flash cd-flash--ok">{assignDirOk}</p>
+					<p class="tw-p-4 tw-mb-4 tw-rounded-lg tw-bg-[#1E293B] tw-border tw-border-[#10b981] tw-text-[#10b981] tw-font-bold tw-text-sm">{assignDirOk}</p>
 				{/if}
-				<div class="cd-assign-row">
+				<div class="tw-flex tw-items-center tw-gap-3 tw-flex-wrap">
 					<input
 						type="email"
 						bind:value={assignDirEmail}
 						placeholder="director@example.com"
 						disabled={assignDirSaving}
-						class="m-0 flex-1"
+						class="tw-flex-1 tw-min-w-0 tw-px-3 tw-py-2 tw-rounded-lg tw-bg-[#0B0F19] tw-border tw-border-[#334155] tw-text-[#FAFAFA] tw-font-bold tw-text-sm"
 					/>
 					<button
 						type="button"
-						class="btn-primary"
+						class="tw-px-4 tw-py-2 tw-rounded-lg tw-font-bold tw-text-sm tw-transition-colors tw-bg-[#14b8a6] tw-text-[#1E293B] hover:tw-bg-[#34d399] disabled:tw-opacity-50"
 						onclick={assignDirector}
 						disabled={assignDirSaving}
 					>
@@ -472,18 +461,17 @@
 		</div>
 
 		<!-- ── Danger zone ─────────────────────────────────────────────────────── -->
-		<div class="cd-danger">
-			<p class="cd-danger__label">
-				<Icon name={"status.warning" as IconName} />
-				Danger Zone
+		<div class="tw-p-6 tw-border tw-border-[#334155] tw-bg-[#0B0F19] tw-rounded-xl tw-flex tw-flex-col tw-gap-3">
+			<p class="tw-m-0 tw-flex tw-items-center tw-gap-2 tw-text-xs tw-font-extrabold tw-tracking-wider tw-uppercase tw-text-[#ef4444]">
+				<Icon name={"status.warning" as IconName} /> Danger Zone
 			</p>
-			<p class="cd-danger__hint">
+			<p class="tw-m-0 tw-text-sm tw-font-bold tw-text-[#D4D4D8]">
 				Permanently deletes this organization and all associated metadata. Teams and player
 				records must be cleaned up separately. This action cannot be undone.
 			</p>
 			<button
 				type="button"
-				class="btn-secondary cd-danger__btn"
+				class="tw-inline-flex tw-items-center tw-justify-center tw-gap-2 tw-w-fit tw-px-4 tw-py-2 tw-mt-2 tw-rounded-lg tw-font-bold tw-text-sm tw-border tw-border-[#ef4444] tw-text-[#ef4444] hover:tw-bg-[#ef4444] hover:tw-text-[#1E293B] tw-transition-colors"
 				onclick={deleteCurrentClub}
 			>
 				<Icon name={"action.delete" as IconName} />
@@ -492,484 +480,4 @@
 		</div>
 
 	{/if}
-
 </div>
-
-<style>
-	.cd-page {
-		display: flex;
-		flex-direction: column;
-		gap: 20px;
-	}
-
-	/* ── Loading / error states ─────────────────────────────────────── */
-	.cd-loading {
-		padding: 40px;
-		text-align: center;
-		color: var(--text-secondary);
-		font-size: 0.9rem;
-	}
-
-	.cd-err {
-		display: flex;
-		align-items: center;
-		gap: 10px;
-		padding: 20px;
-		background: rgba(185, 28, 28, 0.08);
-		border: 1px solid rgba(185, 28, 28, 0.3);
-		border-radius: 14px;
-		color: var(--danger-red, #b91c1c);
-		font-weight: 600;
-		flex-wrap: wrap;
-	}
-
-	.cd-err__back {
-		margin-left: auto;
-		font-size: 0.85rem;
-		color: var(--text-secondary);
-		text-decoration: none;
-	}
-
-	/* ── Identity header ─────────────────────────────────────────────── */
-	.cd-identity {
-		display: flex;
-		align-items: center;
-		gap: 16px;
-	}
-
-	.cd-identity__logo {
-		width: 56px;
-		height: 56px;
-		border-radius: 14px;
-		object-fit: cover;
-		border: 1px solid var(--border-subtle, #e5e5e5);
-		flex-shrink: 0;
-	}
-
-	.cd-identity__logo-fallback {
-		width: 56px;
-		height: 56px;
-		border-radius: 14px;
-		background: rgba(99, 102, 241, 0.12);
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		font-size: 1.6rem;
-		color: #6366f1;
-		flex-shrink: 0;
-	}
-
-	.cd-identity__text {
-		display: flex;
-		flex-direction: column;
-		gap: 4px;
-		min-width: 0;
-	}
-
-	.cd-identity__name {
-		margin: 0;
-		font-size: 1.5rem;
-		font-weight: 800;
-		letter-spacing: -0.04em;
-		color: var(--text-primary);
-	}
-
-	.cd-identity__id {
-		font-size: 0.78rem;
-		color: var(--text-secondary);
-		font-family: ui-monospace, monospace;
-	}
-
-	.cd-identity__promo {
-		display: inline-flex;
-		align-items: center;
-		font-size: 10px;
-		font-weight: 800;
-		letter-spacing: 0.04em;
-		padding: 4px 8px;
-		border-radius: 999px;
-		color: #78350f;
-		background: linear-gradient(135deg, #fde68a 0%, #fbbf24 55%, #d97706 100%);
-		border: 1px solid rgba(180, 83, 9, 0.35);
-		width: fit-content;
-	}
-
-	/* ── Bento info row ──────────────────────────────────────────────── */
-	.cd-bento {
-		display: grid;
-		grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-		gap: 12px;
-	}
-
-	.cd-bento__card {
-		display: flex;
-		flex-direction: column;
-		gap: 5px;
-		padding: 14px 16px;
-		background: var(--surface-subtle, #fafafa);
-		border: 1px solid var(--border-subtle, #e5e5e5);
-		border-radius: 12px;
-	}
-
-	:global(html.dark) .cd-bento__card {
-		background: rgba(255, 255, 255, 0.04);
-		border-color: rgba(255, 255, 255, 0.08);
-	}
-
-	.cd-bento__label {
-		font-size: 0.68rem;
-		font-weight: 800;
-		text-transform: uppercase;
-		letter-spacing: 0.06em;
-		color: var(--text-secondary);
-	}
-
-	.cd-bento__value {
-		font-size: 0.95rem;
-		font-weight: 600;
-		color: var(--text-primary);
-		overflow: hidden;
-		text-overflow: ellipsis;
-		white-space: nowrap;
-	}
-
-	.cd-bento__value--mono {
-		font-family: ui-monospace, monospace;
-		font-size: 0.78rem;
-	}
-
-	/* ── Strike 2: Operations & Contact block ───────────────────────── */
-	.cd-ops {
-		display: flex;
-		flex-direction: column;
-		gap: 14px;
-	}
-
-	.cd-ops__row {
-		display: grid;
-		grid-template-columns: 200px 1fr;
-		align-items: start;
-		gap: 16px;
-		padding: 12px 14px;
-		border: 1px solid var(--border-subtle, #e5e5e5);
-		border-radius: 12px;
-		background: var(--surface-subtle, #fafafa);
-	}
-
-	:global(html.dark) .cd-ops__row {
-		border-color: rgba(255, 255, 255, 0.08);
-		background: rgba(255, 255, 255, 0.04);
-	}
-
-	.cd-ops__label {
-		display: inline-flex;
-		align-items: center;
-		gap: 8px;
-		font-size: 0.75rem;
-		font-weight: 800;
-		letter-spacing: 0.04em;
-		text-transform: uppercase;
-		color: var(--text-secondary);
-	}
-
-	.cd-ops__value {
-		font-size: 0.9rem;
-		font-weight: 600;
-		color: var(--text-primary);
-		line-height: 1.45;
-		word-break: break-word;
-	}
-
-	.cd-ops__value--missing {
-		font-style: italic;
-		font-weight: 500;
-		color: var(--text-secondary);
-	}
-
-	.cd-ops__value--link {
-		color: #4f46e5;
-		text-decoration: none;
-	}
-
-	.cd-ops__value--link:hover {
-		text-decoration: underline;
-	}
-
-	:global(html.dark) .cd-ops__value--link {
-		color: #a5b4fc;
-	}
-
-	@media (max-width: 640px) {
-		.cd-ops__row {
-			grid-template-columns: 1fr;
-			gap: 6px;
-		}
-	}
-
-	/* ── License block ───────────────────────────────────────────────── */
-	.cd-license__infinite {
-		display: flex;
-		align-items: center;
-		gap: 8px;
-		margin: 0;
-		padding: 14px;
-		background: rgba(245, 158, 11, 0.08);
-		border: 1px solid rgba(245, 158, 11, 0.3);
-		border-radius: 10px;
-		color: #d97706;
-		font-weight: 600;
-		font-size: 0.9rem;
-	}
-
-	.cd-license__block {
-		display: flex;
-		flex-direction: column;
-		gap: 10px;
-	}
-
-	.cd-license__row {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		gap: 12px;
-		font-size: 0.85rem;
-		color: var(--text-secondary);
-		flex-wrap: wrap;
-	}
-
-	.cd-license__row--gauge {
-		flex-direction: column;
-		align-items: flex-start;
-		gap: 6px;
-	}
-
-	.cd-license__mono {
-		font-family: ui-monospace, monospace;
-		font-size: 0.78rem;
-		color: var(--text-primary);
-		background: var(--surface-subtle, #f4f4f5);
-		padding: 2px 6px;
-		border-radius: 4px;
-		word-break: break-all;
-	}
-
-	:global(html.dark) .cd-license__mono {
-		background: rgba(255, 255, 255, 0.07);
-	}
-
-	.cd-gauge {
-		display: flex;
-		flex-direction: column;
-		gap: 4px;
-		width: 100%;
-	}
-
-	.cd-gauge__track {
-		height: 8px;
-		border-radius: 999px;
-		background: rgba(15, 23, 42, 0.1);
-		overflow: hidden;
-	}
-
-	:global(html.dark) .cd-gauge__track {
-		background: rgba(255, 255, 255, 0.1);
-	}
-
-	.cd-gauge__fill {
-		width: var(--gauge-fill, 0%);
-		height: 100%;
-		border-radius: 999px;
-		transition: width 0.2s ease;
-	}
-
-	.cd-gauge__fill--ok   { background: #22c55e; }
-	.cd-gauge__fill--warn { background: #f59e0b; }
-	.cd-gauge__fill--crit { background: #ef4444; }
-
-	.cd-gauge__label {
-		font-size: 0.78rem;
-		font-weight: 600;
-		color: var(--text-secondary);
-		font-variant-numeric: tabular-nums;
-	}
-
-	.cd-license__gen-grid {
-		display: grid;
-		grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-		gap: 16px;
-		margin-bottom: 14px;
-	}
-
-	/* ── Edit section ─────────────────────────────────────────────── */
-	.cd-edit-label {
-		display: block;
-		font-size: 0.75rem;
-		font-weight: 700;
-		text-transform: uppercase;
-		letter-spacing: 0.04em;
-		color: var(--text-secondary);
-		margin-bottom: 6px;
-	}
-
-	.cd-edit-select {
-		width: 100%;
-		padding: 10px 12px;
-		border-radius: 8px;
-		border: 1px solid var(--border-subtle, #e5e5e5);
-		background: var(--surface-subtle, #fafafa);
-		font: inherit;
-		color: var(--text-primary);
-		box-sizing: border-box;
-		margin-bottom: 14px;
-	}
-
-	:global(html.dark) .cd-edit-select {
-		border-color: rgba(255, 255, 255, 0.12);
-		background: #09090b;
-	}
-
-	.cd-edit-toggle {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		gap: 12px;
-		padding: 12px;
-		border: 1px solid var(--border-subtle, #e5e5e5);
-		border-radius: 10px;
-		background: var(--surface-subtle, #fafafa);
-		margin-bottom: 8px;
-	}
-
-	:global(html.dark) .cd-edit-toggle {
-		border-color: rgba(255, 255, 255, 0.1);
-		background: rgba(255, 255, 255, 0.04);
-	}
-
-	.cd-edit-toggle__label {
-		font-size: 0.9rem;
-		font-weight: 600;
-		color: var(--text-primary);
-		flex: 1;
-		cursor: pointer;
-	}
-
-	.cd-edit-toggle__check {
-		width: 20px;
-		height: 20px;
-		flex-shrink: 0;
-		cursor: pointer;
-	}
-
-	/* ── Assign director ─────────────────────────────────────────── */
-	.cd-assign-row {
-		display: flex;
-		gap: 10px;
-		align-items: center;
-		flex-wrap: wrap;
-	}
-
-	/* ── Danger zone ─────────────────────────────────────────────── */
-	.cd-danger {
-		padding: 20px;
-		border: 1px dashed rgba(220, 38, 38, 0.4);
-		border-radius: 14px;
-		display: flex;
-		flex-direction: column;
-		gap: 10px;
-	}
-
-	.cd-danger__label {
-		margin: 0;
-		font-size: 0.75rem;
-		font-weight: 800;
-		text-transform: uppercase;
-		letter-spacing: 0.06em;
-		color: var(--danger-red, #b91c1c);
-		display: flex;
-		align-items: center;
-		gap: 6px;
-	}
-
-	.cd-danger__hint {
-		margin: 0;
-		font-size: 0.82rem;
-		color: var(--text-secondary);
-		line-height: 1.5;
-	}
-
-	.cd-danger__btn {
-		align-self: flex-start;
-		display: inline-flex;
-		align-items: center;
-		gap: 6px;
-		padding: 10px 16px;
-		font-weight: 600;
-		font-size: 0.88rem;
-	}
-
-	/* ── Dividers ──────────────────────────────────────────────────── */
-	.cd-divider {
-		border: none;
-		border-top: 1px solid var(--border-subtle, #e5e5e5);
-		margin: 14px 0;
-	}
-
-	:global(html.dark) .cd-divider {
-		border-top-color: rgba(255, 255, 255, 0.08);
-	}
-
-	.cd-section-heading {
-		margin: 0 0 12px;
-		font-size: 0.75rem;
-		font-weight: 800;
-		text-transform: uppercase;
-		letter-spacing: 0.06em;
-		color: var(--text-secondary);
-	}
-
-	/* ── Flash messages ────────────────────────────────────────────── */
-	.cd-flash {
-		margin: 0 0 12px;
-		padding: 12px 14px;
-		border-radius: 12px;
-		font-weight: 700;
-		font-size: 0.9rem;
-	}
-
-	.cd-flash--ok {
-		background: rgba(4, 120, 87, 0.12);
-		color: var(--success-green, #047857);
-		border: 1px solid rgba(4, 120, 87, 0.35);
-	}
-
-	.cd-flash--err {
-		background: rgba(185, 28, 28, 0.1);
-		color: var(--danger-red, #991b1b);
-		border: 1px solid rgba(185, 28, 28, 0.35);
-	}
-
-	:global(html.dark) .cd-flash--ok {
-		color: #a7f3d0;
-		border-color: rgba(52, 211, 153, 0.4);
-		background: rgba(52, 211, 153, 0.1);
-	}
-
-	:global(html.dark) .cd-flash--err {
-		color: #fecaca;
-		border-color: rgba(248, 113, 113, 0.35);
-		background: rgba(127, 29, 29, 0.25);
-	}
-
-	/* ── Misc ────────────────────────────────────────────────────── */
-	.btn-secondary {
-		background: none;
-		border: 1px solid var(--border-strong, rgba(220,38,38,0.4));
-		border-radius: 8px;
-		cursor: pointer;
-		color: var(--danger-red, #b91c1c);
-	}
-
-	.btn-secondary:hover {
-		background: rgba(185, 28, 28, 0.08);
-	}
-</style>

@@ -4,7 +4,7 @@
 	import { handleSignOut } from '$lib/auth/signOutFlow.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { enterprisePlayerDrawer } from '$lib/stores/enterprisePlayerDrawer.svelte.js';
-	import CommandPalette from '$lib/components/shell/CommandPalette.svelte';
+	import CommandPalette from '$lib/components/admin/CommandPalette.svelte';
 	import MobilePinBar from '$lib/components/shell/MobilePinBar.svelte';
 	import AppMenuSheet from '$lib/components/shell/AppMenuSheet.svelte';
 	import { getFieldQuickActions } from '$lib/shell/fieldQuickActions.js';

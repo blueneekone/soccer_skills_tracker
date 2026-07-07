@@ -18,7 +18,7 @@ import { fetchUsersCount, fetchUsersPage, loadClubNameMap } from '$lib/admin/glo
 import type { GlobalUserRow, GlobalUsersTab } from '$lib/types/adminUsers.js';
 
 export class AdminUsersEngine {
-	impersonateUserFn = httpsCallable(functions, 'impersonateUserFn');
+	impersonateUserFn = httpsCallable(functions, 'impersonateUser');
 	purgeUserDataFn = httpsCallable(functions, 'purgeUserDataFn');
 
 	rows = $state<GlobalUserRow[]>([]);
@@ -170,17 +170,17 @@ export class AdminUsersEngine {
 		const actorEmail = authStore.user?.email || 'unknown';
 		this.loginAsBusyFor = row.id;
 		try {
-			const res = await this.impersonateUserFn({ targetEmail: row.email });
-			const payload = (res.data || {}) as { token?: string };
-			if (!payload.token) throw new Error('Impersonation token missing from response.');
-			await signInWithCustomToken(auth, payload.token);
+			const res = await this.impersonateUserFn({ targetUid: row.id || row.uid, targetEmail: row.email });
+			const payload = (res.data || {}) as { customToken?: string };
+			if (!payload.customToken) throw new Error('Impersonation token missing from response.');
+			await signInWithCustomToken(auth, payload.customToken);
 			await impersonationStore.touch();
 			await logSecurityEvent(
 				'IMPERSONATE_USER',
 				row.email,
 				`Platform admin ${actorEmail} assumed session as ${row.email} (${row.role})`,
 			);
-			await goto('/', { replaceState: true });
+			await goto('/dashboard', { replaceState: true });
 		} catch (e) {
 			console.error('[global-users] impersonation failed', e);
 			this.flashErr = e instanceof Error ? e.message : 'Impersonation failed.';

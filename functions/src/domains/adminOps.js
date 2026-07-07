@@ -1940,3 +1940,67 @@ exports.assignTenantClaims = onCall(
       return {success: true};
     },
 );
+
+
+// ── Epic 5 — Security & Infrastructure: impersonateUser ────────────────────────
+//
+// Callable for Global Admins to generate a custom token for another user
+// without requiring their password. Used for remote debugging/support.
+// ─────────────────────────────────────────────────────────────────────────────
+exports.impersonateUser = onCall(
+    {
+      region: REGION,
+      // enforceAppCheck: true,
+    },
+    async (request) => {
+      // ── Auth guard ────────────────────────────────────────────────────────
+      if (!request.auth) {
+        throw new HttpsError(
+            'unauthenticated',
+            'You must be signed in to impersonate.',
+        );
+      }
+
+      const callerRole = request.auth.token.role;
+      if (callerRole !== 'global_admin' && callerRole !== 'super_admin') {
+        logger.warn('[impersonateUser] unauthorized attempt', {
+          uid: request.auth.uid,
+          role: callerRole,
+        });
+        throw new HttpsError(
+            'permission-denied',
+            'You must be a global admin to impersonate users.',
+        );
+      }
+
+      const {targetUid, targetEmail} = request.data;
+      if (!targetUid || typeof targetUid !== 'string') {
+        throw new HttpsError('invalid-argument', '`targetUid` is required.');
+      }
+
+      try {
+        const customToken = await admin.auth().createCustomToken(targetUid);
+
+        // Maintain a non-repudiable audit trail
+        await db().collection('security_audit').add({
+          action: 'IMPERSONATION_SUCCESS',
+          actorUid: request.auth.uid,
+          actorEmail: request.auth.token.email || 'unknown',
+          targetUid,
+          targetEmail: targetEmail || 'unknown',
+          timestamp: admin.firestore.FieldValue.serverTimestamp(),
+          ip: request.rawRequest.ip || 'unknown',
+        });
+
+        logger.info('[impersonateUser] success', {
+          actorUid: request.auth.uid,
+          targetUid,
+        });
+
+        return {customToken};
+      } catch (err) {
+        logger.error('[impersonateUser] failed to generate token', err);
+        throw new HttpsError('internal', 'Failed to generate impersonation token.');
+      }
+    },
+);

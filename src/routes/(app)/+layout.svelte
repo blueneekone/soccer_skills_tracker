@@ -169,8 +169,24 @@
 
 				if (cancelled || !browser) return;
 
+				
 				const currentPath = untrack(() => page.url.pathname);
+				
+				// ── Global Infrastructure Kill Switch ────────────────────────────────
+				try {
+					const coreSnap = await getDoc(doc(db, 'platform_settings', 'core'));
+					if (coreSnap.exists() && coreSnap.data()?.maintenance_mode === true) {
+						if (authStore.role !== 'global_admin' && authStore.role !== 'super_admin' && !currentPath.startsWith('/maintenance')) {
+							await untrack(() => goto('/maintenance', { replaceState: true }));
+							return;
+						}
+					}
+				} catch (e) {
+					console.warn('[layout] maintenance check failed', e);
+				}
+				
 				if (requiresPasskey && !currentPath.startsWith(PASSKEY_ENROLL_ROUTE)) {
+
 					await untrack(() => goto(PASSKEY_ENROLL_ROUTE, { replaceState: true }));
 					return;
 				}

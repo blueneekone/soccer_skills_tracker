@@ -16,7 +16,32 @@ export const TAB_LABELS = ['Executive', 'Growth', 'Security', 'Platform'] as con
 
 
 
+
+import { doc, setDoc } from 'firebase/firestore';
+
 export class AdminOverviewEngine {
+	maintenanceMode = $state(false);
+	maintenanceBusy = $state(false);
+
+	toggleMaintenance = async () => {
+		const nextState = !this.maintenanceMode;
+		if (nextState) {
+			const ok = confirm("WARNING: You are about to enable GLOBAL PLATFORM LOCKOUT.\n\nAll non-admin users will be immediately ejected to the maintenance page. Do you wish to proceed?");
+			if (!ok) return;
+		}
+
+		this.maintenanceBusy = true;
+		try {
+			await setDoc(doc(db, 'platform_settings', 'core'), { maintenance_mode: nextState }, { merge: true });
+			this.maintenanceMode = nextState;
+		} catch (e) {
+			console.error('[overview] failed to toggle maintenance mode', e);
+			alert('Failed to toggle maintenance mode.');
+		} finally {
+			this.maintenanceBusy = false;
+		}
+	}
+
 	activeTab: 'executive' | 'growth' | 'security' | 'platform' = $state('executive');
 
 	strike13Executive = $state([
@@ -166,77 +191,7 @@ export class AdminOverviewEngine {
 				};
 			});
 
-			$effect(() => {
-				if (!browser || !this.mauCanvasEl) return;
-				const target = this.mauCanvasEl;
-				const series = this.mauSeries;
-				let destroyed = false;
-				let destroyChart: (() => void) | null = null;
-
-				mountMauLineChart(target, series, readOverviewCssVar)
-					.then((destroy) => {
-						if (destroyed) {
-							destroy();
-							return;
-						}
-						destroyChart = destroy;
-					})
-					.catch((e) => console.warn('[overview] MAU chart init failed', e));
-
-				return () => {
-					destroyed = true;
-					destroyChart?.();
-					destroyChart = null;
-				};
-			});
-
-			$effect(() => {
-				if (!browser || !this.revenueCanvasEl) return;
-				const target = this.revenueCanvasEl;
-				const series = this.revenueByTier;
-				let destroyed = false;
-				let destroyChart: (() => void) | null = null;
-
-				mountRevenueDoughnutChart(target, series, readOverviewCssVar)
-					.then((destroy) => {
-						if (destroyed) {
-							destroy();
-							return;
-						}
-						destroyChart = destroy;
-					})
-					.catch((e) => console.warn('[overview] Revenue chart init failed', e));
-
-				return () => {
-					destroyed = true;
-					destroyChart?.();
-					destroyChart = null;
-				};
-			});
-
-			$effect(() => {
-				if (!browser || !this.sportCanvasEl) return;
-				const target = this.sportCanvasEl;
-				const series = this.playersBySport;
-				let destroyed = false;
-				let destroyChart: (() => void) | null = null;
-
-				mountSportBarChart(target, series, readOverviewCssVar)
-					.then((destroy) => {
-						if (destroyed) {
-							destroy();
-							return;
-						}
-						destroyChart = destroy;
-					})
-					.catch((e) => console.warn('[overview] Sport chart init failed', e));
-
-				return () => {
-					destroyed = true;
-					destroyChart?.();
-					destroyChart = null;
-				};
-			});
+			
 			return () => {};
 		});
 	}

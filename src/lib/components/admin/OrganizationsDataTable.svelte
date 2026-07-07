@@ -4,6 +4,8 @@
 	import { licenseMetaForClub } from '$lib/admin/organizationsFilters.js';
 	import { clubSportAccent, clubSportIconToken } from '$lib/utils/sport-icon.js';
 	import type { AdminClub, AdminComplianceHealth } from '$lib/types/adminOrganizations.js';
+	import { goto } from '$app/navigation';
+	import { untrack } from 'svelte';
 
 	interface Props {
 		pagedClubs: AdminClub[];
@@ -22,7 +24,7 @@
 
 <div class="tw-w-full">
 	<table class="v-table tw-w-full" aria-label="Organizations">
-		<thead class="tw-sticky tw-top-0 tw-z-10 tw-bg-[#0B0F19] tw-border-b tw-border-[#334155]">
+		<thead class="tw-sticky tw-top-0 tw-z-10 tw-bg-[#020617] tw-border-b tw-border-[#334155]">
 			<tr>
 				<th class="v-th v-th--avatar" scope="col" aria-label="Logo"></th>
 				<th class="v-th" scope="col">Organization</th>
@@ -132,9 +134,9 @@
 						</td>
 
 						<td class="v-td tw-py-2 tw-px-3 tw-text-sm tw-tracking-tight v-td--actions">
-							<a class="tw-text-[#14b8a6] hover:tw-text-emerald-400 tw-font-bold tw-text-xs tw-flex tw-items-center tw-gap-1" href="/admin/organizations/{cl.id}" aria-label="View {cl.name || cl.id}">
+							<button class="tw-text-[#14b8a6] hover:tw-text-emerald-400 tw-font-bold tw-text-xs tw-flex tw-items-center tw-gap-1 tw-cursor-pointer" onclick={() => untrack(() => goto(`/admin/organizations/${cl.id}`))} aria-label="View {cl.name || cl.id}">
 								View <Icon name={'nav.arrow-right' as IconName} aria-hidden="true" />
-							</a>
+							</button>
 						</td>
 					</tr>
 				{/each}

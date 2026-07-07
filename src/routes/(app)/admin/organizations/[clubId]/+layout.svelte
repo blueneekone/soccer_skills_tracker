@@ -64,26 +64,29 @@
 </script>
 
 <!-- Breadcrumb navigation sub-header -->
-<nav class="club-layout__breadcrumb" aria-label="Breadcrumb">
-	<a class="club-layout__bc-link" href="/admin/organizations">
+<nav class="tw-sticky tw-top-0 tw-z-10 tw-bg-[#020617] tw-py-4 tw-flex tw-items-center tw-gap-2 tw-border-b tw-border-[#334155]" aria-label="Breadcrumb">
+	<a class="tw-text-[#D4D4D8] hover:tw-text-[#FAFAFA] tw-font-sans tw-text-sm tw-font-bold tw-flex tw-items-center tw-gap-2 tw-transition-colors" href="/admin/organizations">
 		<Icon name={"org.building" as IconName} />
 		Organizations
 	</a>
-	<Icon name={"nav.chevron-right" as IconName} class="club-layout__bc-sep" />
+	<Icon name={"nav.chevron-right" as IconName} class="tw-text-[#A1A1AA] tw-text-sm" />
 	{#if clubLoading}
-		<span class="club-layout__bc-current club-layout__bc-current--loading">Loading…</span>
+		<span class="tw-text-[#A1A1AA] tw-font-sans tw-text-sm">Loading…</span>
 	{:else if clubErr}
-		<span class="club-layout__bc-current club-layout__bc-current--err">{clubId}</span>
+		<span class="tw-text-[#ef4444] tw-font-sans tw-text-sm tw-font-bold">{clubId}</span>
 	{:else}
-		<span class="club-layout__bc-current">{clubDoc?.name || clubId}</span>
+		<span class="tw-text-[#FAFAFA] tw-font-sans tw-text-sm tw-font-bold">{clubDoc?.name || clubId}</span>
 	{/if}
 </nav>
 
 <!-- Sub-page navigation tabs -->
-<div class="club-layout__subnav" role="tablist">
+<div class="tw-flex tw-items-center tw-gap-2 tw-py-4 tw-mb-6 tw-bg-[#020617]" role="tablist">
 	<a
-		class="club-layout__subnav-link"
-		class:club-layout__subnav-link--active={page.url.pathname === `/admin/organizations/${clubId}`}
+		class="tw-flex tw-items-center tw-gap-2 tw-px-4 tw-py-2 tw-rounded-lg tw-font-sans tw-text-sm tw-font-bold tw-transition-colors"
+		class:tw-bg-[#1E293B]={page.url.pathname === `/admin/organizations/${clubId}`}
+		class:tw-text-[#FAFAFA]={page.url.pathname === `/admin/organizations/${clubId}`}
+		class:tw-text-[#D4D4D8]={page.url.pathname !== `/admin/organizations/${clubId}`}
+		class:hover:tw-text-[#FAFAFA]={page.url.pathname !== `/admin/organizations/${clubId}`}
 		href="/admin/organizations/{clubId}"
 		role="tab"
 		aria-selected={page.url.pathname === `/admin/organizations/${clubId}`}
@@ -92,8 +95,11 @@
 		Overview
 	</a>
 	<a
-		class="club-layout__subnav-link"
-		class:club-layout__subnav-link--active={page.url.pathname.startsWith(`/admin/organizations/${clubId}/teams`)}
+		class="tw-flex tw-items-center tw-gap-2 tw-px-4 tw-py-2 tw-rounded-lg tw-font-sans tw-text-sm tw-font-bold tw-transition-colors"
+		class:tw-bg-[#1E293B]={page.url.pathname.startsWith(`/admin/organizations/${clubId}/teams`)}
+		class:tw-text-[#FAFAFA]={page.url.pathname.startsWith(`/admin/organizations/${clubId}/teams`)}
+		class:tw-text-[#D4D4D8]={!page.url.pathname.startsWith(`/admin/organizations/${clubId}/teams`)}
+		class:hover:tw-text-[#FAFAFA]={!page.url.pathname.startsWith(`/admin/organizations/${clubId}/teams`)}
 		href="/admin/organizations/{clubId}/teams"
 		role="tab"
 		aria-selected={page.url.pathname.startsWith(`/admin/organizations/${clubId}/teams`)}
@@ -105,101 +111,3 @@
 
 <!-- Child page slot -->
 {@render children()}
-
-<style>
-	/* ── Breadcrumb ──────────────────────────────────────────────── */
-	.club-layout__breadcrumb {
-		display: flex;
-		align-items: center;
-		gap: 6px;
-		padding: 0 0 12px;
-		flex-wrap: wrap;
-	}
-
-	.club-layout__bc-link {
-		display: inline-flex;
-		align-items: center;
-		gap: 5px;
-		font-size: 0.85rem;
-		font-weight: 600;
-		color: var(--brand-primary, #d97706);
-		text-decoration: none;
-		transition: opacity 0.12s ease;
-	}
-
-	.club-layout__bc-link:hover {
-		opacity: 0.78;
-	}
-
-	.club-layout__bc-sep {
-		font-size: 0.9rem;
-		color: var(--text-secondary);
-		opacity: 0.55;
-	}
-
-	.club-layout__bc-current {
-		font-size: 0.85rem;
-		font-weight: 700;
-		color: var(--text-primary);
-	}
-
-	.club-layout__bc-current--loading {
-		color: var(--text-secondary);
-		font-weight: 400;
-		font-style: italic;
-	}
-
-	.club-layout__bc-current--err {
-		color: var(--danger-red, #b91c1c);
-	}
-
-	/* ── Sub-page nav tabs ───────────────────────────────────────── */
-	.club-layout__subnav {
-		display: flex;
-		align-items: center;
-		gap: 4px;
-		padding-bottom: 16px;
-		border-bottom: 1px solid var(--border-subtle, #e5e5e5);
-		margin-bottom: 20px;
-		flex-wrap: wrap;
-	}
-
-	:global(html.dark) .club-layout__subnav {
-		border-bottom-color: rgba(255, 255, 255, 0.08);
-	}
-
-	.club-layout__subnav-link {
-		display: inline-flex;
-		align-items: center;
-		gap: 6px;
-		padding: 8px 14px;
-		border-radius: 8px;
-		font-size: 0.85rem;
-		font-weight: 600;
-		color: var(--text-secondary);
-		text-decoration: none;
-		transition: background 0.12s ease, color 0.12s ease;
-		border: 1px solid transparent;
-	}
-
-	.club-layout__subnav-link:hover {
-		background: var(--surface-subtle, rgba(0, 0, 0, 0.04));
-		color: var(--text-primary);
-	}
-
-	:global(html.dark) .club-layout__subnav-link:hover {
-		background: rgba(255, 255, 255, 0.06);
-	}
-
-	.club-layout__subnav-link--active {
-		background: rgba(245, 158, 11, 0.1);
-		color: var(--brand-primary, #d97706);
-		border-color: rgba(245, 158, 11, 0.3);
-	}
-
-	:global(html.dark) .club-layout__subnav-link--active {
-		background: rgba(245, 158, 11, 0.12);
-		color: #fbbf24;
-		border-color: rgba(245, 158, 11, 0.35);
-	}
-</style>
