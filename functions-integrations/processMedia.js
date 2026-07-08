@@ -1,4 +1,4 @@
-﻿/* eslint-disable quotes */
+/* eslint-disable quotes */
 /**
  * processMedia.js â€” AEGIS Secure Media Pipeline
  * â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -80,9 +80,9 @@ function resolveStorageBucket() {
     // admin not initialized yet
   }
   if (process.env.GCLOUD_PROJECT) {
-    return `${process.env.GCLOUD_PROJECT}.appspot.com`;
+    return `${process.env.GCLOUD_PROJECT}.firebasestorage.app`;
   }
-  return undefined;
+  return 'sports-skill-tracker-dev.firebasestorage.app';
 }
 
 // Maximum pixel dimension for thumbnails stored alongside videos

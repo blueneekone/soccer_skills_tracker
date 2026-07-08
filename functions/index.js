@@ -39,6 +39,7 @@ exports.processMatchTelemetry = eqOps.processMatchTelemetry;
 const trainingOps = require('./src/domains/trainingOps.js');
 exports.onWorkoutLogged = trainingOps.onWorkoutLogged;
 exports.commitMacrocycle = trainingOps.commitMacrocycle;
+exports.onTrialScoreAdded = trainingOps.onTrialScoreAdded;
 
 const ragOps = require('./src/domains/ragOps.js');
 exports.generateTacticalPlan = ragOps.generateTacticalPlan;

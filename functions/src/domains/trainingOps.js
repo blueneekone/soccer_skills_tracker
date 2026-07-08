@@ -1,6 +1,7 @@
 const logger = require('firebase-functions/logger');
 const admin = require('firebase-admin');
 const { onDocumentCreated } = require('firebase-functions/v2/firestore');
+const { onCall, HttpsError } = require('firebase-functions/v2/https');
 
 /**
  * PHASE 1: THE AUTOMATED DISPATCH ENGINE (RL ADAPTIVE HOMEWORK)
@@ -65,8 +66,6 @@ exports.onWorkoutLogged = onDocumentCreated(
  * PHASE 3: SECURE MACROCYCLE COMMIT
  * Receives the serialized hierarchical JSON payload and executes a server-side atomic batch.
  */
-const { onCall, HttpsError } = require('firebase-functions/v2/https');
-
 exports.commitMacrocycle = onCall(
   { region: 'us-central1' },
   async (request) => {
@@ -106,5 +105,66 @@ exports.commitMacrocycle = onCall(
 
     logger.info(`Macrocycle committed by cleared coach: ${request.auth.uid}`);
     return { success: true, assignmentId: assignmentRef.id };
+  }
+);
+
+/**
+ * EPIC 13: REAL-TIME FCM DISPATCHER (BACKEND)
+ * Triggered asynchronously when a coach approves a trial or an AI milestone is reached.
+ */
+exports.onTrialScoreAdded = onDocumentCreated(
+  {
+    document: 'trial_scores/{scoreId}',
+    region: 'us-central1'
+  },
+  async (event) => {
+    const snapshot = event.data;
+    if (!snapshot) return;
+
+    const data = snapshot.data();
+    const playerUid = data.playerUid;
+
+    if (!playerUid) return;
+
+    const firestore = admin.firestore();
+
+    // Find the linked parent's UID for this player.
+    // Assuming a players collection has a 'parentUid' field.
+    const playerDoc = await firestore.collection('users').doc(playerUid).get();
+    if (!playerDoc.exists) return;
+
+    const parentUid = playerDoc.data().parentUid;
+    if (!parentUid) return;
+
+    // Fetch parent's device tokens (assumed to be stored in device_tokens registry)
+    const parentTokensDoc = await firestore.collection('device_tokens').doc(parentUid).get();
+    
+    if (!parentTokensDoc.exists) return;
+    
+    const tokens = parentTokensDoc.data().fcmTokens || []; // stored using arrayUnion
+
+    if (tokens.length === 0) return;
+
+    const payload = {
+      notification: {
+        title: "Milestone Achieved! 🚀",
+        body: "Your athlete just unlocked a new milestone score!",
+      },
+      data: {
+        scoreId: event.params.scoreId,
+        click_action: "FLUTTER_NOTIFICATION_CLICK"
+      }
+    };
+
+    try {
+      const response = await admin.messaging().sendEachForMulticast({
+        tokens,
+        notification: payload.notification,
+        data: payload.data
+      });
+      logger.info(`FCM dispatched to ${response.successCount} devices for parent ${parentUid}`);
+    } catch (error) {
+      logger.error('Error sending FCM:', error);
+    }
   }
 );

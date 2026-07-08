@@ -590,6 +590,19 @@ async function handleStripeWebhookEvent(stripeClient, event) {
         session.metadata && session.metadata.tierType ?
           String(session.metadata.tierType).toLowerCase() :
           '';
+
+    // EPIC 14: B2C STRIPE PAYWALL (PREMIUM SPECTATOR ACCESS)
+    if (tierType === 'premium_spectator') {
+      const parentUid = session.client_reference_id;
+      if (parentUid) {
+        await admin.auth().setCustomUserClaims(parentUid, { premium_spectator: true });
+        logger.info(`B2C Premium Spectator unlocked for ${parentUid}`);
+      } else {
+        logger.warn('checkout.session.completed: premium_spectator missing client_reference_id');
+      }
+      return;
+    }
+
     // Phase 2, Epic 2 — Session M: route recruiter subs to recruiter_accounts.
     const recruiterEmail =
         session.metadata && session.metadata.recruiterEmail ?

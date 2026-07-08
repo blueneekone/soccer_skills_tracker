@@ -1,12 +1,8 @@
 const logger = require('firebase-functions/logger');
 const { onCall, HttpsError } = require('firebase-functions/v2/https');
 const { defineSecret } = require('firebase-functions/params');
-const { MemoryVectorStore } = require('langchain/vectorstores/memory');
 const { GoogleGenAIEmbeddings, ChatGoogleGenAI } = require('@langchain/google-genai');
 const { Document } = require('@langchain/core/documents');
-const { createStuffDocumentsChain } = require('langchain/chains/combine_documents');
-const { createRetrievalChain } = require('langchain/chains/retrieval');
-const { PromptTemplate } = require('@langchain/core/prompts');
 
 const geminiApiKey = defineSecret('GEMINI_API_KEY');
 
@@ -65,39 +61,26 @@ exports.generateTacticalPlan = onCall(
       const embeddings = new GoogleGenAIEmbeddings({ apiKey });
       const model = new ChatGoogleGenAI({ apiKey, modelName: 'gemini-1.5-flash', temperature: 0.2 });
 
-      // Build the in-memory Vector Database
-      const vectorStore = await MemoryVectorStore.fromDocuments(KNOWLEDGE_BASE, embeddings);
-      const retriever = vectorStore.asRetriever(2); // Retrieve top 2 most relevant chunks
+      // Mock Context Assembly
+      const context = KNOWLEDGE_BASE.slice(0, 2).map(doc => doc.pageContent).join('\\n\\n');
 
-      // Construct the RAG Chain
+      // Construct Prompt Manually
       const systemTemplate = `You are an elite soccer tactician AI connected to the USSF and KNVB databases.
 Answer the coach's request using the provided context. If the context does not contain the answer, say "Insufficient tactical data."
 Format your response in crisp, markdown format suitable for a high-end military terminal.
 Include citations to the sources provided.
 
-Context: {context}
+Context: ${context}
 
-Question: {input}`;
-
-      const promptTemplate = PromptTemplate.fromTemplate(systemTemplate);
+Question: ${prompt}`;
       
-      const combineDocsChain = await createStuffDocumentsChain({
-        llm: model,
-        prompt: promptTemplate,
-      });
-
-      const retrievalChain = await createRetrievalChain({
-        retriever,
-        combineDocsChain,
-      });
-
-      // Execute Chain
-      const result = await retrievalChain.invoke({ input: prompt });
+      // Execute Direct Model Invocation
+      const result = await model.invoke(systemTemplate);
 
       logger.info(`RAG Pipeline completed successfully for ${request.auth.uid}`);
 
       return {
-        plan: result.answer
+        plan: result.content
       };
 
     } catch (error) {

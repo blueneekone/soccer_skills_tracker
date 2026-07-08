@@ -58,6 +58,7 @@ const CODEBASES = {
       'recruiterBilling.js',
       'pricingPolicyOps.js',
       'src/domains/webhooksOps.js',
+      'src/domains/dunningOps.js',
     ],
   },
   compliance: {
@@ -86,6 +87,7 @@ const CODEBASES = {
       'src/domains/weatherOps.js',
       'src/domains/weatherEvaluation.js',
       'src/domains/facilityWeatherWebhook.js',
+      'src/domains/stackSportsOps.js',
     ],
     preserve: ['resolveTarget.js'],
   },
@@ -103,6 +105,7 @@ const CODEBASES = {
       'analytics.js',
       'src/domains/adminOps.js',
       'src/domains/operativeOps.js',
+      'src/domains/interoperabilityOps.js',
     ],
   },
 };

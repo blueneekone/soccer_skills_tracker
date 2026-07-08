@@ -14,7 +14,7 @@ try {
 }
 
 const TREMENDOUS_API_KEY = defineSecret('TREMENDOUS_API_KEY');
-const feature_cv_bounty_enabled = defineBoolean('feature_cv_bounty_enabled', { default: false });
+const FEATURE_CV_BOUNTY_ENABLED = defineBoolean('FEATURE_CV_BOUNTY_ENABLED', { default: false });
 
 /**
  * PHASE 1: THE TREMENDOUS ESCROW PIPELINE
@@ -70,9 +70,9 @@ exports.releaseTremendousBounty = onCall({ secrets: [TREMENDOUS_API_KEY] }, asyn
  * Firebase Remote Config gating the CV pipeline
  */
 exports.cvBiomechanicsVerifier = onObjectFinalized(
-  { bucket: 'sstracker-drills-bucket' }, 
+  { bucket: 'sports-skill-tracker-dev.firebasestorage.app' }, 
   async (event) => {
-    if (!feature_cv_bounty_enabled.value()) {
+    if (!FEATURE_CV_BOUNTY_ENABLED.value()) {
       logger.info('CV Pipeline disabled via Remote Config. Skipping clip processing.');
       return;
     }
@@ -84,8 +84,8 @@ exports.cvBiomechanicsVerifier = onObjectFinalized(
  * PHASE 3: OBJECTIVE AI BOUNTY TRIGGER
  */
 exports.onCvVerifiedDrillWritten = onDocumentWritten('cv_verified_drill/{repId}', async (event) => {
-  if (!feature_cv_bounty_enabled.value()) {
-    logger.info('onCvVerifiedDrillWritten: feature_cv_bounty_enabled is FALSE, aborting');
+  if (!FEATURE_CV_BOUNTY_ENABLED.value()) {
+    logger.info('onCvVerifiedDrillWritten: FEATURE_CV_BOUNTY_ENABLED is FALSE, aborting');
     return;
   }
 
