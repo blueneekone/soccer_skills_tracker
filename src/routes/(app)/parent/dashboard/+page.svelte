@@ -2,6 +2,14 @@
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { doc, onSnapshot } from 'firebase/firestore';
 	import { db } from '$lib/firebase.js';
+	import CarRideHome from '$lib/components/parent/CarRideHome.svelte';
+	import CoOpArena from '$lib/components/parent/co-op/CoOpArena.svelte';
+	import BountyTerminal from '$lib/components/parent/co-op/BountyTerminal.svelte';
+
+	// For the engine, we will dynamically import or mock it for the dashboard
+	// Assuming CoOpEngine exists and is available
+	import { CoOpEngine } from '$lib/states/CoOpEngine.svelte.js';
+	let coOpEngine = new CoOpEngine();
 
 	// Mock match data
 	let matchData = $state<any>(null);
@@ -12,13 +20,10 @@
 	let countdown = $state('');
 
 	$effect(() => {
-		// Mock logic: fetching the latest match for the linked child
-		// In a real app, this would query match_telemetry where playerUid in household
 		loading = false;
 		
-		// Simulate a recent match under embargo
 		const now = new Date();
-		const lift = new Date(now.getTime() + 5 * 60000); // 5 minutes from now
+		const lift = new Date(now.getTime() + 5 * 60000); 
 		liftTime = lift;
 		isEmbargoed = true;
 		matchData = {
@@ -52,200 +57,67 @@
 	}
 </script>
 
-<div class="parent-dashboard">
-	<header class="parent-header">
-		<h1 class="parent-title">Parent OS</h1>
-		<p class="parent-subtitle">Supporting your athlete's journey.</p>
-	</header>
+<!-- Parent OS Trusted Co-Op Partner Aesthetic -->
+<div class="tw-min-h-screen tw-bg-[#0f172a] tw-text-white tw-p-8 tw-font-sans">
+	<div class="tw-max-w-7xl tw-mx-auto tw-space-y-8">
+		
+		<!-- Header -->
+		<header class="tw-mb-8">
+			<h1 class="tw-text-3xl tw-font-bold tw-font-mono tw-text-white tw-tracking-tight tw-mb-2">Parent OS</h1>
+			<p class="tw-text-[#94a3b8] tw-text-lg">Trusted Co-Op Partner Console</p>
+		</header>
 
-	<section class="match-panel" class:embargoed={isEmbargoed && !attestationSigned}>
-		<div class="match-header">
-			<h2 class="match-title">Latest Match: {matchData?.opponent}</h2>
-			<span class="match-date">{matchData?.date}</span>
+		<!-- The Car Ride Home Holographic Widget -->
+		<div class="tw-mb-8">
+			<CarRideHome 
+				{matchData}
+				{isEmbargoed}
+				{attestationSigned}
+				{countdown}
+				{signAttestation}
+			/>
 		</div>
 
-		{#if isEmbargoed && !attestationSigned}
-			<!-- Z2 Frosted Glass Overlay for The Car Ride Home Protocol -->
-			<div class="embargo-overlay">
-				<div class="embargo-content">
-					<h3 class="embargo-title">The Car Ride Home</h3>
-					<p class="embargo-desc">
-						Match data is processing. We enforce a 15-minute cooling off period to preserve emotional safety.
-						Ask them what they enjoyed most today!
-					</p>
-					{#if countdown}
-						<div class="embargo-timer">Unlocks in {countdown}</div>
-					{/if}
-					
-					<button class="btn-attest" onclick={signAttestation}>
-						I acknowledge the emotional safety parameters
-					</button>
+		<!-- Co-Op Arena & Bounty Terminal in 12-Column Liquid Bento Grid -->
+		<div class="tw-grid tw-grid-cols-1 md:tw-grid-cols-12 tw-gap-6 tw-mb-8">
+			<!-- CoOpArena spans 8 columns -->
+			<div class="md:tw-col-span-8">
+				<CoOpArena engine={coOpEngine} />
+			</div>
+			<!-- BountyTerminal spans 4 columns -->
+			<div class="md:tw-col-span-4">
+				<BountyTerminal />
+			</div>
+		</div>
+
+		<!-- Communications Oversight Panels -->
+		<div class="tw-grid tw-grid-cols-1 md:tw-grid-cols-2 tw-gap-6">
+			<!-- Parent Lounge -->
+			<div class="tw-bg-[#0f172a] tw-rounded-[24px] tw-border tw-border-[#334155] tw-p-6">
+				<h3 class="tw-text-white tw-font-bold tw-text-lg tw-flex tw-items-center tw-gap-2 tw-mb-4">
+					<span class="tw-text-[#3b82f6]">●</span> Parent Lounge
+				</h3>
+				<div class="tw-bg-[#1e293b] tw-rounded-xl tw-p-4 tw-border tw-border-[#334155] tw-h-48 tw-flex tw-items-center tw-justify-center tw-overflow-hidden tw-relative">
+					<div class="tw-absolute tw-top-4 tw-right-4 tw-px-2 tw-py-1 tw-bg-blue-500/10 tw-text-blue-400 tw-text-[10px] tw-font-mono tw-tracking-widest tw-rounded">READ_ONLY</div>
+					<p class="tw-text-[#64748b] tw-font-mono tw-text-sm tw-text-center">Official team broadcasts and scheduling announcements will appear here.</p>
 				</div>
 			</div>
-		{/if}
 
-		<div class="match-stats" class:blurred={isEmbargoed && !attestationSigned}>
-			<div class="stat-box">
-				<span class="stat-label">Effort (RPE)</span>
-				<span class="stat-value">{matchData?.rpe}/10</span>
-			</div>
-			<div class="stat-box">
-				<span class="stat-label">Success Rate</span>
-				<span class="stat-value">{matchData?.successRate}%</span>
+			<!-- Household Thread -->
+			<div class="tw-bg-[#0f172a] tw-rounded-[24px] tw-border tw-border-[#334155] tw-p-6">
+				<h3 class="tw-text-white tw-font-bold tw-text-lg tw-flex tw-items-center tw-gap-2 tw-mb-4">
+					<span class="tw-text-[#10b981]">●</span> Household Thread
+				</h3>
+				<div class="tw-bg-[#1e293b] tw-rounded-xl tw-p-4 tw-border tw-border-[#334155] tw-h-48 tw-flex tw-items-center tw-justify-center tw-relative tw-overflow-hidden">
+					<div class="tw-absolute tw-top-4 tw-right-4 tw-px-2 tw-py-1 tw-bg-green-500/10 tw-text-green-400 tw-text-[10px] tw-font-mono tw-tracking-widest tw-rounded">SAFESPORT_COMPLIANT</div>
+					<div class="tw-absolute tw-bottom-4 tw-left-4 tw-flex tw-items-center tw-gap-2">
+						<svg class="tw-w-4 tw-h-4 tw-text-[#94a3b8]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+						<span class="tw-text-[#94a3b8] tw-text-[10px] tw-font-mono tw-tracking-widest">PRIVATE MESSAGING DISABLED FOR MINORS</span>
+					</div>
+					<p class="tw-text-[#64748b] tw-font-mono tw-text-sm tw-text-center tw-px-8">Coach-to-athlete communications are CC'd to this thread automatically for full oversight.</p>
+				</div>
 			</div>
 		</div>
-	</section>
+
+	</div>
 </div>
-
-<style>
-	.parent-dashboard {
-		padding: 32px;
-		max-width: 1200px;
-		margin: 0 auto;
-		background: #0f172a; /* Navy Slate base */
-		min-height: 100vh;
-	}
-
-	.parent-header {
-		margin-bottom: 32px;
-	}
-
-	.parent-title {
-		font-family: var(--font-mono, 'Geist Mono', monospace);
-		font-size: 2rem;
-		color: #f8fafc;
-		margin: 0 0 8px 0;
-	}
-
-	.parent-subtitle {
-		font-family: var(--font-sans, system-ui, sans-serif);
-		color: #94a3b8;
-		margin: 0;
-	}
-
-	/* Navy Slate Z2 Panel */
-	.match-panel {
-		background: #1e293b; /* Structural Grey */
-		border-radius: 24px; /* Flat, trusted aesthetic */
-		padding: 32px;
-		position: relative;
-		overflow: hidden;
-		border: 1px solid rgba(255, 255, 255, 0.05);
-	}
-
-	.match-header {
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
-		margin-bottom: 24px;
-	}
-
-	.match-title {
-		font-family: var(--font-sans, system-ui, sans-serif);
-		font-size: 1.25rem;
-		color: #f8fafc;
-		margin: 0;
-	}
-
-	.match-date {
-		font-size: 0.875rem;
-		color: #94a3b8;
-	}
-
-	.match-stats {
-		display: grid;
-		grid-template-columns: repeat(2, 1fr);
-		gap: 24px;
-		transition: filter 0.3s ease;
-	}
-
-	.match-stats.blurred {
-		filter: blur(10px);
-		pointer-events: none;
-		user-select: none;
-	}
-
-	.stat-box {
-		background: #0f172a;
-		padding: 24px;
-		border-radius: 16px;
-		display: flex;
-		flex-direction: column;
-		gap: 8px;
-	}
-
-	.stat-label {
-		color: #94a3b8;
-		font-size: 0.875rem;
-		text-transform: uppercase;
-		letter-spacing: 0.05em;
-	}
-
-	.stat-value {
-		color: #f8fafc;
-		font-size: 2rem;
-		font-weight: 700;
-	}
-
-	/* Frosted Glass Embargo Overlay */
-	.embargo-overlay {
-		position: absolute;
-		top: 0;
-		left: 0;
-		right: 0;
-		bottom: 0;
-		background: rgba(15, 23, 42, 0.6);
-		backdrop-filter: blur(16px);
-		-webkit-backdrop-filter: blur(16px);
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		z-index: 10;
-		border-radius: 24px;
-	}
-
-	.embargo-content {
-		text-align: center;
-		max-width: 400px;
-		padding: 32px;
-		background: rgba(30, 41, 59, 0.9);
-		border-radius: 16px;
-		border: 1px solid rgba(255, 255, 255, 0.1);
-	}
-
-	.embargo-title {
-		color: #f8fafc;
-		font-size: 1.5rem;
-		margin: 0 0 16px 0;
-	}
-
-	.embargo-desc {
-		color: #cbd5e1;
-		font-size: 1rem;
-		line-height: 1.5;
-		margin: 0 0 24px 0;
-	}
-
-	.embargo-timer {
-		font-family: var(--font-mono, 'Geist Mono', monospace);
-		color: #14b8a6;
-		font-size: 1.25rem;
-		margin-bottom: 24px;
-	}
-
-	.btn-attest {
-		background: #f8fafc;
-		color: #0f172a;
-		border: none;
-		padding: 12px 24px;
-		border-radius: 8px;
-		font-weight: 600;
-		cursor: pointer;
-		width: 100%;
-		transition: background 0.2s;
-	}
-
-	.btn-attest:hover {
-		background: #e2e8f0;
-	}
-</style>

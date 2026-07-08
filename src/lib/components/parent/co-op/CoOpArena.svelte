@@ -38,36 +38,29 @@
 	function statusChipClass(status: BountyDoc['status']): string {
 		switch (status) {
 			case 'active':
-				return 'parent-bounty-chip parent-bounty-chip--nav';
+				return 'tw-bg-[#14b8a6]/20 tw-text-[#14b8a6] tw-border-[#14b8a6]/50';
 			case 'verified':
 			case 'paid':
-				return 'parent-bounty-chip parent-bounty-chip--verified';
+				return 'tw-bg-[#f59e0b]/20 tw-text-[#f59e0b] tw-border-[#f59e0b]/50';
 			case 'failed':
-				return 'parent-bounty-chip parent-bounty-chip--pending';
+				return 'tw-bg-red-500/20 tw-text-red-500 tw-border-red-500/50';
 			case 'expired':
 			case 'voided':
-				return 'parent-bounty-chip parent-bounty-chip--muted';
+				return 'tw-bg-[#334155] tw-text-[#94a3b8] tw-border-[#475569]';
 			default:
-				return 'parent-bounty-chip parent-bounty-chip--muted';
+				return 'tw-bg-[#334155] tw-text-[#94a3b8] tw-border-[#475569]';
 		}
 	}
 
 	function criterionLabel(type: BountyDoc['criterion']['type']): string {
 		switch (type) {
-			case 'reps_count':
-				return 'REPS';
-			case 'workout_volume_kj':
-				return 'VOLUME';
-			case 'streak_length':
-				return 'STREAK';
-			case 'gpa_threshold':
-				return 'GPA';
-			case 'mastery_node_unlock':
-				return 'MASTERY';
-			case 'cv_verified_drill':
-				return 'CV-DRILL';
-			default:
-				return 'UNKNOWN';
+			case 'reps_count': return 'REPS';
+			case 'workout_volume_kj': return 'VOLUME';
+			case 'streak_length': return 'STREAK';
+			case 'gpa_threshold': return 'GPA';
+			case 'mastery_node_unlock': return 'MASTERY';
+			case 'cv_verified_drill': return 'CV-DRILL';
+			default: return 'UNKNOWN';
 		}
 	}
 
@@ -86,198 +79,118 @@
 	const displayBounties = $derived([...engine.activeBounties, ...engine.verifiedBounties]);
 </script>
 
-<div class="parent-bounty-funding-panel">
-	<div class="parent-bounty-funding-panel__grid">
-		<section class="parent-bounty-board" aria-label="Bounty board">
-			<header class="parent-bounty-module-head">
-				<div class="parent-bounty-module-head__row">
-					<span class="parent-bounty-module-head__prefix">//</span>
-					<span class="parent-bounty-module-head__title">Bounty board</span>
-					<span class="parent-bounty-module-head__meta">{displayBounties.length} active</span>
-				</div>
-			</header>
+<div class="tw-bg-[#0f172a] tw-rounded-[24px] tw-border tw-border-[#334155] tw-p-6 tw-h-full tw-flex tw-flex-col">
+	<div class="tw-flex tw-items-center tw-justify-between tw-mb-6">
+		<h2 class="tw-text-white tw-font-bold tw-text-lg tw-flex tw-items-center tw-gap-2">
+			<span class="tw-text-[#14b8a6]">●</span> Co-Op Arena
+		</h2>
+		<span class="tw-text-[#94a3b8] tw-text-xs tw-font-mono tw-tracking-widest">FUNDING MANAGEMENT</span>
+	</div>
 
-			<div class="parent-bounty-board__list">
-				{#if displayBounties.length === 0}
-					<div class="parent-bounty-empty">
-						<span class="parent-bounty-empty__label">No active bounties — deploy one</span>
+	<!-- Stripe Billing Interface Section -->
+	<section class="tw-mb-8">
+		<h3 class="tw-text-white tw-font-bold tw-text-md tw-mb-4 tw-flex tw-items-center tw-gap-2">
+			<span class="tw-text-[#334155]">#</span> Stripe Billing Metrics
+		</h3>
+		<div class="tw-bg-[#1e293b] tw-rounded-xl tw-p-4 tw-border tw-border-[#334155]">
+			{#if engine.hasFundingSource}
+				<div class="tw-flex tw-justify-between tw-items-center">
+					<div>
+						<p class="tw-text-[#94a3b8] tw-text-xs tw-font-mono tw-tracking-widest tw-mb-1">LINKED ACCOUNT</p>
+						<p class="tw-text-white tw-font-bold">{engine.fundingSource?.label || 'Active Source'}</p>
+						<p class="tw-text-[#64748b] tw-text-sm">Method: {engine.fundingSource?.method || 'N/A'}</p>
 					</div>
-				{:else}
-					{#each displayBounties as bounty (bounty.id)}
-						{@const progress = engine.bountyProgress(bounty)}
-						{@const isActive = bounty.status === 'active'}
-						<article class="parent-bounty-z2-panel parent-bounty-row">
-							<div class="parent-bounty-row__top">
-								<div class="parent-bounty-row__body">
-									<span class="parent-bounty-row__title">{bounty.title}</span>
-									<span class="parent-bounty-row__target">→ {bounty.playerEmail}</span>
+					<div class="tw-px-3 tw-py-1 tw-bg-[#14b8a6]/10 tw-text-[#14b8a6] tw-rounded-full tw-text-xs tw-font-bold">VERIFIED</div>
+				</div>
+			{:else}
+				<div class="tw-flex tw-flex-col tw-gap-3">
+					<p class="tw-text-[#94a3b8] tw-text-sm">No primary funding source linked. Link an account to fund bounties.</p>
+					{#if availableSources.length === 0 && !loadingSources}
+						<button class="tw-bg-white tw-text-black tw-font-bold tw-px-4 tw-py-2 tw-rounded-lg tw-hover:bg-gray-200 tw-transition-colors tw-w-fit" onclick={fetchSources} disabled={loadingSources}>
+							Fetch Stripe Sources
+						</button>
+					{:else if loadingSources}
+						<p class="tw-text-white tw-font-mono tw-text-sm tw-animate-pulse">FETCHING_SOURCES...</p>
+					{:else}
+						<div class="tw-flex tw-gap-2">
+							<select bind:value={selectedSourceId} class="tw-flex-1 tw-bg-[#0f172a] tw-text-white tw-border tw-border-[#334155] tw-rounded-lg tw-px-3 tw-py-2 tw-font-mono focus:tw-outline-none focus:tw-border-[#14b8a6]">
+								<option value="" disabled>Select Source</option>
+								{#each availableSources as src (src.id)}
+									<option value={src.id}>{src.label} ({src.method})</option>
+								{/each}
+							</select>
+							<button class="tw-bg-[#14b8a6] tw-text-[#0f172a] tw-font-bold tw-px-4 tw-py-2 tw-rounded-lg tw-hover:bg-[#0d9488]" onclick={handleLinkSource} disabled={!selectedSourceId || linkingSource || engine.mutating}>
+								{linkingSource ? 'LINKING...' : 'LINK SOURCE'}
+							</button>
+						</div>
+						{#if linkError}
+							<p class="tw-text-red-400 tw-text-sm tw-mt-2">{linkError}</p>
+						{/if}
+					{/if}
+				</div>
+			{/if}
+		</div>
+	</section>
+
+	<!-- Bounties Section -->
+	<section class="tw-flex-1 tw-flex tw-flex-col">
+		<h3 class="tw-text-white tw-font-bold tw-text-md tw-mb-4 tw-flex tw-items-center tw-gap-2">
+			<span class="tw-text-[#334155]">#</span> Active Objectives
+		</h3>
+		
+		<div class="tw-flex-1 tw-overflow-y-auto tw-pr-2 tw-space-y-3">
+			{#if displayBounties.length === 0}
+				<div class="tw-h-full tw-flex tw-items-center tw-justify-center tw-border tw-border-dashed tw-border-[#334155] tw-rounded-xl">
+					<span class="tw-text-[#64748b] tw-font-mono tw-text-sm">NO_ACTIVE_BOUNTIES</span>
+				</div>
+			{:else}
+				{#each displayBounties as bounty (bounty.id)}
+					{@const progress = engine.bountyProgress(bounty)}
+					<div class="tw-bg-[#1e293b] tw-rounded-xl tw-p-4 tw-border tw-border-[#334155]">
+						<div class="tw-flex tw-justify-between tw-items-start tw-mb-3">
+							<div>
+								<h4 class="tw-text-white tw-font-bold">{bounty.title}</h4>
+								<p class="tw-text-[#94a3b8] tw-text-xs tw-font-mono">→ {bounty.playerEmail}</p>
+							</div>
+							<div class="tw-flex tw-gap-2">
+								<span class="tw-px-2 tw-py-1 tw-rounded tw-bg-[#334155] tw-text-white tw-text-xs tw-font-mono tw-border tw-border-[#475569]">
+									{criterionLabel(bounty.criterion.type)}
+								</span>
+								<span class={`tw-px-2 tw-py-1 tw-rounded tw-text-xs tw-font-mono tw-border ${statusChipClass(bounty.status)}`}>
+									{bounty.status.toUpperCase()}
+								</span>
+							</div>
+						</div>
+
+						{#if bounty.progressTarget && bounty.progressTarget > 0}
+							<div class="tw-mb-3">
+								<div class="tw-h-1.5 tw-w-full tw-bg-[#0f172a] tw-rounded-full tw-overflow-hidden tw-mb-1">
+									<div class="tw-h-full tw-bg-[#14b8a6] tw-transition-all tw-duration-500" style="width: {progress}%"></div>
 								</div>
-								<div class="parent-bounty-row__badges">
-									<span class="parent-bounty-chip parent-bounty-chip--type">
-										{criterionLabel(bounty.criterion.type)}
-									</span>
-									<span class={statusChipClass(bounty.status)}>{bounty.status}</span>
+								<div class="tw-flex tw-justify-between tw-text-[10px] tw-font-mono tw-text-[#94a3b8]">
+									<span>{bounty.progressCurrent ?? 0} / {bounty.progressTarget} {bounty.progressUnit ?? ''}</span>
+									<span>{progress}%</span>
 								</div>
 							</div>
+						{/if}
 
-							{#if bounty.progressTarget && bounty.progressTarget > 0}
-								<div class="parent-bounty-field-group">
-									<div class="parent-bounty-progress">
-										<div
-											class="parent-bounty-progress__fill"
-											style="width: {progress}%"
-										></div>
-									</div>
-									<div class="parent-bounty-progress__meta">
-										<span>
-											{bounty.progressCurrent ?? 0} / {bounty.progressTarget}
-											{bounty.progressUnit ?? ''}
-										</span>
-										<span>{progress}%</span>
-									</div>
-								</div>
-							{/if}
-
-							<div class="parent-bounty-row__foot">
-								<span class="parent-bounty-reward">
-									${((bounty.rewardCents ?? 0) / 100).toFixed(2)}
-								</span>
-								<span class="parent-bounty-reward__unit">USD</span>
-								<span class="parent-bounty-expiry">Exp: {formatExpiry(bounty.expiresAt)}</span>
-								{#if isActive}
-									<button
-										type="button"
-										class="parent-bounty-btn-void"
-										onclick={() => engine.voidBounty(bounty.id!)}
-										disabled={engine.mutating}
-									>
-										Void
+						<div class="tw-flex tw-items-center tw-justify-between tw-pt-3 tw-border-t tw-border-[#334155]">
+							<div class="tw-flex tw-items-end tw-gap-1">
+								<span class="tw-text-white tw-font-bold tw-text-lg">${((bounty.rewardCents ?? 0) / 100).toFixed(2)}</span>
+								<span class="tw-text-[#64748b] tw-text-xs tw-pb-1">USD</span>
+							</div>
+							<div class="tw-flex tw-items-center tw-gap-3">
+								<span class="tw-text-[#94a3b8] tw-text-xs tw-font-mono">EXP: {formatExpiry(bounty.expiresAt)}</span>
+								{#if bounty.status === 'active'}
+									<button class="tw-text-[#ef4444] tw-text-xs tw-font-bold tw-hover:text-red-400 tw-transition-colors" onclick={() => engine.voidBounty(bounty.id!)} disabled={engine.mutating}>
+										VOID
 									</button>
 								{/if}
 							</div>
-						</article>
-					{/each}
-				{/if}
-			</div>
-		</section>
-
-		<section class="parent-bounty-side-stack" aria-label="Boost console">
-			<header class="parent-bounty-module-head">
-				<div class="parent-bounty-module-head__row">
-					<span class="parent-bounty-module-head__prefix">//</span>
-					<span class="parent-bounty-module-head__title">Boost console</span>
-				</div>
-			</header>
-
-			<div class="parent-bounty-side-list">
-				{#if engine.householdChildren.length === 0}
-					<p class="parent-bounty-empty__label">No children linked</p>
-				{:else}
-					{#each engine.householdChildren as child (child.email)}
-						<article class="parent-bounty-z2-panel parent-bounty-child-row">
-							<div class="parent-bounty-child-row__head">
-								<div>
-									<div class="parent-bounty-child-row__name">{child.displayName}</div>
-									<div class="parent-bounty-child-row__email">{child.email}</div>
-								</div>
-								<div>
-									<div class="parent-bounty-child-row__stat">
-										{child.totalXP.toLocaleString()} XP
-									</div>
-									<div class="parent-bounty-child-row__stat">{child.currentStreak}d streak</div>
-								</div>
-							</div>
-
-							{#if child.boostAppliedToday}
-								<div class="parent-bounty-boost-active">Boost active today</div>
-							{/if}
-
-							<div class="parent-bounty-boost-grid">
-								{#each BOOST_PRESETS as preset (preset.id)}
-									<button
-										type="button"
-										class="parent-bounty-btn-audit parent-bounty-btn-audit--sm"
-										onclick={() => engine.activateBoost(child.email, preset.id)}
-										disabled={engine.mutating}
-									>
-										{preset.label}
-									</button>
-								{/each}
-							</div>
-						</article>
-					{/each}
-				{/if}
-			</div>
-		</section>
-
-		<section id="parent-funding-source" class="tw-flex tw-flex-col" aria-label="Funding source">
-			<header class="parent-bounty-module-head">
-				<div class="parent-bounty-module-head__row">
-					<span class="parent-bounty-module-head__prefix">//</span>
-					<span class="parent-bounty-module-head__title">Funding source</span>
-				</div>
-			</header>
-
-			<div class="parent-bounty-funding-body">
-				{#if engine.hasFundingSource}
-					<div class="parent-bounty-funding-linked">
-						<span class="parent-bounty-funding-linked__status">Linked</span>
-						{#if engine.fundingSource?.label}
-							<span class="parent-bounty-funding-linked__label">
-								{engine.fundingSource.label}
-							</span>
-						{/if}
-						{#if engine.fundingSource?.method}
-							<span class="parent-bounty-funding-linked__method">
-								Method: {engine.fundingSource.method}
-							</span>
-						{/if}
+						</div>
 					</div>
-				{:else if availableSources.length === 0 && !loadingSources}
-					<div class="parent-bounty-empty">
-						<span class="parent-bounty-empty__label">No funding source linked</span>
-						<button
-							type="button"
-							class="parent-bounty-btn-audit"
-							onclick={fetchSources}
-							disabled={loadingSources}
-						>
-							Link funding source
-						</button>
-					</div>
-				{:else if loadingSources}
-					<p class="parent-bounty-empty__label">Fetching sources…</p>
-				{:else}
-					<div class="parent-bounty-field-group">
-						<label for="source-select" class="parent-bounty-field-label">
-							Select funding source
-						</label>
-						<select id="source-select" bind:value={selectedSourceId} class="parent-bounty-field">
-							<option value="" disabled>— Select —</option>
-							{#each availableSources as src (src.id)}
-								<option value={src.id}>{src.label} ({src.method})</option>
-							{/each}
-						</select>
-						{#if linkError}
-							<p class="parent-bounty-alert parent-bounty-alert--error" role="alert">
-								{linkError}
-							</p>
-						{/if}
-						<button
-							type="button"
-							class="parent-bounty-btn-deploy parent-bounty-btn-deploy--block"
-							onclick={handleLinkSource}
-							disabled={!selectedSourceId || linkingSource || engine.mutating}
-						>
-							{#if linkingSource}
-								Linking…
-							{:else}
-								Confirm link
-							{/if}
-						</button>
-					</div>
-				{/if}
-			</div>
-		</section>
-	</div>
+				{/each}
+			{/if}
+		</div>
+	</section>
 </div>

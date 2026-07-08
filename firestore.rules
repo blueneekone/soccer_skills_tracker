@@ -4156,6 +4156,20 @@ service cloud.firestore {
       allow write: if authed() && isDirector();
     }
 
+    // Sprint 6.1: Subcollection Event-Sourcing model for Sideline Telemetry
+    match /teams/{teamId}/telemetry_events/{eventId} {
+      allow read: if authed() && (isCoach() || isDirector()) && tokenClub() != null;
+      allow create: if authed() && isCoach() && tokenTeam() == teamId;
+      allow update, delete: if false; // Append-only Event Sourcing
+    }
+
+    // Sprint 4.1: Secure Macrocycle Commit
+    match /team_assignments/{assignmentId} {
+      // Backend handles writes via writeBatch, but defense-in-depth requires checking isCleared
+      allow read: if authed();
+      allow write: if authed() && isCoach() && request.auth.token.isCleared == true;
+    }
+
     match /{document=**} {
       allow read, write: if false;
     }

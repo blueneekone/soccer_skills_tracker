@@ -64,19 +64,14 @@
 			return;
 		}
 		try {
-			telemetryTracker.push({
-				uid,
-				ref: doc(collection(db, 'teams', teamId, 'telemetry_events')),
-				type: 'set',
-				data: {
-					teamId,
-					matchId,
-					playerId,
-					action: actionType,
-					points,
-					timestamp: serverTimestamp(),
-					loggedBy: uid,
-				}
+			addDoc(collection(db, 'teams', teamId, 'telemetry_events'), {
+				teamId,
+				matchId,
+				playerId,
+				action: actionType,
+				points,
+				timestamp: serverTimestamp(),
+				loggedBy: uid,
 			});
 			void Swal.fire({
 				icon: 'success',

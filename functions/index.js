@@ -36,4 +36,14 @@ exports.saveActiveLoadout = cosmetics.saveActiveLoadout;
 const eqOps = require('./src/domains/eqOps.js');
 exports.processMatchTelemetry = eqOps.processMatchTelemetry;
 
+const trainingOps = require('./src/domains/trainingOps.js');
+exports.onWorkoutLogged = trainingOps.onWorkoutLogged;
+exports.commitMacrocycle = trainingOps.commitMacrocycle;
+
+const ragOps = require('./src/domains/ragOps.js');
+exports.generateTacticalPlan = ragOps.generateTacticalPlan;
+
+const marketingOps = require('./src/domains/marketingOps.js');
+exports.dispatchWeeklyRoiNudges = marketingOps.dispatchWeeklyRoiNudges;
+
 

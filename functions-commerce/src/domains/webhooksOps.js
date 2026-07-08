@@ -768,18 +768,9 @@ async function syncSubscriptionStatusFromStripeObject(stripeClient, sub, status)
         sub.customer :
         String(sub.customer || ''),
     subscription_status: status,
-    billing_status: status,
     updatedAt: admin.firestore.FieldValue.serverTimestamp(),
     updatedBy: 'stripe:subscription',
   };
-  if (status === 'past_due') {
-    patch.payment_failed_at = admin.firestore.FieldValue.serverTimestamp();
-  } else if (status === 'active') {
-    patch.payment_failed_at = admin.firestore.FieldValue.delete();
-    patch.dunning_day1_sent = admin.firestore.FieldValue.delete();
-    patch.dunning_day3_sent = admin.firestore.FieldValue.delete();
-    patch.dunning_day7_sent = admin.firestore.FieldValue.delete();
-  }
   if (tierType && seats !== undefined) {
     patch.seats_limit = seats;
     patch.tier = tierType;
