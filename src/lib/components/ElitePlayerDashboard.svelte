@@ -236,6 +236,9 @@
 				{:else if profile?.teamId && profile.teamId !== 'admin'}
 					<p class="epd__team epd__team--muted">Team loading…</p>
 				{/if}
+				{#if profile?.gritXp}
+					<p class="epd__grit">Grit XP: {profile.gritXp}</p>
+				{/if}
 			</div>
 		</div>
 		<div class="epd__identity-ring">
@@ -500,10 +503,16 @@
 	}
 
 	.epd__team {
-		margin: 4px 0 0;
-		font-size: 0.88rem;
-		font-weight: 700;
-		color: rgba(28, 16, 8, 0.78);
+		color: #94a3b8;
+		font-size: 0.8125rem;
+		margin: 0;
+	}
+	.epd__grit {
+		color: #f59e0b; /* Atompunk Amber */
+		font-size: 0.8125rem;
+		margin: 4px 0 0 0;
+		font-family: var(--font-mono, 'Geist Mono', monospace);
+		font-weight: bold;
 	}
 
 	.epd__identity--silver .epd__team {

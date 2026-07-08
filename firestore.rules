@@ -4148,6 +4148,14 @@ service cloud.firestore {
       }
     }
 
+    // Epic 7/8: The Car Ride Home Protocol
+    match /match_telemetry/{matchId} {
+      allow read: if authed() && (
+        !resource.data.keys().hasAll(['embargoLiftTime']) || request.time > resource.data.embargoLiftTime
+      );
+      allow write: if authed() && isDirector();
+    }
+
     match /{document=**} {
       allow read, write: if false;
     }

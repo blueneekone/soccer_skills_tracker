@@ -33,4 +33,7 @@ const cosmetics = require('./src/domains/cosmetics.js');
 exports.unlockAvatarComponent = cosmetics.unlockAvatarComponent;
 exports.saveActiveLoadout = cosmetics.saveActiveLoadout;
 
+const eqOps = require('./src/domains/eqOps.js');
+exports.processMatchTelemetry = eqOps.processMatchTelemetry;
+
 

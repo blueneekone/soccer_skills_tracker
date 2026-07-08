@@ -1,178 +1,251 @@
 <script lang="ts">
-	import { onMount, onDestroy } from 'svelte';
-	import { page } from '$app/stores';
-	import { get } from 'svelte/store';
-	import { CoOpEngine } from '$lib/states/CoOpEngine.svelte.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
+	import { doc, onSnapshot } from 'firebase/firestore';
 	import { db } from '$lib/firebase.js';
-	import { doc, getDoc } from 'firebase/firestore';
-	import CoOpArena from '$lib/components/parent/co-op/CoOpArena.svelte';
-	import CoOpHUD from '$lib/components/parent/co-op/CoOpHUD.svelte';
-	import BountyTerminal from './BountyTerminal.svelte';
-	import { CarRideEngine } from './CarRideEngine.svelte.js';
-	import CarRideArena from './CarRideArena.svelte';
-	import CarRideHUD from './CarRideHUD.svelte';
-	import ProofReviewQueue from '$lib/components/parent/ProofReviewQueue.svelte';
-	import UpcomingEventsRsvp from '$lib/components/parent/UpcomingEventsRsvp.svelte';
-	import LiveStreamWatch from '$lib/components/parent/LiveStreamWatch.svelte';
-	import ParentNotificationPanel from '$lib/components/parent/ParentNotificationPanel.svelte';
-	import ParentLatestAnnouncements from '$lib/components/parent/ParentLatestAnnouncements.svelte';
-	import ParentPartnerOffers from '$lib/components/parent/ParentPartnerOffers.svelte';
-	import ParentCommsConsentBanner from '$lib/components/parent/ParentCommsConsentBanner.svelte';
-	import ParentWeekScheduleStrip from '$lib/components/parent/ParentWeekScheduleStrip.svelte';
-	import ClaimRosterSpot from '$lib/components/parent/ClaimRosterSpot.svelte';
-	import '$lib/styles/parent-bounty-funding-panel.css';
 
-	const engine = new CoOpEngine();
-	const carRideEngine = new CarRideEngine();
+	// Mock match data
+	let matchData = $state<any>(null);
+	let loading = $state(true);
+	let isEmbargoed = $state(false);
+	let attestationSigned = $state(false);
+	let liftTime = $state<Date | null>(null);
+	let countdown = $state('');
 
-	let showCreateBounty = $state(false);
-	/** Resolved householdId passed down to ProofReviewQueue — set in onMount. */
-	let resolvedHouseholdId = $state('');
-	/** email → display name map for household children — built from households doc. */
-	let childNames = $state<Record<string, string>>({});
-	let childEmails = $state<string[]>([]);
+	$effect(() => {
+		// Mock logic: fetching the latest match for the linked child
+		// In a real app, this would query match_telemetry where playerUid in household
+		loading = false;
+		
+		// Simulate a recent match under embargo
+		const now = new Date();
+		const lift = new Date(now.getTime() + 5 * 60000); // 5 minutes from now
+		liftTime = lift;
+		isEmbargoed = true;
+		matchData = {
+			opponent: 'FC Elite U14',
+			date: now.toLocaleDateString(),
+			rpe: 9,
+			successRate: 35
+		};
+	});
 
-	onMount(async () => {
-		const user = authStore.user;
-		const profile = authStore.userProfile as Record<string, unknown> | null;
-
-		const parentEmail = (user as { email?: string } | null)?.email?.toLowerCase() ?? '';
-		const householdId = (profile?.householdId as string | undefined) ?? '';
-		const tenantId = authStore.tenantId ?? '';
-		const clubId = (profile?.clubId as string | undefined) ?? tenantId;
-
-		// Resolve child emails from the households doc — the authoritative source.
-		let resolvedChildren: string[] = [];
-		if (householdId) {
-			try {
-				const hSnap = await getDoc(doc(db, 'households', householdId));
-				if (hSnap.exists()) {
-					const hData = hSnap.data();
-					const raw: unknown[] = hData.playerEmails ?? [];
-					resolvedChildren = raw
-						.map((e) => String(e ?? '').trim().toLowerCase())
-						.filter(Boolean);
-
-					// Build email→name map for ProofReviewQueue (uses playerNames parallel array).
-					const rawNames: unknown[] = hData.playerNames ?? [];
-					const nameMap: Record<string, string> = {};
-					resolvedChildren.forEach((em, i) => {
-						const nm =
-							typeof rawNames[i] === 'string' && (rawNames[i] as string).trim()
-								? (rawNames[i] as string).trim()
-								: em.split('@')[0];
-						nameMap[em] = nm;
-					});
-					childNames = nameMap;
+	$effect(() => {
+		if (isEmbargoed && liftTime) {
+			const interval = setInterval(() => {
+				const diff = liftTime!.getTime() - Date.now();
+				if (diff <= 0) {
+					isEmbargoed = false;
+					countdown = '';
+					clearInterval(interval);
+				} else {
+					const minutes = Math.floor(diff / 60000);
+					const seconds = Math.floor((diff % 60000) / 1000);
+					countdown = `${minutes}:${seconds.toString().padStart(2, '0')}`;
 				}
-			} catch (err) {
-				console.error('[parent dashboard] household read', err);
-			}
+			}, 1000);
+			return () => clearInterval(interval);
 		}
-
-		childEmails = resolvedChildren;
-		resolvedHouseholdId = householdId;
-		await engine.init(parentEmail, householdId, childEmails);
-		// Use the first linked child email for pending fixture detection.
-		const linkedPlayerEmail = resolvedChildren[0] ?? '';
-		const urlFixtureId = get(page).url.searchParams.get('fixtureId') ?? null;
-
-		await carRideEngine.init(linkedPlayerEmail, tenantId, clubId, urlFixtureId);
 	});
 
-	onDestroy(() => {
-		engine.destroy();
-	});
+	function signAttestation() {
+		attestationSigned = true;
+	}
 </script>
 
-<div class="parent-lounge-page">
-	<div class="bento-grid bento-grid--12col bento-grid--liquid tw-w-full tw-grid tw-grid-cols-1 lg:tw-grid-cols-12">
-		<header class="bento-span-12 parent-lounge-page-head tw-flex tw-flex-wrap tw-items-center tw-gap-3">
-			<p class="parent-lounge-eyebrow">Parent co-op</p>
-			<h1 class="parent-lounge-page-title">Command dashboard</h1>
-		</header>
+<div class="parent-dashboard">
+	<header class="parent-header">
+		<h1 class="parent-title">Parent OS</h1>
+		<p class="parent-subtitle">Supporting your athlete's journey.</p>
+	</header>
 
-			{#if carRideEngine.pendingFixtureId}
-				<div class="bento-span-12 tw-min-w-0">
-					<CarRideArena engine={carRideEngine} />
-				</div>
-			{/if}
+	<section class="match-panel" class:embargoed={isEmbargoed && !attestationSigned}>
+		<div class="match-header">
+			<h2 class="match-title">Latest Match: {matchData?.opponent}</h2>
+			<span class="match-date">{matchData?.date}</span>
+		</div>
 
-			<!-- 8-Column Primary Canvas -->
-			<div class="bento-span-8 tw-flex tw-flex-col tw-gap-6 tw-min-w-0">
-				<ClaimRosterSpot />
-				<ParentWeekScheduleStrip {childEmails} {childNames} />
-				<UpcomingEventsRsvp {childEmails} {childNames} />
-				<ParentLatestAnnouncements />
-				<CoOpArena {engine} />
-				<!-- B4b — advisory completion proof review queue -->
-				{#if resolvedHouseholdId}
-					<ProofReviewQueue householdId={resolvedHouseholdId} {childNames} />
-				{/if}
-			</div>
-
-			<!-- 4-Column Sidecar -->
-			<div class="bento-span-4 tw-flex tw-flex-col tw-gap-6 tw-min-w-0">
-				<ParentCommsConsentBanner {childEmails} />
-				<ParentNotificationPanel />
-				<LiveStreamWatch {childEmails} />
-				<ParentPartnerOffers />
-				<aside
-					class="parent-lounge-z2-panel parent-bounty-dispatch-panel bento-cell tw-min-w-0"
-					aria-label="Parent co-op operations"
-				>
-					<div>
-						<p class="parent-lounge-eyebrow">Ops terminal</p>
-						<h2 class="parent-lounge-page-title tw-mt-2 tw-text-sm">Bounty dispatch</h2>
-						<p class="parent-lounge-meta tw-mt-2">
-							Authorize household rewards and post-match protocols from this panel.
-						</p>
-					</div>
-					<button
-						type="button"
-						class="parent-bounty-btn-deploy parent-bounty-btn-deploy--block"
-						onclick={() => (showCreateBounty = true)}
-					>
-						Deploy bounty
-					</button>
-				</aside>
-			</div>
-	</div>
-
-	<!-- HUD overlay (pointer-events-none at root, children opt in) -->
-	<CoOpHUD
-		{engine}
-		{showCreateBounty}
-		onCreateBounty={() => (showCreateBounty = true)}
-	/>
-
-	<!-- Phase 4, Epic 8 — Car Ride Home HUD (fixed overlay, z-60) -->
-	<CarRideHUD engine={carRideEngine} />
-
-	<!-- Create Bounty Modal -->
-	{#if showCreateBounty}
-		<div class="parent-bounty-z3-modal-scrim" role="presentation">
-			<button
-				type="button"
-				class="parent-bounty-z3-modal-scrim__hit"
-				aria-label="Close bounty terminal"
-				onclick={() => (showCreateBounty = false)}
-			></button>
-
-			<div class="parent-bounty-z3-modal" role="dialog" aria-modal="true" aria-label="Deploy bounty">
-				<div class="parent-bounty-z3-modal__head">
-					<button
-						type="button"
-						class="parent-bounty-btn-audit parent-bounty-btn-audit--sm"
-						onclick={() => (showCreateBounty = false)}
-					>
-						Close
+		{#if isEmbargoed && !attestationSigned}
+			<!-- Z2 Frosted Glass Overlay for The Car Ride Home Protocol -->
+			<div class="embargo-overlay">
+				<div class="embargo-content">
+					<h3 class="embargo-title">The Car Ride Home</h3>
+					<p class="embargo-desc">
+						Match data is processing. We enforce a 15-minute cooling off period to preserve emotional safety.
+						Ask them what they enjoyed most today!
+					</p>
+					{#if countdown}
+						<div class="embargo-timer">Unlocks in {countdown}</div>
+					{/if}
+					
+					<button class="btn-attest" onclick={signAttestation}>
+						I acknowledge the emotional safety parameters
 					</button>
 				</div>
+			</div>
+		{/if}
 
-				<BountyTerminal {engine} />
+		<div class="match-stats" class:blurred={isEmbargoed && !attestationSigned}>
+			<div class="stat-box">
+				<span class="stat-label">Effort (RPE)</span>
+				<span class="stat-value">{matchData?.rpe}/10</span>
+			</div>
+			<div class="stat-box">
+				<span class="stat-label">Success Rate</span>
+				<span class="stat-value">{matchData?.successRate}%</span>
 			</div>
 		</div>
-	{/if}
+	</section>
 </div>
+
+<style>
+	.parent-dashboard {
+		padding: 32px;
+		max-width: 1200px;
+		margin: 0 auto;
+		background: #0f172a; /* Navy Slate base */
+		min-height: 100vh;
+	}
+
+	.parent-header {
+		margin-bottom: 32px;
+	}
+
+	.parent-title {
+		font-family: var(--font-mono, 'Geist Mono', monospace);
+		font-size: 2rem;
+		color: #f8fafc;
+		margin: 0 0 8px 0;
+	}
+
+	.parent-subtitle {
+		font-family: var(--font-sans, system-ui, sans-serif);
+		color: #94a3b8;
+		margin: 0;
+	}
+
+	/* Navy Slate Z2 Panel */
+	.match-panel {
+		background: #1e293b; /* Structural Grey */
+		border-radius: 24px; /* Flat, trusted aesthetic */
+		padding: 32px;
+		position: relative;
+		overflow: hidden;
+		border: 1px solid rgba(255, 255, 255, 0.05);
+	}
+
+	.match-header {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		margin-bottom: 24px;
+	}
+
+	.match-title {
+		font-family: var(--font-sans, system-ui, sans-serif);
+		font-size: 1.25rem;
+		color: #f8fafc;
+		margin: 0;
+	}
+
+	.match-date {
+		font-size: 0.875rem;
+		color: #94a3b8;
+	}
+
+	.match-stats {
+		display: grid;
+		grid-template-columns: repeat(2, 1fr);
+		gap: 24px;
+		transition: filter 0.3s ease;
+	}
+
+	.match-stats.blurred {
+		filter: blur(10px);
+		pointer-events: none;
+		user-select: none;
+	}
+
+	.stat-box {
+		background: #0f172a;
+		padding: 24px;
+		border-radius: 16px;
+		display: flex;
+		flex-direction: column;
+		gap: 8px;
+	}
+
+	.stat-label {
+		color: #94a3b8;
+		font-size: 0.875rem;
+		text-transform: uppercase;
+		letter-spacing: 0.05em;
+	}
+
+	.stat-value {
+		color: #f8fafc;
+		font-size: 2rem;
+		font-weight: 700;
+	}
+
+	/* Frosted Glass Embargo Overlay */
+	.embargo-overlay {
+		position: absolute;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		background: rgba(15, 23, 42, 0.6);
+		backdrop-filter: blur(16px);
+		-webkit-backdrop-filter: blur(16px);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		z-index: 10;
+		border-radius: 24px;
+	}
+
+	.embargo-content {
+		text-align: center;
+		max-width: 400px;
+		padding: 32px;
+		background: rgba(30, 41, 59, 0.9);
+		border-radius: 16px;
+		border: 1px solid rgba(255, 255, 255, 0.1);
+	}
+
+	.embargo-title {
+		color: #f8fafc;
+		font-size: 1.5rem;
+		margin: 0 0 16px 0;
+	}
+
+	.embargo-desc {
+		color: #cbd5e1;
+		font-size: 1rem;
+		line-height: 1.5;
+		margin: 0 0 24px 0;
+	}
+
+	.embargo-timer {
+		font-family: var(--font-mono, 'Geist Mono', monospace);
+		color: #14b8a6;
+		font-size: 1.25rem;
+		margin-bottom: 24px;
+	}
+
+	.btn-attest {
+		background: #f8fafc;
+		color: #0f172a;
+		border: none;
+		padding: 12px 24px;
+		border-radius: 8px;
+		font-weight: 600;
+		cursor: pointer;
+		width: 100%;
+		transition: background 0.2s;
+	}
+
+	.btn-attest:hover {
+		background: #e2e8f0;
+	}
+</style>
