@@ -46,7 +46,7 @@ import type confetti from 'canvas-confetti';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
-export type DopamineKind = 'drill' | 'grit' | 'levelUp' | 'matchWin' | 'loadoutUnlock' | 'adminRelief';
+export type DopamineKind = 'drill' | 'grit' | 'levelUp' | 'matchWin' | 'loadoutUnlock' | 'adminRelief' | 'escrow';
 
 export interface DopamineOpts {
 	kind: DopamineKind;
@@ -98,12 +98,22 @@ const PRESETS: Record<DopamineKind, ConfettiOptions> = {
 	matchWin: {
 		particleCount: 140,
 		spread: 110,
-		colors: ['#10b981', '#34d399', '#a7f3d0', '#ffffff'],
-		startVelocity: 40,
-		gravity: 0.85,
-		scalar: 1.0,
+		colors: ['#f8fafc', '#fbbf24', '#22c55e', '#3b82f6'],
+		startVelocity: 45,
+		gravity: 0.8,
+		scalar: 1.1,
 		ticks: 300,
 	},
+	escrow: {
+		particleCount: 150,
+		spread: 100,
+		colors: ['#fbbf24', '#f59e0b', '#0f172a', '#334155'],
+		startVelocity: 40,
+		gravity: 0.85,
+		scalar: 1.2,
+		ticks: 300,
+	},
+
 	loadoutUnlock: {
 		particleCount: 120,
 		spread: 100,

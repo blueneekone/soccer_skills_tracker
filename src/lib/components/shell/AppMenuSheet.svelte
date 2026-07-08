@@ -195,6 +195,7 @@
 		class:app-menu-sheet--parent-trust={skin === 'parent-trust'}
 		role="dialog"
 		aria-modal="true"
+		tabindex="-1"
 		aria-label={mode === 'pick-pin' ? `Choose pin for slot ${pickSlotIndex + 1}` : 'App menu'}
 		ontouchstart={onSheetTouchStart}
 		ontouchend={onSheetTouchEnd}
@@ -454,9 +455,7 @@
 		color: #64748b;
 	}
 
-	.app-menu-sheet__workspace {
-		padding: 0 4px 4px;
-	}
+
 
 	.app-menu-sheet__nav {
 		display: flex;
@@ -566,10 +565,6 @@
 		letter-spacing: 0.1em;
 		text-transform: uppercase;
 		color: #14b8a6;
-	}
-
-	.app-menu-sheet__badge--dim {
-		color: #64748b;
 	}
 
 	.app-menu-sheet__footer {

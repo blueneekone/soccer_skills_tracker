@@ -123,13 +123,6 @@ function createLicenseEntitlementStore() {
 					undefined;
 			return fromEnt;
 		},
-		/**
-		 * True when the active club is on the post-cutover transaction-based
-		 * model.  Derived from `billingModel` above so it stays consistent
-		 * across all consumers.
-		 *
-		 * @returns {boolean}
-		 */
 		get isTransactionBilled() {
 			const fromClub =
 				typeof clubDoc?.billingModel === 'string' && clubDoc.billingModel.trim() ?
@@ -141,6 +134,19 @@ function createLicenseEntitlementStore() {
 					entitlement.billingModel.trim() :
 					undefined;
 			return fromEnt === 'transaction_billing';
+		},
+		get billingStatus() {
+			return entitlement?.billing_status || 'active';
+		},
+		get paymentFailedAt() {
+			return entitlement?.payment_failed_at || null;
+		},
+		get daysPastDue() {
+			if (!this.paymentFailedAt || this.billingStatus !== 'past_due') return 0;
+			const failedAtMs = this.paymentFailedAt.toMillis ? this.paymentFailedAt.toMillis() : this.paymentFailedAt;
+			const nowMs = Date.now();
+			const diffMs = nowMs - failedAtMs;
+			return Math.floor(diffMs / (24 * 60 * 60 * 1000));
 		}
 	};
 }

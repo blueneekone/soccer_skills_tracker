@@ -13,3 +13,24 @@ logger.warn(
 );
 const admin = require('firebase-admin');
 admin.initializeApp();
+
+exports.affinityWebhook = require('./affinityWebhook').affinityWebhook;
+
+const bounties = require('./src/domains/bounties.js');
+exports.releaseTremendousBounty = bounties.releaseTremendousBounty;
+exports.cvBiomechanicsVerifier = bounties.cvBiomechanicsVerifier;
+exports.onCvVerifiedDrillWritten = bounties.onCvVerifiedDrillWritten;
+
+const wearables = require('./src/domains/wearables.js');
+exports.ingestBiometrics = wearables.ingestBiometrics;
+exports.garminWebhook = wearables.garminWebhook;
+exports.whoopWebhook = wearables.whoopWebhook;
+
+const progression = require('./src/domains/progression.js');
+exports.calculatePlayerProgression = progression.calculatePlayerProgression;
+
+const cosmetics = require('./src/domains/cosmetics.js');
+exports.unlockAvatarComponent = cosmetics.unlockAvatarComponent;
+exports.saveActiveLoadout = cosmetics.saveActiveLoadout;
+
+

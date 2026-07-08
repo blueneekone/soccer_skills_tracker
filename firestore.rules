@@ -4139,8 +4139,17 @@ service cloud.firestore {
       }
     }
 
+    // Sprint 5.2: Zero-Liability PII invariant for Wearable Biometrics
+    match /player_biometrics/{uid} {
+      allow read, write: if authed() && request.auth.uid == uid;
+      
+      match /daily/{date} {
+        allow read, write: if authed() && request.auth.uid == uid;
+      }
+    }
+
     match /{document=**} {
       allow read, write: if false;
     }
   }
-}
+}

@@ -1,4 +1,4 @@
-﻿/* eslint-disable quotes */
+/* eslint-disable quotes */
 /**
  * commerce.js â€” Stripe Connect Commerce Engine
  * â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -224,7 +224,11 @@ exports.createRegistrationIntent = onCall(
       // Get the club's Stripe Connect account
       const orgSnap = await db.doc(`organizations/${tenantId}`).get();
       if (!orgSnap.exists) throw new HttpsError('not-found', 'Organisation not found.');
-      const stripeAccountId = orgSnap.data()?.stripeAccountId;
+      
+      const credSnap = await db.doc(`integration_credentials/${tenantId}`).get();
+      let stripeAccountId = credSnap.data()?.stripe_connected_account_id;
+      if (!stripeAccountId) stripeAccountId = orgSnap.data()?.stripeAccountId;
+
       if (!stripeAccountId) {
         throw new HttpsError(
             'failed-precondition',
@@ -234,25 +238,8 @@ exports.createRegistrationIntent = onCall(
 
       const feeAmountCents = Math.round(feeAmountDollars * 100);
 
-      // Resolve platform fee from the live pricing policy.  We look up the
-      // tenant's override first (`organizations/{tenantId}.pricingPolicyId`)
-      // then fall back to default-v1.  Fee math is integer-cents only and
-      // honours volume-tier modifiers via `ytdGrossCents`.
-      const tenantPolicyOverride = orgSnap.data()?.pricingPolicyId;
-      const ytdSnap = await db
-          .doc(`organizations/${tenantId}/fee_summary/ytd`)
-          .get();
-      const ytdGrossCents = ytdSnap.exists ?
-        Number(ytdSnap.data()?.grossCents) || 0 :
-        0;
-      const policy = await loadActivePolicy(getRegistryDb(), tenantPolicyOverride);
-      const fee = computePlatformFee({
-        policy,
-        transactionType: feeType, // Sprint 9.6: pass feeType through to fee engine
-        grossCents: feeAmountCents,
-        ytdGrossCents,
-      });
-      const platformFeeCents = fee.platformFeeCents;
+      // Sprint 6.1: Exactly 2% of transaction volume
+      const platformFeeCents = Math.round(feeAmountCents * 0.02);
 
       const stripeClient = getStripe();
       const playerSnap = await db.collection('users').doc(playerEmail).get();
@@ -273,9 +260,9 @@ exports.createRegistrationIntent = onCall(
           playerEmail,
           seasonId,
           type: feeType,
-          policyId: policy.id,
-          policyVersion: String(policy.version),
-          rateBp: String(fee.rateBp),
+          policyId: 'sprint-6.1-autonomous',
+          policyVersion: '1',
+          rateBp: '200',
         },
         description: `Season registration — ${orgSnap.data()?.name ?? tenantId}`,
       });
@@ -292,9 +279,9 @@ exports.createRegistrationIntent = onCall(
         feeType, // Sprint 9.6: persisted for audit trail and fee-type-specific reporting
         feeAmountCents,
         platformFeeCents,
-        rateBp: fee.rateBp,
-        policyId: policy.id,
-        policyVersion: policy.version,
+        rateBp: 200,
+        policyId: 'sprint-6.1-autonomous',
+        policyVersion: 1,
         paymentIntentId: paymentIntent.id,
         paymentStatus: 'pending',
         stripeAccountId,
@@ -597,17 +584,23 @@ async function handleConnectAccountUpdated(account) {
     stripePayoutsEnabled: account.payouts_enabled ?? false,
     stripeUpdatedAt: admin.firestore.FieldValue.serverTimestamp(),
   });
+  await db.doc(`integration_credentials/${tenantId}`).set({
+    stripe_connected_account_id: account.id,
+    stripeOnboardingComplete: account.details_submitted && account.charges_enabled,
+    stripePayoutsEnabled: account.payouts_enabled ?? false,
+    stripeUpdatedAt: admin.firestore.FieldValue.serverTimestamp(),
+  }, { merge: true });
   logger.info('[webhook] connect account updated', {tenantId, chargesEnabled: account.charges_enabled});
 }
 
-// â”€â”€ createConnectOnboarding â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ——— createConnectOnboarding ——————————————————————————————————————————————————————
 
 /**
  * Creates or resumes a Stripe Connect Express onboarding session for a Club Director.
  * The director is redirected to Stripe's hosted onboarding UI.
  * On completion, Stripe sends `account.updated` to `handleRegistrationWebhook`.
  *
- * Returns: { url: string }  â€” redirect this in the browser
+ * Returns: { url: string }  — redirect this in the browser
  */
 exports.createConnectOnboarding = onCall(
     {region: REGION, secrets: [STRIPE_SECRET_KEY]},
@@ -661,7 +654,67 @@ exports.createConnectOnboarding = onCall(
     },
 );
 
-// â”€â”€ getRegistrationStatus â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+/**
+ * Sprint 6.1: Multi-Tenant Payment Splitting (Phase 1)
+ * Creates a Stripe Connect Express onboarding session for a Club Director.
+ */
+exports.initiateStripeConnect = onCall(
+    {region: REGION, secrets: [STRIPE_SECRET_KEY]},
+    async (request) => {
+      if (!request.auth) throw new HttpsError('unauthenticated', 'Sign in required.');
+
+      const role = request.auth.token.role ?? '';
+      const tenantId = request.auth.token.clubId ?? request.auth.token.tenantId ?? '';
+      if (role !== 'director' && role !== 'super_admin' && role !== 'global_admin') {
+        throw new HttpsError('permission-denied', 'Director role required.');
+      }
+
+      const orgRef = db.doc(`organizations/${tenantId}`);
+      const orgSnap = await orgRef.get();
+      if (!orgSnap.exists) throw new HttpsError('not-found', 'Organisation not found.');
+
+      const credRef = db.doc(`integration_credentials/${tenantId}`);
+      const credSnap = await credRef.get();
+      
+      const stripeClient = getStripe();
+      let stripeAccountId = credSnap.data()?.stripe_connected_account_id;
+
+      if (!stripeAccountId) {
+        // Create a new Stripe Express account for this club
+        const account = await stripeClient.accounts.create({
+          type: 'express',
+          metadata: {tenantId},
+          email: request.auth.token.email ?? undefined,
+          business_profile: {
+            name: orgSnap.data()?.name ?? `Club ${tenantId}`,
+            url: `${APP_BASE_URL.value()}/club/${tenantId}`,
+          },
+          capabilities: {
+            card_payments: {requested: true},
+            transfers: {requested: true},
+          },
+        });
+        stripeAccountId = account.id;
+        await credRef.set({
+          stripe_connected_account_id: stripeAccountId,
+          stripeOnboardingComplete: false,
+          updatedAt: admin.firestore.FieldValue.serverTimestamp()
+        }, { merge: true });
+      }
+
+      const accountLink = await stripeClient.accountLinks.create({
+        account: stripeAccountId,
+        refresh_url: `${APP_BASE_URL.value()}/admin/organizations/${tenantId}/billing?stripe=refresh`,
+        return_url: `${APP_BASE_URL.value()}/admin/organizations/${tenantId}/billing?stripe=connected`,
+        type: 'account_onboarding',
+      });
+
+      logger.info('[initiateStripeConnect] link created', {tenantId});
+      return {url: accountLink.url};
+    },
+);
+
+// ——— getRegistrationStatus ——————————————————————————————————————————————————————
 
 /**
  * Returns the payment status of a player's registration for a given season.

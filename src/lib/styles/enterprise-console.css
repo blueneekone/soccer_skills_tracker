@@ -1719,3 +1719,8 @@ html.dark .ec-drawer {
 html.dark .ec-drawer__head {
 	border-bottom-color: rgba(148, 163, 184, 0.1);
 }
+
+/* Override Google Maps Places Autocomplete watermark on inputs */
+.pac-target-input {
+	background-image: none !important;
+}

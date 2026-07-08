@@ -70,3 +70,16 @@ if (!target || target === 'facilityWeatherWebhook') {
   exports.facilityWeatherWebhook =
     require('./src/domains/facilityWeatherWebhook').facilityWeatherWebhook;
 }
+
+if (!target || target === 'stackSportsAuthInit' || target === 'stackSportsAuthCallback' || target === 'syncStackSportsDataFn') {
+  const stackSportsOps = require('./src/domains/stackSportsOps');
+  if (!target || target === 'stackSportsAuthInit') {
+    exports.stackSportsAuthInit = stackSportsOps.stackSportsAuthInit;
+  }
+  if (!target || target === 'stackSportsAuthCallback') {
+    exports.stackSportsAuthCallback = stackSportsOps.stackSportsAuthCallback;
+  }
+  if (!target || target === 'syncStackSportsDataFn') {
+    exports.syncStackSportsDataFn = stackSportsOps.syncStackSportsDataFn;
+  }
+}

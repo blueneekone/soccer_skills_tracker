@@ -265,13 +265,5 @@
 		color: #cbd5e1;
 	}
 
-	.vpp-inspector__ghost {
-		margin: 0;
-		font-family: 'Geist Mono', ui-monospace, monospace;
-		font-size: 10px;
-		font-weight: 700;
-		letter-spacing: 0.14em;
-		text-transform: uppercase;
-		color: #475569;
-	}
+
 </style>

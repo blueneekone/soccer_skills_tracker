@@ -24,6 +24,7 @@
 	import CommsSponsorPartnerChannel from '$lib/components/comms/CommsSponsorPartnerChannel.svelte';
 	import DirectorRetentionReport from '$lib/components/compliance/DirectorRetentionReport.svelte';
 	import WeatherAlert from '$lib/components/weather/WeatherAlert.svelte';
+	import VampireImporter from '$lib/components/interoperability/VampireImporter.svelte';
 	import { teamsStore } from '$lib/stores/teams.svelte.js';
 	import { workspaceContextStore } from '$lib/stores/workspaceContext.svelte.js';
 
@@ -31,6 +32,7 @@
 		'home', 'teams', 'field', 'comms', 'registrars', 'brand', 'playbook', 'licenses', 'compliance', 'household',
 		'vanguard',   // EPIC 4 — Director Mission Control
 		'retention',  // EPIC 6 — PII Burn Protocol compliance dashboard
+		'sync',       // Data Sync & Importer
 	]);
 
 /** Effective tenant for Firestore; dynamically syncs with Context Switcher */
@@ -122,6 +124,7 @@
 			{ label: 'Field',    icon: 'sys.map-pin' as IconName,         tab: 'field' },
 			{ label: 'Comply',   icon: 'status.shield-check' as IconName, tab: 'compliance' },
 			{ label: 'Families', icon: 'nav.home' as IconName,            tab: 'household' },
+			{ label: 'Sync',     icon: 'ph-arrows-left-right' as IconName, tab: 'sync' },
 		] as item (item.tab)}
 			<a
 				href="/director?tab={item.tab}"
@@ -210,6 +213,11 @@
 			<MissionControl />
 		{:else if activeTab === 'retention'}
 			<DirectorRetentionReport />
+		{:else if activeTab === 'sync'}
+			<div class="tw-p-6 tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-rounded-xl">
+				<h2 class="tw-text-xl tw-font-bold tw-text-slate-50 tw-mb-6">Data Sync</h2>
+				<VampireImporter {clubId} />
+			</div>
 		{:else}
 			<p class="director-console-fallback">Unknown section. Use the sidebar to navigate.</p>
 		{/if}

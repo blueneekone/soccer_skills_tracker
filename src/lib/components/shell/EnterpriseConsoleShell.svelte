@@ -458,16 +458,6 @@
 		align-items: stretch;
 	}
 
-	.ec-topbar-user-name {
-		display: block;
-		overflow: hidden;
-		text-overflow: ellipsis;
-		white-space: nowrap;
-		font-size: 12px;
-		font-weight: 500;
-		min-width: 0;
-	}
-
 	/* ── Anomaly nav link variant ─────────────────────────────────────────── */
 	:global(.ec-nav-link--anomaly) {
 		color: rgba(251, 191, 36, 0.6) !important;

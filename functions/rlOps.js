@@ -274,10 +274,42 @@ exports.getAdaptiveWorkoutPolicy = onCall(
             stateVec[21] > 0.5 ? 'teen13to16' : 'adult';
 
         // Recovery mode: ACWR > 1.5 OR rolling 7d RPE > 8.5 OR soreness > 4
-        const recoveryMode =
+        let recoveryMode =
             stateVec[10] * 2.0 > 1.5 ||
             stateVec[0]  * 10  > 8.5 ||
             stateVec[2]  * 5   > 4;
+
+        // Sprint 5.2: Biometric Wearable Safety Interceptor
+        const biometricsSnap = await db().collection(`player_biometrics/${uid}/daily`)
+            .orderBy('date', 'desc').limit(7).get();
+        
+        let hrvSum = 0, hrvCount = 0;
+        let latestHrv = null;
+        biometricsSnap.forEach(doc => {
+            const data = doc.data();
+            if (data.hrv) {
+                if (latestHrv === null) latestHrv = data.hrv;
+                hrvSum += data.hrv;
+                hrvCount++;
+            }
+        });
+
+        const hrvBaseline = hrvCount > 0 ? hrvSum / hrvCount : null;
+        const severeExhaustion = hrvBaseline && latestHrv && (latestHrv < hrvBaseline * 0.7 || latestHrv < 40);
+
+        if (severeExhaustion) {
+            recoveryMode = true;
+            return {
+              mode: 'policy',
+              recommendedDrillId: 'tactics-video',
+              recommendedDurationMinutes: 15,
+              recommendedTargetRpe: 2,
+              policyVersion,
+              explorationFlag: false,
+              explanationCode: 'biometric-override',
+              explanationText: 'HRV dropped below safety threshold. Active recovery assigned.',
+            };
+        }
 
         // Step 4 — enumerate candidates
         const candidates = await enumerateCandidates(sportId, ageBand, recoveryMode);

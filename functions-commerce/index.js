@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
 'use strict';
 
 /**
@@ -9,6 +10,7 @@ const commerceHandlers = require('./commerce');
 exports.createRegistrationIntent = commerceHandlers.createRegistrationIntent;
 exports.handleRegistrationWebhook = commerceHandlers.handleRegistrationWebhook;
 exports.createConnectOnboarding = commerceHandlers.createConnectOnboarding;
+exports.initiateStripeConnect = commerceHandlers.initiateStripeConnect;
 exports.getRegistrationStatus = commerceHandlers.getRegistrationStatus;
 
 const ticketingHandlers = require('./ticketing');
@@ -48,3 +50,6 @@ exports.cancelRecruiterAccount = recruiterBillingHandlers.cancelRecruiterAccount
 const pricingPolicyOps = require('./pricingPolicyOps');
 exports.bootstrapPricingPolicy = pricingPolicyOps.bootstrapPricingPolicy;
 exports.updatePricingPolicy = pricingPolicyOps.updatePricingPolicy;
+
+const dunningOps = require('./src/domains/dunningOps');
+exports.dunningCommsDispatch = dunningOps.dunningCommsDispatch;

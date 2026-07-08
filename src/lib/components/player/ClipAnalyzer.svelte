@@ -569,15 +569,6 @@
 	.ca-overlay__dots span:nth-child(2) { animation-delay: 0.2s; }
 	.ca-overlay__dots span:nth-child(3) { animation-delay: 0.4s; }
 
-	.ca-overlay__grid-data {
-		display: flex;
-		flex-direction: column;
-		gap: 3px;
-		font-size: 0.45rem;
-		color: rgba(20, 184, 166, 0.4);
-		letter-spacing: 0.1em;
-	}
-
 	/* ── Drop Zone ───────────────────────────────────────────────────────────── */
 	.ca-drop-zone {
 		display: flex;

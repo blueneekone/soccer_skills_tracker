@@ -237,29 +237,6 @@
 		to { transform: rotate(360deg); }
 	}
 
-	.prm-empty {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		justify-content: center;
-		padding: 3rem 1rem;
-		text-align: center;
-	}
-
-	:global(.prm-empty-icon) {
-		color: #10b981;
-		margin-bottom: 1rem;
-	}
-
-	.prm-empty-title {
-		margin: 0 0 0.5rem;
-		font-family: 'Geist Mono', monospace;
-		font-size: 1.1rem;
-		font-weight: 700;
-		color: #10b981;
-		letter-spacing: 0.05em;
-	}
-
 	.prm-empty-sub {
 		margin: 0;
 		font-family: 'Switzer', sans-serif;

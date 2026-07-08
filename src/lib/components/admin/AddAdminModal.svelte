@@ -626,53 +626,6 @@
 		border-top-color: rgba(255, 255, 255, 0.08);
 	}
 
-	.aam-btn {
-		display: inline-flex;
-		align-items: center;
-		gap: 6px;
-		height: 38px;
-		padding: 0 16px;
-		border-radius: 8px;
-		border: 1px solid #e4e4e7;
-		background: #ffffff;
-		color: #18181b;
-		font: inherit;
-		font-size: 0.875rem;
-		font-weight: 700;
-		cursor: pointer;
-		transition: background 0.12s ease, border-color 0.12s ease;
-	}
-
-	.aam-btn:disabled {
-		opacity: 0.55;
-		cursor: not-allowed;
-	}
-
-	.aam-btn--ghost:hover:not(:disabled) {
-		background: #f4f4f5;
-	}
-
-	:global(html.dark) .aam-btn--ghost {
-		background: transparent;
-		border-color: rgba(255, 255, 255, 0.12);
-		color: #fafafa;
-	}
-
-	:global(html.dark) .aam-btn--ghost:hover:not(:disabled) {
-		background: rgba(255, 255, 255, 0.06);
-	}
-
-	.aam-btn--primary {
-		background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
-		border-color: #4338ca;
-		color: #ffffff;
-		box-shadow: 0 6px 16px -6px rgba(79, 70, 229, 0.55);
-	}
-
-	.aam-btn--primary:hover:not(:disabled) {
-		background: linear-gradient(135deg, #4338ca 0%, #6d28d9 100%);
-	}
-
 	/* ── Responsive ──────────────────────────────────────────────────────── */
 	@media (max-width: 560px) {
 		.aam-grid {

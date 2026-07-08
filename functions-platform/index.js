@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
 'use strict';
 
 /**
@@ -68,3 +69,7 @@ exports.assignTenantClaims = adminOps.assignTenantClaims;
 const operativeOps = require('./src/domains/operativeOps');
 exports.impersonateUserFn = operativeOps.impersonateUserFn;
 exports.purgeUserDataFn = operativeOps.purgeUserDataFn;
+
+const interoperabilityOps = require('./src/domains/interoperabilityOps');
+exports.extractTenantData = interoperabilityOps.extractTenantData;
+exports.vampireIngestRows = interoperabilityOps.vampireIngestRows;

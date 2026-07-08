@@ -555,7 +555,11 @@
 			});
 
 			questProgress = markQuestClaimed(quest.id, questProgress);
-			void dopamineExplosion('grit');
+			if (quest.rewardLabel) {
+				void dopamineExplosion('escrow');
+			} else {
+				void dopamineExplosion('grit');
+			}
 			if (questsProp === undefined) {
 				internalQuests = internalQuests.filter((q) => q.id !== quest.id);
 			}

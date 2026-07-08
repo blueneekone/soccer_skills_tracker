@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { browser } from '$app/environment';
-	import { doc, onSnapshot, getDoc } from 'firebase/firestore';
+	import { doc, onSnapshot, getDoc, collection, query, orderBy, limit } from 'firebase/firestore';
 	import { db } from '$lib/firebase.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import {
@@ -15,6 +15,7 @@
 	import LevelProgressRing from '$lib/components/LevelProgressRing.svelte';
 	import PlayerActionInbox from '$lib/components/shell/PlayerActionInbox.svelte';
 	import PlayerSkillRadar from '$lib/components/PlayerSkillRadar.svelte';
+	import TelemetryPanel from '$lib/components/hud/TelemetryPanel.svelte';
 	import Icon from '$lib/components/ui/Icon.svelte';
 
 	const SESSION_KEY = 'elite_xp_pulse';
@@ -32,6 +33,11 @@
 
 	let displayXp = $state(0);
 	let animating = $state(false);
+
+	let latestHrv = $state<number | null>(null);
+	let biometricStatus = $derived(
+		latestHrv === null ? 'unknown' : (latestHrv < 40 ? 'recovery' : 'nominal')
+	);
 
 	const profile = $derived(authStore.userProfile);
 	const photoUrl = $derived(authStore.user?.photoURL || '');
@@ -192,6 +198,22 @@
 		);
 		return () => unsub();
 	});
+
+	$effect(() => {
+		if (!browser || !authStore.user?.uid) return;
+		const uid = authStore.user.uid;
+		const biometricsRef = collection(db, 'player_biometrics', uid, 'daily');
+		const q = query(biometricsRef, orderBy('date', 'desc'), limit(1));
+		const unsubBiometrics = onSnapshot(q, (snap) => {
+			if (!snap.empty) {
+				const data = snap.docs[0].data();
+				latestHrv = data.hrv ?? null;
+			} else {
+				latestHrv = null;
+			}
+		});
+		return () => unsubBiometrics();
+	});
 </script>
 
 <div class="epd">
@@ -236,6 +258,26 @@
 				{sportDisplayLabel} · Ultimate Team profile — max rating 99.
 			</p>
 			<PlayerSkillRadar labels={skillRadar.labels} values={skillRadar.values} />
+		</div>
+	</section>
+
+	<section class="epd__telemetry-bento">
+		<TelemetryPanel />
+	</section>
+
+
+	<section class="epd__biometrics-bento" aria-labelledby="epd-biometrics-h">
+		<div class="epd__biometrics-card" class:epd__biometrics-card--recovery={biometricStatus === 'recovery'}>
+			<h2 id="epd-biometrics-h" class="epd__biometrics-title">Biometric Readiness</h2>
+			<div class="epd__biometrics-content">
+				{#if biometricStatus === 'unknown'}
+					<span class="epd__biometrics-value">--</span>
+					<span class="epd__biometrics-label">Awaiting telemetry...</span>
+				{:else}
+					<span class="epd__biometrics-value">{latestHrv} ms</span>
+					<span class="epd__biometrics-label">{biometricStatus === 'nominal' ? 'NOMINAL' : 'ACTIVE RECOVERY'}</span>
+				{/if}
+			</div>
 		</div>
 	</section>
 
@@ -658,5 +700,54 @@
 		text-transform: uppercase;
 		letter-spacing: 0.06em;
 		color: var(--text-secondary);
+	}
+	.epd__biometrics-card {
+		background: #09090b;
+		border: 1px solid rgba(20, 184, 166, 0.4);
+		border-radius: 12px;
+		padding: 24px;
+		display: flex;
+		flex-direction: column;
+		gap: 12px;
+	}
+
+	.epd__biometrics-card--recovery {
+		border-color: #f59e0b;
+		background: rgba(245, 158, 11, 0.05);
+	}
+
+	.epd__biometrics-title {
+		font-family: var(--font-mono, 'Geist Mono', monospace);
+		font-size: 0.8rem;
+		text-transform: uppercase;
+		letter-spacing: 0.1em;
+		color: #94a3b8;
+		margin: 0;
+	}
+
+	.epd__biometrics-content {
+		display: flex;
+		align-items: baseline;
+		gap: 12px;
+	}
+
+	.epd__biometrics-value {
+		font-family: var(--font-mono, 'Geist Mono', monospace);
+		font-size: 2rem;
+		font-weight: 700;
+		color: #14b8a6; /* Data Cyan */
+	}
+
+	.epd__biometrics-label {
+		font-family: var(--font-mono, 'Geist Mono', monospace);
+		font-size: 0.75rem;
+		text-transform: uppercase;
+		letter-spacing: 0.1em;
+		color: #14b8a6;
+	}
+
+	.epd__biometrics-card--recovery .epd__biometrics-value,
+	.epd__biometrics-card--recovery .epd__biometrics-label {
+		color: #f59e0b; /* Atompunk Amber */
 	}
 </style>

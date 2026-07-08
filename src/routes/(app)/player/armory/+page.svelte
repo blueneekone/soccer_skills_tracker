@@ -1,589 +1,393 @@
 <script lang="ts">
-	import { browser } from '$app/environment';
-	import { page } from '$app/state';
+	import { untrack } from 'svelte';
 	import { authStore } from '$lib/stores/auth.svelte.js';
-	import Icon from '$lib/components/ui/Icon.svelte';
-	import type { IconName } from '$lib/icons/registry.js';
-	import { playerEngine } from '$lib/stores/playerEngine.svelte.js';
-	import { getAvailableItems, processDeploymentRequest } from '$lib/gamification/armory.js';
-	import { getCurrentRank, getLevelProgressFromTotalXp } from '$lib/gamification/level.js';
-	import {
-		SEASON_ONE_ALBUM_CAP,
-		seasonOneSets,
-	} from '$lib/gamification/seasonOneData.js';
-	import ArmoryAlbumWorkspace from '$lib/components/player/ArmoryAlbumWorkspace.svelte';
-	import ArmoryCommandDeck from '$lib/components/player/ArmoryCommandDeck.svelte';
-	import PlayerDiegeticOverlay from '$lib/components/player/PlayerDiegeticOverlay.svelte';
-	import PlayerOsPageStrap from '$lib/components/player/PlayerOsPageStrap.svelte';
-	import PlayerOsButton from '$lib/components/player/os/PlayerOsButton.svelte';
-	import PlayerOsTabRail from '$lib/components/player/os/PlayerOsTabRail.svelte';
-	import type { LoadoutSlotId } from '$lib/gamification/loadoutSchema.js';
-	import {
-		defaultOwnedPortraitParts,
-		defaultPortraitV2,
-		type PortraitPartSlot,
-	} from '$lib/avatars/portraitV2Schema.js';
-	import {
-		readRepairOperativeAvatar,
-		queuePortraitReadRepairWrite,
-	} from '$lib/avatars/portraitReadRepair.js';
-	import {
-		defaultOperativeLoadout,
-		parseOperativeLoadout,
-	} from '$lib/gamification/loadoutSchema.js';
-	import { grantPendingAlbumSetBonuses } from '$lib/gamification/albumSetBonuses.js';
-	// ── Phase 3, Epic 6 — Trajectory Tracking ───────────────────────────────
-	import { TrajectoryEngine } from '$lib/states/TrajectoryEngine.svelte.js';
-	import { vanguardFlags } from '$lib/services/remoteConfig.svelte.js';
-	import GrowthVelocityHUD from '$lib/components/player/trajectory/GrowthVelocityHUD.svelte';
-	import MemoryCapsuleArena from '$lib/components/player/trajectory/MemoryCapsuleArena.svelte';
-	import MemoryCapsuleHUD from '$lib/components/player/trajectory/MemoryCapsuleHUD.svelte';
-	import { onDestroy } from 'svelte';
+	import { doc, onSnapshot } from 'firebase/firestore';
 	import { db } from '$lib/firebase.js';
-	import { fetchClubDisplayName } from '$lib/player/fetchClubDisplayName.js';
-	import '$lib/styles/player-armory-stats-telemetry.css';
+	import { getFunctions as getFns, httpsCallable as httpsCall } from 'firebase/functions';
 
-	const trajectoryEngine = new TrajectoryEngine();
+	// Mock catalog
+	const CATALOG = [
+		{ id: 'M-HAIR-PLASMA-MOHAWK', name: 'Plasma Mohawk', cost: 500, type: 'head', isPremium: true },
+		{ id: 'F-HAIR-PLASMA-MOHAWK', name: 'Plasma Mohawk', cost: 500, type: 'head', isPremium: true },
+		{ id: 'GEAR-TORSO-CYBER', name: 'Cyber Torso', cost: 1200, type: 'torso', isPremium: true },
+		{ id: 'GEAR-BOOTS-NEON', name: 'Neon Cleats', cost: 800, type: 'footwear', isPremium: true },
+		{ id: 'DEFAULT-BASE', name: 'Standard Issue Base', cost: 0, type: 'base', isPremium: false },
+	];
 
-	/** Operative portrait — v1 Bauhaus seed or v2 layered parts; persisted to Firestore `users/{email}.operativeAvatar`. */
-	let operativeAvatar = $state<unknown>(defaultPortraitV2());
-
-	/** Catalog portrait part ids the player may equip in Studio (read-only hydrate; no Firestore write until save). */
-	let ownedPortraitParts = $state(defaultOwnedPortraitParts());
-
-	/** @type {'quartermaster' | 'album' | 'studio' | 'ceremonies'} */
-	let armoryWorkspace = $state('quartermaster');
-
-	let operativeLoadout = $state(defaultOperativeLoadout());
-	let ownedCosmetics = $state(/** @type {string[]} */ ([]));
-
-	let ownedSeasonOneCardIds = $state(new Set<string>());
-
-	let selectedAlbumSetId = $state(
-		seasonOneSets[0]?.id ?? 'street_kings',
-	);
-
-	const armoryTabParam = $derived(page.url.searchParams.get('tab'));
-	const studioSlotParam = $derived(page.url.searchParams.get('slot'));
-	const studioPartParam = $derived(page.url.searchParams.get('part'));
-
-	const studioInitialSlot = $derived.by((): LoadoutSlotId | undefined => {
-		const raw = studioSlotParam?.trim();
-		if (raw === 'border' || raw === 'badge' || raw === 'banner' || raw === 'title') return raw;
-		return undefined;
+	let loading = $state(true);
+	let gritXp = $state(0);
+	let unlockedCosmetics = $state<string[]>([]);
+	let equipped = $state<Record<string, string>>({
+		base: 'DEFAULT-BASE',
+		torso: '',
+		footwear: '',
+		head: '',
+		expression: ''
 	});
 
-	const studioInitialPart = $derived.by((): PortraitPartSlot | undefined => {
-		const raw = studioPartParam?.trim();
-		if (raw === 'face' || raw === 'hair' || raw === 'kit') return raw;
-		return undefined;
-	});
-
-	$effect(() => {
-		if (!browser) return;
-		const tab = armoryTabParam;
-		if (
-			tab === 'quartermaster' ||
-			tab === 'album' ||
-			tab === 'studio' ||
-			tab === 'ceremonies'
-		) {
-			armoryWorkspace = tab;
-		}
-	});
+	let accentColor = $state('#14b8a6'); // Data Cyan
+	let canvasRef: HTMLCanvasElement;
 
 	const profile = $derived(authStore.userProfile);
 
-	/** Sync local portrait state when the signed-in profile supplies `operativeAvatar`. */
-	const profileAvatarHydrateSig = $derived.by(() => {
-		const emailKey = (authStore.user?.email || '').toLowerCase();
-		const oa = profile?.operativeAvatar;
-		const opp = profile?.ownedPortraitParts;
-		const ageBand = typeof profile?.ageBand === 'string' ? profile.ageBand : '';
-		const normalized = oa && typeof oa === 'object' ? JSON.stringify(oa) : '{}';
-		const oppNorm = Array.isArray(opp) ? JSON.stringify([...opp].sort()) : '[]';
-		return `${emailKey}:${ageBand}:${normalized}:${oppNorm}`;
-	});
-
-	let lastAvatarHydrateSig = '';
-	let lastLoadoutHydrateSig = '';
-	let lastPortraitRepairQueuedSig = '';
-
-	/** Sync local portrait + loadout when signed-in profile changes. */
-	const profileLoadoutHydrateSig = $derived.by(() => {
-		const emailKey = (authStore.user?.email || '').toLowerCase();
-		const ol = profile?.operativeLoadout;
-		const oc = profile?.ownedCosmetics;
-		const olNorm =
-			ol && typeof ol === 'object' ?
-				JSON.stringify({
-					v: /** @type {Record<string, unknown>} */ (ol).v,
-					equipped: /** @type {Record<string, unknown>} */ (ol).equipped ?? {},
-				})
-			:	'{}';
-		const ocNorm = Array.isArray(oc) ? JSON.stringify([...oc].sort()) : '[]';
-		return `${emailKey}:${olNorm}:${ocNorm}`;
-	});
-
 	$effect(() => {
-		if (!browser || authStore.isLoading) return;
-		void profileAvatarHydrateSig;
-		const emailKey = (authStore.user?.email || '').toLowerCase();
-		if (!emailKey) {
-			lastAvatarHydrateSig = '';
-			return;
-		}
-		if (profileAvatarHydrateSig === lastAvatarHydrateSig) return;
-		lastAvatarHydrateSig = profileAvatarHydrateSig;
+		if (!authStore.user?.uid) return;
+		const uid = authStore.user.uid;
+		const unsub = onSnapshot(doc(db, 'users', uid), (snap) => {
+			loading = false;
+			if (snap.exists()) {
+				const d = snap.data();
+				gritXp = d.xp || 0;
+				unlockedCosmetics = d.unlocked_cosmetics || [];
+				if (d.avatar_loadout) {
+					equipped = { ...equipped, ...d.avatar_loadout };
+				}
+			}
+		});
+		return () => unsub();
+	});
 
-		const { operativeAvatar: repairedAvatar, ownedPortraitParts: repairedOwned, didMigrate } =
-			readRepairOperativeAvatar(profile?.operativeAvatar, profile?.ownedPortraitParts, {
-				ageBand: typeof profile?.ageBand === 'string' ? profile.ageBand : undefined,
+	// Avatar Rendering Engine
+	$effect(() => {
+		const ctx = canvasRef?.getContext('2d');
+		if (!ctx) return;
+
+		const currentEquipped = equipped;
+		const currentAccent = accentColor;
+
+		untrack(() => {
+			let destroyed = false;
+
+			// Clear Canvas (Void Contract >=40% black)
+			ctx.fillStyle = '#020617';
+			ctx.fillRect(0, 0, canvasRef.width, canvasRef.height);
+
+			// Render Background
+			ctx.fillStyle = '#000000';
+			ctx.fillRect(20, 20, canvasRef.width - 40, canvasRef.height - 40);
+
+			// Universal Joint Map & Z-Index Layering
+			// Order: Base Geometry -> Torso -> Footwear -> Head -> Expression
+			const layers = [
+				{ id: currentEquipped.base, type: 'base', yOffset: 100 },
+				{ id: currentEquipped.torso, type: 'torso', yOffset: 150 },
+				{ id: currentEquipped.footwear, type: 'footwear', yOffset: 300 },
+				{ id: currentEquipped.head, type: 'head', yOffset: 50 },
+				{ id: currentEquipped.expression, type: 'expression', yOffset: 50 }
+			];
+
+			layers.forEach(layer => {
+				if (!layer.id) return;
+				
+				// Mock rendering a block for the layer to simulate the joints
+				ctx.fillStyle = '#1e293b'; // Base gray for gear
+				if (layer.type === 'base') ctx.fillStyle = '#334155';
+				
+				// Mock Universal Joint anchor positioning
+				const width = layer.type === 'torso' ? 100 : (layer.type === 'head' ? 60 : 40);
+				const height = layer.type === 'torso' ? 120 : 60;
+				const xAnchor = (canvasRef.width / 2) - (width / 2);
+				
+				ctx.fillRect(xAnchor, layer.yOffset, width, height);
+
+				// Apply Accent Color Engine to 'premium' gears
+				const asset = CATALOG.find(a => a.id === layer.id);
+				if (asset?.isPremium) {
+					ctx.strokeStyle = currentAccent;
+					ctx.lineWidth = 2;
+					ctx.strokeRect(xAnchor, layer.yOffset, width, height);
+					
+					// Glowing piping
+					ctx.shadowColor = currentAccent;
+					ctx.shadowBlur = 10;
+					ctx.strokeRect(xAnchor + 2, layer.yOffset + 2, width - 4, height - 4);
+					ctx.shadowBlur = 0; // Reset
+				}
 			});
-		operativeAvatar = repairedAvatar;
-		ownedPortraitParts = repairedOwned.filter((id): id is string => typeof id === 'string');
-		if (didMigrate) {
-			const repairSig = `${emailKey}:${JSON.stringify(repairedAvatar)}`;
-			if (lastPortraitRepairQueuedSig !== repairSig) {
-				lastPortraitRepairQueuedSig = repairSig;
-				void queuePortraitReadRepairWrite(emailKey, {
-					operativeAvatar: repairedAvatar,
-					ownedPortraitParts: ownedPortraitParts,
-				});
-			}
-		}
+
+			return () => {
+				destroyed = true;
+				ctx.clearRect(0, 0, canvasRef.width, canvasRef.height);
+			};
+		});
 	});
 
-	$effect(() => {
-		if (!browser || authStore.isLoading) return;
-		void profileLoadoutHydrateSig;
-		const emailKey = (authStore.user?.email || '').toLowerCase();
-		if (!emailKey) {
-			lastLoadoutHydrateSig = '';
-			operativeLoadout = defaultOperativeLoadout();
-			ownedCosmetics = [];
-			ownedPortraitParts = defaultOwnedPortraitParts();
-			ownedSeasonOneCardIds = new Set();
-			return;
-		}
-		if (profileLoadoutHydrateSig === lastLoadoutHydrateSig) return;
-		lastLoadoutHydrateSig = profileLoadoutHydrateSig;
-
-		const parsedLoadout = parseOperativeLoadout(profile?.operativeLoadout);
-		operativeLoadout = parsedLoadout ?? defaultOperativeLoadout();
-		ownedCosmetics = Array.isArray(profile?.ownedCosmetics) ?
-			profile.ownedCosmetics.filter((id) => typeof id === 'string')
-		:	[];
-		const cardIds = Array.isArray(profile?.ownedSeasonOneCards) ?
-			profile.ownedSeasonOneCards.filter((id): id is string => typeof id === 'string')
-		:	[];
-		ownedSeasonOneCardIds = new Set<string>(cardIds);
-	});
-
-	let albumGrantDebounce: ReturnType<typeof setTimeout> | undefined;
-	let albumGrantBusy = false;
-
-	/** Debounced server grant when a folder completes (3.4 — no client self-grant). */
-	$effect(() => {
-		if (!browser || authStore.isLoading) return;
-		const emailKey = (authStore.user?.email || '').toLowerCase();
-		if (!emailKey) return;
-
-		const cardSig = [...ownedSeasonOneCardIds].sort().join(',');
-		const cosmSig = [...ownedCosmetics].sort().join(',');
-		void cardSig;
-		void cosmSig;
-
-		clearTimeout(albumGrantDebounce);
-		albumGrantDebounce = setTimeout(() => {
-			if (albumGrantBusy) return;
-			albumGrantBusy = true;
-			void grantPendingAlbumSetBonuses(ownedSeasonOneCardIds, ownedCosmetics)
-				.catch((err) => {
-					console.warn('[armory] album set bonus grant failed:', err);
-				})
-				.finally(() => {
-					albumGrantBusy = false;
-				});
-		}, 600);
-
-		return () => clearTimeout(albumGrantDebounce);
-	});
-
-	const profileXp = $derived(Math.max(0, Math.floor(Number(profile?.totalXp ?? profile?.xp) || 0)));
-	const totalXpHud = $derived(
-		playerEngine.hydrated ? Math.max(playerEngine.totalXp, profileXp) : profileXp,
-	);
-	const operativeLevel = $derived(getLevelProgressFromTotalXp(totalXpHud).level);
-	const rankLabel = $derived(getCurrentRank(totalXpHud).rank);
-	let clubDisplayName = $state('');
-
-	$effect(() => {
-		if (!browser) return;
-		let cancelled = false;
-		(async () => {
-			const name = await fetchClubDisplayName(db, profile);
-			if (!cancelled) clubDisplayName = name;
-		})();
-		return () => {
-			cancelled = true;
-		};
-	});
-
-
-	const email = $derived((authStore.user?.email || '').toLowerCase());
-	const playerEmailKey = $derived(email);
-	const vaultDisplayName = $derived(
-		(profile?.playerName && String(profile.playerName).trim()) ||
-			email.split('@')[0] ||
-			'Operative',
-	);
-
-	/**
-	 * Tactical Credit balance (Path B). Prefer Firestore `users` profile; optional fallback if ever mirrored on the auth user object.
-	 * @see $lib/gamification/armory.js — all catalog prices use the same unit.
-	 */
-	const tacticalCredits = $derived(
-		Math.max(
-			0,
-			Math.floor(
-				Number(
-					profile?.tacticalCredits ??
-						(authStore.user && typeof /** @type {Record<string, unknown>} */ (authStore.user).tacticalCredits ===
-						'number' ?
-							/** @type {Record<string, unknown>} */ (authStore.user).tacticalCredits :
-							0),
-				) || 0,
-			),
-		),
-	);
-
-	const lineItems = $derived(getAvailableItems(operativeLevel));
-
-	const qaCardSpanClass = $derived(
-		lineItems.length <= 2 ? 'bento-span-12' : 'bento-span-6',
-	);
-
-	let armoryBusy = $state(false);
-
-	/** Diegetic overlay state (Wave E — replaces legacy deployment toasts). */
-	let overlayOpen = $state(false);
-	let overlayVariant = $state<'success' | 'error' | 'confirm'>('error');
-	let overlayTitle = $state('');
-	let overlayMessage = $state('');
-	let overlayAutoDismissMs = $state(0);
-
-	const armoryTabs = [
-		{ key: 'quartermaster', label: 'Quartermaster' },
-		{ key: 'album', label: 'Sticker Album' },
-		{ key: 'studio', label: 'Studio' },
-		{ key: 'ceremonies', label: 'Ceremonies' },
-	];
-
-	function closeOverlay() {
-		overlayOpen = false;
-	}
-
-	function showDiegeticError(title: string, message: string) {
-		overlayVariant = 'error';
-		overlayTitle = title;
-		overlayMessage = message;
-		overlayAutoDismissMs = 0;
-		overlayOpen = true;
-	}
-
-	function showDiegeticSuccess(title: string, message: string, autoDismissMs = 4500) {
-		overlayVariant = 'success';
-		overlayTitle = title;
-		overlayMessage = message;
-		overlayAutoDismissMs = autoDismissMs;
-		overlayOpen = true;
-	}
-
-	/** @param {string} key */
-	function selectArmoryWorkspace(key: string) {
-		if (
-			key === 'quartermaster' ||
-			key === 'album' ||
-			key === 'studio' ||
-			key === 'ceremonies'
-		) {
-			armoryWorkspace = key;
-		}
-	}
-
-	$effect(() => {
-		if (!browser) return;
-		const u = authStore.user;
-		if (authStore.role === 'player' && u?.uid) {
-			playerEngine.attach(u.uid);
-			return () => playerEngine.detach();
-		}
-		playerEngine.detach();
-	});
-
-	// ── Epic 6: connect TrajectoryEngine when player email resolves ──────────
-	$effect(() => {
-		if (!browser || authStore.isLoading) return;
-		const emailKey = (authStore.user?.email ?? '').toLowerCase();
-		if (!emailKey) return;
+	async function unlockItem(assetId: string) {
+		const fns = getFns();
+		const unlockFn = httpsCall(fns, 'unlockAvatarComponent');
 		try {
-			trajectoryEngine.connect(emailKey);
+			await unlockFn({ assetId });
+			// The onSnapshot will update the local unlocked state
 		} catch (err) {
-			trajectoryEngine.error = 'Trajectory data unavailable.';
-			console.warn('[armory] TrajectoryEngine.connect failed:', err);
+			console.error('Failed to unlock:', err);
 		}
-	});
+	}
 
-	onDestroy(() => trajectoryEngine.destroy());
-
-	/**
-	 * Quartermaster: deduct TC via {@link processDeploymentRequest}, then optimistically update local profile.
-	 * @param {import('$lib/gamification/armory.js').QuartermasterItem} item
-	 */
-	async function requestDeployment(item) {
-		if (armoryBusy) return;
-		/** @type {import('firebase/auth').User | null} */
-		const u = authStore.user;
-		/** `users/{email}` profile — `clubId` is not on Firebase `User` in the client SDK. */
-		const prof = profile;
-		const clubId = typeof prof?.clubId === 'string' && prof.clubId.trim() ? prof.clubId.trim() : '';
-		if (!u) {
-			showDiegeticError('Sign-in required', 'You must be signed in to request deployment.');
-			return;
-		}
-		if (!clubId) {
-			showDiegeticError(
-				'Missing club context',
-				'Complete team setup or contact Command.',
-			);
-			return;
-		}
-		armoryBusy = true;
+	async function equipItem(item: any) {
+		if (item.isPremium && !unlockedCosmetics.includes(item.id)) return;
+		equipped = { ...equipped, [item.type]: item.id };
+		
+		const fns = getFns();
+		const saveFn = httpsCall(fns, 'saveActiveLoadout');
 		try {
-			await processDeploymentRequest(u, item, clubId);
-			const after = authStore.userProfile;
-			if (after) {
-				const o = /** @type {Record<string, unknown> & { tacticalCredits?: number }} */ (after);
-				const prev = Math.max(0, Math.floor(Number(o.tacticalCredits) || 0));
-				authStore.setProfile({ ...o, tacticalCredits: Math.max(0, prev - item.cost) });
-			}
-			showDiegeticSuccess(
-				'Deployment confirmed',
-				`DEPLOYMENT CONFIRMED: ${item.title} requested. Credits deducted.`,
-			);
-		} catch (e) {
-			const msg = e instanceof Error ? e.message : 'Deployment could not be completed.';
-			showDiegeticError('Deployment failed', msg);
-		} finally {
-			armoryBusy = false;
+			await saveFn({ loadout: equipped });
+		} catch (err) {
+			console.error('Failed to save loadout:', err);
 		}
 	}
 </script>
 
-<svelte:head>
-	<title>Armory · Quartermaster &amp; Sticker Album · SSTRACKER</title>
-</svelte:head>
+<div class="armory-studio">
+	<header class="armory__header">
+		<h1 class="armory__title">Avatar Studio</h1>
+		<div class="armory__economy">
+			<span class="grit-label">Grit XP</span>
+			<span class="grit-value">{gritXp.toLocaleString()}</span>
+		</div>
+	</header>
 
-<div
-	class="pd-page-root player-dossier-root player-hud-root tw-min-w-0 tw-overflow-x-hidden"
-	data-region="quartermaster-armory"
->
-
-	<!-- ── Phase 3, Epic 6 · Memory Capsule fixed overlay ──────────────────── -->
-	{#if !trajectoryEngine.error && vanguardFlags.capsulesEnabled && trajectoryEngine.hasUnseenCapsule && trajectoryEngine.activeCapsule}
-		<MemoryCapsuleHUD
-			dossierMode={true}
-			capsule={trajectoryEngine.activeCapsule}
-			baselineDaysAgo={trajectoryEngine.baselineDaysAgo}
-			onDismiss={() => {
-				if (trajectoryEngine.activeCapsule) {
-					void trajectoryEngine.acknowledgeCapsule(trajectoryEngine.activeCapsule.capsuleId);
-				}
-			}}
-		/>
-	{/if}
-
-	<!-- ── Phase 3, Epic 6 · Growth Velocity Index bento cell ─────────────── -->
-	{#if !trajectoryEngine.error && (vanguardFlags.gviEnabled || vanguardFlags.capsulesEnabled)}
-		<section
-			class="tw-mb-[clamp(1rem,2vw,1.35rem)]"
-			aria-label="Growth Velocity Index"
-		>
-			<GrowthVelocityHUD
-				dossierMode={true}
-				gvi={trajectoryEngine.gvi}
-				gviTier={trajectoryEngine.gviTier}
-				gviLabel={trajectoryEngine.gviLabel}
-				gviFormatted={trajectoryEngine.gviFormatted}
-				currentMonthXp={trajectoryEngine.currentMonthXp}
-				lastMonthXp={trajectoryEngine.lastMonthXp}
-				monthsActive={trajectoryEngine.monthsActive}
-				loading={trajectoryEngine.loading}
-			/>
+	<div class="bento-grid">
+		<!-- Hero Canvas (bento-span-8) -->
+		<section class="bento-card bento-span-8 armory__hero">
+			<div class="canvas-wrapper">
+				<canvas bind:this={canvasRef} width="400" height="500"></canvas>
+			</div>
+			<div class="color-engine">
+				<p class="color-title">Accent Core</p>
+				<button 
+					class="color-btn cyan" 
+					class:active={accentColor === '#14b8a6'} 
+					onclick={() => accentColor = '#14b8a6'}
+					aria-label="Data Cyan"
+				></button>
+				<button 
+					class="color-btn amber" 
+					class:active={accentColor === '#f59e0b'} 
+					onclick={() => accentColor = '#f59e0b'}
+					aria-label="Atompunk Amber"
+				></button>
+			</div>
 		</section>
-	{/if}
 
-	<!-- ── Phase 3, Epic 6 · Capsule Arena inline panel (when active) ──────── -->
-	{#if !trajectoryEngine.error && vanguardFlags.capsulesEnabled && trajectoryEngine.hasUnseenCapsule && trajectoryEngine.activeCapsule}
-		<section
-			class="tw-mb-[clamp(1rem,2vw,1.35rem)]"
-			aria-label="Time-Lapse Memory Capsule"
-		>
-			<MemoryCapsuleArena
-				dossierMode={true}
-				capsule={trajectoryEngine.activeCapsule}
-				baselineDaysAgo={trajectoryEngine.baselineDaysAgo}
-				capsuleHeadline={trajectoryEngine.capsuleHeadline}
-			/>
-		</section>
-	{/if}
-
-	<div class="pd-content-wrap pd-route-stack">
-		<PlayerOsPageStrap
-			eyebrow="Quartermaster / SIEM store"
-			title="Armory"
-			ariaLabel="Tactical credit balance"
-		>
-			{#snippet status()}
-				<p class="pd-eyebrow">Tactical credit balance</p>
-				<p class="pd-mono armory-balance" aria-live="polite">
-					{Number(tacticalCredits).toLocaleString()}
-					<span class="armory-balance__unit">TC</span>
-				</p>
-			{/snippet}
-			{#snippet children()}
-				<p class="armory-strap__sub">
-					Clearance <span class="pd-mono">LVL {String(operativeLevel).padStart(2, '0')}</span> · line
-					items priced in <strong>Tactical Credits</strong>
-				</p>
-			{/snippet}
-		</PlayerOsPageStrap>
-
-		<PlayerOsTabRail
-			tabs={armoryTabs}
-			active={armoryWorkspace}
-			onSelect={selectArmoryWorkspace}
-			ariaLabel="Armory workspace"
-		/>
-
-	<ArmoryCommandDeck
-		{operativeAvatar}
-		{operativeLoadout}
-		{ownedCosmetics}
-		{operativeLevel}
-		{tacticalCredits}
-		{rankLabel}
-		albumOwnedCount={ownedSeasonOneCardIds.size}
-		albumCap={SEASON_ONE_ALBUM_CAP}
-		{lineItems}
-	/>
-
-	{#if armoryWorkspace === 'quartermaster'}
-		<section
-			id="quartermaster-grid"
-			class="qa-grid bento-grid bento-grid--12col bento-grid--liquid tw-grid tw-grid-cols-1 lg:tw-grid-cols-12"
-			aria-label="Available armory line items"
-		>
-			{#each lineItems as item (item.id)}
-				<article class="qa-card pd-os-deck {qaCardSpanClass} tw-min-w-0">
-					<div class="qa-card__icon" aria-hidden="true">
-						<Icon name={item.icon as IconName} />
-					</div>
-					<span
-						class="qa-pill"
-						class:qa-pill--phys={item.type === 'physical'}
-						class:qa-pill--dig={item.type === 'digital'}
-					>
-						{item.type === 'physical' ? 'PHYSICAL' : 'DIGITAL'}
-					</span>
-					<h2 class="qa-card__title">{item.title}</h2>
-					<p class="qa-card__desc">{item.description}</p>
-					<p class="qa-card__cost">
-						<span class="pd-eyebrow">List price</span>
-						<span class="pd-mono"
-							>{item.cost.toLocaleString()} <span class="armory-balance__unit">TC</span></span
-						>
-					</p>
-					{#if tacticalCredits >= item.cost}
-						<PlayerOsButton
-							variant="data"
-							class="btn-primary"
-							disabled={armoryBusy}
-							onclick={async () => {
-								await requestDeployment(item);
-							}}
-						>
-							REQUEST DEPLOYMENT
-						</PlayerOsButton>
-					{:else}
-						<div class="pd-empty-state pd-empty-state--compact qa-insufficient" role="status">
-							<div class="pd-empty-state__copy">
-								<p class="pd-empty-state__title">Insufficient TC</p>
-								<p class="pd-empty-state__lede">
-									Earn credits via
-									<a href="/player/dashboard" class="qa-insufficient__link">HQ missions</a>
-									or
-									<a href="/player/workout" class="qa-insufficient__link">training sessions</a>.
-								</p>
-							</div>
+		<!-- Gear Unlocks (bento-span-4) -->
+		<section class="bento-card bento-span-4 armory__gear">
+			<h2 class="gear-title">Requisition Log</h2>
+			<div class="gear-list">
+				{#each CATALOG as item}
+					{@const isUnlocked = !item.isPremium || unlockedCosmetics.includes(item.id)}
+					{@const isEquipped = equipped[item.type] === item.id}
+					
+					<div class="gear-item" class:locked={!isUnlocked} class:equipped={isEquipped}>
+						<div class="gear-info">
+							<span class="gear-name">{item.name}</span>
+							<span class="gear-type">{item.type}</span>
 						</div>
-					{/if}
-				</article>
-			{:else}
-				<p class="qa-empty pd-mono">
-					No line items at your clearance. Increase Operative level to reveal SKUs.
-				</p>
-			{/each}
+						<div class="gear-actions">
+							{#if isUnlocked}
+								<button class="btn btn-equip" onclick={() => equipItem(item)}>
+									{isEquipped ? 'Equipped' : 'Equip'}
+								</button>
+							{:else}
+								<button class="btn btn-unlock" onclick={() => unlockItem(item.id)}>
+									{item.cost} XP
+								</button>
+							{/if}
+						</div>
+					</div>
+				{/each}
+			</div>
 		</section>
-	{:else if armoryWorkspace === 'studio'}
-		<div class="pd-os-deck pd-content-wrap tw-min-w-0 tw-p-4 sm:tw-p-5">
-		{#await import('$lib/components/player/OperativeLoadoutStudio.svelte') then { default: OperativeLoadoutStudio }}
-			<OperativeLoadoutStudio
-				bind:operativeAvatar
-				bind:operativeLoadout
-				bind:ownedCosmetics
-				{ownedPortraitParts}
-				ownedSeasonOneCards={[...ownedSeasonOneCardIds]}
-				playerEmailKey={playerEmailKey}
-				playerDisplayName={vaultDisplayName}
-				{rankLabel}
-				{operativeLevel}
-				clubName={clubDisplayName}
-				telemetryTotalXp={totalXpHud.toLocaleString()}
-				initialSlot={studioInitialSlot}
-				initialPortraitPart={studioInitialPart}
-			/>
-		{:catch err}
-			<p class="qa-empty pd-mono" role="alert">
-				Studio unavailable — {err instanceof Error ? err.message : 'load failed'}
-			</p>
-		{/await}
-		</div>
-	{:else if armoryWorkspace === 'ceremonies'}
-		<div class="pd-os-deck pd-content-wrap tw-min-w-0 tw-p-4 sm:tw-p-5">
-		{#await import('$lib/components/player/OperativeCeremoniesPanel.svelte') then { default: OperativeCeremoniesPanel }}
-			<OperativeCeremoniesPanel playerEmail={playerEmailKey} />
-		{:catch err}
-			<p class="qa-empty pd-mono" role="alert">
-				Ceremonies unavailable — {err instanceof Error ? err.message : 'load failed'}
-			</p>
-		{/await}
-		</div>
-	{:else}
-		<div class="pd-os-deck pd-content-wrap tw-min-w-0 tw-p-4 sm:tw-p-5">
-		<ArmoryAlbumWorkspace bind:selectedAlbumSetId {ownedSeasonOneCardIds} />
-		</div>
-	{/if}
 	</div>
-
-	<PlayerDiegeticOverlay
-		open={overlayOpen}
-		variant={overlayVariant}
-		title={overlayTitle}
-		message={overlayMessage}
-		autoDismissMs={overlayAutoDismissMs}
-		onConfirm={closeOverlay}
-		onCancel={closeOverlay}
-	/>
 </div>
+
+<style>
+	.armory-studio {
+		padding: 24px;
+		display: flex;
+		flex-direction: column;
+		gap: 24px;
+		background: #000000;
+		min-height: 100vh;
+	}
+
+	.armory__header {
+		display: flex;
+		justify-content: space-between;
+		align-items: flex-end;
+		border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+		padding-bottom: 16px;
+	}
+
+	.armory__title {
+		font-family: var(--font-mono, 'Geist Mono', monospace);
+		font-size: 1.5rem;
+		text-transform: uppercase;
+		color: #f8fafc;
+		margin: 0;
+	}
+
+	.armory__economy {
+		display: flex;
+		align-items: baseline;
+		gap: 8px;
+	}
+
+	.grit-label {
+		font-family: var(--font-mono, 'Geist Mono', monospace);
+		font-size: 0.75rem;
+		color: #94a3b8;
+		text-transform: uppercase;
+	}
+
+	.grit-value {
+		font-family: var(--font-mono, 'Geist Mono', monospace);
+		font-size: 1.25rem;
+		color: #f59e0b; /* Atompunk Amber for currency */
+		font-weight: 700;
+	}
+
+	.bento-grid {
+		display: grid;
+		grid-template-columns: repeat(12, 1fr);
+		gap: 16px;
+	}
+
+	.bento-card {
+		background: #020617;
+		border: 1px solid rgba(255, 255, 255, 0.05);
+		border-radius: 12px;
+		padding: 24px;
+	}
+
+	.bento-span-8 { grid-column: span 8; }
+	.bento-span-4 { grid-column: span 4; }
+
+	.armory__hero {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		position: relative;
+		min-height: 500px;
+	}
+
+	.canvas-wrapper {
+		width: 400px;
+		height: 500px;
+		background: #000000; /* Void Contract */
+		border-radius: 8px;
+		box-shadow: inset 0 0 20px rgba(0,0,0,0.8);
+		overflow: hidden;
+	}
+
+	.color-engine {
+		position: absolute;
+		bottom: 24px;
+		left: 24px;
+		display: flex;
+		flex-direction: column;
+		gap: 8px;
+	}
+
+	.color-title {
+		font-family: var(--font-mono, 'Geist Mono', monospace);
+		font-size: 0.75rem;
+		color: #64748b;
+		margin: 0;
+	}
+
+	.color-btn {
+		width: 24px;
+		height: 24px;
+		border-radius: 50%;
+		border: 2px solid transparent;
+		cursor: pointer;
+		transition: all 0.2s;
+	}
+
+	.color-btn.cyan { background: #14b8a6; }
+	.color-btn.amber { background: #f59e0b; }
+
+	.color-btn.active {
+		border-color: #ffffff;
+		box-shadow: 0 0 10px currentColor;
+	}
+
+	.gear-title {
+		font-family: var(--font-mono, 'Geist Mono', monospace);
+		font-size: 1rem;
+		color: #cbd5e1;
+		margin: 0 0 16px 0;
+		text-transform: uppercase;
+	}
+
+	.gear-list {
+		display: flex;
+		flex-direction: column;
+		gap: 12px;
+	}
+
+	.gear-item {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		padding: 12px;
+		background: #0f172a;
+		border-radius: 8px;
+		border: 1px solid rgba(255, 255, 255, 0.05);
+		transition: all 0.2s;
+	}
+
+	.gear-item.locked {
+		opacity: 0.4;
+		filter: grayscale(100%);
+	}
+
+	.gear-item.equipped {
+		border-color: #14b8a6;
+		background: rgba(20, 184, 166, 0.05);
+	}
+
+	.gear-info {
+		display: flex;
+		flex-direction: column;
+	}
+
+	.gear-name {
+		font-family: var(--font-mono, 'Geist Mono', monospace);
+		font-size: 0.875rem;
+		color: #f8fafc;
+	}
+
+	.gear-type {
+		font-family: var(--font-mono, 'Geist Mono', monospace);
+		font-size: 0.65rem;
+		color: #64748b;
+		text-transform: uppercase;
+	}
+
+	.btn {
+		font-family: var(--font-mono, 'Geist Mono', monospace);
+		font-size: 0.75rem;
+		padding: 6px 12px;
+		border-radius: 4px;
+		cursor: pointer;
+		text-transform: uppercase;
+		font-weight: bold;
+		border: none;
+	}
+
+	.btn-unlock {
+		background: #f59e0b;
+		color: #000000;
+	}
+
+	.btn-equip {
+		background: #334155;
+		color: #f8fafc;
+	}
+
+	.gear-item.equipped .btn-equip {
+		background: #14b8a6;
+		color: #000000;
+	}
+</style>

@@ -857,7 +857,9 @@
 			role="dialog"
 			aria-modal="true"
 			aria-labelledby="phh-otp-title"
+			tabindex="-1"
 			onclick={(e) => e.stopPropagation()}
+			onkeydown={(e) => e.stopPropagation()}
 		>
 			<p class="phh-eyebrow tw-mb-2 tw-text-cyan-300/80">Clearance code</p>
 			<h3 id="phh-otp-title" class="phh-otp-h3 tw-m-0">

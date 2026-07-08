@@ -1,7 +1,9 @@
 <script lang="ts">
 	import { getContext } from 'svelte';
 	import { db } from '$lib/firebase.js';
-	import { collection, query, orderBy, limit, getDocs } from 'firebase/firestore';
+	import { doc, getDoc, collection, query, orderBy, limit, getDocs } from 'firebase/firestore';
+	import { httpsCallable } from 'firebase/functions';
+	import { getFunctions } from 'firebase/functions';
 	import { ADMIN_CLUB_CTX_KEY } from '../adminClubCtx.js';
 	import type { AdminClubCtx } from '../adminClubCtx.js';
 	import Icon from '$lib/components/ui/Icon.svelte';
@@ -22,6 +24,11 @@
 	// Dunning Engine Auto-Chase Toggle
 	let autoChaseEnabled = $state(true);
 	let dunningStatus = $state('Grace Period'); // Mock status
+
+	// Financial Routing (Phase 2)
+	let isStripeConnected = $state(false);
+	let stripePayoutsEnabled = $state(false);
+	let isConnecting = $state(false);
 
 	$effect(() => {
 		let cancelled = false;
@@ -49,7 +56,21 @@
 			}
 		}
 
+		async function fetchCredentials() {
+			try {
+				const snap = await getDoc(doc(db, 'integration_credentials', ctx.clubId));
+				if (cancelled) return;
+				if (snap.exists()) {
+					isStripeConnected = snap.data().stripeOnboardingComplete ?? false;
+					stripePayoutsEnabled = snap.data().stripePayoutsEnabled ?? false;
+				}
+			} catch (err: any) {
+				console.error(err);
+			}
+		}
+
 		fetchLedger();
+		fetchCredentials();
 		return () => {
 			cancelled = true;
 		};
@@ -61,10 +82,58 @@
 		if (type === 'trial') isTrialModalOpen = false;
 		if (type === 'revoke') isRevokeModalOpen = false;
 	}
+
+	async function handleConnectBank() {
+		isConnecting = true;
+		try {
+			const functions = getFunctions();
+			const initiateStripeConnect = httpsCallable(functions, 'initiateStripeConnect');
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
+			const result = await initiateStripeConnect({ }) as any;
+			if (result.data && result.data.url) {
+				window.location.href = result.data.url;
+			}
+		} catch (e) {
+			console.error(e);
+			alert('Failed to initiate onboarding');
+		} finally {
+			isConnecting = false;
+		}
+	}
 </script>
 
 <div class="tw-flex tw-flex-col tw-gap-6 tw-w-full">
 	
+	<!-- ── Financial Routing (Stripe Connect) ───────────────────────── -->
+	<div class="tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-rounded-[24px] tw-p-6">
+		<h2 class="tw-text-[#FAFAFA] tw-font-bold tw-text-lg tw-m-0 tw-mb-4">Financial Routing</h2>
+		{#if !isStripeConnected}
+			<div class="tw-flex tw-items-center tw-justify-between">
+				<p class="tw-text-[#A1A1AA] tw-text-sm">Bank account is unconnected. Platform revenue splitting requires an active Stripe Express account.</p>
+				<button 
+					class="tw-bg-[#fbbf24] hover:tw-bg-[#f59e0b] tw-text-[#0f172a] tw-px-6 tw-py-3 tw-rounded-lg tw-font-bold tw-text-sm tw-transition-colors disabled:tw-opacity-50"
+					onclick={handleConnectBank}
+					disabled={isConnecting}
+				>
+					{isConnecting ? 'Connecting...' : 'Connect Bank Account'}
+				</button>
+			</div>
+		{:else}
+			<div class="tw-flex tw-items-center tw-gap-8 tw-font-mono tw-text-sm">
+				<div class="tw-flex tw-flex-col">
+					<span class="tw-text-[#A1A1AA] tw-text-xs tw-mb-1 tw-tracking-widest">STATUS</span>
+					<span class="tw-text-[#10b981] tw-font-bold">CONNECTED</span>
+				</div>
+				<div class="tw-flex tw-flex-col">
+					<span class="tw-text-[#A1A1AA] tw-text-xs tw-mb-1 tw-tracking-widest">PAYOUTS</span>
+					<span class={stripePayoutsEnabled ? "tw-text-[#10b981] tw-font-bold" : "tw-text-[#f59e0b] tw-font-bold"}>
+						{stripePayoutsEnabled ? 'ACTIVE' : 'PENDING VERIFICATION'}
+					</span>
+				</div>
+			</div>
+		{/if}
+	</div>
+
 	<!-- ── Operations Dashboard & Dunning Engine ─────────────────────── -->
 	<div class="tw-grid tw-grid-cols-1 lg:tw-grid-cols-12 tw-gap-6">
 		

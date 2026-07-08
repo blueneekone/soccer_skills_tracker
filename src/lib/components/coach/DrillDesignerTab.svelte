@@ -23,7 +23,7 @@
 			<DrillDesignerHUD {engine} />
 
 			<div class="card-body">
-				<label>Spatial Layout</label>
+				<h3>Spatial Layout</h3>
 				<DrillDesignerArena {engine} />
 				<button class="btn-primary w-100 tw-mt-4" onclick={() => engine.saveWorkout()}>Save to team library</button>
 			</div>

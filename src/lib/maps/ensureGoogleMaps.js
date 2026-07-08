@@ -103,7 +103,7 @@ function loadMapsScriptClassic(apiKey) {
 		const s = document.createElement('script');
 		s.setAttribute('data-sst-google-maps', '1');
 		s.async = true;
-		s.src = `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(apiKey)}&loading=async&v=weekly&callback=${cbName}`;
+		s.src = `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(apiKey)}&libraries=places&loading=async&v=weekly&callback=${cbName}`;
 		s.onerror = () => {
 			cleanup();
 			reject(new Error('Failed to fetch maps.googleapis.com/maps/api/js (blocked network/CSP)'));

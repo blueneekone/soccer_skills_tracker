@@ -21,6 +21,7 @@
 	import { portal } from '$lib/actions/portal.js';
 	import Icon from '$lib/components/ui/Icon.svelte';
 	import type { IconName } from '$lib/icons/registry.js';
+	import { importLibrary, setOptions } from '@googlemaps/js-api-loader';
 	/**
 	 * @typedef {{
 	 *   id: string,
@@ -60,6 +61,83 @@
 	let saving = $state(false);
 	let errMsg = $state('');
 	let okMsg  = $state('');
+
+	let addressInput = $state<HTMLInputElement | null>(null);
+	let facilityInput = $state<HTMLInputElement | null>(null);
+
+	$effect(() => {
+		if (open && (addressInput || facilityInput)) {
+			let addressAutocomplete: any = null;
+			let facilityAutocomplete: any = null;
+			let addressObserver: MutationObserver | null = null;
+			let facilityObserver: MutationObserver | null = null;
+
+			setOptions({
+				key: import.meta.env.VITE_GOOGLE_MAPS_API_KEY,
+				v: 'weekly',
+				libraries: ['places']
+			});
+
+			importLibrary('places').then(() => {
+				if (addressInput) {
+					addressAutocomplete = new globalThis.google.maps.places.Autocomplete(addressInput, { 
+						fields: ['formatted_address', 'formatted_phone_number', 'name', 'geometry'] 
+					});
+					addressAutocomplete.addListener('place_changed', () => {
+						const place = addressAutocomplete!.getPlace();
+						if (place.formatted_address) {
+							verifiedAddress = place.formatted_address;
+						}
+						if (place.formatted_phone_number && !phoneNumber) {
+							phoneNumber = place.formatted_phone_number;
+						}
+					});
+
+					addressObserver = new MutationObserver(() => {
+						if (addressInput?.hasAttribute('disabled') && !saving) addressInput.removeAttribute('disabled');
+						if (addressInput?.placeholder === 'Oops! Something went wrong.') addressInput.placeholder = 'Start typing a verified street address…';
+						if (addressInput?.style.backgroundImage) addressInput.style.backgroundImage = '';
+					});
+					addressObserver.observe(addressInput, { attributes: true, attributeFilter: ['disabled', 'placeholder', 'style'] });
+				}
+				if (facilityInput) {
+					facilityAutocomplete = new globalThis.google.maps.places.Autocomplete(facilityInput, { 
+						fields: ['formatted_address', 'formatted_phone_number', 'name', 'geometry'] 
+					});
+					facilityAutocomplete.addListener('place_changed', () => {
+						const place = facilityAutocomplete!.getPlace();
+						if (place.formatted_address) {
+							primaryFacility = place.name ? `${place.name}, ${place.formatted_address}` : place.formatted_address || '';
+						}
+						if (place.formatted_phone_number && !phoneNumber) {
+							phoneNumber = place.formatted_phone_number;
+						}
+					});
+
+					facilityObserver = new MutationObserver(() => {
+						if (facilityInput?.hasAttribute('disabled') && !saving) facilityInput.removeAttribute('disabled');
+						if (facilityInput?.placeholder === 'Oops! Something went wrong.') facilityInput.placeholder = 'e.g. Mueller Athletic Complex, Austin TX';
+						if (facilityInput?.style.backgroundImage) facilityInput.style.backgroundImage = '';
+					});
+					facilityObserver.observe(facilityInput, { attributes: true, attributeFilter: ['disabled', 'placeholder', 'style'] });
+				}
+			}).catch(e => console.error('Failed to load places autocomplete', e));
+
+			return () => {
+				if (addressAutocomplete && typeof globalThis.google !== 'undefined') {
+					globalThis.google.maps.event.clearInstanceListeners(addressAutocomplete);
+				}
+				if (facilityAutocomplete && typeof globalThis.google !== 'undefined') {
+					globalThis.google.maps.event.clearInstanceListeners(facilityAutocomplete);
+				}
+				if (addressObserver) addressObserver.disconnect();
+				if (facilityObserver) facilityObserver.disconnect();
+				
+				// Clean up orphaned pac-containers
+				document.querySelectorAll('.pac-container').forEach(el => el.remove());
+			};
+		}
+	});
 
 	/** Re-hydrate the form whenever a new club is handed in or the modal reopens. */
 	$effect(() => {
@@ -115,7 +193,7 @@
 		if (!nm) return (errMsg = 'Organization name is required.');
 
 		const ph = phoneNumber.trim();
-		if (ph && !/^\+?[0-9\s().\-]{7,20}$/.test(ph)) {
+		if (ph && !/^\+?[0-9\s().-]{7,20}$/.test(ph)) {
 			return (errMsg = 'Phone number looks invalid. Use E.164 (e.g. +15125550100).');
 		}
 
@@ -290,6 +368,8 @@
 					<input
 						id="eom-address"
 						type="text"
+						bind:this={addressInput}
+						style="background-image: none !important;"
 						class="eom-input"
 						bind:value={verifiedAddress}
 						placeholder="Start typing a verified street address…"
@@ -310,6 +390,8 @@
 					<input
 						id="eom-facility"
 						type="text"
+						bind:this={facilityInput}
+						style="background-image: none !important;"
 						class="eom-input"
 						bind:value={primaryFacility}
 						placeholder="e.g. Mueller Athletic Complex, Austin TX"
@@ -351,6 +433,36 @@
 {/if}
 
 <style>
+	:global(.pac-container) {
+		background-color: #0f172a;
+		border: 1px solid #334155;
+		border-radius: 8px;
+		font-family: inherit;
+		color: #fafafa;
+		box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+		margin-top: 4px;
+	}
+	:global(.pac-item) {
+		padding: 10px 12px;
+		color: #d4d4d8;
+		border-top: 1px solid #1e293b;
+		cursor: pointer;
+	}
+	:global(.pac-item:hover) {
+		background-color: #1e293b;
+	}
+	:global(.pac-item-query) {
+		color: #fafafa;
+		font-size: 14px;
+	}
+	:global(.pac-matched) {
+		font-weight: bold;
+		color: #fbbf24;
+	}
+	:global(.pac-icon) {
+		filter: invert(0.8);
+	}
+
 	/* Strike 2 — True fixed overlay that hovers above the whole interface.
 	   The overlay itself handles both the dimmed scrim *and* the flex-centering
 	   of the dialog card. z-index 9999 guarantees it paints above the sidebar

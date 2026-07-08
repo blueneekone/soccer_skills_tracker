@@ -106,12 +106,22 @@ export class AdminOrgsEngine {
 	}
 
 	importViaStackSports = () => {
-		this.pushToast('Stack Sports OAuth Integration arriving in Sprint 2.9', 'info');
+		// Pass a temporary 'pending_import' or the admin's tenant ID
+		const clubId = 'pending_import'; 
+		
 		void logSecurityEvent(
 			'CLUB_IMPORT_STACK_SPORTS_INTENT',
 			'admin.organizations',
-			`Global Admin ${authStore.user?.email || 'unknown'} clicked Stack Sports import.`,
+			`Global Admin ${authStore.user?.email || 'unknown'} initiated Stack Sports OAuth for tenant: ${clubId}.`,
 		);
+
+		// Redirect to Cloud Function endpoint to initiate OAuth Handshake
+		const functionsEmulator = import.meta.env.VITE_FIREBASE_EMULATOR === 'true' || import.meta.env.DEV;
+		const baseUrl = functionsEmulator 
+			? 'http://127.0.0.1:5001/soccer-skills-tracker-dev/us-central1'
+			: 'https://us-central1-soccer-skills-tracker-prod.cloudfunctions.net';
+			
+		window.location.href = `${baseUrl}/stackSportsAuthInit?clubId=${clubId}`;
 	}
 
 	isAddModalOpen = $state(false);

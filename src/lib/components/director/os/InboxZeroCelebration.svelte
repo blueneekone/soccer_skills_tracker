@@ -88,6 +88,7 @@
 		letter-spacing: 0.1em;
 		background: linear-gradient(to right, #34d399, #10b981);
 		-webkit-background-clip: text;
+		background-clip: text;
 		-webkit-text-fill-color: transparent;
 		text-transform: uppercase;
 	}

@@ -17,6 +17,7 @@ export const adminLinks = [
 	{ label: 'Audit Log',       icon: 'status.shield-check', href: '/admin/audit-log' },
 	{ label: 'System Settings', icon: 'sys.settings-adv',  href: '/admin/system-settings' },
 	{ label: 'Support Terminal', icon: 'game.zap',         href: '/admin/support-terminal' },
+	{ label: 'Data Sync',       icon: 'ph-database',       href: '/admin/interoperability' },
 ];
 
 /** @type {ShellNavItem[]} */
@@ -35,6 +36,7 @@ export const directorLinks = [
 	{ tab: 'vanguard',   label: 'Mission Control',   icon: 'data.activity',      href: '/director?tab=vanguard' },
 	{ tab: 'retention',  label: 'Retention & PII',   icon: 'status.shield-check', href: '/director?tab=retention' },
 	{ label: 'Tournaments', icon: 'sys.calendar',     href: '/director/events' },
+	{ tab: 'sync',       label: 'Data Sync',         icon: 'ph-arrows-left-right', href: '/director?tab=sync' },
 ];
 
 /** @type {ShellNavItem[]} */

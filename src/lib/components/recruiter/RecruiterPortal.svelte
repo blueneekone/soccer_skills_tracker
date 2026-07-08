@@ -945,7 +945,7 @@
 		gap: 0.35rem;
 	}
 	.rp-filter-group--search { flex: 1; min-width: 160px; }
-	.rp-filter-group__icon { color: rgba(255,255,255,0.25); flex-shrink: 0; }
+
 	.rp-filter-group__label {
 		font-size: 0.5rem;
 		font-weight: 700;

@@ -121,6 +121,20 @@
 		<Icon name={"user.settings" as IconName} />
 		Users
 	</a>
+
+	<a
+		class="tw-flex tw-items-center tw-gap-2 tw-px-4 tw-py-2 tw-rounded-lg tw-font-sans tw-text-sm tw-font-bold tw-transition-colors"
+		class:tw-bg-[#1E293B]={page.url.pathname.startsWith(`/admin/organizations/${clubId}/marketing`)}
+		class:tw-text-[#FAFAFA]={page.url.pathname.startsWith(`/admin/organizations/${clubId}/marketing`)}
+		class:tw-text-[#D4D4D8]={!page.url.pathname.startsWith(`/admin/organizations/${clubId}/marketing`)}
+		class:hover:tw-text-[#FAFAFA]={!page.url.pathname.startsWith(`/admin/organizations/${clubId}/marketing`)}
+		href="/admin/organizations/{clubId}/marketing"
+		role="tab"
+		aria-selected={page.url.pathname.startsWith(`/admin/organizations/${clubId}/marketing`)}
+	>
+		<Icon name={"data.target" as IconName} />
+		Marketing
+	</a>
 </div>
 
 <!-- Child page slot -->

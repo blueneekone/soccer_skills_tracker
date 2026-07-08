@@ -37,6 +37,8 @@
 	import LoadoutUnlockCeremony from '$lib/components/player/LoadoutUnlockCeremony.svelte';
 	import NexusSidebar from '$lib/components/layout/NexusSidebar.svelte';
 	import AlertMatrix from '$lib/components/layout/AlertMatrix.svelte';
+	import DunningBanner from '$lib/components/shell/DunningBanner.svelte';
+	import LockoutInterstitial from '$lib/components/shell/LockoutInterstitial.svelte';
 	import {
 		connectLoadoutUnlockListener,
 		disconnectLoadoutUnlockListener,
@@ -485,6 +487,8 @@
 	<div class="tw-flex tw-w-full tw-h-screen tw-overflow-hidden tw-bg-[#0B0F19]">
 		
 		<main class="tw-flex-1 tw-flex tw-flex-col tw-min-w-0 tw-min-h-0 tw-overflow-hidden">
+			<DunningBanner />
+			<LockoutInterstitial />
 			{#if impersonationStore.active}
 				<ImpersonationBanner />
 			{/if}

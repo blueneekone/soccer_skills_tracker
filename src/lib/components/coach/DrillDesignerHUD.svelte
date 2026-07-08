@@ -13,8 +13,7 @@
 		<option value="gameday">Gameday Drill</option>
 	</select>
 	<input type="text" bind:value={engine.workoutName} placeholder="Drill name (required)" />
-	<label>Target duration (minutes)</label>
-	<input type="number" bind:value={engine.workoutDuration} min="1" max="120" />
+	<label>Target duration (minutes) <input type="number" bind:value={engine.workoutDuration} min="1" max="120" /></label>
 	<textarea bind:value={engine.workoutDesc} rows="3" placeholder="Coaching cues, constraints, progressions…"></textarea>
 </div>
 

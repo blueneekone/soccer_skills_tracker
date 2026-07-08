@@ -14,8 +14,8 @@
 
 	const registrarTransferPlayer = httpsCallable(functions, 'registrarTransferPlayer');
 
-	let email = $state(playerEmail);
-	let teamId = $state(targetTeamId);
+	let email = $state('');
+	let teamId = $state('');
 	let busy = $state(false);
 	let err = $state('');
 	let ok = $state('');
