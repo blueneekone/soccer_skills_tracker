@@ -30,6 +30,7 @@
     "functions-shared": "file:../functions-shared",
     "langchain": "^1.5.2",
     "pdf-parse": "^2.4.5",
+    "pdfmake": "^0.3.11",
     "qrcode": "^1.5.4",
     "sharp": "^0.34.5",
     "stripe": "^17.7.0"

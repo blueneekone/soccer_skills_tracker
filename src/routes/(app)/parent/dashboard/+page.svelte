@@ -137,7 +137,7 @@
 						</div>
 						<h3 class="tw-text-white tw-font-bold tw-text-xl tw-mb-2">Advanced Analytics & Live Feeds Locked</h3>
 						<p class="tw-text-[#cbd5e1] tw-mb-6 tw-text-sm tw-font-mono">Experience 1080p live streams, automated highlight reels, and tactical heatmaps of your athlete's performance.</p>
-						<button class="tw-bg-[#fbbf24] tw-text-[#0f172a] tw-font-bold tw-text-lg tw-w-full tw-py-4 tw-rounded-xl tw-hover:bg-[#f59e0b] tw-transition-colors tw-shadow-[0_0_20px_rgba(251,191,36,0.3)]">
+						<button class="tw-bg-[#fbbf24] tw-text-[#0f172a] tw-font-bold tw-text-lg tw-w-full tw-py-4 tw-rounded-xl tw-hover:bg-[#f59e0b] tw-transition-colors">
 							Unlock Premium Spectator Access ($24.99/mo)
 						</button>
 					</div>

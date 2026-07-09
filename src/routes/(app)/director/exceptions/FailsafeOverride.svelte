@@ -118,7 +118,7 @@
 	<!-- ── ACCESS DENIED ──────────────────────────────────────────────────── -->
 	<div
 		class="tw-flex tw-items-center tw-justify-center tw-min-h-[120px] tw-p-6
-		       tw-backdrop-blur-[40px] tw-bg-[#040f16]/85 tw-border tw-border-[#ff0055]/30
+		       tw-backdrop-blur-[40px] tw-bg-[#0B0F19]/85 tw-border tw-border-[#1E293B]
 		       tw-rounded-xl tw-mx-auto tw-max-w-md"
 	>
 		<div class="tw-text-center">
@@ -137,14 +137,10 @@
 	<!-- ── AUTHORIZED TERMINAL ───────────────────────────────────────────── -->
 	<div
 		class="tw-w-full tw-max-w-2xl tw-mx-auto tw-space-y-4
-		       tw-backdrop-blur-[40px] tw-bg-[#040f16]/85 tw-border tw-border-[#14b8a6]/20
+		       tw-backdrop-blur-[40px] tw-bg-[#0B0F19]/85 tw-border tw-border-[#1E293B]
 		       tw-rounded-xl tw-p-6 tw-relative tw-overflow-hidden"
 	>
-		<!-- Ambient glow -->
-		<div
-			class="tw-absolute tw-top-0 tw-left-0 tw-right-0 tw-h-px
-			       tw-bg-gradient-to-r tw-from-transparent tw-via-[#14b8a6]/40 tw-to-transparent"
-		></div>
+
 
 		<!-- ── HEADER ──────────────────────────────────────────────────────── -->
 		<div class="tw-space-y-2">
@@ -230,10 +226,10 @@
 							onclick={() => selectNode(node.id)}
 							class="tw-w-full tw-flex tw-items-center tw-justify-between
 							       tw-px-4 tw-py-3 tw-rounded-lg tw-transition-all tw-duration-200
-							       tw-bg-[#020202]/60 tw-border tw-text-left
+							       tw-bg-[#0B0F19] tw-border tw-text-left
 							       {selectedNodeId === node.id
-								? 'tw-border-[#14b8a6]/60 tw-shadow-[0_0_12px_rgba(20, 184, 166,0.15)]'
-								: 'tw-border-[#14b8a6]/10 hover:tw-border-[#14b8a6]/30'}"
+								? 'tw-border-[#14b8a6]/60'
+								: 'tw-border-[#1E293B] hover:tw-border-[#14b8a6]/30'}"
 						>
 							<div class="tw-space-y-0.5">
 								<p class="tw-font-mono tw-text-[10px] tw-tracking-wider tw-text-white/80">
@@ -292,7 +288,7 @@
 
 				<!-- Telemetry preview -->
 				<div
-					class="tw-bg-[#020202] tw-border tw-border-[#14b8a6]/10 tw-rounded-lg
+					class="tw-bg-[#0B0F19] tw-border tw-border-[#1E293B] tw-rounded-lg
 					       tw-px-4 tw-py-3"
 				>
 					<p
@@ -321,9 +317,9 @@
 						disabled={isClearing}
 						class="tw-w-full tw-py-3 tw-rounded-lg tw-font-mono tw-text-[10px]
 						       tw-tracking-widest tw-uppercase tw-font-bold tw-transition-all
-						       tw-duration-200 tw-bg-[#020202]/80
-						       tw-border tw-border-[#ff0055]/60 tw-text-[#ff0055]
-						       hover:tw-border-[#ff0055] hover:tw-shadow-[0_0_16px_rgba(255,0,85,0.25)]
+						       tw-duration-200 tw-bg-[#0B0F19]
+						       tw-border tw-border-[#1E293B] tw-text-[#ff0055]
+						       hover:tw-border-[#ff0055]
 						       hover:tw-bg-[#ff0055]/10
 						       disabled:tw-opacity-40 disabled:tw-cursor-not-allowed"
 					>

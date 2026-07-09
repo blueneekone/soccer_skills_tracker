@@ -247,7 +247,7 @@
 		<!-- ── Club identity header ────────────────────────────────────────────── -->
 		<div class="tw-flex tw-items-center tw-gap-4">
 			{#if typeof clubDoc.logoUrl === 'string' && clubDoc.logoUrl.trim()}
-				<img class="tw-w-14 tw-h-14 tw-rounded-xl tw-object-cover tw-border tw-border-[#334155] tw-shrink-0" src={clubDoc.logoUrl.trim()} alt="" loading="lazy" />
+				<img class="tw-w-14 tw-h-14 tw-rounded-xl tw-object-cover tw-border tw-border-[#1E293B] tw-shrink-0" src={clubDoc.logoUrl.trim()} alt="" loading="lazy" />
 			{:else}
 				<div class="tw-w-14 tw-h-14 tw-rounded-xl tw-bg-[#1E293B] tw-flex tw-items-center tw-justify-center tw-text-2xl tw-text-[#D4D4D8] tw-shrink-0" aria-hidden="true">
 					<Icon name={"org.building" as IconName} />
@@ -266,31 +266,31 @@
 
 		<!-- ── Info bento row ─────────────────────────────────────────────────── -->
 		<div class="tw-grid tw-grid-cols-2 lg:tw-grid-cols-4 tw-gap-4">
-			<div class="tw-flex tw-flex-col tw-gap-1 tw-p-4 tw-bg-[#020617] tw-border tw-border-[#334155] tw-rounded-xl">
+			<div class="tw-flex tw-flex-col tw-gap-1 tw-p-4 tw-bg-[#0B0F19] tw-border tw-border-[#1E293B] tw-rounded-xl">
 				<span class="tw-text-[10px] tw-font-extrabold tw-uppercase tw-tracking-wider tw-text-[#A1A1AA]">Sport</span>
 				<span class="tw-text-sm tw-font-bold tw-text-[#FAFAFA] tw-truncate">{clubDoc.sport || '—'}</span>
 			</div>
-			<div class="tw-flex tw-flex-col tw-gap-1 tw-p-4 tw-bg-[#020617] tw-border tw-border-[#334155] tw-rounded-xl">
+			<div class="tw-flex tw-flex-col tw-gap-1 tw-p-4 tw-bg-[#0B0F19] tw-border tw-border-[#1E293B] tw-rounded-xl">
 				<span class="tw-text-[10px] tw-font-extrabold tw-uppercase tw-tracking-wider tw-text-[#A1A1AA]">Director</span>
 				<span class="tw-text-sm tw-font-bold tw-text-[#FAFAFA] tw-font-mono tw-truncate">{clubDoc.directorEmail || '—'}</span>
 			</div>
-			<div class="tw-flex tw-flex-col tw-gap-1 tw-p-4 tw-bg-[#020617] tw-border tw-border-[#334155] tw-rounded-xl">
+			<div class="tw-flex tw-flex-col tw-gap-1 tw-p-4 tw-bg-[#0B0F19] tw-border tw-border-[#1E293B] tw-rounded-xl">
 				<span class="tw-text-[10px] tw-font-extrabold tw-uppercase tw-tracking-wider tw-text-[#A1A1AA]">Teams</span>
 				<span class="tw-text-sm tw-font-bold tw-text-[#FAFAFA] tw-font-mono tw-tabular-nums tw-truncate">{teamsCount}</span>
 			</div>
-			<div class="tw-flex tw-flex-col tw-gap-1 tw-p-4 tw-bg-[#020617] tw-border tw-border-[#334155] tw-rounded-xl">
+			<div class="tw-flex tw-flex-col tw-gap-1 tw-p-4 tw-bg-[#0B0F19] tw-border tw-border-[#1E293B] tw-rounded-xl">
 				<span class="tw-text-[10px] tw-font-extrabold tw-uppercase tw-tracking-wider tw-text-[#A1A1AA]">Created</span>
 				<span class="tw-text-sm tw-font-bold tw-text-[#FAFAFA] tw-font-mono tw-tabular-nums tw-truncate">{formatCreatedAt(clubDoc.createdAt)}</span>
 			</div>
 		</div>
 
 		<!-- ── Strike 2: Operations & Contact ───────────────────────── -->
-		<div class="tw-bg-[#020617] tw-border tw-border-[#334155] tw-rounded-xl tw-overflow-hidden">
-			<div class="tw-bg-[#0B0F19] tw-px-5 tw-py-4 tw-border-b tw-border-[#334155] tw-flex tw-items-center tw-gap-2 tw-text-[#FAFAFA] tw-font-bold tw-text-sm">
+		<div class="tw-bg-[#0B0F19] tw-border tw-border-[#1E293B] tw-rounded-xl tw-overflow-hidden">
+			<div class="tw-bg-[#0B0F19] tw-px-5 tw-py-4 tw-border-b tw-border-[#1E293B] tw-flex tw-items-center tw-gap-2 tw-text-[#FAFAFA] tw-font-bold tw-text-sm">
 				<Icon name={"sys.map-pin" as IconName} /> Operations & Contact
 			</div>
 			<div class="tw-p-5 tw-flex tw-flex-col tw-gap-4">
-				<div class="tw-grid tw-grid-cols-1 md:tw-grid-cols-[200px_1fr] tw-gap-4 tw-p-4 tw-bg-[#0B0F19] tw-border tw-border-[#334155] tw-rounded-lg">
+				<div class="tw-grid tw-grid-cols-1 md:tw-grid-cols-[200px_1fr] tw-gap-4 tw-p-4 tw-bg-[#0B0F19] tw-border tw-border-[#1E293B] tw-rounded-lg">
 					<span class="tw-inline-flex tw-items-center tw-gap-2 tw-text-xs tw-font-extrabold tw-tracking-wider tw-uppercase tw-text-[#A1A1AA]">
 						<Icon name={"sys.map-pin" as IconName} /> Verified Address
 					</span>
@@ -300,7 +300,7 @@
 						<span class="tw-text-sm tw-font-bold tw-text-[#A1A1AA]">No verified address on file.</span>
 					{/if}
 				</div>
-				<div class="tw-grid tw-grid-cols-1 md:tw-grid-cols-[200px_1fr] tw-gap-4 tw-p-4 tw-bg-[#0B0F19] tw-border tw-border-[#334155] tw-rounded-lg">
+				<div class="tw-grid tw-grid-cols-1 md:tw-grid-cols-[200px_1fr] tw-gap-4 tw-p-4 tw-bg-[#0B0F19] tw-border tw-border-[#1E293B] tw-rounded-lg">
 					<span class="tw-inline-flex tw-items-center tw-gap-2 tw-text-xs tw-font-extrabold tw-tracking-wider tw-uppercase tw-text-[#A1A1AA]">
 						<Icon name={"comm.phone" as IconName} /> Phone Number
 					</span>
@@ -310,7 +310,7 @@
 						<span class="tw-text-sm tw-font-bold tw-text-[#A1A1AA]">No phone number on file.</span>
 					{/if}
 				</div>
-				<div class="tw-grid tw-grid-cols-1 md:tw-grid-cols-[200px_1fr] tw-gap-4 tw-p-4 tw-bg-[#0B0F19] tw-border tw-border-[#334155] tw-rounded-lg">
+				<div class="tw-grid tw-grid-cols-1 md:tw-grid-cols-[200px_1fr] tw-gap-4 tw-p-4 tw-bg-[#0B0F19] tw-border tw-border-[#1E293B] tw-rounded-lg">
 					<span class="tw-inline-flex tw-items-center tw-gap-2 tw-text-xs tw-font-extrabold tw-tracking-wider tw-uppercase tw-text-[#A1A1AA]">
 						<Icon name={"sport.soccer" as IconName} /> Primary Facility
 					</span>
@@ -324,8 +324,8 @@
 		</div>
 
 		<!-- ── Licensing & Entitlement Bento ────────────────────────────────────────── -->
-		<div class="tw-bg-[#0B0F19] tw-border tw-border-[#334155] tw-rounded-xl tw-overflow-hidden">
-			<div class="tw-bg-[#0B0F19] tw-px-5 tw-py-4 tw-border-b tw-border-[#334155] tw-flex tw-items-center tw-gap-2 tw-text-[#FAFAFA] tw-font-bold tw-text-sm">
+		<div class="tw-bg-[#0B0F19] tw-border tw-border-[#1E293B] tw-rounded-xl tw-overflow-hidden">
+			<div class="tw-bg-[#0B0F19] tw-px-5 tw-py-4 tw-border-b tw-border-[#1E293B] tw-flex tw-items-center tw-gap-2 tw-text-[#FAFAFA] tw-font-bold tw-text-sm">
 				<Icon name={"sys.credit-card" as IconName} /> Licensing & Entitlement
 			</div>
 			<div class="tw-p-5">
@@ -369,7 +369,7 @@
 					<p class="tw-text-sm tw-text-[#A1A1AA] tw-font-bold tw-mb-6">No entitlement document found for this organization.</p>
 				{/if}
 
-				<hr class="tw-border-t tw-border-[#334155] tw-my-6" />
+				<hr class="tw-border-t tw-border-[#1E293B] tw-my-6" />
 
 				<p class="tw-text-xs tw-font-extrabold tw-tracking-wider tw-uppercase tw-text-[#A1A1AA] tw-mb-4">Generate New License</p>
 				{#if licenseErr}
@@ -381,18 +381,18 @@
 				<div class="tw-grid tw-grid-cols-1 md:tw-grid-cols-3 tw-gap-4 tw-mb-4">
 					<div class="tw-flex tw-flex-col tw-gap-1">
 						<label class="tw-text-xs tw-font-bold tw-text-[#D4D4D8]" for="cd-lic-type">License Type</label>
-						<select id="cd-lic-type" bind:value={licenseType} disabled={licenseBusy} class="tw-w-full tw-px-3 tw-py-2 tw-rounded-lg tw-bg-[#0B0F19] tw-border tw-border-[#334155] tw-text-[#FAFAFA] tw-font-bold tw-text-sm">
+						<select id="cd-lic-type" bind:value={licenseType} disabled={licenseBusy} class="tw-w-full tw-px-3 tw-py-2 tw-rounded-lg tw-bg-[#0B0F19] tw-border tw-border-[#1E293B] tw-text-[#FAFAFA] tw-font-bold tw-text-sm">
 							<option value="subscription">Monthly subscription</option>
 							<option value="trial">Free trial</option>
 						</select>
 					</div>
 					<div class="tw-flex tw-flex-col tw-gap-1">
 						<label class="tw-text-xs tw-font-bold tw-text-[#D4D4D8]" for="cd-lic-seats">Seat Limit</label>
-						<input id="cd-lic-seats" type="number" min="1" bind:value={licenseMaxSeats} disabled={licenseBusy} class="tw-w-full tw-px-3 tw-py-2 tw-rounded-lg tw-bg-[#0B0F19] tw-border tw-border-[#334155] tw-text-[#FAFAFA] tw-font-mono tw-font-bold tw-text-sm" />
+						<input id="cd-lic-seats" type="number" min="1" bind:value={licenseMaxSeats} disabled={licenseBusy} class="tw-w-full tw-px-3 tw-py-2 tw-rounded-lg tw-bg-[#0B0F19] tw-border tw-border-[#1E293B] tw-text-[#FAFAFA] tw-font-mono tw-font-bold tw-text-sm" />
 					</div>
 					<div class="tw-flex tw-flex-col tw-gap-1">
 						<label class="tw-text-xs tw-font-bold tw-text-[#D4D4D8]" for="cd-lic-months">Duration (months)</label>
-						<input id="cd-lic-months" type="number" min="1" max="120" bind:value={licenseDurationMonths} disabled={licenseBusy} class="tw-w-full tw-px-3 tw-py-2 tw-rounded-lg tw-bg-[#0B0F19] tw-border tw-border-[#334155] tw-text-[#FAFAFA] tw-font-mono tw-font-bold tw-text-sm" />
+						<input id="cd-lic-months" type="number" min="1" max="120" bind:value={licenseDurationMonths} disabled={licenseBusy} class="tw-w-full tw-px-3 tw-py-2 tw-rounded-lg tw-bg-[#0B0F19] tw-border tw-border-[#1E293B] tw-text-[#FAFAFA] tw-font-mono tw-font-bold tw-text-sm" />
 					</div>
 				</div>
 				<button
@@ -407,8 +407,8 @@
 		</div>
 
 		<!-- ── Edit organization ──────────────────────────────────────────────── -->
-		<div class="tw-bg-[#020617] tw-border tw-border-[#334155] tw-rounded-xl tw-overflow-hidden">
-			<div class="tw-bg-[#0B0F19] tw-px-5 tw-py-4 tw-border-b tw-border-[#334155] tw-flex tw-items-center tw-gap-2 tw-text-[#FAFAFA] tw-font-bold tw-text-sm">
+		<div class="tw-bg-[#0B0F19] tw-border tw-border-[#1E293B] tw-rounded-xl tw-overflow-hidden">
+			<div class="tw-bg-[#0B0F19] tw-px-5 tw-py-4 tw-border-b tw-border-[#1E293B] tw-flex tw-items-center tw-gap-2 tw-text-[#FAFAFA] tw-font-bold tw-text-sm">
 				<Icon name={"action.edit" as IconName} /> Edit Organization
 			</div>
 			<div class="tw-p-5">
@@ -422,7 +422,7 @@
 				<div class="tw-flex tw-flex-col tw-gap-4 tw-mb-6">
 					<div class="tw-flex tw-flex-col tw-gap-1">
 						<label class="tw-text-xs tw-font-extrabold tw-uppercase tw-tracking-wider tw-text-[#A1A1AA]" for="cd-edit-sport">Sport</label>
-						<select id="cd-edit-sport" bind:value={editSport} disabled={editSaving} class="tw-w-full tw-px-3 tw-py-2 tw-rounded-lg tw-bg-[#0B0F19] tw-border tw-border-[#334155] tw-text-[#FAFAFA] tw-font-bold tw-text-sm">
+						<select id="cd-edit-sport" bind:value={editSport} disabled={editSaving} class="tw-w-full tw-px-3 tw-py-2 tw-rounded-lg tw-bg-[#0B0F19] tw-border tw-border-[#1E293B] tw-text-[#FAFAFA] tw-font-bold tw-text-sm">
 							<option value="soccer">Soccer</option>
 							<option value="basketball">Basketball</option>
 							<option value="baseball">Baseball</option>
@@ -434,7 +434,7 @@
 						</select>
 					</div>
 
-					<div class="tw-flex tw-items-center tw-justify-between tw-gap-4 tw-p-4 tw-rounded-lg tw-border tw-border-[#334155] tw-bg-[#0B0F19]">
+					<div class="tw-flex tw-items-center tw-justify-between tw-gap-4 tw-p-4 tw-rounded-lg tw-border tw-border-[#1E293B] tw-bg-[#0B0F19]">
 						<div class="tw-flex tw-flex-col">
 							<label class="tw-text-sm tw-font-bold tw-text-[#FAFAFA] tw-cursor-pointer" for="cd-edit-infinite">
 								Grant Infinite License (Promo)
@@ -463,8 +463,8 @@
 		</div>
 
 		<!-- ── Assign Director ────────────────────────────────────────────────── -->
-		<div class="tw-bg-[#020617] tw-border tw-border-[#334155] tw-rounded-xl tw-overflow-hidden">
-			<div class="tw-bg-[#0B0F19] tw-px-5 tw-py-4 tw-border-b tw-border-[#334155] tw-flex tw-items-center tw-gap-2 tw-text-[#FAFAFA] tw-font-bold tw-text-sm">
+		<div class="tw-bg-[#0B0F19] tw-border tw-border-[#1E293B] tw-rounded-xl tw-overflow-hidden">
+			<div class="tw-bg-[#0B0F19] tw-px-5 tw-py-4 tw-border-b tw-border-[#1E293B] tw-flex tw-items-center tw-gap-2 tw-text-[#FAFAFA] tw-font-bold tw-text-sm">
 				<Icon name={"user.settings" as IconName} /> Assign Director
 			</div>
 			<div class="tw-p-5">
@@ -480,7 +480,7 @@
 						bind:value={assignDirEmail}
 						placeholder="director@example.com"
 						disabled={assignDirSaving}
-						class="tw-flex-1 tw-min-w-0 tw-px-3 tw-py-2 tw-rounded-lg tw-bg-[#0B0F19] tw-border tw-border-[#334155] tw-text-[#FAFAFA] tw-font-bold tw-text-sm"
+						class="tw-flex-1 tw-min-w-0 tw-px-3 tw-py-2 tw-rounded-lg tw-bg-[#0B0F19] tw-border tw-border-[#1E293B] tw-text-[#FAFAFA] tw-font-bold tw-text-sm"
 					/>
 					<button
 						type="button"
@@ -495,7 +495,7 @@
 		</div>
 
 		<!-- ── Danger zone ─────────────────────────────────────────────────────── -->
-		<div class="tw-p-6 tw-border tw-border-[#334155] tw-bg-[#0B0F19] tw-rounded-xl tw-flex tw-flex-col tw-gap-3">
+		<div class="tw-p-6 tw-border tw-border-[#1E293B] tw-bg-[#0B0F19] tw-rounded-xl tw-flex tw-flex-col tw-gap-3">
 			<p class="tw-m-0 tw-flex tw-items-center tw-gap-2 tw-text-xs tw-font-extrabold tw-tracking-wider tw-uppercase tw-text-[#ef4444]">
 				<Icon name={"status.warning" as IconName} /> Danger Zone
 			</p>
@@ -518,11 +518,11 @@
 			<!-- svelte-ignore a11y_click_events_have_key_events -->
 			<!-- svelte-ignore a11y_no_static_element_interactions -->
 			<div
-				class="tw-fixed tw-inset-0 tw-z-50 tw-flex tw-items-center tw-justify-center tw-bg-[#020617]/80 tw-backdrop-blur-xl"
+				class="tw-fixed tw-inset-0 tw-z-50 tw-flex tw-items-center tw-justify-center tw-bg-[#0B0F19]/80 tw-backdrop-blur-xl"
 				onclick={() => { if (!deleteExecuting) deleteModalOpen = false; }}
 			>
 				<div
-					class="tw-w-[400px] tw-max-w-[90vw] tw-bg-[#0B0F19] tw-border tw-border-[#334155] tw-rounded-xl tw-p-6 tw-flex tw-flex-col tw-gap-4 tw-shadow-2xl"
+					class="tw-w-[400px] tw-max-w-[90vw] tw-bg-[#0B0F19] tw-border tw-border-[#1E293B] tw-rounded-xl tw-p-6 tw-flex tw-flex-col tw-gap-4"
 					onclick={(e) => e.stopPropagation()}
 				>
 					{#if deleteConfirmStep === 1}
@@ -534,7 +534,7 @@
 							You are about to permanently delete <span class="tw-text-[#FAFAFA]">"{ctx.clubDoc.name || ctx.clubId}"</span>. This will destroy the organization metadata.
 						</p>
 						<div class="tw-flex tw-items-center tw-justify-end tw-gap-3 tw-mt-4">
-							<button type="button" class="tw-px-4 tw-py-2 tw-rounded-lg tw-font-bold tw-text-sm tw-bg-[#1E293B] tw-text-[#FAFAFA] hover:tw-bg-[#334155]" onclick={() => deleteModalOpen = false}>Cancel</button>
+							<button type="button" class="tw-px-4 tw-py-2 tw-rounded-lg tw-font-bold tw-text-sm tw-bg-[#1E293B] tw-text-[#FAFAFA] hover:tw-bg-[#1E293B]" onclick={() => deleteModalOpen = false}>Cancel</button>
 							<button type="button" class="tw-px-4 tw-py-2 tw-rounded-lg tw-font-bold tw-text-sm tw-bg-[#f59e0b] tw-text-[#1E293B] hover:tw-bg-[#fbbf24]" onclick={advanceDelete}>Yes, proceed</button>
 						</div>
 					{:else if deleteConfirmStep === 2}
@@ -546,7 +546,7 @@
 							This is a destructive action that cannot be undone. Are you absolutely certain you want to annihilate this organization?
 						</p>
 						<div class="tw-flex tw-items-center tw-justify-end tw-gap-3 tw-mt-4">
-							<button type="button" class="tw-px-4 tw-py-2 tw-rounded-lg tw-font-bold tw-text-sm tw-bg-[#1E293B] tw-text-[#FAFAFA] hover:tw-bg-[#334155]" disabled={deleteExecuting} onclick={() => deleteModalOpen = false}>Cancel</button>
+							<button type="button" class="tw-px-4 tw-py-2 tw-rounded-lg tw-font-bold tw-text-sm tw-bg-[#1E293B] tw-text-[#FAFAFA] hover:tw-bg-[#1E293B]" disabled={deleteExecuting} onclick={() => deleteModalOpen = false}>Cancel</button>
 							<button type="button" class="tw-px-4 tw-py-2 tw-rounded-lg tw-font-bold tw-text-sm tw-bg-[#ef4444] tw-text-[#FAFAFA] hover:tw-bg-[#dc2626]" disabled={deleteExecuting} onclick={executeDeletion}>
 								{deleteExecuting ? 'Deleting…' : 'Delete Permanently'}
 							</button>

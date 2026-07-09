@@ -67,6 +67,7 @@ export interface PublicScore {
 	scoreAway: number;
 	outcome: 'W' | 'L' | 'D';
 	teamId: string;
+	recordedAt: Timestamp | null;
 }
 
 export interface LockedMetrics {
@@ -101,6 +102,13 @@ export class CarRideEngine {
 	readonly shouldIntercept = $derived(
 		this.pendingFixtureId !== null && !this.attested,
 	);
+
+	/** Derived: whether the metrics are temporally embargoed (15 mins post-match) */
+	readonly isTemporallyEmbargoed = $derived.by(() => {
+		if (!this.publicScore || !this.publicScore.recordedAt) return false;
+		const FIFTEEN_MINS = 15 * 60 * 1000;
+		return (Date.now() - this.publicScore.recordedAt.toMillis()) < FIFTEEN_MINS;
+	});
 
 	// ── Private fields ─────────────────────────────────────────────────────────
 
@@ -163,6 +171,10 @@ export class CarRideEngine {
 	 */
 	async attest(): Promise<void> {
 		if (!this.pendingFixtureId || this.attested || this.isAttesting) return;
+		if (this.isTemporallyEmbargoed) {
+			this.error = 'Match metrics are temporally locked for 15 minutes. Focus on the conversation.';
+			return;
+		}
 
 		this.isAttesting = true;
 		this.error = null;
@@ -273,6 +285,7 @@ export class CarRideEngine {
 			scoreAway: (data.scoreAway as number) ?? 0,
 			outcome,
 			teamId: (data.teamId as string) ?? '',
+			recordedAt: (data.recordedAt as Timestamp) ?? null,
 		};
 		this.conversationAnchor = this._pickAnchor(outcome);
 	}

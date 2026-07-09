@@ -34,6 +34,7 @@ const CODEBASES = {
       'src/domains/eligibilityOps.js',
       'src/domains/ngbExportOps.js',
       'src/domains/federationSyncOps.js',
+      'src/domains/reportOps.js',
     ],
   },
   rl: {

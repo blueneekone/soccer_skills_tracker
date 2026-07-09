@@ -227,11 +227,19 @@ html {
 }
 
 .dark-form-surface {
+	--vanguard-bg:        #0b0f19;
+	--vanguard-surface:        #131c2e;
+	--vanguard-surface-raised: #182236;
+	--vanguard-border:    rgba(148, 163, 184, 0.12);
+	--vanguard-border-strong: rgba(148, 163, 184, 0.22);
+	--border-slate-800:   #1e293b;
 	--text-primary: #fafafa;
 	--text-secondary: #d4d4d8;
 	--text-muted: #a1a1aa;
 	color: var(--text-primary);
+	background-color: var(--vanguard-bg);
 }
+
 
 :root.dark, .dark {
 	--vanguard-bg:        #0b0f19;   /* Slate-900 global background — NO pure black */
@@ -253,11 +261,19 @@ html {
 }
 
 .dark-form-surface {
+	--vanguard-bg:        #0b0f19;
+	--vanguard-surface:        #131c2e;
+	--vanguard-surface-raised: #182236;
+	--vanguard-border:    rgba(148, 163, 184, 0.12);
+	--vanguard-border-strong: rgba(148, 163, 184, 0.22);
+	--border-slate-800:   #1e293b;
 	--text-primary: #fafafa;
 	--text-secondary: #d4d4d8;
 	--text-muted: #a1a1aa;
 	color: var(--text-primary);
+	background-color: var(--vanguard-bg);
 }
+
 
 :root.dark, .dark, .dark-form-surface {
 	--vanguard-text-primary: var(--text-primary);
@@ -1455,4 +1471,12 @@ body.modal-open {
 .alert-matrix-item:hover {
 	background-color: rgba(148, 163, 184, 0.08);
 	border-color: var(--border-slate-800);
+}
+
+
+/* Sprint 3.1.2 - Mobile Data Table Scrolling */
+.vanguard-table-wrapper {
+	overflow-x: auto;
+	-webkit-overflow-scrolling: touch;
+	overscroll-behavior-x: contain;
 }

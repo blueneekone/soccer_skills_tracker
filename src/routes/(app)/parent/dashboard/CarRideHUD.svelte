@@ -27,7 +27,7 @@
 			class="tw-absolute tw-inset-0 tw-flex tw-items-center tw-justify-center tw-p-6 tw-pointer-events-auto"
 		>
 			<div
-				class="tw-w-full tw-max-w-md tw-flex tw-flex-col tw-gap-6 tw-rounded-2xl tw-border tw-border-[#ff0055]/30 tw-bg-[#0a0206]/95 tw-backdrop-blur-sm tw-p-8 tw-shadow-[0_0_80px_rgba(255,0,85,0.08)]"
+				class="tw-w-full tw-max-w-md tw-flex tw-flex-col tw-gap-6 tw-rounded-2xl tw-border tw-border-[#1E293B] tw-bg-[#0B0F19]/95 tw-backdrop-blur-sm tw-p-8"
 			>
 				<!-- Protocol badge -->
 				<div class="tw-flex tw-items-center tw-justify-center tw-gap-2">
@@ -80,11 +80,13 @@
 				<!-- Attest CTA -->
 				<button
 					onclick={() => engine.attest()}
-					disabled={engine.isAttesting}
+					disabled={engine.isAttesting || engine.isTemporallyEmbargoed}
 					class="tw-w-full tw-font-mono tw-text-[10px] tw-tracking-widest tw-uppercase tw-border tw-border-[#ff0055] tw-text-[#ff0055] tw-bg-[#ff0055]/10 tw-rounded-lg tw-px-6 tw-py-4 tw-transition-all tw-duration-200
-						{engine.isAttesting ? 'tw-opacity-50 tw-cursor-not-allowed' : 'hover:tw-bg-[#ff0055]/20 hover:tw-shadow-[0_0_20px_rgba(255,0,85,0.35)] active:tw-scale-[0.98]'}"
+						{engine.isAttesting || engine.isTemporallyEmbargoed ? 'tw-opacity-50 tw-cursor-not-allowed' : 'hover:tw-bg-[#ff0055]/20 active:tw-scale-[0.98]'}"
 				>
-					{#if engine.isAttesting}
+					{#if engine.isTemporallyEmbargoed}
+						[ EMBARGOED: 15 MIN TEMPORAL LOCK ]
+					{:else if engine.isAttesting}
 						[ LOGGING ATTESTATION... ]
 					{:else}
 						[ ATTEST EQ COMPLIANCE &amp; UNLOCK METRICS ]
