@@ -54,7 +54,7 @@
 				the Revenue Ledger module shows your YTD volume, fees paid, and the
 				comparison vs the legacy seat plan.
 			</p>
-			<a class="upgrade-info-link" href="/director">Open Director OS →</a>
+			<a class="upgrade-info-link" href="/director/dashboard">Open Director OS →</a>
 		</section>
 	{:else}
 		<PricingTable />

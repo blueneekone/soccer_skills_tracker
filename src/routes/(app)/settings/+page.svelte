@@ -509,7 +509,7 @@
 			<div class="st-section">
 				<div class="st-section-label">ORGANISATION MANAGEMENT</div>
 				<div class="st-link-grid">
-					<a href="/director" class="st-link-card">
+					<a href="/director/dashboard" class="st-link-card">
 						<div class="st-link-card-title">MISSION CONTROL</div>
 						<div class="st-link-card-sub">Roster, invites, season config</div>
 					</a>

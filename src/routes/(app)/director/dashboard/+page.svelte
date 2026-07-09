@@ -7,8 +7,8 @@
 	import TeamsTab from '$lib/components/director/TeamsTab.svelte';
 	import BrandingTab from '$lib/components/director/BrandingTab.svelte';
 	import ComplianceTab from '$lib/components/director/ComplianceTab.svelte';
-	import UplinkTerminal from './dashboard/UplinkTerminal.svelte';
-	import IntakePanopticon from './dashboard/IntakePanopticon.svelte';
+	import UplinkTerminal from './UplinkTerminal.svelte';
+	import IntakePanopticon from './IntakePanopticon.svelte';
 	import VpcApprovalQueue from '$lib/components/director/os/VpcApprovalQueue.svelte';
 	import HouseholdLinkerPanel from '$lib/components/director/HouseholdLinkerPanel.svelte';
 	import RegistrarInviteTab from '$lib/components/director/RegistrarInviteTab.svelte';

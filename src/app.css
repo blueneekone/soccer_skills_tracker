@@ -491,6 +491,43 @@ body {
 	}
 
 	/**
+	 * .vanguard-btn-amber
+	 * Action Gold CTA — strictly for primary conversion actions.
+	 */
+	.vanguard-btn-amber {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		gap: 0.5rem;
+		width: fit-content;
+		min-height: 44px;
+		background: rgba(245, 158, 11, 0.08);
+		border: 1px solid #f59e0b;
+		color: #f59e0b;
+		font-family: var(--font-mono);
+		font-size: 0.75rem;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+		padding: 0.5rem 1rem;
+		border-radius: var(--vanguard-radius-sm);
+		cursor: pointer;
+		text-decoration: none;
+		transition:
+			background var(--motion-base) var(--motion-ease),
+			border-color var(--motion-base) var(--motion-ease);
+	}
+
+	.vanguard-btn-amber:hover:not(:disabled) {
+		background: rgba(245, 158, 11, 0.16);
+		border-color: #f59e0b;
+	}
+
+	.vanguard-btn-amber:disabled {
+		opacity: 0.4;
+		cursor: not-allowed;
+	}
+
+	/**
 	 * .vanguard-btn-danger
 	 * Ares Red CTA — for destructive / critical actions.
 	 * Hover glow is intentionally retained as a critical-state signal.

@@ -3,6 +3,7 @@
 	<meta name="robots" content="noindex, nofollow" />
 </svelte:head>
 
+<div class="tw-flex tw-w-full tw-min-h-dvh tw-flex-col tw-bg-[#0f172a] tw-text-[#f8fafc] tw-font-sans tw-selection:bg-[#14b8a6] tw-selection:text-[#0f172a]">
 <div class="legal-root">
 	<div class="legal-scanlines" aria-hidden="true"></div>
 
@@ -181,13 +182,14 @@
 		</div>
 	</main>
 </div>
+</div>
 
 <style>
 	.legal-root {
 		min-height: 100dvh;
-		background: #020208;
+		background: transparent;
 		position: relative;
-		padding: 1.5rem 1rem 3rem;
+		padding: clamp(6rem, 10vw, 7.5rem) clamp(1rem, 4vw, 2rem) clamp(3rem, 6vw, 5rem);
 	}
 
 	.legal-scanlines {
@@ -238,8 +240,8 @@
 	}
 
 	.legal-panel {
-		background: rgba(6, 8, 16, 0.9);
-		border: 1px solid rgba(20, 184, 166, 0.1);
+		background: #0B0F19;
+		border: 1px solid #1e293b;
 		border-radius: 14px;
 		overflow: hidden;
 	}
@@ -247,7 +249,7 @@
 	.legal-doc-header {
 		padding: 2rem 2rem 1.5rem;
 		background: rgba(20, 184, 166, 0.03);
-		border-bottom: 1px solid rgba(20, 184, 166, 0.08);
+		border-bottom: 1px solid #1e293b;
 		display: flex;
 		flex-direction: column;
 		gap: 0.5rem;
@@ -256,14 +258,14 @@
 	.legal-doc-badge {
 		display: inline-block;
 		padding: 2px 10px;
-		background: rgba(168, 85, 247, 0.1);
-		border: 1px solid rgba(168, 85, 247, 0.25);
+		background: rgba(20, 184, 166, 0.1);
+		border: 1px solid rgba(20, 184, 166, 0.25);
 		border-radius: 4px;
 		font-family: 'JetBrains Mono', monospace;
 		font-size: 0.6rem;
 		font-weight: 800;
 		letter-spacing: 0.2em;
-		color: rgba(168, 85, 247, 0.8);
+		color: #14b8a6;
 		align-self: flex-start;
 	}
 
@@ -293,9 +295,9 @@
 
 	.legal-section { display: flex; flex-direction: column; gap: 0.6rem; }
 	.legal-section--highlight {
-		border-left: 2px solid rgba(251, 146, 60, 0.35);
+		border-left: 2px solid #f59e0b;
 		padding-left: 1rem;
-		background: rgba(251, 146, 60, 0.02);
+		background: rgba(245, 158, 11, 0.02);
 	}
 
 	.legal-h2 {
@@ -304,9 +306,9 @@
 		font-size: 0.7rem;
 		font-weight: 800;
 		letter-spacing: 0.16em;
-		color: rgba(168, 85, 247, 0.75);
+		color: #14b8a6;
 		padding-bottom: 0.4rem;
-		border-bottom: 1px solid rgba(168, 85, 247, 0.1);
+		border-bottom: 1px solid rgba(20, 184, 166, 0.1);
 	}
 
 	.legal-body p {
@@ -333,7 +335,7 @@
 		justify-content: center;
 		gap: 0.75rem;
 		padding: 1.25rem;
-		border-top: 1px solid rgba(255, 255, 255, 0.05);
+		border-top: 1px solid #1e293b;
 	}
 
 	.legal-footer__link {

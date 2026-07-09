@@ -47,7 +47,7 @@
 	<h2 class="ops-panel__title">Roster</h2>
 	<p class="ops-panel__sub">
 		Import CSV below or add one player at a time on
-		<a class="ops-link" href="/coach">Daily Intel</a>.
+		<a class="ops-link" href="/coach/dashboard">Daily Intel</a>.
 		Linked players with email appear in the list automatically.
 	</p>
 

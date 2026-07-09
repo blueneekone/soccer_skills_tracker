@@ -30,13 +30,14 @@
 	<meta property="og:type" content="website" />
 </svelte:head>
 
-<div class="acq-root">
-	<header class="acq-hero">
+<div class="tw-flex tw-w-full tw-min-h-dvh tw-flex-col tw-bg-[#0f172a] tw-text-[#f8fafc] tw-font-sans tw-selection:bg-[#14b8a6] tw-selection:text-[#0f172a]">
+	<div class="acq-root">
+		<header class="acq-hero">
 		<p class="acq-eyebrow">{ACQ_BADGE}</p>
 		<h1 class="acq-h1">{ACQ_HEADLINE}</h1>
 		<p class="acq-lede">{ACQ_SUBHEAD}</p>
 		<div class="acq-hero__actions">
-			<a class="tw-vanguard-btn-primary" href={ACQ_PDF_EXECUTIVE_BRIEF} download>
+			<a class="vanguard-btn-primary" href={ACQ_PDF_EXECUTIVE_BRIEF} download>
 				Download executive brief (PDF)
 			</a>
 			<a class="acq-btn-secondary" href={ACQ_PDF_PROSPECTUS} download>
@@ -140,7 +141,7 @@
 	<footer class="acq-cta">
 		<p class="acq-cta__copy">Request demo access, QA tenant provisioning, or technical transfer pack.</p>
 		<div class="acq-cta__actions">
-			<a class="tw-vanguard-btn-primary" href="mailto:{ACQ_CONTACT_EMAIL}?subject=SSTracker%20acquisition%20inquiry">
+			<a class="vanguard-btn-primary" href="mailto:{ACQ_CONTACT_EMAIL}?subject=SSTracker%20acquisition%20inquiry">
 				Contact acquisition →
 			</a>
 			<a class="acq-cta__ghost" href="/">Back to landing</a>
@@ -152,6 +153,7 @@
 			<a href="/acquisition/print/director-trust-brief">Print director trust brief</a>
 		</nav>
 	</footer>
+	</div>
 </div>
 
 <style>
@@ -177,7 +179,7 @@
 		font-size: 0.6875rem;
 		font-weight: 700;
 		letter-spacing: 0.22em;
-		color: #fbbf24;
+		color: #14b8a6;
 	}
 
 	.acq-h1 {
@@ -210,28 +212,28 @@
 		align-items: center;
 		min-height: 40px;
 		padding: 0 1rem;
-		border: 1px solid #334155;
+		border: 1px solid #1e293b;
 		border-radius: 4px;
 		font-family: var(--font-mono);
 		font-size: 0.6875rem;
 		font-weight: 700;
 		letter-spacing: 0.08em;
-		color: #fbbf24;
+		color: #14b8a6;
 		text-decoration: none;
-		background: rgb(2 2 2 / 0.6);
+		background: transparent;
 		transition: border-color 150ms ease, background 150ms ease;
 	}
 
 	.acq-btn-secondary:hover {
-		border-color: #fbbf24;
-		background: rgb(251 191 36 / 0.08);
+		border-color: #14b8a6;
+		background: rgba(20, 184, 166, 0.08);
 	}
 
 	.acq-win {
 		margin: 0;
 		padding: clamp(1.25rem, 3vw, 1.75rem);
-		border-left: 3px solid #fbbf24;
-		background: rgb(15 23 42 / 0.45);
+		border-left: 3px solid #14b8a6;
+		background: #0B0F19;
 		border-radius: 0 8px 8px 0;
 	}
 
@@ -262,9 +264,10 @@
 		display: flex;
 		flex-direction: column;
 		gap: 0.5rem;
-		border: 1px solid #334155;
+		border: 1px solid #1e293b;
 		border-radius: 8px;
 		overflow: hidden;
+		background: #0B0F19;
 	}
 
 	.acq-traction__row {
@@ -272,7 +275,7 @@
 		grid-template-columns: minmax(140px, 34%) 1fr;
 		gap: 0.75rem;
 		padding: 0.65rem 1rem;
-		border-bottom: 1px solid rgb(51 65 85 / 0.6);
+		border-bottom: 1px solid #1e293b;
 		font-size: 0.8125rem;
 	}
 
@@ -285,7 +288,7 @@
 		font-size: 0.625rem;
 		font-weight: 700;
 		letter-spacing: 0.08em;
-		color: #fbbf24;
+		color: #14b8a6;
 	}
 
 	.acq-traction__value {
@@ -301,9 +304,9 @@
 
 	.acq-card {
 		padding: 1.25rem;
-		border: 1px solid #334155;
+		border: 1px solid #1e293b;
 		border-radius: 8px;
-		background: rgb(2 2 2 / 0.6);
+		background: #0B0F19;
 	}
 
 	.acq-h3 {
@@ -333,7 +336,7 @@
 		flex-direction: column;
 		gap: 0.25rem;
 		padding-bottom: 0.85rem;
-		border-bottom: 1px solid rgb(30 41 59);
+		border-bottom: 1px solid #1e293b;
 		font-size: 0.875rem;
 		line-height: 1.6;
 		color: var(--vanguard-text-3, #cbd5e1);
@@ -352,9 +355,9 @@
 
 	.acq-limit {
 		padding: 1rem;
-		border: 1px solid rgb(51 65 85 / 0.7);
+		border: 1px solid #1e293b;
 		border-radius: 8px;
-		background: rgb(2 2 2 / 0.4);
+		background: #0B0F19;
 	}
 
 	.acq-limit__label {
@@ -371,7 +374,7 @@
 		font-size: 0.625rem;
 		font-weight: 700;
 		letter-spacing: 0.12em;
-		color: #fbbf24;
+		color: #14b8a6;
 	}
 
 	.acq-limit__note {
@@ -403,7 +406,7 @@
 		align-items: baseline;
 		gap: 0.5rem;
 		padding: 0.45rem 0;
-		border-bottom: 1px solid rgb(30 41 59);
+		border-bottom: 1px solid #1e293b;
 	}
 
 	.acq-dataroom code {
@@ -425,7 +428,7 @@
 
 	.acq-cta {
 		padding-top: 1rem;
-		border-top: 1px solid rgb(30 41 59);
+		border-top: 1px solid #1e293b;
 		display: flex;
 		flex-direction: column;
 		align-items: flex-start;

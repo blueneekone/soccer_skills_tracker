@@ -5,6 +5,8 @@
 	import CarRideHome from '$lib/components/parent/CarRideHome.svelte';
 	import CoOpArena from '$lib/components/parent/co-op/CoOpArena.svelte';
 	import BountyTerminal from '$lib/components/parent/co-op/BountyTerminal.svelte';
+	import Icon from '$lib/components/ui/Icon.svelte';
+	import type { IconName } from '$lib/icons/registry.js';
 
 	// For the engine, we will dynamically import or mock it for the dashboard
 	// Assuming CoOpEngine exists and is available
@@ -114,7 +116,7 @@
 				<div class="tw-bg-[#1e293b] tw-rounded-xl tw-p-4 tw-border tw-border-[#334155] tw-h-48 tw-flex tw-items-center tw-justify-center tw-relative tw-overflow-hidden">
 					<div class="tw-absolute tw-top-4 tw-right-4 tw-px-2 tw-py-1 tw-bg-green-500/10 tw-text-green-400 tw-text-[10px] tw-font-mono tw-tracking-widest tw-rounded">SAFESPORT_COMPLIANT</div>
 					<div class="tw-absolute tw-bottom-4 tw-left-4 tw-flex tw-items-center tw-gap-2">
-						<svg class="tw-w-4 tw-h-4 tw-text-[#94a3b8]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+						<Icon name={"sys.lock" as IconName} class="tw-w-4 tw-h-4 tw-text-[#94a3b8]" />
 						<span class="tw-text-[#94a3b8] tw-text-[10px] tw-font-mono tw-tracking-widest">PRIVATE MESSAGING DISABLED FOR MINORS</span>
 					</div>
 					<p class="tw-text-[#64748b] tw-font-mono tw-text-sm tw-text-center tw-px-8">Coach-to-athlete communications are CC'd to this thread automatically for full oversight.</p>
@@ -133,7 +135,7 @@
 				<div class="tw-absolute tw-inset-0 tw-z-10 tw-mt-14 tw-bg-[#0f172a]/40 tw-backdrop-blur-[20px] tw-rounded-[24px] tw-flex tw-flex-col tw-items-center tw-justify-center tw-border tw-border-white/10">
 					<div class="tw-text-center tw-max-w-md tw-px-6">
 						<div class="tw-text-[#fbbf24] tw-mb-4 tw-flex tw-justify-center">
-							<svg class="tw-w-12 tw-h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+							<Icon name={"sys.lock" as IconName} class="tw-w-12 tw-h-12" />
 						</div>
 						<h3 class="tw-text-white tw-font-bold tw-text-xl tw-mb-2">Advanced Analytics & Live Feeds Locked</h3>
 						<p class="tw-text-[#cbd5e1] tw-mb-6 tw-text-sm tw-font-mono">Experience 1080p live streams, automated highlight reels, and tactical heatmaps of your athlete's performance.</p>

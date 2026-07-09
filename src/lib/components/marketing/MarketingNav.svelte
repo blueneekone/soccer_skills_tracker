@@ -49,7 +49,7 @@
 		<!-- Desktop CTAs -->
 		<div class="mn-ctas">
 			<a href="/login" class="tw-vanguard-btn-secondary mn-cta-size">Sign In</a>
-			<a href="/setup" class="tw-btn-primary mn-cta-size">Start club →</a>
+			<a href="/setup" class="vanguard-btn-amber mn-cta-size">Start club →</a>
 		</div>
 
 		<!-- Mobile hamburger -->
@@ -239,8 +239,8 @@
 		margin-top: 0.5rem;
 		padding: 0.8rem;
 		border-radius: 4px;
-		background: var(--vanguard-accent);
-		border: 1px solid var(--vanguard-accent);
+		background: #f59e0b;
+		border: 1px solid #f59e0b;
 		font-family: var(--font-mono);
 		font-size: 0.65rem;
 		font-weight: 700;
@@ -255,7 +255,7 @@
 		transition: background-color 150ms ease;
 	}
 	.mn-mobile__cta:hover {
-		background: color-mix(in srgb, var(--vanguard-accent) 85%, white 15%);
+		background: color-mix(in srgb, #f59e0b 85%, white 15%);
 	}
 
 	@media (max-width: 768px) {
