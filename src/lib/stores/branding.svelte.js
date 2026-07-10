@@ -13,6 +13,7 @@ function createBrandingStore() {
 	let secondaryColor = $state(DEFAULT_PALETTE.accent);
 	let structuralColor = $state(DEFAULT_PALETTE.structural);
 	let bgUrl = $state('');
+	let courtType = $state('soccer'); // 'soccer' | 'basketball'
 
 	function applyToCss() {
 		applySixtyThirtyTenPalette(
@@ -36,6 +37,7 @@ function createBrandingStore() {
 		get secondaryColor() { return secondaryColor; },
 		get structuralColor() { return structuralColor; },
 		get bgUrl() { return bgUrl; },
+		get courtType() { return courtType; },
 
 		async loadForTeam(teamId) {
 			if (!teamId || teamId === 'admin') return;
@@ -49,6 +51,7 @@ function createBrandingStore() {
 					secondaryColor = data.secondaryColor || DEFAULT_PALETTE.accent;
 					structuralColor = data.structuralColor || DEFAULT_PALETTE.structural;
 					bgUrl = data.bgUrl || '';
+					courtType = data.courtType || 'soccer';
 					applyToCss();
 				}
 			} catch (err) {
@@ -64,6 +67,7 @@ function createBrandingStore() {
 			secondaryColor = data.secondaryColor || secondaryColor;
 			structuralColor = data.structuralColor || structuralColor;
 			bgUrl = data.bgUrl || bgUrl;
+			courtType = data.courtType || courtType;
 			applyToCss();
 		},
 
@@ -75,6 +79,7 @@ function createBrandingStore() {
 			secondaryColor = DEFAULT_PALETTE.accent;
 			structuralColor = DEFAULT_PALETTE.structural;
 			bgUrl = '';
+			courtType = 'soccer';
 			applyToCss();
 		},
 
@@ -86,6 +91,7 @@ function createBrandingStore() {
 			secondaryColor = DEFAULT_PALETTE.accent;
 			structuralColor = DEFAULT_PALETTE.structural;
 			bgUrl = '';
+			courtType = 'soccer';
 			if (typeof document !== 'undefined') {
 				document.body.style.backgroundImage = '';
 				document.body.style.backgroundSize = '';

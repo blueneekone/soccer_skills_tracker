@@ -153,11 +153,9 @@ const bindCoachView = () => {
 };
 
 // 🟢 FIX: Safely execute the binder regardless of ES6 module load time
-if (document.readyState === 'loading') {
-    document.addEventListener("DOMContentLoaded", bindCoachView);
-} else {
+export const initCoachBindings = () => {
     bindCoachView();
-}
+};
 
 // --- SCHEDULE & HOMEWORK VIEW ---
 export const loadCoachScheduleAndHW = async () => {
@@ -504,12 +502,12 @@ export const exportSessionData = () => {
 };
 
 // Bind the export button securely
-document.addEventListener("DOMContentLoaded", () => {
+export const initExportBinding = () => {
     const exportBtn = document.getElementById("exportXlsxBtn");
     if(exportBtn) {
         exportBtn.addEventListener("click", exportSessionData);
     }
-});
+};
 
 export const initStrategyBoard = () => {
     const canvas = document.getElementById("strategyCanvas");

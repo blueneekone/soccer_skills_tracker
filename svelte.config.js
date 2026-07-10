@@ -24,6 +24,10 @@ const config = {
 				if (path.startsWith('/acquisition/sstracker-') && path.endsWith('.pdf')) {
 					return;
 				}
+				// Stripe API routes are handled dynamically and should not break prerendering
+				if (path.startsWith('/api/')) {
+					return;
+				}
 				throw new Error(message);
 			},
 		}

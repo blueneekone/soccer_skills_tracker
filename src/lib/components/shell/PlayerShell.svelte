@@ -119,7 +119,7 @@
 <div
 	class="ps-root ps-root--dossier tw-w-full tw-max-w-[100vw] tw-overflow-x-hidden"
 >
-	<div class="ps-ambient" aria-hidden="true">
+	<div class="ps-ambient tw-pointer-events-none" aria-hidden="true">
 		<div class="ps-ambient__grid"></div>
 		<div class="ps-ambient__glow ps-ambient__glow--a"></div>
 		<div class="ps-ambient__glow ps-ambient__glow--b"></div>

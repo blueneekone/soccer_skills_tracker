@@ -3,6 +3,7 @@
 	<meta name="robots" content="noindex, nofollow" />
 </svelte:head>
 
+<div class="tw-flex tw-w-full tw-min-h-dvh tw-flex-col tw-bg-[#0f172a] tw-text-[#f8fafc] tw-font-sans tw-selection:bg-[#14b8a6] tw-selection:text-[#0f172a]">
 <div class="legal-root">
 	<div class="legal-scanlines" aria-hidden="true"></div>
 
@@ -162,13 +163,14 @@
 		</div>
 	</main>
 </div>
+</div>
 
 <style>
 	.legal-root {
 		min-height: 100dvh;
-		background: #020208;
+		background: transparent;
 		position: relative;
-		padding: 1.5rem 1rem 3rem;
+		padding: clamp(6rem, 10vw, 7.5rem) clamp(1rem, 4vw, 2rem) clamp(3rem, 6vw, 5rem);
 	}
 
 	.legal-scanlines {

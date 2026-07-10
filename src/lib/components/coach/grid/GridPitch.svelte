@@ -1,8 +1,10 @@
 <script>
+	import { brandingStore } from '$lib/stores/branding.svelte.js';
 	let { showLabels = false } = $props();
 
 	/** Flat SIEM data-cyan stroke — no glow (VS-3b). */
 	const NEON = '#14b8a6';
+	const isBasketball = $derived(brandingStore.courtType === 'basketball');
 </script>
 
 <!--
@@ -10,7 +12,11 @@
 -->
 
 <!-- Subtle grid backplate -->
-<rect width="100%" height="100%" fill="url(#cyber-grid)" mask="url(#grid-mask)" />
+{#if isBasketball}
+	<rect width="100%" height="100%" fill="#d2a679" />
+{:else}
+	<rect width="100%" height="100%" fill="url(#cyber-grid)" mask="url(#grid-mask)" />
+{/if}
 
 <!-- Pitch boundary -->
 <rect

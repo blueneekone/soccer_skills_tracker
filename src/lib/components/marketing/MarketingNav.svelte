@@ -11,7 +11,7 @@
 		{ href: '/features', label: 'Features' },
 		{ href: '/pricing', label: 'Pricing' },
 		{ href: '/acquisition', label: 'Acquisition' },
-		{ href: '/privacy', label: 'Privacy' },
+
 	];
 
 	$effect(() => {
@@ -183,7 +183,7 @@
 	}
 
 	/* Hamburger */
-	.mn-hamburger {
+	:global(.mn-hamburger) {
 		display: none;
 		flex-direction: column;
 		gap: 4px;
@@ -196,17 +196,18 @@
 		min-width: 44px;
 		align-items: center;
 		justify-content: center;
+		z-index: 1000;
 	}
-	.mn-hamburger__bar {
+	:global(.mn-hamburger__bar) {
 		width: 20px;
 		height: 1.5px;
 		background: rgba(255, 255, 255, 0.55);
 		border-radius: 2px;
 		transition: transform 0.25s, opacity 0.25s, width 0.25s;
 	}
-	.mn-hamburger__bar--open:nth-child(1) { transform: translateY(5.5px) rotate(45deg); }
-	.mn-hamburger__bar--open:nth-child(2) { opacity: 0; width: 0; }
-	.mn-hamburger__bar--open:nth-child(3) { transform: translateY(-5.5px) rotate(-45deg); }
+	:global(.mn-hamburger__bar--open:nth-child(1)) { transform: translateY(5.5px) rotate(45deg); }
+	:global(.mn-hamburger__bar--open:nth-child(2)) { opacity: 0; width: 0; }
+	:global(.mn-hamburger__bar--open:nth-child(3)) { transform: translateY(-5.5px) rotate(-45deg); }
 
 	/* Mobile menu */
 	.mn-mobile {

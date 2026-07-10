@@ -8,6 +8,8 @@
 	import WarRoomGrid from '$lib/components/coach/WarRoomGrid.svelte';
 	import CheckrEmbed from '$lib/components/compliance/CheckrEmbed.svelte';
 	import { deriveCoachClearanceStep } from '$lib/compliance/checkrCoachClearance.js';
+	import Icon from '$lib/components/ui/Icon.svelte';
+	import type { IconName } from '$lib/icons/registry.js';
 
 	const role = $derived(authStore.role);
 
@@ -94,16 +96,7 @@
 
 		<!-- Pulsing shield icon -->
 		<div class="clearance-gate__shield" aria-hidden="true">
-			<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-				<path
-					d="M32 4L8 14v18c0 14 10.5 25.5 24 28 13.5-2.5 24-14 24-28V14L32 4Z"
-					stroke="var(--vanguard-red)"
-					stroke-width="2.5"
-					fill="rgba(255,0,60,0.08)"
-				/>
-				<line x1="32" y1="22" x2="32" y2="36" stroke="var(--vanguard-red)" stroke-width="3" stroke-linecap="round"/>
-				<circle cx="32" cy="43" r="2.5" fill="var(--vanguard-red)"/>
-			</svg>
+			<Icon name={"status.shield-alert" as IconName} size={48} color="var(--vanguard-red)" />
 		</div>
 
 		<!-- Status text -->

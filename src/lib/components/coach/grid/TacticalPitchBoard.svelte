@@ -89,14 +89,14 @@
 -->
 <div class="coach-tac-z3-stage tw-absolute tw-inset-0 tw-flex tw-items-center tw-justify-center">
 	<div
-		class="coach-tac-z3-pitch tw-relative tw-overflow-visible"
-		style="aspect-ratio: 16 / 9; max-width: 100%; max-height: 100%; width: 100%; height: 100%;"
+		class="coach-tac-z3-pitch tw-relative tw-overflow-visible tw-aspect-video tw-w-full tw-h-full"
+		style="max-width: 100%; max-height: 100%;"
 	>
 		<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
 		<!-- svelte-ignore a11y_click_events_have_key_events -->
 		<svg
 			bind:this={pitchSvgEl}
-			id="tactical-pitch-svg"
+			id="tactical-pitch"
 			class="tw-absolute tw-inset-0 tw-w-full tw-h-full tw-opacity-90 tw-touch-none tw-select-none {warRoomTool ===
 			'ROUTE'
 				? 'tw-cursor-crosshair'
