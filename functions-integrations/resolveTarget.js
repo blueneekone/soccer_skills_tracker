@@ -14,6 +14,9 @@ const EXPORT_NAMES = Object.freeze([
   'getUploadToken',
   'deleteAllPlayerMedia',
   'facilityWeatherWebhook',
+  'stackSportsAuthInit',
+  'stackSportsAuthCallback',
+  'syncStackSportsDataFn',
 ]);
 
 /** @type {Map<string, string>} lowercase service id → camelCase export */

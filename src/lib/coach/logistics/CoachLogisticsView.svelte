@@ -106,6 +106,7 @@
 		gap: 20px;
 		min-width: 0;
 		padding: var(--bento-pad-liquid, 1rem);
+		padding-bottom: calc(var(--bento-pad-liquid, 1rem) + 84px + env(safe-area-inset-bottom, 0px));
 	}
 
 	.logistics-head {

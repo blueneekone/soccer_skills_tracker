@@ -6,7 +6,7 @@
 .ps-shell-outer {
 	width: 100%;
 	max-width: 100%;
-	min-height: 100dvh;
+	min-height: 0;
 }
 
 .ps-root {
@@ -33,8 +33,9 @@
 	   so ps-stack's flex-grow would lock ps-root at 100dvh even on long pages. */
 	display: block;
 	width: 100%;
-	max-width: 100vw;
-	min-height: 100dvh;
+	max-width: 100%;
+	min-height: 0;
+	height: 100%;
 	overflow-x: hidden;
 	overflow-y: visible;
 	box-sizing: border-box;

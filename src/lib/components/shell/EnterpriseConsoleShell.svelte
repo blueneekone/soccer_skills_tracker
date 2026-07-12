@@ -182,9 +182,8 @@
 	});
 </script>
 
-<!-- svelte-ignore a11y_no_static_element_interactions -->
 <div
-	class="ec-shell-outer tw-h-[100dvh] tw-flex-col"
+	class="ec-shell-outer tw-flex-1 tw-flex tw-flex-col tw-min-h-0"
 	ontouchstart={fieldMenuSwipe.onTouchStart}
 	ontouchend={fieldMenuSwipe.onTouchEnd}
 >

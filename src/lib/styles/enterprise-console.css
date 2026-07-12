@@ -31,7 +31,6 @@
 	flex-direction: column;
 	width: 100%;
 	max-width: 100%;
-	min-height: 100dvh;
 }
 
 .ec-root {
@@ -40,8 +39,9 @@
 	align-items: stretch;
 	width: 100%;
 	max-width: 100%;
-	height: 100dvh;
-	max-height: 100dvh;
+	flex: 1 1 auto;
+	min-height: 0;
+	height: 100%;
 	background: var(--ec-canvas-bg, #f4f4f5);
 	box-sizing: border-box;
 	/* Create an isolated stacking context so global overlays (OfflineBanner,
@@ -761,7 +761,6 @@ html.dark .ec-icon-btn:hover {
 	overflow-x: hidden;
 	overflow-y: auto;
 	-webkit-overflow-scrolling: touch;
-	padding: var(--bento-pad-liquid);
 	box-sizing: border-box;
 	width: 100%;
 }

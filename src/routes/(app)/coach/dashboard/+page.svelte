@@ -129,10 +129,10 @@
 {:else}
 
 <!-- Vanguard root: deep void background, native page scrolling, no overflow traps. -->
-<div class="coach-nexus-canvas tw-relative tw-flex tw-flex-col tw-h-[100dvh] tw-w-full tw-text-slate-200">
+<div class="coach-nexus-canvas tw-relative tw-flex tw-flex-col tw-h-full tw-w-full tw-text-slate-200">
 	<!-- Background ambient grid -->
 	<div
-		class="tw-pointer-events-none tw-fixed tw-inset-0 tw-z-0 tw-opacity-[0.08]"
+		class="tw-pointer-events-none tw-absolute tw-inset-0 tw-z-0 tw-opacity-[0.08]"
 		style="background-image: linear-gradient(#0f172a 1px, transparent 1px), linear-gradient(90deg, #0f172a 1px, transparent 1px); background-size: 44px 44px;"
 		aria-hidden="true"
 	></div>
@@ -172,9 +172,9 @@
 	</header>
 
 	<!-- ── BODY — 12-col asymmetric bento ───────────────────────────────────── -->
-	<main
-		class="coach-nexus-main tw-relative tw-z-10 tw-mx-auto tw-box-border tw-w-full tw-max-w-7xl tw-flex-1 tw-min-h-0 tw-overflow-y-auto"
-		style="padding: var(--bento-pad-liquid); padding-bottom: calc(var(--bento-pad-liquid) + env(safe-area-inset-bottom, 0px));"
+	<main 
+		class="coach-nexus-main tw-relative tw-z-10 tw-mx-auto tw-box-border tw-w-full tw-max-w-7xl tw-flex-1 tw-min-h-0"
+		style="padding: var(--bento-pad-liquid); padding-bottom: calc(var(--bento-pad-liquid) + 84px + env(safe-area-inset-bottom, 0px));"
 	>
 		<div class="tw-grid tw-grid-cols-12 tw-gap-4" aria-label="Nexus Command workspace">
 			<!-- Top Navigation Section (3-section grid) -->

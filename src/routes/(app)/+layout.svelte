@@ -484,9 +484,9 @@
 	<!-- Sprint 2.7: Global Kill Switch — full-screen maintenance UI. -->
 	<MaintenanceGate message={featureFlagsStore.maintenanceMessage} />
 {:else if authStore.isAuthenticated && authStore.isProfileComplete && passkeyEligibilityConfirmed && routeGuardResolved && !holdShellForConsent}
-	<div class="tw-flex tw-w-full tw-h-screen tw-overflow-hidden tw-bg-[#0B0F19]">
+	<div class="tw-flex tw-w-full {authStore.role === 'player' ? 'tw-min-h-[100dvh] tw-flex-col' : 'tw-h-screen tw-overflow-hidden'} tw-bg-[#0B0F19]">
 		
-		<main class="tw-flex-1 tw-flex tw-flex-col tw-min-w-0 tw-min-h-0 tw-overflow-hidden">
+		<main class="tw-flex-1 tw-flex tw-flex-col tw-min-w-0 tw-min-h-0 {authStore.role !== 'player' ? 'tw-overflow-hidden' : ''}">
 			<DunningBanner />
 			<LockoutInterstitial />
 			{#if impersonationStore.active}

@@ -187,15 +187,6 @@
         ".git",
         "*.local"
       ]
-    },
-    {
-      "source": "functions",
-      "codebase": "monolith",
-      "ignore": [
-        "node_modules",
-        ".git",
-        "*.local"
-      ]
     }
   ],
   "emulators": {
@@ -207,3 +198,4 @@
     }
   }
 }
+

@@ -110,14 +110,13 @@
 
 <AlertsDrawer />
 
-<!-- svelte-ignore a11y_no_static_element_interactions -->
 <div
-	class="ps-shell-outer tw-h-[100dvh] tw-flex-col"
+	class="ps-shell-outer tw-flex-1 tw-flex tw-flex-col tw-min-h-0"
 	ontouchstart={fieldMenuSwipe.onTouchStart}
 	ontouchend={fieldMenuSwipe.onTouchEnd}
 >
 <div
-	class="ps-root ps-root--dossier tw-w-full tw-max-w-[100vw] tw-overflow-x-hidden"
+	class="ps-root ps-root--dossier tw-w-full tw-max-w-full tw-overflow-x-hidden"
 >
 	<div class="ps-ambient tw-pointer-events-none" aria-hidden="true">
 		<div class="ps-ambient__grid"></div>
