@@ -23,7 +23,7 @@
 <div
   class="tw-w-full tw-aspect-video tw-relative tw-overflow-hidden tw-rounded-xl tw-bg-[#020202] tw-border tw-border-[#14b8a6]/30"
 >
-  <svg viewBox="0 0 400 250" class="tw-w-full tw-h-full" xmlns="http://www.w3.org/2000/svg">
+  <svg viewBox="0 0 400 250" preserveAspectRatio="xMidYMid slice" class="tw-w-full tw-h-full" xmlns="http://www.w3.org/2000/svg">
     <!-- Obsidian field base -->
     <rect width="400" height="250" fill="#020202" />
 

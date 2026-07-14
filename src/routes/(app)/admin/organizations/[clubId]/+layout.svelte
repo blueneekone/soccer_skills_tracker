@@ -82,7 +82,7 @@
 <!-- Sub-page navigation tabs -->
 <div class="tw-flex tw-items-center tw-gap-2 tw-py-4 tw-mb-6 tw-bg-[#020617]" role="tablist">
 	<a
-		class="tw-flex tw-items-center tw-gap-2 tw-px-4 tw-py-2 tw-rounded-lg tw-font-sans tw-text-sm tw-font-bold tw-transition-colors"
+		class="tw-flex tw-items-center tw-gap-2 tw-px-4 tw-py-2 tw-rounded-none tw-font-sans tw-text-sm tw-font-bold tw-transition-colors"
 		class:tw-bg-[#1E293B]={page.url.pathname === `/admin/organizations/${clubId}`}
 		class:tw-text-[#FAFAFA]={page.url.pathname === `/admin/organizations/${clubId}`}
 		class:tw-text-[#D4D4D8]={page.url.pathname !== `/admin/organizations/${clubId}`}
@@ -95,7 +95,7 @@
 		Overview
 	</a>
 	<a
-		class="tw-flex tw-items-center tw-gap-2 tw-px-4 tw-py-2 tw-rounded-lg tw-font-sans tw-text-sm tw-font-bold tw-transition-colors"
+		class="tw-flex tw-items-center tw-gap-2 tw-px-4 tw-py-2 tw-rounded-none tw-font-sans tw-text-sm tw-font-bold tw-transition-colors"
 		class:tw-bg-[#1E293B]={page.url.pathname.startsWith(`/admin/organizations/${clubId}/teams`)}
 		class:tw-text-[#FAFAFA]={page.url.pathname.startsWith(`/admin/organizations/${clubId}/teams`)}
 		class:tw-text-[#D4D4D8]={!page.url.pathname.startsWith(`/admin/organizations/${clubId}/teams`)}
@@ -109,7 +109,7 @@
 	</a>
 
 	<a
-		class="tw-flex tw-items-center tw-gap-2 tw-px-4 tw-py-2 tw-rounded-lg tw-font-sans tw-text-sm tw-font-bold tw-transition-colors"
+		class="tw-flex tw-items-center tw-gap-2 tw-px-4 tw-py-2 tw-rounded-none tw-font-sans tw-text-sm tw-font-bold tw-transition-colors"
 		class:tw-bg-[#1E293B]={page.url.pathname.startsWith(`/admin/organizations/${clubId}/users`)}
 		class:tw-text-[#FAFAFA]={page.url.pathname.startsWith(`/admin/organizations/${clubId}/users`)}
 		class:tw-text-[#D4D4D8]={!page.url.pathname.startsWith(`/admin/organizations/${clubId}/users`)}
@@ -123,7 +123,7 @@
 	</a>
 
 	<a
-		class="tw-flex tw-items-center tw-gap-2 tw-px-4 tw-py-2 tw-rounded-lg tw-font-sans tw-text-sm tw-font-bold tw-transition-colors"
+		class="tw-flex tw-items-center tw-gap-2 tw-px-4 tw-py-2 tw-rounded-none tw-font-sans tw-text-sm tw-font-bold tw-transition-colors"
 		class:tw-bg-[#1E293B]={page.url.pathname.startsWith(`/admin/organizations/${clubId}/marketing`)}
 		class:tw-text-[#FAFAFA]={page.url.pathname.startsWith(`/admin/organizations/${clubId}/marketing`)}
 		class:tw-text-[#D4D4D8]={!page.url.pathname.startsWith(`/admin/organizations/${clubId}/marketing`)}

@@ -53,11 +53,11 @@
 				<ul class="tw-space-y-3 tw-m-0 tw-p-0" style="list-style: none;">
 					<li class="tw-flex tw-justify-between tw-items-center">
 						<span>Pending VPC requests</span>
-						<strong class="tw-text-[#FAFAFA] tw-font-mono tw-text-lg">0</strong>
+						<strong class="tw-text-[#FAFAFA] tw-font-mono tw-text-lg">{engine.executiveTotals.pendingVpc}</strong>
 					</li>
 					<li class="tw-flex tw-justify-between tw-items-center">
 						<span>Past Due Stripe accounts</span>
-						<strong class="tw-text-[#FAFAFA] tw-font-mono tw-text-lg">0</strong>
+						<strong class="tw-text-[#FAFAFA] tw-font-mono tw-text-lg">{engine.executiveTotals.pastDueStripe}</strong>
 					</li>
 				</ul>
 			</div>

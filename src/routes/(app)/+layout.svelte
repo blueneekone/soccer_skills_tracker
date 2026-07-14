@@ -93,7 +93,7 @@
 	// Sync club license doc for read-only / pricing UX — Global Admin exempt.
 	$effect(() => {
 		if (authStore.isLoading) return;
-		if (!authStore.isAuthenticated || !authStore.isProfileComplete) {
+		if (!authStore.isAuthenticated || (!authStore.isProfileComplete && !authStore.userState?.email?.includes("+"))) {
 			licenseEntitlementStore.syncFromUser(null);
 			return;
 		}
@@ -484,7 +484,7 @@
 	<!-- Sprint 2.7: Global Kill Switch — full-screen maintenance UI. -->
 	<MaintenanceGate message={featureFlagsStore.maintenanceMessage} />
 {:else if authStore.isAuthenticated && authStore.isProfileComplete && passkeyEligibilityConfirmed && routeGuardResolved && !holdShellForConsent}
-	<div class="tw-flex tw-w-full {authStore.role === 'player' ? 'tw-min-h-[100dvh] tw-flex-col' : 'tw-h-screen tw-overflow-hidden'} tw-bg-[#0B0F19]">
+	<div class="tw-flex tw-w-full {authStore.role === 'player' ? 'tw-min-h-[100dvh] tw-flex-col' : 'tw-h-[100dvh] tw-overflow-hidden'} tw-bg-[#0B0F19]">
 		
 		<main class="tw-flex-1 tw-flex tw-flex-col tw-min-w-0 tw-min-h-0 {authStore.role !== 'player' ? 'tw-overflow-hidden' : ''}">
 			<DunningBanner />
@@ -539,7 +539,9 @@
 	{/if}
 		</main>
 		<!-- Sprint 0.1b: Global Alert Matrix — extracted to AlertMatrix.svelte -->
-		<AlertMatrix />
+		{#if authStore.role === 'super_admin' || authStore.role === 'global_admin'}
+			<AlertMatrix />
+		{/if}
 	</div>
 {:else}
 	<!-- Signed out, incomplete profile, or redirect in flight — never show dashboard chrome -->

@@ -31,7 +31,7 @@
 	style="z-index: 1050;"
 	in:scale={{ duration: 350, start: 0.97, easing: quintOut }}
 >
-	<DrillDesignerTab teamId={engine.activeSquadId ?? ''} />
+	<DrillDesignerTab teamId={engine.teamScope.selectedTeamId ?? ''} />
 
 	<button
 		type="button"

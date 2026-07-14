@@ -79,7 +79,7 @@
 	const displayBounties = $derived([...engine.activeBounties, ...engine.verifiedBounties]);
 </script>
 
-<div class="tw-bg-[#0f172a] tw-rounded-[24px] tw-border tw-border-[#334155] tw-p-6 tw-h-full tw-flex tw-flex-col">
+<div class="tw-bg-[#0f172a] tw-rounded-[24px] tw-border tw-border-[#334155] tw-p-6 tw-flex tw-flex-col tw-gap-8">
 	<div class="tw-flex tw-items-center tw-justify-between tw-mb-6">
 		<h2 class="tw-text-white tw-font-bold tw-text-lg tw-flex tw-items-center tw-gap-2">
 			<span class="tw-text-[#14b8a6]">●</span> Co-Op Arena
@@ -88,7 +88,7 @@
 	</div>
 
 	<!-- Stripe Billing Interface Section -->
-	<section class="tw-mb-8">
+	<section>
 		<h3 class="tw-text-white tw-font-bold tw-text-md tw-mb-4 tw-flex tw-items-center tw-gap-2">
 			<span class="tw-text-[#334155]">#</span> Stripe Billing Metrics
 		</h3>
@@ -133,14 +133,14 @@
 	</section>
 
 	<!-- Bounties Section -->
-	<section class="tw-flex-1 tw-flex tw-flex-col">
+	<section class="tw-flex tw-flex-col">
 		<h3 class="tw-text-white tw-font-bold tw-text-md tw-mb-4 tw-flex tw-items-center tw-gap-2">
 			<span class="tw-text-[#334155]">#</span> Active Objectives
 		</h3>
 		
-		<div class="tw-flex-1 tw-overflow-y-auto tw-pr-2 tw-space-y-3">
+		<div class="tw-flex tw-flex-col tw-gap-3">
 			{#if displayBounties.length === 0}
-				<div class="tw-h-full tw-flex tw-items-center tw-justify-center tw-border tw-border-dashed tw-border-[#334155] tw-rounded-xl">
+				<div class="tw-py-8 tw-flex tw-items-center tw-justify-center tw-border tw-border-dashed tw-border-[#334155] tw-rounded-xl">
 					<span class="tw-text-[#64748b] tw-font-mono tw-text-sm">NO_ACTIVE_BOUNTIES</span>
 				</div>
 			{:else}

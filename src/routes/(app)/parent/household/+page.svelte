@@ -503,10 +503,10 @@
 	{/if}
 
 	<div
-		class="bento-grid bento-grid--12col bento-grid--liquid tw-min-h-0 tw-w-full tw-grid tw-grid-cols-1 lg:tw-grid-cols-12"
+		class="bento-grid bento-grid--12col bento-grid--liquid tw-min-h-0 tw-w-full tw-grid tw-grid-cols-1 lg:tw-grid-cols-12 tw-gap-6 lg:tw-gap-8"
 	>
 		<!-- 8-Column Primary Canvas -->
-		<div class="bento-span-8 tw-flex tw-flex-col tw-gap-6 tw-min-w-0">
+		<div class="bento-span-8 lg:tw-col-span-8 tw-flex tw-flex-col tw-gap-6 tw-min-w-0">
 			<!-- COPPA & liability block -->
 			<section
 				class="phh-surface parent-lounge-z2-panel parent-lounge-z2-panel--warn tw-min-w-0 tw-px-3 tw-py-4 sm:tw-px-4 md:tw-px-5"
@@ -716,7 +716,7 @@
 		</div>
 
 		<!-- 4-Column Sidecar -->
-		<div class="bento-span-4 tw-flex tw-flex-col tw-gap-6 tw-min-w-0">
+		<div class="bento-span-4 lg:tw-col-span-4 tw-flex tw-flex-col tw-gap-6 tw-min-w-0">
 			<!-- Operative generation -->
 			<section
 				class="phh-surface parent-lounge-z2-panel tw-min-w-0 tw-px-3 tw-py-4 sm:tw-px-4 md:tw-px-5"
@@ -928,12 +928,12 @@
 		font-size: 1rem;
 		touch-action: manipulation;
 		border: 1px solid rgba(255, 255, 255, 0.1);
-		background: #000;
+		background: transparent;
 		color: #fafafa;
 		border-radius: 0.25rem;
 	}
 	.phh-input::placeholder {
-		color: rgba(255, 255, 255, 0.3);
+		color: #94a3b8;
 	}
 	.phh-input:focus {
 		outline: 1px solid #00d4ff;
@@ -943,7 +943,7 @@
 	.phh-input--cyan {
 		min-height: 3.25rem;
 		border: 1px solid rgba(0, 212, 255, 0.45);
-		background: #000;
+		background: transparent;
 	}
 	.phh-input--cyan:focus {
 		outline: 1px solid #00d4ff;

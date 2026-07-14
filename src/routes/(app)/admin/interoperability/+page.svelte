@@ -116,7 +116,7 @@
     <h2 class="tw-text-lg tw-font-bold tw-text-[#FAFAFA] tw-mb-4">Total Data Liquidity (Outbound)</h2>
     <div class="tw-flex tw-gap-4">
       <button 
-        class="tw-flex tw-items-center tw-gap-2 tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-px-4 tw-py-2 tw-rounded-md tw-hover:bg-[#1e293b] tw-transition-colors disabled:opacity-50"
+        class="tw-flex tw-items-center tw-gap-2 tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-px-4 tw-py-2 tw-rounded-none tw-hover:bg-[#1e293b] tw-transition-colors disabled:opacity-50"
         onclick={() => handleExport('csv')}
         disabled={isExporting}
       >
@@ -125,7 +125,7 @@
       </button>
 
       <button 
-        class="tw-flex tw-items-center tw-gap-2 tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-px-4 tw-py-2 tw-rounded-md tw-hover:bg-[#1e293b] tw-transition-colors disabled:opacity-50"
+        class="tw-flex tw-items-center tw-gap-2 tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-px-4 tw-py-2 tw-rounded-none tw-hover:bg-[#1e293b] tw-transition-colors disabled:opacity-50"
         onclick={() => handleExport('json')}
         disabled={isExporting}
       >
@@ -134,7 +134,7 @@
       </button>
 
       <button 
-        class="tw-flex tw-items-center tw-gap-2 tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-px-4 tw-py-2 tw-rounded-md tw-hover:bg-[#1e293b] tw-transition-colors disabled:opacity-50"
+        class="tw-flex tw-items-center tw-gap-2 tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-px-4 tw-py-2 tw-rounded-none tw-hover:bg-[#1e293b] tw-transition-colors disabled:opacity-50"
         onclick={handlePrintPDF}
         disabled={isExporting}
       >

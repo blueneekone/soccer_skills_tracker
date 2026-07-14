@@ -232,7 +232,7 @@ exports.listJoinableClubs = onCall({region: REGION}, async (request) => {
       process.env.GCLOUD_PROJECT || process.env.GCP_PROJECT || '';
   const isDevProject = projectId === 'sports-skill-tracker-dev';
 
-  const snap = await db().collection('clubs').limit(200).get();
+  const snap = await db().collection('organizations').limit(200).get();
   /** @type {Array<{id: string, name: string, slug?: string}>} */
   const clubs = [];
   snap.forEach((d) => {

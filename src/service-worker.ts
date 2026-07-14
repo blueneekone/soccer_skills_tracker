@@ -106,7 +106,7 @@ function shouldBypass(url: URL): boolean {
 	const path = url.pathname.toLowerCase();
 	const host = url.hostname.toLowerCase();
 
-	if (path.startsWith('/auth/') || path.includes('passkey')) {
+	if (path.startsWith('/auth/') || path.startsWith('/login') || path.startsWith('/setup') || path.includes('passkey')) {
 		return true;
 	}
 
@@ -241,6 +241,15 @@ self.addEventListener('fetch', (event: FetchEvent) => {
 				// Return cached immediately if we have it, else wait for network
 				return cachedResponse || networkPromise as Promise<Response>;
 			})
+		);
+		return;
+	}
+
+	// Sprint 9.1: NetworkFirst strategy for dynamic authenticated /(app) routes
+	const isAppRoute = url.pathname.startsWith('/coach') || url.pathname.startsWith('/admin') || url.pathname.startsWith('/director') || url.pathname.startsWith('/parent');
+	if (isAppRoute) {
+		event.respondWith(
+			fetch(req).catch(() => caches.match(req) as Promise<Response>)
 		);
 		return;
 	}

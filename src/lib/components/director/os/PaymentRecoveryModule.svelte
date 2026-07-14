@@ -237,12 +237,6 @@
 		to { transform: rotate(360deg); }
 	}
 
-	.prm-empty-sub {
-		margin: 0;
-		font-family: 'Switzer', sans-serif;
-		font-size: 0.9rem;
-		color: rgba(255, 255, 255, 0.5);
-	}
 
 	.prm-error {
 		padding: 1rem;

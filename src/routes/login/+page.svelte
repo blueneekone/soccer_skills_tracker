@@ -125,7 +125,7 @@
 </script>
 
 <!-- ─── Vanguard Atmosphere ───────────────────────────────────────────────── -->
-<div class="login-surface tw-relative tw-flex tw-min-h-screen tw-w-full tw-items-center tw-justify-center tw-overflow-hidden tw-bg-[#0B0F19]">
+<div class="login-surface tw-relative tw-flex tw-min-h-[100dvh] tw-w-full tw-items-center tw-justify-center tw-overflow-hidden tw-bg-[#0B0F19]">
 
 	<!-- Ambient teal glow -->
 	<div class="tw-pointer-events-none tw-absolute tw-left-1/2 tw-top-1/2 tw-h-[600px] tw-w-[600px] -tw-translate-x-1/2 -tw-translate-y-1/2 tw-rounded-full tw-bg-teal-500/10 tw-blur-[120px]"></div>

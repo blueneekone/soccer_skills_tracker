@@ -124,12 +124,12 @@
 	</div>
 
 	{#if error}
-		<p class="tw-p-4 tw-m-0 tw-rounded-lg tw-bg-[#1E293B] tw-border tw-border-[#ef4444] tw-text-[#ef4444] tw-font-bold tw-text-sm" role="alert">
+		<p class="tw-p-4 tw-m-0 tw-rounded-none tw-bg-[#1E293B] tw-border tw-border-[#ef4444] tw-text-[#ef4444] tw-font-bold tw-text-sm" role="alert">
 			{error}
 		</p>
 	{/if}
 
-	<div class="tw-w-full tw-overflow-x-auto tw-border tw-border-[#334155] tw-rounded-xl tw-bg-[#020617]">
+	<div class="tw-w-full tw-overflow-x-auto tw-border tw-border-[#334155] tw-rounded-none tw-bg-[#020617]">
 		<table class="tw-w-full tw-min-w-[800px] tw-text-left tw-border-collapse">
 			<thead class="tw-sticky tw-top-0 tw-z-10 tw-bg-[#020617] tw-border-b tw-border-[#334155]">
 				<tr>

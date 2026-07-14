@@ -107,7 +107,7 @@
 <!-- AEGIS Lightning Alert — directors and above only -->
 <WeatherAlert />
 
-<div class="director-console-page">
+<div class="director-console-page tw-h-[100dvh] tw-flex tw-flex-col tw-overflow-hidden">
 	<!-- Page identity row — sits directly inside ec-canvas (no subnav above it) -->
 	<div class="director-console-page__header">
 		{#if clubId}
@@ -148,7 +148,7 @@
 	{:else if activeTab === 'comms'}
 		<section class="director-console-page__section bento-grid bento-grid--12col bento-grid--liquid tw-w-full tw-grid tw-grid-cols-1 lg:tw-grid-cols-12">
 			<section
-				class="bento-span-8 bento-cell dark-form-surface tw-flex tw-flex-col tw-gap-3 tw-p-5 tw-border tw-border-slate-600 tw-rounded-xl tw-bg-slate-900"
+				class="bento-span-8 bento-cell dark-form-surface tw-flex tw-flex-col tw-gap-3 tw-p-5 tw-border tw-border-slate-600 tw-rounded-none tw-bg-slate-900"
 				aria-labelledby="director-comms-cta-heading"
 			>
 				<h2 id="director-comms-cta-heading" class="tw-m-0 tw-text-base tw-font-extrabold tw-text-slate-50">
@@ -166,7 +166,7 @@
 				</a>
 			</section>
 			<section
-				class="bento-span-4 bento-cell dark-form-surface tw-flex tw-flex-col tw-gap-3 tw-p-5 tw-border tw-border-slate-600 tw-rounded-xl tw-bg-slate-900"
+				class="bento-span-4 bento-cell dark-form-surface tw-flex tw-flex-col tw-gap-3 tw-p-5 tw-border tw-border-slate-600 tw-rounded-none tw-bg-slate-900"
 				aria-labelledby="director-sponsor-ops-heading"
 			>
 				<h2 id="director-sponsor-ops-heading" class="tw-m-0 tw-text-base tw-font-extrabold tw-text-slate-50">
@@ -214,7 +214,7 @@
 		{:else if activeTab === 'retention'}
 			<DirectorRetentionReport />
 		{:else if activeTab === 'sync'}
-			<div class="tw-p-6 tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-rounded-xl">
+			<div class="tw-p-6 tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-rounded-none">
 				<h2 class="tw-text-xl tw-font-bold tw-text-slate-50 tw-mb-6">Data Sync</h2>
 				<VampireImporter {clubId} />
 			</div>

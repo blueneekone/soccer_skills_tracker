@@ -18,7 +18,7 @@
 		{/if}
 
 		<button 
-			class="action-gold-btn tw-flex tw-items-center tw-gap-2 tw-px-6 tw-py-3 tw-rounded-xl tw-font-bold tw-transition-all active:tw-scale-95 disabled:tw-opacity-50 disabled:tw-pointer-events-none"
+			class="tw-bg-[#334155] hover:tw-bg-[#475569] tw-text-[#FAFAFA] tw-flex tw-items-center tw-gap-2 tw-px-6 tw-py-3 tw-rounded-none tw-font-bold tw-transition-all active:tw-scale-95 disabled:tw-opacity-50 disabled:tw-pointer-events-none"
 			disabled={engine.isDispatching}
 			onclick={() => engine.dispatchReportCards()}>
 			{#if engine.isDispatching}
@@ -38,14 +38,5 @@
 		border: 1px solid #1e293b;
 		border-radius: 24px;
 		box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
-	}
-
-	.action-gold-btn {
-		background-color: #f59e0b; /* Action Gold */
-		color: #000000;
-	}
-	.action-gold-btn:hover {
-		background-color: #d97706;
-		box-shadow: 0 0 15px rgba(245, 158, 11, 0.4);
 	}
 </style>

@@ -41,7 +41,7 @@ export const directorLinks = [
 
 /** @type {ShellNavItem[]} */
 export const coachLinks = [
-	{ label: 'Daily Intel',       href: '/coach',               icon: 'content.grid' },
+	{ label: 'Daily Intel',       href: '/coach/dashboard',               icon: 'content.grid' },
 	{ label: 'The Forge',         href: '/coach/forge',         icon: 'game.dumbbell' },
 	{ label: 'Field Station',     href: '/coach/drills',        icon: 'content.checks' },
 	// War Room (/coach/tactical) — Tier 2 per PRODUCT_SURFACE_REGISTRY PS-C04

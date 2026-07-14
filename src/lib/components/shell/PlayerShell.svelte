@@ -114,6 +114,7 @@
 	class="ps-shell-outer tw-flex-1 tw-flex tw-flex-col tw-min-h-0"
 	ontouchstart={fieldMenuSwipe.onTouchStart}
 	ontouchend={fieldMenuSwipe.onTouchEnd}
+	role="presentation"
 >
 <div
 	class="ps-root ps-root--dossier tw-w-full tw-max-w-full tw-overflow-x-hidden"

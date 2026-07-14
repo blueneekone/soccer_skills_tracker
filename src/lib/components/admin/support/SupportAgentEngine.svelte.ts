@@ -50,6 +50,11 @@ export class SupportAgentEngine {
 				body: JSON.stringify({ command: userMsg.content })
 			});
 
+			const contentType = res.headers.get('content-type');
+			if (!contentType || !contentType.includes('application/json')) {
+				throw new Error('Support Agent backend is currently offline for maintenance (requires Cloud Function migration).');
+			}
+
 			if (!res.ok) {
 				const errData = await res.json().catch(() => ({}));
 				throw new Error(errData.error || `Server error: ${res.status}`);

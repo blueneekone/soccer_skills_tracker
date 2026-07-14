@@ -31,7 +31,7 @@
 	</header>
 
 	<div
-		class="tw-flex tw-flex-wrap tw-gap-2 tw-rounded-lg tw-border tw-border-slate-800 tw-bg-[#0B0F19] tw-p-2 tw-mt-4 tw-mb-6"
+		class="tw-flex tw-flex-wrap tw-gap-2 tw-rounded-none tw-border tw-border-slate-800 tw-bg-[#0B0F19] tw-p-2 tw-mt-4 tw-mb-6"
 		role="tablist"
 		aria-label="Command center departments"
 	>

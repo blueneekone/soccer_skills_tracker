@@ -15,8 +15,7 @@
 	--parent-lounge-inset: 16px;
 	--parent-lounge-gutter: 24px;
 	--bento-pad-liquid: var(--parent-lounge-gutter);
-	display: flex;
-	flex-direction: column;
+	display: block;
 	min-height: 100%;
 	background: var(--pd-void-base, #000000);
 	color: #e2e8f0;
@@ -25,8 +24,7 @@
 
 /* ── Z1 well ───────────────────────────────────────────────────────────────── */
 .parent-os-root .parent-lounge-z1-well {
-	flex: 1 1 auto;
-	min-height: 0;
+	display: block;
 	margin: var(--parent-lounge-inset, 16px);
 	padding: var(--parent-lounge-gutter, 24px);
 	background: var(--pd-navy-panel, #0f172a);

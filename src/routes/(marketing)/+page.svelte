@@ -22,7 +22,7 @@
 <div class="tw-flex tw-w-full tw-min-h-dvh tw-flex-col tw-bg-[#0f172a] tw-text-[#f8fafc] tw-font-sans tw-selection:bg-[#14b8a6] tw-selection:text-[#0f172a]">
 	
 	<!-- THE HERO -->
-	<main class="tw-max-w-7xl tw-mx-auto tw-w-full tw-px-6 tw-pt-24 tw-pb-16 tw-flex tw-flex-col tw-items-center tw-text-center tw-gap-12">
+	<main class="tw-max-w-7xl tw-mx-auto tw-w-full tw-px-6 tw-pt-24 tw-pb-16 tw-flex tw-flex-col tw-items-center tw-text-center tw-justify-center tw-gap-12">
 		
 		<div class="tw-flex tw-flex-col tw-items-center tw-gap-8">
 			<div class="tw-flex tw-items-center tw-gap-3">
@@ -79,7 +79,7 @@
 		<div class="tw-grid tw-grid-cols-1 md:tw-grid-cols-3 tw-gap-6">
 			
 			<!-- Player Train -->
-			<div class="tw-bg-[#0B0F19] tw-border tw-border-[#1e293b] tw-p-8 hover:tw-border-[#334155] tw-transition-colors tw-duration-150 tw-flex tw-flex-col">
+			<div class="tw-bg-[#0B0F19] tw-border tw-border-[#1e293b] tw-p-8 hover:tw-border-[#334155] tw-transition-colors tw-duration-150 tw-flex tw-flex-col tw-items-center tw-text-center md:tw-items-start md:tw-text-left">
 				<Icon name={"game.rocket" as IconName} size={32} strokeWidth={1} class="tw-text-[#14b8a6] tw-mb-6" />
 				<h3 class="tw-text-2xl tw-font-bold tw-text-[#f8fafc] tw-mb-3">Player Train</h3>
 				<p class="tw-text-[#94a3b8] tw-text-sm tw-leading-relaxed tw-mb-8 tw-flex-1">
@@ -91,7 +91,7 @@
 			</div>
 
 			<!-- Coach Forge -->
-			<div class="tw-bg-[#0B0F19] tw-border tw-border-[#1e293b] tw-p-8 hover:tw-border-[#334155] tw-transition-colors tw-duration-150 tw-flex tw-flex-col">
+			<div class="tw-bg-[#0B0F19] tw-border tw-border-[#1e293b] tw-p-8 hover:tw-border-[#334155] tw-transition-colors tw-duration-150 tw-flex tw-flex-col tw-items-center tw-text-center md:tw-items-start md:tw-text-left">
 				<Icon name={"user.settings" as IconName} size={32} strokeWidth={1} class="tw-text-[#f59e0b] tw-mb-6" />
 				<h3 class="tw-text-2xl tw-font-bold tw-text-[#f8fafc] tw-mb-3">Coach Forge</h3>
 				<p class="tw-text-[#94a3b8] tw-text-sm tw-leading-relaxed tw-mb-8 tw-flex-1">
@@ -103,7 +103,7 @@
 			</div>
 
 			<!-- Parent Visibility -->
-			<div class="tw-bg-[#0B0F19] tw-border tw-border-[#1e293b] tw-p-8 hover:tw-border-[#334155] tw-transition-colors tw-duration-150 tw-flex tw-flex-col">
+			<div class="tw-bg-[#0B0F19] tw-border tw-border-[#1e293b] tw-p-8 hover:tw-border-[#334155] tw-transition-colors tw-duration-150 tw-flex tw-flex-col tw-items-center tw-text-center md:tw-items-start md:tw-text-left">
 				<Icon name={"status.shield-check" as IconName} size={32} strokeWidth={1} class="tw-text-[#3b82f6] tw-mb-6" />
 				<h3 class="tw-text-2xl tw-font-bold tw-text-[#f8fafc] tw-mb-3">Parent Visibility</h3>
 				<p class="tw-text-[#94a3b8] tw-text-sm tw-leading-relaxed tw-mb-8 tw-flex-1">

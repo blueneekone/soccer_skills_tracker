@@ -3,6 +3,7 @@
  */
 
 import { goto } from '$app/navigation';
+import { untrack } from 'svelte';
 import { browser } from '$app/environment';
 import { auth } from '$lib/firebase.js';
 import { applyLoginWaterfall } from '$lib/auth/loginRouting.js';
@@ -28,14 +29,14 @@ export async function navigateAfterLogin(
 
 	const u = auth.currentUser;
 	if (await requiresPasskeyEnrollmentBeforeApp(u)) {
-		await goto(PASSKEY_ENROLL_ROUTE, { replaceState });
+		await untrack(() => goto(PASSKEY_ENROLL_ROUTE, { replaceState }));
 		return;
 	}
 
 	if (!authStore.isProfileComplete) {
-		await goto('/setup', { replaceState });
+		await untrack(() => goto('/setup', { replaceState }));
 		return;
 	}
 
-	await goto(applyLoginWaterfall(authStore.role, authStore.userProfile), { replaceState });
+	await untrack(() => goto(applyLoginWaterfall(authStore.role, authStore.userProfile), { replaceState }));
 }

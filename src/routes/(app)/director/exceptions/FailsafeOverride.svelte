@@ -119,7 +119,7 @@
 	<div
 		class="tw-flex tw-items-center tw-justify-center tw-min-h-[120px] tw-p-6
 		       tw-backdrop-blur-[40px] tw-bg-[#0B0F19]/85 tw-border tw-border-[#1E293B]
-		       tw-rounded-xl tw-mx-auto tw-max-w-md"
+		       tw-rounded-none tw-mx-auto tw-max-w-md"
 	>
 		<div class="tw-text-center">
 			<p
@@ -138,7 +138,7 @@
 	<div
 		class="tw-w-full tw-max-w-2xl tw-mx-auto tw-space-y-4
 		       tw-backdrop-blur-[40px] tw-bg-[#0B0F19]/85 tw-border tw-border-[#1E293B]
-		       tw-rounded-xl tw-p-6 tw-relative tw-overflow-hidden"
+		       tw-rounded-none tw-p-6 tw-relative tw-overflow-hidden"
 	>
 
 
@@ -168,7 +168,7 @@
 		<!-- ── FLASH STATES ─────────────────────────────────────────────────── -->
 		{#if clearSuccess}
 			<div
-				class="tw-bg-[#2dd4bf]/10 tw-border tw-border-[#2dd4bf]/30 tw-rounded-lg
+				class="tw-bg-[#2dd4bf]/10 tw-border tw-border-[#2dd4bf]/30 tw-rounded-none
 				       tw-px-4 tw-py-3"
 			>
 				<p class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-[#2dd4bf] tw-uppercase">
@@ -179,7 +179,7 @@
 
 		{#if clearError}
 			<div
-				class="tw-bg-[#ff0055]/10 tw-border tw-border-[#ff0055]/30 tw-rounded-lg
+				class="tw-bg-[#ff0055]/10 tw-border tw-border-[#ff0055]/30 tw-rounded-none
 				       tw-px-4 tw-py-3"
 			>
 				<p class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-[#ff0055] tw-uppercase">
@@ -209,7 +209,7 @@
 				</div>
 			{:else if pendingNodes.length === 0}
 				<div
-					class="tw-bg-[#2dd4bf]/5 tw-border tw-border-[#2dd4bf]/20 tw-rounded-lg
+					class="tw-bg-[#2dd4bf]/5 tw-border tw-border-[#2dd4bf]/20 tw-rounded-none
 					       tw-px-4 tw-py-3"
 				>
 					<p
@@ -225,7 +225,7 @@
 						<button
 							onclick={() => selectNode(node.id)}
 							class="tw-w-full tw-flex tw-items-center tw-justify-between
-							       tw-px-4 tw-py-3 tw-rounded-lg tw-transition-all tw-duration-200
+							       tw-px-4 tw-py-3 tw-rounded-none tw-transition-all tw-duration-200
 							       tw-bg-[#0B0F19] tw-border tw-text-left
 							       {selectedNodeId === node.id
 								? 'tw-border-[#14b8a6]/60'
@@ -288,7 +288,7 @@
 
 				<!-- Telemetry preview -->
 				<div
-					class="tw-bg-[#0B0F19] tw-border tw-border-[#1E293B] tw-rounded-lg
+					class="tw-bg-[#0B0F19] tw-border tw-border-[#1E293B] tw-rounded-none
 					       tw-px-4 tw-py-3"
 				>
 					<p
@@ -315,7 +315,7 @@
 					<button
 						onclick={() => handleForceClear(selectedNodeId)}
 						disabled={isClearing}
-						class="tw-w-full tw-py-3 tw-rounded-lg tw-font-mono tw-text-[10px]
+						class="tw-w-full tw-py-3 tw-rounded-none tw-font-mono tw-text-[10px]
 						       tw-tracking-widest tw-uppercase tw-font-bold tw-transition-all
 						       tw-duration-200 tw-bg-[#0B0F19]
 						       tw-border tw-border-[#1E293B] tw-text-[#ff0055]
@@ -330,7 +330,7 @@
 						<button
 							onclick={() => handleForceClear(selectedNodeId)}
 							disabled={isClearing}
-							class="tw-w-full tw-py-3 tw-rounded-lg tw-font-mono tw-text-[10px]
+							class="tw-w-full tw-py-3 tw-rounded-none tw-font-mono tw-text-[10px]
 							       tw-tracking-widest tw-uppercase tw-font-bold tw-transition-all
 							       tw-duration-200 tw-bg-[#ff0055]/10
 							       tw-border-2 tw-border-[#ff0055] tw-text-[#ff0055]

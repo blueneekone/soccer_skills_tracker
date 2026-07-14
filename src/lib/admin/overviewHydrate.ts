@@ -205,6 +205,8 @@ export async function hydrateAdminOverview(db: Firestore): Promise<OverviewHydra
 			arpu: Number(totals?.arpu) || 0,
 			grossRetention: Number(totals?.grossRetention) || 0,
 			ltv: Number(totals?.ltv) || 0,
+			pendingVpc: Number(totals?.pendingVpc) || 0,
+			pastDueStripe: Number(totals?.pastDueStripe) || 0,
 		},
 		growth: {
 			ltvCac: Number(totals?.ltvCac) || 0,

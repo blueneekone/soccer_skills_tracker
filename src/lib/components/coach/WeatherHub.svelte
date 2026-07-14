@@ -14,7 +14,7 @@
 	const isThreatActive = $derived(weatherAegis.alertLevel === 'DANGER');
 </script>
 
-<div class="tw-h-full tw-w-full tw-min-h-[220px] {isThreatActive ? 'vanguard-panel-breach' : 'vanguard-panel'} tw-overflow-hidden tw-relative tw-flex tw-flex-col">
+<div class="tw-h-full tw-w-full tw-min-h-[220px] {isThreatActive ? 'vanguard-panel-breach' : 'vanguard-panel'} tw-relative tw-flex tw-flex-col">
 	{#if vanguardFlags.weatherEnabled}
 		<WeatherWidget lat={fieldLat} lng={fieldLng} coordsLabel={weatherCoords} />
 	{:else}

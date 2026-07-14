@@ -16,7 +16,7 @@ function renderManifestAsset(entry, size, className) {
 	if (!entry?.assetPath) return '';
 	const s = Math.max(1, Math.floor(Number(size) || 128));
 	const hash = typeof entry.contentHash === 'string' ? entry.contentHash.slice(0, 16) : '';
-	const src = hash ? `${entry.assetPath}?v=${hash}` : entry.assetPath;
+	const src = entry.assetPath;
 	const variant = entry.renderKey.replace(/[^a-z0-9-]/gi, '-');
 	return `<img src="${src}" width="${s}" height="${s}" alt="" aria-hidden="true" class="${className} loadout-asset--${variant}" loading="lazy" decoding="async" />`;
 }

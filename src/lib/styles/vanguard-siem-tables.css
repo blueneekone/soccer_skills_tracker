@@ -104,6 +104,8 @@
 /* ── Data Tables ─────────────────────────────────────────────────────── */
 .v-table-wrap {
 	width: 100%;
+	max-width: 100%;
+	min-width: 0;
 	border-radius: 0;
 	border: 1px solid #334155; /* Structural Grey */
 	background: #0f172a; /* Navy Slate */

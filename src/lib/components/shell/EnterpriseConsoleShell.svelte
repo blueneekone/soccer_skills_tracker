@@ -186,13 +186,14 @@
 	class="ec-shell-outer tw-flex-1 tw-flex tw-flex-col tw-min-h-0"
 	ontouchstart={fieldMenuSwipe.onTouchStart}
 	ontouchend={fieldMenuSwipe.onTouchEnd}
+	role="presentation"
 >
 <div
-	class="ec-root"
+	class="ec-root tw-flex-1 tw-min-h-0"
 	data-sidebar-collapsed={sidebarCollapsedDesktop}
 	data-vanguard-os="tactical"
 >
-	<div class="ec-root__body">
+	<div class="ec-root__body tw-flex tw-flex-1 tw-min-h-0 tw-min-w-0">
 		<aside
 			id="ec-workspace-nav"
 			class="ec-sidebar"

@@ -96,7 +96,7 @@ describe('Sprint 3.2 — catalog ingestion + renderer', () => {
 
 	it('renderLoadoutBorderLayer uses manifest asset img tags with content hash', () => {
 		const html = renderLoadoutBorderLayer('digi_border_neon', 128);
-		expect(html).toMatch(/<img[\s\S]*?\/cosmetics\/border-neon\.svg\?v=/);
+		expect(html).toMatch(/<img[\s\S]*?\/cosmetics\/border-neon\.svg"/);
 		expect(html).toMatch(/class="loadout-border/);
 	});
 

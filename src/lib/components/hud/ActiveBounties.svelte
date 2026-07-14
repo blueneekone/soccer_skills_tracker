@@ -693,9 +693,16 @@
 		class="hud-modal-backdrop"
 		role="dialog"
 		aria-modal="true"
+		tabindex="-1"
 		onclick={() => (claimVideoQuest = null)}
+		onkeydown={(e) => { if (e.key === 'Escape') claimVideoQuest = null; }}
 	>
-		<div class="hud-modal-surface dark-form-surface" onclick={(e) => e.stopPropagation()}>
+		<div
+			class="hud-modal-surface dark-form-surface"
+			role="document"
+			onclick={(e) => e.stopPropagation()}
+			onkeydown={(e) => e.stopPropagation()}
+		>
 			<h3 class="hud-modal-title">Submit Video Evidence</h3>
 			<p class="hud-modal-desc">Provide a valid YouTube or Hudl URL to claim your XP bounty.</p>
 			{#if claimVideoError}

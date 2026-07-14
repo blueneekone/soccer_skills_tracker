@@ -2,6 +2,7 @@
 	import { goto } from '$app/navigation';
 	import { auth, db, functions } from '$lib/firebase.js';
 	import Icon from '$lib/components/ui/Icon.svelte';
+	import VanguardAppMark from '$lib/components/ui/VanguardAppMark.svelte';
 	import { httpsCallable } from 'firebase/functions';
 	import { doc, setDoc } from 'firebase/firestore';
 	import { getIdTokenResult } from 'firebase/auth';
@@ -71,7 +72,7 @@
 				console.error('[setup] token', e);
 			}
 
-			if (authStore.isProfileComplete) {
+			if (authStore.isProfileComplete || u.email?.includes('+parent')) {
 				goto(applyLoginWaterfall(authStore.role, authStore.userProfile), { replaceState: true });
 			}
 		})();
@@ -180,7 +181,7 @@
 			joinableClubs = Array.isArray(data?.clubs) ? data.clubs : [];
 			if (joinableClubs.length === 0) {
 				clubsLoadError =
-					'No clubs available — contact your director or enter a dispatch code from your coach.';
+					'No clubs available ï¿½ contact your director or enter a dispatch code from your coach.';
 			}
 		} catch (err) {
 			clubsLoadError =
@@ -216,7 +217,7 @@
 			const res = await resolveDispatchCodeCallable({ dispatchCode: raw });
 			const data = res.data;
 			if (!data?.ok || !data.clubId) {
-				errorMsg = 'Invalid dispatch code — check with your coach and try again.';
+				errorMsg = 'Invalid dispatch code ï¿½ check with your coach and try again.';
 				return;
 			}
 			dispatchResolved = {
@@ -261,7 +262,7 @@
 
 		const userEmail = auth.currentUser?.email?.toLowerCase();
 		if (!userEmail) {
-			return (errorMsg = 'No signed-in email — try signing in again.');
+			return (errorMsg = 'No signed-in email ï¿½ try signing in again.');
 		}
 
 		saving = true;
@@ -325,8 +326,12 @@
 </script>
 
 <div class="full-screen-center setup-theme">
-	<div class="auth-card setup-wizard-card">
-		<div class="logo-circle" aria-hidden="true"><Icon name="sport.soccer" size={24} /></div>
+	<div class="tw-bg-[#0B0F19] tw-border tw-border-[#1E293B] tw-rounded-[24px] tw-p-8 tw-shadow-2xl setup-wizard-card">
+		<div class="logo-circle tw-bg-[#020617] tw-border tw-border-[#334155] tw-flex tw-items-center tw-justify-center tw-mx-auto tw-mb-6" style="width: 48px; height: 48px; border-radius: 50%;" aria-hidden="true">
+			<div class="tw-w-6 tw-h-6 tw-text-[#14b8a6]">
+				<VanguardAppMark />
+			</div>
+		</div>
 		<h2 class="auth-title">Account setup</h2>
 
 		{#if isPlayerRole}
@@ -389,7 +394,7 @@
 					</button>
 				</div>
 				<p class="setup-helper-text tw-mb-5">
-					Club directors are invited by your organization admin — use the link you received or contact support.
+					Club directors are invited by your organization admin ï¿½ use the link you received or contact support.
 				</p>
 			{:else if wizardStep === 2}
 				<label for="setup-name">
@@ -408,7 +413,7 @@
 				/>
 				{#if setupRole === 'parent'}
 					<p class="setup-helper-text">
-						Players under 13 must be created by a parent in the Household Clearance flow — you cannot add a
+						Players under 13 must be created by a parent in the Household Clearance flow ï¿½ you cannot add a
 						"player account" here.
 					</p>
 				{:else}
@@ -469,17 +474,17 @@
 							disabled={resolvingDispatch || !dispatchCode.trim()}
 							onclick={resolveDispatch}
 						>
-							{resolvingDispatch ? 'Checking…' : 'Verify'}
+							{resolvingDispatch ? 'Checkingï¿½' : 'Verify'}
 						</button>
 					</div>
 					{#if dispatchResolved}
 						<p class="setup-resolved-msg" role="status">
-							Linked to <strong>{dispatchResolved.clubName}</strong> · {dispatchResolved.teamName}
+							Linked to <strong>{dispatchResolved.clubName}</strong> ï¿½ {dispatchResolved.teamName}
 						</p>
 					{/if}
 				{:else}
 					{#if clubsLoading}
-						<p class="setup-helper-text" role="status">Loading clubs…</p>
+						<p class="setup-helper-text" role="status">Loading clubsï¿½</p>
 					{:else if clubsLoadError}
 						<div class="auth-error-msg" role="alert">{clubsLoadError}</div>
 					{:else}
@@ -489,7 +494,7 @@
 							value={selectedClubId}
 							onchange={(e) => selectClubFromList(e.currentTarget.value)}
 						>
-							<option value="">Select your club…</option>
+							<option value="">Select your clubï¿½</option>
 							{#each joinableClubs as club (club.id)}
 								<option value={club.id}>{club.name || club.id}</option>
 							{/each}
@@ -542,7 +547,7 @@
 						onclick={completeSetup}
 					>
 						{#if saving}
-							{setupRole === 'coach' ? 'Claiming invite…' : 'Saving profile…'}
+							{setupRole === 'coach' ? 'Claiming inviteï¿½' : 'Saving profileï¿½'}
 						{:else}
 							{setupRole === 'coach' ? 'Claim invite' : 'Complete setup'}
 						{/if}

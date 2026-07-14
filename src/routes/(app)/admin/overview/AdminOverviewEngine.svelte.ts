@@ -103,7 +103,9 @@ export class AdminOverviewEngine {
 		mrr: 0,
 		activeOrgs: 0,
 		totalPlayers: 0,
-		activeLicenses: 0
+		activeLicenses: 0,
+		pendingVpc: 0,
+		pastDueStripe: 0
 	});
 
 	subscribe() {
@@ -142,6 +144,8 @@ export class AdminOverviewEngine {
 								totalPlayers: result.executive.totalPlayers || 0,
 								// Map activeLicenses from arr if missing, or default 0. Assuming it will be added to the db.
 								activeLicenses: (result.executive as any).activeLicenses || 0,
+								pendingVpc: (result.executive as any).pendingVpc || 0,
+								pastDueStripe: (result.executive as any).pastDueStripe || 0,
 							};
 						}
 

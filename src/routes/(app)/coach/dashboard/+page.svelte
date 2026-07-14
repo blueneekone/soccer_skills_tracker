@@ -96,7 +96,7 @@
 
 		<!-- Pulsing shield icon -->
 		<div class="clearance-gate__shield" aria-hidden="true">
-			<Icon name={"status.shield-alert" as IconName} size={48} color="var(--vanguard-red)" />
+			<Icon name={"status.shield-alert" as IconName} size={48} style="color: var(--vanguard-red);" />
 		</div>
 
 		<!-- Status text -->

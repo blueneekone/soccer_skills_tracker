@@ -29,6 +29,8 @@ export type OverviewHydrateResult = {
 		arpu: number;
 		grossRetention: number;
 		ltv: number;
+		pendingVpc?: number;
+		pastDueStripe?: number;
 	};
 	growth: {
 		ltvCac: number;
