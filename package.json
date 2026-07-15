@@ -47,7 +47,8 @@
     "cap:sync": "cap sync",
     "cap:ios": "cap open ios",
     "cap:android": "cap open android",
-    "native:prepare": "npm run build && cap sync"
+    "native:prepare": "npm run build && cap sync",
+    "prepare": "husky"
   },
   "devDependencies": {
     "@capacitor/android": "^6.2.1",
@@ -68,6 +69,7 @@
     "eslint": "^10.6.0",
     "eslint-plugin-svelte": "^3.20.0",
     "globals": "^17.7.0",
+    "husky": "^9.1.7",
     "jsdom": "^29.1.1",
     "pngjs": "^7.0.0",
     "postcss": "^8.5.10",

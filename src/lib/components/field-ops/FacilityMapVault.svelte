@@ -21,6 +21,8 @@
 	import Icon from '$lib/components/ui/Icon.svelte';
 	import type { IconName } from '$lib/icons/registry.js';
 	import { syncFacilityToLegacyField } from '$lib/director/fieldOps/syncFacilityToLegacyField.js';
+	import { readFirestoreCoord, hydrateSig, parseFacilityMapData, type FacilityMapDataPayload } from '$lib/utils/facilityHelpers.js';
+	import { renderPdfPageToCanvas } from '$lib/utils/pdfRenderer.js';
 
 	/**
 	 * @typedef {{ version: 1; polygons: Array<{ name: string; path: Array<{ lat: number; lng: number }> }>; markers: Array<{ label?: string; lat: number; lng: number }> }} FacilityMapDataPayload
@@ -116,34 +118,6 @@
 	/** @type {HTMLCanvasElement | null} */
 	let pdfCanvasEl = $state(null);
 	let pdfBusy = $state(false);
-
-	/**
-	 * Coerce Firestore lat/lng (numbers or legacy strings) to finite numbers.
-	 * @param {unknown} v
-	 * @returns {number | undefined}
-	 */
-	function readFirestoreCoord(v) {
-		if (typeof v === 'number' && Number.isFinite(v)) return v;
-		if (typeof v === 'string' && v.trim()) {
-			const n = Number(v);
-			return Number.isFinite(n) ? n : undefined;
-		}
-		if (v instanceof GeoPoint) {
-			const n = v.latitude;
-			return typeof n === 'number' && Number.isFinite(n) ? n : undefined;
-		}
-		if (v && typeof v === 'object' && 'latitude' in v) {
-			const n = /** @type {{ latitude: unknown }} */ (v).latitude;
-			return typeof n === 'number' && Number.isFinite(n) ? n : undefined;
-		}
-		return undefined;
-	}
-
-	/** Firestore snapshot fingerprint for the hero row (coords + raw map JSON). */
-	function hydrateSig(row) {
-		if (!row) return '';
-		return `${row.latitude ?? ''},${row.longitude ?? ''}|${row.mapData ?? ''}`;
-	}
 
 	$effect(() => {
 		if (!clubId) {
@@ -321,60 +295,6 @@
 	}
 
 	/**
-	 * @param {unknown} raw
-	 */
-	function parseFacilityMapData(raw) {
-		if (typeof raw !== 'string' || !raw.trim()) {
-			return { version: 1, polygons: [], markers: [] };
-		}
-		try {
-			const o = JSON.parse(raw);
-			if (!o || typeof o !== 'object') throw new Error('bad');
-			const polys = Array.isArray(o.polygons) ? o.polygons : [];
-			const markers = Array.isArray(o.markers) ? o.markers : [];
-			const cleanPolys = [];
-			for (const p of polys) {
-				if (!p || typeof p !== 'object' || typeof p.name !== 'string' || !Array.isArray(p.path)) continue;
-				const path = [];
-				for (const pt of p.path) {
-					if (!pt || typeof pt !== 'object') continue;
-					const lat = typeof pt.lat === 'number' ? pt.lat : Number(pt.lat);
-					const lng = typeof pt.lng === 'number' ? pt.lng : Number(pt.lng);
-					if (!Number.isFinite(lat) || !Number.isFinite(lng)) continue;
-					path.push({ lat, lng });
-				}
-				if (path.length >= 3) {
-					const entry: { name: string; path: Array<{ lat: number; lng: number }>; color?: string } = {
-						name: p.name.trim().slice(0, 120),
-						path,
-					};
-					const col =
-						typeof p.color === 'string' ?
-							p.color.trim().slice(0, 9)
-						:	'';
-					if (/^#[0-9a-fA-F]{3}([0-9a-fA-F]{3})?$/.test(col)) {
-						entry.color = col.length === 4 ? `#${col[1]}${col[1]}${col[2]}${col[2]}${col[3]}${col[3]}` : col;
-					}
-					cleanPolys.push(entry);
-				}
-			}
-			const cleanMarks = [];
-			for (const m of markers) {
-				if (!m || typeof m !== 'object') continue;
-				const lat = typeof m.lat === 'number' ? m.lat : Number(m.lat);
-				const lng = typeof m.lng === 'number' ? m.lng : Number(m.lng);
-				if (!Number.isFinite(lat) || !Number.isFinite(lng)) continue;
-				const label =
-					typeof m.label === 'string' && m.label.trim() ? m.label.trim().slice(0, 120) : undefined;
-				cleanMarks.push(label ? { label, lat, lng } : { lat, lng });
-			}
-			return { version: /** @type {1} */ (1), polygons: cleanPolys, markers: cleanMarks };
-		} catch {
-			return { version: 1, polygons: [], markers: [] };
-		}
-	}
-
-	/**
 	 * @param {FacilityMapRow} row
 	 */
 	function openPreview(row) {
@@ -504,39 +424,14 @@
 		if (!url) return;
 
 		let cancelled = false;
+		const ac = new AbortController();
 		pdfBusy = true;
 
 		(async () => {
 			try {
-				await tick();
-				if (cancelled || !pdfCanvasEl) return;
-				const pdfjs = await import('pdfjs-dist');
-				const workerMod = await import('pdfjs-dist/build/pdf.worker.min.mjs?url');
-				const workerSrc =
-					typeof workerMod.default === 'string' ? workerMod.default : String(workerMod.default);
-				pdfjs.GlobalWorkerOptions.workerSrc = workerSrc;
-
-				const task = pdfjs.getDocument({ url, withCredentials: false });
-				const pdf = await task.promise;
-				if (cancelled) return;
-				const page = await pdf.getPage(1);
-				if (cancelled) return;
-				const canvas = pdfCanvasEl;
-				if (!canvas) return;
-				const ctx = canvas.getContext('2d');
-				if (!ctx) return;
-				const baseVp = page.getViewport({ scale: 1 });
-				const maxW = Math.min(720, typeof window !== 'undefined' ? window.innerWidth - 48 : 720);
-				const scale = Math.min(maxW / baseVp.width, 2);
-				const vp = page.getViewport({ scale });
-				canvas.width = Math.floor(vp.width);
-				canvas.height = Math.floor(vp.height);
-				const renderTask = page.render({
-					canvasContext: ctx,
-					viewport: vp,
-					canvas,
-				});
-				await renderTask.promise;
+				if (pdfCanvasEl) {
+					await renderPdfPageToCanvas(url, pdfCanvasEl, ac.signal);
+				}
 			} catch (e) {
 				console.error('[FacilityMapVault] pdf render', e);
 			} finally {
@@ -546,6 +441,7 @@
 
 		return () => {
 			cancelled = true;
+			ac.abort();
 		};
 	});
 

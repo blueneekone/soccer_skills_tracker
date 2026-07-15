@@ -298,3 +298,31 @@ jobs:
 
       - name: Run Firestore emulator rules tests
         run: npm run test:firestore-rules
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # JOB 4 — E2E Tests (Playwright)
+  # ─────────────────────────────────────────────────────────────────────────────
+  e2e:
+    name: E2E Tests (Playwright)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    needs: typecheck
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright Browsers
+        run: npx playwright install --with-deps
+
+      - name: Run Playwright E2E tests
+        run: npm run test:e2e

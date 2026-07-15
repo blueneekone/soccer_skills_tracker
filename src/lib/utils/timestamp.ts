@@ -1,6 +1,7 @@
 /** Converts Firestore timestamps, ISO strings, and epoch numbers to milliseconds. */
 export function toEpochMs(v: unknown): number {
 	if (v == null) return 0;
+	if (v instanceof Date) return v.getTime();
 	if (typeof v === 'number' && Number.isFinite(v)) return v > 1e12 ? v : v * 1000;
 	if (typeof v === 'string') {
 		const n = Number(v);

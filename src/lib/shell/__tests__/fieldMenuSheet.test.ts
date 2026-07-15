@@ -18,7 +18,7 @@ describe('field menu sheet portal guards', () => {
 
 	it('AppMenuSheet is not nested inside ec-root or ps-root', () => {
 		for (const [label, src, rootMarker, chromeGuard] of [
-			['enterprise', enterprise, 'class="ec-root"', '{#if showFieldChrome}'],
+			['enterprise', enterprise, 'class="ec-root', '{#if showFieldChrome}'],
 			['player', playerShell, 'class="ps-root', '{#if !isDesktop}'],
 		] as const) {
 			const rootIdx = src.indexOf(rootMarker);

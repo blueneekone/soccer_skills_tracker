@@ -31,8 +31,9 @@
 	import DrillDesignerTab from '$lib/components/coach/DrillDesignerTab.svelte';
 	import FacilityScheduler from '$lib/components/coach/FacilityScheduler.svelte';
 
-	const secureAssignHomework = httpsCallable(functions, 'secureAssignHomework');
-
+	import { loadTeamDrills } from '$lib/utils/drillLoaders.js';
+	import { submitDrillAssignment } from '$lib/utils/drillAssignment.js';
+	import type { DrillRow } from '$lib/utils/drillLoaders.js';
 	// â”€â”€ Team context resolution â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 	const teamScope = new CoachTeamScope({ preferProfileTeam: true });
 	$effect(() => {
@@ -167,9 +168,7 @@
 
 	// Mission deploy tab removed (Epic 8). Intents deploy via The Forge (/coach/forge).
 
-	// â”€â”€ Drill library data loads â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-	/** @typedef {{ id: string, title: string, category: string, metricType: string, videoUrl: string, description: string, durationMinutes: number, baseXp: number, source: 'team' | 'platform', sportId?: string, createdBy?: string }} DrillRow */
-
+	// ── Drill library data loads ──────────────────────────────────────────
 	/** @type {DrillRow[]} */
 	let teamDrills = $state([]);
 	/** @type {DrillRow[]} */
@@ -231,40 +230,8 @@
 		let cancelled = false;
 		(async () => {
 			try {
-				const snap = await getDocs(
-					collection(db, 'teams', teamScope.selectedTeamId, 'drills'),
-				);
+				const rows = await loadTeamDrills(teamScope.selectedTeamId);
 				if (cancelled) return;
-				const rows = snap.docs.map((d) => {
-					const x = d.data() || {};
-					return {
-						id: d.id,
-						title:
-							typeof x.name === 'string' && x.name.trim() ?
-								x.name.trim() :
-								typeof x.title === 'string' ?
-									x.title :
-									'Untitled Drill',
-						category:
-							typeof x.category === 'string' ?
-								x.category :
-								typeof x.focusArea === 'string' ?
-									x.focusArea :
-									'General',
-						metricType: typeof x.metricType === 'string' ? x.metricType : 'reps',
-						videoUrl: typeof x.videoUrl === 'string' ? x.videoUrl : '',
-						description: typeof x.description === 'string' ? x.description : '',
-						durationMinutes:
-							typeof x.durationMinutes === 'number' ? x.durationMinutes : 10,
-						baseXp:
-							typeof x.base_xp === 'number' && !Number.isNaN(x.base_xp) ?
-								Math.floor(x.base_xp) :
-								10,
-						source: /** @type {'team'} */ ('team'),
-						createdBy: typeof x.createdBy === 'string' ? x.createdBy : '',
-					};
-				});
-				rows.sort((a, b) => a.title.localeCompare(b.title));
 				teamDrills = rows;
 			} catch (e) {
 				if (!cancelled) {
@@ -545,21 +512,12 @@
 		assignBusy = true;
 		assignErr = '';
 		try {
-			const due = new Date(assignDue);
-			if (Number.isNaN(due.getTime())) {
-				assignErr = 'Pick a valid due date and time.';
-				return;
-			}
-			const res = await secureAssignHomework({
-				teamId: teamScope.selectedTeamId,
-				drillId: assignDrill.id,
-				dueDate: due.toISOString(),
-				playerEmails: Array.from(selectedEmails),
-			});
-			const count =
-				res && typeof res.data === 'object' && res.data && 'assignedCount' in res.data ?
-					Number(res.data.assignedCount) :
-					selectedEmails.size;
+			const count = await submitDrillAssignment(
+				teamScope.selectedTeamId,
+				assignDrill.id,
+				assignDue,
+				Array.from(selectedEmails) as string[]
+			);
 			assignOk = `Homework dispatched to ${count} player${count === 1 ? '' : 's'}.`;
 			selectedEmails = new Set();
 			assignDue = '';

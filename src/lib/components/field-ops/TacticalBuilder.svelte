@@ -2,8 +2,7 @@
 	import { browser } from '$app/environment';
 	import { tick } from 'svelte';
 
-	import { db } from '$lib/firebase.js';
-	import { doc, updateDoc } from 'firebase/firestore';
+	import { saveTacticalCanvas } from '$lib/utils/tacticalPersistence.js';
 	import Icon from '$lib/components/ui/Icon.svelte';
 	import type { IconName } from '$lib/icons/registry.js';
 
@@ -158,9 +157,7 @@
 		saving = true;
 		try {
 			const json = JSON.stringify(canvasRef.toJSON());
-			await updateDoc(doc(db, 'clubs', clubId, 'facilities', facilityId), {
-				tacticalCanvasJson: json,
-			});
+			await saveTacticalCanvas(clubId, facilityId, json);
 			onSaved?.();
 		} catch (e) {
 			saveErr =
