@@ -36,14 +36,6 @@
 		@apply tw-opacity-20 tw-scale-110;
 	}
 
-	.izh-icon {
-		@apply tw-relative tw-z-10 tw-text-[#14b8a6]/80 tw-drop-shadow-lg tw-transition-transform tw-duration-500;
-	}
-
-	.izh-glass:hover .izh-icon {
-		@apply tw-scale-110 tw-text-[#14b8a6];
-	}
-
 	.izh-title {
 		@apply tw-m-0 tw-mb-2 tw-font-mono tw-text-lg tw-font-black tw-tracking-tight tw-text-slate-100;
 	}

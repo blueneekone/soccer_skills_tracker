@@ -679,10 +679,6 @@
 
 	.roster-dt__row:hover { background: #1E293B; }
 
-	.roster-dt__row--linked {
-		cursor: pointer;
-	}
-
 	.roster-gap--warn {
 		color: #ef4444;
 		font-weight: 700;

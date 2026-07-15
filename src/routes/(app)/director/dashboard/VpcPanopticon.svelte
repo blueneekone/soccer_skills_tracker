@@ -364,10 +364,6 @@
 
   /* States */
   .vp-loading { display: flex; align-items: center; gap: 0.75rem; padding: 2rem; justify-content: center; font-size: 0.65rem; letter-spacing: 0.14em; color: rgba(20, 184, 166,0.45); }
-  .vp-empty { display: flex; flex-direction: column; align-items: center; gap: 0.65rem; padding: 2.5rem; text-align: center; }
-  .vp-empty__icon { width: 2.5rem; height: 2.5rem; color: rgba(20, 184, 166,0.4); }
-  .vp-empty__label { margin: 0; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.14em; color: #e5e7eb; }
-  .vp-empty__sub { margin: 0; font-size: 0.6rem; color: rgba(229,231,235,0.3); }
 
   /* Grid */
   .vp-grid-head {

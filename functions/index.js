@@ -57,3 +57,16 @@ exports.parentSubmitVpcIntent = complianceOps.parentSubmitVpcIntent;
 const adminOps = require('./src/domains/adminOps.js');
 exports.listTeamsForClub = adminOps.listTeamsForClub;
 
+// --- Auth & Setup Bugfix Exports ---
+const operativeOps = require('./src/domains/operativeOps.js');
+exports.parentSignCoppaWaiver = operativeOps.parentSignCoppaWaiver;
+exports.parentProvisionOperative = operativeOps.parentProvisionOperative;
+exports.parentLinkOperativeToTeam = operativeOps.parentLinkOperativeToTeam;
+exports.parentReconcileHousehold = operativeOps.parentReconcileHousehold;
+exports.generatePlayerOTP = operativeOps.generatePlayerOTP;
+exports.operativeSignInWithDispatch = operativeOps.operativeSignInWithDispatch;
+exports.validatePlayerOTP = operativeOps.validatePlayerOTP;
+
+exports.listJoinableClubs = adminOps.listJoinableClubs;
+exports.claimCoachInvite = adminOps.claimCoachInvite;
+exports.resolveDispatchCode = adminOps.resolveDispatchCode;
