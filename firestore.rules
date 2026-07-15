@@ -799,10 +799,7 @@ service cloud.firestore {
       return resource.data.keys().hasAll(['teamId'])
         && (isSuper()
           || sameTeam(resource.data.teamId)
-          || directorScopedToTeam(resource.data.teamId)
-          || registrarTeamInClub(resource.data.teamId)
-          || coachStaffCanAccessTeam(resource.data.teamId)
-          || parentHouseholdChildOnTeam(resource.data.teamId));
+          || resource.data.get('clubId', null) == tokenClub());
     }
 
     function teamWorkoutRsvpReadOk(eventId, playerEmail) {
@@ -1524,12 +1521,8 @@ service cloud.firestore {
     match /teams/{teamId} {
       allow read: if authed() && (
         isSuper()
-        || (isDirector() && resource.data.clubId == tokenClub())
-        || (isRegistrar() && resource.data.clubId == tokenClub())
         || sameTeam(teamId)
-        || (isCoach() && resource.data.get('coachEmail', '').lower() == emailKey())
-        || (isCoach() && resource.data.keys().hasAll(['assistants'])
-            && resource.data.assistants.hasAny([emailKey()]))
+        || resource.data.clubId == tokenClub()
       );
       allow create: if isSuper()
         || (isDirector() && request.resource.data.clubId == tokenClub())
@@ -1806,9 +1799,10 @@ service cloud.firestore {
 
     match /coach_lookup/{coachId} {
       allow read: if authed() && (
-        emailKey() == coachId.lower()
-        || isSuper()
+        isSuper()
         || (isDirector() && tokenClub() != null && lookupRowInActorClub())
+        || (isRegistrar() && tokenClub() != null && lookupRowInActorClub())
+        || (isCoach() && isCleared() && resource.data.keys().hasAll(['teamId']) && coachStaffCanAccessTeam(resource.data.teamId))
       );
       allow write: if isSuper() || isDirector();
     }
@@ -1828,13 +1822,10 @@ service cloud.firestore {
     // Epic 3 Sprint 6: player_lookup rows only via Cloud Functions (stays in sync with rosters).
     match /player_lookup/{inviteId} {
       allow read: if authed() && (
-        emailKey() == inviteId.lower()
-        || isSuper()
+        isSuper()
         || (isDirector() && tokenClub() != null && lookupRowInActorClub())
         || (isRegistrar() && tokenClub() != null && lookupRowInActorClub())
-        || (isCoach() && isCleared() && resource.data.keys().hasAll(['teamId'])
-            && coachStaffCanAccessTeam(resource.data.teamId))
-        || (isParent() && parentHouseholdAllowsChildEmail(inviteId.lower()))
+        || (isCoach() && isCleared() && resource.data.keys().hasAll(['teamId']) && coachStaffCanAccessTeam(resource.data.teamId))
       );
       allow create, delete: if false;
       allow update: if isSuper() || parentOperativePlayerLookupNameApprove(inviteId);
@@ -2191,15 +2182,7 @@ service cloud.firestore {
     //   • Update/delete: super_admin only (for redaction / retention compliance).
     match /security_audit/{docId} {
       allow read: if isSuper();
-      allow create: if isSuper()
-        && request.resource.data.keys().hasAll(['action', 'target', 'admin'])
-        && request.resource.data.action is string
-        && request.resource.data.action.size() > 0
-        && request.resource.data.action.size() <= 120
-        && request.resource.data.target is string
-        && request.resource.data.target.size() <= 500
-        && request.resource.data.admin is string
-        && request.resource.data.admin.size() <= 320;
+      allow create: if false;
       allow update, delete: if isSuper();
     }
 

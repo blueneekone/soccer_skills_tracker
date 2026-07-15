@@ -702,27 +702,11 @@ exports.parentSubmitVpcIntent = onCall({region: REGION}, async (request) => {
     throw new HttpsError('failed-precondition', 'Household not found.');
   }
   const h = hSnap.data();
-  const parentSet = new Set(
-      (h.parentEmails || [])
-          .map((e) => normEmail(String(e)))
-          .filter(Boolean),
-  );
-  if (!parentSet.has(actor.email)) {
-    throw new HttpsError(
-        'permission-denied',
-        'You are not listed on this household.',
-    );
+  if (!(h.parentEmails || []).some((e) => normEmail(String(e)) === actor.email)) {
+    throw new HttpsError('permission-denied', 'You are not listed on this household.');
   }
-  const playerSet = new Set(
-      (h.playerEmails || [])
-          .map((e) => normEmail(String(e)))
-          .filter(Boolean),
-  );
-  if (!playerSet.has(playerEmail)) {
-    throw new HttpsError(
-        'invalid-argument',
-        'That player email is not linked to your household.',
-    );
+  if (!(h.playerEmails || []).some((e) => normEmail(String(e)) === playerEmail)) {
+    throw new HttpsError('invalid-argument', 'That player email is not linked to your household.');
   }
 
   const uRef = db().collection('users').doc(playerEmail);

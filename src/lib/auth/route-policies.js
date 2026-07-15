@@ -16,9 +16,9 @@ export const ROLE_ROUTE_POLICIES = {
 	'/parent': ['parent'],
 	'/player': ['player', 'super_admin', 'global_admin'],
 	'/operative': ['player', 'super_admin', 'global_admin'],
-	'/tracker': ['player', 'super_admin', 'global_admin'],
-	'/stats': ['player', 'super_admin', 'global_admin'],
-	'/challenges': ['player', 'super_admin', 'global_admin'],
+	'/tracker': ['player'],
+	'/stats': ['player'],
+	'/challenges': ['player'],
 	'/passport': ['player', 'super_admin', 'global_admin'],
 	'/trophies': ['player', 'super_admin', 'global_admin'],
 	'/vpc-pending': ['player']
