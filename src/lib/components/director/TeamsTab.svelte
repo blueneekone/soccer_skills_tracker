@@ -3,7 +3,7 @@
 	import { getContext } from 'svelte';
 	import { db, functions } from '$lib/firebase.js';
 	import { enterprisePlayerDrawer } from '$lib/stores/enterprisePlayerDrawer.svelte.js';
-	import { doc, setDoc, collection, query, where, orderBy, onSnapshot } from 'firebase/firestore';
+	import { doc, setDoc, collection, query, where, orderBy, onSnapshot, writeBatch } from 'firebase/firestore';
 	import { httpsCallable } from 'firebase/functions';
 	import { teamsStore } from '$lib/stores/teams.svelte.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
@@ -30,7 +30,7 @@
 		),
 	);
 
-	const directorInviteCoach = httpsCallable(functions, 'directorInviteCoach');
+
 
 	// ── Adaptive UI state ──────────────────────────────────────────────────
 	let searchQuery    = $state('');
@@ -157,6 +157,28 @@
 		});
 	}
 
+	// ── Client Batch Invite Coach ─────────────────────────────────────────
+	async function clientBatchInviteCoach(teamId, coachEmail) {
+		const emailLower = coachEmail.toLowerCase().trim();
+		if (!emailLower) throw new Error('Email is required.');
+		const batch = writeBatch(db);
+		
+		batch.set(doc(db, 'coach_lookup', emailLower), {
+			teamId,
+			clubId,
+			role: 'coach',
+			invitedAt: new Date()
+		}, { merge: true });
+		
+		batch.set(doc(db, 'users', emailLower), {
+			teamId,
+			clubId,
+			role: 'coach'
+		}, { merge: true });
+		
+		await batch.commit();
+	}
+
 	// ── Create team ───────────────────────────────────────────────────────
 	const createTeam = async () => {
 		if (isReadOnly) { openReadOnlyUpgrade(); return; }
@@ -174,7 +196,7 @@
 			let msg = '';
 			if (newCoachEmail.trim()) {
 				try {
-					await directorInviteCoach({ teamId, coachEmail: newCoachEmail.trim() });
+					await clientBatchInviteCoach(teamId, newCoachEmail.trim());
 					msg = ' Coach invite queued.';
 				} catch (ie) {
 					const m = ie instanceof Error ? ie.message : String(ie);
@@ -201,7 +223,7 @@
 		if (!email) return;
 		inlineInviteSaving = { ...inlineInviteSaving, [teamId]: true };
 		try {
-			await directorInviteCoach({ teamId, coachEmail: email });
+			await clientBatchInviteCoach(teamId, email);
 			alert(`Coach invite sent to ${email}.`);
 			inlineInviteEmail  = { ...inlineInviteEmail,  [teamId]: '' };
 			showInlineInvite   = { ...showInlineInvite,   [teamId]: false };
@@ -223,7 +245,7 @@
 			const email = inv?.coachEmail || team?.coachEmail;
 			if (!email) continue;
 			try {
-				await directorInviteCoach({ teamId, coachEmail: email });
+				await clientBatchInviteCoach(teamId, email);
 				sent++;
 			} catch { failed++; }
 		}

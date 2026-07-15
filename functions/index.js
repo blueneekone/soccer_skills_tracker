@@ -51,4 +51,9 @@ const reportOps = require('./src/domains/reportOps.js');
 exports.batchDispatchReportCards = reportOps.batchDispatchReportCards;
 exports.generatePdfReportCard = reportOps.generatePdfReportCard;
 
+const complianceOps = require('./src/domains/complianceOps.js');
+exports.parentSubmitVpcIntent = complianceOps.parentSubmitVpcIntent;
+
+const adminOps = require('./src/domains/adminOps.js');
+exports.listTeamsForClub = adminOps.listTeamsForClub;
 
