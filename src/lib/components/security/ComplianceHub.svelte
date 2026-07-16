@@ -10,8 +10,8 @@
 	 * Zero-Trust: no PII beyond email/name is exposed. Status flag only.
 	 */
 	import { authStore } from '$lib/stores/auth.svelte.js';
-	import { getFunctions, httpsCallable } from 'firebase/functions';
-	import { app } from '$lib/firebase.js';
+	import { httpsCallable } from 'firebase/functions';
+	import { app, functions } from '$lib/firebase.js';
 
 	// ── Reactive auth guards ──────────────────────────────────────────────
 	const canAccess = $derived(
@@ -68,7 +68,6 @@
 	}));
 
 	// ── Firebase callable references ──────────────────────────────────────
-	const functions = getFunctions(app, 'us-east1');
 	const getComplianceRosterFn  = httpsCallable(functions, 'getComplianceRoster');
 	const requestManualOverrideFn = httpsCallable(functions, 'requestManualOverride');
 	const revokeCoachClearanceFn  = httpsCallable(functions, 'revokeCoachClearance');

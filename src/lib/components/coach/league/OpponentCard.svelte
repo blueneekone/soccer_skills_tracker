@@ -25,10 +25,10 @@
 	 *   LeagueManager.opponentsWithThreat and renders one OpponentCard each.
 	 */
 
-	import { computeThreatAssessment, type LeagueSchema } from '$lib/types/league';
+	import { computeThreatAssessment, type Opponent, type OpponentStats, type ThreatAssessment, type ThreatLevel } from '$lib/types/league';
 
 	interface Props {
-		opponent: LeagueSchema.Opponent & { threat?: LeagueSchema.ThreatAssessment };
+		opponent: Opponent & { threat?: ThreatAssessment };
 		/** Invoked when the card is clicked (e.g. open history drawer). */
 		onclick?: () => void;
 		class?: string;
@@ -46,19 +46,19 @@
 		Array.isArray(opponent.scoutNotes) && opponent.scoutNotes.length > 0,
 	);
 
-	function winBarWidth(stats: LeagueSchema.OpponentStats | undefined): number {
+	function winBarWidth(stats: OpponentStats | undefined): number {
 		if (!stats || stats.totalGames === 0) return 0;
-		return Math.round((stats.wins / stats.totalGames) * 100);
+		return (stats.wins / stats.totalGames) * 100;
 	}
 
-	function goalDiff(stats: LeagueSchema.OpponentStats | undefined): string {
+	function goalDiff(stats: OpponentStats | undefined): string {
 		if (!stats || stats.totalGames === 0) return '—';
 		const diff = stats.goalsFor - stats.goalsAgainst;
-		return diff > 0 ? `+${diff}` : String(diff);
+		return diff > 0 ? `+${diff}` : `${diff}`;
 	}
 
 	const THREAT_META: Record<
-		LeagueSchema.ThreatLevel,
+		ThreatLevel,
 		{ label: string; pulse: boolean }
 	> = {
 		HIGH: { label: 'HIGH THREAT', pulse: true },

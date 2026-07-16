@@ -1,6 +1,5 @@
 <script lang="ts">
-	/* global document, console, window */
-	/* eslint-disable svelte/no-navigation-without-resolve, max-lines-per-function */
+	/* eslint-disable max-lines-per-function */
 	import { browser } from '$app/environment';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';

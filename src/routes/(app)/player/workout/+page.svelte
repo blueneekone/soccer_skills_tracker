@@ -410,7 +410,7 @@
   });
 
   $effect(() => {
-    if (!browser) return;
+    if (!browser || authStore.isLoading) return;
     void missionRefreshNonce;
     const uid = authStore.user?.uid ?? '';
     const teamId = typeof authStore.userProfile?.teamId === 'string'

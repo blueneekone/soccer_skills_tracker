@@ -17,7 +17,9 @@ import { wireTacticalPlayback, type TacticalPlaybackHost } from '$lib/states/war
 import { WAR_ROOM_CARTRIDGE_CONTEXT, TACTICAL_CARTRIDGE_SCHEMA_VERSION } from '$lib/states/war-room/types';
 import type { TacticalCartridge, TacticalRoute, TacticalToken } from '$lib/states/war-room/types';
 import type { AnchorDrag, RouteBodyDrag, TrailPt } from '$lib/states/war-room/TacticalInputEngine.svelte';
-
+import { clientToSvg, clampToPitch, bindPlayerIdAtRouteStart } from '$lib/utils/canvasPhysics';
+import { executeLoadCartridge, executeSerializeToCartridge, executeResetPositions, type CartridgeOpsHost } from '$lib/utils/cartridgeOps';
+import { formatTimelineMs, executeRecallBench, executeClearRoutesOnly, executeCloseOverlay, executeHandleSvgClick } from '$lib/utils/tacticalWarRoomHandlers';
 export type TacticalGridHost = {
 	showTacticalOverlay: { get: () => boolean; set: (v: boolean) => void };
 	warRoomTool: { get: () => 'DRAG' | 'ROUTE'; set: (v: 'DRAG' | 'ROUTE') => void };
@@ -31,6 +33,7 @@ export type TacticalGridHost = {
 export type TacticalWarRoomModel = ReturnType<typeof createTacticalWarRoom>;
 
 /** Pure war-room state + physics + playback — UI shells consume via TacticalArena / TacticalHUD. */
+// eslint-disable-next-line max-lines-per-function
 export function createTacticalWarRoom(host: TacticalGridHost) {
 	const simulator = new SimulatorEngine();
 
@@ -147,57 +150,15 @@ export function createTacticalWarRoom(host: TacticalGridHost) {
 	const viewBoxWidth = VIEW_W;
 	const viewBoxHeight = VIEW_H;
 
-	function clientToSvg(ev: MouseEvent | TouchEvent | PointerEvent) {
-		if (!pitchSvgEl) return { x: 0, y: 0 };
-		const clientX = 'touches' in ev ? (ev.touches[0]?.clientX ?? 0) : ev.clientX;
-		const clientY = 'touches' in ev ? (ev.touches[0]?.clientY ?? 0) : ev.clientY;
-
-		// Fast path: invertible CTM (no 3D projection on ancestors).
-		try {
-			const pt = pitchSvgEl.createSVGPoint();
-			pt.x = clientX;
-			pt.y = clientY;
-			const ctm = pitchSvgEl.getScreenCTM();
-			if (ctm && Math.abs(ctm.a * ctm.d - ctm.b * ctm.c) > 0.00001) {
-				return pt.matrixTransform(ctm.inverse());
-			}
-		} catch {
-			/* DOMException — fall through to hard-coded fallback. */
-		}
-
-	// Hard-coded Zero-Gravity fallback: linear ratio interpolation off bbox.
-	const rect = pitchSvgEl.getBoundingClientRect();
-	const rw = rect.width || 1;
-	const rh = rect.height || 1;
-	return {
-			x: (clientX - rect.left) * (viewBoxWidth / rw),
-			y: (clientY - rect.top) * (viewBoxHeight / rh),
-		};
-	}
-
-	function clampToPitch(x: number, y: number) {
-		const pad = DISC_HIT_R + 6;
-		return {
-			x: Math.min(VIEW_W - pad, Math.max(pad, x)),
-			y: Math.min(VIEW_H - pad, Math.max(pad, y)),
-		};
-	}
-
-
-	function bindPlayerIdAtRouteStart(x1: number, y1: number) {
-		const rHit = DISC_HIT_R + 2;
-		for (const t of allPitchTokens) {
-			if (typeof t.x !== 'number' || typeof t.y !== 'number') continue;
-			if (Math.hypot(t.x - x1, t.y - y1) <= rHit) return t.id;
-		}
-		return null;
+	function clientToSvgWrapper(ev: MouseEvent | TouchEvent | PointerEvent) {
+		return clientToSvg(ev, pitchSvgEl);
 	}
 
 	function appendTrailPoint(x: number, y: number, color?: string) {
 		const now = performance.now();
 		const pt: TrailPt = { x, y, t: now };
 		if (color) pt.c = color;
-		let next = [...activeDragTrail, pt];
+		const next = [...activeDragTrail, pt];
 		const cap = draggingPlayer ? DRAG_TRAIL_MAX_POINTS : TRAIL_MAX_POINTS;
 		while (next.length > cap) next.shift();
 		activeDragTrail = next;
@@ -244,56 +205,25 @@ export function createTacticalWarRoom(host: TacticalGridHost) {
 	}
 
 	function closeOverlay() {
-		host.showTacticalOverlay.set(false);
-		host.warRoomTool.set('DRAG');
-		routingActive = false;
-		routeDraft = null;
-		teardownAnchorDrag();
-		routeBodyDrag = null;
-		input.releaseRouteBodyCapture();
-		draggingPlayer = null;
-		activeDragTrail = [];
-		selectedRouteId = null;
-		focusedPlayerId = null;
-		input.releasePitchDragCapture();
-		simulator.pause();
-		radial.closeRadialHub();
+		executeCloseOverlay(host);
 	}
 
-	function handleSvgClick(e: MouseEvent) {
-		const el = e.target;
-		const tag = el instanceof Element ? el.tagName.toLowerCase() : '';
-		if (tag === 'svg' || tag === 'rect') {
-			focusedPlayerId = null;
-		}
+	function handleSvgClick(ev: MouseEvent | TouchEvent) {
+		executeHandleSvgClick(ev, {
+			contextMenuOpen,
+			setContextMenuOpen: (v) => (contextMenuOpen = v),
+			cancelRadialLongPress: radial.cancelRadialLongPress,
+			radialBlocking: radial.radialBlocking,
+			closeRadialHub: radial.closeRadialHub
+		});
 	}
 
 	function recallBench() {
-		teardownAnchorDrag();
-		routeBodyDrag = null;
-		input.releaseRouteBodyCapture();
-		simulator.timelineAuthorCapMs = 0;
-		if (host.wrBucketPitch.get().length > 0) {
-			const recalled = host.wrBucketPitch.get().map(({ x: _x, y: _y, ...rest }) => rest);
-			host.wrBucketXi.set([...host.wrBucketXi.get(), ...recalled]);
-			host.wrBucketPitch.set([]);
-		}
-		host.drawnRoutes.set([]);
-		host.wrOppPitch.set([]);
-		activeDragTrail = [];
-		selectedRouteId = null;
-		playbackBaselinePitch = [];
-		playbackBaselineOpp = [];
+		executeRecallBench(host.wrBucketPitch, host.wrBucketBench, host.wrOppPitch);
 	}
 
 	function clearRoutesOnly() {
-		host.drawnRoutes.set([]);
-		routeDraft = null;
-		routingActive = false;
-		teardownAnchorDrag();
-		routeBodyDrag = null;
-		input.releaseRouteBodyCapture();
-		selectedRouteId = null;
+		executeClearRoutesOnly(host.drawnRoutes, simulator, simRouteHoldPrev);
 	}
 
 	function deployTokenAt(t: TacticalToken, source: RadialSlotSource, p: { x: number; y: number }) {
@@ -319,7 +249,7 @@ export function createTacticalWarRoom(host: TacticalGridHost) {
 		wrBucketXi: () => host.wrBucketXi.get(),
 		wrBucketBench: () => host.wrBucketBench.get(),
 		wrOppPitch: () => host.wrOppPitch.get(),
-		clientToSvg,
+		clientToSvg: clientToSvgWrapper,
 		clampToPitch,
 		deployTokenAt,
 	});
@@ -327,7 +257,7 @@ export function createTacticalWarRoom(host: TacticalGridHost) {
 	const pointerHost = {
 		svg: () => pitchSvgEl,
 		warRoomTool: () => host.warRoomTool.get(),
-		clientToSvg,
+		clientToSvg: clientToSvgWrapper,
 		clampToPitch,
 		anchorDrag: () => anchorDrag,
 		setAnchorDrag: (v: AnchorDrag | null) => (anchorDrag = v),
@@ -353,7 +283,7 @@ export function createTacticalWarRoom(host: TacticalGridHost) {
 		setSelectedRouteId: (v: string | null) => (selectedRouteId = v),
 		ribbon,
 		appendTrailPoint,
-		bindPlayerIdAtRouteStart,
+		bindPlayerIdAtRouteStart: (x, y) => bindPlayerIdAtRouteStart(x, y, allPitchTokens),
 		resolvePitchToken,
 		updateRadialHover: radial.updateRadialHover,
 		cancelRadialLongPress: radial.cancelRadialLongPress,
@@ -372,56 +302,39 @@ export function createTacticalWarRoom(host: TacticalGridHost) {
 
 	const input = createTacticalInputEngine(pointerHost);
 
+	const cartridgeHost: CartridgeOpsHost = {
+		wrBucketPitch: host.wrBucketPitch,
+		wrOppPitch: host.wrOppPitch,
+		drawnRoutes: host.drawnRoutes,
+		wrBucketXi: host.wrBucketXi,
+		wrBucketBench: host.wrBucketBench,
+		routesLive: () => routesLive,
+		teardownAnchorDrag,
+		setRouteBodyDrag: (v) => (routeBodyDrag = v),
+		releaseRouteBodyCapture: input.releaseRouteBodyCapture,
+		releasePitchDragCapture: input.releasePitchDragCapture,
+		setDraggingPlayer: (v) => (draggingPlayer = v),
+		setActiveDragTrail: (v) => (activeDragTrail = v),
+		setSelectedRouteId: (v) => (selectedRouteId = v),
+		setFocusedPlayerId: (v) => (focusedPlayerId = v),
+		setHoveredDiscId: (v) => (hoveredDiscId = v),
+		setHoveredRouteId: (v) => (hoveredRouteId = v),
+		setRoutingActive: (v) => (routingActive = v),
+		setRouteDraft: (v) => (routeDraft = v),
+		closeRadialHub: radial.closeRadialHub,
+		simulator,
+		capturePlaybackBaseline,
+		playbackBaselinePitch: () => playbackBaselinePitch,
+		playbackBaselineOpp: () => playbackBaselineOpp,
+		simRouteHoldPrev
+	};
+
 	function loadCartridge(payload: TacticalCartridge) {
-		teardownAnchorDrag();
-		routeBodyDrag = null;
-		input.releaseRouteBodyCapture();
-		input.releasePitchDragCapture();
-		draggingPlayer = null;
-		activeDragTrail = [];
-		selectedRouteId = null;
-		focusedPlayerId = null;
-		hoveredDiscId = null;
-		hoveredRouteId = null;
-		routingActive = false;
-		routeDraft = null;
-		radial.closeRadialHub();
-
-		const friendly: TacticalToken[] = [];
-		const opp: TacticalToken[] = [];
-		for (const e of payload.entities) {
-			const side = e.side === 'opponent' ? 'opponent' : 'friendly';
-			const token: TacticalToken = {
-				...e,
-				side,
-				color: e.color ?? (side === 'opponent' ? OPP_RING : FRIENDLY_RING),
-			};
-			if (side === 'opponent') opp.push(token);
-			else friendly.push(token);
-		}
-		host.wrBucketPitch.set(friendly);
-		host.wrOppPitch.set(opp);
-		host.drawnRoutes.set(payload.routes.map((raw) => ({ ...normalizeRoute(raw) })));
-		host.wrBucketXi.set([]);
-		host.wrBucketBench.set([]);
-
-		simulator.loadCartridge(payload);
-		capturePlaybackBaseline();
+		executeLoadCartridge(payload, cartridgeHost);
 	}
 
 	function serializeToCartridge(): TacticalCartridge {
-		const entities: TacticalToken[] = [
-			...host.wrBucketPitch.get().map((t) => ({ ...t, side: 'friendly' as const })),
-			...host.wrOppPitch.get().map((t) => ({ ...t, side: 'opponent' as const })),
-		];
-		return {
-			id: crypto.randomUUID(),
-			title: `Play ${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`,
-			schemaVersion: TACTICAL_CARTRIDGE_SCHEMA_VERSION,
-			metadata: { sport: 'soccer', duration: simulator.maxDuration, tags: [] },
-			entities,
-			routes: routesLive,
-		};
+		return executeSerializeToCartridge(cartridgeHost);
 	}
 
 	setContext(WAR_ROOM_CARTRIDGE_CONTEXT, { loadCartridge });
@@ -480,40 +393,10 @@ export function createTacticalWarRoom(host: TacticalGridHost) {
 
 	/** Rewind timeline and restore pitch token x/y from last captured baseline. */
 	function resetPositions() {
-		simulator.pause();
-		simulator.scrub(0);
-		simRouteHoldPrev.clear();
-		activeDragTrail = [];
-		draggingPlayer = null;
-		teardownAnchorDrag();
-		routeBodyDrag = null;
-		input.releaseRouteBodyCapture();
-		input.releasePitchDragCapture();
-		if (playbackBaselinePitch.length === 0 && playbackBaselineOpp.length === 0) return;
-		const byIdPitch = new Map(playbackBaselinePitch.map((t) => [t.id, t]));
-		const byIdOpp = new Map(playbackBaselineOpp.map((t) => [t.id, t]));
-		host.wrBucketPitch.set(
-			host.wrBucketPitch.get().map((t) => {
-				const b = byIdPitch.get(t.id);
-				return b ? { ...t, x: b.x, y: b.y } : t;
-			}),
-		);
-		host.wrOppPitch.set(
-			host.wrOppPitch.get().map((t) => {
-				const b = byIdOpp.get(t.id);
-				return b ? { ...t, x: b.x, y: b.y } : t;
-			}),
-		);
+		executeResetPositions(cartridgeHost);
 	}
 
 	/** Monospace-friendly scrub clock (ms). */
-	function formatTimelineMs(ms: number) {
-		const s = Math.max(0, ms / 1000);
-		const m = Math.floor(s / 60);
-		const r = s % 60;
-		if (m > 0) return `${m}:${r.toFixed(2).padStart(5, '0')}`;
-		return `${r.toFixed(2)}s`;
-	}
 
 	function toggleTimelinePlayback() {
 		simulator.togglePlay();
@@ -555,7 +438,7 @@ export function createTacticalWarRoom(host: TacticalGridHost) {
 
 	/** Public pointer façade (Arena + window forward here). */
 	function handlePointerMove(e: PointerEvent) {
-		const p = clientToSvg(e);
+		const p = clientToSvgWrapper(e);
 		cursorSvgX = p.x;
 		cursorSvgY = p.y;
 		input.handlePointerMove(e);
@@ -645,7 +528,7 @@ export function createTacticalWarRoom(host: TacticalGridHost) {
 		get cursorSvgY() { return cursorSvgY; },
 		get viewBoxWidth() { return viewBoxWidth; },
 		get viewBoxHeight() { return viewBoxHeight; },
-		clientToSvg,
+		clientToSvg: clientToSvgWrapper,
 		// Radial context menu state + API (right-click summon).
 		get contextMenuOpen() { return contextMenuOpen; },
 		get contextMenuClientX() { return contextMenuClientX; },

@@ -1,7 +1,7 @@
 import { authStore } from '$lib/stores/auth.svelte.js';
 import { db } from '$lib/firebase.js';
 import { collection, query, where, onSnapshot } from 'firebase/firestore';
-import { getFunctions, httpsCallable } from 'firebase/functions';
+import { httpsCallable } from 'firebase/functions';
 import { getApp } from 'firebase/app';
 import { getClearanceStatusSubLabel } from '$lib/compliance/checkrCoachClearance.js';
 
@@ -113,8 +113,8 @@ export class CoachClearanceEngine {
 		rs.ordering = true;
 		rs.error = '';
 		try {
-			const fns = getFunctions(getApp(), 'us-east1');
-			const initiate = httpsCallable(fns, 'directorInitiateCoachClearance');
+			const { functions } = await import('$lib/firebase.js');
+			const initiate = httpsCallable(functions, 'directorInitiateCoachClearance');
 			const result = await initiate({ coachEmail: coach.email });
 			const data = result.data as Record<string, unknown>;
 			coach.clearance = {
@@ -137,8 +137,8 @@ export class CoachClearanceEngine {
 		rs.simulating = true;
 		rs.error = '';
 		try {
-			const fns = getFunctions(getApp(), 'us-east1');
-			const simulate = httpsCallable(fns, 'simulateClearance');
+			const { functions } = await import('$lib/firebase.js');
+			const simulate = httpsCallable(functions, 'simulateClearance');
 			await simulate({ email: coach.email });
 			coach.clearance = {
 				...(coach.clearance ?? {}),
@@ -159,8 +159,8 @@ export class CoachClearanceEngine {
 		rs.verifying = true;
 		rs.error = '';
 		try {
-			const fns = getFunctions(getApp(), 'us-east1');
-			const revoke = httpsCallable(fns, 'revokeCoachClearance');
+			const { functions } = await import('$lib/firebase.js');
+			const revoke = httpsCallable(functions, 'revokeCoachClearance');
 			await revoke({ email: coach.email, reason: 'Director initiated revocation via Panopticon' });
 			coach.clearance = { ...(coach.clearance ?? {}), status: 'flagged' };
 		} catch (err) {

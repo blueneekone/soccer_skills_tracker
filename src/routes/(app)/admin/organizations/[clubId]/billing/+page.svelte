@@ -88,7 +88,7 @@
 		try {
 			const functions = getFunctions();
 			const initiateStripeConnect = httpsCallable(functions, 'initiateStripeConnect');
-			// eslint-disable-next-line @typescript-eslint/no-explicit-any
+			 
 			const result = await initiateStripeConnect({ }) as any;
 			if (result.data && result.data.url) {
 				window.location.href = result.data.url;

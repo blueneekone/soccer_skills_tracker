@@ -221,7 +221,7 @@
 	});
 
 	$effect(() => {
-		if (!browser || !uid) {
+		if (!browser || authStore.isLoading || !uid) {
 			statsRaw = null;
 			return;
 		}
@@ -244,7 +244,7 @@
 	});
 
 	$effect(() => {
-		if (!browser) return;
+		if (!browser || authStore.isLoading) return;
 		const tid = /** @type {string | undefined} */ (activePlayer?.teamId);
 		if (!tid || tid === 'admin') {
 			teamAssignmentLabel = '';
@@ -308,7 +308,7 @@
 	}
 
 	$effect(() => {
-		if (!browser) return;
+		if (!browser || authStore.isLoading) return;
 		const tid =
 			typeof activePlayer?.teamId === 'string' ? activePlayer.teamId.trim() : '';
 		if (!tid || tid === 'admin') {

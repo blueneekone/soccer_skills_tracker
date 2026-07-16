@@ -31,7 +31,7 @@
 	const profile = $derived(authStore.userProfile);
 
 	$effect(() => {
-		if (!authStore.user?.uid) return;
+		if (authStore.isLoading || !authStore.user?.uid) return;
 		const uid = authStore.user.uid;
 		const unsub = onSnapshot(doc(db, 'users', uid), (snap) => {
 			loading = false;

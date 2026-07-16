@@ -20,7 +20,8 @@
  */
 
 import { browser } from '$app/environment';
-import { getFunctions, httpsCallable } from 'firebase/functions';
+import { httpsCallable } from 'firebase/functions';
+import { functions } from '$lib/firebase.js';
 
 // ── Types ─────────────────────────────────────────────────────────────────
 
@@ -110,7 +111,7 @@ async function countPendingScans(): Promise<number> {
 const SCAN_DEBOUNCE_MS = 3000;
 
 export function createTicketScanner(eventId: string, mountId = 'qr-reader') {
-	let state = $state<ScannerState>({
+	const state = $state<ScannerState>({
 		phase: 'idle',
 		lastResult: null,
 		stats: { valid: 0, invalid: 0, already_scanned: 0, queued: 0 },
@@ -119,7 +120,7 @@ export function createTicketScanner(eventId: string, mountId = 'qr-reader') {
 		queueSize: 0,
 	});
 
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	 
 	let html5QrScanner: any = null;
 	let lastScannedToken = '';
 	let lastScannedAt = 0;
@@ -136,7 +137,7 @@ export function createTicketScanner(eventId: string, mountId = 'qr-reader') {
 	// ── verifyScanToken callable ───────────────────────────────────────────
 
 	async function verifyOnline(qrToken: string): Promise<ScanResult> {
-		const fns = getFunctions(undefined, 'us-east1');
+		const fns = functions;
 		const verify = httpsCallable<
 			{ eventId: string; qrToken: string },
 			{ valid: boolean; status: ScanResultStatus; checkedInAt?: string }
@@ -230,7 +231,7 @@ export function createTicketScanner(eventId: string, mountId = 'qr-reader') {
 	function playTone(status: ScanResultStatus, queued?: boolean) {
 		if (!browser) return;
 		try {
-			// eslint-disable-next-line @typescript-eslint/no-explicit-any
+			 
 			const ctx = new ((window as any).AudioContext || (window as any).webkitAudioContext)();
 			const osc = ctx.createOscillator();
 			const gain = ctx.createGain();

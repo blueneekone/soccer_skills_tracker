@@ -37,7 +37,8 @@ import {
 	Timestamp,
 	where,
 } from 'firebase/firestore';
-import type { LeagueSchema } from '$lib/types/league.js';
+import type { PlayerMatchStats } from '$lib/types/league.js';
+import type { Season, Fixture } from '$lib/types/league.js';
 
 // ── Conversation anchors ─────────────────────────────────────────────────────
 
@@ -71,7 +72,7 @@ export interface PublicScore {
 }
 
 export interface LockedMetrics {
-	playerStats: Record<string, LeagueSchema.PlayerMatchStats>;
+	playerStats: Record<string, PlayerMatchStats>;
 	coachNotes: string;
 	highlights: string;
 }
@@ -201,7 +202,7 @@ export class CarRideEngine {
 			if (resultSnap.exists()) {
 				const d = resultSnap.data();
 				this.lockedMetrics = {
-					playerStats: (d.playerStats ?? {}) as Record<string, LeagueSchema.PlayerMatchStats>,
+					playerStats: (d.playerStats ?? {}) as Record<string, PlayerMatchStats>,
 					coachNotes: d.coachNotes ?? '',
 					highlights: d.highlights ?? '',
 				};

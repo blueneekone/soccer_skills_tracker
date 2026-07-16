@@ -38,7 +38,8 @@ import {
 	type Unsubscribe,
 } from 'firebase/firestore';
 import { db } from '$lib/firebase.js';
-import { getFunctions, httpsCallable } from 'firebase/functions';
+import { httpsCallable } from 'firebase/functions';
+import { functions } from '$lib/firebase.js';
 
 // ── Public types ──────────────────────────────────────────────────────────────
 
@@ -136,7 +137,7 @@ export class CommerceEngine {
 		this.isLoading = true;
 		this.error = null;
 		try {
-			const fns = getFunctions(undefined, 'us-east1');
+			const fns = functions;
 			const createFn = httpsCallable<
 				{ seasonId: string; feeAmountDollars: number; playerEmail?: string },
 				{ clientSecret: string; registrationId: string; feeAmountCents: number }

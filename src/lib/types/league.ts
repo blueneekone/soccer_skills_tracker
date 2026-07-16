@@ -47,8 +47,7 @@ export type AnyDate = Date | FirestoreTimestamp | string | number;
 // LeagueSchema namespace
 // ═══════════════════════════════════════════════════════════════════════════
 
-export namespace LeagueSchema {
-	// ── Discriminated unions ─────────────────────────────────────────────────
+// ── Discriminated unions ─────────────────────────────────────────────────
 
 	/** Match type — determines which standings / cup this fixture counts toward. */
 	export type FixtureType = 'League' | 'Tournament' | 'Friendly';
@@ -340,7 +339,6 @@ export namespace LeagueSchema {
 		protocol: 'car_ride_home_v1';
 		attestedAt?: FirestoreTimestamp;
 	}
-}
 
 // ── Utility functions ──────────────────────────────────────────────────────
 
@@ -358,8 +356,8 @@ export function toTimestampMs(val: AnyDate | undefined | null): number {
 
 /** Compute the Vanguard Threat Assessment for an opponent. */
 export function computeThreatAssessment(
-	stats: LeagueSchema.OpponentStats | undefined,
-): LeagueSchema.ThreatAssessment {
+	stats: OpponentStats | undefined,
+): ThreatAssessment {
 	if (!stats || stats.totalGames === 0) {
 		return { level: 'UNKNOWN', score: 50, color: '#475569', winRate: 0 };
 	}

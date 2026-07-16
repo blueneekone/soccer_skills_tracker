@@ -543,7 +543,7 @@ describe('B4b — completion_verifications: write stays CF-only; parent list ena
 describe('PARENT-JWT-PROOF — parentResolvedHouseholdId rules parity', () => {
 	const parentHouseholdFn = (() => {
 		const blockMatch = RULES.match(
-			/function parentHouseholdAllowsChildEmail\(childKey\)\s*\{[\s\S]*?\n    \}/,
+			/function parentHouseholdAllowsChildEmail\(childKey\)\s*\{[\s\S]*?\n {4}\}/,
 		);
 		return blockMatch ? blockMatch[0] : '';
 	})();
@@ -567,7 +567,7 @@ describe('PARENT-JWT-PROOF — parentResolvedHouseholdId rules parity', () => {
 	it('parentHouseholdChildOnTeam checks household children (not parent userDoc.teamId)', () => {
 		expect(RULES).toMatch(/function parentHouseholdChildOnTeam\(teamId\)/);
 		const fnBlock = RULES.match(
-			/function canReadScheduleOrWorkoutDoc\(\)\s*\{[\s\S]*?\n    \}/,
+			/function canReadScheduleOrWorkoutDoc\(\)\s*\{[\s\S]*?\n {4}\}/,
 		)?.[0];
 		expect(fnBlock).toBeTruthy();
 		expect(fnBlock).toMatch(/parentHouseholdChildOnTeam\(resource\.data\.teamId\)/);
@@ -575,7 +575,7 @@ describe('PARENT-JWT-PROOF — parentResolvedHouseholdId rules parity', () => {
 	});
 
 	it('bounties parent read uses parentOwnsHouseholdId (Firestore-first household)', () => {
-		const bountyBlock = RULES.match(/match \/bounties\/\{bountyId\}\s*\{[\s\S]*?\n    \}/)?.[0];
+		const bountyBlock = RULES.match(/match \/bounties\/\{bountyId\}\s*\{[\s\S]*?\n {4}\}/)?.[0];
 		expect(bountyBlock).toBeTruthy();
 		expect(bountyBlock).toMatch(/parentOwnsHouseholdId\(resource\.data\.householdId\)/);
 		expect(bountyBlock).not.toMatch(/resource\.data\.householdId == tokenHousehold\(\)/);

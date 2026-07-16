@@ -1,6 +1,6 @@
 <script lang="ts">
   import { httpsCallable } from 'firebase/functions';
-  import { getFunctions } from 'firebase/functions';
+  import { functions } from '$lib/firebase.js';
   import Papa from 'papaparse';
   import { UploadCloud, CheckCircle } from 'lucide-svelte';
 
@@ -9,9 +9,9 @@
   // Drag and Drop State
   let isDragging = $state(false);
   let csvHeaders = $state<string[]>([]);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   let csvData = $state<any[]>([]);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   let previewData = $state<any[]>([]);
 
   // Mapping State
@@ -86,7 +86,7 @@
         };
       });
 
-      const fns = getFunctions(undefined, 'us-east1');
+      const fns = functions;
       const vampireIngestRows = httpsCallable(fns, 'vampireIngestRows');
       
       const res = await vampireIngestRows({

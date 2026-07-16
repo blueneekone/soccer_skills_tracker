@@ -127,7 +127,7 @@ export class CoachTacticalEngine {
 
 			$effect(() => {
 				const tid = this.teamScope.selectedTeamId;
-				if (!tid) return;
+				if (!tid || authStore.isLoading || !authStore.user?.uid) return;
 
 				this.boardLoadComplete = false;
 

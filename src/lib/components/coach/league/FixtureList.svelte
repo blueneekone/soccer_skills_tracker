@@ -16,16 +16,16 @@
 	 *   onFixtureClick — optional callback when a row is selected
 	 */
 
-	import { formatFixtureDate, type LeagueSchema } from '$lib/types/league';
+	import { formatFixtureDate, type Fixture, type FixtureType, type Opponent, type MatchResult, type FixtureStatus } from '$lib/types/league';
 	import { formatFixtureDateFull, getBrowserTimezone } from '$lib/utils/time';
 
 	const browserTz = getBrowserTimezone();
 	import { swipe } from '$lib/actions/swipe.js';
 	import VanguardEmptyState from '$lib/components/ui/VanguardEmptyState.svelte';
 
-	type EnrichedFixture = LeagueSchema.Fixture & {
-		opponent: LeagueSchema.Opponent | null;
-		result?: LeagueSchema.MatchResult | null;
+	type EnrichedFixture = Fixture & {
+		opponent: Opponent | null;
+		result?: MatchResult | null;
 	};
 
 	interface Props {
@@ -35,7 +35,7 @@
 		 * When a fixture has result data here or in `fixture.result`, the
 		 * glowing score badge is shown on the row.
 		 */
-		matchResults?: Record<string, LeagueSchema.MatchResult>;
+		matchResults?: Record<string, MatchResult>;
 		title?: string;
 		showFilter?: boolean;
 		onFixtureClick?: (fixture: EnrichedFixture) => void;
@@ -91,7 +91,7 @@
 	});
 
 	/** Resolve score for a fixture from either the embedded result or the prop map. */
-	function getResult(fixture: EnrichedFixture): LeagueSchema.MatchResult | null {
+	function getResult(fixture: EnrichedFixture): MatchResult | null {
 		return fixture.result ?? matchResults[fixture.id] ?? null;
 	}
 
@@ -104,13 +104,13 @@
 	});
 
 	// ── Static configs ────────────────────────────────────────────────────────
-	const TYPE_COLORS: Record<LeagueSchema.FixtureType, string> = {
+	const TYPE_COLORS: Record<FixtureType, string> = {
 		League: '#14b8a6',
 		Tournament: '#a855f7',
 		Friendly: '#22c55e',
 	};
 
-	const STATUS_COLORS: Record<LeagueSchema.FixtureStatus, string> = {
+	const STATUS_COLORS: Record<FixtureStatus, string> = {
 		Scheduled: '#64748b',
 		Completed: '#22c55e',
 		Cancelled: '#ef4444',

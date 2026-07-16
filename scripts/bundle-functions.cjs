@@ -35,6 +35,7 @@ const CODEBASES = {
       'src/domains/ngbExportOps.js',
       'src/domains/federationSyncOps.js',
       'src/domains/reportOps.js',
+      'lib/grit.js',
     ],
   },
   rl: {
@@ -107,6 +108,7 @@ const CODEBASES = {
       'src/domains/adminOps.js',
       'src/domains/operativeOps.js',
       'src/domains/interoperabilityOps.js',
+      'lib/grit.js',
     ],
   },
 };

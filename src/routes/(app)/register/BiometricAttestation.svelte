@@ -14,6 +14,7 @@
 
   type FlowStatus = 'checking' | 'ready' | 'authenticating' | 'verifying' | 'success' | 'error' | 'fallback';
 
+
   // Resolved once at mount time — browser & PublicKeyCredential never change
   const webAuthnSupported = browser ? !!(window as any).PublicKeyCredential : false;
 
@@ -58,7 +59,7 @@
 
       const credential = await navigator.credentials.create({
         publicKey: {
-          challenge: challengeBytes as BufferSource,
+          challenge: challengeBytes as any,
           rp: { name: rpName, id: window.location.hostname },
           user: {
             id: userIdBytes,

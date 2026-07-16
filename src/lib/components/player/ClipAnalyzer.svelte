@@ -7,7 +7,8 @@
 	 */
 
 	import { doc, getDoc } from 'firebase/firestore';
-	import { getFunctions, httpsCallable } from 'firebase/functions';
+	import { httpsCallable } from 'firebase/functions';
+import { functions } from '$lib/firebase.js';
 	import { db } from '$lib/firebase.js';
 	import type { ArmoryEngine } from '$lib/states/ArmoryEngine.svelte.js';
 
@@ -206,7 +207,7 @@
 
 		try {
 			// STEP 1: Get signed upload URL from Cloud Function
-			const fns = getFunctions(undefined, 'us-central1');
+			const fns = functions;
 			const getUploadTokenFn = httpsCallable<
 				{ mimeType: string; fileName: string; targetStat: string },
 				{ signedUrl: string; storagePath: string; clipId: string; expiresAt: string }

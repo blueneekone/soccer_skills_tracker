@@ -34,7 +34,8 @@
 	 *   renders the error state.
 	 */
 
-	import { getFunctions, httpsCallable } from 'firebase/functions';
+	import { httpsCallable } from 'firebase/functions';
+	import { functions } from '$lib/firebase.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import Icon from '$lib/components/ui/Icon.svelte';
 
@@ -83,7 +84,6 @@
 
 	const SIGNED_URL_TTL_SECONDS = 5 * 60; // 5 minutes — matches CF
 
-	const functions = getFunctions();
 	const getSensitiveDocumentUrlFn = httpsCallable<
 		{ targetUserKey: string; documentType: string; fileName: string },
 		{ signedUrl: string; expiresAt: string; auditLogId: string }

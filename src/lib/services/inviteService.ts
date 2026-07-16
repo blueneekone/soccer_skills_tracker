@@ -187,7 +187,7 @@ export async function consumeInviteCode(code: string): Promise<ConsumeInviteResu
 	} catch (fnErr: unknown) {
 		const msg =
 			fnErr instanceof Error ? fnErr.message : 'Failed to redeem invite. Please try again.';
-		throw new Error(msg);
+		throw new Error(msg, { cause: fnErr });
 	}
 
 	// Force-refresh JWT — new claims (tenantId, role, teamId) active immediately.

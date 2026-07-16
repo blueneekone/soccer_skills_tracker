@@ -20,7 +20,8 @@
  */
 
 import { signInWithCustomToken } from 'firebase/auth';
-import { getFunctions, httpsCallable } from 'firebase/functions';
+import { httpsCallable } from 'firebase/functions';
+import { functions } from '$lib/firebase.js';
 import { goto } from '$app/navigation';
 import { untrack } from 'svelte';
 import { auth } from '$lib/firebase.js';
@@ -43,7 +44,7 @@ export class UplinkRedeemEngine {
 	redirectTo = $state('/');
 
 	readonly #redeemFn = httpsCallable<RedeemMagicUplinkPayload, RedeemMagicUplinkResult>(
-		getFunctions(undefined, 'us-east1'),
+		functions,
 		'redeemMagicUplink',
 	);
 

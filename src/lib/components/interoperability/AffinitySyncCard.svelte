@@ -7,7 +7,7 @@
   let sidcode = $state('');
   let seasonId = $state('');
   let selectedTeamId = $state('');
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   let teams = $state<any[]>([]);
   let isBinding = $state(false);
   let lastAffinitySyncAt = $state<string | null>(null);

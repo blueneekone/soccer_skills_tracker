@@ -58,7 +58,8 @@
 
 import { browser } from '$app/environment';
 import { authStore } from '$lib/stores/auth.svelte.js';
-import { getFunctions, httpsCallable } from 'firebase/functions';
+import { httpsCallable } from 'firebase/functions';
+import { functions } from '$lib/firebase.js';
 
 // ── Known ad-tech host patterns (string fragments to match against URL host) ─
 const AD_HOST_BLOCKLIST = [
@@ -111,7 +112,7 @@ function logBlock(src, marker) {
   if (!browser) return;
   try {
     if (!_logBlockFn) {
-      const fns = getFunctions();
+      const fns = functions;
       _logBlockFn = httpsCallable(fns, 'logTeenAdBlock');
     }
     _logBlockFn({ src, marker }).catch(() => {

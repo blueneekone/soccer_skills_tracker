@@ -20,7 +20,8 @@
 	import { onMount, onDestroy } from 'svelte';
 	import { collection, onSnapshot, query, orderBy, deleteDoc, doc, type Unsubscribe } from 'firebase/firestore';
 	import { db } from '$lib/firebase.js';
-	import { getFunctions, httpsCallable } from 'firebase/functions';
+	import { httpsCallable } from 'firebase/functions';
+import { functions } from '$lib/firebase.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
 
 	// ── Props ─────────────────────────────────────────────────────────────────
@@ -151,7 +152,7 @@
 		deletingAll = true;
 		deleteAllResult = null;
 		try {
-			const fns = getFunctions(undefined, 'us-central1');
+			const fns = functions;
 			const deleteAll = httpsCallable<
 				{ playerUid: string; playerEmail: string },
 				{ deletedCount: number }

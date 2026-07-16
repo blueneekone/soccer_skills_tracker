@@ -239,10 +239,10 @@ export async function commitGritAward(payload: GritAwardPayload): Promise<BatchW
 					: String(err);
 
 		if (code === 'functions/resource-exhausted' || message.includes('GRIT_DAILY_CAP')) {
-			throw new Error('GRIT_DAILY_CAP');
+			throw new Error('GRIT_DAILY_CAP', { cause: err });
 		}
 		if (code === 'functions/failed-precondition' || message.includes('GRIT_NOT_ELIGIBLE')) {
-			throw new Error('GRIT_NOT_ELIGIBLE');
+			throw new Error('GRIT_NOT_ELIGIBLE', { cause: err });
 		}
 		throw err;
 	}

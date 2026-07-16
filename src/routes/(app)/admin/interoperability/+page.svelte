@@ -61,7 +61,7 @@
         format: 'json'
       });
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const data = res.data as { data: any[] };
       
       // Hidden printable iframe technique

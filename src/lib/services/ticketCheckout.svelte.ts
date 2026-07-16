@@ -14,7 +14,8 @@
  *   // on submit: await checkout.confirm(returnUrl);
  */
 
-import { getFunctions, httpsCallable } from 'firebase/functions';
+import { httpsCallable } from 'firebase/functions';
+import { functions } from '$lib/firebase.js';
 import { loadStripe, type Stripe, type StripeElements } from '@stripe/stripe-js';
 import { browser } from '$app/environment';
 
@@ -64,7 +65,7 @@ export function createTicketCheckout() {
 		state.phase = 'loading';
 		state.errorMsg = '';
 		try {
-			const fns = getFunctions(undefined, 'us-east1');
+			const fns = functions;
 			const createIntent = httpsCallable<
 				{ eventId: string; tierId: string; quantity: number },
 				{ clientSecret: string; ticketId: string; grossCents: number; platformFeeCents: number }

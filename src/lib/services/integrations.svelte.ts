@@ -21,7 +21,8 @@
  */
 
 import { browser } from '$app/environment';
-import { getFunctions, httpsCallable } from 'firebase/functions';
+import { httpsCallable } from 'firebase/functions';
+import { functions } from '$lib/firebase.js';
 
 // ── Public types ─────────────────────────────────────────────────────────────
 
@@ -67,7 +68,7 @@ export interface NowPlaying {
 
 function makeCaller(name: string) {
 	if (!browser) return null;
-	return httpsCallable(getFunctions(undefined, 'us-central1'), name);
+	return httpsCallable(functions, name);
 }
 
 // ═══════════════════════════════════════════════════════════════════════════

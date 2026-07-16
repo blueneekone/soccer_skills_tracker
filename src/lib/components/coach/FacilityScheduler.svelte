@@ -16,7 +16,8 @@
 	 */
 
 	import { onMount } from 'svelte';
-	import { getFunctions, httpsCallable } from 'firebase/functions';
+	import { httpsCallable } from 'firebase/functions';
+import { functions } from '$lib/firebase.js';
 
 	interface Facility {
 		facilityId: string;
@@ -40,7 +41,7 @@
 
 	let { teamId = '', onbooked }: Props = $props();
 
-	const fns = getFunctions(undefined, 'us-central1');
+	const fns = functions;
 
 	// ── State ─────────────────────────────────────────────────────────────────
 

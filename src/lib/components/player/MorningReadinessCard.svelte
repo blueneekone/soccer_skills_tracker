@@ -1,5 +1,6 @@
 <script>
-	import { getFunctions, httpsCallable } from 'firebase/functions';
+	import { httpsCallable } from 'firebase/functions';
+import { functions } from '$lib/firebase.js';
 	import { getDoc, doc } from 'firebase/firestore';
 	import { db } from '$lib/firebase.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
@@ -64,7 +65,7 @@
 
 		submitting = true;
 		try {
-			const fns = getFunctions();
+			const fns = functions;
 			const submit = httpsCallable(fns, 'submitPhysioSelfReport');
 			await submit({ sleepHours, soreness, mood, restingFeel });
 			submitted = true;

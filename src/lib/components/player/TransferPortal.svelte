@@ -17,7 +17,8 @@
 	 * Completed phases glow green; the active phase pulses cyan.
 	 */
 
-	import { getFunctions, httpsCallable } from 'firebase/functions';
+	import { httpsCallable } from 'firebase/functions';
+import { functions } from '$lib/firebase.js';
 	import Icon from '$lib/components/ui/Icon.svelte';
 	import type { IconName } from '$lib/icons/registry.js';
 
@@ -28,7 +29,7 @@
 
 	let { role, playerEmail = '' }: Props = $props();
 
-	const fns = getFunctions(undefined, 'us-central1');
+	const fns = functions;
 
 	// ── State machine ─────────────────────────────────────────────────────────
 

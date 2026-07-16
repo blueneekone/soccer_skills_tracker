@@ -38,29 +38,12 @@ export class SupportAgentEngine {
 		this.error = '';
 
 		try {
-			// Retrieve the current Firebase Auth token
-			const token = authStore.user ? await authStore.user.getIdToken() : '';
+			const { functions } = await import('$lib/firebase.js');
+			const { httpsCallable } = await import('firebase/functions');
+			const executeCmd = httpsCallable<{ command: string }, { reply: string }>(functions, 'executeSupportCommand');
 
-			const res = await fetch('/api/support/execute', {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json',
-					'Authorization': `Bearer ${token}`
-				},
-				body: JSON.stringify({ command: userMsg.content })
-			});
-
-			const contentType = res.headers.get('content-type');
-			if (!contentType || !contentType.includes('application/json')) {
-				throw new Error('Support Agent backend is currently offline for maintenance (requires Cloud Function migration).');
-			}
-
-			if (!res.ok) {
-				const errData = await res.json().catch(() => ({}));
-				throw new Error(errData.error || `Server error: ${res.status}`);
-			}
-
-			const data = await res.json();
+			const result = await executeCmd({ command: userMsg.content });
+			const data = result.data;
 			
 			const agentMsg: ChatMessage = {
 				id: crypto.randomUUID(),

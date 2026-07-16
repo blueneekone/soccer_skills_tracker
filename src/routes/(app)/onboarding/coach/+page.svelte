@@ -44,7 +44,7 @@
       }
     } catch (e) {
       console.error('Checkr token generation failed', e);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const err = e as any;
       errorMsg = err.message || 'Failed to initialize the background check process.';
     } finally {

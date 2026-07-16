@@ -17,7 +17,8 @@
  */
 
 import { browser } from '$app/environment';
-import { getFunctions, httpsCallable } from 'firebase/functions';
+import { httpsCallable } from 'firebase/functions';
+import { functions } from '$lib/firebase.js';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -256,7 +257,7 @@ export class CommsEngine {
 
 	constructor() {
 		if (!browser) return;
-		const fns = getFunctions(undefined, 'us-east1');
+		const fns = functions;
 		this._broadcastFn = httpsCallable(fns, 'safeSportBroadcast');
 		this._clubBroadcastFn = httpsCallable(fns, 'clubSportBroadcast');
 		this._emergencyBroadcastFn = httpsCallable(fns, 'emergencyClubBroadcast');

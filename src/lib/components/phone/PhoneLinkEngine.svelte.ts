@@ -30,7 +30,8 @@
 
 import type { ConfirmationResult, RecaptchaVerifier } from 'firebase/auth';
 import { linkWithPhoneNumber, getIdToken } from 'firebase/auth';
-import { getFunctions, httpsCallable } from 'firebase/functions';
+import { httpsCallable } from 'firebase/functions';
+import { functions } from '$lib/firebase.js';
 import { auth } from '$lib/firebase.js';
 import type {
 	MirrorPhoneVerificationInput,
@@ -74,7 +75,7 @@ export class PhoneLinkEngine {
 	#confirmationResult: ConfirmationResult | null = null;
 
 	readonly #mirrorFn = httpsCallable<MirrorPhoneVerificationInput, MirrorPhoneVerificationResult>(
-		getFunctions(undefined, 'us-east1'),
+		functions,
 		'mirrorPhoneVerification',
 	);
 

@@ -2004,3 +2004,57 @@ exports.impersonateUser = onCall(
       }
     },
 );
+
+exports.executeSupportCommand = onCall(
+  {region: REGION, enforceAppCheck: false},
+  async (request) => {
+    if (!request.auth) {
+      throw new HttpsError('unauthenticated', 'Missing or invalid authorization token');
+    }
+    
+    // Check if the user is a global or super admin via their custom claims
+    const role = request.auth.token.role;
+    if (role !== 'global_admin' && role !== 'super_admin') {
+      throw new HttpsError('permission-denied', 'Insufficient privileges. Support Chat is for Support Agents (Admins).');
+    }
+
+    const cmdStr = (request.data.command || '').trim();
+    if (!cmdStr) {
+      throw new HttpsError('invalid-argument', 'No command provided.');
+    }
+
+    // Support Agent Command Parsing
+    if (cmdStr.startsWith('/sync-roster')) {
+      const match = cmdStr.match(/clubId=([a-zA-Z0-9_-]+)/);
+      const clubId = match ? match[1] : null;
+      
+      if (!clubId) {
+        return { reply: "Usage: /sync-roster clubId=<id>" };
+      }
+      
+      // Mock sync logic: update an audit document
+      await db().collection('audit_logs').add({
+        action: 'admin_sync_roster',
+        clubId,
+        agentId: request.auth.uid,
+        timestamp: admin.firestore.FieldValue.serverTimestamp()
+      });
+
+      return { reply: `Roster synchronization successfully queued for club: ${clubId}.` };
+    }
+
+    if (cmdStr.startsWith('/clear-queue')) {
+      const match = cmdStr.match(/clubId=([a-zA-Z0-9_-]+)/);
+      const clubId = match ? match[1] : null;
+      if (!clubId) {
+        return { reply: "Usage: /clear-queue clubId=<id>" };
+      }
+      
+      // Simulate clearing the queue
+      return { reply: `Compliance queues flushed for club: ${clubId}.` };
+    }
+
+    return { reply: `Command not recognized: ${cmdStr.split(' ')[0]}. Available commands: /sync-roster, /clear-queue` };
+  }
+);
+

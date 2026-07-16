@@ -12,16 +12,16 @@
 	 *   onOpponentClick — optional callback when a card is selected
 	 */
 
-	import { type LeagueSchema } from '$lib/types/league';
+	import { type Opponent, type ThreatAssessment } from '$lib/types/league';
 	import OpponentCard from './OpponentCard.svelte';
 
-	type OpponentWithThreat = LeagueSchema.Opponent & {
-		threat: LeagueSchema.ThreatAssessment;
+	type OpponentWithThreat = Opponent & {
+		threat?: ThreatAssessment;
 	};
 
 	interface Props {
 		opponents?: OpponentWithThreat[];
-		onOpponentClick?: (opponent: LeagueSchema.Opponent) => void;
+		onOpponentClick?: (opponent: Opponent) => void;
 		class?: string;
 	}
 
