@@ -410,6 +410,7 @@
   });
 
   $effect(() => {
+		if (!db || !authStore.isAuthenticated) return;
     if (!browser || authStore.isLoading) return;
     void missionRefreshNonce;
     const uid = authStore.user?.uid ?? '';

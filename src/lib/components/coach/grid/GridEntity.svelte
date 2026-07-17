@@ -1,5 +1,5 @@
 <script>
-	const DISC_R = 30;
+	const DISC_R = 22;
 	const DISC_HIT_R = 32;
 
 	/**
@@ -136,9 +136,9 @@
 				cx="0"
 				cy="0"
 				r={DISC_R}
-				fill="#050505"
-				stroke={isDragging ? '#d97706' : siemColor}
-				stroke-width="2"
+				fill="#000000"
+				stroke={isDragging ? '#d97706' : '#06b6d4'}
+				stroke-width="2.5"
 			/>
 			<circle
 				cx="0"

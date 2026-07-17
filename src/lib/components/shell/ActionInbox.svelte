@@ -8,8 +8,8 @@
 	import { db } from '$lib/firebase.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
 
-	/** @type {{ clubId?: string, teamId?: string }} */
-	let { clubId = '', teamId = '' } = $props();
+	/** @type {{ clubId?: string, teamId?: string, householdId?: string }} */
+	let { clubId = '', teamId = '', householdId = '' } = $props();
 
 	const role = $derived(authStore.role);
 	const uid = $derived(authStore.user?.uid || '');
@@ -151,22 +151,48 @@
 							href: '/director?tab=compliance',
 						});
 					}
-				} else if (role === 'parent' && authStore.userProfile?.playerName) {
-					const pn = authStore.userProfile.playerName;
-					const q = query(collection(db, 'assignments'), where('player', '==', pn));
-					const snap = await getDocs(q);
-					let n = 0;
-					snap.forEach((d) => {
-						const st = d.data().status;
-						if (st === 'active' || st === 'pending') n++;
-					});
-					if (!cancelled && n > 0) {
-						next.push({
-							id: 'hw',
-							label: `${n} household assignment${n === 1 ? '' : 's'} to complete`,
-							meta: 'Household',
-							href: '/parent/vpc',
+				} else if (role === 'parent') {
+					if (authStore.userProfile?.playerName) {
+						const pn = authStore.userProfile.playerName;
+						const q = query(collection(db, 'assignments'), where('player', '==', pn));
+						const snap = await getDocs(q);
+						let n = 0;
+						snap.forEach((d) => {
+							const st = d.data().status;
+							if (st === 'active' || st === 'pending') n++;
 						});
+						if (!cancelled && n > 0) {
+							next.push({
+								id: 'hw',
+								label: `${n} household assignment${n === 1 ? '' : 's'} to complete`,
+								meta: 'Household',
+								href: '/parent/vpc',
+							});
+						}
+					}
+					if (householdId) {
+						const hsSnap = await getDoc(doc(db, 'households', householdId));
+						if (hsSnap.exists()) {
+							const hData = hsSnap.data();
+							const emails = Array.isArray(hData.playerEmails) ? hData.playerEmails : [];
+							let missing = 0;
+							for (const em of emails) {
+								if (!em) continue;
+								const ps = await getDoc(doc(db, 'passports', em.toString().trim().toLowerCase()));
+								const pData = ps.exists() ? ps.data() : null;
+								if (!pData || pData.hasSignedWaiver !== true) {
+									missing++;
+								}
+							}
+							if (!cancelled && missing > 0) {
+								next.push({
+									id: 'waivers',
+									label: `${missing} player${missing === 1 ? '' : 's'} missing waiver`,
+									meta: 'Compliance · Waivers',
+									href: '/parent/vpc',
+								});
+							}
+						}
 					}
 				}
 			} catch (e) {

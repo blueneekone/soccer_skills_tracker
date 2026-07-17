@@ -113,12 +113,17 @@
 	const totalSteps = $derived(wizardSteps.length);
 	const progressLabel = $derived(`Step ${wizardStep} of ${totalSteps}`);
 
-	const basePrivacy = {
+	/**
+	 * basePrivacy is a plain object literal — no $state Proxy wrapping needed.
+	 * We snapshot it anyway to be defensive against future refactors that might
+	 * make it reactive.
+	 */
+	const basePrivacy = $state.snapshot({
 		privacyProfile: 'strict_minor_defaults',
 		telemetryOptIn: false,
 		biometricOrVideoConsentAt: null,
 		consentPolicyVersion: '2026-04',
-	};
+	});
 
 	function setSetupRole(kind: SetupRole) {
 		setupRole = kind;
@@ -262,7 +267,7 @@
 
 		const userEmail = auth.currentUser?.email?.toLowerCase();
 		if (!userEmail) {
-			return (errorMsg = 'No signed-in email � try signing in again.');
+			return (errorMsg = 'No signed-in email — try signing in again.');
 		}
 
 		saving = true;
@@ -271,18 +276,29 @@
 			const userRef = doc(db, 'users', userEmail);
 			const joinedAt = new Date();
 
+			// Force a fresh token so the Firestore rules' authed() check
+			// receives the current claims (role + clubId) in the JWT.
+			// Without this, a brand-new Google sign-in has no claims yet
+			// and authed() returns false, causing a 403.
+			if (auth.currentUser) {
+				try {
+					await auth.currentUser.getIdToken(true);
+				} catch (tokenErr) {
+					console.warn('[setup] token refresh failed, proceeding anyway', tokenErr);
+				}
+			}
+
 			if (setupRole === 'parent') {
-				await setDoc(
-					userRef,
-					{
-						clubId: resolvedClubId(),
-						role: 'parent',
-						playerName: name,
-						joinedAt,
-						...basePrivacy,
-					},
-					{ merge: true },
-				);
+				// Strip the Svelte 5 Proxy from all reactive state before
+				// passing to Firestore — prevents 400 serialization failures on mobile.
+				const payload = $state.snapshot({
+					clubId: resolvedClubId(),
+					role: 'parent' as const,
+					playerName: name,
+					joinedAt,
+					...basePrivacy,
+				});
+				await setDoc(userRef, payload, { merge: true });
 			} else {
 				const claimResult = await claimCoachInviteCallable({});
 				const claimData = claimResult.data as { ok: boolean; claimed: boolean; teamId?: string };
@@ -292,18 +308,22 @@
 					saving = false;
 					return;
 				}
-				await setDoc(
-					userRef,
-					{
-						playerName: name,
-						joinedAt,
-						...basePrivacy,
-					},
-					{ merge: true },
-				);
+				// claimCoachInvite writes role+clubId+teamId via Admin SDK.
+				// We only write safe, non-RBAC profile fields from the client.
+				const payload = $state.snapshot({
+					playerName: name,
+					joinedAt,
+					...basePrivacy,
+				});
+				await setDoc(userRef, payload, { merge: true });
 			}
 
 			await authStore.refresh({ silent: true });
+			// Wait for the auth store to finish re-hydrating from the fresh token
+			// before calling navigateAfterLogin — prevents routing with stale role.
+			while (authStore.isLoading) {
+				await new Promise<void>((r) => setTimeout(r, 50));
+			}
 			goto(applyLoginWaterfall(authStore.role, authStore.userProfile), { replaceState: true });
 		} catch (err) {
 			errorMsg =

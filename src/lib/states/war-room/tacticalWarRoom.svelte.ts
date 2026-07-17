@@ -19,7 +19,8 @@ import type { TacticalCartridge, TacticalRoute, TacticalToken } from '$lib/state
 import type { AnchorDrag, RouteBodyDrag, TrailPt } from '$lib/states/war-room/TacticalInputEngine.svelte';
 import { clientToSvg, clampToPitch, bindPlayerIdAtRouteStart } from '$lib/utils/canvasPhysics';
 import { executeLoadCartridge, executeSerializeToCartridge, executeResetPositions, type CartridgeOpsHost } from '$lib/utils/cartridgeOps';
-import { formatTimelineMs, executeRecallBench, executeClearRoutesOnly, executeCloseOverlay, executeHandleSvgClick } from '$lib/utils/tacticalWarRoomHandlers';
+import * as api from './tacticalWarRoomApi';
+import { formatTimelineMs } from '$lib/utils/tacticalWarRoomHandlers';
 export type TacticalGridHost = {
 	showTacticalOverlay: { get: () => boolean; set: (v: boolean) => void };
 	warRoomTool: { get: () => 'DRAG' | 'ROUTE'; set: (v: 'DRAG' | 'ROUTE') => void };
@@ -31,6 +32,49 @@ export type TacticalGridHost = {
 };
 
 export type TacticalWarRoomModel = ReturnType<typeof createTacticalWarRoom>;
+
+function buildKineticState(
+	simulator: SimulatorEngine,
+	draggingPlayer: () => TacticalToken | null,
+	routesLive: () => TacticalRoute[],
+	allPitchTokens: () => TacticalToken[],
+	drawnRoutes: () => unknown[]
+) {
+	const kineticPitchTokens = $derived.by(() => {
+		const maxT = Math.max(1, simulator.maxDuration);
+		const tNow = simulator.currentTime;
+		const dragId = draggingPlayer()?.id ?? null;
+		const routes = routesLive();
+		return allPitchTokens().map((tok) => {
+			if (dragId && tok.id === dragId) return tok;
+			const r = routes.find((x) => x.bindPlayerId === tok.id);
+			if (!r || typeof tok.x !== 'number' || typeof tok.y !== 'number') return tok;
+			const delay = Math.max(0, r.delay ?? 0);
+			const span = Math.max(1, maxT - delay);
+			const uRoute = tNow < delay ? 0 : Math.max(0, Math.min(1, (tNow - delay) / span));
+			const p = sampleRoutePointAt(r, uRoute);
+			return { ...tok, x: p.x, y: p.y };
+		});
+	});
+
+	const timelineNorm = $derived(
+		simulator.maxDuration > 0 ? Math.max(0, Math.min(1, simulator.currentTime / simulator.maxDuration)) : 0,
+	);
+
+	const allRouteMarkerColors = $derived.by(() => {
+		const s = new Set<string>([...INK_PALETTE]);
+		for (const raw of drawnRoutes()) {
+			s.add(normalizeRoute(raw).color);
+		}
+		return [...s];
+	});
+
+	return {
+		get kineticPitchTokens() { return kineticPitchTokens; },
+		get timelineNorm() { return timelineNorm; },
+		get allRouteMarkerColors() { return allRouteMarkerColors; }
+	};
+}
 
 /** Pure war-room state + physics + playback — UI shells consume via TacticalArena / TacticalHUD. */
 // eslint-disable-next-line max-lines-per-function
@@ -116,34 +160,16 @@ export function createTacticalWarRoom(host: TacticalGridHost) {
 	 * at the route start (u = 0); after that, u maps from r.delay → maxDuration.
 	 * Coordinate math (sampleRoutePointAt / routePathD) untouched.
 	 */
-	const kineticPitchTokens = $derived.by(() => {
-		const maxT = Math.max(1, simulator.maxDuration);
-		const tNow = simulator.currentTime;
-		const dragId = draggingPlayer?.id ?? null;
-		const routes = routesLive;
-		return allPitchTokens.map((tok) => {
-			if (dragId && tok.id === dragId) return tok;
-			const r = routes.find((x) => x.bindPlayerId === tok.id);
-			if (!r || typeof tok.x !== 'number' || typeof tok.y !== 'number') return tok;
-			const delay = Math.max(0, r.delay ?? 0);
-			const span = Math.max(1, maxT - delay);
-			const uRoute = tNow < delay ? 0 : Math.max(0, Math.min(1, (tNow - delay) / span));
-			const p = sampleRoutePointAt(r, uRoute);
-			return { ...tok, x: p.x, y: p.y };
-		});
-	});
-
-	const timelineNorm = $derived(
-		simulator.maxDuration > 0 ? Math.max(0, Math.min(1, simulator.currentTime / simulator.maxDuration)) : 0,
+	const kinetics = buildKineticState(
+		simulator,
+		() => draggingPlayer,
+		() => routesLive,
+		() => allPitchTokens,
+		() => host.drawnRoutes.get()
 	);
-
-	const allRouteMarkerColors = $derived.by(() => {
-		const s = new Set<string>([...INK_PALETTE]);
-		for (const raw of host.drawnRoutes.get()) {
-			s.add(normalizeRoute(raw).color);
-		}
-		return [...s];
-	});
+	const kineticPitchTokens = $derived(kinetics.kineticPitchTokens);
+	const timelineNorm = $derived(kinetics.timelineNorm);
+	const allRouteMarkerColors = $derived(kinetics.allRouteMarkerColors);
 
 	// Zero-Gravity coordinate math — viewBox dimensions sourced from constants so the
 	// fallback is a pure ratio interpolation regardless of CSS 3D transforms.
@@ -194,54 +220,31 @@ export function createTacticalWarRoom(host: TacticalGridHost) {
 	});
 
 	function bumpRouteDelay(routeId: string, deltaMs: number) {
-		host.drawnRoutes.set(
-			host.drawnRoutes.get().map((raw) => {
-				const r = normalizeRoute(raw);
-				if (r.id !== routeId) return raw;
-				const next = Math.max(0, Math.min(DELAY_MAX_MS, r.delay + deltaMs));
-				return { ...r, delay: next };
-			}),
-		);
+		api.bumpRouteDelay(host, routeId, deltaMs);
 	}
 
 	function closeOverlay() {
-		executeCloseOverlay(host);
+		api.closeOverlay(host);
 	}
 
 	function handleSvgClick(ev: MouseEvent | TouchEvent) {
-		executeHandleSvgClick(ev, {
-			contextMenuOpen,
-			setContextMenuOpen: (v) => (contextMenuOpen = v),
-			cancelRadialLongPress: radial.cancelRadialLongPress,
-			radialBlocking: radial.radialBlocking,
-			closeRadialHub: radial.closeRadialHub
-		});
+		if (contextMenuOpen) contextMenuOpen = false;
+		radial.cancelRadialLongPress();
+		if (radial.radialBlocking()) {
+			radial.closeRadialHub();
+		}
 	}
 
 	function recallBench() {
-		executeRecallBench(host.wrBucketPitch, host.wrBucketBench, host.wrOppPitch);
+		api.recallBench(host);
 	}
 
 	function clearRoutesOnly() {
-		executeClearRoutesOnly(host.drawnRoutes, simulator, simRouteHoldPrev);
+		api.clearRoutesOnly(host, simulator, simRouteHoldPrev);
 	}
 
 	function deployTokenAt(t: TacticalToken, source: RadialSlotSource, p: { x: number; y: number }) {
-		const isOpp = t.side === 'opponent' || source === 'opp';
-		const placed: TacticalToken = {
-			...t,
-			x: p.x,
-			y: p.y,
-			side: isOpp ? 'opponent' : 'friendly',
-			color: isOpp ? OPP_RING : t.color || FRIENDLY_RING,
-		};
-		if (isOpp) {
-			host.wrOppPitch.set([...host.wrOppPitch.get(), placed]);
-		} else {
-			host.wrBucketPitch.set([...host.wrBucketPitch.get(), placed]);
-			if (source === 'xi') host.wrBucketXi.set(host.wrBucketXi.get().filter((x) => x.id !== t.id));
-			else host.wrBucketBench.set(host.wrBucketBench.get().filter((x) => x.id !== t.id));
-		}
+		api.deployTokenAt(host, t, source, p);
 	}
 
 	const radial = createTacticalRadialHub({
@@ -382,13 +385,7 @@ export function createTacticalWarRoom(host: TacticalGridHost) {
 	}
 
 	function deleteRoute(routeId: string) {
-		host.drawnRoutes.set(
-			host.drawnRoutes.get().filter((raw) => {
-				const r = normalizeRoute(raw);
-				return r.id !== routeId;
-			}),
-		);
-		if (selectedRouteId === routeId) selectedRouteId = null;
+		api.deleteRoute(host, routeId, () => selectedRouteId, (v) => (selectedRouteId = v));
 	}
 
 	/** Rewind timeline and restore pitch token x/y from last captured baseline. */
@@ -411,7 +408,7 @@ export function createTacticalWarRoom(host: TacticalGridHost) {
 	const activeTool = $derived(host.warRoomTool.get());
 
 	function setActiveTool(t: 'DRAG' | 'ROUTE') {
-		host.warRoomTool.set(t);
+		api.setActiveTool(host, t);
 	}
 
 	// ── Tactical Readout cursor tracking ────────────────────────────────────

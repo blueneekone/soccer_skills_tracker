@@ -22,7 +22,7 @@
 		isGenerating = true;
 
 		try {
-			const functions = getFunctions(app);
+			const functions = getFunctions(app, 'us-east1');
 			const generateTacticalPlan = httpsCallable(functions, 'generateTacticalPlan');
 			const result = await generateTacticalPlan({ prompt: currentPrompt });
 			const data = result.data as { plan: string };
@@ -86,7 +86,7 @@
 	async function commitMacrocycle() {
 		isCommitting = true;
 		try {
-			const functions = getFunctions(app);
+			const functions = getFunctions(app, 'us-east1');
 			const commit = httpsCallable(functions, 'commitMacrocycle');
 			await commit({ payload: { microcycles } });
 			

@@ -109,7 +109,24 @@ export function isProfileComplete(profile) {
  */
 export async function resolveUserProfile(db, firebaseUser, forceTokenRefresh = true) {
 	const tokenResult = await getIdTokenResult(firebaseUser, forceTokenRefresh);
-	let role = tokenResult.claims.role || 'player';
+	let role = tokenResult.claims.role || '';
+	const emailKey = (firebaseUser.email ?? '').toLowerCase();
+
+	// QA / Test Accounts: auto-assign role from email alias if no custom claim exists
+	if (!tokenResult.claims.role && emailKey.includes('+')) {
+		const match = /\+([a-zA-Z0-9_]+)@/.exec(emailKey);
+		if (match) {
+			const alias = match[1];
+			if (alias === 'admin' || alias === 'global_admin') role = 'global_admin';
+			else if (alias === 'super_admin') role = 'super_admin';
+			else if (alias === 'director') role = 'director';
+			else if (alias === 'coach') role = 'coach';
+			else if (alias === 'registrar') role = 'registrar';
+			else if (alias === 'parent') role = 'parent';
+			else if (alias === 'player') role = 'player';
+		}
+	}
+
 	/**
 	 * Tenant ID sourced from JWT custom claims — set by `syncUserClaims`
 	 * Cloud Function trigger.  `clubId` is the legacy claim name (backward compat);
@@ -130,7 +147,6 @@ export async function resolveUserProfile(db, firebaseUser, forceTokenRefresh = t
 		role = role === 'global_admin' ? 'global_admin' : 'super_admin';
 	}
 
-	const emailKey = firebaseUser.email.toLowerCase();
 	const userRef = doc(db, 'users', emailKey);
 	const userSnap = await getDoc(userRef);
 	const baseProfile = userSnap.exists() ? userSnap.data() : null;
@@ -184,6 +200,10 @@ export async function resolveUserProfile(db, firebaseUser, forceTokenRefresh = t
 	}
 
 	if (userSnap.exists()) {
+		if (!role && baseProfile && typeof baseProfile.role === 'string' && baseProfile.role.trim() !== '') {
+			role = baseProfile.role.trim();
+		}
+		if (!role) role = 'player';
 		let merged = { ...baseProfile, role, playerName: fbName };
 		if (!merged.teamId || String(merged.teamId).trim() === '') {
 			const plSnap = await getDoc(doc(db, 'player_lookup', emailKey));
@@ -220,7 +240,7 @@ export async function resolveUserProfile(db, firebaseUser, forceTokenRefresh = t
 			}
 		}
 		return {
-			role,
+			role: effectiveRole,
 			tenantId: resolvedTenantId,
 			cellId,
 			profile: merged,

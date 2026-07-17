@@ -8,6 +8,7 @@
 	import Icon from '$lib/components/ui/Icon.svelte';
 	import type { IconName } from '$lib/icons/registry.js';
 	import VanguardEmptyState from '$lib/components/ui/VanguardEmptyState.svelte';
+	import ActionInbox from '$lib/components/shell/ActionInbox.svelte';
 
 	// For the engine, we will dynamically import or mock it for the dashboard
 	// Assuming CoOpEngine exists and is available
@@ -63,6 +64,8 @@
 			
 			<!-- Compliance Sidecar spans 4 columns -->
 			<div class="bento-span-4 lg:tw-col-span-4 tw-flex tw-flex-col tw-gap-6">
+				<ActionInbox householdId={authStore.userProfile?.householdId} />
+
 				<!-- The Car Ride Home Holographic Widget (Z3 Holographic Card) -->
 				<div class="tw-relative tw-rounded-[var(--radius-premium,24px)] tw-border tw-border-[#334155] tw-overflow-hidden tw-z-10 tw-bg-[#0f172a]/40 tw-backdrop-blur-[20px]">
 					<CarRideHome 
@@ -76,7 +79,7 @@
 
 				<!-- Bounty Terminal -->
 				<div class="tw-bg-[#0f172a] tw-rounded-[var(--radius-premium,24px)] tw-border tw-border-[#334155] tw-flex-1 tw-min-h-[300px]">
-					<BountyTerminal />
+					<BountyTerminal engine={coOpEngine} />
 				</div>
 			</div>
 		</div>

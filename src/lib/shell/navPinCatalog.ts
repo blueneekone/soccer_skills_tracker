@@ -97,12 +97,12 @@ function buildDirectorCatalog(): NavPinItem[] {
 
 function buildCoachCatalog(): NavPinItem[] {
 	const tier1: ShellLink[] = [
-		coachLinks.find((l) => l.href === '/coach')!,
+		coachLinks.find((l) => l.href === '/coach/dashboard')!,
 		coachLinks.find((l) => l.href === '/coach/forge')!,
 		messagesNavItem,
 	];
 	const tier2 = coachLinks.filter(
-		(l) => l.href !== '/coach' && l.href !== '/coach/forge',
+		(l) => l.href !== '/coach/dashboard' && l.href !== '/coach/forge',
 	);
 	return [
 		...mapLinks(tier1, 'Tier 1 / exec'),

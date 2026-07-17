@@ -112,10 +112,8 @@ export const db = (() => {
 			}),
 		});
 	} catch (err) {
-		console.warn('[Firestore] Failed to initialize persistent cache. Falling back to memory cache.', err);
-		return initializeFirestore(app, {
-			localCache: memoryLocalCache()
-		});
+		console.warn('[Firestore] Failed to initialize persistent cache. Falling back to non-persistent getFirestore.', err);
+		return getFirestore(app);
 	}
 })();
 

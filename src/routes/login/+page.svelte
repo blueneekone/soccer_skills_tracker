@@ -11,7 +11,6 @@
 	import { httpsCallable } from 'firebase/functions';
 	import { loginEngine } from '$lib/auth/LoginEngine.svelte.js';
 	import { navigateAfterLogin } from '$lib/auth/postAuthRouting.js';
-	import { routeByFirestoreRole } from '$lib/auth/authRouter.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import Icon from '$lib/components/ui/Icon.svelte';
 
@@ -43,10 +42,18 @@
 		opCode = (e.target as HTMLInputElement).value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 8);
 	}
 
+	let handledByRedirect = $state(false);
+
 	$effect(() => {
-		if (!authStore.isLoading && authStore.isAuthenticated && !navigating) {
-			navigating = true;
-			void navigateAfterLogin({ replaceState: true });
+		if (browser && !authStore.isLoading) {
+			if (authStore.isAuthenticated && !navigating && !handledByRedirect) {
+				navigating = true;
+				void navigateAfterLogin({ replaceState: true });
+			} else if (!authStore.isAuthenticated && navigating) {
+				// Re-enable the login form if a sign-out finishes while the page is mounted
+				navigating = false;
+				googleBusy = false;
+			}
 		}
 	});
 
@@ -56,22 +63,26 @@
 		googleError = '';
 		loginEngine.error = '';
 		try {
-		const provider = new GoogleAuthProvider();
-		const result = await signInWithPopup(auth, provider);
-		const user = result.user;
-		const emailKey = (user.email ?? '').trim().toLowerCase();
-		if (!emailKey) throw new Error('Google account has no email address — cannot create profile.');
-		await setDoc(
-			doc(db, 'users', emailKey),
-			{ email: user.email, displayName: user.displayName, photoURL: user.photoURL ?? null, lastLogin: serverTimestamp() },
-			{ merge: true },
-		);
-		await authStore.refresh({ silent: true });
-		await routeByFirestoreRole(user);
+			const provider = new GoogleAuthProvider();
+			const result = await signInWithPopup(auth, provider);
+			if (result && result.user) {
+				handledByRedirect = true;
+				const user = result.user;
+				const emailKey = (user.email ?? '').trim().toLowerCase();
+				if (!emailKey) throw new Error('Google account has no email address — cannot create profile.');
+				await setDoc(
+					doc(db, 'users', emailKey),
+					{ email: user.email, displayName: user.displayName, photoURL: user.photoURL ?? null, lastLogin: serverTimestamp() },
+					{ merge: true },
+				);
+				while (authStore.isLoading) {
+					await new Promise((r) => setTimeout(r, 50));
+				}
+				await navigateAfterLogin({ replaceState: true });
+			}
 		} catch (err) {
 			googleError = err instanceof Error ? err.message : 'Google sign-in failed.';
 			navigating = false;
-		} finally {
 			googleBusy = false;
 		}
 	};
@@ -82,6 +93,9 @@
 		googleError = '';
 		await loginEngine.loginWithPasskey();
 		if (loginEngine.error) { navigating = false; return; }
+		while (authStore.isLoading) {
+			await new Promise((r) => setTimeout(r, 50));
+		}
 		await navigateAfterLogin({ replaceState: true });
 	};
 
@@ -114,6 +128,9 @@
 				customToken = res.data.customToken;
 			}
 			await signInWithCustomToken(auth, customToken);
+			while (authStore.isLoading) {
+				await new Promise((r) => setTimeout(r, 50));
+			}
 			await navigateAfterLogin({ replaceState: true });
 		} catch (err) {
 			opError = err instanceof Error ? err.message : 'Clearance verification failed.';

@@ -65,6 +65,7 @@ exports.secureUpdateJersey = adminOps.secureUpdateJersey;
 exports.directorUpsertField = adminOps.directorUpsertField;
 exports.secureBookField = adminOps.secureBookField;
 exports.assignTenantClaims = adminOps.assignTenantClaims;
+exports.executeSupportCommand = adminOps.executeSupportCommand;
 
 const operativeOps = require('./src/domains/operativeOps');
 exports.impersonateUserFn = operativeOps.impersonateUserFn;

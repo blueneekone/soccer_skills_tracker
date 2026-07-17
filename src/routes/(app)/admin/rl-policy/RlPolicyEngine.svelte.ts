@@ -121,7 +121,7 @@ export class RlPolicyEngine {
 		this.saveError = '';
 		try {
 			const fn = httpsCallable<InitRlPolicyInput, InitRlPolicyResult>(
-				getFunctions(),
+				getFunctions(undefined, 'us-east1'),
 				'initRlPolicy',
 			);
 			await fn(force ? { force: true } : {});
@@ -140,7 +140,7 @@ export class RlPolicyEngine {
 		this.saveError = '';
 		try {
 			const fn = httpsCallable<SetPolicyAbPercentInput, SetPolicyAbPercentResult>(
-				getFunctions(),
+				getFunctions(undefined, 'us-east1'),
 				'setPolicyAbPercent'
 			);
 			await fn({ abPercent });
@@ -157,7 +157,7 @@ export class RlPolicyEngine {
 		this.saveError = '';
 		try {
 			const fn = httpsCallable<FreezeRlPolicyInput, FreezeRlPolicyResult>(
-				getFunctions(),
+				getFunctions(undefined, 'us-east1'),
 				'freezeRlPolicy'
 			);
 			await fn({ frozen: !this.frozen });
@@ -174,7 +174,7 @@ export class RlPolicyEngine {
 		this.saveError = '';
 		try {
 			const fn = httpsCallable<RollbackRlPolicyInput, RollbackRlPolicyResult>(
-				getFunctions(),
+				getFunctions(undefined, 'us-east1'),
 				'rollbackRlPolicy'
 			);
 			await fn({ targetVersion });

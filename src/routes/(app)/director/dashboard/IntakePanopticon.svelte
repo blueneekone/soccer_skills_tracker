@@ -1,5 +1,6 @@
 <script lang="ts">
   import { db, functions } from '$lib/firebase.js';
+  import { authStore } from '$lib/stores/auth.svelte.js';
   import { collection, query, where, onSnapshot, addDoc, serverTimestamp } from 'firebase/firestore';
   import { httpsCallable } from 'firebase/functions';
   import { SvelteSet } from 'svelte/reactivity';
@@ -39,6 +40,7 @@
 
   // Firestore real-time listener — exception-only: pending_guardian nodes only
   $effect(() => {
+		if (!db || !authStore.isAuthenticated) return;
     if (!browser || !currentClubId) { isLoading = false; return; }
     isLoading = true;
     const q = query(

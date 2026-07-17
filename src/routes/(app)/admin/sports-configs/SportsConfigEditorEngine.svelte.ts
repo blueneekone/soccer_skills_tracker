@@ -43,7 +43,7 @@ export class SportsConfigEditorEngine {
   schemaBumpWarning = $state(false);
   latestAuditReport = $state<AuditReport | null>(null);
 
-  private fns = getFunctions(app);
+  private fns = getFunctions(app, 'us-east1');
   private db = getActiveDb();
   private _listFn = httpsCallable<{ includeArchived?: boolean }, ListSportsConfigsResult>(this.fns, 'listSportsConfigs');
   private _upsertFn = httpsCallable<UpsertSportsConfigInput, UpsertSportsConfigResult>(this.fns, 'upsertSportsConfig');

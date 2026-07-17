@@ -221,6 +221,7 @@
 	});
 
 	$effect(() => {
+		if (!db || !authStore.isAuthenticated) return;
 		if (!browser || authStore.isLoading || !uid) {
 			statsRaw = null;
 			return;
@@ -244,6 +245,7 @@
 	});
 
 	$effect(() => {
+		if (!db || !authStore.isAuthenticated) return;
 		if (!browser || authStore.isLoading) return;
 		const tid = /** @type {string | undefined} */ (activePlayer?.teamId);
 		if (!tid || tid === 'admin') {
@@ -285,6 +287,7 @@
 	});
 
 	$effect(() => {
+		if (!db || !authStore.isAuthenticated) return;
 		if (!browser) return;
 		const profile = activePlayer;
 		let cancelled = false;
@@ -308,6 +311,7 @@
 	}
 
 	$effect(() => {
+		if (!db || !authStore.isAuthenticated) return;
 		if (!browser || authStore.isLoading) return;
 		const tid =
 			typeof activePlayer?.teamId === 'string' ? activePlayer.teamId.trim() : '';
@@ -361,6 +365,7 @@
 
 	// Read-Repair: silently stamp sportId = 'soccer' on user profiles missing it.
 	$effect(() => {
+		if (!db || !authStore.isAuthenticated) return;
 		if (!browser || !email || authStore.isLoading) return;
 		const profile = activePlayer;
 		if (!profile || typeof profile.sportId === 'string') return;

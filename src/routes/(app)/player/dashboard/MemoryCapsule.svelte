@@ -24,6 +24,7 @@
 	let error = $state(null);
 
 	$effect(() => {
+		if (!db || !authStore.isAuthenticated) return;
 		const uid = authStore.user?.uid;
 		if (!uid) {
 			isLoading = false;

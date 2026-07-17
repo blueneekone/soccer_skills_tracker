@@ -45,6 +45,7 @@
 	});
 
 	$effect(() => {
+		if (!db || !authStore.isAuthenticated) return;
 		if (role !== 'parent' || !householdId) {
 			parentLoungeTeams = [];
 			parentLoungeLoading = false;
@@ -143,6 +144,7 @@
 	);
 
 	$effect(() => {
+		if (!db || !authStore.isAuthenticated) return;
 		if (!myEmail || role === 'parent') {
 			dmItems = [];
 			dmLoading = false;

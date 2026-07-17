@@ -77,37 +77,34 @@ export interface TacticalPointerHost {
 }
 
  
+export function releasePitchDragCapture(host: TacticalPointerHost) {
+	const { el, id } = host.pitchDragCapture;
+	if (el && id != null) {
+		try {
+			el.releasePointerCapture(id);
+		} catch {
+			/* ignore */
+		}
+	}
+	host.pitchDragCapture.el = null;
+	host.pitchDragCapture.id = null;
+}
+
+export function releaseRouteBodyCapture(host: TacticalPointerHost) {
+	const { el, id } = host.routeBodyCapture;
+	if (el && id != null) {
+		try {
+			el.releasePointerCapture(id);
+		} catch {
+			/* ignore */
+		}
+	}
+	host.routeBodyCapture.el = null;
+	host.routeBodyCapture.id = null;
+}
+
 export function createTacticalInputEngine(host: TacticalPointerHost) {
 	let _anchorSvgCapturePid: number | null = null;
-
-	function releasePitchDragCapture() {
-		const { el, id } = host.pitchDragCapture;
-		if (el && id != null) {
-			try {
-				el.releasePointerCapture(id);
-			} catch {
-				/* ignore */
-			}
-		}
-		host.pitchDragCapture.el = null;
-		host.pitchDragCapture.id = null;
-	}
-
-	function releaseRouteBodyCapture() {
-		const { el, id } = host.routeBodyCapture;
-		if (el && id != null) {
-			try {
-				el.releasePointerCapture(id);
-			} catch {
-				/* ignore */
-			}
-		}
-		host.routeBodyCapture.el = null;
-		host.routeBodyCapture.id = null;
-	}
-
-
-
 	function onRouteStrokePointerDown(ev: PointerEvent, route: TacticalRoute) {
 		executeRouteStrokePointerDown(ev, route, host);
 	}
@@ -121,7 +118,13 @@ export function createTacticalInputEngine(host: TacticalPointerHost) {
 	}
 
 	function handlePointerUp(ev: PointerEvent) {
-		_anchorSvgCapturePid = executePointerUp(ev, host, releaseRouteBodyCapture, releasePitchDragCapture, _anchorSvgCapturePid);
+		_anchorSvgCapturePid = executePointerUp(
+			ev,
+			host,
+			() => releaseRouteBodyCapture(host),
+			() => releasePitchDragCapture(host),
+			_anchorSvgCapturePid
+		);
 	}
 
 	function startDrag(ev: PointerEvent, player: TacticalToken) {
@@ -152,7 +155,7 @@ export function createTacticalInputEngine(host: TacticalPointerHost) {
 		startDrag,
 		onAnchorDown,
 		onPitchMouseLeave,
-		releasePitchDragCapture,
-		releaseRouteBodyCapture,
+		releasePitchDragCapture: () => releasePitchDragCapture(host),
+		releaseRouteBodyCapture: () => releaseRouteBodyCapture(host),
 	};
 }

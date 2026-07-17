@@ -114,6 +114,85 @@ export class CoachTacticalEngine {
 		}, 1500);
 	}
 
+	async _loadBoardState(tid: string, uid: string) {
+		this.boardLoadComplete = false;
+		try {
+			const snap = await getDoc(doc(db, 'teams', tid, 'tactics', `wr_${uid}`));
+			if (snap.exists()) {
+				const c = snap.data()?.cartridge;
+				if (c && Array.isArray(c.entities)) {
+					this.wrBucketPitch = c.entities
+						.filter((e: any) => e.side !== 'opponent')
+						.map((e: any) => ({ ...e }));
+					this.wrOppPitch = c.entities
+						.filter((e: any) => e.side === 'opponent')
+						.map((e: any) => ({ ...e }));
+					this.drawnRoutes = Array.isArray(c.routes) ? c.routes.map((r: any) => ({ ...r })) : [];
+				}
+			}
+		} catch (e) {
+			console.error('[War Room] load error:', e);
+		}
+		this.boardLoadComplete = true;
+	}
+
+	async _loadRosters(tid: string) {
+		try {
+			const snap = await getDoc(doc(db, 'rosters', tid));
+			const rostersNames = (
+				snap.exists() && Array.isArray(snap.data()?.players)
+					? snap.data()!.players
+					: []
+			)
+				.map((x: any) => String(x).trim())
+				.filter(Boolean);
+
+			if (rostersNames.length) {
+				this.wrBucketXi = rostersNames.map((name: any, i: number) => ({
+					id: `${tid}_p${i}`,
+					name,
+					number: String(i + 1).padStart(2, '0'),
+					position: '',
+					side: 'friendly',
+					color: '#14b8a6',
+				}));
+				return;
+			}
+
+			const lookupSnap = await getDocs(
+				query(collection(db, 'player_lookup'), where('teamId', '==', tid)),
+			);
+
+			if (lookupSnap.size > 0) {
+				const tokens: TacticalToken[] = [];
+				let idx = 0;
+				lookupSnap.forEach((d) => {
+					const data = d.data();
+					const name =
+						typeof data.playerName === 'string' && data.playerName.trim()
+							? data.playerName.trim()
+							: d.id;
+					tokens.push({
+						id: `${tid}_${d.id}`,
+						name,
+						number: String(++idx).padStart(2, '0'),
+						position: typeof data.position === 'string' ? data.position : '',
+						side: 'friendly',
+						color: '#14b8a6',
+					});
+				});
+				tokens.sort((a, b) => (a.name ?? '').localeCompare(b.name ?? ''));
+				this.wrBucketXi = tokens;
+				return;
+			}
+
+			this.wrBucketXi = [];
+		} catch (e) {
+			console.error('[War Room] roster load error:', e);
+			this.wrBucketXi = [];
+		}
+	}
+
 	subscribe() {
 		$effect.root(() => {
 			$effect(() => {
@@ -128,94 +207,13 @@ export class CoachTacticalEngine {
 			$effect(() => {
 				const tid = this.teamScope.selectedTeamId;
 				if (!tid || authStore.isLoading || !authStore.user?.uid) return;
-
-				this.boardLoadComplete = false;
-
-				void (async () => {
-					try {
-						const uid = authStore.user?.uid;
-						if (uid) {
-							const snap = await getDoc(doc(db, 'teams', tid, 'tactics', `wr_${uid}`));
-							if (snap.exists()) {
-								const c = snap.data()?.cartridge;
-								if (c && Array.isArray(c.entities)) {
-									this.wrBucketPitch = c.entities
-										.filter((e: any) => e.side !== 'opponent')
-										.map((e: any) => ({ ...e }));
-									this.wrOppPitch = c.entities
-										.filter((e: any) => e.side === 'opponent')
-										.map((e: any) => ({ ...e }));
-									this.drawnRoutes = Array.isArray(c.routes) ? c.routes.map((r: any) => ({ ...r })) : [];
-								}
-							}
-						}
-					} catch (e) {
-						console.error('[War Room] load error:', e);
-					}
-					this.boardLoadComplete = true;
-				})();
+				void this._loadBoardState(tid, authStore.user.uid);
 			});
 
 			$effect(() => {
 				const tid = this.teamScope.selectedTeamId;
 				if (!tid) return;
-
-				void (async () => {
-					try {
-						const snap = await getDoc(doc(db, 'rosters', tid));
-						const rostersNames = (
-							snap.exists() && Array.isArray(snap.data()?.players)
-								? snap.data()!.players
-								: []
-						)
-							.map((x: any) => String(x).trim())
-							.filter(Boolean);
-
-						if (rostersNames.length) {
-							this.wrBucketXi = rostersNames.map((name: any, i: number) => ({
-								id: `${tid}_p${i}`,
-								name,
-								number: String(i + 1).padStart(2, '0'),
-								position: '',
-								side: 'friendly',
-								color: '#14b8a6',
-							}));
-							return;
-						}
-
-						const lookupSnap = await getDocs(
-							query(collection(db, 'player_lookup'), where('teamId', '==', tid)),
-						);
-
-						if (lookupSnap.size > 0) {
-							const tokens: TacticalToken[] = [];
-							let idx = 0;
-							lookupSnap.forEach((d) => {
-								const data = d.data();
-								const name =
-									typeof data.playerName === 'string' && data.playerName.trim()
-										? data.playerName.trim()
-										: d.id;
-								tokens.push({
-									id: `${tid}_${d.id}`,
-									name,
-									number: String(++idx).padStart(2, '0'),
-									position: typeof data.position === 'string' ? data.position : '',
-									side: 'friendly',
-									color: '#14b8a6',
-								});
-							});
-							tokens.sort((a, b) => (a.name ?? '').localeCompare(b.name ?? ''));
-							this.wrBucketXi = tokens;
-							return;
-						}
-
-						this.wrBucketXi = [];
-					} catch (e) {
-						console.error('[War Room] roster load error:', e);
-						this.wrBucketXi = [];
-					}
-				})();
+				void this._loadRosters(tid);
 			});
 
 			return () => {

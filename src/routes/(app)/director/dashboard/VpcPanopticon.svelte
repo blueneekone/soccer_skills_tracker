@@ -2,6 +2,7 @@
   import { browser } from '$app/environment';
   import { collection, query, where, onSnapshot, addDoc, serverTimestamp } from 'firebase/firestore';
   import { db, functions } from '$lib/firebase.js';
+  import { authStore } from '$lib/stores/auth.svelte.js';
   import { httpsCallable } from 'firebase/functions';
   import { SvelteSet } from 'svelte/reactivity';
   import { dopamineOnCallable } from '$lib/services/dopamine.svelte.js';
@@ -45,6 +46,7 @@
 
   // Real-time Firestore query — exception-only (pending_guardian)
   $effect(() => {
+		if (!db || !authStore.isAuthenticated) return;
     if (!browser || !currentClubId) {
       pendingNodes = [];
       isLoading = false;

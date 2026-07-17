@@ -30,11 +30,11 @@
 />
 
 <!-- Halfway line -->
-<line x1="800" y1="4" x2="800" y2="896" stroke={NEON} stroke-width="1.5" />
+<line x1="800" y1="4" x2="800" y2="896" stroke={NEON} stroke-width="1.5" filter="url(#neonBloom)" />
 
 <!-- Center circle + center spot -->
-<circle cx="800" cy="450" r="148" fill="none" stroke={NEON} stroke-width="1.5" />
-<circle cx="800" cy="450" r="6" fill={NEON} />
+<circle cx="800" cy="450" r="148" fill="none" stroke={NEON} stroke-width="1.5" filter="url(#neonBloom)" />
+<circle cx="800" cy="450" r="6" fill={NEON} filter="url(#neonBloom)" />
 
 <!-- Penalty boxes -->
 <rect x="4" y="183" width="248" height="534" fill="none" stroke={NEON} stroke-width="1.5" />

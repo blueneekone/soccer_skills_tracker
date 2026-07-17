@@ -20,6 +20,8 @@
 	import { logSecurityEvent } from '$lib/utils/security.js';
 	import Icon from '$lib/components/ui/Icon.svelte';
 	import type { IconName } from '$lib/icons/registry.js';
+	import { ensureGoogleMapsLoaded } from '$lib/maps/ensureGoogleMaps.js';
+	
 	/**
 	 * @typedef {{
 	 *   id: string,
@@ -79,6 +81,73 @@
 		errMsg = '';
 		okMsg = '';
 	});
+
+	$effect(() => {
+		if (!open || !admin) return;
+		
+		let addressAutocomplete: any = null;
+		let facilityAutocomplete: any = null;
+		let destroyed = false;
+
+		ensureGoogleMapsLoaded().then(() => {
+			if (destroyed) return;
+			const addressInput = document.getElementById('eam-address') as HTMLInputElement | null;
+			const facilityInput = document.getElementById('eam-facility') as HTMLInputElement | null;
+
+			if (addressInput) {
+				addressAutocomplete = new globalThis.google.maps.places.Autocomplete(addressInput, {
+					fields: ['formatted_address']
+				});
+				addressAutocomplete.addListener('place_changed', () => {
+					const place = addressAutocomplete.getPlace();
+					if (place && place.formatted_address) {
+						verifiedAddress = place.formatted_address;
+					}
+				});
+			}
+
+			if (facilityInput) {
+				facilityAutocomplete = new globalThis.google.maps.places.Autocomplete(facilityInput, {
+					fields: ['name', 'formatted_address']
+				});
+				facilityAutocomplete.addListener('place_changed', () => {
+					const place = facilityAutocomplete.getPlace();
+					if (place && place.name) {
+						primaryFacility = place.name;
+					} else if (place && place.formatted_address) {
+						primaryFacility = place.formatted_address;
+					}
+				});
+			}
+		}).catch(e => console.warn('Places init failed', e));
+
+		return () => {
+			destroyed = true;
+			if (addressAutocomplete) {
+				globalThis.google.maps.event.clearInstanceListeners(addressAutocomplete);
+			}
+			if (facilityAutocomplete) {
+				globalThis.google.maps.event.clearInstanceListeners(facilityAutocomplete);
+			}
+		};
+	});
+
+	function formatPhoneNumber(e: Event) {
+		let val = (e.target as HTMLInputElement).value;
+		const cleaned = val.replace(/\D/g, '');
+		let match = null;
+		if (cleaned.length === 10) {
+			match = cleaned.match(/^(\d{3})(\d{3})(\d{4})$/);
+		} else if (cleaned.length === 11 && cleaned.startsWith('1')) {
+			match = cleaned.slice(1).match(/^(\d{3})(\d{3})(\d{4})$/);
+		}
+		if (match) {
+			phoneNumber = `+1 (${match[1]}) ${match[2]}-${match[3]}`;
+		} else {
+			phoneNumber = val;
+		}
+	}
+
 
 
 	async function submit() {
@@ -248,6 +317,7 @@
 						type="tel"
 						class="eam-input"
 						bind:value={phoneNumber}
+						onblur={formatPhoneNumber}
 						placeholder="+1 (512) 555-0100"
 						autocomplete="tel"
 						inputmode="tel"

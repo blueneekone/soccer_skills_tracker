@@ -38,12 +38,24 @@ export class SupportAgentEngine {
 		this.error = '';
 
 		try {
-			const { functions } = await import('$lib/firebase.js');
-			const { httpsCallable } = await import('firebase/functions');
-			const executeCmd = httpsCallable<{ command: string }, { reply: string }>(functions, 'executeSupportCommand');
+			const token = await authStore.user?.getIdToken();
+			if (!token) throw new Error('Unauthenticated: Missing ID token.');
 
-			const result = await executeCmd({ command: userMsg.content });
-			const data = result.data;
+			const res = await fetch('/api/support/execute', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+					'Authorization': `Bearer ${token}`
+				},
+				body: JSON.stringify({ command: userMsg.content })
+			});
+
+			if (!res.ok) {
+				const errData = await res.json().catch(() => ({}));
+				throw new Error(errData.error || `Command failed with status ${res.status}`);
+			}
+
+			const data = await res.json();
 			
 			const agentMsg: ChatMessage = {
 				id: crypto.randomUUID(),

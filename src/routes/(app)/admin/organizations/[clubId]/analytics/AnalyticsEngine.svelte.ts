@@ -14,7 +14,7 @@ export function createAnalyticsEngine(clubId: string) {
 		error = null;
 		
 		try {
-			const functions = getFunctions();
+			const functions = getFunctions(undefined, 'us-east1');
 			const triggerDispatch = httpsCallable(functions, 'batchDispatchReportCards');
 			
 			const result = await triggerDispatch({ clubId });

@@ -74,6 +74,7 @@ export function createAuthFacade() {
 			try {
 				const ok = await hydrateFromFirebaseUser(auth.currentUser, userState, sessionState, tenantState);
 				if (!ok) return;
+				sessionState.isAuthenticated = true;
 			} catch (err) {
 				console.error('[auth store] refresh error:', err);
 			} finally {

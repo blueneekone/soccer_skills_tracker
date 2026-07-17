@@ -89,7 +89,7 @@
 -->
 <div class="coach-tac-z3-stage tw-absolute tw-inset-0 tw-flex tw-items-center tw-justify-center">
 	<div
-		class="coach-tac-z3-pitch tw-relative tw-overflow-visible tw-aspect-video tw-w-full tw-h-full"
+		class="coach-tac-z3-pitch tw-relative tw-overflow-visible tw-aspect-[16/9] tw-w-full tw-h-full"
 		style="max-width: 100%; max-height: 100%;"
 	>
 		<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->

@@ -86,7 +86,7 @@
 	async function handleConnectBank() {
 		isConnecting = true;
 		try {
-			const functions = getFunctions();
+			const functions = getFunctions(undefined, 'us-east1');
 			const initiateStripeConnect = httpsCallable(functions, 'initiateStripeConnect');
 			 
 			const result = await initiateStripeConnect({ }) as any;

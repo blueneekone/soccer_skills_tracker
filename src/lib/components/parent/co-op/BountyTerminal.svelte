@@ -1,13 +1,19 @@
 <script lang="ts">
 	// Bounty Terminal - Tremendous Escrow Integration
+	import type { CoOpEngine } from '$lib/states/CoOpEngine.svelte.js';
+
 	let {
+		engine,
 		escrowBalance = 150.00,
 		activeBounties = 3
 	} = $props<{
+		engine?: CoOpEngine;
 		escrowBalance?: number;
 		activeBounties?: number;
 	}>();
 
+	const hasFunding = $derived(!!engine?.fundingSource);
+	const fundingLabel = $derived(engine?.fundingSource?.label || 'None linked');
 	let depositAmount = $state(50);
 
 	function depositFunds() {
@@ -26,8 +32,10 @@
 
 	<div class="tw-grid tw-grid-cols-2 tw-gap-4 tw-mb-6">
 		<div class="tw-bg-[#1e293b] tw-p-4 tw-rounded-xl tw-border tw-border-[#334155]">
-			<p class="tw-text-[#94a3b8] tw-text-xs tw-font-mono tw-tracking-widest tw-mb-1">ESCROW BALANCE</p>
-			<p class="tw-text-white tw-text-3xl tw-font-bold">${escrowBalance.toFixed(2)}</p>
+			<p class="tw-text-[#94a3b8] tw-text-xs tw-font-mono tw-tracking-widest tw-mb-1">FUNDING SOURCE</p>
+			<p class="tw-text-white tw-text-sm tw-font-bold tw-truncate" title={fundingLabel}>
+				{hasFunding ? fundingLabel : 'No funding source linked'}
+			</p>
 		</div>
 		<div class="tw-bg-[#1e293b] tw-p-4 tw-rounded-xl tw-border tw-border-[#334155]">
 			<p class="tw-text-[#94a3b8] tw-text-xs tw-font-mono tw-tracking-widest tw-mb-1">ACTIVE BOUNTIES</p>

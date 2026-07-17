@@ -49,7 +49,7 @@
 			stroke-linecap="round"
 			stroke-linejoin="round"
 			marker-end="url(#arrowhead)"
-			filter="url(#neon-glow)"
+			filter="url(#lightCycleBloom)"
 			pointer-events="none"
 		/>
 	</g>

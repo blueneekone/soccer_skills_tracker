@@ -1,6 +1,9 @@
 <script lang="ts">
 	// Sprint 1.3 will add: invite-code entry, club selection, profile setup
 	// For now this is a holding pattern for authenticated users without a role
+	import { goto } from '$app/navigation';
+	import { auth } from '$lib/firebase.js';
+	import { signOut } from 'firebase/auth';
 </script>
 
 <svelte:head>
@@ -56,13 +59,17 @@
 			</span>
 		</div>
 
-		<!-- Sign out link -->
-		<a
-			href="/login"
-			class="tw-font-mono tw-text-[0.65rem] tw-font-bold tw-uppercase tw-tracking-[0.18em] tw-text-slate-600 tw-no-underline tw-transition-colors tw-duration-150 hover:tw-text-slate-300"
+		<!-- Sign out button -->
+		<button
+			type="button"
+			onclick={async () => {
+				await signOut(auth);
+				await goto('/login', { replaceState: true });
+			}}
+			class="tw-font-mono tw-text-[0.65rem] tw-font-bold tw-uppercase tw-tracking-[0.18em] tw-text-slate-600 tw-no-underline tw-transition-colors tw-duration-150 hover:tw-text-slate-300 tw-text-left tw-bg-transparent tw-border-none tw-cursor-pointer tw-p-0"
 		>
 			← Sign out and return to login
-		</a>
+		</button>
 
 	</div>
 </div>

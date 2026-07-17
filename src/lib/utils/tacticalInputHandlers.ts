@@ -4,6 +4,91 @@ import { snapPointToDockingCore } from '$lib/utils/canvasPhysics';
 import type { TacticalPointerHost, AnchorDrag } from '$lib/states/war-room/TacticalInputEngine.svelte';
 import type { TacticalToken, TacticalRoute } from '$lib/states/war-room/types';
 
+function handleAnchorDrag(ev: PointerEvent, host: TacticalPointerHost, ad: AnchorDrag) {
+	const svgEl = host.pitchSvgEl;
+	const rect = svgEl?.getBoundingClientRect();
+	const uniformScale = rect ? Math.max(VIEW_W / rect.width, VIEW_H / rect.height) : 1;
+	const dxScreen = ev.clientX - ad.startClientX;
+	const dyScreen = ev.clientY - ad.startClientY;
+	const p = host.clampToPitch(
+		ad.anchorX + dxScreen * uniformScale,
+		ad.anchorY + dyScreen * uniformScale,
+	);
+	const { routeId, kind } = ad;
+	host.setDrawnRoutes(
+		host.drawnRoutes().map((rawR) => {
+			const r = normalizeRoute(rawR as TacticalRoute);
+			if (r.id !== routeId) return rawR;
+			if (kind === 'start') {
+				const dock = snapPointToDockingCore(p.x, p.y, [...host.wrBucketPitch(), ...host.wrOppPitch()]);
+				const nextBindId = dock.bindPlayerId !== null ? dock.bindPlayerId : r.bindPlayerId;
+				return { ...r, x1: dock.x, y1: dock.y, bindPlayerId: nextBindId };
+			}
+			if (kind === 'ctrl') return { ...r, cx: p.x, cy: p.y };
+			const dock = snapPointToDockingCore(p.x, p.y, [...host.wrBucketPitch(), ...host.wrOppPitch()]);
+			return { ...r, x2: dock.x, y2: dock.y };
+		}),
+	);
+}
+
+function handleRouteBodyDrag(ev: PointerEvent, host: TacticalPointerHost, rb: any) {
+	const raw = host.clientToSvg(ev);
+	const p = host.clampToPitch(raw.x, raw.y);
+	const dx = p.x - rb.ox;
+	const dy = p.y - rb.oy;
+	const s = rb.snap;
+	host.setDrawnRoutes(
+		host.drawnRoutes().map((rawR) => {
+			const r = normalizeRoute(rawR as TacticalRoute);
+			if (r.id !== rb.routeId) return rawR;
+			let next = {
+				...r,
+				x1: s.x1 + dx,
+				y1: s.y1 + dy,
+				cx: s.cx + dx,
+				cy: s.cy + dy,
+				x2: s.x2 + dx,
+				y2: s.y2 + dy,
+			};
+			const q1 = host.clampToPitch(next.x1, next.y1);
+			const qc = host.clampToPitch(next.cx, next.cy);
+			const q2 = host.clampToPitch(next.x2, next.y2);
+			next = { ...next, x1: q1.x, y1: q1.y, cx: qc.x, cy: qc.y, x2: q2.x, y2: q2.y };
+			return next;
+		}),
+	);
+}
+
+function handlePlayerDrag(ev: PointerEvent, host: TacticalPointerHost, dp: TacticalToken) {
+	const raw = host.clientToSvg(ev);
+	const p = host.clampToPitch(raw.x, raw.y);
+	dp.x = p.x;
+	dp.y = p.y;
+	host.appendTrailPoint(p.x, p.y);
+	if (host.wrBucketPitch().some((t) => t === dp)) host.setWrBucketPitch([...host.wrBucketPitch()]);
+	else host.setWrOppPitch([...host.wrOppPitch()]);
+	const pid = dp.id;
+	if (pid) {
+		host.setDrawnRoutes(
+			host.drawnRoutes().map((rawR) => {
+				const r = normalizeRoute(rawR as TacticalRoute);
+				if (r.bindPlayerId !== pid) return rawR;
+				return { ...r, x1: p.x, y1: p.y };
+			}),
+		);
+	}
+}
+
+function handleRouteDrafting(ev: PointerEvent, host: TacticalPointerHost, draft: TacticalRoute) {
+	const raw = host.clientToSvg(ev);
+	const p = host.clampToPitch(raw.x, raw.y);
+	const dock = snapPointToDockingCore(p.x, p.y, [...host.wrBucketPitch(), ...host.wrOppPitch()]);
+	const mc = midCtrl(draft.x1, draft.y1, dock.x, dock.y);
+	const bindPlayerId =
+		dock.bindPlayerId !== null ? dock.bindPlayerId : (draft.bindPlayerId ?? null);
+	host.setRouteDraft({ ...draft, x2: dock.x, y2: dock.y, cx: mc.cx, cy: mc.cy, bindPlayerId });
+}
+
 export function executePointerMove(ev: PointerEvent, host: TacticalPointerHost) {
 	host.updateRadialHover(ev);
 	const origin = host.radialLongPressOrigin();
@@ -13,94 +98,29 @@ export function executePointerMove(ev: PointerEvent, host: TacticalPointerHost) 
 		const dy = ev.clientY - origin.y;
 		if (Math.hypot(dx, dy) > 14) host.cancelRadialLongPress();
 	}
+
 	const ad = host.anchorDrag();
 	if (ad && host.warRoomTool() === 'ROUTE') {
-		const svgEl = host.pitchSvgEl;
-		const rect = svgEl?.getBoundingClientRect();
-		const uniformScale = rect ? Math.max(VIEW_W / rect.width, VIEW_H / rect.height) : 1;
-		const dxScreen = ev.clientX - ad.startClientX;
-		const dyScreen = ev.clientY - ad.startClientY;
-		const p = host.clampToPitch(
-			ad.anchorX + dxScreen * uniformScale,
-			ad.anchorY + dyScreen * uniformScale,
-		);
-		const { routeId, kind } = ad;
-		host.setDrawnRoutes(
-			host.drawnRoutes().map((rawR) => {
-				const r = normalizeRoute(rawR as TacticalRoute);
-				if (r.id !== routeId) return rawR;
-				if (kind === 'start') {
-					const dock = snapPointToDockingCore(p.x, p.y, [...host.wrBucketPitch(), ...host.wrOppPitch()]);
-					const nextBindId = dock.bindPlayerId !== null ? dock.bindPlayerId : r.bindPlayerId;
-					return { ...r, x1: dock.x, y1: dock.y, bindPlayerId: nextBindId };
-				}
-			if (kind === 'ctrl') return { ...r, cx: p.x, cy: p.y };
-			const dock = snapPointToDockingCore(p.x, p.y, [...host.wrBucketPitch(), ...host.wrOppPitch()]);
-			return { ...r, x2: dock.x, y2: dock.y };
-			}),
-		);
+		handleAnchorDrag(ev, host, ad);
 		return;
 	}
+
 	const rb = host.routeBodyDrag();
 	if (rb && host.warRoomTool() === 'ROUTE') {
-		const raw = host.clientToSvg(ev);
-		const p = host.clampToPitch(raw.x, raw.y);
-		const dx = p.x - rb.ox;
-		const dy = p.y - rb.oy;
-		const s = rb.snap;
-		host.setDrawnRoutes(
-			host.drawnRoutes().map((rawR) => {
-				const r = normalizeRoute(rawR as TacticalRoute);
-				if (r.id !== rb.routeId) return rawR;
-				let next = {
-					...r,
-					x1: s.x1 + dx,
-					y1: s.y1 + dy,
-					cx: s.cx + dx,
-					cy: s.cy + dy,
-					x2: s.x2 + dx,
-					y2: s.y2 + dy,
-				};
-				const q1 = host.clampToPitch(next.x1, next.y1);
-				const qc = host.clampToPitch(next.cx, next.cy);
-				const q2 = host.clampToPitch(next.x2, next.y2);
-				next = { ...next, x1: q1.x, y1: q1.y, cx: qc.x, cy: qc.y, x2: q2.x, y2: q2.y };
-				return next;
-			}),
-		);
+		handleRouteBodyDrag(ev, host, rb);
 		return;
 	}
+
 	const dp = host.draggingPlayer();
 	if (dp && host.warRoomTool() === 'DRAG') {
-		const raw = host.clientToSvg(ev);
-		const p = host.clampToPitch(raw.x, raw.y);
-		dp.x = p.x;
-		dp.y = p.y;
-		host.appendTrailPoint(p.x, p.y);
-		if (host.wrBucketPitch().some((t) => t === dp)) host.setWrBucketPitch([...host.wrBucketPitch()]);
-		else host.setWrOppPitch([...host.wrOppPitch()]);
-		const pid = dp.id;
-		if (pid) {
-			host.setDrawnRoutes(
-				host.drawnRoutes().map((rawR) => {
-					const r = normalizeRoute(rawR as TacticalRoute);
-					if (r.bindPlayerId !== pid) return rawR;
-					return { ...r, x1: p.x, y1: p.y };
-				}),
-			);
-		}
+		handlePlayerDrag(ev, host, dp);
 		return;
 	}
+
 	const routingActive = host.routingActive();
 	const draft = host.routeDraft();
 	if (routingActive && draft && host.warRoomTool() === 'ROUTE') {
-		const raw = host.clientToSvg(ev);
-		const p = host.clampToPitch(raw.x, raw.y);
-		const dock = snapPointToDockingCore(p.x, p.y, [...host.wrBucketPitch(), ...host.wrOppPitch()]);
-		const mc = midCtrl(draft.x1, draft.y1, dock.x, dock.y);
-		const bindPlayerId =
-			dock.bindPlayerId !== null ? dock.bindPlayerId : (draft.bindPlayerId ?? null);
-		host.setRouteDraft({ ...draft, x2: dock.x, y2: dock.y, cx: mc.cx, cy: mc.cy, bindPlayerId });
+		handleRouteDrafting(ev, host, draft);
 	}
 }
 

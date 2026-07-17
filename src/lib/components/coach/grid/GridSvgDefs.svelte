@@ -9,6 +9,22 @@
 </script>
 
 <defs>
+	<filter id="lightCycleBloom" x="-100%" y="-100%" width="300%" height="300%">
+		<feGaussianBlur in="SourceGraphic" stdDeviation="3" result="blur1" />
+		<feGaussianBlur in="SourceGraphic" stdDeviation="6" result="blur2" />
+		<feMerge>
+			<feMergeNode in="blur2" />
+			<feMergeNode in="blur1" />
+			<feMergeNode in="SourceGraphic" />
+		</feMerge>
+	</filter>
+	<filter id="neonBloom" x="-50%" y="-50%" width="200%" height="200%">
+		<feGaussianBlur in="SourceGraphic" stdDeviation="4" result="blur" />
+		<feMerge>
+			<feMergeNode in="blur" />
+			<feMergeNode in="SourceGraphic" />
+		</feMerge>
+	</filter>
 	<filter id="heavy-bloom" x="-100%" y="-100%" width="300%" height="300%">
 		<feGaussianBlur in="SourceGraphic" stdDeviation="2" result="blur1" />
 		<feGaussianBlur in="SourceGraphic" stdDeviation="8" result="blur2" />
