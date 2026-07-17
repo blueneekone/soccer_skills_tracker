@@ -45,8 +45,11 @@
 	import AdaptiveHomework from './AdaptiveHomework.svelte';
 	import { ArmoryEngine } from '$lib/states/ArmoryEngine.svelte.js';
 	import PlayerActivityStreak from '$lib/components/shell/PlayerActivityStreak.svelte';
+	import { DopamineEngine } from '$lib/components/player/DopamineEngine.svelte';
+	import BountyBoard from '$lib/components/player/BountyBoard.svelte';
 
 	const armory = new ArmoryEngine();
+	const dopamineEngine = new DopamineEngine();
 
 	/**
 	 * Effective operative for this lobby: Firestore profile for the signed-in Firebase user.
@@ -235,6 +238,7 @@
 					return;
 				}
 				statsRaw = snap.data();
+				dopamineEngine.hydrate(statsRaw);
 			},
 			(e) => {
 				console.error('[player dashboard] player_stats', e);
@@ -412,12 +416,12 @@
 	</div>
 {:else}
 <div
-	class="lobby-page player-hud-root pd-page-root pd-grain tw-relative tw-isolate tw-min-w-0 tw-overflow-x-hidden tw-text-slate-50"
+	class="lobby-page player-hud-root pd-page-root pd-grain tw-relative tw-isolate tw-min-w-0 tw-text-slate-50 tw-flex tw-flex-col tw-h-[100dvh] tw-overflow-hidden"
 	style="background: var(--pd-bg, #000);"
 	data-region="player-lobby"
 	data-dopamine={vanguardFlags.dopamineEnabled ? 'on' : 'off'}
 >
-	<div class="pd-content-wrap">
+	<div class="pd-content-wrap tw-flex-1 tw-min-h-0 tw-overflow-y-auto" style="padding: clamp(20px, 4vw, 32px); padding-bottom: calc(clamp(20px, 4vw, 32px) + 84px + env(safe-area-inset-bottom, 0px));">
 	<HUDContainer ariaLabel="Player operations HUD">
 		<header class="pd-strap pd-strap--premium bento-span-12" aria-label="Operative headquarters">
 			<div class="pd-strap__grid">
@@ -502,6 +506,9 @@
 						onCoachBountyCount={(count) => (coachBountyCount = count)}
 						onHeroQuestId={(id) => (heroQuestId = id)}
 					/>
+					<div class="tw-mt-4">
+						<BountyBoard engine={dopamineEngine} playerId={uid} />
+					</div>
 				{/snippet}
 		</OperativeHub>
 
