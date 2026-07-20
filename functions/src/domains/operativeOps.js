@@ -1768,6 +1768,16 @@ exports.generatePlayerOTP = onCall({region: REGION}, async (request) => {
   const nowMs = Date.now();
   const tenMin = 10 * 60 * 1000;
   const expiresAt = admin.firestore.Timestamp.fromMillis(nowMs + tenMin);
+
+  // Rate Limiting
+  const recentChallenges = await db().collection('auth_challenges')
+      .where('childUid', '==', childUid)
+      .where('expiresAt', '>', admin.firestore.Timestamp.fromMillis(nowMs))
+      .get();
+
+  if (recentChallenges.size >= 3) {
+    throw new HttpsError('resource-exhausted', 'Too many recent login codes requested. Please wait.');
+  }
   for (let attempt = 0; attempt < 8; attempt++) {
     const code = generateOtpCodeString();
     const ref = db().collection('auth_challenges').doc(code);

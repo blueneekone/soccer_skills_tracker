@@ -1,4 +1,6 @@
 import { authStore } from '$lib/stores/auth.svelte.js';
+import { functions } from '$lib/firebase.js';
+import { httpsCallable } from 'firebase/functions';
 
 export type ChatMessage = {
 	id: string;
@@ -41,22 +43,15 @@ export class SupportAgentEngine {
 			const token = await authStore.user?.getIdToken();
 			if (!token) throw new Error('Unauthenticated: Missing ID token.');
 
-			const res = await fetch('/api/support/execute', {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json',
-					'Authorization': `Bearer ${token}`
-				},
-				body: JSON.stringify({ command: userMsg.content })
-			});
+			const executeSupportCommand = httpsCallable(functions, 'executeSupportCommand');
+			const res = await executeSupportCommand({ command: userMsg.content });
 
-			if (!res.ok) {
-				const errData = await res.json().catch(() => ({}));
-				throw new Error(errData.error || `Command failed with status ${res.status}`);
+			const data = res.data as { reply?: string; error?: string };
+
+			if (data.error) {
+				throw new Error(data.error);
 			}
 
-			const data = await res.json();
-			
 			const agentMsg: ChatMessage = {
 				id: crypto.randomUUID(),
 				role: 'agent',
