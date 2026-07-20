@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { untrack } from 'svelte';
 	import { browser } from '$app/environment';
+	import { authStore } from '$lib/stores/auth.svelte.js';
 	import HudSeededRingCanvas from '$lib/components/hud/HudSeededRingCanvas.svelte';
 	import '$lib/styles/hud-telemetry.css';
 	import { db, functions } from '$lib/firebase.js';
@@ -63,6 +64,7 @@
 	});
 
 	$effect(() => {
+		if (authStore.isLoading || !authStore.isAuthenticated) return;
 		const tid = teamId;
 		const mid = activeMatchId;
 		/** @type {undefined | (() => void)} */
@@ -375,6 +377,7 @@
 	}
 
 	$effect(() => {
+		if (authStore.isLoading || !authStore.isAuthenticated) return;
 		const currentTeamId = teamId;
 		untrack(() => {
 			if (!currentTeamId) {
@@ -389,6 +392,7 @@
 	});
 
 	$effect(() => {
+		if (authStore.isLoading || !authStore.isAuthenticated) return;
 		const currentTeamId = teamId;
 		/** @type {(() => void) | undefined} */
 		let unsub;
@@ -424,6 +428,7 @@
 	});
 
 	$effect(() => {
+		if (authStore.isLoading || !authStore.isAuthenticated) return;
 		const currentTeamId = teamId;
 		untrack(() => {
 			const gen = ++signalsLoadGen;

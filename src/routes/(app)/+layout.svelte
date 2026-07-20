@@ -537,10 +537,6 @@
 		<PlayerDetailDrawer />
 	{/if}
 		</main>
-		<!-- Sprint 0.1b: Global Alert Matrix — extracted to AlertMatrix.svelte -->
-		{#if authStore.role === 'super_admin' || authStore.role === 'global_admin'}
-			<AlertMatrix />
-		{/if}
 	</div>
 {:else}
 	<!-- Signed out, incomplete profile, or redirect in flight — never show dashboard chrome -->

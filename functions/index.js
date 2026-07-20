@@ -59,6 +59,9 @@ exports.listTeamsForClub = adminOps.listTeamsForClub;
 exports.logSecurityAudit = adminOps.logSecurityAudit;
 exports.executeSupportCommand = adminOps.executeSupportCommand;
 
+const dailyIntelOps = require('./src/domains/dailyIntelOps.js');
+exports.fetchDailyIntel = dailyIntelOps.fetchDailyIntel;
+
 // --- Auth & Setup Bugfix Exports ---
 const operativeOps = require('./src/domains/operativeOps.js');
 exports.parentSignCoppaWaiver = operativeOps.parentSignCoppaWaiver;

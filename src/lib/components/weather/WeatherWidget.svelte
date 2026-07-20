@@ -119,7 +119,7 @@
 	{/if}
 
 	<!-- Metric cards -->
-	<div class="ww-grid">
+	<div class="tw-grid tw-grid-cols-2 tw-gap-4 tw-mt-4">
 		<div class="ww-card">
 			<span class="ww-card__label">TEMPERATURE</span>
 			<span class="ww-card__value">{fmtTemp(snap?.current?.temperatureF)}<span class="ww-card__unit">°F</span></span>
@@ -348,15 +348,6 @@
 	}
 
 	/* ── Metric grid ─────────────────────────────────────────────────────────── */
-	.ww-grid {
-		display: grid;
-		grid-template-columns: repeat(2, 1fr);
-		gap: var(--bento-gap-sm);
-		flex: 1;
-	}
-	@media (min-width: 30rem) {
-		.ww-grid { grid-template-columns: repeat(4, 1fr); }
-	}
 
 	.ww-card {
 		display: flex;

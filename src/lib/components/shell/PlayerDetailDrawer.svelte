@@ -233,6 +233,51 @@
 			});
 		});
 	});
+
+	let isEditing = $state(false);
+	let editData = $state({
+		jersey: '',
+		position: '',
+		ageGroup: ''
+	});
+
+	function startEditing() {
+		editData = {
+			jersey: row?.jersey || '',
+			position: positionResolved === '—' ? '' : positionResolved,
+			ageGroup: row?.ageGroup || ''
+		};
+		isEditing = true;
+	}
+
+	async function saveEdits() {
+		if (!row?.playerEmail) {
+			isEditing = false;
+			return;
+		}
+		try {
+			const { updateDoc } = await import('firebase/firestore');
+			const userRef = doc(db, 'users', row.playerEmail);
+			await updateDoc(userRef, {
+				jersey: editData.jersey,
+				position: editData.position,
+				ageGroup: editData.ageGroup
+			});
+			// Also optimistic update if the row object is mutable
+			if (row) {
+				row.jersey = editData.jersey;
+				row.position = editData.position;
+				row.ageGroup = editData.ageGroup;
+			}
+		} catch (e) {
+			console.error("Failed to save edits", e);
+		}
+		isEditing = false;
+	}
+
+	$effect(() => {
+		if (!open) isEditing = false;
+	});
 </script>
 
 <!-- svelte-ignore a11y_click_events_have_key_events -->
@@ -273,20 +318,37 @@
 		>
 			<section class="ec-pdrawer__section ec-pdrawer__section--identity">
 				<h3 class="ec-pdrawer__section-label">Identity</h3>
-				<dl class="ec-pdrawer__dl">
-					<div>
-						<dt>Primary position</dt>
-						<dd>{positionResolved}</dd>
+				{#if isEditing}
+					<div class="tw-flex tw-flex-col tw-gap-3 tw-mt-2">
+						<div>
+							<label class="tw-block tw-text-[10px] tw-font-mono tw-text-[#a1a1aa] tw-uppercase tw-tracking-widest tw-mb-1">Primary position</label>
+							<input type="text" bind:value={editData.position} class="tw-w-full tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-rounded tw-px-3 tw-py-2 tw-text-sm tw-font-mono tw-text-[#fafafa] focus:tw-border-[#14b8a6] focus:tw-outline-none" />
+						</div>
+						<div>
+							<label class="tw-block tw-text-[10px] tw-font-mono tw-text-[#a1a1aa] tw-uppercase tw-tracking-widest tw-mb-1">Age group</label>
+							<input type="text" bind:value={editData.ageGroup} class="tw-w-full tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-rounded tw-px-3 tw-py-2 tw-text-sm tw-font-mono tw-text-[#fafafa] focus:tw-border-[#14b8a6] focus:tw-outline-none" />
+						</div>
+						<div>
+							<label class="tw-block tw-text-[10px] tw-font-mono tw-text-[#a1a1aa] tw-uppercase tw-tracking-widest tw-mb-1">Jersey</label>
+							<input type="text" bind:value={editData.jersey} class="tw-w-full tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-rounded tw-px-3 tw-py-2 tw-text-sm tw-font-mono tw-text-[#fafafa] focus:tw-border-[#14b8a6] focus:tw-outline-none" />
+						</div>
 					</div>
-					<div>
-						<dt>Age group</dt>
-						<dd>{row.ageGroup?.trim() ? row.ageGroup : '—'}</dd>
-					</div>
-					<div>
-						<dt>Jersey</dt>
-						<dd>{row.jersey?.trim() ? row.jersey : '—'}</dd>
-					</div>
-				</dl>
+				{:else}
+					<dl class="ec-pdrawer__dl">
+						<div>
+							<dt>Primary position</dt>
+							<dd>{positionResolved}</dd>
+						</div>
+						<div>
+							<dt>Age group</dt>
+							<dd>{row.ageGroup?.trim() ? row.ageGroup : '—'}</dd>
+						</div>
+						<div>
+							<dt>Jersey</dt>
+							<dd>{row.jersey?.trim() ? row.jersey : '—'}</dd>
+						</div>
+					</dl>
+				{/if}
 			</section>
 
 			<section class="ec-pdrawer__section ec-pdrawer__section--accountability">
@@ -355,20 +417,37 @@
 							Assign drill
 						</button>
 					{/if}
-					<button
-						type="button"
-						class="ec-pdrawer__btn"
-						onclick={() => {
-							if (act?.editProfile) {
-								act.editProfile();
-								return;
-							}
-							const em = row.playerEmail;
-							if (em) window.location.href = `mailto:${em}`;
-						}}
-					>
-						Edit profile
-					</button>
+					{#if isEditing}
+						<button
+							type="button"
+							class="ec-pdrawer__btn"
+							style="background:linear-gradient(to bottom,#14b8a6,#0d9488); border:1px solid #0d9488; color:#000;"
+							onclick={saveEdits}
+						>
+							Save changes
+						</button>
+						<button
+							type="button"
+							class="ec-pdrawer__btn"
+							onclick={() => isEditing = false}
+						>
+							Cancel
+						</button>
+					{:else}
+						<button
+							type="button"
+							class="ec-pdrawer__btn"
+							onclick={() => {
+								if (act?.editProfile) {
+									act.editProfile();
+									return;
+								}
+								startEditing();
+							}}
+						>
+							Edit profile
+						</button>
+					{/if}
 					{#if act?.removeFromRoster}
 						<button
 							type="button"

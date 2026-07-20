@@ -6,6 +6,9 @@
 	import Icon from '$lib/components/ui/Icon.svelte';
 	import type { IconName } from '$lib/icons/registry.js';
 	import Swal from 'sweetalert2';
+	import { db } from '$lib/firebase.js';
+	import { authStore } from '$lib/stores/auth.svelte.js';
+	import { collection, query, where, onSnapshot } from 'firebase/firestore';
 
 	// ==========================================
 	// TACTICAL FORGE (RAG AI) STATE
@@ -66,6 +69,30 @@
 	// Proactive AI Warning state
 	let showAlert = $state(true);
 
+	$effect(() => {
+		if (authStore.isLoading || !authStore.isAuthenticated) return;
+		if (!db) return;
+		
+		const teamId = authStore.userProfile?.teamId;
+		const clubId = authStore.userProfile?.clubId;
+		if (!teamId || !clubId) return;
+
+		const q = query(
+			collection(db, 'macrocycles'),
+			where('teamId', '==', teamId),
+			where('clubId', '==', clubId)
+		);
+
+		const unsub = onSnapshot(q, (snap) => {
+			if (!snap.empty) {
+				// Safely hydrated macrocycles based on teamId & clubId RBAC
+				console.log(`Loaded ${snap.size} secure macrocycles for team ${teamId} in club ${clubId}`);
+			}
+		});
+
+		return () => unsub();
+	});
+
 	/**
 	 * Svelte 5 Action for SortableJS
 	 */
@@ -115,13 +142,10 @@
 		}
 	}
 </script>
-
-<div class="tw-min-h-screen tw-bg-[#020617] tw-p-8 tw-font-sans tw-text-[#f8fafc]">
-	<div class="tw-max-w-6xl tw-mx-auto tw-flex tw-flex-col tw-gap-8">
-		
-		<header class="tw-flex tw-flex-col tw-gap-2">
-			<h1 class="tw-font-mono tw-text-2xl tw-text-[#f8fafc] tw-uppercase tw-tracking-widest tw-m-0">Coach OS: Tactical Forge</h1>
-			<p class="tw-font-mono tw-text-sm tw-text-[#14b8a6] tw-m-0">Curriculum Builder & AI Systems</p>
+	<!-- Forging Canvas / Bento Grid -->
+	<div class="tw-p-[clamp(16px,4vw,32px)] tw-bg-[#0B0F19] tw-w-full tw-h-full tw-flex-1 tw-flex tw-flex-col tw-gap-4">
+		<header class="tw-py-3 tw-mb-4 tw-border-b tw-border-[#1E293B]">
+			<div class="tw-text-xs tw-font-mono tw-tracking-widest tw-uppercase tw-text-slate-400">COACH COMMAND // TACTICAL FORGE</div>
 		</header>
 
 		<div class="tw-flex tw-items-center tw-border-b tw-border-[#334155]">
@@ -142,13 +166,13 @@
 		{#if activeTab === 'builder'}
 			<!-- PROACTIVE AI WARNING -->
 			{#if showAlert}
-				<div class="tw-bg-[#0f172a] tw-border tw-border-[#f59e0b] tw-p-4 tw-flex tw-items-start tw-gap-4 tw-transition-all tw-duration-200">
-					<Icon name={"status.pulse" as IconName} size={24} class="tw-text-[#f59e0b] tw-shrink-0" />
+				<div class="vanguard-panel tw-w-full tw-mb-6 tw-border-[#fbbf24] tw-bg-[#fbbf24]/10 tw-p-4 tw-flex tw-items-start tw-gap-4 tw-transition-all tw-duration-200">
+					<Icon name={"status.pulse" as IconName} size={24} class="tw-text-[#fbbf24] tw-shrink-0" />
 					<div class="tw-flex-1">
-						<div class="tw-font-mono tw-text-xs tw-text-[#f59e0b] tw-font-bold tw-mb-1">RL ADAPTIVE ENGINE // BIOMETRIC WARNING</div>
-						<div class="tw-font-mono tw-text-sm tw-text-[#f8fafc]">Player X's heart rate variability suggests a 15% reduction in drill intensity today. We recommend replacing AEROBIC FITNESS with a lower-load phase play.</div>
+						<div class="tw-font-mono tw-text-xs tw-text-[#fbbf24] tw-font-bold tw-mb-1">RL ADAPTIVE ENGINE // BIOMETRIC WARNING</div>
+						<div class="tw-font-mono tw-text-sm tw-text-[#fbbf24]/90">Player X's heart rate variability suggests a 15% reduction in drill intensity today. We recommend replacing AEROBIC FITNESS with a lower-load phase play.</div>
 					</div>
-					<button onclick={() => showAlert = false} class="tw-text-[#64748b] hover:tw-text-[#f8fafc] tw-transition-colors">
+					<button onclick={() => showAlert = false} class="tw-text-[#fbbf24]/60 hover:tw-text-[#fbbf24] tw-transition-colors">
 						<Icon name={"nav.close" as IconName} size={20} />
 					</button>
 				</div>
@@ -158,7 +182,7 @@
 			<div class="tw-grid tw-grid-cols-1 lg:tw-grid-cols-12 tw-gap-6 tw-items-start">
 				
 				<!-- Library -->
-				<div class="lg:tw-col-span-3 tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-flex tw-flex-col">
+				<div class="vanguard-panel lg:tw-col-span-4 tw-flex tw-flex-col tw-p-0">
 					<div class="tw-bg-[#020617] tw-border-b tw-border-[#334155] tw-p-3 tw-font-mono tw-text-xs tw-text-[#94a3b8] tw-uppercase tw-tracking-widest">
 						Drill Library
 					</div>
@@ -175,7 +199,7 @@
 				</div>
 
 				<!-- Macrocycle Grid -->
-				<div class="lg:tw-col-span-9 tw-flex tw-flex-col tw-gap-6">
+				<div class="lg:tw-col-span-8 tw-flex tw-flex-col tw-gap-6">
 					<div 
 						class="tw-grid tw-gap-4" 
 						style="grid-template-columns: repeat(auto-fit, minmax(clamp(200px, 25vw, 400px), 1fr));"
@@ -197,7 +221,7 @@
 
 					<div class="tw-flex tw-justify-end">
 						<button 
-							class="tw-bg-[#14b8a6] hover:tw-bg-[#0d9488] tw-text-[#020617] tw-font-mono tw-text-sm tw-font-bold tw-uppercase tw-tracking-widest tw-px-8 tw-py-3 tw-transition-colors tw-duration-150 disabled:tw-opacity-50"
+							class="tw-bg-[#14b8a6] hover:tw-bg-[#0d9488] active:tw-scale-[0.97] tw-text-[#020617] tw-font-mono tw-text-sm tw-font-bold tw-uppercase tw-tracking-widest tw-px-8 tw-py-3 tw-transition-all tw-duration-200 disabled:tw-opacity-50"
 							onclick={commitMacrocycle}
 							disabled={isCommitting}
 						>
@@ -239,7 +263,6 @@
 			</div>
 		{/if}
 	</div>
-</div>
 
 <style>
 	/* Sortable JS active classes */

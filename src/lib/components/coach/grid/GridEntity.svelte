@@ -197,7 +197,7 @@
 			<text
 				x="0"
 				y="0"
-				font-family="monospace"
+				font-family="var(--font-mono, 'Geist Mono', monospace)"
 				font-size="14"
 				fill="#ffffff"
 				font-weight="bold"
@@ -228,15 +228,15 @@
 				stroke="#14b8a6" stroke-width="0.5" stroke-opacity="0.4"
 			/>
 			<line x1="0" y1="-48" x2="112" y2="-48" stroke="#14b8a6" stroke-width="0.5" stroke-opacity="0.25" />
-			<text x="56" y="-50" font-family="monospace" font-size="6" fill="#14b8a6" fill-opacity="0.5"
+			<text x="56" y="-50" font-family="var(--font-mono, 'Geist Mono', monospace)" font-size="6" fill="#14b8a6" fill-opacity="0.5"
 				text-anchor="middle" letter-spacing="2">OPERATOR_STATS</text>
-			<text x="8" y="-37" font-family="monospace" font-size="8" fill="#14b8a6" text-anchor="start">
+			<text x="8" y="-37" font-family="var(--font-mono, 'Geist Mono', monospace)" font-size="8" fill="#14b8a6" text-anchor="start">
 				ID: {player.number || 'XX'}
 			</text>
-			<text x="8" y="-25" font-family="monospace" font-size="8" fill="#14b8a6" text-anchor="start">
+			<text x="8" y="-25" font-family="var(--font-mono, 'Geist Mono', monospace)" font-size="8" fill="#14b8a6" text-anchor="start">
 				SPD: 94  STM: 88
 			</text>
-			<text x="8" y="-13" font-family="monospace" font-size="8" fill="#14b8a6" text-anchor="start">
+			<text x="8" y="-13" font-family="var(--font-mono, 'Geist Mono', monospace)" font-size="8" fill="#14b8a6" text-anchor="start">
 				POS: {player.position || 'FWD'}
 			</text>
 		</g>

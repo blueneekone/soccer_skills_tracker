@@ -529,7 +529,7 @@
 
 <!-- VS-3d — Coach match-day SIEM scoreboard -->
 <div class="coach-match-shell">
-	<a href="/coach/dashboard" class="coach-match-exit coach-os-action-chip">HUB</a>
+	<a href="/coach/daily-intel" class="coach-match-exit coach-os-action-chip">HUB</a>
 
 	<header class="coach-match-z4-strap" aria-label="Match clock">
 		<p class="coach-match-z4-strap__label">Match clock</p>

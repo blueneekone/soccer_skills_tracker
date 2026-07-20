@@ -89,7 +89,7 @@ function hydrateMauSeries(totals: Record<string, unknown> | null): {
 	}
 
 	return {
-		series: values.some((v) => v > 0) ? labels.map(({ label }, i) => ({ label, value: values[i] ?? 0 })) : MOCK_MAU,
+		series: labels.map(({ label }, i) => ({ label, value: values[i] ?? 0 })),
 	};
 }
 
@@ -112,7 +112,7 @@ function hydrateRevenueByTier(totals: Record<string, unknown> | null): {
 	})).filter((s) => s.value > 0);
 
 	return {
-		series: ordered.length > 0 ? ordered : MOCK_REVENUE_BY_TIER,
+		series: ordered,
 	};
 }
 
@@ -136,7 +136,7 @@ function hydratePlayersBySport(totals: Record<string, unknown> | null): {
 		.sort((a, b) => b.value - a.value);
 
 	return {
-		series: ordered.length > 0 ? ordered : MOCK_PLAYERS_BY_SPORT,
+		series: ordered,
 	};
 }
 

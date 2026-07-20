@@ -1,54 +1,44 @@
-### SCINTILLATION SPORTS TRACKER - Master Project Roadmap
-**Architecture Philosophy:** Zero-Liability PII, Exception-Only Administration, Dynamic Multi-Sport Scaling, Uncompromised RPG Gamification, and Deep Emotional Intelligence (EQ) Protections [cite: 1313].
+# SSTRACKER (NEXUS COMMAND) - EXHAUSTIVE MASTER ROADMAP
+**Architecture Philosophy:** Zero-Liability PII, Exception-Only Administration, Dynamic Multi-Sport Scaling, Uncompromised RPG Gamification, and Deep Emotional Intelligence (EQ) Protections [cite: 1246, 1295].
 
-> **⚠️ THE PESSIMISTIC DEFINITION OF DONE:** No task on this roadmap may be marked as complete `[x]` unless:
-> 1. A Vitest or Playwright logic guard has been written and passed.
-> 2. The terminal returns 0 Svelte 5 compilation errors and 0 TypeScript violations via `npm run check`.
-> 3. JSDOM/Happy DOM virtual rendering and static CSS assertions confirm the component adheres to the CSS box model and "Strategic Minimalism" aesthetics.
-> 4. The UI strictly adheres to WCAG 2.2 AA cognitive accessibility constraints and the Halation-Free Dark Mode defined in `.agents/rules/sstracker-enterprise.md`.
+## 🌐 EPIC 1: GLOBAL ADMIN OS (THE COMMAND PLANE)
+**Mission:** Total multi-tenant infrastructure control, absolute observability, and system safety.
+*   **Global User Grid:** Paginated, edge-to-edge data tables managing all cross-tenant roles [cite: 350, 355].
+*   **Account Impersonation ("Login As"):** Securely mint custom JWT tokens via `admin.auth().createCustomToken(uid)` to troubleshoot tenant accounts without passwords [cite: 302].
+*   **Telemetry Single Pane:** Aggregated read-only dashboard pulling MAU, Revenue, and Players-by-Sport from `analytics/platform_totals` to defuse NoSQL read-bombs [cite: 436, 441].
+*   **The Kill Switch:** System Settings Maintenance Mode toggle to lock out non-admins globally during severe outages [cite: 303].
+*   **Database Defrag & PII Shredder:** Throwaway Firebase scripts to permanently purge ghost data and enforce strict cascading deletes across all cells [cite: 379, 386].
 
-#### PHASE 0: Global Aesthetic & Layout Synchronization
-*Objective: Lock in the multi-billion-dollar SIEM aesthetic and enterprise responsiveness before touching data layers.*
-* [x] **Sprint 0.1: The Bento Grid Lock.** Transition all core layouts to the 12-column asymmetric Bento Grid using fluid `clamp()` spacing to prevent mobile squishing. Forcefully apply the `.dark-form-surface` utility to permanently resolve dark-mode contrast barriers [cite: 1175].
-* [ ] **Sprint 0.2: Component Standardization.** Execute a global sweep to replace fragmented button and tab classes. Purge the legacy 'pills' UI and standardize all sub-navigation using the horizontal `.tab-nav` component. Ensure typography strictly enforces Geist Mono for data and Switzer for body copy.
+## 💼 EPIC 2: DIRECTOR OS & B2B REVENUE ENGINE
+**Mission:** Multi-sport club scaling, logistical domination, and embedded finance.
+*   **Multi-Sport "Rec Center" Hierarchy:** Data topology scaling from Tenant -> Programs -> Teams -> Rosters to support multi-sport organizations [cite: 368, 369].
+*   **Stripe Connect Billing:** Transaction-based $0 platform fee model. Enforce strict seat-allocation interceptors and the "Glass Showcase" read-only degradation state for past-due accounts [cite: 921, 1305].
+*   **Logistics & Field Ops Matrix:** Google Places/Maps API integration for facility mapping. Coupled directly with Tomorrow.io Real-Time Webhooks to automatically lock field status the millisecond a lightning strike registers nearby [cite: 946, 1337].
+*   **The "Vampire Importer" (Interoperability Hub):** Headless CSV ingestion to frictionlessly map and steal legacy rosters from competitors (Sports Connect, PlayMetrics) [cite: 362, 363].
+*   **Compliance Health Scoring:** Visual indicators (Green/Amber/Red dots) on the master Organizations table to instantly track VPC/SafeSport status [cite: 311].
 
-#### PHASE 1: Data Plane & Core Architecture Stabilization
-*Objective: Eradicate legacy technical debt, secure database boundaries, and establish the Svelte 5 framework [cite: 1314].*
-* [ ] **Sprint 1.1: Svelte 5 Vanguard Trinity Enforcement.** Audit all viewports to ensure they strictly fracture into The Shell (`+page.svelte`), The Brain (`*Engine.svelte.ts`), The Glass (`*Arena.svelte`), and The HUD (`*HUD.svelte`) [cite: 1168]. Enforce the 80-line function maximum.
-* [ ] **Sprint 1.2: PWA Caching & Vite Pipeline.** Replace all legacy `?v=` query-string cache busting with cryptographic file-hash versioning (`[name].[hash].js`) within `vite.config.js` to permanently resolve Service Worker desynchronization [cite: 1188].
-* [ ] **Sprint 1.3: Cloud Functions Architecture.** Ensure all 7 serverless codebases are correctly split to minimize deployment blast radius. Remove `minInstances` configurations to return the backend to a true scale-to-zero economic model [cite: 1176].
-* [ ] **Sprint 1.4: Cell-Based Firestore Isolation.** Architect API gateway routing to isolate large National Governing Bodies into distinct Firestore database cells based on `cellId` JWT claims, eliminating "noisy neighbor" throttling [cite: 1314]. Implement Cloud Firestore atomic batch writes and increment operators.
+## 📋 EPIC 3: COACH OS (THE SIDELINE SIEM)
+**Mission:** Figma-grade tactical tools, RL-driven accountability, and expanded staff controls.
+- [x] **Expanded Staff RBAC:** Assistant Coach and Team Manager access roles to delegate roster and schedule management [cite: 451, 454].
+- [x] **The Core Tabs:** The OS includes Daily Intel, The Forge, Field Station, War Room, Match Day, Scouting, and Team Ops [cite: 780, 781, 782, 1618, 1619].
+- [x] **The Tron War Room (HTML5 Spatial Drill Designer):** Utilize `getScreenCTM().inverse()` for flawless 1:1 SVG drag-and-drop physics. Implement Vantablack identity discs and glowing `<filter id="neonBloom">` light cycle trails in a 16:9 full-screen mode [cite: 689, 694, 699, 1623].
+- [x] **The Intent Engine & The Forge:** Batch-assign tactical drills directly to players via the RAG Terminal and Curriculum Builder. The Reinforcement Learning (RL) algorithm autonomously adjusts drill volume based on physiological feedback [cite: 1619].
+- [x] **Content Hub & Squad Telemetry:** Integrating API-Football for global soccer standing data and ListenNotes for tactical coaching podcasts, alongside Acute:Chronic Workload Ratios [cite: 527].
+- [x] **Remediation Strike 1 (Coach OS):** Defensive Hydration `b815` fix, Spatial Canvas `min-w-0` bounding, Zero-Trust `clubId` scoping, and Haptic Biometric Warnings on Intent Engine.
 
-#### PHASE 2: Zero-Liability Onboarding, Revenue & B2B Operations
-*Objective: Automate enterprise club ingestion, ensure absolute legal compliance, and manage logistical conflict engines [cite: 1315].*
-* [ ] **Sprint 2.1: Stripe Connect & Seat Licensing.** Transition core pricing to a transaction-based model (micro-percentage on volume) [cite: 1315]. Implement the Stripe Webhook Bouncer. Audit the `license_entitlements` schema to mathematically guarantee `active_seats` cannot exceed limits via atomic server-side transactions.
-* [ ] **Sprint 2.2: Field Ops Conflict Engine.** Finalize the `secureBookField` backend transaction to ensure that double-booking a facility triggers an immediate overlap rejection before writing to the database.
-* [ ] **Sprint 2.3: Checkr Staff Vetting.** Wire the Checkr Client-Hosted SDK into the onboarding flow, ensuring that Coach clearance is strictly evaluated via JWT claims before unlocking the Coach OS.
-* [ ] **Sprint 2.4: 12-Column Asymmetric Grid Operations.** Force the Director OS layout into an 8-column Primary Canvas and a 4-column Sidecar, utilizing minmax clamp math to ensure horizontal data table swiping on mobile.
-* [ ] **Sprint 2.5: Absolute Data Zeroing.** Permanently delete all mock constants and purge the `hasSignal` fallback logic from the Director Overview. Force all widgets to read directly from live collections, gracefully rendering 0 if data is missing.
+## 🎮 EPIC 4: PLAYER OS (THE DOPAMINE ENGINE)
+**Mission:** Absolute retention, habit-forming gamification, and verifiable athletic proof.
+- [x] **40% Void Black Gaming HUD:** Cinematic operative command deck utilizing the 60-30-10 palette, chamfered clip-path corners, and strict Z-depth UI [cite: 1152].
+- [x] **Vanguard Prism Charts:** 6-axis Chart.js radars tracking the "Scout's Six" (Power, Agility, Acceleration, Pace, Stamina, Composure) mapping to the Composite Snowflake skill tree [cite: 1341, 1345].
+- [ ] **Premium Video Trials:** 50MB-capped upload pipelines to Firebase Storage for biomechanical proof of work. Computer Vision verification instantly triggers real-world escrow payouts [cite: 980].
+- [ ] **The Dopamine Engine:** Canvas-confetti particle explosions firing strictly on verified database commits. Dynamic streak counters with 2% daily skill decay (Loss Avoidance) [cite: 1338].
+- [ ] **TCG "Ultimate Team" Player Cards:** Dynamically generated, exportable digital resumes showing deterministic geometric avatars, stats, level, and tier for social sharing [cite: 365, 1414].
 
-#### PHASE 3: Legal Compliance Moat (COPPA 2.0 & SafeSport)
-*Objective: Seal the platform's liability loop through verifiable consent and automated data shredding.*
-* [ ] **Sprint 3.1: Context-Aware COPPA 2.0 & VPC.** Integrate native WebAuthn Biometric Enclave Attestation (`navigator.credentials.create()`) to bind legally mandated COPPA consent directly to on-device hardware biometrics (FaceID/TouchID) [cite: 1315]. Implement strict opt-in consent architectures for teens aged 13-16 to explicitly block targeted advertising data sharing [cite: 1315].
-* [ ] **Sprint 3.2: SafeSport "Shadow CC" Comms Hub.** Audit the `sendChannelMessage` callable. Ensure it explicitly blocks direct 1-on-1 adult-to-minor messages by automatically resolving and injecting the linked parent's email into the `ccParentEmails` array for all squad threads [cite: 1194].
-* [ ] **Sprint 3.3: PII Burn Protocol (TTL Shredder).** Finalize the `shredSensitiveData` daily cron job. It must autonomously overwrite PII inside the `users` and `passports` collections after 24 hours of inactivity while strictly exempting the `consents` collection for legal multi-year retention [cite: 1172, 1192].
-
-#### PHASE 4: The AI Training Engine & Coach OS
-*Objective: Replace static, template-based workout loggers with an intelligent, adaptive coaching ecosystem.*
-* [ ] **Sprint 4.1: Spatial Drill Designer.** Fortify the HTML5 Fabric.js canvas to utilize SVG bounding-box scaling and `preserveAspectRatio="xMidYMid slice"`, preventing drawn tactical routes and player tokens from warping on ultra-wide monitors or mobile devices.
-* [ ] **Sprint 4.2: Retrieval-Augmented Generation (RAG) AI.** Deploy a Vector Database to ingest verified USSF and KNVB coaching manuals. Build the AI Chat terminal mapping natural language prompts to semantic embeddings to instantly generate age-appropriate practice plans.
-* [ ] **Sprint 4.3: The Intent Engine & RL Adaptive Homework.** Ensure the drag-and-drop curriculum builder successfully packages drill assignments as "Homework." Transition the Reinforcement Learning adaptive training engine from a heuristic default to an active state, pushing suggestions to the Player OS based on RPE telemetry, while respecting the "Command Override Protocol" [cite: 1200].
-
-#### PHASE 5: Player OS, Gamification, & The Emotional Intelligence Perimeter
-*Objective: Launch an addictive, consequence-driven real-life leveling loop fueled by behavioral economics [cite: 1316].*
-* [ ] **Sprint 5.1: The Dopamine Engine & Void Contract.** Audit the Player OS to adhere to a minimum 40% "Void Density". Hook the asynchronous HTML5 canvas-confetti burst immediately to verified backend data saves (Core Drive 2) [cite: 1316, 1317].
-* [ ] **Sprint 5.2: Composite Snowflake Skill Tree.** Construct multi-attribute hex trees visualizing physical progression [cite: 1316]. The frontend UI must strictly render Synthetic Authored Nodes (abstract action abstractions like "Pace" or "Vision") utilizing a Hybrid Data Model mapped to the "Drill-as-Node" curriculum on the backend [cite: 1259, 1362].
-* [ ] **Sprint 5.3: Skill Decay & Psychological Scaffolding.** Program automated Skill Decay algorithms that drain fractions of inactive XP after 5 consecutive missed days, triggering urgent re-engagement alerts (Core Drive 8: Loss Avoidance) [cite: 1316, 1373]. Implement an asymmetric UI "Fog of War" masking intermediate/advanced skill trees to prevent cognitive overload for beginners [cite: 1317].
-* [ ] **Sprint 5.4: Video Trials & Sanitized Recruiter Index.** Lock down Firebase Storage rules to enforce a 50MB file limit on 30-second video trial uploads. Ensure the `syncPublicPlayerProfile` trigger securely builds read-only prospect cards so subscribed recruiters can filter the global index without exposing minors' direct PII.
-* [ ] **Sprint 5.5: "The Car Ride Home" Protocol.** Engineer the protocol to fire mandatory push notifications to parents 15 minutes post-match, locking metrics behind an attestation to prioritize emotional safety and providing highly empathetic conversation anchors [cite: 1317].
-
-#### PHASE 6: Enterprise Scale & Multi-Sport Expansion
-*Objective: Future-proof the Total Addressable Market (TAM) by moving beyond soccer into a universal athletic operating system.*
-* [ ] **Sprint 6.1: Dynamic Sport Templates.** Execute database restructuring to support dynamic sport configuration trees (`sports_configs`). Ensure the OS scales instantly to basketball, football, and lacrosse by mapping custom attributes, icons, and rule schemas dynamically [cite: 1316].
-* [ ] **Sprint 6.2: Dynamic XP Balancing.** Refactor the backend reinforcement learning models to support variable effort weighting (e.g., a "repetition" in basketball carries a different physiological weight than a "minute" in soccer).
-* [ ] **Sprint 6.3: Custom Branding Engine.** Build the white-label configuration panel. Allow multi-sport clubs to upload their own hex codes and logos to securely override the platform's default 60-30-10 palette via global CSS variable injection (`--brand-primary`, `--brand-accent`).
+## 🛡️ EPIC 5: PARENT OS & RECRUITER MARKETPLACE
+**Mission:** Legal compliance, financial escrow, and global scouting monetization.
+- [x] **WebAuthn Biometric Enclave:** Binding COPPA 2.0 compliance and Verifiable Parental Consent (VPC) directly to hardware FaceID/TouchID attestation [cite: 1297, 1305].
+- [x] **SafeSport Comms (Shadow CC):** A hardcoded routing layer that automatically CCs parents on all coach-to-player direct messages, mathematically prohibiting 1:1 adult-to-minor DMs [cite: 1288].
+- [x] **The Tremendous Bounty Terminal:** Escrowing real-world rewards (gift cards) funded by parents that release upon CV-verified workout completion [cite: 1298, 1306].
+- [x] **The Car Ride Home Protocol:** Suppressing raw metric dashboards for 15 minutes post-match and pushing empathetic conversation anchors to protect beginner self-worth [cite: 1253, 1299].
+*   **Vetted Recruiter Engine:** Checkr API integration to mandate National Criminal Database vetting before scouts gain platform access [cite: 1416].
+*   **Global Search Engine:** Edge-to-edge data tables allowing vetted recruiters to filter the global prospect database by age, region, and verified video trial scores [cite: 973].

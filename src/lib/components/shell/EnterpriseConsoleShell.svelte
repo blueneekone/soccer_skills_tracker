@@ -260,30 +260,32 @@
 		</aside>
 
 	<div class="ec-main tw-flex-1 tw-min-h-0 tw-overflow-y-auto">
-		<header class="ec-topbar">
-			<button
-				type="button"
-				class="ec-sidebar-toggle ec-sidebar-toggle--desktop icon-tap"
-				onclick={toggleDesktopSidebar}
-				aria-expanded={workspaceContextStore.isSidebarOpen}
-				aria-controls="ec-workspace-nav"
-				aria-label={workspaceContextStore.isSidebarOpen ? 'Collapse sidebar' : 'Expand sidebar'}
-			>
-				<Icon name="nav.sidebar" size={20} />
-			</button>
-			<div class="ec-breadcrumb">
-				{#if breadcrumb}
-					{breadcrumb}
-				{:else}
-					<strong>{workspaceLabel}</strong> / Console
-				{/if}
+		<header class="ec-topbar tw-relative">
+			<div class="tw-flex tw-items-center tw-flex-1 tw-min-w-0">
+				<button
+					type="button"
+					class="ec-sidebar-toggle ec-sidebar-toggle--desktop icon-tap"
+					onclick={toggleDesktopSidebar}
+					aria-expanded={workspaceContextStore.isSidebarOpen}
+					aria-controls="ec-workspace-nav"
+					aria-label={workspaceContextStore.isSidebarOpen ? 'Collapse sidebar' : 'Expand sidebar'}
+				>
+					<Icon name="nav.sidebar" size={20} />
+				</button>
+				<div class="ec-breadcrumb tw-truncate tw-pl-4">
+					{#if breadcrumb}
+						{breadcrumb}
+					{:else}
+						<strong>{workspaceLabel}</strong> / Console
+					{/if}
+				</div>
 			</div>
 			<!-- Command Palette trigger — desk only; field uses AppMenuSheet (no search/jump on field) -->
 			{#if isDesktop}
-				<div class="tw-flex-1 tw-flex tw-justify-center tw-px-4">
+				<div class="tw-absolute tw-left-1/2 -tw-translate-x-1/2 tw-w-full tw-max-w-md tw-flex tw-justify-center tw-px-4 tw-pointer-events-none">
 					<button
 						type="button"
-						class="tw-group tw-flex tw-items-center tw-justify-between tw-w-full tw-max-w-md tw-bg-[#1E293B] tw-border tw-border-[#334155] tw-rounded-md tw-px-3 tw-py-1.5 tw-text-sm tw-text-[#94A3B8] hover:tw-border-[#FAFAFA] hover:tw-text-[#FAFAFA] tw-transition-colors"
+						class="tw-pointer-events-auto tw-group tw-flex tw-items-center tw-justify-between tw-w-full tw-bg-[#1E293B] tw-border tw-border-[#334155] tw-rounded-md tw-px-3 tw-py-1.5 tw-text-sm tw-text-[#94A3B8] hover:tw-border-[#FAFAFA] hover:tw-text-[#FAFAFA] tw-transition-colors"
 						onclick={() => (cmdPaletteOpen = true)}
 						aria-label="Open command palette"
 						aria-keyshortcuts="Meta+K Control+K"
@@ -296,10 +298,8 @@
 						<kbd class="tw-hidden sm:tw-inline-flex tw-items-center tw-font-mono tw-text-[10px] tw-font-bold tw-text-[#94A3B8] tw-bg-[#0B0F19] tw-border tw-border-[#334155] tw-rounded tw-px-1.5 tw-py-0.5 group-hover:tw-text-[#14b8a6] group-hover:tw-border-[#14b8a6] tw-transition-colors">⌘K</kbd>
 					</button>
 				</div>
-			{:else}
-				<div class="tw-flex-1"></div>
 			{/if}
-			<div class="ec-topbar__right">
+			<div class="ec-topbar__right tw-flex-1 tw-flex tw-justify-end tw-items-center">
 				<button
 					type="button"
 					class="ec-icon-btn icon-tap ec-bell-btn"

@@ -6,10 +6,13 @@
 	import CoachTeamCommsPanel from '$lib/coach/logistics/CoachTeamCommsPanel.svelte';
 	import { page } from '$app/state';
 	import { teamsStore } from '$lib/stores/teams.svelte.js';
+	import { authStore } from '$lib/stores/auth.svelte.js';
+	import { db } from '$lib/firebase.js';
 	import { CoachTeamScope } from '$lib/coach/context/coachTeamScope.svelte.js';
 
 	const teamScope = new CoachTeamScope({ preferProfileTeam: true });
 	$effect(() => {
+		if (!db || !authStore.isAuthenticated) return;
 		teamScope.syncSelectedTeam();
 	});
 

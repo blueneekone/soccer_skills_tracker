@@ -8,7 +8,6 @@
 	import { CoachTacticalEngine } from './CoachTacticalEngine.svelte.js';
 	import '$lib/styles/coach-tactics-stratagem.css';
 	import TacticalArena from '$lib/components/coach/TacticalArena.svelte';
-	import DrillDesignerTab from '$lib/components/coach/DrillDesignerTab.svelte';
 	import TacticalHUD from '$lib/components/coach/TacticalHUD.svelte';
 	import { scale } from 'svelte/transition';
 	import { quintOut } from 'svelte/easing';
@@ -31,8 +30,8 @@
 	style="z-index: 1050;"
 	in:scale={{ duration: 350, start: 0.97, easing: quintOut }}
 >
-	<DrillDesignerTab teamId={engine.teamScope.selectedTeamId ?? ''} />
-
+	<TacticalArena model={engine.gridEngine} warRoomTool={engine.warRoomTool} />
+	<TacticalHUD model={engine.gridEngine} />
 	<button
 		type="button"
 		class="coach-tac-exit coach-os-action-chip"

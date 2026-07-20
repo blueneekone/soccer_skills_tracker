@@ -11,10 +11,16 @@
 
 	let { fieldLat = 41.633, fieldLng = -111.851, weatherCoords }: Props = $props();
 
-	const isThreatActive = $derived(weatherAegis.alertLevel === 'DANGER');
+	const activeWeatherThreat = $derived(weatherAegis.alertLevel === 'DANGER');
 </script>
 
-<div class="tw-h-full tw-w-full tw-min-h-[220px] {isThreatActive ? 'vanguard-panel-breach' : 'vanguard-panel'} tw-relative tw-flex tw-flex-col">
+<div class="tw-h-full tw-w-full tw-min-h-[220px] {activeWeatherThreat ? 'vanguard-panel-breach' : 'vanguard-panel'} tw-relative tw-flex tw-flex-col tw-overflow-hidden">
+	<!-- Ambient radar rings (perfect SVG circles) -->
+	<svg class="tw-absolute tw-inset-0 tw-w-full tw-h-full tw-pointer-events-none tw-opacity-[0.15]" aria-hidden="true" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid slice">
+		<circle cx="50" cy="50" r="25" fill="none" stroke="#14b8a6" stroke-width="0.25" stroke-dasharray="1 2" class="tw-animate-[spin_20s_linear_infinite]" style="transform-origin: center;" />
+		<circle cx="50" cy="50" r="50" fill="none" stroke="#14b8a6" stroke-width="0.5" opacity="0.6" />
+		<circle cx="50" cy="50" r="85" fill="none" stroke="#14b8a6" stroke-width="0.75" stroke-dasharray="2 4" opacity="0.3" class="tw-animate-[spin_40s_linear_infinite_reverse]" style="transform-origin: center;" />
+	</svg>
 	{#if vanguardFlags.weatherEnabled}
 		<WeatherWidget lat={fieldLat} lng={fieldLng} coordsLabel={weatherCoords} />
 	{:else}

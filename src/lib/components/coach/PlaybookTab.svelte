@@ -2,6 +2,7 @@
 	import { httpsCallable } from 'firebase/functions';
 	import { functions, db } from '$lib/firebase.js';
 	import { collection, query, where, getDocs } from 'firebase/firestore';
+	import { authStore } from '$lib/stores/auth.svelte.js';
 	import Icon from '$lib/components/ui/Icon.svelte';
 	import type { IconName } from '$lib/icons/registry.js';
 
@@ -42,6 +43,7 @@
 	}
 
 	$effect(() => {
+		if (authStore.isLoading || !authStore.isAuthenticated) return;
 		loadDrillsForIntent();
 	});
 

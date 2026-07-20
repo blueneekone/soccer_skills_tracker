@@ -3,6 +3,7 @@
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
 	import { auth, db } from '$lib/firebase.js';
+	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { CoachTeamScope } from '$lib/coach/context/coachTeamScope.svelte.js';
 	import CoachRosterQuickEvalPanel from '$lib/coach/scouting/CoachRosterQuickEvalPanel.svelte';
 	import { teamsStore } from '$lib/stores/teams.svelte.js';
@@ -135,6 +136,7 @@
 	});
 
 	$effect(() => {
+		if (!db || !authStore.isAuthenticated) return;
 		const teamId = teamScope.selectedTeamId;
 		if (!browser || !teamId) {
 			prospects = [];

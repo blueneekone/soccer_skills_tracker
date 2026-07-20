@@ -48,6 +48,7 @@ const SVG_STROKE_ALLOWLIST = [
 	'GridEntity.svelte',
 	'GridPitch.svelte',
 	'ContextRadial.svelte',
+	'WeatherHub.svelte',
 	'IntakePanopticon.svelte',
 	'TransferPortal.svelte',
 	'RecruiterPortal.svelte',

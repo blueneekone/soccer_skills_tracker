@@ -9,6 +9,7 @@
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { licenseEntitlementStore } from '$lib/stores/licenseEntitlement.svelte.js';
 	import { isSubscriptionReadOnly } from '$lib/auth/billing.js';
+	import AlertMatrix from '$lib/components/layout/AlertMatrix.svelte';
 
 	let { children } = $props();
 
@@ -31,10 +32,15 @@
 	});
 </script>
 
-<div class="director-os-root director-command-center-shell">
-	{#if isReadOnly}
-		<DirectorReadOnlyBanner onUpgrade={() => (upgradeModalOpen = true)} />
+<div class="tw-flex tw-w-full">
+	<div class="director-os-root director-command-center-shell tw-flex-1 tw-min-w-0">
+		{#if isReadOnly}
+			<DirectorReadOnlyBanner onUpgrade={() => (upgradeModalOpen = true)} />
+		{/if}
+		<ReadOnlyUpgradeModal bind:open={upgradeModalOpen} />
+		{@render children()}
+	</div>
+	{#if authStore.role === 'super_admin' || authStore.role === 'global_admin' || authStore.role === 'director'}
+		<AlertMatrix />
 	{/if}
-	<ReadOnlyUpgradeModal bind:open={upgradeModalOpen} />
-	{@render children()}
 </div>

@@ -292,8 +292,6 @@
 				// Strip the Svelte 5 Proxy from all reactive state before
 				// passing to Firestore — prevents 400 serialization failures on mobile.
 				const payload = $state.snapshot({
-					clubId: resolvedClubId(),
-					role: 'parent' as const,
 					playerName: name,
 					joinedAt,
 					...basePrivacy,

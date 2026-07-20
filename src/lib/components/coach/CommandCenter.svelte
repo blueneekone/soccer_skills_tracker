@@ -140,6 +140,7 @@
 
 	// ── Guardian denorm from player_lookup ────────────────────────────────
 	$effect(() => {
+		if (authStore.isLoading || !authStore.isAuthenticated) return;
 		if (!browser) return;
 		const emails = roster
 			.map((p) => (typeof p.email === 'string' && p.email ? p.email : p.id))
@@ -187,6 +188,7 @@
 
 	// ── Firestore roster listener ─────────────────────────────────────────
 	$effect(() => {
+		if (authStore.isLoading || !authStore.isAuthenticated) return;
 		if (!browser) return;
 
 		rosterLoading = true;

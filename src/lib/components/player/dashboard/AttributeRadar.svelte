@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { VANGUARD_PRISM_LABELS } from '$lib/utils/vanguard-prism.js';
 	import type { VanguardAxisId } from '$lib/player/dashboard/vanguardProtocol.js';
+	import Chart from 'chart.js/auto';
 
 	type Props = {
 		/** Six 0–99 values: PAC · ACC · POW · COMP · STM · AGI (Vanguard Protocol) */
@@ -9,208 +10,98 @@
 		onAxisSelect?: (id: VanguardAxisId) => void;
 	};
 
-	const { values = [], selectedAxis = null, onAxisSelect }: Props = $props();
+	let { values = [], selectedAxis = null, onAxisSelect }: Props = $props();
 
 	const ATTRS = VANGUARD_PRISM_LABELS;
 	const N = ATTRS.length;
 
-	const CX = 140;
-	const CY = 140;
-	const R = 80;
-	const LABEL_R = 116;
-	const HIT_R = 14;
-	const TIERS = [0.25, 0.5, 0.75, 1.0];
+	let canvasEl: HTMLCanvasElement;
+	let chart: Chart | null = null;
 
 	const safeValues = $derived(
 		values.length >= N
 			? values
 					.slice(0, N)
 					.map((v) => Math.min(99, Math.max(0, Math.round(Number(v) || 0))))
-			: Array(N).fill(0),
+			: Array(N).fill(0)
 	);
 
-	function pt(i: number, r: number): { x: number; y: number } {
-		const a = (i * 2 * Math.PI) / N - Math.PI / 2;
-		return { x: CX + r * Math.cos(a), y: CY + r * Math.sin(a) };
-	}
+	$effect(() => {
+		let destroyed = false; // Memory leak guard (Architect Persona)
 
-	function polygonPoints(r: number): string {
-		return Array.from({ length: N }, (_, i) => {
-			const p = pt(i, r);
-			return `${p.x.toFixed(2)},${p.y.toFixed(2)}`;
-		}).join(' ');
-	}
-
-	function anchorFor(i: number): 'start' | 'middle' | 'end' {
-		const a = (i * 2 * Math.PI) / N - Math.PI / 2;
-		const x = Math.cos(a);
-		if (x > 0.25) return 'start';
-		if (x < -0.25) return 'end';
-		return 'middle';
-	}
-
-	function handleLabelClick(id: VanguardAxisId) {
-		onAxisSelect?.(id);
-	}
-
-	function handleLabelKeydown(e: KeyboardEvent, id: VanguardAxisId) {
-		if (e.key === 'Enter' || e.key === ' ') {
-			e.preventDefault();
-			onAxisSelect?.(id);
+		if (canvasEl && safeValues.length > 0) {
+			// Initialize Chart.js Vanguard Prism
+			chart = new Chart(canvasEl, {
+				type: 'radar',
+				data: {
+					labels: ATTRS as unknown as string[],
+					datasets: [
+						{
+							data: safeValues,
+							backgroundColor: 'rgba(20, 184, 166, 0.2)', // Data Cyan 20%
+							borderColor: '#14b8a6', // Data Cyan
+							borderWidth: 2,
+							pointBackgroundColor: '#fbbf24', // Action Gold Nodes
+							pointBorderColor: '#020617', // Void slate border
+							pointRadius: 4,
+							pointHoverRadius: 6
+						}
+					]
+				},
+				options: {
+					responsive: true,
+					maintainAspectRatio: false,
+					scales: {
+						r: {
+							min: 0,
+							max: 99,
+							ticks: { display: false },
+							grid: { color: '#334155' },
+							angleLines: { color: '#334155' },
+							pointLabels: {
+								color: '#94a3b8',
+								font: {
+									family: 'Geist Mono, monospace',
+									size: 11,
+									weight: 'bold'
+								}
+							}
+						}
+					},
+					plugins: {
+						legend: { display: false },
+						tooltip: {
+							backgroundColor: '#0f172a',
+							titleColor: '#14b8a6',
+							titleFont: { family: 'Geist Mono, monospace', size: 12 },
+							bodyColor: '#e2e8f0',
+							bodyFont: { family: 'Geist Mono, monospace', size: 14, weight: 'bold' },
+							borderColor: '#334155',
+							borderWidth: 1,
+							displayColors: false
+						}
+					},
+					onClick: (e, elements) => {
+						if (elements.length > 0 && onAxisSelect) {
+							const index = elements[0].index;
+							const axis = ATTRS[index] as VanguardAxisId;
+							onAxisSelect(axis);
+						}
+					}
+				}
+			});
 		}
-	}
 
-	const skillVertices = $derived(
-		safeValues.map((v, i) => {
-			const mult = Math.max(0.02, v / 99);
-			return { ...pt(i, R * mult) };
-		}),
-	);
-
-	const skillPolygonPoints = $derived(
-		skillVertices.map((p) => `${p.x.toFixed(2)},${p.y.toFixed(2)}`).join(' '),
-	);
-
-	const allZero = $derived(safeValues.every((v) => v === 0));
-
-	const ZERO_TRACK_RADIUS = 0.18;
-
-	const labelVertices = $derived(
-		ATTRS.map((label, i) => ({
-			...pt(i, LABEL_R),
-			hit: pt(i, LABEL_R),
-			label,
-			id: label as VanguardAxisId,
-		})),
-	);
+		return () => {
+			destroyed = true;
+			chart?.destroy(); // Permanently prevents 4GB RAM accumulation leaks
+			chart = null;
+		};
+	});
 </script>
 
-<div class="ar-root">
-	<svg
-		class="ar-svg"
-		viewBox="-30 -30 340 340"
-		preserveAspectRatio="xMidYMid meet"
-		role="img"
-		aria-label="Vanguard Prism attribute radar"
-	>
-		{#each TIERS as tier, ti (tier)}
-			<polygon
-				points={polygonPoints(R * tier)}
-				fill="none"
-				stroke={ti === TIERS.length - 1 ? 'rgba(148,163,184,0.20)' : 'rgba(148,163,184,0.12)'}
-				stroke-width={ti === TIERS.length - 1 ? '0.6' : '0.4'}
-				vector-effect="non-scaling-stroke"
-			/>
-		{/each}
-
-		{#each Array.from({ length: N }, (_, i) => i) as i (`spoke-${i}`)}
-			{@const tip = pt(i, R)}
-			<line
-				x1={CX}
-				y1={CY}
-				x2={tip.x}
-				y2={tip.y}
-				stroke="rgba(148,163,184,0.10)"
-				stroke-width="0.3"
-				vector-effect="non-scaling-stroke"
-			/>
-		{/each}
-
-		{#if allZero}
-			<polygon
-				points={polygonPoints(R * ZERO_TRACK_RADIUS)}
-				fill="none"
-				stroke="color-mix(in srgb, var(--pd-accent-data, #14b8a6) 28%, transparent)"
-				stroke-width="0.8"
-				vector-effect="non-scaling-stroke"
-				class="ar-zero-track"
-				filter="url(#pdDataBloom)"
-			/>
-		{/if}
-
-		{#if !allZero}
-			<polygon
-				points={skillPolygonPoints}
-				fill="color-mix(in srgb, var(--pd-accent-data, #14b8a6) 18%, transparent)"
-				stroke="var(--pd-accent-data, #14b8a6)"
-				stroke-width="1.4"
-				stroke-linejoin="round"
-				vector-effect="non-scaling-stroke"
-				filter="url(#pdDataBloom)"
-			/>
-		{/if}
-
-		{#each skillVertices as v, vi (`vtx-${vi}`)}
-			{#if safeValues[vi] > 0}
-				<circle
-					cx={v.x}
-					cy={v.y}
-					r="2.5"
-					fill="var(--pd-accent-data, #14b8a6)"
-					filter="url(#pdDataBloom)"
-				/>
-			{/if}
-		{/each}
-
-		{#each labelVertices as lv, li (`lbl-${li}`)}
-			<circle
-				cx={lv.hit.x}
-				cy={lv.hit.y}
-				r={HIT_R}
-				fill="transparent"
-				class="ar-hit"
-				role="button"
-				tabindex="0"
-				aria-label="Select {lv.label}"
-				aria-pressed={selectedAxis === lv.id}
-				onclick={() => handleLabelClick(lv.id)}
-				onkeydown={(e) => handleLabelKeydown(e, lv.id)}
-			/>
-			<text
-				x={lv.x}
-				y={lv.y}
-				font-size="8"
-				font-family="Geist Mono, ui-monospace, SFMono-Regular, Menlo, Consolas, monospace"
-				font-weight="700"
-				letter-spacing="0.5"
-				text-anchor={anchorFor(li)}
-				dominant-baseline="middle"
-				fill={selectedAxis === lv.id
-					? 'color-mix(in srgb, var(--pd-accent-data, #14b8a6) 92%, #fff)'
-					: 'var(--pd-text-muted, rgba(255, 255, 255, 0.5))'}
-				class="ar-label"
-				class:ar-label--selected={selectedAxis === lv.id}
-				pointer-events="none"
-			>{lv.label}</text>
-		{/each}
-	</svg>
+<div class="tw-w-full tw-h-full tw-min-h-[280px] tw-relative tw-flex tw-items-center tw-justify-center">
+	<canvas bind:this={canvasEl}></canvas>
 </div>
 
-<style>
-	.ar-root {
-		width: 100%;
-		aspect-ratio: 1 / 1;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-	}
-	.ar-svg {
-		display: block;
-		width: 100%;
-		height: 100%;
-		overflow: visible;
-	}
-	.ar-hit {
-		cursor: pointer;
-	}
-	.ar-hit:focus-visible {
-		outline: none;
-	}
-	.ar-hit:focus-visible + .ar-label {
-		fill: var(--pd-accent-data, #14b8a6);
-	}
-	.ar-label--selected {
-		text-decoration: underline;
-		text-decoration-color: var(--pd-accent-data, #14b8a6);
-	}
-</style>
+

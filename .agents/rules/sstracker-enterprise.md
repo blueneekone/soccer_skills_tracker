@@ -12,6 +12,7 @@ description: Core principles for Svelte 5 frontend architecture and Firebase v10
 *   **Visual & Structural Verification:** You must utilize JSDOM or Happy DOM virtual rendering in vitest.config.ts to assert that layouts adhere to the CSS box model and compute correctly [cite: 1654]. You must use static regex-based tests to ensure components utilize the mandated design tokens and explicitly fail the build if banned styling is detected [cite: 1654].
 *   **Proof of Stability:** A task is ONLY "Done" when you have autonomously run `npm run check` and `npx eslint`, and the compiler returns absolutely 0 Svelte 5 errors and zero TypeScript `any` violations [cite: 1654].
 *   **Two-File Governance System:** No single execution plan may encompass more than 2 to 3 distinct architectural tasks to prevent context degradation and code hallucination [cite: 1654].
+*   **Roadmap Synchronization Mandate:** From this exact second forward, the final step of every successful execution plan MUST be opening the roadmap file (`ROADMAP.md`) and officially updating the completion state [cite: 2000].
 
 #### 2. SVELTE 5 & THE VANGUARD TRINITY PATTERN
 *   **Strict Svelte 5 Runes:** You must exclusively use Svelte 5 compile-time reactivity (`$state`, `$derived`, `$effect`, `$props`, `$bindable`) [cite: 1654]. Legacy Svelte 4 syntax is completely banned [cite: 1654]. Programmatic routing invoked within an `$effect` block must be wrapped in an `untrack()` enclosure to prevent infinite rendering loops [cite: 1654].

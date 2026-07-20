@@ -86,6 +86,7 @@
 	}
 
 	$effect(() => {
+		if (authStore.isLoading || !authStore.isAuthenticated) return;
 		const cId = clubId?.trim();
 		const tId = teamId?.trim();
 		if (!browser || !cId || !tId) {
@@ -115,6 +116,7 @@
 	});
 
 	$effect(() => {
+		if (authStore.isLoading || !authStore.isAuthenticated) return;
 		if (!browser || !teamId) {
 			messages = [];
 			return;

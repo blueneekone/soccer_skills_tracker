@@ -41,11 +41,24 @@
 		aria-current={isSelected ? 'true' : undefined}
 		data-timeline-ms={timelineMs}
 	>
+		<!-- Glowing Tron Base Trail -->
 		<path
 			d={pathD}
 			fill="none"
-			stroke={route.color}
-			stroke-width={isSelected ? 4 : 3}
+			stroke="#06b6d4"
+			stroke-width={isSelected ? 18 : 16}
+			stroke-linecap="round"
+			stroke-linejoin="round"
+			filter="url(#neonBloom)"
+			opacity="0.4"
+			pointer-events="none"
+		/>
+		<!-- Sharp White Core Trail -->
+		<path
+			d={pathD}
+			fill="none"
+			stroke="#ffffff"
+			stroke-width={isSelected ? 6 : 4}
 			stroke-linecap="round"
 			stroke-linejoin="round"
 			marker-end="url(#arrowhead)"
