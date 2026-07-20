@@ -254,6 +254,7 @@
 
 /* Sprint 2.20c — center "ACTIVE MISSIONS" label over the mission deck */
 .player-hud-root .quest-log-panel--premium .quest-log__head--embedded {
+	text-align: center;
 	position: relative;
 	z-index: 1;
 	padding-bottom: clamp(4px, 0.8vw, 6px);
