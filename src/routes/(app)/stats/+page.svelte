@@ -308,17 +308,14 @@
 		chartOk;
 		workoutCanvas;
 		ChartCtor;
-		workoutViewMode;
 		if (!chartOk || !ChartCtor || !workoutCanvas || !browser) return;
 
-		if (workoutChartInst) {
-			workoutChartInst.destroy();
-			workoutChartInst = null;
-		}
+		if (workoutChartInst) return;
 
+		const currentMode = untrack(() => workoutViewMode);
 		const dsLabel =
-			workoutViewMode === 'daily' ? 'DAILY_XP' :
-			workoutViewMode === 'weekly' ? 'WEEKLY_XP' :
+			currentMode === 'daily' ? 'DAILY_XP' :
+			currentMode === 'weekly' ? 'WEEKLY_XP' :
 			'MONTHLY_XP';
 
 		workoutChartInst = new ChartCtor(workoutCanvas, {

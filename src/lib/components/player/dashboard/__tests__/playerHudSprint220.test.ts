@@ -25,7 +25,7 @@ const VOID_CAPTURE_PRIMARY = join(VA_DIR, 'g10-hq-void-1280x900.png');
 const VOID_CAPTURE_FALLBACK = join(VA_DIR, 'g10-hq-1280.png');
 const SHELL_CSS = join(ROOT, 'lib/styles/player-shell.css');
 const SHELL = join(ROOT, 'lib/components/shell/PlayerShell.svelte');
-const WORKOUT = join(ROOT, 'routes/(app)/player/workout/+page.svelte');
+const WORKOUT = join(ROOT, 'lib/player/workout/PlayerWorkoutPageView.svelte');
 const FOUNDATION = join(ROOT, '..', 'docs/vision/PLAYER_OS_FOUNDATION.md');
 
 const HUD_CSS = join(ROOT, 'lib/styles/player-dashboard-hud.css');
@@ -167,7 +167,7 @@ describe.skip('Sprint 2.20b — VPP material lift (PLAYER_OS_FOUNDATION.md §2, 
 	});
 });
 
-describe.skip('Sprint 2.20c — composition hotfix (HQ / Stats / Train)', () => {
+describe('Sprint 2.20c — composition hotfix (HQ / Stats / Train)', () => {
 	it('OperativeHub.svelte .operative-hub does NOT use overflow: hidden', () => {
 		// Bug 1: overflow:hidden was clipping identity stage and mission rail content
 		// Scoped rule block for .operative-hub must use visible (or omit overflow altogether)
