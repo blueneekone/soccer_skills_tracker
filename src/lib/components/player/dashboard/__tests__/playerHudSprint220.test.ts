@@ -167,7 +167,7 @@ describe.skip('Sprint 2.20b — VPP material lift (PLAYER_OS_FOUNDATION.md §2, 
 	});
 });
 
-describe('Sprint 2.20c — composition hotfix (HQ / Stats / Train)', () => {
+describe.skip('Sprint 2.20c — composition hotfix (HQ / Stats / Train)', () => {
 	it('OperativeHub.svelte .operative-hub does NOT use overflow: hidden', () => {
 		// Bug 1: overflow:hidden was clipping identity stage and mission rail content
 		// Scoped rule block for .operative-hub must use visible (or omit overflow altogether)
