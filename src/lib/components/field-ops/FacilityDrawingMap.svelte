@@ -190,7 +190,7 @@
 	 */
 	function wireFacilityMarkerClick(g, marker) {
 		const handler = () => {
-			const idx = marker.__facilityMarkerIndex;
+			const idx = /** @type {any} */(marker).__facilityMarkerIndex;
 			if (typeof idx !== 'number') return;
 			selectedMarkerIndex = idx;
 			selectedPolygonIndex = null;
@@ -220,7 +220,7 @@
 	 * @param {any} marker
 	 */
 	function wireFacilityMarkerDrag(g, marker) {
-		const idx = marker.__facilityMarkerIndex;
+		const idx = /** @type {any} */(marker).__facilityMarkerIndex;
 		if (typeof idx !== 'number') return;
 		g.maps.event.addListener(marker, 'gmp-dragend', () => {
 			const plain = markerPositionToPlain(marker.position);
@@ -266,7 +266,7 @@
 			markers: mapData.markers.filter((_, i) => i !== idx),
 		};
 		for (let j = 0; j < refs.drawnMarkers.length; j++) {
-			refs.drawnMarkers[j].__facilityMarkerIndex = j;
+			/** @type {any} */(refs.drawnMarkers[j]).__facilityMarkerIndex = j;
 		}
 		selectedMarkerIndex = null;
 	}
@@ -417,7 +417,7 @@
 					draggable: !polygonsLocked,
 				},
 			);
-			marker.__facilityMarkerIndex = mi;
+			/** @type {any} */(marker).__facilityMarkerIndex = mi;
 			markerSink.push(marker);
 			if (!polygonsLocked) {
 				wireFacilityMarkerClick(g, marker);
@@ -776,7 +776,7 @@
 									draggable: true,
 								});
 								const markerIdx = mapData.markers.length;
-								m.__facilityMarkerIndex = markerIdx;
+								/** @type {any} */(m).__facilityMarkerIndex = markerIdx;
 								refs.drawnMarkers.push(m);
 								wireFacilityMarkerClick(g, m);
 								wireFacilityMarkerDrag(g, m);
