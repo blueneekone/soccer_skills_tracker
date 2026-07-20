@@ -49,7 +49,7 @@
 			<div class="tw-absolute tw-bottom-0 tw-right-0 tw-w-8 tw-h-8 tw-border-b-2 tw-border-r-2 tw-border-[#14b8a6] tw-z-20"></div>
 			
 			<div class="tw-absolute tw-inset-0 tw-flex tw-items-center tw-justify-center tw-z-20">
-				<button class="tw-bg-[#0f172a]/90 tw-border tw-border-[#1e293b] hover:tw-border-[#14b8a6] tw-rounded-full tw-p-5 tw-text-[#f8fafc] tw-shadow-2xl tw-transition-colors tw-duration-150 group-hover:tw-text-[#14b8a6]">
+				<button class="tw-bg-[#0f172a]/90 tw-border tw-border-[#1e293b] hover:tw-border-[#14b8a6] tw-rounded-full tw-p-5 tw-text-[#f8fafc] tw-shadow-2xl tw-transition-colors tw-duration-150 group-hover:tw-text-[#14b8a6]" aria-label="Play product demo video">
 					<Icon name={"media.play" as IconName} size={48} strokeWidth={1.5} />
 				</button>
 			</div>

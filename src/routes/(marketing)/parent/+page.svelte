@@ -24,7 +24,7 @@
 		<!-- Cinematic Media Container -->
 		<div class="tw-w-full tw-max-w-5xl tw-aspect-video tw-bg-[#0B0F19] tw-border tw-border-[#1e293b] tw-rounded-sm tw-overflow-hidden tw-relative tw-group">
 			<div class="tw-absolute tw-inset-0 tw-flex tw-items-center tw-justify-center tw-z-10">
-				<button class="tw-bg-[#0B0F19]/90 tw-border tw-border-[#1e293b] tw-rounded-full tw-p-4 tw-text-[#f8fafc] tw-transition-colors tw-duration-150 group-hover:tw-text-[#3b82f6]">
+				<button class="tw-bg-[#0B0F19]/90 tw-border tw-border-[#1e293b] tw-rounded-full tw-p-4 tw-text-[#f8fafc] tw-transition-colors tw-duration-150 group-hover:tw-text-[#3b82f6]" aria-label="Play Parent OS demo video">
 					<Icon name={"status.circle-play" as IconName} size={48} strokeWidth={1} />
 				</button>
 			</div>

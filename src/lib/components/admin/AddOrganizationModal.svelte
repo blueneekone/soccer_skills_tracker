@@ -119,7 +119,7 @@
 		>
 			<div class="tw-flex tw-justify-between tw-items-center tw-mb-8">
 				<h2 class="tw-text-[#FAFAFA] tw-text-2xl tw-font-bold tw-m-0">Add Organization</h2>
-				<button type="button" class="tw-bg-transparent tw-border-none tw-outline-none tw-p-2 hover:tw-bg-white/10 tw-rounded-md tw-text-[#A1A1AA] hover:tw-text-[#FAFAFA] tw-transition-colors tw-flex tw-items-center tw-justify-center" onclick={onClose}>
+				<button type="button" class="tw-bg-transparent tw-border-none tw-outline-none tw-p-2 hover:tw-bg-white/10 tw-rounded-md tw-text-[#A1A1AA] hover:tw-text-[#FAFAFA] tw-transition-colors tw-flex tw-items-center tw-justify-center" onclick={onClose} aria-label="Close add organization modal">
 					<Icon name={'sys.close' as IconName} />
 				</button>
 			</div>

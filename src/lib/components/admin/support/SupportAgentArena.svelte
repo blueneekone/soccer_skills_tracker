@@ -63,7 +63,7 @@
 			placeholder="Enter command (e.g. /sync-roster clubId)..." 
 			disabled={engine.isProcessing}
 		/>
-		<button type="submit" class="sa-btn-send" disabled={!input.trim() || engine.isProcessing}>
+		<button type="submit" class="sa-btn-send" disabled={!input.trim() || engine.isProcessing} aria-label="Send support command">
 			<Icon name="nav.chevron-right" size={20} />
 		</button>
 	</form>

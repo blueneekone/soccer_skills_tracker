@@ -512,6 +512,7 @@
 						<button
 							onclick={closeHUD}
 							style="background:rgba(30,41,59,0.8); border:1px solid #334155; color:#64748b; padding:6px; border-radius:8px; cursor:pointer; transition:all 0.15s; line-height:1; flex-shrink:0;"
+							aria-label="Close"
 						>
 							<Icon name="sys.close" size={16} decorative={true} />
 						</button>
@@ -684,6 +685,7 @@
 					<button
 						onclick={() => showIngestionModal = false}
 						style="background:transparent; border:none; color:#64748b; cursor:pointer; padding:4px; border-radius:4px; transition:color 0.15s; line-height:1;"
+						aria-label="Close"
 					><Icon name="sys.close" size={18} decorative={true} /></button>
 				</div>
 				<input type="file" id="roster-upload" accept=".csv,.pdf" class="tw-hidden" />
@@ -722,6 +724,7 @@
 				<button
 					onclick={() => showLightningAlert = false}
 					style="background:none; border:none; color:#64748b; cursor:pointer; padding:0; flex-shrink:0; line-height:1;"
+					aria-label="Close alert"
 				><Icon name="sys.close" size={16} decorative={true} /></button>
 			</div>
 		</div>
