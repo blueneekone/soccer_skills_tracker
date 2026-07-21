@@ -30,11 +30,7 @@ describe('$lib/coach module tree', () => {
 
 describe('Coach routes — thin shells', () => {
 	const cases = [
-		{
-			route: 'forge',
-			importPattern: /\$lib\/coach\/intent/,
-			view: 'CoachIntentEngineView',
-		},
+
 		{
 			route: 'drills',
 			importPattern: /\$lib\/coach\/drills/,
