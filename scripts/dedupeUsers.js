@@ -43,6 +43,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import url from 'node:url';
 import { createRequire } from 'node:module';
+import { promptUserForWinner } from './utils/cliPromptUtils.js';
 
 /* ------------------------------------------------------------------ */
 /* 0. Console helpers                                                  */
@@ -113,8 +114,11 @@ function buildMergePatch(winnerData, loserData) {
 		const wv = winnerData ? winnerData[k] : undefined;
 		const winnerHasValue = wv !== undefined && wv !== null && wv !== '';
 		if (!winnerHasValue) {
-			patch[k] = v;
-			changed += 1;
+			// Zero-Trust Security Payload Stripping
+			if (k !== 'role' && k !== 'clubId') {
+				patch[k] = v;
+				changed += 1;
+			}
 		}
 	}
 	return { patch, changedCount: changed };
@@ -197,6 +201,10 @@ async function main() {
 	/* Load users                                                       */
 	/* ---------------------------------------------------------------- */
 	step('Loading every document from users/');
+	if (!db) {
+		fail('Hydration Error: db is undefined. Aborting to prevent quota loop.');
+		return 1;
+	}
 	const snap = await db.collection('users').get();
 	ok(`fetched ${snap.size} user document${snap.size === 1 ? '' : 's'}`);
 
@@ -318,11 +326,11 @@ async function main() {
 					null;
 			}
 			if (!winner) {
-				warn(
-					`could not identify a UID-keyed survivor for ${email}. Skipping ` +
-						`group to avoid data loss — fix manually (typically by promoting ` +
-						`the document manually or re-running the migration).`
-				);
+				winner = await promptUserForWinner(email, list);
+			}
+
+			if (!winner) {
+				warn(`Skipping group for ${email} as no survivor was selected.`);
 				results.skippedUnresolved += 1;
 				continue;
 			}
