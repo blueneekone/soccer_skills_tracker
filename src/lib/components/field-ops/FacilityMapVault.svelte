@@ -1546,11 +1546,6 @@
 		margin-bottom: 6px;
 	}
 
-	.fm-optional {
-		font-weight: 500;
-		opacity: 0.85;
-	}
-
 	.fm-input {
 		width: 100%;
 		box-sizing: border-box;
@@ -1766,10 +1761,6 @@
 		height: auto;
 	}
 
-	.fm-vault--embedded .fm-logistics-map-slot--drawing > :global(*) {
-		min-height: min(58vh, 680px);
-	}
-
 	.fm-routing-uri-input {
 		font-family: ui-monospace, monospace;
 		font-size: 11px;
@@ -1777,14 +1768,6 @@
 
 	.fm-logistics-input {
 		margin-bottom: 8px;
-	}
-
-	.fm-logistics__coords {
-		margin: 0 0 10px;
-		font-size: 11px;
-		font-weight: 500;
-		color: var(--text-secondary);
-		font-variant-numeric: tabular-nums;
 	}
 
 	.fm-logistics__route-link {

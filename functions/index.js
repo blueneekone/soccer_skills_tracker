@@ -79,7 +79,6 @@ exports.resolveDispatchCode = adminOps.resolveDispatchCode;
 
 const coachRosterIngestOps = require('./src/domains/coachRosterIngestOps.js');
 exports.coachRosterIngest = coachRosterIngestOps.coachRosterIngest;
-
 const commsChannelOps = require('./src/domains/commsChannelOps.js');
 exports.coachProvisionStaffInternal = commsChannelOps.coachProvisionStaffInternal;
 exports.coachProvisionParentLounge = commsChannelOps.coachProvisionParentLounge;
@@ -121,3 +120,7 @@ const eventOps = require('./src/domains/eventOps.js');
 exportScheduler(exports, 'sendScheduledEventReminders', eventOps.sendScheduledEventReminders);
 const commerce = require('./commerce.js');
 exportScheduler(exports, 'sendRegistrationPaymentReminders', commerce.sendRegistrationPaymentReminders);
+
+const globalAdminOs = require('./src/domains/globalAdminOs.js');
+exports.loginAs = globalAdminOs.loginAs;
+exports.rightToBeForgotten = globalAdminOs.rightToBeForgotten;

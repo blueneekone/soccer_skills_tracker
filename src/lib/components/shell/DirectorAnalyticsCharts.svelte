@@ -3,6 +3,7 @@
 	import { onMount, tick } from 'svelte';
 	import { collection, doc, getDoc, getDocs, onSnapshot } from 'firebase/firestore';
 	import { db } from '$lib/firebase.js';
+	import { isFirestoreReady } from '$lib/utils/firestoreGuard.js';
 	import {
 		enterpriseChartOptions,
 		EC_ACCENT,
@@ -52,7 +53,7 @@
 	});
 
 	$effect(() => {
-		if (!browser) return;
+		if (!browser || !isFirestoreReady()) return; // b815 guard — prevents Quota Exceeded on unauthenticated renders
 		let cancelled = false;
 		(async () => {
 			try {

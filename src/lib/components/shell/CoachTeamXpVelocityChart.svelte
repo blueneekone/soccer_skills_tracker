@@ -3,6 +3,7 @@
 	import { tick } from 'svelte';
 	import { collection, doc, getDoc, getDocs, query, where } from 'firebase/firestore';
 	import { db } from '$lib/firebase.js';
+	import { isFirestoreReady } from '$lib/utils/firestoreGuard.js';
 	import { safeGetDate } from '$lib/utils/dates.js';
 	import {
 		enterpriseRadialOptions,
@@ -24,7 +25,7 @@
 	let velocityBars = $state([]);
 
 	$effect(() => {
-		if (!browser || !mounted || !radarCanvasEl || !teamId) return;
+		if (!browser || !mounted || !radarCanvasEl || !teamId || !isFirestoreReady()) return; // b815 guard
 		let cancelled = false;
 
 		void (async () => {

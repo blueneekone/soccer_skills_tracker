@@ -8,6 +8,16 @@
 	import NewMessageArena from './NewMessageArena.svelte';
 	import NewMessageHUD from './NewMessageHUD.svelte';
 
+	interface Props {
+		open?: boolean;
+		onClose?: () => void;
+		clubId?: string;
+		teamId?: string;
+		myEmail?: string;
+		myRole?: string;
+		onChannelCreated?: (id: string) => void;
+	}
+
 	let {
 		open = false,
 		onClose = () => {},
@@ -15,8 +25,8 @@
 		teamId = '',
 		myEmail = '',
 		myRole = 'player',
-		onChannelCreated = /** @param {string} _id */ (_id: string) => {},
-	} = $props();
+		onChannelCreated = (_id: string) => {},
+	}: Props = $props();
 
 	// Initialize the Brain (Engine)
 	const engine = new NewMessageEngine(clubId, teamId, myEmail, myRole, onChannelCreated);

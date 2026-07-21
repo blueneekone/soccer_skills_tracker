@@ -1,7 +1,7 @@
 import { collection, query, where, limit, getDocs } from 'firebase/firestore';
 import { db, functions } from '$lib/firebase.js';
 import { httpsCallable } from 'firebase/functions';
-import type { CandidateUser } from '$lib/types'; // Using inline types here
+
 
 type LocalCandidateUser = { email: string; role: string; label: string; isMinor?: boolean };
 
