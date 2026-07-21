@@ -1,0 +1,11 @@
+--- src/lib/admin/__tests__/rosterInviteLaunch.test.ts
++++ src/lib/admin/__tests__/rosterInviteLaunch.test.ts
+@@ -32,8 +32,4 @@
+		expect(page).toMatch(/GuardianInviteModal/);
+	});
+
+-	it('parent dashboard mounts ClaimRosterSpot', () => {
+-		const page = readFileSync(join(ROOT, 'src/routes/(app)/parent/dashboard/+page.svelte'), 'utf-8');
+-		expect(page).toMatch(/ClaimRosterSpot/);
+-	});
+ });

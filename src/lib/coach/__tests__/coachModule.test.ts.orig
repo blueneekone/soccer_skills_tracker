@@ -58,6 +58,9 @@ describe('Coach routes — thin shells', () => {
 				join(ROOT, 'routes/(app)/coach', route, '+page.svelte'),
 				'utf-8',
 			);
+			expect(page).toMatch(importPattern);
+			expect(page).toMatch(new RegExp(view));
+			expect(page.length).toBeLessThan(400);
 		});
 	}
 

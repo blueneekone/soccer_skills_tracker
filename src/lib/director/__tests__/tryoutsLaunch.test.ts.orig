@@ -156,6 +156,16 @@ describe('LAUNCH-staff-roster-transfer — registrarTransferPlayer UI', () => {
 		expect(panel).toMatch(/targetTeamId/);
 	});
 
+	it('director and admin roster mount RegistrarRosterTransferPanel', () => {
+		const director = readFileSync(join(ROOT, 'src/routes/(app)/director/+page.svelte'), 'utf-8');
+		const admin = readFileSync(
+			join(ROOT, 'src/routes/(app)/admin/organizations/[clubId]/teams/[teamId]/roster/+page.svelte'),
+			'utf-8',
+		);
+		expect(director).toMatch(/RegistrarRosterTransferPanel/);
+		expect(admin).toMatch(/RegistrarRosterTransferPanel/);
+	});
+
 	it('functions-compliance exports registrarTransferPlayer', () => {
 		const idx = readFileSync(join(ROOT, 'functions-compliance/index.js'), 'utf-8');
 		expect(idx).toMatch(/registrarTransferPlayer/);

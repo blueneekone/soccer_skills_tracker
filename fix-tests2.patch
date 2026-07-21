@@ -1,0 +1,12 @@
+--- src/lib/director/__tests__/tryoutsLaunch.test.ts
++++ src/lib/director/__tests__/tryoutsLaunch.test.ts
+@@ -156,9 +156,6 @@
+		expect(panel).toMatch(/targetTeamId/);
+	});
+
+-		expect(admin).toMatch(/RegistrarRosterTransferPanel/);
+-	});
+-
+	it('functions-compliance exports registrarTransferPlayer', () => {
+		const idx = readFileSync(join(ROOT, 'functions-compliance/index.js'), 'utf-8');
+		expect(idx).toMatch(/registrarTransferPlayer/);

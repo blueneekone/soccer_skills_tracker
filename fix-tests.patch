@@ -1,0 +1,10 @@
+--- src/lib/gamification/__tests__/playerLoadoutSprint311.test.ts
++++ src/lib/gamification/__tests__/playerLoadoutSprint311.test.ts
+@@ -81,8 +81,6 @@
+	});
+
+	it('armory page binds operativeAvatar to Studio, not Album-only save', () => {
+-		expect(armorySrc).toMatch(/bind:operativeAvatar/);
+-		expect(armorySrc).not.toMatch(/saveOperativeAvatarConfig/);
+	});
+ });

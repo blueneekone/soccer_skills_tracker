@@ -1,0 +1,13 @@
+--- src/lib/__tests__/launchCohesionLb.test.ts
++++ src/lib/__tests__/launchCohesionLb.test.ts
+@@ -92,8 +92,8 @@
+ });
+
+ describe('CLB-3 — /coach gamification chrome removed (Coach OS canon)', () => {
+-	it('coach dashboard mounts SquadTelemetryView (live surface under guard)', () => {
+-		expect(coachDashSrc).toMatch(/<SquadTelemetryView/);
++	it('coach dashboard mounts SquadMatrix (live surface under guard)', () => {
++		expect(coachDashSrc).toMatch(/<SquadMatrix/);
+	});
+
+	it('SquadTelemetryView no longer renders player XP/Level chrome', () => {

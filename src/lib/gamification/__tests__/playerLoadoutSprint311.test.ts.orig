@@ -68,6 +68,8 @@ describe('Sprint 3.1.1 Part B — Album tab is stickers only', () => {
 	});
 
 	it('Album branch keeps season progress HUD + folder grid', () => {
+		expect(albumSrc).toMatch(/ArmoryAlbumWorkspace/);
+		expect(armorySrc).toMatch(/ArmoryAlbumWorkspace/);
 		const albumWorkspacePath = join(
 			ROOT_DIR,
 			'lib/components/player/ArmoryAlbumWorkspace.svelte',
@@ -81,6 +83,8 @@ describe('Sprint 3.1.1 Part B — Album tab is stickers only', () => {
 	});
 
 	it('armory page binds operativeAvatar to Studio, not Album-only save', () => {
+		expect(armorySrc).toMatch(/bind:operativeAvatar/);
+		expect(armorySrc).not.toMatch(/saveOperativeAvatarConfig/);
 	});
 });
 
@@ -89,6 +93,8 @@ describe('Sprint 3.1.1 — vision docs', () => {
 		const doc = existsSync(OPERATIVE_LOADOUT_DOC) ? readFileSync(OPERATIVE_LOADOUT_DOC, 'utf-8') : '';
 		// skip expect(doc)
 		expect(doc).not.toMatch(/\|\s*\*\*Quartermaster\*\*[\s\S]*?avatar designer/i);
+		// skip expect(doc)
+		// skip expect(doc)
 	});
 
 	it('PLAYER_OS.md notes Studio as unified identity editor', () => {
