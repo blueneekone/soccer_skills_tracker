@@ -78,6 +78,19 @@ export interface ClearanceDoc {
 	expiresAt?: unknown;
 }
 
+export type RecruiterCheckStatus = 'pending' | 'invited' | 'clear' | 'consider' | 'suspended';
+
+export interface RecruiterProfile {
+	uid: string;
+	email: string;
+	organizationName: string;
+	checkrCandidateId?: string;
+	checkrReportId?: string;
+	checkrStatus: RecruiterCheckStatus;
+	accessGrantedAt?: string | null;
+	createdAt: string;
+}
+
 /**
  * Type guard — does this role need to pass through the clearance gate?
  *

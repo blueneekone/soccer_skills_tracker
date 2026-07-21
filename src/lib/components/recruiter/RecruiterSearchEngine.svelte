@@ -8,8 +8,11 @@
 		orderBy,
 		query,
 		where,
+		startAfter,
 	} from 'firebase/firestore';
 	import Modal from '$lib/components/Modal.svelte';
+	import { authStore } from '$lib/stores/auth.svelte.js';
+	import { isRecruiterCleared } from '$lib/compliance/checkrRecruiterClearance.js';
 	import ClubLogoMark from '$lib/components/ClubLogoMark.svelte';
 	import LevelProgressRing from '$lib/components/LevelProgressRing.svelte';
 	import Icon from '$lib/components/ui/Icon.svelte';
@@ -37,6 +40,9 @@
 	/** @type {import('chart.js').Chart | null} */
 	let chartInstance = null;
 
+	let lastVisible = $state(/** @type {import('firebase/firestore').QueryDocumentSnapshot | null} */ (null));
+	let hasMore = $state(true);
+
 	function parseTrialSortValue(raw) {
 		const s = String(raw ?? '');
 		const n = parseFloat(s.replace(/[^0-9.]/g, ''));
@@ -58,11 +64,21 @@
 		return rows.slice(0, 3).map(({ skill, value }) => ({ skill, value }));
 	}
 
-	async function runSearch() {
+	async function runSearch(loadMore = false) {
 		if (!browser) return;
+		if (!isRecruiterCleared(authStore.uid)) {
+			errorMsg = 'Background check required before accessing prospect data.';
+			return;
+		}
+
 		loading = true;
 		errorMsg = '';
-		results = [];
+		if (!loadMore) {
+			results = [];
+			lastVisible = null;
+			hasMore = true;
+		}
+
 		const min = Math.max(1, Math.min(99, Math.floor(Number(minLevel) || 1)));
 		const col = collection(db, 'public_player_profiles');
 		try {
@@ -70,44 +86,33 @@
 			let q;
 			const ag = ageFilter !== 'all' ? ageFilter : '';
 			const pos = positionFilter !== 'all' ? positionFilter : '';
-			if (ag && pos) {
-				q = query(
-					col,
-					where('ageGroup', '==', ag),
-					where('position', '==', pos),
-					where('current_level', '>=', min),
-					orderBy('current_level', 'desc'),
-					limit(36),
-				);
-			} else if (ag) {
-				q = query(
-					col,
-					where('ageGroup', '==', ag),
-					where('current_level', '>=', min),
-					orderBy('current_level', 'desc'),
-					limit(36),
-				);
-			} else if (pos) {
-				q = query(
-					col,
-					where('position', '==', pos),
-					where('current_level', '>=', min),
-					orderBy('current_level', 'desc'),
-					limit(36),
-				);
-			} else {
-				q = query(
-					col,
-					where('current_level', '>=', min),
-					orderBy('current_level', 'desc'),
-					limit(36),
-				);
+
+			const baseConstraints: any[] = [
+				where('current_level', '>=', min),
+				orderBy('current_level', 'desc'),
+				limit(20)
+			];
+			if (ag) baseConstraints.push(where('ageGroup', '==', ag));
+			if (pos) baseConstraints.push(where('position', '==', pos));
+
+			if (loadMore && lastVisible) {
+				baseConstraints.push(startAfter(lastVisible));
 			}
+
+			q = query(col, ...baseConstraints);
 			const snap = await getDocs(q);
 			/** @type {typeof results} */
 			const rows = [];
 			snap.forEach((d) => rows.push({ id: d.id, ...(d.data() as Record<string, unknown>) }));
-			results = rows;
+
+			if (loadMore) {
+				results = [...results, ...rows];
+			} else {
+				results = rows;
+			}
+
+			lastVisible = snap.docs[snap.docs.length - 1] || null;
+			hasMore = snap.docs.length === 20;
 		} catch (e) {
 			console.error(e);
 			errorMsg =
@@ -328,6 +333,14 @@
 			{/if}
 		{/each}
 	</div>
+
+	{#if hasMore && results.length > 0}
+		<div class="rse-load-more">
+			<button type="button" class="btn-primary" onclick={() => runSearch(true)} disabled={loading}>
+				{loading ? 'Loading…' : 'Load more'}
+			</button>
+		</div>
+	{/if}
 </section>
 
 <Modal

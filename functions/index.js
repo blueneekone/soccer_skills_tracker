@@ -47,7 +47,10 @@ exports.generateTacticalPlan = ragOps.generateTacticalPlan;
 const marketingOps = require('./src/domains/marketingOps.js');
 exports.dispatchWeeklyRoiNudges = marketingOps.dispatchWeeklyRoiNudges;
 
-const reportOps = require('./src/domains/reportOps.js');
+const recruiterOps = require("./src/domains/recruiterOps.js");
+exports.inviteRecruiterCheckr = recruiterOps.inviteRecruiterCheckr;
+
+const reportOps = require("./src/domains/reportOps.js");
 exports.batchDispatchReportCards = reportOps.batchDispatchReportCards;
 exports.generatePdfReportCard = reportOps.generatePdfReportCard;
 
