@@ -1,4 +1,4 @@
-import type { PublicKeyCredentialRequestOptionsJSON } from '@simplewebauthn/types';
+import type { PublicKeyCredentialRequestOptionsJSON } from '@simplewebauthn/browser';
 
 export type LoginStartPayload = {
   options: PublicKeyCredentialRequestOptionsJSON;

@@ -31,7 +31,7 @@ import {
 import type {
   PublicKeyCredentialCreationOptionsJSON,
   PublicKeyCredentialRequestOptionsJSON,
-} from '@simplewebauthn/types';
+} from '@simplewebauthn/browser';
 import {
   loginStartUserMessage,
   parseLoginStartData,
