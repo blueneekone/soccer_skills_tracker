@@ -603,7 +603,7 @@
 	{clubId}
 	{teamId}
 	myEmail={myEmail}
-	myUid={myUid}
+
 	myRole={myRole}
 	onClose={() => {
 		newChannelOpen = false;

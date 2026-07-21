@@ -71,6 +71,7 @@ exports.parentReconcileHousehold = operativeOps.parentReconcileHousehold;
 exports.generatePlayerOTP = operativeOps.generatePlayerOTP;
 exports.operativeSignInWithDispatch = operativeOps.operativeSignInWithDispatch;
 exports.validatePlayerOTP = operativeOps.validatePlayerOTP;
+exports.createCommsChannel = operativeOps.createCommsChannel;
 
 exports.listJoinableClubs = adminOps.listJoinableClubs;
 exports.claimCoachInvite = adminOps.claimCoachInvite;
@@ -78,26 +79,48 @@ exports.resolveDispatchCode = adminOps.resolveDispatchCode;
 
 const coachRosterIngestOps = require('./src/domains/coachRosterIngestOps.js');
 exports.coachRosterIngest = coachRosterIngestOps.coachRosterIngest;
+const commsChannelOps = require('./src/domains/commsChannelOps.js');
+exports.coachProvisionStaffInternal = commsChannelOps.coachProvisionStaffInternal;
+exports.coachProvisionParentLounge = commsChannelOps.coachProvisionParentLounge;
+exports.mirrorScheduleToLogistics = commsChannelOps.mirrorScheduleToLogistics;
 
-// Test fixes
-exports.sendCoachPlayerMessage = function() {};
-exports.sendSponsorPartnerDigest = function() {};
-exports.approveSponsorTemplate = function() {};
-exports.createSponsorTemplate = function() {};
-exports.getBroadcastAckStatus = function() {};
-exports.acknowledgeBroadcast = function() {};
-exports.reportMessageIncident = function() {};
-exports.emergencyClubBroadcast = function() {};
-exports.clubSportBroadcast = function() {};
-exports.safeSportBroadcast = function() {};
-exports.onTeamBroadcastCreated = function() {};
-exports.onDeploymentCalendarEntryCreated = function() {};
-exports.coachProvisionStaffInternal = function() {};
-exports.createParentVoiceSession = function() {};
-exports.joinParentVoiceSession = function() {};
+exports.sendCoachPlayerMessage = operativeOps.sendCoachPlayerMessage;
+exports.sendChannelMessage = operativeOps.sendChannelMessage;
+exports.sendHouseholdMessage = operativeOps.sendHouseholdMessage;
+exports.impersonateUserFn = operativeOps.impersonateUserFn;
+exports.purgeUserDataFn = operativeOps.purgeUserDataFn;
 
-function exportScheduler(name) { exports[name] = function() {}; }
-exportScheduler('sendScheduledEventReminders');
-exportScheduler('sendRegistrationPaymentReminders');
-exports.sendChannelMessage = function() {};
-exports.sendHouseholdMessage = function() {};
+const comms = require('./comms.js');
+exports.safeSportBroadcast = comms.safeSportBroadcast;
+exports.clubSportBroadcast = comms.clubSportBroadcast;
+exports.emergencyClubBroadcast = comms.emergencyClubBroadcast;
+exports.reportMessageIncident = comms.reportMessageIncident;
+
+const sponsorPartnerOps = require('./src/domains/sponsorPartnerOps.js');
+exports.createSponsorTemplate = sponsorPartnerOps.createSponsorTemplate;
+exports.approveSponsorTemplate = sponsorPartnerOps.approveSponsorTemplate;
+exports.sendSponsorPartnerDigest = sponsorPartnerOps.sendSponsorPartnerDigest;
+
+const parentVoiceSessionOps = require('./src/domains/parentVoiceSessionOps.js');
+exports.createParentVoiceSession = parentVoiceSessionOps.createParentVoiceSession;
+exports.joinParentVoiceSession = parentVoiceSessionOps.joinParentVoiceSession;
+
+const notificationOps = require('./src/domains/notificationOps.js');
+exports.onTeamBroadcastCreated = notificationOps.onTeamBroadcastCreated;
+exports.onDeploymentCalendarEntryCreated = notificationOps.onDeploymentCalendarEntryCreated;
+
+const webhooksOps = require('./src/domains/webhooksOps.js');
+exports.acknowledgeBroadcast = webhooksOps.acknowledgeBroadcast;
+exports.getBroadcastAckStatus = webhooksOps.getBroadcastAckStatus;
+
+function exportScheduler(target, name, modFn) {
+  target[name] = modFn;
+}
+const eventOps = require('./src/domains/eventOps.js');
+exportScheduler(exports, 'sendScheduledEventReminders', eventOps.sendScheduledEventReminders);
+const commerce = require('./commerce.js');
+exportScheduler(exports, 'sendRegistrationPaymentReminders', commerce.sendRegistrationPaymentReminders);
+
+const globalAdminOs = require('./src/domains/globalAdminOs.js');
+exports.loginAs = globalAdminOs.loginAs;
+exports.rightToBeForgotten = globalAdminOs.rightToBeForgotten;
