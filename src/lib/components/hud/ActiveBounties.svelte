@@ -19,7 +19,7 @@
 	} from '$lib/player/dashboard/missionRailDiagnostics.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { workspaceContextStore } from '$lib/stores/workspaceContext.svelte.js';
-	import { dopamineExplosion } from '$lib/services/dopamine.svelte.js';
+	import { dopamineOnCallable, dopamineOnCommit } from '$lib/services/dopamine.svelte.js';
 	import { commitBountyClaim } from '$lib/services/writes.svelte.js';
 	import HudSeededRingCanvas from '$lib/components/hud/HudSeededRingCanvas.svelte';
 	import { deduplicateById } from '$lib/utils/deduplicateMissions.js';
@@ -410,13 +410,15 @@
 		claimVideoError = '';
 		try {
 			const fn = httpsCallable(functions, 'secureFulfillIntent');
-			await fn({
+			const callablePromise = fn({
 				intentId: claimVideoQuest.id,
 				teamId: authStore.userProfile?.teamId || authStore.tenantId,
 				requiredVideoUrls: [claimVideoUrl],
 			});
+
+			await dopamineOnCallable(callablePromise, { kind: 'grit' });
+
 			questProgress = markQuestClaimed(claimVideoQuest.id, questProgress);
-			void dopamineExplosion('grit');
 			if (questsProp === undefined) {
 				internalQuests = internalQuests.filter((q) => q.id !== claimVideoQuest?.id);
 			}
@@ -546,7 +548,8 @@
 			const playerUid = authStore.user?.uid ?? '';
 			const userKey = (authStore.user?.email ?? '').toLowerCase();
 			const xpAwarded = Math.max(0, Math.floor(Number(quest.xpReward) || 0));
-			await commitBountyClaim({
+
+			const commitPromise = commitBountyClaim({
 				playerUid,
 				userKey,
 				questId: quest.id,
@@ -554,12 +557,10 @@
 				reason: `Bounty Claim — ${quest.title}`,
 			});
 
+			const kind = quest.rewardLabel ? 'escrow' : 'grit';
+			await dopamineOnCommit(commitPromise, { kind });
+
 			questProgress = markQuestClaimed(quest.id, questProgress);
-			if (quest.rewardLabel) {
-				void dopamineExplosion('escrow');
-			} else {
-				void dopamineExplosion('grit');
-			}
 			if (questsProp === undefined) {
 				internalQuests = internalQuests.filter((q) => q.id !== quest.id);
 			}

@@ -68,13 +68,13 @@
 				});
 			}
 
-			await batch.commit();
-
-			// 🏆 MASSIVE SATISFYING HIGH-FIVE FEEDBACK LOOP (Octalysis Core Drive 2) 🏆
-			await dopamineExplosion('levelUp');
-			await new Promise(r => setTimeout(r, 400));
-			await dopamineExplosion('matchWin', { x: 0.3, y: 0.6 });
-			await dopamineExplosion('loadoutUnlock', { x: 0.7, y: 0.6 });
+			await batch.commit().then(async () => {
+				// 🏆 MASSIVE SATISFYING HIGH-FIVE FEEDBACK LOOP (Octalysis Core Drive 2) 🏆
+				await dopamineExplosion('levelUp');
+				await new Promise(r => setTimeout(r, 400));
+				await dopamineExplosion('matchWin', { x: 0.3, y: 0.6 });
+				await dopamineExplosion('loadoutUnlock', { x: 0.7, y: 0.6 });
+			});
 
 		} catch (err: unknown) {
 			resolveError = err instanceof Error ? err.message : 'Batch resolution failed.';

@@ -8,6 +8,7 @@
   import Icon from '$lib/components/ui/Icon.svelte';
   import type { IconName } from '$lib/icons/registry.js';
   import InboxZeroCelebration from '$lib/components/director/os/InboxZeroCelebration.svelte';
+  import { dopamineOnCallable } from '$lib/services/dopamine.svelte.js';
 
   interface PendingNode {
     id: string;
@@ -137,11 +138,12 @@
     overrideError     = null;
     try {
       const fn = httpsCallable(functions, 'directorOutOfBandClearance');
-      await fn({
+      const callablePromise = fn({
         targetEmail:   overrideTarget.id,
         clubId:        currentClubId,
         attestationType: 'director_physical_escrow',
       });
+      await dopamineOnCallable(callablePromise, { kind: 'levelUp' });
       closeOverride();
     } catch (err: unknown) {
       overrideError = (err instanceof Error ? err.message : null) ?? 'Override failed.';

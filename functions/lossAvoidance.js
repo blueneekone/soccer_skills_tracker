@@ -56,6 +56,7 @@ const {
   isoWeekKey,
 } = require('./streakUtils');
 const {collectFcmTokensForUids} = require('./src/domains/notificationOps');
+const {applyScoutsSixDecay} = require('./src/utils/gamificationMath');
 
 // ── Environment params (safe defaults = everything off) ───────────────────────
 
@@ -321,6 +322,8 @@ async function processSinglePlayer({userDoc, todayStr, nowMs, params, db: firest
     let decayXp  = 0;
     let idleDays = 0;
     let decayPct = 0;
+    let newStats = armory.stats || {};
+
     if (params.decayEnabled) {
       const result = computeDecay({
         totalXp,
@@ -333,6 +336,11 @@ async function processSinglePlayer({userDoc, todayStr, nowMs, params, db: firest
       decayXp  = result.decayXp;
       idleDays = result.idleDays;
       decayPct = result.decayPct;
+
+      // Apply 2% daily skill decay if decay is active and freeze not consumed
+      if (decayPct > 0 && !streakResult.freezeConsumed) {
+        newStats = applyScoutsSixDecay(newStats, 0.02);
+      }
     }
 
     // ── Assemble writes ───────────────────────────────────────────────────
@@ -360,6 +368,11 @@ async function processSinglePlayer({userDoc, todayStr, nowMs, params, db: firest
       'armory.decayState': decayStateUpdate,
       'armory.streakFreeze': newFreeze,
     };
+
+    if (decayPct > 0 && !streakResult.freezeConsumed && armory.stats) {
+      userPatch['armory.stats'] = newStats;
+    }
+
     if (decayXp > 0) {
       userPatch['armory.totalXP'] = admin.firestore.FieldValue.increment(-decayXp);
     }
