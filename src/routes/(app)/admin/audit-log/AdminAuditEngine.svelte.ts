@@ -52,6 +52,7 @@ export class AdminAuditEngine {
 	}
 
 	fetchAuditPage = async (append: boolean, cursor: QueryDocumentSnapshot | null) => {
+		if (!db || !authStore.isAuthenticated) throw new Error('Unauthenticated');
 		const base = collection(db, 'security_audit');
 		if (append && cursor) {
 			try {

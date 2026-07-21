@@ -14,6 +14,7 @@
 	import { httpsCallable } from 'firebase/functions';
 	import { signInWithCustomToken } from 'firebase/auth';
 	import { impersonationStore } from '$lib/stores/impersonation.svelte.js';
+	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { ADMIN_CLUB_CTX_KEY, type AdminClubCtx } from '../adminClubCtx.js';
 	import Icon from '$lib/components/ui/Icon.svelte';
 	import type { IconName } from '$lib/icons/registry.js';
@@ -45,6 +46,7 @@
 
 		void (async () => {
 			try {
+				if (!db || !authStore.isAuthenticated) return;
 				const q = query(
 					collection(db, 'users'),
 					where('clubId', '==', id),

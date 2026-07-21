@@ -4,6 +4,7 @@
 	import { doc, getDoc, collection, query, orderBy, limit, getDocs } from 'firebase/firestore';
 	import { httpsCallable } from 'firebase/functions';
 	import { getFunctions } from 'firebase/functions';
+	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { ADMIN_CLUB_CTX_KEY } from '../adminClubCtx.js';
 	import type { AdminClubCtx } from '../adminClubCtx.js';
 	import Icon from '$lib/components/ui/Icon.svelte';
@@ -36,6 +37,7 @@
 
 		async function fetchLedger() {
 			try {
+				if (!db || !authStore.isAuthenticated) return;
 				const q = query(
 					collection(db, 'clubs', ctx.clubId, 'stripe_invoices'),
 					orderBy('created', 'desc'),

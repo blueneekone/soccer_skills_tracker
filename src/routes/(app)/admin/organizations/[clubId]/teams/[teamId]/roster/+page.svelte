@@ -201,6 +201,7 @@
 
 		void (async () => {
 			try {
+				if (!db || !authStore.isAuthenticated) return;
 				const rosterFirstPageQ = query(
 					collection(db, 'player_lookup'),
 					where('teamId', '==', tid),
@@ -269,6 +270,7 @@
 
 	/** Append the next page of email-linked (player_lookup) rows. Name-only rows are already fully loaded. */
 	async function loadMoreRoster() {
+		if (!db || !authStore.isAuthenticated) return;
 		if (!rosterHasMore || rosterLoadingMore || !rosterLastDoc) return;
 		rosterLoadingMore = true;
 		try {

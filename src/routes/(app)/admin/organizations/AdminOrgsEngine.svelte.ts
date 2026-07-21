@@ -162,6 +162,8 @@ export class AdminOrgsEngine {
 				this.clubsLoading = true;
 				this.clubsErr = '';
 
+				if (!db || !authStore.isAuthenticated) return;
+
 				Promise.all([
 					getDocs(collection(db, 'clubs')),
 					getDocs(query(collection(db, 'vpc_requests')))
