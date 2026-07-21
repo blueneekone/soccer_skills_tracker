@@ -1,5 +1,6 @@
 import { db } from '$lib/firebase.js';
 import { collection, doc, getDoc, getDocs, query, where } from 'firebase/firestore';
+import { isFirestoreReady } from '$lib/utils/firestoreGuard.js';
 
 /**
  * Tenancy: teams are scoped by Firestore queries — never load the full `teams` collection
@@ -93,6 +94,7 @@ function createTeamsStore() {
 
 			const key = `${role}|${scope}|${clubId}|${coachEmail.toLowerCase()}|${routePath}`;
 			if (loaded && lastLoadKey === key) return;
+			if (!isFirestoreReady()) return;
 
 			try {
 				teams = [];
