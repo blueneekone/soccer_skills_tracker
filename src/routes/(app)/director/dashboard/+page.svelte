@@ -60,13 +60,15 @@
 			targetId = teamsStore.clubs[0].id;
 		}
 
-		// Sync local state for the UI
-		if (clubId !== targetId) clubId = targetId;
-		
-		// Force sync to global store so the Context Switcher highlights the correct club
-		if (workspaceContextStore.activeClubId !== targetId) {
-			workspaceContextStore.setActiveClubId(targetId);
-		}
+		untrack(() => {
+			// Sync local state for the UI
+			if (clubId !== targetId) clubId = targetId;
+			
+			// Force sync to global store so the Context Switcher highlights the correct club
+			if (workspaceContextStore.activeClubId !== targetId) {
+				workspaceContextStore.setActiveClubId(targetId);
+			}
+		});
 	});
 
 	let activeTab = $state(page.url.searchParams.get('tab') || 'home');
@@ -84,7 +86,9 @@
 	$effect(() => {
 		const t = page.url.searchParams.get('tab') || 'home';
 		if (!VALID_DIR_TABS.has(t)) return;
-		if (untrack(() => activeTab) !== t) activeTab = t;
+		untrack(() => {
+			if (activeTab !== t) activeTab = t;
+		});
 	});
 
 	// Force teamsStore to reload whenever the Context Switcher pivots to a
@@ -146,9 +150,9 @@
 			<FieldOpsModule {clubId} />
 		</section>
 	{:else if activeTab === 'comms'}
-		<section class="director-console-page__section bento-grid bento-grid--12col bento-grid--liquid tw-w-full tw-grid tw-grid-cols-1 lg:tw-grid-cols-12">
+		<section class="director-console-page__section tw-w-full tw-grid tw-grid-cols-1 lg:tw-grid-cols-12 tw-gap-8" style="grid-template-columns: repeat(auto-fit, minmax(min(100%, clamp(280px, 30vw, 350px)), 1fr));">
 			<section
-				class="bento-span-8 bento-cell dark-form-surface tw-flex tw-flex-col tw-gap-3 tw-p-5 tw-border tw-border-slate-600 tw-rounded-none tw-bg-slate-900"
+				class="lg:tw-col-span-8 dark-form-surface tw-flex tw-flex-col tw-gap-3 tw-p-8 tw-border tw-border-slate-600 tw-rounded-none tw-bg-slate-900 tw-relative" style="clip-path: polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px);"
 				aria-labelledby="director-comms-cta-heading"
 			>
 				<h2 id="director-comms-cta-heading" class="tw-m-0 tw-text-base tw-font-extrabold tw-text-slate-50">
@@ -166,7 +170,7 @@
 				</a>
 			</section>
 			<section
-				class="bento-span-4 bento-cell dark-form-surface tw-flex tw-flex-col tw-gap-3 tw-p-5 tw-border tw-border-slate-600 tw-rounded-none tw-bg-slate-900"
+				class="lg:tw-col-span-4 dark-form-surface tw-flex tw-flex-col tw-gap-3 tw-p-8 tw-border tw-border-slate-600 tw-rounded-none tw-bg-slate-900 tw-relative" style="clip-path: polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px);"
 				aria-labelledby="director-sponsor-ops-heading"
 			>
 				<h2 id="director-sponsor-ops-heading" class="tw-m-0 tw-text-base tw-font-extrabold tw-text-slate-50">
@@ -178,7 +182,7 @@
 				</p>
 				<CommsSponsorPartnerChannel {clubId} />
 			</section>
-			<div class="bento-span-12">
+			<div class="lg:tw-col-span-12 tw-w-full">
 				<DirectorCommsCompliancePanel {clubId} teams={clubTeams} />
 			</div>
 		</section>

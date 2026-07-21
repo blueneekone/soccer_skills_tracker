@@ -91,7 +91,7 @@
 
 			{#if activeTab === 'executive'}
 				<!-- Executive KPI Strip -->
-				<div class="tw-grid tw-grid-cols-2 lg:tw-grid-cols-4 tw-w-full tw-bg-[#0B0F19] tw-border tw-border-[#1E293B] tw-rounded-none tw-mb-6 tw-divide-y sm:tw-divide-y-0 sm:tw-divide-x tw-divide-[#1E293B]">
+				<div class="tw-grid tw-grid-cols-2 lg:tw-grid-cols-4 tw-w-full tw-bg-[#0B0F19] tw-border tw-border-[#1E293B] tw-rounded-none tw-mb-6 tw-divide-y sm:tw-divide-y-0 sm:tw-divide-x tw-divide-[#1E293B]" style="grid-template-columns: repeat(auto-fit, minmax(min(100%, clamp(280px, 30vw, 350px)), 1fr));">
 					{#each engine.strike13Executive.slice(0, 4) as tile}
 						<div class="tw-flex-1 tw-p-4 sm:tw-p-6">
 							<p class="tw-text-xs tw-font-bold tw-uppercase tw-tracking-widest tw-text-[#D4D4D8] tw-mb-1">{tile.label}</p>
@@ -101,7 +101,7 @@
 					{/each}
 				</div>
 
-				<div class="tw-grid tw-grid-cols-1 xl:tw-grid-cols-12 tw-gap-6 tw-w-full">
+				<div class="tw-grid tw-grid-cols-1 xl:tw-grid-cols-12 tw-gap-6 tw-w-full" style="grid-template-columns: repeat(auto-fit, minmax(min(100%, clamp(280px, 30vw, 350px)), 1fr));">
 					<div class="tw-col-span-1 xl:tw-col-span-6 tw-flex tw-flex-col">
 						<!-- Revenue Doughnut Chart -->
 						<div class="tw-bg-[#0B0F19] tw-border tw-border-[#1E293B] tw-rounded-none tw-p-6 tw-flex tw-flex-col tw-h-full">
@@ -125,7 +125,7 @@
 			{/if}
 
 			{#if activeTab === 'growth'}
-				<div class="tw-flex tw-flex-col sm:tw-flex-row tw-w-full tw-bg-[#0B0F19] tw-border tw-border-[#1E293B] tw-rounded-none tw-mb-6 tw-divide-y sm:tw-divide-y-0 sm:tw-divide-x tw-divide-[#1E293B]">
+				<div class="tw-grid tw-grid-cols-2 lg:tw-grid-cols-4 tw-w-full tw-bg-[#0B0F19] tw-border tw-border-[#1E293B] tw-rounded-none tw-mb-6 tw-divide-y sm:tw-divide-y-0 sm:tw-divide-x tw-divide-[#1E293B]" style="grid-template-columns: repeat(auto-fit, minmax(min(100%, clamp(280px, 30vw, 350px)), 1fr));">
 					{#each engine.GROWTH_TILES as tile}
 						<div class="tw-flex-1 tw-p-4 sm:tw-p-6">
 							<p class="tw-text-xs tw-font-bold tw-uppercase tw-tracking-widest tw-text-[#D4D4D8] tw-mb-1">{tile.label}</p>
@@ -135,7 +135,7 @@
 					{/each}
 				</div>
 
-				<div class="tw-grid tw-grid-cols-1 xl:tw-grid-cols-12 tw-gap-6 tw-w-full">
+				<div class="tw-grid tw-grid-cols-1 xl:tw-grid-cols-12 tw-gap-6 tw-w-full" style="grid-template-columns: repeat(auto-fit, minmax(min(100%, clamp(280px, 30vw, 350px)), 1fr));">
 					<div class="tw-col-span-1 xl:tw-col-span-12 tw-flex tw-flex-col">
 						<!-- MAU Line Chart -->
 						<div class="tw-bg-[#0B0F19] tw-border tw-border-[#1E293B] tw-rounded-none tw-p-6 tw-flex tw-flex-col tw-h-full">
@@ -150,7 +150,7 @@
 
 			{#if activeTab === 'security'}
 				<!-- Security Threat Matrix Strip -->
-				<div class="tw-grid tw-grid-cols-2 lg:tw-grid-cols-4 tw-w-full tw-bg-[#0B0F19] tw-border tw-border-[#1E293B] tw-rounded-none tw-mb-6 tw-divide-y sm:tw-divide-y-0 sm:tw-divide-x tw-divide-[#1E293B]">
+				<div class="tw-grid tw-grid-cols-2 lg:tw-grid-cols-4 tw-w-full tw-bg-[#0B0F19] tw-border tw-border-[#1E293B] tw-rounded-none tw-mb-6 tw-divide-y sm:tw-divide-y-0 sm:tw-divide-x tw-divide-[#1E293B]" style="grid-template-columns: repeat(auto-fit, minmax(min(100%, clamp(280px, 30vw, 350px)), 1fr));">
 					{#each engine.strike13Security.slice(0, 4) as tile}
 						<div class="tw-flex-1 tw-p-4 sm:tw-p-6">
 							<p class="tw-text-xs tw-font-bold tw-uppercase tw-tracking-widest tw-text-[#D4D4D8] tw-mb-1">{tile.label}</p>
@@ -159,7 +159,7 @@
 					{/each}
 				</div>
 
-				<div class="tw-grid tw-grid-cols-1 xl:tw-grid-cols-12 tw-gap-6 tw-w-full">
+				<div class="tw-grid tw-grid-cols-1 xl:tw-grid-cols-12 tw-gap-6 tw-w-full" style="grid-template-columns: repeat(auto-fit, minmax(min(100%, clamp(280px, 30vw, 350px)), 1fr));">
 					<!-- Playbooks & Queue -->
 					<div class="tw-col-span-1 xl:tw-col-span-8 tw-flex tw-flex-col">
 						<div class="tw-bg-[#0B0F19] tw-border tw-border-[#1E293B] tw-rounded-none tw-p-6 tw-flex tw-flex-col tw-h-full">
@@ -214,7 +214,7 @@
 			{/if}
 
 			{#if activeTab === 'platform'}
-				<div class="tw-flex tw-flex-col sm:tw-flex-row tw-w-full tw-bg-[#0B0F19] tw-border tw-border-[#1E293B] tw-rounded-none tw-mb-6 tw-divide-y sm:tw-divide-y-0 sm:tw-divide-x tw-divide-[#1E293B]">
+				<div class="tw-grid tw-grid-cols-2 lg:tw-grid-cols-4 tw-w-full tw-bg-[#0B0F19] tw-border tw-border-[#1E293B] tw-rounded-none tw-mb-6 tw-divide-y sm:tw-divide-y-0 sm:tw-divide-x tw-divide-[#1E293B]" style="grid-template-columns: repeat(auto-fit, minmax(min(100%, clamp(280px, 30vw, 350px)), 1fr));">
 					{#each engine.PLATFORM_TILES as tile}
 						<div class="tw-flex-1 tw-p-4 sm:tw-p-6">
 							<p class="tw-text-xs tw-font-bold tw-uppercase tw-tracking-widest tw-text-[#D4D4D8] tw-mb-1">{tile.label}</p>
@@ -224,7 +224,7 @@
 					{/each}
 				</div>
 
-				<div class="tw-grid tw-grid-cols-1 xl:tw-grid-cols-12 tw-gap-6 tw-w-full">
+				<div class="tw-grid tw-grid-cols-1 xl:tw-grid-cols-12 tw-gap-6 tw-w-full" style="grid-template-columns: repeat(auto-fit, minmax(min(100%, clamp(280px, 30vw, 350px)), 1fr));">
 					<div class="tw-col-span-1 xl:tw-col-span-12 tw-flex tw-flex-col">
 						<!-- Premium Infrastructure Override -->
 						<div class="tw-bg-[#0B0F19] tw-border tw-border-[#1E293B] tw-rounded-none tw-p-8 tw-relative tw-overflow-hidden tw-group tw-transition-all tw-duration-500" class:tw-shadow-[0_0_30px_rgba(239,68,68,0.15)]={engine.maintenanceMode}>

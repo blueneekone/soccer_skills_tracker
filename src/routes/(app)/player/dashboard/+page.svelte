@@ -21,7 +21,7 @@
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { impersonationStore } from '$lib/stores/impersonation.svelte.js';
 	import { playerEngine } from '$lib/stores/playerEngine.svelte.js';
-	import { onDestroy } from 'svelte';
+	import { onDestroy, untrack } from 'svelte';
 	import { TrajectoryEngine } from '$lib/states/TrajectoryEngine.svelte.js';
 	import { vanguardFlags } from '$lib/services/remoteConfig.svelte.js';
 	import MemoryCapsuleArena from '$lib/components/player/trajectory/MemoryCapsuleArena.svelte';
@@ -216,11 +216,16 @@
 	$effect(() => {
 		if (!browser) return;
 		const u = authStore.user;
-		if (authStore.role === 'player' && u?.uid) {
-			playerEngine.attach(u.uid);
-			return () => playerEngine.detach();
-		}
-		playerEngine.detach();
+		untrack(() => {
+			if (authStore.role === 'player' && u?.uid) {
+				playerEngine.attach(u.uid);
+			} else {
+				playerEngine.detach();
+			}
+		});
+		return () => {
+			untrack(() => playerEngine.detach());
+		};
 	});
 
 	$effect(() => {
@@ -238,7 +243,7 @@
 					return;
 				}
 				statsRaw = snap.data();
-				dopamineEngine.hydrate(statsRaw);
+				untrack(() => dopamineEngine.hydrate(statsRaw));
 			},
 			(e) => {
 				console.error('[player dashboard] player_stats', e);
@@ -436,7 +441,7 @@
 		</section>
 
 		<!-- Z2: Vanguard Prism (6-axis Radar) -->
-		<section class="lg:tw-col-span-6 tw-bg-[#0f172a] tw-p-8 tw-relative tw-z-20 tw-flex tw-flex-col" style="clip-path: polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px);">
+		<section class="lg:tw-col-span-8 tw-bg-[#0f172a] tw-p-8 tw-relative tw-z-20 tw-flex tw-flex-col" style="clip-path: polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px);">
 			<header class="tw-mb-6">
 				<h2 class="tw-font-mono tw-text-lg tw-text-[#f8fafc] tw-uppercase tw-tracking-widest">Vanguard Telemetry</h2>
 				<p class="tw-font-mono tw-text-xs tw-text-[#94a3b8] tw-uppercase tw-tracking-widest">Synthetic Nodes</p>
@@ -452,7 +457,7 @@
 		</section>
 
 		<!-- Z2: Octalysis Quests & Intel -->
-		<section class="lg:tw-col-span-6 tw-flex tw-flex-col tw-gap-8 tw-z-20">
+		<section class="lg:tw-col-span-4 tw-flex tw-flex-col tw-gap-8 tw-z-20 tw-min-w-0">
 			<div class="tw-bg-[#0f172a] tw-p-8 tw-relative" style="clip-path: polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px);">
 				<header class="tw-mb-4">
 					<h2 class="tw-font-mono tw-text-lg tw-text-[#f8fafc] tw-uppercase tw-tracking-widest">Active Bounties</h2>

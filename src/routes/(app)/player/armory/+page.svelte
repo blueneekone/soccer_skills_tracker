@@ -4,6 +4,7 @@
 	import { doc, onSnapshot } from 'firebase/firestore';
 	import { db } from '$lib/firebase.js';
 	import { getFunctions as getFns, httpsCallable as httpsCall } from 'firebase/functions';
+	import { browser } from '$app/environment';
 
 	// Mock catalog
 	const CATALOG = [
@@ -31,7 +32,7 @@
 	const profile = $derived(authStore.userProfile);
 
 	$effect(() => {
-		if (authStore.isLoading || !authStore.user?.uid) return;
+		if (!browser || authStore.isLoading || !authStore.user?.uid || !db) return;
 		const uid = authStore.user.uid;
 		const unsub = onSnapshot(doc(db, 'users', uid), (snap) => {
 			loading = false;
@@ -137,32 +138,30 @@
 	}
 </script>
 
-<div class="armory-studio">
-	<header class="armory__header">
-		<h1 class="armory__title">Avatar Studio</h1>
-		<div class="armory__economy">
-			<span class="grit-label">Grit XP</span>
-			<span class="grit-value">{gritXp.toLocaleString()}</span>
+<main class="tw-bg-[#000000] tw-min-h-screen tw-text-white tw-font-sans tw-p-6 lg:tw-p-8 tw-flex tw-flex-col tw-gap-8">
+	<header class="tw-flex tw-justify-between tw-items-end tw-border-b tw-border-white/10 tw-pb-4">
+		<h1 class="tw-font-mono tw-text-2xl tw-uppercase tw-text-[#f8fafc] tw-m-0">Avatar Studio</h1>
+		<div class="tw-flex tw-items-baseline tw-gap-2">
+			<span class="tw-font-mono tw-text-xs tw-text-[#94a3b8] tw-uppercase">Grit XP</span>
+			<span class="tw-font-mono tw-text-xl tw-font-bold tw-text-[#f59e0b]">{gritXp.toLocaleString()}</span>
 		</div>
 	</header>
 
-	<div class="bento-grid">
+	<div class="tw-grid tw-grid-cols-1 lg:tw-grid-cols-12 tw-gap-8" style="grid-template-columns: repeat(auto-fit, minmax(min(100%, clamp(280px, 30vw, 350px)), 1fr));">
 		<!-- Hero Canvas (bento-span-8) -->
-		<section class="bento-card bento-span-8 armory__hero">
-			<div class="canvas-wrapper">
+		<section class="lg:tw-col-span-8 tw-bg-[#0f172a] tw-p-8 tw-relative tw-flex tw-items-center tw-justify-center tw-min-h-[500px]" style="clip-path: polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px);">
+			<div class="tw-w-[400px] tw-h-[500px] tw-bg-[#000000] tw-rounded-lg tw-shadow-[inset_0_0_20px_rgba(0,0,0,0.8)] tw-overflow-hidden">
 				<canvas bind:this={canvasRef} width="400" height="500"></canvas>
 			</div>
-			<div class="color-engine">
-				<p class="color-title">Accent Core</p>
+			<div class="tw-absolute tw-bottom-8 tw-left-8 tw-flex tw-flex-col tw-gap-2">
+				<p class="tw-font-mono tw-text-xs tw-text-[#64748b] tw-m-0">Accent Core</p>
 				<button 
-					class="color-btn cyan" 
-					class:active={accentColor === '#14b8a6'} 
+					class="tw-w-6 tw-h-6 tw-rounded-full tw-border-2 tw-cursor-pointer tw-transition-all tw-duration-200 tw-bg-[#14b8a6] {accentColor === '#14b8a6' ? 'tw-border-white tw-shadow-[0_0_10px_currentColor]' : 'tw-border-transparent'}" 
 					onclick={() => accentColor = '#14b8a6'}
 					aria-label="Data Cyan"
 				></button>
 				<button 
-					class="color-btn amber" 
-					class:active={accentColor === '#f59e0b'} 
+					class="tw-w-6 tw-h-6 tw-rounded-full tw-border-2 tw-cursor-pointer tw-transition-all tw-duration-200 tw-bg-[#f59e0b] {accentColor === '#f59e0b' ? 'tw-border-white tw-shadow-[0_0_10px_currentColor]' : 'tw-border-transparent'}" 
 					onclick={() => accentColor = '#f59e0b'}
 					aria-label="Atompunk Amber"
 				></button>
@@ -170,25 +169,25 @@
 		</section>
 
 		<!-- Gear Unlocks (bento-span-4) -->
-		<section class="bento-card bento-span-4 armory__gear">
-			<h2 class="gear-title">Requisition Log</h2>
-			<div class="gear-list">
+		<section class="lg:tw-col-span-4 tw-bg-[#0f172a] tw-p-8 tw-relative tw-min-w-0" style="clip-path: polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px);">
+			<h2 class="tw-font-mono tw-text-base tw-text-[#cbd5e1] tw-m-0 tw-mb-4 tw-uppercase">Requisition Log</h2>
+			<div class="tw-flex tw-flex-col tw-gap-3">
 				{#each CATALOG as item}
 					{@const isUnlocked = !item.isPremium || unlockedCosmetics.includes(item.id)}
 					{@const isEquipped = equipped[item.type] === item.id}
 					
-					<div class="gear-item" class:locked={!isUnlocked} class:equipped={isEquipped}>
-						<div class="gear-info">
-							<span class="gear-name">{item.name}</span>
-							<span class="gear-type">{item.type}</span>
+					<div class="tw-flex tw-justify-between tw-items-center tw-p-3 tw-bg-[#0f172a] tw-rounded-lg tw-border tw-border-white/5 tw-transition-all tw-duration-200 {(!isUnlocked) ? 'tw-opacity-40 tw-grayscale' : ''} {isEquipped ? 'tw-border-[#14b8a6] tw-bg-[#14b8a6]/5' : ''}">
+						<div class="tw-flex tw-flex-col">
+							<span class="tw-font-mono tw-text-sm tw-text-[#f8fafc]">{item.name}</span>
+							<span class="tw-font-mono tw-text-[10px] tw-text-[#64748b] tw-uppercase">{item.type}</span>
 						</div>
-						<div class="gear-actions">
+						<div class="tw-flex tw-items-center">
 							{#if isUnlocked}
-								<button class="btn btn-equip" onclick={() => equipItem(item)}>
+								<button class="tw-font-mono tw-text-xs tw-px-3 tw-py-1.5 tw-rounded tw-cursor-pointer tw-uppercase tw-font-bold tw-border-none {isEquipped ? 'tw-bg-[#14b8a6] tw-text-black' : 'tw-bg-[#334155] tw-text-[#f8fafc]'}" onclick={() => equipItem(item)}>
 									{isEquipped ? 'Equipped' : 'Equip'}
 								</button>
 							{:else}
-								<button class="btn btn-unlock" onclick={() => unlockItem(item.id)}>
+								<button class="tw-font-mono tw-text-xs tw-px-3 tw-py-1.5 tw-rounded tw-cursor-pointer tw-uppercase tw-font-bold tw-border-none tw-bg-[#f59e0b] tw-text-black" onclick={() => unlockItem(item.id)}>
 									{item.cost} XP
 								</button>
 							{/if}
@@ -198,196 +197,4 @@
 			</div>
 		</section>
 	</div>
-</div>
-
-<style>
-	.armory-studio {
-		padding: 24px;
-		display: flex;
-		flex-direction: column;
-		gap: 24px;
-		background: #000000;
-		min-height: 100vh;
-	}
-
-	.armory__header {
-		display: flex;
-		justify-content: space-between;
-		align-items: flex-end;
-		border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-		padding-bottom: 16px;
-	}
-
-	.armory__title {
-		font-family: var(--font-mono, 'Geist Mono', monospace);
-		font-size: 1.5rem;
-		text-transform: uppercase;
-		color: #f8fafc;
-		margin: 0;
-	}
-
-	.armory__economy {
-		display: flex;
-		align-items: baseline;
-		gap: 8px;
-	}
-
-	.grit-label {
-		font-family: var(--font-mono, 'Geist Mono', monospace);
-		font-size: 0.75rem;
-		color: #94a3b8;
-		text-transform: uppercase;
-	}
-
-	.grit-value {
-		font-family: var(--font-mono, 'Geist Mono', monospace);
-		font-size: 1.25rem;
-		color: #f59e0b; /* Atompunk Amber for currency */
-		font-weight: 700;
-	}
-
-	.bento-grid {
-		display: grid;
-		grid-template-columns: repeat(12, 1fr);
-		gap: 16px;
-	}
-
-	.bento-card {
-		background: #020617;
-		border: 1px solid rgba(255, 255, 255, 0.05);
-		border-radius: 12px;
-		padding: 24px;
-	}
-
-	.bento-span-8 { grid-column: span 8; }
-	.bento-span-4 { grid-column: span 4; }
-
-	.armory__hero {
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		position: relative;
-		min-height: 500px;
-	}
-
-	.canvas-wrapper {
-		width: 400px;
-		height: 500px;
-		background: #000000; /* Void Contract */
-		border-radius: 8px;
-		box-shadow: inset 0 0 20px rgba(0,0,0,0.8);
-		overflow: hidden;
-	}
-
-	.color-engine {
-		position: absolute;
-		bottom: 24px;
-		left: 24px;
-		display: flex;
-		flex-direction: column;
-		gap: 8px;
-	}
-
-	.color-title {
-		font-family: var(--font-mono, 'Geist Mono', monospace);
-		font-size: 0.75rem;
-		color: #64748b;
-		margin: 0;
-	}
-
-	.color-btn {
-		width: 24px;
-		height: 24px;
-		border-radius: 50%;
-		border: 2px solid transparent;
-		cursor: pointer;
-		transition: all 0.2s;
-	}
-
-	.color-btn.cyan { background: #14b8a6; }
-	.color-btn.amber { background: #f59e0b; }
-
-	.color-btn.active {
-		border-color: #ffffff;
-		box-shadow: 0 0 10px currentColor;
-	}
-
-	.gear-title {
-		font-family: var(--font-mono, 'Geist Mono', monospace);
-		font-size: 1rem;
-		color: #cbd5e1;
-		margin: 0 0 16px 0;
-		text-transform: uppercase;
-	}
-
-	.gear-list {
-		display: flex;
-		flex-direction: column;
-		gap: 12px;
-	}
-
-	.gear-item {
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
-		padding: 12px;
-		background: #0f172a;
-		border-radius: 8px;
-		border: 1px solid rgba(255, 255, 255, 0.05);
-		transition: all 0.2s;
-	}
-
-	.gear-item.locked {
-		opacity: 0.4;
-		filter: grayscale(100%);
-	}
-
-	.gear-item.equipped {
-		border-color: #14b8a6;
-		background: rgba(20, 184, 166, 0.05);
-	}
-
-	.gear-info {
-		display: flex;
-		flex-direction: column;
-	}
-
-	.gear-name {
-		font-family: var(--font-mono, 'Geist Mono', monospace);
-		font-size: 0.875rem;
-		color: #f8fafc;
-	}
-
-	.gear-type {
-		font-family: var(--font-mono, 'Geist Mono', monospace);
-		font-size: 0.65rem;
-		color: #64748b;
-		text-transform: uppercase;
-	}
-
-	.btn {
-		font-family: var(--font-mono, 'Geist Mono', monospace);
-		font-size: 0.75rem;
-		padding: 6px 12px;
-		border-radius: 4px;
-		cursor: pointer;
-		text-transform: uppercase;
-		font-weight: bold;
-		border: none;
-	}
-
-	.btn-unlock {
-		background: #f59e0b;
-		color: #000000;
-	}
-
-	.btn-equip {
-		background: #334155;
-		color: #f8fafc;
-	}
-
-	.gear-item.equipped .btn-equip {
-		background: #14b8a6;
-		color: #000000;
-	}
-</style>
+</main>
