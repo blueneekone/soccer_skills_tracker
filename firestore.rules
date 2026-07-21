@@ -2133,6 +2133,8 @@ service cloud.firestore {
             && parentCanSeePlayerName(resource.data.playerName))
         || (isDirector() && tokenClubMatchesDoc(resource.data))
       );
+      allow write: if request.auth.uid == playerKey
+        && !('streakFreezes' in request.resource.data.diff(resource.data).affectedKeys());
       // Server-only (Cloud Functions / Admin SDK). Legacy client writes removed.
       allow create, update, delete: if false;
     }

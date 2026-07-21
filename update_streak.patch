@@ -1,0 +1,17 @@
+--- src/lib/components/shell/PlayerActivityStreak.svelte
++++ src/lib/components/shell/PlayerActivityStreak.svelte
+@@ -69,13 +69,13 @@
+	// ── Subscriptions ──────────────────────────────────────────────────────────
+
+	$effect(() => {
+-		if (!browser || !authStore.user?.uid) {
++		if (!browser || !db || !authStore.isAuthenticated || !authStore.user?.uid) {
+			streakDays = 0;
+			loading = false;
+			return;
+		}
+
+		const uid = authStore.user.uid;
+		const psRef = doc(db, 'player_stats', uid);
+
+		const unsubPS = onSnapshot(

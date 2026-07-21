@@ -78,3 +78,6 @@ exports.resolveDispatchCode = adminOps.resolveDispatchCode;
 
 const coachRosterIngestOps = require('./src/domains/coachRosterIngestOps.js');
 exports.coachRosterIngest = coachRosterIngestOps.coachRosterIngest;
+
+const streakOps = require('./src/domains/streakOps.js');
+exports.consumeStreakFreeze = streakOps.consumeStreakFreeze;

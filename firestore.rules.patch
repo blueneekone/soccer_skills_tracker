@@ -1,0 +1,44 @@
+<<<<<<< SEARCH
+    match /player_stats/{playerKey} {
+      // playerKey is Firebase Auth uid (Elite aggregate) or legacy display-name key.
+      // Peers on the same team (token.teamId) may read for leaderboard — no emails exposed.
+      // Epic 14: Coach sameTeam reads require isCleared JWT claim.
+      // T1-10: Director path replaced the team-lookup helper (1 get via teamClubId) with
+      //   tokenClubMatchesDoc (zero gets — uses denormalized clubId/tenantId on doc).
+      //   Worst-case get budget: userDoc=1 + parentCanSeePlayerName=1 = 2 ≤ 10.
+      allow read: if authed() && playerVpcAllowed() && (
+        isSuper()
+        || (sameTeam(resource.data.teamId) && isCleared())
+        || playerKey == request.auth.uid
+        || playerKey == userDoc().playerName
+        || (resource.data.keys().hasAll(['playerName'])
+            && parentCanSeePlayerName(resource.data.playerName))
+        || (isDirector() && tokenClubMatchesDoc(resource.data))
+      );
+      // Server-only (Cloud Functions / Admin SDK). Legacy client writes removed.
+      allow create, update, delete: if false;
+    }
+=======
+    match /player_stats/{playerKey} {
+      // playerKey is Firebase Auth uid (Elite aggregate) or legacy display-name key.
+      // Peers on the same team (token.teamId) may read for leaderboard — no emails exposed.
+      // Epic 14: Coach sameTeam reads require isCleared JWT claim.
+      // T1-10: Director path replaced the team-lookup helper (1 get via teamClubId) with
+      //   tokenClubMatchesDoc (zero gets — uses denormalized clubId/tenantId on doc).
+      //   Worst-case get budget: userDoc=1 + parentCanSeePlayerName=1 = 2 ≤ 10.
+      allow read: if authed() && playerVpcAllowed() && (
+        isSuper()
+        || (sameTeam(resource.data.teamId) && isCleared())
+        || playerKey == request.auth.uid
+        || playerKey == userDoc().playerName
+        || (resource.data.keys().hasAll(['playerName'])
+            && parentCanSeePlayerName(resource.data.playerName))
+        || (isDirector() && tokenClubMatchesDoc(resource.data))
+      );
+      // Allow user to write to their own player_stats doc, EXCEPT streakFreezes
+      allow write: if request.auth.uid == playerKey
+        && !('streakFreezes' in request.resource.data.diff(resource.data).affectedKeys());
+      // Server-only (Cloud Functions / Admin SDK). Legacy client writes removed for other cases.
+      allow create, update, delete: if false;
+    }
+>>>>>>> REPLACE

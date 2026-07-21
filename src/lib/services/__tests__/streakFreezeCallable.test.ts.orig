@@ -1,0 +1,177 @@
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { render, screen, fireEvent, waitFor } from '@testing-library/svelte';
+import PlayerActivityStreak from '../../components/shell/PlayerActivityStreak.svelte';
+import { httpsCallable } from 'firebase/functions';
+import { dopamineOnCallable } from '$lib/services/dopamine.svelte.js';
+
+// Mock dependencies
+vi.mock('firebase/firestore', () => ({
+  doc: vi.fn(() => ({ type: 'doc' })),
+  onSnapshot: vi.fn(() => vi.fn()),
+  query: vi.fn(() => ({ type: 'query' })),
+  collection: vi.fn(),
+  where: vi.fn(),
+  orderBy: vi.fn(),
+  limit: vi.fn(),
+  updateDoc: vi.fn().mockResolvedValue(undefined),
+}));
+
+vi.mock('firebase/functions', () => ({
+  getFunctions: vi.fn(),
+  httpsCallable: vi.fn(() => vi.fn().mockResolvedValue({ data: { success: true, freezesRemaining: 1, streakPreserved: true } })),
+}));
+
+vi.mock('$lib/firebase.js', () => ({
+  db: {},
+}));
+
+vi.mock('$lib/stores/auth.svelte.js', () => ({
+  authStore: {
+    user: { uid: 'test-user-123' },
+  },
+}));
+
+vi.mock('$lib/services/remoteConfig.svelte.js', () => ({
+  vanguardFlags: {
+    streakEnforcementEnabled: true,
+  },
+}));
+
+vi.mock('$lib/services/dopamine.svelte.js', () => ({
+  dopamineOnCallable: vi.fn((promise, opts) => promise),
+}));
+
+describe('streakFreezeCallable', () => {
+  let mockConsumeStreakFreeze;
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockConsumeStreakFreeze = vi.fn().mockResolvedValue({ data: { success: true } });
+    vi.mocked(httpsCallable).mockReturnValue(mockConsumeStreakFreeze);
+  });
+
+  it('PlayerActivityStreak references the consumeStreakFreeze callable and uses dopamineOnCallable', async () => {
+    const mockArmory = {
+      freezesAvailable: 2,
+      freezeClaimPending: false,
+    };
+
+    // Test mode needs to be 'at_risk' or 'broken' for button to show. We'll mock the internal state indirectly or override props if possible.
+    // In this component, mode is derived from firestore state. Let's mock onSnapshot to return 'at_risk' state.
+    const { onSnapshot } = await import('firebase/firestore');
+
+    vi.mocked(onSnapshot).mockImplementation((ref, onNext) => {
+      if (ref && ref.type === 'doc') {
+        onNext({
+          exists: () => true,
+          data: () => ({ streak_days: 5, streakStatus: 'active', gracePeriodEndsUtc: new Date(Date.now() - 86400000).toISOString() }),
+        });
+      } else {
+         onNext({
+            empty: false,
+            docs: [{ id: 'alert1', data: () => ({ kind: 'streak_warning', uid: 'test-user-123' }) }]
+         });
+      }
+      return vi.fn();
+    });
+
+
+    render(PlayerActivityStreak, { armory: mockArmory });
+
+    const freezeBtn = await screen.findByRole('button', { name: /Use streak freeze/i });
+    expect(freezeBtn).toBeDefined();
+
+    await fireEvent.click(freezeBtn);
+
+    expect(httpsCallable).toHaveBeenCalledWith(undefined, 'consumeStreakFreeze');
+    expect(mockConsumeStreakFreeze).toHaveBeenCalled();
+    expect(dopamineOnCallable).toHaveBeenCalledWith(expect.any(Promise), { kind: 'adminRelief' });
+  });
+
+  it('freezeLoading state is set and cleared correctly', async () => {
+    const mockArmory = {
+      freezesAvailable: 2,
+      freezeClaimPending: false,
+    };
+
+    const { onSnapshot } = await import('firebase/firestore');
+
+    vi.mocked(onSnapshot).mockImplementation((ref, onNext) => {
+      if (ref && ref.type === 'doc') {
+        onNext({
+          exists: () => true,
+          data: () => ({ streak_days: 5, streakStatus: 'active', gracePeriodEndsUtc: new Date(Date.now() - 86400000).toISOString() }),
+        });
+      } else {
+         onNext({
+            empty: false,
+            docs: [{ id: 'alert1', data: () => ({ kind: 'streak_warning', uid: 'test-user-123' }) }]
+         });
+      }
+      return vi.fn();
+    });
+
+
+    let resolveFreeze;
+    const freezePromise = new Promise(resolve => { resolveFreeze = resolve; });
+    mockConsumeStreakFreeze.mockReturnValue(freezePromise);
+
+    render(PlayerActivityStreak, { armory: mockArmory });
+
+    const freezeBtn = await screen.findByRole('button', { name: /Use streak freeze/i });
+    await fireEvent.click(freezeBtn);
+
+    // Check loading state
+    expect(freezeBtn.textContent).toContain('Activating');
+    expect(freezeBtn.disabled).toBe(true);
+
+    resolveFreeze({ data: { success: true } });
+
+    // Check loading cleared
+    await waitFor(() => {
+      expect(freezeBtn.textContent).not.toContain('Activating');
+      expect(freezeBtn.disabled).toBe(false);
+    });
+  });
+
+  it('Error state is populated when callable throws', async () => {
+    const mockArmory = {
+      freezesAvailable: 2,
+      freezeClaimPending: false,
+    };
+
+    const { onSnapshot } = await import('firebase/firestore');
+
+    vi.mocked(onSnapshot).mockImplementation((ref, onNext) => {
+      if (ref && ref.type === 'doc') {
+        onNext({
+          exists: () => true,
+          data: () => ({ streak_days: 5, streakStatus: 'active', gracePeriodEndsUtc: new Date(Date.now() - 86400000).toISOString() }),
+        });
+      } else {
+         onNext({
+            empty: false,
+            docs: [{ id: 'alert1', data: () => ({ kind: 'streak_warning', uid: 'test-user-123' }) }]
+         });
+      }
+      return vi.fn();
+    });
+
+
+    mockConsumeStreakFreeze.mockRejectedValue(new Error('Function error'));
+
+    // To check error state, we might not have a visible UI element for it in the provided code snippet,
+    // but we can verify it doesn't crash and the button resets to normal.
+    // If the component is updated to display `freezeError`, we could assert on that text.
+
+    render(PlayerActivityStreak, { armory: mockArmory });
+
+    const freezeBtn = await screen.findByRole('button', { name: /Use streak freeze/i });
+    await fireEvent.click(freezeBtn);
+
+    await waitFor(() => {
+      expect(freezeBtn.textContent).not.toContain('Activating');
+      expect(freezeBtn.disabled).toBe(false);
+    });
+  });
+});

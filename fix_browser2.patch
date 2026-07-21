@@ -1,0 +1,12 @@
+--- src/lib/services/__tests__/streakFreezeCallable.test.ts
++++ src/lib/services/__tests__/streakFreezeCallable.test.ts
+@@ -37,6 +37,10 @@
+   dopamineOnCallable: vi.fn((promise, opts) => promise),
+ }));
+
++vi.mock('$app/environment', () => ({
++  browser: true,
++}));
++
+ describe('streakFreezeCallable', () => {
+   let mockConsumeStreakFreeze;
