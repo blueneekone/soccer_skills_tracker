@@ -1452,7 +1452,7 @@ exports.stripeWebhook = onRequest(
       } catch (err) {
         const msg = err instanceof Error ? err.message : String(err);
         logger.error(`Webhook signature verification failed: ${msg}`);
-        res.status(400).send(`Webhook Error: ${msg}`);
+        res.status(400).send('Webhook signature verification failed');
         return;
       }
 
