@@ -11,7 +11,9 @@ export async function createClubTeam(db, clubId, teamName, coachEmail) {
         const teamId = `${clubId}_${teamName.toLowerCase().replace(/[^a-z0-9]/g, '')}`;
         
         const teamRef = doc(db, "teams", teamId);
-        await setDoc(teamRef, {
+        const batch = writeBatch(db);
+
+        batch.set(teamRef, {
             clubId: clubId,
             name: teamName,
             coachEmail: coachEmail.toLowerCase(),
@@ -20,12 +22,14 @@ export async function createClubTeam(db, clubId, teamName, coachEmail) {
 
         // Auto-link the coach email so the Bouncer routes them correctly on login
         if (coachEmail) {
-            await setDoc(doc(db, "coach_lookup", coachEmail.toLowerCase()), { 
+            batch.set(doc(db, "coach_lookup", coachEmail.toLowerCase()), {
                 teamId: teamId, 
                 clubId: clubId,
                 role: "coach"
             });
         }
+
+        await batch.commit();
 
         alert(`✅ Sub-Team '${teamName}' created successfully!`);
         document.getElementById("newClubTeamName").value = "";
