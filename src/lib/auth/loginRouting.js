@@ -51,7 +51,7 @@ export function getLoginWaterfallDestination(role, profile) {
 	}
 	if (role === 'coach') {
 		return {
-			path: '/coach/daily-intel',
+			path: '/coach/dashboard',
 			context: 'coach',
 			pivotKey: 'ctx-coach-default',
 		};

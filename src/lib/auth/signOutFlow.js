@@ -36,7 +36,8 @@ export async function handleSignOut(opts = {}) {
 
 	try {
 		fieldMenu.close();
-		await goto(loginPath, { replaceState: true });
+		// Execute Firebase sign-out FIRST so authStore.isAuthenticated becomes false,
+		// preventing the /login page from auto-redirecting us back to the app.
 		await signOut(auth);
 	} catch (e) {
 		console.error('[handleSignOut]', e);
@@ -46,6 +47,7 @@ export async function handleSignOut(opts = {}) {
 			console.error('[handleSignOut] recovery signOut failed', e2);
 		}
 	} finally {
+		// Clear all lingering app state BEFORE we trigger the navigation
 		try {
 			workspaceContextStore.clear();
 			teamsStore.clearSession();
@@ -54,5 +56,8 @@ export async function handleSignOut(opts = {}) {
 		} catch (e3) {
 			console.error('[handleSignOut] store reset failed', e3);
 		}
+		
+		// Finally route to the login page (or public page)
+		await goto(loginPath, { replaceState: true });
 	}
 }

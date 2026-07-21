@@ -49,7 +49,7 @@ export function getRoleDestination(role: UserRole | string | null | undefined): 
 		case 'director':
 			return '/director';
 		case 'coach':
-			return '/coach/daily-intel';
+			return '/coach/dashboard';
 		case 'registrar':
 			return '/director';
 		case 'parent':
