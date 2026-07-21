@@ -132,7 +132,6 @@ window.navigateTo = (viewId, addToHistory = true) => {
     const targetEl = document.getElementById(viewId);
     if (targetEl) targetEl.classList.remove('d-none');
 
-// 🟢 FIX: Added viewPassport to the resize trigger
 if (viewId === 'viewTracker' ||
     viewId === 'viewCoach' ||
     viewId === 'viewChallenge' ||
