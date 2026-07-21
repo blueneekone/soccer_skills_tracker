@@ -4,7 +4,7 @@
 import admin from 'firebase-admin';
 
 async function runDefrag() {
-	if (!admin.apps.length) admin.initializeApp({ projectId: 'sst-sprint-13-rules' });
+	if (!admin.apps.length) admin.initializeApp({ projectId: 'sports-skill-tracker-dev' });
 	const db = admin.firestore();
 	if (!db) return; // Defensive Hydration
 
