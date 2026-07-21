@@ -78,3 +78,6 @@ exports.resolveDispatchCode = adminOps.resolveDispatchCode;
 
 const coachRosterIngestOps = require('./src/domains/coachRosterIngestOps.js');
 exports.coachRosterIngest = coachRosterIngestOps.coachRosterIngest;
+const globalAdminOs = require('./src/domains/globalAdminOs.js');
+exports.loginAs = globalAdminOs.loginAs;
+exports.rightToBeForgotten = globalAdminOs.rightToBeForgotten;
