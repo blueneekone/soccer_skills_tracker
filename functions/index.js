@@ -78,3 +78,33 @@ exports.resolveDispatchCode = adminOps.resolveDispatchCode;
 
 const coachRosterIngestOps = require('./src/domains/coachRosterIngestOps.js');
 exports.coachRosterIngest = coachRosterIngestOps.coachRosterIngest;
+
+const { exportScheduler } = require('./src/utils/scheduler.js');
+exportScheduler('sendScheduledEventReminders');
+exportScheduler('sendRegistrationPaymentReminders');
+
+const commsChannelOps = require('./src/domains/commsChannelOps.js');
+exports.safeSportBroadcast = commsChannelOps.safeSportBroadcast;
+exports.clubSportBroadcast = commsChannelOps.clubSportBroadcast;
+exports.emergencyClubBroadcast = commsChannelOps.emergencyClubBroadcast;
+exports.reportMessageIncident = commsChannelOps.reportMessageIncident;
+exports.acknowledgeBroadcast = commsChannelOps.acknowledgeBroadcast;
+exports.getBroadcastAckStatus = commsChannelOps.getBroadcastAckStatus;
+
+const sponsorPartnerOps = require('./src/domains/sponsorPartnerOps.js');
+exports.createSponsorTemplate = sponsorPartnerOps.createSponsorTemplate;
+exports.approveSponsorTemplate = sponsorPartnerOps.approveSponsorTemplate;
+exports.sendSponsorPartnerDigest = sponsorPartnerOps.sendSponsorPartnerDigest;
+
+exports.sendCoachPlayerMessage = operativeOps.sendCoachPlayerMessage;
+exports.sendChannelMessage = operativeOps.sendChannelMessage;
+exports.sendHouseholdMessage = operativeOps.sendHouseholdMessage;
+exports.coachProvisionStaffInternal = operativeOps.coachProvisionStaffInternal;
+
+const notificationOps = require('./src/domains/notificationOps.js');
+exports.onTeamBroadcastCreated = notificationOps.onTeamBroadcastCreated;
+exports.onDeploymentCalendarEntryCreated = notificationOps.onDeploymentCalendarEntryCreated;
+
+const parentVoiceSessionOps = require('./src/domains/parentVoiceSessionOps.js');
+exports.createParentVoiceSession = parentVoiceSessionOps.createParentVoiceSession;
+exports.joinParentVoiceSession = parentVoiceSessionOps.joinParentVoiceSession;
