@@ -36,17 +36,17 @@
 				<button class="rpr-link" onclick={onCancelEdit} disabled={saving}>Cancel</button>
 			</div>
 
-			<label class="rpr-label">PLAYER NAME</label>
-			<input class="rpr-input" bind:value={editData.displayName} disabled={saving} />
+			<label class="rpr-label" for="edit-name-{player.id}">PLAYER NAME</label>
+			<input id="edit-name-{player.id}" class="rpr-input" bind:value={editData.displayName} disabled={saving} />
 
-			<label class="rpr-label">PARENT NAME</label>
-			<input class="rpr-input" bind:value={editData.parentName} disabled={saving} />
+			<label class="rpr-label" for="edit-parent-name-{player.id}">PARENT NAME</label>
+			<input id="edit-parent-name-{player.id}" class="rpr-input" bind:value={editData.parentName} disabled={saving} />
 
-			<label class="rpr-label">PARENT PHONE</label>
-			<input class="rpr-input" type="tel" bind:value={editData.parentPhone} disabled={saving} />
+			<label class="rpr-label" for="edit-parent-phone-{player.id}">PARENT PHONE</label>
+			<input id="edit-parent-phone-{player.id}" class="rpr-input" type="tel" bind:value={editData.parentPhone} disabled={saving} />
 
-			<label class="rpr-label">PARENT EMAIL</label>
-			<input class="rpr-input" type="email" bind:value={editData.parentEmail} disabled={saving} />
+			<label class="rpr-label" for="edit-parent-email-{player.id}">PARENT EMAIL</label>
+			<input id="edit-parent-email-{player.id}" class="rpr-input" type="email" bind:value={editData.parentEmail} disabled={saving} />
 
 			{#if saveErr}
 				<p class="rpr-err" role="alert">{saveErr}</p>

@@ -290,12 +290,7 @@
     text-align: center;
     animation: baFadeIn 0.4s ease;
   }
-  .ba-success__icon {
-    width: 3.5rem;
-    height: 3.5rem;
-    color: var(--vanguard-cyan, #14b8a6);
-    filter: drop-shadow(0 0 14px rgba(20, 184, 166, 0.55));
-  }
+
   .ba-success__label {
     margin: 0;
     font-size: 1rem;
@@ -324,17 +319,7 @@
     align-items: flex-start;
     gap: 1rem;
   }
-  .ba-card__shield {
-    flex-shrink: 0;
-    width: 2.5rem;
-    height: 2.5rem;
-    color: var(--vanguard-cyan, #14b8a6);
-    filter: drop-shadow(0 0 10px rgba(20, 184, 166, 0.45));
-  }
-  .ba-card__shield--amber {
-    color: #fbbf24;
-    filter: drop-shadow(0 0 10px rgba(251, 191, 36, 0.45));
-  }
+
   .ba-card__badge {
     margin: 0 0 0.25rem;
     font-size: 0.55rem;
@@ -402,11 +387,7 @@
     color: var(--vanguard-red, #ff003c);
     animation: baFadeIn 0.25s ease;
   }
-  .ba-error svg {
-    width: 1.1rem;
-    height: 1.1rem;
-    flex-shrink: 0;
-  }
+
   .ba-error span {
     line-height: 1.5;
   }

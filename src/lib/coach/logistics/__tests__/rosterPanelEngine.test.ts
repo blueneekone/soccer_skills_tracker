@@ -73,19 +73,19 @@ describe('RosterPanelEngine', () => {
 
 	it('players are sorted alphabetically by displayName', () => {
 		engine.subscribe('team_abc');
-		const names = engine.players.map((p) => p.displayName);
+		const names = engine.players.map((p: any) => p.displayName);
 		expect(names).toEqual([...names].sort((a, b) => a.localeCompare(b)));
 	});
 
 	it('uses playerName as fallback when displayName is missing', () => {
 		engine.subscribe('team_abc');
-		const bob = engine.players.find((p) => p.email === 'bob@test.com');
+		const bob = engine.players.find((p: any) => p.email === 'bob@test.com');
 		expect(bob?.displayName).toBe('Bob Jones');
 	});
 
 	it('startEdit() populates editData with player values', () => {
 		engine.subscribe('team_abc');
-		const alice = engine.players.find((p) => p.email === 'alice@test.com')!;
+		const alice = engine.players.find((p: any) => p.email === 'alice@test.com')!;
 		engine.startEdit(alice);
 		expect(engine.editingPlayerId).toBe('alice@test.com');
 		expect(engine.editData.displayName).toBe('Alice Smith');
@@ -103,7 +103,7 @@ describe('RosterPanelEngine', () => {
 	it('saveEdit() calls setDoc with merged payload', async () => {
 		const { setDoc } = await import('firebase/firestore');
 		engine.subscribe('team_abc');
-		const alice = engine.players.find((p) => p.email === 'alice@test.com')!;
+		const alice = engine.players.find((p: any) => p.email === 'alice@test.com')!;
 		engine.startEdit(alice);
 		engine.editData.parentPhone = '999-1234';
 		await engine.saveEdit(alice.id);
@@ -122,6 +122,7 @@ describe('RosterPanelEngine', () => {
 	});
 
 	it('subscribe() returns early without calling onSnapshot when not ready', async () => {
+		// @ts-expect-error dynamic import of js
 		const { isFirestoreReady } = await import('$lib/utils/firestoreGuard.js');
 		const { onSnapshot } = await import('firebase/firestore');
 		(isFirestoreReady as any).mockReturnValueOnce(false);
@@ -131,7 +132,7 @@ describe('RosterPanelEngine', () => {
 		expect(engine.loading).toBe(false);
 	});
 
-	it('detach() calls the unsub function', () => {
+	it('detach() calls the unsub function', async () => {
 		const { onSnapshot } = await import('firebase/firestore') as any;
 		const mockUnsub = vi.fn();
 		onSnapshot.mockReturnValueOnce(mockUnsub);

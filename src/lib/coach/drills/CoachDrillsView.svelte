@@ -1080,38 +1080,6 @@
 		font-family: ui-monospace, 'Cascadia Code', 'SFMono-Regular', Menlo, Consolas, monospace;
 	}
 
-	.cdm-cyber {
-		color: var(--cdm-cyber);
-	}
-
-	.cdm-orange {
-		color: var(--cdm-threat);
-	}
-
-	.cdm-toggle {
-		display: grid;
-		grid-template-columns: 1fr 1fr;
-		gap: 6px;
-		margin-bottom: 1rem;
-	}
-
-	.cdm-toggle__btn {
-		padding: 0.5rem 0.4rem;
-		font-size: 0.6rem;
-		font-weight: 800;
-		text-transform: uppercase;
-		letter-spacing: 0.08em;
-		border: 1px solid var(--cdm-line);
-		background: #000;
-		color: rgba(255, 255, 255, 0.5);
-		cursor: pointer;
-	}
-
-	.cdm-toggle__btn--on {
-		border-color: var(--cdm-cyber);
-		color: #fff;
-		box-shadow: 0 0 16px rgba(0, 212, 255, 0.15);
-	}
 
 	.cdm-field {
 		display: flex;
@@ -1129,88 +1097,6 @@
 		font-size: 0.8rem;
 	}
 
-	.cdm-roster {
-		list-style: none;
-		margin: 0;
-		padding: 0;
-		max-height: 280px;
-		overflow: auto;
-		border: 1px solid var(--cdm-line);
-	}
-
-	.cdm-roster__row {
-		display: flex;
-		flex-direction: column;
-		gap: 2px;
-		padding: 0.5rem 0.65rem;
-		border-bottom: 1px solid var(--cdm-line);
-		font-size: 0.72rem;
-	}
-
-	.cdm-roster__row:last-child {
-		border-bottom: 0;
-	}
-
-	.cdm-roster__em {
-		font-size: 0.65rem;
-		color: rgba(255, 255, 255, 0.35);
-	}
-
-	.cdm-gauge {
-		margin-bottom: 1rem;
-	}
-
-	.cdm-gauge__head {
-		display: flex;
-		justify-content: space-between;
-		align-items: baseline;
-		margin-bottom: 0.35rem;
-	}
-
-	.cdm-range {
-		-webkit-appearance: none;
-		appearance: none;
-		width: 100%;
-		height: 0.4rem;
-		background: #000;
-		border: 1px solid var(--cdm-line);
-	}
-
-	.cdm-range::-webkit-slider-thumb {
-		-webkit-appearance: none;
-		width: 14px;
-		height: 14px;
-		background: #000;
-		border: 2px solid var(--cdm-cyber);
-		box-shadow: 0 0 8px var(--cdm-cyber);
-	}
-
-	.cdm-range--rpe::-webkit-slider-thumb {
-		border-color: var(--cdm-threat);
-		box-shadow: 0 0 8px var(--cdm-threat);
-	}
-
-	.cdm-bounty {
-		padding: 1rem;
-		border: 1px solid rgba(57, 255, 20, 0.25);
-		background: #000;
-		margin-bottom: 0.75rem;
-	}
-
-	.cdm-bounty__val {
-		margin: 0.3rem 0 0;
-		font-size: 1.75rem;
-		font-weight: 800;
-		color: var(--cdm-toxic);
-		text-shadow: 0 0 20px rgba(57, 255, 20, 0.35);
-	}
-
-	.cdm-hint {
-		margin: 0 0 1rem;
-		font-size: 0.65rem;
-		line-height: 1.45;
-		color: rgba(255, 255, 255, 0.4);
-	}
 
 	.cdm-err {
 		margin: 0 0 0.5rem;
