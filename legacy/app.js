@@ -465,15 +465,15 @@ onAuthStateChanged(auth, async (user) => {
             let baseProfile = userSnap.exists() ? userSnap.data() : null;
             
 // 🟢 FIX: Safely parse legacy names using correct OR (||) syntax
-let fallbackName = (baseProfile && baseProfile.playerName) ||
-                   (baseProfile && baseProfile.name) ||
-                   (baseProfile && baseProfile.player) ||
+let fallbackName = baseProfile?.playerName ||
+                   baseProfile?.name ||
+                   baseProfile?.player ||
                    user.email.split('@')[0];
 
 if (userRole === 'super_admin' || userRole === 'director') {
                 userProfile = { 
                    ...baseProfile, 
-clubId: (baseProfile && baseProfile.clubId) || (window.globalClubs && window.globalClubs[0]?.id ? window.globalClubs[0].id : "aggiesfc"),
+clubId: baseProfile?.clubId || (window.globalClubs && window.globalClubs[0]?.id ? window.globalClubs[0].id : "aggiesfc"),
                     teamId: "admin", 
                     playerName: fallbackName, 
                     role: userRole 
