@@ -26,37 +26,37 @@
  *   manager. Behaviour is equivalent but supported on Firebase SDK v9.13+.
  */
 
-import { browser } from '$app/environment';
-import { initializeApp, getApps, type FirebaseApp } from 'firebase/app';
-import { getAuth, type Auth } from 'firebase/auth';
+import { browser } from "$app/environment";
+import { initializeApp, getApps, type FirebaseApp } from "firebase/app";
+import { getAuth, type Auth } from "firebase/auth";
 import {
-	initializeFirestore,
-	persistentLocalCache,
-	persistentMultipleTabManager,
-	getFirestore,
-	type Firestore,
-} from 'firebase/firestore';
-import { getFunctions, type Functions } from 'firebase/functions';
-import { getStorage, type FirebaseStorage } from 'firebase/storage';
-import { getMessaging, isSupported, type Messaging } from 'firebase/messaging';
+  initializeFirestore,
+  persistentLocalCache,
+  persistentMultipleTabManager,
+  getFirestore,
+  type Firestore,
+} from "firebase/firestore";
+import { getFunctions, type Functions } from "firebase/functions";
+import { getStorage, type FirebaseStorage } from "firebase/storage";
+import { getMessaging, isSupported, type Messaging } from "firebase/messaging";
 import {
-	getRemoteConfig,
-	fetchAndActivate,
-	type RemoteConfig,
-} from 'firebase/remote-config';
+  getRemoteConfig,
+  fetchAndActivate,
+  type RemoteConfig,
+} from "firebase/remote-config";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Config interface
 // ─────────────────────────────────────────────────────────────────────────────
 
 interface FirebaseClientConfig {
-	readonly apiKey: string;
-	readonly authDomain: string;
-	readonly projectId: string;
-	readonly storageBucket: string;
-	readonly messagingSenderId: string;
-	readonly appId: string;
-	readonly measurementId?: string;
+  readonly apiKey: string;
+  readonly authDomain: string;
+  readonly projectId: string;
+  readonly storageBucket: string;
+  readonly messagingSenderId: string;
+  readonly appId: string;
+  readonly measurementId?: string;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -65,58 +65,54 @@ interface FirebaseClientConfig {
 
 /** Development project: sports-skill-tracker-dev */
 const devConfig: FirebaseClientConfig = {
-	apiKey:
-		import.meta.env.VITE_FIREBASE_DEV_API_KEY ??
-		'AIzaSyCiBoemXJHTkTnujTwM1vOJc4FrVZF8Lw8',
-	authDomain:
-		import.meta.env.VITE_FIREBASE_DEV_AUTH_DOMAIN ??
-		'sports-skill-tracker-dev.firebaseapp.com',
-	projectId:
-		import.meta.env.VITE_FIREBASE_DEV_PROJECT_ID ?? 'sports-skill-tracker-dev',
-	storageBucket:
-		import.meta.env.VITE_FIREBASE_DEV_STORAGE_BUCKET ??
-		'sports-skill-tracker-dev.firebasestorage.app',
-	messagingSenderId:
-		import.meta.env.VITE_FIREBASE_DEV_MESSAGING_SENDER_ID ?? '4624204181',
-	appId:
-		import.meta.env.VITE_FIREBASE_DEV_APP_ID ??
-		'1:4624204181:web:d6c576088f0eb7d3d0f69c',
-	measurementId:
-		import.meta.env.VITE_FIREBASE_DEV_MEASUREMENT_ID ?? 'G-1YX13X6DQ6',
+  apiKey: import.meta.env.VITE_FIREBASE_DEV_API_KEY ?? "",
+  authDomain:
+    import.meta.env.VITE_FIREBASE_DEV_AUTH_DOMAIN ??
+    "sports-skill-tracker-dev.firebaseapp.com",
+  projectId:
+    import.meta.env.VITE_FIREBASE_DEV_PROJECT_ID ?? "sports-skill-tracker-dev",
+  storageBucket:
+    import.meta.env.VITE_FIREBASE_DEV_STORAGE_BUCKET ??
+    "sports-skill-tracker-dev.firebasestorage.app",
+  messagingSenderId:
+    import.meta.env.VITE_FIREBASE_DEV_MESSAGING_SENDER_ID ?? "4624204181",
+  appId:
+    import.meta.env.VITE_FIREBASE_DEV_APP_ID ??
+    "1:4624204181:web:d6c576088f0eb7d3d0f69c",
+  measurementId:
+    import.meta.env.VITE_FIREBASE_DEV_MEASUREMENT_ID ?? "G-1YX13X6DQ6",
 };
 
 /** Production project: soccer-skills-tracker */
 const prodConfig: FirebaseClientConfig = {
-	apiKey:
-		import.meta.env.VITE_FIREBASE_PROD_API_KEY ??
-		'AIzaSyDNmo6dACOLzOSkC93elMd5yMbFmsUXO1w',
-	authDomain:
-		import.meta.env.VITE_FIREBASE_PROD_AUTH_DOMAIN ?? 'soccer.sstracker.app',
-	projectId:
-		import.meta.env.VITE_FIREBASE_PROD_PROJECT_ID ?? 'soccer-skills-tracker',
-	storageBucket:
-		import.meta.env.VITE_FIREBASE_PROD_STORAGE_BUCKET ??
-		'soccer-skills-tracker.firebasestorage.app',
-	messagingSenderId:
-		import.meta.env.VITE_FIREBASE_PROD_MESSAGING_SENDER_ID ?? '884044129977',
-	appId:
-		import.meta.env.VITE_FIREBASE_PROD_APP_ID ??
-		'1:884044129977:web:47d54f59c891340e505d68',
+  apiKey: import.meta.env.VITE_FIREBASE_PROD_API_KEY ?? "",
+  authDomain:
+    import.meta.env.VITE_FIREBASE_PROD_AUTH_DOMAIN ?? "soccer.sstracker.app",
+  projectId:
+    import.meta.env.VITE_FIREBASE_PROD_PROJECT_ID ?? "soccer-skills-tracker",
+  storageBucket:
+    import.meta.env.VITE_FIREBASE_PROD_STORAGE_BUCKET ??
+    "soccer-skills-tracker.firebasestorage.app",
+  messagingSenderId:
+    import.meta.env.VITE_FIREBASE_PROD_MESSAGING_SENDER_ID ?? "884044129977",
+  appId:
+    import.meta.env.VITE_FIREBASE_PROD_APP_ID ??
+    "1:884044129977:web:47d54f59c891340e505d68",
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Active config (driven by VITE_USE_PROD)
 // ─────────────────────────────────────────────────────────────────────────────
 
-const useProd = import.meta.env.VITE_USE_PROD === 'true';
+const useProd = import.meta.env.VITE_USE_PROD === "true";
 
 /**
  * The resolved Firebase project config for the current environment.
  * Export is read-only — do not mutate at runtime.
  */
 export const activeConfig: Readonly<FirebaseClientConfig> = useProd
-	? prodConfig
-	: devConfig;
+  ? prodConfig
+  : devConfig;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Firebase App (Singleton Guard)
@@ -128,7 +124,7 @@ export const activeConfig: Readonly<FirebaseClientConfig> = useProd
  * which would throw "Firebase App named '[DEFAULT]' already exists".
  */
 export const app: FirebaseApp =
-	getApps().length > 0 ? getApps()[0] : initializeApp(activeConfig);
+  getApps().length > 0 ? getApps()[0] : initializeApp(activeConfig);
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Firebase Authentication
@@ -151,17 +147,20 @@ export const auth: Auth = getAuth(app);
  * instance without error.
  */
 export const db: Firestore = (() => {
-	try {
-		return initializeFirestore(app, {
-			localCache: persistentLocalCache({
-				tabManager: persistentMultipleTabManager(),
-				cacheSizeBytes: 41943040, // 40MB strict limit for offline cache to prevent IndexedDB QuotaExceededError
-			}),
-		});
-	} catch (err) {
-		console.warn('[Firebase] persistentLocalCache failed, falling back to non-persistent getFirestore', err);
-		return getFirestore(app);
-	}
+  try {
+    return initializeFirestore(app, {
+      localCache: persistentLocalCache({
+        tabManager: persistentMultipleTabManager(),
+        cacheSizeBytes: 41943040, // 40MB strict limit for offline cache to prevent IndexedDB QuotaExceededError
+      }),
+    });
+  } catch (err) {
+    console.warn(
+      "[Firebase] persistentLocalCache failed, falling back to non-persistent getFirestore",
+      err,
+    );
+    return getFirestore(app);
+  }
 })();
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -169,7 +168,7 @@ export const db: Firestore = (() => {
 // ─────────────────────────────────────────────────────────────────────────────
 
 /** Deployed to us-east1 — must match the region in functions/index.js */
-export const functions: Functions = getFunctions(app, 'us-east1');
+export const functions: Functions = getFunctions(app, "us-east1");
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Cloud Storage
@@ -191,11 +190,11 @@ export const storage: FirebaseStorage = getStorage(app);
 export let messaging: Messaging | null = null;
 
 if (browser) {
-	isSupported().then((supported) => {
-		if (supported) {
-			messaging = getMessaging(app);
-		}
-	});
+  isSupported().then((supported) => {
+    if (supported) {
+      messaging = getMessaging(app);
+    }
+  });
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -214,23 +213,23 @@ if (browser) {
  * Returns `null` in SSR or if Remote Config is unavailable.
  */
 export const remoteConfig: RemoteConfig | null = (() => {
-	if (!browser) return null;
-	try {
-		const rc = getRemoteConfig(app);
-		rc.settings.minimumFetchIntervalMillis = 5 * 60 * 1_000; // 5 minutes
+  if (!browser) return null;
+  try {
+    const rc = getRemoteConfig(app);
+    rc.settings.minimumFetchIntervalMillis = 5 * 60 * 1_000; // 5 minutes
 
-		rc.defaultConfig = {
-			feature_weather_aegis_enabled: true,
-			feature_xp_gamification_enabled: true,
-			feature_dopamine_explosions_enabled: true,
-		};
+    rc.defaultConfig = {
+      feature_weather_aegis_enabled: true,
+      feature_xp_gamification_enabled: true,
+      feature_dopamine_explosions_enabled: true,
+    };
 
-		fetchAndActivate(rc).catch(() => {
-			// Network failures keep safe defaults active — no crash
-		});
+    fetchAndActivate(rc).catch(() => {
+      // Network failures keep safe defaults active — no crash
+    });
 
-		return rc;
-	} catch {
-		return null;
-	}
+    return rc;
+  } catch {
+    return null;
+  }
 })();

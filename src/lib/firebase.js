@@ -25,69 +25,72 @@
  * Firebase Security Rules and Custom Claims, not by key secrecy.
  */
 
-import { browser } from '$app/environment';
-import { initializeApp, getApps } from 'firebase/app';
-import { getAuth } from 'firebase/auth';
+import { browser } from "$app/environment";
+import { initializeApp, getApps } from "firebase/app";
+import { getAuth } from "firebase/auth";
 import {
-	initializeFirestore,
-	persistentLocalCache,
-	persistentMultipleTabManager,
-	memoryLocalCache,
-	getFirestore,
-} from 'firebase/firestore';
-import { DEFAULT_CELL_ID, resolveCellId } from '$lib/types/cells';
-import { getFunctions } from 'firebase/functions';
-import { getStorage } from 'firebase/storage';
-import { getMessaging, isSupported } from 'firebase/messaging';
-import {
-	getRemoteConfig,
-	fetchAndActivate,
-} from 'firebase/remote-config';
+  initializeFirestore,
+  persistentLocalCache,
+  persistentMultipleTabManager,
+  memoryLocalCache,
+  getFirestore,
+} from "firebase/firestore";
+import { DEFAULT_CELL_ID, resolveCellId } from "$lib/types/cells";
+import { getFunctions } from "firebase/functions";
+import { getStorage } from "firebase/storage";
+import { getMessaging, isSupported } from "firebase/messaging";
+import { getRemoteConfig, fetchAndActivate } from "firebase/remote-config";
 
 // ── Config objects ────────────────────────────────────────────────────────────
 
 /** Development project — sports-skill-tracker-dev */
 const devConfig = {
-	apiKey: import.meta.env.VITE_FIREBASE_DEV_API_KEY || 'AIzaSyCiBoemXJHTkTnujTwM1vOJc4FrVZF8Lw8',
-	authDomain:
-		import.meta.env.VITE_FIREBASE_DEV_AUTH_DOMAIN ||
-		'sports-skill-tracker-dev.firebaseapp.com',
-	projectId: import.meta.env.VITE_FIREBASE_DEV_PROJECT_ID || 'sports-skill-tracker-dev',
-	storageBucket:
-		import.meta.env.VITE_FIREBASE_DEV_STORAGE_BUCKET ||
-		'sports-skill-tracker-dev.firebasestorage.app',
-	messagingSenderId:
-		import.meta.env.VITE_FIREBASE_DEV_MESSAGING_SENDER_ID || '4624204181',
-	appId: import.meta.env.VITE_FIREBASE_DEV_APP_ID || '1:4624204181:web:d6c576088f0eb7d3d0f69c',
-	measurementId: import.meta.env.VITE_FIREBASE_DEV_MEASUREMENT_ID || 'G-1YX13X6DQ6',
+  apiKey: import.meta.env.VITE_FIREBASE_DEV_API_KEY || "",
+  authDomain:
+    import.meta.env.VITE_FIREBASE_DEV_AUTH_DOMAIN ||
+    "sports-skill-tracker-dev.firebaseapp.com",
+  projectId:
+    import.meta.env.VITE_FIREBASE_DEV_PROJECT_ID || "sports-skill-tracker-dev",
+  storageBucket:
+    import.meta.env.VITE_FIREBASE_DEV_STORAGE_BUCKET ||
+    "sports-skill-tracker-dev.firebasestorage.app",
+  messagingSenderId:
+    import.meta.env.VITE_FIREBASE_DEV_MESSAGING_SENDER_ID || "4624204181",
+  appId:
+    import.meta.env.VITE_FIREBASE_DEV_APP_ID ||
+    "1:4624204181:web:d6c576088f0eb7d3d0f69c",
+  measurementId:
+    import.meta.env.VITE_FIREBASE_DEV_MEASUREMENT_ID || "G-1YX13X6DQ6",
 };
 
 /** Production project — soccer-skills-tracker */
 const prodConfig = {
-	apiKey: import.meta.env.VITE_FIREBASE_PROD_API_KEY || 'AIzaSyDNmo6dACOLzOSkC93elMd5yMbFmsUXO1w',
-	authDomain:
-		import.meta.env.VITE_FIREBASE_PROD_AUTH_DOMAIN || 'soccer.sstracker.app',
-	projectId: import.meta.env.VITE_FIREBASE_PROD_PROJECT_ID || 'soccer-skills-tracker',
-	storageBucket:
-		import.meta.env.VITE_FIREBASE_PROD_STORAGE_BUCKET ||
-		'soccer-skills-tracker.firebasestorage.app',
-	messagingSenderId:
-		import.meta.env.VITE_FIREBASE_PROD_MESSAGING_SENDER_ID || '884044129977',
-	appId:
-		import.meta.env.VITE_FIREBASE_PROD_APP_ID ||
-		'1:884044129977:web:47d54f59c891340e505d68',
+  apiKey: import.meta.env.VITE_FIREBASE_PROD_API_KEY || "",
+  authDomain:
+    import.meta.env.VITE_FIREBASE_PROD_AUTH_DOMAIN || "soccer.sstracker.app",
+  projectId:
+    import.meta.env.VITE_FIREBASE_PROD_PROJECT_ID || "soccer-skills-tracker",
+  storageBucket:
+    import.meta.env.VITE_FIREBASE_PROD_STORAGE_BUCKET ||
+    "soccer-skills-tracker.firebasestorage.app",
+  messagingSenderId:
+    import.meta.env.VITE_FIREBASE_PROD_MESSAGING_SENDER_ID || "884044129977",
+  appId:
+    import.meta.env.VITE_FIREBASE_PROD_APP_ID ||
+    "1:884044129977:web:47d54f59c891340e505d68",
 };
 
 // ── Initialise (singleton guard) ──────────────────────────────────────────────
 
-const useProd = import.meta.env.VITE_USE_PROD === 'true';
+const useProd = import.meta.env.VITE_USE_PROD === "true";
 const activeConfig = useProd ? prodConfig : devConfig;
 
 /**
  * Singleton guard: SvelteKit dev server hot-reloads modules frequently.
  * `getApps()` returns existing instances so we never double-initialise.
  */
-export const app = getApps().length > 0 ? getApps()[0] : initializeApp(activeConfig);
+export const app =
+  getApps().length > 0 ? getApps()[0] : initializeApp(activeConfig);
 
 export const auth = getAuth(app);
 
@@ -104,17 +107,20 @@ export const auth = getAuth(app);
  * defined below.
  */
 export const db = (() => {
-	try {
-		return initializeFirestore(app, {
-			localCache: persistentLocalCache({
-				cacheSizeBytes: 41943040,
-				tabManager: persistentMultipleTabManager(),
-			}),
-		});
-	} catch (err) {
-		console.warn('[Firestore] Failed to initialize persistent cache. Falling back to non-persistent getFirestore.', err);
-		return getFirestore(app);
-	}
+  try {
+    return initializeFirestore(app, {
+      localCache: persistentLocalCache({
+        cacheSizeBytes: 41943040,
+        tabManager: persistentMultipleTabManager(),
+      }),
+    });
+  } catch (err) {
+    console.warn(
+      "[Firestore] Failed to initialize persistent cache. Falling back to non-persistent getFirestore.",
+      err,
+    );
+    return getFirestore(app);
+  }
 })();
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -136,20 +142,21 @@ export const db = (() => {
  * @type {Map<string, import('firebase/firestore').Firestore>}
  */
 const cellDbCache = (() => {
-	const KEY = '__vanguardCellDbCache__';
-	const g = /** @type {{ [key: string]: Map<string, import('firebase/firestore').Firestore> }} */ (
-		globalThis
-	);
-	if (!g[KEY]) {
-		g[KEY] = new Map();
-	}
-	const cache = g[KEY];
-	// Seed with the already-initialised (default) Firestore instance so
-	// the first `getDb('(default)')` call doesn't try to re-initialise it.
-	if (!cache.has(DEFAULT_CELL_ID)) {
-		cache.set(DEFAULT_CELL_ID, db);
-	}
-	return cache;
+  const KEY = "__vanguardCellDbCache__";
+  const g =
+    /** @type {{ [key: string]: Map<string, import('firebase/firestore').Firestore> }} */ (
+      globalThis
+    );
+  if (!g[KEY]) {
+    g[KEY] = new Map();
+  }
+  const cache = g[KEY];
+  // Seed with the already-initialised (default) Firestore instance so
+  // the first `getDb('(default)')` call doesn't try to re-initialise it.
+  if (!cache.has(DEFAULT_CELL_ID)) {
+    cache.set(DEFAULT_CELL_ID, db);
+  }
+  return cache;
 })();
 
 /**
@@ -178,32 +185,32 @@ const cellDbCache = (() => {
  * @returns {import('firebase/firestore').Firestore}
  */
 export function getDb(cellId) {
-	const resolved = resolveCellId(cellId);
+  const resolved = resolveCellId(cellId);
 
-	const cached = cellDbCache.get(resolved);
-	if (cached) return cached;
+  const cached = cellDbCache.get(resolved);
+  if (cached) return cached;
 
-	// Dedicated cell — initialise on first use.  Web SDK accepts the
-	// cellId as the 3rd argument to initializeFirestore / getFirestore.
-	try {
-		const instance = initializeFirestore(
-			app,
-			{
-				localCache: persistentLocalCache({
-					tabManager: persistentMultipleTabManager(),
-				}),
-			},
-			resolved,
-		);
-		cellDbCache.set(resolved, instance);
-		return instance;
-	} catch {
-		// HMR fallback — instance already initialised for this cellId
-		// on a prior module load; recover via getFirestore.
-		const fallback = getFirestore(app, resolved);
-		cellDbCache.set(resolved, fallback);
-		return fallback;
-	}
+  // Dedicated cell — initialise on first use.  Web SDK accepts the
+  // cellId as the 3rd argument to initializeFirestore / getFirestore.
+  try {
+    const instance = initializeFirestore(
+      app,
+      {
+        localCache: persistentLocalCache({
+          tabManager: persistentMultipleTabManager(),
+        }),
+      },
+      resolved,
+    );
+    cellDbCache.set(resolved, instance);
+    return instance;
+  } catch {
+    // HMR fallback — instance already initialised for this cellId
+    // on a prior module load; recover via getFirestore.
+    const fallback = getFirestore(app, resolved);
+    cellDbCache.set(resolved, fallback);
+    return fallback;
+  }
 }
 
 /**
@@ -227,7 +234,7 @@ let activeCellResolver = null;
  * @param {() => string | null | undefined} resolver
  */
 export function registerActiveCellResolver(resolver) {
-	activeCellResolver = resolver;
+  activeCellResolver = resolver;
 }
 
 /**
@@ -256,19 +263,19 @@ export function registerActiveCellResolver(resolver) {
  * @returns {import('firebase/firestore').Firestore}
  */
 export function getActiveDb() {
-	if (!browser || !activeCellResolver) {
-		return getDb(DEFAULT_CELL_ID);
-	}
-	try {
-		const cellId = activeCellResolver();
-		return getDb(cellId ?? undefined);
-	} catch {
-		return getDb(DEFAULT_CELL_ID);
-	}
+  if (!browser || !activeCellResolver) {
+    return getDb(DEFAULT_CELL_ID);
+  }
+  try {
+    const cellId = activeCellResolver();
+    return getDb(cellId ?? undefined);
+  } catch {
+    return getDb(DEFAULT_CELL_ID);
+  }
 }
 
 /** Matches Cloud Functions region in functions/index.js — us-east1 (HOTFIX ALPHA-4) */
-export const functions = getFunctions(app, 'us-east1');
+export const functions = getFunctions(app, "us-east1");
 
 export const storage = getStorage(app);
 
@@ -277,14 +284,15 @@ export const storage = getStorage(app);
  * Resolved asynchronously; callers should check `messaging !== null`
  * before use.
  */
-export let messaging = /** @type {import('firebase/messaging').Messaging | null} */ (null);
+export let messaging =
+  /** @type {import('firebase/messaging').Messaging | null} */ (null);
 
 if (browser) {
-	isSupported().then((supported) => {
-		if (supported) {
-			messaging = getMessaging(app);
-		}
-	});
+  isSupported().then((supported) => {
+    if (supported) {
+      messaging = getMessaging(app);
+    }
+  });
 }
 
 /**
@@ -302,28 +310,28 @@ if (browser) {
  * Changes propagate within the minimumFetchIntervalMillis window (5 min).
  */
 export const remoteConfig = (() => {
-	if (!browser) return null;
-	try {
-		const rc = getRemoteConfig(app);
-		rc.settings.minimumFetchIntervalMillis = 5 * 60 * 1000; // 5 minutes
+  if (!browser) return null;
+  try {
+    const rc = getRemoteConfig(app);
+    rc.settings.minimumFetchIntervalMillis = 5 * 60 * 1000; // 5 minutes
 
-		// Safe defaults — all features ON until told otherwise
-		rc.defaultConfig = {
-			feature_weather_aegis_enabled: true,
-			feature_xp_gamification_enabled: true,
-			// Phase 4, Epic 7 — Dopamine Engine enabled by default.
-			// Kill switch: set false in Firebase Console → Remote Config.
-			feature_dopamine_explosions_enabled: true,
-		};
+    // Safe defaults — all features ON until told otherwise
+    rc.defaultConfig = {
+      feature_weather_aegis_enabled: true,
+      feature_xp_gamification_enabled: true,
+      // Phase 4, Epic 7 — Dopamine Engine enabled by default.
+      // Kill switch: set false in Firebase Console → Remote Config.
+      feature_dopamine_explosions_enabled: true,
+    };
 
-		// Fetch and activate in the background — never blocks rendering
-		fetchAndActivate(rc).catch(() => {
-			// Network failure: defaults remain active, no crash
-		});
+    // Fetch and activate in the background — never blocks rendering
+    fetchAndActivate(rc).catch(() => {
+      // Network failure: defaults remain active, no crash
+    });
 
-		return rc;
-	} catch {
-		// Remote Config not supported in this environment (e.g. test runner)
-		return null;
-	}
+    return rc;
+  } catch {
+    // Remote Config not supported in this environment (e.g. test runner)
+    return null;
+  }
 })();
