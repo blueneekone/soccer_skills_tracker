@@ -39,7 +39,11 @@ const initTrackerBindings = () => {
 
 // 🟢 FIX: Safely execute the binder
 export const initTracker = () => {
-    initTrackerBindings();
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initTrackerBindings);
+    } else {
+        initTrackerBindings();
+    }
 };
 
 export const addDrillToSession = (drill) => {
