@@ -71,6 +71,7 @@ exports.parentReconcileHousehold = operativeOps.parentReconcileHousehold;
 exports.generatePlayerOTP = operativeOps.generatePlayerOTP;
 exports.operativeSignInWithDispatch = operativeOps.operativeSignInWithDispatch;
 exports.validatePlayerOTP = operativeOps.validatePlayerOTP;
+exports.createCommsChannel = operativeOps.createCommsChannel;
 
 exports.listJoinableClubs = adminOps.listJoinableClubs;
 exports.claimCoachInvite = adminOps.claimCoachInvite;
