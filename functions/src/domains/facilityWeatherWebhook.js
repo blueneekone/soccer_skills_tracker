@@ -4,6 +4,7 @@
  * Tomorrow.io facility weather webhook — lightning lockdown + FCM alerts.
  * Split from webhooksOps so integrations codebase does not load Stripe.
  */
+const crypto = require('crypto');
 const {onRequest} = require('firebase-functions/v2/https');
 const logger = require('firebase-functions/logger');
 const admin = require('firebase-admin');
@@ -81,7 +82,18 @@ exports.facilityWeatherWebhook = onRequest(
             req.query.token.trim() :
             '';
       const expectedToken = WEBHOOK_AUTH_TOKEN.value();
-      if (!expectedToken || token !== expectedToken) {
+      if (!expectedToken || !token) {
+        res.status(403).send('Forbidden');
+        return;
+      }
+
+      const expectedTokenBuffer = Buffer.from(expectedToken);
+      const tokenBuffer = Buffer.from(token);
+
+      if (
+        expectedTokenBuffer.length !== tokenBuffer.length ||
+        !crypto.timingSafeEqual(expectedTokenBuffer, tokenBuffer)
+      ) {
         res.status(403).send('Forbidden');
         return;
       }
