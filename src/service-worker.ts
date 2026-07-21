@@ -201,7 +201,15 @@ self.addEventListener('fetch', (event: FetchEvent) => {
 	if (shouldBypass(url)) {
 		// SvelteKit requires us to respond with fetch directly to avoid
 		// chromium navigation-preload bugs on bypassed routes
-		event.respondWith(fetch(req));
+		event.respondWith(
+			(async () => {
+				if (event.preloadResponse) {
+					const preload = await event.preloadResponse;
+					if (preload) return preload;
+				}
+				return fetch(req);
+			})()
+		);
 		return;
 	}
 
