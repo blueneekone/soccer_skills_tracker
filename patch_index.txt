@@ -1,0 +1,50 @@
+<<<<<<< SEARCH
+exports.validatePlayerOTP = operativeOps.validatePlayerOTP;
+
+exports.listJoinableClubs = adminOps.listJoinableClubs;
+=======
+exports.validatePlayerOTP = operativeOps.validatePlayerOTP;
+exports.createCommsChannel = operativeOps.createCommsChannel;
+
+exports.listJoinableClubs = adminOps.listJoinableClubs;
+>>>>>>> REPLACE
+<<<<<<< SEARCH
+exports.coachRosterIngest = coachRosterIngestOps.coachRosterIngest;
+=======
+exports.coachRosterIngest = coachRosterIngestOps.coachRosterIngest;
+
+const commsChannelOps = require('./src/domains/commsChannelOps.js');
+exports.coachProvisionStaffInternal = commsChannelOps.coachProvisionStaffInternal;
+exports.coachProvisionParentLounge = commsChannelOps.coachProvisionParentLounge;
+exports.mirrorScheduleToLogistics = commsChannelOps.mirrorScheduleToLogistics;
+
+exports.sendCoachPlayerMessage = operativeOps.sendCoachPlayerMessage;
+exports.sendChannelMessage = operativeOps.sendChannelMessage;
+exports.sendHouseholdMessage = operativeOps.sendHouseholdMessage;
+exports.impersonateUserFn = operativeOps.impersonateUserFn;
+exports.purgeUserDataFn = operativeOps.purgeUserDataFn;
+
+const comms = require('./comms.js');
+exports.safeSportBroadcast = comms.safeSportBroadcast;
+exports.clubSportBroadcast = comms.clubSportBroadcast;
+exports.emergencyClubBroadcast = comms.emergencyClubBroadcast;
+exports.reportMessageIncident = comms.reportMessageIncident;
+
+const sponsorPartnerOps = require('./src/domains/sponsorPartnerOps.js');
+exports.createSponsorTemplate = sponsorPartnerOps.createSponsorTemplate;
+exports.approveSponsorTemplate = sponsorPartnerOps.approveSponsorTemplate;
+exports.sendSponsorPartnerDigest = sponsorPartnerOps.sendSponsorPartnerDigest;
+
+const parentVoiceSessionOps = require('./src/domains/parentVoiceSessionOps.js');
+exports.createParentVoiceSession = parentVoiceSessionOps.createParentVoiceSession;
+exports.joinParentVoiceSession = parentVoiceSessionOps.joinParentVoiceSession;
+
+const notificationOps = require('./src/domains/notificationOps.js');
+exports.onTeamBroadcastCreated = notificationOps.onTeamBroadcastCreated;
+exports.onDeploymentCalendarEntryCreated = notificationOps.onDeploymentCalendarEntryCreated;
+
+const webhooksOps = require('./src/domains/webhooksOps.js');
+exports.acknowledgeBroadcast = webhooksOps.acknowledgeBroadcast;
+exports.getBroadcastAckStatus = webhooksOps.getBroadcastAckStatus;
+
+>>>>>>> REPLACE

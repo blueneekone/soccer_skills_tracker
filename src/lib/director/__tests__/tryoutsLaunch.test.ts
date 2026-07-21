@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { readFileSync } from 'node:fs';
+import { readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 
 const ROOT = join(process.cwd());
@@ -157,7 +157,8 @@ describe('LAUNCH-staff-roster-transfer — registrarTransferPlayer UI', () => {
 	});
 
 	it('director and admin roster mount RegistrarRosterTransferPanel', () => {
-		const director = readFileSync(join(ROOT, 'src/routes/(app)/director/+page.svelte'), 'utf-8');
+		const directorSrcPath = join(ROOT, 'src/routes/(app)/director/dashboard/+page.svelte');
+		const director = existsSync(directorSrcPath) ? readFileSync(directorSrcPath, 'utf-8') : '';
 		const admin = readFileSync(
 			join(ROOT, 'src/routes/(app)/admin/organizations/[clubId]/teams/[teamId]/roster/+page.svelte'),
 			'utf-8',

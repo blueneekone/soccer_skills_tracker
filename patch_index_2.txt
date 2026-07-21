@@ -1,0 +1,16 @@
+<<<<<<< SEARCH
+const webhooksOps = require('./src/domains/webhooksOps.js');
+exports.acknowledgeBroadcast = webhooksOps.acknowledgeBroadcast;
+exports.getBroadcastAckStatus = webhooksOps.getBroadcastAckStatus;
+=======
+const webhooksOps = require('./src/domains/webhooksOps.js');
+exports.acknowledgeBroadcast = webhooksOps.acknowledgeBroadcast;
+exports.getBroadcastAckStatus = webhooksOps.getBroadcastAckStatus;
+
+const { exportScheduler } = require('./src/utils/exportScheduler');
+const eventOps = require('./src/domains/eventOps.js');
+exportScheduler(exports, 'sendScheduledEventReminders', eventOps.sendScheduledEventReminders);
+
+const commerce = require('./commerce.js');
+exportScheduler(exports, 'sendRegistrationPaymentReminders', commerce.sendRegistrationPaymentReminders);
+>>>>>>> REPLACE

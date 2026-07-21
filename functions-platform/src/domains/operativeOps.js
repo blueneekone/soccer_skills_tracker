@@ -25,6 +25,8 @@ const {provisionLoungesForParentHousehold} = require('./commsChannelOps');
 const {buildBaseCustomClaims} = require('../auth/customClaims');
 const {assertChildInParentHousehold, reconcileParentHouseholdGraph} =
   require('./householdMembership');
+const {resolveGuardiansForPlayers} = require('../utils/guardianResolver');
+const {sanitizeChannelPayload} = require('../utils/channelSecurityGuard');
 
 const REGION = 'us-east1';
 
@@ -264,6 +266,68 @@ async function resolveUserUidFromUsernameOrCallsign(raw) {
  * SafeSport / Epic 1.4 + Sprint 4.2: coach or director sends in-app message to a
  * rostered adult athlete (18+). Minors are blocked — use parent-targeted broadcasts.
  */
+/**
+ * SafeSport: createCommsChannel ensures zero-trust channel creation.
+ */
+exports.createCommsChannel = onCall({region: REGION}, async (request) => {
+  if (!request.auth) throw new HttpsError('unauthenticated', 'Sign in required.');
+
+  const callerUid = request.auth.uid;
+  const callerRole = request.auth.token.role || 'player';
+  const cleanPayload = sanitizeChannelPayload(request.data || {});
+
+  const { clubId, teamId, name, type, memberIds } = cleanPayload;
+  if (!clubId) throw new HttpsError('invalid-argument', 'clubId is required');
+
+  // Enforce caller membership
+  const callerEmail = normEmail(request.auth.token.email);
+  if (callerEmail && !memberIds.includes(callerEmail)) {
+    memberIds.push(callerEmail);
+  }
+
+  let ccParentEmails = [];
+  let safesportMonitored = false;
+  const isStaffShadow = ['coach', 'director', 'super_admin', 'global_admin'].includes(callerRole);
+
+  if (isStaffShadow) {
+    const playersInChannel = [];
+    // b815 Guard: check for db instance existence implicitly by admin.firestore()
+    for (const member of memberIds) {
+      if (member === callerEmail) continue;
+      const snap = await admin.firestore().collection('users').doc(member).get();
+      if (snap.exists) {
+        const d = snap.data();
+        if (d.role === 'player') {
+          if (d.isMinor) {
+             throw new HttpsError('permission-denied', 'SafeSport: direct chat with minor athletes is blocked. Use Logistics → parent announcements.');
+          }
+          playersInChannel.push(member);
+        }
+      }
+    }
+    if (playersInChannel.length > 0) {
+      ccParentEmails = await resolveGuardiansForPlayers(admin.firestore(), clubId, playersInChannel);
+      safesportMonitored = ccParentEmails.length > 0;
+      if (ccParentEmails.length === 0) {
+          throw new HttpsError('permission-denied', 'Link a parent/guardian to this player (household) before starting a chat.');
+      }
+    }
+  }
+
+  const finalMemberIds = [...new Set([...memberIds, ...ccParentEmails])].sort();
+  const channelData = {
+    name: name || 'Group chat', type: type || 'group',
+    memberIds: finalMemberIds, ccParentEmails,
+    safesportMonitored, teamId: teamId || null,
+    createdBy: callerUid, createdAt: admin.firestore.FieldValue.serverTimestamp(),
+  };
+
+  const col = admin.firestore().collection('clubs').doc(clubId).collection('channels');
+  const ref = await col.add(channelData);
+
+  return { id: ref.id, safesportMonitored, ccCount: ccParentEmails.length };
+});
+
 exports.sendCoachPlayerMessage = onCall({region: REGION}, async (request) => {
   const actor = assertCoachMessageSender(request);
   const data = request.data || {};
