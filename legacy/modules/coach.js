@@ -154,7 +154,11 @@ const bindCoachView = () => {
 
 // 🟢 FIX: Safely execute the binder regardless of ES6 module load time
 export const initCoachBindings = () => {
-    bindCoachView();
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', bindCoachView);
+    } else {
+        bindCoachView();
+    }
 };
 
 // --- SCHEDULE & HOMEWORK VIEW ---
