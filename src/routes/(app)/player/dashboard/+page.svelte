@@ -14,6 +14,7 @@
 	import IdentityBentoModule from '$lib/components/player/dashboard/IdentityBentoModule.svelte';
 	import HUDContainer from '$lib/components/hud/HUDContainer.svelte';
 	import VanguardProtocolPanel from '$lib/components/player/dashboard/VanguardProtocolPanel.svelte';
+	import DecayWarningBanner from '$lib/components/player/DecayWarningBanner.svelte';
 	import { sportsConfigStore } from '$lib/stores/sportsConfigStore.svelte.js';
 	import { deriveVanguardPrism } from '$lib/utils/vanguard-prism.js';
 	import { getCurrentRank, getLevelProgressFromTotalXp } from '$lib/gamification/level.js';
@@ -423,7 +424,10 @@
 <main class="tw-bg-[#000000] tw-min-h-screen tw-text-white tw-font-sans tw-relative tw-z-0 tw-p-8 lg:tw-p-12 tw-overflow-y-auto" data-dopamine={vanguardFlags.dopamineEnabled ? 'on' : 'off'}>
 	<!-- Z1: Structural Layout (12-col Bento) -->
 	<div class="tw-grid tw-grid-cols-1 lg:tw-grid-cols-12 tw-gap-8 tw-max-w-7xl tw-mx-auto tw-z-10 tw-relative">
-		
+		{#if dopamineEngine.decayPenaltyApplied}
+			<DecayWarningBanner xpLost={dopamineEngine.xpLost} />
+		{/if}
+
 		<!-- Z2: Dynamic Streak Counters & EXACTLY ONE ACTION GOLD CTA -->
 		<section class="lg:tw-col-span-12 tw-flex tw-items-center tw-justify-between tw-z-20 tw-mt-4">
 			<div class="tw-bg-[#0f172a] tw-p-6 tw-flex tw-items-center tw-gap-6" style="clip-path: polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px);">

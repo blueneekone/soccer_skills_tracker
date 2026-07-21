@@ -1,4 +1,13 @@
 import { browser } from '$app/environment';
+import { getFunctions, httpsCallable } from 'firebase/functions';
+
+export interface DecayResult {
+	applied: boolean;
+	xpLost?: number;
+	newXp?: number;
+	daysInactive?: number;
+	reason?: string;
+}
 
 export class DopamineEngine {
 	// Habit Streak System
@@ -24,28 +33,23 @@ export class DopamineEngine {
 		this.bestStreak = userData.bestStreak || 0;
 		this.lastActiveDate = userData.lastActiveDate || null;
 		
-		this.evaluateSkillDecay();
+		void this.syncDecayFromServer();
 	}
 
-	/**
-	 * Core Drive 8: Loss Avoidance
-	 * Calculates if the player missed 5+ consecutive days and applies decay.
-	 */
-	private evaluateSkillDecay() {
-		if (!this.lastActiveDate) return;
-		
-		const today = new Date();
-		const lastActive = new Date(this.lastActiveDate);
-		const diffTime = Math.abs(today.getTime() - lastActive.getTime());
-		const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-
-		if (diffDays >= 5) {
-			this.decayPenaltyApplied = true;
-			// Drain fractions of inactive XP (mocked as static for now, would sync to DB)
-			this.xpLost = Math.floor(diffDays * 15);
-			
-			// Visual behavioral reinforcement queue
-			this.queueFeedback('DECAY_WARNING', { days: diffDays, lost: this.xpLost });
+	private async syncDecayFromServer(): Promise<void> {
+		try {
+			const functions = getFunctions();
+			const applyDecay = httpsCallable<void, DecayResult>(functions, 'applySkillDecay');
+			const result = await applyDecay();
+			const data = result.data;
+			if (data.applied) {
+				this.decayPenaltyApplied = true;
+				this.xpLost = data.xpLost ?? 0;
+				this.queueFeedback('DECAY_WARNING', { days: data.daysInactive, lost: data.xpLost });
+			}
+		} catch (e) {
+			// Graceful degradation — decay display skipped, no hard error shown
+			console.warn('[DopamineEngine] decay sync skipped:', e);
 		}
 	}
 
