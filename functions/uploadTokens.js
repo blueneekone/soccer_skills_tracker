@@ -30,6 +30,7 @@
 const {onCall, HttpsError} = require('firebase-functions/v2/https');
 const logger = require('firebase-functions/logger');
 const admin = require('firebase-admin');
+const crypto = require('crypto');
 
 const REGION = 'us-east1';
 const UPLOAD_EXPIRY_MINUTES = 15;
@@ -100,7 +101,8 @@ exports.getUploadToken = onCall({region: REGION}, async (request) => {
   }
 
   const safe = sanitizeFileName(fileName);
-  const clipId = `${Date.now()}_${callerUid.slice(0, 8)}_${Math.random().toString(36).slice(2, 8)}`;
+  const randomPart = crypto.randomBytes(4).toString('hex');
+  const clipId = `${Date.now()}_${callerUid.slice(0, 8)}_${randomPart}`;
   const ext = safe.includes('.') ? safe.slice(safe.lastIndexOf('.')) : '';
   const storagePath = `tenants/${tenantId}/staging/${callerUid}/${clipId}${ext}`;
 
