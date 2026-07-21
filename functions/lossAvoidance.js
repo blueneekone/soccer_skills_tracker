@@ -48,6 +48,7 @@ const {onCall, HttpsError}    = require('firebase-functions/v2/https');
 const logger                  = require('firebase-functions/logger');
 const admin                   = require('firebase-admin');
 const {defineString}          = require('firebase-functions/params');
+const crypto                  = require('crypto');
 
 const {
   resolveStreak,
@@ -337,7 +338,7 @@ async function processSinglePlayer({userDoc, todayStr, nowMs, params, db: firest
 
     // ── Assemble writes ───────────────────────────────────────────────────
     const batchId = crypto.randomUUID ? crypto.randomUUID()
-      : `decay-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+      : `decay-${Date.now()}-${crypto.randomBytes(8).toString('hex')}`;
 
     const decayStateUpdate = {
       lastDecayRunUtc: todayStr,
