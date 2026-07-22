@@ -42,9 +42,9 @@ SSTracker is a multi-billion-dollar youth sports SaaS platform engineered for a 
 
 ### 🛡️ EPIC 5: PARENT OS & RECRUITER MARKETPLACE (THE SHIELD)
 **Mission:** Legal compliance, financial escrow, emotional safety, and global scouting monetization [cite: 1065].
-*   **WebAuthn Biometric Enclave:** Binds COPPA 2.0 and Verifiable Parental Consent (VPC) directly to hardware FaceID/TouchID [cite: 1065].
+[x] **WebAuthn Biometric Enclave:** Binds COPPA 2.0 and Verifiable Parental Consent (VPC) directly to hardware FaceID/TouchID [cite: 1065].
 *   **SafeSport Comms (Shadow CC):** Hardcoded routing layer that automatically CCs parents on all coach-to-player direct messages [cite: 1065].
-*   **The Car Ride Home Protocol (EQ):** Suppresses raw metric dashboards for 15 minutes post-match to protect beginner self-worth [cite: 1065].
+[x] **The Car Ride Home Protocol (EQ):** Suppresses raw metric dashboards for 15 minutes post-match to protect beginner self-worth [cite: 1065].
 *   **Vetted Recruiter Engine:** Checkr API integration mandating National Criminal Database vetting before scouts can filter the global prospect database [cite: 1065].
 
 ### 🏟️ EPIC 6: FAN OS & BROADCAST MONETIZATION
