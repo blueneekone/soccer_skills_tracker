@@ -262,3 +262,132 @@ exports.vaultUnsealPii = onCall(
 
 module.exports.SENSITIVE_PII_FIELDS = SENSITIVE_PII_FIELDS;
 module.exports.KEY_VERSION = KEY_VERSION;
+
+exports.uploadEligibilityDocument = onCall(
+    {region: REGION, secrets: [PII_VAULT_MASTER_KEY]},
+    async (request) => {
+      const {ownerEmailKey: rawOwner, documentType, fileUrl} = request.data || {};
+      const ownerEmailKey = normEmail(rawOwner);
+
+      if (!request.auth) {
+        throw new HttpsError('unauthenticated', 'Sign in required.');
+      }
+
+      if (request.auth.token.vpcVerified !== true) {
+         throw new HttpsError('permission-denied', 'Upload rejected: Missing valid Verifiable Parental Consent (VPC) token.');
+      }
+
+      if (!ownerEmailKey || !documentType || !fileUrl) {
+        throw new HttpsError('invalid-argument', 'ownerEmailKey, documentType, and fileUrl are required.');
+      }
+
+      assertVaultWriteAccess(request, ownerEmailKey);
+
+      const masterKey = resolveMasterKey(PII_VAULT_MASTER_KEY.value());
+      const dek = crypto.randomBytes(32);
+      const wrappedDek = wrapDek(masterKey, dek);
+
+      const ciphertext = {
+        fileUrl: encryptField(dek, fileUrl)
+      };
+
+      dek.fill(0);
+
+      const sealRef = db().collection('pii_vault').doc();
+      const firestoreNow = admin.firestore.FieldValue.serverTimestamp();
+
+      const clubId = typeof request.data.clubId === 'string'
+          ? request.data.clubId
+          : (request.auth.token.clubId || null);
+
+      await sealRef.set({
+        ownerUid: request.auth.uid,
+        ownerEmailKey,
+        clubId,
+        documentType,
+        isEligibilityRecord: true,
+        ciphertext,
+        wrappedDek,
+        algorithm: 'AES-256-GCM',
+        keyVersion: KEY_VERSION,
+        createdAt: firestoreNow,
+        shredStatus: 'pending',
+      });
+
+      logger.info('[uploadEligibilityDocument] Gate clear. Document sealed.', { ownerEmailKey, documentType, sealId: sealRef.id });
+
+      return { sealId: sealRef.id };
+    }
+);
+
+
+/**
+ * Helper function to handle E-Sign encryption logic to keep main function < 80 lines.
+ * @param {Buffer} masterKey
+ * @param {string} ip
+ * @param {string} emailKey
+ * @param {Date} date
+ */
+function processEsignMetadata(masterKey, ip, emailKey, date) {
+  const dek = crypto.randomBytes(32);
+  const wrappedDek = wrapDek(masterKey, dek);
+
+  const ciphertext = {
+    ipAddress: encryptField(dek, ip),
+    emailVerified: encryptField(dek, emailKey),
+    timestamp: encryptField(dek, date.toISOString()),
+    dateString: encryptField(dek, date.toDateString())
+  };
+
+  dek.fill(0);
+  return { ciphertext, wrappedDek };
+}
+
+exports.signDocument = onCall(
+    {region: REGION, secrets: [PII_VAULT_MASTER_KEY]},
+    async (request) => {
+      const {ownerEmailKey: rawOwner, documentType} = request.data || {};
+      const ownerEmailKey = normEmail(rawOwner);
+
+      if (!request.auth) {
+        throw new HttpsError('unauthenticated', 'Sign in required.');
+      }
+
+      if (!ownerEmailKey || !documentType) {
+        throw new HttpsError('invalid-argument', 'ownerEmailKey and documentType are required.');
+      }
+
+      assertVaultWriteAccess(request, ownerEmailKey);
+
+      const ip = request.rawRequest?.ip || 'unknown';
+      const masterKey = resolveMasterKey(PII_VAULT_MASTER_KEY.value());
+      const now = new Date();
+
+      const { ciphertext, wrappedDek } = processEsignMetadata(masterKey, ip, ownerEmailKey, now);
+
+      const sealRef = db().collection('pii_vault').doc();
+      const firestoreNow = admin.firestore.FieldValue.serverTimestamp();
+
+      const clubId = typeof request.data.clubId === 'string'
+          ? request.data.clubId
+          : (request.auth.token.clubId || null);
+
+      await sealRef.set({
+        ownerUid: request.auth.uid,
+        ownerEmailKey,
+        clubId,
+        documentType,
+        isEsignRecord: true,
+        ciphertext,
+        wrappedDek,
+        algorithm: 'AES-256-GCM',
+        keyVersion: KEY_VERSION,
+        createdAt: firestoreNow,
+        shredStatus: 'exempt', // E-sign records must be retained
+      });
+
+      logger.info('[signDocument] E-Sign metadata captured', { ownerEmailKey, documentType, sealId: sealRef.id });
+
+      return { sealId: sealRef.id, timestamp: now.toISOString() };
+    }
+);
