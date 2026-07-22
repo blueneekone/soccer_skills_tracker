@@ -15,6 +15,7 @@
 		if (!teamId) return;
 		loading = true;
 		try {
+			if (!db || !authStore.isAuthenticated) return;
 			// Mock query or actual query based on Squad Telemetry
 			const q = query(
 				collection(db, 'player_lookup'),
@@ -38,9 +39,13 @@
 		}
 	}
 
+	import { untrack } from 'svelte';
+
 	$effect(() => {
 		if (authStore.isLoading || !authStore.isAuthenticated) return;
-		loadTelemetry();
+		untrack(() => {
+			loadTelemetry();
+		});
 	});
 </script>
 

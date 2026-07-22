@@ -34,6 +34,7 @@
 
 		(async () => {
 			try {
+				if (!db || !authStore.isAuthenticated) return;
 				const snap = await getDocs(
 					query(collection(db, 'consent_records'), where('parentEmail', '==', myEmail)),
 				);

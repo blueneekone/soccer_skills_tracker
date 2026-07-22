@@ -45,6 +45,7 @@
 			return annCache.rows.slice(0, maxRows);
 		}
 
+		if (!db || !authStore.isAuthenticated) return [];
 		const seen = new Set<string>();
 		const rows: AnnRow[] = [];
 

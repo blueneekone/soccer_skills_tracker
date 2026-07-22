@@ -117,12 +117,14 @@ export class NewMessageEngine {
 			};
 
 			if (this.isStaffShadow) {
+				if (!db) return;
 				const uq = query(collection(db, 'users'), where('clubId', '==', this.clubId), limit(400));
 				const snap = await getDocs(uq);
 				snap.forEach(pushDoc);
 			}
 
 			if (this.teamId && this.isStaffShadow) {
+				if (!db) return;
 				const tq = query(collection(db, 'users'), where('teamId', '==', this.teamId), limit(400));
 				const ts = await getDocs(tq);
 				ts.forEach(pushDoc);

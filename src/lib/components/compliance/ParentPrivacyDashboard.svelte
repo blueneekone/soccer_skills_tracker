@@ -65,6 +65,7 @@
 		loading = true;
 		error = '';
 		try {
+			if (!db || !authStore.isAuthenticated) return;
 			const cutoff = Timestamp.fromDate(new Date(Date.now() - THIRTY_DAYS_MS));
 			const q = query(
 				collection(db, 'audit_logs'),

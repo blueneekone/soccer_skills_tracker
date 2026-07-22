@@ -23,6 +23,7 @@
 		if (!teamId) return;
 		loadingDrills = true;
 		try {
+			if (!db || !authStore.isAuthenticated) return;
 			const q = query(
 				collection(db, 'workouts'),
 				where('teamId', '==', teamId),
@@ -42,9 +43,13 @@
 		}
 	}
 
+	import { untrack } from 'svelte';
+
 	$effect(() => {
 		if (authStore.isLoading || !authStore.isAuthenticated) return;
-		loadDrillsForIntent();
+		untrack(() => {
+			loadDrillsForIntent();
+		});
 	});
 
 	async function assignDrill() {

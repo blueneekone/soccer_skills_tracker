@@ -57,6 +57,7 @@
 		}
 
 		if (!resolvedClubId || !channelId) return [];
+		if (!db || !authStore.isAuthenticated) return [];
 
 		const qy = query(
 			collection(db, 'clubs', resolvedClubId, 'channels', channelId, 'messages'),
