@@ -1,4 +1,5 @@
 <script>
+	import { untrack } from 'svelte';
 	import { onDestroy } from 'svelte';
 	import { FeeLedgerEngine } from '$lib/services/feeLedger.svelte.ts';
 	import { licenseEntitlementStore } from '$lib/stores/licenseEntitlement.svelte.js';

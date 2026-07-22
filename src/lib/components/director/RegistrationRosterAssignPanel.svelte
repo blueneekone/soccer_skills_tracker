@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { authStore } from '$lib/stores/auth.svelte.js';
+	import { untrack } from 'svelte';
 	import { db, functions } from '$lib/firebase.js';
 	import {
 		collection,
@@ -141,6 +143,7 @@
 	});
 
 	async function assignRow(registrationId: string, teamId?: string) {
+		if (!db || !authStore.isAuthenticated) return;
 		const resolvedTeamId = (teamId ?? teamPick[registrationId])?.trim();
 		if (!resolvedTeamId || savingId) return;
 		const row = registrations.find((r) => r.id === registrationId);

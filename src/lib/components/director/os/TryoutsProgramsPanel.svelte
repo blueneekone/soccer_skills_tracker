@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { untrack } from 'svelte';
 	import { browser } from '$app/environment';
 	import { db, functions } from '$lib/firebase.js';
 	import { collection, query, where, onSnapshot } from 'firebase/firestore';

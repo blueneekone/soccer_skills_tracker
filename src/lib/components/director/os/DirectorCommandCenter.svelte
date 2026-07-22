@@ -1,4 +1,5 @@
 <script>
+	import { untrack } from 'svelte';
 	import { browser } from '$app/environment';
 	import { collection, doc, getCountFromServer, getDoc, query, where } from 'firebase/firestore';
 	import { db } from '$lib/firebase.js';

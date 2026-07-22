@@ -1,4 +1,5 @@
 <script>
+	import { untrack } from 'svelte';
 	import { db, functions, storage } from '$lib/firebase.js';
 	import { doc, getDoc } from 'firebase/firestore';
 	import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';

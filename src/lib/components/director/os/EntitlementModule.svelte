@@ -1,4 +1,5 @@
 <script>
+	import { untrack } from 'svelte';
 	import { db } from '$lib/firebase.js';
 	import { doc, onSnapshot } from 'firebase/firestore';
 	import { licenseEntitlementStore } from '$lib/stores/licenseEntitlement.svelte.js';

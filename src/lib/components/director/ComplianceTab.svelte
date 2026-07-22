@@ -1,4 +1,5 @@
 <script>
+	import { untrack } from 'svelte';
 	import { db } from '$lib/firebase.js';
 	import { doc, updateDoc, getDoc } from 'firebase/firestore';
 	import { teamsStore } from '$lib/stores/teams.svelte.js';

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { untrack } from 'svelte';
 	import { browser } from '$app/environment';
 	import { collection, getDocs, query, where } from 'firebase/firestore';
 	import { db } from '$lib/firebase.js';
@@ -38,6 +39,7 @@
 	});
 
 	async function loadRecommendations() {
+		if (!db || !authStore.isAuthenticated) return;
 		if (!clubId) return;
 		loading = true;
 		err = '';
@@ -72,6 +74,7 @@
 	}
 
 	async function publish(rec: RecRow) {
+		if (!db || !authStore.isAuthenticated) return;
 		const uid = authStore.user?.uid;
 		if (!uid || !clubId || actingId) return;
 		actingId = rec.id;
@@ -93,6 +96,7 @@
 	}
 
 	async function dismiss(rec: RecRow) {
+		if (!db || !authStore.isAuthenticated) return;
 		const uid = authStore.user?.uid;
 		if (!uid || !clubId || actingId) return;
 		actingId = rec.id;

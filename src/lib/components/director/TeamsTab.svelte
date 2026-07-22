@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { untrack } from 'svelte';
 	import { page } from '$app/state';
 	import { getContext } from 'svelte';
 	import { db, functions } from '$lib/firebase.js';

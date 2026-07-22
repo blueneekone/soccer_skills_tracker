@@ -1,4 +1,5 @@
 <script>
+	import { untrack } from 'svelte';
 	import { brandingStore } from '$lib/stores/branding.svelte.js';
 	import { teamsStore } from '$lib/stores/teams.svelte.js';
 

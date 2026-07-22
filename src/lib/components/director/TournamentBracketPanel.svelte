@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { untrack } from 'svelte';
 	import type { BracketMatch, TournamentBracket } from '$lib/types/tournamentEvent.js';
 	import {
 		BRACKET_TEAM_SIZES,

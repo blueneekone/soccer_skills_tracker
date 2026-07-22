@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { untrack } from 'svelte';
 	import { browser } from '$app/environment';
 	import {
 		collection,
@@ -40,6 +41,7 @@
 	});
 
 	async function loadConsole() {
+		if (!db || !authStore.isAuthenticated) return;
 		if (!clubId) return;
 		loading = true;
 		err = '';
@@ -159,6 +161,7 @@
 	}
 
 	async function exportAudit() {
+		if (!db || !authStore.isAuthenticated) return;
 		exporting = true;
 		try {
 			if (broadcasts.length === 0 && messagingAudit.length === 0) {

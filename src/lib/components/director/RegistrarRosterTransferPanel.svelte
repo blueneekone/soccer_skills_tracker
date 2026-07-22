@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { untrack } from 'svelte';
 	import { httpsCallable } from 'firebase/functions';
 	import { functions } from '$lib/firebase.js';
 

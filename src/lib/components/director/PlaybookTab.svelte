@@ -1,4 +1,5 @@
 <script>
+	import { untrack } from 'svelte';
 	/**
 	 * PlaybookTab — strategic playbook hub for Director workspace.
 	 * Strictly sports tactics (formations, set pieces, tactical notes).
@@ -61,6 +62,7 @@
 	const formationOptions = ['4-3-3', '4-4-2', '4-2-3-1', '3-5-2', '3-4-3', '5-3-2'];
 
 	async function loadEntries() {
+		if (!db || !authStore.isAuthenticated) return;
 		if (!clubId) return;
 		loading = true;
 		errMsg = '';
@@ -89,6 +91,7 @@
 	});
 
 	async function saveEntry() {
+		if (!db || !authStore.isAuthenticated) return;
 		const t = title.trim();
 		if (!t || !clubId) return;
 		saving = true;
@@ -154,6 +157,7 @@
 
 	/** @param {string} id */
 	async function deleteEntry(id) {
+		if (!db || !authStore.isAuthenticated) return;
 		if (!clubId || deletingId) return;
 		deletingId = id;
 		errMsg = '';
