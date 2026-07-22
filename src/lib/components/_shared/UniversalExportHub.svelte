@@ -53,6 +53,15 @@
 		triggerDownload(json, 'application/json;charset=utf-8', 'json');
 	}
 
+	function escapeHtml(unsafe: string): string {
+		return unsafe
+			.replace(/&/g, '&amp;')
+			.replace(/</g, '&lt;')
+			.replace(/>/g, '&gt;')
+			.replace(/"/g, '&quot;')
+			.replace(/'/g, '&#039;');
+	}
+
 	function exportPdf() {
 		if (!browser) return;
 		const printWindow = window.open('', '_blank');
@@ -61,22 +70,24 @@
 		const mapped = getMappedData();
 		const headerLabels = columns.length > 0 ? columns.map((c) => c.label) : Object.keys(mapped[0] || {});
 
-		const theadHtml = headerLabels.map((lbl) => `<th>${lbl}</th>`).join('');
+		const theadHtml = headerLabels.map((lbl) => `<th>${escapeHtml(lbl)}</th>`).join('');
 		const tbodyHtml = mapped
 			.map(
 				(row) =>
 					`<tr>${headerLabels
-						.map((lbl) => `<td>${row[lbl] !== undefined && row[lbl] !== null ? String(row[lbl]) : ''}</td>`)
+						.map((lbl) => `<td>${row[lbl] !== undefined && row[lbl] !== null ? escapeHtml(String(row[lbl])) : ''}</td>`)
 						.join('')}</tr>`,
 			)
 			.join('');
+
+		const safeFilename = escapeHtml(filename);
 
 		const html = `
 			<!DOCTYPE html>
 			<html lang="en">
 			<head>
 				<meta charset="utf-8">
-				<title>${filename}</title>
+				<title>${safeFilename}</title>
 				<style>
 					body {
 						font-family: 'Geist Mono', ui-monospace, SFMono-Regular, Consolas, monospace;
@@ -114,7 +125,7 @@
 				</style>
 			</head>
 			<body>
-				<h2>${filename}</h2>
+				<h2>${safeFilename}</h2>
 				<table>
 					<thead><tr>${theadHtml}</tr></thead>
 					<tbody>${tbodyHtml}</tbody>
@@ -126,7 +137,7 @@
 							window.close();
 						}, 250);
 					};
-				<\/script>
+				<${'/'}script>
 			</body>
 			</html>
 		`;
