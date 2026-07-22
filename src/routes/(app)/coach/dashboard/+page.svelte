@@ -1,75 +1,11 @@
 <script lang="ts">
 	import { browser } from '$app/environment';
 	import { authStore } from '$lib/stores/auth.svelte.js';
-	import { teamsStore } from '$lib/stores/teams.svelte.js';
-	import { workspaceContextStore } from '$lib/stores/workspaceContext.svelte.js';
-	import WeatherHub from '$lib/components/coach/WeatherHub.svelte';
-	import SquadMatrix from '$lib/components/coach/SquadMatrix.svelte';
-	import WarRoomGrid from '$lib/components/coach/WarRoomGrid.svelte';
-	import CheckrEmbed from '$lib/components/compliance/CheckrEmbed.svelte';
-	import { deriveCoachClearanceStep } from '$lib/compliance/checkrCoachClearance.js';
-	import Icon from '$lib/components/ui/Icon.svelte';
-	import type { IconName } from '$lib/icons/registry.js';
+	import { DashboardEngine } from './DashboardEngine.svelte.js';
+	import DashboardArena from './DashboardArena.svelte';
+	import ClearanceGate from './ClearanceGate.svelte';
 
-	const role = $derived(authStore.role);
-
-	// Epic 14: Clearance Protocol — gate the whole Coach OS behind BGC clearance.
-	const clearanceRequired = $derived(role === 'coach' || role === 'recruiter');
-	const isCleared = $derived(authStore.isCleared);
-	const userEmail = $derived((authStore.user?.email || '').trim());
-
-	const clearanceStep = $derived(
-		deriveCoachClearanceStep(
-			/** @type {import('$lib/types/backgroundCheck.js').ClearanceDoc|undefined} */ (
-				authStore.userProfile?.clearance
-			)
-		)
-	);
-	
-	const clearanceContext = $derived({
-		uid: authStore.user?.uid || '',
-		email: userEmail,
-		getSessionTokenHeaders: async () => {
-			const token = await authStore.user?.getIdToken();
-			return { Authorization: `Bearer ${token}` };
-		}
-	});
-
-	const myTeams = $derived.by(() => {
-		if (!teamsStore.loaded) return [];
-		if (role === 'super_admin' || role === 'global_admin') return teamsStore.teams.slice();
-		if (!userEmail) return [];
-		return teamsStore.getCoachTeams(userEmail);
-	});
-
-	const effectiveTeamId = $derived.by(() => {
-		const pivot = workspaceContextStore.activeTeamId?.trim();
-		if (pivot && myTeams.some((t) => t.id === pivot)) return pivot;
-		return myTeams[0]?.id ?? '';
-	});
-
-	const activeTeamRow = $derived(myTeams.find((t) => t.id === effectiveTeamId) ?? null);
-	const activeClubId = $derived(typeof activeTeamRow?.clubId === 'string' ? activeTeamRow.clubId : '');
-
-	const clubNameDisplay = $derived.by(() => {
-		if (!activeClubId) return 'YOUR CLUB';
-		const n = teamsStore.clubs.find((c) => c.id === activeClubId)?.name;
-		return typeof n === 'string' && n.trim() ? n.trim().toUpperCase() : 'YOUR CLUB';
-	});
-
-	const teamNameDisplay = $derived(
-		typeof activeTeamRow?.name === 'string' && activeTeamRow.name.trim()
-			? activeTeamRow.name.trim().toUpperCase()
-			: 'SELECT TEAM',
-	);
-
-	const nexusBadgeLetter = $derived((clubNameDisplay.slice(0, 1) || 'A').toUpperCase());
-
-	const fieldLat = $derived(activeTeamRow?.fieldLat ?? 41.633);
-	const fieldLng = $derived(activeTeamRow?.fieldLng ?? -111.851);
-	const weatherCoords = $derived(
-		`LAT ${Math.abs(fieldLat).toFixed(3)}° ${fieldLat >= 0 ? 'N' : 'S'}  ·  LON ${Math.abs(fieldLng).toFixed(3)}° ${fieldLng >= 0 ? 'E' : 'W'}`,
-	);
+	const engine = new DashboardEngine();
 
 	let tickerNow = $state('--:--:--');
 	$effect(() => {
@@ -89,118 +25,61 @@
 </svelte:head>
 
 <!-- ── Epic 14: Clearance Protocol — locked dashboard state ───────────────── -->
-{#if clearanceRequired && !isCleared && !authStore.isLoading}
-	<div class="clearance-gate" aria-live="assertive" role="alert">
-		<!-- Ambient threat grid -->
-		<div class="clearance-gate__grid" aria-hidden="true"></div>
-
-		<!-- Pulsing shield icon -->
-		<div class="clearance-gate__shield" aria-hidden="true">
-			<Icon name={"status.shield-alert" as IconName} size={48} style="color: var(--vanguard-red);" />
-		</div>
-
-		<!-- Status text -->
-		<div class="clearance-gate__status">CLEARANCE {clearanceStep.replace('_', ' ').toUpperCase()}</div>
-		<h1 class="clearance-gate__title">ACCESS RESTRICTED</h1>
-		
-		<div class="tw-w-full tw-max-w-2xl tw-mx-auto tw-mt-8">
-			{#if clearanceStep === 'not_started'}
-				<CheckrEmbed context={clearanceContext} mode="invitation" />
-			{:else}
-				<CheckrEmbed context={clearanceContext} mode="reports" />
-			{/if}
-		</div>
-
-		<!-- Diagnostic strip -->
-		<div class="clearance-gate__diag tw-mt-8">
-			<span>UID: {authStore.user?.uid?.slice(0, 12) ?? '—'}…</span>
-			<span>CLUB: {authStore.tenantId || '—'}</span>
-			<span>STATUS: BGC PENDING</span>
-		</div>
-
-		<!-- Contact CTA -->
-		<a
-			href="mailto:compliance@vanguard.app?subject=BGC%20Clearance%20Inquiry&body=UID%3A%20{authStore.user?.uid ?? ''}"
-			class="clearance-gate__contact"
-		>
-			[ CONTACT COMPLIANCE OFFICER ]
-		</a>
-	</div>
+{#if engine.clearanceRequired && !engine.isCleared && !authStore.isLoading}
+	<ClearanceGate {engine} />
 {:else}
-
-<!-- Vanguard root: deep void background, native page scrolling, no overflow traps. -->
-<div class="coach-nexus-canvas tw-relative tw-flex tw-flex-col tw-h-full tw-w-full tw-text-slate-200">
-	<!-- Background ambient grid -->
-	<div
-		class="tw-pointer-events-none tw-absolute tw-inset-0 tw-z-0 tw-opacity-[0.08]"
-		style="background-image: linear-gradient(#0f172a 1px, transparent 1px), linear-gradient(90deg, #0f172a 1px, transparent 1px); background-size: 44px 44px;"
-		aria-hidden="true"
-	></div>
-
-	<!-- ── NEXUS COMMAND BANNER ─────────────────────────────────────────────── -->
-	<header
-		class="coach-os-z4-header nexus-banner tw-relative tw-z-10 tw-w-full tw-overflow-visible tw-rounded-t-none"
-		aria-label="Nexus Command"
-	>
-		<div class="nexus-banner__media" aria-hidden="true">
-			<div class="nexus-banner__grid"></div>
-			<div class="nexus-banner__glow nexus-banner__glow--a"></div>
-			<div class="nexus-banner__glow nexus-banner__glow--b"></div>
-			<div class="nexus-banner__scanline"></div>
-		</div>
+	<!-- Vanguard root: deep void background, native page scrolling, no overflow traps. -->
+	<div class="coach-nexus-canvas tw-relative tw-flex tw-flex-col tw-h-full tw-w-full tw-text-slate-200">
+		<!-- Background ambient grid -->
 		<div
-			class="coach-os-z4-strip vanguard-surface tw-absolute tw-inset-x-4 tw-bottom-4 tw-z-20 tw-flex tw-flex-wrap tw-items-end bento-gap-md tw-px-5 tw-py-4 md:tw-inset-x-8 md:tw-bottom-6"
+			class="tw-pointer-events-none tw-absolute tw-inset-0 tw-z-0 tw-opacity-[0.08]"
+			style="background-image: linear-gradient(#0f172a 1px, transparent 1px), linear-gradient(90deg, #0f172a 1px, transparent 1px); background-size: 44px 44px;"
+			aria-hidden="true"
+		></div>
+
+		<!-- ── NEXUS COMMAND BANNER ─────────────────────────────────────────────── -->
+		<header
+			class="coach-os-z4-header nexus-banner tw-relative tw-z-10 tw-w-full tw-overflow-visible tw-rounded-t-none"
+			aria-label="Nexus Command"
 		>
+			<div class="nexus-banner__media" aria-hidden="true">
+				<div class="nexus-banner__grid"></div>
+				<div class="nexus-banner__glow nexus-banner__glow--a"></div>
+				<div class="nexus-banner__glow nexus-banner__glow--b"></div>
+				<div class="nexus-banner__scanline"></div>
+			</div>
+
 			<div
-				class="coach-os-badge tw-relative tw-flex tw-h-12 tw-w-12 tw-shrink-0 tw-items-center tw-justify-center md:tw-h-14 md:tw-w-14"
+				class="coach-os-z4-strip vanguard-surface tw-absolute tw-inset-x-4 tw-bottom-4 tw-z-20 tw-flex tw-flex-wrap tw-items-end bento-gap-md tw-px-5 tw-py-4 md:tw-inset-x-8 md:tw-bottom-6"
 			>
-				<span class="tw-font-mono tw-text-2xl tw-font-black tw-tracking-widest md:tw-text-3xl">{nexusBadgeLetter}</span>
+				<div
+					class="coach-os-badge tw-relative tw-flex tw-h-12 tw-w-12 tw-shrink-0 tw-items-center tw-justify-center md:tw-h-14 md:tw-w-14"
+				>
+					<span class="tw-font-mono tw-text-2xl tw-font-black tw-tracking-widest md:tw-text-3xl">{engine.nexusBadgeLetter}</span>
+				</div>
+				<div class="tw-min-w-0 tw-flex-1">
+					<h1 class="tw-m-0 tw-font-mono tw-text-lg tw-font-black tw-uppercase tw-tracking-[0.18em] tw-text-white md:tw-text-xl">
+						Nexus Command
+					</h1>
+					<p class="tw-mt-1 tw-font-mono tw-text-[10px] tw-tracking-[0.22em] tw-text-[#14b8a6]/85 tw-uppercase">
+						{engine.clubNameDisplay} <span class="tw-text-slate-600">//</span> {engine.teamNameDisplay}
+					</p>
+				</div>
+				<div class="tw-flex tw-shrink-0 tw-flex-col tw-items-end tw-gap-1 tw-font-mono coach-os-uplink">
+					<span class="tw-text-[9px] tw-font-semibold tw-uppercase tw-tracking-[0.05em] tw-text-[var(--text-muted)]">UPLINK</span>
+					<span class="coach-os-uplink tw-text-2xl tw-font-black tw-tabular-nums">{tickerNow}</span>
+				</div>
 			</div>
-			<div class="tw-min-w-0 tw-flex-1">
-				<h1 class="tw-m-0 tw-font-mono tw-text-lg tw-font-black tw-uppercase tw-tracking-[0.18em] tw-text-white md:tw-text-xl">
-					Nexus Command
-				</h1>
-				<p class="tw-mt-1 tw-font-mono tw-text-[10px] tw-tracking-[0.22em] tw-text-[#14b8a6]/85 tw-uppercase">
-					{clubNameDisplay} <span class="tw-text-slate-600">//</span> {teamNameDisplay}
-				</p>
-			</div>
-			<div class="tw-flex tw-shrink-0 tw-flex-col tw-items-end tw-gap-1 tw-font-mono coach-os-uplink">
-				<span class="tw-text-[9px] tw-font-semibold tw-uppercase tw-tracking-[0.05em] tw-text-[var(--text-muted)]">UPLINK</span>
-				<span class="coach-os-uplink tw-text-2xl tw-font-black tw-tabular-nums">{tickerNow}</span>
-			</div>
-		</div>
-	</header>
+		</header>
 
-	<!-- ── BODY — 12-col asymmetric bento ───────────────────────────────────── -->
-	<main 
-		class="coach-nexus-main tw-relative tw-z-10 tw-mx-auto tw-box-border tw-w-full tw-max-w-7xl tw-flex-1 tw-min-h-0"
-		style="padding: var(--bento-pad-liquid); padding-bottom: calc(var(--bento-pad-liquid) + 84px + env(safe-area-inset-bottom, 0px));"
-	>
-		<div class="tw-grid tw-grid-cols-12 tw-gap-4" aria-label="Nexus Command workspace">
-			<!-- Top Navigation Section (3-section grid) -->
-			<div class="tw-col-span-12 tw-grid tw-grid-cols-3 tw-gap-4 tw-mb-2">
-				<div class="vanguard-panel tw-text-center tw-p-3 tw-font-mono tw-font-bold tw-text-[10px] tw-uppercase tw-tracking-widest tw-text-[#14b8a6]">MISSION CONTROL</div>
-				<div class="vanguard-panel tw-text-center tw-p-3 tw-font-mono tw-font-bold tw-text-[10px] tw-uppercase tw-tracking-widest tw-text-slate-400">FACILITY OPS</div>
-				<div class="vanguard-panel tw-text-center tw-p-3 tw-font-mono tw-font-bold tw-text-[10px] tw-uppercase tw-tracking-widest tw-text-slate-400">WEATHER HUB</div>
-			</div>
-
-			<!-- WarRoomGrid (8 cols) -->
-			<div class="tw-col-span-12 lg:tw-col-span-8 tw-min-w-0">
-				<WarRoomGrid />
-			</div>
-
-			<!-- WeatherHub (4 cols) -->
-			<div class="tw-col-span-12 lg:tw-col-span-4 tw-min-w-0">
-				<WeatherHub {fieldLat} {fieldLng} {weatherCoords} />
-			</div>
-
-			<!-- SquadMatrix (12 cols) -->
-			<div class="tw-col-span-12 tw-min-w-0">
-				<SquadMatrix teamId={effectiveTeamId} teams={myTeams} />
-			</div>
-		</div>
-	</main>
-</div>
+		<!-- ── BODY — 12-col asymmetric bento ───────────────────────────────────── -->
+		<main 
+			class="coach-nexus-main tw-relative tw-z-10 tw-mx-auto tw-box-border tw-w-full tw-max-w-7xl tw-flex-1 tw-min-h-0"
+			style="padding: var(--bento-pad-liquid); padding-bottom: calc(var(--bento-pad-liquid) + 84px + env(safe-area-inset-bottom, 0px));"
+		>
+			<DashboardArena {engine} />
+		</main>
+	</div>
 {/if}
 
 <style>
@@ -248,120 +127,139 @@
 	}
 
 	.nexus-banner__glow--b {
-		bottom: -18%;
-		right: 4%;
-		width: 36%;
-		height: 80%;
-		background: radial-gradient(ellipse, rgba(168, 85, 247, 0.48), transparent 70%);
+		bottom: -15%;
+		right: -10%;
+		width: 45%;
+		height: 85%;
+		background: radial-gradient(ellipse, rgba(168, 85, 247, 0.45), transparent 70%);
 	}
 
 	.nexus-banner__scanline {
 		position: absolute;
 		inset: 0;
-		background-image: repeating-linear-gradient(
-			0deg,
-			transparent,
-			transparent 4px,
-			rgba(20, 184, 166, 0.04) 4px,
-			rgba(20, 184, 166, 0.04) 5px
+		background: linear-gradient(
+			to bottom,
+			transparent 50%,
+			rgba(20, 184, 166, 0.03) 51%,
+			transparent 52%
 		);
-		mix-blend-mode: screen;
+		background-size: 100% 4px;
+		opacity: 0.5;
+		pointer-events: none;
 	}
 
-	/* ── Epic 14: Clearance Gate ─────────────────────────────────────────────── */
-	.clearance-gate {
+	.coach-nexus-canvas {
+		background-color: var(--vanguard-void);
+	}
+	
+	.coach-os-z4-strip {
+		background-color: rgba(2, 6, 23, 0.85);
+		backdrop-filter: blur(16px);
+		border: 1px solid rgba(51, 65, 85, 0.5);
+		border-radius: 2px;
+	}
+
+	.coach-os-badge {
+		background-color: var(--vanguard-slate);
+		color: var(--vanguard-cyan);
+		border: 1px solid rgba(20, 184, 166, 0.3);
+		border-radius: 2px;
+		box-shadow: inset 0 0 12px rgba(20, 184, 166, 0.1);
+	}
+
+	.coach-os-uplink {
+		color: var(--vanguard-cyan);
+		text-shadow: 0 0 12px rgba(20, 184, 166, 0.4);
+	}
+
+	/* CLEARANCE GATE STYLES */
+	:global(.clearance-gate) {
 		position: fixed;
 		inset: 0;
 		z-index: 9999;
-		background: var(--vanguard-bg);
 		display: flex;
 		flex-direction: column;
 		align-items: center;
 		justify-content: center;
-		padding: 2rem;
+		background: var(--vanguard-void);
+		color: var(--text-primary);
+		padding: clamp(16px, 4vw, 32px);
 		text-align: center;
-		gap: 1rem;
+		font-family: var(--font-mono);
 	}
 
-	.clearance-gate__grid {
+	:global(.clearance-gate__grid) {
 		position: absolute;
 		inset: 0;
-		background-image:
-			linear-gradient(to right, rgba(255, 0, 60, 0.04) 1px, transparent 1px),
-			linear-gradient(to bottom, rgba(255, 0, 60, 0.04) 1px, transparent 1px);
-		background-size: 4rem 4rem;
+		background-image: linear-gradient(rgba(220, 38, 38, 0.05) 1px, transparent 1px),
+			linear-gradient(90deg, rgba(220, 38, 38, 0.05) 1px, transparent 1px);
+		background-size: 32px 32px;
+		z-index: 0;
 		pointer-events: none;
 	}
 
-	.clearance-gate__shield {
-		width: 6rem;
-		height: 6rem;
-		animation: gate-shield-pulse 2.5s ease-in-out infinite;
-		filter: drop-shadow(0 0 20px rgba(255, 0, 60, 0.5));
+	:global(.clearance-gate__shield) {
 		position: relative;
-		z-index: 1;
+		z-index: 10;
+		margin-bottom: 24px;
+		animation: pulse-red 2s infinite;
 	}
 
-	@keyframes gate-shield-pulse {
-		0%, 100% { filter: drop-shadow(0 0 16px rgba(255, 0, 60, 0.4)); }
-		50% { filter: drop-shadow(0 0 36px rgba(255, 0, 60, 0.8)); }
-	}
-
-	.clearance-gate__status {
-		font-size: 0.6rem;
-		letter-spacing: 0.2em;
+	:global(.clearance-gate__status) {
+		position: relative;
+		z-index: 10;
+		font-size: 0.75rem;
+		font-weight: 700;
+		letter-spacing: 0.25em;
 		color: var(--vanguard-red);
-		text-transform: uppercase;
-		position: relative;
-		z-index: 1;
+		margin-bottom: 8px;
 	}
 
-	.clearance-gate__title {
-		margin: 0;
-		font-size: clamp(1.5rem, 5vw, 2.5rem);
+	:global(.clearance-gate__title) {
+		position: relative;
+		z-index: 10;
+		font-size: clamp(24px, 4vw, 40px);
 		font-weight: 900;
 		letter-spacing: 0.1em;
-		color: #f3f4f6;
 		text-transform: uppercase;
-		position: relative;
-		z-index: 1;
+		margin: 0;
+		text-shadow: 0 0 20px rgba(220, 38, 38, 0.3);
 	}
 
-	.clearance-gate__diag {
+	:global(.clearance-gate__diag) {
+		position: relative;
+		z-index: 10;
 		display: flex;
-		gap: 1.5rem;
 		flex-wrap: wrap;
+		gap: 16px;
 		justify-content: center;
-		font-size: 0.6rem;
-		letter-spacing: 0.12em;
-		color: #374151;
-		font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;
-		border: 1px solid rgba(255, 0, 60, 0.15);
-		background: rgba(255, 0, 60, 0.04);
-		padding: 0.5rem 1.25rem;
-		border-radius: 0.375rem;
-		position: relative;
-		z-index: 1;
+		font-size: 0.75rem;
+		color: var(--text-muted);
+		background: rgba(220, 38, 38, 0.05);
+		padding: 12px 24px;
+		border: 1px solid rgba(220, 38, 38, 0.2);
+		border-radius: 4px;
 	}
 
-	.clearance-gate__contact {
-		display: inline-block;
-		margin-top: 0.5rem;
-		font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;
-		font-size: 0.7rem;
-		letter-spacing: 0.1em;
-		color: var(--vanguard-red);
-		border: 1px solid rgba(255, 0, 60, 0.3);
-		padding: 0.5rem 1.25rem;
-		border-radius: 0.375rem;
+	:global(.clearance-gate__contact) {
+		position: relative;
+		z-index: 10;
+		margin-top: 32px;
+		font-size: 0.875rem;
+		font-weight: 700;
+		color: var(--vanguard-slate);
 		text-decoration: none;
-		transition: background 0.2s, box-shadow 0.2s;
-		position: relative;
-		z-index: 1;
+		transition: all 0.2s;
 	}
 
-	.clearance-gate__contact:hover {
-		background: rgba(255, 0, 60, 0.1);
-		box-shadow: 0 0 15px rgba(255, 0, 60, 0.3);
+	:global(.clearance-gate__contact:hover) {
+		color: var(--vanguard-red);
+		text-shadow: 0 0 10px rgba(220, 38, 38, 0.4);
+	}
+
+	@keyframes pulse-red {
+		0% { transform: scale(1); filter: drop-shadow(0 0 10px rgba(220, 38, 38, 0.5)); }
+		50% { transform: scale(1.05); filter: drop-shadow(0 0 25px rgba(220, 38, 38, 0.8)); }
+		100% { transform: scale(1); filter: drop-shadow(0 0 10px rgba(220, 38, 38, 0.5)); }
 	}
 </style>
