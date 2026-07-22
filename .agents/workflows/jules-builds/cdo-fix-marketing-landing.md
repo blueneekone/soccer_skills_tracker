@@ -1,35 +1,37 @@
-# Workflow: CDO — Fix Marketing Landing Page Violations
+---
+description: Workflow: CDO — Rebuild Marketing Landing Page (The Training Triangle)
+---
 
-**Owner**: Antigravity (Frontend)
-**Priority**: P1 — HIGH IMPACT / BRAND CRITICAL
-**Persona Context**: Chief Design Officer (CDO)
+**Owner**: Jules (Frontend)  **Priority**: P1 — HIGH IMPACT / BRAND CRITICAL  **Persona Context**: Chief Design Officer (CDO)
 
-## Objective
-The marketing landing page (`src/routes/(marketing)/+page.svelte`) contains multiple violations of the nexus-command-ui design system that will damage brand trust and conversion rates.
+#### Objective
+The marketing landing page (`src/routes/(marketing)/+page.svelte`) must be completely overhauled to reflect the new "Training Triangle" narrative and enforce the strict nexus-command-ui design system [1].
 
-## Violations to Fix
+#### Instructions for Swarm Subagent
+You are acting on behalf of the **CDO Persona**. Ensure you spawn the correct subagent using `.agents/agents/cdo/agent.md`.
 
-### 1. Live Placeholder Image (CRITICAL)
-- **Target**: Line 57 — `<img src="https://placehold.co/1920x1080/...">`
-- **Fix**: Replace with a generated product screenshot or a styled SVG placeholder that renders the NEXUS COMMAND UI aesthetic. The video slot must show a visually compelling mock of the product dashboard, not a gray box. Use the `generate_image` tool to create a premium product preview.
+#### Violations to Fix & New Implementations
 
-### 2. Banned Color on Parent Card (HIGH)
-- **Target**: Line 107 — `tw-text-[#3b82f6]` (plain blue on Parent Visibility icon)
-- **Fix**: Replace with `tw-text-[#14b8a6]` (Data Cyan) per the strict 10% Action/Telemetry color taxonomy. Blue is not in the approved palette.
+##### 1. The Hero Headline (CRITICAL)
+*   **Target**: The main H1 hero text (e.g., Line 35) [2].
+*   **Fix**: Rewrite to the exact approved declarative headline: **"Stop managing teams. Start developing athletes. The Youth Sports OS."** [2].
 
-### 3. Overly Long Hero Headline (MEDIUM)
-- **Target**: Line 35 — "Level-up in game and reality, with the ultimate sports skill tracker." (14 words)
-- **Fix**: Rewrite to ≤10 words. Suggested: "The operating system for elite youth clubs." or "Train. Prove. Dominate. The youth sports OS." — brutalist, declarative, sub-10 words.
+##### 2. The Interactive Video Loop (CRITICAL)
+*   **Target**: The hero media slot (e.g., Line 57 placeholders) [1].
+*   **Fix**: Replace any gray boxes or static images with a lazy-loaded interactive video loop/product preview showcasing the actual UI [1]. It must feature Void Black backgrounds, Data Cyan telemetry, and exactly ONE Action Gold CTA button reading "Deploy Your Club" [3].
 
-### 4. Symmetrical Feature Grid Violation (HIGH)
-- **Target**: Lines 79 — `tw-grid-cols-3` symmetrical layout
-- **Fix**: Refactor to an asymmetric 12-column Bento Grid. The primary "Player Train" card should span 6 columns (hero feature), with "Coach Forge" (4 cols) and "Parent Visibility" (2 cols) as supporting cells. This creates the asymmetric visual hierarchy mandated by the design system.
+##### 3. The Asymmetric Training Triangle Grid (HIGH)
+*   **Target**: The feature presentation section (e.g., Line 79 symmetrical grid) [3].
+*   **Fix**: Delete any symmetrical 3-column layouts [3]. Implement a strict 12-column asymmetric Bento Grid to visually prioritize the Training Triangle [3]:
+    *   **Player Development**: Must span **6 columns** (the visual hero).
+    *   **Coach Tactics**: Must span **4 columns**.
+    *   **Parent Shield**: Must span **2 columns**.
 
-## Constraints
-- Maintain `prerender = true` — no dynamic data or auth imports allowed on marketing pages
-- All font classes must use `tw-font-mono` for telemetry/data, `tw-font-sans` (Switzer) for body
-- The single Action Gold CTA ("Deploy Your Club") must remain the ONLY `#fbbf24` element per viewport
+##### 4. Color Palette Enforcement (HIGH)
+*   **Target**: Unauthorized UI colors (e.g., Line 107 `tw-text-[#3b82f6]`) [2].
+*   **Fix**: Remove any standard Tailwind blues. Ensure Data Cyan (`#14b8a6`) is used for accents per the 10% Action/Telemetry color taxonomy [2].
 
-## Verification
-- Run `npm run check` — 0 errors
-- Visual browser validation to confirm color, layout, and image render correctly
+#### Constraints
+*   Maintain `prerender = true` — no dynamic data or auth imports allowed on marketing pages [3].
+*   All font classes must use `tw-font-mono` for telemetry/data, and `tw-font-sans` (Switzer) for body copy [3].
+*   The Action Gold CTA ("Deploy Your Club") must remain the ONLY `#fbbf24` element per viewport [3].
