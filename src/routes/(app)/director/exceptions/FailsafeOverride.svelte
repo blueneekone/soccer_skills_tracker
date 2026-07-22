@@ -1,5 +1,4 @@
 <script>
-	import { untrack } from 'svelte';
 	import { db } from '$lib/firebase.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import {
@@ -32,7 +31,6 @@
 	// ── Data Loading ──────────────────────────────────────────────────────────
 	$effect(() => {
 		if (!isAuthorized) return;
-		if (!db || !authStore.isAuthenticated) return;
 		const tenantId = authStore.tenantId;
 		if (!tenantId) return;
 

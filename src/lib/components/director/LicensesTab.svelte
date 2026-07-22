@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { untrack } from 'svelte';
 	/**
 	 * LicensesTab — Director workspace.
 	 * Houses all seat allocation and subscription-entitlement management that was

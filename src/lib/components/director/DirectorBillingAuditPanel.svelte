@@ -1,6 +1,4 @@
 <script lang="ts">
-	import { authStore } from '$lib/stores/auth.svelte.js';
-	import { untrack } from 'svelte';
 	/**
 	 * DirectorBillingAuditPanel.svelte
 	 * ──────────────────────────────────
@@ -98,7 +96,6 @@
 			loading = true;
 			error = '';
 			try {
-				if (!db || !authStore.isAuthenticated) return;
 				const [orgSnap, auditSnap] = await Promise.all([
 					getDoc(doc(db, 'organizations', id)),
 					getDocs(
@@ -149,7 +146,6 @@
 	});
 
 	async function refreshNow() {
-		if (!db || !authStore.isAuthenticated) return;
 		const id = clubId.trim();
 		if (!id) return;
 		lastLoadedClubId = '';

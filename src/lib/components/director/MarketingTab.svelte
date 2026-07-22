@@ -130,7 +130,6 @@
 	});
 
 	async function saveMarketingFunnel() {
-		if (!db || !authStore.isAuthenticated) return;
 		funnelErr = '';
 		funnelOk = '';
 		const cid = effectiveClubId;

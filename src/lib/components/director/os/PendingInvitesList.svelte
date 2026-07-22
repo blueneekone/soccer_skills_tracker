@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { untrack } from 'svelte';
 	import { db } from '$lib/firebase.js';
 	import { collection, query, where, orderBy, onSnapshot } from 'firebase/firestore';
 	import { teamsStore } from '$lib/stores/teams.svelte.js';

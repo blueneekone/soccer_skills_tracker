@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { untrack } from 'svelte';
 	import { onDestroy } from 'svelte';
 	import { collection, query, where, orderBy, onSnapshot } from 'firebase/firestore';
 	import { getActiveDb } from '$lib/firebase';

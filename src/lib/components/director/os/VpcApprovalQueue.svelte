@@ -1,6 +1,4 @@
 <script lang="ts">
-	import { authStore } from '$lib/stores/auth.svelte.js';
-	import { untrack } from 'svelte';
 	import { browser } from '$app/environment';
 	import {
 		collection,
@@ -33,7 +31,6 @@
 
 		(async () => {
 			try {
-				if (!db || !authStore.isAuthenticated) return;
 				const q = query(
 					collection(db, 'consent_records'),
 					where('clubId', '==', clubId),
