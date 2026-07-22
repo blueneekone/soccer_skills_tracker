@@ -192,7 +192,8 @@
 		let cancelled = false;
 		void (async () => {
 			try {
-				const rows = await loadPlatformBasics(db, sportId);
+				if (!db || !authStore.isAuthenticated) return;
+				const rows = await untrack(() => loadPlatformBasics(db, sportId));
 				if (cancelled) return;
 				platformDrills = rows.map((row) => ({
 					id: row.id,

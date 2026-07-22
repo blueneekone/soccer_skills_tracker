@@ -17,7 +17,7 @@
 	const clubId = $derived(authStore.userProfile?.clubId ?? '');
 
 	$effect(() => {
-		if (!authStore.isAuthenticated) return;
+
 		if (!clubId) return;
 		loading = true;
 		const db = getActiveDb();

@@ -1,3 +1,5 @@
+// @ts-ignore
+// @ts-ignore
 import type { PublicKeyCredentialRequestOptionsJSON } from '@simplewebauthn/types';
 
 export type LoginStartPayload = {

@@ -27,6 +27,7 @@ import {
 } from 'firebase/firestore';
 import { httpsCallable } from 'firebase/functions';
 import { db, functions } from '$lib/firebase.js';
+import { authStore } from '$lib/stores/auth.svelte.js';
 import { getRpgSportConfig } from '$lib/config/sports.js';
 import type {
 	IntentDoc,

@@ -81,12 +81,32 @@ describe('T1-2: match-day telemetry Firestore persistence', () => {
 		expect(src).toMatch(/serverTimestamp/);
 	});
 
-	it('CoachMatchDayView writes teamId, clubId, and loggedBy fields to the event doc', () => {
+
+	it('CoachMatchDayView writes teamId, and loggedBy fields to the event doc, and strips clubId', () => {
 		const src = readFileSync(VIEW, 'utf-8');
 		expect(src).toMatch(/teamId\s*:\s*tid/);
-		expect(src).toMatch(/clubId\s*:\s*teamScope\.teamClubId/);
 		expect(src).toMatch(/loggedBy\s*:\s*uid/);
+		expect(src).not.toMatch(/clubId\s*:\s*teamScope\.teamClubId/);
 	});
+
+	it('CoachTacticalEngine applies b815 Defensive Hydration guards for getDocs calls', () => {
+		const src = readFileSync(join(ROOT, 'routes/(app)/coach/war-room/CoachTacticalEngine.svelte.ts'), 'utf-8');
+		expect(src).toMatch(/if \(!db \|\| !authStore\.isAuthenticated\) return;\s*const lookupSnap = await getDocs/);
+	});
+
+	it('CoachTacticalEngine wraps $effect side-effects in untrack() closures', () => {
+		const src = readFileSync(join(ROOT, 'routes/(app)/coach/war-room/CoachTacticalEngine.svelte.ts'), 'utf-8');
+		expect(src).toMatch(/untrack\(\(\) => \{\s*this\.teamScope\.syncSelectedTeam\(\);\s*\}\);/);
+		expect(src).toMatch(/untrack\(\(\) => void this\._loadBoardState/);
+		expect(src).toMatch(/untrack\(\(\) => void this\._loadRosters/);
+	});
+
+	it('CoachMatchDayView applies b815 Defensive Hydration guards for getDocs calls', () => {
+		const src = readFileSync(VIEW, 'utf-8');
+		expect(src).toMatch(/if \(!db \|\| !authStore\.isAuthenticated\) return;\s*const lookupSnap = await untrack/);
+		expect(src).toMatch(/if \(!db \|\| !authStore\.isAuthenticated\) return;\s*const snap = await untrack/);
+	});
+
 
 	it('CoachMatchDayView uses a date-scoped sessionMatchId derived from selectedTeamId', () => {
 		const src = readFileSync(VIEW, 'utf-8');

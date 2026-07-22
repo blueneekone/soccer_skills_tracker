@@ -1,3 +1,4 @@
+import { untrack } from 'svelte';
 <script>
 	import '$lib/styles/coach-match-day-scoreboard.css';
 	import { browser } from '$app/environment';
@@ -124,9 +125,10 @@
 
 		void (async () => {
 			try {
-				const lookupSnap = await getDocs(
+				if (!db || !authStore.isAuthenticated) return;
+				const lookupSnap = await untrack(() => getDocs(
 					query(collection(db, 'player_lookup'), where('teamId', '==', tid)),
-				);
+				));
 				if (cancelled) return;
 
 				/** @type {Operative[]} */
@@ -175,7 +177,8 @@
 		let cancelled = false;
 		void (async () => {
 			try {
-				const sessionSnap = await getDoc(doc(db, 'teams', tid, 'match_sessions', mid));
+				if (!db || !authStore.isAuthenticated) return;
+				const sessionSnap = await untrack(() => getDoc(doc(db, 'teams', tid, 'match_sessions', mid)));
 				if (cancelled) return;
 				if (sessionSnap.exists()) {
 					const data = sessionSnap.data();
@@ -190,13 +193,14 @@
 					liveStreamDraft = '';
 				}
 
-				const snap = await getDocs(
+				if (!db || !authStore.isAuthenticated) return;
+				const snap = await untrack(() => getDocs(
 					query(
 						collection(db, 'teams', tid, 'telemetry_events'),
 						where('matchId', '==', mid),
 						orderBy('timestamp', 'asc'),
 					),
-				);
+				));
 				if (cancelled) return;
 				/** @type {FeedLine[]} */
 				const lines = [];
@@ -239,7 +243,7 @@
 			/** @type {Record<string, unknown>} */
 			const payload = {
 				teamId: tid,
-				clubId: teamScope.teamClubId || '',
+
 				matchId: mid,
 				homeScore,
 				awayScore,
@@ -302,7 +306,7 @@
 				doc(db, 'teams', tid, 'match_sessions', mid),
 				{
 					teamId: tid,
-					clubId: teamScope.teamClubId || '',
+
 					matchId: mid,
 					homeScore,
 					awayScore,
@@ -358,7 +362,7 @@
 		try {
 			await addDoc(collection(db, 'teams', tid, 'telemetry_events'), {
 				teamId: tid,
-				clubId: teamScope.teamClubId || '',
+
 				matchId: mid,
 				playerId: side === 'home' ? activeOperative?.id || 'squad' : 'opponent',
 				action: side === 'home' ? 'GOAL' : 'OPPONENT_GOAL',
@@ -457,7 +461,7 @@
 		try {
 			await addDoc(collection(db, 'teams', tid, 'telemetry_events'), {
 				teamId: tid,
-				clubId: teamScope.teamClubId || '',
+
 				matchId: mid,
 				playerId: op.id,
 				action: actionType,

@@ -1,3 +1,4 @@
+import { untrack } from 'svelte';
 import { CoachTeamScope } from '$lib/coach/context/coachTeamScope.svelte.js';
 import { createTacticalWarRoom } from '$lib/components/coach/TacticalEngine.svelte.js';
 import { db } from '$lib/firebase.js';
@@ -159,6 +160,7 @@ export class CoachTacticalEngine {
 				return;
 			}
 
+			if (!db || !authStore.isAuthenticated) return;
 			const lookupSnap = await getDocs(
 				query(collection(db, 'player_lookup'), where('teamId', '==', tid)),
 			);
@@ -196,7 +198,9 @@ export class CoachTacticalEngine {
 	subscribe() {
 		$effect.root(() => {
 			$effect(() => {
-				this.teamScope.syncSelectedTeam();
+				untrack(() => {
+					this.teamScope.syncSelectedTeam();
+				});
 			});
 
 			$effect(() => {
@@ -207,13 +211,13 @@ export class CoachTacticalEngine {
 			$effect(() => {
 				const tid = this.teamScope.selectedTeamId;
 				if (!tid || authStore.isLoading || !authStore.user?.uid) return;
-				void this._loadBoardState(tid, authStore.user.uid);
+				untrack(() => void this._loadBoardState(tid, authStore.user!.uid));
 			});
 
 			$effect(() => {
 				const tid = this.teamScope.selectedTeamId;
 				if (!tid) return;
-				void this._loadRosters(tid);
+				untrack(() => void this._loadRosters(tid));
 			});
 
 			return () => {
