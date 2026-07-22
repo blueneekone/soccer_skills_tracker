@@ -58,6 +58,7 @@ const adminOps = require('./src/domains/adminOps.js');
 exports.listTeamsForClub = adminOps.listTeamsForClub;
 exports.logSecurityAudit = adminOps.logSecurityAudit;
 exports.executeSupportCommand = adminOps.executeSupportCommand;
+exports.updateUserRole = adminOps.updateUserRole;
 
 const dailyIntelOps = require('./src/domains/dailyIntelOps.js');
 exports.fetchDailyIntel = dailyIntelOps.fetchDailyIntel;

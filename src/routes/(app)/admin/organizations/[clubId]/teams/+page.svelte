@@ -1,7 +1,8 @@
 <script lang="ts">
 	import { page } from '$app/state';
-	import { db } from '$lib/firebase.js';
+	import { db, functions } from '$lib/firebase.js';
 	import { doc, setDoc } from 'firebase/firestore';
+	import { httpsCallable } from 'firebase/functions';
 	import { getContext } from 'svelte';
 	import { teamsStore } from '$lib/stores/teams.svelte.js';
 	import { logSecurityEvent } from '$lib/utils/security.js';
@@ -46,16 +47,9 @@
 			});
 			if (teamCoach.trim()) {
 				const coachEmail = teamCoach.trim().toLowerCase();
-				await setDoc(
-					doc(db, 'users', coachEmail),
-					{ role: 'coach', clubId: ctx.clubId, teamId: tid },
-					{ merge: true },
-				);
-				await setDoc(
-					doc(db, 'coach_lookup', coachEmail),
-					{ role: 'coach', clubId: ctx.clubId, teamId: tid },
-					{ merge: true },
-				);
+				const updateRoleFn = httpsCallable(functions, 'updateUserRole');
+				await updateRoleFn({ targetUid: coachEmail, role: 'coach', clubId: ctx.clubId, teamId: tid });
+
 			}
 			await logSecurityEvent('CREATE_TEAM', tid, teamName);
 			teamId = '';
