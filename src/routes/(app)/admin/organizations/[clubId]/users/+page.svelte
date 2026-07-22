@@ -80,8 +80,7 @@
 		users[idx].role = newRole; // Optimistic UI update
 
 		try {
-			const updateRoleFn = httpsCallable(functions, 'updateUserRole');
-            await updateRoleFn({ targetUid: userId, role: newRole });
+			await updateDoc(doc(db, 'users', userId), { role: newRole });
 		} catch (e) {
 			console.error('Role update failed', e);
 			users[idx].role = oldRole; // Rollback

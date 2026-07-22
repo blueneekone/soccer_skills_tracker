@@ -113,8 +113,7 @@
 		assignDirOk = '';
 		try {
 			await setDoc(doc(db, 'clubs', clubId), { directorEmail: email }, { merge: true });
-			const updateRoleFn = httpsCallable(functions, 'updateUserRole');
-			await updateRoleFn({ targetUid: email, role: 'director', clubId: clubId });
+			await setDoc(doc(db, 'users', email), { role: 'director', clubId: clubId }, { merge: true });
 			await logSecurityEvent('ASSIGN_DIRECTOR', email, `Club ID: ${clubId}`);
 			assignDirOk = `${email} is now director of this organization.`;
 			assignDirEmail = '';
