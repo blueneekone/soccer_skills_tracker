@@ -65,7 +65,7 @@
 	// ── State → display config ────────────────────────────────────────────────
 
 	type StateMeta = { color: string; icon: string; message: string };
-	const STATE_META: Partial<Record<PhoneLinkState, StateMeta>> = {
+	const STATE_META = $derived({
 		invalid_phone:  { color: 'red',   icon: '⚠', message: 'Invalid phone number. Check the format and try again.' },
 		quota_exceeded: { color: 'amber', icon: '⏱', message: 'Too many attempts. Please wait a few minutes before retrying.' },
 		code_expired:   { color: 'amber', icon: '⏱', message: 'Code expired. Request a new one.' },
@@ -73,7 +73,7 @@
 		already_linked: { color: 'amber', icon: '🔒', message: 'A phone number is already linked to this account.' },
 		error:          { color: 'red',   icon: '💥', message: engine.errorMessage || 'An unexpected error occurred.' },
 		success:        { color: 'green', icon: '✅', message: `Verified · ${engine.verifiedPhone.slice(-4) ? '···· ' + engine.verifiedPhone.slice(-4) : ''}` },
-	};
+	});
 
 	const meta = $derived(STATE_META[engineState]);
 
