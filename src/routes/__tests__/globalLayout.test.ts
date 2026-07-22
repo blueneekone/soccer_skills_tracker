@@ -15,8 +15,8 @@ describe('Global Layout (+layout.svelte) - Sprint 0.1 Bento Grid Lock', () => {
 	});
 
 	it('must contain an 8-column primary canvas and a 4-column sidecar', () => {
-		expect(layoutContent).toMatch(/bento-span-8/);
-		expect(layoutContent).toMatch(/bento-span-4/);
+		expect(layoutContent).toMatch(/tw-col-span-8/);
+		expect(layoutContent).toMatch(/tw-col-span-4/);
 	});
 
 	it('must explicitly use fluid bento cell spacing or grid tokens, banning static squishing margins', () => {
