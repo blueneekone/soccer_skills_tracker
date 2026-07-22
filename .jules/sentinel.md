@@ -1,0 +1,4 @@
+## 2026-07-22 - [XSS] PDF Export HTML Injection
+**Vulnerability:** Cross-Site Scripting (XSS) vulnerability found in `src/lib/components/_shared/UniversalExportHub.svelte`. The `exportPdf` function took user-controlled data (`filename`, `lbl`, and `row[lbl]`) and directly interpolated it into an HTML string, which was then rendered in a new window using `printWindow.document.write(html)`.
+**Learning:** Writing arbitrary HTML strings into new windows with `document.write` opens the application to XSS attacks if any of the string's content comes from user input. This pattern bypasses typical framework protections (like Svelte's built-in escaping for templates) because it drops down to raw DOM manipulation.
+**Prevention:** Always sanitize or escape any dynamic, potentially untrusted data before injecting it into HTML templates constructed as strings. Added an `escapeHtml` function to properly escape HTML entities (`&`, `<`, `>`, `"`, `'`) in the export inputs.
