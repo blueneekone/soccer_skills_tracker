@@ -3,6 +3,12 @@ const admin = require('firebase-admin');
 const { onDocumentCreated } = require('firebase-functions/v2/firestore');
 const { onCall, HttpsError } = require('firebase-functions/v2/https');
 
+const LAUNCH_CORE_CALLABLE_OPTS = {
+  region: 'us-central1',
+  invoker: 'public',
+  memory: '512MiB'
+};
+
 /**
  * PHASE 1: THE AUTOMATED DISPATCH ENGINE (RL ADAPTIVE HOMEWORK)
  * Triggers when a workout log is created.

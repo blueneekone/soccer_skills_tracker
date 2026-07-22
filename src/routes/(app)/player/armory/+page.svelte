@@ -5,6 +5,7 @@
 	import { db } from '$lib/firebase.js';
 	import { getFunctions as getFns, httpsCallable as httpsCall } from 'firebase/functions';
 	import { browser } from '$app/environment';
+	import PlayerCardGallery from './PlayerCardGallery.svelte';
 
 	// Mock catalog
 	const CATALOG = [
@@ -198,3 +199,8 @@
 		</section>
 	</div>
 </main>
+
+<!-- ── OPERATIVE FIELD DOSSIERS ───────────────────────────────── -->
+<section class="tw-bg-[#000000] tw-border-t tw-border-[#1e293b]">
+	<PlayerCardGallery />
+</section>
