@@ -320,7 +320,6 @@ exports.uploadEligibilityDocument = onCall(
     }
 );
 
-
 /**
  * Helper function to handle E-Sign encryption logic to keep main function < 80 lines.
  * @param {Buffer} masterKey
