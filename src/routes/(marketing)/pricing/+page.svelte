@@ -6,6 +6,8 @@
 	import Icon from '$lib/components/ui/Icon.svelte';
 	import type { IconName } from '$lib/icons/registry.js';
 
+	export const prerender = true;
+
 	// ── Tiers config ──────────────────────────────────────────────────────────
 	type Tier = {
 		id: string;
@@ -141,7 +143,7 @@
 	<meta name="description" content="Secure your club's future with the $0 Platform Fee and our micro-percentage transaction model." />
 </svelte:head>
 
-<div class="tw-flex tw-w-full tw-min-h-dvh tw-flex-col tw-bg-[#0f172a] tw-text-[#f8fafc] tw-font-sans tw-selection:bg-[#14b8a6] tw-selection:text-[#0f172a] tw-pb-24">
+<div class="tw-flex tw-w-full tw-min-h-dvh tw-flex-col tw-bg-[#000000] tw-text-[#f8fafc] tw-font-sans tw-selection:bg-[#14b8a6] tw-selection:text-[#000000] tw-pb-24">
 	
 	<!-- Header -->
 	<header class="tw-max-w-7xl tw-mx-auto tw-w-full tw-px-6 tw-pt-24 tw-pb-16 tw-flex tw-flex-col tw-items-center tw-text-center tw-gap-6">
@@ -153,7 +155,7 @@
 
 	<!-- The PLG Hook (Brutalist Readout) -->
 	<section class="tw-max-w-4xl tw-mx-auto tw-w-full tw-px-6 tw-mb-16">
-		<div class="tw-bg-[#0B0F19] tw-border tw-border-[#1e293b] tw-p-8 hover:tw-border-[#334155] tw-transition-colors tw-duration-150 tw-flex tw-flex-col">
+		<div class="tw-bg-[#0f172a] tw-border tw-border-[#1e293b] tw-p-8 hover:tw-border-[#334155] tw-transition-colors tw-duration-150 tw-flex tw-flex-col">
 			<div class="tw-flex tw-items-center tw-justify-between tw-border-b tw-border-[#1e293b] tw-pb-4 tw-mb-6">
 				<span class="tw-font-mono tw-text-xs tw-text-[#f59e0b] tw-tracking-widest">SYS.PRICING_MODEL</span>
 				<Icon name={"status.pulse" as IconName} size={20} class="tw-text-[#f59e0b]" />
@@ -166,14 +168,51 @@
 		</div>
 	</section>
 
+	<!-- Competitor Comparison Table -->
+	<section class="tw-max-w-4xl tw-mx-auto tw-w-full tw-px-6 tw-mb-24">
+		<div class="tw-bg-[#0B0F19] tw-border tw-border-[#1e293b] tw-overflow-x-auto">
+			<table class="tw-w-full tw-text-left tw-border-collapse">
+				<thead>
+					<tr class="tw-border-b tw-border-[#1e293b]">
+						<th class="tw-py-4 tw-px-6 tw-font-mono tw-text-xs tw-font-bold tw-text-[#64748b] tw-tracking-widest tw-uppercase">Metric</th>
+						<th class="tw-py-4 tw-px-6 tw-font-mono tw-text-xs tw-font-bold tw-text-[#ef4444] tw-tracking-widest tw-uppercase">Legacy Competitors</th>
+						<th class="tw-py-4 tw-px-6 tw-font-mono tw-text-xs tw-font-bold tw-text-[#14b8a6] tw-tracking-widest tw-uppercase">SSTracker</th>
+					</tr>
+				</thead>
+				<tbody class="tw-text-sm tw-text-[#cbd5e1]">
+					<tr class="tw-border-b tw-border-[#1e293b]/50">
+						<td class="tw-py-4 tw-px-6 tw-font-mono">Platform Fee</td>
+						<td class="tw-py-4 tw-px-6">$1,000 - $3,000 / year</td>
+						<td class="tw-py-4 tw-px-6 tw-text-[#14b8a6] tw-font-bold">$0 Flat</td>
+					</tr>
+					<tr class="tw-border-b tw-border-[#1e293b]/50">
+						<td class="tw-py-4 tw-px-6 tw-font-mono">Processing Rate</td>
+						<td class="tw-py-4 tw-px-6">3.5% + $1.50 per tx</td>
+						<td class="tw-py-4 tw-px-6 tw-text-[#14b8a6] tw-font-bold">2.9% + 30¢ (Stripe Direct)</td>
+					</tr>
+					<tr class="tw-border-b tw-border-[#1e293b]/50">
+						<td class="tw-py-4 tw-px-6 tw-font-mono">Hidden Payout Fees</td>
+						<td class="tw-py-4 tw-px-6">0.5% withdrawal fee</td>
+						<td class="tw-py-4 tw-px-6 tw-text-[#14b8a6] tw-font-bold">None</td>
+					</tr>
+					<tr>
+						<td class="tw-py-4 tw-px-6 tw-font-mono">Off-Season Cost</td>
+						<td class="tw-py-4 tw-px-6">Still pay monthly subscription</td>
+						<td class="tw-py-4 tw-px-6 tw-text-[#14b8a6] tw-font-bold">Pay $0 when you aren't charging</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+	</section>
+
 	<!-- Tiered Matrix (4-Column) -->
 	<section class="tw-max-w-[1400px] tw-mx-auto tw-w-full tw-px-6 tw-mb-24">
 		<div class="tw-grid tw-grid-cols-1 md:tw-grid-cols-2 lg:tw-grid-cols-4 tw-gap-6">
 			{#each TIERS as tier}
-				<article class="tw-bg-[#0B0F19] tw-border tw-border-[#1e293b] hover:tw-border-[var(--accent)] tw-transition-all tw-duration-150 tw-relative tw-p-8 tw-flex tw-flex-col tw-rounded-sm" style:--accent={tier.accentColor}>
+				<article class="tw-bg-[#0f172a] tw-border tw-border-[#1e293b] hover:tw-border-[var(--accent)] tw-transition-all tw-duration-150 tw-relative tw-p-8 tw-flex tw-flex-col tw-rounded-sm" style:--accent={tier.accentColor}>
 					
 					{#if tier.badge}
-						<div class="tw-absolute -tw-top-3 tw-left-1/2 -tw-translate-x-1/2 tw-bg-[#0f172a] tw-border tw-border-[var(--accent)] tw-text-[var(--accent)] tw-text-[10px] tw-font-mono tw-font-bold tw-tracking-widest tw-uppercase tw-px-3 tw-py-1 tw-rounded-full">
+						<div class="tw-absolute -tw-top-3 tw-left-1/2 -tw-translate-x-1/2 tw-bg-[#0B0F19] tw-border tw-border-[var(--accent)] tw-text-[var(--accent)] tw-text-[10px] tw-font-mono tw-font-bold tw-tracking-widest tw-uppercase tw-px-3 tw-py-1 tw-rounded-full">
 							{tier.badge}
 						</div>
 					{/if}
@@ -204,7 +243,7 @@
 						<button
 							onclick={() => handleSubscribe(tier)}
 							disabled={checkoutPhase === 'processing' && checkoutTierId === tier.id}
-							class="tw-w-full tw-py-4 tw-text-center tw-bg-[#0f172a] tw-border tw-border-[#1e293b] hover:tw-bg-[var(--accent)] hover:tw-text-[#0f172a] tw-text-[var(--accent)] tw-font-mono tw-text-xs tw-font-bold tw-uppercase tw-tracking-[0.1em] tw-transition-colors tw-duration-150 tw-rounded-sm disabled:tw-opacity-50 disabled:tw-cursor-not-allowed"
+							class="tw-w-full tw-py-4 tw-text-center tw-bg-[#000000] tw-border tw-border-[#1e293b] hover:tw-bg-[var(--accent)] hover:tw-text-[#000000] tw-text-[var(--accent)] tw-font-mono tw-text-xs tw-font-bold tw-uppercase tw-tracking-[0.1em] tw-transition-colors tw-duration-150 tw-rounded-sm disabled:tw-opacity-50 disabled:tw-cursor-not-allowed"
 						>
 							{#if checkoutPhase === 'processing' && checkoutTierId === tier.id}
 								PROCESSING...
@@ -223,24 +262,30 @@
 		</div>
 	</section>
 
-	<!-- B2C Upsell: Premium Spectator -->
-	<section class="tw-max-w-4xl tw-mx-auto tw-w-full tw-px-6">
-		<div class="tw-bg-gradient-to-r tw-from-[#fbbf24]/10 tw-to-transparent tw-border tw-border-[#fbbf24]/30 tw-p-8 tw-rounded-sm tw-flex tw-flex-col md:tw-flex-row tw-items-center tw-justify-between tw-gap-8">
-			<div class="tw-flex-1">
-				<div class="tw-flex tw-items-center tw-gap-2 tw-mb-2">
-					<Icon name={"game.star" as IconName} size={18} class="tw-text-[#fbbf24]" />
-					<h3 class="tw-text-xl tw-font-bold tw-text-[#fbbf24]">Premium Spectator Family Subscription</h3>
-				</div>
-				<p class="tw-text-[#cbd5e1] tw-text-sm tw-leading-relaxed">
-					For parents and extended family. Unlock 1080p HD live streams, automated AI highlight reels, and tactical heatmaps of your athlete's performance. Billed directly to households at $24.99/mo.
-				</p>
+	<!-- Migration Concierge -->
+	<section class="tw-max-w-4xl tw-mx-auto tw-w-full tw-px-6 tw-mb-24">
+		<div class="tw-bg-[#0B0F19] tw-border tw-border-[#1e293b] tw-p-8 tw-flex tw-flex-col md:tw-flex-row tw-gap-8 tw-items-center">
+			<div class="tw-shrink-0 tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-p-4 tw-rounded-full">
+				<Icon name={"user.settings" as IconName} size={32} class="tw-text-[#14b8a6]" />
 			</div>
-			<div class="tw-shrink-0">
-				<a href="/login?redirect=premium" class="tw-bg-[#fbbf24] tw-text-[#0f172a] hover:tw-bg-[#f59e0b] tw-px-6 tw-py-3 tw-font-mono tw-font-bold tw-text-xs tw-uppercase tw-tracking-widest tw-transition-colors tw-duration-150 tw-block tw-text-center tw-rounded-sm">
-					Enable for Club
-				</a>
+			<div class="tw-flex-1">
+				<h3 class="tw-text-xl tw-font-bold tw-text-[#f8fafc] tw-mb-2">White-Glove Migration Concierge</h3>
+				<p class="tw-text-[#94a3b8] tw-text-sm tw-leading-relaxed tw-mb-4">
+					Switching platforms shouldn't mean losing years of historical data. Our elite onboarding team will manually map and migrate your legacy athlete data.
+				</p>
+				<div class="tw-inline-flex tw-items-center tw-gap-2 tw-bg-[#0f172a] tw-border tw-border-[#1e293b] tw-px-3 tw-py-1.5 tw-rounded-sm">
+					<Icon name={"action.upload" as IconName} size={16} class="tw-text-[#14b8a6]" />
+					<span class="tw-font-mono tw-text-xs tw-text-[#cbd5e1] tw-tracking-widest">Powered by Automated CSV Vampire Importer</span>
+				</div>
 			</div>
 		</div>
+	</section>
+
+	<!-- Single B2C Upsell / CTA (Replaced old CTA to ensure only ONE Action Gold button exists) -->
+	<section class="tw-max-w-4xl tw-mx-auto tw-w-full tw-px-6 tw-flex tw-justify-center">
+		<a href="/login" class="tw-bg-[#fbbf24] tw-text-[#0f172a] hover:tw-bg-[#f59e0b] tw-px-10 tw-py-4 tw-font-mono tw-font-bold tw-text-sm tw-uppercase tw-tracking-widest tw-transition-all tw-duration-150 tw-inline-block tw-text-center tw-rounded-sm active:tw-scale-[0.98]">
+			Deploy Your Club
+		</a>
 	</section>
 
 </div>
