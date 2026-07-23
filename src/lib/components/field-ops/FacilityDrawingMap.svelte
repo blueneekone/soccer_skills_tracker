@@ -417,6 +417,7 @@
 					draggable: !polygonsLocked,
 				},
 			);
+			//@ts-ignore
 			marker.__facilityMarkerIndex = mi;
 			markerSink.push(marker);
 			if (!polygonsLocked) {
@@ -776,6 +777,7 @@
 									draggable: true,
 								});
 								const markerIdx = mapData.markers.length;
+								//@ts-ignore
 								m.__facilityMarkerIndex = markerIdx;
 								refs.drawnMarkers.push(m);
 								wireFacilityMarkerClick(g, m);
