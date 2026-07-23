@@ -5,6 +5,7 @@
 	 * CDO Recovery: Fixed placeholder image, banned color, headline length, symmetric grid
 	 */
 	import Icon from '$lib/components/ui/Icon.svelte';
+	import SeatGaugeMockup from '$lib/components/marketing/SeatGaugeMockup.svelte';
 	import type { IconName } from '$lib/icons/registry.js';
 
 	export const prerender = true;
@@ -70,7 +71,7 @@
 
 			<!-- FIX #3: Sub-10 word brutalist headline -->
 			<h1 class="tw-text-5xl md:tw-text-7xl tw-font-bold tw-text-[#f8fafc] tw-tracking-tight tw-leading-[1.05] tw-max-w-4xl">
-				The operating system for elite youth clubs.
+				Stop managing teams. Start developing athletes. The Youth Sports OS.
 			</h1>
 
 			<p class="tw-text-[#94a3b8] tw-text-lg tw-max-w-2xl tw-leading-relaxed">
@@ -97,14 +98,9 @@
 			<!-- Overlay gradient -->
 			<div class="tw-absolute tw-inset-0 tw-bg-gradient-to-tr tw-from-[#020617]/60 tw-to-transparent tw-z-10 tw-pointer-events-none tw-transition-opacity tw-duration-700 group-hover:tw-opacity-30"></div>
 			<!-- Generated product preview -->
-			<img
-				src="/nexus-command-preview.png"
-				alt="NEXUS COMMAND — Coach OS Daily Intel dashboard showing squad radar charts, SIEM squad matrix, and weather protocol panels"
-				class="tw-w-full tw-h-full tw-object-cover tw-transition-transform tw-duration-700 group-hover:tw-scale-[1.02]"
-				loading="eager"
-				width="1920"
-				height="1080"
-			/>
+			<div class="tw-w-full tw-h-full tw-flex tw-items-center tw-justify-center tw-bg-[#000000] tw-p-8 tw-transition-transform tw-duration-700 group-hover:tw-scale-[1.02]">
+				<SeatGaugeMockup />
+			</div>
 			<!-- Scanline overlay -->
 			<div class="tw-absolute tw-inset-0 tw-z-10 tw-pointer-events-none tw-opacity-[0.03]" style="background: repeating-linear-gradient(0deg, transparent, transparent 3px, #fff 3px, #fff 4px);"></div>
 		</div>

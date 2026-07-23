@@ -9,11 +9,11 @@
 	<meta name="description" content="Parent OS: COPPA 2.0 WebAuthn biometric enclave, the 15-minute Car Ride Home embargo, and Tremendous API escrow bounties." />
 </svelte:head>
 
-<div class="tw-flex tw-w-full tw-min-h-dvh tw-flex-col tw-bg-[#0f172a] tw-text-[#f8fafc] tw-font-sans tw-selection:bg-[#3b82f6] tw-selection:text-[#0f172a]">
+<div class="tw-flex tw-w-full tw-min-h-dvh tw-flex-col tw-bg-[#0f172a] tw-text-[#f8fafc] tw-font-sans tw-selection:bg-[#14b8a6] tw-selection:text-[#0f172a]">
 	
 	<!-- Header & Cinematic Media -->
 	<header class="tw-max-w-7xl tw-mx-auto tw-w-full tw-px-6 tw-pt-24 tw-pb-16 tw-flex tw-flex-col tw-items-center tw-text-center tw-gap-6">
-		<span class="tw-font-mono tw-text-xs tw-font-bold tw-tracking-[0.3em] tw-text-[#3b82f6]">THE CO-OP TRUST CENTER</span>
+		<span class="tw-font-mono tw-text-xs tw-font-bold tw-tracking-[0.3em] tw-text-[#14b8a6]">THE CO-OP TRUST CENTER</span>
 		<h1 class="tw-text-5xl md:tw-text-6xl tw-font-bold tw-text-[#f8fafc] tw-tracking-tight tw-leading-tight">
 			Parent OS
 		</h1>
@@ -24,7 +24,7 @@
 		<!-- Cinematic Media Container -->
 		<div class="tw-w-full tw-max-w-5xl tw-aspect-video tw-bg-[#0B0F19] tw-border tw-border-[#1e293b] tw-rounded-sm tw-overflow-hidden tw-relative tw-group">
 			<div class="tw-absolute tw-inset-0 tw-flex tw-items-center tw-justify-center tw-z-10">
-				<button class="tw-bg-[#0B0F19]/90 tw-border tw-border-[#1e293b] tw-rounded-full tw-p-4 tw-text-[#f8fafc] tw-transition-colors tw-duration-150 group-hover:tw-text-[#3b82f6]">
+				<button class="tw-bg-[#0B0F19]/90 tw-border tw-border-[#1e293b] tw-rounded-full tw-p-4 tw-text-[#f8fafc] tw-transition-colors tw-duration-150 group-hover:tw-text-[#14b8a6]">
 					<Icon name={"status.circle-play" as IconName} size={48} strokeWidth={1} />
 				</button>
 			</div>
@@ -39,7 +39,7 @@
 			<!-- COPPA 2.0 WebAuthn - 4 Cols -->
 			<div class="md:tw-col-span-4 tw-bg-[#0B0F19] tw-border tw-border-[#1e293b] tw-p-[clamp(1.5rem,3vw,2.5rem)] hover:tw-border-[#334155] tw-transition-colors tw-duration-150 tw-flex tw-flex-col">
 				<div class="tw-flex tw-items-center tw-gap-3 tw-mb-6">
-					<Icon name={"status.shield-check" as IconName} size={28} strokeWidth={1.5} class="tw-text-[#3b82f6]" />
+					<Icon name={"status.shield-check" as IconName} size={28} strokeWidth={1.5} class="tw-text-[#14b8a6]" />
 					<h2 class="tw-text-xl tw-font-bold">COPPA 2.0 WebAuthn</h2>
 				</div>
 				<p class="tw-text-[#94a3b8] tw-text-sm tw-leading-relaxed">
@@ -50,7 +50,7 @@
 			<!-- 15-Minute Car Ride Home Embargo - 8 Cols -->
 			<div class="md:tw-col-span-8 tw-bg-[#0B0F19] tw-border tw-border-[#1e293b] tw-p-[clamp(1.5rem,3vw,2.5rem)] hover:tw-border-[#334155] tw-transition-colors tw-duration-150 tw-flex tw-flex-col">
 				<div class="tw-flex tw-items-center tw-gap-3 tw-mb-6">
-					<Icon name={"sys.eye-off" as IconName} size={28} strokeWidth={1.5} class="tw-text-[#3b82f6]" />
+					<Icon name={"sys.eye-off" as IconName} size={28} strokeWidth={1.5} class="tw-text-[#14b8a6]" />
 					<h2 class="tw-text-2xl tw-font-bold">15-Minute Car Ride Home Embargo</h2>
 				</div>
 				<p class="tw-text-[#94a3b8] tw-text-sm tw-leading-relaxed tw-mb-8">
@@ -62,7 +62,7 @@
 			<div class="md:tw-col-span-12 tw-bg-[#0B0F19] tw-border tw-border-[#1e293b] tw-p-[clamp(1.5rem,3vw,2.5rem)] hover:tw-border-[#334155] tw-transition-colors tw-duration-150 tw-flex tw-flex-col md:tw-flex-row tw-gap-8 tw-items-center">
 				<div class="tw-flex-1">
 					<div class="tw-flex tw-items-center tw-gap-3 tw-mb-6">
-						<Icon name={"sys.escrow" as IconName} size={28} strokeWidth={1.5} class="tw-text-[#3b82f6]" />
+						<Icon name={"sys.escrow" as IconName} size={28} strokeWidth={1.5} class="tw-text-[#14b8a6]" />
 						<h2 class="tw-text-2xl tw-font-bold">Tremendous API Escrow Bounties</h2>
 					</div>
 					<p class="tw-text-[#94a3b8] tw-text-sm tw-leading-relaxed">

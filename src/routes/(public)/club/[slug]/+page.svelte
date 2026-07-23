@@ -191,7 +191,7 @@
 		flex-direction: column;
 		align-items: center;
 		gap: 2rem;
-		--clp-brand: #3b82f6;
+		--clp-brand: #14b8a6;
 		--clp-accent: #60a5fa;
 	}
 

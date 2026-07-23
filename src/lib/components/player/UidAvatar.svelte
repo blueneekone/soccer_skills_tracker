@@ -49,7 +49,7 @@
 		flex-shrink: 0;
 		overflow: hidden;
 		border-radius: 24px;
-		border: 1px solid color-mix(in srgb, var(--color-structural, #3b82f6) 35%, transparent);
+		border: 1px solid color-mix(in srgb, var(--color-structural, #14b8a6) 35%, transparent);
 		background: var(--color-dominant, #0f172a);
 	}
 

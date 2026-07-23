@@ -6,7 +6,7 @@
 		label = '',
 		value = '',
 		subLabel = '',
-		strokeColor = 'var(--color-structural, #3b82f6)',
+		strokeColor = 'var(--color-structural, #14b8a6)',
 		size = 56,
 		prominent = false,
 	}: {
@@ -92,7 +92,7 @@
 	}
 
 	.hud-mini-ring__track {
-		stroke: color-mix(in srgb, var(--color-structural, #3b82f6) 22%, transparent);
+		stroke: color-mix(in srgb, var(--color-structural, #14b8a6) 22%, transparent);
 	}
 
 	.hud-mini-ring--prominent .hud-mini-ring__track {
@@ -100,9 +100,9 @@
 	}
 
 	.hud-mini-ring__fill {
-		stroke: var(--hud-ring-stroke, var(--color-structural, #3b82f6));
+		stroke: var(--hud-ring-stroke, var(--color-structural, #14b8a6));
 		transition: stroke-dashoffset 0.65s cubic-bezier(0.33, 1, 0.68, 1);
-		filter: drop-shadow(0 0 4px color-mix(in srgb, var(--hud-ring-stroke, #3b82f6) 45%, transparent));
+		filter: drop-shadow(0 0 4px color-mix(in srgb, var(--hud-ring-stroke, #14b8a6) 45%, transparent));
 	}
 
 	.hud-mini-ring__center {
@@ -124,7 +124,7 @@
 		font-weight: 800;
 		letter-spacing: 0.12em;
 		text-transform: uppercase;
-		color: color-mix(in srgb, var(--color-structural, #3b82f6) 65%, #94a3b8);
+		color: color-mix(in srgb, var(--color-structural, #14b8a6) 65%, #94a3b8);
 	}
 
 	.hud-mini-ring--prominent .hud-mini-ring__label {
