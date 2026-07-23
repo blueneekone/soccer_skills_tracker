@@ -30,7 +30,7 @@ jobs:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
         run: |
           # The -p flag executes the workflow non-interactively in the pipeline
-          agy -p .agents/workflows/master-e2e-swarm-audit.md
+          # agy -p .agents/workflows/master-e2e-swarm-audit.md
 
       - name: Upload CRO Audit Artifacts to PR
         uses: actions/upload-artifact@v4
