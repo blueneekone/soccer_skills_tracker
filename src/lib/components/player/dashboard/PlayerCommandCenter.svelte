@@ -109,7 +109,7 @@
 		margin: 0;
 		padding: clamp(16px, 3vw, 24px);
 		gap: var(--bento-gap-liquid, clamp(20px, 4vw, 32px));
-		border-left: 1px solid color-mix(in srgb, var(--color-structural, #3b82f6) 25%, transparent);
+		border-left: 1px solid color-mix(in srgb, var(--color-structural, #14b8a6) 25%, transparent);
 		background: color-mix(in srgb, var(--color-dominant, #0f172a) 96%, #000);
 		box-shadow: var(--shadow-liquid);
 		overflow-y: auto;
@@ -150,7 +150,7 @@
 		min-width: 44px;
 		min-height: 44px;
 		border-radius: 12px;
-		border: 1px solid color-mix(in srgb, var(--color-structural, #3b82f6) 30%, transparent);
+		border: 1px solid color-mix(in srgb, var(--color-structural, #14b8a6) 30%, transparent);
 		background: color-mix(in srgb, var(--color-dominant, #0f172a) 80%, transparent);
 		color: #94a3b8;
 		cursor: pointer;
@@ -194,7 +194,7 @@
 		min-height: 44px;
 		padding: 0.65rem 0.75rem;
 		border-radius: 16px;
-		border: 1px solid color-mix(in srgb, var(--color-structural, #3b82f6) 18%, transparent);
+		border: 1px solid color-mix(in srgb, var(--color-structural, #14b8a6) 18%, transparent);
 		background: color-mix(in srgb, var(--color-dominant, #0f172a) 88%, transparent);
 		text-decoration: none;
 		color: inherit;
@@ -204,8 +204,8 @@
 	}
 
 	.pcc-drawer__link:hover {
-		border-color: color-mix(in srgb, var(--color-structural, #3b82f6) 45%, transparent);
-		background: color-mix(in srgb, var(--color-structural, #3b82f6) 12%, transparent);
+		border-color: color-mix(in srgb, var(--color-structural, #14b8a6) 45%, transparent);
+		background: color-mix(in srgb, var(--color-structural, #14b8a6) 12%, transparent);
 	}
 
 	.pcc-drawer__link-icon {
@@ -215,8 +215,8 @@
 		width: 2rem;
 		height: 2rem;
 		border-radius: 10px;
-		background: color-mix(in srgb, var(--color-structural, #3b82f6) 14%, transparent);
-		color: var(--color-structural, #3b82f6);
+		background: color-mix(in srgb, var(--color-structural, #14b8a6) 14%, transparent);
+		color: var(--color-structural, #14b8a6);
 		flex-shrink: 0;
 	}
 

@@ -49,7 +49,7 @@
 		<!-- Desktop CTAs -->
 		<div class="mn-ctas">
 			<a href="/login" class="tw-vanguard-btn-secondary mn-cta-size">Sign In</a>
-			<a href="/setup" class="vanguard-btn-amber mn-cta-size">Start club →</a>
+			<a href="/setup" class="tw-vanguard-btn-secondary mn-cta-size tw-border-[#14b8a6] tw-text-[#14b8a6] hover:tw-border-[#14b8a6] hover:tw-bg-[#14b8a6]/10">Start club →</a>
 		</div>
 
 		<!-- Mobile hamburger -->

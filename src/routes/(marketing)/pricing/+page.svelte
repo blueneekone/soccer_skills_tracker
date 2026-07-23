@@ -62,7 +62,7 @@
 			seats: '100+ Seats',
 			price: '$299',
 			priceSub: '/ month per club',
-			accentColor: '#3b82f6',
+			accentColor: '#14b8a6',
 			features: [
 				'Director OS Panopticon',
 				'Field scheduling ops',

@@ -292,7 +292,7 @@
 
 	.mh-input:focus {
 		outline: none;
-		border-color: #3b82f6;
+		border-color: #14b8a6;
 	}
 
 	.geist-mono {
