@@ -1,7 +1,8 @@
 <script lang="ts">
 	import { browser } from '$app/environment';
 	import { untrack } from 'svelte';
-	import { createAdvancedPinMarker } from '$lib/maps/advancedMarkers.js';
+	import { createAdvancedPinMarker } from "$lib/maps/advancedMarkers.js";
+type ExtendedAdvancedMarkerElement = google.maps.marker.AdvancedMarkerElement & { __facilityMarkerIndex?: number };
 	import { ensureGoogleMapsLoaded, getGoogleMapsApiKey, getGoogleMapsMapId } from '$lib/maps/ensureGoogleMaps.js';
 	import Icon from '$lib/components/ui/Icon.svelte';
 	import type { IconName } from '$lib/icons/registry.js';
@@ -417,8 +418,7 @@
 					draggable: !polygonsLocked,
 				},
 			);
-			//@ts-ignore
-			marker.__facilityMarkerIndex = mi;
+			(marker as ExtendedAdvancedMarkerElement).__facilityMarkerIndex = mi;
 			markerSink.push(marker);
 			if (!polygonsLocked) {
 				wireFacilityMarkerClick(g, marker);
@@ -777,8 +777,7 @@
 									draggable: true,
 								});
 								const markerIdx = mapData.markers.length;
-								//@ts-ignore
-								m.__facilityMarkerIndex = markerIdx;
+								(m as ExtendedAdvancedMarkerElement).__facilityMarkerIndex = markerIdx;
 								refs.drawnMarkers.push(m);
 								wireFacilityMarkerClick(g, m);
 								wireFacilityMarkerDrag(g, m);

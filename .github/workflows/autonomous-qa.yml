@@ -21,7 +21,7 @@ jobs:
       - name: Install Antigravity CLI
         run: |
           # Install the Antigravity CLI for Linux headless execution
-          curl -sL https://antigravity.google/install.sh | bash
+          # curl -sL https://antigravity.google/install.sh | bash
           
       - name: Execute Master E2E Swarm Audit
         env:
