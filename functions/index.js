@@ -103,6 +103,12 @@ exports.sendSponsorPartnerDigest = sponsorPartnerOps.sendSponsorPartnerDigest;
 
 const parentVoiceSessionOps = require('./src/domains/parentVoiceSessionOps.js');
 exports.createParentVoiceSession = parentVoiceSessionOps.createParentVoiceSession;
+
+const invites = require("./invites.js");
+exports.consumeInviteCode = invites.consumeInviteCode;
+
+const magicUplinks = require("./magicUplinks.js");
+exports.redeemMagicUplink = magicUplinks.redeemMagicUplink;
 exports.joinParentVoiceSession = parentVoiceSessionOps.joinParentVoiceSession;
 
 const notificationOps = require('./src/domains/notificationOps.js');
