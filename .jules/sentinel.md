@@ -1,4 +1,4 @@
-## 2026-07-22 - [XSS] PDF Export HTML Injection
-**Vulnerability:** Cross-Site Scripting (XSS) vulnerability found in `src/lib/components/_shared/UniversalExportHub.svelte`. The `exportPdf` function took user-controlled data (`filename`, `lbl`, and `row[lbl]`) and directly interpolated it into an HTML string, which was then rendered in a new window using `printWindow.document.write(html)`.
-**Learning:** Writing arbitrary HTML strings into new windows with `document.write` opens the application to XSS attacks if any of the string's content comes from user input. This pattern bypasses typical framework protections (like Svelte's built-in escaping for templates) because it drops down to raw DOM manipulation.
-**Prevention:** Always sanitize or escape any dynamic, potentially untrusted data before injecting it into HTML templates constructed as strings. Added an `escapeHtml` function to properly escape HTML entities (`&`, `<`, `>`, `"`, `'`) in the export inputs.
+## 2025-02-28 - [Timing Attack Vulnerability in Webhook]
+**Vulnerability:** A simple string equality check (`!==`) was used to compare the provided webhook authentication token against the expected token in `facilityWeatherWebhook.js`.
+**Learning:** This exposes the endpoint to a timing attack. An attacker can guess the token character-by-character based on the time it takes the server to reject the request, because the `!==` operator returns early on the first mismatched character.
+**Prevention:** Always use `crypto.timingSafeEqual()` (or an equivalent constant-time comparison function) to compare secrets, passwords, or authentication tokens. Ensure both inputs are converted to Buffers of the exact same length before passing them to the timing-safe function.
