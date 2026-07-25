@@ -17,7 +17,7 @@ const pageSrc = existsSync(PAGE) ? readFileSync(PAGE, 'utf-8') : '';
 const identitySrc = existsSync(IDENTITY) ? readFileSync(IDENTITY, 'utf-8') : '';
 const ringSrc = existsSync(HUD_RING) ? readFileSync(HUD_RING, 'utf-8') : '';
 
-describe.skip('Sprint 3.1 Part A — hud-stat-cell dossier tokens', () => {
+describe('Sprint 3.1 Part A — hud-stat-cell dossier tokens', () => {
 	it('uses --pd-panel background (not bare #0f172a on stat cells)', () => {
 		expect(hudCssSrc).toMatch(/\.hud-stat-cell[\s\S]*?background:\s*var\(--pd-panel,\s*#05050a\)/);
 		expect(hudCssSrc).not.toMatch(
@@ -39,7 +39,7 @@ describe.skip('Sprint 3.1 Part A — hud-stat-cell dossier tokens', () => {
 	});
 });
 
-describe.skip('Sprint 3.1 Part A — init modal dossier remap', () => {
+describe('Sprint 3.1 Part A — init modal dossier remap', () => {
 	it('init modal shell does not use tw-bg-slate-900', () => {
 		expect(pageSrc).not.toMatch(/init-modal[\s\S]{0,120}tw-bg-slate-900/);
 		expect(pageSrc).toMatch(/init-modal[\s\S]{0,120}pd-panel/);
@@ -58,7 +58,7 @@ describe.skip('Sprint 3.1 Part A — init modal dossier remap', () => {
 	});
 });
 
-describe.skip('Sprint 3.1 Part B — HQ loadout wiring', () => {
+describe('Sprint 3.1 Part B — HQ loadout wiring', () => {
 	it('IdentityBentoModule accepts operativeLoadout + ownedCosmetics', () => {
 		expect(identitySrc).toMatch(/operativeLoadout/);
 		expect(identitySrc).toMatch(/ownedCosmetics/);
@@ -69,7 +69,7 @@ describe.skip('Sprint 3.1 Part B — HQ loadout wiring', () => {
 		expect(ringSrc).toMatch(/composeOperativePortrait|loadoutBorder/);
 	});
 
-	it.skip('dashboard passes operativeLoadout to IdentityBentoModule', () => {
+	it('dashboard passes operativeLoadout to IdentityBentoModule', () => {
 		expect(pageSrc).toMatch(/operativeLoadout=\{activePlayer\?\.operativeLoadout\}/);
 		expect(pageSrc).toMatch(/ownedCosmetics/);
 	});

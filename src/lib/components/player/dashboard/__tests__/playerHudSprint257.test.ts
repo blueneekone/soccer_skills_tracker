@@ -60,7 +60,7 @@ const sharedEyebrowBlock =
 		/\.player-hud-root \.pd-label,[\s\S]*?line-height:\s*1\.3;\s*\n\}/,
 	)?.[0] ?? '';
 
-describe.skip('Phase 7 · G8 — HQ telemetry banner parity documented', () => {
+describe('Phase 7 · G8 — HQ telemetry banner parity documented', () => {
 	it('documents Phase 7 · G8 — HQ telemetry banner parity in CSS', () => {
 		expect(hudCss).toMatch(/Phase 7 · G8 — HQ telemetry banner parity/);
 		expect(g8VoidBlock).toMatch(/\.player-analytics-void\.pd-os-deck--recessed > \.vpp-root--premium/);
@@ -70,7 +70,7 @@ describe.skip('Phase 7 · G8 — HQ telemetry banner parity documented', () => {
 	});
 });
 
-describe.skip('Phase 7 · G8 — HQ page uses shared pd-hq-section-head band banner', () => {
+describe('Phase 7 · G8 — HQ page uses shared pd-hq-section-head band banner', () => {
 	it('+page.svelte: pd-hq-section-head player-analytics-void__head BEFORE VanguardProtocolPanel', () => {
 		expect(analyticsVoidBlock).toMatch(/pd-hq-section-head player-analytics-void__head/);
 		expect(analyticsVoidBlock).toMatch(/pd-hq-section-head__eyebrow pd-label player-analytics-void__eyebrow/);
@@ -93,7 +93,7 @@ describe.skip('Phase 7 · G8 — HQ page uses shared pd-hq-section-head band ban
 	});
 });
 
-describe.skip('Phase 7 · G8 — HUD CSS banner cohesion', () => {
+describe('Phase 7 · G8 — HUD CSS banner cohesion', () => {
 	it('NO G7 teal border-bottom on void vpp-head selector block', () => {
 		expect(hudCss).not.toMatch(
 			/\.player-hud-root \.player-analytics-void\.pd-os-deck--recessed > \.vpp-root--premium \.vpp-head--premium[\s\S]*?border-bottom:\s*1px solid color-mix\(in srgb, var\(--pd-accent-data/,
@@ -123,7 +123,7 @@ describe.skip('Phase 7 · G8 — HUD CSS banner cohesion', () => {
 	});
 });
 
-describe.skip('Phase 7 · G8 — G3 regression: telemetry inner wells frozen', () => {
+describe('Phase 7 · G8 — G3 regression: telemetry inner wells frozen', () => {
 	it(':is(.player-analytics-void, .stats-analytics-void) .vpp-chart--premium uses --pd-z1-well-bg', () => {
 		expect(hudCss).toMatch(/Phase 7 · G3 — Telemetry inner: calm void \(HQ \+ Stats parity\)/);
 		expect(hudCss).toMatch(
@@ -132,7 +132,7 @@ describe.skip('Phase 7 · G8 — G3 regression: telemetry inner wells frozen', (
 	});
 });
 
-describe.skip('Phase 7 · G8 — G6 regression: hub band rhythm + VPP head dedup intact', () => {
+describe('Phase 7 · G8 — G6 regression: hub band rhythm + VPP head dedup intact', () => {
 	it('OperativeHub still has pd-hq-section-head operative-hub__head', () => {
 		expect(hubSrc).toMatch(/pd-hq-section-head operative-hub__head/);
 		expect(hubSrc).toMatch(/pd-hq-section-head__eyebrow/);
@@ -145,14 +145,14 @@ describe.skip('Phase 7 · G8 — G6 regression: hub band rhythm + VPP head dedup
 	});
 });
 
-describe.skip('Phase 7 · G8 — Quick Ops / Pathway section heads unchanged', () => {
+describe('Phase 7 · G8 — Quick Ops / Pathway section heads unchanged', () => {
 	it('Quick Ops / Pathway retain pd-hq-section-head pattern', () => {
 		expect(quickOpsSrc).toMatch(/pd-hq-section-head oqo-deck__head/);
 		expect(pathwaySrc).toMatch(/pd-hq-section-head opp-preview__head/);
 	});
 });
 
-describe.skip('Phase 7 · G8 — anti-patterns + regression hooks', () => {
+describe('Phase 7 · G8 — anti-patterns + regression hooks', () => {
 	it('touched G8 sources omit neon cyan literals', () => {
 		expect(G8_TOUCHED).not.toMatch(/#00d4ff/i);
 		expect(G8_TOUCHED).not.toMatch(/#00f0ff/i);
