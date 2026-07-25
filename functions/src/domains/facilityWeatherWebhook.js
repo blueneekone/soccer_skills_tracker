@@ -7,7 +7,6 @@
 const {onRequest} = require('firebase-functions/v2/https');
 const logger = require('firebase-functions/logger');
 const admin = require('firebase-admin');
-const crypto = require('crypto');
 const {defineSecret} = require('firebase-functions/params');
 const {
   collectFcmTokensForUids,
@@ -82,16 +81,7 @@ exports.facilityWeatherWebhook = onRequest(
             req.query.token.trim() :
             '';
       const expectedToken = WEBHOOK_AUTH_TOKEN.value();
-      if (!expectedToken) {
-        res.status(403).send('Forbidden');
-        return;
-      }
-
-      const tokenBuffer = Buffer.from(token, 'utf8');
-      const expectedBuffer = Buffer.from(expectedToken, 'utf8');
-
-      if (tokenBuffer.length !== expectedBuffer.length ||
-          !crypto.timingSafeEqual(tokenBuffer, expectedBuffer)) {
+      if (!expectedToken || token !== expectedToken) {
         res.status(403).send('Forbidden');
         return;
       }

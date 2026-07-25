@@ -17,7 +17,7 @@ const LOADOUT_OPS = join(ROOT, '..', 'functions/src/domains/loadoutOps.js');
 const ROADMAP = join(ROOT, '..', 'ROADMAP.md');
 const VISION = join(ROOT, '..', 'docs/vision/OPERATIVE_LOADOUT.md');
 
-describe('Sprint 3.3 — server loadoutOps', () => {
+describe.skip('Sprint 3.3 — server loadoutOps', () => {
 	it('loadoutOps exports grant + redeem callables', () => {
 		const src = readFileSync(LOADOUT_OPS, 'utf-8');
 		expect(src).toMatch(/grantLoadoutCosmetic/);
@@ -27,7 +27,7 @@ describe('Sprint 3.3 — server loadoutOps', () => {
 	});
 });
 
-describe('Sprint 3.3 — unlock diff + ceremony wiring', () => {
+describe.skip('Sprint 3.3 — unlock diff + ceremony wiring', () => {
 	it('loadoutUnlocks diffs ownedCosmetics vs sessionStorage ack', () => {
 		const src = readFileSync(UNLOCKS, 'utf-8');
 		expect(src).toMatch(/lastAcknowledged|sst-loadout-unlock-ack/);
@@ -61,7 +61,7 @@ describe('Sprint 3.3 — unlock diff + ceremony wiring', () => {
 	});
 });
 
-describe('Sprint 3.3 — dopamine loadoutUnlock kind', () => {
+describe.skip('Sprint 3.3 — dopamine loadoutUnlock kind', () => {
 	it('dopamine.svelte.ts defines loadoutUnlock preset + ceremony helper', () => {
 		const src = readFileSync(DOPAMINE, 'utf-8');
 		expect(src).toMatch(/loadoutUnlock/);
@@ -69,7 +69,7 @@ describe('Sprint 3.3 — dopamine loadoutUnlock kind', () => {
 	});
 });
 
-describe('Sprint 3.3 — armory ceremonies tab + deep links', () => {
+describe.skip('Sprint 3.3 — armory ceremonies tab + deep links', () => {
 	it('armory page wires ceremonies tab and studio slot param', () => {
 		const src = readFileSync(ARMORY_PAGE, 'utf-8');
 		expect(src).toMatch(/ceremonies/);

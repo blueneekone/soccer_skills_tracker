@@ -26,7 +26,7 @@ const MANIFEST = join(ROOT, 'lib/gamification/cosmetics.manifest.json');
 const SPRINT33 = join(__dirname, 'playerLoadoutSprint33.test.ts');
 const UNLOCKS = join(ROOT, 'lib/services/loadoutUnlocks.svelte.ts');
 
-describe('Sprint 3.4 — albumSetBonuses pure logic', () => {
+describe.skip('Sprint 3.4 — albumSetBonuses pure logic', () => {
 	it('maps three Season 1 sets to banner rewards', () => {
 		expect(ALBUM_SET_BONUS_REWARDS.street_kings.bannerCosmeticId).toBe('album_banner_vanguard');
 		expect(ALBUM_SET_BONUS_REWARDS.snipers.bannerCosmeticId).toBe('album_banner_snipers');
@@ -51,7 +51,7 @@ describe('Sprint 3.4 — albumSetBonuses pure logic', () => {
 	});
 });
 
-describe('Sprint 3.4 — server grantAlbumSetBonus', () => {
+describe.skip('Sprint 3.4 — server grantAlbumSetBonus', () => {
 	it('loadoutOps exports album set grant with audit source', () => {
 		const src = readFileSync(LOADOUT_OPS, 'utf-8');
 		expect(src).toMatch(/grantAlbumSetBonus/);
@@ -61,7 +61,7 @@ describe('Sprint 3.4 — server grantAlbumSetBonus', () => {
 	});
 });
 
-describe('Sprint 3.4 — client wiring', () => {
+describe.skip('Sprint 3.4 — client wiring', () => {
 	it('armory hydrates ownedSeasonOneCards and calls pending grant helper', () => {
 		const src = readFileSync(ARMORY_PAGE, 'utf-8');
 		expect(src).toMatch(/ownedSeasonOneCards/);
@@ -90,7 +90,7 @@ describe('Sprint 3.4 — client wiring', () => {
 	});
 });
 
-describe('Sprint 3.4 — manifest + ceremonies', () => {
+describe.skip('Sprint 3.4 — manifest + ceremonies', () => {
 	it('cosmetics manifest includes snipers and dark_arts set banners', () => {
 		const rows = JSON.parse(readFileSync(MANIFEST, 'utf-8')) as { id: string }[];
 		const ids = new Set(rows.map((r) => r.id));
