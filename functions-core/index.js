@@ -55,3 +55,7 @@ exports.enqueueFederationSyncJob = federationSyncOps.enqueueFederationSyncJob;
 const reportOps = require('./src/domains/reportOps');
 exports.batchDispatchReportCards = reportOps.batchDispatchReportCards;
 exports.generatePdfReportCard = reportOps.generatePdfReportCard;
+
+const b2bEnrollmentOps = require('./src/domains/b2bEnrollmentOps.js');
+exports.enrollIndependentDirector = b2bEnrollmentOps.enrollIndependentDirector;
+exports.enrollGovernedDirector = b2bEnrollmentOps.enrollGovernedDirector;

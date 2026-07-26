@@ -132,3 +132,7 @@ exports.loginAs = globalAdminOs.loginAs;
 exports.rightToBeForgotten = globalAdminOs.rightToBeForgotten;
 exports.consumeInviteCode = require('./invites').consumeInviteCode;
 exports.redeemMagicUplink = require('./magicUplinks').redeemMagicUplink;
+
+const b2bEnrollmentOps = require('./src/domains/b2bEnrollmentOps.js');
+exports.enrollIndependentDirector = b2bEnrollmentOps.enrollIndependentDirector;
+exports.enrollGovernedDirector = b2bEnrollmentOps.enrollGovernedDirector;

@@ -28,8 +28,8 @@ All agents must run these checks before any code is committed. We do not merge r
 This replaces all generic registration flows. Mandatory Firebase MFA and 1-hour ID Token timeouts with secure background refresh logic must govern all elevated RBAC roles [cite: 338, 770].
 
 **1. B2B Registration Pipeline (The Dual-Track)**
-*   **Independent Director Track:** Frictionless self-serve onboarding that provisions a standalone `tenantId` and `clubId`, immediately kicking off Stripe Connect onboarding [cite: 141, 830]. Requires uploading a government-issued photo ID or business license for Account Ownership Verification [cite: 271, 385].
-*   **Governed Director Track:** Registration via single-use Federation invite links, automatically nesting the new `clubId` under the Commissioner's master `tenantId` [cite: 309, 310].
+*   [x] **Independent Director Track:** Frictionless self-serve onboarding that provisions a standalone `tenantId` and `clubId`, immediately kicking off Stripe Connect onboarding [cite: 141, 830]. Requires uploading a government-issued photo ID or business license for Account Ownership Verification [cite: 271, 385].
+*   [x] **Governed Director Track:** Registration via single-use Federation invite links, automatically nesting the new `clubId` under the Commissioner's master `tenantId` [cite: 309, 310].
 
 **2. Legal Gateway & The Zero-Trust Document Vault**
 All data collection must pass through these legal gates before a user accesses the platform [cite: 878, 1231]:
