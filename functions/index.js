@@ -120,7 +120,9 @@ exports.acknowledgeBroadcast = webhooksOps.acknowledgeBroadcast;
 exports.getBroadcastAckStatus = webhooksOps.getBroadcastAckStatus;
 
 function exportScheduler(target, name, modFn) {
-  target[name] = modFn;
+  if (process.env.SCHEDULERS_ENABLED === 'true') {
+    target[name] = modFn;
+  }
 }
 const eventOps = require('./src/domains/eventOps.js');
 exportScheduler(exports, 'sendScheduledEventReminders', eventOps.sendScheduledEventReminders);

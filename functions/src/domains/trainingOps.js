@@ -1,3 +1,4 @@
+const REGION = 'us-east1';
 const logger = require('firebase-functions/logger');
 const admin = require('firebase-admin');
 const { onDocumentCreated } = require('firebase-functions/v2/firestore');
