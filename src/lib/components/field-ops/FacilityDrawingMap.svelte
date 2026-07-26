@@ -2,7 +2,7 @@
 	import { browser } from '$app/environment';
 	import { untrack } from 'svelte';
 	import { createAdvancedPinMarker } from "$lib/maps/advancedMarkers.js";
-type ExtendedAdvancedMarkerElement = google.maps.marker.AdvancedMarkerElement & { __facilityMarkerIndex?: number };
+type ExtendedAdvancedMarkerElement = any & { __facilityMarkerIndex?: number };
 	import { ensureGoogleMapsLoaded, getGoogleMapsApiKey, getGoogleMapsMapId } from '$lib/maps/ensureGoogleMaps.js';
 	import Icon from '$lib/components/ui/Icon.svelte';
 	import type { IconName } from '$lib/icons/registry.js';

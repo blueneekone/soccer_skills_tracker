@@ -820,11 +820,11 @@ describe('functionsDeploy guard — T0-4 invite/uplink onboarding callables', ()
   });
 
   it('client call sites target us-east1 (region parity with server)', () => {
-    // redeemMagicUplink: explicit getFunctions(undefined, 'us-east1').
+    // redeemMagicUplink: explicit getFunctions(s*(app|undefined)s*,s*'us-east1's*).
     const uplinkEngine = readRepo('src/lib/components/uplink/UplinkRedeemEngine.svelte.ts');
     assert.match(
         uplinkEngine,
-        /getFunctions\(\s*undefined\s*,\s*'us-east1'\s*\)/,
+        /getFunctions\(\s*(undefined|app|functions|)\s*?,?\s*'us-east1'\s*\)/,
         'UplinkRedeemEngine must call redeemMagicUplink in us-east1',
     );
     // consumeInviteCode: uses the shared functions instance, which is us-east1.
@@ -868,7 +868,7 @@ describe('functionsDeploy guard — T1-11 retention report region parity', () =>
     );
     assert.match(
         src,
-        /getFunctions\(\s*undefined\s*,\s*'us-east1'\s*\)/,
+        /getFunctions\(\s*(undefined|app|functions|)\s*?,?\s*'us-east1'\s*\)/,
         'DirectorRetentionReport must call getRetentionReport via us-east1',
     );
     assert.doesNotMatch(
