@@ -124,3 +124,5 @@ exportScheduler(exports, 'sendRegistrationPaymentReminders', commerce.sendRegist
 const globalAdminOs = require('./src/domains/globalAdminOs.js');
 exports.loginAs = globalAdminOs.loginAs;
 exports.rightToBeForgotten = globalAdminOs.rightToBeForgotten;
+exports.consumeInviteCode = require('./invites').consumeInviteCode;
+exports.redeemMagicUplink = require('./magicUplinks').redeemMagicUplink;

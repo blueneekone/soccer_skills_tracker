@@ -13,8 +13,7 @@
 	 */
 
 	import { browser } from '$app/environment';
-	import { httpsCallable } from 'firebase/functions';
-import { functions } from '$lib/firebase.js';
+	import { getFunctions, httpsCallable } from 'firebase/functions';
 	import { authStore } from '$lib/stores/auth.svelte.js';
 
 	// ── Types ──────────────────────────────────────────────────────────────────
@@ -40,7 +39,7 @@ import { functions } from '$lib/firebase.js';
 
 	// ── Cloud Function handles ─────────────────────────────────────────────────
 	const getRetentionReportFn = browser
-		? httpsCallable(functions, 'getRetentionReport')
+		? httpsCallable(getFunctions(undefined, 'us-east1'), 'getRetentionReport')
 		: null;
 
 	// ── Load ───────────────────────────────────────────────────────────────────
