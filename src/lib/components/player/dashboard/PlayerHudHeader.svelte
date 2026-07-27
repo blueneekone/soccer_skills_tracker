@@ -218,7 +218,7 @@
 		gap: clamp(6px, 1.2vw, 8px);
 		padding: clamp(4px, 1vw, 6px) clamp(8px, 1.5vw, 10px);
 		border-radius: 999px;
-		border: 1px solid color-mix(in srgb, var(--color-structural, #3b82f6) 28%, transparent);
+		border: 1px solid color-mix(in srgb, var(--color-structural, #14b8a6) 28%, transparent);
 		background: color-mix(in srgb, var(--color-dominant, #0f172a) 55%, transparent);
 		-webkit-backdrop-filter: blur(12px);
 		backdrop-filter: blur(12px);
@@ -248,7 +248,7 @@
 		font-weight: 800;
 		letter-spacing: 0.12em;
 		text-transform: uppercase;
-		color: color-mix(in srgb, var(--color-structural, #3b82f6) 70%, #94a3b8);
+		color: color-mix(in srgb, var(--color-structural, #14b8a6) 70%, #94a3b8);
 	}
 
 	.player-hud-pill--streak .player-hud-pill__label {
