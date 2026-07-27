@@ -192,38 +192,41 @@ service cloud.firestore {
     }
 
     // JWT householdId can lag after household link / VPC / claim sync — prefer users/{email}.
+    function _resolvedHouseholdId() {
+      return tokenHousehold() != null
+        ? tokenHousehold()
+        : (exists(/databases/$(database)/documents/users/$(emailKey()))
+           && get(/databases/$(database)/documents/users/$(emailKey())).data.keys().hasAll(['householdId'])
+           ? get(/databases/$(database)/documents/users/$(emailKey())).data.householdId
+           : null);
+    }
+
     function parentResolvedHouseholdId() {
-      return exists(/databases/$(database)/documents/users/$(emailKey()))
-        && userDoc().keys().hasAll(['householdId'])
-        && userDoc().householdId is string
-        && userDoc().householdId != ''
-        ? userDoc().householdId
-        : tokenHousehold();
+      return tokenHousehold();
     }
 
     function parentHouseholdAllowsChildEmail(childKey) {
-      return isParent()
-        && parentResolvedHouseholdId() != null
-        && exists(/databases/$(database)/documents/households/$(parentResolvedHouseholdId()))
-        && get(/databases/$(database)/documents/households/$(parentResolvedHouseholdId())).data.playerEmails.hasAny([childKey]);
+      return isParent() && parentResolvedHouseholdId() != null && exists(/databases/$(database)/documents/users/$(childKey)) && get(/databases/$(database)/documents/users/$(childKey)).data.get('householdId', null) == parentResolvedHouseholdId();
+    }
+
+    function _hasName(name, hId) {
+      return hId != null && exists(/databases/$(database)/documents/households/$(hId))
+        && get(/databases/$(database)/documents/households/$(hId)).data.keys().hasAll(['playerNames'])
+        && get(/databases/$(database)/documents/households/$(hId)).data.playerNames.hasAny([name]);
     }
 
     function parentCanSeePlayerName(name) {
-      return isParent()
-        && parentResolvedHouseholdId() != null
-        && exists(/databases/$(database)/documents/households/$(parentResolvedHouseholdId()))
-        && get(/databases/$(database)/documents/households/$(parentResolvedHouseholdId())).data.keys().hasAll(['playerNames'])
-        && get(/databases/$(database)/documents/households/$(parentResolvedHouseholdId())).data.playerNames.hasAny([name]);
+      return isParent() && _hasName(name, tokenHousehold());
     }
 
     function parentHouseholdDoc() {
-      return get(/databases/$(database)/documents/households/$(parentResolvedHouseholdId())).data;
+      let hId = tokenHousehold();
+      return hId != null ? get(/databases/$(database)/documents/households/$(hId)).data : null;
     }
 
     function parentOwnsHouseholdId(householdId) {
-      return isParent()
-        && parentResolvedHouseholdId() != null
-        && parentResolvedHouseholdId() == householdId;
+      let hId = tokenHousehold();
+      return isParent() && hId != null && hId == householdId;
     }
 
     function parentChildUserOnTeam(childEmail, teamId) {
@@ -4125,7 +4128,7 @@ service cloud.firestore {
     // Sprint 5.2: Zero-Liability PII invariant for Wearable Biometrics
     match /player_biometrics/{uid} {
       allow read, write: if authed() && request.auth.uid == uid;
-      
+
       match /daily/{date} {
         allow read, write: if authed() && request.auth.uid == uid;
       }
@@ -4146,15 +4149,8 @@ service cloud.firestore {
       allow update, delete: if false; // Append-only Event Sourcing
     }
 
-    // Sprint 4.1: Secure Macrocycle Commit
-    match /team_assignments/{assignmentId} {
-      // Backend handles writes via writeBatch, but defense-in-depth requires checking isCleared
-      allow read: if authed();
-      allow write: if authed() && isCoach() && request.auth.token.isCleared == true;
-    }
-
-    match /{document=**} {
+match /{document=**} {
       allow read, write: if false;
     }
   }
-}
+}

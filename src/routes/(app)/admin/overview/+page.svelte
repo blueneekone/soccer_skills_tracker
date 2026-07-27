@@ -193,12 +193,11 @@
 										<div class="tw-flex tw-flex-col tw-p-3 tw-border-b tw-border-[#1E293B] last:tw-border-0 hover:tw-bg-[#1E293B] tw-transition-colors">
 											<div class="tw-flex tw-items-center tw-justify-between tw-mb-1">
 												<span class="tw-text-[10px] tw-font-bold tw-uppercase tw-tracking-wider tw-px-1.5 tw-py-0.5 tw-rounded"
-												class:tw-bg-[#14b8a6]={event.action === 'EVENT' || event.action.includes('SUCCESS')}
+												class:tw-bg-[#14b8a6]={(event.action === 'EVENT' || event.action.includes('SUCCESS')) || (!event.action.includes('SUCCESS') && !event.action.includes('WARN') && !event.action.includes('FAIL') && !event.action.includes('BLOCK') && event.action !== 'EVENT')}
 												class:tw-text-[#020617]={event.action === 'EVENT' || event.action.includes('SUCCESS') || event.action.includes('WARN')}
 												class:tw-bg-[#f59e0b]={event.action.includes('WARN')}
 												class:tw-bg-[#f43f5e]={event.action.includes('FAIL') || event.action.includes('BLOCK')}
 												class:tw-text-[#FAFAFA]={event.action.includes('FAIL') || event.action.includes('BLOCK') || (!event.action.includes('SUCCESS') && !event.action.includes('WARN') && !event.action.includes('FAIL') && !event.action.includes('BLOCK') && event.action !== 'EVENT')}
-												class:tw-bg-[#3b82f6]={!event.action.includes('SUCCESS') && !event.action.includes('WARN') && !event.action.includes('FAIL') && !event.action.includes('BLOCK') && event.action !== 'EVENT'}
 											>{event.action}</span>
 												<span class="tw-text-[10px] tw-text-[#A1A1AA] tw-font-mono tw-tracking-widest">{event.createdAt ? new Date(event.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Live'}</span>
 											</div>
