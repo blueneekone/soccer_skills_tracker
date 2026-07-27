@@ -5,7 +5,6 @@
 	 * CDO Recovery: Fixed placeholder image, banned color, headline length, symmetric grid
 	 */
 	import Icon from '$lib/components/ui/Icon.svelte';
-	import SeatGaugeMockup from '$lib/components/marketing/SeatGaugeMockup.svelte';
 	import type { IconName } from '$lib/icons/registry.js';
 
 	export const prerender = true;
@@ -98,8 +97,8 @@
 			<!-- Overlay gradient -->
 			<div class="tw-absolute tw-inset-0 tw-bg-gradient-to-tr tw-from-[#020617]/60 tw-to-transparent tw-z-10 tw-pointer-events-none tw-transition-opacity tw-duration-700 group-hover:tw-opacity-30"></div>
 			<!-- Generated product preview -->
-			<div class="tw-w-full tw-h-full tw-flex tw-items-center tw-justify-center tw-bg-[#000000] tw-p-8 tw-transition-transform tw-duration-700 group-hover:tw-scale-[1.02]">
-				<SeatGaugeMockup />
+			<div class="tw-w-full tw-h-full tw-flex tw-items-center tw-justify-center tw-bg-[#000000] tw-transition-transform tw-duration-700 group-hover:tw-scale-[1.02]">
+				<img src="/videos/product_preview.webp" alt="SSTracker Product Preview" class="tw-w-full tw-h-full tw-object-cover" loading="lazy" />
 			</div>
 			<!-- Scanline overlay -->
 			<div class="tw-absolute tw-inset-0 tw-z-10 tw-pointer-events-none tw-opacity-[0.03]" style="background: repeating-linear-gradient(0deg, transparent, transparent 3px, #fff 3px, #fff 4px);"></div>
