@@ -67,7 +67,7 @@
 			<!-- Parent OS (Co-Op Trust Center) - Spans 4 Cols -->
 			<div id="household" class="md:tw-col-span-4 tw-bg-[#0B0F19] tw-border tw-border-[#1e293b] tw-p-8 hover:tw-border-[#334155] tw-transition-colors tw-duration-150 tw-flex tw-flex-col">
 				<div class="tw-flex tw-items-center tw-gap-3 tw-mb-6">
-					<Icon name={"security.lock" as IconName} size={28} class="tw-text-[#3b82f6]" />
+					<Icon name={"security.lock" as IconName} size={28} class="tw-text-[#14b8a6]" />
 					<h2 class="tw-text-2xl tw-font-bold">Parent OS: Co-Op Trust Center</h2>
 				</div>
 				<p class="tw-text-[#94a3b8] tw-text-sm tw-leading-relaxed tw-mb-8">

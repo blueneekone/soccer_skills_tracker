@@ -9,6 +9,8 @@ require('./bootstrapAdmin');
 const vaultOps = require('./src/domains/vaultOps');
 exports.vaultSealPii = vaultOps.vaultSealPii;
 exports.vaultUnsealPii = vaultOps.vaultUnsealPii;
+exports.signDocument = vaultOps.signDocument;
+exports.uploadEligibilityDocument = vaultOps.uploadEligibilityDocument;
 
 const shredOps = require('./src/domains/shredOps');
 exports.shredSensitiveData = shredOps.shredSensitiveData;

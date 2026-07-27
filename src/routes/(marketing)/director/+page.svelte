@@ -62,7 +62,7 @@
 			<div class="md:tw-col-span-12 tw-bg-[#0B0F19] tw-border tw-border-[#1e293b] tw-p-[clamp(1.5rem,3vw,2.5rem)] hover:tw-border-[#334155] tw-transition-colors tw-duration-150 tw-flex tw-flex-col md:tw-flex-row tw-gap-8 tw-items-center">
 				<div class="tw-flex-1">
 					<div class="tw-flex tw-items-center tw-gap-3 tw-mb-6">
-						<Icon name={"data.chart-line" as IconName} size={28} strokeWidth={1.5} class="tw-text-[#3b82f6]" />
+						<Icon name={"data.chart-line" as IconName} size={28} strokeWidth={1.5} class="tw-text-[#14b8a6]" />
 						<h2 class="tw-text-2xl tw-font-bold">Stripe Financial Telemetry</h2>
 					</div>
 					<p class="tw-text-[#94a3b8] tw-text-sm tw-leading-relaxed tw-mb-8">

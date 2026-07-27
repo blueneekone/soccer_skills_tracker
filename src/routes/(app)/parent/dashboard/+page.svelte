@@ -88,10 +88,10 @@
 			<!-- Parent Lounge -->
 			<div class="lg:tw-col-span-7 tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-p-6 tw-relative" style="clip-path: polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px);">
 				<h3 class="tw-text-white tw-font-bold tw-text-lg tw-flex tw-items-center tw-gap-2 tw-mb-4">
-					<Icon name={"status.info" as IconName} class="tw-w-5 tw-h-5 tw-text-[#3b82f6]" /> Parent Lounge
+					<Icon name={"status.info" as IconName} class="tw-w-5 tw-h-5 tw-text-[#14b8a6]" /> Parent Lounge
 				</h3>
 				<div class="tw-bg-[#1e293b] tw-rounded-[24px] tw-p-4 tw-border tw-border-[#334155] tw-h-48 tw-flex tw-items-center tw-justify-center tw-overflow-hidden tw-relative">
-					<div class="tw-absolute tw-top-4 tw-right-4 tw-px-2 tw-py-1 tw-bg-[#3b82f6]/10 tw-text-[#3b82f6] tw-text-[10px] tw-font-mono tw-tracking-widest tw-rounded">READ_ONLY</div>
+					<div class="tw-absolute tw-top-4 tw-right-4 tw-px-2 tw-py-1 tw-bg-[#14b8a6]/10 tw-text-[#14b8a6] tw-text-[10px] tw-font-mono tw-tracking-widest tw-rounded">READ_ONLY</div>
 					<VanguardEmptyState title="No Recent Announcements" message="Official team broadcasts and scheduling announcements will appear here." />
 				</div>
 			</div>

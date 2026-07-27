@@ -21,7 +21,7 @@
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { impersonationStore } from '$lib/stores/impersonation.svelte.js';
 	import { playerEngine } from '$lib/stores/playerEngine.svelte.js';
-	import { onDestroy, untrack } from 'svelte';
+	import { onDestroy } from 'svelte';
 	import { TrajectoryEngine } from '$lib/states/TrajectoryEngine.svelte.js';
 	import { vanguardFlags } from '$lib/services/remoteConfig.svelte.js';
 	import MemoryCapsuleArena from '$lib/components/player/trajectory/MemoryCapsuleArena.svelte';
@@ -45,11 +45,8 @@
 	import AdaptiveHomework from './AdaptiveHomework.svelte';
 	import { ArmoryEngine } from '$lib/states/ArmoryEngine.svelte.js';
 	import PlayerActivityStreak from '$lib/components/shell/PlayerActivityStreak.svelte';
-	import { DopamineEngine } from '$lib/components/player/DopamineEngine.svelte';
-	import BountyBoard from '$lib/components/player/BountyBoard.svelte';
 
 	const armory = new ArmoryEngine();
-	const dopamineEngine = new DopamineEngine();
 
 	/**
 	 * Effective operative for this lobby: Firestore profile for the signed-in Firebase user.
@@ -216,21 +213,15 @@
 	$effect(() => {
 		if (!browser) return;
 		const u = authStore.user;
-		untrack(() => {
-			if (authStore.role === 'player' && u?.uid) {
-				playerEngine.attach(u.uid);
-			} else {
-				playerEngine.detach();
-			}
-		});
-		return () => {
-			untrack(() => playerEngine.detach());
-		};
+		if (authStore.role === 'player' && u?.uid) {
+			playerEngine.attach(u.uid);
+			return () => playerEngine.detach();
+		}
+		playerEngine.detach();
 	});
 
 	$effect(() => {
-		if (!db || !authStore.isAuthenticated) return;
-		if (!browser || authStore.isLoading || !uid) {
+		if (!browser || !uid) {
 			statsRaw = null;
 			return;
 		}
@@ -243,7 +234,6 @@
 					return;
 				}
 				statsRaw = snap.data();
-				untrack(() => dopamineEngine.hydrate(statsRaw));
 			},
 			(e) => {
 				console.error('[player dashboard] player_stats', e);
@@ -254,8 +244,7 @@
 	});
 
 	$effect(() => {
-		if (!db || !authStore.isAuthenticated) return;
-		if (!browser || authStore.isLoading) return;
+		if (!browser) return;
 		const tid = /** @type {string | undefined} */ (activePlayer?.teamId);
 		if (!tid || tid === 'admin') {
 			teamAssignmentLabel = '';
@@ -296,7 +285,6 @@
 	});
 
 	$effect(() => {
-		if (!db || !authStore.isAuthenticated) return;
 		if (!browser) return;
 		const profile = activePlayer;
 		let cancelled = false;
@@ -320,8 +308,7 @@
 	}
 
 	$effect(() => {
-		if (!db || !authStore.isAuthenticated) return;
-		if (!browser || authStore.isLoading) return;
+		if (!browser) return;
 		const tid =
 			typeof activePlayer?.teamId === 'string' ? activePlayer.teamId.trim() : '';
 		if (!tid || tid === 'admin') {
@@ -374,7 +361,6 @@
 
 	// Read-Repair: silently stamp sportId = 'soccer' on user profiles missing it.
 	$effect(() => {
-		if (!db || !authStore.isAuthenticated) return;
 		if (!browser || !email || authStore.isLoading) return;
 		const profile = activePlayer;
 		if (!profile || typeof profile.sportId === 'string') return;
@@ -420,80 +406,162 @@
 		{/if}
 	</div>
 {:else}
-<main class="tw-bg-[#000000] tw-min-h-screen tw-text-white tw-font-sans tw-relative tw-z-0 tw-p-8 lg:tw-p-12 tw-overflow-y-auto" data-dopamine={vanguardFlags.dopamineEnabled ? 'on' : 'off'}>
-	<!-- Z1: Structural Layout (12-col Bento) -->
-	<div class="tw-grid tw-grid-cols-1 lg:tw-grid-cols-12 tw-gap-8 tw-max-w-7xl tw-mx-auto tw-z-10 tw-relative">
-		
-		<!-- Z2: Dynamic Streak Counters & EXACTLY ONE ACTION GOLD CTA -->
-		<section class="lg:tw-col-span-12 tw-flex tw-items-center tw-justify-between tw-z-20 tw-mt-4">
-			<div class="tw-bg-[#0f172a] tw-p-6 tw-flex tw-items-center tw-gap-6" style="clip-path: polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px);">
-				<div>
-					<p class="tw-font-mono tw-text-xs tw-text-[#94a3b8] tw-tracking-widest tw-uppercase tw-mb-1">Callsign // {callsign || 'Operative'}</p>
-					<h1 class="tw-font-mono tw-text-2xl tw-text-[#f8fafc] tw-uppercase">{rankProgress.rank}</h1>
+<div
+	class="lobby-page player-hud-root pd-page-root pd-grain tw-relative tw-isolate tw-min-w-0 tw-overflow-x-hidden tw-text-slate-50"
+	style="background: var(--pd-bg, #000);"
+	data-region="player-lobby"
+	data-dopamine={vanguardFlags.dopamineEnabled ? 'on' : 'off'}
+>
+	<div class="pd-content-wrap">
+	<HUDContainer ariaLabel="Player operations HUD">
+		<header class="pd-strap pd-strap--premium bento-span-12" aria-label="Operative headquarters">
+			<div class="pd-strap__grid">
+				<div class="pd-strap__id">
+					<p class="pd-eyebrow">Command / HQ</p>
+					<h1 class="pd-strap__title">{callsign || 'Operative HQ'}</h1>
 				</div>
-				<div class="tw-h-12 tw-w-px tw-bg-[#334155]"></div>
-				<PlayerActivityStreak {armory} />
-			</div>
-			
-			<button class="tw-bg-[#fbbf24] hover:tw-bg-[#f59e0b] tw-text-[#000000] tw-font-bold tw-font-mono tw-px-10 tw-py-5 tw-uppercase tw-tracking-widest tw-transition-colors" style="clip-path: polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px);" onclick={() => goto('/player/armory?tab=studio')}>
-				[ INITIATE WORKOUT ]
-			</button>
-		</section>
-
-		<!-- Z2: Vanguard Prism (6-axis Radar) -->
-		<section class="lg:tw-col-span-8 tw-bg-[#0f172a] tw-p-8 tw-relative tw-z-20 tw-flex tw-flex-col" style="clip-path: polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px);">
-			<header class="tw-mb-6">
-				<h2 class="tw-font-mono tw-text-lg tw-text-[#f8fafc] tw-uppercase tw-tracking-widest">Vanguard Telemetry</h2>
-				<p class="tw-font-mono tw-text-xs tw-text-[#94a3b8] tw-uppercase tw-tracking-widest">Synthetic Nodes</p>
-			</header>
-			<div class="tw-flex-1 tw-min-h-[300px]">
-				<VanguardProtocolPanel
-					prismValues={attrRadarValues}
-					bind:selectedAxis={selectedVanguardAxis}
-					compact={!telemetryReady}
-					hideHeadTitle={true}
-				/>
-			</div>
-		</section>
-
-		<!-- Z2: Octalysis Quests & Intel -->
-		<section class="lg:tw-col-span-4 tw-flex tw-flex-col tw-gap-8 tw-z-20 tw-min-w-0">
-			<div class="tw-bg-[#0f172a] tw-p-8 tw-relative" style="clip-path: polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px);">
-				<header class="tw-mb-4">
-					<h2 class="tw-font-mono tw-text-lg tw-text-[#f8fafc] tw-uppercase tw-tracking-widest">Active Bounties</h2>
-				</header>
-				<ActiveBounties
-					embedded
-					lastTrainingUtc={lastTrainingUtc}
-					onCoachBountyCount={(count) => (coachBountyCount = count)}
-					onHeroQuestId={(id) => (heroQuestId = id)}
-				/>
-				<div class="tw-mt-4">
-					<BountyBoard engine={dopamineEngine} playerId={uid} />
+				<div class="pd-strap__status" role="status">
+					<p class="pd-label pd-mono">
+						{rankProgress.rank} · LVL {String(osLevel).padStart(2, '0')}
+					</p>
 				</div>
 			</div>
-
-			<div class="tw-bg-[#0f172a] tw-p-8 tw-relative" style="clip-path: polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px);">
-				{#if vanguardFlags.capsulesEnabled && trajectoryEngine.activeCapsule}
-					<header class="tw-mb-4">
-						<h2 class="tw-font-mono tw-text-lg tw-text-[#f8fafc] tw-uppercase tw-tracking-widest">Memory Capsules</h2>
-						<p class="tw-font-mono tw-text-xs tw-text-[#94a3b8] tw-uppercase tw-tracking-widest">Self Comparison</p>
-					</header>
-					<MemoryCapsuleArena
-						dossierMode={true}
-						capsule={trajectoryEngine.activeCapsule}
-						baselineDaysAgo={trajectoryEngine.baselineDaysAgo}
-						capsuleHeadline={trajectoryEngine.capsuleHeadline}
+			<div class="pd-strap__context">
+				<HqWorldContextStrip
+					inline
+					nextEventLabel={nextEventLabel}
+					badges={hqStatusBadges}
+				/>
+			</div>
+		</header>
+		<div class="pd-hq-glance-band bento-span-12" aria-label="Operative glance stats">
+			<div class="pd-hq-glance-band__cell">
+				<span class="pd-hq-glance-band__label">LVL</span>
+				<span class="pd-hq-glance-band__value">{String(osLevel).padStart(2, '0')}</span>
+			</div>
+			<div class="pd-hq-glance-band__cell">
+				<span class="pd-hq-glance-band__label">Rank</span>
+				<span class="pd-hq-glance-band__value">{rankProgress.rank}</span>
+			</div>
+			<div class="pd-hq-glance-band__cell">
+				<span class="pd-hq-glance-band__label">Streak</span>
+				<span class="pd-hq-glance-band__value">{streak}d</span>
+			</div>
+			<div class="pd-hq-glance-band__cell">
+				<span class="pd-hq-glance-band__label">Bounties</span>
+				<span class="pd-hq-glance-band__value">{coachBountyCount}</span>
+			</div>
+		</div>
+		<OperativeHub>
+				{#snippet identity()}
+					<IdentityBentoModule
+						embedded={true}
+						hideDisplayName={true}
+						uid={uid}
+						operativeAvatar={operativeAvatarForHud}
+						operativeLoadout={activePlayer?.operativeLoadout}
+						ownedCosmetics={Array.isArray(activePlayer?.ownedCosmetics) ?
+							activePlayer.ownedCosmetics.filter((id) => typeof id === 'string')
+						:	[]}
+						displayName={callsign}
+						clubName={clubDisplayName}
+						teamLabel={teamAssignmentLabel}
+						rankName={rankProgress.rank}
+						level={osLevel}
+						totalXp={totalXpHud}
+						currentStreak={streak}
+						longestStreak={longestStreak}
+						xpInTier={rankProgress.xpInCurrentTier}
+						xpToNextRank={rankProgress.xpToNextRank}
+						nextRank={rankProgress.nextRank}
+						rankProgressPercent={rankProgress.progressPercent}
+						atMaxRank={rankProgress.atMaxRank}
+						lastTrainingUtc={lastTrainingUtc}
+						profileIncomplete={!hasArmoryProfile}
+						cardMetadata={hqCardMetadata}
+						onProfileSetup={() => void goto('/player/armory?tab=studio')}
 					/>
-				{:else}
-					<div class="tw-flex tw-items-center tw-justify-center tw-h-32 tw-text-center">
-						<p class="tw-font-mono tw-text-sm tw-text-[#334155] tw-uppercase tw-tracking-widest">Awaiting First Memory Capsule</p>
+				{/snippet}
+				{#snippet metrics()}
+					<PlayerActivityStreak {armory} />
+					{#if !telemetryReady}
+						<p class="hmp-vectors-collapsed hmp-vectors-collapsed--premium" role="status">
+							AWAITING TELEMETRY · LOG A SESSION TO UNLOCK VECTORS
+						</p>
+					{/if}
+				{/snippet}
+				{#snippet quests()}
+					<ActiveBounties
+						embedded
+						lastTrainingUtc={lastTrainingUtc}
+						onCoachBountyCount={(count) => (coachBountyCount = count)}
+						onHeroQuestId={(id) => (heroQuestId = id)}
+					/>
+				{/snippet}
+		</OperativeHub>
+
+		<AdaptiveHomework />
+
+		<OperativeQuickOps />
+
+		<OperativePathwayPreview level={osLevel} />
+
+	<section
+		class="bento-span-12 player-analytics-void pd-os-deck pd-os-deck--recessed tw-relative tw-z-30 tw-flex tw-min-h-0 tw-min-w-0 tw-flex-col"
+		class:player-analytics-void--compact={!telemetryReady}
+		aria-label="Player analytics deck"
+		data-region="player-analytics-void"
+	>
+		<header class="pd-hq-section-head player-analytics-void__head">
+			<h2 class="pd-hq-section-head__title player-analytics-void__title">Vanguard telemetry</h2>
+			<p class="pd-hq-section-head__eyebrow pd-label player-analytics-void__eyebrow">Performance</p>
+		</header>
+		<VanguardProtocolPanel
+			prismValues={attrRadarValues}
+			bind:selectedAxis={selectedVanguardAxis}
+			compact={!telemetryReady}
+			hideHeadTitle={true}
+		/>
+		<footer class="player-capsules-strip player-capsules-strip--void" aria-labelledby="lobby-capsules-h">
+			{#if vanguardFlags.capsulesEnabled && trajectoryEngine.activeCapsule}
+				<header class="pd-hq-section-head player-capsules-strip__head">
+					<h2 id="lobby-capsules-h" class="pd-hq-section-head__title player-capsules-strip__title">
+						Time-lapse memory capsules
+					</h2>
+					<p class="pd-hq-section-head__eyebrow pd-label player-capsules-strip__eyebrow">Self comparison</p>
+				</header>
+				<MemoryCapsuleArena
+					dossierMode={true}
+					capsule={trajectoryEngine.activeCapsule}
+					baselineDaysAgo={trajectoryEngine.baselineDaysAgo}
+					capsuleHeadline={trajectoryEngine.capsuleHeadline}
+				/>
+			{:else}
+				<header class="pd-hq-section-head player-capsules-strip__head">
+					<h2 id="lobby-capsules-h" class="pd-hq-section-head__title player-capsules-strip__title">
+						Memory capsules
+					</h2>
+					<p class="pd-hq-section-head__eyebrow pd-label player-capsules-strip__eyebrow">Self comparison</p>
+				</header>
+				<div class="lobby-capsule-ghost-wrap">
+					<div
+						class="pd-empty-state pd-empty-state--compact lobby-capsule-ghost-card"
+						role="status"
+						aria-labelledby="lobby-capsules-h"
+					>
+						<div class="pd-empty-state__icon" aria-hidden="true"></div>
+						<div class="pd-empty-state__copy">
+							<p class="pd-empty-state__title">Ghost profile</p>
+							<p class="pd-empty-state__lede">Awaiting first memory capsule</p>
+						</div>
 					</div>
-				{/if}
-			</div>
-		</section>
+				</div>
+			{/if}
+		</footer>
+	</section>
+	</HUDContainer>
 	</div>
-</main>
+</div>
 
 <!-- Sprint 9.2: Initialize Operative — distinct one-time setup modal -->
 {#if showInitModal}
@@ -569,4 +637,16 @@
 {/if}
 
 <style>
+	.lobby-page {
+		color: var(--vanguard-text-1, #f8fafc);
+	}
+
+	/* Lifted dossier panels — void-first gradient (6j closure J-06) */
+	:global(.player-dossier-root) .bento-card {
+		overflow: hidden;
+		min-width: 0;
+		background: var(--pd-depth-panel-gradient, var(--pd-panel, #05050a));
+		border-color: var(--pd-line, rgba(255, 255, 255, 0.1));
+		box-shadow: var(--shadow-liquid);
+	}
 </style>
