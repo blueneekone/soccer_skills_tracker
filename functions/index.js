@@ -120,7 +120,9 @@ exports.acknowledgeBroadcast = webhooksOps.acknowledgeBroadcast;
 exports.getBroadcastAckStatus = webhooksOps.getBroadcastAckStatus;
 
 function exportScheduler(target, name, modFn) {
-  target[name] = modFn;
+  if (process.env.SCHEDULERS_ENABLED === 'true') {
+    target[name] = modFn;
+  }
 }
 const eventOps = require('./src/domains/eventOps.js');
 exportScheduler(exports, 'sendScheduledEventReminders', eventOps.sendScheduledEventReminders);
@@ -132,3 +134,7 @@ exports.loginAs = globalAdminOs.loginAs;
 exports.rightToBeForgotten = globalAdminOs.rightToBeForgotten;
 exports.consumeInviteCode = require('./invites').consumeInviteCode;
 exports.redeemMagicUplink = require('./magicUplinks').redeemMagicUplink;
+
+const b2bEnrollmentOps = require('./src/domains/b2bEnrollmentOps.js');
+exports.enrollIndependentDirector = b2bEnrollmentOps.enrollIndependentDirector;
+exports.enrollGovernedDirector = b2bEnrollmentOps.enrollGovernedDirector;
