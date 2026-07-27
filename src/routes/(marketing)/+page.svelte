@@ -19,7 +19,7 @@
 			body: 'Gamified Skill Trees, XP progression, Vanguard Prism radars, and video trial uploads driving intrinsic motivation and unyielding athlete engagement.',
 			href: '/player',
 			hoverColor: '#14b8a6',
-			cols: 'md:tw-col-span-4'
+			cols: 'md:tw-col-span-6'
 		},
 		{
 			icon: 'user.settings' as IconName,
@@ -41,7 +41,7 @@
 			body: 'COPPA 2.0 WebAuthn biometric gating, SafeSport Shadow CC routing, and the Car Ride Home emotional safety protocol.',
 			href: '/parent',
 			hoverColor: '#14b8a6',
-			cols: 'md:tw-col-span-4'
+			cols: 'md:tw-col-span-2'
 		}
 	];
 </script>
@@ -88,20 +88,20 @@
 
 		<!-- FIX #1: Product preview image (no more placehold.co) -->
 		<div
-			class="tw-w-full tw-relative tw-aspect-video tw-bg-[#0B0F19] tw-border tw-border-[#1e293b] tw-overflow-hidden tw-group"
+			class="tw-w-full tw-relative tw-aspect-video tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-overflow-hidden tw-group"
 			style="clip-path: polygon(20px 0, 100% 0, 100% calc(100% - 20px), calc(100% - 20px) 100%, 0 100%, 0 20px);"
 		>
 			<!-- Corner accents -->
 			<div class="tw-absolute tw-top-0 tw-left-0 tw-w-8 tw-h-8 tw-border-t-2 tw-border-l-2 tw-border-[#14b8a6] tw-z-20"></div>
 			<div class="tw-absolute tw-bottom-0 tw-right-0 tw-w-8 tw-h-8 tw-border-b-2 tw-border-r-2 tw-border-[#14b8a6] tw-z-20"></div>
 			<!-- Overlay gradient -->
-			<div class="tw-absolute tw-inset-0 tw-bg-gradient-to-tr tw-from-[#020617]/60 tw-to-transparent tw-z-10 tw-pointer-events-none tw-transition-opacity tw-duration-700 group-hover:tw-opacity-30"></div>
+			<div class="tw-absolute tw-inset-0 tw-bg-gradient-to-tr tw-from-[#02061799] tw-to-transparent tw-z-10 tw-pointer-events-none tw-transition-opacity tw-duration-700 group-hover:tw-opacity-30"></div>
 			<!-- Generated product preview -->
 			<div class="tw-w-full tw-h-full tw-flex tw-items-center tw-justify-center tw-bg-[#000000] tw-transition-transform tw-duration-700 group-hover:tw-scale-[1.02]">
 				<img src="/videos/product_preview.webp" alt="SSTracker Product Preview" class="tw-w-full tw-h-full tw-object-cover" loading="lazy" />
 			</div>
 			<!-- Scanline overlay -->
-			<div class="tw-absolute tw-inset-0 tw-z-10 tw-pointer-events-none tw-opacity-[0.03]" style="background: repeating-linear-gradient(0deg, transparent, transparent 3px, #fff 3px, #fff 4px);"></div>
+			<div class="tw-absolute tw-inset-0 tw-z-10 tw-pointer-events-none" style="opacity: 0.03; background: repeating-linear-gradient(0deg, transparent, transparent 3px, #fff 3px, #fff 4px);"></div>
 		</div>
 
 		<!-- Trust Bar -->
@@ -129,7 +129,7 @@
 		<!-- Asymmetric: 6 / 4 / 2 column weighting -->
 		<div class="tw-grid tw-grid-cols-1 md:tw-grid-cols-12 tw-gap-4 md:tw-gap-6">
 			{#each features as feat}
-				<div class="tw-col-span-1 {feat.cols} tw-bg-[#0B0F19] tw-border tw-border-[#1e293b] tw-p-8 hover:tw-border-[#334155] tw-transition-colors tw-duration-150 tw-flex tw-flex-col tw-relative tw-group tw-overflow-hidden"
+				<div class="tw-col-span-1 {feat.cols} tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-p-8 hover:tw-border-[#334155] tw-transition-colors tw-duration-150 tw-flex tw-flex-col tw-relative tw-group tw-overflow-hidden"
 					style="clip-path: polygon(12px 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%, 0 12px);"
 				>
 					<!-- Ambient glow on hover -->
@@ -154,7 +154,7 @@
 	</section>
 
 	<!-- ═══ COMPLIANCE STRIP ═══ -->
-	<section class="tw-border-t tw-border-[#1e293b] tw-py-12">
+	<section class="tw-border-t tw-border-[#334155] tw-py-12">
 		<div class="tw-max-w-7xl tw-mx-auto tw-px-6 tw-flex tw-flex-wrap tw-items-center tw-justify-center tw-gap-x-12 tw-gap-y-4 tw-text-center">
 			{#each ['COPPA 2.0 Compliant', 'SafeSport Certified', 'WCAG 2.2 AA', 'GDPR / CCPA Ready'] as badge}
 				<div class="tw-flex tw-items-center tw-gap-2">
