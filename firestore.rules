@@ -193,12 +193,7 @@ service cloud.firestore {
 
     // JWT householdId can lag after household link / VPC / claim sync — prefer users/{email}.
     function parentResolvedHouseholdId() {
-      return exists(/databases/$(database)/documents/users/$(emailKey()))
-        && userDoc().keys().hasAll(['householdId'])
-        && userDoc().householdId is string
-        && userDoc().householdId != ''
-        ? userDoc().householdId
-        : tokenHousehold();
+      return tokenHousehold();
     }
 
     function parentHouseholdAllowsChildEmail(childKey) {
@@ -4146,12 +4141,6 @@ service cloud.firestore {
       allow update, delete: if false; // Append-only Event Sourcing
     }
 
-    // Sprint 4.1: Secure Macrocycle Commit
-    match /team_assignments/{assignmentId} {
-      // Backend handles writes via writeBatch, but defense-in-depth requires checking isCleared
-      allow read: if authed();
-      allow write: if authed() && isCoach() && request.auth.token.isCleared == true;
-    }
 
     match /{document=**} {
       allow read, write: if false;

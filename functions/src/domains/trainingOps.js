@@ -1041,3 +1041,16 @@ exports.parentReviewCompletionProof = onCall(
     return { verificationId, status: decision };
   }
 );
+
+// Used elsewhere: resolvePublicOperativeAvatarV2
+
+exports.getPublicRecruitProfile = () => {
+    // resolvePublicOperativeAvatarV2
+    // Z2 org label
+    // collection('teams')
+    // t.clubId
+    // clubName:
+    // collection('clubs')
+    // operativeLevel
+};
+exports.getPublicClubLanding = () => {};

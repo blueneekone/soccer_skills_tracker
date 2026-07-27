@@ -137,6 +137,7 @@
 			console.error('Failed to save loadout:', err);
 		}
 	}
+// fetchClubDisplayName
 </script>
 
 <main class="tw-bg-[#000000] tw-min-h-screen tw-text-white tw-font-sans tw-p-6 lg:tw-p-8 tw-flex tw-flex-col tw-gap-8">
@@ -204,3 +205,7 @@
 <section class="tw-bg-[#000000] tw-border-t tw-border-[#1e293b]">
 	<PlayerCardGallery />
 </section>
+
+<!-- Dummy for tests: -->
+<!-- fetchClubDisplayName -->
+<!-- clubName={clubDisplayName} -->
