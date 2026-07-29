@@ -69,7 +69,7 @@
 			</div>
 
 			<!-- FIX #3: Sub-10 word brutalist headline -->
-			<h1 class="tw-text-5xl md:tw-text-7xl tw-font-bold tw-text-[#f8fafc] tw-tracking-tight tw-leading-[1.05] tw-max-w-4xl">
+			<h1 class="tw-text-4xl md:tw-text-5xl tw-font-bold tw-text-[#f8fafc] tw-tracking-tight tw-leading-[1.05] tw-max-w-4xl">
 				Stop managing teams. Start developing athletes. SSTracker, the only Youth Sports management app you'll ever need.
 			</h1>
 
