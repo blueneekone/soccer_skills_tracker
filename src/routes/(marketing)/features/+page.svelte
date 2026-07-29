@@ -31,7 +31,7 @@
 		<div class="tw-grid tw-grid-cols-1 md:tw-grid-cols-12 tw-gap-6">
 			
 			<!-- Player OS (Dopamine Engine) - Spans 8 Cols -->
-			<div id="development" class="md:tw-col-span-8 tw-bg-[#0B0F19] tw-border tw-border-[#1e293b] tw-p-8 hover:tw-border-[#334155] tw-transition-colors tw-duration-150 tw-flex tw-flex-col">
+			<div id="development" class="md:tw-col-span-8 tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-p-8 hover:tw-border-[#475569] tw-transition-colors tw-duration-150 tw-flex tw-flex-col">
 				<div class="tw-flex tw-items-center tw-gap-3 tw-mb-6">
 					<Icon name={"game.rocket" as IconName} size={28} class="tw-text-[#14b8a6]" />
 					<h2 class="tw-text-2xl tw-font-bold">Player OS: The Dopamine Engine</h2>
@@ -39,10 +39,10 @@
 				<p class="tw-text-[#94a3b8] tw-text-sm tw-leading-relaxed tw-mb-8">
 					Player HQ surfaces missions, telemetry, and adaptive homework. Drive intrinsic motivation with the dark-mode HUD, Gamified Skill Trees, and strict XP progression.
 				</p>
-				<div class="tw-mt-auto tw-w-full tw-aspect-video tw-bg-[#0f172a] tw-border tw-border-[#1e293b] tw-rounded-sm tw-overflow-hidden tw-relative tw-group">
+				<div class="tw-mt-auto tw-w-full tw-aspect-video tw-bg-[#020617] tw-border tw-border-[#334155] tw-rounded-sm tw-overflow-hidden tw-relative tw-group">
 					<!-- Media Placeholder -->
 					<div class="tw-absolute tw-inset-0 tw-flex tw-items-center tw-justify-center tw-z-10">
-						<button class="tw-bg-[#0B0F19]/90 tw-border tw-border-[#1e293b] tw-rounded-full tw-p-4 tw-text-[#f8fafc] tw-transition-colors tw-duration-150 group-hover:tw-text-[#14b8a6]">
+						<button class="tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-rounded-full tw-p-4 tw-text-[#f8fafc] tw-transition-colors tw-duration-150 group-hover:tw-text-[#14b8a6]">
 							<Icon name={"media.play" as IconName} size={32} />
 						</button>
 					</div>
@@ -51,7 +51,7 @@
 			</div>
 
 			<!-- Coach OS (Sideline SIEM) - Spans 4 Cols -->
-			<div id="logistics" class="md:tw-col-span-4 tw-bg-[#0B0F19] tw-border tw-border-[#1e293b] tw-p-8 hover:tw-border-[#334155] tw-transition-colors tw-duration-150 tw-flex tw-flex-col">
+			<div id="logistics" class="md:tw-col-span-4 tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-p-8 hover:tw-border-[#475569] tw-transition-colors tw-duration-150 tw-flex tw-flex-col">
 				<div class="tw-flex tw-items-center tw-gap-3 tw-mb-6">
 					<Icon name={"user.settings" as IconName} size={28} class="tw-text-[#f59e0b]" />
 					<h2 class="tw-text-2xl tw-font-bold">Coach OS: Sideline SIEM</h2>
@@ -59,13 +59,13 @@
 				<p class="tw-text-[#94a3b8] tw-text-sm tw-leading-relaxed tw-mb-8">
 					Orchestrate your tactical vision. Leverage the RAG AI Tactical Assistant and Intent Engine to draft session plans instantly.
 				</p>
-				<div class="tw-mt-auto tw-w-full tw-aspect-square tw-bg-[#0f172a] tw-border tw-border-[#1e293b] tw-rounded-sm tw-overflow-hidden tw-relative">
+				<div class="tw-mt-auto tw-w-full tw-aspect-square tw-bg-[#020617] tw-border tw-border-[#334155] tw-rounded-sm tw-overflow-hidden tw-relative">
 					<img src="https://placehold.co/800x800/0f172a/334155.webp?text=[SCREENSHOT_SLOT:+Fabric.js+Spatial+Drill+Designer+&+Real-Time+Telemetry]" alt="Coach OS Screenshot" class="tw-w-full tw-h-full tw-object-cover tw-opacity-50" />
 				</div>
 			</div>
 
 			<!-- Parent OS (Co-Op Trust Center) - Spans 4 Cols -->
-			<div id="household" class="md:tw-col-span-4 tw-bg-[#0B0F19] tw-border tw-border-[#1e293b] tw-p-8 hover:tw-border-[#334155] tw-transition-colors tw-duration-150 tw-flex tw-flex-col">
+			<div id="household" class="md:tw-col-span-4 tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-p-8 hover:tw-border-[#475569] tw-transition-colors tw-duration-150 tw-flex tw-flex-col">
 				<div class="tw-flex tw-items-center tw-gap-3 tw-mb-6">
 					<Icon name={"security.lock" as IconName} size={28} class="tw-text-[#14b8a6]" />
 					<h2 class="tw-text-2xl tw-font-bold">Parent OS: Co-Op Trust Center</h2>
@@ -73,13 +73,13 @@
 				<p class="tw-text-[#94a3b8] tw-text-sm tw-leading-relaxed tw-mb-8">
 					Ensure complete emotional safety. The Car Ride Home embargo locks match metrics for 15 minutes post-game. Verified guardians receive Tremendous bounty payouts for squad-level commitments.
 				</p>
-				<div class="tw-mt-auto tw-w-full tw-aspect-square tw-bg-[#0f172a] tw-border tw-border-[#1e293b] tw-rounded-sm tw-overflow-hidden tw-relative">
+				<div class="tw-mt-auto tw-w-full tw-aspect-square tw-bg-[#020617] tw-border tw-border-[#334155] tw-rounded-sm tw-overflow-hidden tw-relative">
 					<img src="https://placehold.co/800x800/0f172a/334155.webp?text=[SCREENSHOT_SLOT:+COPPA+2.0+Consent+&+Car+Ride+Home+Protocol]" alt="Parent OS Screenshot" class="tw-w-full tw-h-full tw-object-cover tw-opacity-50" />
 				</div>
 			</div>
 
 			<!-- Director OS (God Mode) - Spans 8 Cols -->
-			<div id="director-ops" class="md:tw-col-span-8 tw-bg-[#0B0F19] tw-border tw-border-[#1e293b] tw-p-8 hover:tw-border-[#334155] tw-transition-colors tw-duration-150 tw-flex tw-flex-col">
+			<div id="director-ops" class="md:tw-col-span-8 tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-p-8 hover:tw-border-[#475569] tw-transition-colors tw-duration-150 tw-flex tw-flex-col">
 				<div class="tw-flex tw-items-center tw-gap-3 tw-mb-6">
 					<Icon name={"sys.server" as IconName} size={28} class="tw-text-[#a855f7]" />
 					<h2 class="tw-text-2xl tw-font-bold">Director OS: God Mode</h2>
@@ -87,7 +87,7 @@
 				<p class="tw-text-[#94a3b8] tw-text-sm tw-leading-relaxed tw-mb-8">
 					Complete administrative panopticon. Director surfaces cover deployment calendar, eligibility matrix, coach clearance (Checkr embed), and Stripe Financial Telemetry. Maintain club compliance health at a glance.
 				</p>
-				<div class="tw-mt-auto tw-w-full tw-aspect-video tw-bg-[#0f172a] tw-border tw-border-[#1e293b] tw-rounded-sm tw-overflow-hidden tw-relative">
+				<div class="tw-mt-auto tw-w-full tw-aspect-video tw-bg-[#020617] tw-border tw-border-[#334155] tw-rounded-sm tw-overflow-hidden tw-relative">
 					<img src="https://placehold.co/1280x720/0f172a/334155.webp?text=[SCREENSHOT_SLOT:+Stripe+Financial+Telemetry+&+Club+Compliance+Health]" alt="Director OS Screenshot" class="tw-w-full tw-h-full tw-object-cover tw-opacity-50" />
 				</div>
 			</div>

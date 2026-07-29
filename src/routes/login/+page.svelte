@@ -142,13 +142,15 @@
 </script>
 
 <!-- ─── Vanguard Atmosphere ───────────────────────────────────────────────── -->
-<div class="login-surface tw-relative tw-flex tw-min-h-[100dvh] tw-w-full tw-items-center tw-justify-center tw-overflow-hidden tw-bg-[#0B0F19]">
+<div class="login-surface tw-relative tw-flex tw-min-h-[100dvh] tw-w-full tw-items-center tw-justify-center tw-overflow-hidden tw-bg-[#020617]">
 
 	<!-- Ambient teal glow -->
-	<div class="tw-pointer-events-none tw-absolute tw-left-1/2 tw-top-1/2 tw-h-[600px] tw-w-[600px] -tw-translate-x-1/2 -tw-translate-y-1/2 tw-rounded-full tw-bg-teal-500/10 tw-blur-[120px]"></div>
+	<div class="tw-pointer-events-none tw-absolute tw-left-1/2 tw-top-1/2 tw-h-[600px] tw-w-[600px] -tw-translate-x-1/2 -tw-translate-y-1/2 tw-rounded-full tw-bg-[#14b8a614] tw-blur-[120px]"></div>
 
 	<!-- ─── Liquid Glass Card ─────────────────────────────────────────────── -->
-	<div class="tw-relative tw-z-10 tw-w-full tw-max-w-md tw-rounded-2xl tw-border tw-border-slate-700/50 tw-bg-slate-900/60 tw-p-10 tw-shadow-[0_8px_32px_rgba(0,0,0,0.4)] tw-backdrop-blur-2xl">
+	<div class="tw-relative tw-z-10 tw-w-full tw-max-w-md tw-border tw-border-[#334155] tw-bg-[#0f172a] tw-p-10 tw-shadow-[0_8px_32px_rgba(0,0,0,0.4)]"
+		style="clip-path: polygon(16px 0, 100% 0, 100% calc(100% - 16px), calc(100% - 16px) 100%, 0 100%, 0 16px);"
+	>
 
 		{#if loginView === 'operative'}
 
@@ -157,18 +159,19 @@
 			<!-- Header row -->
 			<div class="tw-mb-6 tw-flex tw-w-full tw-min-w-0 tw-items-center tw-justify-between tw-gap-2">
 				<div class="tw-flex tw-min-w-0 tw-items-center tw-gap-2.5">
-					<div class="tw-flex tw-h-7 tw-w-7 tw-shrink-0 tw-items-center tw-justify-center tw-rounded-lg tw-border tw-border-teal-500/30 tw-bg-teal-500/10">
-						<Icon name="nav.sign-in" size={13} class="tw-text-teal-400" />
+					<div class="tw-flex tw-h-7 tw-w-7 tw-shrink-0 tw-items-center tw-justify-center tw-border tw-border-[#14b8a633] tw-bg-[#14b8a60d]"
+						style="clip-path: polygon(4px 0, 100% 0, 100% calc(100% - 4px), calc(100% - 4px) 100%, 0 100%, 0 4px);">
+						<Icon name="nav.sign-in" size={13} class="tw-text-[#14b8a6]" />
 					</div>
 					<div class="tw-min-w-0">
 						<p class="tw-m-0 tw-truncate tw-font-mono tw-text-[0.5rem] tw-font-semibold tw-uppercase tw-tracking-[0.22em] tw-text-slate-500">COPPA-SECURE GATE</p>
-						<h2 class="tw-m-0 tw-truncate tw-font-mono tw-text-xs tw-font-bold tw-uppercase tw-tracking-[0.14em] tw-text-teal-400">OPERATIVE TERMINAL</h2>
+						<h2 class="tw-m-0 tw-truncate tw-font-mono tw-text-xs tw-font-bold tw-uppercase tw-tracking-[0.14em] tw-text-[#14b8a6]">OPERATIVE TERMINAL</h2>
 					</div>
 				</div>
 				<button
 					type="button"
 					onclick={() => { loginView = 'command'; opError = ''; opCode = ''; opCallsign = ''; }}
-					class="tw-shrink-0 tw-rounded-lg tw-border tw-border-slate-700/50 tw-bg-transparent tw-px-2.5 tw-py-1.5 tw-font-mono tw-text-[0.6rem] tw-font-semibold tw-uppercase tw-tracking-[0.1em] tw-text-slate-500 tw-transition-all tw-duration-200 hover:tw-border-slate-600 hover:tw-bg-slate-800/50 hover:tw-text-slate-300 focus-visible:tw-outline-none"
+					class="tw-shrink-0 tw-border tw-border-[#334155] tw-bg-transparent tw-px-2.5 tw-py-1.5 tw-font-mono tw-text-[0.6rem] tw-font-semibold tw-uppercase tw-tracking-[0.1em] tw-text-[#64748b] tw-transition-all tw-duration-200 hover:tw-border-[#475569] hover:tw-bg-[#1e293b] hover:tw-text-[#94a3b8] focus-visible:tw-outline-none"
 					aria-label="Return to adult login"
 				>
 					← Back
@@ -191,7 +194,7 @@
 						spellcheck={false}
 						placeholder="callsign, name, or email"
 						bind:value={opCallsign}
-						class="tw-h-12 tw-w-full tw-rounded-lg tw-border tw-border-slate-700/50 tw-bg-transparent tw-px-4 tw-text-center tw-font-mono tw-text-xl tw-tracking-widest tw-text-[#fafafa] tw-shadow-inner tw-outline-none tw-transition-all tw-placeholder-slate-400 focus:tw-border-teal-500/50 focus:tw-ring-1 focus:tw-ring-teal-500/50"
+						class="tw-h-12 tw-w-full tw-border tw-border-[#334155] tw-bg-transparent tw-px-4 tw-text-center tw-font-mono tw-text-xl tw-tracking-widest tw-text-[#fafafa] tw-shadow-inner tw-outline-none tw-transition-all tw-placeholder-slate-400 focus:tw-border-[#14b8a6] focus:tw-ring-1 focus:tw-ring-[#14b8a633]"
 					/>
 				</div>
 
@@ -211,7 +214,7 @@
 						placeholder="XXX-XXX"
 						value={opCode}
 						oninput={handleOtpInput}
-						class="tw-h-12 tw-w-full tw-rounded-lg tw-border tw-border-slate-700/50 tw-bg-transparent tw-text-center tw-font-mono tw-text-2xl tw-tracking-[0.4em] tw-text-[#fafafa] tw-shadow-inner tw-outline-none tw-transition-all placeholder:tw-text-sm placeholder:tw-tracking-normal placeholder:tw-text-slate-400 focus:tw-border-teal-500/50 focus:tw-ring-1 focus:tw-ring-teal-500/50"
+						class="tw-h-12 tw-w-full tw-border tw-border-[#334155] tw-bg-transparent tw-text-center tw-font-mono tw-text-2xl tw-tracking-[0.4em] tw-text-[#fafafa] tw-shadow-inner tw-outline-none tw-transition-all placeholder:tw-text-sm placeholder:tw-tracking-normal placeholder:tw-text-slate-400 focus:tw-border-[#14b8a6] focus:tw-ring-1 focus:tw-ring-[#14b8a633]"
 					/>
 				</div>
 
@@ -223,7 +226,7 @@
 						type="button"
 						onclick={handleOperativeAuth}
 						disabled={opBusy || navigating || !opCallsign.trim() || !opCode.trim()}
-						class="tw-flex tw-h-11 tw-w-full tw-items-center tw-justify-center tw-rounded-lg tw-border tw-border-teal-500/30 tw-bg-teal-500/10 tw-font-mono tw-text-xs tw-uppercase tw-tracking-[0.15em] tw-text-teal-400 tw-shadow-[0_0_15px_rgba(20,184,166,0.1)] tw-transition-all hover:tw-border-teal-400 hover:tw-bg-teal-500/20 hover:tw-shadow-[0_0_20px_rgba(20,184,166,0.2)] disabled:tw-pointer-events-none disabled:tw-opacity-40 focus-visible:tw-outline-none focus-visible:tw-ring-1 focus-visible:tw-ring-teal-500/50"
+						class="tw-flex tw-h-11 tw-w-full tw-items-center tw-justify-center tw-border tw-border-[#14b8a633] tw-bg-[#14b8a60d] tw-font-mono tw-text-xs tw-uppercase tw-tracking-[0.15em] tw-text-[#14b8a6] tw-shadow-[0_0_15px_#14b8a61a] tw-transition-all hover:tw-border-[#14b8a6] hover:tw-bg-[#14b8a61a] hover:tw-shadow-[0_0_20px_#14b8a633] disabled:tw-pointer-events-none disabled:tw-opacity-40 focus-visible:tw-outline-none focus-visible:tw-ring-1 focus-visible:tw-ring-[#14b8a633]"
 					>
 						{#if opBusy}
 							<span class="tw-flex tw-items-center tw-gap-2">
@@ -239,7 +242,7 @@
 					<button
 						type="button"
 						onclick={() => { loginView = 'command'; opError = ''; opCode = ''; opCallsign = ''; }}
-						class="tw-flex tw-h-11 tw-w-full tw-items-center tw-justify-center tw-rounded-lg tw-border tw-border-slate-800 tw-bg-transparent tw-font-mono tw-text-xs tw-uppercase tw-tracking-[0.15em] tw-text-slate-500 tw-transition-all hover:tw-bg-slate-800 hover:tw-text-slate-300 focus-visible:tw-outline-none focus-visible:tw-ring-1 focus-visible:tw-ring-teal-500/50"
+						class="tw-flex tw-h-11 tw-w-full tw-items-center tw-justify-center tw-border tw-border-[#1e293b] tw-bg-transparent tw-font-mono tw-text-xs tw-uppercase tw-tracking-[0.15em] tw-text-[#475569] tw-transition-all hover:tw-bg-[#1e293b] hover:tw-text-[#94a3b8] focus-visible:tw-outline-none focus-visible:tw-ring-1 focus-visible:tw-ring-[#14b8a633]"
 					>
 						Abort / Cancel
 					</button>
@@ -262,7 +265,7 @@
 
 			<!-- Header -->
 			<div class="tw-mb-8 tw-flex tw-w-full tw-flex-col tw-items-center tw-text-center">
-				<div class="tw-mb-5 tw-flex tw-h-12 tw-w-12 tw-items-center tw-justify-center tw-rounded-xl tw-border tw-border-slate-700/50 tw-bg-slate-800/60 tw-shadow-[0_0_20px_rgba(20,184,166,0.08)]">
+				<div class="tw-mb-5 tw-flex tw-h-12 tw-w-12 tw-items-center tw-justify-center tw-border tw-border-[#334155] tw-bg-[#0f172a] tw-shadow-[0_0_20px_#14b8a614]">
 					<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="tw-text-slate-300" aria-hidden="true">
 						<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
 					</svg>
@@ -283,7 +286,7 @@
 					type="button"
 					onclick={handlePasskeyLogin}
 					disabled={loginEngine.busy || googleBusy || navigating}
-					class="tw-flex tw-h-11 tw-w-full tw-items-center tw-justify-center tw-gap-3 tw-rounded-xl tw-border tw-border-slate-700/50 tw-bg-slate-800/40 tw-text-sm tw-font-medium tw-text-slate-200 tw-transition-all tw-duration-200 hover:tw-border-slate-600 hover:tw-bg-slate-700/60 active:tw-scale-[0.98] disabled:tw-cursor-not-allowed disabled:tw-opacity-40 focus-visible:tw-outline-none focus-visible:tw-ring-1 focus-visible:tw-ring-teal-500/50"
+					class="tw-flex tw-h-11 tw-w-full tw-items-center tw-justify-center tw-gap-3 tw-border tw-border-[#334155] tw-bg-[#1e293b] tw-text-sm tw-font-medium tw-text-[#cbd5e1] tw-transition-all tw-duration-200 hover:tw-border-[#475569] hover:tw-bg-[#334155] active:tw-scale-[0.98] disabled:tw-cursor-not-allowed disabled:tw-opacity-40 focus-visible:tw-outline-none focus-visible:tw-ring-1 focus-visible:tw-ring-[#14b8a633]"
 				>
 					<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="tw-text-slate-400" aria-hidden="true">
 						<path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/>
@@ -296,7 +299,7 @@
 					type="button"
 					onclick={handleGoogleLogin}
 					disabled={googleBusy || loginEngine.busy || navigating}
-					class="tw-flex tw-h-11 tw-w-full tw-items-center tw-justify-center tw-gap-3 tw-rounded-xl tw-border tw-border-slate-700/50 tw-bg-slate-800/40 tw-text-sm tw-font-medium tw-text-slate-200 tw-transition-all tw-duration-200 hover:tw-border-slate-600 hover:tw-bg-slate-700/60 active:tw-scale-[0.98] disabled:tw-cursor-not-allowed disabled:tw-opacity-40 focus-visible:tw-outline-none focus-visible:tw-ring-1 focus-visible:tw-ring-teal-500/50"
+					class="tw-flex tw-h-11 tw-w-full tw-items-center tw-justify-center tw-gap-3 tw-border tw-border-[#334155] tw-bg-[#1e293b] tw-text-sm tw-font-medium tw-text-[#cbd5e1] tw-transition-all tw-duration-200 hover:tw-border-[#475569] hover:tw-bg-[#334155] active:tw-scale-[0.98] disabled:tw-cursor-not-allowed disabled:tw-opacity-40 focus-visible:tw-outline-none focus-visible:tw-ring-1 focus-visible:tw-ring-[#14b8a633]"
 				>
 					{#if !googleBusy}
 						<svg width="15" height="15" viewBox="0 0 18 18" aria-hidden="true">
@@ -322,7 +325,7 @@
 					autocomplete="email"
 					placeholder="Email address"
 					bind:value={loginEngine.email}
-					class="tw-h-11 tw-w-full tw-rounded-lg tw-border tw-border-slate-700/50 tw-bg-transparent tw-px-4 tw-text-sm tw-text-[#fafafa] tw-outline-none tw-transition-all tw-placeholder-slate-400 focus:tw-border-teal-500/50 focus:tw-ring-1 focus:tw-ring-teal-500/50"
+					class="tw-h-11 tw-w-full tw-border tw-border-[#334155] tw-bg-transparent tw-px-4 tw-text-sm tw-text-[#fafafa] tw-outline-none tw-transition-all tw-placeholder-slate-400 focus:tw-border-[#14b8a6] focus:tw-ring-1 focus:tw-ring-[#14b8a633]"
 				/>
 
 				<!-- Send Magic Link -->
@@ -330,7 +333,7 @@
 					type="button"
 					onclick={handleMagicLink}
 					disabled={loginEngine.busy || googleBusy || navigating}
-					class="tw-flex tw-h-11 tw-w-full tw-items-center tw-justify-center tw-gap-3 tw-rounded-xl tw-border tw-border-slate-700/50 tw-bg-slate-800/40 tw-text-sm tw-font-medium tw-text-slate-200 tw-transition-all tw-duration-200 hover:tw-border-slate-600 hover:tw-bg-slate-700/60 active:tw-scale-[0.98] disabled:tw-cursor-not-allowed disabled:tw-opacity-40 focus-visible:tw-outline-none focus-visible:tw-ring-1 focus-visible:tw-ring-teal-500/50"
+					class="tw-flex tw-h-11 tw-w-full tw-items-center tw-justify-center tw-gap-3 tw-border tw-border-[#334155] tw-bg-[#1e293b] tw-text-sm tw-font-medium tw-text-[#cbd5e1] tw-transition-all tw-duration-200 hover:tw-border-[#475569] hover:tw-bg-[#334155] active:tw-scale-[0.98] disabled:tw-cursor-not-allowed disabled:tw-opacity-40 focus-visible:tw-outline-none focus-visible:tw-ring-1 focus-visible:tw-ring-[#14b8a633]"
 				>
 					<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="tw-text-slate-400" aria-hidden="true">
 						<rect x="2" y="4" width="20" height="16" rx="2" /><path d="M22 7L12 13 2 7" />
@@ -348,8 +351,8 @@
 
 			<!-- Magic link confirmation -->
 			{#if loginEngine.magicLinkSent}
-				<p class="tw-mt-3 tw-rounded-xl tw-border tw-border-teal-500/20 tw-bg-teal-500/5 tw-px-4 tw-py-2.5 tw-text-center tw-font-mono tw-text-xs tw-leading-relaxed tw-text-slate-400">
-					Link sent to <span class="tw-text-teal-400">{loginEngine.email}</span>
+				<p class="tw-mt-3 tw-border tw-border-[#14b8a633] tw-bg-[#14b8a60a] tw-px-4 tw-py-2.5 tw-text-center tw-font-mono tw-text-xs tw-leading-relaxed tw-text-[#64748b]">
+					Link sent to <span class="tw-text-[#14b8a6]">{loginEngine.email}</span>
 				</p>
 			{/if}
 
@@ -370,16 +373,15 @@
 				TACTICAL OPERATIONS PLATFORM
 			</p>
 
-			<!-- INITIALIZE OPERATIVE — high-tech escape hatch -->
-			<button
-				type="button"
-				onclick={() => { loginView = 'operative'; opError = ''; opCode = ''; opCallsign = ''; }}
-				disabled={navigating}
-				class="tw-mt-6 tw-flex tw-w-full tw-cursor-pointer tw-items-center tw-justify-center tw-gap-2 tw-border-none tw-bg-transparent tw-py-2 tw-font-mono tw-text-xs tw-uppercase tw-tracking-[0.2em] tw-text-slate-500 tw-transition-colors tw-duration-200 hover:tw-text-teal-400 disabled:tw-pointer-events-none disabled:tw-opacity-40 focus-visible:tw-outline-none"
+			<!-- INITIALIZE OPERATIVE — Action Gold Primary CTA -->
+			<a
+				href="/login"
+				onclick={(e) => { e.preventDefault(); if (!navigating) { loginView = 'operative'; opError = ''; opCode = ''; opCallsign = ''; } }}
+				class="vanguard-btn-amber tw-mt-6 tw-flex tw-w-full tw-cursor-pointer tw-items-center tw-justify-center tw-gap-2 tw-px-6 tw-py-3 tw-font-mono tw-text-xs tw-uppercase tw-tracking-[0.2em] tw-font-bold tw-transition-colors tw-duration-200 active:tw-scale-[0.98]"
 			>
 				<Icon name="nav.sign-in" size={10} />
 				Initialize Operative
-			</button>
+			</a>
 
 		{/if}
 
