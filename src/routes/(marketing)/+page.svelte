@@ -19,7 +19,7 @@
 			body: 'Gamified Skill Trees, XP progression, Vanguard Prism radars, and video trial uploads driving intrinsic motivation and unyielding athlete engagement.',
 			href: '/player',
 			hoverColor: '#14b8a6',
-			cols: 'md:tw-col-span-6'
+			cols: 'md:tw-col-span-4'
 		},
 		{
 			icon: 'user.settings' as IconName,
@@ -41,7 +41,7 @@
 			body: 'COPPA 2.0 WebAuthn biometric gating, SafeSport Shadow CC routing, and the Car Ride Home emotional safety protocol.',
 			href: '/parent',
 			hoverColor: '#14b8a6',
-			cols: 'md:tw-col-span-2'
+			cols: 'md:tw-col-span-4'
 		}
 	];
 </script>
@@ -126,7 +126,7 @@
 			<p class="tw-text-[#94a3b8] tw-mt-4 tw-max-w-2xl">Complete operational parity across your club's most critical personas.</p>
 		</div>
 
-		<!-- Asymmetric: 6 / 4 / 2 column weighting -->
+		<!-- Symmetric: 4 / 4 / 4 column weighting -->
 		<div class="tw-grid tw-grid-cols-1 md:tw-grid-cols-12 tw-gap-4 md:tw-gap-6">
 			{#each features as feat}
 				<div class="tw-col-span-1 {feat.cols} tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-p-8 hover:tw-border-[#334155] tw-transition-colors tw-duration-150 tw-flex tw-flex-col tw-relative tw-group tw-overflow-hidden"
