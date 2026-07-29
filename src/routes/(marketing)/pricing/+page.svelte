@@ -155,8 +155,8 @@
 
 	<!-- The PLG Hook (Brutalist Readout) -->
 	<section class="tw-max-w-4xl tw-mx-auto tw-w-full tw-px-6 tw-mb-16">
-		<div class="tw-bg-[#0f172a] tw-border tw-border-[#1e293b] tw-p-8 hover:tw-border-[#334155] tw-transition-colors tw-duration-150 tw-flex tw-flex-col">
-			<div class="tw-flex tw-items-center tw-justify-between tw-border-b tw-border-[#1e293b] tw-pb-4 tw-mb-6">
+		<div class="tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-p-8 hover:tw-border-[#475569] tw-transition-colors tw-duration-150 tw-flex tw-flex-col">
+			<div class="tw-flex tw-items-center tw-justify-between tw-border-b tw-border-[#334155] tw-pb-4 tw-mb-6">
 				<span class="tw-font-mono tw-text-xs tw-text-[#f59e0b] tw-tracking-widest">SYS.PRICING_MODEL</span>
 				<Icon name={"status.pulse" as IconName} size={20} class="tw-text-[#f59e0b]" />
 			</div>
@@ -170,27 +170,27 @@
 
 	<!-- Competitor Comparison Table -->
 	<section class="tw-max-w-4xl tw-mx-auto tw-w-full tw-px-6 tw-mb-24">
-		<div class="tw-bg-[#0B0F19] tw-border tw-border-[#1e293b] tw-overflow-x-auto">
+		<div class="tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-overflow-x-auto">
 			<table class="tw-w-full tw-text-left tw-border-collapse">
 				<thead>
-					<tr class="tw-border-b tw-border-[#1e293b]">
+					<tr class="tw-border-b tw-border-[#334155]">
 						<th class="tw-py-4 tw-px-6 tw-font-mono tw-text-xs tw-font-bold tw-text-[#64748b] tw-tracking-widest tw-uppercase">Metric</th>
 						<th class="tw-py-4 tw-px-6 tw-font-mono tw-text-xs tw-font-bold tw-text-[#ef4444] tw-tracking-widest tw-uppercase">Legacy Competitors</th>
 						<th class="tw-py-4 tw-px-6 tw-font-mono tw-text-xs tw-font-bold tw-text-[#14b8a6] tw-tracking-widest tw-uppercase">SSTracker</th>
 					</tr>
 				</thead>
 				<tbody class="tw-text-sm tw-text-[#cbd5e1]">
-					<tr class="tw-border-b tw-border-[#1e293b]/50">
+					<tr class="tw-border-b tw-border-[#33415580]">
 						<td class="tw-py-4 tw-px-6 tw-font-mono">Platform Fee</td>
 						<td class="tw-py-4 tw-px-6">$1,000 - $3,000 / year</td>
 						<td class="tw-py-4 tw-px-6 tw-text-[#14b8a6] tw-font-bold">$0 Flat</td>
 					</tr>
-					<tr class="tw-border-b tw-border-[#1e293b]/50">
+					<tr class="tw-border-b tw-border-[#33415580]">
 						<td class="tw-py-4 tw-px-6 tw-font-mono">Processing Rate</td>
 						<td class="tw-py-4 tw-px-6">3.5% + $1.50 per tx</td>
 						<td class="tw-py-4 tw-px-6 tw-text-[#14b8a6] tw-font-bold">2.9% + 30¢ (Stripe Direct)</td>
 					</tr>
-					<tr class="tw-border-b tw-border-[#1e293b]/50">
+					<tr class="tw-border-b tw-border-[#33415580]">
 						<td class="tw-py-4 tw-px-6 tw-font-mono">Hidden Payout Fees</td>
 						<td class="tw-py-4 tw-px-6">0.5% withdrawal fee</td>
 						<td class="tw-py-4 tw-px-6 tw-text-[#14b8a6] tw-font-bold">None</td>
@@ -209,10 +209,10 @@
 	<section class="tw-max-w-[1400px] tw-mx-auto tw-w-full tw-px-6 tw-mb-24">
 		<div class="tw-grid tw-grid-cols-1 md:tw-grid-cols-2 lg:tw-grid-cols-4 tw-gap-6">
 			{#each TIERS as tier}
-				<article class="tw-bg-[#0f172a] tw-border tw-border-[#1e293b] hover:tw-border-[var(--accent)] tw-transition-all tw-duration-150 tw-relative tw-p-8 tw-flex tw-flex-col tw-rounded-sm" style:--accent={tier.accentColor}>
+				<article class="tw-bg-[#0f172a] tw-border tw-border-[#334155] hover:tw-border-[var(--accent)] tw-transition-all tw-duration-150 tw-relative tw-p-8 tw-flex tw-flex-col tw-rounded-sm" style:--accent={tier.accentColor}>
 					
 					{#if tier.badge}
-						<div class="tw-absolute -tw-top-3 tw-left-1/2 -tw-translate-x-1/2 tw-bg-[#0B0F19] tw-border tw-border-[var(--accent)] tw-text-[var(--accent)] tw-text-[10px] tw-font-mono tw-font-bold tw-tracking-widest tw-uppercase tw-px-3 tw-py-1 tw-rounded-full">
+						<div class="tw-absolute -tw-top-3 tw-left-1/2 -tw-translate-x-1/2 tw-bg-[#020617] tw-border tw-border-[var(--accent)] tw-text-[var(--accent)] tw-text-[10px] tw-font-mono tw-font-bold tw-tracking-widest tw-uppercase tw-px-3 tw-py-1 tw-rounded-full">
 							{tier.badge}
 						</div>
 					{/if}
@@ -243,7 +243,7 @@
 						<button
 							onclick={() => handleSubscribe(tier)}
 							disabled={checkoutPhase === 'processing' && checkoutTierId === tier.id}
-							class="tw-w-full tw-py-4 tw-text-center tw-bg-[#000000] tw-border tw-border-[#1e293b] hover:tw-bg-[var(--accent)] hover:tw-text-[#000000] tw-text-[var(--accent)] tw-font-mono tw-text-xs tw-font-bold tw-uppercase tw-tracking-[0.1em] tw-transition-colors tw-duration-150 tw-rounded-sm disabled:tw-opacity-50 disabled:tw-cursor-not-allowed"
+							class="tw-w-full tw-py-4 tw-text-center tw-bg-[#000000] tw-border tw-border-[#334155] hover:tw-bg-[var(--accent)] hover:tw-text-[#000000] tw-text-[var(--accent)] tw-font-mono tw-text-xs tw-font-bold tw-uppercase tw-tracking-[0.1em] tw-transition-colors tw-duration-150 tw-rounded-sm disabled:tw-opacity-50 disabled:tw-cursor-not-allowed"
 						>
 							{#if checkoutPhase === 'processing' && checkoutTierId === tier.id}
 								PROCESSING...
@@ -264,7 +264,7 @@
 
 	<!-- Migration Concierge -->
 	<section class="tw-max-w-4xl tw-mx-auto tw-w-full tw-px-6 tw-mb-24">
-		<div class="tw-bg-[#0B0F19] tw-border tw-border-[#1e293b] tw-p-8 tw-flex tw-flex-col md:tw-flex-row tw-gap-8 tw-items-center">
+		<div class="tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-p-8 tw-flex tw-flex-col md:tw-flex-row tw-gap-8 tw-items-center">
 			<div class="tw-shrink-0 tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-p-4 tw-rounded-full">
 				<Icon name={"user.settings" as IconName} size={32} class="tw-text-[#14b8a6]" />
 			</div>
@@ -273,7 +273,7 @@
 				<p class="tw-text-[#94a3b8] tw-text-sm tw-leading-relaxed tw-mb-4">
 					Switching platforms shouldn't mean losing years of historical data. Our elite onboarding team will manually map and migrate your legacy athlete data.
 				</p>
-				<div class="tw-inline-flex tw-items-center tw-gap-2 tw-bg-[#0f172a] tw-border tw-border-[#1e293b] tw-px-3 tw-py-1.5 tw-rounded-sm">
+				<div class="tw-inline-flex tw-items-center tw-gap-2 tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-px-3 tw-py-1.5 tw-rounded-sm">
 					<Icon name={"action.upload" as IconName} size={16} class="tw-text-[#14b8a6]" />
 					<span class="tw-font-mono tw-text-xs tw-text-[#cbd5e1] tw-tracking-widest">Powered by Automated CSV Vampire Importer</span>
 				</div>
