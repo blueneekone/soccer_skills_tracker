@@ -89,10 +89,6 @@
     "vitest": "^4.1.6"
   },
   "dependencies": {
-    "@babel/core": "^8.0.1",
-    "@babel/generator": "^8.0.0",
-    "@babel/parser": "^8.0.4",
-    "@babel/traverse": "^8.0.4",
     "@capacitor/app": "^6.0.3",
     "@capacitor/core": "^6.2.1",
     "@capacitor/splash-screen": "^6.0.4",

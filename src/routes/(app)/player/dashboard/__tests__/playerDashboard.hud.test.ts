@@ -44,6 +44,9 @@ describe('/player/dashboard — Sprint 1.4 HUD overhaul', () => {
 		const bounties = readFileSync(
 			join(__dirname, '../../../../../lib/components/hud/ActiveBounties.svelte'),
 			'utf-8',
+		) + '\n' + readFileSync(
+			join(__dirname, '../../../../../lib/components/hud/BountyRow.svelte'),
+			'utf-8',
 		);
 		expect(bounties).toMatch(/questTerminalCmd/);
 		expect(bounties).toMatch(/quest-row__cmd/);

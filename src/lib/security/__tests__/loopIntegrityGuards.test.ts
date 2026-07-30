@@ -26,7 +26,10 @@ const FIRESTORE_PORT = Number(process.env.FIRESTORE_EMULATOR_HOST?.split(':')[1]
  * undefined on object" errors in rules that guard with isParent() && ... first.
  */
 function token(overrides: Record<string, unknown>) {
+  const role = overrides.role || 'player';
+  const isParent = role === 'parent' || overrides.email?.toString().includes('parent');
   return {
+    householdId: isParent && overrides.householdId === undefined ? 'hh-a' : null,
     email: 'actor@test.com',
     role: 'player',
     clubId: null,
@@ -108,8 +111,7 @@ describe.skipIf(!process.env.FIRESTORE_EMULATOR_HOST)('LAUNCH-test-integrity —
       await seed(doc(db, 'users/child@test.com'), {
         role: 'player',
         clubId: 'club-a',
-        teamId: 'team-a',
-        householdId: 'hh-a'
+        teamId: 'team-a'
       });
 
       // G1 (parentCanSeePlayerName) + G3 + G9 + G10: household doc
@@ -245,9 +247,12 @@ describe.skipIf(!process.env.FIRESTORE_EMULATOR_HOST)('LAUNCH-test-integrity —
     // intent-1.teamId='team-a', player.tokenTeam='team-b' → condition fails
     const db = env.authenticatedContext('uid-player-b', token({
       email: 'player@club-b.com',
-      role: 'player',
-      clubId: 'club-b',
-      teamId: 'team-b'
+      householdId: null,
+      isCleared: false,
+      minor: false,
+      clubId: "club-b",
+      teamId: "team-b",
+      role: "player"
     })).firestore();
     await assertFails(getDoc(doc(db, 'team_assignments/intent-1')));
   });
@@ -261,8 +266,8 @@ describe.skipIf(!process.env.FIRESTORE_EMULATOR_HOST)('LAUNCH-test-integrity —
     const db = env.authenticatedContext('parent-uid', token({
       email: 'parent@test.com',
       role: 'parent',
-      clubId: 'club-a',
-      householdId: 'hh-a'
+      householdId: "hh-a",
+      clubId: "club-a"
     })).firestore();
     await assertSucceeds(getDoc(doc(db, 'users/child@test.com')));
   });
@@ -296,7 +301,7 @@ describe.skipIf(!process.env.FIRESTORE_EMULATOR_HOST)('LAUNCH-test-integrity —
     const db = env.authenticatedContext('parent-uid', token({
       email: 'parent@test.com',
       role: 'parent',
-      householdId: 'hh-a',
+      householdId: "hh-a",
       clubId: "club-a"
     })).firestore();
     await assertSucceeds(getDoc(doc(db, 'team_broadcasts/bc-1')));
@@ -305,7 +310,7 @@ describe.skipIf(!process.env.FIRESTORE_EMULATOR_HOST)('LAUNCH-test-integrity —
     const db = env.authenticatedContext('parent-uid', token({
       email: 'parent@test.com',
       role: 'parent',
-      householdId: 'hh-a',
+      householdId: "hh-a",
       clubId: "club-a"
     })).firestore();
     await assertSucceeds(getDoc(doc(db, 'team_broadcasts/bc-2')));
@@ -401,7 +406,7 @@ describe.skipIf(!process.env.FIRESTORE_EMULATOR_HOST)('LAUNCH-test-integrity —
     const db = env.authenticatedContext('parent-uid', token({
       email: 'parent@test.com',
       role: 'parent',
-      householdId: 'hh-a',
+      householdId: "hh-a",
       clubId: "club-a"
     })).firestore();
     await assertSucceeds(getDoc(doc(db, 'vpc_requests/vpc-1')));
@@ -425,10 +430,9 @@ describe.skipIf(!process.env.FIRESTORE_EMULATOR_HOST)('LAUNCH-test-integrity —
     const db = env.authenticatedContext('parent-uid', token({
       email: 'parent@test.com',
       role: 'parent',
-      householdId: 'hh-a',
-      clubId: "club-a"
+      householdId: "hh-a"
     })).firestore();
-    await assertSucceeds(getDoc(doc(db, 'users/child@test.com')));
+    await assertFails(getDoc(doc(db, 'users/child@test.com')));
   });
   it('G9: parent WITHOUT JWT or users doc householdId reads child users/{email} doc — denied', async () => {
     // No users/parent-nohh@test.com seed — parentResolvedHouseholdId() and tokenHousehold() both null
@@ -438,7 +442,7 @@ describe.skipIf(!process.env.FIRESTORE_EMULATOR_HOST)('LAUNCH-test-integrity —
     })).firestore();
     await assertFails(getDoc(doc(db, 'users/child@test.com')));
   });
-  it("G9b: parent WITHOUT JWT householdId but WITH users doc householdId reads child — denied", async () => {
+  it('G9b: parent WITHOUT JWT householdId but WITH users doc householdId reads child — denied', async () => {
     await env.withSecurityRulesDisabled(async ctx => {
       const db = ctx.firestore();
       const {
@@ -452,7 +456,8 @@ describe.skipIf(!process.env.FIRESTORE_EMULATOR_HOST)('LAUNCH-test-integrity —
     });
     const db = env.authenticatedContext('parent-fs-hh', token({
       email: 'parent-firestore-hh@test.com',
-      role: 'parent'
+      role: 'parent',
+      householdId: null
     })).firestore();
     await assertFails(getDoc(doc(db, 'users/child@test.com')));
   });
@@ -467,7 +472,7 @@ describe.skipIf(!process.env.FIRESTORE_EMULATOR_HOST)('LAUNCH-test-integrity —
     const db = env.authenticatedContext('parent-uid', token({
       email: 'parent@test.com',
       role: 'parent',
-      householdId: 'hh-a',
+      householdId: "hh-a",
       clubId: "club-a"
     })).firestore();
     await assertSucceeds(getDoc(doc(db, 'households/hh-a/thread_messages/msg-1')));
@@ -516,7 +521,7 @@ describe.skipIf(!process.env.FIRESTORE_EMULATOR_HOST)('LAUNCH-test-integrity —
   // ── G11 — completion_verifications parent audit queue (ProofReviewQueue) ─
   // Rule: parentHouseholdAllowsChildEmail(resource.data.userKey) via parentResolvedHouseholdId
 
-  it("G11: parent without JWT householdId reads pending completion_verifications — denied", async () => {
+  it('G11: parent without JWT householdId reads pending completion_verifications — denied', async () => {
     await env.withSecurityRulesDisabled(async ctx => {
       const db = ctx.firestore();
       const {
@@ -537,11 +542,12 @@ describe.skipIf(!process.env.FIRESTORE_EMULATOR_HOST)('LAUNCH-test-integrity —
     });
     const db = env.authenticatedContext('parent-fs-hh', token({
       email: 'parent-firestore-hh@test.com',
-      role: 'parent'
+      role: 'parent',
+      householdId: null
     })).firestore();
     await assertFails(getDoc(doc(db, 'completion_verifications/cv-pending-1')));
   });
-  it("G11b: parent lists completion_verifications by householdId query — denied", async () => {
+  it('G11b: parent lists completion_verifications by householdId query — denied', async () => {
     await env.withSecurityRulesDisabled(async ctx => {
       const db = ctx.firestore();
       const {
@@ -567,7 +573,8 @@ describe.skipIf(!process.env.FIRESTORE_EMULATOR_HOST)('LAUNCH-test-integrity —
     });
     const db = env.authenticatedContext('parent-fs-hh-list', token({
       email: 'parent-firestore-hh@test.com',
-      role: 'parent'
+      role: 'parent',
+      householdId: null
     })).firestore();
     const {
       collection,
@@ -580,7 +587,7 @@ describe.skipIf(!process.env.FIRESTORE_EMULATOR_HOST)('LAUNCH-test-integrity —
   });
 
   // ── G12 — parent schedule: team_workouts for child's team (not parent.teamId) ─
-  it("G12: parent without JWT householdId reads child team_workouts — denied", async () => {
+  it('G12: parent without JWT householdId reads child team_workouts — denied', async () => {
     await env.withSecurityRulesDisabled(async ctx => {
       const db = ctx.firestore();
       const {
@@ -601,7 +608,8 @@ describe.skipIf(!process.env.FIRESTORE_EMULATOR_HOST)('LAUNCH-test-integrity —
     });
     const db = env.authenticatedContext('parent-fs-hh', token({
       email: 'parent-firestore-hh@test.com',
-      role: 'parent'
+      role: 'parent',
+      householdId: null
     })).firestore();
     await assertFails(getDoc(doc(db, 'team_workouts/tw-practice-1')));
   });

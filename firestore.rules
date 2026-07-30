@@ -192,41 +192,33 @@ service cloud.firestore {
     }
 
     // JWT householdId can lag after household link / VPC / claim sync — prefer users/{email}.
-    function _resolvedHouseholdId() {
-      return tokenHousehold() != null
-        ? tokenHousehold()
-        : (exists(/databases/$(database)/documents/users/$(emailKey()))
-           && get(/databases/$(database)/documents/users/$(emailKey())).data.keys().hasAll(['householdId'])
-           ? get(/databases/$(database)/documents/users/$(emailKey())).data.householdId
-           : null);
-    }
-
     function parentResolvedHouseholdId() {
       return tokenHousehold();
     }
 
     function parentHouseholdAllowsChildEmail(childKey) {
-      return isParent() && parentResolvedHouseholdId() != null && exists(/databases/$(database)/documents/users/$(childKey)) && get(/databases/$(database)/documents/users/$(childKey)).data.get('householdId', null) == parentResolvedHouseholdId();
-    }
-
-    function _hasName(name, hId) {
-      return hId != null && exists(/databases/$(database)/documents/households/$(hId))
-        && get(/databases/$(database)/documents/households/$(hId)).data.keys().hasAll(['playerNames'])
-        && get(/databases/$(database)/documents/households/$(hId)).data.playerNames.hasAny([name]);
+      return isParent()
+        && parentResolvedHouseholdId() != null
+        && exists(/databases/$(database)/documents/households/$(parentResolvedHouseholdId()))
+        && get(/databases/$(database)/documents/households/$(parentResolvedHouseholdId())).data.playerEmails.hasAny([childKey]);
     }
 
     function parentCanSeePlayerName(name) {
-      return isParent() && _hasName(name, tokenHousehold());
+      return isParent()
+        && parentResolvedHouseholdId() != null
+        && exists(/databases/$(database)/documents/households/$(parentResolvedHouseholdId()))
+        && get(/databases/$(database)/documents/households/$(parentResolvedHouseholdId())).data.keys().hasAll(['playerNames'])
+        && get(/databases/$(database)/documents/households/$(parentResolvedHouseholdId())).data.playerNames.hasAny([name]);
     }
 
     function parentHouseholdDoc() {
-      let hId = tokenHousehold();
-      return hId != null ? get(/databases/$(database)/documents/households/$(hId)).data : null;
+      return get(/databases/$(database)/documents/households/$(parentResolvedHouseholdId())).data;
     }
 
     function parentOwnsHouseholdId(householdId) {
-      let hId = tokenHousehold();
-      return isParent() && hId != null && hId == householdId;
+      return isParent()
+        && parentResolvedHouseholdId() != null
+        && parentResolvedHouseholdId() == householdId;
     }
 
     function parentChildUserOnTeam(childEmail, teamId) {
@@ -4149,7 +4141,8 @@ service cloud.firestore {
       allow update, delete: if false; // Append-only Event Sourcing
     }
 
-match /{document=**} {
+
+    match /{document=**} {
       allow read, write: if false;
     }
   }
