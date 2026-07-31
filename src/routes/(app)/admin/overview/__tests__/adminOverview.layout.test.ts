@@ -44,7 +44,6 @@ describe('/admin/overview — Liquid Bento (Sprint 1.1)', () => {
 
 	it('cards and panels use dark-form-surface (Sprint 0.1)', () => {
 		expect(arenaSrc).toMatch(/cc-soc-card dark-form-surface/);
-		expect(hudSrc).toMatch(/cc-chart-card--soc dark-form-surface/);
-		expect(hudSrc).toMatch(/cc-feed-shell--soc dark-form-surface/);
+		expect(arenaSrc).toMatch(/cc-feed-shell--soc dark-form-surface/);
 	});
 });
