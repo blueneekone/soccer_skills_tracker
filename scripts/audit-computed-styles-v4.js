@@ -1,19 +1,53 @@
 import { chromium } from 'playwright';
 
+/**
+ * Injects a mock Firebase Auth user directly into the browser's LocalStorage 
+ * to bypass the login redirects and pass the B815 Defensive Hydration check.
+ */
+async function injectMockAuth(page, uid, email, role) {
+  // 1. Navigate to the root domain first to establish the origin context
+  await page.goto('http://localhost:5173/');
+
+  // 2. Inject mock Firebase Auth User State into LocalStorage
+  await page.evaluate(({ uid, email, role }) => {
+    const firebaseApiKey = "mock-api-key"; // Matches your local emulator setup
+    const storageKey = `firebase:authUser:${firebaseApiKey}:[DEFAULT]`;
+
+    const mockUser = {
+      uid: uid,
+      email: email,
+      emailVerified: true,
+      isAnonymous: false,
+      stsTokenManager: {
+        accessToken: "mock-jwt-access-token",
+        refreshToken: "mock-refresh-token",
+        expirationTime: Date.now() + 3600000 // Valid for 1 hour
+      },
+      // Injects the Custom Claims required for Svelte role routing gates
+      claims: {
+        role: role,
+        tenantId: "mock-tenant-id"
+      }
+    };
+
+    window.localStorage.setItem(storageKey, JSON.stringify(mockUser));
+  }, { uid, email, role });
+}
+
 (async () => {
   // Grab the target persona from command line arguments (defaults to player)
   const targetPersona = (process.argv[2] || 'player').toLowerCase();
-  
+
   const browser = await chromium.launch({ headless: true });
   const page = await browser.newPage();
-  
+
   // Set viewport to target mobile tablet / dashboard viewport
   await page.setViewportSize({ width: 375, height: 812 });
-  
+
   // Resolve target url based on the persona
   const targetUrl = `http://localhost:5173/${targetPersona}/dashboard`;
   console.log(`📡 Crawling Localhost -> Target Route: ${targetUrl}`);
-  
+
   try {
     await page.goto(targetUrl, { timeout: 5000, waitUntil: 'domcontentloaded' });
   } catch (err) {
@@ -52,7 +86,7 @@ import { chromium } from 'playwright';
     const elements = document.querySelectorAll('*');
     elements.forEach(el => {
       const styles = window.getComputedStyle(el);
-      
+
       // 1. Block low-contrast/unsupported opacities that cause halation on Void Black
       if (styles.color.includes('rgba') && styles.color.includes('0.5')) {
         // Exempt standard framework elements, focus purely on primary layout elements

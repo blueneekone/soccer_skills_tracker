@@ -1,5 +1,9 @@
 @import url('https://api.fonts.coollabs.io/css2?family=Geist+Mono&family=Geist+Sans&family=Switzer:wght@400;600;800&display=swap');
 
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 @layer base {
   body {
     @apply bg-void-black text-slate-100 font-sans antialiased selection:bg-data-cyan/30;
