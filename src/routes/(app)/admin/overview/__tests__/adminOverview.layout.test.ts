@@ -1,50 +1,65 @@
-/**
- * adminOverview.layout.test.ts — Slice 6: Admin overview liquid bento regression
- *
- * Guards that:
- *  • All KPI bento grids use bento-grid--liquid (dense flow + clamp gap).
- *  • .cc-soc-card CSS uses --shadow-liquid (opaque carve-out preserved).
- *  • .cc-soc-card CSS does NOT use backdrop-filter.
- */
+import '@testing-library/jest-dom';
+// @vitest-environment jsdom
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { render, screen, cleanup } from '@testing-library/svelte';
+import AdminDashboardHUD from '../AdminDashboardHUD.svelte';
+import AdminOverviewArena from '../AdminOverviewArena.svelte';
+import AdminDashboardEngine from '../AdminDashboardEngine.svelte';
 
-import { describe, it, expect } from 'vitest';
-import { readFileSync } from 'fs';
-import { join } from 'path';
+// Mock the Firebase client and Auth store to pass Defensive Hydration
+vi.mock('$lib/firebase/config', () => ({
+	db: {} // Truthy object to pass `if (!db)`
+}));
 
-const PAGE = join(__dirname, '..', '+page.svelte');
-const ARENA = join(__dirname, '..', 'AdminOverviewArena.svelte');
-const HUD = join(__dirname, '..', 'AdminOverviewHUD.svelte');
+vi.mock('$lib/stores/auth.svelte', () => ({
+	authStore: {
+		isAuthenticated: true // Pass `if (!authStore.isAuthenticated)`
+	}
+}));
 
-const src = readFileSync(PAGE, 'utf-8');
-const arenaSrc = readFileSync(ARENA, 'utf-8');
-const hudSrc = readFileSync(HUD, 'utf-8');
+// Mock firestore queries
+vi.mock('firebase/firestore', () => ({
+	collection: vi.fn(),
+	query: vi.fn(),
+	where: vi.fn(),
+	limit: vi.fn(),
+	orderBy: vi.fn(),
+	getDocs: vi.fn().mockResolvedValue({ size: 42 }) // Mock returning 42 docs for size properties
+}));
 
-describe('/admin/overview — Liquid Bento (Sprint 1.1)', () => {
-	it('tab panels use 12-column liquid bento grid', () => {
-		expect(arenaSrc).toMatch(/bento-grid--12col bento-grid--liquid|bento-grid--liquid.*bento-grid--12col/);
+describe('Admin OS Vanguard Trinity', () => {
+	beforeEach(() => {
+		cleanup();
+		vi.clearAllMocks();
 	});
 
-	it('KPI tiles use bento-span-3 within the 12-column grid', () => {
-		expect(arenaSrc).toMatch(/bento-span-3/);
+	it('HUD renders system status and strict 90-degree corners', () => {
+		const engine = new AdminDashboardEngine();
+		const { container } = render(AdminDashboardHUD, { engine });
+
+		expect(screen.getByText('Nexus Command')).toBeInTheDocument();
+		expect(screen.getByText('SYSTEM_STATUS: INITIALIZING')).toBeInTheDocument();
+
+		// Check for specific structural classes required by the prompt
+		const header = container.querySelector('header');
+		expect(header).toHaveClass('command-plane-system-status');
+		expect(header).toHaveClass('tw-rounded-none'); // Enforcing 90-degree corners
 	});
 
-	it('shell padding uses --bento-pad-liquid', () => {
-		expect(src).toMatch(/--bento-pad-liquid/);
-	});
+	it('Arena renders multi-tenant matrix and enforces fluid Bento Grid', () => {
+		const engine = new AdminDashboardEngine();
+		// Mock engine to 'ready' state to show the main matrix
+		engine.isLoading = false;
+		engine.error = null;
 
-	it('.cc-soc-card CSS uses var(--shadow-liquid)', () => {
-		expect(src).toMatch(/var\(--shadow-liquid\)/);
-	});
+		const { container } = render(AdminOverviewArena, { engine });
 
-	it('.cc-soc-card CSS does NOT apply backdrop-filter (opaque carve-out)', () => {
-		const m = src.match(/\.cc-soc-card\s*\{([^}]+)\}/s);
-		expect(m).not.toBeNull();
-		expect(m![1]).not.toMatch(/backdrop-filter/);
-	});
+		// Wait for data to conceptually "load" or just assert immediately since it's sync here
+		const wrapper = container.querySelector('.tenant-matrix-grid');
+		expect(wrapper).toBeInTheDocument();
 
-	it('cards and panels use dark-form-surface (Sprint 0.1)', () => {
-		expect(arenaSrc).toMatch(/cc-soc-card dark-form-surface/);
-		expect(hudSrc).toMatch(/cc-chart-card--soc dark-form-surface/);
-		expect(hudSrc).toMatch(/cc-feed-shell--soc dark-form-surface/);
+		// Check for Bento grid clamp logic
+		const bentoGrid = container.querySelector('[style*="clamp(280px, 30vw, 350px)"]');
+		expect(bentoGrid).toBeInTheDocument();
 	});
 });
