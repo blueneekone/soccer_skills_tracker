@@ -1,130 +1,135 @@
-# start-nexus-orchestrator.ps1
-# SSTracker Nexus Command - Resilient Night-Shift Orchestrator
+# run-launch-automation-v5.ps1
+# SSTracker Nexus Command Unattended Launch-Day Orchestrator
+# Enforces the cloud-to-local sequential assembly line
 
 $ErrorActionPreference = "Stop"
 
-Write-Host "=========================================================" -ForegroundColor Cyan
-Write-Host " NEXUS COMMAND: UNATTENDED ORCHESTRATOR ONLINE            " -ForegroundColor Cyan
-Write-Host "=========================================================" -ForegroundColor Cyan
-
-# 1. BULLETPROOFING: Set a dedicated local Git Author to prevent infinite loops
-$AutomationAuthor = "Nexus Command Automation"
-git config user.name $AutomationAuthor
-git config user.email "nexus-automation@sstracker.local"
-
-# 2. Define the exact sequential build queue
-$PendingPersonas = @(
-    @{ Name = "admin"; Route = "/admin/overview"; NextTask = "Build Director OS Backend" },
-    @{ Name = "director"; Route = "/director/dashboard"; NextTask = "Build Coach OS Backend" },
-    @{ Name = "coach"; Route = "/coach/dashboard"; NextTask = "Build Player OS Gamification" },
-    @{ Name = "player"; Route = "/player/dashboard"; NextTask = "Build Parent OS Vault" },
-    @{ Name = "parent"; Route = "/parent/dashboard"; NextTask = "Build Recruiter OS Vetting" },
-    @{ Name = "recruiter"; Route = "/recruiter/onboarding"; NextTask = "SYSTEM COMPLETE" }
+# Define the personas in the sequential build queue
+$Personas = @(
+    @{ Name = "admin"; Route = "/admin/overview"; NextTrigger = "tdd-director-os" },
+    @{ Name = "director"; Route = "/director/dashboard"; NextTrigger = "tdd-coach-os" },
+    @{ Name = "coach"; Route = "/coach/dashboard"; NextTrigger = "tdd-player-os" },
+    @{ Name = "player"; Route = "/player/dashboard"; NextTrigger = "tdd-parent-os" },
+    @{ Name = "parent"; Route = "/parent/dashboard"; NextTrigger = "tdd-recruiter-os" },
+    @{ Name = "recruiter"; Route = "/recruiter/onboarding"; NextTrigger = "launch-complete" }
 )
 
-# --- Subroutines ---
+Write-Host "=========================================================" -ForegroundColor Cyan
+Write-Host " SSTRACKER UNATTENDED LAUNCH-DAY ORCHESTRATOR ACTIVE      " -ForegroundColor Cyan
+Write-Host "=========================================================" -ForegroundColor Cyan
 
-function Run-AntigravityAudit ($PersonaName) {
-    Write-Host "--> [Antigravity] Running Visual/Data Flow Audit for $PersonaName..." -ForegroundColor Magenta
-    # Invokes the local Antigravity CLI non-interactively
-    agy -p "/ui-ux-audit $PersonaName"
-    return $LASTEXITCODE -eq 0
+# Check for GitHub CLI (gh)
+$HasGH = $null -ne (Get-Command gh -ErrorAction SilentlyContinue)
+if (-not $HasGH) {
+    Write-Host "[WARNING] GitHub CLI (gh) not found in PATH." -ForegroundColor Yellow
 }
 
-function Run-AntigravityHeal ($PersonaName) {
-    Write-Host "--> [Antigravity] Audit failed. Triggering Critic-Augmented Auto-Fix for $PersonaName..." -ForegroundColor Yellow
-    agy -p "/tdd-ui-ux-autofix $PersonaName"
-    return $LASTEXITCODE -eq 0
-}
+# 1. INFINITE LOOP GUARD: Set specific bot author for automated commits
+$BotAuthor = "SSTracker Nexus Bot"
+git config user.name $BotAuthor
+git config user.email "nexus@sstracker.local"
 
-function Trigger-JulesCloud ($NextTask) {
-    if ($NextTask -eq "SYSTEM COMPLETE") {
-        Write-Host "--> [SUCCESS] Master Assembly Line Complete! Shutting down." -ForegroundColor Green
-        exit 0
-    }
-    
-    Write-Host "--> [GitHub] Handing off to Jules. Triggering: $NextTask" -ForegroundColor Blue
-    # Use GitHub CLI to assign the next epic to Jules
-    gh issue create --title "Jules Action Required: $NextTask" --body "@jules, proceed with the next Master Roadmap phase." --label "jules"
-}
-
-# --- Main Resilient Polling Loop ---
-
-Write-Host "Monitoring 'dev' branch for Jules Cloud merges..." -ForegroundColor DarkGray
-
-while ($PendingPersonas.Count -gt 0) {
+function Run-VisualAudit ($Persona) {
+    Write-Host "`n[1/3] Starting Local Svelte Dev Server and Firebase Emulators..." -ForegroundColor Green
+    Write-Host "[2/3] Running Playwright Visual Styles Audit for $($Persona.Name)..." -ForegroundColor Green
     try {
-        # Fetch silently
-        git fetch origin dev -q
-        $LocalHash = git rev-parse HEAD
-        $RemoteHash = git rev-parse origin/dev
+        # 2. V3 UPDATE: Execute the v3 visual audit script
+        node ./scripts/audit-computed-styles-v3.js $($Persona.Name)
+        Write-Host "[SUCCESS] Visual audit passed for $($Persona.Name)!" -ForegroundColor Green
+        return $true
+    } catch {
+        Write-Host "[FAIL] Visual audit failed for $($Persona.Name)." -ForegroundColor Red
+        return $false
+    }
+}
 
-        if ($LocalHash -ne $RemoteHash) {
-            
-            # Pull new changes
-            git pull origin dev -q
-            
-            # THE GUARD CLAUSE: Check who authored the last commit
-            $LastCommitAuthor = git log -1 --pretty=%an
-            
-            if ($LastCommitAuthor -eq $AutomationAuthor) {
-                Write-Host "Ignoring local styling lock commit. Waiting for Jules..." -ForegroundColor DarkGray
-                Start-Sleep -Seconds 15
-                continue
-            }
+function Trigger-AutoHeal ($Persona) {
+    Write-Host "`n[AUTO-HEAL] Launching local subagents to repair $($Persona.Name) layout..." -ForegroundColor Yellow
+    try {
+        # 3. V3 UPDATE: Trigger the exact command ID required by ui-ux-audit-v3.md
+        agy -p "/ui-ux-audit-v3 $($Persona.Name)"
+        
+        Write-Host "[AUTO-HEAL] Repair complete. Re-running visual audit..." -ForegroundColor Yellow
+        return Run-VisualAudit $Persona
+    } catch {
+        Write-Host "[ERROR] Auto-heal failed to resolve styling discrepancies." -ForegroundColor Red
+        return $false
+    }
+}
 
-            # If it's from Jules/Cloud, get changed files
-            $ChangedFiles = git diff --name-only HEAD~1 HEAD
-            $TargetPersona = $null
+function Trigger-NextCloudPersona ($Persona) {
+    if ($Persona.NextTrigger -eq "launch-complete") {
+        Write-Host "`n=========================================================" -ForegroundColor Green
+        Write-Host " LAUNCH-DAY BLUEPRINTS 100% COMPLETE AND LOCKED DOWN!     " -ForegroundColor Green
+        Write-Host "=========================================================" -ForegroundColor Green
+        return
+    }
 
-            # Check if this merge matches the next persona in our queue
-            foreach ($Persona in $PendingPersonas) {
-                if ($ChangedFiles -match "src/routes/\(app\)$($Persona.Route)") {
-                    $TargetPersona = $Persona
-                    break
-                }
-            }
+    if (-not $HasGH) {
+        Write-Host "`n[ACTION REQUIRED] Manual intervention needed. Type:" -ForegroundColor Yellow
+        Write-Host "  @google-jules run .agents/workflows/jules-builds/$($Persona.NextTrigger).md" -ForegroundColor Cyan
+        return
+    }
 
-            if ($TargetPersona) {
+    Write-Host "`n[3/3] Visuals locked. Programmatically triggering next cloud VM ($($Persona.NextTrigger))..." -ForegroundColor Green
+    try {
+        $PRNumber = gh pr list --limit 1 --json number --jq '.[0].number'
+        if ($PRNumber) {
+            gh pr comment $PRNumber --body "@google-jules run .agents/workflows/jules-builds/$($Persona.NextTrigger).md"
+        } else {
+            gh issue create --title "Trigger Swarm: $($Persona.NextTrigger)" --body "@google-jules run .agents/workflows/jules-builds/$($Persona.NextTrigger).md"
+        }
+        Write-Host "[SUCCESS] Sequential handoff complete." -ForegroundColor Green
+    } catch {
+        Write-Host "[ERROR] Failed to programmatically trigger next Jules phase: $_" -ForegroundColor Red
+    }
+}
+
+# Master Loop
+while ($true) {
+    Write-Host "`nChecking Git tree for new merges from Google Jules..." -ForegroundColor Gray
+    git fetch origin dev -q
+    
+    $LocalHash = git rev-parse HEAD
+    $RemoteHash = git rev-parse origin/dev
+    
+    if ($LocalHash -ne $RemoteHash) {
+        git pull origin dev -q
+        
+        # 4. INFINITE LOOP GUARD: Ignore our own styling commits
+        $LastCommitAuthor = git log -1 --pretty=%an
+        if ($LastCommitAuthor -eq $BotAuthor) {
+            Write-Host "Ignoring local styling lock commit. Waiting for Jules..." -ForegroundColor DarkGray
+            Start-Sleep -Seconds 10
+            continue
+        }
+        
+        $ChangedFiles = git diff --name-only HEAD~1 HEAD
+        
+        foreach ($Persona in $Personas) {
+            if ($ChangedFiles -match "src/routes/\(app\)$($Persona.Route)") {
                 Write-Host "`n=========================================================" -ForegroundColor Cyan
-                Write-Host " INTERCEPTED: Jules finished backend for $($TargetPersona.Name)!" -ForegroundColor Cyan
+                Write-Host " INTERCEPTED: Merged updates for $($Persona.Name) OS!" -ForegroundColor Cyan
                 Write-Host "=========================================================" -ForegroundColor Cyan
                 
-                # 1. Antigravity Audit
-                $Passed = Run-AntigravityAudit $TargetPersona.Name
+                $Passed = Run-VisualAudit $Persona
                 
-                # 2. Antigravity Heal (if needed)
                 if (-not $Passed) {
-                    $Passed = Run-AntigravityHeal $TargetPersona.Name
+                    $Passed = Trigger-AutoHeal $Persona
                 }
                 
-                # 3. Lock, Commit, and Handoff
                 if ($Passed) {
-                    Write-Host "--> [Git] Committing visual styling lock..." -ForegroundColor Green
+                    Write-Host "Committing and pushing visual styling lock..." -ForegroundColor Green
                     git add .
-                    git commit -m "style: fix UX/UI deviations and lock visual layout for $($TargetPersona.Name)" -q
+                    git commit -m "style: visual styling lock and grid-alignment fix for $($Persona.Name) dashboard" -q
                     git push origin dev -q
                     
-                    # 4. Trigger Jules for the next step
-                    Trigger-JulesCloud $TargetPersona.NextTask
-                    
-                    # 5. Remove completed persona from the queue
-                    $PendingPersonas = $PendingPersonas | Where-Object { $_.Name -ne $TargetPersona.Name }
-                    
-                    Write-Host "Waiting for Jules to complete the next phase..." -ForegroundColor DarkGray
-                } else {
-                    Write-Host "[ERROR] Antigravity failed to heal the UI. Human intervention required." -ForegroundColor Red
-                    exit 1
+                    Trigger-NextCloudPersona $Persona
                 }
+                break
             }
         }
     }
-    catch {
-        Write-Host "[WARNING] Network or Git state error encountered. Retrying in 30 seconds... ($($_.Exception.Message))" -ForegroundColor Yellow
-        Start-Sleep -Seconds 30
-        continue
-    }
     
-    # Standard polling interval
-    Start-Sleep -Seconds 15
+    Start-Sleep -Seconds 10
 }
