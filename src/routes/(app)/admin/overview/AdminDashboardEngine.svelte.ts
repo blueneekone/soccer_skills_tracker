@@ -50,9 +50,9 @@ export default class AdminDashboardEngine {
 			);
 			this.activeIncidents = incidentsSnap.size;
 
-		} catch (err: any) {
+		} catch (err: unknown) {
 			console.error('Error fetching admin telemetry:', err);
-			this.error = err.message || 'Failed to fetch telemetry data.';
+			this.error = (err as Error).message || 'Failed to fetch telemetry data.';
 		} finally {
 			this.isLoading = false;
 		}
@@ -70,4 +70,21 @@ export default class AdminDashboardEngine {
 		this.maintenanceMode = !this.maintenanceMode;
 		console.warn(`Infrastructure Override (Maintenance Mode): ${this.maintenanceMode ? 'ENGAGED' : 'STANDBY'}`);
 	}
+
+	async impersonateUser(targetUserId: string) {
+		if (!db || !authStore.isAuthenticated) return;
+
+		try {
+			this.isLoading = true;
+			this.error = null;
+			console.log(`[ADMIN COMMAND] Impersonating user: ${targetUserId}`);
+			// In a real app this calls a Callable Cloud Function to retrieve an impersonation token
+		} catch (err: unknown) {
+			console.error('Failed to impersonate user', err);
+			this.error = 'Impersonation failed: ' + ((err as Error).message || 'Unknown error');
+		} finally {
+			this.isLoading = false;
+		}
+	}
+
 }
