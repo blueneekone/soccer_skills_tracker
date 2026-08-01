@@ -19,17 +19,20 @@ jobs:
         with:
           version: 9
 
-      - name: Set up Node.js 20
+      - name: Set up Node.js 24
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 24
           cache: 'pnpm'
 
       - name: Install Dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Sync SvelteKit
+        run: pnpm exec svelte-kit sync
+
       - name: Verify Svelte 5 Compilation
         run: pnpm run check
 
-      - name: Execute Headless Backend Unit Tests
-        run: pnpm test:unit
+      - name: Execute Headless Unit Tests
+        run: pnpm test
