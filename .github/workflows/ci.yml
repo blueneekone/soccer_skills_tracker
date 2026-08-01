@@ -34,5 +34,5 @@ jobs:
       - name: Verify Svelte 5 Compilation
         run: pnpm run check
 
-      - name: Execute Headless Unit Tests
-        run: pnpm test
+      - name: Execute Headless Backend Unit Tests
+        run: pnpm test:unit
