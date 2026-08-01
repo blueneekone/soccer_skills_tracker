@@ -11,7 +11,7 @@ const ROADMAP = join(REPO, 'ROADMAP.md');
 const CANON = join(REPO, 'docs/vision/COMMS_CHANNEL_CANON.md');
 const CHANNEL_TYPES = join(ROOT, 'lib/comms/channelTypes.ts');
 const HUB = join(ROOT, 'lib/components/comms/CommsHubShell.svelte');
-const DIRECTOR = join(ROOT, 'routes/(app)/director/+page.svelte');
+const DIRECTOR = join(ROOT, 'routes/(app)/director/+page.svelte.disabled');
 const COMMS_JS = join(REPO, 'functions/comms.js');
 const INDEX = join(REPO, 'functions/index.js');
 

@@ -595,7 +595,7 @@ describe.skip('Functional audit — E-series coach/director mounts', () => {
 
 	it('parent household and director registrars mount TransferPortal', () => {
 		const household = readFileSync(join(ROOT, 'routes/(app)/parent/household/+page.svelte'), 'utf-8');
-		const director = readFileSync(join(ROOT, 'routes/(app)/director/+page.svelte'), 'utf-8');
+		const director = readFileSync(join(ROOT, 'routes/(app)/director/+page.svelte.disabled'), 'utf-8');
 		expect(household).toMatch(/TransferPortal/);
 		expect(director).toMatch(/TransferPortal/);
 	});

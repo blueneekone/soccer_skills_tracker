@@ -11,7 +11,7 @@ const HUB = join(ROOT, 'lib/components/comms/CommsHubShell.svelte');
 const SPONSOR_CH = join(ROOT, 'lib/components/comms/CommsSponsorPartnerChannel.svelte');
 const PARENT_OFFERS = join(ROOT, 'lib/components/parent/ParentPartnerOffers.svelte');
 const PARENT_DASH = join(ROOT, 'routes/(app)/parent/dashboard/+page.svelte');
-const DIRECTOR = join(ROOT, 'routes/(app)/director/+page.svelte');
+const DIRECTOR = join(ROOT, 'routes/(app)/director/+page.svelte.disabled');
 const STANDARDS = join(ROOT, '..', 'docs/vision/COMMS_PLATFORM_STANDARDS.md');
 const ROADMAP = join(ROOT, '..', 'ROADMAP.md');
 

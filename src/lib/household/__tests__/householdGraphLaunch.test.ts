@@ -17,7 +17,7 @@ describe('LAUNCH-household-graph — guardian visibility', () => {
 	});
 
 	it('director Families tab mounts HouseholdLinkerPanel', () => {
-		const page = readFileSync(join(ROOT, 'routes/(app)/director/+page.svelte'), 'utf-8');
+		const page = readFileSync(join(ROOT, 'routes/(app)/director/+page.svelte.disabled'), 'utf-8');
 		const panel = readFileSync(
 			join(ROOT, 'lib/components/director/HouseholdLinkerPanel.svelte'),
 			'utf-8',

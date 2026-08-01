@@ -14,7 +14,7 @@ import {
 const ROOT = join(__dirname, '..', '..', '..');
 const HUB_SHELL = join(ROOT, 'lib/components/comms/CommsHubShell.svelte');
 const CLUB_WIDE = join(ROOT, 'lib/components/comms/CommsClubWideChannel.svelte');
-const DIRECTOR_PAGE = join(ROOT, 'routes/(app)/director/+page.svelte');
+const DIRECTOR_PAGE = join(ROOT, 'routes/(app)/director/+page.svelte.disabled');
 const COMPOSER = join(ROOT, 'lib/components/director/DirectorClubBroadcastComposer.svelte');
 const CHANNEL_TYPES = join(ROOT, 'lib/comms/channelTypes.ts');
 

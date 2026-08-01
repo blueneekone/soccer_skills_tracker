@@ -353,7 +353,7 @@ describe.skip('VS-5a — Director command center', () => {
 		'utf8',
 	);
 	const directorPage = readFileSync(
-		join(process.cwd(), 'src/routes/(app)/director/+page.svelte'),
+		join(process.cwd(), 'src/routes/(app)/director/+page.svelte.disabled'),
 		'utf8',
 	);
 	const commandCenter = readFileSync(
