@@ -18,8 +18,9 @@
 <div class="bento-grid bento-grid--12col bento-grid--liquid tw-grid tw-grid-cols-1 lg:tw-grid-cols-12 tw-gap-6">
 	<!-- Main Arena spans 8 columns -->
 	<div class="bento-span-8 lg:tw-col-span-8 tw-bg-[#0f172a] tw-rounded-[var(--radius-premium,24px)] tw-border tw-border-[#334155] tw-flex tw-flex-col tw-overflow-hidden">
-		<div class="tw-p-4 tw-border-b tw-border-[#334155]">
+		<div class="tw-p-4 tw-border-b tw-border-[#334155] tw-flex tw-justify-between tw-items-center">
 			<h2 class="tw-text-white tw-font-bold tw-text-lg">Drill Designer</h2>
+			<span class="tw-text-xs tw-text-[#94a3b8] tw-font-mono">Spatial Layout</span>
 		</div>
 		<div class="tw-p-4 tw-flex-1">
 			<DrillDesignerArena {engine} />

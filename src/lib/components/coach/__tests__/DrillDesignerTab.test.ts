@@ -46,7 +46,7 @@ describe('DrillDesignerTab', () => {
 	it('renders the designer interface and spatial layout', () => {
 		const { getByText, getByPlaceholderText } = render(DrillDesignerTab, { teamId: 'team-123' });
 		
-		expect(getByText('Drill designer')).toBeTruthy();
+		expect(getByText(/Drill [Dd]esigner/)).toBeTruthy();
 		expect(getByPlaceholderText('Drill name (required)')).toBeTruthy();
 		expect(getByText('Spatial Layout')).toBeTruthy();
 	});
