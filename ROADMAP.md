@@ -48,7 +48,7 @@ All data collection must pass through these legal gates before a user accesses t
 
 #### ⚙️ PART 3: THE SEVEN EMPIRE OPERATING SYSTEMS
 
-[x] ##### 🚀 EPIC 1: GLOBAL ADMIN OS (THE COMMAND PLANE)
+##### 🚀 EPIC 1: GLOBAL ADMIN OS (THE COMMAND PLANE)
 **Mission:** Total multi-tenant infrastructure control, absolute observability, and system safety [cite: 754].
 *   **Account Impersonation:** Securely mint custom JWT tokens to troubleshoot Commissioner/Director accounts without exposing passwords [cite: 754].
 *   **Telemetry Single Pane:** Aggregated read-only dashboard pulling MAU and Stripe Connect Revenue metrics to defuse NoSQL read-bombs [cite: 754].

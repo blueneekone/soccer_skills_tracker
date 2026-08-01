@@ -10,6 +10,8 @@ describe('Coach Clearance Read', () => {
     testEnv = await initializeTestEnvironment({
       projectId: 'sst-sprint-13-rules',
       firestore: {
+        host: '127.0.0.1',
+        port: 8080,
         rules: readFileSync('firestore.rules', 'utf8')
       },
     });
