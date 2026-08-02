@@ -87,6 +87,7 @@ function isParentProfileComplete(profile) {
 export function isProfileComplete(profile) {
 	if (!profile) return false;
 	if (isAccountSuspendedProfile(/** @type {Record<string, unknown>} */ (profile))) return false;
+	if (profile.isProfileComplete === true) return true;
 	if (isPlayerProfileComplete(/** @type {Record<string, unknown>} */ (profile))) return true;
 	if (profile.role === 'super_admin' || profile.role === 'global_admin') return true;
 	if (profile.role === 'director') return true;

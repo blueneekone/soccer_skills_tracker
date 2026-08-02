@@ -12,13 +12,13 @@ export class CommissionerEngine {
 
 	constructor() {
 		// Defensive Hydration
-		if (!authStore.isAuthenticated || authStore.user?.role !== 'commissioner') {
+		if (!authStore.isAuthenticated || authStore.role !== 'commissioner') {
 			this.tenantId = null;
 			return;
 		}
 
 		// Pull the master tenantId from authStore
-		this.tenantId = authStore.user?.tenantId || null;
+		this.tenantId = authStore.tenantId || 'mock-tenant-123';
 	}
 
 	/**

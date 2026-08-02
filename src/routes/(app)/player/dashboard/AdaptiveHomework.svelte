@@ -301,9 +301,10 @@
 
 			<button
 				type="button"
+				data-primary-cta
 				class="tw-w-full tw-py-2.5 tw-rounded-xl tw-font-mono tw-text-[10px] tw-tracking-widest
-				       tw-uppercase tw-border tw-border-teal-500/35 tw-text-teal-400 tw-bg-teal-500/10
-				       hover:tw-bg-teal-500/20 tw-transition-colors"
+				       tw-uppercase tw-border tw-border-amber-400/35 tw-text-amber-400 tw-bg-amber-400/10
+				       hover:tw-bg-amber-400/20 tw-transition-colors"
 				disabled={!suggestedDrill}
 				onclick={logOnTrain}
 			>

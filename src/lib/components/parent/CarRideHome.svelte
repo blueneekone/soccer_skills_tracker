@@ -64,7 +64,7 @@
 			</div>
 
 			{#if countdown}
-				<div class="tw-text-[#f59e0b] tw-font-mono tw-text-sm tw-tracking-widest tw-mb-6 tw-animate-pulse">
+				<div class="car-ride-home-timer tw-text-[#f59e0b] tw-font-mono tw-text-sm tw-tracking-widest tw-mb-6 tw-animate-pulse">
 					UNLOCKS IN {countdown}
 				</div>
 			{/if}

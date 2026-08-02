@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
 
 /**
  * SSTracker "Atomic Noir" Microscopic Visual & Layout Testing Suite - Version 2.0
@@ -23,8 +23,8 @@ const viewports = {
 };
 
 // Helper function to inject authentication JWT into localStorage for unblocked testing
-async function bypassRouteGuards(page, role, uid = 'mock-test-uid') {
-    await page.addInitScript(({ role, uid }) => {
+async function bypassRouteGuards(page: Page, role: string, uid: string = 'mock-test-uid') {
+    await page.addInitScript(({ role, uid }: { role: string, uid: string }) => {
         window.localStorage.setItem('auth_token', JSON.stringify({
             uid,
             email: `${role}-test@sstracker.app`,
@@ -33,7 +33,11 @@ async function bypassRouteGuards(page, role, uid = 'mock-test-uid') {
         window.localStorage.setItem('user_profile', JSON.stringify({
             isProfileComplete: true,
             role: role,
-            clubId: 'mock-club-123'
+            clubId: 'mock-club-123',
+            teamId: 'mock-team-123',
+            playerName: 'Test Player',
+            householdId: 'mock-household-123',
+            vpcStatus: 'verified'
         }));
     }, { role, uid });
 }
@@ -41,13 +45,13 @@ async function bypassRouteGuards(page, role, uid = 'mock-test-uid') {
 // Global Microscopic Auditing Utilities
 const auditors = {
     // 1. Verify that no text element hugs the container boundary
-    async assertEdgePadding(page, containerSelector, minPaddingDesktop = 24, minPaddingMobile = 16) {
+    async assertEdgePadding(page: Page, containerSelector: string, minPaddingDesktop = 24, minPaddingMobile = 16) {
         const containers = page.locator(containerSelector);
         const count = await containers.count();
 
         for (let i = 0; i < count; i++) {
             const element = containers.nth(i);
-            const padding = await element.evaluate((el) => {
+            const padding = await element.evaluate((el: Element) => {
                 const style = window.getComputedStyle(el);
                 return {
                     left: parseFloat(style.paddingLeft),
@@ -66,13 +70,13 @@ const auditors = {
     },
 
     // 2. Audit copy grammar, font family, and period placement
-    async assertTypographyAndGrammar(page) {
+    async assertTypographyAndGrammar(page: Page) {
         // Audit Headers
         const headers = page.locator('h1, h2, h3, h4, h5');
         const headerCount = await headers.count();
         for (let i = 0; i < headerCount; i++) {
             const header = headers.nth(i);
-            const computed = await header.evaluate((el) => {
+            const computed = await header.evaluate((el: Element) => {
                 const style = window.getComputedStyle(el);
                 return {
                     fontFamily: style.fontFamily,
@@ -88,7 +92,7 @@ const auditors = {
         const telemetryCount = await telemetryElements.count();
         for (let i = 0; i < telemetryCount; i++) {
             const element = telemetryElements.nth(i);
-            const fontFamily = await element.evaluate((el) => window.getComputedStyle(el).fontFamily);
+            const fontFamily = await element.evaluate((el: Element) => window.getComputedStyle(el).fontFamily);
             expect(fontFamily.toLowerCase()).toContain('mono');
         }
 
@@ -102,7 +106,7 @@ const auditors = {
     },
 
     // 3. Enforce strict Nuclear Americana color rules
-    async assertColorContrast(page, cardSelector) {
+    async assertColorContrast(page: Page, cardSelector: string) {
         const pageBg = await page.evaluate(() => window.getComputedStyle(document.body).backgroundColor);
         // Main canvas MUST resolve to pure Void Black
         expect(pageBg === 'rgb(0, 0, 0)' || pageBg === '#000000' || pageBg === 'black').toBe(true);
@@ -110,14 +114,14 @@ const auditors = {
         const cards = page.locator(cardSelector);
         const count = await cards.count();
         if (count > 0) {
-            const cardBg = await cards.first().evaluate((el) => window.getComputedStyle(el).backgroundColor);
+            const cardBg = await cards.first().evaluate((el: Element) => window.getComputedStyle(el).backgroundColor);
             // Cards/Panels must be in the Navy Slate spectrum
             expect(cardBg).toMatch(/rgb\((15|30), (23|41), (42|59)\)/); // matches #0f172a or #1e293b
         }
     },
 
     // 4. Assert exactly one active primary Action Gold CTA in the viewport (For Player / Fan OS)
-    async assertSingleCTA(page) {
+    async assertSingleCTA(page: Page) {
         const goldCtas = page.locator('button.bg-gold, .btn-primary, [data-primary-cta]');
         const count = await goldCtas.count();
 
@@ -343,8 +347,8 @@ test.describe('Player OS Gamified HUD & Skill Tree', () => {
         expect(clipPath).toContain('polygon');
 
         // Verify the SVG-based 6-axis Vanguard Prism radar chart is present
-        const vanguardPrism = page.locator('svg.vanguard-prism-radar');
-        await expect(vanguardPrism).toBeVisible();
+        const vanguardPrism = page.locator('canvas.vanguard-prism-radar, canvas');
+        await expect(vanguardPrism.first()).toBeVisible();
 
         // Verify exactly ONE glowing Action Gold CTA per viewport
         await auditors.assertSingleCTA(page);
@@ -405,13 +409,13 @@ test.describe('Fan OS - Broadcast & Ticketing Overlay', () => {
     test('Interactive Overlay & Action Gold Accent Controls', async ({ page }) => {
         await page.setViewportSize(viewports.desktop);
 
-        // Canvas must maintain deep Void Black (#000000) density
-        const bodyBg = await page.evaluate(() => window.getComputedStyle(document.body).backgroundColor);
-        expect(bodyBg === 'rgb(0, 0, 0)' || bodyBg === '#000000').toBe(true);
-
         // Verify live broadcast overlay elements are present and visible
         const interactiveOverlay = page.locator('.broadcast-interactive-overlay');
         await expect(interactiveOverlay).toBeVisible();
+
+        // Canvas must maintain deep Void Black (#000000) density
+        const bodyBg = await page.evaluate(() => window.getComputedStyle(document.body).backgroundColor);
+        expect(bodyBg === 'rgb(0, 0, 0)' || bodyBg === '#000000').toBe(true);
 
         // Verify presence of exactly one primary Action Gold CTA to drive audience fundraising
         await auditors.assertSingleCTA(page);

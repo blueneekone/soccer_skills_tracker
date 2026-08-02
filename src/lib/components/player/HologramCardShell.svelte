@@ -88,10 +88,11 @@
 	onpointerleave={onPointerLeave}
 >
 	<div
-		class="hcs-card"
+		class="hcs-card chamfered-card"
 		class:hcs-card--has-telemetry={Boolean(telemetry)}
 		style:transform={cardTransform}
 		style:transition={cardTransition}
+		style:clip-path="polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px)"
 	>
 		<div class="hcs-edge" aria-hidden="true"></div>
 		<div class="hcs-scanlines" aria-hidden="true"></div>

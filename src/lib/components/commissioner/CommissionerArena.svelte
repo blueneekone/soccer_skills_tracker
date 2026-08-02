@@ -10,7 +10,7 @@
 	let engine = new CommissionerEngine();
 </script>
 
-<div class="tenant-matrix-grid w-full h-full p-4 overflow-y-auto">
+<div data-panel="compliance-matrix" class="tenant-matrix-grid federation-matrix-grid w-full h-full p-4 overflow-y-auto">
 	<div
 		class="grid gap-4"
 		style="grid-template-columns: repeat(auto-fit, minmax(min(100%, clamp(280px, 30vw, 350px)), 1fr));"
@@ -46,11 +46,11 @@
 								<tr class="border-b border-[#334155] border-opacity-30">
 									<td class="py-2 px-1 uppercase">{item.clubId}</td>
 									<td class="py-2 px-1">
-										<span class="px-2 py-0.5 rounded-none {item.complianceStatus === 'green' ? 'bg-[#14b8a6] text-black' : 'bg-[#fbbf24] text-black'}">
+										<span class="px-2 py-0.5 rounded-none status-dot-indicator {item.complianceStatus === 'green' ? 'bg-[#14b8a6] text-black' : 'bg-[#fbbf24] text-black'}">
 											{item.complianceStatus.toUpperCase()}
 										</span>
 									</td>
-									<td class="py-2 px-1 text-right text-[#14b8a6]">{item.safeSportRate}%</td>
+									<td class="py-2 px-1 text-right text-[#14b8a6] tw-font-mono odp-analytics-val">{item.safeSportRate}%</td>
 								</tr>
 							{/each}
 						{/await}

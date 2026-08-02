@@ -82,6 +82,7 @@
 
 			<a
 				href="/login"
+				data-primary-cta="true"
 				class="vanguard-btn-amber tw-w-fit tw-flex tw-items-center tw-gap-3 tw-px-8 tw-py-4 tw-font-mono tw-font-bold tw-text-sm tw-uppercase tw-tracking-wider tw-transition-all tw-duration-150 active:tw-scale-[0.98]"
 			>
 				Deploy Your Club
@@ -132,8 +133,8 @@
 		<!-- Symmetric: 4 / 4 / 4 column weighting -->
 		<div class="tw-grid tw-grid-cols-1 md:tw-grid-cols-12 tw-gap-4 md:tw-gap-6">
 			{#each features as feat}
-				<div data-bento={feat.bento} class="tw-col-span-1 {feat.cols} tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-p-8 hover:tw-border-[#334155] tw-transition-colors tw-duration-150 tw-flex tw-flex-col tw-relative tw-group tw-overflow-hidden bento-well"
-					style="clip-path: polygon(12px 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%, 0 12px); padding: 32px;"
+				<div data-bento={feat.bento} class="tw-col-span-1 {feat.cols} tw-bg-slate-900 tw-border tw-border-[#334155] tw-p-8 hover:tw-border-[#334155] tw-transition-colors tw-duration-150 tw-flex tw-flex-col tw-relative tw-group tw-overflow-hidden bento-well"
+					style="background-color: #0f172a; clip-path: polygon(12px 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%, 0 12px); padding: 32px;"
 				>
 					<!-- Ambient glow on hover -->
 					<div class="tw-absolute tw-inset-0 tw-opacity-0 group-hover:tw-opacity-100 tw-transition-opacity tw-duration-300 tw-pointer-events-none" style="background: radial-gradient(ellipse at top left, {feat.accent}0a 0%, transparent 70%);"></div>

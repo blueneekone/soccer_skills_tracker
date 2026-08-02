@@ -150,7 +150,7 @@
 				<div data-card="revenue" class="director-card revenue-engine-analytics dark-form-surface tw-border tw-border-slate-700 tw-bg-slate-900/80 tw-p-4 tw-rounded-none" style="border-radius: 0px !important;">
 					<div class="tw-flex tw-justify-between tw-items-center tw-mb-2">
 						<h3 class="tw-font-mono tw-text-xs tw-text-teal-400 tw-uppercase tw-tracking-widest">Revenue Engine</h3>
-						<div class="compliance-status-dot tw-w-2 tw-h-2 tw-rounded-full tw-bg-emerald-500"></div>
+						<div class="compliance-status-dot tw-bg-emerald-500" style="width: 8px; height: 8px; border-radius: 50%; display: block;"></div>
 					</div>
 					<div class="tw-text-slate-300 tw-text-sm tw-min-w-0">Club Revenue Analytics Offline</div>
 				</div>
@@ -159,7 +159,7 @@
 				<div data-card="roster" class="director-card roster-hierarchy-tree dark-form-surface tw-border tw-border-slate-700 tw-bg-slate-900/80 tw-p-4 tw-rounded-none" style="border-radius: 0px !important;">
 					<div class="tw-flex tw-justify-between tw-items-center tw-mb-2">
 						<h3 class="tw-font-mono tw-text-xs tw-text-teal-400 tw-uppercase tw-tracking-widest">Roster Hierarchy</h3>
-						<div class="compliance-status-dot tw-w-2 tw-h-2 tw-rounded-full tw-bg-emerald-500"></div>
+						<div class="compliance-status-dot tw-bg-emerald-500" style="width: 8px; height: 8px; border-radius: 50%; display: block;"></div>
 					</div>
 					<div class="tw-text-slate-300 tw-text-sm tw-min-w-0">God-Mode Tree Offline</div>
 				</div>
