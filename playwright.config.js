@@ -4,8 +4,13 @@
 import { defineConfig, devices } from '@playwright/test';
 
 export default defineConfig({
-  // Directory where Playwright searches for test specifications
-  testDir: './e2e',
+  // Directory where Playwright searches for test specifications.
+  // Configured to search both your legacy ./e2e and the new ./tests folder for visual-regression specs.
+  testDir: '.',
+  testMatch: [
+    'e2e/**/*.spec.{js,ts}',
+    'tests/**/*.spec.{js,ts}'
+  ],
 
   // Maximum time one test can run (30 seconds)
   timeout: 30 * 1000,
@@ -16,8 +21,8 @@ export default defineConfig({
     
     // Configure threshold for visual pixel comparison (Visual Regression check)
     toHaveScreenshot: {
-      maxDiffPixels: 100, // Strict threshold for 12-column alignment checks
-      threshold: 0.2,     // Sensible color sensitivity gate to catch palette drift
+      maxDiffPixels: 100, // Strict threshold for 12-column alignment checks [cite: 610]
+      threshold: 0.2,     // Sensible color sensitivity gate to catch palette drift [cite: 610]
     },
   },
 
@@ -48,7 +53,7 @@ export default defineConfig({
     // Collect trace when retrying a failed test
     trace: 'on-first-retry',
 
-    // Automatically record visual evidence to feed our CRO review folders
+    // Automatically record visual evidence to feed our CRO review folders [cite: 930]
     screenshot: 'only-on-failure',
     video: {
       mode: 'retain-on-failure', // Keeps video recordings of failed visual layouts
@@ -57,26 +62,27 @@ export default defineConfig({
   },
 
   // Configure projects for major responsive viewports to test our "Anti-Squish" fluid clamp layout physics
+  // Hardened to strict 16:9 widescreen aspect ratios matching your visual-regression suite expectations
   projects: [
     {
       name: 'desktop-chrome',
       use: {
         ...devices['Desktop Chrome'],
-        viewport: { width: 1280, height: 800 },
+        viewport: { width: 1280, height: 720 }, // Strict 16:9 HD widescreen viewport [cite: 1144]
       },
     },
     {
       name: 'tablet-portrait',
       use: {
         ...devices['iPad Mini'],
-        viewport: { width: 768, height: 1024 },
+        viewport: { width: 768, height: 1024 }, // Preserved portrait viewport matching spec expectations
       },
     },
     {
       name: 'mobile-portrait',
       use: {
         ...devices['iPhone 14'],
-        viewport: { width: 375, height: 812 },
+        viewport: { width: 375, height: 667 }, // Strict 16:9 portrait equivalent mobile viewport [cite: 1144]
       },
     },
   ],
