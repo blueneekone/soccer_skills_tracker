@@ -79,7 +79,7 @@ All data collection must pass through these legal gates before a user accesses t
 *   **40% Void Black Gaming HUD:** Cinematic operative command deck utilizing chamfered clip-path corners [cite: 757].
 *   **Biometric Digital Twin & TCG Cards:** 5:7 aspect ratio "Ultimate Team" player cards dynamically generated from verified 1000Hz physical data [cite: 757].
 *   **Vanguard Prism Charts:** 6-axis radar charts tracking the "Scout's Six" physical attributes [cite: 757].
-*   **The Dopamine Engine:** Dynamic streak counters with 2% daily skill decay. `canvas-confetti` particle explosions firing STRICTLY on verified backend database commits to prevent spoofing [cite: 757, 1187].
+*   [x] **The Dopamine Engine:** Dynamic streak counters with 2% daily skill decay. `canvas-confetti` particle explosions firing STRICTLY on verified backend database commits to prevent spoofing [cite: 757, 1187].
 *   **Premium Video Trials & Escrow Sponsorships:** 50MB-capped upload pipelines where Computer Vision verification triggers real-world escrow payouts from local brands [cite: 757].
 
 ##### 🛡️ EPIC 5: PARENT OS & RECRUITER MARKETPLACE (THE SHIELD)

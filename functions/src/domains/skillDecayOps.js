@@ -1,0 +1,68 @@
+const { onCall, HttpsError } = require('firebase-functions/v2/https');
+const { getAdminDb } = require('../utils/adminDb.js');
+
+exports.applySkillDecay = onCall({ enforceAppCheck: true }, async (request) => {
+  const uid = request.auth?.uid;
+  if (!uid) throw new HttpsError('unauthenticated', 'Auth required.');
+
+  const db = getAdminDb();
+  const usersQuery = await db.collection('users').where('uid', '==', uid).limit(1).get();
+  const docRef = usersQuery.empty ? db.collection('users').doc(uid) : usersQuery.docs[0].ref;
+
+  const snap = await docRef.get();
+  if (!snap.exists) return { applied: false, reason: 'no_stats' };
+
+  const data = snap.data();
+  const armory = data.armory || {};
+  const lastActiveStr = armory.lastActiveUtc || null;
+  const lastActiveDateObj = lastActiveStr ? new Date(lastActiveStr) : null;
+
+  if (!lastActiveDateObj) return { applied: false, reason: 'no_last_active' };
+
+  const today = new Date();
+  const diffDays = Math.floor((today - lastActiveDateObj) / (1000 * 60 * 60 * 24));
+
+  if (diffDays < 5) return { applied: false, daysInactive: diffDays };
+
+  const currentXp = typeof armory.totalXP === 'number' ? armory.totalXP : 0;
+  const streakFreeze = armory.streakFreeze || {};
+  const freezeCount = typeof streakFreeze.available === 'number' ? streakFreeze.available : 0;
+
+  if (freezeCount > 0) {
+    await docRef.update({
+      'armory.streakFreeze.available': freezeCount - 1,
+      'armory.streakFreeze.consumedAt': today.toISOString()
+    });
+    return { applied: false, reason: 'freeze_consumed', freezesLeft: freezeCount - 1 };
+  }
+
+  const DECAY_RATE = 0.02;
+  const decayMultiplier = Math.min(diffDays - 4, 30);
+  const xpLost = Math.floor(currentXp * DECAY_RATE * decayMultiplier);
+  const newXp = Math.max(0, currentXp - xpLost);
+
+  const stats = armory.stats || {};
+  const decayedStats = { ...(stats.scoutsSix || {}) };
+  const axes = ['PAC', 'ACC', 'AGI', 'STM', 'POW', 'VAN'];
+
+  for (const axis of axes) {
+    if (decayedStats[axis] && decayedStats[axis] !== '—') {
+      let val = parseFloat(decayedStats[axis]);
+      if (!isNaN(val)) {
+        val = Math.floor(val * 0.98 * 100) / 100;
+        if (val < 0) val = 0;
+        decayedStats[axis] = val.toString();
+      }
+    }
+  }
+
+  await docRef.update({
+    'armory.totalXP': newXp,
+    'armory.stats.scoutsSix': decayedStats,
+    'armory.decayState.lastDecayApplied': today.toISOString(),
+    'armory.decayState.lastDecayLost': xpLost,
+    'armory.currentStreak': 0,
+  });
+
+  return { applied: true, xpLost, newXp, daysInactive: diffDays };
+});
