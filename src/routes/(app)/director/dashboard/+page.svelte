@@ -147,14 +147,20 @@
 			
 			<div class="director-hud-grid bento-span-12 tw-grid tw-gap-4 tw-mt-6" style="grid-template-columns: repeat(auto-fit, minmax(min(100%, clamp(280px, 30vw, 350px)), 1fr));">
 				<!-- Club Revenue Analytics -->
-				<div class="revenue-engine-analytics dark-form-surface tw-border tw-border-slate-700 tw-bg-slate-900/80 tw-p-4 tw-rounded-none">
-					<h3 class="tw-font-mono tw-text-xs tw-text-teal-400 tw-mb-2 tw-uppercase tw-tracking-widest">Revenue Engine</h3>
+				<div data-card="revenue" class="director-card revenue-engine-analytics dark-form-surface tw-border tw-border-slate-700 tw-bg-slate-900/80 tw-p-4 tw-rounded-none" style="border-radius: 0px !important;">
+					<div class="tw-flex tw-justify-between tw-items-center tw-mb-2">
+						<h3 class="tw-font-mono tw-text-xs tw-text-teal-400 tw-uppercase tw-tracking-widest">Revenue Engine</h3>
+						<div class="compliance-status-dot tw-w-2 tw-h-2 tw-rounded-full tw-bg-emerald-500"></div>
+					</div>
 					<div class="tw-text-slate-300 tw-text-sm tw-min-w-0">Club Revenue Analytics Offline</div>
 				</div>
 
 				<!-- God-Mode Club Roster Tree -->
-				<div class="roster-hierarchy-tree dark-form-surface tw-border tw-border-slate-700 tw-bg-slate-900/80 tw-p-4 tw-rounded-none">
-					<h3 class="tw-font-mono tw-text-xs tw-text-teal-400 tw-mb-2 tw-uppercase tw-tracking-widest">Roster Hierarchy</h3>
+				<div data-card="roster" class="director-card roster-hierarchy-tree dark-form-surface tw-border tw-border-slate-700 tw-bg-slate-900/80 tw-p-4 tw-rounded-none" style="border-radius: 0px !important;">
+					<div class="tw-flex tw-justify-between tw-items-center tw-mb-2">
+						<h3 class="tw-font-mono tw-text-xs tw-text-teal-400 tw-uppercase tw-tracking-widest">Roster Hierarchy</h3>
+						<div class="compliance-status-dot tw-w-2 tw-h-2 tw-rounded-full tw-bg-emerald-500"></div>
+					</div>
 					<div class="tw-text-slate-300 tw-text-sm tw-min-w-0">God-Mode Tree Offline</div>
 				</div>
 			</div>

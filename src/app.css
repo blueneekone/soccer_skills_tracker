@@ -28,3 +28,7 @@
   0%, 100% { filter: drop-shadow(0 0 4px #14b8a6); opacity: 0.8; }
   50% { filter: drop-shadow(0 0 10px #14b8a6); opacity: 1; }
 }
+
+body, .app-shell, .ec-canvas { background-color: #000000 !important; }
+
+.tw-font-mono { font-family: 'Geist Mono', monospace !important; }

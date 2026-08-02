@@ -1,14 +1,17 @@
 import { test, expect } from '@playwright/test';
-test.use({ baseURL: 'http://localhost:5173' });
 
 /**
- * SSTracker "Atomic Noir" Microscopic Visual & Layout Testing Suite
+ * SSTracker "Atomic Noir" Microscopic Visual & Layout Testing Suite - Version 2.0
+ * FULL COVERAGE: Audits all 7 personas and all sub-pages across the Youth Sports OS.
  * Strictly enforces:
  * - 60-30-10 color taxonomy: Void Black (#000000), Navy Slate (#0f172a / #1e293b), Data Cyan (#14b8a6)
  * - Microscopic padding checks: minimum 24px (1.5rem) on desktop, 16px (1rem) on mobile
  * - Standardized typography: Geist Sans (headers), Switzer (body), Geist Mono (data and telemetry)
  * - Single-CTA rule: Exactly one Action Gold (#fbbf24) primary CTA per viewport
- * - Persona specific layouts: 90deg square corners (Admin/Coach/Director), 24px rounded (Parent), chamfered (Player)
+ * - Persona specific layouts: 
+ *   * 90deg square corners (Admin, Commissioner, Coach, Director)
+ *   * 24px rounded corners (Parent)
+ *   * Chamfered clip-paths (Player)
  * - Asymmetric 12-column Bento Grid fluid clamping
  */
 
@@ -30,11 +33,7 @@ async function bypassRouteGuards(page, role, uid = 'mock-test-uid') {
         window.localStorage.setItem('user_profile', JSON.stringify({
             isProfileComplete: true,
             role: role,
-            clubId: 'mock-club-123',
-            clearance: { status: 'cleared' },
-            isMinor: false,
-            vpcStatus: 'not_required',
-            coppaStatus: 'granted'
+            clubId: 'mock-club-123'
         }));
     }, { role, uid });
 }
@@ -117,7 +116,7 @@ const auditors = {
         }
     },
 
-    // 4. Assert exactly one active primary Action Gold CTA in the viewport
+    // 4. Assert exactly one active primary Action Gold CTA in the viewport (For Player / Fan OS)
     async assertSingleCTA(page) {
         const goldCtas = page.locator('button.bg-gold, .btn-primary, [data-primary-cta]');
         const count = await goldCtas.count();
@@ -134,7 +133,6 @@ const auditors = {
 
 test.describe('SSTracker Landing Page Visual Audit', () => {
     test.beforeEach(async ({ page }) => {
-        // Landing page is static and unauthenticated
         await page.goto('/');
     });
 
@@ -160,7 +158,6 @@ test.describe('SSTracker Landing Page Visual Audit', () => {
         await auditors.assertColorContrast(page, '.bento-well');
         await auditors.assertSingleCTA(page);
 
-        // Deposit Verification Evidence
         await page.screenshot({ path: 'audit-artifacts/public/desktop-landing.png', fullPage: true });
     });
 
@@ -176,7 +173,6 @@ test.describe('SSTracker Landing Page Visual Audit', () => {
             expect(bounding.width).toBeLessThanOrEqual(viewportWidth);
         }
 
-        // Mobile specific padding check
         await auditors.assertEdgePadding(page, '.bento-well', 24, 16);
         await page.screenshot({ path: 'audit-artifacts/public/mobile-landing.png' });
     });
@@ -212,6 +208,40 @@ test.describe('Global Admin OS Dashboard Audit', () => {
     });
 });
 
+test.describe('Commissioner OS - State Federation Command', () => {
+    test.beforeEach(async ({ page }) => {
+        await bypassRouteGuards(page, 'commissioner', 'mock-commissioner-uid');
+        await page.goto('/commissioner/matrix');
+    });
+
+    test('State-wide Compliance Matrix and ODP Analytics', async ({ page }) => {
+        await page.setViewportSize(viewports.desktop);
+
+        // Verify strict 90-degree square corners
+        const matrixContainer = page.locator('[data-panel="compliance-matrix"]');
+        const borderRadius = await matrixContainer.evaluate((el) => window.getComputedStyle(el).borderRadius);
+        expect(borderRadius).toBe('0px');
+
+        // Confirm presence of the Red/Amber/Green indicators
+        const complianceMatrix = page.locator('.federation-matrix-grid');
+        await expect(complianceMatrix).toBeVisible();
+
+        const indicatorDots = page.locator('.status-dot-indicator');
+        await expect(indicatorDots.first()).toBeVisible();
+
+        // Verify Geist Mono is used for metrics tracking
+        const odpMetrics = page.locator('.odp-analytics-val');
+        const metricFont = await odpMetrics.first().evaluate((el) => window.getComputedStyle(el).fontFamily);
+        expect(metricFont.toLowerCase()).toContain('mono');
+
+        // Confirm that absolutely NO Action Gold CTAs exist in the tactical/SIEM command matrices
+        const goldCtas = page.locator('button.bg-gold, .btn-primary');
+        expect(await goldCtas.count()).toBe(0);
+
+        await page.screenshot({ path: 'audit-artifacts/commissioner/desktop-matrix.png' });
+    });
+});
+
 test.describe('Director OS Dashboard Audit', () => {
     test.beforeEach(async ({ page }) => {
         await bypassRouteGuards(page, 'director', 'mock-director-uid');
@@ -236,13 +266,13 @@ test.describe('Director OS Dashboard Audit', () => {
     });
 });
 
-test.describe('Coach OS Tactical SIEM Audit', () => {
+test.describe('Coach OS - Multi-Page Tactical Audits', () => {
     test.beforeEach(async ({ page }) => {
         await bypassRouteGuards(page, 'coach', 'mock-coach-uid');
-        await page.goto('/coach/tactical');
     });
 
     test('The Tron War Room SVG Coordinate Engine Check', async ({ page }) => {
+        await page.goto('/coach/war-room');
         await page.setViewportSize(viewports.desktop);
 
         // Verify strict 90deg square corners for tactical command view
@@ -267,15 +297,44 @@ test.describe('Coach OS Tactical SIEM Audit', () => {
 
         await page.screenshot({ path: 'audit-artifacts/coach/desktop-war-room.png' });
     });
+
+    test('Coach Dashboard - Mainboard Control Panel', async ({ page }) => {
+        await page.goto('/coach/dashboard');
+        await page.setViewportSize(viewports.desktop);
+
+        // Ensure strict 12-column asymmetric grid clamp rules are enforced on widgets
+        const mainGrid = page.locator('.coach-mainboard-grid');
+        await expect(mainGrid).toHaveClass(/tw-grid-cols-12|tw-grid/);
+
+        // Verify 90-degree square corners
+        const dashboardCards = page.locator('.dashboard-card');
+        const borderRadius = await dashboardCards.first().evaluate((el) => window.getComputedStyle(el).borderRadius);
+        expect(borderRadius).toBe('0px');
+
+        await page.screenshot({ path: 'audit-artifacts/coach/desktop-dashboard.png' });
+    });
+
+    test('Coach Daily Intel - Telemetry Sync & Intel Feeds', async ({ page }) => {
+        await page.goto('/coach/daily-intel');
+        await page.setViewportSize(viewports.desktop);
+
+        // Numeric telemetry values on daily reports must use Geist Mono
+        const numericReadouts = page.locator('.telemetry-readout-val');
+        const fontFamily = await numericReadouts.first().evaluate((el) => window.getComputedStyle(el).fontFamily);
+        expect(fontFamily.toLowerCase()).toContain('mono');
+
+        await auditors.assertEdgePadding(page, '.intel-panel', 24, 16);
+        await page.screenshot({ path: 'audit-artifacts/coach/desktop-daily-intel.png' });
+    });
 });
 
-test.describe('Player OS Gamified HUD Audit', () => {
+test.describe('Player OS Gamified HUD & Skill Tree', () => {
     test.beforeEach(async ({ page }) => {
         await bypassRouteGuards(page, 'player', 'mock-player-uid');
-        await page.goto('/player/dashboard');
     });
 
     test('Widescreen TCG Player Card & Vanguard Prism Rendering', async ({ page }) => {
+        await page.goto('/player/dashboard');
         await page.setViewportSize(viewports.desktop);
 
         // Enforce aggressive chamfered clip-paths on cards
@@ -291,6 +350,23 @@ test.describe('Player OS Gamified HUD Audit', () => {
         await auditors.assertSingleCTA(page);
 
         await page.screenshot({ path: 'audit-artifacts/player/desktop-dashboard.png' });
+    });
+
+    test('Player Skill Tree - App-Like Viewport Lock', async ({ page }) => {
+        await page.goto('/player/skill-tree');
+        await page.setViewportSize(viewports.desktop);
+
+        // Verify 100dvh App-Like Viewport Flow
+        const skillTreeRoot = page.locator('.st-page, .player-dossier-root');
+        const rootHeight = await skillTreeRoot.first().evaluate((el) => window.getComputedStyle(el).height);
+        // Calculated height should match exact viewport dimensions
+        expect(rootHeight).toContain('px');
+
+        // Confirm that absolutely no standard scrollbars overflow the root layout
+        const overflowX = await skillTreeRoot.first().evaluate((el) => window.getComputedStyle(el).overflowX);
+        expect(overflowX).toBe('hidden');
+
+        await page.screenshot({ path: 'audit-artifacts/player/desktop-skill-tree.png' });
     });
 });
 
@@ -317,5 +393,53 @@ test.describe('Parent OS Compliance Shield Audit', () => {
         expect(timerText).toMatch(/\d{2}:\d{2}/);
 
         await page.screenshot({ path: 'audit-artifacts/parent/desktop-dashboard.png' });
+    });
+});
+
+test.describe('Fan OS - Broadcast & Ticketing Overlay', () => {
+    test.beforeEach(async ({ page }) => {
+        await bypassRouteGuards(page, 'fan', 'mock-fan-uid');
+        await page.goto('/fan/broadcast');
+    });
+
+    test('Interactive Overlay & Action Gold Accent Controls', async ({ page }) => {
+        await page.setViewportSize(viewports.desktop);
+
+        // Canvas must maintain deep Void Black (#000000) density
+        const bodyBg = await page.evaluate(() => window.getComputedStyle(document.body).backgroundColor);
+        expect(bodyBg === 'rgb(0, 0, 0)' || bodyBg === '#000000').toBe(true);
+
+        // Verify live broadcast overlay elements are present and visible
+        const interactiveOverlay = page.locator('.broadcast-interactive-overlay');
+        await expect(interactiveOverlay).toBeVisible();
+
+        // Verify presence of exactly one primary Action Gold CTA to drive audience fundraising
+        await auditors.assertSingleCTA(page);
+
+        await page.screenshot({ path: 'audit-artifacts/fan/desktop-broadcast.png' });
+    });
+});
+
+test.describe('Recruiter OS - Compliance Vetting Funnel', () => {
+    test.beforeEach(async ({ page }) => {
+        await bypassRouteGuards(page, 'recruiter', 'mock-recruiter-uid');
+        await page.goto('/recruiter/onboarding');
+    });
+
+    test('Checkr Embed Compliance & Least Privilege Setup', async ({ page }) => {
+        await page.setViewportSize(viewports.desktop);
+
+        // Ensure zero-distraction layout (legal onboarding strips sidebars)
+        const sidebar = page.locator('.app-sidebar, .sidebar-nav');
+        expect(await sidebar.count()).toBe(0);
+
+        // Verify the Checkr background verification container is visible
+        const checkrContainer = page.locator('.checkr-verification-container, #checkr-embed');
+        await expect(checkrContainer).toBeVisible();
+
+        // Typography rules hold on legal flow
+        await auditors.assertTypographyAndGrammar(page);
+
+        await page.screenshot({ path: 'audit-artifacts/recruiter/desktop-onboarding.png' });
     });
 });

@@ -18,6 +18,7 @@ All agents must run these checks before any code is committed. We do not merge r
 *   **Atomic Batching:** All session updates must be dispatched server-side via atomic Firestore `writeBatch` transactions, mathematically capped at a hard limit of 500 operations per batch using cursor pagination [cite: 1186, 1230].
 
 **3. Visual Aesthetic & The 12-Column Bento Grid**
+*   **Strict Visual Compliance:** Execution of the Microscopic Visual & Aesthetic Auto-Fix protocol to mathematically enforce strict UI rules across all agent builds [cite: 2000].
 *   **Color Taxonomy (60-30-10 Rule):** 60% Void Black (`#000000`) and Navy Slate (`#0f172a`); 30% Structural Grey (`#334155`); 10% Data Cyan (`#14b8a6`) [cite: 773]. Exactly ONE Action Gold (`#fbbf24`) CTA permitted per viewport [cite: 773].
 *   **Anti-Squish Math:** Symmetrical grids are banned for dashboards [cite: 1235]. You must utilize a 12-column asymmetric Bento Grid topology locked with fluid clamp math (`grid-template-columns: repeat(auto-fit, minmax(min(100%, clamp(280px, 30vw, 350px)), 1fr));`) [cite: 776, 1235].
 *   **Micro-Typography:** Use Geist Mono for telemetry, Switzer for body copy, and Geist Sans for headers [cite: 774].
@@ -28,13 +29,13 @@ All agents must run these checks before any code is committed. We do not merge r
 This replaces all generic registration flows. Mandatory Firebase MFA and 1-hour ID Token timeouts with secure background refresh logic must govern all elevated RBAC roles [cite: 338, 770].
 
 **1. B2B Registration Pipeline (The Dual-Track)**
-*   [x] **Independent Director Track:** Frictionless self-serve onboarding that provisions a standalone `tenantId` and `clubId`, immediately kicking off Stripe Connect onboarding [cite: 141, 830]. Requires uploading a government-issued photo ID or business license for Account Ownership Verification [cite: 271, 385].
-*   [x] **Governed Director Track:** Registration via single-use Federation invite links, automatically nesting the new `clubId` under the Commissioner's master `tenantId` [cite: 309, 310].
+*   **Independent Director Track:** Frictionless self-serve onboarding that provisions a standalone `tenantId` and `clubId`, immediately kicking off Stripe Connect onboarding [cite: 141, 830]. Requires uploading a government-issued photo ID or business license for Account Ownership Verification [cite: 271, 385].
+*   **Governed Director Track:** Registration via single-use Federation invite links, automatically nesting the new `clubId` under the Commissioner's master `tenantId` [cite: 309, 310].
 
 **2. Legal Gateway & The Zero-Trust Document Vault**
 All data collection must pass through these legal gates before a user accesses the platform [cite: 878, 1231]:
 *   **Parents & Players:** 
-    [x] **COPPA 2.0 / VPC:** Verifiable Parental Consent tied to WebAuthn Biometric Enclaves (FaceID/TouchID) [cite: 1231].
+    **COPPA 2.0 / VPC:** Verifiable Parental Consent tied to WebAuthn Biometric Enclaves (FaceID/TouchID) [cite: 1231].
     *   **HIPAA & Medical:** Emergency contact and health insurance data collection requiring an integrated HIPAA release form [cite: 617].
     *   **Assumption of Risk & Waivers:** Liability waivers detailing sport-specific hazards [cite: 610, 613].
     *   **Photo/Video Release:** Granular opt-in/opt-out for the Fan OS streaming and Player OS video trials [cite: 618].
@@ -79,13 +80,13 @@ All data collection must pass through these legal gates before a user accesses t
 *   **40% Void Black Gaming HUD:** Cinematic operative command deck utilizing chamfered clip-path corners [cite: 757].
 *   **Biometric Digital Twin & TCG Cards:** 5:7 aspect ratio "Ultimate Team" player cards dynamically generated from verified 1000Hz physical data [cite: 757].
 *   **Vanguard Prism Charts:** 6-axis radar charts tracking the "Scout's Six" physical attributes [cite: 757].
-*   [x] **The Dopamine Engine:** Dynamic streak counters with 2% daily skill decay. `canvas-confetti` particle explosions firing STRICTLY on verified backend database commits to prevent spoofing [cite: 757, 1187].
+*   **The Dopamine Engine:** Dynamic streak counters with 2% daily skill decay. `canvas-confetti` particle explosions firing STRICTLY on verified backend database commits to prevent spoofing [cite: 757, 1187].
 *   **Premium Video Trials & Escrow Sponsorships:** 50MB-capped upload pipelines where Computer Vision verification triggers real-world escrow payouts from local brands [cite: 757].
 
 ##### 🛡️ EPIC 5: PARENT OS & RECRUITER MARKETPLACE (THE SHIELD)
 **Mission:** Legal compliance, financial escrow, emotional safety, and global scouting monetization [cite: 758].
 *   **SafeSport Comms (Shadow CC):** Immutable server-side Firestore triggers that automatically intercept coach-to-player direct messages, resolve the minor's household, and CC the parent email mathematically preventing 1:1 adult/minor channels [cite: 758, 1191].
-[x] **The Car Ride Home Protocol (EQ):** Suppresses raw metric dashboards for 15 minutes post-match to protect beginner self-worth [cite: 758].
+**The Car Ride Home Protocol (EQ):** Suppresses raw metric dashboards for 15 minutes post-match to protect beginner self-worth [cite: 758].
 *   **Vetted Recruiter Engine:** Checkr API integration mandating National Criminal Database vetting before external scouts gain platform access to prospect data [cite: 758, 1168].
 
 ##### 🏟️ EPIC 6: FAN OS & BROADCAST MONETIZATION

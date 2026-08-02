@@ -57,7 +57,7 @@
   overflow-hidden clips CommandDrawer when it translates off-screen right.
   Child components opt back in with pointer-events-auto.
 -->
-<div class="tw-pointer-events-none tw-absolute tw-inset-0 tw-z-10 tw-overflow-hidden">
+<div class="tactical-hud-panel tw-pointer-events-none tw-absolute tw-inset-0 tw-z-10 tw-overflow-hidden" style="border-radius: 0px;">
 	<TacticalDock {model} {deployPhase} onDeploy={handleDeploy} />
 	<CommandDrawer {model} />
 	<ContextRadial

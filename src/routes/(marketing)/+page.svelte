@@ -19,7 +19,8 @@
 			body: 'Gamified Skill Trees, XP progression, Vanguard Prism radars, and video trial uploads driving intrinsic motivation and unyielding athlete engagement.',
 			href: '/player',
 			hoverColor: '#14b8a6',
-			cols: 'md:tw-col-span-4'
+			cols: 'md:tw-col-span-6',
+			bento: 'player'
 		},
 		{
 			icon: 'user.settings' as IconName,
@@ -30,7 +31,8 @@
 			body: 'The HTML5 Tron War Room Drill Designer, real-time squad telemetry, and the RAG AI Tactical Assistant orchestrating every victory.',
 			href: '/coach',
 			hoverColor: '#f59e0b',
-			cols: 'md:tw-col-span-4'
+			cols: 'md:tw-col-span-4',
+			bento: 'coach'
 		},
 		{
 			icon: 'status.shield-check' as IconName,
@@ -41,7 +43,8 @@
 			body: 'COPPA 2.0 WebAuthn biometric gating, SafeSport Shadow CC routing, and the Car Ride Home emotional safety protocol.',
 			href: '/parent',
 			hoverColor: '#14b8a6',
-			cols: 'md:tw-col-span-4'
+			cols: 'md:tw-col-span-2',
+			bento: 'parent'
 		}
 	];
 </script>
@@ -70,7 +73,7 @@
 
 			<!-- FIX #3: Sub-10 word brutalist headline -->
 			<h1 class="tw-text-4xl md:tw-text-5xl tw-font-bold tw-text-[#f8fafc] tw-tracking-tight tw-leading-[1.05] tw-max-w-4xl">
-				Stop managing teams. Start developing athletes. SSTracker, the only Youth Sports management app you'll ever need.
+				Stop managing teams. Start developing athletes. The Youth Sports OS.
 			</h1>
 
 			<p class="tw-text-[#94a3b8] tw-text-lg tw-max-w-2xl tw-leading-relaxed">
@@ -129,8 +132,8 @@
 		<!-- Symmetric: 4 / 4 / 4 column weighting -->
 		<div class="tw-grid tw-grid-cols-1 md:tw-grid-cols-12 tw-gap-4 md:tw-gap-6">
 			{#each features as feat}
-				<div class="tw-col-span-1 {feat.cols} tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-p-8 hover:tw-border-[#334155] tw-transition-colors tw-duration-150 tw-flex tw-flex-col tw-relative tw-group tw-overflow-hidden"
-					style="clip-path: polygon(12px 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%, 0 12px);"
+				<div data-bento={feat.bento} class="tw-col-span-1 {feat.cols} tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-p-8 hover:tw-border-[#334155] tw-transition-colors tw-duration-150 tw-flex tw-flex-col tw-relative tw-group tw-overflow-hidden bento-well"
+					style="clip-path: polygon(12px 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%, 0 12px); padding: 32px;"
 				>
 					<!-- Ambient glow on hover -->
 					<div class="tw-absolute tw-inset-0 tw-opacity-0 group-hover:tw-opacity-100 tw-transition-opacity tw-duration-300 tw-pointer-events-none" style="background: radial-gradient(ellipse at top left, {feat.accent}0a 0%, transparent 70%);"></div>

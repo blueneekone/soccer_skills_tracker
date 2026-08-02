@@ -57,7 +57,7 @@
 		<div class="tw-grid tw-grid-cols-1 lg:tw-grid-cols-12 tw-gap-6 lg:tw-gap-8" style="grid-template-columns: repeat(auto-fit, minmax(min(100%, clamp(280px, 30vw, 350px)), 1fr));">
 			
 			<!-- CoOpArena spans 8 columns -->
-			<div class="lg:tw-col-span-8 tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-overflow-hidden tw-relative" style="clip-path: polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px);">
+			<div data-panel="true" class="parent-panel lg:tw-col-span-8 tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-overflow-hidden tw-relative" style="border-radius: 24px;">
 				<CoOpArena engine={coOpEngine} />
 			</div>
 			
@@ -66,7 +66,7 @@
 				<ActionInbox householdId={authStore.userProfile?.householdId} />
 
 				<!-- The Car Ride Home Holographic Widget (Z3 Holographic Card) -->
-				<div class="tw-relative tw-border tw-border-[#334155] tw-overflow-hidden tw-z-10 tw-bg-[#0f172a]/40 tw-backdrop-blur-[20px]" style="clip-path: polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px);">
+				<div data-panel="true" class="parent-panel tw-relative tw-border tw-border-[#334155] tw-overflow-hidden tw-z-10 tw-bg-[#0f172a]/40 tw-backdrop-blur-[20px]" style="border-radius: 24px;">
 					<CarRideHome 
 						{matchData}
 						{isEmbargoed}
@@ -77,7 +77,7 @@
 				</div>
 
 				<!-- Bounty Terminal -->
-				<div class="tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-flex-1 tw-min-h-[300px] tw-relative" style="clip-path: polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px);">
+				<div data-panel="true" class="parent-panel tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-flex-1 tw-min-h-[300px] tw-relative" style="border-radius: 24px;">
 					<BountyTerminal engine={coOpEngine} />
 				</div>
 			</div>
@@ -86,7 +86,7 @@
 		<!-- Communications Oversight Panels -->
 		<div class="tw-grid tw-grid-cols-1 lg:tw-grid-cols-12 tw-gap-6 lg:tw-gap-8" style="grid-template-columns: repeat(auto-fit, minmax(min(100%, clamp(280px, 30vw, 350px)), 1fr));">
 			<!-- Parent Lounge -->
-			<div class="lg:tw-col-span-7 tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-p-6 tw-relative" style="clip-path: polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px);">
+			<div data-panel="true" class="parent-panel lg:tw-col-span-7 tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-p-6 tw-relative" style="border-radius: 24px;">
 				<h3 class="tw-text-white tw-font-bold tw-text-lg tw-flex tw-items-center tw-gap-2 tw-mb-4">
 					<Icon name={"status.info" as IconName} class="tw-w-5 tw-h-5 tw-text-[#14b8a6]" /> Parent Lounge
 				</h3>
@@ -97,7 +97,7 @@
 			</div>
 
 			<!-- Household Thread -->
-			<div class="lg:tw-col-span-5 tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-p-6 tw-relative" style="clip-path: polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px);">
+			<div data-panel="true" class="parent-panel lg:tw-col-span-5 tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-p-6 tw-relative" style="border-radius: 24px;">
 				<h3 class="tw-text-white tw-font-bold tw-text-lg tw-flex tw-items-center tw-gap-2 tw-mb-4">
 					<Icon name={"status.verified" as IconName} class="tw-w-5 tw-h-5 tw-text-[#10b981]" /> Household Thread
 				</h3>
