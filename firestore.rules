@@ -88,6 +88,10 @@ service cloud.firestore {
         );
     }
 
+    function isCommissioner() {
+      return tokenRole() == 'commissioner';
+    }
+
     function isDirector() {
       return tokenRole() == 'director';
     }
