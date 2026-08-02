@@ -559,6 +559,31 @@
 			{/if}
 		</footer>
 	</section>
+	<section class="player-hud-grid bento-span-12 tw-grid tw-gap-4 tw-mt-6" style="grid-template-columns: repeat(auto-fit, minmax(min(100%, clamp(280px, 30vw, 350px)), 1fr));">
+		<!-- Biometrics Cardiac Module -->
+		<div class="hud-biometrics-card pd-panel tw-min-w-0 tw-bg-slate-900/50 tw-p-4 tw-border tw-border-slate-800" style="clip-path: polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px);">
+			<h3 class="tw-font-mono tw-text-xs tw-text-teal-400 tw-mb-2 tw-uppercase tw-tracking-widest">Biometrics</h3>
+			<div class="tw-text-slate-300 tw-text-sm tw-min-w-0">Cardiac Module Offline</div>
+		</div>
+
+		<!-- Tactical Live Play Map -->
+		<div class="hud-tactical-map pd-panel tw-min-w-0 tw-bg-slate-900/50 tw-p-4 tw-border tw-border-slate-800" style="clip-path: polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px);">
+			<h3 class="tw-font-mono tw-text-xs tw-text-teal-400 tw-mb-2 tw-uppercase tw-tracking-widest">Tactical</h3>
+			<div class="tw-text-slate-300 tw-text-sm tw-min-w-0">Live Play Map</div>
+		</div>
+
+		<!-- Equipment Durability Schematic -->
+		<div class="hud-equipment-schematic pd-panel tw-min-w-0 tw-bg-slate-900/50 tw-p-4 tw-border tw-border-slate-800" style="clip-path: polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px);">
+			<h3 class="tw-font-mono tw-text-xs tw-text-teal-400 tw-mb-2 tw-uppercase tw-tracking-widest">Armory</h3>
+			<div class="tw-text-slate-300 tw-text-sm tw-min-w-0">Equipment Durability Schematic</div>
+		</div>
+
+		<!-- Avatar Customization Station -->
+		<div class="hud-avatar-station pd-panel tw-min-w-0 tw-bg-slate-900/50 tw-p-4 tw-border tw-border-slate-800" style="clip-path: polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px);">
+			<h3 class="tw-font-mono tw-text-xs tw-text-teal-400 tw-mb-2 tw-uppercase tw-tracking-widest">Identity</h3>
+			<div class="tw-text-slate-300 tw-text-sm tw-min-w-0">Avatar Customization Station</div>
+		</div>
+	</section>
 	</HUDContainer>
 	</div>
 </div>

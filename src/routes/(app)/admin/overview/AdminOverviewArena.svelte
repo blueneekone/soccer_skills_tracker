@@ -65,7 +65,20 @@
 					</div>
 
 				</div>
+			</div>
 
+			<div class="admin-hud-grid tw-grid tw-grid-cols-1 xl:tw-grid-cols-12 tw-gap-6 tw-mt-6" style="grid-template-columns: repeat(auto-fit, minmax(min(100%, clamp(280px, 30vw, 350px)), 1fr));">
+				<!-- Global Telemetry Feed -->
+				<div class="global-telemetry-feed tw-col-span-1 xl:tw-col-span-8 dark-form-surface tw-border tw-border-[#1E293B] tw-bg-[#0B0F19] tw-p-6 tw-rounded-none">
+					<h3 class="tw-font-mono tw-text-xs tw-text-[#14b8a6] tw-mb-2 tw-uppercase tw-tracking-widest">Global Telemetry Feed</h3>
+					<div class="tw-text-[#94A3B8] tw-font-mono tw-text-xs">Stream Offline</div>
+				</div>
+
+				<!-- System Health Diagnostics -->
+				<div class="system-health-diagnostics tw-col-span-1 xl:tw-col-span-4 dark-form-surface tw-border tw-border-[#1E293B] tw-bg-[#0B0F19] tw-p-6 tw-rounded-none">
+					<h3 class="tw-font-mono tw-text-xs tw-text-[#14b8a6] tw-mb-2 tw-uppercase tw-tracking-widest">System Health Diagnostics</h3>
+					<div class="tw-text-[#94A3B8] tw-font-mono tw-text-xs">All Systems Nominal</div>
+				</div>
 			</div>
 		{/if}
 

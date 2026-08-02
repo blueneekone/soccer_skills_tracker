@@ -10,7 +10,7 @@ async function injectMockAuth(page, uid, email, role) {
 
   // 2. Inject mock Firebase Auth User State into LocalStorage
   await page.evaluate(({ uid, email, role }) => {
-    const firebaseApiKey = "mock-api-key"; // Matches your local emulator setup
+    const firebaseApiKey = "AIzaSyCiBoemXJHTkTnujTwM1vOJc4FrVZF8Lw8"; // Matches your local dev setup
     const storageKey = `firebase:authUser:${firebaseApiKey}:[DEFAULT]`;
 
     const mockUser = {
@@ -49,6 +49,7 @@ async function injectMockAuth(page, uid, email, role) {
   console.log(`📡 Crawling Localhost -> Target Route: ${targetUrl}`);
 
   try {
+    await injectMockAuth(page, 'mock-uid', 'mock@test.com', targetPersona);
     await page.goto(targetUrl, { timeout: 5000, waitUntil: 'domcontentloaded' });
   } catch (err) {
     console.error(`❌ CRITICAL: Could not connect to development server at ${targetUrl}. Is 'npm run dev' running?`);

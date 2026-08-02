@@ -144,6 +144,20 @@
 	{#if activeTab === 'home'}
 		<section class="director-console-page__section">
 			<DirectorCommandCenter {clubId} />
+			
+			<div class="director-hud-grid bento-span-12 tw-grid tw-gap-4 tw-mt-6" style="grid-template-columns: repeat(auto-fit, minmax(min(100%, clamp(280px, 30vw, 350px)), 1fr));">
+				<!-- Club Revenue Analytics -->
+				<div class="revenue-engine-analytics dark-form-surface tw-border tw-border-slate-700 tw-bg-slate-900/80 tw-p-4 tw-rounded-none">
+					<h3 class="tw-font-mono tw-text-xs tw-text-teal-400 tw-mb-2 tw-uppercase tw-tracking-widest">Revenue Engine</h3>
+					<div class="tw-text-slate-300 tw-text-sm tw-min-w-0">Club Revenue Analytics Offline</div>
+				</div>
+
+				<!-- God-Mode Club Roster Tree -->
+				<div class="roster-hierarchy-tree dark-form-surface tw-border tw-border-slate-700 tw-bg-slate-900/80 tw-p-4 tw-rounded-none">
+					<h3 class="tw-font-mono tw-text-xs tw-text-teal-400 tw-mb-2 tw-uppercase tw-tracking-widest">Roster Hierarchy</h3>
+					<div class="tw-text-slate-300 tw-text-sm tw-min-w-0">God-Mode Tree Offline</div>
+				</div>
+			</div>
 		</section>
 	{:else if activeTab === 'field'}
 		<section class="director-console-page__section director-console-page__section--full">
