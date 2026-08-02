@@ -285,47 +285,20 @@ exports.createCommsChannel = onCall({region: REGION}, async (request) => {
     memberIds.push(callerEmail);
   }
 
-  let ccParentEmails = [];
-  let safesportMonitored = false;
-  const isStaffShadow = ['coach', 'director', 'super_admin', 'global_admin'].includes(callerRole);
-
-  if (isStaffShadow) {
-    const playersInChannel = [];
-    // b815 Guard: check for db instance existence implicitly by admin.firestore()
-    for (const member of memberIds) {
-      if (member === callerEmail) continue;
-      const snap = await admin.firestore().collection('users').doc(member).get();
-      if (snap.exists) {
-        const d = snap.data();
-        if (d.role === 'player') {
-          if (d.isMinor) {
-             throw new HttpsError('permission-denied', 'SafeSport: direct chat with minor athletes is blocked. Use Logistics → parent announcements.');
-          }
-          playersInChannel.push(member);
-        }
-      }
-    }
-    if (playersInChannel.length > 0) {
-      ccParentEmails = await resolveGuardiansForPlayers(admin.firestore(), clubId, playersInChannel);
-      safesportMonitored = ccParentEmails.length > 0;
-      if (ccParentEmails.length === 0) {
-          throw new HttpsError('permission-denied', 'Link a parent/guardian to this player (household) before starting a chat.');
-      }
-    }
-  }
-
-  const finalMemberIds = [...new Set([...memberIds, ...ccParentEmails])].sort();
+  const finalMemberIds = [...new Set(memberIds)].sort();
   const channelData = {
     name: name || 'Group chat', type: type || 'group',
-    memberIds: finalMemberIds, ccParentEmails,
-    safesportMonitored, teamId: teamId || null,
-    createdBy: callerUid, createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    memberIds: finalMemberIds,
+    teamId: teamId || null,
+    createdBy: callerUid,
+    createdAt: admin.firestore.FieldValue.serverTimestamp(),
   };
 
   const col = admin.firestore().collection('clubs').doc(clubId).collection('channels');
   const ref = await col.add(channelData);
 
-  return { id: ref.id, safesportMonitored, ccCount: ccParentEmails.length };
+  // SafeSport resolution is now fully delegated to the server-side onChannelCreated trigger.
+  return { id: ref.id, safesportMonitored: false, ccCount: 0 };
 });
 
 exports.sendCoachPlayerMessage = onCall({region: REGION}, async (request) => {
