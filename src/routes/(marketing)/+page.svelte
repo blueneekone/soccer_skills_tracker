@@ -7,8 +7,6 @@
 	import Icon from '$lib/components/ui/Icon.svelte';
 	import type { IconName } from '$lib/icons/registry.js';
 
-
-
 	const features = [
 		{
 			icon: 'game.rocket' as IconName,
@@ -19,7 +17,7 @@
 			body: 'Gamified Skill Trees, XP progression, Vanguard Prism radars, and video trial uploads driving intrinsic motivation and unyielding athlete engagement.',
 			href: '/player',
 			hoverColor: '#14b8a6',
-			cols: 'md:tw-col-span-6',
+			cols: 'md:tw-col-span-4',
 			bento: 'player'
 		},
 		{
@@ -43,7 +41,7 @@
 			body: 'COPPA 2.0 WebAuthn biometric gating, SafeSport Shadow CC routing, and the Car Ride Home emotional safety protocol.',
 			href: '/parent',
 			hoverColor: '#14b8a6',
-			cols: 'md:tw-col-span-2',
+			cols: 'md:tw-col-span-4',
 			bento: 'parent'
 		}
 	];
@@ -59,7 +57,13 @@
 	<meta property="og:type" content="website" />
 </svelte:head>
 
-<div class="tw-flex tw-w-full tw-min-h-dvh tw-flex-col tw-bg-[#020617] tw-text-[#f8fafc] tw-font-sans">
+<div class="tw-flex tw-w-full tw-min-h-dvh tw-flex-col tw-text-[#f8fafc] tw-font-sans tw-relative tw-overflow-hidden" style="background-color: #020617;">
+	<!-- Volumetric Background Mesh & Lighting -->
+	<div class="tw-absolute tw-inset-0 tw-z-0 tw-pointer-events-none" style="background: radial-gradient(circle at 50% 0%, #14b8a615 0%, transparent 50%), radial-gradient(circle at 100% 50%, #f59e0b08 0%, transparent 40%);"></div>
+	<div class="tw-absolute tw-inset-0 tw-z-0 tw-pointer-events-none tw-opacity-[0.03]" style="background-image: linear-gradient(#14b8a6 1px, transparent 1px), linear-gradient(90deg, #14b8a6 1px, transparent 1px); background-size: 40px 40px; mask-image: linear-gradient(to bottom, black 20%, transparent 80%); -webkit-mask-image: linear-gradient(to bottom, black 20%, transparent 80%);"></div>
+
+	<!-- Content Layer -->
+	<div class="tw-relative tw-z-10 tw-w-full tw-h-full tw-flex tw-flex-col">
 
 	<!-- ═══ HERO ═══ -->
 	<main class="tw-max-w-7xl tw-mx-auto tw-w-full tw-px-6 tw-pt-24 tw-pb-16 tw-flex tw-flex-col tw-items-center tw-text-center tw-gap-10">
@@ -91,7 +95,7 @@
 		</div>
 
 		<!-- FIX #1: Product preview image (no more placehold.co) -->
-		<div class="tw-w-full tw-relative tw-aspect-video tw-drop-shadow-[0_20px_50px_rgba(20,184,166,0.15)]">
+		<div class="tw-w-full tw-relative tw-aspect-video" style="filter: drop-shadow(0 0 40px rgba(0,0,0,0.8)) drop-shadow(0 4px 10px rgba(20,184,166,0.15));">
 		<div
 			class="tw-w-full tw-h-full tw-relative tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-overflow-hidden tw-group"
 			style="clip-path: polygon(20px 0, 100% 0, 100% calc(100% - 20px), calc(100% - 20px) 100%, 0 100%, 0 20px);"
@@ -103,7 +107,7 @@
 			<div class="tw-absolute tw-inset-0 tw-bg-gradient-to-tr tw-from-[#02061799] tw-to-transparent tw-z-10 tw-pointer-events-none tw-transition-opacity tw-duration-700 group-hover:tw-opacity-30"></div>
 			<!-- Generated product preview -->
 			<div class="tw-w-full tw-h-full tw-flex tw-items-center tw-justify-center tw-bg-[#000000] tw-transition-transform tw-duration-700 group-hover:tw-scale-[1.02]">
-				<img src="/nexus-command-preview.png" alt="SSTracker Product Preview" class="tw-w-full tw-h-full tw-object-cover" loading="lazy" />
+				<video src="/nexus-command-preview.mp4" autoplay loop muted playsinline class="tw-w-full tw-h-full tw-object-cover"></video>
 			</div>
 			<!-- Scanline overlay -->
 			<div class="tw-absolute tw-inset-0 tw-z-10 tw-pointer-events-none" style="opacity: 0.03; background: repeating-linear-gradient(0deg, transparent, transparent 3px, #fff 3px, #fff 4px);"></div>
@@ -135,7 +139,7 @@
 		<!-- Symmetric: 4 / 4 / 4 column weighting -->
 		<div class="tw-grid tw-grid-cols-1 md:tw-grid-cols-12 tw-gap-4 md:tw-gap-6">
 			{#each features as feat}
-				<div data-bento={feat.bento} class="tw-col-span-1 {feat.cols} tw-drop-shadow-[0_8px_32px_rgba(0,0,0,0.5)] tw-transition-all tw-duration-300 hover:tw-drop-shadow-[0_12px_48px_rgba(20,184,166,0.15)] tw-h-full">
+				<div data-bento={feat.bento} class="tw-col-span-1 {feat.cols} tw-transition-all tw-duration-300 tw-h-full bento-wrapper">
 				<div class="tw-w-full tw-h-full tw-bg-slate-900 tw-border tw-border-[#334155] tw-p-8 hover:tw-border-[#14b8a6] tw-transition-colors tw-duration-150 tw-flex tw-flex-col tw-relative tw-group tw-overflow-hidden bento-well"
 					style="background-color: #0f172a; clip-path: polygon(12px 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%, 0 12px); padding: 32px;"
 				>
@@ -173,4 +177,14 @@
 		</div>
 	</section>
 
+	</div>
 </div>
+
+<style>
+	.bento-wrapper {
+		filter: drop-shadow(0 15px 30px rgba(0,0,0,0.8)) drop-shadow(0 4px 12px rgba(20,184,166,0.05));
+	}
+	.bento-wrapper:hover {
+		filter: drop-shadow(0 20px 40px rgba(0,0,0,0.9)) drop-shadow(0 4px 20px rgba(20,184,166,0.25));
+	}
+</style>

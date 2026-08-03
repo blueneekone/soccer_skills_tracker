@@ -142,7 +142,7 @@
 </script>
 
 <!-- ─── Vanguard Atmosphere ───────────────────────────────────────────────── -->
-<div class="login-surface tw-relative tw-flex tw-min-h-[100dvh] tw-w-full tw-items-center tw-justify-center tw-overflow-hidden tw-bg-[#020617]">
+<div class="login-surface tw-relative tw-flex tw-min-h-[100dvh] tw-w-full tw-items-center tw-justify-center tw-overflow-hidden tw-bg-[#020617] tw-px-6">
 
 	<!-- Ambient teal glow -->
 	<div class="tw-pointer-events-none tw-absolute tw-left-1/2 tw-top-1/2 tw-h-[600px] tw-w-[600px] -tw-translate-x-1/2 -tw-translate-y-1/2 tw-rounded-full tw-bg-[#14b8a614] tw-blur-[120px]"></div>
@@ -287,7 +287,7 @@
 					type="button"
 					onclick={handlePasskeyLogin}
 					disabled={loginEngine.busy || googleBusy || navigating}
-					class="tw-flex tw-h-11 tw-w-full tw-items-center tw-justify-center tw-gap-3 tw-border tw-border-[#334155] tw-bg-[#1e293b] tw-text-sm tw-font-medium tw-text-[#cbd5e1] tw-transition-all tw-duration-200 hover:tw-border-[#475569] hover:tw-bg-[#334155] active:tw-scale-[0.98] disabled:tw-cursor-not-allowed disabled:tw-opacity-40 focus-visible:tw-outline-none focus-visible:tw-ring-1 focus-visible:tw-ring-[#14b8a633]"
+					class="tw-flex tw-h-11 tw-w-full tw-items-center tw-justify-center tw-gap-3 tw-border tw-border-[#334155] tw-bg-[#1e293b] tw-text-sm tw-font-medium tw-text-[#cbd5e1] tw-transition-all tw-duration-200 hover:tw-border-[#475569] hover:tw-bg-[#334155] hover:tw-text-[#14b8a6] active:tw-scale-[0.98] disabled:tw-cursor-not-allowed disabled:tw-opacity-40 focus-visible:tw-outline-none focus-visible:tw-ring-1 focus-visible:tw-ring-[#14b8a633]"
 				>
 					<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="tw-text-slate-400" aria-hidden="true">
 						<path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/>
@@ -300,7 +300,7 @@
 					type="button"
 					onclick={handleGoogleLogin}
 					disabled={googleBusy || loginEngine.busy || navigating}
-					class="tw-flex tw-h-11 tw-w-full tw-items-center tw-justify-center tw-gap-3 tw-border tw-border-[#334155] tw-bg-[#1e293b] tw-text-sm tw-font-medium tw-text-[#cbd5e1] tw-transition-all tw-duration-200 hover:tw-border-[#475569] hover:tw-bg-[#334155] active:tw-scale-[0.98] disabled:tw-cursor-not-allowed disabled:tw-opacity-40 focus-visible:tw-outline-none focus-visible:tw-ring-1 focus-visible:tw-ring-[#14b8a633]"
+					class="tw-flex tw-h-11 tw-w-full tw-items-center tw-justify-center tw-gap-3 tw-border tw-border-[#334155] tw-bg-[#1e293b] tw-text-sm tw-font-medium tw-text-[#cbd5e1] tw-transition-all tw-duration-200 hover:tw-border-[#475569] hover:tw-bg-[#334155] hover:tw-text-[#14b8a6] active:tw-scale-[0.98] disabled:tw-cursor-not-allowed disabled:tw-opacity-40 focus-visible:tw-outline-none focus-visible:tw-ring-1 focus-visible:tw-ring-[#14b8a633]"
 				>
 					{#if !googleBusy}
 						<svg width="15" height="15" viewBox="0 0 18 18" aria-hidden="true">
@@ -334,7 +334,7 @@
 					type="button"
 					onclick={handleMagicLink}
 					disabled={loginEngine.busy || googleBusy || navigating}
-					class="tw-flex tw-h-11 tw-w-full tw-items-center tw-justify-center tw-gap-3 tw-border tw-border-[#334155] tw-bg-[#1e293b] tw-text-sm tw-font-medium tw-text-[#cbd5e1] tw-transition-all tw-duration-200 hover:tw-border-[#475569] hover:tw-bg-[#334155] active:tw-scale-[0.98] disabled:tw-cursor-not-allowed disabled:tw-opacity-40 focus-visible:tw-outline-none focus-visible:tw-ring-1 focus-visible:tw-ring-[#14b8a633]"
+					class="tw-flex tw-h-11 tw-w-full tw-items-center tw-justify-center tw-gap-3 tw-border tw-border-[#334155] tw-bg-[#1e293b] tw-text-sm tw-font-medium tw-text-[#cbd5e1] tw-transition-all tw-duration-200 hover:tw-border-[#475569] hover:tw-bg-[#334155] hover:tw-text-[#14b8a6] active:tw-scale-[0.98] disabled:tw-cursor-not-allowed disabled:tw-opacity-40 focus-visible:tw-outline-none focus-visible:tw-ring-1 focus-visible:tw-ring-[#14b8a633]"
 				>
 					<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="tw-text-slate-400" aria-hidden="true">
 						<rect x="2" y="4" width="20" height="16" rx="2" /><path d="M22 7L12 13 2 7" />

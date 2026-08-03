@@ -31,7 +31,7 @@
 
 		<div class="tw-grid tw-grid-cols-1 md:tw-grid-cols-12 tw-gap-6">
 			<!-- The Problem: The Frankenstein Stack (4 cols) -->
-			<div class="tw-col-span-1 md:tw-col-span-4 tw-bg-[#0f172a] tw-border tw-border-[#ef4444]/30 tw-p-8 tw-relative tw-overflow-hidden">
+			<div class="tw-col-span-1 md:tw-col-span-4 tw-bg-[#0f172a] tw-border tw-border-[#ef4444]/30 tw-p-8 tw-relative tw-overflow-hidden" style="filter: drop-shadow(0 15px 30px rgba(0,0,0,0.8)) drop-shadow(0 4px 12px rgba(239,68,68,0.05));">
 				<div class="tw-absolute tw-inset-0 tw-opacity-[0.03] tw-pointer-events-none" style="background: repeating-linear-gradient(45deg, transparent, transparent 10px, #ef4444 10px, #ef4444 20px);"></div>
 
 				<div class="tw-flex tw-items-center tw-gap-2 tw-mb-6">
@@ -68,7 +68,7 @@
 			</div>
 
 			<!-- The Solution: SSTracker Ecosystem (8 cols) -->
-			<div class="tw-col-span-1 md:tw-col-span-8 tw-bg-[#0B0F19] tw-border tw-border-[#14b8a6]/50 tw-p-8 tw-relative tw-flex tw-flex-col">
+			<div class="tw-col-span-1 md:tw-col-span-8 tw-bg-[#0B0F19] tw-border tw-border-[#14b8a6]/50 tw-p-8 tw-relative tw-flex tw-flex-col" style="filter: drop-shadow(0 15px 30px rgba(0,0,0,0.8)) drop-shadow(0 4px 12px rgba(20,184,166,0.05));">
 				<div class="tw-absolute tw-top-0 tw-right-0 tw-w-16 tw-h-16 tw-border-t-2 tw-border-r-2 tw-border-[#14b8a6] tw-opacity-50"></div>
 
 				<div class="tw-flex tw-items-center tw-gap-2 tw-mb-6">
@@ -82,19 +82,19 @@
 
 				<div class="tw-grid tw-grid-cols-2 md:tw-grid-cols-3 tw-gap-4 tw-mt-auto">
 					<div class="tw-bg-[#0f172a] tw-border tw-border-[#1e293b] tw-p-4 tw-flex tw-flex-col tw-gap-2">
-						<Icon name={"user.settings" as IconName} size={20} class="tw-text-[#14b8a6]" />
-						<span class="tw-font-mono tw-text-xs tw-text-[#f8fafc]">Director OS</span>
+						<Icon name={"data.pulse" as IconName} size={20} class="tw-text-[#14b8a6]" />
+						<span class="tw-font-mono tw-text-xs tw-text-[#f8fafc]">Sideline SIEM</span>
 					</div>
 					<div class="tw-bg-[#0f172a] tw-border tw-border-[#1e293b] tw-p-4 tw-flex tw-flex-col tw-gap-2">
 						<Icon name={"game.rocket" as IconName} size={20} class="tw-text-[#14b8a6]" />
 						<span class="tw-font-mono tw-text-xs tw-text-[#f8fafc]">Player HUD</span>
 					</div>
 					<div class="tw-bg-[#0f172a] tw-border tw-border-[#1e293b] tw-p-4 tw-flex tw-flex-col tw-gap-2">
-						<Icon name={"status.pulse" as IconName} size={20} class="tw-text-[#14b8a6]" />
-						<span class="tw-font-mono tw-text-xs tw-text-[#f8fafc]">Sideline SIEM</span>
+						<Icon name={"user.settings" as IconName} size={20} class="tw-text-[#14b8a6]" />
+						<span class="tw-font-mono tw-text-xs tw-text-[#f8fafc]">Director OS</span>
 					</div>
 					<div class="tw-bg-[#0f172a] tw-border tw-border-[#1e293b] tw-p-4 tw-flex tw-flex-col tw-gap-2">
-						<Icon name={"action.document" as IconName} size={20} class="tw-text-[#14b8a6]" />
+						<Icon name={"sys.lock" as IconName} size={20} class="tw-text-[#14b8a6]" />
 						<span class="tw-font-mono tw-text-xs tw-text-[#f8fafc]">Compliance Vault</span>
 					</div>
 					<div class="tw-bg-[#0f172a] tw-border tw-border-[#1e293b] tw-p-4 tw-flex tw-flex-col tw-gap-2">
@@ -102,7 +102,7 @@
 						<span class="tw-font-mono tw-text-xs tw-text-[#f8fafc]">Parent Co-op</span>
 					</div>
 					<div class="tw-bg-[#0f172a] tw-border tw-border-[#1e293b] tw-p-4 tw-flex tw-flex-col tw-gap-2">
-						<Icon name={"nav.search" as IconName} size={20} class="tw-text-[#14b8a6]" />
+						<Icon name={"action.search" as IconName} size={20} class="tw-text-[#14b8a6]" />
 						<span class="tw-font-mono tw-text-xs tw-text-[#f8fafc]">Global Talent Index</span>
 					</div>
 				</div>
@@ -112,7 +112,7 @@
 
 	<!-- Founder Profile -->
 	<section class="tw-max-w-5xl tw-mx-auto tw-w-full tw-px-6 tw-mb-24">
-		<div class="tw-bg-[#0f172a] tw-border tw-border-[#1e293b] tw-p-8 md:tw-p-12 tw-flex tw-flex-col md:tw-flex-row tw-gap-12 tw-items-center md:tw-items-start">
+		<div class="tw-bg-[#0f172a] tw-border tw-border-[#1e293b] tw-p-8 md:tw-p-12 tw-flex tw-flex-col md:tw-flex-row tw-gap-12 tw-items-center md:tw-items-start" style="filter: drop-shadow(0 15px 30px rgba(0,0,0,0.8)) drop-shadow(0 4px 12px rgba(20,184,166,0.05));">
 
 			<!-- MANDATE: Styled placeholder slot for headshot -->
 			<div class="tw-shrink-0 tw-w-48 tw-h-48 tw-rounded-sm tw-bg-[#0B0F19] tw-border-2 tw-border-dashed tw-border-[#334155] tw-flex tw-flex-col tw-items-center tw-justify-center tw-relative tw-group">

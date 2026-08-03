@@ -744,12 +744,13 @@ html.dark .ec-topbar {
 }
 
 .ec-icon-btn:hover {
-	background: rgba(0, 0, 0, 0.05);
-	color: var(--text-primary);
+	background: rgba(20, 184, 166, 0.08);
+	color: #14b8a6;
 }
 
 html.dark .ec-icon-btn:hover {
-	background: rgba(255, 255, 255, 0.06);
+	background: rgba(20, 184, 166, 0.1);
+	color: #14b8a6;
 }
 
 .ec-canvas {

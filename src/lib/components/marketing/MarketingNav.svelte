@@ -121,6 +121,11 @@
 		gap: 0.5rem;
 		text-decoration: none;
 		flex-shrink: 0;
+		color: currentColor;
+		transition: color 0.15s;
+	}
+	.mn-brand:hover {
+		color: #14b8a6;
 	}
 	.mn-brand__hex {
 		width: 28px;

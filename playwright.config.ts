@@ -19,6 +19,10 @@ export default defineConfig({
 			name: 'chromium',
 			use: { ...devices['Desktop Chrome'] },
 		},
+		{
+			name: 'Mobile Chrome',
+			use: { ...devices['Pixel 5'] },
+		},
 	],
 	webServer: {
 		command: 'cross-env VITE_E2E_BYPASS_AUTH=true npm run dev -- --host 127.0.0.1 --port 5173',

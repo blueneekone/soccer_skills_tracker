@@ -81,6 +81,19 @@ const PERSONAS = {
 			{ name: 'matrix', path: '/commissioner/matrix' },
 		],
 	},
+	public: {
+		role: 'public',
+		uid: '',
+		routes: [
+			{ name: 'landing', path: '/' },
+			{ name: 'login', path: '/login' },
+			{ name: 'features', path: '/features' },
+			{ name: 'pricing', path: '/pricing' },
+			{ name: 'about', path: '/about' },
+			{ name: 'terms', path: '/terms' },
+			{ name: 'privacy', path: '/privacy' },
+		],
+	},
 } satisfies Record<string, { role: string; uid: string; routes: { name: string; path: string }[] }>;
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -227,32 +240,40 @@ async function runMicroscopicLayoutAssertions(page: Page, routeName: string) {
 	const clientWidth = await page.evaluate(() => document.documentElement.clientWidth);
 	expect(scrollWidth, `[${routeName}] Horizontal overflow detected`).toBeLessThanOrEqual(clientWidth + 1);
 
-	// 2. Bento Grid 2D Collision Detection — O(n²) bounding-box comparison
-	const gridItems = page.locator(
-		'.tw-grid > *, [class*="bento"] > *, [class*="Bento"] > *, .grid > .panel',
-	);
-	const count = await gridItems.count();
-	const bboxes: Array<{ id: number; x: number; y: number; width: number; height: number }> = [];
-	for (let i = 0; i < count; i++) {
-		const box = await gridItems.nth(i).boundingBox();
-		if (box && box.width > 1 && box.height > 1) {
-			bboxes.push({ id: i, ...box });
-		}
-	}
-	for (let i = 0; i < bboxes.length; i++) {
-		for (let j = i + 1; j < bboxes.length; j++) {
-			const a = bboxes[i];
-			const b = bboxes[j];
-			const overlapX = Math.max(0, Math.min(a.x + a.width, b.x + b.width) - Math.max(a.x, b.x));
-			const overlapY = Math.max(0, Math.min(a.y + a.height, b.y + b.height) - Math.max(a.y, b.y));
-			// 2px tolerance for subpixel rendering
-			if (overlapX > 2 && overlapY > 2) {
-				throw new Error(
-					`[COLLISION] Bento item #${a.id} overlaps item #${b.id} on route "${routeName}" ` +
-					`(overlapX=${overlapX.toFixed(1)}, overlapY=${overlapY.toFixed(1)})`,
-				);
+	// 2. Bento Grid 2D Collision Detection — per container, checking only in-flow siblings
+	const collisionError = await page.evaluate(() => {
+		const grids = Array.from(document.querySelectorAll('.tw-grid, [class*="bento"], [class*="Bento"], .grid'));
+		for (let g = 0; g < grids.length; g++) {
+			const grid = grids[g];
+			// Only check direct children that are visibly in-flow (not absolute/fixed)
+			const children = Array.from(grid.children).filter((el) => {
+				const style = window.getComputedStyle(el);
+				return style.position !== 'absolute' && style.position !== 'fixed' && style.display !== 'none';
+			});
+			
+			const bboxes = children.map((c, idx) => ({ id: idx, ...c.getBoundingClientRect() }));
+			
+			for (let i = 0; i < bboxes.length; i++) {
+				for (let j = i + 1; j < bboxes.length; j++) {
+					const a = bboxes[i];
+					const b = bboxes[j];
+					if (a.width <= 1 || a.height <= 1 || b.width <= 1 || b.height <= 1) continue;
+					
+					const overlapX = Math.max(0, Math.min(a.x + a.width, b.x + b.width) - Math.max(a.x, b.x));
+					const overlapY = Math.max(0, Math.min(a.y + a.height, b.y + b.height) - Math.max(a.y, b.y));
+					
+					// 2px tolerance for subpixel rendering
+					if (overlapX > 2 && overlapY > 2) {
+						return `[COLLISION] Grid #${g} Item #${a.id} overlaps Item #${b.id} ` +
+							`(overlapX=${overlapX.toFixed(1)}, overlapY=${overlapY.toFixed(1)})`;
+					}
+				}
 			}
 		}
+		return null;
+	});
+	if (collisionError) {
+		throw new Error(`${collisionError} on route "${routeName}"`);
 	}
 
 	// 3. Silent text clipping check — warns but doesn't hard-fail
@@ -278,14 +299,16 @@ async function assertDarkModeBackground(page: Page, routeName: string) {
  * transitions to a brand-approved accent color within 250ms.
  */
 async function verifyHoverState(page: Page, selector: string, routeName: string) {
-	const elements = page.locator(selector);
+	// Filter to VISIBLE elements only — hidden desktop-only nav items cause
+	// scrollIntoViewIfNeeded() to hang on mobile viewports.
+	const elements = page.locator(selector).filter({ visible: true });
 	if (await elements.count() === 0) return;
 
 	const el = elements.first();
 	const html = await el.evaluate(n => n.outerHTML);
 	console.log(`[${routeName}] First matched element for hover test:`, html);
 	await el.scrollIntoViewIfNeeded();
-	await el.hover();
+	await el.hover({ force: true }); // force bypasses pointer-event interception from overlapping canvases (e.g. War Room)
 	await page.waitForTimeout(250); // kinetic transition window (150–250ms mandated)
 
 	const computedColor = await el.evaluate((node) => window.getComputedStyle(node as Element).color);
@@ -385,11 +408,13 @@ for (const [personaName, persona] of Object.entries(PERSONAS)) {
 					console.log(`[BROWSER 404] ${response.url()}`);
 				}
 			});
-			await bypassRouteGuards(page, persona.role, persona.uid);
+			if (personaName !== 'public') {
+				await bypassRouteGuards(page, persona.role, persona.uid);
+			}
 		});
 
 		for (const route of persona.routes) {
-			test(`Audit: ${route.name.toUpperCase()}`, async ({ page }) => {
+			test(`Audit: ${route.name.toUpperCase()}`, async ({ page }, testInfo) => {
 				// Create isolated output folder
 				const personaDir = join(artifactsDir, personaName);
 				if (!existsSync(personaDir)) mkdirSync(personaDir, { recursive: true });
@@ -424,9 +449,10 @@ for (const [personaName, persona] of Object.entries(PERSONAS)) {
 				}
 
 				// ── Visual proof screenshot ────────────────────────────────────
-				const screenshotPath = join(personaDir, `${route.name}-desktop.png`);
+				const envName = testInfo.project.name.toLowerCase().includes('mobile') ? 'mobile' : 'desktop';
+				const screenshotPath = join(personaDir, `${route.name}-${envName}.png`);
 				await page.screenshot({ path: screenshotPath, fullPage: true });
-				console.log(`✅ [AUDIT PASSED] ${personaName}/${route.name} → ${screenshotPath}`);
+				console.log(`✅ [AUDIT PASSED] ${personaName}/${route.name} (${envName}) → ${screenshotPath}`);
 			});
 		}
 	});

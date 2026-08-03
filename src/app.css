@@ -84,14 +84,15 @@ body, .app-shell, .ec-canvas { background-color: #000000 !important; }
 .tw-font-mono { font-family: 'Geist Mono', monospace !important; }
 
 @layer components {
-  /* Action Gold CTA */
+  /* Action Gold CTA - Atompunk Chamfered */
   .vanguard-btn-amber, .tw-vanguard-btn-amber {
-    @apply tw-bg-[#f59e0b] tw-text-[#020617] tw-border tw-border-[#fbbf24] tw-rounded-none;
+    @apply tw-bg-[#f59e0b] tw-text-[#020617] tw-border-none tw-rounded-none;
+    clip-path: polygon(12px 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%, 0 12px);
     box-shadow: 0 0 10px rgba(245, 158, 11, 0.2);
   }
   .vanguard-btn-amber:hover, .tw-vanguard-btn-amber:hover {
-    @apply tw-bg-[#fbbf24];
-    box-shadow: 0 0 15px rgba(245, 158, 11, 0.4);
+    @apply tw-bg-[#fbbf24] tw-text-[#020617];
+    box-shadow: 0 0 15px rgba(251, 191, 36, 0.5);
   }
 
   /* Data Cyan CTA */
