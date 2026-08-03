@@ -95,6 +95,12 @@ npx playwright test tests/visual-regression.spec.ts -g "EPIC TRAVERSAL: [PERSONA
 | Player chamfer | `clipPath` contains `polygon` |
 | Parent panels | `borderRadius >= 24px` |
 | Z-Depth Architecture | Liquid Glassmorphism uses `drop-shadow()` on wrappers if `clip-path` destroys `box-shadow` |
+| Responsive Viewports | Elements scale without layout breakage across Mobile, Tablet, and Desktop resolutions |
+| Text Clipping & Overflow | No silent text clipping; proper ellipsis truncation (`text-overflow: ellipsis`) applied where intended |
+| Accessibility & Contrast | Text meets WCAG contrast ratio requirements (≥ 4.5:1), especially on Void Black and Navy Slate |
+| Keyboard Focus Rings | All interactive elements display visible, brand-aligned focus rings (`:focus-visible`) during tab navigation |
+| Z-Index Layering | Strict layering assertion: Tooltips/Modals (Z4) > Nav (Z3) > Panels (Z2) > Background (Z0) |
+| Cumulative Layout Shift | Page load and micro-interactions trigger zero unexpected layout shifts (CLS = 0) |
 
 **Persona → Route Map:**
 
