@@ -134,7 +134,7 @@
 
 	.card-grid {
 		display: grid;
-		grid-template-columns: repeat(auto-fill, minmax(min(100%, clamp(220px, 22vw, 280px)), 1fr));
+		grid-template-columns: repeat(auto-fit, minmax(min(100%, clamp(280px, 30vw, 350px)), 1fr));
 		gap: clamp(20px, 3vw, 32px);
 		justify-items: center;
 	}
@@ -144,5 +144,6 @@
 		flex-direction: column;
 		align-items: center;
 		min-width: 0;
+		width: 100%;
 	}
 </style>
