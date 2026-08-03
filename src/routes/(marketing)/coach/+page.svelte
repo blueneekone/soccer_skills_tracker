@@ -43,18 +43,24 @@
 					<h2 class="tw-text-2xl tw-font-bold">Fabric.js Spatial Drill Designer</h2>
 				</div>
 				<p class="tw-text-[#94a3b8] tw-text-sm tw-leading-relaxed tw-mb-8">
-					Draft and animate tactical maneuvers on an interactive HTML5 canvas. Snap-to-grid constraints, multi-select tooling, and vector physics allow you to design complex drills that athletes can view directly in their OS.
+					Design complex training ground tactics using our HTML5 Spatial Canvas.
 				</p>
-				<div class="tw-mt-auto tw-w-full tw-aspect-video tw-bg-[#0f172a] tw-border tw-border-[#1e293b] tw-rounded-sm tw-overflow-hidden">
-					<img src="https://placehold.co/800x450/0f172a/334155.webp?text=[VIDEO_SLOT:+Spatial+Drill+Designer]" alt="Spatial Drill Designer" class="tw-w-full tw-h-full tw-object-cover tw-opacity-50" />
+				<div class="tw-flex-1 tw-relative tw-overflow-hidden">
+					<img src="/nexus-command-preview.png" alt="Coach OS Cinematic Video" class="tw-w-full tw-h-full tw-object-cover tw-opacity-50" />
+				</div>
+			</div>
+			
+			<div class="tw-col-span-1 md:tw-col-span-4 tw-flex tw-flex-col tw-gap-4">
+				<div class="tw-bg-[#0B0F19] tw-border tw-border-[#1E293B] tw-p-6 tw-flex-1 tw-relative tw-overflow-hidden group">
+					<div class="tw-absolute tw-inset-0 tw-bg-gradient-to-tr tw-from-[#02061799] tw-to-transparent tw-z-10 tw-pointer-events-none tw-transition-opacity tw-duration-700 group-hover:tw-opacity-30"></div>
+					<img src="/nexus-command-preview.png" alt="Spatial Drill Designer" class="tw-w-full tw-h-full tw-object-cover tw-opacity-50" />
 				</div>
 			</div>
 
-			<!-- RAG AI Tactical Assistant - 4 Cols -->
-			<div class="md:tw-col-span-4 tw-bg-[#0B0F19] tw-border tw-border-[#1e293b] tw-p-[clamp(1.5rem,3vw,2.5rem)] hover:tw-border-[#334155] tw-transition-colors tw-duration-150 tw-flex tw-flex-col">
-				<div class="tw-flex tw-items-center tw-gap-3 tw-mb-6">
-					<Icon name={"comm.chat" as IconName} size={28} strokeWidth={1.5} class="tw-text-[#f59e0b]" />
-					<h2 class="tw-text-xl tw-font-bold">RAG AI Tactical Assistant</h2>
+			<div class="tw-col-span-1 md:tw-col-span-12 tw-flex tw-flex-col tw-gap-4">
+				<div class="tw-bg-[#0B0F19] tw-border tw-border-[#1E293B] tw-p-6 tw-h-64 tw-relative tw-overflow-hidden group">
+					<div class="tw-absolute tw-inset-0 tw-bg-gradient-to-tr tw-from-[#02061799] tw-to-transparent tw-z-10 tw-pointer-events-none tw-transition-opacity tw-duration-700 group-hover:tw-opacity-30"></div>
+					<img src="/nexus-command-preview.png" alt="Telemetry Grid" class="tw-w-full tw-h-full tw-object-cover tw-opacity-50" />
 				</div>
 				<p class="tw-text-[#94a3b8] tw-text-sm tw-leading-relaxed tw-mb-8">
 					Chat with your club's entire historical playbook. The AI ingests past match reports, drill success rates, and opponent telemetry to suggest optimal formations and counter-strategies in real-time.

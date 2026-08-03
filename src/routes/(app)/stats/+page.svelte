@@ -486,6 +486,7 @@
 			/>
 		</section>
 
+		<div class={isPlayerRole ? "pd-os-deck-shadow-wrap" : ""} style={isPlayerRole ? "filter: drop-shadow(12px 12px 0 var(--pd-void-base, #000000));" : ""}>
 		<section
 			class="dossier-workout pd-panel-section"
 			class:stats-workout-band={isPlayerRole}
@@ -575,6 +576,7 @@
 			</div>
 			{/if}
 		</section>
+		</div>
 	</div>
 
 	<!-- Trophy matrix -->

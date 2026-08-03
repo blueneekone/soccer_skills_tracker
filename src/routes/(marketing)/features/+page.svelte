@@ -46,7 +46,7 @@
 							<Icon name={"media.play" as IconName} size={32} />
 						</button>
 					</div>
-					<img src="https://placehold.co/1280x720/0f172a/334155.webp?text=[VIDEO_SLOT:+Octalysis+XP+Ring+&+Video+Trial+Upload]" alt="Player OS Video" class="tw-w-full tw-h-full tw-object-cover tw-opacity-50" />
+					<img src="/nexus-command-preview.png" alt="Player OS Video" class="tw-w-full tw-h-full tw-object-cover tw-opacity-50" />
 				</div>
 			</div>
 
@@ -60,7 +60,7 @@
 					Orchestrate your tactical vision. Leverage the RAG AI Tactical Assistant and Intent Engine to draft session plans instantly.
 				</p>
 				<div class="tw-mt-auto tw-w-full tw-aspect-square tw-bg-[#020617] tw-border tw-border-[#334155] tw-rounded-sm tw-overflow-hidden tw-relative">
-					<img src="https://placehold.co/800x800/0f172a/334155.webp?text=[SCREENSHOT_SLOT:+Fabric.js+Spatial+Drill+Designer+&+Real-Time+Telemetry]" alt="Coach OS Screenshot" class="tw-w-full tw-h-full tw-object-cover tw-opacity-50" />
+					<img src="/nexus-command-preview.png" alt="Coach OS Screenshot" class="tw-w-full tw-h-full tw-object-cover tw-opacity-50" />
 				</div>
 			</div>
 
@@ -74,7 +74,7 @@
 					Ensure complete emotional safety. The Car Ride Home embargo locks match metrics for 15 minutes post-game. Verified guardians receive Tremendous bounty payouts for squad-level commitments.
 				</p>
 				<div class="tw-mt-auto tw-w-full tw-aspect-square tw-bg-[#020617] tw-border tw-border-[#334155] tw-rounded-sm tw-overflow-hidden tw-relative">
-					<img src="https://placehold.co/800x800/0f172a/334155.webp?text=[SCREENSHOT_SLOT:+COPPA+2.0+Consent+&+Car+Ride+Home+Protocol]" alt="Parent OS Screenshot" class="tw-w-full tw-h-full tw-object-cover tw-opacity-50" />
+					<img src="/nexus-command-preview.png" alt="Parent OS Screenshot" class="tw-w-full tw-h-full tw-object-cover tw-opacity-50" />
 				</div>
 			</div>
 

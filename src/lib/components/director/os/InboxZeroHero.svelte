@@ -11,36 +11,36 @@
 			<Icon name="status.inbox-zero" size={56} class="izh-icon" />
 		</div>
 		<h4 class="izh-title">{title}</h4>
-		<p class="izh-subtitle">{subtitle}</p>
+		<p class="izh-text">{subtitle}</p>
 	</div>
 </div>
 
 <style>
 	.inbox-zero-hero {
-		@apply flex w-full items-center justify-center py-12 px-6;
+		@apply tw-flex tw-w-full tw-items-center tw-justify-center tw-py-12 tw-px-6;
 	}
 
-	.izh-glass {
-		@apply flex max-w-md flex-col items-center justify-center rounded-2xl border border-white/5 bg-slate-900/40 p-8 text-center shadow-[inset_0_1px_1px_rgba(255,255,255,0.03)] backdrop-blur-md transition-all duration-500 hover:border-[#14b8a6]/20 hover:bg-slate-900/60;
+	.izh-box {
+		@apply tw-flex tw-max-w-md tw-flex-col tw-items-center tw-justify-center tw-rounded-2xl tw-border tw-border-white/5 tw-bg-slate-900/40 tw-p-8 tw-text-center tw-shadow-[inset_0_1px_1px_rgba(255,255,255,0.03)] tw-backdrop-blur-md tw-transition-all tw-duration-500 hover:tw-border-[#14b8a6]/20 hover:tw-bg-slate-900/60;
 	}
 
 	.izh-icon-wrap {
-		@apply relative mb-5 flex items-center justify-center;
+		@apply tw-relative tw-mb-5 tw-flex tw-items-center tw-justify-center;
 	}
 
 	.izh-glow {
-		@apply absolute h-24 w-24 rounded-full bg-[#14b8a6] opacity-10 blur-2xl transition-opacity duration-700;
+		@apply tw-absolute tw-h-24 tw-w-24 tw-rounded-full tw-bg-[#14b8a6] tw-opacity-10 tw-blur-2xl tw-transition-opacity tw-duration-700;
 	}
 
-	.izh-glass:hover .izh-glow {
-		@apply opacity-20 scale-110;
+	.izh-box:hover .izh-glow {
+		@apply tw-opacity-20 tw-scale-110;
 	}
 
 	.izh-title {
-		@apply m-0 mb-2 font-mono text-lg font-black tracking-tight text-slate-100;
+		@apply tw-m-0 tw-mb-2 tw-font-mono tw-text-lg tw-font-black tw-tracking-tight tw-text-slate-100;
 	}
 
-	.izh-subtitle {
-		@apply m-0 font-mono text-sm leading-relaxed text-slate-400;
+	.izh-text {
+		@apply tw-m-0 tw-font-mono tw-text-sm tw-leading-relaxed tw-text-slate-400;
 	}
 </style>

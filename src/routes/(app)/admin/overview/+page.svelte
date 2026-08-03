@@ -1,5 +1,5 @@
 <script lang="ts">
-		import AdminDashboardEngine from './AdminDashboardEngine.svelte';
+		import AdminDashboardEngine from './AdminDashboardEngine.svelte.js';
 	import AdminDashboardHUD from './AdminDashboardHUD.svelte';
 	import AdminOverviewArena from './AdminOverviewArena.svelte';
 

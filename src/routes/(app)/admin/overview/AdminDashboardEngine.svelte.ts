@@ -19,6 +19,8 @@ export default class AdminDashboardEngine {
 	// Derived state
 	isReady = $derived(!this.isLoading && this.error === null);
 
+
+
 	constructor() {
 		// Initialize the engine by fetching initial data
 		this.fetchTelemetry();

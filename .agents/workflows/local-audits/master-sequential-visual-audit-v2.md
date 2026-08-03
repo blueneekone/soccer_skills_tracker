@@ -1,36 +1,118 @@
 # Master Sequential Platform-Wide Visual Audit & Recovery (v2)
 
-## 🏛️ Phase 1: Local Firestore Emulator Seeding
-
-To bypass the unauthenticated `/setup` redirect gate (`authStore.isProfileComplete` redirection loop), the orchestrator automatically seeds the local Firestore emulator on port `8080` with standard verified profiles before initiating the browser audits.
-
-Seeded profiles are generated using the following properties:
-*   **Admin:** `mock-admin-uid` (role: `admin`, isProfileComplete: `true`)
-*   **Director:** `mock-director-uid` (role: `director`, isProfileComplete: `true`)
-*   **Coach:** `mock-coach-uid` (role: `coach`, isProfileComplete: `true`)
-*   **Player:** `mock-player-uid` (role: `player`, isProfileComplete: `true`)
-*   **Parent:** `mock-parent-uid` (role: `parent`, isProfileComplete: `true`)
+Orchestrates a full platform traversal across all 6 authenticated personas in strict architectural sequence using `tests/visual-regression.spec.ts`.
 
 ---
 
-## 🚀 Phase 2: Sequential Traversal Sequence
+## 🏛️ Phase 1: Environment Pre-Flight
 
-The master suite traverses and verifies every platform area in strict architectural sequence to prevent context drift and data leaks:
+Before initiating browser traversal, the orchestrator validates and repairs the environment:
 
-1.  **Public Landing Pages:** Public-facing marketing copy, responsive 12-column asymmetric Bento Grid sections, and unauthenticated CTAs.
-2.  **Global Admin OS:** Command plane, telemetry dashboard, system health diagnostics, and unauthenticated bypass controls.
-3.  **Director OS:** Vampire Importer rosters, Stripe Connect checkout sessions, and compliance score metrics.
-4.  **Coach OS:** Tron War Room, HTML5 SVG spatial drill designer, and SafeSport Shadow CC communication routing.
-5.  **Player OS:** 40% Void Black HUD dashboard, 6-axis Vanguard Prism radar charts, TCG player cards, and Dopamine Engine streak commitments.
-6.  **Parent OS:** SafeSport message monitoring queues, Household Graph alignments, and the Car Ride Home post-game metric embargo.
+```bash
+# 1. Regenerate SvelteKit type definitions (required after cache purge)
+npx svelte-kit sync
+
+# 2. Confirm dev server is live
+# If not: npm run dev
+```
+
+**Auth Bypass Method:** The spec injects a localStorage token via `page.addInitScript()` — no real login or emulator required. Profiles are hydrated with:
+
+| Persona | UID | Role | isProfileComplete |
+|---|---|---|---|
+| Admin | `mock-admin-uid` | `admin` | `true` |
+| Director | `mock-director-uid` | `director` | `true` |
+| Coach | `mock-coach-uid` | `coach` | `true` |
+| Player | `mock-player-uid` | `player` | `true` |
+| Parent | `mock-parent-uid` | `parent` | `true` |
+| Commissioner | `mock-commissioner-uid` | `commissioner` | `true` |
 
 ---
 
-## 🛡️ Phase 3: Action-Driven Playwright Testing & Self-Correction
+## 🚀 Phase 2: Sequential Persona Traversal
 
-Each persona route is audited physically in a headless Chrome browser using `scripts/audit-computed-styles-v4.js` to ensure zero layout regressions:
+Run each persona in strict sequence to prevent auth token collisions. Use the `-g` grep filter:
 
-*   **Audit Checkpoints:** Viewport responsiveness audits at `1280px` (desktop), `768px` (tablet), and `375px` (mobile). Colors are compared against Void Black background density metrics (>= 40%) and Navy Slate panel limits.
-*   **Visual Regression Gate:** Captures video recordings (MP4/WebM) and raw screenshots of all transitions.
-*   **Self-Healing Loop:** If a test fails, the orchestrator triggers the Antigravity subagent `agy -p "/ui-ux-audit-v3 [PERSONA]"` to auto-heal the CSS grid parameters and Svelte 5 reactivity scopes before committing.
-*   **Git Automation:** Successfully verified code locks are automatically committed with `style: visual styling lock...`, merged into the development branch, and pushed to the remote origin.
+```bash
+# Admin OS (6 routes)
+npx playwright test tests/visual-regression.spec.ts -g "EPIC TRAVERSAL: ADMIN OS" --headed --project=chromium
+
+# Director OS (4 routes)
+npx playwright test tests/visual-regression.spec.ts -g "EPIC TRAVERSAL: DIRECTOR OS" --headed --project=chromium
+
+# Coach OS (6 routes)
+npx playwright test tests/visual-regression.spec.ts -g "EPIC TRAVERSAL: COACH OS" --headed --project=chromium
+
+# Player OS (5 routes)
+npx playwright test tests/visual-regression.spec.ts -g "EPIC TRAVERSAL: PLAYER OS" --headed --project=chromium
+
+# Parent OS (4 routes)
+npx playwright test tests/visual-regression.spec.ts -g "EPIC TRAVERSAL: PARENT OS" --headed --project=chromium
+
+# Commissioner OS (1 route)
+npx playwright test tests/visual-regression.spec.ts -g "EPIC TRAVERSAL: COMMISSIONER OS" --headed --project=chromium
+```
+
+**Full platform run (all 26 routes):**
+```bash
+npx playwright test tests/visual-regression.spec.ts --headed --project=chromium
+```
+
+### Platform Areas Covered
+
+1. **Admin OS** — `overview`, `users`, `organizations`, `audit-log`, `system-settings`, `support-terminal`
+2. **Director OS** — `dashboard`, `compliance`, `events`, `uplinks`
+3. **Coach OS** — `dashboard`, `tactical`, `war-room`, `drills`, `match-day`, `daily-intel`
+4. **Player OS** — `dashboard`, `skill-tree`, `tracker`, `armory`, `proving-grounds`
+5. **Parent OS** — `dashboard`, `household`, `trust-center`, `payments`
+6. **Commissioner OS** — `matrix`
+
+---
+
+## 🛡️ Phase 3: Assertion Checkpoints
+
+Every route is physically audited in headless Chromium with these mandatory checks:
+
+### Universal Checks (all personas, all routes)
+| Check | Assertion |
+|---|---|
+| Dark Mode | Body background is not `rgb(255,255,255)` |
+| No H-Scroll | `scrollWidth <= clientWidth` |
+| Bento Collision | Sibling elements do not overlap >2px |
+| Text Clipping | No hidden `overflow` on text elements |
+| Hover State | Interactive elements resolve to Data Cyan / Amber / Gold |
+| Tooltips | Visible, correctly backgrounded, within viewport |
+
+### Persona-Specific Checks
+| Persona | Check |
+|---|---|
+| Admin | `borderRadius === '0px'` on all `.admin-panel` elements |
+| Director | `borderRadius === '0px'` on all `.director-card` elements |
+| Player | `clipPath` contains `polygon` on `.chamfered-card`; Vanguard Prism radar visible on `/dashboard` |
+| Parent | `borderRadius >= 24px` on `.parent-panel` elements |
+
+---
+
+## 🔁 Phase 4: Self-Healing Loop
+
+If any persona test returns failures:
+
+1. **Diagnose:** Read Playwright error + screenshot to identify the failing element.
+2. **Invoke Autofix:** Trigger `/microscopic-visual-autofix-v3 [PersonaName]` to isolate and repair.
+3. **Re-run:** Execute only the failing persona's suite using the `-g` grep filter.
+4. **Gate:** Only proceed to the next persona once the current one returns `100% passed`.
+
+---
+
+## 🔒 Phase 5: Visual Lock & Git Commit
+
+Once all 6 personas pass:
+
+```bash
+git add audit-artifacts/
+git add src/
+git commit -m "style: master visual lock — all 6 personas verified [$(date -u +%Y-%m-%d)]"
+git push
+```
+
+Screenshots are stored in `audit-artifacts/[persona]/[route]-desktop.png` as forensic proof.

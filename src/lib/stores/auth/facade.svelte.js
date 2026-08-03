@@ -56,6 +56,17 @@ export function createAuthFacade() {
 		get isProfileComplete() { return userState.isProfileComplete; },
 		get isLoading() { return sessionState.isLoading; },
 		setProfile: userState.setProfile,
+		/**
+		 * E2E test-only: hydrate auth state from a mock profile object.
+		 * Called from the layout bypass block when VITE_E2E_BYPASS_AUTH=true.
+		 * @param {{ role: string, isProfileComplete: boolean, [key: string]: unknown }} profile
+		 */
+		hydrateForE2E(profile) {
+			userState.setProfile(profile);
+			sessionState.setRole(profile.role ?? 'guest');
+			sessionState.isAuthenticated = true;
+			sessionState.isLoading = false;
+		},
 		async refreshClaims() {
 			if (!auth.currentUser) return;
 			try {

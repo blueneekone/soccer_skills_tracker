@@ -1,4 +1,5 @@
 /// <reference types="@sveltejs/kit" />
+/// <reference lib="webworker" />
 /**
  * src/service-worker.ts — VANGUARD PWA Service Worker
  * ─────────────────────────────────────────────────────────────────────────────
@@ -52,6 +53,9 @@
  */
 
 import { build, files, version } from '$service-worker';
+
+const sw = self as unknown as ServiceWorkerGlobalScope;
+
 
 // ── Cache identity ────────────────────────────────────────────────────────────
 
@@ -167,18 +171,18 @@ function isCdnFont(url: URL): boolean {
 
 // ── Install: precache hashed app-shell assets ────────────────────────────────
 
-self.addEventListener('install', (event: ExtendableEvent) => {
+sw.addEventListener('install', (event: ExtendableEvent) => {
 	event.waitUntil(
 		caches
 			.open(CACHE_NAME)
 			.then((cache) => cache.addAll(PRECACHE))
-			.then(() => (self as unknown as ServiceWorkerGlobalScope).skipWaiting()),
+			.then(() => sw.skipWaiting()),
 	);
 });
 
 // ── Activate: evict all caches from previous deploys ─────────────────────────
 
-self.addEventListener('activate', (event: ExtendableEvent) => {
+sw.addEventListener('activate', (event: ExtendableEvent) => {
 	event.waitUntil(
 		caches.keys().then(async (keys) => {
 			for (const key of keys) {
@@ -186,14 +190,14 @@ self.addEventListener('activate', (event: ExtendableEvent) => {
 					await caches.delete(key);
 				}
 			}
-			await (self as unknown as ServiceWorkerGlobalScope).clients.claim();
+			await sw.clients.claim();
 		}),
 	);
 });
 
 // ── Fetch: tiered caching strategies ─────────────────────────────────────────
 
-self.addEventListener('fetch', (event: FetchEvent) => {
+sw.addEventListener('fetch', (event: FetchEvent) => {
 	const req = event.request;
 	const url = new URL(req.url);
 
@@ -262,12 +266,12 @@ self.addEventListener('fetch', (event: FetchEvent) => {
 // WeatherAegis calls `navigator.serviceWorker.controller.postMessage()`
 // with type AEGIS_LIGHTNING_ALERT when a DANGER transition occurs.
 
-self.addEventListener('message', (event: ExtendableMessageEvent) => {
+sw.addEventListener('message', (event: ExtendableMessageEvent) => {
 	if (!event.data || event.data.type !== 'AEGIS_LIGHTNING_ALERT') return;
 
 	const { title, body, tag } = event.data as { title?: string; body?: string; tag?: string };
 
-	const showNotification = (self as unknown as ServiceWorkerGlobalScope).registration.showNotification(
+	const showNotification = sw.registration.showNotification(
 		title ?? 'LIGHTNING ALERT',
 		{
 			body: body ?? 'CRITICAL: LIGHTNING DETECTED — CLEAR THE PITCH.',
@@ -277,26 +281,26 @@ self.addEventListener('message', (event: ExtendableMessageEvent) => {
 			requireInteraction: true,
 			vibrate: [200, 100, 200, 100, 200],
 			actions: [{ action: 'acknowledge', title: 'Acknowledged' }],
-		},
+		} as NotificationOptions & { vibrate?: number[] },
 	);
 
 	event.waitUntil(showNotification);
 });
 
 // Notification click — bring the coach portal to the foreground.
-self.addEventListener('notificationclick', (event: NotificationEvent) => {
+sw.addEventListener('notificationclick', (event: NotificationEvent) => {
 	event.notification.close();
 	if (event.action === 'acknowledge') return;
 
 	event.waitUntil(
-		(self as unknown as ServiceWorkerGlobalScope).clients
+		sw.clients
 			.matchAll({ type: 'window', includeUncontrolled: true })
-			.then((clients) => {
-				const focused = clients.find((c) => c.focused);
+			.then((clients: readonly WindowClient[]) => {
+				const focused = clients.find((c: WindowClient) => c.focused);
 				if (focused) return focused.focus();
-				const any = clients.find((c) => 'focus' in c);
+				const any = clients.find((c: WindowClient) => 'focus' in c);
 				if (any) return any.focus();
-				return (self as unknown as ServiceWorkerGlobalScope).clients.openWindow('/coach');
+				return sw.clients.openWindow('/coach');
 			}),
 	);
 });

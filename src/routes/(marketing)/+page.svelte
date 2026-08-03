@@ -7,7 +7,7 @@
 	import Icon from '$lib/components/ui/Icon.svelte';
 	import type { IconName } from '$lib/icons/registry.js';
 
-	export const prerender = true;
+
 
 	const features = [
 		{
@@ -91,8 +91,9 @@
 		</div>
 
 		<!-- FIX #1: Product preview image (no more placehold.co) -->
+		<div class="tw-w-full tw-relative tw-aspect-video tw-drop-shadow-[0_20px_50px_rgba(20,184,166,0.15)]">
 		<div
-			class="tw-w-full tw-relative tw-aspect-video tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-overflow-hidden tw-group"
+			class="tw-w-full tw-h-full tw-relative tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-overflow-hidden tw-group"
 			style="clip-path: polygon(20px 0, 100% 0, 100% calc(100% - 20px), calc(100% - 20px) 100%, 0 100%, 0 20px);"
 		>
 			<!-- Corner accents -->
@@ -102,10 +103,11 @@
 			<div class="tw-absolute tw-inset-0 tw-bg-gradient-to-tr tw-from-[#02061799] tw-to-transparent tw-z-10 tw-pointer-events-none tw-transition-opacity tw-duration-700 group-hover:tw-opacity-30"></div>
 			<!-- Generated product preview -->
 			<div class="tw-w-full tw-h-full tw-flex tw-items-center tw-justify-center tw-bg-[#000000] tw-transition-transform tw-duration-700 group-hover:tw-scale-[1.02]">
-				<img src="/videos/product_preview.webp" alt="SSTracker Product Preview" class="tw-w-full tw-h-full tw-object-cover" loading="lazy" />
+				<img src="/nexus-command-preview.png" alt="SSTracker Product Preview" class="tw-w-full tw-h-full tw-object-cover" loading="lazy" />
 			</div>
 			<!-- Scanline overlay -->
 			<div class="tw-absolute tw-inset-0 tw-z-10 tw-pointer-events-none" style="opacity: 0.03; background: repeating-linear-gradient(0deg, transparent, transparent 3px, #fff 3px, #fff 4px);"></div>
+		</div>
 		</div>
 
 		<!-- Trust Bar -->
@@ -133,7 +135,8 @@
 		<!-- Symmetric: 4 / 4 / 4 column weighting -->
 		<div class="tw-grid tw-grid-cols-1 md:tw-grid-cols-12 tw-gap-4 md:tw-gap-6">
 			{#each features as feat}
-				<div data-bento={feat.bento} class="tw-col-span-1 {feat.cols} tw-bg-slate-900 tw-border tw-border-[#334155] tw-p-8 hover:tw-border-[#334155] tw-transition-colors tw-duration-150 tw-flex tw-flex-col tw-relative tw-group tw-overflow-hidden bento-well"
+				<div data-bento={feat.bento} class="tw-col-span-1 {feat.cols} tw-drop-shadow-[0_8px_32px_rgba(0,0,0,0.5)] tw-transition-all tw-duration-300 hover:tw-drop-shadow-[0_12px_48px_rgba(20,184,166,0.15)] tw-h-full">
+				<div class="tw-w-full tw-h-full tw-bg-slate-900 tw-border tw-border-[#334155] tw-p-8 hover:tw-border-[#14b8a6] tw-transition-colors tw-duration-150 tw-flex tw-flex-col tw-relative tw-group tw-overflow-hidden bento-well"
 					style="background-color: #0f172a; clip-path: polygon(12px 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%, 0 12px); padding: 32px;"
 				>
 					<!-- Ambient glow on hover -->
@@ -152,6 +155,7 @@
 					>
 						Learn More <Icon name={"nav.arrow-right" as IconName} size={14} />
 					</a>
+				</div>
 				</div>
 			{/each}
 		</div>

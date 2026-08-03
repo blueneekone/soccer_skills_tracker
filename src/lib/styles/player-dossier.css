@@ -689,7 +689,7 @@
 			transparent 68%
 		);
 	border: 1px solid color-mix(in srgb, var(--pd-accent-data) 35%, var(--pd-line));
-	box-shadow: var(--pd-depth-glow-teal);
+	box-shadow: none; /* Moved to Svelte drop-shadow wrapper */
 }
 
 .player-dossier-root .pd-empty-state__title {

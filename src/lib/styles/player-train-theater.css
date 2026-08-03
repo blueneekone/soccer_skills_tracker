@@ -14,7 +14,7 @@
 	position: relative;
 	background: var(--pd-navy-panel, #0f172a);
 	border: 1px solid var(--pd-grey-trim, #334155);
-	box-shadow: 12px 12px 0 0 var(--pd-void-base, #000000);
+	box-shadow: none; /* Moved to pd-os-deck-shadow-wrap in Svelte */
 	clip-path: polygon(
 		var(--pd-chamfer-modal, 8px) 0%,
 		100% 0%,

@@ -398,7 +398,7 @@
 			transparent 68%
 		);
 	border: 1px solid color-mix(in srgb, var(--pd-accent-data, #14b8a6) 35%, var(--pd-line));
-	box-shadow: var(--pd-depth-glow-teal, 0 0 12px color-mix(in srgb, var(--pd-accent-data, #14b8a6) 18%, transparent));
+	box-shadow: none; /* Moved to Svelte drop-shadow wrapper to avoid clip-path cutoff */
 }
 
 .player-hud-root .lobby-capsule-ghost-card .pd-empty-state__copy {

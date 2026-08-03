@@ -549,7 +549,9 @@
 						role="status"
 						aria-labelledby="lobby-capsules-h"
 					>
-						<div class="pd-empty-state__icon" aria-hidden="true"></div>
+						<div class="tw-drop-shadow-[0_0_12px_rgba(20,184,166,0.18)]" aria-hidden="true">
+							<div class="pd-empty-state__icon"></div>
+						</div>
 						<div class="pd-empty-state__copy">
 							<p class="pd-empty-state__title">Ghost profile</p>
 							<p class="pd-empty-state__lede">Awaiting first memory capsule</p>

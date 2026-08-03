@@ -34,7 +34,7 @@
 	padding: clamp(1rem, 2.4vw, 1.35rem);
 	background: var(--pd-navy-panel, #0f172a);
 	border: 1px solid var(--pd-grey-trim, #334155);
-	box-shadow: var(--pd-modal-shadow-void, 12px 12px 0 0 var(--pd-void-base));
+	box-shadow: none; /* Moved to ss-modal-shadow-wrap in Svelte */
 	clip-path: polygon(
 		var(--pd-chamfer-modal, 8px) 0%,
 		100% 0%,
@@ -47,9 +47,7 @@
 
 /* Directive milestone variant — emissive gold reserved for SkillTierUnlockModal only */
 .ss-modal-z4-hero.ss-modal-directive {
-	box-shadow:
-		var(--pd-modal-shadow-void, 12px 12px 0 0 var(--pd-void-base)),
-		var(--pd-emissive-gold, 0 0 14px color-mix(in srgb, var(--pd-action-gold) 32%, transparent));
+	box-shadow: none;
 }
 
 .ss-scrim-overlay :global(button:focus-visible),
@@ -69,7 +67,7 @@
 }
 
 .pd-chrome-root[data-dopamine='off'] .ss-modal-z4-hero.ss-modal-directive {
-	box-shadow: var(--pd-modal-shadow-void, 12px 12px 0 0 var(--pd-void-base));
+	box-shadow: none;
 	animation: none !important;
 }
 

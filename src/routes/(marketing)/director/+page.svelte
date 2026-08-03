@@ -28,7 +28,7 @@
 					<Icon name={"status.circle-play" as IconName} size={48} strokeWidth={1} />
 				</button>
 			</div>
-			<img src="https://placehold.co/1920x1080/0f172a/334155.webp?text=[VIDEO_SLOT:+Architecting+Cell-Based+Multi-Tenancy]" alt="Director OS Cinematic Video" class="tw-w-full tw-h-full tw-object-cover tw-opacity-50" />
+			<img src="/nexus-command-preview.png" alt="Director OS Cinematic Video" class="tw-w-full tw-h-full tw-object-cover tw-opacity-50" />
 		</div>
 	</header>
 

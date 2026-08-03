@@ -239,6 +239,7 @@
     </p>
   {/if}
 
+  <div class="pd-os-deck-shadow-wrap" style="filter: drop-shadow(12px 12px 0 var(--pd-void-base, #000000));">
   <div class="pw-theater pd-os-deck pd-os-deck--hero bento-span-12">
     <div class="pw-theater__z4-scan" aria-hidden="true"></div>
     {#if activeMissionId}
@@ -615,8 +616,10 @@
     {/if}
   </div>
   </div>
+  </div>
 
   {#if pendingProofIntentId && !proofSubmitted}
+    <div class="pd-os-deck-shadow-wrap" style="filter: drop-shadow(12px 12px 0 var(--pd-void-base, #000000));">
     <div class="pw-theater pd-os-deck pd-os-deck--hero bento-span-12" aria-live="polite">
       <div class="pd-os-deck__well pw-mission-armed" style="border-color:rgba(20,184,166,0.2);">
         <div class="pw-mission-armed__head">
@@ -681,6 +684,7 @@
           </button>
         </div>
       </div>
+    </div>
     </div>
   {/if}
 

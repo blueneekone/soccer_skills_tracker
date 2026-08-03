@@ -12,6 +12,7 @@
 	} = $props();
 </script>
 
+<div class="pd-os-deck-shadow-wrap" style="filter: drop-shadow(12px 12px 0 var(--pd-void-base, #000000));">
 <section
 	class="operative-hub pd-os-deck pd-os-deck--hero bento-span-12 tw-min-w-0"
 	data-region="operative-hub"
@@ -40,6 +41,7 @@
 	</div>
 	</div>
 </section>
+</div>
 
 <style>
 	.operative-hub {

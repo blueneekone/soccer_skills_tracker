@@ -118,6 +118,7 @@
 		min-width: 0;
 		flex-shrink: 0;
 		user-select: none;
+		filter: drop-shadow(0 0 24px color-mix(in srgb, var(--hcs-accent, #14b8a6) 16%, transparent));
 	}
 
 	.hcs-wrapper--compact {
@@ -188,8 +189,7 @@
 		border-radius: inherit;
 		box-shadow:
 			inset 0 0 0 1px color-mix(in srgb, var(--hcs-accent, #14b8a6) 35%, transparent),
-			inset 0 0 24px color-mix(in srgb, var(--hcs-accent, #14b8a6) 18%, transparent),
-			0 0 32px color-mix(in srgb, var(--hcs-accent, #14b8a6) 16%, transparent);
+			inset 0 0 24px color-mix(in srgb, var(--hcs-accent, #14b8a6) 18%, transparent);
 		pointer-events: none;
 	}
 

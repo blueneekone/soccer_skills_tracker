@@ -78,6 +78,7 @@
 				<h2 id="pt-capsule-heading" class="pt-archive-section__title">Time-lapse capsule</h2>
 			</header>
 		{#if trajectoryEngine.activeCapsule}
+			<div class="pd-os-deck-shadow-wrap" style="filter: drop-shadow(12px 12px 0 var(--pd-void-base, #000000));">
 			<section class="pt-lb pd-os-deck pd-os-deck--hero tw-min-w-0" aria-label="Time-Lapse Memory Capsule">
 				<MemoryCapsuleArena
 					dossierMode={true}
@@ -86,6 +87,7 @@
 					capsuleHeadline={trajectoryEngine.capsuleHeadline}
 				/>
 			</section>
+			</div>
 		{:else if !trajectoryEngine.loading}
 			<section
 				class="pt-lb pt-ghost pd-os-deck__well pt-ghost--whisper tw-min-w-0"
