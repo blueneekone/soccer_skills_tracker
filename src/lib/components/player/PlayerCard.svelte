@@ -123,10 +123,11 @@
 		align-items: center;
 		gap: 12px;
 		perspective: 1000px;
+		width: 100%;
 	}
 
 	.player-card {
-		width: clamp(200px, 22vw, 260px);
+		width: 100%;
 		aspect-ratio: 5 / 7;
 		position: relative;
 		transform-style: preserve-3d;
