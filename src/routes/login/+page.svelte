@@ -148,7 +148,7 @@
 	<div class="tw-pointer-events-none tw-absolute tw-left-1/2 tw-top-1/2 tw-h-[600px] tw-w-[600px] -tw-translate-x-1/2 -tw-translate-y-1/2 tw-rounded-full tw-bg-[#14b8a614] tw-blur-[120px]"></div>
 
 	<!-- ─── Liquid Glass Card ─────────────────────────────────────────────── -->
-	<div class="tw-relative tw-z-10 tw-w-full tw-max-w-md tw-drop-shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
+	<div class="tw-relative tw-z-10 tw-w-full tw-max-w-md" style="filter: drop-shadow(0 0 40px rgba(0,0,0,0.8)) drop-shadow(0 4px 10px rgba(20,184,166,0.15));">
 	<div class="tw-w-full tw-border tw-border-[#334155] tw-bg-[#0f172a] tw-p-10"
 		style="clip-path: polygon(16px 0, 100% 0, 100% calc(100% - 16px), calc(100% - 16px) 100%, 0 100%, 0 16px);"
 	>

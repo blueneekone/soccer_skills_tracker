@@ -282,6 +282,8 @@ async function verifyHoverState(page: Page, selector: string, routeName: string)
 	if (await elements.count() === 0) return;
 
 	const el = elements.first();
+	const html = await el.evaluate(n => n.outerHTML);
+	console.log(`[${routeName}] First matched element for hover test:`, html);
 	await el.scrollIntoViewIfNeeded();
 	await el.hover();
 	await page.waitForTimeout(250); // kinetic transition window (150–250ms mandated)
