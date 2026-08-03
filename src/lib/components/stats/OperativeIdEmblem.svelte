@@ -126,7 +126,8 @@
 				class="oie-banner tw-pointer-events-none tw-absolute tw-inset-x-0 tw-top-0 tw-z-0 tw-h-[28%] tw-overflow-hidden"
 				aria-hidden="true"
 			>
-				{@html bannerSvg}
+				<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+          {@html bannerSvg}
 			</div>
 		{/if}
 
@@ -141,11 +142,13 @@
 				<div
 					class="oie-portrait tw-flex tw-h-full tw-w-full tw-items-center tw-justify-center tw-overflow-hidden tw-rounded-full tw-border-2 tw-border-cyan-500 tw-bg-slate-700"
 				>
-					{@html portraitSvg}
+					<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+          {@html portraitSvg}
 				</div>
 				{#if borderSvg}
 					<div class="oie-loadout-border tw-pointer-events-none tw-absolute tw-inset-0" aria-hidden="true">
-						{@html borderSvg}
+						<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+          {@html borderSvg}
 					</div>
 				{/if}
 				{#if showLevelBadge && levelAnchor === 'ring'}

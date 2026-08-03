@@ -222,7 +222,8 @@
 				onclick={() => selectPart(entry.id)}
 			>
 				<span class="opp-cell__thumb" aria-hidden="true">
-					{@html thumbSvg(entry.id)}
+					<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+          {@html thumbSvg(entry.id)}
 				</span>
 				<span class="opp-cell__label">{entry.label}</span>
 				<span class="opp-cell__status qa-mono">
@@ -233,7 +234,8 @@
 		{#each lockedForSlot as entry (entry.id)}
 			<article class="opp-cell opp-cell--locked" aria-label="{entry.label} — locked">
 				<span class="opp-cell__thumb opp-cell__thumb--locked" aria-hidden="true">
-					{@html thumbSvg(entry.id)}
+					<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+          {@html thumbSvg(entry.id)}
 				</span>
 				<span class="opp-cell__label">{entry.label}</span>
 				<span class="opp-cell__status qa-mono">Locked · earn via training milestones</span>

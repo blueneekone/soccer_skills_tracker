@@ -51,9 +51,9 @@ All data collection must pass through these legal gates before a user accesses t
 
 ##### 🚀 EPIC 1: GLOBAL ADMIN OS (THE COMMAND PLANE)
 **Mission:** Total multi-tenant infrastructure control, absolute observability, and system safety [cite: 754].
-*   **Account Impersonation:** Securely mint custom JWT tokens to troubleshoot Commissioner/Director accounts without exposing passwords [cite: 754].
-*   **Telemetry Single Pane:** Aggregated read-only dashboard pulling MAU and Stripe Connect Revenue metrics to defuse NoSQL read-bombs [cite: 754].
-*   **System Kill Switches:** Admin scripts to trigger the Right to Be Forgotten and database defragmentation [cite: 886].
+*   [x] **Account Impersonation:** Securely mint custom JWT tokens to troubleshoot Commissioner/Director accounts without exposing passwords [cite: 754].
+*   [x] **Telemetry Single Pane:** Aggregated read-only dashboard pulling MAU and Stripe Connect Revenue metrics to defuse NoSQL read-bombs [cite: 754].
+*   [x] **System Kill Switches:** Admin scripts to trigger the Right to Be Forgotten and database defragmentation [cite: 886].
 
 ##### 🏛️ EPIC 7: COMMISSIONER OS (THE FEDERATION COMMAND)
 **Mission:** State-wide governance, macro-logistics, and absolute talent oversight.

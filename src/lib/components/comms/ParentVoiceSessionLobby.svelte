@@ -51,7 +51,15 @@
 
 	let sessions = $state<SessionRow[]>([]);
 	let sessionsLoading = $state(false);
-	let calendarOptions = $state<CalendarOption[]>([]);
+	let calendarOptions = $derived(
+		workoutsStore.scheduledEvents.map((ev) => ({
+			id: String(ev.id),
+			label: `${String(ev.name || ev.eventKind || 'Event')} · ${fmtStart(
+				typeof ev.startTimestamp === 'number' ? ev.startTimestamp : null,
+			)}`,
+			startTimestamp: typeof ev.startTimestamp === 'number' ? ev.startTimestamp : null,
+		}))
+	);
 	let selectedCalendarEventId = $state('');
 	let sessionTitle = $state('');
 	let scheduleErr = $state('');
@@ -118,21 +126,9 @@
 	$effect(() => {
 		const tId = teamId?.trim();
 		if (!browser || !tId) {
-			calendarOptions = [];
 			return;
 		}
 		void workoutsStore.loadForTeam(tId);
-	});
-
-	$effect(() => {
-		calendarOptions = workoutsStore.scheduledEvents.map((ev) => ({
-			id: String(ev.id),
-			label: `${String(ev.name || ev.eventKind || 'Event')} · ${fmtStart(
-				typeof ev.startTimestamp === 'number' ? ev.startTimestamp : null,
-			)}`,
-			startTimestamp:
-				typeof ev.startTimestamp === 'number' ? ev.startTimestamp : null,
-		}));
 	});
 
 	$effect(() => {

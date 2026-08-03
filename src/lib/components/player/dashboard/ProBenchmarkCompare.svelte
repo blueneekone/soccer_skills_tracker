@@ -2,7 +2,7 @@
 	import { proBenchmarkService } from '$lib/services/proBenchmarks.svelte';
 	import type { VanguardAxisId } from '$lib/player/dashboard/vanguardProtocol';
 
-	export let prismValues: readonly number[] = [];
+	let { prismValues = [] }: { prismValues?: readonly number[] } = $props();
 
 	const AXES: { id: VanguardAxisId; label: string; index: number }[] = [
 		{ id: 'PAC', label: 'Pace', index: 0 },
@@ -14,7 +14,7 @@
 	];
 
 	// Extract the reactive state
-	$: benchmarks = proBenchmarkService.benchmarks;
+	const benchmarks = $derived(proBenchmarkService.benchmarks);
 </script>
 
 {#if benchmarks}

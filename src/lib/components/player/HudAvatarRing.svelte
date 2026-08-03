@@ -77,11 +77,13 @@
 	</svg>
 	<div class="hud-avatar-ring__avatar-wrap">
 		<div class="hud-avatar-ring__portrait" aria-hidden="true">
-			{@html innerPortraitSvg}
+			<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+          {@html innerPortraitSvg}
 		</div>
 		{#if portraitLayers.borderSvg}
 			<div class="hud-avatar-ring__loadout-border" aria-hidden="true">
-				{@html portraitLayers.borderSvg}
+				<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+          {@html portraitLayers.borderSvg}
 			</div>
 		{/if}
 	</div>
