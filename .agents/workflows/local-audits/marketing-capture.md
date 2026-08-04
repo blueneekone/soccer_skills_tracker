@@ -61,53 +61,53 @@ test.use({
 
 test.describe('Marketing Capture Walkthroughs', () => {
 
-	test('Scene 1: Director OS & B2B Revenue Engine', async ({ page }) => {
-		await bypassRouteGuards(page, 'director', 'mock-director-uid');
-		await page.goto('/director/dashboard', { waitUntil: 'domcontentloaded' });
-		await page.waitForTimeout(1000);
+	test('Scene 1: Coach OS - Dispatching Mission/Bounty', async ({ page }) => {
+		await bypassRouteGuards(page, 'coach', 'mock-coach-uid');
 
-		// Simulate viewing the command center and analytics
-		await page.mouse.move(500, 500);
+		// Coach goes to drills/field station to dispatch intent
+		await page.goto('/coach/drills', { waitUntil: 'domcontentloaded' });
+		await page.waitForTimeout(2000);
+
+		// Simulate mouse movement and viewing the screen
+		await page.mouse.move(300, 300);
 		await page.mouse.wheel(0, 300);
 		await page.waitForTimeout(2000);
-
-		// Navigate to compliance
-		await page.goto('/director/dashboard?tab=compliance', { waitUntil: 'domcontentloaded' });
-		await page.waitForTimeout(2000);
 	});
 
-	test('Scene 2 (Training Triangle): Athlete OS & Dopamine Engine', async ({ page }) => {
-		await bypassRouteGuards(page, 'player', 'mock-player-uid');
-		await page.goto('/player/dashboard', { waitUntil: 'domcontentloaded' });
-		await page.waitForTimeout(1000);
-
-		// Navigate to skill tree
-		await page.goto('/player/dashboard?tab=skills', { waitUntil: 'domcontentloaded' });
-		await page.waitForTimeout(2000);
-
-		// Navigate to armory
-		await page.goto('/player/dashboard?tab=armory', { waitUntil: 'domcontentloaded' });
-		await page.waitForTimeout(2000);
-	});
-
-	test('Scene 3 (Training Triangle): Coach OS & The Sideline SIEM', async ({ page }) => {
-		await bypassRouteGuards(page, 'coach', 'mock-coach-uid');
-		await page.goto('/coach/dashboard', { waitUntil: 'domcontentloaded' });
-		await page.waitForTimeout(1000);
-
-		// Navigate to War Room
-		await page.goto('/coach/dashboard?tab=tactics', { waitUntil: 'domcontentloaded' });
-		await page.waitForTimeout(3000);
-	});
-
-	test('Scene 4 (Training Triangle): SafeSport & Parent Shield', async ({ page }) => {
+	test('Scene 2: Parent OS - Escrow & Funding', async ({ page }) => {
 		await bypassRouteGuards(page, 'parent', 'mock-parent-uid');
-		await page.goto('/parent/dashboard', { waitUntil: 'domcontentloaded' });
-		await page.waitForTimeout(1000);
 
-		// Navigate to household
-		await page.goto('/parent/dashboard?tab=household', { waitUntil: 'domcontentloaded' });
+		// Parent goes to dashboard to see bounty funding panel
+		await page.goto('/parent/dashboard', { waitUntil: 'domcontentloaded' });
 		await page.waitForTimeout(2000);
+
+		// Scroll to view Bounty Terminal
+		await page.mouse.wheel(0, 500);
+		await page.waitForTimeout(2000);
+	});
+
+	test('Scene 3: Player OS - Workout & Dopamine', async ({ page }) => {
+		await bypassRouteGuards(page, 'player', 'mock-player-uid');
+
+		// Player views incoming bounty on dashboard
+		await page.goto('/player/dashboard', { waitUntil: 'domcontentloaded' });
+		await page.waitForTimeout(2000);
+
+		// Player executes workout
+		await page.goto('/player/workout', { waitUntil: 'domcontentloaded' });
+		await page.waitForTimeout(2000);
+
+		// Player views their unlocked gear in armory
+		await page.goto('/player/armory', { waitUntil: 'domcontentloaded' });
+		await page.waitForTimeout(2000);
+	});
+
+	test('Scene 4: Coach OS - Telemetry Review', async ({ page }) => {
+		await bypassRouteGuards(page, 'coach', 'mock-coach-uid');
+
+		// Coach views recorded progress on dashboard
+		await page.goto('/coach/dashboard', { waitUntil: 'domcontentloaded' });
+		await page.waitForTimeout(3000);
 	});
 
 });
