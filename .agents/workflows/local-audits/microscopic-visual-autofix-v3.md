@@ -126,6 +126,10 @@ If the suite returns any failures:
    - Maintain the **60-30-10 palette** (Void Black, Structural Grey, Data Cyan/Amber accents).
    - Wrap any `$effect` routing or state mutations in `untrack()` closures.
    - No `!important` hacks. No inline `style=` overrides to game tests.
+   - All Tailwind utility classes must be prefixed with `tw-`.
+   - Do not use legacy colors like `#fbbf24` in Commissioner OS.
+   - Do not use legacy data maps (query the nested `armory` map over `player_stats`).
+   - Global edits (e.g., `sed -i`) are strictly forbidden; edits must be surgical.
 4. **Re-run the spec.** Repeat until the console returns `X passed (0 failed)`.
 
 ---
@@ -139,7 +143,8 @@ Once Playwright tests are 100% green, you MUST mathematically prove stability:
    npm run check
    npx eslint .
    ```
-2. **Zero Error Mandate:** If Svelte 5 compiler or ESLint returns any errors or TypeScript `any` violations, fix them. A task is ONLY "Done" with 0 errors.
+2. **Run Unit Tests:** Execute `pnpm test:unit` to ensure zero regressions in functionality.
+3. **Zero Error Mandate:** If Svelte 5 compiler or ESLint returns any errors or TypeScript `any` violations, fix them. A task is ONLY "Done" with 0 errors.
 
 ---
 
