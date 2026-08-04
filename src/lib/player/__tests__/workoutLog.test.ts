@@ -218,4 +218,47 @@ describe('workoutLog', () => {
 			workoutLogErrorMessage({ message: 'Just a random message.' })
 		).toBe('Just a random message.');
 	});
+
+
+	it('executePlayerWorkoutLog catches and logs errors when Player OS write fails', async () => {
+		const logSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+		const mockError = new Error('Simulated Player OS write failure');
+
+		const logTrainingSession = vi.fn(async () => {
+			return { data: { earnedXP: 42, totalXp: 500, level: 3 } } as any;
+		});
+
+		const writePlayerOsWorkout = vi.fn().mockRejectedValue(mockError);
+
+		const result = await executePlayerWorkoutLog({
+			drillType: '[Technical] Juggling (Player workout)',
+			durationMin: 30,
+			totalReps: 0,
+			intensityCall: 'medium',
+			focusLabel: 'Technical',
+			selectedDrill: 'Juggling',
+			activeMissionId: null,
+			missionSource: null,
+			totalXpHud: 458,
+			oldLevel: 3,
+			intensityStep: 7,
+			authUser: { uid: 'player-1', email: 'ace@example.com' },
+			profile: { teamId: 'team-1', playerName: 'Ace' },
+			logTrainingSession,
+			writePlayerOsWorkout,
+			commitWorkoutCompletion: vi.fn(),
+			dopamineOnCommit: vi.fn(async (p) => p),
+		});
+
+		expect(writePlayerOsWorkout).toHaveBeenCalled();
+		expect(logSpy).toHaveBeenCalledWith(
+			'[Player OS] users/',
+			'ace@example.com',
+			'/workouts',
+			mockError
+		);
+		expect(result.earned).toBe(42);
+
+		logSpy.mockRestore();
+	});
 });
