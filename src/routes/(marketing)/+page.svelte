@@ -17,7 +17,7 @@
 			body: 'Gamified Skill Trees, XP progression, Vanguard Prism radars, and video trial uploads driving intrinsic motivation and unyielding athlete engagement.',
 			href: '/player',
 			hoverColor: '#14b8a6',
-			cols: 'md:tw-col-span-4',
+			cols: 'md:tw-col-span-6',
 			bento: 'player'
 		},
 		{
@@ -41,7 +41,7 @@
 			body: 'COPPA 2.0 WebAuthn biometric gating, SafeSport Shadow CC routing, and the Car Ride Home emotional safety protocol.',
 			href: '/parent',
 			hoverColor: '#14b8a6',
-			cols: 'md:tw-col-span-4',
+			cols: 'md:tw-col-span-2',
 			bento: 'parent'
 		}
 	];
@@ -60,7 +60,7 @@
 <div class="tw-flex tw-w-full tw-min-h-dvh tw-flex-col tw-text-[#f8fafc] tw-font-sans tw-relative tw-overflow-hidden" style="background-color: #020617;">
 	<!-- Volumetric Background Mesh & Lighting -->
 	<div class="tw-absolute tw-inset-0 tw-z-0 tw-pointer-events-none" style="background: radial-gradient(circle at 50% 0%, #14b8a615 0%, transparent 50%), radial-gradient(circle at 100% 50%, #f59e0b08 0%, transparent 40%);"></div>
-	<div class="tw-absolute tw-inset-0 tw-z-0 tw-pointer-events-none tw-opacity-[0.03]" style="background-image: linear-gradient(#14b8a6 1px, transparent 1px), linear-gradient(90deg, #14b8a6 1px, transparent 1px); background-size: 40px 40px; mask-image: linear-gradient(to bottom, black 20%, transparent 80%); -webkit-mask-image: linear-gradient(to bottom, black 20%, transparent 80%);"></div>
+	<div class="tw-absolute tw-inset-0 tw-z-0 tw-pointer-events-none tw-opacity-5" style="background-image: linear-gradient(#14b8a6 1px, transparent 1px), linear-gradient(90deg, #14b8a6 1px, transparent 1px); background-size: 40px 40px; mask-image: linear-gradient(to bottom, black 20%, transparent 80%); -webkit-mask-image: linear-gradient(to bottom, black 20%, transparent 80%);"></div>
 
 	<!-- Content Layer -->
 	<div class="tw-relative tw-z-10 tw-w-full tw-h-full tw-flex tw-flex-col">
