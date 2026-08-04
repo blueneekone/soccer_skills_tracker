@@ -201,6 +201,22 @@ describe('workoutLog', () => {
 		expect(workoutLogErrorMessage({})).toBe('Could not log workout.');
 	});
 
+	it('workoutLogErrorMessage handles object with empty code and message', () => {
+		expect(workoutLogErrorMessage({ code: null, message: undefined })).toBe('Could not log workout.');
+	});
+
+	it('workoutLogErrorMessage handles bare functions/internal code with no message', () => {
+		expect(workoutLogErrorMessage({ code: 'functions/internal' })).toBe('Transmit failed — try again or ask staff.');
+	});
+
+	it('workoutLogErrorMessage handles bare internal message with generic code', () => {
+		expect(workoutLogErrorMessage({ message: 'internal' })).toBe('internal');
+	});
+
+	it('workoutLogErrorMessage handles bare internal message with functions code prefix', () => {
+		expect(workoutLogErrorMessage({ code: 'functions/something', message: 'internal' })).toBe('Transmit failed — try again or ask staff.');
+	});
+
 	it('workoutLogErrorMessage handles bare internal error with different functions code', () => {
 		expect(
 			workoutLogErrorMessage({ code: 'functions/unknown', message: 'internal' })
