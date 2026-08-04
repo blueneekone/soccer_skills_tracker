@@ -1,7 +1,7 @@
 import { sveltekit } from '@sveltejs/kit/vite';
 import { defineConfig } from 'vite';
 
-export default defineConfig(({ mode }) => ({
+export default defineConfig(({ mode, isSsrBuild }) => ({
 	plugins: [
 		sveltekit(),
 	],
@@ -13,7 +13,7 @@ export default defineConfig(({ mode }) => ({
 	 */
 	build: {
 		rollupOptions: {
-			output: {
+			output: isSsrBuild ? undefined : {
 				entryFileNames: '_app/immutable/entry/[name].[hash].js',
 				chunkFileNames: '_app/immutable/chunks/[name].[hash].js',
 				assetFileNames: '_app/immutable/assets/[name].[hash][extname]',

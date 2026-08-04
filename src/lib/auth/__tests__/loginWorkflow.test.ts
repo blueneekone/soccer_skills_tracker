@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { getLoginWaterfallDestination } from '$lib/auth/loginRouting.js';
+import { getLoginWaterfallDestination, getContextFromHref } from '$lib/auth/loginRouting.js';
 import { isProfileComplete } from '$lib/auth/profile.js';
 import { deriveNeedsOnboarding, deriveRoleFlags } from '$lib/stores/auth/roleDerivations.js';
 
@@ -9,6 +9,68 @@ import { deriveNeedsOnboarding, deriveRoleFlags } from '$lib/stores/auth/roleDer
  * Login → dashboard state-machine regression guards (Phase C).
  * Pure routing + onboarding gates — no Firebase I/O.
  */
+
+
+describe('getContextFromHref — login routing context extraction', () => {
+	it('maps explicit paths to their corresponding contexts', () => {
+		expect(getContextFromHref('/admin')).toBe('admin');
+		expect(getContextFromHref('/admin/overview')).toBe('admin');
+
+		expect(getContextFromHref('/director')).toBe('director');
+		expect(getContextFromHref('/director/compliance')).toBe('director');
+
+		expect(getContextFromHref('/registrar')).toBe('director');
+		expect(getContextFromHref('/registrar/xyz')).toBe('director');
+
+		expect(getContextFromHref('/coach')).toBe('coach');
+		expect(getContextFromHref('/coach/dashboard')).toBe('coach');
+
+		expect(getContextFromHref('/recruiter')).toBe('recruiter');
+		expect(getContextFromHref('/recruiter/dashboard')).toBe('recruiter');
+
+		expect(getContextFromHref('/parent')).toBe('household');
+		expect(getContextFromHref('/parent/household')).toBe('household');
+
+		expect(getContextFromHref('/home')).toBe('household');
+		expect(getContextFromHref('/home/dashboard')).toBe('household');
+
+		expect(getContextFromHref('/stats')).toBe('household');
+		expect(getContextFromHref('/stats/recent')).toBe('household');
+
+		expect(getContextFromHref('/trophies')).toBe('household');
+		expect(getContextFromHref('/trophies/earned')).toBe('household');
+
+		expect(getContextFromHref('/settings')).toBe('household');
+		expect(getContextFromHref('/settings/account')).toBe('household');
+
+		expect(getContextFromHref('/player/settings')).toBe('household');
+		expect(getContextFromHref('/player/settings/profile')).toBe('household');
+	});
+
+	it('maps paths with query strings and hashes correctly', () => {
+		expect(getContextFromHref('/coach?tab=roster')).toBe('coach');
+		expect(getContextFromHref('/director/compliance?status=active#top')).toBe('director');
+		expect(getContextFromHref('/parent/household?view=calendar')).toBe('household');
+		expect(getContextFromHref('/home#dashboard')).toBe('household');
+	});
+
+	it('returns an empty string for unhandled paths', () => {
+		expect(getContextFromHref('/onboarding')).toBe('');
+		expect(getContextFromHref('/player/dashboard')).toBe(''); // Not mapped in the function explicitly, handled separately or differently in app
+		expect(getContextFromHref('/unknown-path')).toBe('');
+		expect(getContextFromHref('/')).toBe('');
+	});
+
+	it('safely catches errors and returns an empty string for invalid inputs', () => {
+		expect(getContextFromHref(null as any)).toBe('');
+		expect(getContextFromHref(undefined as any)).toBe('');
+		expect(getContextFromHref('')).toBe('');
+		// Objects and numbers that fail URL construction
+		expect(getContextFromHref(123 as any)).toBe('');
+		expect(getContextFromHref({} as any)).toBe('');
+	});
+});
+
 describe('login-to-dashboard workflow (Phase C regression guards)', () => {
 	it('routes coaches to /coach after profile is complete', () => {
 		const dest = getLoginWaterfallDestination('coach', { clubId: 'fc-demo' });
