@@ -66,6 +66,7 @@ All data collection must pass through these legal gates before a user accesses t
 *   [x] **Tournament Operations & Live Results Hub:** Automated multi-venue bracket scheduling, team registration, digital game sheets, and live scorekeeping that instantly pushes results to the Fan and Player OS.
 
 ##### 🏢 EPIC 2: DIRECTOR OS & B2B REVENUE ENGINE
+*   [x] Rebuild Marketing Landing Page
 **Mission:** Multi-sport club scaling, logistical domination, and embedded finance [cite: 755].
 *   **Transaction-Based Monetization:** $0 platform base fee monetized via Stripe Connect transaction fees [cite: 755].
 *   [x] **The Vampire Importer:** Frictionless headless CSV ingestion to steal legacy rosters from competitors [cite: 755].
