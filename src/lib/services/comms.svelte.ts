@@ -257,7 +257,7 @@ export class CommsEngine {
 
 	constructor() {
 		if (!browser) return;
-		const fns = functions;
+		const fns = functions; // us-east1 via firebase.js alias
 		this._broadcastFn = httpsCallable(fns, 'safeSportBroadcast');
 		this._clubBroadcastFn = httpsCallable(fns, 'clubSportBroadcast');
 		this._emergencyBroadcastFn = httpsCallable(fns, 'emergencyClubBroadcast');
