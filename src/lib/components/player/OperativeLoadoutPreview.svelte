@@ -50,20 +50,24 @@
 	<div class="olp-stack">
 		{#if layers.bannerSvg}
 			<div class="olp-banner" aria-hidden="true">
-				{@html layers.bannerSvg}
+				<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+          {@html layers.bannerSvg}
 			</div>
 		{/if}
 		<div class="olp-portrait" aria-hidden="true">
-			{@html layers.portraitSvg}
+			<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+          {@html layers.portraitSvg}
 		</div>
 		{#if layers.borderSvg}
 			<div class="olp-border" aria-hidden="true">
-				{@html layers.borderSvg}
+				<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+          {@html layers.borderSvg}
 			</div>
 		{/if}
 		{#if layers.badgeSvg}
 			<div class="olp-badge" aria-hidden="true">
-				{@html layers.badgeSvg}
+				<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+          {@html layers.badgeSvg}
 			</div>
 		{/if}
 	</div>

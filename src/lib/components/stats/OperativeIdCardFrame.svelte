@@ -124,7 +124,8 @@
 	<div class="oicf-art-well" aria-hidden="true">
 		{#if bannerSvg}
 			<div class="oicf-banner">
-				{@html bannerSvg}
+				<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+          {@html bannerSvg}
 			</div>
 		{/if}
 		<div class="oicf-portrait-stage">
@@ -136,11 +137,13 @@
 					: `width: ${size}px; height: ${size}px; max-width: 100%;`}
 			>
 				<div class="oicf-portrait">
-					{@html portraitSvg}
+					<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+          {@html portraitSvg}
 				</div>
 				{#if borderSvg}
 					<div class="oicf-loadout-border" aria-hidden="true">
-						{@html borderSvg}
+						<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+          {@html borderSvg}
 					</div>
 				{/if}
 			</div>

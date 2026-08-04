@@ -104,7 +104,7 @@
 	<div class="st-bento">
 
 		<!-- Primary cell: arena + HUD stacked (HUD absolutely overlays Arena) -->
-		<div class="st-cell-primary tw-relative">
+		<div class="st-cell-primary tw-relative chamfered-card" style="clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);">
 			<SkillTreeArena engine={skillTree} {armoryStats} {tierAccent} />
 			<SkillTreeHUD engine={skillTree} {armory} />
 		</div>

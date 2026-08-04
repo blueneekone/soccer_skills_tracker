@@ -67,7 +67,8 @@
 			>PARENTAL<br>CONSENT<br>REQUIRED</span>
 		</div>
 	{:else}
-		{@html svgMarkup}
+		<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+          {@html svgMarkup}
 		{#if showInitializeCta && !resolvedPortrait}
 			<a
 				href={resolveAppPath('/player/armory')}

@@ -67,7 +67,7 @@
 			<h1 class="tw-text-2xl tw-font-black tw-tracking-tight tw-text-white">
 				<span class="tw-text-[#14b8a6]">{titleLead}</span>
 				{#if titleAccent}
-					{' '}{titleAccent}
+					 {titleAccent}
 				{/if}
 			</h1>
 			<p class="tw-text-[10px] tw-tracking-widest tw-text-white/30 tw-uppercase">

@@ -209,9 +209,7 @@
 		return labels[dow];
 	}
 
-	$effect(() => {
-		mounted = true;
-	});
+
 </script>
 
 {#if teamId}

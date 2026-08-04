@@ -33,7 +33,7 @@ The CMO and Browser subagents are **mathematically prohibited** from executing a
 *   **Recording**: Record this 20-second sequence, ensuring no layout squishing occurs during animations.
 
 ### SCENE 3: The Fan OS & Broadcast Monetization (0:35 - 0:55)
-*   **Transition**: Authenticate as the *Engaged Fan/Parent* persona and navigate to `/fan/stream`.
+*   **Transition**: Authenticate as the *Engaged Fan/Parent* persona and navigate to `/fan/broadcast`.
 *   **Action 1 (Smart Camera Stream)**: Simulate a live football stream using a pre-buffered, lazy-loaded local video file. Overlay real-time gamified overlays (e.g., MVP voting panel).
 *   **Action 2 (Interactive Superdraw & Apple Pay)**: Trigger a 60-second digital fundraising prompt on screen. Simulate an Apple Pay button click, showing a frictionless, successful payment verification checkmark.
 *   **Recording**: Capture this 20-second broadcast overlay sequence.
@@ -52,9 +52,9 @@ The CMO and Browser subagents are **mathematically prohibited** from executing a
 2.  **Typography Overlays**: The CMO must programmatically overlay Geist Mono micro-typography labels showing real-time frame rates and database transaction latencies (e.g., *"14ms Inference Latency"*, *"1000Hz Telemetry Stream"*) on the video corners.
 3.  **Hashed Static Compression**: Save the resulting video files with cryptographic file-hash names to prevent browser caching when reviewed.
 4.  **Save Path**: Output all scene files and the combined compilation strictly to:
-    `/workspace/scratch/marketing/pending-review/`
+    `./marketing/pending-review/`
     Once post-production completes, copy the unified file exactly once to:
-    `/workspace/out/SSTracker-90s-Demo-Capture.mp4`
+    `./out/SSTracker-90s-Demo-Capture.mp4`
 
 ---
 

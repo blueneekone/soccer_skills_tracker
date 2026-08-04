@@ -19,7 +19,6 @@
 	let busy = $state(false);
 	let err = $state('');
 	let ok = $state('');
-
 	async function submitTransfer() {
 		err = '';
 		ok = '';

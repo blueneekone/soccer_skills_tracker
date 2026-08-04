@@ -72,7 +72,7 @@
 	</section>
 
 	{#if vanguardFlags.capsulesEnabled}
-		<section class="pt-archive-section pt-archive-section--capsule" aria-labelledby="pt-capsule-heading">
+		<section class="pt-archive-section pt-archive-section--capsule chamfered-card" style="clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);" aria-labelledby="pt-capsule-heading">
 			<header class="pt-archive-section__head">
 				<span class="pd-label">Memory archive</span>
 				<h2 id="pt-capsule-heading" class="pt-archive-section__title">Time-lapse capsule</h2>
