@@ -292,6 +292,7 @@ exports.createCommsChannel = onCall({region: REGION}, async (request) => {
     teamId: teamId || null,
     createdBy: callerUid,
     createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    channelStatus: 'BLOCKED_VPC_PENDING',
   };
 
   const col = admin.firestore().collection('clubs').doc(clubId).collection('channels');
@@ -520,6 +521,10 @@ exports.sendChannelMessage = onCall({region: REGION}, async (request) => {
   const channelSnap = await channelRef.get();
   if (!channelSnap.exists) {
     throw new HttpsError('not-found', 'Channel not found.');
+  }
+
+  if (channelSnap.data().channelStatus !== 'ACTIVE') {
+    throw new HttpsError('failed-precondition', 'Channel is not active.');
   }
   const channel = channelSnap.data();
   if (channel.channelStatus !== 'ACTIVE') {

@@ -1,5 +1,6 @@
 <script>
 	import { db } from '$lib/firebase.js';
+	import { authStore } from '$lib/stores/auth/facade.svelte.js';
 	import { doc, updateDoc, getDoc } from 'firebase/firestore';
 	import { teamsStore } from '$lib/stores/teams.svelte.js';
 	import { loadComplianceTable } from '$lib/registrar/loadComplianceRows.js';
@@ -26,6 +27,7 @@
 	);
 
 	const load = async () => {
+		if (!db || !authStore.isAuthenticated) return;
 		if (!clubId || clubTeams.length === 0) {
 			rows = [];
 			return;
@@ -51,6 +53,7 @@
 
 	/** @param {string | null} email @param {string} newStatus */
 	const updateStatus = async (email, newStatus) => {
+		if (!db || !authStore.isAuthenticated) return;
 		if (!email) return;
 		try {
 			await updateDoc(doc(db, 'passports', email), { clearanceStatus: newStatus });

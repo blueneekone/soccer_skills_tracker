@@ -14,6 +14,7 @@ export default defineConfig({
 		conditions: ['browser', 'import', 'module', 'default'],
 	},
 	test: {
+		setupFiles: ['./src/setup/vitest.setup.ts'],
 		globals: true,
 		environment: 'node',
 		include: [
