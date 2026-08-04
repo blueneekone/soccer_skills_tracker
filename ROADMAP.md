@@ -84,11 +84,11 @@ All data collection must pass through these legal gates before a user accesses t
 *   **The Dopamine Engine:** Dynamic streak counters with 2% daily skill decay. `canvas-confetti` particle explosions firing STRICTLY on verified backend database commits to prevent spoofing [cite: 757, 1187].
 *   **Premium Video Trials & Escrow Sponsorships:** 50MB-capped upload pipelines where Computer Vision verification triggers real-world escrow payouts from local brands [cite: 757].
 
-##### 🛡️ EPIC 5: PARENT OS & RECRUITER MARKETPLACE (THE SHIELD)
+##### [x] 🛡️ EPIC 5: PARENT OS & RECRUITER MARKETPLACE (THE SHIELD)
 **Mission:** Legal compliance, financial escrow, emotional safety, and global scouting monetization [cite: 758].
-*   **SafeSport Comms (Shadow CC):** Immutable server-side Firestore triggers that automatically intercept coach-to-player direct messages, resolve the minor's household, and CC the parent email mathematically preventing 1:1 adult/minor channels [cite: 758, 1191].
-**The Car Ride Home Protocol (EQ):** Suppresses raw metric dashboards for 15 minutes post-match to protect beginner self-worth [cite: 758].
-*   **Vetted Recruiter Engine:** Checkr API integration mandating National Criminal Database vetting before external scouts gain platform access to prospect data [cite: 758, 1168].
+*   [x] **SafeSport Comms (Shadow CC):** Immutable server-side Firestore triggers that automatically intercept coach-to-player direct messages, resolve the minor's household, and CC the parent email mathematically preventing 1:1 adult/minor channels [cite: 758, 1191].
+*   [x] **The Car Ride Home Protocol (EQ):** Suppresses raw metric dashboards for 15 minutes post-match to protect beginner self-worth [cite: 758].
+*   [x] **Vetted Recruiter Engine:** Checkr API integration mandating National Criminal Database vetting before external scouts gain platform access to prospect data [cite: 758, 1168].
 
 ##### 🏟️ EPIC 6: FAN OS & BROADCAST MONETIZATION
 **Mission:** Turn every club into a media franchise, eliminating fundraising friction [cite: 759].
