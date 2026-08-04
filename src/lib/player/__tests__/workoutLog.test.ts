@@ -191,4 +191,31 @@ describe('workoutLog', () => {
 		expect(captured?.mood).toBe(4);
 		expect(captured?.restingFeel).toBe(3);
 	});
+
+	it('workoutLogErrorMessage handles falsy inputs', () => {
+		expect(workoutLogErrorMessage(null)).toBe('Could not log workout.');
+		expect(workoutLogErrorMessage(undefined)).toBe('Could not log workout.');
+	});
+
+	it('workoutLogErrorMessage handles empty object', () => {
+		expect(workoutLogErrorMessage({})).toBe('Could not log workout.');
+	});
+
+	it('workoutLogErrorMessage handles bare internal error with different functions code', () => {
+		expect(
+			workoutLogErrorMessage({ code: 'functions/unknown', message: 'internal' })
+		).toBe('Transmit failed — try again or ask staff.');
+	});
+
+	it('workoutLogErrorMessage returns generic functions error message', () => {
+		expect(
+			workoutLogErrorMessage({ code: 'functions/invalid-argument', message: 'Invalid arguments provided.' })
+		).toBe('Invalid arguments provided.');
+	});
+
+	it('workoutLogErrorMessage returns message when no code is present', () => {
+		expect(
+			workoutLogErrorMessage({ message: 'Just a random message.' })
+		).toBe('Just a random message.');
+	});
 });
