@@ -140,7 +140,8 @@ const b2bEnrollmentOps = require('./src/domains/b2bEnrollmentOps.js');
 exports.enrollIndependentDirector = b2bEnrollmentOps.enrollIndependentDirector;
 exports.enrollGovernedDirector = b2bEnrollmentOps.enrollGovernedDirector;
 
-const interoperabilityOps = require('./src/domains/interoperabilityOps.js');
-exports.vampireIngestRows = interoperabilityOps.vampireIngestRows;
-exports.interoperabilitySync = interoperabilityOps.interoperabilitySync;
-exports.interoperabilityWebhook = interoperabilityOps.interoperabilityWebhook;
+const ingestRoster = require("./ingestRoster.js");
+exports.ingestRoster = ingestRoster.ingestRoster;
+
+const { onChannelCreated } = require('./src/onChannelCreated.js');
+exports.onChannelCreated = onChannelCreated;

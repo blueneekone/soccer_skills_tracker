@@ -337,11 +337,13 @@
 
 <!-- ── Manual Override Modal ──────────────────────────────────────────────── -->
 {#if overrideOpen}
-	<!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
+	<!-- svelte-ignore a11y_click_events_have_key_events -->
+	<!-- svelte-ignore a11y_no_static_element_interactions -->
 	<div class="ch-modal-backdrop" onclick={() => !overrideBusy && (overrideOpen = false)}>
 		<div
 			class="ch-modal vanguard-card"
 			role="dialog"
+			tabindex="-1"
 			aria-modal="true"
 			aria-labelledby="override-title"
 			onclick={(e) => e.stopPropagation()}
@@ -399,11 +401,13 @@
 
 <!-- ── Revoke Confirmation Modal ──────────────────────────────────────────── -->
 {#if revokeOpen}
-	<!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
+	<!-- svelte-ignore a11y_click_events_have_key_events -->
+	<!-- svelte-ignore a11y_no_static_element_interactions -->
 	<div class="ch-modal-backdrop" onclick={() => !revokeBusy && (revokeOpen = false)}>
 		<div
 			class="ch-modal ch-modal--danger vanguard-card"
 			role="dialog"
+			tabindex="-1"
 			aria-modal="true"
 			aria-labelledby="revoke-title"
 			onclick={(e) => e.stopPropagation()}

@@ -5,26 +5,26 @@
 	 */
 </script>
 
-<header class="command-plane-system-status w-full bg-[#0f172a] border-b border-[#334155] p-4 flex items-center justify-between z-10">
-	<div class="flex items-center gap-4">
-		<div class="w-8 h-8 bg-[#14b8a6] rounded-none flex items-center justify-center text-[#000000] font-bold font-geist-sans uppercase tracking-widest text-xs">
+<header class="command-plane-system-status tw-w-full tw-bg-[#0f172a] tw-border-b tw-border-[#334155] tw-p-4 tw-flex tw-items-center tw-justify-between tw-z-10">
+	<div class="tw-flex tw-items-center tw-gap-4">
+		<div class="tw-w-8 tw-h-8 tw-bg-[#14b8a6] tw-rounded-none tw-flex tw-items-center tw-justify-center tw-text-[#000000] tw-font-bold tw-font-geist-sans tw-uppercase tw-tracking-widest tw-text-xs">
 			FED
 		</div>
 		<div>
-			<h1 class="text-white font-geist-sans uppercase tracking-widest text-sm m-0">Federation Command</h1>
-			<p class="text-[#14b8a6] font-geist-mono text-xs m-0">STATUS: ODP ONLINE // MASTER TENANT ACTIVE</p>
+			<h1 class="tw-text-white tw-font-geist-sans tw-uppercase tw-tracking-widest tw-text-sm tw-m-0">Federation Command</h1>
+			<p class="tw-text-[#14b8a6] tw-font-geist-mono tw-text-xs tw-m-0">STATUS: ODP ONLINE // MASTER TENANT ACTIVE</p>
 		</div>
 	</div>
 
-	<div class="flex items-center gap-6 font-geist-mono text-xs text-[#334155]">
-		<div class="flex flex-col text-right">
-			<span class="uppercase tracking-widest">Network Safety</span>
-			<span class="text-[#14b8a6]">SECURE</span>
+	<div class="tw-flex tw-items-center tw-gap-6 tw-font-geist-mono tw-text-xs tw-text-[#334155]">
+		<div class="tw-flex tw-flex-col tw-text-right">
+			<span class="tw-uppercase tw-tracking-widest">Network Safety</span>
+			<span class="tw-text-[#14b8a6]">SECURE</span>
 		</div>
-		<div class="w-px h-8 bg-[#334155]"></div>
-		<div class="flex flex-col text-right">
-			<span class="uppercase tracking-widest">Nodes</span>
-			<span class="text-white">1,024 ACTIVE</span>
+		<div class="tw-w-px tw-h-8 tw-bg-[#334155]"></div>
+		<div class="tw-flex tw-flex-col tw-text-right">
+			<span class="tw-uppercase tw-tracking-widest">Nodes</span>
+			<span class="tw-text-white">1,024 ACTIVE</span>
 		</div>
 	</div>
 </header>

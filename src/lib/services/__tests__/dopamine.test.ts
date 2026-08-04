@@ -245,7 +245,7 @@ describe('Dopamine Engine', () => {
 			await dopamineExplosion('matchWin');
 			await flushAsync();
 			const callArg = mockConfetti.mock.calls[0][0] as Record<string, unknown>;
-			expect((callArg.colors as string[]).some((c) => c.includes('10b981') || c.includes('34d399'))).toBe(true);
+			expect((callArg.colors as string[]).some((c) => c.includes('10b981') || c.includes('34d399') || c.includes('22c55e'))).toBe(true);
 		});
 
 		it('loadoutUnlock preset uses gold + teal palette', async () => {

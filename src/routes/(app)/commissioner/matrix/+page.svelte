@@ -8,12 +8,12 @@
 	import CommissionerHUD from '$lib/components/commissioner/CommissionerHUD.svelte';
 </script>
 
-<div class="h-screen w-full bg-[#000000] text-[#334155] overflow-hidden flex flex-col font-switzer">
+<div class="tw-h-screen tw-w-full tw-bg-[#000000] tw-text-[#334155] tw-overflow-hidden tw-flex tw-flex-col tw-font-switzer">
 	<!-- Commissioner HUD (Header / Command Plane Status) -->
 	<CommissionerHUD />
 
 	<!-- Commissioner Arena (Matrix / Data Plane) -->
-	<main class="flex-1 overflow-auto relative">
+	<main class="tw-flex-1 tw-overflow-auto tw-relative">
 		<CommissionerArena />
 	</main>
 </div>

@@ -1,12 +1,14 @@
 <script lang="ts">
 	import { browser } from '$app/environment';
 	import { db } from '$lib/firebase.js';
+	import { authStore } from '$lib/stores/auth/facade.svelte.js';
 	import {
 		collection,
 		getDocs,
 		limit,
 		orderBy,
 		query,
+		startAfter,
 		where,
 	} from 'firebase/firestore';
 	import Modal from '$lib/components/Modal.svelte';
@@ -26,6 +28,8 @@
 	let errorMsg = $state('');
 	/** @type {Array<Record<string, unknown> & { id: string }>} */
 	let results = $state([]);
+	let lastDoc = $state(null);
+	let hasMore = $state(true);
 
 	let modalOpen = $state(false);
 	/** @type {Record<string, unknown> & { id: string } | null} */
@@ -63,6 +67,8 @@
 		loading = true;
 		errorMsg = '';
 		results = [];
+		lastDoc = null;
+		hasMore = true;
 		const min = Math.max(1, Math.min(99, Math.floor(Number(minLevel) || 1)));
 		const col = collection(db, 'public_player_profiles');
 		try {
@@ -77,7 +83,7 @@
 					where('position', '==', pos),
 					where('current_level', '>=', min),
 					orderBy('current_level', 'desc'),
-					limit(36),
+					limit(20),
 				);
 			} else if (ag) {
 				q = query(
@@ -85,7 +91,7 @@
 					where('ageGroup', '==', ag),
 					where('current_level', '>=', min),
 					orderBy('current_level', 'desc'),
-					limit(36),
+					limit(20),
 				);
 			} else if (pos) {
 				q = query(
@@ -93,26 +99,59 @@
 					where('position', '==', pos),
 					where('current_level', '>=', min),
 					orderBy('current_level', 'desc'),
-					limit(36),
+					limit(20),
 				);
 			} else {
 				q = query(
 					col,
 					where('current_level', '>=', min),
 					orderBy('current_level', 'desc'),
-					limit(36),
+					limit(20),
 				);
 			}
 			const snap = await getDocs(q);
 			/** @type {typeof results} */
 			const rows = [];
 			snap.forEach((d) => rows.push({ id: d.id, ...(d.data() as Record<string, unknown>) }));
+			lastDoc = snap.docs.length > 0 ? snap.docs[snap.docs.length - 1] : null;
+			hasMore = snap.docs.length === 20;
 			results = rows;
 		} catch (e) {
 			console.error(e);
 			errorMsg =
 				'Search failed. If this is the first deploy, create Firestore composite indexes (see firestore.indexes.json) and wait for them to build.';
 			results = [];
+		} finally {
+			loading = false;
+		}
+	}
+
+	async function loadMore() {
+		if (!db || !authStore.isAuthenticated || !hasMore || loading) return;
+		loading = true;
+		const min = Math.max(1, Math.min(99, Math.floor(Number(minLevel) || 1)));
+		const col = collection(db, 'public_player_profiles');
+		try {
+			let q;
+			const ag = ageFilter !== 'all' ? ageFilter : '';
+			const pos = positionFilter !== 'all' ? positionFilter : '';
+			const constraints = [];
+			if (ag) constraints.push(where('ageGroup', '==', ag));
+			if (pos) constraints.push(where('position', '==', pos));
+			constraints.push(where('current_level', '>=', min));
+			constraints.push(orderBy('current_level', 'desc'));
+			if (lastDoc) constraints.push(startAfter(lastDoc));
+			constraints.push(limit(20));
+			q = query(col, ...constraints);
+
+			const snap = await getDocs(q);
+			const rows = [];
+			snap.forEach((d) => rows.push({ id: d.id, ...(d.data() as Record<string, unknown>) }));
+			results = [...results, ...rows];
+			lastDoc = snap.docs.length > 0 ? snap.docs[snap.docs.length - 1] : null;
+			hasMore = snap.docs.length === 20;
+		} catch (e) {
+			console.error(e);
 		} finally {
 			loading = false;
 		}
