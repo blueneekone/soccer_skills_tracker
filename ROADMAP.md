@@ -91,6 +91,7 @@ All data collection must pass through these legal gates before a user accesses t
 **Mission:** Legal compliance, financial escrow, emotional safety, and global scouting monetization [cite: 758].
 *   [x] **SafeSport Comms (Shadow CC):** Immutable server-side Firestore triggers that automatically intercept coach-to-player direct messages, resolve the minor's household, and CC the parent email mathematically preventing 1:1 adult/minor channels [cite: 758, 1191].
 *   [x] **The Car Ride Home Protocol (EQ):** Suppresses raw metric dashboards for 15 minutes post-match to protect beginner self-worth [cite: 758].
+*   [x] **Performance Optimization:** N+1 Query in CarRideEngine removed.
 *   [x] **Vetted Recruiter Engine:** Checkr API integration mandating National Criminal Database vetting before external scouts gain platform access to prospect data [cite: 758, 1168].
 
 ##### 🏟️ EPIC 6: FAN OS & BROADCAST MONETIZATION
