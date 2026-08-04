@@ -64,8 +64,6 @@
 
 	function exportPdf() {
 		if (!browser) return;
-		const printWindow = window.open('', '_blank');
-		if (!printWindow) return;
 
 		const mapped = getMappedData();
 		const headerLabels = columns.length > 0 ? columns.map((c) => c.label) : Object.keys(mapped[0] || {});
@@ -82,68 +80,57 @@
 
 		const safeFilename = escapeHtml(filename);
 
-		const html = `
-			<!DOCTYPE html>
-			<html lang="en">
-			<head>
-				<meta charset="utf-8">
-				<title>${safeFilename}</title>
-				<style>
-					body {
-						font-family: 'Geist Mono', ui-monospace, SFMono-Regular, Consolas, monospace;
-						padding: 20px;
-						color: #0f172a;
-						font-size: 11px;
-					}
-					h2 {
-						font-family: 'Switzer', sans-serif;
-						font-size: 16px;
-						text-transform: uppercase;
-						letter-spacing: 0.05em;
-						margin-bottom: 10px;
-					}
-					table {
-						width: 100%;
-						border-collapse: collapse;
-					}
-					th, td {
-						border-bottom: 1px solid #cbd5e1;
-						padding: 6px 8px;
-						text-align: left;
-					}
-					th {
-						background-color: #f8fafc;
-						font-weight: 700;
-						color: #475569;
-						text-transform: uppercase;
-						letter-spacing: 0.05em;
-						font-size: 10px;
-					}
-					@media print {
-						body { padding: 0; }
-					}
-				</style>
-			</head>
-			<body>
-				<h2>${safeFilename}</h2>
-				<table>
-					<thead><tr>${theadHtml}</tr></thead>
-					<tbody>${tbodyHtml}</tbody>
-				</table>
-				<script>
-					window.onload = function() {
-						setTimeout(() => {
-							window.print();
-							window.close();
-						}, 250);
-					};
-				<${'/'}script>
-			</body>
-			</html>
-		`;
+		const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<title>${safeFilename}</title>
+	<style>
+		body {
+			font-family: 'Geist Mono', ui-monospace, SFMono-Regular, Consolas, monospace;
+			padding: 20px;
+			color: #0f172a;
+			font-size: 11px;
+		}
+		h2 {
+			font-family: 'Switzer', sans-serif;
+			font-size: 16px;
+			text-transform: uppercase;
+			letter-spacing: 0.05em;
+			margin-bottom: 10px;
+		}
+		table {
+			width: 100%;
+			border-collapse: collapse;
+		}
+		th, td {
+			border-bottom: 1px solid #cbd5e1;
+			padding: 6px 8px;
+			text-align: left;
+		}
+		th {
+			background-color: #f8fafc;
+			font-weight: 700;
+			color: #475569;
+			text-transform: uppercase;
+			letter-spacing: 0.05em;
+			font-size: 10px;
+		}
+		@media print {
+			body { padding: 0; }
+		}
+	</style>
+</head>
+<body>
+	<h2>${safeFilename}</h2>
+	<table>
+		<thead><tr>${theadHtml}</tr></thead>
+		<tbody>${tbodyHtml}</tbody>
+	</table>
+</body>
+</html>`;
 
-		printWindow.document.write(html);
-		printWindow.document.close();
+		triggerDownload(html, 'text/html;charset=utf-8', 'html');
 	}
 </script>
 

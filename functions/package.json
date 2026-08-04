@@ -29,7 +29,7 @@
     "firebase-functions": "^7.2.5",
     "functions-shared": "file:../functions-shared",
     "langchain": "^1.5.2",
-    "pdf-parse": "^2.4.5",
+    "pdf-parse": "^1.1.1",
     "pdfmake": "^0.3.11",
     "qrcode": "^1.5.4",
     "sharp": "^0.34.5",
