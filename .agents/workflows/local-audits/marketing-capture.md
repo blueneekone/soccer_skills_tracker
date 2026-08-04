@@ -16,50 +16,118 @@ The CMO and Browser subagents are **mathematically prohibited** from executing a
 
 ---
 
-## SCENE-BY-SCENE CAPTURE PROTOCOL
+## EXECUTION STEPS
 
-### SCENE 1: The Director OS & B2B Revenue Engine (0:00 - 0:15)
-*   **Initialization**: Mint a custom JWT token for the *Visionary Club Director* persona. Bypass auth to instantly land on the `/director/dashboard`.
-*   **Action 1 (Tomorrow.io Webhook)**: Programmatically trigger a mock "Lightning Detected" telemetry event. Verify that the map status dynamically shifts and display the neon-bloom *"Fields Auto-Locked"* alert panel.
-*   **Action 2 (The Vampire Importer)**: Open the logistics tab and trigger a simulated, frictionless CSV upload. Animate the headless parsing and rapid ingestion of roster rows into Svelte's reactive `$state`.
-*   **Action 3 (Stripe Connect Split)**: Trigger a mock subscription payment and record the Stripe Connect auto-billing successful animation.
-*   **Recording**: Capture this 15-second sequence in high-density viewport dimensions.
+### STEP 1: CREATE THE CAPTURE SCRIPT
+The agent must generate a Playwright test script at `tests/marketing-capture.spec.ts` with the following actual workflow walkthroughs for the key personas:
 
-### SCENE 2: The Athlete OS & Dopamine Engine (0:15 - 0:35)
-*   **Transition**: Authenticate as the *Ambitious Athlete* persona. Land on `/player/dashboard`.
-*   **Action 1 (Gaming HUD & 6-Axis Prism)**: Animate a smooth, fluid pan across the 40% Void Black Gaming HUD. Render the SVG-based 6-axis Vanguard Prism tracking the "Scout's Six" physical telemetry.
-*   **Action 2 (RPG Skill Tree Swipe)**: Trigger a mock mouse swipe navigating the Svelte 5 interactive skill tree component, highlighting kinetic 150-250ms node micro-interactions.
-*   **Action 3 (Dopamine Commit Celebration)**: Mock a completed verified video trial. Animate a server-verified database commit that triggers the `dopamineOnCommit` canvas-confetti particle explosion directly over the athlete's badge.
-*   **Recording**: Record this 20-second sequence, ensuring no layout squishing occurs during animations.
+```typescript
+import { test, expect, type Page } from '@playwright/test';
+import { existsSync, mkdirSync } from 'node:fs';
+import { join } from 'node:path';
 
-### SCENE 3: The Fan OS & Broadcast Monetization (0:35 - 0:55)
-*   **Transition**: Authenticate as the *Engaged Fan/Parent* persona and navigate to `/fan/broadcast`.
-*   **Action 1 (Smart Camera Stream)**: Simulate a live football stream using a pre-buffered, lazy-loaded local video file. Overlay real-time gamified overlays (e.g., MVP voting panel).
-*   **Action 2 (Interactive Superdraw & Apple Pay)**: Trigger a 60-second digital fundraising prompt on screen. Simulate an Apple Pay button click, showing a frictionless, successful payment verification checkmark.
-*   **Recording**: Capture this 20-second broadcast overlay sequence.
+const artifactsDir = join(process.cwd(), 'marketing/pending-review');
+if (!existsSync(artifactsDir)) mkdirSync(artifactsDir, { recursive: true });
 
-### SCENE 4: SafeSport & Zero-Trust Safety (0:55 - 0:75)
-*   **Transition**: Authenticate as the *Coach* persona and navigate to `/messages`.
-*   **Action 1 (1:1 Messaging Lock)**: Attempt to open a direct, 1-on-1 private message window with a minor athlete. Ensure the UI displays the serious, SafeSport-compliant block screen: *"1:1 Messaging Restricted: Parents must be CC'd."*
-*   **Action 2 (Shadow CC Trigger)**: Type a mock team message and show the server-side Shadow CC engine in action, programmatically resolving the minor's household and automatically CC'ing the parent's email.
-*   **Recording**: Record this 20-second compliance security sequence.
+async function bypassRouteGuards(page: Page, role: string, uid: string) {
+	await page.addInitScript(
+		({ uid, role, idbKey }: { uid: string; role: string; idbKey: string }) => {
+			const mockUser = {
+				uid,
+				email: `${role}-test@sstracker.app`,
+				emailVerified: true,
+				displayName: `Test ${role}`,
+				isAnonymous: false,
+				providerData: [{ providerId: 'password', uid, email: `${role}-test@sstracker.app`, displayName: null, photoURL: null, phoneNumber: null }],
+				stsTokenManager: { refreshToken: 'mock-refresh-token', accessToken: 'mock-access-token', expirationTime: Date.now() + 3600000 },
+				createdAt: Date.now().toString(),
+				lastLoginAt: Date.now().toString(),
+				apiKey: 'mock-api-key',
+				appName: '[DEFAULT]'
+			};
+			const mockProfile = { id: uid, role, email: mockUser.email, firstName: 'Test', lastName: role.toUpperCase(), clubId: 'mock-club-id', teams: ['mock-team-1'] };
+			const mockToken = { claims: { role, clubId: 'mock-club-id' }, token: 'mock-jwt' };
+			const state = { user: mockUser, profile: mockProfile, token: mockToken, status: 'AUTHENTICATED', role };
+			window.localStorage.setItem(idbKey, JSON.stringify(state));
+		},
+		{ uid, role, idbKey: 'sst_auth_state_v1' }
+	);
+}
 
----
+test.use({
+  video: 'on',
+  viewport: { width: 1920, height: 1080 }
+});
 
-## POST-PRODUCTION, RESOLUTION, & EXPORT METRICS
+test.describe('Marketing Capture Walkthroughs', () => {
 
-1.  **Viewport Dimensions**: Lock the headless browser viewport strictly to a high-refresh, non-skewed resolution (1920x1080 or custom 16:9 box).
-2.  **Typography Overlays**: The CMO must programmatically overlay Geist Mono micro-typography labels showing real-time frame rates and database transaction latencies (e.g., *"14ms Inference Latency"*, *"1000Hz Telemetry Stream"*) on the video corners.
-3.  **Hashed Static Compression**: Save the resulting video files with cryptographic file-hash names to prevent browser caching when reviewed.
-4.  **Save Path**: Output all scene files and the combined compilation strictly to:
-    `./marketing/pending-review/`
-    Once post-production completes, copy the unified file exactly once to:
-    `./out/SSTracker-90s-Demo-Capture.mp4`
+	test('Scene 1: Director OS & B2B Revenue Engine', async ({ page }) => {
+		await bypassRouteGuards(page, 'director', 'mock-director-uid');
+		await page.goto('/director/dashboard', { waitUntil: 'domcontentloaded' });
+		await page.waitForTimeout(1000);
+
+		// Simulate viewing the command center and analytics
+		await page.mouse.move(500, 500);
+		await page.mouse.wheel(0, 300);
+		await page.waitForTimeout(2000);
+
+		// Navigate to compliance
+		await page.goto('/director/dashboard?tab=compliance', { waitUntil: 'domcontentloaded' });
+		await page.waitForTimeout(2000);
+	});
+
+	test('Scene 2: Athlete OS & Dopamine Engine', async ({ page }) => {
+		await bypassRouteGuards(page, 'player', 'mock-player-uid');
+		await page.goto('/player/dashboard', { waitUntil: 'domcontentloaded' });
+		await page.waitForTimeout(1000);
+
+		// Navigate to skill tree
+		await page.goto('/player/dashboard?tab=skills', { waitUntil: 'domcontentloaded' });
+		await page.waitForTimeout(2000);
+
+		// Navigate to armory
+		await page.goto('/player/dashboard?tab=armory', { waitUntil: 'domcontentloaded' });
+		await page.waitForTimeout(2000);
+	});
+
+	test('Scene 3: Coach OS & The Sideline SIEM', async ({ page }) => {
+		await bypassRouteGuards(page, 'coach', 'mock-coach-uid');
+		await page.goto('/coach/dashboard', { waitUntil: 'domcontentloaded' });
+		await page.waitForTimeout(1000);
+
+		// Navigate to War Room
+		await page.goto('/coach/dashboard?tab=tactics', { waitUntil: 'domcontentloaded' });
+		await page.waitForTimeout(3000);
+	});
+
+	test('Scene 4: SafeSport & Parent Shield', async ({ page }) => {
+		await bypassRouteGuards(page, 'parent', 'mock-parent-uid');
+		await page.goto('/parent/dashboard', { waitUntil: 'domcontentloaded' });
+		await page.waitForTimeout(1000);
+
+		// Navigate to household
+		await page.goto('/parent/dashboard?tab=household', { waitUntil: 'domcontentloaded' });
+		await page.waitForTimeout(2000);
+	});
+
+});
+```
+
+### STEP 2: RUN THE CAPTURE
+Execute the Playwright script to record the walkthroughs:
+```bash
+npx playwright test tests/marketing-capture.spec.ts --project=chromium
+```
+
+### STEP 3: POST-PRODUCTION & ARTIFACT EXTRACTION
+1.  **Locate Videos**: Playwright automatically saves the recorded WebM videos in the `test-results/` directory.
+2.  **Move to Pending Review**: The agent must run a script to copy and rename these video files into `./marketing/pending-review/` with cryptographic or descriptive filenames (e.g., `Scene-1-Director-OS.webm`).
+3.  **Clear Test Results**: Clean up the raw `test-results/` directory to save space.
 
 ---
 
 ## VERIFICATION & HANDOVER
 The CMO must verify that:
-*   The final MP4 renders cleanly at exactly 90 seconds.
-*   No system-level error overlays or uncompiled Svelte code blocks are visible in the capture.
-*   The file is saved correctly to the public outbox before alerting the user.
+*   The video artifacts are successfully stored in `./marketing/pending-review/`.
+*   The actual UI rendering is captured across the key routes for Director, Player, Coach, and Parent.
+*   No errors or stack traces are visible on screen during the recording.
