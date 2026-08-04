@@ -89,7 +89,7 @@ export default defineConfig({
 
   // Run your local Svelte development server before starting the test runner
   webServer: {
-    command: 'npm run dev', // Or 'pnpm dev' based on your active package manager
+    command: 'cross-env VITE_E2E_BYPASS_AUTH=true pnpm run dev', // Or 'pnpm dev' based on your active package manager
     url: 'http://localhost:5173',
     reuseExistingServer: !process.env.CI,
     timeout: 120 * 1000, // Allow plenty of time for Svelte 5 compilation on first boot
