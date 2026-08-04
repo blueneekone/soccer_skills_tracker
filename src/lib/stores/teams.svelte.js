@@ -192,7 +192,10 @@ export function resolveTeamsLoadScope(pathname, role) {
 		return 'admin_full';
 	}
 	if (pathname.startsWith('/director')) return 'club';
-	if (pathname.startsWith('/coach')) return 'coach';
+	if (pathname.startsWith('/coach')) {
+		if (role === 'director' || role === 'registrar') return 'club';
+		return 'coach';
+	}
 	if (pathname.startsWith('/recruiter')) return 'none';
 	if (role === 'director' || role === 'registrar') return 'club';
 	if (role === 'coach') return 'coach';
