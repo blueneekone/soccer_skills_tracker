@@ -730,9 +730,7 @@ export class ArmoryEngine {
 		const historyRef = doc(collection(db, PATHS.userXpHistory(this.userKey)));
 
 		const batchId =
-			typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
-				? crypto.randomUUID()
-				: `xp-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+			crypto.randomUUID();
 
 		const batch = writeBatch(db);
 
