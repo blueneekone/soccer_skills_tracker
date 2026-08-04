@@ -22,7 +22,7 @@ The CMO and Browser subagents are **mathematically prohibited** from executing a
 The agent must generate a Playwright test script at `tests/marketing-capture.spec.ts` with the following actual workflow walkthroughs for the key personas:
 
 ```typescript
-import { test, expect, type Page } from '@playwright/test';
+import { test, expect, type Page, type BrowserContext } from '@playwright/test';
 import { existsSync, mkdirSync } from 'node:fs';
 import { join } from 'node:path';
 
@@ -66,48 +66,84 @@ test.describe('Marketing Capture Walkthroughs', () => {
 		await page.goto('/director/dashboard', { waitUntil: 'domcontentloaded' });
 		await page.waitForTimeout(1000);
 
-		// Simulate viewing the command center and analytics
 		await page.mouse.move(500, 500);
 		await page.mouse.wheel(0, 300);
 		await page.waitForTimeout(2000);
 
-		// Navigate to compliance
 		await page.goto('/director/dashboard?tab=compliance', { waitUntil: 'domcontentloaded' });
 		await page.waitForTimeout(2000);
 	});
 
-	test('Scene 2 (Training Triangle): Athlete OS & Dopamine Engine', async ({ page }) => {
+	test('Scene 2: Athlete OS & Dopamine Engine', async ({ page }) => {
 		await bypassRouteGuards(page, 'player', 'mock-player-uid');
 		await page.goto('/player/dashboard', { waitUntil: 'domcontentloaded' });
 		await page.waitForTimeout(1000);
 
-		// Navigate to skill tree
 		await page.goto('/player/dashboard?tab=skills', { waitUntil: 'domcontentloaded' });
 		await page.waitForTimeout(2000);
 
-		// Navigate to armory
 		await page.goto('/player/dashboard?tab=armory', { waitUntil: 'domcontentloaded' });
 		await page.waitForTimeout(2000);
 	});
 
-	test('Scene 3 (Training Triangle): Coach OS & The Sideline SIEM', async ({ page }) => {
+	test('Scene 3: Coach OS & The Sideline SIEM', async ({ page }) => {
 		await bypassRouteGuards(page, 'coach', 'mock-coach-uid');
 		await page.goto('/coach/dashboard', { waitUntil: 'domcontentloaded' });
 		await page.waitForTimeout(1000);
 
-		// Navigate to War Room
 		await page.goto('/coach/dashboard?tab=tactics', { waitUntil: 'domcontentloaded' });
 		await page.waitForTimeout(3000);
 	});
 
-	test('Scene 4 (Training Triangle): SafeSport & Parent Shield', async ({ page }) => {
+	test('Scene 4: SafeSport & Parent Shield', async ({ page }) => {
 		await bypassRouteGuards(page, 'parent', 'mock-parent-uid');
 		await page.goto('/parent/dashboard', { waitUntil: 'domcontentloaded' });
 		await page.waitForTimeout(1000);
 
-		// Navigate to household
 		await page.goto('/parent/dashboard?tab=household', { waitUntil: 'domcontentloaded' });
 		await page.waitForTimeout(2000);
+	});
+
+	test('Scene 5: The Training Triangle (E2E Bounty Workflow)', async ({ browser }) => {
+		// Create isolated contexts for Coach and Player to simulate real-time collaboration
+		const coachContext = await browser.newContext({ viewport: { width: 1920, height: 1080 }, recordVideo: { dir: artifactsDir } });
+		const playerContext = await browser.newContext({ viewport: { width: 1920, height: 1080 }, recordVideo: { dir: artifactsDir } });
+
+		const coachPage = await coachContext.newPage();
+		const playerPage = await playerContext.newPage();
+
+		// 1. Coach creates a Bounty
+		await bypassRouteGuards(coachPage, 'coach', 'mock-coach-uid');
+		await coachPage.goto('/coach/dashboard?tab=drills', { waitUntil: 'domcontentloaded' });
+		await coachPage.waitForTimeout(2000);
+		// Coach creates and assigns a bounty to the team (simulate UI clicks/inputs)
+		await coachPage.getByRole('button', { name: /create bounty/i }).click().catch(() => {});
+		await coachPage.waitForTimeout(1000);
+
+		// 2. Player accepts and completes the Bounty
+		await bypassRouteGuards(playerPage, 'player', 'mock-player-uid');
+		await playerPage.goto('/player/dashboard', { waitUntil: 'domcontentloaded' });
+		await playerPage.waitForTimeout(2000);
+		// Player finds the bounty in their dashboard/HUD and claims it
+		await playerPage.getByRole('button', { name: /claim bounty/i }).click().catch(() => {});
+		await playerPage.waitForTimeout(2000);
+
+		// 3. Player unlocks gear in the Armory
+		await playerPage.goto('/player/dashboard?tab=armory', { waitUntil: 'domcontentloaded' });
+		await playerPage.waitForTimeout(2000);
+		// Simulate interacting with newly unlocked items
+		await playerPage.mouse.click(500, 500);
+		await playerPage.waitForTimeout(1500);
+
+		// 4. Coach reviews completion stats
+		await coachPage.goto('/coach/dashboard?tab=tactics', { waitUntil: 'domcontentloaded' });
+		await coachPage.waitForTimeout(2000);
+		// Simulate coach viewing squad telemetry updates
+		await coachPage.mouse.wheel(0, 300);
+		await coachPage.waitForTimeout(2000);
+
+		await coachContext.close();
+		await playerContext.close();
 	});
 
 });
