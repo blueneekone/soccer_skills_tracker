@@ -2,7 +2,7 @@
 
 const { onDocumentCreated } = require('firebase-functions/v2/firestore');
 const { getFirestore } = require('firebase-admin/firestore');
-const { resolveParentEmails } = require('./utils/resolveParentEmails');
+const { resolveParentEmails } = require('./utils/guardianResolver');
 
 exports.onChannelCreated = onDocumentCreated(
   {
