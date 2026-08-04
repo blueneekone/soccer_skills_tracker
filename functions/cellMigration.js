@@ -318,7 +318,7 @@ exports.verifyTenantOnCell = onCall(
 
       /** @type {Record<string, { from: number, to: number, diff: number }>} */
       const diffs = {};
-      for (const coll of collections) {
+      await Promise.all(collections.map(async (coll) => {
         const [fromCount, toCount] = await Promise.all([
           fromDb.collection(coll).where('clubId', '==', m.tenantId).count().get(),
           toDb.collection(coll).where('clubId', '==', m.tenantId).count().get(),
@@ -326,7 +326,7 @@ exports.verifyTenantOnCell = onCall(
         const a = fromCount.data().count;
         const b = toCount.data().count;
         diffs[coll] = {from: a, to: b, diff: a - b};
-      }
+      }));
 
       const ok = Object.values(diffs).every((d) => d.diff === 0);
       await migrationRef.update({
