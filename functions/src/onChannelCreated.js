@@ -34,6 +34,11 @@ exports.onChannelCreated = onDocumentCreated(
       needsUpdate = true;
     }
 
+    if (!missingParents) {
+      updates.channelStatus = 'ACTIVE';
+      needsUpdate = true;
+    }
+
     if (needsUpdate) {
       await snap.ref.update(updates);
     }

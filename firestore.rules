@@ -567,7 +567,7 @@ service cloud.firestore {
         && (!request.resource.data.keys().hasAny(['safesportMonitored'])
             || request.resource.data.safesportMonitored is bool)
         // SafeSport Epic 5 Shadow CC: Never allow client to mutate ccParentEmails
-        && !request.resource.data.diff(resource == null ? {} : resource.data).affectedKeys().hasAny(['ccParentEmails']);
+        && !request.resource.data.diff(resource == null ? {} : resource.data).affectedKeys().hasAny(['ccParentEmails', 'channelStatus']);
     }
 
     // DM: two members only; peer email is the memberIds entry that is not the creator.
