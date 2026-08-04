@@ -48,6 +48,7 @@ exports.onAnalyticsClubWritten = analyticsTriggers.onClubWritten;
 exports.onAnalyticsLicenseWritten = analyticsTriggers.onLicenseWritten;
 
 const adminOps = require('./src/domains/adminOps');
+exports.updateUserRole = adminOps.updateUserRole;
 exports.syncUserClaims = adminOps.syncUserClaims;
 exports.listTeamsForClub = adminOps.listTeamsForClub;
 exports.listJoinableClubs = adminOps.listJoinableClubs;

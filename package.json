@@ -16,6 +16,7 @@
     "check": "svelte-check --tsconfig ./jsconfig.json --threshold error",
     "test": "vitest run",
     "test:unit": "vitest run src/lib/director/__tests__ src/lib/components/director",
+    "test:admin": "npm --prefix functions test src/domains/__tests__/admin/updateUserRole.test.js",
     "test:regression:acquisition": "vitest run src/lib/platform/__tests__/acquisitionRegression.guard.test.ts src/lib/registrar/__tests__/launchP0Fixes.test.ts src/lib/parent/__tests__/householdOperatives.test.ts src/lib/parent/__tests__/householdClearanceLoad.test.ts src/lib/player/dashboard/__tests__/activeBounties.test.ts src/lib/shell/__tests__/fieldMenuSheet.test.ts src/lib/platform/__tests__/parentNavWorkflow.guard.test.ts src/lib/gamification/__tests__/personaFunctionalMvp.test.ts",
     "audit:pre-deploy": "node scripts/regression-audit.cjs",
     "test:firestore-rules": "npx firebase-tools@latest emulators:exec --only firestore --project sst-sprint-13-rules \"vitest run src/lib/security/__tests__/firestoreTenantIsolation.test.ts src/lib/security/__tests__/loopIntegrityGuards.test.ts src/lib/security/__tests__/firestoreRulesSprint412.test.ts\"",
