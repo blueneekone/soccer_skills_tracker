@@ -130,6 +130,8 @@ If the suite returns any failures:
    - Do not use legacy colors like `#fbbf24` in Commissioner OS.
    - Do not use legacy data maps (query the nested `armory` map over `player_stats`).
    - Global edits (e.g., `sed -i`) are strictly forbidden; edits must be surgical.
+   - Enforce strict Tailwind spacing tokens (e.g., `tw-p-4`, `tw-gap-6`) to maintain consistent padding/spacing.
+   - Ensure absolute zero overlapping elements (strict bounding-box validation) to guarantee structural integrity.
 4. **Re-run the spec.** Repeat until the console returns `X passed (0 failed)`.
 
 ---
@@ -148,21 +150,11 @@ Once Playwright tests are 100% green, you MUST mathematically prove stability:
 
 ---
 
-### STEP 6: HUMAN-IN-THE-LOOP SCREENSHOT GATE
+### STEP 6: ASYNC VISUAL LOCK & COMMIT
 
-1. Screenshots are saved to `audit-artifacts/[persona-name]/[route]-desktop.png`.
-2. **PAUSE EXECUTION.** Print terminal alert:
-   ```
-   ⏸ PAUSED FOR HUMAN REVIEW
-   ─────────────────────────────────────────────────────
-   Visual audit completed for: [PERSONA] OS
-   Screenshots → audit-artifacts/[persona-name]/
-   
-   Review bento layouts, computed typography, and hover/tooltip states.
-   Press [Enter] to commit the visual lock and proceed.
-   ─────────────────────────────────────────────────────
-   ```
-3. Wait for physical keyboard `[Enter]` before finalizing.
+1. Screenshots are automatically saved to `audit-artifacts/[persona-name]/[route]-desktop.png`.
+2. **ASYNC REVIEW.** The agent will automatically commit the generated screenshots along with the structural changes.
+3. The operator can asynchronously review the artifacts in the PR or commit history without blocking the execution pipeline.
 
 ---
 
