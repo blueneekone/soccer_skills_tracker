@@ -103,7 +103,7 @@
 		if (!nm) return (errMsg = 'Organization name is required.');
 
 		const ph = phoneNumber.trim();
-		if (ph && !/^\+?[0-9\s().\-]{7,20}$/.test(ph)) {
+		if (ph && !/^\+?[0-9\s().-]{7,20}$/.test(ph)) {
 			return (errMsg = 'Phone number looks invalid. Use E.164 (e.g. +15125550100).');
 		}
 

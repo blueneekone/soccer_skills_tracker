@@ -132,7 +132,7 @@ import Flame from 'lucide-svelte/icons/flame';
 import Ghost from 'lucide-svelte/icons/ghost';
 import Sword from 'lucide-svelte/icons/sword';
 import Rocket from 'lucide-svelte/icons/rocket';
-import Infinity from 'lucide-svelte/icons/infinity';
+import InfinityIcon from 'lucide-svelte/icons/infinity';
 import Moon from 'lucide-svelte/icons/moon';
 import Wind from 'lucide-svelte/icons/wind';
 import Snowflake from 'lucide-svelte/icons/snowflake';
@@ -368,7 +368,7 @@ export const REGISTRY = {
 	'sys.square':      Square,          // ph-square
 	'sys.circle':      Circle,          // ph-circle (plain circle shape)
 	'sys.hexagon':     Hexagon,         // ph-hexradar (shape)
-	'sys.infinity':    Infinity,        // ph-infinity
+	'sys.infinity':    InfinityIcon,        // ph-infinity
 
 	// ── Environment ──
 	'env.moon':    Moon,         // ph-moon-stars

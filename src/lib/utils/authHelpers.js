@@ -38,7 +38,7 @@ export async function handleAuthStateChange(firebaseUser, auth, userState, sessi
 				sessionState.isAuthenticated = true;
 				sessionState.isLoading = false;
 				return;
-			} catch (e) {}
+			} catch (e) { console.error("Error parsing user_profile", e); }
 		}
 		clearAuthState(userState, sessionState, tenantState, globalFirestoreUnsubs);
 		return;

@@ -20,7 +20,7 @@ export function validateAddClubInput(input: AdminAddClubInput): string | null {
 		return 'Director email looks invalid.';
 	}
 	const ph = input.phoneNumber.trim();
-	if (ph && !/^\+?[0-9\s().\-]{7,20}$/.test(ph)) {
+	if (ph && !/^\+?[0-9\s().-]{7,20}$/.test(ph)) {
 		return 'Phone number looks invalid. Use E.164 (e.g. +15125550100).';
 	}
 	return null;
