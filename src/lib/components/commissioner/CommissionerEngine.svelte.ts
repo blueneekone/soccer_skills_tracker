@@ -5,6 +5,7 @@
  */
 
 import { authStore } from '$lib/stores/auth/facade.svelte';
+import { federationService } from '$lib/services/federation.svelte';
 
 export class CommissionerEngine {
 	// Active Tenant ID context
@@ -26,11 +27,27 @@ export class CommissionerEngine {
 	 */
 	async loadFederationCompliance() {
 		if (!this.tenantId || !authStore.isAuthenticated) return [];
-		// Read-only logic placeholder for Federation Compliance
-		return [
-			{ clubId: 'club-a', complianceStatus: 'green', safeSportRate: 100 },
-			{ clubId: 'club-b', complianceStatus: 'amber', safeSportRate: 85 }
-		];
+		// Use real backend god-mode queries
+		const odpPipeline = await federationService.getOdpTalentPipeline(this.tenantId);
+
+		const clubsMap = new Map();
+		for (const player of odpPipeline) {
+			if (!clubsMap.has(player.clubId)) {
+				clubsMap.set(player.clubId, { total: 0, compliant: 0 });
+			}
+			const entry = clubsMap.get(player.clubId);
+			entry.total += 1;
+			entry.compliant += 1;
+		}
+
+		return Array.from(clubsMap.entries()).map(([clubId, data]) => {
+			const safeSportRate = Math.round((data.compliant / data.total) * 100);
+			return {
+				clubId,
+				complianceStatus: safeSportRate === 100 ? 'green' : 'amber',
+				safeSportRate
+			};
+		});
 	}
 
 	/**

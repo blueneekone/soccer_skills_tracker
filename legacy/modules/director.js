@@ -52,7 +52,6 @@ export async function inviteCoach(db, targetTeamId, coachEmail) {
         if (!teamSnap.exists()) return alert("Error: Team not found.");
         const clubId = teamSnap.data().clubId;
 
-        // 🟢 FIX: Use a batch to write to BOTH collections instantly
         const batch = writeBatch(db);
         
         batch.set(doc(db, "coach_lookup", emailLower), { 

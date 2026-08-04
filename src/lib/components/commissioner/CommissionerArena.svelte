@@ -10,47 +10,47 @@
 	let engine = new CommissionerEngine();
 </script>
 
-<div data-panel="compliance-matrix" class="tenant-matrix-grid federation-matrix-grid w-full h-full p-4 overflow-y-auto">
+<div data-panel="compliance-matrix" class="tenant-matrix-grid federation-matrix-grid tw-w-full tw-h-full tw-p-4 tw-overflow-y-auto">
 	<div
-		class="grid gap-4"
+		class="tw-grid tw-gap-4"
 		style="grid-template-columns: repeat(auto-fit, minmax(min(100%, clamp(280px, 30vw, 350px)), 1fr));"
 	>
 
 		<!-- Federation Compliance Matrix -->
-		<section class="bg-[#0f172a] border border-[#334155] rounded-none p-4 flex flex-col min-h-[300px]">
-			<header class="border-b border-[#334155] pb-2 mb-4">
-				<h2 class="font-geist-sans text-white uppercase tracking-widest text-sm m-0">
+		<section class="tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-rounded-none tw-p-4 tw-flex tw-flex-col tw-min-h-[300px]">
+			<header class="tw-border-b tw-border-[#334155] tw-pb-2 tw-mb-4">
+				<h2 class="tw-font-geist-sans tw-text-white tw-uppercase tw-tracking-widest tw-text-sm tw-m-0">
 					Federation Compliance Matrix
 				</h2>
-				<p class="font-geist-mono text-[#334155] text-xs uppercase m-0 mt-1">
+				<p class="tw-font-geist-mono tw-text-[#334155] tw-text-xs tw-uppercase tw-m-0 tw-mt-1">
 					Live COPPA/SafeSport Status
 				</p>
 			</header>
 
-			<div class="flex-1 overflow-auto">
-				<table class="w-full text-left font-geist-mono text-xs text-white border-collapse">
+			<div class="tw-flex-1 tw-overflow-auto">
+				<table class="tw-w-full tw-text-left tw-font-geist-mono tw-text-xs tw-text-white tw-border-collapse">
 					<thead>
-						<tr class="border-b border-[#334155] text-[#334155]">
-							<th class="py-2 px-1 font-normal uppercase">Club ID</th>
-							<th class="py-2 px-1 font-normal uppercase">Status</th>
-							<th class="py-2 px-1 font-normal uppercase text-right">SafeSport</th>
+						<tr class="tw-border-b tw-border-[#334155] tw-text-[#334155]">
+							<th class="tw-py-2 tw-px-1 tw-font-normal tw-uppercase">Club ID</th>
+							<th class="tw-py-2 tw-px-1 tw-font-normal tw-uppercase">Status</th>
+							<th class="tw-py-2 tw-px-1 tw-font-normal tw-uppercase tw-text-right">SafeSport</th>
 						</tr>
 					</thead>
 					<tbody>
 						{#await engine.loadFederationCompliance()}
 							<tr>
-								<td colspan="3" class="py-4 text-center text-[#334155]">SCANNING REGISTRY...</td>
+								<td colspan="3" class="tw-py-4 tw-text-center tw-text-[#334155]">SCANNING REGISTRY...</td>
 							</tr>
 						{:then complianceData}
 							{#each complianceData as item}
-								<tr class="border-b border-[#334155] border-opacity-30">
-									<td class="py-2 px-1 uppercase">{item.clubId}</td>
-									<td class="py-2 px-1">
-										<span class="px-2 py-0.5 rounded-none status-dot-indicator {item.complianceStatus === 'green' ? 'bg-[#14b8a6] text-black' : 'bg-[#fbbf24] text-black'}">
+								<tr class="tw-border-b tw-border-[#334155] tw-border-opacity-30">
+									<td class="tw-py-2 tw-px-1 tw-uppercase">{item.clubId}</td>
+									<td class="tw-py-2 tw-px-1">
+										<span class="tw-px-2 tw-py-0.5 tw-rounded-none status-dot-indicator {item.complianceStatus === 'green' ? 'tw-bg-[#14b8a6] tw-text-black' : 'tw-bg-[#334155] tw-text-black'}">
 											{item.complianceStatus.toUpperCase()}
 										</span>
 									</td>
-									<td class="py-2 px-1 text-right text-[#14b8a6] tw-font-mono odp-analytics-val">{item.safeSportRate}%</td>
+									<td class="tw-py-2 tw-px-1 tw-text-right tw-text-[#14b8a6] tw-font-mono odp-analytics-val">{item.safeSportRate}%</td>
 								</tr>
 							{/each}
 						{/await}
@@ -60,42 +60,42 @@
 		</section>
 
 		<!-- Tournament Operations & Live Results Hub -->
-		<section class="bg-[#0f172a] border border-[#334155] rounded-none p-4 flex flex-col min-h-[300px]">
-			<header class="border-b border-[#334155] pb-2 mb-4">
-				<h2 class="font-geist-sans text-white uppercase tracking-widest text-sm m-0">
+		<section class="tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-rounded-none tw-p-4 tw-flex tw-flex-col tw-min-h-[300px]">
+			<header class="tw-border-b tw-border-[#334155] tw-pb-2 tw-mb-4">
+				<h2 class="tw-font-geist-sans tw-text-white tw-uppercase tw-tracking-widest tw-text-sm tw-m-0">
 					Tournament Operations
 				</h2>
-				<p class="font-geist-mono text-[#334155] text-xs uppercase m-0 mt-1">
+				<p class="tw-font-geist-mono tw-text-[#334155] tw-text-xs tw-uppercase tw-m-0 tw-mt-1">
 					Live Multi-Venue Scheduling
 				</p>
 			</header>
 
-			<div class="flex-1 overflow-auto">
-				<table class="w-full text-left font-geist-mono text-xs text-white border-collapse">
+			<div class="tw-flex-1 tw-overflow-auto">
+				<table class="tw-w-full tw-text-left tw-font-geist-mono tw-text-xs tw-text-white tw-border-collapse">
 					<thead>
-						<tr class="border-b border-[#334155] text-[#334155]">
-							<th class="py-2 px-1 font-normal uppercase">Event ID</th>
-							<th class="py-2 px-1 font-normal uppercase text-center">Status</th>
-							<th class="py-2 px-1 font-normal uppercase text-right">Teams</th>
+						<tr class="tw-border-b tw-border-[#334155] tw-text-[#334155]">
+							<th class="tw-py-2 tw-px-1 tw-font-normal tw-uppercase">Event ID</th>
+							<th class="tw-py-2 tw-px-1 tw-font-normal tw-uppercase tw-text-center">Status</th>
+							<th class="tw-py-2 tw-px-1 tw-font-normal tw-uppercase tw-text-right">Teams</th>
 						</tr>
 					</thead>
 					<tbody>
 						{#await engine.loadTournamentOperations()}
 							<tr>
-								<td colspan="3" class="py-4 text-center text-[#334155]">INITIALIZING SCHEDULES...</td>
+								<td colspan="3" class="tw-py-4 tw-text-center tw-text-[#334155]">INITIALIZING SCHEDULES...</td>
 							</tr>
 						{:then operationsData}
 							{#each operationsData as item}
-								<tr class="border-b border-[#334155] border-opacity-30">
-									<td class="py-2 px-1 uppercase">{item.tournamentId}</td>
-									<td class="py-2 px-1 text-center">
+								<tr class="tw-border-b tw-border-[#334155] tw-border-opacity-30">
+									<td class="tw-py-2 tw-px-1 tw-uppercase">{item.tournamentId}</td>
+									<td class="tw-py-2 tw-px-1 tw-text-center">
 										{#if item.status === 'live'}
-											<span class="text-[#14b8a6]">LIVE</span>
+											<span class="tw-text-[#14b8a6]">LIVE</span>
 										{:else}
-											<span class="text-[#334155]">SCHEDULING</span>
+											<span class="tw-text-[#334155]">SCHEDULING</span>
 										{/if}
 									</td>
-									<td class="py-2 px-1 text-right">{item.teams}</td>
+									<td class="tw-py-2 tw-px-1 tw-text-right">{item.teams}</td>
 								</tr>
 							{/each}
 						{/await}
