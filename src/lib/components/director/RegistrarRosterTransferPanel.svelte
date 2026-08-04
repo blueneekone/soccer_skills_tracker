@@ -14,11 +14,26 @@
 
 	const registrarTransferPlayer = httpsCallable(functions, 'registrarTransferPlayer');
 
-	let email = $state(playerEmail);
-	let teamId = $state(targetTeamId);
+	// eslint-disable-next-line svelte/prefer-writable-derived
+	let email = $state('');
+	// eslint-disable-next-line svelte/prefer-writable-derived
+	let teamId = $state('');
+
 	let busy = $state(false);
 	let err = $state('');
 	let ok = $state('');
+
+	$effect(() => {
+
+		email = playerEmail;
+	});
+	$effect(() => {
+
+		teamId = targetTeamId;
+	});
+
+
+
 	async function submitTransfer() {
 		err = '';
 		ok = '';
