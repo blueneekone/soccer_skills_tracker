@@ -76,7 +76,7 @@ All data collection must pass through these legal gates before a user accesses t
 *   ✅ **Visual Styling Lock (Coach OS)**: Audit Passed.
 **Mission:** Figma-grade tactical tools, RL-driven accountability, and expanded staff controls [cite: 756].
 *   **The Tron War Room:** HTML5 Spatial Drill Designer featuring flawless 1:1 SVG drag-and-drop physics, Vantablack identity discs, and neonBloom light trails using `matrixTransform(getScreenCTM().inverse())` [cite: 756, 1184].
-*   [x] **The Intent Engine & The Forge:** Reinforcement Learning (RL) algorithms that autonomously adjust drill volume based on physiological feedback [cite: 756].
+*   **The Intent Engine & The Forge:** Reinforcement Learning (RL) algorithms that autonomously adjust drill volume based on physiological feedback [cite: 756].
 *   **Dynamic Difficulty Scaling (ZPD Engine):** Leverages Vygotsky’s Zone of Proximal Development to scale drill difficulty via 14ms-latency inference [cite: 756].
 
 ##### 🎮 EPIC 4: PLAYER OS (THE DOPAMINE ENGINE)
@@ -91,7 +91,6 @@ All data collection must pass through these legal gates before a user accesses t
 **Mission:** Legal compliance, financial escrow, emotional safety, and global scouting monetization [cite: 758].
 *   [x] **SafeSport Comms (Shadow CC):** Immutable server-side Firestore triggers that automatically intercept coach-to-player direct messages, resolve the minor's household, and CC the parent email mathematically preventing 1:1 adult/minor channels [cite: 758, 1191].
 *   [x] **The Car Ride Home Protocol (EQ):** Suppresses raw metric dashboards for 15 minutes post-match to protect beginner self-worth [cite: 758].
-*   [x] **Performance Optimization:** N+1 Query in CarRideEngine removed.
 *   [x] **Vetted Recruiter Engine:** Checkr API integration mandating National Criminal Database vetting before external scouts gain platform access to prospect data [cite: 758, 1168].
 
 ##### 🏟️ EPIC 6: FAN OS & BROADCAST MONETIZATION

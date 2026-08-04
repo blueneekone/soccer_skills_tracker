@@ -257,13 +257,9 @@ export class CarRideEngine {
 			),
 		);
 
-		const attestations = await Promise.all(
-			snap.docs.map((docSnap) => this._checkAttestation(docSnap.id))
-		);
-
-		for (let i = 0; i < snap.docs.length; i++) {
-			if (!attestations[i]) {
-				const docSnap = snap.docs[i];
+		for (const docSnap of snap.docs) {
+			const alreadyAttested = await this._checkAttestation(docSnap.id);
+			if (!alreadyAttested) {
 				this._applyPublicDoc(docSnap.id, docSnap.data());
 				return;
 			}

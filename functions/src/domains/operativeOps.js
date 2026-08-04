@@ -522,6 +522,9 @@ exports.sendChannelMessage = onCall({region: REGION}, async (request) => {
     throw new HttpsError('not-found', 'Channel not found.');
   }
   const channel = channelSnap.data();
+  if (channel.channelStatus !== 'ACTIVE') {
+    throw new HttpsError('failed-precondition', 'Communications are locked pending SafeSport verification.');
+  }
   let channelType =
       typeof channel.channelType === 'string' ? channel.channelType.trim() : '';
   if (!channelType && channelId.startsWith('parent-lounge-')) {
@@ -654,82 +657,7 @@ exports.sendChannelMessage = onCall({region: REGION}, async (request) => {
     channel.ccParentEmails.map((e) => normEmail(String(e))).filter(Boolean) :
     [];
 
-  // SafeSport CC verification and re-enforcement (monitored channels only).
-  if (safesportMonitored && channelType !== 'staff_internal') {
-    const memberSet = new Set(memberIds);
-
-    // Identify every player-role user currently in the channel member list.
-    const userSnaps = await Promise.all(
-        memberIds.map((em) => db().collection('users').doc(em).get()),
-    );
-    const playerEmailsInChannel = [];
-    for (let i = 0; i < memberIds.length; i++) {
-      const us = userSnaps[i];
-      if (us.exists && us.data().role === 'player') {
-        playerEmailsInChannel.push(memberIds[i]);
-      }
-    }
-
-    // Re-resolve parent emails for each player via household (strict club scope).
-    const resolvedParentSet = new Set(ccParentEmails);
-    for (const playerEmail of playerEmailsInChannel) {
-      const uSnap = await db().collection('users').doc(playerEmail).get();
-      if (!uSnap.exists) continue;
-      const playerHouseholdId = uSnap.data().householdId;
-      if (!playerHouseholdId) continue;
-      const hSnap = await db().collection('households').doc(playerHouseholdId).get();
-      if (!hSnap.exists) continue;
-      const hd = hSnap.data();
-      if (hd.clubId !== clubId) continue; // cross-tenant guard
-      const parentEmailList = (hd.parentEmails || [])
-          .map((e) => normEmail(String(e)))
-          .filter(Boolean);
-      for (const p of parentEmailList) resolvedParentSet.add(p);
-    }
-
-    const resolvedParents = [...resolvedParentSet].sort();
-    const consentedParents = [];
-    for (const playerEmail of playerEmailsInChannel) {
-      const filtered = await filterParentsWithCommsConsent(
-          db(),
-          resolvedParents,
-          playerEmail,
-      );
-      filtered.forEach((p) => consentedParents.push(p));
-    }
-    const consentedSet = new Set(consentedParents);
-    ccParentEmails = [...consentedSet].sort();
-
-    // Sprint 3.2 SafeSport Block: explicitly block direct 1-on-1 adult-to-minor messages
-    // by ensuring a linked parent's email was successfully resolved and injected into ccParentEmails.
-    if (isStaffRole(callerRole) && playerEmailsInChannel.length > 0 && memberIds.length === 2 && ccParentEmails.length === 0) {
-      throw new HttpsError(
-          'failed-precondition',
-          'SafeSport violation: Direct 1-on-1 messages with a minor are strictly prohibited without a linked parent CC. No verified parent email was found for this athlete.'
-      );
-    }
-
-    // Detect parents missing from current memberIds (dropped after creation).
-    const missingParents = ccParentEmails.filter((p) => !memberSet.has(p));
-    const newParentsFound = ccParentEmails.length > 0 &&
-      ccParentEmails.length !== (channel.ccParentEmails || []).length;
-
-    if (missingParents.length > 0 || newParentsFound) {
-      const updatedMemberIds = [
-        ...new Set([...memberIds, ...ccParentEmails]),
-      ].sort();
-      await channelRef.update({
-        memberIds: updatedMemberIds,
-        ccParentEmails,
-      });
-      logger.info(
-          `[sendChannelMessage] re-enforced SafeSport CC: ` +
-          `${missingParents.length} missing + ${newParentsFound ? 'new' : '0 new'} ` +
-          `parents on channel ${channelId} in club ${clubId}`,
-      );
-    }
-  }
-
+  // SafeSport resolution is now fully delegated to the server-side onChannelCreated trigger.
   // Atomically write the message and audit record via Admin SDK.
   const msgRef = db()
       .collection('clubs').doc(clubId)

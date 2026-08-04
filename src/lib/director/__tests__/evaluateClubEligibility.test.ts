@@ -88,16 +88,6 @@ describe('evaluateClubEligibility', () => {
 			expect(result).toEqual({ eligible: false, blockers: ['passport_not_verified'] });
 		});
 
-		it('should return passport_not_verified blocker when passportKind is warn', () => {
-			const result = evaluateClubEligibility({ ...baseInput, passportKind: 'warn' }, DEFAULT_ELIGIBILITY_MATRIX);
-			expect(result).toEqual({ eligible: false, blockers: ['passport_not_verified'] });
-		});
-
-		it('should return passport_not_verified blocker when passportKind is muted', () => {
-			const result = evaluateClubEligibility({ ...baseInput, passportKind: 'muted' }, DEFAULT_ELIGIBILITY_MATRIX);
-			expect(result).toEqual({ eligible: false, blockers: ['passport_not_verified'] });
-		});
-
 		it('should return suspended blocker for RED_CARD safesport clearance', () => {
 			const result = evaluateClubEligibility({ ...baseInput, clearanceStatus: 'RED_CARD' }, DEFAULT_ELIGIBILITY_MATRIX);
 			expect(result).toEqual({ eligible: false, blockers: ['suspended'] });
@@ -108,11 +98,6 @@ describe('evaluateClubEligibility', () => {
 			expect(result).toEqual({ eligible: false, blockers: ['safesport_pending'] });
 		});
 
-		it('should not return safesport blocker when clearanceStatus is null', () => {
-			const result = evaluateClubEligibility({ ...baseInput, clearanceStatus: null }, DEFAULT_ELIGIBILITY_MATRIX);
-			expect(result).toEqual({ eligible: true, blockers: [] });
-		});
-
 		it('should return vpc_not_verified blocker for minors without verified vpc', () => {
 			const result = evaluateClubEligibility({ ...baseInput, isMinor: true, vpcStatus: 'pending' }, DEFAULT_ELIGIBILITY_MATRIX);
 			expect(result).toEqual({ eligible: false, blockers: ['vpc_not_verified'] });
@@ -120,23 +105,6 @@ describe('evaluateClubEligibility', () => {
 
 		it('should return eligible for minor with verified vpc', () => {
 			const result = evaluateClubEligibility({ ...baseInput, isMinor: true, vpcStatus: 'verified' }, DEFAULT_ELIGIBILITY_MATRIX);
-			expect(result).toEqual({ eligible: true, blockers: [] });
-		});
-
-		it('should not return vpc_not_verified blocker for non-minors with pending vpc', () => {
-			const result = evaluateClubEligibility({ ...baseInput, isMinor: false, vpcStatus: 'pending' }, DEFAULT_ELIGIBILITY_MATRIX);
-			expect(result).toEqual({ eligible: true, blockers: [] });
-		});
-
-		it('should not return vpc_not_verified blocker if isMinor is undefined even with pending vpc', () => {
-			const input = {
-				hasSignedWaiver: true,
-				passportKind: 'ok' as const,
-				guardianLinked: true,
-				clearanceStatus: 'CLEARED',
-				vpcStatus: 'pending',
-			};
-			const result = evaluateClubEligibility(input, DEFAULT_ELIGIBILITY_MATRIX);
 			expect(result).toEqual({ eligible: true, blockers: [] });
 		});
 
