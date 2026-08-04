@@ -54,6 +54,14 @@
 
 import { build, files, version } from '$service-worker';
 
+
+const BYPASS_REGEXES = [
+	/firestore\.googleapis\.com/,
+	/cloudfunctions\.net/,
+	/__\/auth/,
+	/securetoken\.googleapis\.com/
+];
+
 const sw = self as unknown as ServiceWorkerGlobalScope;
 
 
@@ -200,6 +208,11 @@ sw.addEventListener('activate', (event: ExtendableEvent) => {
 sw.addEventListener('fetch', (event: FetchEvent) => {
 	const req = event.request;
 	const url = new URL(req.url);
+
+	// Immediately exit and hand off to native browser networking for Firebase / Firestore APIs
+	if (BYPASS_REGEXES.some((regex) => regex.test(url.href))) {
+		return;
+	}
 
 	// Programmatic bypass
 	if (shouldBypass(url)) {

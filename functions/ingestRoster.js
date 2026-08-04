@@ -102,65 +102,8 @@ exports.ingestRoster = onCall(
 
       logger.info('[ingestRoster] parsed', {count: rawPlayers.length, format, tenantId});
 
-      const batchResult = {processed: 0, skipped: 0, invites: []};
-      const now = admin.firestore.FieldValue.serverTimestamp();
-      const batch = db().batch();
-
-      for (const player of rawPlayers) {
-        const email = normEmail(player.email);
-        if (!email || !isValidEmail(email)) { batchResult.skipped++; continue; }
-
-        const userRef = db().doc(`users/${email}`);
-        const existingSnap = await userRef.get();
-
-        const userData = {
-          email,
-          displayName: player.displayName || email.split('@')[0],
-          position: player.position || null,
-          dateOfBirth: player.dateOfBirth || null,
-          jerseyNumber: player.jerseyNumber || null,
-          role: 'player',
-          clubId: tenantId,
-          tenantId,
-          teamId: teamId || null,
-          ingestedByUid: callerUid,
-          ingestedAt: now,
-          status: 'invited',
-        };
-
-        if (existingSnap.exists()) {
-          const existing = existingSnap.data();
-          batch.update(userRef, {
-            ...userData,
-            role: existing.role || 'player',
-            updatedAt: now,
-          });
-        } else {
-          batch.set(userRef, {...userData, createdAt: now, xp: 0, tier: 'ROOKIE'});
-        }
-
-        const code = generateCode();
-        const inviteRef = db().doc(`invites/${code}`);
-        batch.set(inviteRef, {
-          code,
-          tenantId,
-          clubId: tenantId,
-          teamId: teamId || null,
-          role: 'player',
-          usageLimit: 1,
-          usageCount: 0,
-          consumedByUids: [],
-          targetEmail: email,
-          createdByUid: callerUid,
-          createdAt: now,
-          expiresAt: admin.firestore.Timestamp.fromMillis(Date.now() + 30 * 24 * 60 * 60 * 1000),
-        });
-
-        batchResult.invites.push({email, code, name: player.displayName || email});
-        batchResult.processed++;
-      }
-
-      await batch.commit();
+      const { processPlayersBatch } = require('./src/utils/mapper');
+      const { batchResult, now } = await processPlayersBatch(db, rawPlayers, generateCode, tenantId, teamId, callerUid);
 
       await db().collection('audit_logs').add({
         action: 'ROSTER_INGESTED',
