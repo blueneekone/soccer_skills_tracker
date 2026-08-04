@@ -76,7 +76,7 @@ test.describe('Marketing Capture Walkthroughs', () => {
 		await page.waitForTimeout(2000);
 	});
 
-	test('Scene 2: Athlete OS & Dopamine Engine', async ({ page }) => {
+	test('Scene 2 (Training Triangle): Athlete OS & Dopamine Engine', async ({ page }) => {
 		await bypassRouteGuards(page, 'player', 'mock-player-uid');
 		await page.goto('/player/dashboard', { waitUntil: 'domcontentloaded' });
 		await page.waitForTimeout(1000);
@@ -90,7 +90,7 @@ test.describe('Marketing Capture Walkthroughs', () => {
 		await page.waitForTimeout(2000);
 	});
 
-	test('Scene 3: Coach OS & The Sideline SIEM', async ({ page }) => {
+	test('Scene 3 (Training Triangle): Coach OS & The Sideline SIEM', async ({ page }) => {
 		await bypassRouteGuards(page, 'coach', 'mock-coach-uid');
 		await page.goto('/coach/dashboard', { waitUntil: 'domcontentloaded' });
 		await page.waitForTimeout(1000);
@@ -100,7 +100,7 @@ test.describe('Marketing Capture Walkthroughs', () => {
 		await page.waitForTimeout(3000);
 	});
 
-	test('Scene 4: SafeSport & Parent Shield', async ({ page }) => {
+	test('Scene 4 (Training Triangle): SafeSport & Parent Shield', async ({ page }) => {
 		await bypassRouteGuards(page, 'parent', 'mock-parent-uid');
 		await page.goto('/parent/dashboard', { waitUntil: 'domcontentloaded' });
 		await page.waitForTimeout(1000);
