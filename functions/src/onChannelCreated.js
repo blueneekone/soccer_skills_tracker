@@ -1,3 +1,4 @@
+// 🛡️ SafeSport Compliance Mandate: Zero-State Lock (P0 Critical)
 'use strict';
 
 const { onDocumentCreated } = require('firebase-functions/v2/firestore');
@@ -31,6 +32,9 @@ exports.onChannelCreated = onDocumentCreated(
 
     if (missingParents) {
       updates.channelStatus = 'BLOCKED_VPC_PENDING';
+      needsUpdate = true;
+    } else {
+      updates.channelStatus = 'ACTIVE';
       needsUpdate = true;
     }
 

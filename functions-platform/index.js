@@ -78,3 +78,6 @@ exports.vampireIngestRows = interoperabilityOps.vampireIngestRows;
 
 const ingestRoster = require("../functions/ingestRoster.js");
 exports.ingestRoster = ingestRoster.ingestRoster;
+
+const { onChannelCreated } = require('../functions/src/onChannelCreated.js');
+exports.onChannelCreated = onChannelCreated;
