@@ -48,20 +48,27 @@
 			const broadcastRows: Record<string, unknown>[] = [];
 			const auditRows: Record<string, unknown>[] = [];
 
+			const chunks = [];
+			for (let i = 0; i < teamIds.length; i += 30) {
+				chunks.push(teamIds.slice(i, i + 30));
+			}
+
 			await Promise.all(
-				teamIds.map(async (teamId) => {
+				chunks.map(async (chunk) => {
+					if (chunk.length === 0) return;
+
 					const bq = query(
 						collection(db, 'team_broadcasts'),
-						where('teamId', '==', teamId),
+						where('teamId', 'in', chunk),
 						orderBy('createdAt', 'desc'),
-						limit(25),
+						limit(60),
 					);
 					const bs = await getDocs(bq);
 					for (const d of bs.docs) {
 						const data = d.data();
 						broadcastRows.push({
 							id: d.id,
-							teamId,
+							teamId: data.teamId ?? null,
 							subject: data.subject ?? null,
 							bodyPreview: data.bodyPreview ?? null,
 							fromEmail: data.fromEmail ?? null,
@@ -78,8 +85,8 @@
 
 					const mq = query(
 						collection(db, 'messaging_audit'),
-						where('teamId', '==', teamId),
-						limit(40),
+						where('teamId', 'in', chunk),
+						limit(80),
 					);
 					const ms = await getDocs(mq);
 					for (const d of ms.docs) {
@@ -87,7 +94,7 @@
 						auditRows.push({
 							id: d.id,
 							action: data.action ?? null,
-							teamId,
+							teamId: data.teamId ?? null,
 							fromEmail: data.fromEmail ?? null,
 							toPlayerEmail: data.toPlayerEmail ?? null,
 							channelId: data.channelId ?? null,
