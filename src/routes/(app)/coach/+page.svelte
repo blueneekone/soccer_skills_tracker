@@ -185,10 +185,10 @@
 		style="padding: var(--bento-pad-liquid); padding-bottom: calc(var(--bento-pad-liquid) + env(safe-area-inset-bottom, 0px));"
 	>
 		<div
-			class="bento-grid bento-grid--12col bento-grid--liquid tw-w-full tw-grid tw-grid-cols-1 lg:tw-grid-cols-12"
+			class="bento-grid bento-grid--12col bento-grid--liquid tw-w-full"
 			aria-label="Nexus Command workspace"
 		>
-			<div class="bento-span-12 tw-col-span-1 lg:tw-col-span-12 tw-flex tw-justify-end">
+			<div class="bento-span-12 tw-flex tw-justify-end">
 				<button
 					type="button"
 					class="media-hub-btn"
@@ -200,14 +200,14 @@
 				</button>
 			</div>
 
-			<div class="bento-span-12 tw-col-span-1 lg:tw-col-span-12 tw-min-w-0">
+			<div class="bento-span-12 tw-min-w-0">
 				<SquadTelemetryView teamId={effectiveTeamId} teams={myTeams} />
 			</div>
 
 			{#if warRoomHqVisible}
 			<button
 				type="button"
-				class="coach-os-panel coach-os-war-room war-room-card bento-span-8 tw-col-span-1 lg:tw-col-span-8 bento-cell tw-group tw-relative tw-flex tw-min-h-[320px] tw-min-w-0 tw-flex-col tw-justify-between tw-overflow-hidden tw-p-6 tw-text-left focus-visible:tw-outline focus-visible:tw-outline-2 focus-visible:tw-outline-offset-2 focus-visible:tw-outline-[#06b6d4]"
+				class="coach-os-panel coach-os-war-room war-room-card bento-span-8 tw-col-span-8 bento-cell tw-group tw-relative tw-flex tw-min-h-[320px] tw-min-w-0 tw-flex-col tw-justify-between tw-overflow-hidden tw-p-6 tw-text-left focus-visible:tw-outline focus-visible:tw-outline-2 focus-visible:tw-outline-offset-2 focus-visible:tw-outline-[#06b6d4]"
 				aria-label="Enter War Room — tactical board"
 				onclick={enterWarRoom}
 			>
@@ -265,10 +265,8 @@
 			<!-- FACILITY OPS & STAGING — secondary ops (4 cols @ 64rem+) -->
 			<article
 				class="coach-os-panel coach-os-facility bento-cell tw-relative tw-flex tw-min-h-[320px] tw-min-w-0 tw-flex-col tw-overflow-hidden tw-p-5"
-				class:tw-col-span-12={!warRoomHqVisible}
-				class:lg:tw-col-span-12={!warRoomHqVisible}
-				class:tw-col-span-1={warRoomHqVisible}
-				class:lg:tw-col-span-4={warRoomHqVisible}
+				class:bento-span-12={!warRoomHqVisible}
+				class:tw-col-span-4={warRoomHqVisible}
 				aria-label="Facility Ops & Staging"
 			>
 				<header class="bento-mb-md tw-flex tw-items-center tw-gap-2 tw-border-b tw-border-white/10 tw-pb-3">
@@ -331,7 +329,7 @@
 
 		<!-- WEATHER MONITORING — AEGIS live widget (full-width row) -->
 		<!-- Kill switch: feature_weather_aegis_enabled (Remote Config) -->
-		<div class="bento-span-12 tw-col-span-1 lg:tw-col-span-12 tw-min-w-0">
+		<div class="bento-span-12 tw-min-w-0">
 			{#if vanguardFlags.weatherEnabled}
 				<WeatherWidget lat={fieldLat} lng={fieldLng} coordsLabel={weatherCoords} />
 			{:else}
