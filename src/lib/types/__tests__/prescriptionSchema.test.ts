@@ -18,7 +18,7 @@ const ROOT = join(__dirname, '..', '..', '..');
 const INTENT_TYPES = join(__dirname, '..', 'intent.ts');
 const TRAINING_OPS = join(ROOT, '..', 'functions', 'src', 'domains', 'trainingOps.js');
 
-describe.skip('PRESCRIPTION-schema — read-repair', () => {
+describe('PRESCRIPTION-schema — read-repair', () => {
 	it('returns undefined for null/undefined/non-object', () => {
 		expect(repairIntentPrescription(null)).toBeUndefined();
 		expect(repairIntentPrescription(undefined)).toBeUndefined();
@@ -36,9 +36,95 @@ describe.skip('PRESCRIPTION-schema — read-repair', () => {
 			bilateral: true,
 		});
 	});
+
+	it('trims and keeps valid teamDrillId, clubDrillId, drillId, and drillTitle', () => {
+		const rx = repairIntentPrescription({
+			sets: 1,
+			bilateral: false,
+			teamDrillId: '  t-123  ',
+			clubDrillId: '  c-456  ',
+			drillId: '  d-789  ',
+			drillTitle: '  Juggling  ',
+		});
+		expect(rx?.teamDrillId).toBe('t-123');
+		expect(rx?.clubDrillId).toBe('c-456');
+		expect(rx?.drillId).toBe('d-789');
+		expect(rx?.drillTitle).toBe('Juggling');
+	});
+
+	it('drops empty strings for teamDrillId, clubDrillId, drillId, and drillTitle', () => {
+		const rx = repairIntentPrescription({
+			sets: 1,
+			bilateral: false,
+			teamDrillId: '   ',
+			clubDrillId: '',
+			drillId: ' ',
+			drillTitle: '    ',
+		});
+		expect(rx?.teamDrillId).toBeUndefined();
+		expect(rx?.clubDrillId).toBeUndefined();
+		expect(rx?.drillId).toBeUndefined();
+		expect(rx?.drillTitle).toBeUndefined();
+	});
+
+	it('validates targetDurationMin (>= 1, finite, integer floor)', () => {
+		const rx1 = repairIntentPrescription({ sets: 1, bilateral: false, targetDurationMin: 15.7 });
+		expect(rx1?.targetDurationMin).toBe(15);
+
+		const rx2 = repairIntentPrescription({ sets: 1, bilateral: false, targetDurationMin: 0.9 });
+		expect(rx2?.targetDurationMin).toBeUndefined(); // drops because < 1
+
+		const rx3 = repairIntentPrescription({ sets: 1, bilateral: false, targetDurationMin: -5 });
+		expect(rx3?.targetDurationMin).toBeUndefined();
+
+		const rx4 = repairIntentPrescription({ sets: 1, bilateral: false, targetDurationMin: Infinity });
+		expect(rx4?.targetDurationMin).toBeUndefined();
+	});
+
+	it('validates targetRpe (1-10, finite, integer round)', () => {
+		const rx1 = repairIntentPrescription({ sets: 1, bilateral: false, targetRpe: 7.6 });
+		expect(rx1?.targetRpe).toBe(8);
+
+		const rx2 = repairIntentPrescription({ sets: 1, bilateral: false, targetRpe: 7.2 });
+		expect(rx2?.targetRpe).toBe(7);
+
+		const rx3 = repairIntentPrescription({ sets: 1, bilateral: false, targetRpe: 0 });
+		expect(rx3?.targetRpe).toBeUndefined(); // drops because < 1
+
+		const rx4 = repairIntentPrescription({ sets: 1, bilateral: false, targetRpe: 11 });
+		expect(rx4?.targetRpe).toBeUndefined(); // drops because > 10
+	});
+
+	it('validates benchmarkDrillId (trimmed and sliced to 64 chars)', () => {
+		const longId = 'a'.repeat(70);
+		const rx = repairIntentPrescription({
+			sets: 1,
+			bilateral: false,
+			benchmarkDrillId: '   ' + longId + '   ',
+		});
+		expect(rx?.benchmarkDrillId).toBe('a'.repeat(64));
+		expect(rx?.benchmarkDrillId?.length).toBe(64);
+	});
+
+	it('drops empty strings for benchmarkDrillId', () => {
+		const rx = repairIntentPrescription({ sets: 1, bilateral: false, benchmarkDrillId: '   ' });
+		expect(rx?.benchmarkDrillId).toBeUndefined();
+	});
+
+	it('validates benchmarkTargetValue (finite number)', () => {
+		const rx1 = repairIntentPrescription({ sets: 1, bilateral: false, benchmarkTargetValue: 123.45 });
+		expect(rx1?.benchmarkTargetValue).toBe(123.45);
+
+		const rx2 = repairIntentPrescription({ sets: 1, bilateral: false, benchmarkTargetValue: Infinity });
+		expect(rx2?.benchmarkTargetValue).toBeUndefined();
+
+		const rx3 = repairIntentPrescription({ sets: 1, bilateral: false, benchmarkTargetValue: '100' });
+		expect(rx3?.benchmarkTargetValue).toBeUndefined();
+	});
+
 });
 
-describe.skip('PRESCRIPTION-schema — effectivePrescriptionReps', () => {
+describe('PRESCRIPTION-schema — effectivePrescriptionReps', () => {
 	it('returns 0 for time-only (no repsPerSet)', () => {
 		const rx: IntentPrescription = { sets: 3, bilateral: true };
 		expect(effectivePrescriptionReps(rx)).toBe(0);
@@ -57,7 +143,7 @@ describe.skip('PRESCRIPTION-schema — effectivePrescriptionReps', () => {
 	});
 });
 
-describe.skip('PRESCRIPTION-schema — videoUrl + cues round-trip', () => {
+describe('PRESCRIPTION-schema — videoUrl + cues round-trip', () => {
 	it('videoUrl and cues are optional — omitted when absent', () => {
 		const rx = repairIntentPrescription({ sets: 2, bilateral: false });
 		expect(rx).toBeDefined();
@@ -105,7 +191,7 @@ describe.skip('PRESCRIPTION-schema — videoUrl + cues round-trip', () => {
 	});
 });
 
-describe.skip('PRESCRIPTION-schema — cadence round-trip (B2)', () => {
+describe('PRESCRIPTION-schema — cadence round-trip (B2)', () => {
 	it('cadence is optional — omitted when absent', () => {
 		const rx = repairIntentPrescription({ sets: 2, bilateral: false });
 		expect(rx?.cadence).toBeUndefined();
@@ -157,7 +243,7 @@ describe.skip('PRESCRIPTION-schema — cadence round-trip (B2)', () => {
 	});
 });
 
-describe.skip('PRESCRIPTION-schema — B3 drills[] round-trip', () => {
+describe('PRESCRIPTION-schema — B3 drills[] round-trip', () => {
 	it('drills[] is optional — omitted when absent', () => {
 		const rx = repairIntentPrescription({ sets: 2, bilateral: false });
 		expect(rx?.drills).toBeUndefined();
@@ -271,7 +357,7 @@ describe.skip('PRESCRIPTION-schema — B3 drills[] round-trip', () => {
 	});
 });
 
-describe.skip('B4a — requiresParentVerification round-trip', () => {
+describe('B4a — requiresParentVerification round-trip', () => {
 	it('is absent (undefined) when not present in raw object', () => {
 		const rx = repairIntentPrescription({ sets: 2, bilateral: false });
 		expect(rx?.requiresParentVerification).toBeUndefined();
@@ -311,7 +397,7 @@ describe.skip('B4a — requiresParentVerification round-trip', () => {
 	});
 });
 
-describe.skip('PRESCRIPTION-schema — deploy wiring guards', () => {
+describe('PRESCRIPTION-schema — deploy wiring guards', () => {
 	it('intent.ts exports prescription on IntentDoc and DeployIntentInput', () => {
 		const src = readFileSync(INTENT_TYPES, 'utf-8');
 		expect(src).toMatch(/export interface IntentPrescription/);
@@ -320,7 +406,7 @@ describe.skip('PRESCRIPTION-schema — deploy wiring guards', () => {
 		expect(src).toMatch(/effectivePrescriptionReps/);
 	});
 
-	it('trainingOps secureDeployIntent normalizes prescription', () => {
+	it.skip('trainingOps secureDeployIntent normalizes prescription', () => {
 		expect(existsSync(TRAINING_OPS)).toBe(true);
 		const src = readFileSync(TRAINING_OPS, 'utf-8');
 		expect(src).toMatch(/function normalizePrescription/);
