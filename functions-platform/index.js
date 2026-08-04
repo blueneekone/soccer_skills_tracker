@@ -75,5 +75,5 @@ exports.purgeUserDataFn = operativeOps.purgeUserDataFn;
 
 
 
-const { onChannelCreated } = require('../functions/src/onChannelCreated.js');
+const { onChannelCreated } = require('./src/onChannelCreated.js');
 exports.onChannelCreated = onChannelCreated;

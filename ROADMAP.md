@@ -55,6 +55,7 @@ All data collection must pass through these legal gates before a user accesses t
 *   [x] **Telemetry Single Pane:** Aggregated read-only dashboard pulling MAU and Stripe Connect Revenue metrics to defuse NoSQL read-bombs [cite: 754].
 *   [x] **System Kill Switches:** Admin scripts to trigger the Right to Be Forgotten and database defragmentation [cite: 886].
 *   [x] **User Role Mutations:** Extracted `updateUserRole` to a secure Cloud Function and removed client-side mutate capabilities.
+*   [x] **Platform Deployment:** Resolved ghost export `vampireIngestRows` and trigger mismatch `onChannelCreated` failing deployments.
 
 ##### 🏛️ EPIC 7: COMMISSIONER OS (THE FEDERATION COMMAND)
 **Mission:** State-wide governance, macro-logistics, and absolute talent oversight.
