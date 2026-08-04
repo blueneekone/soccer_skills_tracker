@@ -54,6 +54,7 @@ All data collection must pass through these legal gates before a user accesses t
 *   [x] **Account Impersonation:** Securely mint custom JWT tokens to troubleshoot Commissioner/Director accounts without exposing passwords [cite: 754].
 *   [x] **Telemetry Single Pane:** Aggregated read-only dashboard pulling MAU and Stripe Connect Revenue metrics to defuse NoSQL read-bombs [cite: 754].
 *   [x] **System Kill Switches:** Admin scripts to trigger the Right to Be Forgotten and database defragmentation [cite: 886].
+*   [x] **User Role Mutations:** Extracted `updateUserRole` to a secure Cloud Function and removed client-side mutate capabilities.
 
 ##### 🏛️ EPIC 7: COMMISSIONER OS (THE FEDERATION COMMAND)
 **Mission:** State-wide governance, macro-logistics, and absolute talent oversight.

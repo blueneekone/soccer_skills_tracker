@@ -55,6 +55,7 @@ const complianceOps = require('./src/domains/complianceOps.js');
 exports.parentSubmitVpcIntent = complianceOps.parentSubmitVpcIntent;
 
 const adminOps = require('./src/domains/adminOps.js');
+exports.updateUserRole = adminOps.updateUserRole;
 exports.listTeamsForClub = adminOps.listTeamsForClub;
 exports.logSecurityAudit = adminOps.logSecurityAudit;
 exports.executeSupportCommand = adminOps.executeSupportCommand;
