@@ -181,7 +181,7 @@
 			/>
 		{/if}
 
-		<div class="ps-scroll-shell tw-relative tw-flex-1 tw-min-h-0 tw-overflow-y-auto">
+		<div class="ps-scroll-shell tw-relative">
 			<div class="ps-canvas-bg" aria-hidden="true"></div>
 			<main
 				class="ps-canvas ps-canvas--scroll-inner player-dossier-root pd-grain pd-chrome-root tw-relative tw-z-[1] bento-grid tw-grid tw-grid-cols-1 lg:tw-grid-cols-12"
