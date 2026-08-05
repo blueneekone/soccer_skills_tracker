@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { db, auth } from '$lib/firebase.js';
+	import { isFirestoreReady } from '$lib/utils/firestoreGuard.js';
 	import {
 		collection,
 		doc,
@@ -28,7 +29,7 @@
 	let activeSessionId = $state(null);
 
 	$effect(() => {
-		if (!teamId) {
+		if (!teamId || !isFirestoreReady()) {
 			players = [];
 			rosterLoading = false;
 			return;
@@ -57,7 +58,7 @@
 	});
 
 	$effect(() => {
-		if (!teamId) {
+		if (!teamId || !isFirestoreReady()) {
 			activeSessionId = null;
 			sessionLoading = false;
 			return;

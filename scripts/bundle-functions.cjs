@@ -111,6 +111,7 @@ const CODEBASES = {
       'src/domains/interoperabilityOps.js',
       'src/domains/b2bEnrollmentOps.js',
       'lib/grit.js',
+      'src/onChannelCreated.js',
     ],
   },
 };

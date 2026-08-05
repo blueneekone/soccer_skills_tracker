@@ -80,28 +80,28 @@
 					We collapsed the entire youth sports operational stack into a single, cohesive operating system. Built on military-grade architecture, enforcing Vanguard Zero-Trust compliance, and designed with a brutalist focus on athlete development.
 				</p>
 
-				<div class="tw-grid tw-grid-cols-2 md:tw-grid-cols-3 tw-gap-4 tw-mt-auto">
-					<div class="tw-bg-[#0f172a] tw-border tw-border-[#1e293b] tw-p-4 tw-flex tw-flex-col tw-gap-2">
+				<div class="tw-flex tw-flex-wrap tw-gap-4 tw-mt-auto child-flex-basis">
+					<div class="tw-bg-[#0f172a] tw-border tw-border-[#1e293b] tw-p-4 tw-flex tw-flex-col tw-gap-2 tw-w-[calc(50%-0.5rem)] md:tw-w-[calc(33.333%-0.7rem)]">
 						<Icon name={"data.pulse" as IconName} size={20} class="tw-text-[#14b8a6]" />
 						<span class="tw-font-mono tw-text-xs tw-text-[#f8fafc]">Sideline SIEM</span>
 					</div>
-					<div class="tw-bg-[#0f172a] tw-border tw-border-[#1e293b] tw-p-4 tw-flex tw-flex-col tw-gap-2">
+					<div class="tw-bg-[#0f172a] tw-border tw-border-[#1e293b] tw-p-4 tw-flex tw-flex-col tw-gap-2 tw-w-[calc(50%-0.5rem)] md:tw-w-[calc(33.333%-0.7rem)]">
 						<Icon name={"game.rocket" as IconName} size={20} class="tw-text-[#14b8a6]" />
 						<span class="tw-font-mono tw-text-xs tw-text-[#f8fafc]">Player HUD</span>
 					</div>
-					<div class="tw-bg-[#0f172a] tw-border tw-border-[#1e293b] tw-p-4 tw-flex tw-flex-col tw-gap-2">
+					<div class="tw-bg-[#0f172a] tw-border tw-border-[#1e293b] tw-p-4 tw-flex tw-flex-col tw-gap-2 tw-w-[calc(50%-0.5rem)] md:tw-w-[calc(33.333%-0.7rem)]">
 						<Icon name={"user.settings" as IconName} size={20} class="tw-text-[#14b8a6]" />
 						<span class="tw-font-mono tw-text-xs tw-text-[#f8fafc]">Director OS</span>
 					</div>
-					<div class="tw-bg-[#0f172a] tw-border tw-border-[#1e293b] tw-p-4 tw-flex tw-flex-col tw-gap-2">
+					<div class="tw-bg-[#0f172a] tw-border tw-border-[#1e293b] tw-p-4 tw-flex tw-flex-col tw-gap-2 tw-w-[calc(50%-0.5rem)] md:tw-w-[calc(33.333%-0.7rem)]">
 						<Icon name={"sys.lock" as IconName} size={20} class="tw-text-[#14b8a6]" />
 						<span class="tw-font-mono tw-text-xs tw-text-[#f8fafc]">Compliance Vault</span>
 					</div>
-					<div class="tw-bg-[#0f172a] tw-border tw-border-[#1e293b] tw-p-4 tw-flex tw-flex-col tw-gap-2">
+					<div class="tw-bg-[#0f172a] tw-border tw-border-[#1e293b] tw-p-4 tw-flex tw-flex-col tw-gap-2 tw-w-[calc(50%-0.5rem)] md:tw-w-[calc(33.333%-0.7rem)]">
 						<Icon name={"game.star" as IconName} size={20} class="tw-text-[#14b8a6]" />
 						<span class="tw-font-mono tw-text-xs tw-text-[#f8fafc]">Parent Co-op</span>
 					</div>
-					<div class="tw-bg-[#0f172a] tw-border tw-border-[#1e293b] tw-p-4 tw-flex tw-flex-col tw-gap-2">
+					<div class="tw-bg-[#0f172a] tw-border tw-border-[#1e293b] tw-p-4 tw-flex tw-flex-col tw-gap-2 tw-w-[calc(50%-0.5rem)] md:tw-w-[calc(33.333%-0.7rem)]">
 						<Icon name={"action.search" as IconName} size={20} class="tw-text-[#14b8a6]" />
 						<span class="tw-font-mono tw-text-xs tw-text-[#f8fafc]">Global Talent Index</span>
 					</div>
