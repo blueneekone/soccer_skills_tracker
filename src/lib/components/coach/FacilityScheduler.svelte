@@ -312,7 +312,7 @@ import { functions } from '$lib/firebase.js';
 				type="date"
 				bind:value={date}
 				class="w-full px-2 py-2 text-xs bg-transparent outline-none"
-				style="border: 1px solid rgba(0,255,255,0.2); border-radius: 2px; color: #14b8a6; colorscheme: dark;"
+				style="border: 1px solid rgba(0,255,255,0.2); border-radius: 2px; color: #14b8a6; color-scheme: dark;"
 				min={todayISO()}
 			/>
 		</div>
@@ -322,7 +322,7 @@ import { functions } from '$lib/firebase.js';
 				type="time"
 				bind:value={startTime}
 				class="w-full px-2 py-2 text-xs bg-transparent outline-none"
-				style="border: 1px solid rgba(0,255,255,0.2); border-radius: 2px; color: #14b8a6; colorscheme: dark;"
+				style="border: 1px solid rgba(0,255,255,0.2); border-radius: 2px; color: #14b8a6; color-scheme: dark;"
 			/>
 		</div>
 		<div class="space-y-1">
@@ -331,7 +331,7 @@ import { functions } from '$lib/firebase.js';
 				type="time"
 				bind:value={endTime}
 				class="w-full px-2 py-2 text-xs bg-transparent outline-none"
-				style="border: 1px solid rgba(0,255,255,0.2); border-radius: 2px; color: #14b8a6; colorscheme: dark;"
+				style="border: 1px solid rgba(0,255,255,0.2); border-radius: 2px; color: #14b8a6; color-scheme: dark;"
 			/>
 		</div>
 	</div>

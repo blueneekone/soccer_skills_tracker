@@ -37,7 +37,7 @@
 	{:else if engine.err}
 		<p class="ops-err" role="alert">{engine.err}</p>
 	{:else if engine.players.length === 0}
-		<p class="ops-muted">No linked players on this team yet. Ask your director to sync the roster.</p>
+		<p class="ops-muted">No athletes found on this roster. Ingest using the CSV tool above or manually via Daily Intel.</p>
 	{:else}
 		<p class="ops-count">{engine.players.length} player{engine.players.length === 1 ? '' : 's'}</p>
 		<ul class="ops-roster">

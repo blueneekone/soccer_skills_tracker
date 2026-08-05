@@ -46,8 +46,8 @@
 			{#if dev}
 				<p class="logistics-kicker qa-mono">Epic 4.7 · Team ops</p>
 			{/if}
-			<h1 class="logistics-title">Team Ops</h1>
-			<p class="logistics-sub">
+			<h1 class="tw-font-mono tw-text-2xl tw-font-black tw-uppercase tw-tracking-[0.08em] tw-text-white md:tw-text-3xl tw-m-0">TEAM OPS</h1>
+			<p class="tw-mt-2 tw-max-w-2xl tw-text-sm tw-text-slate-400">
 				Coach-delegated logistics — schedule, roster, attendance, and parent-targeted comms (no separate
 				team_manager role in v1).
 			</p>
@@ -129,21 +129,7 @@
 		color: #64748b;
 	}
 
-	.logistics-title {
-		margin: 0;
-		font-size: clamp(1.35rem, 2.5vw, 1.75rem);
-		font-weight: 800;
-		letter-spacing: -0.03em;
-		color: #e2e8f0;
-	}
 
-	.logistics-sub {
-		margin: 6px 0 0;
-		max-width: 40rem;
-		font-size: 13px;
-		line-height: 1.45;
-		color: #94a3b8;
-	}
 
 	.logistics-tabs {
 		display: flex;

@@ -191,7 +191,6 @@ export function sanitizePins(raw: readonly (string | null)[], personaKey: NavPer
 	return result;
 }
 
-/** Resolve nav persona key from auth role + workspace context (NAV-OPTION-D). */
 export function resolveNavPersonaKey(
 	role: string | null | undefined,
 	activeContext: string | null | undefined,
@@ -199,15 +198,22 @@ export function resolveNavPersonaKey(
 	const r = (role ?? '').trim();
 	const ctx = (activeContext ?? '').trim();
 
+	if (ctx === 'admin') return 'admin';
+	if (ctx === 'director') return 'director';
+	if (ctx === 'coach') return 'coach';
+	if (ctx === 'recruiter') return 'recruiter';
+	if (ctx === 'registrar') return 'registrar';
+	if (ctx === 'household') return 'parent';
+
 	if (r === 'player') return 'player';
 	if (r === 'parent') return 'parent';
-	if (r === 'recruiter' || ctx === 'recruiter') return 'recruiter';
-	if (r === 'registrar' || ctx === 'registrar') return 'registrar';
-	if (ctx === 'admin' || r === 'admin' || r === 'global_admin' || r === 'super_admin') {
+	if (r === 'recruiter') return 'recruiter';
+	if (r === 'registrar') return 'registrar';
+	if (r === 'admin' || r === 'global_admin' || r === 'super_admin') {
 		return 'admin';
 	}
-	if (ctx === 'director' || r === 'director') return 'director';
-	if (ctx === 'coach' || r === 'coach') return 'coach';
+	if (r === 'director') return 'director';
+	if (r === 'coach') return 'coach';
 	return 'coach';
 }
 
