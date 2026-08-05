@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { untrack } from 'svelte';
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { db } from '$lib/firebase.js';
 	import CarRideHome from '$lib/components/parent/CarRideHome.svelte';
@@ -24,6 +25,7 @@
 
 	// Simulate data fetch
 	$effect(() => {
+		untrack(() => {
 		setTimeout(() => {
 			loading = false;
 			matchData = {
@@ -33,6 +35,7 @@
 			};
 			isEmbargoed = true;
 		}, 1000);
+		});
 	});
 
 	function signAttestation() {
@@ -55,7 +58,7 @@
 		</header>
 
 		<!-- Co-Op Arena & Compliance Sidecar in 12-Column Liquid Bento Grid -->
-		<div class="tw-grid tw-grid-cols-1 lg:tw-grid-cols-12 tw-gap-6 lg:tw-gap-8" style="grid-template-columns: repeat(auto-fit, minmax(min(100%, clamp(280px, 30vw, 350px)), 1fr));">
+		<div class="tw-grid tw-grid-cols-1 lg:tw-grid-cols-12 tw-gap-6 lg:tw-gap-8" >
 			
 			<!-- CoOpArena spans 8 columns -->
 			<div data-panel="true" class="parent-panel lg:tw-col-span-8 tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-overflow-hidden tw-relative" style="border-radius: 24px;">
@@ -86,7 +89,7 @@
 		</div>
 
 		<!-- Communications Oversight Panels -->
-		<div class="tw-grid tw-grid-cols-1 lg:tw-grid-cols-12 tw-gap-6 lg:tw-gap-8" style="grid-template-columns: repeat(auto-fit, minmax(min(100%, clamp(280px, 30vw, 350px)), 1fr));">
+		<div class="tw-grid tw-grid-cols-1 lg:tw-grid-cols-12 tw-gap-6 lg:tw-gap-8" >
 			<!-- Parent Lounge -->
 			<div data-panel="true" class="parent-panel lg:tw-col-span-7 tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-p-6 tw-relative" style="border-radius: 24px;">
 				<h3 class="tw-text-white tw-font-bold tw-text-lg tw-flex tw-items-center tw-gap-2 tw-mb-4">
