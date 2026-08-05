@@ -9,6 +9,7 @@
 	import type { IconName } from '$lib/icons/registry.js';
 	import VanguardEmptyState from '$lib/components/ui/VanguardEmptyState.svelte';
 	import ActionInbox from '$lib/components/shell/ActionInbox.svelte';
+	import UpcomingEventsRsvp from '$lib/components/parent/UpcomingEventsRsvp.svelte';
 
 	// For the engine, we will dynamically import or mock it for the dashboard
 	// Assuming CoOpEngine exists and is available
@@ -67,6 +68,7 @@
 			<!-- Compliance Sidecar spans 4 columns -->
 			<div class="lg:tw-col-span-4 tw-flex tw-flex-col tw-gap-6">
 				<ActionInbox householdId={authStore.userProfile?.householdId} />
+				<UpcomingEventsRsvp />
 
 				<!-- The Car Ride Home Holographic Widget (Z3 Holographic Card) -->
 				<div data-panel="true" class="parent-panel tw-relative tw-border tw-border-[#334155] tw-overflow-hidden tw-z-10 tw-bg-[#0f172a]/40 tw-backdrop-blur-[20px]" style="border-radius: 24px;">

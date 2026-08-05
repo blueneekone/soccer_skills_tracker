@@ -2,6 +2,7 @@ import { db, functions } from '$lib/firebase.js';
 import { normalizeLiveStreamUrl } from '$lib/live-stream/liveStreamEmbed.js';
 import { addDoc, collection, query, where, getDocs, serverTimestamp, Timestamp } from 'firebase/firestore';
 import { httpsCallable } from 'firebase/functions';
+import { isFirestoreReady } from '$lib/utils/firestoreGuard.js';
 
 /**
  * UI / API keys → stored in `reminderOffsets` as numbers (minutes) or the sentinel `'morning'`.
@@ -66,7 +67,7 @@ export async function saveTeamScheduledEvent({
 	announceToTeam = false,
 	liveStreamUrl = '',
 }) {
-	if (!teamId) {
+	if (!teamId || !isFirestoreReady()) {
 		throw new Error('teamId is required');
 	}
 	const start = startAt instanceof Date ? startAt : new Date(startAt);
@@ -84,21 +85,7 @@ export async function saveTeamScheduledEvent({
 				'Practice';
 
 	const startTimestamp = start.getTime();
-
-	/** @type {Record<string, unknown>} */
-	const payload = {
-		teamId,
-		recordType: 'scheduled_event',
-		eventKind: kind,
-		name,
-		type: 'scheduled',
-		startTime: Timestamp.fromDate(start),
-		/** Unix epoch milliseconds — canonical for server reminder dispatch */
-		startTimestamp,
-		reminderOffsets,
-		source,
-		createdAt: serverTimestamp(),
-	};
+	const payload = buildEventPayload({ teamId, kind, name, start, startTimestamp, reminderOffsets, source });
 
 	if (endAt != null) {
 		const en = endAt instanceof Date ? endAt : new Date(endAt);
@@ -136,6 +123,36 @@ export async function saveTeamScheduledEvent({
 		} catch (broadcastErr) {
 			console.error('[workouts] announce broadcast failed (non-fatal):', broadcastErr);
 		}
+	}
+}
+
+
+function buildEventPayload(opts) {
+	return {
+		teamId: opts.teamId,
+		recordType: 'scheduled_event',
+		eventKind: opts.kind,
+		name: opts.name,
+		type: 'scheduled',
+		startTime: Timestamp.fromDate(opts.start),
+		startTimestamp: opts.startTimestamp,
+		reminderOffsets: opts.reminderOffsets,
+		source: opts.source,
+		createdAt: serverTimestamp(),
+	};
+}
+
+async function triggerAnnouncements(teamId, kind, name) {
+	try {
+		const broadcastFn = httpsCallable(functions, 'safeSportBroadcast');
+		const kindLabel = kind === 'game' ? 'Game' : 'Practice';
+		const subject = `New ${kindLabel}: ${name}`;
+		const body = `${name} has been added to the team schedule.`;
+		await broadcastFn({ teamId, subject, body });
+		const mirrorFn = httpsCallable(functions, 'mirrorScheduleToLogistics');
+		await mirrorFn({ teamId, kind, name, subject, body });
+	} catch (broadcastErr) {
+		console.error('[workouts] announce broadcast failed (non-fatal):', broadcastErr);
 	}
 }
 

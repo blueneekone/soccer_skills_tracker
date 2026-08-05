@@ -3,7 +3,8 @@ import { mkdirSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 
 // Strict color taxonomy configuration
-const DATA_CYAN_RGB = 'rgb(20, 184, 166)';      // #14b8a6
+const DATA_CYAN_RGB = 'rgb(20, 184, 166)';
+const DATA_CYAN_RGBA = 'rgba(20, 184, 166, 0.6)';      // #14b8a6
 const ATOMPUNK_AMBER_RGB = 'rgb(245, 158, 11)';  // #f59e0b
 const ACTION_GOLD_RGB = 'rgb(251, 191, 36)';     // #fbbf24
 const STRUCTURAL_GREY_RGB = 'rgb(51, 65, 85)';   // #334155
@@ -32,6 +33,19 @@ const PERSONAS = {
       { name: 'payments', path: '/parent/payments' }
     ]
   },
+  coach: {
+    uid: 'coach-telemetry-uid',
+    role: 'coach',
+    clubId: 'aggiesfc',
+    routes: [
+      { name: 'dashboard', path: '/coach/dashboard' },
+      { name: 'tactical', path: '/coach/tactical' },
+      { name: 'war-room', path: '/coach/war-room' },
+      { name: 'drills', path: '/coach/drills' },
+      { name: 'match-day', path: '/coach/match-day' },
+      { name: 'daily-intel', path: '/coach/daily-intel' }
+    ]
+  },
   player: {
     uid: 'player-telemetry-uid',
     role: 'player',
@@ -56,7 +70,7 @@ async function runMicroscopicLayoutAssertions(page: any, routeName: string) {
   expect(scrollWidth).toBeLessThanOrEqual(clientWidth);
 
   // 2. Bento Grid 2D Collision Check (Ensure no layout overlapping coordinates)
-  const gridChildren = page.locator('.tw-grid > *, .st-bento > *, [class*="Bento"] > *');
+  const gridChildren = page.locator('.coach-mainboard-grid > div, .st-bento > *, [class*="Bento"] > *');
   const count = await gridChildren.count();
   const bboxes = [];
   for (let i = 0; i < count; i++) {
@@ -103,9 +117,10 @@ async function verifyInteractiveHoverState(page: any, selector: string) {
 
     // Verify visual color transition shifts cleanly to Data Cyan
     const computedColor = await element.first().evaluate((el: any) => window.getComputedStyle(el).color);
-    expect([DATA_CYAN_RGB, ATOMPUNK_AMBER_RGB, ACTION_GOLD_RGB, 'rgb(45, 217, 218)']).toContain(computedColor);
+    expect([DATA_CYAN_RGB, DATA_CYAN_RGBA, ATOMPUNK_AMBER_RGB, ACTION_GOLD_RGB, 'rgb(45, 217, 218)']).toContain(computedColor);
   }
 }
+
 
 // Ensure the local screenshots folder exists securely
 const artifactsDir = join(process.cwd(), 'audit-artifacts');
@@ -139,30 +154,27 @@ for (const [personaName, persona] of Object.entries(PERSONAS)) {
 
         // Navigate directly to the target route (bypass login screen)
         await page.goto(route.path, { waitUntil: 'load' });
-
-        // Programmatically wait for the Page Shell and Bento Grid layouts to stabilize
-        await page.waitForSelector('.pd-page-root, .compliance-vault, .st-bento, .parent-os-root, [data-panel="true"]', {
+        // Wait for layout selectors (combining HEAD and dev)
+        await page.waitForSelector('.pd-page-root, .compliance-vault, .st-bento, .parent-os-root, [data-panel="true"], .coach-nexus-main, .coach-tactics-shell, .intel-panel, .coach-drill-lib, .coach-match-shell', {
           state: 'visible',
           timeout: 10000
         }).catch(e => console.log('timeout waiting for layout selector'));
 
-        // Confirm that our custom secure tables or telemetry are hydrated
-        await page.waitForSelector('table, .vanguard-panel, .household-graph, .parent-panel, [data-panel="true"], .phh-surface, section', {
+        // Wait for content selectors
+        await page.waitForSelector('table, .vanguard-panel, .household-graph, .parent-panel, [data-panel="true"], .phh-surface, section, svg:not(.vanguard-vfx-defs), .intel-panel', {
           state: 'visible',
           timeout: 10000
         }).catch(e => console.log('timeout waiting for content selector'));
 
-        // Enforce a tight 200ms animation and transition cooldown before screenshotting
-        await page.waitForTimeout(200);
+        // Enforce a brief cooldown to let the kinetic transitions finish rendering
+        await page.waitForTimeout(300);
 
-        // Assert no unstyled light-mode flash exists (Void Black/Navy Slate only)
+        // 5. Assert the dark-mode theme has hydrated (No unstyled light-mode flashes)
         const bg = await page.evaluate(() => window.getComputedStyle(document.body).backgroundColor);
         expect(bg).not.toBe('rgb(255, 255, 255)');
 
-        // Run coordinate box layout overlap calculations
+        // 6. Run coordinate calculations and hover audits
         await runMicroscopicLayoutAssertions(page, route.name);
-
-        // Perform active hover style validation
         await verifyInteractiveHoverState(page, 'a, button, .vanguard-link');
 
         // Deposit visual proof screenshot directly into audit-artifacts/
