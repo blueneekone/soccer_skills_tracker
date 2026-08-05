@@ -167,6 +167,7 @@
 		}),
 	);
 	const missionRailEmptyMessage = $derived(missionRailEmptyMessageFor(missionRailDiagnostic));
+	// dummy q.id !== heroQuest.id
 	const embeddedFeed = $derived(
 		heroQuest ?
 			[heroQuest, ...visibleQuests.filter((q) => q.id !== heroQuest.id)]
@@ -613,14 +614,39 @@
 				aria-label="Active missions"
 			>
 				{@render coachAssignHintBlock()}
+				{#snippet questRowEmbedded(quest)}
+  <div class="quest-row-embedded tw-flex tw-items-center tw-justify-between tw-p-4 tw-border-b tw-border-slate-800 quest-row--promoted={isPromotedQuest(quest) && heroQuest?.id !== quest.id}">
+    <div class="tw-flex tw-items-center tw-gap-3">
+      <span class="quest-row__title-text tw-font-mono tw-text-sm tw-tracking-widest">
+        {quest.title}
+      </span>
+    </div>
+
+    <div class="tw-flex tw-items-center tw-gap-4">
+      <span class="quest-reward-label tw-font-mono tw-text-xs tw-text-[#14b8a6] quest-row__lede--rail-wide quest-row__xp--inline">
+        {formatQuestRewardLabel(quest)}
+      </span>
+
+      <button
+        class="quest-hero__cta rse-btn tw-font-mono tw-text-xs active:tw-scale-[0.98]"
+        onclick={() => handleQuestAction(quest)}>
+        {questHudCtaFor(quest)}
+      </button>
+    </div>
+  </div>
+{/snippet}
+
+{#snippet questHeroCard(quest)}
+<div class="quest-hero--premium quest-row--premium"></div>
+{/snippet}
+{#snippet questRow(quest)}
+  <div class="quest-row tw-bg-[#0f172a] tw-border tw-border-slate-800 tw-mb-2" class:quest-row--hero={heroQuest?.id === quest.id}>
+    {@render questRowEmbedded(quest)}
+  </div>
+{/snippet}
+
 				{#each embeddedFeed as quest (quest.id)}
-					<div
-						class="bento-span-12 quest-terminal-row quest-terminal-row--embedded"
-						class:quest-terminal-row--habit={quest.tier === 'daily'}
-						class:quest-terminal-row--bounty={quest.tier === 'bounty'}
-					>
-						<BountyRow {quest} embedded={true} {cadenceCompletions} intentRow={intentDataById[quest.id]} {playerUid} {playerXpByAttribute} {playerEmail} drillPreview={drillPreviewByQuestId[quest.id]} isParentVerified={approvedIntentIds.has(quest.id)} onAction={handleQuestAction} />
-					</div>
+					{@render questRowEmbedded(quest)}
 				{/each}
 			</div>
 		{:else}

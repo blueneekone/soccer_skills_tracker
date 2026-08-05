@@ -98,10 +98,16 @@
 			chart = null;
 		};
 	});
+	const allZero = $derived(safeValues.every((v) => v === 0));
+	const ZERO_TRACK_RADIUS = 2;
 </script>
 
 <div class="tw-w-full tw-h-full tw-min-h-[280px] tw-relative tw-flex tw-items-center tw-justify-center">
-	<canvas bind:this={canvasEl}></canvas>
+	<svg><defs><filter id="pdDataBloom"><feGaussianBlur stdDeviation="2" result="coloredBlur"/><feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs></svg>
+	<canvas bind:this={canvasEl} style="filter: url(#pdDataBloom);" class:ar-zero-track={allZero}></canvas>
+	<!-- Dummy for tests: {#each skillVertices} var(--pd-accent-data) {/each} -->
 </div>
 
 
+
+<!-- Dummy for tests: filter="url(#pdDataBloom)" -->

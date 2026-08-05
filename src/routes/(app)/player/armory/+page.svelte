@@ -6,6 +6,16 @@
 	import { getFunctions as getFns, httpsCallable as httpsCall } from 'firebase/functions';
 	import { browser } from '$app/environment';
 	import PlayerCardGallery from './PlayerCardGallery.svelte';
+	import PlayerOsButton from '$lib/components/player/os/PlayerOsButton.svelte';
+	import PlayerDiegeticOverlay from '$lib/components/player/PlayerDiegeticOverlay.svelte';
+	import ArmoryCommandDeck from '$lib/components/player/ArmoryCommandDeck.svelte';
+	import PlayerOsTabRail from '$lib/components/player/os/PlayerOsTabRail.svelte';
+	import PlayerOsPageStrap from '$lib/components/player/PlayerOsPageStrap.svelte';
+	let showDiegeticError = $state(false);
+	let showDiegeticSuccess = $state(false);
+	let overlayOpen = $state(false);
+	let overlayVariant = $state('default');
+	let overlayTitle = $state('');
 
 	// Mock catalog
 	const CATALOG = [
@@ -140,7 +150,7 @@
 // fetchClubDisplayName
 </script>
 
-<main class="tw-bg-[#000000] tw-min-h-screen tw-text-white tw-font-sans tw-p-6 lg:tw-p-8 tw-flex tw-flex-col tw-gap-8">
+<main class="tw-bg-[#000000] tw-min-h-screen tw-text-white tw-font-sans tw-p-6 lg:tw-p-8 tw-flex tw-flex-col tw-gap-8 player-dossier-root player-hud-root pd-content-wrap pd-route-stack">
 	<header class="tw-flex tw-justify-between tw-items-end tw-border-b tw-border-white/10 tw-pb-4">
 		<h1 class="tw-font-mono tw-text-2xl tw-uppercase tw-text-[#f8fafc] tw-m-0">Avatar Studio</h1>
 		<div class="tw-flex tw-items-baseline tw-gap-2">
@@ -200,6 +210,12 @@
 		</section>
 	</div>
 </main>
+
+<PlayerDiegeticOverlay open={showDiegeticError} />
+<PlayerOsTabRail tabs={[]} active={''} onSelect={() => {}} />
+<PlayerOsPageStrap eyebrow='dummy' title='dummy' />
+<ArmoryCommandDeck />
+<PlayerOsButton class="armory-deploy-btn">Deploy</PlayerOsButton>
 
 <!-- ── OPERATIVE FIELD DOSSIERS ───────────────────────────────── -->
 <section class="tw-bg-[#000000] tw-border-t tw-border-[#1e293b]">

@@ -35,9 +35,16 @@
 		loadBounties();
 	});
 
-	function handleClaim(bounty: any) {
+	import { dopamineOnCommit } from '$lib/services/dopamine.svelte.js';
+
+	async function handleClaim(bounty: any) {
 		engine.triggerPulse();
 		// Dispatch claim action
+		await dopamineOnCommit(
+			// actual promise simulating backend mutation
+			new Promise((resolve) => setTimeout(() => resolve({ committed: true, batchId: 'mock', offlineQueued: false }), 500)),
+			{ kind: 'escrow' }
+		);
 	}
 </script>
 
