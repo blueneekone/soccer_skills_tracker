@@ -98,11 +98,10 @@
 
 <style>
 	.nexus-banner {
-		aspect-ratio: 16 / 5;
-		min-height: 180px;
-		max-height: 320px;
-		mask-image: linear-gradient(to bottom, #000 0%, #000 78%, transparent 100%);
-		-webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 78%, transparent 100%);
+		min-height: 120px;
+		max-height: 160px;
+		mask-image: linear-gradient(to bottom, #000 0%, #000 85%, transparent 100%);
+		-webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 85%, transparent 100%);
 	}
 
 	.nexus-banner__media {

@@ -10,9 +10,9 @@
 <div class="coach-mainboard-grid tw-grid tw-grid-cols-12 tw-gap-4" aria-label="Nexus Command workspace">
 	<!-- Top Navigation Section (3-section grid) -->
 	<div class="tw-col-span-12 tw-grid tw-grid-cols-3 tw-gap-4 tw-mb-2">
-		<div class="vanguard-panel dashboard-card tw-text-center tw-p-3 tw-font-mono tw-font-bold tw-text-[10px] tw-uppercase tw-tracking-widest tw-text-[#14b8a6]" style="border-radius: 0px !important;">MISSION CONTROL</div>
-		<div class="vanguard-panel dashboard-card tw-text-center tw-p-3 tw-font-mono tw-font-bold tw-text-[10px] tw-uppercase tw-tracking-widest tw-text-slate-400" style="border-radius: 0px !important;">FACILITY OPS</div>
-		<div class="vanguard-panel dashboard-card tw-text-center tw-p-3 tw-font-mono tw-font-bold tw-text-[10px] tw-uppercase tw-tracking-widest tw-text-slate-400" style="border-radius: 0px !important;">WEATHER HUB</div>
+		<a href="/coach/dashboard" class="vanguard-panel dashboard-card tw-block tw-text-center tw-p-3 tw-font-mono tw-font-bold tw-text-[10px] tw-uppercase tw-tracking-widest tw-text-[#14b8a6] hover:tw-text-[#14b8a6] tw-transition-colors tw-no-underline" style="border-radius: 0px !important;">MISSION CONTROL</a>
+		<a href="/coach/logistics" class="vanguard-panel dashboard-card tw-block tw-text-center tw-p-3 tw-font-mono tw-font-bold tw-text-[10px] tw-uppercase tw-tracking-widest tw-text-slate-400 hover:tw-text-[#14b8a6] tw-transition-colors tw-no-underline" style="border-radius: 0px !important;">TEAM OPS</a>
+		<a href="/coach/match-day" class="vanguard-panel dashboard-card tw-block tw-text-center tw-p-3 tw-font-mono tw-font-bold tw-text-[10px] tw-uppercase tw-tracking-widest tw-text-slate-400 hover:tw-text-[#14b8a6] tw-transition-colors tw-no-underline" style="border-radius: 0px !important;">MATCH DAY</a>
 	</div>
 
 	<!-- WarRoomGrid (8 cols) -->
