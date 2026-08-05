@@ -77,7 +77,7 @@
 
 			<!-- FIX #3: Sub-10 word brutalist headline -->
 			<h1 class="tw-text-4xl md:tw-text-5xl tw-font-bold tw-text-[#f8fafc] tw-tracking-tight tw-leading-[1.05] tw-max-w-4xl">
-				Stop managing. Start developing. The Youth Sports OS.
+				Focus on development, not just management.
 			</h1>
 
 			<p class="tw-text-[#94a3b8] tw-text-lg tw-max-w-2xl tw-leading-relaxed">
