@@ -134,7 +134,7 @@
 		font-size: clamp(1.35rem, 2.5vw, 1.75rem);
 		font-weight: 800;
 		letter-spacing: -0.03em;
-		color: var(--text-primary, #0f172a);
+		color: #e2e8f0;
 	}
 
 	.logistics-sub {
@@ -142,7 +142,7 @@
 		max-width: 40rem;
 		font-size: 13px;
 		line-height: 1.45;
-		color: #64748b;
+		color: #94a3b8;
 	}
 
 	.logistics-tabs {
@@ -184,17 +184,17 @@
 	}
 
 	.logistics-team-select {
-		border: 1px solid #e2e8f0;
+		border: 1px solid #334155;
 		border-radius: 12px;
 		padding: 8px 12px;
-		background: #fff;
-		color: var(--text-primary, #0f172a);
+		background: #0f172a;
+		color: #e2e8f0;
 	}
 
 	.logistics-team-static {
 		margin: 0;
 		font-weight: 700;
-		color: #334155;
+		color: #e2e8f0;
 	}
 
 	.logistics-hint {

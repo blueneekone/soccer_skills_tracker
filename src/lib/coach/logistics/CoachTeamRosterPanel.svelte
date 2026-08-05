@@ -57,12 +57,12 @@
 
 <style>
 	.ops-panel { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
-	.ops-panel__title { margin: 0; font-size: 15px; font-weight: 800; color: var(--text-primary, #0f172a); }
-	.ops-panel__sub { margin: 0; font-size: 12px; color: #64748b; max-width: 40rem; }
+	.ops-panel__title { margin: 0; font-size: 15px; font-weight: 800; color: #e2e8f0; }
+	.ops-panel__sub { margin: 0; font-size: 12px; color: #94a3b8; max-width: 40rem; }
 	.ops-muted { margin: 0; font-size: 13px; color: #64748b; }
-	.ops-err { margin: 0; font-size: 12px; color: #b91c1c; }
-	.ops-count { margin: 0; font-size: 12px; font-weight: 700; color: #334155; }
+	.ops-err { margin: 0; font-size: 12px; color: #f87171; }
+	.ops-count { margin: 0; font-size: 12px; font-weight: 700; color: #94a3b8; }
 	.ops-roster { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
-	.ops-link { color: #0d9488; font-weight: 700; text-decoration: underline; text-underline-offset: 2px; }
-	.ops-link:hover { color: #0f766e; }
+	.ops-link { color: #14b8a6; font-weight: 700; text-decoration: underline; text-underline-offset: 2px; }
+	.ops-link:hover { color: #2dd4bf; }
 </style>

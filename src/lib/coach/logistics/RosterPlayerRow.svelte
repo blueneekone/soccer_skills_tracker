@@ -69,41 +69,41 @@
 
 <style>
 	.rpr-row {
-		border: 1px solid #e2e8f0;
-		border-radius: 10px;
+		border: 1px solid #334155;
+		border-radius: 8px;
 		padding: 8px 12px;
-		background: #f8fafc;
+		background: rgba(15, 23, 42, 0.6);
 	}
 
 	/* View mode */
 	.rpr-view { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
 	.rpr-view__info { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
-	.rpr-name { font-size: 13px; font-weight: 700; color: #0f172a; }
-	.rpr-email { font-size: 12px; color: #64748b; font-family: ui-monospace, monospace; }
+	.rpr-name { font-size: 13px; font-weight: 700; color: #e2e8f0; }
+	.rpr-email { font-size: 12px; color: #64748b; font-family: 'Geist Mono', ui-monospace, monospace; }
 
 	/* Edit mode */
 	.rpr-edit { display: flex; flex-direction: column; gap: 6px; }
 	.rpr-edit__header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
-	.rpr-edit__title { font-size: 13px; font-weight: 700; color: #0f172a; }
-	.rpr-label { font-size: 10px; font-weight: 700; color: #64748b; letter-spacing: 0.08em; text-transform: uppercase; margin-top: 6px; }
+	.rpr-edit__title { font-size: 13px; font-weight: 700; color: #e2e8f0; }
+	.rpr-label { font-size: 10px; font-weight: 700; color: #94a3b8; letter-spacing: 0.08em; text-transform: uppercase; margin-top: 6px; }
 	.rpr-input {
-		border: 1px solid #cbd5e1; border-radius: 6px; padding: 6px 10px;
-		font-size: 13px; color: #0f172a; background: #fff; width: 100%;
+		border: 1px solid #334155; border-radius: 6px; padding: 6px 10px;
+		font-size: 13px; color: #e2e8f0; background: #0f172a; width: 100%;
 	}
-	.rpr-input:focus { outline: 2px solid #14b8a6; border-color: #14b8a6; }
-	.rpr-input:disabled { opacity: 0.6; }
-	.rpr-err { font-size: 12px; color: #b91c1c; margin: 2px 0 0; }
+	.rpr-input:focus { outline: none; border-color: #14b8a6; box-shadow: 0 0 0 2px rgba(20,184,166,0.2); }
+	.rpr-input:disabled { opacity: 0.5; }
+	.rpr-err { font-size: 12px; color: #f87171; margin: 2px 0 0; }
 	.rpr-save {
-		margin-top: 10px; background: #0d9488; color: #fff; border: none;
+		margin-top: 10px; background: rgba(20,184,166,0.15); color: #14b8a6; border: 1px solid #14b8a6;
 		border-radius: 8px; padding: 8px 16px; font-size: 12px; font-weight: 700;
-		font-family: ui-monospace, monospace; letter-spacing: 0.05em; cursor: pointer;
+		font-family: 'Geist Mono', ui-monospace, monospace; letter-spacing: 0.05em; cursor: pointer;
 		transition: background 0.15s;
 	}
-	.rpr-save:hover:not(:disabled) { background: #0f766e; }
-	.rpr-save:disabled { opacity: 0.6; cursor: not-allowed; }
+	.rpr-save:hover:not(:disabled) { background: rgba(20,184,166,0.28); }
+	.rpr-save:disabled { opacity: 0.5; cursor: not-allowed; }
 
 	/* Shared link style */
-	.rpr-link { color: #0d9488; font-weight: 700; text-decoration: underline; text-underline-offset: 2px; background: none; border: none; cursor: pointer; }
-	.rpr-link:hover:not(:disabled) { color: #0f766e; }
+	.rpr-link { color: #14b8a6; font-weight: 700; text-decoration: underline; text-underline-offset: 2px; background: none; border: none; cursor: pointer; }
+	.rpr-link:hover:not(:disabled) { color: #2dd4bf; }
 	.rpr-link--sm { font-size: 12px; }
 </style>
