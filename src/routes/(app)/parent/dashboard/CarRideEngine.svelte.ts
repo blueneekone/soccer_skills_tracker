@@ -1,3 +1,4 @@
+// 🛡️ SafeSport Compliance Mandate
 /**
  * CarRideEngine.svelte.ts — Phase 4, Epic 8: The Car Ride Home Protocol
  * ───────────────────────────────────────────────────────────────────────
