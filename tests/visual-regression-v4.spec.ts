@@ -54,6 +54,18 @@ const PERSONAS = {
       { name: 'dashboard', path: '/player/dashboard' },
       { name: 'skill-tree', path: '/player/skill-tree' }
     ]
+  },
+  public: {
+    uid: '',
+    role: 'public',
+    clubId: '',
+    routes: [
+      { name: 'landing', path: '/' },
+      { name: 'login', path: '/login' },
+      { name: 'features', path: '/features' },
+      { name: 'pricing', path: '/pricing' },
+      { name: 'about', path: '/about' }
+    ]
   }
 };
 
@@ -145,7 +157,7 @@ for (const [personaName, persona] of Object.entries(PERSONAS)) {
     });
 
     for (const route of persona.routes) {
-      test(`Navigate & Audit: ${route.name.toUpperCase()}`, async ({ page }) => {
+      test(`Navigate & Audit: ${route.name.toUpperCase()}`, async ({ page }, testInfo) => {
         // Create isolated folders for each target review segment
         const personaDir = join(artifactsDir, personaName);
         if (!existsSync(personaDir)) {
@@ -178,7 +190,9 @@ for (const [personaName, persona] of Object.entries(PERSONAS)) {
         await verifyInteractiveHoverState(page, 'a, button, .vanguard-link');
 
         // Deposit visual proof screenshot directly into audit-artifacts/
-        const screenshotPath = join(personaDir, `${route.name}-desktop.png`);
+        const isMobile = testInfo.project.name.toLowerCase().includes('mobile');
+        const platform = isMobile ? 'mobile' : 'desktop';
+        const screenshotPath = join(personaDir, `${route.name}-${platform}.png`);
         await page.screenshot({ path: screenshotPath, fullPage: true });
         console.log(`[VISUAL AUDIT PASSED] Screenshot exported to: ${screenshotPath}`);
       });
