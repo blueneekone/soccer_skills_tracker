@@ -226,8 +226,7 @@ async function parsePdfBase64ToCoachPlayers(contentBase64, apiKey) {
   }
   let pdfText = '';
   try {
-    const parseFn = typeof pdfParse === 'function' ? pdfParse : (pdfParse.default || pdfParse.PDFParse);
-    const pdfData = await parseFn(pdfBuf);
+    const pdfData = await pdfParse(pdfBuf);
     pdfText = pdfData.text;
   } catch (err) {
     throw new Error(`PDF parse failed: ${err.message}`);
