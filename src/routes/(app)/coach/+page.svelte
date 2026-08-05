@@ -6,7 +6,6 @@
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { teamsStore } from '$lib/stores/teams.svelte.js';
 	import { workspaceContextStore } from '$lib/stores/workspaceContext.svelte.js';
-	import SquadTelemetryView from '$lib/components/hud/SquadTelemetryView.svelte';
 	import MediaCenter from '$lib/components/media/MediaCenter.svelte';
 	import WeatherAlert from '$lib/components/weather/WeatherAlert.svelte';
 	import WeatherWidget from '$lib/components/weather/WeatherWidget.svelte';
@@ -198,10 +197,6 @@
 					<span class="media-hub-btn__icon" aria-hidden="true">▶</span>
 					MEDIA HUB
 				</button>
-			</div>
-
-			<div class="bento-span-12 tw-min-w-0">
-				<SquadTelemetryView teamId={effectiveTeamId} teams={myTeams} />
 			</div>
 
 			{#if warRoomHqVisible}
