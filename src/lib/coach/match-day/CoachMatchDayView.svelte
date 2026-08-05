@@ -100,6 +100,11 @@
 	let liveStreamErr = $state('');
 	let liveStreamSaving = $state(false);
 
+	let fieldLocation = $state('');
+	let opponentTeam = $state('');
+	/** @type {Set<string>} */
+	let gameDayActiveRoster = $state(new Set());
+
 	$effect(() => {
 		if (!browser) return;
 		const id = window.setInterval(() => {
@@ -148,6 +153,10 @@
 				});
 				rows.sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }));
 				operatives = rows;
+				// default all to active if no session data yet
+				if (gameDayActiveRoster.size === 0) {
+					gameDayActiveRoster = new Set(rows.map(r => r.id));
+				}
 			} catch (e) {
 				console.error('[Match Logger] roster', e);
 				if (!cancelled) operatives = [];
@@ -155,8 +164,9 @@
 				if (!cancelled) rosterLoading = false;
 			}
 			if (!cancelled && operatives.length) {
-				const still = operatives.some((o) => o.id === activeTarget);
-				if (!still) activeTarget = operatives[0].id;
+				const activeOps = operatives.filter(o => gameDayActiveRoster.has(o.id));
+				const still = activeOps.some((o) => o.id === activeTarget);
+				if (!still && activeOps.length > 0) activeTarget = activeOps[0].id;
 			}
 		})();
 
@@ -185,6 +195,11 @@
 						typeof data.liveStreamUrl === 'string' ? data.liveStreamUrl.trim() : '';
 					liveStreamUrl = stream;
 					liveStreamDraft = stream;
+					if (typeof data.fieldLocation === 'string') fieldLocation = data.fieldLocation;
+					if (typeof data.opponentTeam === 'string') opponentTeam = data.opponentTeam;
+					if (Array.isArray(data.gameDayRoster)) {
+						gameDayActiveRoster = new Set(data.gameDayRoster);
+					}
 				} else {
 					liveStreamUrl = '';
 					liveStreamDraft = '';
@@ -243,6 +258,9 @@
 				matchId: mid,
 				homeScore,
 				awayScore,
+				fieldLocation,
+				opponentTeam,
+				gameDayRoster: Array.from(gameDayActiveRoster),
 				updatedBy: uid,
 				updatedAt: serverTimestamp(),
 			};
@@ -538,33 +556,44 @@
 		<p class="coach-match-z4-strap__team">{activeTeamLabel}</p>
 	</header>
 
-	<div class="coach-match-stream" aria-labelledby="coach-match-stream-h">
-		<label id="coach-match-stream-h" class="coach-match-stream__label" for="coach-match-stream-url">
-			Live stream (YouTube / Vimeo / Mux)
-		</label>
-		<div class="coach-match-stream__row">
-			<input
-				id="coach-match-stream-url"
-				class="coach-match-stream__input"
-				type="url"
-				bind:value={liveStreamDraft}
-				maxlength="512"
-				placeholder="Paste watch URL for parents"
-			/>
-			<button
-				type="button"
-				class="coach-match-stream__save"
-				disabled={liveStreamSaving}
-				onclick={() => void saveLiveStreamUrl()}
-			>
-				{liveStreamSaving ? 'Saving…' : 'Save stream'}
-			</button>
+	<div class="tw-px-3 tw-py-3 tw-flex tw-flex-col tw-gap-3 tw-bg-[#0f172a] tw-border-b tw-border-[#334155] tw-shrink-0">
+		<div class="tw-grid tw-grid-cols-2 md:tw-grid-cols-4 tw-gap-3">
+			<div class="tw-flex tw-flex-col tw-gap-1">
+				<label class="tw-text-[9px] tw-font-bold tw-text-slate-400 tw-uppercase tw-tracking-widest" for="field-loc">Field / Pitch</label>
+				<input id="field-loc" type="text" class="coach-match-stream__input" placeholder="e.g. Field 4" bind:value={fieldLocation} onblur={() => persistMatchSession()} />
+			</div>
+			<div class="tw-flex tw-flex-col tw-gap-1">
+				<label class="tw-text-[9px] tw-font-bold tw-text-slate-400 tw-uppercase tw-tracking-widest" for="opp-team">Opponent</label>
+				<input id="opp-team" type="text" class="coach-match-stream__input" placeholder="e.g. Crossfire" bind:value={opponentTeam} onblur={() => persistMatchSession()} />
+			</div>
+			<div class="tw-flex tw-flex-col tw-gap-1 tw-col-span-2">
+				<label class="tw-text-[9px] tw-font-bold tw-text-slate-400 tw-uppercase tw-tracking-widest" for="stream-url">Live Stream URL</label>
+				<div class="tw-flex tw-gap-2">
+					<input id="stream-url" type="url" class="coach-match-stream__input" placeholder="YouTube / Vimeo link" bind:value={liveStreamDraft} />
+					<button type="button" class="coach-match-stream__save" disabled={liveStreamSaving} onclick={() => void saveLiveStreamUrl()}>{liveStreamSaving ? 'Saving…' : 'Save'}</button>
+				</div>
+				{#if liveStreamErr}
+					<p class="coach-match-stream__err" role="alert">{liveStreamErr}</p>
+				{:else if liveStreamUrl}
+					<p class="coach-match-stream__ok" role="status">Stream linked — parents can watch live.</p>
+				{/if}
+			</div>
 		</div>
-		{#if liveStreamErr}
-			<p class="coach-match-stream__err" role="alert">{liveStreamErr}</p>
-		{:else if liveStreamUrl}
-			<p class="coach-match-stream__ok" role="status">Stream linked — parents can watch live.</p>
-		{/if}
+		<div class="tw-flex tw-flex-col tw-gap-1">
+			<span class="tw-text-[9px] tw-font-bold tw-text-slate-400 tw-uppercase tw-tracking-widest">Game Day Roster</span>
+			<div class="tw-flex tw-gap-2 tw-overflow-x-auto tw-pb-1" style="scrollbar-width: none;">
+				{#each operatives as op (op.id)}
+					<button type="button" class="tw-border tw-px-2 tw-py-1 tw-text-[10px] tw-font-mono tw-rounded-none tw-whitespace-nowrap {gameDayActiveRoster.has(op.id) ? 'tw-bg-[#14b8a6]/20 tw-text-[#14b8a6] tw-border-[#14b8a6]' : 'tw-bg-transparent tw-text-slate-500 tw-border-slate-700'}" onclick={() => {
+						if (gameDayActiveRoster.has(op.id)) gameDayActiveRoster.delete(op.id);
+						else gameDayActiveRoster.add(op.id);
+						gameDayActiveRoster = new Set(gameDayActiveRoster);
+						persistMatchSession();
+					}}>
+						{op.name}
+					</button>
+				{/each}
+			</div>
+		</div>
 	</div>
 
 	<div class="coach-match-main">

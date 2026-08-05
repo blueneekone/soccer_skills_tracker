@@ -88,20 +88,23 @@ function createTeamsStore() {
 		async load(role, opts = {}) {
 			const clubId = (opts.clubId || '').trim();
 			const coachEmail = opts.coachEmail || '';
-			const routePath = (opts.routePath || '').trim();
 			/** @type {TeamsLoadScope} */
 			let scope = opts.scope || 'none';
 
-			const key = `${role}|${scope}|${clubId}|${coachEmail.toLowerCase()}|${routePath}`;
+			// Exclude routePath from key so navigating within the same scope (e.g. /coach/dashboard -> /coach/logistics)
+			// uses the already loaded teams array, preventing duplicate Firestore fetches and race conditions.
+			const key = `${role}|${scope}|${clubId}|${coachEmail.toLowerCase()}`;
 			if (loaded && lastLoadKey === key) return;
 			if (!isFirestoreReady()) return;
 
 			try {
-				teams = [];
-				clubs = [];
+				let nextTeams = [];
+				let nextClubs = [];
+				let nextAdmins = [];
 
 				if (scope === 'setup') {
-					clubs = await loadClubsForScope('setup', [], '');
+					nextClubs = await loadClubsForScope('setup', [], '');
+					clubs = nextClubs;
 					teams = [];
 					admins = [];
 					lastLoadKey = key;
@@ -111,8 +114,8 @@ function createTeamsStore() {
 
 				if (scope === 'admin_full' && (role === 'super_admin' || role === 'global_admin')) {
 					const teamsSnap = await getDocs(collection(db, 'teams'));
-					teamsSnap.forEach((d) => teams.push({ id: d.id, ...d.data() }));
-					clubs = await loadClubsForScope('admin_full', teams, '');
+					teamsSnap.forEach((d) => nextTeams.push({ id: d.id, ...d.data() }));
+					nextClubs = await loadClubsForScope('admin_full', nextTeams, '');
 				} else if (
 					scope === 'club' &&
 					clubId &&
@@ -124,20 +127,23 @@ function createTeamsStore() {
 					const teamsSnap = await getDocs(
 						query(collection(db, 'teams'), where('clubId', '==', clubId)),
 					);
-					teamsSnap.forEach((d) => teams.push({ id: d.id, ...d.data() }));
-					clubs = await loadClubsForScope('club', teams, clubId);
+					teamsSnap.forEach((d) => nextTeams.push({ id: d.id, ...d.data() }));
+					nextClubs = await loadClubsForScope('club', nextTeams, clubId);
 				} else if (coachEmail && (scope === 'coach' || role === 'coach')) {
-					teams = await loadTeamsForCoachEmail(coachEmail);
-					clubs = await loadClubsForScope('coach', teams, clubId);
+					nextTeams = await loadTeamsForCoachEmail(coachEmail);
+					nextClubs = await loadClubsForScope('coach', nextTeams, clubId);
 				}
 
-				admins = [];
 				if (scope === 'admin_full' && (role === 'super_admin' || role === 'global_admin')) {
 					const adminsSnap = await getDocs(
 						query(collection(db, 'users'), where('role', 'in', ['super_admin', 'global_admin'])),
 					);
-					adminsSnap.forEach((d) => admins.push(d.id));
+					adminsSnap.forEach((d) => nextAdmins.push(d.id));
 				}
+
+				teams = nextTeams;
+				clubs = nextClubs;
+				admins = nextAdmins;
 
 				lastLoadKey = key;
 				loaded = true;
