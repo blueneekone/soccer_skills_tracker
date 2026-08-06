@@ -1,4 +1,4 @@
-import { db } from '$lib/firebase.js';
+import { getActiveDb } from '$lib/firebase.js';
 import { collection, doc, getDoc, getDocs, query, where } from 'firebase/firestore';
 import { isFirestoreReady } from '$lib/utils/firestoreGuard.js';
 
@@ -20,16 +20,27 @@ function createTeamsStore() {
 
 	/**
 	 * @param {string} em
+	 * @param {string} clubId
 	 */
-	async function loadTeamsForCoachEmail(em) {
+	async function loadTeamsForCoachEmail(em, clubId) {
 		const head = em.toLowerCase();
-		const [snapHead, snapAsst] = await Promise.all([
-			getDocs(query(collection(db, 'teams'), where('coachEmail', '==', head))),
-			getDocs(query(collection(db, 'teams'), where('assistants', 'array-contains', head))),
-		]);
+		const db = getActiveDb();
+		if (!db) return [];
+		
+		const queries = [];
+		if (clubId) {
+			queries.push(getDocs(query(collection(db, 'teams'), where('clubId', '==', clubId), where('coachEmail', '==', head))));
+			queries.push(getDocs(query(collection(db, 'teams'), where('clubId', '==', clubId), where('assistants', 'array-contains', head))));
+		} else {
+			queries.push(getDocs(query(collection(db, 'teams'), where('coachEmail', '==', head))));
+			queries.push(getDocs(query(collection(db, 'teams'), where('assistants', 'array-contains', head))));
+		}
+		
+		const snaps = await Promise.all(queries);
 		const byId = new Map();
-		snapHead.forEach((d) => byId.set(d.id, { id: d.id, ...d.data() }));
-		snapAsst.forEach((d) => byId.set(d.id, { id: d.id, ...d.data() }));
+		for (const snap of snaps) {
+			snap.forEach((d) => byId.set(d.id, { id: d.id, ...d.data() }));
+		}
 		return Array.from(byId.values());
 	}
 
@@ -41,6 +52,9 @@ function createTeamsStore() {
 	 * @param {string} clubId
 	 */
 	async function loadClubsForScope(scope, teamRows, clubId) {
+		const db = getActiveDb();
+		if (!db) return [];
+		
 		if (scope === 'admin_full') {
 			const clubsSnap = await getDocs(collection(db, 'clubs'));
 			const out = [];
@@ -113,6 +127,8 @@ function createTeamsStore() {
 				}
 
 				if (scope === 'admin_full' && (role === 'super_admin' || role === 'global_admin')) {
+					const db = getActiveDb();
+					if (!db) return;
 					const teamsSnap = await getDocs(collection(db, 'teams'));
 					teamsSnap.forEach((d) => nextTeams.push({ id: d.id, ...d.data() }));
 					nextClubs = await loadClubsForScope('admin_full', nextTeams, '');
@@ -124,17 +140,21 @@ function createTeamsStore() {
 						role === 'super_admin' ||
 						role === 'global_admin')
 				) {
+					const db = getActiveDb();
+					if (!db) return;
 					const teamsSnap = await getDocs(
 						query(collection(db, 'teams'), where('clubId', '==', clubId)),
 					);
 					teamsSnap.forEach((d) => nextTeams.push({ id: d.id, ...d.data() }));
 					nextClubs = await loadClubsForScope('club', nextTeams, clubId);
 				} else if (coachEmail && (scope === 'coach' || role === 'coach')) {
-					nextTeams = await loadTeamsForCoachEmail(coachEmail);
+					nextTeams = await loadTeamsForCoachEmail(coachEmail, clubId);
 					nextClubs = await loadClubsForScope('coach', nextTeams, clubId);
 				}
 
 				if (scope === 'admin_full' && (role === 'super_admin' || role === 'global_admin')) {
+					const db = getActiveDb();
+					if (!db) return;
 					const adminsSnap = await getDocs(
 						query(collection(db, 'users'), where('role', 'in', ['super_admin', 'global_admin'])),
 					);
