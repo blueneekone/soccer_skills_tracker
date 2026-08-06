@@ -1,14 +1,24 @@
-<script lang="ts">
+ï»¿<script lang="ts">
 	import { CoachMatchDayView } from '$lib/coach/match-day/index.js';
 	import HalftimeChoicePlanner from '$lib/components/coach/halftime-choice-planner.svelte';
 </script>
 
 <svelte:head>
-	<title>Coach · Match Day · Sideline Terminal</title>
+	<title>Coach â€¢ Match Day â€¢ Sideline Terminal</title>
 </svelte:head>
 
-<CoachMatchDayView />
+<div class="pd-page-root tw-min-h-[100dvh] tw-bg-[#020617] tw-text-slate-300 tw-flex tw-flex-col tw-overflow-x-hidden">
+	<div class="tw-pt-[var(--st-header-h,64px)] tw-flex-1 tw-flex tw-flex-col">
+		<div class="tw-w-full tw-max-w-[1600px] tw-mx-auto tw-p-[clamp(12px,3vw,32px)]">
+			
+			<div class="st-bento vanguard-panel tw-bg-[#0f172a] tw-border tw-border-slate-800 tw-mb-[clamp(16px,2vw,24px)]" style="clip-path: polygon(0 0, 100% 0, 100% calc(100% - 16px), calc(100% - 16px) 100%, 0 100%);">
+				<CoachMatchDayView />
+			</div>
 
-<div class="tw-mt-8">
-	<HalftimeChoicePlanner />
+			<div class="st-bento vanguard-panel tw-bg-[#0f172a] tw-border tw-border-slate-800" style="clip-path: polygon(0 0, 100% 0, 100% calc(100% - 16px), calc(100% - 16px) 100%, 0 100%);">
+				<HalftimeChoicePlanner />
+			</div>
+
+		</div>
+	</div>
 </div>

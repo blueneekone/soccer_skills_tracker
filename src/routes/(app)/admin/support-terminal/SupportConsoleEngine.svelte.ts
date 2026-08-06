@@ -26,6 +26,12 @@ export class SupportConsoleEngine {
 	repairClubId = $state('');
 	repairTeamId = $state('');
 
+	// Link User to Team State
+	linkEmail = $state('');
+	linkRole = $state('coach');
+	linkClubId = $state('');
+	linkTeamId = $state('');
+
 	constructor() {}
 
 	setActiveTab(tab: SupportTab) {

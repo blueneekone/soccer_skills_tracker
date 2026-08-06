@@ -70,6 +70,14 @@ const PERSONAS = {
     routes: [
       { name: 'dashboard', path: '/director/dashboard', waitSelector: '.pd-page-root, .st-bento' }
     ]
+  },
+  public: {
+    uid: 'public-telemetry-uid',
+    role: 'public',
+    clubId: 'aggiesfc',
+    routes: [
+      { name: 'club-roster', path: '/club/aggiesfc', waitSelector: '.clp-root' }
+    ]
   }
 };
 
@@ -151,6 +159,9 @@ for (const [personaName, persona] of Object.entries(PERSONAS)) {
   test.describe(`EPIC COMPREHENSIVE TRAVERSAL: ${personaName.toUpperCase()} OS`, () => {
     
     test.beforeEach(async ({ page }) => {
+      page.on('console', msg => console.log(`[Browser Console] ${msg.type()}: ${msg.text()}`));
+      page.on('pageerror', err => console.error(`[Browser Error] ${err.name}: ${err.message}`, err.stack));
+
       // Zero-Touch CSO Protocol: Inject authenticated state directly before page loads
       await page.addInitScript((p) => {
         window.localStorage.setItem('auth_state', JSON.stringify({

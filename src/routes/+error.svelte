@@ -218,6 +218,13 @@
 			</button>
 		</div>
 
+		<div class="tw-mt-8 tw-text-left tw-bg-[#0f172a] tw-p-4 tw-rounded tw-border tw-border-slate-800 tw-overflow-x-auto tw-text-sm">
+			<pre>
+Error Message: {page.error?.message}
+Error Stack: {page.error?.stack}
+			</pre>
+		</div>
+
 		<p class="va-foot">
 			Fault telemetry recorded · REF: <code class="va-foot-code">{loggedSignature || '—'}</code>
 		</p>

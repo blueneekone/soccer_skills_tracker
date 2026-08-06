@@ -41,7 +41,7 @@
 	});
 </script>
 
-<div class="logistics-root pd-page-root st-bento">
+<div class="logistics-root">
 	<header class="logistics-head">
 		<div>
 			{#if dev}

@@ -44,12 +44,13 @@
 			
 			<div class="tw-grid tw-grid-cols-1 md:tw-grid-cols-2 tw-gap-8">
 				<div class="tw-flex tw-flex-col tw-gap-4">
+					<h3 class="tw-text-sm tw-font-mono tw-text-[#14b8a6] tw-mb-2">Create / Delete Team</h3>
 					<div class="tw-flex tw-flex-col tw-gap-1">
-						<label class="tw-text-xs tw-font-mono tw-text-slate-400 tw-uppercase">Club ID</label>
-						<input type="text" bind:value={engine.teamClubId} class="tw-bg-[#020617] tw-border tw-border-slate-700 tw-text-white tw-px-3 tw-py-2 tw-font-mono tw-text-sm" />
+						<label class="tw-text-xs tw-font-mono tw-text-slate-400 tw-uppercase">Club ID / Target Team ID</label>
+						<input type="text" bind:value={engine.teamClubId} class="tw-bg-[#020617] tw-border tw-border-slate-700 tw-text-white tw-px-3 tw-py-2 tw-font-mono tw-text-sm" placeholder="Club ID or Team ID (for delete)" />
 					</div>
 					<div class="tw-flex tw-flex-col tw-gap-1">
-						<label class="tw-text-xs tw-font-mono tw-text-slate-400 tw-uppercase">Team Name</label>
+						<label class="tw-text-xs tw-font-mono tw-text-slate-400 tw-uppercase">Team Name (Create)</label>
 						<input type="text" bind:value={engine.teamName} class="tw-bg-[#020617] tw-border tw-border-slate-700 tw-text-white tw-px-3 tw-py-2 tw-font-mono tw-text-sm" placeholder="e.g. Aggies FC 16G Grey" />
 					</div>
 					<div class="tw-grid tw-grid-cols-2 tw-gap-4">
@@ -62,12 +63,44 @@
 							<input type="text" bind:value={engine.teamGender} class="tw-bg-[#020617] tw-border tw-border-slate-700 tw-text-white tw-px-3 tw-py-2 tw-font-mono tw-text-sm" />
 						</div>
 					</div>
+					<div class="tw-flex tw-flex-row tw-gap-2 tw-mt-2">
+						<button onclick={() => engine.executeCommand('createTeam', { clubId: engine.teamClubId, teamName: engine.teamName, ageGroup: engine.teamAgeGroup, gender: engine.teamGender, sport: engine.teamSport })} class="tw-bg-[#14b8a6]/10 hover:tw-bg-[#14b8a6]/20 tw-border tw-border-[#14b8a6]/30 tw-text-[#14b8a6] tw-font-mono tw-text-sm tw-font-bold tw-py-2 tw-px-4 tw-flex-1 tw-text-center tw-transition-colors">
+							> Create Team
+						</button>
+						<button onclick={() => engine.executeCommand('deleteTeam', { clubId: engine.teamClubId, teamId: engine.teamName })} class="tw-bg-rose-950/30 hover:tw-bg-rose-900/40 tw-border tw-border-rose-900/50 tw-text-rose-400 tw-font-mono tw-text-sm tw-font-bold tw-py-2 tw-px-4 tw-flex-1 tw-text-center tw-transition-colors" title="Put Team ID in the Team Name field">
+							> Delete Team
+						</button>
+					</div>
 				</div>
 
-				<div class="tw-flex tw-flex-col tw-gap-3 tw-justify-end">
-					<button onclick={() => engine.executeCommand('createTeam', { clubId: engine.teamClubId, teamName: engine.teamName, ageGroup: engine.teamAgeGroup, gender: engine.teamGender, sport: engine.teamSport })} class="tw-bg-[#14b8a6]/10 hover:tw-bg-[#14b8a6]/20 tw-border tw-border-[#14b8a6]/30 tw-text-[#14b8a6] tw-font-mono tw-text-sm tw-font-bold tw-py-2 tw-px-4 tw-text-left tw-transition-colors">
-						> Create Team
-					</button>
+				<div class="tw-flex tw-flex-col tw-gap-4">
+					<h3 class="tw-text-sm tw-font-mono tw-text-[#f59e0b] tw-mb-2">Link User to Team</h3>
+					<div class="tw-flex tw-flex-col tw-gap-1">
+						<label class="tw-text-xs tw-font-mono tw-text-slate-400 tw-uppercase">User Email</label>
+						<input type="email" bind:value={engine.linkEmail} class="tw-bg-[#020617] tw-border tw-border-slate-700 tw-text-white tw-px-3 tw-py-2 tw-font-mono tw-text-sm" placeholder="coach@example.com" />
+					</div>
+					<div class="tw-flex tw-flex-col tw-gap-1">
+						<label class="tw-text-xs tw-font-mono tw-text-slate-400 tw-uppercase">Role</label>
+						<select bind:value={engine.linkRole} class="tw-bg-[#020617] tw-border tw-border-slate-700 tw-text-white tw-px-3 tw-py-2 tw-font-mono tw-text-sm">
+							<option value="head_coach">Head Coach</option>
+							<option value="assistant_coach">Assistant Coach</option>
+							<option value="player">Player</option>
+							<option value="manager">Manager</option>
+						</select>
+					</div>
+					<div class="tw-flex tw-flex-col tw-gap-1">
+						<label class="tw-text-xs tw-font-mono tw-text-slate-400 tw-uppercase">Club ID</label>
+						<input type="text" bind:value={engine.linkClubId} class="tw-bg-[#020617] tw-border tw-border-slate-700 tw-text-white tw-px-3 tw-py-2 tw-font-mono tw-text-sm" />
+					</div>
+					<div class="tw-flex tw-flex-col tw-gap-1">
+						<label class="tw-text-xs tw-font-mono tw-text-slate-400 tw-uppercase">Team ID</label>
+						<input type="text" bind:value={engine.linkTeamId} class="tw-bg-[#020617] tw-border tw-border-slate-700 tw-text-white tw-px-3 tw-py-2 tw-font-mono tw-text-sm" />
+					</div>
+					<div class="tw-flex tw-flex-col tw-gap-3 tw-mt-2">
+						<button onclick={() => engine.executeCommand('linkUserToTeam', { userEmail: engine.linkEmail, role: engine.linkRole, clubId: engine.linkClubId, teamId: engine.linkTeamId })} class="tw-bg-slate-800 hover:tw-bg-slate-700 tw-border tw-border-slate-600 tw-text-amber-400 tw-font-mono tw-text-sm tw-font-bold tw-py-2 tw-px-4 tw-text-center tw-transition-colors">
+							> Link User
+						</button>
+					</div>
 				</div>
 			</div>
 		{/if}
