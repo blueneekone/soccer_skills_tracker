@@ -669,8 +669,7 @@
 	}
 
 	/* Lifted dossier panels — void-first gradient (6j closure J-06) */
-	:global(.player-dossier-root .bento-card),
-	.bento-card {
+	:global(.player-dossier-root .bento-card) {
 
 		overflow: hidden;
 		min-width: 0;

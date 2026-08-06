@@ -28,6 +28,7 @@
   }: Props = $props();
 
   // Svelte 5 Reactive States
+  // svelte-ignore state_referenced_locally
   let options = $state<ChoiceOption[]>(initialOptions);
   let rationale = $state<string>('');
   let isSubmitting = $state<boolean>(false);
