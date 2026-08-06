@@ -89,8 +89,8 @@
 -->
 <div class="coach-tac-z3-stage tw-absolute tw-inset-0 tw-flex tw-items-center tw-justify-center tw-min-w-0">
 	<div
-		class="coach-tac-z3-pitch tw-relative tw-overflow-visible tw-aspect-[16/9] tw-w-full tw-h-full tw-min-w-0"
-		style="max-width: 100%; max-height: 100%;"
+		class="coach-tac-z3-pitch tw-relative tw-overflow-visible tw-aspect-[16/9] tw-w-full tw-min-w-0"
+		style="max-width: calc((100vh - 2rem) * 16 / 9);"
 	>
 		<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
 		<!-- svelte-ignore a11y_click_events_have_key_events -->

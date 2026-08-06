@@ -1,5 +1,7 @@
 <script lang="ts">
   import { untrack } from 'svelte';
+  import { getActiveDb } from '$lib/firebase.js';
+  import { authStore } from '$lib/stores/auth.svelte.js';
 
   // Svelte 5 TypeScript Definitions
   interface ChoiceOption {
@@ -65,6 +67,8 @@
   }
 
   export async function commitHalftimePlan() {
+    const db = getActiveDb();
+    if (!db || !authStore.isAuthenticated) return;
     isSubmitting = true;
     try {
       // Simulate atomic database write trigger with rationale preservation
