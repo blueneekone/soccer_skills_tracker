@@ -18,7 +18,7 @@
   overflow-visible on inner wrappers so the radial hub and route anchors
   can paint outside the board boundary without being clipped.
 -->
-<div class="tw-absolute tw-inset-0 tw-z-0 tw-overflow-hidden">
+<div class="tactical-arena-canvas tw-absolute tw-inset-0 tw-z-0 tw-overflow-hidden">
 	<div
 		class="tw-absolute tw-inset-4 tw-flex tw-min-h-0 tw-min-w-0 tw-items-center tw-justify-center tw-overflow-visible md:tw-inset-8"
 	>

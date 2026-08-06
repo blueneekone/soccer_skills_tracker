@@ -29,11 +29,11 @@ function createTeamsStore() {
 		
 		const queries = [];
 		if (clubId) {
-			queries.push(getDocs(query(collection(db, 'teams'), where('clubId', '==', clubId), where('coachEmail', '==', head))));
-			queries.push(getDocs(query(collection(db, 'teams'), where('clubId', '==', clubId), where('assistants', 'array-contains', head))));
+			queries.push(getDocs(query(collection(db, 'teams'), where('clubId', '==', clubId), where('coachEmail', '==', head))).catch(e => { console.error('Error fetching teams by coachEmail', e); return []; }));
+			queries.push(getDocs(query(collection(db, 'teams'), where('clubId', '==', clubId), where('assistants', 'array-contains', head))).catch(e => { console.error('Error fetching teams by assistants', e); return []; }));
 		} else {
-			queries.push(getDocs(query(collection(db, 'teams'), where('coachEmail', '==', head))));
-			queries.push(getDocs(query(collection(db, 'teams'), where('assistants', 'array-contains', head))));
+			queries.push(getDocs(query(collection(db, 'teams'), where('coachEmail', '==', head))).catch(e => { console.error('Error fetching teams by coachEmail', e); return []; }));
+			queries.push(getDocs(query(collection(db, 'teams'), where('assistants', 'array-contains', head))).catch(e => { console.error('Error fetching teams by assistants', e); return []; }));
 		}
 		
 		// Fallback: check user's profile for explicit teamId assignment (handles alias mismatches)
@@ -185,6 +185,7 @@ function createTeamsStore() {
 				loaded = true;
 			} catch (err) {
 				console.error('[teams store] load error:', err);
+				loaded = true;
 			}
 		},
 

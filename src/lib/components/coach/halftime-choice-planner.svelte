@@ -118,7 +118,7 @@
   {/if}
 
   <!-- Asymmetric Bento Layout: 8-col Primary Tactics / 4-col Sidebar -->
-  <div class="tw-grid tw-grid-cols-1 lg:tw-grid-cols-12 tw-gap-6 tw-flex-1 tw-overflow-y-auto">
+  <div class="tw-grid-cols-1 lg:tw-grid-cols-12 tw-gap-6 tw-flex-1 tw-overflow-y-auto" style="display: grid;">
     
     <!-- Primary Choice Slots (8 Columns) -->
     <div class="lg:tw-col-span-8 tw-flex tw-flex-col tw-gap-4">

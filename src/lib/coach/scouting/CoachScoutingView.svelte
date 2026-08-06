@@ -306,7 +306,7 @@
 				No linked players on this team yet. Roster syncs from <code class="tw-text-cyan-400/90">player_lookup</code>.
 			</p>
 		{:else}
-			<div class="bento-grid bento-grid--12col bento-grid--liquid tw-grid tw-grid-cols-1 lg:tw-grid-cols-12">
+			<div class="bento-grid bento-grid--12col bento-grid--liquid tw-grid-cols-1 lg:tw-grid-cols-12" style="display: grid;">
 				<div
 					class="tw-col-span-12 lg:tw-col-span-4 vanguard-panel tw-flex tw-min-h-[min(70vh,560px)] tw-min-w-0 tw-flex-col tw-p-4 md:tw-min-h-[640px]"
 				>

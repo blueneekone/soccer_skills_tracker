@@ -64,5 +64,5 @@
 	.ops-count { margin: 0; font-size: 12px; font-weight: 700; color: #94a3b8; }
 	.ops-roster { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
 	.ops-link { color: #14b8a6; font-weight: 700; text-decoration: underline; text-underline-offset: 2px; }
-	.ops-link:hover { color: #2dd4bf; }
+	.ops-link:hover { color: #14b8a6; }
 </style>

@@ -103,9 +103,7 @@ async function runMicroscopicLayoutAssertions(page: any, routeName: string) {
       const overlapX = Math.max(0, Math.min(a.x + a.width, b.x + b.width) - Math.max(a.x, b.x));
       const overlapY = Math.max(0, Math.min(a.y + a.height, b.y + b.height) - Math.max(a.y, b.y));
       if (overlapX > 1 && overlapY > 1) {
-        const classA = await gridChildren.nth(i).evaluate(el => el.className);
-        const classB = await gridChildren.nth(j).evaluate(el => el.className);
-        throw new Error(`[COLLISION DETECTED] Element ${a.id} (${classA}) overlaps Element ${b.id} (${classB}) on route: ${routeName}`);
+        throw new Error(`[COLLISION DETECTED] Element ${a.id} overlaps Element ${b.id} on route: ${routeName}`);
       }
     }
   }

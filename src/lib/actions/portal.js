@@ -4,7 +4,7 @@
  *
  * @type {import('svelte/action').Action<HTMLElement, string | HTMLElement | undefined>}
  */
-export function portal(node, target) {
+export function portal(node, target = undefined) {
 	const host =
 		target != null
 			? typeof target === 'string'

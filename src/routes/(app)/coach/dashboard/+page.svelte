@@ -76,12 +76,12 @@
 
 		<!-- ── BODY — 12-col asymmetric bento ───────────────────────────────────── -->
 		<main 
-			class="coach-nexus-main tw-relative tw-z-10 tw-mx-auto tw-box-border tw-w-full tw-max-w-7xl tw-flex-1 tw-min-h-0"
+			class="coach-dashboard-root st-bento coach-nexus-main tw-relative tw-z-10 tw-mx-auto tw-box-border tw-w-full tw-max-w-7xl tw-flex-1 tw-min-h-0"
 			style="padding: var(--bento-pad-liquid); padding-bottom: calc(var(--bento-pad-liquid) + 84px + env(safe-area-inset-bottom, 0px));"
 		>
 			<DashboardArena {engine} />
 			
-			<section class="coach-hud-grid bento-span-12 tw-grid tw-gap-4 tw-mt-6" style="grid-template-columns: repeat(auto-fit, minmax(min(100%, clamp(280px, 30vw, 350px)), 1fr));">
+			<section class="coach-hud-grid bento-span-12 tw-gap-4 tw-mt-6" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, clamp(280px, 30vw, 350px)), 1fr));">
 				<!-- Sideline SIEM Live Feed -->
 				<div class="sideline-siem-panel vanguard-surface tw-rounded-none tw-border tw-border-slate-700 tw-bg-slate-900/80 tw-p-4">
 					<h3 class="tw-font-mono tw-text-xs tw-text-teal-400 tw-mb-2 tw-uppercase tw-tracking-widest">SIEM Live Feed</h3>
@@ -122,7 +122,7 @@
 			</section>
 
 			<!-- Roster Scannable Feed & Match Day -->
-			<section class="coach-hud-grid bento-span-12 tw-grid tw-gap-4 tw-mt-6" style="grid-template-columns: repeat(auto-fit, minmax(min(100%, clamp(280px, 30vw, 350px)), 1fr));">
+			<section class="coach-hud-grid bento-span-12 tw-gap-4 tw-mt-6" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, clamp(280px, 30vw, 350px)), 1fr));">
 				<div class="roster-panel vanguard-surface tw-rounded-none tw-border tw-border-slate-700 tw-bg-slate-900/80 tw-p-4 tw-col-span-1 lg:tw-col-span-2">
 					<h3 class="tw-font-mono tw-text-xs tw-text-teal-400 tw-mb-4 tw-uppercase tw-tracking-widest">Active Roster & Operatives</h3>
 					{#if engine.effectiveTeamId}

@@ -43,7 +43,7 @@ export const DRILL_CATEGORY_TO_ATTRIBUTE: Record<string, string> = {
 	Tactics: 'scanning',
 };
 
-/** Spatial designer workout type → attribute id. */
+/** War Room workout type → attribute id. */
 export const DESIGNER_TYPE_TO_ATTRIBUTE: Record<string, string> = {
 	foundation: 'ball_mastery',
 	cardio: 'pace',

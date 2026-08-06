@@ -439,7 +439,7 @@
 				createdByUid: uid,
 				createdByEmail: myEmail,
 			});
-			copyPlatformMsg = `"${row.title}" copied to your team library. Customize it in Spatial designer or deploy via Intent Engine.`;
+			copyPlatformMsg = `"${row.title}" copied to your team library. Customize it in War Room or deploy via Intent Engine.`;
 			reloadCounter++;
 			activeTab = 'team';
 		} catch (e) {
@@ -747,7 +747,7 @@
 			</p>
 		{:else}
 			<p class="coach-drill-z1-hint">
-				Starter drills for {activeSportLabel}. Copy to your team library, then customize in Spatial designer or deploy from Assignments.
+				Starter drills for {activeSportLabel}. Copy to your team library, then customize in War Room or deploy from Assignments.
 			</p>
 		{/if}
 		{#if copyPlatformMsg}
@@ -765,7 +765,7 @@
 			{:else if visibleRows.length === 0}
 				<p class="coach-drill-z2-empty">
 					{#if activeTab === 'team'}
-						No team drills yet. Use New drill, Spatial designer, or copy from Platform basics.
+						No team drills yet. Use New drill, War Room, or copy from Platform basics.
 					{:else}
 						No platform basics for {activeSportLabel} yet.
 					{/if}

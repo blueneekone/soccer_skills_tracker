@@ -343,7 +343,7 @@
 	);
 </script>
 
-<div class="tw-flex tw-w-full tw-items-center tw-justify-center tw-min-h-screen tw-bg-[#000000] setup-theme">
+<div class="tw-fixed tw-inset-0 tw-overflow-y-auto tw-flex tw-w-screen tw-items-center tw-justify-center tw-min-h-screen tw-bg-[#000000] setup-theme">
 	<div class="tw-bg-[#0B0F19] tw-border tw-border-[#1E293B] tw-rounded-[24px] tw-p-8 tw-shadow-2xl setup-wizard-card">
 		<div class="logo-circle tw-bg-[#020617] tw-border tw-border-[#334155] tw-flex tw-items-center tw-justify-center tw-mx-auto tw-mb-6" style="width: 48px; height: 48px; border-radius: 50%;" aria-hidden="true">
 			<div class="tw-w-6 tw-h-6 tw-text-[#14b8a6]">

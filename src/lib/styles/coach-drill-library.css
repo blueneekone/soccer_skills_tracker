@@ -224,7 +224,7 @@
 	max-width: 420px;
 }
 
-.coach-os-root .coach-drill-z1-search :global(svg) {
+.coach-os-root .coach-drill-z1-search svg {
 	position: absolute;
 	top: 50%;
 	left: 0.75rem;
