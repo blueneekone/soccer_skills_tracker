@@ -1,5 +1,9 @@
 <script lang="ts">
 	import { authStore } from '$lib/stores/auth.svelte.js';
+	import { teamsStore } from '$lib/stores/teams.svelte.js';
+	import CoachTeamRosterPanel from '$lib/coach/logistics/CoachTeamRosterPanel.svelte';
+	
+	const selectedTeamId = $derived(teamsStore.selectedTeamId);
 </script>
 
 <svelte:head>
@@ -31,7 +35,7 @@
 		<div class="tw-grid tw-gap-8" style="grid-template-columns: repeat(auto-fit, minmax(min(100%, clamp(280px, 30vw, 350px)), 1fr));">
 			<div class="bento-cell tw-bg-[#000000] tw-p-4 tw-border tw-border-[#334155]">
 				<span class="tw-font-mono tw-text-xs tw-text-[#94a3b8] tw-uppercase">Drill Volume Autoregulator</span>
-				<div class="tw-mt-4 tw-flex tw-items-center tw-justify-between">
+				<div class="tw-mt-4 tw-flex tw-flex-wrap tw-items-baseline tw-justify-between tw-gap-2">
 					<span class="tw-text-xs tw-text-[#64748b] tw-uppercase tw-font-bold">RL Inference</span>
 					<span class="tw-font-mono tw-text-lg tw-text-[#14b8a6]">+12% Intensity</span>
 				</div>
@@ -42,7 +46,7 @@
 			
 			<div class="bento-cell tw-bg-[#000000] tw-p-4 tw-border tw-border-[#334155]">
 				<span class="tw-font-mono tw-text-xs tw-text-[#94a3b8] tw-uppercase">ZPD Engine (Dynamic Difficulty)</span>
-				<div class="tw-mt-4 tw-flex tw-items-center tw-justify-between">
+				<div class="tw-mt-4 tw-flex tw-flex-wrap tw-items-baseline tw-justify-between tw-gap-2">
 					<span class="tw-text-xs tw-text-[#64748b] tw-uppercase tw-font-bold">Latency</span>
 					<span class="tw-font-mono tw-text-lg tw-text-[#d97706]">14ms</span>
 				</div>
@@ -51,5 +55,11 @@
 				</p>
 			</div>
 		</div>
+	</div>
+
+	<!-- Roster Scannable Feed -->
+	<div class="intel-panel tw-py-6 tw-px-4 tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-rounded-none">
+		<h2 class="tw-text-sm tw-uppercase tw-tracking-widest tw-text-[#94a3b8] tw-mb-4 tw-font-sans">Active Roster & Operatives</h2>
+		<CoachTeamRosterPanel teamId={selectedTeamId} />
 	</div>
 </div>
