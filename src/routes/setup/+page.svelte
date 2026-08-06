@@ -134,8 +134,8 @@
 	function roleBtnClass(id: SetupRole) {
 		const on = setupRole === id;
 		return [
-			'tw-flex tw-min-h-[3.25rem] tw-w-full tw-flex-1 tw-items-center tw-justify-center tw-rounded-lg tw-border-2 tw-px-3 tw-py-3',
-			'tw-text-center tw-font-mono tw-text-[0.65rem] tw-font-extrabold tw-uppercase tw-leading-tight tw-tracking-widest tw-transition-colors',
+			'tw-flex tw-flex-col tw-min-h-[4rem] tw-w-full tw-flex-1 tw-items-center tw-justify-center tw-rounded-lg tw-border-2 tw-px-3 tw-py-3',
+			'tw-text-center tw-font-mono tw-text-[0.7rem] tw-font-extrabold tw-uppercase tw-leading-tight tw-tracking-widest tw-transition-colors',
 			on
 				? 'tw-border-cyan-500 tw-bg-cyan-900/20 tw-text-cyan-400 tw-shadow-[0_0_18px_rgba(20, 184, 166,0.12)]'
 				: 'tw-border-gray-700 tw-bg-transparent tw-text-gray-500 hover:tw-border-gray-600 hover:tw-text-gray-400',
@@ -186,7 +186,7 @@
 			joinableClubs = Array.isArray(data?.clubs) ? data.clubs : [];
 			if (joinableClubs.length === 0) {
 				clubsLoadError =
-					'No clubs available � contact your director or enter a dispatch code from your coach.';
+					'No clubs available — contact your director or enter a dispatch code from your coach.';
 			}
 		} catch (err) {
 			clubsLoadError =
@@ -222,7 +222,7 @@
 			const res = await resolveDispatchCodeCallable({ dispatchCode: raw });
 			const data = res.data;
 			if (!data?.ok || !data.clubId) {
-				errorMsg = 'Invalid dispatch code � check with your coach and try again.';
+				errorMsg = 'Invalid dispatch code — check with your coach and try again.';
 				return;
 			}
 			dispatchResolved = {
@@ -344,8 +344,8 @@
 </script>
 
 <div class="tw-fixed tw-inset-0 tw-overflow-y-auto tw-flex tw-w-screen tw-items-center tw-justify-center tw-min-h-screen tw-bg-[#000000] setup-theme">
-	<div class="tw-bg-[#0B0F19] tw-border tw-border-[#1E293B] tw-rounded-[24px] tw-p-8 tw-shadow-2xl setup-wizard-card">
-		<div class="logo-circle tw-bg-[#020617] tw-border tw-border-[#334155] tw-flex tw-items-center tw-justify-center tw-mx-auto tw-mb-6" style="width: 48px; height: 48px; border-radius: 50%;" aria-hidden="true">
+	<div class="tw-bg-[#0B0F19] tw-border tw-border-[#1E293B] tw-rounded-[24px] tw-p-8 tw-shadow-2xl setup-wizard-card tw-relative">
+		<div class="logo-circle tw-bg-[#020617] tw-border tw-border-[#334155] tw-flex tw-items-center tw-justify-center tw-mx-auto tw-mb-6 tw-overflow-hidden" style="width: 48px; height: 48px; border-radius: 50%;" aria-hidden="true">
 			<div class="tw-w-6 tw-h-6 tw-text-[#14b8a6]">
 				<VanguardAppMark />
 			</div>
@@ -412,7 +412,7 @@
 					</button>
 				</div>
 				<p class="setup-helper-text tw-mb-5">
-					Club directors are invited by your organization admin � use the link you received or contact support.
+					Club directors are invited by your organization admin — use the link you received or contact support.
 				</p>
 			{:else if wizardStep === 2}
 				<label for="setup-name">
@@ -431,7 +431,7 @@
 				/>
 				{#if setupRole === 'parent'}
 					<p class="setup-helper-text">
-						Players under 13 must be created by a parent in the Household Clearance flow � you cannot add a
+						Players under 13 must be created by a parent in the Household Clearance flow — you cannot add a
 						"player account" here.
 					</p>
 				{:else}
@@ -492,17 +492,17 @@
 							disabled={resolvingDispatch || !dispatchCode.trim()}
 							onclick={resolveDispatch}
 						>
-							{resolvingDispatch ? 'Checking�' : 'Verify'}
+							{resolvingDispatch ? 'Checking…' : 'Verify'}
 						</button>
 					</div>
 					{#if dispatchResolved}
 						<p class="setup-resolved-msg" role="status">
-							Linked to <strong>{dispatchResolved.clubName}</strong> � {dispatchResolved.teamName}
+							Linked to <strong>{dispatchResolved.clubName}</strong> — {dispatchResolved.teamName}
 						</p>
 					{/if}
 				{:else}
 					{#if clubsLoading}
-						<p class="setup-helper-text" role="status">Loading clubs�</p>
+						<p class="setup-helper-text" role="status">Loading clubs…</p>
 					{:else if clubsLoadError}
 						<div class="auth-error-msg" role="alert">{clubsLoadError}</div>
 					{:else}
@@ -512,7 +512,7 @@
 							value={selectedClubId}
 							onchange={(e) => selectClubFromList(e.currentTarget.value)}
 						>
-							<option value="">Select your club�</option>
+							<option value="">Select your club…</option>
 							{#each joinableClubs as club (club.id)}
 								<option value={club.id}>{club.name || club.id}</option>
 							{/each}
@@ -555,27 +555,27 @@
 
 			<div class="setup-wizard-nav">
 				{#if wizardStep > 1}
-					<button class="secondary-btn" type="button" disabled={saving} onclick={goBack}>Back</button>
+					<button class="tw-flex-1 tw-py-3 tw-rounded-lg tw-border tw-border-gray-700 tw-text-gray-300 hover:tw-bg-gray-800 tw-transition-colors tw-font-semibold tw-text-sm" type="button" disabled={saving} onclick={goBack}>Back</button>
 				{/if}
 				{#if isFinalStep}
 					<button
-						class="primary-btn btn-orange"
+						class="tw-flex-1 tw-py-3 tw-rounded-lg tw-bg-[#fbbf24] tw-text-black hover:tw-bg-[#f59e0b] tw-transition-colors tw-font-bold tw-text-sm"
 						type="button"
 						disabled={saving}
 						onclick={completeSetup}
 					>
 						{#if saving}
-							{setupRole === 'coach' ? 'Claiming invite�' : 'Saving profile�'}
+							{setupRole === 'coach' ? 'Claiming invite…' : 'Saving profile…'}
 						{:else}
 							{setupRole === 'coach' ? 'Claim invite' : 'Complete setup'}
 						{/if}
 					</button>
 				{:else}
-					<button class="primary-btn btn-orange" type="button" onclick={goNext}>Continue</button>
+					<button class="tw-flex-1 tw-py-3 tw-rounded-lg tw-bg-white tw-text-black hover:tw-bg-gray-200 tw-transition-colors tw-font-bold tw-text-sm" type="button" onclick={goNext}>Continue</button>
 				{/if}
 			</div>
 
-			<button class="secondary-btn w-100 setup-cancel" type="button" onclick={handleLogout}>
+			<button class="tw-w-full tw-mt-3 tw-py-3 tw-text-sm tw-text-gray-500 hover:tw-text-white hover:tw-bg-gray-800/50 tw-rounded-lg tw-transition-colors" type="button" onclick={handleLogout}>
 				Cancel &amp; logout
 			</button>
 		{/if}
