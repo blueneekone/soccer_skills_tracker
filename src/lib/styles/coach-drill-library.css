@@ -219,6 +219,7 @@
 
 .coach-os-root .coach-drill-z1-search {
 	position: relative;
+	display: block;
 	flex: 1 1 280px;
 	max-width: 420px;
 }

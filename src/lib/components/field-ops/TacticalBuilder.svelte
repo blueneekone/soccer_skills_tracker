@@ -18,6 +18,7 @@
 	let saving = $state(false);
 	let canvasReady = $state(false);
 	let isFullscreen = $state(false);
+	let isToolbarVisible = $state(true);
 
 	/** @type {HTMLDivElement | null} */
 	let pitchAreaRef = $state(null);
@@ -141,6 +142,24 @@
 		applyInteract(t);
 		canvasRef.add(t);
 		canvasRef.setActiveObject(t);
+		canvasRef.requestRenderAll();
+	}
+
+	function spawnOpposition() {
+		if (!canvasRef || !fabricMod) return;
+		const { Circle, IText, Group } = fabricMod;
+		const { cx, cy } = center();
+		const positions = ['GK', 'LB', 'CB', 'CB', 'RB', 'CDM', 'CM', 'CM', 'LW', 'RW', 'ST'];
+		positions.forEach((pos, i) => {
+			const circle = new Circle({ radius: 14, fill: '#ef4444', originX: 'center', originY: 'center' });
+			const text = new IText(pos, { fontSize: 10, fill: '#fff', originX: 'center', originY: 'center', fontFamily: 'sans-serif', fontWeight: 'bold' });
+			const group = new Group([circle, text], {
+				left: cx + (i * 30) - 150,
+				top: cy - 100,
+			});
+			applyInteract(group);
+			canvasRef.add(group);
+		});
 		canvasRef.requestRenderAll();
 	}
 
@@ -345,6 +364,18 @@
 		>
 			<Icon name={isFullscreen ? ("nav.minimize" as IconName) : ("nav.maximize" as IconName)} size={20} aria-hidden="true" />
 		</button>
+		
+		{#if canManage}
+			<button
+				type="button"
+				class="fm-tactical-fs-btn"
+				style="right: 3.5rem;"
+				onclick={() => (isToolbarVisible = !isToolbarVisible)}
+				aria-label={isToolbarVisible ? 'Hide toolbar' : 'Show toolbar'}
+			>
+				<Icon name={isToolbarVisible ? ("nav.minimize" as IconName) : ("action.edit" as IconName)} size={16} aria-hidden="true" />
+			</button>
+		{/if}
 
 		<div
 			class="fm-tactical-pitch-area"
@@ -357,7 +388,7 @@
 			</div>
 		</div>
 
-		{#if canManage}
+		{#if canManage && isToolbarVisible}
 			<div class="fm-tactical-island" role="toolbar" aria-label="Tactical canvas tools">
 				<div class="fm-tactical-island__tools">
 				<button type="button" class="fm-tb-btn" disabled={!canvasReady} onclick={addCone}>
@@ -375,6 +406,10 @@
 				<button type="button" class="fm-tb-btn" disabled={!canvasReady} onclick={addText}>
 					<Icon name={"content.text" as IconName} aria-hidden="true" />
 					Text
+				</button>
+				<button type="button" class="fm-tb-btn" disabled={!canvasReady} onclick={spawnOpposition}>
+					<Icon name={"sys.users" as IconName} aria-hidden="true" />
+					Opposition
 				</button>
 				</div>
 				<div class="fm-tactical-island__meta">
