@@ -11,13 +11,13 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 // The actual implementation reads from authStore and db singletons.
 
 describe('isFirestoreReady — b815 Defensive Hydration Guard', () => {
-	it('returns false when db is falsy', () => {
-		vi.doMock('$lib/firebase.js', () => ({ db: null }));
+	it('returns false when db is falsy', async () => {
+		vi.doMock('$lib/firebase.js', () => ({ getActiveDb: () => null }));
 		vi.doMock('$lib/stores/auth/facade.svelte.js', () => ({
 			authStore: { isAuthenticated: true, isLoading: false },
 		}));
 		// Re-import after mock
-		const { isFirestoreReady } = require('$lib/utils/firestoreGuard.js');
+		const { isFirestoreReady } = await import('$lib/utils/firestoreGuard.ts');
 		expect(isFirestoreReady()).toBe(false);
 	});
 

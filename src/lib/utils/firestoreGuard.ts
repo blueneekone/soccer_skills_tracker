@@ -1,4 +1,4 @@
-import { db } from '$lib/firebase.js';
+import { getActiveDb } from '$lib/firebase.js';
 import { authStore } from '$lib/stores/auth/facade.svelte.js';
 
 /**
@@ -7,5 +7,5 @@ import { authStore } from '$lib/stores/auth/facade.svelte.js';
  * Returns true if safe to proceed, false if the call must abort.
  */
 export function isFirestoreReady(): boolean {
-  return !!db && authStore.isAuthenticated === true && !authStore.isLoading;
+  return !!getActiveDb() && authStore.isAuthenticated === true && !authStore.isLoading;
 }
