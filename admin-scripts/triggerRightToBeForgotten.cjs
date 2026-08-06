@@ -15,8 +15,8 @@
  * node admin-scripts/triggerRightToBeForgotten.js <targetUid> <targetEmail>
  */
 
-const admin = require('firebase-admin');
-const { cascadeDeleteUserData } = require('../functions/src/utils/rightToBeForgottenUtil');
+import admin from 'firebase-admin';
+import { cascadeDeleteUserData } from '../functions/src/utils/rightToBeForgottenUtil.js';
 
 if (process.argv.length < 4) {
   console.error('Usage: node triggerRightToBeForgotten.js <targetUid> <targetEmail>');
@@ -33,7 +33,8 @@ async function run() {
   console.log(`Target UID: ${targetUid}, Target Email: ${targetEmail}`);
 
   try {
-    await cascadeDeleteUserData(targetUid, targetEmail);
+    const authStore = { isAuthenticated: true }; // CLI invocation is pre-authorized
+    await cascadeDeleteUserData(targetUid, targetEmail, authStore);
     console.log('Successfully completed cascading delete for user.');
     process.exit(0);
   } catch (err) {
