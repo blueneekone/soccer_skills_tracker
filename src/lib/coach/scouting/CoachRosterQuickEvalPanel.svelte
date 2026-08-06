@@ -182,7 +182,7 @@
 		<div class="tw-mt-5 tw-flex tw-flex-wrap tw-gap-3">
 			<button
 				type="button"
-				class="tw-rounded-xl tw-border tw-border-emerald-500/40 tw-bg-emerald-950/50 tw-px-5 tw-py-3 tw-text-xs tw-font-black tw-uppercase tw-tracking-[0.18em] tw-text-emerald-200 hover:tw-border-emerald-400/60 hover:tw-bg-emerald-900/40 disabled:tw-opacity-50"
+				class="tw-w-full tw-truncate tw-rounded-xl tw-border tw-border-emerald-500/40 tw-bg-emerald-950/50 tw-px-5 tw-py-3 tw-text-xs tw-font-black tw-uppercase tw-tracking-[0.18em] tw-text-emerald-200 hover:tw-border-emerald-400/60 hover:tw-bg-emerald-900/40 disabled:tw-opacity-50"
 				disabled={saving || !rosterNames.length}
 				onclick={() => void submitTrial()}
 			>

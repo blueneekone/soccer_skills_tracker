@@ -2,8 +2,8 @@
 	import TacticalPitchBoard from './grid/TacticalPitchBoard.svelte';
 	/** @typedef {import('./TacticalEngine.svelte.ts').TacticalWarRoomModel} TacticalWarRoomModel */
 
-	/** @type {{ model: TacticalWarRoomModel; warRoomTool: 'DRAG' | 'ROUTE' }} */
-	let { model, warRoomTool } = $props();
+	/** @type {{ model: TacticalWarRoomModel; warRoomTool: 'DRAG' | 'ROUTE'; isHalfField: boolean }} */
+	let { model, warRoomTool, isHalfField = false } = $props();
 </script>
 
 <!-- Window-level pointer stream: drag/route gestures survive leaving the SVG viewport. -->
@@ -25,6 +25,7 @@
 		<TacticalPitchBoard
 			bind:pitchSvgEl={model.pitchSvgEl}
 			{warRoomTool}
+			{isHalfField}
 			showLabels={model.showLabels}
 			draggingPlayer={model.draggingPlayer}
 			activeDragTrail={model.activeDragTrail}

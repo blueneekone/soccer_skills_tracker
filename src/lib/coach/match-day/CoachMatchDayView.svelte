@@ -556,7 +556,7 @@
 		<p class="coach-match-z4-strap__team">{activeTeamLabel}</p>
 	</header>
 
-	<div class="tw-px-3 tw-py-3 tw-flex tw-flex-col tw-gap-3 tw-bg-[#0f172a] tw-border-b tw-border-[#334155] tw-shrink-0">
+	<div class="tw-p-5 tw-flex tw-flex-col tw-gap-5 tw-bg-[#0f172a] tw-border-b tw-border-[#334155] tw-shrink-0">
 		<div class="tw-grid tw-grid-cols-2 md:tw-grid-cols-4 tw-gap-3">
 			<div class="tw-flex tw-flex-col tw-gap-1">
 				<label class="tw-text-[9px] tw-font-bold tw-text-slate-400 tw-uppercase tw-tracking-widest" for="field-loc">Field / Pitch</label>

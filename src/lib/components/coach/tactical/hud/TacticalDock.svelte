@@ -1,6 +1,6 @@
 <script>
-	/** @type {{ model: import('$lib/components/coach/TacticalEngine.svelte.ts').TacticalWarRoomModel, deployPhase: string, onDeploy: () => void }} */
-	let { model, deployPhase = 'idle', onDeploy } = $props();
+	/** @type {{ model: import('$lib/components/coach/TacticalEngine.svelte.ts').TacticalWarRoomModel, deployPhase: string, onDeploy: () => void, isHalfField?: boolean, onToggleHalfField?: () => void, onToggleToolbar?: () => void }} */
+	let { model, deployPhase = 'idle', onDeploy, isHalfField, onToggleHalfField, onToggleToolbar } = $props();
 
 	/** @type {'cursor' | 'draw' | 'erase'} */
 	let dockMode = $state('cursor');
@@ -141,7 +141,31 @@
 
 		<button
 			type="button"
-			class="coach-tac-z4-btn coach-tac-z4-btn--deploy"
+			class="coach-tac-z4-icon-btn {isHalfField ? 'coach-tac-z4-btn--active' : ''}"
+			onclick={onToggleHalfField}
+			title={isHalfField ? 'Full Field View' : 'Half Field View'}
+			aria-label={isHalfField ? 'Full Field View' : 'Half Field View'}
+		>
+			<span aria-hidden="true" class="tw-font-mono tw-font-black">1/2</span>
+		</button>
+
+		<button
+			type="button"
+			class="coach-tac-z4-icon-btn"
+			style="color: var(--pd-atom-amber);"
+			onclick={onToggleToolbar}
+			title="Hide Tools"
+			aria-label="Hide Tools"
+		>
+			<span aria-hidden="true">✕</span>
+		</button>
+
+		<span class="coach-tac-z4-divider" aria-hidden="true"></span>
+
+		<button
+			type="button"
+			class="coach-tac-z4-btn coach-tac-z4-btn--deploy tw-truncate"
+			style="max-width: 140px;"
 			onclick={onDeploy}
 			disabled={deployPhase !== 'idle' || model.routesLive.length === 0}
 		>

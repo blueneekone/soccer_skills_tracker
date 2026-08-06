@@ -13,6 +13,8 @@ export class CoachTacticalEngine {
 	});
 
 	warRoomTool = $state<'DRAG' | 'ROUTE'>('DRAG');
+	isHalfField = $state(false);
+	isToolbarVisible = $state(true);
 
 	wrBucketPitch = $state<TacticalToken[]>([]);
 	wrBucketXi = $state<TacticalToken[]>([]);
@@ -127,6 +129,21 @@ export class CoachTacticalEngine {
 					this.wrOppPitch = c.entities
 						.filter((e: any) => e.side === 'opponent')
 						.map((e: any) => ({ ...e }));
+					
+					if (this.wrOppPitch.length === 0) {
+						const positions = ['GK', 'LB', 'CB', 'CB', 'RB', 'CDM', 'CM', 'CM', 'LW', 'ST', 'RW'];
+						this.wrOppPitch = positions.map((pos, i) => ({
+							id: `opp_${i}`,
+							name: pos,
+							number: String(i + 1),
+							position: pos,
+							side: 'opponent',
+							color: '#d97706', // Atompunk Amber
+							x: 800 + (Math.random() * 200 - 100),
+							y: 400 + (Math.random() * 200 - 100)
+						}));
+					}
+					
 					this.drawnRoutes = Array.isArray(c.routes) ? c.routes.map((r: any) => ({ ...r })) : [];
 				}
 			}

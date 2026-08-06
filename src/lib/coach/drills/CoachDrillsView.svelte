@@ -28,7 +28,6 @@
 		loadPlatformBasics,
 	} from '$lib/coach/platformDrillLibrary.js';
 	import { sportsConfigStore } from '$lib/stores/sportsConfigStore.svelte.js';
-	import DrillDesignerTab from '$lib/components/coach/DrillDesignerTab.svelte';
 	import FacilityScheduler from '$lib/components/coach/FacilityScheduler.svelte';
 
 	import { loadTeamDrills } from '$lib/utils/drillLoaders.js';
@@ -540,7 +539,7 @@
 		<div>
 			<h1 class="coach-drill-z4__title">Field operations</h1>
 			<p class="coach-drill-z4__sub">
-				Team â€º {currentTeam?.name || teamScope.selectedTeamId || 'â€”'}
+				Team &rsaquo; {currentTeam?.name || teamScope.selectedTeamId || '&mdash;'}
 			</p>
 			<nav class="coach-drill-z4-nav" aria-label="Coach section">
 				<a href="/coach/forge" class="coach-drill-z4-nav__btn coach-drill-z4-nav__btn--link" title="Deploy macro-goal intents â€” individualized drills per player">
@@ -553,14 +552,6 @@
 					onclick={() => (pageView = 'library')}
 				>
 					Drill library
-				</button>
-				<button
-					type="button"
-					class="coach-drill-z4-nav__btn"
-					class:coach-drill-z4-nav__btn--active={pageView === 'designer'}
-					onclick={() => (pageView = 'designer')}
-				>
-					Spatial designer
 				</button>
 				<button
 					type="button"
@@ -592,16 +583,7 @@
 		</div>
 	</header>
 
-	{#if pageView === 'designer'}
-		<div class="cdm-designer" data-region="spatial-designer">
-			<DrillDesignerTab
-				teamId={teamScope.selectedTeamId}
-				onDrillSaved={() => {
-					reloadCounter++;
-				}}
-			/>
-		</div>
-	{:else if pageView === 'schedule'}
+	{#if pageView === 'schedule'}
 		<div class="cdm-grid cdm-grid--schedule" data-region="team-schedule">
 			<div class="cdm-panel" aria-labelledby="cdm-sch-h">
 				<div class="cdm-panel__head">
@@ -753,7 +735,7 @@
 			<label class="coach-drill-z1-search">
 				<Icon name="action.search" />
 				<input
-					type="search"
+					type="text"
 					placeholder="Search by title, category, or metricâ€¦"
 					bind:value={searchTerm}
 				/>

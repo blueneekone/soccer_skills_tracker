@@ -3,8 +3,8 @@
 	import CommandDrawer from './tactical/hud/CommandDrawer.svelte';
 	import ContextRadial from './tactical/hud/ContextRadial.svelte';
 
-	/** @type {{ model: import('./TacticalEngine.svelte.ts').TacticalWarRoomModel, ondeploy?: (cartridge: import('$lib/states/war-room/types').TacticalCartridge) => void }} */
-	let { model, ondeploy } = $props();
+	/** @type {{ model: import('./TacticalEngine.svelte.ts').TacticalWarRoomModel, ondeploy?: (cartridge: import('$lib/states/war-room/types').TacticalCartridge) => void, isHalfField?: boolean, onToggleHalfField?: () => void, onToggleToolbar?: () => void }} */
+	let { model, ondeploy, isHalfField, onToggleHalfField, onToggleToolbar } = $props();
 
 	// ── Deploy sequence — owned here, threaded to Dock (button) and ContextRadial (modal) ──
 	let deployPhase = $state(/** @type {'idle' | 'deploying' | 'success'} */ ('idle'));
@@ -58,7 +58,7 @@
   Child components opt back in with pointer-events-auto.
 -->
 <div class="tactical-hud-panel tw-pointer-events-none tw-absolute tw-inset-0 tw-z-10 tw-overflow-hidden" style="border-radius: 0px;">
-	<TacticalDock {model} {deployPhase} onDeploy={handleDeploy} />
+	<TacticalDock {model} {deployPhase} onDeploy={handleDeploy} {isHalfField} {onToggleHalfField} {onToggleToolbar} />
 	<CommandDrawer {model} />
 	<ContextRadial
 		{deployPhase}

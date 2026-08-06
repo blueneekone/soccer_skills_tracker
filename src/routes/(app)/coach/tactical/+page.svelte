@@ -30,8 +30,18 @@
 	style="z-index: 1050;"
 	in:scale={{ duration: 350, start: 0.97, easing: quintOut }}
 >
-	<TacticalArena model={engine.gridEngine} warRoomTool={engine.warRoomTool} />
-	<TacticalHUD model={engine.gridEngine} />
+	<TacticalArena model={engine.gridEngine} warRoomTool={engine.warRoomTool} isHalfField={engine.isHalfField} />
+	{#if engine.isToolbarVisible}
+		<TacticalHUD model={engine.gridEngine} isHalfField={engine.isHalfField} onToggleHalfField={() => engine.isHalfField = !engine.isHalfField} onToggleToolbar={() => engine.isToolbarVisible = !engine.isToolbarVisible} />
+	{:else}
+		<button
+			type="button"
+			class="coach-os-action-chip tw-absolute tw-bottom-4 tw-left-4 tw-z-[2000]"
+			onclick={() => engine.isToolbarVisible = true}
+		>
+			<span class="tw-text-[#14b8a6]">↑ SHOW TOOLS</span>
+		</button>
+	{/if}
 	<button
 		type="button"
 		class="coach-tac-exit coach-os-action-chip"

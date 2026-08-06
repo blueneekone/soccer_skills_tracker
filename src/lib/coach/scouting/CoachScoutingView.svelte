@@ -238,12 +238,10 @@
 
 <div class="tw-mb-10 tw-mt-2 tw-min-w-0 tw-flex-1" style="padding: var(--bento-pad-liquid);">
 	<header class="tw-mb-6 tw-text-center md:tw-text-left">
-		<h1
-			class="tw-font-black tw-uppercase tw-tracking-tight tw-text-transparent tw-bg-clip-text tw-bg-gradient-to-r tw-from-cyan-300 tw-via-emerald-300 tw-to-cyan-400 tw-drop-shadow-[0_0_28px_rgba(20, 184, 166,0.35)] md:tw-text-4xl tw-text-2xl"
-		>
+		<h1 class="tw-font-black tw-uppercase tw-tracking-tight tw-text-white tw-text-2xl md:tw-text-4xl">
 			Scouting
 		</h1>
-		<p class="tw-mt-2 tw-text-xs tw-font-semibold tw-uppercase tw-tracking-widest tw-text-slate-500">
+		<p class="tw-mt-2 tw-text-xs tw-font-semibold tw-uppercase tw-tracking-widest tw-text-[#14b8a6]">
 			Prospect matrix · roster quick log · tryout pipeline on same surface
 		</p>
 		<div class="tw-mt-4 tw-flex tw-flex-wrap tw-justify-center tw-gap-2 md:tw-justify-start" role="tablist" aria-label="Scouting modes">
@@ -310,18 +308,18 @@
 		{:else}
 			<div class="bento-grid bento-grid--12col bento-grid--liquid tw-grid tw-grid-cols-1 lg:tw-grid-cols-12">
 				<div
-					class="tw-col-span-12 lg:tw-col-span-4 tw-flex tw-min-h-[min(70vh,560px)] tw-min-w-0 tw-flex-col tw-rounded-2xl tw-border tw-border-white/5 tw-bg-slate-900/60 tw-p-4 tw-shadow-xl tw-backdrop-blur-md md:tw-min-h-[640px]"
+					class="tw-col-span-12 lg:tw-col-span-4 vanguard-panel tw-flex tw-min-h-[min(70vh,560px)] tw-min-w-0 tw-flex-col tw-p-4 md:tw-min-h-[640px]"
 				>
-					<h2 class="tw-mb-3 tw-text-[10px] tw-font-bold tw-uppercase tw-tracking-[0.25em] tw-text-slate-500">
+					<h2 class="tw-mb-3 tw-text-[10px] tw-font-bold tw-uppercase tw-tracking-[0.25em] tw-text-[#334155]">
 						Squad roster
 					</h2>
 					<label class="tw-sr-only" for="proving-grounds-search">Search prospects</label>
 					<input
 						id="proving-grounds-search"
-						type="search"
+						type="text"
 						placeholder="Search…"
 						autocomplete="off"
-						class="tw-mb-3 tw-w-full tw-rounded-xl tw-border tw-border-white/10 tw-bg-slate-950/80 tw-px-3 tw-py-2.5 tw-font-mono tw-text-sm tw-text-slate-100 tw-outline-none tw-ring-cyan-500/30 placeholder:tw-text-slate-600 focus-visible:tw-ring-2"
+						class="tw-mb-3 tw-w-full tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-px-3 tw-py-2.5 tw-font-mono tw-text-sm tw-text-slate-100 tw-outline-none focus:tw-border-[#14b8a6]"
 						bind:value={searchQuery}
 					/>
 
@@ -332,15 +330,15 @@
 									type="button"
 									role="option"
 									aria-selected={activeId === prospect.id}
-									class="tw-w-full tw-rounded-lg tw-border tw-px-3 tw-py-3 tw-text-left tw-transition-colors hover:tw-bg-slate-800/50 {activeId === prospect.id
-										? 'tw-border-cyan-500/35 tw-bg-slate-800/40 tw-ring-1 tw-ring-cyan-500/25'
-										: 'tw-border-transparent'}"
+									class="tw-w-full tw-px-3 tw-py-3 tw-text-left tw-transition-colors hover:tw-bg-[#0f172a] {activeId === prospect.id
+										? 'tw-border-l-2 tw-border-[#14b8a6] tw-bg-[#0f172a]'
+										: 'tw-border-l-2 tw-border-transparent'}"
 									onclick={() => {
 										activeId = prospect.id;
 									}}
 								>
-									<span class="tw-block tw-text-sm tw-font-semibold tw-text-slate-100">{prospect.label}</span>
-									<span class="tw-mt-0.5 tw-block tw-text-[11px] tw-font-medium tw-text-slate-500">{prospect.role}</span>
+									<span class="tw-block tw-truncate tw-text-sm tw-font-semibold tw-text-slate-100">{prospect.label}</span>
+									<span class="tw-mt-0.5 tw-block tw-truncate tw-text-[11px] tw-font-medium tw-text-slate-500">{prospect.role}</span>
 								</button>
 							</li>
 						{/each}
@@ -352,13 +350,13 @@
 
 				{#if activeProspect}
 					<div
-						class="tw-col-span-12 lg:tw-col-span-8 tw-flex tw-min-h-[min(70vh,560px)] tw-min-w-0 tw-flex-col tw-rounded-2xl tw-border tw-border-white/5 tw-bg-slate-900/60 tw-p-5 tw-shadow-xl tw-backdrop-blur-md md:tw-min-h-[640px] md:tw-p-6"
+						class="tw-col-span-12 lg:tw-col-span-8 vanguard-panel tw-flex tw-min-h-[min(70vh,560px)] tw-min-w-0 tw-flex-col tw-p-5 md:tw-min-h-[640px] md:tw-p-6"
 					>
 						<div
-							class="bento-mb-lg tw-flex tw-flex-col bento-gap-md tw-border-b tw-border-white/5 tw-pb-6 sm:tw-flex-row sm:tw-items-end sm:tw-justify-between"
+							class="bento-mb-lg tw-flex tw-flex-col bento-gap-md tw-border-b tw-border-[#334155] tw-pb-6 sm:tw-flex-row sm:tw-items-end sm:tw-justify-between"
 						>
 							<div class="tw-min-w-0">
-								<p class="tw-text-[10px] tw-font-bold tw-uppercase tw-tracking-[0.22em] tw-text-slate-500">
+								<p class="tw-text-[10px] tw-font-bold tw-uppercase tw-tracking-[0.22em] tw-text-[#334155]">
 									Active player
 								</p>
 								<h2 class="tw-mt-1 tw-truncate tw-text-xl tw-font-black tw-text-white md:tw-text-2xl">
@@ -367,12 +365,10 @@
 								<p class="tw-mt-1 tw-truncate tw-font-mono tw-text-[11px] tw-text-slate-500">{activeProspect.email}</p>
 							</div>
 							<div class="tw-shrink-0 tw-text-right">
-								<p class="tw-text-[10px] tw-font-bold tw-uppercase tw-tracking-[0.28em] tw-text-emerald-400/90">
+								<p class="tw-text-[10px] tw-font-bold tw-uppercase tw-tracking-[0.28em] tw-text-[#d97706]">
 									Overall grade
 								</p>
-								<p
-									class="tw-font-black tw-tabular-nums tw-text-emerald-400 tw-text-5xl tw-leading-none tw-tracking-tighter tw-shadow-[0_0_24px_rgba(52,211,153,0.35)] md:tw-text-6xl"
-								>
+								<p class="tw-font-black tw-tabular-nums tw-text-[#d97706] tw-text-5xl tw-leading-none tw-tracking-tighter md:tw-text-6xl">
 									{overallGrade}
 								</p>
 							</div>
@@ -415,12 +411,11 @@
 							{/each}
 						</div>
 
-						<div class="bento-mt-lg tw-shrink-0 tw-border-t tw-border-white/5 tw-pt-5">
+						<div class="bento-mt-lg tw-shrink-0 tw-border-t tw-border-[#334155] tw-pt-5">
 							<button
 								type="button"
-								class="tw-w-full tw-rounded-xl tw-border tw-border-emerald-500/40 tw-bg-emerald-950/50 tw-py-3.5 tw-text-center tw-text-xs tw-font-black tw-uppercase tw-tracking-[0.22em] tw-text-emerald-200 tw-shadow-[0_0_20px_rgba(52,211,153,0.2)] tw-transition hover:tw-border-emerald-400/60 hover:tw-bg-emerald-900/40 hover:tw-text-white focus-visible:tw-outline focus-visible:tw-outline-2 focus-visible:tw-outline-offset-2 focus-visible:tw-outline-emerald-400 {lockFlash
-									? 'tw-ring-2 tw-ring-emerald-400/70'
-									: ''}"
+								class="coach-os-action-chip tw-w-full tw-py-3.5 tw-text-center {lockFlash ? 'tw-ring-2 tw-ring-[#d97706]' : ''}"
+								style="background: {saving ? '#0f172a' : '#d97706'}; color: {saving ? '#334155' : '#000000'}; border-color: {saving ? '#334155' : '#d97706'};"
 								disabled={saving}
 								onclick={() => void lockAssessment()}
 							>
@@ -429,7 +424,7 @@
 							{#if saveErr}
 								<p class="tw-mt-3 tw-text-center tw-text-[11px] tw-font-semibold tw-text-red-400" role="alert">{saveErr}</p>
 							{:else if saveOk && lockFlash}
-								<p class="tw-mt-3 tw-text-center tw-text-[11px] tw-font-semibold tw-text-emerald-400/90">{saveOk}</p>
+								<p class="tw-mt-3 tw-text-center tw-text-[11px] tw-font-semibold tw-text-[#14b8a6]">{saveOk}</p>
 							{/if}
 						</div>
 					</div>

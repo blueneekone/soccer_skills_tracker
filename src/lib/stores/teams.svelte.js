@@ -36,6 +36,22 @@ function createTeamsStore() {
 			queries.push(getDocs(query(collection(db, 'teams'), where('assistants', 'array-contains', head))));
 		}
 		
+		// Fallback: check user's profile for explicit teamId assignment (handles alias mismatches)
+		queries.push(
+			getDoc(doc(db, 'users', head)).then(async (userSnap) => {
+				if (userSnap.exists()) {
+					const data = userSnap.data();
+					if (data.teamId) {
+						const tSnap = await getDoc(doc(db, 'teams', data.teamId));
+						if (tSnap.exists()) {
+							return [{ id: tSnap.id, data: () => tSnap.data() }];
+						}
+					}
+				}
+				return [];
+			}).catch(() => [])
+		);
+		
 		const snaps = await Promise.all(queries);
 		const byId = new Map();
 		for (const snap of snaps) {

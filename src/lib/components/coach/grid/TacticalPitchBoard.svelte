@@ -38,6 +38,7 @@
 	let {
 		pitchSvgEl = $bindable(),
 		warRoomTool,
+		isHalfField = false,
 		showLabels,
 		draggingPlayer,
 		activeDragTrail,
@@ -101,7 +102,7 @@
 			'ROUTE'
 				? 'tw-cursor-crosshair'
 				: 'tw-cursor-default'}"
-			viewBox="0 0 1600 900"
+			viewBox={isHalfField ? "800 0 800 900" : "0 0 1600 900"}
 			preserveAspectRatio="xMidYMid slice"
 			role="img"
 			aria-label="Tactical pitch"
