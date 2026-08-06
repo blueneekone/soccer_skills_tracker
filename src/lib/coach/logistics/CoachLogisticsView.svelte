@@ -7,11 +7,12 @@
 	import { page } from '$app/state';
 	import { teamsStore } from '$lib/stores/teams.svelte.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
-	import { db } from '$lib/firebase.js';
+	import { getActiveDb } from '$lib/firebase.js';
 	import { CoachTeamScope } from '$lib/coach/context/coachTeamScope.svelte.js';
 
 	const teamScope = new CoachTeamScope({ preferProfileTeam: true });
 	$effect(() => {
+		const db = getActiveDb();
 		if (!db || !authStore.isAuthenticated) return;
 		teamScope.syncSelectedTeam();
 	});
