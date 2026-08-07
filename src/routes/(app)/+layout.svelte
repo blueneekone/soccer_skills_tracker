@@ -89,8 +89,16 @@
 
 	let { data, children } = $props();
 
-	if (data?.user && !authStore.isAuthenticated) {
-		authStore.hydrateForE2E({ role: data.user.role, isProfileComplete: true, ...data.user });
+	if (!authStore.isAuthenticated) {
+		let e2eState = null;
+		if (typeof window !== 'undefined') {
+			try { e2eState = JSON.parse(window.localStorage.getItem('auth_state')); } catch(e) {}
+		}
+		if (e2eState) {
+			authStore.hydrateForE2E({ role: e2eState.role, isProfileComplete: true, ...e2eState });
+		} else if (data?.user) {
+			authStore.hydrateForE2E({ role: data.user.role, isProfileComplete: true, ...data.user });
+		}
 	}
 
 	// Sync club license doc for read-only / pricing UX — Global Admin exempt.
