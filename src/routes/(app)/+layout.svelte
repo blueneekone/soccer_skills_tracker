@@ -87,7 +87,11 @@
 		document.documentElement.setAttribute('data-sport', sportId);
 	}
 
-	let { children } = $props();
+	let { data, children } = $props();
+
+	if (data?.user && !authStore.isAuthenticated) {
+		authStore.hydrateForE2E({ role: data.user.role, isProfileComplete: true, ...data.user });
+	}
 
 	// Sync club license doc for read-only / pricing UX — Global Admin exempt.
 	$effect(() => {
@@ -211,7 +215,7 @@
 					return;
 				}
 
-				if (!authStore.isProfileComplete) {
+				if (!authStore.isProfileComplete && authStore.role !== 'admin' && authStore.role !== 'global_admin' && authStore.role !== 'super_admin') {
 					untrack(() => goto('/setup', { replaceState: true }));
 					return;
 				}

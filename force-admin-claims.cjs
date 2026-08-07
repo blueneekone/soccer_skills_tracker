@@ -5,7 +5,7 @@ if (process.env.FIREBASE_AUTH_EMULATOR_HOST) {
   process.env.FIRESTORE_EMULATOR_HOST = '127.0.0.1:8080';
 }
 admin.initializeApp({
-  projectId: 'demo-sstracker' // Using demo project id since we are running in emulator
+  projectId: 'sports-skill-tracker-dev' // Connecting to dev environment
 });
 
 const auth = admin.auth();
