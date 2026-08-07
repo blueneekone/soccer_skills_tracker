@@ -138,27 +138,19 @@ async function extractPlayersFromPdfText(rawText, apiKey) {
   const response = await ai.models.generateContent({
     model: 'gemini-2.0-flash',
     contents: [
-      {
-        parts: [
-          {
-            text: [
-              'You are a data extraction assistant for a soccer club management system.',
-              'Extract ALL player entries from the following roster document text.',
-              'For each player, extract: email, full name, position, date of birth (ISO 8601), jersey number.',
-              'If a field is not present in the document, omit it from that player\'s object.',
-              'Return ONLY a valid JSON array. No explanations, no markdown fences.',
-              'Example: [{"email":"j.smith@email.com","displayName":"John Smith","position":"Midfielder","dateOfBirth":"2008-03-15","jerseyNumber":"7"}]',
-              '',
-              '--- ROSTER DOCUMENT TEXT ---',
-              rawText.slice(0, 12000),
-            ].join('\n'),
-          },
-        ],
-      },
-    ],
+      'You are a data extraction assistant for a soccer club management system.',
+      'Extract ALL player entries from the following roster document text.',
+      'For each player, extract: email, full name, position, date of birth (ISO 8601), jersey number.',
+      'If a field is not present in the document, omit it from that player\'s object.',
+      'Return ONLY a valid JSON array. No explanations, no markdown fences.',
+      'Example: [{"email":"j.smith@email.com","displayName":"John Smith","position":"Midfielder","dateOfBirth":"2008-03-15","jerseyNumber":"7"}]',
+      '',
+      '--- ROSTER DOCUMENT TEXT ---',
+      rawText.slice(0, 12000),
+    ].join('\n'),
   });
 
-  const text = response.candidates?.[0]?.content?.parts?.[0]?.text ?? '[]';
+  const text = response.text || '[]';
   const clean = text.replace(/```(?:json)?\n?|```/g, '').trim();
 
   try {
