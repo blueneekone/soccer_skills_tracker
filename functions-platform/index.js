@@ -71,9 +71,17 @@ exports.executeSupportCommand = adminOps.executeSupportCommand;
 const operativeOps = require('./src/domains/operativeOps');
 exports.impersonateUserFn = operativeOps.impersonateUserFn;
 exports.purgeUserDataFn = operativeOps.purgeUserDataFn;
-
-
-
+const globalAdminOs = require('./src/domains/globalAdminOs');
+exports.loginAs = globalAdminOs.loginAs;
+exports.rightToBeForgotten = globalAdminOs.rightToBeForgotten;
+exports.listAllUsers = globalAdminOs.listAllUsers;
+exports.repairUserClaims = globalAdminOs.repairUserClaims;
+exports.resetUserPassword = globalAdminOs.resetUserPassword;
+exports.disableUser = globalAdminOs.disableUser;
+exports.purgeUser = globalAdminOs.purgeUser;
+exports.createTeam = globalAdminOs.createTeam;
+exports.deleteTeam = globalAdminOs.deleteTeam;
+exports.linkUserToTeam = globalAdminOs.linkUserToTeam;
 
 const { onChannelCreated } = require('./src/onChannelCreated.js');
 exports.onChannelCreated = onChannelCreated;

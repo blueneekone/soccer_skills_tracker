@@ -110,6 +110,7 @@ const CODEBASES = {
       'src/domains/operativeOps.js',
       'src/domains/interoperabilityOps.js',
       'src/domains/b2bEnrollmentOps.js',
+      'src/domains/globalAdminOs.js',
       'lib/grit.js',
       'src/onChannelCreated.js',
     ],

@@ -97,7 +97,7 @@
 						<input type="text" bind:value={engine.linkTeamId} class="tw-bg-[#020617] tw-border tw-border-slate-700 tw-text-white tw-px-3 tw-py-2 tw-font-mono tw-text-sm" />
 					</div>
 					<div class="tw-flex tw-flex-col tw-gap-3 tw-mt-2">
-						<button onclick={() => engine.executeCommand('linkUserToTeam', { userEmail: engine.linkEmail, role: engine.linkRole, clubId: engine.linkClubId, teamId: engine.linkTeamId })} class="tw-bg-slate-800 hover:tw-bg-slate-700 tw-border tw-border-slate-600 tw-text-amber-400 tw-font-mono tw-text-sm tw-font-bold tw-py-2 tw-px-4 tw-text-center tw-transition-colors">
+						<button onclick={() => engine.executeCommand('linkUserToTeam', { targetEmail: engine.linkEmail, role: engine.linkRole, clubId: engine.linkClubId, teamId: engine.linkTeamId })} class="tw-bg-slate-800 hover:tw-bg-slate-700 tw-border tw-border-slate-600 tw-text-amber-400 tw-font-mono tw-text-sm tw-font-bold tw-py-2 tw-px-4 tw-text-center tw-transition-colors">
 							> Link User
 						</button>
 					</div>

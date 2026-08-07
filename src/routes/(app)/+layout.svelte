@@ -160,8 +160,9 @@
 		if (import.meta.env.VITE_E2E_BYPASS_AUTH === 'true') {
 			const testProfile = (window as any).__TEST_PROFILE__;
 			if (testProfile) {
-				// Atomically hydrate role + isAuthenticated + isLoading + profile
 				authStore.hydrateForE2E(testProfile);
+			}
+			if (authStore.isAuthenticated) {
 				passkeyEligibilityConfirmed = true;
 				routeGuardResolved = true;
 			}
@@ -206,11 +207,13 @@
 				
 				// ── Global Infrastructure Kill Switch ────────────────────────────────
 				try {
-					const coreSnap = await getDoc(doc(db, 'platform_settings', 'core'));
-					if (coreSnap.exists() && coreSnap.data()?.maintenance_mode === true) {
-						if (authStore.role !== 'global_admin' && authStore.role !== 'super_admin' && !currentPath.startsWith('/maintenance')) {
-							await untrack(() => goto('/maintenance', { replaceState: true }));
-							return;
+					if (auth.currentUser) {
+						const coreSnap = await getDoc(doc(db, 'platform_settings', 'core'));
+						if (coreSnap.exists() && coreSnap.data()?.maintenance_mode === true) {
+							if (authStore.role !== 'global_admin' && authStore.role !== 'super_admin' && !currentPath.startsWith('/maintenance')) {
+								await untrack(() => goto('/maintenance', { replaceState: true }));
+								return;
+							}
 						}
 					}
 				} catch (e) {

@@ -5,7 +5,6 @@ const logger = require('firebase-functions/logger');
 const pdfParse = require('pdf-parse');
 const { getFirestore } = require('firebase-admin/firestore');
 const { extractPlayersFromPdfText, mapExtractedPlayerToCoach } = require('./rosterIngestParse');
-const { env } = require('firebase-functions/v2/params');
 
 exports.interoperabilitySync = onCall((request) => {
   return { success: true };

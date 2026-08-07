@@ -57,7 +57,7 @@
 				<div
 					class="coach-os-badge tw-relative tw-flex tw-h-12 tw-w-12 tw-shrink-0 tw-items-center tw-justify-center md:tw-h-14 md:tw-w-14"
 				>
-					<span class="tw-font-mono tw-text-2xl tw-font-black tw-tracking-widest md:tw-text-3xl">{engine.nexusBadgeLetter}</span>
+					<span class="tw-font-mono tw-text-2xl tw-font-black md:tw-text-3xl">{engine.nexusBadgeLetter}</span>
 				</div>
 				<div class="tw-min-w-0 tw-flex-1">
 					<h1 class="tw-m-0 tw-truncate tw-font-mono tw-text-lg tw-font-black tw-uppercase tw-tracking-[0.18em] tw-text-white md:tw-text-xl">

@@ -168,7 +168,9 @@ for (const [personaName, persona] of Object.entries(PERSONAS)) {
           uid: p.uid,
           isAuthenticated: true,
           role: p.role,
-          clubId: p.clubId
+          clubId: p.clubId,
+          clearance: { status: 'cleared', checkrStatus: 'clear', safeSportStatus: 'certified' },
+          vpcStatus: 'verified'
         }));
       }, persona);
     });
