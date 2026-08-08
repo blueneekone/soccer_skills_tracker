@@ -482,7 +482,9 @@ service cloud.firestore {
           || get(/databases/$(database)/documents/teams/$(tid)).data.get('coachEmail', '').lower()
                == emailKey()
           || (get(/databases/$(database)/documents/teams/$(tid)).data.keys().hasAll(['assistants'])
-              && get(/databases/$(database)/documents/teams/$(tid)).data.assistants.hasAny([emailKey()])));
+              && get(/databases/$(database)/documents/teams/$(tid)).data.assistants.hasAny([emailKey()]))
+          || (get(/databases/$(database)/documents/teams/$(tid)).data.keys().hasAll(['expandedStaff'])
+              && get(/databases/$(database)/documents/teams/$(tid)).data.expandedStaff.hasAny([emailKey()])));
     }
 
     // Team channel matrix: teams/{teamId}/channels/{channelId}/messages
