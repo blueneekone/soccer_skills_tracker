@@ -52,7 +52,7 @@
 			</div>
 
 			<div
-				class="coach-os-z4-strip vanguard-surface tw-absolute tw-inset-x-4 tw-bottom-4 tw-z-20 tw-flex tw-flex-wrap tw-items-end tw-gap-4 md:tw-gap-6 tw-px-5 tw-py-4 md:tw-inset-x-8 md:tw-bottom-6"
+				class="coach-os-z4-strip vanguard-surface tw-absolute tw-inset-x-4 tw-bottom-4 tw-z-20 tw-flex tw-flex-nowrap tw-items-end tw-gap-4 md:tw-gap-6 tw-px-5 tw-py-4 md:tw-inset-x-8 md:tw-bottom-6"
 			>
 				<div
 					class="coach-os-badge tw-relative tw-flex tw-h-12 tw-w-12 tw-shrink-0 tw-items-center tw-justify-center md:tw-h-14 md:tw-w-14"

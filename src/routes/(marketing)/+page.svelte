@@ -27,7 +27,7 @@
 			sub: 'SYS.COACH',
 			title: 'The Sideline SIEM',
 			body: 'The HTML5 Tron War Room Drill Designer, real-time squad telemetry, and the RAG AI Tactical Assistant orchestrating every victory.',
-			href: '/coach',
+			href: '/coach/dashboard',
 			hoverColor: '#f59e0b',
 			cols: 'md:tw-col-span-4',
 			bento: 'coach'
