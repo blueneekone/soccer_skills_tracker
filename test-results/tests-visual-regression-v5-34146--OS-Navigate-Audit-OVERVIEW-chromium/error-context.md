@@ -7,7 +7,7 @@
 # Test info
 
 - Name: tests\visual-regression-v5.spec.ts >> EPIC COMPREHENSIVE TRAVERSAL: ADMIN OS >> Navigate & Audit: OVERVIEW
-- Location: tests\visual-regression-v5.spec.ts:177:7
+- Location: tests\visual-regression-v5.spec.ts:179:7
 
 # Error details
 
@@ -21,83 +21,21 @@ Call log:
 # Page snapshot
 
 ```yaml
-- main [ref=e4]:
-  - button "Report an anomaly or bug" [ref=e5] [cursor=pointer]:
-    - generic [ref=e7]: ALPHA
-  - generic [ref=e9]:
-    - complementary "Workspace navigation" [ref=e10]:
-      - generic [ref=e11]:
-        - generic [ref=e13]:
-          - generic [ref=e14]: SSTracker
-          - generic [ref=e15]: "|"
-          - generic [ref=e16]: Nexus Command
-        - navigation [ref=e17]:
-          - link "Overview" [ref=e18] [cursor=pointer]:
-            - /url: /admin/overview
-          - link "Organizations" [ref=e21] [cursor=pointer]:
-            - /url: /admin/organizations
-          - link "Global Users" [ref=e24] [cursor=pointer]:
-            - /url: /admin/users
-          - link "Recruiters" [ref=e27] [cursor=pointer]:
-            - /url: /admin/recruiters
-          - link "Coach clearance" [ref=e30] [cursor=pointer]:
-            - /url: /admin/coach-clearance
-          - link "Audit Log" [ref=e33] [cursor=pointer]:
-            - /url: /admin/audit-log
-          - link "System Settings" [ref=e36] [cursor=pointer]:
-            - /url: /admin/system-settings
-          - link "Support Terminal" [ref=e39] [cursor=pointer]:
-            - /url: /admin/support-terminal
-          - link "Data Sync" [ref=e42] [cursor=pointer]:
-            - /url: /admin/interoperability
-        - generic [ref=e44]:
-          - paragraph [ref=e45]: System actions
-          - link "Support / Help Desk" [ref=e46] [cursor=pointer]:
-            - /url: mailto:support@sstracker.app?subject=SSTRACKER%20support
-          - button "Report Anomaly" [ref=e49] [cursor=pointer]
-          - button "Sign out" [ref=e52] [cursor=pointer]
-    - generic [ref=e55]:
-      - generic [ref=e56]:
-        - generic [ref=e57]:
-          - button "Collapse sidebar" [expanded] [ref=e58] [cursor=pointer]
-          - generic [ref=e60]:
-            - strong [ref=e61]: Global Admin
-            - text: / Console
-        - button "Open command palette" [ref=e62]:
-          - generic [ref=e63]: Search & jump to…
-          - generic [ref=e66]: ⌘K
-        - generic [ref=e67]:
-          - button "Alerts" [ref=e68] [cursor=pointer]
-          - button "Settings" [ref=e70] [cursor=pointer]
-          - generic [ref=e72]: Account
-      - generic [ref=e90]:
-        - generic [ref=e92]:
-          - generic [ref=e97]:
-            - heading "Nexus Command" [level=1] [ref=e98]
-            - paragraph [ref=e99]: "SYSTEM_STATUS: INITIALIZING"
-          - navigation [ref=e100]:
-            - button "Overview" [ref=e101]
-            - button "Security" [ref=e102]
-            - button "Platform" [ref=e103]
-        - main [ref=e104]:
-          - generic [ref=e106]:
-            - heading "System Error" [level=2] [ref=e107]
-            - paragraph [ref=e108]: Missing or insufficient permissions.
-  - complementary [ref=e109]
-  - complementary [ref=e110]:
-    - generic [ref=e111]:
-      - heading [level=2] [ref=e116]: Alerts
-      - button [ref=e117] [cursor=pointer]
-    - generic [ref=e120]:
-      - paragraph [ref=e122]: No alerts right now.
-      - paragraph [ref=e123]: We'll notify you when something needs your attention.
+- generic [ref=e2]:
+  - generic [ref=e4]:
+    - generic [ref=e8]:
+      - paragraph [ref=e9]: VANGUARD ONBOARDING PROTOCOL
+      - heading "AWAITING ASSIGNMENT" [level=1] [ref=e10]
+    - separator [ref=e11]
+    - paragraph [ref=e12]: Your account has been authenticated. An administrator will assign your role and grant access to your command surface.
+    - generic [ref=e13]: PENDING ROLE ASSIGNMENT
+    - button "← Sign out and return to login" [ref=e16] [cursor=pointer]
+  - generic [ref=e17]: Onboarding · NEXUS COMMAND
 ```
 
 # Test source
 
 ```ts
-  88  |   // 1. Assert No Horizontal Scroll Overflow
-  89  |   const overflowX = await page.evaluate(() => window.scrollX);
   90  |   expect(overflowX).toBe(0);
   91  | 
   92  |   const scrollWidth = await page.evaluate(() => document.documentElement.scrollWidth);
@@ -179,44 +117,46 @@ Call log:
   168 |           uid: p.uid,
   169 |           isAuthenticated: true,
   170 |           role: p.role,
-  171 |           clubId: p.clubId
-  172 |         }));
-  173 |       }, persona);
-  174 |     });
-  175 | 
-  176 |     for (const route of persona.routes) {
-  177 |       test(`Navigate & Audit: ${route.name.toUpperCase()}`, async ({ page }) => {
-  178 |         // Create isolated folders for each target review segment
-  179 |         const personaDir = join(artifactsDir, personaName);
-  180 |         if (!existsSync(personaDir)) {
-  181 |           mkdirSync(personaDir, { recursive: true });
-  182 |         }
-  183 | 
-  184 |         // 1. Navigate directly to the target route using fast load gating (bypass gRPC networkidle lock)
-  185 |         await page.goto(route.path, { waitUntil: 'load' });
-  186 | 
-  187 |         // 2. Wait explicitly for the Svelte 5 DOM and page elements to hydrate
-> 188 |         await page.waitForSelector(route.waitSelector, { state: 'visible', timeout: 10000 });
+  171 |           clubId: p.clubId,
+  172 |           clearance: { status: 'cleared', checkrStatus: 'clear', safeSportStatus: 'certified' },
+  173 |           vpcStatus: 'verified'
+  174 |         }));
+  175 |       }, persona);
+  176 |     });
+  177 | 
+  178 |     for (const route of persona.routes) {
+  179 |       test(`Navigate & Audit: ${route.name.toUpperCase()}`, async ({ page }) => {
+  180 |         // Create isolated folders for each target review segment
+  181 |         const personaDir = join(artifactsDir, personaName);
+  182 |         if (!existsSync(personaDir)) {
+  183 |           mkdirSync(personaDir, { recursive: true });
+  184 |         }
+  185 | 
+  186 |         // 1. Navigate directly to the target route using fast load gating (bypass gRPC networkidle lock)
+  187 |         await page.goto(route.path, { waitUntil: 'load' });
+  188 | 
+  189 |         // 2. Wait explicitly for the Svelte 5 DOM and page elements to hydrate
+> 190 |         await page.waitForSelector(route.waitSelector, { state: 'visible', timeout: 10000 });
       |                    ^ TimeoutError: page.waitForSelector: Timeout 10000ms exceeded.
-  189 |         await page.waitForTimeout(300); // Allow reactivity and animations to settle
-  190 | 
-  191 |         // 3. Assert no unstyled light-mode flash exists (Void Black/Navy Slate only)
-  192 |         const bg = await page.evaluate(() => window.getComputedStyle(document.body).backgroundColor);
-  193 |         expect(bg).not.toBe('rgb(255, 255, 255)');
-  194 | 
-  195 |         // 4. Run coordinate box layout overlap calculations
-  196 |         await runMicroscopicLayoutAssertions(page, route.name);
-  197 | 
-  198 |         // 5. Perform active hover style validation against brand links
-  199 |         await verifyInteractiveHoverState(page, '.vanguard-link, .pd-nav-link, .st-bento a:not(.quest-hero__cta)');
-  200 | 
-  201 |         // 6. Deposit visual proof screenshot directly into audit-artifacts/
-  202 |         const screenshotPath = join(personaDir, `${route.name}-desktop.png`);
-  203 |         await page.screenshot({ path: screenshotPath, fullPage: true });
-  204 |         console.log(`[VISUAL AUDIT PASSED] Screenshot exported to: ${screenshotPath}`);
-  205 |       });
-  206 |     }
-  207 |   });
-  208 | }
-  209 | 
+  191 |         await page.waitForTimeout(300); // Allow reactivity and animations to settle
+  192 | 
+  193 |         // 3. Assert no unstyled light-mode flash exists (Void Black/Navy Slate only)
+  194 |         const bg = await page.evaluate(() => window.getComputedStyle(document.body).backgroundColor);
+  195 |         expect(bg).not.toBe('rgb(255, 255, 255)');
+  196 | 
+  197 |         // 4. Run coordinate box layout overlap calculations
+  198 |         await runMicroscopicLayoutAssertions(page, route.name);
+  199 | 
+  200 |         // 5. Perform active hover style validation against brand links
+  201 |         await verifyInteractiveHoverState(page, '.vanguard-link, .pd-nav-link, .st-bento a:not(.quest-hero__cta)');
+  202 | 
+  203 |         // 6. Deposit visual proof screenshot directly into audit-artifacts/
+  204 |         const screenshotPath = join(personaDir, `${route.name}-desktop.png`);
+  205 |         await page.screenshot({ path: screenshotPath, fullPage: true });
+  206 |         console.log(`[VISUAL AUDIT PASSED] Screenshot exported to: ${screenshotPath}`);
+  207 |       });
+  208 |     }
+  209 |   });
+  210 | }
+  211 | 
 ```
