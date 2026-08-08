@@ -6,43 +6,21 @@
 
 # Test info
 
-- Name: tests\visual-regression-v5.spec.ts >> EPIC COMPREHENSIVE TRAVERSAL: ADMIN OS >> Navigate & Audit: OVERVIEW
-- Location: tests\visual-regression-v5.spec.ts:179:7
+- Name: tests\visual-regression-v5.spec.ts >> EPIC COMPREHENSIVE TRAVERSAL: PLAYER OS >> Navigate & Audit: DASHBOARD
+- Location: tests\visual-regression-v5.spec.ts:186:7
 
 # Error details
 
 ```
 TimeoutError: page.waitForSelector: Timeout 10000ms exceeded.
 Call log:
-  - waiting for locator('.pd-page-root, .st-bento') to be visible
+  - waiting for locator('.pd-page-root') to be visible
 
-```
-
-# Page snapshot
-
-```yaml
-- generic [ref=e2]:
-  - generic [ref=e4]:
-    - generic [ref=e8]:
-      - paragraph [ref=e9]: VANGUARD ONBOARDING PROTOCOL
-      - heading "AWAITING ASSIGNMENT" [level=1] [ref=e10]
-    - separator [ref=e11]
-    - paragraph [ref=e12]: Your account has been authenticated. An administrator will assign your role and grant access to your command surface.
-    - generic [ref=e13]: PENDING ROLE ASSIGNMENT
-    - button "← Sign out and return to login" [ref=e16] [cursor=pointer]
-  - generic [ref=e17]: Onboarding · NEXUS COMMAND
 ```
 
 # Test source
 
 ```ts
-  90  |   expect(overflowX).toBe(0);
-  91  | 
-  92  |   const scrollWidth = await page.evaluate(() => document.documentElement.scrollWidth);
-  93  |   const clientWidth = await page.evaluate(() => document.documentElement.clientWidth);
-  94  |   expect(scrollWidth).toBeLessThanOrEqual(clientWidth);
-  95  | 
-  96  |   // 2. Bento Grid 2D Collision Check (Ensure no layout overlapping coordinates)
   97  |   const gridChildren = page.locator('.tw-grid > *, .st-bento > *, [class*=\"Bento\"] > *');
   98  |   const count = await gridChildren.count();
   99  |   const bboxes = [];
@@ -113,50 +91,57 @@ Call log:
   164 | 
   165 |       // Zero-Touch CSO Protocol: Inject authenticated state directly before page loads
   166 |       await page.addInitScript((p) => {
-  167 |         window.localStorage.setItem('auth_state', JSON.stringify({
+  167 |         const profile = {
   168 |           uid: p.uid,
   169 |           isAuthenticated: true,
   170 |           role: p.role,
   171 |           clubId: p.clubId,
-  172 |           clearance: { status: 'cleared', checkrStatus: 'clear', safeSportStatus: 'certified' },
-  173 |           vpcStatus: 'verified'
-  174 |         }));
-  175 |       }, persona);
-  176 |     });
-  177 | 
-  178 |     for (const route of persona.routes) {
-  179 |       test(`Navigate & Audit: ${route.name.toUpperCase()}`, async ({ page }) => {
-  180 |         // Create isolated folders for each target review segment
-  181 |         const personaDir = join(artifactsDir, personaName);
-  182 |         if (!existsSync(personaDir)) {
-  183 |           mkdirSync(personaDir, { recursive: true });
-  184 |         }
-  185 | 
-  186 |         // 1. Navigate directly to the target route using fast load gating (bypass gRPC networkidle lock)
-  187 |         await page.goto(route.path, { waitUntil: 'load' });
-  188 | 
-  189 |         // 2. Wait explicitly for the Svelte 5 DOM and page elements to hydrate
-> 190 |         await page.waitForSelector(route.waitSelector, { state: 'visible', timeout: 10000 });
-      |                    ^ TimeoutError: page.waitForSelector: Timeout 10000ms exceeded.
-  191 |         await page.waitForTimeout(300); // Allow reactivity and animations to settle
+  172 |           isProfileComplete: true,
+  173 |           isCleared: true,
+  174 |           clearance: { status: 'cleared', checkrStatus: 'clear', safeSportStatus: 'certified' },
+  175 |           vpcStatus: 'verified',
+  176 |           isConsented: true
+  177 |         };
+  178 |         // Set both localStorage (for hydrateForE2E sync path) and
+  179 |         // window.__TEST_PROFILE__ (for VITE_E2E_BYPASS_AUTH async path)
+  180 |         window.localStorage.setItem('auth_state', JSON.stringify(profile));
+  181 |         (window as any).__TEST_PROFILE__ = profile;
+  182 |       }, persona);
+  183 |     });
+  184 | 
+  185 |     for (const route of persona.routes) {
+  186 |       test(`Navigate & Audit: ${route.name.toUpperCase()}`, async ({ page }) => {
+  187 |         // Create isolated folders for each target review segment
+  188 |         const personaDir = join(artifactsDir, personaName);
+  189 |         if (!existsSync(personaDir)) {
+  190 |           mkdirSync(personaDir, { recursive: true });
+  191 |         }
   192 | 
-  193 |         // 3. Assert no unstyled light-mode flash exists (Void Black/Navy Slate only)
-  194 |         const bg = await page.evaluate(() => window.getComputedStyle(document.body).backgroundColor);
-  195 |         expect(bg).not.toBe('rgb(255, 255, 255)');
-  196 | 
-  197 |         // 4. Run coordinate box layout overlap calculations
-  198 |         await runMicroscopicLayoutAssertions(page, route.name);
+  193 |         // 1. Navigate directly to the target route using fast load gating (bypass gRPC networkidle lock)
+  194 |         await page.goto(route.path, { waitUntil: 'load' });
+  195 | 
+  196 |         // 2. Wait explicitly for the Svelte 5 DOM and page elements to hydrate
+> 197 |         await page.waitForSelector(route.waitSelector, { state: 'visible', timeout: 10000 });
+      |                    ^ TimeoutError: page.waitForSelector: Timeout 10000ms exceeded.
+  198 |         await page.waitForTimeout(300); // Allow reactivity and animations to settle
   199 | 
-  200 |         // 5. Perform active hover style validation against brand links
-  201 |         await verifyInteractiveHoverState(page, '.vanguard-link, .pd-nav-link, .st-bento a:not(.quest-hero__cta)');
-  202 | 
-  203 |         // 6. Deposit visual proof screenshot directly into audit-artifacts/
-  204 |         const screenshotPath = join(personaDir, `${route.name}-desktop.png`);
-  205 |         await page.screenshot({ path: screenshotPath, fullPage: true });
-  206 |         console.log(`[VISUAL AUDIT PASSED] Screenshot exported to: ${screenshotPath}`);
-  207 |       });
-  208 |     }
-  209 |   });
-  210 | }
-  211 | 
+  200 |         // 3. Assert no unstyled light-mode flash exists (Void Black/Navy Slate only)
+  201 |         const bg = await page.evaluate(() => window.getComputedStyle(document.body).backgroundColor);
+  202 |         expect(bg).not.toBe('rgb(255, 255, 255)');
+  203 | 
+  204 |         // 4. Run coordinate box layout overlap calculations
+  205 |         await runMicroscopicLayoutAssertions(page, route.name);
+  206 | 
+  207 |         // 5. Perform active hover style validation against brand links
+  208 |         await verifyInteractiveHoverState(page, '.vanguard-link, .pd-nav-link, .st-bento a:not(.quest-hero__cta)');
+  209 | 
+  210 |         // 6. Deposit visual proof screenshot directly into audit-artifacts/
+  211 |         const screenshotPath = join(personaDir, `${route.name}-desktop.png`);
+  212 |         await page.screenshot({ path: screenshotPath, fullPage: true });
+  213 |         console.log(`[VISUAL AUDIT PASSED] Screenshot exported to: ${screenshotPath}`);
+  214 |       });
+  215 |     }
+  216 |   });
+  217 | }
+  218 | 
 ```

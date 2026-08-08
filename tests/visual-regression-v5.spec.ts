@@ -22,14 +22,14 @@ const COMPLIANT_HOVER_COLORS = [
 const PERSONAS = {
   admin: {
     uid: 'admin-telemetry-uid',
-    role: 'admin',
+    role: 'super_admin',
     clubId: 'aggiesfc',
     routes: [
-      { name: 'overview', path: '/admin/overview', waitSelector: '.pd-page-root, .st-bento' },
-      { name: 'users', path: '/admin/users', waitSelector: '.pd-page-root' },
-      { name: 'organizations', path: '/admin/organizations', waitSelector: '.pd-page-root' },
-      { name: 'audit-logs', path: '/admin/audit-logs', waitSelector: '.pd-page-root' },
-      { name: 'settings', path: '/admin/settings', waitSelector: '.pd-page-root' }
+      { name: 'overview', path: '/admin/overview', waitSelector: '.tenant-matrix-grid' },
+      { name: 'users', path: '/admin/users', waitSelector: '.cc-root, .gu-root' },
+      { name: 'organizations', path: '/admin/organizations', waitSelector: '.orgs-panel' },
+      { name: 'audit-logs', path: '/admin/audit-log', waitSelector: '.al-page' },
+      { name: 'settings', path: '/admin/system-settings', waitSelector: 'h1' }
     ]
   },
   player: {
@@ -37,7 +37,7 @@ const PERSONAS = {
     role: 'player',
     clubId: 'aggiesfc',
     routes: [
-      { name: 'dashboard', path: '/player/dashboard', waitSelector: '.player-dossier-root, .st-bento' },
+      { name: 'dashboard', path: '/player/dashboard', waitSelector: '.pd-page-root' },
       { name: 'skill-tree', path: '/player/skill-tree', waitSelector: '.pd-page-root, .st-bento' }
     ]
   },
@@ -57,10 +57,10 @@ const PERSONAS = {
     role: 'parent',
     clubId: 'aggiesfc',
     routes: [
-      { name: 'dashboard', path: '/parent/dashboard', waitSelector: '.pd-page-root, .compliance-vault, .st-bento' },
-      { name: 'household', path: '/parent/household', waitSelector: '.pd-page-root, .household-graph' },
-      { name: 'trust-center', path: '/parent/trust-center', waitSelector: '.pd-page-root, .compliance-vault' },
-      { name: 'payments', path: '/parent/payments', waitSelector: '.pd-page-root, .compliance-vault' }
+      { name: 'dashboard', path: '/parent/dashboard', waitSelector: 'main, .parent-panel' },
+      { name: 'household', path: '/parent/household', waitSelector: '.parent-lounge-page, .phh' },
+      { name: 'trust-center', path: '/parent/trust-center', waitSelector: 'main' },
+      { name: 'payments', path: '/parent/payments', waitSelector: '.pp-root' }
     ]
   },
   director: {
@@ -68,7 +68,7 @@ const PERSONAS = {
     role: 'director',
     clubId: 'aggiesfc',
     routes: [
-      { name: 'dashboard', path: '/director/dashboard', waitSelector: '.pd-page-root, .st-bento' }
+      { name: 'dashboard', path: '/director/dashboard', waitSelector: '.director-console-page' }
     ]
   },
   public: {
@@ -164,14 +164,21 @@ for (const [personaName, persona] of Object.entries(PERSONAS)) {
 
       // Zero-Touch CSO Protocol: Inject authenticated state directly before page loads
       await page.addInitScript((p) => {
-        window.localStorage.setItem('auth_state', JSON.stringify({
+        const profile = {
           uid: p.uid,
           isAuthenticated: true,
           role: p.role,
           clubId: p.clubId,
+          isProfileComplete: true,
+          isCleared: true,
           clearance: { status: 'cleared', checkrStatus: 'clear', safeSportStatus: 'certified' },
-          vpcStatus: 'verified'
-        }));
+          vpcStatus: 'verified',
+          isConsented: true
+        };
+        // Set both localStorage (for hydrateForE2E sync path) and
+        // window.__TEST_PROFILE__ (for VITE_E2E_BYPASS_AUTH async path)
+        window.localStorage.setItem('auth_state', JSON.stringify(profile));
+        (window as any).__TEST_PROFILE__ = profile;
       }, persona);
     });
 
