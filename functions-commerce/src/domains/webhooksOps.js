@@ -650,7 +650,7 @@ async function handleStripeWebhookEvent(stripeClient, event) {
     }
 
     const seats = seatsLimitForTier(tierType, quantity);
-    const entRef = db().collection('license_entitlements').doc(clubId);
+    const entRef = db().collection('clubs').doc(clubId).collection('entitlements').doc('current');
     await entRef.set(
         {
           tier: tierType,
