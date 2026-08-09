@@ -86,6 +86,19 @@ describe('evaluateClubEligibility', () => {
 		it('should return passport_not_verified blocker when required and not ok', () => {
 			const result = evaluateClubEligibility({ ...baseInput, passportKind: 'bad' }, DEFAULT_ELIGIBILITY_MATRIX);
 			expect(result).toEqual({ eligible: false, blockers: ['passport_not_verified'] });
+
+			const resultWarn = evaluateClubEligibility({ ...baseInput, passportKind: 'warn' }, DEFAULT_ELIGIBILITY_MATRIX);
+			expect(resultWarn).toEqual({ eligible: false, blockers: ['passport_not_verified'] });
+
+			const resultMuted = evaluateClubEligibility({ ...baseInput, passportKind: 'muted' }, DEFAULT_ELIGIBILITY_MATRIX);
+			expect(resultMuted).toEqual({ eligible: false, blockers: ['passport_not_verified'] });
+		});
+
+		it('should properly ignore SafeSport clearance if guardianLinked is false', () => {
+			// even if clearanceStatus is RED_CARD, if guardianLinked is false it shouldn't trigger the SafeSport blocker
+			// (though it might trigger guardian_not_linked if matrix.requireGuardianLinked is true, which is false by default here)
+			const result = evaluateClubEligibility({ ...baseInput, clearanceStatus: 'RED_CARD', guardianLinked: false }, DEFAULT_ELIGIBILITY_MATRIX);
+			expect(result).toEqual({ eligible: true, blockers: [] });
 		});
 
 		it('should return suspended blocker for RED_CARD safesport clearance', () => {
@@ -106,6 +119,14 @@ describe('evaluateClubEligibility', () => {
 		it('should return eligible for minor with verified vpc', () => {
 			const result = evaluateClubEligibility({ ...baseInput, isMinor: true, vpcStatus: 'verified' }, DEFAULT_ELIGIBILITY_MATRIX);
 			expect(result).toEqual({ eligible: true, blockers: [] });
+		});
+
+		it('should return eligible for non-minor with missing or pending vpcStatus', () => {
+			const resultPending = evaluateClubEligibility({ ...baseInput, isMinor: false, vpcStatus: 'pending' }, DEFAULT_ELIGIBILITY_MATRIX);
+			expect(resultPending).toEqual({ eligible: true, blockers: [] });
+
+			const resultMissing = evaluateClubEligibility({ ...baseInput, isMinor: false, vpcStatus: null }, DEFAULT_ELIGIBILITY_MATRIX);
+			expect(resultMissing).toEqual({ eligible: true, blockers: [] });
 		});
 
 		it('should return multiple blockers when several criteria fail', () => {
