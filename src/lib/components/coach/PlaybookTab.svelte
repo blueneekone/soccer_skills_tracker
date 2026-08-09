@@ -79,8 +79,9 @@
 			Select a tactical intent. The engine will match drills from your Team Library to address squad gaps.
 		</p>
 		
-		<label class="tw-block tw-mb-2 tw-text-[#94a3b8] tw-text-xs tw-font-mono tw-tracking-widest">TACTICAL INTENT</label>
+		<label for="tactical-intent" class="tw-block tw-mb-2 tw-text-[#94a3b8] tw-text-xs tw-font-mono tw-tracking-widest">TACTICAL INTENT</label>
 		<select 
+			id="tactical-intent"
 			bind:value={intent}
 			class="tw-w-full tw-bg-[#1e293b] tw-text-white tw-border tw-border-[#334155] tw-rounded-xl tw-p-3 tw-font-mono focus:tw-outline-none focus:tw-border-[#14b8a6] tw-transition-colors tw-mb-6"
 		>
@@ -107,7 +108,7 @@
 			</div>
 		{:else}
 			<div class="tw-space-y-4 tw-flex-1 tw-overflow-y-auto tw-max-h-[300px]">
-				<label class="tw-block tw-text-[#94a3b8] tw-text-xs tw-font-mono tw-tracking-widest">SELECT DRILL TO ASSIGN</label>
+				<div class="tw-block tw-text-[#94a3b8] tw-text-xs tw-font-mono tw-tracking-widest">SELECT DRILL TO ASSIGN</div>
 				{#each availableDrills as drill (drill.id)}
 					<label class="tw-flex tw-items-center tw-gap-3 tw-bg-[#1e293b] tw-p-4 tw-rounded-xl tw-border tw-border-[#334155] tw-cursor-pointer hover:tw-border-[#14b8a6] tw-transition-colors">
 						<input type="radio" bind:group={selectedDrillId} value={drill.id} class="tw-accent-[#14b8a6]" />

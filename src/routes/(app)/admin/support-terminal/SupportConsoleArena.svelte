@@ -13,12 +13,12 @@
 			<div class="tw-grid tw-grid-cols-1 md:tw-grid-cols-2 tw-gap-8">
 				<div class="tw-flex tw-flex-col tw-gap-4">
 					<div class="tw-flex tw-flex-col tw-gap-1">
-						<label class="tw-text-xs tw-font-mono tw-text-slate-400 tw-uppercase">Target Email</label>
-						<input type="email" bind:value={engine.userEmail} class="tw-bg-[#020617] tw-border tw-border-slate-700 tw-text-white tw-px-3 tw-py-2 tw-font-mono tw-text-sm" placeholder="user@example.com" />
+						<label for="sc-target-email" class="tw-text-xs tw-font-mono tw-text-slate-400 tw-uppercase">Target Email</label>
+						<input id="sc-target-email" type="email" bind:value={engine.userEmail} class="tw-bg-[#020617] tw-border tw-border-slate-700 tw-text-white tw-px-3 tw-py-2 tw-font-mono tw-text-sm" placeholder="user@example.com" />
 					</div>
 					<div class="tw-flex tw-flex-col tw-gap-1">
-						<label class="tw-text-xs tw-font-mono tw-text-slate-400 tw-uppercase">Target UID (for Purge/Disable)</label>
-						<input type="text" bind:value={engine.userUid} class="tw-bg-[#020617] tw-border tw-border-slate-700 tw-text-white tw-px-3 tw-py-2 tw-font-mono tw-text-sm" placeholder="Firebase Auth UID" />
+						<label for="sc-target-uid" class="tw-text-xs tw-font-mono tw-text-slate-400 tw-uppercase">Target UID (for Purge/Disable)</label>
+						<input id="sc-target-uid" type="text" bind:value={engine.userUid} class="tw-bg-[#020617] tw-border tw-border-slate-700 tw-text-white tw-px-3 tw-py-2 tw-font-mono tw-text-sm" placeholder="Firebase Auth UID" />
 					</div>
 				</div>
 
@@ -46,21 +46,21 @@
 				<div class="tw-flex tw-flex-col tw-gap-4">
 					<h3 class="tw-text-sm tw-font-mono tw-text-[#14b8a6] tw-mb-2">Create / Delete Team</h3>
 					<div class="tw-flex tw-flex-col tw-gap-1">
-						<label class="tw-text-xs tw-font-mono tw-text-slate-400 tw-uppercase">Club ID / Target Team ID</label>
-						<input type="text" bind:value={engine.teamClubId} class="tw-bg-[#020617] tw-border tw-border-slate-700 tw-text-white tw-px-3 tw-py-2 tw-font-mono tw-text-sm" placeholder="Club ID or Team ID (for delete)" />
+						<label for="sc-club-id" class="tw-text-xs tw-font-mono tw-text-slate-400 tw-uppercase">Club ID / Target Team ID</label>
+						<input id="sc-club-id" type="text" bind:value={engine.teamClubId} class="tw-bg-[#020617] tw-border tw-border-slate-700 tw-text-white tw-px-3 tw-py-2 tw-font-mono tw-text-sm" placeholder="Club ID or Team ID (for delete)" />
 					</div>
 					<div class="tw-flex tw-flex-col tw-gap-1">
-						<label class="tw-text-xs tw-font-mono tw-text-slate-400 tw-uppercase">Team Name (Create)</label>
-						<input type="text" bind:value={engine.teamName} class="tw-bg-[#020617] tw-border tw-border-slate-700 tw-text-white tw-px-3 tw-py-2 tw-font-mono tw-text-sm" placeholder="e.g. Aggies FC 16G Grey" />
+						<label for="sc-team-name" class="tw-text-xs tw-font-mono tw-text-slate-400 tw-uppercase">Team Name (Create)</label>
+						<input id="sc-team-name" type="text" bind:value={engine.teamName} class="tw-bg-[#020617] tw-border tw-border-slate-700 tw-text-white tw-px-3 tw-py-2 tw-font-mono tw-text-sm" placeholder="e.g. Aggies FC 16G Grey" />
 					</div>
 					<div class="tw-grid tw-grid-cols-2 tw-gap-4">
 						<div class="tw-flex tw-flex-col tw-gap-1">
-							<label class="tw-text-xs tw-font-mono tw-text-slate-400 tw-uppercase">Age Group</label>
-							<input type="text" bind:value={engine.teamAgeGroup} class="tw-bg-[#020617] tw-border tw-border-slate-700 tw-text-white tw-px-3 tw-py-2 tw-font-mono tw-text-sm" />
+							<label for="sc-team-age" class="tw-text-xs tw-font-mono tw-text-slate-400 tw-uppercase">Age Group</label>
+							<input id="sc-team-age" type="text" bind:value={engine.teamAgeGroup} class="tw-bg-[#020617] tw-border tw-border-slate-700 tw-text-white tw-px-3 tw-py-2 tw-font-mono tw-text-sm" />
 						</div>
 						<div class="tw-flex tw-flex-col tw-gap-1">
-							<label class="tw-text-xs tw-font-mono tw-text-slate-400 tw-uppercase">Gender</label>
-							<input type="text" bind:value={engine.teamGender} class="tw-bg-[#020617] tw-border tw-border-slate-700 tw-text-white tw-px-3 tw-py-2 tw-font-mono tw-text-sm" />
+							<label for="sc-team-gender" class="tw-text-xs tw-font-mono tw-text-slate-400 tw-uppercase">Gender</label>
+							<input id="sc-team-gender" type="text" bind:value={engine.teamGender} class="tw-bg-[#020617] tw-border tw-border-slate-700 tw-text-white tw-px-3 tw-py-2 tw-font-mono tw-text-sm" />
 						</div>
 					</div>
 					<div class="tw-flex tw-flex-row tw-gap-2 tw-mt-2">
@@ -76,12 +76,12 @@
 				<div class="tw-flex tw-flex-col tw-gap-4">
 					<h3 class="tw-text-sm tw-font-mono tw-text-[#f59e0b] tw-mb-2">Link User to Team</h3>
 					<div class="tw-flex tw-flex-col tw-gap-1">
-						<label class="tw-text-xs tw-font-mono tw-text-slate-400 tw-uppercase">User Email</label>
-						<input type="email" bind:value={engine.linkEmail} class="tw-bg-[#020617] tw-border tw-border-slate-700 tw-text-white tw-px-3 tw-py-2 tw-font-mono tw-text-sm" placeholder="coach@example.com" />
+						<label for="sc-link-email" class="tw-text-xs tw-font-mono tw-text-slate-400 tw-uppercase">User Email</label>
+						<input id="sc-link-email" type="email" bind:value={engine.linkEmail} class="tw-bg-[#020617] tw-border tw-border-slate-700 tw-text-white tw-px-3 tw-py-2 tw-font-mono tw-text-sm" placeholder="coach@example.com" />
 					</div>
 					<div class="tw-flex tw-flex-col tw-gap-1">
-						<label class="tw-text-xs tw-font-mono tw-text-slate-400 tw-uppercase">Role</label>
-						<select bind:value={engine.linkRole} class="tw-bg-[#020617] tw-border tw-border-slate-700 tw-text-white tw-px-3 tw-py-2 tw-font-mono tw-text-sm">
+						<label for="sc-link-role" class="tw-text-xs tw-font-mono tw-text-slate-400 tw-uppercase">Role</label>
+						<select id="sc-link-role" bind:value={engine.linkRole} class="tw-bg-[#020617] tw-border tw-border-slate-700 tw-text-white tw-px-3 tw-py-2 tw-font-mono tw-text-sm">
 							<option value="head_coach">Head Coach</option>
 							<option value="assistant_coach">Assistant Coach</option>
 							<option value="player">Player</option>
@@ -89,12 +89,12 @@
 						</select>
 					</div>
 					<div class="tw-flex tw-flex-col tw-gap-1">
-						<label class="tw-text-xs tw-font-mono tw-text-slate-400 tw-uppercase">Club ID</label>
-						<input type="text" bind:value={engine.linkClubId} class="tw-bg-[#020617] tw-border tw-border-slate-700 tw-text-white tw-px-3 tw-py-2 tw-font-mono tw-text-sm" />
+						<label for="sc-link-club" class="tw-text-xs tw-font-mono tw-text-slate-400 tw-uppercase">Club ID</label>
+						<input id="sc-link-club" type="text" bind:value={engine.linkClubId} class="tw-bg-[#020617] tw-border tw-border-slate-700 tw-text-white tw-px-3 tw-py-2 tw-font-mono tw-text-sm" />
 					</div>
 					<div class="tw-flex tw-flex-col tw-gap-1">
-						<label class="tw-text-xs tw-font-mono tw-text-slate-400 tw-uppercase">Team ID</label>
-						<input type="text" bind:value={engine.linkTeamId} class="tw-bg-[#020617] tw-border tw-border-slate-700 tw-text-white tw-px-3 tw-py-2 tw-font-mono tw-text-sm" />
+						<label for="sc-link-team" class="tw-text-xs tw-font-mono tw-text-slate-400 tw-uppercase">Team ID</label>
+						<input id="sc-link-team" type="text" bind:value={engine.linkTeamId} class="tw-bg-[#020617] tw-border tw-border-slate-700 tw-text-white tw-px-3 tw-py-2 tw-font-mono tw-text-sm" />
 					</div>
 					<div class="tw-flex tw-flex-col tw-gap-3 tw-mt-2">
 						<button onclick={() => engine.executeCommand('linkUserToTeam', { targetEmail: engine.linkEmail, role: engine.linkRole, clubId: engine.linkClubId, teamId: engine.linkTeamId })} class="tw-bg-slate-800 hover:tw-bg-slate-700 tw-border tw-border-slate-600 tw-text-amber-400 tw-font-mono tw-text-sm tw-font-bold tw-py-2 tw-px-4 tw-text-center tw-transition-colors">
@@ -111,12 +111,12 @@
 			<div class="tw-grid tw-grid-cols-1 md:tw-grid-cols-2 tw-gap-8">
 				<div class="tw-flex tw-flex-col tw-gap-4">
 					<div class="tw-flex tw-flex-col tw-gap-1">
-						<label class="tw-text-xs tw-font-mono tw-text-slate-400 tw-uppercase">Target Email</label>
-						<input type="email" bind:value={engine.repairEmail} class="tw-bg-[#020617] tw-border tw-border-slate-700 tw-text-white tw-px-3 tw-py-2 tw-font-mono tw-text-sm" />
+						<label for="sc-repair-email" class="tw-text-xs tw-font-mono tw-text-slate-400 tw-uppercase">Target Email</label>
+						<input id="sc-repair-email" type="email" bind:value={engine.repairEmail} class="tw-bg-[#020617] tw-border tw-border-slate-700 tw-text-white tw-px-3 tw-py-2 tw-font-mono tw-text-sm" />
 					</div>
 					<div class="tw-flex tw-flex-col tw-gap-1">
-						<label class="tw-text-xs tw-font-mono tw-text-slate-400 tw-uppercase">Role</label>
-						<select bind:value={engine.repairRole} class="tw-bg-[#020617] tw-border tw-border-slate-700 tw-text-white tw-px-3 tw-py-2 tw-font-mono tw-text-sm">
+						<label for="sc-repair-role" class="tw-text-xs tw-font-mono tw-text-slate-400 tw-uppercase">Role</label>
+						<select id="sc-repair-role" bind:value={engine.repairRole} class="tw-bg-[#020617] tw-border tw-border-slate-700 tw-text-white tw-px-3 tw-py-2 tw-font-mono tw-text-sm">
 							<option value="user">User (Parent/Player)</option>
 							<option value="coach">Coach</option>
 							<option value="director">Director</option>
@@ -125,12 +125,12 @@
 						</select>
 					</div>
 					<div class="tw-flex tw-flex-col tw-gap-1">
-						<label class="tw-text-xs tw-font-mono tw-text-slate-400 tw-uppercase">Club ID (Optional)</label>
-						<input type="text" bind:value={engine.repairClubId} class="tw-bg-[#020617] tw-border tw-border-slate-700 tw-text-white tw-px-3 tw-py-2 tw-font-mono tw-text-sm" />
+						<label for="sc-repair-club" class="tw-text-xs tw-font-mono tw-text-slate-400 tw-uppercase">Club ID (Optional)</label>
+						<input id="sc-repair-club" type="text" bind:value={engine.repairClubId} class="tw-bg-[#020617] tw-border tw-border-slate-700 tw-text-white tw-px-3 tw-py-2 tw-font-mono tw-text-sm" />
 					</div>
 					<div class="tw-flex tw-flex-col tw-gap-1">
-						<label class="tw-text-xs tw-font-mono tw-text-slate-400 tw-uppercase">Team ID (Optional)</label>
-						<input type="text" bind:value={engine.repairTeamId} class="tw-bg-[#020617] tw-border tw-border-slate-700 tw-text-white tw-px-3 tw-py-2 tw-font-mono tw-text-sm" />
+						<label for="sc-repair-team" class="tw-text-xs tw-font-mono tw-text-slate-400 tw-uppercase">Team ID (Optional)</label>
+						<input id="sc-repair-team" type="text" bind:value={engine.repairTeamId} class="tw-bg-[#020617] tw-border tw-border-slate-700 tw-text-white tw-px-3 tw-py-2 tw-font-mono tw-text-sm" />
 					</div>
 				</div>
 

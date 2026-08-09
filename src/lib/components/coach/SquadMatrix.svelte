@@ -882,7 +882,7 @@
 		<div class="bento-grid bento-grid--12col bento-grid--liquid tw-grid-cols-1 lg:tw-grid-cols-12" style="display: grid;">
 			{#each readinessRoster as p (p.id)}
 				{@const staminaFill = Math.max(0, Math.min(1, p.stamina / 100))}
-				<article
+				<div
 					class="tw-col-span-1 md:tw-col-span-6 lg:tw-col-span-3 hud-readiness-card hud-telemetry-panel"
 					role="button"
 					tabindex="0"
@@ -897,7 +897,7 @@
 						<p class="tw-font-mono tw-text-[10px] tw-text-[#14b8a6] tw-m-0">{p.position} · #{p.number}</p>
 						<p class="tw-font-mono tw-text-[10px] tw-uppercase tw-tracking-widest tw-m-0" style="color: {p.status === 'READY' ? '#14b8a6' : p.status === 'INJURY RISK' ? '#ff003c' : '#666'}">{p.status}</p>
 					</div>
-				</article>
+				</div>
 			{/each}
 		</div>
 	{/if}

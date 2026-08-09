@@ -284,8 +284,9 @@ import { functions } from '$lib/firebase.js';
 		</div>
 	{:else}
 		<div class="space-y-1">
-			<label class="text-xs tracking-widest" style="color: rgba(0,255,255,0.5);">PITCH / FACILITY</label>
+			<label for="fs-pitch" class="text-xs tracking-widest" style="color: rgba(0,255,255,0.5);">PITCH / FACILITY</label>
 			<select
+				id="fs-pitch"
 				bind:value={selectedFacilityId}
 				class="w-full px-3 py-2 text-xs bg-transparent outline-none cursor-pointer"
 				style="
@@ -307,8 +308,9 @@ import { functions } from '$lib/firebase.js';
 	<!-- Date and time row -->
 	<div class="grid grid-cols-3 gap-3">
 		<div class="space-y-1">
-			<label class="text-xs tracking-widest" style="color: rgba(0,255,255,0.5);">DATE</label>
+			<label for="fs-date" class="text-xs tracking-widest" style="color: rgba(0,255,255,0.5);">DATE</label>
 			<input
+				id="fs-date"
 				type="date"
 				bind:value={date}
 				class="w-full px-2 py-2 text-xs bg-transparent outline-none"
@@ -317,8 +319,9 @@ import { functions } from '$lib/firebase.js';
 			/>
 		</div>
 		<div class="space-y-1">
-			<label class="text-xs tracking-widest" style="color: rgba(0,255,255,0.5);">START</label>
+			<label for="fs-start" class="text-xs tracking-widest" style="color: rgba(0,255,255,0.5);">START</label>
 			<input
+				id="fs-start"
 				type="time"
 				bind:value={startTime}
 				class="w-full px-2 py-2 text-xs bg-transparent outline-none"
@@ -326,8 +329,9 @@ import { functions } from '$lib/firebase.js';
 			/>
 		</div>
 		<div class="space-y-1">
-			<label class="text-xs tracking-widest" style="color: rgba(0,255,255,0.5);">END</label>
+			<label for="fs-end" class="text-xs tracking-widest" style="color: rgba(0,255,255,0.5);">END</label>
 			<input
+				id="fs-end"
 				type="time"
 				bind:value={endTime}
 				class="w-full px-2 py-2 text-xs bg-transparent outline-none"
@@ -346,8 +350,9 @@ import { functions } from '$lib/firebase.js';
 
 	<!-- Event details -->
 	<div class="space-y-1">
-		<label class="text-xs tracking-widest" style="color: rgba(0,255,255,0.5);">EVENT LABEL</label>
+		<label for="fs-event" class="text-xs tracking-widest" style="color: rgba(0,255,255,0.5);">EVENT LABEL</label>
 		<input
+			id="fs-event"
 			type="text"
 			bind:value={label}
 			placeholder="e.g. U14 Training Block"
@@ -359,7 +364,7 @@ import { functions } from '$lib/firebase.js';
 	</div>
 
 	<div class="space-y-1">
-		<label class="text-xs tracking-widest" style="color: rgba(0,255,255,0.5);">EVENT TYPE</label>
+		<div class="text-xs tracking-widest" style="color: rgba(0,255,255,0.5);">EVENT TYPE</div>
 		<div class="flex gap-2">
 			{#each (['practice', 'fixture', 'other'] as const) as et}
 				<button
