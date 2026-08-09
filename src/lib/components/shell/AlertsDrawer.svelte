@@ -2,6 +2,7 @@
 	import { browser } from '$app/environment';
 	import { collection, query, where, orderBy, limit, onSnapshot } from 'firebase/firestore';
 	import { db } from '$lib/firebase.js';
+	import { isFirestoreReady } from '$lib/utils/firestoreGuard.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { alertsDrawer } from '$lib/stores/alertsDrawer.svelte.js';
 	import Icon from '$lib/components/ui/Icon.svelte';
@@ -31,7 +32,7 @@
 	// ── Real-time listener ────────────────────────────────────────────────────
 
 	$effect(() => {
-		if (!browser || !uid) {
+		if (!browser || !uid || !isFirestoreReady()) {
 			alerts = [];
 			alertsDrawer.setUnread(0);
 			return;

@@ -45,12 +45,12 @@ async function injectMockAuth(page, uid, email, role) {
   await page.setViewportSize({ width: 375, height: 812 });
 
   // Resolve target url based on the persona
-  const targetUrl = `http://localhost:5173/${targetPersona}/dashboard`;
+  const targetUrl = targetPersona === 'admin' ? `http://localhost:5173/admin/overview` : `http://localhost:5173/${targetPersona}/dashboard`;
   console.log(`📡 Crawling Localhost -> Target Route: ${targetUrl}`);
 
   try {
     await injectMockAuth(page, 'mock-uid', 'mock@test.com', targetPersona);
-    await page.goto(targetUrl, { timeout: 5000, waitUntil: 'domcontentloaded' });
+    await page.goto(targetUrl, { timeout: 15000, waitUntil: 'load' });
   } catch (err) {
     console.error(`❌ CRITICAL: Could not connect to development server at ${targetUrl}. Is 'npm run dev' running?`);
     process.exit(1);

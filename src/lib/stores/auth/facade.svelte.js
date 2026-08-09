@@ -1,5 +1,5 @@
 import { auth, db, registerActiveCellResolver } from '$lib/firebase.js';
-import { getIdTokenResult, onAuthStateChanged, signOut, getIdToken } from 'firebase/auth';
+import { getIdTokenResult, onIdTokenChanged, signOut, getIdToken } from 'firebase/auth';
 import { resolveUserProfile } from '$lib/auth/profile.js';
 import { workspaceContextStore } from '$lib/stores/workspaceContext.svelte.js';
 import { createAuthGates } from '$lib/stores/auth/authGates.svelte.js';
@@ -20,8 +20,24 @@ export function createAuthFacade() {
 	const sessionState = createSessionState();
 	const gates = createAuthGates(userState, sessionState, tenantState);
 
-	onAuthStateChanged(auth, async (firebaseUser) => {
-		await handleAuthStateChange(firebaseUser, auth, userState, sessionState, tenantState, globalFirestoreUnsubs);
+	sessionState.isLoading = true;
+	onIdTokenChanged(auth, async (user) => {
+		if (user) {
+			const tokenResult = await user.getIdTokenResult(true);
+
+			if (tokenResult.claims.isProfileComplete) {
+				sessionState.setRole(tokenResult.claims.role || null);
+				tenantState.applyClaims(tokenResult);
+				userState.setProfile({ role: tokenResult.claims.role || null, isProfileComplete: true });
+				sessionState.isAuthenticated = true;
+				workspaceContextStore.hydrateContext(user, tokenResult.claims.role, { role: tokenResult.claims.role || null, isProfileComplete: true });
+			} else {
+				await handleAuthStateChange(user, auth, userState, sessionState, tenantState, globalFirestoreUnsubs);
+			}
+		} else {
+			await handleAuthStateChange(user, auth, userState, sessionState, tenantState, globalFirestoreUnsubs);
+		}
+		sessionState.isLoading = false;
 	});
 
 	registerActiveCellResolver(() => tenantState.cellId);
