@@ -1,7 +1,10 @@
 /*
- * SSTracker (Project Phoenix) - Enterprise Design System Tokens (v1.0)
+ * SSTracker (Project Phoenix) - Enterprise Design System Tokens (v2.0)
  * Style: Cybernetic Atompunk Tech Noir / Tactical SIEM
  * Base Canvas Density: >= 40% Absolute Void Black (#000000)
+ *
+ * v2.0 Upgrades: Hardened against layout squishing, horizontal overflows,
+ * button label clipping, and overlapping viewport metrics.
  */
 
 @import url('https://fonts.googleapis.com/css2?family=Geist+Mono:wght@300;400;700&family=Geist:wght@300;400;700&display=swap');
@@ -36,13 +39,20 @@
   --transition-behavioral: 350ms cubic-bezier(0.87, 0, 0.13, 1);
 }
 
-/* --- Global Base Styles --- */
+/* --- Global Base Styles & Anti-Overflow Guards --- */
 body {
   background-color: var(--color-void-black);
   color: var(--text-primary);
   font-family: 'Geist', -apple-system, sans-serif;
   margin: 0;
-  overflow: hidden;
+  overflow-x: hidden; /* Strictly prevent horizontal layout blowouts */
+}
+
+/* --- Anti-Squish / Anti-Clipping Typography Reset --- */
+h1, h2, h3, h4, h5, h6, p, span, div, button, a,
+.telemetry-readout, .stats-column, .hud-numeric {
+  min-width: 0; /* Override HTML auto-min-width flex behavior */
+  box-sizing: border-box;
 }
 
 /* Dyslexia-Friendly Monospace Typography for Telemetry */
@@ -102,6 +112,8 @@ body {
   border: 1px solid var(--color-structural-grey);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
   transition: border-color var(--transition-visceral), box-shadow var(--transition-visceral);
+  min-width: 0; /* Safeguard nested components */
+  overflow: hidden; /* Enforce rigid container boundaries */
 }
 
 .z2-panel:hover {
@@ -115,6 +127,8 @@ body {
 .siem-panel {
   border-radius: 0px !important; /* Strict 90-degree corners */
   border-left: 2px solid var(--color-data-cyan);
+  min-width: 0;
+  overflow: hidden;
 }
 
 .siem-warning {
@@ -134,7 +148,7 @@ body {
   border-color: var(--color-action-gold);
 }
 
-/* The Singular Action Gold CTA */
+/* The Singular Action Gold CTA - Defensive Wrapping Enforced */
 .primary-mission-cta {
   background-color: var(--color-action-gold);
   color: var(--color-void-black);
@@ -145,11 +159,33 @@ body {
   border: none;
   box-shadow: 0 0 10px rgba(251, 191, 36, 0.3);
   transition: filter var(--transition-visceral), box-shadow var(--transition-visceral);
+  white-space: normal; /* Force wrapping of labels on tight screens */
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  padding: clamp(8px, 1.5vh, 16px) clamp(16px, 2.5vw, 24px);
+  max-width: 100%;
 }
 
 .primary-mission-cta:hover {
   filter: brightness(1.1);
   box-shadow: 0 0 20px rgba(251, 191, 36, 0.6);
+}
+
+/* --- Universal Button Scaling & Prohibitions --- */
+button, .btn, .siem-panel button {
+  white-space: normal; /* Force label wrapping */
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  min-width: 0;
+  max-width: 100%;
+}
+
+/* Stop buttons with long labels from blowing out fixed margins */
+button.tw-w-auto, .btn-auto {
+  width: auto !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 /* 3. Parent OS (The Compliance Shield) */
@@ -165,7 +201,7 @@ body {
   color: var(--color-atompunk-amber);
 }
 
-/* --- SVG "Tron" Tactical Map Coordinates --- */
+/* --- SVG \"Tron\" Tactical Map Coordinates --- */
 .identity-disc {
   fill: var(--color-void-black);
   stroke: var(--color-data-cyan);
@@ -178,4 +214,21 @@ body {
   stroke: var(--color-atompunk-amber);
   stroke-width: 2;
   filter: url(#neon-bloom-amber);
+}
+
+/* --- Dynamic KPI Overlap Prevention --- */
+.kpi-metric-display {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  width: 100%;
+}
+
+.kpi-metric-value {
+  font-size: clamp(1.5rem, 5vw, 3.5rem); /* Dynamically scale text to prevent canvas crashes */
+  line-height: 1;
+  font-weight: 800;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
