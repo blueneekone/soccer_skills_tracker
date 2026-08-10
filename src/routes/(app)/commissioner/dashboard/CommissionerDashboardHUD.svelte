@@ -1,30 +1,41 @@
 <script lang="ts">
-	/**
-	 * CommissionerDashboardHUD.svelte — Command Plane Status
-	 * Strict 90-degree corners, zero gamification, Data Cyan telemetry.
-	 */
+	import type { CommissionerDashboardEngine } from './CommissionerDashboardEngine.svelte.js';
+
+	let { engine = $bindable() }: { engine: CommissionerDashboardEngine } = $props();
 </script>
 
-<header class="command-plane-system-status tw-w-full tw-bg-[#0f172a] tw-border-b tw-border-[#334155] tw-p-4 tw-flex tw-items-center tw-justify-between tw-z-10 tw-rounded-none">
-	<div class="tw-flex tw-items-center tw-gap-4 tw-rounded-none">
-		<div class="tw-w-8 tw-h-8 tw-bg-[#14b8a6] tw-rounded-none tw-flex tw-items-center tw-justify-center tw-text-[#000000] tw-font-bold tw-font-geist-sans tw-uppercase tw-tracking-widest tw-text-xs">
-			FED
-		</div>
-		<div>
-			<h1 class="tw-text-white tw-font-geist-sans tw-uppercase tw-tracking-widest tw-text-sm tw-m-0">Federation Command</h1>
-			<p class="tw-text-[#14b8a6] tw-font-geist-mono tw-text-xs tw-m-0">STATUS: ODP ONLINE // MASTER TENANT ACTIVE</p>
-		</div>
+<div class="commissioner-hud tw-bg-[#0f172a] tw-border-b tw-border-[#334155] tw-rounded-none tw-px-6 tw-py-4 tw-flex tw-items-center tw-justify-between">
+	<div class="tw-flex tw-flex-col">
+		<h1 class="tw-text-[#fafafa] tw-font-sans tw-font-bold tw-text-2xl tw-uppercase tw-tracking-wide">
+			State-Wide Federation Command
+		</h1>
+		<h2 class="tw-text-[#14b8a6] tw-font-mono tw-text-sm">
+			ODP Talent Pipeline & Master Tenant Overview
+		</h2>
 	</div>
 
-	<div class="tw-flex tw-items-center tw-gap-6 tw-font-geist-mono tw-text-xs tw-text-[#334155] tw-rounded-none">
-		<div class="tw-flex tw-flex-col tw-text-right tw-rounded-none">
-			<span class="tw-uppercase tw-tracking-widest">Network Safety</span>
-			<span class="tw-text-[#14b8a6]">SECURE</span>
+	<div class="tw-flex tw-items-center tw-gap-8">
+		<div class="tw-flex tw-flex-col tw-items-end">
+			<span class="tw-text-[#334155] tw-font-sans tw-text-xs tw-uppercase tw-font-bold">Total Clubs</span>
+			<span class="tw-text-[#fafafa] tw-font-mono tw-text-xl">{engine.totalClubs}</span>
 		</div>
-		<div class="tw-w-px tw-h-8 tw-bg-[#334155]"></div>
-		<div class="tw-flex tw-flex-col tw-text-right tw-rounded-none">
-			<span class="tw-uppercase tw-tracking-widest">Nodes</span>
-			<span class="tw-text-white">1,024 ACTIVE</span>
+
+		<div class="tw-flex tw-flex-col tw-items-end">
+			<span class="tw-text-[#334155] tw-font-sans tw-text-xs tw-uppercase tw-font-bold">Network Status</span>
+			{#if engine.isLoading}
+				<span class="tw-text-[#fbbf24] tw-font-mono tw-text-sm">SYNCING...</span>
+			{:else if engine.error}
+				<span class="tw-text-[#ef4444] tw-font-mono tw-text-sm">ERROR</span>
+			{:else}
+				<span class="tw-text-[#14b8a6] tw-font-mono tw-text-sm">SECURE</span>
+			{/if}
 		</div>
 	</div>
-</header>
+</div>
+
+<style>
+	.commissioner-hud {
+		/* Strict 90-degree corners and tactical SIEM styling */
+		border-radius: 0;
+	}
+</style>

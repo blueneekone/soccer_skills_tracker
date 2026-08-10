@@ -1,83 +1,133 @@
 <script lang="ts">
-	/**
-	 * VanguardPrism.svelte — Federation SVG 6-Axis Matrix
-	 * STRICT RESTRICTIONS: Pure SVG only. NO Canvas wrappers. NO Tailwind text size inside <svg>.
-	 * Standard viewBox geometries (viewBox="0 0 1200 800") with preserveAspectRatio="xMidYMid slice"
-	 * Max 80 lines. Uses Vanguard PRISM.
-	 */
-	import { VANGUARD_PRISM_LABELS } from '$lib/utils/vanguard-prism.js';
+	let {
+		size = 400,
+		metrics = {
+			speed: 50,
+			agility: 50,
+			power: 50,
+			stamina: 50,
+			vision: 50,
+			technique: 50
+		}
+	} = $props();
 
-	interface Props {
-		sixAxis: number[]; // 0-99 array matching VANGUARD_PRISM_LABELS length
-		playerLabel?: string;
-	}
+	// Calculate polygon points for the 6-axis chart
+	const points = $derived.by(() => {
+		const center = { x: 600, y: 400 };
+		const radius = 300;
+		const axes = ['speed', 'agility', 'power', 'stamina', 'vision', 'technique'] as const;
 
-	let { sixAxis, playerLabel = 'Unknown' }: Props = $props();
-
-	// SVG Constants for 1200x800 viewBox centering
-	const CX = 600;
-	const CY = 400;
-	const R = 300;
-
-	$effect(() => {
-		if (sixAxis.length !== 6) console.warn("Invalid 6-axis data", sixAxis);
+		return axes.map((axis, i) => {
+			const angle = (Math.PI / 3) * i - Math.PI / 2;
+			const value = metrics[axis] / 100;
+			return {
+				x: center.x + radius * Math.cos(angle) * value,
+				y: center.y + radius * Math.sin(angle) * value
+			};
+		}).map(p => `${p.x},${p.y}`).join(' ');
 	});
 
-	// Calculate vertex positions in standard geometry
-	const getPoint = (val: number, idx: number, total: number) => {
-		const angle = (Math.PI * 2 * idx) / total - Math.PI / 2;
-		const rad = (val / 99) * R;
-		return { x: CX + rad * Math.cos(angle), y: CY + rad * Math.sin(angle) };
-	};
+	// Pre-calculate full grid polygons
+	const gridPolygons = [0.2, 0.4, 0.6, 0.8, 1.0].map(level => {
+		const center = { x: 600, y: 400 };
+		const radius = 300;
+		return Array.from({ length: 6 }).map((_, i) => {
+			const angle = (Math.PI / 3) * i - Math.PI / 2;
+			return `${center.x + radius * Math.cos(angle) * level},${center.y + radius * Math.sin(angle) * level}`;
+		}).join(' ');
+	});
 
-	let outerPoints = $derived(VANGUARD_PRISM_LABELS.map((_, i) => getPoint(99, i, 6)).map(p => `${p.x},${p.y}`).join(' '));
-	let statPoints = $derived(sixAxis.map((val, i) => getPoint(val || 10, i, 6)).map(p => `${p.x},${p.y}`).join(' '));
+	const labels = [
+		{ text: 'SPEED', x: 600, y: 70, align: 'middle' },
+		{ text: 'AGILITY', x: 930, y: 250, align: 'start' },
+		{ text: 'POWER', x: 930, y: 550, align: 'start' },
+		{ text: 'STAMINA', x: 600, y: 730, align: 'middle' },
+		{ text: 'VISION', x: 270, y: 550, align: 'end' },
+		{ text: 'TECHNIQUE', x: 270, y: 250, align: 'end' }
+	];
 </script>
 
-<svg
-	xmlns="http://www.w3.org/2000/svg"
-	viewBox="0 0 1200 800"
-	preserveAspectRatio="xMidYMid slice"
-	class="vanguard-prism-svg tw-w-full tw-h-full"
->
-	<defs>
-		<radialGradient id="prism-glow" cx="50%" cy="50%" r="50%">
-			<stop offset="0%" stop-color="#14b8a6" stop-opacity="0.5" />
-			<stop offset="100%" stop-color="#14b8a6" stop-opacity="0" />
-		</radialGradient>
-	</defs>
+<div class="vanguard-prism tw-w-full tw-h-full tw-flex tw-items-center tw-justify-center" style="width: {size}px; height: {size}px;">
+	<svg
+		viewBox="0 0 1200 800"
+		preserveAspectRatio="xMidYMid slice"
+		class="tw-w-full tw-h-full"
+		style="display: block;"
+	>
+		<defs>
+			<filter id="neonBloom">
+				<feGaussianBlur stdDeviation="4" result="coloredBlur"/>
+				<feMerge>
+					<feMergeNode in="coloredBlur"/>
+					<feMergeNode in="SourceGraphic"/>
+				</feMerge>
+			</filter>
+		</defs>
 
-	<!-- Outer Hexagon Grid Base -->
-	<polygon points={outerPoints} fill="#0f172a" stroke="#334155" stroke-width="2" />
+		<!-- Background grids -->
+		{#each gridPolygons as polygon}
+			<polygon
+				points={polygon}
+				fill="none"
+				stroke="#334155"
+				stroke-width="2"
+				stroke-dasharray="4,4"
+			/>
+		{/each}
 
-	<!-- Internal Radar Web Lines -->
-	{#each [33, 66] as step}
-		<polygon points={VANGUARD_PRISM_LABELS.map((_, i) => getPoint(step, i, 6)).map(p => `${p.x},${p.y}`).join(' ')} fill="none" stroke="#1e293b" stroke-width="1.5" />
-	{/each}
-	{#each VANGUARD_PRISM_LABELS as _, i}
-		{@const end = getPoint(99, i, 6)}
-		<line x1={CX} y1={CY} x2={end.x} y2={end.y} stroke="#334155" stroke-width="1" stroke-dasharray="4,4" />
-	{/each}
+		<!-- Axis lines -->
+		{#each labels as label, i}
+			{@const angle = (Math.PI / 3) * i - Math.PI / 2}
+			<line
+				x1="600"
+				y1="400"
+				x2={600 + 300 * Math.cos(angle)}
+				y2={400 + 300 * Math.sin(angle)}
+				stroke="#334155"
+				stroke-width="2"
+			/>
+			<text
+				x={label.x}
+				y={label.y}
+				fill="#14b8a6"
+				font-size="24"
+				font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace"
+				font-weight="bold"
+				text-anchor={label.align}
+				dominant-baseline="middle"
+			>
+				{label.text}
+			</text>
+		{/each}
 
-	<!-- Dynamic Stat Polygon -->
-	<polygon points={statPoints} fill="url(#prism-glow)" stroke="#14b8a6" stroke-width="3" />
+		<!-- Data Polygon -->
+		<polygon
+			{points}
+			fill="rgba(20, 184, 166, 0.2)"
+			stroke="#14b8a6"
+			stroke-width="4"
+			class="data-polygon"
+			filter="url(#neonBloom)"
+		/>
 
-	<!-- Data Dots -->
-	{#each sixAxis as val, i}
-		{@const pt = getPoint(val || 10, i, 6)}
-		<circle cx={pt.x} cy={pt.y} r="6" fill="#14b8a6" />
-	{/each}
+		<!-- Data points -->
+		{#each points.split(' ') as p}
+			{@const [x, y] = p.split(',')}
+			<circle
+				cx={x}
+				cy={y}
+				r="6"
+				fill="#000000"
+				stroke="#14b8a6"
+				stroke-width="4"
+				filter="url(#neonBloom)"
+			/>
+		{/each}
+	</svg>
+</div>
 
-	<!-- Labels (Native SVG Text, strictly no tailwind classes for size) -->
-	{#each VANGUARD_PRISM_LABELS as label, i}
-		{@const p = getPoint(115, i, 6)}
-		<text x={p.x} y={p.y} fill="#14b8a6" font-size="24" font-family="Geist Mono, monospace" text-anchor="middle" dominant-baseline="middle">
-			{label}
-		</text>
-	{/each}
-
-	<!-- Center Label -->
-	<text x={CX} y={CY + 360} fill="#ffffff" font-size="28" font-family="Geist Sans, sans-serif" font-weight="bold" text-anchor="middle">
-		{playerLabel.toUpperCase()}
-	</text>
-</svg>
+<style>
+	.data-polygon {
+		transition: all 0.3s ease;
+	}
+</style>

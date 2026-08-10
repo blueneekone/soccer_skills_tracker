@@ -1,60 +1,46 @@
 <script lang="ts">
-	/**
-	 * CommissionerDashboardArena.svelte — The Glass
-	 * High-Density Data UI mapping out Federation Compliance and the ODP Talent Prism.
-	 * 12-column asymmetric Bento Grid using fluid anti-squish math.
-	 * Strict 90-degree corners, Geist Mono typography, zero gamification.
-	 */
-	import FederationComplianceMatrix from '$lib/components/commissioner/FederationComplianceMatrix.svelte';
+	import type { CommissionerDashboardEngine } from './CommissionerDashboardEngine.svelte.js';
 	import VanguardPrism from '$lib/components/commissioner/VanguardPrism.svelte';
+	import FederationComplianceMatrix from '$lib/components/commissioner/FederationComplianceMatrix.svelte';
 
-	interface Props {
-		engine: any;
-	}
-
-	let { engine = $bindable() }: Props = $props();
+	let { engine = $bindable() }: { engine: CommissionerDashboardEngine } = $props();
 </script>
 
-<div data-panel="odp-matrix" class="tenant-matrix-grid tw-w-full tw-h-full tw-p-6 tw-overflow-y-auto tw-bg-[#000000]">
-
-	<!-- 12-Column Asymmetric Bento Grid Math -->
-	<div
-		class="bento-grid-container tw-grid tw-gap-6 tw-w-full"
-		style="grid-template-columns: repeat(auto-fit, minmax(min(100%, clamp(280px, 30vw, 350px)), 1fr));"
-	>
-		<!-- Federation Matrix Column -->
-		<div class="tw-h-[600px] tw-flex tw-flex-col tw-rounded-none">
-			{#await engine.loadFederationCompliance()}
-				<FederationComplianceMatrix complianceData={[]} isLoading={true} />
-			{:then _}
-				<FederationComplianceMatrix complianceData={engine.complianceData} />
-			{/await}
+<div class="commissioner-arena tw-w-full tw-h-full tw-bg-[#000000] tw-p-6 tw-overflow-y-auto">
+	{#if !engine.isAuthorized && !engine.isLoading}
+		<div class="tw-flex tw-items-center tw-justify-center tw-h-64 tw-border tw-border-[#ef4444] tw-bg-[#0f172a]">
+			<span class="tw-text-[#ef4444] tw-font-mono tw-text-xl">ACCESS DENIED: INSUFFICIENT CLEARANCE</span>
 		</div>
+	{:else}
+		<div class="bento-grid tw-grid tw-gap-6" style="grid-template-columns: repeat(auto-fit, minmax(min(100%, clamp(280px, 30vw, 350px)), 1fr));">
 
-		<!-- ODP Talent Vanguard Prism Column -->
-		<section class="z2-panel siem-panel tw-flex tw-flex-col tw-h-[600px] tw-rounded-none tw-bg-[#0f172a] tw-border tw-border-[#334155]">
-			<header class="tw-border-b tw-border-[#334155] tw-p-4">
-				<h2 class="tw-font-geist-sans tw-text-white tw-uppercase tw-tracking-widest tw-text-sm tw-m-0">
-					ODP Vanguard Prism
-				</h2>
-				<p class="tw-font-geist-mono tw-text-[#334155] tw-text-xs tw-uppercase tw-m-0 tw-mt-1">
-					6-Axis Physical Telemetry Matrix
-				</p>
-			</header>
-
-			<div class="tw-flex-1 tw-relative tw-p-6 tw-overflow-hidden">
-				{#if engine.odpPipeline.length > 0}
-					<VanguardPrism
-						sixAxis={engine.odpPipeline[0].sixAxis}
-						playerLabel={engine.odpPipeline[0].name}
-					/>
-				{:else}
-					<div class="tw-absolute tw-inset-0 tw-flex tw-items-center tw-justify-center tw-font-geist-mono tw-text-[#334155] tw-text-sm">
-						NO ODP TELEMETRY SIGNAL
+			<!-- Vanguard Prism Component -->
+			<div class="z2-panel tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-rounded-none tw-flex tw-flex-col">
+				<div class="tw-p-4 tw-border-b tw-border-[#334155]">
+					<h3 class="tw-text-[#fafafa] tw-font-sans tw-font-bold tw-text-lg">ODP Talent Vanguard</h3>
+					<span class="tw-text-[#14b8a6] tw-font-mono tw-text-xs">AGGREGATED MULTI-TENANT TELEMETRY</span>
+				</div>
+				<div class="tw-p-6 tw-flex tw-items-center tw-justify-center tw-flex-1">
+					<div class="tw-w-full tw-max-w-[400px] tw-aspect-square">
+						<VanguardPrism metrics={engine.odpMetrics} />
 					</div>
-				{/if}
+				</div>
 			</div>
-		</section>
 
-	</div>
+			<!-- Federation Compliance Matrix -->
+			<div class="z2-panel tw-col-span-1 md:tw-col-span-2 xl:tw-col-span-3 tw-flex tw-flex-col">
+				<FederationComplianceMatrix clubs={engine.clubs as any[]} />
+			</div>
+
+		</div>
+	{/if}
 </div>
+
+<style>
+	.commissioner-arena {
+		border-radius: 0;
+	}
+	.z2-panel {
+		border-radius: 0;
+	}
+</style>
