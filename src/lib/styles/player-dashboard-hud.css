@@ -741,7 +741,7 @@
 }
 
 .player-hud-root .stats-analytics-void.pd-os-deck--recessed {
-	overflow: visible;
+	overflow: hidden;
 	padding: clamp(1rem, 2.1vw, 1.35rem);
 }
 
