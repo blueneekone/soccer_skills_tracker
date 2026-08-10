@@ -18,12 +18,12 @@
 			<div class="tw-grid tw-grid-cols-1 xl:tw-grid-cols-12 tw-gap-[clamp(16px,2vw,24px)] tw-items-start">
 				
 				<!-- Main Scouting & Roster Eval Panel (Span 8) -->
-				<div class="xl:tw-col-span-8 st-bento vanguard-panel tw-bg-[#0f172a] tw-border tw-border-slate-800" style="clip-path: polygon(0 0, 100% 0, 100% calc(100% - 16px), calc(100% - 16px) 100%, 0 100%);">
+				<div class="xl:tw-col-span-8 st-bento vanguard-panel tw-bg-[#0f172a] tw-border tw-border-slate-800">
 					<CoachScoutingView />
 				</div>
 				
 				<!-- Tryout Pipeline Eval Panel (Span 4) -->
-				<div class="xl:tw-col-span-4 st-bento vanguard-panel tw-bg-[#0f172a] tw-border tw-border-slate-800" style="clip-path: polygon(0 0, 100% 0, 100% calc(100% - 16px), calc(100% - 16px) 100%, 0 100%);">
+				<div class="xl:tw-col-span-4 st-bento vanguard-panel tw-bg-[#0f172a] tw-border tw-border-slate-800">
 					<CoachTryoutEvalPanel />
 				</div>
 

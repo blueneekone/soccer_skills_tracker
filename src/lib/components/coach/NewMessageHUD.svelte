@@ -168,7 +168,7 @@
 	}
 
 	.nm-btn--primary {
-		background: var(--brand-primary, #f59e0b);
+		background: var(--brand-primary, #14b8a6);
 		color: #0f172a;
 		border-color: transparent;
 	}

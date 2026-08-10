@@ -81,7 +81,7 @@
 	}
 	.message--user { color: #94a3b8; }
 	.message--ai { color: #f8fafc; }
-	.message-prefix { color: #f59e0b; white-space: nowrap; }
+	.message-prefix { color: #14b8a6; white-space: nowrap; }
 	.message-content { white-space: pre-wrap; }
 	.loading { color: #14b8a6; }
 	.cursor { animation: blink 1s step-end infinite; }

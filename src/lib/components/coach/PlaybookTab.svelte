@@ -102,7 +102,7 @@
 			</div>
 		{:else if availableDrills.length === 0}
 			<div class="tw-bg-[#1e293b] tw-rounded-xl tw-p-6 tw-border tw-border-[#334155] tw-flex-1 tw-flex tw-flex-col tw-items-center tw-justify-center tw-text-center">
-				<Icon name={"status.warning" as IconName} class="tw-w-8 tw-h-8 tw-text-[#fbbf24] tw-mb-3" />
+				<Icon name={"status.warning" as IconName} class="tw-w-8 tw-h-8 tw-text-[#14b8a6] tw-mb-3" />
 				<h3 class="tw-text-white tw-font-bold tw-mb-1">No Matching Drills</h3>
 				<p class="tw-text-[#94a3b8] tw-text-sm">Design a drill with this tactical intent in the Drill Designer first.</p>
 			</div>
