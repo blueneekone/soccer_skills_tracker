@@ -27,13 +27,13 @@
 </script>
 
 {#if engine.showAlert}
-	<div class="vanguard-panel tw-w-full tw-mb-6 tw-border-[#fbbf24] tw-bg-[#fbbf24]/10 tw-p-4 tw-flex tw-items-start tw-gap-4 tw-transition-all tw-duration-200">
-		<Icon name={"status.pulse" as IconName} size={24} class="tw-text-[#fbbf24] tw-shrink-0" />
+	<div class="vanguard-panel tw-w-full tw-mb-6 tw-border-[#14b8a6] tw-bg-[#14b8a6]/10 tw-p-4 tw-flex tw-items-start tw-gap-4 tw-transition-all tw-duration-200">
+		<Icon name={"status.pulse" as IconName} size={24} class="tw-text-[#14b8a6] tw-shrink-0" />
 		<div class="tw-flex-1">
-			<div class="tw-font-mono tw-text-xs tw-text-[#fbbf24] tw-font-bold tw-mb-1">RL ADAPTIVE ENGINE // BIOMETRIC WARNING</div>
-			<div class="tw-font-mono tw-text-sm tw-text-[#fbbf24]/90">Player X's heart rate variability suggests a 15% reduction in drill intensity today. We recommend replacing AEROBIC FITNESS with a lower-load phase play.</div>
+			<div class="tw-font-mono tw-text-xs tw-text-[#14b8a6] tw-font-bold tw-mb-1">RL ADAPTIVE ENGINE // BIOMETRIC WARNING</div>
+			<div class="tw-font-mono tw-text-sm tw-text-[#14b8a6]/90">Player X's heart rate variability suggests a 15% reduction in drill intensity today. We recommend replacing AEROBIC FITNESS with a lower-load phase play.</div>
 		</div>
-		<button onclick={() => engine.showAlert = false} class="tw-text-[#fbbf24]/60 hover:tw-text-[#fbbf24] tw-transition-colors">
+		<button onclick={() => engine.showAlert = false} class="tw-text-[#14b8a6]/60 hover:tw-text-[#14b8a6] tw-transition-colors">
 			<Icon name={"nav.close" as IconName} size={20} />
 		</button>
 	</div>

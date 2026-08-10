@@ -74,7 +74,7 @@
 			const obj = new Text(item?.glyph || type, {
 				left: x, top: y, fontSize: 24, fill: type === 'player_x' ? '#b91c1c' : '#0284c7',
 				fontFamily: 'Inter', fontWeight: '900', originX: 'center', originY: 'center',
-				hasControls: false, hasBorders: true, borderColor: '#fbbf24', hoverCursor: 'grab', moveCursor: 'grabbing'
+				hasControls: false, hasBorders: true, borderColor: '#14b8a6', hoverCursor: 'grab', moveCursor: 'grabbing'
 			});
 			spatialCanvas.add(obj); spatialCanvas.setActiveObject(obj);
 		});

@@ -457,7 +457,7 @@
 									<!-- VPC -->
 									<td class="tw-text-[10px] tw-uppercase tw-tracking-widest">
 										<span class:tw-text-emerald-400={vpcLine(player) === 'Verified'}
-											class:tw-text-amber-400={vpcLine(player) === 'Pending'}>
+											class:tw-text-teal-400={vpcLine(player) === 'Pending'}>
 											{vpcLine(player)}
 										</span>
 									</td>

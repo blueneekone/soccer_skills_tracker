@@ -38,7 +38,7 @@
 	const FILTER_TABS: { key: ThreatFilter; label: string; color: string }[] = [
 		{ key: 'ALL', label: 'ALL', color: '#64748b' },
 		{ key: 'HIGH', label: 'HIGH', color: '#ef4444' },
-		{ key: 'MEDIUM', label: 'MED', color: '#f59e0b' },
+		{ key: 'MEDIUM', label: 'MED', color: '#14b8a6' },
 		{ key: 'LOW', label: 'LOW', color: '#22c55e' },
 		{ key: 'UNKNOWN', label: '?', color: '#475569' },
 	];

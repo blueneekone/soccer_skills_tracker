@@ -719,7 +719,7 @@
 		font-size: 12px;
 		font-weight: 800;
 		cursor: pointer;
-		background: var(--brand-primary, #f59e0b);
+		background: var(--brand-primary, #14b8a6);
 		color: #0f172a;
 	}
 
@@ -805,8 +805,8 @@
 		color: #e4e4e7;
 	}
 	.matrix__chip--on {
-		background: color-mix(in srgb, var(--brand-primary, #f59e0b) 20%, #fff);
-		border-color: color-mix(in srgb, var(--brand-primary, #f59e0b) 50%, #e2e8f0);
+		background: color-mix(in srgb, var(--brand-primary, #14b8a6) 20%, #fff);
+		border-color: color-mix(in srgb, var(--brand-primary, #14b8a6) 50%, #e2e8f0);
 	}
 
 	.matrix__shell {
@@ -931,7 +931,7 @@
 	}
 	.matrix__ch--active {
 		background: rgba(245, 158, 11, 0.1);
-		border-left: 3px solid var(--brand-primary, #f59e0b);
+		border-left: 3px solid var(--brand-primary, #14b8a6);
 		padding-left: 9px;
 	}
 	.matrix__ch-hash {
@@ -1137,8 +1137,8 @@
 	}
 	.matrix__row--mine .matrix__bubble {
 		border-radius: 16px 16px 4px 16px;
-		background: color-mix(in srgb, var(--brand-primary, #f59e0b) 10%, #fff);
-		border-color: color-mix(in srgb, var(--brand-primary, #f59e0b) 28%, #e2e8f0);
+		background: color-mix(in srgb, var(--brand-primary, #14b8a6) 10%, #fff);
+		border-color: color-mix(in srgb, var(--brand-primary, #14b8a6) 28%, #e2e8f0);
 	}
 	:global(html.dark) .matrix__bubble {
 		background: #141416;
@@ -1252,7 +1252,7 @@
 		font-size: 13px;
 		font-weight: 800;
 		cursor: pointer;
-		background: var(--brand-primary, #f59e0b);
+		background: var(--brand-primary, #14b8a6);
 		color: #0f172a;
 		flex-shrink: 0;
 	}
