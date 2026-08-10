@@ -96,8 +96,8 @@
 		}
 		if (e2eState) {
 			authStore.hydrateForE2E({ role: e2eState.role, isProfileComplete: true, ...e2eState });
-		} else if (data && data.session) {
-			authStore.hydrateForE2E({ role: data.session.role, isProfileComplete: true, ...data.session });
+		} else if (data && (data as any).session) {
+			authStore.hydrateForE2E({ role: (data as any).session.role, isProfileComplete: true, ...(data as any).session });
 		}
 	}
 

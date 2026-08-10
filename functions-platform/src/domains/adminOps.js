@@ -74,26 +74,56 @@ function timeRangesOverlap(aStart, aEnd, bStart, bEnd) {
 
 // ── Exports ───────────────────────────────────────────────────────────────────
 
-exports.syncUserClaims = onDocumentWritten('users/{email}', async (event) => {
+exports.syncUserClaims = onDocumentWritten('users/{docId}', async (event) => {
   const userData = event.data.after.data();
-  const userEmail = event.params.email;
+  const docId = event.params.docId;
+  const isUidKey = docId && !docId.includes('@');
+
+  let userRecord = null;
+  if (isUidKey) {
+    try {
+      userRecord = await admin.auth().getUser(docId);
+    } catch (e) {
+      // Not fatal yet, we'll try fallback
+    }
+  }
+  
+  if (!userRecord) {
+    const fallbackEmail = (userData && userData.email) || (docId.includes('@') ? docId : null);
+    if (fallbackEmail) {
+      try {
+        userRecord = await admin.auth().getUserByEmail(fallbackEmail);
+      } catch (e) {
+        // Handled below
+      }
+    }
+  }
 
   if (!userData) {
     logger.info('User profile deleted. Exiting function.');
-    try {
-      const ur = await admin.auth().getUserByEmail(userEmail);
-      await db().collection('public_player_profiles').doc(ur.uid).delete();
-    } catch (e) {
-      logger.warn('syncUserClaims public profile delete', e);
+    if (userRecord) {
+      try {
+        await db().collection('public_player_profiles').doc(userRecord.uid).delete();
+      } catch (e) {
+        logger.warn('syncUserClaims public profile delete', e);
+      }
     }
     return null;
   }
+
+  if (!userRecord) {
+    logger.warn('syncUserClaims: Could not resolve auth record for docId', docId);
+    return null;
+  }
+
+  const userEmail = userRecord.email || '';
+  const authUid = userRecord.uid;
 
   const superAdmin = ADMIN_EMAIL.value();
 
   const customClaims = buildBaseCustomClaims(userData);
   if (!customClaims) {
-    logger.warn('syncUserClaims: empty profile payload', userEmail);
+    logger.warn('syncUserClaims: empty profile payload', docId);
     return null;
   }
 
@@ -118,16 +148,6 @@ exports.syncUserClaims = onDocumentWritten('users/{email}', async (event) => {
       logger.warn('syncUserClaims entitlement read', e);
     }
 
-    // Cell-Based Routing — read organizations/{tenantId}.cellId and stamp
-    // it into the JWT so the client SDK + API gateway can target the
-    // right Firestore database without a per-request lookup.  Falls
-    // through to DEFAULT_CELL_ID on any error or absence, which is the
-    // correct behavior — every tenant starts on the shared cell.
-    // Phase 2, Epic 2 — Session F: also read `billingModel` from the org
-    // doc so the read-only paywall short-circuits for transaction-billed
-    // tenants.  When the org is on `transaction_billing` we explicitly
-    // null out the legacy `tier` / `subscription_status` claims so the
-    // client-side billing.js gate sees a clean "no legacy sub" state.
     try {
       const orgSnap = await db().collection('organizations').doc(cid).get();
       if (orgSnap.exists) {
@@ -146,7 +166,7 @@ exports.syncUserClaims = onDocumentWritten('users/{email}', async (event) => {
     }
   }
 
-  logger.info(`Intercepted profile update for: ${userEmail}`);
+  logger.info(`Intercepted profile update for: ${userEmail || docId}`);
 
   if (userEmail.toLowerCase() === superAdmin.toLowerCase()) {
     customClaims.role = 'super_admin';
@@ -154,22 +174,20 @@ exports.syncUserClaims = onDocumentWritten('users/{email}', async (event) => {
   }
 
   try {
-    const userRecord = await admin.auth().getUserByEmail(userEmail);
-    const authUid = userRecord.uid;
     if (userData.uid !== authUid) {
-      await db().collection('users').doc(userEmail).set({uid: authUid}, {merge: true});
+      await db().collection('users').doc(docId).set({uid: authUid}, {merge: true});
     }
     await admin.auth().setCustomUserClaims(authUid, customClaims);
     logger.info('Successfully stamped claims!');
     const r = userData.role || 'player';
     if (r !== 'player') {
       await db().collection('public_player_profiles')
-          .doc(userRecord.uid)
+          .doc(authUid)
           .delete()
           .catch(() => {});
     } else {
       try {
-        await syncPublicPlayerProfile(userRecord.uid);
+        await syncPublicPlayerProfile(authUid);
       } catch (e) {
         logger.error('syncUserClaims syncPublicPlayerProfile', e);
       }
