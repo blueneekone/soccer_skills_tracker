@@ -35,11 +35,11 @@ This replaces all generic registration flows. Mandatory Firebase MFA and 1-hour 
 **2. Legal Gateway & The Zero-Trust Document Vault**
 All data collection must pass through these legal gates before a user accesses the platform [cite: 878, 1231]:
 *   **Parents & Players:** 
-    [x] **COPPA 2.0 / VPC:** Verifiable Parental Consent tied to WebAuthn Biometric Enclaves (FaceID/TouchID) [cite: 1231].
+    [x] **COPPA 2.0 / VPC:** Verifiable Parental Consent tied to WebAuthn Biometric Enclaves (FaceID/TouchID) [cite: 1231] - Completed by Agent.
     *   **HIPAA & Medical:** Emergency contact and health insurance data collection requiring an integrated HIPAA release form [cite: 617].
     *   **Assumption of Risk & Waivers:** Liability waivers detailing sport-specific hazards [cite: 610, 613].
     *   **Photo/Video Release:** Granular opt-in/opt-out for the Fan OS streaming and Player OS video trials [cite: 618].
-    *   **E-Sign Act Enforcement:** The backend must silently capture and encrypt the user's IP address, date, timestamp, and email verification for every signed document [cite: 878].
+    *   [x] **E-Sign Act Enforcement:** The backend must silently capture and encrypt the user's IP address, date, timestamp, and email verification for every signed document [cite: 878] - Completed by Agent.
 *   **Coaches & Volunteers:** 
     *   **AB 506 Live Scan:** Checkr API integration mandating National Criminal Database clearance before accessing minor data [cite: 280, 285].
     *   **Mandated Reporter & SafeSport:** Upload gates for annual child abuse prevention training certificates [cite: 284].

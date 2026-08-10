@@ -2907,7 +2907,8 @@ service cloud.firestore {
         || (tokenRole() == 'player' && resource.data.childId == request.auth.uid)
       );
       allow list: if authed() && isPlatformAdmin();
-      allow create, update, delete: if false;
+      allow create: if authed();
+      allow update, delete: if false;
     }
 
     // pii_vault/{sealId} — Sprint 2.2 encrypted PII envelopes (Admin SDK writes only).
