@@ -5,7 +5,7 @@
 	import OrganizationsDataTable from '$lib/components/admin/OrganizationsDataTable.svelte';
 	import OrganizationsPagination from '$lib/components/admin/OrganizationsPagination.svelte';
 
-	let { engine }: { engine: AdminOrgsEngine } = $props();
+	let { engine = $bindable() }: { engine: AdminOrgsEngine } = $props();
 </script>
 
 	<AddOrganizationModal

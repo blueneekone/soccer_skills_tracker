@@ -5,7 +5,7 @@
 	import Tabs from '$lib/components/ui/Tabs.svelte';
 	import { ADMIN_SPORT_TABS } from '$lib/admin/organizationsConstants.js';
 
-	let { engine }: { engine: AdminOrgsEngine } = $props();
+	let { engine = $bindable() }: { engine: AdminOrgsEngine } = $props();
 </script>
 
 <OrganizationsToolbar
