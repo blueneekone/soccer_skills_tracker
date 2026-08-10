@@ -360,7 +360,7 @@
 .player-hud-root .lobby-capsule-ghost-wrap {
 	min-width: 0;
 	max-width: 100%;
-	overflow: hidden;
+	overflow: visible;
 }
 
 .player-hud-root .pd-empty-state.pd-empty-state--compact.lobby-capsule-ghost-card,
@@ -378,7 +378,7 @@
 	padding: clamp(6px, 1vw, 10px) clamp(8px, 1.3vw, 12px);
 	min-height: 44px;
 	max-height: 56px;
-	overflow: hidden;
+	overflow: visible;
 	border: 1px solid color-mix(in srgb, var(--pd-accent-data, #14b8a6) 32%, var(--pd-line));
 	border-radius: 0;
 	background: var(--pd-z1-well-bg);
@@ -404,7 +404,7 @@
 .player-hud-root .lobby-capsule-ghost-card .pd-empty-state__copy {
 	min-width: 0;
 	flex: 1 1 auto;
-	overflow: hidden;
+	overflow: visible;
 }
 
 .player-hud-root .lobby-capsule-ghost-card .pd-empty-state__title {
@@ -415,9 +415,9 @@
 	letter-spacing: 0.1em;
 	text-transform: uppercase;
 	color: var(--pd-text, #f4f4f5);
-	overflow: hidden;
-	text-overflow: ellipsis;
-	white-space: nowrap;
+	overflow: visible;
+
+
 }
 
 .player-hud-root .lobby-capsule-ghost-card .pd-empty-state__lede {
@@ -429,9 +429,9 @@
 	letter-spacing: 0.06em;
 	text-transform: uppercase;
 	color: var(--pd-text-muted, rgba(255, 255, 255, 0.5));
-	overflow: hidden;
-	text-overflow: ellipsis;
-	white-space: nowrap;
+	overflow: visible;
+
+
 	max-width: none;
 }
 
@@ -486,7 +486,7 @@
 	max-height: 64px;
 	text-align: left;
 	min-width: 0;
-	overflow: hidden;
+	overflow: visible;
 }
 
 .player-hud-root .vpp-inspector__empty--dossier .vpp-inspector__empty-icon {
@@ -500,22 +500,22 @@
 .player-hud-root .vpp-inspector__empty--dossier .vpp-empty-state__copy {
 	min-width: 0;
 	flex: 1 1 auto;
-	overflow: hidden;
+	overflow: visible;
 }
 
 .player-hud-root .vpp-inspector__empty--dossier .vpp-inspector__empty-title {
-	white-space: nowrap;
-	overflow: hidden;
-	text-overflow: ellipsis;
+
+	overflow: visible;
+
 }
 
 .player-hud-root .vpp-inspector__empty--dossier .vpp-inspector__empty-copy {
 	display: -webkit-box;
 	-webkit-box-orient: vertical;
 	-webkit-line-clamp: 1;
-	overflow: hidden;
-	white-space: nowrap;
-	text-overflow: ellipsis;
+	overflow: visible;
+
+
 	max-width: 100%;
 }
 
@@ -637,9 +637,9 @@
 		font-weight: 700;
 		font-variant-numeric: tabular-nums;
 		color: var(--player-hud-data, #14b8a6);
-		overflow: hidden;
-		text-overflow: ellipsis;
-		white-space: nowrap;
+		overflow: visible;
+
+
 		max-width: 100%;
 	}
 
@@ -684,7 +684,7 @@
 /* Phase 7 · G9 — Telemetry void top rim-light: stack --pd-os-frame-highlight above recessed fill (outer plate only) */
 .player-hud-root :is(.player-analytics-void, .stats-analytics-void).pd-os-deck--recessed,
 .player-hud-root .player-analytics-void.pd-os-deck--recessed {
-	overflow: hidden;
+	overflow: visible;
 	min-width: 0;
 	max-width: 100%;
 	border: var(--pd-os-frame-rim, var(--pd-hq-deck-rim));
@@ -741,7 +741,7 @@
 }
 
 .player-hud-root .stats-analytics-void.pd-os-deck--recessed {
-	overflow: hidden;
+	overflow: visible;
 	padding: clamp(1rem, 2.1vw, 1.35rem);
 }
 
@@ -864,7 +864,7 @@
 	box-shadow: none;
 	min-width: 0;
 	max-width: 100%;
-	overflow: hidden;
+	overflow: visible;
 }
 
 .player-hud-root .player-capsules-strip--void::before {
@@ -1008,7 +1008,7 @@
 
 .player-hud-root .ibm-rank-bar--has-xp .ibm-rank-progress__fill {
 	position: relative;
-	overflow: hidden;
+	overflow: visible;
 }
 
 .player-hud-root .ibm-rank-bar--has-xp .ibm-avatar :global(.hud-avatar-ring__svg circle:last-of-type) {
@@ -1417,9 +1417,9 @@
 	letter-spacing: 0.05em;
 	text-transform: uppercase;
 	color: var(--vanguard-text-1, #f8fafc);
-	overflow: hidden;
-	text-overflow: ellipsis;
-	white-space: nowrap;
+	overflow: visible;
+
+
 }
 
 .player-hud-header__meta {
@@ -1430,9 +1430,9 @@
 	text-transform: uppercase;
 	letter-spacing: 0.05em;
 	color: color-mix(in srgb, var(--color-structural) 70%, #94a3b8);
-	overflow: hidden;
-	text-overflow: ellipsis;
-	white-space: nowrap;
+	overflow: visible;
+
+
 }
 
 .cmd-center-trigger {
@@ -1547,7 +1547,7 @@
 	font-weight: 900;
 	font-variant-numeric: tabular-nums;
 	color: var(--pd-text, #f4f4f5);
-	white-space: nowrap;
+
 }
 
 .player-hud-root .hud-stat-cell:hover,
@@ -1614,7 +1614,7 @@
 	font-weight: 900;
 	font-variant-numeric: tabular-nums;
 	color: #ffffff;
-	white-space: nowrap;
+
 }
 
 .player-hud-root .ibm-metric-chip:hover {
@@ -1845,9 +1845,9 @@
 	letter-spacing: 0.1em;
 	text-transform: uppercase;
 	color: color-mix(in srgb, #64748b 85%, #94a3b8);
-	overflow: hidden;
-	text-overflow: ellipsis;
-	white-space: nowrap;
+	overflow: visible;
+
+
 }
 
 .player-hud-root .ibm-rank-progress__bar {
@@ -1864,7 +1864,7 @@
 		1px 100%,
 		0 calc(100% - 1px)
 	);
-	overflow: hidden;
+	overflow: visible;
 }
 
 .player-hud-root .ibm-rank-progress__fill {
@@ -1880,9 +1880,9 @@
 	letter-spacing: 0.08em;
 	text-transform: uppercase;
 	color: color-mix(in srgb, #64748b 80%, #94a3b8);
-	overflow: hidden;
-	text-overflow: ellipsis;
-	white-space: nowrap;
+	overflow: visible;
+
+
 }
 
 /* Sprint 2.6 — embedded mission rail hero card */
@@ -1926,7 +1926,7 @@
 	text-transform: uppercase;
 	color: var(--vanguard-text-1, #f8fafc);
 	line-height: 1.25;
-	overflow: hidden;
+	overflow: visible;
 	display: -webkit-box;
 	-webkit-line-clamp: 2;
 	-webkit-box-orient: vertical;
@@ -2622,7 +2622,7 @@
 	min-width: 0;
 	max-width: 100%;
 	text-align: center;
-	overflow: hidden;
+	overflow: visible;
 }
 
 /* Sprint 3.5g-f — HQ holo identity: OperativeIdCardFrame holo variant fits HologramCardShell */
@@ -2682,9 +2682,9 @@
 	letter-spacing: 0.06em;
 	text-transform: uppercase;
 	color: var(--pd-text, #f4f4f5);
-	overflow: hidden;
-	text-overflow: ellipsis;
-	white-space: nowrap;
+	overflow: visible;
+
+
 }
 
 .player-hud-root .operative-hub__identity-stage .ibm-holo-face__rank {
@@ -2696,9 +2696,9 @@
 	text-transform: uppercase;
 	letter-spacing: 0.08em;
 	color: var(--pd-text-muted, rgba(255, 255, 255, 0.5));
-	overflow: hidden;
-	text-overflow: ellipsis;
-	white-space: nowrap;
+	overflow: visible;
+
+
 }
 
 @media (min-width: 1280px) {
@@ -3143,7 +3143,7 @@
 	height: 300px;
 	margin-top: clamp(0.65rem, 1.25vw, 0.9rem);
 	padding: clamp(0.65rem, 1.2vw, 0.9rem);
-	overflow: hidden;
+	overflow: visible;
 	box-sizing: border-box;
 }
 
