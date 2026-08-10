@@ -15,6 +15,7 @@ describe('league utility functions', () => {
 			expect(toTimestampMs(undefined)).toBe(0);
 			expect(toTimestampMs(null)).toBe(0);
 			expect(toTimestampMs('') as any).toBe(0);
+			expect(toTimestampMs(NaN)).toBe(0);
 		});
 
 		it('returns getTime() for Date objects', () => {
@@ -30,6 +31,16 @@ describe('league utility functions', () => {
 		it('parses strings into timestamps', () => {
 			const str = '2024-01-01T12:00:00Z';
 			expect(toTimestampMs(str)).toBe(new Date(str).getTime());
+		});
+
+		it('returns NaN for invalid date strings', () => {
+			const str = 'invalid-date';
+			expect(toTimestampMs(str)).toBeNaN();
+		});
+
+		it('returns NaN for invalid Date objects', () => {
+			const date = new Date('invalid');
+			expect(toTimestampMs(date)).toBeNaN();
 		});
 
 		it('handles FirestoreTimestamp-like objects', () => {
@@ -64,6 +75,19 @@ describe('league utility functions', () => {
 			};
 			const result = computeThreatAssessment(stats);
 			expect(result).toEqual({ level: 'UNKNOWN', score: 50, color: '#475569', winRate: 0 });
+		});
+
+		it('returns HIGH threat for win rate of 0% (0 wins)', () => {
+			const stats: OpponentStats = {
+				totalGames: 10,
+				wins: 0, // 0% win rate
+				draws: 0,
+				losses: 10,
+				goalsFor: 0,
+				goalsAgainst: 20
+			};
+			const result = computeThreatAssessment(stats);
+			expect(result).toEqual({ level: 'HIGH', score: 100, color: '#ef4444', winRate: 0 });
 		});
 
 		it('returns LOW threat for win rate >= 60%', () => {
