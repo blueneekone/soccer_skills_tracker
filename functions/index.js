@@ -155,5 +155,5 @@ exports.enrollGovernedDirector = b2bEnrollmentOps.enrollGovernedDirector;
 const ingestRoster = require("./ingestRoster.js");
 exports.ingestRoster = ingestRoster.ingestRoster;
 
-const { onChannelCreated } = require('./src/onChannelCreated.js');
+const { onChannelCreated } = require('./src/onChannelCreated');
 exports.onChannelCreated = onChannelCreated;
