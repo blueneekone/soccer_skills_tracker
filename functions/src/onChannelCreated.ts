@@ -1,11 +1,8 @@
-// 🛡️ SafeSport Compliance Mandate: Zero-State Lock (P0 Critical)
-'use strict';
+import { onDocumentCreated } from 'firebase-functions/v2/firestore';
+import { getFirestore } from 'firebase-admin/firestore';
+import { resolveParentEmails } from './utils/resolveParentEmails';
 
-const { onDocumentCreated } = require('firebase-functions/v2/firestore');
-const { getFirestore } = require('firebase-admin/firestore');
-const { resolveParentEmails } = require('./utils/guardianResolver');
-
-exports.onChannelCreated = onDocumentCreated(
+export const onChannelCreated = onDocumentCreated(
   {
     document: 'clubs/{clubId}/channels/{channelId}',
     region: 'us-east1',
@@ -15,13 +12,13 @@ exports.onChannelCreated = onDocumentCreated(
     if (!snap) return;
 
     const data = snap.data();
-    if (data.channelType === 'staff_internal') return; // Exclude internal channels
+    if (data.channelType === 'staff_internal') return;
     if (!Array.isArray(data.memberIds) || data.memberIds.length === 0) return;
 
     const db = getFirestore();
     const { ccParentEmails, missingParents } = await resolveParentEmails(db, data.memberIds);
 
-    const updates = {};
+    const updates: Record<string, any> = {};
     let needsUpdate = false;
 
     if (ccParentEmails.length > 0) {
@@ -38,13 +35,19 @@ exports.onChannelCreated = onDocumentCreated(
       needsUpdate = true;
     }
 
-    if (!missingParents) {
-      updates.channelStatus = 'ACTIVE';
-      needsUpdate = true;
-    }
-
     if (needsUpdate) {
       await snap.ref.update(updates);
+    }
+
+    if (missingParents) {
+      const auditRef = db.collection('messaging_audit').doc();
+      await auditRef.set({
+        action: 'channel_blocked_vpc_pending',
+        channelId: snap.id,
+        clubId: event.params.clubId,
+        memberIds: data.memberIds,
+        createdAt: new Date()
+      });
     }
   }
 );

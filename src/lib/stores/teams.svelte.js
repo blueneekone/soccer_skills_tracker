@@ -109,7 +109,7 @@ function createTeamsStore() {
 
 		/**
 		 * @param {string} role
-		 * @param {{ clubId?: string, coachEmail?: string, scope?: TeamsLoadScope, routePath?: string }} [opts]
+		 * @param {{ clubId?: string, coachEmail?: string, scope?: TeamsLoadScope, routePath?: string, forceRefresh?: boolean }} [opts]
 		 */
 		async load(role, opts = {}) {
 			const clubId = (opts.clubId || '').trim();
@@ -120,7 +120,7 @@ function createTeamsStore() {
 			// Exclude routePath from key so navigating within the same scope (e.g. /coach/dashboard -> /coach/logistics)
 			// uses the already loaded teams array, preventing duplicate Firestore fetches and race conditions.
 			const key = `${role}|${scope}|${clubId}|${coachEmail.toLowerCase()}`;
-			if (loaded && lastLoadKey === key) return;
+			if (loaded && lastLoadKey === key && !opts.forceRefresh) return;
 			if (!isFirestoreReady()) return;
 
 			try {
