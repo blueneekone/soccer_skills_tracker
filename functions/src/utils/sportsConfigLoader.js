@@ -47,7 +47,7 @@ async function loadSportsConfig(sportId) {
     return cached.data;
   }
 
-  const db = admin.firestore();
+  const db = new Proxy({}, { get: (t, p) => { const fs = admin.firestore(); const v = fs[p]; return typeof v === 'function' ? v.bind(fs) : v; } });
   const snap = await db.collection('sports_configs').doc(sportId).get();
   if (!snap.exists) {
     _cache.delete(sportId);
@@ -81,7 +81,7 @@ async function loadAllSportsConfigs() {
     return /** @type {object[]} */ (cached.data);
   }
 
-  const db = admin.firestore();
+  const db = new Proxy({}, { get: (t, p) => { const fs = admin.firestore(); const v = fs[p]; return typeof v === 'function' ? v.bind(fs) : v; } });
   const snap = await db
       .collection('sports_configs')
       .where('status', '==', 'active')

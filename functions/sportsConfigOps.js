@@ -160,7 +160,7 @@ exports.upsertSportsConfig = onCall(async (request) => {
   validateUpsertInput(data);
 
   const sportId = data.sportId;
-  const db = admin.firestore();
+  const db = new Proxy({}, { get: (t, p) => { const fs = admin.firestore(); const v = fs[p]; return typeof v === 'function' ? v.bind(fs) : v; } });
   const ref = db.collection('sports_configs').doc(sportId);
 
   const existingSnap = await ref.get();
@@ -208,7 +208,7 @@ exports.listSportsConfigs = onCall(async (request) => {
   }
 
   const includeArchived = Boolean(request.data?.includeArchived);
-  const db = admin.firestore();
+  const db = new Proxy({}, { get: (t, p) => { const fs = admin.firestore(); const v = fs[p]; return typeof v === 'function' ? v.bind(fs) : v; } });
 
   let query = db.collection('sports_configs').orderBy('displayName');
   if (!includeArchived) {
@@ -240,7 +240,7 @@ exports.archiveSportsConfig = onCall(async (request) => {
     throw new HttpsError('invalid-argument', 'sportId must be a non-empty string.');
   }
 
-  const db = admin.firestore();
+  const db = new Proxy({}, { get: (t, p) => { const fs = admin.firestore(); const v = fs[p]; return typeof v === 'function' ? v.bind(fs) : v; } });
   const ref = db.collection('sports_configs').doc(sportId);
   const snap = await ref.get();
 

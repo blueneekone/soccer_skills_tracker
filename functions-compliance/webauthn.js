@@ -29,7 +29,7 @@ const {
   verifyAuthenticationResponse,
 } = require('@simplewebauthn/server');
 
-const db = admin.firestore();
+const db = new Proxy({}, { get: (t, p) => { const fs = admin.firestore(); const v = fs[p]; return typeof v === 'function' ? v.bind(fs) : v; } });
 
 // ── RP configuration ────────────────────────────────────────────────────────
 // RP_ID and RP_ORIGIN are set via Firebase environment config / defineString so

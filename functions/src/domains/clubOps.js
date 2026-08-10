@@ -68,7 +68,7 @@ exports.auditClubSportConfig = onDocumentWritten(
       // Only act when sport field actually changed
       if (newSport === oldSport) return;
 
-      const db = admin.firestore();
+      const db = new Proxy({}, { get: (t, p) => { const fs = admin.firestore(); const v = fs[p]; return typeof v === 'function' ? v.bind(fs) : v; } });
       const clubId = event.params.clubId;
       const sportKey = normalizeSport(newSport);
 
@@ -110,7 +110,7 @@ exports.pruneOrphanedSports = onSchedule(
       timeZone: 'UTC',
     },
     async () => {
-      const db = admin.firestore();
+      const db = new Proxy({}, { get: (t, p) => { const fs = admin.firestore(); const v = fs[p]; return typeof v === 'function' ? v.bind(fs) : v; } });
       logger.info('[pruneOrphanedSports] starting weekly audit');
 
       // 1. Load all active sport config keys

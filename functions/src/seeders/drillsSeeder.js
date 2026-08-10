@@ -89,7 +89,7 @@ exports.seedGlobalDrills = onCall(async (request) => {
     throw new HttpsError('permission-denied', 'Admin role required.');
   }
 
-  const db = admin.firestore();
+  const db = new Proxy({}, { get: (t, p) => { const fs = admin.firestore(); const v = fs[p]; return typeof v === 'function' ? v.bind(fs) : v; } });
   const batch = db.batch();
 
   for (const drill of BASE_DRILLS) {

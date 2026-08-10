@@ -116,7 +116,7 @@ const trajectoryMonthlyAggregator = onSchedule(
       timeoutSeconds: 540,
     },
     async () => {
-      const db = admin.firestore();
+      const db = new Proxy({}, { get: (t, p) => { const fs = admin.firestore(); const v = fs[p]; return typeof v === 'function' ? v.bind(fs) : v; } });
 
       // Kill switch check.
       const enabled = await isGviEnabled();
