@@ -5,7 +5,7 @@ description: HEADLESS UNATTENDED UI HEALING WORKFLOW (v6.0). Enforces strict des
 
 # 🛡️ UNATTENDED WORKFLOW: COHESIVE VISUAL HEALING & STYLING LOCK (v6.0)
 
-This workflow legally binds the Antigravity/Jules execution loops to perform a strict, physical, browser-in-the-loop visual audit and structural layout repair against **exactly ONE persona at a time**, with absolutely zero human-in-the-loop pauses [cite: 1115].
+This workflow legally binds the Antigravity/Jules execution loops to perform a strict, physical, browser-in-the-loop visual audit and structural layout repair against **exactly ONE persona at a time**, with absolutely zero human-in-the-loop pauses [cite: 1115]. 
 
 It specifically overrides the generic visual-autofix routines by enforcing **strict design-token and component consistency**, permanently eliminating the "random styling drift" where different runs result in chaotic tables, missing margins, and mismatched buttons [cite: 830, 831].
 
