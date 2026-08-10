@@ -107,3 +107,44 @@ describe('navigateAfterLogin', () => {
 		expect(goto).toHaveBeenCalledWith('/player/dashboard', { replaceState: false });
 	});
 });
+
+describe('Vanguard Boundary Conditions', () => {
+	beforeEach(() => {
+		vi.clearAllMocks();
+		mockBrowser = true;
+		vi.mocked(requiresPasskeyEnrollmentBeforeApp).mockResolvedValue(false);
+		vi.mocked(authStore.refresh).mockResolvedValue(undefined);
+		Object.defineProperty(authStore, 'isProfileComplete', { get: () => true, configurable: true });
+	});
+
+	it('Scenario A: Unrecognized/Null Roles navigate to waterfall fallback (/onboarding) avoiding privileged data pools', async () => {
+		Object.defineProperty(authStore, 'role', { get: () => null, configurable: true });
+		Object.defineProperty(authStore, 'userProfile', { get: () => ({ name: 'Unknown User' }), configurable: true });
+		vi.mocked(applyLoginWaterfall).mockReturnValueOnce('/onboarding');
+
+		await navigateAfterLogin();
+
+		expect(applyLoginWaterfall).toHaveBeenCalledWith(null, { name: 'Unknown User' });
+		expect(goto).toHaveBeenCalledWith('/onboarding', { replaceState: true });
+	});
+
+	it('Scenario B: Incomplete Parent Profile forces parent onto the parent onboarding setup path', async () => {
+		Object.defineProperty(authStore, 'role', { get: () => 'parent', configurable: true });
+		Object.defineProperty(authStore, 'isProfileComplete', { get: () => false, configurable: true });
+
+		await navigateAfterLogin();
+
+		expect(goto).toHaveBeenCalledWith('/setup', { replaceState: true });
+		expect(applyLoginWaterfall).not.toHaveBeenCalled();
+	});
+
+	it('Scenario C: Pending Recruiter Background Check (incomplete profile) blocks access to sensitive minor data pools', async () => {
+		Object.defineProperty(authStore, 'role', { get: () => 'recruiter', configurable: true });
+		Object.defineProperty(authStore, 'isProfileComplete', { get: () => false, configurable: true });
+
+		await navigateAfterLogin();
+
+		expect(goto).toHaveBeenCalledWith('/setup', { replaceState: true });
+		expect(applyLoginWaterfall).not.toHaveBeenCalled();
+	});
+});
