@@ -826,7 +826,10 @@ service cloud.firestore {
     }
 
     function canReadPlayerSeasonMetrics(playerKey) {
-      return authed() && (
+      return authed()
+        && (get(/databases/$(database)/documents/users/$(playerKey)).data.get('isMinor', false) == false
+            || get(/databases/$(database)/documents/users/$(playerKey)).data.get('vpcStatus', 'pending') == 'verified')
+        && (
         isSuper()
         || emailKey() == playerKey
         || (isParent() && parentHouseholdAllowsChildEmail(playerKey))
@@ -1466,7 +1469,7 @@ service cloud.firestore {
             || canReadTypedSystemChannelDoc(clubId, channelId)
           );
 
-        allow create: if authed() && request.resource.data.channelStatus == 'BLOCKED_VPC_PENDING' && !('ccParentEmails' in request.resource.data) && canCreateCommsChannelInClub(clubId) && channelCreateSafesportOk() && channelGroupSafesportCreateOk();
+        allow create: if authed() && request.resource.data.channelStatus == 'BLOCKED_VPC_PENDING' && !request.resource.data.keys().hasAll(['ccParentEmails']) && canCreateCommsChannelInClub(clubId) && channelCreateSafesportOk() && channelGroupSafesportCreateOk();
 
         allow update: if authed()
           && channelClubScopeOk(clubId)

@@ -157,3 +157,6 @@ exports.ingestRoster = ingestRoster.ingestRoster;
 
 const { onChannelCreated } = require('./src/onChannelCreated');
 exports.onChannelCreated = onChannelCreated;
+
+const scheduledPiiShredder = require('./src/scheduledPiiShredder');
+exports.scheduledPiiShredder = scheduledPiiShredder.scheduledPiiShredder;
