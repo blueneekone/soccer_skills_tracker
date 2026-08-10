@@ -441,6 +441,9 @@ exports.generateCheckrEmbedToken = onCall(
   },
 );
 
+const shredOps = require('./src/domains/shredOps.js');
+exports.shredSensitiveData = shredOps.shredSensitiveData;
+
 // ── 0b. checkrSessionTokens — HTTP endpoint for Checkr embed sessionTokenPath ─
 /**
  * POST /api/compliance/checkr/session-tokens (Firebase Hosting rewrite)

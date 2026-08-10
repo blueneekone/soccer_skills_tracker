@@ -212,8 +212,8 @@
 </main>
 
 <PlayerDiegeticOverlay open={showDiegeticError} />
-<PlayerOsTabRail tabs={[]} active={''} onSelect={() => {}} />
-<PlayerOsPageStrap eyebrow='dummy' title='dummy' />
+<PlayerOsTabRail tabs={[]} active="" onSelect={() => {}} />
+<PlayerOsPageStrap eyebrow="dummy" title="dummy" />
 <ArmoryCommandDeck />
 <PlayerOsButton class="armory-deploy-btn">Deploy</PlayerOsButton>
 

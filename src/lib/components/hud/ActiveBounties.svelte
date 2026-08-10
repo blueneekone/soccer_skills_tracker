@@ -617,7 +617,7 @@
 				{#snippet questRowEmbedded(quest)}
   <div class="quest-row-embedded tw-flex tw-items-center tw-justify-between tw-p-4 tw-border-b tw-border-slate-800 quest-row--promoted={isPromotedQuest(quest) && heroQuest?.id !== quest.id}">
     <div class="tw-flex tw-items-center tw-gap-3">
-      <span class="quest-row__title-text tw-font-mono tw-text-sm tw-tracking-widest">
+      <span class="quest-row__title quest-row__title-text tw-font-mono tw-text-sm tw-tracking-widest" style="white-space: nowrap; text-overflow: ellipsis; overflow: hidden; display: block;">
         {quest.title}
       </span>
     </div>
