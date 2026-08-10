@@ -125,8 +125,8 @@ function exportScheduler(target, name, modFn) {
     target[name] = modFn;
   }
 }
-const eventOps = require('./src/domains/eventOps.js');
-exportScheduler(exports, 'sendScheduledEventReminders', eventOps.sendScheduledEventReminders);
+// const eventOps = require('./src/domains/eventOps.js');
+// exportScheduler(exports, 'sendScheduledEventReminders', eventOps.sendScheduledEventReminders);
 const commerce = require('./commerce.js');
 exportScheduler(exports, 'sendRegistrationPaymentReminders', commerce.sendRegistrationPaymentReminders);
 
