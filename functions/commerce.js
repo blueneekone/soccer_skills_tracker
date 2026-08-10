@@ -70,7 +70,7 @@ const REGION = 'us-east1';
 // still set per PaymentIntent — the SOURCE of the number is the only
 // thing that changed.
 
-const db = admin.firestore();
+const db = new Proxy({}, { get: (t, p) => { const fs = admin.firestore(); const v = fs[p]; return typeof v === 'function' ? v.bind(fs) : v; } });
 
 /** Lazy-init Stripe client so we don't crash if secret isn't set at cold start. */
 function getStripe() {

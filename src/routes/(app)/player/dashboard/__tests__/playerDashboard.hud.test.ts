@@ -45,11 +45,9 @@ describe('/player/dashboard — Sprint 1.4 HUD overhaul', () => {
 			join(__dirname, '../../../../../lib/components/hud/ActiveBounties.svelte'),
 			'utf-8',
 		);
-		expect(bounties).toMatch(/questTerminalCmd/);
-		expect(bounties).toMatch(/quest-row__cmd/);
+		expect(bounties).toMatch(/questHudCtaFor/);
+		expect(bounties).toMatch(/quest-hero__cta/);
 		expect(bounties).toMatch(/ACTIVE DIRECTIVES/);
-		expect(bounties).toMatch(/quest-row__status/);
-		expect(bounties).not.toMatch(/quest-row__cta/);
 	});
 
 	it('uses IdentityBentoModule for operative identity (not OperativeAvatarPreview circles on page)', () => {

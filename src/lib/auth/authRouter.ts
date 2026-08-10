@@ -26,7 +26,7 @@
 import { browser } from '$app/environment';
 import { goto } from '$app/navigation';
 import { doc, getDoc } from 'firebase/firestore';
-import { db } from '$lib/firebase/config';
+import { db } from '$lib/firebase.js';
 import type { UserRole } from '$lib/types';
 import type { User } from 'firebase/auth';
 

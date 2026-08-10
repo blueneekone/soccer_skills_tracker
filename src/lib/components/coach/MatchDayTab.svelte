@@ -79,12 +79,12 @@
 								<td class="tw-px-4 tw-py-4 tw-text-white tw-font-bold">{row.name}</td>
 								<td class="tw-px-4 tw-py-4 tw-text-[#14b8a6] tw-font-mono tw-text-right">{row.xp.toLocaleString()}</td>
 								<td class="tw-px-4 tw-py-4 tw-text-white tw-font-mono tw-text-right">
-									<span class="{row.readiness > 80 ? 'tw-text-[#10b981]' : row.readiness > 60 ? 'tw-text-[#fbbf24]' : 'tw-text-[#ef4444]'}">
+									<span class="{row.readiness > 80 ? 'tw-text-[#10b981]' : row.readiness > 60 ? 'tw-text-[#14b8a6]' : 'tw-text-[#ef4444]'}">
 										{row.readiness}%
 									</span>
 								</td>
 								<td class="tw-px-4 tw-py-4 tw-text-white tw-font-mono tw-text-right">
-									<span class="{row.fatigue < 20 ? 'tw-text-[#10b981]' : row.fatigue < 50 ? 'tw-text-[#fbbf24]' : 'tw-text-[#ef4444]'}">
+									<span class="{row.fatigue < 20 ? 'tw-text-[#10b981]' : row.fatigue < 50 ? 'tw-text-[#14b8a6]' : 'tw-text-[#ef4444]'}">
 										{row.fatigue}
 									</span>
 								</td>

@@ -92,7 +92,7 @@
 				<div class="tactical-playbook-board vanguard-surface tw-rounded-none tw-border tw-border-slate-700 tw-bg-slate-900/80 tw-p-4 tw-flex tw-flex-col">
 					<h3 class="tw-font-mono tw-text-xs tw-text-teal-400 tw-mb-2 tw-uppercase tw-tracking-widest">Tactical Playbook</h3>
 					<div class="tw-text-slate-300 tw-text-sm tw-min-w-0 tw-flex-1">
-						<a href="/coach/war-room" class="tw-text-amber-500 hover:tw-text-amber-400 tw-underline tw-underline-offset-4 tw-font-mono tw-text-xs tw-uppercase">Enter War Room &rarr;</a>
+						<a href="/coach/war-room" class="tw-text-teal-400 hover:tw-text-teal-300 tw-underline tw-underline-offset-4 tw-font-mono tw-text-xs tw-uppercase">Enter War Room &rarr;</a>
 					</div>
 				</div>
 
@@ -113,7 +113,7 @@
 					<h3 class="tw-font-mono tw-text-xs tw-text-teal-400 tw-mb-2 tw-uppercase tw-tracking-widest">ZPD Engine (Dynamic Difficulty)</h3>
 					<div class="tw-mt-2 tw-flex tw-flex-wrap tw-items-baseline tw-justify-between tw-gap-2">
 						<span class="tw-text-xs tw-text-slate-400 tw-uppercase tw-font-bold">Latency</span>
-						<span class="tw-font-mono tw-text-lg tw-text-amber-500">14ms</span>
+						<span class="tw-font-mono tw-text-lg tw-text-teal-400">14ms</span>
 					</div>
 					<p class="tw-mt-2 tw-text-[10px] tw-text-slate-400 tw-leading-relaxed tw-font-sans">
 						Vygotsky inference active. Skill boundary scaling applied to central press and transitional width phases.

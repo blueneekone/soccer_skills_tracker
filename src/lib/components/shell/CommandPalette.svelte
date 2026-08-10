@@ -3,6 +3,7 @@
 	import { goto } from '$app/navigation';
 	import { untrack } from 'svelte';
 	import { db } from '$lib/firebase.js';
+	import { isFirestoreReady } from '$lib/utils/firestoreGuard.js';
 	import { doc, getDoc } from 'firebase/firestore';
 	import Icon from '$lib/components/ui/Icon.svelte';
 	import type { IconName } from '$lib/icons/registry.js';
@@ -144,6 +145,7 @@
 	/** @param {CmdItem | undefined} item */
 	async function activateItem(item) {
 		if (!item?.href) return;
+		if (item.isContextSwitch && !isFirestoreReady()) return;
 		
 		if (item.isContextSwitch && item.id) {
 			workspaceContextStore.resetScope();
@@ -165,6 +167,7 @@
 				const sportId = selectedClub && 'sportId' in selectedClub ? selectedClub.sportId as string : 'soccer';
 				workspaceContextStore.setActiveSportId(sportId);
 				try {
+					if (!isFirestoreReady()) return;
 					const snap = await getDoc(doc(db, 'sports_configs', sportId));
 					if (snap.exists()) {
 						workspaceContextStore.setActiveSportConfig(snap.data() as Record<string, unknown>);

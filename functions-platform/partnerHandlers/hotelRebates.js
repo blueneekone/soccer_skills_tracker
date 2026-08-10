@@ -29,7 +29,7 @@ const {loadActivePolicy, computePlatformFee} = require('../pricingEngine');
 const {recordPlatformFee} = require('../feeLedger');
 const {getRegistryDb} = require('../cellRouter');
 
-const db = admin.firestore();
+const db = new Proxy({}, { get: (t, p) => { const fs = admin.firestore(); const v = fs[p]; return typeof v === 'function' ? v.bind(fs) : v; } });
 // Phase 2, Epic 3 — Teen 13-16 Ad-Block: partner adapter gate.
 // Hotel rebates don't carry player PII directly, but the interceptor is
 // wired here to document the pattern and catch future payload expansions.

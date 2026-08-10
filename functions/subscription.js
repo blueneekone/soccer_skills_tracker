@@ -38,7 +38,7 @@ const logger = require('firebase-functions/logger');
 const admin = require('firebase-admin');
 
 const REGION = 'us-east1';
-const db = admin.firestore();
+const db = new Proxy({}, { get: (t, p) => { const fs = admin.firestore(); const v = fs[p]; return typeof v === 'function' ? v.bind(fs) : v; } });
 
 const TIER_CONFIG = {
   basecamp: {planTier: 'base_camp', maxPlayers: 30, label: 'Base Camp'},

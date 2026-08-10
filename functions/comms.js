@@ -38,7 +38,7 @@ const {postChannelSystemMessage} = require('./src/domains/commsChannelOps');
 const {parseAckDeadline} = require('./src/domains/broadcastAckOps');
 
 const REGION = 'us-east1';
-const db = admin.firestore();
+const db = new Proxy({}, { get: (t, p) => { const fs = admin.firestore(); const v = fs[p]; return typeof v === 'function' ? v.bind(fs) : v; } });
 
 /** Normalise email to lowercase, trimmed. */
 const normEmail = (e) => (typeof e === 'string' ? e.trim().toLowerCase() : '');

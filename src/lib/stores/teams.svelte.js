@@ -27,35 +27,31 @@ function createTeamsStore() {
 		const db = getActiveDb();
 		if (!db) return [];
 		
-		const queries = [];
+		let teamsArr = [];
 		if (clubId) {
-			queries.push(getDocs(query(collection(db, 'teams'), where('clubId', '==', clubId), where('coachEmail', '==', head))).catch(e => { console.error('Error fetching teams by coachEmail', e); return []; }));
-			queries.push(getDocs(query(collection(db, 'teams'), where('clubId', '==', clubId), where('assistants', 'array-contains', head))).catch(e => { console.error('Error fetching teams by assistants', e); return []; }));
+			const snap = await getDocs(query(collection(db, 'teams'), where('clubId', '==', clubId))).catch(e => { console.error('Error fetching teams by clubId', e); return null; });
+			if (snap) {
+				snap.forEach(d => teamsArr.push({ id: d.id, ...d.data() }));
+			}
 		} else {
-			queries.push(getDocs(query(collection(db, 'teams'), where('coachEmail', '==', head))).catch(e => { console.error('Error fetching teams by coachEmail', e); return []; }));
-			queries.push(getDocs(query(collection(db, 'teams'), where('assistants', 'array-contains', head))).catch(e => { console.error('Error fetching teams by assistants', e); return []; }));
+			// Fallback if no clubId (unlikely for coach, but just in case)
+			const snapHead = await getDocs(query(collection(db, 'teams'), where('coachEmail', '==', head))).catch(() => null);
+			if (snapHead) snapHead.forEach(d => teamsArr.push({ id: d.id, ...d.data() }));
+			
+			const snapAsst = await getDocs(query(collection(db, 'teams'), where('assistants', 'array-contains', head))).catch(() => null);
+			if (snapAsst) snapAsst.forEach(d => teamsArr.push({ id: d.id, ...d.data() }));
 		}
 		
-		// Fallback: check user's profile for explicit teamId assignment (handles alias mismatches)
-		queries.push(
-			getDoc(doc(db, 'users', head)).then(async (userSnap) => {
-				if (userSnap.exists()) {
-					const data = userSnap.data();
-					if (data.teamId) {
-						const tSnap = await getDoc(doc(db, 'teams', data.teamId));
-						if (tSnap.exists()) {
-							return [{ id: tSnap.id, data: () => tSnap.data() }];
-						}
-					}
-				}
-				return [];
-			}).catch(() => [])
-		);
-		
-		const snaps = await Promise.all(queries);
 		const byId = new Map();
-		for (const snap of snaps) {
-			snap.forEach((d) => byId.set(d.id, { id: d.id, ...d.data() }));
+		for (const data of teamsArr) {
+			const isHeadString = (data.coachEmail || '').toLowerCase() === head;
+			const isHeadArray = (data.coachEmails || []).some(
+				(e) => (e || '').toLowerCase() === head,
+			);
+			const isAsst = (data.assistants || []).some(a => (a || '').toLowerCase() === head);
+			if (isHeadString || isHeadArray || isAsst) {
+				byId.set(data.id, data);
+			}
 		}
 		return Array.from(byId.values());
 	}
@@ -113,7 +109,7 @@ function createTeamsStore() {
 
 		/**
 		 * @param {string} role
-		 * @param {{ clubId?: string, coachEmail?: string, scope?: TeamsLoadScope, routePath?: string }} [opts]
+		 * @param {{ clubId?: string, coachEmail?: string, scope?: TeamsLoadScope, routePath?: string, forceRefresh?: boolean }} [opts]
 		 */
 		async load(role, opts = {}) {
 			const clubId = (opts.clubId || '').trim();
@@ -124,7 +120,7 @@ function createTeamsStore() {
 			// Exclude routePath from key so navigating within the same scope (e.g. /coach/dashboard -> /coach/logistics)
 			// uses the already loaded teams array, preventing duplicate Firestore fetches and race conditions.
 			const key = `${role}|${scope}|${clubId}|${coachEmail.toLowerCase()}`;
-			if (loaded && lastLoadKey === key) return;
+			if (loaded && lastLoadKey === key && !opts.forceRefresh) return;
 			if (!isFirestoreReady()) return;
 
 			try {
@@ -206,11 +202,14 @@ function createTeamsStore() {
 		/** Filter teams that a coach email manages (head or assistant) */
 		getCoachTeams(email) {
 			return teams.filter((t) => {
-				const isHead = (t.coachEmail || '').toLowerCase() === email.toLowerCase();
+				const isHeadString = (t.coachEmail || '').toLowerCase() === email.toLowerCase();
+				const isHeadArray = (t.coachEmails || []).some(
+					(e) => (e || '').toLowerCase() === email.toLowerCase(),
+				);
 				const isAsst = (t.assistants || []).some(
 					(a) => (a || '').toLowerCase() === email.toLowerCase(),
 				);
-				return isHead || isAsst;
+				return isHeadString || isHeadArray || isAsst;
 			});
 		},
 	};

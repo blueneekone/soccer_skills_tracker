@@ -568,7 +568,7 @@ exports.seedBaseSportsConfigs = onCall(async (request) => {
     throw new HttpsError('permission-denied', 'super_admin or global_admin role required.');
   }
 
-  const db = admin.firestore();
+  const db = new Proxy({}, { get: (t, p) => { const fs = admin.firestore(); const v = fs[p]; return typeof v === 'function' ? v.bind(fs) : v; } });
   const batch = db.batch();
   const now = admin.firestore.FieldValue.serverTimestamp();
 

@@ -1,5 +1,5 @@
 import { auth, db, registerActiveCellResolver } from '$lib/firebase.js';
-import { getIdTokenResult, onAuthStateChanged, signOut, getIdToken } from 'firebase/auth';
+import { getIdTokenResult, onIdTokenChanged, signOut, getIdToken } from 'firebase/auth';
 import { resolveUserProfile } from '$lib/auth/profile.js';
 import { workspaceContextStore } from '$lib/stores/workspaceContext.svelte.js';
 import { createAuthGates } from '$lib/stores/auth/authGates.svelte.js';
@@ -20,8 +20,39 @@ export function createAuthFacade() {
 	const sessionState = createSessionState();
 	const gates = createAuthGates(userState, sessionState, tenantState);
 
-	onAuthStateChanged(auth, async (firebaseUser) => {
-		await handleAuthStateChange(firebaseUser, auth, userState, sessionState, tenantState, globalFirestoreUnsubs);
+	sessionState.isLoading = true;
+	onIdTokenChanged(auth, async (user) => {
+		try {
+			if (user) {
+				const tokenResult = await getIdTokenResult(user, true);
+
+				if (tokenResult.claims.isProfileComplete) {
+					userState.user = user;
+					sessionState.setRole(tokenResult.claims.role || null);
+					tenantState.applyClaims(tokenResult);
+					const profileFromClaims = {
+						role: tokenResult.claims.role || null,
+						isProfileComplete: true,
+						clubId: tokenResult.claims.clubId || tokenResult.claims.tenantId || null,
+						teamId: tokenResult.claims.teamId || null,
+						orgId: tokenResult.claims.orgId || null,
+						householdId: tokenResult.claims.householdId || null
+					};
+					userState.setProfile(profileFromClaims);
+					sessionState.isAuthenticated = true;
+					workspaceContextStore.hydrateContext(user, tokenResult.claims.role, profileFromClaims);
+				} else {
+					await handleAuthStateChange(user, auth, userState, sessionState, tenantState, globalFirestoreUnsubs);
+				}
+			} else {
+				await handleAuthStateChange(user, auth, userState, sessionState, tenantState, globalFirestoreUnsubs);
+			}
+		} catch (err) {
+			console.error('[Auth Facade] Error in onIdTokenChanged:', err);
+			await handleAuthStateChange(null, auth, userState, sessionState, tenantState, globalFirestoreUnsubs);
+		} finally {
+			sessionState.isLoading = false;
+		}
 	});
 
 	registerActiveCellResolver(() => tenantState.cellId);

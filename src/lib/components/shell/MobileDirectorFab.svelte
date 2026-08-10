@@ -25,7 +25,6 @@
 		{ prefix: '/admin',                       label: 'Overview',       icon: 'data.chart-line',     href: '/admin/overview' },
 		{ prefix: '/coach/forge',                 label: 'Create Drill',   icon: 'game.dumbbell',       href: '/coach/forge' },
 		{ prefix: '/coach/match-day',             label: 'Log Match',      icon: 'data.activity',       href: '/coach/match-day' },
-		{ prefix: '/coach',                       label: 'View Roster',    icon: 'user.group',          href: '/coach' },
 	];
 
 	let { pathname }: Props = $props();

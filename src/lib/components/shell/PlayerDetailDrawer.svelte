@@ -321,16 +321,16 @@
 				{#if isEditing}
 					<div class="tw-flex tw-flex-col tw-gap-3 tw-mt-2">
 						<div>
-							<label class="tw-block tw-text-[10px] tw-font-mono tw-text-[#a1a1aa] tw-uppercase tw-tracking-widest tw-mb-1">Primary position</label>
-							<input type="text" bind:value={editData.position} class="tw-w-full tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-rounded tw-px-3 tw-py-2 tw-text-sm tw-font-mono tw-text-[#fafafa] focus:tw-border-[#14b8a6] focus:tw-outline-none" />
+							<label for="pdd-pos" class="tw-block tw-text-[10px] tw-font-mono tw-text-[#a1a1aa] tw-uppercase tw-tracking-widest tw-mb-1">Primary position</label>
+							<input id="pdd-pos" type="text" bind:value={editData.position} class="tw-w-full tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-rounded tw-px-3 tw-py-2 tw-text-sm tw-font-mono tw-text-[#fafafa] focus:tw-border-[#14b8a6] focus:tw-outline-none" />
 						</div>
 						<div>
-							<label class="tw-block tw-text-[10px] tw-font-mono tw-text-[#a1a1aa] tw-uppercase tw-tracking-widest tw-mb-1">Age group</label>
-							<input type="text" bind:value={editData.ageGroup} class="tw-w-full tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-rounded tw-px-3 tw-py-2 tw-text-sm tw-font-mono tw-text-[#fafafa] focus:tw-border-[#14b8a6] focus:tw-outline-none" />
+							<label for="pdd-age" class="tw-block tw-text-[10px] tw-font-mono tw-text-[#a1a1aa] tw-uppercase tw-tracking-widest tw-mb-1">Age group</label>
+							<input id="pdd-age" type="text" bind:value={editData.ageGroup} class="tw-w-full tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-rounded tw-px-3 tw-py-2 tw-text-sm tw-font-mono tw-text-[#fafafa] focus:tw-border-[#14b8a6] focus:tw-outline-none" />
 						</div>
 						<div>
-							<label class="tw-block tw-text-[10px] tw-font-mono tw-text-[#a1a1aa] tw-uppercase tw-tracking-widest tw-mb-1">Jersey</label>
-							<input type="text" bind:value={editData.jersey} class="tw-w-full tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-rounded tw-px-3 tw-py-2 tw-text-sm tw-font-mono tw-text-[#fafafa] focus:tw-border-[#14b8a6] focus:tw-outline-none" />
+							<label for="pdd-jersey" class="tw-block tw-text-[10px] tw-font-mono tw-text-[#a1a1aa] tw-uppercase tw-tracking-widest tw-mb-1">Jersey</label>
+							<input id="pdd-jersey" type="text" bind:value={editData.jersey} class="tw-w-full tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-rounded tw-px-3 tw-py-2 tw-text-sm tw-font-mono tw-text-[#fafafa] focus:tw-border-[#14b8a6] focus:tw-outline-none" />
 						</div>
 					</div>
 				{:else}
@@ -465,7 +465,6 @@
 
 <style>
 	/* Panel tweaks are in enterprise-console.css (.ec-pdrawer*) */
-	.pdrawer-close-icon { font-size: 1.25rem; }
 
 	.ec-pdrawer__scroll--compliance-first {
 		display: flex;

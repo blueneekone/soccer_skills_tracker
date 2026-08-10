@@ -53,7 +53,7 @@ exports.affinityWebhook = onRequest({ secrets: [affinityWebhookSecret] }, async 
     return;
   }
 
-  const db = admin.firestore();
+  const db = new Proxy({}, { get: (t, p) => { const fs = admin.firestore(); const v = fs[p]; return typeof v === 'function' ? v.bind(fs) : v; } });
   const eventRef = db.collection('affinity_webhook_events').doc(eventId);
 
   try {

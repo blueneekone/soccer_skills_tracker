@@ -11,7 +11,7 @@
 	engine.subscribe();
 </script>
 
-<div class="al-page">
+<div class="pd-page-root al-page st-bento">
 	<AdminAuditHUD {engine} />
 	<AdminAuditArena {engine} />
 </div>

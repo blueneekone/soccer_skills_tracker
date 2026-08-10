@@ -112,6 +112,7 @@ export async function resolveUserProfile(db, firebaseUser, forceTokenRefresh = t
 	const tokenResult = await getIdTokenResult(firebaseUser, forceTokenRefresh);
 	let role = tokenResult.claims.role || '';
 	const emailKey = (firebaseUser.email ?? '').toLowerCase();
+	const uidKey = firebaseUser.uid;
 
 	// QA / Test Accounts: auto-assign role from email alias if no custom claim exists
 	if (!tokenResult.claims.role && emailKey.includes('+')) {
@@ -148,8 +149,18 @@ export async function resolveUserProfile(db, firebaseUser, forceTokenRefresh = t
 		role = role === 'global_admin' ? 'global_admin' : 'super_admin';
 	}
 
-	const userRef = doc(db, 'users', emailKey);
-	const userSnap = await getDoc(userRef);
+	let userRef = doc(db, 'users', uidKey);
+	let userSnap = await getDoc(userRef);
+
+	if (!userSnap.exists()) {
+		const legacyRef = doc(db, 'users', emailKey);
+		const legacySnap = await getDoc(legacyRef);
+		if (legacySnap.exists()) {
+			userRef = legacyRef;
+			userSnap = legacySnap;
+		}
+	}
+
 	const baseProfile = userSnap.exists() ? userSnap.data() : null;
 	const fbName = fallbackPlayerName(baseProfile, firebaseUser.email);
 	// Claims are authoritative; fall back to Firestore `clubId` for users

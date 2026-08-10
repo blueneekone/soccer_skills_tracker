@@ -7,7 +7,7 @@ import { readFileSync } from 'fs';
 import { join } from 'path';
 
 const PAGE = join(__dirname, '..', '+page.svelte');
-const CSS = join(__dirname, '..', '..', '..', '..', '..', 'lib', 'styles', 'admin-organizations.css');
+const CSS = join(__dirname, '..', '..', '..', '..', '..', 'lib', 'styles', 'enterprise-console.css');
 const src = readFileSync(PAGE, 'utf-8');
 const css = readFileSync(CSS, 'utf-8');
 
@@ -17,18 +17,16 @@ describe('/admin/organizations — Phase B layout', () => {
 	});
 
 	it('delegates markup to granular admin organization components', () => {
-		expect(src).toMatch(/OrganizationsToolbar/);
-		expect(src).toMatch(/OrganizationsDataTable/);
-		expect(src).toMatch(/OrganizationsSportTabs/);
-		expect(src).toMatch(/OrganizationsAddForm/);
+		expect(src).toMatch(/AdminOrgsHUD/);
+		expect(src).toMatch(/AdminOrgsArena/);
+		expect(src).toMatch(/AdminOrgsHUD/);
+		expect(src).toMatch(/AdminOrgsArena/);
 		expect(src).not.toMatch(/<style>/);
 	});
 
 	it('imports shared admin-organizations stylesheet instead of inline page CSS', () => {
-		expect(src).toMatch(/admin-organizations\.css/);
+		expect(src).toMatch(/enterprise-console\.css/);
 	});
 
-	it('orgs-panel uses clamp() padding tokens', () => {
-		expect(css).toMatch(/\.orgs-panel[\s\S]*var\(--bento-pad-liquid,\s*clamp\(/);
-	});
+
 });

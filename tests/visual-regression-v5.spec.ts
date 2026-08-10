@@ -71,6 +71,14 @@ const PERSONAS = {
       { name: 'dashboard', path: '/director/dashboard', waitSelector: '.director-console-page' }
     ]
   },
+  commissioner: {
+    uid: 'commissioner-telemetry-uid',
+    role: 'commissioner',
+    clubId: 'aggiesfc',
+    routes: [
+      { name: 'matrix', path: '/commissioner/matrix', waitSelector: '.federation-matrix-grid' }
+    ]
+  },
   public: {
     uid: 'public-telemetry-uid',
     role: 'public',
@@ -94,7 +102,7 @@ async function runMicroscopicLayoutAssertions(page: any, routeName: string) {
   expect(scrollWidth).toBeLessThanOrEqual(clientWidth);
 
   // 2. Bento Grid 2D Collision Check (Ensure no layout overlapping coordinates)
-  const gridChildren = page.locator('.tw-grid > *, .st-bento > *, [class*=\"Bento\"] > *');
+  const gridChildren = page.locator('.tw-grid > *, .st-bento > *, [class*="Bento"] > *');
   const count = await gridChildren.count();
   const bboxes = [];
   for (let i = 0; i < count; i++) {

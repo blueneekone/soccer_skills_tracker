@@ -10,14 +10,11 @@
 	let engine = new CommissionerEngine();
 </script>
 
-<div data-panel="compliance-matrix" class="tenant-matrix-grid federation-matrix-grid tw-w-full tw-h-full tw-p-4 tw-overflow-y-auto">
-	<div
-		class="tw-grid tw-gap-4"
-		style="grid-template-columns: repeat(auto-fit, minmax(min(100%, clamp(280px, 30vw, 350px)), 1fr));"
-	>
+<div data-panel="compliance-matrix" class="tenant-matrix-grid federation-matrix-grid tw-w-full tw-h-full tw-p-6 tw-overflow-y-auto">
+	<div class="bento-grid-container">
 
 		<!-- Federation Compliance Matrix -->
-		<section class="tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-rounded-none tw-p-4 tw-flex tw-flex-col tw-min-h-[300px]">
+		<section class="z2-panel siem-panel tw-p-4 tw-flex tw-flex-col tw-min-h-[300px]">
 			<header class="tw-border-b tw-border-[#334155] tw-pb-2 tw-mb-4">
 				<h2 class="tw-font-geist-sans tw-text-white tw-uppercase tw-tracking-widest tw-text-sm tw-m-0">
 					Federation Compliance Matrix
@@ -60,7 +57,7 @@
 		</section>
 
 		<!-- Tournament Operations & Live Results Hub -->
-		<section class="tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-rounded-none tw-p-4 tw-flex tw-flex-col tw-min-h-[300px]">
+		<section class="z2-panel siem-panel tw-p-4 tw-flex tw-flex-col tw-min-h-[300px]">
 			<header class="tw-border-b tw-border-[#334155] tw-pb-2 tw-mb-4">
 				<h2 class="tw-font-geist-sans tw-text-white tw-uppercase tw-tracking-widest tw-text-sm tw-m-0">
 					Tournament Operations

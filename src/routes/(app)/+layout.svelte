@@ -96,8 +96,8 @@
 		}
 		if (e2eState) {
 			authStore.hydrateForE2E({ role: e2eState.role, isProfileComplete: true, ...e2eState });
-		} else if (data?.user) {
-			authStore.hydrateForE2E({ role: data.user.role, isProfileComplete: true, ...data.user });
+		} else if (data && (data as any).session) {
+			authStore.hydrateForE2E({ role: (data as any).session.role, isProfileComplete: true, ...(data as any).session });
 		}
 	}
 
@@ -146,34 +146,16 @@
 	// sessions cannot onboard without enrolling WebAuthn.
 	// untrack() on every `goto` avoids reactive loops; `browser` avoids SSR `goto` noise.
 	$effect(() => {
-		// In E2E test mode bypass isLoading gate — onAuthStateChanged never fires
-		const e2eBypass = import.meta.env.VITE_E2E_BYPASS_AUTH === 'true';
-		if (!browser || (authStore.isLoading && !e2eBypass)) return;
+		if (!browser || authStore.isLoading) return;
 
 		routeGuardResolved = false;
 
-		// ── E2E Test Bypass ──────────────────────────────────────────────────
-		// When VITE_E2E_BYPASS_AUTH=true the Playwright spec injects a mock
-		// profile via window.__TEST_PROFILE__. We skip all Firebase calls and
-		// immediately resolve the shell so the page renders for screenshots.
-		// This block is tree-shaken out of production builds.
-		if (import.meta.env.VITE_E2E_BYPASS_AUTH === 'true') {
-			const testProfile = (window as any).__TEST_PROFILE__;
-			if (testProfile) {
-				authStore.hydrateForE2E(testProfile);
-			}
-			if (authStore.isAuthenticated) {
+		if (!authStore.isAuthenticated) {
+			untrack(() => {
 				passkeyEligibilityConfirmed = true;
 				routeGuardResolved = true;
-			}
-			return;
-		}
-		// ── End E2E Bypass ───────────────────────────────────────────────────
-
-		if (!authStore.isAuthenticated) {
-			passkeyEligibilityConfirmed = true;
-			routeGuardResolved = true;
-			untrack(() => goto('/login', { replaceState: true }));
+				goto('/login', { replaceState: true });
+			});
 			return;
 		}
 
@@ -227,7 +209,11 @@
 				}
 
 				if (!authStore.isProfileComplete && authStore.role !== 'admin' && authStore.role !== 'global_admin' && authStore.role !== 'super_admin') {
-					untrack(() => goto('/setup', { replaceState: true }));
+					untrack(() => {
+						passkeyEligibilityConfirmed = true;
+						routeGuardResolved = true;
+						goto('/onboarding', { replaceState: true });
+					});
 					return;
 				}
 
@@ -250,9 +236,10 @@
 					authStore.role === 'player' &&
 					!authStore.isConsented &&
 					isDataCollectionRoute(pathConsent) &&
-					!pathConsent.startsWith('/vpc-pending')
+					!pathConsent.startsWith('/vpc-pending') &&
+					!pathConsent.startsWith('/parent/dashboard/vpc')
 				) {
-					untrack(() => goto('/vpc-pending', { replaceState: true }));
+					untrack(() => goto('/parent/dashboard/vpc', { replaceState: true }));
 					return;
 				}
 
@@ -500,7 +487,7 @@
 <!-- Global Vanguard SVG filter defs — referenced by url(#neonBloom) / url(#aresBloom) across every portal. -->
 <VanguardVFX />
 
-{#if authStore.isLoading && import.meta.env.VITE_E2E_BYPASS_AUTH !== 'true'}
+{#if authStore.isLoading || !routeGuardResolved}
 	<div
 		class="auth-splash"
 		role="status"
@@ -518,7 +505,7 @@
 {:else if maintenanceLockout}
 	<!-- Sprint 2.7: Global Kill Switch — full-screen maintenance UI. -->
 	<MaintenanceGate message={featureFlagsStore.maintenanceMessage} />
-{:else if (authStore.isAuthenticated && authStore.isProfileComplete && passkeyEligibilityConfirmed && routeGuardResolved && !holdShellForConsent) || import.meta.env.VITE_E2E_BYPASS_AUTH === 'true'}
+{:else if (authStore.isAuthenticated && authStore.isProfileComplete && passkeyEligibilityConfirmed && routeGuardResolved && !holdShellForConsent)}
 	<div class="app-shell tw-flex tw-w-full {authStore.role === 'player' ? 'tw-min-h-[100dvh] tw-flex-col' : 'tw-h-[100dvh] tw-overflow-hidden'} tw-bg-[#000000]">
 		
 		<main class="tw-flex-1 tw-flex tw-flex-col tw-min-w-0 tw-min-h-0 {authStore.role !== 'player' ? 'tw-overflow-hidden' : ''}">

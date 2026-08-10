@@ -40,7 +40,19 @@ function resolveFirebaseAdmin() {
 const admin = resolveFirebaseAdmin();
 
 if (admin.apps.length === 0) {
-  admin.initializeApp();
+  let credential;
+  const fs = require('fs');
+  const keyPath = path.resolve(process.cwd(), 'serviceAccountKey.json');
+  
+  if (fs.existsSync(keyPath)) {
+    try {
+      credential = admin.credential.cert(require(keyPath));
+    } catch (e) {
+      // Ignore invalid cert errors during bootstrap
+    }
+  }
+
+  admin.initializeApp(credential ? { credential } : undefined);
 }
 
 module.exports = admin;

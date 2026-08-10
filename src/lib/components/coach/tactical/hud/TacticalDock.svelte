@@ -152,7 +152,7 @@
 		<button
 			type="button"
 			class="coach-tac-z4-icon-btn"
-			style="color: var(--pd-atom-amber);"
+			style="color: var(--pd-data-cyan);"
 			onclick={onToggleToolbar}
 			title="Hide Tools"
 			aria-label="Hide Tools"

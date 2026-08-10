@@ -114,13 +114,13 @@
 		Scheduled: '#64748b',
 		Completed: '#22c55e',
 		Cancelled: '#ef4444',
-		Postponed: '#f59e0b',
+		Postponed: '#14b8a6',
 	};
 
 	const OUTCOME_COLORS: Record<'W' | 'L' | 'D', string> = {
 		W: '#22c55e',
 		L: '#ef4444',
-		D: '#f59e0b',
+		D: '#14b8a6',
 	};
 
 	type TabEntry = { key: FilterKey; label: string };
@@ -528,7 +528,7 @@
 	/* Amber pulsing warning icon for cross-timezone fixtures */
 	.fl-tz-warn {
 		font-size: 9px;
-		color: #f59e0b;
+		color: #14b8a6;
 		cursor: help;
 		animation: fl-tz-pulse 2.5s ease-in-out infinite;
 	}
