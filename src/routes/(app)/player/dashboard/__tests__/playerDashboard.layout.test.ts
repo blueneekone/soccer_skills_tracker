@@ -33,11 +33,15 @@ describe('/player/dashboard — Liquid Bento (Slice 3)', () => {
 		expect(src).toMatch(/var\(--shadow-liquid\)/);
 	});
 
-	it('.bento-card local CSS does NOT use backdrop-filter (opaque carve-out)', () => {
+	it('.bento-card local CSS does NOT use backdrop-filter (opaque carve-out) and uses crisp borders', () => {
 		// Extract the .bento-card rule block
-		const m = src.match(/\.bento-card\s*\{([^}]+)\}/s);
+		const m = src.match(/:global\(\.player-dossier-root \.bento-card\)\s*\{([^}]+)\}/s);
 		expect(m).not.toBeNull();
+		// Must not use glassmorphism / blur filter on Z2 data cards
 		expect(m![1]).not.toMatch(/backdrop-filter/);
+		// Ensure background and borders are styled for opaque presentation (Navy Slate / Void palette tokens)
+		expect(m![1]).toMatch(/background:\s*var\(--pd-depth-panel-gradient,\s*var\(--pd-panel,\s*#05050a\)\)/);
+		expect(m![1]).toMatch(/border-color:/);
 	});
 
 	it('has a loading/skeleton state for CLS prevention (.cursorrules §4)', () => {
