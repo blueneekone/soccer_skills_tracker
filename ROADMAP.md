@@ -39,11 +39,11 @@ All data collection must pass through these legal gates before a user accesses t
     *   **HIPAA & Medical:** Emergency contact and health insurance data collection requiring an integrated HIPAA release form [cite: 617].
     *   **Assumption of Risk & Waivers:** Liability waivers detailing sport-specific hazards [cite: 610, 613].
     *   **Photo/Video Release:** Granular opt-in/opt-out for the Fan OS streaming and Player OS video trials [cite: 618].
-    *   **E-Sign Act Enforcement:** The backend must silently capture and encrypt the user's IP address, date, timestamp, and email verification for every signed document [cite: 878].
+    [x] **E-Sign Act Enforcement:** The backend must silently capture and encrypt the user's IP address, date, timestamp, and email verification for every signed document [cite: 878].
 *   **Coaches & Volunteers:** 
     *   **AB 506 Live Scan:** Checkr API integration mandating National Criminal Database clearance before accessing minor data [cite: 280, 285].
     *   **Mandated Reporter & SafeSport:** Upload gates for annual child abuse prevention training certificates [cite: 284].
-*   **Data Minimization (GDPR/CCPA):** An automated 24-hour PII Shredder script for ghost data, while preserving the `consents` collection for multi-year legal audits [cite: 1231].
+*   [x] **Data Minimization (GDPR/CCPA):** An automated 24-hour PII Shredder script for ghost data, while preserving the `consents` collection for multi-year legal audits [cite: 1231].
 
 ---
 

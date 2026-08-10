@@ -1466,7 +1466,7 @@ service cloud.firestore {
             || canReadTypedSystemChannelDoc(clubId, channelId)
           );
 
-        allow create: if authed() && request.resource.data.channelStatus == 'BLOCKED_VPC_PENDING' && !('ccParentEmails' in request.resource.data) && canCreateCommsChannelInClub(clubId) && channelCreateSafesportOk() && channelGroupSafesportCreateOk();
+        allow create: if authed() && request.resource.data.channelStatus == 'BLOCKED_VPC_PENDING' && !request.resource.data.keys().hasAll(['ccParentEmails']) && canCreateCommsChannelInClub(clubId) && channelCreateSafesportOk() && channelGroupSafesportCreateOk();
 
         allow update: if authed()
           && channelClubScopeOk(clubId)

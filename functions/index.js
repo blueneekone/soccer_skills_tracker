@@ -153,3 +153,10 @@ exports.ingestRoster = ingestRoster.ingestRoster;
 
 const { onChannelCreated } = require('./src/onChannelCreated.js');
 exports.onChannelCreated = onChannelCreated;
+
+const vpcOps = require('./src/domains/vpcOps.ts');
+exports.generateVpcChallenge = vpcOps.generateVpcChallenge;
+exports.verifyVpcSignature = vpcOps.verifyVpcSignature;
+
+const { scheduledPiiShredder } = require('./src/scheduledPiiShredder.ts');
+exports.scheduledPiiShredder = scheduledPiiShredder;
