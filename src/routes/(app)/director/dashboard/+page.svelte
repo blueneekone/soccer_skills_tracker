@@ -111,7 +111,7 @@
 <!-- AEGIS Lightning Alert — directors and above only -->
 <WeatherAlert />
 
-<div class="director-console-page tw-h-[100dvh] tw-flex tw-flex-col tw-overflow-hidden">
+<div class="director-console-page tw-h-[100dvh] tw-flex tw-flex-col tw-overflow-hidden" style="padding: clamp(16px, 3vw, 24px);">
 	<!-- Page identity row — sits directly inside ec-canvas (no subnav above it) -->
 	<div class="director-console-page__header">
 		{#if clubId}
@@ -172,7 +172,7 @@
 	{:else if activeTab === 'comms'}
 		<section class="director-console-page__section tw-w-full tw-grid tw-grid-cols-1 lg:tw-grid-cols-12 tw-gap-8" style="grid-template-columns: repeat(auto-fit, minmax(min(100%, clamp(280px, 30vw, 350px)), 1fr));">
 			<section
-				class="lg:tw-col-span-8 dark-form-surface tw-flex tw-flex-col tw-gap-3 tw-p-8 tw-border tw-border-slate-600 tw-rounded-none tw-bg-slate-900 tw-relative" style="clip-path: polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px);"
+				class="lg:tw-col-span-8 siem-panel dark-form-surface tw-flex tw-flex-col tw-gap-3 tw-p-8 tw-border tw-border-slate-600 tw-bg-slate-900 tw-relative"
 				aria-labelledby="director-comms-cta-heading"
 			>
 				<h2 id="director-comms-cta-heading" class="tw-m-0 tw-text-base tw-font-extrabold tw-text-slate-50">
@@ -190,7 +190,7 @@
 				</a>
 			</section>
 			<section
-				class="lg:tw-col-span-4 dark-form-surface tw-flex tw-flex-col tw-gap-3 tw-p-8 tw-border tw-border-slate-600 tw-rounded-none tw-bg-slate-900 tw-relative" style="clip-path: polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px);"
+				class="lg:tw-col-span-4 siem-panel dark-form-surface tw-flex tw-flex-col tw-gap-3 tw-p-8 tw-border tw-border-slate-600 tw-bg-slate-900 tw-relative"
 				aria-labelledby="director-sponsor-ops-heading"
 			>
 				<h2 id="director-sponsor-ops-heading" class="tw-m-0 tw-text-base tw-font-extrabold tw-text-slate-50">
