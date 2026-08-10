@@ -49,8 +49,7 @@
 			{/if}
 			<h1 class="tw-font-mono tw-text-2xl tw-font-black tw-uppercase tw-tracking-[0.08em] tw-text-white md:tw-text-3xl tw-m-0">TEAM OPS</h1>
 			<p class="tw-mt-2 tw-max-w-2xl tw-text-sm tw-text-slate-400">
-				Coach-delegated logistics — schedule, roster, attendance, and parent-targeted comms (no separate
-				team_manager role in v1).
+				Coach-delegated logistics — schedule, roster, attendance, and parent-targeted comms.
 			</p>
 		</div>
 

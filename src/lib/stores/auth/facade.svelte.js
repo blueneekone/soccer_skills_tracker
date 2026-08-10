@@ -30,9 +30,17 @@ export function createAuthFacade() {
 					userState.user = user;
 					sessionState.setRole(tokenResult.claims.role || null);
 					tenantState.applyClaims(tokenResult);
-					userState.setProfile({ role: tokenResult.claims.role || null, isProfileComplete: true });
+					const profileFromClaims = {
+						role: tokenResult.claims.role || null,
+						isProfileComplete: true,
+						clubId: tokenResult.claims.clubId || tokenResult.claims.tenantId || null,
+						teamId: tokenResult.claims.teamId || null,
+						orgId: tokenResult.claims.orgId || null,
+						householdId: tokenResult.claims.householdId || null
+					};
+					userState.setProfile(profileFromClaims);
 					sessionState.isAuthenticated = true;
-					workspaceContextStore.hydrateContext(user, tokenResult.claims.role, { role: tokenResult.claims.role || null, isProfileComplete: true });
+					workspaceContextStore.hydrateContext(user, tokenResult.claims.role, profileFromClaims);
 				} else {
 					await handleAuthStateChange(user, auth, userState, sessionState, tenantState, globalFirestoreUnsubs);
 				}
