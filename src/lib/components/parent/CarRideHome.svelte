@@ -27,7 +27,7 @@
 			</div>
 		</div>
 
-		<div class="tw-grid tw-grid-cols-2 tw-gap-4">
+		<div class="bento-grid-container tw-grid-cols-2 tw-gap-4" style="grid-template-columns: repeat(2, minmax(0, 1fr)); width: auto;">
 			<div class="tw-bg-[#1e293b] tw-rounded-xl tw-p-4 tw-border tw-border-[#334155]">
 				<span class="tw-text-[#94a3b8] tw-text-xs tw-font-mono tw-tracking-widest tw-block tw-mb-1">EFFORT (RPE)</span>
 				<span class="tw-text-white tw-text-3xl tw-font-bold">{matchData?.rpe}<span class="tw-text-[#64748b] tw-text-lg">/10</span></span>
