@@ -22,23 +22,29 @@ export function createAuthFacade() {
 
 	sessionState.isLoading = true;
 	onIdTokenChanged(auth, async (user) => {
-		if (user) {
-			const tokenResult = await user.getIdTokenResult(true);
+		try {
+			if (user) {
+				const tokenResult = await getIdTokenResult(user, true);
 
-			if (tokenResult.claims.isProfileComplete) {
-				userState.user = user;
-				sessionState.setRole(tokenResult.claims.role || null);
-				tenantState.applyClaims(tokenResult);
-				userState.setProfile({ role: tokenResult.claims.role || null, isProfileComplete: true });
-				sessionState.isAuthenticated = true;
-				workspaceContextStore.hydrateContext(user, tokenResult.claims.role, { role: tokenResult.claims.role || null, isProfileComplete: true });
+				if (tokenResult.claims.isProfileComplete) {
+					userState.user = user;
+					sessionState.setRole(tokenResult.claims.role || null);
+					tenantState.applyClaims(tokenResult);
+					userState.setProfile({ role: tokenResult.claims.role || null, isProfileComplete: true });
+					sessionState.isAuthenticated = true;
+					workspaceContextStore.hydrateContext(user, tokenResult.claims.role, { role: tokenResult.claims.role || null, isProfileComplete: true });
+				} else {
+					await handleAuthStateChange(user, auth, userState, sessionState, tenantState, globalFirestoreUnsubs);
+				}
 			} else {
 				await handleAuthStateChange(user, auth, userState, sessionState, tenantState, globalFirestoreUnsubs);
 			}
-		} else {
-			await handleAuthStateChange(user, auth, userState, sessionState, tenantState, globalFirestoreUnsubs);
+		} catch (err) {
+			console.error('[Auth Facade] Error in onIdTokenChanged:', err);
+			await handleAuthStateChange(null, auth, userState, sessionState, tenantState, globalFirestoreUnsubs);
+		} finally {
+			sessionState.isLoading = false;
 		}
-		sessionState.isLoading = false;
 	});
 
 	registerActiveCellResolver(() => tenantState.cellId);
