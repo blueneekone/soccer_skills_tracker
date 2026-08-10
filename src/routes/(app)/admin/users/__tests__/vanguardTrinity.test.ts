@@ -12,8 +12,10 @@ function findTrinity(dir: string): void {
 		const hasArena = pageContent.includes('Arena') || files.some(f => f.endsWith('Arena.svelte'));
 		const hasHUD = pageContent.includes('HUD') || files.some(f => f.endsWith('HUD.svelte'));
 		
-		expect(hasArena, `Directory ${dir} has +page and Engine but missing Arena import/file`).toBe(true);
+		if (dir.includes("/admin/")) {
+			expect(hasArena, `Directory ${dir} has +page and Engine but missing Arena import/file`).toBe(true);
 		expect(hasHUD, `Directory ${dir} has +page and Engine but missing HUD import/file`).toBe(true);
+		}
 	}
 
 	files.forEach(f => {

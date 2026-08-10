@@ -15,7 +15,9 @@ import {
 	suspendUserRowLocally,
 } from '$lib/admin/globalUsersDisplay.js';
 import { fetchUsersCount, fetchUsersPage, loadClubNameMap } from '$lib/admin/globalUsersData.js';
-import type { GlobalUserRow, GlobalUsersTab } from '$lib/types/adminUsers.js';
+import type { GlobalUserRow, GlobalUsersTab } from "$lib/types/adminUsers.js";
+import { isFirestoreReady } from "$lib/utils/firestoreGuard.js";
+import { untrack } from "svelte";
 
 export class AdminUsersEngine {
 	impersonateUserFn = httpsCallable(functions, 'impersonateUser');
@@ -97,7 +99,7 @@ export class AdminUsersEngine {
 		this.searchInput = term;
 		this.searchApplied = term;
 		this.cursorStack = [''];
-		this.pageIndex = 0;
+		untrack(() => { this.pageIndex = 0; });
 		await Promise.all([this.loadCount(term, this.activeTab), this.loadPage(term, '', this.activeTab)]);
 	}
 
@@ -105,7 +107,7 @@ export class AdminUsersEngine {
 		this.searchInput = '';
 		this.searchApplied = '';
 		this.cursorStack = [''];
-		this.pageIndex = 0;
+		untrack(() => { this.pageIndex = 0; });
 		await Promise.all([this.loadCount('', this.activeTab), this.loadPage('', '', this.activeTab)]);
 	}
 
@@ -299,7 +301,7 @@ export class AdminUsersEngine {
 	subscribe() {
 		$effect.root(() => {
 			$effect(() => {
-				if (authStore.isLoading || !authStore.isAuthenticated) return;
+				if (!isFirestoreReady() || authStore.isLoading || !authStore.isAuthenticated) return;
 				if (authStore.role !== 'super_admin' && authStore.role !== 'global_admin') {
 					this.err = 'You must be a super admin to view this page.';
 					return;
@@ -317,7 +319,7 @@ export class AdminUsersEngine {
 					}
 					if (cancelled) return;
 					this.cursorStack = [''];
-					this.pageIndex = 0;
+					untrack(() => { this.pageIndex = 0; });
 					await Promise.all([this.loadCount(term, segment), this.loadPage(term, '', segment)]);
 				})();
 

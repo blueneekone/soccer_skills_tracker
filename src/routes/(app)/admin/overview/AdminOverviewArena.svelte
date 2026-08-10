@@ -5,11 +5,11 @@
 
 	// The Glass: Renders the high-density multi-tenant resource matrix and system-level tables.
 	// Constraints:
-	// - Must inject the .tenant-matrix-grid class selector on the outermost wrapper.
+	// - Must inject the .pd-page-root class selector on the outermost wrapper.
 	// - Grid Math: Enforce the asymmetric 12-column Bento Grid utilizing fluid anti-squish layout configuration.
 </script>
 
-<div class="tenant-matrix-grid tw-w-full tw-max-w-[1920px] tw-mx-auto tw-p-6 tw-flex-1 tw-flex tw-flex-col">
+<div class="pd-page-root tw-w-full tw-max-w-[1920px] tw-mx-auto tw-p-6 tw-flex-1 tw-flex tw-flex-col">
 
 	{#if engine.isLoading}
 		<div class="tw-flex-1 tw-flex tw-items-center tw-justify-center">
@@ -24,7 +24,7 @@
 
 		{#if engine.activeTab === 'overview'}
 			<!-- Telemetry Tiles -->
-			<div class="tw-grid tw-grid-cols-1 sm:tw-grid-cols-2 lg:tw-grid-cols-4 tw-gap-6 tw-mb-6">
+			<div class="tw-grid st-bento tw-grid-cols-1 sm:tw-grid-cols-2 lg:tw-grid-cols-4 tw-gap-6 tw-mb-6">
 				<div class="tw-bg-[#0B0F19] tw-border tw-border-[#1E293B] tw-rounded-none tw-p-6 tw-flex tw-flex-col">
 					<span class="tw-text-[10px] tw-font-bold tw-uppercase tw-tracking-widest tw-text-[#94A3B8] tw-mb-2">Total Organizations</span>
 					<span class="tw-font-mono tw-text-4xl tw-font-black tw-text-[#FAFAFA]">{engine.clubsCount}</span>
@@ -44,7 +44,7 @@
 			</div>
 
 			<!-- Asymmetric 12-column Bento Grid with fluid anti-squish -->
-			<div class="tw-grid tw-grid-cols-1 xl:tw-grid-cols-12 tw-gap-6" style="grid-template-columns: repeat(auto-fit, minmax(min(100%, clamp(280px, 30vw, 350px)), 1fr));">
+			<div class="tw-grid st-bento tw-grid-cols-1 xl:tw-grid-cols-12 tw-gap-6" style="grid-template-columns: repeat(auto-fit, minmax(min(100%, clamp(280px, 30vw, 350px)), 1fr));">
 
 				<!-- Main Chart Area (Spans 8 cols on xl) -->
 				<div class="tw-col-span-1 xl:tw-col-span-8 tw-bg-[#0B0F19] tw-border tw-border-[#1E293B] tw-rounded-none tw-p-6 tw-min-h-[400px] tw-flex tw-flex-col">
@@ -67,7 +67,7 @@
 				</div>
 			</div>
 
-			<div class="admin-hud-grid tw-grid tw-grid-cols-1 xl:tw-grid-cols-12 tw-gap-6 tw-mt-6" style="grid-template-columns: repeat(auto-fit, minmax(min(100%, clamp(280px, 30vw, 350px)), 1fr));">
+			<div class="admin-hud-grid tw-grid st-bento tw-grid-cols-1 xl:tw-grid-cols-12 tw-gap-6 tw-mt-6" style="grid-template-columns: repeat(auto-fit, minmax(min(100%, clamp(280px, 30vw, 350px)), 1fr));">
 				<!-- Global Telemetry Feed -->
 				<div class="global-telemetry-feed tw-col-span-1 xl:tw-col-span-8 dark-form-surface tw-border tw-border-[#1E293B] tw-bg-[#0B0F19] tw-p-6 tw-rounded-none">
 					<h3 class="tw-font-mono tw-text-xs tw-text-[#14b8a6] tw-mb-2 tw-uppercase tw-tracking-widest">Global Telemetry Feed</h3>
