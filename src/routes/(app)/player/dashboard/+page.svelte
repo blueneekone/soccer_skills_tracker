@@ -561,7 +561,7 @@
 			{/if}
 		</footer>
 	</section>
-	<section class="player-hud-grid bento-span-12 tw-grid tw-gap-4 tw-mt-6" style="grid-template-columns: repeat(auto-fit, minmax(min(100%, clamp(280px, 30vw, 350px)), 1fr));">
+	<section class="player-hud-grid bento-span-12  tw-gap-4 tw-mt-6" style="grid-template-columns: repeat(auto-fit, minmax(min(100%, clamp(280px, 30vw, 350px)), 1fr));">
 		<!-- Biometrics Cardiac Module -->
 		<div data-chamfer="true" class="chamfered-card hud-biometrics-card pd-panel tw-min-w-0 tw-bg-slate-900/50 tw-p-4 tw-border tw-border-slate-800" style="clip-path: polygon(16px 0px, 100% 0px, 100% calc(100% - 16px), calc(100% - 16px) 100%, 0px 100%, 0px 16px);">
 			<h3 class="tw-font-mono tw-text-xs tw-text-teal-400 tw-mb-2 tw-uppercase tw-tracking-widest">Biometrics</h3>
@@ -669,7 +669,8 @@
 	}
 
 	/* Lifted dossier panels — void-first gradient (6j closure J-06) */
-	:global(.player-dossier-root .bento-card) {
+	:global(.player-dossier-root .bento-card),
+	.bento-card {
 
 		overflow: hidden;
 		min-width: 0;
