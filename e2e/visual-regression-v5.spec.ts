@@ -68,7 +68,7 @@ const PERSONAS = {
     role: 'director',
     clubId: 'aggiesfc',
     routes: [
-      { name: 'dashboard', path: '/director/dashboard', waitSelector: '.pd-page-root, .st-bento' }
+      { name: 'dashboard', path: '/director/dashboard', waitSelector: '.director-console-page' }
     ]
   }
 };
