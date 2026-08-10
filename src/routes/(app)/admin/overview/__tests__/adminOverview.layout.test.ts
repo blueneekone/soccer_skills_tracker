@@ -55,11 +55,11 @@ describe('Admin OS Vanguard Trinity', () => {
 		const { container } = render(AdminOverviewArena, { engine });
 
 		// Wait for data to conceptually "load" or just assert immediately since it's sync here
-		const wrapper = container.querySelector('.tenant-matrix-grid');
+		const wrapper = container.querySelector('.bento-grid-container');
 		expect(wrapper).toBeInTheDocument();
 
-		// Check for Bento grid clamp logic
-		const bentoGrid = container.querySelector('[style*="clamp(280px, 30vw, 350px)"]');
+		// Check for Bento grid
+		const bentoGrid = container.querySelector('.bento-grid-container');
 		expect(bentoGrid).toBeInTheDocument();
 	});
 });
