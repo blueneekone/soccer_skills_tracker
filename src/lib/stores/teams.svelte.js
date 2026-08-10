@@ -27,36 +27,28 @@ function createTeamsStore() {
 		const db = getActiveDb();
 		if (!db) return [];
 		
-		const queries = [];
-		// Fetch all teams for the coach by email or assistants array.
-		// We do NOT include clubId in the query to avoid requiring a composite index.
-		queries.push(getDocs(query(collection(db, 'teams'), where('coachEmail', '==', head))).catch(e => { console.error('Error fetching teams by coachEmail', e); return []; }));
-		queries.push(getDocs(query(collection(db, 'teams'), where('assistants', 'array-contains', head))).catch(e => { console.error('Error fetching teams by assistants', e); return []; }));
+		let teamsArr = [];
+		if (clubId) {
+			const snap = await getDocs(query(collection(db, 'teams'), where('clubId', '==', clubId))).catch(e => { console.error('Error fetching teams by clubId', e); return null; });
+			if (snap) {
+				snap.forEach(d => teamsArr.push({ id: d.id, ...d.data() }));
+			}
+		} else {
+			// Fallback if no clubId (unlikely for coach, but just in case)
+			const snapHead = await getDocs(query(collection(db, 'teams'), where('coachEmail', '==', head))).catch(() => null);
+			if (snapHead) snapHead.forEach(d => teamsArr.push({ id: d.id, ...d.data() }));
+			
+			const snapAsst = await getDocs(query(collection(db, 'teams'), where('assistants', 'array-contains', head))).catch(() => null);
+			if (snapAsst) snapAsst.forEach(d => teamsArr.push({ id: d.id, ...d.data() }));
+		}
 		
-		// Fallback: check user's profile for explicit teamId assignment (handles alias mismatches)
-		queries.push(
-			getDocs(query(collection(db, 'users'), where('emailLower', '==', head))).then(async (userSnap) => {
-				if (!userSnap.empty) {
-					const data = userSnap.docs[0].data();
-					if (data.teamId) {
-						const tSnap = await getDoc(doc(db, 'teams', data.teamId));
-						if (tSnap.exists()) {
-							return [{ id: tSnap.id, data: () => tSnap.data() }];
-						}
-					}
-				}
-				return [];
-			}).catch(() => [])
-		);
-		
-		const snaps = await Promise.all(queries);
 		const byId = new Map();
-		for (const snap of snaps) {
-			snap.forEach((d) => {
-				const data = typeof d.data === 'function' ? d.data() : d;
-				if (clubId && data.clubId !== clubId) return;
-				byId.set(d.id, { id: d.id, ...data });
-			});
+		for (const data of teamsArr) {
+			const isHead = (data.coachEmail || '').toLowerCase() === head;
+			const isAsst = (data.assistants || []).some(a => (a || '').toLowerCase() === head);
+			if (isHead || isAsst) {
+				byId.set(data.id, data);
+			}
 		}
 		return Array.from(byId.values());
 	}
