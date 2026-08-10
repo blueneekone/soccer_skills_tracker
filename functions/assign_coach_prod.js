@@ -10,7 +10,7 @@ try {
 }
 admin.initializeApp({
   credential,
-  projectId: 'sstracker-dev'
+  projectId: 'sports-skill-tracker-dev'
 });
 
 async function run() {
