@@ -111,6 +111,11 @@ describe('evaluateClubEligibility', () => {
 			expect(result).toEqual({ eligible: false, blockers: ['safesport_pending'] });
 		});
 
+		it('should return eligible for cleared safesport clearance', () => {
+			const result = evaluateClubEligibility({ ...baseInput, clearanceStatus: 'CLEARED' }, DEFAULT_ELIGIBILITY_MATRIX);
+			expect(result).toEqual({ eligible: true, blockers: [] });
+		});
+
 		it('should return vpc_not_verified blocker for minors without verified vpc', () => {
 			const result = evaluateClubEligibility({ ...baseInput, isMinor: true, vpcStatus: 'pending' }, DEFAULT_ELIGIBILITY_MATRIX);
 			expect(result).toEqual({ eligible: false, blockers: ['vpc_not_verified'] });
