@@ -1,5 +1,6 @@
 import { error } from '@sveltejs/kit';
-import { getAdminDb } from '$lib/server/admin';
+import { db } from '$lib/firebase.js';
+import { collection, query, where, limit, getDocs, doc, getDoc, orderBy } from 'firebase/firestore';
 
 export async function load({ params }) {
 	const slug = (params.slug || '').trim().toLowerCase();
@@ -7,11 +8,9 @@ export async function load({ params }) {
 		error(404, 'Club not found');
 	}
 
-	const db = getAdminDb();
-	const snap = await db.collection('clubs')
-		.where('marketing.publicSlug', '==', slug)
-		.limit(1)
-		.get();
+	const clubsRef = collection(db, 'clubs');
+	const q = query(clubsRef, where('marketing.publicSlug', '==', slug), limit(1));
+	const snap = await getDocs(q);
 
 	if (snap.empty) {
 		error(404, 'Club not found');
@@ -22,19 +21,17 @@ export async function load({ params }) {
 	const c = clubDoc.data() || {};
 
 	// Also fetch the tracking configs for secure pixel injection
-	const configSnap = await db.collection('marketing_configs').doc(clubId).get();
-	const configData = configSnap.exists ? configSnap.data() || {} : {};
+	const configSnap = await getDoc(doc(db, 'marketing_configs', clubId));
+	const configData = configSnap.exists() ? configSnap.data() || {} : {};
 
 	const metaPixelId = typeof configData.metaPixelId === 'string' ? configData.metaPixelId.trim().slice(0, 64) : '';
 	const googleAnalyticsId = typeof configData.googleAnalyticsId === 'string' ? configData.googleAnalyticsId.trim().slice(0, 64) : '';
 
 	const athletes: Record<string, unknown>[] = [];
 	try {
-		const profSnap = await db.collection('public_player_profiles')
-			.where('clubId', '==', clubId)
-			.orderBy('current_level', 'desc')
-			.limit(8)
-			.get();
+		const profsRef = collection(db, 'public_player_profiles');
+		const profsQuery = query(profsRef, where('clubId', '==', clubId), orderBy('current_level', 'desc'), limit(8));
+		const profSnap = await getDocs(profsQuery);
 		
 		profSnap.forEach((d) => {
 			const p = d.data() || {};
