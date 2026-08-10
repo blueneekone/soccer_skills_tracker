@@ -22,14 +22,14 @@ const COMPLIANT_HOVER_COLORS = [
 const PERSONAS = {
   admin: {
     uid: 'admin-telemetry-uid',
-    role: 'admin',
+    role: 'super_admin',
     clubId: 'aggiesfc',
     routes: [
       { name: 'overview', path: '/admin/overview', waitSelector: '.pd-page-root, .st-bento' },
       { name: 'users', path: '/admin/users', waitSelector: '.pd-page-root' },
       { name: 'organizations', path: '/admin/organizations', waitSelector: '.pd-page-root' },
-      { name: 'audit-logs', path: '/admin/audit-logs', waitSelector: '.pd-page-root' },
-      { name: 'settings', path: '/admin/settings', waitSelector: '.pd-page-root' }
+      { name: 'audit-logs', path: '/admin/audit-log', waitSelector: '.pd-page-root' },
+      { name: 'settings', path: '/admin/system-settings', waitSelector: '.pd-page-root' }
     ]
   },
   player: {
