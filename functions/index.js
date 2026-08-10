@@ -54,6 +54,10 @@ exports.generatePdfReportCard = reportOps.generatePdfReportCard;
 const complianceOps = require('./src/domains/complianceOps.js');
 exports.parentSubmitVpcIntent = complianceOps.parentSubmitVpcIntent;
 
+const vpcOps = require('./src/domains/vpcOps.js');
+exports.generateVpcChallenge = vpcOps.generateVpcChallenge;
+exports.verifyVpcSignature = vpcOps.verifyVpcSignature;
+
 const adminOps = require('./src/domains/adminOps.js');
 exports.updateUserRole = adminOps.updateUserRole;
 exports.listTeamsForClub = adminOps.listTeamsForClub;
