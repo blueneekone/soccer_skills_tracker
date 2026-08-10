@@ -40,6 +40,25 @@ function resolveFirebaseAdmin() {
 const admin = resolveFirebaseAdmin();
 
 if (admin.apps.length === 0) {
+  let credential;
+  const fs = require('fs');
+  const keyPath = path.resolve(__dirname, '../serviceAccountKey.json');
+  fs.writeFileSync('C:/Users/ewaec/Documents/Soccer Skills Developent Tracker/soccer_skills_tracker/deploy-debug.log', 'Dirname: ' + __dirname + ' keyPath: ' + keyPath + ' exists: ' + fs.existsSync(keyPath) + '\n', {flag: 'a'});
+
+  if (fs.existsSync(keyPath)) {
+    try {
+      const certObj = require(keyPath);
+      credential = admin.credential.cert(certObj);
+      if (!process.env.GCLOUD_PROJECT) process.env.GCLOUD_PROJECT = certObj.project_id;
+      if (!process.env.GCP_PROJECT) process.env.GCP_PROJECT = certObj.project_id;
+      if (!process.env.FIREBASE_CONFIG) process.env.FIREBASE_CONFIG = JSON.stringify({ projectId: certObj.project_id });
+      admin.initializeApp({ credential, projectId: certObj.project_id });
+      return;
+    } catch (e) {
+      // Ignore invalid cert errors during bootstrap
+    }
+  }
+
   admin.initializeApp();
 }
 

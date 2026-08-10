@@ -235,7 +235,7 @@
 	/>
 {/if}
 
-<div class="pp-root tw-mx-auto tw-box-border tw-w-full tw-max-w-3xl tw-min-w-0 tw-px-4 tw-pb-24 tw-pt-6">
+<div class="pd-page-root compliance-vault pp-root tw-mx-auto tw-box-border tw-w-full tw-max-w-3xl tw-min-w-0 tw-px-4 tw-pb-24 tw-pt-6">
 	<header class="tw-mb-8 tw-min-w-0">
 		<p class="tw-mb-1 tw-font-mono tw-text-xs tw-uppercase tw-tracking-widest tw-text-slate-500">
 			Parent Portal
@@ -283,7 +283,7 @@
 	{:else}
 		<ul class="tw-m-0 tw-list-none tw-space-y-4 tw-p-0">
 			{#each players as player (player.email)}
-				<li class="tw-rounded-2xl tw-border tw-border-slate-800 tw-bg-slate-900/60 tw-p-5">
+				<li class="st-bento tw-rounded-2xl tw-border tw-border-slate-800 tw-bg-slate-900/60 tw-p-5">
 					<div class="tw-flex tw-flex-wrap tw-items-center tw-justify-between tw-gap-4">
 						<div class="tw-flex tw-min-w-0 tw-items-center tw-gap-3">
 							<div

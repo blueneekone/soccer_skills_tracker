@@ -30,7 +30,7 @@
 		<span class="tw-text-[#94a3b8] tw-text-xs tw-font-mono tw-tracking-widest">BOUNTY TERMINAL</span>
 	</div>
 
-	<div class="tw-grid tw-grid-cols-2 tw-gap-4 tw-mb-6">
+	<div class="bento-grid-container tw-grid-cols-2 tw-gap-4 tw-mb-6" style="grid-template-columns: repeat(2, minmax(0, 1fr)); width: auto;">
 		<div class="tw-bg-[#1e293b] tw-p-4 tw-rounded-xl tw-border tw-border-[#334155]">
 			<p class="tw-text-[#94a3b8] tw-text-xs tw-font-mono tw-tracking-widest tw-mb-1">FUNDING SOURCE</p>
 			<p class="tw-text-white tw-text-sm tw-font-bold tw-truncate" title={fundingLabel}>

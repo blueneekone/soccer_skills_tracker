@@ -235,7 +235,7 @@ describe('workoutLog', () => {
 		).toBe('Just a random message.');
 	});
 
-
+	// 🧪 Testing Improvement Task: Ensure Player OS write errors do not halt execution and are logged.
 	it('executePlayerWorkoutLog catches and logs errors when Player OS write fails', async () => {
 		const logSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 		const mockError = new Error('Simulated Player OS write failure');

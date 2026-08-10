@@ -1,3 +1,8 @@
+<script module>
+  import Icon from '$lib/components/ui/Icon.svelte';
+  import type { IconName } from '$lib/icons/registry.js';
+</script>
+
 <script lang="ts">
   import type { VpcEngine } from './VpcEngine.svelte.js';
 
@@ -11,11 +16,6 @@
       credentialIdB64: 'mock_credential_id'
     });
   }
-</script>
-
-<script module>
-  import Icon from '$lib/components/ui/Icon.svelte';
-  import type { IconName } from '$lib/icons/registry.js';
 </script>
 
 <div class="tw-border tw-border-slate-800 tw-rounded-[24px] tw-p-8 tw-bg-slate-900 tw-text-center tw-flex tw-flex-col tw-items-center tw-gap-6">

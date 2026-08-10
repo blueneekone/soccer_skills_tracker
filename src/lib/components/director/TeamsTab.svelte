@@ -176,6 +176,10 @@
 			role: 'coach'
 		}, { merge: true });
 		
+		batch.set(doc(db, 'teams', teamId), {
+			coachEmail: emailLower
+		}, { merge: true });
+
 		await batch.commit();
 	}
 
@@ -207,7 +211,7 @@
 			newTeamName   = '';
 			newCoachEmail = '';
 			showCreateForm = false;
-			await teamsStore.load('director', { clubId, scope: 'club', routePath: page.url.pathname });
+			await teamsStore.load('director', { clubId, scope: 'club', routePath: page.url.pathname, forceRefresh: true });
 		} catch (e) {
 			alert('Error: ' + (e instanceof Error ? e.message : String(e)));
 		} finally {

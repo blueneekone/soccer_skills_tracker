@@ -86,7 +86,7 @@ async function runMicroscopicLayoutAssertions(page: any, routeName: string) {
   expect(scrollWidth).toBeLessThanOrEqual(clientWidth);
 
   // 2. Bento Grid 2D Collision Check (Ensure no layout overlapping coordinates)
-  const gridChildren = page.locator('.tw-grid > *, .st-bento > *, [class*=\"Bento\"] > *');
+  const gridChildren = page.locator('.tw-grid > *, .st-bento > *, [class*="Bento"] > *');
   const count = await gridChildren.count();
   const bboxes = [];
   for (let i = 0; i < count; i++) {
