@@ -35,7 +35,7 @@ async function run() {
         console.log(`Assigning ${targetUser.email} to team ${teamId}...`);
         
         await db.collection('teams').doc(teamId).set({
-            coachEmails: admin.firestore.FieldValue.arrayUnion(targetUser.email)
+            coachEmail: targetUser.email
         }, { merge: true });
         
         console.log('Successfully assigned!');

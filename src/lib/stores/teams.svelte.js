@@ -44,9 +44,12 @@ function createTeamsStore() {
 		
 		const byId = new Map();
 		for (const data of teamsArr) {
-			const isHead = (data.coachEmail || '').toLowerCase() === head;
+			const isHeadString = (data.coachEmail || '').toLowerCase() === head;
+			const isHeadArray = (data.coachEmails || []).some(
+				(e) => (e || '').toLowerCase() === head,
+			);
 			const isAsst = (data.assistants || []).some(a => (a || '').toLowerCase() === head);
-			if (isHead || isAsst) {
+			if (isHeadString || isHeadArray || isAsst) {
 				byId.set(data.id, data);
 			}
 		}
@@ -199,11 +202,14 @@ function createTeamsStore() {
 		/** Filter teams that a coach email manages (head or assistant) */
 		getCoachTeams(email) {
 			return teams.filter((t) => {
-				const isHead = (t.coachEmail || '').toLowerCase() === email.toLowerCase();
+				const isHeadString = (t.coachEmail || '').toLowerCase() === email.toLowerCase();
+				const isHeadArray = (t.coachEmails || []).some(
+					(e) => (e || '').toLowerCase() === email.toLowerCase(),
+				);
 				const isAsst = (t.assistants || []).some(
 					(a) => (a || '').toLowerCase() === email.toLowerCase(),
 				);
-				return isHead || isAsst;
+				return isHeadString || isHeadArray || isAsst;
 			});
 		},
 	};
