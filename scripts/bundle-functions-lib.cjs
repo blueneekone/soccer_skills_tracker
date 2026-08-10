@@ -72,11 +72,41 @@ function collectClosure(monolithRoot, seedRels) {
 
 /** @param {string} monolithRoot @param {string} destRoot @param {Set<string>} rels */
 function copyClosure(monolithRoot, destRoot, rels) {
+  // These patterns open background gRPC/socket connections at module load time,
+  // causing the Firebase CLI's 10-second initialization timeout.
+  // We replace them with lazy getters so connections are deferred to first use.
+  const LAZY_TRANSFORMS = [
+    {
+      pattern: /^const db = admin\.firestore\(\);/gm,
+      replacement: "const db = new Proxy({}, { get: (t, p) => { const _fs = admin.firestore(); const v = _fs[p]; return typeof v === 'function' ? v.bind(_fs) : v; } });",
+    },
+    {
+      pattern: /^const auth = admin\.auth\(\);/gm,
+      replacement: "const auth = new Proxy({}, { get: (t, p) => { const _a = admin.auth(); const v = _a[p]; return typeof v === 'function' ? v.bind(_a) : v; } });",
+    },
+    {
+      pattern: /^const messaging = admin\.messaging\(\);/gm,
+      replacement: "const messaging = new Proxy({}, { get: (t, p) => { const _m = admin.messaging(); const v = _m[p]; return typeof v === 'function' ? v.bind(_m) : v; } });",
+    },
+    {
+      pattern: /^const storage = admin\.storage\(\);/gm,
+      replacement: "const storage = new Proxy({}, { get: (t, p) => { const _st = admin.storage(); const v = _st[p]; return typeof v === 'function' ? v.bind(_st) : v; } });",
+    },
+    {
+      pattern: /^const database = admin\.database\(\);/gm,
+      replacement: "const database = new Proxy({}, { get: (t, p) => { const _db2 = admin.database(); const v = _db2[p]; return typeof v === 'function' ? v.bind(_db2) : v; } });",
+    },
+  ];
+
   for (const rel of rels) {
     const src = path.join(monolithRoot, rel);
     const dest = path.join(destRoot, rel);
     fs.mkdirSync(path.dirname(dest), {recursive: true});
-    fs.copyFileSync(src, dest);
+    let content = fs.readFileSync(src, 'utf8');
+    for (const {pattern, replacement} of LAZY_TRANSFORMS) {
+      content = content.replace(pattern, replacement);
+    }
+    fs.writeFileSync(dest, content, 'utf8');
   }
 }
 

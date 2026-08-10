@@ -26,6 +26,7 @@ export function createAuthFacade() {
 			const tokenResult = await user.getIdTokenResult(true);
 
 			if (tokenResult.claims.isProfileComplete) {
+				userState.user = user;
 				sessionState.setRole(tokenResult.claims.role || null);
 				tenantState.applyClaims(tokenResult);
 				userState.setProfile({ role: tokenResult.claims.role || null, isProfileComplete: true });

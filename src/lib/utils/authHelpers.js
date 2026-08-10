@@ -30,16 +30,6 @@ export function clearAuthState(userState, sessionState, tenantState, globalFires
 export async function handleAuthStateChange(firebaseUser, auth, userState, sessionState, tenantState, globalFirestoreUnsubs) {
 	detachUserStatusListener();
 	if (!firebaseUser) {
-		if (typeof window !== 'undefined' && window.localStorage.getItem('auth_token')) {
-			try {
-				const prof = JSON.parse(window.localStorage.getItem('user_profile'));
-				userState.setProfile(prof);
-				sessionState.setRole(prof.role);
-				sessionState.isAuthenticated = true;
-				sessionState.isLoading = false;
-				return;
-			} catch (e) { console.error("Error parsing user_profile", e); }
-		}
 		clearAuthState(userState, sessionState, tenantState, globalFirestoreUnsubs);
 		return;
 	}
