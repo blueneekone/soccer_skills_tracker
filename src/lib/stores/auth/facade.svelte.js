@@ -95,6 +95,7 @@ export function createAuthFacade() {
 		hydrateForE2E(profile) {
 			userState.setProfile(profile);
 			sessionState.setRole(profile.role ?? 'guest');
+			tenantState.applyResolved({ tenantId: profile.tenantId || profile.clubId || '', profile });
 			sessionState.isAuthenticated = true;
 			sessionState.isLoading = false;
 		},
