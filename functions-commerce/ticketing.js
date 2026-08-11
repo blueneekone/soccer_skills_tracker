@@ -1,4 +1,4 @@
-
+/* eslint-disable quotes */
 /**
  * ticketing.js — Digital Ticketing (Phase 2, Epic 2, Session H)
  * ─────────────────────────────────────────────────────────────

@@ -1,4 +1,4 @@
-﻿
+﻿/* eslint-disable quotes */
 /**
  * Strike 1 (Agent 3) â€” Analytics aggregation triggers.
  *

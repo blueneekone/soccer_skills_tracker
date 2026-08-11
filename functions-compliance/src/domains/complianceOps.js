@@ -251,7 +251,7 @@ async function paginatedBatchDelete(q, pageSize = 400) {
   if (pageSize > 499) pageSize = 400;
   let totalDeleted = 0;
 
-
+  // eslint-disable-next-line no-constant-condition
   while (true) {
     const snap = await q.limit(pageSize).get();
     if (snap.empty) break;
