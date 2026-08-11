@@ -160,3 +160,6 @@ exports.onChannelCreated = onChannelCreated;
 
 const scheduledPiiShredder = require('./src/scheduledPiiShredder');
 exports.scheduledPiiShredder = scheduledPiiShredder.scheduledPiiShredder;
+
+const escrowOps = require('./src/domains/escrowOps');
+exports.triggerEscrowPayout = escrowOps.triggerEscrowPayout;
