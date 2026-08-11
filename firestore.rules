@@ -88,10 +88,6 @@ service cloud.firestore {
         );
     }
 
-    function isCommissioner() {
-      return tokenRole() == 'commissioner';
-    }
-
     function isDirector() {
       return tokenRole() == 'director';
     }
@@ -196,15 +192,6 @@ service cloud.firestore {
     }
 
     // JWT householdId can lag after household link / VPC / claim sync — prefer users/{email}.
-    function _resolvedHouseholdId() {
-      return tokenHousehold() != null
-        ? tokenHousehold()
-        : (exists(/databases/$(database)/documents/users/$(emailKey()))
-           && get(/databases/$(database)/documents/users/$(emailKey())).data.keys().hasAll(['householdId'])
-           ? get(/databases/$(database)/documents/users/$(emailKey())).data.householdId
-           : null);
-    }
-
     function parentResolvedHouseholdId() {
       return tokenHousehold();
     }
