@@ -1,6 +1,6 @@
 /**
  * commsSprint47.test.ts — Epic 4.7 coach-delegated team ops (source-scan)
- * Authority: ROADMAP Epic 4.7 · docs/vision/TEAM_MANAGER_OS.md (v1 = coach-delegated, no team_manager JWT)
+ * Authority: ROADMAP Epic 4.7 · docs/vision/TEAM_MANAGER_OS.md
  */
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';

@@ -28,22 +28,19 @@ function createTeamsStore() {
 		if (!db) return [];
 		
 		let teamsArr = [];
-		if (clubId) {
-			const snap = await getDocs(query(collection(db, 'teams'), where('clubId', '==', clubId))).catch(e => { console.error('Error fetching teams by clubId', e); return null; });
-			if (snap) {
-				snap.forEach(d => teamsArr.push({ id: d.id, ...d.data() }));
-			}
-		} else {
-			// Fallback if no clubId (unlikely for coach, but just in case)
-			const snapHead = await getDocs(query(collection(db, 'teams'), where('coachEmail', '==', head))).catch(() => null);
-			if (snapHead) snapHead.forEach(d => teamsArr.push({ id: d.id, ...d.data() }));
-			
-			const snapAsst = await getDocs(query(collection(db, 'teams'), where('assistants', 'array-contains', head))).catch(() => null);
-			if (snapAsst) snapAsst.forEach(d => teamsArr.push({ id: d.id, ...d.data() }));
-		}
+		
+		const snapHead = await getDocs(query(collection(db, 'teams'), where('coachEmail', '==', head))).catch(e => { console.error('Error fetching teams by coachEmail', e); return null; });
+		if (snapHead) snapHead.forEach(d => teamsArr.push({ id: d.id, ...d.data() }));
+		
+		const snapHeads = await getDocs(query(collection(db, 'teams'), where('coachEmails', 'array-contains', head))).catch(e => { console.error('Error fetching teams by coachEmails', e); return null; });
+		if (snapHeads) snapHeads.forEach(d => teamsArr.push({ id: d.id, ...d.data() }));
+		
+		const snapAsst = await getDocs(query(collection(db, 'teams'), where('assistants', 'array-contains', head))).catch(e => { console.error('Error fetching teams by assistants', e); return null; });
+		if (snapAsst) snapAsst.forEach(d => teamsArr.push({ id: d.id, ...d.data() }));
 		
 		const byId = new Map();
 		for (const data of teamsArr) {
+			if (clubId && data.clubId !== clubId) continue;
 			const isHeadString = (data.coachEmail || '').toLowerCase() === head;
 			const isHeadArray = (data.coachEmails || []).some(
 				(e) => (e || '').toLowerCase() === head,

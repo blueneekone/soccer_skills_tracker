@@ -2,7 +2,8 @@
   import { httpsCallable } from 'firebase/functions';
   import { getFunctions } from 'firebase/functions';
   import { Embeds } from '@checkr/web-sdk';
-  import { ShieldCheck, Loader2 } from 'lucide-svelte';
+  import ShieldCheck from 'lucide-svelte/icons/shield-check';
+  import Loader2 from 'lucide-svelte/icons/loader-2';
 
   let hasAttested = $state(false);
   let isFetching = $state(false);

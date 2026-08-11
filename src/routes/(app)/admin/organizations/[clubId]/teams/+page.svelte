@@ -187,14 +187,7 @@
 							<td class="teams-dt__td teams-dt__td--mono">{t.id}</td>
 							<td class="teams-dt__td teams-dt__td--muted">{t.coachEmail || '—'}</td>
 							<td class="teams-dt__td teams-dt__td--actions">
-								<a
-									class="teams-roster-btn"
-									href="/admin/organizations/{ctx.clubId}/teams/{t.id}/roster"
-									aria-label="View roster for {t.name || t.id}"
-								>
-								<Icon name={"user.group" as IconName} />
-								View Roster
-								</a>
+								
 							</td>
 						</tr>
 					{/each}

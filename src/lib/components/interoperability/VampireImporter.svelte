@@ -2,7 +2,8 @@
   import { httpsCallable } from 'firebase/functions';
   import { functions } from '$lib/firebase.js';
   import Papa from 'papaparse';
-  import { UploadCloud, CheckCircle } from 'lucide-svelte';
+  import UploadCloud from 'lucide-svelte/icons/upload-cloud';
+  import CheckCircle from 'lucide-svelte/icons/circle-check';
 
   const { clubId } = $props<{ clubId: string }>();
 

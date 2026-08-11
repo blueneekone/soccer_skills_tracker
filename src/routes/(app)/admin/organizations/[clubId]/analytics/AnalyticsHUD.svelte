@@ -1,5 +1,7 @@
 <script lang="ts">
-	import { Play, Loader2, FileDown } from 'lucide-svelte';
+	import Play from 'lucide-svelte/icons/play';
+	import Loader2 from 'lucide-svelte/icons/loader-2';
+	import FileDown from 'lucide-svelte/icons/file-down';
 
 	let { engine } = $props<{ engine: any }>();
 </script>

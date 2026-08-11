@@ -3,7 +3,9 @@
   import { getFunctions } from 'firebase/functions';
   import { licenseEntitlementStore } from '$lib/stores/licenseEntitlement.svelte.js';
   import Papa from 'papaparse';
-  import { Download, FileJson, FileText } from 'lucide-svelte';
+  import Download from 'lucide-svelte/icons/download';
+  import FileJson from 'lucide-svelte/icons/file-json';
+  import FileText from 'lucide-svelte/icons/file-text';
   import VampireImporter from '$lib/components/interoperability/VampireImporter.svelte';
   import AffinitySyncCard from '$lib/components/interoperability/AffinitySyncCard.svelte';
 
