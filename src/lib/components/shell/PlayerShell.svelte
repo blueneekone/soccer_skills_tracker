@@ -117,7 +117,8 @@
 	role="presentation"
 >
 <div
-	class="ps-root ps-root--dossier tw-w-full tw-max-w-full tw-overflow-x-hidden"
+	class="ps-root ps-root--dossier tw-w-full tw-max-w-full tw-flex-1 tw-min-h-0 tw-overflow-x-hidden tw-overflow-y-auto"
+	style="overflow-y: auto;"
 >
 	<div class="ps-ambient tw-pointer-events-none" aria-hidden="true">
 		<div class="ps-ambient__grid"></div>
