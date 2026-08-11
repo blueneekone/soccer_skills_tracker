@@ -92,3 +92,5 @@ artifacts/firestore-debt-pass-*/
 
 # dataconnect generated files
 .dataconnect
+audit-artifacts/
+.deprecated_backups/
