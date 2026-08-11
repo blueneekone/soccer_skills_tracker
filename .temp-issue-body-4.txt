@@ -1,0 +1,22 @@
+```text
+Task: Standalone TDD: Biometric Player Card Generator
+
+@jules, please implement the frontend PlayerCard component using the sliced avatars and TCG layouts [cite: 755, 1061].
+
+1. THE GLASS COMPONENT (PlayerCard.svelte)
+- Implement a custom, high-fidelity 5:7 aspect ratio RPG-style collectible player card using the 60-30-10 palette [cite: 755, 1061].
+- Enforce strict Atompunk UI chamfered grid panel clip-paths on the outer card wrapper [cite: 771, 1061]:
+  style="clip-path: polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px);"
+- Exactly ONE Action Gold (#fbbf24) primary CTA button is permitted beneath the card in the viewport [cite: 771, 1061].
+
+2. TDD SPECIFICATION
+- Create 'src/lib/components/player/__tests__/playerCard.test.ts'.
+- Assert that the rendered card dimensions maintain the strict 5:7 aspect ratio across mobile-portrait and desktop projects [cite: 1061].
+- Check for zero compilation errors using Svelte 5 strict type checking [cite: jules-comprehensive-brain-audit.md].
+
+Run 'pnpm run check' and 'npx vitest run playerCard'. Once green, commit as 'feat: deploy 5:7 RPG biometric PlayerCard'.
+```
+
+---
+
+@jules please run /swarm-build to implement and verify this feature.
