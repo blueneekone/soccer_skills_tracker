@@ -1,5 +1,5 @@
 import { browser } from '$app/environment';
-import { db } from '$lib/firebase.js';
+import { getActiveDb } from '$lib/firebase.js';
 import {
 	collection,
 	query,
@@ -52,7 +52,9 @@ export class AdminAuditEngine {
 	}
 
 	fetchAuditPage = async (append: boolean, cursor: QueryDocumentSnapshot | null) => {
-		const base = collection(db, 'security_audit');
+		const activeDb = getActiveDb();
+		if (!activeDb || authStore.isLoading || !authStore.isAuthenticated) throw new Error('Missing or insufficient permissions');
+		const base = collection(activeDb, 'security_audit');
 		if (append && cursor) {
 			try {
 				return await getDocs(

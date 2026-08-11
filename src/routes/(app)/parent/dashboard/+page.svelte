@@ -10,6 +10,7 @@
 	import VanguardEmptyState from '$lib/components/ui/VanguardEmptyState.svelte';
 	import ActionInbox from '$lib/components/shell/ActionInbox.svelte';
 	import UpcomingEventsRsvp from '$lib/components/parent/UpcomingEventsRsvp.svelte';
+	import ParentNotificationPanel from '$lib/components/parent/ParentNotificationPanel.svelte';
 
 	// For the engine, we will dynamically import or mock it for the dashboard
 	// Assuming CoOpEngine exists and is available
@@ -72,6 +73,9 @@
 				</div>
 				<div class="st-bento tw-contents">
 					<UpcomingEventsRsvp />
+				</div>
+				<div class="st-bento tw-contents">
+					<ParentNotificationPanel />
 				</div>
 
 				<!-- The Car Ride Home Holographic Widget (Z3 Holographic Card) -->

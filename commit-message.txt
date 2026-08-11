@@ -1,8 +1,1 @@
-test: Implement integration suite for Destructive Actions (RBAC & PII Shredder)
-
-- Refactored `cascadeDeleteUserData` to use pagination (`limit` and `startAfter`), enforces a 500-operation limit, explicitly preserves the `consents` collection, and uses `batch.update()` instead of `delete` for root user records.
-- Added strict B815 Hydration guard: `if (!firestore || !authStore.isAuthenticated) return;`
-- Tested zero-trust RBAC gating for 403 Forbidden.
-- Included 24h inactivity checking prior to shredding.
-- Integrated `authStore` to CLI trigger to authorize invocation.
-- Verified test suite passes locally inside Emulator with 0 regressions.
+fix: patch admin permissions crash and deploy full-stack build

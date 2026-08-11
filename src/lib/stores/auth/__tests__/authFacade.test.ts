@@ -16,6 +16,6 @@ describe('auth facade composition (Phase C)', () => {
 		const src = readFileSync(facadePath, 'utf-8');
 		expect(src).toMatch(/createUserState/);
 		expect(src).toMatch(/createTenantState/);
-		expect(src).toMatch(/onAuthStateChanged/);
+		expect(src).toMatch(/onIdTokenChanged/);
 	});
 });

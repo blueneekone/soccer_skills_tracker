@@ -1,4 +1,4 @@
-/* eslint-disable quotes */
+
 /**
  * cellBootstrap.js
  * ─────────────────
@@ -118,7 +118,7 @@ exports.bootstrapCellRegistry = onCall(
       let lastDoc = null;
       let assignedToDefault = 0;
 
-      // eslint-disable-next-line no-constant-condition
+
       while (true) {
         let query = db().collection('organizations').limit(PAGE_SIZE);
         if (lastDoc) query = query.startAfter(lastDoc);

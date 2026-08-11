@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { getContext } from 'svelte';
-	import { db } from '$lib/firebase.js';
+	import { getActiveDb } from '$lib/firebase.js';
+	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { doc, getDoc, collection, query, orderBy, limit, getDocs } from 'firebase/firestore';
 	import { httpsCallable } from 'firebase/functions';
 	import { getFunctions } from 'firebase/functions';
@@ -32,12 +33,13 @@
 
 	$effect(() => {
 		let cancelled = false;
-		if (!ctx.clubId) return;
+		const activeDb = getActiveDb();
+		if (!activeDb || authStore.isLoading || !authStore.isAuthenticated || !ctx.clubId) return;
 
 		async function fetchLedger() {
 			try {
 				const q = query(
-					collection(db, 'clubs', ctx.clubId, 'stripe_invoices'),
+					collection(activeDb, 'clubs', ctx.clubId, 'stripe_invoices'),
 					orderBy('created', 'desc'),
 					limit(25)
 				);
@@ -57,8 +59,10 @@
 		}
 
 		async function fetchCredentials() {
+			const activeDb = getActiveDb();
+			if (!activeDb || !ctx.clubId) return;
 			try {
-				const snap = await getDoc(doc(db, 'integration_credentials', ctx.clubId));
+				const snap = await getDoc(doc(activeDb, 'integration_credentials', ctx.clubId));
 				if (cancelled) return;
 				if (snap.exists()) {
 					isStripeConnected = snap.data().stripeOnboardingComplete ?? false;

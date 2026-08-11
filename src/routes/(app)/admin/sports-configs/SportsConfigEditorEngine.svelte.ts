@@ -4,6 +4,7 @@
 import { getFunctions, httpsCallable } from 'firebase/functions';
 import { collection, query, orderBy, limit, getDocs } from 'firebase/firestore';
 import { app, getActiveDb } from '$lib/firebase';
+import { authStore } from '$lib/stores/auth.svelte.js';
 import type {
   SportsConfigDoc,
   UpsertSportsConfigInput,
@@ -186,9 +187,11 @@ export class SportsConfigEditorEngine {
   }
 
   async loadLatestAuditReport() {
+    const activeDb = getActiveDb();
+    if (!activeDb || authStore.isLoading || !authStore.isAuthenticated) return;
     try {
       const q = query(
-        collection(this.db, 'sport_audit_report'),
+        collection(activeDb, 'sport_audit_report'),
         orderBy('generatedAt', 'desc'),
         limit(1),
       );
