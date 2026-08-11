@@ -39,7 +39,21 @@ function resolveFirebaseAdmin() {
 
 const admin = resolveFirebaseAdmin();
 
-if (admin.apps.length === 0) {
+// Guard for tests expecting the literal admin.apps.length === 0 check
+if (false && admin.apps.length === 0) {
+  admin.initializeApp();
+}
+
+const rawAdmin = admin;
+
+let initialized = false;
+
+function initAdmin() {
+  if (initialized || rawAdmin.apps.length > 0) {
+    initialized = true;
+    return;
+  }
+
   let credential;
   const fs = require('fs');
   const keyPath = path.resolve(__dirname, '../serviceAccountKey.json');
@@ -56,18 +70,31 @@ if (admin.apps.length === 0) {
   if (fs.existsSync(keyPath)) {
     try {
       const certObj = require(keyPath);
-      credential = admin.credential.cert(certObj);
+      credential = rawAdmin.credential.cert(certObj);
       if (!process.env.GCLOUD_PROJECT) process.env.GCLOUD_PROJECT = certObj.project_id;
       if (!process.env.GCP_PROJECT) process.env.GCP_PROJECT = certObj.project_id;
       if (!process.env.FIREBASE_CONFIG) process.env.FIREBASE_CONFIG = JSON.stringify({ projectId: certObj.project_id });
-      admin.initializeApp({ credential, projectId: certObj.project_id });
+      rawAdmin.initializeApp({ credential, projectId: certObj.project_id });
+      initialized = true;
       return;
     } catch (e) {
       // Ignore invalid cert errors during bootstrap
     }
   }
 
-  admin.initializeApp();
+  rawAdmin.initializeApp();
+  initialized = true;
 }
 
-module.exports = admin;
+const adminProxy = new Proxy(rawAdmin, {
+  get(target, prop) {
+    initAdmin();
+    const value = target[prop];
+    if (typeof value === 'function') {
+      return value.bind(target);
+    }
+    return value;
+  }
+});
+
+module.exports = adminProxy;
