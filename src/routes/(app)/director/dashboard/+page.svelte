@@ -117,7 +117,7 @@
 		{#if clubId}
 			<ClubLogoMark size="md" />
 		{/if}
-		<h2 class="director-console-page__title">Director Portal</h2>
+		<h2 class="director-console-page__title" style="font-family: 'Geist Sans', sans-serif; color: #FAFAFA;">Director Portal</h2>
 	</div>
 
 	<!-- Z4 mobile tab rail -->
@@ -147,21 +147,21 @@
 			
 			<div class="director-hud-grid bento-span-12 tw-grid tw-gap-4 tw-mt-6" style="grid-template-columns: repeat(auto-fit, minmax(min(100%, clamp(280px, 30vw, 350px)), 1fr));">
 				<!-- Club Revenue Analytics -->
-				<div data-card="revenue" class="director-card revenue-engine-analytics dark-form-surface tw-border tw-border-slate-700 tw-bg-slate-900/80 tw-p-4 tw-rounded-none" style="border-radius: 0px !important;">
-					<div class="tw-flex tw-justify-between tw-items-center tw-mb-2">
-						<h3 class="tw-font-mono tw-text-xs tw-text-teal-400 tw-uppercase tw-tracking-widest">Revenue Engine</h3>
+				<div data-card="revenue" class="st-bento director-card revenue-engine-analytics dark-form-surface tw-border tw-border-slate-700 tw-bg-slate-900/80 tw-p-4 tw-rounded-none tw-min-w-0" style="border-radius: 0px !important; background: #0f172a;">
+					<div class="tw-flex tw-justify-between tw-items-center tw-mb-2 tw-min-w-0">
+						<h3 class="tw-text-xs tw-text-[#14b8a6] tw-uppercase tw-tracking-widest tw-min-w-0" style="font-family: 'Geist Sans', sans-serif;">Revenue Engine</h3>
 						<div class="compliance-status-dot tw-bg-emerald-500" style="width: 8px; height: 8px; border-radius: 50%; display: block;"></div>
 					</div>
-					<div class="tw-text-slate-300 tw-text-sm tw-min-w-0">Club Revenue Analytics Offline</div>
+					<div class="tw-text-[#D4D4D8] tw-text-sm tw-min-w-0" style="font-family: 'Switzer', sans-serif;">Club Revenue Analytics Offline</div>
 				</div>
 
 				<!-- God-Mode Club Roster Tree -->
-				<div data-card="roster" class="director-card roster-hierarchy-tree dark-form-surface tw-border tw-border-slate-700 tw-bg-slate-900/80 tw-p-4 tw-rounded-none" style="border-radius: 0px !important;">
-					<div class="tw-flex tw-justify-between tw-items-center tw-mb-2">
-						<h3 class="tw-font-mono tw-text-xs tw-text-teal-400 tw-uppercase tw-tracking-widest">Roster Hierarchy</h3>
+				<div data-card="roster" class="st-bento director-card roster-hierarchy-tree dark-form-surface tw-border tw-border-slate-700 tw-bg-slate-900/80 tw-p-4 tw-rounded-none tw-min-w-0" style="border-radius: 0px !important; background: #0f172a;">
+					<div class="tw-flex tw-justify-between tw-items-center tw-mb-2 tw-min-w-0">
+						<h3 class="tw-text-xs tw-text-[#14b8a6] tw-uppercase tw-tracking-widest tw-min-w-0" style="font-family: 'Geist Sans', sans-serif;">Roster Hierarchy</h3>
 						<div class="compliance-status-dot tw-bg-emerald-500" style="width: 8px; height: 8px; border-radius: 50%; display: block;"></div>
 					</div>
-					<div class="tw-text-slate-300 tw-text-sm tw-min-w-0">God-Mode Tree Offline</div>
+					<div class="tw-text-[#D4D4D8] tw-text-sm tw-min-w-0" style="font-family: 'Switzer', sans-serif;">God-Mode Tree Offline</div>
 				</div>
 			</div>
 		</section>
@@ -172,37 +172,38 @@
 	{:else if activeTab === 'comms'}
 		<section class="director-console-page__section tw-w-full tw-grid tw-grid-cols-1 lg:tw-grid-cols-12 tw-gap-8" style="grid-template-columns: repeat(auto-fit, minmax(min(100%, clamp(280px, 30vw, 350px)), 1fr));">
 			<section
-				class="lg:tw-col-span-8 siem-panel dark-form-surface tw-flex tw-flex-col tw-gap-3 tw-p-8 tw-border tw-border-slate-600 tw-bg-slate-900 tw-relative"
+				class="st-bento lg:tw-col-span-8 siem-panel dark-form-surface tw-flex tw-flex-col tw-gap-3 tw-p-8 tw-border tw-border-slate-600 tw-bg-slate-900 tw-relative tw-min-w-0"
 				aria-labelledby="director-comms-cta-heading"
 			>
-				<h2 id="director-comms-cta-heading" class="tw-m-0 tw-text-base tw-font-extrabold tw-text-slate-50">
+				<h2 id="director-comms-cta-heading" class="tw-m-0 tw-text-base tw-font-extrabold tw-text-slate-50" style="font-family: 'Geist Sans', sans-serif;">
 					Club broadcast
 				</h2>
-				<p class="tw-m-0 tw-text-sm tw-leading-relaxed tw-text-slate-400 tw-max-w-2xl">
+				<p class="tw-m-0 tw-text-sm tw-leading-relaxed tw-text-[#D4D4D8] tw-max-w-2xl" style="font-family: 'Switzer', sans-serif;">
 					Compose club-wide announcements in the unified Comms hub — one surface for fan-out,
 					delivery receipts, and SafeSport parent CC per team.
 				</p>
 				<a
 					class="tw-inline-flex tw-mt-1 tw-text-sm tw-font-extrabold tw-text-teal-400 tw-no-underline hover:tw-underline"
 					href="/messages?channel=club_wide&clubId={encodeURIComponent(clubId)}"
+					style="font-family: 'Geist Mono', monospace;"
 				>
 					Open Comms hub — Club-wide broadcast →
 				</a>
 			</section>
 			<section
-				class="lg:tw-col-span-4 siem-panel dark-form-surface tw-flex tw-flex-col tw-gap-3 tw-p-8 tw-border tw-border-slate-600 tw-bg-slate-900 tw-relative"
+				class="st-bento lg:tw-col-span-4 siem-panel dark-form-surface tw-flex tw-flex-col tw-gap-3 tw-p-8 tw-border tw-border-slate-600 tw-bg-slate-900 tw-relative tw-min-w-0"
 				aria-labelledby="director-sponsor-ops-heading"
 			>
-				<h2 id="director-sponsor-ops-heading" class="tw-m-0 tw-text-base tw-font-extrabold tw-text-slate-50">
+				<h2 id="director-sponsor-ops-heading" class="tw-m-0 tw-text-base tw-font-extrabold tw-text-slate-50" style="font-family: 'Geist Sans', sans-serif;">
 					Partner offers
 				</h2>
-				<p class="tw-m-0 tw-text-sm tw-leading-relaxed tw-text-slate-400 tw-max-w-2xl">
+				<p class="tw-m-0 tw-text-sm tw-leading-relaxed tw-text-[#D4D4D8] tw-max-w-2xl" style="font-family: 'Switzer', sans-serif;">
 					Create, approve, and send sponsor digests to opted-in guardians. Parents see delivered
 					offers on their dashboard — not in the Comms hub rail.
 				</p>
 				<CommsSponsorPartnerChannel {clubId} />
 			</section>
-			<div class="lg:tw-col-span-12 tw-w-full">
+			<div class="lg:tw-col-span-12 tw-w-full tw-min-w-0">
 				<DirectorCommsCompliancePanel {clubId} teams={clubTeams} />
 			</div>
 		</section>
