@@ -92,7 +92,7 @@
 	if (!authStore.isAuthenticated) {
 		let e2eState = null;
 		if (typeof window !== 'undefined') {
-			try { e2eState = JSON.parse(window.localStorage.getItem('auth_state')); } catch(e) {}
+			try { e2eState = JSON.parse(window.localStorage.getItem('auth_state')); } catch(e) { /* ignore */ }
 		}
 		if (e2eState) {
 			authStore.hydrateForE2E({ role: e2eState.role, isProfileComplete: true, ...e2eState });
@@ -103,8 +103,9 @@
 
 	// Sync club license doc for read-only / pricing UX — Global Admin exempt.
 	$effect(() => {
+		if (!db || !authStore.isAuthenticated) return;
 		if (authStore.isLoading) return;
-		if (!authStore.isAuthenticated || (!authStore.isProfileComplete && !authStore.userState?.email?.includes("+"))) {
+		if (!authStore.isProfileComplete && !authStore.userState?.email?.includes("+")) {
 			licenseEntitlementStore.syncFromUser(null);
 			return;
 		}
@@ -119,10 +120,8 @@
 	// switch). Subscription requires an authenticated session; we tear it down
 	// on sign-out to avoid permission-denied snapshot errors.
 	$effect(() => {
-		if (!authStore.isAuthenticated || authStore.isLoading) {
-			featureFlagsStore.teardown();
-			return;
-		}
+		if (!db || !authStore.isAuthenticated) return;
+		if (authStore.isLoading) return;
 		featureFlagsStore.subscribe();
 		return () => {
 			featureFlagsStore.teardown();
@@ -135,6 +134,7 @@
 	// guarantees the banner renders in EVERY tab that inherits an
 	// impersonation session, closing the previous cross-tab desync hole.
 	$effect(() => {
+		if (!db || !authStore.isAuthenticated) return;
 		impersonationStore.init();
 		return () => {
 			impersonationStore.teardown();
@@ -150,12 +150,17 @@
 
 		routeGuardResolved = false;
 
-		if (!authStore.isAuthenticated) {
-			untrack(() => {
-				passkeyEligibilityConfirmed = true;
-				routeGuardResolved = true;
-				goto('/login', { replaceState: true });
-			});
+		const elevatedRoles = ['admin', 'global_admin', 'super_admin', 'commissioner', 'director', 'coach', 'parent'];
+
+		let shouldRedirectToOnboarding = false;
+		untrack(() => {
+			if (!authStore.isAuthenticated || !elevatedRoles.includes(authStore.role ?? '')) {
+				shouldRedirectToOnboarding = true;
+				goto('/onboarding', { replaceState: true });
+			}
+		});
+
+		if (shouldRedirectToOnboarding) {
 			return;
 		}
 
@@ -278,7 +283,8 @@
 
 	// Scoped teams/clubs by route + role (never full `teams` except Super Admin on /admin).
 	$effect(() => {
-		if (!authStore.isAuthenticated || authStore.isLoading) return;
+		if (!db || !authStore.isAuthenticated) return;
+		if (authStore.isLoading) return;
 		const path = page.url.pathname;
 		const scope = resolveTeamsLoadScope(path, authStore.role);
 		void teamsStore.load(authStore.role, {
@@ -359,7 +365,8 @@
 	});
 
 	$effect(() => {
-		if (!authStore.isAuthenticated || authStore.isLoading) {
+		if (!db || !authStore.isAuthenticated) return;
+		if (authStore.isLoading) {
 			clubBrandingStore.clear();
 			return;
 		}
@@ -388,6 +395,7 @@
 	//      (AttributeRadar, WorkspaceContextSwitcher footer, drill engines, etc.)
 	//   3. Re-stamps CSS custom properties once the real config is loaded.
 	$effect(() => {
+		if (!db || !authStore.isAuthenticated) return;
 		if (!browser || authStore.isLoading) return;
 		const sportId = workspaceContextStore.activeSportId || 'soccer';
 		const cached  = workspaceContextStore.activeSportConfig;
@@ -442,6 +450,7 @@
 
 	// Sprint 3.3 — server-verified loadout unlock ceremonies (player only).
 	$effect(() => {
+		if (!db || !authStore.isAuthenticated) return;
 		if (!browser || authStore.isLoading) return;
 		if (authStore.role !== 'player') {
 			disconnectLoadoutUnlockListener();
