@@ -85,3 +85,6 @@ exports.linkUserToTeam = globalAdminOs.linkUserToTeam;
 
 const { onChannelCreated } = require('./src/onChannelCreated.js');
 exports.onChannelCreated = onChannelCreated;
+
+const weatherOps = require('./src/domains/weatherOps');
+exports.processTomorrowIoAlert = weatherOps.processTomorrowIoAlert;
