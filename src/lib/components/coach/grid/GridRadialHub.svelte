@@ -111,7 +111,9 @@
 			y="8"
 			text-anchor="middle"
 			fill="#14b8a6"
-			class="tw-font-mono tw-text-[12px] tw-tracking-[0.22em]"
+			font-family="var(--font-mono, 'Geist Mono', monospace)"
+			font-size="12"
+			letter-spacing="2"
 			style="paint-order: stroke; stroke: rgba(0,0,0,0.82); stroke-width: 4px;"
 		>
 			{hubCenterLabel}
@@ -141,7 +143,9 @@
 					y="5"
 					text-anchor="middle"
 					fill="#ffffff"
-					class="tw-font-mono tw-text-[13px] tw-font-black"
+					font-family="var(--font-mono, 'Geist Mono', monospace)"
+					font-size="13"
+					font-weight="bold"
 				>
 					{slot.token.number || '—'}
 				</text>

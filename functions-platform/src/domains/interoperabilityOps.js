@@ -2,9 +2,9 @@
 
 const { onCall, onRequest, HttpsError } = require('firebase-functions/v2/https');
 const logger = require('firebase-functions/logger');
-const pdfParse = require('pdf-parse');
+const { parse } = require('csv-parse/sync');
 const { getFirestore } = require('firebase-admin/firestore');
-const { extractPlayersFromPdfText, mapExtractedPlayerToCoach } = require('./rosterIngestParse');
+const { sanitizeVampireRow, validateVampireSchema } = require('../utils/vampireSanitizer');
 
 exports.interoperabilitySync = onCall((request) => {
   return { success: true };
@@ -16,61 +16,50 @@ exports.interoperabilityWebhook = onRequest((req, res) => {
 
 exports.vampireIngestRows = onCall({ region: 'us-east1' }, async (request) => {
   const { auth, data } = request;
-  if (!auth) {
-    throw new HttpsError('unauthenticated', 'User must be authenticated.');
-  }
+  if (!auth) throw new HttpsError('unauthenticated', 'User must be authenticated.');
 
   const role = auth.token.role || '';
   const clubId = auth.token.clubId || '';
-  
-  if (role !== 'admin' && role !== 'director' && role !== 'coach') {
+  if (!['admin', 'director', 'coach'].includes(role)) {
     throw new HttpsError('permission-denied', 'Only authorized staff can upload rosters.');
   }
-  if (!clubId) {
-    throw new HttpsError('permission-denied', 'No associated clubId.');
-  }
+  if (!clubId) throw new HttpsError('permission-denied', 'No associated clubId.');
 
-  const { fileBufferBase64, teamId } = data;
-  if (!fileBufferBase64 || !teamId) {
-    throw new HttpsError('invalid-argument', 'Missing file payload or teamId.');
-  }
+  const { csvPayload, teamId } = data;
+  if (!csvPayload || !teamId) throw new HttpsError('invalid-argument', 'Missing payload/teamId.');
 
-  let pdfText = '';
+  let parsedRows;
   try {
-    const pdfBuffer = Buffer.from(fileBufferBase64, 'base64');
-    // Direct async function call without 'new' keyword
-    const parsedData = await pdfParse(pdfBuffer);
-    pdfText = parsedData.text;
-  } catch (error) {
-    logger.error('PDF Parse failed', error);
-    throw new HttpsError('internal', 'Failed to read PDF payload.');
+    parsedRows = parse(csvPayload, { columns: true, skip_empty_lines: true });
+  } catch (err) {
+    logger.error('CSV Parse failed', err);
+    throw new HttpsError('invalid-argument', 'Malformed CSV.');
   }
 
-  const apiKey = process.env.GEMINI_API_KEY || ''; // Adjust depending on env
-  if (!apiKey) {
-    logger.error('Missing GEMINI_API_KEY');
+  const sanitizedRows = parsedRows.map(sanitizeVampireRow);
+  if (!validateVampireSchema(sanitizedRows)) {
+    throw new HttpsError('invalid-argument', 'CSV schema validation failed.');
   }
-
-  const extracted = await extractPlayersFromPdfText(pdfText, apiKey);
-  const players = extracted.map(mapExtractedPlayerToCoach).filter(Boolean);
-  if (!players.length) throw new HttpsError('invalid-argument', 'No valid players extracted.');
 
   const db = getFirestore();
   let batch = db.batch();
   let opCount = 0;
-  
-  for (const p of players) {
-    const pId = p.playerEmail || `roster_${teamId}_${Date.now()}_${Math.floor(Math.random() * 10000)}`;
-    const ref = db.collection('users').doc(pId.toLowerCase());
+  let totalProcessed = 0;
+
+  for (let i = 0; i < sanitizedRows.length; i++) {
+    const row = sanitizedRows[i];
+    const docId = `vamp_${teamId}_${Date.now()}_${i}_${Math.floor(Math.random() * 100000)}`;
+    const ref = db.collection('roster_staging').doc(docId);
     batch.set(ref, {
-      ...p,
-      role: 'player',
-      clubId: clubId,
-      teamId: teamId,
+      ...row,
+      teamId,
+      clubId,
       createdBy: auth.uid,
-      source: 'vampireIngestRows'
-    }, { merge: true });
+      ingestedAt: new Date().toISOString()
+    });
     opCount++;
+    totalProcessed++;
+
     if (opCount === 500) {
       await batch.commit();
       batch = db.batch();
@@ -78,9 +67,6 @@ exports.vampireIngestRows = onCall({ region: 'us-east1' }, async (request) => {
     }
   }
 
-  if (opCount > 0) {
-    await batch.commit();
-  }
-
-  return { success: true, count: players.length };
+  if (opCount > 0) await batch.commit();
+  return { success: true, count: totalProcessed };
 });
