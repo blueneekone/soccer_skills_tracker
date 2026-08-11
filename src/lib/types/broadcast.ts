@@ -23,3 +23,11 @@ export interface SuperdrawCampaign {
 	totalPool: number;
 	ticketPrice: number;
 }
+
+export interface SmartCameraNode {
+	cameraId: string;
+	venueId: string;
+	currentStreamUrl: string;
+	status: 'ONLINE' | 'OFFLINE';
+	streamResolution: string;
+}
