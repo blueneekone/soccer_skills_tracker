@@ -5,6 +5,7 @@ import { collection, doc, getDoc, getDocs, setDoc, query, where, serverTimestamp
 import { authStore } from '$lib/stores/auth.svelte.js';
 import type { TacticalToken } from '$lib/states/war-room/types.js';
 import { page } from '$app/state';
+import { untrack } from 'svelte';
 
 export class CoachTacticalEngine {
 	teamScope = new CoachTeamScope({
@@ -218,19 +219,25 @@ export class CoachTacticalEngine {
 
 			$effect(() => {
 				this.wrBucketPitch; this.wrOppPitch; this.drawnRoutes;
-				this.scheduleSave();
+				untrack(() => {
+					this.scheduleSave();
+				});
 			});
 
 			$effect(() => {
 				const tid = this.teamScope.selectedTeamId;
 				if (!tid || authStore.isLoading || !authStore.user?.uid) return;
-				void this._loadBoardState(tid, authStore.user.uid);
+				untrack(() => {
+					void this._loadBoardState(tid, authStore.user.uid);
+				});
 			});
 
 			$effect(() => {
 				const tid = this.teamScope.selectedTeamId;
 				if (!tid) return;
-				void this._loadRosters(tid);
+				untrack(() => {
+					void this._loadRosters(tid);
+				});
 			});
 
 			return () => {
