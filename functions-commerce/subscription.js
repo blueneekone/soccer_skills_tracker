@@ -38,7 +38,6 @@ const logger = require('firebase-functions/logger');
 const admin = require('firebase-admin');
 
 const REGION = 'us-east1';
-const db = new Proxy({}, { get: (t, p) => { const fs = admin.firestore(); const v = fs[p]; return typeof v === 'function' ? v.bind(fs) : v; } });
 
 const TIER_CONFIG = {
   basecamp: {planTier: 'base_camp', maxPlayers: 30, label: 'Base Camp'},
@@ -71,6 +70,7 @@ exports.createSubscription = onCall({region: REGION}, async (request) => {
 
   const config = TIER_CONFIG[tierId];
   const now = admin.firestore.FieldValue.serverTimestamp();
+  const db = admin.firestore();
 
   // ── STUB: Directly activate subscription in Firestore ────────────────────
   // PRODUCTION: Remove this block and return Stripe session URL instead.

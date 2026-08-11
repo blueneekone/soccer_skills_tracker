@@ -5,6 +5,7 @@ const logger = require('firebase-functions/logger');
 const { parse } = require('csv-parse/sync');
 const { getFirestore } = require('firebase-admin/firestore');
 const { sanitizeVampireRow, validateVampireSchema } = require('../utils/vampireSanitizer');
+const { executeBatchPagination } = require('../utils/batchPaginator');
 
 exports.interoperabilitySync = onCall((request) => {
   return { success: true };
@@ -42,31 +43,7 @@ exports.vampireIngestRows = onCall({ region: 'us-east1' }, async (request) => {
   }
 
   const db = getFirestore();
-  let batch = db.batch();
-  let opCount = 0;
-  let totalProcessed = 0;
+  const totalProcessed = await executeBatchPagination(sanitizedRows, db, teamId, clubId, auth.uid);
 
-  for (let i = 0; i < sanitizedRows.length; i++) {
-    const row = sanitizedRows[i];
-    const docId = `vamp_${teamId}_${Date.now()}_${i}_${Math.floor(Math.random() * 100000)}`;
-    const ref = db.collection('roster_staging').doc(docId);
-    batch.set(ref, {
-      ...row,
-      teamId,
-      clubId,
-      createdBy: auth.uid,
-      ingestedAt: new Date().toISOString()
-    });
-    opCount++;
-    totalProcessed++;
-
-    if (opCount === 500) {
-      await batch.commit();
-      batch = db.batch();
-      opCount = 0;
-    }
-  }
-
-  if (opCount > 0) await batch.commit();
   return { success: true, count: totalProcessed };
 });
