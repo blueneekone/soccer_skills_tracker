@@ -8,6 +8,10 @@ import * as firestore from 'firebase/firestore';
 
 // Mock dependencies
 let mockRole = 'commissioner';
+vi.mock('$lib/firebase/config', () => ({
+	db: {}
+}));
+
 vi.mock('$lib/stores/auth/facade.svelte.js', () => ({
 	authStore: new Proxy({}, {
 		get: (_, prop) => (prop === "role" ? mockRole : prop === "isAuthenticated" ? true : prop === "isLoading" ? false : prop === "userProfile" ? { tenantId: "tenant-123" } : undefined),
