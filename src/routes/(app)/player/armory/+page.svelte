@@ -11,6 +11,11 @@
 	import ArmoryCommandDeck from '$lib/components/player/ArmoryCommandDeck.svelte';
 	import PlayerOsTabRail from '$lib/components/player/os/PlayerOsTabRail.svelte';
 	import PlayerOsPageStrap from '$lib/components/player/PlayerOsPageStrap.svelte';
+	import { readRepairOperativeAvatar, queuePortraitReadRepairWrite } from '$lib/avatars/portraitReadRepair.js';
+	import { defaultOwnedPortraitParts } from '$lib/avatars/portraitV2Schema.js';
+	import { grantPendingAlbumSetBonuses } from '$lib/gamification/albumSetBonuses.js';
+	import OperativeCeremoniesPanel from '$lib/components/player/OperativeCeremoniesPanel.svelte';
+
 	let showDiegeticError = $state(false);
 	let showDiegeticSuccess = $state(false);
 	let overlayOpen = $state(false);
@@ -41,6 +46,46 @@
 	let canvasRef: HTMLCanvasElement;
 
 	const profile = $derived(authStore.userProfile);
+
+	// Search params for deep-linking
+	const searchParams = browser ? new URLSearchParams(window.location.search) : new URL('http://localhost').searchParams;
+	const studioInitialPart = searchParams.get('part');
+	const slotParam = searchParams.get('slot');
+	const tabParam = searchParams.get('tab');
+
+	let armoryWorkspace = $state('studio');
+	let lastPortraitRepairQueuedSig = $state('');
+	const activeTab = tabParam || 'studio';
+
+	let operativeAvatar = $state<any>(null);
+	let ownedPortraitParts = $state<string[]>([]);
+
+	$effect(() => {
+		if (!browser || authStore.isLoading || !profile) return;
+		const ageBand = profile.ageBand;
+		const repairedAvatarResult = readRepairOperativeAvatar(profile?.operativeAvatar, profile?.ownedPortraitParts, { ageBand });
+		const repairedAvatar = repairedAvatarResult.operativeAvatar;
+		operativeAvatar = repairedAvatar;
+		ownedPortraitParts = repairedAvatarResult.ownedPortraitParts || defaultOwnedPortraitParts();
+		if (repairedAvatarResult.didMigrate && profile.email) {
+			const sig = `${profile.email}:${ageBand}`;
+			if (sig !== lastPortraitRepairQueuedSig) {
+				lastPortraitRepairQueuedSig = sig;
+				queuePortraitReadRepairWrite(profile.email, {
+					operativeAvatar: repairedAvatarResult.operativeAvatar,
+					ownedPortraitParts: repairedAvatarResult.ownedPortraitParts
+				});
+			}
+		}
+	});
+
+	// Owned Season One Cards and pending grant checking
+	const ownedSeasonOneCards = $derived(profile?.ownedSeasonOneCards || []);
+	$effect(() => {
+		if (ownedSeasonOneCards.length > 0) {
+			void grantPendingAlbumSetBonuses(ownedSeasonOneCards, unlockedCosmetics);
+		}
+	});
 
 	$effect(() => {
 		if (!browser || authStore.isLoading || !authStore.user?.uid || !db) return;
@@ -230,3 +275,18 @@
 <!-- trajectoryEngine.connect(emailKey) -->
 <!-- catch (err) -->
 <!-- !trajectoryEngine.error -->
+
+<!-- Sprint 3.3-3.5 integration structures: -->
+{#if activeTab === 'ceremonies'}
+	<OperativeCeremoniesPanel />
+{/if}
+
+{#if armoryWorkspace === 'studio'}
+	{#await import('$lib/components/player/OperativeLoadoutStudio.svelte') then { default: OperativeLoadoutStudioComponent }}
+		<svelte:component
+			this={OperativeLoadoutStudioComponent}
+			initialPortraitPart={studioInitialPart as any}
+			ownedPortraitParts={ownedPortraitParts}
+		/>
+	{/await}
+{/if}

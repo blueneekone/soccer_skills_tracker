@@ -8,6 +8,7 @@ wrapFetch();
 
 const logger = require('firebase-functions/logger');
 // DEPLOY-N: slim default codebase — migrated exports live in split packages (see FUNCTIONS_DEPLOY.md).
+// DEPLOY-N: RL → functions-rl/
 logger.warn(
     '[functions/default] Legacy monolith index — deploy split codebases for production surfaces.',
 );

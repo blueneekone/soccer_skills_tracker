@@ -85,6 +85,26 @@ describe('Dopamine Engine', () => {
 			configurable: true,
 			value: vi.fn().mockReturnValue({ matches: false }),
 		});
+
+		// Stub HTMLCanvasElement's getContext to prevent canvas-confetti uncaught exception
+		if (typeof HTMLCanvasElement !== 'undefined') {
+			HTMLCanvasElement.prototype.getContext = vi.fn().mockReturnValue({
+				clearRect: vi.fn(),
+				fillRect: vi.fn(),
+				beginPath: vi.fn(),
+				moveTo: vi.fn(),
+				lineTo: vi.fn(),
+				stroke: vi.fn(),
+				fill: vi.fn(),
+				save: vi.fn(),
+				restore: vi.fn(),
+				closePath: vi.fn(),
+				translate: vi.fn(),
+				rotate: vi.fn(),
+				scale: vi.fn(),
+				arc: vi.fn(),
+			});
+		}
 	});
 
 	afterEach(() => {
