@@ -214,18 +214,29 @@ sw.addEventListener('fetch', (event: FetchEvent) => {
 		return;
 	}
 
-	// Programmatic bypass
-	if (shouldBypass(url)) {
-		// SvelteKit requires us to respond with fetch directly to avoid
-		// chromium navigation-preload bugs on bypassed routes
-		event.respondWith(fetch(req));
+	// Enforce strict Network-First cache strategy for API calls
+	if (url.pathname.startsWith('/api/') && !url.pathname.includes('passkey')) {
+		event.respondWith(
+			caches.open(RUNTIME_CACHE).then(async (cache) => {
+				try {
+					const fresh = await fetch(req);
+					if (fresh.status === 200) {
+						cache.put(req, fresh.clone());
+					}
+					return fresh;
+				} catch (err) {
+					const cached = await cache.match(req);
+					if (cached) return cached;
+					return Response.error(); // Complete failure fallback, never stale HTML
+				}
+			})
+		);
 		return;
 	}
 
-	if (event.request.method !== 'GET') return;
-
-	// Bare-minimum caching: only cache known static precache assets
-	if (PRECACHE_SET.has(url.pathname)) {
+	// Enforce Cache-First strategy for hashed static assets
+	const isHashedAsset = url.pathname.includes('/_app/immutable/') || PRECACHE_SET.has(url.pathname);
+	if (isHashedAsset) {
 		event.respondWith(
 			caches.open(CACHE_NAME).then(async (cache) => {
 				const cached = await cache.match(req);
@@ -239,6 +250,16 @@ sw.addEventListener('fetch', (event: FetchEvent) => {
 		);
 		return;
 	}
+
+	// Programmatic bypass
+	if (shouldBypass(url)) {
+		// SvelteKit requires us to respond with fetch directly to avoid
+		// chromium navigation-preload bugs on bypassed routes
+		event.respondWith(fetch(req));
+		return;
+	}
+
+	if (event.request.method !== 'GET') return;
 
 	// Sprint 2.7: Stale-While-Revalidate for offline routes
 	const isOfflineData = url.pathname.endsWith('__data.json') && OFFLINE_ROUTES.some((r) => url.pathname.replace(/__data\.json$/, '').startsWith(r));

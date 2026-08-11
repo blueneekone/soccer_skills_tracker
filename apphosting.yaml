@@ -1,0 +1,9 @@
+# apphosting.yaml
+# Production App Hosting configuration for zero-downtime Firebase deployments
+
+runConfig:
+  cpu: 1
+  memoryMiB: 512
+  minInstances: 1 # Enforce hot standby instance to prevent cold starts and ensure zero-downtime cutover
+  maxInstances: 50
+  concurrency: 80
