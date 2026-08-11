@@ -19,6 +19,7 @@ export default defineConfig({
 		environment: 'node',
 		include: [
 			'src/**/__tests__/**/*.test.ts',
+			'src/lib/compliance/tests/**/*.test.ts',
 			'docs/**/__tests__/**/*.test.ts',
 			'scripts/**/__tests__/**/*.test.ts',
 		],

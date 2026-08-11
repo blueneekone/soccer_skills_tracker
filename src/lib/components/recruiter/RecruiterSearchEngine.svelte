@@ -11,6 +11,7 @@
 		startAfter,
 		where,
 	} from 'firebase/firestore';
+	import { isRecruiterCleared } from './RecruiterOnboardingEngine.svelte.js';
 	import Modal from '$lib/components/Modal.svelte';
 	import ClubLogoMark from '$lib/components/ClubLogoMark.svelte';
 	import LevelProgressRing from '$lib/components/LevelProgressRing.svelte';
@@ -64,6 +65,10 @@
 
 	async function runSearch() {
 		if (!browser) return;
+		if (!isRecruiterCleared()) {
+			results = [];
+			return;
+		}
 		loading = true;
 		errorMsg = '';
 		results = [];
@@ -113,6 +118,17 @@
 			/** @type {typeof results} */
 			const rows = [];
 			snap.forEach((d) => rows.push({ id: d.id, ...(d.data() as Record<string, unknown>) }));
+
+			const size = new TextEncoder().encode(JSON.stringify(rows)).length;
+			if (size > 200 * 1024) {
+				console.warn('Search results exceeded 200KB payload limit');
+				errorMsg = 'Search payload limit exceeded (200KB max). Please narrow your filters.';
+				results = [];
+				hasMore = false;
+				lastDoc = null;
+				return;
+			}
+
 			lastDoc = snap.docs.length > 0 ? snap.docs[snap.docs.length - 1] : null;
 			hasMore = snap.docs.length === 20;
 			results = rows;
@@ -128,6 +144,10 @@
 
 	async function loadMore() {
 		if (!db || !authStore.isAuthenticated || !hasMore || loading) return;
+		if (!isRecruiterCleared()) {
+			results = [];
+			return;
+		}
 		loading = true;
 		const min = Math.max(1, Math.min(99, Math.floor(Number(minLevel) || 1)));
 		const col = collection(db, 'public_player_profiles');
@@ -147,7 +167,16 @@
 			const snap = await getDocs(q);
 			const rows = [];
 			snap.forEach((d) => rows.push({ id: d.id, ...(d.data() as Record<string, unknown>) }));
-			results = [...results, ...rows];
+
+			const combined = [...results, ...rows];
+			const size = new TextEncoder().encode(JSON.stringify(combined)).length;
+			if (size > 200 * 1024) {
+				console.warn('Cumulative search results exceeded 200KB payload limit');
+				hasMore = false;
+				return;
+			}
+
+			results = combined;
 			lastDoc = snap.docs.length > 0 ? snap.docs[snap.docs.length - 1] : null;
 			hasMore = snap.docs.length === 20;
 		} catch (e) {
