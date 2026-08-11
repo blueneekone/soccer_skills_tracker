@@ -12,7 +12,16 @@
 # Error details
 
 ```
-Error: [COLLISION DETECTED] Element 0 (st-bento bento-col-8 parent-panel tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-overflow-hidden tw-relative tw-min-w-0) overlaps Element 1 (tw-bg-[#0f172a] tw-rounded-[24px] tw-border tw-border-[#334155] tw-p-6 tw-flex tw-flex-col tw-gap-8) on route: dashboard
+Test timeout of 30000ms exceeded.
+```
+
+```
+Error: page.screenshot: Test timeout of 30000ms exceeded.
+Call log:
+  - taking page screenshot
+  - waiting for fonts to load...
+  - fonts loaded
+
 ```
 
 # Page snapshot
@@ -141,180 +150,103 @@ Error: [COLLISION DETECTED] Element 0 (st-bento bento-col-8 parent-panel tw-bg-[
                   - generic [ref=e159] [cursor=pointer]:
                     - checkbox "Payment reminders" [checked] [ref=e160]
                     - text: Payment reminders
-            - generic [ref=e163]:
-              - generic [ref=e164]:
-                - heading "Latest Match:" [level=2] [ref=e166]
-                - generic [ref=e167]: POST-MATCH ANALYSIS
-              - generic [ref=e168]:
-                - generic [ref=e169]:
-                  - generic [ref=e170]: EFFORT (RPE)
-                  - generic [ref=e171]: /10
-                - generic [ref=e172]:
-                  - generic [ref=e173]: SUCCESS RATE
-                  - generic [ref=e174]: "%"
-            - generic [ref=e176]:
-              - generic [ref=e177]:
-                - heading "● Tremendous Escrow" [level=2] [ref=e178]:
-                  - generic [ref=e179]: ●
+            - generic [ref=e162]:
+              - generic [ref=e163]:
+                - generic [ref=e164]:
+                  - generic [ref=e165]:
+                    - 'heading "Latest Match: Metro City Elite" [level=2] [ref=e166]'
+                    - text: 2026-08-11T11:12:47.138Z
+                  - generic [ref=e167]: POST-MATCH ANALYSIS
+                - generic [ref=e168]:
+                  - generic [ref=e169]:
+                    - generic [ref=e170]: EFFORT (RPE)
+                    - generic [ref=e171]: /10
+                  - generic [ref=e172]:
+                    - generic [ref=e173]: SUCCESS RATE
+                    - generic [ref=e174]: "%"
+              - generic [ref=e175]:
+                - heading "The Car Ride Home" [level=3] [ref=e176]
+                - paragraph [ref=e177]: Match data is processing. We enforce a 15-minute cooling off period to preserve emotional safety.
+                - generic [ref=e178]:
+                  - paragraph [ref=e179]: "SUGGESTED CONVERSATION ANCHORS:"
+                  - list [ref=e180]:
+                    - listitem [ref=e181]:
+                      - generic [ref=e182]: ">"
+                      - text: "\"I love watching you play.\""
+                    - listitem [ref=e183]:
+                      - generic [ref=e184]: ">"
+                      - text: "\"What was your favorite moment out there?\""
+                    - listitem [ref=e185]:
+                      - generic [ref=e186]: ">"
+                      - text: "\"Did anything surprise you today?\""
+                - generic [ref=e187]: UNLOCKS IN 15:00
+                - button "I Acknowledge The Safety Parameters" [ref=e188]
+            - generic [ref=e190]:
+              - generic [ref=e191]:
+                - heading "● Tremendous Escrow" [level=2] [ref=e192]:
+                  - generic [ref=e193]: ●
                   - text: Tremendous Escrow
-                - generic [ref=e180]: BOUNTY TERMINAL
-              - generic [ref=e181]:
-                - generic [ref=e182]:
-                  - paragraph [ref=e183]: FUNDING SOURCE
-                  - paragraph [ref=e184]: No funding source linked
-                - generic [ref=e185]:
-                  - paragraph [ref=e186]: ACTIVE BOUNTIES
-                  - paragraph [ref=e187]: "3"
-              - generic [ref=e188]:
-                - paragraph [ref=e189]: Fund real-world rewards for your athlete's completed quests seamlessly.
-                - generic [ref=e190]:
-                  - combobox [ref=e191]:
+                - generic [ref=e194]: BOUNTY TERMINAL
+              - generic [ref=e195]:
+                - generic [ref=e196]:
+                  - paragraph [ref=e197]: FUNDING SOURCE
+                  - paragraph [ref=e198]: No funding source linked
+                - generic [ref=e199]:
+                  - paragraph [ref=e200]: ACTIVE BOUNTIES
+                  - paragraph [ref=e201]: "3"
+              - generic [ref=e202]:
+                - paragraph [ref=e203]: Fund real-world rewards for your athlete's completed quests seamlessly.
+                - generic [ref=e204]:
+                  - combobox [ref=e205]:
                     - option "$25.00"
                     - option "$50.00" [selected]
                     - option "$100.00"
                     - option "$200.00"
-                  - button "Deposit Funds via Stripe" [ref=e192]
-        - generic [ref=e193]:
-          - generic [ref=e194]:
-            - heading "Parent Lounge" [level=3] [ref=e195]
-            - generic [ref=e197]:
-              - generic [ref=e198]: READ_ONLY
-              - status "No Recent Announcements" [ref=e199]:
+                  - button "Deposit Funds via Stripe" [ref=e206]
+        - generic [ref=e207]:
+          - generic [ref=e208]:
+            - heading "Parent Lounge" [level=3] [ref=e209]
+            - generic [ref=e211]:
+              - generic [ref=e212]: READ_ONLY
+              - status "No Recent Announcements" [ref=e213]:
                 - generic: "0x2520FF"
                 - generic: NULL_DATASET
-                - generic [ref=e200]:
-                  - paragraph [ref=e203]:
+                - generic [ref=e214]:
+                  - paragraph [ref=e217]:
                     - text: No Recent Announcements
-                    - generic [ref=e204]: ▋
-                  - paragraph [ref=e205]: Official team broadcasts and scheduling announcements will appear here.
-          - generic [ref=e206]:
-            - heading "Household Thread" [level=3] [ref=e207]
-            - generic [ref=e209]:
-              - generic [ref=e210]: SAFESPORT_COMPLIANT
-              - generic [ref=e211]: PRIVATE MESSAGING DISABLED FOR MINORS
-              - status "No Active Threads" [ref=e214]:
+                    - generic [ref=e218]: ▋
+                  - paragraph [ref=e219]: Official team broadcasts and scheduling announcements will appear here.
+          - generic [ref=e220]:
+            - heading "Household Thread" [level=3] [ref=e221]
+            - generic [ref=e223]:
+              - generic [ref=e224]: SAFESPORT_COMPLIANT
+              - generic [ref=e225]: PRIVATE MESSAGING DISABLED FOR MINORS
+              - status "No Active Threads" [ref=e228]:
                 - generic: "0xB3AE33"
                 - generic: NULL_DATASET
-                - generic [ref=e215]:
-                  - paragraph [ref=e218]:
+                - generic [ref=e229]:
+                  - paragraph [ref=e232]:
                     - text: No Active Threads
-                    - generic [ref=e219]: ▋
-                  - paragraph [ref=e220]: Coach-to-athlete communications are CC'd to this thread automatically for full oversight.
-  - complementary [ref=e221]
-  - complementary [ref=e222]:
-    - generic [ref=e223]:
-      - heading [level=2] [ref=e228]: Alerts
-      - button [ref=e229] [cursor=pointer]
-    - generic [ref=e232]:
-      - paragraph [ref=e234]: No alerts right now.
-      - paragraph [ref=e235]: We'll notify you when something needs your attention.
+                    - generic [ref=e233]: ▋
+                  - paragraph [ref=e234]: Coach-to-athlete communications are CC'd to this thread automatically for full oversight.
+  - complementary [ref=e235]
+  - complementary [ref=e236]:
+    - generic [ref=e237]:
+      - heading [level=2] [ref=e242]: Alerts
+      - button [ref=e243] [cursor=pointer]
+    - generic [ref=e246]:
+      - paragraph [ref=e248]: No alerts right now.
+      - paragraph [ref=e249]: We'll notify you when something needs your attention.
 ```
 
 # Test source
 
 ```ts
-  24  |     uid: 'admin-telemetry-uid',
-  25  |     role: 'super_admin',
-  26  |     clubId: 'aggiesfc',
-  27  |     routes: [
-  28  |       { name: 'overview', path: '/admin/overview', waitSelector: '.tenant-matrix-grid' },
-  29  |       { name: 'users', path: '/admin/users', waitSelector: '.cc-root, .gu-root' },
-  30  |       { name: 'organizations', path: '/admin/organizations', waitSelector: '.orgs-panel' },
-  31  |       { name: 'audit-logs', path: '/admin/audit-log', waitSelector: '.al-page' },
-  32  |       { name: 'settings', path: '/admin/system-settings', waitSelector: 'h1' }
-  33  |     ]
-  34  |   },
-  35  |   player: {
-  36  |     uid: 'player-telemetry-uid',
-  37  |     role: 'player',
-  38  |     clubId: 'aggiesfc',
-  39  |     routes: [
-  40  |       { name: 'dashboard', path: '/player/dashboard', waitSelector: '.pd-page-root' },
-  41  |       { name: 'skill-tree', path: '/player/skill-tree', waitSelector: '.pd-page-root, .st-bento' }
-  42  |     ]
-  43  |   },
-  44  |   coach: {
-  45  |     uid: 'coach-telemetry-uid',
-  46  |     role: 'coach',
-  47  |     clubId: 'aggiesfc',
-  48  |     routes: [
-  49  |       { name: 'dashboard', path: '/coach/dashboard', waitSelector: '.coach-dashboard-root, .st-bento' },
-  50  |       { name: 'logistics', path: '/coach/logistics', waitSelector: '.pd-page-root, .st-bento' },
-  51  |       { name: 'daily-intel', path: '/coach/daily-intel', waitSelector: '.pd-page-root, .st-bento' },
-  52  |       { name: 'war-room', path: '/coach/war-room', waitSelector: '.pd-page-root, .st-bento, .tactical-arena-canvas' }
-  53  |     ]
-  54  |   },
-  55  |   parent: {
-  56  |     uid: 'parent-telemetry-uid',
-  57  |     role: 'parent',
-  58  |     clubId: 'aggiesfc',
-  59  |     routes: [
-  60  |       { name: 'dashboard', path: '/parent/dashboard', waitSelector: 'main, .parent-panel' },
-  61  |       { name: 'household', path: '/parent/household', waitSelector: '.parent-lounge-page, .phh' },
-  62  |       { name: 'trust-center', path: '/parent/trust-center', waitSelector: 'main' },
-  63  |       { name: 'payments', path: '/parent/payments', waitSelector: '.pp-root' }
-  64  |     ]
-  65  |   },
-  66  |   director: {
-  67  |     uid: 'director-telemetry-uid',
-  68  |     role: 'director',
-  69  |     clubId: 'aggiesfc',
-  70  |     routes: [
-  71  |       { name: 'dashboard', path: '/director/dashboard', waitSelector: '.director-console-page' }
-  72  |     ]
-  73  |   },
-  74  |   commissioner: {
-  75  |     uid: 'commissioner-telemetry-uid',
-  76  |     role: 'commissioner',
-  77  |     clubId: 'aggiesfc',
-  78  |     routes: [
-  79  |       { name: 'matrix', path: '/commissioner/matrix', waitSelector: '.federation-matrix-grid' }
-  80  |     ]
-  81  |   },
-  82  |   public: {
-  83  |     uid: 'public-telemetry-uid',
-  84  |     role: 'public',
-  85  |     clubId: 'aggiesfc',
-  86  |     routes: [
-  87  |       { name: 'club-roster', path: '/club/aggiesfc', waitSelector: '.clp-root' }
-  88  |     ]
-  89  |   }
-  90  | };
-  91  |
-  92  | /**
-  93  |  * Programmatic visual inspection assertions for 2D bounding boxes and CSS.
-  94  |  */
-  95  | async function runMicroscopicLayoutAssertions(page: any, routeName: string) {
-  96  |   // 1. Assert No Horizontal Scroll Overflow
-  97  |   const overflowX = await page.evaluate(() => window.scrollX);
-  98  |   expect(overflowX).toBe(0);
-  99  |
-  100 |   const scrollWidth = await page.evaluate(() => document.documentElement.scrollWidth);
-  101 |   const clientWidth = await page.evaluate(() => document.documentElement.clientWidth);
-  102 |   expect(scrollWidth).toBeLessThanOrEqual(clientWidth);
-  103 |
-  104 |   // 2. Bento Grid 2D Collision Check (Ensure no layout overlapping coordinates)
-  105 |   const gridChildren = page.locator('.tw-grid > *, .st-bento > *, [class*="Bento"] > *');
-  106 |   const count = await gridChildren.count();
-  107 |   const bboxes = [];
-  108 |   for (let i = 0; i < count; i++) {
-  109 |     const box = await gridChildren.nth(i).boundingBox();
-  110 |     if (box) {
-  111 |       bboxes.push({ id: i, ...box });
-  112 |     }
-  113 |   }
-  114 |
-  115 |   for (let i = 0; i < bboxes.length; i++) {
-  116 |     for (let j = i + 1; j < bboxes.length; j++) {
-  117 |       const a = bboxes[i];
-  118 |       const b = bboxes[j];
-  119 |       const overlapX = Math.max(0, Math.min(a.x + a.width, b.x + b.width) - Math.max(a.x, b.x));
   120 |       const overlapY = Math.max(0, Math.min(a.y + a.height, b.y + b.height) - Math.max(a.y, b.y));
   121 |       if (overlapX > 1 && overlapY > 1) {
   122 |         const classA = await gridChildren.nth(i).evaluate(el => el.className);
   123 |         const classB = await gridChildren.nth(j).evaluate(el => el.className);
-> 124 |         throw new Error(`[COLLISION DETECTED] Element ${a.id} (${classA}) overlaps Element ${b.id} (${classB}) on route: ${routeName}`);
-      |               ^ Error: [COLLISION DETECTED] Element 0 (st-bento bento-col-8 parent-panel tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-overflow-hidden tw-relative tw-min-w-0) overlaps Element 1 (tw-bg-[#0f172a] tw-rounded-[24px] tw-border tw-border-[#334155] tw-p-6 tw-flex tw-flex-col tw-gap-8) on route: dashboard
+  124 |         throw new Error(`[COLLISION DETECTED] Element ${a.id} (${classA}) overlaps Element ${b.id} (${classB}) on route: ${routeName}`);
   125 |       }
   126 |     }
   127 |   }
@@ -410,9 +342,12 @@ Error: [COLLISION DETECTED] Element 0 (st-bento bento-col-8 parent-panel tw-bg-[
   217 |
   218 |         // 6. Deposit visual proof screenshot directly into audit-artifacts/
   219 |         const screenshotPath = join(personaDir, `${route.name}-desktop.png`);
-  220 |         await page.screenshot({ path: screenshotPath, fullPage: true });
+> 220 |         await page.screenshot({ path: screenshotPath, fullPage: true });
+      |                    ^ Error: page.screenshot: Test timeout of 30000ms exceeded.
   221 |         console.log(`[VISUAL AUDIT PASSED] Screenshot exported to: ${screenshotPath}`);
   222 |       });
   223 |     }
   224 |   });
+  225 | }
+  226 |
 ```

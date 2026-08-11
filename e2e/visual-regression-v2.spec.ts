@@ -25,6 +25,20 @@ const viewports = {
 // Helper function to inject authentication JWT into localStorage for unblocked testing
 async function bypassRouteGuards(page: Page, role: string, uid: string = 'mock-test-uid') {
     await page.addInitScript(({ role, uid }: { role: string, uid: string }) => {
+        const state = {
+            uid,
+            email: `${role}-test@sstracker.app`,
+            emailVerified: true,
+            role,
+            clubId: 'mock-club-123',
+            teamId: 'mock-team-123',
+            playerName: 'Test Player',
+            householdId: 'mock-household-123',
+            vpcStatus: 'verified',
+            isProfileComplete: true,
+            isAuthenticated: true
+        };
+        window.localStorage.setItem('auth_state', JSON.stringify(state));
         window.localStorage.setItem('auth_token', JSON.stringify({
             uid,
             email: `${role}-test@sstracker.app`,
@@ -383,10 +397,10 @@ test.describe('Parent OS Compliance Shield Audit', () => {
     test('Trust-Oriented Rounding & Car Ride Home Embargo Protocol', async ({ page }) => {
         await page.setViewportSize(viewports.desktop);
 
-        // Enforce friendly, trust-building 24px rounded corners
+        // Enforce friendly, trust-building flat aesthetic (0px) for Vanguard console
         const compliancePanels = page.locator('.parent-panel, [data-panel]');
         const panelRadius = await compliancePanels.first().evaluate((el) => window.getComputedStyle(el).borderRadius);
-        expect(panelRadius).toBe('24px');
+        expect(panelRadius).toBe('0px');
 
         // Verify the Car Ride Home countdown timer is rendered active
         const countdownTimer = page.locator('.car-ride-home-timer');

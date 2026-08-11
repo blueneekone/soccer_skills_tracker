@@ -14,7 +14,7 @@
 	}>();
 </script>
 
-<section class="st-bento tw-relative tw-w-full tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-overflow-hidden tw-z-30" style="clip-path: polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px);">
+<section class="tw-relative tw-w-full tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-overflow-hidden tw-z-30" style="clip-path: polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px);">
 	<!-- Raw Athletic Data Underneath -->
 	<div class="tw-p-6">
 		<div class="tw-flex tw-justify-between tw-items-center tw-mb-6">

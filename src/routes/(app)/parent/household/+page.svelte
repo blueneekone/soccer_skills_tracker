@@ -504,13 +504,13 @@
 	{/if}
 
 	<div
-		class="bento-grid-container tw-min-h-0 tw-w-full lg:tw-grid-cols-12" style="grid-template-columns: repeat(auto-fit, minmax(min(100%, clamp(280px, 30vw, 350px)), 1fr));"
+		class="bento-grid-container bento-grid--12col bento-grid--liquid tw-min-h-0 tw-w-full lg:tw-grid-cols-12 tw-grid tw-gap-6" style="grid-template-columns: repeat(auto-fit, minmax(min(100%, clamp(280px, 30vw, 350px)), 1fr));"
 	>
 		<!-- 8-Column Primary Canvas -->
 		<div class="bento-col-8 lg:tw-col-span-8 tw-flex tw-flex-col tw-gap-6 tw-min-w-0">
 			<!-- COPPA & liability block -->
 			<section
-				class="st-bento phh-surface parent-lounge-z2-panel parent-lounge-z2-panel--warn tw-min-w-0 tw-px-3 tw-py-4 sm:tw-px-4 md:tw-px-5"
+				class="phh-surface parent-lounge-z2-panel parent-lounge-z2-panel--warn tw-min-w-0 tw-px-3 tw-py-4 sm:tw-px-4 md:tw-px-5"
 				aria-labelledby="phh-coppa"
 			>
 				<div class="tw-mb-3 tw-flex tw-flex-col tw-gap-1">
@@ -558,7 +558,7 @@
 			<!-- Linked operatives — ephemeral OTP login -->
 			{#if operativeRows.length > 0}
 				<section
-					class="st-bento phh-surface parent-lounge-z2-panel tw-min-w-0 tw-px-3 tw-py-4 sm:tw-px-4 md:tw-px-5"
+					class="phh-surface parent-lounge-z2-panel tw-min-w-0 tw-px-3 tw-py-4 sm:tw-px-4 md:tw-px-5"
 					aria-labelledby="phh-active-ops"
 				>
 					<div class="tw-mb-3">
@@ -720,7 +720,7 @@
 		<div class="bento-col-4 lg:tw-col-span-4 tw-flex tw-flex-col tw-gap-6 tw-min-w-0">
 			<!-- Operative generation -->
 			<section
-				class="st-bento phh-surface parent-lounge-z2-panel tw-min-w-0 tw-px-3 tw-py-4 sm:tw-px-4 md:tw-px-5"
+				class="phh-surface parent-lounge-z2-panel tw-min-w-0 tw-px-3 tw-py-4 sm:tw-px-4 md:tw-px-5"
 				aria-labelledby="phh-ops"
 			>
 				<div class="tw-mb-3">
@@ -735,7 +735,7 @@
 					account is created automatically. The engine issues a one-time
 					<span class="phh-mono tw-text-cyan-300">DISPATCH</span> code for Operative login.
 				</p>
-				<div class="tw-min-w-0 tw-flex tw-flex-col tw-gap-4">
+				<div class="bento-grid--liquid tw-min-w-0 tw-flex tw-flex-col tw-gap-4">
 					<label class="phh-field tw-block tw-w-full">
 						<span class="phh-eyebrow tw-mb-1 tw-block">Operative name</span>
 						<input
@@ -810,7 +810,7 @@
 			</section>
 
 			<section
-				class="st-bento phh-surface parent-lounge-z2-panel tw-min-w-0 tw-px-3 tw-py-4 sm:tw-px-4 md:tw-px-5"
+				class="phh-surface parent-lounge-z2-panel tw-min-w-0 tw-px-3 tw-py-4 sm:tw-px-4 md:tw-px-5"
 				aria-labelledby="phh-transfer"
 			>
 				<div class="tw-mb-3">
