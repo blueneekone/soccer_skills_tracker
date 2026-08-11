@@ -104,7 +104,7 @@
 				</button>
 
 				{#if filterOpen}
-					<div class="tw-absolute tw-top-[calc(100%+8px)] tw-right-0 tw-z-50 tw-bg-[#0B0F19] tw-border tw-border-[#334155] tw-shadow-2xl">
+					<div class="tw-absolute tw-top-[calc(100%+8px)] tw-right-0 tw-z-50 tw-bg-[#0B0F19] tw-border tw-border-slate-800 tw-shadow-2xl">
 						<OrganizationsEnterpriseFilter
 							{clubs}
 							bind:filterVerification

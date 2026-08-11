@@ -375,20 +375,20 @@
 		max-height: min(88vh, 640px);
 		display: flex;
 		flex-direction: column;
-		background: #0f172a;
-		border-top: 1px solid rgba(148, 163, 184, 0.22);
+		background: #0B0F19 !important;
+		border-top: 1px solid #1e293b !important;
 		border-radius: 12px 12px 0 0;
 		box-shadow: 0 -8px 40px rgba(0, 0, 0, 0.45);
 		padding-bottom: env(safe-area-inset-bottom, 0px);
 	}
 
 	.app-menu-sheet--player {
-		background: rgba(15, 23, 42, 0.98);
-		border-top-color: rgba(251, 191, 36, 0.2);
+		background: #0B0F19 !important;
+		border-top-color: #1e293b !important;
 	}
 
 	.app-menu-sheet--parent-trust {
-		border-top-color: rgba(148, 163, 184, 0.28);
+		border-top-color: #1e293b !important;
 	}
 
 	.app-menu-sheet__handle {

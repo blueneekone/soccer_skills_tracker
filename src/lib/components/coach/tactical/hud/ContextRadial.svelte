@@ -26,9 +26,9 @@
 
 		<!-- Glass panel -->
 		<div
-			class="tw-relative tw-w-[min(400px,90vw)] tw-rounded-2xl tw-border tw-border-white/10 tw-bg-[#020202]/96 tw-p-8 tw-text-center tw-backdrop-blur-3xl tw-shadow-[inset_0_1px_1px_rgba(255,255,255,0.08),_0_0_80px_rgba(20, 184, 166,0.12),_0_40px_80px_rgba(0,0,0,0.8)]"
-			in:scale={{ duration: 350, start: 0.85 }}
-			out:scale={{ duration: 200, start: 0.92 }}
+			class="tw-relative tw-w-[min(400px,90vw)] tw-rounded-2xl tw-border tw-border-slate-800 tw-bg-[#0B0F19] tw-p-8 tw-text-center tw-shadow-[0_40px_80px_rgba(0,0,0,0.8)] tw-z-50"
+			in:scale={{ duration: 150, start: 0.85 }}
+			out:scale={{ duration: 150, start: 0.92 }}
 		>
 			{#if deployPhase === 'deploying'}
 				<p class="tw-mb-1 tw-font-mono tw-text-[10px] tw-font-bold tw-uppercase tw-tracking-[0.3em] tw-text-white/25">
