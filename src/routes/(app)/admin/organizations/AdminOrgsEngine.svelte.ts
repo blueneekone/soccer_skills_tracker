@@ -1,4 +1,4 @@
-import { auth, db, functions } from '$lib/firebase.js';
+import { auth, getActiveDb, functions } from '$lib/firebase.js';
 import { httpsCallable } from 'firebase/functions';
 import { authStore } from '$lib/stores/auth.svelte.js';
 import { logSecurityEvent } from '$lib/utils/security.js';
@@ -134,11 +134,13 @@ export class AdminOrgsEngine {
 	}
 
 	addClub = async () => {
+		const activeDb = getActiveDb();
+		if (!activeDb || !authStore.isAuthenticated) return;
 		this.clubAddErr = '';
 		this.clubSaving = true;
 		try {
 			const result = await executeAddClub({
-				db,
+				db: activeDb,
 				form: { ...this.addClubForm, newSportMode: this.newSportMode },
 				createSportModuleFn: this.createSportModuleFn,
 			});
@@ -156,15 +158,16 @@ export class AdminOrgsEngine {
 	subscribe() {
 		$effect.root(() => {
 			$effect(() => {
-				if (authStore.isLoading || !authStore.isAuthenticated) return;
+				const activeDb = getActiveDb();
+				if (!activeDb || authStore.isLoading || !authStore.isAuthenticated) return;
 
 				let cancelled = false;
 				this.clubsLoading = true;
 				this.clubsErr = '';
 
 				Promise.all([
-					getDocs(collection(db, 'clubs')),
-					getDocs(query(collection(db, 'vpc_requests')))
+					getDocs(collection(activeDb, 'clubs')),
+					getDocs(query(collection(activeDb, 'vpc_requests')))
 				])
 				.then(([clubsSnap, vpcSnap]) => {
 					if (cancelled) return;

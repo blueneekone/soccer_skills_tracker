@@ -77,6 +77,9 @@
 				<div class="st-bento tw-contents">
 					<UpcomingEventsRsvp />
 				</div>
+				<div class="st-bento tw-contents">
+					<ParentNotificationPanel />
+				</div>
 
 				<!-- The Car Ride Home Holographic Widget (Z3 Holographic Card) -->
 				<div data-panel="true" class="st-bento parent-panel tw-relative tw-border tw-border-[#334155] tw-overflow-hidden tw-z-10 tw-bg-[#0f172a]/40 tw-backdrop-blur-[20px]" style="border-radius: 24px;">

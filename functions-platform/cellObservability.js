@@ -1,4 +1,4 @@
-/* eslint-disable quotes */
+
 /**
  * cellObservability.js
  * ─────────────────────
@@ -171,7 +171,7 @@ exports.evaluateCellPromotions = onSchedule(
       let flagged = 0;
       const PAGE_SIZE = 100;
 
-      // eslint-disable-next-line no-constant-condition
+
       while (true) {
         let q = registry.collection('organizations').limit(PAGE_SIZE);
         if (lastDoc) q = q.startAfter(lastDoc);
@@ -248,7 +248,7 @@ exports.purgeGatewayCaches = onSchedule(
       let pruned = 0;
       const purge = async (collectionName) => {
         let lastDoc = null;
-        // eslint-disable-next-line no-constant-condition
+
         while (true) {
           let q = registry.collection(collectionName)
               .where('recordedAt', '<', cutoff)

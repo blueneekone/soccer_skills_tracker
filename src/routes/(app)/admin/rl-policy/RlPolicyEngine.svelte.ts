@@ -23,7 +23,8 @@ import {
 	type Unsubscribe
 } from 'firebase/firestore';
 import { getFunctions, httpsCallable } from 'firebase/functions';
-import { db } from '$lib/firebase.js';
+import { getActiveDb } from '$lib/firebase.js';
+import { authStore } from '$lib/stores/auth.svelte.js';
 import type {
 	RlPolicyStateDoc,
 	RlTrainingRunDoc,
@@ -66,10 +67,15 @@ export class RlPolicyEngine {
 
 	subscribe() {
 		this.isLoading = true;
+		const activeDb = getActiveDb();
+		if (!activeDb || authStore.isLoading || !authStore.isAuthenticated) {
+			this.isLoading = false;
+			return;
+		}
 
 		// rl_policy_state/current — live
 		this._unsubPolicy = onSnapshot(
-			doc(db, 'rl_policy_state', 'current'),
+			doc(activeDb, 'rl_policy_state', 'current'),
 			(snap) => {
 				this.policyState = snap.exists() ? (snap.data() as RlPolicyStateDoc) : null;
 				this.draftAbPercent = this.policyState?.abPercent ?? 0;
@@ -84,7 +90,7 @@ export class RlPolicyEngine {
 		// rl_training_runs — latest 30, ordered by runDate desc
 		this._unsubRuns = onSnapshot(
 			query(
-				collection(db, 'rl_training_runs'),
+				collection(activeDb, 'rl_training_runs'),
 				orderBy('runDate', 'desc'),
 				limit(30)
 			),
@@ -98,7 +104,7 @@ export class RlPolicyEngine {
 		const sevenDaysAgo = Timestamp.fromMillis(Date.now() - 7 * 86_400_000);
 		this._unsubOverrides = onSnapshot(
 			query(
-				collection(db, 'rl_safety_overrides'),
+				collection(activeDb, 'rl_safety_overrides'),
 				where('createdAt', '>=', sevenDaysAgo)
 			),
 			(snap) => {

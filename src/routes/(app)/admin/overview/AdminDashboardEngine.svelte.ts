@@ -1,5 +1,5 @@
-import { db } from '$lib/firebase/config';
-import { authStore } from '$lib/stores/auth.svelte';
+import { getActiveDb } from '$lib/firebase.js';
+import { authStore } from '$lib/stores/auth.svelte.js';
 import { collection, query, where, getDocs, limit, orderBy } from 'firebase/firestore';
 
 // The Brain: Handles all Svelte 5 reactive states ($state, $derived),
@@ -29,7 +29,8 @@ export default class AdminDashboardEngine {
 	// Safety Gate: Every database call must be cell-isolated and wrapped in our
 	// B815 Defensive Hydration check to prevent unauthenticated read loops.
 	async fetchTelemetry() {
-		if (!db || !authStore.isAuthenticated) return;
+		const activeDb = getActiveDb();
+		if (!activeDb || authStore.isLoading || !authStore.isAuthenticated) return;
 
 		this.isLoading = true;
 		this.error = null;
@@ -37,14 +38,14 @@ export default class AdminDashboardEngine {
 		try {
 			// Fetch total clubs
 			const clubsSnap = await getDocs(
-				query(collection(db, 'clubs'), limit(100))
+				query(collection(activeDb, 'clubs'), limit(100))
 			);
 			this.clubsCount = clubsSnap.size; // Note: For a real dashboard, use aggregation queries if available
 
 			// Fetch recent active incidents/alerts (mock logic for demonstration)
 			const incidentsSnap = await getDocs(
 				query(
-					collection(db, 'auditLogs'),
+					collection(activeDb, 'auditLogs'),
 					where('severity', '>=', 'HIGH'),
 					orderBy('createdAt', 'desc'),
 					limit(10)
@@ -65,7 +66,8 @@ export default class AdminDashboardEngine {
 	}
 
 	async toggleMaintenanceMode() {
-		if (!db || !authStore.isAuthenticated) return;
+		const activeDb = getActiveDb();
+		if (!activeDb || authStore.isLoading || !authStore.isAuthenticated) return;
 
 		// In a real application, this would trigger a Callable Cloud Function
 		// to enforce the infrastructure override securely.
@@ -74,7 +76,8 @@ export default class AdminDashboardEngine {
 	}
 
 	async impersonateUser(targetUserId: string) {
-		if (!db || !authStore.isAuthenticated) return;
+		const activeDb = getActiveDb();
+		if (!activeDb || authStore.isLoading || !authStore.isAuthenticated) return;
 
 		try {
 			this.isLoading = true;

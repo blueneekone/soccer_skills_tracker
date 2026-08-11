@@ -31,11 +31,37 @@ const PANOPTICON = join(
 	'compliance',
 	'CoachClearancePanopticon.svelte',
 );
+const ARENA = join(
+	__dirname,
+	'..',
+	'..',
+	'..',
+	'..',
+	'..',
+	'lib',
+	'components',
+	'compliance',
+	'CoachClearanceArena.svelte',
+);
+const ENGINE = join(
+	__dirname,
+	'..',
+	'..',
+	'..',
+	'..',
+	'..',
+	'lib',
+	'components',
+	'compliance',
+	'CoachClearanceEngine.svelte.ts',
+);
 const WORKSPACE_NAV = join(__dirname, '..', '..', '..', '..', '..', 'lib', 'shell', 'workspaceNav.js');
 
 const pageSrc = readFileSync(PAGE, 'utf-8');
 const panopticonArenaSrc = readFileSync(PANOPTICON_ARENA, 'utf-8');
 const panopticonSrc = readFileSync(PANOPTICON, 'utf-8');
+const arenaSrc = readFileSync(ARENA, 'utf-8');
+const engineSrc = readFileSync(ENGINE, 'utf-8');
 const navSrc = readFileSync(WORKSPACE_NAV, 'utf-8');
 
 describe('/admin/coach-clearance — CHECKR-QA-ADMIN', () => {
