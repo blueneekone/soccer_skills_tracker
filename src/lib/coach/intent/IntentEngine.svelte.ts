@@ -28,6 +28,7 @@ import {
 import { httpsCallable } from 'firebase/functions';
 import { db, functions } from '$lib/firebase.js';
 import { getRpgSportConfig } from '$lib/config/sports.js';
+import { isFirestoreReady } from '$lib/utils/firestoreGuard.js';
 import type {
 	IntentDoc,
 	EnrichedIntent,
@@ -105,6 +106,56 @@ export class IntentEngine {
 	draftPriorityMission = $state(false);
 	draftPrescriptionSets = $state(3);
 	draftPrescriptionRepsPerSet = $state(10);
+
+	// ── Physiological Feedback Loop ─────────────────────────────────────────────
+	playerHeartRates = $state<number[]>([]);
+	heartRateRecoveryThreshold = $state(15);
+
+	heartRateHz = $derived.by(() => {
+		if (this.playerHeartRates.length === 0) return 0;
+		const sum = this.playerHeartRates.reduce((a, b) => a + b, 0);
+		return (sum / this.playerHeartRates.length) / 60;
+	});
+
+	heartRateVelocity = $derived.by(() => {
+		if (this.playerHeartRates.length < 2) return 0;
+		let totalDiffHz = 0;
+		for (let i = 1; i < this.playerHeartRates.length; i++) {
+			totalDiffHz += (this.playerHeartRates[i] - this.playerHeartRates[i - 1]) / 60;
+		}
+		return totalDiffHz / (this.playerHeartRates.length - 1);
+	});
+
+	heartRateRecovery = $derived.by(() => {
+		if (this.playerHeartRates.length < 2) return 0;
+		const peak = Math.max(...this.playerHeartRates);
+		const last = this.playerHeartRates[this.playerHeartRates.length - 1];
+		return peak - last;
+	});
+
+	workloadFatigueCoefficient = $derived.by(() => {
+		if (this.playerHeartRates.length === 0) return 0;
+		const sum = this.playerHeartRates.reduce((a, b) => a + b, 0);
+		const avgBpm = sum / this.playerHeartRates.length;
+		const recovery = this.heartRateRecovery;
+		const hrrDeficit = Math.max(0, this.heartRateRecoveryThreshold - recovery);
+		return (avgBpm / 100) * (1 + hrrDeficit / 10);
+	});
+
+	volumeScaleFactor = $derived.by(() => {
+		if (this.playerHeartRates.length > 0 && this.heartRateRecovery < this.heartRateRecoveryThreshold) {
+			return 0.85;
+		}
+		return 1.0;
+	});
+
+	adjustedPrescriptionSets = $derived(
+		Math.max(1, Math.round(this.draftPrescriptionSets * this.volumeScaleFactor))
+	);
+
+	adjustedPrescriptionReps = $derived(
+		Math.max(1, Math.round(this.draftPrescriptionRepsPerSet * this.volumeScaleFactor))
+	);
 	draftPrescriptionBilateral = $state(false);
 	draftPrescriptionDurationMin = $state(0);
 	draftPrescriptionTargetRpe = $state(0);
@@ -359,8 +410,12 @@ export class IntentEngine {
 			return rx;
 		}
 
-		const sets = Math.max(1, Math.min(99, Math.floor(Number(this.draftPrescriptionSets) || 1)));
-		const repsRaw = Math.floor(Number(this.draftPrescriptionRepsPerSet) || 0);
+		const setsRaw = Math.max(1, Math.min(99, Math.floor(Number(this.draftPrescriptionSets) || 1)));
+		const repsRawInput = Math.floor(Number(this.draftPrescriptionRepsPerSet) || 0);
+
+		const sets = Math.max(1, Math.round(setsRaw * this.volumeScaleFactor));
+		const repsRaw = Math.max(0, Math.round(repsRawInput * this.volumeScaleFactor));
+
 		const rx: IntentPrescription = {
 			sets,
 			bilateral: this.draftPrescriptionBilateral === true,
@@ -403,8 +458,10 @@ export class IntentEngine {
 			const drills: PrescriptionDrillEntry[] = this.draftBundleDrills
 				.slice(0, 8)
 				.map((entry) => {
-					const entrySets = Math.max(1, Math.min(99, Math.floor(Number(entry.sets) || 1)));
-					const entryReps = Math.floor(Number(entry.repsPerSet) || 0);
+					const entrySetsRaw = Math.max(1, Math.min(99, Math.floor(Number(entry.sets) || 1)));
+					const entryRepsRaw = Math.floor(Number(entry.repsPerSet) || 0);
+					const entrySets = Math.max(1, Math.round(entrySetsRaw * this.volumeScaleFactor));
+					const entryReps = Math.max(0, Math.round(entryRepsRaw * this.volumeScaleFactor));
 					const out: PrescriptionDrillEntry = { sets: entrySets };
 					const matchedDrill = this.availableDrills.find((d) => d.id === entry.drillId);
 					if (matchedDrill?.title) {
@@ -629,7 +686,7 @@ export class IntentEngine {
 
 	private _subscribeIntents() {
 		this._unsubIntents?.();
-		if (!this._teamId) return;
+		if (!isFirestoreReady() || !this._teamId) return;
 
 		this.isLoadingIntents = true;
 		const q = query(
@@ -777,7 +834,7 @@ export class IntentEngine {
 	}
 
 	private async _loadRoster() {
-		if (!this._teamId) return;
+		if (!isFirestoreReady() || !this._teamId) return;
 		this.isLoadingRoster = true;
 		this.rosterError = '';
 		let teamPlayerUids: string[] = [];
@@ -846,7 +903,7 @@ export class IntentEngine {
 	}
 
 	private async _loadDrillsForAttribute() {
-		if (!this._teamId) {
+		if (!isFirestoreReady() || !this._teamId) {
 			this.availableDrills = [];
 			return;
 		}
