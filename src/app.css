@@ -55,11 +55,33 @@
     --tw-backdrop-opacity:  ;
     --tw-backdrop-saturate:  ;
     --tw-backdrop-sepia:  ;
+    --tw-text-opacity: 1 !important; /* Strictly ban rgba() text opacities or Tailwind text-opacity modifiers */
   }
   body {
     @apply tw-bg-void-black tw-text-slate-100 tw-font-sans tw-antialiased selection:tw-bg-data-cyan/30;
     overflow-x: hidden;
+    font-family: 'Switzer', -apple-system, sans-serif !important; /* Standardize Switzer for highly legible body copy */
   }
+}
+
+/* 60-30-10 Palette Declarations */
+:root {
+  --color-void-black: #000000;      /* 60% Void Black Canvas base */
+  --color-structural-grey: #334155;  /* 30% Structural Grey rigid 1px layout borders */
+  --color-data-cyan: #14b8a6;       /* 10% Data Cyan High-Contrast Telemetry & Action Accent */
+}
+
+/* Universal Monospace standard for technical data */
+.tw-font-mono, .telemetry-readout, .stats-column, .hud-numeric, .mono-telemetry {
+  font-family: 'Geist Mono', monospace !important;
+}
+
+/* Micro-interactions compile with a transition duration locked to 150-250ms with 1% scale active feedback */
+button, .btn, a, [role="button"] {
+  transition: transform 200ms cubic-bezier(0.16, 1, 0.3, 1), background-color 200ms, border-color 200ms !important;
+}
+button:active, .btn:active, a:active, [role="button"]:active {
+  transform: scale(0.99) !important;
 }
 
 /* Fluid Bento Grid clamps to prevent grid-squish bugs */
