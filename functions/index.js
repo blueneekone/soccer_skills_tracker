@@ -13,7 +13,7 @@ logger.warn(
     '[functions/default] Legacy monolith index — deploy split codebases for production surfaces.',
 );
 const admin = require('firebase-admin');
-admin.initializeApp();
+
 
 exports.affinityWebhook = require('./affinityWebhook').affinityWebhook;
 
