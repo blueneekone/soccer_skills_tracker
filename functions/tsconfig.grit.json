@@ -11,6 +11,6 @@
     "declaration": false,
     "allowJs": true
   },
-  "include": ["src/grit.ts"],
+  "include": ["src/grit.ts", "src/domains/federationInvites.ts"],
   "exclude": ["src/**/*.test.js", "src/grit.js"]
 }

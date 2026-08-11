@@ -22,6 +22,7 @@ export default defineConfig({
 			'src/routes/**/tests/**/*.test.ts',
 			'docs/**/__tests__/**/*.test.ts',
 			'scripts/**/__tests__/**/*.test.ts',
+			'functions/src/__tests__/**/*.test.ts',
 		],
 		alias: {
 			$lib: resolve(__dirname, 'src/lib'),
