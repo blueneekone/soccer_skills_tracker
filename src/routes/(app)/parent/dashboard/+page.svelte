@@ -45,7 +45,7 @@
 </script>
 
 <svelte:head>
-	<title>Nexus Command Â· Parent OS</title>
+	<title>Nexus Command · Parent OS</title>
 </svelte:head>
 
 <!-- Parent OS Trusted Co-Op Partner Aesthetic -->
@@ -54,15 +54,15 @@
 		
 		<!-- Header -->
 		<header class="tw-mb-8">
-			<h1 class="tw-text-3xl tw-font-bold tw-font-mono tw-text-white tw-tracking-tight tw-mb-2">Parent OS</h1>
-			<p class="tw-text-[#94a3b8] tw-text-lg tw-font-mono">Trusted Co-Op Partner Console</p>
+			<h1 class="tw-text-3xl tw-font-bold tw-tracking-tight tw-mb-2" style="font-family: 'Geist Sans', sans-serif; color: #FAFAFA;">Parent OS</h1>
+			<p class="tw-text-[#D4D4D8] tw-text-lg" style="font-family: 'Switzer', sans-serif;">Trusted Co-Op Partner Console</p>
 		</header>
 
 		<!-- Co-Op Arena & Compliance Sidecar in 12-Column Liquid Bento Grid -->
-		<div class="bento-grid-container tw-w-full tw-min-w-0" style="grid-template-columns: repeat(auto-fit, minmax(min(100%, clamp(280px, 30vw, 350px)), 1fr));">
+		<div class="bento-grid-container tw-w-full tw-min-w-0 tw-grid tw-gap-6" style="grid-template-columns: repeat(auto-fit, minmax(min(100%, clamp(280px, 30vw, 350px)), 1fr));">
 			
 			<!-- CoOpArena spans 8 columns -->
-			<div data-panel="true" class="st-bento bento-col-8 parent-panel tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-overflow-hidden tw-relative tw-min-w-0" style="border-radius: 24px;">
+			<div data-panel="true" class="st-bento bento-col-8 parent-panel tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-overflow-hidden tw-relative tw-min-w-0" style="border-radius: 0px;">
 				<CoOpArena engine={coOpEngine} />
 			</div>
 			
@@ -82,7 +82,7 @@
 				</div>
 
 				<!-- The Car Ride Home Holographic Widget (Z3 Holographic Card) -->
-				<div data-panel="true" class="st-bento parent-panel tw-relative tw-border tw-border-[#334155] tw-overflow-hidden tw-z-10 tw-bg-[#0f172a]/40 tw-backdrop-blur-[20px]" style="border-radius: 24px;">
+				<div data-panel="true" class="st-bento parent-panel tw-relative tw-border tw-border-[#334155] tw-overflow-hidden tw-z-10 tw-bg-[#0f172a]/40 tw-backdrop-blur-[20px]" style="border-radius: 0px;">
 					<CarRideHome 
 						{matchData}
 						{isEmbargoed}
@@ -93,35 +93,35 @@
 				</div>
 
 				<!-- Bounty Terminal -->
-				<div data-panel="true" class="st-bento parent-panel tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-flex-1 tw-min-h-[300px] tw-relative" style="border-radius: 24px;">
+				<div data-panel="true" class="st-bento parent-panel tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-flex-1 tw-min-h-[300px] tw-relative" style="border-radius: 0px;">
 					<BountyTerminal engine={coOpEngine} />
 				</div>
 			</div>
 		</div>
 
 		<!-- Communications Oversight Panels -->
-		<div class="bento-grid-container tw-mt-6 tw-w-full tw-min-w-0" style="grid-template-columns: repeat(auto-fit, minmax(min(100%, clamp(280px, 30vw, 350px)), 1fr));">
+		<div class="bento-grid-container tw-mt-6 tw-w-full tw-min-w-0 tw-grid tw-gap-6" style="grid-template-columns: repeat(auto-fit, minmax(min(100%, clamp(280px, 30vw, 350px)), 1fr));">
 			<!-- Parent Lounge -->
-			<div data-panel="true" class="st-bento bento-col-8 parent-panel tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-p-6 tw-relative tw-min-w-0" style="border-radius: 24px;">
-				<h3 class="tw-text-white tw-font-bold tw-text-lg tw-flex tw-items-center tw-gap-2 tw-mb-4">
+			<div data-panel="true" class="st-bento bento-col-8 parent-panel tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-p-6 tw-relative tw-min-w-0" style="border-radius: 0px;">
+				<h3 class="tw-text-[#FAFAFA] tw-font-bold tw-text-lg tw-flex tw-items-center tw-gap-2 tw-mb-4" style="font-family: 'Geist Sans', sans-serif;">
 					<Icon name={"status.info" as IconName} class="tw-w-5 tw-h-5 tw-text-[#14b8a6]" /> Parent Lounge
 				</h3>
-				<div class="tw-bg-[#1e293b] tw-rounded-[24px] tw-p-4 tw-border tw-border-[#334155] tw-h-48 tw-flex tw-items-center tw-justify-center tw-overflow-hidden tw-relative">
-					<div class="tw-absolute tw-top-4 tw-right-4 tw-px-2 tw-py-1 tw-bg-[#14b8a6]/10 tw-text-[#14b8a6] tw-text-[10px] tw-font-mono tw-tracking-widest tw-rounded">READ_ONLY</div>
+				<div class="tw-bg-[#1e293b] tw-p-4 tw-border tw-border-[#334155] tw-h-48 tw-flex tw-items-center tw-justify-center tw-overflow-hidden tw-relative" style="border-radius: 0px;">
+					<div class="tw-absolute tw-top-4 tw-right-4 tw-px-2 tw-py-1 tw-bg-[#14b8a6]/10 tw-text-[#14b8a6] tw-text-[10px] tw-font-mono tw-tracking-widest tw-rounded" style="font-family: 'Geist Mono', monospace;">READ_ONLY</div>
 					<VanguardEmptyState title="No Recent Announcements" message="Official team broadcasts and scheduling announcements will appear here." />
 				</div>
 			</div>
 
 			<!-- Household Thread -->
-			<div data-panel="true" class="st-bento bento-col-4 parent-panel tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-p-6 tw-relative tw-min-w-0" style="border-radius: 24px;">
-				<h3 class="tw-text-white tw-font-bold tw-text-lg tw-flex tw-items-center tw-gap-2 tw-mb-4">
+			<div data-panel="true" class="st-bento bento-col-4 parent-panel tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-p-6 tw-relative tw-min-w-0" style="border-radius: 0px;">
+				<h3 class="tw-text-[#FAFAFA] tw-font-bold tw-text-lg tw-flex tw-items-center tw-gap-2 tw-mb-4" style="font-family: 'Geist Sans', sans-serif;">
 					<Icon name={"status.verified" as IconName} class="tw-w-5 tw-h-5 tw-text-[#10b981]" /> Household Thread
 				</h3>
-				<div class="tw-bg-[#1e293b] tw-rounded-[24px] tw-p-4 tw-border tw-border-[#334155] tw-h-48 tw-flex tw-items-center tw-justify-center tw-relative tw-overflow-hidden">
-					<div class="tw-absolute tw-top-4 tw-right-4 tw-px-2 tw-py-1 tw-bg-[#10b981]/10 tw-text-[#10b981] tw-text-[10px] tw-font-mono tw-tracking-widest tw-rounded">SAFESPORT_COMPLIANT</div>
+				<div class="tw-bg-[#1e293b] tw-p-4 tw-border tw-border-[#334155] tw-h-48 tw-flex tw-items-center tw-justify-center tw-relative tw-overflow-hidden" style="border-radius: 0px;">
+					<div class="tw-absolute tw-top-4 tw-right-4 tw-px-2 tw-py-1 tw-bg-[#10b981]/10 tw-text-[#10b981] tw-text-[10px] tw-font-mono tw-tracking-widest tw-rounded" style="font-family: 'Geist Mono', monospace;">SAFESPORT_COMPLIANT</div>
 					<div class="tw-absolute tw-bottom-4 tw-left-4 tw-flex tw-items-center tw-gap-2">
-						<Icon name={"sys.lock" as IconName} class="tw-w-4 tw-h-4 tw-text-[#94a3b8]" />
-						<span class="tw-text-[#94a3b8] tw-text-[10px] tw-font-mono tw-tracking-widest">PRIVATE MESSAGING DISABLED FOR MINORS</span>
+						<Icon name={"sys.lock" as IconName} class="tw-w-4 tw-h-4 tw-text-[#A1A1AA]" />
+						<span class="tw-text-[#A1A1AA] tw-text-[10px] tw-font-mono tw-tracking-widest" style="font-family: 'Geist Mono', monospace;">PRIVATE MESSAGING DISABLED FOR MINORS</span>
 					</div>
 					<VanguardEmptyState title="No Active Threads" message="Coach-to-athlete communications are CC'd to this thread automatically for full oversight." />
 				</div>

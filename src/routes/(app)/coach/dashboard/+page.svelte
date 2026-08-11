@@ -31,7 +31,7 @@
 	<ClearanceGate {engine} />
 {:else}
 	<!-- Vanguard root: deep void background, native page scrolling, no overflow traps. -->
-	<div class="coach-nexus-canvas tw-relative tw-flex tw-flex-col tw-h-full tw-w-full tw-text-slate-200">
+	<div class="coach-nexus-canvas tw-relative tw-flex tw-flex-col tw-h-full tw-w-full tw-text-[#FAFAFA]">
 		<!-- Background ambient grid -->
 		<div
 			class="tw-pointer-events-none tw-absolute tw-inset-0 tw-z-0 tw-opacity-[0.08]"
@@ -63,12 +63,12 @@
 					<h1 class="tw-m-0 tw-truncate tw-font-mono tw-text-lg tw-font-black tw-uppercase tw-tracking-[0.18em] tw-text-white md:tw-text-xl">
 						Nexus Command
 					</h1>
-					<p class="tw-mt-1 tw-truncate tw-font-mono tw-text-[10px] tw-tracking-[0.22em] tw-text-[#14b8a6]/85 tw-uppercase">
+					<p class="tw-mt-1 tw-truncate tw-font-mono tw-text-[10px] tw-tracking-[0.22em] tw-text-[#14b8a6] tw-uppercase">
 						{engine.clubNameDisplay} <span class="tw-text-slate-600">//</span> {engine.teamNameDisplay}
 					</p>
 				</div>
 				<div class="tw-flex tw-shrink-0 tw-flex-col tw-items-end tw-gap-1 tw-font-mono coach-os-uplink">
-					<span class="tw-text-[9px] tw-font-semibold tw-uppercase tw-tracking-[0.05em] tw-text-[var(--text-muted)]">UPLINK</span>
+					<span class="tw-text-[9px] tw-font-semibold tw-uppercase tw-tracking-[0.05em] tw-text-[#A1A1AA]">UPLINK</span>
 					<span class="coach-os-uplink tw-text-2xl tw-font-black tw-tabular-nums">{tickerNow}</span>
 				</div>
 			</div>
@@ -76,64 +76,64 @@
 
 		<!-- ── BODY — 12-col asymmetric bento ───────────────────────────────────── -->
 		<main 
-			class="coach-dashboard-root st-bento coach-nexus-main tw-relative tw-z-10 tw-mx-auto tw-box-border tw-w-full tw-max-w-7xl tw-flex-1 tw-min-h-0"
+			class="coach-dashboard-root coach-nexus-main tw-relative tw-z-10 tw-mx-auto tw-box-border tw-w-full tw-max-w-7xl tw-flex-1 tw-min-h-0 tw-min-w-0"
 			style="padding: var(--bento-pad-liquid); padding-bottom: calc(var(--bento-pad-liquid) + 84px + env(safe-area-inset-bottom, 0px));"
 		>
 			<DashboardArena {engine} />
 			
-			<section class="coach-hud-grid bento-span-12 tw-gap-4 tw-mt-6" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, clamp(280px, 30vw, 350px)), 1fr));">
+			<section class="coach-hud-grid bento-span-12 tw-gap-4 tw-mt-6 tw-grid tw-min-w-0" style="grid-template-columns: repeat(auto-fit, minmax(min(100%, clamp(280px, 30vw, 350px)), 1fr));">
 				<!-- Sideline SIEM Live Feed -->
-				<div class="sideline-siem-panel vanguard-surface tw-rounded-none tw-border tw-border-slate-700 tw-bg-slate-900/80 tw-p-4">
-					<h3 class="tw-font-mono tw-text-xs tw-text-teal-400 tw-mb-2 tw-uppercase tw-tracking-widest">SIEM Live Feed</h3>
-					<div class="tw-text-slate-300 tw-text-sm tw-min-w-0">Awaiting Telemetry...</div>
+				<div class="st-bento sideline-siem-panel vanguard-surface tw-rounded-none tw-border tw-border-slate-700 tw-bg-slate-900/80 tw-p-4 tw-min-w-0" style="background: #0f172a;">
+					<h3 class="tw-text-xs tw-text-[#14b8a6] tw-mb-2 tw-uppercase tw-tracking-widest tw-min-w-0" style="font-family: 'Geist Sans', sans-serif;">SIEM Live Feed</h3>
+					<div class="tw-text-[#D4D4D8] tw-text-sm tw-min-w-0" style="font-family: 'Switzer', sans-serif;">Awaiting Telemetry...</div>
 				</div>
 
 				<!-- Tactical Playbook Board (Tron War Room) -->
-				<div class="tactical-playbook-board vanguard-surface tw-rounded-none tw-border tw-border-slate-700 tw-bg-slate-900/80 tw-p-4 tw-flex tw-flex-col">
-					<h3 class="tw-font-mono tw-text-xs tw-text-teal-400 tw-mb-2 tw-uppercase tw-tracking-widest">Tactical Playbook</h3>
-					<div class="tw-text-slate-300 tw-text-sm tw-min-w-0 tw-flex-1">
-						<a href="/coach/war-room" class="tw-text-teal-400 hover:tw-text-teal-300 tw-underline tw-underline-offset-4 tw-font-mono tw-text-xs tw-uppercase">Enter War Room &rarr;</a>
+				<div class="st-bento tactical-playbook-board vanguard-surface tw-rounded-none tw-border tw-border-slate-700 tw-bg-slate-900/80 tw-p-4 tw-flex tw-flex-col tw-min-w-0" style="background: #0f172a;">
+					<h3 class="tw-text-xs tw-text-[#14b8a6] tw-mb-2 tw-uppercase tw-tracking-widest tw-min-w-0" style="font-family: 'Geist Sans', sans-serif;">Tactical Playbook</h3>
+					<div class="tw-text-[#D4D4D8] tw-text-sm tw-min-w-0 tw-flex-1 tw-min-w-0" style="font-family: 'Switzer', sans-serif;">
+						<a href="/coach/war-room" class="tw-text-[#14b8a6] hover:tw-text-teal-300 tw-underline tw-underline-offset-4 tw-uppercase" style="font-family: 'Geist Mono', monospace; font-size: 0.75rem;">Enter War Room &rarr;</a>
 					</div>
 				</div>
 
 				<!-- Intent Engine (RL Volume) -->
-				<div class="intent-engine-panel vanguard-surface tw-rounded-none tw-border tw-border-slate-700 tw-bg-slate-900/80 tw-p-4 tw-flex tw-flex-col">
-					<h3 class="tw-font-mono tw-text-xs tw-text-teal-400 tw-mb-2 tw-uppercase tw-tracking-widest">The Forge & Intent Engine</h3>
-					<div class="tw-mt-2 tw-flex tw-flex-wrap tw-items-baseline tw-justify-between tw-gap-2">
-						<span class="tw-text-xs tw-text-slate-400 tw-uppercase tw-font-bold">RL Inference</span>
-						<span class="tw-font-mono tw-text-lg tw-text-teal-400">+12% Intensity</span>
+				<div class="st-bento intent-engine-panel vanguard-surface tw-rounded-none tw-border tw-border-slate-700 tw-bg-slate-900/80 tw-p-4 tw-flex tw-flex-col tw-min-w-0" style="background: #0f172a;">
+					<h3 class="tw-text-xs tw-text-[#14b8a6] tw-mb-2 tw-uppercase tw-tracking-widest tw-min-w-0" style="font-family: 'Geist Sans', sans-serif;">The Forge & Intent Engine</h3>
+					<div class="tw-mt-2 tw-flex tw-flex-wrap tw-items-baseline tw-justify-between tw-gap-2 tw-min-w-0">
+						<span class="tw-text-xs tw-text-[#A1A1AA] tw-uppercase tw-font-bold" style="font-family: 'Geist Sans', sans-serif;">RL Inference</span>
+						<span class="tw-text-lg tw-text-[#14b8a6]" style="font-family: 'Geist Mono', monospace;">+12% Intensity</span>
 					</div>
-					<div class="tw-w-full tw-bg-slate-800 tw-h-1.5 tw-mt-2 tw-border tw-border-slate-700">
-						<div class="tw-bg-teal-400 tw-h-full" style="width: 62%;"></div>
+					<div class="tw-w-full tw-bg-slate-800 tw-h-1.5 tw-mt-2 tw-border tw-border-slate-700 tw-min-w-0">
+						<div class="tw-bg-[#14b8a6] tw-h-full" style="width: 62%;"></div>
 					</div>
 				</div>
 
 				<!-- ZPD Engine (Dynamic Difficulty) -->
-				<div class="zpd-engine-panel vanguard-surface tw-rounded-none tw-border tw-border-slate-700 tw-bg-slate-900/80 tw-p-4 tw-flex tw-flex-col">
-					<h3 class="tw-font-mono tw-text-xs tw-text-teal-400 tw-mb-2 tw-uppercase tw-tracking-widest">ZPD Engine (Dynamic Difficulty)</h3>
-					<div class="tw-mt-2 tw-flex tw-flex-wrap tw-items-baseline tw-justify-between tw-gap-2">
-						<span class="tw-text-xs tw-text-slate-400 tw-uppercase tw-font-bold">Latency</span>
-						<span class="tw-font-mono tw-text-lg tw-text-teal-400">14ms</span>
+				<div class="st-bento zpd-engine-panel vanguard-surface tw-rounded-none tw-border tw-border-slate-700 tw-bg-slate-900/80 tw-p-4 tw-flex tw-flex-col tw-min-w-0" style="background: #0f172a;">
+					<h3 class="tw-text-xs tw-text-[#14b8a6] tw-mb-2 tw-uppercase tw-tracking-widest tw-min-w-0" style="font-family: 'Geist Sans', sans-serif;">ZPD Engine (Dynamic Difficulty)</h3>
+					<div class="tw-mt-2 tw-flex tw-flex-wrap tw-items-baseline tw-justify-between tw-gap-2 tw-min-w-0">
+						<span class="tw-text-xs tw-text-[#A1A1AA] tw-uppercase tw-font-bold" style="font-family: 'Geist Sans', sans-serif;">Latency</span>
+						<span class="tw-text-lg tw-text-[#14b8a6]" style="font-family: 'Geist Mono', monospace;">14ms</span>
 					</div>
-					<p class="tw-mt-2 tw-text-[10px] tw-text-slate-400 tw-leading-relaxed tw-font-sans">
+					<p class="tw-mt-2 tw-text-[10px] tw-text-[#D4D4D8] tw-leading-relaxed tw-min-w-0" style="font-family: 'Switzer', sans-serif;">
 						Vygotsky inference active. Skill boundary scaling applied to central press and transitional width phases.
 					</p>
 				</div>
 			</section>
 
 			<!-- Roster Scannable Feed & Match Day -->
-			<section class="coach-hud-grid bento-span-12 tw-gap-4 tw-mt-6" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, clamp(280px, 30vw, 350px)), 1fr));">
-				<div class="roster-panel vanguard-surface tw-rounded-none tw-border tw-border-slate-700 tw-bg-slate-900/80 tw-p-4 tw-col-span-1 lg:tw-col-span-2">
-					<h3 class="tw-font-mono tw-text-xs tw-text-teal-400 tw-mb-4 tw-uppercase tw-tracking-widest">Active Roster & Operatives</h3>
+			<section class="coach-hud-grid bento-span-12 tw-gap-4 tw-mt-6 tw-grid tw-min-w-0" style="grid-template-columns: repeat(auto-fit, minmax(min(100%, clamp(280px, 30vw, 350px)), 1fr));">
+				<div class="st-bento roster-panel vanguard-surface tw-rounded-none tw-border tw-border-slate-700 tw-bg-slate-900/80 tw-p-4 tw-col-span-1 lg:tw-col-span-2 tw-min-w-0" style="background: #0f172a;">
+					<h3 class="tw-text-xs tw-text-[#14b8a6] tw-mb-4 tw-uppercase tw-tracking-widest tw-min-w-0" style="font-family: 'Geist Sans', sans-serif;">Active Roster & Operatives</h3>
 					{#if engine.effectiveTeamId}
 						<CoachTeamRosterPanel teamId={engine.effectiveTeamId} />
 					{:else}
-						<div class="tw-text-slate-300 tw-text-sm">No active squad.</div>
+						<div class="tw-text-[#D4D4D8] tw-text-sm tw-min-w-0" style="font-family: 'Switzer', sans-serif;">No active squad.</div>
 					{/if}
 				</div>
 
-				<div class="match-day-panel vanguard-surface tw-rounded-none tw-border tw-border-slate-700 tw-bg-slate-900/80 tw-p-4">
-					<h3 class="tw-font-mono tw-text-xs tw-text-teal-400 tw-mb-4 tw-uppercase tw-tracking-widest">Match Day Integration</h3>
+				<div class="st-bento match-day-panel vanguard-surface tw-rounded-none tw-border tw-border-slate-700 tw-bg-slate-900/80 tw-p-4 tw-min-w-0" style="background: #0f172a;">
+					<h3 class="tw-text-xs tw-text-[#14b8a6] tw-mb-4 tw-uppercase tw-tracking-widest tw-min-w-0" style="font-family: 'Geist Sans', sans-serif;">Match Day Integration</h3>
 					<HalftimeChoicePlanner ageGroup={14} />
 				</div>
 			</section>

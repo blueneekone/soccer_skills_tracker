@@ -24,60 +24,60 @@
 
 		{#if engine.activeTab === 'overview'}
 			<!-- Telemetry Tiles -->
-			<div class="bento-grid-container tw-mb-6">
-				<div class="z2-panel siem-panel tw-p-[clamp(16px,3vw,24px)] tw-flex tw-flex-col">
-					<span class="tw-text-[10px] tw-font-bold tw-uppercase tw-tracking-widest tw-text-[#94A3B8] tw-mb-2">Total Organizations</span>
-					<span class="tw-font-mono tw-text-4xl tw-font-black tw-text-[#FAFAFA]">{engine.clubsCount}</span>
+			<div class="bento-grid-container tw-mb-6 tw-grid" style="grid-template-columns: repeat(auto-fit, minmax(min(100%, clamp(280px, 30vw, 350px)), 1fr)); gap: 1rem;">
+				<div class="z2-panel siem-panel st-bento tw-p-[clamp(16px,3vw,24px)] tw-flex tw-flex-col tw-min-w-0" style="background: #0f172a; border: 1px solid #334155;">
+					<span class="tw-text-[10px] tw-font-bold tw-uppercase tw-tracking-widest tw-text-[#A1A1AA] tw-mb-2" style="font-family: 'Geist Sans', sans-serif;">Total Organizations</span>
+					<span class="tw-text-4xl tw-font-black tw-text-[#FAFAFA]" style="font-family: 'Geist Mono', monospace;">{engine.clubsCount}</span>
 				</div>
-				<div class="z2-panel siem-panel tw-p-[clamp(16px,3vw,24px)] tw-flex tw-flex-col">
-					<span class="tw-text-[10px] tw-font-bold tw-uppercase tw-tracking-widest tw-text-[#94A3B8] tw-mb-2">Total Users</span>
-					<span class="tw-font-mono tw-text-4xl tw-font-black tw-text-[#FAFAFA]">{engine.usersCount}</span>
+				<div class="z2-panel siem-panel st-bento tw-p-[clamp(16px,3vw,24px)] tw-flex tw-flex-col tw-min-w-0" style="background: #0f172a; border: 1px solid #334155;">
+					<span class="tw-text-[10px] tw-font-bold tw-uppercase tw-tracking-widest tw-text-[#A1A1AA] tw-mb-2" style="font-family: 'Geist Sans', sans-serif;">Total Users</span>
+					<span class="tw-text-4xl tw-font-black tw-text-[#FAFAFA]" style="font-family: 'Geist Mono', monospace;">{engine.usersCount}</span>
 				</div>
-				<div class="z2-panel siem-panel tw-p-[clamp(16px,3vw,24px)] tw-flex tw-flex-col">
-					<span class="tw-text-[10px] tw-font-bold tw-uppercase tw-tracking-widest tw-text-[#94A3B8] tw-mb-2">Active Incidents</span>
-					<span class="tw-font-mono tw-text-4xl tw-font-black" class:tw-text-[#ef4444]={engine.activeIncidents > 0} class:tw-text-[#14b8a6]={engine.activeIncidents === 0}>{engine.activeIncidents}</span>
+				<div class="z2-panel siem-panel st-bento tw-p-[clamp(16px,3vw,24px)] tw-flex tw-flex-col tw-min-w-0" style="background: #0f172a; border: 1px solid #334155;">
+					<span class="tw-text-[10px] tw-font-bold tw-uppercase tw-tracking-widest tw-text-[#A1A1AA] tw-mb-2" style="font-family: 'Geist Sans', sans-serif;">Active Incidents</span>
+					<span class="tw-text-4xl tw-font-black" class:tw-text-[#ef4444]={engine.activeIncidents > 0} class:tw-text-[#14b8a6]={engine.activeIncidents === 0} style="font-family: 'Geist Mono', monospace;">{engine.activeIncidents}</span>
 				</div>
-				<div class="z2-panel siem-panel tw-p-[clamp(16px,3vw,24px)] tw-flex tw-flex-col">
-					<span class="tw-text-[10px] tw-font-bold tw-uppercase tw-tracking-widest tw-text-[#94A3B8] tw-mb-2">System Status</span>
-					<span class="tw-font-mono tw-text-4xl tw-font-black tw-text-[#14b8a6]">NOMINAL</span>
+				<div class="z2-panel siem-panel st-bento tw-p-[clamp(16px,3vw,24px)] tw-flex tw-flex-col tw-min-w-0" style="background: #0f172a; border: 1px solid #334155;">
+					<span class="tw-text-[10px] tw-font-bold tw-uppercase tw-tracking-widest tw-text-[#A1A1AA] tw-mb-2" style="font-family: 'Geist Sans', sans-serif;">System Status</span>
+					<span class="tw-text-4xl tw-font-black tw-text-[#14b8a6]" style="font-family: 'Geist Mono', monospace;">NOMINAL</span>
 				</div>
 			</div>
 
 			<!-- Asymmetric 12-column Bento Grid with fluid anti-squish -->
-			<div class="bento-grid-container">
+			<div class="bento-grid-container tw-grid" style="grid-template-columns: repeat(auto-fit, minmax(min(100%, clamp(280px, 30vw, 350px)), 1fr)); gap: 1rem;">
 
 				<!-- Main Chart Area (Spans 8 cols on xl) -->
-				<div class="bento-col-8 z2-panel siem-panel tw-p-[clamp(16px,3vw,24px)] tw-min-h-[400px] tw-flex tw-flex-col">
-					<h3 class="tw-text-xs tw-font-bold tw-uppercase tw-font-sans tw-tracking-widest tw-text-[#FAFAFA] tw-mb-6">Global Activity Matrix</h3>
-					<div class="tw-flex-1 z1-well tw-flex tw-items-center tw-justify-center">
-						<span class="tw-font-mono tw-text-xs tw-text-[#334155] tw-tracking-widest">[VISUALIZATION_PENDING]</span>
+				<div class="bento-col-8 z2-panel siem-panel st-bento tw-p-[clamp(16px,3vw,24px)] tw-min-h-[400px] tw-flex tw-flex-col tw-min-w-0" style="background: #0f172a; border: 1px solid #334155;">
+					<h3 class="tw-text-xs tw-font-bold tw-uppercase tw-tracking-widest tw-text-[#FAFAFA] tw-mb-6" style="font-family: 'Geist Sans', sans-serif;">Global Activity Matrix</h3>
+					<div class="tw-flex-1 z1-well tw-flex tw-items-center tw-justify-center tw-min-w-0" style="background: #000000; border: 1px solid #334155;">
+						<span class="tw-text-xs tw-text-[#A1A1AA] tw-tracking-widest" style="font-family: 'Geist Mono', monospace;">[VISUALIZATION_PENDING]</span>
 					</div>
 				</div>
 
 				<!-- Secondary Details (Spans 4 cols on xl) -->
-				<div class="bento-col-4 tw-flex tw-flex-col tw-gap-6">
+				<div class="bento-col-4 tw-flex tw-flex-col tw-gap-6 tw-min-w-0">
 
-					<div class="tw-flex-1 z2-panel siem-panel tw-p-[clamp(16px,3vw,24px)] tw-flex tw-flex-col">
-						<h3 class="tw-text-xs tw-font-bold tw-uppercase tw-font-sans tw-tracking-widest tw-text-[#FAFAFA] tw-mb-6">Recent Org Registrations</h3>
-						<div class="tw-flex-1 tw-flex tw-items-center tw-justify-center">
-							<span class="tw-font-mono tw-text-xs tw-text-[#334155] tw-tracking-widest">NO_DATA</span>
+					<div class="tw-flex-1 z2-panel siem-panel st-bento tw-p-[clamp(16px,3vw,24px)] tw-flex tw-flex-col tw-min-w-0" style="background: #0f172a; border: 1px solid #334155;">
+						<h3 class="tw-text-xs tw-font-bold tw-uppercase tw-tracking-widest tw-text-[#FAFAFA] tw-mb-6" style="font-family: 'Geist Sans', sans-serif;">Recent Org Registrations</h3>
+						<div class="tw-flex-1 tw-flex tw-items-center tw-justify-center tw-min-w-0" style="background: #000000; border: 1px solid #334155;">
+							<span class="tw-text-xs tw-text-[#A1A1AA] tw-tracking-widest" style="font-family: 'Geist Mono', monospace;">NO_DATA</span>
 						</div>
 					</div>
 
 				</div>
 			</div>
 
-			<div class="admin-hud-grid bento-grid-container tw-mt-6">
+			<div class="admin-hud-grid bento-grid-container tw-mt-6 tw-grid" style="grid-template-columns: repeat(auto-fit, minmax(min(100%, clamp(280px, 30vw, 350px)), 1fr)); gap: 1rem;">
 				<!-- Global Telemetry Feed -->
-				<div class="global-telemetry-feed bento-col-8 z2-panel siem-panel tw-p-[clamp(16px,3vw,24px)]">
-					<h3 class="tw-font-mono tw-text-xs tw-text-[#14b8a6] tw-mb-2 tw-uppercase tw-tracking-widest">Global Telemetry Feed</h3>
-					<div class="tw-text-[#94A3B8] tw-font-mono tw-text-xs">Stream Offline</div>
+				<div class="global-telemetry-feed bento-col-8 z2-panel siem-panel st-bento tw-p-[clamp(16px,3vw,24px)] tw-min-w-0" style="background: #0f172a; border: 1px solid #334155;">
+					<h3 class="tw-text-xs tw-text-[#14b8a6] tw-mb-2 tw-uppercase tw-tracking-widest" style="font-family: 'Geist Sans', sans-serif;">Global Telemetry Feed</h3>
+					<div class="tw-text-[#D4D4D8] tw-text-xs" style="font-family: 'Switzer', sans-serif;">Stream Offline</div>
 				</div>
 
 				<!-- System Health Diagnostics -->
-				<div class="system-health-diagnostics bento-col-4 z2-panel siem-panel tw-p-[clamp(16px,3vw,24px)]">
-					<h3 class="tw-font-mono tw-text-xs tw-text-[#14b8a6] tw-mb-2 tw-uppercase tw-tracking-widest">System Health Diagnostics</h3>
-					<div class="tw-text-[#94A3B8] tw-font-mono tw-text-xs">All Systems Nominal</div>
+				<div class="system-health-diagnostics bento-col-4 z2-panel siem-panel st-bento tw-p-[clamp(16px,3vw,24px)] tw-min-w-0" style="background: #0f172a; border: 1px solid #334155;">
+					<h3 class="tw-text-xs tw-text-[#14b8a6] tw-mb-2 tw-uppercase tw-tracking-widest" style="font-family: 'Geist Sans', sans-serif;">System Health Diagnostics</h3>
+					<div class="tw-text-[#D4D4D8] tw-text-xs" style="font-family: 'Switzer', sans-serif;">All Systems Nominal</div>
 				</div>
 			</div>
 		{/if}

@@ -379,12 +379,12 @@
 {#if authStore.isLoading}
 	<div
 		class="player-dossier-root tw-flex tw-h-64 tw-min-h-[40vh] tw-w-full tw-items-center tw-justify-center tw-py-16"
-		style="background: var(--pd-bg, #000); color: var(--pd-text-muted, rgba(255, 255, 255, 0.5));"
+		style="background: var(--pd-bg, #000); color: var(--pd-text-muted, #A1A1AA);"
 		role="status"
 		aria-live="polite"
 		aria-busy="true"
 	>
-		<Icon name="status.loading" class="tw-animate-spin tw-text-4xl tw-text-[color:var(--pd-text-muted,rgba(255,255,255,0.5))]" />
+		<Icon name="status.loading" class="tw-animate-spin tw-text-4xl tw-text-[color:var(--pd-text-muted)]" />
 		<span class="tw-sr-only">Loading player dashboard</span>
 	</div>
 {:else if !activePlayer}
@@ -563,7 +563,7 @@
 			</footer>
 		{:else}
 			<div class="tw-p-6 tw-text-center tw-bg-slate-900/50 tw-border tw-border-slate-800 tw-rounded-lg tw-m-4">
-				<p class="tw-text-amber-500/90 tw-font-mono tw-text-[10px] tw-uppercase tw-tracking-widest">
+				<p class="tw-font-mono tw-text-[10px] tw-uppercase tw-tracking-widest tw-text-[#fbbf24]">
 					Telemetry blocked: Verifiable Parental Consent (VPC) Required
 				</p>
 			</div>
