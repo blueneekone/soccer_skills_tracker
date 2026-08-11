@@ -1,68 +1,93 @@
 /*
- * SSTracker (Project Phoenix) - Enterprise Design System Tokens (v2.0)
- * Style: Cybernetic Atompunk Tech Noir / Tactical SIEM
+ * SSTRACKER (PROJECT PHOENIX) - ENTERPRISE DESIGN SYSTEM TOKENS (v3.0)
+ * Style: Cybernetic Atompunk Tech Noir / Tactical SIEM & Gamified HUD
  * Base Canvas Density: >= 40% Absolute Void Black (#000000)
  *
- * v2.0 Upgrades: Hardened against layout squishing, horizontal overflows,
- * button label clipping, and overlapping viewport metrics.
+ * Upgrades (v3.0): Integrated high-voltage Cybernetic Nuclear Yellow (#daff0a)
+ * alongside original Action Gold (#fbbf24) in a mathematically complete,
+ * cohesive palette. Guaranteed anti-squishing, zero-pixel label wrapping,
+ * and dynamic text clamping to permanently end layout-boundary collisions.
  */
 
-@import url('https://fonts.googleapis.com/css2?family=Geist+Mono:wght@300;400;700&family=Geist:wght@300;400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Geist+Mono:wght@300;400;700&family=Geist:wght@300;400;700&family=Switzer:wght@300;400;700&display=swap');
 
 :root {
-  /* 60-30-10 Color Taxonomy */
-  --color-void-black: #000000;
-  --color-navy-slate: #0f172a;
-  --color-slate-card: #1e293b;
-  --color-structural-grey: #334155;
-  --color-metal-trim: #475569;
+  /* --- The 60-30-10 Color Taxonomy --- */
+  --color-void-black: #000000;      /* Canvas base (Z0 Void) */
+  --color-navy-slate: #0f172a;      /* Panel container background (Z2 Panels) */
+  --color-slate-card: #1e293b;      /* Nested subcard background */
+  --color-structural-grey: #334155;  /* Rigid 1px layout borders */
+  --color-metal-trim: #475569;      /* Inactive indicators and borders */
   
-  /* Telemetry & Action Accents */
-  --color-data-cyan: #14b8a6;
-  --color-electric-teal: #06b6d4;
-  --color-atompunk-amber: #f59e0b;
-  --color-action-gold: #fbbf24;
+  /* --- High-Contrast Telemetry & Action Accents --- */
+  --color-data-cyan: #14b8a6;       /* Primary monospace telemetry & readouts */
+  --color-electric-teal: #06b6d4;   /* Secondary network/link indicators */
+  --color-atompunk-amber: #f59e0b;  /* Warnings and safety state locks (ZPD/Embargo) */
+  --color-action-gold: #fbbf24;     /* Strictly reserved for exactly ONE primary CTA per viewport */
+  --color-nuclear-yellow: #daff0a;  /* Cybernetic high-voltage highlight / progress trackers */
   
-  /* Text Contrast Hierarchy (Zero-Opacity Modifiers Rule) */
+  /* --- Text Contrast Hierarchy (Zero-Opacity Modifiers Rule) --- */
   --text-primary: #fafafa;
   --text-secondary: #d4d4d8;
   --text-tertiary: #a1a1aa;
+  
+  /* --- Pure Glow Fields (No Text Opacity Modifications Allowed) --- */
   --text-glow-cyan: rgba(20, 184, 166, 0.15);
   --text-glow-amber: rgba(245, 158, 11, 0.15);
+  --text-glow-yellow: rgba(218, 255, 10, 0.15);
 
-  /* Viewport & Bento Grid Fluid Math */
+  /* --- Viewport & Bento Grid Fluid Math --- */
   --grid-fluid-clamp: clamp(280px, 30vw, 350px);
   --viewport-locked-height: 100dvh;
   
-  /* Svelte 5 Emotional Design Kinetics */
+  /* --- Svelte 5 Kinetic Transitions --- */
   --transition-visceral: 200ms cubic-bezier(0.16, 1, 0.3, 1);
   --transition-behavioral: 350ms cubic-bezier(0.87, 0, 0.13, 1);
 }
 
-/* --- Global Base Styles & Anti-Overflow Guards --- */
+/* --- Global Base & Viewport Lock --- */
 body {
   background-color: var(--color-void-black);
   color: var(--text-primary);
-  font-family: 'Geist', -apple-system, sans-serif;
+  font-family: 'Switzer', -apple-system, sans-serif;
   margin: 0;
-  overflow-x: hidden; /* Strictly prevent horizontal layout blowouts */
+  overflow-x: hidden; /* Prevent horizontal layout blowouts */
 }
 
-/* --- Anti-Squish / Anti-Clipping Typography Reset --- */
-h1, h2, h3, h4, h5, h6, p, span, div, button, a,
+/* --- Anti-Squish Flex & Grid Typographical Reset --- */
+h1, h2, h3, h4, h5, h6, p, span, div, button, a, 
 .telemetry-readout, .stats-column, .hud-numeric {
-  min-width: 0; /* Override HTML auto-min-width flex behavior */
+  min-width: 0; /* Overrides HTML auto-min-width behavior inside flex containers */
   box-sizing: border-box;
 }
 
-/* Dyslexia-Friendly Monospace Typography for Telemetry */
+/* --- Dyslexia-Friendly Monospace Typography --- */
 .telemetry-readout,
 .stats-column,
-.hud-numeric {
+.hud-numeric,
+.mono-telemetry {
   font-family: 'Geist Mono', monospace;
   font-variant-numeric: tabular-nums;
   letter-spacing: 0.08em;
   color: var(--color-data-cyan);
+}
+
+/* --- Dynamic KPI Overlap Prevention --- */
+.kpi-metric-display {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  width: 100%;
+}
+
+.kpi-metric-value {
+  font-family: 'Geist Mono', monospace;
+  font-size: clamp(1.5rem, 5vw, 3.5rem); /* Dynamic scale based on viewport to prevent overlap crashes */
+  line-height: 1;
+  font-weight: 800;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 /* --- The 12-Column Asymmetric Bento Grid --- */
@@ -95,7 +120,7 @@ h1, h2, h3, h4, h5, h6, p, span, div, button, a,
   }
 }
 
-/* --- Material Z-Depth Hierarchy --- */
+/* --- Material Depth Hierarchy (No Blended Depth Levels Allowed) --- */
 .z0-canvas {
   background-color: var(--color-void-black);
   min-height: var(--viewport-locked-height);
@@ -112,8 +137,8 @@ h1, h2, h3, h4, h5, h6, p, span, div, button, a,
   border: 1px solid var(--color-structural-grey);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
   transition: border-color var(--transition-visceral), box-shadow var(--transition-visceral);
-  min-width: 0; /* Safeguard nested components */
-  overflow: hidden; /* Enforce rigid container boundaries */
+  min-width: 0; /* Enforce boundary limits */
+  overflow: hidden; /* Force clipping containment on tight viewports */
 }
 
 .z2-panel:hover {
@@ -121,21 +146,31 @@ h1, h2, h3, h4, h5, h6, p, span, div, button, a,
   box-shadow: 0 0 15px var(--text-glow-cyan);
 }
 
-/* --- Persona-Specific CSS Trims --- */
+/* --- Interactive Hover High-Voltage Triggers --- */
+.z2-panel-nuclear:hover {
+  border-color: var(--color-nuclear-yellow);
+  box-shadow: 0 0 15px var(--text-glow-yellow);
+}
+
+/* --- Persona CSS Trims & Structural Specifications --- */
 
 /* 1. Global Admin & Director OS (Tactical SIEM) */
 .siem-panel {
-  border-radius: 0px !important; /* Strict 90-degree corners */
-  border-left: 2px solid var(--color-data-cyan);
+  border-radius: 0px !important; /* Rigid, 90-degree corners */
+  border-left: 3px solid var(--color-data-cyan);
   min-width: 0;
   overflow: hidden;
 }
 
 .siem-warning {
-  border-left: 2px solid var(--color-atompunk-amber);
+  border-left: 3px solid var(--color-atompunk-amber);
 }
 
-/* 2. Player OS (The Gamified HUD / Dopamine Engine) */
+.siem-nuclear {
+  border-left: 3px solid var(--color-nuclear-yellow);
+}
+
+/* 2. Player OS & Fan OS (The Gamified HUD / Broadcast Overlay) */
 .player-card-wrapper {
   background-color: var(--color-navy-slate);
   border: 1px solid var(--color-structural-grey);
@@ -145,10 +180,10 @@ h1, h2, h3, h4, h5, h6, p, span, div, button, a,
 
 .player-card-wrapper:hover {
   transform: translateY(-4px);
-  border-color: var(--color-action-gold);
+  border-color: var(--color-nuclear-yellow);
 }
 
-/* The Singular Action Gold CTA - Defensive Wrapping Enforced */
+/* The Singular Action Gold CTA - Comprehensive Label Wrapping */
 .primary-mission-cta {
   background-color: var(--color-action-gold);
   color: var(--color-void-black);
@@ -159,7 +194,7 @@ h1, h2, h3, h4, h5, h6, p, span, div, button, a,
   border: none;
   box-shadow: 0 0 10px rgba(251, 191, 36, 0.3);
   transition: filter var(--transition-visceral), box-shadow var(--transition-visceral);
-  white-space: normal; /* Force wrapping of labels on tight screens */
+  white-space: normal; /* Guarantee labels wrap rather than expanding button containers */
   overflow-wrap: break-word;
   word-wrap: break-word;
   padding: clamp(8px, 1.5vh, 16px) clamp(16px, 2.5vw, 24px);
@@ -171,26 +206,15 @@ h1, h2, h3, h4, h5, h6, p, span, div, button, a,
   box-shadow: 0 0 20px rgba(251, 191, 36, 0.6);
 }
 
-/* --- Universal Button Scaling & Prohibitions --- */
-button, .btn, .siem-panel button {
-  white-space: normal; /* Force label wrapping */
-  overflow-wrap: break-word;
-  word-wrap: break-word;
-  min-width: 0;
-  max-width: 100%;
-}
-
-/* Stop buttons with long labels from blowing out fixed margins */
-button.tw-w-auto, .btn-auto {
-  width: auto !important;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+/* High-Voltage Progress Bars & Accent Highlights */
+.nuclear-meter-fill {
+  background-color: var(--color-nuclear-yellow);
+  box-shadow: 0 0 10px var(--text-glow-yellow);
 }
 
 /* 3. Parent OS (The Compliance Shield) */
 .shield-panel {
-  border-radius: 24px; /* Comforting rounded corners */
+  border-radius: 24px; /* Comforting rounded edges for trust */
   border: 1px solid var(--color-structural-grey);
   background-color: var(--color-navy-slate);
 }
@@ -201,7 +225,23 @@ button.tw-w-auto, .btn-auto {
   color: var(--color-atompunk-amber);
 }
 
-/* --- SVG \"Tron\" Tactical Map Coordinates --- */
+/* --- Anti-Clipping Button Overrides --- */
+button, .btn, .siem-panel button {
+  white-space: normal;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  min-width: 0;
+  max-width: 100%;
+}
+
+button.tw-w-auto, .btn-auto {
+  width: auto !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* --- SVG "Tron" Tactical Field Vector Coordinates --- */
 .identity-disc {
   fill: var(--color-void-black);
   stroke: var(--color-data-cyan);
@@ -216,19 +256,9 @@ button.tw-w-auto, .btn-auto {
   filter: url(#neon-bloom-amber);
 }
 
-/* --- Dynamic KPI Overlap Prevention --- */
-.kpi-metric-display {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-  width: 100%;
-}
-
-.kpi-metric-value {
-  font-size: clamp(1.5rem, 5vw, 3.5rem); /* Dynamically scale text to prevent canvas crashes */
-  line-height: 1;
-  font-weight: 800;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+.identity-disc-nuclear {
+  fill: var(--color-void-black);
+  stroke: var(--color-nuclear-yellow);
+  stroke-width: 2;
+  filter: url(#neon-bloom-nuclear);
 }
