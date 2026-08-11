@@ -504,7 +504,7 @@
 	{/if}
 
 	<div
-		class="bento-grid-container bento-grid--12col bento-grid--liquid tw-min-h-0 tw-w-full lg:tw-grid-cols-12 tw-grid tw-gap-6" style="grid-template-columns: repeat(auto-fit, minmax(min(100%, clamp(280px, 30vw, 350px)), 1fr));"
+		class="bento-grid-container bento-grid--12col bento-grid--liquid tw-min-h-0 tw-w-full tw-grid tw-grid-cols-1 lg:tw-grid-cols-12 tw-gap-6"
 	>
 		<!-- 8-Column Primary Canvas -->
 		<div class="bento-col-8 lg:tw-col-span-8 tw-flex tw-flex-col tw-gap-6 tw-min-w-0">
