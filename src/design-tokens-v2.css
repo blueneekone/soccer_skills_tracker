@@ -3,7 +3,7 @@
  * Style: Cybernetic Atompunk Tech Noir / Tactical SIEM
  * Base Canvas Density: >= 40% Absolute Void Black (#000000)
  *
- * v2.0 Upgrades: Hardened against layout squishing, horizontal overflows,
+ * v2.0 Upgrades: Hardened against layout squishing, horizontal overflows, 
  * button label clipping, and overlapping viewport metrics.
  */
 
@@ -49,7 +49,7 @@ body {
 }
 
 /* --- Anti-Squish / Anti-Clipping Typography Reset --- */
-h1, h2, h3, h4, h5, h6, p, span, div, button, a,
+h1, h2, h3, h4, h5, h6, p, span, div, button, a, 
 .telemetry-readout, .stats-column, .hud-numeric {
   min-width: 0; /* Override HTML auto-min-width flex behavior */
   box-sizing: border-box;

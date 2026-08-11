@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest';
 
 const ROOT = join(process.cwd(), 'src');
 const NAV = join(ROOT, 'lib/shell/workspaceNav.js');
-const TACTICS_BOARD_PAGE = join(ROOT, 'routes/(app)/coach/tactics-board/+page.svelte');
+const TACTICS_BOARD_PAGE = join(ROOT, 'routes/(app)/coach/war-room/+page.svelte');
 
 describe('WARROOM-SINGLE-SURFACE guards', () => {
 	it('workspaceNav links War Room to /coach/tactical, not tactics-board', () => {

@@ -69,6 +69,9 @@
 			<!-- Compliance Sidecar spans 4 columns -->
 			<div class="bento-col-4 tw-flex tw-flex-col tw-gap-6 tw-min-w-0">
 				<div class="st-bento tw-contents">
+					<ParentNotificationPanel />
+				</div>
+				<div class="st-bento tw-contents">
 					<ActionInbox householdId={authStore.userProfile?.householdId} />
 				</div>
 				<div class="st-bento tw-contents">

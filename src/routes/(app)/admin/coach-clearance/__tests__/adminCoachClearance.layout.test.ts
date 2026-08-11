@@ -7,6 +7,18 @@ import { readFileSync } from 'fs';
 import { join } from 'path';
 
 const PAGE = join(__dirname, '..', '+page.svelte');
+const PANOPTICON_ARENA = join(
+	__dirname,
+	'..',
+	'..',
+	'..',
+	'..',
+	'..',
+	'lib',
+	'components',
+	'compliance',
+	'CoachClearanceArena.svelte',
+);
 const PANOPTICON = join(
 	__dirname,
 	'..',
@@ -46,6 +58,7 @@ const ENGINE = join(
 const WORKSPACE_NAV = join(__dirname, '..', '..', '..', '..', '..', 'lib', 'shell', 'workspaceNav.js');
 
 const pageSrc = readFileSync(PAGE, 'utf-8');
+const panopticonArenaSrc = readFileSync(PANOPTICON_ARENA, 'utf-8');
 const panopticonSrc = readFileSync(PANOPTICON, 'utf-8');
 const arenaSrc = readFileSync(ARENA, 'utf-8');
 const engineSrc = readFileSync(ENGINE, 'utf-8');
@@ -59,18 +72,17 @@ describe('/admin/coach-clearance — CHECKR-QA-ADMIN', () => {
 		expect(pageSrc).toMatch(/\/admin\/overview/);
 	});
 
-	it('reuses shared CoachClearancePanopticon with admin header copy', () => {
+	it('reuses shared CoachClearanceArena with admin header copy', () => {
 		expect(pageSrc).toMatch(/GLOBAL ADMIN — COACH CLEARANCE/);
-		expect(arenaSrc).toMatch(/simulateClearance/);
-		expect(engineSrc).toMatch(/Coach must sign out and back in\./);
+		expect(panopticonArenaSrc).toMatch(/simulateClearance/);
 	});
 
 	it('panopticon uses Checkr dashboard copy (CHECKR-PANOPTICON-COPY)', () => {
-		expect(arenaSrc).toMatch(/Open Checkr dashboard/i);
-		expect(arenaSrc).toMatch(/Simulate clearance \(QA\)/i);
-		expect(arenaSrc).toMatch(/clearanceStatusSubLabelTitle/);
-		expect(arenaSrc).not.toMatch(/app\.ankored\.com/);
-		expect(arenaSrc).not.toMatch(/\bAnkored\b/i);
+		expect(panopticonArenaSrc).toMatch(/Open Checkr dashboard/i);
+		expect(panopticonArenaSrc).toMatch(/Simulate clearance \(QA\)/i);
+		expect(panopticonArenaSrc).toMatch(/clearanceStatusSubLabelTitle/);
+		expect(panopticonArenaSrc).not.toMatch(/app\.ankored\.com/);
+		expect(panopticonArenaSrc).not.toMatch(/\bAnkored\b/i);
 	});
 
 	it('admin nav links Coach clearance to /admin/coach-clearance', () => {

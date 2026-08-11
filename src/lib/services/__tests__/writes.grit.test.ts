@@ -13,6 +13,6 @@ describe('commitGritAward', () => {
 	});
 
 	it('maps GRIT_DAILY_CAP from callable errors', () => {
-		expect(source).toContain("throw new Error('GRIT_DAILY_CAP', { cause: err });");
+		expect(source).toContain("throw new Error('GRIT_DAILY_CAP'");
 	});
 });

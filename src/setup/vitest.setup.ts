@@ -9,5 +9,11 @@ vi.mock('canvas-confetti', () => ({
 }));
 
 // Mock requestAnimationFrame to avoid JSDOM errors with canvas animation loops
-global.requestAnimationFrame = (callback) => setTimeout(callback, 0);
-global.cancelAnimationFrame = (id) => clearTimeout(id);
+if (typeof globalThis !== 'undefined') {
+  if (!globalThis.requestAnimationFrame) {
+    globalThis.requestAnimationFrame = (callback) => setTimeout(callback, 0) as any;
+  }
+  if (!globalThis.cancelAnimationFrame) {
+    globalThis.cancelAnimationFrame = (id) => clearTimeout(id);
+  }
+}

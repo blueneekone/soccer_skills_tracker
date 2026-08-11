@@ -6,6 +6,8 @@
 	 */
 	import Icon from '$lib/components/ui/Icon.svelte';
 	import type { IconName } from '$lib/icons/registry.js';
+	import CompetitivePositionPanel from '$lib/components/marketing/landing/CompetitivePositionPanel.svelte';
+	import { WIN_MESSAGE } from '$lib/components/marketing/landing/landingContent.js';
 
 	const features = [
 		{
@@ -71,7 +73,7 @@
 		<div class="tw-flex tw-flex-col tw-items-center tw-gap-6">
 			<div class="tw-flex tw-items-center tw-gap-3">
 				<div class="tw-h-px tw-w-12 tw-bg-[#14b8a6]"></div>
-				<span class="tw-font-mono tw-text-xs tw-text-[#14b8a6] tw-tracking-widest">NEXUS COMMAND · ENTERPRISE</span>
+				<span class="tw-font-mono tw-text-xs tw-text-[#14b8a6] tw-tracking-widest">SSTRACKER · ENTERPRISE</span>
 				<div class="tw-h-px tw-w-12 tw-bg-[#14b8a6]"></div>
 			</div>
 

@@ -8,7 +8,7 @@ import type { IconName } from '$lib/icons/registry.js';
 export const WIN_MESSAGE =
 	'TeamSnap runs your season. SportsEngine runs your league. GotSport runs your state paperwork. SSTracker runs your athletes\' development — with the compliance architecture youth sports actually needs in 2026.';
 
-export const HERO_HEADLINE = 'Run your club like a Mission Control.';
+export const HERO_HEADLINE = 'Run your club like a Mission Control for athlete development.';
 export const HERO_SUBHEADLINE =
 	'Schedules and chat got youth sports started. SSTracker closes the loop — train, progress, comply, and communicate safely across every persona.';
 
@@ -16,7 +16,7 @@ export const HERO_BADGE = 'SSTRACKER · CLUB OPERATING SYSTEM';
 
 /** Trust campaign hero — Option A (director-facing, Utah 2026). Wired in LandingHero.svelte. */
 export const HERO_TRUST_BADGE = 'SSTRACKER · TRUST & REGISTRATION · 2026';
-export const HERO_TRUST_HEADLINE = "When statewide registration pauses, development shouldn't.";
+export const HERO_TRUST_HEADLINE = "When statewide registration pauses, athlete development shouldn't.";
 export const HERO_TRUST_SUBHEADLINE =
 	'In June 2026, Utah families reported unauthorized card activity after youth soccer registration—and sign-ups stopped while the platform investigated. SSTracker separates season payments (Stripe Connect), minor consent (household VPC), and athlete development on tenant-scoped infrastructure. One registration outage shouldn\'t freeze your entire club OS.';
 

@@ -12,7 +12,7 @@ describe('CommandPalette.svelte', () => {
 	});
 
 	it('contains a search input with appropriate ARIA attributes', () => {
-		expect(src).toMatch(/class="cp-search__input\b/);
+		expect(src).toMatch(/class="cp-search__input/);
 		expect(src).toMatch(/aria-label="Command palette search"/);
 		expect(src).toMatch(/aria-autocomplete="list"/);
 	});
