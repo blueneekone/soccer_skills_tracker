@@ -119,6 +119,7 @@ exports.joinParentVoiceSession = parentVoiceSessionOps.joinParentVoiceSession;
 const notificationOps = require('./src/domains/notificationOps.js');
 exports.onTeamBroadcastCreated = notificationOps.onTeamBroadcastCreated;
 exports.onDeploymentCalendarEntryCreated = notificationOps.onDeploymentCalendarEntryCreated;
+exports.registerDeviceToken = notificationOps.registerDeviceToken;
 
 const webhooksOps = require('./src/domains/webhooksOps.js');
 exports.acknowledgeBroadcast = webhooksOps.acknowledgeBroadcast;
@@ -161,5 +162,5 @@ exports.onChannelCreated = onChannelCreated;
 const scheduledPiiShredder = require('./src/scheduledPiiShredder');
 exports.scheduledPiiShredder = scheduledPiiShredder.scheduledPiiShredder;
 
-const escrowOps = require('./src/domains/escrowOps');
-exports.triggerEscrowPayout = escrowOps.triggerEscrowPayout;
+const superdrawOps = require('./src/domains/superdrawOps.js');
+exports.purchaseSuperdrawTickets = superdrawOps.purchaseSuperdrawTickets;

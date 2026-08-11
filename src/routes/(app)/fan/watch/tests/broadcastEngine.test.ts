@@ -21,8 +21,7 @@ vi.mock('firebase/firestore', async () => {
 		limit: vi.fn(),
 		where: vi.fn(),
 		onSnapshot: vi.fn((_, cb) => {
-			// Mock initial snapshot trigger if needed
-			return vi.fn(); // unsubscribe mock
+			return vi.fn();
 		}),
 		writeBatch: vi.fn(() => ({
 			set: vi.fn(),
@@ -61,12 +60,10 @@ describe('BroadcastEngine', () => {
 
 	it('Test 1: Rejects vote submission without authentic credentials', async () => {
 		vi.mocked(isFirestoreReady).mockReturnValue(true);
-		Object.assign(authStore, { user: null }); // Unauthenticated
+		Object.assign(authStore, { user: null });
 		vi.mocked(getActiveDb).mockReturnValue({} as any);
 
 		engine.connect('test-session');
-
-		// Setup mock state to pretend voting is active
 		Object.defineProperty(engine, 'isVotingOpen', { get: () => true, configurable: true });
 
 		const result = await engine.submitVote('player1');
@@ -96,7 +93,7 @@ describe('BroadcastEngine', () => {
 	});
 
 	it('Test 3: Asserts isFirestoreReady blocks data-fetching if unauthenticated', () => {
-		vi.mocked(isFirestoreReady).mockReturnValue(false); // Unauthenticated / Not Ready
+		vi.mocked(isFirestoreReady).mockReturnValue(false);
 
 		engine.connect('test-session');
 
@@ -122,7 +119,6 @@ describe('Epic 6: Live MVP Voting Batching and Minor Player PII Protection', () 
 			isAuthenticated: true
 		});
 
-		// Setup onSnapshot callback capture
 		vi.mocked(onSnapshot).mockImplementation((ref: any, cb: any) => {
 			const path = ref?.path || '';
 			if (path.includes('broadcast_sessions/')) {
@@ -132,7 +128,7 @@ describe('Epic 6: Live MVP Voting Batching and Minor Player PII Protection', () 
 				const uid = parts[parts.length - 1];
 				userCallbacks[uid] = cb;
 			}
-			return vi.fn(); // Unsubscribe mock
+			return vi.fn();
 		});
 	});
 
@@ -142,7 +138,6 @@ describe('Epic 6: Live MVP Voting Batching and Minor Player PII Protection', () 
 	});
 
 	it('should correctly batch rapid sequential votes into a single writeBatch', async () => {
-		// Mock voting to be open
 		const mockSessionData = {
 			sessionId: 'session_abc',
 			mvpVoting: {
@@ -152,7 +147,6 @@ describe('Epic 6: Live MVP Voting Batching and Minor Player PII Protection', () 
 			}
 		};
 
-		// Connect and trigger session document snapshot
 		engine.connect('session_abc');
 		expect(sessionCallback).toBeTypeOf('function');
 		sessionCallback({
@@ -160,10 +154,8 @@ describe('Epic 6: Live MVP Voting Batching and Minor Player PII Protection', () 
 			data: () => mockSessionData
 		});
 
-		// Verify voting state is active
 		expect(engine.isVotingOpen).toBe(true);
 
-		// Prepare mock writeBatch
 		const mockCommit = vi.fn().mockResolvedValue(undefined);
 		const mockSet = vi.fn();
 		vi.mocked(writeBatch).mockReturnValue({
@@ -171,20 +163,17 @@ describe('Epic 6: Live MVP Voting Batching and Minor Player PII Protection', () 
 			commit: mockCommit
 		} as any);
 
-		// Submit 3 votes in rapid succession
 		const p1 = engine.submitVote('player_1');
 		const p2 = engine.submitVote('player_2');
 		const p3 = engine.submitVote('player_1');
 
-		// Advance timer for batchTimeout (10ms)
 		await vi.runAllTimersAsync();
 
-		// Wait for resolutions
 		const results = await Promise.all([p1, p2, p3]);
 
 		expect(results).toEqual([true, true, true]);
-		expect(mockCommit).toHaveBeenCalledTimes(1); // Consolidated in 1 batch commit!
-		expect(mockSet).toHaveBeenCalledTimes(3); // 3 individual vote documents set
+		expect(mockCommit).toHaveBeenCalledTimes(1);
+		expect(mockSet).toHaveBeenCalledTimes(3);
 	});
 
 	it('should protect minor player PII by displaying pseudonymized metrics and names', () => {
@@ -203,8 +192,6 @@ describe('Epic 6: Live MVP Voting Batching and Minor Player PII Protection', () 
 			data: () => mockSessionData
 		});
 
-		// Trigger profile loads
-		// 1. Minor unconsented
 		userCallbacks['minor_unconsented_1']?.({
 			exists: () => true,
 			data: () => ({
@@ -217,7 +204,6 @@ describe('Epic 6: Live MVP Voting Batching and Minor Player PII Protection', () 
 			})
 		});
 
-		// 2. Minor consented
 		userCallbacks['minor_consented_2']?.({
 			exists: () => true,
 			data: () => ({
@@ -230,7 +216,6 @@ describe('Epic 6: Live MVP Voting Batching and Minor Player PII Protection', () 
 			})
 		});
 
-		// 3. Adult player
 		userCallbacks['adult_3']?.({
 			exists: () => true,
 			data: () => ({
@@ -243,28 +228,25 @@ describe('Epic 6: Live MVP Voting Batching and Minor Player PII Protection', () 
 		const list = engine.candidates;
 		expect(list).toHaveLength(3);
 
-		// Assertions for unconsented minor (PII completely pseudonymized and restricted)
 		const c1 = list.find(c => c.id === 'minor_unconsented_1');
 		expect(c1).toBeDefined();
 		expect(c1.isMinor).toBe(true);
 		expect(c1.isConsented).toBe(false);
-		expect(c1.name).toBe('Athlete #mino'); // Pseudonymized to first 4 chars of ID
-		expect(c1.stats.performanceTier).toBe('Verified'); // Fallback safe stats
-		expect(c1.stats.privatePii).toBeUndefined(); // Stripped private stats
+		expect(c1.name).toBe('Athlete #mino');
+		expect(c1.stats.performanceTier).toBe('Verified');
+		expect(c1.stats.privatePii).toBeUndefined();
 
-		// Assertions for consented minor (displays vetted player-card profiles and masked name)
 		const c2 = list.find(c => c.id === 'minor_consented_2');
 		expect(c2).toBeDefined();
 		expect(c2.isMinor).toBe(true);
 		expect(c2.isConsented).toBe(true);
-		expect(c2.name).toBe('Sarah C.'); // Masked name to protect minor athlete PII in live broadcasts
+		expect(c2.name).toBe('Sarah C.');
 		expect(c2.stats.performanceTier).toBe('Elite');
 
-		// Assertions for adult (displays fully)
 		const c3 = list.find(c => c.id === 'adult_3');
 		expect(c3).toBeDefined();
 		expect(c3.isMinor).toBe(false);
-		expect(c3.name).toBe('John Doe'); // Real name displayed safely
+		expect(c3.name).toBe('John Doe');
 		expect(c3.stats.performanceTier).toBe('Silver');
 	});
 });
