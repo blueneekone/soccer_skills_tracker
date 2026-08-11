@@ -153,6 +153,9 @@ const b2bEnrollmentOps = require('./src/domains/b2bEnrollmentOps.js');
 exports.enrollIndependentDirector = b2bEnrollmentOps.enrollIndependentDirector;
 exports.enrollGovernedDirector = b2bEnrollmentOps.enrollGovernedDirector;
 
+const federationInvites = require('./lib/domains/federationInvites.js');
+exports.consumeFederationInvite = federationInvites.consumeFederationInvite;
+
 const ingestRoster = require("./ingestRoster.js");
 exports.ingestRoster = ingestRoster.ingestRoster;
 
