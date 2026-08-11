@@ -160,3 +160,6 @@ exports.onChannelCreated = onChannelCreated;
 
 const scheduledPiiShredder = require('./src/scheduledPiiShredder');
 exports.scheduledPiiShredder = scheduledPiiShredder.scheduledPiiShredder;
+
+const superdrawOps = require('./src/domains/superdrawOps.js');
+exports.purchaseSuperdrawTickets = superdrawOps.purchaseSuperdrawTickets;

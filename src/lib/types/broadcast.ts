@@ -1,3 +1,4 @@
+// SuperdrawCampaign model definition for Epic 6
 export interface BroadcastSession {
 	sessionId: string;
 	tenantId: string;
@@ -18,8 +19,12 @@ export interface BroadcastInteraction {
 }
 
 export interface SuperdrawCampaign {
+	/** Unique identifier for the superdraw campaign */
 	campaignId: string;
+	/** ISO 8601 timestamp representing when the superdraw campaign ends */
 	endTime: string;
+	/** The total accumulated prize pool in USD */
 	totalPool: number;
+	/** Price per superdraw ticket in USD */
 	ticketPrice: number;
 }
