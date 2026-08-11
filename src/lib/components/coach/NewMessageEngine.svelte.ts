@@ -1,3 +1,4 @@
+import { authStore } from '$lib/stores/auth/facade.svelte.js';
 import { collection, query, where, limit, getDocs } from 'firebase/firestore';
 import { db, functions } from '$lib/firebase.js';
 import { httpsCallable } from 'firebase/functions';
@@ -98,7 +99,7 @@ export class NewMessageEngine {
 	}
 
 	async loadCandidates() {
-		if (!this.clubId || !db) return;
+		if (!this.clubId || !db || !authStore.isAuthenticated) return;
 		this.loading = true;
 		this.loadErr = '';
 		try {

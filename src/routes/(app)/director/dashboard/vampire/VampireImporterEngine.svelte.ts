@@ -11,6 +11,16 @@ export class VampireImporterEngine {
   totalRowCount = $state<number>(0);
   ingestedCount = $state<number>(0);
   errorMessage = $state<string | null>(null);
+  teamId = $state<string>('');
+  successMessage = $state<string | null>(null);
+
+  get processedCount() {
+    return this.ingestedCount;
+  }
+
+  async handleFileUpload(file: File) {
+    await this.setFile(file);
+  }
 
   async setFile(file: File) {
     this.file = file;

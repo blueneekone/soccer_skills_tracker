@@ -2076,3 +2076,37 @@ exports.executeSupportCommand = onCall(
   }
 );
 
+exports.updateUserRole = onCall({ region: REGION }, async (request) => {
+  const { auth, data } = request;
+  if (!auth) {
+    throw new HttpsError('unauthenticated', 'User must be authenticated.');
+  }
+
+  const callerRole = auth.token.role || '';
+  if (callerRole !== 'admin' && callerRole !== 'global_admin' && callerRole !== 'super_admin' && callerRole !== 'director') {
+    throw new HttpsError('permission-denied', 'Only authorized staff can update roles.');
+  }
+
+  const { targetEmail, newRole } = data;
+  if (!targetEmail || !newRole) {
+    throw new HttpsError('invalid-argument', 'targetEmail and newRole are required.');
+  }
+
+  // Update in Firestore
+  const docRef = db().collection('users').doc(targetEmail.toLowerCase());
+  await docRef.set({ role: newRole }, { merge: true });
+
+  // Update auth claims
+  try {
+    const userRecord = await admin.auth().getUserByEmail(targetEmail);
+    const existingClaims = userRecord.customClaims || {};
+    await admin.auth().setCustomUserClaims(userRecord.uid, {
+      ...existingClaims,
+      role: newRole
+    });
+  } catch (e) {
+    logger.warn('Auth claims update failed for', targetEmail, e);
+  }
+
+  return { success: true };
+});
