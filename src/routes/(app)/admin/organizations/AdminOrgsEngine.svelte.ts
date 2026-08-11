@@ -1,3 +1,4 @@
+import { untrack } from 'svelte';
 import { auth, getActiveDb, functions } from '$lib/firebase.js';
 import { httpsCallable } from 'firebase/functions';
 import { authStore } from '$lib/stores/auth.svelte.js';
@@ -221,20 +222,29 @@ export class AdminOrgsEngine {
 			$effect(() => {
 				void this.orgSearch;
 				void this.activeSportTab;
-				this.orgPage = 0;
+				untrack(() => {
+					this.orgPage = 0;
+				});
 			});
 
 			$effect(() => {
-				if (this.orgPage > this.orgTotalPages - 1) this.orgPage = Math.max(0, this.orgTotalPages - 1);
+				const maxPage = Math.max(0, this.orgTotalPages - 1);
+				if (this.orgPage > maxPage) {
+					untrack(() => {
+						this.orgPage = maxPage;
+					});
+				}
 			});
 
 			$effect(() => {
 				if (this.addClubForm.sport !== '__new__' && (this.addClubForm.newSportName || this.addClubForm.newSportIcon !== 'ph-soccer-ball')) {
-					this.addClubForm = {
-						...this.addClubForm,
-						newSportName: '',
-						newSportIcon: 'ph-soccer-ball',
-					};
+					untrack(() => {
+						this.addClubForm = {
+							...this.addClubForm,
+							newSportName: '',
+							newSportIcon: 'ph-soccer-ball',
+						};
+					});
 				}
 			});
 
