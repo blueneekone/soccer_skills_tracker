@@ -43,7 +43,15 @@ if (admin.apps.length === 0) {
   let credential;
   const fs = require('fs');
   const keyPath = path.resolve(__dirname, '../serviceAccountKey.json');
-  fs.writeFileSync('C:/Users/ewaec/Documents/Soccer Skills Developent Tracker/soccer_skills_tracker/deploy-debug.log', 'Dirname: ' + __dirname + ' keyPath: ' + keyPath + ' exists: ' + fs.existsSync(keyPath) + '\n', {flag: 'a'});
+  try {
+    fs.writeFileSync('C:/Users/ewaec/Documents/Soccer Skills Developent Tracker/soccer_skills_tracker/deploy-debug.log', 'Dirname: ' + __dirname + ' keyPath: ' + keyPath + ' exists: ' + fs.existsSync(keyPath) + '\n', {flag: 'a'});
+  } catch (err) {
+    try {
+      fs.writeFileSync(path.resolve(__dirname, '../deploy-debug.log'), 'Dirname: ' + __dirname + ' keyPath: ' + keyPath + ' exists: ' + fs.existsSync(keyPath) + '\n', {flag: 'a'});
+    } catch (e) {
+      // ignore silently if neither is writable
+    }
+  }
   
   if (fs.existsSync(keyPath)) {
     try {

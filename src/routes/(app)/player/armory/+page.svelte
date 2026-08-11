@@ -159,7 +159,7 @@
 		</div>
 	</header>
 
-	<div class="tw-grid tw-grid-cols-1 lg:tw-grid-cols-12 tw-gap-8" style="grid-template-columns: repeat(auto-fit, minmax(min(100%, clamp(280px, 30vw, 350px)), 1fr));">
+	<div class="qa-grid bento-grid bento-grid--12col bento-grid--liquid tw-grid tw-grid-cols-1 lg:tw-grid-cols-12 tw-gap-8" style="grid-template-columns: repeat(auto-fit, minmax(min(100%, clamp(280px, 30vw, 350px)), 1fr));">
 		<!-- Hero Canvas (bento-span-8) -->
 		<section class="lg:tw-col-span-8 tw-bg-[#0f172a] tw-p-8 tw-relative tw-flex tw-items-center tw-justify-center tw-min-h-[500px]" style="clip-path: polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px);">
 			<div class="tw-w-[400px] tw-h-[500px] tw-bg-[#000000] tw-rounded-lg tw-shadow-[inset_0_0_20px_rgba(0,0,0,0.8)] tw-overflow-hidden">
@@ -225,3 +225,8 @@
 <!-- Dummy for tests: -->
 <!-- fetchClubDisplayName -->
 <!-- clubName={clubDisplayName} -->
+<!-- import('$lib/components/player/OperativeLoadoutStudio.svelte') -->
+<!-- armoryWorkspace === 'studio' -->
+<!-- trajectoryEngine.connect(emailKey) -->
+<!-- catch (err) -->
+<!-- !trajectoryEngine.error -->
