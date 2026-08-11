@@ -31,6 +31,7 @@
 		normalizeHouseholdId,
 		shouldClearLoadBusy,
 	} from '$lib/parent/loadHouseholdClearance.js';
+	import { isFirestoreReady } from '$lib/utils/firestoreGuard.js';
 
 	const DISPATCH_CODE_INTEL = {
 		title: 'DISPATCH CODES',
@@ -265,7 +266,7 @@
 		const hid = clearanceHid;
 		const ready = clearanceLoadReady;
 
-		if (!ready || !hid) {
+		if (!ready || !hid || !isFirestoreReady()) {
 			loadBusy = false;
 			return;
 		}

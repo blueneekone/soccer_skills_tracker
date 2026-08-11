@@ -5,7 +5,7 @@
 </script>
 
 <div class="tw-flex tw-flex-col tw-gap-4">
-	<div class="tw-p-6 tw-bg-[#1e293b] tw-rounded-[24px] tw-border tw-border-[#334155]">
+	<div class="tw-p-6 tw-bg-[#1e293b] tw-border tw-border-[#334155]" style="clip-path: polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px);">
 		<h1 class="tw-text-2xl tw-font-sans tw-text-white tw-mb-2">Verifiable Parental Consent (VPC)</h1>
 		<p class="tw-font-mono tw-text-sm tw-text-[#94a3b8]">
 			STATUS:
@@ -17,7 +17,7 @@
 		</p>
 	</div>
 
-	<div class="tw-p-6 tw-bg-[#0f172a] tw-rounded-[24px] tw-border tw-border-[#334155]">
+	<div class="tw-p-6 tw-bg-[#0f172a] tw-border tw-border-[#334155]" style="clip-path: polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px);">
 		<h3 class="tw-text-sm tw-font-sans tw-text-[#94a3b8] tw-uppercase tw-mb-3">E-Sign Legal Disclosure</h3>
 		<p class="tw-text-xs tw-font-mono tw-text-[#64748b] tw-leading-relaxed">
 			By completing the biometric authentication process below, you confirm that you are the parent or legal guardian of the minor athlete.

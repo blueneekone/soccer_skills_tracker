@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { untrack } from 'svelte';
 	import { authStore } from '$lib/stores/auth.svelte.js';
-	import { db } from '$lib/firebase.js';
 	import CarRideHome from '$lib/components/parent/CarRideHome.svelte';
 	import CoOpArena from '$lib/components/parent/co-op/CoOpArena.svelte';
 	import BountyTerminal from '$lib/components/parent/co-op/BountyTerminal.svelte';
@@ -62,27 +61,27 @@
 		<div class="bento-grid-container tw-w-full tw-min-w-0 tw-grid tw-gap-6" style="grid-template-columns: repeat(auto-fit, minmax(min(100%, clamp(280px, 30vw, 350px)), 1fr));">
 			
 			<!-- CoOpArena spans 8 columns -->
-			<div data-panel="true" class="st-bento bento-col-8 parent-panel tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-overflow-hidden tw-relative tw-min-w-0" style="border-radius: 0px;">
+			<div data-panel="true" class="bento-col-8 parent-panel tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-overflow-hidden tw-relative tw-min-w-0" style="border-radius: 0px;">
 				<CoOpArena engine={coOpEngine} />
 			</div>
 			
 			<!-- Compliance Sidecar spans 4 columns -->
 			<div class="bento-col-4 tw-flex tw-flex-col tw-gap-6 tw-min-w-0">
-				<div class="st-bento tw-contents">
+				<div class="tw-contents">
 					<ParentNotificationPanel />
 				</div>
-				<div class="st-bento tw-contents">
+				<div class="tw-contents">
 					<ActionInbox householdId={authStore.userProfile?.householdId} />
 				</div>
-				<div class="st-bento tw-contents">
+				<div class="tw-contents">
 					<UpcomingEventsRsvp />
 				</div>
-				<div class="st-bento tw-contents">
+				<div class="tw-contents">
 					<ParentNotificationPanel />
 				</div>
 
 				<!-- The Car Ride Home Holographic Widget (Z3 Holographic Card) -->
-				<div data-panel="true" class="st-bento parent-panel tw-relative tw-border tw-border-[#334155] tw-overflow-hidden tw-z-10 tw-bg-[#0f172a]/40 tw-backdrop-blur-[20px]" style="border-radius: 0px;">
+				<div data-panel="true" class="parent-panel tw-relative tw-border tw-border-[#334155] tw-overflow-hidden tw-z-10 tw-bg-[#0f172a]/40 tw-backdrop-blur-[20px]" style="border-radius: 0px;">
 					<CarRideHome 
 						{matchData}
 						{isEmbargoed}
@@ -93,7 +92,7 @@
 				</div>
 
 				<!-- Bounty Terminal -->
-				<div data-panel="true" class="st-bento parent-panel tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-flex-1 tw-min-h-[300px] tw-relative" style="border-radius: 0px;">
+				<div data-panel="true" class="parent-panel tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-flex-1 tw-min-h-[300px] tw-relative" style="border-radius: 0px;">
 					<BountyTerminal engine={coOpEngine} />
 				</div>
 			</div>
@@ -102,7 +101,7 @@
 		<!-- Communications Oversight Panels -->
 		<div class="bento-grid-container tw-mt-6 tw-w-full tw-min-w-0 tw-grid tw-gap-6" style="grid-template-columns: repeat(auto-fit, minmax(min(100%, clamp(280px, 30vw, 350px)), 1fr));">
 			<!-- Parent Lounge -->
-			<div data-panel="true" class="st-bento bento-col-8 parent-panel tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-p-6 tw-relative tw-min-w-0" style="border-radius: 0px;">
+			<div data-panel="true" class="bento-col-8 parent-panel tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-p-6 tw-relative tw-min-w-0" style="border-radius: 0px;">
 				<h3 class="tw-text-[#FAFAFA] tw-font-bold tw-text-lg tw-flex tw-items-center tw-gap-2 tw-mb-4" style="font-family: 'Geist Sans', sans-serif;">
 					<Icon name={"status.info" as IconName} class="tw-w-5 tw-h-5 tw-text-[#14b8a6]" /> Parent Lounge
 				</h3>
@@ -113,7 +112,7 @@
 			</div>
 
 			<!-- Household Thread -->
-			<div data-panel="true" class="st-bento bento-col-4 parent-panel tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-p-6 tw-relative tw-min-w-0" style="border-radius: 0px;">
+			<div data-panel="true" class="bento-col-4 parent-panel tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-p-6 tw-relative tw-min-w-0" style="border-radius: 0px;">
 				<h3 class="tw-text-[#FAFAFA] tw-font-bold tw-text-lg tw-flex tw-items-center tw-gap-2 tw-mb-4" style="font-family: 'Geist Sans', sans-serif;">
 					<Icon name={"status.verified" as IconName} class="tw-w-5 tw-h-5 tw-text-[#10b981]" /> Household Thread
 				</h3>

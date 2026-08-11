@@ -3,6 +3,8 @@
 	import { getActiveDb } from '$lib/firebase.js';
 	import { query, collection, where, onSnapshot } from 'firebase/firestore';
 	import { browser } from '$app/environment';
+	import { isFirestoreReady } from '$lib/utils/firestoreGuard.js';
+	import { untrack } from 'svelte';
 	
 	// CDO Aesthetic: Flat, professional, 24px border radii.
 	
@@ -59,7 +61,7 @@
 
 	// CSO: Shadow CC Audit Log
 	$effect(() => {
-		if (!db || !authStore.isAuthenticated) return;
+		if (!db || !authStore.isAuthenticated || !isFirestoreReady()) return;
 		const uid = authStore.userProfile?.uid;
 		if (!uid) return;
 
@@ -70,7 +72,9 @@
 		);
 
 		const unsub = onSnapshot(q, (snap) => {
-			shadowCcLogs = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+			untrack(() => {
+				shadowCcLogs = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+			});
 		});
 
 		return () => unsub();

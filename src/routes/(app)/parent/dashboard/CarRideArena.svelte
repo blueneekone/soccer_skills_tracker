@@ -22,7 +22,8 @@
 	{#if engine.publicScore}
 		{@const score = engine.publicScore}
 		<div
-			class="tw-rounded-[24px] tw-border tw-border-[#14b8a6]/15 tw-bg-[#040f16]/80 tw-backdrop-blur-sm tw-p-5 tw-flex tw-flex-col tw-gap-4"
+			class="tw-border tw-border-[#14b8a6]/15 tw-bg-[#040f16]/80 tw-backdrop-blur-sm tw-p-5 tw-flex tw-flex-col tw-gap-4"
+			style="clip-path: polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px);"
 		>
 			<!-- Header -->
 			<div class="tw-flex tw-items-center tw-justify-between">
@@ -65,7 +66,8 @@
 
 		<!-- Unlock confirmation banner -->
 		<div
-			class="tw-rounded-[24px] tw-border tw-border-[#14b8a6]/25 tw-bg-[#14b8a6]/5 tw-px-5 tw-py-3 tw-flex tw-items-center tw-gap-3"
+			class="tw-border tw-border-[#14b8a6]/25 tw-bg-[#14b8a6]/5 tw-px-5 tw-py-3 tw-flex tw-items-center tw-gap-3"
+			style="clip-path: polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px);"
 		>
 			<span class="tw-text-[#14b8a6] tw-text-[14px]">✓</span>
 			<span class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-[#14b8a6]/80 tw-uppercase">
@@ -75,7 +77,7 @@
 
 		<!-- Player stats table -->
 		{#if Object.keys(metrics.playerStats).length > 0}
-			<div class="tw-rounded-[24px] tw-border tw-border-[#ffffff]/8 tw-bg-[#040f16]/80 tw-backdrop-blur-sm tw-overflow-hidden">
+			<div class="tw-border tw-border-[#ffffff]/8 tw-bg-[#040f16]/80 tw-backdrop-blur-sm tw-overflow-hidden" style="clip-path: polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px);">
 				<div class="tw-px-5 tw-py-3 tw-border-b tw-border-[#ffffff]/5">
 					<span class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-[#14b8a6]/50 tw-uppercase">
 						// PLAYER PERFORMANCE
@@ -121,7 +123,7 @@
 
 		<!-- Coach notes -->
 		{#if metrics.coachNotes && metrics.coachNotes.trim().length > 0}
-			<div class="tw-rounded-[24px] tw-border tw-border-[#ffffff]/8 tw-bg-[#040f16]/80 tw-backdrop-blur-sm tw-p-5 tw-flex tw-flex-col tw-gap-3">
+			<div class="tw-border tw-border-[#ffffff]/8 tw-bg-[#040f16]/80 tw-backdrop-blur-sm tw-p-5 tw-flex tw-flex-col tw-gap-3" style="clip-path: polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px);">
 				<span class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-[#14b8a6]/50 tw-uppercase">
 					// COACH NOTES
 				</span>
@@ -133,7 +135,7 @@
 
 		<!-- Highlights -->
 		{#if metrics.highlights && metrics.highlights.trim().length > 0}
-			<div class="tw-rounded-[24px] tw-border tw-border-[#ffffff]/8 tw-bg-[#040f16]/80 tw-backdrop-blur-sm tw-p-5 tw-flex tw-flex-col tw-gap-3">
+			<div class="tw-border tw-border-[#ffffff]/8 tw-bg-[#040f16]/80 tw-backdrop-blur-sm tw-p-5 tw-flex tw-flex-col tw-gap-3" style="clip-path: polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px);">
 				<span class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-[#14b8a6]/50 tw-uppercase">
 					// HIGHLIGHTS
 				</span>
@@ -147,7 +149,8 @@
 	<!-- ── Error state ────────────────────────────────────────────────────── -->
 	{#if engine.error}
 		<div
-			class="tw-rounded-[24px] tw-border tw-border-[#ff6b6b]/30 tw-bg-[#ff6b6b]/5 tw-p-4 tw-font-mono tw-text-[10px] tw-text-[#ff6b6b] tw-tracking-wide"
+			class="tw-border tw-border-[#ff6b6b]/30 tw-bg-[#ff6b6b]/5 tw-p-4 tw-font-mono tw-text-[10px] tw-text-[#ff6b6b] tw-tracking-wide"
+			style="clip-path: polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px);"
 		>
 			{engine.error}
 		</div>
