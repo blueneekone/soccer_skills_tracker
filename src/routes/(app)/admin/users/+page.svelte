@@ -7,20 +7,22 @@
 	import type { GlobalUserRow } from '$lib/types/adminUsers.js';
 
 	import '$lib/styles/enterprise-console.css';
-	
 
 	const engine = new AdminUsersEngine();
 	engine.subscribe();
 </script>
 
 <div
-	class="pd-page-root  tw-col-span-1 lg:tw-col-span-12 tw-flex tw-flex-col tw-w-full tw-bg-[#0B0F19] tw-text-[#FAFAFA] dark-form-surface cc-root tw-box-border tw-mx-auto tw-max-w-[1680px]"
-	style="padding: var(--bento-pad-liquid, clamp(20px, 4vw, 32px));"
+	class="pd-page-root tw-flex tw-flex-col tw-w-full tw-bg-[#0B0F19] tw-text-[#FAFAFA] dark-form-surface cc-root tw-box-border tw-mx-auto tw-max-w-[1680px]"
+	style="padding: var(--bento-pad-liquid, clamp(20px, 4vw, 32px)); height: 100dvh; max-height: 100dvh; overflow: hidden; box-sizing: border-box; flex: 1 1 auto; min-height: 0;"
 	data-admin-shell="true"
 >
-	<div class="tw-grid st-bento tw-grid-cols-1 xl:tw-grid-cols-12 tw-gap-[clamp(16px,2vw,24px)] tw-w-full tw-min-w-0">
-		<div class="xl:tw-col-span-12 tw-min-w-0 tw-flex tw-flex-col tw-break-words tw-whitespace-normal">
-			<div class="gu-root">
+	<div
+		class="bento-grid-container tw-w-full tw-flex-1 tw-min-h-0"
+		style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, clamp(280px, 30vw, 350px)), 1fr)); gap: clamp(16px, 2vw, 24px);"
+	>
+		<div class="st-bento users-card tw-min-w-0 tw-flex tw-flex-col tw-break-words tw-whitespace-normal tw-min-h-0 tw-h-full" style="grid-column: 1 / -1;">
+			<div class="gu-root tw-flex tw-flex-col tw-min-h-0 tw-h-full tw-overflow-y-auto">
 				<AdminUsersHUD {engine} />
 				<AdminUsersArena {engine} />
 			</div>

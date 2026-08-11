@@ -22,29 +22,29 @@
 	}: Props = $props();
 </script>
 
-<div class="v-table-wrap tw-overflow-x-auto">
-	<table class="v-table tw-w-full tw-border-collapse tw-border tw-border-slate-800 tw-rounded-lg" aria-label="Organizations">
+<div class="v-table-wrap tw-overflow-x-auto" style="border: 1px solid #334155 !important; border-radius: 0px !important;">
+	<table class="v-table tw-w-full tw-border-collapse tw-border tw-border-[#334155] tw-rounded-none" aria-label="Organizations">
 		<thead>
 			<tr>
-				<th class="tw-px-4 tw-py-3 tw-bg-slate-900/70 tw-text-left tw-font-semibold tw-text-xs tw-uppercase tw-tracking-wider tw-text-[#E2E8F0]" scope="col" aria-label="Logo"></th>
-				<th class="tw-px-4 tw-py-3 tw-bg-slate-900/70 tw-text-left tw-font-semibold tw-text-xs tw-uppercase tw-tracking-wider tw-text-[#E2E8F0]" scope="col">Organization</th>
-				<th class="tw-px-4 tw-py-3 tw-bg-slate-900/70 tw-text-left tw-font-semibold tw-text-xs tw-uppercase tw-tracking-wider tw-text-[#E2E8F0]" scope="col">Sport</th>
-				<th class="tw-px-4 tw-py-3 tw-bg-slate-900/70 tw-text-left tw-font-semibold tw-text-xs tw-uppercase tw-tracking-wider tw-text-[#E2E8F0]" scope="col">License</th>
-				<th class="tw-px-4 tw-py-3 tw-bg-slate-900/70 tw-text-left tw-font-semibold tw-text-xs tw-uppercase tw-tracking-wider tw-text-[#E2E8F0]" scope="col">Director</th>
-				<th class="tw-px-4 tw-py-3 tw-bg-slate-900/70 tw-text-left tw-font-semibold tw-text-xs tw-uppercase tw-tracking-wider tw-text-[#E2E8F0]" scope="col">Compliance</th>
-				<th class="tw-px-4 tw-py-3 tw-bg-slate-900/70 tw-text-left tw-font-semibold tw-text-xs tw-uppercase tw-tracking-wider tw-text-[#E2E8F0]" scope="col" aria-label="Actions"></th>
+				<th class="tw-px-4 tw-py-3 tw-bg-[#0B0F19] tw-text-left tw-font-semibold tw-text-xs tw-uppercase tw-tracking-wider tw-text-[#A1A1AA]" style="font-family: 'Geist Mono', monospace; border-bottom: 1px solid #334155;" scope="col" aria-label="Logo"></th>
+				<th class="tw-px-4 tw-py-3 tw-bg-[#0B0F19] tw-text-left tw-font-semibold tw-text-xs tw-uppercase tw-tracking-wider tw-text-[#A1A1AA]" style="font-family: 'Geist Mono', monospace; border-bottom: 1px solid #334155;" scope="col">Organization</th>
+				<th class="tw-px-4 tw-py-3 tw-bg-[#0B0F19] tw-text-left tw-font-semibold tw-text-xs tw-uppercase tw-tracking-wider tw-text-[#A1A1AA]" style="font-family: 'Geist Mono', monospace; border-bottom: 1px solid #334155;" scope="col">Sport</th>
+				<th class="tw-px-4 tw-py-3 tw-bg-[#0B0F19] tw-text-left tw-font-semibold tw-text-xs tw-uppercase tw-tracking-wider tw-text-[#A1A1AA]" style="font-family: 'Geist Mono', monospace; border-bottom: 1px solid #334155;" scope="col">License</th>
+				<th class="tw-px-4 tw-py-3 tw-bg-[#0B0F19] tw-text-left tw-font-semibold tw-text-xs tw-uppercase tw-tracking-wider tw-text-[#A1A1AA]" style="font-family: 'Geist Mono', monospace; border-bottom: 1px solid #334155;" scope="col">Director</th>
+				<th class="tw-px-4 tw-py-3 tw-bg-[#0B0F19] tw-text-left tw-font-semibold tw-text-xs tw-uppercase tw-tracking-wider tw-text-[#A1A1AA]" style="font-family: 'Geist Mono', monospace; border-bottom: 1px solid #334155;" scope="col">Compliance</th>
+				<th class="tw-px-4 tw-py-3 tw-bg-[#0B0F19] tw-text-left tw-font-semibold tw-text-xs tw-uppercase tw-tracking-wider tw-text-[#A1A1AA]" style="font-family: 'Geist Mono', monospace; border-bottom: 1px solid #334155;" scope="col" aria-label="Actions"></th>
 			</tr>
 		</thead>
 		<tbody>
 			{#if clubsLoading}
 				<tr>
-					<td colspan="7" class="v-td-empty tw-px-4 tw-py-2.5 tw-border-t tw-border-slate-900 tw-text-[#E2E8F0] tw-whitespace-nowrap tw-min-w-0 tw-font-mono tw-[font-variant-numeric:tabular-nums]" aria-busy="true">
+					<td colspan="7" class="v-td-empty tw-px-4 tw-py-2.5 tw-border-t tw-border-[#334155] tw-text-[#D4D4D8] tw-whitespace-nowrap tw-min-w-0 tw-font-mono tw-[font-variant-numeric:tabular-nums]" style="font-family: 'Geist Mono', monospace;" aria-busy="true">
 						Loading organizations…
 					</td>
 				</tr>
 			{:else if pagedClubs.length === 0}
 				<tr>
-					<td colspan="7" class="v-td-empty tw-px-4 tw-py-2.5 tw-border-t tw-border-slate-900 tw-text-[#E2E8F0] tw-whitespace-nowrap tw-min-w-0 tw-font-mono tw-[font-variant-numeric:tabular-nums]">
+					<td colspan="7" class="v-td-empty tw-px-4 tw-py-2.5 tw-border-t tw-border-[#334155] tw-text-[#D4D4D8] tw-whitespace-nowrap tw-min-w-0 tw-font-mono tw-[font-variant-numeric:tabular-nums]" style="font-family: 'Geist Mono', monospace;">
 						{totalClubs === 0
 							? 'No organizations registered yet.'
 							: 'No organizations match your filter.'}
@@ -56,7 +56,7 @@
 					{@const accent = clubSportAccent(cl?.sport)}
 					{@const licenseMeta = licenseMetaForClub(cl)}
 					<tr class="v-tr">
-						<td class="tw-px-4 tw-py-2.5 tw-border-t tw-border-slate-900 tw-text-[#E2E8F0] tw-whitespace-nowrap tw-min-w-0">
+						<td class="tw-px-4 tw-py-2.5 tw-border-t tw-border-[#334155] tw-text-[#D4D4D8] tw-whitespace-nowrap tw-min-w-0" style="font-family: 'Geist Mono', monospace;">
 							{#if typeof cl.logoUrl === 'string' && cl.logoUrl.trim()}
 								<img class="orgs3-logo" src={cl.logoUrl.trim()} alt="" loading="lazy" />
 							{:else}
@@ -70,7 +70,7 @@
 							{/if}
 						</td>
 
-						<td class="tw-px-4 tw-py-2.5 tw-border-t tw-border-slate-900 tw-text-[#E2E8F0] tw-whitespace-nowrap tw-min-w-0">
+						<td class="tw-px-4 tw-py-2.5 tw-border-t tw-border-[#334155] tw-text-[#D4D4D8] tw-whitespace-nowrap tw-min-w-0" style="font-family: 'Geist Mono', monospace;">
 							<div class="orgs3-org-primary">
 								<a class="orgs3-org-link" href="/admin/organizations/{cl?.id ?? ''}">
 									<span class="tw-text-[#FAFAFA] tw-font-bold">
@@ -81,7 +81,7 @@
 							<span class="tw-text-[#A1A1AA] tw-font-mono tw-[font-variant-numeric:tabular-nums] tw-text-xs">{cl?.id ?? ''}</span>
 						</td>
 
-						<td class="tw-px-4 tw-py-2.5 tw-border-t tw-border-slate-900 tw-text-[#E2E8F0] tw-whitespace-nowrap tw-min-w-0">
+						<td class="tw-px-4 tw-py-2.5 tw-border-t tw-border-[#334155] tw-text-[#D4D4D8] tw-whitespace-nowrap tw-min-w-0" style="font-family: 'Geist Mono', monospace;">
 							<span
 								class="orgs3-sport-pill"
 								style="--sport-fg:{accent.fg}; --sport-ring:{accent.ring};"
@@ -90,7 +90,7 @@
 							</span>
 						</td>
 
-						<td class="tw-px-4 tw-py-2.5 tw-border-t tw-border-slate-900 tw-text-[#E2E8F0] tw-whitespace-nowrap tw-min-w-0">
+						<td class="tw-px-4 tw-py-2.5 tw-border-t tw-border-[#334155] tw-text-[#D4D4D8] tw-whitespace-nowrap tw-min-w-0" style="font-family: 'Geist Mono', monospace;">
 							<span
 								class="orgs3-license-pill"
 								style="--lic-accent:{licenseMeta.accent};"
@@ -103,11 +103,11 @@
 							</span>
 						</td>
 
-						<td class="tw-px-4 tw-py-2.5 tw-border-t tw-border-slate-900 tw-text-[#E2E8F0] tw-whitespace-nowrap tw-min-w-0">
+						<td class="tw-px-4 tw-py-2.5 tw-border-t tw-border-[#334155] tw-text-[#D4D4D8] tw-whitespace-nowrap tw-min-w-0" style="font-family: 'Geist Mono', monospace;">
 							<span class="tw-text-[#D4D4D8]">{cl?.directorEmail || 'Unassigned'}</span>
 						</td>
 
-						<td class="tw-px-4 tw-py-2.5 tw-border-t tw-border-slate-900 tw-text-[#E2E8F0] tw-whitespace-nowrap tw-min-w-0">
+						<td class="tw-px-4 tw-py-2.5 tw-border-t tw-border-[#334155] tw-text-[#D4D4D8] tw-whitespace-nowrap tw-min-w-0" style="font-family: 'Geist Mono', monospace;">
 							<div class="tw-flex tw-items-center tw-gap-2" title={compliance ? `${compliance.verified}/${compliance.total} VPC verified` : ''}>
 								{#if cl.isInfinite === true && !compliance}
 									<div class="tw-w-[6px] tw-h-[6px] tw-rounded-full tw-bg-emerald-400" aria-hidden="true"></div>
@@ -125,7 +125,7 @@
 							</div>
 						</td>
 
-						<td class="tw-px-4 tw-py-2.5 tw-border-t tw-border-slate-900 tw-text-[#E2E8F0] tw-whitespace-nowrap tw-min-w-0">
+						<td class="tw-px-4 tw-py-2.5 tw-border-t tw-border-[#334155] tw-text-[#D4D4D8] tw-whitespace-nowrap tw-min-w-0" style="font-family: 'Geist Mono', monospace;">
 							<button class="tw-text-[#14b8a6] hover:tw-text-emerald-400 tw-font-bold tw-text-xs tw-flex tw-items-center tw-gap-1 tw-cursor-pointer" onclick={() => untrack(() => goto(`/admin/organizations/${cl.id}`))} aria-label="View {cl.name || cl.id}">
 								View <Icon name={'nav.arrow-right' as IconName} aria-hidden="true" />
 							</button>

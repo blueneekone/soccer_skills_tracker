@@ -106,8 +106,8 @@
 	width: 100%;
 	max-width: 100%;
 	min-width: 0;
-	border-radius: 0;
-	border: 1px solid #334155; /* Structural Grey */
+	border-radius: 0 !important;
+	border: 1px solid #334155 !important; /* Structural Grey */
 	background: #0f172a; /* Navy Slate */
 	overflow-x: auto;
 	overflow-y: visible;
@@ -120,6 +120,8 @@
 	border-spacing: 0;
 	font-size: 0.875rem;
 	font-variant-numeric: tabular-nums;
+	font-family: 'Geist Mono', monospace !important;
+	border: 1px solid #334155 !important;
 }
 
 .v-th {
@@ -132,10 +134,11 @@
 	font-weight: 700;
 	letter-spacing: 0.06em;
 	text-transform: uppercase;
-	color: #A1A1AA;
+	color: #A1A1AA !important; /* Tertiary/Icon */
 	background: #0B0F19; /* Void Black Header */
-	border-bottom: 1px solid #334155;
+	border-bottom: 1px solid #334155 !important;
 	white-space: nowrap;
+	font-family: 'Geist Mono', monospace !important;
 }
 
 .v-th--avatar { width: 44px; }
@@ -144,9 +147,10 @@
 
 .v-td {
 	padding: 16px 24px;
-	border-bottom: 1px solid #1e293b;
+	border-bottom: 1px solid #334155 !important; /* Structural Grey */
 	vertical-align: middle;
-	color: #D4D4D8;
+	color: #D4D4D8 !important; /* Secondary Text */
+	font-family: 'Geist Mono', monospace !important;
 }
 
 .v-td--avatar { width: 44px; }
@@ -160,8 +164,9 @@
 .v-td-empty {
 	padding: 64px 24px;
 	text-align: center;
-	color: #94a3b8;
+	color: #A1A1AA !important; /* Tertiary Text */
 	font-size: 0.875rem;
+	font-family: 'Geist Mono', monospace !important;
 }
 
 /* ── Universal Toolbar ───────────────────────────────────────────────── */
