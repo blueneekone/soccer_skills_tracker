@@ -484,7 +484,7 @@
 	<header class="phh-page-head bento-mb-lg">
 		<div class="tw-text-center">
 			<p class="phh-eyebrow tw-mb-1">Parent OS · TIER-0 ACCESS</p>
-			<h1 class="phh-title tw-mb-2 tw-text-xl tw-font-extrabold tw-tracking-tight tw-text-white md:tw-text-2xl">
+			<h1 class="phh-title tw-mb-2 tw-text-xl tw-font-extrabold tw-tracking-tight tw-text-white md:tw-text-2xl" style="font-family: 'Geist Sans', sans-serif;">
 				Household Clearance Center
 			</h1>
 			<p class="tw-mx-auto tw-max-w-prose tw-text-sm tw-text-[var(--text-secondary)]">
@@ -504,61 +504,63 @@
 	{/if}
 
 	<div
-		class="bento-grid-container bento-grid--12col bento-grid--liquid tw-min-h-0 tw-w-full tw-grid tw-grid-cols-1 lg:tw-grid-cols-12 tw-gap-6"
+		class="bento-grid-container bento-grid--12col bento-grid--liquid tw-min-h-0 tw-w-full tw-grid tw-gap-6"
+		style="grid-template-columns: repeat(auto-fit, minmax(min(100%, clamp(280px, 30vw, 350px)), 1fr));"
 	>
-		<!-- 8-Column Primary Canvas -->
-		<div class="bento-col-8 lg:tw-col-span-8 tw-flex tw-flex-col tw-gap-6 tw-min-w-0">
-			<!-- COPPA & liability block -->
-			<section
-				class="phh-surface parent-lounge-z2-panel parent-lounge-z2-panel--warn tw-min-w-0 tw-px-3 tw-py-4 sm:tw-px-4 md:tw-px-5"
-				aria-labelledby="phh-coppa"
+		<!-- COPPA & liability block -->
+		<section
+			class="tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-rounded-[24px] tw-min-w-0 tw-px-3 tw-py-4 sm:tw-px-4 md:tw-px-5"
+			style="clip-path: none !important;"
+			aria-labelledby="phh-coppa"
+		>
+			<div class="tw-mb-3 tw-flex tw-flex-col tw-gap-1">
+				<span class="phh-eyebrow tw-text-red-400/90">COPPA &amp; LIABILITY</span>
+				<h2 id="phh-coppa" class="tw-m-0 tw-text-sm tw-font-bold tw-uppercase tw-tracking-widest tw-text-red-200" style="font-family: 'Geist Sans', sans-serif;">
+					Minor accounts locked
+				</h2>
+			</div>
+			<p class="bento-mb-md tw-text-sm tw-leading-relaxed tw-text-[var(--text-secondary)]" style="font-family: 'Switzer', sans-serif;">
+				Until you execute the digital signature below, child operative accounts in this household
+				remain <span class="tw-font-semibold tw-text-red-200">inert (no self-initiation)</span>.
+				By signing, you assert parental authority to provision credentials per club policy and
+				federal child-privacy law.
+			</p>
+			<div
+				class="phh-row tw-mb-3 tw-flex tw-min-h-[3.25rem] tw-flex-col tw-gap-1 tw-border tw-border-white/10 tw-bg-black/60 tw-px-3 tw-py-2.5 sm:tw-flex-row sm:tw-items-center sm:tw-justify-between"
 			>
-				<div class="tw-mb-3 tw-flex tw-flex-col tw-gap-1">
-					<span class="phh-eyebrow tw-text-red-400/90">COPPA &amp; LIABILITY</span>
-					<h2 id="phh-coppa" class="tw-m-0 tw-text-sm tw-font-bold tw-uppercase tw-tracking-widest tw-text-red-200">
-						Minor accounts locked
-					</h2>
+				<span class="phh-eyebrow">Clearance file</span>
+				<div class="tw-text-right">
+					{#if coppaSigned}
+						<span class="phh-mono tw-text-cyan-300">SIGNED</span>
+						<div class="phh-mono tw-text-xs tw-text-[var(--text-secondary)]">{fmtTs(coppaAt)}</div>
+					{:else if loadBusy}
+						<span class="phh-mono tw-text-[var(--text-muted)]">SCANNING…</span>
+					{:else}
+						<span class="phh-mono tw-text-amber-400">PENDING SIGNATURE</span>
+					{/if}
 				</div>
-				<p class="bento-mb-md tw-text-sm tw-leading-relaxed tw-text-[var(--text-secondary)]">
-					Until you execute the digital signature below, child operative accounts in this household
-					remain <span class="tw-font-semibold tw-text-red-200">inert (no self-initiation)</span>.
-					By signing, you assert parental authority to provision credentials per club policy and
-					federal child-privacy law.
-				</p>
-				<div
-					class="phh-row tw-mb-3 tw-flex tw-min-h-[3.25rem] tw-flex-col tw-gap-1 tw-border tw-border-white/10 tw-bg-black/60 tw-px-3 tw-py-2.5 sm:tw-flex-row sm:tw-items-center sm:tw-justify-between"
-				>
-					<span class="phh-eyebrow">Clearance file</span>
-					<div class="tw-text-right">
-						{#if coppaSigned}
-							<span class="phh-mono tw-text-cyan-300">SIGNED</span>
-							<div class="phh-mono tw-text-xs tw-text-[var(--text-secondary)]">{fmtTs(coppaAt)}</div>
-						{:else if loadBusy}
-							<span class="phh-mono tw-text-[var(--text-muted)]">SCANNING…</span>
-						{:else}
-							<span class="phh-mono tw-text-amber-400">PENDING SIGNATURE</span>
-						{/if}
-					</div>
-				</div>
-				<p class="phh-eyebrow tw-mb-2">Household / club line</p>
-				<div class="phh-mono tw-mb-3 tw-text-xs tw-break-all tw-text-[var(--text-secondary)]">
-					HH: {householdId || '— (created on sign)'} · Club: {profile?.clubId ? String(profile.clubId) : '—'}
-				</div>
-				<button
-					type="button"
-					class="phh-btn tw-w-full tw-min-h-[3.25rem] tw-px-4 tw-text-base tw-font-extrabold tw-uppercase tw-tracking-widest"
-					class:phh-btn--dim={coppaSigned}
-					disabled={coppaSigned || actionBusy}
-					onclick={signWaiver}
-				>
-					{coppaSigned ? 'Waiver on file' : 'Sign waiver & authorize'}
-				</button>
-			</section>
+			</div>
+			<p class="phh-eyebrow tw-mb-2">Household / club line</p>
+			<div class="phh-mono tw-mb-3 tw-text-xs tw-break-all tw-text-[var(--text-secondary)]" style="font-family: 'Geist Mono', monospace;">
+				HH: {householdId || '— (created on sign)'} · Club: {profile?.clubId ? String(profile.clubId) : '—'}
+			</div>
+			<button
+				type="button"
+				class="tw-w-full tw-min-h-[3.25rem] tw-px-4 tw-text-base tw-font-extrabold tw-uppercase tw-tracking-widest"
+				style="background-color: #fbbf24 !important; border: 1px solid #fbbf24 !important; color: #000000 !important; border-radius: 24px !important; clip-path: none !important; cursor: pointer;"
+				class:phh-btn--dim={coppaSigned}
+				disabled={coppaSigned || actionBusy}
+				onclick={signWaiver}
+			>
+				{coppaSigned ? 'Waiver on file' : 'Sign waiver & authorize'}
+			</button>
+		</section>
 
 			<!-- Linked operatives — ephemeral OTP login -->
 			{#if operativeRows.length > 0}
 				<section
 					class="phh-surface parent-lounge-z2-panel tw-min-w-0 tw-px-3 tw-py-4 sm:tw-px-4 md:tw-px-5"
+					style="clip-path: none !important; border-radius: 24px !important;"
 					aria-labelledby="phh-active-ops"
 				>
 					<div class="tw-mb-3">
@@ -566,6 +568,7 @@
 						<h2
 							id="phh-active-ops"
 							class="tw-m-0 tw-text-sm tw-font-bold tw-uppercase tw-tracking-widest tw-text-white"
+							style="font-family: 'Geist Sans', sans-serif;"
 						>
 							Active operatives
 						</h2>
@@ -714,13 +717,11 @@
 					</ul>
 				</section>
 			{/if}
-		</div>
 
-		<!-- 4-Column Sidecar -->
-		<div class="bento-col-4 lg:tw-col-span-4 tw-flex tw-flex-col tw-gap-6 tw-min-w-0">
 			<!-- Operative generation -->
 			<section
-				class="phh-surface parent-lounge-z2-panel tw-min-w-0 tw-px-3 tw-py-4 sm:tw-px-4 md:tw-px-5"
+				class="tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-rounded-[24px] tw-min-w-0 tw-px-3 tw-py-4 sm:tw-px-4 md:tw-px-5"
+				style="clip-path: none !important;"
 				aria-labelledby="phh-ops"
 			>
 				<div class="tw-mb-3">
@@ -811,6 +812,7 @@
 
 			<section
 				class="phh-surface parent-lounge-z2-panel tw-min-w-0 tw-px-3 tw-py-4 sm:tw-px-4 md:tw-px-5"
+				style="clip-path: none !important; border-radius: 24px !important;"
 				aria-labelledby="phh-transfer"
 			>
 				<div class="tw-mb-3">
@@ -818,6 +820,7 @@
 					<h2
 						id="phh-transfer"
 						class="tw-m-0 tw-text-sm tw-font-bold tw-uppercase tw-tracking-widest tw-text-white"
+						style="font-family: 'Geist Sans', sans-serif;"
 					>
 						Vanguard transfer protocol
 					</h2>
@@ -833,7 +836,6 @@
 						: ''}
 				/>
 			</section>
-		</div>
 	</div>
 
 	{#if actErr}
