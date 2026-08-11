@@ -182,8 +182,8 @@
 			{#each slots as s (s.id)}
 				<button
 					type="button"
-					class="ctx-action tw-pointer-events-auto tw-absolute tw-flex tw-h-16 tw-w-16 tw-flex-col tw-items-center tw-justify-center tw-gap-0.5 tw-rounded-full tw-border tw-bg-[#020202]/85 tw-font-mono tw-text-[8px] tw-font-black tw-uppercase tw-tracking-widest tw-backdrop-blur-3xl tw-transition-all hover:tw-scale-110 active:tw-scale-95 focus-visible:tw-outline focus-visible:tw-outline-2 focus-visible:tw-outline-offset-2"
-					style="left: 50%; top: 50%; transform: translate({s.cx}px, {s.cy}px) translate(-50%, -50%); border-color: {s.color}55; color: {s.color}; box-shadow: 0 0 20px {s.color}33, inset 0 1px 1px rgba(255,255,255,0.05);"
+					class="ctx-action tw-pointer-events-auto tw-absolute tw-flex tw-h-16 tw-w-16 tw-flex-col tw-items-center tw-justify-center tw-gap-0.5 tw-rounded-full tw-border tw-border-slate-800 tw-bg-[#0B0F19] tw-font-mono tw-text-[8px] tw-font-black tw-uppercase tw-tracking-widest tw-z-50 tw-transition-all hover:tw-scale-110 active:tw-scale-[0.98] focus-visible:tw-outline focus-visible:tw-outline-2 focus-visible:tw-outline-offset-2"
+					style="left: 50%; top: 50%; transform: translate({s.cx}px, {s.cy}px) translate(-50%, -50%); color: {s.color}; box-shadow: 0 0 20px {s.color}33, inset 0 1px 1px rgba(255,255,255,0.05);"
 					role="menuitem"
 					aria-label={s.label}
 					onclick={(e) => {
