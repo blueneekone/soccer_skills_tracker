@@ -248,6 +248,19 @@
 					return;
 				}
 
+				// HIPAA & Medical Release Integrated Intake Gate
+				const pathIntake = untrack(() => page.url.pathname);
+				if (
+					authStore.role === 'player' &&
+					authStore.userProfile &&
+					!authStore.userProfile.medicalSignatureVerified &&
+					isDataCollectionRoute(pathIntake) &&
+					!pathIntake.startsWith('/player/intake')
+				) {
+					untrack(() => goto('/player/intake', { replaceState: true }));
+					return;
+				}
+
 				const clearanceRoles = ['coach', 'recruiter', 'director', 'tutor'];
 				const pathClr = untrack(() => page.url.pathname);
 				if (
