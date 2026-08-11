@@ -1,4 +1,4 @@
-﻿
+﻿/* eslint-disable quotes */
 /**
  * subscription.js — Marketing / Stripe Checkout Stub
  * ────────────────────────────────────────────────────────────────────────────
@@ -70,7 +70,8 @@ exports.createSubscription = onCall({region: REGION}, async (request) => {
 
   const config = TIER_CONFIG[tierId];
   const now = admin.firestore.FieldValue.serverTimestamp();
-  const db = admin.firestore();
+  const { getFirestore } = require("firebase-admin/firestore");
+  const db = getFirestore();
 
   // ── STUB: Directly activate subscription in Firestore ────────────────────
   // PRODUCTION: Remove this block and return Stripe session URL instead.

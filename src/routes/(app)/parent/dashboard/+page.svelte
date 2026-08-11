@@ -62,7 +62,7 @@
 		<div class="bento-grid-container tw-w-full tw-min-w-0 tw-grid tw-gap-6" style="grid-template-columns: repeat(auto-fit, minmax(min(100%, clamp(280px, 30vw, 350px)), 1fr));">
 			
 			<!-- CoOpArena spans 8 columns -->
-			<div data-panel="true" class="st-bento bento-col-8 parent-panel tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-overflow-hidden tw-relative tw-min-w-0" style="border-radius: 0px;">
+			<div data-panel="true" class="st-bento bento-col-8 parent-panel tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-overflow-hidden tw-relative tw-min-w-0" style="clip-path: polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px);">
 				<CoOpArena engine={coOpEngine} />
 			</div>
 			
@@ -82,7 +82,7 @@
 				</div>
 
 				<!-- The Car Ride Home Holographic Widget (Z3 Holographic Card) -->
-				<div data-panel="true" class="st-bento parent-panel tw-relative tw-border tw-border-[#334155] tw-overflow-hidden tw-z-10 tw-bg-[#0f172a]/40 tw-backdrop-blur-[20px]" style="border-radius: 0px;">
+				<div data-panel="true" class="st-bento parent-panel tw-relative tw-border tw-border-[#334155] tw-overflow-hidden tw-z-10 tw-bg-[#0f172a]/40 tw-backdrop-blur-[20px]" style="clip-path: polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px);">
 					<CarRideHome 
 						{matchData}
 						{isEmbargoed}
@@ -93,7 +93,7 @@
 				</div>
 
 				<!-- Bounty Terminal -->
-				<div data-panel="true" class="st-bento parent-panel tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-flex-1 tw-min-h-[300px] tw-relative" style="border-radius: 0px;">
+				<div data-panel="true" class="st-bento parent-panel tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-flex-1 tw-min-h-[300px] tw-relative" style="clip-path: polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px);">
 					<BountyTerminal engine={coOpEngine} />
 				</div>
 			</div>
@@ -102,22 +102,22 @@
 		<!-- Communications Oversight Panels -->
 		<div class="bento-grid-container tw-mt-6 tw-w-full tw-min-w-0 tw-grid tw-gap-6" style="grid-template-columns: repeat(auto-fit, minmax(min(100%, clamp(280px, 30vw, 350px)), 1fr));">
 			<!-- Parent Lounge -->
-			<div data-panel="true" class="st-bento bento-col-8 parent-panel tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-p-6 tw-relative tw-min-w-0" style="border-radius: 0px;">
+			<div data-panel="true" class="st-bento bento-col-8 parent-panel tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-p-6 tw-relative tw-min-w-0" style="clip-path: polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px);">
 				<h3 class="tw-text-[#FAFAFA] tw-font-bold tw-text-lg tw-flex tw-items-center tw-gap-2 tw-mb-4" style="font-family: 'Geist Sans', sans-serif;">
 					<Icon name={"status.info" as IconName} class="tw-w-5 tw-h-5 tw-text-[#14b8a6]" /> Parent Lounge
 				</h3>
-				<div class="tw-bg-[#1e293b] tw-p-4 tw-border tw-border-[#334155] tw-h-48 tw-flex tw-items-center tw-justify-center tw-overflow-hidden tw-relative" style="border-radius: 0px;">
+				<div class="tw-bg-[#1e293b] tw-p-4 tw-border tw-border-[#334155] tw-h-48 tw-flex tw-items-center tw-justify-center tw-overflow-hidden tw-relative" style="clip-path: polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px);">
 					<div class="tw-absolute tw-top-4 tw-right-4 tw-px-2 tw-py-1 tw-bg-[#14b8a6]/10 tw-text-[#14b8a6] tw-text-[10px] tw-font-mono tw-tracking-widest tw-rounded" style="font-family: 'Geist Mono', monospace;">READ_ONLY</div>
 					<VanguardEmptyState title="No Recent Announcements" message="Official team broadcasts and scheduling announcements will appear here." />
 				</div>
 			</div>
 
 			<!-- Household Thread -->
-			<div data-panel="true" class="st-bento bento-col-4 parent-panel tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-p-6 tw-relative tw-min-w-0" style="border-radius: 0px;">
+			<div data-panel="true" class="st-bento bento-col-4 parent-panel tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-p-6 tw-relative tw-min-w-0" style="clip-path: polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px);">
 				<h3 class="tw-text-[#FAFAFA] tw-font-bold tw-text-lg tw-flex tw-items-center tw-gap-2 tw-mb-4" style="font-family: 'Geist Sans', sans-serif;">
 					<Icon name={"status.verified" as IconName} class="tw-w-5 tw-h-5 tw-text-[#10b981]" /> Household Thread
 				</h3>
-				<div class="tw-bg-[#1e293b] tw-p-4 tw-border tw-border-[#334155] tw-h-48 tw-flex tw-items-center tw-justify-center tw-relative tw-overflow-hidden" style="border-radius: 0px;">
+				<div class="tw-bg-[#1e293b] tw-p-4 tw-border tw-border-[#334155] tw-h-48 tw-flex tw-items-center tw-justify-center tw-relative tw-overflow-hidden" style="clip-path: polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px);">
 					<div class="tw-absolute tw-top-4 tw-right-4 tw-px-2 tw-py-1 tw-bg-[#10b981]/10 tw-text-[#10b981] tw-text-[10px] tw-font-mono tw-tracking-widest tw-rounded" style="font-family: 'Geist Mono', monospace;">SAFESPORT_COMPLIANT</div>
 					<div class="tw-absolute tw-bottom-4 tw-left-4 tw-flex tw-items-center tw-gap-2">
 						<Icon name={"sys.lock" as IconName} class="tw-w-4 tw-h-4 tw-text-[#A1A1AA]" />

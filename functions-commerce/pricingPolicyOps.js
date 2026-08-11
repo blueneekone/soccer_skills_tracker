@@ -1,4 +1,4 @@
-
+/* eslint-disable quotes */
 /**
  * pricingPolicyOps.js — Live pricing-policy administration
  * ────────────────────────────────────────────────────────

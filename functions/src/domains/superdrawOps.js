@@ -2,7 +2,7 @@
 
 const { onCall, HttpsError } = require('firebase-functions/v2/https');
 const admin = require('firebase-admin');
-const stripe = require('stripe');
+
 const { defineSecret } = require('firebase-functions/params');
 
 const STRIPE_SECRET_KEY = defineSecret('STRIPE_SECRET_KEY');
@@ -23,7 +23,8 @@ exports.purchaseSuperdrawTickets = onCall(
       throw new HttpsError('invalid-argument', 'ticketsCount must be a positive integer.');
     }
 
-    const db = admin.firestore();
+    const { getFirestore } = require("firebase-admin/firestore");
+    const db = getFirestore();
     const campaignRef = db.collection('superdraw_campaigns').doc(campaignId);
     let ticketPrice = 0;
 
@@ -47,6 +48,7 @@ exports.purchaseSuperdrawTickets = onCall(
     });
 
     const secret = STRIPE_SECRET_KEY.value() || process.env.STRIPE_SECRET_KEY || 'mock_key';
+    const stripe = require("stripe");
     const stripeClient = stripe(secret);
 
     const session = await stripeClient.checkout.sessions.create({
