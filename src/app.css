@@ -1,8 +1,6 @@
 @import "./design-tokens.css";
 @import url('https://api.fonts.coollabs.io/css2?family=Geist+Mono&family=Geist+Sans&family=Switzer:wght@400;600;800&display=swap');
 
-@import "./design-tokens.css";
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;

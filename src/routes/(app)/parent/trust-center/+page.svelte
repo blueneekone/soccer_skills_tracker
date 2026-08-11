@@ -81,7 +81,7 @@
 	<title>Co-op Trust Center · Parent OS</title>
 </svelte:head>
 
-<main class="tw-bg-slate-50 tw-min-h-screen tw-text-slate-900 tw-font-sans tw-p-8 lg:tw-p-12 tw-overflow-y-auto">
+<main class="pd-page-root compliance-vault st-bento z0-canvas tw-p-8 lg:tw-p-12 tw-overflow-y-auto">
 	<div class="tw-max-w-6xl tw-mx-auto tw-space-y-8">
 		
 		<header class="tw-mb-10">
@@ -108,10 +108,10 @@
 			{/if}
 		</section>
 
-		<div class="tw-grid tw-grid-cols-1 lg:tw-grid-cols-2 tw-gap-8">
+		<div class="bento-grid-container tw-w-full tw-min-w-0" style="grid-template-columns: repeat(auto-fit, minmax(min(100%, clamp(280px, 30vw, 350px)), 1fr));">
 			
 			<!-- CSO: The Triad Protocol (Shadow CC Audit Log) -->
-			<section class="tw-bg-white tw-rounded-[24px] tw-p-8 tw-shadow-sm tw-border tw-border-slate-200 tw-flex tw-flex-col">
+			<section class="bento-col-6 z2-panel shield-panel tw-p-8 tw-flex tw-flex-col tw-min-w-0">
 				<h2 class="tw-text-xl tw-font-semibold tw-mb-4">Communication Audit Log</h2>
 				<p class="tw-text-slate-500 tw-text-sm tw-mb-6">All 1:1 adult-to-minor messaging is prohibited. This log displays all messages routed to your minor.</p>
 				

@@ -299,7 +299,7 @@
 	}
 
 	.parent-rsvp__link {
-		color: #2dd4bf;
+		color: #14b8a6;
 	}
 
 	.parent-rsvp__err {

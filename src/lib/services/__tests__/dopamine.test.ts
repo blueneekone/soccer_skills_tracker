@@ -13,6 +13,15 @@
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
+if (typeof globalThis !== 'undefined') {
+  if (!globalThis.requestAnimationFrame) {
+    globalThis.requestAnimationFrame = (callback) => setTimeout(callback, 0) as any;
+  }
+  if (!globalThis.cancelAnimationFrame) {
+    globalThis.cancelAnimationFrame = (id) => clearTimeout(id);
+  }
+}
+
 // ── Hoisted mock variables ────────────────────────────────────────────────────
 // vi.hoisted() runs before vi.mock() factory evaluation, making these
 // variables available inside the factory callbacks (which are hoisted to the

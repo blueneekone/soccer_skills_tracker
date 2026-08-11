@@ -236,9 +236,10 @@
 					authStore.role === 'player' &&
 					!authStore.isConsented &&
 					isDataCollectionRoute(pathConsent) &&
-					!pathConsent.startsWith('/vpc-pending')
+					!pathConsent.startsWith('/vpc-pending') &&
+					!pathConsent.startsWith('/parent/dashboard/vpc')
 				) {
-					untrack(() => goto('/vpc-pending', { replaceState: true }));
+					untrack(() => goto('/parent/dashboard/vpc', { replaceState: true }));
 					return;
 				}
 

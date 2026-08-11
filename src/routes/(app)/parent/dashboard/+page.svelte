@@ -10,6 +10,7 @@
 	import VanguardEmptyState from '$lib/components/ui/VanguardEmptyState.svelte';
 	import ActionInbox from '$lib/components/shell/ActionInbox.svelte';
 	import UpcomingEventsRsvp from '$lib/components/parent/UpcomingEventsRsvp.svelte';
+	import ParentNotificationPanel from '$lib/components/parent/ParentNotificationPanel.svelte';
 
 	// For the engine, we will dynamically import or mock it for the dashboard
 	// Assuming CoOpEngine exists and is available
@@ -48,7 +49,7 @@
 </svelte:head>
 
 <!-- Parent OS Trusted Co-Op Partner Aesthetic -->
-<div class="tw-bg-[#0f172a] tw-text-white tw-p-8 tw-font-sans tw-min-h-0">
+<div class="pd-page-root compliance-vault tw-bg-[#0f172a] tw-text-white tw-p-8 tw-font-sans tw-min-h-0">
 	<div class="tw-max-w-[1600px] tw-mx-auto tw-space-y-8">
 		
 		<!-- Header -->
@@ -58,20 +59,27 @@
 		</header>
 
 		<!-- Co-Op Arena & Compliance Sidecar in 12-Column Liquid Bento Grid -->
-		<div class="tw-grid tw-grid-cols-1 lg:tw-grid-cols-12 tw-gap-6 lg:tw-gap-8" >
+		<div class="bento-grid-container tw-w-full tw-min-w-0" style="grid-template-columns: repeat(auto-fit, minmax(min(100%, clamp(280px, 30vw, 350px)), 1fr));">
 			
 			<!-- CoOpArena spans 8 columns -->
-			<div data-panel="true" class="parent-panel lg:tw-col-span-8 tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-overflow-hidden tw-relative" style="border-radius: 24px;">
+			<div data-panel="true" class="st-bento bento-col-8 parent-panel tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-overflow-hidden tw-relative tw-min-w-0" style="border-radius: 24px;">
 				<CoOpArena engine={coOpEngine} />
 			</div>
 			
 			<!-- Compliance Sidecar spans 4 columns -->
-			<div class="lg:tw-col-span-4 tw-flex tw-flex-col tw-gap-6">
-				<ActionInbox householdId={authStore.userProfile?.householdId} />
-				<UpcomingEventsRsvp />
+			<div class="bento-col-4 tw-flex tw-flex-col tw-gap-6 tw-min-w-0">
+				<div class="st-bento tw-contents">
+					<ParentNotificationPanel />
+				</div>
+				<div class="st-bento tw-contents">
+					<ActionInbox householdId={authStore.userProfile?.householdId} />
+				</div>
+				<div class="st-bento tw-contents">
+					<UpcomingEventsRsvp />
+				</div>
 
 				<!-- The Car Ride Home Holographic Widget (Z3 Holographic Card) -->
-				<div data-panel="true" class="parent-panel tw-relative tw-border tw-border-[#334155] tw-overflow-hidden tw-z-10 tw-bg-[#0f172a]/40 tw-backdrop-blur-[20px]" style="border-radius: 24px;">
+				<div data-panel="true" class="st-bento parent-panel tw-relative tw-border tw-border-[#334155] tw-overflow-hidden tw-z-10 tw-bg-[#0f172a]/40 tw-backdrop-blur-[20px]" style="border-radius: 24px;">
 					<CarRideHome 
 						{matchData}
 						{isEmbargoed}
@@ -82,16 +90,16 @@
 				</div>
 
 				<!-- Bounty Terminal -->
-				<div data-panel="true" class="parent-panel tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-flex-1 tw-min-h-[300px] tw-relative" style="border-radius: 24px;">
+				<div data-panel="true" class="st-bento parent-panel tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-flex-1 tw-min-h-[300px] tw-relative" style="border-radius: 24px;">
 					<BountyTerminal engine={coOpEngine} />
 				</div>
 			</div>
 		</div>
 
 		<!-- Communications Oversight Panels -->
-		<div class="tw-grid tw-grid-cols-1 lg:tw-grid-cols-12 tw-gap-6 lg:tw-gap-8" >
+		<div class="bento-grid-container tw-mt-6 tw-w-full tw-min-w-0" style="grid-template-columns: repeat(auto-fit, minmax(min(100%, clamp(280px, 30vw, 350px)), 1fr));">
 			<!-- Parent Lounge -->
-			<div data-panel="true" class="parent-panel lg:tw-col-span-7 tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-p-6 tw-relative" style="border-radius: 24px;">
+			<div data-panel="true" class="st-bento bento-col-8 parent-panel tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-p-6 tw-relative tw-min-w-0" style="border-radius: 24px;">
 				<h3 class="tw-text-white tw-font-bold tw-text-lg tw-flex tw-items-center tw-gap-2 tw-mb-4">
 					<Icon name={"status.info" as IconName} class="tw-w-5 tw-h-5 tw-text-[#14b8a6]" /> Parent Lounge
 				</h3>
@@ -102,7 +110,7 @@
 			</div>
 
 			<!-- Household Thread -->
-			<div data-panel="true" class="parent-panel lg:tw-col-span-5 tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-p-6 tw-relative" style="border-radius: 24px;">
+			<div data-panel="true" class="st-bento bento-col-4 parent-panel tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-p-6 tw-relative tw-min-w-0" style="border-radius: 24px;">
 				<h3 class="tw-text-white tw-font-bold tw-text-lg tw-flex tw-items-center tw-gap-2 tw-mb-4">
 					<Icon name={"status.verified" as IconName} class="tw-w-5 tw-h-5 tw-text-[#10b981]" /> Household Thread
 				</h3>

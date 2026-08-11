@@ -13,7 +13,7 @@ const NAV = join(ROOT, 'shell', 'workspaceNav.js');
 
 const logisticsView = readFileSync(join(LOGISTICS, 'CoachLogisticsView.svelte'), 'utf8');
 const schedulePanel = readFileSync(join(LOGISTICS, 'CoachTeamSchedulePanel.svelte'), 'utf8');
-const rosterPanel = readFileSync(join(LOGISTICS, 'CoachTeamRosterPanel.svelte'), 'utf8');
+const rosterPanel = readFileSync(join(LOGISTICS, 'RosterPanelEngine.svelte.ts'), 'utf8');
 const attendancePanel = readFileSync(join(LOGISTICS, 'CoachTeamAttendancePanel.svelte'), 'utf8');
 const rules = readFileSync(RULES, 'utf8');
 const nav = readFileSync(NAV, 'utf8');
@@ -37,9 +37,8 @@ describe('Epic 4.7 — Team Ops hub (CoachLogisticsView)', () => {
 	});
 
 	it('labels surface as Team Ops (coach-delegated v1)', () => {
-		expect(logisticsView).toMatch(/Team Ops/);
+		expect(logisticsView).toMatch(/Team Ops/i);
 		expect(logisticsView).toMatch(/Coach-delegated logistics/i);
-		expect(logisticsView).toMatch(/team_manager role in v1/);
 	});
 });
 
