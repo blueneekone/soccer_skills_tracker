@@ -299,7 +299,7 @@ describe('functionsDeploy guard — monolith slim (DEPLOY-N)', () => {
     );
   });
 
-  it('all functions package.json engines.node are 20', () => {
+  it('all functions package.json engines.node are 22', () => {
     const pkgs = [
       'functions/package.json',
       'functions-shared/package.json',
@@ -314,8 +314,8 @@ describe('functionsDeploy guard — monolith slim (DEPLOY-N)', () => {
       const pkg = JSON.parse(readRepo(rel));
       assert.equal(
           pkg.engines?.node,
-          '20',
-          `${rel} engines.node must be "20"`,
+          '22',
+          `${rel} engines.node must be "22"`,
       );
     }
   });
