@@ -162,12 +162,12 @@
 		<h2 id="dir-os-heading" class="tw-sr-only">Director command center</h2>
 		<WorkspaceSocMetricGrid
 			metrics={metrics}
-			gridClass="bento-grid bento-grid--12col bento-grid--liquid director-cc-kpi-grid"
+			gridClass="tw-grid tw-grid-cols-2 md:tw-grid-cols-5 tw-gap-4 director-cc-kpi-grid"
 		/>
 
-		<div class="bento-grid bento-grid--12col bento-grid--liquid tw-w-full tw-grid tw-grid-cols-1 lg:tw-grid-cols-12 tw-gap-6 bento-mt-md">
+		<div class="tw-w-full tw-grid tw-grid-cols-1 lg:tw-grid-cols-12 tw-gap-6 tw-mt-6">
 			<!-- 8-Column Primary Canvas -->
-			<div class="bento-span-8 tw-flex tw-flex-col tw-gap-6 tw-min-w-0">
+			<div class="lg:tw-col-span-8 tw-flex tw-flex-col tw-gap-6 tw-min-w-0">
 				<div class="director-cc-z2-panel wsd-surface-accent">
 					<ActionInbox {clubId} />
 				</div>
@@ -182,7 +182,7 @@
 			</div>
 
 			<!-- 4-Column Sidecar -->
-			<div class="bento-span-4 tw-flex tw-flex-col tw-gap-6 tw-min-w-0">
+			<div class="lg:tw-col-span-4 tw-flex tw-flex-col tw-gap-6 tw-min-w-0">
 				<div class="director-cc-compliance-band">
 					<div class="director-cc-compliance-band__head">
 						<Icon name="status.shield-check" />

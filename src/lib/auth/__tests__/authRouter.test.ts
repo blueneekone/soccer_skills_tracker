@@ -11,10 +11,14 @@ vi.mock('$app/navigation', () => ({
 	goto: vi.fn()
 }));
 
-vi.mock('firebase/firestore', () => ({
-	doc: vi.fn(),
-	getDoc: vi.fn()
-}));
+vi.mock('firebase/firestore', async (importOriginal) => {
+	const actual = await importOriginal<typeof import('firebase/firestore')>();
+	return {
+		...actual,
+		doc: vi.fn(),
+		getDoc: vi.fn()
+	};
+});
 
 vi.mock('$lib/firebase/config', () => ({
 	db: {}
