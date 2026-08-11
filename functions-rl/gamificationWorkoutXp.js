@@ -1,5 +1,5 @@
 /* eslint-disable valid-jsdoc */
-/* eslint-disable max-len */
+
 /**
  * Server-side gamification math — keep aligned with `src/lib/gamification/level.js`.
  * Cloud Functions must not trust client-computed XP; triggers / callables use this module.

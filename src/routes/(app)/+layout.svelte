@@ -261,6 +261,18 @@
 					return;
 				}
 
+				if (
+					authStore.role === 'player' &&
+					authStore.userProfile &&
+					authStore.userProfile.medicalSignatureVerified &&
+					!authStore.userProfile.liabilityWaiverVerified &&
+					isDataCollectionRoute(pathIntake) &&
+					!pathIntake.startsWith('/player/waivers')
+				) {
+					untrack(() => goto('/player/waivers', { replaceState: true }));
+					return;
+				}
+
 				const clearanceRoles = ['coach', 'recruiter', 'director', 'tutor'];
 				const pathClr = untrack(() => page.url.pathname);
 				if (
