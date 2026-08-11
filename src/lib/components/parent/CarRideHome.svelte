@@ -14,7 +14,7 @@
 	}>();
 </script>
 
-<section class="tw-relative tw-w-full tw-rounded-[24px] tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-overflow-hidden tw-z-30">
+<section class="tw-relative tw-w-full tw-rounded-none" style="clip-path: polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px); tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-overflow-hidden tw-z-30">
 	<!-- Raw Athletic Data Underneath -->
 	<div class="tw-p-6">
 		<div class="tw-flex tw-justify-between tw-items-center tw-mb-6">

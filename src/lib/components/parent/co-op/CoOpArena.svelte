@@ -79,7 +79,7 @@
 	const displayBounties = $derived([...engine.activeBounties, ...engine.verifiedBounties]);
 </script>
 
-<div class="tw-bg-[#0f172a] tw-rounded-[24px] tw-border tw-border-[#334155] tw-p-6 tw-flex tw-flex-col tw-gap-8">
+<div class="tw-bg-[#0f172a] tw-rounded-none" style="clip-path: polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px); tw-border tw-border-[#334155] tw-p-6 tw-flex tw-flex-col tw-gap-8">
 	<div class="tw-flex tw-items-center tw-justify-between tw-mb-6">
 		<h2 class="tw-text-white tw-font-bold tw-text-lg tw-flex tw-items-center tw-gap-2">
 			<span class="tw-text-[#14b8a6]">●</span> Co-Op Arena

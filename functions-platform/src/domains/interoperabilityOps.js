@@ -3,7 +3,7 @@
 const { onCall, onRequest, HttpsError } = require('firebase-functions/v2/https');
 const logger = require('firebase-functions/logger');
 const { parse } = require('csv-parse/sync');
-const { getFirestore } = require('firebase-admin/firestore');
+
 const { sanitizeVampireRow, validateVampireSchema } = require('../utils/vampireSanitizer');
 const { executeBatchPagination } = require('../utils/batchPaginator');
 
@@ -42,6 +42,7 @@ exports.vampireIngestRows = onCall({ region: 'us-east1' }, async (request) => {
     throw new HttpsError('invalid-argument', 'CSV schema validation failed.');
   }
 
+  const { getFirestore } = require("firebase-admin/firestore");
   const db = getFirestore();
   const totalProcessed = await executeBatchPagination(sanitizedRows, db, teamId, clubId, auth.uid);
 

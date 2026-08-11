@@ -6,7 +6,7 @@ const {onSchedule} = require('firebase-functions/v2/scheduler');
 const logger = require('firebase-functions/logger');
 const admin = require('firebase-admin');
 const {defineString, defineSecret} = require('firebase-functions/params');
-const stripe = require('stripe');
+
 
 const {normEmail} = require('../utils/formatters');
 const {
@@ -16,7 +16,7 @@ const {
 const REGION = 'us-east1';
 
 /** Lazy Firestore accessor — defers init until first call. */
-const db = () => admin.firestore();
+const db = () => { const { getFirestore } = require("firebase-admin/firestore"); return getFirestore(); };
 
 // ── Affinity secrets ──────────────────────────────────────────────────────────
 const AFFINITY_WEBHOOK_HMAC_SECRET = defineSecret('AFFINITY_WEBHOOK_HMAC_SECRET');
