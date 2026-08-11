@@ -54,6 +54,8 @@ exports.generatePdfReportCard = reportOps.generatePdfReportCard;
 
 const complianceOps = require('./src/domains/complianceOps.js');
 exports.parentSubmitVpcIntent = complianceOps.parentSubmitVpcIntent;
+exports.submitMedicalIntake = complianceOps.submitMedicalIntake;
+exports.submitLiabilityWaivers = complianceOps.submitLiabilityWaivers;
 
 const vpcOps = require('./src/domains/vpcOps.js');
 exports.generateVpcChallenge = vpcOps.generateVpcChallenge;
