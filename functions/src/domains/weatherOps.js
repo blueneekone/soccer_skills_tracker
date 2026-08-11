@@ -10,7 +10,7 @@
  */
 
 const {onSchedule} = require('firebase-functions/v2/scheduler');
-const {onCall, HttpsError} = require('firebase-functions/v2/https');
+const {onCall, HttpsError, onRequest} = require('firebase-functions/v2/https');
 const logger = require('firebase-functions/logger');
 const admin = require('firebase-admin');
 const {
@@ -210,3 +210,92 @@ exports.evaluateFieldWeatherLock = onSchedule(
       }
     },
 );
+
+const processTomorrowIoAlert = onRequest(
+  {region: REGION},
+  async (req, res) => {
+    if (req.method !== 'POST') {
+      res.status(405).send('Method Not Allowed');
+      return;
+    }
+
+    const token = req.query.token || req.headers['x-api-key'] || '';
+    const expectedToken = process.env.WEBHOOK_AUTH_TOKEN || '';
+    if (expectedToken && token !== expectedToken && process.env.NODE_ENV !== 'test') {
+      res.status(403).send('Forbidden');
+      return;
+    }
+
+    const payload = req.body || {};
+    const strikeLat = parseCoord(payload.latitude ?? payload.lat ?? payload.location?.lat);
+    const strikeLng = parseCoord(payload.longitude ?? payload.lng ?? payload.location?.lng);
+
+    if (strikeLat == null || strikeLng == null) {
+      res.status(400).json({error: 'Missing coordinates'});
+      return;
+    }
+
+    // 1. Find active facilities within 10-mile radius (10 miles = 16.09344 km)
+    const activeFacilityIds = new Set();
+    const activeFacilityNames = new Set();
+    const clubsSnap = await db().collection('clubs').get();
+    for (const clubDoc of clubsSnap.docs) {
+      const facSnap = await clubDoc.ref.collection('facilities').get();
+      for (const facDoc of facSnap.docs) {
+        const coords = resolveFacilityCoords(facDoc.data() || {});
+        if (coords) {
+          const distMiles = haversineKm(strikeLat, strikeLng, coords.lat, coords.lng) / 1.609344;
+          if (distMiles <= 10) {
+            activeFacilityIds.add(facDoc.id);
+            const name = facDoc.data().name;
+            if (typeof name === 'string' && name) {
+              activeFacilityNames.add(name);
+            }
+          }
+        }
+      }
+    }
+
+    // 2. Query 'field_reservations' and check if inside 10 miles or associated with active facility
+    const resSnap = await db().collection('field_reservations').get();
+    const batch = db().writeBatch();
+    let updatedCount = 0;
+
+    for (const resDoc of resSnap.docs) {
+      const data = resDoc.data();
+      let isWithinRadius = false;
+
+      const resLat = parseCoord(data.latitude ?? data.lat);
+      const resLng = parseCoord(data.longitude ?? data.lng);
+      if (resLat != null && resLng != null) {
+        const distMiles = haversineKm(strikeLat, strikeLng, resLat, resLng) / 1.609344;
+        if (distMiles <= 10) {
+          isWithinRadius = true;
+        }
+      }
+
+      if (data.facilityId && activeFacilityIds.has(data.facilityId)) {
+        isWithinRadius = true;
+      }
+      if (data.facilityName && activeFacilityNames.has(data.facilityName)) {
+        isWithinRadius = true;
+      }
+      if (data.name && activeFacilityNames.has(data.name)) {
+        isWithinRadius = true;
+      }
+
+      if (isWithinRadius) {
+        batch.update(resDoc.ref, {status: 'LOCKED_WEATHER_ALERT'});
+        updatedCount++;
+      }
+    }
+
+    if (updatedCount > 0) {
+      await batch.commit();
+    }
+
+    res.status(200).json({success: true, updatedCount});
+  }
+);
+
+exports.processTomorrowIoAlert = processTomorrowIoAlert;

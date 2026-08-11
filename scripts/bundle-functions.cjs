@@ -113,6 +113,8 @@ const CODEBASES = {
       'src/domains/globalAdminOs.js',
       'lib/grit.js',
       'src/onChannelCreated.js',
+      'src/domains/weatherOps.js',
+      'src/domains/weatherEvaluation.js',
     ],
   },
 };

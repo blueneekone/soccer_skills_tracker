@@ -125,6 +125,9 @@ const webhooksOps = require('./src/domains/webhooksOps.js');
 exports.acknowledgeBroadcast = webhooksOps.acknowledgeBroadcast;
 exports.getBroadcastAckStatus = webhooksOps.getBroadcastAckStatus;
 
+const weatherOps = require('./src/domains/weatherOps.js');
+exports.processTomorrowIoAlert = weatherOps.processTomorrowIoAlert;
+
 function exportScheduler(target, name, modFn) {
   if (process.env.SCHEDULERS_ENABLED === 'true') {
     target[name] = modFn;
