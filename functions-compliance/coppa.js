@@ -1,4 +1,4 @@
-﻿
+﻿/* eslint-disable quotes */
 /**
  * coppa.js
  * â”€â”€â”€â”€â”€â”€â”€â”€

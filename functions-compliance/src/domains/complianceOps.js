@@ -251,7 +251,7 @@ async function paginatedBatchDelete(q, pageSize = 400) {
   if (pageSize > 499) pageSize = 400;
   let totalDeleted = 0;
 
-
+  // eslint-disable-next-line no-constant-condition
   while (true) {
     const snap = await q.limit(pageSize).get();
     if (snap.empty) break;
@@ -1499,6 +1499,77 @@ exports.processMinorRetentionQueue = onSchedule('every 24 hours', async () => {
     logger.info('minor_retention_queue: no legacy (non-TTL) jobs.');
   }
   return null;
+});
+
+const crypto = require('crypto');
+
+function encryptString(text) {
+  if (!text) return '';
+  const secretKey = process.env.AES_SECRET_KEY || '12345678901234567890123456789012';
+  const iv = crypto.randomBytes(16);
+  const cipher = crypto.createCipheriv('aes-256-cbc', Buffer.from(secretKey), iv);
+  let encrypted = cipher.update(text, 'utf-8', 'hex');
+  encrypted += cipher.final('hex');
+  return `${iv.toString('hex')}:${encrypted}`;
+}
+
+exports.submitMedicalIntake = onCall({region: REGION}, async (request) => {
+  if (!request.auth || !request.auth.token.email) {
+    throw new HttpsError('unauthenticated', 'User must be authenticated.');
+  }
+
+  const data = request.data || {};
+  const ipAddress = request.rawRequest ? request.rawRequest.ip : 'unknown';
+  const email = normEmail(request.auth.token.email);
+  const { emergencyContactName, insuranceCarrier, policyId, signature } = data;
+
+  const docData = {
+    type: 'medical_intake',
+    email,
+    ipAddress,
+    signature,
+    timestamp: admin.firestore.FieldValue.serverTimestamp(),
+    encryptedEmergencyContact: encryptString(emergencyContactName),
+    encryptedInsuranceCarrier: encryptString(insuranceCarrier),
+    encryptedPolicyId: encryptString(policyId),
+  };
+
+  await db().collection('consents').add(docData);
+
+  await db().collection('users').doc(email).update({
+    medicalSignatureVerified: true,
+  });
+
+  return { ok: true };
+});
+
+exports.submitLiabilityWaivers = onCall({region: REGION}, async (request) => {
+  if (!request.auth || !request.auth.token.email) {
+    throw new HttpsError('unauthenticated', 'User must be authenticated.');
+  }
+
+  const data = request.data || {};
+  const ipAddress = request.rawRequest ? request.rawRequest.ip : 'unknown';
+  const email = normEmail(request.auth.token.email);
+  const { signature, optInFanOsLivestream, optInPlayerOsTrials } = data;
+
+  const docData = {
+    type: 'liability_waiver',
+    email,
+    ipAddress,
+    signature,
+    timestamp: admin.firestore.FieldValue.serverTimestamp(),
+    optInFanOsLivestream: Boolean(optInFanOsLivestream),
+    optInPlayerOsTrials: Boolean(optInPlayerOsTrials),
+  };
+
+  await db().collection('consents').add(docData);
+
+  await db().collection('users').doc(email).update({
+    liabilityWaiverVerified: true,
+  });
+
+  return { ok: true };
 });
 
 /**
