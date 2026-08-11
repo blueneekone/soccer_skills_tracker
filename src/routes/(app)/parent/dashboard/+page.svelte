@@ -10,6 +10,7 @@
 	import VanguardEmptyState from '$lib/components/ui/VanguardEmptyState.svelte';
 	import ActionInbox from '$lib/components/shell/ActionInbox.svelte';
 	import UpcomingEventsRsvp from '$lib/components/parent/UpcomingEventsRsvp.svelte';
+	import ParentNotificationPanel from '$lib/components/parent/ParentNotificationPanel.svelte';
 
 	// For the engine, we will dynamically import or mock it for the dashboard
 	// Assuming CoOpEngine exists and is available
@@ -67,6 +68,9 @@
 			
 			<!-- Compliance Sidecar spans 4 columns -->
 			<div class="bento-col-4 tw-flex tw-flex-col tw-gap-6 tw-min-w-0">
+				<div class="st-bento tw-contents">
+					<ParentNotificationPanel />
+				</div>
 				<div class="st-bento tw-contents">
 					<ActionInbox householdId={authStore.userProfile?.householdId} />
 				</div>

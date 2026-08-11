@@ -16,25 +16,6 @@
 	import { CommsEngine } from '$lib/services/comms.svelte.js';
 	import DeliveryReceipt from '$lib/components/comms/DeliveryReceipt.svelte';
 
-	async function guardianEmailsForProfile(prof: Record<string, unknown>): Promise<string[]> {
-		const out: string[] = [];
-		const householdId =
-			typeof prof.householdId === 'string' ? prof.householdId.trim() : '';
-		if (householdId) {
-			const hSnap = await getDoc(doc(db, 'households', householdId));
-			if (hSnap.exists()) {
-				const pe = hSnap.data().parentEmails ?? [];
-				for (const p of pe) {
-					const n = String(p ?? '').trim().toLowerCase();
-					if (n) out.push(n);
-				}
-			}
-		}
-		const direct = String(prof.parentEmail ?? '').trim().toLowerCase();
-		if (direct) out.push(direct);
-		return [...new Set(out)];
-	}
-
 	let {
 		clubId,
 		teamId,
@@ -225,16 +206,14 @@
 				const profSnap = await getDoc(doc(db, 'users', playerEmail));
 				if (!profSnap.exists()) continue;
 				const prof = profSnap.data() as Record<string, unknown>;
-				const guardians = await guardianEmailsForProfile(prof);
+				const direct = String(prof.parentEmail ?? '').trim().toLowerCase();
 				const playerName =
 					typeof prof.playerName === 'string' && prof.playerName.trim()
 						? prof.playerName.trim()
 						: playerEmail;
-				for (const g of guardians) {
-					if (!seen[g]) {
-						seen[g] = true;
-						options.push({ email: g, label: `${g} (${playerName})` });
-					}
+				if (direct && !seen[direct]) {
+					seen[direct] = true;
+					options.push({ email: direct, label: `${direct} (${playerName})` });
 				}
 			}
 			parentOptions = options.sort((a, b) => a.label.localeCompare(b.label));

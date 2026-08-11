@@ -516,50 +516,58 @@
 			<h2 class="pd-hq-section-head__title player-analytics-void__title">Vanguard telemetry</h2>
 			<p class="pd-hq-section-head__eyebrow pd-label player-analytics-void__eyebrow">Performance</p>
 		</header>
-		<VanguardProtocolPanel
-			prismValues={attrRadarValues}
-			bind:selectedAxis={selectedVanguardAxis}
-			compact={!telemetryReady}
-			hideHeadTitle={true}
-		/>
-		<footer class="player-capsules-strip player-capsules-strip--void" aria-labelledby="lobby-capsules-h">
-			{#if vanguardFlags.capsulesEnabled && trajectoryEngine.activeCapsule}
-				<header class="pd-hq-section-head player-capsules-strip__head">
-					<h2 id="lobby-capsules-h" class="pd-hq-section-head__title player-capsules-strip__title">
-						Time-lapse memory capsules
-					</h2>
-					<p class="pd-hq-section-head__eyebrow pd-label player-capsules-strip__eyebrow">Self comparison</p>
-				</header>
-				<MemoryCapsuleArena
-					dossierMode={true}
-					capsule={trajectoryEngine.activeCapsule}
-					baselineDaysAgo={trajectoryEngine.baselineDaysAgo}
-					capsuleHeadline={trajectoryEngine.capsuleHeadline}
-				/>
-			{:else}
-				<header class="pd-hq-section-head player-capsules-strip__head">
-					<h2 id="lobby-capsules-h" class="pd-hq-section-head__title player-capsules-strip__title">
-						Memory capsules
-					</h2>
-					<p class="pd-hq-section-head__eyebrow pd-label player-capsules-strip__eyebrow">Self comparison</p>
-				</header>
-				<div class="lobby-capsule-ghost-wrap">
-					<div
-						class="pd-empty-state pd-empty-state--compact lobby-capsule-ghost-card"
-						role="status"
-						aria-labelledby="lobby-capsules-h"
-					>
-						<div class="tw-drop-shadow-[0_0_12px_rgba(20,184,166,0.18)]" aria-hidden="true">
-							<div class="pd-empty-state__icon"></div>
-						</div>
-						<div class="pd-empty-state__copy">
-							<p class="pd-empty-state__title">Ghost profile</p>
-							<p class="pd-empty-state__lede">Awaiting first memory capsule</p>
+		{#if authStore.isConsented}
+			<VanguardProtocolPanel
+				prismValues={attrRadarValues}
+				bind:selectedAxis={selectedVanguardAxis}
+				compact={!telemetryReady}
+				hideHeadTitle={true}
+			/>
+			<footer class="player-capsules-strip player-capsules-strip--void" aria-labelledby="lobby-capsules-h">
+				{#if vanguardFlags.capsulesEnabled && trajectoryEngine.activeCapsule}
+					<header class="pd-hq-section-head player-capsules-strip__head">
+						<h2 id="lobby-capsules-h" class="pd-hq-section-head__title player-capsules-strip__title">
+							Time-lapse memory capsules
+						</h2>
+						<p class="pd-hq-section-head__eyebrow pd-label player-capsules-strip__eyebrow">Self comparison</p>
+					</header>
+					<MemoryCapsuleArena
+						dossierMode={true}
+						capsule={trajectoryEngine.activeCapsule}
+						baselineDaysAgo={trajectoryEngine.baselineDaysAgo}
+						capsuleHeadline={trajectoryEngine.capsuleHeadline}
+					/>
+				{:else}
+					<header class="pd-hq-section-head player-capsules-strip__head">
+						<h2 id="lobby-capsules-h" class="pd-hq-section-head__title player-capsules-strip__title">
+							Memory capsules
+						</h2>
+						<p class="pd-hq-section-head__eyebrow pd-label player-capsules-strip__eyebrow">Self comparison</p>
+					</header>
+					<div class="lobby-capsule-ghost-wrap">
+						<div
+							class="pd-empty-state pd-empty-state--compact lobby-capsule-ghost-card"
+							role="status"
+							aria-labelledby="lobby-capsules-h"
+						>
+							<div class="tw-drop-shadow-[0_0_12px_rgba(20,184,166,0.18)]" aria-hidden="true">
+								<div class="pd-empty-state__icon"></div>
+							</div>
+							<div class="pd-empty-state__copy">
+								<p class="pd-empty-state__title">Ghost profile</p>
+								<p class="pd-empty-state__lede">Awaiting first memory capsule</p>
+							</div>
 						</div>
 					</div>
-				</div>
-			{/if}
-		</footer>
+				{/if}
+			</footer>
+		{:else}
+			<div class="tw-p-6 tw-text-center tw-bg-slate-900/50 tw-border tw-border-slate-800 tw-rounded-lg tw-m-4">
+				<p class="tw-text-amber-500/90 tw-font-mono tw-text-[10px] tw-uppercase tw-tracking-widest">
+					Telemetry blocked: Verifiable Parental Consent (VPC) Required
+				</p>
+			</div>
+		{/if}
 	</section>
 	<section class="player-hud-grid bento-span-12  tw-gap-4 tw-mt-6" style="grid-template-columns: repeat(auto-fit, minmax(min(100%, clamp(280px, 30vw, 350px)), 1fr));">
 		<!-- Biometrics Cardiac Module -->
