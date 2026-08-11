@@ -97,3 +97,44 @@ export function assertPiiAttestationDisjoint(): true {
 	}
 	return true;
 }
+
+export interface ComplianceHealthScore {
+	clubId: string;
+	activeCoachesCount: number;
+	verifiedCoachesCount: number;
+	activePlayersCount: number;
+	verifiedVpcCount: number;
+	overallScore: number; // percentage (0 - 100)
+}
+
+export function computeComplianceHealthScore(
+	activeCoaches: number,
+	verifiedCoaches: number,
+	activePlayers: number,
+	verifiedVpc: number,
+): number {
+	const hasCoaches = activeCoaches > 0;
+	const hasPlayers = activePlayers > 0;
+
+	if (!hasCoaches && !hasPlayers) return 100;
+
+	const coachRate = hasCoaches ? (verifiedCoaches / activeCoaches) * 100 : 0;
+	const playerRate = hasPlayers ? (verifiedVpc / activePlayers) * 100 : 0;
+
+	if (hasCoaches && hasPlayers) {
+		return Math.round((coachRate + playerRate) / 2);
+	}
+	return Math.round(hasCoaches ? coachRate : playerRate);
+}
+
+export function getComplianceStatusColor(overallScore: number): string {
+	if (overallScore >= 90) return '#14b8a6'; // Green
+	if (overallScore >= 60) return '#f59e0b'; // Amber
+	return '#f43f5e'; // Red
+}
+
+export function getComplianceStatusLabel(overallScore: number): 'Green' | 'Amber' | 'Red' {
+	if (overallScore >= 90) return 'Green';
+	if (overallScore >= 60) return 'Amber';
+	return 'Red';
+}

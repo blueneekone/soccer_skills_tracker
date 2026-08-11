@@ -9,13 +9,41 @@
 		normalizeEligibilityMatrix,
 		blockerLabel,
 	} from '$lib/director/evaluateClubEligibility.js';
+	import { CoachClearanceEngine } from '$lib/components/compliance/CoachClearanceEngine.svelte.ts';
+	import {
+		computeComplianceHealthScore,
+		getComplianceStatusColor,
+		getComplianceStatusLabel,
+	} from '$lib/types/compliance.ts';
 
 	let { clubId = '' } = $props();
+
+	const coachEngine = new CoachClearanceEngine();
+
+	$effect(() => {
+		coachEngine.clubIdProp = clubId;
+	});
+
+	coachEngine.subscribe();
 
 	/** @type {import('$lib/registrar/loadComplianceRows.js').RegistrarRosterRow[]} */
 	let rows = $state([]);
 	let loading = $state(false);
 	let loadErr = $state('');
+
+	const healthScore = $derived({
+		clubId,
+		activeCoachesCount: coachEngine.coaches.length,
+		verifiedCoachesCount: coachEngine.coaches.filter((c) => coachEngine.getStatus(c) === 'cleared').length,
+		activePlayersCount: rows.length,
+		verifiedVpcCount: rows.filter((r) => r.vpcStatus === 'verified').length,
+		overallScore: computeComplianceHealthScore(
+			coachEngine.coaches.length,
+			coachEngine.coaches.filter((c) => coachEngine.getStatus(c) === 'cleared').length,
+			rows.length,
+			rows.filter((r) => r.vpcStatus === 'verified').length,
+		),
+	});
 
 	/** @type {Record<string, boolean>} */
 	let matrix = $state(normalizeEligibilityMatrix(null));
@@ -66,6 +94,48 @@
 
 <div class="compliance-tab">
 	<ClubEligibilityMatrixPanel {clubId} onSaved={() => void load()} />
+
+	<!-- Compliance Health Scoring Matrix & Visual Gauges -->
+	<section class="compliance-health-panel tw-mb-6 tw-bg-[#0f172a] tw-border tw-border-[#1e293b] tw-p-6 tw-rounded-none">
+		<div class="tw-grid tw-grid-cols-1 md:tw-grid-cols-3 tw-gap-6 tw-items-center">
+			<!-- Overall score with Dot status indicator -->
+			<div class="tw-flex tw-items-center tw-gap-4">
+				<span
+					class="tw-w-4 tw-h-4 tw-rounded-full tw-inline-block compliance-status-dot"
+					style="background-color: {getComplianceStatusColor(healthScore.overallScore)}"
+					aria-label="Status: {getComplianceStatusLabel(healthScore.overallScore)}"
+				></span>
+				<div>
+					<h3 class="tw-text-xs tw-font-semibold tw-uppercase tw-tracking-wider tw-text-[#94a3b8] tw-m-0">Compliance Health Score</h3>
+					<p class="tw-text-3xl tw-font-bold tw-font-mono tw-text-[#f8fafc] tw-m-0 tw-mt-1 compliance-overall-score">
+						{healthScore.overallScore}%
+					</p>
+				</div>
+			</div>
+
+			<!-- Coach Clearance Gauge Card -->
+			<div class="tw-flex tw-flex-col tw-bg-[#020617] tw-p-4 tw-border tw-border-[#1e293b] tw-rounded-none">
+				<span class="tw-text-[10px] tw-font-semibold tw-uppercase tw-tracking-wider tw-text-[#94a3b8]">Coach SafeSport Clearance</span>
+				<span class="tw-text-lg tw-font-bold tw-font-mono tw-text-[#cbd5e1] tw-mt-1 compliance-coach-metric">
+					{healthScore.verifiedCoachesCount} <span class="tw-text-xs tw-text-[#64748b]">/ {healthScore.activeCoachesCount}</span>
+				</span>
+				<div class="tw-w-full tw-bg-[#1e293b] tw-h-1.5 tw-mt-2">
+					<div class="tw-bg-[#14b8a6] tw-h-1.5 compliance-coach-bar" style="width: {healthScore.activeCoachesCount > 0 ? (healthScore.verifiedCoachesCount / healthScore.activeCoachesCount * 100) : 100}%"></div>
+				</div>
+			</div>
+
+			<!-- Player VPC Gauge Card -->
+			<div class="tw-flex tw-flex-col tw-bg-[#020617] tw-p-4 tw-border tw-border-[#1e293b] tw-rounded-none">
+				<span class="tw-text-[10px] tw-font-semibold tw-uppercase tw-tracking-wider tw-text-[#94a3b8]">Player VPC Verification</span>
+				<span class="tw-text-lg tw-font-bold tw-font-mono tw-text-[#cbd5e1] tw-mt-1 compliance-player-metric">
+					{healthScore.verifiedVpcCount} <span class="tw-text-xs tw-text-[#64748b]">/ {healthScore.activePlayersCount}</span>
+				</span>
+				<div class="tw-w-full tw-bg-[#1e293b] tw-h-1.5 tw-mt-2">
+					<div class="tw-bg-[#14b8a6] tw-h-1.5 compliance-player-bar" style="width: {healthScore.activePlayersCount > 0 ? (healthScore.verifiedVpcCount / healthScore.activePlayersCount * 100) : 100}%"></div>
+				</div>
+			</div>
+		</div>
+	</section>
 
 	<h2 class="tw-text-sm tw-font-semibold tw-uppercase tw-tracking-wider tw-text-[#A1A1AA] tw-mb-[clamp(8px,1vw,12px)]">Player compliance matrix</h2>
 	<div class="v-table-wrap tw-overflow-x-auto">
