@@ -4152,6 +4152,12 @@ service cloud.firestore {
       allow update, delete: if false; // Append-only Event Sourcing
     }
 
+    // HIPAA & Medical Release Integrated Intake Gate — 'medical_records'
+    // Enforce that client-side reads and writes are strictly forbidden.
+    match /medical_records/{docId} {
+      allow read, write: if false;
+    }
+
 match /{document=**} {
       allow read, write: if false;
     }
