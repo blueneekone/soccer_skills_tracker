@@ -1,7 +1,8 @@
 <script lang="ts">
 	import { untrack } from 'svelte';
 	import { page } from '$app/state';
-	import { db } from '$lib/firebase.js';
+	import { getActiveDb } from '$lib/firebase.js';
+	import { authStore } from '$lib/stores/auth.svelte.js';
 	import {
 		collection,
 		doc,
@@ -14,7 +15,6 @@
 		startAfter,
 	} from 'firebase/firestore';
 	import { getContext } from 'svelte';
-	import { authStore } from '$lib/stores/auth.svelte.js';
 	import '$lib/styles/enterprise-console.css';
 	import Icon from '$lib/components/ui/Icon.svelte';
 	import type { IconName } from '$lib/icons/registry.js';
@@ -119,7 +119,9 @@
 	async function enrichLinkedRows(rows) {
 		const needs = rows.filter((r) => r.email && r.parentEmails.length === 0).map((r) => r.email);
 		if (needs.length === 0) return rows;
-		const meta = await fetchGuardiansByPlayerEmails(db, needs);
+		const activeDb = getActiveDb();
+		if (!activeDb) return rows;
+		const meta = await fetchGuardiansByPlayerEmails(activeDb, needs);
 		return rows.map((r) => {
 			if (!r.email || r.parentEmails.length > 0) return r;
 			const g = meta.get(r.email.toLowerCase());
@@ -200,9 +202,19 @@
 		});
 
 		void (async () => {
+			const activeDb = getActiveDb();
+			if (!activeDb || authStore.isLoading || !authStore.isAuthenticated) {
+				untrack(() => {
+					teamLoading = false;
+					rosterLoading = false;
+					teamErr = 'Missing or insufficient permissions';
+					rosterErr = 'Missing or insufficient permissions';
+				});
+				return;
+			}
 			try {
 				const rosterFirstPageQ = query(
-					collection(db, 'player_lookup'),
+					collection(activeDb, 'player_lookup'),
 					where('teamId', '==', tid),
 					orderBy('playerName'),
 					limit(ROSTER_PAGE_SIZE + 1),
@@ -210,8 +222,8 @@
 				// Fetch player_lookup (paginated first page), rosters doc (name array), and team meta in parallel.
 				const [rosterSnap, rostersDocSnap, teamSnap] = await Promise.all([
 					getDocs(rosterFirstPageQ),
-					getDoc(doc(db, 'rosters', tid)),
-					getDoc(doc(db, 'teams', tid)),
+					getDoc(doc(activeDb, 'rosters', tid)),
+					getDoc(doc(activeDb, 'teams', tid)),
 				]);
 
 				if (cancelled || gen !== rosterFetchGen) return;
@@ -269,11 +281,12 @@
 
 	/** Append the next page of email-linked (player_lookup) rows. Name-only rows are already fully loaded. */
 	async function loadMoreRoster() {
-		if (!rosterHasMore || rosterLoadingMore || !rosterLastDoc) return;
+		const activeDb = getActiveDb();
+		if (!activeDb || authStore.isLoading || !authStore.isAuthenticated || !rosterHasMore || rosterLoadingMore || !rosterLastDoc) return;
 		rosterLoadingMore = true;
 		try {
 			const nextQ = query(
-				collection(db, 'player_lookup'),
+				collection(activeDb, 'player_lookup'),
 				where('teamId', '==', teamId),
 				orderBy('playerName'),
 				startAfter(rosterLastDoc),

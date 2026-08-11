@@ -1,7 +1,8 @@
 <script lang="ts">
 	import { getContext, untrack } from 'svelte';
 	import { goto } from '$app/navigation';
-	import { db, auth, functions } from '$lib/firebase.js';
+	import { getActiveDb, auth, functions } from '$lib/firebase.js';
+	import { authStore } from '$lib/stores/auth.svelte.js';
 	import {
 		collection,
 		doc,
@@ -44,9 +45,17 @@
 		});
 
 		void (async () => {
+			const activeDb = getActiveDb();
+			if (!activeDb || authStore.isLoading || !authStore.isAuthenticated) {
+				untrack(() => {
+					loading = false;
+					error = 'Missing or insufficient permissions';
+				});
+				return;
+			}
 			try {
 				const q = query(
-					collection(db, 'users'),
+					collection(activeDb, 'users'),
 					where('clubId', '==', id),
 					limit(100)
 				);
@@ -73,6 +82,8 @@
 
 	// ── Role Mutation ──────────────────────────────────────────────────────────
 	async function updateRole(userId: string, newRole: string) {
+		const activeDb = getActiveDb();
+		if (!activeDb || !authStore.isAuthenticated) return;
 		const idx = users.findIndex(u => u.id === userId);
 		if (idx === -1) return;
 		
@@ -80,7 +91,7 @@
 		users[idx].role = newRole; // Optimistic UI update
 
 		try {
-			await updateDoc(doc(db, 'users', userId), { role: newRole });
+			await updateDoc(doc(activeDb, 'users', userId), { role: newRole });
 		} catch (e) {
 			console.error('Role update failed', e);
 			users[idx].role = oldRole; // Rollback

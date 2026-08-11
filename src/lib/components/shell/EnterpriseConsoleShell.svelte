@@ -259,7 +259,7 @@
 			</div>
 		</aside>
 
-	<div class="ec-main tw-flex-1 tw-min-h-0 tw-overflow-y-auto">
+	<div class="ec-main tw-flex-1 tw-min-h-0 tw-overflow-hidden">
 		<header class="ec-topbar tw-relative">
 			<div class="tw-flex tw-items-center tw-flex-1 tw-min-w-0">
 				<button
@@ -340,7 +340,7 @@
 			</div>
 		</header>
 
-		<div class="ec-canvas tw-overflow-y-auto tw-scrollbar-hide tw-min-h-0">
+		<div class="ec-canvas tw-overflow-y-auto tw-flex-1 tw-min-h-0 tw-scrollbar-hide">
 			{@render children?.()}
 		</div>
 	</div>

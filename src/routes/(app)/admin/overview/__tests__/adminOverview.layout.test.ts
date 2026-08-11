@@ -8,7 +8,7 @@ import AdminDashboardEngine from '../AdminDashboardEngine.svelte';
 
 // Mock the Firebase client and Auth store to pass Defensive Hydration
 vi.mock('$lib/firebase/config', () => ({
-	db: {} // Truthy object to pass `if (!db)`
+	getActiveDb: vi.fn().mockReturnValue({}) // Truthy object to pass `if (!getActiveDb())`
 }));
 
 vi.mock('$lib/stores/auth.svelte', () => ({
@@ -24,7 +24,11 @@ vi.mock('firebase/firestore', () => ({
 	where: vi.fn(),
 	limit: vi.fn(),
 	orderBy: vi.fn(),
-	getDocs: vi.fn().mockResolvedValue({ size: 42 }) // Mock returning 42 docs for size properties
+	getDocs: vi.fn().mockResolvedValue({ size: 42 }), // Mock returning 42 docs for size properties
+	getFirestore: vi.fn().mockReturnValue({}),
+	initializeFirestore: vi.fn().mockReturnValue({}),
+	persistentLocalCache: vi.fn(),
+	persistentMultipleTabManager: vi.fn(),
 }));
 
 describe('Admin OS Vanguard Trinity', () => {

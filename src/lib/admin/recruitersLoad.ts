@@ -1,4 +1,5 @@
-import { db } from '$lib/firebase.js';
+import { getActiveDb } from '$lib/firebase.js';
+import { authStore } from '$lib/stores/auth.svelte.js';
 import { collection, getDocs, orderBy, query } from 'firebase/firestore';
 import { toEpochMs } from '$lib/utils/timestamp.js';
 
@@ -42,7 +43,9 @@ export function coerceSubscription(raw: unknown): SubscriptionStatus {
 }
 
 export async function loadRecruitersData(): Promise<RecruiterRow[]> {
-	const snap = await getDocs(query(collection(db, 'recruiters'), orderBy('email')));
+	const activeDb = getActiveDb();
+	if (!activeDb || authStore.isLoading || !authStore.isAuthenticated) return [];
+	const snap = await getDocs(query(collection(activeDb, 'recruiters'), orderBy('email')));
 	const next: RecruiterRow[] = [];
 	snap.forEach((d) => {
 		const raw = (d.data() || {}) as Record<string, unknown>;

@@ -1,4 +1,4 @@
-/* eslint-disable quotes */
+
 /**
  * hotelRebates.js — B2B partner kickback flow
  * ────────────────────────────────────────────

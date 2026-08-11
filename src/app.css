@@ -104,6 +104,35 @@ button:active, .btn:active, a:active, [role="button"]:active {
 
 body, .app-shell, .ec-canvas { background-color: #000000 !important; }
 
+/* Kinetic transitions (150-250ms range, e.g. 150ms / 200ms) and tactile active shrink feedback for interactive elements */
+button,
+.vanguard-btn-amber,
+.tw-vanguard-btn-amber,
+.vanguard-btn-primary,
+.tw-vanguard-btn-primary,
+.vanguard-btn-secondary,
+.tw-vanguard-btn-secondary,
+.vanguard-btn-danger,
+.tw-vanguard-btn-danger,
+.v-toolbar-btn,
+.ec-nav-link {
+  transition: transform 150ms cubic-bezier(0.4, 0, 0.2, 1), background-color 150ms, border-color 150ms, box-shadow 150ms !important;
+}
+
+button:active,
+.vanguard-btn-amber:active,
+.tw-vanguard-btn-amber:active,
+.vanguard-btn-primary:active,
+.tw-vanguard-btn-primary:active,
+.vanguard-btn-secondary:active,
+.tw-vanguard-btn-secondary:active,
+.vanguard-btn-danger:active,
+.tw-vanguard-btn-danger:active,
+.v-toolbar-btn:active,
+.ec-nav-link:active {
+  transform: scale(0.98) !important;
+}
+
 .tw-font-mono { font-family: 'Geist Mono', monospace !important; }
 
 @layer components {

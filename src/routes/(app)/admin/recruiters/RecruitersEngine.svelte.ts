@@ -1,4 +1,4 @@
-import { db } from '$lib/firebase.js';
+import { getActiveDb } from '$lib/firebase.js';
 import {
 	collection,
 	doc,
@@ -74,6 +74,12 @@ export class RecruitersEngine {
 	}
 
 	async loadRecruiters() {
+		const activeDb = getActiveDb();
+		if (!activeDb || authStore.isLoading || !authStore.isAuthenticated) {
+			this.loading = false;
+			this.err = 'Missing or insufficient permissions';
+			return;
+		}
 		this.loading = true;
 		this.err = '';
 		try {
@@ -165,7 +171,9 @@ export class RecruitersEngine {
 		this.pushToast(`Background check dispatched for ${row.scoutName || row.email}. Checkr API integration arriving Sprint 2.9.`, 'info');
 
 		try {
-			await updateDoc(doc(db, 'recruiters', row.id), {
+			const activeDb = getActiveDb();
+			if (!activeDb) return;
+			await updateDoc(doc(activeDb, 'recruiters', row.id), {
 				vettingStatus: 'processing',
 				vettingRequestedAt: serverTimestamp(),
 				vettingRequestedBy: authStore.user?.email || 'super_admin'

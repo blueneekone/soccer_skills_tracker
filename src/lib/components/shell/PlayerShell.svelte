@@ -182,10 +182,10 @@
 			/>
 		{/if}
 
-		<div class="ps-scroll-shell tw-relative">
+		<div class="ps-scroll-shell tw-relative tw-overflow-hidden">
 			<div class="ps-canvas-bg" aria-hidden="true"></div>
 			<main
-				class="ps-canvas ps-canvas--scroll-inner player-dossier-root pd-grain pd-chrome-root tw-relative tw-z-[1] bento-grid  -cols-1 lg:-cols-12"
+				class="ps-canvas ps-canvas--scroll-inner player-dossier-root pd-grain pd-chrome-root tw-relative tw-z-[1] bento-grid tw-overflow-y-auto tw-flex-1 tw-min-h-0 -cols-1 lg:-cols-12"
 				data-dopamine={vanguardFlags.dopamineEnabled ? 'on' : 'off'}
 			>
 				{@render children?.()}

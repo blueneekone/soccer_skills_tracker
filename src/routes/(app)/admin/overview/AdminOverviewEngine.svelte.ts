@@ -1,5 +1,5 @@
 import { browser } from '$app/environment';
-import { db } from '$lib/firebase.js';
+import { getActiveDb } from '$lib/firebase.js';
 import { authStore } from '$lib/stores/auth.svelte.js';
 import { hydrateAdminOverview } from '$lib/admin/overviewHydrate.js';
 import {
@@ -24,6 +24,8 @@ export class AdminOverviewEngine {
 	maintenanceBusy = $state(false);
 
 	toggleMaintenance = async () => {
+		const activeDb = getActiveDb();
+		if (!activeDb || authStore.isLoading || !authStore.isAuthenticated) return;
 		const nextState = !this.maintenanceMode;
 		if (nextState) {
 			const ok = confirm("WARNING: You are about to enable GLOBAL PLATFORM LOCKOUT.\n\nAll non-admin users will be immediately ejected to the maintenance page. Do you wish to proceed?");
@@ -32,7 +34,7 @@ export class AdminOverviewEngine {
 
 		this.maintenanceBusy = true;
 		try {
-			await setDoc(doc(db, 'platform_settings', 'core'), { maintenance_mode: nextState }, { merge: true });
+			await setDoc(doc(activeDb, 'platform_settings', 'core'), { maintenance_mode: nextState }, { merge: true });
 			this.maintenanceMode = nextState;
 		} catch (e) {
 			console.error('[overview] failed to toggle maintenance mode', e);
@@ -111,7 +113,8 @@ export class AdminOverviewEngine {
 	subscribe() {
 		$effect.root(() => {
 			$effect(() => {
-				if (!browser) return;
+				const activeDb = getActiveDb();
+				if (!browser || !activeDb) return;
 				if (authStore.isLoading || !authStore.isAuthenticated) return;
 				if (!authStore.user || !authStore.tenantId) return;
 
@@ -119,7 +122,7 @@ export class AdminOverviewEngine {
 				this.feedLoading = true;
 				this.feedErr = '';
 
-				hydrateAdminOverview(db)
+				hydrateAdminOverview(activeDb)
 					.then((result) => {
 						if (destroyed) return;
 						this.mauSeries = result.mauSeries;
