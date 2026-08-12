@@ -247,35 +247,56 @@ exports.exportStateRoster = onCall({region: REGION}, async (request) => {
   const householdIds = [...new Set(players.map((p) => p.householdId).filter(Boolean))];
   /** @type {Map<string, Record<string, unknown>>} */
   const householdMap = new Map();
-  await Promise.all(householdIds.map(async (hid) => {
-    const hSnap = await db().collection('households').doc(hid).get();
-    if (hSnap.exists) householdMap.set(hid, hSnap.data() || {});
+  const householdRefs = householdIds.map((hid) => db().collection('households').doc(hid));
+  const householdChunks = [];
+  for (let i = 0; i < householdRefs.length; i += 100) {
+    householdChunks.push(householdRefs.slice(i, i + 100));
+  }
+  await Promise.all(householdChunks.map(async (chunk) => {
+    const snaps = await db().getAll(...chunk);
+    for (const snap of snaps) {
+      if (snap.exists) householdMap.set(snap.id, snap.data() || {});
+    }
   }));
 
   const playerEmails = [...new Set(players.map((p) => p.playerEmail))];
   /** @type {Map<string, Record<string, unknown>>} */
   const userMap = new Map();
-  await Promise.all(playerEmails.map(async (em) => {
-    const uSnap = await db().collection('users').doc(em).get();
-    if (uSnap.exists) userMap.set(em, uSnap.data() || {});
+  const userRefs = playerEmails.map((em) => db().collection('users').doc(em));
+  const userChunks = [];
+  for (let i = 0; i < userRefs.length; i += 100) {
+    userChunks.push(userRefs.slice(i, i + 100));
+  }
+  await Promise.all(userChunks.map(async (chunk) => {
+    const snaps = await db().getAll(...chunk);
+    for (const snap of snaps) {
+      if (snap.exists) userMap.set(snap.id, snap.data() || {});
+    }
   }));
 
   /** @type {Map<string, Record<string, string>>} */
   const jerseyByTeam = new Map();
-  await Promise.all(teams.map(async (team) => {
-    const rosterSnap = await db().collection('rosters').doc(team.id).get();
-    const jerseys = rosterSnap.exists && rosterSnap.data().jerseys &&
-      typeof rosterSnap.data().jerseys === 'object' ?
-      rosterSnap.data().jerseys :
-      {};
-    /** @type {Record<string, string>} */
-    const map = {};
-    for (const [name, num] of Object.entries(jerseys)) {
-      if (typeof name === 'string' && name.trim() && num != null) {
-        map[name.trim()] = String(num);
+  const teamRefs = teams.map((team) => db().collection('rosters').doc(team.id));
+  const teamChunks = [];
+  for (let i = 0; i < teamRefs.length; i += 100) {
+    teamChunks.push(teamRefs.slice(i, i + 100));
+  }
+  await Promise.all(teamChunks.map(async (chunk) => {
+    const snaps = await db().getAll(...chunk);
+    for (const snap of snaps) {
+      const jerseys = snap.exists && snap.data().jerseys &&
+        typeof snap.data().jerseys === 'object' ?
+        snap.data().jerseys :
+        {};
+      /** @type {Record<string, string>} */
+      const map = {};
+      for (const [name, num] of Object.entries(jerseys)) {
+        if (typeof name === 'string' && name.trim() && num != null) {
+          map[name.trim()] = String(num);
+        }
       }
+      jerseyByTeam.set(snap.id, map);
     }
-    jerseyByTeam.set(team.id, map);
   }));
 
   /** @type {Array<Record<string, string>>} */
