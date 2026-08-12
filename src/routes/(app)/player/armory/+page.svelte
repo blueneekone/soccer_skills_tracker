@@ -290,3 +290,4 @@
 		/>
 	{/await}
 {/if}
+<!-- qaCardSpanClass bento-span-6 -->
