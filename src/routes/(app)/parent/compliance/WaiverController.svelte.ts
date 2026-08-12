@@ -15,7 +15,7 @@ export class WaiverController {
 
 	// audit trail details
 	signedAt = $state<string | null>(null);
-	encryptedPayload = $state<string | null>(null);
+	auditSignature = $state<string | null>(null);
 
 	constructor() {
 		this.hydrate();
@@ -51,15 +51,11 @@ export class WaiverController {
 		}
 	}
 
-	// Capture and encrypt the user's IP address, current timestamp, and email verification for the E-Sign Act audit trail.
-	encrypt(data: string, secretKey: string = 'esign-audit-secret'): string {
-		const b64 = btoa(encodeURIComponent(data));
-		let result = '';
-		for (let i = 0; i < b64.length; i++) {
-			const charCode = b64.charCodeAt(i) ^ secretKey.charCodeAt(i % secretKey.length);
-			result += String.fromCharCode(charCode);
-		}
-		return btoa(result);
+	async generateAuditSignature(data: string): Promise<string> {
+		const msgBuffer = new TextEncoder().encode(data);
+		const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+		const hashArray = Array.from(new Uint8Array(hashBuffer));
+		return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
 	}
 
 	async submitWaiver(email: string, ipAddress: string) {
@@ -86,7 +82,7 @@ export class WaiverController {
 				fan_os_opt_in: this.fanOsOptIn,
 				player_os_opt_in: this.playerOsOptIn
 			};
-			const encrypted = this.encrypt(JSON.stringify(payload));
+			const signature = await this.generateAuditSignature(JSON.stringify(payload));
 
 			await untrack(async () => {
 				const isE2E = typeof window !== 'undefined' &&
@@ -102,10 +98,9 @@ export class WaiverController {
 					const consentRef = doc(db, 'consents', `${email.toLowerCase()}_waiver`);
 					batch.set(consentRef, {
 						email: email.toLowerCase(),
-						ipAddress_encrypted: this.encrypt(ipAddress),
-						timestamp_encrypted: this.encrypt(timestamp),
-						email_encrypted: this.encrypt(email),
-						encryptedPayload: encrypted,
+						ipAddress: ipAddress,
+						timestamp: timestamp,
+						auditSignature: signature,
 						fan_os_opt_in: this.fanOsOptIn,
 						player_os_opt_in: this.playerOsOptIn,
 						consentType: 'sport_hazard_liability_and_media_release',
@@ -118,7 +113,7 @@ export class WaiverController {
 						fan_os_opt_in: this.fanOsOptIn,
 						player_os_opt_in: this.playerOsOptIn,
 						waiver_signed_at: timestamp,
-						waiver_encrypted_payload: encrypted
+						waiver_signature: signature
 					}, { merge: true });
 
 					await batch.commit();
@@ -126,7 +121,7 @@ export class WaiverController {
 			});
 
 			this.signedAt = timestamp;
-			this.encryptedPayload = encrypted;
+			this.auditSignature = signature;
 			this.success = true;
 		} catch (err: any) {
 			this.error = err?.message || 'Failed to submit waiver sign-off.';
