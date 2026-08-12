@@ -19,7 +19,7 @@
 			body: 'Gamified Skill Trees, XP progression, Vanguard Prism radars, and video trial uploads driving intrinsic motivation and unyielding athlete engagement.',
 			href: '/player',
 			hoverColor: '#14b8a6',
-			cols: 'md:tw-col-span-6',
+			cols: 'md:tw-col-span-4',
 			bento: 'player'
 		},
 		{
@@ -43,7 +43,7 @@
 			body: 'COPPA 2.0 WebAuthn biometric gating, SafeSport Shadow CC routing, and the Car Ride Home emotional safety protocol.',
 			href: '/parent',
 			hoverColor: '#14b8a6',
-			cols: 'md:tw-col-span-2',
+			cols: 'md:tw-col-span-4',
 			bento: 'parent'
 		}
 	];
