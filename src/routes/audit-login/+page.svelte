@@ -1,29 +1,18 @@
 <script lang="ts">
-  import { browser } from '$app/environment';
-  import { auth } from '$lib/firebase.js';
-  import { signInWithCustomToken } from 'firebase/auth';
-  import { onMount } from 'svelte';
-  
-  let errorMsg = $state('');
+	import { AuditLoginEngine } from './AuditLoginEngine.svelte';
+	import AuditLoginArena from './AuditLoginArena.svelte';
+	import AuditLoginHUD from './AuditLoginHUD.svelte';
 
-  onMount(async () => {
-    if (browser) {
-      try {
-        const urlParams = new URLSearchParams(window.location.search);
-        const token = urlParams.get('token');
-        if (token) {
-          await signInWithCustomToken(auth, token);
-          window.location.href = '/';
-        } else {
-          errorMsg = 'No token provided in URL';
-        }
-      } catch (err: any) {
-        errorMsg = err.message || String(err);
-      }
-    }
-  });
+	const engine = new AuditLoginEngine();
 </script>
-<h1>Audit Login in progress...</h1>
-{#if errorMsg}
-  <p style="color: red;">Error: {errorMsg}</p>
-{/if}
+
+<svelte:head>
+	<title>Audit Login | Nexus Command</title>
+</svelte:head>
+
+<div class="tw-min-h-screen tw-bg-[#020617] tw-text-[#fafafa] tw-p-8 tw-flex tw-flex-col tw-items-center tw-justify-center">
+	<div class="tw-w-full tw-max-w-md tw-bg-[#0f172a] tw-p-8 tw-rounded-xl tw-border tw-border-[#334155]">
+		<AuditLoginArena {engine} />
+		<AuditLoginHUD {engine} />
+	</div>
+</div>
