@@ -46,15 +46,32 @@ export const renderCalendar = (logs) => {
                 setText("dayModalDate", dStr);
                 const content = document.getElementById("dayModalContent");
                 if(content) {
-                    content.innerHTML = daily.map(l => {
+                    content.innerHTML = "";
+                    daily.forEach(l => {
                         const wName = l.name || l.drillSummary || l.drill || l.type || 'Workout';
                         const pName = l.player || l.playerName || 'Unknown Player';
                         const mins = l.minutes || l.time || 0;
-                        return `<div style="border-bottom:1px solid #eee; padding:10px 5px;">
-                            <b style="color:var(--aggie-blue);">${pName}</b><br>
-                            <span style="font-size:12px; color:#64748b;">${wName} (${mins}m)</span>
-                        </div>`;
-                    }).join("");
+
+                        const entryDiv = document.createElement("div");
+                        entryDiv.style.borderBottom = "1px solid #eee";
+                        entryDiv.style.padding = "10px 5px";
+
+                        const b = document.createElement("b");
+                        b.style.color = "var(--aggie-blue)";
+                        b.textContent = pName;
+
+                        const br = document.createElement("br");
+
+                        const span = document.createElement("span");
+                        span.style.fontSize = "12px";
+                        span.style.color = "#64748b";
+                        span.textContent = `${wName} (${mins}m)`;
+
+                        entryDiv.appendChild(b);
+                        entryDiv.appendChild(br);
+                        entryDiv.appendChild(span);
+                        content.appendChild(entryDiv);
+                    });
                 }
                 
                 const modal = document.getElementById("dayModal");
