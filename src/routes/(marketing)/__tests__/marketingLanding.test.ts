@@ -2,15 +2,13 @@ import { describe, it, expect } from 'vitest';
 import PageSource from '../+page.svelte?raw';
 
 describe('CDO Protocol: Marketing Landing Page Audit', () => {
-	it('MUST enforce the strict 12-column asymmetric Bento Grid (6/4/2)', () => {
-		// The `features` array should define the asymmetrical col-spans.
-		expect(PageSource).toContain("cols: 'md:tw-col-span-6'");
+	it('MUST enforce the strict 12-column symmetric Bento Grid (4/4/4)', () => {
+		// The `features` array should define the equal col-spans.
 		expect(PageSource).toContain("cols: 'md:tw-col-span-4'");
-		expect(PageSource).toContain("cols: 'md:tw-col-span-2'");
 		
-		// It should NOT contain three symmetrical 4-columns
+		// It should contain three symmetrical 4-columns
 		const count4Col = (PageSource.match(/md:tw-col-span-4/g) || []).length;
-		expect(count4Col).toBe(1);
+		expect(count4Col).toBe(3);
 	});
 
 	it('MUST absolutely eradicate unauthorized dark hex codes (#0B0F19, #1e293b)', () => {
