@@ -85,23 +85,18 @@ describe('Waiver Sign-off and Media Release Control', () => {
 		const consentsDocData = firstCall[1];
 		expect(consentsDocData.email).toBe(email);
 		expect(consentsDocData.consentType).toBe('sport_hazard_liability_and_media_release');
-		expect(consentsDocData.encryptedPayload).toBeDefined();
-
-		// Check encrypted data
-		const decryptedRaw = controller.decrypt(consentsDocData.encryptedPayload);
-		const decryptedJson = JSON.parse(decryptedRaw);
-		expect(decryptedJson.ipAddress).toBe(ipAddress);
-		expect(decryptedJson.email).toBe(email);
-		expect(decryptedJson.timestamp).toBeDefined();
-		expect(decryptedJson.fan_os_opt_in).toBe(true);
-		expect(decryptedJson.player_os_opt_in).toBe(true);
+		expect(consentsDocData.auditSignature).toBeDefined();
+		expect(consentsDocData.ipAddress).toBe(ipAddress);
+		expect(consentsDocData.timestamp).toBeDefined();
+		expect(consentsDocData.fan_os_opt_in).toBe(true);
+		expect(consentsDocData.player_os_opt_in).toBe(true);
 
 		// Profile doc assertion
 		const profileDocData = secondCall[1];
 		expect(profileDocData.fan_os_opt_in).toBe(true);
 		expect(profileDocData.player_os_opt_in).toBe(true);
 		expect(profileDocData.waiver_signed_at).toBeDefined();
-		expect(profileDocData.waiver_encrypted_payload).toBe(consentsDocData.encryptedPayload);
+		expect(profileDocData.waiver_signature).toBe(consentsDocData.auditSignature);
 	});
 
 	it('Asserts that opting out of the video release successfully sets the fan_os_opt_in and player_os_opt_in flags to false in their Firestore profile', async () => {
@@ -136,16 +131,3 @@ describe('Waiver Sign-off and Media Release Control', () => {
 		expect(consentDocData.player_os_opt_in).toBe(false);
 	});
 });
-
-// Add decrypt method helper to the test scope or controller
-// Since the controller doesn't strictly need decrypt at runtime (it's write-only secure compliance vault),
-// we can implement a decrypt helper here to inspect and verify the encrypted values in the test!
-WaiverController.prototype['decrypt'] = function (encrypted: string, secretKey: string = 'esign-audit-secret'): string {
-	const xorResult = atob(encrypted);
-	let b64 = '';
-	for (let i = 0; i < xorResult.length; i++) {
-		const charCode = xorResult.charCodeAt(i) ^ secretKey.charCodeAt(i % secretKey.length);
-		b64 += String.fromCharCode(charCode);
-	}
-	return decodeURIComponent(atob(b64));
-};

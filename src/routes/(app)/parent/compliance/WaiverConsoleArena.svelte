@@ -90,7 +90,7 @@
 					<p><strong>Signee Email:</strong> {emailInput}</p>
 					<p><strong>Signed At:</strong> {controller.signedAt}</p>
 					<p><strong>Audit Trail IP:</strong> {ipInput}</p>
-					<p class="tw-break-all"><strong>Audit Cipher Block:</strong> {controller.encryptedPayload}</p>
+					<p class="tw-break-all"><strong>Audit Signature:</strong> {controller.auditSignature}</p>
 				</div>
 			</div>
 		{:else}
