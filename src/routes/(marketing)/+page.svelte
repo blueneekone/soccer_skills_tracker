@@ -77,9 +77,8 @@
 				<div class="tw-h-px tw-w-12 tw-bg-[#14b8a6]"></div>
 			</div>
 
-			<!-- FIX #3: Sub-10 word brutalist headline -->
 			<h1 class="tw-text-4xl md:tw-text-5xl tw-font-bold tw-text-[#FAFAFA] tw-tracking-tight tw-leading-[1.05] tw-max-w-4xl" style="font-family: 'Geist Sans', sans-serif;">
-				Focus on development, not just management.
+				Develop athletes. Automate the rest.
 			</h1>
 
 			<p class="tw-text-[#D4D4D8] tw-text-lg tw-max-w-2xl tw-leading-relaxed" style="font-family: 'Switzer', sans-serif;">
