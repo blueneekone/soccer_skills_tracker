@@ -104,12 +104,14 @@ describe('BroadcastEngine', () => {
 describe('Epic 6: Live MVP Voting Batching and Minor Player PII Protection', () => {
 	let engine: BroadcastEngine;
 	let sessionCallback: any = null;
+	let campaignCallback: any = null;
 	let userCallbacks: Record<string, any> = {};
 
 	beforeEach(() => {
 		vi.useFakeTimers();
 		engine = new BroadcastEngine();
 		sessionCallback = null;
+		campaignCallback = null;
 		userCallbacks = {};
 
 		vi.mocked(isFirestoreReady).mockReturnValue(true);
@@ -123,6 +125,8 @@ describe('Epic 6: Live MVP Voting Batching and Minor Player PII Protection', () 
 			const path = ref?.path || '';
 			if (path.includes('broadcast_sessions/')) {
 				sessionCallback = cb;
+			} else if (path.includes('superdraw_campaigns') || path.includes('col/col')) {
+				campaignCallback = cb;
 			} else if (path.includes('users/')) {
 				const parts = path.split('/');
 				const uid = parts[parts.length - 1];
@@ -248,5 +252,62 @@ describe('Epic 6: Live MVP Voting Batching and Minor Player PII Protection', () 
 		expect(c3.isMinor).toBe(false);
 		expect(c3.name).toBe('John Doe');
 		expect(c3.stats.performanceTier).toBe('Silver');
+	});
+
+	it('should allow purchase of superdraw ticket before campaign endTime', async () => {
+		engine.connect('session_abc');
+
+		if (campaignCallback) {
+			campaignCallback({
+				empty: false,
+				docs: [{
+					data: () => ({
+						campaignId: 'session_abc',
+						endTime: new Date(Date.now() + 60000).toISOString(),
+						totalPool: 1000,
+						ticketPrice: 5
+					})
+				}]
+			});
+		}
+
+		const mockCommit = vi.fn().mockResolvedValue(undefined);
+		const mockSet = vi.fn();
+		vi.mocked(writeBatch).mockReturnValue({
+			set: mockSet,
+			commit: mockCommit
+		} as any);
+
+		const result = await engine.purchaseSuperdrawEntry(2);
+		expect(result).toBe(true);
+		expect(mockCommit).toHaveBeenCalled();
+	});
+
+	it('should block purchase of superdraw ticket after campaign endTime', async () => {
+		engine.connect('session_abc');
+
+		if (campaignCallback) {
+			campaignCallback({
+				empty: false,
+				docs: [{
+					data: () => ({
+						campaignId: 'session_abc',
+						endTime: new Date(Date.now() - 60000).toISOString(),
+						totalPool: 1000,
+						ticketPrice: 5
+					})
+				}]
+			});
+		}
+
+		const mockCommit = vi.fn().mockResolvedValue(undefined);
+		vi.mocked(writeBatch).mockReturnValue({
+			set: vi.fn(),
+			commit: mockCommit
+		} as any);
+
+		const result = await engine.purchaseSuperdrawEntry(2);
+		expect(result).toBe(false);
+		expect(mockCommit).not.toHaveBeenCalled();
 	});
 });

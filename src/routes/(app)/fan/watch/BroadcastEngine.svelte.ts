@@ -26,7 +26,7 @@ export class BroadcastEngine {
 	// Protect minor player PII. When rendering candidates, map and display only pseudonymized metrics or vetted player-card profiles
 	candidates = $derived(
 		(this.#sessionDoc?.mvpVoting?.candidates ?? []).map((cand) => {
-			const id = typeof cand === 'string' ? cand : cand.id;
+			const id = typeof cand === 'string' ? cand : (cand as any).id;
 			const profile = this.#candidateProfiles[id] || (typeof cand === 'object' ? cand : null);
 
 			if (profile) {
@@ -114,7 +114,7 @@ export class BroadcastEngine {
 		this.sessionId = sessionId;
 		if (!isFirestoreReady()) return;
 		const db = getActiveDb();
-		if (!db) return;
+		if (!db || !authStore.isAuthenticated) return;
 
 		this.#unsubs.push(
 			onSnapshot(doc(db, 'broadcast_sessions', sessionId), (snap) => {
@@ -127,6 +127,7 @@ export class BroadcastEngine {
 				}
 			})
 		);
+		if (!db || !authStore.isAuthenticated) return;
 		this.#unsubs.push(
 			onSnapshot(query(collection(db, 'superdraw_campaigns'), where('campaignId', '==', sessionId), limit(1)), (snap) => {
 				if (!snap.empty) {
@@ -141,7 +142,7 @@ export class BroadcastEngine {
 	_syncCandidateProfiles(candidateIds: string[]) {
 		if (!isFirestoreReady()) return;
 		const db = getActiveDb();
-		if (!db) return;
+		if (!db || !authStore.isAuthenticated) return;
 
 		// Clean up subscriptions for candidates no longer active
 		Object.keys(this.#candidateUnsubs).forEach((uid) => {
@@ -155,6 +156,7 @@ export class BroadcastEngine {
 		candidateIds.forEach((uid) => {
 			if (!this.#candidateUnsubs[uid]) {
 				const userRef = doc(db, 'users', uid);
+				if (!db || !authStore.isAuthenticated) return;
 				this.#candidateUnsubs[uid] = onSnapshot(userRef, (snap) => {
 					if (snap.exists()) {
 						untrack(() => {
@@ -236,6 +238,13 @@ export class BroadcastEngine {
 
 	async purchaseSuperdrawEntry(quantity: number) {
 		if (!isFirestoreReady() || !authStore.user?.uid) return false;
+		if (this.#campaignDoc?.endTime) {
+			const endTime = new Date(this.#campaignDoc.endTime).getTime();
+			if (Date.now() >= endTime) {
+				console.warn('Superdraw Campaign has ended.');
+				return false;
+			}
+		}
 		const db = getActiveDb();
 		if (!db) return false;
 		const batch = writeBatch(db);
