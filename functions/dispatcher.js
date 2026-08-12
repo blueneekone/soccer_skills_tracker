@@ -160,6 +160,176 @@ async function sendVanguardPush(userEmail, payload, category) {
 	return {sent: response.successCount, failed: response.failureCount, skipped: false};
 }
 
+
+/**
+ * Batches push notifications for multiple users efficiently.
+ * Resolves UID chunks, fetches tokens, and uses sendEachForMulticast in chunks.
+ *
+ * @param {Array<{id: string, data: Function}>} userDocs - Firestore document snapshots or mock docs
+ * @param {{ title: string, body: string, link?: string, imageUrl?: string, data?: Record<string,string> }} payload
+ * @param {string} category - preference key
+ * @returns {Promise<{ sent: number, failed: number, skipped: number }>}
+ */
+async function sendVanguardPushBatched(userDocs, payload, category) {
+	let totalSent = 0;
+	let totalFailed = 0;
+	let totalSkipped = 0;
+
+	// 1. Filter eligible emails based on preference without redundant DB fetch
+	const eligibleEmails = [];
+	for (const doc of userDocs) {
+		const userData = doc.data();
+		const role = userData.role ?? 'player';
+		const prefs = userData.preferences ?? {};
+
+		const isEnabled = prefs.hasOwnProperty(category)
+			? prefs[category]
+			: getDefaultPreference(role, category);
+
+		if (!isEnabled) {
+			totalSkipped++;
+		} else {
+			eligibleEmails.push(doc.id); // lower-cased email
+		}
+	}
+
+	if (eligibleEmails.length === 0) {
+		return { sent: 0, failed: 0, skipped: totalSkipped };
+	}
+
+	// 2. Resolve UIDs via Admin Auth in batches (max 100 identifiers per call)
+	const uids = [];
+	for (let i = 0; i < eligibleEmails.length; i += 100) {
+		const chunk = eligibleEmails.slice(i, i + 100);
+		const identifiers = chunk.map(email => ({ email }));
+		try {
+			const authResult = await admin.auth().getUsers(identifiers);
+			uids.push(...authResult.users.map(u => u.uid));
+			// Emails that failed lookup are naturally skipped
+			totalSkipped += (chunk.length - authResult.users.length);
+		} catch (e) {
+			logger.warn('[dispatcher] batch auth lookup failed', { error: e.message });
+			totalFailed += chunk.length;
+		}
+	}
+
+	if (uids.length === 0) {
+		return { sent: totalSent, failed: totalFailed, skipped: totalSkipped };
+	}
+
+	// 3. Fetch device tokens concurrently
+	const uidToTokens = new Map();
+	const tokensSnapshots = await Promise.all(
+		uids.map(uid => db.doc(`device_tokens/${uid}`).get().catch(() => null))
+	);
+
+	const allTokens = [];
+	const tokenToUid = new Map();
+
+	tokensSnapshots.forEach((snap, idx) => {
+		if (snap && snap.exists) {
+			const data = snap.data();
+			if (Array.isArray(data.tokens)) {
+				const validTokens = data.tokens.filter(Boolean);
+				if (validTokens.length > 0) {
+					uidToTokens.set(uids[idx], validTokens);
+					validTokens.forEach(t => {
+						allTokens.push(t);
+						tokenToUid.set(t, uids[idx]);
+					});
+				} else {
+					totalSkipped++; // No valid tokens for this user
+				}
+			} else {
+				totalSkipped++;
+			}
+		} else {
+			totalSkipped++;
+		}
+	});
+
+	if (allTokens.length === 0) {
+		return { sent: totalSent, failed: totalFailed, skipped: totalSkipped };
+	}
+
+	const messageTemplate = {
+		notification: {title: payload.title, body: payload.body},
+		data: {
+			...payload.data,
+			category,
+			link: payload.link ?? '/',
+		},
+		webpush: {
+			notification: {
+				icon: APP_ICON,
+				badge: APP_ICON,
+				...(payload.imageUrl && {image: payload.imageUrl}),
+				tag: category,
+				renotify: true,
+			},
+			fcmOptions: {link: payload.link ?? '/'},
+		},
+	};
+
+	// 4. Batch send in chunks of 500 (Firebase Admin SDK limit)
+	const staleTokensByUid = new Map();
+
+	for (let i = 0; i < allTokens.length; i += 500) {
+		const chunkTokens = allTokens.slice(i, i + 500);
+		const message = {
+			...messageTemplate,
+			tokens: chunkTokens
+		};
+
+		try {
+			const response = await admin.messaging().sendEachForMulticast(message);
+			totalSent += response.successCount;
+			totalFailed += response.failureCount;
+
+			// Handle stale token pruning
+			response.responses.forEach((resp, idx) => {
+				if (!resp.success) {
+					const code = resp.error?.code ?? '';
+					if (
+						code === 'messaging/registration-token-not-registered' ||
+						code === 'messaging/invalid-registration-token' ||
+						code === 'messaging/invalid-argument'
+					) {
+						const badToken = chunkTokens[idx];
+						const uid = tokenToUid.get(badToken);
+						if (uid) {
+							if (!staleTokensByUid.has(uid)) {
+								staleTokensByUid.set(uid, []);
+							}
+							staleTokensByUid.get(uid).push(badToken);
+						}
+					}
+				}
+			});
+		} catch (e) {
+			logger.warn('[dispatcher] multicast send failed', { error: e.message });
+			totalFailed += chunkTokens.length;
+		}
+	}
+
+	// 5. Prune stale tokens in the background
+	if (staleTokensByUid.size > 0) {
+		const prunePromises = [];
+		for (const [uid, staleTokens] of staleTokensByUid.entries()) {
+			prunePromises.push(
+				db.doc(`device_tokens/${uid}`).update({
+					tokens: admin.firestore.FieldValue.arrayRemove(...staleTokens),
+				}).catch(e => logger.warn('[dispatcher] prune token failed', { uid, error: e.message }))
+			);
+		}
+		// Awaiting to be safe and avoid dangling promises in Cloud Functions.
+		await Promise.all(prunePromises);
+		logger.info('[dispatcher] pruned stale tokens for multiple users', { prunedUsersCount: staleTokensByUid.size });
+	}
+
+	return { sent: totalSent, failed: totalFailed, skipped: totalSkipped };
+}
+
 // â”€â”€ sendWeatherAlertToTenant â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 /**
@@ -197,22 +367,15 @@ exports.sendWeatherAlertToTenant = onCall({region: REGION}, async (request) => {
 		.where('clubId', '==', tenantId)
 		.get();
 
-	let totalSent = 0;
-	let totalFailed = 0;
-	let totalSkipped = 0;
-
-	await Promise.all(
-		usersSnap.docs.map(async (doc) => {
-			const result = await sendVanguardPush(
-				doc.id, // email key
-				{title, body, link, data: {alertLevel, tenantId}},
-				'push_weatherAlerts',
-			);
-			totalSent    += result.sent;
-			totalFailed  += result.failed;
-			totalSkipped += result.skipped ? 1 : 0;
-		}),
+	const batchResult = await sendVanguardPushBatched(
+		usersSnap.docs,
+		{title, body, link, data: {alertLevel, tenantId}},
+		'push_weatherAlerts'
 	);
+
+	let totalSent = batchResult.sent;
+	let totalFailed = batchResult.failed;
+	let totalSkipped = batchResult.skipped;
 
 	// Audit log
 	await db.collection('audit_logs').add({
@@ -271,21 +434,17 @@ exports.sendGameRemindersToday = onSchedule(
 					.where('teamId', '==', teamId)
 					.get();
 
-				await Promise.all(
-					usersSnap.docs.map(async (userDoc) => {
-						const result = await sendVanguardPush(
-							userDoc.id,
-							{
-								title: `MATCH DAY â€” ${opponent?.name ?? 'Fixture'}`,
-								body: `Kickoff ${kickoff}. Check the War Room for tactical briefing.`,
-								link: '/coach/match-day',
-								data: {fixtureId: fixtureDoc.id, tenantId},
-							},
-							'push_gameReminders',
-						);
-						totalSent += result.sent;
-					}),
+				const result = await sendVanguardPushBatched(
+					usersSnap.docs,
+					{
+						title: `MATCH DAY — ${opponent?.name ?? 'Fixture'}`,
+						body: `Kickoff ${kickoff}. Check the War Room for tactical briefing.`,
+						link: '/coach/match-day',
+						data: {fixtureId: fixtureDoc.id, tenantId},
+					},
+					'push_gameReminders'
 				);
+				totalSent += result.sent;
 			}),
 		);
 
@@ -397,21 +556,17 @@ exports.sendScheduledEventReminders = onSchedule(
 				const usersSnap = await db.collection('users').where('teamId', '==', teamId).get();
 				let sentForOffset = 0;
 
-				await Promise.all(
-					usersSnap.docs.map(async (userDoc) => {
-						const result = await sendVanguardPush(
-							userDoc.id,
-							{
-								title: `${kind} in ${reminderOffsetLabel(offset)} — ${name}`,
-								body: `Starts at ${kickoff}. Check your schedule.`,
-								link: '/player/dashboard',
-								data: {eventId: eventDoc.id, teamId, offset: key},
-							},
-							'push_gameReminders',
-						);
-						sentForOffset += result.sent;
-					}),
+				const result = await sendVanguardPushBatched(
+					usersSnap.docs,
+					{
+						title: `${kind} in ${reminderOffsetLabel(offset)} — ${name}`,
+						body: `Starts at ${kickoff}. Check your schedule.`,
+						link: '/player/dashboard',
+						data: {eventId: eventDoc.id, teamId, offset: key},
+					},
+					'push_gameReminders'
 				);
+				sentForOffset += result.sent;
 
 				await eventDoc.ref.update({
 					[`remindersSent.${key}`]: admin.firestore.FieldValue.serverTimestamp(),
