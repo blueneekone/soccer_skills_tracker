@@ -48,7 +48,8 @@ describe('Commissioner OS Master Dashboard', () => {
 	describe('CommissionerDashboardEngine', () => {
 		it('should gate access if the custom JWT role claim is not commissioner', async () => {
 			mockRole = 'coach'; // Override for test
-			vi.mocked(firestoreGuard.isFirestoreReady).mockReturnValue(true);
+			const mockDb = {};
+			vi.mocked(firebase.getActiveDb as any).mockReturnValue(mockDb as any);
 
 			const engine = new CommissionerDashboardEngine();
 			expect(engine.isAuthorized).toBe(false);
@@ -58,18 +59,16 @@ describe('Commissioner OS Master Dashboard', () => {
 		});
 
 		it('should return early if B815 defensive hydration guard fails', async () => {
-			vi.mocked(firestoreGuard.isFirestoreReady).mockReturnValue(false);
+			mockRole = 'commissioner'; vi.mocked(firebase.getActiveDb).mockReturnValue(null as any);
 
 			const engine = new CommissionerDashboardEngine();
 			await engine.fetchFederationData();
 
-			expect(firebase.getActiveDb).not.toHaveBeenCalled();
+			expect(firebase.getActiveDb).toHaveBeenCalled();
 			expect(engine.isLoading).toBe(false);
 		});
 
 		it('should resolve telemetry across multi-tenant child club databases', async () => {
-			vi.mocked(firestoreGuard.isFirestoreReady).mockReturnValue(true);
-
 			const mockDb = {};
 			vi.mocked(firebase.getActiveDb).mockReturnValue(mockDb as any);
 
