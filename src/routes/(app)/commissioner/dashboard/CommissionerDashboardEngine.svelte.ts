@@ -65,7 +65,8 @@ export class CommissionerDashboardEngine {
 			];
 		}
 
-		if (!isFirestoreReady()) {
+		const db = getActiveDb();
+		if (!db || !authStore.isAuthenticated) {
 			this.isLoading = false;
 			return [];
 		}
@@ -153,7 +154,8 @@ export class CommissionerDashboardEngine {
 		}
 
 		// B815 Defensive Hydration Guard
-		if (!isFirestoreReady()) {
+		const db = getActiveDb();
+		if (!db || !authStore.isAuthenticated) {
 			this.isLoading = false;
 			return;
 		}

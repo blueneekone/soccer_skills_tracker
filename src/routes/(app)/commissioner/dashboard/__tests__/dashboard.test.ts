@@ -1,3 +1,4 @@
+import * as firebase from '$lib/firebase.js';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 /**
@@ -29,6 +30,10 @@ vi.mock('$lib/utils/firestoreGuard', () => ({
 	isFirestoreReady: vi.fn()
 }));
 
+vi.mock('$lib/firebase.js', () => ({
+	getActiveDb: vi.fn()
+}));
+
 vi.mock('$lib/firebase/config', () => ({
 	db: {}
 }));
@@ -52,7 +57,7 @@ describe('Commissioner OS - Dashboard Integration Tests', () => {
 		authStore.role = 'commissioner';
 		authStore.tenantId = 'master-tenant';
 		// Simulating firestore NOT ready
-		vi.mocked(firestoreGuard.isFirestoreReady).mockReturnValue(false);
+		vi.mocked(firebase.getActiveDb as any).mockReturnValue(null as any);
 
 		const engine = new CommissionerDashboardEngine();
 		const result = await engine.loadFederationCompliance();
@@ -65,7 +70,8 @@ describe('Commissioner OS - Dashboard Integration Tests', () => {
 		authStore.isAuthenticated = true;
 		authStore.role = 'commissioner';
 		authStore.tenantId = 'master-tenant-123';
-		vi.mocked(firestoreGuard.isFirestoreReady).mockReturnValue(true);
+		const mockDb = {};
+		vi.mocked(firebase.getActiveDb as any).mockReturnValue(mockDb as any);
 
 		const mockPipeline = [
 			{ id: 'u1', clubId: 'club-a', name: 'Alpha Player', sixAxis: [50, 50, 50, 50, 50, 50] },
