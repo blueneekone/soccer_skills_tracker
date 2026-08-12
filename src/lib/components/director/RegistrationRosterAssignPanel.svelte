@@ -7,6 +7,7 @@
 		getDocs,
 		query,
 		where,
+		documentId,
 	} from 'firebase/firestore';
 	import { httpsCallable } from 'firebase/functions';
 	import { teamsStore } from '$lib/stores/teams.svelte.js';
@@ -90,28 +91,54 @@
 				const snap = await getDocs(rq);
 				if (cancelled) return;
 
-				const rows: RegRow[] = await Promise.all(
-					snap.docs.map(async (d) => {
-						const data = d.data();
-						const playerEmail =
-							typeof data.playerEmail === 'string' ? data.playerEmail.trim() : '';
-						const userSnap = playerEmail
-							? await getDoc(doc(db, 'users', playerEmail))
-							: null;
-						const playerName =
-							userSnap?.exists() && typeof userSnap.data()?.playerName === 'string'
-								? (userSnap.data()!.playerName as string)
-								: playerEmail.split('@')[0] || 'Athlete';
-						return {
-							id: d.id,
-							playerEmail,
-							playerName,
-							paidAtMs: data.paidAt?.toMillis?.() ?? null,
-							assignedTeamId:
-								typeof data.assignedTeamId === 'string' ? data.assignedTeamId : null,
-						};
+				const emails = Array.from(
+					new Set(
+						snap.docs
+							.map((d) => {
+								const data = d.data();
+								return typeof data.playerEmail === 'string' ? data.playerEmail.trim() : '';
+							})
+							.filter(Boolean),
+					),
+				);
+
+				const userMap = new Map();
+				const chunks = [];
+				for (let i = 0; i < emails.length; i += 30) {
+					chunks.push(emails.slice(i, i + 30));
+				}
+
+				await Promise.all(
+					chunks.map(async (chunk) => {
+						const q = query(
+							collection(db, 'users'),
+							where(documentId(), 'in', chunk),
+						);
+						const qs = await getDocs(q);
+						qs.forEach((d) => {
+							userMap.set(d.id, d.data());
+						});
 					}),
 				);
+
+				const rows: RegRow[] = snap.docs.map((d) => {
+					const data = d.data();
+					const playerEmail =
+						typeof data.playerEmail === 'string' ? data.playerEmail.trim() : '';
+					const userData = playerEmail ? userMap.get(playerEmail) : null;
+					const playerName =
+						userData && typeof userData.playerName === 'string'
+							? (userData.playerName as string)
+							: playerEmail.split('@')[0] || 'Athlete';
+					return {
+						id: d.id,
+						playerEmail,
+						playerName,
+						paidAtMs: data.paidAt?.toMillis?.() ?? null,
+						assignedTeamId:
+							typeof data.assignedTeamId === 'string' ? data.assignedTeamId : null,
+					};
+				});
 
 				rows.sort((a, b) => {
 					if (!a.assignedTeamId && b.assignedTeamId) return -1;
