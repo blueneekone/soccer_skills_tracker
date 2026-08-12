@@ -10,6 +10,7 @@
 		getDocs,
 		doc,
 		getDoc,
+		documentId,
 	} from 'firebase/firestore';
 	import { db } from '$lib/firebase.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
@@ -198,24 +199,37 @@
 			const rosterSnap = await getDocs(
 				query(collection(db, 'player_lookup'), where('teamId', '==', tId)),
 			);
+
+			const playerEmails = rosterSnap.docs.map(row => row.id.toLowerCase());
+			if (playerEmails.length === 0) {
+				parentOptions = [];
+				return;
+			}
+
 			const seen: Record<string, true> = {};
 			const options: Array<{ email: string; label: string }> = [];
 
-			for (const row of rosterSnap.docs) {
-				const playerEmail = row.id.toLowerCase();
-				const profSnap = await getDoc(doc(db, 'users', playerEmail));
-				if (!profSnap.exists()) continue;
-				const prof = profSnap.data() as Record<string, unknown>;
-				const direct = String(prof.parentEmail ?? '').trim().toLowerCase();
-				const playerName =
-					typeof prof.playerName === 'string' && prof.playerName.trim()
-						? prof.playerName.trim()
-						: playerEmail;
-				if (direct && !seen[direct]) {
-					seen[direct] = true;
-					options.push({ email: direct, label: `${direct} (${playerName})` });
+			for (let i = 0; i < playerEmails.length; i += 30) {
+				const chunk = playerEmails.slice(i, i + 30);
+				const usersSnap = await getDocs(
+					query(collection(db, 'users'), where(documentId(), 'in', chunk)),
+				);
+
+				for (const profSnap of usersSnap.docs) {
+					const playerEmail = profSnap.id.toLowerCase();
+					const prof = profSnap.data() as Record<string, unknown>;
+					const direct = String(prof.parentEmail ?? '').trim().toLowerCase();
+					const playerName =
+						typeof prof.playerName === 'string' && prof.playerName.trim()
+							? prof.playerName.trim()
+							: playerEmail;
+					if (direct && !seen[direct]) {
+						seen[direct] = true;
+						options.push({ email: direct, label: `${direct} (${playerName})` });
+					}
 				}
 			}
+
 			parentOptions = options.sort((a, b) => a.label.localeCompare(b.label));
 			if (!selectedParentEmail && options.length === 1) {
 				selectedParentEmail = options[0].email;
