@@ -57,6 +57,17 @@ export const loadSecurityLogs = async () => {
 // ==========================================
 // 2. CORE ADMIN FUNCTIONS
 // ==========================================
+
+const escapeHTML = (str) => {
+    if (!str) return "";
+    return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+};
+
 export const renderAdminTables = (globalClubs, globalTeams, globalAdmins, userEmail, userRole) => {
     const isSuper = userRole === 'super_admin';
     const clubsCard = document.getElementById("adminClubsCard");
@@ -65,13 +76,13 @@ export const renderAdminTables = (globalClubs, globalTeams, globalAdmins, userEm
     // Build Clubs Table WITH DELETE BUTTON
     const c = document.getElementById("clubTable");
     if (c) {
-        c.querySelector("tbody").innerHTML = (globalClubs || []).map(cl => `<tr><td>${cl.id}</td><td>${cl.name}</td><td><div style="display:flex; gap:4px;"><input type="email" id="clubDirInp_${cl.id}" value="${cl.directorEmail || ''}" style="margin:0; padding:4px; flex:1;"><button class="action-btn text-blue action-edit-club-dir" data-id="${cl.id}" title="Save Director" style="padding:4px 8px; border-radius:4px;">💾</button><button class="delete-btn action-delete-club" data-id="${cl.id}" title="Delete Club" style="padding:4px 8px; border-radius:4px; margin:0;">🗑️</button></div></td></tr>`).join("");
+        c.querySelector("tbody").innerHTML = (globalClubs || []).map(cl => `<tr><td>${escapeHTML(cl.id)}</td><td>${escapeHTML(cl.name)}</td><td><div style="display:flex; gap:4px;"><input type="email" id="clubDirInp_${escapeHTML(cl.id)}" value="${escapeHTML(cl.directorEmail || '')}" style="margin:0; padding:4px; flex:1;"><button class="action-btn text-blue action-edit-club-dir" data-id="${escapeHTML(cl.id)}" title="Save Director" style="padding:4px 8px; border-radius:4px;">💾</button><button class="delete-btn action-delete-club" data-id="${escapeHTML(cl.id)}" title="Delete Club" style="padding:4px 8px; border-radius:4px; margin:0;">🗑️</button></div></td></tr>`).join("");
     }
 
     const tc = document.getElementById("adminTeamClubSelect");
     if (tc) {
         const cList = isSuper ? (globalClubs || []) : (globalClubs || []).filter(cl => cl.directorEmail && cl.directorEmail.toLowerCase() === (userEmail || "").toLowerCase());
-        tc.innerHTML = `<option value="">-- Select Parent Club --</option>` + cList.map(cl => `<option value="${cl.id}">${cl.name}</option>`).join("");
+        tc.innerHTML = `<option value="">-- Select Parent Club --</option>` + cList.map(cl => `<option value="${escapeHTML(cl.id)}">${escapeHTML(cl.name)}</option>`).join("");
     }
 
     // Build Teams Table WITH DELETE BUTTON
@@ -82,22 +93,22 @@ export const renderAdminTables = (globalClubs, globalTeams, globalAdmins, userEm
             return club && club.directorEmail && club.directorEmail.toLowerCase() === (userEmail || "").toLowerCase();
         });
 
-        const clubOptionsHtml = isSuper ? (globalClubs || []).map(cl => `<option value="${cl.id}">${cl.name}</option>`).join("") : "";
+        const clubOptionsHtml = isSuper ? (globalClubs || []).map(cl => `<option value="${escapeHTML(cl.id)}">${escapeHTML(cl.name)}</option>`).join("") : "";
 
         t.querySelector("tbody").innerHTML = tList.map(tm => {
-            let clubSelectHtml = tm.clubId || 'N/A';
+            let clubSelectHtml = escapeHTML(tm.clubId || 'N/A');
             if (isSuper) {
-                clubSelectHtml = `<select id="teamClubSel_${tm.id}" style="margin:0; padding:4px; max-width:80px;"><option value="${tm.clubId}">${tm.clubId || 'UNASSIGNED'}</option><option disabled>---</option>${clubOptionsHtml}</select>`;
+                clubSelectHtml = `<select id="teamClubSel_${escapeHTML(tm.id)}" style="margin:0; padding:4px; max-width:80px;"><option value="${escapeHTML(tm.clubId)}">${escapeHTML(tm.clubId || 'UNASSIGNED')}</option><option disabled>---</option>${clubOptionsHtml}</select>`;
             }
-            return `<tr><td>${tm.name} <span class="text-sm-sub">(${tm.id})</span></td><td>${clubSelectHtml}</td><td><div style="display:flex; gap:4px;"><input type="email" id="teamCoachInp_${tm.id}" value="${tm.coachEmail || ''}" style="margin:0; padding:4px; flex:1;"><button class="action-btn text-blue action-edit-team-coach" data-id="${tm.id}" title="Save Coach" style="padding:4px 8px; border-radius:4px;">💾</button><button class="delete-btn action-delete-team" data-id="${tm.id}" title="Delete Team" style="padding:4px 8px; border-radius:4px; margin:0;">🗑️</button></div></td></tr>`;
+            return `<tr><td>${escapeHTML(tm.name)} <span class="text-sm-sub">(${escapeHTML(tm.id)})</span></td><td>${clubSelectHtml}</td><td><div style="display:flex; gap:4px;"><input type="email" id="teamCoachInp_${escapeHTML(tm.id)}" value="${escapeHTML(tm.coachEmail || '')}" style="margin:0; padding:4px; flex:1;"><button class="action-btn text-blue action-edit-team-coach" data-id="${escapeHTML(tm.id)}" title="Save Coach" style="padding:4px 8px; border-radius:4px;">💾</button><button class="delete-btn action-delete-team" data-id="${escapeHTML(tm.id)}" title="Delete Team" style="padding:4px 8px; border-radius:4px; margin:0;">🗑️</button></div></td></tr>`;
         }).join("");
     }
 
     const a = document.getElementById("adminTable");
-    if (a) a.querySelector("tbody").innerHTML = (globalAdmins || []).map(e => `<tr><td>${e}</td><td><button class="delete-btn action-remove-admin" data-email="${e}" style="float:right;">X</button></td></tr>`).join("");
+    if (a) a.querySelector("tbody").innerHTML = (globalAdmins || []).map(e => `<tr><td>${escapeHTML(e)}</td><td><button class="delete-btn action-remove-admin" data-email="${escapeHTML(e)}" style="float:right;">X</button></td></tr>`).join("");
 
     const assignClubSel = document.getElementById("assignDirClubId");
-    if (assignClubSel) assignClubSel.innerHTML = "<option value=''>Select Club...</option>" + (globalClubs || []).map(c => `<option value="${c.id}">${c.name}</option>`).join("");
+    if (assignClubSel) assignClubSel.innerHTML = "<option value=''>Select Club...</option>" + (globalClubs || []).map(c => `<option value="${escapeHTML(c.id)}">${escapeHTML(c.name)}</option>`).join("");
 
     const adminView = document.getElementById("viewAdmin");
     if (adminView && adminView.dataset.tablesBound !== "true") {
