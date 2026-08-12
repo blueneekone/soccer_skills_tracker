@@ -59,7 +59,7 @@
 	<meta property="og:type" content="website" />
 </svelte:head>
 
-<div class="tw-flex tw-w-full tw-min-h-dvh tw-flex-col tw-text-[#f8fafc] tw-font-sans tw-relative tw-overflow-hidden" style="background-color: #020617;">
+<div class="tw-flex tw-w-full tw-min-h-dvh tw-flex-col tw-text-[#FAFAFA] tw-relative tw-overflow-hidden" style="background-color: #000000; font-family: 'Switzer', sans-serif;">
 	<!-- Volumetric Background Mesh & Lighting -->
 	<div class="tw-absolute tw-inset-0 tw-z-0 tw-pointer-events-none" style="background: radial-gradient(circle at 50% 0%, #14b8a615 0%, transparent 50%), radial-gradient(circle at 100% 50%, #f59e0b08 0%, transparent 40%);"></div>
 	<div class="tw-absolute tw-inset-0 tw-z-0 tw-pointer-events-none tw-opacity-5" style="background-image: linear-gradient(#14b8a6 1px, transparent 1px), linear-gradient(90deg, #14b8a6 1px, transparent 1px); background-size: 40px 40px; mask-image: linear-gradient(to bottom, black 20%, transparent 80%); -webkit-mask-image: linear-gradient(to bottom, black 20%, transparent 80%);"></div>
@@ -73,16 +73,16 @@
 		<div class="tw-flex tw-flex-col tw-items-center tw-gap-6">
 			<div class="tw-flex tw-items-center tw-gap-3">
 				<div class="tw-h-px tw-w-12 tw-bg-[#14b8a6]"></div>
-				<span class="tw-font-mono tw-text-xs tw-text-[#14b8a6] tw-tracking-widest">SSTRACKER · ENTERPRISE</span>
+				<span class="tw-font-mono tw-text-xs tw-text-[#14b8a6] tw-tracking-widest" style="font-family: 'Geist Mono', monospace;">SSTRACKER · ENTERPRISE</span>
 				<div class="tw-h-px tw-w-12 tw-bg-[#14b8a6]"></div>
 			</div>
 
 			<!-- FIX #3: Sub-10 word brutalist headline -->
-			<h1 class="tw-text-4xl md:tw-text-5xl tw-font-bold tw-text-[#f8fafc] tw-tracking-tight tw-leading-[1.05] tw-max-w-4xl">
+			<h1 class="tw-text-4xl md:tw-text-5xl tw-font-bold tw-text-[#FAFAFA] tw-tracking-tight tw-leading-[1.05] tw-max-w-4xl" style="font-family: 'Geist Sans', sans-serif;">
 				Focus on development, not just management.
 			</h1>
 
-			<p class="tw-text-[#94a3b8] tw-text-lg tw-max-w-2xl tw-leading-relaxed">
+			<p class="tw-text-[#D4D4D8] tw-text-lg tw-max-w-2xl tw-leading-relaxed" style="font-family: 'Switzer', sans-serif;">
 				Train smarter. Prove everything. Dominate your development — from the sideline SIEM to the dopamine-engineered player HUD.
 			</p>
 
@@ -90,6 +90,7 @@
 				href="/login"
 				data-primary-cta="true"
 				class="vanguard-btn-amber tw-w-fit tw-flex tw-items-center tw-gap-3 tw-px-8 tw-py-4 tw-font-mono tw-font-bold tw-text-sm tw-uppercase tw-tracking-wider tw-transition-all tw-duration-150 active:tw-scale-[0.98]"
+				style="font-family: 'Geist Mono', monospace;"
 			>
 				Deploy Your Club
 				<Icon name={"nav.chevron-right" as IconName} strokeWidth={2.5} size={18} />
@@ -106,7 +107,7 @@
 			<div class="tw-absolute tw-top-0 tw-left-0 tw-w-8 tw-h-8 tw-border-t-2 tw-border-l-2 tw-border-[#14b8a6] tw-z-20"></div>
 			<div class="tw-absolute tw-bottom-0 tw-right-0 tw-w-8 tw-h-8 tw-border-b-2 tw-border-r-2 tw-border-[#14b8a6] tw-z-20"></div>
 			<!-- Overlay gradient -->
-			<div class="tw-absolute tw-inset-0 tw-bg-gradient-to-tr tw-from-[#02061799] tw-to-transparent tw-z-10 tw-pointer-events-none tw-transition-opacity tw-duration-700 group-hover:tw-opacity-30"></div>
+			<div class="tw-absolute tw-inset-0 tw-bg-gradient-to-tr tw-from-[#000000] tw-to-transparent tw-z-10 tw-pointer-events-none tw-transition-opacity tw-duration-700 group-hover:tw-opacity-30"></div>
 			<!-- Generated product preview -->
 			<div class="tw-w-full tw-h-full tw-flex tw-items-center tw-justify-center tw-bg-[#000000] tw-transition-transform tw-duration-700 group-hover:tw-scale-[1.02]">
 				<img src="https://images.unsplash.com/photo-1518605368461-1e1e38ce81b5?ixlib=rb-4.0.3&auto=format&fit=crop&w=1280&q=80" alt="Product Preview" class="tw-w-full tw-h-full tw-object-cover tw-opacity-80" />
@@ -117,15 +118,15 @@
 		</div>
 
 		<!-- Trust Bar -->
-		<div class="tw-flex tw-flex-wrap tw-items-center tw-justify-center tw-gap-x-6 tw-gap-y-2 tw-font-mono tw-text-xs tw-text-[#475569] tw-uppercase tw-tracking-widest">
+		<div class="tw-flex tw-flex-wrap tw-items-center tw-justify-center tw-gap-x-6 tw-gap-y-2 tw-font-mono tw-text-xs tw-text-[#A1A1AA] tw-uppercase tw-tracking-widest" style="font-family: 'Geist Mono', monospace;">
 			<span>Powered by:</span>
-			<span class="tw-text-[#64748b]">Stripe</span>
+			<span class="tw-text-[#A1A1AA]">Stripe</span>
 			<span>·</span>
-			<span class="tw-text-[#64748b]">Checkr</span>
+			<span class="tw-text-[#A1A1AA]">Checkr</span>
 			<span>·</span>
-			<span class="tw-text-[#64748b]">Firebase</span>
+			<span class="tw-text-[#A1A1AA]">Firebase</span>
 			<span>·</span>
-			<span class="tw-text-[#64748b]">Tomorrow.io</span>
+			<span class="tw-text-[#A1A1AA]">Tomorrow.io</span>
 		</div>
 	</main>
 
@@ -133,16 +134,16 @@
 	<!-- FIX #4: Replace tw-grid-cols-3 with asymmetric 12-col weighting -->
 	<section class="tw-max-w-7xl tw-mx-auto tw-w-full tw-px-6 tw-py-24">
 		<div class="tw-flex tw-flex-col tw-items-center tw-text-center tw-mb-16">
-			<span class="tw-font-mono tw-text-xs tw-text-[#f59e0b] tw-tracking-widest tw-mb-4">SYS.ECOSYSTEM</span>
-			<h2 class="tw-text-4xl tw-font-bold tw-text-[#f8fafc] tw-tracking-tight">The Training Triangle</h2>
-			<p class="tw-text-[#94a3b8] tw-mt-4 tw-max-w-2xl">Complete operational parity across your club's most critical personas.</p>
+			<span class="tw-font-mono tw-text-xs tw-text-[#f59e0b] tw-tracking-widest tw-mb-4" style="font-family: 'Geist Mono', monospace;">SYS.ECOSYSTEM</span>
+			<h2 class="tw-text-4xl tw-font-bold tw-text-[#FAFAFA] tw-tracking-tight" style="font-family: 'Geist Sans', sans-serif;">The Training Triangle</h2>
+			<p class="tw-text-[#D4D4D8] tw-mt-4 tw-max-w-2xl" style="font-family: 'Switzer', sans-serif;">Complete operational parity across your club's most critical personas.</p>
 		</div>
 
 		<!-- Symmetric: 4 / 4 / 4 column weighting -->
 		<div class="tw-grid tw-grid-cols-1 md:tw-grid-cols-12 tw-gap-4 md:tw-gap-6">
 			{#each features as feat}
 				<div data-bento={feat.bento} class="tw-col-span-1 {feat.cols} tw-transition-all tw-duration-300 tw-h-full bento-wrapper">
-				<div class="tw-w-full tw-h-full tw-bg-slate-900 tw-border tw-border-[#334155] tw-p-8 hover:tw-border-[#14b8a6] tw-transition-colors tw-duration-150 tw-flex tw-flex-col tw-relative tw-group tw-overflow-hidden bento-well"
+				<div class="tw-w-full tw-h-full tw-border tw-border-[#334155] tw-p-8 hover:tw-border-[#14b8a6] tw-transition-colors tw-duration-150 tw-flex tw-flex-col tw-relative tw-group tw-overflow-hidden bento-well"
 					style="background-color: #0f172a; clip-path: polygon(12px 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%, 0 12px); padding: 32px;"
 				>
 					<!-- Ambient glow on hover -->
@@ -150,13 +151,14 @@
 
 					<div class="tw-flex tw-items-center tw-gap-2 tw-mb-6 tw-relative">
 						<Icon name={feat.icon} size={28} strokeWidth={1} style="color: {feat.accent};" />
-						<span class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-uppercase" style="color: {feat.accent};">{feat.sub}</span>
+						<span class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-uppercase" style="color: {feat.accent}; font-family: 'Geist Mono', monospace;">{feat.sub}</span>
 					</div>
-					<h3 class="tw-text-xl tw-font-bold tw-text-[#f8fafc] tw-mb-3 tw-relative">{feat.title}</h3>
-					<p class="tw-text-[#94a3b8] tw-text-sm tw-leading-relaxed tw-mb-8 tw-flex-1 tw-relative">{feat.body}</p>
+					<h3 class="tw-text-xl tw-font-bold tw-text-[#FAFAFA] tw-mb-3 tw-relative" style="font-family: 'Geist Sans', sans-serif;">{feat.title}</h3>
+					<p class="tw-text-[#D4D4D8] tw-text-sm tw-leading-relaxed tw-mb-8 tw-flex-1 tw-relative" style="font-family: 'Switzer', sans-serif;">{feat.body}</p>
 					<a
 						href={feat.href}
-						class="tw-w-fit tw-font-mono tw-text-xs tw-text-[#f8fafc] tw-uppercase tw-tracking-widest tw-font-bold tw-transition-colors tw-duration-150 tw-flex tw-items-center tw-gap-2 tw-relative"
+						class="tw-w-fit tw-font-mono tw-text-xs tw-text-[#FAFAFA] tw-uppercase tw-tracking-widest tw-font-bold tw-transition-colors tw-duration-150 tw-flex tw-items-center tw-gap-2 tw-relative"
+						style="font-family: 'Geist Mono', monospace;"
 						style:--hover-color={feat.hoverColor}
 					>
 						Learn More <Icon name={"nav.arrow-right" as IconName} size={14} />
@@ -173,7 +175,7 @@
 			{#each ['COPPA 2.0 Compliant', 'SafeSport Certified', 'WCAG 2.2 AA', 'GDPR / CCPA Ready'] as badge}
 				<div class="tw-flex tw-items-center tw-gap-2">
 					<div class="tw-w-1.5 tw-h-1.5 tw-rounded-full tw-bg-[#14b8a6]"></div>
-					<span class="tw-font-mono tw-text-xs tw-text-[#64748b] tw-tracking-widest tw-uppercase">{badge}</span>
+					<span class="tw-font-mono tw-text-xs tw-text-[#A1A1AA] tw-tracking-widest tw-uppercase" style="font-family: 'Geist Mono', monospace;">{badge}</span>
 				</div>
 			{/each}
 		</div>
