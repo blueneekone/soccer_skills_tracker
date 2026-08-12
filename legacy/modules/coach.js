@@ -179,18 +179,61 @@ export const loadCoachScheduleAndHW = async () => {
     if (cHw) {
         const q2 = query(collection(db, "assignments"), where("teamId", "==", tid));
         const snap2 = await getDocs(q2);
-        let html = "";
+
+        cHw.innerHTML = "";
+        let hasActive = false;
+
         snap2.forEach(d => {
             const hw = d.data();
             if (hw.status === "active") {
-                let drillSummary = Array.isArray(hw.drills) ? `${hw.drills.length} Drills Assigned` : hw.drill;
-                html += `<li class="session-item">
-                    <div><b>${hw.player}</b><br><span style="font-size:10px; color:#ea580c;">Due: ${hw.dueDate}</span><br><span style="font-size:11px;">${drillSummary}</span></div>
-                    <button class="delete-btn action-delete-homework" data-id="${d.id}">✕</button>
-                </li>`;
+                hasActive = true;
+                const drillSummaryText = Array.isArray(hw.drills) ? `${hw.drills.length} Drills Assigned` : (hw.drill || "");
+
+                const li = document.createElement("li");
+                li.className = "session-item";
+
+                const div = document.createElement("div");
+
+                const b = document.createElement("b");
+                b.textContent = hw.player || "Unknown";
+
+                const br1 = document.createElement("br");
+
+                const spanDate = document.createElement("span");
+                spanDate.style.fontSize = "10px";
+                spanDate.style.color = "#ea580c";
+                spanDate.textContent = `Due: ${hw.dueDate || "N/A"}`;
+
+                const br2 = document.createElement("br");
+
+                const spanSummary = document.createElement("span");
+                spanSummary.style.fontSize = "11px";
+                spanSummary.textContent = drillSummaryText;
+
+                div.appendChild(b);
+                div.appendChild(br1);
+                div.appendChild(spanDate);
+                div.appendChild(br2);
+                div.appendChild(spanSummary);
+
+                const btn = document.createElement("button");
+                btn.className = "delete-btn action-delete-homework";
+                btn.setAttribute("data-id", d.id);
+                btn.textContent = "✕";
+
+                li.appendChild(div);
+                li.appendChild(btn);
+
+                cHw.appendChild(li);
             }
         });
-        cHw.innerHTML = html || "<li class='session-empty'>No active homework.</li>";
+
+        if (!hasActive) {
+            const emptyLi = document.createElement("li");
+            emptyLi.className = "session-empty";
+            emptyLi.textContent = "No active homework.";
+            cHw.appendChild(emptyLi);
+        }
     }
 };
 
