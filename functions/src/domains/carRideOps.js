@@ -97,17 +97,29 @@ async function resolveParentUidsForEmail(playerEmail) {
   const parentEmails = hSnap.data().parentEmails;
   if (!Array.isArray(parentEmails) || parentEmails.length === 0) return [];
 
+  const validEmails = [...new Set(parentEmails
+      .map((raw) => normEmail(String(raw)))
+      .filter((pem) => pem && pem.includes('@')))];
+
+  if (validEmails.length === 0) return [];
+
   const uids = [];
-  await Promise.all(parentEmails.map(async (raw) => {
-    const pem = normEmail(String(raw));
-    if (!pem || !pem.includes('@')) return;
-    try {
-      const ur = await admin.auth().getUserByEmail(pem);
-      if (ur && ur.uid) uids.push(ur.uid);
-    } catch (_e) {
-      // No Firebase Auth account for this parent email — skip silently.
+  try {
+    const CHUNK_SIZE = 100;
+    for (let i = 0; i < validEmails.length; i += CHUNK_SIZE) {
+      const chunk = validEmails.slice(i, i + CHUNK_SIZE).map((email) => ({email}));
+      const {users} = await admin.auth().getUsers(chunk);
+      users.forEach((ur) => {
+        if (ur && ur.uid) uids.push(ur.uid);
+      });
     }
-  }));
+  } catch (e) {
+    logger.warn('resolveParentUidsForEmail: getUsers failed', {
+      playerEmail,
+      err: e instanceof Error ? e.message : String(e),
+    });
+  }
+
   return [...new Set(uids)];
 }
 
