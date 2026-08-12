@@ -51,11 +51,11 @@
 		const unsub = onSnapshot(
 			q,
 			(snap) => {
-				const rows: AlertDoc[] = [];
+			let rows: AlertDoc[] = [];
 				let unread = 0;
 				snap.forEach((d) => {
 					const data = d.data() as AlertDoc;
-					rows.push({ ...data, alertId: d.id });
+					rows = [...rows, { ...data, alertId: d.id }];
 					if (!data.read) unread++;
 				});
 				alerts = rows;

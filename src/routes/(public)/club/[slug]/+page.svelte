@@ -91,7 +91,7 @@
 				const s2 = document.createElement('script');
 				s2.setAttribute('data-club-landing-track', 'ga-inline');
 				s2.textContent =
-					`window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}` +
+					`window.dataLayer=window.dataLayer||[];function gtag(){dataLayer = [...dataLayer, arguments];}` +
 					`gtag('js',new Date());gtag('config','${ga}');`;
 				document.head.appendChild(s2);
 			}

@@ -3,6 +3,7 @@
 	import { browser } from '$app/environment';
 	import { onDestroy } from 'svelte';
 	import { goto } from '$app/navigation';
+	import { untrack } from 'svelte';
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { createTicketScanner } from '$lib/services/ticketScanner.svelte.js';
 
@@ -12,7 +13,9 @@
 	$effect(() => {
 		const role = authStore.userProfile?.role ?? '';
 		if (!['director', 'super_admin', 'global_admin'].includes(role)) {
-			goto('/director');
+			untrack(() => {
+            goto('/director');
+        });
 		}
 	});
 

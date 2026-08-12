@@ -1,16 +1,6 @@
 {
-  "firestore": [
-    {
-      "database": "(default)",
-      "rules": "firestore.rules",
-      "indexes": "firestore.indexes.json"
-    }
-  ],
-  "storage": {
-    "rules": "storage.rules"
-  },
   "hosting": {
-    "public": "build",
+    "public": "dist",
     "ignore": [
       "firebase.json",
       "**/.*",
@@ -21,8 +11,8 @@
         "source": "**",
         "headers": [
           {
-            "key": "Content-Security-Policy",
-            "value": "default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self' 'unsafe-inline' https://unpkg.com https://static.cloudflareinsights.com https://maps.googleapis.com https://maps.gstatic.com https://*.gstatic.com https://apis.google.com https://accounts.google.com https://web-sdk-services.checkr.com https://web-sdk-services.checkr-staging.com; style-src 'self' 'unsafe-inline' https://unpkg.com https://fonts.googleapis.com https://accounts.google.com https://api.fontshare.com https://api.fonts.coollabs.io; img-src 'self' data: blob: https:; font-src 'self' data: https://fonts.gstatic.com https://unpkg.com https://api.fontshare.com https://cdn.fontshare.com https://api.fonts.coollabs.io; worker-src 'self' blob:; connect-src 'self' https://*.firebaseio.com wss://*.firebaseio.com https://*.googleapis.com https://sstracker.app https://soccer.sstracker.app https://cloudflareinsights.com https://static.cloudflareinsights.com https://*.cloudfunctions.net https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://accounts.google.com https://*.firebaseapp.com https://api.checkr.com https://api.checkr-staging.com https://web-sdk-services.checkr.com https://web-sdk-services.checkr-staging.com; frame-src 'self' https://accounts.google.com https://www.gstatic.com https://*.google.com https://*.firebaseapp.com https://web-sdk-services.checkr.com https://web-sdk-services.checkr-staging.com; frame-ancestors 'none'; upgrade-insecure-requests"
+            "key": "Strict-Transport-Security",
+            "value": "max-age=31536000; includeSubDomains; preload"
           },
           {
             "key": "X-Content-Type-Options",
@@ -33,47 +23,21 @@
             "value": "DENY"
           },
           {
-            "key": "X-XSS-Protection",
-            "value": "1; mode=block"
-          },
-          {
             "key": "Referrer-Policy",
             "value": "strict-origin-when-cross-origin"
           },
           {
-            "key": "Permissions-Policy",
-            "value": "geolocation=(), microphone=(), camera=(), payment=(), usb=(), interest-cohort=()"
+            "key": "X-XSS-Protection",
+            "value": "1; mode=block"
           },
           {
-            "key": "Strict-Transport-Security",
-            "value": "max-age=63072000; includeSubDomains; preload"
+            "key": "Content-Security-Policy",
+            "value": "upgrade-insecure-requests;"
           }
         ]
       },
       {
-        "source": "/service-worker.js",
-        "headers": [
-          {
-            "key": "Cache-Control",
-            "value": "no-cache, no-store, must-revalidate"
-          },
-          {
-            "key": "Service-Worker-Allowed",
-            "value": "/"
-          }
-        ]
-      },
-      {
-        "source": "**/*.html",
-        "headers": [
-          {
-            "key": "Cache-Control",
-            "value": "no-cache, no-store, must-revalidate"
-          }
-        ]
-      },
-      {
-        "source": "/_app/immutable/**",
+        "source": "**/*.@(js|css|svg|png|jpg|webp|woff2)",
         "headers": [
           {
             "key": "Cache-Control",
@@ -84,41 +48,6 @@
     ],
     "rewrites": [
       {
-        "source": "/v1/**",
-        "function": {
-          "functionId": "apiGateway",
-          "region": "us-east1"
-        }
-      },
-      {
-        "source": "/api/webhooks/stripe/tickets",
-        "function": {
-          "functionId": "handleTicketingWebhook",
-          "region": "us-east1"
-        }
-      },
-      {
-        "source": "/api/webhooks/stripe/registration",
-        "function": {
-          "functionId": "handleRegistrationWebhook",
-          "region": "us-east1"
-        }
-      },
-      {
-        "source": "/api/webhooks/stripe/recruiter",
-        "function": {
-          "functionId": "handleRecruiterWebhook",
-          "region": "us-east1"
-        }
-      },
-      {
-        "source": "/api/compliance/checkr/session-tokens",
-        "function": {
-          "functionId": "checkrSessionTokens",
-          "region": "us-east1"
-        }
-      },
-      {
         "source": "**",
         "destination": "/index.html"
       }
@@ -126,87 +55,43 @@
   },
   "functions": [
     {
-      "source": "functions-core",
+      "codebase": "default",
+      "source": "functions",
+      "runtime": "nodejs22"
+    },
+    {
       "codebase": "core",
-      "predeploy": [
-        "node scripts/bundle-functions.cjs"
-      ],
-      "ignore": [
-        "node_modules",
-        ".git",
-        "*.local"
-      ]
+      "source": "functions-core",
+      "runtime": "nodejs20"
     },
     {
-      "source": "functions-rl",
       "codebase": "rl",
-      "predeploy": [
-        "node scripts/bundle-functions.cjs"
-      ],
-      "ignore": [
-        "node_modules",
-        ".git",
-        "*.local"
-      ]
+      "source": "functions-rl",
+      "runtime": "nodejs20"
     },
     {
-      "source": "functions-commerce",
       "codebase": "commerce",
-      "predeploy": [
-        "node scripts/bundle-functions.cjs"
-      ],
-      "ignore": [
-        "node_modules",
-        ".git",
-        "*.local"
-      ]
+      "source": "functions-commerce",
+      "runtime": "nodejs20"
     },
     {
-      "source": "functions-compliance",
       "codebase": "compliance",
+      "source": "functions-compliance",
+      "runtime": "nodejs20",
       "predeploy": [
+        "bash scripts/sync-compliance-env.sh",
         "node scripts/bundle-functions.cjs"
-      ],
-      "ignore": [
-        "node_modules",
-        ".git",
-        "*.local"
       ]
     },
     {
-      "source": "functions-integrations",
       "codebase": "integrations",
-      "predeploy": [
-        "node scripts/bundle-functions.cjs"
-      ],
-      "ignore": [
-        "node_modules",
-        ".git",
-        "*.local"
-      ]
+      "source": "functions-integrations",
+      "runtime": "nodejs20"
     },
     {
-      "source": "functions-platform",
       "codebase": "platform",
-      "predeploy": [
-        "node scripts/bundle-functions.cjs"
-      ],
-      "ignore": [
-        "node_modules",
-        ".git",
-        "*.local"
-      ]
+      "source": "functions-platform",
+      "runtime": "nodejs20"
     }
-  ],
-  "emulators": {
-    "auth": {
-      "port": 9099
-    },
-    "firestore": {
-      "port": 8080
-    },
-    "ui": {
-      "enabled": false
-    }
-  }
+  ]
 }

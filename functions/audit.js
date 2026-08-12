@@ -138,7 +138,7 @@ exports.getSensitiveDocumentUrl = onCall(
       }
 
       // â”€â”€ Resolve player profile â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-      const firestore = admin.firestore();
+      
       const playerSnap = await firestore.collection('users').doc(targetUserKey).get();
 
       if (!playerSnap.exists) {

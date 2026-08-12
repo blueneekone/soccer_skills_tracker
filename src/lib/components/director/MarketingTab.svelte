@@ -256,8 +256,8 @@
 				);
 				const snap = await getDocs(q);
 				if (cancelled) return;
-				const rows = [];
-				snap.forEach((d) => rows.push({ id: d.id, ...d.data() }));
+			let rows: Array<{ id: string } & Record<string, unknown>> = [];
+				snap.forEach((d) => { rows = [...rows, { id: d.id, ...d.data() }]; });
 				campaigns = rows;
 			} catch (e) {
 				if (!cancelled) {

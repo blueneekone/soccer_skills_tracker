@@ -31,7 +31,7 @@ export const initializeIndependentDirector = onCall(
       metadata: { tenantId, uid },
     });
 
-    const db = admin.firestore();
+    
     await db.collection('account_verifications').doc(uid).set({
       uid,
       tenantId,

@@ -109,14 +109,14 @@
 					getDocs(usersQ)
 				]);
 
-				const newResults: any[] = [];
+			let newResults: any[] = [];
 				clubsSnap.forEach(doc => {
 					const data = doc.data();
-					newResults.push({ type: 'club', id: doc.id, name: data.name || doc.id });
+					newResults = [...newResults, { type: 'club', id: doc.id, name: data.name || doc.id }];
 				});
 				usersSnap.forEach(doc => {
 					const data = doc.data();
-					newResults.push({ type: 'user', id: doc.id, name: data.email || doc.id });
+					newResults = [...newResults, { type: 'user', id: doc.id, name: data.email || doc.id }];
 				});
 
 				results = newResults;

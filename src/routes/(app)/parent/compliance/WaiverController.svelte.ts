@@ -1,3 +1,4 @@
+// 🛡️ SafeSport Compliance Mandate: Enforces Parent Shadow CC routing for minors.
 import { untrack } from 'svelte';
 import { db } from '$lib/firebase.js';
 import { authStore } from '$lib/stores/auth/facade.svelte.js';

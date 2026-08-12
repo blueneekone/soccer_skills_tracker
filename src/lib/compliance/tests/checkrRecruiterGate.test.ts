@@ -1,3 +1,4 @@
+// 🛡️ SafeSport Compliance Mandate: Enforces Parent Shadow CC routing for minors.
 // @vitest-environment jsdom
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { isRecruiterCleared } from '$lib/components/recruiter/RecruiterOnboardingEngine.svelte.js';

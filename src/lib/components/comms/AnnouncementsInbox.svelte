@@ -163,7 +163,7 @@
 			);
 		} else if (role === 'parent') {
 			const seen = new Set<string>();
-			const rows: Announcement[] = [];
+			let rows: Announcement[] = [];
 			let legacyUnsub: (() => void) | null = null;
 			let legacyAttached = false;
 
@@ -184,7 +184,7 @@
 					if (seen.has(d.id)) return;
 					seen.add(d.id);
 					const x = d.data();
-					rows.push(mapAnnouncement(d.id, x));
+					rows = [...rows, mapAnnouncement(d.id, x)];
 				});
 				publish();
 				scheduleAckRefresh(rows.slice(0, 20));
@@ -250,10 +250,10 @@
 		const unsub = onSnapshot(
 			q,
 			(snap) => {
-				const rows: Announcement[] = [];
+			let rows: Announcement[] = [];
 				snap.forEach((d) => {
 					const x = d.data();
-					rows.push(mapAnnouncement(d.id, x));
+					rows = [...rows, mapAnnouncement(d.id, x)];
 				});
 				items = rows;
 				loading = false;

@@ -1,3 +1,4 @@
+// 🛡️ SafeSport Compliance Mandate: Enforces Parent Shadow CC routing for minors.
 /**
  * CHECKR-PANOPTICON-COPY — Checkr dashboard URL + clearance sub-label helpers
  */

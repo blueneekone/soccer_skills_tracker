@@ -70,7 +70,7 @@
 					Math.abs(g.createdAtMs - row.createdAtMs) <= FANOUT_WINDOW_MS,
 			);
 			if (existing) {
-				if (!existing.teamIds.includes(row.teamId)) existing.teamIds.push(row.teamId);
+				if (!existing.teamIds.includes(row.teamId)) existing.teamIds = [...existing.teamIds, row.teamId];
 				continue;
 			}
 			groups.push({

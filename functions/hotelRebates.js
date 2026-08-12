@@ -45,10 +45,10 @@ const STRIPE_SECRET_KEY = defineSecret('STRIPE_SECRET_KEY');
 
 const REGION = 'us-east1';
 
-const db = new Proxy({}, { get: (t, p) => { const fs = admin.firestore(); const v = fs[p]; return typeof v === 'function' ? v.bind(fs) : v; } });
+const db = new Proxy({}, { get: (t, p) => {  const v = fs[p]; return typeof v === 'function' ? v.bind(fs) : v; } });
 
 function getStripe() {
-  const stripe = require('stripe');
+  
   return stripe(STRIPE_SECRET_KEY.value(), {apiVersion: '2024-06-20'});
 }
 

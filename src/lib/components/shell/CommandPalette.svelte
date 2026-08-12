@@ -54,10 +54,10 @@
 		const q = query.trim().toLowerCase();
 
 		/** @type {CmdItem[]} */
-		const matched = [];
+		let matched = [];
 
 		if (!q) {
-			matched.push(...JUMP_ACTIONS);
+			matched = [...matched, ...JUMP_ACTIONS];
 			
 			// Show user's active divisions/clubs when query is empty as well
 			for (const cl of teamsStore.clubs) {
@@ -77,7 +77,7 @@
 		// Jump actions that match
 		for (const a of JUMP_ACTIONS) {
 			if (a.label.toLowerCase().includes(q) || a.sub.toLowerCase().includes(q)) {
-				matched.push(a);
+				matched = [...matched, a];
 			}
 		}
 

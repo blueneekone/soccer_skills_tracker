@@ -135,7 +135,7 @@ exports.createFixture = onCall({region: REGION}, async (request) => {
 		outputUtc: dateTimeUtc.toDate().toISOString(),
 	});
 
-	const firestoreDb = admin.firestore();
+	
 	const fixtureRef = firestoreDb.collection('fixtures').doc();
 
 	const fixtureDoc = {
@@ -199,7 +199,7 @@ exports.updateFixture = onCall({region: REGION}, async (request) => {
 		sanitised['dateTime'] = toUtcTimestamp(updates.dateTime);
 	}
 
-	const firestoreDb = admin.firestore();
+	
 	await firestoreDb.doc(`fixtures/${fixtureId}`).update({
 		...sanitised,
 		updatedAt: admin.firestore.FieldValue.serverTimestamp(),
@@ -223,7 +223,7 @@ exports.cancelFixture = onCall({region: REGION}, async (request) => {
 	const {fixtureId} = request.data ?? {};
 	if (!fixtureId) throw new HttpsError('invalid-argument', 'fixtureId is required.');
 
-	const firestoreDb = admin.firestore();
+	
 	await firestoreDb.doc(`fixtures/${fixtureId}`).update({
 		status:         'Cancelled',
 		cancelledAt:    admin.firestore.FieldValue.serverTimestamp(),
@@ -269,7 +269,7 @@ exports.schedulePractice = onCall({region: REGION}, async (request) => {
 		throw new HttpsError('invalid-argument', 'endDateTime must be after startDateTime.');
 	}
 
-	const firestoreDb = admin.firestore();
+	
 	const practiceRef = firestoreDb.collection('practice_sessions').doc();
 
 	await practiceRef.set({

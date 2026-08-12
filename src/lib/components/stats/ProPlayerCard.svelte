@@ -141,8 +141,8 @@
 					collection(db, 'player_metrics', key, 'seasons'),
 				);
 				if (cancelled) return;
-				const list = [];
-				snap.forEach((d) => list.push({ id: d.id, ...d.data() }));
+				let list: Array<Record<string, unknown> & { id: string }> = [];
+				snap.forEach((d) => { list = [...list, { id: d.id, ...d.data() }]; });
 				list.sort((a, b) =>
 					String(a.seasonLabel || '').localeCompare(String(b.seasonLabel || '')),
 				);

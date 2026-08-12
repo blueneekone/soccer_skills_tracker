@@ -1,37 +1,51 @@
 ---
-description: This workflow targets Google Jules, instructing it to eradicate the global scope leaks causing the 10,000ms deployment timeouts, whilst resolving the invalid Firebase Security Rules that are blocking database reads.
+name: architect-backend-recovery
+description: Resolves the 10,000ms Firebase deployment timeout and invalid Security Rules compilation crashes [587].
 ---
 
-name: architect-backend-recovery
-description: Resolves the 10000ms Firebase deployment timeout and invalid Security Rules.
-1. Context & Persona Formulation:
+# Blueprint 1: Architectural Recovery of Backend Timeouts and Firebase Rules
 
-You are acting exclusively as the Principal Backend Architect.
+This workflow targets Google Jules, directing it to eradicate the global scope resource leaks causing the 10,000ms Cloud Function deployment timeouts [563, 588], while repairing the broken `firestore.rules` compilation errors that are blocking tenant read/write requests [589].
 
-You are strictly bound by the "SSTracker Nexus Command: Engineering Protocols".
+## 1. Context & Persona Formulation
+* **Persona**: Act exclusively as the **Chief Software Architect (CSA) / Principal Backend Architect** [40/535, 51/643, 591].
+* **Governance**: You are strictly bound by the governance rules specified in `AGENTS.md` and "SSTracker Nexus Command: Engineering Protocols" [588].
+* **Reference**: Read `FUNCTIONS_DEPLOY.md` to understand the isolated multi-codebase deployment directory structure and Node 20 runtime constraints [562, 588].
 
-You must read and internalize FUNCTIONS_DEPLOY.md to understand the multi-codebase split architecture and the Node 20 runtime constraints.
+---
 
-2. Eradicate Global Scope Initialization Leaks (The 10000ms Timeout Fix):
+## 2. Eradicate Global Scope Connection Leaks (The 10,000ms Timeout Fix)
+* **The Problem**: During the Firebase CLI discovery phase, active network sockets established in the global file scope cause compilation hangs, triggering the fatal `Timeout after 10000` error [563, 588].
+* **The Solution**: Perform an exhaustive, recursive sweep of `functions/index.js`, `functions/src/domains/interoperabilityOps.js`, `functions/subscription.js`, and all entry points within the `functions-commerce`, `functions-compliance`, and `functions-platform` split directories [588].
+* **Action**: Move all instances of:
+  * `admin.initializeApp()`
+  * `admin.firestore()`
+  * `require('stripe')(...)` or `new Stripe(...)`
+  strictly *inside* the execution blocks of individual HTTPS callable functions or behind localized lazy-loading helper wrappers [533, 588]. Global-level imports are allowed; global instantiation/execution is strictly forbidden [563, 588].
 
-The Issue: The Firebase CLI deployment parser is crashing with "Timeout after 10000" because network and database connections are hanging at the global scope during discovery.
+---
 
-The Execution: Perform an aggressive, exhaustive sweep of functions/index.js, functions/src/domains/interoperabilityOps.js, functions/subscription.js, and all entry points within the functions-commerce, functions-compliance, and functions-platform directories.
+## 3. Resolve Firestore Security Rules Compilation Crashes
+* **The Problem**: Overriding native query methods inside `firestore.rules` triggers a parsing syntax exception, which completely disables database reads for organizations, teams, and rosters [589].
+* **The Solution**: Open `firestore.rules` in the root directory [589].
+* **Action**: 
+  1. Rename the custom `exists` declaration to `checkDocExists` [533, 589].
+  2. Rename the custom `get` declaration to `fetchDoc` [533, 589].
+  3. Enforce the Zero-Trust multi-tenancy claim logic on the `/clubs/{clubId}` and `/team_assignments/{assignmentId}` paths [533, 566]:
+     `allow read, write: if request.auth != null && request.auth.token.clubId == clubId;` [533]
 
-The Constraint: Move EVERY instance of admin.initializeApp(), admin.firestore(), and external SDK instantiations (like Stripe) strictly INSIDE the callable function execution blocks. Absolutely zero external network calls may exist at the root level of any file.
+---
 
-3. Resolve Firestore Rules Compilation Failures:
+## 4. Developer Cost Control & Targeted Deployments
+* **Action**: Ensure `process.env.SCHEDULERS_ENABLED` is configured to bypass high-frequency Cloud Scheduler jobs in development environments [565, 588].
+* **Targeted Push**: Deploy the specific modified functions individually rather than running global deployments [566]:
+  ```bash
+  firebase deploy --only functions:core:logTrainingSession
+  ```
 
-The Issue: The compiler is throwing "Invalid function name: exists" and "Invalid function name: get". Database reads for organizations and teams are failing due to a compiler crash.
+---
 
-The Execution: Open firestore.rules. You have illegally overridden native Firebase methods. Rename your custom functions (e.g., change exists to checkDocExists and get to fetchDoc).
-
-The Enforcement: Ensure clubId and tenantId enforcement relies strictly on the request.auth.token.clubId custom claim, satisfying the Zero-Trust Data Plane mandate.
-
-4. Verification & Deployment Pipeline (Pessimistic Definition of Done):
-
-Run the local Firebase emulator deployment dry-run (pnpm run test:functions-deploy).
-
-If the deployment hangs for more than 10 seconds, your scope sweep failed. Iterate via your Critic-Augmented Generation loop until the deployment dry-run resolves completely.
-
-You are explicitly forbidden from opening the Pull Request until the deployment pipeline is 100% green.
+## 5. Verification & Definition of Done
+* Run `pnpm run test:functions-deploy` to perform a dry-run compile of all split packages [113, 590].
+* Verify that the deployment discovery completes under 10 seconds [590].
+* The task is strictly incomplete until Svelte has 0 compiler warnings, TypeScript has 0 `any` types, and Unit Tests are 100% green [112, 590].

@@ -195,7 +195,7 @@
 		rosterError = null;
 
 		let constraints = [where('role', '==', 'player')];
-		if (teamId) constraints.push(where('teamId', '==', teamId));
+		if (teamId) constraints = [...constraints, where('teamId', '==', teamId)];
 
 		const q = query(collection(db, 'users'), ...constraints);
 

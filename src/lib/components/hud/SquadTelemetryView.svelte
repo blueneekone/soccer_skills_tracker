@@ -84,7 +84,7 @@
 				q,
 				(snap) => {
 					liveEvents = [];
-					snap.forEach((d) => liveEvents.push({ id: d.id, ...d.data() }));
+					snap.forEach((d) => { liveEvents = [...liveEvents, { id: d.id, ...d.data() }]; });
 				},
 				(e) => {
 					console.error('[SquadTelemetry] telemetry_events', e);
@@ -409,7 +409,7 @@
 				q,
 				(s) => {
 					vpcItems = [];
-					s.forEach((d) => vpcItems.push({ id: d.id, ...d.data() }));
+					s.forEach((d) => { vpcItems = [...vpcItems, { id: d.id, ...d.data() }]; });
 					vpcLoading = false;
 				},
 				() => {
@@ -441,8 +441,8 @@
 					const tSnap = await getDocs(
 						query(collection(db, 'trials'), where('teamId', '==', currentTeamId)),
 					);
-					const tr = [];
-					tSnap.forEach((d) => tr.push({ id: d.id, ...d.data() }));
+					let tr: any[] = [];
+					tSnap.forEach((d) => { tr = [...tr, { id: d.id, ...d.data() }]; });
 					tr.sort((a, b) => (b.timestamp?.seconds || 0) - (a.timestamp?.seconds || 0));
 					nextTrials = tr.slice(0, 8);
 				} catch (e) {
@@ -452,8 +452,8 @@
 					const eSnap = await getDocs(
 						query(collection(db, 'evaluations'), where('teamId', '==', currentTeamId)),
 					);
-					const er = [];
-					eSnap.forEach((d) => er.push({ id: d.id, ...d.data() }));
+					let er: any[] = [];
+					eSnap.forEach((d) => { er = [...er, { id: d.id, ...d.data() }]; });
 					er.sort((a, b) => {
 						const ta = a.timestamp?.seconds || 0;
 						const tb = b.timestamp?.seconds || 0;

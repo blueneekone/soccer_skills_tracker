@@ -46,9 +46,9 @@
 				const snap = await getDocs(q);
 				if (cancelled) return;
 				
-				const results: any[] = [];
+			let results: any[] = [];
 				snap.forEach((doc) => {
-					results.push({ id: doc.id, ...doc.data() });
+					results = [...results, { id: doc.id, ...doc.data() }];
 				});
 				invoices = results;
 			} catch (err: any) {

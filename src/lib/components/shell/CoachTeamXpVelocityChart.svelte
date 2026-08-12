@@ -74,16 +74,16 @@
 					if (status === 'active' && playerName) activeNames.add(playerName);
 				});
 
-				const rosterStats = [];
+				let rosterStats = /** @type {Array<Record<string, unknown>>} */ ([]);
 				statsSnap.forEach((row) => {
 					const d = row.data();
 					const playerName = typeof d.playerName === 'string' ? d.playerName.trim() : '';
 					if (activeNames.size > 0 && playerName && !activeNames.has(playerName)) return;
-					rosterStats.push(d);
+					rosterStats = [...rosterStats, d];
 				});
 
 				/** @type {number[]} */
-				const avgValues = [];
+				let avgValues = [];
 				for (const key of schema.keys) {
 					let sum = 0;
 					let samples = 0;
@@ -100,7 +100,7 @@
 							samples += 1;
 						}
 					}
-					avgValues.push(samples > 0 ? Math.round(sum / samples) : 0);
+					avgValues = [...avgValues, samples > 0 ? Math.round(sum / samples) : 0];
 				}
 
 				if (cancelled) return;
@@ -176,13 +176,13 @@
 
 	function getLast7DayKeys() {
 		/** @type {string[]} */
-		const keys = [];
+		let keys = [];
 		const today = new Date();
 		today.setHours(0, 0, 0, 0);
 		for (let i = 6; i >= 0; i--) {
 			const d = new Date(today);
 			d.setDate(today.getDate() - i);
-			keys.push(toLocalDateKey(d));
+			keys = [...keys, toLocalDateKey(d)];
 		}
 		return keys;
 	}

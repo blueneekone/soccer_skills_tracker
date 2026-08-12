@@ -32,10 +32,10 @@
 			err = 'Invalid start time.';
 			return;
 		}
-		const keys: string[] = [];
-		if (notify1h) keys.push('h1');
-		if (notify30m) keys.push('m30');
-		if (notifyMorning) keys.push('morning');
+		let keys: string[] = [];
+		if (notify1h) keys = [...keys, 'h1'];
+		if (notify30m) keys = [...keys, 'm30'];
+		if (notifyMorning) keys = [...keys, 'morning'];
 
 		saving = true;
 		err = '';

@@ -1,3 +1,4 @@
+// 🛡️ SafeSport Compliance Mandate: Enforces Parent Shadow CC routing for minors.
 import { describe, it, expect } from 'vitest';
 
 describe('Director OS: Compliance Health Analytics Matrix', () => {

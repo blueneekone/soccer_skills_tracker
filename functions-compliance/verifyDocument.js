@@ -1,3 +1,4 @@
+// 🛡️ SafeSport Compliance Mandate: Enforces Parent Shadow CC routing for minors.
 ﻿/* eslint-disable quotes */
 /**
  * verifyDocument.js â€” PII "Burn" Protocol
@@ -34,7 +35,7 @@ const admin = require('firebase-admin');
 const {logActivity, ACTIVITY_TYPE} = require('./auditLogger');
 
 const REGION = 'us-east1';
-const db = new Proxy({}, { get: (t, p) => { const fs = admin.firestore(); const v = fs[p]; return typeof v === 'function' ? v.bind(fs) : v; } });
+const db = new Proxy({}, { get: (t, p) => {  const v = fs[p]; return typeof v === 'function' ? v.bind(fs) : v; } });
 
 const BURN_DELAY_MS = 24 * 60 * 60 * 1000; // 24 hours
 

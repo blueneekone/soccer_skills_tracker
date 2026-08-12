@@ -32,7 +32,7 @@ exports.onWorkoutLogged = onDocumentCreated(
       return;
     }
 
-    const firestore = admin.firestore();
+    
 
     // The Reinforcement Learning (RL) Adaptive Engine is now ACTIVE (abPercent: 100)
     // Here we evaluate historical adherence and physiological feedback (mocked).
@@ -91,7 +91,7 @@ exports.commitMacrocycle = onCall(
 
     // In a real scenario we'd use the coach's team ID. 
     // We'll assume the client payload sends teamId or it's implicitly mapped.
-    const firestore = admin.firestore();
+    
     const batch = firestore.batch();
 
     // Generate a unique assignment ID
@@ -133,7 +133,7 @@ exports.onTrialScoreAdded = onDocumentCreated(
 
     if (!playerUid) return;
 
-    const firestore = admin.firestore();
+    
 
     // Find the linked parent's UID for this player.
     // Assuming a players collection has a 'parentUid' field.
@@ -970,7 +970,7 @@ exports.submitCompletionProof = onCall(
       }
     }
 
-    const firestore = admin.firestore();
+    
     const verificationRef = firestore.collection('completion_verifications').doc();
 
     await verificationRef.set({
@@ -1008,7 +1008,7 @@ exports.parentReviewCompletionProof = onCall(
       throw new HttpsError('invalid-argument', 'decision must be approved or rejected');
     }
 
-    const firestore = admin.firestore();
+    
     const householdSnap = await firestore.collection('households').where('playerEmails', 'array-contains', recordUserKey).get();
     const playerSet = new Set(householdSnap.docs[0]?.data()?.playerEmails || []);
     if (!playerSet.has(recordUserKey)) throw new HttpsError('permission-denied', 'cross-household access');

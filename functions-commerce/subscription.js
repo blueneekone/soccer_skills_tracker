@@ -5,7 +5,7 @@
  * PRODUCTION PATH: When going live, replace the stub block in `createSubscription`
  * with real Stripe Checkout Session creation:
  *
- *   const stripe = require('stripe')(STRIPE_SECRET_KEY.value());
+ *   
  *   const session = await stripe.checkout.sessions.create({
  *     mode: 'subscription',
  *     line_items: [{ price: priceId, quantity: 1 }],
@@ -37,7 +37,7 @@ const {onCall, HttpsError} = require('firebase-functions/v2/https');
 const logger = require('firebase-functions/logger');
 const admin = require('firebase-admin');
 const {defineSecret} = require('firebase-functions/params');
-const stripe = require('stripe');
+
 
 const REGION = 'us-east1';
 const STRIPE_SECRET_KEY = defineSecret('STRIPE_SECRET_KEY');

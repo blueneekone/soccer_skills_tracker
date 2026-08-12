@@ -6,7 +6,7 @@
 	const syncGarmin = async () => {
 		syncing = true;
 		await new Promise((r) => setTimeout(r, 800));
-		syncedDevices.push('Garmin Fenix 7');
+		syncedDevices = [...syncedDevices, 'Garmin Fenix 7'];
 		currentHrv = 62; // Mock HRV
 		syncing = false;
 	};
@@ -14,7 +14,7 @@
 	const syncAppleHealth = async () => {
 		syncing = true;
 		await new Promise((r) => setTimeout(r, 800));
-		syncedDevices.push('Apple Watch Series 9');
+		syncedDevices = [...syncedDevices, 'Apple Watch Series 9'];
 		currentHrv = 65; // Mock HRV
 		syncing = false;
 	};
@@ -22,7 +22,7 @@
 	const syncWhoop = async () => {
 		syncing = true;
 		await new Promise((r) => setTimeout(r, 800));
-		syncedDevices.push('Whoop 4.0');
+		syncedDevices = [...syncedDevices, 'Whoop 4.0'];
 		currentHrv = 58; // Mock HRV
 		syncing = false;
 	};

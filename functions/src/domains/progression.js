@@ -55,7 +55,7 @@ exports.calculatePlayerProgression = onCall({ region: 'us-central1' }, async (re
 
   const parityPercentiles = enforcePairwiseRankParity(percentiles);
 
-  const firestore = admin.firestore();
+  
   
   // Refactor local array mutations into atomic writeBatch commits (capped at 500)
   const batch = firestore.batch();

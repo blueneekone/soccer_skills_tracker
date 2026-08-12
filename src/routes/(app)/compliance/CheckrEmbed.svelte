@@ -98,11 +98,11 @@
 				void mountReportsOverview(Checkr);
 			},
 			onInvitationError: (response: { errors?: Record<string, string[]> }) => {
-				const parts: string[] = [];
+			let parts: string[] = [];
 				const errors = response?.errors;
 				if (errors && typeof errors === 'object') {
 					for (const [key, val] of Object.entries(errors)) {
-						if (Array.isArray(val)) parts.push(`${key}: ${val.join(', ')}`);
+						if (Array.isArray(val)) parts = [...parts, `${key}: ${val.join(', ')}`];
 					}
 				}
 				if (parts.length > 0) {

@@ -104,15 +104,15 @@
 		scheduleSaveBusy = true;
 		scheduleErr = '';
 		scheduleOk = '';
-		const keys = /** @type {string[]} */ ([]);
+		let keys = /** @type {string[]} */ ([]);
 		if (schedNotify1h) {
-			keys.push('h1');
+			keys = [...keys, 'h1'];
 		}
 		if (schedNotify30m) {
-			keys.push('m30');
+			keys = [...keys, 'm30'];
 		}
 		if (schedNotifyMorning) {
-			keys.push('morning');
+			keys = [...keys, 'morning'];
 		}
 		try {
 		await saveTeamScheduledEvent({

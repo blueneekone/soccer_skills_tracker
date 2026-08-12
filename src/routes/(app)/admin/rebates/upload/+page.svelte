@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
+	import { untrack } from 'svelte';
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { RebatesEngine } from './RebatesEngine.svelte.js';
 	import RebatesHUD from './RebatesHUD.svelte';
@@ -10,7 +11,9 @@
 	$effect(() => {
 		const role = authStore.userProfile?.role ?? '';
 		if (!['super_admin', 'global_admin'].includes(role)) {
-			goto('/director');
+			untrack(() => {
+            goto('/director');
+        });
 		}
 	});
 

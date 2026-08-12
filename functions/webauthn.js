@@ -29,7 +29,7 @@ const {
   verifyAuthenticationResponse,
 } = require('@simplewebauthn/server');
 
-const db = new Proxy({}, { get: (t, p) => { const fs = admin.firestore(); const v = fs[p]; return typeof v === 'function' ? v.bind(fs) : v; } });
+const db = new Proxy({}, { get: (t, p) => {  const v = fs[p]; return typeof v === 'function' ? v.bind(fs) : v; } });
 
 // ── RP configuration ────────────────────────────────────────────────────────
 // RP_ID and RP_ORIGIN are set via Firebase environment config / defineString so
@@ -119,7 +119,7 @@ exports.webauthnRegisterStart = onCall(
 
     const options = await generateRegistrationOptions({
       rpName: RP_NAME,
-      rpID: RP_ID,
+      rpID: process.env.WEBAUTHN_RP_ID?.replace(/^https?:\/\//, '').split(':')[0] || 'sstracker.app',
       userID: new TextEncoder().encode(uid),
       userName: request.auth.token.email || uid,
       userDisplayName: request.auth.token.name || request.auth.token.email || uid,
@@ -185,7 +185,7 @@ exports.webauthnRegisterFinish = onCall(
       verification = await verifyRegistrationResponse({
         response: attResp,
         expectedChallenge: challenge,
-        expectedOrigin: RP_ORIGIN,
+        expectedOrigin: process.env.WEBAUTHN_RP_ORIGIN?.split(',') || ['https://sstracker.app', 'https://preview.sstracker.app'],
         expectedRPID: RP_ID,
         // Must match authenticatorSelection.userVerification: 'preferred' in register start
         requireUserVerification: false,
@@ -243,7 +243,7 @@ exports.webauthnLoginStart = onCall(
     } catch {
       // Normalized shape (uid null) — client must not treat raw options as { options, uid }
       const options = await generateAuthenticationOptions({
-        rpID: RP_ID,
+        rpID: process.env.WEBAUTHN_RP_ID?.replace(/^https?:\/\//, '').split(':')[0] || 'sstracker.app',
         userVerification: 'preferred',
         allowCredentials: [],
       });
@@ -254,7 +254,7 @@ exports.webauthnLoginStart = onCall(
     const existingCreds = await loadCredentialsForUid(uid);
 
     const options = await generateAuthenticationOptions({
-      rpID: RP_ID,
+      rpID: process.env.WEBAUTHN_RP_ID?.replace(/^https?:\/\//, '').split(':')[0] || 'sstracker.app',
       userVerification: 'preferred',
       allowCredentials: existingCreds.map((c) => ({
         id: c.id,
@@ -324,7 +324,7 @@ exports.webauthnLoginFinish = onCall(
       verification = await verifyAuthenticationResponse({
         response: authResp,
         expectedChallenge: challenge,
-        expectedOrigin: RP_ORIGIN,
+        expectedOrigin: process.env.WEBAUTHN_RP_ORIGIN?.split(',') || ['https://sstracker.app', 'https://preview.sstracker.app'],
         expectedRPID: RP_ID,
         credential: {
           id: credData.credentialID,

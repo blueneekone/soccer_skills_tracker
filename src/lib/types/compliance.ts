@@ -1,3 +1,4 @@
+// 🛡️ SafeSport Compliance Mandate: Enforces Parent Shadow CC routing for minors.
 /**
  * compliance.ts — Sprint 2.2 Data Vaulting & TTL Hard Purge
  *

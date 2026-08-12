@@ -36,7 +36,7 @@
 				if (cancelled) return;
 				drillCount = aSnap.size;
 				/** @type {Array<{ id: string; title: string }>} */
-				const rows = [];
+				let rows = [];
 				aSnap.forEach((d) => {
 					const x = d.data() || {};
 					const title =
@@ -45,7 +45,7 @@
 						: typeof x.title === 'string' && x.title.trim() ?
 							x.title.trim()
 						: 'Assignment';
-					rows.push({ id: d.id, title });
+					rows = [...rows, { id: d.id, title }];
 				});
 				rows.sort((a, b) => a.title.localeCompare(b.title));
 				assignmentRows = rows;

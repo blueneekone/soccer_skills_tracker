@@ -1,7 +1,7 @@
 'use strict';
 
 const crypto = require('crypto');
-const stripe = require('stripe');
+
 const {onCall, onRequest, HttpsError} = require('firebase-functions/v2/https');
 const {onSchedule} = require('firebase-functions/v2/scheduler');
 const logger = require('firebase-functions/logger');

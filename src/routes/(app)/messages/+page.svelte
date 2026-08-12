@@ -74,7 +74,7 @@
 				}
 
 				const seen: Record<string, true> = {};
-				const teams: Array<{ clubId: string; teamId: string }> = [];
+				let teams: Array<{ clubId: string; teamId: string }> = [];
 
 				await Promise.all(
 					childEmails.map(async (email) => {
@@ -93,7 +93,7 @@
 								const key = `${cId}:${tId}`;
 								if (!seen[key]) {
 									seen[key] = true;
-									teams.push({ clubId: cId, teamId: tId });
+									teams = [...teams, { clubId: cId, teamId: tId }];
 								}
 							}
 						} catch {
@@ -121,12 +121,12 @@
 		(() => {
 			if (role !== 'parent') return [] as Array<{ clubId: string; teamId: string }>;
 			const seen: Record<string, true> = {};
-			const result: Array<{ clubId: string; teamId: string }> = [];
+			let result: Array<{ clubId: string; teamId: string }> = [];
 			for (const t of parentLoungeTeams) {
 				const key = `${t.clubId}:${t.teamId}`;
 				if (!seen[key]) {
 					seen[key] = true;
-					result.push(t);
+					result = [...result, t];
 				}
 			}
 			for (const m of dmItems) {
@@ -136,7 +136,7 @@
 				const key = `${cId}:${tId}`;
 				if (!seen[key]) {
 					seen[key] = true;
-					result.push({ clubId: cId, teamId: tId });
+					result = [...result, { clubId: cId, teamId: tId }];
 				}
 			}
 			return result;
@@ -164,8 +164,8 @@
 						limit(40),
 					);
 					const snap = await getDocs(q);
-					const rows: Array<Record<string, unknown> & { id: string }> = [];
-					snap.forEach((d) => rows.push({ id: d.id, ...d.data() }));
+					let rows: Array<Record<string, unknown> & { id: string }> = [];
+					snap.forEach((d) => { rows = [...rows, { id: d.id, ...d.data() }]; });
 					if (!cancelled) dmItems = rows;
 					return;
 				}
@@ -178,8 +178,8 @@
 						limit(60),
 					);
 					const snap = await getDocs(q);
-					const rows: Array<Record<string, unknown> & { id: string }> = [];
-					snap.forEach((d) => rows.push({ id: d.id, ...d.data() }));
+					let rows: Array<Record<string, unknown> & { id: string }> = [];
+					snap.forEach((d) => { rows = [...rows, { id: d.id, ...d.data() }]; });
 					if (!cancelled) dmItems = rows;
 					return;
 				}
@@ -198,8 +198,8 @@
 						limit(40),
 					);
 					const snap = await getDocs(qFrom);
-					const rows: Array<Record<string, unknown> & { id: string }> = [];
-					snap.forEach((d) => rows.push({ id: d.id, ...d.data() }));
+					let rows: Array<Record<string, unknown> & { id: string }> = [];
+					snap.forEach((d) => { rows = [...rows, { id: d.id, ...d.data() }]; });
 					if (!cancelled) dmItems = rows;
 					return;
 				}

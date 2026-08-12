@@ -45,6 +45,18 @@ function normEmail(e) {
  * Output: { boostId: string, expiresAt: string, multiplier: number }
  */
 exports.activateTelemetryBoost = onCall(async (req) => {
+    // Lazy loaded inside callable scope to bypass compilation timeout
+    const admin = await import('firebase-admin');
+    if (!admin.apps.length) {
+        admin.initializeApp();
+    }
+    const db = admin.firestore();
+    // Lazy loaded inside callable scope to bypass compilation timeout
+    const admin = await import('firebase-admin');
+    if (!admin.apps.length) {
+        admin.initializeApp();
+    }
+    
   if (!req.auth) throw new HttpsError('unauthenticated', 'Login required.');
 
   const callerEmail = normEmail(req.auth.token.email);
@@ -80,7 +92,7 @@ exports.activateTelemetryBoost = onCall(async (req) => {
   }
 
   // ── Guardianship assertion ──────────────────────────────────────────────
-  const firestore = admin.firestore();
+  
 
   if (!householdId) {
     throw new HttpsError('permission-denied', 'No household claim on token.');

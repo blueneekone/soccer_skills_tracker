@@ -26,7 +26,7 @@ exports.unlockAvatarComponent = onCall({ region: 'us-central1' }, async (req) =>
   }
 
   const assetInfo = COSMETIC_CATALOG[assetId];
-  const firestore = admin.firestore();
+  
   const userRef = firestore.doc(`users/${uid}`);
 
   try {
@@ -77,7 +77,7 @@ exports.saveActiveLoadout = onCall({ region: 'us-central1' }, async (req) => {
     throw new HttpsError('invalid-argument', 'Valid loadout object is required.');
   }
 
-  const firestore = admin.firestore();
+  
   const userRef = firestore.doc(`users/${uid}`);
 
   // In production, we'd verify that the user owns every asset in the loadout object.

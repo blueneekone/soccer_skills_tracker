@@ -136,7 +136,7 @@ exports.linkTremendousFundingSource = onCall(
         throw new HttpsError('invalid-argument', 'fundingSourceId is required.');
       }
 
-      const firestore = admin.firestore();
+      
       const hhSnap = await firestore.collection('households').doc(householdId).get();
       if (!hhSnap.exists) throw new HttpsError('not-found', 'Household not found.');
 
@@ -189,7 +189,7 @@ exports.listTremendousFundingSources = onCall(
       const callerEmail = normEmail(req.auth.token.email);
       const householdId = req.auth.token.householdId || '';
 
-      const firestore = admin.firestore();
+      
       const hhSnap = await firestore.collection('households').doc(householdId).get();
       if (!hhSnap.exists) throw new HttpsError('not-found', 'Household not found.');
       const parentEmails = Array.isArray(hhSnap.data().parentEmails) ?
@@ -273,7 +273,7 @@ exports.createBountyEscrow = onCall(
       }
 
       // ── Guardianship assertion ──────────────────────────────────────────
-      const firestore = admin.firestore();
+      
       const hhData = await assertGuardianship(
           callerEmail, householdId, playerEmail, firestore);
 
@@ -373,6 +373,18 @@ exports.createBountyEscrow = onCall(
  * Output: { success: true }
  */
 exports.voidBounty = onCall(async (req) => {
+    // Lazy loaded inside callable scope to bypass compilation timeout
+    const admin = await import('firebase-admin');
+    if (!admin.apps.length) {
+        admin.initializeApp();
+    }
+    const db = admin.firestore();
+    // Lazy loaded inside callable scope to bypass compilation timeout
+    const admin = await import('firebase-admin');
+    if (!admin.apps.length) {
+        admin.initializeApp();
+    }
+    
   if (!req.auth) throw new HttpsError('unauthenticated', 'Login required.');
 
   const callerEmail = normEmail(req.auth.token.email);
@@ -381,7 +393,7 @@ exports.voidBounty = onCall(async (req) => {
 
   if (!bountyId) throw new HttpsError('invalid-argument', 'bountyId is required.');
 
-  const firestore = admin.firestore();
+  
   const bountyRef = firestore.collection('bounties').doc(bountyId);
 
   await firestore.runTransaction(async (tx) => {

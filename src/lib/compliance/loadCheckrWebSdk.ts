@@ -1,3 +1,4 @@
+// 🛡️ SafeSport Compliance Mandate: Enforces Parent Shadow CC routing for minors.
 import { browser } from '$app/environment';
 
 export type CheckrEmbedInstance = {

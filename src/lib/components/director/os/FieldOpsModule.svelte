@@ -401,15 +401,15 @@
 				endTime: endD.toISOString(),
 				activityType
 			});
-			const rKeys = /** @type {string[]} */ ([]);
+			let rKeys = /** @type {string[]} */ ([]);
 			if (notify1h) {
-				rKeys.push('h1');
+				rKeys = [...rKeys, 'h1'];
 			}
 			if (notify30m) {
-				rKeys.push('m30');
+				rKeys = [...rKeys, 'm30'];
 			}
 			if (notifyMorning) {
-				rKeys.push('morning');
+				rKeys = [...rKeys, 'morning'];
 			}
 			try {
 			await saveTeamScheduledEvent({

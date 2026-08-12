@@ -64,12 +64,12 @@
 		if (!bracket) return [];
 		const sideMatches = matchesForSide(bracket, side);
 		const maxRound = sideMatches.reduce((max, m) => Math.max(max, m.round), 0);
-		const grouped: BracketMatch[][] = [];
+		let grouped: BracketMatch[][] = [];
 		for (let round = 0; round <= maxRound; round++) {
 			const roundMatches = sideMatches
 				.filter((m) => m.round === round)
 				.sort((a, b) => a.slot - b.slot);
-			if (roundMatches.length) grouped.push(roundMatches);
+			if (roundMatches.length) grouped = [...grouped, roundMatches];
 		}
 		return grouped;
 	}

@@ -19,7 +19,7 @@ exports.ingestBiometrics = onCall({ region: 'us-central1' }, async (req) => {
     throw new HttpsError('invalid-argument', 'date string (YYYY-MM-DD) is required.');
   }
 
-  const firestore = admin.firestore();
+  
   
   // Enforce zero-liability PII invariant
   const docRef = firestore.doc(`player_biometrics/${uid}/daily/${date}`);

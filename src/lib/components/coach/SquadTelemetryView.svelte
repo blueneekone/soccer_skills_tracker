@@ -40,7 +40,7 @@
 				q,
 				(snap) => {
 					let newEvents: Array<Record<string, any>> = [];
-					snap.forEach((d) => newEvents.push({ id: d.id, ...d.data() }));
+					snap.forEach((d) => { newEvents = [...newEvents, { id: d.id, ...d.data() }]; });
 					events = newEvents;
 				},
 				(e) => {

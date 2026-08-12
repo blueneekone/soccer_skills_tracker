@@ -25,6 +25,7 @@
 	 */
 
 	import { goto } from '$app/navigation';
+	import { untrack } from 'svelte';
 	import { browser } from '$app/environment';
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { OrgManager } from '$lib/services/org.svelte.js';
@@ -54,11 +55,15 @@
 	$effect(() => {
 		if (!browser || authStore.isLoading) return;
 		if (!authStore.isAuthenticated) {
-			goto('/login');
+			untrack(() => {
+            goto('/login');
+        });
 			return;
 		}
 		if (!isAuthorized) {
-			goto('/home');
+			untrack(() => {
+            goto('/home');
+        });
 		}
 	});
 

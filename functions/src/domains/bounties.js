@@ -24,7 +24,7 @@ exports.releaseTremendousBounty = onCall({ secrets: [TREMENDOUS_API_KEY] }, asyn
   const { bountyId } = req.data || {};
   if (!bountyId) throw new HttpsError('invalid-argument', 'bountyId is required');
 
-  const firestore = admin.firestore();
+  
   const bountyRef = firestore.collection('bounties').doc(bountyId);
 
   try {
@@ -89,7 +89,7 @@ exports.onCvVerifiedDrillWritten = onDocumentWritten('cv_verified_drill/{repId}'
     return;
   }
 
-  const firestore = admin.firestore();
+  
   const snap = event.data.after;
   if (!snap || !snap.exists) return;
   const repData = snap.data();

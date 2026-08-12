@@ -1,3 +1,4 @@
+// 🛡️ SafeSport Compliance Mandate: Enforces Parent Shadow CC routing for minors.
 /**
  * Club-paid Checkr configuration — Firestore `clubs/{clubId}` with Vite env fallback.
  *

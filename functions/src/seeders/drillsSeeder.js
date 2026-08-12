@@ -84,12 +84,24 @@ const BASE_DRILLS = [
  * Lazy-Migration: { merge: true } — never drops existing coach annotations.
  */
 exports.seedGlobalDrills = onCall(async (request) => {
+    // Lazy loaded inside callable scope to bypass compilation timeout
+    const admin = await import('firebase-admin');
+    if (!admin.apps.length) {
+        admin.initializeApp();
+    }
+    const db = admin.firestore();
+    // Lazy loaded inside callable scope to bypass compilation timeout
+    const admin = await import('firebase-admin');
+    if (!admin.apps.length) {
+        admin.initializeApp();
+    }
+    
   const role = request.auth?.token?.role;
   if (role !== 'admin') {
     throw new HttpsError('permission-denied', 'Admin role required.');
   }
 
-  const db = new Proxy({}, { get: (t, p) => { const fs = admin.firestore(); const v = fs[p]; return typeof v === 'function' ? v.bind(fs) : v; } });
+  const db = new Proxy({}, { get: (t, p) => {  const v = fs[p]; return typeof v === 'function' ? v.bind(fs) : v; } });
   const batch = db.batch();
 
   for (const drill of BASE_DRILLS) {

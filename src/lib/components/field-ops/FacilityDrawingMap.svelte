@@ -165,9 +165,9 @@ type ExtendedAdvancedMarkerElement = any & { __facilityMarkerIndex?: number };
 		poly.setOptions({ editable: true, draggable: false });
 		const path = poly.getPath();
 		const syncPathToMapData = () => {
-			const nextPath = /** @type {{ lat: number; lng: number }[]} */ ([]);
+			let nextPath = /** @type {{ lat: number; lng: number }[]} */ ([]);
 			path.forEach((/** @type {any} */ ll) => {
-				nextPath.push({ lat: ll.lat(), lng: ll.lng() });
+				nextPath = [...nextPath, { lat: ll.lat(), lng: ll.lng() }];
 			});
 			mapData = {
 				version: 1,
@@ -394,7 +394,7 @@ type ExtendedAdvancedMarkerElement = any & { __facilityMarkerIndex?: number };
 				editable: false,
 				draggable: false,
 			});
-			polygonSink.push(poly);
+			polygonSink = [...polygonSink, poly];
 			wireSavedPolygon(g, poly, i, polygonsLocked);
 			path.forEach((/** @type {any} */ ll) => bounds.extend(ll));
 		}
@@ -419,7 +419,7 @@ type ExtendedAdvancedMarkerElement = any & { __facilityMarkerIndex?: number };
 				},
 			);
 			(marker as ExtendedAdvancedMarkerElement).__facilityMarkerIndex = mi;
-			markerSink.push(marker);
+			markerSink = [...markerSink, marker];
 			if (!polygonsLocked) {
 				wireFacilityMarkerClick(g, marker);
 				wireFacilityMarkerDrag(g, marker);
@@ -504,7 +504,7 @@ type ExtendedAdvancedMarkerElement = any & { __facilityMarkerIndex?: number };
 			editable: false,
 			draggable: false,
 		});
-		refs.drawnPolygons.push(poly);
+		refs.drawnPolygons = [...refs.drawnPolygons, poly];
 		const newIndex = mapData.polygons.length;
 		mapData = {
 			version: 1,
@@ -733,7 +733,7 @@ type ExtendedAdvancedMarkerElement = any & { __facilityMarkerIndex?: number };
 						const plng = e.latLng.lng();
 
 						if (interactionModeRef.value === 'polygon') {
-							const pts = polygonDraftPtsRef.pts;
+							let pts = polygonDraftPtsRef.pts;
 							const click = { lat: plat, lng: plng };
 							if (
 								pts.length >= 3 &&
@@ -742,7 +742,7 @@ type ExtendedAdvancedMarkerElement = any & { __facilityMarkerIndex?: number };
 								finishPolygonDraft();
 								return;
 							}
-							pts.push(click);
+							pts = [...pts, click];
 							polygonDraftPts = [...pts];
 							if (!polygonDraftPreview) {
 								polygonDraftPreview = new g.maps.Polyline({
@@ -778,7 +778,7 @@ type ExtendedAdvancedMarkerElement = any & { __facilityMarkerIndex?: number };
 								});
 								const markerIdx = mapData.markers.length;
 								(m as ExtendedAdvancedMarkerElement).__facilityMarkerIndex = markerIdx;
-								refs.drawnMarkers.push(m);
+								refs.drawnMarkers = [...drawnMarkers, m];
 								wireFacilityMarkerClick(g, m);
 								wireFacilityMarkerDrag(g, m);
 								mapData = {

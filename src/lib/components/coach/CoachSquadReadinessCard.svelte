@@ -98,7 +98,7 @@
 				if (cancelled) return;
 
 				/** @type {Array<{ name: string, status: string }>} */
-				const bad = [];
+				let bad = [];
 				lookupSnap.forEach((d) => {
 					const data = d.data();
 					const name =
@@ -107,7 +107,7 @@
 						:	'';
 					const st = normStatus(data.status);
 					if (!name || OK_LOOKUP.has(st)) return;
-					bad.push({ name, status: typeof data.status === 'string' ? data.status.trim() : st });
+					bad = [...bad, { name, status: typeof data.status === 'string' ? data.status.trim() : st }];
 				});
 				bad.sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }));
 				unavailable = bad.slice(0, 8);

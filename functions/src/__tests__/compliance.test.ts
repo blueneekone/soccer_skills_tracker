@@ -1,3 +1,4 @@
+// 🛡️ SafeSport Compliance Mandate: Enforces Parent Shadow CC routing for minors.
 import { describe, it, beforeEach, afterEach } from 'node:test';
 import assert from 'node:assert';
 import { resolveParentEmails } from '../utils/resolveParentEmails';

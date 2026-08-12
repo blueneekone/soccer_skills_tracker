@@ -116,8 +116,8 @@
 			}
 			const snap = await getDocs(q);
 			/** @type {typeof results} */
-			const rows = [];
-			snap.forEach((d) => rows.push({ id: d.id, ...(d.data() as Record<string, unknown>) }));
+		let rows: Array<Record<string, unknown> & { id: string }> = [];
+			snap.forEach((d) => { rows = [...rows, { id: d.id, ...(d.data() as Record<string, unknown>) }]; });
 
 			const size = new TextEncoder().encode(JSON.stringify(rows)).length;
 			if (size > 200 * 1024) {
@@ -155,18 +155,18 @@
 			let q;
 			const ag = ageFilter !== 'all' ? ageFilter : '';
 			const pos = positionFilter !== 'all' ? positionFilter : '';
-			const constraints = [];
-			if (ag) constraints.push(where('ageGroup', '==', ag));
-			if (pos) constraints.push(where('position', '==', pos));
-			constraints.push(where('current_level', '>=', min));
-			constraints.push(orderBy('current_level', 'desc'));
-			if (lastDoc) constraints.push(startAfter(lastDoc));
-			constraints.push(limit(20));
+			let constraints: import('firebase/firestore').QueryConstraint[] = [];
+			if (ag) constraints = [...constraints, where('ageGroup', '==', ag)];
+			if (pos) constraints = [...constraints, where('position', '==', pos)];
+			constraints = [...constraints, where('current_level', '>=', min)];
+			constraints = [...constraints, orderBy('current_level', 'desc')];
+			if (lastDoc) constraints = [...constraints, startAfter(lastDoc)];
+			constraints = [...constraints, limit(20)];
 			q = query(col, ...constraints);
 
 			const snap = await getDocs(q);
-			const rows = [];
-			snap.forEach((d) => rows.push({ id: d.id, ...(d.data() as Record<string, unknown>) }));
+			let rows: Array<Record<string, unknown> & { id: string }> = [];
+			snap.forEach((d) => { rows = [...rows, { id: d.id, ...(d.data() as Record<string, unknown>) }]; });
 
 			const combined = [...results, ...rows];
 			const size = new TextEncoder().encode(JSON.stringify(combined)).length;

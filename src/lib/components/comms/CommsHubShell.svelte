@@ -124,7 +124,7 @@
 	const sidebarChannels = $derived(
 		(() => {
 			/** @type {CommsNavChannelRef[]} */
-			const list: CommsNavChannelRef[] = [
+			let list: CommsNavChannelRef[] = [
 				{ id: 'announcements', label: COMMS_CHANNEL_TYPE_REGISTRY.announcements.label },
 			];
 			if (showTeamLogistics) {
@@ -194,10 +194,10 @@
 				});
 			}
 			if (showHousehold) {
-				list.push({ id: 'household', label: 'Household' });
+				list = [...list, { id: 'household', label: 'Household' }];
 			}
 			if (showDirectMail && dmKind !== 'parent_cc') {
-				list.push({ id: 'direct_mail', label: 'Direct mail' });
+				list = [...list, { id: 'direct_mail', label: 'Direct mail' }];
 			}
 			return list;
 		})(),
@@ -207,7 +207,7 @@
 
 	const availableSpaces = $derived.by(() => {
 		/** @type {CommsSpaceRef[]} */
-		const spaces: CommsSpaceRef[] = [];
+		let spaces: CommsSpaceRef[] = [];
 		const isClubStaff =
 			role === 'director' || role === 'registrar' || role === 'admin';
 
@@ -246,7 +246,7 @@
 			const tId = deepLinkTeamId || teamId;
 			if (tId) {
 				const team = teamsStore.teams.find((t) => t.id === tId);
-				spaces.push({ kind: 'team', id: tId, label: team?.name || teamName || tId });
+				spaces = [...spaces, { kind: 'team', id: tId, label: team?.name || teamName || tId }];
 			}
 		} else if (isClubStaff && deepLinkTeamId) {
 			const team = teamsStore.teams.find((t) => t.id === deepLinkTeamId);
@@ -258,7 +258,7 @@
 		}
 
 		if (showHousehold && householdId) {
-			spaces.push({ kind: 'household', id: householdId, label: 'Household' });
+			spaces = [...spaces, { kind: 'household', id: householdId, label: 'Household' }];
 		}
 
 		return spaces;

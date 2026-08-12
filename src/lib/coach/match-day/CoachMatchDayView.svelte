@@ -135,7 +135,7 @@
 				if (cancelled) return;
 
 				/** @type {Operative[]} */
-				const rows = [];
+				let rows = [];
 				lookupSnap.forEach((d) => {
 					const data = d.data();
 					const name =
@@ -149,7 +149,7 @@
 						:	'MID';
 					const sid =
 						d.id.length > 14 ? d.id.slice(0, 10).toUpperCase() + 'â€¦' : d.id.toUpperCase();
-					rows.push({ id: d.id, shortId: sid, name, role: pos });
+					rows = [...rows, { id: d.id, shortId: sid, name, role: pos }];
 				});
 				rows.sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }));
 				operatives = rows;

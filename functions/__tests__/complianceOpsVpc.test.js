@@ -1,3 +1,4 @@
+// 🛡️ SafeSport Compliance Mandate: Enforces Parent Shadow CC routing for minors.
 /**
 
  * complianceOpsVpc.test.js — LAUNCH-VPC permanent parent-only golden path guards.

@@ -125,7 +125,7 @@ exports.getUploadToken = onCall({region: REGION}, async (request) => {
 
   // Pre-register the clip in Firestore as 'processing' so the client can
   // track status without polling Storage.
-  const db = new Proxy({}, { get: (t, p) => { const fs = admin.firestore(); const v = fs[p]; return typeof v === 'function' ? v.bind(fs) : v; } });
+  const db = new Proxy({}, { get: (t, p) => {  const v = fs[p]; return typeof v === 'function' ? v.bind(fs) : v; } });
   const mediaRef = db.doc(`player_media/${callerUid}/clips/${clipId}`);
   await mediaRef.set({
     clipId,
@@ -178,7 +178,7 @@ exports.deleteAllPlayerMedia = onCall({region: REGION}, async (request) => {
     throw new HttpsError('permission-denied', 'Director or parent role required.');
   }
 
-  const db = new Proxy({}, { get: (t, p) => { const fs = admin.firestore(); const v = fs[p]; return typeof v === 'function' ? v.bind(fs) : v; } });
+  const db = new Proxy({}, { get: (t, p) => {  const v = fs[p]; return typeof v === 'function' ? v.bind(fs) : v; } });
   const bucket = admin.storage().bucket();
 
   // Load all clips for this player

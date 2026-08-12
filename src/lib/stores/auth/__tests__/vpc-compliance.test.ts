@@ -1,3 +1,4 @@
+// 🛡️ SafeSport Compliance Mandate: Enforces Parent Shadow CC routing for minors.
 import { describe, it, expect, vi } from 'vitest';
 import { isDataCollectionRoute } from '$lib/auth/route-policies.js';
 import * as roleDerivations from '$lib/stores/auth/roleDerivations.js';

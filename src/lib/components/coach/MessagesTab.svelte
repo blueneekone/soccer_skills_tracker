@@ -100,10 +100,10 @@
 		const unsub = onSnapshot(
 			qy,
 			(snap) => {
-				const next = [];
+			let next = [];
 				for (const d of snap.docs) {
 					const row = mapClubChannelDoc(d.id, d.data(), tId);
-					if (row) next.push(row);
+					if (row) next = [...next, row];
 				}
 				next.sort((a, b) => a.label.localeCompare(b.label));
 				customChannels = next;

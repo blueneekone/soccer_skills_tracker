@@ -199,7 +199,7 @@
 				query(collection(db, 'player_lookup'), where('teamId', '==', tId)),
 			);
 			const seen: Record<string, true> = {};
-			const options: Array<{ email: string; label: string }> = [];
+			let options: Array<{ email: string; label: string }> = [];
 
 			for (const row of rosterSnap.docs) {
 				const playerEmail = row.id.toLowerCase();
@@ -213,7 +213,7 @@
 						: playerEmail;
 				if (direct && !seen[direct]) {
 					seen[direct] = true;
-					options.push({ email: direct, label: `${direct} (${playerName})` });
+					options = [...options, { email: direct, label: `${direct} (${playerName})` }];
 				}
 			}
 			parentOptions = options.sort((a, b) => a.label.localeCompare(b.label));
@@ -276,14 +276,14 @@
 		void getDoc(doc(db, 'teams', tId)).then((snap) => {
 			if (!snap.exists()) return;
 			const data = snap.data();
-			const emails: string[] = [];
+			let emails: string[] = [];
 			if (Array.isArray(data.coachEmails)) {
 				data.coachEmails.forEach((e: unknown) => {
 					const n = String(e ?? '').trim().toLowerCase();
-					if (n) emails.push(n);
+					if (n) emails = [...emails, n];
 				});
 			} else if (typeof data.coachEmail === 'string' && data.coachEmail.trim()) {
-				emails.push(data.coachEmail.trim().toLowerCase());
+				emails = [...emails, data.coachEmail.trim().toLowerCase()];
 			}
 			coachEmail = emails[0] ?? '';
 		});

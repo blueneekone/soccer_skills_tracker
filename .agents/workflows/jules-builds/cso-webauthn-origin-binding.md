@@ -1,35 +1,64 @@
 ---
-description: This workflow instructs the agent to correctly configure the WebAuthn deployment strategy, rectifying the Relying Party ID mismatches and preventing the SecurityError exception when directory accounts attempt passkey generation.
+name: cso-webauthn-origin-binding
+description: Resolves Relying Party (RP) ID and subdomain origin mismatches causing browser-level SecurityError exceptions during Passkey generation [591].
 ---
 
-name: cso-webauthn-origin-binding
-description: Resolves Relying Party (RP) ID mismatches causing Passkey generation failures.
-1. Context & Persona Formulation:
+# Blueprint 2: Security Engineering of Cryptographic Origin Binding (WebAuthn)
 
-You are acting exclusively as the Chief Security Officer (CSO).
+This workflow instructs Google Jules to align WebAuthn configurations across development and production environments, resolving the `SecurityError` DOMExceptions during biometric passkey ceremonies [576, 591].
 
-Your objective is to resolve a critical SecurityError during passkey generation caused by an RP ID and Origin mismatch in the @simplewebauthn/server configuration.
+## 1. Context & Persona Formulation
+* **Persona**: Act exclusively as the **Chief Security Officer (CSO)** [40/533, 51/664, 591].
+* **Objective**: Establish secure cryptographic bindings between client biometrics and the backend relying party credentials across both testing subdomains and main domains [578, 591].
 
-2. Environment Variable Synchronization (The Root Cause):
+---
 
-The Issue: The compliance split codebase is defaulting to localhost in production because it lacks the necessary environment configurations.
+## 2. Environment Variable Synchronization (The Root Cause)
+* **The Problem**: The `functions-compliance/` directory lacks the appropriate context when deployed because variables default to `localhost`, throwing an invalid RP ID domain suffix abort on live HTTPS domains [576, 592].
+* **The Solution**: Update `scripts/bundle-functions.cjs` or generate a secure script `scripts/sync-compliance-env.sh` to synchronize configurations prior to deployment [592].
+* **Action**: Inject these variables into the compliance codebase execution workspace [592]:
+  ```bash
+  WEBAUTHN_RP_ID=sstracker.app
+  WEBAUTHN_RP_ORIGIN=https://sstracker.app,https://preview.sstracker.app
+  ```
 
-The Execution: Generate a secure pre-deploy script (e.g., scripts/sync-compliance-env.sh) that explicitly copies the correct .env.sports-skill-tracker-dev file into the functions-compliance/.env directory before executing the bundle-functions.cjs orchestrator.
+---
 
-Ensure the target .env file explicitly sets WEBAUTHN_RP_ID=sstracker.app and WEBAUTHN_RP_ORIGIN=https://sstracker.app (or their respective development equivalents).
+## 3. SimpleWebAuthn Server-Side Hardening
+* **Action**: Edit compliance routines, including `webauthnRegisterStart.js` and `webauthnRegisterFinish.js` [593]:
+  1. **Sanitize RP ID**: Ensure `rpID` is parsed dynamically from the environment. Strip any protocol scheme (`http://` or `https://`) and port suffixes [533, 593].
+     ```typescript
+     const rpID = process.env.WEBAUTHN_RP_ID?.replace(/^https?:\/\//, '').split(':')[0] || 'sstracker.app';
+     ```
+  2. **Subdomain Array Mapping**: Map the `expectedOrigin` parameter in `verifyRegistrationResponse()` and `verifyAuthenticationResponse()` to accept an array of strings [533, 578]:
+     ```typescript
+     const expectedOrigins = process.env.WEBAUTHN_RP_ORIGIN?.split(',') || ['https://sstracker.app', 'https://preview.sstracker.app'];
+     ```
+     This supports validation across both preview deployments and the live production domain safely [533, 578].
 
-3. SimpleWebAuthn Verification Hardening:
+---
 
-The Execution: Open the passkey callables (e.g., webauthnRegisterStart.js, webauthnRegisterFinish.js).
+## 4. Client-Side Error Boundary Interception
+* **Action**: Refactor the browser biometric integration block to explicitly capture WebAuthn exceptions and translate them into actionable on-screen notices instead of failing silently [533, 577]:
+  ```typescript
+  try {
+      // Passkey ceremony execution
+  } catch (error: any) {
+      if (error.name === 'SecurityError') {
+          ui.showError('Security Guard: Passkeys require an encrypted HTTPS connection with matching Relying Party ID.');
+      } else if (error.name === 'NotAllowedError') {
+          ui.showError('Biometric Cancelled: The biometric prompt was dismissed or timed out.');
+      } else if (error.name === 'InvalidStateError') {
+          ui.showError('State Conflict: This authenticator is already registered or unsupported on this device.');
+      } else {
+          ui.showError(`Passkey Generation Failed: ${error.message}`);
+      }
+  }
+  ```
 
-Ensure that the expectedOrigin parameter in verifyRegistrationResponse is formatted to accept the exact scheme and hostname defined in process.env.WEBAUTHN_RP_ORIGIN. If multiple preview domains exist, format this as an array of acceptable origins.
+---
 
-Verify that generateRegistrationOptions utilizes process.env.WEBAUTHN_RP_ID for the rpID configuration, stripping any port or protocol prefixes.
-
-4. Error Handling & UI Notification:
-
-Ensure the frontend webauthn client-side API safely catches NotAllowedError, InvalidStateError, and SecurityError DOMExceptions. Map these exact errors to structured, human-readable UI notifications rather than crashing silently.
-
-5. Verification:
-
-Do not alter UI design components. Ensure TypeScript compilation passes with zero any type violations.
+## 5. Verification & Compliance Sign-Off
+* Prepend the mandatory SafeSport Audit compliance banner to all modified trigger files:
+  `// 🛡️ SafeSport Compliance Mandate: Secure WebAuthn Verification Protocol Active`
+* Validate that Svelte compiles with 0 errors and TypeScript contains 0 `any` types [112, 594].

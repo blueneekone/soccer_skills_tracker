@@ -46,7 +46,7 @@
 		}
 
 		const seen = new Set<string>();
-		const rows: AnnRow[] = [];
+		let rows: AnnRow[] = [];
 
 		const mergeSnap = (snap: {
 			forEach: (fn: (d: { id: string; data: () => Record<string, unknown> }) => void) => void;
@@ -54,7 +54,7 @@
 			snap.forEach((d) => {
 				if (seen.has(d.id)) return;
 				seen.add(d.id);
-				rows.push(mapAnnRow(d.id, d.data()));
+				rows = [...rows, mapAnnRow(d.id, d.data())];
 			});
 		};
 

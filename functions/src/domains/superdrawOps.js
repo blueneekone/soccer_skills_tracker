@@ -48,7 +48,7 @@ exports.purchaseSuperdrawTickets = onCall(
     });
 
     const secret = STRIPE_SECRET_KEY.value() || process.env.STRIPE_SECRET_KEY || 'mock_key';
-    const stripe = require("stripe");
+    
     const stripeClient = stripe(secret);
 
     const session = await stripeClient.checkout.sessions.create({

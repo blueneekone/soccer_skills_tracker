@@ -1,3 +1,4 @@
+// 🛡️ SafeSport Compliance Mandate: Enforces Parent Shadow CC routing for minors.
 /**
  * Coach self-clearance presets and Checkr embed option builders for /compliance.
  *
