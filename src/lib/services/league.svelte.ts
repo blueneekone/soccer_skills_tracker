@@ -495,18 +495,31 @@ export class LeagueManager {
 
 		if (fixtureSnap.empty) return [];
 
-		const { getDoc } = await import('firebase/firestore');
+		const { documentId } = await import('firebase/firestore');
 
-		const results = await Promise.all(
-			fixtureSnap.docs.map(async (fd) => {
-				const snap = await getDoc(doc(db, 'match_results', fd.id));
-				if (!snap.exists()) return null;
-				return { id: snap.id, ...snap.data() } as LeagueSchema.MatchResult;
-			}),
+		const fixtureIds = fixtureSnap.docs.map(fd => fd.id);
+		const chunkSize = 30; // Firestore limit for 'in' queries is 30
+		const chunks: string[][] = [];
+
+		for (let i = 0; i < fixtureIds.length; i += chunkSize) {
+			chunks.push(fixtureIds.slice(i, i + chunkSize));
+		}
+
+		const chunkedResults = await Promise.all(
+			chunks.map(async (chunk) => {
+				const chunkSnap = await getDocs(
+					query(
+						collection(db, 'match_results'),
+						where(documentId(), 'in', chunk)
+					)
+				);
+				return chunkSnap.docs.map(doc => ({ id: doc.id, ...doc.data() } as LeagueSchema.MatchResult));
+			})
 		);
 
+		const results = chunkedResults.flat();
+
 		return results
-			.filter((r): r is LeagueSchema.MatchResult => r !== null)
 			.sort((a, b) => toTimestampMs(b.recordedAt) - toTimestampMs(a.recordedAt));
 	}
 
