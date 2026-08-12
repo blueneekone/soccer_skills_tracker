@@ -106,6 +106,7 @@ test.beforeEach(() => {
     subscriptionHandlers = proxyquire('../../../subscription.js', {
         'stripe': stripeMock,
         'firebase-admin': adminMock,
+        'firebase-admin/firestore': { getFirestore: () => adminMock.firestore() },
         'firebase-functions/v2/https': functionsHttpsMock,
         'firebase-functions/logger': { info: () => {}, error: () => {}, warn: () => {} },
         // Need to mock the secret from functions-shared/index.js if gamificationWorkoutXp is missing.
@@ -121,6 +122,7 @@ test.beforeEach(() => {
     webhookHandlers = proxyquire('../webhooksOps.js', {
         'stripe': stripeMock,
         'firebase-admin': adminMock,
+        'firebase-admin/firestore': { getFirestore: () => adminMock.firestore() },
         'firebase-functions/v2/https': functionsHttpsMock,
         'firebase-functions/logger': { warn: () => {}, error: () => {}, info: () => {} },
         '../../../functions-shared/index.js': {
@@ -210,7 +212,7 @@ test('stripeCommerce: Webhook Validation & Database Entitlement Hydration', asyn
 
     assert.strictEqual(statusCode, 200, 'Webhook should return 200 OK');
 
-    const expectedPath = 'clubs/club_mock_id/entitlements/current';
+    const expectedPath = 'license_entitlements/club_mock_id';
     assert.ok(mockDb[expectedPath], 'Entitlement should be hydrated at the correct path');
     assert.strictEqual(mockDb[expectedPath].tier, 'pro');
     assert.strictEqual(mockDb[expectedPath].subscription_status, 'active');

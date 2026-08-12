@@ -145,7 +145,7 @@
 		<section class="director-console-page__section">
 			<DirectorCommandCenter {clubId} />
 			
-			<div class="director-hud-grid bento-span-12 tw-gap-4 tw-mt-6" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, clamp(280px, 30vw, 350px)), 1fr));">
+			<div class="director-hud-grid tw-w-full tw-gap-4 tw-mt-6" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, clamp(280px, 30vw, 350px)), 1fr));">
 				<!-- Club Revenue Analytics -->
 				<div data-card="revenue" class="st-bento director-card revenue-engine-analytics dark-form-surface tw-border tw-border-slate-700 tw-bg-slate-900/80 tw-p-4 tw-rounded-none tw-min-w-0" style="border-radius: 0px !important; background: #0f172a;">
 					<div class="tw-flex tw-justify-between tw-items-center tw-mb-2 tw-min-w-0">
