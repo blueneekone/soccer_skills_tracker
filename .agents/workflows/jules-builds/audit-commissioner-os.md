@@ -1,24 +1,16 @@
 ---
-description: 
+name: audit-commissioner-os
+description: Asynchronous Cloud VM workflow to audit and design the Commissioner OS.
 ---
+# Swarm Audit: Commissioner OS (Federation Command)
 
-#### name: audit-commissioner-os
-#### description: TDD Swarm Audit and Recovery for the Commissioner OS & Federation Command.
+@jules, please execute the visual and functional audit for the Commissioner OS.
 
-**1. Context & Global Mandates:**
-* Read `@GEMINI.md` and `@ROADMAP.md`. 
-* You are strictly bound by the "Pessimistic Definition of Done". 
+### Rules & Gates
+1. Apply `.agents/skills/b815-hydration` and `.agents/skills/zero-trust`.
+2. **Circuit Breaker:** Authorized max of 3 attempts. If failing, revert, log to `/audit-artifacts/commissioner/`, and stop.
 
-**2. The Anti-Looping Circuit Breaker (CRITICAL):**
-* **Maximum of 3 iteration attempts** per component. If it fails, revert, log to `/audit-artifacts/commissioner/`, and move on.
-
-**3. Zero-Touch Authentication (CSO):**
-* Mint a Custom JWT token (`admin.auth().createCustomToken(uid)`) for the **Commissioner** persona and inject it into local storage.
-
-**4. Execution Sequence:**
-* **Architecture (Architect):** Enforce B815 Defensive Hydration guards on all master tenant architecture queries, ensuring read-only "God-mode" aggregation is strictly walled off from Epic 1 global admin scripts. 
-* **Design (CDO):** Maintain strict 90-degree corners and high-density data panels aligned with the Tactical SIEM aesthetic to handle dense tournament brackets, compliance matrices, and ODP analytics. **CRITICAL:** Absolutely NO gamification chamfers are permitted. 
-* **QA (CRO):** Execute E2E tests for the tournament multi-venue bracket scheduling and ODP Talent Pipeline readouts. Capture MP4 recordings and layout screenshots. 
-
-**5. Artifact Delivery:**
-* Save all visual proof to `/audit-artifacts/commissioner/`. Open a single PR detailing the fixes.
+### Execution Sequence
+- **Architecture:** Enforce B815 defensive hydration on multi-tenant federation queries. Walled off read-only ODP lookups from Admin global scripts.
+- **Design:** Render dense data-analytics panels with strict 90-degree corners. Ensure absolutely no gamification chamfers are used.
+- **QA:** Run tournament operations and scheduling E2E tests. Save visual proof to `/audit-artifacts/commissioner/`. Open a non-conflicting PR.

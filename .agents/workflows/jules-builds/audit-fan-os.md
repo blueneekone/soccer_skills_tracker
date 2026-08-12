@@ -1,25 +1,16 @@
 ---
-description: 
+name: audit-fan-os
+description: Asynchronous Cloud VM workflow to audit and design the Fan OS.
 ---
+# Swarm Audit: Fan OS (Broadcast Monetization)
 
-#### name: audit-fan-os
-#### description: TDD Swarm Audit and Recovery for the Fan OS & Broadcast Monetization.
+@jules, please execute the visual and functional audit for the Fan OS.
 
-**1. Context & Global Mandates:**
-* Read `@GEMINI.md` and `@ROADMAP.md`. 
-* You are strictly bound by the "Pessimistic Definition of Done". 
+### Rules & Gates
+1. Apply `.agents/skills/b815-hydration`.
+2. **Circuit Breaker:** Authorized max of 3 attempts. If failing, revert, log to `/audit-artifacts/fan/`, and stop.
 
-**2. The Anti-Looping Circuit Breaker (CRITICAL):**
-* **Maximum of 3 iteration attempts** per component. If it fails, revert, log to `/audit-artifacts/fan/`, and move on.
-
-**3. Zero-Touch Authentication (CSO):**
-* Mint a Custom JWT token (`admin.auth().createCustomToken(uid)`) for the **Fan** persona and inject it into local storage.
-
-**4. Execution Sequence:**
-* **Architecture (Architect):** Ensure the Stripe-powered Superdraw Fundraising Engine correctly validates `endTime` and integrates the Stripe SDK safely. 
-* **Gamification (CPO):** Verify that gamification overlays on live streams correctly allow remote fans to vote on MVP and react with digital confetti.
-* **Design (CDO):** Apply interactive broadcast overlays and gamification aesthetics. Maintain the Z0 Void Black canvas, but aggressively utilize Data Cyan and Action Gold accents to drive audience engagement and frictionless digital ticketing.
-* **QA (CRO):** Run visual regression tests. Capture MP4 recordings and layout screenshots. 
-
-**5. Artifact Delivery:**
-* Save all visual proof to `/audit-artifacts/fan/`. Open a single PR detailing the fixes.
+### Execution Sequence
+- **Architecture:** Securely bind the Stripe-powered Superdraw Fundraising trigger, verifying campaign endTime validation.
+- **Design:** Implement high-contrast broadcast overlay HUDs. Allow live fan interaction emoji particle streams to render on top of live video feeds.
+- **QA:** Run visual regression tests. Deposit visual proof to `/audit-artifacts/fan/`. Open a non-conflicting PR.

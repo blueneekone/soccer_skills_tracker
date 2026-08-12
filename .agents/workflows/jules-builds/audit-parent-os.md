@@ -1,25 +1,17 @@
 ---
-description: 
+name: audit-parent-os
+description: Asynchronous Cloud VM workflow to audit and design the Parent OS Compliance Vault.
 ---
+# Swarm Audit: Parent OS (Compliance Vault)
 
-#### name: audit-parent-os
-#### description: TDD Swarm Audit and Recovery for the Parent OS & Compliance Vault.
+@jules, please execute the visual and functional audit for the Parent OS.
 
-**1. Context & Global Mandates:**
-* Read `@GEMINI.md` and `@ROADMAP.md`. 
-* You are strictly bound by the "Pessimistic Definition of Done". 
+### Rules & Gates
+1. Apply `.agents/skills/vanguard-trinity` and `.agents/skills/b815-hydration`.
+2. **Circuit Breaker:** Authorized max of 3 attempts. If failing, revert, log to `/audit-artifacts/parent/`, and stop.
 
-**2. The Anti-Looping Circuit Breaker (CRITICAL):**
-* **Maximum of 3 iteration attempts** per component. If it fails, revert, log to `/audit-artifacts/parent/`, and move on.
-
-**3. Zero-Touch Authentication (CSO):**
-* Mint a Custom JWT token (`admin.auth().createCustomToken(uid)`) for the **Parent** persona and inject it into local storage.
-
-**4. Execution Sequence:**
-* **Architecture (Architect):** Open `src/routes/(app)/parent/dashboard/+page.svelte`. Locate and remove any unused `doc` and `onSnapshot` zombie Firebase SDK imports that bypass B815 hydration rules.
-* **Security (CSO):** Ensure COPPA 2.0 / VPC queues and HIPAA interceptors are properly gated and functioning without bypassing Zero-Trust rules.
-* **Design (CDO):** Apply a calm, flat aesthetic. Locate instances of standard rounded corners (`tw-rounded-[var(--radius-premium,24px)]`) on Bento Grid panels and replace them with the strict Vanguard chamfered clip-path: `style="clip-path: polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px);"`. Remove the `tw-rounded-[...]` classes entirely. Verify the absence of gamification elements.
-* **QA (CRO):** Run Playwright tests and execute the CRO browser subagent validation. 
-
-**5. Artifact Delivery:**
-* Save all visual proof to `/audit-artifacts/parent/`. Open a single PR detailing the fixes.
+### Execution Sequence
+- **Architecture:** Audit and purge any unused Firebase SDK zombie imports. Ensure the HIPAA gate layout is fractured into Trinity structures.
+- **Security:** Securely bind COPPA 2.0 parental consent enforcers to WebAuthn Biometric enclaves. 
+- **Design:** Enforce a calm, flat trust aesthetic. Re-style standard panel borders to use 24px border radii. Apply the 15-minute post-match EQ metric embargo.
+- **QA:** Run aesthetics-verification tests. Save visual proof to `/audit-artifacts/parent/`. Open a non-conflicting PR.

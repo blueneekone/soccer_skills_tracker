@@ -1,27 +1,17 @@
 ---
-description: 
+name: audit-admin-os
+description: Asynchronous Cloud VM workflow to audit, secure, and design the Global Admin Console.
 ---
+# Swarm Audit: Global Admin Console (Z4)
 
-#### name: audit-admin-os
-#### description: TDD Swarm Audit and Recovery for the Global Admin Console.
+@jules, please execute the visual and functional audit for the Global Admin Console.
 
-**1. Context & Global Mandates:**
-* Read `@GEMINI.md` and `@ROADMAP.md`. 
-* You are strictly bound by the "SSTracker Nexus Command: Engineering Protocols and Master Roadmap".
-* **Pessimistic Definition of Done:** You must mathematically prove the code and layout are stable via passing tests before marking this complete.
+### Rules & Gates
+1. Apply `.agents/skills/b815-hydration` and `.agents/skills/zero-trust`.
+2. **Circuit Breaker:** Authorized max of 3 attempts. If failing, revert, log to `/audit-artifacts/admin/`, and stop.
 
-**2. The Anti-Looping Circuit Breaker (CRITICAL):**
-* You are authorized a **maximum of 3 iteration attempts** per component or failing test in your Critic-Augmented Generation loop. 
-* If a visual regression or hydration bug remains red after 3 attempts, revert the file, log the failure in `/audit-artifacts/admin/`, and immediately move on.
-
-**3. Zero-Touch Authentication (CSO):**
-* Utilize the Firebase MCP Server tools to programmatically mint a Custom JWT token (`admin.auth().createCustomToken(uid)`) for the **Admin** persona. Inject this into the browser subagent's local storage.
-
-**4. Execution Sequence:**
-* **Architecture (Architect):** Scan the Admin OS. Ensure all `getDocs` and `onSnapshot` queries are wrapped in strict B815 Defensive Hydration guards (`if (!db || !authStore.isAuthenticated) return;`). Enforce the 80-line function limit.
-* **Security (CSO):** Verify that all protected RBAC fields (`role`, `clubId`) are explicitly stripped from frontend payloads before any database mutation.
-* **Design (CDO):** Enforce the 12-column asymmetric Bento Grid using fluid `clamp` math. Ensure top telemetry cards do not squish. Enforce the 60-30-10 palette (Void Black Z0 Canvas, Navy Slate Z2 Panels) and ensure `Geist Mono` is strictly used for numerical data readouts.
-* **QA (CRO):** Run Playwright/Puppeteer. Capture MP4 recordings and layout screenshots. 
-
-**5. Artifact Delivery:**
-* Save all visual proof to `/audit-artifacts/admin/`. Open a single PR detailing the fixes.
+### Execution Sequence
+- **Architecture:** Wrap all `getDocs` and `onSnapshot` calls in B815 guards. Maintain the 80-line limit.
+- **Security:** Ensure account impersonation routes securely mint custom JWTs via `admin.auth().createCustomToken(uid)`.
+- **Design:** Implement the strict 12-column asymmetric Bento Grid with fluid clamp math. Standardize the data tables with crisp 1px borders (#334155) and Geist Mono numbers.
+- **QA:** Run Playwright and Vitest. Save visual artifacts to `/audit-artifacts/admin/`. Open a non-conflicting PR.

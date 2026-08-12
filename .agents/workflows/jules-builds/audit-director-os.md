@@ -1,26 +1,17 @@
 ---
-description: 
+name: audit-director-os
+description: Asynchronous Cloud VM workflow to audit and design the Director OS B2B Revenue Engine.
 ---
+# Swarm Audit: Director OS (B2B Revenue Engine)
 
-#### name: audit-director-os
-#### description: TDD Swarm Audit and Recovery for the Director OS & B2B Revenue Engine.
+@jules, please execute the visual and functional audit for the Director OS.
 
-**1. Context & Global Mandates:**
-* Read `@GEMINI.md` and `@ROADMAP.md`. 
-* You are strictly bound by the "Pessimistic Definition of Done". You must mathematically prove the code and layout are stable via passing tests before marking this complete.
+### Rules & Gates
+1. Apply `.agents/skills/svelte5-strictness` and `.agents/skills/b815-hydration`.
+2. **Circuit Breaker:** Authorized max of 3 attempts. If failing, revert, log to `/audit-artifacts/director/`, and stop.
 
-**2. The Anti-Looping Circuit Breaker (CRITICAL):**
-* You are authorized a **maximum of 3 iteration attempts** per component or failing test in your Critic-Augmented Generation loop. 
-* If a visual regression or hydration bug remains red after 3 attempts, revert the file, log the failure in `/audit-artifacts/director/`, and immediately move on.
-
-**3. Zero-Touch Authentication (CSO):**
-* Utilize the Firebase MCP Server tools to programmatically mint a Custom JWT token (`admin.auth().createCustomToken(uid)`) for the **Director** persona. Inject this into the browser subagent's local storage.
-
-**4. Execution Sequence:**
-* **Architecture (Architect):** Open `src/routes/(app)/director/dashboard/+page.svelte`. Fix critical Svelte 5 reactivity violations that trigger memory loops during context switching. Wrap direct mutations of `clubId`, `activeTab`, or `workspaceContextStore.setActiveClubId` inside strict `untrack(() => { ... })` closures. Ensure the 80-line function limit is maintained. 
-* **Security (CSO):** Verify that all protected RBAC fields (`role`, `clubId`) are explicitly stripped from frontend payloads before any database mutation.
-* **Design (CDO):** Locate legacy CSS grids (`bento-grid`, `bento-grid--liquid`) inside `<section>` elements. Replace legacy classes with strict Vanguard Tailwind grid structures (e.g., `tw-grid`, `tw-grid-cols-12`, `lg:tw-col-span-8`). Maintain strict 90-degree corners on all core layout panels.
-* **QA (CRO):** Run `npm run check` to verify zero type or reactivity compilation errors. Capture MP4 recordings and layout screenshots. 
-
-**5. Artifact Delivery:**
-* Save all visual proof to `/audit-artifacts/director/`. Open a single PR detailing the fixes.
+### Execution Sequence
+- **Architecture:** Fix Svelte 5 reactivity loops by wrapping dashboard tab mutations inside strict `untrack()` gates. 
+- **Security:** Wire Stripe Connect checkout session mappings server-side.
+- **Design:** Render the 12-column asymmetric Bento Grid for logistics and field matrix slots. Implement color-coded compliance scoring dots on the Compliance Tab.
+- **QA:** Ensure svelte-check returns 0 errors. Deposit visual proof to `/audit-artifacts/director/`. Open a non-conflicting PR.
