@@ -110,7 +110,7 @@
 			<div class="tw-absolute tw-inset-0 tw-bg-gradient-to-tr tw-from-[#000000] tw-to-transparent tw-z-10 tw-pointer-events-none tw-transition-opacity tw-duration-700 group-hover:tw-opacity-30"></div>
 			<!-- Generated product preview -->
 			<div class="tw-w-full tw-h-full tw-flex tw-items-center tw-justify-center tw-bg-[#000000] tw-transition-transform tw-duration-700 group-hover:tw-scale-[1.02]">
-				<img src="https://images.unsplash.com/photo-1518605368461-1e1e38ce81b5?ixlib=rb-4.0.3&auto=format&fit=crop&w=1280&q=80" alt="Product Preview" class="tw-w-full tw-h-full tw-object-cover tw-opacity-80" />
+				<img src="/nexus-command-preview.png" alt="Product Preview" class="tw-w-full tw-h-full tw-object-cover tw-opacity-80" />
 			</div>
 			<!-- Scanline overlay -->
 			<div class="tw-absolute tw-inset-0 tw-z-10 tw-pointer-events-none" style="opacity: 0.03; background: repeating-linear-gradient(0deg, transparent, transparent 3px, #fff 3px, #fff 4px);"></div>
