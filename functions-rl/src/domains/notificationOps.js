@@ -535,7 +535,7 @@ async function emailsToUids(emails) {
     try {
       const ur = await admin.auth().getUserByEmail(key);
       if (ur && ur.uid) uids.push(ur.uid);
-    } catch (_) {}
+    } catch (_) { /* ignore batch errors */ }
   }));
   return [...new Set(uids)];
 }
