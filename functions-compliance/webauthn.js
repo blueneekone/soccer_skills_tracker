@@ -34,9 +34,9 @@ const db = new Proxy({}, { get: (t, p) => { const fs = admin.firestore(); const 
 // ── RP configuration ────────────────────────────────────────────────────────
 // RP_ID and RP_ORIGIN are set via Firebase environment config / defineString so
 // no production values are hard-coded here.
-const RP_ID = process.env.WEBAUTHN_RP_ID || 'localhost';
+const RP_ID = (process.env.WEBAUTHN_RP_ID || 'localhost').replace(/^https?:\/\//, '').split(':')[0];
 const RP_NAME = 'Nexus Command';
-const RP_ORIGIN = process.env.WEBAUTHN_RP_ORIGIN || 'http://localhost:5173';
+const RP_ORIGIN = (process.env.WEBAUTHN_RP_ORIGIN || 'http://localhost:5173').split(',').map(s => s.trim());
 
 const CHALLENGE_TTL_MS = 5 * 60 * 1000; // 5 minutes
 

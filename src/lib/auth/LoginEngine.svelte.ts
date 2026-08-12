@@ -158,6 +158,10 @@ class LoginEngine {
       if (err instanceof Error && err.name === 'NotAllowedError') {
         // User dismissed the passkey prompt — not an error state
         this.error = '';
+      } else if (err instanceof Error && err.name === 'InvalidStateError') {
+        this.error = 'A passkey is already registered for this device or account.';
+      } else if (err instanceof Error && err.name === 'SecurityError') {
+        this.error = 'Passkey operation is not permitted by this browser or origin.';
       } else {
         this.error = userFacingErrorMessage(
           err,
@@ -224,6 +228,10 @@ class LoginEngine {
       } catch (err) {
         if (err instanceof Error && err.name === 'NotAllowedError') {
           this.error = '';
+        } else if (err instanceof Error && err.name === 'InvalidStateError') {
+          this.error = 'A passkey is already registered for this device or account.';
+        } else if (err instanceof Error && err.name === 'SecurityError') {
+          this.error = 'Passkey operation is not permitted by this browser or origin.';
         } else {
           this.error = userFacingErrorMessage(
             err,
@@ -248,6 +256,10 @@ class LoginEngine {
       // Defensive: nested try/catch above should cover normal paths
       if (err instanceof Error && err.name === 'NotAllowedError') {
         this.error = '';
+      } else if (err instanceof Error && err.name === 'InvalidStateError') {
+        this.error = 'A passkey is already registered for this device or account.';
+      } else if (err instanceof Error && err.name === 'SecurityError') {
+        this.error = 'Passkey operation is not permitted by this browser or origin.';
       } else {
         this.error = userFacingErrorMessage(
           err,
