@@ -262,21 +262,30 @@ exports.exportStateRoster = onCall({region: REGION}, async (request) => {
 
   /** @type {Map<string, Record<string, string>>} */
   const jerseyByTeam = new Map();
-  await Promise.all(teams.map(async (team) => {
-    const rosterSnap = await db().collection('rosters').doc(team.id).get();
-    const jerseys = rosterSnap.exists && rosterSnap.data().jerseys &&
-      typeof rosterSnap.data().jerseys === 'object' ?
-      rosterSnap.data().jerseys :
-      {};
-    /** @type {Record<string, string>} */
-    const map = {};
-    for (const [name, num] of Object.entries(jerseys)) {
-      if (typeof name === 'string' && name.trim() && num != null) {
-        map[name.trim()] = String(num);
-      }
+  if (teams.length > 0) {
+    const chunkSize = 100;
+    for (let i = 0; i < teams.length; i += chunkSize) {
+      const chunk = teams.slice(i, i + chunkSize);
+      const refs = chunk.map((t) => db().collection('rosters').doc(t.id));
+      const snaps = await db().getAll(...refs);
+
+      snaps.forEach((rosterSnap, index) => {
+        const teamId = chunk[index].id;
+        const jerseys = rosterSnap.exists && rosterSnap.data().jerseys &&
+          typeof rosterSnap.data().jerseys === 'object' ?
+          rosterSnap.data().jerseys :
+          {};
+        /** @type {Record<string, string>} */
+        const map = {};
+        for (const [name, num] of Object.entries(jerseys)) {
+          if (typeof name === 'string' && name.trim() && num != null) {
+            map[name.trim()] = String(num);
+          }
+        }
+        jerseyByTeam.set(teamId, map);
+      });
     }
-    jerseyByTeam.set(team.id, map);
-  }));
+  }
 
   /** @type {Array<Record<string, string>>} */
   const exportRows = players
