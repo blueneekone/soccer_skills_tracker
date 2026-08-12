@@ -5,7 +5,9 @@ test.describe('Chief Design Officer: Viewport Cohesion & Color Taxonomy', () => 
     const viewports = [375, 768, 1024];
     for (const width of viewports) {
       await page.setViewportSize({ width, height: 800 });
-      await page.goto('/player/dashboard');
+      await page.goto('/player/dashboard', { waitUntil: 'load' });
+      await page.waitForSelector('.player-hud-root', { state: 'visible', timeout: 10000 }).catch(() => {});
+      await page.waitForTimeout(500);
       
       // Ensure the background is unshaded Void Black
       const bodyBg = await page.evaluate(() => getComputedStyle(document.body).backgroundColor);
