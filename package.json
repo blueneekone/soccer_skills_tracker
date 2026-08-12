@@ -28,7 +28,7 @@
     "test:e2e:ui": "playwright test --ui",
     "lint:functions": "npm --prefix functions run lint",
     "deploy:functions": "npm run lint:functions && firebase deploy --only functions",
-    "bundle:functions": "node scripts/bundle-functions.cjs",
+    "bundle:functions": "./scripts/sync-compliance-env.sh && node scripts/bundle-functions.cjs",
     "sync:functions-vendor": "node scripts/sync-functions-vendor.cjs",
     "test:functions-deploy": "node --test functions/__tests__/functionsDeploy.guard.test.js && node scripts/verify-codebase-deps.cjs",
     "predeploy:integrations": "npm run bundle:functions && npm run test:functions-deploy && node scripts/smoke-require-codebase.cjs integrations getWeatherConditions && node scripts/smoke-require-codebase.cjs integrations --simulate-cloud",
