@@ -1,8 +1,8 @@
 const { execSync } = require('child_process');
 
-const personas = ["admin", "player", "coach", "director", "parent", "commissioner", "fan"];
+const personas = ["admin", "player", "coach", "director", "parent", "commissioner", "fan", "public"];
 
-console.log("⚡ INITIATING MASTER PARALLEL SWARM DISPATCH SEQUENCE...");
+console.log("⚡ INITIATING MASTER PARALLEL SWARM DISPATCH SEQUENCE (8 PERSOAS)...");
 
 personas.forEach((persona, index) => {
   const title = `Swarm Audit & Recovery: ${persona.toUpperCase()} OS`;
@@ -13,11 +13,10 @@ personas.forEach((persona, index) => {
   
   try {
     execSync(command, { stdio: 'inherit' });
-    console.log(`✅ Spawned successfully for ${persona.toUpperCase()} OS.
-`);
+    console.log(`✅ Spawned successfully for ${persona.toUpperCase()} OS.\n`);
   } catch (err) {
     console.error(`❌ Failed to spawn VM for ${persona.toUpperCase()} OS: `, err.message);
   }
 });
 
-console.log("🎯 ALL 7 PLATFORM PERSOAS DISPATCHED IN PARALLEL! YOU CAN CLOSE YOUR LAPTOP.");
+console.log("🎯 ALL 8 PLATFORM PERSOAS DISPATCHED IN PARALLEL! YOU CAN CLOSE YOUR LAPTOP.");
