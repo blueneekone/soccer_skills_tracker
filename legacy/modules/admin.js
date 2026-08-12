@@ -3,6 +3,20 @@ import { auth, db } from "../firebase-config.js";
 import { collection, query, orderBy, limit, getDocs, doc, setDoc, deleteDoc, addDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 import { initBrandingPanel } from "./branding.js";
 
+function escapeHTML(str) {
+    if (str == null) return '';
+    return String(str).replace(/[&<>"']/g, function(match) {
+        switch (match) {
+            case '&': return '&amp;';
+            case '<': return '&lt;';
+            case '>': return '&gt;';
+            case '"': return '&quot;';
+            case "'": return '&#39;';
+            default: return match;
+        }
+    });
+}
+
 // ==========================================
 // 1. SECURITY AUDIT LOGGING ENGINE
 // ==========================================
@@ -39,10 +53,10 @@ export const loadSecurityLogs = async () => {
             const data = doc.data();
             const dateStr = data.timestamp ? data.timestamp.toDate().toLocaleString() : "N/A";
             html += `<tr>
-                <td style="font-size:11px; color:#64748b;">${dateStr}</td>
-                <td style="color:#0ea5e9; font-weight:bold;">${data.admin}</td>
-                <td><span style="background:#fef2f2; color:#b91c1c; padding:4px 8px; border-radius:6px; font-size:10px; font-weight:800; letter-spacing:0.5px;">${data.action}</span></td>
-                <td><b>${data.target}</b> <br><span style="font-size:10px; color:#64748b;">${data.details}</span></td>
+                <td style="font-size:11px; color:#64748b;">${escapeHTML(dateStr)}</td>
+                <td style="color:#0ea5e9; font-weight:bold;">${escapeHTML(data.admin)}</td>
+                <td><span style="background:#fef2f2; color:#b91c1c; padding:4px 8px; border-radius:6px; font-size:10px; font-weight:800; letter-spacing:0.5px;">${escapeHTML(data.action)}</span></td>
+                <td><b>${escapeHTML(data.target)}</b> <br><span style="font-size:10px; color:#64748b;">${escapeHTML(data.details)}</span></td>
             </tr>`;
         });
         
