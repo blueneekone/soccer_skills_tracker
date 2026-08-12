@@ -20,7 +20,7 @@ import { isFirestoreReady } from "$lib/utils/firestoreGuard.js";
 import { untrack } from "svelte";
 
 export class AdminUsersEngine {
-	impersonateUserFn = httpsCallable(functions, 'impersonateUser');
+	impersonateUserFn = httpsCallable(functions, 'impersonateUserFn');
 	purgeUserDataFn = httpsCallable(functions, 'purgeUserDataFn');
 
 	rows = $state<GlobalUserRow[]>([]);

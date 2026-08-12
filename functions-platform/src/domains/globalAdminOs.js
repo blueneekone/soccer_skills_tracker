@@ -1,5 +1,10 @@
 'use strict';
 
+// Domain files use firebase-admin directly. The app is initialized by the
+// index entry point (functions/index.js → bootstrapAdmin) before any domain
+// module is loaded — this is the standard pattern across all domain files.
+const admin = require('firebase-admin');
+
 const { onCall, HttpsError } = require('firebase-functions/v2/https');
 const logger = require('firebase-functions/logger');
 const { stripProtectedFields } = require('../utils/rbacUtil');
