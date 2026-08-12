@@ -36,8 +36,11 @@
 const {onCall, HttpsError} = require('firebase-functions/v2/https');
 const logger = require('firebase-functions/logger');
 const admin = require('firebase-admin');
+const {defineSecret} = require('firebase-functions/params');
+const stripe = require('stripe');
 
 const REGION = 'us-east1';
+const STRIPE_SECRET_KEY = defineSecret('STRIPE_SECRET_KEY');
 
 const TIER_CONFIG = {
   basecamp: {planTier: 'base_camp', maxPlayers: 30, label: 'Base Camp'},
@@ -73,50 +76,36 @@ exports.createSubscription = onCall({region: REGION}, async (request) => {
   const { getFirestore } = require("firebase-admin/firestore");
   const db = getFirestore();
 
-  // ── STUB: Directly activate subscription in Firestore ────────────────────
-  // PRODUCTION: Remove this block and return Stripe session URL instead.
+  // ── LIVE Stripe Connect Checkout Session ─────────────────────────────────
+  const secretKey = STRIPE_SECRET_KEY.value();
+  if (!secretKey) {
+    throw new HttpsError('failed-precondition', 'Stripe secret key not configured.');
+  }
 
-  // Authoritative write: license_entitlements/{clubId} — the Player OS gate
-  // (playerOsAccess.js / billing.js) reads subscription_status (snake_case)
-  // from this collection to decide read-only mode. tenantId === clubId in this
-  // codebase (JWT token.clubId / token.tenantId resolve to the same value).
-  const entitlementRef = db.doc(`license_entitlements/${tenantId}`);
-  await entitlementRef.set({
-    subscription_status: 'active',
-    tier: config.planTier,
-    maxPlayers: config.maxPlayers,
-    subscribedAt: now,
-    subscribedByUid: callerUid,
-  }, {merge: true});
-
-  // Mirror write to organizations/{tenantId} for legacy Director OS reads.
-  const orgRef = db.doc(`organizations/${tenantId}`);
-  await orgRef.set({
-    subscriptionStatus: 'active',
-    planTier: config.planTier,
-    maxPlayers: config.maxPlayers,
-    subscribedAt: now,
-    subscribedByUid: callerUid,
-    stripepriceId: priceId ?? null,
-  }, {merge: true});
-
-  // Immutable subscription log
-  await db.collection('subscription_logs').add({
-    tenantId,
-    callerUid,
-    tierId,
-    planTier: config.planTier,
-    priceId: priceId ?? null,
-    action: 'SUBSCRIBED_STUB',
-    timestamp: now,
+  const stripeClient = stripe(secretKey);
+  const session = await stripeClient.checkout.sessions.create({
+    mode: 'subscription',
+    line_items: [{ price: priceId || 'price_dummy', quantity: 1 }],
+    customer_email: request.auth.token.email || undefined,
+    metadata: {
+      clubId: tenantId,
+      tierType: tierId,
+    },
+    subscription_data: {
+      application_fee_percent: 0,
+      metadata: {
+        clubId: tenantId,
+        tierType: tierId,
+      }
+    },
+    success_url: 'https://vanguardcommand.app/setup?checkout=success',
+    cancel_url:  'https://vanguardcommand.app/pricing?checkout=cancelled',
   });
 
-  logger.info('[createSubscription] stub activated', {tenantId, tierId});
+  logger.info('[createSubscription] Stripe session created', {tenantId, tierId, sessionId: session.id});
 
   return {
-    status: 'activated',
-    planTier: config.planTier,
-    label: config.label,
-    // sessionUrl: null — set when Stripe integration is live
+    status: 'pending',
+    sessionUrl: session.url,
   };
 });
