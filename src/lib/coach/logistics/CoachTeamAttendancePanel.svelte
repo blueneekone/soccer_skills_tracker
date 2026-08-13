@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { db, auth } from '$lib/firebase.js';
 	import { isFirestoreReady } from '$lib/utils/firestoreGuard.js';
+	import { authStore } from '$lib/stores/auth.svelte.js';
 	import {
 		collection,
 		doc,
@@ -29,6 +30,7 @@
 	let activeSessionId = $state(null);
 
 	$effect(() => {
+		if (!db || !authStore.isAuthenticated) return;
 		if (!teamId || !isFirestoreReady()) {
 			players = [];
 			rosterLoading = false;
@@ -58,6 +60,7 @@
 	});
 
 	$effect(() => {
+		if (!db || !authStore.isAuthenticated) return;
 		if (!teamId || !isFirestoreReady()) {
 			activeSessionId = null;
 			sessionLoading = false;

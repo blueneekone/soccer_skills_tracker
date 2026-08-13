@@ -59,7 +59,7 @@ export class RecruitersEngine {
 
 	pushToast(text: string, tone: 'info' | 'ok' | 'warn' = 'info') {
 		const id = ++this.toastSeq;
-		this.toasts.push({ id, text, tone });
+		this.toasts = [...this.toasts, { id, text, tone }];
 		setTimeout(() => {
 			this.toasts = this.toasts.filter((t) => t.id !== id);
 		}, 4200);

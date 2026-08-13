@@ -73,7 +73,7 @@ export class IntentEngine {
 				});
 			}
 		);
-		this._unsubs.push(unsub);
+		this._unsubs = [...this._unsubs, unsub];
 	}
 
 	disconnect() {

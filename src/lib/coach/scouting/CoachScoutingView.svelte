@@ -145,6 +145,7 @@
 		}
 		rosterLoading = true;
 		rosterErr = '';
+		if (!db || !authStore.isAuthenticated) return;
 		const q = query(collection(db, 'player_lookup'), where('teamId', '==', teamId));
 		const unsub = onSnapshot(
 			q,
@@ -183,7 +184,7 @@
 
 	$effect(() => {
 		const teamId = teamScope.selectedTeamId;
-		if (!browser || !teamId) return;
+		if (!browser || !teamId || !db || !authStore.isAuthenticated) return;
 		const unsub = onSnapshot(collection(db, 'teams', teamId, 'scouting_assessments'), (snap) => {
 			const next = { ...scoresByProspect };
 			for (const d of snap.docs) {

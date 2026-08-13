@@ -177,6 +177,7 @@ export class CoachTacticalEngine {
 				return;
 			}
 
+			if (!db || !authStore.isAuthenticated) return;
 			const lookupSnap = await getDocs(
 				query(collection(db, 'player_lookup'), where('teamId', '==', tid)),
 			);

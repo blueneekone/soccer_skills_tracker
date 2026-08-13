@@ -67,6 +67,7 @@ export class AdminUsersEngine {
 	}
 
 	loadCount = async (searchTerm: string, tab: GlobalUsersTab) => {
+		if (!db || !authStore.isAuthenticated) return;
 		try {
 			this.totalEstimate = await fetchUsersCount(db, searchTerm, tab);
 		} catch (e) {
@@ -78,6 +79,7 @@ export class AdminUsersEngine {
 	}
 
 	loadPage = async (searchTerm: string, afterEmail: string, tab: GlobalUsersTab) => {
+		if (!db || !authStore.isAuthenticated) return;
 		this.loading = true;
 		this.err = '';
 		try {

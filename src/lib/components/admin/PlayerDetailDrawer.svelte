@@ -7,6 +7,8 @@
 	
 	let stats: { level: number; xp_this_week: number; streak_days: number } | null = $state(null);
 	
+	import { authStore } from '$lib/stores/auth.svelte.js';
+
 	$effect(() => {
 		const row = enterprisePlayerDrawer.selected;
 		if (!row || !row.statsDocId) {
@@ -15,6 +17,7 @@
 		}
 		
 		const db = getActiveDb();
+		if (!db || !authStore.isAuthenticated) return;
 		const docRef = doc(db, 'player_stats', row.statsDocId);
 		
 		const unsub = onSnapshot(docRef, (snap) => {
