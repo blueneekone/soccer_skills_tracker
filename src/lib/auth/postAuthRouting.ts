@@ -27,6 +27,12 @@ export async function navigateAfterLogin(
 		/* non-fatal */
 	}
 
+	try {
+		await auth.currentUser?.getIdToken(true);
+	} catch {
+		/* non-fatal */
+	}
+
 	const u = auth.currentUser;
 	if (await requiresPasskeyEnrollmentBeforeApp(u)) {
 		await untrack(() => goto(PASSKEY_ENROLL_ROUTE, { replaceState }));

@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import { onMount } from 'svelte';
+	import { onMount, untrack } from 'svelte';
 
 	onMount(() => {
-		goto('/coach/tactical' + window.location.search, { replaceState: true });
+		untrack(() => goto('/coach/tactical' + window.location.search, { replaceState: true }));
 	});
 </script>

@@ -11,9 +11,7 @@
 	$effect(() => {
 		const role = authStore.userProfile?.role ?? '';
 		if (!['super_admin', 'global_admin'].includes(role)) {
-			untrack(() => {
-            goto('/director');
-        });
+			untrack(() => goto('/director'));
 		}
 	});
 

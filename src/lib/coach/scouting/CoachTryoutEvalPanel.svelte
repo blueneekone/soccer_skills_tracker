@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { browser } from '$app/environment';
 	import { auth, db, functions } from '$lib/firebase.js';
+	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { onAuthStateChanged } from 'firebase/auth';
 	import { collection, onSnapshot, query, where } from 'firebase/firestore';
 	import { httpsCallable } from 'firebase/functions';
@@ -75,6 +76,7 @@
 					programs = [];
 					return;
 				}
+				if (!db || !authStore.isAuthenticated) return;
 				const q = query(collection(db, 'tryout_programs'), where('clubId', '==', cid));
 				unsubPrograms = onSnapshot(q, (snap) => {
 					programs = snap.docs
@@ -117,6 +119,7 @@
 			loading = false;
 		};
 
+		if (!db || !authStore.isAuthenticated) return;
 		const unsubR = onSnapshot(regQ, (snap) => {
 			regRows = snap.docs.map((d) => {
 				const x = d.data();
@@ -152,6 +155,7 @@
 			matrix = defaultMatrix();
 			return;
 		}
+		if (!db || !authStore.isAuthenticated) return;
 		const unsub = onSnapshot(
 			query(collection(db, 'tryout_programs', pid, 'evaluations')),
 			(snap) => {
