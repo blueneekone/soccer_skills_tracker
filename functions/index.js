@@ -48,8 +48,7 @@ const marketingOps = require('./src/domains/marketingOps.js');
 exports.dispatchWeeklyRoiNudges = marketingOps.dispatchWeeklyRoiNudges;
 
 const reportOps = require('./src/domains/reportOps.js');
-exports.batchDispatchReportCards = reportOps.batchDispatchReportCards;
-exports.generatePdfReportCard = reportOps.generatePdfReportCard;
+
 
 const complianceOps = require('./src/domains/complianceOps.js');
 exports.parentSubmitVpcIntent = complianceOps.parentSubmitVpcIntent;
@@ -61,31 +60,15 @@ exports.generateVpcChallenge = vpcOps.generateVpcChallenge;
 exports.verifyVpcSignature = vpcOps.verifyVpcSignature;
 
 const adminOps = require('./src/domains/adminOps.js');
-exports.updateUserRole = adminOps.updateUserRole;
-exports.listTeamsForClub = adminOps.listTeamsForClub;
-exports.logSecurityAudit = adminOps.logSecurityAudit;
-exports.executeSupportCommand = adminOps.executeSupportCommand;
-
 const dailyIntelOps = require('./src/domains/dailyIntelOps.js');
 exports.fetchDailyIntel = dailyIntelOps.fetchDailyIntel;
 
 // --- Auth & Setup Bugfix Exports ---
 const operativeOps = require('./src/domains/operativeOps.js');
-exports.parentSignCoppaWaiver = operativeOps.parentSignCoppaWaiver;
-exports.parentProvisionOperative = operativeOps.parentProvisionOperative;
-exports.parentLinkOperativeToTeam = operativeOps.parentLinkOperativeToTeam;
-exports.parentReconcileHousehold = operativeOps.parentReconcileHousehold;
-exports.generatePlayerOTP = operativeOps.generatePlayerOTP;
-exports.operativeSignInWithDispatch = operativeOps.operativeSignInWithDispatch;
-exports.validatePlayerOTP = operativeOps.validatePlayerOTP;
 exports.createCommsChannel = operativeOps.createCommsChannel;
 
-exports.listJoinableClubs = adminOps.listJoinableClubs;
-exports.claimCoachInvite = adminOps.claimCoachInvite;
-exports.resolveDispatchCode = adminOps.resolveDispatchCode;
 
 const coachRosterIngestOps = require('./src/domains/coachRosterIngestOps.js');
-exports.coachRosterIngest = coachRosterIngestOps.coachRosterIngest;
 const commsChannelOps = require('./src/domains/commsChannelOps.js');
 exports.coachProvisionStaffInternal = commsChannelOps.coachProvisionStaffInternal;
 exports.coachProvisionParentLounge = commsChannelOps.coachProvisionParentLounge;
@@ -94,9 +77,6 @@ exports.mirrorScheduleToLogistics = commsChannelOps.mirrorScheduleToLogistics;
 exports.sendCoachPlayerMessage = operativeOps.sendCoachPlayerMessage;
 exports.sendChannelMessage = operativeOps.sendChannelMessage;
 exports.sendHouseholdMessage = operativeOps.sendHouseholdMessage;
-exports.impersonateUserFn = operativeOps.impersonateUserFn;
-exports.purgeUserDataFn = operativeOps.purgeUserDataFn;
-
 const comms = require('./comms.js');
 exports.safeSportBroadcast = comms.safeSportBroadcast;
 exports.clubSportBroadcast = comms.clubSportBroadcast;
@@ -128,8 +108,6 @@ exports.acknowledgeBroadcast = webhooksOps.acknowledgeBroadcast;
 exports.getBroadcastAckStatus = webhooksOps.getBroadcastAckStatus;
 
 const weatherOps = require('./src/domains/weatherOps.js');
-exports.processTomorrowIoAlert = weatherOps.processTomorrowIoAlert;
-
 function exportScheduler(target, name, modFn) {
   if (process.env.SCHEDULERS_ENABLED === 'true') {
     target[name] = modFn;
@@ -141,31 +119,17 @@ const commerce = require('./commerce.js');
 exportScheduler(exports, 'sendRegistrationPaymentReminders', commerce.sendRegistrationPaymentReminders);
 
 const globalAdminOs = require('./src/domains/globalAdminOs.js');
-exports.loginAs = globalAdminOs.loginAs;
-exports.rightToBeForgotten = globalAdminOs.rightToBeForgotten;
-exports.listAllUsers = globalAdminOs.listAllUsers;
-exports.repairUserClaims = globalAdminOs.repairUserClaims;
-exports.resetUserPassword = globalAdminOs.resetUserPassword;
-exports.disableUser = globalAdminOs.disableUser;
-exports.purgeUser = globalAdminOs.purgeUser;
-exports.createTeam = globalAdminOs.createTeam;
-exports.deleteTeam = globalAdminOs.deleteTeam;
-exports.linkUserToTeam = globalAdminOs.linkUserToTeam;
 exports.consumeInviteCode = require('./invites').consumeInviteCode;
 exports.redeemMagicUplink = require('./magicUplinks').redeemMagicUplink;
 
 const b2bEnrollmentOps = require('./src/domains/b2bEnrollmentOps.js');
-exports.enrollIndependentDirector = b2bEnrollmentOps.enrollIndependentDirector;
-exports.enrollGovernedDirector = b2bEnrollmentOps.enrollGovernedDirector;
 
 const federationInvites = require('./lib/domains/federationInvites.js');
 exports.consumeFederationInvite = federationInvites.consumeFederationInvite;
 
 const ingestRoster = require("./ingestRoster.js");
-exports.ingestRoster = ingestRoster.ingestRoster;
 
 const { onChannelCreated } = require('./src/onChannelCreated');
-exports.onChannelCreated = onChannelCreated;
 
 const scheduledPiiShredder = require('./src/scheduledPiiShredder');
 exports.scheduledPiiShredder = scheduledPiiShredder.scheduledPiiShredder;

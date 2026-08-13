@@ -373,17 +373,7 @@ exports.createBountyEscrow = onCall(
  * Output: { success: true }
  */
 exports.voidBounty = onCall(async (req) => {
-    // Lazy loaded inside callable scope to bypass compilation timeout
-    const admin = await import('firebase-admin');
-    if (!admin.apps.length) {
-        admin.initializeApp();
-    }
-    const db = admin.firestore();
-    // Lazy loaded inside callable scope to bypass compilation timeout
-    const admin = await import('firebase-admin');
-    if (!admin.apps.length) {
-        admin.initializeApp();
-    }
+    const firestore = db();
     
   if (!req.auth) throw new HttpsError('unauthenticated', 'Login required.');
 

@@ -21,11 +21,11 @@ service cloud.firestore {
 
     // ✅ Multi-Tenant Integrity Guard via Custom Claims
     match /clubs/{clubId} {
-      allow read, write: if isAuthenticated() && request.auth.token.clubId == clubId;
+      allow read, write: if isAuthenticated() && (request.auth.token.clubId == clubId || request.auth.token.admin == true);
       
       // Nested collections under clubs inherit the tenant scope
       match /{allChildren=**} {
-        allow read, write: if isAuthenticated() && request.auth.token.clubId == clubId;
+        allow read, write: if isAuthenticated() && (request.auth.token.clubId == clubId || request.auth.token.admin == true);
       }
     }
 
@@ -42,6 +42,10 @@ service cloud.firestore {
       // Role field cannot be mutated directly by client-side unauthenticated or basic user writes
       allow create, update: if isAuthenticated() && 
         (request.resource.data.role == resource.data.role || request.auth.token.admin == true);
+    }
+
+    match /vpc_requests/{requestId} {
+      allow read, write: if isAuthenticated() && request.auth.token.admin == true;
     }
 
     // Default match to prevent global unauthenticated reads/writes

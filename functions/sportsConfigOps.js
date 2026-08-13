@@ -151,17 +151,7 @@ function isStructuralChange(existing, incoming) {
  * schemaVersion unchanged.
  */
 exports.upsertSportsConfig = onCall(async (request) => {
-    // Lazy loaded inside callable scope to bypass compilation timeout
-    const admin = await import('firebase-admin');
-    if (!admin.apps.length) {
-        admin.initializeApp();
-    }
-    const db = admin.firestore();
-    // Lazy loaded inside callable scope to bypass compilation timeout
-    const admin = await import('firebase-admin');
-    if (!admin.apps.length) {
-        admin.initializeApp();
-    }
+    const firestore = db();
     
   const role = request.auth?.token?.role;
   if (role !== 'super_admin' && role !== 'global_admin') {
@@ -214,17 +204,7 @@ exports.upsertSportsConfig = onCall(async (request) => {
  * `includeArchived: true` is passed.
  */
 exports.listSportsConfigs = onCall(async (request) => {
-    // Lazy loaded inside callable scope to bypass compilation timeout
-    const admin = await import('firebase-admin');
-    if (!admin.apps.length) {
-        admin.initializeApp();
-    }
-    const db = admin.firestore();
-    // Lazy loaded inside callable scope to bypass compilation timeout
-    const admin = await import('firebase-admin');
-    if (!admin.apps.length) {
-        admin.initializeApp();
-    }
+    const firestore = db();
     
   const role = request.auth?.token?.role;
   if (role !== 'super_admin' && role !== 'global_admin') {
@@ -254,17 +234,7 @@ exports.listSportsConfigs = onCall(async (request) => {
  * Hard delete is blocked at the Firestore rules layer.
  */
 exports.archiveSportsConfig = onCall(async (request) => {
-    // Lazy loaded inside callable scope to bypass compilation timeout
-    const admin = await import('firebase-admin');
-    if (!admin.apps.length) {
-        admin.initializeApp();
-    }
-    const db = admin.firestore();
-    // Lazy loaded inside callable scope to bypass compilation timeout
-    const admin = await import('firebase-admin');
-    if (!admin.apps.length) {
-        admin.initializeApp();
-    }
+    const firestore = db();
     
   const role = request.auth?.token?.role;
   if (role !== 'super_admin' && role !== 'global_admin') {

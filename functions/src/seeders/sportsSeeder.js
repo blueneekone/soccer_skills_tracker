@@ -563,17 +563,7 @@ exports.BASE_SPORTS_CONFIGS = BASE_SPORTS_CONFIGS;
  * Role-gated: caller must hold `super_admin` or `global_admin` custom claim.
  */
 exports.seedBaseSportsConfigs = onCall(async (request) => {
-    // Lazy loaded inside callable scope to bypass compilation timeout
-    const admin = await import('firebase-admin');
-    if (!admin.apps.length) {
-        admin.initializeApp();
-    }
-    const db = admin.firestore();
-    // Lazy loaded inside callable scope to bypass compilation timeout
-    const admin = await import('firebase-admin');
-    if (!admin.apps.length) {
-        admin.initializeApp();
-    }
+    const firestore = db();
     
   const role = request.auth?.token?.role;
   if (role !== 'super_admin' && role !== 'global_admin') {
