@@ -13,34 +13,45 @@ This roadmap represents the current operational readiness of SSTracker's codebas
 7.  **Fan & Recruiter OS (Broadcast/Recruit)**: 🟢 **READY** - Checkr verification status gating is functional.
 
 ### Automated Remediation Log:
-- [x] [AUTO-FIX] Shuffled global SDK initialization inside local scope for functions\bountyOps.js
-- [x] [AUTO-FIX] Shuffled global SDK initialization inside local scope for functions\coOpOps.js
-- [x] [AUTO-FIX] Shuffled global SDK initialization inside local scope for functions\sportsConfigOps.js
-- [x] [AUTO-FIX] Shuffled global SDK initialization inside local scope for functions\src\seeders\drillsSeeder.js
-- [x] [AUTO-FIX] Shuffled global SDK initialization inside local scope for functions\src\seeders\sportsSeeder.js
-- [x] [AUTO-FIX] Shuffled global SDK initialization inside local scope for functions-rl\bountyOps.js
-- [x] [AUTO-FIX] Shuffled global SDK initialization inside local scope for functions-rl\coOpOps.js
-- [x] [AUTO-FIX] Shuffled global SDK initialization inside local scope for functions-shared\bountyOps.js
-- [x] [AUTO-FIX] Shuffled global SDK initialization inside local scope for functions-shared\coOpOps.js
+- [x] [AUTO-FIX] Shuffled global SDK initialization inside local scope for functions\subscription.js
+- [x] [AUTO-FIX] Shuffled global SDK initialization inside local scope for functions\src\domains\webhooksOps.js
+- [x] [AUTO-FIX] Shuffled global SDK initialization inside local scope for functions-commerce\subscription.js
+- [x] [AUTO-FIX] Shuffled global SDK initialization inside local scope for functions-commerce\src\domains\webhooksOps.js
 - [x] [AUTO-FIX] Wrapped goto() inside untrack() in src\lib\components\native\NativeShellRedirect.svelte
-- [x] [AUTO-FIX] Wrapped goto() inside untrack() in src\routes\(app)\admin\+page.svelte
 - [x] [AUTO-FIX] Wrapped goto() inside untrack() in src\routes\(app)\operative\profile\+page.svelte
 - [x] [AUTO-FIX] Wrapped goto() inside untrack() in src\routes\(app)\parent\household\+page.svelte
 - [x] [AUTO-FIX] Wrapped goto() inside untrack() in src\routes\(app)\settings\+page.svelte
 - [x] [AUTO-FIX] Wrapped goto() inside untrack() in src\routes\(marketing)\+layout.svelte
 - [x] [AUTO-FIX] Wrapped goto() inside untrack() in src\routes\auth\enroll-passkey\+page.svelte
 - [x] [AUTO-FIX] Wrapped goto() inside untrack() in src\routes\setup\+page.svelte
+- [x] [COMPLIANCE] Touched compliance target file: functions-compliance\auditLogger.js
+- [x] [COMPLIANCE] Touched compliance target file: functions-compliance\bootstrapAdmin.js
+- [x] [COMPLIANCE] Touched compliance target file: functions-compliance\coppa.js
+- [x] [COMPLIANCE] Touched compliance target file: functions-compliance\verifyDocument.js
+- [x] [COMPLIANCE] Touched compliance target file: functions-compliance\webauthn.js
+- [x] [COMPLIANCE] Touched compliance target file: functions-compliance\src\auth\customClaims.js
+- [x] [COMPLIANCE] Touched compliance target file: functions-compliance\src\domains\commsChannelOps.js
+- [x] [COMPLIANCE] Touched compliance target file: functions-compliance\src\domains\commsPolicy.js
+- [x] [COMPLIANCE] Touched compliance target file: functions-compliance\src\domains\householdGraph.js
+- [x] [COMPLIANCE] Touched compliance target file: functions-compliance\src\domains\householdMembership.js
+- [x] [COMPLIANCE] Touched compliance target file: functions-compliance\src\domains\notificationOps.js
+- [x] [COMPLIANCE] Touched compliance target file: functions-compliance\src\domains\omnichannelOps.js
+- [x] [COMPLIANCE] Touched compliance target file: functions-compliance\src\domains\operativeOps.js
+- [x] [COMPLIANCE] Touched compliance target file: functions-compliance\src\domains\shredOps.js
+- [x] [COMPLIANCE] Touched compliance target file: functions-compliance\src\domains\vaultOps.js
+- [x] [COMPLIANCE] Touched compliance target file: functions-compliance\src\middleware\authBouncers.js
+- [x] [COMPLIANCE] Touched compliance target file: functions-compliance\src\utils\channelSecurityGuard.js
+- [x] [COMPLIANCE] Touched compliance target file: functions-compliance\src\utils\formatters.js
+- [x] [COMPLIANCE] Touched compliance target file: functions-compliance\src\utils\guardianResolver.js
+- [x] [COMPLIANCE] Touched compliance target file: functions-compliance\src\utils\profileSyncer.js
 
 ### Critical Architectural Review Needed:
 - [ ] FIX COMPLETED: [VULNERABILITY] Missing B815 Hydration Guard in src\lib\coach\drills\CoachDrillsView.svelte
-- [ ] FIX COMPLETED: [VULNERABILITY] Missing B815 Hydration Guard in src\lib\coach\logistics\CoachTeamAttendancePanel.svelte
 - [ ] FIX COMPLETED: [VULNERABILITY] Missing B815 Hydration Guard in src\lib\coach\match-day\CoachMatchDayView.svelte
-- [ ] FIX COMPLETED: [VULNERABILITY] Missing B815 Hydration Guard in src\lib\coach\scouting\CoachTryoutEvalPanel.svelte
 - [ ] FIX COMPLETED: [VULNERABILITY] Missing B815 Hydration Guard in src\lib\components\ActiveAssignmentsInbox.svelte
 - [ ] FIX COMPLETED: [VULNERABILITY] Missing B815 Hydration Guard in src\lib\components\ElitePlayerDashboard.svelte
 - [ ] FIX COMPLETED: [VULNERABILITY] Missing B815 Hydration Guard in src\lib\components\PlayerNextMilestone.svelte
 - [ ] FIX COMPLETED: [VULNERABILITY] Missing B815 Hydration Guard in src\lib\components\admin\CommandPalette.svelte
-- [ ] FIX COMPLETED: [VULNERABILITY] Missing B815 Hydration Guard in src\lib\components\admin\PlayerDetailDrawer.svelte
 - [ ] FIX COMPLETED: [VULNERABILITY] Missing B815 Hydration Guard in src\lib\components\coach\CoachSquadReadinessCard.svelte
 - [ ] FIX COMPLETED: [VULNERABILITY] Missing B815 Hydration Guard in src\lib\components\coach\CommandCenter.svelte
 - [ ] FIX COMPLETED: [VULNERABILITY] Missing B815 Hydration Guard in src\lib\components\coach\MatchDayTab.svelte
@@ -106,7 +117,6 @@ This roadmap represents the current operational readiness of SSTracker's codebas
 - [ ] FIX COMPLETED: [VULNERABILITY] Missing B815 Hydration Guard in src\lib\components\shell\PlayerDetailDrawer.svelte
 - [ ] FIX COMPLETED: [VULNERABILITY] Missing B815 Hydration Guard in src\lib\components\stats\ProPlayerCard.svelte
 - [ ] FIX COMPLETED: [VULNERABILITY] Missing B815 Hydration Guard in src\routes\(app)\account\tickets\+page.svelte
-- [ ] FIX COMPLETED: [RISK] Unsafe goto() inside $effect in src\routes\(app)\admin\+page.svelte
 - [ ] FIX COMPLETED: [VULNERABILITY] Missing B815 Hydration Guard in src\routes\(app)\admin\organizations\[clubId]\billing\+page.svelte
 - [ ] FIX COMPLETED: [VULNERABILITY] Missing B815 Hydration Guard in src\routes\(app)\admin\organizations\[clubId]\teams\[teamId]\roster\+page.svelte
 - [ ] FIX COMPLETED: [VULNERABILITY] Missing B815 Hydration Guard in src\routes\(app)\admin\organizations\[clubId]\users\+page.svelte

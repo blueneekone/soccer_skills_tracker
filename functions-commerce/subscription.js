@@ -82,7 +82,7 @@ exports.createSubscription = onCall({region: REGION}, async (request) => {
     throw new HttpsError('failed-precondition', 'Stripe secret key not configured.');
   }
 
-  const stripeClient = require('stripe')(secretKey);
+  
   const session = await stripeClient.checkout.sessions.create({
     mode: 'subscription',
     line_items: [{ price: priceId || 'price_dummy', quantity: 1 }],
