@@ -1,4 +1,4 @@
-﻿/* eslint-disable quotes */
+/* eslint-disable quotes */
 /**
  * subscription.js — Marketing / Stripe Checkout Stub
  * ────────────────────────────────────────────────────────────────────────────
@@ -73,7 +73,7 @@ exports.createSubscription = onCall({region: REGION}, async (request) => {
 
   const config = TIER_CONFIG[tierId];
   const now = admin.firestore.FieldValue.serverTimestamp();
-  const { getFirestore } = require("firebase-admin/firestore");
+  const { getFirestore } = require('firebase-admin/firestore');
   const db = getFirestore();
 
   // ── LIVE Stripe Connect Checkout Session ─────────────────────────────────
@@ -82,7 +82,7 @@ exports.createSubscription = onCall({region: REGION}, async (request) => {
     throw new HttpsError('failed-precondition', 'Stripe secret key not configured.');
   }
 
-  const stripeClient = stripe(secretKey);
+  const stripeClient = require('stripe')(secretKey);
   const session = await stripeClient.checkout.sessions.create({
     mode: 'subscription',
     line_items: [{ price: priceId || 'price_dummy', quantity: 1 }],
