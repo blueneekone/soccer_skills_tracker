@@ -79,7 +79,7 @@
       "source": "functions-compliance",
       "runtime": "nodejs20",
       "predeploy": [
-        "bash scripts/sync-compliance-env.sh",
+        "node scripts/sync-compliance-env.js",
         "node scripts/bundle-functions.cjs"
       ]
     },
