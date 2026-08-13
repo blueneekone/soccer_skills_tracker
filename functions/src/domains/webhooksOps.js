@@ -1,7 +1,6 @@
 'use strict';
 
 const crypto = require('crypto');
-const stripe = require('stripe');
 const {onCall, onRequest, HttpsError} = require('firebase-functions/v2/https');
 const {onSchedule} = require('firebase-functions/v2/scheduler');
 const logger = require('firebase-functions/logger');
@@ -1345,7 +1344,7 @@ exports.createStripeCheckoutSession = onCall(
         );
       }
 
-      const stripeClient = stripe(secret);
+      const stripeClient = require('stripe')(secret);
       const priceId = priceIdForTierType(stripeClient, tierTypeRaw);
       if (!priceId || typeof priceId !== 'string') {
         throw new HttpsError(
@@ -1446,7 +1445,7 @@ exports.stripeWebhook = onRequest(
         return;
       }
 
-      const stripeClient = stripe(secretKey);
+      const stripeClient = require('stripe')(secretKey);
       let event;
       try {
         event = stripeClient.webhooks.constructEvent(rawBody, sig, whSecret);

@@ -42,7 +42,7 @@ exports.vampireIngestRows = onCall({ region: 'us-east1' }, async (request) => {
     throw new HttpsError('invalid-argument', 'CSV schema validation failed.');
   }
 
-  const { getFirestore } = require("firebase-admin/firestore");
+    const { getFirestore } = require('firebase-admin/firestore');
   const db = getFirestore();
   const totalProcessed = await executeBatchPagination(sanitizedRows, db, teamId, clubId, auth.uid);
 
