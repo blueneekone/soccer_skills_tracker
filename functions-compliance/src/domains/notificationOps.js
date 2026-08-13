@@ -1,4 +1,3 @@
-// 🛡️ SafeSport Compliance Mandate: Enforces Parent Shadow CC routing for minors.
 'use strict';
 
 const {onCall, HttpsError} = require('firebase-functions/v2/https');
