@@ -243,12 +243,14 @@
 						<button
 							onclick={() => handleSubscribe(tier)}
 							disabled={checkoutPhase === 'processing' && checkoutTierId === tier.id}
-							class="tw-w-full tw-py-4 tw-text-center tw-bg-[#000000] tw-border tw-border-[#334155] hover:tw-bg-[var(--accent)] hover:tw-text-[#000000] tw-text-[var(--accent)] tw-font-mono tw-text-xs tw-font-bold tw-uppercase tw-tracking-[0.1em] tw-transition-colors tw-duration-150 tw-rounded-sm disabled:tw-opacity-50 disabled:tw-cursor-not-allowed"
+							class="tw-w-full tw-py-4 tw-flex tw-items-center tw-justify-center tw-gap-2 tw-bg-[#000000] tw-border tw-border-[#334155] hover:tw-bg-[var(--accent)] hover:tw-text-[#000000] tw-text-[var(--accent)] tw-font-mono tw-text-xs tw-font-bold tw-uppercase tw-tracking-[0.1em] tw-transition-colors tw-duration-150 tw-rounded-sm disabled:tw-opacity-50 disabled:tw-cursor-not-allowed"
 						>
 							{#if checkoutPhase === 'processing' && checkoutTierId === tier.id}
+								<Icon name={"status.pulse" as IconName} size={14} class="tw-animate-spin" />
 								PROCESSING...
 							{:else}
 								{tier.cta}
+								<Icon name={"nav.chevron-right" as IconName} size={14} />
 							{/if}
 						</button>
 					{/if}
@@ -281,9 +283,9 @@
 		</div>
 	</section>
 
-	<!-- Single B2C Upsell / CTA (Replaced old CTA to ensure only ONE Action Gold button exists) -->
+	<!-- Single B2C Upsell / CTA (Nuclear Yellow CTA Accent) -->
 	<section class="tw-max-w-4xl tw-mx-auto tw-w-full tw-px-6 tw-flex tw-justify-center">
-		<a href="/login" class="tw-bg-[#fbbf24] tw-text-[#0f172a] hover:tw-bg-[#f59e0b] tw-px-10 tw-py-4 tw-font-mono tw-font-bold tw-text-sm tw-uppercase tw-tracking-widest tw-transition-all tw-duration-150 tw-inline-flex tw-items-center tw-gap-3 tw-text-center tw-rounded-sm active:tw-scale-[0.98]">
+		<a href="/login" class="tw-bg-nuclear-yellow tw-text-[#000000] hover:tw-bg-nuclear-yellow/90 tw-px-10 tw-py-4 tw-font-mono tw-font-bold tw-text-sm tw-uppercase tw-tracking-widest tw-transition-all tw-duration-150 tw-inline-flex tw-items-center tw-gap-3 tw-text-center tw-rounded-sm active:tw-scale-[0.98] tw-shadow-[0_0_25px_rgba(224,255,0,0.25)]">
 			Deploy Your Club
 			<Icon name={"nav.chevron-right" as IconName} strokeWidth={2.5} size={18} />
 		</a>

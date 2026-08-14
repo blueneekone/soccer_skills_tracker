@@ -10,6 +10,8 @@
 	import { isEventOpen } from '$lib/types/tournamentEvent.js';
 	import { bracketHasStarted } from '$lib/tournament/tournamentBracket.js';
 	import TournamentBracketPanel from '$lib/components/director/TournamentBracketPanel.svelte';
+	import Icon from '$lib/components/ui/Icon.svelte';
+	import type { IconName } from '$lib/icons/registry.js';
 
 	const eventId = $derived(page.params.eventId);
 
@@ -95,7 +97,8 @@
 	);
 
 	async function startCheckout() {
-    if (!db || !authStore.isAuthenticated) return;
+		const db = getActiveDb();
+		if (!db) return;
 		if (!event || !selectedTierId || !buyerEmail.trim()) return;
 		checkoutStarted = true;
 		await checkout.init(eventId, selectedTierId, quantity, buyerEmail.trim());
@@ -138,9 +141,15 @@
 			</div>
 			<div class="hero-badge">
 				{#if isEventOpen(event)}
-					<span class="open-badge">🟢 Tickets Available</span>
+					<span class="open-badge tw-inline-flex tw-items-center tw-gap-1.5">
+						<Icon name={"status.circle-check" as IconName} size={14} class="tw-text-nuclear-yellow" />
+						Tickets Available
+					</span>
 				{:else}
-					<span class="closed-badge">🔴 Sold Out / Closed</span>
+					<span class="closed-badge tw-inline-flex tw-items-center tw-gap-1.5">
+						<Icon name={"status.x-circle" as IconName} size={14} class="tw-text-red-400" />
+						Sold Out / Closed
+					</span>
 				{/if}
 			</div>
 		</header>
@@ -238,11 +247,12 @@
 
 					{#if !checkoutStarted}
 						<button
-							class="btn-checkout"
+							class="btn-checkout tw-flex tw-items-center tw-justify-center tw-gap-2"
 							onclick={startCheckout}
 							disabled={!buyerEmail.trim() || !selectedTierId}
 						>
-							Proceed to Payment →
+							Proceed to Payment
+							<Icon name={"nav.arrow-right" as IconName} size={18} />
 						</button>
 					{:else}
 						<!-- Stripe Elements mount target -->
@@ -258,9 +268,10 @@
 
 						{#if checkout.state.phase === 'ready' || checkout.state.phase === 'error'}
 							<button
-								class="btn-checkout"
+								class="btn-checkout tw-flex tw-items-center tw-justify-center tw-gap-2"
 								onclick={confirmPayment}
 							>
+								<Icon name={"action.check" as IconName} size={18} />
 								Pay {formatCents(totalCents)}
 							</button>
 						{/if}
@@ -452,7 +463,7 @@
 		gap: 0.5rem;
 	}
 	.tier-label { font-weight: 600; color: var(--vanguard-text-primary, #e2e8f0); }
-	.tier-price { font-weight: 700; color: #a5b4fc; font-size: 1.05rem; }
+	.tier-price { font-weight: 700; color: var(--tw-nuclear-yellow, #e0ff00); font-size: 1.05rem; }
 	.tier-desc { font-size: 0.82rem; color: var(--vanguard-text-muted, #94a3b8); margin: 0.25rem 0 0; }
 	.tier-remaining { font-size: 0.75rem; color: var(--vanguard-text-muted, #94a3b8); margin-top: 0.3rem; display: block; }
 
@@ -546,15 +557,18 @@
 
 	.btn-checkout {
 		width: 100%;
-		background: linear-gradient(135deg, #6366f1, #8b5cf6);
-		color: white;
+		background: #e0ff00;
+		color: #000000;
 		border: none;
 		border-radius: 14px;
 		padding: 0.9rem 1.5rem;
 		font-size: 1rem;
-		font-weight: 700;
+		font-weight: 800;
+		font-family: 'Geist Mono', monospace;
+		text-transform: uppercase;
+		letter-spacing: 0.05em;
 		cursor: pointer;
-		box-shadow: 0 4px 16px rgba(99, 102, 241, 0.35);
+		box-shadow: 0 4px 16px rgba(224, 255, 0, 0.25);
 		transition: opacity 0.15s, transform 0.15s;
 		margin-bottom: 0.75rem;
 	}
