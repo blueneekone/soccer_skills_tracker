@@ -222,6 +222,18 @@ exports.provisionTenantCell = onCall(
       // ── 4. Force token refresh so the new cellId claim is picked up ────
       const tokensRotated = await rotateTokensForTenant(tenantId);
 
+      const auditData = {
+        timestamp: admin.firestore.FieldValue.serverTimestamp(),
+        admin: request.auth?.token?.email || request.auth?.uid || 'unknown',
+        action: 'PROVISION_TENANT_CELL',
+        target: tenantId,
+        details: JSON.stringify({ fromCellId, toCellId: targetCellId, tokensRotated }),
+      };
+      await Promise.all([
+        db().collection('security_audits').add(auditData),
+        db().collection('security_audit').add(auditData),
+      ]).catch((e) => logger.warn('[provisionTenantCell] SIEM audit write failed', e));
+
       logger.info('[provisionTenantCell] complete', {
         tenantId,
         fromCellId,

@@ -11,12 +11,14 @@ const { stripProtectedFields } = require('../utils/rbacUtil');
 const { mintImpersonationToken } = require('../utils/loginAsUtil');
 const { cascadeDeleteUserData } = require('../utils/rightToBeForgottenUtil');
 
+const { getRegistryDb, getRequestDb, getAdminDb } = require('../../cellRouter');
+
 const REGION = 'us-east1';
 const ADMIN_ROLES = new Set(['global_admin', 'super_admin', 'admin']);
 const MAX_BATCH = 450;
 
-/** Lazy Firestore accessor. */
-const db = () => admin.firestore();
+/** Lazy Firestore accessor — defaults to control plane registry DB. */
+const db = () => getRegistryDb();
 
 /**
  * Ensures the caller is authenticated and holds an admin-tier role.
@@ -37,17 +39,28 @@ function assertAdminTier(request) {
 }
 
 /**
- * Write an audit log entry for every admin action.
+ * Write an audit log entry for every admin action to both audit_logs and security_audits.
  */
 async function writeAuditLog(action, actorUid, actorEmail, details) {
   try {
-    await db().collection('audit_logs').add({
+    const registry = getRegistryDb();
+    const entry = {
       action,
       actorUid,
       actorEmail,
       details: details || {},
       timestamp: admin.firestore.FieldValue.serverTimestamp(),
-    });
+    };
+    await Promise.all([
+      registry.collection('audit_logs').add(entry),
+      registry.collection('security_audits').add({
+        action,
+        admin: actorEmail || actorUid || 'unknown',
+        target: details?.targetEmail || details?.targetUid || '',
+        details: JSON.stringify(details || {}),
+        timestamp: entry.timestamp,
+      }),
+    ]);
   } catch (e) {
     logger.warn('[globalAdminOs] audit log write failed', e);
   }

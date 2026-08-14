@@ -171,6 +171,18 @@ exports.startTenantMigration = onCall(
         });
       });
 
+      const auditData = {
+        timestamp: admin.firestore.FieldValue.serverTimestamp(),
+        admin: request.auth?.token?.email || request.auth?.uid || 'unknown',
+        action: 'START_TENANT_MIGRATION',
+        target: tenantId,
+        details: JSON.stringify({ migrationId, fromCellId, toCellId }),
+      };
+      await Promise.all([
+        registry.collection('security_audits').add(auditData),
+        registry.collection('security_audit').add(auditData),
+      ]).catch((e) => logger.warn('[startTenantMigration] SIEM audit write failed', e));
+
       logger.info('[startTenantMigration] tenant frozen', {
         tenantId,
         migrationId,
@@ -449,6 +461,18 @@ exports.executeCutover = onCall(
       // case we later route through it.
       void fakeReq;
 
+      const auditData = {
+        timestamp: admin.firestore.FieldValue.serverTimestamp(),
+        admin: request.auth?.token?.email || request.auth?.uid || 'unknown',
+        action: 'EXECUTE_CELL_CUTOVER',
+        target: m.tenantId,
+        details: JSON.stringify({ migrationId, fromCellId: m.fromCellId, toCellId: m.toCellId, rotated }),
+      };
+      await Promise.all([
+        registry.collection('security_audits').add(auditData),
+        registry.collection('security_audit').add(auditData),
+      ]).catch((e) => logger.warn('[executeCutover] SIEM audit write failed', e));
+
       logger.info('[executeCutover] complete', {
         migrationId,
         tenantId: m.tenantId,
@@ -528,6 +552,18 @@ exports.rollbackTenantMigration = onCall(
                   null,
         });
       });
+
+      const auditData = {
+        timestamp: admin.firestore.FieldValue.serverTimestamp(),
+        admin: request.auth?.token?.email || request.auth?.uid || 'unknown',
+        action: 'ROLLBACK_TENANT_MIGRATION',
+        target: m.tenantId,
+        details: JSON.stringify({ migrationId, fromCellId: m.fromCellId, toCellId: m.toCellId }),
+      };
+      await Promise.all([
+        registry.collection('security_audits').add(auditData),
+        registry.collection('security_audit').add(auditData),
+      ]).catch((e) => logger.warn('[rollbackTenantMigration] SIEM audit write failed', e));
 
       logger.warn('[rollbackTenantMigration] complete', {
         migrationId,
