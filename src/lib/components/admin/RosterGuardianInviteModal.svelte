@@ -2,6 +2,8 @@
 	import { functions } from '$lib/firebase.js';
 	import { httpsCallable } from 'firebase/functions';
 	import { authStore } from '$lib/stores/auth.svelte.js';
+	import Icon from '$lib/components/ui/Icon.svelte';
+	import type { IconName } from '$lib/icons/registry.js';
 
 	let {
 		playerName = '',
@@ -78,8 +80,11 @@
 		{#if ok}<p class="rg-ok" role="status">{ok}</p>{/if}
 
 		<div class="rg-actions">
-			<button type="button" class="rg-btn rg-btn--ghost" onclick={() => onclose?.()}>Cancel</button>
-			<button type="button" class="rg-btn" disabled={busy} onclick={() => void sendInvite()}>
+			<button type="button" class="rg-btn rg-btn--ghost tw-flex tw-items-center tw-gap-1.5" onclick={() => onclose?.()}>
+				<Icon name={"sys.close" as IconName} size={14} /> Cancel
+			</button>
+			<button type="button" class="rg-btn tw-flex tw-items-center tw-gap-1.5" disabled={busy} onclick={() => void sendInvite()}>
+				<Icon name={"comm.mail" as IconName} size={14} />
 				{busy ? 'Sending…' : 'Send invite'}
 			</button>
 		</div>
@@ -173,9 +178,9 @@
 		border-radius: 8px;
 		padding: 0.45rem 0.85rem;
 		font-size: 0.8125rem;
-		font-weight: 700;
-		background: #14b8a6;
-		color: #0f172a;
+		font-weight: 800;
+		background: #CCFF00;
+		color: #000000;
 		cursor: pointer;
 	}
 

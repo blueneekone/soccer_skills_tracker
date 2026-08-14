@@ -90,8 +90,12 @@
 				{/if}
 			</div>
 			<footer class="gu-modal__foot">
-				<button type="button" class="btn-secondary tw-px-[clamp(16px,2vw,24px)] tw-py-2 tw-text-sm tw-font-bold" onclick={onClose}>Cancel</button>
-				<button type="button" class="btn-primary tw-bg-red-600 hover:tw-bg-red-700 tw-text-[#FAFAFA] tw-px-[clamp(16px,2vw,24px)] tw-py-2 tw-text-sm tw-font-bold" onclick={onAdvance}>Continue</button>
+				<button type="button" class="btn-secondary tw-px-[clamp(16px,2vw,24px)] tw-py-2 tw-text-sm tw-font-bold tw-flex tw-items-center tw-gap-1.5" onclick={onClose}>
+					<Icon name={"sys.close" as IconName} size={14} /> Cancel
+				</button>
+				<button type="button" class="btn-primary tw-bg-nuclear-yellow hover:tw-bg-nuclear-yellow/90 tw-text-void-black tw-px-[clamp(16px,2vw,24px)] tw-py-2 tw-text-sm tw-font-extrabold tw-flex tw-items-center tw-gap-1.5" onclick={onAdvance}>
+					<Icon name={"nav.arrow-right" as IconName} size={14} /> Continue
+				</button>
 			</footer>
 		{:else}
 			<div class="gu-modal__body">
@@ -116,15 +120,16 @@
 				{/if}
 			</div>
 			<footer class="gu-modal__foot">
-				<button type="button" class="btn-secondary tw-px-[clamp(16px,2vw,24px)] tw-py-2 tw-text-sm tw-font-bold" onclick={onClose} disabled={busy}>
-					Cancel
+				<button type="button" class="btn-secondary tw-px-[clamp(16px,2vw,24px)] tw-py-2 tw-text-sm tw-font-bold tw-flex tw-items-center tw-gap-1.5" onclick={onClose} disabled={busy}>
+					<Icon name={"sys.close" as IconName} size={14} /> Cancel
 				</button>
 				<button
 					type="button"
-					class="btn-primary tw-bg-red-600 hover:tw-bg-red-700 tw-text-[#FAFAFA] tw-px-[clamp(16px,2vw,24px)] tw-py-2 tw-text-sm tw-font-bold disabled:tw-opacity-50 disabled:tw-cursor-not-allowed"
+					class="btn-primary tw-bg-red-600 hover:tw-bg-red-700 tw-text-[#FAFAFA] tw-px-[clamp(16px,2vw,24px)] tw-py-2 tw-text-sm tw-font-bold disabled:tw-opacity-50 disabled:tw-cursor-not-allowed tw-flex tw-items-center tw-gap-1.5"
 					onclick={onConfirm}
 					disabled={busy || typedConfirmation.trim().toLowerCase() !== targetEmail.toLowerCase()}
 				>
+					<Icon name={"status.shield-alert" as IconName} size={14} />
 					{busy ? 'Purging…' : 'Permanently Purge'}
 				</button>
 			</footer>

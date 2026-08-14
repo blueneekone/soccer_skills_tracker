@@ -14,7 +14,7 @@
 {/if}
 
 <!-- ── Log table ──────────────────────────────────────────────────────────── -->
-<div class="v-table-wrap tw-overflow-x-auto">
+<div class="bento-grid-container st-bento v-table-wrap tw-overflow-x-auto">
 	<table class="v-table">
 		<thead>
 			<tr>
@@ -74,10 +74,11 @@
 	<div class="tw-flex tw-items-center tw-gap-[clamp(8px,1vw,16px)] tw-mt-[clamp(8px,1vw,16px)]">
 		<button
 			type="button"
-			class="v-toolbar-btn"
+			class="v-toolbar-btn tw-border-nuclear-yellow/40 tw-text-nuclear-yellow hover:tw-border-nuclear-yellow hover:tw-bg-nuclear-yellow/10 tw-flex tw-items-center tw-gap-2"
 			onclick={() => engine.loadLogs(true)}
 			disabled={engine.loading}
 		>
+			<Icon name={"nav.rotate-cw" as IconName} size={14} class={engine.loading ? "tw-animate-spin" : ""} />
 			{engine.loading ? 'Loading…' : `Load ${engine.PAGE_SIZE} more events`}
 		</button>
 		<span class="tw-text-xs tw-text-[#A1A1AA] tw-font-mono">

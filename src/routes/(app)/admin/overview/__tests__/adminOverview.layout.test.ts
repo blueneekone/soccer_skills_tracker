@@ -42,7 +42,7 @@ describe('Admin OS Vanguard Trinity', () => {
 		const { container } = render(AdminDashboardHUD, { engine });
 
 		expect(screen.getByText('Nexus Command')).toBeInTheDocument();
-		expect(screen.getByText('SYSTEM_STATUS: INITIALIZING')).toBeInTheDocument();
+		expect(screen.getByText((_, el) => el?.textContent?.replace(/\s+/g, ' ').trim() === 'SYSTEM_STATUS: INITIALIZING')).toBeInTheDocument();
 
 		// Check for specific structural classes required by the prompt
 		const header = container.querySelector('header');

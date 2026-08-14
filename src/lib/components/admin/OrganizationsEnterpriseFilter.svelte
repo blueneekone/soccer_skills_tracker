@@ -177,17 +177,19 @@
 	<div class="tw-flex tw-justify-between tw-items-center tw-pt-4 tw-border-t tw-border-[#334155]">
 		<button
 			type="button"
-			class="tw-bg-transparent tw-border-none tw-text-[#f43f5e] hover:tw-text-[#fb7185] tw-text-xs tw-font-bold tw-font-mono tw-uppercase tw-tracking-widest tw-transition-colors disabled:tw-opacity-50"
+			class="tw-bg-transparent tw-border-none tw-text-[#f43f5e] hover:tw-text-[#fb7185] tw-text-xs tw-font-bold tw-font-mono tw-uppercase tw-tracking-widest tw-transition-colors disabled:tw-opacity-50 tw-flex tw-items-center tw-gap-1.5"
 			onclick={onReset}
 			disabled={filterActiveCount === 0}
 		>
+			<Icon name={"sys.refresh-cw" as IconName} size={14} />
 			Reset All
 		</button>
 		<button 
 			type="button" 
-			class="tw-bg-[#14b8a6] tw-text-[#0B0F19] tw-px-6 tw-py-2 tw-font-mono tw-font-bold tw-text-sm tw-uppercase tw-tracking-widest hover:tw-bg-[#0d9488] tw-transition-colors" 
+			class="tw-bg-nuclear-yellow tw-text-void-black tw-px-6 tw-py-2 tw-font-mono tw-font-extrabold tw-text-sm tw-uppercase tw-tracking-widest hover:tw-bg-nuclear-yellow/90 tw-transition-colors tw-flex tw-items-center tw-gap-2"
 			onclick={onClose}
 		>
+			<Icon name={"status.check-square" as IconName} size={14} />
 			Apply & Close
 		</button>
 	</div>

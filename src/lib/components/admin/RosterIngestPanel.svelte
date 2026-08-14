@@ -4,6 +4,8 @@
 	import { resolveAppPath } from '$lib/components/_shared/resolveAppPath.js';
 	import Papa from 'papaparse';
 	import VampireColumnMapper from './VampireColumnMapper.svelte';
+	import Icon from '$lib/components/ui/Icon.svelte';
+	import type { IconName } from '$lib/icons/registry.js';
 
 	type IngestFormat = 'csv' | 'json' | 'pdf';
 
@@ -202,7 +204,9 @@
 
 	<div class="ri-panel__pick">
 		<label class="ri-file-label">
-			<span class="ri-btn ri-btn--secondary">Choose file</span>
+			<span class="ri-btn ri-btn--secondary tw-flex tw-items-center tw-gap-1.5">
+				<Icon name={"sys.folder" as IconName} size={14} /> Choose file
+			</span>
 			<input
 				class="ri-file-input"
 				type="file"
@@ -223,15 +227,17 @@
 		{:else}
 			<button
 				type="button"
-				class="ri-btn"
+				class="ri-btn ri-btn--primary tw-flex tw-items-center tw-gap-1.5"
 				disabled={!pendingFile || !teamId || ingesting}
 				onclick={() => void runIngest()}
 			>
+				<Icon name={"status.check-square" as IconName} size={14} />
 				{ingesting ? 'Ingesting…' : 'Run ingest'}
 			</button>
 		{/if}
 		{#if (fileName || invites.length > 0) && !showVampire}
-			<button type="button" class="ri-btn ri-btn--secondary" disabled={ingesting} onclick={clearSelection}>
+			<button type="button" class="ri-btn ri-btn--secondary tw-flex tw-items-center tw-gap-1.5" disabled={ingesting} onclick={clearSelection}>
+				<Icon name={"sys.close" as IconName} size={14} />
 				Clear
 			</button>
 		{/if}
@@ -363,14 +369,14 @@
 		gap: 0.75rem;
 	}
 	.ri-btn {
-		border: 1px solid #FAFAFA;
+		border: 1px solid #CCFF00;
 		border-radius: 0;
 		padding: 0.65rem 1.25rem;
 		font-size: 0.85rem;
 		font-family: 'Geist Sans', sans-serif;
-		font-weight: 700;
-		background: #FAFAFA;
-		color: #020617;
+		font-weight: 800;
+		background: #CCFF00;
+		color: #000000;
 		cursor: pointer;
 		text-transform: uppercase;
 		transition: transform 0.15s ease;

@@ -82,7 +82,6 @@
 
 	// ── Role Mutation ──────────────────────────────────────────────────────────
 	async function updateRole(userId: string, newRole: string) {
-    if (!db || !authStore.isAuthenticated) return;
 		const activeDb = getActiveDb();
 		if (!activeDb || !authStore.isAuthenticated) return;
 		const idx = users.findIndex(u => u.id === userId);
