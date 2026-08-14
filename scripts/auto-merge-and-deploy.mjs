@@ -48,9 +48,9 @@ async function validateAndMergePr(pr) {
     console.log(`\n[Step 1/5] Staging non-committed merge of origin/${pr.headRefName}...`);
     run(`git merge --no-commit --no-ff origin/${pr.headRefName}`);
 
-    // 3. Pre-merge Validation Gate 1: Svelte 5 and TypeScript check (pnpm run check)
-    console.log('\n[Gate 1/4] Running Svelte 5 & TypeScript static analysis (pnpm run check)...');
-    run('pnpm run check');
+    // 3. Pre-merge Validation Gate 1: Svelte 5 and TypeScript check (direct binary)
+    console.log('\n[Gate 1/4] Running Svelte 5 & TypeScript static analysis...');
+    run('node ./node_modules/svelte-check/bin/svelte-check --tsconfig ./jsconfig.json --threshold error');
 
     // 4. Pre-merge Validation Gate 2: Universal Backend Smoke Probe
     console.log('\n[Gate 2/4] Running Universal Backend Smoke Probe across all 7 codebases...');
