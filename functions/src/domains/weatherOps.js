@@ -5,12 +5,12 @@
  *
  * Default: no-op when WEATHER_LOCK_ENABLED !== 'true'.
  * When enabled: evaluates club facilities via AEGIS (Open-Meteo + NWS) and writes
- * field_weather_status/{facilityId}. Optional TOMORROW_IO_API_KEY reserved for
- * future strike-radius enrichment.
+ * field_weather_status/{facilityId} and facility_weather_locks/{facilityId}.
  */
 
 const {onSchedule} = require('firebase-functions/v2/scheduler');
 const {onCall, HttpsError, onRequest} = require('firebase-functions/v2/https');
+const {defineSecret} = require('firebase-functions/params');
 const logger = require('firebase-functions/logger');
 const admin = require('firebase-admin');
 const {
@@ -18,6 +18,7 @@ const {
   mapSnapshotToFieldStatus,
 } = require('./weatherEvaluation');
 
+const TOMORROW_IO_API_KEY = defineSecret('TOMORROW_IO_API_KEY');
 const REGION = 'us-east1';
 const EARTH_RADIUS_KM = 6371;
 
@@ -73,18 +74,18 @@ async function writeFacilityWeatherStatus(clubId, facilityId, coords) {
     };
   }
 
-  await db().collection('field_weather_status').doc(facilityId).set(
-      {
-        clubId,
-        facilityId,
-        status: evalResult.status,
-        ...(evalResult.lockReason ? {lockReason: evalResult.lockReason} : {}),
-        ...(evalResult.distanceKm != null ? {distanceKm: evalResult.distanceKm} : {}),
-        provider: evalResult.provider,
-        evaluatedAt: admin.firestore.FieldValue.serverTimestamp(),
-      },
-      {merge: true},
-  );
+  const payload = {
+    clubId,
+    facilityId,
+    status: evalResult.status,
+    ...(evalResult.lockReason ? {lockReason: evalResult.lockReason} : {}),
+    ...(evalResult.distanceKm != null ? {distanceKm: evalResult.distanceKm} : {}),
+    provider: evalResult.provider,
+    evaluatedAt: admin.firestore.FieldValue.serverTimestamp(),
+  };
+
+  await db().collection('field_weather_status').doc(facilityId).set(payload, {merge: true});
+  await db().collection('facility_weather_locks').doc(facilityId).set(payload, {merge: true});
 
   return evalResult.status;
 }
@@ -100,7 +101,7 @@ async function runWeatherLockPass(options = {}) {
     return {enabled: false, clubs: 0, facilities: 0, locked: 0, advisory: 0};
   }
 
-  const tomorrowKey = (process.env.TOMORROW_IO_API_KEY || '').trim();
+  const tomorrowKey = (TOMORROW_IO_API_KEY.value() || process.env.TOMORROW_IO_API_KEY || '').trim();
   if (tomorrowKey) {
     logger.info(
         '[evaluateFieldWeatherLock] TOMORROW_IO_API_KEY set — AEGIS active; Tomorrow.io radius enrich pending',
@@ -149,7 +150,7 @@ async function runWeatherLockPass(options = {}) {
 }
 
 exports.refreshClubWeatherLock = onCall(
-    {region: REGION, timeoutSeconds: 120},
+    {region: REGION, secrets: [TOMORROW_IO_API_KEY], timeoutSeconds: 120},
     async (request) => {
       if (!request.auth) {
         throw new HttpsError('unauthenticated', 'Sign in required.');
@@ -197,6 +198,7 @@ exports.evaluateFieldWeatherLock = onSchedule(
     {
       schedule: 'every 15 minutes',
       region: REGION,
+      secrets: [TOMORROW_IO_API_KEY],
       timeoutSeconds: 300,
     },
     async () => {
@@ -212,7 +214,7 @@ exports.evaluateFieldWeatherLock = onSchedule(
 );
 
 const processTomorrowIoAlert = onRequest(
-  {region: REGION},
+  {region: REGION, secrets: [TOMORROW_IO_API_KEY]},
   async (req, res) => {
     if (req.method !== 'POST') {
       res.status(405).send('Method Not Allowed');

@@ -56,6 +56,16 @@ service cloud.firestore {
       allow read: if isAuthenticated();
     }
 
+    // Field weather status and facility weather locks — read by authenticated users, writes reserved to CF/Admin
+    match /field_weather_status/{facilityId} {
+      allow read: if isAuthenticated();
+      allow create, update, delete: if false;
+    }
+    match /facility_weather_locks/{facilityId} {
+      allow read: if isAuthenticated();
+      allow create, update, delete: if false;
+    }
+
     // Workout logs, physio reports, and training data — authenticated users
     match /workout_logs/{logId} {
       allow read, write: if isAuthenticated();

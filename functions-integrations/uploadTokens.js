@@ -1,7 +1,7 @@
 /* eslint-disable quotes */
 /**
- * uploadTokens.js â€” Secure Direct-to-Cloud Upload Tokens
- * â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+ * uploadTokens.js — Secure Direct-to-Cloud Upload Tokens
+ * ───────────────────────────────────────────────────────
  * Generates pre-signed GCS upload URLs so media never transits the
  * SvelteKit server. This is the ONLY way players should upload video clips.
  *
@@ -14,15 +14,15 @@
  *   5. processMedia strips EXIF, runs content safety, moves to media/ bucket
  *
  * Zero-Trust notes:
- *   â€¢ Only authenticated players can request upload tokens for their own UID.
- *   â€¢ Directors may request tokens for players within their tenant.
- *   â€¢ The staging path is separated from the final media path so that
+ *   • Only authenticated players can request upload tokens for their own UID.
+ *   • Directors may request tokens for players within their tenant.
+ *   • The staging path is separated from the final media path so that
  *     partially-processed or unsafe files can never be served publicly.
- *   â€¢ Each token is single-use and expires in 15 minutes.
+ *   • Each token is single-use and expires in 15 minutes.
  *
  * Exports:
- *   getUploadToken       â€” onCall: generate a signed upload URL
- *   getDeleteAllToken    â€” onCall: director/parent deletes all media for a player
+ *   getUploadToken       — onCall: generate a signed upload URL
+ *   deleteAllPlayerMedia — onCall: director/parent deletes all media for a player
  */
 
 'use strict';
@@ -61,15 +61,15 @@ function sanitizeFileName(name) {
       .slice(0, 128);
 }
 
-// â”€â”€ getUploadToken â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── getUploadToken ───────────────────────────────────────────────────────
 
 /**
  * Generate a signed V4 PUT URL for direct-to-cloud video/image upload.
  *
  * Input: { mimeType: string, fileName: string, targetStat?: string }
- *   mimeType  â€” MIME type of the file being uploaded
- *   fileName  â€” Client-supplied file name (will be sanitized)
- *   targetStat â€” optional Scout's Six stat this clip is training for
+ *   mimeType   — MIME type of the file being uploaded
+ *   fileName   — Client-supplied file name (will be sanitized)
+ *   targetStat — optional Scout's Six stat this clip is training for
  *
  * Returns: { signedUrl, storagePath, clipId, expiresAt }
  */
@@ -123,9 +123,7 @@ exports.getUploadToken = onCall({region: REGION}, async (request) => {
     },
   });
 
-  // Pre-register the clip in Firestore as 'processing' so the client can
-  // track status without polling Storage.
-  const db = new Proxy({}, { get: (t, p) => {  const v = fs[p]; return typeof v === 'function' ? v.bind(fs) : v; } });
+  const db = admin.firestore();
   const mediaRef = db.doc(`player_media/${callerUid}/clips/${clipId}`);
   await mediaRef.set({
     clipId,
@@ -150,7 +148,7 @@ exports.getUploadToken = onCall({region: REGION}, async (request) => {
   return {signedUrl, storagePath, clipId, expiresAt: expiresAt.toISOString()};
 });
 
-// â”€â”€ getDeleteAllToken â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── deleteAllPlayerMedia ─────────────────────────────────────────────────
 
 /**
  * Hard-delete ALL media for a specific player (director or parent only).
@@ -178,7 +176,7 @@ exports.deleteAllPlayerMedia = onCall({region: REGION}, async (request) => {
     throw new HttpsError('permission-denied', 'Director or parent role required.');
   }
 
-  const db = new Proxy({}, { get: (t, p) => {  const v = fs[p]; return typeof v === 'function' ? v.bind(fs) : v; } });
+  const db = admin.firestore();
   const bucket = admin.storage().bucket();
 
   // Load all clips for this player
@@ -196,7 +194,7 @@ exports.deleteAllPlayerMedia = onCall({region: REGION}, async (request) => {
       try {
         await bucket.file(path).delete();
       } catch {
-        // File may already be gone â€” continue
+        // File may already be gone — continue
       }
     }
 

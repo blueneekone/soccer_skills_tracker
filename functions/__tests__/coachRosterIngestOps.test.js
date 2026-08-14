@@ -4,6 +4,7 @@
  * coachRosterIngestOps.test.js — COACH-ROSTER-PDF-IMPORT auth guards
  */
 
+const { describe, it, beforeEach, after: afterAll } = require('node:test');
 const assert = require('node:assert/strict');
 const Module = require('module');
 

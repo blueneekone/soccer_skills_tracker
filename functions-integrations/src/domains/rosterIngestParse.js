@@ -150,7 +150,7 @@ async function extractPlayersFromPdfText(rawText, apiKey) {
     ].join('\n'),
   });
 
-  const text = response.text || '[]';
+  const text = response.text || response.candidates?.[0]?.content?.parts?.[0]?.text || '[]';
   const clean = text.replace(/```(?:json)?\n?|```/g, '').trim();
 
   try {
