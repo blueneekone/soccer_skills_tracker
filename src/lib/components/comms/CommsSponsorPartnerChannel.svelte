@@ -167,6 +167,7 @@
 	});
 
 	function formatDate(ts: SponsorMessage['createdAt']) {
+    if (!db || !authStore.isAuthenticated) return;
 		if (ts && typeof ts.toDate === 'function') return ts.toDate().toLocaleString();
 		return '—';
 	}

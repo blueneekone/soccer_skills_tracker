@@ -62,6 +62,7 @@
 	});
 
 	async function load() {
+    if (!db || !authStore.isAuthenticated) return;
 		loading = true;
 		error = '';
 		try {

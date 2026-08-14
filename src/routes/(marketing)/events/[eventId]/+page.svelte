@@ -95,6 +95,7 @@
 	);
 
 	async function startCheckout() {
+    if (!db || !authStore.isAuthenticated) return;
 		if (!event || !selectedTierId || !buyerEmail.trim()) return;
 		checkoutStarted = true;
 		await checkout.init(eventId, selectedTierId, quantity, buyerEmail.trim());

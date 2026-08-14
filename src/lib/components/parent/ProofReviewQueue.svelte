@@ -93,6 +93,7 @@
 	});
 
 	async function decide(verificationId: string, decision: 'approved' | 'rejected') {
+    if (!db || !authStore.isAuthenticated) return;
 		deciding = new Set([...deciding, verificationId]);
 		itemErrors = { ...itemErrors, [verificationId]: '' };
 

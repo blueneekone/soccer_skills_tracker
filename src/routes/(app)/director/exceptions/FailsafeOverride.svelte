@@ -37,6 +37,7 @@
 		let cancelled = false;
 
 		async function loadNodes() {
+    if (!db || !authStore.isAuthenticated) return;
 			isLoadingNodes = true;
 			try {
 				const usersRef = collection(db, 'users');

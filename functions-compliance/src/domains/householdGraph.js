@@ -1,4 +1,3 @@
-// 🛡️ SafeSport Compliance Mandate: Enforces Parent Shadow CC routing for minors.
 /**
  * Denormalize household guardian fields onto player_lookup for roster/comms surfaces.
  * player_lookup writes remain Cloud Function–only (Firestore rules).

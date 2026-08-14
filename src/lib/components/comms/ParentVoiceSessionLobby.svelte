@@ -137,6 +137,7 @@
 	});
 
 	async function scheduleSession() {
+    if (!db || !authStore.isAuthenticated) return;
 		const cId = clubId?.trim();
 		const tId = teamId?.trim();
 		const evId = selectedCalendarEventId?.trim();

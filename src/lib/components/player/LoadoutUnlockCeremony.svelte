@@ -70,7 +70,7 @@
 	function equipInStudio() {
 		if (!activeMeta) return;
 		dismiss();
-		void goto(`/player/armory?tab=studio&slot=${encodeURIComponent(activeMeta.slot)}`);
+		void goto()
 	}
 </script>
 

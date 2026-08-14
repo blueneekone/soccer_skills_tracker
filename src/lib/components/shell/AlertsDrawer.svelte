@@ -95,6 +95,7 @@
 	}
 
 	function closeDrawer() {
+    if (!db || !authStore.isAuthenticated) return;
 		alertsDrawer.hide();
 	}
 

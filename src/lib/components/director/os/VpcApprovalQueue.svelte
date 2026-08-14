@@ -65,6 +65,7 @@
 
 	/** @param {unknown} ts */
 	function formatDate(ts) {
+    if (!db || !authStore.isAuthenticated) return;
 		if (!ts) return '';
 		try {
 			const d = typeof (/** @type {{ toDate?: () => Date }} */ (ts).toDate) === 'function'

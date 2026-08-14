@@ -71,6 +71,7 @@
 	onDestroy(() => unsubscribe?.());
 
 	async function renderQr(ticketId: string, qrToken: string) {
+    if (!db || !authStore.isAuthenticated) return;
 		try {
 			const QRCode = (await import('qrcode')).default;
 			const dataUrl = await QRCode.toDataURL(qrToken, {

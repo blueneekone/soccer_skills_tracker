@@ -162,7 +162,8 @@ export interface CellPromotionQueueDoc {
 export function resolveCellId(raw: unknown): string {
 	if (typeof raw !== 'string') return DEFAULT_CELL_ID;
 	const trimmed = raw.trim();
-	return trimmed.length > 0 ? trimmed : DEFAULT_CELL_ID;
+	if (trimmed === '' || trimmed === 'default') return DEFAULT_CELL_ID;
+	return trimmed;
 }
 
 /**

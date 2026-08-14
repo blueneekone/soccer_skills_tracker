@@ -11,6 +11,7 @@
 	let err = $state(/** @type {string | null} */ (null));
 
 	function teamLabel(teamId) {
+    if (!db || !authStore.isAuthenticated) return;
 		const t = teamsStore.teams.find((x) => x.id === teamId);
 		return t?.name || teamId;
 	}

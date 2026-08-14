@@ -45,6 +45,7 @@
 	 * @param {unknown} v
 	 */
 	function fmtTs(v) {
+    if (!db || !authStore.isAuthenticated) return;
 		if (v == null) return '—';
 		if (typeof v === 'object' && v !== null && 'toDate' in v && typeof v.toDate === 'function') {
 			try {

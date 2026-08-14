@@ -246,6 +246,7 @@
 	});
 
 	async function persistMatchSession() {
+    if (!db || !authStore.isAuthenticated) return;
 		const tid = teamScope.selectedTeamId?.trim();
 		const mid = sessionMatchId;
 		const uid = authStore.user?.uid;

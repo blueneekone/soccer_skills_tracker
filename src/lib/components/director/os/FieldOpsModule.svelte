@@ -110,6 +110,7 @@
 	let weatherRefreshMsg = $state(/** @type {string | null} */ (null));
 
 	async function handleRefreshWeatherLock() {
+    if (!db || !authStore.isAuthenticated) return;
 		if (!resolvedClubId || isReadOnly || weatherRefreshing) return;
 		weatherRefreshing = true;
 		weatherRefreshMsg = null;

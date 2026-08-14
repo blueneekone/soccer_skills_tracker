@@ -168,6 +168,7 @@
 	 * @param {RosterPlayer} player
 	 */
 	function guardianLine(player) {
+    if (!db || !authStore.isAuthenticated) return;
 		const em = (typeof player.email === 'string' && player.email ? player.email : player.id).toLowerCase();
 		const meta = guardianByEmail[em];
 		if (!meta || meta.parentEmails.length === 0) return 'Unlinked';

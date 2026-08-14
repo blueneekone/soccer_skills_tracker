@@ -73,6 +73,7 @@
 	});
 
 	async function loadData(parentEmail: string, tid: string) {
+    if (!db || !authStore.isAuthenticated) return;
 		loading = true;
 		err = '';
 		try {

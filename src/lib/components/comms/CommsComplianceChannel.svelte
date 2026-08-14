@@ -80,6 +80,7 @@
 	});
 
 	function formatDate(ts: ComplianceMessage['createdAt']) {
+    if (!db || !authStore.isAuthenticated) return;
 		if (ts && typeof ts.toDate === 'function') return ts.toDate().toLocaleString();
 		return '—';
 	}

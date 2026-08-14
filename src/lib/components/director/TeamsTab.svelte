@@ -116,6 +116,7 @@
 	// ── Status helpers ────────────────────────────────────────────────────
 	/** @param {{ id: string; coachEmail?: string }} t */
 	function teamStatusLabel(t) {
+    if (!db || !authStore.isAuthenticated) return;
 		if (pendingInviteTeamIds.has(t.id)) return 'PENDING';
 		if (t.coachEmail) return 'ACTIVE';
 		return 'VACANT';

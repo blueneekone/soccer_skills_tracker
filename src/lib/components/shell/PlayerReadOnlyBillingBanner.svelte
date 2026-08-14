@@ -1,7 +1,7 @@
 <script>
 	import { goto } from '$app/navigation';
 
-	let { onPricing = async () => await goto('/upgrade'), reasons = [], onSettings = undefined } =
+	let { onPricing = async () => await goto(), reasons = [], onSettings = undefined } =
 		$props();
 </script>
 

@@ -21,11 +21,11 @@ service cloud.firestore {
 
     // ✅ Multi-Tenant Integrity Guard via Custom Claims
     match /clubs/{clubId} {
-      allow read, write: if isAuthenticated() && (request.auth.token.clubId == clubId || request.auth.token.admin == true);
+      allow read, write: if isAuthenticated() && (request.auth.token.clubId == clubId || request.auth.token.admin == true || request.auth.token.role == 'super_admin');
       
       // Nested collections under clubs inherit the tenant scope
       match /{allChildren=**} {
-        allow read, write: if isAuthenticated() && (request.auth.token.clubId == clubId || request.auth.token.admin == true);
+        allow read, write: if isAuthenticated() && (request.auth.token.clubId == clubId || request.auth.token.admin == true || request.auth.token.role == 'super_admin');
       }
     }
 
@@ -41,13 +41,13 @@ service cloud.firestore {
       allow read: if isAuthenticated();
       // Role field cannot be mutated directly by client-side unauthenticated or basic user writes
       allow create: if isAuthenticated() && 
-        (!("role" in request.resource.data) || request.auth.token.admin == true);
+        (!("role" in request.resource.data) || request.auth.token.admin == true || request.auth.token.role == 'super_admin');
       allow update: if isAuthenticated() && 
-        (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['role']) || request.auth.token.admin == true);
+        (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['role']) || request.auth.token.admin == true || request.auth.token.role == 'super_admin');
     }
 
     match /vpc_requests/{requestId} {
-      allow read, write: if isAuthenticated() && request.auth.token.admin == true;
+      allow read, write: if isAuthenticated() && (request.auth.token.admin == true || request.auth.token.role == 'super_admin');
     }
 
     // Default match to prevent global unauthenticated reads/writes

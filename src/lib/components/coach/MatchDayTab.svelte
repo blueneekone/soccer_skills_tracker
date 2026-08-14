@@ -12,6 +12,7 @@
 	let error = $state('');
 
 	async function loadTelemetry() {
+    if (!db || !authStore.isAuthenticated) return;
 		if (!teamId) return;
 		loading = true;
 		try {

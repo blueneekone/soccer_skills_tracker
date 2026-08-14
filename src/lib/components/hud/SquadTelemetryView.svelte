@@ -156,6 +156,7 @@
 	 * @param {string} name
 	 */
 	function linkedDocIdForPlayerName(em, name) {
+    if (!db || !authStore.isAuthenticated) return;
 		if (em[name] != null) return em[name];
 		if (typeof name === 'string') {
 			const t = name.trim();

@@ -49,7 +49,7 @@ const QM_DIGITAL_LOADOUT = Object.freeze({
 function loadCosmeticAllowlist() {
   const configPath = path.join(
       __dirname,
-      '../../../static/cosmetics/catalog.config.json',
+      '../../static/cosmetics/catalog.config.json',
   );
   const rows = JSON.parse(fs.readFileSync(configPath, 'utf8'));
   return new Set(rows.map((row) => String(row.id)));

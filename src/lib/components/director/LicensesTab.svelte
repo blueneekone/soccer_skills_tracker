@@ -118,6 +118,7 @@
 
 	/** @param {string} tid */
 	function usagePct(tid) {
+    if (!db || !authStore.isAuthenticated) return;
 		const rc = rosterCounts[tid] ?? 0;
 		const row = teamEntLimits[tid];
 		const limit = row?.set ? row.limit : 0;

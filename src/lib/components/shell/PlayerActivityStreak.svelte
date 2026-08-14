@@ -131,6 +131,7 @@
 	// ── Actions ────────────────────────────────────────────────────────────────
 
 	function acknowledgeAlert(id: string) {
+    if (!db || !authStore.isAuthenticated) return;
 		if (!id || !browser) return;
 		const ref = doc(db, 'reengagement_alerts', id);
 		updateDoc(ref, { acknowledgedAt: new Date().toISOString() }).catch(() => {});

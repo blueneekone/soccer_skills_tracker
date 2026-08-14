@@ -22,6 +22,7 @@
 	let impersonating = $state('');
 
 	async function doImpersonate(item: any) {
+    if (!db || !authStore.isAuthenticated) return;
 		const ok = confirm(`Begin impersonation session as ${item.name}?`);
 		if (!ok) return;
 

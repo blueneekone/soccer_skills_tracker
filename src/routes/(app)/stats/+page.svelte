@@ -53,6 +53,7 @@
 
 	/** Monthly XP chart rows — mirrored on `player_stats` when recruit profile is private. */
 	function parseMonthlyPerformance(mp) {
+    if (!db || !authStore.isAuthenticated) return;
 		return Array.isArray(mp) ?
 			mp
 				.filter(

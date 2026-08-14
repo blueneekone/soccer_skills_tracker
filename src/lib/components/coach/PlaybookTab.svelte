@@ -20,6 +20,7 @@
 
 	// Load drills for intent
 	async function loadDrillsForIntent() {
+    if (!db || !authStore.isAuthenticated) return;
 		if (!teamId) return;
 		loadingDrills = true;
 		try {

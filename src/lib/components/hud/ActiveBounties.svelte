@@ -191,6 +191,7 @@
 		let cancelled = false;
 
 		async function loadPreviews() {
+    if (!db || !authStore.isAuthenticated) return;
 			if (coachIntents.length === 0) {
 				if (!cancelled) drillPreviewByQuestId = {};
 				return;

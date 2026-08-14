@@ -39,8 +39,9 @@ export async function navigateAfterLogin(
 		return;
 	}
 
+	console.log('DEBUG [postAuthRouting]: authStore state', { isProfileComplete: authStore.isProfileComplete, role: authStore.role, profile: authStore.userProfile });
 	if (!authStore.isProfileComplete) {
-		await untrack(() => goto('/setup', { replaceState }));
+		await untrack(() => goto('/onboarding', { replaceState }));
 		return;
 	}
 

@@ -71,6 +71,7 @@
 	const visible = $derived(!loading && !dismissed && needsConsent && linkedChildren.length > 0);
 
 	function dismiss() {
+    if (!db || !authStore.isAuthenticated) return;
 		if (!browser) return;
 		sessionStorage.setItem(SESSION_DISMISS_KEY, '1');
 		dismissed = true;

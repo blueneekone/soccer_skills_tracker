@@ -10,7 +10,7 @@
 		e.preventDefault();
 		await engine.submit();
 		if (authStore.userProfile?.liabilityWaiverVerified) {
-			goto('/player/dashboard');
+			goto()
 		}
 	}
 </script>

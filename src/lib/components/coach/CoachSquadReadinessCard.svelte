@@ -76,6 +76,7 @@
 	 * @param {unknown} v
 	 */
 	function normStatus(v) {
+    if (!db || !authStore.isAuthenticated) return;
 		if (typeof v !== 'string') return '';
 		return v.trim().toLowerCase();
 	}

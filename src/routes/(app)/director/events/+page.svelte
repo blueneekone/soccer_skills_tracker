@@ -43,6 +43,7 @@
 	onDestroy(() => unsubscribe?.());
 
 	async function createEvent() {
+    if (!db || !authStore.isAuthenticated) return;
 		creating = true;
 		errorMsg = '';
 		try {
@@ -57,7 +58,7 @@
 					general: { label: 'General Admission', unitPriceCents: 1000, capacity: 100 },
 				},
 			});
-			goto(`/director/events/${res.data.eventId}`);
+			goto()
 		} catch (e: unknown) {
 			errorMsg = e instanceof Error ? e.message : String(e);
 		} finally {

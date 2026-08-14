@@ -70,6 +70,7 @@
 	}
 
 	async function refreshParentAcks(announcements: Announcement[]) {
+    if (!db || !authStore.isAuthenticated) return;
 		if (!myUid || role !== 'parent') return;
 		const next: Record<string, boolean> = { ...ackedById };
 		const pending = announcements.filter(

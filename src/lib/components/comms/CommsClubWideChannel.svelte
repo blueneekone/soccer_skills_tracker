@@ -143,6 +143,7 @@
 	});
 
 	function formatDate(ms: number) {
+    if (!db || !authStore.isAuthenticated) return;
 		if (!ms) return '—';
 		return new Date(ms).toLocaleString();
 	}

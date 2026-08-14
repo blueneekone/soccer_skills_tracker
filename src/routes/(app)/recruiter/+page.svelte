@@ -32,7 +32,7 @@
 			<code>recruiter</code> custom claim. Upgrade to unlock verified athlete profiles without
 			exposing PII from core roster collections.
 		</p>
-		<button type="button" class="recruiter-locked__btn" onclick={() => goto('/upgrade')}>
+		<button type="button" class="recruiter-locked__btn" onclick={() => goto()}>
 			VIEW PRICING
 		</button>
 	</section>

@@ -75,6 +75,7 @@
 	});
 
 	async function send() {
+    if (!db || !authStore.isAuthenticated) return;
 		if (!householdId?.trim() || !draft.trim() || engine.isSending) return;
 		try {
 			await engine.sendHouseholdMessage(draft.trim());

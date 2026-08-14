@@ -62,7 +62,7 @@
 			<button
 				type="button"
 				class="tw-pointer-events-auto tw-flex tw-h-10 tw-w-10 tw-items-center tw-justify-center tw-rounded-lg tw-border tw-border-[#14b8a6]/25 tw-bg-[#020202]/70 tw-text-[#14b8a6] tw-backdrop-blur-md tw-transition-all hover:tw-border-[#14b8a6]/55 hover:tw-bg-[#14b8a6]/10 hover:tw-shadow-[0_0_18px_rgba(20, 184, 166,0.3)]"
-				onclick={() => goto('/settings')}
+				onclick={() => goto()}
 				aria-label="Profile and settings"
 			>
 				<Icon name="sys.settings" size={18} />
@@ -71,7 +71,7 @@
 				<button
 					type="button"
 					class="tw-pointer-events-auto tw-inline-flex tw-items-center tw-gap-1.5 tw-rounded-full tw-border tw-border-[#14b8a6]/35 tw-bg-[#020202]/80 tw-px-3 tw-py-1.5 tw-font-mono tw-text-[10px] tw-font-bold tw-uppercase tw-tracking-widest tw-text-[#14b8a6] tw-backdrop-blur-md tw-transition-all hover:tw-border-[#14b8a6]/75 hover:tw-bg-[#14b8a6]/10"
-					onclick={() => goto('/support')}
+					onclick={() => goto()}
 				>
 					<Icon name="sys.lifebuoy" size={14} />
 					<span>SUPPORT</span>

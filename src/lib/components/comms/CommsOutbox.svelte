@@ -47,6 +47,7 @@
 	let ackLoadingId = $state('');
 
 	async function loadAckStatus(row: OutboxRow) {
+    if (!db || !authStore.isAuthenticated) return;
 		if (!row.requiresAck || ackStatusById[row.id] || ackLoadingId === row.id) return;
 		ackLoadingId = row.id;
 		try {

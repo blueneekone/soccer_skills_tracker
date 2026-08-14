@@ -38,6 +38,7 @@
 	});
 
 	async function loadRecommendations() {
+    if (!db || !authStore.isAuthenticated) return;
 		if (!clubId) return;
 		loading = true;
 		err = '';

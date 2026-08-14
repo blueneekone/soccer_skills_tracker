@@ -63,7 +63,7 @@
 			countdown -= 1;
 			if (countdown <= 0) {
 				clearInterval(timer);
-				goto('/login');
+				goto()
 			}
 		}, 1000);
 	}

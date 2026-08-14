@@ -92,6 +92,7 @@
 	};
 
 	async function submitScheduleEvent() {
+    if (!db || !authStore.isAuthenticated) return;
 		if (!teamScope.selectedTeamId || !scheduleStartLocal) {
 			scheduleErr = 'Choose a start date and time.';
 			return;

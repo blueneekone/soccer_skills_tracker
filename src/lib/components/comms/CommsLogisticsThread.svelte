@@ -107,6 +107,7 @@
 	});
 
 	async function send() {
+    if (!db || !authStore.isAuthenticated) return;
 		const tId = teamId?.trim();
 		const ch = channelId?.trim();
 		const text = draft.trim();

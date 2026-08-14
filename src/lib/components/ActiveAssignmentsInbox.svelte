@@ -103,6 +103,7 @@
 	});
 
 	function dueLabel(d) {
+    if (!db || !authStore.isAuthenticated) return;
 		if (!d) return '—';
 		try {
 			if (typeof d.toDate === 'function') {
@@ -119,7 +120,7 @@
 		const q = new URLSearchParams();
 		q.set('assignmentId', row.id);
 		if (row.drillId) q.set('drillId', row.drillId);
-		goto(`/tracker?${q.toString()}`);
+		goto()
 	}
 
 	async function markDoneQuick(id) {

@@ -209,6 +209,7 @@
 	});
 
 	async function navigateTo(href) {
+    if (!db || !authStore.isAuthenticated) return;
 		if (!href) return;
 		await goto(resolveAppPath(href));
 	}

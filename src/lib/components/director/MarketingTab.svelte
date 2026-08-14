@@ -73,6 +73,7 @@
 	];
 
 	function slugifyInput(raw) {
+    if (!db || !authStore.isAuthenticated) return;
 		return String(raw || '')
 			.trim()
 			.toLowerCase()

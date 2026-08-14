@@ -51,6 +51,7 @@
 	});
 
 	async function resolveBatch() {
+    if (!db || !authStore.isAuthenticated) return;
 		if (failedPayments.length === 0 || isResolving) return;
 		isResolving = true;
 		resolveError = '';

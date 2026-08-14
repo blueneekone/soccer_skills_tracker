@@ -111,6 +111,7 @@
 	// ── Send ──────────────────────────────────────────────────────────────────
 
 	async function send() {
+    if (!db || !authStore.isAuthenticated) return;
 		const text = draft.trim();
 		if (!text || !clubId?.trim() || !teamId?.trim() || engine.isSending) return;
 		sendErr = '';

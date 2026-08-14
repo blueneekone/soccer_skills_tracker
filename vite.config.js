@@ -5,6 +5,11 @@ export default defineConfig(({ mode }) => ({
 	plugins: [
 		sveltekit(),
 	],
+	server: {
+		headers: {
+			'Cross-Origin-Opener-Policy': 'same-origin-allow-popups'
+		}
+	},
 
 	/**
 	 * Sprint 1.1 — content-hash asset versioning (.cursorrules asset_versioning).

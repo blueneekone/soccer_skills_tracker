@@ -9,7 +9,7 @@
 
 	function upgrade() {
 		open = false;
-		goto('/upgrade');
+		goto()
 	}
 </script>
 

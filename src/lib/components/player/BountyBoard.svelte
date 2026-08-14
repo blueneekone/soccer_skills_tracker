@@ -11,6 +11,7 @@
 	let loading = $state(true);
 
 	async function loadBounties() {
+    if (!db || !authStore.isAuthenticated) return;
 		if (!playerId) {
 			loading = false;
 			return;

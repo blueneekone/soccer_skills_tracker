@@ -89,6 +89,7 @@
 	}
 
 	function threadSeenKey(threadId: string) {
+    if (!db || !authStore.isAuthenticated) return;
 		return `coach-dm-thread-seen-${threadId}`;
 	}
 

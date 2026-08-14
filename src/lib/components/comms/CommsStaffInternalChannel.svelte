@@ -113,6 +113,7 @@
 	});
 
 	async function send() {
+    if (!db || !authStore.isAuthenticated) return;
 		const text = draft.trim();
 		if (!text || !clubId?.trim() || !channelId || engine.isSending) return;
 		sendErr = '';

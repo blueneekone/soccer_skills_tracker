@@ -30,7 +30,7 @@ export default class AdminDashboardEngine {
 	// B815 Defensive Hydration check to prevent unauthenticated read loops.
 	async fetchTelemetry() {
 		const activeDb = getActiveDb();
-		if (!activeDb || authStore.isLoading || !authStore.isAuthenticated) return;
+		if (!activeDb || !authStore.isAuthenticated) return;
 
 		this.isLoading = true;
 		this.error = null;

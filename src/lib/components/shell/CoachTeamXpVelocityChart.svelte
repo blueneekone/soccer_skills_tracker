@@ -175,6 +175,7 @@
 	});
 
 	function getLast7DayKeys() {
+    if (!db || !authStore.isAuthenticated) return;
 		/** @type {string[]} */
 		let keys = [];
 		const today = new Date();

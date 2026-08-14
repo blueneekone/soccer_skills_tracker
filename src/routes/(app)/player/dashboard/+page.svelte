@@ -298,6 +298,7 @@
 	});
 
 	async function loadLegacyScheduleFallback(tid: string, now: Date) {
+    if (!db || !authStore.isAuthenticated) return;
 		// T0-2: read from team_workouts (coach-written), client-filter scheduled_event.
 		const fallbackQ = query(collection(db, 'team_workouts'), where('teamId', '==', tid));
 		const snap = await getDocs(fallbackQ);
@@ -479,7 +480,7 @@
 						lastTrainingUtc={lastTrainingUtc}
 						profileIncomplete={!hasArmoryProfile}
 						cardMetadata={hqCardMetadata}
-						onProfileSetup={() => void goto('/player/armory?tab=studio')}
+						onProfileSetup={() => void goto()}
 					/>
 				{/snippet}
 				{#snippet metrics()}

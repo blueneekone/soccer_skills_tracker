@@ -83,6 +83,7 @@
 	 * @param {string} name
 	 */
 	function initials(name) {
+    if (!db || !authStore.isAuthenticated) return;
 		const p = name.trim().split(/\s+/).filter(Boolean);
 		if (p.length === 0) return '?';
 		if (p.length === 1) return p[0].slice(0, 2).toUpperCase();

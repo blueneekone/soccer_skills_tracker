@@ -59,6 +59,7 @@
 	let unsubTeams: (() => void) | null = null;
 
 	function detach() {
+    if (!db || !authStore.isAuthenticated) return;
 		unsubOrg?.();
 		unsubOrg = null;
 		unsubTeams?.();

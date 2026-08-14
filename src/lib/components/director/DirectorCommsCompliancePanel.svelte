@@ -40,6 +40,7 @@
 	});
 
 	async function loadConsole() {
+    if (!db || !authStore.isAuthenticated) return;
 		if (!clubId) return;
 		loading = true;
 		err = '';

@@ -139,6 +139,7 @@
 
 	/** @returns {Promise<void>} */
 	async function refreshHouseholdOperatives() {
+    if (!db || !authStore.isAuthenticated) return;
 		operativeRows = await loadHouseholdOperativeRows(db, householdId);
 	}
 
