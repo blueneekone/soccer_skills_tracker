@@ -13,6 +13,7 @@ export default {
         'data-cyan': '#14b8a6', // Neon accent for cardiac monitors and tactical paths
         'action-gold': '#fbbf24', // Focus CTA and active state indicator
         'warning-orange': '#f97316', // System warning / tactical heat indicator
+        'nuclear-yellow': '#daff0a', // Cybernetic high-voltage highlight / progress trackers
       },
       fontFamily: {
         mono: ['Geist Mono', 'monospace'], // Telemetry, cardiac BPM, & coordinate feeds
@@ -21,6 +22,7 @@ export default {
       boxShadow: {
         'neon-cyan': '0 0 15px rgba(20, 184, 166, 0.5)', // Under-panel glowing effects
         'neon-gold': '0 0 15px rgba(251, 191, 36, 0.5)', // Active CTA highlight glow
+        'neon-nuclear': '0 0 15px rgba(218, 255, 10, 0.5)', // High-voltage progress glow
       }
     },
   },
