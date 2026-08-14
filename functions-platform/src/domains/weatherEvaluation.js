@@ -1,7 +1,7 @@
 'use strict';
 
 /**
- * weatherEvaluation.js — shared AEGIS weather + lightning evaluation (Open-Meteo + NWS).
+ * weatherEvaluation.js — shared AEGIS weather + lightning + heat + AQI evaluation.
  * Used by getWeatherConditions (onCall) and evaluateFieldWeatherLock (scheduled).
  */
 
@@ -29,13 +29,22 @@ const NWS_DANGER_EVENTS = [
   'tornado warning',
   'flash flood emergency',
   'extreme wind warning',
+  'excessive heat warning',
+  'heat warning',
+  'air quality alert',
+  'air quality warning',
 ];
+
 const NWS_CAUTION_EVENTS = [
   'severe thunderstorm watch',
   'tornado watch',
   'thunderstorm watch',
   'special weather statement',
   'lightning safety awareness',
+  'excessive heat watch',
+  'heat advisory',
+  'air quality advisory',
+  'smoke advisory',
 ];
 
 function fetchJson(url) {
@@ -148,6 +157,7 @@ async function evaluateWeatherAtCoords(lat, lng) {
       uvIndex: Math.round(Number(c.uv_index ?? 0)),
       weatherCode: wmoCode,
       conditionsLabel: WMO_LABELS[wmoCode] ?? 'Unknown',
+      aqi: c.us_aqi ? Math.round(Number(c.us_aqi)) : undefined,
     };
   } else {
     logger.warn('[weatherEvaluation] Open-Meteo failed', {err: omResult.reason?.message});
@@ -161,23 +171,25 @@ async function evaluateWeatherAtCoords(lat, lng) {
     logger.warn('[weatherEvaluation] NWS failed', {err: nwsResult.reason?.message});
   }
 
+  const tempF = current?.temperatureF ?? 72;
+  const aqi = current?.aqi ?? 0;
+  const windMph = current?.windMph ?? 0;
+  const precipProb = current?.precipProbability ?? 0;
+
   let alertLevel = 'NORMAL';
-  if (THUNDER_AT_LOCATION.has(wmoCode) || nwsAlert.level === 'DANGER') {
+  if (THUNDER_AT_LOCATION.has(wmoCode) || nwsAlert.level === 'DANGER' || tempF >= 100 || aqi >= 150) {
     alertLevel = 'DANGER';
-  } else if (THUNDER_NEARBY.has(wmoCode) || nwsAlert.level === 'CAUTION') {
+  } else if (THUNDER_NEARBY.has(wmoCode) || nwsAlert.level === 'CAUTION' || tempF >= 90 || aqi >= 101) {
     alertLevel = 'CAUTION';
   }
 
   const lightningMiles = estimateLightningMiles(wmoCode, nwsAlert.level);
-  const tempF = current?.temperatureF ?? 72;
-  const windMph = current?.windMph ?? 0;
-  const precipProb = current?.precipProbability ?? 0;
   let deploymentStatus = 'GO';
   if (alertLevel === 'DANGER') {
     deploymentStatus = 'NO-GO';
   } else if (alertLevel === 'CAUTION') {
     deploymentStatus = 'HOLD';
-  } else if (windMph > 25 || precipProb >= 65 || tempF >= 100 || tempF <= 20) {
+  } else if (windMph > 25 || precipProb >= 65 || tempF <= 20) {
     deploymentStatus = 'NO-GO';
   }
 
@@ -203,16 +215,36 @@ function mapSnapshotToFieldStatus(snapshot) {
   const distanceKm = miles != null ? Math.round(miles * 1.60934 * 10) / 10 : undefined;
   const nwsEvent = snapshot?.lightning?.nwsEvent;
   const conditions = snapshot?.current?.conditionsLabel;
+  const tempF = snapshot?.current?.temperatureF;
+  const aqi = snapshot?.current?.aqi;
 
   if (snapshot?.lightning?.alertLevel === 'DANGER' || snapshot?.deploymentStatus === 'NO-GO') {
-    const reason = nwsEvent ||
-      (miles != null ? `Lightning/storm risk ~${miles} mi (${conditions || 'AEGIS'})` :
-        `Unsafe conditions (${conditions || 'AEGIS'})`);
+    let reason = nwsEvent;
+    if (!reason) {
+      if (tempF != null && tempF >= 100) {
+        reason = `Extreme Heat Hazard (${tempF}°F)`;
+      } else if (aqi != null && aqi >= 150) {
+        reason = `Unhealthy Air Quality (AQI ${aqi})`;
+      } else if (miles != null) {
+        reason = `Lightning/storm risk ~${miles} mi (${conditions || 'AEGIS'})`;
+      } else {
+        reason = `Unsafe conditions (${conditions || 'AEGIS'})`;
+      }
+    }
     return {status: 'locked', lockReason: reason, distanceKm, provider: 'aegis'};
   }
 
   if (snapshot?.lightning?.alertLevel === 'CAUTION' || snapshot?.deploymentStatus === 'HOLD') {
-    const reason = nwsEvent || 'Storm watch — monitor before deploying';
+    let reason = nwsEvent;
+    if (!reason) {
+      if (tempF != null && tempF >= 90) {
+        reason = `Heat Caution (${tempF}°F) — monitor hydration`;
+      } else if (aqi != null && aqi >= 101) {
+        reason = `Air Quality Advisory (AQI ${aqi})`;
+      } else {
+        reason = 'Storm watch — monitor before deploying';
+      }
+    }
     return {status: 'advisory', lockReason: reason, distanceKm, provider: 'aegis'};
   }
 
