@@ -33,7 +33,7 @@
 	import { loadTeamDrills } from '$lib/utils/drillLoaders.js';
 	import { submitDrillAssignment } from '$lib/utils/drillAssignment.js';
 	import type { DrillRow } from '$lib/utils/drillLoaders.js';
-	// â”€â”€ Team context resolution â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+	// ── Team context resolution ─────────────────────────────────────────────
 	const teamScope = new CoachTeamScope({ preferProfileTeam: true });
 	$effect(() => {
 		teamScope.syncSelectedTeam();
@@ -47,7 +47,7 @@
 	/** @type {'library' | 'designer' | 'schedule'} */
 	let pageView = $state('library');
 
-	// Honor ?view= deep links (e.g. comms "Open training & schedule" CTA) â€” apply once.
+	// Honor ?view= deep links (e.g. comms "Open training & schedule" CTA) — apply once.
 	let _viewInit = false;
 	$effect(() => {
 		if (_viewInit) return;
@@ -158,7 +158,7 @@
 		if (typeof u === 'number' && u > 0) {
 			return new Date(u * 1000).toLocaleString();
 		}
-		return 'â€”';
+		return '—';
 	}
 
 	$effect(() => {
@@ -247,7 +247,7 @@
 		};
 	});
 
-	// â”€â”€ Tab + search â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+	// ── Tab + search ────────────────────────────────────────────────────────
 	/** @type {'team' | 'platform'} */
 	let activeTab = $state('team');
 	let searchTerm = $state('');
@@ -265,7 +265,7 @@
 		});
 	});
 
-	// â”€â”€ Add Drill modal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+	// ── Add Drill modal ──────────────────────────────────────────────────────
 	let addOpen = $state(false);
 	let formTitle = $state('');
 	let formCategory = $state('Ball Mastery');
@@ -332,7 +332,7 @@
 			const duration = Number.isFinite(formDuration) ?
 				Math.max(1, Math.min(240, Math.floor(formDuration))) :
 				10;
-			const description = `${formCategory} Â· metric: ${formMetricType}${formVideoUrl ? `\nVideo: ${formVideoUrl.trim()}` : ''}`;
+			const description = `${formCategory} · metric: ${formMetricType}${formVideoUrl ? `\nVideo: ${formVideoUrl.trim()}` : ''}`;
 			await addDoc(collection(db, 'teams', teamScope.selectedTeamId, 'drills'), {
 				name: title,
 				title,
@@ -357,7 +357,7 @@
 		}
 	}
 
-	// â”€â”€ Delete drill â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+	// ── Delete drill ────────────────────────────────────────────────────────
 	async function deleteDrill(row) {
 		if (row.source !== 'team') return;
 		const ok = confirm(`Delete drill "${row.title}"? This cannot be undone.`);
@@ -370,7 +370,7 @@
 		}
 	}
 
-	// â”€â”€ Assign Homework modal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+	// ── Assign Homework modal ───────────────────────────────────────────────
 	let assignOpen = $state(false);
 	/** @type {DrillRow | null} */
 	let assignDrill = $state(null);
@@ -530,10 +530,10 @@
 </script>
 
 <svelte:head>
-	<title>Coach Â· Field Station Â· SSTRACKER</title>
+	<title>Coach · Field Station · SSTRACKER</title>
 </svelte:head>
 
-<!-- VS-3c â€” Coach drill library SIEM shell -->
+<!-- VS-3c — Coach drill library SIEM shell -->
 <div class="coach-drill-lib tw-relative tw-min-h-screen tw-w-full tw-px-3 tw-py-6 sm:tw-px-5">
 <section class="cdm-page">
 	<header class="coach-drill-z4">
@@ -543,7 +543,7 @@
 				Team &rsaquo; {currentTeam?.name || teamScope.selectedTeamId || '&mdash;'}
 			</p>
 			<nav class="coach-drill-z4-nav" aria-label="Coach section">
-				<a href="/coach/forge" class="coach-drill-z4-nav__btn coach-drill-z4-nav__btn--link" title="Deploy macro-goal intents â€” individualized drills per player">
+				<a href="/coach/forge" class="coach-drill-z4-nav__btn coach-drill-z4-nav__btn--link" title="Deploy macro-goal intents — individualized drills per player">
 					The Forge
 				</a>
 				<button
@@ -577,7 +577,7 @@
 			{/if}
 			{#if pageView === 'library'}
 				<button type="button" class="coach-drill-z4-cta" onclick={openAddDrill}>
-					<Icon name="status.circle-plus" />
+					<Icon name={"status.circle-plus" as IconName} size={14} />
 					<span>NEW DRILL</span>
 				</button>
 			{/if}
@@ -658,9 +658,11 @@
 						onclick={() => void submitScheduleEvent()}
 					>
 						{#if scheduleSaveBusy}
-							Savingâ€¦
+							<Icon name={"status.shield-check" as IconName} size={14} />
+							<span>Saving…</span>
 						{:else}
-							Save event
+							<Icon name={"action.save" as IconName} size={14} />
+							<span>Save event</span>
 						{/if}
 					</button>
 				</div>
@@ -678,16 +680,16 @@
 							<li class="cdm-sch-li">
 								<div class="cdm-sch-li__top">
 									<span class="cdm-sch-pill"
-										>{String(ev.eventKind || ev.type || 'â€”')}</span
+										>{String(ev.eventKind || ev.type || '—')}</span
 									>
 									<time class="cdm-sch-time">{formatScheduleStart(/** @type {*} */ (ev))}</time>
 								</div>
-								<p class="cdm-sch-name">{String(ev.name || 'â€”')}</p>
+								<p class="cdm-sch-name">{String(ev.name || '—')}</p>
 								<p class="cdm-sch-meta">
 									<span>reminderOffsets: {JSON.stringify(ev.reminderOffsets || [])}</span>
 									<br />
 									<span class="cdm-mono"
-										>startTimestamp: {String(ev.startTimestamp != null ? ev.startTimestamp : 'â€”')}</span
+										>startTimestamp: {String(ev.startTimestamp != null ? ev.startTimestamp : '—')}</span
 									>
 								</p>
 							</li>
@@ -734,17 +736,17 @@
 	<div class="coach-drill-z1-well">
 		<div class="coach-drill-z1-toolbar">
 			<label class="coach-drill-z1-search">
-				<Icon name="action.search" />
+				<Icon name={"action.search" as IconName} />
 				<input
 					type="text"
-					placeholder="Search by title, category, or metricâ€¦"
+					placeholder="Search by title, category, or metric…"
 					bind:value={searchTerm}
 				/>
 			</label>
 		</div>
 		{#if activeTab === 'team'}
 			<p class="coach-drill-z1-hint">
-				Team drills are yours to edit and deploy via Intent Engine. Recommend a strong drill to your director with Share with director â€” they add it to the club library after review.
+				Team drills are yours to edit and deploy via Intent Engine. Recommend a strong drill to your director with Share with director — they add it to the club library after review.
 			</p>
 		{:else}
 			<p class="coach-drill-z1-hint">
@@ -760,9 +762,9 @@
 
 		<div class="coach-drill-z2-grid" aria-label="Drill library">
 			{#if activeTab === 'team' && loadingTeamDrills}
-				<p class="coach-drill-z2-empty">Loading custom drillsâ€¦</p>
+				<p class="coach-drill-z2-empty">Loading custom drills…</p>
 			{:else if activeTab === 'platform' && loadingPlatformDrills}
-				<p class="coach-drill-z2-empty">Loading platform basicsâ€¦</p>
+				<p class="coach-drill-z2-empty">Loading platform basics…</p>
 			{:else if visibleRows.length === 0}
 				<p class="coach-drill-z2-empty">
 					{#if activeTab === 'team'}
@@ -806,7 +808,7 @@
 								target="_blank"
 								rel="noopener noreferrer"
 							>
-								<Icon name="status.circle-play" />
+								<Icon name={"status.circle-play" as IconName} />
 								<span>Watch</span>
 							</a>
 						{/if}
@@ -818,7 +820,7 @@
 									disabled={copyPlatformBusy || !teamScope.selectedTeamId}
 									onclick={() => void copyPlatformToTeam(row)}
 								>
-									<Icon name="action.copy" />
+									<Icon name={"action.copy" as IconName} />
 									<span>Copy to team</span>
 								</button>
 							{:else}
@@ -827,6 +829,7 @@
 									class="coach-drill-z2-btn coach-drill-z2-btn--assign"
 									onclick={() => openAssign(row)}
 								>
+									<Icon name={"comm.send" as IconName} />
 									<span>Assign</span>
 								</button>
 								<button
@@ -834,7 +837,7 @@
 									class="coach-drill-z2-btn"
 									onclick={() => void recommendToDirector(row)}
 								>
-									<Icon name="comm.send" />
+									<Icon name={"comm.send" as IconName} />
 									<span>Share</span>
 								</button>
 								<button
@@ -843,7 +846,7 @@
 									onclick={() => deleteDrill(row)}
 									aria-label={`Delete drill ${row.title}`}
 								>
-									<Icon name="action.delete" />
+									<Icon name={"action.delete" as IconName} />
 									<span>Delete</span>
 								</button>
 							{/if}
@@ -901,7 +904,7 @@
 			<input
 				type="url"
 				bind:value={formVideoUrl}
-				placeholder="https://youtube.com/watch?v=â€¦"
+				placeholder="https://youtube.com/watch?v=…"
 			/>
 		</label>
 
@@ -918,7 +921,7 @@
 				class="coach-drill-z4-cta"
 				disabled={addBusy}
 			>
-				{addBusy ? 'Savingâ€¦' : 'Save Drill'}
+				{addBusy ? 'Saving…' : 'Save Drill'}
 			</button>
 		</div>
 	</form>
@@ -933,7 +936,7 @@
 			<div class="coach-drill-assign__drill">
 				<span class="coach-drill-form__label">Drill</span>
 				<strong>{assignDrill.title}</strong>
-				<span class="coach-drill-z1-hint">{assignDrill.category} Â· metric: {assignDrill.metricType}</span>
+				<span class="coach-drill-z1-hint">{assignDrill.category} · metric: {assignDrill.metricType}</span>
 			</div>
 
 			<label class="coach-drill-form__field">
@@ -949,7 +952,7 @@
 					</button>
 				</div>
 				{#if loadingRoster}
-					<p class="coach-drill-z1-hint">Loading rosterâ€¦</p>
+					<p class="coach-drill-z1-hint">Loading roster…</p>
 				{:else if roster.length === 0}
 					<p class="coach-drill-z1-hint">No player accounts on this team yet.</p>
 				{:else}
@@ -992,7 +995,7 @@
 					disabled={assignDisabled}
 					onclick={submitAssign}
 				>
-					{assignBusy ? 'Dispatchingâ€¦' : `Assign to ${selectedEmails.size || 0}`}
+					{assignBusy ? 'Dispatching…' : `Assign to ${selectedEmails.size || 0}`}
 				</button>
 			</div>
 		</div>
@@ -1004,8 +1007,8 @@
 		--cdm-bg: #000000;
 		--cdm-panel: #05050a;
 		--cdm-line: rgba(255, 255, 255, 0.1);
-		--cdm-cyber: #00d4ff;
-		--cdm-toxic: #2dd4bf;
+		--cdm-cyber: #daff0a;
+		--cdm-toxic: #daff0a;
 		--cdm-threat: #ff6b00;
 		background: var(--cdm-bg);
 	}
@@ -1106,15 +1109,16 @@
 		text-transform: uppercase;
 		letter-spacing: 0.14em;
 		cursor: pointer;
-		border: 1px solid rgba(0, 212, 255, 0.45);
-		background: #000;
-		color: #fff;
+		border: 1px solid #daff0a;
+		background: #daff0a;
+		color: #000;
 		transition: box-shadow 0.2s, border-color 0.2s;
 	}
 
 	.cdm-deploy:hover:not(:disabled) {
-		border-color: var(--cdm-toxic);
-		box-shadow: 0 0 32px rgba(57, 255, 20, 0.35), 0 0 20px rgba(0, 212, 255, 0.25);
+		border-color: #fde047;
+		background: #fde047;
+		box-shadow: 0 0 25px rgba(218, 255, 10, 0.5);
 	}
 
 	.cdm-deploy:disabled {
@@ -1179,8 +1183,8 @@
 		text-transform: uppercase;
 		letter-spacing: 0.08em;
 		padding: 0.2rem 0.45rem;
-		border: 1px solid rgba(0, 212, 255, 0.35);
-		color: var(--cdm-cyber, #14b8a6);
+		border: 1px solid rgba(218, 255, 10, 0.35);
+		color: var(--cdm-cyber, #daff0a);
 	}
 
 	.cdm-sch-time {

@@ -49,7 +49,10 @@ export class RosterPanelEngine {
 
 	subscribe(teamId: string): void {
 		this.unsub?.();
-		if (!db || !isFirestoreReady()) return;
+		if (!db || !isFirestoreReady()) {
+			this.loading = false;
+			return;
+		}
 		if (!teamId || !isFirestoreReady()) {
 			this.players = [];
 			this.loading = false;

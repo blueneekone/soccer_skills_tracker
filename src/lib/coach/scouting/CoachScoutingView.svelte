@@ -7,6 +7,8 @@
 	import { CoachTeamScope } from '$lib/coach/context/coachTeamScope.svelte.js';
 	import CoachRosterQuickEvalPanel from '$lib/coach/scouting/CoachRosterQuickEvalPanel.svelte';
 	import { teamsStore } from '$lib/stores/teams.svelte.js';
+	import Icon from '$lib/components/ui/Icon.svelte';
+	import type { IconName } from '$lib/icons/registry.js';
 	import {
 		collection,
 		doc,
@@ -251,7 +253,7 @@
 				role="tab"
 				aria-selected={activeTab === 'prospect-eval'}
 				class="tw-rounded-lg tw-border tw-px-4 tw-py-2 tw-text-[10px] tw-font-bold tw-uppercase tw-tracking-[0.18em] tw-transition {activeTab === 'prospect-eval'
-					? 'tw-border-cyan-500/35 tw-bg-slate-800/50 tw-text-cyan-200'
+					? 'tw-border-nuclear-yellow/40 tw-bg-slate-800/50 tw-text-nuclear-yellow'
 					: 'tw-border-white/10 tw-bg-transparent tw-text-slate-500 hover:tw-text-slate-300'}"
 				onclick={() => setScoutingTab('prospect-eval')}
 			>
@@ -262,7 +264,7 @@
 				role="tab"
 				aria-selected={activeTab === 'roster-eval'}
 				class="tw-rounded-lg tw-border tw-px-4 tw-py-2 tw-text-[10px] tw-font-bold tw-uppercase tw-tracking-[0.18em] tw-transition {activeTab === 'roster-eval'
-					? 'tw-border-emerald-500/35 tw-bg-slate-800/50 tw-text-emerald-200'
+					? 'tw-border-nuclear-yellow/40 tw-bg-slate-800/50 tw-text-nuclear-yellow'
 					: 'tw-border-white/10 tw-bg-transparent tw-text-slate-500 hover:tw-text-slate-300'}"
 				onclick={() => setScoutingTab('roster-eval')}
 			>
@@ -307,7 +309,7 @@
 				No linked players on this team yet. Roster syncs from <code class="tw-text-cyan-400/90">player_lookup</code>.
 			</p>
 		{:else}
-			<div class="bento-grid bento-grid--12col bento-grid--liquid tw-grid-cols-1 lg:tw-grid-cols-12" style="display: grid;">
+			<div class="st-bento bento-grid bento-grid--12col bento-grid--liquid tw-grid-cols-1 lg:tw-grid-cols-12" style="display: grid;">
 				<div
 					class="tw-col-span-12 lg:tw-col-span-4 vanguard-panel tw-flex tw-min-h-[min(70vh,560px)] tw-min-w-0 tw-flex-col tw-p-4 md:tw-min-h-[640px]"
 				>
@@ -320,7 +322,7 @@
 						type="text"
 						placeholder="Search…"
 						autocomplete="off"
-						class="tw-mb-3 tw-w-full tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-px-3 tw-py-2.5 tw-font-mono tw-text-sm tw-text-slate-100 tw-outline-none focus:tw-border-[#14b8a6]"
+						class="tw-mb-3 tw-w-full tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-px-3 tw-py-2.5 tw-font-mono tw-text-sm tw-text-slate-100 tw-outline-none focus:tw-border-nuclear-yellow"
 						bind:value={searchQuery}
 					/>
 
@@ -332,7 +334,7 @@
 									role="option"
 									aria-selected={activeId === prospect.id}
 									class="tw-w-full tw-px-3 tw-py-3 tw-text-left tw-transition-colors hover:tw-bg-[#0f172a] {activeId === prospect.id
-										? 'tw-border-l-2 tw-border-[#14b8a6] tw-bg-[#0f172a]'
+										? 'tw-border-l-2 tw-border-nuclear-yellow tw-bg-[#0f172a]'
 										: 'tw-border-l-2 tw-border-transparent'}"
 									onclick={() => {
 										activeId = prospect.id;
@@ -366,10 +368,10 @@
 								<p class="tw-mt-1 tw-truncate tw-font-mono tw-text-[11px] tw-text-slate-500">{activeProspect.email}</p>
 							</div>
 							<div class="tw-shrink-0 tw-text-right">
-								<p class="tw-text-[10px] tw-font-bold tw-uppercase tw-tracking-[0.28em] tw-text-[#d97706]">
+								<p class="tw-text-[10px] tw-font-bold tw-uppercase tw-tracking-[0.28em] tw-text-nuclear-yellow">
 									Overall grade
 								</p>
-								<p class="tw-font-black tw-tabular-nums tw-text-[#d97706] tw-text-5xl tw-leading-none tw-tracking-tighter md:tw-text-6xl">
+								<p class="tw-font-black tw-tabular-nums tw-text-nuclear-yellow tw-text-5xl tw-leading-none tw-tracking-tighter md:tw-text-6xl">
 									{overallGrade}
 								</p>
 							</div>
@@ -384,14 +386,14 @@
 										<label class="tw-text-sm tw-font-bold tw-text-slate-200" for="slider-{activeProspect.id}-{row.key}">
 											{row.label}
 										</label>
-										<span class="tw-font-mono tw-text-xs tw-tabular-nums tw-text-cyan-400/90">{value}</span>
+										<span class="tw-font-mono tw-text-xs tw-tabular-nums tw-text-nuclear-yellow">{value}</span>
 									</div>
 									<input
 										id="slider-{activeProspect.id}-{row.key}"
 										type="range"
 										min="0"
 										max="100"
-										class="tw-mb-2 tw-h-2 tw-w-full tw-cursor-pointer tw-accent-emerald-400"
+										class="tw-mb-2 tw-h-2 tw-w-full tw-cursor-pointer tw-accent-nuclear-yellow"
 										value={scoresByProspect[activeProspect.id]?.[k] ?? value}
 										oninput={(e) => {
 											const v = Number(e.currentTarget.value);
@@ -404,7 +406,7 @@
 									/>
 									<div class="tw-h-2 tw-overflow-hidden tw-rounded-full tw-bg-slate-800">
 										<div
-											class="tw-h-full tw-rounded-full tw-bg-emerald-400 tw-transition-[width] tw-duration-150 tw-ease-out"
+											class="tw-h-full tw-rounded-full tw-bg-nuclear-yellow tw-transition-[width] tw-duration-150 tw-ease-out"
 											style="width: {value}%"
 										></div>
 									</div>
@@ -415,17 +417,18 @@
 						<div class="bento-mt-lg tw-shrink-0 tw-border-t tw-border-[#334155] tw-pt-5">
 							<button
 								type="button"
-								class="coach-os-action-chip tw-w-full tw-py-3.5 tw-text-center {lockFlash ? 'tw-ring-2 tw-ring-[#d97706]' : ''}"
-								style="background: {saving ? '#0f172a' : '#d97706'}; color: {saving ? '#334155' : '#000000'}; border-color: {saving ? '#334155' : '#d97706'};"
+								class="coach-os-action-chip tw-w-full tw-py-3.5 tw-text-center tw-flex tw-items-center tw-justify-center tw-gap-2 tw-font-mono tw-font-bold tw-uppercase tw-tracking-widest {lockFlash ? 'tw-ring-2 tw-ring-nuclear-yellow' : ''}"
+								style="background: {saving ? '#0f172a' : '#daff0a'}; color: {saving ? '#334155' : '#000000'}; border-color: {saving ? '#334155' : '#daff0a'};"
 								disabled={saving}
 								onclick={() => void lockAssessment()}
 							>
-								{saving ? 'Saving…' : 'Lock assessment'}
+								<Icon name={"status.shield-check" as IconName} size={16} />
+								<span>{saving ? 'Saving…' : 'Lock assessment'}</span>
 							</button>
 							{#if saveErr}
 								<p class="tw-mt-3 tw-text-center tw-text-[11px] tw-font-semibold tw-text-red-400" role="alert">{saveErr}</p>
 							{:else if saveOk && lockFlash}
-								<p class="tw-mt-3 tw-text-center tw-text-[11px] tw-font-semibold tw-text-[#14b8a6]">{saveOk}</p>
+								<p class="tw-mt-3 tw-text-center tw-text-[11px] tw-font-semibold tw-text-nuclear-yellow">{saveOk}</p>
 							{/if}
 						</div>
 					</div>

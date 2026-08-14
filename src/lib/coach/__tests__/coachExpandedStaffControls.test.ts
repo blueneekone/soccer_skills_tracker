@@ -3,23 +3,23 @@ import { readFileSync } from 'fs';
 import { initializeTestEnvironment, RulesTestEnvironment, assertSucceeds, assertFails } from '@firebase/rules-unit-testing';
 import { setDoc, doc, getDoc } from 'firebase/firestore';
 
-let testEnv: RulesTestEnvironment;
+describe.skipIf(!process.env.FIRESTORE_EMULATOR_HOST)('coachExpandedStaffControls', () => {
+    let testEnv: RulesTestEnvironment;
 
-beforeAll(async () => {
-    const rules = readFileSync('firestore.rules', 'utf8');
-    testEnv = await initializeTestEnvironment({
-        projectId: 'soccer-skills-tracker',
-        firestore: { rules }
+    beforeAll(async () => {
+        const rules = readFileSync('firestore.rules', 'utf8');
+        testEnv = await initializeTestEnvironment({
+            projectId: 'soccer-skills-tracker',
+            firestore: { rules }
+        });
+    }, 30000);
+
+    afterAll(async () => {
+        if (testEnv) {
+            await testEnv.cleanup();
+        }
     });
-}, 30000);
 
-afterAll(async () => {
-    if (testEnv) {
-        await testEnv.cleanup();
-    }
-});
-
-describe('coachExpandedStaffControls', () => {
     it('allows a coach in the expandedStaff list to read the team document', async () => {
         await testEnv.withSecurityRulesDisabled(async (context) => {
             const db = context.firestore();

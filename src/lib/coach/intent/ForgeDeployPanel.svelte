@@ -75,7 +75,7 @@
 			? 'rgba(57,255,20,0.45)'
 			: deployPhase === 'error'
 				? 'rgba(255,48,64,0.45)'
-				: 'rgba(20, 184, 166,0.25)',
+				: '#daff0a',
 	);
 
 	const selectedAssignableCount = $derived(
@@ -133,12 +133,12 @@
 	aria-label="Deploy intent workbench"
 >		<!-- ── Header ──────────────────────────────────────── -->
 		<div class="tw-flex tw-flex-col tw-gap-0.5">
-			<span class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-[#14b8a6]/60 tw-uppercase">
+			<span class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-nuclear-yellow tw-uppercase">
 				[ DEPLOY WORKBENCH ]
 			</span>
 		</div>
 
-		<div class="tw-h-px tw-w-full tw-bg-[#14b8a6]/10"></div>
+		<div class="tw-h-px tw-w-full tw-bg-nuclear-yellow/20"></div>
 
 		<!-- ── Mission kind ───────────────────────────────── -->
 		<div class="tw-flex tw-flex-col tw-gap-1.5">
@@ -151,7 +151,7 @@
 					class="tw-flex-1 tw-py-1.5 tw-rounded-lg tw-font-mono tw-text-[9px] tw-tracking-widest
 					       tw-uppercase tw-border tw-transition-all tw-min-h-[44px]"
 					style={draftMissionKind === 'standard'
-						? 'border-color:#14b8a6; color:#14b8a6; background:rgba(20, 184, 166,0.1);'
+						? 'border-color:#daff0a; color:#daff0a; background:rgba(218,255,10,0.1);'
 						: 'border-color:rgba(20, 184, 166,0.2); color:rgba(20, 184, 166,0.35);'}
 					onclick={() => {
 						draftMissionKind = 'standard';
@@ -165,7 +165,7 @@
 					class="tw-flex-1 tw-py-1.5 tw-rounded-lg tw-font-mono tw-text-[9px] tw-tracking-widest
 					       tw-uppercase tw-border tw-transition-all tw-min-h-[44px]"
 					style={draftMissionKind === 'benchmark'
-						? 'border-color:#14b8a6; color:#14b8a6; background:rgba(20, 184, 166,0.1);'
+						? 'border-color:#daff0a; color:#daff0a; background:rgba(218,255,10,0.1);'
 						: 'border-color:rgba(20, 184, 166,0.2); color:rgba(20, 184, 166,0.35);'}
 					onclick={() => {
 						draftMissionKind = 'benchmark';
@@ -349,7 +349,7 @@
 				<input
 					type="checkbox"
 					bind:checked={draftPrescriptionBilateral}
-					class="tw-accent-[#14b8a6] tw-w-3 tw-h-3"
+					class="tw-accent-nuclear-yellow tw-w-3 tw-h-3"
 				/>
 				<span class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-[#14b8a6]/55 tw-uppercase">
 					Both sides
@@ -490,10 +490,10 @@
 		<!-- ── XP bounty ──────────────────────────────────── -->
 		<div class="tw-flex tw-flex-col tw-gap-1.5">
 			<div class="tw-flex tw-items-center tw-justify-between">
-				<label for="hud-xp" class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-[#14b8a6]/40 tw-uppercase">
+				<label for="hud-xp" class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-nuclear-yellow tw-uppercase">
 					XP BOUNTY
 				</label>
-				<span class="tw-font-mono tw-text-[14px] tw-tracking-wider tw-text-[#14b8a6] tw-font-bold">
+				<span class="tw-font-mono tw-text-[14px] tw-tracking-wider tw-text-nuclear-yellow tw-font-bold">
 					{draftRequiredXp}
 				</span>
 			</div>
@@ -504,17 +504,17 @@
 				max="2000"
 				step="25"
 				bind:value={draftRequiredXp}
-				class="tw-w-full tw-accent-[#14b8a6] tw-h-1 tw-rounded-full tw-cursor-pointer"
+				class="tw-w-full tw-accent-nuclear-yellow tw-h-1 tw-rounded-full tw-cursor-pointer"
 			/>
 		</div>
 
 		<!-- ── Duration ───────────────────────────────────── -->
 		<div class="tw-flex tw-flex-col tw-gap-1.5">
 			<div class="tw-flex tw-items-center tw-justify-between">
-				<label for="hud-dur" class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-[#14b8a6]/40 tw-uppercase">
+				<label for="hud-dur" class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-nuclear-yellow tw-uppercase">
 					DURATION
 				</label>
-				<span class="tw-font-mono tw-text-[14px] tw-tracking-wider tw-text-[#14b8a6] tw-font-bold">
+				<span class="tw-font-mono tw-text-[14px] tw-tracking-wider tw-text-nuclear-yellow tw-font-bold">
 					{draftDurationDays}d
 				</span>
 			</div>
@@ -525,7 +525,7 @@
 				max="90"
 				step="1"
 				bind:value={draftDurationDays}
-				class="tw-w-full tw-accent-[#14b8a6] tw-h-1 tw-rounded-full tw-cursor-pointer"
+				class="tw-w-full tw-accent-nuclear-yellow tw-h-1 tw-rounded-full tw-cursor-pointer"
 			/>
 		</div>
 
@@ -547,7 +547,7 @@
 			max="7"
 			step="1"
 			bind:value={draftCadenceSessionsPerWindow}
-			class="tw-w-full tw-accent-[#14b8a6] tw-h-1 tw-rounded-full tw-cursor-pointer"
+			class="tw-w-full tw-accent-nuclear-yellow tw-h-1 tw-rounded-full tw-cursor-pointer"
 		/>
 		<p class="tw-font-mono tw-text-[8px] tw-text-white/20 tw-leading-relaxed">
 			Recommended for multi-day XP goals. One credited session per UTC day — caps how fast players can finish.
@@ -706,11 +706,11 @@
 									type="checkbox"
 									checked={isChecked}
 									onchange={() => onToggleUid(player.rosterKey)}
-									class="tw-accent-[#14b8a6] tw-w-4 tw-h-4 tw-shrink-0"
+									class="tw-accent-nuclear-yellow tw-w-4 tw-h-4 tw-shrink-0"
 								/>
 								<span
 									class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-uppercase tw-truncate"
-									style={isChecked ? 'color:#14b8a6;' : 'color:rgba(20, 184, 166,0.45);'}
+									style={isChecked ? 'color:#daff0a;' : 'color:rgba(20, 184, 166,0.45);'}
 								>
 									{player.playerName}
 								</span>
@@ -797,11 +797,11 @@
 			{/if}
 			<button
 				type="button"
-				class="tw-w-full tw-min-h-[44px] tw-py-3 tw-rounded-lg tw-font-mono tw-text-[10px] tw-tracking-widest
+				class="tw-w-full tw-min-h-[44px] tw-py-3 tw-rounded-lg tw-font-mono tw-text-[10px] tw-font-bold tw-tracking-widest
 				       tw-uppercase tw-border tw-transition-all tw-flex tw-items-center tw-justify-center tw-gap-2
 				       disabled:tw-opacity-30 disabled:tw-cursor-not-allowed
 				       enabled:hover:tw-brightness-125 active:tw-scale-[0.98]"
-				style="border-color:{deployBorderColor}; color:{deployPhase === 'success' ? '#2dd4bf' : deployPhase === 'error' ? '#ff3040' : '#14b8a6'};"
+				style="border-color:{deployBorderColor}; background:{deployPhase === 'saving' ? 'rgba(20,184,166,0.1)' : '#daff0a'}; color:{deployPhase === 'saving' ? '#14b8a6' : deployPhase === 'error' ? '#ff3040' : '#000000'};"
 				disabled={!canDeploy || deployPhase === 'saving'}
 				onclick={onDeploy}
 			>
@@ -813,8 +813,8 @@
 		</div>
 
 		<!-- ── Footer ─────────────────────────────────────── -->
-		<div class="tw-h-px tw-w-full tw-bg-[#14b8a6]/10"></div>
-		<div class="tw-font-mono tw-text-[8px] tw-tracking-widest tw-text-white/10 tw-uppercase tw-text-center">
+		<div class="tw-h-px tw-w-full tw-bg-nuclear-yellow/20"></div>
+		<div class="tw-font-mono tw-text-[8px] tw-tracking-widest tw-text-white/20 tw-uppercase tw-text-center">
 			[ NEXUS INTENT ENGINE v1 ]
 		</div>
 </section>
