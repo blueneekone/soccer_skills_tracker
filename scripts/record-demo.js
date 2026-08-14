@@ -3,9 +3,13 @@
  * Captures pixel-perfect 1080p 60fps diegetic recordings matching the public website video slots.
  */
 
-const { chromium } = require('playwright');
-const fs = require('fs');
-const path = require('path');
+import { chromium } from 'playwright';
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const BASE_URL = process.env.BASE_URL || 'http://localhost:5173';
 const OUTPUT_DIR = path.resolve(__dirname, '../static/videos');
@@ -82,7 +86,7 @@ async function captureDirectorDemo(browser) {
     clubId: 'apex-fc'
   });
 
-  await page.goto(`${BASE_URL}/director/dashboard`, { waitUntil: 'networkidle' });
+  await page.goto(`${BASE_URL}/director/dashboard`, { waitUntil: 'domcontentloaded' });
   await page.waitForTimeout(1500);
 
   // Smooth hover over Mission Control KPI meters
@@ -108,7 +112,7 @@ async function captureCoachDemo(browser) {
     teamId: 'u17-premier'
   });
 
-  await page.goto(`${BASE_URL}/coach/tactical`, { waitUntil: 'networkidle' });
+  await page.goto(`${BASE_URL}/coach/tactical`, { waitUntil: 'domcontentloaded' });
   await page.waitForTimeout(1500);
 
   // Interact with Tactical War Room pitch
@@ -136,7 +140,7 @@ async function capturePlayerDemo(browser) {
     currentStreak: 14
   });
 
-  await page.goto(`${BASE_URL}/player/dashboard`, { waitUntil: 'networkidle' });
+  await page.goto(`${BASE_URL}/player/dashboard`, { waitUntil: 'domcontentloaded' });
   await page.waitForTimeout(1500);
 
   // Hover over Vanguard Prism 6-axis Radar
@@ -160,7 +164,7 @@ async function capturePlayerCvDemo(browser) {
     playerName: 'Leo Hernandez'
   });
 
-  await page.goto(`${BASE_URL}/player/proving-grounds`, { waitUntil: 'networkidle' });
+  await page.goto(`${BASE_URL}/player/proving-grounds`, { waitUntil: 'domcontentloaded' });
   await page.waitForTimeout(1500);
 
   // Hover over CV Trial verification workspace
@@ -178,7 +182,7 @@ async function captureParentDemo(browser) {
     householdId: 'hh-hernandez-01'
   });
 
-  await page.goto(`${BASE_URL}/parent/dashboard`, { waitUntil: 'networkidle' });
+  await page.goto(`${BASE_URL}/parent/dashboard`, { waitUntil: 'domcontentloaded' });
   await page.waitForTimeout(1500);
 
   // Hover over Compliance Shield & Car Ride Home countdown
@@ -196,7 +200,7 @@ async function captureMarketingHeroDemo(browser) {
   console.log('Capturing: marketing-hero.webm (Master Compilation)...');
   const { context, page } = await setupContext(browser, 'guest', {});
 
-  await page.goto(`${BASE_URL}/`, { waitUntil: 'networkidle' });
+  await page.goto(`${BASE_URL}/`, { waitUntil: 'domcontentloaded' });
   await page.waitForTimeout(1500);
 
   // Cinematic pan over Landing Hero CTA
