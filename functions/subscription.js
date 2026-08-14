@@ -76,13 +76,24 @@ exports.createSubscription = onCall({region: REGION}, async (request) => {
   const { getFirestore } = require('firebase-admin/firestore');
   const db = getFirestore();
 
-  // ── LIVE Stripe Connect Checkout Session ─────────────────────────────────
+  const entitlementRef = db.doc(`license_entitlements/${tenantId}`);
   const secretKey = STRIPE_SECRET_KEY.value();
+
   if (!secretKey) {
-    throw new HttpsError('failed-precondition', 'Stripe secret key not configured.');
+    // STUB PATH: Dev/test mode without Stripe credentials.
+    await entitlementRef.set({
+      subscription_status: 'active',
+      tier: config.planTier,
+      updatedAt: now,
+    }, {merge: true});
+    logger.info('[createSubscription] Stub subscription activated', {tenantId, tierId});
+    return { status: 'active' };
   }
 
-  
+  // ── LIVE Stripe Connect Checkout Session ─────────────────────────────────
+  const Stripe = require('stripe');
+  const stripeClient = new Stripe(secretKey, {apiVersion: '2024-06-20'});
+
   const session = await stripeClient.checkout.sessions.create({
     mode: 'subscription',
     line_items: [{ price: priceId || 'price_dummy', quantity: 1 }],

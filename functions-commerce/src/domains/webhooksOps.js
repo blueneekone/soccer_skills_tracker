@@ -177,125 +177,55 @@ async function resolveTeamBySidCode(sidCode, seasonExternalId) {
   );
 }
 
-/**
- * Fail-closed eligibility row for one player payload object.
- * @param {Record<string, unknown>} p
- * @param {string} teamId
- * @param {string|null} clubId
- * @param {string} seasonExternalId
- * @param {string} sidCode
- * @param {string} sourceTag
- * @param {string} eventId
- * @return {!Promise<!Object>}
- */
-async function buildEligibilityRow(
-    p, teamId, clubId, seasonExternalId, sidCode, sourceTag, eventId,
-) {
-  const emailKey = normEmail(
-      typeof p.email === 'string' ? p.email : null,
-  );
-  const extId =
-      typeof p.externalMemberId === 'string' && p.externalMemberId.trim() ?
-        p.externalMemberId.trim() :
-        null;
-  const displayName =
-      typeof p.displayName === 'string' ? p.displayName.trim() : '';
+async function evaluateUserVpc(emailKey, identityVerified) {
+  if (!identityVerified || !emailKey) return false;
+  const uSnap = await db().collection('users').doc(emailKey).get();
+  if (!uSnap.exists) return false;
+  const ud = uSnap.data();
+  return ud.isMinor === true ? ud.vpcStatus === 'verified' : true;
+}
+
+async function buildEligibilityRow(p, teamId, clubId, seasonExternalId, sidCode, sourceTag, eventId) {
+  const emailKey = normEmail(typeof p.email === 'string' ? p.email : null);
+  const extId = typeof p.externalMemberId === 'string' && p.externalMemberId.trim() ? p.externalMemberId.trim() : null;
+  const displayName = typeof p.displayName === 'string' ? p.displayName.trim() : '';
 
   const identityVerified = !!(emailKey || extId);
   const identityStatus = identityVerified ? 'verified' : 'unverified';
+  const safeSportVerified = p.safeSport === true || p.safeSportVerified === true;
+  const concussionClearanceVerified = p.concussionClearance === true || p.concussionClearanceVerified === true;
 
-  const safeSportVerified =
-      p.safeSport === true || p.safeSportVerified === true;
-  const concussionClearanceVerified =
-      p.concussionClearance === true ||
-      p.concussionClearanceVerified === true;
-
-  const rawGb =
-      typeof p.governingBodyStatus === 'string' ?
-        p.governingBodyStatus.trim().toLowerCase() :
-        '';
+  const rawGb = typeof p.governingBodyStatus === 'string' ? p.governingBodyStatus.trim().toLowerCase() : '';
   let governingBodyStatus = 'unknown';
   if (rawGb === 'clear') governingBodyStatus = 'clear';
-  else if (rawGb === 'red_card' || rawGb === 'red card') {
-    governingBodyStatus = 'red_card';
-  } else if (rawGb === 'suspended') governingBodyStatus = 'suspended';
+  else if (rawGb === 'red_card' || rawGb === 'red card') governingBodyStatus = 'red_card';
+  else if (rawGb === 'suspended') governingBodyStatus = 'suspended';
   const governingBodyClear = governingBodyStatus === 'clear';
 
-  let vpcSatisfied = false;
-  if (!identityVerified) {
-    vpcSatisfied = false;
-  } else if (emailKey) {
-    const uSnap = await db().collection('users').doc(emailKey).get();
-    if (!uSnap.exists) {
-      vpcSatisfied = false;
-    } else {
-      const ud = uSnap.data();
-      if (ud.isMinor === true) {
-        vpcSatisfied = ud.vpcStatus === 'verified';
-      } else {
-        vpcSatisfied = true;
-      }
-    }
-  } else {
-    vpcSatisfied = false;
-  }
-
-  const eligible =
-      safeSportVerified &&
-      concussionClearanceVerified &&
-      governingBodyClear &&
-      vpcSatisfied &&
-      identityVerified;
+  const vpcSatisfied = await evaluateUserVpc(emailKey, identityVerified);
+  const eligible = safeSportVerified && concussionClearanceVerified && governingBodyClear && vpcSatisfied && identityVerified;
 
   const reasons = [];
   if (!identityVerified) reasons.push('identity_unverified');
   if (!safeSportVerified) reasons.push('safesport_not_verified');
-  if (!concussionClearanceVerified) {
-    reasons.push('concussion_not_verified');
-  }
+  if (!concussionClearanceVerified) reasons.push('concussion_not_verified');
   if (!governingBodyClear) reasons.push('governing_body_not_clear');
   if (!vpcSatisfied) reasons.push('vpc_not_satisfied');
 
-  const eligibilityDocId = makeEligibilityDocId(
-      teamId, extId, emailKey, displayName,
-  );
+  const eligibilityDocId = makeEligibilityDocId(teamId, extId, emailKey, displayName);
   const now = admin.firestore.FieldValue.serverTimestamp();
   const eligibilityData = {
-    teamId,
-    clubId: clubId || null,
-    seasonExternalId: seasonExternalId || null,
-    sidCode,
-    externalMemberId: extId,
-    emailKey: emailKey || null,
-    displayName: displayName || null,
-    safeSportVerified,
-    concussionClearanceVerified,
-    governingBodyClear,
-    governingBodyStatus,
-    vpcSatisfied,
-    identityVerified,
-    identityStatus,
-    eligible,
-    ineligibilityReasons: reasons,
-    source: sourceTag,
-    lastEventId: eventId,
-    updatedAt: now,
+    teamId, clubId: clubId || null, seasonExternalId: seasonExternalId || null, sidCode,
+    externalMemberId: extId, emailKey: emailKey || null, displayName: displayName || null,
+    safeSportVerified, concussionClearanceVerified, governingBodyClear, governingBodyStatus,
+    vpcSatisfied, identityVerified, identityStatus, eligible, ineligibilityReasons: reasons,
+    source: sourceTag, lastEventId: eventId, updatedAt: now,
   };
 
   const linkId = makeRosterLinkDocId(teamId, extId, emailKey, displayName);
   const rosterLinkData = {
     id: linkId,
-    data: {
-      teamId,
-      clubId: clubId || null,
-      seasonExternalId: seasonExternalId || null,
-      sidCode,
-      externalMemberId: extId,
-      emailKey: emailKey || null,
-      displayName: displayName || null,
-      updatedAt: now,
-      lastEventId: eventId,
-    },
+    data: { teamId, clubId: clubId || null, seasonExternalId: seasonExternalId || null, sidCode, externalMemberId: extId, emailKey: emailKey || null, displayName: displayName || null, updatedAt: now, lastEventId: eventId },
   };
 
   return {eligibilityDocId, eligibilityData, rosterLinkData};
@@ -357,96 +287,13 @@ async function recomputeEligibilityDerived(d) {
  * @param {{sourceTag: string, rawString: string}} opts
  * @return {!Promise<!Object>}
  */
-async function runAffinityIngestCore(payload, opts) {
-  const eventId =
-      typeof payload.eventId === 'string' ? payload.eventId.trim() : '';
-  if (!eventId) {
-    throwAffinityHttp(400, 'eventId is required');
-  }
-  const sidCode =
-      typeof payload.sidCode === 'string' ? payload.sidCode.trim() : '';
-  const seasonExternalId =
-      typeof payload.seasonExternalId === 'string' ?
-        payload.seasonExternalId.trim() :
-        '';
-  const players = Array.isArray(payload.players) ? payload.players : [];
-  if (players.length > 120) {
-    throwAffinityHttp(400, 'At most 120 players per payload');
-  }
-
-  const eventDocId = sanitizeAffinityEventDocId(eventId);
-  const eventRef = db().collection('affinity_webhook_events').doc(eventDocId);
-
-  const duplicate = await db().runTransaction(async (t) => {
-    const es = await t.get(eventRef);
-    if (es.exists) return true;
-    t.set(eventRef, {
-      eventId,
-      status: 'processing',
-      receivedAt: admin.firestore.FieldValue.serverTimestamp(),
-      source: opts.sourceTag,
-    });
-    return false;
-  });
-
-  if (duplicate) {
-    return {ok: true, duplicate: true, eventId};
-  }
-
-  const rawRef = db().collection('affinity_ingest_raw').doc();
-  await rawRef.set({
-    eventId,
-    bodyPreview: (opts.rawString || '').slice(0, 80000),
-    byteLength: Buffer.byteLength(opts.rawString || '', 'utf8'),
-    receivedAt: admin.firestore.FieldValue.serverTimestamp(),
-    source: opts.sourceTag,
-  });
-
-  let teamId;
-  let clubId;
-  try {
-    const resolved = await resolveTeamBySidCode(sidCode, seasonExternalId);
-    teamId = resolved.teamId;
-    clubId = resolved.clubId;
-  } catch (err) {
-    await eventRef.set({
-      status: 'failed',
-      error: err.message || String(err),
-      completedAt: admin.firestore.FieldValue.serverTimestamp(),
-    }, {merge: true});
-    throw err;
-  }
-
-  const built = [];
-  for (const p of players) {
-    if (!p || typeof p !== 'object') continue;
-    built.push(
-        await buildEligibilityRow(
-            /** @type {Record<string, unknown>} */ (p),
-            teamId,
-            clubId,
-            seasonExternalId,
-            sidCode,
-            opts.sourceTag,
-            eventId,
-        ),
-    );
-  }
-
+async function batchCommitEligibilityRows(built) {
   let batch = db().batch();
   let ops = 0;
   for (const row of built) {
-    batch.set(
-        db().collection('player_eligibility').doc(row.eligibilityDocId),
-        row.eligibilityData,
-        {merge: true},
-    );
+    batch.set(db().collection('player_eligibility').doc(row.eligibilityDocId), row.eligibilityData, {merge: true});
     ops++;
-    batch.set(
-        db().collection('roster_links').doc(row.rosterLinkData.id),
-        row.rosterLinkData.data,
-        {merge: true},
-    );
+    batch.set(db().collection('roster_links').doc(row.rosterLinkData.id), row.rosterLinkData.data, {merge: true});
     ops++;
     if (ops >= 450) {
       await batch.commit();
@@ -454,24 +301,50 @@ async function runAffinityIngestCore(payload, opts) {
       ops = 0;
     }
   }
-  if (ops > 0) {
-    await batch.commit();
+  if (ops > 0) await batch.commit();
+}
+
+async function runAffinityIngestCore(payload, opts) {
+  const eventId = typeof payload.eventId === 'string' ? payload.eventId.trim() : '';
+  if (!eventId) throwAffinityHttp(400, 'eventId is required');
+  const sidCode = typeof payload.sidCode === 'string' ? payload.sidCode.trim() : '';
+  const seasonExternalId = typeof payload.seasonExternalId === 'string' ? payload.seasonExternalId.trim() : '';
+  const players = Array.isArray(payload.players) ? payload.players : [];
+  if (players.length > 120) throwAffinityHttp(400, 'At most 120 players per payload');
+
+  const eventDocId = sanitizeAffinityEventDocId(eventId);
+  const eventRef = db().collection('affinity_webhook_events').doc(eventDocId);
+
+  const duplicate = await db().runTransaction(async (t) => {
+    const es = await t.get(eventRef);
+    if (es.exists) return true;
+    t.set(eventRef, { eventId, status: 'processing', receivedAt: admin.firestore.FieldValue.serverTimestamp(), source: opts.sourceTag });
+    return false;
+  });
+  if (duplicate) return {ok: true, duplicate: true, eventId};
+
+  const rawRef = db().collection('affinity_ingest_raw').doc();
+  await rawRef.set({ eventId, bodyPreview: (opts.rawString || '').slice(0, 80000), byteLength: Buffer.byteLength(opts.rawString || '', 'utf8'), receivedAt: admin.firestore.FieldValue.serverTimestamp(), source: opts.sourceTag });
+
+  let teamId, clubId;
+  try {
+    const resolved = await resolveTeamBySidCode(sidCode, seasonExternalId);
+    teamId = resolved.teamId; clubId = resolved.clubId;
+  } catch (err) {
+    await eventRef.set({ status: 'failed', error: err.message || String(err), completedAt: admin.firestore.FieldValue.serverTimestamp() }, {merge: true});
+    throw err;
   }
 
-  await eventRef.set({
-    status: 'completed',
-    completedAt: admin.firestore.FieldValue.serverTimestamp(),
-    teamId,
-    playerCount: built.length,
-    ingestRawId: rawRef.id,
-  }, {merge: true});
+  const built = [];
+  for (const p of players) {
+    if (!p || typeof p !== 'object') continue;
+    built.push(await buildEligibilityRow(/** @type {Record<string, unknown>} */ (p), teamId, clubId, seasonExternalId, sidCode, opts.sourceTag, eventId));
+  }
 
-  return {
-    ok: true,
-    eventId,
-    teamId,
-    playerCount: built.length,
-  };
+  await batchCommitEligibilityRows(built);
+  await eventRef.set({ status: 'completed', completedAt: admin.firestore.FieldValue.serverTimestamp(), teamId, playerCount: built.length, ingestRawId: rawRef.id }, {merge: true});
+
+  return { ok: true, eventId, teamId, playerCount: built.length };
 }
 
 // ── Private helpers: Stripe ───────────────────────────────────────────────────
@@ -573,155 +446,73 @@ function isAllowedStripeRedirectUrl(url) {
  * @param {Object} stripeClient Stripe client
  * @param {Object} event Stripe event payload
  */
+async function handleCheckoutSessionCompleted(stripeClient, session) {
+  let clubId = session.metadata?.clubId ? String(session.metadata.clubId).trim() : '';
+  if (!clubId && session.client_reference_id) clubId = String(session.client_reference_id).trim();
+  const tierType = session.metadata?.tierType ? String(session.metadata.tierType).toLowerCase() : '';
+
+  if (tierType === 'premium_spectator') {
+    if (session.client_reference_id) {
+      await admin.auth().setCustomUserClaims(session.client_reference_id, { premium_spectator: true });
+    }
+    return;
+  }
+
+  const recruiterEmail = session.metadata?.recruiterEmail ? String(session.metadata.recruiterEmail).toLowerCase().trim() : '';
+  if (!clubId || !tierType) return;
+
+  const subId = session.subscription;
+  const customerId = session.customer;
+  let quantity = 1;
+  if (typeof subId === 'string') {
+    const sub = await stripeClient.subscriptions.retrieve(subId);
+    const first = sub.items?.data[0];
+    if (first && typeof first.quantity === 'number' && first.quantity > 0) quantity = first.quantity;
+  }
+
+  if (tierType === 'recruiter' && recruiterEmail) {
+    await db().collection('recruiter_accounts').doc(recruiterEmail).set({
+      email: recruiterEmail, stripe_customer_id: String(customerId || ''), stripe_subscription_id: typeof subId === 'string' ? subId : '',
+      subscription_status: 'active', billingModel: 'recruiter_hybrid', updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    }, {merge: true});
+  }
+
+  const seats = seatsLimitForTier(tierType, quantity);
+  await db().collection('license_entitlements').doc(clubId).set({
+    tier: tierType, stripe_customer_id: String(customerId || ''), stripe_subscription_id: typeof subId === 'string' ? subId : '',
+    subscription_status: 'active', seats_limit: seats, updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+  }, {merge: true});
+}
+
+async function handleSubscriptionDeleted(stripeClient, sub) {
+  await syncSubscriptionStatusFromStripeObject(stripeClient, sub, 'canceled');
+  try {
+    const tier = sub.metadata?.tierType ? String(sub.metadata.tierType).toLowerCase() : '';
+    const clubId = sub.metadata?.clubId ? String(sub.metadata.clubId).trim() : '';
+    if (clubId && tier && tier !== 'recruiter') {
+      await db().collection('organizations').doc(clubId).set({
+        billingModel: 'transaction_billing', billingModelMigratedAt: admin.firestore.FieldValue.serverTimestamp(),
+      }, {merge: true});
+    }
+  } catch (err) {
+    logger.error('subscription.deleted flip error', err);
+  }
+}
+
 async function handleStripeWebhookEvent(stripeClient, event) {
-  const type = event.type;
-
-  if (type === 'checkout.session.completed') {
-    const session = /** @type {import('stripe').Stripe.Checkout.Session} */ (
-      event.data.object
-    );
-    let clubId =
-        session.metadata && session.metadata.clubId ?
-          String(session.metadata.clubId).trim() :
-          '';
-    if (!clubId && session.client_reference_id) {
-      clubId = String(session.client_reference_id).trim();
-    }
-    const tierType =
-        session.metadata && session.metadata.tierType ?
-          String(session.metadata.tierType).toLowerCase() :
-          '';
-
-    // EPIC 14: B2C STRIPE PAYWALL (PREMIUM SPECTATOR ACCESS)
-    if (tierType === 'premium_spectator') {
-      const parentUid = session.client_reference_id;
-      if (parentUid) {
-        await admin.auth().setCustomUserClaims(parentUid, { premium_spectator: true });
-        logger.info(`B2C Premium Spectator unlocked for ${parentUid}`);
-      } else {
-        logger.warn('checkout.session.completed: premium_spectator missing client_reference_id');
-      }
-      return;
-    }
-
-    // Phase 2, Epic 2 — Session M: route recruiter subs to recruiter_accounts.
-    const recruiterEmail =
-        session.metadata && session.metadata.recruiterEmail ?
-          String(session.metadata.recruiterEmail).toLowerCase().trim() :
-          '';
-    if (!clubId || !tierType) {
-      logger.warn(
-          'checkout.session.completed: missing clubId/tier in metadata',
-      );
-      return;
-    }
-    const subId = session.subscription;
-    const customerId = session.customer;
-    let quantity = 1;
-    if (typeof subId === 'string') {
-      const sub = await stripeClient.subscriptions.retrieve(subId);
-      const first = sub.items && sub.items.data[0] ? sub.items.data[0] : null;
-      if (first && typeof first.quantity === 'number' && first.quantity > 0) {
-        quantity = first.quantity;
-      }
-    }
-
-    // Recruiter hybrid path: write `recruiter_accounts/{email}` (the canonical
-    // source of truth for recruiter access).  Also retain the legacy
-    // `license_entitlements/{clubId}` row for backwards compat during the
-    // cutover — the rules helper `recruiterSubscriptionActive()` reads from
-    // recruiter_accounts first and falls back to license_entitlements.
-    if (tierType === 'recruiter' && recruiterEmail) {
-      const recRef = db().collection('recruiter_accounts').doc(recruiterEmail);
-      await recRef.set(
-          {
-            email: recruiterEmail,
-            stripe_customer_id: typeof customerId === 'string' ?
-              customerId :
-              String(customerId || ''),
-            stripe_subscription_id: typeof subId === 'string' ? subId : '',
-            subscription_status: 'active',
-            billingModel: 'recruiter_hybrid',
-            activatedAt: admin.firestore.FieldValue.serverTimestamp(),
-            updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-            updatedBy: 'stripe:checkout.session.completed',
-          },
-          {merge: true},
-      );
-    }
-
-    const seats = seatsLimitForTier(tierType, quantity);
-    const entRef = db().collection('license_entitlements').doc(clubId);
-    await entRef.set(
-        {
-          tier: tierType,
-          stripe_customer_id: typeof customerId === 'string' ?
-            customerId :
-            String(customerId || ''),
-          stripe_subscription_id: typeof subId === 'string' ? subId : '',
-          subscription_status: 'active',
-          seats_limit: seats,
-          updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-          updatedBy: 'stripe:checkout.session.completed',
-        },
-        {merge: true},
-    );
-    return;
-  }
-
-  if (type === 'customer.subscription.deleted') {
-    const sub = /** @type {import('stripe').Stripe.Subscription} */ (
-      event.data.object
-    );
-    await syncSubscriptionStatusFromStripeObject(stripeClient, sub, 'canceled');
-    // Phase 2, Epic 2 — Session E.  When a legacy club sub (tutor/team/club)
-    // is cancelled, flip the org-side `billingModel` so the read-only paywall
-    // (Session F) stops tripping.  Recruiter subs are intentionally skipped
-    // — they migrate via Session M, not by free-falling off the gate.
-    try {
-      const tier = sub.metadata && sub.metadata.tierType ?
-        String(sub.metadata.tierType).toLowerCase() :
-        '';
-      const clubId = sub.metadata && sub.metadata.clubId ?
-        String(sub.metadata.clubId).trim() :
-        '';
-      if (clubId && tier && tier !== 'recruiter') {
-        await db().collection('organizations').doc(clubId).set(
-            {
-              billingModel: 'transaction_billing',
-              billingModelMigratedAt: admin.firestore.FieldValue.serverTimestamp(),
-            },
-            {merge: true},
-        );
-        logger.info('subscription.deleted: org flipped to transaction_billing', {clubId, tier});
-      }
-    } catch (err) {
-      logger.error('subscription.deleted: org-side flip failed', {
-        err: err instanceof Error ? err.message : String(err),
-      });
-    }
-    return;
-  }
-
-  if (type === 'customer.subscription.updated') {
-    const sub = /** @type {import('stripe').Stripe.Subscription} */ (
-      event.data.object
-    );
-    const mapped = mapStripeSubscriptionStatus(sub.status);
-    await syncSubscriptionStatusFromStripeObject(stripeClient, sub, mapped);
-    return;
-  }
-
-  if (type === 'invoice.payment_failed') {
-    const invoice = /** @type {import('stripe').Stripe.Invoice} */ (
-      event.data.object
-    );
-    const subId = invoice.subscription;
+  if (event.type === 'checkout.session.completed') {
+    await handleCheckoutSessionCompleted(stripeClient, event.data.object);
+  } else if (event.type === 'customer.subscription.deleted') {
+    await handleSubscriptionDeleted(stripeClient, event.data.object);
+  } else if (event.type === 'customer.subscription.updated') {
+    const mapped = mapStripeSubscriptionStatus(event.data.object.status);
+    await syncSubscriptionStatusFromStripeObject(stripeClient, event.data.object, mapped);
+  } else if (event.type === 'invoice.payment_failed') {
+    const subId = event.data.object.subscription;
     if (typeof subId === 'string') {
       const sub = await stripeClient.subscriptions.retrieve(subId);
       await syncSubscriptionStatusFromStripeObject(stripeClient, sub, 'past_due');
     }
-    return;
   }
 }
 
@@ -852,98 +643,50 @@ exports.expireCoachInvites = onSchedule('every 60 minutes', async () => {
   await reconcileReservedSeatsWithoutPendingInvites();
 });
 
+async function resolvePlayerTrialProfile(request, data) {
+  if (!request.auth || !request.auth.uid) throw new HttpsError('unauthenticated', 'Sign in required.');
+  if ((request.auth.token.role || 'player') !== 'player') {
+    throw new HttpsError('permission-denied', 'Only player accounts may submit video trials.');
+  }
+  const scoreId = typeof data.scoreId === 'string' ? data.scoreId.trim() : '';
+  const videoUrl = typeof data.videoUrl === 'string' ? data.videoUrl.trim() : '';
+  if (!scoreId || scoreId.length < 8 || scoreId.length > 128) throw new HttpsError('invalid-argument', 'scoreId is required.');
+  if (!videoUrl || !videoUrl.startsWith('http')) throw new HttpsError('invalid-argument', 'videoUrl is required.');
+
+  const email = normEmail(request.auth.token.email);
+  if (!email) throw new HttpsError('failed-precondition', 'Missing email on account.');
+  const uSnap = await db().collection('users').doc(email).get();
+  if (!uSnap.exists) throw new HttpsError('not-found', 'Profile not found.');
+
+  const u = uSnap.data() || {};
+  const teamId = typeof u.teamId === 'string' && u.teamId.trim() && u.teamId !== 'admin' ? u.teamId.trim() : '';
+  const clubId = typeof u.clubId === 'string' && u.clubId.trim() ? u.clubId.trim() : '';
+  const playerName = typeof u.playerName === 'string' && u.playerName.trim() ? u.playerName.trim() : '';
+  if (!teamId || !clubId || !playerName) throw new HttpsError('failed-precondition', 'Athlete profile must have team and club.');
+
+  return { uid: request.auth.uid, scoreId, videoUrl, skill: typeof data.skill === 'string' ? data.skill.trim().slice(0, 120) : '', teamId, clubId, playerName };
+}
+
 /** Epic 14: video trial Firestore row after Storage upload (validated). */
 exports.submitVideoTrial = onCall({region: REGION}, async (request) => {
-  if (!request.auth || !request.auth.uid) {
-    throw new HttpsError('unauthenticated', 'Sign in required.');
-  }
-  const role = request.auth.token.role || 'player';
-  if (role !== 'player') {
-    throw new HttpsError(
-        'permission-denied',
-        'Only player accounts may submit video trials.',
-    );
-  }
-  const data = request.data || {};
-  const scoreId =
-      typeof data.scoreId === 'string' ? data.scoreId.trim() : '';
-  const videoUrl =
-      typeof data.videoUrl === 'string' ? data.videoUrl.trim() : '';
-  const skill =
-      typeof data.skill === 'string' ? data.skill.trim().slice(0, 120) : '';
-  if (!scoreId || scoreId.length < 8 || scoreId.length > 128) {
-    throw new HttpsError('invalid-argument', 'scoreId is required.');
-  }
-  if (!videoUrl || !videoUrl.startsWith('http')) {
-    throw new HttpsError('invalid-argument', 'videoUrl is required.');
-  }
-  const uid = request.auth.uid;
-  const email = normEmail(request.auth.token.email);
-  if (!email) {
-    throw new HttpsError('failed-precondition', 'Missing email on account.');
-  }
-  const uSnap = await db().collection('users').doc(email).get();
-  if (!uSnap.exists) {
-    throw new HttpsError('not-found', 'Profile not found.');
-  }
-  const u = uSnap.data() || {};
-  const teamId =
-      typeof u.teamId === 'string' && u.teamId.trim() && u.teamId !== 'admin' ?
-        u.teamId.trim() :
-        '';
-  const clubId =
-      typeof u.clubId === 'string' && u.clubId.trim() ? u.clubId.trim() : '';
-  const playerName =
-      typeof u.playerName === 'string' && u.playerName.trim() ?
-        u.playerName.trim() :
-        '';
-  if (!teamId || !clubId || !playerName) {
-    throw new HttpsError(
-        'failed-precondition',
-        'Athlete profile must have team and club.',
-    );
-  }
-
-  const expectedPath = `clubs/${clubId}/trials/${uid}/${scoreId}_video.mp4`;
+  const p = await resolvePlayerTrialProfile(request, request.data || {});
+  const expectedPath = `clubs/${p.clubId}/trials/${p.uid}/${p.scoreId}_video.mp4`;
   let bucket;
-  try {
-    bucket = admin.storage().bucket();
-  } catch (e) {
-    logger.error('submitVideoTrial bucket', e);
-    throw new HttpsError(
-        'failed-precondition',
-        'Storage is not available.',
-    );
+  try { bucket = admin.storage().bucket(); } catch (e) {
+    throw new HttpsError('failed-precondition', 'Storage is not available.');
   }
   const [exists] = await bucket.file(expectedPath).exists();
-  if (!exists) {
-    throw new HttpsError(
-        'failed-precondition',
-        'Upload the video to the expected path before submitting.',
-    );
-  }
+  if (!exists) throw new HttpsError('failed-precondition', 'Upload the video to expected path first.');
 
-  const ref = db().collection('trial_scores').doc(scoreId);
-  const prev = await ref.get();
-  if (prev.exists) {
-    throw new HttpsError(
-        'already-exists',
-        'This trial id was already submitted.',
-    );
-  }
+  const ref = db().collection('trial_scores').doc(p.scoreId);
+  if ((await ref.get()).exists) throw new HttpsError('already-exists', 'Trial id already submitted.');
 
   await ref.set({
-    clubId,
-    teamId,
-    playerId: uid,
-    playerName,
-    videoUrl,
-    skill: skill || '',
-    status: 'pending_verification',
+    clubId: p.clubId, teamId: p.teamId, playerId: p.uid, playerName: p.playerName,
+    videoUrl: p.videoUrl, skill: p.skill, status: 'pending_verification',
     submittedAt: admin.firestore.FieldValue.serverTimestamp(),
   });
-
-  return {ok: true, scoreId};
+  return {ok: true, scoreId: p.scoreId};
 });
 
 /**
@@ -1345,6 +1088,8 @@ exports.createStripeCheckoutSession = onCall(
         );
       }
 
+      const Stripe = require('stripe');
+      const stripeClient = new Stripe(secret, {apiVersion: '2024-06-20'});
       
       const priceId = priceIdForTierType(stripeClient, tierTypeRaw);
       if (!priceId || typeof priceId !== 'string') {
@@ -1446,7 +1191,9 @@ exports.stripeWebhook = onRequest(
         return;
       }
 
-      
+      const Stripe = require('stripe');
+      const stripeClient = new Stripe(secretKey, {apiVersion: '2024-06-20'});
+
       let event;
       try {
         event = stripeClient.webhooks.constructEvent(rawBody, sig, whSecret);
@@ -1455,6 +1202,25 @@ exports.stripeWebhook = onRequest(
         logger.error(`Webhook signature verification failed: ${msg}`);
         res.status(400).send(`Webhook Error: ${msg}`);
         return;
+      }
+
+      const eventId = event.id;
+      if (eventId) {
+        const webhookRef = db().collection('processed_webhooks').doc(eventId);
+        const alreadyProcessed = await db().runTransaction(async (tx) => {
+          const doc = await tx.get(webhookRef);
+          if (doc.exists) return true;
+          tx.set(webhookRef, {
+            processedAt: admin.firestore.FieldValue.serverTimestamp(),
+            type: event.type,
+          });
+          return false;
+        });
+        if (alreadyProcessed) {
+          logger.info(`[stripeWebhook] event ${eventId} already processed (idempotent skip)`);
+          res.status(200).json({received: true, idempotent: true});
+          return;
+        }
       }
 
       try {

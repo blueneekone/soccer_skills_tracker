@@ -17,6 +17,11 @@ const REPO_ROOT = path.resolve(__dirname, '..');
 /** @type {Record<string, string>} */
 const CODEBASE_DIRS = {
   integrations: 'functions-integrations',
+  commerce: 'functions-commerce',
+  core: 'functions-core',
+  rl: 'functions-rl',
+  compliance: 'functions-compliance',
+  platform: 'functions-platform',
 };
 
 const codebase = process.argv[2];
