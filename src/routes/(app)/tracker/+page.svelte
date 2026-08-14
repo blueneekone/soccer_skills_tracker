@@ -518,11 +518,11 @@
 				</div>
 				<div class="gw-schedule-actions">
 					<button type="button" class="gw-btn-secondary" onclick={addToGoogleCalendar}>
-						<Icon name="nav.calendar" size={14} />
+						<Icon name="sys.calendar" size={14} />
 						<span>Google Calendar</span>
 					</button>
 					<button type="button" class="gw-btn-secondary" onclick={downloadIcs}>
-						<Icon name="sys.download" size={14} />
+						<Icon name="action.download" size={14} />
 						<span>Download .ics</span>
 					</button>
 				</div>

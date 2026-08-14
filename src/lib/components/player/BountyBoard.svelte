@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { db } from '$lib/firebase.js';
+	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { collection, query, where, getDocs } from 'firebase/firestore';
 	import Icon from '$lib/components/ui/Icon.svelte';
 	import type { IconName } from '$lib/icons/registry.js';

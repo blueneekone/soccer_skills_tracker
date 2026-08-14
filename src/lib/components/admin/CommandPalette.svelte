@@ -5,6 +5,7 @@
 	import { db, auth, functions } from '$lib/firebase.js';
 	import { httpsCallable } from 'firebase/functions';
 	import { signInWithCustomToken } from 'firebase/auth';
+	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { impersonationStore } from '$lib/stores/impersonation.svelte.js';
 	import { collection, query, orderBy, startAt, endAt, limit, getDocs } from 'firebase/firestore';
 

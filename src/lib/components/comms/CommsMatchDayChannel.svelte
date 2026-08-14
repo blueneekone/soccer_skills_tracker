@@ -8,6 +8,7 @@
 		query,
 	} from 'firebase/firestore';
 	import { db } from '$lib/firebase.js';
+	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { COMMS_CHANNEL_TYPE_REGISTRY } from '$lib/comms/channelTypes.js';
 
 	let { clubId = '', teamId = '' } = $props();

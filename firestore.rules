@@ -19,6 +19,26 @@ service cloud.firestore {
       return request.auth != null;
     }
 
+    function authed() {
+      return request.auth != null;
+    }
+
+    function isParent() {
+      return request.auth != null && request.auth.token.role == 'parent';
+    }
+
+    function emailKey() {
+      return request.auth != null ? request.auth.token.email : '';
+    }
+
+    function playerVpcAllowed() {
+      return request.auth != null;
+    }
+
+    function teamWorkoutRsvpReadOk() {
+      return isAuthenticated();
+    }
+
     // ✅ Multi-Tenant Integrity Guard via Custom Claims
     match /clubs/{clubId} {
       allow read, write: if isAuthenticated() && (request.auth.token.clubId == clubId || request.auth.token.admin == true || request.auth.token.role == 'super_admin');
@@ -48,6 +68,21 @@ service cloud.firestore {
 
     match /vpc_requests/{requestId} {
       allow read, write: if isAuthenticated() && (request.auth.token.admin == true || request.auth.token.role == 'super_admin');
+    }
+
+    match /consents/{consentId} {
+      allow read: if isParent() && resource.data.parentId == emailKey();
+      allow create, update, delete: if false;
+    }
+
+    match /workouts/{docId} {
+      allow create: if authed() && playerVpcAllowed();
+    }
+
+    match /team_workouts/{workoutId} {
+      match /rsvps/{playerEmail} {
+        allow read: if teamWorkoutRsvpReadOk();
+      }
     }
 
     // Default match to prevent global unauthenticated reads/writes

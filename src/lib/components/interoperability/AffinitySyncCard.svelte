@@ -1,6 +1,7 @@
 <script lang="ts">
   import { collection, query, where, getDocs, doc, updateDoc, serverTimestamp } from 'firebase/firestore';
   import { getActiveDb } from '$lib/firebase.js';
+  import { authStore } from '$lib/stores/auth.svelte.js';
 
   const { clubId } = $props<{ clubId: string }>();
 
@@ -19,9 +20,9 @@
   });
 
   async function loadTeams() {
+    const db = getActiveDb();
     if (!db || !authStore.isAuthenticated) return;
     try {
-      const db = getActiveDb();
       const q = query(collection(db, 'teams'), where('clubId', '==', clubId));
       const snap = await getDocs(q);
       teams = snap.docs.map(d => ({ id: d.id, ...d.data() }));
