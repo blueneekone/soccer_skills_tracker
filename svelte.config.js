@@ -28,6 +28,10 @@ const config = {
 				if (path.startsWith('/api/')) {
 					return;
 				}
+				// Marketing videos are generated locally and excluded from git
+				if (path.startsWith('/videos/')) {
+					return;
+				}
 				throw new Error(message);
 			},
 		}

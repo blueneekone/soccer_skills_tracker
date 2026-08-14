@@ -220,7 +220,7 @@ exports.onWorkoutLogCreated = onDocumentCreated(
       // (gamificationWorkoutXp.js). Without this call, bounties that gate on
       // reps_count / workout_volume_kj / streak_length never advance for
       // workouts that went through the adaptive-policy flow.
-      const playerEmail = typeof logDoc.playerEmail === 'string' ? logDoc.playerEmail : '';
+      playerEmail = playerEmail || (typeof logDoc.playerEmail === 'string' ? logDoc.playerEmail : '');
       if (playerEmail && playerEmail.includes('@')) {
         try {
           const psData = playerStats || {};

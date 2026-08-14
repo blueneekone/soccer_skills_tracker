@@ -4,15 +4,7 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // ✅ Renamed to checkDocExists to avoid illegally overriding native 'exists'
-    function checkDocExists(docPath) {
-      return exists(docPath);
-    }
 
-    // ✅ Renamed to fetchDoc to avoid illegally overriding native 'get'
-    function fetchDoc(docPath) {
-      return get(docPath);
-    }
 
     // Standard helper to verify authentication state
     function isAuthenticated() {
