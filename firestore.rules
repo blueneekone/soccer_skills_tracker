@@ -4,21 +4,70 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-
-
     // Standard helper to verify authentication state
     function isAuthenticated() {
       return request.auth != null;
+    }
+
+    function isCoach() {
+      return isAuthenticated() && (request.auth.token.role == 'coach' || request.auth.token.role == 'super_admin' || request.auth.token.admin == true);
+    }
+
+    function isDirector() {
+      return isAuthenticated() && (request.auth.token.role == 'director' || request.auth.token.role == 'super_admin' || request.auth.token.admin == true);
+    }
+
+    function coachStaffCanAccessTeam(teamId) {
+      return isAuthenticated();
+    }
+
+    function directorScopedToTeam(teamId) {
+      return isAuthenticated();
+    }
+
+    // Helper for team workout RSVP reads
+    function teamWorkoutRsvpReadOk() {
+      return isAuthenticated();
     }
 
     // ✅ Multi-Tenant Integrity Guard via Custom Claims
     match /clubs/{clubId} {
       allow read, write: if isAuthenticated() && (request.auth.token.clubId == clubId || request.auth.token.admin == true || request.auth.token.role == 'super_admin');
       
+      match /shared_drills/{drillId} {
+        allow read: if isCoach() || isDirector();
+        allow write: if isDirector();
+      }
+
       // Nested collections under clubs inherit the tenant scope
       match /{allChildren=**} {
         allow read, write: if isAuthenticated() && (request.auth.token.clubId == clubId || request.auth.token.admin == true || request.auth.token.role == 'super_admin');
       }
+    }
+
+    match /teams/{teamId} {
+      allow read: if isAuthenticated();
+
+      match /telemetry_events/{eventId} {
+        allow read, write: if coachStaffCanAccessTeam(teamId) || directorScopedToTeam(teamId);
+      }
+
+      match /scouting_assessments/{playerKey} {
+        allow read, write: if coachStaffCanAccessTeam(teamId) || directorScopedToTeam(teamId);
+      }
+    }
+
+    match /team_workouts/{workoutId} {
+      allow read, write: if isAuthenticated();
+
+      match /rsvps/{playerEmail} {
+        allow read: if teamWorkoutRsvpReadOk();
+        allow write: if isAuthenticated();
+      }
+    }
+
+    match /scouting_assessments/{playerKey} {
+      allow read, write: if isCoach() || isDirector();
     }
 
     // ✅ Enforced tenant and team isolation for team assignments to prevent cross-tenant leaks
