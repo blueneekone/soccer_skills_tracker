@@ -258,16 +258,16 @@ import { functions } from '$lib/firebase.js';
 	.value-badge {
 		font-size: 0.7rem;
 		font-weight: 700;
-		color: #00d4ff;
-		background: rgba(0, 212, 255, 0.1);
-		border: 1px solid rgba(0, 212, 255, 0.25);
+		color: #fde047;
+		background: rgba(253, 224, 71, 0.1);
+		border: 1px solid rgba(253, 224, 71, 0.3);
 		border-radius: 999px;
 		padding: 0.1rem 0.6rem;
 	}
 
 	.slider {
 		width: 100%;
-		accent-color: #00d4ff;
+		accent-color: #fde047;
 		cursor: pointer;
 	}
 
@@ -297,9 +297,9 @@ import { functions } from '$lib/firebase.js';
 	}
 
 	.pip.active {
-		background: rgba(0, 212, 255, 0.15);
-		border-color: #00d4ff;
-		color: #00d4ff;
+		background: rgba(253, 224, 71, 0.15);
+		border-color: #fde047;
+		color: #fde047;
 	}
 
 	.pip:hover:not(.active) {
@@ -311,9 +311,9 @@ import { functions } from '$lib/firebase.js';
 	.submit-btn {
 		margin-top: 0.5rem;
 		padding: 0.65rem 1.5rem;
-		background: linear-gradient(135deg, #00d4ff 0%, #0099cc 100%);
+		background: #fde047;
 		color: #0a0a1a;
-		font-weight: 800;
+		font-weight: 900;
 		font-size: 0.8rem;
 		letter-spacing: 0.08em;
 		text-transform: uppercase;
