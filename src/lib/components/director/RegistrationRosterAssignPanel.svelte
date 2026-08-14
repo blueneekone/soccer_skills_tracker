@@ -141,7 +141,6 @@
 	});
 
 	async function assignRow(registrationId: string, teamId?: string) {
-    if (!db || !authStore.isAuthenticated) return;
 		const resolvedTeamId = (teamId ?? teamPick[registrationId])?.trim();
 		if (!resolvedTeamId || savingId) return;
 		const row = registrations.find((r) => r.id === registrationId);

@@ -103,7 +103,7 @@
 				disabled={isResolving}
 				onclick={() => void resolveBatch()}
 			>
-				<Icon name="status.sparkle" size={14} />
+				<Icon name="status.shield-check" size={14} />
 				<span>{isResolving ? 'RESOLVING...' : 'RESOLVE ALL FAILED (HIGH-FIVE)'}</span>
 			</button>
 		{/if}

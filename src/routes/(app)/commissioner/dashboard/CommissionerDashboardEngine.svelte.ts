@@ -50,6 +50,13 @@ export class CommissionerDashboardEngine {
 		}
 	}
 
+	get resolvedTenantId(): string | null {
+		if (authStore.isAuthenticated && authStore.role === 'commissioner') {
+			return authStore.tenantId || authStore.userProfile?.tenantId || this.tenantId || 'mock-tenant-123';
+		}
+		return this.tenantId;
+	}
+
 	async loadFederationCompliance() {
 		const isMock = typeof window !== 'undefined' && (window.localStorage.getItem('auth_state') !== null || (import.meta.env && import.meta.env.VITE_E2E_BYPASS_AUTH));
 		if (isMock) {
@@ -71,7 +78,7 @@ export class CommissionerDashboardEngine {
 			return [];
 		}
 
-		if (!this.isAuthorized || !this.tenantId) {
+		if (!this.isAuthorized) {
 			this.error = 'Unauthorized access.';
 			this.isLoading = false;
 			return [];
@@ -81,7 +88,9 @@ export class CommissionerDashboardEngine {
 		this.error = null;
 
 		try {
-			const odpPipeline = await federationService.getOdpTalentPipeline(this.tenantId);
+			const tenantId = this.resolvedTenantId;
+			if (!tenantId) return [];
+			const odpPipeline = await federationService.getOdpTalentPipeline(tenantId);
 			this.odpPipeline = odpPipeline;
 
 			const clubsMap = new Map<string, { total: number; compliant: number }>();
@@ -173,7 +182,7 @@ export class CommissionerDashboardEngine {
 			const db = getActiveDb();
 			if (!db) throw new Error('Database not available');
 
-			const tenantId = this.tenantId;
+			const tenantId = this.resolvedTenantId;
 			if (!tenantId) {
 				this.clubs = [];
 				this.isLoading = false;

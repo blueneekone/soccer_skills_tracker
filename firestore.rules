@@ -11,6 +11,14 @@ service cloud.firestore {
       return request.auth != null;
     }
 
+    function tokenRole() {
+      return request.auth.token.role;
+    }
+
+    function isCommissioner() {
+      return isAuthenticated() && tokenRole() == 'commissioner';
+    }
+
     // ✅ Multi-Tenant Integrity Guard via Custom Claims
     match /clubs/{clubId} {
       allow read, write: if isAuthenticated() && (request.auth.token.clubId == clubId || request.auth.token.admin == true || request.auth.token.role == 'super_admin');

@@ -105,7 +105,7 @@
 						</a>
 						<button
 							type="button"
-							class="tw-px-3 tw-py-2 tw-text-xs tw-font-mono tw-font-bold tw-tracking-wider tw-uppercase tw-bg-transparent tw-border tw-border-nuclear-yellow tw-text-nuclear-yellow hover:tw-bg-nuclear-yellow hover:tw-text-void-black tw-transition-colors tw-flex tw-items-center tw-justify-between cursor-pointer"
+							class="tw-px-3 tw-py-2 tw-text-xs tw-font-mono tw-font-bold tw-tracking-wider tw-uppercase tw-bg-transparent tw-border tw-border-[#fbbf24] tw-text-[#fbbf24] hover:tw-bg-[#fbbf24] hover:tw-text-black tw-transition-colors tw-flex tw-items-center tw-justify-between cursor-pointer"
 							onclick={() => engine.fetchFederationData()}
 						>
 							<span class="tw-flex tw-items-center tw-gap-2">

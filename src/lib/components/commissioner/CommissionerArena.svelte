@@ -62,6 +62,12 @@
 									</td>
 									<td class="tw-py-2.5 tw-px-2 tw-text-right tw-text-nuclear-yellow tw-font-mono tw-font-bold odp-analytics-val">{item.safeSportRate}%</td>
 								</tr>
+							{:else}
+								<tr>
+									<td colspan="3" class="tw-py-8 tw-text-center tw-text-slate-400 tw-font-mono tw-text-xs">
+										NO FEDERATION CLUBS DISCOVERED
+									</td>
+								</tr>
 							{/each}
 						{/await}
 					</tbody>
@@ -133,4 +139,3 @@
 		border-radius: 0;
 	}
 </style>
-
