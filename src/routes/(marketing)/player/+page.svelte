@@ -28,7 +28,7 @@
 					<Icon name={"status.circle-play" as IconName} size={48} strokeWidth={1} />
 				</button>
 			</div>
-			<img src="/nexus-command-preview.png" alt="Player OS Cinematic Video" class="tw-w-full tw-h-full tw-object-cover tw-opacity-50" />
+			<video src="/videos/player-os-demo.webm" autoplay loop muted playsinline class="tw-w-full tw-h-full tw-object-cover tw-opacity-50"></video>
 		</div>
 	</header>
 
@@ -70,7 +70,7 @@
 					</p>
 				</div>
 				<div class="tw-flex-1 tw-w-full tw-aspect-video tw-bg-[#0f172a] tw-border tw-border-[#1e293b] tw-rounded-sm tw-overflow-hidden">
-					<img src="/nexus-command-preview.png" alt="CV Validation" class="tw-w-full tw-h-full tw-object-cover tw-opacity-50" />
+					<video src="/videos/player-cv-demo.webm" autoplay loop muted playsinline class="tw-w-full tw-h-full tw-object-cover tw-opacity-50"></video>
 				</div>
 			</div>
 

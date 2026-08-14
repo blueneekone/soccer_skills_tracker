@@ -1,0 +1,50 @@
+name: Jules UI/UX Polishing Swarm
+
+on:
+  push:
+    branches: [ dev ]
+    paths:
+      - '.agents/workflows/jules-builds/**'
+
+jobs:
+  run-ui-ux-sprints:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        persona: 
+          - sprint-ui-admin-os.md
+          - sprint-ui-coach-os.md
+          - sprint-ui-commissioner-os.md
+          - sprint-ui-director-os.md
+          - sprint-ui-parent-os.md
+          - sprint-ui-player-os.md
+          - sprint-ui-public-marketing.md
+          
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 9
+
+      - name: Install Dependencies
+        run: pnpm install --frozen-lockfile
+        
+      - name: Install Antigravity CLI
+        run: |
+          curl -sL https://antigravity.google/install.sh | bash
+
+      - name: Execute Jules Persona UI/UX Sprint
+        env:
+          AGY_API_KEY: ${{ secrets.AGY_API_KEY }}
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+        run: |
+          agy -p .agents/workflows/jules-builds/${{ matrix.persona }} --dangerously-skip-permissions
