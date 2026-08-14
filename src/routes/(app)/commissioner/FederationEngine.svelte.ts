@@ -31,12 +31,18 @@ export class FederationEngine {
 	isAuthorized = $derived(authStore.isAuthenticated && authStore.role === 'commissioner');
 
 	constructor() {
-		// Defensive Hydration check
 		if (!authStore.isAuthenticated || authStore.role !== 'commissioner') {
 			this.tenantId = null;
 			return;
 		}
 		this.tenantId = authStore.tenantId || authStore.userProfile?.tenantId || null;
+	}
+
+	get resolvedTenantId(): string | null {
+		if (authStore.isAuthenticated && authStore.role === 'commissioner') {
+			return authStore.tenantId || authStore.userProfile?.tenantId || this.tenantId;
+		}
+		return this.tenantId;
 	}
 
 	/**
@@ -49,7 +55,9 @@ export class FederationEngine {
 			return [];
 		}
 
-		if (!this.isAuthorized || !this.tenantId) {
+		const tenantId = this.resolvedTenantId;
+
+		if (!this.isAuthorized || !tenantId) {
 			this.error = 'Unauthorized access.';
 			this.isLoading = false;
 			return [];
@@ -65,7 +73,7 @@ export class FederationEngine {
 			const usersRef = collection(db, 'users');
 			const q = query(
 				usersRef,
-				where('tenantId', '==', this.tenantId),
+				where('tenantId', '==', tenantId),
 				where('role', '==', 'player')
 			);
 

@@ -11,7 +11,7 @@
 
 	$effect(() => {
 		// Programmatic hydration trigger - B815 compliant
-		if (!authStore.isLoading && authStore.isAuthenticated) {
+		if (!authStore.isLoading) {
 			untrack(() => {
 				engine.fetchFederationData();
 			});
