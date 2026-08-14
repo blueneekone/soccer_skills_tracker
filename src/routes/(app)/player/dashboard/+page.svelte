@@ -480,7 +480,7 @@
 						lastTrainingUtc={lastTrainingUtc}
 						profileIncomplete={!hasArmoryProfile}
 						cardMetadata={hqCardMetadata}
-						onProfileSetup={() => void goto()}
+						onProfileSetup={() => (showInitModal = true)}
 					/>
 				{/snippet}
 				{#snippet metrics()}

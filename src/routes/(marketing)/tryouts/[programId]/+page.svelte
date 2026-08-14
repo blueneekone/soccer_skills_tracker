@@ -2,6 +2,8 @@
 	import { page } from '$app/state';
 	import { browser } from '$app/environment';
 	import { getFunctions, httpsCallable } from 'firebase/functions';
+	import Icon from '$lib/components/ui/Icon.svelte';
+	import type { IconName } from '$lib/icons/registry.js';
 
 	const programId = $derived(page.params.programId ?? '');
 
@@ -168,35 +170,35 @@
 		<h1 class="tw-text-2xl tw-font-bold">Tryout not found</h1>
 		<p class="tw-mt-2 tw-text-slate-400">This registration link may be invalid or expired.</p>
 	{:else}
-		<p class="tw-mb-1 tw-font-mono tw-text-xs tw-uppercase tw-tracking-widest tw-text-slate-500">
+		<p class="tw-mb-1 tw-font-mono tw-text-xs tw-uppercase tw-tracking-widest tw-text-nuclear-yellow">
 			Tryout registration
 		</p>
 		<h1 class="tw-m-0 tw-text-3xl tw-font-black">{program.name}</h1>
 		<p class="tw-mt-1 tw-text-slate-400">{program.clubName}</p>
 
-		<dl class="ty-facts tw-mt-6 tw-space-y-2 tw-rounded-xl tw-border tw-border-slate-800 tw-bg-slate-900/50 tw-p-4 tw-text-sm">
+		<dl class="ty-facts tw-mt-6 tw-space-y-2 tw-rounded-sm tw-border tw-border-[#334155] tw-bg-[#0f172a] tw-p-4 tw-text-sm">
 			{#if program.ageBands && program.ageBands.length > 0}
 				<div class="tw-flex tw-justify-between tw-gap-3">
-					<dt class="tw-text-slate-500">Age bands</dt>
-					<dd>{program.ageBands.join(', ')}</dd>
+					<dt class="tw-text-slate-400">Age bands</dt>
+					<dd class="tw-font-mono tw-text-slate-200">{program.ageBands.join(', ')}</dd>
 				</div>
 			{/if}
 			{#if program.spotsRemaining != null}
 				<div class="tw-flex tw-justify-between tw-gap-3">
-					<dt class="tw-text-slate-500">Spots left</dt>
-					<dd class="tw-font-mono">{program.spotsRemaining}</dd>
+					<dt class="tw-text-slate-400">Spots left</dt>
+					<dd class="tw-font-mono tw-font-bold tw-text-nuclear-yellow">{program.spotsRemaining}</dd>
 				</div>
 			{/if}
 			{#if program.registrationClosesAt}
 				<div class="tw-flex tw-justify-between tw-gap-3">
-					<dt class="tw-text-slate-500">Closes</dt>
+					<dt class="tw-text-slate-400">Closes</dt>
 					<dd class="tw-font-mono">{program.registrationClosesAt}</dd>
 				</div>
 			{/if}
 		</dl>
 
 		{#if !program.registrationOpen}
-			<p class="tw-mt-6 tw-text-amber-400">Registration is closed for this tryout.</p>
+			<p class="tw-mt-6 tw-text-amber-400 tw-font-mono tw-text-sm">Registration is closed for this tryout.</p>
 		{:else}
 			<form
 				class="ty-form tw-mt-8 tw-flex tw-flex-col tw-gap-3"
@@ -250,31 +252,33 @@
 
 				<button
 					type="submit"
-					class="tw-vanguard-btn-primary tw-mt-2"
+					class="vanguard-btn-amber tw-mt-2 tw-flex tw-items-center tw-justify-center tw-gap-2 tw-py-3.5 tw-font-mono tw-font-bold tw-text-sm tw-uppercase"
 					disabled={submitting}
 				>
+					<Icon name={"action.send" as IconName} size={16} />
 					{submitting ? 'Submitting…' : 'Register for tryouts'}
 				</button>
 			</form>
 
 			{#if registrationId}
-				<section class="ty-rsvp tw-mt-8 tw-rounded-xl tw-border tw-border-slate-800 tw-bg-slate-900/50 tw-p-4">
+				<section class="ty-rsvp tw-mt-8 tw-rounded-sm tw-border tw-border-[#334155] tw-bg-[#0f172a] tw-p-4">
 					<h2 class="tw-m-0 tw-text-sm tw-font-bold tw-uppercase tw-tracking-wide tw-text-slate-400">
 						Session RSVP
 					</h2>
-					<p class="tw-mt-2 tw-text-sm tw-text-slate-400">
-						Confirmation code: <code class="tw-font-mono tw-text-teal-300">{registrationId}</code>
+					<p class="tw-mt-2 tw-text-sm tw-text-slate-300">
+						Confirmation code: <code class="tw-font-mono tw-text-nuclear-yellow tw-font-bold">{registrationId}</code>
 					</p>
-					<p class="tw-text-sm tw-text-slate-500">
+					<p class="tw-text-sm tw-text-slate-400">
 						After the club assigns your tryout block, confirm attendance below (same guardian email).
 					</p>
 					<div class="tw-mt-3 tw-flex tw-flex-wrap tw-gap-2">
 						<button
 							type="button"
-							class="tw-vanguard-btn-primary"
+							class="tw-vanguard-btn-primary tw-flex tw-items-center tw-gap-1.5 tw-px-4 tw-py-2"
 							disabled={rsvpSubmitting || rsvpStatus === 'going'}
 							onclick={() => void submitSessionRsvp('going')}
 						>
+							<Icon name={"status.circle-check" as IconName} size={14} />
 							Going
 						</button>
 						<button
@@ -299,8 +303,8 @@
 				</section>
 
 				{#if pipelineStatus === 'offered'}
-					<section class="ty-rsvp tw-mt-6 tw-rounded-xl tw-border tw-border-amber-800/60 tw-bg-amber-950/30 tw-p-4">
-						<h2 class="tw-m-0 tw-text-sm tw-font-bold tw-uppercase tw-tracking-wide tw-text-amber-300">
+					<section class="ty-rsvp tw-mt-6 tw-rounded-sm tw-border tw-border-[#f59e0b] tw-bg-[#0f172a] tw-p-4">
+						<h2 class="tw-m-0 tw-text-sm tw-font-bold tw-uppercase tw-tracking-wide tw-text-nuclear-yellow">
 							Roster offer
 						</h2>
 						<p class="tw-mt-2 tw-text-sm tw-text-slate-300">
@@ -309,10 +313,11 @@
 						<div class="tw-mt-3 tw-flex tw-flex-wrap tw-gap-2">
 							<button
 								type="button"
-								class="tw-vanguard-btn-primary"
+								class="vanguard-btn-amber tw-flex tw-items-center tw-gap-1.5 tw-px-5 tw-py-2.5 tw-font-mono tw-font-bold tw-text-xs tw-uppercase"
 								disabled={offerSubmitting}
 								onclick={() => void respondOffer('accepted')}
 							>
+								<Icon name={"action.check" as IconName} size={14} />
 								Accept offer
 							</button>
 							<button

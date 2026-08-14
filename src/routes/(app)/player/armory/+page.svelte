@@ -56,6 +56,7 @@
 	let armoryWorkspace = $state('studio');
 	let lastPortraitRepairQueuedSig = $state('');
 	const activeTab = tabParam || 'studio';
+	const qaCardSpanClass = 'bento-span-6';
 
 	let operativeAvatar = $state<any>(null);
 	let ownedPortraitParts = $state<string[]>([]);

@@ -3,8 +3,7 @@ name: Jules UI/UX Polishing Swarm
 on:
   push:
     branches: [ dev ]
-    paths:
-      - '.agents/workflows/jules-builds/**'
+  workflow_dispatch:
 
 jobs:
   run-ui-ux-sprints:

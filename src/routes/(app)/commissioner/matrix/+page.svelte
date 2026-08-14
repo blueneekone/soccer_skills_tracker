@@ -8,7 +8,11 @@
 	import CommissionerHUD from '$lib/components/commissioner/CommissionerHUD.svelte';
 </script>
 
-<div class="tw-h-screen tw-w-full tw-bg-[#000000] tw-text-[#334155] tw-overflow-hidden tw-flex tw-flex-col tw-font-switzer">
+<svelte:head>
+	<title>Commissioner OS | Federation Compliance Matrix</title>
+</svelte:head>
+
+<div class="commissioner-matrix-shell tw-h-screen tw-w-full tw-bg-[#000000] tw-text-white tw-overflow-hidden tw-flex tw-flex-col tw-font-sans tw-rounded-none">
 	<!-- Commissioner HUD (Header / Command Plane Status) -->
 	<CommissionerHUD />
 
@@ -17,3 +21,10 @@
 		<CommissionerArena />
 	</main>
 </div>
+
+<style>
+	.commissioner-matrix-shell {
+		border-radius: 0;
+	}
+</style>
+

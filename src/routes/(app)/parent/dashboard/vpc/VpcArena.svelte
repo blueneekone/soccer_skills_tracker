@@ -1,37 +1,47 @@
 <script lang="ts">
 	import type VpcEngine from './VpcEngine.svelte.ts';
+	import Icon from '$lib/components/ui/Icon.svelte';
+	import type { IconName } from '$lib/icons/registry.js';
 
 	let { engine }: { engine: VpcEngine } = $props();
 </script>
 
-<div class="tw-p-6 tw-bg-[#1e293b] tw-rounded-none" style="clip-path: polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px); tw-border tw-border-[#334155]">
-	<h2 class="tw-text-xl tw-font-sans tw-text-white tw-mb-4">Biometric Registration</h2>
+<div class="tw-p-6 tw-bg-[#0F172A] tw-rounded-none tw-border tw-border-[#1E293B]">
+	<h2 class="tw-text-lg tw-font-bold tw-text-white tw-mb-3 tw-flex tw-items-center tw-gap-2">
+		<Icon name={"sys.fingerprint" as IconName} size={20} class="tw-text-nuclear-yellow" />
+		<span>Biometric Registration (VPC)</span>
+	</h2>
 
-	<p class="tw-text-sm tw-font-sans tw-text-[#94a3b8] tw-mb-6">
-		To complete Verifiable Parental Consent (VPC), please register your device's biometric authenticator (FaceID / TouchID).
+	<p class="tw-text-sm tw-font-sans tw-text-slate-300 tw-mb-6">
+		To complete Verifiable Parental Consent (VPC), please register your device's biometric authenticator (FaceID / TouchID / Windows Hello).
 	</p>
 
 	{#if engine.error}
-		<div class="tw-p-4 tw-mb-4 tw-rounded-none" style="clip-path: polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px); tw-bg-red-500/10 tw-border tw-border-red-500/20">
-			<p class="tw-text-sm tw-text-red-400 tw-font-mono">{engine.error}</p>
+		<div class="tw-p-4 tw-mb-4 tw-rounded-none tw-bg-red-950/30 tw-border tw-border-red-500/30 tw-flex tw-items-center tw-gap-2">
+			<Icon name={"status.error" as IconName} size={16} class="tw-text-red-400" />
+			<p class="tw-text-sm tw-text-red-300 tw-font-mono">{engine.error}</p>
 		</div>
 	{/if}
 
 	{#if engine.success}
-		<div class="tw-p-4 tw-rounded-none" style="clip-path: polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px); tw-bg-[#2dd4bf]/10 tw-border tw-border-[#2dd4bf]/20">
-			<p class="tw-text-sm tw-text-[#2dd4bf] tw-font-mono">✓ Biometric VPC Registration Complete</p>
+		<div class="tw-p-4 tw-rounded-none tw-bg-emerald-950/30 tw-border tw-border-emerald-500/30 tw-flex tw-items-center tw-gap-2">
+			<Icon name={"status.seal-check" as IconName} size={18} class="tw-text-nuclear-yellow" />
+			<p class="tw-text-sm tw-text-nuclear-yellow tw-font-mono tw-font-bold">Biometric VPC Registration Complete</p>
 		</div>
 	{:else}
 		<button
 			onclick={() => engine.register()}
 			disabled={engine.loading || !engine.isReady}
-			class="tw-w-full tw-py-3 tw-px-6 tw-rounded-none" style="clip-path: polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px); tw-bg-transparent tw-border tw-border-[#2dd4bf] tw-text-[#2dd4bf] hover:tw-bg-[#2dd4bf]/10 disabled:tw-opacity-50 disabled:tw-cursor-not-allowed tw-transition-colors tw-font-sans tw-font-medium"
+			class="tw-w-full tw-py-3.5 tw-px-6 tw-rounded-none tw-bg-nuclear-yellow tw-text-black tw-font-mono tw-text-xs tw-font-bold tw-tracking-widest tw-uppercase hover:tw-bg-yellow-300 disabled:tw-opacity-50 disabled:tw-cursor-not-allowed tw-transition-all tw-flex tw-items-center tw-justify-center tw-gap-2"
 		>
-			{#if engine.loading}
-				Processing...
-			{:else}
-				Authenticate with Device
-			{/if}
+			<Icon name={"sys.fingerprint" as IconName} size={18} />
+			<span>
+				{#if engine.loading}
+					Processing Biometric Auth…
+				{:else}
+					Authenticate with Device Biometrics
+				{/if}
+			</span>
 		</button>
 	{/if}
 </div>

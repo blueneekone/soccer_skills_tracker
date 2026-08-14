@@ -18,6 +18,8 @@
 	import IntelModal from '$lib/components/ui/IntelModal.svelte';
 	import { lockBody, unlockBody } from '$lib/utils/modalLock.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
+	import Icon from '$lib/components/ui/Icon.svelte';
+	import type { IconName } from '$lib/icons/registry.js';
 	import ParentPrivacyDashboard from '$lib/components/compliance/ParentPrivacyDashboard.svelte';
 	import TransferPortal from '$lib/components/player/TransferPortal.svelte';
 	import type { HouseholdOperativeRow } from '$lib/types/household.js';
@@ -257,7 +259,9 @@
 	$effect(() => {
 		if (browser && !authStore.isLoading && authStore.isAuthenticated) {
 			if (role !== 'parent') {
-				goto('/parent/vpc', { replaceState: true });
+				untrack(() => {
+					goto('/parent/vpc', { replaceState: true });
+				});
 			}
 		}
 	});
@@ -546,12 +550,13 @@
 				</div>
 				<button
 					type="button"
-					class="phh-btn tw-w-full tw-min-h-[3.25rem] tw-px-4 tw-text-base tw-font-extrabold tw-uppercase tw-tracking-widest"
+					class="phh-btn tw-w-full tw-min-h-[3.25rem] tw-px-4 tw-text-base tw-font-extrabold tw-uppercase tw-tracking-widest tw-inline-flex tw-items-center tw-justify-center tw-gap-2"
 					class:phh-btn--dim={coppaSigned}
 					disabled={coppaSigned || actionBusy}
 					onclick={signWaiver}
 				>
-					{coppaSigned ? 'Waiver on file' : 'Sign waiver & authorize'}
+					<Icon name={"status.seal-check" as IconName} size={18} class="tw-text-nuclear-yellow" />
+					<span>{coppaSigned ? 'Waiver on file' : 'Sign waiver & authorize'}</span>
 				</button>
 			</section>
 
@@ -632,22 +637,24 @@
 												>
 													<button
 														type="button"
-														class="phh-gt-approve"
+														class="phh-gt-approve tw-inline-flex tw-items-center tw-gap-1.5"
 														disabled={!coppaSigned ||
 															gtActionBusyKey !== null ||
 															actionBusy ||
 															row.gamertagChangesLeft <= 0}
 														onclick={() => approveGamertagForRow(row)}
 													>
-														{gtActionBusyKey === row.email ? '…' : 'Approve'}
+														<Icon name={"status.check" as IconName} size={12} />
+														<span>{gtActionBusyKey === row.email ? '…' : 'Approve'}</span>
 													</button>
 													<button
 														type="button"
-														class="phh-gt-deny"
+														class="phh-gt-deny tw-inline-flex tw-items-center tw-gap-1.5"
 														disabled={!coppaSigned || gtActionBusyKey !== null || actionBusy}
 														onclick={() => denyGamertagForRow(row)}
 													>
-														{gtActionBusyKey === row.email ? '…' : 'Deny'}
+														<Icon name={"sys.close" as IconName} size={12} />
+														<span>{gtActionBusyKey === row.email ? '…' : 'Deny'}</span>
 													</button>
 												</div>
 											</div>
@@ -679,14 +686,15 @@
 												/>
 												<button
 													type="button"
-													class="phh-btn phh-btn--cyan tw-min-h-[2.75rem] tw-shrink-0 tw-px-4 tw-text-xs"
+													class="phh-btn phh-btn--cyan tw-min-h-[2.75rem] tw-shrink-0 tw-px-4 tw-text-xs tw-inline-flex tw-items-center tw-gap-1.5"
 													disabled={!coppaSigned ||
 														linkTeamBusyKey !== null ||
 														actionBusy ||
 														gtActionBusyKey !== null}
 													onclick={() => linkOperativeTeam(row)}
 												>
-													{linkTeamBusyKey === row.email ? 'Linking…' : 'Link team'}
+													<Icon name={"sys.plug" as IconName} size={14} />
+													<span>{linkTeamBusyKey === row.email ? 'Linking…' : 'Link team'}</span>
 												</button>
 											</div>
 										</div>
@@ -699,14 +707,15 @@
 								<div class="tw-flex tw-shrink-0 sm:tw-justify-end">
 									<button
 										type="button"
-										class="phh-dispatch-gen tw-w-full sm:tw-w-auto"
+										class="phh-dispatch-gen tw-w-full sm:tw-w-auto tw-inline-flex tw-items-center tw-justify-center tw-gap-1.5"
 										disabled={!coppaSigned ||
 											otpGenBusyKey !== null ||
 											gtActionBusyKey !== null ||
 											actionBusy}
 										onclick={() => generateOtpForRow(row)}
 									>
-										{otpGenBusyKey === row.email ? 'Working…' : 'Generate clearance code'}
+										<Icon name={"sys.key" as IconName} size={14} class="tw-text-nuclear-yellow" />
+										<span>{otpGenBusyKey === row.email ? 'Working…' : 'Generate clearance code'}</span>
 									</button>
 								</div>
 							</li>
@@ -789,11 +798,12 @@
 				<div class="bento-mt-md">
 					<button
 						type="button"
-						class="phh-btn phh-btn--cyan tw-w-full tw-min-h-[3.25rem] tw-px-4 tw-text-base tw-font-extrabold tw-uppercase tw-tracking-widest"
+						class="phh-btn phh-btn--cyan tw-w-full tw-min-h-[3.25rem] tw-px-4 tw-text-base tw-font-extrabold tw-uppercase tw-tracking-widest tw-inline-flex tw-items-center tw-justify-center tw-gap-2"
 						disabled={!coppaSigned || actionBusy}
 						onclick={provision}
 					>
-						Generate operative credentials
+						<Icon name={"user.plus" as IconName} size={18} />
+						<span>Generate operative credentials</span>
 					</button>
 				</div>
 				{#if lastDispatch}
@@ -881,8 +891,9 @@
 				>
 			</div>
 			<div class="tw-flex tw-flex-col tw-gap-2 sm:tw-flex-row">
-				<button type="button" class="phh-btn phh-btn--cyan phh-otp-btn" onclick={copyOtpToClipboard}>
-					{copyFeedback ? 'Copied' : 'Copy to clipboard'}
+				<button type="button" class="phh-btn phh-btn--cyan phh-otp-btn tw-inline-flex tw-items-center tw-justify-center tw-gap-2" onclick={copyOtpToClipboard}>
+					<Icon name={"action.copy" as IconName} size={16} />
+					<span>{copyFeedback ? 'Copied' : 'Copy to clipboard'}</span>
 				</button>
 				<button type="button" class="phh-btn phh-otp-btn phh-otp-btn--close" onclick={closeOtpDialog}
 					>Dismiss</button
@@ -1025,9 +1036,14 @@
 		cursor: pointer;
 	}
 	.phh-gt-approve {
-		color: #05050a;
-		background: linear-gradient(180deg, #7dff9a 0%, #3ecf6a 100%);
-		border: 1px solid rgba(125, 255, 154, 0.9);
+		color: #000000;
+		background: #daff0a;
+		border: 1px solid #daff0a;
+		box-shadow: 0 0 12px rgba(218, 255, 10, 0.4);
+	}
+	.phh-gt-approve:hover:not(:disabled) {
+		background: #ebff47;
+		box-shadow: 0 0 16px rgba(218, 255, 10, 0.6);
 	}
 	.phh-gt-approve:disabled {
 		opacity: 0.45;

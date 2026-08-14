@@ -6,6 +6,7 @@
 	import ClearanceGate from './ClearanceGate.svelte';
 	import CoachTeamRosterPanel from '$lib/coach/logistics/CoachTeamRosterPanel.svelte';
 	import HalftimeChoicePlanner from '$lib/components/coach/halftime-choice-planner.svelte';
+	import Icon from '$lib/components/ui/Icon.svelte';
 
 	const engine = new DashboardEngine();
 

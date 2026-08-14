@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { untrack } from 'svelte';
 	import MarketingNav from '$lib/components/marketing/MarketingNav.svelte';
 	import MarketingFooter from '$lib/components/marketing/MarketingFooter.svelte';
 	import { browser } from '$app/environment';
@@ -18,7 +19,9 @@
 		if (isPrintRoute) return;
 		if (authStore.isLoading) return;
 		if (authStore.isAuthenticated && authStore.isProfileComplete) {
-			goto(applyLoginWaterfall(authStore.role, authStore.userProfile), { replaceState: true });
+			untrack(() => {
+				goto(applyLoginWaterfall(authStore.role, authStore.userProfile), { replaceState: true });
+			});
 		}
 	});
 
@@ -42,7 +45,7 @@
 	<MarketingNav />
 {/if}
 
-<main class="tw-min-h-dvh" class:tw-bg-slate-950={!isPrintRoute}>
+<main class="tw-min-h-dvh" class:tw-bg-[#000000]={!isPrintRoute}>
 	{@render children()}
 </main>
 

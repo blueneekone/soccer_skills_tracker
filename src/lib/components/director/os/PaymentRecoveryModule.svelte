@@ -2,6 +2,7 @@
 	import { browser } from '$app/environment';
 	import { collection, doc, query, where, onSnapshot, writeBatch, serverTimestamp } from 'firebase/firestore';
 	import { db } from '$lib/firebase.js';
+	import { authStore } from '$lib/stores/auth.svelte.js';
 	import Icon from '$lib/components/ui/Icon.svelte';
 	import { dopamineExplosion } from '$lib/services/dopamine.svelte.js';
 	import InboxZeroHero from '$lib/components/director/os/InboxZeroHero.svelte';
@@ -51,16 +52,14 @@
 	});
 
 	async function resolveBatch() {
-    if (!db || !authStore.isAuthenticated) return;
+		if (!db || !authStore.isAuthenticated) return;
 		if (failedPayments.length === 0 || isResolving) return;
 		isResolving = true;
 		resolveError = '';
 
 		try {
 			const batch = writeBatch(db);
-			const limitList = failedPayments.slice(0, 500);
-			
-			for (const fp of limitList) {
+			for (const fp of failedPayments) {
 				const ref = doc(db, 'registrations', fp.id);
 				batch.update(ref, {
 					paymentStatus: 'paid',
@@ -92,7 +91,7 @@
 <div class="prm-showcase vanguard-card">
 	<div class="prm-header">
 		<div class="prm-title-row">
-			<Icon name="status.warning" size={24} class="prm-icon-warn" />
+			<Icon name="status.warning" size={24} class="prm-icon-warn tw-text-nuclear-yellow" />
 			<div>
 				<h3 class="prm-title">PAYMENT RECOVERY SHOWCASE</h3>
 				<p class="prm-subtitle">Empathetic Lapsed Payment Assistant</p>
@@ -104,7 +103,8 @@
 				disabled={isResolving}
 				onclick={() => void resolveBatch()}
 			>
-				{isResolving ? 'RESOLVING...' : 'RESOLVE ALL FAILED (HIGH-FIVE)'}
+				<Icon name="status.sparkle" size={14} />
+				<span>{isResolving ? 'RESOLVING...' : 'RESOLVE ALL FAILED (HIGH-FIVE)'}</span>
 			</button>
 		{/if}
 	</div>
@@ -189,8 +189,11 @@
 	}
 
 	.prm-btn-resolve {
-		background: linear-gradient(135deg, #10b981, #059669);
-		color: #022c22;
+		display: flex;
+		align-items: center;
+		gap: 6px;
+		background: #daff0a;
+		color: #000000;
 		border: none;
 		border-radius: 999px;
 		padding: 0.5rem 1.25rem;
@@ -200,12 +203,12 @@
 		letter-spacing: 0.05em;
 		cursor: pointer;
 		transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-		box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+		box-shadow: 0 0 15px rgba(218, 255, 10, 0.4);
 	}
 
 	.prm-btn-resolve:hover:not(:disabled) {
 		transform: translateY(-1px);
-		box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4);
+		box-shadow: 0 0 20px rgba(218, 255, 10, 0.6);
 		filter: brightness(1.1);
 	}
 

@@ -1,4 +1,6 @@
 <script lang="ts">
+	import Icon from '$lib/components/ui/Icon.svelte';
+	import type { IconName } from '$lib/icons/registry.js';
 	import {
 		ACQ_BADGE,
 		ACQ_HEADLINE,
@@ -30,26 +32,30 @@
 	<meta property="og:type" content="website" />
 </svelte:head>
 
-<div class="tw-flex tw-w-full tw-min-h-dvh tw-flex-col tw-bg-[#0f172a] tw-text-[#f8fafc] tw-font-sans tw-selection:bg-[#14b8a6] tw-selection:text-[#0f172a]">
+<div class="tw-flex tw-w-full tw-min-h-dvh tw-flex-col tw-bg-[#000000] tw-text-[#f8fafc] tw-font-sans tw-selection:bg-[#14b8a6] tw-selection:text-[#000000]">
 	<div class="acq-root">
 		<header class="acq-hero">
 		<p class="acq-eyebrow">{ACQ_BADGE}</p>
 		<h1 class="acq-h1">{ACQ_HEADLINE}</h1>
 		<p class="acq-lede">{ACQ_SUBHEAD}</p>
 		<div class="acq-hero__actions">
-			<a class="vanguard-btn-primary" href={ACQ_PDF_EXECUTIVE_BRIEF} download>
+			<a class="vanguard-btn-primary tw-inline-flex tw-items-center tw-gap-2" href={ACQ_PDF_EXECUTIVE_BRIEF} download>
+				<Icon name={"action.download" as IconName} size={16} />
 				Download executive brief (PDF)
 			</a>
-			<a class="acq-btn-secondary" href={ACQ_PDF_PROSPECTUS} download>
+			<a class="acq-btn-secondary tw-inline-flex tw-items-center tw-gap-2" href={ACQ_PDF_PROSPECTUS} download>
+				<Icon name={"action.download" as IconName} size={16} />
 				Download full prospectus (PDF)
 			</a>
-			<a class="acq-btn-secondary" href={ACQ_PDF_DIRECTOR_TRUST_BRIEF} download>
+			<a class="acq-btn-secondary tw-inline-flex tw-items-center tw-gap-2" href={ACQ_PDF_DIRECTOR_TRUST_BRIEF} download>
+				<Icon name={"action.download" as IconName} size={16} />
 				Director trust brief (PDF)
 			</a>
 			<a
-				class="acq-cta__ghost"
+				class="acq-cta__ghost tw-inline-flex tw-items-center tw-gap-2"
 				href="mailto:{ACQ_CONTACT_EMAIL}?subject=SSTracker%20acquisition%20inquiry"
 			>
+				<Icon name={"comm.mail" as IconName} size={16} />
 				Contact acquisition →
 			</a>
 		</div>

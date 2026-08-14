@@ -769,8 +769,8 @@
 	.pw-loadbar__fill {
 		height: 100%;
 		width: var(--fill);
-		background: linear-gradient(90deg, #0a3a45 0%, var(--cyber) 55%, var(--toxic) 100%);
-		box-shadow: 0 0 12px rgba(0, 212, 255, 0.5);
+		background: linear-gradient(90deg, #14b8a6 0%, #daff0a 100%);
+		box-shadow: 0 0 12px rgba(218, 255, 10, 0.5);
 	}
 
 	.pw-loadbar__scan {
@@ -1071,22 +1071,21 @@
 		gap: 0.5rem;
 		min-height: 3.5rem;
 		padding: 0.75rem 1rem;
-		background: #000;
-		border: 1px solid rgba(0, 212, 255, 0.4);
-		color: #fff;
+		background: #daff0a;
+		border: 1px solid #daff0a;
+		color: #000000;
 		font-size: 0.85rem;
 		font-weight: 800;
 		letter-spacing: 0.15em;
 		text-transform: uppercase;
 		cursor: pointer;
-		transition: box-shadow 0.2s ease, border-color 0.2s ease;
+		transition: box-shadow 0.2s ease, background 0.2s ease;
+		box-shadow: 0 0 16px rgba(218, 255, 10, 0.4);
 	}
 
 	.pw-exec:hover:not(:disabled) {
-		border-color: var(--toxic);
-		box-shadow:
-			0 0 32px rgba(57, 255, 20, 0.35),
-			0 0 18px rgba(0, 212, 255, 0.3);
+		background: #ebff47;
+		box-shadow: 0 0 24px rgba(218, 255, 10, 0.6);
 	}
 
 	.pw-exec:disabled {

@@ -25,7 +25,6 @@
 
 	/** @param {string | undefined} k */
 	function kindBadgeClass(k) {
-    if (!db || !authStore.isAuthenticated) return;
 		const v = typeof k === 'string' ? k.toLowerCase() : '';
 		if (v === 'match') return 'dep-badge dep-badge--match';
 		if (v === 'tournament') return 'dep-badge dep-badge--tournament';
@@ -398,8 +397,8 @@
 	}
 
 	.dep-cal-card.dep-kind--tournament .dep-cal-card__accent {
-		background: linear-gradient(180deg, #c4b5fd 0%, #7c3aed 100%);
-		box-shadow: 0 0 16px rgba(167, 139, 250, 0.35);
+		background: linear-gradient(180deg, #daff0a 0%, #fbbf24 100%);
+		box-shadow: 0 0 16px rgba(218, 255, 10, 0.45);
 	}
 
 	.dep-badge {
@@ -428,9 +427,9 @@
 	}
 
 	.dep-badge--tournament {
-		color: #ddd6fe;
-		background: rgba(76, 29, 149, 0.48);
-		border-color: rgba(167, 139, 250, 0.42);
+		color: #daff0a;
+		background: rgba(218, 255, 10, 0.12);
+		border-color: rgba(218, 255, 10, 0.4);
 	}
 </style>
 
@@ -567,11 +566,12 @@
 					</button>
 					<button
 						type="button"
-						class="tw-rounded-lg tw-border tw-border-emerald-500/40 tw-bg-emerald-950/50 tw-px-4 tw-py-2 tw-text-xs tw-font-black tw-uppercase tw-tracking-wide tw-text-emerald-300 hover:tw-bg-emerald-950 disabled:tw-opacity-50"
+						class="tw-inline-flex tw-items-center tw-gap-1.5 tw-rounded-lg tw-border tw-border-emerald-500/40 tw-bg-emerald-950/50 tw-px-4 tw-py-2 tw-text-xs tw-font-black tw-uppercase tw-tracking-wide tw-text-emerald-300 hover:tw-bg-emerald-950 disabled:tw-opacity-50"
 						disabled={saving}
 						onclick={() => void submitDeployment()}
 					>
-						{saving ? 'Saving…' : 'Schedule'}
+						<Icon name={'status.check' as IconName} size={14} />
+						<span>{saving ? 'Saving…' : 'Schedule'}</span>
 					</button>
 				</div>
 			</div>

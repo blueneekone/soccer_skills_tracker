@@ -1,5 +1,7 @@
 <script lang="ts">
 	import type { CarRideEngine } from './CarRideEngine.svelte.js';
+	import Icon from '$lib/components/ui/Icon.svelte';
+	import type { IconName } from '$lib/icons/registry.js';
 
 	let { engine }: { engine: CarRideEngine } = $props();
 
@@ -22,15 +24,16 @@
 	{#if engine.publicScore}
 		{@const score = engine.publicScore}
 		<div
-			class="tw-rounded-none" style="clip-path: polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px); tw-border tw-border-[#14b8a6]/15 tw-bg-[#040f16]/80 tw-backdrop-blur-sm tw-p-5 tw-flex tw-flex-col tw-gap-4"
+			class="tw-rounded-none tw-border tw-border-[#1E293B] tw-bg-[#0B0F19] tw-p-5 tw-flex tw-flex-col tw-gap-4"
 		>
 			<!-- Header -->
 			<div class="tw-flex tw-items-center tw-justify-between">
-				<span class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-[#14b8a6]/50 tw-uppercase">
-					// MATCH RESULT
+				<span class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-nuclear-yellow tw-uppercase tw-flex tw-items-center tw-gap-1.5">
+					<Icon name={"data.activity" as IconName} size={12} class="tw-text-nuclear-yellow" />
+					<span>// MATCH RESULT TELEMETRY</span>
 				</span>
 				<span
-					class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-uppercase tw-px-2 tw-py-0.5 tw-rounded tw-border {score.outcome === 'W' ? 'tw-text-[#14b8a6] tw-border-[#14b8a6]/40 tw-bg-[#14b8a6]/10' : score.outcome === 'L' ? 'tw-text-[#ff0055] tw-border-[#ff0055]/40 tw-bg-[#ff0055]/10' : 'tw-text-[#a0a0a0] tw-border-[#a0a0a0]/30 tw-bg-[#a0a0a0]/10'}"
+					class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-uppercase tw-px-2.5 tw-py-1 tw-rounded-none tw-border {score.outcome === 'W' ? 'tw-text-nuclear-yellow tw-border-nuclear-yellow/40 tw-bg-nuclear-yellow/10' : score.outcome === 'L' ? 'tw-text-[#ff0055] tw-border-[#ff0055]/40 tw-bg-[#ff0055]/10' : 'tw-text-[#a0a0a0] tw-border-[#a0a0a0]/30 tw-bg-[#a0a0a0]/10'}"
 				>
 					{score.outcome === 'W' ? 'VICTORY' : score.outcome === 'L' ? 'DEFEAT' : 'DRAW'}
 				</span>
@@ -49,9 +52,9 @@
 
 			<!-- EQ interceptor label (metrics locked badge) -->
 			{#if !engine.attested}
-				<div class="tw-flex tw-items-center tw-justify-center tw-gap-2">
-					<div class="tw-w-1.5 tw-h-1.5 tw-rounded-full tw-bg-[#ff0055] tw-animate-pulse"></div>
-					<span class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-[#ff0055]/70 tw-uppercase">
+				<div class="tw-flex tw-items-center tw-justify-center tw-gap-2 tw-py-1.5 tw-bg-[#ff0055]/10 tw-border tw-border-[#ff0055]/30">
+					<Icon name={"status.warning" as IconName} size={14} class="tw-text-nuclear-yellow tw-animate-pulse" />
+					<span class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-nuclear-yellow tw-uppercase tw-font-bold">
 						PLAYER METRICS LOCKED — EQ ATTESTATION REQUIRED
 					</span>
 				</div>
@@ -65,19 +68,20 @@
 
 		<!-- Unlock confirmation banner -->
 		<div
-			class="tw-rounded-none" style="clip-path: polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px); tw-border tw-border-[#14b8a6]/25 tw-bg-[#14b8a6]/5 tw-px-5 tw-py-3 tw-flex tw-items-center tw-gap-3"
+			class="tw-rounded-none tw-border tw-border-nuclear-yellow/40 tw-bg-nuclear-yellow/10 tw-px-5 tw-py-3 tw-flex tw-items-center tw-gap-3"
 		>
-			<span class="tw-text-[#14b8a6] tw-text-[14px]">✓</span>
-			<span class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-[#14b8a6]/80 tw-uppercase">
+			<Icon name={"status.check" as IconName} size={16} class="tw-text-nuclear-yellow" />
+			<span class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-nuclear-yellow tw-uppercase tw-font-bold">
 				EQ ATTESTATION CONFIRMED — FULL METRICS UNLOCKED
 			</span>
 		</div>
 
 		<!-- Player stats table -->
 		{#if Object.keys(metrics.playerStats).length > 0}
-			<div class="tw-rounded-none" style="clip-path: polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px); tw-border tw-border-[#ffffff]/8 tw-bg-[#040f16]/80 tw-backdrop-blur-sm tw-overflow-hidden">
-				<div class="tw-px-5 tw-py-3 tw-border-b tw-border-[#ffffff]/5">
-					<span class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-[#14b8a6]/50 tw-uppercase">
+			<div class="tw-rounded-none tw-border tw-border-[#1E293B] tw-bg-[#0B0F19] tw-overflow-hidden">
+				<div class="tw-px-5 tw-py-3 tw-border-b tw-border-[#1E293B] tw-flex tw-items-center tw-gap-2">
+					<Icon name={"data.chart-bar" as IconName} size={14} class="tw-text-[#14b8a6]" />
+					<span class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-[#14b8a6] tw-uppercase">
 						// PLAYER PERFORMANCE
 					</span>
 				</div>
@@ -85,30 +89,30 @@
 				<div class="tw-overflow-x-auto">
 					<table class="tw-w-full">
 						<thead>
-							<tr class="tw-border-b tw-border-[#ffffff]/5">
-								<th class="tw-px-4 tw-py-2 tw-text-left tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-[#a0a0a0]/50 tw-uppercase">PLAYER</th>
-								<th class="tw-px-3 tw-py-2 tw-text-center tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-[#a0a0a0]/50 tw-uppercase">MIN</th>
-								<th class="tw-px-3 tw-py-2 tw-text-center tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-[#a0a0a0]/50 tw-uppercase">G</th>
-								<th class="tw-px-3 tw-py-2 tw-text-center tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-[#a0a0a0]/50 tw-uppercase">A</th>
-								<th class="tw-px-3 tw-py-2 tw-text-center tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-[#a0a0a0]/50 tw-uppercase">RTG</th>
+							<tr class="tw-border-b tw-border-[#1E293B]">
+								<th class="tw-px-4 tw-py-2.5 tw-text-left tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-slate-400 tw-uppercase">PLAYER</th>
+								<th class="tw-px-3 tw-py-2.5 tw-text-center tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-slate-400 tw-uppercase">MIN</th>
+								<th class="tw-px-3 tw-py-2.5 tw-text-center tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-slate-400 tw-uppercase">G</th>
+								<th class="tw-px-3 tw-py-2.5 tw-text-center tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-slate-400 tw-uppercase">A</th>
+								<th class="tw-px-3 tw-py-2.5 tw-text-center tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-slate-400 tw-uppercase">RTG</th>
 							</tr>
 						</thead>
 						<tbody>
 							{#each Object.entries(metrics.playerStats) as [email, stat]}
-								<tr class="tw-border-b tw-border-[#ffffff]/4 last:tw-border-b-0 hover:tw-bg-[#14b8a6]/3 tw-transition-colors tw-duration-150">
-									<td class="tw-px-4 tw-py-2.5 tw-font-mono tw-text-[10px] tw-text-[#e0e0e0] tw-max-w-[140px] tw-truncate">{email}</td>
-									<td class="tw-px-3 tw-py-2.5 tw-text-center tw-font-mono tw-text-[11px] tw-text-[#a0a0a0]">{fmt(stat.minutesPlayed)}</td>
-									<td class="tw-px-3 tw-py-2.5 tw-text-center tw-font-mono tw-text-[11px] tw-text-[#14b8a6]">{fmt(stat.goals)}</td>
-									<td class="tw-px-3 tw-py-2.5 tw-text-center tw-font-mono tw-text-[11px] tw-text-[#a78bfa]">{fmt(stat.assists)}</td>
+								<tr class="tw-border-b tw-border-[#1E293B]/50 last:tw-border-b-0 hover:tw-bg-[#14b8a6]/5 tw-transition-colors tw-duration-150">
+									<td class="tw-px-4 tw-py-2.5 tw-font-mono tw-text-[10px] tw-text-slate-200 tw-max-w-[140px] tw-truncate">{email}</td>
+									<td class="tw-px-3 tw-py-2.5 tw-text-center tw-font-mono tw-text-[11px] tw-text-slate-300">{fmt(stat.minutesPlayed)}</td>
+									<td class="tw-px-3 tw-py-2.5 tw-text-center tw-font-mono tw-text-[11px] tw-text-nuclear-yellow tw-font-bold">{fmt(stat.goals)}</td>
+									<td class="tw-px-3 tw-py-2.5 tw-text-center tw-font-mono tw-text-[11px] tw-text-[#14b8a6]">{fmt(stat.assists)}</td>
 									<td class="tw-px-3 tw-py-2.5 tw-text-center">
 										{#if stat.rating !== undefined && stat.rating !== null}
 											<span
-												class="tw-font-mono tw-text-[11px] tw-font-bold {stat.rating >= 8 ? 'tw-text-[#14b8a6]' : stat.rating >= 6 ? 'tw-text-[#a0a0a0]' : 'tw-text-[#ff6b6b]'}"
+												class="tw-font-mono tw-text-[11px] tw-font-bold {stat.rating >= 8 ? 'tw-text-nuclear-yellow' : stat.rating >= 6 ? 'tw-text-[#14b8a6]' : 'tw-text-[#ff6b6b]'}"
 											>
 												{stat.rating}/10
 											</span>
 										{:else}
-											<span class="tw-font-mono tw-text-[11px] tw-text-[#a0a0a0]/40">—</span>
+											<span class="tw-font-mono tw-text-[11px] tw-text-slate-500">—</span>
 										{/if}
 									</td>
 								</tr>
@@ -121,11 +125,12 @@
 
 		<!-- Coach notes -->
 		{#if metrics.coachNotes && metrics.coachNotes.trim().length > 0}
-			<div class="tw-rounded-none" style="clip-path: polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px); tw-border tw-border-[#ffffff]/8 tw-bg-[#040f16]/80 tw-backdrop-blur-sm tw-p-5 tw-flex tw-flex-col tw-gap-3">
-				<span class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-[#14b8a6]/50 tw-uppercase">
-					// COACH NOTES
+			<div class="tw-rounded-none tw-border tw-border-[#1E293B] tw-bg-[#0B0F19] tw-p-5 tw-flex tw-flex-col tw-gap-3">
+				<span class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-nuclear-yellow tw-uppercase tw-flex tw-items-center tw-gap-1.5">
+					<Icon name={"comm.chat" as IconName} size={14} />
+					<span>// COACH NOTES</span>
 				</span>
-				<p class="tw-font-mono tw-text-[12px] tw-leading-relaxed tw-text-[#c0c0c0] tw-whitespace-pre-wrap">
+				<p class="tw-font-mono tw-text-[12px] tw-leading-relaxed tw-text-slate-300 tw-whitespace-pre-wrap">
 					{metrics.coachNotes}
 				</p>
 			</div>
@@ -133,11 +138,12 @@
 
 		<!-- Highlights -->
 		{#if metrics.highlights && metrics.highlights.trim().length > 0}
-			<div class="tw-rounded-none" style="clip-path: polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px); tw-border tw-border-[#ffffff]/8 tw-bg-[#040f16]/80 tw-backdrop-blur-sm tw-p-5 tw-flex tw-flex-col tw-gap-3">
-				<span class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-[#14b8a6]/50 tw-uppercase">
-					// HIGHLIGHTS
+			<div class="tw-rounded-none tw-border tw-border-[#1E293B] tw-bg-[#0B0F19] tw-p-5 tw-flex tw-flex-col tw-gap-3">
+				<span class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-[#14b8a6] tw-uppercase tw-flex tw-items-center tw-gap-1.5">
+					<Icon name={"game.sparkles" as IconName} size={14} />
+					<span>// HIGHLIGHTS</span>
 				</span>
-				<p class="tw-font-mono tw-text-[12px] tw-leading-relaxed tw-text-[#c0c0c0]">
+				<p class="tw-font-mono tw-text-[12px] tw-leading-relaxed tw-text-slate-300">
 					{metrics.highlights}
 				</p>
 			</div>
@@ -147,9 +153,10 @@
 	<!-- ── Error state ────────────────────────────────────────────────────── -->
 	{#if engine.error}
 		<div
-			class="tw-rounded-none" style="clip-path: polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px); tw-border tw-border-[#ff6b6b]/30 tw-bg-[#ff6b6b]/5 tw-p-4 tw-font-mono tw-text-[10px] tw-text-[#ff6b6b] tw-tracking-wide"
+			class="tw-rounded-none tw-border tw-border-red-500/40 tw-bg-red-950/30 tw-p-4 tw-font-mono tw-text-[10px] tw-text-red-300 tw-tracking-wide tw-flex tw-items-center tw-gap-2"
 		>
-			{engine.error}
+			<Icon name={"status.error" as IconName} size={14} class="tw-text-red-400" />
+			<span>{engine.error}</span>
 		</div>
 	{/if}
 </div>

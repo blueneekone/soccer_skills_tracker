@@ -147,8 +147,8 @@
 	
 	<!-- Header -->
 	<header class="tw-max-w-7xl tw-mx-auto tw-w-full tw-px-6 tw-pt-24 tw-pb-16 tw-flex tw-flex-col tw-items-center tw-text-center tw-gap-6">
-		<span class="tw-font-mono tw-text-xs tw-font-bold tw-tracking-[0.3em] tw-text-[#14b8a6]">LIVE LICENSING & BILLING</span>
-		<h1 class="tw-text-5xl md:tw-text-6xl tw-font-bold tw-text-[#f8fafc] tw-tracking-tight tw-leading-tight">
+		<span class="tw-font-mono tw-text-xs tw-font-bold tw-tracking-[0.3em] tw-text-nuclear-yellow">LIVE LICENSING & BILLING</span>
+		<h1 class="tw-text-5xl md:tw-text-6xl tw-font-bold tw-text-[#f8fafc] tw-tracking-tight tw-leading-tight" style="font-family: 'Geist Sans', sans-serif;">
 			Scale your academy with zero friction.
 		</h1>
 	</header>
@@ -283,8 +283,9 @@
 
 	<!-- Single B2C Upsell / CTA (Replaced old CTA to ensure only ONE Action Gold button exists) -->
 	<section class="tw-max-w-4xl tw-mx-auto tw-w-full tw-px-6 tw-flex tw-justify-center">
-		<a href="/login" class="tw-bg-[#fbbf24] tw-text-[#0f172a] hover:tw-bg-[#f59e0b] tw-px-10 tw-py-4 tw-font-mono tw-font-bold tw-text-sm tw-uppercase tw-tracking-widest tw-transition-all tw-duration-150 tw-inline-block tw-text-center tw-rounded-sm active:tw-scale-[0.98]">
+		<a href="/login" class="tw-bg-[#fbbf24] tw-text-[#0f172a] hover:tw-bg-[#f59e0b] tw-px-10 tw-py-4 tw-font-mono tw-font-bold tw-text-sm tw-uppercase tw-tracking-widest tw-transition-all tw-duration-150 tw-inline-flex tw-items-center tw-gap-3 tw-text-center tw-rounded-sm active:tw-scale-[0.98]">
 			Deploy Your Club
+			<Icon name={"nav.chevron-right" as IconName} strokeWidth={2.5} size={18} />
 		</a>
 	</section>
 

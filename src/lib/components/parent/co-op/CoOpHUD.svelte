@@ -1,5 +1,7 @@
 <script lang="ts">
 	import type { CoOpEngine } from '$lib/states/CoOpEngine.svelte.js';
+	import Icon from '$lib/components/ui/Icon.svelte';
+	import type { IconName } from '$lib/icons/registry.js';
 
 	let {
 		engine,
@@ -34,10 +36,10 @@
 		>
 			<div class="tw-flex tw-flex-col tw-items-center tw-gap-3">
 				<div
-					class="tw-w-8 tw-h-8 tw-rounded-full tw-border-2 tw-border-[#14b8a6]/30 tw-border-t-[#14b8a6] tw-animate-spin"
+					class="tw-w-8 tw-h-8 tw-rounded-none tw-border-2 tw-border-nuclear-yellow/30 tw-border-t-nuclear-yellow tw-animate-spin"
 				></div>
 				<span
-					class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-[#14b8a6]/50 tw-uppercase tw-animate-pulse"
+					class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-nuclear-yellow tw-uppercase tw-animate-pulse"
 				>
 					INITIALIZING CO-OP ENGINE...
 				</span>
@@ -49,12 +51,11 @@
 	{#if engine.error}
 		<div class="tw-absolute tw-top-4 tw-left-1/2 -tw-translate-x-1/2 tw-pointer-events-auto">
 			<div
-				class="tw-rounded-xl tw-bg-[#ff0055]/15 tw-backdrop-blur-xl tw-border tw-border-[#ff0055]/40 tw-px-5 tw-py-3 tw-flex tw-items-center tw-gap-3"
-				style="box-shadow: 0 0 20px rgba(255,0,85,0.2);"
+				class="tw-rounded-none tw-bg-red-950/80 tw-backdrop-blur-xl tw-border tw-border-red-500/40 tw-px-5 tw-py-3 tw-flex tw-items-center tw-gap-3"
 			>
-				<span class="tw-text-[#ff0055] tw-font-mono tw-text-[12px]">⚠</span>
+				<Icon name={"status.error" as IconName} size={14} class="tw-text-red-400" />
 				<span
-					class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-[#ff0055] tw-uppercase"
+					class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-red-300 tw-uppercase"
 				>
 					{engine.error}
 				</span>
@@ -68,22 +69,20 @@
 	>
 		<!-- Escrow readout -->
 		<div
-			class="tw-rounded-2xl tw-bg-[#040f16]/90 tw-backdrop-blur-xl tw-border tw-border-[#14b8a6]/20 tw-px-5 tw-py-3.5 tw-flex tw-flex-col tw-items-end tw-gap-1"
-			style="box-shadow: 0 0 30px rgba(20, 184, 166,0.08), 0 0 60px rgba(0,0,0,0.6), inset 0 1px 0 rgba(20, 184, 166,0.08);"
+			class="tw-rounded-none tw-bg-[#0B0F19]/95 tw-backdrop-blur-xl tw-border tw-border-[#1E293B] tw-px-5 tw-py-3.5 tw-flex tw-flex-col tw-items-end tw-gap-1"
 		>
 			<span
-				class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-[#14b8a6]/40 tw-uppercase"
+				class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-slate-400 tw-uppercase"
 			>
 				ACTIVE ESCROW
 			</span>
 			<span
-				class="tw-font-mono tw-text-[22px] tw-font-bold tw-tracking-tight tw-text-[#14b8a6] tw-leading-none"
-				style="text-shadow: 0 0 20px rgba(20, 184, 166,0.6), 0 0 40px rgba(20, 184, 166,0.3);"
+				class="tw-font-mono tw-text-[22px] tw-font-bold tw-tracking-tight tw-text-nuclear-yellow tw-leading-none"
 			>
 				${activeDollars}
 			</span>
 			<span
-				class="tw-font-mono tw-text-[8px] tw-tracking-widest tw-text-[#14b8a6]/30 tw-uppercase"
+				class="tw-font-mono tw-text-[8px] tw-tracking-widest tw-text-[#14b8a6] tw-uppercase"
 			>
 				{activeBounties.length} BOUNTI{activeBounties.length === 1 ? 'Y' : 'ES'} ACTIVE
 			</span>
@@ -94,14 +93,13 @@
 			<div class="tw-flex tw-items-center tw-gap-1.5">
 				{#each dotBounties as b (b.id)}
 					<div
-						class="tw-w-2 tw-h-2 tw-rounded-full tw-bg-[#14b8a6]"
+						class="tw-w-2 tw-h-2 tw-rounded-none tw-bg-nuclear-yellow"
 						title={b.title}
-						style="box-shadow: 0 0 6px rgba(20, 184, 166,0.8);"
 					></div>
 				{/each}
 				{#if extraBounties > 0}
 					<span
-						class="tw-font-mono tw-text-[8px] tw-tracking-widest tw-text-[#14b8a6]/50 tw-uppercase"
+						class="tw-font-mono tw-text-[8px] tw-tracking-widest tw-text-slate-400 tw-uppercase"
 					>
 						+{extraBounties}
 					</span>
@@ -112,10 +110,10 @@
 		<!-- New bounty CTA -->
 		<button
 			onclick={onCreateBounty}
-			class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-uppercase tw-border tw-border-[#14b8a6]/50 tw-text-[#14b8a6] tw-bg-[#14b8a6]/8 tw-rounded-xl tw-px-5 tw-py-2.5 tw-transition-all tw-duration-200 hover:tw-bg-[#14b8a6]/15 hover:tw-border-[#14b8a6]/80 hover:tw-shadow-[0_0_20px_rgba(20, 184, 166,0.4),inset_0_0_12px_rgba(20, 184, 166,0.12)] active:tw-scale-95"
-			style="text-shadow: 0 0 12px rgba(20, 184, 166,0.5);"
+			class="tw-inline-flex tw-items-center tw-gap-1.5 tw-font-mono tw-text-[10px] tw-font-bold tw-tracking-widest tw-uppercase tw-border tw-border-nuclear-yellow tw-text-black tw-bg-nuclear-yellow tw-rounded-none tw-px-5 tw-py-2.5 tw-transition-all tw-duration-200 hover:tw-bg-yellow-300 hover:tw-shadow-[0_0_15px_rgba(218,255,10,0.5)] active:tw-scale-95"
 		>
-			[ + NEW BOUNTY ]
+			<Icon name={"action.add" as IconName} size={14} />
+			<span>NEW BOUNTY</span>
 		</button>
 	</div>
 </div>

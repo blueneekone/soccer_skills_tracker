@@ -3,8 +3,8 @@
 	import { getActiveDb } from '$lib/firebase.js';
 	import { query, collection, where, onSnapshot } from 'firebase/firestore';
 	import { browser } from '$app/environment';
-	
-	// CDO Aesthetic: Flat, professional, 24px border radii.
+	import Icon from '$lib/components/ui/Icon.svelte';
+	import type { IconName } from '$lib/icons/registry.js';
 	
 	let db = $derived(browser ? getActiveDb() : null);
 	
@@ -43,7 +43,6 @@
 
 			if (credential) {
 				vpcStatus = 'attested';
-				// Write VPC token to Firestore (implementation deferred)
 			}
 		} catch (err) {
 			console.error("Biometric attestation failed", err);
@@ -81,50 +80,96 @@
 	<title>Co-op Trust Center · Parent OS</title>
 </svelte:head>
 
-<main class="pd-page-root compliance-vault st-bento z0-canvas tw-p-8 lg:tw-p-12 tw-overflow-y-auto">
-	<div class="tw-max-w-6xl tw-mx-auto tw-space-y-8">
+<main class="pd-page-root compliance-vault st-bento z0-canvas tw-bg-[#0B0F19] tw-text-white tw-p-6 lg:tw-p-8 tw-overflow-y-auto">
+	<div class="tw-max-w-6xl tw-mx-auto tw-space-y-6">
 		
-		<header class="tw-mb-10">
-			<h1 class="tw-text-3xl tw-font-semibold tw-text-slate-900">Co-op Trust Center</h1>
-			<p class="tw-text-slate-500 tw-mt-2">Legal Compliance, Financial Escrow, and Communication Audits</p>
+		<!-- Header -->
+		<header class="tw-bg-[#0F172A] tw-border tw-border-[#1E293B] tw-p-6 tw-flex tw-flex-col md:tw-flex-row md:tw-items-center md:tw-justify-between tw-gap-4 tw-rounded-none">
+			<div class="tw-flex tw-items-center tw-gap-4">
+				<div class="tw-w-12 tw-h-12 tw-bg-[#1E293B] tw-border tw-border-[#334155] tw-flex tw-items-center tw-justify-center tw-text-nuclear-yellow tw-rounded-none">
+					<Icon name={"status.shield-check" as IconName} size={24} />
+				</div>
+				<div>
+					<div class="tw-flex tw-items-center tw-gap-2.5">
+						<h1 class="tw-text-xl lg:tw-text-2xl tw-font-bold tw-tracking-tight tw-text-white tw-uppercase" style="font-family: 'Geist Sans', sans-serif;">
+							Co-op Trust Center
+						</h1>
+						<span class="tw-text-[9px] tw-px-2 tw-py-0.5 tw-font-mono tw-border tw-border-nuclear-yellow/40 tw-bg-nuclear-yellow/10 tw-text-nuclear-yellow tw-font-bold tw-rounded-none">
+							ZERO-TRUST
+						</span>
+					</div>
+					<p class="tw-text-[#14b8a6] tw-font-mono tw-text-xs tw-mt-1">
+						LEGAL COMPLIANCE // FINANCIAL ESCROW // SHADOW-CC AUDITS
+					</p>
+				</div>
+			</div>
 		</header>
 
 		<!-- CSO: WebAuthn Biometric Enclave -->
-		<section class="tw-bg-white tw-rounded-none" style="clip-path: polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px); tw-p-8 tw-shadow-sm tw-border tw-border-slate-200">
-			<h2 class="tw-text-xl tw-font-semibold tw-mb-4">Verifiable Parental Consent (VPC)</h2>
-			<p class="tw-text-slate-500 tw-mb-6">COPPA 2.0 and SafeSport mandates require hardware biometric attestation to approve minor participation.</p>
+		<section class="st-bento tw-bg-[#0F172A] tw-border tw-border-[#1E293B] tw-p-6 lg:tw-p-8 tw-rounded-none">
+			<div class="tw-flex tw-items-center tw-justify-between tw-mb-4">
+				<h2 class="tw-text-lg tw-font-bold tw-text-white tw-flex tw-items-center tw-gap-2 tw-m-0">
+					<Icon name={"sys.fingerprint" as IconName} size={20} class="tw-text-nuclear-yellow" />
+					<span>Verifiable Parental Consent (VPC)</span>
+				</h2>
+				<span class="tw-text-xs tw-font-mono tw-text-slate-400">COPPA 2.0 & SafeSport Gate</span>
+			</div>
+			<p class="tw-text-slate-300 tw-text-sm tw-mb-6">
+				Federal mandates require hardware biometric attestation to verify guardian authority and approve minor participation.
+			</p>
 			
 			{#if vpcStatus === 'attested'}
-				<div class="tw-bg-green-50 tw-border tw-border-green-200 tw-rounded-none" style="clip-path: polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px); tw-p-4 tw-flex tw-items-center tw-gap-3">
-					<span class="tw-text-green-700 tw-font-medium">VPC Verified via Hardware Attestation.</span>
+				<div class="tw-bg-emerald-950/30 tw-border tw-border-emerald-500/40 tw-rounded-none tw-p-4 tw-flex tw-items-center tw-gap-3">
+					<Icon name={"status.seal-check" as IconName} size={20} class="tw-text-nuclear-yellow" />
+					<span class="tw-text-nuclear-yellow tw-font-mono tw-text-xs tw-font-bold">VPC VERIFIED VIA HARDWARE ENCLAVE ATTESTATION</span>
 				</div>
 			{:else}
-				<button onclick={initiateBiometricConsent} class="tw-bg-blue-600 tw-text-white tw-px-6 tw-py-3 tw-rounded-none" style="clip-path: polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px); tw-font-medium hover:tw-bg-blue-700 tw-transition-colors">
-					Attest via TouchID / FaceID
+				<button 
+					onclick={initiateBiometricConsent} 
+					class="tw-inline-flex tw-items-center tw-gap-2 tw-bg-nuclear-yellow tw-text-black tw-px-6 tw-py-3 tw-rounded-none tw-font-mono tw-text-xs tw-font-bold tw-tracking-widest tw-uppercase hover:tw-bg-yellow-300 hover:tw-shadow-[0_0_20px_rgba(218,255,10,0.5)] tw-transition-all"
+				>
+					<Icon name={"sys.fingerprint" as IconName} size={16} />
+					<span>Attest via TouchID / FaceID / Windows Hello</span>
 				</button>
 				{#if vpcStatus === 'error'}
-					<p class="tw-text-red-500 tw-mt-2 tw-text-sm">Attestation failed or was cancelled.</p>
+					<p class="tw-text-red-400 tw-mt-3 tw-text-xs tw-font-mono">Attestation failed or was cancelled.</p>
 				{/if}
 			{/if}
 		</section>
 
-		<div class="bento-grid-container tw-w-full tw-min-w-0" style="grid-template-columns: repeat(auto-fit, minmax(min(100%, clamp(280px, 30vw, 350px)), 1fr));">
+		<!-- 12-Column Asymmetric Bento Grid -->
+		<div class="bento-grid-container bento-grid--12col bento-grid--liquid st-bento tw-grid tw-grid-cols-1 lg:tw-grid-cols-12 tw-gap-6 tw-w-full tw-min-w-0">
 			
-			<!-- CSO: The Triad Protocol (Shadow CC Audit Log) -->
-			<section class="bento-col-6 z2-panel shield-panel tw-p-8 tw-flex tw-flex-col tw-min-w-0">
-				<h2 class="tw-text-xl tw-font-semibold tw-mb-4">Communication Audit Log</h2>
-				<p class="tw-text-slate-500 tw-text-sm tw-mb-6">All 1:1 adult-to-minor messaging is prohibited. This log displays all messages routed to your minor.</p>
+			<!-- CSO: The Triad Protocol (Shadow CC Audit Log) (8 cols) -->
+			<section class="st-bento bento-col-8 lg:tw-col-span-8 tw-bg-[#0F172A] tw-border tw-border-[#1E293B] tw-p-6 tw-flex tw-flex-col tw-min-w-0 tw-rounded-none">
+				<div class="tw-flex tw-items-center tw-justify-between tw-mb-4">
+					<h2 class="tw-text-lg tw-font-bold tw-text-white tw-flex tw-items-center tw-gap-2 tw-m-0">
+						<Icon name={"comm.chats" as IconName} size={18} class="tw-text-[#14b8a6]" />
+						<span>Communication Audit Log</span>
+					</h2>
+					<span class="tw-px-2 tw-py-0.5 tw-bg-[#14b8a6]/10 tw-border tw-border-[#14b8a6]/30 tw-text-[#14b8a6] tw-text-[10px] tw-font-mono tw-tracking-widest tw-rounded-none">
+						SAFESPORT_CC_ACTIVE
+					</span>
+				</div>
+				<p class="tw-text-slate-400 tw-text-xs tw-mb-6">
+					All 1:1 adult-to-minor messaging is prohibited. This log displays all coach-to-athlete messages CC'd to your guardian console in real time.
+				</p>
 				
-				<div class="tw-flex-1 tw-min-h-[200px] tw-overflow-y-auto tw-border-t tw-border-slate-100 tw-pt-4">
+				<div class="tw-flex-1 tw-min-h-[220px] tw-overflow-y-auto tw-border-t tw-border-[#1E293B] tw-pt-4">
 					{#if shadowCcLogs.length === 0}
-						<p class="tw-text-slate-400 tw-italic">No communications logged.</p>
+						<div class="tw-py-8 tw-flex tw-flex-col tw-items-center tw-justify-center tw-text-center">
+							<Icon name={"status.shield" as IconName} size={32} class="tw-text-slate-600 tw-mb-2" />
+							<p class="tw-text-slate-400 tw-font-mono tw-text-xs">No communications logged in audit trail.</p>
+						</div>
 					{:else}
-						<ul class="tw-space-y-4">
+						<ul class="tw-space-y-3 tw-p-0 tw-m-0 tw-list-none">
 							{#each shadowCcLogs as log (log.id)}
-								<li class="tw-bg-slate-50 tw-p-4 tw-rounded-[16px] tw-border tw-border-slate-100">
-									<p class="tw-text-xs tw-text-slate-400 tw-mb-1">{new Date(log.timestamp?.toMillis() || Date.now()).toLocaleString()}</p>
-									<p class="tw-text-sm tw-font-medium tw-text-slate-800">From: {log.senderName || 'Coach'}</p>
-									<p class="tw-text-sm tw-text-slate-600 tw-mt-1">{log.message}</p>
+								<li class="tw-bg-[#0B0F19] tw-p-4 tw-border tw-border-[#1E293B] tw-rounded-none">
+									<div class="tw-flex tw-items-center tw-justify-between tw-mb-1.5">
+										<span class="tw-text-xs tw-font-bold tw-text-nuclear-yellow">From: {log.senderName || 'Coach'}</span>
+										<span class="tw-text-[10px] tw-font-mono tw-text-slate-500">{new Date(log.timestamp?.toMillis() || Date.now()).toLocaleString()}</span>
+									</div>
+									<p class="tw-text-xs tw-text-slate-300 tw-m-0">{log.message}</p>
 								</li>
 							{/each}
 						</ul>
@@ -132,37 +177,60 @@
 				</div>
 			</section>
 
-			<!-- CMO: Tremendous Bounty Terminal (Escrow) -->
-			<section class="tw-bg-white tw-rounded-none" style="clip-path: polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px); tw-p-8 tw-shadow-sm tw-border tw-border-slate-200">
-				<h2 class="tw-text-xl tw-font-semibold tw-mb-4">Bounty Escrow Terminal</h2>
-				<p class="tw-text-slate-500 tw-text-sm tw-mb-6">Fund real-world rewards (Tremendous Gift Cards) that automatically release upon Computer Vision (CV) verified workout completions.</p>
+			<!-- CMO: Tremendous Bounty Terminal (Escrow) (4 cols) -->
+			<section class="st-bento bento-col-4 lg:tw-col-span-4 tw-bg-[#0F172A] tw-border tw-border-[#1E293B] tw-p-6 tw-rounded-none tw-flex tw-flex-col">
+				<div class="tw-flex tw-items-center tw-justify-between tw-mb-4">
+					<h2 class="tw-text-lg tw-font-bold tw-text-white tw-flex tw-items-center tw-gap-2 tw-m-0">
+						<Icon name={"sys.escrow" as IconName} size={18} class="tw-text-nuclear-yellow" />
+						<span>Bounty Escrow</span>
+					</h2>
+				</div>
+				<p class="tw-text-slate-400 tw-text-xs tw-mb-6">
+					Fund real-world rewards (Tremendous Gift Cards) that automatically release upon Computer Vision (CV) verified drill completions.
+				</p>
 				
-				<div class="tw-flex tw-items-center tw-gap-4 tw-mb-4">
-					<span class="tw-text-slate-500 tw-font-medium">$</span>
+				<div class="tw-flex tw-items-center tw-gap-3 tw-mb-4">
+					<span class="tw-text-nuclear-yellow tw-font-mono tw-font-bold tw-text-lg">$</span>
 					<input 
 						type="number" 
 						bind:value={bountyAmount} 
-						class="tw-w-full tw-px-4 tw-py-2 tw-rounded-[12px] tw-border tw-border-slate-200 focus:tw-outline-none focus:tw-ring-2 focus:tw-ring-blue-500" 
+						class="tw-w-full tw-px-3 tw-py-2 tw-bg-[#0B0F19] tw-border tw-border-[#1E293B] tw-text-white tw-font-mono tw-text-sm focus:tw-outline-none focus:tw-border-nuclear-yellow tw-rounded-none" 
 						placeholder="Enter amount" 
 						min="0" 
 						step="5"
 					/>
 				</div>
-				<button onclick={fundBounty} class="tw-bg-slate-900 tw-text-white tw-w-full tw-py-3 tw-rounded-none" style="clip-path: polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px); tw-font-medium hover:tw-bg-slate-800 tw-transition-colors">
-					Lock Funds in Escrow
+				<button 
+					onclick={fundBounty} 
+					class="tw-w-full tw-py-3 tw-bg-nuclear-yellow tw-text-black tw-font-mono tw-text-xs tw-font-bold tw-tracking-widest tw-uppercase hover:tw-bg-yellow-300 hover:tw-shadow-[0_0_15px_rgba(218,255,10,0.5)] tw-transition-all tw-flex tw-items-center tw-justify-center tw-gap-2 tw-rounded-none tw-mt-auto"
+				>
+					<Icon name={"sys.lock" as IconName} size={14} />
+					<span>Lock Funds in Escrow</span>
 				</button>
 			</section>
 
 		</div>
 
-		<!-- CMO: The Car Ride Home Protocol -->
-		<section class="tw-bg-blue-50 tw-rounded-none" style="clip-path: polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px); tw-p-8 tw-border tw-border-blue-100">
-			<h2 class="tw-text-xl tw-font-semibold tw-mb-2 tw-text-blue-900">Post-Match Protocol</h2>
-			<p class="tw-text-blue-700 tw-text-sm tw-mb-6">Raw metrics are suppressed for 15 minutes post-match to protect beginner self-worth.</p>
+		<!-- CMO: The Car Ride Home Protocol Banner -->
+		<section class="st-bento tw-bg-[#0F172A] tw-border tw-border-[#1E293B] tw-p-6 tw-rounded-none">
+			<div class="tw-flex tw-items-center tw-justify-between tw-mb-3">
+				<h2 class="tw-text-base tw-font-bold tw-text-white tw-flex tw-items-center tw-gap-2 tw-m-0">
+					<Icon name={"status.warning" as IconName} size={18} class="tw-text-nuclear-yellow" />
+					<span>The Car Ride Home Protocol</span>
+				</h2>
+				<span class="tw-text-[10px] tw-font-mono tw-text-nuclear-yellow tw-tracking-widest">COOLING_OFF_PERIOD</span>
+			</div>
+			<p class="tw-text-slate-400 tw-text-xs tw-mb-4">
+				Raw telemetries are suppressed for 15 minutes post-match to protect athlete emotional resilience and prioritize emotional support.
+			</p>
 			
-			<div class="tw-bg-white tw-rounded-none" style="clip-path: polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px); tw-p-6 tw-shadow-sm">
-				<p class="tw-text-slate-500 tw-text-xs tw-uppercase tw-tracking-widest tw-font-semibold tw-mb-2">Empathetic Conversation Anchor</p>
-				<p class="tw-text-xl tw-text-blue-900 tw-font-medium">"I loved watching you play today."</p>
+			<div class="tw-bg-[#0B0F19] tw-border tw-border-[#1E293B] tw-p-4 tw-rounded-none">
+				<p class="tw-text-nuclear-yellow tw-text-[10px] tw-font-mono tw-uppercase tw-tracking-widest tw-font-semibold tw-mb-1">
+					Empathetic Conversation Anchor:
+				</p>
+				<p class="tw-text-base tw-text-white tw-font-mono tw-italic tw-m-0">
+					"I loved watching you play today."
+				</p>
 			</div>
 		</section>
 

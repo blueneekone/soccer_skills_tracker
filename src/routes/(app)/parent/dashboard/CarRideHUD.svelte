@@ -1,5 +1,7 @@
 <script lang="ts">
 	import type { CarRideEngine } from './CarRideEngine.svelte.js';
+	import Icon from '$lib/components/ui/Icon.svelte';
+	import type { IconName } from '$lib/icons/registry.js';
 
 	let { engine }: { engine: CarRideEngine } = $props();
 </script>
@@ -27,18 +29,18 @@
 			class="tw-absolute tw-inset-0 tw-flex tw-items-center tw-justify-center tw-p-6 tw-pointer-events-auto"
 		>
 			<div
-				class="tw-w-full tw-max-w-md tw-flex tw-flex-col tw-gap-6 tw-rounded-none" style="clip-path: polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px); tw-border tw-border-[#1E293B] tw-bg-[#0B0F19]/95 tw-backdrop-blur-sm tw-p-8"
+				class="tw-w-full tw-max-w-md tw-flex tw-flex-col tw-gap-6 tw-rounded-none tw-border tw-border-nuclear-yellow/40 tw-bg-[#0B0F19]/95 tw-backdrop-blur-sm tw-p-8"
 			>
 				<!-- Protocol badge -->
 				<div class="tw-flex tw-items-center tw-justify-center tw-gap-2">
-					<span class="tw-text-[#ff0055] tw-text-[11px] tw-animate-pulse">▲</span>
-					<span class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-[#ff0055] tw-uppercase">
+					<Icon name={"status.warning" as IconName} size={16} class="tw-text-nuclear-yellow tw-animate-pulse" />
+					<span class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-nuclear-yellow tw-uppercase tw-font-bold">
 						CAR RIDE HOME PROTOCOL — ACTIVE
 					</span>
 				</div>
 
 				<!-- Divider -->
-				<div class="tw-w-full tw-h-px tw-bg-[#ff0055]/15"></div>
+				<div class="tw-w-full tw-h-px tw-bg-nuclear-yellow/20"></div>
 
 				<!-- Score summary (public — no attestation required) -->
 				{#if engine.publicScore}
@@ -54,7 +56,7 @@
 							</span>
 						</div>
 						<span
-							class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-uppercase {score.outcome === 'W' ? 'tw-text-[#14b8a6]' : score.outcome === 'L' ? 'tw-text-[#ff6b6b]' : 'tw-text-[#a0a0a0]'}"
+							class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-uppercase {score.outcome === 'W' ? 'tw-text-nuclear-yellow tw-font-bold' : score.outcome === 'L' ? 'tw-text-[#ff6b6b]' : 'tw-text-[#a0a0a0]'}"
 						>
 							{score.outcome === 'W' ? 'VICTORY' : score.outcome === 'L' ? 'DEFEAT' : 'DRAW'}
 						</span>
@@ -62,35 +64,38 @@
 				{/if}
 
 				<!-- Divider -->
-				<div class="tw-w-full tw-h-px tw-bg-[#ff0055]/15"></div>
+				<div class="tw-w-full tw-h-px tw-bg-[#1E293B]"></div>
 
 				<!-- EQ mandate -->
 				<div class="tw-flex tw-flex-col tw-gap-3 tw-text-center">
 					<p class="tw-font-mono tw-text-[12px] tw-leading-relaxed tw-text-[#e0e0e0]">
 						MANDATE: Protect player EQ. Do not critique tactical errors today.
 					</p>
-					<p class="tw-font-mono tw-text-[12px] tw-leading-relaxed tw-text-[#a0a0a0] tw-italic">
-						{engine.conversationAnchor}
+					<p class="tw-font-mono tw-text-[12px] tw-leading-relaxed tw-text-slate-300 tw-italic">
+						"{engine.conversationAnchor}"
 					</p>
 				</div>
 
 				<!-- Divider -->
-				<div class="tw-w-full tw-h-px tw-bg-[#ff0055]/15"></div>
+				<div class="tw-w-full tw-h-px tw-bg-[#1E293B]"></div>
 
 				<!-- Attest CTA -->
 				<button
 					onclick={() => engine.attest()}
 					disabled={engine.isAttesting || engine.isTemporallyEmbargoed}
-					class="tw-w-full tw-font-mono tw-text-[10px] tw-tracking-widest tw-uppercase tw-border tw-border-[#ff0055] tw-text-[#ff0055] tw-bg-[#ff0055]/10 tw-rounded-none" style="clip-path: polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px); tw-px-6 tw-py-4 tw-transition-all tw-duration-200
-						{engine.isAttesting || engine.isTemporallyEmbargoed ? 'tw-opacity-50 tw-cursor-not-allowed' : 'hover:tw-bg-[#ff0055]/20 active:tw-scale-[0.98]'}"
+					class="tw-w-full tw-font-mono tw-text-[11px] tw-font-bold tw-tracking-widest tw-uppercase tw-flex tw-items-center tw-justify-center tw-gap-2 tw-border tw-border-nuclear-yellow tw-text-black tw-bg-nuclear-yellow tw-rounded-none tw-px-6 tw-py-4 tw-transition-all tw-duration-200
+						{engine.isAttesting || engine.isTemporallyEmbargoed ? 'tw-opacity-50 tw-cursor-not-allowed' : 'hover:tw-bg-yellow-300 hover:tw-shadow-[0_0_20px_rgba(218,255,10,0.5)] active:tw-scale-[0.98]'}"
 				>
-					{#if engine.isTemporallyEmbargoed}
-						[ EMBARGOED: 15 MIN TEMPORAL LOCK ]
-					{:else if engine.isAttesting}
-						[ LOGGING ATTESTATION... ]
-					{:else}
-						[ ATTEST EQ COMPLIANCE &amp; UNLOCK METRICS ]
-					{/if}
+					<Icon name={"status.shield-check" as IconName} size={16} />
+					<span>
+						{#if engine.isTemporallyEmbargoed}
+							[ EMBARGOED: 15 MIN TEMPORAL LOCK ]
+						{:else if engine.isAttesting}
+							[ LOGGING ATTESTATION... ]
+						{:else}
+							[ ATTEST EQ COMPLIANCE &amp; UNLOCK METRICS ]
+						{/if}
+					</span>
 				</button>
 
 				<!-- Error -->
@@ -102,7 +107,7 @@
 
 				<!-- Protocol label -->
 				<span
-					class="tw-self-center tw-font-mono tw-text-[8px] tw-tracking-widest tw-text-[#ff0055]/25 tw-uppercase"
+					class="tw-self-center tw-font-mono tw-text-[8px] tw-tracking-widest tw-text-slate-500 tw-uppercase"
 				>
 					PROTOCOL: CAR_RIDE_HOME_V1 · PHASE 4 · EPIC 8
 				</span>

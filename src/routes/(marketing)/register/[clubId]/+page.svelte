@@ -3,6 +3,8 @@
 	import { browser } from '$app/environment';
 	import { getFunctions, httpsCallable } from 'firebase/functions';
 	import { authStore } from '$lib/stores/auth.svelte.js';
+	import Icon from '$lib/components/ui/Icon.svelte';
+	import type { IconName } from '$lib/icons/registry.js';
 
 	const clubId = $derived(page.params.clubId ?? '');
 
@@ -79,22 +81,22 @@
 			{/if}
 		</p>
 	{:else}
-		<p class="tw-mb-1 tw-font-mono tw-text-xs tw-uppercase tw-tracking-widest tw-text-slate-500">
+		<p class="tw-mb-1 tw-font-mono tw-text-xs tw-uppercase tw-tracking-widest tw-text-nuclear-yellow">
 			Season registration
 		</p>
 		<h1 class="tw-m-0 tw-text-3xl tw-font-black">{program.clubName}</h1>
 		<p class="tw-mt-2 tw-text-lg tw-text-slate-300">{program.seasonName}</p>
 
-		<dl class="reg-facts tw-mt-8 tw-space-y-3 tw-rounded-xl tw-border tw-border-slate-800 tw-bg-slate-900/50 tw-p-5">
+		<dl class="reg-facts tw-mt-8 tw-space-y-3 tw-rounded-sm tw-border tw-border-[#334155] tw-bg-[#0f172a] tw-p-5">
 			<div class="tw-flex tw-justify-between tw-gap-4">
-				<dt class="tw-text-slate-500">Fee</dt>
-				<dd class="tw-font-mono tw-font-bold tw-text-teal-300">
+				<dt class="tw-text-slate-400">Fee</dt>
+				<dd class="tw-font-mono tw-font-bold tw-text-nuclear-yellow">
 					{fmtFee(program.feeAmountDollars)}
 				</dd>
 			</div>
 			{#if program.registrationDeadline}
 				<div class="tw-flex tw-justify-between tw-gap-4">
-					<dt class="tw-text-slate-500">Deadline</dt>
+					<dt class="tw-text-slate-400">Deadline</dt>
 					<dd class="tw-font-mono">{program.registrationDeadline}</dd>
 				</div>
 			{/if}
@@ -102,30 +104,34 @@
 
 		<div class="tw-mt-8 tw-flex tw-flex-col tw-gap-3">
 			{#if isLoggedIn && isParent}
-				<a href="/parent/payments" class="tw-vanguard-btn-primary tw-text-center">
-					Continue to payment →
+				<a href="/parent/payments" class="vanguard-btn-amber tw-text-center tw-flex tw-items-center tw-justify-center tw-gap-2 tw-py-3.5 tw-font-mono tw-font-bold tw-text-sm tw-uppercase">
+					Continue to payment
+					<Icon name={"nav.arrow-right" as IconName} size={16} />
 				</a>
 			{:else if isLoggedIn}
 				<p class="tw-text-sm tw-text-slate-400">
 					Sign in with a parent account linked to this club to complete registration.
 				</p>
-				<a href="/login?redirect=/parent/payments" class="tw-vanguard-btn-secondary tw-text-center">
+				<a href="/login?redirect=/parent/payments" class="tw-vanguard-btn-secondary tw-text-center tw-flex tw-items-center tw-justify-center tw-gap-2 tw-py-3">
+					<Icon name={"nav.sign-in" as IconName} size={16} />
 					Switch account
 				</a>
 			{:else}
 				<a
 					href="/login?redirect={encodeURIComponent(`/parent/payments`)}"
-					class="tw-vanguard-btn-primary tw-text-center"
+					class="vanguard-btn-amber tw-text-center tw-flex tw-items-center tw-justify-center tw-gap-2 tw-py-3.5 tw-font-mono tw-font-bold tw-text-sm tw-uppercase"
 				>
-					Sign in to register →
+					Sign in to register
+					<Icon name={"nav.chevron-right" as IconName} size={16} />
 				</a>
-				<a href="/setup" class="tw-vanguard-btn-secondary tw-text-center">
+				<a href="/setup" class="tw-vanguard-btn-secondary tw-text-center tw-flex tw-items-center tw-justify-center tw-gap-2 tw-py-3">
+					<Icon name={"nav.arrow-right" as IconName} size={16} />
 					New to SSTracker? Start here
 				</a>
 			{/if}
 		</div>
 
-		<p class="tw-mt-6 tw-text-xs tw-text-slate-600">
+		<p class="tw-mt-6 tw-text-xs tw-text-slate-500">
 			Payments route to your club via Stripe Connect. Household-linked guardians pay for each athlete on the payments page.
 		</p>
 	{/if}

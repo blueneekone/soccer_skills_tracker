@@ -2,6 +2,8 @@
 	import { onDestroy } from 'svelte';
 	import { collection, query, where, onSnapshot } from 'firebase/firestore';
 	import { getActiveDb } from '$lib/firebase';
+	import Icon from '$lib/components/ui/Icon.svelte';
+	import type { IconName } from '$lib/icons/registry.js';
 
 	interface Props {
 		clubId: string;
@@ -89,7 +91,10 @@
 
 <div class="recon-module">
 	<div class="module-header">
-		<h3 class="module-title">🎟 Event Reconciliation</h3>
+		<h3 class="module-title">
+			<Icon name={'business.ticket' as IconName} size={18} class="tw-text-nuclear-yellow" />
+			<span>Event Reconciliation</span>
+		</h3>
 		<a class="module-link" href="/director/events">Manage Events →</a>
 	</div>
 
@@ -150,6 +155,9 @@
 	}
 
 	.module-title {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
 		font-size: 0.9rem;
 		font-weight: 700;
 		color: var(--vanguard-text-primary, #e2e8f0);
@@ -158,7 +166,7 @@
 
 	.module-link {
 		font-size: 0.78rem;
-		color: #a5b4fc;
+		color: #14b8a6;
 		text-decoration: none;
 		transition: opacity 0.15s;
 	}
@@ -193,8 +201,8 @@
 		gap: 0.6rem;
 	}
 	.event-tile:hover {
-		border-color: rgba(99,102,241,0.35);
-		background: rgba(99,102,241,0.06);
+		border-color: rgba(20,184,166,0.35);
+		background: rgba(20,184,166,0.06);
 	}
 
 	.tile-id {
@@ -241,7 +249,8 @@
 
 	.scan-bar-fill {
 		height: 100%;
-		background: linear-gradient(90deg, #6366f1, #8b5cf6);
+		background: linear-gradient(90deg, #daff0a, #14b8a6);
+		box-shadow: 0 0 8px rgba(218, 255, 10, 0.4);
 		border-radius: 99px;
 		transition: width 0.5s ease;
 	}
@@ -268,6 +277,6 @@
 		border: 1px dashed rgba(255,255,255,0.1);
 		border-radius: 14px;
 	}
-	.empty-link { color: #a5b4fc; text-decoration: none; }
+	.empty-link { color: #14b8a6; text-decoration: none; }
 	.empty-link:hover { text-decoration: underline; }
 </style>

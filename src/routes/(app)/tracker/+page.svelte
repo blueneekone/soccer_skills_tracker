@@ -517,8 +517,14 @@
 					<input class="gw-input" type="time" bind:value={calTime} />
 				</div>
 				<div class="gw-schedule-actions">
-					<button type="button" class="gw-btn-secondary" onclick={addToGoogleCalendar}>Google Calendar</button>
-					<button type="button" class="gw-btn-secondary" onclick={downloadIcs}>Download .ics</button>
+					<button type="button" class="gw-btn-secondary" onclick={addToGoogleCalendar}>
+						<Icon name="nav.calendar" size={14} />
+						<span>Google Calendar</span>
+					</button>
+					<button type="button" class="gw-btn-secondary" onclick={downloadIcs}>
+						<Icon name="sys.download" size={14} />
+						<span>Download .ics</span>
+					</button>
 				</div>
 			</section>
 
@@ -543,7 +549,8 @@
 				{#if submitting}
 					<span class="gw-submit__shine">Logging…</span>
 				{:else}
-					Log workout &amp; claim +{estimatedXp} XP
+					<Icon name="content.checks" size={18} />
+					<span>Log workout &amp; claim +{estimatedXp} XP</span>
 				{/if}
 			</button>
 		</div>

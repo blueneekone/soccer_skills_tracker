@@ -2,6 +2,8 @@
 	import { onDestroy } from 'svelte';
 	import { collection, query, where, orderBy, onSnapshot } from 'firebase/firestore';
 	import { getActiveDb } from '$lib/firebase';
+	import Icon from '$lib/components/ui/Icon.svelte';
+	import type { IconName } from '$lib/icons/registry.js';
 
 	interface Props {
 		clubId: string;
@@ -81,7 +83,7 @@
 		{
 			key: 'approved',
 			label: 'Approved',
-			color: '#a5b4fc',
+			color: '#14b8a6',
 			rows: rebates.filter((r) => r.status === 'approved'),
 			totalNgbCents: rebates
 				.filter((r) => r.status === 'approved')
@@ -123,7 +125,10 @@
 
 <div class="rebate-panel">
 	<div class="panel-header">
-		<h3 class="panel-title">🏨 Hotel Rebates</h3>
+		<h3 class="panel-title">
+			<Icon name={'business.hotel' as IconName} size={18} class="tw-text-nuclear-yellow" />
+			<span>Hotel Rebates</span>
+		</h3>
 		<span class="panel-note">Read-only — contact platform support to dispute.</span>
 	</div>
 
@@ -207,6 +212,9 @@
 	}
 
 	.panel-title {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
 		font-size: 0.9rem;
 		font-weight: 700;
 		color: var(--vanguard-text-primary, #e2e8f0);

@@ -330,10 +330,11 @@
 							{:else if canPay(player.ledger)}
 								<button
 									type="button"
-									class="tw-inline-flex tw-items-center tw-justify-center tw-rounded-lg tw-border tw-border-teal-700/60 tw-bg-teal-900/30 tw-px-3 tw-py-2 tw-font-mono tw-text-xs tw-font-bold tw-tracking-wide tw-text-teal-300 tw-transition-colors hover:tw-bg-teal-900/60"
+									class="tw-inline-flex tw-items-center tw-justify-center tw-gap-1.5 tw-rounded-none tw-border tw-border-nuclear-yellow tw-bg-nuclear-yellow tw-px-3.5 tw-py-2 tw-font-mono tw-text-xs tw-font-bold tw-tracking-wide tw-text-black tw-transition-all hover:tw-bg-yellow-300 hover:tw-shadow-[0_0_15px_rgba(218,255,10,0.5)]"
 									onclick={() => openPayment(player.email)}
 								>
-									{payButtonLabel(player.ledger)}
+									<Icon name={"sys.credit-card" as IconName} size={14} />
+									<span>{payButtonLabel(player.ledger)}</span>
 								</button>
 							{:else}
 								<span class="tw-font-mono tw-text-xs tw-text-slate-500">In progress…</span>

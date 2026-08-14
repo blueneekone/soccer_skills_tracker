@@ -3,16 +3,26 @@
 	import WeatherHub from '$lib/components/coach/WeatherHub.svelte';
 	import SquadMatrix from '$lib/components/coach/SquadMatrix.svelte';
 	import WarRoomGrid from '$lib/components/coach/WarRoomGrid.svelte';
+	import Icon from '$lib/components/ui/Icon.svelte';
 
 	let { engine }: { engine: DashboardEngine } = $props();
 </script>
 
-<div class="coach-mainboard-grid tw-grid-cols-12 tw-gap-4" style="display: grid;" aria-label="Nexus Command workspace">
+<div class="coach-mainboard-grid tw-grid-cols-12 tw-gap-4 st-bento" style="display: grid;" aria-label="Nexus Command workspace">
 	<!-- Top Navigation Section (3-section grid) -->
 	<div class="tw-col-span-12 tw-grid-cols-3 tw-gap-4 tw-mb-2" style="display: grid;">
-		<a href="/coach/dashboard" class="vanguard-panel dashboard-card tw-block tw-text-center tw-p-3 tw-font-mono tw-font-bold tw-text-[10px] tw-uppercase tw-tracking-widest tw-text-[#14b8a6] hover:tw-text-[#14b8a6] tw-transition-colors tw-no-underline" style="border-radius: 0px !important;">MISSION CONTROL</a>
-		<a href="/coach/logistics" class="vanguard-panel dashboard-card tw-block tw-text-center tw-p-3 tw-font-mono tw-font-bold tw-text-[10px] tw-uppercase tw-tracking-widest tw-text-slate-400 hover:tw-text-[#14b8a6] tw-transition-colors tw-no-underline" style="border-radius: 0px !important;">TEAM OPS</a>
-		<a href="/coach/match-day" class="vanguard-panel dashboard-card tw-block tw-text-center tw-p-3 tw-font-mono tw-font-bold tw-text-[10px] tw-uppercase tw-tracking-widest tw-text-slate-400 hover:tw-text-[#14b8a6] tw-transition-colors tw-no-underline" style="border-radius: 0px !important;">MATCH DAY</a>
+		<a href="/coach/dashboard" class="vanguard-panel dashboard-card tw-flex tw-items-center tw-justify-center tw-gap-2 tw-text-center tw-p-3 tw-font-mono tw-font-bold tw-text-[10px] tw-uppercase tw-tracking-widest tw-text-nuclear-yellow tw-border-nuclear-yellow/40 hover:tw-text-nuclear-yellow tw-transition-colors tw-no-underline" style="border-radius: 0px !important;">
+			<Icon name="status.shield-check" size={14} class="tw-text-nuclear-yellow" />
+			<span>MISSION CONTROL</span>
+		</a>
+		<a href="/coach/logistics" class="vanguard-panel dashboard-card tw-flex tw-items-center tw-justify-center tw-gap-2 tw-text-center tw-p-3 tw-font-mono tw-font-bold tw-text-[10px] tw-uppercase tw-tracking-widest tw-text-slate-400 hover:tw-text-[#14b8a6] tw-transition-colors tw-no-underline" style="border-radius: 0px !important;">
+			<Icon name="user.group" size={14} class="tw-text-slate-400 group-hover:tw-text-[#14b8a6]" />
+			<span>TEAM OPS</span>
+		</a>
+		<a href="/coach/match-day" class="vanguard-panel dashboard-card tw-flex tw-items-center tw-justify-center tw-gap-2 tw-text-center tw-p-3 tw-font-mono tw-font-bold tw-text-[10px] tw-uppercase tw-tracking-widest tw-text-slate-400 hover:tw-text-[#14b8a6] tw-transition-colors tw-no-underline" style="border-radius: 0px !important;">
+			<Icon name="data.activity" size={14} class="tw-text-slate-400 group-hover:tw-text-[#14b8a6]" />
+			<span>MATCH DAY</span>
+		</a>
 	</div>
 
 	<!-- WarRoomGrid (8 cols) -->
