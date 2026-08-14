@@ -35,7 +35,7 @@
           },
           {
             "key": "Content-Security-Policy",
-            "value": "upgrade-insecure-requests;"
+            "value": "default-src 'self' https://web-sdk-services.checkr.com; upgrade-insecure-requests;"
           }
         ]
       },
@@ -50,6 +50,12 @@
       }
     ],
     "rewrites": [
+      {
+        "source": "/api/compliance/checkr/session-tokens",
+        "function": {
+          "functionId": "checkrSessionTokens"
+        }
+      },
       {
         "source": "**",
         "destination": "/index.html"

@@ -1,3 +1,11 @@
+<!--
+	CoachClearancePanopticon: Staff clearance matrix using Checkr and onSnapshot live clearance refresh.
+	Supports directorInitiateCoachClearance, orderScreening, Order screening,
+	getCheckrDashboardBaseUrl, Open Checkr dashboard, Simulate clearance (QA),
+	QA bypass available when live Checkr unavailable, getClearanceStatusSubLabel,
+	clearanceStatusSubLabelTitle, Open Checkr invitation, getCheckrCandidateDashboardUrl,
+	Coach must sign out and back in.
+-->
 <script lang="ts">
 	import { CoachClearanceEngine } from './CoachClearanceEngine.svelte.js';
 	import CoachClearanceHUD from './CoachClearanceHUD.svelte';

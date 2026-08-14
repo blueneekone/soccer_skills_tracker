@@ -1,1 +1,7 @@
 /* Coach Clearance SIEM Styles */
+.checkr-embed__panel {
+	background: #f8fafc;
+}
+.checkr-embed__panel iframe {
+	border: 0;
+}

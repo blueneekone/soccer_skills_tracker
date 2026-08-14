@@ -19,7 +19,6 @@
   });
 
   async function loadTeams() {
-    if (!db || !authStore.isAuthenticated) return;
     try {
       const db = getActiveDb();
       const q = query(collection(db, 'teams'), where('clubId', '==', clubId));

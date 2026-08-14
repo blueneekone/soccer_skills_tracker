@@ -380,8 +380,9 @@ exports.logSecurityAudit = onCall({region: REGION}, async (request) => {
  */
 async function syncClubEntitlements(clubId, maxSeats, adminEmail) {
   if (!clubId) return;
-  const entRef = getRegistryDb().collection('license_entitlements').doc(clubId);
-  await getRegistryDb().runTransaction(async (t) => {
+  const registryDb = getRegistryDb();
+  const entRef = registryDb.collection('license_entitlements').doc(clubId);
+  await registryDb.runTransaction(async (t) => {
     const snap = await t.get(entRef);
     const cur = snap.exists && typeof snap.data().seats_limit === 'number' && !Number.isNaN(snap.data().seats_limit) ? snap.data().seats_limit : 0;
     const active = snap.exists && typeof snap.data().active_seats === 'number' && !Number.isNaN(snap.data().active_seats) ? snap.data().active_seats : 0;
@@ -484,27 +485,25 @@ exports.directorSaveClubBranding = onCall({region: REGION}, async (request) => {
  * Reserve one licensed seat + create pending coach invite (atomic).
  * Does not touch active_seats until claimCoachInvite.
  */
-async function processInviteCoachTxn(reqDb, entRef, inviteRef, clubId, teamId, coachEmail, creatorEmail) {
-  return reqDb.runTransaction(async (transaction) => {
-    const entSnap = await transaction.get(entRef);
-    if (!entSnap.exists) return {kind: 'no_entitlement'};
-    const ent = entSnap.data() || {};
-    const seatsLimit = typeof ent.seats_limit === 'number' && !Number.isNaN(ent.seats_limit) ? ent.seats_limit : 0;
-    const activeSeats = typeof ent.active_seats === 'number' && !Number.isNaN(ent.active_seats) ? ent.active_seats : 0;
-    const reservedSeats = typeof ent.reserved_seats === 'number' && !Number.isNaN(ent.reserved_seats) ? ent.reserved_seats : 0;
+async function processInviteCoachTxn(reqDb, clubId, teamId, coachEmail, creatorEmail) {
+  const entRef = getRegistryDb().collection('license_entitlements').doc(clubId);
+  const entSnap = await entRef.get();
+  if (!entSnap.exists) return {kind: 'no_entitlement'};
+  const ent = entSnap.data() || {};
+  const seatsLimit = typeof ent.seats_limit === 'number' && !Number.isNaN(ent.seats_limit) ? ent.seats_limit : 0;
+  const activeSeats = typeof ent.active_seats === 'number' && !Number.isNaN(ent.active_seats) ? ent.active_seats : 0;
+  const reservedSeats = typeof ent.reserved_seats === 'number' && !Number.isNaN(ent.reserved_seats) ? ent.reserved_seats : 0;
 
-    if (activeSeats + reservedSeats >= seatsLimit) return {kind: 'full'};
+  if (activeSeats + reservedSeats >= seatsLimit) return {kind: 'full'};
 
+  const inviteId = coachInviteDocId(clubId, teamId, coachEmail);
+  const inviteRef = reqDb.collection('coach_invites').doc(inviteId);
+
+  const txnRes = await reqDb.runTransaction(async (transaction) => {
     const inviteSnap = await transaction.get(inviteRef);
     if (inviteSnap.exists && inviteSnap.data().status === 'pending') {
       return {kind: 'duplicate_invite'};
     }
-
-    transaction.set(entRef, {
-      reserved_seats: admin.firestore.FieldValue.increment(1),
-      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-      updatedBy: 'system:directorInviteCoach',
-    }, {merge: true});
 
     transaction.set(inviteRef, {
       clubId,
@@ -518,6 +517,16 @@ async function processInviteCoachTxn(reqDb, entRef, inviteRef, clubId, teamId, c
 
     return {kind: 'ok'};
   });
+
+  if (txnRes.kind === 'ok') {
+    await entRef.set({
+      reserved_seats: admin.firestore.FieldValue.increment(1),
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      updatedBy: 'system:directorInviteCoach',
+    }, {merge: true});
+  }
+
+  return {kind: txnRes.kind, inviteId};
 }
 
 exports.directorInviteCoach = onCall({region: REGION}, async (request) => {
@@ -538,34 +547,36 @@ exports.directorInviteCoach = onCall({region: REGION}, async (request) => {
   assertDirectorClubOrSuper(request, clubId);
   await assertClubSubscriptionWritable(clubId, request);
 
-  const entRef = getRegistryDb().collection('license_entitlements').doc(clubId);
   const inviteId = coachInviteDocId(clubId, teamId, coachEmail);
-  const inviteRef = reqDb.collection('coach_invites').doc(inviteId);
-
   const existingUser = await reqDb.collection('users').doc(coachEmail).get();
   if (existingUser.exists && existingUser.data().role === 'coach' && existingUser.data().teamId === teamId) {
     throw new HttpsError('already-exists', 'This coach is already assigned to this team.');
   }
 
   const creatorEmail = normEmail(request.auth.token.email) || 'unknown';
-  const result = await processInviteCoachTxn(reqDb, entRef, inviteRef, clubId, teamId, coachEmail, creatorEmail);
+  const result = await processInviteCoachTxn(reqDb, clubId, teamId, coachEmail, creatorEmail);
 
   if (result.kind === 'no_entitlement') throw new HttpsError('failed-precondition', 'Club license is not configured yet.');
   if (result.kind === 'full') throw new HttpsError('resource-exhausted', 'No licensed seats available for pending invites.');
   if (result.kind === 'duplicate_invite') throw new HttpsError('already-exists', 'A pending invite already exists for this coach and team.');
 
-  return {ok: true, inviteId};
+  return {ok: true, inviteId: result.inviteId || inviteId};
 });
 
 /**
  * Coach accepts oldest pending invite — moves one seat from reserved to active.
  */
-async function executeClaimCoachInviteTxn(reqDb, entRef, inviteDoc, email, clubId, teamId) {
+async function executeClaimCoachInviteTxn(reqDb, inviteDoc, email, clubId, teamId) {
+  const entRef = getRegistryDb().collection('license_entitlements').doc(clubId);
+  const entSnap = await entRef.get();
+  const reserved = entSnap.exists && typeof entSnap.data().reserved_seats === 'number' && !Number.isNaN(entSnap.data().reserved_seats) ? entSnap.data().reserved_seats : 0;
+  if (reserved < 1) return {kind: 'no_reserved'};
+
   const teamRef = reqDb.collection('teams').doc(teamId);
   const userRef = reqDb.collection('users').doc(email);
   const lookupRef = reqDb.collection('coach_lookup').doc(email);
 
-  return reqDb.runTransaction(async (transaction) => {
+  const txnRes = await reqDb.runTransaction(async (transaction) => {
     const inviteSnap = await transaction.get(inviteDoc.ref);
     if (!inviteSnap.exists || inviteSnap.data().status !== 'pending') return {kind: 'stale'};
     const userSnap = await transaction.get(userRef);
@@ -577,26 +588,11 @@ async function executeClaimCoachInviteTxn(reqDb, entRef, inviteDoc, email, clubI
           acceptedAt: admin.firestore.FieldValue.serverTimestamp(),
           note: 'reconciled_existing_coach',
         });
-        transaction.update(entRef, {
-          reserved_seats: admin.firestore.FieldValue.increment(-1),
-          updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-          updatedBy: 'system:claimCoachInvite_reconcile',
-        });
         return {kind: 'already_coach'};
       }
       if (role && role !== 'player') return {kind: 'role_conflict'};
     }
 
-    const entSnap = await transaction.get(entRef);
-    const reserved = entSnap.exists && typeof entSnap.data().reserved_seats === 'number' && !Number.isNaN(entSnap.data().reserved_seats) ? entSnap.data().reserved_seats : 0;
-    if (reserved < 1) return {kind: 'no_reserved'};
-
-    transaction.update(entRef, {
-      reserved_seats: admin.firestore.FieldValue.increment(-1),
-      active_seats: admin.firestore.FieldValue.increment(1),
-      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-      updatedBy: 'system:claimCoachInvite',
-    });
     transaction.update(inviteSnap.ref, {
       status: 'accepted',
       acceptedAt: admin.firestore.FieldValue.serverTimestamp(),
@@ -613,6 +609,23 @@ async function executeClaimCoachInviteTxn(reqDb, entRef, inviteDoc, email, clubI
 
     return {kind: 'ok'};
   });
+
+  if (txnRes.kind === 'already_coach') {
+    await entRef.set({
+      reserved_seats: admin.firestore.FieldValue.increment(-1),
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      updatedBy: 'system:claimCoachInvite_reconcile',
+    }, {merge: true});
+  } else if (txnRes.kind === 'ok') {
+    await entRef.set({
+      reserved_seats: admin.firestore.FieldValue.increment(-1),
+      active_seats: admin.firestore.FieldValue.increment(1),
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      updatedBy: 'system:claimCoachInvite',
+    }, {merge: true});
+  }
+
+  return txnRes;
 }
 
 exports.claimCoachInvite = onCall({region: REGION}, async (request) => {
@@ -641,8 +654,7 @@ exports.claimCoachInvite = onCall({region: REGION}, async (request) => {
     throw new HttpsError('internal', 'Invite data is invalid.');
   }
 
-  const entRef = getRegistryDb().collection('license_entitlements').doc(clubId);
-  const out = await executeClaimCoachInviteTxn(reqDb, entRef, inviteDoc, email, clubId, teamId);
+  const out = await executeClaimCoachInviteTxn(reqDb, inviteDoc, email, clubId, teamId);
 
   if (out.kind === 'role_conflict') throw new HttpsError('failed-precondition', 'Your account already has a non-player role. Contact support.');
   if (out.kind === 'no_reserved') throw new HttpsError('failed-precondition', 'Seat reservation out of sync. Ask your director to resend an invite.');
@@ -841,11 +853,10 @@ exports.secureBookField = onCall({region: REGION}, async (request) => {
  * Director / super_admin: set per-team seat cap. Sum of all team caps for the
  * club must not exceed license_entitlements/{clubId}.seats_limit.
  */
-async function processAllocateSeatsTxn(reqDb, masterRef, rosterRef, teamEntRef, teamsQuery, teamId, clubId, seatsLimit) {
+async function processAllocateSeatsTxn(reqDb, masterSnap, rosterRef, teamEntRef, teamsQuery, teamId, clubId, seatsLimit) {
   return reqDb.runTransaction(async (transaction) => {
-    const [rosterSnap, masterSnap, teamsSnap] = await Promise.all([
+    const [rosterSnap, teamsSnap] = await Promise.all([
       transaction.get(rosterRef),
-      transaction.get(masterRef),
       transaction.get(teamsQuery),
     ]);
 
@@ -908,11 +919,11 @@ exports.secureAllocateTeamSeats = onCall({region: REGION}, async (request) => {
   await assertClubSubscriptionWritable(clubId, request);
 
   const rosterRef = reqDb.collection('rosters').doc(teamId);
-  const masterRef = getRegistryDb().collection('license_entitlements').doc(clubId);
+  const masterSnap = await getRegistryDb().collection('license_entitlements').doc(clubId).get();
   const teamEntRef = reqDb.collection('team_entitlements').doc(teamId);
   const teamsQuery = reqDb.collection('teams').where('clubId', '==', clubId);
 
-  await processAllocateSeatsTxn(reqDb, masterRef, rosterRef, teamEntRef, teamsQuery, teamId, clubId, seatsLimit);
+  await processAllocateSeatsTxn(reqDb, masterSnap, rosterRef, teamEntRef, teamsQuery, teamId, clubId, seatsLimit);
 
   return {ok: true, teamId, seatsLimit};
 });
@@ -929,7 +940,7 @@ const MAX_BULK_ROSTER_ROWS = 200;
  * @param {string} params.playerEmail
  * @param {string} params.jersey
  * @param {admin.firestore.DocumentReference} params.rosterRef
- * @param {admin.firestore.DocumentReference} params.entRef
+ * @param {object} params.entData
  * @param {admin.firestore.DocumentReference} params.teamEntRef
  * @param {admin.firestore.DocumentReference|null} params.lookupRef
  * @param {string} params.updatedBy
@@ -942,7 +953,7 @@ async function secureAddPlayerTxn(transaction, params) {
     playerName,
     jersey,
     rosterRef,
-    entRef,
+    entData,
     teamEntRef,
     lookupRef,
     updatedBy,
@@ -991,11 +1002,10 @@ async function secureAddPlayerTxn(transaction, params) {
     }
   }
 
-  const entSnap = await transaction.get(entRef);
-  if (!entSnap.exists) {
+  if (!entData.exists) {
     return {kind: 'no_entitlement'};
   }
-  const ent = entSnap.data() || {};
+  const ent = entData.data || {};
   const seatsLimit =
       typeof ent.seats_limit === 'number' && !Number.isNaN(ent.seats_limit) ?
         ent.seats_limit :
@@ -1034,11 +1044,6 @@ async function secureAddPlayerTxn(transaction, params) {
     });
   }
 
-  transaction.update(entRef, {
-    active_seats: admin.firestore.FieldValue.increment(1),
-    updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-    updatedBy,
-  });
   transaction.set(
       rosterRef,
       {players: newPlayers, jerseys},
@@ -1118,13 +1123,15 @@ exports.secureAddPlayer = onCall({region: REGION}, async (request) => {
   const reqDb = getRequestDb(request);
   const rosterRef = reqDb.collection('rosters').doc(teamId);
   const entRef = getRegistryDb().collection('license_entitlements').doc(clubId);
+  const entSnap = await entRef.get();
+  const entData = { exists: entSnap.exists, data: entSnap.data() || {} };
   const teamEntRef = reqDb.collection('team_entitlements').doc(teamId);
   const lookupRef = playerEmail ? reqDb.collection('player_lookup').doc(playerEmail) : null;
 
   const txnResult = await reqDb.runTransaction(async (transaction) =>
     secureAddPlayerTxn(transaction, {
       teamId, clubId, playerName, playerEmail, jersey,
-      rosterRef, entRef, teamEntRef, lookupRef,
+      rosterRef, entData, teamEntRef, lookupRef,
       updatedBy: 'system:secureAddPlayer',
     }),
   );
@@ -1134,6 +1141,13 @@ exports.secureAddPlayer = onCall({region: REGION}, async (request) => {
   if (txnResult.kind === 'no_entitlement') throw new HttpsError('failed-precondition', 'Club license is not configured yet.');
   if (txnResult.kind === 'team_full') throw new HttpsError('failed-precondition', 'team-full');
   if (txnResult.kind === 'full') throw new HttpsError('resource-exhausted', 'Licensed roster seats are fully allocated.');
+
+  await entRef.set({
+    active_seats: admin.firestore.FieldValue.increment(1),
+    updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    updatedBy: 'system:secureAddPlayer',
+  }, {merge: true});
+
   return {ok: true};
 });
 
@@ -1173,18 +1187,29 @@ exports.secureBulkAddPlayers = onCall({region: REGION}, async (request) => {
       continue;
     }
 
+    const entSnap = await entRef.get();
+    const entData = { exists: entSnap.exists, data: entSnap.data() || {} };
+
     const {playerName, playerEmail, jersey} = normalized;
     const lookupRef = playerEmail ? reqDb.collection('player_lookup').doc(playerEmail) : null;
 
     const txnResult = await reqDb.runTransaction(async (transaction) =>
       secureAddPlayerTxn(transaction, {
         teamId, clubId, playerName, playerEmail, jersey,
-        rosterRef, entRef, teamEntRef, lookupRef,
+        rosterRef, entData, teamEntRef, lookupRef,
         updatedBy: 'system:secureBulkAddPlayers',
       }),
     );
 
-    if (txnResult.kind === 'ok') { added++; continue; }
+    if (txnResult.kind === 'ok') {
+      added++;
+      await entRef.set({
+        active_seats: admin.firestore.FieldValue.increment(1),
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        updatedBy: 'system:secureBulkAddPlayers',
+      }, {merge: true});
+      continue;
+    }
     if (txnResult.kind === 'duplicate') { duplicates++; continue; }
     if (txnResult.kind === 'email_in_use') { errors.push({index, reason: 'email_in_use'}); skipped++; continue; }
     if (txnResult.kind === 'no_entitlement') throw new HttpsError('failed-precondition', 'Club license is not configured yet.');
@@ -1227,7 +1252,6 @@ exports.secureRemovePlayer = onCall({region: REGION}, async (request) => {
     const list = rosterSnap.exists && Array.isArray(rosterSnap.data().players) ? rosterSnap.data().players : [];
     if (!list.includes(playerName)) return {kind: 'not_found'};
 
-    const entSnap = await transaction.get(entRef);
     const teamEntSnap = await transaction.get(teamEntRef);
     const lookupSnap = await transaction.get(lookupQuery);
 
@@ -1236,11 +1260,6 @@ exports.secureRemovePlayer = onCall({region: REGION}, async (request) => {
 
     transaction.set(rosterRef, {players: list.filter((p) => p !== playerName), jerseys}, {merge: true});
     lookupSnap.forEach((d) => transaction.delete(d.ref));
-
-    if (entSnap.exists) {
-      const activeSeats = typeof entSnap.data().active_seats === 'number' ? entSnap.data().active_seats : 0;
-      transaction.update(entRef, { active_seats: Math.max(0, activeSeats - 1), updatedAt: admin.firestore.FieldValue.serverTimestamp(), updatedBy: 'system:secureRemovePlayer' });
-    }
 
     if (teamEntSnap.exists) {
       const a = typeof teamEntSnap.data().active_seats === 'number' ? teamEntSnap.data().active_seats : 0;
@@ -1251,6 +1270,17 @@ exports.secureRemovePlayer = onCall({region: REGION}, async (request) => {
   });
 
   if (txnResult.kind === 'not_found') return {ok: true, notFound: true};
+
+  const entSnap = await entRef.get();
+  if (entSnap.exists) {
+    const activeSeats = typeof entSnap.data().active_seats === 'number' ? entSnap.data().active_seats : 0;
+    await entRef.set({
+      active_seats: Math.max(0, activeSeats - 1),
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      updatedBy: 'system:secureRemovePlayer',
+    }, {merge: true});
+  }
+
   return {ok: true};
 });
 

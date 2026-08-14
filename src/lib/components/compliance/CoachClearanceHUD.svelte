@@ -58,7 +58,7 @@
 		<div class="tw-flex tw-items-center">
 			<div class="tw-flex tw-items-center tw-gap-2 tw-bg-[#0B0F19] tw-border tw-border-[#334155] tw-px-3 tw-h-10 tw-rounded-none">
 				<span class="tw-w-2 tw-h-2 tw-rounded-full tw-bg-[#14b8a6] tw-animate-pulse"></span>
-				<span class="tw-text-[10px] tw-font-mono tw-text-[#94A3B8] tw-tracking-widest tw-uppercase">
+				<span class="tw-text-[10px] tw-font-mono tw-text-[#94A3B8] tw-tracking-widest tw-uppercase" title="QA bypass available when live Checkr unavailable">
 					QA BYPASS ACTIVE
 				</span>
 			</div>

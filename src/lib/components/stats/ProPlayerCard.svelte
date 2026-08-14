@@ -81,7 +81,6 @@
 	let isFlipped = $state(false);
 
 	function onOperativeIdKeydown(/** @type {KeyboardEvent} */ e) {
-    if (!db || !authStore.isAuthenticated) return;
 		if (e.key !== 'Enter' && e.key !== ' ') return;
 		e.preventDefault();
 		isFlipped = !isFlipped;

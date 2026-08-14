@@ -3,6 +3,7 @@
 	import { db, functions } from '$lib/firebase.js';
 	import { collection, onSnapshot, query, doc } from 'firebase/firestore';
 	import { httpsCallable } from 'firebase/functions';
+	import { authStore } from '$lib/stores/auth.svelte.js';
 
 	let {
 		programId = '',
