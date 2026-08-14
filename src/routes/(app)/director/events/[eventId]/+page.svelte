@@ -5,6 +5,7 @@
 	import { getFunctions, httpsCallable } from 'firebase/functions';
 	import { doc, onSnapshot } from 'firebase/firestore';
 	import { getActiveDb } from '$lib/firebase';
+	import { authStore } from '$lib/stores/auth.svelte.js';
 	import type { TournamentEventDoc, TicketTier, TournamentBracket } from '$lib/types/tournamentEvent.js';
 	import { labelToTierId } from '$lib/types/tournamentEvent.js';
 	import TournamentBracketPanel from '$lib/components/director/TournamentBracketPanel.svelte';
@@ -84,7 +85,8 @@
 	}
 
 	function addTier() {
-    if (!db || !authStore.isAuthenticated) return;
+		const db = getActiveDb();
+		if (!db || !authStore.isAuthenticated) return;
 		tiers = [
 			...tiers,
 			{ id: '', label: '', unitPriceDollars: '10.00', capacity: '100', description: '', gateOpensAt: '' },

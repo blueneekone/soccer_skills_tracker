@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { db, functions } from '$lib/firebase.js';
+	import { authStore } from '$lib/stores/auth.svelte.js';
 	import {
 		collection,
 		doc,
