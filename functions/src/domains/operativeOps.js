@@ -302,162 +302,79 @@ exports.createCommsChannel = onCall({region: REGION}, async (request) => {
   return { id: ref.id, safesportMonitored: false, ccCount: 0 };
 });
 
-exports.sendCoachPlayerMessage = onCall({region: REGION}, async (request) => {
-  const actor = assertCoachMessageSender(request);
-  const data = request.data || {};
-  const teamId = typeof data.teamId === 'string' ? data.teamId.trim() : '';
-  const playerName =
-      typeof data.playerName === 'string' ? data.playerName.trim() : '';
-  const bodyRaw = typeof data.body === 'string' ? data.body.trim() : '';
-  if (!teamId || !playerName || !bodyRaw) {
-    throw new HttpsError(
-        'invalid-argument',
-        'teamId, playerName, and body are required.',
-    );
-  }
-  if (bodyRaw.length > 4000) {
-    throw new HttpsError(
-        'invalid-argument',
-        'Message too long (max 4000 characters).',
-    );
-  }
-
-  const tSnap = await db().collection('teams').doc(teamId).get();
-  if (!tSnap.exists) {
-    throw new HttpsError('not-found', 'Team not found.');
-  }
-  const teamClubId = tSnap.data().clubId || null;
-
-  if (actor.role === 'coach' && actor.teamId !== teamId) {
-    throw new HttpsError(
-        'permission-denied',
-        'You can only message your team.',
-    );
-  }
-  if (actor.role === 'director') {
-    if (!teamClubId || teamClubId !== actor.clubId) {
-      throw new HttpsError(
-          'permission-denied',
-          'Team is not in your club.',
-      );
-    }
-  }
-
+async function resolvePlayerMessageRecipient(teamId, playerName) {
   const lookupSnap = await db().collection('player_lookup')
       .where('teamId', '==', teamId)
       .where('playerName', '==', playerName)
       .limit(2)
       .get();
 
-  if (lookupSnap.empty) {
-    throw new HttpsError(
-        'failed-precondition',
-        'Add the athlete login email on the roster before messaging.',
-    );
-  }
-  if (lookupSnap.size > 1) {
-    throw new HttpsError(
-        'failed-precondition',
-        'Duplicate roster links for this name; resolve in Firestore.',
-    );
-  }
+  if (lookupSnap.empty) throw new HttpsError('failed-precondition', 'Add the athlete login email on the roster before messaging.');
+  if (lookupSnap.size > 1) throw new HttpsError('failed-precondition', 'Duplicate roster links for this name; resolve in Firestore.');
 
   const toPlayerEmail = normEmail(lookupSnap.docs[0].id);
-  if (!toPlayerEmail) {
-    throw new HttpsError('failed-precondition', 'Invalid player email key.');
-  }
+  if (!toPlayerEmail) throw new HttpsError('failed-precondition', 'Invalid player email key.');
 
   const uSnap = await db().collection('users').doc(toPlayerEmail).get();
-  if (!uSnap.exists) {
-    throw new HttpsError(
-        'failed-precondition',
-        'Athlete has not finished account setup.',
-    );
-  }
+  if (!uSnap.exists) throw new HttpsError('failed-precondition', 'Athlete has not finished account setup.');
   const u = uSnap.data();
-  if (u.teamId !== teamId) {
-    throw new HttpsError('failed-precondition', 'Athlete is not on this team.');
-  }
+  if (u.teamId !== teamId) throw new HttpsError('failed-precondition', 'Athlete is not on this team.');
 
-  // Sprint 4.2 — household-only charter: block staff→minor direct mail entirely.
   assertStaffMayDirectMessagePlayer(u);
+  return toPlayerEmail;
+}
 
-  const actorEmail = actor.email || '';
-  if (normEmail(actorEmail) === toPlayerEmail) {
-    throw new HttpsError('invalid-argument', 'Cannot message yourself.');
+exports.sendCoachPlayerMessage = onCall({region: REGION}, async (request) => {
+  const actor = assertCoachMessageSender(request);
+  const data = request.data || {};
+  const teamId = typeof data.teamId === 'string' ? data.teamId.trim() : '';
+  const playerName = typeof data.playerName === 'string' ? data.playerName.trim() : '';
+  const bodyRaw = typeof data.body === 'string' ? data.body.trim() : '';
+  if (!teamId || !playerName || !bodyRaw) throw new HttpsError('invalid-argument', 'teamId, playerName, and body are required.');
+  if (bodyRaw.length > 4000) throw new HttpsError('invalid-argument', 'Message too long (max 4000 characters).');
+
+  const tSnap = await db().collection('teams').doc(teamId).get();
+  if (!tSnap.exists) throw new HttpsError('not-found', 'Team not found.');
+  const teamClubId = tSnap.data().clubId || null;
+
+  if (actor.role === 'coach' && actor.teamId !== teamId) throw new HttpsError('permission-denied', 'You can only message your team.');
+  if (actor.role === 'director' && (!teamClubId || teamClubId !== actor.clubId)) {
+    throw new HttpsError('permission-denied', 'Team is not in your club.');
   }
+
+  const toPlayerEmail = await resolvePlayerMessageRecipient(teamId, playerName);
+  const actorEmail = actor.email || '';
+  if (normEmail(actorEmail) === toPlayerEmail) throw new HttpsError('invalid-argument', 'Cannot message yourself.');
 
   const now = admin.firestore.FieldValue.serverTimestamp();
-  const bodyPreview = bodyRaw.length > 200 ?
-    bodyRaw.slice(0, 200) + '\u2026' :
-    bodyRaw;
+  const bodyPreview = bodyRaw.length > 200 ? bodyRaw.slice(0, 200) + '\u2026' : bodyRaw;
 
   const msgRef = db().collection('in_app_messages').doc();
   const batch = db().batch();
-
   batch.set(msgRef, {
-    teamId,
-    teamClubId: teamClubId || null,
-    fromEmail: actorEmail,
-    toPlayerEmail,
-    toPlayerName: playerName,
-    body: bodyRaw,
-    bodyPreview,
-    minorRecipient: false,
-    ccParentEmails: [],
-    createdAt: now,
-    createdByRole: actor.role,
+    teamId, teamClubId: teamClubId || null,
+    fromEmail: actorEmail, toPlayerEmail, toPlayerName: playerName,
+    body: bodyRaw, bodyPreview, minorRecipient: false, ccParentEmails: [],
+    createdAt: now, createdByRole: actor.role,
   });
-
   batch.set(db().collection('messaging_audit').doc(), {
-    action: 'coach_player_message',
-    messageId: msgRef.id,
-    teamId,
-    fromEmail: actorEmail,
-    toPlayerEmail,
-    toPlayerName: playerName,
-    minorRecipient: false,
-    ccParentEmails: [],
-    bodyPreview,
-    bodyLength: bodyRaw.length,
-    actorUid: request.auth.uid,
-    at: now,
+    action: 'coach_player_message', messageId: msgRef.id,
+    teamId, fromEmail: actorEmail, toPlayerEmail, toPlayerName: playerName,
+    minorRecipient: false, ccParentEmails: [], bodyPreview, bodyLength: bodyRaw.length,
+    actorUid: request.auth.uid, at: now,
   });
-
   await batch.commit();
 
-  // Epic 4.3 — push the player on DM delivery (non-fatal; never breaks the send path).
   try {
-    let playerUid = '';
-    try {
-      const ur = await admin.auth().getUserByEmail(toPlayerEmail);
-      playerUid = ur && ur.uid ? ur.uid : '';
-    } catch (_) {
-      /* player has no Auth account — skip push */
-    }
-    if (playerUid) {
-      await sendFcmToUids(
-          [playerUid],
-          {
-            title: 'New message from your coach',
-            body: bodyPreview,
-          },
-          {category: 'push_messages'},
-      );
+    const ur = await admin.auth().getUserByEmail(toPlayerEmail).catch(() => null);
+    if (ur?.uid) {
+      await sendFcmToUids([ur.uid], { title: 'New message from your coach', body: bodyPreview }, {category: 'push_messages'});
     }
   } catch (e) {
-    logger.warn('[sendCoachPlayerMessage] push failed (non-fatal)', {
-      err: e instanceof Error ? e.message : String(e),
-    });
+    logger.warn('[sendCoachPlayerMessage] push failed (non-fatal)', e);
   }
 
-  return {
-    ok: true,
-    messageId: msgRef.id,
-    minorRecipient: false,
-    ccCount: 0,
-    warnNoCc: false,
-  };
+  return { ok: true, messageId: msgRef.id, minorRecipient: false, ccCount: 0, warnNoCc: false };
 });
 
 /**
@@ -473,237 +390,116 @@ exports.sendCoachPlayerMessage = onCall({region: REGION}, async (request) => {
  *
  * @param {{ clubId: string, channelId: string, text: string }} data
  */
-exports.sendChannelMessage = onCall({region: REGION}, async (request) => {
-  if (!request.auth) {
-    throw new HttpsError('unauthenticated', 'Sign in required.');
+async function validateChannelAndMemberAccess(channelRef, callerEmail, callerRole, clubId, request) {
+  const channelSnap = await channelRef.get();
+  if (!channelSnap.exists) throw new HttpsError('not-found', 'Channel not found.');
+  const channel = channelSnap.data() || {};
+  if (channel.channelStatus !== 'ACTIVE') {
+    throw new HttpsError('failed-precondition', 'Communications are locked pending SafeSport verification.');
   }
+
+  let channelType = typeof channel.channelType === 'string' ? channel.channelType.trim() : '';
+  if (!channelType && channelRef.id.startsWith('parent-lounge-')) channelType = 'parent_lounge';
+  if (channelType === 'parent_lounge' && callerRole !== 'parent') {
+    throw new HttpsError('permission-denied', 'Parent Circle is parent-peer only.');
+  }
+
+  let memberIds = Array.isArray(channel.memberIds) ? channel.memberIds.map((e) => normEmail(String(e))).filter(Boolean) : [];
+  const STAFF_INTERNAL_ROLES = new Set(['coach', 'director', 'registrar', 'super_admin', 'global_admin']);
+
+  if (channelType === 'staff_internal') {
+    if (!STAFF_INTERNAL_ROLES.has(callerRole)) {
+      throw new HttpsError('permission-denied', 'Staff internal channels are restricted to club staff.');
+    }
+    const channelTeamId = typeof channel.teamId === 'string' ? channel.teamId.trim() : '';
+    if (!channelTeamId) throw new HttpsError('failed-precondition', 'Staff channel missing team scope.');
+    const teamSnap = await db().collection('teams').doc(channelTeamId).get();
+    if (!teamSnap.exists) throw new HttpsError('not-found', 'Team not found.');
+    if (teamSnap.data().clubId !== clubId) throw new HttpsError('permission-denied', 'Channel mismatch.');
+
+    const tokenTeamId = request.auth.token.teamId || '';
+    const tokenClubId = request.auth.token.clubId || '';
+    let scoped = callerRole === 'super_admin' || callerRole === 'global_admin';
+    if (callerRole === 'coach') scoped = tokenTeamId === channelTeamId || memberIds.includes(callerEmail);
+    if (callerRole === 'director' || callerRole === 'registrar') scoped = tokenClubId === clubId;
+    if (!scoped) throw new HttpsError('permission-denied', 'Out of staff scope.');
+
+    if (!memberIds.includes(callerEmail)) {
+      await channelRef.update({ memberIds: admin.firestore.FieldValue.arrayUnion(callerEmail) });
+      memberIds.push(callerEmail);
+    }
+  } else if (!memberIds.includes(callerEmail)) {
+    throw new HttpsError('permission-denied', 'You are not a member of this channel.');
+  }
+
+  if (isStaffRole(callerRole) && channelType !== 'staff_internal') {
+    for (const memberEmail of memberIds) {
+      const memberSnap = await db().collection('users').doc(memberEmail).get();
+      if (memberSnap.exists && memberSnap.data().role === 'player' && resolveIsMinor(memberSnap.data())) {
+        throw new HttpsError('failed-precondition', 'SafeSport policy: staff cannot message in channels with minor athletes.');
+      }
+    }
+  }
+
+  if (channel.type === 'broadcast' && callerRole !== 'coach' && callerRole !== 'director' && callerRole !== 'super_admin') {
+    throw new HttpsError('permission-denied', 'Read-only: Announcements channel.');
+  }
+
+  return { channel, channelType, memberIds };
+}
+
+exports.sendChannelMessage = onCall({region: REGION}, async (request) => {
+  if (!request.auth) throw new HttpsError('unauthenticated', 'Sign in required.');
 
   const callerEmail = normEmail(request.auth.token.email);
   const callerUid = request.auth.uid;
   const callerRole = request.auth.token.role || 'player';
-
-  if (!callerEmail) {
-    throw new HttpsError('unauthenticated', 'Authenticated email is missing.');
-  }
+  if (!callerEmail) throw new HttpsError('unauthenticated', 'Authenticated email is missing.');
 
   const data = request.data || {};
   const clubId = typeof data.clubId === 'string' ? data.clubId.trim() : '';
   const channelId = typeof data.channelId === 'string' ? data.channelId.trim() : '';
   const rawText = typeof data.text === 'string' ? data.text.trim() : '';
 
-  if (!clubId || !channelId || !rawText) {
-    throw new HttpsError(
-        'invalid-argument',
-        'clubId, channelId, and text are required.',
-    );
-  }
-  if (rawText.length > 8000) {
-    throw new HttpsError(
-        'invalid-argument',
-        'Message too long (max 8000 characters).',
-    );
-  }
+  if (!clubId || !channelId || !rawText) throw new HttpsError('invalid-argument', 'clubId, channelId, and text are required.');
+  if (rawText.length > 8000) throw new HttpsError('invalid-argument', 'Message too long (max 8000 characters).');
 
-  // Resolve display name server-side (not trusted from client).
   let callerName = callerEmail.split('@')[0];
   const callerUserSnap = await db().collection('users').doc(callerEmail).get();
   if (callerUserSnap.exists) {
     const cd = callerUserSnap.data();
-    const pn = typeof cd.playerName === 'string' ? cd.playerName.trim() : '';
-    const dn = typeof cd.displayName === 'string' ? cd.displayName.trim() : '';
-    callerName = pn || dn || callerName;
+    callerName = cd.playerName?.trim() || cd.displayName?.trim() || callerName;
   }
 
-  // Load and validate the channel doc.
-  const channelRef = db()
-      .collection('clubs').doc(clubId)
-      .collection('channels').doc(channelId);
-  const channelSnap = await channelRef.get();
-  if (!channelSnap.exists) {
-    throw new HttpsError('not-found', 'Channel not found.');
-  }
-
-  if (channelSnap.data().channelStatus !== 'ACTIVE') {
-    throw new HttpsError('failed-precondition', 'Channel is not active.');
-  }
-  const channel = channelSnap.data();
-  if (channel.channelStatus !== 'ACTIVE') {
-    throw new HttpsError('failed-precondition', 'Communications are locked pending SafeSport verification.');
-  }
-  let channelType =
-      typeof channel.channelType === 'string' ? channel.channelType.trim() : '';
-  if (!channelType && channelId.startsWith('parent-lounge-')) {
-    channelType = 'parent_lounge';
-  }
-
-  if (channelType === 'parent_lounge' && callerRole !== 'parent') {
-    throw new HttpsError(
-        'permission-denied',
-        'Parent Circle is parent-peer only. Staff use Announcements or message your coach.',
-    );
-  }
-
-  /** @type {string[]} */
-  let memberIds = Array.isArray(channel.memberIds) ?
-    channel.memberIds.map((e) => normEmail(String(e))).filter(Boolean) :
-    [];
-
-  const STAFF_INTERNAL_ROLES = new Set([
-    'coach',
-    'director',
-    'registrar',
-    'super_admin',
-    'global_admin',
-  ]);
-
-  if (channelType === 'staff_internal') {
-    if (!STAFF_INTERNAL_ROLES.has(callerRole)) {
-      throw new HttpsError(
-          'permission-denied',
-          'Staff internal channels are restricted to club staff.',
-      );
-    }
-
-    const channelTeamId =
-        typeof channel.teamId === 'string' ? channel.teamId.trim() : '';
-    if (!channelTeamId) {
-      throw new HttpsError('failed-precondition', 'Staff channel missing team scope.');
-    }
-
-    const teamSnap = await db().collection('teams').doc(channelTeamId).get();
-    if (!teamSnap.exists) {
-      throw new HttpsError('not-found', 'Team not found.');
-    }
-    const teamClubId =
-        typeof teamSnap.data().clubId === 'string' ? teamSnap.data().clubId.trim() : '';
-    if (!teamClubId || teamClubId !== clubId) {
-      throw new HttpsError(
-          'permission-denied',
-          'Channel does not belong to the specified club.',
-      );
-    }
-
-    const tokenTeamId = request.auth.token.teamId || '';
-    const tokenClubId = request.auth.token.clubId || '';
-    let scoped = false;
-    if (callerRole === 'super_admin' || callerRole === 'global_admin') {
-      scoped = true;
-    } else if (callerRole === 'coach') {
-      scoped = tokenTeamId === channelTeamId || memberIds.includes(callerEmail);
-    } else if (callerRole === 'director' || callerRole === 'registrar') {
-      scoped = tokenClubId === clubId;
-    }
-
-    if (!scoped) {
-      throw new HttpsError(
-          'permission-denied',
-          'You do not have staff scope for this team channel.',
-      );
-    }
-
-    if (!memberIds.includes(callerEmail)) {
-      await channelRef.update({
-        memberIds: admin.firestore.FieldValue.arrayUnion(callerEmail),
-      });
-      memberIds = [...memberIds, callerEmail];
-    }
-  } else if (!memberIds.includes(callerEmail)) {
-    throw new HttpsError(
-        'permission-denied',
-        'You are not a member of this channel.',
-    );
-  }
-
-  // Sprint 4.2 — staff cannot participate in interactive channels that include minors.
-  if (isStaffRole(callerRole) && channelType !== 'staff_internal') {
-    for (const memberEmail of memberIds) {
-      const memberSnap = await db().collection('users').doc(memberEmail).get();
-      if (!memberSnap.exists) continue;
-      const memberData = memberSnap.data();
-      if (memberData.role === 'player' && resolveIsMinor(memberData)) {
-        throw new HttpsError(
-            'failed-precondition',
-            'SafeSport policy: staff cannot message in channels with minor athletes. ' +
-            'Use parent-targeted announcements instead.',
-        );
-      }
-    }
-  }
-
-  // Cross-tenant guard: verify the channel's team belongs to the declared club.
-  const channelTeamId =
-      typeof channel.teamId === 'string' ? channel.teamId.trim() : '';
-  if (channelTeamId) {
-    const teamSnap = await db().collection('teams').doc(channelTeamId).get();
-    if (teamSnap.exists) {
-      const teamClubId = teamSnap.data().clubId;
-      if (teamClubId && teamClubId !== clubId) {
-        throw new HttpsError(
-            'permission-denied',
-            'Channel does not belong to the specified club.',
-        );
-      }
-    }
-  }
-
-  // Broadcast channels: only staff may write.
-  if (
-    channel.type === 'broadcast' &&
-    callerRole !== 'coach' &&
-    callerRole !== 'director' &&
-    callerRole !== 'super_admin'
-  ) {
-    throw new HttpsError('permission-denied', 'Read-only: Announcements channel.');
-  }
+  const channelRef = db().collection('clubs').doc(clubId).collection('channels').doc(channelId);
+  const { channel, channelType } = await validateChannelAndMemberAccess(channelRef, callerEmail, callerRole, clubId, request);
 
   const now = admin.firestore.FieldValue.serverTimestamp();
   const safesportMonitored = channel.safesportMonitored === true;
-  let ccParentEmails = Array.isArray(channel.ccParentEmails) ?
-    channel.ccParentEmails.map((e) => normEmail(String(e))).filter(Boolean) :
-    [];
+  let ccParentEmails = Array.isArray(channel.ccParentEmails) ? channel.ccParentEmails.map((e) => normEmail(String(e))).filter(Boolean) : [];
 
-  // SafeSport resolution is now fully delegated to the server-side onChannelCreated trigger.
-  // Atomically write the message and audit record via Admin SDK.
-  const msgRef = db()
-      .collection('clubs').doc(clubId)
-      .collection('channels').doc(channelId)
-      .collection('messages').doc();
+  const msgRef = channelRef.collection('messages').doc();
   const batch = db().batch();
 
   batch.set(msgRef, {
-    senderId: callerUid,
-    senderName: callerName,
-    senderRole: callerRole,
-    text: rawText,
-    timestamp: now,
-    deleted: false,
-    safesportMonitored,
+    senderId: callerUid, senderName: callerName, senderRole: callerRole,
+    text: rawText, timestamp: now, deleted: false, safesportMonitored,
     ...(channelType ? {channelType} : {}),
     ...(safesportMonitored && channelType !== 'staff_internal' ? {ccParentEmails} : {}),
   });
 
   batch.set(db().collection('messaging_audit').doc(), {
-    action: 'channel_message',
-    channelId,
-    clubId,
-    teamId: channelTeamId || null,
-    channelType: channelType || null,
-    fromEmail: callerEmail,
-    safesportMonitored,
-    ccParentEmails: safesportMonitored && channelType !== 'staff_internal' ?
-      ccParentEmails :
-      [],
-    bodyLength: rawText.length,
-    actorUid: callerUid,
-    at: now,
+    action: 'channel_message', channelId, clubId,
+    teamId: channel.teamId || null, channelType: channelType || null,
+    fromEmail: callerEmail, safesportMonitored,
+    ccParentEmails: safesportMonitored && channelType !== 'staff_internal' ? ccParentEmails : [],
+    bodyLength: rawText.length, actorUid: callerUid, at: now,
   });
 
   await batch.commit();
 
   return {
-    ok: true,
-    messageId: msgRef.id,
-    safesportMonitored,
+    ok: true, messageId: msgRef.id, safesportMonitored,
     ccCount: safesportMonitored ? ccParentEmails.length : 0,
     warnNoCc: safesportMonitored && ccParentEmails.length === 0,
   };
@@ -830,143 +626,66 @@ exports.sendHouseholdMessage = onCall({region: REGION}, async (request) => {
 //     `additionalClaims.impersonatedBy = <adminEmail>` so downstream auditing
 //     can correlate sessions.
 
+async function resolveImpersonationTargetUser(targetUidIn, targetEmailIn, adminEmail) {
+  try {
+    if (targetUidIn) return await admin.auth().getUser(targetUidIn);
+    return await admin.auth().getUserByEmail(normEmail(targetEmailIn) || targetEmailIn);
+  } catch (err) {
+    logger.warn('impersonateUserFn: target lookup failed', { admin: adminEmail, targetEmailIn, targetUidIn, err: err?.message });
+    throw new HttpsError('not-found', 'Target user does not exist.');
+  }
+}
+
+async function writeImpersonationAuditLogs(adminEmail, targetEmail, targetUid, targetRole, callerUid) {
+  const auditPayload = {
+    timestamp: admin.firestore.FieldValue.serverTimestamp(),
+    admin: adminEmail, action: 'IMPERSONATE_USER', target: targetEmail || targetUid,
+    details: JSON.stringify({ targetUid, targetEmail: targetEmail || null, targetRole: targetRole || null, callerUid }).slice(0, 2000),
+  };
+  await Promise.all([
+    db().collection('security_audit').add(auditPayload),
+    db().collection('security_audits').add(auditPayload),
+  ]);
+}
+
 exports.impersonateUserFn = onCall({region: REGION}, async (request) => {
   const {email: adminEmail} = assertSuperAdmin(request);
   const data = request.data || {};
+  const targetEmailIn = typeof data.targetEmail === 'string' ? data.targetEmail.trim() : '';
+  const targetUidIn = typeof data.targetUid === 'string' ? data.targetUid.trim() : '';
+  if (!targetEmailIn && !targetUidIn) throw new HttpsError('invalid-argument', 'Provide targetEmail or targetUid.');
 
-  const targetEmailIn =
-      typeof data.targetEmail === 'string' ? data.targetEmail.trim() : '';
-  const targetUidIn =
-      typeof data.targetUid === 'string' ? data.targetUid.trim() : '';
-
-  if (!targetEmailIn && !targetUidIn) {
-    throw new HttpsError(
-        'invalid-argument',
-        'Provide targetEmail or targetUid.',
-    );
-  }
-
-  // Resolve the target Firebase Auth record authoritatively.
-  let userRecord;
-  try {
-    if (targetUidIn) {
-      userRecord = await admin.auth().getUser(targetUidIn);
-    } else {
-      userRecord = await admin.auth().getUserByEmail(
-          normEmail(targetEmailIn) || targetEmailIn,
-      );
-    }
-  } catch (err) {
-    logger.warn('impersonateUserFn: target lookup failed', {
-      admin: adminEmail,
-      targetEmailIn,
-      targetUidIn,
-      err: err && err.message,
-    });
-    throw new HttpsError('not-found', 'Target user does not exist.');
-  }
-
+  const userRecord = await resolveImpersonationTargetUser(targetUidIn, targetEmailIn, adminEmail);
   const targetUid = userRecord.uid;
   const targetEmail = normEmail(userRecord.email) || '';
 
-  // Self-impersonation has no valid use-case and pollutes audit history.
-  if (request.auth.uid === targetUid) {
-    throw new HttpsError(
-        'failed-precondition',
-        'You cannot impersonate your own account.',
-    );
-  }
+  if (request.auth.uid === targetUid) throw new HttpsError('failed-precondition', 'You cannot impersonate your own account.');
 
-  // Lateral-movement guard: a super_admin may never impersonate another
-  // super_admin (prevents collusion / privilege-chain obfuscation).
   let targetRole = '';
   if (targetEmail) {
-    try {
-      const userDocSnap = await db().collection('users').doc(targetEmail).get();
-      if (userDocSnap.exists) {
-        const raw = userDocSnap.data() || {};
-        targetRole = typeof raw.role === 'string' ? raw.role : '';
-      }
-    } catch (err) {
-      logger.warn('impersonateUserFn: users/{email} lookup failed', {
-        admin: adminEmail,
-        targetEmail,
-        err: err && err.message,
-      });
-    }
+    const userDocSnap = await db().collection('users').doc(targetEmail).get().catch(() => null);
+    if (userDocSnap?.exists) targetRole = typeof userDocSnap.data()?.role === 'string' ? userDocSnap.data().role : '';
   }
-  if (targetRole === 'super_admin') {
-    throw new HttpsError(
-        'permission-denied',
-        'Impersonating another super_admin is not permitted.',
-    );
-  }
+  if (targetRole === 'super_admin') throw new HttpsError('permission-denied', 'Impersonating another super_admin is not permitted.');
 
-  // Mint the custom token. The additionalClaims flow into the signed-in user's
-  // ID token so the client-side session is permanently identifiable as an
-  // impersonation session for the lifetime of that token.
-  // Sprint 2.6.1 — the banner is now derived from these claims on the client
-  // (no sessionStorage), so include target email + role so the high-visibility
-  // banner never requires a second Firestore round-trip.
-  const additionalClaims = {
-    impersonation: true,
-    impersonatedBy: adminEmail,
-    impersonatedEmail: targetEmail || null,
-    impersonatedRole: targetRole || null,
-    impersonationStartedAt: Date.now(),
-  };
+  const additionalClaims = { impersonation: true, impersonatedBy: adminEmail, impersonatedEmail: targetEmail || null, impersonatedRole: targetRole || null, impersonationStartedAt: Date.now() };
 
   let customToken;
   try {
-    customToken = await admin.auth().createCustomToken(
-        targetUid,
-        additionalClaims,
-    );
+    customToken = await admin.auth().createCustomToken(targetUid, additionalClaims);
   } catch (err) {
-    logger.error('impersonateUserFn: createCustomToken failed', {
-      admin: adminEmail,
-      targetUid,
-      err: err && err.message,
-    });
-    throw new HttpsError(
-        'internal',
-        'Failed to mint impersonation token.',
-    );
+    logger.error('impersonateUserFn: createCustomToken failed', err);
+    throw new HttpsError('internal', 'Failed to mint impersonation token.');
   }
 
   try {
-    await db().collection('security_audit').add({
-      timestamp: admin.firestore.FieldValue.serverTimestamp(),
-      admin: adminEmail,
-      action: 'IMPERSONATE_USER',
-      target: targetEmail || targetUid,
-      details: JSON.stringify({
-        targetUid,
-        targetEmail: targetEmail || null,
-        targetRole: targetRole || null,
-        callerUid: request.auth.uid,
-      }).slice(0, 2000),
-    });
+    await writeImpersonationAuditLogs(adminEmail, targetEmail, targetUid, targetRole, request.auth.uid);
   } catch (err) {
-    // An audit write failure must not leak a token without traceability.
-    logger.error('impersonateUserFn: audit write failed', {
-      admin: adminEmail,
-      targetUid,
-      err: err && err.message,
-    });
-    throw new HttpsError(
-        'internal',
-        'Audit logging failed; impersonation aborted.',
-    );
+    logger.error('impersonateUserFn: audit write failed', err);
+    throw new HttpsError('internal', 'Audit logging failed; impersonation aborted.');
   }
 
-  return {
-    token: customToken,
-    targetUid,
-    targetEmail: targetEmail || null,
-    targetRole: targetRole || null,
-    impersonatedBy: adminEmail,
-  };
+  return { token: customToken, targetUid, targetEmail: targetEmail || null, targetRole: targetRole || null, impersonatedBy: adminEmail };
 });
 
 // ── Sprint 2.7 — GDPR Purge (right-to-be-forgotten) ─────────────────────────
@@ -978,97 +697,52 @@ exports.impersonateUserFn = onCall({region: REGION}, async (request) => {
 // Writes a PURGE_USER_DATA audit record before the Auth deletion so the
 // audit trail survives even if the caller's token is invalidated.
 
-exports.purgeUserDataFn = onCall({region: REGION}, async (request) => {
-  const {email: adminEmail} = assertSuperAdmin(request);
-  const data = request.data || {};
-  const targetEmailIn =
-      typeof data.targetEmail === 'string' ? data.targetEmail.trim() : '';
-  const reason =
-      typeof data.reason === 'string' ? data.reason.trim().slice(0, 500) : '';
+async function executePurgeUserData(adminEmail, targetEmail, targetRole, reason) {
+  const auditPayload = {
+    timestamp: admin.firestore.FieldValue.serverTimestamp(),
+    admin: adminEmail, action: 'PURGE_USER_DATA', target: targetEmail,
+    details: JSON.stringify({ targetRole: targetRole || null, reason: reason || null }).slice(0, 2000),
+  };
+  await Promise.all([
+    db().collection('security_audit').add(auditPayload),
+    db().collection('security_audits').add(auditPayload),
+  ]);
 
-  const targetEmail = normEmail(targetEmailIn);
-  if (!targetEmail) {
-    throw new HttpsError('invalid-argument', 'targetEmail is required.');
-  }
-  if (targetEmail === adminEmail) {
-    throw new HttpsError(
-        'failed-precondition',
-        'You cannot purge your own account.',
-    );
-  }
-
-  // Lateral-movement guard: super_admin → super_admin purge is denied.
-  let targetRole = '';
-  try {
-    const userDocSnap = await db().collection('users').doc(targetEmail).get();
-    if (userDocSnap.exists) {
-      const raw = userDocSnap.data() || {};
-      targetRole = typeof raw.role === 'string' ? raw.role : '';
-    }
-  } catch (err) {
-    logger.warn('purgeUserDataFn: users lookup failed', {
-      admin: adminEmail,
-      targetEmail,
-      err: err && err.message,
-    });
-  }
-  if (targetRole === 'super_admin') {
-    throw new HttpsError(
-        'permission-denied',
-        'Purging another super_admin is not permitted.',
-    );
-  }
-
-  // Audit FIRST so the action is recorded even if mid-batch we fail.
-  try {
-    await db().collection('security_audit').add({
-      timestamp: admin.firestore.FieldValue.serverTimestamp(),
-      admin: adminEmail,
-      action: 'PURGE_USER_DATA',
-      target: targetEmail,
-      details: JSON.stringify({
-        targetRole: targetRole || null,
-        reason: reason || null,
-      }).slice(0, 2000),
-    });
-  } catch (err) {
-    logger.error('purgeUserDataFn: audit write failed', {
-      admin: adminEmail,
-      targetEmail,
-      err: err && err.message,
-    });
-    throw new HttpsError('internal', 'Audit logging failed; purge aborted.');
-  }
-
-  // Delete users/{email} and any lookup rows atomically.
   const batch = db().batch();
   batch.delete(db().collection('users').doc(targetEmail));
   batch.delete(db().collection('player_lookup').doc(targetEmail));
   batch.delete(db().collection('coach_lookup').doc(targetEmail));
   batch.delete(db().collection('registrar_lookup').doc(targetEmail));
-  try {
-    await batch.commit();
-  } catch (err) {
-    logger.error('purgeUserDataFn: Firestore batch failed', {
-      admin: adminEmail,
-      targetEmail,
-      err: err && err.message,
-    });
-    throw new HttpsError('internal', 'Firestore purge failed.');
-  }
+  await batch.commit();
 
-  // Best-effort Auth deletion: ignore if the user never completed signup.
   try {
     const rec = await admin.auth().getUserByEmail(targetEmail);
     await admin.auth().deleteUser(rec.uid);
   } catch (err) {
-    if (err && err.code !== 'auth/user-not-found') {
-      logger.warn('purgeUserDataFn: Auth deleteUser non-fatal', {
-        admin: adminEmail,
-        targetEmail,
-        err: err && err.message,
-      });
-    }
+    if (err?.code !== 'auth/user-not-found') logger.warn('purgeUserDataFn: Auth deleteUser non-fatal', err);
+  }
+}
+
+exports.purgeUserDataFn = onCall({region: REGION}, async (request) => {
+  const {email: adminEmail} = assertSuperAdmin(request);
+  const data = request.data || {};
+  const targetEmailIn = typeof data.targetEmail === 'string' ? data.targetEmail.trim() : '';
+  const reason = typeof data.reason === 'string' ? data.reason.trim().slice(0, 500) : '';
+
+  const targetEmail = normEmail(targetEmailIn);
+  if (!targetEmail) throw new HttpsError('invalid-argument', 'targetEmail is required.');
+  if (targetEmail === adminEmail) throw new HttpsError('failed-precondition', 'You cannot purge your own account.');
+
+  let targetRole = '';
+  const userDocSnap = await db().collection('users').doc(targetEmail).get().catch(() => null);
+  if (userDocSnap?.exists) targetRole = typeof userDocSnap.data()?.role === 'string' ? userDocSnap.data().role : '';
+  if (targetRole === 'super_admin') throw new HttpsError('permission-denied', 'Purging another super_admin is not permitted.');
+
+  try {
+    await executePurgeUserData(adminEmail, targetEmail, targetRole, reason);
+  } catch (err) {
+    logger.error('purgeUserDataFn: purge failed', err);
+    throw new HttpsError('internal', 'Purge failed: ' + err.message);
   }
 
   return {ok: true, targetEmail};
@@ -1081,123 +755,80 @@ exports.purgeUserDataFn = onCall({region: REGION}, async (request) => {
  * Parent: digital COPPA / liability signature — stamps household + coppaSigned.
  * Creates a household if the parent has none (requires clubId on users/{email}).
  */
-exports.parentSignCoppaWaiver = onCall({region: REGION}, async (request) => {
-  if (!request.auth) {
-    throw new HttpsError('unauthenticated', 'Sign in required.');
-  }
-  const email = normEmail(request.auth.token.email);
-  if (!email) {
-    throw new HttpsError('invalid-argument', 'No email on session.');
-  }
-  const uRef = db().collection('users').doc(email);
-  const uSnap = await uRef.get();
-  if (!uSnap.exists) {
-    throw new HttpsError('not-found', 'User profile not found.');
-  }
-  const u = uSnap.data();
-  if (u.role !== 'parent') {
-    throw new HttpsError(
-        'permission-denied',
-        'Only parent accounts may sign the household waiver.',
-    );
-  }
-  const clubId = typeof u.clubId === 'string' ? u.clubId.trim() : '';
-  if (!clubId) {
-    throw new HttpsError(
-        'failed-precondition',
-        'Your profile is missing a club. Complete organization setup first.',
-    );
-  }
-  const now = admin.firestore.FieldValue.serverTimestamp();
-  let hid = typeof u.householdId === 'string' ? u.householdId.trim() : '';
-  if (!hid) {
-    hid = db().collection('households').doc().id;
-    const hRef = db().collection('households').doc(hid);
-    const pe = Array.isArray(u.playerEmails) ? u.playerEmails : [];
-    const pn = Array.isArray(u.playerNames) ? u.playerNames : [];
-    await hRef.set({
-      clubId,
-      parentEmails: [email],
-      playerEmails: [...new Set([...pe].map((x) => normEmail(/** @type {string} */(x))).filter(Boolean))],
-      playerNames: [...new Set([...pn].filter((x) => typeof x === 'string' && x.trim()))],
-      coppaSigned: true,
-      coppaSignedAt: now,
-      primaryParentUid: request.auth.uid,
-      createdAt: now,
-      updatedAt: now,
-    });
-    await uRef.set({householdId: hid}, {merge: true});
-    // Fast-path: propagate householdId into parent's JWT immediately.
-    // syncUserClaims only fires on role/clubId changes, so a householdId
-    // write from this callable would otherwise not propagate until the next
-    // role/clubId update.
-    try {
-      const parentRec = await admin.auth().getUser(request.auth.uid);
-      const existingClaims = parentRec.customClaims || {};
-      await admin.auth().setCustomUserClaims(request.auth.uid, {...existingClaims, householdId: hid});
-    } catch (claimErr) {
-      logger.warn('[parentSignCoppaWaiver] householdId claim fast-path failed (non-fatal)', claimErr.message);
-    }
-    // W2: provision Parent Lounge channels for any children already in the household.
-    try {
-      const childEmailsList = pe.map((x) => normEmail(String(x))).filter(Boolean);
-      await provisionLoungesForParentHousehold({
-        parentEmail: email,
-        childEmails: childEmailsList,
-        parentClubId: clubId,
-      });
-    } catch (loungeErr) {
-      logger.warn('[parentSignCoppaWaiver] lounge provision failed (non-fatal)', {
-        err: loungeErr instanceof Error ? loungeErr.message : String(loungeErr),
-      });
-    }
-    return {ok: true, householdId: hid, createdHousehold: true};
-  }
-  const hRef = db().collection('households').doc(hid);
-  const hSnap = await hRef.get();
-  if (!hSnap.exists) {
-    throw new HttpsError('not-found', 'Household not found. Contact support.');
-  }
-  const hData = hSnap.data();
-  if (hData.clubId !== clubId) {
-    throw new HttpsError('permission-denied', 'Household club does not match your profile.');
-  }
-  const parents = new Set(
-      [...(hData.parentEmails || []), email].map((x) => normEmail(/** @type {string} */(x))).filter(Boolean),
-  );
-  await hRef.set(
-      {
-        parentEmails: [...parents],
-        coppaSigned: true,
-        coppaSignedAt: now,
-        primaryParentUid: request.auth.uid,
-        updatedAt: now,
-      },
-      {merge: true},
-  );
-  // Fast-path: same as creation path — propagate householdId into parent's JWT claims.
+async function createParentHousehold(email, clubId, u, request, now) {
+  const hid = db().collection('households').doc().id;
+  const pe = Array.isArray(u.playerEmails) ? u.playerEmails : [];
+  const pn = Array.isArray(u.playerNames) ? u.playerNames : [];
+  await db().collection('households').doc(hid).set({
+    clubId, parentEmails: [email],
+    playerEmails: [...new Set([...pe].map((x) => normEmail(String(x))).filter(Boolean))],
+    playerNames: [...new Set([...pn].filter((x) => typeof x === 'string' && x.trim()))],
+    coppaSigned: true, coppaSignedAt: now, primaryParentUid: request.auth.uid, createdAt: now, updatedAt: now,
+  });
+  await db().collection('users').doc(email).set({householdId: hid}, {merge: true});
   try {
     const parentRec = await admin.auth().getUser(request.auth.uid);
     const existingClaims = parentRec.customClaims || {};
     await admin.auth().setCustomUserClaims(request.auth.uid, {...existingClaims, householdId: hid});
-  } catch (claimErr) {
-    logger.warn('[parentSignCoppaWaiver] householdId claim fast-path failed (non-fatal)', claimErr.message);
+  } catch (e) {
+    logger.warn('[parentSignCoppaWaiver] fast-path failed', e);
   }
-  // W2: provision/upsert Parent Lounge channels for all children in the household.
   try {
-    const childEmailsList = (hData.playerEmails || [])
-        .map((x) => normEmail(String(x)))
-        .filter(Boolean);
-    await provisionLoungesForParentHousehold({
-      parentEmail: email,
-      childEmails: childEmailsList,
-      parentClubId: clubId,
-    });
-  } catch (loungeErr) {
-    logger.warn('[parentSignCoppaWaiver] lounge provision failed (non-fatal)', {
-      err: loungeErr instanceof Error ? loungeErr.message : String(loungeErr),
-    });
+    await provisionLoungesForParentHousehold({ parentEmail: email, childEmails: pe.map((x) => normEmail(String(x))).filter(Boolean), parentClubId: clubId });
+  } catch (e) {
+    logger.warn('[parentSignCoppaWaiver] lounge failed', e);
   }
+  return hid;
+}
+
+async function updateParentHousehold(email, clubId, hid, request, now) {
+  const hRef = db().collection('households').doc(hid);
+  const hSnap = await hRef.get();
+  if (!hSnap.exists) throw new HttpsError('not-found', 'Household not found.');
+  const hData = hSnap.data() || {};
+  if (hData.clubId !== clubId) throw new HttpsError('permission-denied', 'Household club mismatch.');
+
+  const parents = new Set([...(hData.parentEmails || []), email].map((x) => normEmail(String(x))).filter(Boolean));
+  await hRef.set({ parentEmails: [...parents], coppaSigned: true, coppaSignedAt: now, primaryParentUid: request.auth.uid, updatedAt: now }, {merge: true});
+
+  try {
+    const parentRec = await admin.auth().getUser(request.auth.uid);
+    const existingClaims = parentRec.customClaims || {};
+    await admin.auth().setCustomUserClaims(request.auth.uid, {...existingClaims, householdId: hid});
+  } catch (e) {
+    logger.warn('[parentSignCoppaWaiver] fast-path failed', e);
+  }
+  try {
+    const childEmailsList = (hData.playerEmails || []).map((x) => normEmail(String(x))).filter(Boolean);
+    await provisionLoungesForParentHousehold({ parentEmail: email, childEmails: childEmailsList, parentClubId: clubId });
+  } catch (e) {
+    logger.warn('[parentSignCoppaWaiver] lounge failed', e);
+  }
+}
+
+exports.parentSignCoppaWaiver = onCall({region: REGION}, async (request) => {
+  if (!request.auth) throw new HttpsError('unauthenticated', 'Sign in required.');
+  const email = normEmail(request.auth.token.email);
+  if (!email) throw new HttpsError('invalid-argument', 'No email on session.');
+
+  const uRef = db().collection('users').doc(email);
+  const uSnap = await uRef.get();
+  if (!uSnap.exists) throw new HttpsError('not-found', 'User profile not found.');
+  const u = uSnap.data() || {};
+  if (u.role !== 'parent') throw new HttpsError('permission-denied', 'Only parent accounts may sign the waiver.');
+
+  const clubId = typeof u.clubId === 'string' ? u.clubId.trim() : '';
+  if (!clubId) throw new HttpsError('failed-precondition', 'Your profile is missing a club.');
+
+  const now = admin.firestore.FieldValue.serverTimestamp();
+  let hid = typeof u.householdId === 'string' ? u.householdId.trim() : '';
+
+  if (!hid) {
+    hid = await createParentHousehold(email, clubId, u, request, now);
+    return {ok: true, householdId: hid, createdHousehold: true};
+  }
+
+  await updateParentHousehold(email, clubId, hid, request, now);
   return {ok: true, householdId: hid, createdHousehold: false};
 });
 
@@ -1206,466 +837,198 @@ exports.parentSignCoppaWaiver = onCall({region: REGION}, async (request) => {
  * Requires prior COPPA signature.
  * Optional `teamInviteCode`: links the child to a team via `teams.inviteCode`.
  */
+async function validateParentProvisioningRequest(request, rawCallsign, childName) {
+  const operSlug = normOperativeCallsignSlug(rawCallsign);
+  if (!rawCallsign || !childName) throw new HttpsError('invalid-argument', 'operativeCallsign and childName are required.');
+  if (operSlug.length < 2 || operSlug.length > 32) throw new HttpsError('invalid-argument', 'Operative Callsign must yield 2–32 letters/numbers.');
+
+  const childEmail = normEmail(`${operSlug}@operative.local`);
+  if (!childEmail) throw new HttpsError('invalid-argument', 'Invalid operative proxy email.');
+  if (!request.auth) throw new HttpsError('unauthenticated', 'Sign in required.');
+
+  const parentEmail = normEmail(request.auth.token.email);
+  if (!parentEmail || childEmail === parentEmail) throw new HttpsError('invalid-argument', 'Child email must differ from parent email.');
+
+  const pSnap = await db().collection('users').doc(parentEmail).get();
+  if (!pSnap.exists || pSnap.data()?.role !== 'parent') throw new HttpsError('permission-denied', 'Only parent accounts may provision operatives.');
+
+  const pu = pSnap.data() || {};
+  const hid = typeof pu.householdId === 'string' ? pu.householdId.trim() : '';
+  if (!hid) throw new HttpsError('failed-precondition', 'Sign the household waiver first.');
+
+  const hSnap = await db().collection('households').doc(hid).get();
+  if (!hSnap.exists || !hSnap.data()?.coppaSigned) throw new HttpsError('failed-precondition', 'COPPA waiver is not on file.');
+
+  const h = hSnap.data() || {};
+  if (!(Array.isArray(h.parentEmails) ? h.parentEmails.map(normEmail) : []).includes(parentEmail)) {
+    throw new HttpsError('permission-denied', 'Not authorized parent.');
+  }
+
+  const clubId = typeof pu.clubId === 'string' ? pu.clubId.trim() : '';
+  if (!clubId || h.clubId !== clubId) throw new HttpsError('failed-precondition', 'Club scope mismatch.');
+
+  if ((h.playerEmails || []).map(normEmail).includes(childEmail)) {
+    throw new HttpsError('already-exists', 'This athlete email is already in your household.');
+  }
+
+  return { operSlug, childEmail, parentEmail, pu, hid, h, clubId };
+}
+
 exports.parentProvisionOperative = onCall({region: REGION}, async (request) => {
   const data = request.data || {};
-  const childName =
-    typeof data.childName === 'string' ? data.childName.trim().slice(0, 200) : '';
-  const rawCallsign =
-    typeof data.operativeCallsign === 'string' ? data.operativeCallsign.trim().slice(0, 200) : '';
-  const operSlug = normOperativeCallsignSlug(rawCallsign);
-  if (!rawCallsign || !childName) {
-    throw new HttpsError(
-        'invalid-argument',
-        'operativeCallsign and childName are required.',
-    );
-  }
-  if (operSlug.length < 2 || operSlug.length > 32) {
-    throw new HttpsError(
-        'invalid-argument',
-        'Operative Callsign must yield 2\u201332 letters or numbers (after normalizing).',
-    );
-  }
-  const childEmail = normEmail(`${operSlug}@operative.local`);
-  if (!childEmail) {
-    throw new HttpsError('invalid-argument', 'Invalid operative proxy email.');
-  }
-  if (!request.auth) {
-    throw new HttpsError('unauthenticated', 'Sign in required.');
-  }
-  const parentEmail = normEmail(request.auth.token.email);
-  if (!parentEmail) {
-    throw new HttpsError('invalid-argument', 'No email on session.');
-  }
-  if (childEmail === parentEmail) {
-    throw new HttpsError('invalid-argument', 'Child email must differ from parent email.');
-  }
+  const childName = typeof data.childName === 'string' ? data.childName.trim().slice(0, 200) : '';
+  const rawCallsign = typeof data.operativeCallsign === 'string' ? data.operativeCallsign.trim().slice(0, 200) : '';
+
+  const { operSlug, childEmail, parentEmail, pu, hid, h, clubId } = await validateParentProvisioningRequest(request, rawCallsign, childName);
+
   const rawTeamCode = data.teamInviteCode;
-  const teamCodeNorm =
-    typeof rawTeamCode === 'string' && rawTeamCode.trim() ?
-      normTeamInviteCode(rawTeamCode) :
-      '';
-  const pRef = db().collection('users').doc(parentEmail);
-  const pSnap = await pRef.get();
-  if (!pSnap.exists || pSnap.data().role !== 'parent') {
-    throw new HttpsError('permission-denied', 'Only parent accounts may provision operatives.');
-  }
-  const pu = pSnap.data();
-  const hid =
-    typeof pu.householdId === 'string' ? pu.householdId.trim() : '';
-  if (!hid) {
-    throw new HttpsError(
-        'failed-precondition',
-        'Sign the household waiver before generating operative credentials.',
-    );
-  }
-  const hRef = db().collection('households').doc(hid);
-  const hSnap = await hRef.get();
-  if (!hSnap.exists) {
-    throw new HttpsError('not-found', 'Household not found.');
-  }
-  const h = hSnap.data();
-  if (!h.coppaSigned) {
-    throw new HttpsError(
-        'failed-precondition',
-        'COPPA waiver is not on file. Sign the waiver first.',
-    );
-  }
-  const parentList = Array.isArray(h.parentEmails) ? h.parentEmails.map(normEmail) : [];
-  if (!parentList.includes(parentEmail)) {
-    throw new HttpsError('permission-denied', 'You are not an authorized parent on this household.');
-  }
-  const clubId = typeof pu.clubId === 'string' ? pu.clubId.trim() : '';
-  if (!clubId || h.clubId !== clubId) {
-    throw new HttpsError('failed-precondition', 'Club scope mismatch.');
-  }
-  const existingPlayers = (h.playerEmails || []).map(normEmail);
-  if (existingPlayers.includes(childEmail)) {
-    throw new HttpsError(
-        'already-exists',
-        'This athlete email is already in your household.',
-    );
-  }
-  let teamRef = null;
-  let teamIdForUser = null;
+  const teamCodeNorm = typeof rawTeamCode === 'string' && rawTeamCode.trim() ? normTeamInviteCode(rawTeamCode) : '';
+
+  let teamRef = null, teamIdForUser = null;
   if (teamCodeNorm) {
-    const tq = await db()
-        .collection('teams')
-        .where('inviteCode', '==', teamCodeNorm)
-        .limit(2)
-        .get();
-    if (tq.empty) {
-      throw new HttpsError(
-          'not-found',
-          'No team matches this team dispatch code. Check with the coach and try again.',
-      );
-    }
-    if (tq.size > 1) {
-      throw new HttpsError(
-          'failed-precondition',
-          'Multiple teams share this code. Contact the club to resolve.',
-      );
-    }
-    const tdoc = tq.docs[0];
-    const tData = tdoc.data();
-    const tidClub =
-      typeof tData.clubId === 'string' ? tData.clubId.trim() : '';
-    if (tidClub !== clubId) {
-      throw new HttpsError(
-          'permission-denied',
-          'That team is not in your club. Use a code from your organization.',
-      );
-    }
-    teamRef = tdoc.ref;
-    teamIdForUser = tdoc.id;
+    const res = await resolveTeamByInviteCodeForClub(teamCodeNorm, clubId);
+    teamRef = res.teamRef;
+    teamIdForUser = res.teamId;
   }
-  const parentTeamIdRaw = typeof pu.teamId === 'string' ? pu.teamId.trim() : '';
-  const currentTeamId = teamIdForUser || (parentTeamIdRaw ? parentTeamIdRaw : null);
+
+  const currentTeamId = teamIdForUser || (typeof pu.teamId === 'string' && pu.teamId.trim() ? pu.teamId.trim() : null);
   const dispatchCode = crypto.randomBytes(4).toString('hex').toUpperCase();
   const now = admin.firestore.FieldValue.serverTimestamp();
+
   let childUid;
   try {
     const existing = await admin.auth().getUserByEmail(childEmail);
     childUid = existing.uid;
   } catch (e) {
-    if (e.code !== 'auth/user-not-found') {
-      throw e;
-    }
-    const rec = await admin.auth().createUser({
-      email: childEmail,
-      password: crypto.randomBytes(32).toString('hex'),
-      displayName: childName,
-    });
-    childUid = rec.uid;
+    if (e.code !== 'auth/user-not-found') throw e;
+    childUid = (await admin.auth().createUser({ email: childEmail, password: crypto.randomBytes(32).toString('hex'), displayName: childName })).uid;
   }
+
   const uRef = db().collection('users').doc(childEmail);
   const uExisting = await uRef.get();
-  if (uExisting.exists) {
-    const uData = uExisting.data() || {};
-    const role = uData.role;
-    if (role && role !== 'player') {
-      throw new HttpsError(
-          'failed-precondition',
-          'This email is already in use with a different role. Contact your club.',
-      );
-    }
-    const exHid = typeof uData.householdId === 'string' ? uData.householdId.trim() : '';
-    if (exHid && exHid !== hid) {
-      throw new HttpsError(
-          'already-exists',
-          'That Operative Callsign is already in use. Choose a different one.',
-      );
-    }
+  if (uExisting.exists && uExisting.data()?.role && uExisting.data().role !== 'player') {
+    throw new HttpsError('failed-precondition', 'Email in use with different role.');
   }
-  const mergedPlayers = [...new Set([...existingPlayers, childEmail])];
-  const nameSet = new Set(
-      Array.isArray(h.playerNames) ? h.playerNames.filter((x) => typeof x === 'string') : [],
-  );
+
+  const mergedPlayers = [...new Set([...((h.playerEmails || []).map(normEmail)), childEmail])];
+  const nameSet = new Set(Array.isArray(h.playerNames) ? h.playerNames.filter((x) => typeof x === 'string') : []);
   nameSet.add(childName);
+
   const userPayload = {
-    uid: childUid,
-    role: 'player',
-    clubId,
-    householdId: hid,
-    playerName: childName,
-    operativeCallsign: rawCallsign,
-    operativeCallsignSlug: operSlug,
-    parentProvisioned: true,
-    parentProvisionerEmail: parentEmail,
-    updatedAt: now,
+    uid: childUid, role: 'player', clubId, householdId: hid, playerName: childName,
+    operativeCallsign: rawCallsign, operativeCallsignSlug: operSlug, parentProvisioned: true,
+    parentProvisionerEmail: parentEmail, updatedAt: now,
+    ...(teamIdForUser ? {teamId: teamIdForUser} : {}),
   };
-  const existingVpc = uExisting.exists ?
-    (typeof uExisting.data()?.vpcStatus === 'string' ?
-      uExisting.data().vpcStatus :
-      '') :
-    '';
-  if (existingVpc !== 'verified') {
-    userPayload.isMinor = true;
-    userPayload.vpcStatus = 'pending_parent';
-    userPayload.coppaStatus = 'pending';
+  if ((uExisting.exists ? uExisting.data()?.vpcStatus : '') !== 'verified') {
+    userPayload.isMinor = true; userPayload.vpcStatus = 'pending_parent'; userPayload.coppaStatus = 'pending';
   }
-  if (teamIdForUser) {
-    userPayload.teamId = teamIdForUser;
-  }
-  const prevPE = (h.playerEmails || [])
-      .map((x) => normEmail(String(x || '')))
-      .filter(Boolean);
-  const prevCalls = Array.isArray(h.playerCallsigns) ? h.playerCallsigns : [];
-  const callByEmail = new Map();
-  for (let i = 0; i < prevPE.length; i++) {
-    const em = prevPE[i];
-    const c =
-        prevCalls[i] != null && String(prevCalls[i]).trim() ?
-          String(prevCalls[i]).trim() :
-          em && em.endsWith('@operative.local') ?
-            em.split('@')[0] :
-            '';
-    callByEmail.set(em, c);
-  }
-  callByEmail.set(childEmail, rawCallsign);
-  const playerCallsigns = mergedPlayers.map((em) => {
-    if (!em) {
-      return '';
-    }
-    const fromMap = callByEmail.get(em);
-    if (fromMap != null && String(fromMap).trim()) {
-      return String(fromMap).trim();
-    }
-    return em.endsWith('@operative.local') ? em.split('@')[0] : '';
-  });
-  const dispRef = db().collection('operative_dispatches').doc();
-  const plRef = db().collection('player_lookup').doc(childEmail);
+
   const batch = db().batch();
   batch.set(uRef, userPayload, {merge: true});
-  const householdParents = (h.parentEmails || [])
-      .map((x) => normEmail(String(x || '')))
-      .filter(Boolean);
-  if (!householdParents.includes(parentEmail)) {
-    householdParents.push(parentEmail);
-  }
-  batch.set(plRef, {
-    clubId,
-    teamId: currentTeamId,
-    playerName: childName,
-    role: 'player',
-    householdId: hid,
-    parentEmails: householdParents,
-    parentProvisionerEmail: parentEmail,
-    vpcStatus: userPayload.vpcStatus || 'pending_parent',
+  batch.set(db().collection('player_lookup').doc(childEmail), {
+    clubId, teamId: currentTeamId, playerName: childName, role: 'player', householdId: hid,
+    parentEmails: [...new Set([...(Array.isArray(h.parentEmails) ? h.parentEmails.map(normEmail) : []), parentEmail])],
+    parentProvisionerEmail: parentEmail, vpcStatus: userPayload.vpcStatus || 'pending_parent',
   }, {merge: true});
-  batch.set(
-      hRef,
-      {
-        playerEmails: mergedPlayers,
-        playerNames: [...nameSet],
-        playerCallsigns,
-        updatedAt: now,
-      },
-      {merge: true},
-  );
-  batch.set(dispRef, {
-    householdId: hid,
-    childEmail,
-    childName,
-    dispatchCode,
-    childUid,
-    parentUid: request.auth.uid,
-    parentEmail,
-    ...(teamIdForUser ? {teamId: teamIdForUser, teamInviteCode: teamCodeNorm} : {}),
-    createdAt: now,
+  batch.set(db().collection('households').doc(hid), { playerEmails: mergedPlayers, playerNames: [...nameSet], updatedAt: now }, {merge: true});
+  batch.set(db().collection('operative_dispatches').doc(), {
+    householdId: hid, childEmail, childName, dispatchCode, childUid, parentUid: request.auth.uid, parentEmail,
+    ...(teamIdForUser ? {teamId: teamIdForUser, teamInviteCode: teamCodeNorm} : {}), createdAt: now,
   });
+
   if (teamRef) {
-    batch.update(teamRef, {
-      playerUids: admin.firestore.FieldValue.arrayUnion(childUid),
-      updatedAt: now,
-    });
-    batch.set(db().collection('rosters').doc(teamIdForUser), {
-      players: admin.firestore.FieldValue.arrayUnion(childName),
-    }, {merge: true});
+    batch.update(teamRef, { playerUids: admin.firestore.FieldValue.arrayUnion(childUid), updatedAt: now });
+    batch.set(db().collection('rosters').doc(teamIdForUser), { players: admin.firestore.FieldValue.arrayUnion(childName) }, {merge: true});
   }
   await batch.commit();
-  // W2: when a child is linked to a team, provision the Parent Lounge for this child.
-  // The users/{childEmail} doc with teamId was just committed, so the helper can resolve it.
+
   if (teamIdForUser) {
-    try {
-      await provisionLoungesForParentHousehold({
-        parentEmail,
-        childEmails: [childEmail],
-        parentClubId: clubId,
-      });
-    } catch (loungeErr) {
-      logger.warn('[parentProvisionOperative] lounge provision failed (non-fatal)', {
-        err: loungeErr instanceof Error ? loungeErr.message : String(loungeErr),
-      });
-    }
+    await provisionLoungesForParentHousehold({ parentEmail, childEmails: [childEmail], parentClubId: clubId }).catch((e) => logger.warn('[parentProvisionOperative] lounge failed', e));
   }
-  return {
-    ok: true,
-    householdId: hid,
-    childEmail,
-    dispatchCode,
-    teamLinked: Boolean(teamIdForUser),
-    teamId: teamIdForUser || null,
-    message:
-      'Share this dispatch code with your athlete. It is also stored server-side for Operative sign-in.',
-  };
+
+  return { ok: true, householdId: hid, childEmail, dispatchCode, teamLinked: Boolean(teamIdForUser), teamId: teamIdForUser || null, message: 'Share this dispatch code with your athlete.' };
 });
 
 /**
  * Parent: link an existing household operative to a team via dispatch code.
  * Requires COPPA signature; does not re-provision Auth or dispatch credentials.
  */
-exports.parentLinkOperativeToTeam = onCall({region: REGION}, async (request) => {
+async function validateParentLinkRequest(request, data) {
   const actor = assertParent(request);
-  const data = request.data || {};
-  const childEmailRaw = normEmail(data.childEmail);
-  const rawCallsign =
-      typeof data.operativeCallsign === 'string' ?
-        data.operativeCallsign.trim().slice(0, 200) :
-        '';
-  let childEmail = childEmailRaw;
+  const rawCallsign = typeof data.operativeCallsign === 'string' ? data.operativeCallsign.trim().slice(0, 200) : '';
+  let childEmail = normEmail(data.childEmail);
   if (!childEmail && rawCallsign) {
     const operSlug = normOperativeCallsignSlug(rawCallsign);
-    if (operSlug.length < 2) {
-      throw new HttpsError(
-          'invalid-argument',
-          'Operative Callsign must yield at least two letters or numbers.',
-      );
-    }
-    childEmail = normEmail(`${operSlug}@operative.local`);
+    if (operSlug.length >= 2) childEmail = normEmail(`${operSlug}@operative.local`);
   }
-  if (!childEmail || !childEmail.endsWith('@operative.local')) {
-    throw new HttpsError(
-        'invalid-argument',
-        'childEmail or operativeCallsign is required.',
-    );
-  }
-  const teamCodeNorm = normTeamInviteCode(data.teamInviteCode);
+  if (!childEmail || !childEmail.endsWith('@operative.local')) throw new HttpsError('invalid-argument', 'childEmail or operativeCallsign is required.');
+
   const parentEmail = actor.email;
-  const pRef = db().collection('users').doc(parentEmail);
-  const pSnap = await pRef.get();
-  if (!pSnap.exists || pSnap.data().role !== 'parent') {
-    throw new HttpsError('permission-denied', 'Only parent accounts may link operatives.');
+  const pSnap = await db().collection('users').doc(parentEmail).get();
+  if (!pSnap.exists || pSnap.data()?.role !== 'parent') throw new HttpsError('permission-denied', 'Only parent accounts may link operatives.');
+
+  const pu = pSnap.data() || {};
+  const hid = typeof pu.householdId === 'string' ? pu.householdId.trim() : '';
+  if (!hid) throw new HttpsError('failed-precondition', 'Sign the waiver first.');
+
+  const hSnap = await db().collection('households').doc(hid).get();
+  if (!hSnap.exists || !hSnap.data()?.coppaSigned) throw new HttpsError('failed-precondition', 'COPPA waiver not on file.');
+
+  const h = hSnap.data() || {};
+  if (!(Array.isArray(h.parentEmails) ? h.parentEmails.map(normEmail) : []).includes(parentEmail)) {
+    throw new HttpsError('permission-denied', 'Not authorized parent.');
   }
-  const pu = pSnap.data();
-  const hid =
-      typeof pu.householdId === 'string' ? pu.householdId.trim() : '';
-  if (!hid) {
-    throw new HttpsError(
-        'failed-precondition',
-        'Sign the household waiver before linking operatives to a team.',
-    );
-  }
-  const hRef = db().collection('households').doc(hid);
-  const hSnap = await hRef.get();
-  if (!hSnap.exists) {
-    throw new HttpsError('not-found', 'Household not found.');
-  }
-  const h = hSnap.data();
-  if (!h.coppaSigned) {
-    throw new HttpsError(
-        'failed-precondition',
-        'COPPA waiver is not on file. Sign the waiver first.',
-    );
-  }
-  const parentList = Array.isArray(h.parentEmails) ? h.parentEmails.map(normEmail) : [];
-  if (!parentList.includes(parentEmail)) {
-    throw new HttpsError('permission-denied', 'You are not an authorized parent on this household.');
-  }
+
   const clubId = typeof pu.clubId === 'string' ? pu.clubId.trim() : '';
-  if (!clubId || h.clubId !== clubId) {
-    throw new HttpsError('failed-precondition', 'Club scope mismatch.');
+  if (!clubId || h.clubId !== clubId) throw new HttpsError('failed-precondition', 'Club scope mismatch.');
+
+  if (!(h.playerEmails || []).map(normEmail).includes(childEmail)) {
+    throw new HttpsError('permission-denied', 'That operative is not in your household.');
   }
-  const householdPlayers = (h.playerEmails || []).map(normEmail);
-  if (!householdPlayers.includes(childEmail)) {
-    throw new HttpsError(
-        'permission-denied',
-        'That operative is not in your household.',
-    );
-  }
-  const {teamRef, teamId: teamIdForUser} =
-      await resolveTeamByInviteCodeForClub(teamCodeNorm, clubId);
+
+  return { childEmail, parentEmail, hid, h, clubId };
+}
+
+exports.parentLinkOperativeToTeam = onCall({region: REGION}, async (request) => {
+  const data = request.data || {};
+  const { childEmail, parentEmail, hid, h, clubId } = await validateParentLinkRequest(request, data);
+  const teamCodeNorm = normTeamInviteCode(data.teamInviteCode);
+
+  const {teamRef, teamId: teamIdForUser} = await resolveTeamByInviteCodeForClub(teamCodeNorm, clubId);
 
   const uRef = db().collection('users').doc(childEmail);
   const uSnap = await uRef.get();
-  if (!uSnap.exists) {
-    throw new HttpsError('not-found', 'Operative profile not found.');
-  }
+  if (!uSnap.exists) throw new HttpsError('not-found', 'Operative profile not found.');
   const u = uSnap.data() || {};
-  const playerName =
-      typeof u.playerName === 'string' && u.playerName.trim() ?
-        u.playerName.trim() :
-        '';
-  if (!playerName) {
-    throw new HttpsError('failed-precondition', 'Operative missing display name.');
-  }
-  let childUid = '';
-  try {
-    const rec = await admin.auth().getUserByEmail(childEmail);
-    childUid = rec.uid;
-  } catch (e) {
-    if (e && e.code === 'auth/user-not-found') {
-      throw new HttpsError('not-found', 'Operative Auth account not found.');
-    }
-    throw e;
-  }
-  const existingTeam =
-      typeof u.teamId === 'string' && u.teamId.trim() ? u.teamId.trim() : '';
-  if (existingTeam === teamIdForUser) {
+  const playerName = typeof u.playerName === 'string' ? u.playerName.trim() : '';
+  if (!playerName) throw new HttpsError('failed-precondition', 'Operative missing display name.');
+
+  const rec = await admin.auth().getUserByEmail(childEmail).catch(() => null);
+  if (!rec?.uid) throw new HttpsError('not-found', 'Operative Auth account not found.');
+  const childUid = rec.uid;
+
+  if (u.teamId === teamIdForUser) {
     await stampOperativeTeamClaims(childUid, u, teamIdForUser, clubId, hid);
-    return {
-      ok: true,
-      noop: true,
-      childEmail,
-      teamId: teamIdForUser,
-      teamLinked: true,
-    };
+    return { ok: true, noop: true, childEmail, teamId: teamIdForUser, teamLinked: true };
   }
 
   const now = admin.firestore.FieldValue.serverTimestamp();
-  const plRef = db().collection('player_lookup').doc(childEmail);
-  const householdParents = (h.parentEmails || [])
-      .map((x) => normEmail(String(x || '')))
-      .filter(Boolean);
   const batch = db().batch();
-  batch.set(
-      uRef,
-      {
-        teamId: teamIdForUser,
-        clubId,
-        householdId: hid,
-        role: 'player',
-        updatedAt: now,
-      },
-      {merge: true},
-  );
-  batch.set(
-      plRef,
-      {
-        clubId,
-        teamId: teamIdForUser,
-        playerName,
-        role: 'player',
-        householdId: hid,
-        parentEmails: householdParents,
-        parentProvisionerEmail: parentEmail,
-        updatedAt: now,
-      },
-      {merge: true},
-  );
-  batch.update(teamRef, {
-    playerUids: admin.firestore.FieldValue.arrayUnion(childUid),
-    updatedAt: now,
-  });
-  batch.set(
-      db().collection('rosters').doc(teamIdForUser),
-      {
-        players: admin.firestore.FieldValue.arrayUnion(playerName),
-      },
-      {merge: true},
-  );
+  batch.set(uRef, { teamId: teamIdForUser, clubId, householdId: hid, role: 'player', updatedAt: now }, {merge: true});
+  batch.set(db().collection('player_lookup').doc(childEmail), {
+    clubId, teamId: teamIdForUser, playerName, role: 'player', householdId: hid,
+    parentEmails: (h.parentEmails || []).map((x) => normEmail(String(x || ''))).filter(Boolean),
+    parentProvisionerEmail: parentEmail, updatedAt: now,
+  }, {merge: true});
+  batch.update(teamRef, { playerUids: admin.firestore.FieldValue.arrayUnion(childUid), updatedAt: now });
+  batch.set(db().collection('rosters').doc(teamIdForUser), { players: admin.firestore.FieldValue.arrayUnion(playerName) }, {merge: true});
   await batch.commit();
 
   await stampOperativeTeamClaims(childUid, u, teamIdForUser, clubId, hid);
+  await provisionLoungesForParentHousehold({ parentEmail, childEmails: [childEmail], parentClubId: clubId }).catch((e) => logger.warn('[parentLinkOperativeToTeam] lounge failed', e));
 
-  try {
-    await provisionLoungesForParentHousehold({
-      parentEmail,
-      childEmails: [childEmail],
-      parentClubId: clubId,
-    });
-  } catch (loungeErr) {
-    logger.warn('[parentLinkOperativeToTeam] lounge provision failed (non-fatal)', {
-      err: loungeErr instanceof Error ? loungeErr.message : String(loungeErr),
-    });
-  }
-
-  return {
-    ok: true,
-    childEmail,
-    teamId: teamIdForUser,
-    teamLinked: true,
-    inviteCode: teamCodeNorm,
-  };
+  return { ok: true, childEmail, teamId: teamIdForUser, teamLinked: true, inviteCode: teamCodeNorm };
 });
 
 /**

@@ -223,6 +223,18 @@ exports.registerDedicatedCell = onCall(
         createdAt: admin.firestore.FieldValue.serverTimestamp(),
       });
 
+      const auditData = {
+        timestamp: admin.firestore.FieldValue.serverTimestamp(),
+        admin: request.auth?.token?.email || request.auth?.uid || 'unknown',
+        action: 'REGISTER_DEDICATED_CELL',
+        target: cellId,
+        details: JSON.stringify({ quotaProfile, region }),
+      };
+      await Promise.all([
+        db().collection('security_audits').add(auditData),
+        db().collection('security_audit').add(auditData),
+      ]).catch((e) => logger.warn('[registerDedicatedCell] SIEM audit write failed', e));
+
       logger.info('[registerDedicatedCell] registered', {
         cellId,
         quotaProfile,
@@ -270,6 +282,18 @@ exports.activateCell = onCall(
         status: 'active',
         activatedAt: admin.firestore.FieldValue.serverTimestamp(),
       });
+
+      const auditData = {
+        timestamp: admin.firestore.FieldValue.serverTimestamp(),
+        admin: request.auth?.token?.email || request.auth?.uid || 'unknown',
+        action: 'ACTIVATE_CELL',
+        target: cellId,
+        details: JSON.stringify({ cellId }),
+      };
+      await Promise.all([
+        db().collection('security_audits').add(auditData),
+        db().collection('security_audit').add(auditData),
+      ]).catch((e) => logger.warn('[activateCell] SIEM audit write failed', e));
 
       logger.info('[activateCell] activated', {cellId});
       return {ok: true, cellId, alreadyActive: false};

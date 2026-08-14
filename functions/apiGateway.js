@@ -215,7 +215,7 @@ async function verifyPartnerSignature(headers, rawBody) {
   }
 
   // ── Partner lookup ───────────────────────────────────────────────────────
-  const partnerSnap = await admin.firestore().doc(`hotel_partners/${partnerId}`).get();
+  const partnerSnap = await getRegistryDb().doc(`hotel_partners/${partnerId}`).get();
   if (!partnerSnap.exists) {
     throw {status: 401, code: 'unauthenticated', message: 'Partner not found.'};
   }
@@ -504,7 +504,7 @@ exports.apiGateway = onRequest(
           }
 
           // Write to the partner_webhook_log for every request (B7 audit trail).
-          const logRef = admin.firestore().collection('partner_webhook_log').doc();
+          const logRef = getRegistryDb().collection('partner_webhook_log').doc();
           logRef.set({
             partnerId: partner.id,
             path: matchPath,
