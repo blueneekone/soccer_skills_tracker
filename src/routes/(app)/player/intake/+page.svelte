@@ -10,7 +10,7 @@
 		e.preventDefault();
 		await engine.submit();
 		if (authStore.userProfile?.medicalSignatureVerified) {
-			goto()
+			goto('/player/dashboard');
 		}
 	}
 </script>
