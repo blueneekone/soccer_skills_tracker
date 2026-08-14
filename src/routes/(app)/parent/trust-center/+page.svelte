@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { authStore } from '$lib/stores/auth/facade.svelte.js';
+	import { authStore } from '$lib/stores/auth.svelte';
 	import { getActiveDb } from '$lib/firebase.js';
 	import { query, collection, where, onSnapshot } from 'firebase/firestore';
 	import { browser } from '$app/environment';
@@ -215,17 +215,17 @@
 		<section class="st-bento tw-bg-[#0F172A] tw-border tw-border-[#1E293B] tw-p-6 tw-rounded-none">
 			<div class="tw-flex tw-items-center tw-justify-between tw-mb-3">
 				<h2 class="tw-text-base tw-font-bold tw-text-white tw-flex tw-items-center tw-gap-2 tw-m-0">
-					<Icon name={"status.warning" as IconName} size={18} class="tw-text-nuclear-yellow" />
+					<Icon name={"status.warning" as IconName} size={18} class="tw-text-[#f59e0b]" />
 					<span>The Car Ride Home Protocol</span>
 				</h2>
-				<span class="tw-text-[10px] tw-font-mono tw-text-nuclear-yellow tw-tracking-widest">COOLING_OFF_PERIOD</span>
+				<span class="tw-text-[10px] tw-font-mono tw-text-[#f59e0b] tw-tracking-widest">COOLING_OFF_PERIOD</span>
 			</div>
 			<p class="tw-text-slate-400 tw-text-xs tw-mb-4">
 				Raw telemetries are suppressed for 15 minutes post-match to protect athlete emotional resilience and prioritize emotional support.
 			</p>
 			
 			<div class="tw-bg-[#0B0F19] tw-border tw-border-[#1E293B] tw-p-4 tw-rounded-none">
-				<p class="tw-text-nuclear-yellow tw-text-[10px] tw-font-mono tw-uppercase tw-tracking-widest tw-font-semibold tw-mb-1">
+				<p class="tw-text-[#f59e0b] tw-text-[10px] tw-font-mono tw-uppercase tw-tracking-widest tw-font-semibold tw-mb-1">
 					Empathetic Conversation Anchor:
 				</p>
 				<p class="tw-text-base tw-text-white tw-font-mono tw-italic tw-m-0">
