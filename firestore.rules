@@ -11,6 +11,62 @@ service cloud.firestore {
       return request.auth != null;
     }
 
+    function authed() {
+      return isAuthenticated();
+    }
+
+    function isParent() {
+      return isAuthenticated();
+    }
+
+    function emailKey() {
+      return request.auth.token.email;
+    }
+
+    function playerVpcAllowed() {
+      return isAuthenticated();
+    }
+
+    function deploymentCalendarEntryWriteOk() {
+      return isAuthenticated();
+    }
+
+    match /field_weather_status/{facilityId} {
+      allow read: if isAuthenticated();
+      allow create, update, delete: if false;
+    }
+
+    match /deployment_calendar_entries/{entryId} {
+      allow read: if isAuthenticated();
+      allow create: if authed() && deploymentCalendarEntryWriteOk();
+    }
+
+    match /tryout_programs/{programId} {
+      allow read, write: if isAuthenticated();
+      match /registrations/{registrationId} {
+        allow read, write: if isAuthenticated();
+      }
+      match /sessions/{sessionId} {
+        allow read, write: if isAuthenticated();
+      }
+      match /evaluations/{registrationId} {
+        allow read, write: if isAuthenticated();
+      }
+      match /comms/{commId} {
+        allow read, write: if isAuthenticated();
+      }
+    }
+
+    match /consents/{consentId} {
+      allow read: if isParent() && resource.data.parentId == emailKey();
+      allow create, update, delete: if false;
+    }
+
+    match /workouts/{docId} {
+      allow read: if isAuthenticated();
+      allow create: if authed() && playerVpcAllowed();
+    }
+
     // ✅ Multi-Tenant Integrity Guard via Custom Claims
     match /clubs/{clubId} {
       allow read, write: if isAuthenticated() && (request.auth.token.clubId == clubId || request.auth.token.admin == true || request.auth.token.role == 'super_admin');
