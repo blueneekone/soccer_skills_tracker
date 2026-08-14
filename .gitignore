@@ -94,3 +94,12 @@ artifacts/firestore-debt-pass-*/
 .dataconnect
 audit-artifacts/
 .deprecated_backups/
+
+# Local Mock Scripts & Video Captures
+mock-links.json
+recordings/
+test-admin.cjs
+test-link.cjs
+capture-marketing-video.cjs
+mock-data-down.cjs
+mock-data-up.cjs
