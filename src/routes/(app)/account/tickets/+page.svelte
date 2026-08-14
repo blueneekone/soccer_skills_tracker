@@ -2,7 +2,7 @@
 	import { onDestroy, tick } from 'svelte';
 	import { browser } from '$app/environment';
 	import { collection, query, where, orderBy, onSnapshot } from 'firebase/firestore';
-	import { getActiveDb } from '$lib/firebase';
+	import { db, getActiveDb } from '$lib/firebase.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
 
 	interface TicketDoc {
@@ -115,7 +115,7 @@
 
 	{#if loading}
 		<div class="tickets-grid">
-			{#each [1, 2] as _}
+			{#each [1, 2] as _item (_item)}
 				<div class="boarding-pass skeleton"></div>
 			{/each}
 		</div>

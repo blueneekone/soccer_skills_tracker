@@ -3,7 +3,7 @@
 	import { goto } from '$app/navigation';
 	import { getFunctions, httpsCallable } from 'firebase/functions';
 	import { collection, query, where, onSnapshot, orderBy } from 'firebase/firestore';
-	import { getActiveDb } from '$lib/firebase';
+	import { db, getActiveDb } from '$lib/firebase.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import type { TournamentEventDoc } from '$lib/types/tournamentEvent.js';
 
@@ -58,7 +58,7 @@
 					general: { label: 'General Admission', unitPriceCents: 1000, capacity: 100 },
 				},
 			});
-			goto()
+			goto(`/director/events/${res.data.eventId}`);
 		} catch (e: unknown) {
 			errorMsg = e instanceof Error ? e.message : String(e);
 		} finally {
@@ -103,7 +103,7 @@
 
 	{#if loading}
 		<div class="loading-grid">
-			{#each [1, 2, 3] as _}
+			{#each [1, 2, 3] as _item (_item)}
 				<div class="event-card skeleton"></div>
 			{/each}
 		</div>

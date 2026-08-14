@@ -318,7 +318,7 @@
 				<button
 					type="button"
 					class="ec-icon-btn icon-tap"
-					onclick={() => goto()}
+					onclick={() => goto('/complete-profile')}
 					aria-label="Settings"
 				>
 					<Icon name="sys.settings" size={18} />
