@@ -34,9 +34,9 @@
   }
 </script>
 
-<div class="arena-root">
+<div class="arena-root bento-grid-container st-bento">
   <!-- Left rail: sport list -->
-  <aside class="arena-rail">
+  <aside class="arena-rail lg:tw-col-span-4">
     <div class="rail-header">
       <span class="mono-label">ACTIVE</span>
       <span class="rail-count">{engine.activeConfigs.length}</span>
@@ -78,7 +78,7 @@
   </aside>
 
   <!-- Right pane: editor -->
-  <section class="arena-editor">
+  <section class="arena-editor lg:tw-col-span-8">
     {#if engine.viewMode === 'list'}
       <div class="arena-empty">
         <Icon name={"status.shield-check" as IconName} size={36} class="tw-text-slate-600" />
@@ -260,21 +260,26 @@
 
         <!-- Action buttons -->
         <div class="action-bar">
-          <button class="btn-ghost" onclick={() => engine.cancelEdit()}>Cancel</button>
+          <button class="btn-ghost tw-flex tw-items-center tw-gap-1.5" onclick={() => engine.cancelEdit()}>
+            <Icon name={"sys.close" as IconName} size={14} />
+            Cancel
+          </button>
           {#if engine.viewMode === 'edit' && engine.selectedConfig?.status !== 'archived'}
             <button
-              class="btn-archive"
+              class="btn-archive tw-flex tw-items-center tw-gap-1.5"
               onclick={() => { if (engine.selectedConfig) engine.archive(engine.selectedConfig.sportId); }}
             >
+              <Icon name={"sys.ban" as IconName} size={14} />
               Archive
             </button>
           {/if}
           <button
-            class="btn-save"
+            class="btn-save tw-flex tw-items-center tw-gap-1.5"
             class:btn-save--loading={engine.saveState === 'saving' || engine.saveState === 'validating'}
             disabled={engine.saveState === 'saving' || engine.saveState === 'validating' || engine.saveState === 'success'}
             onclick={() => engine.save()}
           >
+            <Icon name={"status.check-square" as IconName} size={14} />
             {engine.saveState === 'saving' ? 'Saving…' : engine.saveState === 'success' ? 'Saved ✓' : 'Save'}
           </button>
         </div>
@@ -528,15 +533,15 @@
   .btn-save {
     padding: 0.5rem 1.5rem;
     border-radius: 10px;
-    border: 1px solid rgba(20, 184, 166, 0.4);
-    background: rgba(20, 184, 166, 0.1);
-    color: #14b8a6;
+    border: 1px solid #CCFF00;
+    background: #CCFF00;
+    color: #000000;
     font-size: 13px;
-    font-weight: 600;
+    font-weight: 800;
     cursor: pointer;
     transition: all 0.15s;
   }
-  .btn-save:hover:not(:disabled) { background: rgba(20, 184, 166, 0.2); box-shadow: 0 0 12px rgba(20, 184, 166, 0.2); }
+  .btn-save:hover:not(:disabled) { background: #d8ff33; box-shadow: 0 0 12px rgba(204, 255, 0, 0.4); }
   .btn-save:disabled { opacity: 0.5; cursor: not-allowed; }
   .btn-save--loading { animation: pulse 1s ease-in-out infinite; }
   @keyframes pulse { 0%,100% { opacity: 0.5; } 50% { opacity: 1; } }

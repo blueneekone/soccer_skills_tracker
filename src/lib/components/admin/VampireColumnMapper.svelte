@@ -113,8 +113,12 @@
 			<p class="vm-error">{errorMsg}</p>
 		{/if}
 		<div class="vm-actions">
-			<button class="vm-btn vm-btn--cancel" onclick={oncancel}>Cancel</button>
-			<button class="vm-btn vm-btn--confirm" onclick={handleConfirm}>Ingest Mapped Data</button>
+			<button class="vm-btn vm-btn--cancel tw-flex tw-items-center tw-gap-1.5" onclick={oncancel}>
+				<Icon name={"sys.close" as IconName} size={14} /> Cancel
+			</button>
+			<button class="vm-btn vm-btn--confirm tw-flex tw-items-center tw-gap-1.5" onclick={handleConfirm}>
+				<Icon name={"status.check-square" as IconName} size={14} /> Ingest Mapped Data
+			</button>
 		</div>
 	</footer>
 </div>
@@ -249,12 +253,13 @@
 	}
 
 	.vm-btn--confirm {
-		background: #d97706;
-		color: #fff;
+		background: #CCFF00;
+		color: #000000;
+		font-weight: 800;
 	}
 
 	.vm-btn--confirm:hover {
-		background: #b45309;
+		background: #d8ff33;
 	}
 
 	.vm-error {

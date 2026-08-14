@@ -20,12 +20,14 @@
 
 <OrganizationsAlerts clubsErr={engine.clubsErr}  />
 
-<OrganizationsDataTable
-	pagedClubs={engine.pagedClubs}
-	totalClubs={engine.clubs.length}
-	clubsLoading={engine.clubsLoading}
-	getCompliance={engine.getCompliance}
-/>
+<div class="bento-grid-container st-bento">
+	<OrganizationsDataTable
+		pagedClubs={engine.pagedClubs}
+		totalClubs={engine.clubs.length}
+		clubsLoading={engine.clubsLoading}
+		getCompliance={engine.getCompliance}
+	/>
+</div>
 
 <OrganizationsPagination
 	orgPage={engine.orgPage}

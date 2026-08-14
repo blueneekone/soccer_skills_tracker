@@ -3,6 +3,7 @@
 	import { goto } from '$app/navigation';
 	import { untrack } from 'svelte';
 	import { db, auth, functions } from '$lib/firebase.js';
+	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { httpsCallable } from 'firebase/functions';
 	import { signInWithCustomToken } from 'firebase/auth';
 	import { impersonationStore } from '$lib/stores/impersonation.svelte.js';

@@ -1,14 +1,18 @@
 <script lang="ts">
-	import type { SupportConsoleEngine } from './SupportConsoleEngine.svelte.ts';
+	import type { SupportConsoleEngine } from './SupportConsoleEngine.svelte.js';
+	import Icon from '$lib/components/ui/Icon.svelte';
+	import type { IconName } from '$lib/icons/registry.js';
 	let { engine }: { engine: SupportConsoleEngine } = $props();
 </script>
 
-<div class="tw-flex tw-flex-col tw-gap-6 tw-mt-6">
-	<!-- Tab Content -->
-	<div class="tw-bg-[#0f172a] tw-border tw-border-slate-800 tw-p-[clamp(16px,2vw,24px)]" style="clip-path: polygon(0 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%)">
+<div class="bento-grid-container tw-grid tw-grid-cols-1 lg:tw-grid-cols-12 tw-gap-6 tw-mt-6">
+	<!-- Tab Content (Spans 8 cols on lg) -->
+	<div class="lg:tw-col-span-8 st-bento z2-panel siem-panel tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-p-[clamp(16px,2vw,24px)]" style="clip-path: polygon(0 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%)">
 		
 		{#if engine.activeTab === 'users'}
-			<h2 class="tw-text-base tw-font-mono tw-font-bold tw-text-white tw-uppercase tw-mb-6">User Operations</h2>
+			<h2 class="tw-text-base tw-font-mono tw-font-bold tw-text-white tw-uppercase tw-mb-6 tw-flex tw-items-center tw-gap-2">
+				<Icon name={"user.settings" as IconName} size={18} class="tw-text-nuclear-yellow" /> User Operations
+			</h2>
 			
 			<div class="tw-grid tw-grid-cols-1 md:tw-grid-cols-2 tw-gap-8">
 				<div class="tw-flex tw-flex-col tw-gap-4">
@@ -23,17 +27,17 @@
 				</div>
 
 				<div class="tw-flex tw-flex-col tw-gap-3">
-					<button onclick={() => engine.executeCommand('resetUserPassword', { targetEmail: engine.userEmail })} class="tw-bg-slate-800 hover:tw-bg-slate-700 tw-text-white tw-font-mono tw-text-sm tw-font-bold tw-py-2 tw-px-4 tw-text-left tw-transition-colors">
-						> Send Password Reset
+					<button onclick={() => engine.executeCommand('resetUserPassword', { targetEmail: engine.userEmail })} class="tw-bg-slate-800 hover:tw-bg-slate-700 tw-text-white tw-font-mono tw-text-sm tw-font-bold tw-py-2 tw-px-4 tw-text-left tw-transition-colors tw-flex tw-items-center tw-gap-2">
+						<Icon name={"comm.mail" as IconName} size={14} class="tw-text-nuclear-yellow" /> Send Password Reset
 					</button>
-					<button onclick={() => engine.executeCommand('disableUser', { targetUid: engine.userUid, disabled: true })} class="tw-bg-slate-800 hover:tw-bg-slate-700 tw-text-amber-400 tw-font-mono tw-text-sm tw-font-bold tw-py-2 tw-px-4 tw-text-left tw-transition-colors">
-						> Disable Account
+					<button onclick={() => engine.executeCommand('disableUser', { targetUid: engine.userUid, disabled: true })} class="tw-bg-slate-800 hover:tw-bg-slate-700 tw-text-amber-400 tw-font-mono tw-text-sm tw-font-bold tw-py-2 tw-px-4 tw-text-left tw-transition-colors tw-flex tw-items-center tw-gap-2">
+						<Icon name={"sys.ban" as IconName} size={14} /> Disable Account
 					</button>
-					<button onclick={() => engine.executeCommand('disableUser', { targetUid: engine.userUid, disabled: false })} class="tw-bg-slate-800 hover:tw-bg-slate-700 tw-text-emerald-400 tw-font-mono tw-text-sm tw-font-bold tw-py-2 tw-px-4 tw-text-left tw-transition-colors">
-						> Enable Account
+					<button onclick={() => engine.executeCommand('disableUser', { targetUid: engine.userUid, disabled: false })} class="tw-bg-slate-800 hover:tw-bg-slate-700 tw-text-emerald-400 tw-font-mono tw-text-sm tw-font-bold tw-py-2 tw-px-4 tw-text-left tw-transition-colors tw-flex tw-items-center tw-gap-2">
+						<Icon name={"status.check-square" as IconName} size={14} /> Enable Account
 					</button>
-					<button onclick={() => engine.executeCommand('purgeUser', { targetUid: engine.userUid, targetEmail: engine.userEmail })} class="tw-bg-rose-950/50 hover:tw-bg-rose-900/50 tw-border tw-border-rose-900/50 tw-text-rose-400 tw-font-mono tw-text-sm tw-font-bold tw-py-2 tw-px-4 tw-text-left tw-transition-colors">
-						> CASCADE PURGE USER
+					<button onclick={() => engine.executeCommand('purgeUser', { targetUid: engine.userUid, targetEmail: engine.userEmail })} class="tw-bg-rose-950/50 hover:tw-bg-rose-900/50 tw-border tw-border-rose-900/50 tw-text-rose-400 tw-font-mono tw-text-sm tw-font-bold tw-py-2 tw-px-4 tw-text-left tw-transition-colors tw-flex tw-items-center tw-gap-2">
+						<Icon name={"status.shield-alert" as IconName} size={14} /> CASCADE PURGE USER
 					</button>
 				</div>
 			</div>
@@ -64,11 +68,11 @@
 						</div>
 					</div>
 					<div class="tw-flex tw-flex-row tw-gap-2 tw-mt-2">
-						<button onclick={() => engine.executeCommand('createTeam', { clubId: engine.teamClubId, teamName: engine.teamName, ageGroup: engine.teamAgeGroup, gender: engine.teamGender, sport: engine.teamSport })} class="tw-bg-[#14b8a6]/10 hover:tw-bg-[#14b8a6]/20 tw-border tw-border-[#14b8a6]/30 tw-text-[#14b8a6] tw-font-mono tw-text-sm tw-font-bold tw-py-2 tw-px-4 tw-flex-1 tw-text-center tw-transition-colors">
-							> Create Team
+						<button onclick={() => engine.executeCommand('createTeam', { clubId: engine.teamClubId, teamName: engine.teamName, ageGroup: engine.teamAgeGroup, gender: engine.teamGender, sport: engine.teamSport })} class="tw-bg-nuclear-yellow/10 hover:tw-bg-nuclear-yellow/20 tw-border tw-border-nuclear-yellow/30 tw-text-nuclear-yellow tw-font-mono tw-text-sm tw-font-bold tw-py-2 tw-px-4 tw-flex-1 tw-flex tw-items-center tw-justify-center tw-gap-2 tw-transition-colors">
+							<Icon name={"action.plus" as IconName} size={14} /> Create Team
 						</button>
-						<button onclick={() => engine.executeCommand('deleteTeam', { clubId: engine.teamClubId, teamId: engine.teamName })} class="tw-bg-rose-950/30 hover:tw-bg-rose-900/40 tw-border tw-border-rose-900/50 tw-text-rose-400 tw-font-mono tw-text-sm tw-font-bold tw-py-2 tw-px-4 tw-flex-1 tw-text-center tw-transition-colors" title="Put Team ID in the Team Name field">
-							> Delete Team
+						<button onclick={() => engine.executeCommand('deleteTeam', { clubId: engine.teamClubId, teamId: engine.teamName })} class="tw-bg-rose-950/30 hover:tw-bg-rose-900/40 tw-border tw-border-rose-900/50 tw-text-rose-400 tw-font-mono tw-text-sm tw-font-bold tw-py-2 tw-px-4 tw-flex-1 tw-flex tw-items-center tw-justify-center tw-gap-2 tw-transition-colors" title="Put Team ID in the Team Name field">
+							<Icon name={"sys.trash" as IconName} size={14} /> Delete Team
 						</button>
 					</div>
 				</div>
@@ -97,8 +101,8 @@
 						<input id="sc-link-team" type="text" bind:value={engine.linkTeamId} class="tw-bg-[#020617] tw-border tw-border-slate-700 tw-text-white tw-px-3 tw-py-2 tw-font-mono tw-text-sm" />
 					</div>
 					<div class="tw-flex tw-flex-col tw-gap-3 tw-mt-2">
-						<button onclick={() => engine.executeCommand('linkUserToTeam', { targetEmail: engine.linkEmail, role: engine.linkRole, clubId: engine.linkClubId, teamId: engine.linkTeamId })} class="tw-bg-slate-800 hover:tw-bg-slate-700 tw-border tw-border-slate-600 tw-text-amber-400 tw-font-mono tw-text-sm tw-font-bold tw-py-2 tw-px-4 tw-text-center tw-transition-colors">
-							> Link User
+						<button onclick={() => engine.executeCommand('linkUserToTeam', { targetEmail: engine.linkEmail, role: engine.linkRole, clubId: engine.linkClubId, teamId: engine.linkTeamId })} class="tw-bg-slate-800 hover:tw-bg-slate-700 tw-border tw-border-nuclear-yellow/40 tw-text-nuclear-yellow tw-font-mono tw-text-sm tw-font-bold tw-py-2 tw-px-4 tw-flex tw-items-center tw-justify-center tw-gap-2 tw-transition-colors">
+							<Icon name={"user.add" as IconName} size={14} /> Link User
 						</button>
 					</div>
 				</div>
@@ -135,8 +139,8 @@
 				</div>
 
 				<div class="tw-flex tw-flex-col tw-gap-3 tw-justify-end">
-					<button onclick={() => engine.executeCommand('repairUserClaims', { targetEmail: engine.repairEmail, role: engine.repairRole, clubId: engine.repairClubId || null, teamId: engine.repairTeamId || null })} class="tw-bg-[#fbbf24] hover:tw-bg-[#fbbf24]/90 tw-text-black tw-font-mono tw-text-sm tw-font-bold tw-py-2 tw-px-4 tw-text-center tw-transition-colors">
-						REPAIR CUSTOM CLAIMS
+					<button onclick={() => engine.executeCommand('repairUserClaims', { targetEmail: engine.repairEmail, role: engine.repairRole, clubId: engine.repairClubId || null, teamId: engine.repairTeamId || null })} class="tw-bg-nuclear-yellow hover:tw-bg-nuclear-yellow/90 tw-text-void-black tw-font-mono tw-text-sm tw-font-bold tw-py-2 tw-px-4 tw-flex tw-items-center tw-justify-center tw-gap-2 tw-transition-colors">
+						<Icon name={"status.shield-check" as IconName} size={14} /> REPAIR CUSTOM CLAIMS
 					</button>
 				</div>
 			</div>
@@ -146,21 +150,25 @@
 			<h2 class="tw-text-base tw-font-mono tw-font-bold tw-text-white tw-uppercase tw-mb-6">System Data</h2>
 			<div class="tw-flex tw-flex-col tw-gap-4">
 				<p class="tw-text-sm tw-text-slate-400">Database health stats and user lists.</p>
-				<button onclick={() => engine.executeCommand('listAllUsers', { maxResults: 10 })} class="tw-bg-slate-800 hover:tw-bg-slate-700 tw-text-white tw-font-mono tw-text-sm tw-font-bold tw-py-2 tw-px-4 tw-text-left tw-transition-colors">
-					> Fetch Recent Users (List 10)
+				<button onclick={() => engine.executeCommand('listAllUsers', { maxResults: 10 })} class="tw-bg-slate-800 hover:tw-bg-slate-700 tw-text-nuclear-yellow tw-font-mono tw-text-sm tw-font-bold tw-py-2 tw-px-4 tw-text-left tw-transition-colors tw-flex tw-items-center tw-gap-2">
+					<Icon name={"user.group" as IconName} size={14} /> Fetch Recent Users (List 10)
 				</button>
 			</div>
 		{/if}
 
 	</div>
 
-	<!-- Output Console -->
-	<div class="tw-bg-[#020617] tw-border tw-border-slate-800 tw-p-4 tw-min-h-[200px] tw-font-mono tw-text-xs">
-		<h3 class="tw-text-[#334155] tw-uppercase tw-tracking-widest tw-mb-2">Terminal Output</h3>
-		{#if engine.lastOutput}
-			<pre class="tw-whitespace-pre-wrap tw-break-all {engine.lastOutput.type === 'success' ? 'tw-text-[#14b8a6]' : 'tw-text-rose-400'}">{engine.lastOutput.text}</pre>
-		{:else}
-			<p class="tw-text-slate-600">Awaiting command execution...</p>
-		{/if}
+	<!-- Output Console (Spans 4 cols on lg) -->
+	<div class="lg:tw-col-span-4 st-bento z2-panel siem-panel tw-bg-[#020617] tw-border tw-border-[#334155] tw-p-4 tw-min-h-[200px] tw-font-mono tw-text-xs tw-flex tw-flex-col">
+		<h3 class="tw-text-[#334155] tw-uppercase tw-tracking-widest tw-mb-2 tw-flex tw-items-center tw-gap-2">
+			<Icon name={"data.radar" as IconName} size={14} class="tw-text-nuclear-yellow" /> Terminal Output
+		</h3>
+		<div class="tw-flex-1 tw-p-3 tw-bg-[#000000] tw-border tw-border-slate-800">
+			{#if engine.lastOutput}
+				<pre class="tw-whitespace-pre-wrap tw-break-all {engine.lastOutput.type === 'success' ? 'tw-text-[#14b8a6]' : 'tw-text-rose-400'}">{engine.lastOutput.text}</pre>
+			{:else}
+				<p class="tw-text-slate-600">[AWAITING_COMMAND_EXECUTION]</p>
+			{/if}
+		</div>
 	</div>
 </div>

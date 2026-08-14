@@ -283,22 +283,24 @@
 				<div class="tw-flex tw-justify-end tw-items-center tw-gap-4 tw-mt-4 tw-pt-6 tw-border-t tw-border-[#334155]">
 					<button 
 						type="button" 
-						class="tw-text-[#A1A1AA] hover:tw-text-white tw-font-bold tw-px-5 tw-py-2.5 tw-bg-transparent hover:tw-bg-white/10 tw-border tw-border-transparent tw-rounded-md tw-transition-colors tw-cursor-pointer" 
+						class="tw-text-[#A1A1AA] hover:tw-text-white tw-font-bold tw-px-5 tw-py-2.5 tw-bg-transparent hover:tw-bg-white/10 tw-border tw-border-transparent tw-rounded-none tw-transition-colors tw-cursor-pointer tw-flex tw-items-center tw-gap-2"
 						onclick={onClose} 
 						disabled={saving}
 					>
+						<Icon name={"sys.close" as IconName} size={14} />
 						Cancel
 					</button>
 					<button 
 						type="button" 
-						class="tw-bg-[#fbbf24] hover:tw-bg-[#f59e0b] tw-text-[#0f172a] tw-font-bold tw-px-6 tw-py-2.5 tw-rounded-md tw-transition-colors tw-cursor-pointer tw-border-none disabled:tw-opacity-50" 
+						class="tw-bg-nuclear-yellow hover:tw-bg-nuclear-yellow/90 tw-text-void-black tw-font-extrabold tw-px-6 tw-py-2.5 tw-rounded-none tw-transition-colors tw-cursor-pointer tw-border-none disabled:tw-opacity-50 tw-flex tw-items-center tw-gap-2"
 						onclick={onSubmit} 
 						disabled={saving}
 					>
+						<Icon name={"org.building" as IconName} size={16} />
 						{#if saving}
 							{newSportMode ? 'Provisioning & creating…' : 'Creating…'}
 						{:else}
-							+ Register Organization
+							Register Organization
 						{/if}
 					</button>
 				</div>

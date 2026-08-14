@@ -8,25 +8,27 @@
 	let { engine }: { engine: AdminUsersEngine } = $props();
 </script>
 
-<GlobalUsersDataTable
-	rows={engine.rows}
-	loading={engine.loading}
-	activeTab={engine.activeTab}
-	searchApplied={engine.searchApplied}
-	clubNameMap={engine.clubNameMap}
-	openMenuFor={engine.openMenuFor}
-	loginAsBusyFor={engine.loginAsBusyFor}
-	pageIndex={engine.pageIndex}
-	hasNextPage={engine.hasNextPage}
-	canDeactivateUser={engine.canDeactivateUser}
-	onToggleMenu={engine.toggleMenu}
-	onEditAdmin={engine.openEditAdmin}
-	onLoginAs={(row) => void engine.loginAs(row)}
-	onDeactivate={engine.openDeactivate}
-	onPurge={engine.openPurge}
-	onPrevPage={() => void engine.goPrev()}
-	onNextPage={() => void engine.goNext()}
-/>
+<div class="bento-grid-container st-bento">
+	<GlobalUsersDataTable
+		rows={engine.rows}
+		loading={engine.loading}
+		activeTab={engine.activeTab}
+		searchApplied={engine.searchApplied}
+		clubNameMap={engine.clubNameMap}
+		openMenuFor={engine.openMenuFor}
+		loginAsBusyFor={engine.loginAsBusyFor}
+		pageIndex={engine.pageIndex}
+		hasNextPage={engine.hasNextPage}
+		canDeactivateUser={engine.canDeactivateUser}
+		onToggleMenu={engine.toggleMenu}
+		onEditAdmin={engine.openEditAdmin}
+		onLoginAs={(row) => void engine.loginAs(row)}
+		onDeactivate={engine.openDeactivate}
+		onPurge={engine.openPurge}
+		onPrevPage={() => void engine.goPrev()}
+		onNextPage={() => void engine.goNext()}
+	/>
+</div>
 
 <AddAdminModal
 	bind:open={engine.showAddAdmin}

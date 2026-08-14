@@ -1,5 +1,7 @@
 <script lang="ts">
 	import type { RebatesEngine } from './RebatesEngine.svelte.js';
+	import Icon from '$lib/components/ui/Icon.svelte';
+	import type { IconName } from '$lib/icons/registry.js';
 
 	let { engine }: { engine: RebatesEngine } = $props();
 
@@ -10,7 +12,7 @@
 
 {#if engine.phase === 'idle' || engine.phase === 'parsing'}
 	<div
-		class="drop-zone glass-panel"
+		class="drop-zone glass-panel st-bento bento-grid-container"
 		class:drag-active={engine.dragOver}
 		role="region"
 		aria-label="CSV drop zone"
@@ -18,9 +20,12 @@
 		ondragleave={() => { engine.dragOver = false; }}
 		ondrop={(e) => void engine.onDrop(e)}
 	>
-		<div class="drop-icon">📄</div>
+		<div class="drop-icon tw-flex tw-justify-center tw-mb-2">
+			<Icon name={"comm.file-text" as IconName} size={36} class="tw-text-nuclear-yellow" />
+		</div>
 		<p class="drop-label">Drop a CSV file here, or</p>
-		<label class="btn-browse">
+		<label class="btn-browse tw-inline-flex tw-items-center tw-gap-2 tw-bg-nuclear-yellow tw-text-void-black tw-font-bold tw-px-4 tw-py-2 tw-rounded-none tw-cursor-pointer">
+			<Icon name={"sys.folder" as IconName} size={16} />
 			Browse File
 			<input type="file" accept=".csv" style="display:none" onchange={(e) => void engine.onFileInput(e)} />
 		</label>
@@ -32,8 +37,8 @@
 		</p>
 	</div>
 {:else if engine.phase === 'previewing'}
-	<div class="preview-section">
-		<div class="preview-summary glass-panel">
+	<div class="preview-section bento-grid-container tw-grid tw-grid-cols-1 lg:tw-grid-cols-12 tw-gap-6">
+		<div class="preview-summary glass-panel st-bento lg:tw-col-span-12">
 			<div class="summary-stat">
 				<span class="stat-val">{engine.rows.length}</span>
 				<span class="stat-lbl">Total Rows</span>
@@ -61,7 +66,7 @@
 		{/if}
 
 		{#if engine.validRows.length > 0}
-			<div class="preview-table-wrap glass-panel">
+			<div class="preview-table-wrap glass-panel st-bento lg:tw-col-span-8">
 				<h3 class="list-title">Preview — {engine.validRows.length} rows to submit</h3>
 				<div class="table-scroll">
 					<table class="preview-table">
@@ -92,13 +97,16 @@
 			</div>
 		{/if}
 
-		<div class="action-row">
-			<button class="btn-reset" onclick={() => engine.reset()}>← Re-upload</button>
+		<div class="action-row tw-flex tw-items-center tw-gap-4 tw-mt-4">
+			<button class="btn-reset tw-flex tw-items-center tw-gap-1.5" onclick={() => engine.reset()}>
+				<Icon name={"nav.rotate-ccw" as IconName} size={14} /> Re-upload
+			</button>
 			<button
-				class="btn-submit"
+				class="btn-submit tw-bg-nuclear-yellow tw-text-void-black tw-border-nuclear-yellow tw-font-extrabold tw-px-6 tw-py-2.5 tw-rounded-none tw-flex tw-items-center tw-gap-2"
 				onclick={() => void engine.submit()}
 				disabled={engine.validRows.length === 0}
 			>
+				<Icon name={"status.check-square" as IconName} size={16} />
 				Submit {engine.validRows.length} Rebate{engine.validRows.length === 1 ? '' : 's'}
 			</button>
 		</div>
@@ -122,8 +130,10 @@
 				</div>
 			{/each}
 		</div>
-		<div class="done-actions">
-			<button class="btn-reset" onclick={() => engine.reset()}>Upload Another</button>
+		<div class="done-actions tw-mt-4">
+			<button class="btn-reset tw-flex tw-items-center tw-gap-1.5" onclick={() => engine.reset()}>
+				<Icon name={"nav.rotate-ccw" as IconName} size={14} /> Upload Another
+			</button>
 		</div>
 	</div>
 {/if}

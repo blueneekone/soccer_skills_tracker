@@ -389,13 +389,14 @@
 			<footer class="eam-foot">
 				<button
 					type="button"
-					class="eam-btn eam-btn--ghost"
+					class="eam-btn eam-btn--ghost tw-flex tw-items-center tw-gap-1.5"
 					onclick={() => !saving && onClose?.()}
 					disabled={saving}
 				>
+					<Icon name={"sys.close" as IconName} size={14} />
 					Cancel
 				</button>
-				<button type="submit" class="eam-btn eam-btn--primary" disabled={saving}>
+				<button type="submit" class="eam-btn eam-btn--primary tw-flex tw-items-center tw-gap-1.5" disabled={saving}>
 					<Icon name={"action.save" as IconName} aria-hidden="true" />
 					{saving ? 'Saving…' : 'Save Changes'}
 				</button>
@@ -566,10 +567,11 @@
 	}
 
 	.eam-btn--primary {
-		background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
-		color: #fff;
-		border-color: #4338ca;
-		box-shadow: 0 6px 16px -6px rgba(79, 70, 229, 0.45);
+		background: #CCFF00;
+		color: #000000;
+		border-color: #CCFF00;
+		font-weight: 800;
+		box-shadow: 0 6px 16px -6px rgba(204, 255, 0, 0.45);
 	}
 
 	.eam-btn--primary:hover:not(:disabled) {

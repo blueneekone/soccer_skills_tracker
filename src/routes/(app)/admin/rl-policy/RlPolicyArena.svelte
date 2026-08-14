@@ -9,6 +9,8 @@
 	 *   • Policy controls (A/B percent slider, freeze/unfreeze toggle, rollback input)
 	 */
 	import type { RlPolicyEngine } from './RlPolicyEngine.svelte.js';
+	import Icon from '$lib/components/ui/Icon.svelte';
+	import type { IconName } from '$lib/icons/registry.js';
 
 	type Props = { engine: RlPolicyEngine };
 	const { engine }: Props = $props();
@@ -22,10 +24,10 @@
 	}
 </script>
 
-<div class="arena">
+<div class="arena bento-grid-container tw-grid tw-grid-cols-1 lg:tw-grid-cols-12 tw-gap-6">
 
-	<!-- ── Policy Controls ─────────────────────────────────────────────────── -->
-	<section class="glass-panel">
+	<!-- ── Policy Controls (Spans 4 cols on lg) ─────────────────────────────────────────────────── -->
+	<section class="glass-panel st-bento lg:tw-col-span-4">
 		<h2 class="panel-title">[ POLICY CONTROLS ]</h2>
 
 		{#if !engine.isLoading && !engine.policyState}
@@ -38,10 +40,11 @@
 			</div>
 			<button
 				type="button"
-				class="ctrl-btn"
+				class="ctrl-btn tw-flex tw-items-center tw-gap-2 tw-bg-nuclear-yellow tw-text-void-black tw-border-nuclear-yellow"
 				disabled={engine.saveState === 'saving'}
 				onclick={() => engine.initPolicy()}
 			>
+				<Icon name={"status.shield-check" as IconName} size={14} />
 				{engine.saveState === 'saving' ? 'INITIALIZING…' : 'Initialize policy (v1)'}
 			</button>
 		{:else}
@@ -64,10 +67,11 @@
 			<div class="ctrl-range-ends"><span>0% (off)</span><span>100% (all)</span></div>
 			<button
 				type="button"
-				class="ctrl-btn"
+				class="ctrl-btn tw-flex tw-items-center tw-gap-2 tw-bg-nuclear-yellow tw-text-void-black tw-border-nuclear-yellow"
 				disabled={engine.saveState === 'saving' || engine.frozen}
 				onclick={() => engine.setAbPercent(engine.draftAbPercent)}
 			>
+				<Icon name={"status.check-square" as IconName} size={14} />
 				APPLY
 			</button>
 		</div>
@@ -82,11 +86,14 @@
 			</div>
 			<button
 				type="button"
-				class="ctrl-btn"
+				class="ctrl-btn tw-flex tw-items-center tw-gap-2"
 				class:ctrl-btn--danger={!engine.frozen}
+				class:tw-bg-nuclear-yellow={engine.frozen}
+				class:tw-text-void-black={engine.frozen}
 				disabled={engine.saveState === 'saving'}
 				onclick={() => engine.toggleFreeze()}
 			>
+				<Icon name={engine.frozen ? ("status.shield-check" as IconName) : ("sys.ban" as IconName)} size={14} />
 				{engine.frozen ? 'UNFREEZE POLICY' : 'FREEZE POLICY'}
 			</button>
 		</div>
@@ -107,10 +114,11 @@
 				/>
 				<button
 					type="button"
-					class="ctrl-btn ctrl-btn--danger"
+					class="ctrl-btn ctrl-btn--danger tw-flex tw-items-center tw-gap-1.5"
 					disabled={engine.saveState === 'saving' || engine.draftRollbackVersion >= engine.policyVersion}
 					onclick={() => engine.rollback(engine.draftRollbackVersion)}
 				>
+					<Icon name={"nav.rotate-ccw" as IconName} size={14} />
 					ROLLBACK
 				</button>
 			</div>
@@ -126,8 +134,8 @@
 		{/if}
 	</section>
 
-	<!-- ── Training Runs Table ─────────────────────────────────────────────── -->
-	<section class="glass-panel">
+	<!-- ── Training Runs Table (Spans 8 cols on lg) ─────────────────────────────── -->
+	<section class="glass-panel st-bento lg:tw-col-span-8">
 		<h2 class="panel-title">[ NIGHTLY TRAINING RUNS — LAST 30 ]</h2>
 
 		{#if engine.trainingRuns.length === 0}
