@@ -47,7 +47,7 @@
 		if (!detail || detail.state === 'locked') return;
 		const focus = scoutsSixToWorkoutFocus(detail.parentAttr);
 		const params = new URLSearchParams({ focus, skillNode: detail.id });
-		void goto()
+		void goto(`/player/skills?${params.toString()}`);
 	}
 </script>
 

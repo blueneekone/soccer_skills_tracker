@@ -1,6 +1,7 @@
 <script lang="ts">
   import { collection, query, where, getDocs, doc, updateDoc, serverTimestamp } from 'firebase/firestore';
-  import { getActiveDb } from '$lib/firebase.js';
+  import { db, getActiveDb } from '$lib/firebase.js';
+  import { authStore } from '$lib/stores/auth.svelte.js';
 
   const { clubId } = $props<{ clubId: string }>();
 

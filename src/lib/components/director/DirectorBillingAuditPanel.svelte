@@ -22,6 +22,7 @@
 		getDocs,
 	} from 'firebase/firestore';
 	import { db } from '$lib/firebase.js';
+	import { authStore } from '$lib/stores/auth.svelte.js';
 
 	// ── Props ──────────────────────────────────────────────────────────────────
 	interface Props {

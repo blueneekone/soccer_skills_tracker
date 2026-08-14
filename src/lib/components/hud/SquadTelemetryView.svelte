@@ -20,6 +20,7 @@
 		serverTimestamp,
 	} from 'firebase/firestore';
 	import Swal from 'sweetalert2';
+	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { enterprisePlayerDrawer } from '$lib/stores/enterprisePlayerDrawer.svelte.js';
 	import LiveTelemetrySection from '$lib/components/coach/LiveTelemetrySection.svelte';
 	import IntelModal from '$lib/components/ui/IntelModal.svelte';
