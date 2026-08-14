@@ -335,8 +335,8 @@
 				</div>
 				<div class="gw-hud__cell">
 					<span class="gw-hud__label">Day streak</span>
-					<span class="gw-hud__value gw-hud__value--streak">
-						<Icon name="game.flame" />
+					<span class="gw-hud__value gw-hud__value--streak tw-text-nuclear-yellow">
+						<Icon name="game.flame" class="tw-text-nuclear-yellow" />
 						{streakDays}d
 					</span>
 				</div>
@@ -518,11 +518,11 @@
 				</div>
 				<div class="gw-schedule-actions">
 					<button type="button" class="gw-btn-secondary" onclick={addToGoogleCalendar}>
-						<Icon name="nav.calendar" size={14} />
+						<Icon name={"nav.calendar" as IconName} size={14} />
 						<span>Google Calendar</span>
 					</button>
 					<button type="button" class="gw-btn-secondary" onclick={downloadIcs}>
-						<Icon name="sys.download" size={14} />
+						<Icon name={"sys.download" as IconName} size={14} />
 						<span>Download .ics</span>
 					</button>
 				</div>
@@ -925,9 +925,9 @@
 	}
 
 	.gw-pill--active {
-		border-color: rgba(20, 184, 166, 0.45);
-		background: rgba(20, 184, 166, 0.12);
-		color: #fafafa;
+		border-color: #fde047;
+		background: rgba(254, 240, 138, 0.12);
+		color: #fde047;
 	}
 
 	.gw-intensity-head {
@@ -1199,18 +1199,18 @@
 	.gw-submit {
 		width: 100%;
 		padding: 18px 20px;
-		border: 1px solid rgba(255, 255, 255, 0.12);
+		border: 1px solid #fde047;
 		border-radius: 16px;
-		background: linear-gradient(135deg, #4338ca 0%, #6366f1 40%, #7c3aed 75%, #9333ea 100%);
-		color: #fafafa;
+		background: #fde047;
+		color: #000000;
 		font: inherit;
 		font-weight: 900;
 		font-size: clamp(0.95rem, 3.5vw, 1.05rem);
 		letter-spacing: -0.01em;
 		cursor: pointer;
 		box-shadow:
-			0 16px 40px -12px rgba(79, 70, 229, 0.65),
-			inset 0 1px 0 rgba(255, 255, 255, 0.15);
+			0 16px 40px -12px rgba(253, 224, 71, 0.45),
+			inset 0 1px 0 rgba(255, 255, 255, 0.3);
 		transition: filter 0.15s ease, transform 0.1s ease;
 		min-height: 56px;
 	}
