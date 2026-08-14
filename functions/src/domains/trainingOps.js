@@ -4,7 +4,7 @@ const admin = require('firebase-admin');
 const { onDocumentCreated } = require('firebase-functions/v2/firestore');
 const { onCall, HttpsError } = require('firebase-functions/v2/https');
 const { normEmail, utcWeekMondayKey, utcYmdAddDays } = require('../utils/formatters');
-const { calculateTrainingSessionEarnedXp, trainingLevelFromTotalXp } = require('functions-shared/gamificationWorkoutXp');
+const { calculateTrainingSessionEarnedXp, trainingLevelFromTotalXp } = require('../../gamificationWorkoutXp');
 const { assertParent, assertParentAsync, assertCanSecureAddPlayer, assertClubSubscriptionWritable } = require('./operativeOps');
 
 const db = () => admin.firestore();
