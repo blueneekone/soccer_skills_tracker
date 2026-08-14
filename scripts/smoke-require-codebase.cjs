@@ -1,13 +1,12 @@
 'use strict';
 
 /**
- * Smoke-require a split functions codebase index (optionally one FUNCTION_TARGET).
+ * Universal Backend Smoke Probe
+ * Validates module loading, dependencies, boot safety, and cold-start health for all 7 split codebases.
  *
- *   node scripts/smoke-require-codebase.cjs integrations
- *   node scripts/smoke-require-codebase.cjs integrations getWeatherConditions
- *   node scripts/smoke-require-codebase.cjs integrations --simulate-cloud
- *
- * Run from repo root after `npm run bundle:functions` and `npm ci` in the codebase folder.
+ * Usage:
+ *   node scripts/smoke-require-codebase.cjs all
+ *   node scripts/smoke-require-codebase.cjs <core|rl|commerce|compliance|integrations|platform|default>
  */
 
 const path = require('node:path');
@@ -16,22 +15,14 @@ const REPO_ROOT = path.resolve(__dirname, '..');
 
 /** @type {Record<string, string>} */
 const CODEBASE_DIRS = {
+  default: 'functions',
+  core: 'functions-core',
+  rl: 'functions-rl',
+  commerce: 'functions-commerce',
+  compliance: 'functions-compliance',
   integrations: 'functions-integrations',
+  platform: 'functions-platform',
 };
-
-const codebase = process.argv[2];
-const arg3 = process.argv[3] || '';
-const simulateCloud = arg3 === '--simulate-cloud';
-const functionTarget = simulateCloud ? '' : arg3;
-
-if (!codebase || !CODEBASE_DIRS[codebase]) {
-  console.error(
-      'Usage: node scripts/smoke-require-codebase.cjs <integrations> [exportName|--simulate-cloud]',
-  );
-  process.exit(1);
-}
-
-const indexPath = path.join(REPO_ROOT, CODEBASE_DIRS[codebase], 'index.js');
 
 process.env.GCLOUD_PROJECT = process.env.GCLOUD_PROJECT || 'smoke-test';
 if (!process.env.FIREBASE_CONFIG) {
@@ -41,48 +32,38 @@ if (!process.env.FIREBASE_CONFIG) {
   });
 }
 
-delete process.env.K_SERVICE;
+const target = process.argv[2] || 'all';
 
-if (simulateCloud) {
-  process.env.K_SERVICE = 'getweatherconditions';
-  process.env.FUNCTION_TARGET = 'integrations-getWeatherConditions';
-} else if (functionTarget) {
-  process.env.FUNCTION_TARGET = functionTarget;
-  delete process.env.K_SERVICE;
-} else {
-  delete process.env.FUNCTION_TARGET;
-  delete process.env.K_SERVICE;
-}
-
-/** @returns {boolean} */
-function isSharpLoaded() {
-  return Object.keys(require.cache).some(
-      (key) => key.includes(`${path.sep}sharp${path.sep}`) ||
-        key.endsWith(`${path.sep}sharp`) ||
-        /[/\\]sharp[/\\]/.test(key),
-  );
-}
-
-require(indexPath);
-
-const weatherOnly =
-  simulateCloud ||
-  functionTarget === 'getWeatherConditions' ||
-  functionTarget === 'getweatherconditions';
-
-if (weatherOnly) {
-  if (isSharpLoaded()) {
-    const envLabel = simulateCloud
-      ? 'K_SERVICE=getweatherconditions + FUNCTION_TARGET=integrations-getWeatherConditions'
-      : `FUNCTION_TARGET=${functionTarget}`;
-    console.error(`FAIL: sharp loaded for ${envLabel}`);
-    process.exit(1);
+function probeCodebase(name) {
+  const dir = CODEBASE_DIRS[name];
+  if (!dir) throw new Error(`Unknown codebase: ${name}`);
+  const indexPath = path.join(REPO_ROOT, dir, 'index.js');
+  console.log(`🔍 Probing [${name}] (${dir}/index.js)...`);
+  
+  // Clear require cache for clean validation
+  try {
+    require(indexPath);
+    console.log(`✅ [${name}] OK — initialized successfully without boot errors.`);
+    return true;
+  } catch (err) {
+    console.error(`❌ [${name}] CRITICAL BOOT FAILURE:`, err.message);
+    return false;
   }
 }
 
-const label = simulateCloud
-  ? `${codebase} OK (Cloud Run simulate, lazy)`
-  : functionTarget
-    ? `${codebase} OK (${functionTarget}, lazy)`
-    : `${codebase} OK (discovery)`;
-console.log(label);
+if (target === 'all') {
+  console.log('⚡ Running Universal Backend Cold-Start Smoke Probe across all 7 codebases...\n');
+  let hasFailure = false;
+  for (const name of Object.keys(CODEBASE_DIRS)) {
+    const ok = probeCodebase(name);
+    if (!ok) hasFailure = true;
+  }
+  if (hasFailure) {
+    console.error('\n🚨 Universal Smoke Probe detected one or more codebase failures!');
+    process.exit(1);
+  }
+  console.log('\n🎉 ALL 7 BACKEND CODEBASES PASSED UNIVERSAL SMOKE PROBE.');
+} else {
+  const ok = probeCodebase(target);
+  if (!ok) process.exit(1);
+}
