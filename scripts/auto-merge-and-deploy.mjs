@@ -126,9 +126,9 @@ async function deployToFirebase() {
     console.log('\n[Deploy 2/3] Compiling SvelteKit production build...');
     run('npm run build');
 
-    // 3. Deploy to Firebase
+    // 3. Deploy to Firebase with --force for non-interactive deletion
     console.log('\n[Deploy 3/3] Deploying Hosting, Firestore Rules, Indexes, and Functions...');
-    run('firebase deploy --only functions,hosting,indexes,firestore:rules');
+    run('firebase deploy --only functions,hosting,indexes,firestore:rules --force');
 
     console.log('\n🌟 LIVE DEPLOYMENT COMPLETE! All services updated on sports-skill-tracker-dev.');
     return true;
