@@ -114,12 +114,12 @@
 		checkoutError = '';
 
 		try {
-			const createStripeCheckoutSession = httpsCallable<
+			const createSubscription = httpsCallable<
 				{ priceId: string; tenantId: string; tierId: string },
 				{ sessionUrl?: string; status: string }
-			>(functions, 'createStripeCheckoutSession');
+			>(functions, 'createSubscription');
 
-			const result = await createStripeCheckoutSession({
+			const result = await createSubscription({
 				priceId: tier.priceId,
 				tenantId,
 				tierId: tier.id,

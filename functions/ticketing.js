@@ -47,12 +47,12 @@ const REGION = 'us-east1';
 const MAX_GROSS_PER_INTENT_CENTS = 500000; // $5,000
 const MAX_QUANTITY = 50;
 
-const db = new Proxy({}, { get: (t, p) => {  const v = fs[p]; return typeof v === 'function' ? v.bind(fs) : v; } });
+const db = new Proxy({}, { get: (t, p) => { const fs = admin.firestore(); const v = fs[p]; return typeof v === 'function' ? v.bind(fs) : v; } });
 
 /** Lazy-init Stripe so a missing secret never breaks cold-start. */
 function getStripe() {
-  
-  return stripe(STRIPE_SECRET_KEY.value(), {apiVersion: '2024-06-20'});
+  const Stripe = require('stripe');
+  return new Stripe(STRIPE_SECRET_KEY.value(), {apiVersion: '2024-06-20'});
 }
 
 // ── createTicketSaleIntent ──────────────────────────────────────────────────
@@ -225,6 +225,25 @@ exports.handleTicketingWebhook = onRequest(
         return;
       }
 
+      const eventId = event.id;
+      if (eventId) {
+        const webhookRef = db.collection('processed_webhooks').doc(eventId);
+        const alreadyProcessed = await db.runTransaction(async (tx) => {
+          const doc = await tx.get(webhookRef);
+          if (doc.exists) return true;
+          tx.set(webhookRef, {
+            processedAt: admin.firestore.FieldValue.serverTimestamp(),
+            type: event.type,
+          });
+          return false;
+        });
+        if (alreadyProcessed) {
+          logger.info(`[ticketing webhook] event ${eventId} already processed (idempotent skip)`);
+          res.json({received: true, idempotent: true});
+          return;
+        }
+      }
+
       try {
         switch (event.type) {
           case 'payment_intent.succeeded':
@@ -244,6 +263,11 @@ exports.handleTicketingWebhook = onRequest(
     },
 );
 
+function generateTicketQrToken(ticketId, piId) {
+  return crypto.createHmac('sha256', TICKET_QR_HMAC_SECRET.value() || 'dev-secret')
+      .update(`${ticketId}:${piId}`).digest('base64url');
+}
+
 async function handleTicketPaid(pi) {
   const {hostClubId, eventId, tierId, purchaserUid, purchaserEmail} = pi.metadata ?? {};
   if (!hostClubId || !eventId) {
@@ -251,11 +275,7 @@ async function handleTicketPaid(pi) {
     return;
   }
 
-  const ticketSnap = await db
-      .collection('tickets')
-      .where('paymentIntentId', '==', pi.id)
-      .limit(1)
-      .get();
+  const ticketSnap = await db.collection('tickets').where('paymentIntentId', '==', pi.id).limit(1).get();
   if (ticketSnap.empty) {
     logger.warn('[ticketing] no ticket doc for intent', {piId: pi.id});
     return;
@@ -264,77 +284,39 @@ async function handleTicketPaid(pi) {
   const ticketDoc = ticketSnap.docs[0];
   const ticketData = ticketDoc.data() || {};
   const grossCents = Number(pi.amount) || Number(ticketData.grossCents) || 0;
-  const platformFeeCents = Number(pi.application_fee_amount) ||
-    Number(ticketData.platformFeeCents) || 0;
+  const platformFeeCents = Number(pi.application_fee_amount) || Number(ticketData.platformFeeCents) || 0;
   const rateBp = Number(pi.metadata?.rateBp) || Number(ticketData.rateBp) || 0;
   const policyId = pi.metadata?.policyId || ticketData.policyId || 'default-v1';
-  const policyVersion = Number(pi.metadata?.policyVersion) ||
-    Number(ticketData.policyVersion) || 0;
+  const policyVersion = Number(pi.metadata?.policyVersion) || Number(ticketData.policyVersion) || 0;
   const qty = Number(ticketData.quantity) || 1;
 
-  // Generate the QR token.  HMAC ties the token to the ticketId + a server
-  // secret — a leaked DB read of the qrToken alone can't be forged into a
-  // valid scan because the gate-scanner re-verifies against the secret.
-  const qrPayload = `${ticketDoc.id}:${pi.id}`;
-  const qrToken = crypto
-      .createHmac('sha256', TICKET_QR_HMAC_SECRET.value() || 'dev-secret')
-      .update(qrPayload)
-      .digest('base64url');
-
+  const qrToken = generateTicketQrToken(ticketDoc.id, pi.id);
   const batch = db.batch();
 
   batch.update(ticketDoc.ref, {
-    paymentStatus: 'paid',
-    paidAt: admin.firestore.FieldValue.serverTimestamp(),
-    stripeChargeId: pi.latest_charge ?? null,
-    qrToken,
+    paymentStatus: 'paid', paidAt: admin.firestore.FieldValue.serverTimestamp(),
+    stripeChargeId: pi.latest_charge ?? null, qrToken,
   });
 
-  // Increment tier soldCount on the event doc.  We use a dot-path on the
-  // nested map so concurrent buys to different tiers don't collide.
   batch.update(db.doc(`tournament_events/${eventId}`), {
     [`ticketTiers.${tierId}.soldCount`]: admin.firestore.FieldValue.increment(qty),
     lastTicketSaleAt: admin.firestore.FieldValue.serverTimestamp(),
   });
 
-  // Audit row.
   batch.set(db.collection('audit_logs').doc(), {
-    action: 'TICKET_PURCHASED',
-    actorUid: purchaserUid ?? null,
-    targetEmail: purchaserEmail ?? null,
-    tenantId: hostClubId,
-    eventId,
-    tierId,
-    quantity: qty,
-    amountCents: grossCents,
-    paymentIntentId: pi.id,
+    action: 'TICKET_PURCHASED', actorUid: purchaserUid ?? null, targetEmail: purchaserEmail ?? null,
+    tenantId: hostClubId, eventId, tierId, quantity: qty, amountCents: grossCents, paymentIntentId: pi.id,
     timestamp: admin.firestore.FieldValue.serverTimestamp(),
   });
 
-  // Ledger.  Doc ID is the PaymentIntent ID so retries are idempotent.
   recordPlatformFee(batch, db, {
-    tenantId: hostClubId,
-    transactionType: 'digital_ticketing',
-    sourceDocPath: `tickets/${ticketDoc.id}`,
-    grossCents,
-    platformFeeCents,
-    netCents: grossCents - platformFeeCents,
-    rateBp,
-    policyId,
-    policyVersion,
-    stripeChargeId: pi.latest_charge ?? null,
-    paymentIntentId: pi.id,
-    idempotencyKey: pi.id,
+    tenantId: hostClubId, transactionType: 'digital_ticketing', sourceDocPath: `tickets/${ticketDoc.id}`,
+    grossCents, platformFeeCents, netCents: grossCents - platformFeeCents, rateBp, policyId, policyVersion,
+    stripeChargeId: pi.latest_charge ?? null, paymentIntentId: pi.id, idempotencyKey: pi.id,
   });
 
   await batch.commit();
-  logger.info('[ticketing] paid', {
-    piId: pi.id,
-    ticketId: ticketDoc.id,
-    hostClubId,
-    eventId,
-    qty,
-  });
+  logger.info('[ticketing] paid', {piId: pi.id, ticketId: ticketDoc.id, hostClubId, eventId, qty});
 }
 
 async function handleTicketFailed(pi) {

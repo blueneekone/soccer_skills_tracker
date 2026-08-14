@@ -70,12 +70,12 @@ const REGION = 'us-east1';
 // still set per PaymentIntent — the SOURCE of the number is the only
 // thing that changed.
 
-const db = new Proxy({}, { get: (t, p) => {  const v = fs[p]; return typeof v === 'function' ? v.bind(fs) : v; } });
+const db = new Proxy({}, { get: (t, p) => { const fs = admin.firestore(); const v = fs[p]; return typeof v === 'function' ? v.bind(fs) : v; } });
 
 /** Lazy-init Stripe client so we don't crash if secret isn't set at cold start. */
 function getStripe() {
-  
-  return stripe(STRIPE_SECRET_KEY.value(), {apiVersion: '2024-06-20'});
+  const Stripe = require('stripe');
+  return new Stripe(STRIPE_SECRET_KEY.value(), {apiVersion: '2024-06-20'});
 }
 
 // â”€â”€ createRegistrationIntent â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -359,6 +359,25 @@ exports.handleRegistrationWebhook = onRequest(
         return;
       }
 
+      const eventId = event.id;
+      if (eventId) {
+        const webhookRef = db.collection('processed_webhooks').doc(eventId);
+        const alreadyProcessed = await db.runTransaction(async (tx) => {
+          const doc = await tx.get(webhookRef);
+          if (doc.exists) return true;
+          tx.set(webhookRef, {
+            processedAt: admin.firestore.FieldValue.serverTimestamp(),
+            type: event.type,
+          });
+          return false;
+        });
+        if (alreadyProcessed) {
+          logger.info(`[webhook] event ${eventId} already processed (idempotent skip)`);
+          res.json({received: true, idempotent: true});
+          return;
+        }
+      }
+
       const pi = event.data?.object;
 
       try {
@@ -439,6 +458,29 @@ async function resolveSeasonUnlockContext(args) {
   });
 }
 
+async function maybeUnlockActiveSeason(batch, {tenantId, playerEmail, seasonId, feeType, regData, regId, grossCents, piId}) {
+  if (playerEmail && seasonId && feeType === 'season_registration') {
+    const unlock = await resolveSeasonUnlockContext({
+      tenantId,
+      playerEmail: normEmail(playerEmail),
+      seasonId,
+      paidByEmail: regData?.paidByEmail ? normEmail(regData.paidByEmail) : null,
+      currentPayment: regId ? {registrationId: regId, feeAmountCents: grossCents} : null,
+    });
+    if (unlock.shouldUnlock) {
+      batch.update(db.doc(`users/${playerEmail}`), {
+        activeSeasonStatus: 'active',
+        activeSeasonId: seasonId ?? null,
+        seasonPaidAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+    } else {
+      logger.info('[webhook] partial season payment — activeSeasonStatus unchanged', {
+        piId, playerEmail, seasonId, reason: unlock.reason,
+      });
+    }
+  }
+}
+
 async function handlePaymentSucceeded(pi) {
   const {tenantId, playerUid, playerEmail, seasonId} = pi.metadata ?? {};
   if (!tenantId || !playerUid) {
@@ -446,19 +488,11 @@ async function handlePaymentSucceeded(pi) {
     return;
   }
 
-  // Find the pending registration document by paymentIntentId
-  const regSnap = await db
-      .collection('season_registrations')
-      .where('paymentIntentId', '==', pi.id)
-      .limit(1)
-      .get();
+  const regSnap = await db.collection('season_registrations')
+      .where('paymentIntentId', '==', pi.id).limit(1).get();
 
   const batch = db.batch();
   const grossCents = Number(pi.amount) || 0;
-  // Stripe surfaces `application_fee_amount` on the source PaymentIntent.
-  // We trust the metadata stamped at intent creation as the source of truth
-  // for the ledger row, but fall back to live recompute if the field is
-  // missing (e.g. legacy intents created before the cutover).
   let platformFeeCents = Number(pi.application_fee_amount) || 0;
   const policyId = pi.metadata?.policyId || 'default-v1';
   const policyVersion = Number(pi.metadata?.policyVersion) || 0;
@@ -474,87 +508,33 @@ async function handlePaymentSucceeded(pi) {
       paidAt: admin.firestore.FieldValue.serverTimestamp(),
       stripeChargeId: pi.latest_charge ?? null,
     });
-    // If the registration doc captured a more authoritative fee at intent
-    // creation, prefer that over the Stripe-roundtripped value (defensive
-    // against any rounding skew the API might introduce).
     const regFee = Number(regData?.platformFeeCents);
     if (Number.isFinite(regFee) && regFee >= 0) platformFeeCents = regFee;
   }
 
-  const feeType =
-    typeof pi.metadata?.type === 'string' && pi.metadata.type.trim() ?
-      pi.metadata.type.trim() :
-      'season_registration';
+  const feeType = typeof pi.metadata?.type === 'string' && pi.metadata.type.trim() ?
+    pi.metadata.type.trim() : 'season_registration';
 
-  // Unlock the player's active season only when the installment ledger is fully paid.
-  if (playerEmail && seasonId && feeType === 'season_registration') {
-    const unlock = await resolveSeasonUnlockContext({
-      tenantId,
-      playerEmail: normEmail(playerEmail),
-      seasonId,
-      paidByEmail: regData?.paidByEmail ? normEmail(regData.paidByEmail) : null,
-      currentPayment: regId ?
-        {registrationId: regId, feeAmountCents: grossCents} :
-        null,
-    });
-    if (unlock.shouldUnlock) {
-      batch.update(db.doc(`users/${playerEmail}`), {
-        activeSeasonStatus: 'active',
-        activeSeasonId: seasonId ?? null,
-        seasonPaidAt: admin.firestore.FieldValue.serverTimestamp(),
-      });
-    } else {
-      logger.info('[webhook] partial season payment — activeSeasonStatus unchanged', {
-        piId: pi.id,
-        playerEmail,
-        seasonId,
-        reason: unlock.reason,
-        paidCents: unlock.ledger?.paidCents ?? null,
-        totalFeeCents: unlock.ledger?.totalFeeCents ?? null,
-      });
-    }
-  }
+  await maybeUnlockActiveSeason(batch, {
+    tenantId, playerEmail, seasonId, feeType, regData, regId, grossCents, piId: pi.id,
+  });
 
-  // Immutable audit log
   batch.set(db.collection('audit_logs').doc(), {
-    action: 'SEASON_REGISTRATION_PAID',
-    actorUid: playerUid,
-    targetEmail: playerEmail ?? null,
-    tenantId,
-    seasonId: seasonId ?? null,
-    amountCents: pi.amount,
-    paymentIntentId: pi.id,
+    action: 'SEASON_REGISTRATION_PAID', actorUid: playerUid, targetEmail: playerEmail ?? null,
+    tenantId, seasonId: seasonId ?? null, amountCents: pi.amount, paymentIntentId: pi.id,
     timestamp: admin.firestore.FieldValue.serverTimestamp(),
   });
 
-  // Platform fee ledger row + YTD/monthly counters.  Doc ID is the
-  // PaymentIntent ID so webhook retries are idempotent.  All in the same
-  // batch as the registration flip + user unlock — atomic by construction.
   recordPlatformFee(batch, db, {
-    tenantId,
-    transactionType: 'season_registration',
-    sourceDocPath: regId ?
-      `season_registrations/${regId}` :
-      `season_registrations/unknown_${pi.id}`,
-    grossCents,
-    platformFeeCents,
-    netCents: grossCents - platformFeeCents,
-    rateBp,
-    policyId,
-    policyVersion,
-    stripeChargeId: pi.latest_charge ?? null,
-    paymentIntentId: pi.id,
-    idempotencyKey: pi.id,
+    tenantId, transactionType: 'season_registration',
+    sourceDocPath: regId ? `season_registrations/${regId}` : `season_registrations/unknown_${pi.id}`,
+    grossCents, platformFeeCents, netCents: grossCents - platformFeeCents,
+    rateBp, policyId, policyVersion, stripeChargeId: pi.latest_charge ?? null,
+    paymentIntentId: pi.id, idempotencyKey: pi.id,
   });
 
   await batch.commit();
-  logger.info('[webhook] payment succeeded', {
-    piId: pi.id,
-    tenantId,
-    playerEmail,
-    platformFeeCents,
-    rateBp,
-  });
+  logger.info('[webhook] payment succeeded', {piId: pi.id, tenantId, playerEmail, platformFeeCents, rateBp});
 
   let payHouseholdId = '';
   if (playerEmail) {
@@ -564,9 +544,7 @@ async function handlePaymentSucceeded(pi) {
     }
   }
   void notifyRegistrationChannel({
-    tenantId,
-    householdId: payHouseholdId,
-    playerEmail: normEmail(playerEmail || ''),
+    tenantId, householdId: payHouseholdId, playerEmail: normEmail(playerEmail || ''),
     subject: 'Payment received',
     body: `Registration payment of $${(grossCents / 100).toFixed(2)} was received. Your registrar will confirm roster assignment.`,
     sourceCallable: 'handleRegistrationWebhook',

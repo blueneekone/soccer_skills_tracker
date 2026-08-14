@@ -50,13 +50,13 @@ const STRIPE_SECRET_KEY = defineSecret('STRIPE_SECRET_KEY');
 
 const REGION = 'us-east1';
 
-const db = new Proxy({}, { get: (t, p) => {  const v = fs[p]; return typeof v === 'function' ? v.bind(fs) : v; } });
+const db = new Proxy({}, { get: (t, p) => { const fs = admin.firestore(); const v = fs[p]; return typeof v === 'function' ? v.bind(fs) : v; } });
 // Phase 2, Epic 3 — Teen 13-16 Ad-Block: zero-tolerance gate on recruiter exports.
 const {filterTeenRows} = require('./teenAdInterceptor');
 
 function getStripe() {
-  
-  return stripe(STRIPE_SECRET_KEY.value(), {apiVersion: '2024-06-20'});
+  const Stripe = require('stripe');
+  return new Stripe(STRIPE_SECRET_KEY.value(), {apiVersion: '2024-06-20'});
 }
 
 // ── recordRecruiterExport ───────────────────────────────────────────────────
