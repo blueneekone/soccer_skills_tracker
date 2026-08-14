@@ -182,36 +182,15 @@ function programRegistrationOpen(data, nowIso) {
 }
 
 /**
- * Director/registrar: create or update a tryout program.
+ * Parse and validate upsertTryoutProgram payload.
  */
-exports.upsertTryoutProgram = onCall({region: REGION}, async (request) => {
-  if (!request.auth) {
-    throw new HttpsError('unauthenticated', 'Sign in required.');
-  }
-
-  const role = request.auth.token.role || '';
-  const tokenClub =
-    typeof request.auth.token.clubId === 'string' ?
-      request.auth.token.clubId.trim() :
-      '';
-  const allowed = ['director', 'registrar', 'super_admin', 'global_admin'].includes(role);
-  if (!allowed) {
-    throw new HttpsError('permission-denied', 'Director or registrar access required.');
-  }
-
-  const data = request.data || {};
+function parseTryoutProgramPayload(data, uid) {
   const clubId = typeof data.clubId === 'string' ? data.clubId.trim() : '';
   const name = typeof data.name === 'string' ? data.name.trim().slice(0, 200) : '';
-  const programId =
-    typeof data.programId === 'string' ? data.programId.trim() : '';
+  const programId = typeof data.programId === 'string' ? data.programId.trim() : '';
 
   if (!clubId || !name) {
     throw new HttpsError('invalid-argument', 'clubId and name are required.');
-  }
-  if (role === 'director' || role === 'registrar') {
-    if (!tokenClub || tokenClub !== clubId) {
-      throw new HttpsError('permission-denied', 'Program must belong to your club.');
-    }
   }
 
   const ageBandsRaw = Array.isArray(data.ageBands) ? data.ageBands : [];
@@ -221,63 +200,62 @@ exports.upsertTryoutProgram = onCall({region: REGION}, async (request) => {
       .slice(0, 24);
 
   const capacityRaw = Number(data.capacity);
-  const capacity =
-    Number.isFinite(capacityRaw) && capacityRaw > 0 ?
-      Math.min(Math.floor(capacityRaw), 5000) :
-      null;
-
+  const capacity = Number.isFinite(capacityRaw) && capacityRaw > 0 ? Math.min(Math.floor(capacityRaw), 5000) : null;
   const feeRaw = Number(data.feeAmountDollars);
-  const feeAmountDollars =
-    Number.isFinite(feeRaw) && feeRaw > 0 ? Math.min(feeRaw, 5000) : 0;
+  const feeAmountDollars = Number.isFinite(feeRaw) && feeRaw > 0 ? Math.min(feeRaw, 5000) : 0;
 
   const registrationOpen = data.registrationOpen !== false;
-  const registrationOpensAt =
-    typeof data.registrationOpensAt === 'string' ?
-      data.registrationOpensAt.trim().slice(0, 32) :
-      null;
-  const registrationClosesAt =
-    typeof data.registrationClosesAt === 'string' ?
-      data.registrationClosesAt.trim().slice(0, 32) :
-      null;
+  const registrationOpensAt = typeof data.registrationOpensAt === 'string' ? data.registrationOpensAt.trim().slice(0, 32) : null;
+  const registrationClosesAt = typeof data.registrationClosesAt === 'string' ? data.registrationClosesAt.trim().slice(0, 32) : null;
 
   const now = admin.firestore.FieldValue.serverTimestamp();
   const payload = {
-    clubId,
-    name,
-    ageBands,
-    registrationOpen,
+    clubId, name, ageBands, registrationOpen,
     ...(registrationOpensAt ? {registrationOpensAt} : {}),
     ...(registrationClosesAt ? {registrationClosesAt} : {}),
     ...(capacity != null ? {capacity} : {}),
     feeAmountDollars,
     status: registrationOpen ? 'open' : 'draft',
     updatedAt: now,
-    updatedBy: request.auth.uid,
+    updatedBy: uid,
   };
 
+  return { clubId, name, programId, payload, now };
+}
+
+/**
+ * Director/registrar: create or update a tryout program.
+ */
+exports.upsertTryoutProgram = onCall({region: REGION}, async (request) => {
+  if (!request.auth) throw new HttpsError('unauthenticated', 'Sign in required.');
+
+  const role = request.auth.token.role || '';
+  const tokenClub = typeof request.auth.token.clubId === 'string' ? request.auth.token.clubId.trim() : '';
+  if (!['director', 'registrar', 'super_admin', 'global_admin'].includes(role)) {
+    throw new HttpsError('permission-denied', 'Director or registrar access required.');
+  }
+
+  const parsed = parseTryoutProgramPayload(request.data || {}, request.auth.uid);
+  if ((role === 'director' || role === 'registrar') && (!tokenClub || tokenClub !== parsed.clubId)) {
+    throw new HttpsError('permission-denied', 'Program must belong to your club.');
+  }
+
   let ref;
-  if (programId) {
-    ref = db().collection('tryout_programs').doc(programId);
+  if (parsed.programId) {
+    ref = db().collection('tryout_programs').doc(parsed.programId);
     const snap = await ref.get();
-    if (!snap.exists) {
-      throw new HttpsError('not-found', 'Tryout program not found.');
-    }
-    if (snap.data().clubId !== clubId) {
-      throw new HttpsError('permission-denied', 'Program club mismatch.');
-    }
-    await ref.set(payload, {merge: true});
+    if (!snap.exists) throw new HttpsError('not-found', 'Tryout program not found.');
+    if (snap.data().clubId !== parsed.clubId) throw new HttpsError('permission-denied', 'Program club mismatch.');
+    await ref.set(parsed.payload, {merge: true});
   } else {
     ref = db().collection('tryout_programs').doc();
     await ref.set({
-      ...payload,
-      registrationCount: 0,
-      waitlistCount: 0,
-      createdAt: now,
-      createdBy: request.auth.uid,
+      ...parsed.payload, registrationCount: 0, waitlistCount: 0,
+      createdAt: parsed.now, createdBy: request.auth.uid,
     });
   }
 
-  return {ok: true, programId: ref.id, clubId};
+  return {ok: true, programId: ref.id, clubId: parsed.clubId};
 });
 
 /**
@@ -334,51 +312,64 @@ exports.getPublicTryoutProgram = onCall(
 );
 
 /**
+ * Asynchronously notify tryout channel and queue comms.
+ */
+async function dispatchRegistrationCommsAsync(programId, result, guardianEmail, playerName, ageBand) {
+  const mailTemplate = result.pipelineStatus === PIPELINE.WAITLISTED ? 'waitlist_promoted' : 'registration_confirm';
+  void sendTryoutCommsForRegistration(programId, result.registrationId, mailTemplate).catch(() => undefined);
+
+  try {
+    const pSnap = await db().collection('tryout_programs').doc(programId).get();
+    if (!pSnap.exists) return;
+    const clubId = typeof pSnap.data().clubId === 'string' ? pSnap.data().clubId.trim() : '';
+    if (!clubId) return;
+    const statusLabel = result.pipelineStatus === PIPELINE.WAITLISTED ? 'waitlisted' : 'registered';
+    let householdId = '';
+    const gSnap = await db().collection('users').doc(guardianEmail).get();
+    if (gSnap.exists && typeof gSnap.data().householdId === 'string') {
+      householdId = gSnap.data().householdId.trim();
+    }
+    await postChannelSystemMessage({
+      channelType: 'tryouts_events', clubId, programId, householdId, guardianEmail,
+      subject: 'Tryout registration received',
+      body: `${playerName} (${ageBand}) is ${statusLabel} for this tryout program.`,
+      sourceCallable: 'registerForTryout', actorRole: 'system',
+    });
+  } catch (tryoutChErr) {
+    logger.warn('[registerForTryout] tryouts_events channel post failed (non-fatal)', {
+      programId, err: tryoutChErr instanceof Error ? tryoutChErr.message : String(tryoutChErr),
+    });
+  }
+}
+
+/**
  * Public: register an athlete for a tryout program (waitlist when full).
  */
 exports.registerForTryout = onCall(
     {region: REGION, invoker: 'public'},
     async (request) => {
       const data = request.data || {};
-      const programId =
-        typeof data.programId === 'string' ? data.programId.trim() : '';
-      const playerName =
-        typeof data.playerName === 'string' ? data.playerName.trim().slice(0, 200) : '';
-      const ageBand =
-        typeof data.ageBand === 'string' ? data.ageBand.trim().slice(0, 32) : '';
-      const guardianName =
-        typeof data.guardianName === 'string' ?
-          data.guardianName.trim().slice(0, 200) :
-          '';
+      const programId = typeof data.programId === 'string' ? data.programId.trim() : '';
+      const playerName = typeof data.playerName === 'string' ? data.playerName.trim().slice(0, 200) : '';
+      const ageBand = typeof data.ageBand === 'string' ? data.ageBand.trim().slice(0, 32) : '';
+      const guardianName = typeof data.guardianName === 'string' ? data.guardianName.trim().slice(0, 200) : '';
       const guardianEmail = normEmail(data.guardianEmail);
-      const guardianPhone =
-        typeof data.guardianPhone === 'string' ?
-          data.guardianPhone.trim().slice(0, 32) :
-          '';
+      const guardianPhone = typeof data.guardianPhone === 'string' ? data.guardianPhone.trim().slice(0, 32) : '';
 
       if (!programId || !playerName || !ageBand || !guardianName || !guardianEmail) {
-        throw new HttpsError(
-            'invalid-argument',
-            'programId, playerName, ageBand, guardianName, and guardianEmail are required.',
-        );
+        throw new HttpsError('invalid-argument', 'programId, playerName, ageBand, guardianName, and guardianEmail are required.');
       }
 
       const programRef = db().collection('tryout_programs').doc(programId);
       const nowIso = new Date().toISOString().slice(0, 10);
       const now = admin.firestore.FieldValue.serverTimestamp();
 
-      /** @type {{ registrationId: string, pipelineStatus: string }} */
       const result = await db().runTransaction(async (tx) => {
         const pSnap = await tx.get(programRef);
-        if (!pSnap.exists) {
-          throw new HttpsError('not-found', 'Tryout program not found.');
-        }
+        if (!pSnap.exists) throw new HttpsError('not-found', 'Tryout program not found.');
         const p = pSnap.data();
         if (!programRegistrationOpen(p, nowIso)) {
-          throw new HttpsError(
-              'failed-precondition',
-              'Registration is closed for this tryout program.',
-          );
+          throw new HttpsError('failed-precondition', 'Registration is closed for this tryout program.');
         }
 
         const bands = Array.isArray(p.ageBands) ? p.ageBands : [];
@@ -386,18 +377,11 @@ exports.registerForTryout = onCall(
           throw new HttpsError('invalid-argument', 'Invalid age band for this program.');
         }
 
-        const regKey = crypto
-            .createHash('sha256')
-            .update(`${programId}|${guardianEmail}|${playerName.toLowerCase()}`)
-            .digest('hex')
-            .slice(0, 32);
+        const regKey = crypto.createHash('sha256').update(`${programId}|${guardianEmail}|${playerName.toLowerCase()}`).digest('hex').slice(0, 32);
         const regRef = programRef.collection('registrations').doc(regKey);
         const dupSnap = await tx.get(regRef);
         if (dupSnap.exists) {
-          throw new HttpsError(
-              'already-exists',
-              'This athlete is already registered for this tryout.',
-          );
+          throw new HttpsError('already-exists', 'This athlete is already registered for this tryout.');
         }
 
         const capacity = Number(p.capacity) || 0;
@@ -407,15 +391,8 @@ exports.registerForTryout = onCall(
         const pipelineStatus = waitlisted ? PIPELINE.WAITLISTED : PIPELINE.REGISTERED;
 
         tx.set(regRef, {
-          programId,
-          clubId: p.clubId,
-          playerName,
-          ageBand,
-          guardianName,
-          guardianEmail,
-          ...(guardianPhone ? {guardianPhone} : {}),
-          pipelineStatus,
-          createdAt: now,
+          programId, clubId: p.clubId, playerName, ageBand, guardianName, guardianEmail,
+          ...(guardianPhone ? {guardianPhone} : {}), pipelineStatus, createdAt: now,
         });
 
         tx.update(programRef, {
@@ -427,124 +404,58 @@ exports.registerForTryout = onCall(
         return {registrationId: regRef.id, pipelineStatus};
       });
 
-      const mailTemplate =
-        result.pipelineStatus === PIPELINE.WAITLISTED ?
-          'waitlist_promoted' :
-          'registration_confirm';
-      void sendTryoutCommsForRegistration(programId, result.registrationId, mailTemplate)
-          .catch(() => undefined);
-
-      void (async () => {
-        try {
-          const pSnap = await db().collection('tryout_programs').doc(programId).get();
-          if (!pSnap.exists) return;
-          const clubId = typeof pSnap.data().clubId === 'string' ? pSnap.data().clubId.trim() : '';
-          if (!clubId) return;
-          const statusLabel =
-            result.pipelineStatus === PIPELINE.WAITLISTED ? 'waitlisted' : 'registered';
-          let householdId = '';
-          const gSnap = await db().collection('users').doc(guardianEmail).get();
-          if (gSnap.exists && typeof gSnap.data().householdId === 'string') {
-            householdId = gSnap.data().householdId.trim();
-          }
-          await postChannelSystemMessage({
-            channelType: 'tryouts_events',
-            clubId,
-            programId,
-            householdId,
-            guardianEmail,
-            subject: 'Tryout registration received',
-            body: `${playerName} (${ageBand}) is ${statusLabel} for this tryout program.`,
-            sourceCallable: 'registerForTryout',
-            actorRole: 'system',
-          });
-        } catch (tryoutChErr) {
-          logger.warn('[registerForTryout] tryouts_events channel post failed (non-fatal)', {
-            programId,
-            err: tryoutChErr instanceof Error ? tryoutChErr.message : String(tryoutChErr),
-          });
-        }
-      })();
+      void dispatchRegistrationCommsAsync(programId, result, guardianEmail, playerName, ageBand);
 
       return {ok: true, ...result, programId};
     },
 );
 
 /**
- * Director/registrar: schedule a tryout field session (Phase B).
+ * Director/registrar: schedule a tryout field session.
  */
 exports.upsertTryoutSession = onCall({region: REGION}, async (request) => {
-  if (!request.auth) {
-    throw new HttpsError('unauthenticated', 'Sign in required.');
-  }
+  if (!request.auth) throw new HttpsError('unauthenticated', 'Sign in required.');
 
   const role = request.auth.token.role || '';
-  const tokenClub =
-    typeof request.auth.token.clubId === 'string' ?
-      request.auth.token.clubId.trim() :
-      '';
-  const allowed = ['director', 'registrar', 'super_admin', 'global_admin'].includes(role);
-  if (!allowed) {
+  const tokenClub = typeof request.auth.token.clubId === 'string' ? request.auth.token.clubId.trim() : '';
+  if (!['director', 'registrar', 'super_admin', 'global_admin'].includes(role)) {
     throw new HttpsError('permission-denied', 'Director or registrar access required.');
   }
 
   const data = request.data || {};
-  const programId =
-    typeof data.programId === 'string' ? data.programId.trim() : '';
-  const sessionId =
-    typeof data.sessionId === 'string' ? data.sessionId.trim() : '';
-  const title =
-    typeof data.title === 'string' ? data.title.trim().slice(0, 200) : 'Tryout session';
-  const fieldLabel =
-    typeof data.fieldLabel === 'string' ? data.fieldLabel.trim().slice(0, 200) : '';
-  const startAt =
-    typeof data.startAt === 'string' ? data.startAt.trim().slice(0, 32) : '';
-  const endAt =
-    typeof data.endAt === 'string' ? data.endAt.trim().slice(0, 32) : '';
+  const programId = typeof data.programId === 'string' ? data.programId.trim() : '';
+  const sessionId = typeof data.sessionId === 'string' ? data.sessionId.trim() : '';
+  const title = typeof data.title === 'string' ? data.title.trim().slice(0, 200) : 'Tryout session';
+  const fieldLabel = typeof data.fieldLabel === 'string' ? data.fieldLabel.trim().slice(0, 200) : '';
+  const startAt = typeof data.startAt === 'string' ? data.startAt.trim().slice(0, 32) : '';
+  const endAt = typeof data.endAt === 'string' ? data.endAt.trim().slice(0, 32) : '';
 
   if (!programId || !fieldLabel || !startAt) {
-    throw new HttpsError(
-        'invalid-argument',
-        'programId, fieldLabel, and startAt are required.',
-    );
+    throw new HttpsError('invalid-argument', 'programId, fieldLabel, and startAt are required.');
   }
 
   const programRef = db().collection('tryout_programs').doc(programId);
   const programSnap = await programRef.get();
-  if (!programSnap.exists) {
-    throw new HttpsError('not-found', 'Tryout program not found.');
-  }
+  if (!programSnap.exists) throw new HttpsError('not-found', 'Tryout program not found.');
   const clubId = programSnap.data().clubId || '';
   if (!staffCanAccessClub(role, tokenClub, clubId)) {
     throw new HttpsError('permission-denied', 'Program must belong to your club.');
   }
 
   const ageBandsRaw = Array.isArray(data.ageBands) ? data.ageBands : [];
-  const ageBands = ageBandsRaw
-      .map((b) => (typeof b === 'string' ? b.trim().slice(0, 32) : ''))
-      .filter(Boolean)
-      .slice(0, 24);
+  const ageBands = ageBandsRaw.map((b) => (typeof b === 'string' ? b.trim().slice(0, 32) : '')).filter(Boolean).slice(0, 24);
 
   const now = admin.firestore.FieldValue.serverTimestamp();
   const payload = {
-    programId,
-    clubId,
-    title,
-    fieldLabel,
-    startAt,
-    ...(endAt ? {endAt} : {}),
-    ...(ageBands.length ? {ageBands} : {}),
-    updatedAt: now,
-    updatedBy: request.auth.uid,
+    programId, clubId, title, fieldLabel, startAt,
+    ...(endAt ? {endAt} : {}), ...(ageBands.length ? {ageBands} : {}),
+    updatedAt: now, updatedBy: request.auth.uid,
   };
 
   let ref;
   if (sessionId) {
     ref = programRef.collection('sessions').doc(sessionId);
-    const snap = await ref.get();
-    if (!snap.exists) {
-      throw new HttpsError('not-found', 'Tryout session not found.');
-    }
+    if (!(await ref.get()).exists) throw new HttpsError('not-found', 'Tryout session not found.');
     await ref.set(payload, {merge: true});
   } else {
     ref = programRef.collection('sessions').doc();
@@ -555,72 +466,41 @@ exports.upsertTryoutSession = onCall({region: REGION}, async (request) => {
 });
 
 /**
- * Director/registrar: assign registered athletes to a session (by age band or ids).
+ * Director/registrar: assign registered athletes to a session.
  */
 exports.assignTryoutSession = onCall({region: REGION}, async (request) => {
-  if (!request.auth) {
-    throw new HttpsError('unauthenticated', 'Sign in required.');
-  }
+  if (!request.auth) throw new HttpsError('unauthenticated', 'Sign in required.');
 
   const role = request.auth.token.role || '';
-  const tokenClub =
-    typeof request.auth.token.clubId === 'string' ?
-      request.auth.token.clubId.trim() :
-      '';
-  const allowed = ['director', 'registrar', 'super_admin', 'global_admin'].includes(role);
-  if (!allowed) {
+  const tokenClub = typeof request.auth.token.clubId === 'string' ? request.auth.token.clubId.trim() : '';
+  if (!['director', 'registrar', 'super_admin', 'global_admin'].includes(role)) {
     throw new HttpsError('permission-denied', 'Director or registrar access required.');
   }
 
   const data = request.data || {};
-  const programId =
-    typeof data.programId === 'string' ? data.programId.trim() : '';
-  const sessionId =
-    typeof data.sessionId === 'string' ? data.sessionId.trim() : '';
-  const ageBand =
-    typeof data.ageBand === 'string' ? data.ageBand.trim().slice(0, 32) : '';
-  const registrationIdsRaw = Array.isArray(data.registrationIds) ?
-    data.registrationIds :
-    [];
+  const programId = typeof data.programId === 'string' ? data.programId.trim() : '';
+  const sessionId = typeof data.sessionId === 'string' ? data.sessionId.trim() : '';
+  const ageBand = typeof data.ageBand === 'string' ? data.ageBand.trim().slice(0, 32) : '';
+  const registrationIdsRaw = Array.isArray(data.registrationIds) ? data.registrationIds : [];
 
-  if (!programId || !sessionId) {
-    throw new HttpsError('invalid-argument', 'programId and sessionId are required.');
-  }
+  if (!programId || !sessionId) throw new HttpsError('invalid-argument', 'programId and sessionId are required.');
 
   const programRef = db().collection('tryout_programs').doc(programId);
   const sessionRef = programRef.collection('sessions').doc(sessionId);
-  const [programSnap, sessionSnap] = await Promise.all([
-    programRef.get(),
-    sessionRef.get(),
-  ]);
-  if (!programSnap.exists || !sessionSnap.exists) {
-    throw new HttpsError('not-found', 'Program or session not found.');
-  }
+  const [programSnap, sessionSnap] = await Promise.all([programRef.get(), sessionRef.get()]);
+  if (!programSnap.exists || !sessionSnap.exists) throw new HttpsError('not-found', 'Program or session not found.');
+
   const clubId = programSnap.data().clubId || '';
-  if (!staffCanAccessClub(role, tokenClub, clubId)) {
-    throw new HttpsError('permission-denied', 'Program must belong to your club.');
-  }
+  if (!staffCanAccessClub(role, tokenClub, clubId)) throw new HttpsError('permission-denied', 'Program must belong to your club.');
 
   const regCol = programRef.collection('registrations');
-  let regRefs = registrationIdsRaw
-      .map((id) => (typeof id === 'string' ? id.trim() : ''))
-      .filter(Boolean)
-      .slice(0, 500)
-      .map((id) => regCol.doc(id));
-
+  let regRefs = registrationIdsRaw.map((id) => (typeof id === 'string' ? id.trim() : '')).filter(Boolean).slice(0, 500).map((id) => regCol.doc(id));
   if (!regRefs.length && ageBand) {
     const q = await regCol.where('ageBand', '==', ageBand).get();
-    regRefs = q.docs
-        .filter((d) => {
-          const st = d.data().pipelineStatus;
-          return st === PIPELINE.REGISTERED || st === PIPELINE.CHECKED_IN;
-        })
-        .map((d) => d.ref);
+    regRefs = q.docs.filter((d) => d.data().pipelineStatus === PIPELINE.REGISTERED || d.data().pipelineStatus === PIPELINE.CHECKED_IN).map((d) => d.ref);
   }
 
-  if (!regRefs.length) {
-    throw new HttpsError('not-found', 'No registrations matched for assignment.');
-  }
+  if (!regRefs.length) throw new HttpsError('not-found', 'No registrations matched for assignment.');
 
   const now = admin.firestore.FieldValue.serverTimestamp();
   const batch = db().batch();
@@ -636,8 +516,7 @@ exports.assignTryoutSession = onCall({region: REGION}, async (request) => {
   await batch.commit();
 
   for (const ref of regRefs) {
-    void sendTryoutCommsForRegistration(programId, ref.id, 'session_assigned')
-        .catch(() => undefined);
+    void sendTryoutCommsForRegistration(programId, ref.id, 'session_assigned').catch(() => undefined);
   }
 
   return {ok: true, programId, sessionId, assignedCount: regRefs.length};
@@ -778,7 +657,7 @@ function clampScore(v, fallback = 50) {
 }
 
 /**
- * Director/registrar: station template for tryout eval rotations (Phase C).
+ * Director/registrar: station template for tryout eval rotations.
  */
 exports.upsertTryoutPlan = onCall({region: REGION}, async (request) => {
   if (!request.auth) {
@@ -836,88 +715,49 @@ exports.upsertTryoutPlan = onCall({region: REGION}, async (request) => {
 });
 
 /**
- * Coach/staff: lock tryout eval sheet for a registration (Phase C).
+ * Coach/staff: lock tryout eval sheet for a registration.
  */
 exports.submitTryoutEvaluation = onCall({region: REGION}, async (request) => {
-  if (!request.auth) {
-    throw new HttpsError('unauthenticated', 'Sign in required.');
-  }
+  if (!request.auth) throw new HttpsError('unauthenticated', 'Sign in required.');
 
   const role = request.auth.token.role || '';
-  const tokenClub =
-    typeof request.auth.token.clubId === 'string' ?
-      request.auth.token.clubId.trim() :
-      '';
-  const allowed = ['director', 'registrar', 'coach', 'super_admin', 'global_admin'].includes(role);
-  if (!allowed) {
+  const tokenClub = typeof request.auth.token.clubId === 'string' ? request.auth.token.clubId.trim() : '';
+  if (!['director', 'registrar', 'coach', 'super_admin', 'global_admin'].includes(role)) {
     throw new HttpsError('permission-denied', 'Staff access required.');
   }
 
   const data = request.data || {};
-  const programId =
-    typeof data.programId === 'string' ? data.programId.trim() : '';
-  const registrationId =
-    typeof data.registrationId === 'string' ? data.registrationId.trim() : '';
-  if (!programId || !registrationId) {
-    throw new HttpsError('invalid-argument', 'programId and registrationId are required.');
-  }
+  const programId = typeof data.programId === 'string' ? data.programId.trim() : '';
+  const registrationId = typeof data.registrationId === 'string' ? data.registrationId.trim() : '';
+  if (!programId || !registrationId) throw new HttpsError('invalid-argument', 'programId and registrationId are required.');
 
   const programRef = db().collection('tryout_programs').doc(programId);
   const regRef = programRef.collection('registrations').doc(registrationId);
   const [programSnap, regSnap] = await Promise.all([programRef.get(), regRef.get()]);
-  if (!programSnap.exists || !regSnap.exists) {
-    throw new HttpsError('not-found', 'Program or registration not found.');
-  }
+  if (!programSnap.exists || !regSnap.exists) throw new HttpsError('not-found', 'Program or registration not found.');
+
   const clubId = programSnap.data().clubId || '';
-  if (!staffCanAccessClub(role, tokenClub, clubId)) {
-    throw new HttpsError('permission-denied', 'Program must belong to your club.');
-  }
+  if (!staffCanAccessClub(role, tokenClub, clubId)) throw new HttpsError('permission-denied', 'Program must belong to your club.');
 
   const reg = regSnap.data();
-  if (reg.pipelineStatus === PIPELINE.WAITLISTED) {
-    throw new HttpsError('failed-precondition', 'Waitlisted athletes cannot be evaluated.');
-  }
+  if (reg.pipelineStatus === PIPELINE.WAITLISTED) throw new HttpsError('failed-precondition', 'Waitlisted athletes cannot be evaluated.');
 
   /** @type {Record<string, number>} */
   const scores = {};
-  for (const key of EVAL_KEYS) {
-    scores[key] = clampScore(data[key], 50);
-  }
-  const overallGrade = Math.round(
-      EVAL_KEYS.reduce((sum, k) => sum + scores[k], 0) / EVAL_KEYS.length,
-  );
-  const notes =
-    typeof data.notes === 'string' ? data.notes.trim().slice(0, 2000) : '';
+  for (const key of EVAL_KEYS) scores[key] = clampScore(data[key], 50);
+  const overallGrade = Math.round(EVAL_KEYS.reduce((sum, k) => sum + scores[k], 0) / EVAL_KEYS.length);
+  const notes = typeof data.notes === 'string' ? data.notes.trim().slice(0, 2000) : '';
 
   const now = admin.firestore.FieldValue.serverTimestamp();
   const actorEmail = normEmail(request.auth.token.email || '');
 
-  const evalPayload = {
-    programId,
-    clubId,
-    registrationId,
-    playerName: reg.playerName || '',
-    ageBand: reg.ageBand || '',
-    ...scores,
-    overallGrade,
-    ...(notes ? {notes} : {}),
-    lockedAt: now,
-    lockedBy: request.auth.uid,
-    lockedByEmail: actorEmail || null,
-  };
-
   await db().runTransaction(async (tx) => {
-    tx.set(
-        programRef.collection('evaluations').doc(registrationId),
-        evalPayload,
-        {merge: true},
-    );
-    tx.set(regRef, {
-      pipelineStatus: PIPELINE.EVALUATED,
-      evaluatedAt: now,
-      overallGrade,
-      updatedAt: now,
+    tx.set(programRef.collection('evaluations').doc(registrationId), {
+      programId, clubId, registrationId, playerName: reg.playerName || '', ageBand: reg.ageBand || '',
+      ...scores, overallGrade, ...(notes ? {notes} : {}), lockedAt: now,
+      lockedBy: request.auth.uid, lockedByEmail: actorEmail || null,
     }, {merge: true});
+    tx.set(regRef, { pipelineStatus: PIPELINE.EVALUATED, evaluatedAt: now, overallGrade, updatedAt: now }, {merge: true});
   });
 
   return {ok: true, programId, registrationId, overallGrade};
@@ -1045,7 +885,7 @@ exports.respondTryoutOffer = onCall(
 );
 
 /**
- * Public: lookup registration status for guardian (offer / RSVP follow-up).
+ * Public: lookup registration status for guardian.
  */
 exports.getPublicTryoutRegistration = onCall(
     {region: REGION, invoker: 'public'},
@@ -1094,27 +934,19 @@ exports.getPublicTryoutRegistration = onCall(
 
 /**
  * Link an existing household operative (by guardian + display name) to the roster team.
- * @param {{ guardianEmail: string, playerName: string, teamId: string, clubId: string }} input
  */
 async function linkHouseholdOperativeToTeam(input) {
   const gEm = normEmail(input.guardianEmail);
   const teamId = typeof input.teamId === 'string' ? input.teamId.trim() : '';
   const clubId = typeof input.clubId === 'string' ? input.clubId.trim() : '';
-  const playerName =
-      typeof input.playerName === 'string' ? input.playerName.trim().slice(0, 200) : '';
-  if (!gEm || !teamId || !playerName) {
-    return {linked: false};
-  }
-  const hhSnap = await db()
-      .collection('households')
-      .where('parentEmails', 'array-contains', gEm)
-      .limit(8)
-      .get();
+  const playerName = typeof input.playerName === 'string' ? input.playerName.trim().slice(0, 200) : '';
+  if (!gEm || !teamId || !playerName) return {linked: false};
+
+  const hhSnap = await db().collection('households').where('parentEmails', 'array-contains', gEm).limit(8).get();
   const nameNorm = playerName.toLowerCase();
+
   for (const hdoc of hhSnap.docs) {
-    const pe = Array.isArray(hdoc.data().playerEmails) ?
-      hdoc.data().playerEmails :
-      [];
+    const pe = Array.isArray(hdoc.data().playerEmails) ? hdoc.data().playerEmails : [];
     for (const raw of pe) {
       const childEmail = normEmail(String(raw || ''));
       if (!childEmail.endsWith('@operative.local')) continue;
@@ -1122,12 +954,10 @@ async function linkHouseholdOperativeToTeam(input) {
       const uSnap = await uRef.get();
       if (!uSnap.exists) continue;
       const u = uSnap.data() || {};
-      const pn =
-          typeof u.playerName === 'string' ? u.playerName.trim().toLowerCase() : '';
+      const pn = typeof u.playerName === 'string' ? u.playerName.trim().toLowerCase() : '';
       if (pn !== nameNorm) continue;
-      if (u.teamId === teamId) {
-        return {linked: true, noop: true, childEmail};
-      }
+      if (u.teamId === teamId) return {linked: true, noop: true, childEmail};
+
       let childUid = '';
       try {
         const rec = await admin.auth().getUserByEmail(childEmail);
@@ -1139,20 +969,8 @@ async function linkHouseholdOperativeToTeam(input) {
       const now = admin.firestore.FieldValue.serverTimestamp();
       const batch = db().batch();
       batch.set(uRef, {teamId, clubId, updatedAt: now}, {merge: true});
-      batch.set(
-          db().collection('player_lookup').doc(childEmail),
-          {
-            clubId,
-            teamId,
-            playerName: u.playerName,
-            updatedAt: now,
-          },
-          {merge: true},
-      );
-      batch.update(db().collection('teams').doc(teamId), {
-        playerUids: admin.firestore.FieldValue.arrayUnion(childUid),
-        updatedAt: now,
-      });
+      batch.set(db().collection('player_lookup').doc(childEmail), { clubId, teamId, playerName: u.playerName, updatedAt: now }, {merge: true});
+      batch.update(db().collection('teams').doc(teamId), { playerUids: admin.firestore.FieldValue.arrayUnion(childUid), updatedAt: now });
       await batch.commit();
       return {linked: true, childEmail, teamId};
     }
@@ -1161,121 +979,69 @@ async function linkHouseholdOperativeToTeam(input) {
 }
 
 /**
- * Director/registrar: add accepted athlete to team roster pipeline (name-only row).
+ * Director/registrar: add accepted athlete to team roster pipeline.
  */
 exports.promoteTryoutToRoster = onCall({region: REGION}, async (request) => {
-  if (!request.auth) {
-    throw new HttpsError('unauthenticated', 'Sign in required.');
-  }
+  if (!request.auth) throw new HttpsError('unauthenticated', 'Sign in required.');
 
   const role = request.auth.token.role || '';
-  const tokenClub =
-    typeof request.auth.token.clubId === 'string' ?
-      request.auth.token.clubId.trim() :
-      '';
-  const allowed = ['director', 'registrar', 'super_admin', 'global_admin'].includes(role);
-  if (!allowed) {
+  const tokenClub = typeof request.auth.token.clubId === 'string' ? request.auth.token.clubId.trim() : '';
+  if (!['director', 'registrar', 'super_admin', 'global_admin'].includes(role)) {
     throw new HttpsError('permission-denied', 'Director or registrar access required.');
   }
 
   const data = request.data || {};
-  const programId =
-    typeof data.programId === 'string' ? data.programId.trim() : '';
-  const registrationId =
-    typeof data.registrationId === 'string' ? data.registrationId.trim() : '';
-  const teamId =
-    typeof data.teamId === 'string' ? data.teamId.trim() : '';
+  const programId = typeof data.programId === 'string' ? data.programId.trim() : '';
+  const registrationId = typeof data.registrationId === 'string' ? data.registrationId.trim() : '';
+  const teamId = typeof data.teamId === 'string' ? data.teamId.trim() : '';
 
   if (!programId || !registrationId || !teamId) {
-    throw new HttpsError(
-        'invalid-argument',
-        'programId, registrationId, and teamId are required.',
-    );
+    throw new HttpsError('invalid-argument', 'programId, registrationId, and teamId are required.');
   }
 
   const programRef = db().collection('tryout_programs').doc(programId);
   const regRef = programRef.collection('registrations').doc(registrationId);
-  const [programSnap, regSnap, teamSnap] = await Promise.all([
-    programRef.get(),
-    regRef.get(),
-    db().collection('teams').doc(teamId).get(),
-  ]);
+  const [programSnap, regSnap, teamSnap] = await Promise.all([programRef.get(), regRef.get(), db().collection('teams').doc(teamId).get()]);
   if (!programSnap.exists || !regSnap.exists || !teamSnap.exists) {
     throw new HttpsError('not-found', 'Program, registration, or team not found.');
   }
 
   const clubId = programSnap.data().clubId || '';
-  const teamClub =
-    typeof teamSnap.data().clubId === 'string' ? teamSnap.data().clubId.trim() : '';
-  if (teamClub && teamClub !== clubId) {
-    throw new HttpsError('failed-precondition', 'Team must belong to the tryout program club.');
-  }
-  if (!staffCanAccessClub(role, tokenClub, clubId)) {
-    throw new HttpsError('permission-denied', 'Program must belong to your club.');
-  }
+  const teamClub = typeof teamSnap.data().clubId === 'string' ? teamSnap.data().clubId.trim() : '';
+  if (teamClub && teamClub !== clubId) throw new HttpsError('failed-precondition', 'Team must belong to the tryout program club.');
+  if (!staffCanAccessClub(role, tokenClub, clubId)) throw new HttpsError('permission-denied', 'Program must belong to your club.');
 
   const reg = regSnap.data();
-  if (reg.pipelineStatus !== PIPELINE.ACCEPTED) {
-    throw new HttpsError(
-        'failed-precondition',
-        'Athlete must accept the offer before roster promotion.',
-    );
-  }
+  if (reg.pipelineStatus !== PIPELINE.ACCEPTED) throw new HttpsError('failed-precondition', 'Athlete must accept the offer before roster promotion.');
 
-  const playerName =
-    typeof reg.playerName === 'string' ? reg.playerName.trim().slice(0, 200) : '';
-  if (!playerName) {
-    throw new HttpsError('failed-precondition', 'Registration missing player name.');
-  }
+  const playerName = typeof reg.playerName === 'string' ? reg.playerName.trim().slice(0, 200) : '';
+  if (!playerName) throw new HttpsError('failed-precondition', 'Registration missing player name.');
 
   const rosterRef = db().collection('rosters').doc(teamId);
   const now = admin.firestore.FieldValue.serverTimestamp();
 
   await db().runTransaction(async (tx) => {
     const rosterSnap = await tx.get(rosterRef);
-    const players = rosterSnap.exists && Array.isArray(rosterSnap.data().players) ?
-      rosterSnap.data().players.filter((x) => typeof x === 'string') :
-      [];
+    const players = rosterSnap.exists && Array.isArray(rosterSnap.data().players)
+      ? rosterSnap.data().players.filter((x) => typeof x === 'string') : [];
     const norm = playerName.toLowerCase();
     if (!players.some((n) => String(n).trim().toLowerCase() === norm)) {
-      tx.set(rosterRef, {
-        players: [...players, playerName],
-        updatedAt: now,
-      }, {merge: true});
+      tx.set(rosterRef, { players: [...players, playerName], updatedAt: now }, {merge: true});
     }
-    tx.set(regRef, {
-      pipelineStatus: PIPELINE.ROSTER_PENDING,
-      rosterTeamId: teamId,
-      rosterPromotedAt: now,
-      updatedAt: now,
-    }, {merge: true});
+    tx.set(regRef, { pipelineStatus: PIPELINE.ROSTER_PENDING, rosterTeamId: teamId, rosterPromotedAt: now, updatedAt: now }, {merge: true});
   });
 
   const guardianEmail = normEmail(reg.guardianEmail);
   let operativeLink = {linked: false};
   try {
-    operativeLink = await linkHouseholdOperativeToTeam({
-      guardianEmail,
-      playerName,
-      teamId,
-      clubId,
-    });
+    operativeLink = await linkHouseholdOperativeToTeam({ guardianEmail, playerName, teamId, clubId });
   } catch (linkErr) {
-    console.warn(
-        '[promoteTryoutToRoster] operative link failed (non-fatal)',
-        linkErr instanceof Error ? linkErr.message : linkErr,
-    );
+    logger.warn('[promoteTryoutToRoster] operative link failed (non-fatal)', linkErr instanceof Error ? linkErr.message : linkErr);
   }
 
   return {
-    ok: true,
-    programId,
-    registrationId,
-    teamId,
-    playerName,
-    guardianEmail,
-    pipelineStatus: PIPELINE.ROSTER_PENDING,
-    operativeLinked: operativeLink.linked === true,
+    ok: true, programId, registrationId, teamId, playerName, guardianEmail,
+    pipelineStatus: PIPELINE.ROSTER_PENDING, operativeLinked: operativeLink.linked === true,
     operativeEmail: operativeLink.childEmail || null,
   };
 });
