@@ -336,9 +336,6 @@ async function runMinorRetentionPurgeJob(jobSnap, deleteQueueDoc) {
             db().collection('reps').where(playerIdField, '==', email),
         ),
         paginatedBatchDelete(
-            db().collection('player_stats').where(playerIdField, '==', email),
-        ),
-        paginatedBatchDelete(
             db().collection('evaluations').where(playerEmailField, '==', email),
         ),
         paginatedBatchDelete(

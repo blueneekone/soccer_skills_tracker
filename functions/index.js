@@ -12,7 +12,7 @@ const logger = require('firebase-functions/logger');
 logger.warn(
     '[functions/default] Legacy monolith index — deploy split codebases for production surfaces.',
 );
-const admin = require('./functions-shared/bootstrapAdmin');
+const admin = require('../functions-shared/bootstrapAdmin');
 
 exports.affinityWebhook = require('./affinityWebhook').affinityWebhook;
 
