@@ -42,6 +42,39 @@ service cloud.firestore {
       allow read, write: if isAuthenticated() && (request.auth.token.admin == true || request.auth.token.role == 'super_admin');
     }
 
+    // Auth-flow lookup collections — read-only for any authenticated user during login resolution
+    match /coach_lookup/{email} {
+      allow read: if isAuthenticated();
+    }
+    match /player_lookup/{email} {
+      allow read: if isAuthenticated();
+    }
+    match /registrar_lookup/{email} {
+      allow read: if isAuthenticated();
+    }
+    match /households/{householdId} {
+      allow read: if isAuthenticated();
+    }
+
+    // Workout logs, physio reports, and training data — authenticated users
+    match /workout_logs/{logId} {
+      allow read, write: if isAuthenticated();
+    }
+    match /grit_awards/{awardId} {
+      allow read: if isAuthenticated();
+    }
+
+    // Gamification and XP collections
+    match /bounties/{bountyId} {
+      allow read: if isAuthenticated();
+    }
+    match /devices/{deviceId} {
+      allow read, write: if isAuthenticated();
+    }
+    match /tenants/{tenantId} {
+      allow read: if isAuthenticated();
+    }
+
     // Default match to prevent global unauthenticated reads/writes
     match /{document=**} {
       allow read, write: if false;
