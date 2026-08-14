@@ -58,13 +58,15 @@
 			targetId = teamsStore.clubs[0].id;
 		}
 
-		// Sync local state for the UI
-		if (clubId !== targetId) clubId = targetId;
+		untrack(() => {
+			// Sync local state for the UI
+			if (clubId !== targetId) clubId = targetId;
 
-		// Force sync to global store so the Context Switcher highlights the correct club
-		if (workspaceContextStore.activeClubId !== targetId) {
-			workspaceContextStore.setActiveClubId(targetId);
-		}
+			// Force sync to global store so the Context Switcher highlights the correct club
+			if (workspaceContextStore.activeClubId !== targetId) {
+				workspaceContextStore.setActiveClubId(targetId);
+			}
+		});
 	});
 
 	let activeTab = $state(page.url.searchParams.get('tab') || 'home');

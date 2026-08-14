@@ -4,7 +4,8 @@
 	import { onDestroy } from 'svelte';
 	import { getFunctions, httpsCallable } from 'firebase/functions';
 	import { doc, onSnapshot } from 'firebase/firestore';
-	import { getActiveDb } from '$lib/firebase';
+	import { db, getActiveDb } from '$lib/firebase.js';
+	import { authStore } from '$lib/stores/auth.svelte.js';
 	import type { TournamentEventDoc, TicketTier, TournamentBracket } from '$lib/types/tournamentEvent.js';
 	import { labelToTierId } from '$lib/types/tournamentEvent.js';
 	import TournamentBracketPanel from '$lib/components/director/TournamentBracketPanel.svelte';
