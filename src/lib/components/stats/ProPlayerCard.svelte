@@ -3,6 +3,7 @@
 	import { onMount } from 'svelte';
 	import { collection, getDocs } from 'firebase/firestore';
 	import { db } from '$lib/firebase.js';
+	import { authStore } from '$lib/stores/auth.svelte.js';
 	import IntelModal from '$lib/components/ui/IntelModal.svelte';
 	import StickerVariantShell from '$lib/components/gamification/StickerVariantShell.svelte';
 	import OperativeIdCardFrame from '$lib/components/stats/OperativeIdCardFrame.svelte';

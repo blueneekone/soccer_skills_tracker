@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { browser } from '$app/environment';
 	import { db, functions } from '$lib/firebase.js';
+	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { collection, query, where, onSnapshot } from 'firebase/firestore';
 	import { httpsCallable } from 'firebase/functions';
 	import TryoutSessionsPanel from './TryoutSessionsPanel.svelte';

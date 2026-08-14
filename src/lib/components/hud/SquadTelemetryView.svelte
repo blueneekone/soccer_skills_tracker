@@ -4,6 +4,7 @@
 	import HudSeededRingCanvas from '$lib/components/hud/HudSeededRingCanvas.svelte';
 	import '$lib/styles/hud-telemetry.css';
 	import { db, functions } from '$lib/firebase.js';
+	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { httpsCallable } from 'firebase/functions';
 	import {
 		addDoc,

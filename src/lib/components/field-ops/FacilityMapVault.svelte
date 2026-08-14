@@ -2,6 +2,7 @@
 	import { browser } from '$app/environment';
 	import { tick } from 'svelte';
 	import { storage, db } from '$lib/firebase.js';
+	import { authStore } from '$lib/stores/auth.svelte.js';
 	import {
 		collection,
 		deleteDoc,

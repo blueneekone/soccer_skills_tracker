@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { db } from '$lib/firebase.js';
+	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { collection, query, where, orderBy, onSnapshot } from 'firebase/firestore';
 	import { teamsStore } from '$lib/stores/teams.svelte.js';
 
