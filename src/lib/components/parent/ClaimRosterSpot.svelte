@@ -2,6 +2,8 @@
 	import { functions } from '$lib/firebase.js';
 	import { httpsCallable } from 'firebase/functions';
 	import { authStore } from '$lib/stores/auth.svelte.js';
+	import Icon from '$lib/components/ui/Icon.svelte';
+	import type { IconName } from '$lib/icons/registry.js';
 
 	let pendingName = $state('');
 	let callsign = $state('');
@@ -57,8 +59,9 @@
 		/>
 		{#if err}<p class="crs__err" role="alert">{err}</p>{/if}
 		{#if ok}<p class="crs__ok" role="status">{ok}</p>{/if}
-		<button type="button" class="crs__btn" disabled={busy || !callsign.trim()} onclick={() => void claim()}>
-			{busy ? 'Claiming…' : 'Claim athlete'}
+		<button type="button" class="crs__btn tw-inline-flex tw-items-center tw-gap-1.5" disabled={busy || !callsign.trim()} onclick={() => void claim()}>
+			<Icon name={"user.group" as IconName} size={15} />
+			<span>{busy ? 'CLAIMING...' : 'CLAIM ATHLETE'}</span>
 		</button>
 	</section>
 {/if}
@@ -67,9 +70,9 @@
 	.crs {
 		margin-bottom: 1.25rem;
 		padding: 1rem 1.1rem;
-		border-radius: 12px;
-		border: 1px solid rgb(20 184 166 / 0.35);
-		background: rgb(20 184 166 / 0.08);
+		border-radius: 0;
+		border: 1px solid rgba(218, 255, 10, 0.35);
+		background: rgba(218, 255, 10, 0.05);
 	}
 
 	.crs__title {
@@ -77,6 +80,7 @@
 		font-size: 0.9375rem;
 		font-weight: 800;
 		color: #f8fafc;
+		font-family: 'Geist Sans', sans-serif;
 	}
 
 	.crs__sub {
@@ -91,6 +95,7 @@
 		margin-bottom: 0.25rem;
 		font-size: 0.6875rem;
 		font-weight: 700;
+		font-family: 'Geist Mono', monospace;
 		text-transform: uppercase;
 		color: #64748b;
 	}
@@ -100,33 +105,51 @@
 		box-sizing: border-box;
 		margin-bottom: 0.65rem;
 		padding: 0.5rem 0.65rem;
-		border-radius: 8px;
+		border-radius: 0;
 		border: 1px solid #334155;
 		background: #0f172a;
 		color: #f8fafc;
+		font-family: 'Geist Mono', monospace;
+		font-size: 0.8125rem;
+	}
+
+	.crs__input:focus {
+		outline: none;
+		border-color: #daff0a;
 	}
 
 	.crs__err {
 		margin: 0 0 0.5rem;
 		font-size: 0.8125rem;
+		font-family: 'Geist Mono', monospace;
 		color: #f87171;
 	}
 
 	.crs__ok {
 		margin: 0 0 0.5rem;
 		font-size: 0.8125rem;
-		color: #14b8a6;
+		font-family: 'Geist Mono', monospace;
+		color: #daff0a;
 	}
 
 	.crs__btn {
 		border: none;
-		border-radius: 8px;
-		padding: 0.45rem 0.9rem;
-		font-size: 0.8125rem;
-		font-weight: 700;
-		background: #14b8a6;
-		color: #0f172a;
+		border-radius: 0;
+		padding: 0.55rem 1rem;
+		font-size: 0.75rem;
+		font-weight: 800;
+		font-family: 'Geist Mono', monospace;
+		text-transform: uppercase;
+		letter-spacing: 0.05em;
+		background: #daff0a;
+		color: #000000;
 		cursor: pointer;
+		transition: all 0.15s ease;
+	}
+
+	.crs__btn:hover:not(:disabled) {
+		background: #ebff47;
+		box-shadow: 0 0 12px rgba(218, 255, 10, 0.4);
 	}
 
 	.crs__btn:disabled {

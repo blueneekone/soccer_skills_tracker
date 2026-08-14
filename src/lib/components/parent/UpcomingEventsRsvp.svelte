@@ -9,6 +9,8 @@
 		buildHouseholdIcsCalendar,
 		downloadIcsFile,
 	} from '$lib/parent/householdCalendarIcs.js';
+	import Icon from '$lib/components/ui/Icon.svelte';
+	import type { IconName } from '$lib/icons/registry.js';
 
 	let {
 		childEmails = [],
@@ -120,11 +122,12 @@
 		{#if childEmails.length > 0}
 			<button
 				type="button"
-				class="parent-rsvp__export"
+				class="parent-rsvp__export tw-inline-flex tw-items-center tw-gap-1.5"
 				disabled={loading || exporting}
 				onclick={exportCalendar}
 			>
-				{exporting ? 'Exporting…' : 'Add to calendar'}
+				<Icon name={"sys.calendar" as IconName} size={13} />
+				<span>{exporting ? 'Exporting…' : 'Add to calendar'}</span>
 			</button>
 		{/if}
 	</div>
@@ -179,7 +182,7 @@
 <style>
 	.parent-rsvp {
 		border: 1px solid rgba(51, 65, 85, 0.45);
-		border-radius: 12px;
+		border-radius: 0;
 		padding: 1rem 1.1rem;
 		background: rgba(15, 23, 42, 0.4);
 	}
@@ -198,6 +201,7 @@
 		font-size: 0.95rem;
 		font-weight: 700;
 		color: #f8fafc;
+		font-family: 'Geist Sans', sans-serif;
 	}
 
 	.parent-rsvp__sub {
@@ -208,16 +212,23 @@
 
 	.parent-rsvp__export {
 		padding: 0.4rem 0.7rem;
-		border-radius: 6px;
-		border: 1px solid rgba(20, 184, 166, 0.45);
-		background: rgba(20, 184, 166, 0.1);
-		color: #5eead4;
+		border-radius: 0;
+		border: 1px solid rgba(218, 255, 10, 0.45);
+		background: rgba(218, 255, 10, 0.1);
+		color: #daff0a;
 		font-size: 0.6875rem;
 		font-weight: 700;
+		font-family: 'Geist Mono', monospace;
 		text-transform: uppercase;
 		letter-spacing: 0.06em;
 		cursor: pointer;
 		flex-shrink: 0;
+		transition: all 0.15s ease;
+	}
+
+	.parent-rsvp__export:hover:not(:disabled) {
+		background: rgba(218, 255, 10, 0.2);
+		box-shadow: 0 0 10px rgba(218, 255, 10, 0.3);
 	}
 
 	.parent-rsvp__export:disabled {
@@ -270,21 +281,22 @@
 
 	.parent-rsvp__btn {
 		padding: 0.35rem 0.55rem;
-		border-radius: 6px;
+		border-radius: 0;
 		border: 1px solid rgba(148, 163, 184, 0.25);
 		background: transparent;
 		color: #cbd5e1;
 		font-size: 0.6875rem;
 		font-weight: 700;
+		font-family: 'Geist Mono', monospace;
 		text-transform: uppercase;
 		letter-spacing: 0.06em;
 		cursor: pointer;
 	}
 
 	.parent-rsvp__btn--active {
-		border-color: rgba(20, 184, 166, 0.5);
-		background: rgba(20, 184, 166, 0.12);
-		color: #5eead4;
+		border-color: rgba(218, 255, 10, 0.5);
+		background: rgba(218, 255, 10, 0.15);
+		color: #daff0a;
 	}
 
 	.parent-rsvp__btn:disabled {

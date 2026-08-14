@@ -10,6 +10,8 @@
 	import { ref as storageRef, getDownloadURL } from 'firebase/storage';
 	import { db, functions, storage } from '$lib/firebase.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
+	import Icon from '$lib/components/ui/Icon.svelte';
+	import type { IconName } from '$lib/icons/registry.js';
 
 	interface Props {
 		householdId: string;
@@ -196,24 +198,26 @@
 						<p class="parent-bounty-claims-item__error" role="alert">{itemErrors[item.id]}</p>
 					{/if}
 
-					<div class="parent-bounty-claims-actions">
+					<div class="parent-bounty-claims-actions tw-flex tw-gap-2">
 						<button
 							type="button"
-							class="parent-bounty-btn-deploy parent-bounty-btn-deploy--sm"
+							class="tw-bg-nuclear-yellow tw-text-black tw-px-3 tw-py-1.5 tw-font-mono tw-text-xs tw-font-bold tw-rounded-none hover:tw-bg-yellow-300 tw-transition-all tw-inline-flex tw-items-center tw-gap-1.5"
 							disabled={deciding.has(item.id)}
 							onclick={() => decide(item.id, 'approved')}
 							aria-label="Approve completion for {childDisplayName(item.userKey)}"
 						>
-							{deciding.has(item.id) ? '…' : 'Approve'}
+							<Icon name={"status.check" as IconName} size={14} />
+							<span>{deciding.has(item.id) ? '…' : 'Approve'}</span>
 						</button>
 						<button
 							type="button"
-							class="parent-bounty-btn-audit parent-bounty-btn-audit--sm"
+							class="tw-border tw-border-slate-700 tw-bg-[#1E293B] tw-text-slate-300 tw-px-3 tw-py-1.5 tw-font-mono tw-text-xs tw-font-bold tw-rounded-none hover:tw-border-red-500/50 hover:tw-text-red-400 tw-transition-all tw-inline-flex tw-items-center tw-gap-1.5"
 							disabled={deciding.has(item.id)}
 							onclick={() => decide(item.id, 'rejected')}
 							aria-label="Reject completion for {childDisplayName(item.userKey)}"
 						>
-							{deciding.has(item.id) ? '…' : 'Reject'}
+							<Icon name={"status.x" as IconName} size={14} />
+							<span>{deciding.has(item.id) ? '…' : 'Reject'}</span>
 						</button>
 					</div>
 				</li>

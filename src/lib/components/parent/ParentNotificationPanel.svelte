@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { fcmService } from '$lib/services/messaging.svelte.js';
+	import Icon from '$lib/components/ui/Icon.svelte';
+	import type { IconName } from '$lib/icons/registry.js';
 	import {
 		loadParentPushPreferences,
 		saveParentPushPreferences,
@@ -66,17 +68,21 @@
 	{#if !fcmService.isGranted}
 		<button
 			type="button"
-			class="parent-push__enable"
+			class="parent-push__enable tw-inline-flex tw-items-center tw-gap-2"
 			disabled={fcmService.isRegistering || !fcmService.isSupported}
 			onclick={enablePush}
 		>
-			{fcmService.isRegistering ? 'Enabling…' : 'Enable push notifications'}
+			<Icon name={"sys.bell" as IconName} size={14} />
+			<span>{fcmService.isRegistering ? 'ENABLING...' : 'ENABLE PUSH NOTIFICATIONS'}</span>
 		</button>
 		{#if fcmService.error}
 			<p class="parent-push__err" role="alert">{fcmService.error}</p>
 		{/if}
 	{:else}
-		<p class="parent-push__status">Push enabled on this device.</p>
+		<p class="parent-push__status tw-font-mono tw-text-nuclear-yellow tw-flex tw-items-center tw-gap-1.5">
+			<Icon name={"status.seal-check" as IconName} size={14} />
+			<span>PUSH ENABLED ON THIS DEVICE</span>
+		</p>
 	{/if}
 
 	<ul class="parent-push__matrix">
@@ -126,7 +132,7 @@
 <style>
 	.parent-push {
 		border: 1px solid rgba(51, 65, 85, 0.45);
-		border-radius: 12px;
+		border-radius: 0;
 		padding: 1rem 1.1rem;
 		background: rgba(15, 23, 42, 0.4);
 	}
@@ -144,6 +150,7 @@
 		font-size: 0.95rem;
 		font-weight: 700;
 		color: #f8fafc;
+		font-family: 'Geist Sans', sans-serif;
 	}
 
 	.parent-push__sub {
@@ -154,19 +161,29 @@
 
 	.parent-push__sync {
 		font-size: 0.75rem;
-		color: #5eead4;
+		color: #daff0a;
+		font-family: 'Geist Mono', monospace;
 	}
 
 	.parent-push__enable {
 		margin-bottom: 0.75rem;
 		padding: 0.45rem 0.75rem;
-		border-radius: 6px;
-		border: 1px solid rgba(20, 184, 166, 0.45);
-		background: rgba(20, 184, 166, 0.1);
-		color: #5eead4;
+		border-radius: 0;
+		border: 1px solid rgba(218, 255, 10, 0.5);
+		background: rgba(218, 255, 10, 0.1);
+		color: #daff0a;
 		font-size: 0.75rem;
 		font-weight: 700;
+		font-family: 'Geist Mono', monospace;
+		text-transform: uppercase;
+		letter-spacing: 0.05em;
 		cursor: pointer;
+		transition: all 0.15s ease;
+	}
+
+	.parent-push__enable:hover:not(:disabled) {
+		background: rgba(218, 255, 10, 0.2);
+		box-shadow: 0 0 12px rgba(218, 255, 10, 0.3);
 	}
 
 	.parent-push__enable:disabled {

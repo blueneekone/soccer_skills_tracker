@@ -284,11 +284,11 @@
 	{:else}
 		<ul class="tw-m-0 tw-list-none tw-space-y-4 tw-p-0">
 			{#each players as player (player.email)}
-				<li class="st-bento tw-rounded-2xl tw-border tw-border-slate-800 tw-bg-slate-900/60 tw-p-5">
+				<li class="st-bento tw-rounded-none tw-border tw-border-slate-800 tw-bg-slate-900/60 tw-p-5">
 					<div class="tw-flex tw-flex-wrap tw-items-center tw-justify-between tw-gap-4">
 						<div class="tw-flex tw-min-w-0 tw-items-center tw-gap-3">
 							<div
-								class="tw-flex tw-h-10 tw-w-10 tw-shrink-0 tw-items-center tw-justify-center tw-rounded-full tw-bg-slate-800 tw-font-mono tw-text-sm tw-font-black tw-text-slate-300"
+								class="tw-flex tw-h-10 tw-w-10 tw-shrink-0 tw-items-center tw-justify-center tw-rounded-none tw-bg-slate-800 tw-font-mono tw-text-sm tw-font-black tw-text-nuclear-yellow tw-border tw-border-slate-700"
 								aria-hidden="true"
 							>
 								{player.displayName.slice(0, 2).toUpperCase()}

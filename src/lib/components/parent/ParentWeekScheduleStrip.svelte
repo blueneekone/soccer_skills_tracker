@@ -7,6 +7,8 @@
 		type HouseholdScheduleEvent,
 	} from '$lib/parent/loadHouseholdScheduleEvents.js';
 	import { parseLiveStreamUrl } from '$lib/live-stream/liveStreamEmbed.js';
+	import Icon from '$lib/components/ui/Icon.svelte';
+	import type { IconName } from '$lib/icons/registry.js';
 
 	let {
 		childEmails = [],
@@ -123,12 +125,13 @@
 						<span class="parent-week__kind">{ev.kind}</span>
 						{#if ev.liveStreamUrl && parseLiveStreamUrl(ev.liveStreamUrl)}
 							<a
-								class="parent-week__watch"
+								class="parent-week__watch tw-inline-flex tw-items-center tw-gap-1"
 								href={ev.liveStreamUrl}
 								target="_blank"
 								rel="noopener noreferrer"
 							>
-								Watch live
+								<Icon name={"comm.broadcast" as IconName} size={12} class="tw-text-nuclear-yellow" />
+								<span>Watch live</span>
 							</a>
 						{/if}
 					</div>
@@ -161,7 +164,7 @@
 <style>
 	.parent-week {
 		border: 1px solid rgba(51, 65, 85, 0.45);
-		border-radius: 12px;
+		border-radius: 0;
 		padding: 1rem 1.1rem;
 		background: rgba(15, 23, 42, 0.55);
 	}
@@ -171,6 +174,7 @@
 		font-size: 0.95rem;
 		font-weight: 700;
 		color: #f8fafc;
+		font-family: 'Geist Sans', sans-serif;
 	}
 
 	.parent-week__sub {
@@ -243,7 +247,8 @@
 		margin-top: 0.15rem;
 		font-size: 0.72rem;
 		font-weight: 700;
-		color: #fbbf24;
+		color: #daff0a;
+		font-family: 'Geist Mono', monospace;
 		text-decoration: none;
 	}
 
@@ -259,20 +264,21 @@
 
 	.parent-week__btn {
 		padding: 0.28rem 0.45rem;
-		border-radius: 6px;
+		border-radius: 0;
 		border: 1px solid rgba(148, 163, 184, 0.25);
 		background: transparent;
 		color: #cbd5e1;
 		font-size: 0.625rem;
 		font-weight: 700;
+		font-family: 'Geist Mono', monospace;
 		text-transform: uppercase;
 		cursor: pointer;
 	}
 
 	.parent-week__btn--active {
-		border-color: rgba(20, 184, 166, 0.5);
-		background: rgba(20, 184, 166, 0.12);
-		color: #5eead4;
+		border-color: rgba(218, 255, 10, 0.5);
+		background: rgba(218, 255, 10, 0.15);
+		color: #daff0a;
 	}
 
 	.parent-week__btn:disabled {

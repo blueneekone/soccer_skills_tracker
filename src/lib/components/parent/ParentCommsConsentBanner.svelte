@@ -3,6 +3,8 @@
 	import { collection, getDocs, query, where } from 'firebase/firestore';
 	import { db } from '$lib/firebase.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
+	import Icon from '$lib/components/ui/Icon.svelte';
+	import type { IconName } from '$lib/icons/registry.js';
 
 	const SESSION_DISMISS_KEY = 'parent-comms-consent-banner-dismissed';
 
@@ -87,7 +89,10 @@
 			</p>
 		</div>
 		<div class="parent-comms-consent-banner__actions">
-			<a class="parent-comms-consent-banner__cta" href="/parent/vpc">Update VPC consent</a>
+			<a class="parent-comms-consent-banner__cta tw-inline-flex tw-items-center tw-gap-1.5" href="/parent/vpc">
+				<Icon name={"status.shield-check" as IconName} size={15} />
+				<span>Update VPC consent</span>
+			</a>
 			<button type="button" class="parent-comms-consent-banner__dismiss" onclick={dismiss}>
 				Dismiss for now
 			</button>
@@ -101,8 +106,9 @@
 		flex-direction: column;
 		gap: 0.65rem;
 		padding: 0.85rem 1rem;
-		border: 1px solid rgba(251, 191, 36, 0.45);
-		background: rgba(15, 23, 42, 0.04);
+		border: 1px solid rgba(218, 255, 10, 0.45);
+		background: rgba(15, 23, 42, 0.8);
+		border-radius: 0;
 	}
 
 	.parent-comms-consent-banner__body {
@@ -115,7 +121,7 @@
 		margin: 0;
 		font-size: 0.875rem;
 		line-height: 1.45;
-		color: var(--text-primary, #0f172a);
+		color: #f8fafc;
 	}
 
 	.parent-comms-consent-banner__actions {
@@ -131,12 +137,22 @@
 		justify-content: center;
 		min-height: 2.25rem;
 		padding: 0.35rem 0.85rem;
-		font-size: 0.8125rem;
-		font-weight: 700;
+		font-size: 0.75rem;
+		font-weight: 800;
+		font-family: 'Geist Mono', monospace;
+		text-transform: uppercase;
+		letter-spacing: 0.05em;
 		text-decoration: none;
-		color: #0f172a;
-		background: #fbbf24;
-		border: 1px solid #d97706;
+		color: #000000;
+		background: #daff0a;
+		border: none;
+		border-radius: 0;
+		transition: all 0.15s ease;
+	}
+
+	.parent-comms-consent-banner__cta:hover {
+		background: #ebff47;
+		box-shadow: 0 0 12px rgba(218, 255, 10, 0.4);
 	}
 
 	.parent-comms-consent-banner__dismiss {
