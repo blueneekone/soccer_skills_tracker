@@ -2,7 +2,7 @@
 	import { onDestroy, tick } from 'svelte';
 	import { browser } from '$app/environment';
 	import { collection, query, where, orderBy, onSnapshot } from 'firebase/firestore';
-	import { getActiveDb } from '$lib/firebase';
+	import { getActiveDb, db } from '$lib/firebase';
 	import { authStore } from '$lib/stores/auth.svelte.js';
 
 	interface TicketDoc {

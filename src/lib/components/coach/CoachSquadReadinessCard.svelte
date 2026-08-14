@@ -2,6 +2,7 @@
 	import { browser } from '$app/environment';
 	import { collection, getDocs, query, where } from 'firebase/firestore';
 	import { db } from '$lib/firebase.js';
+	import { authStore } from '$lib/stores/auth.svelte.js';
 	import EligibilityBadge from './EligibilityBadge.svelte';
 	import Icon from '$lib/components/ui/Icon.svelte';
 
