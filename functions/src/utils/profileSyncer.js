@@ -5,9 +5,9 @@
  * ──────────────────────────────────────
  * Master aggregation engine for public player profiles.
  *
- * Reads from:  users/{email}, player_stats/{uid}, workout_logs, trials,
+ * Reads from:  users/{email}, users/{uid}, workout_logs, trials,
  *              trial_scores, player_metrics, teams, clubs
- * Writes to:   player_stats/{uid}  (performance arrays + trial scores),
+ * Writes to:   users/{uid}  (performance arrays + trial scores),
  *              public_player_profiles/{uid}  (recruiter-visible index)
  *
  * Extracted verbatim from index.js (function syncPublicPlayerProfile).
@@ -35,7 +35,7 @@ const db = () => admin.firestore();
 /**
  * Aggregates XP history, verified trial scores, and recruiter-visible
  * metadata for a single player UID, then writes to:
- *   - player_stats/{uid}         (performance arrays)
+ *   - users/{uid}         (performance arrays)
  *   - public_player_profiles/{uid} (when recruitProfilePublic === true and age >= 16)
  *
  * If the player has opted out, is a minor, or has no stats doc, the public
@@ -90,7 +90,7 @@ async function syncPublicPlayerProfile(uid) {
     return;
   }
 
-  const psSnap = await db().collection('player_stats').doc(uid).get();
+  const psSnap = await db().collection('users').doc(email).get();
   if (!psSnap.exists) {
     await pubRef.delete().catch(() => {});
     return;
@@ -221,7 +221,7 @@ async function syncPublicPlayerProfile(uid) {
     });
   }
 
-  await db().collection('player_stats').doc(uid).set(
+  await db().collection('users').doc(email).set(
       {
         monthly_performance: monthlyXp,
         daily_performance: dailyPerformance,

@@ -337,7 +337,7 @@ exports.logTrainingSession = onCall(
 
   const logRef = db().collection('workout_logs').doc();
   const logId = logRef.id;
-  const psRef = db().collection('player_stats').doc(athleteUid);
+  const psRef = db().collection('users').doc(playerEmail);
   const tsRef = db().collection('team_stats').doc(teamId);
   const teamRef = db().collection('teams').doc(teamId);
 

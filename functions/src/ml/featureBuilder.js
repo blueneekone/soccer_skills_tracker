@@ -8,7 +8,7 @@
  * All features are normalised to roughly [0, 1]. No PII enters the vector.
  *
  * Sources read (all Admin SDK):
- *   • player_stats/{uid}
+ *   • users/{uid}
  *   • workout_logs (uid match, last 28 days, capped at 50 docs)
  *   • physio_self_reports/{uid}/daily/* (last 7 days)
  *   • assignments (open, for uid's team, last 30 days)
@@ -145,6 +145,14 @@ async function buildStateVector(uid, now = new Date()) {
   const nowMs = now.getTime();
   const DAY_MS = 86400000;
 
+  let playerEmail = uid; // fallback
+  try {
+    const authUser = await admin.auth().getUser(uid);
+    playerEmail = authUser.email || uid;
+  } catch (e) {
+    // fallback if unresolvable
+  }
+
   // ── Parallel data fetch ─────────────────────────────────────────────────────
   const cutoff28 = new Date(nowMs - 28 * DAY_MS);
   const cutoff7  = new Date(nowMs - 7  * DAY_MS);
@@ -152,8 +160,8 @@ async function buildStateVector(uid, now = new Date()) {
 
   const [psSnap, logsSnap, physioSnap, assignmentsSnap, teamAssignSnap, gritSnap] =
     await Promise.all([
-      // player_stats
-      db().collection('player_stats').doc(uid).get(),
+      // users
+      db().collection('users').doc(playerEmail).get(),
       // workout_logs — last 28 days
       db().collection('workout_logs')
           .where('playerId', '==', uid)
@@ -299,7 +307,7 @@ async function buildStateVector(uid, now = new Date()) {
   const latestTeamAssign = teamAssignDocs[0];
   const coachAttrId = String(latestTeamAssign?.targetAttributeId ?? '');
 
-  // Build a 6-slot attribute key list from player_stats (or use positional)
+  // Build a 6-slot attribute key list from users (or use positional)
   // The sports_configs canonical order; we map via xpByAttribute keys.
   // For the state vector we use the xpByAttribute keys sorted alphabetically
   // as a stable proxy (S6 will inject the canonical sport attribute list).

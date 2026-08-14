@@ -52,14 +52,14 @@ const CRITERION_HANDLERS = {
 
   /**
    * reps_count — total reps logged by the player (cumulative across all sessions).
-   * Reads `player_stats/{uid}.total_reps` for the running total.
+   * Reads `users/{uid}.total_reps` for the running total.
    */
   async reps_count(bountyDoc, ctx) {
     const {targetReps, drillNameFilter} = bountyDoc.criterion;
     const firestore = admin.firestore();
 
     // If there is a drill name filter, we need to count from reps collection
-    // with a query; otherwise use the denormalized player_stats total.
+    // with a query; otherwise use the denormalized users total.
     if (drillNameFilter) {
       const playerEmail = bountyDoc.playerEmail;
       const startIso    = bountyDoc.startsAt || bountyDoc.createdAt?.toDate?.()?.toISOString?.() || '';
@@ -82,14 +82,14 @@ const CRITERION_HANDLERS = {
       return {satisfied: filteredReps >= targetReps, currentValue: filteredReps};
     }
 
-    // Fast path: use denormalized total from player_stats
+    // Fast path: use denormalized total from users
     const currentReps = typeof ctx.totalReps === 'number' ? ctx.totalReps : 0;
     return {satisfied: currentReps >= targetReps, currentValue: currentReps};
   },
 
   /**
    * workout_volume_kj — total kilojoules of training load.
-   * Approximated as total intense minutes × metabolic coefficient (from player_stats).
+   * Approximated as total intense minutes × metabolic coefficient (from users).
    */
   async workout_volume_kj(bountyDoc, ctx) {
     const {targetKj} = bountyDoc.criterion;

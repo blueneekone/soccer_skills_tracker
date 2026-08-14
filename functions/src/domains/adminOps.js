@@ -187,6 +187,7 @@ exports.syncUserClaims = onDocumentWritten('users/{docId}', async (event) => {
           .catch(() => {});
     } else {
       try {
+        // Ensure sync uses uid, since syncPublicPlayerProfile takes uid
         await syncPublicPlayerProfile(authUid);
       } catch (e) {
         logger.error('syncUserClaims syncPublicPlayerProfile', e);

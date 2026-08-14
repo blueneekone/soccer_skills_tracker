@@ -266,7 +266,7 @@ async function processSinglePlayer({userDoc, todayStr, nowMs, params, db: firest
     return {decayXp: 0, streakStatus: 'active'};
   }
 
-  const psRef   = firestoreDb.collection('player_stats').doc(playerUid);
+  const psRef   = firestoreDb.collection('users').doc(userEmail);
   const userRef = firestoreDb.collection('users').doc(userEmail);
 
   let outcome = {decayXp: 0, streakStatus: armory.streakStatus || 'active'};
@@ -288,7 +288,7 @@ async function processSinglePlayer({userDoc, todayStr, nowMs, params, db: firest
     const totalXp     = typeof freshArmory.totalXP === 'number' ? freshArmory.totalXP : 0;
     const lastActive  = typeof freshArmory.lastActiveUtc === 'string' ? freshArmory.lastActiveUtc : '';
 
-    // ── Streak data from player_stats ─────────────────────────────────────
+    // ── Streak data from users ─────────────────────────────────────
     const psData         = psSnap.exists ? psSnap.data() : {};
     const prevStreakDays  = typeof psData.streak_days  === 'number' ? Math.floor(psData.streak_days)  : 0;
     const prevStatus     = typeof psData.streakStatus  === 'string' ? psData.streakStatus  : '';
@@ -384,7 +384,7 @@ async function processSinglePlayer({userDoc, todayStr, nowMs, params, db: firest
       });
     }
 
-    // player_stats update.
+    // users update.
     if (params.streakEnabled) {
       const psPatch = {
         streak_days: streakResult.newStreakDays,
@@ -604,7 +604,7 @@ exports.claimStreakFreeze = onCall(
       const weekKey   = isoWeekKey(nowMs);
       const params    = readParams();
       const userRef   = db().collection('users').doc(email);
-      const psRef     = db().collection('player_stats').doc(uid);
+      const psRef     = db().collection('users').doc(email);
 
       let freezesRemaining = 0;
 
