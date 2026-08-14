@@ -197,7 +197,7 @@ function detectPlateau(xpHistorySlice, lookbackDays, deltaThresholdPct) {
  * The snapshot is intentionally flat and serializable — it is stored as a
  * plain object inside `users/{email}/memory_capsules/{capsuleId}`.
  *
- * @param {Record<string, unknown>} playerStats    `player_stats/{uid}` document data.
+ * @param {Record<string, unknown>} playerStats    `users/{uid}` document data.
  * @param {Record<string, unknown>} userArmory     `users/{email}.armory` map.
  * @param {string} monthBucket                     'YYYY-MM' key for the active month.
  * @returns {{ totalXp: number; level: number; streakDays: number; scoutsSix: Record<string, string>; monthBucket: string; capturedAt: string }}

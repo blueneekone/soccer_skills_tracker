@@ -285,7 +285,7 @@ async function grantTrainingXpAfterRepCreated(db, repSnap, repId) {
   const weekKey = isoWeekKey(nowMs);
 
   const uRef = db.collection("users").doc(playerEmail);
-  const psRef = db.collection("player_stats").doc(athleteUid);
+  const psRef = db.collection("users").doc(playerEmail);
   const repRef = db.collection("reps").doc(repId);
 
   try {
@@ -373,7 +373,7 @@ async function grantTrainingXpAfterRepCreated(db, repSnap, repId) {
             Math.floor(uData.longestStreak) :
             0;
 
-      // T1-10: denormalize clubId onto player_stats so the Firestore read rule can use
+      // T1-10: denormalize clubId onto users so the Firestore read rule can use
       // tokenClubMatchesDoc() (zero gets) instead of teamClubId() (1 get).
       const psClubId =
           typeof uData.clubId === "string" && uData.clubId.trim() ? uData.clubId.trim() : null;
@@ -446,7 +446,7 @@ async function grantTrainingXpAfterRepCreated(db, repSnap, repId) {
   // Runs outside the XP transaction so a bounty verification failure never
   // rolls back the XP grant.
   try {
-    const psSnap = await db.collection("player_stats").doc(athleteUid).get();
+    const psSnap = await db.collection("users").doc(playerEmail).get();
     const psData = psSnap.exists ? psSnap.data() : {};
     await evaluateActiveBountiesForPlayer(db, playerEmail, {
       totalReps:    typeof psData.total_reps === "number" ? psData.total_reps : repsTotal,

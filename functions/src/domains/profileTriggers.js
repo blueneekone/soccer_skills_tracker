@@ -7,7 +7,7 @@
  * whenever source documents change.
  *
  * Triggers exported:
- *   updatePublicProfile        — onDocumentWritten  player_stats/{statId}
+ *   updatePublicProfile        — onDocumentWritten  users/{statId}
  *   updatePublicProfileOnTrial — onDocumentWritten  trials/{scoreId}
  *   onWorkoutLogCreated        — onDocumentCreated  workout_logs/{logId}
  *
@@ -41,7 +41,7 @@ const db = () => admin.firestore();
  */
 const updatePublicProfile = onDocumentWritten(
     {
-      document: 'player_stats/{statId}',
+      document: 'users/{statId}',
       region: REGION,
     },
     async (event) => {
@@ -78,7 +78,7 @@ const updatePublicProfile = onDocumentWritten(
         }
         await syncPublicPlayerProfile(playerUid);
       } catch (e) {
-        logger.error('updatePublicProfile player_stats', e);
+        logger.error('updatePublicProfile users', e);
       }
     },
 );

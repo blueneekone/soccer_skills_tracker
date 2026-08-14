@@ -134,7 +134,7 @@ const trajectoryMonthlyAggregator = onSchedule(
       const previousMonth = computePreviousMonthBucketKey(new Date(nowMs));
 
       // Query active players.
-      const psSnap = await db.collection('player_stats')
+      const psSnap = await db.collection('users')
           .where('last_training_utc', '>=', cutoffDate)
           .limit(500)
           .get();

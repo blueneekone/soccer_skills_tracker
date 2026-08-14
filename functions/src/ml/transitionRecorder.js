@@ -63,7 +63,7 @@ function expectedXpFromLogDoc(logDoc) {
  *
  * @param {object} logDoc      workout_logs document data
  * @param {object} inferLog    matching rl_inference_log document data (or null)
- * @param {object} playerStats player_stats document data
+ * @param {object} playerStats users document data
  * @param {boolean} hasGritAward
  * @returns {{ total: number, engagementTerm: number, adherenceTerm: number,
  *             learningTerm: number, overtrainingPenalty: number,
@@ -172,8 +172,16 @@ exports.onWorkoutLogCreated = onDocumentCreated(
       // Only record a transition if we have a matching inference log.
       if (!inferLog) return;
 
-      // Fetch player_stats for reward calculation.
-      const psSnap = await db().collection('player_stats').doc(uid).get();
+      let playerEmail = uid; // fallback
+      try {
+        const authUser = await admin.auth().getUser(uid);
+        playerEmail = authUser.email || uid;
+      } catch (e) {
+        // fallback
+      }
+
+      // Fetch users for reward calculation.
+      const psSnap = await db().collection('users').doc(playerEmail).get();
       const playerStats = psSnap.exists ? psSnap.data() : {};
 
       // Check for a grit award tied to this workout within the last hour.

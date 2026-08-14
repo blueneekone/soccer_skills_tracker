@@ -11,7 +11,7 @@
  *   1. Pulls their last 30-day xpHistory window.
  *   2. Runs `detectPlateau()` from trajectoryOps.js.
  *   3. On a positive plateau detection, fetches:
- *        • `player_stats/{uid}` — level, streak, total_xp
+ *        • `users/{uid}` — level, streak, total_xp
  *        • `users/{email}.armory` — Scout's Six
  *   4. Builds two `CapsuleSnapshot` objects (baseline + current).
  *   5. Writes `users/{email}/memory_capsules/cap_{isoWeekKey}` with
@@ -144,7 +144,7 @@ async function maybeWriteCapsule(db, playerEmail, athleteUid, lookbackDays, plat
 
   // Fetch current player state.
   const [psSnap, uSnap] = await Promise.all([
-    db.collection('player_stats').doc(athleteUid).get(),
+    db.collection('users').doc(playerEmail).get(),
     db.collection('users').doc(playerEmail).get(),
   ]);
 
@@ -217,7 +217,7 @@ const trajectoryPlateauDetector = onSchedule(
       // Active = trained in last 14 days (same as lookback window).
       const cutoffDate = new Date(Date.now() - lookbackDays * 86_400_000).toISOString().slice(0, 10);
 
-      const psSnap = await db.collection('player_stats')
+      const psSnap = await db.collection('users')
           .where('last_training_utc', '>=', cutoffDate)
           .limit(500)
           .get();

@@ -75,7 +75,7 @@ exports.daysBetween = daysBetween;
  * @typedef {Object} StreakInput
  * @property {string} lastTrainingUtc   - ISO "YYYY-MM-DD" of the player's last
  *                                        logged workout ("" if never trained).
- * @property {number} prevStreakDays    - streak_days value from player_stats.
+ * @property {number} prevStreakDays    - streak_days value from users.
  * @property {string} streakStatus     - 'active' | 'frozen' | 'broken' | ''
  * @property {number} freezeAvailable  - streak freezes remaining this week.
  * @property {boolean} workoutLoggedToday - true if triggered by a new workout.

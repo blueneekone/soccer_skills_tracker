@@ -267,7 +267,7 @@ test('Extracts totalXp, level, streakDays from playerStats', () => {
   eq(snap.streakDays, 7);
 });
 
-test('Falls back to armory.totalXP when player_stats missing total_xp', () => {
+test('Falls back to armory.totalXP when users missing total_xp', () => {
   const ps = {current_level: 5, streak_days: 2};
   const armory = {totalXP: 1200, stats: {}};
   const snap = buildCapsuleSnapshot(ps, armory, '2026-05');

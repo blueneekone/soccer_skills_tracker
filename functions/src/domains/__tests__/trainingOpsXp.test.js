@@ -88,7 +88,7 @@ describe('logTrainingSession subjectiveRpe guard', () => {
 // Confirms the sanitization logic and Firestore field paths that logTrainingSession
 // uses to increment xpByAttribute on BOTH reader docs:
 //   users/{email}.xpByAttribute[attrId]     ← onUserXpUpdateIntentLifecycle trigger
-//   player_stats/{uid}.xpByAttribute[attrId] ← RL featureBuilder (ml/featureBuilder.js)
+//   users/{uid}.xpByAttribute[attrId] ← RL featureBuilder (ml/featureBuilder.js)
 
 /** Mirrors trainingOps.js attributeId sanitization */
 function sanitizeAttributeId(raw) {
@@ -234,12 +234,12 @@ describe('T1-6 reps_count/volume bounty cumulative counter guard', () => {
     );
   });
 
-  it('gamificationWorkoutXp increments total_reps (cumulative counter) in player_stats transaction', () => {
+  it('gamificationWorkoutXp increments total_reps (cumulative counter) in users transaction', () => {
     const src = fs.readFileSync(XP_SRC, 'utf8');
     assert.match(
         src,
         /total_reps\s*:\s*(?:admin\.firestore\.FieldValue\.increment|repsInc)/,
-        'player_stats transaction must increment total_reps as a cumulative counter',
+        'users transaction must increment total_reps as a cumulative counter',
     );
   });
 
@@ -318,7 +318,7 @@ describe('logTrainingSession xpByAttribute field parity (G1)', () => {
 
   it('produces exact Firestore field paths that trigger and featureBuilder read', () => {
     // Trigger reads: users/{email}.xpByAttribute (object key = attrId)
-    // featureBuilder reads: player_stats/{uid}.xpByAttribute (object key = attrId)
+    // featureBuilder reads: users/{uid}.xpByAttribute (object key = attrId)
     const attrId = sanitizeAttributeId('dribbling');
     // Dot-notation path used in Firestore update/set-merge
     const userDotPath = `xpByAttribute.${attrId}`;
