@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { WaiverController } from './WaiverController.svelte';
-	import { authStore } from '$lib/stores/auth/facade.svelte.js';
+	import { authStore } from '$lib/stores/auth.svelte';
 	import Icon from '$lib/components/ui/Icon.svelte';
 	import type { IconName } from '$lib/icons/registry.js';
 
