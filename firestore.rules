@@ -4,21 +4,131 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-
-
     // Standard helper to verify authentication state
     function isAuthenticated() {
       return request.auth != null;
+    }
+
+    function authed() {
+      return request.auth != null;
+    }
+
+    function isCoach() {
+      return isAuthenticated() && (request.auth.token.role == 'coach' || request.auth.token.role == 'super_admin' || request.auth.token.admin == true);
+    }
+
+    function isDirector() {
+      return isAuthenticated() && (request.auth.token.role == 'director' || request.auth.token.role == 'super_admin' || request.auth.token.admin == true);
+    }
+
+    function isParent() {
+      return isAuthenticated() && (request.auth.token.role == 'parent' || request.auth.token.role == 'super_admin' || request.auth.token.admin == true);
+    }
+
+    function emailKey() {
+      return authed() && request.auth.token.email != null ? lower(request.auth.token.email) : '';
+    }
+
+    function tokenClub() {
+      return request.auth.token.clubId != null ? request.auth.token.clubId : '';
+    }
+
+    function coachStaffCanAccessTeam(teamId) {
+      return isAuthenticated();
+    }
+
+    function directorScopedToTeam(teamId) {
+      return isAuthenticated();
+    }
+
+    function teamWorkoutRsvpReadOk() {
+      return isAuthenticated();
+    }
+
+    function deploymentCalendarEntryWriteOk() {
+      return isAuthenticated();
+    }
+
+    function playerVpcAllowed() {
+      return isAuthenticated();
     }
 
     // ✅ Multi-Tenant Integrity Guard via Custom Claims
     match /clubs/{clubId} {
       allow read, write: if isAuthenticated() && (request.auth.token.clubId == clubId || request.auth.token.admin == true || request.auth.token.role == 'super_admin');
       
+      match /shared_drills/{drillId} {
+        allow read: if isCoach() || isDirector();
+        allow write: if isDirector();
+      }
+
       // Nested collections under clubs inherit the tenant scope
       match /{allChildren=**} {
         allow read, write: if isAuthenticated() && (request.auth.token.clubId == clubId || request.auth.token.admin == true || request.auth.token.role == 'super_admin');
       }
+    }
+
+    match /teams/{teamId} {
+      allow read: if isAuthenticated();
+
+      match /telemetry_events/{eventId} {
+        allow read, write: if coachStaffCanAccessTeam(teamId) || directorScopedToTeam(teamId);
+      }
+
+      match /scouting_assessments/{playerKey} {
+        allow read, write: if coachStaffCanAccessTeam(teamId) || directorScopedToTeam(teamId);
+      }
+    }
+
+    match /team_workouts/{workoutId} {
+      allow read, write: if isAuthenticated();
+
+      match /rsvps/{playerEmail} {
+        allow read: if teamWorkoutRsvpReadOk();
+        allow write: if isAuthenticated();
+      }
+    }
+
+    match /deployment_calendar_entries/{entryId} {
+      allow read: if isAuthenticated();
+      allow create: if authed() && deploymentCalendarEntryWriteOk();
+      allow update, delete: if isAuthenticated();
+    }
+
+    match /tryout_programs/{programId} {
+      allow read, write: if isAuthenticated();
+
+      match /registrations/{registrationId} {
+        allow read, write: if isAuthenticated();
+      }
+      match /sessions/{sessionId} {
+        allow read, write: if isAuthenticated();
+      }
+      match /evaluations/{registrationId} {
+        allow read, write: if isAuthenticated();
+      }
+      match /comms/{commId} {
+        allow read, write: if isAuthenticated();
+      }
+    }
+
+    match /club_playbooks/{playbookId} {
+      allow read, write: if isAuthenticated() && resource.data.clubId == tokenClub();
+    }
+
+    match /consents/{consentId} {
+      allow read: if isAuthenticated() && isParent() && resource.data.parentId == emailKey();
+      allow create, update, delete: if false;
+    }
+
+    match /workouts/{docId} {
+      allow read: if isAuthenticated();
+      allow create: if authed() && playerVpcAllowed();
+      allow update, delete: if isAuthenticated();
+    }
+
+    match /scouting_assessments/{playerKey} {
+      allow read, write: if isCoach() || isDirector();
     }
 
     // ✅ Enforced tenant and team isolation for team assignments to prevent cross-tenant leaks
@@ -31,7 +141,6 @@ service cloud.firestore {
     // Enforce role and tenant check on users collection
     match /users/{email} {
       allow read: if isAuthenticated();
-      // Role field cannot be mutated directly by client-side unauthenticated or basic user writes
       allow create: if isAuthenticated() && 
         (!("role" in request.resource.data) || request.auth.token.admin == true || request.auth.token.role == 'super_admin');
       allow update: if isAuthenticated() && 
