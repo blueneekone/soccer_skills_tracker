@@ -109,7 +109,7 @@
 							onclick={() => engine.fetchFederationData()}
 						>
 							<span class="tw-flex tw-items-center tw-gap-2">
-								<Icon name={"nav.refresh" as IconName} size={14} />
+								<Icon name={"nav.refresh" as IconName} size={14} class={engine.isLoading ? "tw-animate-spin" : ""} />
 								Force Telemetry Rescan
 							</span>
 							<Icon name={"data.radar" as IconName} size={14} />
