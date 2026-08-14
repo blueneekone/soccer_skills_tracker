@@ -84,7 +84,6 @@
 	}
 
 	function addTier() {
-    if (!db || !authStore.isAuthenticated) return;
 		tiers = [
 			...tiers,
 			{ id: '', label: '', unitPriceDollars: '10.00', capacity: '100', description: '', gateOpensAt: '' },

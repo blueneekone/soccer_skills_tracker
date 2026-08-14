@@ -141,7 +141,6 @@
 	});
 
 	async function savePlan() {
-    if (!db || !authStore.isAuthenticated) return;
 		if (!programId.trim() || saving) return;
 		err = '';
 		ok = '';

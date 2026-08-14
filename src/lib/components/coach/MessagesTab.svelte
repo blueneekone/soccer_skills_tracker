@@ -82,7 +82,6 @@
 	 * @param {string} id
 	 */
 	function isAllowedChannelId(id) {
-    if (!db || !authStore.isAuthenticated) return;
 		return allChannels.some((c) => c.id === id);
 	}
 
@@ -247,7 +246,7 @@
 	}
 
 	function openSchedule() {
-		goto()
+		goto('/coach/schedule');
 	}
 
 	/**

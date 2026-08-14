@@ -186,7 +186,6 @@
 	 * @param {FacilityMapRow} row
 	 */
 	function applyHeroFromRow(row) {
-    if (!db || !authStore.isAuthenticated) return;
 		heroFacilityId = row.id;
 		heroLat = typeof row.latitude === 'number' ? row.latitude : null;
 		heroLng = typeof row.longitude === 'number' ? row.longitude : null;

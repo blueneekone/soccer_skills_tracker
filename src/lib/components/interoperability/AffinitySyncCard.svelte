@@ -19,9 +19,9 @@
   });
 
   async function loadTeams() {
-    if (!db || !authStore.isAuthenticated) return;
     try {
       const db = getActiveDb();
+      if (!db) return;
       const q = query(collection(db, 'teams'), where('clubId', '==', clubId));
       const snap = await getDocs(q);
       teams = snap.docs.map(d => ({ id: d.id, ...d.data() }));

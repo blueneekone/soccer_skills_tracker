@@ -70,7 +70,7 @@
 	function equipInStudio() {
 		if (!activeMeta) return;
 		dismiss();
-		void goto()
+		void goto('/player/armory');
 	}
 </script>
 
