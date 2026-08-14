@@ -26,7 +26,7 @@
 	</header>
 
 	<!-- Bento Grid 2.0 (Asymmetric Spatial Weighting) -->
-	<section class="tw-max-w-7xl tw-mx-auto tw-w-full tw-px-6 tw-pb-24">
+	<section class="st-bento tw-max-w-7xl tw-mx-auto tw-w-full tw-px-6 tw-pb-24">
 		
 		<div class="tw-grid tw-grid-cols-1 md:tw-grid-cols-12 tw-gap-6">
 			
@@ -98,7 +98,7 @@
 		<div class="tw-mt-24 tw-text-center">
 			<h2 class="tw-text-3xl tw-font-bold tw-mb-8" style="font-family: 'Geist Sans', sans-serif;">Ready to secure your club's future?</h2>
 			<div class="tw-flex tw-items-center tw-justify-center tw-gap-6 tw-flex-wrap">
-				<a href="/pricing" class="tw-bg-[#fbbf24] tw-text-[#0f172a] hover:tw-bg-[#f59e0b] tw-px-8 tw-py-4 tw-rounded-sm tw-font-mono tw-font-bold tw-text-sm tw-uppercase tw-tracking-wider tw-transition-colors tw-duration-150 tw-flex tw-items-center tw-gap-2">
+				<a href="/pricing" class="tw-bg-nuclear-yellow tw-text-[#000000] hover:tw-bg-nuclear-yellow/90 tw-px-8 tw-py-4 tw-rounded-sm tw-font-mono tw-font-bold tw-text-sm tw-uppercase tw-tracking-wider tw-transition-colors tw-duration-150 tw-flex tw-items-center tw-gap-2 tw-shadow-[0_0_20px_rgba(224,255,0,0.25)]">
 					View Commercial Pricing
 					<Icon name={"nav.arrow-right" as IconName} size={16} />
 				</a>

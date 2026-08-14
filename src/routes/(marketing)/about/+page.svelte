@@ -20,7 +20,7 @@
 	</header>
 
 	<!-- The Problem vs Solution Bento Grid -->
-	<section class="tw-max-w-7xl tw-mx-auto tw-w-full tw-px-6 tw-mb-24">
+	<section class="st-bento tw-max-w-7xl tw-mx-auto tw-w-full tw-px-6 tw-mb-24">
 		<div class="tw-flex tw-flex-col tw-items-center tw-text-center tw-mb-12">
 			<span class="tw-font-mono tw-text-xs tw-text-[#f59e0b] tw-tracking-widest tw-mb-4" style="font-family: 'Geist Mono', monospace;">THE PARADIGM SHIFT</span>
 			<h2 class="tw-text-4xl tw-font-bold tw-text-[#f8fafc] tw-tracking-tight" style="font-family: 'Geist Sans', sans-serif;">Escaping the Frankenstein Stack</h2>

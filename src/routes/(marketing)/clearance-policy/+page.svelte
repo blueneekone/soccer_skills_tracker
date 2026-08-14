@@ -1,8 +1,10 @@
-<script>
+<script lang="ts">
 	// Phase 2, Epic 2 — Session N.  Public-facing explainer of the Vanguard
 	// Clearance Protocol.  Linked from the recruiter pricing card and from
 	// the in-app /compliance terminal so adults entering the platform see
 	// the rationale BEFORE they hit the Checkr embed.
+	import Icon from '$lib/components/ui/Icon.svelte';
+	import type { IconName } from '$lib/icons/registry.js';
 </script>
 
 <svelte:head>
@@ -15,7 +17,7 @@
 
 <main class="cp-root">
 	<header class="cp-hero">
-		<p class="cp-eyebrow">Vanguard Clearance Protocol</p>
+		<p class="cp-eyebrow tw-text-nuclear-yellow">Vanguard Clearance Protocol</p>
 		<h1 class="cp-title">Adults touching minor data must clear a background check.</h1>
 		<p class="cp-lede">
 			Vanguard is built around minor athletes — kids in the U-9 to U-18 range.
@@ -106,7 +108,10 @@
 	</section>
 
 	<footer class="cp-footer">
-		<a class="cp-cta" href="/pricing">Back to pricing</a>
+		<a class="cp-cta tw-inline-flex tw-items-center tw-gap-2" href="/pricing">
+			<Icon name={"nav.arrow-left" as IconName} size={16} class="tw-text-nuclear-yellow" />
+			Back to pricing
+		</a>
 	</footer>
 </main>
 
