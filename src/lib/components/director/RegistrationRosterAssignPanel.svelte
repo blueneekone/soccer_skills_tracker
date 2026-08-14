@@ -9,6 +9,7 @@
 		where,
 	} from 'firebase/firestore';
 	import { httpsCallable } from 'firebase/functions';
+	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { teamsStore } from '$lib/stores/teams.svelte.js';
 
 	let { clubId = '' } = $props();

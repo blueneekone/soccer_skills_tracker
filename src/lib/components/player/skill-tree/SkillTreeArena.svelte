@@ -43,7 +43,7 @@
 		if (!node || node.state === 'locked') return;
 		const focus = scoutsSixToWorkoutFocus(node.parentAttr);
 		const params = new URLSearchParams({ focus, skillNode: node.id });
-		void goto()
+		void goto('/player/workout?' + params.toString());
 	}
 
 	/** Outer polygon circumradius for the selection ring. */

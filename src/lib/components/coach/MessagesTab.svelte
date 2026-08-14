@@ -247,7 +247,7 @@
 	}
 
 	function openSchedule() {
-		goto()
+		goto('/coach/logistics');
 	}
 
 	/**
