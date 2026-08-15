@@ -40,7 +40,7 @@
 			</div>
 			<button
 				type="button"
-				class="ctrl-btn tw-flex tw-items-center tw-gap-2 tw-bg-nuclear-yellow tw-text-void-black tw-border-nuclear-yellow"
+				class="ctrl-btn tw-flex tw-items-center tw-gap-2 tw-bg-amber-500 tw-text-void-black tw-border-amber-500"
 				disabled={engine.saveState === 'saving'}
 				onclick={() => engine.initPolicy()}
 			>
@@ -67,7 +67,7 @@
 			<div class="ctrl-range-ends"><span>0% (off)</span><span>100% (all)</span></div>
 			<button
 				type="button"
-				class="ctrl-btn tw-flex tw-items-center tw-gap-2 tw-bg-nuclear-yellow tw-text-void-black tw-border-nuclear-yellow"
+				class="ctrl-btn tw-flex tw-items-center tw-gap-2 tw-bg-amber-500 tw-text-void-black tw-border-amber-500"
 				disabled={engine.saveState === 'saving' || engine.frozen}
 				onclick={() => engine.setAbPercent(engine.draftAbPercent)}
 			>
@@ -88,7 +88,7 @@
 				type="button"
 				class="ctrl-btn tw-flex tw-items-center tw-gap-2"
 				class:ctrl-btn--danger={!engine.frozen}
-				class:tw-bg-nuclear-yellow={engine.frozen}
+				class:tw-bg-amber-500={engine.frozen}
 				class:tw-text-void-black={engine.frozen}
 				disabled={engine.saveState === 'saving'}
 				onclick={() => engine.toggleFreeze()}

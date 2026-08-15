@@ -92,7 +92,7 @@
 <div class="recon-module">
 	<div class="module-header">
 		<h3 class="module-title">
-			<Icon name={'business.ticket' as IconName} size={18} class="tw-text-nuclear-yellow" />
+			<Icon name={'business.ticket' as IconName} size={18} class="tw-text-amber-500" />
 			<span>Event Reconciliation</span>
 		</h3>
 		<a class="module-link" href="/director/events">Manage Events →</a>
@@ -249,7 +249,7 @@
 
 	.scan-bar-fill {
 		height: 100%;
-		background: linear-gradient(90deg, #daff0a, #14b8a6);
+		background: linear-gradient(90deg, #fbbf24, #14b8a6);
 		box-shadow: 0 0 8px rgba(218, 255, 10, 0.4);
 		border-radius: 99px;
 		transition: width 0.5s ease;

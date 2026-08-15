@@ -13,7 +13,7 @@
 <div class="tw-flex tw-w-full tw-min-h-dvh tw-flex-col tw-bg-[#000000] tw-text-[#f8fafc] tw-font-sans tw-selection:bg-[#14b8a6] tw-selection:text-[#000000]">
 	<!-- Header -->
 	<header class="tw-max-w-7xl tw-mx-auto tw-w-full tw-px-6 tw-pt-24 tw-pb-16 tw-flex tw-flex-col tw-items-center tw-text-center tw-gap-6">
-		<span class="tw-font-mono tw-text-xs tw-font-bold tw-tracking-[0.3em] tw-text-nuclear-yellow">SYS.ABOUT_US</span>
+		<span class="tw-font-mono tw-text-xs tw-font-bold tw-tracking-[0.3em] tw-text-amber-500">SYS.ABOUT_US</span>
 		<h1 class="tw-text-5xl md:tw-text-6xl tw-font-bold tw-text-[#f8fafc] tw-tracking-tight tw-leading-tight" style="font-family: 'Geist Sans', sans-serif;">
 			Forging the Future of Elite Development.
 		</h1>
@@ -86,7 +86,7 @@
 						<span class="tw-font-mono tw-text-xs tw-text-[#f8fafc]">Sideline SIEM</span>
 					</div>
 					<div class="tw-bg-[#020617] tw-border tw-border-[#334155] tw-p-4 tw-flex tw-flex-col tw-gap-2 tw-w-[calc(50%-0.5rem)] md:tw-w-[calc(33.333%-0.7rem)]">
-						<Icon name={"game.rocket" as IconName} size={20} class="tw-text-nuclear-yellow" />
+						<Icon name={"game.rocket" as IconName} size={20} class="tw-text-amber-500" />
 						<span class="tw-font-mono tw-text-xs tw-text-[#f8fafc]">Player HUD</span>
 					</div>
 					<div class="tw-bg-[#020617] tw-border tw-border-[#334155] tw-p-4 tw-flex tw-flex-col tw-gap-2 tw-w-[calc(50%-0.5rem)] md:tw-w-[calc(33.333%-0.7rem)]">
@@ -116,14 +116,14 @@
 
 			<!-- Styled placeholder slot for headshot -->
 			<div class="tw-shrink-0 tw-w-48 tw-h-48 tw-rounded-sm tw-bg-[#020617] tw-border-2 tw-border-dashed tw-border-[#334155] tw-flex tw-flex-col tw-items-center tw-justify-center tw-relative tw-group">
-				<Icon name={"user.profile" as IconName} size={48} class="tw-text-[#475569] tw-mb-2 group-hover:tw-text-nuclear-yellow tw-transition-colors tw-duration-300" />
+				<Icon name={"user.profile" as IconName} size={48} class="tw-text-[#475569] tw-mb-2 group-hover:tw-text-amber-500 tw-transition-colors tw-duration-300" />
 				<span class="tw-font-mono tw-text-[10px] tw-text-[#64748b] tw-uppercase tw-tracking-widest">Awaiting Upload</span>
-				<div class="tw-absolute -tw-bottom-3 tw-bg-[#0f172a] tw-px-2 tw-border tw-border-[#334155] tw-font-mono tw-text-[9px] tw-text-nuclear-yellow tw-tracking-widest">HEADSHOT.SLOT</div>
+				<div class="tw-absolute -tw-bottom-3 tw-bg-[#0f172a] tw-px-2 tw-border tw-border-[#334155] tw-font-mono tw-text-[9px] tw-text-amber-500 tw-tracking-widest">HEADSHOT.SLOT</div>
 			</div>
 
 			<div class="tw-flex-1 tw-text-center md:tw-text-left">
 				<h3 class="tw-text-3xl tw-font-bold tw-text-[#f8fafc] tw-mb-1" style="font-family: 'Geist Sans', sans-serif;">Evan Waechtler</h3>
-				<span class="tw-font-mono tw-text-sm tw-text-nuclear-yellow tw-tracking-widest tw-uppercase tw-block tw-mb-6">Chief Executive Officer</span>
+				<span class="tw-font-mono tw-text-sm tw-text-amber-500 tw-tracking-widest tw-uppercase tw-block tw-mb-6">Chief Executive Officer</span>
 
 				<p class="tw-text-[#94a3b8] tw-text-base tw-leading-relaxed tw-mb-4" style="font-family: 'Switzer', sans-serif;">
 					"We built SSTracker because the current state of youth sports technology is unacceptable. Coaches are drowning in administrative chaos, parents are disconnected from their child's actual development, and athletes are losing the intrinsic motivation that makes sports beautiful."
@@ -133,7 +133,7 @@
 				</p>
 
 				<div class="tw-mt-8 tw-flex tw-items-center tw-justify-center md:tw-justify-start tw-gap-4">
-					<a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" class="tw-font-mono tw-text-xs tw-text-[#64748b] hover:tw-text-nuclear-yellow tw-uppercase tw-tracking-widest tw-transition-colors tw-duration-150 tw-flex tw-items-center tw-gap-2">
+					<a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" class="tw-font-mono tw-text-xs tw-text-[#64748b] hover:tw-text-amber-500 tw-uppercase tw-tracking-widest tw-transition-colors tw-duration-150 tw-flex tw-items-center tw-gap-2">
 						<Icon name={"nav.link" as IconName} size={14} /> Connect
 					</a>
 				</div>

@@ -80,7 +80,9 @@
 	$effect(() => {
 		if (!browser || authStore.isLoading) return;
 		if (role === 'player') {
-			void goto('/player/settings', { replaceState: true });
+   untrack(() => {
+     void goto('/player/settings', { replaceState: true });
+   });
 		}
 	});
 

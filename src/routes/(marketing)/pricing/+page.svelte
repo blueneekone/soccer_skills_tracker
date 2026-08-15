@@ -147,7 +147,7 @@
 	
 	<!-- Header -->
 	<header class="tw-max-w-7xl tw-mx-auto tw-w-full tw-px-6 tw-pt-24 tw-pb-16 tw-flex tw-flex-col tw-items-center tw-text-center tw-gap-6">
-		<span class="tw-font-mono tw-text-xs tw-font-bold tw-tracking-[0.3em] tw-text-nuclear-yellow">LIVE LICENSING & BILLING</span>
+		<span class="tw-font-mono tw-text-xs tw-font-bold tw-tracking-[0.3em] tw-text-amber-500">LIVE LICENSING & BILLING</span>
 		<h1 class="tw-text-5xl md:tw-text-6xl tw-font-bold tw-text-[#f8fafc] tw-tracking-tight tw-leading-tight" style="font-family: 'Geist Sans', sans-serif;">
 			Scale your academy with zero friction.
 		</h1>
@@ -285,7 +285,7 @@
 
 	<!-- Single B2C Upsell / CTA (Nuclear Yellow CTA Accent) -->
 	<section class="tw-max-w-4xl tw-mx-auto tw-w-full tw-px-6 tw-flex tw-justify-center">
-		<a href="/login" class="tw-bg-nuclear-yellow tw-text-[#000000] hover:tw-bg-nuclear-yellow/90 tw-px-10 tw-py-4 tw-font-mono tw-font-bold tw-text-sm tw-uppercase tw-tracking-widest tw-transition-all tw-duration-150 tw-inline-flex tw-items-center tw-gap-3 tw-text-center tw-rounded-sm active:tw-scale-[0.98] tw-shadow-[0_0_25px_rgba(224,255,0,0.25)]">
+		<a href="/login" class="tw-bg-amber-500 tw-text-[#000000] hover:tw-bg-amber-500/90 tw-px-10 tw-py-4 tw-font-mono tw-font-bold tw-text-sm tw-uppercase tw-tracking-widest tw-transition-all tw-duration-150 tw-inline-flex tw-items-center tw-gap-3 tw-text-center tw-rounded-sm active:tw-scale-[0.98] tw-shadow-[0_0_25px_rgba(224,255,0,0.25)]">
 			Deploy Your Club
 			<Icon name={"nav.chevron-right" as IconName} strokeWidth={2.5} size={18} />
 		</a>

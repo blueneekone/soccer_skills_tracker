@@ -398,7 +398,7 @@
 	}
 
 	.dep-cal-card.dep-kind--tournament .dep-cal-card__accent {
-		background: linear-gradient(180deg, #daff0a 0%, #fbbf24 100%);
+		background: linear-gradient(180deg, #fbbf24 0%, #fbbf24 100%);
 		box-shadow: 0 0 16px rgba(218, 255, 10, 0.45);
 	}
 
@@ -428,7 +428,7 @@
 	}
 
 	.dep-badge--tournament {
-		color: #daff0a;
+		color: #fbbf24;
 		background: rgba(218, 255, 10, 0.12);
 		border-color: rgba(218, 255, 10, 0.4);
 	}

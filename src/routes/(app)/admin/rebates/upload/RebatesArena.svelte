@@ -21,10 +21,10 @@
 		ondrop={(e) => void engine.onDrop(e)}
 	>
 		<div class="drop-icon tw-flex tw-justify-center tw-mb-2">
-			<Icon name={"comm.file-text" as IconName} size={36} class="tw-text-nuclear-yellow" />
+			<Icon name={"comm.file-text" as IconName} size={36} class="tw-text-amber-500" />
 		</div>
 		<p class="drop-label">Drop a CSV file here, or</p>
-		<label class="btn-browse tw-inline-flex tw-items-center tw-gap-2 tw-bg-nuclear-yellow tw-text-void-black tw-font-bold tw-px-4 tw-py-2 tw-rounded-none tw-cursor-pointer">
+		<label class="btn-browse tw-inline-flex tw-items-center tw-gap-2 tw-bg-amber-500 tw-text-void-black tw-font-bold tw-px-4 tw-py-2 tw-rounded-none tw-cursor-pointer">
 			<Icon name={"sys.folder" as IconName} size={16} />
 			Browse File
 			<input type="file" accept=".csv" style="display:none" onchange={(e) => void engine.onFileInput(e)} />
@@ -102,7 +102,7 @@
 				<Icon name={"nav.rotate-ccw" as IconName} size={14} /> Re-upload
 			</button>
 			<button
-				class="btn-submit tw-bg-nuclear-yellow tw-text-void-black tw-border-nuclear-yellow tw-font-extrabold tw-px-6 tw-py-2.5 tw-rounded-none tw-flex tw-items-center tw-gap-2"
+				class="btn-submit tw-bg-amber-500 tw-text-void-black tw-border-amber-500 tw-font-extrabold tw-px-6 tw-py-2.5 tw-rounded-none tw-flex tw-items-center tw-gap-2"
 				onclick={() => void engine.submit()}
 				disabled={engine.validRows.length === 0}
 			>

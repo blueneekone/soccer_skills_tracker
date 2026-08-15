@@ -769,7 +769,7 @@
 	.pw-loadbar__fill {
 		height: 100%;
 		width: var(--fill);
-		background: linear-gradient(90deg, #14b8a6 0%, #daff0a 100%);
+		background: linear-gradient(90deg, #14b8a6 0%, #fbbf24 100%);
 		box-shadow: 0 0 12px rgba(218, 255, 10, 0.5);
 	}
 
@@ -1071,8 +1071,8 @@
 		gap: 0.5rem;
 		min-height: 3.5rem;
 		padding: 0.75rem 1rem;
-		background: #daff0a;
-		border: 1px solid #daff0a;
+		background: #fbbf24;
+		border: 1px solid #fbbf24;
 		color: #000000;
 		font-size: 0.85rem;
 		font-weight: 800;

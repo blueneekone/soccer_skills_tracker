@@ -12,13 +12,13 @@
 	const features = [
 		{
 			icon: 'game.rocket' as IconName,
-			accent: '#daff0a',
+			accent: '#fbbf24',
 			label: 'Player OS',
 			sub: 'SYS.PLAYER',
 			title: 'The Dopamine Engine',
 			body: 'Gamified Skill Trees, XP progression, Vanguard Prism radars, and video trial uploads driving intrinsic motivation and unyielding athlete engagement.',
 			href: '/player',
-			hoverColor: '#daff0a',
+			hoverColor: '#fbbf24',
 			cols: 'md:tw-col-span-4',
 			bento: 'player'
 		},

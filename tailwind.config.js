@@ -13,7 +13,7 @@ export default {
         'data-cyan': '#14b8a6', // Neon accent for cardiac monitors and tactical paths
         'action-gold': '#fbbf24', // Focus CTA and active state indicator
         'warning-orange': '#f97316', // System warning / tactical heat indicator
-        'nuclear-yellow': '#daff0a', // Cybernetic high-voltage highlight / progress trackers
+        'amber-500': '#fbbf24', // Cybernetic high-voltage highlight / progress trackers
       },
       fontFamily: {
         mono: ['Geist Mono', 'monospace'], // Telemetry, cardiac BPM, & coordinate feeds

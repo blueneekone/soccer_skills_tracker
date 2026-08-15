@@ -46,7 +46,9 @@
 		if (!browser || authStore.isLoading) return;
 		if (!authStore.isAuthenticated) return;
 		if (!isOperative) {
-			void goto('/settings', { replaceState: true });
+   untrack(() => {
+     void goto('/settings', { replaceState: true });
+   });
 		}
 	});
 

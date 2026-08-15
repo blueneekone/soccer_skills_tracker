@@ -14,6 +14,8 @@
 		if (authStore.isLoading) return;
 		const path = page.url.pathname;
 		if (!isNativeParentFirstEntry(path)) return;
-		void goto(getNativeDefaultRoute(authStore.isAuthenticated), { replaceState: true });
+  untrack(() => {
+    void goto(getNativeDefaultRoute(authStore.isAuthenticated), { replaceState: true });
+  });
 	});
 </script>

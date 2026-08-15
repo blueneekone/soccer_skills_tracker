@@ -292,7 +292,7 @@
 					</button>
 					<button 
 						type="button" 
-						class="tw-bg-nuclear-yellow hover:tw-bg-nuclear-yellow/90 tw-text-void-black tw-font-extrabold tw-px-6 tw-py-2.5 tw-rounded-none tw-transition-colors tw-cursor-pointer tw-border-none disabled:tw-opacity-50 tw-flex tw-items-center tw-gap-2"
+						class="tw-bg-amber-500 hover:tw-bg-amber-500/90 tw-text-void-black tw-font-extrabold tw-px-6 tw-py-2.5 tw-rounded-none tw-transition-colors tw-cursor-pointer tw-border-none disabled:tw-opacity-50 tw-flex tw-items-center tw-gap-2"
 						onclick={onSubmit} 
 						disabled={saving}
 					>

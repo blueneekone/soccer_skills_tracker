@@ -10,17 +10,17 @@
 	<div class="tw-p-6 tw-bg-[#0F172A] tw-rounded-none tw-border tw-border-[#1E293B]">
 		<div class="tw-flex tw-items-center tw-justify-between tw-mb-2">
 			<h1 class="tw-text-xl tw-font-sans tw-font-bold tw-text-white tw-flex tw-items-center tw-gap-2">
-				<Icon name={"status.shield-check" as IconName} size={20} class="tw-text-nuclear-yellow" />
+				<Icon name={"status.shield-check" as IconName} size={20} class="tw-text-amber-500" />
 				<span>Verifiable Parental Consent (VPC)</span>
 			</h1>
-			<span class="tw-text-[9px] tw-px-2 tw-py-0.5 tw-font-mono tw-border tw-border-nuclear-yellow/40 tw-bg-nuclear-yellow/10 tw-text-nuclear-yellow tw-font-bold tw-rounded-none">
+			<span class="tw-text-[9px] tw-px-2 tw-py-0.5 tw-font-mono tw-border tw-border-amber-500/40 tw-bg-amber-500/10 tw-text-amber-500 tw-font-bold tw-rounded-none">
 				COPPA-GATE
 			</span>
 		</div>
 		<p class="tw-font-mono tw-text-xs tw-text-slate-400 tw-mt-2">
 			STATUS:
 			{#if engine.success}
-				<span class="tw-text-nuclear-yellow tw-font-bold tw-ml-1">VERIFIED (TIER-0 ACTIVE)</span>
+				<span class="tw-text-amber-500 tw-font-bold tw-ml-1">VERIFIED (TIER-0 ACTIVE)</span>
 			{:else}
 				<span class="tw-text-amber-400 tw-font-bold tw-ml-1">PENDING HARDWARE ATTESTATION</span>
 			{/if}
@@ -28,7 +28,7 @@
 	</div>
 
 	<div class="tw-p-6 tw-bg-[#0B0F19] tw-rounded-none tw-border tw-border-[#1E293B]">
-		<h3 class="tw-text-xs tw-font-mono tw-text-nuclear-yellow tw-uppercase tw-tracking-widest tw-mb-3 tw-flex tw-items-center tw-gap-1.5">
+		<h3 class="tw-text-xs tw-font-mono tw-text-amber-500 tw-uppercase tw-tracking-widest tw-mb-3 tw-flex tw-items-center tw-gap-1.5">
 			<Icon name={"status.info" as IconName} size={14} />
 			<span>E-Sign Legal Disclosure</span>
 		</h3>

@@ -91,7 +91,7 @@
 	const ringColor = $derived.by(() => {
 		const p = progressPercentage;
 		/** Nuclear Yellow: near rank completion. */
-		if (p >= 90) return '#daff0a';
+		if (p >= 90) return '#fbbf24';
 		/** Cyan: high progress in tier. */
 		if (p >= 67) return '#14b8a6';
 		/** Amber: mid. */

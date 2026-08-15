@@ -40,7 +40,7 @@
 	function statusChipClass(status: BountyDoc['status']): string {
 		switch (status) {
 			case 'active':
-				return 'tw-bg-nuclear-yellow/15 tw-text-nuclear-yellow tw-border-nuclear-yellow/40';
+				return 'tw-bg-amber-500/15 tw-text-amber-500 tw-border-amber-500/40';
 			case 'verified':
 			case 'paid':
 				return 'tw-bg-emerald-500/20 tw-text-emerald-400 tw-border-emerald-500/40';
@@ -84,10 +84,10 @@
 <div class="tw-bg-[#0F172A] tw-border tw-border-[#1E293B] tw-p-6 tw-flex tw-flex-col tw-gap-6 tw-rounded-none">
 	<div class="tw-flex tw-items-center tw-justify-between tw-border-b tw-border-[#1E293B] tw-pb-4">
 		<h2 class="tw-text-white tw-font-bold tw-text-lg tw-flex tw-items-center tw-gap-2.5 tw-m-0">
-			<Icon name={"sys.escrow" as IconName} size={20} class="tw-text-nuclear-yellow" />
+			<Icon name={"sys.escrow" as IconName} size={20} class="tw-text-amber-500" />
 			<span>Co-Op Arena</span>
 		</h2>
-		<span class="tw-px-2 tw-py-0.5 tw-bg-nuclear-yellow/10 tw-border tw-border-nuclear-yellow/40 tw-text-nuclear-yellow tw-text-[10px] tw-font-mono tw-tracking-widest tw-rounded-none font-bold">
+		<span class="tw-px-2 tw-py-0.5 tw-bg-amber-500/10 tw-border tw-border-amber-500/40 tw-text-amber-500 tw-text-[10px] tw-font-mono tw-tracking-widest tw-rounded-none font-bold">
 			ESCROW TELEMETRY
 		</span>
 	</div>
@@ -116,7 +116,7 @@
 					<p class="tw-text-slate-400 tw-text-xs">No primary funding source linked. Link an account to fund athlete bounties.</p>
 					{#if availableSources.length === 0 && !loadingSources}
 						<button 
-							class="tw-inline-flex tw-items-center tw-gap-2 tw-bg-nuclear-yellow tw-text-black tw-font-mono tw-text-xs tw-font-bold tw-tracking-widest tw-uppercase tw-px-4 tw-py-2.5 tw-rounded-none hover:tw-bg-yellow-300 hover:tw-shadow-[0_0_15px_rgba(218,255,10,0.5)] tw-transition-all tw-w-fit" 
+							class="tw-inline-flex tw-items-center tw-gap-2 tw-bg-amber-500 tw-text-black tw-font-mono tw-text-xs tw-font-bold tw-tracking-widest tw-uppercase tw-px-4 tw-py-2.5 tw-rounded-none hover:tw-bg-yellow-300 hover:tw-shadow-[0_0_15px_rgba(218,255,10,0.5)] tw-transition-all tw-w-fit" 
 							onclick={fetchSources} 
 							disabled={loadingSources}
 						>
@@ -124,20 +124,20 @@
 							<span>Fetch Stripe Sources</span>
 						</button>
 					{:else if loadingSources}
-						<p class="tw-text-nuclear-yellow tw-font-mono tw-text-xs tw-animate-pulse tw-flex tw-items-center tw-gap-2">
+						<p class="tw-text-amber-500 tw-font-mono tw-text-xs tw-animate-pulse tw-flex tw-items-center tw-gap-2">
 							<Icon name={"game.zap" as IconName} size={14} />
 							<span>FETCHING_STRIPE_SOURCES...</span>
 						</p>
 					{:else}
 						<div class="tw-flex tw-flex-col sm:tw-flex-row tw-gap-2">
-							<select bind:value={selectedSourceId} class="tw-flex-1 tw-bg-[#0F172A] tw-text-white tw-border tw-border-[#1E293B] tw-rounded-none tw-px-3 tw-py-2 tw-font-mono tw-text-xs focus:tw-outline-none focus:tw-border-nuclear-yellow">
+							<select bind:value={selectedSourceId} class="tw-flex-1 tw-bg-[#0F172A] tw-text-white tw-border tw-border-[#1E293B] tw-rounded-none tw-px-3 tw-py-2 tw-font-mono tw-text-xs focus:tw-outline-none focus:tw-border-amber-500">
 								<option value="" disabled>Select Source</option>
 								{#each availableSources as src (src.id)}
 									<option value={src.id}>{src.label} ({src.method})</option>
 								{/each}
 							</select>
 							<button 
-								class="tw-inline-flex tw-items-center tw-gap-1.5 tw-bg-nuclear-yellow tw-text-black tw-font-mono tw-text-xs tw-font-bold tw-px-4 tw-py-2 tw-rounded-none hover:tw-bg-yellow-300 tw-transition-all disabled:tw-opacity-50" 
+								class="tw-inline-flex tw-items-center tw-gap-1.5 tw-bg-amber-500 tw-text-black tw-font-mono tw-text-xs tw-font-bold tw-px-4 tw-py-2 tw-rounded-none hover:tw-bg-yellow-300 tw-transition-all disabled:tw-opacity-50" 
 								onclick={handleLinkSource} 
 								disabled={!selectedSourceId || linkingSource || engine.mutating}
 							>
@@ -157,7 +157,7 @@
 	<!-- Bounties Section -->
 	<section class="tw-flex tw-flex-col">
 		<h3 class="tw-text-slate-300 tw-font-bold tw-text-sm tw-mb-3 tw-flex tw-items-center tw-gap-2 tw-font-mono tw-uppercase">
-			<Icon name={"game.target" as IconName} size={16} class="tw-text-nuclear-yellow" />
+			<Icon name={"game.target" as IconName} size={16} class="tw-text-amber-500" />
 			<span>Active Objectives & Bounties</span>
 		</h3>
 		
@@ -189,18 +189,18 @@
 						{#if bounty.progressTarget && bounty.progressTarget > 0}
 							<div class="tw-mb-3">
 								<div class="tw-h-1.5 tw-w-full tw-bg-[#1E293B] tw-rounded-none tw-overflow-hidden tw-mb-1">
-									<div class="tw-h-full tw-bg-nuclear-yellow tw-transition-all tw-duration-500" style="width: {progress}%"></div>
+									<div class="tw-h-full tw-bg-amber-500 tw-transition-all tw-duration-500" style="width: {progress}%"></div>
 								</div>
 								<div class="tw-flex tw-justify-between tw-text-[10px] tw-font-mono tw-text-slate-400">
 									<span>{bounty.progressCurrent ?? 0} / {bounty.progressTarget} {bounty.progressUnit ?? ''}</span>
-									<span class="tw-text-nuclear-yellow tw-font-bold">{progress}%</span>
+									<span class="tw-text-amber-500 tw-font-bold">{progress}%</span>
 								</div>
 							</div>
 						{/if}
 
 						<div class="tw-flex tw-items-center tw-justify-between tw-pt-3 tw-border-t tw-border-[#1E293B]">
 							<div class="tw-flex tw-items-end tw-gap-1">
-								<span class="tw-text-nuclear-yellow tw-font-bold tw-font-mono tw-text-base">${((bounty.rewardCents ?? 0) / 100).toFixed(2)}</span>
+								<span class="tw-text-amber-500 tw-font-bold tw-font-mono tw-text-base">${((bounty.rewardCents ?? 0) / 100).toFixed(2)}</span>
 								<span class="tw-text-slate-500 tw-text-xs tw-pb-0.5 tw-font-mono">USD</span>
 							</div>
 							<div class="tw-flex tw-items-center tw-gap-3">

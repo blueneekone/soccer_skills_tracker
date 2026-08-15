@@ -3,7 +3,7 @@
  * Style: Cybernetic Atompunk Tech Noir / Tactical SIEM & Gamified HUD
  * Base Canvas Density: >= 40% Absolute Void Black (#000000)
  *
- * Upgrades (v3.0): Integrated high-voltage Cybernetic Nuclear Yellow (#daff0a)
+ * Upgrades (v3.0): Integrated high-voltage Cybernetic Nuclear Yellow (#fbbf24)
  * alongside original Action Gold (#fbbf24) in a mathematically complete,
  * cohesive palette. Guaranteed anti-squishing, zero-pixel label wrapping,
  * and dynamic text clamping to permanently end layout-boundary collisions.
@@ -24,7 +24,7 @@
   --color-electric-teal: #06b6d4;   /* Secondary network/link indicators */
   --color-atompunk-amber: #f59e0b;  /* Warnings and safety state locks (ZPD/Embargo) */
   --color-action-gold: #fbbf24;     /* Strictly reserved for exactly ONE primary CTA per viewport */
-  --color-nuclear-yellow: #daff0a;  /* Cybernetic high-voltage highlight / progress trackers */
+  --color-amber-500: #fbbf24;  /* Cybernetic high-voltage highlight / progress trackers */
   
   /* --- Text Contrast Hierarchy (Zero-Opacity Modifiers Rule) --- */
   --text-primary: #fafafa;
@@ -148,7 +148,7 @@ h1, h2, h3, h4, h5, h6, p, span, div, button, a,
 
 /* --- Interactive Hover High-Voltage Triggers --- */
 .z2-panel-nuclear:hover {
-  border-color: var(--color-nuclear-yellow);
+  border-color: var(--color-amber-500);
   box-shadow: 0 0 15px var(--text-glow-yellow);
 }
 
@@ -167,7 +167,7 @@ h1, h2, h3, h4, h5, h6, p, span, div, button, a,
 }
 
 .siem-nuclear {
-  border-left: 3px solid var(--color-nuclear-yellow);
+  border-left: 3px solid var(--color-amber-500);
 }
 
 /* 2. Player OS & Fan OS (The Gamified HUD / Broadcast Overlay) */
@@ -180,7 +180,7 @@ h1, h2, h3, h4, h5, h6, p, span, div, button, a,
 
 .player-card-wrapper:hover {
   transform: translateY(-4px);
-  border-color: var(--color-nuclear-yellow);
+  border-color: var(--color-amber-500);
 }
 
 /* The Singular Action Gold CTA - Comprehensive Label Wrapping */
@@ -208,7 +208,7 @@ h1, h2, h3, h4, h5, h6, p, span, div, button, a,
 
 /* High-Voltage Progress Bars & Accent Highlights */
 .nuclear-meter-fill {
-  background-color: var(--color-nuclear-yellow);
+  background-color: var(--color-amber-500);
   box-shadow: 0 0 10px var(--text-glow-yellow);
 }
 
@@ -258,7 +258,7 @@ button.tw-w-auto, .btn-auto {
 
 .identity-disc-nuclear {
   fill: var(--color-void-black);
-  stroke: var(--color-nuclear-yellow);
+  stroke: var(--color-amber-500);
   stroke-width: 2;
   filter: url(#neon-bloom-nuclear);
 }

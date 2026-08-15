@@ -16,18 +16,18 @@
 	let { clubs = [] as ClubCompliance[] } = $props();
 </script>
 
-<div class="st-bento z2-panel siem-panel federation-compliance-matrix tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-rounded-none tw-p-6 tw-flex tw-flex-col tw-gap-4 hover:tw-border-nuclear-yellow tw-transition-all" style="background: #0f172a; border: 1px solid #334155;">
+<div class="st-bento z2-panel siem-panel federation-compliance-matrix tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-rounded-none tw-p-6 tw-flex tw-flex-col tw-gap-4 hover:tw-border-amber-500 tw-transition-all" style="background: #0f172a; border: 1px solid #334155;">
 	<div class="tw-flex tw-items-center tw-justify-between">
 		<div>
 			<h3 class="tw-text-[#FAFAFA] tw-font-sans tw-text-sm tw-font-bold tw-uppercase tw-tracking-wider tw-flex tw-items-center tw-gap-2 tw-m-0">
-				<Icon name={"status.shield-check" as IconName} size={18} class="tw-text-nuclear-yellow" />
+				<Icon name={"status.shield-check" as IconName} size={18} class="tw-text-amber-500" />
 				Federation Compliance Matrix
 			</h3>
 			<p class="tw-font-mono tw-text-[10px] tw-text-[#14b8a6] tw-uppercase tw-m-0 tw-mt-1">
 				Real-Time SafeSport · Background Screening · COPPA 2.0 Telemetry
 			</p>
 		</div>
-		<span class="tw-font-mono tw-text-xs tw-text-nuclear-yellow tw-border tw-border-slate-700 tw-bg-slate-900 tw-px-2.5 tw-py-1 tw-rounded-none">
+		<span class="tw-font-mono tw-text-xs tw-text-amber-500 tw-border tw-border-slate-700 tw-bg-slate-900 tw-px-2.5 tw-py-1 tw-rounded-none">
 			TOTAL CLUBS: {clubs.length}
 		</span>
 	</div>
@@ -54,7 +54,7 @@
 									<Icon name={"status.check" as IconName} size={10} /> PASS
 								</span>
 							{:else if club.safesport === 'amber'}
-								<span class="tw-inline-flex tw-items-center tw-gap-1 tw-px-2 tw-py-0.5 tw-text-[10px] tw-font-mono tw-font-bold tw-bg-nuclear-yellow tw-text-black tw-rounded-none">
+								<span class="tw-inline-flex tw-items-center tw-gap-1 tw-px-2 tw-py-0.5 tw-text-[10px] tw-font-mono tw-font-bold tw-bg-amber-500 tw-text-black tw-rounded-none">
 									<Icon name={"status.warning" as IconName} size={10} /> AUDIT
 								</span>
 							{:else}
@@ -69,7 +69,7 @@
 									<Icon name={"status.check" as IconName} size={10} /> PASS
 								</span>
 							{:else if club.background === 'amber'}
-								<span class="tw-inline-flex tw-items-center tw-gap-1 tw-px-2 tw-py-0.5 tw-text-[10px] tw-font-mono tw-font-bold tw-bg-nuclear-yellow tw-text-black tw-rounded-none">
+								<span class="tw-inline-flex tw-items-center tw-gap-1 tw-px-2 tw-py-0.5 tw-text-[10px] tw-font-mono tw-font-bold tw-bg-amber-500 tw-text-black tw-rounded-none">
 									<Icon name={"status.warning" as IconName} size={10} /> AUDIT
 								</span>
 							{:else}
@@ -84,7 +84,7 @@
 									<Icon name={"status.check" as IconName} size={10} /> PASS
 								</span>
 							{:else if club.coppa === 'amber'}
-								<span class="tw-inline-flex tw-items-center tw-gap-1 tw-px-2 tw-py-0.5 tw-text-[10px] tw-font-mono tw-font-bold tw-bg-nuclear-yellow tw-text-black tw-rounded-none">
+								<span class="tw-inline-flex tw-items-center tw-gap-1 tw-px-2 tw-py-0.5 tw-text-[10px] tw-font-mono tw-font-bold tw-bg-amber-500 tw-text-black tw-rounded-none">
 									<Icon name={"status.warning" as IconName} size={10} /> AUDIT
 								</span>
 							{:else}
@@ -99,7 +99,7 @@
 						<td class="tw-p-3 tw-text-right">
 							<button
 								type="button"
-								class="tw-px-2.5 tw-py-1 tw-text-[10px] tw-font-mono tw-font-bold tw-tracking-wider tw-uppercase tw-bg-[#1E293B] tw-border tw-border-slate-700 tw-text-slate-300 hover:tw-border-nuclear-yellow hover:tw-text-nuclear-yellow tw-transition-colors tw-inline-flex tw-items-center tw-gap-1 cursor-pointer tw-rounded-none"
+								class="tw-px-2.5 tw-py-1 tw-text-[10px] tw-font-mono tw-font-bold tw-tracking-wider tw-uppercase tw-bg-[#1E293B] tw-border tw-border-slate-700 tw-text-slate-300 hover:tw-border-amber-500 hover:tw-text-amber-500 tw-transition-colors tw-inline-flex tw-items-center tw-gap-1 cursor-pointer tw-rounded-none"
 							>
 								<Icon name={"sys.eye" as IconName} size={12} />
 								Inspect

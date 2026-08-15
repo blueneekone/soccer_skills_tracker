@@ -32,12 +32,12 @@
 <div class="waiver-console-arena tw-min-h-screen tw-bg-[#0B0F19] tw-text-white tw-p-6 tw-flex tw-flex-col tw-items-center tw-justify-center">
 	<div class="waiver-wrapper tw-max-w-2xl tw-w-full tw-bg-[#0F172A] tw-border tw-border-[#1E293B] tw-p-8 tw-rounded-none tw-shadow-2xl">
 		<div class="tw-flex tw-items-center tw-justify-center tw-gap-2 tw-mb-2">
-			<Icon name={"status.shield-check" as IconName} size={24} class="tw-text-nuclear-yellow" />
+			<Icon name={"status.shield-check" as IconName} size={24} class="tw-text-amber-500" />
 			<h1 class="tw-text-2xl tw-font-bold tw-tracking-tight tw-text-center tw-uppercase tw-text-white" style="font-family: 'Geist Sans', sans-serif;">
 				SPORT-HAZARD LIABILITY WAIVER
 			</h1>
 		</div>
-		<h2 class="tw-text-xs tw-text-nuclear-yellow tw-font-mono tw-uppercase tw-tracking-widest tw-mb-6 tw-text-center">
+		<h2 class="tw-text-xs tw-text-amber-500 tw-font-mono tw-uppercase tw-tracking-widest tw-mb-6 tw-text-center">
 			Assumption of Risk & Media Release // TIER-0 CLEARANCE
 		</h2>
 
@@ -106,9 +106,9 @@
 
 		<!-- E-Sign Audit Trail Captures -->
 		{#if controller.success}
-			<div class="tw-bg-[#0B0F19] tw-border tw-border-nuclear-yellow/40 tw-p-5 tw-rounded-none tw-mb-6">
-				<p class="tw-text-nuclear-yellow tw-font-bold tw-font-mono tw-text-sm tw-mb-3 tw-flex tw-items-center tw-gap-2">
-					<Icon name={"status.seal-check" as IconName} size={18} class="tw-text-nuclear-yellow" />
+			<div class="tw-bg-[#0B0F19] tw-border tw-border-amber-500/40 tw-p-5 tw-rounded-none tw-mb-6">
+				<p class="tw-text-amber-500 tw-font-bold tw-font-mono tw-text-sm tw-mb-3 tw-flex tw-items-center tw-gap-2">
+					<Icon name={"status.seal-check" as IconName} size={18} class="tw-text-amber-500" />
 					<span>WAIVER SIGNED & SECURED IN COMPLIANCE VAULT</span>
 				</p>
 				<div class="tw-text-xs tw-font-mono tw-text-slate-300 tw-space-y-1.5">
@@ -151,7 +151,7 @@
 						id="esign-verification"
 						type="checkbox"
 						bind:checked={emailVerified}
-						class="tw-mt-1 tw-h-4 tw-w-4 tw-text-nuclear-yellow tw-bg-black tw-border-[#334155] focus:tw-ring-0 tw-rounded-none"
+						class="tw-mt-1 tw-h-4 tw-w-4 tw-text-amber-500 tw-bg-black tw-border-[#334155] focus:tw-ring-0 tw-rounded-none"
 					/>
 					<label for="esign-verification" class="tw-text-xs tw-text-slate-300 tw-leading-relaxed">
 						I certify under penalty of perjury that I am the legal guardian associated with the email address {emailInput || 'provided'}, and this electronic sign-off serves as my digital consent under the E-Sign Act.
@@ -170,7 +170,7 @@
 				type="button"
 				onclick={handleSignOff}
 				disabled={controller.loading}
-				class="tw-w-full tw-bg-nuclear-yellow tw-text-black tw-font-mono tw-font-bold tw-py-3.5 tw-text-xs tw-tracking-widest tw-uppercase hover:tw-bg-yellow-300 tw-transition-all tw-duration-150 disabled:tw-bg-[#1E293B] disabled:tw-text-slate-500 tw-flex tw-items-center tw-justify-center tw-gap-2 tw-rounded-none"
+				class="tw-w-full tw-bg-amber-500 tw-text-black tw-font-mono tw-font-bold tw-py-3.5 tw-text-xs tw-tracking-widest tw-uppercase hover:tw-bg-yellow-300 tw-transition-all tw-duration-150 disabled:tw-bg-[#1E293B] disabled:tw-text-slate-500 tw-flex tw-items-center tw-justify-center tw-gap-2 tw-rounded-none"
 			>
 				<Icon name={"status.seal-check" as IconName} size={16} />
 				<span>

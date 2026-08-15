@@ -55,7 +55,7 @@
 	<div class="bento-span-12 lg:tw-col-span-12 tw-bg-[#0f172a] tw-rounded-[var(--radius-premium,24px)] tw-border tw-border-[#334155] tw-p-6 tw-shadow-2xl">
 		<div class="tw-flex tw-items-center tw-justify-between tw-mb-6">
 			<div class="tw-flex tw-items-center tw-gap-3">
-				<Icon name={"action.dollar" as IconName} class="tw-w-6 tw-h-6 tw-text-nuclear-yellow" />
+				<Icon name={"action.dollar" as IconName} class="tw-w-6 tw-h-6 tw-text-amber-500" />
 				<h2 class="tw-text-white tw-font-bold tw-text-xl">Bounty Board</h2>
 			</div>
 			<span class="tw-text-[#94a3b8] tw-text-xs tw-font-mono tw-tracking-widest">PARENT ESCROWS</span>
@@ -72,14 +72,14 @@
 		{:else}
 			<div class="tw-space-y-4">
 				{#each bounties as b (b.id)}
-					<div class="tw-bg-[#1e293b] tw-rounded-xl tw-p-4 tw-border tw-border-[#334155] tw-flex tw-items-center tw-justify-between hover:tw-border-nuclear-yellow tw-transition-colors">
+					<div class="tw-bg-[#1e293b] tw-rounded-xl tw-p-4 tw-border tw-border-[#334155] tw-flex tw-items-center tw-justify-between hover:tw-border-amber-500 tw-transition-colors">
 						<div class="tw-flex-1">
 							<div class="tw-text-white tw-font-bold tw-text-lg">{b.title}</div>
 							<div class="tw-text-[#94a3b8] tw-text-sm">{b.description}</div>
-							<div class="tw-mt-2 tw-text-nuclear-yellow tw-font-mono tw-text-sm">REWARD: ${b.rewardAmount}</div>
+							<div class="tw-mt-2 tw-text-amber-500 tw-font-mono tw-text-sm">REWARD: ${b.rewardAmount}</div>
 						</div>
 						<button 
-							class="tw-ml-4 tw-px-6 tw-py-3 tw-bg-nuclear-yellow tw-text-black tw-font-bold tw-rounded-xl hover:tw-bg-yellow-300 tw-transition-colors"
+							class="tw-ml-4 tw-px-6 tw-py-3 tw-bg-amber-500 tw-text-black tw-font-bold tw-rounded-xl hover:tw-bg-yellow-300 tw-transition-colors"
 							onclick={() => handleClaim(b)}
 						>
 							CLAIM

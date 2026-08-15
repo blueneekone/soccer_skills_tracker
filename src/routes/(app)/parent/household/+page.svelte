@@ -555,7 +555,7 @@
 					disabled={coppaSigned || actionBusy}
 					onclick={signWaiver}
 				>
-					<Icon name={"status.seal-check" as IconName} size={18} class="tw-text-nuclear-yellow" />
+					<Icon name={"status.seal-check" as IconName} size={18} class="tw-text-amber-500" />
 					<span>{coppaSigned ? 'Waiver on file' : 'Sign waiver & authorize'}</span>
 				</button>
 			</section>
@@ -714,7 +714,7 @@
 											actionBusy}
 										onclick={() => generateOtpForRow(row)}
 									>
-										<Icon name={"sys.key" as IconName} size={14} class="tw-text-nuclear-yellow" />
+										<Icon name={"sys.key" as IconName} size={14} class="tw-text-amber-500" />
 										<span>{otpGenBusyKey === row.email ? 'Working…' : 'Generate clearance code'}</span>
 									</button>
 								</div>
@@ -1037,8 +1037,8 @@
 	}
 	.phh-gt-approve {
 		color: #000000;
-		background: #daff0a;
-		border: 1px solid #daff0a;
+		background: #fbbf24;
+		border: 1px solid #fbbf24;
 		box-shadow: 0 0 12px rgba(218, 255, 10, 0.4);
 	}
 	.phh-gt-approve:hover:not(:disabled) {

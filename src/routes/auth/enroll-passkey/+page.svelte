@@ -51,7 +51,9 @@
 		void (async () => {
 			try {
 				if (!authStore.isAuthenticated || !auth.currentUser) {
-					await goto('/login', { replaceState: true });
+     untrack(() => {
+       await goto('/login', { replaceState: true });
+     });
 					return;
 				}
 				const u = auth.currentUser;

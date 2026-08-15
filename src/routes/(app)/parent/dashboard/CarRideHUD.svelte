@@ -29,18 +29,18 @@
 			class="tw-absolute tw-inset-0 tw-flex tw-items-center tw-justify-center tw-p-6 tw-pointer-events-auto"
 		>
 			<div
-				class="tw-w-full tw-max-w-md tw-flex tw-flex-col tw-gap-6 tw-rounded-none tw-border tw-border-nuclear-yellow/40 tw-bg-[#0B0F19]/95 tw-backdrop-blur-sm tw-p-8"
+				class="tw-w-full tw-max-w-md tw-flex tw-flex-col tw-gap-6 tw-rounded-none tw-border tw-border-amber-500/40 tw-bg-[#0B0F19]/95 tw-backdrop-blur-sm tw-p-8"
 			>
 				<!-- Protocol badge -->
 				<div class="tw-flex tw-items-center tw-justify-center tw-gap-2">
-					<Icon name={"status.warning" as IconName} size={16} class="tw-text-nuclear-yellow tw-animate-pulse" />
-					<span class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-nuclear-yellow tw-uppercase tw-font-bold">
+					<Icon name={"status.warning" as IconName} size={16} class="tw-text-amber-500 tw-animate-pulse" />
+					<span class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-amber-500 tw-uppercase tw-font-bold">
 						CAR RIDE HOME PROTOCOL — ACTIVE
 					</span>
 				</div>
 
 				<!-- Divider -->
-				<div class="tw-w-full tw-h-px tw-bg-nuclear-yellow/20"></div>
+				<div class="tw-w-full tw-h-px tw-bg-amber-500/20"></div>
 
 				<!-- Score summary (public — no attestation required) -->
 				{#if engine.publicScore}
@@ -56,7 +56,7 @@
 							</span>
 						</div>
 						<span
-							class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-uppercase {score.outcome === 'W' ? 'tw-text-nuclear-yellow tw-font-bold' : score.outcome === 'L' ? 'tw-text-[#ff6b6b]' : 'tw-text-[#a0a0a0]'}"
+							class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-uppercase {score.outcome === 'W' ? 'tw-text-amber-500 tw-font-bold' : score.outcome === 'L' ? 'tw-text-[#ff6b6b]' : 'tw-text-[#a0a0a0]'}"
 						>
 							{score.outcome === 'W' ? 'VICTORY' : score.outcome === 'L' ? 'DEFEAT' : 'DRAW'}
 						</span>
@@ -83,7 +83,7 @@
 				<button
 					onclick={() => engine.attest()}
 					disabled={engine.isAttesting || engine.isTemporallyEmbargoed}
-					class="tw-w-full tw-font-mono tw-text-[11px] tw-font-bold tw-tracking-widest tw-uppercase tw-flex tw-items-center tw-justify-center tw-gap-2 tw-border tw-border-nuclear-yellow tw-text-black tw-bg-nuclear-yellow tw-rounded-none tw-px-6 tw-py-4 tw-transition-all tw-duration-200
+					class="tw-w-full tw-font-mono tw-text-[11px] tw-font-bold tw-tracking-widest tw-uppercase tw-flex tw-items-center tw-justify-center tw-gap-2 tw-border tw-border-amber-500 tw-text-black tw-bg-amber-500 tw-rounded-none tw-px-6 tw-py-4 tw-transition-all tw-duration-200
 						{engine.isAttesting || engine.isTemporallyEmbargoed ? 'tw-opacity-50 tw-cursor-not-allowed' : 'hover:tw-bg-yellow-300 hover:tw-shadow-[0_0_20px_rgba(218,255,10,0.5)] active:tw-scale-[0.98]'}"
 				>
 					<Icon name={"status.shield-check" as IconName} size={16} />

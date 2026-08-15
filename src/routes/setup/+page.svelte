@@ -39,7 +39,9 @@
 		if (authStore.isLoading) return;
 
 		if (!authStore.isAuthenticated) {
-			goto('/login', { replaceState: true });
+   untrack(() => {
+     goto('/login', { replaceState: true });
+   });
 			return;
 		}
 

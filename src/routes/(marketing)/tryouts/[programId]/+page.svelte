@@ -170,7 +170,7 @@
 		<h1 class="tw-text-2xl tw-font-bold">Tryout not found</h1>
 		<p class="tw-mt-2 tw-text-slate-400">This registration link may be invalid or expired.</p>
 	{:else}
-		<p class="tw-mb-1 tw-font-mono tw-text-xs tw-uppercase tw-tracking-widest tw-text-nuclear-yellow">
+		<p class="tw-mb-1 tw-font-mono tw-text-xs tw-uppercase tw-tracking-widest tw-text-amber-500">
 			Tryout registration
 		</p>
 		<h1 class="tw-m-0 tw-text-3xl tw-font-black">{program.name}</h1>
@@ -186,7 +186,7 @@
 			{#if program.spotsRemaining != null}
 				<div class="tw-flex tw-justify-between tw-gap-3">
 					<dt class="tw-text-slate-400">Spots left</dt>
-					<dd class="tw-font-mono tw-font-bold tw-text-nuclear-yellow">{program.spotsRemaining}</dd>
+					<dd class="tw-font-mono tw-font-bold tw-text-amber-500">{program.spotsRemaining}</dd>
 				</div>
 			{/if}
 			{#if program.registrationClosesAt}
@@ -266,7 +266,7 @@
 						Session RSVP
 					</h2>
 					<p class="tw-mt-2 tw-text-sm tw-text-slate-300">
-						Confirmation code: <code class="tw-font-mono tw-text-nuclear-yellow tw-font-bold">{registrationId}</code>
+						Confirmation code: <code class="tw-font-mono tw-text-amber-500 tw-font-bold">{registrationId}</code>
 					</p>
 					<p class="tw-text-sm tw-text-slate-400">
 						After the club assigns your tryout block, confirm attendance below (same guardian email).
@@ -304,7 +304,7 @@
 
 				{#if pipelineStatus === 'offered'}
 					<section class="ty-rsvp tw-mt-6 tw-rounded-sm tw-border tw-border-[#f59e0b] tw-bg-[#0f172a] tw-p-4">
-						<h2 class="tw-m-0 tw-text-sm tw-font-bold tw-uppercase tw-tracking-wide tw-text-nuclear-yellow">
+						<h2 class="tw-m-0 tw-text-sm tw-font-bold tw-uppercase tw-tracking-wide tw-text-amber-500">
 							Roster offer
 						</h2>
 						<p class="tw-mt-2 tw-text-sm tw-text-slate-300">

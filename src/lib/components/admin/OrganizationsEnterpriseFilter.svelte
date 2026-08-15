@@ -186,7 +186,7 @@
 		</button>
 		<button 
 			type="button" 
-			class="tw-bg-nuclear-yellow tw-text-void-black tw-px-6 tw-py-2 tw-font-mono tw-font-extrabold tw-text-sm tw-uppercase tw-tracking-widest hover:tw-bg-nuclear-yellow/90 tw-transition-colors tw-flex tw-items-center tw-gap-2"
+			class="tw-bg-amber-500 tw-text-void-black tw-px-6 tw-py-2 tw-font-mono tw-font-extrabold tw-text-sm tw-uppercase tw-tracking-widest hover:tw-bg-amber-500/90 tw-transition-colors tw-flex tw-items-center tw-gap-2"
 			onclick={onClose}
 		>
 			<Icon name={"status.check-square" as IconName} size={14} />

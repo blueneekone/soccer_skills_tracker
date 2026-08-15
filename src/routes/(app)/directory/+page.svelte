@@ -88,7 +88,7 @@
                     <div class="flex justify-between items-start">
                         <h3 class="text-lg font-bold text-white">{tutor.displayName}</h3>
                         <!-- Nuclear Lime styling for active rates -->
-                        <span class="text-[#daff0a] font-mono font-bold text-lg">${tutor.tutorProfile.ratePerHour}/hr</span>
+                        <span class="text-[#fbbf24] font-mono font-bold text-lg">${tutor.tutorProfile.ratePerHour}/hr</span>
                     </div>
                     <!-- Data Cyan typography tokens for sports tag -->
                     <span class="text-[#14b8a6] text-xs font-semibold uppercase tracking-wider block mt-1">{tutor.sport} Specialist</span>

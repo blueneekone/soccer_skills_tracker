@@ -17,7 +17,7 @@
 
 <main class="cp-root">
 	<header class="cp-hero">
-		<p class="cp-eyebrow tw-text-nuclear-yellow">Vanguard Clearance Protocol</p>
+		<p class="cp-eyebrow tw-text-amber-500">Vanguard Clearance Protocol</p>
 		<h1 class="cp-title">Adults touching minor data must clear a background check.</h1>
 		<p class="cp-lede">
 			Vanguard is built around minor athletes — kids in the U-9 to U-18 range.
@@ -109,7 +109,7 @@
 
 	<footer class="cp-footer">
 		<a class="cp-cta tw-inline-flex tw-items-center tw-gap-2" href="/pricing">
-			<Icon name={"nav.arrow-left" as IconName} size={16} class="tw-text-nuclear-yellow" />
+			<Icon name={"nav.arrow-left" as IconName} size={16} class="tw-text-amber-500" />
 			Back to pricing
 		</a>
 	</footer>

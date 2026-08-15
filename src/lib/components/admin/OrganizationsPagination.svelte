@@ -15,7 +15,7 @@
 
 {#if orgTotalPages > 1}
 	<div class="orgs3-pager" role="navigation" aria-label="Organizations pagination">
-		<button type="button" class="orgs3-page-btn tw-flex tw-items-center tw-gap-1 tw-text-nuclear-yellow disabled:tw-text-[#A1A1AA]" disabled={orgPage <= 0} onclick={onPrev}>
+		<button type="button" class="orgs3-page-btn tw-flex tw-items-center tw-gap-1 tw-text-amber-500 disabled:tw-text-[#A1A1AA]" disabled={orgPage <= 0} onclick={onPrev}>
 			<Icon name={"nav.chevron-left" as IconName} size={14} />
 			Prev
 		</button>
@@ -25,7 +25,7 @@
 		</span>
 		<button
 			type="button"
-			class="orgs3-page-btn tw-flex tw-items-center tw-gap-1 tw-text-nuclear-yellow disabled:tw-text-[#A1A1AA]"
+			class="orgs3-page-btn tw-flex tw-items-center tw-gap-1 tw-text-amber-500 disabled:tw-text-[#A1A1AA]"
 			disabled={orgPage >= orgTotalPages - 1}
 			onclick={onNext}
 		>

@@ -28,12 +28,12 @@
 		>
 			<!-- Header -->
 			<div class="tw-flex tw-items-center tw-justify-between">
-				<span class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-nuclear-yellow tw-uppercase tw-flex tw-items-center tw-gap-1.5">
-					<Icon name={"data.activity" as IconName} size={12} class="tw-text-nuclear-yellow" />
+				<span class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-amber-500 tw-uppercase tw-flex tw-items-center tw-gap-1.5">
+					<Icon name={"data.activity" as IconName} size={12} class="tw-text-amber-500" />
 					<span>// MATCH RESULT TELEMETRY</span>
 				</span>
 				<span
-					class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-uppercase tw-px-2.5 tw-py-1 tw-rounded-none tw-border {score.outcome === 'W' ? 'tw-text-nuclear-yellow tw-border-nuclear-yellow/40 tw-bg-nuclear-yellow/10' : score.outcome === 'L' ? 'tw-text-[#ff0055] tw-border-[#ff0055]/40 tw-bg-[#ff0055]/10' : 'tw-text-[#a0a0a0] tw-border-[#a0a0a0]/30 tw-bg-[#a0a0a0]/10'}"
+					class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-uppercase tw-px-2.5 tw-py-1 tw-rounded-none tw-border {score.outcome === 'W' ? 'tw-text-amber-500 tw-border-amber-500/40 tw-bg-amber-500/10' : score.outcome === 'L' ? 'tw-text-[#ff0055] tw-border-[#ff0055]/40 tw-bg-[#ff0055]/10' : 'tw-text-[#a0a0a0] tw-border-[#a0a0a0]/30 tw-bg-[#a0a0a0]/10'}"
 				>
 					{score.outcome === 'W' ? 'VICTORY' : score.outcome === 'L' ? 'DEFEAT' : 'DRAW'}
 				</span>
@@ -53,8 +53,8 @@
 			<!-- EQ interceptor label (metrics locked badge) -->
 			{#if !engine.attested}
 				<div class="tw-flex tw-items-center tw-justify-center tw-gap-2 tw-py-1.5 tw-bg-[#ff0055]/10 tw-border tw-border-[#ff0055]/30">
-					<Icon name={"status.warning" as IconName} size={14} class="tw-text-nuclear-yellow tw-animate-pulse" />
-					<span class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-nuclear-yellow tw-uppercase tw-font-bold">
+					<Icon name={"status.warning" as IconName} size={14} class="tw-text-amber-500 tw-animate-pulse" />
+					<span class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-amber-500 tw-uppercase tw-font-bold">
 						PLAYER METRICS LOCKED — EQ ATTESTATION REQUIRED
 					</span>
 				</div>
@@ -68,10 +68,10 @@
 
 		<!-- Unlock confirmation banner -->
 		<div
-			class="tw-rounded-none tw-border tw-border-nuclear-yellow/40 tw-bg-nuclear-yellow/10 tw-px-5 tw-py-3 tw-flex tw-items-center tw-gap-3"
+			class="tw-rounded-none tw-border tw-border-amber-500/40 tw-bg-amber-500/10 tw-px-5 tw-py-3 tw-flex tw-items-center tw-gap-3"
 		>
-			<Icon name={"status.check" as IconName} size={16} class="tw-text-nuclear-yellow" />
-			<span class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-nuclear-yellow tw-uppercase tw-font-bold">
+			<Icon name={"status.check" as IconName} size={16} class="tw-text-amber-500" />
+			<span class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-amber-500 tw-uppercase tw-font-bold">
 				EQ ATTESTATION CONFIRMED — FULL METRICS UNLOCKED
 			</span>
 		</div>
@@ -102,12 +102,12 @@
 								<tr class="tw-border-b tw-border-[#1E293B]/50 last:tw-border-b-0 hover:tw-bg-[#14b8a6]/5 tw-transition-colors tw-duration-150">
 									<td class="tw-px-4 tw-py-2.5 tw-font-mono tw-text-[10px] tw-text-slate-200 tw-max-w-[140px] tw-truncate">{email}</td>
 									<td class="tw-px-3 tw-py-2.5 tw-text-center tw-font-mono tw-text-[11px] tw-text-slate-300">{fmt(stat.minutesPlayed)}</td>
-									<td class="tw-px-3 tw-py-2.5 tw-text-center tw-font-mono tw-text-[11px] tw-text-nuclear-yellow tw-font-bold">{fmt(stat.goals)}</td>
+									<td class="tw-px-3 tw-py-2.5 tw-text-center tw-font-mono tw-text-[11px] tw-text-amber-500 tw-font-bold">{fmt(stat.goals)}</td>
 									<td class="tw-px-3 tw-py-2.5 tw-text-center tw-font-mono tw-text-[11px] tw-text-[#14b8a6]">{fmt(stat.assists)}</td>
 									<td class="tw-px-3 tw-py-2.5 tw-text-center">
 										{#if stat.rating !== undefined && stat.rating !== null}
 											<span
-												class="tw-font-mono tw-text-[11px] tw-font-bold {stat.rating >= 8 ? 'tw-text-nuclear-yellow' : stat.rating >= 6 ? 'tw-text-[#14b8a6]' : 'tw-text-[#ff6b6b]'}"
+												class="tw-font-mono tw-text-[11px] tw-font-bold {stat.rating >= 8 ? 'tw-text-amber-500' : stat.rating >= 6 ? 'tw-text-[#14b8a6]' : 'tw-text-[#ff6b6b]'}"
 											>
 												{stat.rating}/10
 											</span>
@@ -126,7 +126,7 @@
 		<!-- Coach notes -->
 		{#if metrics.coachNotes && metrics.coachNotes.trim().length > 0}
 			<div class="tw-rounded-none tw-border tw-border-[#1E293B] tw-bg-[#0B0F19] tw-p-5 tw-flex tw-flex-col tw-gap-3">
-				<span class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-nuclear-yellow tw-uppercase tw-flex tw-items-center tw-gap-1.5">
+				<span class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-amber-500 tw-uppercase tw-flex tw-items-center tw-gap-1.5">
 					<Icon name={"comm.chat" as IconName} size={14} />
 					<span>// COACH NOTES</span>
 				</span>

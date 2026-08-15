@@ -36,10 +36,10 @@
 		>
 			<div class="tw-flex tw-flex-col tw-items-center tw-gap-3">
 				<div
-					class="tw-w-8 tw-h-8 tw-rounded-none tw-border-2 tw-border-nuclear-yellow/30 tw-border-t-nuclear-yellow tw-animate-spin"
+					class="tw-w-8 tw-h-8 tw-rounded-none tw-border-2 tw-border-amber-500/30 tw-border-t-amber-500 tw-animate-spin"
 				></div>
 				<span
-					class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-nuclear-yellow tw-uppercase tw-animate-pulse"
+					class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-amber-500 tw-uppercase tw-animate-pulse"
 				>
 					INITIALIZING CO-OP ENGINE...
 				</span>
@@ -77,7 +77,7 @@
 				ACTIVE ESCROW
 			</span>
 			<span
-				class="tw-font-mono tw-text-[22px] tw-font-bold tw-tracking-tight tw-text-nuclear-yellow tw-leading-none"
+				class="tw-font-mono tw-text-[22px] tw-font-bold tw-tracking-tight tw-text-amber-500 tw-leading-none"
 			>
 				${activeDollars}
 			</span>
@@ -93,7 +93,7 @@
 			<div class="tw-flex tw-items-center tw-gap-1.5">
 				{#each dotBounties as b (b.id)}
 					<div
-						class="tw-w-2 tw-h-2 tw-rounded-none tw-bg-nuclear-yellow"
+						class="tw-w-2 tw-h-2 tw-rounded-none tw-bg-amber-500"
 						title={b.title}
 					></div>
 				{/each}
@@ -110,7 +110,7 @@
 		<!-- New bounty CTA -->
 		<button
 			onclick={onCreateBounty}
-			class="tw-inline-flex tw-items-center tw-gap-1.5 tw-font-mono tw-text-[10px] tw-font-bold tw-tracking-widest tw-uppercase tw-border tw-border-nuclear-yellow tw-text-black tw-bg-nuclear-yellow tw-rounded-none tw-px-5 tw-py-2.5 tw-transition-all tw-duration-200 hover:tw-bg-yellow-300 hover:tw-shadow-[0_0_15px_rgba(218,255,10,0.5)] active:tw-scale-95"
+			class="tw-inline-flex tw-items-center tw-gap-1.5 tw-font-mono tw-text-[10px] tw-font-bold tw-tracking-widest tw-uppercase tw-border tw-border-amber-500 tw-text-black tw-bg-amber-500 tw-rounded-none tw-px-5 tw-py-2.5 tw-transition-all tw-duration-200 hover:tw-bg-yellow-300 hover:tw-shadow-[0_0_15px_rgba(218,255,10,0.5)] active:tw-scale-95"
 		>
 			<Icon name={"action.add" as IconName} size={14} />
 			<span>NEW BOUNTY</span>

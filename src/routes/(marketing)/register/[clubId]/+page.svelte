@@ -81,7 +81,7 @@
 			{/if}
 		</p>
 	{:else}
-		<p class="tw-mb-1 tw-font-mono tw-text-xs tw-uppercase tw-tracking-widest tw-text-nuclear-yellow">
+		<p class="tw-mb-1 tw-font-mono tw-text-xs tw-uppercase tw-tracking-widest tw-text-amber-500">
 			Season registration
 		</p>
 		<h1 class="tw-m-0 tw-text-3xl tw-font-black">{program.clubName}</h1>
@@ -90,7 +90,7 @@
 		<dl class="reg-facts tw-mt-8 tw-space-y-3 tw-rounded-sm tw-border tw-border-[#334155] tw-bg-[#0f172a] tw-p-5">
 			<div class="tw-flex tw-justify-between tw-gap-4">
 				<dt class="tw-text-slate-400">Fee</dt>
-				<dd class="tw-font-mono tw-font-bold tw-text-nuclear-yellow">
+				<dd class="tw-font-mono tw-font-bold tw-text-amber-500">
 					{fmtFee(program.feeAmountDollars)}
 				</dd>
 			</div>

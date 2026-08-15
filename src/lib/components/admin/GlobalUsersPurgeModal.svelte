@@ -93,7 +93,7 @@
 				<button type="button" class="btn-secondary tw-px-[clamp(16px,2vw,24px)] tw-py-2 tw-text-sm tw-font-bold tw-flex tw-items-center tw-gap-1.5" onclick={onClose}>
 					<Icon name={"sys.close" as IconName} size={14} /> Cancel
 				</button>
-				<button type="button" class="btn-primary tw-bg-nuclear-yellow hover:tw-bg-nuclear-yellow/90 tw-text-void-black tw-px-[clamp(16px,2vw,24px)] tw-py-2 tw-text-sm tw-font-extrabold tw-flex tw-items-center tw-gap-1.5" onclick={onAdvance}>
+				<button type="button" class="btn-primary tw-bg-amber-500 hover:tw-bg-amber-500/90 tw-text-void-black tw-px-[clamp(16px,2vw,24px)] tw-py-2 tw-text-sm tw-font-extrabold tw-flex tw-items-center tw-gap-1.5" onclick={onAdvance}>
 					<Icon name={"nav.arrow-right" as IconName} size={14} /> Continue
 				</button>
 			</footer>

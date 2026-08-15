@@ -16,7 +16,7 @@
 	
 	<!-- Header -->
 	<header class="tw-max-w-7xl tw-mx-auto tw-w-full tw-px-6 tw-pt-24 tw-pb-16 tw-flex tw-flex-col tw-items-center tw-text-center tw-gap-6">
-		<span class="tw-font-mono tw-text-xs tw-font-bold tw-tracking-[0.3em] tw-text-nuclear-yellow">PERSONA SURFACES</span>
+		<span class="tw-font-mono tw-text-xs tw-font-bold tw-tracking-[0.3em] tw-text-amber-500">PERSONA SURFACES</span>
 		<h1 class="tw-text-5xl md:tw-text-6xl tw-font-bold tw-text-[#f8fafc] tw-tracking-tight tw-leading-tight" style="font-family: 'Geist Sans', sans-serif;">
 			What SSTracker ships today.
 		</h1>
@@ -31,9 +31,9 @@
 		<div class="tw-grid tw-grid-cols-1 md:tw-grid-cols-12 tw-gap-6">
 			
 			<!-- Player OS (Dopamine Engine) - Spans 8 Cols -->
-			<div id="development" class="md:tw-col-span-8 tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-p-8 hover:tw-border-nuclear-yellow tw-transition-colors tw-duration-150 tw-flex tw-flex-col">
+			<div id="development" class="md:tw-col-span-8 tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-p-8 hover:tw-border-amber-500 tw-transition-colors tw-duration-150 tw-flex tw-flex-col">
 				<div class="tw-flex tw-items-center tw-gap-3 tw-mb-6">
-					<Icon name={"game.rocket" as IconName} size={28} class="tw-text-nuclear-yellow" />
+					<Icon name={"game.rocket" as IconName} size={28} class="tw-text-amber-500" />
 					<h2 class="tw-text-2xl tw-font-bold" style="font-family: 'Geist Sans', sans-serif;">Player OS: The Dopamine Engine</h2>
 				</div>
 				<p class="tw-text-[#94a3b8] tw-text-sm tw-leading-relaxed tw-mb-8" style="font-family: 'Switzer', sans-serif;">
@@ -42,7 +42,7 @@
 				<div class="tw-mt-auto tw-w-full tw-aspect-video tw-bg-[#020617] tw-border tw-border-[#334155] tw-rounded-sm tw-overflow-hidden tw-relative tw-group">
 					<!-- Media Container -->
 					<div class="tw-absolute tw-inset-0 tw-flex tw-items-center tw-justify-center tw-z-10">
-						<button class="tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-rounded-full tw-p-4 tw-text-[#f8fafc] tw-transition-colors tw-duration-150 group-hover:tw-text-nuclear-yellow" aria-label="Play video">
+						<button class="tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-rounded-full tw-p-4 tw-text-[#f8fafc] tw-transition-colors tw-duration-150 group-hover:tw-text-amber-500" aria-label="Play video">
 							<Icon name={"media.play" as IconName} size={32} />
 						</button>
 					</div>
@@ -98,7 +98,7 @@
 		<div class="tw-mt-24 tw-text-center">
 			<h2 class="tw-text-3xl tw-font-bold tw-mb-8" style="font-family: 'Geist Sans', sans-serif;">Ready to secure your club's future?</h2>
 			<div class="tw-flex tw-items-center tw-justify-center tw-gap-6 tw-flex-wrap">
-				<a href="/pricing" class="tw-bg-nuclear-yellow tw-text-[#000000] hover:tw-bg-nuclear-yellow/90 tw-px-8 tw-py-4 tw-rounded-sm tw-font-mono tw-font-bold tw-text-sm tw-uppercase tw-tracking-wider tw-transition-colors tw-duration-150 tw-flex tw-items-center tw-gap-2 tw-shadow-[0_0_20px_rgba(224,255,0,0.25)]">
+				<a href="/pricing" class="tw-bg-amber-500 tw-text-[#000000] hover:tw-bg-amber-500/90 tw-px-8 tw-py-4 tw-rounded-sm tw-font-mono tw-font-bold tw-text-sm tw-uppercase tw-tracking-wider tw-transition-colors tw-duration-150 tw-flex tw-items-center tw-gap-2 tw-shadow-[0_0_20px_rgba(224,255,0,0.25)]">
 					View Commercial Pricing
 					<Icon name={"nav.arrow-right" as IconName} size={16} />
 				</a>

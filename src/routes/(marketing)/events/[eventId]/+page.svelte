@@ -142,7 +142,7 @@
 			<div class="hero-badge">
 				{#if isEventOpen(event)}
 					<span class="open-badge tw-inline-flex tw-items-center tw-gap-1.5">
-						<Icon name={"status.circle-check" as IconName} size={14} class="tw-text-nuclear-yellow" />
+						<Icon name={"status.circle-check" as IconName} size={14} class="tw-text-amber-500" />
 						Tickets Available
 					</span>
 				{:else}
@@ -463,7 +463,7 @@
 		gap: 0.5rem;
 	}
 	.tier-label { font-weight: 600; color: var(--vanguard-text-primary, #e2e8f0); }
-	.tier-price { font-weight: 700; color: var(--tw-nuclear-yellow, #e0ff00); font-size: 1.05rem; }
+	.tier-price { font-weight: 700; color: var(--tw-amber-500, #e0ff00); font-size: 1.05rem; }
 	.tier-desc { font-size: 0.82rem; color: var(--vanguard-text-muted, #94a3b8); margin: 0.25rem 0 0; }
 	.tier-remaining { font-size: 0.75rem; color: var(--vanguard-text-muted, #94a3b8); margin-top: 0.3rem; display: block; }
 
