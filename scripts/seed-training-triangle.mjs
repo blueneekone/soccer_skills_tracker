@@ -55,12 +55,30 @@ async function run() {
     const teamRef = db.collection('clubs').doc(clubId).collection('teams').doc(teamId);
     await teamRef.set({ name: 'U17 Premier', ageGroup: 'U17' });
     
+    // Create root-level team and roster for IntentEngine
+    await db.collection('teams').doc(teamId).set({ 
+        name: 'U17 Premier', 
+        playerUids: ['mock-player-uid'],
+        coachEmail: 'coach-test@sstracker.app',
+        clubId: clubId
+    });
+    await db.collection('rosters').doc(teamId).set({ players: ['Leo Hernandez'] });
+
+    // 2.5 Mock Team Drill
+    await db.collection('teams').doc(teamId).collection('drills').doc('mock-drill-1').set({
+        title: 'Toe Taps Mastery',
+        attributeId: 'striking',
+        baseXP: 150,
+        createdAt: new Date().toISOString()
+    });
+    
     await db.collection('team_assignments').doc('assign-coach').set({
         teamId: teamId,
         clubId: clubId,
         uid: 'mock-coach-uid',
         role: 'coach',
-        playerName: 'Coach Henderson'
+        playerName: 'Coach Henderson',
+        status: 'active'
     });
 
     await db.collection('team_assignments').doc('assign-player').set({
@@ -69,12 +87,29 @@ async function run() {
         uid: 'mock-player-uid',
         role: 'player',
         playerName: 'Leo Hernandez',
-        email: 'player-test@sstracker.app'
+        email: 'player-test@sstracker.app',
+        status: 'active'
     });
 
-    // Generate Custom Tokens
+    // 4. Create Auth Users and Generate JWT Custom Tokens
+    // We must ensure the auth user exists with an email so that authStore.user.email is populated for coach queries
+    const authUsers = [
+        { uid: 'mock-coach-uid', email: 'coach-test@sstracker.app' },
+        { uid: 'mock-player-uid', email: 'player-test@sstracker.app' },
+        { uid: 'mock-parent-uid', email: 'parent-test@sstracker.app' }
+    ];
+    for (const u of authUsers) {
+        try {
+            await admin.auth().updateUser(u.uid, { email: u.email });
+        } catch (e) {
+            if (e.code === 'auth/user-not-found') {
+                await admin.auth().createUser({ uid: u.uid, email: u.email });
+            }
+        }
+    }
+
     const coachToken = await admin.auth().createCustomToken('mock-coach-uid', { role: 'coach', clubId, teamId });
-    const playerToken = await admin.auth().createCustomToken('mock-player-uid', { role: 'player', clubId, teamId, householdId: 'mock-household-1' });
+    const playerToken = await admin.auth().createCustomToken('mock-player-uid', { role: 'player', clubId, teamId, householdId: 'mock-household-1', isMinor: true });
     const parentToken = await admin.auth().createCustomToken('mock-parent-uid', { role: 'parent', clubId, householdId: 'mock-household-1' });
 
     fs.writeFileSync('./scripts/mock-tokens.json', JSON.stringify({

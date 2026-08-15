@@ -749,7 +749,11 @@ export class IntentEngine {
 
 		try {
 			const linkSnap = await getDocs(
-				query(collection(db, 'player_lookup'), where('teamId', '==', this._teamId)),
+				query(
+					collection(db, 'player_lookup'),
+					where('teamId', '==', this._teamId),
+					where('clubId', '==', this._clubId)
+				),
 			);
 			for (const linkDoc of linkSnap.docs) {
 				const email = linkDoc.id;
@@ -862,7 +866,11 @@ export class IntentEngine {
 				:	[];
 
 			const snap = await getDocs(
-				query(collection(db, 'users'), where('teamId', '==', this._teamId)),
+				query(
+					collection(db, 'users'),
+					where('teamId', '==', this._teamId),
+					where('clubId', '==', this._clubId)
+				),
 			);
 			rows = snap.docs
 				.filter((d) => d.data().role === 'player')
@@ -906,15 +914,18 @@ export class IntentEngine {
 
 	private async _loadDrillsForAttribute() {
 		if (!isFirestoreReady() || !this._teamId) {
+			console.log(`[IntentEngine] _loadDrillsForAttribute: NOT READY. isFirestoreReady=${isFirestoreReady()}, _teamId=${this._teamId}`);
 			this.availableDrills = [];
 			return;
 		}
 		this.isLoadingDrills = true;
 		try {
+			console.log(`[IntentEngine] _loadDrillsForAttribute: querying for team=${this._teamId}, attr=${this.draftAttributeId.trim()}`);
 			this.availableDrills = await loadTeamDrillsForIntent(db, this._teamId, {
 				attributeId: this.draftAttributeId.trim() || undefined,
 				clubId: this._clubId.trim() || undefined,
 			});
+			console.log(`[IntentEngine] _loadDrillsForAttribute: GOT ${this.availableDrills.length} drills`);
 		} catch (e) {
 			console.error('[IntentEngine] team drill load error:', e);
 			this.availableDrills = [];

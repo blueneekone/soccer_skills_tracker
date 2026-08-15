@@ -73,6 +73,7 @@
 	});
 
 	function tryoutLink(programId: string) {
+    if (!db || !authStore.isAuthenticated) return;
 		if (!browser) return '';
 		return `${window.location.origin}/tryouts/${encodeURIComponent(programId)}`;
 	}

@@ -120,7 +120,7 @@
 		const q = new URLSearchParams();
 		q.set('assignmentId', row.id);
 		if (row.drillId) q.set('drillId', row.drillId);
-		goto(`/tracker?${q.toString()}`);
+		untrack(() => { goto(`/tracker?${q.toString()}`); });
 	}
 
 	async function markDoneQuick(id) {

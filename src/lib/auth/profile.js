@@ -41,7 +41,7 @@ function cellIdFromClaims(tokenResult) {
  * @param {string} email
  */
 export function fallbackPlayerName(baseProfile, email) {
-	const local = email.split('@')[0];
+	const local = email ? String(email).split('@')[0] : 'unknown';
 	return (
 		(baseProfile &&
 			(baseProfile.playerName || baseProfile.name || baseProfile.player)) ||

@@ -8,6 +8,9 @@ export default defineConfig(({ mode }) => ({
 	server: {
 		headers: {
 			'Cross-Origin-Opener-Policy': 'same-origin-allow-popups'
+		},
+		watch: {
+			ignored: ['**/recordings/**', '**/static/videos/**', '**/scripts/**']
 		}
 	},
 

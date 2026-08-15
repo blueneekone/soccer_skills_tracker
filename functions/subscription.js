@@ -91,7 +91,7 @@ exports.createSubscription = onCall({region: REGION}, async (request) => {
   }
 
   // ── LIVE Stripe Connect Checkout Session ─────────────────────────────────
-  const Stripe = require('stripe');
+  
   const stripeClient = new Stripe(secretKey, {apiVersion: '2024-06-20'});
 
   const session = await stripeClient.checkout.sessions.create({

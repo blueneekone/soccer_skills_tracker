@@ -113,9 +113,14 @@ export async function loadTeamDrillsForIntent(
 	const rows: TeamDrillPickerRow[] = [];
 
 	try {
+		console.log(`[teamDrillLibrary] Querying drills for team=${tid}`);
 		const teamSnap = await getDocs(collection(firestore, 'teams', tid, 'drills'));
+		console.log(`[teamDrillLibrary] Team drills returned size: ${teamSnap.size}`);
 		for (const d of teamSnap.docs) {
-			rows.push(mapTeamDrillDoc(d.id, d.data() as Record<string, unknown>, 'team'));
+			console.log(`[teamDrillLibrary] raw doc:`, d.id, d.data());
+			const mapped = mapTeamDrillDoc(d.id, d.data() as Record<string, unknown>, 'team');
+			console.log(`[teamDrillLibrary] mapped doc:`, mapped);
+			rows.push(mapped);
 		}
 	} catch (e) {
 		console.error('[teamDrillLibrary] team drills load', e);

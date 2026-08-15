@@ -93,7 +93,7 @@
 		if (!confirm(`FINAL CONFIRMATION: Are you absolutely sure you want to delete this organization?`)) return;
 		await deleteDoc(doc(db, 'clubs', clubId));
 		await logSecurityEvent('DELETE_CLUB', clubId, 'Club deleted permanently');
-		goto('/admin/organizations');
+		untrack(() => { goto('/admin/organizations'); });
 	}
 
 	// ── Assign Director ──────────────────────────────────────────────────────────
@@ -225,7 +225,7 @@
 		try {
 			await deleteDoc(doc(db, 'clubs', clubId));
 			await logSecurityEvent('DELETE_CLUB', clubId, 'Club deleted permanently');
-			goto('/admin/organizations');
+			untrack(() => { goto('/admin/organizations'); });
 		} catch (e) {
 			console.error(e);
 			deleteExecuting = false;

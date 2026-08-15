@@ -48,7 +48,7 @@
 	function onNavClick(href: string, e: MouseEvent) {
 		if (!playerOsGate.blocked || !PRIMARY_LOCK_HREFS.has(href)) return;
 		e.preventDefault();
-		void goto('/player/settings');
+		void untrack(() => { goto('/player/settings'); });
 	}
 
 	let signingOut = $state(false);
@@ -177,8 +177,8 @@
 		{#if playerOsGate.blocked}
 			<PlayerReadOnlyBillingBanner
 				reasons={playerOsGate.reasons}
-				onPricing={async () => await goto('/pricing')}
-				onSettings={async () => await goto('/player/settings')}
+				onPricing={async () => await untrack(() => { goto('/pricing'); });}
+				onSettings={async () => await untrack(() => { goto('/player/settings'); });}
 			/>
 		{/if}
 

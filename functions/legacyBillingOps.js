@@ -43,7 +43,7 @@ const SUNSETTABLE_TIERS = Object.freeze(['tutor', 'team', 'club']);
 
 /** Lazy-init Stripe so the absence of a secret never crashes cold-starts. */
 function getStripe() {
-  const Stripe = require('stripe');
+  
   return new Stripe(STRIPE_SECRET_KEY.value(), {apiVersion: '2024-06-20'});
 }
 

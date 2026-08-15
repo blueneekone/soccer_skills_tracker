@@ -123,7 +123,7 @@ exports.getUploadToken = onCall({region: REGION}, async (request) => {
     },
   });
 
-  const db = admin.firestore();
+  
   const mediaRef = db.doc(`player_media/${callerUid}/clips/${clipId}`);
   await mediaRef.set({
     clipId,
@@ -176,7 +176,7 @@ exports.deleteAllPlayerMedia = onCall({region: REGION}, async (request) => {
     throw new HttpsError('permission-denied', 'Director or parent role required.');
   }
 
-  const db = admin.firestore();
+  
   const bucket = admin.storage().bucket();
 
   // Load all clips for this player

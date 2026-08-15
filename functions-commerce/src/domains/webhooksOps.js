@@ -1088,7 +1088,7 @@ exports.createStripeCheckoutSession = onCall(
         );
       }
 
-      const Stripe = require('stripe');
+      
       const stripeClient = new Stripe(secret, {apiVersion: '2024-06-20'});
       
       const priceId = priceIdForTierType(stripeClient, tierTypeRaw);
@@ -1191,7 +1191,7 @@ exports.stripeWebhook = onRequest(
         return;
       }
 
-      const Stripe = require('stripe');
+      
       const stripeClient = new Stripe(secretKey, {apiVersion: '2024-06-20'});
 
       let event;

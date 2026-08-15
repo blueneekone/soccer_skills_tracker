@@ -46,7 +46,7 @@
 		type="button"
 		class="coach-tac-exit coach-os-action-chip"
 		aria-label="Exit War Room"
-		onclick={() => goto('/coach/dashboard')}
+		onclick={() => untrack(() => { goto('/coach/dashboard'); });}
 	>
 		✕ Exit War Room
 	</button>

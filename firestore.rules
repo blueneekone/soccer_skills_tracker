@@ -80,6 +80,37 @@ service cloud.firestore {
       match /scouting_assessments/{playerKey} {
         allow read, write: if coachStaffCanAccessTeam(teamId) || directorScopedToTeam(teamId);
       }
+
+      match /drills/{drillId} {
+        allow read, write: if coachStaffCanAccessTeam(teamId) || directorScopedToTeam(teamId) || request.auth.token.role == 'super_admin';
+      }
+
+      match /intents/{intentId} {
+        allow read, write: if coachStaffCanAccessTeam(teamId) || directorScopedToTeam(teamId) || request.auth.token.role == 'super_admin';
+      }
+    }
+
+    match /rosters/{teamId} {
+      allow read: if isAuthenticated();
+    }
+
+    match /sports_configs/{sportId} {
+      allow read: if isAuthenticated();
+    }
+    match /config/{configId} {
+      allow read: if isAuthenticated();
+    }
+    match /platform_settings/{settingId} {
+      allow read: if isAuthenticated();
+    }
+    match /feature_flags/{flagId} {
+      allow read: if isAuthenticated();
+    }
+    match /branding/{brandId} {
+      allow read: if isAuthenticated();
+    }
+    match /license_entitlements/{licenseId} {
+      allow read: if isAuthenticated();
     }
 
     match /team_workouts/{workoutId} {

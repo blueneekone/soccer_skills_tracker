@@ -247,7 +247,7 @@
 	}
 
 	function openSchedule() {
-		goto('/coach/logistics');
+		untrack(() => { goto('/coach/logistics'); });
 	}
 
 	/**

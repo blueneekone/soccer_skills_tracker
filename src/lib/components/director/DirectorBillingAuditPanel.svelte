@@ -147,6 +147,7 @@
 	});
 
 	async function refreshNow() {
+    if (!db || !authStore.isAuthenticated) return;
 		const id = clubId.trim();
 		if (!id) return;
 		lastLoadedClubId = '';

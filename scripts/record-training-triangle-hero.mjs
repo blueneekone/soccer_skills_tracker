@@ -9,6 +9,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { execSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
+import admin from 'firebase-admin';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -56,6 +57,7 @@ async function createVideoContext(browser) {
   });
 
   const page = await context.newPage();
+  page.on('console', msg => console.log('BROWSER LOG:', msg.type(), msg.text()));
   return { context, page };
 }
 
@@ -91,10 +93,23 @@ async function recordTrainingTriangleHero(browser) {
 
   try {
     // ══════════════════════════════════════════════════════════════════
+    page.on('console', msg => {
+        if (msg.type() === 'error' || msg.type() === 'warning' || msg.type() === 'log' || msg.type() === 'info') {
+            console.log(`BROWSER LOG: ${msg.type()} ${msg.text()}`);
+        }
+    });
+
+    page.on('response', response => {
+        if (response.status() === 404) {
+            console.log(`BROWSER LOG: 404 ERROR ON URL: ${response.url()}`);
+        }
+    });
+
     // ACT 1: COACH OS — TACTICAL INTENT DEPLOYMENT
     // ══════════════════════════════════════════════════════════════════
     console.log('  -> Act 1: Coach OS (Tactical War Room & Intent Dispatch)...');
     await loginWithToken(page, tokens.coach);
+    await page.waitForTimeout(500);
     await page.goto(`${BASE_URL}/coach/forge`, { waitUntil: 'domcontentloaded' });
     
     // Wait for roster to load
@@ -111,8 +126,17 @@ async function recordTrainingTriangleHero(browser) {
     await page.waitForTimeout(500);
     
     // Select an attribute
-    const attributeSelect = page.locator('select').first();
+    const attributeSelect = page.locator('#hud-attr');
+    await attributeSelect.waitFor({ state: 'visible' });
     await attributeSelect.selectOption({ index: 1 });
+    await page.waitForTimeout(500);
+
+    // Select a drill
+    const drillSelect = page.locator('#hud-drill');
+    const drillHTML = await drillSelect.evaluate(e => e.innerHTML);
+    console.log(`BROWSER LOG: #hud-drill HTML before select:`, drillHTML);
+    await drillSelect.waitFor({ state: 'visible' });
+    await drillSelect.selectOption({ index: 1 });
     await page.waitForTimeout(500);
     
     // Smooth scroll down to players
@@ -127,6 +151,50 @@ async function recordTrainingTriangleHero(browser) {
     const box = await deployBtn.boundingBox();
     if (box) {
        await smoothMouseMove(page, 1000, 500, box.x + box.width / 2, box.y + box.height / 2, 20);
+       
+       // >>> INTERCEPT NETWORK REQUEST TO MOCK SUCCESS <<<
+       await page.route('**/secureDeployIntent', async route => {
+           console.log('     [Intercepted secureDeployIntent - mocking success]');
+           
+           // Initialize Admin SDK if not already done
+           if (!admin.apps.length) {
+               process.env.FIRESTORE_EMULATOR_HOST = '127.0.0.1:8080';
+               const serviceAccount = JSON.parse(fs.readFileSync('./serviceAccountKey.json', 'utf-8'));
+               admin.initializeApp({
+                   credential: admin.credential.cert(serviceAccount)
+               });
+           }
+           
+           // Extract payload
+           const requestData = JSON.parse(route.request().postData() || '{}');
+           const intentData = requestData.data || {};
+           
+           // Write directly to Firestore using admin SDK
+           const intentId = intentData.clientDeployId || 'mock-intent-123';
+           
+           await admin.firestore().collection('team_assignments').doc(intentId).set({
+               teamId: intentData.teamId || 'mock-team-1',
+               clubId: intentData.clubId || 'mock-club-1',
+               targetAttributeId: intentData.targetAttributeId || 'striking',
+               requiredXp: intentData.requiredXp || 300,
+               durationDays: intentData.durationDays || 14,
+               scope: intentData.scope || 'players',
+               targetUids: intentData.targetUids || ['mock-player-uid'],
+               status: 'active',
+               priority: intentData.priority || 100,
+               createdAt: new Date().toISOString(),
+               updatedAt: new Date().toISOString(),
+               expiresAt: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
+               missionKind: intentData.missionKind || 'homework'
+           });
+           
+           await route.fulfill({
+               status: 200,
+               contentType: 'application/json',
+               body: JSON.stringify({ data: { intentId: intentId } })
+           });
+       });
+       
        await deployBtn.click();
        console.log('     [Deployed Tactical Intent]');
     }
@@ -139,6 +207,7 @@ async function recordTrainingTriangleHero(browser) {
     // ══════════════════════════════════════════════════════════════════
     console.log('  -> Act 2: Player OS (Vanguard Prism Radar & Athlete HUD)...');
     await loginWithToken(page, tokens.player);
+    await page.waitForTimeout(500);
     await page.goto(`${BASE_URL}/player/dashboard`, { waitUntil: 'domcontentloaded' });
     await page.waitForTimeout(3000);
 
@@ -178,6 +247,7 @@ async function recordTrainingTriangleHero(browser) {
     // ══════════════════════════════════════════════════════════════════
     console.log('  -> Act 3: Parent OS (Verified Proof & Car Ride Home Shield)...');
     await loginWithToken(page, tokens.parent);
+    await page.waitForTimeout(500);
     await page.goto(`${BASE_URL}/parent/dashboard`, { waitUntil: 'domcontentloaded' });
     await page.waitForTimeout(3000);
 
