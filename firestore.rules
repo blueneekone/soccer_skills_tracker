@@ -11,6 +11,18 @@ service cloud.firestore {
       return request.auth != null;
     }
 
+    function authed() {
+      return isAuthenticated();
+    }
+
+    function tokenClub() {
+      return request.auth != null && request.auth.token.clubId != null ? request.auth.token.clubId : '';
+    }
+
+    function deploymentCalendarEntryWriteOk() {
+      return isAuthenticated();
+    }
+
     // ✅ Multi-Tenant Integrity Guard via Custom Claims
     match /clubs/{clubId} {
       allow read, write: if isAuthenticated() && (request.auth.token.clubId == clubId || request.auth.token.admin == true || request.auth.token.role == 'super_admin');
@@ -73,6 +85,42 @@ service cloud.firestore {
     }
     match /tenants/{tenantId} {
       allow read: if isAuthenticated();
+    }
+
+    match /deployment_calendar_entries/{entryId} {
+      allow read: if isAuthenticated();
+      allow create: if authed() && deploymentCalendarEntryWriteOk();
+      allow update: if authed() && deploymentCalendarEntryWriteOk();
+    }
+
+    match /field_weather_status/{facilityId} {
+      allow read: if isAuthenticated();
+      allow create, update, delete: if false;
+    }
+
+    match /tryout_programs/{programId} {
+      allow read: if true;
+      allow write: if isDirector();
+
+      match /registrations/{registrationId} {
+        allow read, write: if isAuthenticated();
+      }
+
+      match /sessions/{sessionId} {
+        allow read, write: if isAuthenticated();
+      }
+
+      match /evaluations/{registrationId} {
+        allow read, write: if isAuthenticated();
+      }
+
+      match /comms/{commId} {
+        allow read, write: if isAuthenticated();
+      }
+    }
+
+    match /club_playbooks/{playbookId} {
+      allow read, write: if isDirector() && resource.data.clubId == tokenClub();
     }
 
     // Default match to prevent global unauthenticated reads/writes
