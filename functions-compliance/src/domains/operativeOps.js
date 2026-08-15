@@ -920,7 +920,8 @@ exports.parentProvisionOperative = onCall({region: REGION}, async (request) => {
     parentProvisionerEmail: parentEmail, updatedAt: now,
     ...(teamIdForUser ? {teamId: teamIdForUser} : {}),
   };
-  if ((uExisting.exists ? uExisting.data()?.vpcStatus : '') !== 'verified') {
+  const existingVpc = uExisting.exists ? uExisting.data()?.vpcStatus : '';
+  if (existingVpc !== 'verified') {
     userPayload.isMinor = true; userPayload.vpcStatus = 'pending_parent'; userPayload.coppaStatus = 'pending';
   }
 
