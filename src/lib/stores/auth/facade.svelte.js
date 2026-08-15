@@ -1,14 +1,10 @@
 import { auth, db, registerActiveCellResolver } from '$lib/firebase.js';
 import { getIdTokenResult, onIdTokenChanged, signOut, getIdToken, signInWithCustomToken } from 'firebase/auth';
-  const token = newUser ? await newUser.getIdToken() : undefined;
-  document.cookie = `token=${token || ''}; path=/; max-age=${token ? 3600 : 0}; SameSite=Strict; Secure`;
-  if (token && !document.cookie.includes('token')) {
-    window.location.reload();
-  }
 import { resolveUserProfile } from '$lib/auth/profile.js';
 import { workspaceContextStore } from '$lib/stores/workspaceContext.svelte.js';
 import { createAuthGates } from '$lib/stores/auth/authGates.svelte.js';
 import { hydrateFromFirebaseUser, handleAuthStateChange } from '$lib/utils/authHelpers.js';
+import { syncAuthCookie } from '$lib/utils/cookieSync.js';
 import { createSessionState } from '$lib/stores/auth/sessionState.svelte.js';
 import { createTenantState } from '$lib/stores/auth/tenantState.svelte.js';
 import { createUserState } from '$lib/stores/auth/userState.svelte.js';
@@ -34,6 +30,8 @@ export function createAuthFacade() {
 			}
 			if (user) {
 				const tokenResult = await getIdTokenResult(user, true);
+					const token = await user.getIdToken();
+					if (syncAuthCookie(token)) return;
 
 				if (tokenResult.claims.isProfileComplete) {
 					userState.user = user;

@@ -1,4 +1,6 @@
+
 <script lang="ts">
+	import { untrack } from "svelte";
 	import { clubSportIconToken } from '$lib/utils/sport-icon.js';
 	import { page } from '$app/state';
 	import { db, functions } from '$lib/firebase.js';
@@ -93,7 +95,7 @@
 		if (!confirm(`FINAL CONFIRMATION: Are you absolutely sure you want to delete this organization?`)) return;
 		await deleteDoc(doc(db, 'clubs', clubId));
 		await logSecurityEvent('DELETE_CLUB', clubId, 'Club deleted permanently');
-		untrack(() => { goto('/admin/organizations'); });
+		untrack(() => goto('/admin/organizations'));
 	}
 
 	// ── Assign Director ──────────────────────────────────────────────────────────
@@ -225,7 +227,7 @@
 		try {
 			await deleteDoc(doc(db, 'clubs', clubId));
 			await logSecurityEvent('DELETE_CLUB', clubId, 'Club deleted permanently');
-			untrack(() => { goto('/admin/organizations'); });
+			untrack(() => goto('/admin/organizations'));
 		} catch (e) {
 			console.error(e);
 			deleteExecuting = false;

@@ -194,6 +194,7 @@ function createWorkoutsStore() {
 		},
 
 		async loadForTeam(teamId) {
+			if (!isFirestoreReady()) return;
 			if (!teamId) {
 				workouts = [];
 				return;

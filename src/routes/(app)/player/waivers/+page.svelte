@@ -1,4 +1,6 @@
+
 <script lang="ts">
+	import { untrack } from "svelte";
 	import { LiabilityWaiversEngine } from './LiabilityWaiversEngine.svelte';
 	import { goto } from '$app/navigation';
 	import { authStore } from '$lib/stores/auth.svelte.js';
@@ -10,7 +12,7 @@
 		e.preventDefault();
 		await engine.submit();
 		if (authStore.userProfile?.liabilityWaiverVerified) {
-			untrack(() => { goto('/player/dashboard'); });
+			untrack(() => goto('/player/dashboard'));
 		}
 	}
 </script>

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { isFirestoreReady } from "$lib/utils/firestoreGuard.js";
 	import { getContext } from 'svelte';
 	import { getActiveDb } from '$lib/firebase.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
@@ -37,9 +38,9 @@
 		if (!activeDb || authStore.isLoading || !authStore.isAuthenticated || !ctx.clubId) return;
 
 		async function fetchLedger() {
-    if (!db || !authStore.isAuthenticated) return;
-		const activeDb = getActiveDb();
-		if (!activeDb || !authStore.isAuthenticated) return;
+			if (!isFirestoreReady()) return;
+			const activeDb = getActiveDb();
+			if (!activeDb) return;
 			try {
 				const q = query(
 					collection(activeDb, 'clubs', ctx.clubId, 'stripe_invoices'),

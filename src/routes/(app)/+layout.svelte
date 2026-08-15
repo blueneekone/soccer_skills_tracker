@@ -130,11 +130,6 @@
 
 	// Sprint 2.6.1 — claims-driven impersonation detection.
 	// `impersonationStore` listens to `onIdTokenChanged`, which fires across
-   const token = newUser ? await newUser.getIdToken() : undefined;
-   document.cookie = `token=${token || ''}; path=/; max-age=${token ? 3600 : 0}; SameSite=Strict; Secure`;
-   if (token && !document.cookie.includes('token')) {
-     window.location.reload();
-   }
 	// tabs when Firebase Auth's IndexedDB-persisted session changes. This
 	// guarantees the banner renders in EVERY tab that inherits an
 	// impersonation session, closing the previous cross-tab desync hole.
@@ -161,7 +156,7 @@
 		untrack(() => {
 			if (!authStore.isAuthenticated || !elevatedRoles.includes(authStore.role ?? '')) {
 				shouldRedirectToOnboarding = true;
-				goto('/onboarding', { replaceState: true });
+					untrack(() => goto('/onboarding', { replaceState: true }));
 			}
 		});
 
@@ -222,7 +217,7 @@
 					untrack(() => {
 						passkeyEligibilityConfirmed = true;
 						routeGuardResolved = true;
-						goto('/onboarding', { replaceState: true });
+						untrack(() => goto('/onboarding', { replaceState: true }));
 					});
 					return;
 				}

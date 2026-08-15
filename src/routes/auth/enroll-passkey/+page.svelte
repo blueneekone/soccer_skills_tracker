@@ -1,4 +1,6 @@
+
 <script lang="ts">
+	import { untrack } from "svelte";
 	/**
 	 * /auth/enroll-passkey
 	 * ──────────────────────────────────────────────────────────────────────────
@@ -51,9 +53,7 @@
 		void (async () => {
 			try {
 				if (!authStore.isAuthenticated || !auth.currentUser) {
-     untrack(() => {
-       await goto('/login', { replaceState: true });
-     });
+						await untrack(() => goto('/login', { replaceState: true }));
 					return;
 				}
 				const u = auth.currentUser;

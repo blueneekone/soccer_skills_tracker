@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { isFirestoreReady } from "$lib/utils/firestoreGuard.js";
 	import { getContext, untrack } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { getActiveDb, auth, functions } from '$lib/firebase.js';
@@ -82,9 +83,9 @@
 
 	// ── Role Mutation ──────────────────────────────────────────────────────────
 	async function updateRole(userId: string, newRole: string) {
-    if (!db || !authStore.isAuthenticated) return;
+		if (!isFirestoreReady()) return;
 		const activeDb = getActiveDb();
-		if (!activeDb || !authStore.isAuthenticated) return;
+		if (!activeDb) return;
 		const idx = users.findIndex(u => u.id === userId);
 		if (idx === -1) return;
 		

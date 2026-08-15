@@ -1,4 +1,7 @@
+
 <script lang="ts">
+	import { isFirestoreReady } from "$lib/utils/firestoreGuard.js";
+	import { untrack } from "svelte";
 	import { onMount, onDestroy } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { getFunctions, httpsCallable } from 'firebase/functions';
@@ -43,7 +46,7 @@
 	onDestroy(() => unsubscribe?.());
 
 	async function createEvent() {
-    if (!db || !authStore.isAuthenticated) return;
+		if (!isFirestoreReady()) return;
 		creating = true;
 		errorMsg = '';
 		try {
@@ -58,7 +61,7 @@
 					general: { label: 'General Admission', unitPriceCents: 1000, capacity: 100 },
 				},
 			});
-			untrack(() => { goto(`/director/events/${res.data.eventId}`); });
+			untrack(() => goto(`/director/events/${res.data.eventId}`));
 		} catch (e: unknown) {
 			errorMsg = e instanceof Error ? e.message : String(e);
 		} finally {
