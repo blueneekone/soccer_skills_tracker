@@ -1,5 +1,5 @@
 import { auth, db, registerActiveCellResolver } from '$lib/firebase.js';
-import { getIdTokenResult, onIdTokenChanged, signOut, getIdToken } from 'firebase/auth';
+import { getIdTokenResult, onIdTokenChanged, signOut, getIdToken, signInWithCustomToken } from 'firebase/auth';
 import { resolveUserProfile } from '$lib/auth/profile.js';
 import { workspaceContextStore } from '$lib/stores/workspaceContext.svelte.js';
 import { createAuthGates } from '$lib/stores/auth/authGates.svelte.js';
@@ -132,3 +132,9 @@ export function createAuthFacade() {
 }
 
 export const authStore = createAuthFacade();
+
+if (typeof window !== 'undefined') {
+	window.__AUTH_STORE__ = authStore;
+	window.__FIREBASE_AUTH__ = auth;
+	window.__SIGN_IN_CUSTOM__ = (token) => signInWithCustomToken(auth, token);
+}

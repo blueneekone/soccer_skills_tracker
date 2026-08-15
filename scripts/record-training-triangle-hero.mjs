@@ -34,7 +34,18 @@ async function smoothMouseMove(page, startX, startY, endX, endY, steps = 30) {
   }
 }
 
-async function createAuthenticatedContext(browser, role, profile = {}) {
+async function smoothScroll(page, targetY, steps = 30) {
+  const currentY = await page.evaluate(() => window.scrollY);
+  for (let i = 0; i <= steps; i++) {
+    const t = i / steps;
+    const ease = t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+    const y = currentY + (targetY - currentY) * ease;
+    await page.evaluate((yPos) => window.scrollTo(0, yPos), y);
+    await page.waitForTimeout(16);
+  }
+}
+
+async function createVideoContext(browser) {
   const context = await browser.newContext({
     viewport: { width: 1920, height: 1080 },
     deviceScaleFactor: 1,
@@ -45,148 +56,139 @@ async function createAuthenticatedContext(browser, role, profile = {}) {
   });
 
   const page = await context.newPage();
-
-  await page.addInitScript(({ role, profile }) => {
-    const authState = {
-      role,
-      isProfileComplete: true,
-      email: `${role}@apex-fc.org`,
-      displayName: profile.displayName || (role === 'coach' ? 'Coach Henderson' : role === 'player' ? 'Leo Hernandez' : 'Elena Hernandez (Parent)'),
-      clubId: profile.clubId || 'apex-fc',
-      tenantId: profile.clubId || 'apex-fc',
-      teamId: profile.teamId || 'u17-premier',
-      householdId: profile.householdId || 'hh-hernandez-01',
-      ...profile
-    };
-
-    window.localStorage.setItem('auth_state', JSON.stringify(authState));
-    window.localStorage.setItem('sstracker_e2e_bypass', 'true');
-    window.localStorage.setItem('sstracker_mock_role', role);
-    window.localStorage.setItem('sstracker_mock_profile', JSON.stringify(authState));
-  }, { role, profile });
-
   return { context, page };
 }
 
+async function loginWithToken(page, token) {
+  // Clear any E2E bypass so real Firebase is used
+  await page.addInitScript(() => {
+    window.localStorage.removeItem('sstracker_e2e_bypass');
+    window.localStorage.removeItem('auth_state');
+    window.localStorage.removeItem('sstracker_mock_role');
+  });
+  
+  // Go to home to load the app context
+  await page.goto(`${BASE_URL}/login`, { waitUntil: 'domcontentloaded' });
+  
+  // Wait for JS to initialize window.__SIGN_IN_CUSTOM__
+  await page.waitForFunction(() => typeof window.__SIGN_IN_CUSTOM__ === 'function', { timeout: 10000 });
+  
+  // Login using the exposed facade method
+  await page.evaluate(async (customToken) => {
+    await window.__SIGN_IN_CUSTOM__(customToken);
+  }, token);
+}
+
 async function recordTrainingTriangleHero(browser) {
+  console.log('🌱 Seeding fresh dev database state...');
+  execSync('node scripts/seed-training-triangle.mjs', { stdio: 'inherit' });
+  
+  const tokens = JSON.parse(fs.readFileSync(path.join(__dirname, 'mock-tokens.json'), 'utf-8'));
+
   console.log('🎬 Recording Master Hero: "The Training Triangle In Action"...');
 
-  const { context, page } = await createAuthenticatedContext(browser, 'coach', {
-    displayName: 'Coach Henderson',
-    clubId: 'apex-fc',
-    teamId: 'u17-premier'
-  });
+  const { context, page } = await createVideoContext(browser);
 
   try {
     // ══════════════════════════════════════════════════════════════════
-    // ACT 1: COACH OS — TACTICAL INTENT & MISSION DEPLOYMENT
+    // ACT 1: COACH OS — TACTICAL INTENT DEPLOYMENT
     // ══════════════════════════════════════════════════════════════════
     console.log('  -> Act 1: Coach OS (Tactical War Room & Intent Dispatch)...');
-    await page.goto(`${BASE_URL}/coach/tactical`, { waitUntil: 'domcontentloaded' });
+    await loginWithToken(page, tokens.coach);
+    await page.goto(`${BASE_URL}/coach/forge`, { waitUntil: 'domcontentloaded' });
+    
+    // Wait for roster to load
     await page.waitForTimeout(2000);
 
-    // Smooth hover across the Tactical Pitch
-    await smoothMouseMove(page, 200, 300, 700, 450, 35);
+    // Mouse over to Drill Designer toolbox and set up bounty
+    await smoothMouseMove(page, 200, 300, 1500, 300, 40);
+    
+    await page.screenshot({ path: path.join(RAW_DIR, 'debug-forge.png') });
+    console.log('     [Debug screenshot saved]');
+
+    // Click "Homework" (default, but just to show action)
+    await page.locator('button:has-text("Homework")').click({ timeout: 5000 });
+    await page.waitForTimeout(500);
+    
+    // Select an attribute
+    const attributeSelect = page.locator('select').first();
+    await attributeSelect.selectOption({ index: 1 });
+    await page.waitForTimeout(500);
+    
+    // Smooth scroll down to players
+    await smoothScroll(page, 400);
+    
+    // Scope -> Squad
+    await page.getByRole('button', { name: /SQUAD/i }).click();
     await page.waitForTimeout(1000);
-
-    // Hover over Drill Designer toolbox
-    await smoothMouseMove(page, 700, 450, 1350, 350, 30);
-    await page.waitForTimeout(1200);
-
-    // Pan down to squad readiness matrix
-    await page.evaluate(() => window.scrollTo({ top: 400, behavior: 'smooth' }));
-    await page.waitForTimeout(1800);
+    
+    // Hover and Click DEPLOY
+    const deployBtn = page.locator('button', { hasText: 'DEPLOY TACTICAL INTENT' });
+    const box = await deployBtn.boundingBox();
+    if (box) {
+       await smoothMouseMove(page, 1000, 500, box.x + box.width / 2, box.y + box.height / 2, 20);
+       await deployBtn.click();
+       console.log('     [Deployed Tactical Intent]');
+    }
+    
+    // Wait for deployment animation
+    await page.waitForTimeout(2500);
 
     // ══════════════════════════════════════════════════════════════════
-    // ACT 2: PLAYER OS — DOPAMINE ENGINE & BIOMECHANICS XP
+    // ACT 2: PLAYER OS — ACCEPTING THE BOUNTY
     // ══════════════════════════════════════════════════════════════════
     console.log('  -> Act 2: Player OS (Vanguard Prism Radar & Athlete HUD)...');
-    await page.evaluate(() => {
-      const playerState = {
-        role: 'player',
-        isProfileComplete: true,
-        email: 'leo@apex-fc.org',
-        displayName: 'Leo Hernandez (U17 Forward)',
-        clubId: 'apex-fc',
-        tenantId: 'apex-fc',
-        teamId: 'u17-premier',
-        xp: 6420,
-        currentStreak: 18,
-        level: 14
-      };
-      window.localStorage.setItem('auth_state', JSON.stringify(playerState));
-      window.localStorage.setItem('sstracker_mock_role', 'player');
-    });
-
+    await loginWithToken(page, tokens.player);
     await page.goto(`${BASE_URL}/player/dashboard`, { waitUntil: 'domcontentloaded' });
-    await page.waitForTimeout(2000);
+    await page.waitForTimeout(3000);
 
     // Hover over the 6-Axis Vanguard Prism Radar
-    await smoothMouseMove(page, 300, 350, 580, 480, 35);
-    await page.waitForTimeout(1500);
+    await smoothMouseMove(page, 300, 350, 480, 480, 35);
+    await page.waitForTimeout(1000);
 
-    // Hover to the XP Daily Streak & Level progression meter
-    await smoothMouseMove(page, 580, 480, 1150, 320, 30);
-    await page.waitForTimeout(1500);
+    // Scroll smoothly to Active Loadout / Bounties
+    await smoothScroll(page, 300);
+    await page.waitForTimeout(1000);
 
-    // Scroll smoothly to Bounty Quests & Active Loadout
-    await page.evaluate(() => window.scrollTo({ top: 450, behavior: 'smooth' }));
-    await page.waitForTimeout(2000);
+    // Find the Active Bounty we just deployed
+    const logBtn = page.getByRole('button', { name: /LOG REPS/i }).first();
+    if (await logBtn.isVisible()) {
+        const btnBox = await logBtn.boundingBox();
+        await smoothMouseMove(page, 480, 480, btnBox.x + 20, btnBox.y + 10, 20);
+        await logBtn.click();
+        await page.waitForTimeout(1000);
+        
+        // Type some reps
+        await page.keyboard.type('10');
+        await page.waitForTimeout(500);
+        
+        // Submit
+        await page.keyboard.press('Enter');
+        console.log('     [Player Logged Reps]');
+        
+        // Wait for dopamine blast / XP explosion
+        await page.waitForTimeout(4000);
+    } else {
+        console.log('     [Warning] Active bounty log button not found!');
+        await page.waitForTimeout(2000);
+    }
 
     // ══════════════════════════════════════════════════════════════════
-    // ACT 3: PARENT OS — THE COMPLIANCE SHIELD & CAR RIDE HOME
+    // ACT 3: PARENT OS — COMPLIANCE SHIELD
     // ══════════════════════════════════════════════════════════════════
     console.log('  -> Act 3: Parent OS (Verified Proof & Car Ride Home Shield)...');
-    await page.evaluate(() => {
-      const parentState = {
-        role: 'parent',
-        isProfileComplete: true,
-        email: 'elena@apex-fc.org',
-        displayName: 'Elena Hernandez',
-        clubId: 'apex-fc',
-        tenantId: 'apex-fc',
-        householdId: 'hh-hernandez-01'
-      };
-      window.localStorage.setItem('auth_state', JSON.stringify(parentState));
-      window.localStorage.setItem('sstracker_mock_role', 'parent');
-    });
-
+    await loginWithToken(page, tokens.parent);
     await page.goto(`${BASE_URL}/parent/dashboard`, { waitUntil: 'domcontentloaded' });
-    await page.waitForTimeout(2000);
+    await page.waitForTimeout(3000);
 
-    // Hover over Compliance Shield & Car Ride Home Protocol timer
-    await smoothMouseMove(page, 350, 300, 800, 380, 35);
+    // Hover over Compliance Shield
+    await smoothMouseMove(page, 480, 480, 800, 380, 35);
     await page.waitForTimeout(1500);
 
-    // Scroll to Household Roster & Verified Proofs
-    await page.evaluate(() => window.scrollTo({ top: 400, behavior: 'smooth' }));
-    await page.waitForTimeout(2000);
+    // Scroll to see the completed intent verified proof
+    await smoothScroll(page, 400);
+    await page.waitForTimeout(3000);
 
-    // ══════════════════════════════════════════════════════════════════
-    // ACT 4: DIRECTOR OS — CLUB-WIDE OMNISCIENCE & METRICS
-    // ══════════════════════════════════════════════════════════════════
-    console.log('  -> Act 4: Director OS (Club-Wide Command Center)...');
-    await page.evaluate(() => {
-      const directorState = {
-        role: 'director',
-        isProfileComplete: true,
-        email: 'director@apex-fc.org',
-        displayName: 'Director Sterling',
-        clubId: 'apex-fc',
-        tenantId: 'apex-fc'
-      };
-      window.localStorage.setItem('auth_state', JSON.stringify(directorState));
-      window.localStorage.setItem('sstracker_mock_role', 'director');
-    });
-
-    await page.goto(`${BASE_URL}/director/dashboard`, { waitUntil: 'domcontentloaded' });
-    await page.waitForTimeout(2000);
-
-    // Hover over Tryout Pipeline & KPI matrix
-    await smoothMouseMove(page, 400, 320, 850, 340, 30);
-    await page.waitForTimeout(1800);
-
-    await page.waitForTimeout(1000);
     const video = page.video();
     await context.close();
 
@@ -199,36 +201,25 @@ async function recordTrainingTriangleHero(browser) {
       // Transcode to MP4 if ffmpeg is available
       const targetMp4 = path.join(ASSETS_VIDEO_DIR, 'marketing-hero.mp4');
       try {
-        execSync(
-          `ffmpeg -y -i "${targetWebm}" -c:v libx264 -preset fast -crf 20 -pix_fmt yuv420p -c:a aac -b:a 128k -movflags +faststart "${targetMp4}"`,
-          { stdio: 'ignore' }
-        );
-        console.log(`✨ Master Training Triangle MP4 Exported: ${targetMp4}`);
-      } catch {
-        console.log('ℹ️ ffmpeg not available in path, WebM master preserved.');
+        console.log('🎥 Transcoding to MP4 for wider compatibility...');
+        execSync(`ffmpeg -y -i "${rawPath}" -c:v libx264 -preset fast -crf 22 -c:a aac -b:a 128k "${targetMp4}"`, { stdio: 'ignore' });
+        console.log(`✨ MP4 Exported: ${targetMp4}`);
+      } catch (err) {
+        console.log('⚠️ ffmpeg not found or failed. Skipping MP4 transcode. WebM is ready.');
       }
     }
-  } catch (err) {
-    console.error('❌ Error recording master hero video:', err);
-    await context.close();
-    throw err;
+  } catch (error) {
+    console.error('❌ Choreography failed:', error);
+  } finally {
+    await browser.close();
   }
 }
 
 (async () => {
-  console.log('⚡ Launching High-Fidelity Training Triangle Recording Engine...');
   const browser = await chromium.launch({
     headless: true,
     args: ['--no-sandbox', '--disable-setuid-sandbox']
   });
-
-  try {
-    await recordTrainingTriangleHero(browser);
-    console.log('🎉 TRAINING TRIANGLE MASTER VIDEO CAPTURE COMPLETE!');
-  } catch (err) {
-    console.error('Fatal capture error:', err);
-    process.exit(1);
-  } finally {
-    await browser.close();
-  }
+  
+  await recordTrainingTriangleHero(browser);
 })();
