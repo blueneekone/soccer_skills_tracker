@@ -124,8 +124,6 @@ exports.redeemMagicUplink = require('./magicUplinks').redeemMagicUplink;
 
 const b2bEnrollmentOps = require('./src/domains/b2bEnrollmentOps.js');
 
-const tutoringOps = require('./src/domains/tutoringOps.js');
-exports.bookTutoringSession = tutoringOps.bookTutoringSession;
 
 const federationInvites = require('./lib/domains/federationInvites.js');
 exports.consumeFederationInvite = federationInvites.consumeFederationInvite;
