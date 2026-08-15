@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { getContext } from 'svelte';
-	import { getActiveDb } from '$lib/firebase.js';
+	import { db, getActiveDb } from '$lib/firebase.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { doc, getDoc, collection, query, orderBy, limit, getDocs } from 'firebase/firestore';
 	import { httpsCallable } from 'firebase/functions';

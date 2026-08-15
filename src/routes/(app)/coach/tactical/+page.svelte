@@ -4,6 +4,7 @@
 </svelte:head>
 
 <script lang="ts">
+	import { untrack } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { CoachTacticalEngine } from './CoachTacticalEngine.svelte.js';
 	import '$lib/styles/coach-tactics-stratagem.css';
@@ -46,7 +47,7 @@
 		type="button"
 		class="coach-tac-exit coach-os-action-chip"
 		aria-label="Exit War Room"
-		onclick={() => untrack(() => { goto('/coach/dashboard'); });}
+		onclick={() => { untrack(() => { goto('/coach/dashboard'); }); }}
 	>
 		✕ Exit War Room
 	</button>

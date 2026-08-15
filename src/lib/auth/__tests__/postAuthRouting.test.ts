@@ -87,7 +87,7 @@ describe('navigateAfterLogin', () => {
 
 		await navigateAfterLogin();
 
-		expect(goto).toHaveBeenCalledWith('/setup', { replaceState: true });
+		expect(goto).toHaveBeenCalledWith('/onboarding', { replaceState: true });
 		expect(applyLoginWaterfall).not.toHaveBeenCalled();
 	});
 
@@ -134,7 +134,7 @@ describe('Vanguard Boundary Conditions', () => {
 
 		await navigateAfterLogin();
 
-		expect(goto).toHaveBeenCalledWith('/setup', { replaceState: true });
+		expect(goto).toHaveBeenCalledWith('/onboarding', { replaceState: true });
 		expect(applyLoginWaterfall).not.toHaveBeenCalled();
 	});
 
@@ -144,7 +144,7 @@ describe('Vanguard Boundary Conditions', () => {
 
 		await navigateAfterLogin();
 
-		expect(goto).toHaveBeenCalledWith('/setup', { replaceState: true });
+		expect(goto).toHaveBeenCalledWith('/onboarding', { replaceState: true });
 		expect(applyLoginWaterfall).not.toHaveBeenCalled();
 	});
 });

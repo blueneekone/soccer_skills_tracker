@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { getContext, untrack } from 'svelte';
 	import { goto } from '$app/navigation';
-	import { getActiveDb, auth, functions } from '$lib/firebase.js';
+	import { db, getActiveDb, auth, functions } from '$lib/firebase.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import {
 		collection,

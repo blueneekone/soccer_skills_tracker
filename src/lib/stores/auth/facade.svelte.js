@@ -1,10 +1,5 @@
 import { auth, db, registerActiveCellResolver } from '$lib/firebase.js';
 import { getIdTokenResult, onIdTokenChanged, signOut, getIdToken, signInWithCustomToken } from 'firebase/auth';
-  const token = newUser ? await newUser.getIdToken() : undefined;
-  document.cookie = `token=${token || ''}; path=/; max-age=${token ? 3600 : 0}; SameSite=Strict; Secure`;
-  if (token && !document.cookie.includes('token')) {
-    window.location.reload();
-  }
 import { resolveUserProfile } from '$lib/auth/profile.js';
 import { workspaceContextStore } from '$lib/stores/workspaceContext.svelte.js';
 import { createAuthGates } from '$lib/stores/auth/authGates.svelte.js';
@@ -33,6 +28,13 @@ export function createAuthFacade() {
 				return;
 			}
 			if (user) {
+				const token = await user.getIdToken();
+				const hadCookie = document.cookie.includes('token');
+				document.cookie = `token=${token || ''}; path=/; max-age=${token ? 3600 : 0}; SameSite=Strict; Secure`;
+				if (token && !hadCookie && typeof window !== 'undefined') {
+					window.location.reload();
+				}
+
 				const tokenResult = await getIdTokenResult(user, true);
 
 				if (tokenResult.claims.isProfileComplete) {
@@ -54,6 +56,7 @@ export function createAuthFacade() {
 					await handleAuthStateChange(user, auth, userState, sessionState, tenantState, globalFirestoreUnsubs);
 				}
 			} else {
+				document.cookie = `token=; path=/; max-age=0; SameSite=Strict; Secure`;
 				await handleAuthStateChange(user, auth, userState, sessionState, tenantState, globalFirestoreUnsubs);
 			}
 		} catch (err) {
