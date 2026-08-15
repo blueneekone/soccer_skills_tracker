@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { untrack } from 'svelte';
 	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
 	import { browser } from '$app/environment';
@@ -177,8 +178,8 @@
 		{#if playerOsGate.blocked}
 			<PlayerReadOnlyBillingBanner
 				reasons={playerOsGate.reasons}
-				onPricing={async () => await untrack(() => { goto('/pricing'); });}
-				onSettings={async () => await untrack(() => { goto('/player/settings'); });}
+				onPricing={async () => { await untrack(() => { goto('/pricing'); }); }}
+				onSettings={async () => { await untrack(() => { goto('/player/settings'); }); }}
 			/>
 		{/if}
 

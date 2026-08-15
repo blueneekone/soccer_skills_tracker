@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { untrack } from 'svelte';
 	import { clubSportIconToken } from '$lib/utils/sport-icon.js';
 	import { page } from '$app/state';
 	import { db, functions } from '$lib/firebase.js';
