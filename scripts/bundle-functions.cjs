@@ -62,6 +62,7 @@ const CODEBASES = {
       'pricingPolicyOps.js',
       'src/domains/webhooksOps.js',
       'src/domains/dunningOps.js',
+      'src/domains/tutoringOps.js',
     ],
   },
   compliance: {

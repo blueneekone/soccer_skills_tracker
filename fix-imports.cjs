@@ -8,7 +8,7 @@ const paths = [
   'functions/src/seeders/drillsSeeder.js'
 ];
 
-const badBlockRegex = /    \/\/ Lazy loaded inside callable scope to bypass compilation timeout\r?\n    const admin = await import\('firebase-admin'\);\r?\n    if \(!admin\.apps\.length\) \{\r?\n        admin\.initializeApp\(\);\r?\n    \}\r?\n    const db = admin\.firestore\(\);\r?\n    \/\/ Lazy loaded inside callable scope to bypass compilation timeout\r?\n    const admin = await import\('firebase-admin'\);\r?\n    if \(!admin\.apps\.length\) \{\r?\n        admin\.initializeApp\(\);\r?\n    \}/g;
+const badBlockRegex = / {4}\/\/ Lazy loaded inside callable scope to bypass compilation timeout\r?\n {4}const admin = await import\('firebase-admin'\);\r?\n {4}if \(!admin\.apps\.length\) \{\r?\n {8}admin\.initializeApp\(\);\r?\n {4}\}\r?\n {4}const db = admin\.firestore\(\);\r?\n {4}\/\/ Lazy loaded inside callable scope to bypass compilation timeout\r?\n {4}const admin = await import\('firebase-admin'\);\r?\n {4}if \(!admin\.apps\.length\) \{\r?\n {8}admin\.initializeApp\(\);\r?\n {4}\}/g;
 
 for (const p of paths) {
   if (fs.existsSync(p)) {
