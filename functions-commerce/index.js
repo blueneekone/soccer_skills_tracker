@@ -53,3 +53,6 @@ exports.updatePricingPolicy = pricingPolicyOps.updatePricingPolicy;
 
 const dunningOps = require('./src/domains/dunningOps');
 exports.dunningCommsDispatch = dunningOps.dunningCommsDispatch;
+
+const tutoringOps = require('./src/domains/tutoringOps');
+exports.bookTutoringSession = tutoringOps.bookTutoringSession;

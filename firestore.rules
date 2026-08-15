@@ -102,9 +102,31 @@ service cloud.firestore {
         resource.data.clubId == request.auth.token.clubId;
     }
 
+    // Helper: Verify requesting user is a Parent, Coach, or Director
+    function canAccessDirectory() {
+      return request.auth != null &&
+        (request.auth.token.role == "parent" ||
+         request.auth.token.role == "coach" ||
+         request.auth.token.role == "director");
+    }
+
+    // Helper: Grab user's sport context for strict containment matching
+    function getUserSport(email) {
+      return get(/databases/$(database)/documents/users/$(email)).data.sport;
+    }
+
     // Enforce role and tenant check on users collection
     match /users/{email} {
-      allow read: if isAuthenticated();
+      allow read: if isAuthenticated() &&
+        (
+          resource.data.role != 'tutor' ||
+          (
+            canAccessDirectory() &&
+            resource.data.sport == getUserSport(request.auth.token.email) &&
+            resource.data.tutorProfile.isListingActive == true
+          )
+        );
+
       // Role field cannot be mutated directly by client-side unauthenticated or basic user writes
       allow create: if isAuthenticated() && 
         (!("role" in request.resource.data) || request.auth.token.admin == true || request.auth.token.role == 'super_admin');
