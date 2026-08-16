@@ -37,7 +37,6 @@
 		if (!activeDb || authStore.isLoading || !authStore.isAuthenticated || !ctx.clubId) return;
 
 		async function fetchLedger() {
-    if (!db || !authStore.isAuthenticated) return;
 		const activeDb = getActiveDb();
 		if (!activeDb || !authStore.isAuthenticated) return;
 			try {

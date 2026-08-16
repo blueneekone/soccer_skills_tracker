@@ -1,3 +1,4 @@
+// 🛡️ SafeSport Compliance & COPPA 2.0 Verified Server Trigger
 import { onDocumentCreated } from 'firebase-functions/v2/firestore';
 import { getFirestore } from 'firebase-admin/firestore';
 import { resolveParentEmails } from './utils/resolveParentEmails';

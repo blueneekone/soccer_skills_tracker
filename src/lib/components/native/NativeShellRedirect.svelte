@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { browser } from '$app/environment';
 	import { goto } from '$app/navigation';
+import { untrack } from 'svelte';
 	import { page } from '$app/state';
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import {

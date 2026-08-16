@@ -6,6 +6,7 @@
 	import { httpsCallable } from 'firebase/functions';
 	import { getContext } from 'svelte';
 	import { goto } from '$app/navigation';
+import { untrack } from 'svelte';
 	import { teamsStore } from '$lib/stores/teams.svelte.js';
 	import { logSecurityEvent } from '$lib/utils/security.js';
 	import '$lib/styles/enterprise-console.css';

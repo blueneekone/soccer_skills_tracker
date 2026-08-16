@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
+import { untrack } from 'svelte';
 	import { page } from '$app/state';
 	import { handleSignOut } from '$lib/auth/signOutFlow.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
@@ -318,7 +319,7 @@
 				<button
 					type="button"
 					class="ec-icon-btn icon-tap"
-					onclick={() => untrack(() => { goto('/admin/system-settings'); });}
+					onclick={() => () => { untrack(() => { goto('/admin/system-settings'); }); }}
 					aria-label="Settings"
 				>
 					<Icon name="sys.settings" size={18} />

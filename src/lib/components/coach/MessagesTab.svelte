@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { browser } from '$app/environment';
 	import { goto } from '$app/navigation';
+import { untrack } from 'svelte';
 	import {
 		collection,
 		query,
@@ -82,7 +83,6 @@
 	 * @param {string} id
 	 */
 	function isAllowedChannelId(id) {
-    if (!db || !authStore.isAuthenticated) return;
 		return allChannels.some((c) => c.id === id);
 	}
 

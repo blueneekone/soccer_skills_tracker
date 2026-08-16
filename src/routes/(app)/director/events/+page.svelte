@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte';
 	import { goto } from '$app/navigation';
+import { untrack } from 'svelte';
 	import { getFunctions, httpsCallable } from 'firebase/functions';
 	import { collection, query, where, onSnapshot, orderBy } from 'firebase/firestore';
 	import { getActiveDb } from '$lib/firebase';
@@ -43,7 +44,6 @@
 	onDestroy(() => unsubscribe?.());
 
 	async function createEvent() {
-    if (!db || !authStore.isAuthenticated) return;
 		creating = true;
 		errorMsg = '';
 		try {

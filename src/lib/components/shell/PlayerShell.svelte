@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
+import { untrack } from 'svelte';
 	import { browser } from '$app/environment';
 	import { computePlayerOsBlocked } from '$lib/enterprise/playerOsAccess.js';
 	import AlertsDrawer from '$lib/components/shell/AlertsDrawer.svelte';
@@ -177,8 +178,8 @@
 		{#if playerOsGate.blocked}
 			<PlayerReadOnlyBillingBanner
 				reasons={playerOsGate.reasons}
-				onPricing={async () => await untrack(() => { goto('/pricing'); });}
-				onSettings={async () => await untrack(() => { goto('/player/settings'); });}
+				onPricing={async () => { await untrack(() => { goto('/pricing'); }); }}
+				onSettings={async () => { await untrack(() => { goto('/player/settings'); }); }}
 			/>
 		{/if}
 

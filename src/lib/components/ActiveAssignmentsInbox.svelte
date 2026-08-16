@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { browser } from '$app/environment';
 	import { goto } from '$app/navigation';
+import { untrack } from 'svelte';
 	import { collection, query, where, getDocs, doc, getDoc } from 'firebase/firestore';
 	import { httpsCallable } from 'firebase/functions';
 	import { db, functions } from '$lib/firebase.js';
@@ -103,7 +104,6 @@
 	});
 
 	function dueLabel(d) {
-    if (!db || !authStore.isAuthenticated) return;
 		if (!d) return '—';
 		try {
 			if (typeof d.toDate === 'function') {

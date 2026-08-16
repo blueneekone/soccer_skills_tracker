@@ -1,10 +1,8 @@
 import { auth, db, registerActiveCellResolver } from '$lib/firebase.js';
 import { getIdTokenResult, onIdTokenChanged, signOut, getIdToken, signInWithCustomToken } from 'firebase/auth';
-  const token = newUser ? await newUser.getIdToken() : undefined;
-  document.cookie = `token=${token || ''}; path=/; max-age=${token ? 3600 : 0}; SameSite=Strict; Secure`;
-  if (token && !document.cookie.includes('token')) {
-    window.location.reload();
-  }
+
+
+
 import { resolveUserProfile } from '$lib/auth/profile.js';
 import { workspaceContextStore } from '$lib/stores/workspaceContext.svelte.js';
 import { createAuthGates } from '$lib/stores/auth/authGates.svelte.js';

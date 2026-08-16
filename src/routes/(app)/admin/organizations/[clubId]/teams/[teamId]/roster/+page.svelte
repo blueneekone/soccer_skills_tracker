@@ -101,9 +101,7 @@
 	// ── Age group helper ─────────────────────────────────────────────────────────
 	/** @param {Record<string, unknown>} data */
 	function linkedRowFromLookup(data, docId) {
-    if (!db || !authStore.isAuthenticated) return;
-		if (!getActiveDb() || !authStore.isAuthenticated) return;
-		const guardian = parseGuardianMeta(data);
+				const guardian = parseGuardianMeta(data);
 		return {
 			email: String(data.email ?? docId),
 			playerName: String(data.playerName ?? data.displayName ?? ''),

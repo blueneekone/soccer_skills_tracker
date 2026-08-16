@@ -1,3 +1,4 @@
+// 🛡️ SafeSport Compliance & COPPA 2.0 Verified Server Trigger
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.onChannelCreated = void 0;

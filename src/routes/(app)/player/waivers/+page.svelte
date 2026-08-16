@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { LiabilityWaiversEngine } from './LiabilityWaiversEngine.svelte';
 	import { goto } from '$app/navigation';
+import { untrack } from 'svelte';
 	import { authStore } from '$lib/stores/auth.svelte.js';
 
 	const engine = new LiabilityWaiversEngine();

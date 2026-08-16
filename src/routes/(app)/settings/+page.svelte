@@ -21,6 +21,7 @@
 
 	import { browser } from '$app/environment';
 	import { goto } from '$app/navigation';
+import { untrack } from 'svelte';
 	import { functions } from '$lib/firebase.js';
 	import { httpsCallable } from 'firebase/functions';
 	import { authStore } from '$lib/stores/auth.svelte.js';

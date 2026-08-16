@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
+import { untrack } from 'svelte';
 	import { auth, db, functions } from '$lib/firebase.js';
 	import Icon from '$lib/components/ui/Icon.svelte';
 	import VanguardAppMark from '$lib/components/ui/VanguardAppMark.svelte';

@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
+import { untrack } from 'svelte';
 	import OperativeLoadoutPreview from '$lib/components/player/OperativeLoadoutPreview.svelte';
 	import { getLoadoutCatalog } from '$lib/gamification/loadoutSchema.js';
 	import { ceremonyOnCosmeticUnlock } from '$lib/services/dopamine.svelte.js';

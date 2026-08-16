@@ -9,6 +9,7 @@
 	 */
 	import { browser } from '$app/environment';
 	import { goto } from '$app/navigation';
+import { untrack } from 'svelte';
 	import { auth } from '$lib/firebase.js';
 	import Icon from '$lib/components/ui/Icon.svelte';
 	import { loginEngine, userFacingErrorMessage } from '$lib/auth/LoginEngine.svelte.js';
@@ -51,8 +52,7 @@
 		void (async () => {
 			try {
 				if (!authStore.isAuthenticated || !auth.currentUser) {
-     untrack(() => {
-       await goto('/login', { replaceState: true });
+     untrack(() => { goto('/login', { replaceState: true });
      });
 					return;
 				}
