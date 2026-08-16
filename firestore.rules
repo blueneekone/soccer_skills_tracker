@@ -243,6 +243,10 @@ service cloud.firestore {
       allow create: if authed() && playerVpcAllowed();
     }
 
+    match /pii_vault/{sealId} {
+      allow create, update, delete: if false;
+    }
+
     // Default match to prevent global unauthenticated reads/writes
     match /{document=**} {
       allow read, write: if false;

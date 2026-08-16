@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { untrack } from 'svelte';
 	/**
 	 * Settings Terminal — VANGUARD NEXUS v4
 	 * ────────────────────────────────────────

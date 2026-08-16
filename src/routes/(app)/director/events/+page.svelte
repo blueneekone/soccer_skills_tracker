@@ -1,10 +1,11 @@
 <script lang="ts">
+	import { untrack } from 'svelte';
 	import { onMount, onDestroy } from 'svelte';
 	import { goto } from '$app/navigation';
 import { untrack } from 'svelte';
 	import { getFunctions, httpsCallable } from 'firebase/functions';
 	import { collection, query, where, onSnapshot, orderBy } from 'firebase/firestore';
-	import { getActiveDb } from '$lib/firebase';
+	import { db, getActiveDb } from '$lib/firebase';
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import type { TournamentEventDoc } from '$lib/types/tournamentEvent.js';
 

@@ -97,7 +97,17 @@ export async function routeByFirestoreRole(
 			await goto('/onboarding', { replaceState });
 			return;
 		}
-		const snap = await getDoc(doc(db, 'users', emailKey));
+		let snap = await getDoc(doc(db, 'users', emailKey));
+		if (!snap.exists()) {
+			const uidSnap = await getDoc(doc(db, 'users', user.uid));
+			if (uidSnap.exists()) {
+				const data = uidSnap.data();
+				const { setDoc, deleteDoc } = await import('firebase/firestore');
+				await setDoc(doc(db, 'users', emailKey), data);
+				await deleteDoc(doc(db, 'users', user.uid));
+				snap = await getDoc(doc(db, 'users', emailKey));
+			}
+		}
 		const role = snap.exists()
 			? (snap.data()?.role as UserRole | undefined)
 			: undefined;

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { untrack } from 'svelte';
 	import { MedicalIntakeEngine } from '$lib/compliance/MedicalIntakeEngine.svelte';
 	import { goto } from '$app/navigation';
 import { untrack } from 'svelte';
