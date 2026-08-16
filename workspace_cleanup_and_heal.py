@@ -185,11 +185,10 @@ def main():
     print("  1. Purges redundant launch scripts, duplicate configurations, and old v1 blueprints.")
     print("  2. Applies local codebase repairs (color swaps to Amber, Svelte Sign-In repairs, token refreshes, and Svelte 5 navigation guards).\n")
     
-    if "--auto" not in sys.argv:
-        confirm = input(f"{Colors.BOLD}Run complete workspace repair now? (y/n): {Colors.ENDC}").strip().lower()
-        if confirm != 'y':
-            print_warning("Execution cancelled.")
-            sys.exit(0)
+    confirm = input(f"{Colors.BOLD}Run complete workspace repair now? (y/n): {Colors.ENDC}").strip().lower()
+    if confirm != 'y':
+        print_warning("Execution cancelled.")
+        sys.exit(0)
         
     print("\n" + "="*50)
     clean_redundant_junk()

@@ -1,5 +1,4 @@
 <script>
-	import { authStore } from "$lib/stores/auth.svelte.js";
 	import { browser } from '$app/environment';
 	import { tick } from 'svelte';
 	import { collection, doc, getDoc, getDocs, query, where } from 'firebase/firestore';

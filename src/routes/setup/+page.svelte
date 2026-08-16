@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { untrack } from 'svelte';
 	import { goto } from '$app/navigation';
 import { untrack } from 'svelte';
 	import { auth, db, functions } from '$lib/firebase.js';

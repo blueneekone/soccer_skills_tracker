@@ -50,7 +50,6 @@ describe('Commissioner OS Master Dashboard', () => {
 			mockRole = 'coach'; // Override for test
 			const mockDb = {};
 			vi.mocked(firebase.getActiveDb as any).mockReturnValue(mockDb as any);
-			vi.mocked(firestoreGuard.isFirestoreReady).mockReturnValue(true);
 
 			const engine = new CommissionerDashboardEngine();
 			expect(engine.isAuthorized).toBe(false);
@@ -61,18 +60,17 @@ describe('Commissioner OS Master Dashboard', () => {
 
 		it('should return early if B815 defensive hydration guard fails', async () => {
 			mockRole = 'commissioner'; vi.mocked(firebase.getActiveDb).mockReturnValue(null as any);
-			vi.mocked(firestoreGuard.isFirestoreReady).mockReturnValue(false);
 
 			const engine = new CommissionerDashboardEngine();
 			await engine.fetchFederationData();
 
-			expect(engine.isLoading).toBe(true); // Since it returns early, isLoading isn't flipped to false in the method body
+			expect(firebase.getActiveDb).toHaveBeenCalled();
+			expect(engine.isLoading).toBe(false);
 		});
 
 		it('should resolve telemetry across multi-tenant child club databases', async () => {
 			const mockDb = {};
 			vi.mocked(firebase.getActiveDb).mockReturnValue(mockDb as any);
-			vi.mocked(firestoreGuard.isFirestoreReady).mockReturnValue(true);
 
 			const mockDocs = [
 				{

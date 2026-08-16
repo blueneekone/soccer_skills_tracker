@@ -149,17 +149,15 @@ export async function resolveUserProfile(db, firebaseUser, forceTokenRefresh = t
 		role = role === 'global_admin' ? 'global_admin' : 'super_admin';
 	}
 
-	let userRef = doc(db, 'users', emailKey);
+	let userRef = doc(db, 'users', uidKey);
 	let userSnap = await getDoc(userRef);
 
 	if (!userSnap.exists()) {
-		const uidRef = doc(db, 'users', uidKey);
-		const uidSnap = await getDoc(uidRef);
-		if (uidSnap.exists()) {
-			const data = uidSnap.data();
-			await setDoc(doc(db, 'users', emailKey), data);
-			await deleteDoc(doc(db, 'users', uidKey));
-			userSnap = await getDoc(userRef);
+		const legacyRef = doc(db, 'users', emailKey);
+		const legacySnap = await getDoc(legacyRef);
+		if (legacySnap.exists()) {
+			userRef = legacyRef;
+			userSnap = legacySnap;
 		}
 	}
 

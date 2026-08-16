@@ -1,7 +1,6 @@
 import { CoachTeamScope } from '$lib/coach/context/coachTeamScope.svelte.js';
 import { createTacticalWarRoom } from '$lib/components/coach/TacticalEngine.svelte.js';
 import { db } from '$lib/firebase.js';
-import { isFirestoreReady } from '$lib/utils/firestoreGuard.js';
 import { collection, doc, getDoc, getDocs, setDoc, query, where, serverTimestamp } from 'firebase/firestore';
 import { authStore } from '$lib/stores/auth.svelte.js';
 import type { TacticalToken } from '$lib/states/war-room/types.js';
@@ -119,7 +118,6 @@ export class CoachTacticalEngine {
 	}
 
 	async _loadBoardState(tid: string, uid: string) {
-		if (!isFirestoreReady()) return;
 		this.boardLoadComplete = false;
 		try {
 			const snap = await getDoc(doc(db, 'teams', tid, 'tactics', `wr_${uid}`));
@@ -157,7 +155,6 @@ export class CoachTacticalEngine {
 	}
 
 	async _loadRosters(tid: string) {
-		if (!isFirestoreReady()) return;
 		try {
 			const snap = await getDoc(doc(db, 'rosters', tid));
 			const rostersNames = (
@@ -180,7 +177,7 @@ export class CoachTacticalEngine {
 				return;
 			}
 
-			if (!isFirestoreReady()) return;
+			if (!db || !authStore.isAuthenticated) return;
 			const lookupSnap = await getDocs(
 				query(collection(db, 'player_lookup'), where('teamId', '==', tid)),
 			);

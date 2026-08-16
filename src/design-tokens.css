@@ -25,7 +25,6 @@
   --color-atompunk-amber: #f59e0b;  /* Warnings and safety state locks (ZPD/Embargo) */
   --color-action-gold: #fbbf24;     /* Strictly reserved for exactly ONE primary CTA per viewport */
   --color-amber-500: #fbbf24;  /* Cybernetic high-voltage highlight / progress trackers */
-  --color-amber-500: #fbbf24;
   
   /* --- Text Contrast Hierarchy (Zero-Opacity Modifiers Rule) --- */
   --text-primary: #fafafa;

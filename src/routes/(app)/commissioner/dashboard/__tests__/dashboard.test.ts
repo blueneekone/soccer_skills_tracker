@@ -81,8 +81,6 @@ describe('Commissioner OS - Dashboard Integration Tests', () => {
 		vi.mocked(federationService.getOdpTalentPipeline).mockResolvedValue(mockPipeline);
 
 		const engine = new CommissionerDashboardEngine();
-		// Mock B815 ready specifically for this test
-		vi.mocked(firestoreGuard.isFirestoreReady).mockReturnValue(true);
 		const result = await engine.loadFederationCompliance();
 
 		expect(federationService.getOdpTalentPipeline).toHaveBeenCalledWith('master-tenant-123');

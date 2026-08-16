@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { authStore } from '$lib/stores/auth.svelte';
 	import { browser } from '$app/environment';
 	import {
 		collection,
@@ -9,7 +8,7 @@
 		limit,
 		getDocs,
 	} from 'firebase/firestore';
-	import { db, getActiveDb } from '$lib/firebase.js';
+	import { db } from '$lib/firebase.js';
 	import Icon from '$lib/components/ui/Icon.svelte';
 
 	/** @type {{ clubId?: string }} */

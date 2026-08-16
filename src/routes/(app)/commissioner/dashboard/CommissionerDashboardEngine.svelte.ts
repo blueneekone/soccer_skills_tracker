@@ -59,7 +59,6 @@ export class CommissionerDashboardEngine {
 
 	async loadFederationCompliance() {
 		const isMock = typeof window !== 'undefined' && (window.localStorage.getItem('auth_state') !== null || (import.meta.env && import.meta.env.VITE_E2E_BYPASS_AUTH));
-			if (!isFirestoreReady() && !isMock) return [];
 		if (isMock) {
 			const mockPipeline = [
 				{ id: 'u1', clubId: 'club-alpha', name: 'Alpha Player', sixAxis: [50, 50, 50, 50, 50, 50] },
@@ -123,7 +122,6 @@ export class CommissionerDashboardEngine {
 
 	async fetchFederationData() {
 		const isMock = typeof window !== 'undefined' && (window.localStorage.getItem('auth_state') !== null || (import.meta.env && import.meta.env.VITE_E2E_BYPASS_AUTH));
-			if (!isFirestoreReady() && !isMock) return;
 		if (isMock) {
 			this.clubs = [
 				{

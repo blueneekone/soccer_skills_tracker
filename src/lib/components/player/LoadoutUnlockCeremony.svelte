@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { untrack } from 'svelte';
 	import { goto } from '$app/navigation';
 import { untrack } from 'svelte';
 	import OperativeLoadoutPreview from '$lib/components/player/OperativeLoadoutPreview.svelte';

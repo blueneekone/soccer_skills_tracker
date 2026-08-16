@@ -17,9 +17,6 @@ while ($true) {
             Write-Host ">> New commits detected from Jules! Pulling..." -ForegroundColor Yellow
             git pull origin dev --rebase
             
-            Write-Host ">> Running workspace auto-heal..." -ForegroundColor Cyan
-            python workspace_cleanup_and_heal.py --auto
-            
             Write-Host ">> Triggering full deployment (functions, hosting, rules)..." -ForegroundColor Cyan
             npx firebase deploy --only functions,hosting,indexes,firestore:rules --force
             Write-Host ">> Deployment complete!" -ForegroundColor Green

@@ -138,7 +138,7 @@
 		</section>
 
 		<!-- 12-Column Asymmetric Bento Grid -->
-		<div class="bento-grid-container bento-grid--12col bento-grid--liquid tw-grid tw-grid-cols-1 lg:tw-grid-cols-12" style="grid-template-columns: repeat(auto-fit, minmax(min(100%, clamp(280px, 30vw, 350px)), 1fr)); tw-gap-6 tw-w-full tw-min-w-0">
+		<div class="bento-grid-container bento-grid--12col bento-grid--liquid st-bento tw-grid tw-grid-cols-1 lg:tw-grid-cols-12 tw-gap-6 tw-w-full tw-min-w-0">
 			
 			<!-- CSO: The Triad Protocol (Shadow CC Audit Log) (8 cols) -->
 			<section class="st-bento bento-col-8 lg:tw-col-span-8 tw-bg-[#0F172A] tw-border tw-border-[#1E293B] tw-p-6 tw-flex tw-flex-col tw-min-w-0 tw-rounded-none">

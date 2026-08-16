@@ -23,7 +23,7 @@ const FIRESTORE_HOST = process.env.FIRESTORE_EMULATOR_HOST?.split(':')[0] ?? '12
 const FIRESTORE_PORT = Number(process.env.FIRESTORE_EMULATOR_HOST?.split(':')[1] ?? 8080);
 
 describe('Commissioner OS - Firestore Rules Syntax', () => {
-    it.skip('defines isCommissioner function', () => {
+    it('defines isCommissioner function', () => {
         expect(RULES).toMatch(/function isCommissioner\(\)/);
         expect(RULES).toMatch(/tokenRole\(\) == 'commissioner'/);
     });

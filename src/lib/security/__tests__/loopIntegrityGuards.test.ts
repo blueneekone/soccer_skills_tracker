@@ -41,7 +41,7 @@ function token(overrides: Record<string, unknown>) {
     ...overrides
   };
 }
-describe.skip('LAUNCH-test-integrity — Loop Integrity Guards G1–G5, G7–G10 (emulator)', () => {
+describe.skipIf(!process.env.FIRESTORE_EMULATOR_HOST)('LAUNCH-test-integrity — Loop Integrity Guards G1–G5, G7–G10 (emulator)', () => {
   let env: RulesTestEnvironment;
   beforeAll(async () => {
     env = await initializeTestEnvironment({

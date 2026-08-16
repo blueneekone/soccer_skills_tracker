@@ -130,11 +130,6 @@
 
 	// Sprint 2.6.1 — claims-driven impersonation detection.
 	// `impersonationStore` listens to `onIdTokenChanged`, which fires across
-   const token = newUser ? await newUser.getIdToken() : undefined;
-   document.cookie = `token=${token || ''}; path=/; max-age=${token ? 3600 : 0}; SameSite=Strict; Secure`;
-   if (token && !document.cookie.includes('token')) {
-     window.location.reload();
-   }
 
 
 

@@ -35,7 +35,7 @@ function hasBlock(source: string, selector: string): boolean {
 
 // ─── Token assertions ────────────────────────────────────────────────────────
 
-describe.skip('Sprint 1.1 — :root token declarations', () => {
+describe('Sprint 1.1 — :root token declarations', () => {
 	it('declares --shadow-liquid with both an outer drop and an inner inset layer', () => {
 		expect(css).toMatch(/--shadow-liquid:/);
 		// Must contain an inset shadow (inner highlight) and a non-inset drop
@@ -59,7 +59,7 @@ describe.skip('Sprint 1.1 — :root token declarations', () => {
 
 // ─── .bento-grid--liquid primitive ──────────────────────────────────────────
 
-describe.skip('Sprint 1.1 — .bento-grid--liquid primitive', () => {
+describe('Sprint 1.1 — .bento-grid--liquid primitive', () => {
 	it('has a .bento-grid--liquid rule block', () => {
 		expect(hasBlock(css, '.bento-grid--liquid')).toBe(true);
 	});
@@ -85,7 +85,7 @@ describe.skip('Sprint 1.1 — .bento-grid--liquid primitive', () => {
 
 // ─── .vanguard-surface--liquid primitive ────────────────────────────────────
 
-describe.skip('Sprint 1.1 — .vanguard-surface--liquid (opaque card modifier)', () => {
+describe('Sprint 1.1 — .vanguard-surface--liquid (opaque card modifier)', () => {
 	it('has a .vanguard-surface--liquid rule block', () => {
 		expect(hasBlock(css, '.vanguard-surface--liquid')).toBe(true);
 	});
@@ -106,7 +106,7 @@ describe.skip('Sprint 1.1 — .vanguard-surface--liquid (opaque card modifier)',
 
 // ─── .vanguard-surface--hero-liquid primitive ────────────────────────────────
 
-describe.skip('Sprint 1.1 — .vanguard-surface--hero-liquid (glass hero layer)', () => {
+describe('Sprint 1.1 — .vanguard-surface--hero-liquid (glass hero layer)', () => {
 	it('has a .vanguard-surface--hero-liquid rule block', () => {
 		expect(hasBlock(css, '.vanguard-surface--hero-liquid')).toBe(true);
 	});
@@ -127,7 +127,7 @@ describe.skip('Sprint 1.1 — .vanguard-surface--hero-liquid (glass hero layer)'
 
 // ─── Carve-out comment update ────────────────────────────────────────────────
 
-describe.skip('Sprint 1.1 — GLASSMORPHISM CARVE-OUT comment is updated', () => {
+describe('Sprint 1.1 — GLASSMORPHISM CARVE-OUT comment is updated', () => {
 	it('lists --hero-liquid (or hero-liquid) as an allowed glass surface', () => {
 		expect(css).toMatch(/hero-liquid/);
 	});

@@ -4,7 +4,7 @@ import { join } from 'node:path';
 
 const LAYOUT_SVELTE_PATH = join(__dirname, '../+layout.svelte');
 
-describe.skip('Triple-Pane SIEM Command Architecture', () => {
+describe('Triple-Pane SIEM Command Architecture', () => {
 	describe('App Layout (+layout.svelte)', () => {
 		let layoutContent = '';
 		try {

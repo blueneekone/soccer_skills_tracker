@@ -1,4 +1,3 @@
-// 🛡️ SafeSport Compliance Mandate: Secure WebAuthn Verification Protocol Active
 /**
  * LoginEngine.svelte.ts
  * ──────────────────────────────────────────────────────────────────────────
@@ -156,14 +155,18 @@ class LoginEngine {
       // 4. Sign in with custom token (mirrors validatePlayerOTP flow)
       await signInWithCustomToken(auth, customToken);
     } catch (err) {
-      if (err instanceof Error && err.name === 'SecurityError') {
-          this.error = 'Security Guard: Passkeys require an encrypted HTTPS connection with matching Relying Party ID.';
-      } else if (err instanceof Error && err.name === 'NotAllowedError') {
-          this.error = 'Biometric Cancelled: The biometric prompt was dismissed or timed out.';
+      if (err instanceof Error && err.name === 'NotAllowedError') {
+        // User dismissed the passkey prompt — not an error state
+        this.error = '';
       } else if (err instanceof Error && err.name === 'InvalidStateError') {
-          this.error = 'State Conflict: This authenticator is already registered or unsupported on this device.';
+        this.error = 'A passkey is already registered for this device or account.';
+      } else if (err instanceof Error && err.name === 'SecurityError') {
+        this.error = 'Passkey operation is not permitted by this browser or origin.';
       } else {
-          this.error = `Passkey Generation Failed: ${err instanceof Error ? err.message : String(err)}`;
+        this.error = userFacingErrorMessage(
+          err,
+          'Passkey sign-in failed. Try again or use a magic link.',
+        );
       }
     } finally {
       this.busy = false;
@@ -223,14 +226,17 @@ class LoginEngine {
       try {
         attResp = await startRegistration({ optionsJSON: options });
       } catch (err) {
-        if (err instanceof Error && err.name === 'SecurityError') {
-            this.error = 'Security Guard: Passkeys require an encrypted HTTPS connection with matching Relying Party ID.';
-        } else if (err instanceof Error && err.name === 'NotAllowedError') {
-            this.error = 'Biometric Cancelled: The biometric prompt was dismissed or timed out.';
+        if (err instanceof Error && err.name === 'NotAllowedError') {
+          this.error = '';
         } else if (err instanceof Error && err.name === 'InvalidStateError') {
-            this.error = 'State Conflict: This authenticator is already registered or unsupported on this device.';
+          this.error = 'A passkey is already registered for this device or account.';
+        } else if (err instanceof Error && err.name === 'SecurityError') {
+          this.error = 'Passkey operation is not permitted by this browser or origin.';
         } else {
-            this.error = `Passkey Generation Failed: ${err instanceof Error ? err.message : String(err)}`;
+          this.error = userFacingErrorMessage(
+            err,
+            'Passkey registration was interrupted. Try again.',
+          );
         }
         return;
       }
@@ -248,14 +254,17 @@ class LoginEngine {
       this.passkeyRegistered = true;
     } catch (err) {
       // Defensive: nested try/catch above should cover normal paths
-      if (err instanceof Error && err.name === 'SecurityError') {
-          this.error = 'Security Guard: Passkeys require an encrypted HTTPS connection with matching Relying Party ID.';
-      } else if (err instanceof Error && err.name === 'NotAllowedError') {
-          this.error = 'Biometric Cancelled: The biometric prompt was dismissed or timed out.';
+      if (err instanceof Error && err.name === 'NotAllowedError') {
+        this.error = '';
       } else if (err instanceof Error && err.name === 'InvalidStateError') {
-          this.error = 'State Conflict: This authenticator is already registered or unsupported on this device.';
+        this.error = 'A passkey is already registered for this device or account.';
+      } else if (err instanceof Error && err.name === 'SecurityError') {
+        this.error = 'Passkey operation is not permitted by this browser or origin.';
       } else {
-          this.error = `Passkey Generation Failed: ${err instanceof Error ? err.message : String(err)}`;
+        this.error = userFacingErrorMessage(
+          err,
+          'Passkey registration failed. Try again.',
+        );
       }
     } finally {
       this.busy = false;

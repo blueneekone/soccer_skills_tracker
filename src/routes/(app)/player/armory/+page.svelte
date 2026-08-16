@@ -288,7 +288,6 @@
 			this={OperativeLoadoutStudioComponent}
 			initialPortraitPart={studioInitialPart as any}
 			ownedPortraitParts={ownedPortraitParts}
-			bind:operativeAvatar={operativeAvatar}
 		/>
 	{/await}
 {/if}

@@ -23,7 +23,6 @@ function createTeamsStore() {
 	 * @param {string} clubId
 	 */
 	async function loadTeamsForCoachEmail(em, clubId) {
-		if (!isFirestoreReady()) return [];
 		const head = em.toLowerCase();
 		const db = getActiveDb();
 		if (!db) return [];
@@ -62,7 +61,6 @@ function createTeamsStore() {
 	 * @param {string} clubId
 	 */
 	async function loadClubsForScope(scope, teamRows, clubId) {
-		if (!isFirestoreReady()) return [];
 		const db = getActiveDb();
 		if (!db) return [];
 		
