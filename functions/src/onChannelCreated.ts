@@ -1,3 +1,4 @@
+// 🛡️ SafeSport Compliance Mandate: Server-Side CC Parent Router
 import { onDocumentCreated } from 'firebase-functions/v2/firestore';
 import { getFirestore } from 'firebase-admin/firestore';
 import { resolveParentEmails } from './utils/resolveParentEmails';

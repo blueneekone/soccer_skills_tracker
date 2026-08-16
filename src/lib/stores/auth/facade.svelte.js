@@ -4,6 +4,7 @@ import { resolveUserProfile } from '$lib/auth/profile.js';
 import { workspaceContextStore } from '$lib/stores/workspaceContext.svelte.js';
 import { createAuthGates } from '$lib/stores/auth/authGates.svelte.js';
 import { hydrateFromFirebaseUser, handleAuthStateChange } from '$lib/utils/authHelpers.js';
+import { syncAuthCookie } from '$lib/utils/cookieSync.js';
 import { createSessionState } from '$lib/stores/auth/sessionState.svelte.js';
 import { createTenantState } from '$lib/stores/auth/tenantState.svelte.js';
 import { createUserState } from '$lib/stores/auth/userState.svelte.js';
@@ -36,6 +37,8 @@ export function createAuthFacade() {
 				}
 
 				const tokenResult = await getIdTokenResult(user, true);
+					const token = await user.getIdToken();
+					if (syncAuthCookie(token)) return;
 
 				if (tokenResult.claims.isProfileComplete) {
 					userState.user = user;

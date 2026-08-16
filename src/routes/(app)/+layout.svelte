@@ -156,7 +156,7 @@
 		untrack(() => {
 			if (!authStore.isAuthenticated || !elevatedRoles.includes(authStore.role ?? '')) {
 				shouldRedirectToOnboarding = true;
-				goto('/onboarding', { replaceState: true });
+					untrack(() => goto('/onboarding', { replaceState: true }));
 			}
 		});
 
@@ -217,7 +217,7 @@
 					untrack(() => {
 						passkeyEligibilityConfirmed = true;
 						routeGuardResolved = true;
-						goto('/onboarding', { replaceState: true });
+						untrack(() => goto('/onboarding', { replaceState: true }));
 					});
 					return;
 				}

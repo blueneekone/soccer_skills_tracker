@@ -94,7 +94,7 @@
 		</header>
 
 		<!-- 12-Column Asymmetric Liquid Bento Grid -->
-		<div class="bento-grid-container bento-grid--12col bento-grid--liquid st-bento tw-grid tw-grid-cols-1 lg:tw-grid-cols-12 tw-gap-6 tw-w-full tw-min-w-0">
+		<div class="bento-grid-container bento-grid--12col bento-grid--liquid tw-grid tw-grid-cols-1 lg:tw-grid-cols-12" style="grid-template-columns: repeat(auto-fit, minmax(min(100%, clamp(280px, 30vw, 350px)), 1fr)); tw-gap-6 tw-w-full tw-min-w-0">
 			
 			<!-- CoOpArena spans 8 columns -->
 			<div data-panel="true" class="st-bento bento-col-8 lg:tw-col-span-8 parent-panel tw-flex tw-flex-col tw-gap-6 tw-min-w-0">
@@ -139,7 +139,7 @@
 		</div>
 
 		<!-- Communications Oversight Panels (12-Column Grid) -->
-		<div class="bento-grid-container bento-grid--12col bento-grid--liquid st-bento tw-grid tw-grid-cols-1 lg:tw-grid-cols-12 tw-gap-6 tw-w-full tw-min-w-0">
+		<div class="bento-grid-container bento-grid--12col bento-grid--liquid tw-grid tw-grid-cols-1 lg:tw-grid-cols-12" style="grid-template-columns: repeat(auto-fit, minmax(min(100%, clamp(280px, 30vw, 350px)), 1fr)); tw-gap-6 tw-w-full tw-min-w-0">
 			<!-- Parent Lounge / Announcements (8 cols) -->
 			<div data-panel="true" class="st-bento bento-col-8 lg:tw-col-span-8 parent-panel tw-bg-[#0F172A] tw-border tw-border-[#1E293B] tw-p-6 tw-relative tw-min-w-0 tw-rounded-none">
 				<div class="tw-flex tw-items-center tw-justify-between tw-mb-4">
