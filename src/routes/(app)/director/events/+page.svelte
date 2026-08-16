@@ -1,12 +1,10 @@
-
 <script lang="ts">
-	import { isFirestoreReady } from "$lib/utils/firestoreGuard.js";
-	import { untrack } from "svelte";
+	import { untrack } from 'svelte';
 	import { onMount, onDestroy } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { getFunctions, httpsCallable } from 'firebase/functions';
 	import { collection, query, where, onSnapshot, orderBy } from 'firebase/firestore';
-	import { getActiveDb } from '$lib/firebase';
+	import { db, getActiveDb } from '$lib/firebase';
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import type { TournamentEventDoc } from '$lib/types/tournamentEvent.js';
 
@@ -46,7 +44,7 @@
 	onDestroy(() => unsubscribe?.());
 
 	async function createEvent() {
-		if (!isFirestoreReady()) return;
+    if (!db || !authStore.isAuthenticated) return;
 		creating = true;
 		errorMsg = '';
 		try {
@@ -61,7 +59,7 @@
 					general: { label: 'General Admission', unitPriceCents: 1000, capacity: 100 },
 				},
 			});
-			untrack(() => goto(`/director/events/${res.data.eventId}`));
+			untrack(() => { goto(`/director/events/${res.data.eventId}`); });
 		} catch (e: unknown) {
 			errorMsg = e instanceof Error ? e.message : String(e);
 		} finally {

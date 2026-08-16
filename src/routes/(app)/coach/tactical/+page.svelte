@@ -1,11 +1,10 @@
-
 <svelte:head>
 	<!-- Prevent accidental pinch-zoom on the tactical board touch canvas -->
 	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
 </svelte:head>
 
 <script lang="ts">
-	import { untrack } from "svelte";
+	import { untrack } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { CoachTacticalEngine } from './CoachTacticalEngine.svelte.js';
 	import '$lib/styles/coach-tactics-stratagem.css';
@@ -48,7 +47,7 @@
 		type="button"
 		class="coach-tac-exit coach-os-action-chip"
 		aria-label="Exit War Room"
-		onclick={() => untrack(() => goto('/coach/dashboard'))}
+		onclick={() => { untrack(() => { goto('/coach/dashboard'); }); }}
 	>
 		✕ Exit War Room
 	</button>

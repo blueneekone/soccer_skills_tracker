@@ -1,6 +1,5 @@
-
 <script lang="ts">
-	import { untrack } from "svelte";
+	import { untrack } from 'svelte';
 	import { browser } from '$app/environment';
 	import { goto } from '$app/navigation';
 	import { collection, query, where, getDocs, doc, getDoc } from 'firebase/firestore';
@@ -122,7 +121,7 @@
 		const q = new URLSearchParams();
 		q.set('assignmentId', row.id);
 		if (row.drillId) q.set('drillId', row.drillId);
-		untrack(() => goto(`/tracker?${q.toString()}`));
+		untrack(() => { goto(`/tracker?${q.toString()}`); });
 	}
 
 	async function markDoneQuick(id) {

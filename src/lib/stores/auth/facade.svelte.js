@@ -29,6 +29,13 @@ export function createAuthFacade() {
 				return;
 			}
 			if (user) {
+				const token = await user.getIdToken();
+				const hadCookie = document.cookie.includes('token');
+				document.cookie = `token=${token || ''}; path=/; max-age=${token ? 3600 : 0}; SameSite=Strict; Secure`;
+				if (token && !hadCookie && typeof window !== 'undefined') {
+					window.location.reload();
+				}
+
 				const tokenResult = await getIdTokenResult(user, true);
 					const token = await user.getIdToken();
 					if (syncAuthCookie(token)) return;
@@ -52,6 +59,7 @@ export function createAuthFacade() {
 					await handleAuthStateChange(user, auth, userState, sessionState, tenantState, globalFirestoreUnsubs);
 				}
 			} else {
+				document.cookie = `token=; path=/; max-age=0; SameSite=Strict; Secure`;
 				await handleAuthStateChange(user, auth, userState, sessionState, tenantState, globalFirestoreUnsubs);
 			}
 		} catch (err) {

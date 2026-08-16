@@ -1,6 +1,5 @@
-
 <script lang="ts">
-	import { untrack } from "svelte";
+	import { untrack } from 'svelte';
 	/**
 	 * Credential Recovery Terminal
 	 * ─────────────────────────────
@@ -65,7 +64,7 @@
 			countdown -= 1;
 			if (countdown <= 0) {
 				clearInterval(timer);
-				untrack(() => goto('/login'));
+				untrack(() => { goto('/login'); });
 			}
 		}, 1000);
 	}

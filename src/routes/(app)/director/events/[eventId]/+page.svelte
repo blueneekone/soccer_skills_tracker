@@ -1,6 +1,5 @@
-
 <script lang="ts">
-	import { untrack } from "svelte";
+	import { untrack } from 'svelte';
 	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
 	import { onDestroy } from 'svelte';
@@ -174,7 +173,7 @@
 
 <div class="builder-page">
 	<header class="page-header">
-		<button class="btn-back" onclick={() => untrack(() => goto('/director/events'))}>← Events</button>
+		<button class="btn-back" onclick={() => { untrack(() => { goto('/director/events'); }); }}>← Events</button>
 		<div class="header-actions">
 			<span class="status-badge status-{event?.status ?? 'draft'}">{event?.status ?? 'draft'}</span>
 			<button class="btn-save" onclick={save} disabled={saving || loading}>

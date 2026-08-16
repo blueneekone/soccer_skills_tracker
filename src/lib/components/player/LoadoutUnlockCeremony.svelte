@@ -1,6 +1,5 @@
-
 <script lang="ts">
-	import { untrack } from "svelte";
+	import { untrack } from 'svelte';
 	import { goto } from '$app/navigation';
 	import OperativeLoadoutPreview from '$lib/components/player/OperativeLoadoutPreview.svelte';
 	import { getLoadoutCatalog } from '$lib/gamification/loadoutSchema.js';
@@ -72,7 +71,7 @@
 	function equipInStudio() {
 		if (!activeMeta) return;
 		dismiss();
-		void untrack(() => goto('/player/armory'));
+		void untrack(() => { goto('/player/armory'); });
 	}
 </script>
 

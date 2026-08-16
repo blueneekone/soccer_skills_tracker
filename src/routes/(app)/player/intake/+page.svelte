@@ -1,6 +1,5 @@
-
 <script lang="ts">
-	import { untrack } from "svelte";
+	import { untrack } from 'svelte';
 	import { MedicalIntakeEngine } from '$lib/compliance/MedicalIntakeEngine.svelte';
 	import { goto } from '$app/navigation';
 	import { authStore } from '$lib/stores/auth.svelte.js';
@@ -12,7 +11,7 @@
 		e.preventDefault();
 		await engine.submit();
 		if (authStore.userProfile?.medicalSignatureVerified) {
-			untrack(() => goto('/player/dashboard'));
+			untrack(() => { goto('/player/dashboard'); });
 		}
 	}
 </script>

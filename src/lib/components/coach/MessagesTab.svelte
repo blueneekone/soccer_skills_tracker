@@ -1,6 +1,5 @@
-
 <script lang="ts">
-	import { untrack } from "svelte";
+	import { untrack } from 'svelte';
 	import { browser } from '$app/environment';
 	import { goto } from '$app/navigation';
 	import {
@@ -249,7 +248,7 @@
 	}
 
 	function openSchedule() {
-		untrack(() => goto('/coach/logistics'));
+		untrack(() => { goto('/coach/logistics'); });
 	}
 
 	/**
