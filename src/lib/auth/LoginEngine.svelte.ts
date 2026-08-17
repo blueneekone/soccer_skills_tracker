@@ -156,11 +156,11 @@ class LoginEngine {
       // 4. Sign in with custom token (mirrors validatePlayerOTP flow)
       await signInWithCustomToken(auth, customToken);
     } catch (err) {
-      if (err instanceof Error && err.name === 'SecurityError') {
+      if (err instanceof DOMException && err.name === 'SecurityError') {
           this.error = 'Security Guard: Passkeys require an encrypted HTTPS connection with matching Relying Party ID.';
-      } else if (err instanceof Error && err.name === 'NotAllowedError') {
+      } else if (err instanceof DOMException && err.name === 'NotAllowedError') {
           this.error = 'Biometric Cancelled: The biometric prompt was dismissed or timed out.';
-      } else if (err instanceof Error && err.name === 'InvalidStateError') {
+      } else if (err instanceof DOMException && err.name === 'InvalidStateError') {
           this.error = 'State Conflict: This authenticator is already registered or unsupported on this device.';
       } else {
           this.error = `Passkey Generation Failed: ${err instanceof Error ? err.message : String(err)}`;
@@ -223,11 +223,11 @@ class LoginEngine {
       try {
         attResp = await startRegistration({ optionsJSON: options });
       } catch (err) {
-        if (err instanceof Error && err.name === 'SecurityError') {
+        if (err instanceof DOMException && err.name === 'SecurityError') {
             this.error = 'Security Guard: Passkeys require an encrypted HTTPS connection with matching Relying Party ID.';
-        } else if (err instanceof Error && err.name === 'NotAllowedError') {
+        } else if (err instanceof DOMException && err.name === 'NotAllowedError') {
             this.error = 'Biometric Cancelled: The biometric prompt was dismissed or timed out.';
-        } else if (err instanceof Error && err.name === 'InvalidStateError') {
+        } else if (err instanceof DOMException && err.name === 'InvalidStateError') {
             this.error = 'State Conflict: This authenticator is already registered or unsupported on this device.';
         } else {
             this.error = `Passkey Generation Failed: ${err instanceof Error ? err.message : String(err)}`;
@@ -248,11 +248,11 @@ class LoginEngine {
       this.passkeyRegistered = true;
     } catch (err) {
       // Defensive: nested try/catch above should cover normal paths
-      if (err instanceof Error && err.name === 'SecurityError') {
+      if (err instanceof DOMException && err.name === 'SecurityError') {
           this.error = 'Security Guard: Passkeys require an encrypted HTTPS connection with matching Relying Party ID.';
-      } else if (err instanceof Error && err.name === 'NotAllowedError') {
+      } else if (err instanceof DOMException && err.name === 'NotAllowedError') {
           this.error = 'Biometric Cancelled: The biometric prompt was dismissed or timed out.';
-      } else if (err instanceof Error && err.name === 'InvalidStateError') {
+      } else if (err instanceof DOMException && err.name === 'InvalidStateError') {
           this.error = 'State Conflict: This authenticator is already registered or unsupported on this device.';
       } else {
           this.error = `Passkey Generation Failed: ${err instanceof Error ? err.message : String(err)}`;

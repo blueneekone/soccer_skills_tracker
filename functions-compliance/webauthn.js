@@ -1,3 +1,4 @@
+// 🛡️ SafeSport Compliance Mandate: Secure WebAuthn Verification Protocol Active
 /**
  * functions/webauthn.js
  * ──────────────────────────────────────────────────────────────────────────
@@ -20,7 +21,6 @@
 
 'use strict';
 
-// 🛡️ SafeSport Compliance Mandate: Secure WebAuthn Verification Protocol Active
 const {onCall, HttpsError} = require('firebase-functions/v2/https');
 const admin = require('firebase-admin');
 const {
@@ -35,9 +35,9 @@ const db = new Proxy({}, { get: (t, p) => { const fs = admin.firestore(); const 
 // ── RP configuration ────────────────────────────────────────────────────────
 // RP_ID and RP_ORIGIN are set via Firebase environment config / defineString so
 // no production values are hard-coded here.
-const RP_ID = process.env.WEBAUTHN_RP_ID?.replace(/^https?:\/\//, '').split(':')[0] || 'sstracker.app';
+const rpID = process.env.WEBAUTHN_RP_ID?.replace(/^https?:\/\//, '').split(':')[0] || 'sstracker.app';
 const RP_NAME = 'Nexus Command';
-const RP_ORIGIN = process.env.WEBAUTHN_RP_ORIGIN?.split(',') || ['https://sstracker.app', 'https://preview.sstracker.app'];
+const expectedOrigins = process.env.WEBAUTHN_RP_ORIGIN?.split(',') || ['https://sstracker.app', 'https://preview.sstracker.app'];
 
 const CHALLENGE_TTL_MS = 5 * 60 * 1000; // 5 minutes
 
@@ -120,7 +120,7 @@ exports.webauthnRegisterStart = onCall(
 
     const options = await generateRegistrationOptions({
       rpName: RP_NAME,
-      rpID: RP_ID,
+      rpID: rpID,
       userID: new TextEncoder().encode(uid),
       userName: request.auth.token.email || uid,
       userDisplayName: request.auth.token.name || request.auth.token.email || uid,
@@ -186,8 +186,8 @@ exports.webauthnRegisterFinish = onCall(
       verification = await verifyRegistrationResponse({
         response: attResp,
         expectedChallenge: challenge,
-        expectedOrigin: RP_ORIGIN,
-        expectedRPID: RP_ID,
+        expectedOrigin: expectedOrigins,
+        expectedRPID: rpID,
         // Must match authenticatorSelection.userVerification: 'preferred' in register start
         requireUserVerification: false,
       });
@@ -244,7 +244,7 @@ exports.webauthnLoginStart = onCall(
     } catch {
       // Normalized shape (uid null) — client must not treat raw options as { options, uid }
       const options = await generateAuthenticationOptions({
-        rpID: RP_ID,
+        rpID: rpID,
         userVerification: 'preferred',
         allowCredentials: [],
       });
@@ -255,7 +255,7 @@ exports.webauthnLoginStart = onCall(
     const existingCreds = await loadCredentialsForUid(uid);
 
     const options = await generateAuthenticationOptions({
-      rpID: RP_ID,
+      rpID: rpID,
       userVerification: 'preferred',
       allowCredentials: existingCreds.map((c) => ({
         id: c.id,
@@ -325,8 +325,8 @@ exports.webauthnLoginFinish = onCall(
       verification = await verifyAuthenticationResponse({
         response: authResp,
         expectedChallenge: challenge,
-        expectedOrigin: RP_ORIGIN,
-        expectedRPID: RP_ID,
+        expectedOrigin: expectedOrigins,
+        expectedRPID: rpID,
         credential: {
           id: credData.credentialID,
           publicKey: publicKeyToUint8Array(credData.publicKey),
