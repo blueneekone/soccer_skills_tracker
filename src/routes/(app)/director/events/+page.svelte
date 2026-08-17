@@ -2,7 +2,7 @@
 	import { untrack } from 'svelte';
 	import { onMount, onDestroy } from 'svelte';
 	import { goto } from '$app/navigation';
-import { untrack } from 'svelte';
+
 	import { getFunctions, httpsCallable } from 'firebase/functions';
 	import { collection, query, where, onSnapshot, orderBy } from 'firebase/firestore';
 	import { db, getActiveDb } from '$lib/firebase';

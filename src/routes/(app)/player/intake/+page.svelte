@@ -2,7 +2,6 @@
 	import { untrack } from 'svelte';
 	import { MedicalIntakeEngine } from '$lib/compliance/MedicalIntakeEngine.svelte';
 	import { goto } from '$app/navigation';
-import { untrack } from 'svelte';
 	import { authStore } from '$lib/stores/auth.svelte.js';
 
 	const engine = new MedicalIntakeEngine();

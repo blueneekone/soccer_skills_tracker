@@ -16,11 +16,7 @@
  * `impersonateUserFn`). We derive `active` from
  * `getIdTokenResult().claims.impersonation === true` and keep it in sync via
  * `onIdTokenChanged`. This renders the banner correctly in every tab, every
-   const token = newUser ? await newUser.getIdToken() : undefined;
-   document.cookie = `token=${token || ''}; path=/; max-age=${token ? 3600 : 0}; SameSite=Strict; Secure`;
-   if (token && !document.cookie.includes('token')) {
-     window.location.reload();
-   }
+
  * reload, every restored session — regardless of sessionStorage state.
  */
 

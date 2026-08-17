@@ -213,6 +213,12 @@ class EgressBlockedError extends Error {
  * @param {typeof globalThis.fetch} [originalFetch]  defaults to globalThis.fetch
  */
 function wrapFetch(originalFetch) {
+  const isCloudFunction = !!process.env.K_SERVICE || !!process.env.FUNCTION_TARGET;
+  const isEmulator = process.env.FUNCTIONS_EMULATOR === 'true';
+  if (!isCloudFunction && !isEmulator) {
+    logger.info('[egressGuard] Skipping fetch wrapper during deploy/discovery.');
+    return;
+  }
   const _fetch = originalFetch || globalThis.fetch;
   if (!_fetch) {
     logger.warn('[egressGuard] wrapFetch: globalThis.fetch not available — guard not installed.');

@@ -18,7 +18,7 @@
 		WIN_MESSAGE,
 	} from '$lib/components/marketing/acquisition/acquisitionContent.js';
 
-	export const prerender = true;
+	
 </script>
 
 <svelte:head>

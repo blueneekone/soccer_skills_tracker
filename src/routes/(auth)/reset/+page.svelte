@@ -19,7 +19,7 @@
 	import { auth } from '$lib/firebase.js';
 	import { sendPasswordResetEmail } from 'firebase/auth';
 	import { goto } from '$app/navigation';
-import { untrack } from 'svelte';
+
 
 	type Phase = 'idle' | 'sending' | 'sent' | 'error';
 

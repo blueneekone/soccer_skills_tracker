@@ -32,7 +32,7 @@ const config = {
 				if (path.startsWith('/videos/')) {
 					return;
 				}
-				throw new Error(message);
+				console.error('HTTP_ERROR:', {path, message}); throw new Error(message);
 			},
 		}
 	},

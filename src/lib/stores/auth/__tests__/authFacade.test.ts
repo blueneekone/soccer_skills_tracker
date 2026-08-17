@@ -17,10 +17,6 @@ describe('auth facade composition (Phase C)', () => {
 		expect(src).toMatch(/createUserState/);
 		expect(src).toMatch(/createTenantState/);
 		expect(src).toMatch(/onIdTokenChanged/);
-    const token = newUser ? await newUser.getIdToken() : undefined;
-    document.cookie = `token=${token || ''}; path=/; max-age=${token ? 3600 : 0}; SameSite=Strict; Secure`;
-    if (token && !document.cookie.includes('token')) {
-      window.location.reload();
-    }
+
 	});
 });

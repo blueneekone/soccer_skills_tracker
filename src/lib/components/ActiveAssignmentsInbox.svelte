@@ -2,7 +2,7 @@
 	import { untrack } from 'svelte';
 	import { browser } from '$app/environment';
 	import { goto } from '$app/navigation';
-import { untrack } from 'svelte';
+
 	import { collection, query, where, getDocs, doc, getDoc } from 'firebase/firestore';
 	import { httpsCallable } from 'firebase/functions';
 	import { db, functions } from '$lib/firebase.js';
