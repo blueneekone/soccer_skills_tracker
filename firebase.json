@@ -71,22 +71,22 @@
     {
       "codebase": "core",
       "source": "functions-core",
-      "runtime": "nodejs20"
+      "runtime": "nodejs22"
     },
     {
       "codebase": "rl",
       "source": "functions-rl",
-      "runtime": "nodejs20"
+      "runtime": "nodejs22"
     },
     {
       "codebase": "commerce",
       "source": "functions-commerce",
-      "runtime": "nodejs20"
+      "runtime": "nodejs22"
     },
     {
       "codebase": "compliance",
       "source": "functions-compliance",
-      "runtime": "nodejs20",
+      "runtime": "nodejs22",
       "predeploy": [
         "node scripts/sync-compliance-env.cjs",
         "node scripts/bundle-functions.cjs"
@@ -95,12 +95,12 @@
     {
       "codebase": "integrations",
       "source": "functions-integrations",
-      "runtime": "nodejs20"
+      "runtime": "nodejs22"
     },
     {
       "codebase": "platform",
       "source": "functions-platform",
-      "runtime": "nodejs20"
+      "runtime": "nodejs22"
     }
   ]
 }

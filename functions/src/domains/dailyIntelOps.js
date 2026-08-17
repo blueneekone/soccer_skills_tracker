@@ -23,7 +23,7 @@ exports.fetchDailyIntel = onCall(
 			throw new HttpsError('permission-denied', 'Only coaches and directors can access daily intel.');
 		}
 
-		const db = new Proxy({}, { get: (t, p) => {  const v = fs[p]; return typeof v === 'function' ? v.bind(fs) : v; } });
+		const db = new Proxy({}, { get: (t, p) => { const fs = admin.firestore(); const v = fs[p]; return typeof v === 'function' ? v.bind(fs) : v; } });
 		const cacheRef = db.collection('external_cache').doc('daily_intel');
 
 		try {

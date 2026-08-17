@@ -1,41 +1,41 @@
-﻿/* eslint-disable quotes */
+/* eslint-disable quotes */
 /**
- * commerce.js â€” Stripe Connect Commerce Engine
- * â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+ * commerce.js — Stripe Connect Commerce Engine
+ * ─────────────────────────────────────────────
  * Routes seasonal registration payments from Parents directly to the Club
  * Director's connected Stripe Express account, with Vanguard taking a 3%
  * platform fee via Stripe Connect Destination Charges.
  *
  * ARCHITECTURE
- * â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+ * ────────────
  *  Parent                Club Director              Vanguard Platform
- *  â”€â”€â”€â”€â”€â”€                â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€              â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
- *  PaymentIntent â”€â”€â”€â”€â”€â”€â–º stripeAccountId â—„â”€â”€ onboarding via createConnectOnboarding
+ *  ──────                ─────────────              ─────────────────
+ *  PaymentIntent ──────► stripeAccountId ◄── onboarding via createConnectOnboarding
  *  (captured client-side with confirmCardPayment)
- *  â†“ payment.succeeded webhook
+ *  ↓ payment.succeeded webhook
  *  season_registrations/{id}.paymentStatus = 'paid'
  *  users/{email}.activeSeasonStatus = 'active' (only when installment ledger is fully paid)
  *
  * COLLECTIONS
- * â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+ * ───────────
  *  season_registrations/{registrationId}
  *    playerId, playerEmail, tenantId, seasonId,
  *    feeAmountCents, paymentIntentId, paymentStatus, paidAt
  *
  *  organizations/{tenantId}
- *    stripeAccountId  â† set by createConnectOnboarding
- *    stripeOnboardingComplete â† set by webhook
+ *    stripeAccountId  ← set by createConnectOnboarding
+ *    stripeOnboardingComplete ← set by webhook
  *
  * SECRETS
- * â”€â”€â”€â”€â”€â”€â”€
- *  STRIPE_SECRET_KEY         â€” firebase functions:secrets:set STRIPE_SECRET_KEY
- *  STRIPE_WEBHOOK_SECRET_REG â€” firebase functions:secrets:set STRIPE_WEBHOOK_SECRET_REG
+ * ───────
+ *  STRIPE_SECRET_KEY         — firebase functions:secrets:set STRIPE_SECRET_KEY
+ *  STRIPE_WEBHOOK_SECRET_REG — firebase functions:secrets:set STRIPE_WEBHOOK_SECRET_REG
  *
  * Exports:
- *   createRegistrationIntent    â€” onCall: create PaymentIntent for season fee
- *   handleRegistrationWebhook   â€” onRequest: Stripe webhook handler
- *   createConnectOnboarding     â€” onCall: generate Stripe Express onboarding link
- *   getRegistrationStatus       â€” onCall: current payment status for player/season
+ *   createRegistrationIntent    — onCall: create PaymentIntent for season fee
+ *   handleRegistrationWebhook   — onRequest: Stripe webhook handler
+ *   createConnectOnboarding     — onCall: generate Stripe Express onboarding link
+ *   getRegistrationStatus       — onCall: current payment status for player/season
  */
 
 'use strict';
@@ -62,15 +62,15 @@ const APP_BASE_URL = defineString('APP_BASE_URL', {default: 'https://vanguardcom
 
 const REGION = 'us-east1';
 
-// Phase 2, Epic 2 — Transaction-based pricing
-// ────────────────────────────────────────────
+// Phase 2, Epic 2 � Transaction-based pricing
+// --------------------------------------------
 // The hardcoded 3% platform fee was retired.  Fees now come from
 // `pricing_policy/default-v1` via `computePlatformFee()`, allowing live
 // rate updates without redeploy.  Stripe `application_fee_amount` is
-// still set per PaymentIntent — the SOURCE of the number is the only
+// still set per PaymentIntent � the SOURCE of the number is the only
 // thing that changed.
 
-const db = new Proxy({}, { get: (t, p) => {  const v = fs[p]; return typeof v === 'function' ? v.bind(fs) : v; } });
+const db = new Proxy({}, { get: (t, p) => { const fs = admin.firestore(); const v = fs[p]; return typeof v === 'function' ? v.bind(fs) : v; } });
 
 /** Lazy-init Stripe client so we don't crash if secret isn't set at cold start. */
 function getStripe() {
@@ -78,7 +78,7 @@ function getStripe() {
   return new Stripe(STRIPE_SECRET_KEY.value(), {apiVersion: '2024-06-20'});
 }
 
-// â”€â”€ createRegistrationIntent â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── createRegistrationIntent ──────────────────────────────────────────────────
 
 /**
  * Accepted fee types for createRegistrationIntent.
@@ -277,7 +277,7 @@ exports.createRegistrationIntent = onCall(
           policyVersion: String(policy.version),
           rateBp: String(fee.rateBp),
         },
-        description: `Season registration — ${orgSnap.data()?.name ?? tenantId}`,
+        description: `Season registration � ${orgSnap.data()?.name ?? tenantId}`,
       });
 
       // Pre-create the registration document as 'pending'
@@ -326,14 +326,14 @@ exports.createRegistrationIntent = onCall(
     },
 );
 
-// â”€â”€ handleRegistrationWebhook â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── handleRegistrationWebhook ─────────────────────────────────────────────────
 
 /**
  * Stripe webhook handler for the registration payment flow.
  * Listens for `payment_intent.succeeded` and `payment_intent.payment_failed`.
  *
  * Deploy with:  firebase deploy --only functions:handleRegistrationWebhook
- * Configure in Stripe Dashboard â†’ Webhooks â†’ Add endpoint:
+ * Configure in Stripe Dashboard → Webhooks → Add endpoint:
  *   URL: https://{region}-{project}.cloudfunctions.net/handleRegistrationWebhook
  *   Events: payment_intent.succeeded, payment_intent.payment_failed,
  *           account.updated (for Connect onboarding status)
@@ -474,7 +474,7 @@ async function maybeUnlockActiveSeason(batch, {tenantId, playerEmail, seasonId, 
         seasonPaidAt: admin.firestore.FieldValue.serverTimestamp(),
       });
     } else {
-      logger.info('[webhook] partial season payment — activeSeasonStatus unchanged', {
+      logger.info('[webhook] partial season payment � activeSeasonStatus unchanged', {
         piId, playerEmail, seasonId, reason: unlock.reason,
       });
     }
@@ -578,14 +578,14 @@ async function handleConnectAccountUpdated(account) {
   logger.info('[webhook] connect account updated', {tenantId, chargesEnabled: account.charges_enabled});
 }
 
-// â”€â”€ createConnectOnboarding â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── createConnectOnboarding ───────────────────────────────────────────────────
 
 /**
  * Creates or resumes a Stripe Connect Express onboarding session for a Club Director.
  * The director is redirected to Stripe's hosted onboarding UI.
  * On completion, Stripe sends `account.updated` to `handleRegistrationWebhook`.
  *
- * Returns: { url: string }  â€” redirect this in the browser
+ * Returns: { url: string }  — redirect this in the browser
  */
 exports.createConnectOnboarding = onCall(
     {region: REGION, secrets: [STRIPE_SECRET_KEY]},
@@ -639,7 +639,7 @@ exports.createConnectOnboarding = onCall(
     },
 );
 
-// â”€â”€ getRegistrationStatus â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── getRegistrationStatus ─────────────────────────────────────────────────────
 
 /**
  * Returns the payment status of a player's registration for a given season.
@@ -685,3 +685,4 @@ exports.getRegistrationStatus = onCall({region: REGION}, async (request) => {
     paidAt: data.paidAt?.toMillis?.() ?? null,
   };
 });
+

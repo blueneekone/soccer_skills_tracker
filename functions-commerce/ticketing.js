@@ -47,7 +47,7 @@ const REGION = 'us-east1';
 const MAX_GROSS_PER_INTENT_CENTS = 500000; // $5,000
 const MAX_QUANTITY = 50;
 
-const db = new Proxy({}, { get: (t, p) => {  const v = fs[p]; return typeof v === 'function' ? v.bind(fs) : v; } });
+const db = new Proxy({}, { get: (t, p) => { const fs = admin.firestore(); const v = fs[p]; return typeof v === 'function' ? v.bind(fs) : v; } });
 
 /** Lazy-init Stripe so a missing secret never breaks cold-start. */
 function getStripe() {
@@ -605,3 +605,4 @@ exports.publishTournamentEvent = onCall(
       return {eventId, status: 'published'};
     },
 );
+

@@ -23,7 +23,7 @@ const {onCall, HttpsError} = require('firebase-functions/v2/https');
 const admin = require('firebase-admin');
 
 const REGION = 'us-east1';
-const db = new Proxy({}, { get: (t, p) => {  const v = fs[p]; return typeof v === 'function' ? v.bind(fs) : v; } });
+const db = new Proxy({}, { get: (t, p) => { const fs = admin.firestore(); const v = fs[p]; return typeof v === 'function' ? v.bind(fs) : v; } });
 
 /** Credential length in bytes before base64 encoding. */
 const KEY_BYTES = 32;
@@ -223,3 +223,4 @@ exports.setHotelPartnerStatus = onCall(
 
 // Export scryptHash for use in the API gateway middleware.
 exports._scryptHash = scryptHash;
+

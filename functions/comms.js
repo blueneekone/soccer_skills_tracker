@@ -1,24 +1,24 @@
-﻿/* eslint-disable quotes */
+/* eslint-disable quotes */
 /**
- * comms.js â€” SafeSport Communication Engine
- * â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+ * comms.js — SafeSport Communication Engine
+ * ─────────────────────────────────────────
  * Cloud Functions enforcing the Vanguard SafeSport messaging policy:
  *
  * RULE OF THREE (Safe Sport Foundation)
- * â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+ * ───────────────────────────────────────
  * 1. No 1-on-1 communication between a coach and a minor.
  *    All messages to players under 13 MUST be sent to a team/group,
  *    automatically CC-ing the parent / guardian.
- * 2. Messages are always team-scoped â€” never player-scoped â€” when any
+ * 2. Messages are always team-scoped — never player-scoped — when any
  *    known minor is among the recipients.
  * 3. Every broadcast to a team containing minors writes an immutable
  *    audit log entry with { parentNotified: true } before the message
  *    is persisted in Firestore.
  *
  * Exports:
- *   safeSportBroadcast  â€” onCall: send a team/group message with automatic
+ *   safeSportBroadcast  — onCall: send a team/group message with automatic
  *                         minor detection and parent CC enforcement.
- *   safeSportVerify     â€” onCall: verify a player profile document is SafeSport
+ *   safeSportVerify     — onCall: verify a player profile document is SafeSport
  *                         compliant (used by compliance portal).
  */
 
@@ -38,7 +38,7 @@ const {postChannelSystemMessage} = require('./src/domains/commsChannelOps');
 const {parseAckDeadline} = require('./src/domains/broadcastAckOps');
 
 const REGION = 'us-east1';
-const db = new Proxy({}, { get: (t, p) => {  const v = fs[p]; return typeof v === 'function' ? v.bind(fs) : v; } });
+const db = new Proxy({}, { get: (t, p) => { const fs = admin.firestore(); const v = fs[p]; return typeof v === 'function' ? v.bind(fs) : v; } });
 
 /** Normalise email to lowercase, trimmed. */
 const normEmail = (e) => (typeof e === 'string' ? e.trim().toLowerCase() : '');
@@ -136,7 +136,7 @@ async function commitTeamBroadcast({
     actorUid: callerUid,
     actorEmail: callerEmail,
     tenantId: callerClubId || teamClubId,
-    notes: `Team broadcast to ${teamId} — ${playerEmails.length} recipients, minors: ${hasMinors}, CCd parents: ${ccParentEmails.length}`,
+    notes: `Team broadcast to ${teamId} � ${playerEmails.length} recipients, minors: ${hasMinors}, CCd parents: ${ccParentEmails.length}`,
     extra: {
       teamId,
       channelId: channelId || null,
@@ -225,35 +225,35 @@ async function commitTeamBroadcast({
   };
 }
 
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─────────────────────────────────────────────────────────────────────────────
 // safeSportBroadcast
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─────────────────────────────────────────────────────────────────────────────
 
 /**
  * Send a team / group message with automatic minor detection and CC enforcement.
  *
  * Input (request.data):
- *   teamId      string  â€” required; recipient team
- *   channelId   string  â€” optional; specific channel within the team
- *   body        string  â€” required; message body (max 4000 chars)
- *   subject     string  â€” optional; message subject line
+ *   teamId      string  — required; recipient team
+ *   channelId   string  — optional; specific channel within the team
+ *   body        string  — required; message body (max 4000 chars)
+ *   subject     string  — optional; message subject line
  *
  * Guards:
- *   â€¢ Caller must be authenticated as coach, director, or admin.
- *   â€¢ Coach callers must own the target teamId.
- *   â€¢ Director callers must be in the same club as the team.
- *   â€¢ Individual-player targeting is BLOCKED â€” target must be a team/channel.
+ *   • Caller must be authenticated as coach, director, or admin.
+ *   • Coach callers must own the target teamId.
+ *   • Director callers must be in the same club as the team.
+ *   • Individual-player targeting is BLOCKED — target must be a team/channel.
  *
  * SafeSport enforcement:
- *   â€¢ Resolves the full roster for the target team via `player_lookup`.
- *   â€¢ For each player with `isMinor: true`, resolves their parentEmail(s) from
+ *   • Resolves the full roster for the target team via `player_lookup`.
+ *   • For each player with `isMinor: true`, resolves their parentEmail(s) from
  *     the linked household document.
- *   â€¢ parentEmails are stored on the message as `ccParentEmails[]`.
- *   â€¢ `parentNotified: true` is set on the message document and in the audit log.
+ *   • parentEmails are stored on the message as `ccParentEmails[]`.
+ *   • `parentNotified: true` is set on the message document and in the audit log.
  *
  * Audit:
- *   â€¢ Writes ACTIVITY_TYPE.MESSAGE_BROADCAST to audit_logs before message commit.
- *   â€¢ messageHash = SHA-256 of body (NOT stored in the message itself â€” only in
+ *   • Writes ACTIVITY_TYPE.MESSAGE_BROADCAST to audit_logs before message commit.
+ *   • messageHash = SHA-256 of body (NOT stored in the message itself — only in
  *     the audit log) to enable integrity verification without exposing content.
  */
 exports.safeSportBroadcast = onCall({region: REGION}, async (request) => {
@@ -297,7 +297,7 @@ exports.safeSportBroadcast = onCall({region: REGION}, async (request) => {
     throw new HttpsError('invalid-argument', 'Message body exceeds 4000 characters.');
   }
 
-  // â”€â”€ Resolve team document â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Resolve team document ────────────────────────────────────────────────
   const teamSnap = await db.collection('teams').doc(teamId).get();
   if (!teamSnap.exists) {
     throw new HttpsError('not-found', `Team "${teamId}" not found.`);
@@ -305,7 +305,7 @@ exports.safeSportBroadcast = onCall({region: REGION}, async (request) => {
   const teamData = teamSnap.data();
   const teamClubId = teamData.clubId || '';
 
-  // â”€â”€ Scope enforcement â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Scope enforcement ────────────────────────────────────────────────────
   if (callerRole === 'coach' && callerTeamId !== teamId) {
     throw new HttpsError(
         'permission-denied',
@@ -434,19 +434,19 @@ async function resolveClubFanOutTeamIds({
   return teamIds;
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// clubSportBroadcast — Epic 4.8 director club-wide fan-out
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------------------
+// clubSportBroadcast � Epic 4.8 director club-wide fan-out
+// -----------------------------------------------------------------------------
 
 /**
- * Director club broadcast — fans out to one or all teams in a club.
+ * Director club broadcast � fans out to one or all teams in a club.
  * Each team receives a team_broadcasts doc (rides Epic 4.3 push bus).
  *
  * Input:
- *   clubId    string   — required
- *   body      string   — required (max 4000)
- *   subject   string   — optional
- *   teamIds   string[] — optional subset; default all teams in club
+ *   clubId    string   � required
+ *   body      string   � required (max 4000)
+ *   subject   string   � optional
+ *   teamIds   string[] � optional subset; default all teams in club
  */
 exports.clubSportBroadcast = onCall({region: REGION}, async (request) => {
   if (!request.auth) {
@@ -568,18 +568,18 @@ exports.clubSportBroadcast = onCall({region: REGION}, async (request) => {
   };
 });
 
-// ─────────────────────────────────────────────────────────────────────────────
-// emergencyClubBroadcast — Epic 4.15b director break-glass emergency fan-out
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------------------
+// emergencyClubBroadcast � Epic 4.15b director break-glass emergency fan-out
+// -----------------------------------------------------------------------------
 
 /**
- * Director/admin emergency club broadcast — high-priority FCM + optional SMS (4.16a).
+ * Director/admin emergency club broadcast � high-priority FCM + optional SMS (4.16a).
  *
  * Input:
- *   clubId    string   — required
- *   subject   string   — required (max 200)
- *   body      string   — required (max 4000)
- *   teamIds   string[] — optional subset; default all teams in club
+ *   clubId    string   � required
+ *   subject   string   � required (max 200)
+ *   body      string   � required (max 4000)
+ *   teamIds   string[] � optional subset; default all teams in club
  */
 exports.emergencyClubBroadcast = onCall({region: REGION}, async (request) => {
   if (!request.auth) {
@@ -713,21 +713,21 @@ exports.emergencyClubBroadcast = onCall({region: REGION}, async (request) => {
   };
 });
 
-// ─────────────────────────────────────────────────────────────────────────────
-// reportMessageIncident — Epic 4.10 SafeSport incident report
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------------------
+// reportMessageIncident � Epic 4.10 SafeSport incident report
+// -----------------------------------------------------------------------------
 
 /**
- * File a comms incident report (parent/coach/player → director review queue).
+ * File a comms incident report (parent/coach/player ? director review queue).
  *
  * Input:
- *   clubId       string  — required
- *   teamId       string  — optional
- *   messageKind  string  — team_broadcast | channel_message | coach_dm | other
- *   messageId    string  — optional upstream doc id
- *   bodyPreview  string  — optional snapshot (max 500)
- *   reason       string  — required (max 200)
- *   details      string  — optional (max 2000)
+ *   clubId       string  � required
+ *   teamId       string  � optional
+ *   messageKind  string  � team_broadcast | channel_message | coach_dm | other
+ *   messageId    string  � optional upstream doc id
+ *   bodyPreview  string  � optional snapshot (max 500)
+ *   reason       string  � required (max 200)
+ *   details      string  � optional (max 2000)
  */
 exports.reportMessageIncident = onCall({region: REGION}, async (request) => {
   if (!request.auth) {
@@ -792,7 +792,7 @@ exports.reportMessageIncident = onCall({region: REGION}, async (request) => {
     actorUid: callerUid,
     actorEmail: callerEmail,
     tenantId: clubId,
-    notes: `Comms incident filed — ${messageKind}: ${reason.slice(0, 80)}`,
+    notes: `Comms incident filed � ${messageKind}: ${reason.slice(0, 80)}`,
     extra: {
       incidentId: incidentRef.id,
       messageKind,
@@ -841,3 +841,4 @@ exports.reportMessageIncident = onCall({region: REGION}, async (request) => {
 
   return {success: true, incidentId: incidentRef.id};
 });
+

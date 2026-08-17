@@ -45,7 +45,7 @@ const STRIPE_SECRET_KEY = defineSecret('STRIPE_SECRET_KEY');
 
 const REGION = 'us-east1';
 
-const db = new Proxy({}, { get: (t, p) => {  const v = fs[p]; return typeof v === 'function' ? v.bind(fs) : v; } });
+const db = new Proxy({}, { get: (t, p) => { const fs = admin.firestore(); const v = fs[p]; return typeof v === 'function' ? v.bind(fs) : v; } });
 
 function getStripe() {
   
@@ -318,3 +318,4 @@ exports.approveHotelRebatePayout = onCall(
 function sanitizeRebateId(raw) {
   return String(raw).replace(/[\/.#$\[\]]/g, '_').slice(0, 1500);
 }
+
