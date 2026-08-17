@@ -20,7 +20,7 @@
 
 <OrganizationsAlerts clubsErr={engine.clubsErr}  />
 
-<div class="bento-grid-container st-bento">
+<div class="tw-flex tw-flex-col tw-min-h-0 tw-h-full tw-min-w-0">
 	<OrganizationsDataTable
 		pagedClubs={engine.pagedClubs}
 		totalClubs={engine.clubs.length}
