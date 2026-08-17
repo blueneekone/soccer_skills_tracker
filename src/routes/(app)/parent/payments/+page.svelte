@@ -330,7 +330,7 @@
 							{:else if canPay(player.ledger)}
 								<button
 									type="button"
-									class="tw-inline-flex tw-items-center tw-justify-center tw-gap-1.5 tw-rounded-none tw-border tw-border-amber-500 tw-bg-amber-500 tw-px-3.5 tw-py-2 tw-font-mono tw-text-xs tw-font-bold tw-tracking-wide tw-text-black tw-transition-all hover:tw-bg-yellow-300 hover:tw-shadow-[0_0_15px_rgba(218,255,10,0.5)]"
+									class="tw-inline-flex tw-items-center tw-justify-center tw-gap-1.5 tw-rounded-none tw-border tw-border-amber-500 tw-bg-amber-500 tw-px-3.5 tw-py-2 tw-font-mono tw-text-xs tw-font-bold tw-tracking-wide tw-text-black tw-transition-all hover:tw-bg-amber-400 hover:tw-shadow-[0_0_15px_rgba(251, 191, 36,0.5)]"
 									onclick={() => openPayment(player.email)}
 								>
 									<Icon name={"sys.credit-card" as IconName} size={14} />

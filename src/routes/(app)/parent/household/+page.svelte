@@ -1039,11 +1039,11 @@
 		color: #000000;
 		background: #fbbf24;
 		border: 1px solid #fbbf24;
-		box-shadow: 0 0 12px rgba(218, 255, 10, 0.4);
+		box-shadow: 0 0 12px rgba(251, 191, 36, 0.4);
 	}
 	.phh-gt-approve:hover:not(:disabled) {
 		background: #ebff47;
-		box-shadow: 0 0 16px rgba(218, 255, 10, 0.6);
+		box-shadow: 0 0 16px rgba(251, 191, 36, 0.6);
 	}
 	.phh-gt-approve:disabled {
 		opacity: 0.45;

@@ -35,7 +35,7 @@
   /* --- Pure Glow Fields (No Text Opacity Modifications Allowed) --- */
   --text-glow-cyan: rgba(20, 184, 166, 0.15);
   --text-glow-amber: rgba(245, 158, 11, 0.15);
-  --text-glow-yellow: rgba(218, 255, 10, 0.15);
+  --text-glow-yellow: rgba(251, 191, 36, 0.15);
 
   /* --- Viewport & Bento Grid Fluid Math --- */
   --grid-fluid-clamp: clamp(280px, 30vw, 350px);

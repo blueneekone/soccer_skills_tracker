@@ -126,7 +126,7 @@
 			{:else}
 				<button 
 					onclick={initiateBiometricConsent} 
-					class="tw-inline-flex tw-items-center tw-gap-2 tw-bg-amber-500 tw-text-black tw-px-6 tw-py-3 tw-rounded-none tw-font-mono tw-text-xs tw-font-bold tw-tracking-widest tw-uppercase hover:tw-bg-yellow-300 hover:tw-shadow-[0_0_20px_rgba(218,255,10,0.5)] tw-transition-all"
+					class="tw-inline-flex tw-items-center tw-gap-2 tw-bg-amber-500 tw-text-black tw-px-6 tw-py-3 tw-rounded-none tw-font-mono tw-text-xs tw-font-bold tw-tracking-widest tw-uppercase hover:tw-bg-amber-400 hover:tw-shadow-[0_0_20px_rgba(251, 191, 36,0.5)] tw-transition-all"
 				>
 					<Icon name={"sys.fingerprint" as IconName} size={16} />
 					<span>Attest via TouchID / FaceID / Windows Hello</span>
@@ -202,7 +202,7 @@
 				</div>
 				<button 
 					onclick={fundBounty} 
-					class="tw-w-full tw-py-3 tw-bg-amber-500 tw-text-black tw-font-mono tw-text-xs tw-font-bold tw-tracking-widest tw-uppercase hover:tw-bg-yellow-300 hover:tw-shadow-[0_0_15px_rgba(218,255,10,0.5)] tw-transition-all tw-flex tw-items-center tw-justify-center tw-gap-2 tw-rounded-none tw-mt-auto"
+					class="tw-w-full tw-py-3 tw-bg-amber-500 tw-text-black tw-font-mono tw-text-xs tw-font-bold tw-tracking-widest tw-uppercase hover:tw-bg-amber-400 hover:tw-shadow-[0_0_15px_rgba(251, 191, 36,0.5)] tw-transition-all tw-flex tw-items-center tw-justify-center tw-gap-2 tw-rounded-none tw-mt-auto"
 				>
 					<Icon name={"sys.lock" as IconName} size={14} />
 					<span>Lock Funds in Escrow</span>

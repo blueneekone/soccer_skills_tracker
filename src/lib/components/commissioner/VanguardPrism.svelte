@@ -134,7 +134,7 @@
 		<!-- Data Polygon -->
 		<polygon
 			{points}
-			fill="rgba(218, 255, 10, 0.15)"
+			fill="rgba(251, 191, 36, 0.15)"
 			stroke="#fbbf24"
 			stroke-width="4"
 			class="data-polygon"

@@ -110,7 +110,7 @@
 		<!-- New bounty CTA -->
 		<button
 			onclick={onCreateBounty}
-			class="tw-inline-flex tw-items-center tw-gap-1.5 tw-font-mono tw-text-[10px] tw-font-bold tw-tracking-widest tw-uppercase tw-border tw-border-amber-500 tw-text-black tw-bg-amber-500 tw-rounded-none tw-px-5 tw-py-2.5 tw-transition-all tw-duration-200 hover:tw-bg-yellow-300 hover:tw-shadow-[0_0_15px_rgba(218,255,10,0.5)] active:tw-scale-95"
+			class="tw-inline-flex tw-items-center tw-gap-1.5 tw-font-mono tw-text-[10px] tw-font-bold tw-tracking-widest tw-uppercase tw-border tw-border-amber-500 tw-text-black tw-bg-amber-500 tw-rounded-none tw-px-5 tw-py-2.5 tw-transition-all tw-duration-200 hover:tw-bg-amber-400 hover:tw-shadow-[0_0_15px_rgba(251, 191, 36,0.5)] active:tw-scale-95"
 		>
 			<Icon name={"action.add" as IconName} size={14} />
 			<span>NEW BOUNTY</span>

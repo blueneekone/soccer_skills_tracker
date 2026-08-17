@@ -70,7 +70,7 @@
 			{/if}
 			
 			<button 
-				class="tw-bg-[#fbbf24] tw-text-black tw-px-6 tw-py-3 tw-rounded-none tw-font-mono tw-font-bold tw-text-xs tw-tracking-widest tw-uppercase hover:tw-bg-yellow-400 tw-transition-colors"
+				class="tw-bg-[#fbbf24] tw-text-black tw-px-6 tw-py-3 tw-rounded-none tw-font-mono tw-font-bold tw-text-xs tw-tracking-widest tw-uppercase hover:tw-bg-amber-400 tw-transition-colors"
 				onclick={signAttestation}
 			>
 				I Acknowledge The Safety Parameters

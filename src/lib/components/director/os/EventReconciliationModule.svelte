@@ -250,7 +250,7 @@
 	.scan-bar-fill {
 		height: 100%;
 		background: linear-gradient(90deg, #fbbf24, #14b8a6);
-		box-shadow: 0 0 8px rgba(218, 255, 10, 0.4);
+		box-shadow: 0 0 8px rgba(251, 191, 36, 0.4);
 		border-radius: 99px;
 		transition: width 0.5s ease;
 	}

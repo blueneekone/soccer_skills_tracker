@@ -170,7 +170,7 @@
 				type="button"
 				onclick={handleSignOff}
 				disabled={controller.loading}
-				class="tw-w-full tw-bg-amber-500 tw-text-black tw-font-mono tw-font-bold tw-py-3.5 tw-text-xs tw-tracking-widest tw-uppercase hover:tw-bg-yellow-300 tw-transition-all tw-duration-150 disabled:tw-bg-[#1E293B] disabled:tw-text-slate-500 tw-flex tw-items-center tw-justify-center tw-gap-2 tw-rounded-none"
+				class="tw-w-full tw-bg-amber-500 tw-text-black tw-font-mono tw-font-bold tw-py-3.5 tw-text-xs tw-tracking-widest tw-uppercase hover:tw-bg-amber-400 tw-transition-all tw-duration-150 disabled:tw-bg-[#1E293B] disabled:tw-text-slate-500 tw-flex tw-items-center tw-justify-center tw-gap-2 tw-rounded-none"
 			>
 				<Icon name={"status.seal-check" as IconName} size={16} />
 				<span>

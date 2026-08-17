@@ -203,12 +203,12 @@
 		letter-spacing: 0.05em;
 		cursor: pointer;
 		transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-		box-shadow: 0 0 15px rgba(218, 255, 10, 0.4);
+		box-shadow: 0 0 15px rgba(251, 191, 36, 0.4);
 	}
 
 	.prm-btn-resolve:hover:not(:disabled) {
 		transform: translateY(-1px);
-		box-shadow: 0 0 20px rgba(218, 255, 10, 0.6);
+		box-shadow: 0 0 20px rgba(251, 191, 36, 0.6);
 		filter: brightness(1.1);
 	}
 

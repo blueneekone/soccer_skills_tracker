@@ -32,7 +32,7 @@
 		<button
 			onclick={() => engine.register()}
 			disabled={engine.loading || !engine.isReady}
-			class="tw-w-full tw-py-3.5 tw-px-6 tw-rounded-none tw-bg-amber-500 tw-text-black tw-font-mono tw-text-xs tw-font-bold tw-tracking-widest tw-uppercase hover:tw-bg-yellow-300 disabled:tw-opacity-50 disabled:tw-cursor-not-allowed tw-transition-all tw-flex tw-items-center tw-justify-center tw-gap-2"
+			class="tw-w-full tw-py-3.5 tw-px-6 tw-rounded-none tw-bg-amber-500 tw-text-black tw-font-mono tw-text-xs tw-font-bold tw-tracking-widest tw-uppercase hover:tw-bg-amber-400 disabled:tw-opacity-50 disabled:tw-cursor-not-allowed tw-transition-all tw-flex tw-items-center tw-justify-center tw-gap-2"
 		>
 			<Icon name={"sys.fingerprint" as IconName} size={18} />
 			<span>

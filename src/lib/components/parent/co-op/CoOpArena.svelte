@@ -116,7 +116,7 @@
 					<p class="tw-text-slate-400 tw-text-xs">No primary funding source linked. Link an account to fund athlete bounties.</p>
 					{#if availableSources.length === 0 && !loadingSources}
 						<button 
-							class="tw-inline-flex tw-items-center tw-gap-2 tw-bg-amber-500 tw-text-black tw-font-mono tw-text-xs tw-font-bold tw-tracking-widest tw-uppercase tw-px-4 tw-py-2.5 tw-rounded-none hover:tw-bg-yellow-300 hover:tw-shadow-[0_0_15px_rgba(218,255,10,0.5)] tw-transition-all tw-w-fit" 
+							class="tw-inline-flex tw-items-center tw-gap-2 tw-bg-amber-500 tw-text-black tw-font-mono tw-text-xs tw-font-bold tw-tracking-widest tw-uppercase tw-px-4 tw-py-2.5 tw-rounded-none hover:tw-bg-amber-400 hover:tw-shadow-[0_0_15px_rgba(251, 191, 36,0.5)] tw-transition-all tw-w-fit" 
 							onclick={fetchSources} 
 							disabled={loadingSources}
 						>
@@ -137,7 +137,7 @@
 								{/each}
 							</select>
 							<button 
-								class="tw-inline-flex tw-items-center tw-gap-1.5 tw-bg-amber-500 tw-text-black tw-font-mono tw-text-xs tw-font-bold tw-px-4 tw-py-2 tw-rounded-none hover:tw-bg-yellow-300 tw-transition-all disabled:tw-opacity-50" 
+								class="tw-inline-flex tw-items-center tw-gap-1.5 tw-bg-amber-500 tw-text-black tw-font-mono tw-text-xs tw-font-bold tw-px-4 tw-py-2 tw-rounded-none hover:tw-bg-amber-400 tw-transition-all disabled:tw-opacity-50" 
 								onclick={handleLinkSource} 
 								disabled={!selectedSourceId || linkingSource || engine.mutating}
 							>
