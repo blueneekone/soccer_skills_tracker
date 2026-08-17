@@ -9,12 +9,17 @@ service cloud.firestore {
       return request.auth != null;
     }
 
+    // Helper to verify if user has global platform admin powers
+    function isGlobalAdmin() {
+      return isAuthenticated() && (request.auth.token.admin == true || request.auth.token.role == 'super_admin' || request.auth.token.role == 'global_admin');
+    }
+
     function isCoach() {
-      return isAuthenticated() && (request.auth.token.role == 'coach' || request.auth.token.role == 'super_admin' || request.auth.token.admin == true);
+      return isAuthenticated() && (request.auth.token.role == 'coach' || isGlobalAdmin());
     }
 
     function isDirector() {
-      return isAuthenticated() && (request.auth.token.role == 'director' || request.auth.token.role == 'super_admin' || request.auth.token.admin == true);
+      return isAuthenticated() && (request.auth.token.role == 'director' || isGlobalAdmin());
     }
 
     function coachStaffCanAccessTeam(teamId) {
@@ -35,7 +40,7 @@ service cloud.firestore {
     }
 
     function isParent() {
-      return isAuthenticated() && (request.auth.token.role == 'parent' || request.auth.token.role == 'super_admin' || request.auth.token.admin == true);
+      return isAuthenticated() && (request.auth.token.role == 'parent' || isGlobalAdmin());
     }
 
     function emailKey() {
@@ -57,7 +62,7 @@ service cloud.firestore {
 
     // ✅ Multi-Tenant Integrity Guard via Custom Claims
     match /clubs/{clubId} {
-      allow read, write: if isAuthenticated() && (request.auth.token.clubId == clubId || request.auth.token.admin == true || request.auth.token.role == 'super_admin');
+      allow read, write: if isAuthenticated() && (request.auth.token.clubId == clubId || isGlobalAdmin());
       
       match /shared_drills/{drillId} {
         allow read: if isCoach() || isDirector();
@@ -66,7 +71,7 @@ service cloud.firestore {
 
       // Nested collections under clubs inherit the tenant scope
       match /{allChildren=**} {
-        allow read, write: if isAuthenticated() && (request.auth.token.clubId == clubId || request.auth.token.admin == true || request.auth.token.role == 'super_admin');
+        allow read, write: if isAuthenticated() && (request.auth.token.clubId == clubId || isGlobalAdmin());
       }
     }
 
@@ -82,11 +87,11 @@ service cloud.firestore {
       }
 
       match /drills/{drillId} {
-        allow read, write: if coachStaffCanAccessTeam(teamId) || directorScopedToTeam(teamId) || request.auth.token.role == 'super_admin';
+        allow read, write: if coachStaffCanAccessTeam(teamId) || directorScopedToTeam(teamId) || isGlobalAdmin();
       }
 
       match /intents/{intentId} {
-        allow read, write: if coachStaffCanAccessTeam(teamId) || directorScopedToTeam(teamId) || request.auth.token.role == 'super_admin';
+        allow read, write: if coachStaffCanAccessTeam(teamId) || directorScopedToTeam(teamId) || isGlobalAdmin();
       }
     }
 
@@ -160,13 +165,13 @@ service cloud.firestore {
 
       // Role field cannot be mutated directly by client-side unauthenticated or basic user writes
       allow create: if isAuthenticated() && 
-        (!("role" in request.resource.data) || request.auth.token.admin == true || request.auth.token.role == 'super_admin');
+        (!("role" in request.resource.data) || isGlobalAdmin());
       allow update: if isAuthenticated() && 
-        (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['role']) || request.auth.token.admin == true || request.auth.token.role == 'super_admin');
+        (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['role']) || isGlobalAdmin());
     }
 
     match /vpc_requests/{requestId} {
-      allow read, write: if isAuthenticated() && (request.auth.token.admin == true || request.auth.token.role == 'super_admin');
+      allow read, write: if isAuthenticated() && (isGlobalAdmin());
     }
 
     // Auth-flow lookup collections — read-only for any authenticated user during login resolution
@@ -245,6 +250,19 @@ service cloud.firestore {
 
     match /pii_vault/{sealId} {
       allow create, update, delete: if false;
+    }
+
+    match /analytics/{document=**} {
+      allow read, write: if isGlobalAdmin();
+    }
+    match /security_audit/{document=**} {
+      allow read, write: if isGlobalAdmin();
+    }
+    match /security_audits/{document=**} {
+      allow read, write: if isGlobalAdmin();
+    }
+    match /auditLogs/{document=**} {
+      allow read, write: if isGlobalAdmin();
     }
 
     // Default match to prevent global unauthenticated reads/writes
