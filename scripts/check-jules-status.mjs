@@ -1,4 +1,4 @@
-const JULES_API_KEY = process.env.JULES_API_KEY || "AQ.Ab8RN6KiD4ulxJL4kcfUVp1_vk850a2NYe-BZCdQbfv5DdpI2A";
+const JULES_API_KEY = process.env.JULES_API_KEY;
 
 const SESSIONS = [
   { title: 'Architect Backend Recovery (v2)', id: 'sessions/2560789134166793641' },

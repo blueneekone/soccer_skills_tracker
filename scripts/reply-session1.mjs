@@ -1,4 +1,4 @@
-const JULES_API_KEY = process.env.JULES_API_KEY || "AQ.Ab8RN6KiD4ulxJL4kcfUVp1_vk850a2NYe-BZCdQbfv5DdpI2A";
+const JULES_API_KEY = process.env.JULES_API_KEY;
 
 async function replySession1() {
   const headers = {
