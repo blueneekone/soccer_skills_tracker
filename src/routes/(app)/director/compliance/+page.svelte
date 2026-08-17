@@ -9,8 +9,6 @@
 	import CoachClearancePanopticon from '$lib/components/compliance/CoachClearancePanopticon.svelte';
 	import DirectorBillingAuditPanel from '$lib/components/director/DirectorBillingAuditPanel.svelte';
 
-	export const ssr = false;
-
 	$effect(() => {
 		if (authStore.isLoading) return;
 		const allowed = ['director', 'registrar', 'super_admin', 'global_admin'];

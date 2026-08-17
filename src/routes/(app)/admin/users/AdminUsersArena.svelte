@@ -8,7 +8,7 @@
 	let { engine }: { engine: AdminUsersEngine } = $props();
 </script>
 
-<div class="bento-grid-container st-bento">
+<div class="tw-flex tw-flex-col tw-w-full tw-min-w-0 tw-flex-1">
 	<GlobalUsersDataTable
 		rows={engine.rows}
 		loading={engine.loading}

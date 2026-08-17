@@ -153,7 +153,7 @@ service cloud.firestore {
 
     // Enforce role and tenant check on users collection
     match /users/{email} {
-      allow read: if isAuthenticated() &&
+      allow read: if isGlobalAdmin() || (isAuthenticated() &&
         (
           resource.data.role != 'tutor' ||
           (
@@ -161,13 +161,17 @@ service cloud.firestore {
             resource.data.sport == getUserSport(request.auth.token.email) &&
             resource.data.tutorProfile.isListingActive == true
           )
-        );
+        ));
 
       // Role field cannot be mutated directly by client-side unauthenticated or basic user writes
       allow create: if isAuthenticated() && 
         (!("role" in request.resource.data) || isGlobalAdmin());
       allow update: if isAuthenticated() && 
         (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['role']) || isGlobalAdmin());
+    }
+
+    match /recruiters/{document=**} {
+      allow read, write: if isGlobalAdmin();
     }
 
     match /vpc_requests/{requestId} {
@@ -262,6 +266,15 @@ service cloud.firestore {
       allow read, write: if isGlobalAdmin();
     }
     match /auditLogs/{document=**} {
+      allow read, write: if isGlobalAdmin();
+    }
+    match /sport_audit_report/{document=**} {
+      allow read, write: if isGlobalAdmin();
+    }
+    match /rl_training_runs/{document=**} {
+      allow read, write: if isGlobalAdmin();
+    }
+    match /rl_safety_overrides/{document=**} {
       allow read, write: if isGlobalAdmin();
     }
 

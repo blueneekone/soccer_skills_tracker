@@ -5,8 +5,6 @@
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import CoachClearancePanopticon from '$lib/components/compliance/CoachClearancePanopticon.svelte';
 
-	export const ssr = false;
-
 	$effect(() => {
 		if (authStore.isLoading) return;
 		const allowed = ['super_admin', 'global_admin'];

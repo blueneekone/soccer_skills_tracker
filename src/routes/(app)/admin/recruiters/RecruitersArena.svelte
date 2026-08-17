@@ -32,7 +32,7 @@
 	}
 </script>
 
-<div class="bento-grid-container st-bento v-table-wrap" role="region" aria-label="Recruiters table" tabindex="-1">
+<div class="v-table-wrap tw-w-full tw-overflow-x-auto" role="region" aria-label="Recruiters table" tabindex="-1">
 	<table class="v-table">
 		<thead>
 			<tr>

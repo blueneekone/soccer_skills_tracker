@@ -14,8 +14,6 @@
 			untrack(() => void goto('/settings', { replaceState: true }));
 		}
 	});
-
-	export const ssr = false;
 </script>
 
 <svelte:head>

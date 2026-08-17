@@ -13,8 +13,6 @@
 	import CheckrEmbed from './CheckrEmbed.svelte';
 	import Icon from '$lib/components/ui/Icon.svelte';
 
-	export const ssr = false;
-
 	let clubName = $state('Your club');
 	let liveClearance = $state<ClearanceDoc | null>(null);
 

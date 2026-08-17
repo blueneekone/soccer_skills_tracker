@@ -14,7 +14,7 @@
 {/if}
 
 <!-- ── Log table ──────────────────────────────────────────────────────────── -->
-<div class="bento-grid-container st-bento v-table-wrap tw-overflow-x-auto">
+<div class="v-table-wrap tw-w-full tw-overflow-x-auto">
 	<table class="v-table">
 		<thead>
 			<tr>
