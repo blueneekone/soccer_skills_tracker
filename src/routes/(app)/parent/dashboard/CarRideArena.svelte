@@ -87,7 +87,8 @@
 				</div>
 
 				<div class="tw-overflow-x-auto">
-					<div class="tw-border tw-border-[#334155] tw-bg-[#0f172a] tw-p-4 tw-min-w-0 tw-overflow-x-auto"><table class="tw-w-full tw-font-mono tw-text-sm">
+					<div class="tw-border tw-border-[#334155] tw-bg-[#0f172a] tw-p-4 tw-min-w-0 tw-overflow-x-auto">
+						<table class="tw-w-full tw-font-mono tw-text-sm">
 						<thead>
 							<tr class="tw-border-b tw-border-[#1E293B]">
 								<th class="tw-px-4 tw-py-2.5 tw-text-left tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-slate-400 tw-uppercase">PLAYER</th>
@@ -118,7 +119,8 @@
 								</tr>
 							{/each}
 						</tbody>
-					</table></div>
+					</table>
+					</div>
 				</div>
 			</div>
 		{/if}

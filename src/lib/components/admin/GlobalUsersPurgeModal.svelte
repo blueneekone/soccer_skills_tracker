@@ -67,7 +67,7 @@
         {#if step === 1}
         <!-- Body: Non-transparent text content -->
         <p class="tw-font-sans tw-text-sm tw-text-slate-300 tw-whitespace-normal tw-break-words tw-mb-6">
-            Warning: You are initiating a 24-hour cascading shredder process on the compliance vaults for <strong>{emailToPurge || targetEmail}</strong>. This action is legally irreversible.
+            Warning: You are initiating a 24-hour cascading shredder process on the compliance vaults for <strong>{emailToPurge}</strong>. This action is legally irreversible.
         </p>
         
         <div class="tw-flex tw-flex-col sm:tw-flex-row tw-justify-end tw-gap-3">

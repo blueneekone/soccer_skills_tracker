@@ -123,10 +123,12 @@
 </head>
 <body>
 	<h2>${safeFilename}</h2>
-	<div class="tw-border tw-border-[#334155] tw-bg-[#0f172a] tw-p-4 tw-min-w-0 tw-overflow-x-auto"><table class="tw-w-full tw-font-mono tw-text-sm">
+	<div class="tw-border tw-border-[#334155] tw-bg-[#0f172a] tw-p-4 tw-min-w-0 tw-overflow-x-auto">
+		<table class="tw-w-full tw-font-mono tw-text-sm">
 		<thead><tr>${theadHtml}</tr></thead>
 		<tbody>${tbodyHtml}</tbody>
-	</table></div>
+	</table>
+	</div>
 </body>
 </html>`;
 

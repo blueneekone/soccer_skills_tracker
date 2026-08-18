@@ -164,7 +164,8 @@
 
 	<!-- ── Teams DataTable ──────────────────────────────────────────────────────── -->
 	<div class="teams-dt-container">
-		<div class="tw-border tw-border-[#334155] tw-bg-[#0f172a] tw-p-4 tw-min-w-0 tw-overflow-x-auto"><table class="tw-w-full tw-font-mono tw-text-sm teams-dt" aria-label="Teams in this organization">
+		<div class="tw-border tw-border-[#334155] tw-bg-[#0f172a] tw-p-4 tw-min-w-0 tw-overflow-x-auto">
+			<table class="tw-w-full tw-font-mono tw-text-sm teams-dt" aria-label="Teams in this organization">
 			<thead class="teams-dt__head">
 				<tr>
 					<th class="teams-dt__th" scope="col">Team Name</th>
@@ -193,7 +194,8 @@
 					{/each}
 				{/if}
 			</tbody>
-		</table></div>
+		</table>
+		</div>
 	</div>
 
 </div>
