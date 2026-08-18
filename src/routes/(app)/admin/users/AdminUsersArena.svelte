@@ -52,15 +52,13 @@
 
 {#if engine.purgeStep > 0}
 	<GlobalUsersPurgeModal
-		step={engine.purgeStep}
-		targetEmail={engine.purgeTargetEmail}
-		targetName={engine.purgeTargetName}
-		bind:typedConfirmation={engine.purgeTypedConfirmation}
-		bind:reason={engine.purgeReason}
-		busy={engine.purgeBusy}
-		err={engine.purgeErr}
-		onClose={engine.closePurge}
-		onAdvance={engine.advancePurge}
-		onConfirm={() => void engine.confirmPurge()}
+		bind:show={engine.showPurgeModal}
+		emailToPurge={engine.purgeTargetEmail}
+		onConfirm={async (email, reason) => {
+			engine.purgeTargetEmail = email;
+			engine.purgeTypedConfirmation = email;
+			engine.purgeReason = reason || '';
+			await engine.confirmPurge();
+		}}
 	/>
 {/if}

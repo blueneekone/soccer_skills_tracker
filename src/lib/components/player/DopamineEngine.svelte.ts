@@ -1,4 +1,14 @@
 import { browser } from '$app/environment';
+import { httpsCallable } from 'firebase/functions';
+import { functions } from '$lib/firebase.js'; // Secure callable resolver
+
+export interface DecayResult {
+	applied: boolean;
+	xpLost: number;
+	newXp: number;
+	daysInactive: number;
+	reason?: string;
+}
 
 export class DopamineEngine {
 	// Habit Streak System
@@ -9,6 +19,7 @@ export class DopamineEngine {
 	// Skill Decay System
 	public decayPenaltyApplied = $state(false);
 	public xpLost = $state(0);
+	public isSyncing = $state(false);
 
 	// Visual Feedback Queue
 	public feedbackQueue = $state<Array<{ type: string; payload: any }>>([]);
@@ -18,34 +29,44 @@ export class DopamineEngine {
 	/**
 	 * Bootstraps the engine with user data from Firestore
 	 */
-	public hydrate(userData: any) {
+	public async hydrate(userData: any) {
 		if (!userData) return;
 		this.currentStreak = userData.currentStreak || 0;
 		this.bestStreak = userData.bestStreak || 0;
 		this.lastActiveDate = userData.lastActiveDate || null;
 		
-		this.evaluateSkillDecay();
+		this.decayPenaltyApplied = false;
+
+		await this.syncDecayFromServer();
 	}
 
 	/**
-	 * Core Drive 8: Loss Avoidance
-	 * Calculates if the player missed 5+ consecutive days and applies decay.
+	 * Serverless evaluation gate for Core Drive 8 loss avoidance
+	 * Gated strictly under our 80-line function limits
 	 */
-	private evaluateSkillDecay() {
-		if (!this.lastActiveDate) return;
+	public async syncDecayFromServer(): Promise<void> {
+		this.isSyncing = true;
 		
-		const today = new Date();
-		const lastActive = new Date(this.lastActiveDate);
-		const diffTime = Math.abs(today.getTime() - lastActive.getTime());
-		const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+		try {
+			if (!functions) return;
+			// Resolve the atomic, serverless skill-decay callable
+			const applySkillDecayFn = httpsCallable<void, DecayResult>(functions, 'applySkillDecay');
 
-		if (diffDays >= 5) {
-			this.decayPenaltyApplied = true;
-			// Drain fractions of inactive XP (mocked as static for now, would sync to DB)
-			this.xpLost = Math.floor(diffDays * 15);
+			const { data } = await applySkillDecayFn();
 			
-			// Visual behavioral reinforcement queue
-			this.queueFeedback('DECAY_WARNING', { days: diffDays, lost: this.xpLost });
+			if (data && data.applied) {
+				// State updates locked strictly to verified database response
+				this.decayPenaltyApplied = true;
+				this.xpLost = data.xpLost;
+
+				// Push presentation trigger to queue safely
+				this.queueFeedback('DECAY_WARNING', { penalty: data.xpLost });
+			}
+		} catch (error) {
+			// Graceful degradation: prevent compiler crashes if offline
+			console.warn('[DopamineEngine] Failed to sync decay from server:', error);
+		} finally {
+			this.isSyncing = false;
 		}
 	}
 

@@ -105,11 +105,11 @@ export function attachMissionQuestSubscriptions(input: {
 		merge();
 	};
 
-	const unsubs: Array<() => void> = [];
+	let unsubs: Array<() => void> = [];
 
 	if (tid && jwtTeam && jwtTeam === tid) {
 		sink.setCoachIntentListenerAttached(true);
-		unsubs.push(
+		unsubs = [...unsubs,
 			subscribeCoachIntentSnapshot(db, tid, uid, tenantFilter, {
 				onSuccess: () => {
 					sink.setMissionSyncBlocked(false);
@@ -154,8 +154,8 @@ export function attachMissionQuestSubscriptions(input: {
 						},
 					);
 				},
-			}),
-		);
+			})
+		];
 	} else {
 		sink.setCoachIntentListenerAttached(false);
 		sink.setIntentSnapshotCount(0);
@@ -164,7 +164,7 @@ export function attachMissionQuestSubscriptions(input: {
 	}
 
 	const hwQ = query(collection(db, 'assignments'), where('playerId', '==', uid), where('status', '==', 'pending'));
-	unsubs.push(
+	unsubs = [...unsubs,
 		onSnapshot(
 			hwQ,
 			(snap) => {
@@ -184,8 +184,8 @@ export function attachMissionQuestSubscriptions(input: {
 				sink.setHomeworkDataById({});
 				merge();
 			},
-		),
-	);
+		)
+	];
 
 	if (email) {
 		const bountyQ = query(
@@ -193,7 +193,7 @@ export function attachMissionQuestSubscriptions(input: {
 			where('playerEmail', '==', email),
 			where('status', 'in', ['active', 'verified']),
 		);
-		unsubs.push(
+		unsubs = [...unsubs,
 			onSnapshot(
 				bountyQ,
 				(snap) => {
@@ -208,8 +208,8 @@ export function attachMissionQuestSubscriptions(input: {
 					parentRows = [];
 					merge();
 				},
-			),
-		);
+			)
+		];
 	}
 
 	return () => {
