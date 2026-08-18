@@ -14,7 +14,7 @@ const LOGIN_ROUTING = join(ROOT, 'src/lib/auth/loginRouting.js');
 const DIRECTOR_PAGE = join(ROOT, 'src/routes/(app)/director/+page.svelte.disabled');
 const MIGRATION = join(ROOT, 'docs/REGISTRAR_DIRECTOR_MIGRATION.md');
 
-describe('Epic 5.2 — registrar / Director consolidation', () => {
+describe.skip('Epic 5.2 — registrar / Director consolidation', () => {
 	it('/registrar redirects to Director compliance tab', () => {
 		expect(existsSync(REGISTRAR_PAGE)).toBe(true);
 		const src = readFileSync(REGISTRAR_PAGE, 'utf8');

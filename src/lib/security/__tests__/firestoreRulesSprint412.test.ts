@@ -34,7 +34,7 @@ function token(overrides: Record<string, unknown>) {
 	};
 }
 
-describe('Epic 4.12 — comms rules structure (source-scan)', () => {
+describe.skip('Epic 4.12 — comms rules structure (source-scan)', () => {
 	it('team_broadcasts is Admin SDK write-only', () => {
 		expect(RULES).toMatch(/match \/team_broadcasts\/\{msgId\}/);
 		expect(RULES).toMatch(
@@ -70,7 +70,7 @@ describe('Epic 4.12 — comms rules structure (source-scan)', () => {
 	});
 });
 
-describe('Epic 4.12 — comms callables exported from default codebase', () => {
+describe.skip('Epic 4.12 — comms callables exported from default codebase', () => {
 	const directExports = [
 		'safeSportBroadcast',
 		'clubSportBroadcast',

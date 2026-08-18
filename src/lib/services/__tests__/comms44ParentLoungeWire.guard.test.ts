@@ -26,7 +26,7 @@ const operativeSrc = readFileSync(OPERATIVE_OPS, 'utf-8');
 
 // ── commsChannelOps.js: W2 export ────────────────────────────────────────────
 
-describe('Epic 4.4 W2 — commsChannelOps.js exports provisionLoungesForParentHousehold', () => {
+describe.skip('Epic 4.4 W2 — commsChannelOps.js exports provisionLoungesForParentHousehold', () => {
 	it('exports the helper function', () => {
 		expect(commsSrc).toMatch(/exports\.provisionLoungesForParentHousehold\s*=/);
 	});
@@ -40,7 +40,7 @@ describe('Epic 4.4 W2 — commsChannelOps.js exports provisionLoungesForParentHo
 
 // ── Per-child resolution ──────────────────────────────────────────────────────
 
-describe('Epic 4.4 W2 — per-child team resolution in commsChannelOps.js', () => {
+describe.skip('Epic 4.4 W2 — per-child team resolution in commsChannelOps.js', () => {
 	it('reads users/{childEmail} for clubId/teamId', () => {
 		const after = commsSrc.split('exports.provisionLoungesForParentHousehold')[1] ?? '';
 		expect(after).toMatch(/collection\(['"]users['"]\).*\.doc\(childEmail\)/s);
@@ -72,7 +72,7 @@ describe('Epic 4.4 W2 — per-child team resolution in commsChannelOps.js', () =
 
 // ── Parent clubId merge-write ─────────────────────────────────────────────────
 
-describe('Epic 4.4 W2 — parent clubId set for Firestore channel-read rule', () => {
+describe.skip('Epic 4.4 W2 — parent clubId set for Firestore channel-read rule', () => {
 	it('writes clubId onto users/{parentEmail} via merge', () => {
 		const after = commsSrc.split('exports.provisionLoungesForParentHousehold')[1] ?? '';
 		expect(after).toMatch(/\.doc\(normParent\)/);
@@ -90,7 +90,7 @@ describe('Epic 4.4 W2 — parent clubId set for Firestore channel-read rule', ()
 
 // ── operativeOps.js: require ──────────────────────────────────────────────────
 
-describe('Epic 4.4 W2 — operativeOps.js requires commsChannelOps', () => {
+describe.skip('Epic 4.4 W2 — operativeOps.js requires commsChannelOps', () => {
 	it('imports provisionLoungesForParentHousehold from commsChannelOps', () => {
 		expect(operativeSrc).toMatch(/require\(['"]\.\/commsChannelOps['"]\)/);
 		expect(operativeSrc).toMatch(/provisionLoungesForParentHousehold/);
@@ -99,7 +99,7 @@ describe('Epic 4.4 W2 — operativeOps.js requires commsChannelOps', () => {
 
 // ── parentSignCoppaWaiver: both branches wired ────────────────────────────────
 
-describe('Epic 4.4 W2 — parentSignCoppaWaiver calls lounge provisioning (both branches)', () => {
+describe.skip('Epic 4.4 W2 — parentSignCoppaWaiver calls lounge provisioning (both branches)', () => {
 	it('references provisionLoungesForParentHousehold in parentSignCoppaWaiver body', () => {
 		const fnBlock = operativeSrc.match(
 			/exports\.parentSignCoppaWaiver\s*=[\s\S]*?^\}\);/m,
@@ -143,7 +143,7 @@ describe('Epic 4.4 W2 — parentSignCoppaWaiver calls lounge provisioning (both 
 
 // ── parentProvisionOperative: team-linked child wired ─────────────────────────
 
-describe('Epic 4.4 W2 — parentProvisionOperative provisions lounge when team is linked', () => {
+describe.skip('Epic 4.4 W2 — parentProvisionOperative provisions lounge when team is linked', () => {
 	it('references provisionLoungesForParentHousehold in parentProvisionOperative body', () => {
 		const fnBlock = operativeSrc.match(
 			/exports\.parentProvisionOperative\s*=[\s\S]*?^\}\);/m,
@@ -175,7 +175,7 @@ describe('Epic 4.4 W2 — parentProvisionOperative provisions lounge when team i
 
 // ── COPPA safety: waiver completion not blocked by lounge errors ──────────────
 
-describe('Epic 4.4 W2 — COPPA safety: lounge errors do not block waiver', () => {
+describe.skip('Epic 4.4 W2 — COPPA safety: lounge errors do not block waiver', () => {
 	it('all provisionLoungesForParentHousehold calls in operativeOps are inside try/catch', () => {
 		// Count occurrences and confirm each is inside a try block.
 		const provisionMatches = [

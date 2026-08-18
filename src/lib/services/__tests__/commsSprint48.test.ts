@@ -33,7 +33,7 @@ describe('Epic 4.8 — clubSportBroadcast callable', () => {
 	});
 
 	it('is re-exported from functions/index.js', () => {
-		expect(indexJs).toMatch(/exports\.clubSportBroadcast\s*=\s*commsHandlers\.clubSportBroadcast/);
+		expect(indexJs).toMatch(/exports\.clubSportBroadcast\s*=\s*comms\.clubSportBroadcast/);
 	});
 
 	it('restricts to director and platform admin roles', () => {

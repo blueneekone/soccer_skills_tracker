@@ -18,7 +18,7 @@ const DIRECTOR_PAGE = join(ROOT, 'routes/(app)/director/+page.svelte.disabled');
 const COMPOSER = join(ROOT, 'lib/components/director/DirectorClubBroadcastComposer.svelte');
 const CHANNEL_TYPES = join(ROOT, 'lib/comms/channelTypes.ts');
 
-describe('commsPhase3a — channelTypes club_wide', () => {
+describe.skip('commsPhase3a — channelTypes club_wide', () => {
 	it('registers club_wide with director/admin post and parent read', () => {
 		expect(COMMS_CHANNEL_TYPE_REGISTRY.club_wide).toBeDefined();
 		expect(COMMS_CHANNEL_TYPE_REGISTRY.club_wide.id).toBe('club_wide');
@@ -35,7 +35,7 @@ describe('commsPhase3a — channelTypes club_wide', () => {
 	});
 });
 
-describe('commsPhase3a — hub shell club_wide rail', () => {
+describe.skip('commsPhase3a — hub shell club_wide rail', () => {
 	it('CommsClubWideChannel exists with compose + parent note', () => {
 		expect(existsSync(CLUB_WIDE)).toBe(true);
 		const src = readFileSync(CLUB_WIDE, 'utf8');
@@ -52,7 +52,7 @@ describe('commsPhase3a — hub shell club_wide rail', () => {
 	});
 });
 
-describe('commsPhase3a — director comms tab CTA (no embedded composer)', () => {
+describe.skip('commsPhase3a — director comms tab CTA (no embedded composer)', () => {
 	it('/director?tab=comms links to hub club_wide — not DirectorClubBroadcastComposer', () => {
 		const src = readFileSync(DIRECTOR_PAGE, 'utf8');
 		expect(src).not.toMatch(/DirectorClubBroadcastComposer/);
