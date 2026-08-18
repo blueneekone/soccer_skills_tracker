@@ -1,4 +1,4 @@
-import { sportsConfigStore } from '$lib/stores/sportsConfigStore.svelte.js';
+import { sportsConfigStore } from '$lib/services/sportsConfigs';
 import { db } from '$lib/firebase.js';
 import { doc, setDoc } from 'firebase/firestore';
 

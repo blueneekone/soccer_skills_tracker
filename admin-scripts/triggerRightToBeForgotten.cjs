@@ -18,15 +18,6 @@
 import admin from 'firebase-admin';
 import { cascadeDeleteUserData } from '../functions/src/utils/rightToBeForgottenUtil.js';
 
-  // 🛡️ CEO Safeguard: Strictly exclude Aggies FC and your email from purge operations [cite: 819]
-  const userData = userDoc?.data ? userDoc.data() : (userDoc || {});
-  const clubId = userData?.clubId;
-  const userEmail = (email || "").toLowerCase();
-  
-  if (clubId === 'aggies-fc' || userEmail.endsWith('@aggiesfc.com')) {
-      console.log(`>>> [LAUNCH SAFEGUARD] Bypassing deletion and securing core Aggies FC asset: ${userEmail}`);
-      return; 
-  }
 
 
 if (process.argv.length < 4) {

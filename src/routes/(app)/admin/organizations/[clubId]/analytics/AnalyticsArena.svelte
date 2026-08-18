@@ -116,7 +116,7 @@
 					{engine.complianceHealth.safeSport}%
 				</div>
 			</div>
-			<div class="tw-h-16 tw-w-16 tw-rounded-full tw-border-4 tw-flex tw-items-center tw-justify-center"
+			<div class="tw-h-16 tw-w-16 tw-rounded-none tw-border-4 tw-flex tw-items-center tw-justify-center"
 				class:tw-border-emerald-500={engine.complianceHealth.safeSport >= 95}
 				class:tw-border-amber-500={engine.complianceHealth.safeSport < 95}>
 				<span class="tw-text-slate-400 tw-text-xs tw-font-mono">HLTH</span>
@@ -130,7 +130,7 @@
 					{engine.complianceHealth.vpc}%
 				</div>
 			</div>
-			<div class="tw-h-16 tw-w-16 tw-rounded-full tw-border-4 tw-flex tw-items-center tw-justify-center"
+			<div class="tw-h-16 tw-w-16 tw-rounded-none tw-border-4 tw-flex tw-items-center tw-justify-center"
 				class:tw-border-emerald-500={engine.complianceHealth.vpc >= 95}
 				class:tw-border-amber-500={engine.complianceHealth.vpc < 95}>
 				<span class="tw-text-slate-400 tw-text-xs tw-font-mono">HLTH</span>

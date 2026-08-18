@@ -15,7 +15,7 @@
  * other consumers that call it don't break during the migration window.
  */
 
-import { sportsConfigStore } from '$lib/stores/sportsConfigStore.svelte.js';
+import { sportsConfigStore } from '$lib/services/sportsConfigs';
 
 /** @typedef {{ id: string; name: string; hexColor: string; shortLabel?: string }} SportAttribute */
 /** @typedef {{ sportId: string; displayName: string; attributes: SportAttribute[] }} SportConfig */

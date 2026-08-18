@@ -8,7 +8,7 @@
  * sport-specific attribute, icon, palette, and label in the platform.
  *
  * Write path: super_admin callables only (upsertSportsConfig, archiveSportsConfig).
- * Read path:  all authenticated users via onSnapshot in sportsConfigStore.svelte.js.
+ * Read path:  all authenticated users via onSnapshot in sportsConfigs.
  *
  * Soft-delete only: status → 'archived'; hard delete is blocked in Firestore rules.
  * Schema versioning: schemaVersion auto-increments when attribute IDs or

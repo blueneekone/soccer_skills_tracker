@@ -32,7 +32,7 @@
 			</span>
 		{:else}
 			<span class="tw-inline-flex tw-items-center tw-gap-2 tw-text-xs tw-font-mono tw-text-emerald-400 tw-uppercase tw-tracking-wider">
-				<span class="tw-w-2 tw-h-2 tw-bg-emerald-400 tw-rounded-full"></span>
+				<span class="tw-w-2 tw-h-2 tw-bg-emerald-400 tw-rounded-none"></span>
 				IDLE
 			</span>
 		{/if}

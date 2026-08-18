@@ -2,7 +2,7 @@
 	import { collection, getDocs, query, where } from 'firebase/firestore';
 	import { db } from '$lib/firebase.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
-	import { sportsConfigStore } from '$lib/stores/sportsConfigStore.svelte.js';
+	import { sportsConfigStore } from '$lib/services/sportsConfigs';
 	import { getRpgSportConfig } from '$lib/config/sports.js';
 
 	/**

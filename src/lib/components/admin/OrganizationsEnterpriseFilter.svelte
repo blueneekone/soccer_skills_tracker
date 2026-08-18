@@ -67,7 +67,7 @@
 		<legend class="tw-font-mono tw-text-xs tw-font-bold tw-uppercase tw-tracking-widest tw-text-[#FAFAFA] tw-mb-2">
 			Subscription Tier
 			{#if filterTiers.length > 0}
-				<span class="tw-ml-2 tw-bg-[#fbbf24] tw-text-[#0B0F19] tw-rounded-full tw-px-2 tw-py-0.5 tw-text-[10px]">{filterTiers.length}</span>
+				<span class="tw-ml-2 tw-bg-[#fbbf24] tw-text-[#0B0F19] tw-rounded-none tw-px-2 tw-py-0.5 tw-text-[10px]">{filterTiers.length}</span>
 			{/if}
 		</legend>
 		<p class="tw-text-[#94A3B8] tw-text-xs tw-mb-3">
@@ -84,7 +84,7 @@
 					class="tw-flex tw-items-center tw-gap-2 tw-px-3 tw-py-2 tw-border tw-rounded-none tw-text-xs tw-font-bold tw-transition-colors {active ? 'tw-bg-[#14b8a6]/10 tw-border-[#14b8a6] tw-text-[#14b8a6]' : 'tw-bg-transparent tw-border-[#334155] tw-text-[#94A3B8] hover:tw-border-[#FAFAFA] hover:tw-text-[#FAFAFA]'}"
 					onclick={() => onTiersChange(toggleInList(filterTiers, tier.key) as AdminClubTierKey[])}
 				>
-					<span class="tw-w-2 tw-h-2 tw-rounded-full" style="background:{tier.accent};"></span>
+					<span class="tw-w-2 tw-h-2 tw-rounded-none" style="background:{tier.accent};"></span>
 					<Icon name={tier.icon as IconName} aria-hidden="true" size={14} />
 					<span>{tier.label}</span>
 					<span class="tw-opacity-50">({count})</span>
@@ -98,7 +98,7 @@
 		<legend class="tw-font-mono tw-text-xs tw-font-bold tw-uppercase tw-tracking-widest tw-text-[#FAFAFA] tw-mb-2">
 			Region / State
 			{#if filterStates.length > 0}
-				<span class="tw-ml-2 tw-bg-[#fbbf24] tw-text-[#0B0F19] tw-rounded-full tw-px-2 tw-py-0.5 tw-text-[10px]">{filterStates.length}</span>
+				<span class="tw-ml-2 tw-bg-[#fbbf24] tw-text-[#0B0F19] tw-rounded-none tw-px-2 tw-py-0.5 tw-text-[10px]">{filterStates.length}</span>
 			{/if}
 		</legend>
 		<p class="tw-text-[#94A3B8] tw-text-xs tw-mb-3">
@@ -166,7 +166,7 @@
 					class="tw-flex tw-items-center tw-gap-2 tw-px-3 tw-py-2 tw-border tw-rounded-none tw-text-xs tw-font-bold tw-transition-colors {filterVerification === opt.key ? 'tw-bg-[#14b8a6]/10 tw-border-[#14b8a6] tw-text-[#14b8a6]' : 'tw-bg-transparent tw-border-[#334155] tw-text-[#94A3B8] hover:tw-border-[#FAFAFA] hover:tw-text-[#FAFAFA]'}"
 					onclick={() => onVerificationChange(opt.key)}
 				>
-					<span class="tw-w-2 tw-h-2 tw-rounded-full" style="background:{opt.dot};"></span>
+					<span class="tw-w-2 tw-h-2 tw-rounded-none" style="background:{opt.dot};"></span>
 					<Icon name={opt.icon as IconName} aria-hidden="true" size={14} />
 					{opt.label}
 				</button>

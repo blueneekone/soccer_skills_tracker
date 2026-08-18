@@ -168,7 +168,7 @@
 	>
 		<!-- Container: solid deep slate background to preserve text contrast -->
 		<div 
-			class="tw-w-full tw-max-w-2xl tw-bg-[#0B0F19] tw-border tw-border-[#334155] tw-rounded-xl tw-shadow-2xl tw-overflow-hidden tw-flex tw-flex-col" 
+			class="tw-w-full tw-max-w-2xl tw-bg-[#0B0F19] tw-border tw-border-[#334155] tw-rounded-none tw-shadow-2xl tw-overflow-hidden tw-flex tw-flex-col"
 			onclick={(e) => e.stopPropagation()}
 		>
 			<input 

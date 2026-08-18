@@ -114,19 +114,19 @@
 		<!-- svelte-ignore a11y_click_events_have_key_events -->
 		<!-- svelte-ignore a11y_no_static_element_interactions -->
 		<div 
-			class="tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-rounded-2xl tw-p-8 tw-max-w-2xl tw-w-full tw-max-h-[90vh] tw-overflow-y-auto tw-shadow-2xl"
+			class="tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-rounded-none tw-p-8 tw-max-w-2xl tw-w-full tw-max-h-[90vh] tw-overflow-y-auto tw-shadow-2xl"
 			onclick={(e) => e.stopPropagation()}
 		>
 			<div class="tw-flex tw-justify-between tw-items-center tw-mb-8">
 				<h2 class="tw-text-[#FAFAFA] tw-text-2xl tw-font-bold tw-m-0">Add Organization</h2>
-				<button type="button" class="tw-bg-transparent tw-border-none tw-outline-none tw-p-2 hover:tw-bg-white/10 tw-rounded-md tw-text-[#A1A1AA] hover:tw-text-[#FAFAFA] tw-transition-colors tw-flex tw-items-center tw-justify-center" onclick={onClose}>
+				<button type="button" class="tw-bg-transparent tw-border-none tw-outline-none tw-p-2 hover:tw-bg-white/10 tw-rounded-none tw-text-[#A1A1AA] hover:tw-text-[#FAFAFA] tw-transition-colors tw-flex tw-items-center tw-justify-center" onclick={onClose}>
 					<Icon name={'sys.close' as IconName} />
 				</button>
 			</div>
 
 			<div class="tw-flex tw-flex-col tw-gap-6">
 				{#if err}
-					<div class="tw-bg-red-500/10 tw-border tw-border-red-500/30 tw-text-red-400 tw-px-4 tw-py-3 tw-rounded-md" role="alert">
+					<div class="tw-bg-red-500/10 tw-border tw-border-red-500/30 tw-text-red-400 tw-px-4 tw-py-3 tw-rounded-none" role="alert">
 						{err}
 					</div>
 				{/if}
@@ -139,7 +139,7 @@
 						<input
 							id="add-club-id"
 							type="text"
-							class="tw-w-full tw-bg-[#1e293b] tw-border tw-border-[#334155] tw-rounded-md tw-px-4 tw-py-3 tw-text-[#FAFAFA] placeholder:tw-text-[#71717A] focus:tw-outline-none focus:tw-border-[#fbbf24] tw-transition-colors disabled:tw-opacity-50"
+							class="tw-w-full tw-bg-[#1e293b] tw-border tw-border-[#334155] tw-rounded-none tw-px-4 tw-py-3 tw-text-[#FAFAFA] placeholder:tw-text-[#71717A] focus:tw-outline-none focus:tw-border-[#fbbf24] tw-transition-colors disabled:tw-opacity-50"
 							bind:value={form.clubId}
 							placeholder="e.g. aggiesfc"
 							disabled={saving}
@@ -152,7 +152,7 @@
 						<input
 							id="add-club-name"
 							type="text"
-							class="tw-w-full tw-bg-[#1e293b] tw-border tw-border-[#334155] tw-rounded-md tw-px-4 tw-py-3 tw-text-[#FAFAFA] placeholder:tw-text-[#71717A] focus:tw-outline-none focus:tw-border-[#fbbf24] tw-transition-colors disabled:tw-opacity-50"
+							class="tw-w-full tw-bg-[#1e293b] tw-border tw-border-[#334155] tw-rounded-none tw-px-4 tw-py-3 tw-text-[#FAFAFA] placeholder:tw-text-[#71717A] focus:tw-outline-none focus:tw-border-[#fbbf24] tw-transition-colors disabled:tw-opacity-50"
 							bind:value={form.clubName}
 							placeholder="e.g. Aggie FC"
 							disabled={saving}
@@ -160,7 +160,7 @@
 					</div>
 					<div class="tw-flex tw-flex-col tw-gap-2">
 						<label class="tw-text-[#A1A1AA] tw-text-sm tw-font-semibold" for="add-club-sport">Sport</label>
-						<select id="add-club-sport" class="tw-w-full tw-bg-[#1e293b] tw-border tw-border-[#334155] tw-rounded-md tw-px-4 tw-py-3 tw-text-[#FAFAFA] focus:tw-outline-none focus:tw-border-[#fbbf24] tw-transition-colors disabled:tw-opacity-50" bind:value={form.sport} disabled={saving}>
+						<select id="add-club-sport" class="tw-w-full tw-bg-[#1e293b] tw-border tw-border-[#334155] tw-rounded-none tw-px-4 tw-py-3 tw-text-[#FAFAFA] focus:tw-outline-none focus:tw-border-[#fbbf24] tw-transition-colors disabled:tw-opacity-50" bind:value={form.sport} disabled={saving}>
 							<option value="soccer">Soccer</option>
 							<option value="basketball">Basketball</option>
 							<option value="baseball">Baseball</option>
@@ -178,7 +178,7 @@
 						<input
 							id="add-club-dir"
 							type="email"
-							class="tw-w-full tw-bg-[#1e293b] tw-border tw-border-[#334155] tw-rounded-md tw-px-4 tw-py-3 tw-text-[#FAFAFA] placeholder:tw-text-[#71717A] focus:tw-outline-none focus:tw-border-[#fbbf24] tw-transition-colors disabled:tw-opacity-50"
+							class="tw-w-full tw-bg-[#1e293b] tw-border tw-border-[#334155] tw-rounded-none tw-px-4 tw-py-3 tw-text-[#FAFAFA] placeholder:tw-text-[#71717A] focus:tw-outline-none focus:tw-border-[#fbbf24] tw-transition-colors disabled:tw-opacity-50"
 							bind:value={form.directorEmail}
 							placeholder="director@example.com"
 							disabled={saving}
@@ -189,7 +189,7 @@
 						<input
 							id="add-club-phone"
 							type="tel"
-							class="tw-w-full tw-bg-[#1e293b] tw-border tw-border-[#334155] tw-rounded-md tw-px-4 tw-py-3 tw-text-[#FAFAFA] placeholder:tw-text-[#71717A] focus:tw-outline-none focus:tw-border-[#fbbf24] tw-transition-colors disabled:tw-opacity-50"
+							class="tw-w-full tw-bg-[#1e293b] tw-border tw-border-[#334155] tw-rounded-none tw-px-4 tw-py-3 tw-text-[#FAFAFA] placeholder:tw-text-[#71717A] focus:tw-outline-none focus:tw-border-[#fbbf24] tw-transition-colors disabled:tw-opacity-50"
 							bind:value={form.phoneNumber}
 							placeholder="+1 (512) 555-0100"
 							inputmode="tel"
@@ -212,7 +212,7 @@
 						type="text"
 						bind:this={addressInput}
 						style="background-image: none !important;"
-						class="tw-w-full tw-bg-[#1e293b] tw-border tw-border-[#334155] tw-rounded-md tw-px-4 tw-py-3 tw-text-[#FAFAFA] placeholder:tw-text-[#71717A] focus:tw-outline-none focus:tw-border-[#fbbf24] tw-transition-colors disabled:tw-opacity-50"
+						class="tw-w-full tw-bg-[#1e293b] tw-border tw-border-[#334155] tw-rounded-none tw-px-4 tw-py-3 tw-text-[#FAFAFA] placeholder:tw-text-[#71717A] focus:tw-outline-none focus:tw-border-[#fbbf24] tw-transition-colors disabled:tw-opacity-50"
 						bind:value={form.verifiedAddress}
 						placeholder="Start typing a verified street address…"
 						autocomplete="street-address"
@@ -233,7 +233,7 @@
 						type="text"
 						bind:this={facilityInput}
 						style="background-image: none !important;"
-						class="tw-w-full tw-bg-[#1e293b] tw-border tw-border-[#334155] tw-rounded-md tw-px-4 tw-py-3 tw-text-[#FAFAFA] placeholder:tw-text-[#71717A] focus:tw-outline-none focus:tw-border-[#fbbf24] tw-transition-colors disabled:tw-opacity-50"
+						class="tw-w-full tw-bg-[#1e293b] tw-border tw-border-[#334155] tw-rounded-none tw-px-4 tw-py-3 tw-text-[#FAFAFA] placeholder:tw-text-[#71717A] focus:tw-outline-none focus:tw-border-[#fbbf24] tw-transition-colors disabled:tw-opacity-50"
 						bind:value={form.primaryFacility}
 						placeholder="e.g. Mueller Athletic Complex, Austin TX"
 						disabled={saving}
@@ -241,7 +241,7 @@
 				</div>
 
 				{#if newSportMode}
-					<div class="tw-bg-[#0B0F19] tw-border tw-border-[#334155] tw-rounded-xl tw-p-6 tw-mt-2">
+					<div class="tw-bg-[#0B0F19] tw-border tw-border-[#334155] tw-rounded-none tw-p-6 tw-mt-2">
 						<div class="tw-flex tw-items-center tw-gap-2 tw-text-[#FAFAFA] tw-font-bold tw-mb-2">
 							<Icon name={'game.trophy' as IconName} aria-hidden="true" class="tw-text-[#fbbf24]" />
 							New Sport Module
@@ -257,7 +257,7 @@
 								<input
 									id="add-sport-name"
 									type="text"
-									class="tw-w-full tw-bg-[#1e293b] tw-border tw-border-[#334155] tw-rounded-md tw-px-4 tw-py-3 tw-text-[#FAFAFA] placeholder:tw-text-[#71717A] focus:tw-outline-none focus:tw-border-[#fbbf24] tw-transition-colors disabled:tw-opacity-50"
+									class="tw-w-full tw-bg-[#1e293b] tw-border tw-border-[#334155] tw-rounded-none tw-px-4 tw-py-3 tw-text-[#FAFAFA] placeholder:tw-text-[#71717A] focus:tw-outline-none focus:tw-border-[#fbbf24] tw-transition-colors disabled:tw-opacity-50"
 									bind:value={form.newSportName}
 									placeholder="e.g. Volleyball"
 									disabled={saving}
@@ -270,7 +270,7 @@
 								<input
 									id="add-sport-icon"
 									type="text"
-									class="tw-w-full tw-bg-[#1e293b] tw-border tw-border-[#334155] tw-rounded-md tw-px-4 tw-py-3 tw-text-[#FAFAFA] placeholder:tw-text-[#71717A] focus:tw-outline-none focus:tw-border-[#fbbf24] tw-transition-colors disabled:tw-opacity-50"
+									class="tw-w-full tw-bg-[#1e293b] tw-border tw-border-[#334155] tw-rounded-none tw-px-4 tw-py-3 tw-text-[#FAFAFA] placeholder:tw-text-[#71717A] focus:tw-outline-none focus:tw-border-[#fbbf24] tw-transition-colors disabled:tw-opacity-50"
 									bind:value={form.newSportIcon}
 									placeholder="ph-volleyball"
 									disabled={saving}

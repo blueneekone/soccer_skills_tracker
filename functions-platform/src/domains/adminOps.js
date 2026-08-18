@@ -145,16 +145,6 @@ async function enrichClubClaims(customClaims, cid) {
   }
 }
 
-exports.syncUserClaims = onDocumentWritten('users/{docId}', async (event) => {
-  const userData = event.data.after.data();
-  const docId = event.params.docId;
-  const userRecord = await resolveUserAuthRecord(docId, userData);
-
-  if (!userData) {
-    logger.info('User profile deleted. Exiting function.');
-    if (userRecord) {
-      const cellDb = getAdminDb(DEFAULT_CELL_ID);
-      await cellDb.collection('public_player_profiles').doc(userRecord.uid).delete().catch(() => {});
     }
     return null;
   }
@@ -1404,11 +1394,6 @@ exports.publishClubCampaign = onCall({region: REGION}, async (request) => {
 // to force-refresh the JWT so new claims are active in this session.
 // ─────────────────────────────────────────────────────────────────────────────
 
-exports.assignTenantClaims = onCall(
-    {region: REGION},
-    async (request) => {
-      if (!request.auth) {
-        throw new HttpsError('unauthenticated', 'You must be signed in to redeem an invite code.');
       }
 
       const uid = request.auth.uid;
