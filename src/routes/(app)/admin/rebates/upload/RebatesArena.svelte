@@ -69,7 +69,7 @@
 			<div class="preview-table-wrap glass-panel st-bento lg:tw-col-span-8">
 				<h3 class="list-title">Preview — {engine.validRows.length} rows to submit</h3>
 				<div class="table-scroll">
-					<div class="tw-border tw-border-[#334155] tw-bg-[#0f172a] tw-p-4 tw-min-w-0 tw-overflow-x-auto"><table class="tw-w-full tw-font-mono tw-text-sm" class="preview-table">
+					<div class="tw-border tw-border-[#334155] tw-bg-[#0f172a] tw-p-4 tw-min-w-0 tw-overflow-x-auto"><table class="tw-w-full tw-font-mono tw-text-sm preview-table">
 						<thead>
 							<tr>
 								<th>Idempotency Key</th>
