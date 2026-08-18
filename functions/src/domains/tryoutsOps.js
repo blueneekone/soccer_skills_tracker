@@ -1020,16 +1020,26 @@ exports.promoteTryoutToRoster = onCall({region: REGION}, async (request) => {
   const rosterRef = db().collection('rosters').doc(teamId);
   const now = admin.firestore.FieldValue.serverTimestamp();
 
-  await db().runTransaction(async (tx) => {
-    const rosterSnap = await tx.get(rosterRef);
-    const players = rosterSnap.exists && Array.isArray(rosterSnap.data().players)
-      ? rosterSnap.data().players.filter((x) => typeof x === 'string') : [];
-    const norm = playerName.toLowerCase();
-    if (!players.some((n) => String(n).trim().toLowerCase() === norm)) {
-      tx.set(rosterRef, { players: [...players, playerName], updatedAt: now }, {merge: true});
-    }
-    tx.set(regRef, { pipelineStatus: PIPELINE.ROSTER_PENDING, rosterTeamId: teamId, rosterPromotedAt: now, updatedAt: now }, {merge: true});
-  });
+  // Execute roster promotion writeBatch (capped at maximum 500 operations)
+  const rosterSnap = await rosterRef.get();
+  const players = rosterSnap.exists && Array.isArray(rosterSnap.data().players)
+    ? rosterSnap.data().players.filter((x) => typeof x === 'string') : [];
+  const norm = playerName.toLowerCase();
+
+  const batch = db().batch();
+  let ops = 0;
+  if (!players.some((n) => String(n).trim().toLowerCase() === norm)) {
+    batch.set(rosterRef, { players: [...players, playerName], updatedAt: now }, {merge: true});
+    ops++;
+  }
+  batch.set(regRef, { pipelineStatus: PIPELINE.ROSTER_PENDING, rosterTeamId: teamId, rosterPromotedAt: now, updatedAt: now }, {merge: true});
+  ops++;
+
+  if (ops <= 500) {
+    await batch.commit();
+  } else {
+    throw new HttpsError('resource-exhausted', 'Batch limit exceeded 500 operations.');
+  }
 
   const guardianEmail = normEmail(reg.guardianEmail);
   let operativeLink = {linked: false};

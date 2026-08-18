@@ -44,7 +44,7 @@ exports.setEventRsvp = onCall({region: REGION}, async (request) => {
     );
   }
 
-  const eventRef = db().collection('team_workouts').doc(eventId);
+  const eventRef = db().collection('schedules').doc(eventId);
   const eventSnap = await eventRef.get();
   if (!eventSnap.exists) {
     throw new HttpsError('not-found', 'Scheduled event not found.');

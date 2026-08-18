@@ -119,7 +119,7 @@ export class CoachTacticalEngine {
 	}
 
 	async _loadBoardState(tid: string, uid: string) {
-		if (!isFirestoreReady()) return;
+		if (!db || !authStore.isAuthenticated) return;
 		this.boardLoadComplete = false;
 		try {
 			const snap = await getDoc(doc(db, 'teams', tid, 'tactics', `wr_${uid}`));
@@ -157,7 +157,7 @@ export class CoachTacticalEngine {
 	}
 
 	async _loadRosters(tid: string) {
-		if (!isFirestoreReady()) return;
+		if (!db || !authStore.isAuthenticated) return;
 		try {
 			const snap = await getDoc(doc(db, 'rosters', tid));
 			const rostersNames = (

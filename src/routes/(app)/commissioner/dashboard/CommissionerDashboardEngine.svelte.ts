@@ -14,24 +14,24 @@ export type ClubCompliance = {
 };
 
 export type OdpMetrics = {
-	speed: number;
+	pace: number;
+	accel: number;
 	agility: number;
-	power: number;
 	stamina: number;
-	vision: number;
-	technique: number;
+	power: number;
+	comp: number;
 };
 
 export class CommissionerDashboardEngine {
 	// Svelte 5 Rune State
 	clubs = $state<ClubCompliance[]>([]);
 	odpMetrics = $state<OdpMetrics>({
-		speed: 50,
+		pace: 50,
+		accel: 50,
 		agility: 50,
-		power: 50,
 		stamina: 50,
-		vision: 50,
-		technique: 50
+		power: 50,
+		comp: 50
 	});
 	isLoading = $state(true);
 	error = $state<string | null>(null);
@@ -152,12 +152,12 @@ export class CommissionerDashboardEngine {
 				}
 			];
 			this.odpMetrics = {
-				speed: 75,
-				agility: 82,
-				power: 65,
+				pace: 75,
+				accel: 82,
+				agility: 65,
 				stamina: 90,
-				vision: 70,
-				technique: 85
+				power: 70,
+				comp: 85
 			};
 			this.isLoading = false;
 			this.error = null;
@@ -211,12 +211,12 @@ export class CommissionerDashboardEngine {
 			this.clubs = loadedClubs;
 
 			this.odpMetrics = {
-				speed: 75,
-				agility: 82,
-				power: 65,
+				pace: 75,
+				accel: 82,
+				agility: 65,
 				stamina: 90,
-				vision: 70,
-				technique: 85
+				power: 70,
+				comp: 85
 			};
 
 		} catch (err: unknown) {

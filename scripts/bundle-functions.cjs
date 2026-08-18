@@ -36,6 +36,7 @@ const CODEBASES = {
       'src/domains/federationSyncOps.js',
       'src/domains/reportOps.js',
       'src/domains/b2bEnrollmentOps.js',
+      'src/domains/staffPermissionsOps.js',
       'lib/grit.js',
     ],
   },
