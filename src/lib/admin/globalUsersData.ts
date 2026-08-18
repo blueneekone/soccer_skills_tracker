@@ -14,6 +14,7 @@ import { GLOBAL_USERS_PAGE_SIZE, normalizeEmailPrefix, roleFilterForTab } from '
 import { enrichUsersWithHouseholdGraph } from '$lib/admin/enrichUsersHouseholdGraph.js';
 import { mapUserDocumentToRow, sliceUsersPage } from '$lib/admin/globalUsersMapper.js';
 import type { GlobalUsersPageResult, GlobalUsersTab } from '$lib/types/adminUsers.js';
+import { authStore } from '$lib/stores/auth.svelte.js';
 
 export function buildUsersBaseQuery(db: Firestore, searchTerm: string, tab: GlobalUsersTab): Query {
 	const col = collection(db, 'users');
@@ -52,6 +53,7 @@ export async function fetchUsersCount(
 	searchTerm: string,
 	tab: GlobalUsersTab,
 ): Promise<number> {
+	if (!db || !authStore.isAuthenticated) return 0;
 	const snap = await getCountFromServer(buildUsersBaseQuery(db, searchTerm, tab));
 	return snap.data().count;
 }
@@ -63,6 +65,7 @@ export async function fetchUsersPage(
 	tab: GlobalUsersTab,
 	pageSize = GLOBAL_USERS_PAGE_SIZE,
 ): Promise<GlobalUsersPageResult> {
+	if (!db || !authStore.isAuthenticated) return { rows: [], hasNextPage: false };
 	const snap = await getDocs(buildUsersPageQuery(db, searchTerm, afterEmail, tab, pageSize));
 	const mapped = snap.docs.map((d) =>
 		mapUserDocumentToRow(d.id, (d.data() || {}) as Record<string, unknown>),
@@ -73,8 +76,9 @@ export async function fetchUsersPage(
 }
 
 export async function loadClubNameMap(db: Firestore): Promise<Map<string, string>> {
-	const snap = await getDocs(collection(db, 'clubs'));
 	const m = new Map<string, string>();
+	if (!db || !authStore.isAuthenticated) return m;
+	const snap = await getDocs(collection(db, 'clubs'));
 	snap.forEach((d) => {
 		const data = d.data() as Record<string, unknown>;
 		const name = typeof data.name === 'string' ? data.name.trim() : '';

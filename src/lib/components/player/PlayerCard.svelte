@@ -32,7 +32,8 @@
 	// Lazy-load Chart.js only in browser — prevents SSR crash
 	$effect(() => {
 		if (!browser || !canvasEl) return;
-		const chartData = untrack(() => buildVanguardPrismData(stats));
+		const currentStats = $state.snapshot(stats);
+		const chartData = untrack(() => buildVanguardPrismData(currentStats));
 		const chartOpts = untrack(() => buildVanguardPrismOptions());
 		let chart: import('chart.js').Chart | null = null;
 

@@ -394,17 +394,17 @@
 					query(collection(db, 'users'), where('teamId', '==', teamScope.selectedTeamId)),
 				);
 				if (cancelled) return;
-				const rows = [];
+				let rows = [];
 				snap.forEach((d) => {
 					const x = d.data() || {};
 					if (x.role !== 'player') return;
-					rows.push({
+					rows = [...rows, {
 						email: d.id,
 						playerName:
 							typeof x.playerName === 'string' && x.playerName.trim() ?
 								x.playerName.trim() :
 								d.id,
-					});
+					}];
 				});
 				rows.sort((a, b) => a.playerName.localeCompare(b.playerName));
 				roster = rows;

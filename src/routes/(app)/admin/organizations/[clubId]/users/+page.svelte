@@ -113,6 +113,7 @@
 			const payload = (res.data || {}) as { customToken?: string };
 			if (!payload.customToken) throw new Error('Token missing from backend.');
 			await signInWithCustomToken(auth, payload.customToken);
+			await auth.currentUser?.getIdToken(true);
 			await impersonationStore.touch();
 			goto('/dashboard', { replaceState: true });
 		} catch (e) {

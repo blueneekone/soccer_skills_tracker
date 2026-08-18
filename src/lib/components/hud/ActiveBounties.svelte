@@ -480,8 +480,10 @@
 		if (quest.source === 'coach_intent' || quest.source === 'coach_homework') {
 			navHandoff = await stashQuestHandoff(quest, true);
 		}
-		goto(resolveAppPath('/player/workout'), {
-			state: navHandoff ? { missionHandoff: navHandoff } : undefined,
+		untrack(() => {
+			void goto(resolveAppPath('/player/workout'), {
+				state: navHandoff ? { missionHandoff: navHandoff } : undefined,
+			});
 		});
 		if (!deferUntilLog && questsProp === undefined) {
 			internalQuests = patchQuestLifecycle(internalQuests);

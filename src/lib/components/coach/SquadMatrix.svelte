@@ -227,6 +227,7 @@
 	 * @param {string} [overrideTeamId] When passed from the `$effect` untrack run, use this id for the whole load (avoids racing reactive `teamId`).
 	 */
 	const loadRoster = async (overrideTeamId?: string) => {
+		if (!db || !authStore.isAuthenticated) return;
 		const tid = typeof overrideTeamId === 'string' && overrideTeamId ? overrideTeamId : teamId;
 		if (!tid) {
 			loading = false;
@@ -439,6 +440,7 @@
 				return;
 			}
 			void (async () => {
+				if (!db || !authStore.isAuthenticated) return;
 				/** @type {typeof trialRows} */
 				let nextTrials = [];
 				/** @type {typeof evalRows} */

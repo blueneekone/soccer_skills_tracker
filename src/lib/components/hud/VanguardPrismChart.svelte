@@ -9,7 +9,7 @@
 
 	$effect(() => {
 		// Memory Management: Observe data changes
-		const currentData = data;
+		const currentData = $state.snapshot(data);
 
 		untrack(() => {
 			let destroyed = false;

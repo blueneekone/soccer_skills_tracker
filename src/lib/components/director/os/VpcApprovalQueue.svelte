@@ -21,6 +21,7 @@
 	let loadError = $state('');
 
 	$effect(() => {
+		if (!db || !authStore.isAuthenticated) return;
 		if (!browser || !clubId) {
 			records = [];
 			loading = false;

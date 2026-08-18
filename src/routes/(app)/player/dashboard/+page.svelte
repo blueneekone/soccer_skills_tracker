@@ -14,6 +14,7 @@
 	import IdentityBentoModule from '$lib/components/player/dashboard/IdentityBentoModule.svelte';
 	import HUDContainer from '$lib/components/hud/HUDContainer.svelte';
 	import VanguardProtocolPanel from '$lib/components/player/dashboard/VanguardProtocolPanel.svelte';
+	import CarRideHome from '$lib/components/compliance/CarRideHome.svelte';
 	import { sportsConfigStore } from '$lib/stores/sportsConfigStore.svelte.js';
 	import { deriveVanguardPrism } from '$lib/utils/vanguard-prism.js';
 	import { getCurrentRank, getLevelProgressFromTotalXp } from '$lib/gamification/level.js';
@@ -113,6 +114,33 @@
 
 	/** Controls the one-time profile setup modal. */
 	let showInitModal = $state(false);
+
+	// Mock match data for post-match car ride home telemetry
+	let matchData = $state<any>(null);
+	let isEmbargoed = $state(false);
+	let attestationSigned = $state(false);
+	let countdown = $state('15:00');
+
+	// Simulate data fetch
+	$effect(() => {
+		const { untrack } = require('svelte');
+		untrack(() => {
+			setTimeout(() => {
+				matchData = {
+					opponent: 'Metro City Elite',
+					result: 'L 1-2',
+					date: new Date().toISOString(),
+					rpe: 8,
+					successRate: 84
+				};
+				isEmbargoed = true;
+			}, 1000);
+		});
+	});
+
+	function signAttestation() {
+		attestationSigned = true;
+	}
 
 	let coachBountyCount = $state(0);
 	let heroQuestId = $state<string | null>(null);
@@ -518,12 +546,24 @@
 			<p class="pd-hq-section-head__eyebrow pd-label player-analytics-void__eyebrow">Performance</p>
 		</header>
 		{#if authStore.isConsented}
-			<VanguardProtocolPanel
-				prismValues={attrRadarValues}
-				bind:selectedAxis={selectedVanguardAxis}
-				compact={!telemetryReady}
-				hideHeadTitle={true}
-			/>
+			<div class="tw-relative tw-min-w-0">
+				{#if isEmbargoed && !attestationSigned}
+					<CarRideHome
+						{matchData}
+						{isEmbargoed}
+						{attestationSigned}
+						{countdown}
+						{signAttestation}
+					/>
+				{:else}
+					<VanguardProtocolPanel
+						prismValues={attrRadarValues}
+						bind:selectedAxis={selectedVanguardAxis}
+						compact={!telemetryReady}
+						hideHeadTitle={true}
+					/>
+				{/if}
+			</div>
 			<footer class="player-capsules-strip player-capsules-strip--void" aria-labelledby="lobby-capsules-h">
 				{#if vanguardFlags.capsulesEnabled && trajectoryEngine.activeCapsule}
 					<header class="pd-hq-section-head player-capsules-strip__head">
