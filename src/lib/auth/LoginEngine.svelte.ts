@@ -155,6 +155,7 @@ class LoginEngine {
 
       // 4. Sign in with custom token (mirrors validatePlayerOTP flow)
       await signInWithCustomToken(auth, customToken);
+      await auth.currentUser?.getIdToken(true);
     } catch (err) {
       if (err instanceof Error && err.name === 'SecurityError') {
           this.error = 'Security Guard: Passkeys require an encrypted HTTPS connection with matching Relying Party ID.';

@@ -612,6 +612,7 @@ export class IntentEngine {
 	}
 
 	async refreshIntents() {
+		if (!db || !authStore.isAuthenticated) return;
 		if (!this._teamId || this.isRefreshing) return;
 		this.mutationError = '';
 		this.isRefreshing = true;
@@ -743,9 +744,10 @@ export class IntentEngine {
 		teamPlayerUids: string[],
 		rows: RosterEntry[],
 	): Promise<RosterEntry[]> {
+		if (!db || !authStore.isAuthenticated) return rows;
 		const claimedUids = new Set(rows.map((r) => r.uid).filter(Boolean));
 		const existingEmails = new Set(rows.map((r) => r.email.toLowerCase()).filter(Boolean));
-		const fallbackRows = [...rows];
+		let fallbackRows = [...rows];
 
 		try {
 			const linkSnap = await getDocs(
@@ -762,7 +764,7 @@ export class IntentEngine {
 				if (!userSnap.exists()) continue;
 				const row = this._userDocToRosterEntry(email, userSnap.data());
 				if (!row.assignable) continue;
-				fallbackRows.push(row);
+				fallbackRows = [...fallbackRows, row];
 				existingEmails.add(email.toLowerCase());
 				if (row.uid) claimedUids.add(row.uid);
 			}
@@ -780,7 +782,7 @@ export class IntentEngine {
 					if (existingEmails.has(d.id.toLowerCase())) continue;
 					const row = this._userDocToRosterEntry(d.id, d.data());
 					if (!row.assignable) continue;
-					fallbackRows.push(row);
+					fallbackRows = [...fallbackRows, row];
 					existingEmails.add(d.id.toLowerCase());
 					claimedUids.add(playerUid);
 				}

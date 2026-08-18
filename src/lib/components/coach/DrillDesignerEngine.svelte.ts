@@ -95,6 +95,7 @@ export class DrillDesignerEngine {
 	}
 
 	async loadSavedDrills() {
+		if (!db || !authStore.isAuthenticated) return;
 		const tid = this.teamId;
 		if (!tid) {
 			this.savedTeamDrills = [];

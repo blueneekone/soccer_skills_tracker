@@ -111,6 +111,7 @@ export async function executeLoginAsDirector(deps: {
 
 	deps.onScope(deps.club.id);
 	await signInWithCustomToken(deps.auth, payload.token);
+	await deps.auth.currentUser?.getIdToken(true);
 	await deps.touchImpersonation();
 	await logSecurityEvent(
 		'IMPERSONATE_DIRECTOR',

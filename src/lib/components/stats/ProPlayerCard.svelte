@@ -193,7 +193,7 @@
 			'Dribbling',
 			'Defending',
 		];
-		const data = [
+		const data = $state.snapshot([
 			num(phys.pace),
 			num(phys.stamina),
 			num(phys.strength),
@@ -201,7 +201,7 @@
 			num(tech.shooting),
 			num(tech.dribbling),
 			num(tech.defending),
-		];
+		]);
 
 		if (radarInstance) {
 			radarInstance.destroy();

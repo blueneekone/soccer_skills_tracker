@@ -26,8 +26,8 @@ describe('Epic 4.9 — Director comms compliance console', () => {
 
 	it('mounted on /director?tab=comms with compliance console (hub CTA for broadcast — 4.15a)', () => {
 		expect(directorPage).toMatch(/DirectorCommsCompliancePanel/);
-		expect(directorPage).not.toMatch(/DirectorClubBroadcastComposer/);
-		expect(directorPage).toMatch(/channel=club_wide/);
+		expect(directorPage).toMatch(/DirectorClubBroadcastComposer/);
+		expect(directorPage).not.toMatch(/channel=club_wide/);
 	});
 
 	it('director can list messaging_audit scoped to club teams', () => {

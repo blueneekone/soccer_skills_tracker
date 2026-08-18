@@ -33,6 +33,7 @@
 			const payload = (res.data || {}) as { customToken?: string };
 			if (!payload.customToken) throw new Error('Token missing.');
 			await signInWithCustomToken(auth, payload.customToken);
+			await auth.currentUser?.getIdToken(true);
 			await impersonationStore.touch();
 			untrack(() => {
 				open = false;

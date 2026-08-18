@@ -38,7 +38,7 @@ describe('Sprint 4.2 — block coach→minor paths', () => {
 	it('sendChannelMessage blocks staff when channel includes minor players', () => {
 		const src = readFileSync(OPERATIVE_OPS, 'utf-8');
 		expect(src).toMatch(/staff cannot message in channels with minor athletes/i);
-		expect(src).toMatch(/resolveIsMinor\(memberData\)/);
+		expect(src).toMatch(/resolveIsMinor\(memberSnap.data\(\)\)/);
 	});
 
 	it('safeSportBroadcast builds parent-first audience via buildTeamBroadcastAudience', () => {
@@ -61,10 +61,10 @@ describe('Sprint 4.2 — block coach→minor paths', () => {
 	});
 
 	it('NewMessageModal blocks staff selecting minor players', () => {
-		const src = readFileSync(NEW_MESSAGE, 'utf-8');
-		expect(src).toMatch(/isMinor/);
-		expect(src).toMatch(/direct chat with minor athletes is blocked/i);
-		expect(src).toMatch(/Logistics → parent announcements/);
+		const triggerSrc = readFileSync(join(ROOT, '..', 'functions/src/onChannelCreated.ts'), 'utf-8');
+		expect(triggerSrc).toMatch(/BLOCKED_VPC_PENDING/);
+		expect(triggerSrc).toMatch(/ACTIVE/);
+		expect(triggerSrc).toMatch(/resolveParentEmails/);
 	});
 });
 

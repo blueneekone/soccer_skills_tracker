@@ -88,9 +88,13 @@
 			url.searchParams.delete('tab');
 		}
 		const search = url.searchParams.toString();
-		void goto(`${url.pathname}${search ? `?${search}` : ''}`, {
-			replaceState: true,
-			keepFocus: true,
+		import('svelte').then(({ untrack }) => {
+			untrack(() => {
+				void goto(`${url.pathname}${search ? `?${search}` : ''}`, {
+					replaceState: true,
+					keepFocus: true,
+				});
+			});
 		});
 	}
 

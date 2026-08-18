@@ -83,6 +83,7 @@
 	}
 
 	$effect(() => {
+		if (!db || !authStore.isAuthenticated) return;
 		if (!browser || !teamId) {
 			unavailable = [];
 			loading = false;

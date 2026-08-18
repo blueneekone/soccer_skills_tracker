@@ -90,8 +90,19 @@ service cloud.firestore {
         allow read, write: if coachStaffCanAccessTeam(teamId) || directorScopedToTeam(teamId) || isGlobalAdmin();
       }
 
+      match /tactics/{tacticId} {
+        allow read, write: if coachStaffCanAccessTeam(teamId) || directorScopedToTeam(teamId) || isGlobalAdmin();
+      }
+
       match /intents/{intentId} {
         allow read, write: if coachStaffCanAccessTeam(teamId) || directorScopedToTeam(teamId) || isGlobalAdmin();
+      }
+
+      match /attendance_sessions/{sessionId} {
+        allow read: if coachStaffCanAccessTeam(teamId);
+        allow write: if coachStaffCanAccessTeam(teamId) &&
+                     request.resource.data.keys().hasAll(['title', 'sessionDate', 'records', 'createdBy']) &&
+                     request.resource.data.teamId == teamId;
       }
     }
 
@@ -101,6 +112,14 @@ service cloud.firestore {
 
     match /sports_configs/{sportId} {
       allow read: if isAuthenticated();
+    }
+
+    match /messaging_audit/{docId} {
+      allow read: if isGlobalAdmin() || isDirector();
+    }
+
+    match /team_broadcasts/{docId} {
+      allow read: if isGlobalAdmin() || isDirector() || isCoach();
     }
     match /config/{configId} {
       allow read: if isAuthenticated();
