@@ -28,8 +28,9 @@
 
 	$effect(() => {
 		let destroyed = false; // Memory leak guard (Architect Persona)
+		const currentData = $state.snapshot(safeValues);
 
-		if (canvasEl && safeValues.length > 0) {
+		if (canvasEl && currentData.length > 0) {
 			// Initialize Chart.js Vanguard Prism
 			chart = new Chart(canvasEl, {
 				type: 'radar',
@@ -37,7 +38,7 @@
 					labels: ATTRS as unknown as string[],
 					datasets: [
 						{
-							data: safeValues,
+							data: currentData,
 							backgroundColor: 'rgba(20, 184, 166, 0.2)', // Data Cyan 20%
 							borderColor: '#14b8a6', // Data Cyan
 							borderWidth: 2,

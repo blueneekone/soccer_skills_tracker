@@ -185,6 +185,13 @@
 
 			await updateDoc(doc(db, 'users', admin.id), patch);
 
+			// Refresh custom claims immediately if editing our own profile
+			if (admin.email === authStore.user?.email) {
+				await import('$lib/firebase.js').then(({ auth }) => {
+					return auth.currentUser?.getIdToken(true);
+				});
+			}
+
 			// Keep config/admins canonical if role changed.
 			try {
 				const email = (admin.email || '').toLowerCase();

@@ -72,6 +72,7 @@
 
 	// ── Load ───────────────────────────────────────────────────────────────────
 	$effect(() => {
+		if (!db || !authStore.isAuthenticated) return;
 		const id = clubId.trim();
 		if (!id) {
 			lastLoadedClubId = '';

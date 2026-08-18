@@ -178,6 +178,7 @@ export class AdminUsersEngine {
 			const payload = (res.data || {}) as { customToken?: string };
 			if (!payload.customToken) throw new Error('Impersonation token missing from response.');
 			await signInWithCustomToken(auth, payload.customToken);
+			await auth.currentUser?.getIdToken(true);
 			await impersonationStore.touch();
 			await logSecurityEvent(
 				'IMPERSONATE_USER',

@@ -90,6 +90,7 @@
 	}
 
 	$effect(() => {
+		if (!db || !authStore.isAuthenticated) return;
 		const cid = effectiveClubId;
 		if (!cid) {
 			publicSlug = '';
@@ -237,6 +238,7 @@
 	}
 
 	$effect(() => {
+		if (!db || !authStore.isAuthenticated) return;
 		const cid = effectiveClubId;
 		historyVersion;
 		if (!cid) {

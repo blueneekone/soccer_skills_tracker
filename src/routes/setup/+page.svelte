@@ -318,6 +318,7 @@
 					...basePrivacy,
 				});
 				await setDoc(userRef, payload, { merge: true });
+				await auth.currentUser?.getIdToken(true);
 			}
 
 			await authStore.refresh({ silent: true });

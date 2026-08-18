@@ -1,0 +1,7 @@
+fix(frontend): implement B815 Hydration Recovery Blueprint
+
+- Enforced B815 Defensive Hydration guards (`if (!db || !authStore.isAuthenticated) return;`) across multiple `getDocs` and `onSnapshot` queries to prevent infinite loop database quote exhaustion on Svelte 5 component mounts.
+- Forced client-side IndexedDB token flushing by executing `await auth.currentUser?.getIdToken(true);` immediately following custom token impersonations, coach onboarding role claims, and WebAuthn passkey authentication, resolving data visibility race conditions.
+- Resolved Svelte 5 reactivity infinite loops by enclosing SvelteKit `goto()` navigations inside `$effect` blocks within `untrack()` closures, and refactored legacy array `.push()` mutations to use immutable spread assignments.
+- Stripped Svelte 5 proxy envelopes using `$state.snapshot()` prior to passing nested component data into third-party visualizers like `Chart.js` instances, preventing internal crash loops.
+- Enforced the "Car Ride Home Protocol" in the player UI, gating performance telemetry (`VanguardProtocolPanel`) behind a mandatory Atompunk Amber embargo card until the 15-minute cooling off period elapses or parent attestation occurs.

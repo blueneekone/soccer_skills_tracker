@@ -126,7 +126,7 @@
 			Director-level clearance required.
 			Contact your platform administrator.
 		</p>
-		<button class="mc-locked-back" onclick={() => goto('/home')}>← RETURN TO BASE</button>
+		<button class="mc-locked-back" onclick={() => { untrack(() => goto('/home')); }}>← RETURN TO BASE</button>
 	</div>
 {:else}
 	<div class="mc-root">

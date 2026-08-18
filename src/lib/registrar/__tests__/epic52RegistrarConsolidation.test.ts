@@ -11,7 +11,7 @@ const LOADER = join(ROOT, 'src/lib/registrar/loadComplianceRows.js');
 const REGISTRAR_PAGE = join(ROOT, 'src/routes/(app)/registrar/+page.js');
 const ROUTE_POLICIES = join(ROOT, 'src/lib/auth/route-policies.js');
 const LOGIN_ROUTING = join(ROOT, 'src/lib/auth/loginRouting.js');
-const DIRECTOR_PAGE = join(ROOT, 'src/routes/(app)/director/+page.svelte.disabled');
+const DIRECTOR_PAGE = join(ROOT, 'src/routes/(app)/director/+page.svelte');
 const MIGRATION = join(ROOT, 'docs/REGISTRAR_DIRECTOR_MIGRATION.md');
 
 describe.skip('Epic 5.2 — registrar / Director consolidation', () => {
