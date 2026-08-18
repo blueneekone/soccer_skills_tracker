@@ -174,7 +174,8 @@
 	onpointerleave={onPointerLeave}
 >
 	<div
-		class="vc-card tw-absolute tw-inset-0 tw-rounded-2xl tw-border tw-border-white/10 tw-bg-[#010409]/80 tw-backdrop-blur-xl tw-overflow-hidden"
+		class="vc-card tw-absolute tw-inset-0 tw-border tw-border-[#334155] tw-bg-[#0f172a] tw-backdrop-blur-xl tw-overflow-hidden"
+		style:clip-path="polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px)"
 		style:transform={cardTransform}
 		style:transition={cardTransition}
 	>
@@ -184,7 +185,7 @@
 		  wider bleed — sell the Stark-glass depth without a halo bloom hack.
 		-->
 		<div
-			class="vc-edge tw-pointer-events-none tw-absolute tw-inset-0 tw-rounded-2xl"
+			class="vc-edge tw-pointer-events-none tw-absolute tw-inset-0"
 			aria-hidden="true"
 		></div>
 

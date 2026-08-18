@@ -1,13 +1,33 @@
 const { onCall, HttpsError } = require('firebase-functions/v2/https');
 const { getAdminDb } = require('../utils/adminDb.js');
 
+// Helper to mathematically reduce each of the 6 Scout's Six axis values by exactly 2%
+// (Matches src/lib/utils/gamificationMath.ts applySkillDecay without cross-package import issues)
+function applySkillDecay(stats) {
+  if (!stats) return stats;
+  const decayedStats = { ...stats };
+  const axes = ['PAC', 'ACC', 'AGI', 'STM', 'POW', 'VAN'];
+
+  for (const axis of axes) {
+    const statValue = decayedStats[axis];
+    if (statValue !== undefined && statValue !== null && statValue !== '—') {
+      let val = parseFloat(String(statValue));
+      if (!isNaN(val)) {
+        val = Math.floor(val * 0.98 * 100) / 100;
+        if (val < 0) val = 0;
+        decayedStats[axis] = val.toString();
+      }
+    }
+  }
+  return decayedStats;
+}
+
 exports.applySkillDecay = onCall({ enforceAppCheck: true }, async (request) => {
-  const uid = request.auth?.uid;
-  if (!uid) throw new HttpsError('unauthenticated', 'Auth required.');
+  const email = request.auth?.token?.email;
+  if (!email) throw new HttpsError('unauthenticated', 'Auth required.');
 
   const db = getAdminDb();
-  const usersQuery = await db.collection('users').where('uid', '==', uid).limit(1).get();
-  const docRef = usersQuery.empty ? db.collection('users').doc(uid) : usersQuery.docs[0].ref;
+  const docRef = db.collection('users').doc(email.toLowerCase());
 
   const snap = await docRef.get();
   if (!snap.exists) return { applied: false, reason: 'no_stats' };
@@ -42,19 +62,7 @@ exports.applySkillDecay = onCall({ enforceAppCheck: true }, async (request) => {
   const newXp = Math.max(0, currentXp - xpLost);
 
   const stats = armory.stats || {};
-  const decayedStats = { ...(stats.scoutsSix || {}) };
-  const axes = ['PAC', 'ACC', 'AGI', 'STM', 'POW', 'VAN'];
-
-  for (const axis of axes) {
-    if (decayedStats[axis] && decayedStats[axis] !== '—') {
-      let val = parseFloat(decayedStats[axis]);
-      if (!isNaN(val)) {
-        val = Math.floor(val * 0.98 * 100) / 100;
-        if (val < 0) val = 0;
-        decayedStats[axis] = val.toString();
-      }
-    }
-  }
+  const decayedStats = applySkillDecay(stats.scoutsSix || {});
 
   await docRef.update({
     'armory.totalXP': newXp,

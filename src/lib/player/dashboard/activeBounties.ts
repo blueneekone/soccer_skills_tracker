@@ -822,11 +822,11 @@ export function buildMissionRailModalReadout(
 	quest: QuestTask,
 	drillLine?: string,
 ): string {
-	const parts: string[] = [];
-	if (quest.senderLabel) parts.push(quest.senderLabel);
-	if (drillLine) parts.push(drillLine);
+	let parts: string[] = [];
+	if (quest.senderLabel) parts = [...parts, quest.senderLabel];
+	if (drillLine) parts = [...parts, drillLine];
 	const reward = formatQuestRewardLabel(quest);
-	if (reward) parts.push(reward);
+	if (reward) parts = [...parts, reward];
 	return parts.join(' · ') || 'Confirm mission parameters before training handoff.';
 }
 

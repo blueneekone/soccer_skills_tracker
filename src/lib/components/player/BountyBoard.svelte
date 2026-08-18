@@ -79,7 +79,7 @@
 							<div class="tw-mt-2 tw-text-amber-500 tw-font-mono tw-text-sm">REWARD: ${b.rewardAmount}</div>
 						</div>
 						<button 
-							class="tw-ml-4 tw-px-6 tw-py-3 tw-bg-amber-500 tw-text-black tw-font-bold tw-rounded-xl hover:tw-bg-amber-400 tw-transition-colors"
+							class="tw-ml-4 tw-px-6 tw-py-3 tw-bg-[#fbbf24] tw-text-black tw-font-bold tw-rounded-xl hover:tw-bg-amber-400 tw-transition-colors"
 							onclick={() => handleClaim(b)}
 						>
 							CLAIM

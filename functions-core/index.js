@@ -59,3 +59,6 @@ exports.generatePdfReportCard = reportOps.generatePdfReportCard;
 const b2bEnrollmentOps = require('./src/domains/b2bEnrollmentOps.js');
 exports.enrollIndependentDirector = b2bEnrollmentOps.enrollIndependentDirector;
 exports.enrollGovernedDirector = b2bEnrollmentOps.enrollGovernedDirector;
+
+const staffPermissionsOps = require('./src/domains/staffPermissionsOps.js');
+exports.callableUpdateStaffRole = staffPermissionsOps.callableUpdateStaffRole;
