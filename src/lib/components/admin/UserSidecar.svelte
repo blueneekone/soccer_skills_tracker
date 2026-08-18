@@ -257,7 +257,7 @@
 
 	<!-- Drawer -->
 	<div
-		class="tw-fixed tw-inset-y-0 tw-right-0 tw-z-[100] tw-w-full md:tw-w-[500px] cc-chart-card cc-chart-card--soc tw-flex tw-flex-col tw-overflow-y-auto tw-rounded-none md:tw-rounded-l-2xl tw-border-r-0 tw-shadow-2xl tw-transform tw-transition-transform tw-duration-300"
+		class="tw-fixed tw-inset-y-0 tw-right-0 tw-z-[100] tw-w-full md:tw-w-[500px] cc-chart-card cc-chart-card--soc tw-flex tw-flex-col tw-overflow-y-auto tw-rounded-none md:tw-rounded-none tw-border-r-0 tw-shadow-2xl tw-transform tw-transition-transform tw-duration-300"
 		data-admin-shell="true"
 	>
 		<header class="cc-chart-card__head tw-shrink-0">

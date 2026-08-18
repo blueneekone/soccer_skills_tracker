@@ -75,7 +75,7 @@
 		<!-- Header -->
 		<div class="tw-p-6 tw-border-b tw-border-[#334155] tw-flex tw-items-start tw-justify-between">
 			<div class="tw-flex tw-items-center tw-gap-4">
-				<div class="tw-w-12 tw-h-12 tw-rounded-full tw-bg-[#0f172a] tw-flex tw-items-center tw-justify-center tw-border tw-border-[#334155] tw-text-[#FAFAFA] tw-font-bold tw-text-lg">
+				<div class="tw-w-12 tw-h-12 tw-rounded-none tw-bg-[#0f172a] tw-flex tw-items-center tw-justify-center tw-border tw-border-[#334155] tw-text-[#FAFAFA] tw-font-bold tw-text-lg">
 					{getInitials(enterprisePlayerDrawer.selected.displayName)}
 				</div>
 				<div>
@@ -98,13 +98,13 @@
 			<div>
 				<h3 class="tw-text-xs tw-font-semibold tw-text-[#A1A1AA] tw-uppercase tw-tracking-wider tw-mb-4">Identity & Roster</h3>
 				<div class="tw-grid tw-grid-cols-2 tw-gap-4">
-					<div class="tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-p-4 tw-rounded-lg">
+					<div class="tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-p-4 tw-rounded-none">
 						<div class="tw-text-[#A1A1AA] tw-text-xs tw-mb-1">Jersey</div>
 						<div class="tw-text-[#FAFAFA] tw-font-mono tw-[font-variant-numeric:tabular-nums] tw-text-lg tw-font-bold">
 							{enterprisePlayerDrawer.selected.jersey || '--'}
 						</div>
 					</div>
-					<div class="tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-p-4 tw-rounded-lg">
+					<div class="tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-p-4 tw-rounded-none">
 						<div class="tw-text-[#A1A1AA] tw-text-xs tw-mb-1">Position</div>
 						<div class="tw-text-[#FAFAFA] tw-font-mono tw-[font-variant-numeric:tabular-nums] tw-text-lg tw-font-bold">
 							{enterprisePlayerDrawer.selected.position || '--'}
@@ -116,7 +116,7 @@
 			<!-- Accountability Block -->
 			<div>
 				<h3 class="tw-text-xs tw-font-semibold tw-text-[#A1A1AA] tw-uppercase tw-tracking-wider tw-mb-4">Live Accountability</h3>
-				<div class="tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-p-4 tw-rounded-lg tw-space-y-4">
+				<div class="tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-p-4 tw-rounded-none tw-space-y-4">
 					{#if stats}
 						<div class="tw-flex tw-justify-between tw-items-center">
 							<span class="tw-text-sm tw-text-[#D4D4D8]">Current Level</span>
@@ -140,7 +140,7 @@
 			{#if canReadHousehold}
 			<div>
 				<h3 class="tw-text-xs tw-font-semibold tw-text-[#A1A1AA] tw-uppercase tw-tracking-wider tw-mb-4">Household & Compliance</h3>
-				<div class="tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-p-4 tw-rounded-lg tw-space-y-4">
+				<div class="tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-p-4 tw-rounded-none tw-space-y-4">
 					<div class="tw-flex tw-justify-between tw-items-center">
 						<span class="tw-text-sm tw-text-[#D4D4D8]">Age Group</span>
 						<span class="tw-text-[#FAFAFA] tw-font-mono tw-[font-variant-numeric:tabular-nums]">

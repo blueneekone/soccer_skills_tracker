@@ -97,7 +97,7 @@
 					<Icon name={'action.filter' as IconName} aria-hidden="true" />
 					<span>Enterprise Filter</span>
 					{#if filterActiveCount > 0}
-						<span class="tw-ml-2 tw-bg-[#fbbf24] tw-text-[#0B0F19] tw-rounded-full tw-px-2 tw-py-0.5 tw-text-[10px] tw-font-bold" aria-label="{filterActiveCount} active filters">
+						<span class="tw-ml-2 tw-bg-[#fbbf24] tw-text-[#0B0F19] tw-rounded-none tw-px-2 tw-py-0.5 tw-text-[10px] tw-font-bold" aria-label="{filterActiveCount} active filters">
 							{filterActiveCount}
 						</span>
 					{/if}

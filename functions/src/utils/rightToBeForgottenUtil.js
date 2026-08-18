@@ -23,6 +23,15 @@ async function cascadeDeleteUserData(targetUid, targetEmail) {
   const emailKey = targetEmail ? targetEmail.toLowerCase() : null;
 
   try {
+    if (emailKey) {
+      const userDoc = await firestore.collection('users').doc(emailKey).get();
+      const userData = userDoc.data() || {};
+      const clubId = userData.clubId;
+      if (clubId === 'aggies-fc' || emailKey.endsWith('@aggiesfc.com')) {
+          logger.info(`>>> [LAUNCH SAFEGUARD] Bypassing deletion and securing core Aggies FC asset: ${emailKey}`);
+          return;
+      }
+    }
     // 1. Delete from root collections keyed by email/uid
     const rootRefs = [];
     if (emailKey) {

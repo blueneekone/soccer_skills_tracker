@@ -1,5 +1,5 @@
 /**
- * sportsConfigStore.svelte.js
+ * sportsConfigs
  * ───────────────────────────
  * Phase 3, Epic 4 — Sports_Configs Dynamic Trees.
  *
@@ -207,7 +207,7 @@ function queueReadRepair(sportId, fallbackData) {
 
 /** Start the onSnapshot listener (idempotent). */
 function startListener() {
-  if (!browser || _unsubscribe) return;
+  if (!browser || _unsubscribe || !db || !authStore.isAuthenticated) return;
 
   const colRef = collection(db, 'sports_configs');
   const unsub = onSnapshot(
@@ -338,3 +338,69 @@ export const sportsConfigStore = {
   /** Read-only snapshot of the bundled offline fallback. */
   get legacyConfigs() { return LEGACY_SPORT_CONFIGS; },
 };
+
+// ── Admin Ops: Sports Configuration Engine ─────────────────────────────────────
+
+import { updateDoc, addDoc, deleteDoc } from 'firebase/firestore';
+
+/**
+ * Creates a new sport configuration in the 'sports_configs' collection.
+ *
+ * @param {import('$lib/types/sportsConfig').SportsConfigDoc} data - The data for the new sport.
+ * @returns {Promise<string>} The ID of the newly created document.
+ */
+export async function createSportsConfig(data: import('$lib/types/sportsConfig').SportsConfigDoc): Promise<string> {
+  const colRef = collection(db, 'sports_configs');
+  const docRef = await addDoc(colRef, data);
+
+  const auditData = {
+    action: 'CREATE_SPORT_CONFIG',
+    targetId: docRef.id,
+    timestamp: new Date().toISOString(),
+    admin: authStore.user?.email || 'unknown',
+  };
+  await addDoc(collection(db, 'security_audits'), auditData);
+
+  return docRef.id;
+}
+
+/**
+ * Edits an existing sport configuration.
+ *
+ * @param {string} sportId - The ID of the sport configuration to edit.
+ * @param {Partial<import('$lib/types/sportsConfig').SportsConfigDoc>} updates - The fields to update.
+ * @returns {Promise<void>}
+ */
+export async function editSportsConfig(sportId: string, updates: Partial<import('$lib/types/sportsConfig').SportsConfigDoc>): Promise<void> {
+  const docRef = doc(db, 'sports_configs', sportId);
+  await updateDoc(docRef, updates);
+
+  const auditData = {
+    action: 'EDIT_SPORT_CONFIG',
+    targetId: sportId,
+    timestamp: new Date().toISOString(),
+    admin: authStore.user?.email || 'unknown',
+  };
+  await addDoc(collection(db, 'security_audits'), auditData);
+}
+
+/**
+ * Audits sports configurations by archiving or restoring them.
+ *
+ * @param {string} sportId - The ID of the sport configuration to audit.
+ * @param {'active' | 'archived' | 'draft'} status - The new status.
+ * @returns {Promise<void>}
+ */
+export async function auditSportsConfig(sportId: string, status: 'active' | 'archived' | 'draft'): Promise<void> {
+  const docRef = doc(db, 'sports_configs', sportId);
+  await updateDoc(docRef, { status });
+
+  const auditData = {
+    action: 'AUDIT_SPORT_CONFIG',
+    targetId: sportId,
+    details: { status },
+    timestamp: new Date().toISOString(),
+    admin: authStore.user?.email || 'unknown',
+  };
+  await addDoc(collection(db, 'security_audits'), auditData);
+}

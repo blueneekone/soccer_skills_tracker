@@ -1,5 +1,5 @@
 import { normalizeClubSport } from '$lib/utils/sport-icon.js';
-import { sportsConfigStore } from '$lib/stores/sportsConfigStore.svelte.js';
+import { sportsConfigStore } from '$lib/services/sportsConfigs';
 
 /**
  * @typedef {{ keys: string[], labels: string[] }} SportAttributeSchema

@@ -71,7 +71,7 @@
 
 <svelte:window onclick={handleWindowClick} onscroll={handleWindowClick} />
 
-<div class="v-table-wrap" role="region" aria-label="Global users table" tabindex="-1">
+<div class="v-table-wrap tw-overflow-x-auto tw-border tw-border-[#334155] tw-bg-[#0f172a] tw-rounded-none tw-min-w-0" role="region" aria-label="Global users table" tabindex="-1">
 	<div class="tw-border tw-border-[#334155] tw-bg-[#0f172a] tw-p-4 tw-min-w-0 tw-overflow-x-auto">
 		<table class="tw-w-full tw-font-mono tw-text-sm v-table">
 		<thead>

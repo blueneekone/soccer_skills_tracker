@@ -648,45 +648,6 @@ async function writeImpersonationAuditLogs(adminEmail, targetEmail, targetUid, t
   ]);
 }
 
-exports.impersonateUserFn = onCall({region: REGION}, async (request) => {
-  const {email: adminEmail} = assertSuperAdmin(request);
-  const data = request.data || {};
-  const targetEmailIn = typeof data.targetEmail === 'string' ? data.targetEmail.trim() : '';
-  const targetUidIn = typeof data.targetUid === 'string' ? data.targetUid.trim() : '';
-  if (!targetEmailIn && !targetUidIn) throw new HttpsError('invalid-argument', 'Provide targetEmail or targetUid.');
-
-  const userRecord = await resolveImpersonationTargetUser(targetUidIn, targetEmailIn, adminEmail);
-  const targetUid = userRecord.uid;
-  const targetEmail = normEmail(userRecord.email) || '';
-
-  if (request.auth.uid === targetUid) throw new HttpsError('failed-precondition', 'You cannot impersonate your own account.');
-
-  let targetRole = '';
-  if (targetEmail) {
-    const userDocSnap = await db().collection('users').doc(targetEmail).get().catch(() => null);
-    if (userDocSnap?.exists) targetRole = typeof userDocSnap.data()?.role === 'string' ? userDocSnap.data().role : '';
-  }
-  if (targetRole === 'super_admin') throw new HttpsError('permission-denied', 'Impersonating another super_admin is not permitted.');
-
-  const additionalClaims = { impersonation: true, impersonatedBy: adminEmail, impersonatedEmail: targetEmail || null, impersonatedRole: targetRole || null, impersonationStartedAt: Date.now() };
-
-  let customToken;
-  try {
-    customToken = await admin.auth().createCustomToken(targetUid, additionalClaims);
-  } catch (err) {
-    logger.error('impersonateUserFn: createCustomToken failed', err);
-    throw new HttpsError('internal', 'Failed to mint impersonation token.');
-  }
-
-  try {
-    await writeImpersonationAuditLogs(adminEmail, targetEmail, targetUid, targetRole, request.auth.uid);
-  } catch (err) {
-    logger.error('impersonateUserFn: audit write failed', err);
-    throw new HttpsError('internal', 'Audit logging failed; impersonation aborted.');
-  }
-
-  return { token: customToken, targetUid, targetEmail: targetEmail || null, targetRole: targetRole || null, impersonatedBy: adminEmail };
-});
 
 // ── Sprint 2.7 — GDPR Purge (right-to-be-forgotten) ─────────────────────────
 //

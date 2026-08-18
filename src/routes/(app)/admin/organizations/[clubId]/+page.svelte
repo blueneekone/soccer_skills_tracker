@@ -249,7 +249,7 @@
 		<!-- ── Club identity header ────────────────────────────────────────────── -->
 		<div class="tw-flex tw-items-center tw-gap-4">
 			{#if typeof clubDoc.logoUrl === 'string' && clubDoc.logoUrl.trim()}
-				<img class="tw-w-14 tw-h-14 tw-rounded-xl tw-object-cover tw-border tw-border-[#1E293B] tw-shrink-0" src={clubDoc.logoUrl.trim()} alt="" loading="lazy" />
+				<img class="tw-w-14 tw-h-14 tw-rounded-none tw-object-cover tw-border tw-border-[#1E293B] tw-shrink-0" src={clubDoc.logoUrl.trim()} alt="" loading="lazy" />
 			{:else}
 				<div class="tw-w-14 tw-h-14 tw-rounded-none tw-bg-[#1E293B] tw-flex tw-items-center tw-justify-center tw-text-2xl tw-text-[#D4D4D8] tw-shrink-0" aria-hidden="true">
 					<Icon name={"org.building" as IconName} />
@@ -260,7 +260,7 @@
 				<div class="tw-flex tw-items-center tw-gap-3">
 					<span class="tw-text-xs tw-text-[#A1A1AA] tw-font-mono">{clubId}</span>
 					{#if clubDoc.isInfinite === true}
-						<span class="tw-inline-flex tw-items-center tw-text-[10px] tw-font-extrabold tw-tracking-wider tw-px-2 tw-py-1 tw-rounded-full tw-text-[#1E293B] tw-bg-[#f59e0b] tw-uppercase">∞ Promo License</span>
+						<span class="tw-inline-flex tw-items-center tw-text-[10px] tw-font-extrabold tw-tracking-wider tw-px-2 tw-py-1 tw-rounded-none tw-text-[#1E293B] tw-bg-[#f59e0b] tw-uppercase">∞ Promo License</span>
 					{/if}
 				</div>
 			</div>
@@ -357,8 +357,8 @@
 							<div class="tw-flex tw-flex-col tw-gap-2 tw-mt-2">
 								<span class="tw-text-sm tw-font-bold tw-text-[#D4D4D8]">Seat Utilization</span>
 								<div class="tw-flex tw-flex-col tw-gap-1 tw-w-full">
-									<div class="tw-h-2 tw-rounded-full tw-bg-[#1E293B] tw-overflow-hidden">
-										<div class="tw-h-full tw-rounded-full tw-transition-all tw-duration-200 {licenseStressClass(u.pct)}" style="width: {u.pct}%;"></div>
+									<div class="tw-h-2 tw-rounded-none tw-bg-[#1E293B] tw-overflow-hidden">
+										<div class="tw-h-full tw-rounded-none tw-transition-all tw-duration-200 {licenseStressClass(u.pct)}" style="width: {u.pct}%;"></div>
 									</div>
 									<span class="tw-text-xs tw-font-bold tw-text-[#A1A1AA] tw-font-mono tw-tabular-nums">{u.used} / {u.limit} seats ({Math.round(u.pct)}%)</span>
 								</div>

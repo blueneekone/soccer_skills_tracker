@@ -646,3 +646,44 @@ register('GET',  /^partners\/hotel-rebates\/([^/]+)$/, partnerHotelRebatesGet, {
 // Exposed so domain handler files can register their routes during
 // module load (require() in functions/index.js drives this).
 exports.register = register;
+
+const {onSchedule} = require('firebase-functions/v2/scheduler');
+
+exports.purgeGatewayCaches = onSchedule(
+    {
+      schedule: '33 3 * * *',
+      region: REGION,
+      timeZone: 'America/New_York',
+    },
+    async () => {
+      const registry = getRegistryDb();
+      const cutoff = admin.firestore.Timestamp.fromMillis(
+          Date.now() - 24 * 60 * 60 * 1000,
+      );
+
+      let pruned = 0;
+      const purge = async (collectionName) => {
+        let lastDoc = null;
+        // eslint-disable-next-line no-constant-condition
+        while (true) {
+          let q = registry.collection(collectionName)
+              .where('recordedAt', '<', cutoff)
+              .limit(400);
+          if (lastDoc) q = q.startAfter(lastDoc);
+          const page = await q.get();
+          if (page.empty) break;
+          const batch = registry.batch();
+          page.docs.forEach((d) => {
+            batch.delete(d.ref);
+            pruned += 1;
+          });
+          await batch.commit();
+          if (page.size < 400) break;
+          lastDoc = page.docs[page.docs.length - 1];
+        }
+      };
+
+      await purge('gateway_idempotency');
+      logger.info('[purgeGatewayCaches] complete', {pruned});
+    },
+);
