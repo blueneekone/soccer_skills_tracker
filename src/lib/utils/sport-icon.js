@@ -200,11 +200,13 @@ export function clubSportAccent(sport) {
 	try {
 		const cfg = sportsConfigStore.resolveActiveConfig(sport);
 		if (cfg?.palette) {
+			const rawLabel = cfg.displayName || cfg.sportId || '';
+			const cleanLabel = rawLabel.replace(/^vanguard\s+/i, '');
 			return {
 				fg: cfg.palette.fg,
 				glow: cfg.palette.glow,
 				ring: cfg.palette.ring,
-				label: cfg.displayName || cfg.sportId,
+				label: cleanLabel || rawLabel,
 			};
 		}
 	} catch { /* fall through */ }

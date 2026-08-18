@@ -36,7 +36,7 @@ import { authStore } from '$lib/stores/auth.svelte.js';
 /** @type {Record<string, import('$lib/types/sportsConfig').SportsConfigDoc>} */
 const LEGACY_SPORT_CONFIGS = Object.freeze({
   soccer: {
-    sportId: 'soccer', displayName: 'Vanguard Soccer', schemaVersion: 1, status: 'active',
+    sportId: 'soccer', displayName: 'Soccer', schemaVersion: 1, status: 'active',
     attributes: [
       { id: 'pace',      name: 'Pace & Agility',       shortLabel: 'PAC', hexColor: '#00ff66', playerStatKey: 'pace'      },
       { id: 'shooting',  name: 'Shooting',              shortLabel: 'SHO', hexColor: '#ff0055', playerStatKey: 'shooting'  },
@@ -51,7 +51,7 @@ const LEGACY_SPORT_CONFIGS = Object.freeze({
     rpgProjection: { ball_mastery: ['dribbling','ball_mastery','passing'], striking: ['shooting','striking'], pace: ['pace','speed','athletics'], scanning: ['passing','scanning','vision'], grit: ['physical','grit','defending'] },
   },
   basketball: {
-    sportId: 'basketball', displayName: 'Vanguard Basketball', schemaVersion: 1, status: 'active',
+    sportId: 'basketball', displayName: 'Basketball', schemaVersion: 1, status: 'active',
     attributes: [
       { id: 'shooting',   name: 'Shooting Range', shortLabel: 'SHO', hexColor: '#ff0055', playerStatKey: 'shooting'   },
       { id: 'playmaking', name: 'Playmaking',      shortLabel: 'PLY', hexColor: '#ffcc00', playerStatKey: 'playmaking' },
@@ -66,7 +66,7 @@ const LEGACY_SPORT_CONFIGS = Object.freeze({
     rpgProjection: { ball_mastery: ['playmaking','ball_handling','dribbling'], striking: ['shooting','finishing'], pace: ['athletics','speed','pace'], scanning: ['playmaking','vision','court_vision'], grit: ['defense','rebounding','grit'] },
   },
   baseball: {
-    sportId: 'baseball', displayName: 'Vanguard Baseball', schemaVersion: 1, status: 'active',
+    sportId: 'baseball', displayName: 'Baseball', schemaVersion: 1, status: 'active',
     attributes: [
       { id: 'hitting',  name: 'Hitting',      shortLabel: 'HIT', hexColor: '#ff0055', playerStatKey: 'hitting'  },
       { id: 'power',    name: 'Power',         shortLabel: 'PWR', hexColor: '#9d00ff', playerStatKey: 'power'    },
@@ -81,7 +81,7 @@ const LEGACY_SPORT_CONFIGS = Object.freeze({
     rpgProjection: { ball_mastery: ['hitting','fielding'], striking: ['power','arm'], pace: ['speed','pace','athletics'], scanning: ['vision','scanning','awareness'], grit: ['fielding','defense','grit'] },
   },
   football: {
-    sportId: 'football', displayName: 'Vanguard Football', schemaVersion: 1, status: 'active',
+    sportId: 'football', displayName: 'Football', schemaVersion: 1, status: 'active',
     attributes: [
       { id: 'speed',     name: 'Speed',     shortLabel: 'SPD', hexColor: '#00ff66', playerStatKey: 'speed'    },
       { id: 'strength',  name: 'Strength',  shortLabel: 'STR', hexColor: '#ff6600', playerStatKey: 'strength' },
@@ -96,7 +96,7 @@ const LEGACY_SPORT_CONFIGS = Object.freeze({
     rpgProjection: { ball_mastery: ['catching','ball_handling','dribbling'], striking: ['strength','power'], pace: ['speed','agility','pace'], scanning: ['awareness','vision','scanning'], grit: ['tackling','defense','grit'] },
   },
   volleyball: {
-    sportId: 'volleyball', displayName: 'Vanguard Volleyball', schemaVersion: 1, status: 'active',
+    sportId: 'volleyball', displayName: 'Volleyball', schemaVersion: 1, status: 'active',
     attributes: [
       { id: 'serving',  name: 'Serving',  shortLabel: 'SRV', hexColor: '#ffcc00', playerStatKey: 'serving'  },
       { id: 'spiking',  name: 'Spiking',  shortLabel: 'SPK', hexColor: '#ff0055', playerStatKey: 'spiking'  },
@@ -111,7 +111,7 @@ const LEGACY_SPORT_CONFIGS = Object.freeze({
     rpgProjection: { ball_mastery: ['setting','passing','playmaking'], striking: ['spiking','power'], pace: ['agility','speed','pace'], scanning: ['serving','vision','scanning'], grit: ['blocking','defense','grit'] },
   },
   hockey: {
-    sportId: 'hockey', displayName: 'Vanguard Hockey', schemaVersion: 1, status: 'active',
+    sportId: 'hockey', displayName: 'Hockey', schemaVersion: 1, status: 'active',
     attributes: [
       { id: 'skating',        name: 'Skating',        shortLabel: 'SKT', hexColor: '#00ff66', playerStatKey: 'skating'        },
       { id: 'shooting',       name: 'Shooting',        shortLabel: 'SHO', hexColor: '#ff0055', playerStatKey: 'shooting'       },
@@ -126,7 +126,7 @@ const LEGACY_SPORT_CONFIGS = Object.freeze({
     rpgProjection: { ball_mastery: ['stickhandling','ball_mastery','dribbling'], striking: ['shooting','striking','power'], pace: ['skating','speed','pace'], scanning: ['passing','vision','scanning'], grit: ['physicality','defense','grit'] },
   },
   lacrosse: {
-    sportId: 'lacrosse', displayName: 'Vanguard Lacrosse', schemaVersion: 1, status: 'active',
+    sportId: 'lacrosse', displayName: 'Lacrosse', schemaVersion: 1, status: 'active',
     attributes: [
       { id: 'stick_skills',  name: 'Stick Skills',    shortLabel: 'STK', hexColor: '#14b8a6', playerStatKey: 'stick_skills'  },
       { id: 'shooting',      name: 'Shooting Power',  shortLabel: 'SHO', hexColor: '#ff0055', playerStatKey: 'shooting'      },
@@ -141,7 +141,7 @@ const LEGACY_SPORT_CONFIGS = Object.freeze({
     rpgProjection: { ball_mastery: ['stick_skills','dribbling','ball_mastery'], striking: ['shooting','striking'], pace: ['speed','athleticism','pace'], scanning: ['field_vision','vision','scanning'], grit: ['defense','grit','physicality'] },
   },
   generic: {
-    sportId: 'generic', displayName: 'Vanguard Athletics', schemaVersion: 1, status: 'active',
+    sportId: 'generic', displayName: 'Athletics', schemaVersion: 1, status: 'active',
     attributes: [
       { id: 'speed',     name: 'Speed',     shortLabel: 'SPD', hexColor: '#00ff66', playerStatKey: 'speed'     },
       { id: 'power',     name: 'Power',     shortLabel: 'PWR', hexColor: '#ff6600', playerStatKey: 'power'     },

@@ -12,12 +12,16 @@
 	<title>Support Terminal | Admin OS</title>
 </svelte:head>
 
-<div class="tw-flex tw-flex-col tw-w-full tw-min-h-0 tw-gap-[clamp(12px,1.5vw,20px)]">
+<div
+	class="pd-page-root tw-flex tw-flex-col tw-w-full tw-min-w-0 tw-flex-1 tw-min-h-0 tw-gap-[clamp(16px,2vw,24px)] tw-bg-[#0B0F19] tw-text-[#FAFAFA] dark-form-surface cc-root tw-box-border tw-overflow-y-auto"
+	style="padding: var(--bento-pad-liquid, clamp(20px, 4vw, 32px)); box-sizing: border-box;"
+	data-admin-shell="true"
+>
 	<!-- Header -->
-	<header class="tw-flex tw-items-center tw-justify-between tw-flex-wrap tw-gap-[clamp(8px,1vw,16px)]">
+	<header class="tw-flex tw-items-center tw-justify-between tw-flex-wrap tw-gap-[clamp(8px,1vw,16px)] tw-border-b tw-border-[#334155] tw-pb-4">
 		<div>
 			<h1 class="tw-font-mono tw-text-lg tw-font-extrabold tw-tracking-[0.1em] tw-text-[#FAFAFA] tw-uppercase tw-m-0">
-				VANGUARD SUPPORT TERMINAL
+				Support Terminal
 			</h1>
 			<p class="tw-text-sm tw-text-[#A1A1AA] tw-m-0">Direct Admin SDK execution bridge for global support agents.</p>
 		</div>
@@ -35,7 +39,7 @@
 			<p class="tw-text-[#D4D4D8] tw-m-0">Your current clearance level ({authStore.role || 'none'}) is insufficient for the Support Terminal.</p>
 		</div>
 	{:else}
-		<section class="tw-flex tw-flex-col tw-flex-1 tw-min-h-0 tw-bg-[#020617] tw-border tw-border-slate-800 tw-p-[clamp(16px,2vw,32px)] admin-support-panel">
+		<section class="tw-flex tw-flex-col tw-flex-1 tw-min-h-0 tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-p-[clamp(16px,2vw,32px)] admin-support-panel">
 			<SupportConsoleHUD {engine} />
 			<SupportConsoleArena {engine} />
 		</section>

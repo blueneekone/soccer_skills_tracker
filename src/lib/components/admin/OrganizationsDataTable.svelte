@@ -22,18 +22,18 @@
 	}: Props = $props();
 </script>
 
-<div class="v-table-wrap z2-panel tw-overflow-x-auto tw-border tw-border-slate-800 tw-bg-[var(--color-navy-slate)] tw-rounded-none tw-min-w-0">
+<div class="v-table-wrap" role="region" aria-label="Organizations table" tabindex="-1">
 	<div class="tw-border tw-border-[#334155] tw-bg-[#0f172a] tw-p-4 tw-min-w-0 tw-overflow-x-auto">
-		<table class="tw-w-full tw-font-mono tw-text-sm v-table tw-border-collapse tw-border-0 tw-rounded-none tw-min-w-0" aria-label="Organizations">
+		<table class="tw-w-full tw-font-mono tw-text-sm v-table">
 		<thead>
 			<tr>
-				<th class="tw-px-4 tw-py-3 tw-bg-[#0B0F19] tw-text-left tw-font-semibold tw-text-xs tw-uppercase tw-tracking-wider tw-text-[#A1A1AA] tw-whitespace-nowrap telemetry-readout" scope="col" aria-label="Logo"></th>
-				<th class="tw-px-4 tw-py-3 tw-bg-[#0B0F19] tw-text-left tw-font-semibold tw-text-xs tw-uppercase tw-tracking-wider tw-text-[#A1A1AA] tw-whitespace-nowrap telemetry-readout" scope="col">Organization</th>
-				<th class="tw-px-4 tw-py-3 tw-bg-[#0B0F19] tw-text-left tw-font-semibold tw-text-xs tw-uppercase tw-tracking-wider tw-text-[#A1A1AA] tw-whitespace-nowrap telemetry-readout" scope="col">Sport</th>
-				<th class="tw-px-4 tw-py-3 tw-bg-[#0B0F19] tw-text-left tw-font-semibold tw-text-xs tw-uppercase tw-tracking-wider tw-text-[#A1A1AA] tw-whitespace-nowrap telemetry-readout" scope="col">License</th>
-				<th class="tw-px-4 tw-py-3 tw-bg-[#0B0F19] tw-text-left tw-font-semibold tw-text-xs tw-uppercase tw-tracking-wider tw-text-[#A1A1AA] tw-whitespace-nowrap telemetry-readout" scope="col">Director</th>
-				<th class="tw-px-4 tw-py-3 tw-bg-[#0B0F19] tw-text-left tw-font-semibold tw-text-xs tw-uppercase tw-tracking-wider tw-text-[#A1A1AA] tw-whitespace-nowrap telemetry-readout" scope="col">Compliance</th>
-				<th class="tw-px-4 tw-py-3 tw-bg-[#0B0F19] tw-text-left tw-font-semibold tw-text-xs tw-uppercase tw-tracking-wider tw-text-[#A1A1AA] tw-whitespace-nowrap telemetry-readout" scope="col" aria-label="Actions"></th>
+				<th class="v-th v-th--avatar" scope="col" aria-label="Logo"></th>
+				<th class="v-th" scope="col">Organization</th>
+				<th class="v-th" scope="col">Sport</th>
+				<th class="v-th" scope="col">License</th>
+				<th class="v-th" scope="col">Director</th>
+				<th class="v-th" scope="col">Compliance</th>
+				<th class="v-th v-th--right" scope="col" aria-label="Actions">Actions</th>
 			</tr>
 		</thead>
 		<tbody>

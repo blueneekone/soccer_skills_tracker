@@ -15,7 +15,7 @@
 
 		<div class="tw-flex tw-items-center tw-gap-4">
 			<div class="tw-w-10 tw-h-10 tw-bg-[#1E293B] tw-rounded-none tw-flex tw-items-center tw-justify-center tw-border tw-border-[#334155] tw-text-amber-500">
-				<Icon name={"sys.server" as IconName} size={20} />
+				<Icon name={"data.radar" as IconName} size={20} />
 			</div>
 			<div>
 				<h1 class="tw-text-sm tw-font-bold tw-font-sans tw-tracking-[0.2em] tw-uppercase tw-text-[#FAFAFA] tw-flex tw-items-center tw-gap-2">

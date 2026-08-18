@@ -34,7 +34,7 @@ const RPG_SLOT_LABELS = /** @type {const} */ ({
 // Used when sportsConfigStore is uninitialised (SSR / cold boot).
 const _FALLBACK_SOCCER_RPG = /** @type {SportConfig} */ ({
 	sportId: 'soccer',
-	displayName: 'Vanguard Soccer',
+	displayName: 'Soccer',
 	attributes: [
 		{ id: 'ball_mastery', name: 'Ball Mastery',         shortLabel: 'BM',  hexColor: '#14b8a6' },
 		{ id: 'striking',     name: 'Striking & Finishing', shortLabel: 'STR', hexColor: '#ff0055' },

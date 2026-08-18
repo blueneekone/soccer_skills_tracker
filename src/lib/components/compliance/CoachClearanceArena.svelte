@@ -47,11 +47,11 @@
 			<table class="tw-w-full tw-font-mono tw-text-sm v-table">
 			<thead>
 				<tr>
-					<th class="tw-px-4 tw-py-3 tw-bg-slate-900/70 tw-text-left tw-font-semibold tw-text-xs tw-uppercase tw-tracking-wider tw-text-[#E2E8F0]">COACH / ROLE</th>
-					<th class="tw-px-4 tw-py-3 tw-bg-slate-900/70 tw-text-left tw-font-semibold tw-text-xs tw-uppercase tw-tracking-wider tw-text-[#E2E8F0]">CLEARANCE STATUS</th>
-					<th class="tw-px-4 tw-py-3 tw-bg-slate-900/70 tw-text-left tw-font-semibold tw-text-xs tw-uppercase tw-tracking-wider tw-text-[#E2E8F0]">LAST SYNCED</th>
-					<th class="tw-px-4 tw-py-3 tw-bg-slate-900/70 tw-text-left tw-font-semibold tw-text-xs tw-uppercase tw-tracking-wider tw-text-[#E2E8F0]">CHECKR VENDOR STATUS</th>
-					<th class="tw-px-4 tw-py-3 tw-bg-slate-900/70 tw-text-left tw-font-semibold tw-text-xs tw-uppercase tw-tracking-wider tw-text-[#E2E8F0]">ACTIONS</th>
+					<th class="v-th" scope="col">Coach / Role</th>
+					<th class="v-th" scope="col">Clearance Status</th>
+					<th class="v-th" scope="col">Last Synced</th>
+					<th class="v-th" scope="col">Checkr Vendor Status</th>
+					<th class="v-th v-th--right" scope="col">Actions</th>
 				</tr>
 			</thead>
 			<tbody>

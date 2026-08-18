@@ -110,45 +110,55 @@
   }
 </script>
 
-<div class="tw-p-8 tw-max-w-7xl tw-mx-auto tw-text-[#D4D4D8]">
-  <h1 class="tw-text-2xl tw-font-bold tw-text-[#FAFAFA] tw-mb-8">Interoperability Hub</h1>
+<div
+  class="pd-page-root tw-flex tw-flex-col tw-w-full tw-min-w-0 tw-flex-1 tw-min-h-0 tw-gap-[clamp(24px,3vw,36px)] tw-bg-[#0B0F19] tw-text-[#FAFAFA] dark-form-surface cc-root tw-box-border tw-overflow-y-auto"
+  style="padding: var(--bento-pad-liquid, clamp(20px, 4vw, 32px)); box-sizing: border-box;"
+  data-admin-shell="true"
+>
+  <header class="tw-border-b tw-border-[#334155] tw-pb-4">
+    <h1 class="tw-text-2xl tw-font-bold tw-text-[#FAFAFA] tw-m-0">Interoperability Hub</h1>
+    <p class="tw-text-sm tw-text-[#94A3B8] tw-font-mono tw-mt-1">Multi-tenant data liquidity, ingestion pipelines, and third-party roster sync.</p>
+  </header>
 
   <!-- Phase 1: Outbound Exports -->
-  <section class="tw-mb-12">
-    <h2 class="tw-text-lg tw-font-bold tw-text-[#FAFAFA] tw-mb-4">Total Data Liquidity (Outbound)</h2>
-    <div class="tw-flex tw-gap-4">
+  <section class="tw-flex tw-flex-col tw-gap-3">
+    <h2 class="tw-text-sm tw-font-bold tw-text-[#FAFAFA] tw-uppercase tw-tracking-widest tw-font-mono tw-m-0">Total Data Liquidity (Outbound)</h2>
+    <div class="tw-flex tw-flex-wrap tw-gap-3">
       <button 
-        class="tw-flex tw-items-center tw-gap-2 tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-px-4 tw-py-2 tw-rounded-none tw-hover:bg-[#1e293b] tw-transition-colors disabled:opacity-50"
+        type="button"
+        class="v-toolbar-btn tw-flex tw-items-center tw-gap-2 tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-px-4 tw-py-2 tw-rounded-none hover:tw-bg-[#1e293b] hover:tw-border-[#14b8a6] tw-text-[#FAFAFA] hover:tw-text-[#14b8a6] tw-font-mono tw-text-xs tw-font-bold tw-uppercase tw-tracking-wider tw-transition-colors disabled:tw-opacity-50 disabled:tw-cursor-not-allowed"
         onclick={() => handleExport('csv')}
         disabled={isExporting}
       >
-        <Download strokeWidth={1.5} class="tw-w-5 tw-h-5" />
+        <Download strokeWidth={1.5} class="tw-w-4 tw-h-4 tw-text-[#14b8a6]" />
         <span>Export CSV</span>
       </button>
 
       <button 
-        class="tw-flex tw-items-center tw-gap-2 tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-px-4 tw-py-2 tw-rounded-none tw-hover:bg-[#1e293b] tw-transition-colors disabled:opacity-50"
+        type="button"
+        class="v-toolbar-btn tw-flex tw-items-center tw-gap-2 tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-px-4 tw-py-2 tw-rounded-none hover:tw-bg-[#1e293b] hover:tw-border-[#14b8a6] tw-text-[#FAFAFA] hover:tw-text-[#14b8a6] tw-font-mono tw-text-xs tw-font-bold tw-uppercase tw-tracking-wider tw-transition-colors disabled:tw-opacity-50 disabled:tw-cursor-not-allowed"
         onclick={() => handleExport('json')}
         disabled={isExporting}
       >
-        <FileJson strokeWidth={1.5} class="tw-w-5 tw-h-5" />
+        <FileJson strokeWidth={1.5} class="tw-w-4 tw-h-4 tw-text-[#14b8a6]" />
         <span>Export JSON</span>
       </button>
 
       <button 
-        class="tw-flex tw-items-center tw-gap-2 tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-px-4 tw-py-2 tw-rounded-none tw-hover:bg-[#1e293b] tw-transition-colors disabled:opacity-50"
+        type="button"
+        class="v-toolbar-btn tw-flex tw-items-center tw-gap-2 tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-px-4 tw-py-2 tw-rounded-none hover:tw-bg-[#1e293b] hover:tw-border-[#14b8a6] tw-text-[#FAFAFA] hover:tw-text-[#14b8a6] tw-font-mono tw-text-xs tw-font-bold tw-uppercase tw-tracking-wider tw-transition-colors disabled:tw-opacity-50 disabled:tw-cursor-not-allowed"
         onclick={handlePrintPDF}
         disabled={isExporting}
       >
-        <FileText strokeWidth={1.5} class="tw-w-5 tw-h-5" />
+        <FileText strokeWidth={1.5} class="tw-w-4 tw-h-4 tw-text-[#14b8a6]" />
         <span>Export PDF</span>
       </button>
     </div>
   </section>
 
   <!-- Phase 2 & 3: Vampire Engine & Affinity Sync -->
-  <section>
-    <h2 class="tw-text-lg tw-font-bold tw-text-[#FAFAFA] tw-mb-4">Vampire Engine (Inbound)</h2>
+  <section class="tw-flex tw-flex-col tw-gap-4">
+    <h2 class="tw-text-sm tw-font-bold tw-text-[#FAFAFA] tw-uppercase tw-tracking-widest tw-font-mono tw-m-0">Vampire Engine (Inbound)</h2>
     <VampireImporter {clubId} />
     <AffinitySyncCard {clubId} />
   </section>

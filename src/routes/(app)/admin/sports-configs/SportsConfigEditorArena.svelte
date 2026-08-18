@@ -111,7 +111,7 @@
             </label>
             <label class="field-block">
               <span class="field-label">Display Name *</span>
-              <input class="field-input" bind:value={engine.dirtyBuffer.displayName} placeholder="Vanguard Soccer" />
+              <input class="field-input" bind:value={engine.dirtyBuffer.displayName} placeholder="Soccer" />
             </label>
           </div>
           <label class="field-block tw-mt-3">
