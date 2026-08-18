@@ -18,7 +18,10 @@
 			: 0,
 	);
 
-	const engine = new FeeLedgerEngine(legacyTier, legacySeats);
+	const engine = new FeeLedgerEngine(
+		() => legacyTier,
+		() => legacySeats,
+	);
 
 	$effect(() => {
 		if (clubId) {

@@ -50,11 +50,12 @@
 		{:else}
 		<!-- A/B percent slider -->
 		<div class="control-row">
-			<label class="ctrl-label">
+			<label class="ctrl-label" for="rl-rollout-range">
 				<span>ROLLOUT %</span>
 				<span class="ctrl-val">{engine.draftAbPercent}%</span>
 			</label>
 			<input
+				id="rl-rollout-range"
 				type="range"
 				min="0"
 				max="100"
@@ -100,12 +101,13 @@
 
 		<!-- Rollback -->
 		<div class="control-row tw-mt-4">
-			<label class="ctrl-label">
+			<label class="ctrl-label" for="rl-rollback-version">
 				<span>ROLLBACK TO VERSION</span>
 				<span class="ctrl-val">v{engine.draftRollbackVersion}</span>
 			</label>
 			<div class="ctrl-inline">
 				<input
+					id="rl-rollback-version"
 					type="number"
 					min="1"
 					bind:value={engine.draftRollbackVersion}

@@ -188,7 +188,13 @@
 							<td class="teams-dt__td teams-dt__td--mono">{t.id}</td>
 							<td class="teams-dt__td teams-dt__td--muted">{t.coachEmail || '—'}</td>
 							<td class="teams-dt__td teams-dt__td--actions">
-								
+								<a
+									href="/admin/organizations/{ctx.clubId}/teams/{t.id}/roster"
+									class="teams-roster-btn"
+									aria-label="View roster for {t.name || t.id}"
+								>
+									Roster &rarr;
+								</a>
 							</td>
 						</tr>
 					{/each}

@@ -116,9 +116,21 @@ export class FeeLedgerEngine {
 
 	constructor(
 		/** Legacy tier from `license_entitlements` — drives the "savings" math. */
-		private readonly legacyTier: string | null = null,
-		private readonly legacySeatsLimit: number = 0,
+		private readonly legacyTierOrGetter: (() => string | null) | string | null = null,
+		private readonly legacySeatsLimitOrGetter: (() => number) | number = 0,
 	) {}
+
+	private get legacyTier(): string | null {
+		return typeof this.legacyTierOrGetter === 'function'
+			? this.legacyTierOrGetter()
+			: this.legacyTierOrGetter;
+	}
+
+	private get legacySeatsLimit(): number {
+		return typeof this.legacySeatsLimitOrGetter === 'function'
+			? this.legacySeatsLimitOrGetter()
+			: this.legacySeatsLimitOrGetter;
+	}
 
 	connect(tenantId: string): void {
 		if (!browser) return;

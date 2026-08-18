@@ -82,13 +82,13 @@
         </div>
         {:else}
         <div class="tw-mb-4">
-            <label class="tw-block tw-text-xs tw-text-slate-400 tw-mb-1 tw-font-mono">Type <strong>{emailToPurge}</strong> to confirm</label>
-            <input type="text" class="tw-w-full tw-bg-slate-900 tw-border tw-border-slate-700 tw-text-white tw-px-3 tw-py-2 tw-text-sm tw-font-mono" bind:value={typedConfirmation} disabled={busy} />
+            <label for="purge-confirm-input" class="tw-block tw-text-xs tw-text-slate-400 tw-mb-1 tw-font-mono">Type <strong>{emailToPurge}</strong> to confirm</label>
+            <input id="purge-confirm-input" type="text" class="tw-w-full tw-bg-slate-900 tw-border tw-border-slate-700 tw-text-white tw-px-3 tw-py-2 tw-text-sm tw-font-mono" bind:value={typedConfirmation} disabled={busy} />
         </div>
 
         <div class="tw-mb-6">
-            <label class="tw-block tw-text-xs tw-text-slate-400 tw-mb-1 tw-font-mono">Reason for Purge</label>
-            <textarea class="tw-w-full tw-bg-slate-900 tw-border tw-border-slate-700 tw-text-white tw-px-3 tw-py-2 tw-text-sm tw-font-sans" rows="3" bind:value={reason} disabled={busy}></textarea>
+            <label for="purge-reason-input" class="tw-block tw-text-xs tw-text-slate-400 tw-mb-1 tw-font-mono">Reason for Purge</label>
+            <textarea id="purge-reason-input" class="tw-w-full tw-bg-slate-900 tw-border tw-border-slate-700 tw-text-white tw-px-3 tw-py-2 tw-text-sm tw-font-sans" rows="3" bind:value={reason} disabled={busy}></textarea>
         </div>
 
         <div class="tw-flex tw-flex-col sm:tw-flex-row tw-justify-end tw-gap-3">
