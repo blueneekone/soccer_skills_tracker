@@ -33,7 +33,7 @@
 </script>
 
 <div class="v-table-wrap tw-w-full tw-overflow-x-auto" role="region" aria-label="Recruiters table" tabindex="-1">
-	<div class="tw-border tw-border-[#334155] tw-bg-[#0f172a] tw-p-4 tw-min-w-0 tw-overflow-x-auto"><table class="tw-w-full tw-font-mono tw-text-sm" class="v-table">
+	<div class="tw-border tw-border-[#334155] tw-bg-[#0f172a] tw-p-4 tw-min-w-0 tw-overflow-x-auto"><table class="tw-w-full tw-font-mono tw-text-sm v-table">
 		<thead>
 			<tr>
 				<th class="v-th v-th--avatar" aria-label="Avatar"></th>

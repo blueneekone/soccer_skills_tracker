@@ -3,7 +3,7 @@
 </script>
 
 <div class="v-table-wrap tw-overflow-x-auto">
-	<div class="tw-border tw-border-[#334155] tw-bg-[#0f172a] tw-p-4 tw-min-w-0 tw-overflow-x-auto"><table class="tw-w-full tw-font-mono tw-text-sm" class="v-table">
+	<div class="tw-border tw-border-[#334155] tw-bg-[#0f172a] tw-p-4 tw-min-w-0 tw-overflow-x-auto"><table class="tw-w-full tw-font-mono tw-text-sm v-table">
 		{#if columns.length > 0}
 			<thead>
 				<tr>
