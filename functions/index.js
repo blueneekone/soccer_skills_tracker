@@ -137,3 +137,9 @@ exports.scheduledPiiShredder = scheduledPiiShredder.scheduledPiiShredder;
 
 const superdrawOps = require('./src/domains/superdrawOps.js');
 exports.purchaseSuperdrawTickets = superdrawOps.purchaseSuperdrawTickets;
+const authSync = require('./src/triggers/authSync');
+const clubCreationOps = require('./src/domains/clubCreationOps');
+const orphanCoachOps = require('./src/domains/orphanCoachOps');
+exports.authOnCreate = authSync.authOnCreate;
+exports.createClub = clubCreationOps.createClub;
+exports.registerIndependentCoach = orphanCoachOps.registerIndependentCoach;
