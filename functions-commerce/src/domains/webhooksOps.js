@@ -1,4 +1,3 @@
-const Stripe = require("stripe");
 'use strict';
 
 const crypto = require('crypto');

@@ -50,6 +50,7 @@ export class IntentEngine {
 			where('teamId', '==', teamId)
 		);
 
+		if (!db || !authStore.isAuthenticated) return () => {};
 		const unsub = onSnapshot(
 			q,
 			(snap) => {
