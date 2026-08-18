@@ -63,6 +63,9 @@ export class FederationEngine {
 			return [];
 		}
 
+		const db = getActiveDb();
+		if (!db || !authStore.isAuthenticated) return [];
+
 		this.isLoading = true;
 		this.error = null;
 

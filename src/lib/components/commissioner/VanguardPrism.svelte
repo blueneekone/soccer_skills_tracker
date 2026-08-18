@@ -3,26 +3,30 @@
 		size = 400,
 		sixAxis = null,
 		metrics = {
-			speed: 50,
+			pace: 50,
+			accel: 50,
 			agility: 50,
-			power: 50,
 			stamina: 50,
-			vision: 50,
-			technique: 50
+			power: 50,
+			comp: 50
 		},
 		playerLabel = ''
 	} = $props();
 
-	// If sixAxis array is passed, map it to metrics structure:
+	// Validate and map sixAxis array if passed
 	const activeMetrics = $derived.by(() => {
 		if (sixAxis && Array.isArray(sixAxis)) {
+			// Throw validation error if metrics are not properly ordered/sized
+			if (sixAxis.length !== 6) {
+				throw new Error('VanguardPrism validation error: sixAxis telemetry must be exactly 6 values in order [PACE, ACCEL, AGILITY, STAMINA, POWER, COMP]');
+			}
 			return {
-				speed: sixAxis[0] ?? 50,
-				agility: sixAxis[1] ?? 50,
-				power: sixAxis[2] ?? 50,
+				pace: sixAxis[0] ?? 50,
+				accel: sixAxis[1] ?? 50,
+				agility: sixAxis[2] ?? 50,
 				stamina: sixAxis[3] ?? 50,
-				vision: sixAxis[4] ?? 50,
-				technique: sixAxis[5] ?? 50
+				power: sixAxis[4] ?? 50,
+				comp: sixAxis[5] ?? 50
 			};
 		}
 		return metrics;
@@ -33,7 +37,7 @@
 
 	// Calculate polygon points for the 6-axis chart
 	const points = $derived.by(() => {
-		const axes = ['speed', 'agility', 'power', 'stamina', 'vision', 'technique'] as const;
+		const axes = ['pace', 'accel', 'agility', 'stamina', 'power', 'comp'] as const;
 
 		return axes.map((axis, i) => {
 			const angle = (Math.PI / 3) * i - Math.PI / 2;
@@ -54,12 +58,12 @@
 	});
 
 	const labels = [
-		{ text: 'SPEED', x: 600, y: 150, align: 'middle' },
-		{ text: 'AGILITY', x: 830, y: 295, align: 'start' },
-		{ text: 'POWER', x: 830, y: 505, align: 'start' },
+		{ text: 'PACE', x: 600, y: 150, align: 'middle' },
+		{ text: 'ACCEL', x: 830, y: 295, align: 'start' },
+		{ text: 'AGILITY', x: 830, y: 505, align: 'start' },
 		{ text: 'STAMINA', x: 600, y: 650, align: 'middle' },
-		{ text: 'VISION', x: 370, y: 505, align: 'end' },
-		{ text: 'TECHNIQUE', x: 370, y: 295, align: 'end' }
+		{ text: 'POWER', x: 370, y: 505, align: 'end' },
+		{ text: 'COMP', x: 370, y: 295, align: 'end' }
 	];
 </script>
 
