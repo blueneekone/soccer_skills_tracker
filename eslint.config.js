@@ -49,7 +49,8 @@ export default ts.config(
 			"svelte/prefer-svelte-reactivity": "off",
 			"svelte/no-unused-svelte-ignore": "off",
 			"svelte/no-useless-children-snippet": "off",
-			"@typescript-eslint/no-unused-expressions": "off"
+			"@typescript-eslint/no-unused-expressions": "off",
+			"@typescript-eslint/no-require-imports": "off"
 		}
 	},
 	{

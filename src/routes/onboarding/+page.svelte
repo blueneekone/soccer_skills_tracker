@@ -2,8 +2,28 @@
 	// Sprint 1.3 will add: invite-code entry, club selection, profile setup
 	// For now this is a holding pattern for authenticated users without a role
 	import { goto } from '$app/navigation';
-	import { auth } from '$lib/firebase.js';
+	import { auth, db } from '$lib/firebase.js';
 	import { signOut } from 'firebase/auth';
+	import { untrack } from 'svelte';
+	import { authStore } from '$lib/stores/auth.svelte.js';
+	import { flushTokenCache } from '$lib/auth/onboardingHandshake.js';
+
+	$effect(() => {
+		if (!db || !authStore.isAuthenticated) return;
+		if (authStore.role) {
+			untrack(() => goto('/coach/dashboard'));
+		}
+	});
+
+	async function handleSignOut() {
+		await signOut(auth);
+		untrack(() => goto('/login', { replaceState: true }));
+	}
+
+	async function reloadSession() {
+		await flushTokenCache();
+		window.location.reload();
+	}
 </script>
 
 <svelte:head>
@@ -59,13 +79,18 @@
 			</span>
 		</div>
 
+		<button
+			type="button"
+			onclick={reloadSession}
+			class="tw-mt-4 tw-font-mono tw-text-[0.75rem] tw-font-bold tw-uppercase tw-tracking-[0.18em] tw-text-teal-400 tw-no-underline tw-transition-colors tw-duration-150 hover:tw-text-teal-300 tw-text-left tw-bg-transparent tw-border-none tw-cursor-pointer tw-p-0"
+		>
+			↻ Reload Session
+		</button>
+
 		<!-- Sign out button -->
 		<button
 			type="button"
-			onclick={async () => {
-				await signOut(auth);
-				await goto('/login', { replaceState: true });
-			}}
+			onclick={handleSignOut}
 			class="tw-font-mono tw-text-[0.65rem] tw-font-bold tw-uppercase tw-tracking-[0.18em] tw-text-slate-600 tw-no-underline tw-transition-colors tw-duration-150 hover:tw-text-slate-300 tw-text-left tw-bg-transparent tw-border-none tw-cursor-pointer tw-p-0"
 		>
 			← Sign out and return to login
