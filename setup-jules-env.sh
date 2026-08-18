@@ -31,6 +31,11 @@ function error() {
 
 info "Initializing environment setup for Google Jules Cloud VM..."
 
+# --- STEP 0: RESET WORKING TREE ---
+info "Ensuring clean workspace..."
+git config core.autocrlf false
+git reset --hard HEAD
+
 # --- STEP 1: ENFORCE MANDATED DAEMON & SYSTEM LIMITS ---
 info "Configuring compilation environment variables..."
 export FUNCTIONS_DISCOVERY_TIMEOUT="120"
@@ -92,5 +97,10 @@ else
     error "Static compilation check failed. Fix Svelte syntax issues before snapshotting."
     exit 1
 fi
+
+# --- STEP 8: FINAL SNAPSHOT HYGIENE ---
+info "Resetting working tree to ensure clean git status..."
+git reset --hard HEAD
+git clean -fd
 
 success "Google Jules environment successfully bootstrapped, compiled, and ready for snapshot!"
