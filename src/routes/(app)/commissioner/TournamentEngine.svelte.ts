@@ -216,12 +216,14 @@ export class TournamentEngine {
 		if (!isFirestoreReady()) {
 			return;
 		}
+		const db = getActiveDb();
+		if (!db || !authStore.isAuthenticated) {
+			return;
+		}
 		this.isLoading = true;
 		this.error = null;
 		this.eventId = eventId;
 		try {
-			const db = getActiveDb();
-			if (!db) throw new Error('Database not available');
 			const docRef = doc(db, 'tournament_events', eventId);
 			const docSnap = await getDoc(docRef);
 			if (docSnap.exists()) {
@@ -237,6 +239,14 @@ export class TournamentEngine {
 	}
 
 	async updateLiveScore(matchId: string, scorePayload: ScorePayload) {
+		if (!isFirestoreReady()) {
+			throw new Error('Database not available or user not authenticated');
+		}
+		const db = getActiveDb();
+		if (!db || !authStore.isAuthenticated) {
+			throw new Error('Database not available or user not authenticated');
+		}
+
 		if (!this.bracket || !this.eventId) {
 			throw new Error('No bracket or event loaded');
 		}
@@ -258,9 +268,6 @@ export class TournamentEngine {
 				propagateTeams(this.bracket.matches, matchId, winId, loseId);
 			}
 		}
-
-		const db = getActiveDb();
-		if (!db) throw new Error('Database not available');
 
 		const batch = writeBatch(db);
 		const eventRef = doc(db, 'tournament_events', this.eventId);

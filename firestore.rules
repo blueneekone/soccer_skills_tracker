@@ -102,8 +102,18 @@ service cloud.firestore {
       }
     }
 
+    function isCommissioner() {
+      return isAuthenticated() && request.auth.token.role == 'commissioner';
+    }
+
     match /rosters/{teamId} {
       allow read: if isAuthenticated();
+      allow write: if isGlobalAdmin() || (isAuthenticated() && !isCommissioner());
+    }
+
+    match /direct_messages/{messageId} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated() && !isCommissioner();
     }
 
     match /sports_configs/{sportId} {

@@ -43,7 +43,7 @@
 	/>
 {:else}
 	<div class="v-table-wrap tw-overflow-x-auto" role="region" aria-label="Compliance roster">
-		<div class="tw-border tw-border-[#334155] tw-bg-[#0f172a] tw-p-4 tw-min-w-0 tw-overflow-x-auto"><table class="tw-w-full tw-font-mono tw-text-sm" class="v-table">
+		<div class="tw-border tw-border-[#334155] tw-bg-[#0f172a] tw-p-4 tw-min-w-0 tw-overflow-x-auto"><table class="tw-w-full tw-font-mono tw-text-sm v-table">
 			<thead>
 				<tr>
 					<th class="tw-px-4 tw-py-3 tw-bg-slate-900/70 tw-text-left tw-font-semibold tw-text-xs tw-uppercase tw-tracking-wider tw-text-[#E2E8F0]">COACH / ROLE</th>

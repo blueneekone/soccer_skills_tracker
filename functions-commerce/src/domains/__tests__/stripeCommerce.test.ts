@@ -7,21 +7,24 @@ const assert = require('node:assert');
 let mockStripeSessionsCreate;
 let mockStripeWebhooksConstructEvent;
 
-const stripeMock = (secret) => ({
-    checkout: {
-        sessions: {
-            create: mockStripeSessionsCreate
-        }
-    },
-    webhooks: {
-        constructEvent: mockStripeWebhooksConstructEvent
-    },
-    subscriptions: {
-        retrieve: async (subId) => ({
-            items: { data: [{ quantity: 1 }] }
-        })
+class StripeMock {
+    constructor(secret, options) {
+        this.checkout = {
+            sessions: {
+                create: mockStripeSessionsCreate
+            }
+        };
+        this.webhooks = {
+            constructEvent: mockStripeWebhooksConstructEvent
+        };
+        this.subscriptions = {
+            retrieve: async (subId) => ({
+                items: { data: [{ quantity: 1 }] }
+            })
+        };
     }
-});
+}
+const stripeMock = StripeMock;
 
 // We load the module under test
 const proxyquire = require('proxyquire');
