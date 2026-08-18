@@ -37,7 +37,7 @@ export class ForgeEngine {
 		if (!browser) return;
 		
 		$effect(() => {
-			if (!isFirestoreReady()) return;
+			if (!db || !authStore.isAuthenticated) return;
 			
 			const teamId = authStore.userProfile?.teamId;
 			const clubId = authStore.userProfile?.clubId;

@@ -1,4 +1,3 @@
-const Stripe = require("stripe");
 /* eslint-disable quotes */
 /**
  * subscription.js — Marketing / Stripe Checkout Stub
