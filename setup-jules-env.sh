@@ -33,6 +33,7 @@ info "Initializing environment setup for Google Jules Cloud VM..."
 
 # --- STEP 0: RESET WORKING TREE TO CANONICAL LAUNCH COMMIT ---
 info "Resetting workspace to canonical launch commit (ff4074c)..."
+git config core.autocrlf false
 git reset --hard ff4074c || warn "Git reset failed. Proceeding with active workspace."
 
 # --- STEP 1: ENFORCE MANDATED DAEMON & SYSTEM LIMITS ---
