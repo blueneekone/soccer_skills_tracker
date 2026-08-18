@@ -72,7 +72,6 @@ const CODEBASES = {
     folder: 'functions-compliance',
     seeds: [
       'src/domains/vaultOps.js',
-      'src/domains/orphanCoachOps.js',
       'src/domains/shredOps.js',
       'coppa.js',
       'webauthn.js',
