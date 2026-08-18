@@ -80,4 +80,39 @@ describe('rosterDisplayDedupe — LAUNCH-HOTFIX-P5', () => {
 		});
 		expect(names).toEqual(['Jordan Test']);
 	});
+
+	it('buildCoachRosterDisplayNames includes userDocs with athlete role or missing role', () => {
+		const names = buildCoachRosterDisplayNames({
+			userDocs: [
+				{
+					id: 'athlete-uid',
+					data: {
+						role: 'athlete',
+						uid: 'athlete-uid',
+						playerName: 'Avery Athlete',
+					},
+				},
+				{
+					id: 'no-role-uid',
+					data: {
+						uid: 'no-role-uid',
+						playerName: 'Taylor Player',
+					},
+				},
+				{
+					id: 'coach-uid',
+					data: {
+						role: 'coach',
+						uid: 'coach-uid',
+						playerName: 'Coach Carter',
+					},
+				},
+			],
+			rosterNames: [],
+			statsKeys: [],
+			statsByKey: {},
+			linkedNameToEmail: {},
+		});
+		expect(names).toEqual(['Avery Athlete', 'Taylor Player']);
+	});
 });
