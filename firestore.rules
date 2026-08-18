@@ -97,12 +97,8 @@ service cloud.firestore {
       match /intents/{intentId} {
         allow read, write: if coachStaffCanAccessTeam(teamId) || directorScopedToTeam(teamId) || isGlobalAdmin();
       }
-
-      match /attendance_sessions/{sessionId} {
-        allow read: if coachStaffCanAccessTeam(teamId);
-        allow write: if coachStaffCanAccessTeam(teamId) &&
-                     request.resource.data.keys().hasAll(['title', 'sessionDate', 'records', 'createdBy']) &&
-                     request.resource.data.teamId == teamId;
+      match /tactics/{tacticId} {
+        allow read, write: if coachStaffCanAccessTeam(teamId) || directorScopedToTeam(teamId) || isGlobalAdmin();
       }
     }
 
@@ -284,6 +280,15 @@ service cloud.firestore {
     match /security_audits/{document=**} {
       allow read, write: if isGlobalAdmin();
     }
+    match /message_incidents/{incidentId} {
+      allow read, write: if isDirector() && resource.data.clubId == tokenClub();
+    }
+    match /broadcast_acknowledgements/{docId} {
+      allow read, write: if isAuthenticated() && (resource.data.parentUid == request.auth.uid || isDirector());
+    }
+    match /messaging_audit/{docId} {
+      allow read: if isDirector() && resource.data.clubId == tokenClub();
+    }
     match /auditLogs/{document=**} {
       allow read, write: if isGlobalAdmin();
     }
@@ -295,6 +300,25 @@ service cloud.firestore {
     }
     match /rl_safety_overrides/{document=**} {
       allow read, write: if isGlobalAdmin();
+    }
+
+    match /team_broadcasts/{broadcastId} {
+      allow read: if isAuthenticated();
+      allow write: if isGlobalAdmin();
+    }
+
+    match /attendance_sessions/{sessionId} {
+      allow read, write: if isAuthenticated();
+    }
+
+    match /parent_voice_sessions/{sessionId} {
+      allow read: if isAuthenticated();
+      allow write: if isGlobalAdmin();
+    }
+
+    match /completion_verifications/{verificationId} {
+      allow read: if isAuthenticated();
+      allow create, update, delete: if false;
     }
 
     // Default match to prevent global unauthenticated reads/writes

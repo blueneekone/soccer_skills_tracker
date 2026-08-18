@@ -64,6 +64,11 @@
 	}
 
 	async function runSearch() {
+		if (!db || !authStore.isAuthenticated) return;
+		if (authStore.userProfile?.checkr_status !== 'clear') {
+			results = [];
+			return;
+		}
 		if (!browser) return;
 		if (!isRecruiterCleared()) {
 			results = [];
@@ -81,39 +86,14 @@
 			let q;
 			const ag = ageFilter !== 'all' ? ageFilter : '';
 			const pos = positionFilter !== 'all' ? positionFilter : '';
-			if (ag && pos) {
-				q = query(
-					col,
-					where('ageGroup', '==', ag),
-					where('position', '==', pos),
-					where('current_level', '>=', min),
-					orderBy('current_level', 'desc'),
-					limit(20),
-				);
-			} else if (ag) {
-				q = query(
-					col,
-					where('ageGroup', '==', ag),
-					where('current_level', '>=', min),
-					orderBy('current_level', 'desc'),
-					limit(20),
-				);
-			} else if (pos) {
-				q = query(
-					col,
-					where('position', '==', pos),
-					where('current_level', '>=', min),
-					orderBy('current_level', 'desc'),
-					limit(20),
-				);
-			} else {
-				q = query(
-					col,
-					where('current_level', '>=', min),
-					orderBy('current_level', 'desc'),
-					limit(20),
-				);
-			}
+			let constraints = [];
+			if (ag) constraints.push(where('ageGroup', '==', ag));
+			if (pos) constraints.push(where('position', '==', pos));
+			constraints.push(where('current_level', '>=', min));
+			constraints.push(orderBy('current_level', 'desc'));
+			if (lastDoc) constraints.push(startAfter(lastDoc));
+			constraints.push(limit(20));
+			q = query(col, ...constraints);
 			const snap = await getDocs(q);
 			/** @type {typeof results} */
 		let rows: Array<Record<string, unknown> & { id: string }> = [];
