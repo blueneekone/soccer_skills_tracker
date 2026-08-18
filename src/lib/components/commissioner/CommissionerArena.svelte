@@ -44,12 +44,19 @@
 					<tbody>
 						{#await engine.loadFederationCompliance()}
 							<tr>
-								<td colspan="3" class="tw-py-8 tw-text-center tw-text-amber-500">
-									<div class="tw-flex tw-items-center tw-justify-center tw-gap-2">
-										<Icon name={"status.loading" as IconName} size={16} class="tw-animate-spin" />
-										SCANNING REGISTRY...
-									</div>
-								</td>
+								<td class="tw-py-2.5 tw-px-2"><div class="tw-w-24 tw-h-4 tw-bg-[#1E293B] tw-animate-pulse"></div></td>
+								<td class="tw-py-2.5 tw-px-2"><div class="tw-w-16 tw-h-4 tw-bg-[#1E293B] tw-animate-pulse"></div></td>
+								<td class="tw-py-2.5 tw-px-2"><div class="tw-w-10 tw-h-4 tw-bg-[#1E293B] tw-animate-pulse tw-ml-auto"></div></td>
+							</tr>
+							<tr>
+								<td class="tw-py-2.5 tw-px-2"><div class="tw-w-24 tw-h-4 tw-bg-[#1E293B] tw-animate-pulse"></div></td>
+								<td class="tw-py-2.5 tw-px-2"><div class="tw-w-16 tw-h-4 tw-bg-[#1E293B] tw-animate-pulse"></div></td>
+								<td class="tw-py-2.5 tw-px-2"><div class="tw-w-10 tw-h-4 tw-bg-[#1E293B] tw-animate-pulse tw-ml-auto"></div></td>
+							</tr>
+							<tr>
+								<td class="tw-py-2.5 tw-px-2"><div class="tw-w-24 tw-h-4 tw-bg-[#1E293B] tw-animate-pulse"></div></td>
+								<td class="tw-py-2.5 tw-px-2"><div class="tw-w-16 tw-h-4 tw-bg-[#1E293B] tw-animate-pulse"></div></td>
+								<td class="tw-py-2.5 tw-px-2"><div class="tw-w-10 tw-h-4 tw-bg-[#1E293B] tw-animate-pulse tw-ml-auto"></div></td>
 							</tr>
 						{:then complianceData}
 							{#each complianceData as item}
@@ -104,12 +111,14 @@
 					<tbody>
 						{#await engine.loadTournamentOperations()}
 							<tr>
-								<td colspan="3" class="tw-py-8 tw-text-center tw-text-amber-500">
-									<div class="tw-flex tw-items-center tw-justify-center tw-gap-2">
-										<Icon name={"status.loading" as IconName} size={16} class="tw-animate-spin" />
-										INITIALIZING SCHEDULES...
-									</div>
-								</td>
+								<td class="tw-py-2.5 tw-px-2"><div class="tw-w-20 tw-h-4 tw-bg-[#1E293B] tw-animate-pulse"></div></td>
+								<td class="tw-py-2.5 tw-px-2 tw-flex tw-justify-center"><div class="tw-w-16 tw-h-4 tw-bg-[#1E293B] tw-animate-pulse"></div></td>
+								<td class="tw-py-2.5 tw-px-2"><div class="tw-w-8 tw-h-4 tw-bg-[#1E293B] tw-animate-pulse tw-ml-auto"></div></td>
+							</tr>
+							<tr>
+								<td class="tw-py-2.5 tw-px-2"><div class="tw-w-20 tw-h-4 tw-bg-[#1E293B] tw-animate-pulse"></div></td>
+								<td class="tw-py-2.5 tw-px-2 tw-flex tw-justify-center"><div class="tw-w-16 tw-h-4 tw-bg-[#1E293B] tw-animate-pulse"></div></td>
+								<td class="tw-py-2.5 tw-px-2"><div class="tw-w-8 tw-h-4 tw-bg-[#1E293B] tw-animate-pulse tw-ml-auto"></div></td>
 							</tr>
 						{:then operationsData}
 							{#each operationsData as item}
