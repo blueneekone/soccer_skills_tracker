@@ -276,7 +276,7 @@
 			<p class="pb-tab__muted">No plays yet. Add your first tactical play above.</p>
 		{:else}
 			<div class="pb-tab__table-wrap">
-				<div class="tw-border tw-border-[#334155] tw-bg-[#0f172a] tw-p-4 tw-min-w-0 tw-overflow-x-auto"><table class="tw-w-full tw-font-mono tw-text-sm" class="pb-tab__table">
+				<div class="tw-border tw-border-[#334155] tw-bg-[#0f172a] tw-p-4 tw-min-w-0 tw-overflow-x-auto"><table class="tw-w-full tw-font-mono tw-text-sm pb-tab__table">
 					<thead>
 						<tr>
 							<th>Play</th>
