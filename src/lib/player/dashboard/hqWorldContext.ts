@@ -192,34 +192,34 @@ export function resolveHqStatusBadges(params: {
 		completedAlbumSetChips = [],
 		now = new Date(),
 	} = params;
-	const badges: HqStatusBadge[] = [];
+	let badges: HqStatusBadge[] = [];
 	const trainedToday = isTrainingToday(lastTrainingUtc, now);
 
 	for (const chip of completedAlbumSetChips) {
 		if (!chip?.setId || !chip.label) continue;
-		badges.push({ id: `album-set-${chip.setId}`, label: chip.label });
+		badges = [...badges, { id: `album-set-${chip.setId}`, label: chip.label }];
 	}
 
 	if (coachBountyCount > 0) {
-		badges.push({
+		badges = [...badges, {
 			id: 'coach-missions',
 			label: `${coachBountyCount} COACH MISSION${coachBountyCount === 1 ? '' : 'S'}`,
-		});
+		}];
 	}
 
 	if (profileIncomplete && !suppressProfileIncompleteBadge) {
-		badges.push({ id: 'profile-incomplete', label: 'PROFILE INCOMPLETE' });
+		badges = [...badges, { id: 'profile-incomplete', label: 'PROFILE INCOMPLETE' }];
 	}
 
 	if (streak > 0 && trainedToday) {
-		badges.push({ id: 'streak-live', label: 'STREAK LIVE' });
+		badges = [...badges, { id: 'streak-live', label: 'STREAK LIVE' }];
 	}
 
 	const suppressTrainToday =
 		suppressTrainTodayBadge || heroQuestId === 'daily-training-log';
 
 	if (!trainedToday && !suppressTrainToday) {
-		badges.push({ id: 'train-today', label: 'TRAIN TODAY' });
+		badges = [...badges, { id: 'train-today', label: 'TRAIN TODAY' }];
 	}
 
 	return badges;

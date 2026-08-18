@@ -142,7 +142,7 @@
 			<div class="empty-state">[ NO TRAINING RUNS YET. RUN initRlPolicy + WAIT FOR 04:00 UTC. ]</div>
 		{:else}
 			<div class="runs-table-wrap">
-				<div class="tw-border tw-border-[#334155] tw-bg-[#0f172a] tw-p-4 tw-min-w-0 tw-overflow-x-auto"><table class="tw-w-full tw-font-mono tw-text-sm" class="runs-table">
+				<div class="tw-border tw-border-[#334155] tw-bg-[#0f172a] tw-p-4 tw-min-w-0 tw-overflow-x-auto"><table class="tw-w-full tw-font-mono tw-text-sm runs-table">
 					<thead>
 						<tr>
 							<th>DATE</th>

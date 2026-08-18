@@ -44,6 +44,7 @@ export class AdminUsersEngine {
 	purgeReason = $state('');
 	purgeBusy = $state(false);
 	purgeErr = $state('');
+	showPurgeModal = $state(false);
 	
 	loginAsBusyFor = $state('');
 	flashOk = $state('');
@@ -199,6 +200,7 @@ export class AdminUsersEngine {
 		this.purgeTargetEmail = row.email;
 		this.purgeTargetName = row.displayName || row.playerName || row.email;
 		this.purgeStep = 1;
+		this.showPurgeModal = true;
 		this.purgeTypedConfirmation = '';
 		this.purgeReason = '';
 		this.purgeErr = '';
@@ -207,6 +209,7 @@ export class AdminUsersEngine {
 	closePurge = () => {
 		if (this.purgeBusy) return;
 		this.purgeStep = 0;
+		this.showPurgeModal = false;
 		this.purgeTargetEmail = '';
 		this.purgeTargetName = '';
 		this.purgeTypedConfirmation = '';

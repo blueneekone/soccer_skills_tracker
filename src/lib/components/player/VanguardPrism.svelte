@@ -123,21 +123,23 @@
 	);
 
 	/** Stat fill polygon — driven reactively by `stats` prop. */
-	const fillPoints = $derived(
-		SLOTS.map(({ key, angle }) => {
-			const v = normalise(key, stats[key]);
+	const fillPoints = $derived.by(() => {
+		const snapshotStats = $state.snapshot(stats);
+		return SLOTS.map(({ key, angle }) => {
+			const v = normalise(key, snapshotStats[key]);
 			const { x, y } = vertex(MAX_R * v, angle);
 			return `${x.toFixed(2)},${y.toFixed(2)}`;
-		}).join(' ')
-	);
+		}).join(' ');
+	});
 
 	/** Per-vertex "glow dot" positions (on the fill polygon boundary). */
-	const glowDots = $derived(
-		SLOTS.map(({ key, angle }) => {
-			const v = normalise(key, stats[key]);
+	const glowDots = $derived.by(() => {
+		const snapshotStats = $state.snapshot(stats);
+		return SLOTS.map(({ key, angle }) => {
+			const v = normalise(key, snapshotStats[key]);
 			return vertex(MAX_R * v, angle);
-		})
-	);
+		});
+	});
 
 	/** Unique gradient ID to avoid collisions when multiple Prisms render. */
 	const gradId = $derived(`vp-fill-${accent.replace('#', '')}`);
