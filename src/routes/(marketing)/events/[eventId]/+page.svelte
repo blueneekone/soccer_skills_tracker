@@ -463,7 +463,7 @@
 		gap: 0.5rem;
 	}
 	.tier-label { font-weight: 600; color: var(--vanguard-text-primary, #e2e8f0); }
-	.tier-price { font-weight: 700; color: var(--tw-amber-500, #e0ff00); font-size: 1.05rem; }
+	.tier-price { font-weight: 700; color: #fbbf24; font-size: 1.05rem; }
 	.tier-desc { font-size: 0.82rem; color: var(--vanguard-text-muted, #94a3b8); margin: 0.25rem 0 0; }
 	.tier-remaining { font-size: 0.75rem; color: var(--vanguard-text-muted, #94a3b8); margin-top: 0.3rem; display: block; }
 
@@ -557,7 +557,7 @@
 
 	.btn-checkout {
 		width: 100%;
-		background: #e0ff00;
+		background: #fbbf24;
 		color: #000000;
 		border: none;
 		border-radius: 14px;

@@ -170,8 +170,8 @@
 
 	<!-- Competitor Comparison Table -->
 	<section class="tw-max-w-4xl tw-mx-auto tw-w-full tw-px-6 tw-mb-24">
-		<div class="tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-overflow-x-auto">
-			<table class="tw-w-full tw-text-left tw-border-collapse">
+		<div class="tw-border tw-border-[#334155] tw-bg-[#0f172a] tw-p-4 tw-min-w-0 tw-overflow-x-auto">
+			<table class="tw-w-full tw-font-mono tw-text-sm tw-text-left tw-border-collapse">
 				<thead>
 					<tr class="tw-border-b tw-border-[#334155]">
 						<th class="tw-py-4 tw-px-6 tw-font-mono tw-text-xs tw-font-bold tw-text-[#64748b] tw-tracking-widest tw-uppercase">Metric</th>
@@ -283,9 +283,9 @@
 		</div>
 	</section>
 
-	<!-- Single B2C Upsell / CTA (Nuclear Yellow CTA Accent) -->
+	<!-- Single B2C Upsell / CTA (Action Gold CTA Accent) -->
 	<section class="tw-max-w-4xl tw-mx-auto tw-w-full tw-px-6 tw-flex tw-justify-center">
-		<a href="/login" class="tw-bg-amber-500 tw-text-[#000000] hover:tw-bg-amber-500/90 tw-px-10 tw-py-4 tw-font-mono tw-font-bold tw-text-sm tw-uppercase tw-tracking-widest tw-transition-all tw-duration-150 tw-inline-flex tw-items-center tw-gap-3 tw-text-center tw-rounded-sm active:tw-scale-[0.98] tw-shadow-[0_0_25px_rgba(224,255,0,0.25)]">
+		<a href="/login" class="tw-bg-amber-500 tw-text-[#000000] hover:tw-bg-amber-500/90 tw-px-10 tw-py-4 tw-font-mono tw-font-bold tw-text-sm tw-uppercase tw-tracking-widest tw-transition-all tw-duration-150 tw-inline-flex tw-items-center tw-gap-3 tw-text-center tw-rounded-sm active:tw-scale-[0.98] tw-shadow-[0_0_25px_rgba(251,191,36,0.25)]">
 			Deploy Your Club
 			<Icon name={"nav.chevron-right" as IconName} strokeWidth={2.5} size={18} />
 		</a>

@@ -98,7 +98,7 @@
 		<div class="tw-mt-24 tw-text-center">
 			<h2 class="tw-text-3xl tw-font-bold tw-mb-8" style="font-family: 'Geist Sans', sans-serif;">Ready to secure your club's future?</h2>
 			<div class="tw-flex tw-items-center tw-justify-center tw-gap-6 tw-flex-wrap">
-				<a href="/pricing" class="tw-bg-amber-500 tw-text-[#000000] hover:tw-bg-amber-500/90 tw-px-8 tw-py-4 tw-rounded-sm tw-font-mono tw-font-bold tw-text-sm tw-uppercase tw-tracking-wider tw-transition-colors tw-duration-150 tw-flex tw-items-center tw-gap-2 tw-shadow-[0_0_20px_rgba(224,255,0,0.25)]">
+				<a href="/pricing" class="tw-bg-amber-500 tw-text-[#000000] hover:tw-bg-amber-500/90 tw-px-8 tw-py-4 tw-rounded-sm tw-font-mono tw-font-bold tw-text-sm tw-uppercase tw-tracking-wider tw-transition-colors tw-duration-150 tw-flex tw-items-center tw-gap-2 tw-shadow-[0_0_20px_rgba(251,191,36,0.25)]">
 					View Commercial Pricing
 					<Icon name={"nav.arrow-right" as IconName} size={16} />
 				</a>

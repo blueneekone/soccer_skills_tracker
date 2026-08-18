@@ -86,7 +86,7 @@
 					<p class="tw-text-[#94a3b8] tw-text-sm tw-leading-relaxed tw-mb-6" style="font-family: 'Switzer', sans-serif;">
 						Players seamlessly submit 30-second unlisted YouTube or compressed mobile videos for remote skill validation. Computer Vision (CV) pipelines flag and verify drill mechanics before coaches review, ensuring high-fidelity remote training.
 					</p>
-					<a href="/login" class="tw-bg-amber-500 tw-text-[#000000] hover:tw-bg-amber-500/90 tw-px-8 tw-py-3.5 tw-rounded-sm tw-font-mono tw-font-bold tw-text-xs tw-uppercase tw-tracking-wider tw-transition-colors tw-duration-150 tw-inline-flex tw-items-center tw-gap-2 tw-shadow-[0_0_20px_rgba(224,255,0,0.25)]">
+					<a href="/login" class="tw-bg-amber-500 tw-text-[#000000] hover:tw-bg-amber-500/90 tw-px-8 tw-py-3.5 tw-rounded-sm tw-font-mono tw-font-bold tw-text-xs tw-uppercase tw-tracking-wider tw-transition-colors tw-duration-150 tw-inline-flex tw-items-center tw-gap-2 tw-shadow-[0_0_20px_rgba(251,191,36,0.25)]">
 						Deploy Player HQ
 						<Icon name={"nav.chevron-right" as IconName} size={16} />
 					</a>
