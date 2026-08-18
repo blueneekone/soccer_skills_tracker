@@ -63,7 +63,6 @@
 				placeholder="Search by email prefix (press Enter)"
 				ariaLabel="Search users by email"
 				showClear={Boolean(searchApplied)}
-				submitLabel="Search"
 				{loading}
 				onSearch={onRunSearch}
 				onClear={onClearSearch}

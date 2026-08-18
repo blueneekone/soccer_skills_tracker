@@ -11,9 +11,9 @@
 	style="padding: var(--bento-pad-liquid, clamp(20px, 4vw, 32px)); box-sizing: border-box;"
 	data-admin-shell="true"
 >
-	<header class="tw-flex tw-flex-col tw-gap-2">
-		<h1 class="tw-font-sans tw-tracking-tight tw-text-3xl tw-font-bold tw-text-[#FAFAFA]">System Settings</h1>
-		<p class="tw-text-[#D4D4D8]">Global platform configurations and integrations.</p>
+	<header class="tw-border-b tw-border-[#334155] tw-pb-4">
+		<h1 class="tw-text-2xl tw-font-bold tw-text-[#FAFAFA] tw-m-0 tw-leading-none">System Settings</h1>
+		<p class="tw-text-[#94A3B8] tw-text-sm tw-font-mono tw-mt-2">Global platform configurations, integrations, and operational parameters.</p>
 	</header>
 	<SystemSettingsArena {engine} />
 </div>

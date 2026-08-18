@@ -18,17 +18,17 @@
 	data-admin-shell="true"
 >
 	<!-- Header -->
-	<header class="tw-flex tw-items-center tw-justify-between tw-flex-wrap tw-gap-[clamp(8px,1vw,16px)] tw-border-b tw-border-[#334155] tw-pb-4">
+	<header class="tw-flex tw-justify-between tw-items-end tw-border-b tw-border-[#334155] tw-pb-4">
 		<div>
-			<h1 class="tw-font-mono tw-text-lg tw-font-extrabold tw-tracking-[0.1em] tw-text-[#FAFAFA] tw-uppercase tw-m-0">
-				Support Terminal
-			</h1>
-			<p class="tw-text-sm tw-text-[#A1A1AA] tw-m-0">Direct Admin SDK execution bridge for global support agents.</p>
+			<h1 class="tw-text-2xl tw-font-bold tw-text-[#FAFAFA] tw-m-0 tw-leading-none">Support Terminal</h1>
+			<div class="tw-text-[#94A3B8] tw-text-sm tw-font-mono tw-mt-2">Direct Admin SDK execution bridge for global support agents.</div>
 		</div>
-		<span class="tw-inline-flex tw-items-center tw-gap-1.5 tw-text-xs tw-font-bold tw-text-emerald-400 tw-uppercase tw-tracking-wider">
-			<span class="tw-inline-block tw-w-2 tw-h-2 tw-rounded-full tw-bg-emerald-400 tw-animate-pulse"></span>
-			ONLINE
-		</span>
+		<div class="tw-text-right">
+			<span class="tw-inline-flex tw-items-center tw-gap-1.5 tw-text-xs tw-font-mono tw-font-bold tw-text-emerald-400 tw-uppercase tw-tracking-wider tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-px-3 tw-py-1.5">
+				<span class="tw-inline-block tw-w-2 tw-h-2 tw-rounded-full tw-bg-emerald-400 tw-animate-pulse"></span>
+				ONLINE
+			</span>
+		</div>
 	</header>
 
 	{#if authStore.isLoading}

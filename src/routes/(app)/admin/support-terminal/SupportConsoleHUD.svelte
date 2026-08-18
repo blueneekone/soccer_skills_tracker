@@ -11,18 +11,18 @@
 	];
 </script>
 
-<div class="tw-flex tw-items-center tw-gap-[clamp(8px,1vw,16px)] tw-border-b tw-border-slate-800 tw-pb-4">
-	<div class="tw-flex tw-bg-[#0f172a] tw-border tw-border-slate-800 tw-p-1 tw-rounded">
+<div class="tw-flex tw-items-center tw-justify-between tw-flex-wrap tw-gap-3 tw-border-b tw-border-[#334155] tw-pb-4">
+	<nav class="tw-flex tw-gap-1 tw-bg-[#0B0F19] tw-border tw-border-[#334155] tw-p-1 tw-rounded-none" aria-label="Support Terminal Sub-domains">
 		{#each tabs as tab}
 			<button
 				type="button"
-				class="tw-px-4 tw-py-2 tw-text-sm tw-font-mono tw-font-bold tw-uppercase tw-tracking-widest tw-rounded tw-transition-colors {engine.activeTab === tab.id ? 'tw-bg-slate-800 tw-text-[#14b8a6]' : 'tw-text-[#A1A1AA] hover:tw-text-[#FAFAFA]'}"
+				class="tw-px-4 tw-py-2 tw-text-xs tw-font-mono tw-font-bold tw-uppercase tw-tracking-widest tw-rounded-none tw-transition-all {engine.activeTab === tab.id ? 'tw-bg-[#0f172a] tw-text-[#14b8a6] tw-border-b-2 tw-border-[#14b8a6]' : 'tw-bg-transparent tw-text-[#94A3B8] hover:tw-text-[#FAFAFA] hover:tw-bg-white/[0.03]'}"
 				onclick={() => engine.setActiveTab(tab.id)}
 			>
 				{tab.label}
 			</button>
 		{/each}
-	</div>
+	</nav>
 	
 	<div class="tw-flex-1 tw-flex tw-justify-end">
 		{#if engine.isProcessing}

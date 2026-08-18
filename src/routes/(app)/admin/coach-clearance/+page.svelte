@@ -9,7 +9,7 @@
 		if (authStore.isLoading) return;
 		const allowed = ['super_admin', 'global_admin'];
 		if (!authStore.isAuthenticated || !allowed.includes(authStore.role ?? '')) {
-			if (browser) untrack(() => goto('/home', { replaceState: true }));
+			if (browser) untrack(() => goto('/admin/overview', { replaceState: true }));
 		}
 	});
 </script>
@@ -19,12 +19,6 @@
 	style="padding: var(--bento-pad-liquid, clamp(20px, 4vw, 32px)); box-sizing: border-box;"
 	data-admin-shell="true"
 >
-	<nav class="coach-clearance-admin-bc tw-mb-4" aria-label="Breadcrumb">
-		<a class="coach-clearance-admin-bc__link" href="/admin/overview">Global Admin</a>
-		<span class="coach-clearance-admin-bc__sep" aria-hidden="true">/</span>
-		<span class="coach-clearance-admin-bc__current">Coach clearance</span>
-	</nav>
-
 	<div class="coach-clearance-page tw-w-full tw-min-w-0 tw-flex tw-flex-col tw-min-h-0 tw-flex-1">
 		<div class="coach-clearance-page__inner tw-w-full tw-max-w-none tw-flex tw-flex-col tw-min-h-0 tw-flex-1 tw-overflow-y-auto">
 			<CoachClearancePanopticon

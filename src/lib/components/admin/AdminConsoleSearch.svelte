@@ -38,9 +38,9 @@
 	}
 </script>
 
-<div class="tw-flex tw-items-center tw-h-10 tw-bg-transparent tw-border-b tw-border-[#334155] tw-rounded-none tw-w-full tw-max-w-md tw-px-1 tw-transition-colors focus-within:tw-border-[#14b8a6]">
+<div class="tw-flex tw-items-center tw-h-10 tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-rounded-none tw-w-full tw-max-w-md tw-px-3 tw-transition-all focus-within:tw-border-[#14b8a6] focus-within:tw-bg-[#131c2e] focus-within:tw-shadow-[0_0_12px_rgba(20,184,166,0.15)]">
 	{#if icon}
-		<span class="tw-text-[#94A3B8] tw-flex-shrink-0 tw-mr-3" aria-hidden="true">
+		<span class="tw-text-[#94A3B8] tw-flex-shrink-0 tw-mr-2.5" aria-hidden="true">
 			<Icon name={icon} size={16} />
 		</span>
 	{/if}

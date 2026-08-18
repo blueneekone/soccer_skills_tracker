@@ -271,16 +271,28 @@
 	</div>
 </div>
 
-<footer class="gu-foot">
-	<div class="gu-foot__info">Page {pageIndex + 1}</div>
-	<div class="gu-foot__ctrls">
-		<button type="button" class="btn-secondary" onclick={onPrevPage} disabled={loading || pageIndex === 0}>
-			<Icon name={'nav.chevron-left' as IconName} aria-hidden="true" />
+<footer class="tw-flex tw-items-center tw-justify-between tw-pt-4 tw-mt-4 tw-border-t tw-border-[#334155]">
+	<div class="tw-text-xs tw-font-mono tw-text-[#94A3B8] tw-tracking-wider">
+		PAGE <span class="tw-text-[#FAFAFA] tw-font-bold">{pageIndex + 1}</span>
+	</div>
+	<div class="tw-flex tw-items-center tw-gap-2">
+		<button
+			type="button"
+			class="v-toolbar-btn tw-px-3 tw-py-1.5 tw-text-xs tw-font-mono tw-font-bold tw-uppercase tw-tracking-wider tw-flex tw-items-center tw-gap-1.5 tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-text-[#FAFAFA] hover:tw-bg-[#1e293b] hover:tw-border-[#14b8a6] hover:tw-text-[#14b8a6] disabled:tw-opacity-40 disabled:tw-cursor-not-allowed tw-rounded-none tw-transition-colors"
+			onclick={onPrevPage}
+			disabled={loading || pageIndex === 0}
+		>
+			<Icon name={'nav.chevron-left' as IconName} size={14} aria-hidden="true" />
 			<span>Prev</span>
 		</button>
-		<button type="button" class="btn-secondary" onclick={onNextPage} disabled={loading || !hasNextPage}>
+		<button
+			type="button"
+			class="v-toolbar-btn tw-px-3 tw-py-1.5 tw-text-xs tw-font-mono tw-font-bold tw-uppercase tw-tracking-wider tw-flex tw-items-center tw-gap-1.5 tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-text-[#FAFAFA] hover:tw-bg-[#1e293b] hover:tw-border-[#14b8a6] hover:tw-text-[#14b8a6] disabled:tw-opacity-40 disabled:tw-cursor-not-allowed tw-rounded-none tw-transition-colors"
+			onclick={onNextPage}
+			disabled={loading || !hasNextPage}
+		>
 			<span>Next</span>
-			<Icon name={'nav.chevron-right' as IconName} aria-hidden="true" />
+			<Icon name={'nav.chevron-right' as IconName} size={14} aria-hidden="true" />
 		</button>
 	</div>
 </footer>

@@ -16,7 +16,7 @@
 	<div class="tw-flex tw-flex-col lg:tw-flex-row tw-justify-between tw-items-stretch tw-gap-4 tw-border-b tw-border-[#334155] tw-pb-4">
 		<div class="tw-flex tw-flex-col tw-justify-end">
 			<h1 class="tw-text-2xl tw-font-bold tw-text-[#FAFAFA] tw-m-0 tw-leading-none">{pageTitle}</h1>
-			<div class="tw-text-[#94A3B8] tw-text-sm tw-font-mono tw-mt-2 tw-uppercase tw-tracking-widest">
+			<div class="tw-text-[#94A3B8] tw-text-sm tw-font-mono tw-mt-2">
 				{headerLabel}
 			</div>
 		</div>
