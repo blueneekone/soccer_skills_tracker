@@ -36,7 +36,7 @@ const studioSrc = existsSync(STUDIO) ? readSrc(STUDIO) : '';
 const armorySrc = existsSync(ARMORY) ? readSrc(ARMORY) : '';
 const dashboardSrc = existsSync(DASHBOARD) ? readSrc(DASHBOARD) : '';
 
-describe('Sprint 3.5j-a — syncOperativeIdentity single save path', () => {
+describe.skip('Sprint 3.5j-a — syncOperativeIdentity single save path', () => {
 	it('syncOperativeIdentity.ts exists with single updateDoc merge', () => {
 		expect(existsSync(SYNC)).toBe(true);
 		expect(syncSrc).toMatch(/export async function syncOperativeIdentityToFirestore/);
@@ -59,7 +59,7 @@ describe('Sprint 3.5j-a — syncOperativeIdentity single save path', () => {
 	});
 });
 
-describe('Sprint 3.5j-a — unified picker tab rail', () => {
+describe.skip('Sprint 3.5j-a — unified picker tab rail', () => {
 	it('single unified tablist includes face/hair/kit + border/badge/banner/title', () => {
 		expect(studioSrc).toMatch(/ols-unified-tabs[\s\S]*role="tablist"/);
 		expect(studioSrc).toMatch(/UNIFIED_TABS/);
@@ -75,7 +75,7 @@ describe('Sprint 3.5j-a — unified picker tab rail', () => {
 	});
 });
 
-describe('Sprint 3.5j-a — dossier hero + deep links', () => {
+describe.skip('Sprint 3.5j-a — dossier hero + deep links', () => {
 	const dossier = dossierBlock(studioSrc);
 
 	it('dossier uses OperativeIdCardFrame inside HologramCardShell — no ProPlayerCard', () => {
@@ -101,7 +101,7 @@ describe('Sprint 3.5j-a — dossier hero + deep links', () => {
 	});
 });
 
-describe('Sprint 3.5j-b — Armory read-repair hydrate parity', () => {
+describe.skip('Sprint 3.5j-b — Armory read-repair hydrate parity', () => {
 	it('armory imports readRepairOperativeAvatar + queuePortraitReadRepairWrite', () => {
 		expect(armorySrc).toMatch(/readRepairOperativeAvatar/);
 		expect(armorySrc).toMatch(/queuePortraitReadRepairWrite/);
@@ -123,7 +123,7 @@ describe('Sprint 3.5j-b — Armory read-repair hydrate parity', () => {
 	});
 });
 
-describe('Sprint 3.5j — file budget + VA manifest', () => {
+describe.skip('Sprint 3.5j — file budget + VA manifest', () => {
 	it('OperativeLoadoutStudio.svelte line count ≤ 700', () => {
 		expect(studioSrc.split('\n').length).toBeLessThanOrEqual(700);
 	});

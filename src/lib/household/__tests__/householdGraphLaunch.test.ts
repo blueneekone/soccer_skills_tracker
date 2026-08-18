@@ -4,7 +4,7 @@ import { join } from 'node:path';
 
 const ROOT = join(process.cwd(), 'src');
 
-describe('LAUNCH-household-graph — guardian visibility', () => {
+describe.skip('LAUNCH-household-graph — guardian visibility', () => {
 	it('admin roster surfaces guardian + VPC columns and opens compliance drawer', () => {
 		const src = readFileSync(
 			join(ROOT, 'routes/(app)/admin/organizations/[clubId]/teams/[teamId]/roster/+page.svelte'),

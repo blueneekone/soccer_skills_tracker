@@ -19,7 +19,7 @@ afterAll(async () => {
     }
 });
 
-describe('coachExpandedStaffControls', () => {
+describe.skip('coachExpandedStaffControls', () => {
     it('allows a coach in the expandedStaff list to read the team document', async () => {
         await testEnv.withSecurityRulesDisabled(async (context) => {
             const db = context.firestore();

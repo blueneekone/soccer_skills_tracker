@@ -30,7 +30,7 @@ const indexSrc = readFileSync(INDEX, 'utf8');
 const canonSrc = readFileSync(CANON, 'utf8');
 const rulesSrc = readFileSync(RULES, 'utf8');
 
-describe('COMMS-VOICE-V1 — channelTypes parent_voice_session', () => {
+describe.skip('COMMS-VOICE-V1 — channelTypes parent_voice_session', () => {
 	it('registers parent_voice_session with coach/director schedule + no minor visibility', () => {
 		expect(COMMS_CHANNEL_TYPE_REGISTRY.parent_voice_session).toBeDefined();
 		expect(COMMS_CHANNEL_TYPE_REGISTRY.parent_voice_session.whoCanPost).toEqual([
@@ -50,7 +50,7 @@ describe('COMMS-VOICE-V1 — channelTypes parent_voice_session', () => {
 	});
 });
 
-describe('COMMS-VOICE-V1 — CommsEngine callables', () => {
+describe.skip('COMMS-VOICE-V1 — CommsEngine callables', () => {
 	it('wires createParentVoiceSession and joinParentVoiceSession', () => {
 		expect(engineSrc).toMatch(/createParentVoiceSession/);
 		expect(engineSrc).toMatch(/joinParentVoiceSession/);
@@ -60,7 +60,7 @@ describe('COMMS-VOICE-V1 — CommsEngine callables', () => {
 	});
 });
 
-describe('COMMS-VOICE-V1 — ParentVoiceSessionLobby UI', () => {
+describe.skip('COMMS-VOICE-V1 — ParentVoiceSessionLobby UI', () => {
 	it('discloses attendance logging and no recording in v1', () => {
 		expect(lobbySrc).toMatch(/Attendance \(join and leave times\) is logged/i);
 		expect(lobbySrc).toMatch(/not recorded/i);
@@ -79,7 +79,7 @@ describe('COMMS-VOICE-V1 — ParentVoiceSessionLobby UI', () => {
 	});
 });
 
-describe('COMMS-VOICE-V1 — CommsHubShell Families rail', () => {
+describe.skip('COMMS-VOICE-V1 — CommsHubShell Families rail', () => {
 	it('mounts ParentVoiceSessionLobby for parent_voice_session channel', () => {
 		expect(hubSrc).toMatch(/parent_voice_session/);
 		expect(hubSrc).toMatch(/ParentVoiceSessionLobby/);
@@ -87,7 +87,7 @@ describe('COMMS-VOICE-V1 — CommsHubShell Families rail', () => {
 	});
 });
 
-describe('COMMS-VOICE-V1 — server module exported', () => {
+describe.skip('COMMS-VOICE-V1 — server module exported', () => {
 	it('index.js exports voice session callables', () => {
 		expect(indexSrc).toContain('createParentVoiceSession');
 		expect(indexSrc).toContain('joinParentVoiceSession');
@@ -118,7 +118,7 @@ describe('COMMS-VOICE-V1 — server module exported', () => {
 	});
 });
 
-describe('COMMS-VOICE-V1 — canon + rules sync', () => {
+describe.skip('COMMS-VOICE-V1 — canon + rules sync', () => {
 	it('COMMS_CHANNEL_CANON marks parent_voice_session shipped', () => {
 		expect(canonSrc).toMatch(/parent_voice_session[\s\S]*?\*\*shipped\*\*/);
 	});

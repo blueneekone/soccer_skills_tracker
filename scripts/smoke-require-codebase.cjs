@@ -6,7 +6,7 @@
  *
  * Usage:
  *   node scripts/smoke-require-codebase.cjs all
- *   node scripts/smoke-require-codebase.cjs <core|rl|commerce|compliance|integrations|platform|default>
+ *   node scripts/smoke-require-codebase.cjs <core|rl|commerce|compliance|integrations|platform|default> [--simulate-cloud]
  */
 
 const path = require('node:path');
@@ -33,6 +33,11 @@ if (!process.env.FIREBASE_CONFIG) {
 }
 
 const target = process.argv[2] || 'all';
+const simulateCloud = process.argv.includes('--simulate-cloud');
+
+if (simulateCloud) {
+  console.log('Cloud Run simulate, lazy');
+}
 
 function probeCodebase(name) {
   const dir = CODEBASE_DIRS[name];

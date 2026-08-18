@@ -20,8 +20,7 @@
 	import Icon from '$lib/components/ui/Icon.svelte';
 	import type { IconName } from '$lib/icons/registry.js';
 	import MissionControl from '$lib/components/director/MissionControl.svelte';
-	import DirectorClubBroadcastComposer from '$lib/components/director/DirectorClubBroadcastComposer.svelte';
-	import DirectorCommsCompliancePanel from '$lib/components/director/DirectorCommsCompliancePanel.svelte';
+		import DirectorCommsCompliancePanel from '$lib/components/director/DirectorCommsCompliancePanel.svelte';
 	import DirectorRetentionReport from '$lib/components/compliance/DirectorRetentionReport.svelte';
 	import WeatherAlert from '$lib/components/weather/WeatherAlert.svelte';
 	import { teamsStore } from '$lib/stores/teams.svelte.js';
@@ -146,7 +145,8 @@
 		</section>
 	{:else if activeTab === 'comms'}
 		<section class="director-console-page__section">
-			<DirectorClubBroadcastComposer {clubId} clubName={clubLabel} teams={clubTeams} />
+
+			<!-- channel=club_wide hub CTA -->
 			<DirectorCommsCompliancePanel {clubId} teams={clubTeams} />
 		</section>
 	{:else}

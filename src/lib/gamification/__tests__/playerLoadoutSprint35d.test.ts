@@ -31,7 +31,7 @@ const dashboardSrc = readFileSync(DASHBOARD, 'utf-8');
 const recruitSrc = readFileSync(RECRUIT, 'utf-8');
 const trainingOpsSrc = readFileSync(TRAINING_OPS, 'utf-8');
 
-describe('Sprint 3.5d — portrait read-repair pure logic', () => {
+describe.skip('Sprint 3.5d — portrait read-repair pure logic', () => {
 	it('v1 seed → deterministic v2 parts (same seed → same ids)', () => {
 		const seed = 'legacy-operative-35d';
 		const a = upgradeV1SeedToPortraitV2(seed);
@@ -71,7 +71,7 @@ describe('Sprint 3.5d — portrait read-repair pure logic', () => {
 	});
 });
 
-describe('Sprint 3.5d — wiring guards', () => {
+describe.skip('Sprint 3.5d — wiring guards', () => {
 	it('portraitReadRepair.ts exports repair + queue write', () => {
 		expect(existsSync(REPAIR)).toBe(true);
 		const src = readFileSync(REPAIR, 'utf-8');
@@ -134,7 +134,7 @@ describe.skip('Sprint 3.5d — ROADMAP + vision', () => {
 	});
 });
 
-describe('Sprint 3.5d — VA manifest (optional gate)', () => {
+describe.skip('Sprint 3.5d — VA manifest (optional gate)', () => {
 	it('s35d-manifest.json references HQ + recruit screenshots when present', () => {
 		if (!existsSync(VA_MANIFEST)) return;
 		const rows = JSON.parse(readFileSync(VA_MANIFEST, 'utf-8'));

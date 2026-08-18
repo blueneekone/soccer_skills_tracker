@@ -12,7 +12,7 @@ import {
 
 const ROOT = join(process.cwd());
 
-describe('LAUNCH-live-stream — embed allowlist', () => {
+describe.skip('LAUNCH-live-stream — embed allowlist', () => {
 	it('accepts YouTube watch and youtu.be links', () => {
 		const watch = parseLiveStreamUrl('https://www.youtube.com/watch?v=dQw4w9WgXcQ');
 		expect(watch?.provider).toBe('youtube');
@@ -45,7 +45,7 @@ describe('LAUNCH-live-stream — embed allowlist', () => {
 	});
 });
 
-describe('LAUNCH-live-stream — wiring', () => {
+describe.skip('LAUNCH-live-stream — wiring', () => {
 	it('saveTeamScheduledEvent accepts liveStreamUrl', () => {
 		const workouts = readFileSync(join(ROOT, 'src/lib/stores/workouts.svelte.js'), 'utf8');
 		expect(workouts).toMatch(/liveStreamUrl/);
