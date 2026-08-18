@@ -142,7 +142,7 @@
 	{/if}
 
 	<div class="tw-w-full tw-overflow-x-auto tw-border tw-border-[#334155] tw-rounded-none tw-bg-[#020617]">
-		<div class="tw-border tw-border-[#334155] tw-bg-[#0f172a] tw-p-4 tw-min-w-0 tw-overflow-x-auto"><table class="tw-w-full tw-font-mono tw-text-sm" class="tw-w-full tw-min-w-[800px] tw-text-left tw-border-collapse">
+		<div class="tw-border tw-border-[#334155] tw-bg-[#0f172a] tw-p-4 tw-min-w-0 tw-overflow-x-auto"><table class="tw-w-full tw-font-mono tw-text-sm tw-w-full tw-min-w-[800px] tw-text-left tw-border-collapse">
 			<thead class="tw-sticky tw-top-0 tw-z-10 tw-bg-[#020617] tw-border-b tw-border-[#334155]">
 				<tr>
 					<th class="tw-px-4 tw-py-3 tw-text-xs tw-font-extrabold tw-tracking-wider tw-uppercase tw-text-[#D4D4D8]">User ID</th>
