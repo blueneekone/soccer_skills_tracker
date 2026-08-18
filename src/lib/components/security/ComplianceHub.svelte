@@ -188,7 +188,7 @@
 		</div>
 
 		<!-- ── Stats rail ──────────────────────────────────────────────── -->
-		<div class="ch-stats">
+		<div class="ch-stats tw-font-mono">
 			<div class="ch-stat">
 				<span class="ch-stat__num">{stats.total}</span>
 				<span class="ch-stat__lbl">TOTAL</span>
@@ -247,9 +247,9 @@
 				<p class="ch-empty__sub">Adjust the search or status filter above.</p>
 			</div>
 		{:else}
-			<div class="ch-grid" role="table" aria-label="Compliance roster">
+			<div class="ch-grid tw-font-mono" role="table" aria-label="Compliance roster">
 				<!-- Grid header -->
-				<div class="ch-grid__header" role="row">
+				<div class="ch-grid__header tw-font-mono" role="row">
 					<span role="columnheader">PERSONNEL</span>
 					<span role="columnheader">ROLE</span>
 					<span role="columnheader">STATUS</span>
@@ -263,7 +263,7 @@
 				<!-- Grid rows -->
 				{#each filteredRoster as row (row.email)}
 					<div
-						class="ch-grid__row {row.clearanceStatus === 'flagged' ? 'ch-grid__row--flagged' : ''}"
+						class="ch-grid__row {row.clearanceStatus === 'flagged' ? 'ch-grid__row--flagged' : ''} tw-font-mono"
 						role="row"
 					>
 						<!-- Personnel cell -->
@@ -291,7 +291,7 @@
 								{/if}
 							</span>
 							{#if row.isManualOverride}
-								<span class="ch-override-tag">MANUAL</span>
+								<span class="ch-override-tag tw-font-mono">MANUAL</span>
 							{/if}
 						</div>
 

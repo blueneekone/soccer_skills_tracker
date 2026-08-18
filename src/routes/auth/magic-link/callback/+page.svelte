@@ -72,7 +72,7 @@
 	}
 </script>
 
-<div class="tw-box-border tw-flex tw-min-h-screen tw-w-full tw-flex-col tw-items-center tw-justify-center tw-p-4 tw-bg-vanguard-bg">
+<div class="tw-box-border tw-flex tw-h-[100dvh] tw-overflow-hidden tw-w-full tw-flex-col tw-items-center tw-justify-center tw-p-4 tw-bg-vanguard-bg">
 	<div class="tw-flex tw-w-full tw-max-w-md tw-flex-col tw-gap-6 tw-rounded-lg tw-border tw-border-vanguard-border tw-bg-vanguard-surface tw-p-8 tw-text-center">
 
 		<p class="tw-font-mono tw-text-[0.6rem] tw-font-bold tw-uppercase tw-tracking-[0.2em] tw-text-vanguard-accent">

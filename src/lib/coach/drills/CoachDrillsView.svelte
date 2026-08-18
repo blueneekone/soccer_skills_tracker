@@ -534,7 +534,7 @@
 </svelte:head>
 
 <!-- VS-3c â€” Coach drill library SIEM shell -->
-<div class="coach-drill-lib tw-relative tw-min-h-screen tw-w-full tw-px-3 tw-py-6 sm:tw-px-5">
+<div class="coach-drill-lib tw-relative tw-h-[100dvh] tw-overflow-hidden tw-w-full tw-px-3 tw-py-6 sm:tw-px-5">
 <section class="cdm-page">
 	<header class="coach-drill-z4">
 		<div>
@@ -585,7 +585,7 @@
 	</header>
 
 	{#if pageView === 'schedule'}
-		<div class="cdm-grid cdm-grid--schedule" data-region="team-schedule">
+		<div class="cdm-grid cdm-grid--schedule tw-font-mono" data-region="team-schedule">
 			<div class="cdm-panel" aria-labelledby="cdm-sch-h">
 				<div class="cdm-panel__head">
 					<span class="cdm-eyebrow">Schedule</span>
@@ -717,7 +717,7 @@
 			onclick={() => (activeTab = 'team')}
 		>
 			Custom drills
-			<span class="coach-drill-z4-tab__count">{teamDrills.length}</span>
+			<span class="coach-drill-z4-tab__count tw-font-mono">{teamDrills.length}</span>
 		</button>
 		<button
 			type="button"
@@ -726,8 +726,8 @@
 			onclick={() => (activeTab = 'platform')}
 		>
 			Platform basics
-			<span class="coach-drill-z4-tab__count">{platformDrills.length}</span>
-			<span class="coach-drill-z4-tab__count">{activeSportLabel}</span>
+			<span class="coach-drill-z4-tab__count tw-font-mono">{platformDrills.length}</span>
+			<span class="coach-drill-z4-tab__count tw-font-mono">{activeSportLabel}</span>
 		</button>
 	</nav>
 
@@ -758,7 +758,7 @@
 			<div class="coach-drill-z1-alert" role="alert">{loadError}</div>
 		{/if}
 
-		<div class="coach-drill-z2-grid" aria-label="Drill library">
+		<div class="coach-drill-z2-grid tw-font-mono" aria-label="Drill library">
 			{#if activeTab === 'team' && loadingTeamDrills}
 				<p class="coach-drill-z2-empty">Loading custom drillsâ€¦</p>
 			{:else if activeTab === 'platform' && loadingPlatformDrills}

@@ -24,7 +24,7 @@
 	{#if err}
 		<p class="orgs3-flash orgs3-flash--err" role="alert">{err}</p>
 	{/if}
-	<div class="orgs3-add-grid">
+	<div class="orgs3-add-grid tw-font-mono">
 		<div class="orgs3-field">
 			<label class="orgs3-field-label" for="add-club-id">
 				Club ID <span class="orgs3-req" aria-hidden="true">*</span>
@@ -90,7 +90,7 @@
 				disabled={saving}
 			/>
 		</div>
-		<div class="orgs3-field orgs3-field--wide">
+		<div class="orgs3-field orgs3-field--wide tw-font-mono">
 			<label class="orgs3-field-label" for="add-club-address">
 				Verified Address
 				<span class="orgs3-places-chip">
@@ -109,7 +109,7 @@
 				data-places-autocomplete="address"
 			/>
 		</div>
-		<div class="orgs3-field orgs3-field--wide">
+		<div class="orgs3-field orgs3-field--wide tw-font-mono">
 			<label class="orgs3-field-label" for="add-club-facility">
 				Primary Facility
 				<span class="orgs3-places-chip">
@@ -139,7 +139,7 @@
 					will NOT be created.
 				</span>
 			</div>
-			<div class="orgs3-add-grid orgs3-add-grid--compact">
+			<div class="orgs3-add-grid orgs3-add-grid--compact tw-font-mono">
 				<div class="orgs3-field">
 					<label class="orgs3-field-label" for="add-sport-name">
 						Sport Name <span class="orgs3-req" aria-hidden="true">*</span>

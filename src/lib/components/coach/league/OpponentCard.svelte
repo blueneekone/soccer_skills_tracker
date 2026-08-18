@@ -119,12 +119,12 @@
 				<span class="oc-stat-num oc-w">{opponent.stats.wins}</span>
 				<span class="oc-stat-lbl">W</span>
 			</span>
-			<span class="oc-divider" aria-hidden="true">·</span>
+			<span class="oc-divider tw-font-mono" aria-hidden="true">·</span>
 			<span class="oc-stat">
 				<span class="oc-stat-num">{opponent.stats.draws}</span>
 				<span class="oc-stat-lbl">D</span>
 			</span>
-			<span class="oc-divider" aria-hidden="true">·</span>
+			<span class="oc-divider tw-font-mono" aria-hidden="true">·</span>
 			<span class="oc-stat">
 				<span class="oc-stat-num oc-l">{opponent.stats.losses}</span>
 				<span class="oc-stat-lbl">L</span>

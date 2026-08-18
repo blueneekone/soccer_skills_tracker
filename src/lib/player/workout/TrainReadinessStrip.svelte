@@ -20,7 +20,7 @@
 		<span class="pw-dim pw-mono tw-text-[10px]">Once per day · improves adaptive suggestions</span>
 	</div>
 
-	<div class="pw-readiness__grid">
+	<div class="pw-readiness__grid tw-font-mono">
 		<div class="pw-readiness__field">
 			<label class="pw-readiness__label" for="pw-readiness-sleep">
 				<span>Sleep</span>

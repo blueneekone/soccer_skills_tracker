@@ -425,7 +425,7 @@
 		</div>
 	</header>
 
-	<div class="pw-grid plw-onecol">
+	<div class="pw-grid plw-onecol tw-font-mono">
 		<section class="pw-panel pw-panel--term" aria-labelledby="plw-exec-heading">
 			<div class="pw-panel__head pw-panel__head--row">
 				<div>

@@ -323,7 +323,7 @@
 							<span class="ann-badge ann-badge--ack">Ack required</span>
 						{/if}
 						{#if ann.recipientCount !== undefined}
-							<span class="ann-badge ann-badge--count">{ann.recipientCount} recipients</span>
+							<span class="ann-badge ann-badge--count tw-font-mono">{ann.recipientCount} recipients</span>
 						{/if}
 					</div>
 					{#if ann.subject}

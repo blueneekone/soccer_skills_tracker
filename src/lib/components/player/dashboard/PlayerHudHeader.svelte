@@ -65,7 +65,7 @@
 				{embedded}
 			/>
 		</div>
-		<div class="player-hud-header__identity">
+		<div class="player-hud-header__identity tw-font-mono">
 			<div class="player-hud-header__title-row">
 				<div class="player-hud-header__title-block">
 					<p class="player-hud-header__name" title={displayName}>{displayName}</p>

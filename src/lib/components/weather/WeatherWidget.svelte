@@ -119,7 +119,7 @@
 	{/if}
 
 	<!-- Metric cards -->
-	<div class="tw-grid-cols-2 tw-gap-4 tw-mt-4" style="display: grid;">
+	<div class="tw-grid-cols-2 tw-gap-4 tw-mt-4 tw-font-mono" style="display: grid;">
 		<div class="ww-card">
 			<span class="ww-card__label">TEMPERATURE</span>
 			<span class="ww-card__value">{fmtTemp(snap?.current?.temperatureF)}<span class="ww-card__unit">°F</span></span>

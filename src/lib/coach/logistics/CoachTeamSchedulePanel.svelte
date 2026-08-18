@@ -72,7 +72,7 @@
 	<h2 class="ops-panel__title">Schedule</h2>
 	<p class="ops-panel__sub">Practice and game events with optional reminders and team announcements.</p>
 
-	<div class="ops-panel__grid">
+	<div class="ops-panel__grid tw-font-mono">
 		<form class="ops-form" onsubmit={(e) => { e.preventDefault(); void submit(); }}>
 			<label class="ops-field">
 				<span class="ops-label">Event type</span>

@@ -275,7 +275,7 @@
 
 			<div class="st-section">
 				<div class="st-section-label">IDENTITY MATRIX</div>
-				<div class="st-info-grid">
+				<div class="st-info-grid tw-font-mono">
 					<div class="st-info-row"><span class="st-info-key">EMAIL</span><span class="st-info-val">{email || '—'}</span></div>
 					<div class="st-info-row"><span class="st-info-key">ROLE</span><span class="st-info-val" style="color: #14b8a6;">{role.toUpperCase()}</span></div>
 					<div class="st-info-row"><span class="st-info-key">CLUB</span><span class="st-info-val">{clubLabel}</span></div>
@@ -512,7 +512,7 @@
 
 			<div class="st-section">
 				<div class="st-section-label">ORGANISATION MANAGEMENT</div>
-				<div class="st-link-grid">
+				<div class="st-link-grid tw-font-mono">
 					<a href="/director/dashboard" class="st-link-card">
 						<div class="st-link-card-title">MISSION CONTROL</div>
 						<div class="st-link-card-sub">Roster, invites, season config</div>
@@ -544,7 +544,7 @@
 		<div class="st-panel">
 			<div class="st-section">
 				<div class="st-section-label">COPPA VERIFICATION STATUS</div>
-				<div class="st-info-grid">
+				<div class="st-info-grid tw-font-mono">
 					<div class="st-info-row">
 						<span class="st-info-key">VPC STATUS</span>
 						<span class="st-info-val" style="color: {profile?.vpcVerified ? '#2dd4bf' : '#f59e0b'};">
@@ -567,7 +567,7 @@
 			<div class="st-section">
 				<div class="st-section-label">LINKED PLAYERS</div>
 				{#if profile?.playerEmails?.length > 0}
-					<div class="st-info-grid">
+					<div class="st-info-grid tw-font-mono">
 						{#each profile.playerEmails as playerEmail (playerEmail)}
 							<div class="st-info-row">
 								<span class="st-info-key">PLAYER</span>

@@ -123,7 +123,7 @@
 		/>
 	{:else}
 		<div class="prm-list">
-			<div class="prm-grid-header">
+			<div class="prm-grid-header tw-font-mono">
 				<span>ATHLETE</span>
 				<span>GUARDIAN</span>
 				<span>AMOUNT</span>

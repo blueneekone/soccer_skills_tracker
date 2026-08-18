@@ -21,7 +21,7 @@
 		</button>
 		<span class="orgs3-page-info">
 			Page {orgPage + 1} / {orgTotalPages}
-			<span class="orgs3-page-count">({filteredCount} results)</span>
+			<span class="orgs3-page-count tw-font-mono">({filteredCount} results)</span>
 		</span>
 		<button
 			type="button"

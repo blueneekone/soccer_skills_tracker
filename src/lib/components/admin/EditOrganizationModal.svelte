@@ -300,7 +300,7 @@
 		{/if}
 
 		<form class="eom-form" onsubmit={(e) => { e.preventDefault(); void submit(); }}>
-			<div class="eom-grid">
+			<div class="eom-grid tw-font-mono">
 				<div class="eom-field">
 					<label class="eom-label" for="eom-name">
 						Organization Name <span class="eom-req">*</span>
@@ -357,7 +357,7 @@
 					/>
 				</div>
 
-				<div class="eom-field eom-field--wide">
+				<div class="eom-field eom-field--wide tw-font-mono">
 					<label class="eom-label" for="eom-address">
 						Verified Address
 						<span class="eom-places-chip" title="Google Places Autocomplete active">
@@ -379,7 +379,7 @@
 					/>
 				</div>
 
-				<div class="eom-field eom-field--wide">
+				<div class="eom-field eom-field--wide tw-font-mono">
 					<label class="eom-label" for="eom-facility">
 						Primary Facility
 						<span class="eom-places-chip" title="Google Places Autocomplete active">
@@ -400,7 +400,7 @@
 					/>
 				</div>
 
-				<div class="eom-field eom-field--wide">
+				<div class="eom-field eom-field--wide tw-font-mono">
 					<label class="eom-label" for="eom-logo">Logo URL</label>
 					<input
 						id="eom-logo"

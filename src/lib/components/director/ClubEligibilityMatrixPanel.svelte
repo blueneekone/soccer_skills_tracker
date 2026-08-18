@@ -117,7 +117,7 @@
 		{/if}
 
 		<p
-			class="em-panel__validation"
+			class="em-panel__validation tw-font-mono"
 			class:em-panel__validation--warn={validation.level === 'warn'}
 			role={validation.level === 'warn' ? 'alert' : 'status'}
 		>

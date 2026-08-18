@@ -5,7 +5,7 @@
 	<title>Recruiter Onboarding</title>
 </svelte:head>
 
-<div class="tw-min-h-screen tw-w-full tw-flex tw-items-center tw-justify-center tw-bg-[#020617] tw-p-8">
+<div class="tw-h-[100dvh] tw-overflow-hidden tw-w-full tw-flex tw-items-center tw-justify-center tw-bg-[#020617] tw-p-8">
 	<!-- Zero-distraction layout: No sidebar rendered here -->
 	<div class="tw-w-full tw-max-w-3xl tw-bg-slate-900 tw-rounded-2xl tw-border tw-border-slate-800 tw-p-8">
 		<!-- Must follow typography rules (e.g. Switzer/Geist Mono properly applied) -->

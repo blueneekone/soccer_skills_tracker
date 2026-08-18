@@ -573,7 +573,7 @@
 			</p>
 			<label class="director-field-ops-field-label">
 				Field
-				<select class="director-field-ops-control director-field-ops-control--wide" bind:value={fieldId}>
+				<select class="director-field-ops-control director-field-ops-control--wide tw-font-mono" bind:value={fieldId}>
 					{#each fields as f (f.id)}
 						<option value={f.id}>{f.name}</option>
 					{/each}
@@ -618,7 +618,7 @@
 
 				<div class="dir-field-track-wrap">
 					<div
-						class="dir-field-slots-grid"
+						class="dir-field-slots-grid tw-font-mono"
 						style="grid-template-columns: repeat({NUM_SLOTS}, minmax(0, 1fr));"
 					>
 						{#each Array(NUM_SLOTS) as _, slotIdx}

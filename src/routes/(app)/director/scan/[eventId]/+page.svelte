@@ -89,7 +89,7 @@
 			<div class="start-icon">📷</div>
 			<h2>Ready to Scan</h2>
 			<p>Tap the button below to activate the camera and begin scanning tickets for this event.</p>
-			<p class="event-id-note">Event: <code>{eventId}</code></p>
+			<p class="event-id-note tw-font-mono">Event: <code>{eventId}</code></p>
 			<button class="btn-start" onclick={startScanning}>Start Camera</button>
 		</div>
 	{:else}
@@ -118,8 +118,8 @@
 
 		<!-- Stats bar -->
 		{#if s}
-			<div class="stats-bar glass-panel">
-				<div class="stat-chip valid">
+			<div class="stats-bar glass-panel tw-font-mono">
+				<div class="stat-chip valid tw-font-mono">
 					<span class="stat-n">{s.stats.valid}</span>
 					<span class="stat-l">Valid</span>
 				</div>
@@ -127,7 +127,7 @@
 					<span class="stat-n">{s.stats.already_scanned}</span>
 					<span class="stat-l">Dupe</span>
 				</div>
-				<div class="stat-chip invalid">
+				<div class="stat-chip invalid tw-font-mono">
 					<span class="stat-n">{s.stats.invalid}</span>
 					<span class="stat-l">Invalid</span>
 				</div>

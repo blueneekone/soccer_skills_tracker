@@ -293,7 +293,7 @@ import { functions } from '$lib/firebase.js';
 	{#if phase === 'uploading' || phase === 'analyzing'}
 		<div class="ca-overlay" aria-live="polite" aria-label="Analysis in progress">
 			<!-- Hex grid background -->
-			<div class="ca-overlay__hexgrid" aria-hidden="true"></div>
+			<div class="ca-overlay__hexgrid tw-font-mono" aria-hidden="true"></div>
 
 			<!-- Horizontal scan line -->
 			<div
@@ -357,7 +357,7 @@ import { functions } from '$lib/firebase.js';
 				id="ca-file-input"
 				type="file"
 				accept="video/mp4,video/webm,video/quicktime,image/jpeg,image/png,image/webp"
-				class="ca-file-input-hidden"
+				class="ca-file-input-hidden tw-font-mono"
 				onchange={onFileChange}
 				aria-label="Select training clip"
 			/>

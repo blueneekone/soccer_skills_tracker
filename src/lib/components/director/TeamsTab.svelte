@@ -443,7 +443,7 @@
 				/>
 			</div>
 			<div class="tt-matrix-cell tt-matrix-cell--name"  role="columnheader">SQUAD</div>
-			<div class="tt-matrix-cell tt-matrix-cell--id"    role="columnheader">ID</div>
+			<div class="tt-matrix-cell tt-matrix-cell--id tw-font-mono"    role="columnheader">ID</div>
 			<div class="tt-matrix-cell tt-matrix-cell--coach" role="columnheader">COACH</div>
 			<div class="tt-matrix-cell tt-matrix-cell--status" role="columnheader">STATUS</div>
 			<div class="tt-matrix-cell tt-matrix-cell--acts"  role="columnheader">ACTIONS</div>
@@ -469,7 +469,7 @@
 				<div class="tt-matrix-cell tt-matrix-cell--name" role="cell">
 					<span class="tt-m-name">{t.name || t.id}</span>
 				</div>
-				<div class="tt-matrix-cell tt-matrix-cell--id" role="cell">
+				<div class="tt-matrix-cell tt-matrix-cell--id tw-font-mono" role="cell">
 					<code class="tt-m-code">{t.id}</code>
 				</div>
 				<div class="tt-matrix-cell tt-matrix-cell--coach" role="cell">
@@ -494,7 +494,7 @@
 
 <!-- ── Card Swimlane View ────────────────────────────────────────────────── -->
 {:else}
-	<div class="tt-card-grid">
+	<div class="tt-card-grid tw-font-mono">
 		{#each filteredTeams as t (t.id)}
 			{@const selected = selectedTeamIds.includes(t.id)}
 			{@const showInvForm = showInlineInvite[t.id]}
@@ -513,9 +513,9 @@
 							class="tt-cb"
 						/>
 					</label>
-					<div class="tt-card-identity">
+					<div class="tt-card-identity tw-font-mono">
 						<p class="tt-card-name">{t.name || t.id}</p>
-						<code class="tt-card-id">{t.id}</code>
+						<code class="tt-card-id tw-font-mono">{t.id}</code>
 					</div>
 					<span class="tt-status-badge {teamStatusClass(t)}">{teamStatusLabel(t)}</span>
 				</div>
@@ -577,12 +577,12 @@
 <!-- ── Batch Command Dock ──────────────────────────────────────────────── -->
 {#if selectedTeamIds.length > 0}
 	<div class="tt-batch-dock" role="toolbar" aria-label="Batch command dock">
-		<span class="tt-batch-count">
-			<span class="tt-batch-count-num">{selectedTeamIds.length}</span>
-			<span class="tt-batch-count-lbl">SQUAD{selectedTeamIds.length !== 1 ? 'S' : ''} SELECTED</span>
+		<span class="tt-batch-count tw-font-mono">
+			<span class="tt-batch-count-num tw-font-mono">{selectedTeamIds.length}</span>
+			<span class="tt-batch-count-lbl tw-font-mono">SQUAD{selectedTeamIds.length !== 1 ? 'S' : ''} SELECTED</span>
 		</span>
 
-		<div class="tt-batch-divider"></div>
+		<div class="tt-batch-divider tw-font-mono"></div>
 
 		<button
 			class="tt-batch-action"
@@ -604,7 +604,7 @@
 			<span>EXPORT CSV</span>
 		</button>
 
-		<div class="tt-batch-divider"></div>
+		<div class="tt-batch-divider tw-font-mono"></div>
 
 		<button
 			class="tt-batch-clear"

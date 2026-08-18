@@ -169,7 +169,7 @@
 						rows="5"
 						disabled={phase === 'sending'}
 					></textarea>
-					<div class="ra-char-count">{description.length} / 4000</div>
+					<div class="ra-char-count tw-font-mono">{description.length} / 4000</div>
 				</div>
 
 				<!-- Auto-captured context (display only) -->

@@ -153,7 +153,7 @@
 				<p class="step-label">STEP 1 OF 2 — ENTER YOUR MOBILE NUMBER</p>
 
 				<div class="phone-row">
-					<select class="country-select" bind:value={countryCode} disabled={isBusy}>
+					<select class="country-select tw-font-mono" bind:value={countryCode} disabled={isBusy}>
 						{#each COUNTRY_CODES as cc (cc.code)}
 							<option value={cc.code}>{cc.label}</option>
 						{/each}
@@ -174,7 +174,7 @@
 					<p class="e164-preview">
 						<span class="mono">{e164Preview()}</span>
 						{#if phoneValid}
-							<span class="valid-check" aria-label="Valid format">✓</span>
+							<span class="valid-check tw-font-mono" aria-label="Valid format">✓</span>
 						{/if}
 					</p>
 				{/if}

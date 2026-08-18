@@ -210,7 +210,7 @@
 		</div>
 	{/if}
 
-	<div class="opp-grid" role="tabpanel" aria-label="{SLOT_LABELS[selectedSlot]} parts">
+	<div class="opp-grid tw-font-mono" role="tabpanel" aria-label="{SLOT_LABELS[selectedSlot]} parts">
 		{#each ownedForSlot as entry (entry.id)}
 			<button
 				type="button"

@@ -208,7 +208,7 @@
 		{/if}
 
 		<form class="aam-form" onsubmit={(e) => { e.preventDefault(); void submit(); }}>
-			<div class="aam-grid">
+			<div class="aam-grid tw-font-mono">
 				<div class="aam-field">
 					<label class="aam-label" for="aam-email">Email <span class="aam-req">*</span></label>
 					<input
@@ -264,7 +264,7 @@
 					/>
 				</div>
 
-				<div class="aam-field aam-field--wide">
+				<div class="aam-field aam-field--wide tw-font-mono">
 					<label class="aam-label" for="aam-address">
 						Verified Address
 						<span class="aam-places-chip" title="Google Places Autocomplete active">
@@ -288,7 +288,7 @@
 					</p>
 				</div>
 
-				<div class="aam-field aam-field--wide">
+				<div class="aam-field aam-field--wide tw-font-mono">
 					<label class="aam-label" for="aam-facility">
 						Primary Facility
 						<span class="aam-places-chip" title="Google Places Autocomplete active">
@@ -307,7 +307,7 @@
 					/>
 				</div>
 
-				<div class="aam-field aam-field--wide">
+				<div class="aam-field aam-field--wide tw-font-mono">
 					<label class="aam-label" for="aam-notes">Internal Notes</label>
 					<textarea
 						id="aam-notes"

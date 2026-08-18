@@ -106,7 +106,7 @@
 			Generated {new Date(d.generatedAt).toLocaleString()}
 		</p>
 		{/if}
-		<div class="acc-grid">
+		<div class="acc-grid tw-font-mono">
 			{#each teams as row (row.teamId)}
 				{@const st = typeof row.status === 'string' ? row.status : 'at_risk'}
 				{@const name = typeof row.teamName === 'string' ? row.teamName : row.teamId}

@@ -165,7 +165,7 @@
 				onclick={() => { activeTab = tab.value; }}
 			>
 				{tab.label}
-				<span class="tab-count">{tabCount(tab.value)}</span>
+				<span class="tab-count tw-font-mono">{tabCount(tab.value)}</span>
 			</button>
 		{/each}
 	</div>
@@ -245,7 +245,7 @@
 				<span class="modal-badge">AUDIT LOG</span>
 				<button class="modal-close" onclick={closeAudit} aria-label="Close">✕</button>
 			</div>
-			<p class="modal-token-id">token: {auditTokenId}</p>
+			<p class="modal-token-id tw-font-mono">token: {auditTokenId}</p>
 
 			{#if auditLoading}
 				<p class="modal-loading">Loading…</p>

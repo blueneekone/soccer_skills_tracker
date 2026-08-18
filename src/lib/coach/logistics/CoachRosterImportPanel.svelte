@@ -287,7 +287,7 @@
 
 	{#if previewRows.length > 0}
 		<div class="ops-import__table-wrap">
-			<table class="ops-import__table">
+			<div class="tw-border tw-border-[#334155] tw-bg-[#0f172a] tw-p-4 tw-min-w-0 tw-overflow-x-auto"><table class="tw-w-full tw-font-mono tw-text-sm" class="ops-import__table">
 				<caption class="ops-import__caption">
 					{readyRows.length} ready · {previewRows.length - readyRows.length} with errors
 				</caption>
@@ -309,7 +309,7 @@
 						</tr>
 					{/each}
 				</tbody>
-			</table>
+			</table></div>
 		</div>
 		<div class="ops-import__actions">
 			<button type="button" class="ops-btn ops-btn--secondary" onclick={clearPreview}>Clear</button>

@@ -110,7 +110,7 @@
 				<!-- Countdown redirect bar -->
 				<div class="cr-redirect">
 					<div class="cr-redirect-label">
-						RETURNING TO LOGIN PORTAL IN <span class="cr-redirect-count">{countdown}s</span>
+						RETURNING TO LOGIN PORTAL IN <span class="cr-redirect-count tw-font-mono">{countdown}s</span>
 					</div>
 					<div class="cr-redirect-bar">
 						<div

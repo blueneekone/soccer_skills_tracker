@@ -135,7 +135,7 @@
 			<p class="clp-muted clp-sub">
 				Coach-verified highlights from players who opted into public recruiting profiles (16+).
 			</p>
-			<div class="clp-grid">
+			<div class="clp-grid tw-font-mono">
 				{#each athletes as row (row.id)}
 					<div class="clp-card">
 						<div class="clp-card-watermark" aria-hidden="true">
@@ -163,7 +163,7 @@
 						</div>
 						<div class="clp-trials">
 							<p class="clp-trials-label">Top verified trials</p>
-							<div class="clp-trials-grid">
+							<div class="clp-trials-grid tw-font-mono">
 								{#each topThreeTrials(/** @type {Record<string, unknown>} */ (row.verified_trial_scores || {})) as trial}
 									<div class="clp-trial-stat">
 										<span class="clp-trial-val">{trial.value}</span>

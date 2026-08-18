@@ -130,14 +130,14 @@
 	<title>Live Fan OS Broadcast Overlay HUD</title>
 </svelte:head>
 
-<div class="bento-grid-container tw-min-h-screen tw-w-full tw-bg-black tw-p-8 tw-text-[#FAFAFA]" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, clamp(280px, 30vw, 350px)), 1fr)); gap: 1.5rem; align-items: start;">
+<div class="bento-grid-container tw-h-[100dvh] tw-overflow-hidden tw-w-full tw-bg-black tw-p-8 tw-text-[#FAFAFA] tw-font-mono" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, clamp(280px, 30vw, 350px)), 1fr)); gap: 1.5rem; align-items: start;">
 
 	<!-- COLUMN 1: Broadcast Video Feed & Live Overlay HUD -->
 	<div class="st-bento siem-panel tw-min-w-0" style="display: flex; flex-direction: column; gap: 1rem;">
-		<h2 class="font-sans-header tw-text-[#FAFAFA] tw-text-lg tw-uppercase tw-tracking-widest tw-m-0">Live Match Feed</h2>
+		<h2 class="font-sans-header tw-text-[#FAFAFA] tw-text-lg tw-uppercase tw-tracking-widest tw-m-0 tw-font-mono">Live Match Feed</h2>
 
 		<!-- Simulated live video feed player -->
-		<div class="video-feed-container" style="position: relative; width: 100%; aspect-ratio: 16/9; background-color: #000000; border: 1px solid #334155; overflow: hidden;">
+		<div class="video-feed-container tw-font-mono" style="position: relative; width: 100%; aspect-ratio: 16/9; background-color: #000000; border: 1px solid #334155; overflow: hidden;">
 			<!-- Floating Emoji Particles Rendering on Top of Video Feed -->
 			<div class="particles-overlay" style="position: absolute; inset: 0; pointer-events: none; overflow: hidden; z-index: 40;">
 				{#each particles as p (p.id)}
@@ -160,7 +160,7 @@
 				</div>
 			</div>
 
-			<div class="hud-scoreboard" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); pointer-events: none; z-index: 20; text-align: center; background: rgba(0,0,0,0.85); border: 1px solid #334155; padding: 8px 16px;">
+			<div class="hud-scoreboard tw-font-mono" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); pointer-events: none; z-index: 20; text-align: center; background: rgba(0,0,0,0.85); border: 1px solid #334155; padding: 8px 16px;">
 				<div class="font-mono-tech tw-text-[#FAFAFA] tw-font-bold tw-text-xs" style="letter-spacing: 0.1em; margin-bottom: 2px;">
 					TITANS FC <span class="tw-text-[#fbbf24]">2 - 1</span> AURA ACADEMY
 				</div>
@@ -177,7 +177,7 @@
 
 		<!-- Interactive Emoji Reaction Bar -->
 		<div style="display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.5rem;">
-			<span class="font-switzer-body tw-text-[#D4D4D8] tw-text-xs uppercase tw-tracking-wider">Tap to React in Real-Time:</span>
+			<span class="font-switzer-body tw-text-[#D4D4D8] tw-text-xs uppercase tw-tracking-wider tw-font-mono">Tap to React in Real-Time:</span>
 			<div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
 				{#each ['👍', '🔥', '❤️', '😮', '🚀'] as emoji}
 					<button
@@ -198,7 +198,7 @@
 		
 		<!-- SECURE STRIPE-POWERED SUPERDRAW FUNDRAISING TRIGGER -->
 		<div style="display: flex; flex-direction: column; gap: 0.75rem; border-bottom: 1px solid #334155; padding-bottom: 1.5rem;">
-			<h3 class="font-sans-header tw-text-[#FAFAFA] tw-text-base tw-uppercase tw-tracking-widest tw-m-0">Superdraw Fundraising</h3>
+			<h3 class="font-sans-header tw-text-[#FAFAFA] tw-text-base tw-uppercase tw-tracking-widest tw-m-0 tw-font-mono">Superdraw Fundraising</h3>
 			<p class="font-switzer-body tw-text-[#D4D4D8] tw-text-sm tw-m-0">
 				Support local athletes and unlock exclusive benefits with direct, Stripe-powered payment integrations.
 			</p>
@@ -206,11 +206,11 @@
 			<!-- Pool and Price Meta Columns -->
 			<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 0.5rem;">
 				<div style="border-left: 2px solid #fbbf24; padding-left: 8px;">
-					<div class="font-switzer-body tw-text-[#A1A1AA] tw-text-xs uppercase tw-tracking-wider">Active Prize Pool</div>
+					<div class="font-switzer-body tw-text-[#A1A1AA] tw-text-xs uppercase tw-tracking-wider tw-font-mono">Active Prize Pool</div>
 					<div class="font-mono-tech tw-text-[#FAFAFA] tw-text-lg tw-font-bold">${activePool.toLocaleString()} USD</div>
 				</div>
 				<div style="border-left: 2px solid #334155; padding-left: 8px;">
-					<div class="font-switzer-body tw-text-[#A1A1AA] tw-text-xs uppercase tw-tracking-wider">Ticket Price</div>
+					<div class="font-switzer-body tw-text-[#A1A1AA] tw-text-xs uppercase tw-tracking-wider tw-font-mono">Ticket Price</div>
 					<div class="font-mono-tech tw-text-[#FAFAFA] tw-text-lg tw-font-bold">$5.00 USD</div>
 				</div>
 			</div>
@@ -250,7 +250,7 @@
 			<button
 				type="button"
 				data-primary-cta
-				class="support-athlete-btn font-sans-header tw-px-6 tw-py-3 tw-bg-[#fbbf24] tw-text-black tw-font-bold tw-tracking-widest tw-uppercase"
+				class="support-athlete-btn font-sans-header tw-px-6 tw-py-3 tw-bg-[#fbbf24] tw-text-black tw-font-bold tw-tracking-widest tw-uppercase tw-font-mono"
 				onclick={handleSupportAthlete}
 			>
 				Support Athlete
@@ -269,7 +269,7 @@
 
 		<!-- COMPLIANT LIVE MVP VOTING MODULE -->
 		<div style="display: flex; flex-direction: column; gap: 1rem;">
-			<h3 class="font-sans-header tw-text-[#FAFAFA] tw-text-base tw-uppercase tw-tracking-widest tw-m-0">Match MVP Standings</h3>
+			<h3 class="font-sans-header tw-text-[#FAFAFA] tw-text-base tw-uppercase tw-tracking-widest tw-m-0 tw-font-mono">Match MVP Standings</h3>
 
 			<p class="font-switzer-body tw-text-[#D4D4D8] tw-text-sm tw-m-0">
 				Cast your ballot directly. Athlete PII is protected under strict COPPA 2.0 Broadcast Shield compliance guidelines.
@@ -278,7 +278,7 @@
 			<!-- Candidates list / Dense Matrix Table Standard -->
 			<div style="display: flex; flex-direction: column; gap: 0.75rem;">
 				{#each activeCandidates as candidate}
-					<div class="candidate-row" style="border: 1px solid #334155; background: #0c0f17; padding: 12px; display: flex; flex-direction: column; gap: 6px;">
+					<div class="candidate-row tw-font-mono" style="border: 1px solid #334155; background: #0c0f17; padding: 12px; display: flex; flex-direction: column; gap: 6px;">
 						<div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px;">
 							<div>
 								<div class="font-sans-header tw-text-[#FAFAFA] tw-font-bold tw-text-sm">

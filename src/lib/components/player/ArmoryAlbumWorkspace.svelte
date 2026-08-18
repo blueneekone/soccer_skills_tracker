@@ -31,7 +31,7 @@
 		<div class="tw-flex tw-flex-wrap tw-items-end tw-justify-between bento-gap-md">
 			<div>
 				<p id="album-season-heading" class="qa-eyebrow tw-mb-1">Season 1 · Sticker album</p>
-				<p class="tw-m-0 tw-font-black tw-text-xl tw-tracking-wide tw-text-slate-100 sm:tw-text-2xl">
+				<p class="tw-m-0 tw-font-black tw-text-xl tw-tracking-wide tw-text-slate-100 sm:tw-text-2xl tw-font-mono">
 					Completion:
 					<span class="qa-mono tw-text-cyan-300">{seasonOneOwnedCount}</span>
 					<span class="tw-text-slate-500 tw-font-bold"> / </span>
@@ -43,9 +43,9 @@
 				</p>
 			</div>
 			<div class="tw-min-w-[12rem] tw-flex-1 sm:tw-max-w-sm">
-				<div class="album-progress-track tw-h-2 tw-overflow-hidden tw-rounded-full">
+				<div class="album-progress-track tw-h-2 tw-overflow-hidden tw-rounded-full tw-font-mono">
 					<div
-						class="album-progress-fill tw-h-full tw-rounded-full tw-transition-[width] tw-duration-500"
+						class="album-progress-fill tw-h-full tw-rounded-full tw-transition-[width] tw-duration-500 tw-font-mono"
 						style={`width: ${Math.min(100, (seasonOneOwnedCount / SEASON_ONE_ALBUM_CAP) * 100)}%`}
 					></div>
 				</div>
@@ -58,7 +58,7 @@
 
 	<div>
 		<p class="qa-eyebrow tw-mb-3">Sticker sets</p>
-		<div class="bento-grid bento-grid--12col bento-grid--liquid tw-grid tw-grid-cols-1 lg:tw-grid-cols-12">
+		<div class="bento-grid bento-grid--12col bento-grid--liquid tw-grid tw-grid-cols-1 lg:tw-grid-cols-12 tw-font-mono">
 			{#each seasonOneSets as set (set.id)}
 				{@const setCards = getSeasonOneCardsForSet(set.id)}
 				{@const ownedHere = setCards.filter((c) => ownedSeasonOneCardIds.has(c.id)).length}
@@ -74,16 +74,16 @@
 					:	''} {selectedAlbumSetId ===
 					set.id ?
 						'tw-border-cyan-400/35 tw-ring-1 tw-ring-cyan-400/20 tw-shadow-[0_0_28px_rgba(20, 184, 166,0.12)]'
-					:	'tw-border-white/5 hover:tw-border-white/15'}"
+					:	'tw-border-white/5 hover:tw-border-white/15'} tw-font-mono"
 					onclick={() => (selectedAlbumSetId = set.id)}
 					aria-pressed={selectedAlbumSetId === set.id}
 				>
 					<span class="album-folder__stack bento-mb-md tw-self-center" aria-hidden="true">
 						<span class="album-folder__sheet album-folder__sheet--back"></span>
-						<span class="album-folder__sheet album-folder__sheet--mid"></span>
+						<span class="album-folder__sheet album-folder__sheet--mid tw-font-mono"></span>
 						<span class="album-folder__sheet album-folder__sheet--front"></span>
 					</span>
-					<span class="tw-font-black tw-text-base tw-tracking-wide tw-text-slate-100">{set.title}</span>
+					<span class="tw-font-black tw-text-base tw-tracking-wide tw-text-slate-100 tw-font-mono">{set.title}</span>
 					<span class="tw-mt-1 tw-text-xs tw-leading-snug tw-text-slate-400">{set.tagline}</span>
 					<span class="qa-mono tw-mt-3 tw-text-[0.7rem] tw-text-cyan-300/90">
 						{ownedHere}
@@ -92,7 +92,7 @@
 						<span class="tw-text-slate-500"> in set</span>
 					</span>
 					{#if setComplete && setPerk}
-						<p class="album-folder__complete qa-mono tw-mt-2 tw-m-0 tw-text-[0.62rem] tw-font-bold tw-tracking-wider">
+						<p class="album-folder__complete qa-mono tw-mt-2 tw-m-0 tw-text-[0.62rem] tw-font-bold tw-tracking-wider tw-font-mono">
 							SET COMPLETE · {setPerk.chipLabel} banner
 						</p>
 					{/if}
@@ -104,7 +104,7 @@
 	<div class="album-set-panel pd-glass-panel tw-rounded-2xl tw-p-4 sm:tw-p-5">
 		<div class="tw-mb-5 tw-flex tw-flex-wrap tw-items-baseline tw-justify-between tw-gap-3">
 			<div>
-				<h2 class="tw-m-0 tw-text-lg tw-font-black tw-tracking-wide tw-text-white sm:tw-text-xl">
+				<h2 class="tw-m-0 tw-text-lg tw-font-black tw-tracking-wide tw-text-white sm:tw-text-xl tw-font-mono">
 					{selectedAlbumSetMeta?.title ?? 'Set'}
 				</h2>
 				<p class="tw-m-0 tw-mt-1 tw-max-w-prose tw-text-sm tw-text-slate-400">
@@ -112,7 +112,7 @@
 				</p>
 				{#if isAlbumSetComplete(selectedAlbumSetId, ownedSeasonOneCardIds)}
 					{@const perk = ALBUM_SET_BONUS_REWARDS[selectedAlbumSetId as AlbumSetId]}
-					<p class="album-set-panel__complete qa-mono tw-m-0 tw-mt-2 tw-text-[0.65rem] tw-font-bold tw-tracking-wider">
+					<p class="album-set-panel__complete qa-mono tw-m-0 tw-mt-2 tw-text-[0.65rem] tw-font-bold tw-tracking-wider tw-font-mono">
 						SET COMPLETE · {perk?.chipLabel ?? 'Folder'} dossier banner unlocked
 					</p>
 				{/if}
@@ -125,7 +125,7 @@
 		</div>
 
 		<div
-			class="tw-grid tw-grid-cols-2 tw-gap-3 sm:tw-grid-cols-3 md:tw-grid-cols-4 lg:tw-grid-cols-5"
+			class="tw-grid tw-grid-cols-2 tw-gap-3 sm:tw-grid-cols-3 md:tw-grid-cols-4 lg:tw-grid-cols-5 tw-font-mono"
 			aria-label="Sticker slots for selected set"
 		>
 			{#each selectedAlbumCards as card (card.id)}
@@ -140,18 +140,18 @@
 				{#if ownedSeasonOneCardIds.has(card.id)}
 					<StickerVariantShell
 						variant={card.variant}
-						class="album-slot-card tw-rounded-xl tw-overflow-hidden tw-border tw-border-white/10 {rarityRing}"
+						class="album-slot-card tw-rounded-xl tw-overflow-hidden tw-border tw-border-white/10 {rarityRing} tw-font-mono"
 					>
 						{#snippet children()}
 							<article
-								class="album-slot-owned tw-relative tw-flex tw-h-full tw-min-h-0 tw-flex-col tw-overflow-hidden tw-rounded-[inherit]"
+								class="album-slot-owned tw-relative tw-flex tw-h-full tw-min-h-0 tw-flex-col tw-overflow-hidden tw-rounded-[inherit] tw-font-mono"
 							>
-								<div class="tw-aspect-[280/380] tw-w-full tw-shrink-0 tw-overflow-hidden" style="background: var(--pd-panel, #05050a);">
+								<div class="tw-aspect-[280/380] tw-w-full tw-shrink-0 tw-overflow-hidden tw-font-mono" style="background: var(--pd-panel, #05050a);">
 									<img src={card.imagePath} alt="" class="tw-h-full tw-w-full tw-object-cover" draggable="false" />
 								</div>
 								<div class="tw-border-t tw-border-white/5 tw-bg-black/40 tw-p-2">
 									<p class="tw-m-0 tw-truncate tw-text-xs tw-font-bold tw-text-slate-100">{card.name}</p>
-									<p class="qa-mono tw-m-0 tw-mt-1 tw-text-[0.6rem] tw-uppercase tw-tracking-wider tw-text-cyan-300/85">
+									<p class="qa-mono tw-m-0 tw-mt-1 tw-text-[0.6rem] tw-uppercase tw-tracking-wider tw-text-cyan-300/85 tw-font-mono">
 										{card.rarity}
 										<span class="tw-text-slate-500"> · </span>
 										<span class="tw-text-emerald-300/90">{formatVariantLabel(card.variant)}</span>
@@ -166,7 +166,7 @@
 						aria-label={`Locked slot · ${card.name} · ${formatVariantLabel(card.variant)}`}
 					>
 						<Icon name="sys.lock" class="tw-text-2xl tw-text-slate-600" />
-						<p class="qa-mono tw-m-0 tw-text-[0.55rem] tw-font-bold tw-tracking-wider tw-text-slate-600">LOCKED</p>
+						<p class="qa-mono tw-m-0 tw-text-[0.55rem] tw-font-bold tw-tracking-wider tw-text-slate-600 tw-font-mono">LOCKED</p>
 						<p class="qa-mono tw-m-0 tw-max-w-full tw-px-1 tw-text-[0.5rem] tw-leading-tight tw-text-slate-500">
 							{card.name}
 							<span class="tw-text-slate-600"> · </span>

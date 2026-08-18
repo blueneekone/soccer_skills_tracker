@@ -71,7 +71,7 @@
 		</p>
 	</header>
 
-	<div class="hh-link__grid">
+	<div class="hh-link__grid tw-font-mono">
 		<label class="hh-link__field">
 			<span class="hh-link__label">Parent / guardian emails</span>
 			<textarea

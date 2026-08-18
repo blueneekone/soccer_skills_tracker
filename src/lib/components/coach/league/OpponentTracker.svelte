@@ -80,7 +80,7 @@
 			<p>No opponents in scouting directory.</p>
 		</div>
 	{:else}
-		<div class="ot-grid">
+		<div class="ot-grid tw-font-mono">
 			{#each filtered as opp (opp.id)}
 				<OpponentCard
 					opponent={opp}

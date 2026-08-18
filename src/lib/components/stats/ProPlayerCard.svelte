@@ -270,14 +270,14 @@
 		class="pro-card-outer bento-section"
 		class:pro-card-outer--dossier-preview={dossierPreview}
 	>
-		<div class="ppc-id-wrap">
+		<div class="ppc-id-wrap tw-font-mono">
 			<p
 				class="ppc-flip-hint tw-mb-2 tw-text-center tw-text-[11px] tw-font-extrabold tw-uppercase tw-tracking-[0.2em] tw-text-cyan-500/80"
 			>
 				Click to flip
 			</p>
 			<div
-				class="ppc-flip-scene tw-relative tw-mx-auto tw-h-[360px] tw-w-full tw-max-w-[280px] tw-cursor-pointer tw-overflow-hidden tw-rounded-2xl"
+				class="ppc-flip-scene tw-relative tw-mx-auto tw-h-[360px] tw-w-full tw-max-w-[280px] tw-cursor-pointer tw-overflow-hidden tw-rounded-2xl tw-font-mono"
 				style="perspective: 1000px;"
 				role="button"
 				tabindex="0"
@@ -308,7 +308,7 @@
 						/>
 					</div>
 					<div
-						class="ppc-face ppc-face--back tw-absolute tw-inset-0 tw-flex tw-min-h-0 tw-flex-col tw-overflow-hidden tw-rounded-2xl tw-border tw-p-5 tw-text-left"
+						class="ppc-face ppc-face--back tw-absolute tw-inset-0 tw-flex tw-min-h-0 tw-flex-col tw-overflow-hidden tw-rounded-2xl tw-border tw-p-5 tw-text-left tw-font-mono"
 						style="transform: rotateY(180deg); -webkit-backface-visibility: hidden; backface-visibility: hidden;"
 					>
 						<ProPlayerCardBack
@@ -373,13 +373,13 @@
 						</div>
 					</div>
 
-					<div class="card pro-stats-card">
+					<div class="card pro-stats-card tw-font-mono">
 						<div class="card-header pro-inner-head">Verified metrics</div>
-						<div class="card-body pro-stats-body">
+						<div class="card-body pro-stats-body tw-font-mono">
 							{#if selected}
-								<div class="pro-stats-grid">
-									<section class="pro-stats-block">
-										<h3 class="pro-stats-heading">Physical</h3>
+								<div class="pro-stats-grid tw-font-mono">
+									<section class="pro-stats-block tw-font-mono">
+										<h3 class="pro-stats-heading tw-font-mono">Physical</h3>
 										<ul class="pro-metric-list">
 											<li>
 												<span>Pace</span>
@@ -395,8 +395,8 @@
 											</li>
 										</ul>
 									</section>
-									<section class="pro-stats-block">
-										<h3 class="pro-stats-heading">Technical</h3>
+									<section class="pro-stats-block tw-font-mono">
+										<h3 class="pro-stats-heading tw-font-mono">Technical</h3>
 										<ul class="pro-metric-list">
 											<li>
 												<span>Passing</span>

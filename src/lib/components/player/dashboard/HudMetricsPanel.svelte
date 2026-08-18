@@ -34,7 +34,7 @@
 >
 	<section class="hmp-vectors" aria-label="Vanguard vectors">
 		{#if !embedded || telemetryReady}
-			<dl class="hmp-grid hmp-grid--vectors">
+			<dl class="hmp-grid hmp-grid--vectors tw-font-mono">
 				{#each vectorRows as row (row.id)}
 					<div class="hmp-cell hmp-cell--selectable" class:hmp-cell--selected={selectedAxis === row.id}>
 						<button
@@ -60,7 +60,7 @@
 	{#if !embedded && powerMetrics.length > 0}
 		<section class="hmp-power" aria-label="Match data">
 			<p class="hmp-section-label">Match Data</p>
-			<dl class="hmp-grid">
+			<dl class="hmp-grid tw-font-mono">
 				{#each powerMetrics as m (m.key)}
 					<div class="hmp-cell hmp-cell--secondary">
 						<dt class="hmp-label">{m.label}</dt>

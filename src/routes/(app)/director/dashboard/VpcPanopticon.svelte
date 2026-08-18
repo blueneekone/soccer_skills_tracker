@@ -169,8 +169,8 @@
       <h2 class="vp-title">PENDING HOUSEHOLD NODES</h2>
     </div>
     <div class="vp-header__right">
-      <span class="vp-count-pill">
-        <span class="vp-count-dot" aria-hidden="true"></span>
+      <span class="vp-count-pill tw-font-mono">
+        <span class="vp-count-dot tw-font-mono" aria-hidden="true"></span>
         {#if isLoading}
           SCANNING…
         {:else}
@@ -196,7 +196,7 @@
 
   {:else}
     <!-- Column headers -->
-    <div class="vp-grid-head" aria-hidden="true">
+    <div class="vp-grid-head tw-font-mono" aria-hidden="true">
       <span>PLAYER</span>
       <span>TEAM</span>
       <span>GUARDIAN EMAIL</span>
@@ -261,7 +261,7 @@
 
           <!-- Out-of-band override -->
           <button
-            class="vp-btn vp-btn--override tw-pointer-events-auto"
+            class="vp-btn vp-btn--override tw-pointer-events-auto tw-font-mono"
             onclick={() => openOverride(node)}
             aria-label="Out-of-band clearance for {node.playerName}"
           >

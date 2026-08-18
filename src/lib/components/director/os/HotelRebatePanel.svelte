@@ -146,7 +146,7 @@
 				onclick={() => { activeBucket = bucket.key; }}
 			>
 				<span class="tab-label">{bucket.label}</span>
-				<span class="tab-count">{bucket.rows.length}</span>
+				<span class="tab-count tw-font-mono">{bucket.rows.length}</span>
 				<span class="tab-total">{formatCents(bucket.totalNgbCents)}</span>
 			</button>
 		{/each}

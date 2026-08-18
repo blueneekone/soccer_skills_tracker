@@ -124,7 +124,7 @@
 	onclick={stop}
 >
 	<div class="ec-pdrawer__head">
-		<div class="ec-pdrawer__identity">
+		<div class="ec-pdrawer__identity tw-font-mono">
 			<div class="ec-pdrawer__avatar" aria-hidden="true">
 				<Icon name="comm.bell" size={18} />
 			</div>

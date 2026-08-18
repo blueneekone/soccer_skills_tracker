@@ -258,7 +258,7 @@
 				</button>
 			</div>
 
-			<div class="team-grid">
+			<div class="team-grid tw-font-mono">
 				{#each draftTeams as team, idx (team.id)}
 					<div class="team-row">
 						<span class="seed-pill">#{idx + 1}</span>
@@ -327,8 +327,8 @@
 				] as section (section.side)}
 					{@const sectionRounds = sideRoundGroups(section.side)}
 					{#if sectionRounds.length > 0}
-						<div class="bracket-side-block">
-							<h3 class="bracket-side-title">{section.title}</h3>
+						<div class="bracket-side-block tw-font-mono">
+							<h3 class="bracket-side-title tw-font-mono">{section.title}</h3>
 							<div class="bracket-tree" style:--rounds={sectionRounds.length}>
 								{#each sectionRounds as roundMatches, roundIdx}
 									<div class="bracket-round">
@@ -375,7 +375,7 @@
 										<span class="team-name">{teamLabel(match.homeTeamId)}</span>
 										{#if !readonly && match.homeTeamId && match.awayTeamId && match.status !== 'final'}
 											<input
-												class="score-input"
+												class="score-input tw-font-mono"
 												type="number"
 												min="0"
 												placeholder="0"
@@ -383,7 +383,7 @@
 												oninput={(e) => setScore(match.id, 'home', e.currentTarget.value)}
 											/>
 										{:else if match.homeScore != null}
-											<span class="score-read">{match.homeScore}</span>
+											<span class="score-read tw-font-mono">{match.homeScore}</span>
 										{/if}
 									</div>
 
@@ -391,7 +391,7 @@
 										<span class="team-name">{teamLabel(match.awayTeamId)}</span>
 										{#if !readonly && match.homeTeamId && match.awayTeamId && match.status !== 'final'}
 											<input
-												class="score-input"
+												class="score-input tw-font-mono"
 												type="number"
 												min="0"
 												placeholder="0"
@@ -399,7 +399,7 @@
 												oninput={(e) => setScore(match.id, 'away', e.currentTarget.value)}
 											/>
 										{:else if match.awayScore != null}
-											<span class="score-read">{match.awayScore}</span>
+											<span class="score-read tw-font-mono">{match.awayScore}</span>
 										{/if}
 									</div>
 

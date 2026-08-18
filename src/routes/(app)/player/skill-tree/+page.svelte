@@ -91,7 +91,7 @@
 	<title>Skill Tree · Physical Progression · SSTRACKER</title>
 </svelte:head>
 
-<div class="pd-page-root player-dossier-root st-page tw-h-[100dvh] tw-min-w-0 tw-overflow-hidden tw-flex tw-flex-col tw-text-white" style="background: var(--pd-bg);">
+<div class="pd-page-root player-dossier-root st-page tw-h-[100dvh] tw-min-w-0 tw-overflow-hidden tw-flex tw-flex-col tw-text-white tw-font-mono" style="background: var(--pd-bg);">
 
 	<div class="pd-content-wrap tw-flex-1 tw-min-h-0 tw-overflow-y-auto">
 	<PlayerOsPageStrap eyebrow="Progress / Skill tree" title="Physical progression">
@@ -113,21 +113,21 @@
 		<div class="st-cell-secondary tw-flex tw-flex-col tw-gap-[clamp(0.75rem,2vw,1.25rem)]">
 
 			<!-- Tier card -->
-			<div class="pd-page-panel pd-panel-section st-side-card tw-flex tw-flex-col tw-gap-3 tw-p-4">
+			<div class="pd-page-panel pd-panel-section st-side-card tw-flex tw-flex-col tw-gap-3 tw-p-4 tw-font-mono">
 
 				<p class="pd-label">Current tier</p>
 
 				<p
-					class="pd-mono tw-text-[clamp(1.1rem,2.5vw,1.5rem)] tw-font-black tw-tracking-widest tw-uppercase tw-leading-none"
+					class="pd-mono tw-text-[clamp(1.1rem,2.5vw,1.5rem)] tw-font-black tw-tracking-widest tw-uppercase tw-leading-none tw-font-mono"
 					style:color={tierAccent}
 				>
 					{armory.currentTier.label}
 				</p>
 
 				<!-- XP progress bar -->
-				<div class="st-xp-track tw-h-1 tw-overflow-hidden" style="background: var(--pd-bg); border: 1px solid var(--pd-line);">
+				<div class="st-xp-track tw-h-1 tw-overflow-hidden tw-font-mono" style="background: var(--pd-bg); border: 1px solid var(--pd-line);">
 					<div
-						class="tw-h-full tw-transition-[width] tw-duration-700"
+						class="tw-h-full tw-transition-[width] tw-duration-700 tw-font-mono"
 						style:width="{armory.progressToNextTier}%"
 						style:background="var(--pd-accent-action)"
 					></div>
@@ -138,7 +138,7 @@
 				</p>
 
 				{#if armory.nextTier}
-					<p class="pd-mono tw-text-[10px] tw-tracking-wide" style="color: var(--pd-text-muted);">
+					<p class="pd-mono tw-text-[10px] tw-tracking-wide tw-font-mono" style="color: var(--pd-text-muted);">
 						{armory.xpRequired.toLocaleString()} XP to
 						<span style="color: var(--pd-accent-data);">{armory.nextTier.label}</span>
 					</p>
@@ -146,7 +146,7 @@
 			</div>
 
 			<!-- Branch progress summary -->
-			<div class="pd-page-panel pd-panel-section st-side-card tw-flex tw-flex-col tw-gap-2 tw-p-4">
+			<div class="pd-page-panel pd-panel-section st-side-card tw-flex tw-flex-col tw-gap-2 tw-p-4 tw-font-mono">
 
 				<p class="pd-label tw-mb-1">Branch progress</p>
 
@@ -155,16 +155,16 @@
 
 						<!-- Attr label -->
 						<span
-							class="tw-w-[3.5rem] tw-shrink-0 tw-tracking-wider tw-uppercase"
+							class="tw-w-[3.5rem] tw-shrink-0 tw-tracking-wider tw-uppercase tw-font-mono"
 							style:color={s.accent}
 						>
 							{s.attr}
 						</span>
 
 						<!-- Progress bar -->
-						<div class="tw-flex-1 tw-h-[3px] tw-overflow-hidden" style="background: var(--pd-bg); border: 1px solid var(--pd-line);">
+						<div class="tw-flex-1 tw-h-[3px] tw-overflow-hidden tw-font-mono" style="background: var(--pd-bg); border: 1px solid var(--pd-line);">
 							<div
-								class="tw-h-full tw-transition-[width] tw-duration-700"
+								class="tw-h-full tw-transition-[width] tw-duration-700 tw-font-mono"
 								style:width="{Math.round(s.progress * 100)}%"
 								style:background={s.accent}
 							></div>

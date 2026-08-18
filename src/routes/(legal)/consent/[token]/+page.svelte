@@ -256,7 +256,7 @@
 <!-- ─── Root ─────────────────────────────────────────────────────────────── -->
 <div class="cv-root">
 	<div class="cv-scanlines" aria-hidden="true"></div>
-	<div class="cv-grid" aria-hidden="true"></div>
+	<div class="cv-grid tw-font-mono" aria-hidden="true"></div>
 
 	<main class="cv-main">
 

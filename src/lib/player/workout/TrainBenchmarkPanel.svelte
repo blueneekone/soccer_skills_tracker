@@ -39,15 +39,15 @@
 
 <section class="pw-benchmark tw-space-y-4" aria-label="Benchmark submission">
 	<header class="tw-space-y-2">
-		<p class="pw-mono pw-dim tw-text-[10px] tw-uppercase tw-tracking-widest">
+		<p class="pw-mono pw-dim tw-text-[10px] tw-uppercase tw-tracking-widest tw-font-mono">
 			{drill.category} · {drill.statKey} axis
 		</p>
-		<h2 class="pw-mono tw-text-lg tw-font-bold tw-uppercase tw-tracking-wide tw-text-white">
+		<h2 class="pw-mono tw-text-lg tw-font-bold tw-uppercase tw-tracking-wide tw-text-white tw-font-mono">
 			{drill.label}
 		</h2>
 		<p class="pw-mono pw-dim tw-text-xs tw-leading-relaxed">{drill.description}</p>
 		{#if coachTargetValue != null && coachTargetValue > 0}
-			<p class="pw-mono tw-text-[10px] tw-text-[#14b8a6]/80 tw-uppercase tw-tracking-wide">
+			<p class="pw-mono tw-text-[10px] tw-text-[#14b8a6]/80 tw-uppercase tw-tracking-wide tw-font-mono">
 				Coach target · {coachTargetValue} {drill.unit}
 			</p>
 		{/if}
@@ -58,7 +58,7 @@
 			<label
 				for="train-benchmark-input"
 				class="pw-mono tw-block tw-text-[10px] tw-uppercase tw-tracking-widest tw-mb-2
-				       {submitState === 'error' ? 'tw-text-[#ff4444]' : 'pw-dim'}"
+				       {submitState === 'error' ? 'tw-text-[#ff4444]' : 'pw-dim'} tw-font-mono"
 			>
 				{#if submitState === 'error'}
 					⚠ INVALID INPUT — CHECK RANGE [{drill.inputMin}–{drill.inputMax} {drill.unit}]
@@ -85,11 +85,11 @@
 		</div>
 
 		<div class="tw-space-y-1">
-			<p class="pw-mono pw-dim tw-text-[10px] tw-uppercase tw-tracking-widest">Drill yield</p>
+			<p class="pw-mono pw-dim tw-text-[10px] tw-uppercase tw-tracking-widest tw-font-mono">Drill yield</p>
 			<p class="pw-mono tw-text-2xl tw-font-bold tw-tabular-nums" style:color={bonusEarned ? drill.categoryAccent : 'rgba(255,255,255,0.55)'}>
 				+{previewXp.toLocaleString()} XP
 			</p>
-			<p class="pw-mono pw-dim tw-text-[9px] tw-uppercase tw-tracking-wide">
+			<p class="pw-mono pw-dim tw-text-[9px] tw-uppercase tw-tracking-wide tw-font-mono">
 				{formatBenchmarkBonusHint(drill)}
 			</p>
 		</div>

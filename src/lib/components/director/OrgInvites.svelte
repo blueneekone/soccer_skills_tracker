@@ -177,7 +177,7 @@
 				onclick={() => (inviteFilter = f)}
 			>
 				{f === 'ALL' ? 'ALL ACTIVE' : f.toUpperCase()}
-				<span class="oi-tab-count">
+				<span class="oi-tab-count tw-font-mono">
 					{f === 'ALL'
 						? org.activeInvites.length
 						: f === 'coach'

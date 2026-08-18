@@ -386,7 +386,7 @@
 			<p class="matrix__ok" role="status">{channelCreatedMsg}</p>
 		{/if}
 		<!-- Mobile: top channel scroller -->
-		<div class="matrix__strip md:hidden" role="tablist" aria-label="Channels">
+		<div class="matrix__strip md:hidden tw-font-mono" role="tablist" aria-label="Channels">
 			{#each allChannels as ch (ch.id)}
 				<button
 					type="button"
@@ -464,8 +464,8 @@
 						</h2>
 						<p class="matrix__h2-sub">{activeChannelDef.description}</p>
 					</div>
-					<div class="matrix__head-aside" aria-hidden="true">
-						<span class="matrix__id-badge">{activeChannel}</span>
+					<div class="matrix__head-aside tw-font-mono" aria-hidden="true">
+						<span class="matrix__id-badge tw-font-mono">{activeChannel}</span>
 					</div>
 				</header>
 

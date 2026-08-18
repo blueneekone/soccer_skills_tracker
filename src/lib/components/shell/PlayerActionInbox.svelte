@@ -74,7 +74,7 @@
 	{#if loading}
 		<p class="pai__muted">Loading your assignments…</p>
 	{:else}
-		<div class="pai__grid">
+		<div class="pai__grid tw-font-mono">
 			<div class="pai__card">
 				<div class="pai__card-top">
 					<span class="pai__kicker">Homework & drills</span>

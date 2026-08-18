@@ -76,7 +76,7 @@
 			Move a linked player between teams in {clubId || 'your club'} (users + player_lookup + roster).
 		</p>
 	</header>
-	<div class="rrt-panel__grid">
+	<div class="rrt-panel__grid tw-font-mono">
 		<label class="rrt-field">
 			<span class="rrt-label">Player email</span>
 			<input

@@ -21,7 +21,7 @@
 	<title>Training media · SSTRACKER</title>
 </svelte:head>
 
-<div class="pd-page-root player-dossier-root tw-min-w-0 tw-overflow-x-hidden" style="background: var(--pd-bg); color: var(--pd-text);">
+<div class="pd-page-root player-dossier-root tw-min-w-0 tw-overflow-x-hidden tw-font-mono" style="background: var(--pd-bg); color: var(--pd-text);">
 	<div class="pd-content-wrap pd-route-stack">
 		<PlayerOsPageStrap eyebrow="Execute / Film" title="Training media lab">
 			{#snippet status()}

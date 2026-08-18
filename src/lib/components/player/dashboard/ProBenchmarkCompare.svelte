@@ -20,19 +20,19 @@
 {#if benchmarks}
 <div class="mt-8 rounded-lg border border-slate-700/50 bg-[#0B0F19] p-4 text-slate-300 shadow-xl">
 	<div class="mb-4 flex items-center justify-between border-b border-slate-700/50 pb-2">
-		<h3 class="font-sans text-sm font-semibold tracking-wide text-white uppercase">
+		<h3 class="font-sans text-sm font-semibold tracking-wide text-white uppercase tw-font-mono">
 			Pro-League Benchmarks
 		</h3>
 		<span class="font-mono text-xs text-slate-500">Sportradar API</span>
 	</div>
 
-	<div class="grid grid-cols-2 gap-4 sm:grid-cols-3">
+	<div class="grid grid-cols-2 gap-4 sm:grid-cols-3 tw-font-mono">
 		{#each AXES as axis}
 			{@const proScore = benchmarks[axis.id] ?? 0}
 			{@const myScore = Math.floor(prismValues[axis.index] ?? 0)}
 			{@const diff = myScore - proScore}
 			<div class="flex flex-col rounded bg-slate-800/40 p-3 shadow-inner">
-				<span class="font-mono text-[10px] text-slate-400 uppercase tracking-widest">{axis.label}</span>
+				<span class="font-mono text-[10px] text-slate-400 uppercase tracking-widest tw-font-mono">{axis.label}</span>
 				<div class="mt-1 flex items-baseline justify-between">
 					<div class="flex items-baseline space-x-1">
 						<span class="font-mono text-lg font-bold text-white">{myScore}</span>
@@ -47,7 +47,7 @@
 					{/if}
 				</div>
 				<!-- Progress bar comparison -->
-				<div class="mt-2 h-1 w-full overflow-hidden rounded bg-slate-700/50">
+				<div class="mt-2 h-1 w-full overflow-hidden rounded bg-slate-700/50 tw-font-mono">
 					<div 
 						class="h-full bg-blue-500 transition-all duration-500"
 						style="width: {Math.min(100, Math.max(0, (myScore / Math.max(1, proScore)) * 100))}%;"

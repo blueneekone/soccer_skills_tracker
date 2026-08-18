@@ -171,7 +171,7 @@
 								{@const url = mediaUrls[item.id]!}
 								{#if item.mediaStoragePath.match(/\.(mp4|mov|webm|avi|m4v)(\?|$)/i) || item.mediaStoragePath.match(/video\//)}
 									<video
-										class="parent-bounty-claims-media__video"
+										class="parent-bounty-claims-media__video tw-font-mono"
 										src={url}
 										controls
 										preload="metadata"

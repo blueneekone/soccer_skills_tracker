@@ -1036,7 +1036,7 @@
 				<a class="stw__import-link" href="/coach/logistics?tab=roster">Import CSV on Team Ops →</a>
 			</p>
 			<div class="stw__tablewrap">
-				<table class="stw__table" aria-label="Roster">
+				<div class="tw-border tw-border-[#334155] tw-bg-[#0f172a] tw-p-4 tw-min-w-0 tw-overflow-x-auto"><table class="tw-w-full tw-font-mono tw-text-sm" class="stw__table" aria-label="Roster">
 					<thead>
 						<tr>
 							<th scope="col">Athlete</th>
@@ -1082,7 +1082,7 @@
 							{/each}
 						{/if}
 					</tbody>
-				</table>
+				</table></div>
 			</div>
 		</section>
 

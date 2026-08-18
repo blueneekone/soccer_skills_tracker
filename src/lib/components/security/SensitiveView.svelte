@@ -275,7 +275,7 @@
 							<p class="sv-document__file-name">{fileName}</p>
 							<p class="sv-document__file-type">{label}</p>
 							{#if auditLogId}
-								<p class="sv-document__audit-id">
+								<p class="sv-document__audit-id tw-font-mono">
 									AUDIT REF: <code class="sv-code">{auditLogId.slice(0, 12)}…</code>
 								</p>
 							{/if}

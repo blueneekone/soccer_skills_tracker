@@ -113,7 +113,7 @@
 <div class="co-root" role="dialog" aria-modal="true" aria-labelledby="co-title">
 	<!-- Animated scan-line background -->
 	<div class="co-scanlines" aria-hidden="true"></div>
-	<div class="co-grid-bg" aria-hidden="true"></div>
+	<div class="co-grid-bg tw-font-mono" aria-hidden="true"></div>
 
 	<!-- Core panel -->
 	<div class="co-panel">

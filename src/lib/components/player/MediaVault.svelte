@@ -175,7 +175,7 @@ import { functions } from '$lib/firebase.js';
 		<div class="mv-header__left">
 			<span class="mv-header__icon" aria-hidden="true">📼</span>
 			<h3 class="mv-header__title">MEDIA VAULT</h3>
-			<span class="mv-header__count">{clips.length}</span>
+			<span class="mv-header__count tw-font-mono">{clips.length}</span>
 		</div>
 
 		{#if canDeleteAll && clips.length > 0 && !readonly}
@@ -278,7 +278,7 @@ import { functions } from '$lib/firebase.js';
 	{#if readyClips.length > 0}
 		<div class="mv-section">
 			<h4 class="mv-section__title">VAULT · {readyClips.length} CLIP{readyClips.length !== 1 ? 'S' : ''}</h4>
-			<div class="mv-grid">
+			<div class="mv-grid tw-font-mono">
 				{#each readyClips as clip (clip.clipId)}
 					<article class="mv-card">
 						<!-- Thumbnail / icon area -->

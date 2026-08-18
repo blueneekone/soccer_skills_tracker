@@ -8,7 +8,7 @@
 	const engine = new AdminDashboardEngine();
 </script>
 
-<div class="pd-page-root tw-min-h-screen tw-bg-[#000000] tw-text-[#FAFAFA] tw-flex tw-flex-col">
+<div class="pd-page-root tw-h-[100dvh] tw-overflow-hidden tw-bg-[#000000] tw-text-[#FAFAFA] tw-flex tw-flex-col">
 	<AdminDashboardHUD {engine} />
 	<main class="tw-flex-1 tw-flex tw-flex-col tw-min-w-0">
 		<AdminOverviewArena {engine} />

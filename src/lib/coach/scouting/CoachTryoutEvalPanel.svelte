@@ -257,7 +257,7 @@
 					<div class="cte__sheet">
 						<h3 class="cte__sheet-title">{activeAthlete.playerName}</h3>
 						{#each CRITERIA as c (c.key)}
-							<label class="cte__slider">
+							<label class="cte__slider tw-font-mono">
 								<span>{c.label} — {matrix[c.key]}</span>
 								<input
 									type="range"

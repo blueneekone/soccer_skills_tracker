@@ -403,7 +403,7 @@
 			>
 				TALENT FEED
 				{#if filteredPlayers.length}
-					<span class="rp-tab__count">{filteredPlayers.length}</span>
+					<span class="rp-tab__count tw-font-mono">{filteredPlayers.length}</span>
 				{/if}
 			</button>
 			<button
@@ -413,7 +413,7 @@
 			>
 				WATCHLIST
 				{#if watchlistCount}
-					<span class="rp-tab__count" class:rp-tab__count--alert={watchlistNewMilestones > 0}>
+					<span class="rp-tab__count tw-font-mono" class:rp-tab__count--alert={watchlistNewMilestones > 0}>
 						{watchlistCount}
 					</span>
 				{/if}
@@ -498,7 +498,7 @@
 					<span>SCANNING TALENT DATABASE…</span>
 				</div>
 			{:else}
-				<div class="rp-grid">
+				<div class="rp-grid tw-font-mono">
 					{#each filteredPlayers as player (player.uid)}
 						<!-- svelte-ignore a11y_click_events_have_key_events -->
 						<!-- svelte-ignore a11y_no_static_element_interactions -->
@@ -530,7 +530,7 @@
 								</button>
 							</div>
 							{#if player.verified_video_url}
-								<div class="rp-card__video-badge">▶ VERIFIED TRIAL</div>
+								<div class="rp-card__video-badge tw-font-mono">▶ VERIFIED TRIAL</div>
 							{/if}
 
 							<!-- VAN + Tier + XP -->
@@ -612,7 +612,7 @@
 					<span class="rp-empty__sub">Click the ★ on any player to track milestones.</span>
 				</div>
 			{:else}
-				<div class="rp-grid">
+				<div class="rp-grid tw-font-mono">
 					{#each watchlist as player (player.uid)}
 						<!-- svelte-ignore a11y_click_events_have_key_events -->
 						<!-- svelte-ignore a11y_no_static_element_interactions -->
@@ -670,7 +670,7 @@
 
 	<aside class="rp-detail" aria-label="Player dossier: {selectedPlayer.name}">
 		<header class="rp-detail__header">
-			<div class="rp-detail__id">
+			<div class="rp-detail__id tw-font-mono">
 				<span
 					class="rp-detail__tier-dot"
 					style:background={tierAccent(selectedPlayer.tier)}
@@ -720,7 +720,7 @@
 		{#if Object.keys(selectedPlayer.stats).length}
 			<section class="rp-detail__section">
 				<h3 class="rp-detail__section-title">SCOUT'S SIX · CURRENT</h3>
-				<div class="rp-detail__stats-grid">
+				<div class="rp-detail__stats-grid tw-font-mono">
 					{#each Object.entries(selectedPlayer.stats).filter(([k]) => k !== 'VAN') as [key, value]}
 						<div class="rp-detail__stat">
 							<span class="rp-detail__stat-label">{key}</span>
@@ -827,7 +827,7 @@
 					src={selectedPlayer.verified_video_url}
 					controls
 					playsinline
-					class="rp-detail__video"
+					class="rp-detail__video tw-font-mono"
 				></video>
 			</section>
 		{/if}

@@ -166,7 +166,7 @@
 				<span class="td-empty__sub">Contact a Director to assign students to your tutor account.</span>
 			</div>
 		{:else}
-			<div class="td-grid">
+			<div class="td-grid tw-font-mono">
 				{#each roster.engines as engine, i (roster.studentEmails[i])}
 					<div
 						class="td-card"

@@ -110,11 +110,11 @@
 			No active ticket sales. <a href="/director/events" class="empty-link">Create an event.</a>
 		</div>
 	{:else}
-		<div class="event-grid">
+		<div class="event-grid tw-font-mono">
 			{#each summaries as ev (ev.eventId)}
 				<a class="event-tile" href="/director/scan/{ev.eventId}">
-					<div class="tile-id">{ev.eventId}</div>
-					<div class="tile-stats">
+					<div class="tile-id tw-font-mono">{ev.eventId}</div>
+					<div class="tile-stats tw-font-mono">
 						<div class="tile-stat">
 							<span class="tile-val">{ev.sold}</span>
 							<span class="tile-lbl">Sold</span>

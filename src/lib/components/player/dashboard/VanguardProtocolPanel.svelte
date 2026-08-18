@@ -67,9 +67,9 @@
 				<div class="vpp-inspector__detail">
 					<span class="vpp-inspector__code">{selectedRow.label}</span>
 					<h3 class="vpp-inspector__name">{selectedRow.fullName}</h3>
-					<p class="vpp-inspector__score">
-						<span class="vpp-inspector__score-val">{selectedRow.display}</span>
-						<span class="vpp-inspector__score-max">/99</span>
+					<p class="vpp-inspector__score tw-font-mono">
+						<span class="vpp-inspector__score-val tw-font-mono">{selectedRow.display}</span>
+						<span class="vpp-inspector__score-max tw-font-mono">/99</span>
 					</p>
 					<span
 						class="vpp-inspector__bar"

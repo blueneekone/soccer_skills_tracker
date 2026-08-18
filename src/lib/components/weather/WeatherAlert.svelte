@@ -85,9 +85,9 @@
 
 		<!-- Right: countdown -->
 		{#if weatherAegis.allClearActive}
-			<div class="wa-countdown" aria-label="All-clear countdown">
-				<span class="wa-countdown__label">RESUME IN</span>
-				<span class="wa-countdown__time">{countdown}</span>
+			<div class="wa-countdown tw-font-mono" aria-label="All-clear countdown">
+				<span class="wa-countdown__label tw-font-mono">RESUME IN</span>
+				<span class="wa-countdown__time tw-font-mono">{countdown}</span>
 			</div>
 		{/if}
 	</div>

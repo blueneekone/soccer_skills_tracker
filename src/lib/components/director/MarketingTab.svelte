@@ -470,7 +470,7 @@
 		<div class="mkt-actions">
 			<button
 				type="button"
-				class="mkt-btn mkt-btn--primary mkt-btn--wide"
+				class="mkt-btn mkt-btn--primary mkt-btn--wide tw-font-mono"
 				disabled={funnelSaveBusy || (!isSuperAdmin && !clubId)}
 				onclick={() => void saveMarketingFunnel()}
 			>
@@ -485,7 +485,7 @@
 		</div>
 	{/if}
 
-	<div class="mkt-grid">
+	<div class="mkt-grid tw-font-mono">
 		<div class="mkt-panel mkt-panel--compose">
 			<h2 class="mkt-h2">In-app broadcast</h2>
 			<p class="mkt-lead">Send announcements to signed-in members (separate from ad tracking).</p>
@@ -527,7 +527,7 @@
 
 				<button
 					type="button"
-					class="mkt-btn mkt-btn--primary mkt-btn--wide"
+					class="mkt-btn mkt-btn--primary mkt-btn--wide tw-font-mono"
 					disabled={publishBusy || (!isSuperAdmin && !clubId)}
 					onclick={sendCampaign}
 				>

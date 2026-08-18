@@ -103,7 +103,7 @@
 	{/if}
 
 	{#if loading}
-		<div class="loading-grid">
+		<div class="loading-grid tw-font-mono">
 			{#each [1, 2, 3] as _}
 				<div class="event-card skeleton"></div>
 			{/each}
@@ -118,7 +118,7 @@
 			</button>
 		</div>
 	{:else}
-		<div class="events-grid">
+		<div class="events-grid tw-font-mono">
 			{#each events as event (event.id)}
 				<a class="event-card glass-panel" href="/director/events/{event.id}">
 					<div class="card-top">
@@ -129,7 +129,7 @@
 					{#if event.venue}
 						<p class="event-venue">📍 {event.venue}</p>
 					{/if}
-					<div class="card-stats">
+					<div class="card-stats tw-font-mono">
 						<div class="stat">
 							<span class="stat-value">{event.totalSold ?? 0}</span>
 							<span class="stat-label">Sold</span>

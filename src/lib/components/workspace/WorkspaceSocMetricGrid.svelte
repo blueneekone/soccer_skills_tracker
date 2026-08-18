@@ -12,7 +12,7 @@
 	} = $props();
 </script>
 
-<div class="wsd-metric-grid {gridClass}">
+<div class="wsd-metric-grid {gridClass} tw-font-mono">
 	{#each metrics as m (m.label)}
 		<article
 			class="wsd-metric bento-cell"

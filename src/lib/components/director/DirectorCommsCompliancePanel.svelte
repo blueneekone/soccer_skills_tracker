@@ -225,7 +225,7 @@
 	{:else if err}
 		<p class="compliance-console__err" role="alert">{err}</p>
 	{:else}
-		<div class="compliance-console__grid">
+		<div class="compliance-console__grid tw-font-mono">
 			<div class="compliance-console__panel">
 				<h3 class="compliance-console__panel-title">Team broadcasts ({broadcasts.length})</h3>
 				{#if broadcasts.length === 0}

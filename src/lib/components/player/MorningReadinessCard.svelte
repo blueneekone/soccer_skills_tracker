@@ -110,7 +110,7 @@ import { functions } from '$lib/firebase.js';
 					max="12"
 					step="0.5"
 					bind:value={sleepHours}
-					class="slider"
+					class="slider tw-font-mono"
 					aria-label="Hours of sleep"
 				/>
 				<div class="range-ends"><span>0h</span><span>12h</span></div>

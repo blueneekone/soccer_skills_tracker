@@ -163,7 +163,7 @@
       </div>
     </div>
     {#if !isLoading}
-      <div class="ip-count-badge" role="status" aria-live="polite">
+      <div class="ip-count-badge tw-font-mono" role="status" aria-live="polite">
         {pendingNodes.length} NODE{pendingNodes.length !== 1 ? 'S' : ''} PENDING
       </div>
     {/if}
@@ -188,7 +188,7 @@
 
   <!-- ═══ DATA GRID ═══ -->
   {:else}
-    <div class="ip-grid-header" aria-hidden="true">
+    <div class="ip-grid-header tw-font-mono" aria-hidden="true">
       <span>PLAYER NODE</span>
       <span>TARGET TEAM</span>
       <span>CLAIMING GUARDIAN</span>
@@ -247,7 +247,7 @@
             {/if}
           </button>
           <button
-            class="ip-btn ip-btn--override tw-pointer-events-auto"
+            class="ip-btn ip-btn--override tw-pointer-events-auto tw-font-mono"
             onclick={() => openOverride(node)}
             aria-label="Force physical clearance for {node.displayName}"
           >

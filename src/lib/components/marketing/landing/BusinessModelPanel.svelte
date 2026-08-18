@@ -43,7 +43,7 @@
 			</header>
 
 			<div class="bm-readout__table-wrap">
-				<table class="bm-readout__table">
+				<div class="tw-border tw-border-[#334155] tw-bg-[#0f172a] tw-p-4 tw-min-w-0 tw-overflow-x-auto"><table class="tw-w-full tw-font-mono tw-text-sm" class="bm-readout__table">
 					<thead>
 						<tr>
 							<th scope="col">PARAM_ID</th>
@@ -69,7 +69,7 @@
 							</tr>
 						{/each}
 					</tbody>
-				</table>
+				</table></div>
 			</div>
 
 			<footer class="bm-readout__foot">

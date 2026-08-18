@@ -114,7 +114,7 @@
 	{:else if !canEdit}
 		<p class="season-panel__muted">Director access required to edit season registration settings.</p>
 	{:else}
-		<div class="season-panel__grid">
+		<div class="season-panel__grid tw-font-mono">
 			<label class="season-field">
 				<span class="season-label">Season ID</span>
 				<input class="season-input" type="text" bind:value={seasonId} placeholder="2026-spring" />

@@ -91,7 +91,7 @@
 
 	<section class="acq-section" aria-labelledby="acq-moat-heading">
 		<h2 id="acq-moat-heading" class="acq-h2">Moat pillars</h2>
-		<div class="acq-grid">
+		<div class="acq-grid tw-font-mono">
 			{#each MOAT_PILLARS as pillar (pillar.id)}
 				<article class="acq-card">
 					<h3 class="acq-h3">{pillar.title}</h3>

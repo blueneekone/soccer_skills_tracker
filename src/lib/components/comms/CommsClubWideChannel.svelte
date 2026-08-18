@@ -153,53 +153,53 @@
 	}
 </script>
 
-<section class="comms-club-wide" aria-labelledby="comms-club-wide-heading">
-	<header class="comms-club-wide__head">
-		<h2 id="comms-club-wide-heading" class="comms-club-wide__title">
+<section class="comms-club-wide tw-font-mono" aria-labelledby="comms-club-wide-heading">
+	<header class="comms-club-wide__head tw-font-mono">
+		<h2 id="comms-club-wide-heading" class="comms-club-wide__title tw-font-mono">
 			{def.label}
 		</h2>
-		<p class="comms-club-wide__sub">{def.description}</p>
+		<p class="comms-club-wide__sub tw-font-mono">{def.description}</p>
 	</header>
 
 	{#if isParent}
-		<div class="comms-club-wide__parent-note" role="note">
+		<div class="comms-club-wide__parent-note tw-font-mono" role="note">
 			<p>
 				Club-wide messages from your director are delivered to each team&apos;s
 				<strong>Announcements</strong> channel. Open Announcements for your child&apos;s team to read
 				the latest copy — you do not need to check this channel separately.
 			</p>
-			<a class="comms-club-wide__cta" href="/messages?channel=announcements">
+			<a class="comms-club-wide__cta tw-font-mono" href="/messages?channel=announcements">
 				Go to Announcements →
 			</a>
 		</div>
 	{:else if canPost}
 		<DirectorClubBroadcastComposer {clubId} {clubName} {teams} />
 
-		<section class="comms-club-wide__history" aria-labelledby="comms-club-wide-history">
-			<h3 id="comms-club-wide-history" class="comms-club-wide__history-title">
+		<section class="comms-club-wide__history tw-font-mono" aria-labelledby="comms-club-wide-history">
+			<h3 id="comms-club-wide-history" class="comms-club-wide__history-title tw-font-mono">
 				Recent club fan-outs
 			</h3>
 			{#if historyLoading}
-				<p class="comms-club-wide__muted">Loading history…</p>
+				<p class="comms-club-wide__muted tw-font-mono">Loading history…</p>
 			{:else if historyError}
-				<p class="comms-club-wide__err" role="alert">{historyError}</p>
+				<p class="comms-club-wide__err tw-font-mono" role="alert">{historyError}</p>
 			{:else if fanoutGroups.length === 0}
-				<p class="comms-club-wide__muted">No club-wide broadcasts yet.</p>
+				<p class="comms-club-wide__muted tw-font-mono">No club-wide broadcasts yet.</p>
 			{:else}
-				<ul class="comms-club-wide__list">
+				<ul class="comms-club-wide__list tw-font-mono">
 					{#each fanoutGroups as group (group.key)}
-						<li class="comms-club-wide__card">
-							<div class="comms-club-wide__meta">
+						<li class="comms-club-wide__card tw-font-mono">
+							<div class="comms-club-wide__meta tw-font-mono">
 								<span>{formatDate(group.createdAtMs)}</span>
 								{#if group.fromEmail}
 									<span>· {group.fromEmail}</span>
 								{/if}
 							</div>
 							{#if group.subject}
-								<p class="comms-club-wide__subject">{group.subject}</p>
+								<p class="comms-club-wide__subject tw-font-mono">{group.subject}</p>
 							{/if}
-							<p class="comms-club-wide__preview">{group.bodyPreview ?? '—'}</p>
-							<p class="comms-club-wide__teams">
+							<p class="comms-club-wide__preview tw-font-mono">{group.bodyPreview ?? '—'}</p>
+							<p class="comms-club-wide__teams tw-font-mono">
 								{group.teamIds.length} team{group.teamIds.length === 1 ? '' : 's'}:
 								{group.teamIds.map(teamLabel).join(', ')}
 							</p>
@@ -209,7 +209,7 @@
 			{/if}
 		</section>
 	{:else}
-		<p class="comms-club-wide__muted">
+		<p class="comms-club-wide__muted tw-font-mono">
 			Club-wide broadcasts are composed by directors in the unified Comms hub.
 		</p>
 	{/if}

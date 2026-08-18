@@ -508,7 +508,7 @@
 	{/if}
 
 	<div
-		class="bento-grid-container bento-grid--12col bento-grid--liquid tw-min-h-0 tw-w-full lg:tw-grid-cols-12" style="grid-template-columns: repeat(auto-fit, minmax(min(100%, clamp(280px, 30vw, 350px)), 1fr));"
+		class="bento-grid-container bento-grid--12col bento-grid--liquid tw-min-h-0 tw-w-full lg:tw-grid-cols-12 tw-font-mono" style="grid-template-columns: repeat(auto-fit, minmax(min(100%, clamp(280px, 30vw, 350px)), 1fr));"
 	>
 		<!-- 8-Column Primary Canvas -->
 		<div class="bento-col-8 lg:tw-col-span-8 tw-flex tw-flex-col tw-gap-6 tw-min-w-0">
@@ -519,7 +519,7 @@
 			>
 				<div class="tw-mb-3 tw-flex tw-flex-col tw-gap-1">
 					<span class="phh-eyebrow tw-text-red-400/90">COPPA &amp; LIABILITY</span>
-					<h2 id="phh-coppa" class="tw-m-0 tw-text-sm tw-font-bold tw-uppercase tw-tracking-widest tw-text-red-200">
+					<h2 id="phh-coppa" class="tw-m-0 tw-text-sm tw-font-bold tw-uppercase tw-tracking-widest tw-text-red-200 tw-font-mono">
 						Minor accounts locked
 					</h2>
 				</div>
@@ -550,7 +550,7 @@
 				</div>
 				<button
 					type="button"
-					class="phh-btn tw-w-full tw-min-h-[3.25rem] tw-px-4 tw-text-base tw-font-extrabold tw-uppercase tw-tracking-widest tw-inline-flex tw-items-center tw-justify-center tw-gap-2"
+					class="phh-btn tw-w-full tw-min-h-[3.25rem] tw-px-4 tw-text-base tw-font-extrabold tw-uppercase tw-tracking-widest tw-inline-flex tw-items-center tw-justify-center tw-gap-2 tw-font-mono"
 					class:phh-btn--dim={coppaSigned}
 					disabled={coppaSigned || actionBusy}
 					onclick={signWaiver}
@@ -570,7 +570,7 @@
 						<span class="phh-eyebrow tw-text-cyan-200/80">Household roster</span>
 						<h2
 							id="phh-active-ops"
-							class="tw-m-0 tw-text-sm tw-font-bold tw-uppercase tw-tracking-widest tw-text-white"
+							class="tw-m-0 tw-text-sm tw-font-bold tw-uppercase tw-tracking-widest tw-text-white tw-font-mono"
 						>
 							Active operatives
 						</h2>
@@ -607,7 +607,7 @@
 													<span class="phh-mono tw-text-xs tw-text-amber-300/80">{row.hudErr}</span>
 												{:else if row.dispatchCode}
 													<span
-														class="phh-mono tw-text-sm tw-font-bold tw-tracking-widest tw-text-[#7dff9a]"
+														class="phh-mono tw-text-sm tw-font-bold tw-tracking-widest tw-text-[#7dff9a] tw-font-mono"
 														>{row.dispatchCode}</span
 													>
 												{:else}
@@ -734,7 +734,7 @@
 			>
 				<div class="tw-mb-3">
 					<span class="phh-eyebrow tw-text-cyan-200/80">Operative generation</span>
-					<h2 id="phh-ops" class="tw-m-0 tw-text-sm tw-font-bold tw-uppercase tw-tracking-widest tw-text-white">
+					<h2 id="phh-ops" class="tw-m-0 tw-text-sm tw-font-bold tw-uppercase tw-tracking-widest tw-text-white tw-font-mono">
 						Credential dispatch
 					</h2>
 				</div>
@@ -798,7 +798,7 @@
 				<div class="bento-mt-md">
 					<button
 						type="button"
-						class="phh-btn phh-btn--cyan tw-w-full tw-min-h-[3.25rem] tw-px-4 tw-text-base tw-font-extrabold tw-uppercase tw-tracking-widest tw-inline-flex tw-items-center tw-justify-center tw-gap-2"
+						class="phh-btn phh-btn--cyan tw-w-full tw-min-h-[3.25rem] tw-px-4 tw-text-base tw-font-extrabold tw-uppercase tw-tracking-widest tw-inline-flex tw-items-center tw-justify-center tw-gap-2 tw-font-mono"
 						disabled={!coppaSigned || actionBusy}
 						onclick={provision}
 					>
@@ -827,7 +827,7 @@
 					<span class="phh-eyebrow tw-text-[var(--text-secondary)]">Club transfer</span>
 					<h2
 						id="phh-transfer"
-						class="tw-m-0 tw-text-sm tw-font-bold tw-uppercase tw-tracking-widest tw-text-white"
+						class="tw-m-0 tw-text-sm tw-font-bold tw-uppercase tw-tracking-widest tw-text-white tw-font-mono"
 					>
 						Vanguard transfer protocol
 					</h2>

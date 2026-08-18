@@ -78,9 +78,9 @@
 			</div>
 
 			<!-- Identity Strip -->
-			<div class="card-identity">
-				<div class="identity-name">{playerName}</div>
-				<div class="identity-sub">{clubName}</div>
+			<div class="card-identity tw-font-mono">
+				<div class="identity-name tw-font-mono">{playerName}</div>
+				<div class="identity-sub tw-font-mono">{clubName}</div>
 			</div>
 
 			<!-- Vanguard Prism HUD — radar inset -->
@@ -95,7 +95,7 @@
 		<!-- BACK FACE — telemetry detail -->
 		<div class="card-face card-back">
 			<div class="card-back-header">OPERATIVE TELEMETRY</div>
-			<div class="card-back-stats">
+			<div class="card-back-stats tw-font-mono">
 				{#each ['POW','AGI','ACC','PAC','STM','COMP'] as label, i}
 					<div class="stat-row">
 						<span class="stat-label">{label}</span>

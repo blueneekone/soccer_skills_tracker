@@ -34,7 +34,7 @@
 			</p>
 		</div>
 
-		<div class="fb-grid tw-grid tw-grid-cols-1 lg:tw-grid-cols-12 tw-gap-4 tw-w-full">
+		<div class="fb-grid tw-grid tw-grid-cols-1 lg:tw-grid-cols-12 tw-gap-4 tw-w-full tw-font-mono">
 			{#each FEATURE_BENTO as cell, idx (cell.id)}
 				<a
 					href={cell.href}

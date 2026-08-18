@@ -133,7 +133,7 @@
 	{#if !clubId}
 		<p class="tryouts-panel__muted">Select a club to manage tryouts.</p>
 	{:else}
-		<div class="tryouts-panel__grid">
+		<div class="tryouts-panel__grid tw-font-mono">
 			<label class="tryouts-field">
 				<span class="tryouts-label">Program name</span>
 				<input class="tryouts-input" type="text" bind:value={name} placeholder="Spring 2026 Tryouts" />

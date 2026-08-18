@@ -183,7 +183,7 @@
 	});
 </script>
 
-<div class="ad-shell tw-min-h-screen tw-bg-[#010409] tw-text-white tw-font-mono">
+<div class="ad-shell tw-h-[100dvh] tw-overflow-hidden tw-bg-[#010409] tw-text-white tw-font-mono">
 
 	<!-- ── COMMAND BAR ──────────────────────────────────────────────────── -->
 	<header

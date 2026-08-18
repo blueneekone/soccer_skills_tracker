@@ -115,6 +115,6 @@
     {/if}
 
     <!-- The DOM element where Checkr SDK will mount itself -->
-    <div id="checkr-container" bind:this={checkrContainer} class="tw-w-full tw-min-h-[400px] {sessionToken ? 'tw-block' : 'tw-hidden'}"></div>
+    <div id="checkr-container" bind:this={checkrContainer} class="tw-w-full tw-min-h-[400px] {sessionToken ? 'tw-block' : 'tw-hidden'} tw-font-mono"></div>
   </div>
 </div>

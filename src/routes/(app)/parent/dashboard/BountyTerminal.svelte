@@ -106,7 +106,7 @@
 		<p class="parent-bounty-terminal__subtitle">Deploy escrow bounty</p>
 	</header>
 
-	<hr class="parent-bounty-divider" />
+	<hr class="parent-bounty-divider tw-font-mono" />
 
 	{#if !engine.hasFundingSource}
 		<div class="parent-bounty-alert parent-bounty-alert--pending">
@@ -143,7 +143,7 @@
 			placeholder="e.g. 500 reps this week"
 			class="parent-bounty-field"
 		/>
-		<span class="parent-bounty-char-count">{title.length}/100</span>
+		<span class="parent-bounty-char-count tw-font-mono">{title.length}/100</span>
 	</div>
 
 	<div class="parent-bounty-field-group">

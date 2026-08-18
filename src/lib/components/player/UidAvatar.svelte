@@ -22,16 +22,16 @@
 
 {#if showSkeleton}
 	<div
-		class="uid-avatar uid-avatar--skeleton {klass}"
+		class="uid-avatar uid-avatar--skeleton {klass} tw-font-mono"
 		style="--uid-avatar-size: {size}px;"
 		role={alt ? 'img' : undefined}
 		aria-label={alt || undefined}
 	>
-		<span class="uid-avatar__initials">{initials}</span>
+		<span class="uid-avatar__initials tw-font-mono">{initials}</span>
 	</div>
 {:else}
 	<div
-		class="uid-avatar {klass}"
+		class="uid-avatar {klass} tw-font-mono"
 		style="--uid-avatar-size: {size}px;"
 		role={alt ? 'img' : undefined}
 		aria-label={alt || undefined}

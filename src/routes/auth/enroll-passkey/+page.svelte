@@ -103,7 +103,7 @@ import { untrack } from 'svelte';
 </svelte:head>
 
 <div
-	class="tw-box-border tw-flex tw-min-h-screen tw-w-full tw-flex-col tw-items-center tw-justify-center tw-bg-[#0b1220] tw-px-4 tw-py-10 sm:tw-px-6"
+	class="tw-box-border tw-flex tw-h-[100dvh] tw-overflow-hidden tw-w-full tw-flex-col tw-items-center tw-justify-center tw-bg-[#0b1220] tw-px-4 tw-py-10 sm:tw-px-6"
 >
 	<div
 		class="tw-flex tw-w-full tw-max-w-[26rem] tw-flex-col tw-rounded-md tw-border tw-border-solid tw-border-vanguard-border tw-bg-vanguard-surface tw-shadow-vanguard-elev-1 tw-p-7 sm:tw-p-8"

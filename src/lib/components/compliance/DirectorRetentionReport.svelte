@@ -164,7 +164,7 @@
 					<div class="drr-row drr-row--pending">
 						<span class="drr-cell drr-cell--email">{row.targetEmail}</span>
 						<span class="drr-cell drr-cell--doc">{row.documentType}</span>
-						<span class="drr-cell drr-cell--countdown">
+						<span class="drr-cell drr-cell--countdown tw-font-mono">
 							<span class="drr-fire" aria-hidden="true">🔥</span>
 							{timeUntilBurn(row.scheduledDeleteAt)}
 						</span>

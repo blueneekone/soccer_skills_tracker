@@ -256,7 +256,7 @@
 					{STATUS_LABEL[connectStatus]}
 				</span>
 				{#if stripeData.stripeAccountId}
-					<span class="dbap-account-id" title={stripeData.stripeAccountId}>
+					<span class="dbap-account-id tw-font-mono" title={stripeData.stripeAccountId}>
 						{stripeData.stripeAccountId.slice(0, 18)}…
 					</span>
 				{/if}

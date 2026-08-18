@@ -160,7 +160,7 @@
 					aria-label={tierLabel(tier)}
 					data-opp-current={state === 'current' ? 'true' : undefined}
 				>
-					<span class="tw-mb-2 tw-text-[0.62rem] tw-font-black tw-tabular-nums tw-tracking-wider" style="color: var(--pd-text-muted, rgba(255, 255, 255, 0.5));">
+					<span class="tw-mb-2 tw-text-[0.62rem] tw-font-black tw-tabular-nums tw-tracking-wider tw-font-mono" style="color: var(--pd-text-muted, rgba(255, 255, 255, 0.5));">
 						LVL {tier}
 					</span>
 

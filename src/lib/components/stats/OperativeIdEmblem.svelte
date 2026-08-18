@@ -123,7 +123,7 @@
 
 		{#if bannerSvg}
 			<div
-				class="oie-banner tw-pointer-events-none tw-absolute tw-inset-x-0 tw-top-0 tw-z-0 tw-h-[28%] tw-overflow-hidden"
+				class="oie-banner tw-pointer-events-none tw-absolute tw-inset-x-0 tw-top-0 tw-z-0 tw-h-[28%] tw-overflow-hidden tw-font-mono"
 				aria-hidden="true"
 			>
 				<!-- eslint-disable-next-line svelte/no-at-html-tags -->
@@ -132,7 +132,7 @@
 		{/if}
 
 		<div
-			class="oie-body tw-absolute tw-inset-x-0 tw-bottom-0 tw-top-[28%] tw-z-[1] tw-flex tw-flex-col tw-items-center tw-justify-center tw-overflow-hidden tw-px-2"
+			class="oie-body tw-absolute tw-inset-x-0 tw-bottom-0 tw-top-[28%] tw-z-[1] tw-flex tw-flex-col tw-items-center tw-justify-center tw-overflow-hidden tw-px-2 tw-font-mono"
 			aria-hidden="true"
 		>
 			<div
@@ -140,7 +140,7 @@
 				style="width: {size}px; height: {size}px; max-width: 100%;"
 			>
 				<div
-					class="oie-portrait tw-flex tw-h-full tw-w-full tw-items-center tw-justify-center tw-overflow-hidden tw-rounded-full tw-border-2 tw-border-cyan-500 tw-bg-slate-700"
+					class="oie-portrait tw-flex tw-h-full tw-w-full tw-items-center tw-justify-center tw-overflow-hidden tw-rounded-full tw-border-2 tw-border-cyan-500 tw-bg-slate-700 tw-font-mono"
 				>
 					<!-- eslint-disable-next-line svelte/no-at-html-tags -->
           {@html portraitSvg}
@@ -191,7 +191,7 @@
 
 	{#if rankLine}
 		<p
-			class="oie-rank tw-m-0 tw-mt-1 tw-max-w-full tw-truncate tw-text-center tw-text-[10px] tw-font-semibold tw-uppercase tw-tracking-widest tw-opacity-80"
+			class="oie-rank tw-m-0 tw-mt-1 tw-max-w-full tw-truncate tw-text-center tw-text-[10px] tw-font-semibold tw-uppercase tw-tracking-widest tw-opacity-80 tw-font-mono"
 		>
 			{rankLine}
 		</p>

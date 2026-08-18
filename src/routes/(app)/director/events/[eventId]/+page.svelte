@@ -196,7 +196,7 @@ import { untrack } from 'svelte';
 	{#if loading}
 		<div class="skeleton-block"></div>
 	{:else}
-		<div class="builder-grid">
+		<div class="builder-grid tw-font-mono">
 			<!-- Event details card -->
 			<section class="glass-panel card">
 				<h2 class="card-title">Event Details</h2>

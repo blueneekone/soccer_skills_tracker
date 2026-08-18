@@ -12,7 +12,7 @@
 	<title>Analytics Command Center | Director OS</title>
 </svelte:head>
 
-<div class="tw-min-h-screen tw-bg-[#09090b] tw-p-8 tw-text-slate-300">
+<div class="tw-h-[100dvh] tw-overflow-hidden tw-bg-[#09090b] tw-p-8 tw-text-slate-300">
 	<div class="tw-max-w-7xl tw-mx-auto tw-space-y-6">
 		<header class="tw-mb-8">
 			<h1 class="tw-text-3xl tw-font-bold tw-text-white tw-tracking-tight">Macro-Telemetry Dashboard</h1>

@@ -219,17 +219,17 @@
 
 <div class="epd">
 	<section
-		class="epd__identity epd__identity--{cardTier}"
+		class="epd__identity epd__identity--{cardTier} tw-font-mono"
 		aria-labelledby="epd-identity-h"
 		aria-describedby="epd-tier-label"
 	>
-		<div class="epd__identity-left">
+		<div class="epd__identity-left tw-font-mono">
 			{#if photoUrl}
 				<img class="epd__avatar" src={photoUrl} alt="" width="64" height="64" />
 			{:else}
 				<div class="epd__avatar epd__avatar--fallback">{initials(displayName)}</div>
 			{/if}
-			<div class="epd__id-text">
+			<div class="epd__id-text tw-font-mono">
 				<p id="epd-identity-h" class="epd__name">{displayName}</p>
 				<p id="epd-tier-label" class="epd__tier-chip">{tierLabel} tier · Lv {levelInfo.level}</p>
 				{#if teamLabel}
@@ -242,7 +242,7 @@
 				{/if}
 			</div>
 		</div>
-		<div class="epd__identity-ring">
+		<div class="epd__identity-ring tw-font-mono">
 			<LevelProgressRing
 				totalXp={displayXp}
 				level={levelInfo.level}
@@ -265,7 +265,7 @@
 		</div>
 	</section>
 
-	<section class="epd__telemetry-bento">
+	<section class="epd__telemetry-bento tw-font-mono">
 		<TelemetryPanel />
 	</section>
 
@@ -288,7 +288,7 @@
 	<section class="epd__trophy" aria-labelledby="epd-trophy-h">
 		<h2 id="epd-trophy-h" class="epd__trophy-title">Trophy case</h2>
 		<p class="epd__trophy-sub">Recent highlights & challenge tokens — powered by your effort.</p>
-		<div class="epd__badge-grid">
+		<div class="epd__badge-grid tw-font-mono">
 			<div class="epd__badge">
 				<div class="epd__badge-icon" aria-hidden="true">
 					<Icon name="game.star" size={40} />

@@ -59,7 +59,7 @@
 		<h2 class="pd-hq-section-head__title oqo-deck__title">Quick ops</h2>
 		<p class="pd-hq-section-head__eyebrow pd-label oqo-deck__eyebrow">Operative actions</p>
 	</header>
-	<nav class="oqo-deck__grid" aria-label="Player quick destinations">
+	<nav class="oqo-deck__grid tw-font-mono" aria-label="Player quick destinations">
 		{#each QUICK_OPS as op (`${op.label}-${op.href}`)}
 			<a
 				href={resolveAppPath(op.href)}

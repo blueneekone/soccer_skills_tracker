@@ -29,7 +29,7 @@
 	}
 </script>
 
-<div class="waiver-console-arena tw-min-h-screen tw-bg-[#0B0F19] tw-text-white tw-p-6 tw-flex tw-flex-col tw-items-center tw-justify-center">
+<div class="waiver-console-arena tw-h-[100dvh] tw-overflow-hidden tw-bg-[#0B0F19] tw-text-white tw-p-6 tw-flex tw-flex-col tw-items-center tw-justify-center">
 	<div class="waiver-wrapper tw-max-w-2xl tw-w-full tw-bg-[#0F172A] tw-border tw-border-[#1E293B] tw-p-8 tw-rounded-none tw-shadow-2xl">
 		<div class="tw-flex tw-items-center tw-justify-center tw-gap-2 tw-mb-2">
 			<Icon name={"status.shield-check" as IconName} size={24} class="tw-text-amber-500" />

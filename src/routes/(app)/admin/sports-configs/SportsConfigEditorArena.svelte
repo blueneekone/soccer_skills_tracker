@@ -34,12 +34,12 @@
   }
 </script>
 
-<div class="arena-root bento-grid-container st-bento">
+<div class="arena-root bento-grid-container st-bento tw-font-mono">
   <!-- Left rail: sport list -->
   <aside class="arena-rail lg:tw-col-span-4">
     <div class="rail-header">
       <span class="mono-label">ACTIVE</span>
-      <span class="rail-count">{engine.activeConfigs.length}</span>
+      <span class="rail-count tw-font-mono">{engine.activeConfigs.length}</span>
     </div>
 
     {#each engine.activeConfigs as cfg (cfg.sportId)}
@@ -57,7 +57,7 @@
     {#if engine.archivedConfigs.length > 0}
       <div class="rail-header tw-mt-4">
         <span class="mono-label" style="color: rgba(255,255,255,0.2)">ARCHIVED</span>
-        <span class="rail-count" style="opacity:0.4">{engine.archivedConfigs.length}</span>
+        <span class="rail-count tw-font-mono" style="opacity:0.4">{engine.archivedConfigs.length}</span>
       </div>
       {#each engine.archivedConfigs as cfg (cfg.sportId)}
         <button
@@ -99,7 +99,7 @@
         <!-- Identity fields -->
         <div class="editor-section">
           <h3 class="editor-section-title">Identity</h3>
-          <div class="editor-grid-2">
+          <div class="editor-grid-2 tw-font-mono">
             <label class="field-block">
               <span class="field-label">sportId *</span>
               <input
@@ -164,7 +164,7 @@
             {#each (engine.dirtyBuffer.attributes ?? []) as attr, i (i)}
               <div class="attr-row">
                 <input
-                  class="field-input attr-id"
+                  class="field-input attr-id tw-font-mono"
                   value={attr.id}
                   oninput={(e) => engine.updateAttribute(i, 'id', (e.target as HTMLInputElement).value)}
                 />
@@ -201,7 +201,7 @@
         <!-- Palette -->
         <div class="editor-section">
           <h3 class="editor-section-title">Chip Palette</h3>
-          <div class="editor-grid-3">
+          <div class="editor-grid-3 tw-font-mono">
             {#each (['fg', 'glow', 'ring'] as const) as field}
               <label class="field-block">
                 <span class="field-label">{field}</span>
@@ -238,7 +238,7 @@
         <div class="editor-section">
           <h3 class="editor-section-title">RPG Projection (5-axis radar)</h3>
           <p class="editor-section-hint">Priority-ordered playerStatKey values per radar slot. First non-null value from player_stats wins.</p>
-          <div class="rpg-grid">
+          <div class="rpg-grid tw-font-mono">
             {#each RPG_SLOTS as slot}
               <label class="field-block">
                 <span class="field-label">{slot}</span>

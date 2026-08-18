@@ -336,7 +336,7 @@
 		<p class="rse-error" role="alert">{errorMsg}</p>
 	{/if}
 
-	<div class="rse-grid">
+	<div class="rse-grid tw-font-mono">
 		{#each results as row (row.id)}
 			<div class="rse-card-wrap">
 				<button
@@ -443,14 +443,14 @@
 
 <Modal bind:open={videoModalOpen} title="Verified trial" maxWidth="900px">
 	{#snippet titleSlot()}
-		<div class="rse-video-modal-head">
+		<div class="rse-video-modal-head tw-font-mono">
 			<span>{videoTitle}</span>
 		</div>
 	{/snippet}
 	{#if videoUrl}
-		<div class="rse-video-shell">
-			<video class="rse-video-el" controls playsinline src={videoUrl} preload="metadata"></video>
-			<p class="rse-video-note">Coach-verified clip. Distribution subject to athlete opt-in.</p>
+		<div class="rse-video-shell tw-font-mono">
+			<video class="rse-video-el tw-font-mono" controls playsinline src={videoUrl} preload="metadata"></video>
+			<p class="rse-video-note tw-font-mono">Coach-verified clip. Distribution subject to athlete opt-in.</p>
 		</div>
 	{/if}
 </Modal>

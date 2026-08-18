@@ -218,10 +218,10 @@
 
 	<!-- ── Teams grid ─────────────────────────────────────────────────────── -->
 	<section class="od-teams-section">
-		<h2 class="od-section-title">TEAMS <span class="od-section-count">// {teams.length}</span></h2>
+		<h2 class="od-section-title">TEAMS <span class="od-section-count tw-font-mono">// {teams.length}</span></h2>
 
 		{#if teamsLoading}
-			<div class="od-teams-grid">
+			<div class="od-teams-grid tw-font-mono">
 				{#each [1, 2, 3] as _}
 					<div class="od-team-card od-team-card--loading">
 						<div class="od-skeleton od-skeleton--line"></div>
@@ -243,7 +243,7 @@
 				{/if}
 			</div>
 		{:else}
-			<div class="od-teams-grid">
+			<div class="od-teams-grid tw-font-mono">
 				{#each teams as team (team.id)}
 					<div class="od-team-card">
 						<!-- Team identity -->

@@ -80,7 +80,7 @@
 		<div class="card-header bg-blue-header">1. Passing Points</div>
 		<div class="card-body">
 			<iframe
-				class="video-frame"
+				class="video-frame tw-font-mono"
 				src="https://www.youtube.com/embed/QytqZ-zieSc"
 				frameborder="0"
 				allowfullscreen
@@ -92,9 +92,9 @@
 				<input type="number" bind:value={passScore2} placeholder="Score 2" class="flex-1" />
 				<input type="number" bind:value={passScore3} placeholder="Score 3" class="flex-1" />
 			</div>
-			<div class="score-display-box">
-				<span class="score-label">Total Passing Score</span>
-				<span class="score-value score-blue">{passTotal}</span>
+			<div class="score-display-box tw-font-mono">
+				<span class="score-label tw-font-mono">Total Passing Score</span>
+				<span class="score-value score-blue tw-font-mono">{passTotal}</span>
 			</div>
 			<button class="primary-btn btn-blue" onclick={() => submitTrial('Passing')}>Submit Passing Score</button>
 		</div>
@@ -105,7 +105,7 @@
 		<div class="card-header bg-orange-header">2. Shot Scoring</div>
 		<div class="card-body">
 			<iframe
-				class="video-frame"
+				class="video-frame tw-font-mono"
 				src="https://www.youtube.com/embed/p-75lxTdksg"
 				frameborder="0"
 				allowfullscreen
@@ -117,9 +117,9 @@
 				<input type="number" bind:value={shotScore2} placeholder="Score 2" class="flex-1" />
 				<input type="number" bind:value={shotScore3} placeholder="Score 3" class="flex-1" />
 			</div>
-			<div class="score-display-box">
-				<span class="score-label">Total Shot Score</span>
-				<span class="score-value score-orange">{shotTotal}</span>
+			<div class="score-display-box tw-font-mono">
+				<span class="score-label tw-font-mono">Total Shot Score</span>
+				<span class="score-value score-orange tw-font-mono">{shotTotal}</span>
 			</div>
 			<button class="primary-btn btn-orange" onclick={() => submitTrial('Shooting')}>Submit Shot Score</button>
 		</div>
@@ -130,7 +130,7 @@
 		<div class="card-header bg-green-header">3. Time Trial</div>
 		<div class="card-body">
 			<iframe
-				class="video-frame"
+				class="video-frame tw-font-mono"
 				src="https://www.youtube.com/embed/u51A9mWPBXo"
 				frameborder="0"
 				allowfullscreen
@@ -142,9 +142,9 @@
 				<input type="number" bind:value={timeScore2} placeholder="Time 2 (s)" class="flex-1" />
 				<input type="number" bind:value={timeScore3} placeholder="Time 3 (s)" class="flex-1" />
 			</div>
-			<div class="score-display-box">
-				<span class="score-label">Best Time</span>
-				<span class="score-value score-green">{timeTotal()}</span>
+			<div class="score-display-box tw-font-mono">
+				<span class="score-label tw-font-mono">Best Time</span>
+				<span class="score-value score-green tw-font-mono">{timeTotal()}</span>
 			</div>
 			<button class="primary-btn btn-green" onclick={() => submitTrial('Time')}>Submit Best Time</button>
 		</div>

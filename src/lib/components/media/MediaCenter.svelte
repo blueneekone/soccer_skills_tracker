@@ -249,7 +249,7 @@
 				{:else if integrations.podcasts.length === 0}
 					<div class="mc-empty">No podcasts found. Try a different search.</div>
 				{:else}
-					<div class="mc-podcast-grid">
+					<div class="mc-podcast-grid tw-font-mono">
 						{#each integrations.podcasts as podcast (podcast.id)}
 							<div class="mc-pod-card" class:mc-pod-card--expanded={expandedPodcast?.id === podcast.id}>
 								<!-- Cover + quick info -->

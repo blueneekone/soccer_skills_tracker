@@ -217,7 +217,7 @@
 	<div class="ps-settings-panel pd-os-deck">
 		<section class="pd-panel-section">
 			<span class="pd-panel-eyebrow">Account</span>
-			<div class="ps-settings-info-grid">
+			<div class="ps-settings-info-grid tw-font-mono">
 				<div class="ps-settings-info-row">
 					<span class="ps-settings-info-row__label">Email</span>
 					<span class="ps-settings-info-row__value">{email || '—'}</span>

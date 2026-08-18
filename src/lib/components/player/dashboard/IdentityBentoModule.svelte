@@ -169,8 +169,8 @@
 			</HologramCardShell>
 
 			<div class="ibm-rings">
-				<div class="ibm-identity">
-					<div class="ibm-identity__head">
+				<div class="ibm-identity tw-font-mono">
+					<div class="ibm-identity__head tw-font-mono">
 						{#if !hideDisplayName && !emblemOwnsIdentity}
 							<p class="ibm-name" title={displayName}>{displayName}</p>
 						{/if}
@@ -240,8 +240,8 @@
 				</span>
 			</button>
 		{/if}
-		<div class="ibm-identity">
-			<div class="ibm-identity__head">
+		<div class="ibm-identity tw-font-mono">
+			<div class="ibm-identity__head tw-font-mono">
 				{#if !hideDisplayName}
 					<p class="ibm-name" title={displayName}>{displayName}</p>
 				{/if}

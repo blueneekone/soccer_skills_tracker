@@ -206,7 +206,7 @@
   }: Props = $props();
 </script>
 
-<div class="pd-page-root player-dossier-root player-hud-root pw-page tw-min-w-0 tw-overflow-x-hidden" data-region="player-workout-log">
+<div class="pd-page-root player-dossier-root player-hud-root pw-page tw-min-w-0 tw-overflow-x-hidden tw-font-mono" data-region="player-workout-log">
   <div class="pd-content-wrap pd-route-stack">
   <PlayerOsPageStrap eyebrow="Train / Log session" title="Workout logger" />
 
@@ -330,7 +330,7 @@
     </div>
 
     <div class="pw-theater__body tw-min-w-0 bento-span-12">
-      <div class="pw-theater__grid">
+      <div class="pw-theater__grid tw-font-mono">
         {#if isBenchmarkSession && armedBenchmarkDrill}
           <BenchmarkTrainSession
             drill={armedBenchmarkDrill}
@@ -430,7 +430,7 @@
               {#if currentBundleDrill.videoUrl}
                 <a class="pw-link pw-mono pw-dim" href={currentBundleDrill.videoUrl} target="_blank" rel="noopener noreferrer">Watch demo</a>
               {/if}
-              <dl class="pw-mono pw-data tw-grid tw-grid-cols-2 tw-gap-2 tw-text-sm">
+              <dl class="pw-mono pw-data tw-grid tw-grid-cols-2 tw-gap-2 tw-text-sm tw-font-mono">
                 <div>
                   <dt class="pw-dim tw-text-xs">Sets</dt>
                   <dd>{currentBundleDrill.sets}</dd>
@@ -482,7 +482,7 @@
               {#if armedPrescription?.videoUrl}
                 <a class="pw-link pw-mono pw-dim" href={armedPrescription.videoUrl} target="_blank" rel="noopener noreferrer">Watch demo</a>
               {/if}
-              <dl class="pw-mono pw-data tw-grid tw-grid-cols-2 tw-gap-2 tw-text-sm">
+              <dl class="pw-mono pw-data tw-grid tw-grid-cols-2 tw-gap-2 tw-text-sm tw-font-mono">
                 <div>
                   <dt class="pw-dim tw-text-xs">Duration</dt>
                   <dd>{duration} min</dd>

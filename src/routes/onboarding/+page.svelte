@@ -11,7 +11,7 @@
 	<meta name="robots" content="noindex,nofollow" />
 </svelte:head>
 
-<div class="tw-min-h-screen tw-bg-[#020617] tw-flex tw-items-center tw-justify-center tw-px-4">
+<div class="tw-h-[100dvh] tw-overflow-hidden tw-bg-[#020617] tw-flex tw-items-center tw-justify-center tw-px-4">
 	<div class="tw-w-full tw-max-w-[26rem] tw-bg-slate-900 tw-border tw-border-slate-800 tw-rounded-lg tw-p-8 tw-flex tw-flex-col tw-gap-6">
 
 		<!-- Shield icon -->

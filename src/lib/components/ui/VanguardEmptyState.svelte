@@ -71,7 +71,7 @@
 	aria-label={title}
 >
 	<!-- Dot-grid background -->
-	<div class="ves-grid" aria-hidden="true"></div>
+	<div class="ves-grid tw-font-mono" aria-hidden="true"></div>
 
 	<!-- Corner refs (top-left and bottom-right) -->
 	<span class="ves-corner ves-corner--tl" aria-hidden="true">{cornerRef}</span>

@@ -220,20 +220,20 @@
 
 	<!-- ── Expiry slider ──────────────────────────────────────────────────── -->
 	<div class="field-group">
-		<div class="slider-header">
+		<div class="slider-header tw-font-mono">
 			<label class="field-label" for="mu-expiry">EXPIRY</label>
-			<span class="slider-val">{expiryDays}d · expires {previewExpiry()}</span>
+			<span class="slider-val tw-font-mono">{expiryDays}d · expires {previewExpiry()}</span>
 		</div>
 		<input
 			id="mu-expiry"
 			type="range"
-			class="expiry-slider"
+			class="expiry-slider tw-font-mono"
 			min="1"
 			max="30"
 			step="1"
 			bind:value={expiryDays}
 		/>
-		<div class="slider-ticks">
+		<div class="slider-ticks tw-font-mono">
 			<span>1d</span><span>7d</span><span>14d</span><span>30d</span>
 		</div>
 	</div>

@@ -40,7 +40,7 @@
 </svelte:head>
 
 <div
-	class="pd-page-root player-dossier-root player-hud-root pt-root tw-min-w-0 tw-overflow-x-hidden"
+	class="pd-page-root player-dossier-root player-hud-root pt-root tw-min-w-0 tw-overflow-x-hidden tw-font-mono"
 >
 	<div class="pd-content-wrap pd-route-stack">
 	<PlayerOsPageStrap eyebrow="Progress / Training tracker" title="Training pulse">

@@ -114,7 +114,7 @@
 	{/if}
 
 	{#if loading}
-		<div class="tickets-grid">
+		<div class="tickets-grid tw-font-mono">
 			{#each [1, 2] as _}
 				<div class="boarding-pass skeleton"></div>
 			{/each}
@@ -127,7 +127,7 @@
 			<a class="btn-find" href="/events">Find Events</a>
 		</div>
 	{:else}
-		<div class="tickets-grid">
+		<div class="tickets-grid tw-font-mono">
 			{#each tickets as ticket (ticket.ticketId)}
 				<div class="boarding-pass glass-panel" class:checked-in={!!ticket.checkedInAt}>
 					<div class="pass-left">
@@ -166,7 +166,7 @@
 						{/if}
 					</div>
 
-					<div class="pass-divider">
+					<div class="pass-divider tw-font-mono">
 						<div class="perforation"></div>
 					</div>
 

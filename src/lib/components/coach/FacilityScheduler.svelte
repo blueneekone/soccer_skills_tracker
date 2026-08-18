@@ -218,7 +218,7 @@ import { functions } from '$lib/firebase.js';
 	<div class="flex items-center justify-between">
 		<div class="flex items-center gap-2">
 			<div class="w-1.5 h-1.5 rounded-full bg-cyan-400" style="box-shadow: 0 0 6px #14b8a6;"></div>
-			<span class="text-xs tracking-widest" style="color: rgba(0,255,255,0.7);">FACILITY SCHEDULER</span>
+			<span class="text-xs tracking-widest tw-font-mono" style="color: rgba(0,255,255,0.7);">FACILITY SCHEDULER</span>
 		</div>
 		{#if isChecking}
 			<span class="text-xs animate-pulse" style="color: rgba(0,255,255,0.4);">PROBING...</span>
@@ -232,7 +232,7 @@ import { functions } from '$lib/firebase.js';
 	<!-- ── RESOURCE UNAVAILABLE BANNER ────────────────────────────────────── -->
 	{#if availStatus === 'conflict'}
 		<div
-			class="relative overflow-hidden rounded-sm p-3 space-y-2"
+			class="relative overflow-hidden rounded-sm p-3 space-y-2 tw-font-mono"
 			style="
 				background: rgba(255, 40, 64, 0.06);
 				border: 1px solid rgba(255, 64, 96, {glitchActive ? '0.9' : '0.5'});
@@ -253,7 +253,7 @@ import { functions } from '$lib/firebase.js';
 			"></div>
 
 			<div class="flex items-center gap-2">
-				<span class="text-sm font-bold tracking-widest" style="color: #ff4060; text-shadow: 0 0 12px rgba(255,64,96,0.7);">
+				<span class="text-sm font-bold tracking-widest tw-font-mono" style="color: #ff4060; text-shadow: 0 0 12px rgba(255,64,96,0.7);">
 					⚠ RESOURCE UNAVAILABLE
 				</span>
 			</div>
@@ -284,7 +284,7 @@ import { functions } from '$lib/firebase.js';
 		</div>
 	{:else}
 		<div class="space-y-1">
-			<label for="fs-pitch" class="text-xs tracking-widest" style="color: rgba(0,255,255,0.5);">PITCH / FACILITY</label>
+			<label for="fs-pitch" class="text-xs tracking-widest tw-font-mono" style="color: rgba(0,255,255,0.5);">PITCH / FACILITY</label>
 			<select
 				id="fs-pitch"
 				bind:value={selectedFacilityId}
@@ -306,9 +306,9 @@ import { functions } from '$lib/firebase.js';
 	{/if}
 
 	<!-- Date and time row -->
-	<div class="grid grid-cols-3 gap-3">
+	<div class="grid grid-cols-3 gap-3 tw-font-mono">
 		<div class="space-y-1">
-			<label for="fs-date" class="text-xs tracking-widest" style="color: rgba(0,255,255,0.5);">DATE</label>
+			<label for="fs-date" class="text-xs tracking-widest tw-font-mono" style="color: rgba(0,255,255,0.5);">DATE</label>
 			<input
 				id="fs-date"
 				type="date"
@@ -319,7 +319,7 @@ import { functions } from '$lib/firebase.js';
 			/>
 		</div>
 		<div class="space-y-1">
-			<label for="fs-start" class="text-xs tracking-widest" style="color: rgba(0,255,255,0.5);">START</label>
+			<label for="fs-start" class="text-xs tracking-widest tw-font-mono" style="color: rgba(0,255,255,0.5);">START</label>
 			<input
 				id="fs-start"
 				type="time"
@@ -329,7 +329,7 @@ import { functions } from '$lib/firebase.js';
 			/>
 		</div>
 		<div class="space-y-1">
-			<label for="fs-end" class="text-xs tracking-widest" style="color: rgba(0,255,255,0.5);">END</label>
+			<label for="fs-end" class="text-xs tracking-widest tw-font-mono" style="color: rgba(0,255,255,0.5);">END</label>
 			<input
 				id="fs-end"
 				type="time"
@@ -350,7 +350,7 @@ import { functions } from '$lib/firebase.js';
 
 	<!-- Event details -->
 	<div class="space-y-1">
-		<label for="fs-event" class="text-xs tracking-widest" style="color: rgba(0,255,255,0.5);">EVENT LABEL</label>
+		<label for="fs-event" class="text-xs tracking-widest tw-font-mono" style="color: rgba(0,255,255,0.5);">EVENT LABEL</label>
 		<input
 			id="fs-event"
 			type="text"
@@ -364,12 +364,12 @@ import { functions } from '$lib/firebase.js';
 	</div>
 
 	<div class="space-y-1">
-		<div class="text-xs tracking-widest" style="color: rgba(0,255,255,0.5);">EVENT TYPE</div>
+		<div class="text-xs tracking-widest tw-font-mono" style="color: rgba(0,255,255,0.5);">EVENT TYPE</div>
 		<div class="flex gap-2">
 			{#each (['practice', 'fixture', 'other'] as const) as et}
 				<button
 					onclick={() => (eventType = et)}
-					class="flex-1 py-1.5 text-xs tracking-wider capitalize transition-all"
+					class="flex-1 py-1.5 text-xs tracking-wider capitalize transition-all tw-font-mono"
 					style="
 						border: 1px solid {eventType === et ? 'rgba(0,255,255,0.5)' : 'rgba(0,255,255,0.15)'};
 						background: {eventType === et ? 'rgba(0,255,255,0.1)' : 'transparent'};
@@ -400,7 +400,7 @@ import { functions } from '$lib/firebase.js';
 	<button
 		onclick={handleBook}
 		disabled={isBooking || availStatus === 'conflict' || !isValidTimeBlock || !label.trim() || !selectedFacilityId}
-		class="w-full py-2.5 text-xs font-bold tracking-widest transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed"
+		class="w-full py-2.5 text-xs font-bold tracking-widest transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed tw-font-mono"
 		style="
 			background: {availStatus === 'conflict' ? 'rgba(255,64,96,0.08)' : 'rgba(0,255,255,0.08)'};
 			border: 1px solid {availStatus === 'conflict' ? 'rgba(255,64,96,0.4)' : 'rgba(0,255,255,0.4)'};

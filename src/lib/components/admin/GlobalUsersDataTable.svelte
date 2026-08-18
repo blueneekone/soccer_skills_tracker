@@ -72,7 +72,7 @@
 <svelte:window onclick={handleWindowClick} onscroll={handleWindowClick} />
 
 <div class="v-table-wrap" role="region" aria-label="Global users table" tabindex="-1">
-	<table class="v-table">
+	<div class="tw-border tw-border-[#334155] tw-bg-[#0f172a] tw-p-4 tw-min-w-0 tw-overflow-x-auto"><table class="tw-w-full tw-font-mono tw-text-sm" class="v-table">
 		<thead>
 			<tr>
 				<th class="v-th v-th--avatar" aria-label="Avatar"></th>
@@ -266,7 +266,7 @@
 				{/each}
 			{/if}
 		</tbody>
-	</table>
+	</table></div>
 </div>
 
 <footer class="gu-foot">

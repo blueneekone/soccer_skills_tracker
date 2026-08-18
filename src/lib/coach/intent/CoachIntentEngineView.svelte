@@ -59,7 +59,7 @@
 	});
 </script>
 
-<div class="tw-relative tw-min-h-screen tw-w-full tw-bg-[#020202] tw-font-mono coach-forge-workbench">
+<div class="tw-relative tw-h-[100dvh] tw-overflow-hidden tw-w-full tw-bg-[#020202] tw-font-mono coach-forge-workbench">
 	<header
 		class="tw-bg-[#020202] tw-border-b tw-border-[#14b8a6]/10 tw-px-5 tw-py-4 tw-flex tw-items-center tw-justify-between tw-gap-4 tw-flex-wrap"
 	>

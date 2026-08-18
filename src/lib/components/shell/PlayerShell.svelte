@@ -119,11 +119,11 @@
 	role="presentation"
 >
 <div
-	class="ps-root ps-root--dossier tw-w-full tw-max-w-full tw-flex-1 tw-min-h-0 tw-overflow-x-hidden tw-overflow-y-auto"
+	class="ps-root ps-root--dossier tw-w-full tw-max-w-full tw-flex-1 tw-min-h-0 tw-overflow-x-hidden tw-overflow-y-auto tw-font-mono"
 	style="overflow-y: auto;"
 >
 	<div class="ps-ambient tw-pointer-events-none" aria-hidden="true">
-		<div class="ps-ambient__grid"></div>
+		<div class="ps-ambient__grid tw-font-mono"></div>
 		<div class="ps-ambient__glow ps-ambient__glow--a"></div>
 		<div class="ps-ambient__glow ps-ambient__glow--b"></div>
 	</div>
@@ -154,7 +154,7 @@
 					</span>
 				</a>
 				{#if isHub}
-					<div class="ps-rail__divider" aria-hidden="true"></div>
+					<div class="ps-rail__divider tw-font-mono" aria-hidden="true"></div>
 				{/if}
 			{/each}
 			<div class="ps-rail__spacer" aria-hidden="true"></div>
@@ -184,10 +184,10 @@
 			/>
 		{/if}
 
-		<div class="ps-scroll-shell tw-relative tw-overflow-hidden">
+		<div class="ps-scroll-shell tw-relative tw-overflow-hidden tw-font-mono">
 			<div class="ps-canvas-bg" aria-hidden="true"></div>
 			<main
-				class="ps-canvas ps-canvas--scroll-inner player-dossier-root pd-grain pd-chrome-root tw-relative tw-z-[1] bento-grid tw-overflow-y-auto tw-flex-1 tw-min-h-0 -cols-1 lg:-cols-12"
+				class="ps-canvas ps-canvas--scroll-inner player-dossier-root pd-grain pd-chrome-root tw-relative tw-z-[1] bento-grid tw-overflow-y-auto tw-flex-1 tw-min-h-0 -cols-1 lg:-cols-12 tw-font-mono"
 				data-dopamine={vanguardFlags.dopamineEnabled ? 'on' : 'off'}
 			>
 				{@render children?.()}

@@ -89,7 +89,7 @@
 					<div class="hero__media-wrap tw-w-full">
 						<video
 							bind:this={videoEl}
-							class="hero__video tw-w-full tw-h-auto"
+							class="hero__video tw-w-full tw-h-auto tw-font-mono"
 							data-src="/marketing/hero-demo.mp4"
 							playsinline
 							muted

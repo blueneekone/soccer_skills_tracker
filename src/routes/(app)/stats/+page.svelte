@@ -446,7 +446,7 @@
 </script>
 
 <div
-	class="ec-page ec-player-stats view-section dossier-page player-dossier-root pd-page-root"
+	class="ec-page ec-player-stats view-section dossier-page player-dossier-root pd-page-root tw-font-mono"
 	class:player-hud-root={isPlayerRole}
 	class:pos-stats={isPlayerRole}
 >
@@ -462,7 +462,7 @@
 	{/if}
 
 	<div
-		class="dossier-grid"
+		class="dossier-grid tw-font-mono"
 		class:bento-grid={isPlayerRole}
 		class:bento-grid--12col={isPlayerRole}
 		class:bento-grid--liquid={isPlayerRole}
@@ -470,14 +470,14 @@
 		aria-label="Skill radar and analytics"
 	>
 		<section
-			class="stats-analytics-void pd-os-deck pd-os-deck--recessed bento-span-12"
+			class="stats-analytics-void pd-os-deck pd-os-deck--recessed bento-span-12 tw-font-mono"
 			class:stats-analytics-void--compact={!telemetryReady}
 			data-region="stats-analytics-void"
 			aria-label="Vanguard protocol telemetry"
 		>
-			<header class="pd-hq-section-head stats-analytics-void__head">
-				<h2 class="pd-hq-section-head__title stats-analytics-void__title">Vanguard telemetry</h2>
-				<p class="pd-hq-section-head__eyebrow pd-label stats-analytics-void__eyebrow">Performance</p>
+			<header class="pd-hq-section-head stats-analytics-void__head tw-font-mono">
+				<h2 class="pd-hq-section-head__title stats-analytics-void__title tw-font-mono">Vanguard telemetry</h2>
+				<p class="pd-hq-section-head__eyebrow pd-label stats-analytics-void__eyebrow tw-font-mono">Performance</p>
 			</header>
 			<VanguardProtocolPanel
 				prismValues={attrRadarValues}
@@ -499,9 +499,9 @@
 			aria-label="Workout telemetry"
 		>
 			{#if isPlayerRole}
-				<header class="pd-hq-section-head stats-workout-band__head">
-					<h2 class="pd-hq-section-head__title stats-workout-band__title">Workout telemetry</h2>
-					<p class="pd-hq-section-head__eyebrow pd-label stats-workout-band__eyebrow">Training</p>
+				<header class="pd-hq-section-head stats-workout-band__head tw-font-mono">
+					<h2 class="pd-hq-section-head__title stats-workout-band__title tw-font-mono">Workout telemetry</h2>
+					<p class="pd-hq-section-head__eyebrow pd-label stats-workout-band__eyebrow tw-font-mono">Training</p>
 				</header>
 			{:else}
 			<div class="dossier-radar__head">
@@ -591,12 +591,12 @@
 		aria-label="Achievement matrix"
 	>
 		{#if isPlayerRole}
-			<header class="pd-hq-section-head stats-achievement-deck__head">
-				<div class="stats-achievement-deck__id">
-					<h2 class="pd-hq-section-head__title stats-achievement-deck__title">Achievement matrix</h2>
-					<p class="pd-hq-section-head__eyebrow pd-label stats-achievement-deck__eyebrow">Asset registry</p>
+			<header class="pd-hq-section-head stats-achievement-deck__head tw-font-mono">
+				<div class="stats-achievement-deck__id tw-font-mono">
+					<h2 class="pd-hq-section-head__title stats-achievement-deck__title tw-font-mono">Achievement matrix</h2>
+					<p class="pd-hq-section-head__eyebrow pd-label stats-achievement-deck__eyebrow tw-font-mono">Asset registry</p>
 				</div>
-				<div class="stats-achievement-deck__status" role="status">
+				<div class="stats-achievement-deck__status tw-font-mono" role="status">
 					<p class="pd-label pd-mono">
 						UNL={badges.filter((b) => b.unlocked).length} · LCK={badges.filter((b) => !b.unlocked).length}
 					</p>
@@ -614,7 +614,7 @@
 		</div>
 		{/if}
 		<div
-			class="dossier-badges__grid"
+			class="dossier-badges__grid tw-font-mono"
 			class:stats-achievement-deck__grid={isPlayerRole}
 			role="list"
 		>

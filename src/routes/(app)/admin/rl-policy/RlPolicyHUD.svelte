@@ -39,7 +39,7 @@
 		<span class="hud-value">v{engine.policyVersion}</span>
 	</div>
 
-	<div class="hud-divider"></div>
+	<div class="hud-divider tw-font-mono"></div>
 
 	<div class="hud-status" style="color: {statusColor}">
 		<span class="hud-dot" style="background: {statusColor}"></span>
@@ -47,8 +47,8 @@
 	</div>
 
 	{#if engine.safetyOverrideCount7d > 0}
-		<div class="hud-divider"></div>
-		<div class="hud-overrides">
+		<div class="hud-divider tw-font-mono"></div>
+		<div class="hud-overrides tw-font-mono">
 			<span class="hud-label">OVERRIDES 7D</span>
 			<span class="hud-value hud-warn">{engine.safetyOverrideCount7d}</span>
 		</div>

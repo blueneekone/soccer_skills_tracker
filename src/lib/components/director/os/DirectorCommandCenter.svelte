@@ -165,7 +165,7 @@
 			gridClass="tw-grid tw-grid-cols-2 md:tw-grid-cols-5 tw-gap-4 director-cc-kpi-grid"
 		/>
 
-		<div class="tw-w-full tw-grid tw-grid-cols-1 lg:tw-grid-cols-12 tw-gap-6 tw-mt-6">
+		<div class="tw-w-full tw-grid tw-grid-cols-1 lg:tw-grid-cols-12 tw-gap-6 tw-mt-6 tw-font-mono">
 			<!-- 8-Column Primary Canvas -->
 			<div class="lg:tw-col-span-8 tw-flex tw-flex-col tw-gap-6 tw-min-w-0">
 				<div class="director-cc-z2-panel wsd-surface-accent">

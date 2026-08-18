@@ -355,7 +355,7 @@
 			<section class="gw-section" aria-labelledby="gw-focus-heading">
 				<h2 id="gw-focus-heading" class="gw-section__title">Workout focus</h2>
 				<p class="gw-section__hint">What dominated this session? One tap.</p>
-				<div class="gw-focus-grid" role="group" aria-label="Workout focus">
+				<div class="gw-focus-grid tw-font-mono" role="group" aria-label="Workout focus">
 					{#each FOCUS_OPTIONS as opt (opt.id)}
 						<button
 							type="button"
@@ -409,9 +409,9 @@
 				<p class="gw-section__hint">
 					Dials your XP multiplier ({intensityApi} · server-verified curve).
 				</p>
-				<div class="gw-slider-wrap">
+				<div class="gw-slider-wrap tw-font-mono">
 					<input
-						class="gw-slider"
+						class="gw-slider tw-font-mono"
 						type="range"
 						min="1"
 						max="10"
@@ -422,7 +422,7 @@
 						aria-valuenow={intensitySlider}
 						aria-valuetext="Intensity {intensitySlider} of 10"
 					/>
-					<div class="gw-slider-ticks" aria-hidden="true">
+					<div class="gw-slider-ticks tw-font-mono" aria-hidden="true">
 						{#each [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] as n}
 							<span class:gw-slider-ticks__on={n <= intensitySlider}></span>
 						{/each}
@@ -443,7 +443,7 @@
 				</button>
 				{#if builderOpen}
 					<div class="gw-builder">
-						<div class="gw-builder__grid">
+						<div class="gw-builder__grid tw-font-mono">
 							<div class="gw-builder__block">
 								<span class="gw-builder__tag">Cardio</span>
 								<select class="gw-select" bind:value={selectWarmup}>
@@ -568,7 +568,7 @@
 						</select>
 						<div class="input-row">
 							<input type="number" bind:value={cardioDist} placeholder="Miles" class="flex-1" />
-							<span class="input-divider">/</span>
+							<span class="input-divider tw-font-mono">/</span>
 							<input type="number" bind:value={cardioTime} placeholder="Mins" class="flex-1" />
 							<button class="action-btn btn-orange" onclick={() => addDrill(selectWarmup, cardioDist, cardioTime)}>+ Add</button>
 						</div>
@@ -582,7 +582,7 @@
 						</select>
 						<div class="input-row">
 							<input type="number" bind:value={setsCore} placeholder="Sets" class="w-50" />
-							<span class="input-divider">x</span>
+							<span class="input-divider tw-font-mono">x</span>
 							<input type="number" bind:value={repsCore} placeholder="Reps" class="flex-1" />
 							<button class="action-btn btn-red" onclick={() => addDrill(selectCore, setsCore, repsCore)}>+ Add</button>
 						</div>
@@ -596,7 +596,7 @@
 						</select>
 						<div class="input-row">
 							<input type="number" bind:value={setsBall} placeholder="Sets" class="w-50" />
-							<span class="input-divider">x</span>
+							<span class="input-divider tw-font-mono">x</span>
 							<input type="number" bind:value={repsBall} placeholder="Reps" class="flex-1" />
 							<button class="action-btn btn-blue" onclick={() => addDrill(selectBallWork, setsBall, repsBall)}>+ Add</button>
 						</div>
@@ -610,7 +610,7 @@
 						</select>
 						<div class="input-row">
 							<input type="number" bind:value={setsBasics} placeholder="Sets" class="w-50" />
-							<span class="input-divider">x</span>
+							<span class="input-divider tw-font-mono">x</span>
 							<input type="number" bind:value={repsBasics} placeholder="Reps" class="flex-1" />
 							<button class="action-btn btn-green" onclick={() => addDrill(selectBasics, setsBasics, repsBasics)}>+ Add</button>
 						</div>

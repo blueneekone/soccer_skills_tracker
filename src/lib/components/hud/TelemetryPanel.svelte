@@ -45,13 +45,13 @@
 	});
 </script>
 
-<div class="telemetry-panel">
-	<div class="telemetry-panel__header">
-		<h2 class="telemetry-panel__title pw-mono">YoY Progression & Parity</h2>
+<div class="telemetry-panel tw-font-mono">
+	<div class="telemetry-panel__header tw-font-mono">
+		<h2 class="telemetry-panel__title pw-mono tw-font-mono">YoY Progression & Parity</h2>
 		{#if loading}
-			<span class="telemetry-panel__status pw-mono">Syncing...</span>
+			<span class="telemetry-panel__status pw-mono tw-font-mono">Syncing...</span>
 		{:else if lastUpdated}
-			<span class="telemetry-panel__status pw-mono">Last updated: {lastUpdated.toLocaleDateString()}</span>
+			<span class="telemetry-panel__status pw-mono tw-font-mono">Last updated: {lastUpdated.toLocaleDateString()}</span>
 		{/if}
 	</div>
 

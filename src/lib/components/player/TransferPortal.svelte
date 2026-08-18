@@ -186,14 +186,14 @@ import { functions } from '$lib/firebase.js';
 				</svg>
 			</div>
 			<div>
-				<div class="text-xs font-bold tracking-widest" style="color: rgba(0,255,255,0.9);">VANGUARD TRANSFER PROTOCOL</div>
+				<div class="text-xs font-bold tracking-widest tw-font-mono" style="color: rgba(0,255,255,0.9);">VANGUARD TRANSFER PROTOCOL</div>
 				<div class="text-xs" style="color: rgba(0,255,255,0.35);">
 					{isParent ? 'PARENT AUTHORIZATION TERMINAL' : 'DIRECTOR TOKEN ACCEPTANCE MODULE'}
 				</div>
 			</div>
 		</div>
 		<div
-			class="px-2 py-0.5 text-xs tracking-wider"
+			class="px-2 py-0.5 text-xs tracking-wider tw-font-mono"
 			style="
 				border: 1px solid rgba(255,180,40,0.4);
 				color: rgba(255,180,40,0.8);
@@ -267,7 +267,7 @@ import { functions } from '$lib/firebase.js';
 				</div>
 				<button
 					onclick={reset}
-					class="px-5 py-2 text-xs tracking-widest transition-all"
+					class="px-5 py-2 text-xs tracking-widest transition-all tw-font-mono"
 					style="border: 1px solid rgba(45, 212, 191,0.4); color: #2dd4bf;"
 					onmouseenter={(e) => (e.currentTarget.style.background = 'rgba(45, 212, 191,0.08)')}
 					onmouseleave={(e) => (e.currentTarget.style.background = 'transparent')}
@@ -283,7 +283,7 @@ import { functions } from '$lib/firebase.js';
 				</div>
 				<button
 					onclick={reset}
-					class="px-5 py-2 text-xs tracking-widest transition-all"
+					class="px-5 py-2 text-xs tracking-widest transition-all tw-font-mono"
 					style="border: 1px solid rgba(255,64,96,0.4); color: #ff4060;"
 					onmouseenter={(e) => (e.currentTarget.style.background = 'rgba(255,64,96,0.08)')}
 					onmouseleave={(e) => (e.currentTarget.style.background = 'transparent')}
@@ -299,7 +299,7 @@ import { functions } from '$lib/firebase.js';
 				</div>
 
 				<div class="space-y-1">
-					<label class="text-xs tracking-widest" style="color: rgba(0,255,255,0.5);">PLAYER EMAIL</label>
+					<label class="text-xs tracking-widest tw-font-mono" style="color: rgba(0,255,255,0.5);">PLAYER EMAIL</label>
 					<input
 						type="email"
 						bind:value={targetPlayerEmail}
@@ -319,7 +319,7 @@ import { functions } from '$lib/firebase.js';
 				<button
 					onclick={handleInitiate}
 					disabled={isLoading}
-					class="w-full py-2.5 text-xs font-bold tracking-widest transition-all disabled:opacity-40"
+					class="w-full py-2.5 text-xs font-bold tracking-widest transition-all disabled:opacity-40 tw-font-mono"
 					style="background: rgba(0,255,255,0.08); border: 1px solid rgba(0,255,255,0.4); color: #14b8a6;"
 					onmouseenter={(e) => { if (!e.currentTarget.disabled) e.currentTarget.style.background = 'rgba(0,255,255,0.15)'; }}
 					onmouseleave={(e) => (e.currentTarget.style.background = 'rgba(0,255,255,0.08)')}
@@ -332,7 +332,7 @@ import { functions } from '$lib/firebase.js';
 		{:else if isParent && stage === 'parent_initiated'}
 			<div class="space-y-4">
 				<div class="px-3 py-3 space-y-2" style="background: rgba(0,255,255,0.04); border: 1px solid rgba(0,255,255,0.2);">
-					<div class="text-xs tracking-widest" style="color: rgba(0,255,255,0.5);">TRANSFER TOKEN GENERATED</div>
+					<div class="text-xs tracking-widest tw-font-mono" style="color: rgba(0,255,255,0.5);">TRANSFER TOKEN GENERATED</div>
 					<div class="text-xs font-bold break-all" style="color: #14b8a6; word-break: break-all;">{tokenId}</div>
 					{#if expiresAt}
 						<div class="text-xs" style="color: rgba(0,255,255,0.3);">EXPIRES: {new Date(expiresAt).toLocaleString()}</div>
@@ -344,7 +344,7 @@ import { functions } from '$lib/firebase.js';
 				</div>
 
 				<div class="space-y-1">
-					<label class="text-xs tracking-widest" style="color: rgba(0,255,255,0.5);">ENTER AUTH CODE (from email)</label>
+					<label class="text-xs tracking-widest tw-font-mono" style="color: rgba(0,255,255,0.5);">ENTER AUTH CODE (from email)</label>
 					<input
 						type="text"
 						bind:value={authCode}
@@ -367,7 +367,7 @@ import { functions } from '$lib/firebase.js';
 				<button
 					onclick={handleConfirm}
 					disabled={isLoading || !authCode.trim()}
-					class="w-full py-2.5 text-xs font-bold tracking-widest transition-all disabled:opacity-40"
+					class="w-full py-2.5 text-xs font-bold tracking-widest transition-all disabled:opacity-40 tw-font-mono"
 					style="background: rgba(0,255,255,0.08); border: 1px solid rgba(0,255,255,0.4); color: #14b8a6;"
 					onmouseenter={(e) => { if (!e.currentTarget.disabled) e.currentTarget.style.background = 'rgba(0,255,255,0.15)'; }}
 					onmouseleave={(e) => (e.currentTarget.style.background = 'rgba(0,255,255,0.08)')}
@@ -385,7 +385,7 @@ import { functions } from '$lib/firebase.js';
 				</div>
 
 				<div class="space-y-1">
-					<label class="text-xs tracking-widest" style="color: rgba(0,255,255,0.5);">TRANSFER TOKEN</label>
+					<label class="text-xs tracking-widest tw-font-mono" style="color: rgba(0,255,255,0.5);">TRANSFER TOKEN</label>
 					<textarea
 						bind:value={directorTokenInput}
 						placeholder="64-character transfer token"
@@ -404,7 +404,7 @@ import { functions } from '$lib/firebase.js';
 				<button
 					onclick={handleDirectorPresent}
 					disabled={isLoading || !directorTokenInput.trim()}
-					class="w-full py-2.5 text-xs font-bold tracking-widest transition-all disabled:opacity-40"
+					class="w-full py-2.5 text-xs font-bold tracking-widest transition-all disabled:opacity-40 tw-font-mono"
 					style="background: rgba(0,255,255,0.08); border: 1px solid rgba(0,255,255,0.4); color: #14b8a6;"
 					onmouseenter={(e) => { if (!e.currentTarget.disabled) e.currentTarget.style.background = 'rgba(0,255,255,0.15)'; }}
 					onmouseleave={(e) => (e.currentTarget.style.background = 'rgba(0,255,255,0.08)')}

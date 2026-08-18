@@ -10,7 +10,7 @@
 
 <div class="clearance-gate" aria-live="assertive" role="alert">
 	<!-- Ambient threat grid -->
-	<div class="clearance-gate__grid" aria-hidden="true"></div>
+	<div class="clearance-gate__grid tw-font-mono" aria-hidden="true"></div>
 
 	<!-- Pulsing shield icon -->
 	<div class="clearance-gate__shield" aria-hidden="true">

@@ -295,7 +295,7 @@
 					class:animate-pulse={phase === 'processing' || phase === 'loading'}
 					style="background: {phase === 'confirmed' ? '#2dd4bf' : phase === 'error' ? '#ff4060' : '#14b8a6'}; box-shadow: 0 0 8px currentColor;"
 				></div>
-				<span class="font-mono text-xs tracking-widest" style="color: rgba(0,255,255,0.7);">
+				<span class="font-mono text-xs tracking-widest tw-font-mono" style="color: rgba(0,255,255,0.7);">
 					SECURE PAYMENT TERMINAL v2.4
 				</span>
 			</div>
@@ -317,11 +317,11 @@
 			>
 				<div class="flex justify-between items-start">
 					<div>
-						<div class="font-mono text-xs tracking-widest mb-1" style="color: rgba(0,255,255,0.5);">OPERATION</div>
+						<div class="font-mono text-xs tracking-widest mb-1 tw-font-mono" style="color: rgba(0,255,255,0.5);">OPERATION</div>
 						<div class="font-mono text-sm font-bold" style="color: #14b8a6;">{seasonName}</div>
 					</div>
 					<div class="text-right">
-						<div class="font-mono text-xs tracking-widest mb-1" style="color: rgba(0,255,255,0.5);">FEE PAYLOAD</div>
+						<div class="font-mono text-xs tracking-widest mb-1 tw-font-mono" style="color: rgba(0,255,255,0.5);">FEE PAYLOAD</div>
 						<div class="font-mono text-xl font-bold" style="color: #14b8a6; text-shadow: 0 0 20px rgba(0,255,255,0.5);">
 							{formatCents(chargeCents)}
 						</div>
@@ -361,14 +361,14 @@
 							class="rounded-sm p-3 space-y-2 text-left"
 							style="background: rgba(0,255,255,0.02); border: 1px solid rgba(0,255,255,0.08);"
 						>
-							<div class="font-mono text-xs tracking-widest" style="color: rgba(0,255,255,0.5);">
+							<div class="font-mono text-xs tracking-widest tw-font-mono" style="color: rgba(0,255,255,0.5);">
 								PAYMENT PLAN
 							</div>
 							<div class="flex flex-wrap gap-2">
 								{#each selectableOptions as option (option)}
 									<button
 										type="button"
-										class="px-3 py-2 font-mono text-xs tracking-wide transition-all"
+										class="px-3 py-2 font-mono text-xs tracking-wide transition-all tw-font-mono"
 										style="
 											border: 1px solid {installmentCount === option ? 'rgba(0,255,255,0.55)' : 'rgba(0,255,255,0.2)'};
 											color: {installmentCount === option ? '#14b8a6' : 'rgba(0,255,255,0.45)'};
@@ -407,7 +407,7 @@
 
 					<button
 						onclick={handleInitiatePayment}
-						class="w-full py-3 font-mono text-sm font-bold tracking-widest transition-all duration-200"
+						class="w-full py-3 font-mono text-sm font-bold tracking-widest transition-all duration-200 tw-font-mono"
 						style="
 							background: rgba(0,255,255,0.08);
 							border: 1px solid rgba(0,255,255,0.4);
@@ -431,14 +431,14 @@
 							style="animation-direction: reverse; border-color: rgba(0,255,255,0.15); animation-duration: 3s;"
 						></div>
 					</div>
-					<span class="font-mono text-xs tracking-widest animate-pulse" style="color: rgba(0,255,255,0.6);">
+					<span class="font-mono text-xs tracking-widest animate-pulse tw-font-mono" style="color: rgba(0,255,255,0.6);">
 						ESTABLISHING SECURE CHANNEL...
 					</span>
 				</div>
 
 			<!-- ── PHASE: FORM ────────────────────────────────────────────────── -->
 			{:else if phase === 'form'}
-				<div class="space-y-4 relative overflow-hidden">
+				<div class="space-y-4 relative overflow-hidden tw-font-mono">
 					<!-- Scanline effect -->
 					<div
 						class="absolute inset-0 pointer-events-none z-10"
@@ -454,7 +454,7 @@
 
 					<!-- Cardholder name -->
 					<div class="space-y-1">
-						<label class="font-mono text-xs tracking-widest" style="color: rgba(0,255,255,0.5);">
+						<label class="font-mono text-xs tracking-widest tw-font-mono" style="color: rgba(0,255,255,0.5);">
 							CARDHOLDER IDENTITY
 						</label>
 						<input
@@ -476,7 +476,7 @@
 
 					<!-- Card element container -->
 					<div class="space-y-1">
-						<label class="font-mono text-xs tracking-widest" style="color: rgba(0,255,255,0.5);">
+						<label class="font-mono text-xs tracking-widest tw-font-mono" style="color: rgba(0,255,255,0.5);">
 							PAYMENT VECTOR
 						</label>
 						<div
@@ -535,7 +535,7 @@
 					<button
 						onclick={handleConfirmPayment}
 						disabled={commerce.isConfirming}
-						class="w-full py-3 font-mono text-sm font-bold tracking-widest transition-all duration-200 disabled:opacity-40"
+						class="w-full py-3 font-mono text-sm font-bold tracking-widest transition-all duration-200 disabled:opacity-40 tw-font-mono"
 						style="
 							background: rgba(0,255,255,0.1);
 							border: 1px solid rgba(0,255,255,0.5);
@@ -605,7 +605,7 @@
 					</div>
 					<button
 						onclick={() => onclose?.()}
-						class="px-6 py-2 font-mono text-xs tracking-widest transition-all"
+						class="px-6 py-2 font-mono text-xs tracking-widest transition-all tw-font-mono"
 						style="border: 1px solid rgba(45, 212, 191,0.4); color: #2dd4bf;"
 						onmouseenter={(e) => (e.currentTarget.style.background = 'rgba(45, 212, 191,0.08)')}
 						onmouseleave={(e) => (e.currentTarget.style.background = 'transparent')}
@@ -629,7 +629,7 @@
 					</div>
 					<button
 						onclick={handleRetry}
-						class="px-6 py-2 font-mono text-xs tracking-widest transition-all"
+						class="px-6 py-2 font-mono text-xs tracking-widest transition-all tw-font-mono"
 						style="border: 1px solid rgba(255,64,96,0.4); color: #ff4060;"
 						onmouseenter={(e) => (e.currentTarget.style.background = 'rgba(255,64,96,0.08)')}
 						onmouseleave={(e) => (e.currentTarget.style.background = 'transparent')}

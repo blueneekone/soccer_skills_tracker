@@ -291,7 +291,7 @@
 		{/if}
 
 		<form class="eam-form" onsubmit={(e) => { e.preventDefault(); void submit(); }}>
-			<div class="eam-grid">
+			<div class="eam-grid tw-font-mono">
 				<div class="eam-field">
 					<label class="eam-label" for="eam-name">
 						Display Name <span class="eam-req">*</span>
@@ -344,7 +344,7 @@
 					/>
 				</div>
 
-				<div class="eam-field eam-field--wide">
+				<div class="eam-field eam-field--wide tw-font-mono">
 					<label class="eam-label" for="eam-address">
 						Verified Address
 						<span class="eam-places-chip" title="Google Places Autocomplete active">
@@ -363,7 +363,7 @@
 					/>
 				</div>
 
-				<div class="eam-field eam-field--wide">
+				<div class="eam-field eam-field--wide tw-font-mono">
 					<label class="eam-label" for="eam-facility">
 						Primary Facility
 						<span class="eam-places-chip" title="Google Places Autocomplete active">
@@ -381,7 +381,7 @@
 					/>
 				</div>
 
-				<div class="eam-field eam-field--wide">
+				<div class="eam-field eam-field--wide tw-font-mono">
 					<label class="eam-label" for="eam-notes">Internal Notes</label>
 					<textarea
 						id="eam-notes"

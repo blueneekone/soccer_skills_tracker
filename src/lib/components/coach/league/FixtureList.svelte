@@ -140,8 +140,8 @@
 			<h2 class="fl-title">{title}</h2>
 		</div>
 		<div class="fl-header-right">
-			<span class="fl-count"
-				>{filtered.length}<span class="fl-count-label">MATCHES</span></span
+			<span class="fl-count tw-font-mono"
+				>{filtered.length}<span class="fl-count-label tw-font-mono">MATCHES</span></span
 			>
 		</div>
 	</div>
@@ -160,7 +160,7 @@
 					>
 						{tab.label}
 						{#if tabCounts[tab.key] > 0}
-							<span class="fl-tab-count">{tabCounts[tab.key]}</span>
+							<span class="fl-tab-count tw-font-mono">{tabCounts[tab.key]}</span>
 						{/if}
 					</button>
 				{/each}
@@ -270,11 +270,11 @@
 					</div>
 
 					<!-- Score badge (completed) OR status indicator (scheduled/cancelled) -->
-					<div class="fl-col-score-status">
+					<div class="fl-col-score-status tw-font-mono">
 						{#if isCompleted && result}
 							<!-- ── GLOWING SCORE BADGE ──────────────────────────── -->
 							<div
-								class="fl-score-badge"
+								class="fl-score-badge tw-font-mono"
 								style:--outcome-color={result.outcome
 									? OUTCOME_COLORS[result.outcome]
 									: '#14b8a6'}
@@ -284,9 +284,9 @@
 										{result.outcome}
 									</span>
 								{/if}
-								<span class="fl-score">
+								<span class="fl-score tw-font-mono">
 									{result.scoreHome}
-									<span class="fl-score-sep">–</span>
+									<span class="fl-score-sep tw-font-mono">–</span>
 									{result.scoreAway}
 								</span>
 							</div>

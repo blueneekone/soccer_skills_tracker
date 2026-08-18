@@ -131,7 +131,7 @@
 					</div>
 				{/if}
 
-				<div class="tw-grid tw-grid-cols-1 md:tw-grid-cols-2 tw-gap-6">
+				<div class="tw-grid tw-grid-cols-1 md:tw-grid-cols-2 tw-gap-6 tw-font-mono">
 					<div class="tw-flex tw-flex-col tw-gap-2">
 						<label class="tw-text-[#A1A1AA] tw-text-sm tw-font-semibold" for="add-club-id">
 							Club ID <span class="tw-text-red-400" aria-hidden="true">*</span>
@@ -249,7 +249,7 @@
 						<p class="tw-text-sm tw-text-[#A1A1AA] tw-mb-6">
 							Provisioned via Cloud Function before the club is saved. If this step fails, the club will NOT be created.
 						</p>
-						<div class="tw-grid tw-grid-cols-1 md:tw-grid-cols-2 tw-gap-6">
+						<div class="tw-grid tw-grid-cols-1 md:tw-grid-cols-2 tw-gap-6 tw-font-mono">
 							<div class="tw-flex tw-flex-col tw-gap-2">
 								<label class="tw-text-[#A1A1AA] tw-text-sm tw-font-semibold" for="add-sport-name">
 									Sport Name <span class="tw-text-red-400" aria-hidden="true">*</span>
@@ -292,7 +292,7 @@
 					</button>
 					<button 
 						type="button" 
-						class="tw-bg-amber-500 hover:tw-bg-amber-500/90 tw-text-void-black tw-font-extrabold tw-px-6 tw-py-2.5 tw-rounded-none tw-transition-colors tw-cursor-pointer tw-border-none disabled:tw-opacity-50 tw-flex tw-items-center tw-gap-2"
+						class="tw-bg-amber-500 hover:tw-bg-amber-500/90 tw-text-void-black tw-font-extrabold tw-px-6 tw-py-2.5 tw-rounded-none tw-transition-colors tw-cursor-pointer tw-border-none disabled:tw-opacity-50 tw-flex tw-items-center tw-gap-2 tw-font-mono"
 						onclick={onSubmit} 
 						disabled={saving}
 					>

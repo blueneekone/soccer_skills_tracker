@@ -1,138 +1,47 @@
 <script lang="ts">
-	import Icon from '$lib/components/ui/Icon.svelte';
-	import type { IconName } from '$lib/icons/registry.js';
-	import { portal } from '$lib/actions/portal.js';
+  let { show = $bindable(), emailToPurge, onConfirm } = $props();
 
-	interface Props {
-		step: number;
-		targetEmail: string;
-		targetName: string;
-		typedConfirmation: string;
-		reason: string;
-		busy: boolean;
-		err: string;
-		onClose: () => void;
-		onAdvance: () => void;
-		onConfirm: () => void;
-	}
+  function close() {
+    show = false;
+  }
 
-	let {
-		step,
-		targetEmail,
-		targetName,
-		typedConfirmation = $bindable(''),
-		reason = $bindable(''),
-		busy,
-		err,
-		onClose,
-		onAdvance,
-		onConfirm,
-	}: Props = $props();
+  async function confirmPurge() {
+    if (onConfirm) {
+      await onConfirm(emailToPurge);
+    }
+    close();
+  }
 </script>
 
-<div
-	class="gu-modal-bg"
-	use:portal
-	role="presentation"
-	onclick={onClose}
-	onkeydown={(e) => {
-		if (e.key === 'Escape') onClose();
-	}}
->
-	<div
-		class="gu-modal dark-form-surface"
-		role="dialog"
-		aria-modal="true"
-		aria-labelledby="gu-purge-title"
-		tabindex="-1"
-		onclick={(e) => e.stopPropagation()}
-		onkeydown={(e) => e.stopPropagation()}
-	>
-		<header class="gu-modal__head">
-			<div class="gu-modal__icon gu-modal__icon--danger" aria-hidden="true">
-				<Icon name={'status.shield-alert' as IconName} />
-			</div>
-			<div>
-				<h2 id="gu-purge-title" class="gu-modal__title">
-					{step === 1 ? 'Purge User Data' : 'Final Confirmation'}
-				</h2>
-				<p class="gu-modal__sub">GDPR Article 17 — Right to Erasure.</p>
-			</div>
-		</header>
-
-		{#if step === 1}
-			<div class="gu-modal__body">
-				<p class="gu-modal__p">
-					You are about to <strong>permanently delete</strong> all Firestore records
-					and the Firebase Auth entry for:
-				</p>
-				<div class="gu-modal__target">
-					<div class="gu-modal__target-name">{targetName}</div>
-					<div class="gu-modal__target-email">{targetEmail}</div>
-				</div>
-				<p class="gu-modal__p gu-modal__p--muted">
-					This action cannot be undone. The audit trail will be retained under
-					<code class="gu-modal__code">security_audit</code>.
-				</p>
-				<label class="gu-modal__label" for="gu-purge-reason">
-					Reason (optional — audited)
-				</label>
-				<textarea
-					id="gu-purge-reason"
-					class="gu-modal__input gu-modal__textarea"
-					bind:value={reason}
-					placeholder="e.g. GDPR Article 17 request — ticket #12345"
-					rows="2"
-					maxlength="500"
-				></textarea>
-				{#if err}
-					<p class="gu-flash gu-flash--err">{err}</p>
-				{/if}
-			</div>
-			<footer class="gu-modal__foot">
-				<button type="button" class="btn-secondary tw-px-[clamp(16px,2vw,24px)] tw-py-2 tw-text-sm tw-font-bold tw-flex tw-items-center tw-gap-1.5" onclick={onClose}>
-					<Icon name={"sys.close" as IconName} size={14} /> Cancel
-				</button>
-				<button type="button" class="btn-primary tw-bg-amber-500 hover:tw-bg-amber-500/90 tw-text-void-black tw-px-[clamp(16px,2vw,24px)] tw-py-2 tw-text-sm tw-font-extrabold tw-flex tw-items-center tw-gap-1.5" onclick={onAdvance}>
-					<Icon name={"nav.arrow-right" as IconName} size={14} /> Continue
-				</button>
-			</footer>
-		{:else}
-			<div class="gu-modal__body">
-				<p class="gu-modal__p">
-					To confirm, type the target email address <strong>exactly</strong>:
-				</p>
-				<div class="gu-modal__target gu-modal__target--center">
-					<div class="gu-modal__target-email">{targetEmail}</div>
-				</div>
-				<label class="gu-modal__label" for="gu-purge-typed">Typed confirmation</label>
-				<input
-					id="gu-purge-typed"
-					type="text"
-					class="gu-modal__input"
-					bind:value={typedConfirmation}
-					autocomplete="off"
-					spellcheck="false"
-					placeholder={targetEmail}
-				/>
-				{#if err}
-					<p class="gu-flash gu-flash--err">{err}</p>
-				{/if}
-			</div>
-			<footer class="gu-modal__foot">
-				<button type="button" class="btn-secondary tw-px-[clamp(16px,2vw,24px)] tw-py-2 tw-text-sm tw-font-bold tw-flex tw-items-center tw-gap-1.5" onclick={onClose} disabled={busy}>
-					<Icon name={"sys.close" as IconName} size={14} /> Cancel
-				</button>
-				<button
-					type="button"
-					class="btn-primary tw-bg-red-600 hover:tw-bg-red-700 tw-text-[#FAFAFA] tw-px-[clamp(16px,2vw,24px)] tw-py-2 tw-text-sm tw-font-bold disabled:tw-opacity-50 disabled:tw-cursor-not-allowed tw-flex tw-items-center tw-gap-1.5"
-					onclick={onConfirm}
-					disabled={busy || typedConfirmation.trim().toLowerCase() !== targetEmail.toLowerCase()}
-				>
-					<Icon name={"status.shield-alert" as IconName} size={14} />
-					{busy ? 'Purging…' : 'Permanently Purge'}
-				</button>
-			</footer>
-		{/if}
-	</div>
+{#if show}
+<!-- Outer Overlay: Fixed, full viewport lock with dark backdrop blur and high z-index -->
+<div class="tw-fixed tw-inset-0 tw-z-50 tw-flex tw-items-center tw-justify-center tw-bg-black/90 tw-backdrop-blur-md tw-p-4">
+    
+    <!-- Modal Card Box: Solid Slate background, Structural Grey borders, and Vanguard chamfered clip-path -->
+    <div class="tw-relative tw-w-full tw-max-w-md tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-p-6 tw-shadow-2xl tw-min-w-0"
+         style="clip-path: polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px);">
+         
+        <!-- Header: Monospace Action Gold / Amber warning typography -->
+        <h3 class="tw-font-mono tw-text-xl tw-text-[#fbbf24] tw-mb-4">
+            ⚠️ CONFIRM IDENTITY PURGE
+        </h3>
+        
+        <!-- Body: Non-transparent text content -->
+        <p class="tw-font-sans tw-text-sm tw-text-slate-300 tw-whitespace-normal tw-break-words tw-mb-6">
+            Warning: You are initiating a 24-hour cascading shredder process on the compliance vaults for <strong>{emailToPurge}</strong>. This action is legally irreversible.
+        </p>
+        
+        <!-- Actions: Auto-scaling responsive buttons -->
+        <div class="tw-flex tw-flex-col sm:tw-flex-row tw-justify-end tw-gap-3">
+            <button class="tw-px-4 tw-py-2 tw-bg-slate-800 hover:tw-bg-slate-700 tw-text-white tw-font-mono tw-text-sm"
+                    onclick={close}>
+                Cancel
+            </button>
+            <button class="tw-px-4 tw-py-2 tw-bg-red-700 hover:tw-bg-red-600 tw-text-white tw-font-mono tw-text-sm"
+                    onclick={confirmPurge}>
+                Purge Profile
+            </button>
+        </div>
+    </div>
 </div>
+{/if}

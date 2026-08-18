@@ -164,7 +164,7 @@
 			</section>
 		{/if}
 
-		<div class="checkout-grid">
+		<div class="checkout-grid tw-font-mono">
 			<!-- Tier selector -->
 			<section class="glass-panel tier-section">
 				<h2 class="section-title">Choose Tickets</h2>
@@ -184,7 +184,7 @@
 							>
 								<div class="tier-main">
 									<span class="tier-label">{tier.label}</span>
-									<span class="tier-price">{formatCents(tier.unitPriceCents)}</span>
+									<span class="tier-price tw-font-mono">{formatCents(tier.unitPriceCents)}</span>
 								</div>
 								{#if tier.description}
 									<p class="tier-desc">{tier.description}</p>

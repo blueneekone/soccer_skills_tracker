@@ -6,7 +6,7 @@
 	<title>SSTracker · Legal Vault</title>
 </svelte:head>
 
-<div class="tw-min-h-screen tw-bg-[#000000] tw-text-white tw-font-sans tw-pt-24 tw-pb-16 tw-px-6">
+<div class="tw-h-[100dvh] tw-overflow-hidden tw-bg-[#000000] tw-text-white tw-font-sans tw-pt-24 tw-pb-16 tw-px-6">
 	<div class="tw-max-w-3xl tw-mx-auto tw-space-y-16">
 		<header class="tw-text-center tw-mb-16">
 			<h1 class="tw-text-4xl tw-font-bold tw-font-mono tw-text-white tw-tracking-tight tw-mb-4">
