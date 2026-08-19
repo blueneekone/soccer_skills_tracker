@@ -20,7 +20,12 @@ function sleep(ms) {
 /** @param {string} cmd */
 function run(cmd) {
   console.log(`\n>> ${cmd}\n`);
-  execSync(cmd, {cwd: REPO_ROOT, stdio: 'inherit', shell: true});
+  execSync(cmd, {
+    cwd: REPO_ROOT,
+    stdio: 'inherit',
+    shell: true,
+    env: {...process.env, FUNCTIONS_DISCOVERY_TIMEOUT: '120'},
+  });
 }
 
 /** @param {string} label */

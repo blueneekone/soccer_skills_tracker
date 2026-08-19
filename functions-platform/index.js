@@ -12,15 +12,16 @@ require('./bootstrapAdmin');
 require('./tenantUtils');
 require('./cellRouter');
 
-const cellRegistryHandlers = require("./src/domains/cellRegistry");
-exports.bootstrapCellRegistry = cellRegistryHandlers.bootstrapCellRegistry;
-exports.registerDedicatedCell = cellRegistryHandlers.registerDedicatedCell;
-exports.activateCell = cellRegistryHandlers.activateCell;
-const cellRegistryHandlers = require("./src/domains/cellRegistry");
-exports.provisionTenantCell = cellRegistryHandlers.provisionTenantCell;
-exports.peekTenantCell = cellRegistryHandlers.peekTenantCell;
+const cellBootstrapHandlers = require('./cellBootstrap');
+exports.bootstrapCellRegistry = cellBootstrapHandlers.bootstrapCellRegistry;
+exports.registerDedicatedCell = cellBootstrapHandlers.registerDedicatedCell;
+exports.activateCell = cellBootstrapHandlers.activateCell;
 
-const cellMigrationHandlers = require("./src/domains/cellMigration");
+const cellProvisioningHandlers = require('./cellProvisioning');
+exports.provisionTenantCell = cellProvisioningHandlers.provisionTenantCell;
+exports.peekTenantCell = cellProvisioningHandlers.peekTenantCell;
+
+const cellMigrationHandlers = require('./cellMigration');
 exports.startTenantMigration = cellMigrationHandlers.startTenantMigration;
 exports.markExportComplete = cellMigrationHandlers.markExportComplete;
 exports.markImportComplete = cellMigrationHandlers.markImportComplete;
@@ -32,7 +33,7 @@ const cellObservabilityHandlers = require('./cellObservability');
 exports.flagTenantForPromotion = cellObservabilityHandlers.flagTenantForPromotion;
 exports.acknowledgePromotionFlag = cellObservabilityHandlers.acknowledgePromotionFlag;
 exports.evaluateCellPromotions = cellObservabilityHandlers.evaluateCellPromotions;
-exports.purgeGatewayCaches = apiGatewayHandlers.purgeGatewayCaches;
+exports.purgeGatewayCaches = cellObservabilityHandlers.purgeGatewayCaches;
 
 const cellSeedHandlers = require('./cellSeed');
 exports.seedSyntheticTenant = cellSeedHandlers.seedSyntheticTenant;
@@ -48,12 +49,12 @@ exports.onAnalyticsLicenseWritten = analyticsTriggers.onLicenseWritten;
 
 const adminOps = require('./src/domains/adminOps');
 exports.updateUserRole = adminOps.updateUserRole;
-exports.syncUserClaims = require("./src/domains/claimsOps").syncUserClaims;
+exports.syncUserClaims = adminOps.syncUserClaims;
 exports.listTeamsForClub = adminOps.listTeamsForClub;
 exports.listJoinableClubs = adminOps.listJoinableClubs;
 exports.resolveDispatchCode = adminOps.resolveDispatchCode;
 exports.logSecurityAudit = adminOps.logSecurityAudit;
-exports.generateLicense = require("../functions-commerce/commerce").generateLicense;
+exports.generateLicense = adminOps.generateLicense;
 exports.directorSaveClubBranding = adminOps.directorSaveClubBranding;
 exports.directorInviteCoach = adminOps.directorInviteCoach;
 exports.claimCoachInvite = adminOps.claimCoachInvite;
@@ -64,17 +65,18 @@ exports.secureRemovePlayer = adminOps.secureRemovePlayer;
 exports.secureUpdateJersey = adminOps.secureUpdateJersey;
 exports.directorUpsertField = adminOps.directorUpsertField;
 exports.secureBookField = adminOps.secureBookField;
-exports.assignTenantClaims = require("./src/domains/claimsOps").assignTenantClaims;
+exports.assignTenantClaims = adminOps.assignTenantClaims;
 exports.executeSupportCommand = adminOps.executeSupportCommand;
 
 const operativeOps = require('./src/domains/operativeOps');
-exports.impersonateUserFn = require("./src/domains/claimsOps").impersonateUserFn;
+exports.impersonateUserFn = operativeOps.impersonateUserFn;
 exports.purgeUserDataFn = operativeOps.purgeUserDataFn;
+
 const globalAdminOs = require('./src/domains/globalAdminOs');
 exports.loginAs = globalAdminOs.loginAs;
 exports.rightToBeForgotten = globalAdminOs.rightToBeForgotten;
 exports.listAllUsers = globalAdminOs.listAllUsers;
-exports.repairUserClaims = require("./src/domains/claimsOps").repairUserClaims;
+exports.repairUserClaims = globalAdminOs.repairUserClaims;
 exports.resetUserPassword = globalAdminOs.resetUserPassword;
 exports.disableUser = globalAdminOs.disableUser;
 exports.purgeUser = globalAdminOs.purgeUser;
