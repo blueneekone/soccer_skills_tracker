@@ -19,7 +19,7 @@
 			body: 'Gamified Skill Trees, XP progression, Vanguard Prism radars, and video trial uploads driving intrinsic motivation and unyielding athlete engagement.',
 			href: '/player',
 			hoverColor: '#fbbf24',
-			cols: 'md:tw-col-span-4',
+			cols: 'md:tw-col-span-8',
 			bento: 'player'
 		},
 		{
@@ -43,7 +43,7 @@
 			body: 'COPPA 2.0 WebAuthn biometric gating, SafeSport Shadow CC routing, and the Car Ride Home emotional safety protocol.',
 			href: '/parent',
 			hoverColor: '#14b8a6',
-			cols: 'md:tw-col-span-4',
+			cols: 'md:tw-col-span-12',
 			bento: 'parent'
 		}
 	];
@@ -139,7 +139,7 @@
 			<p class="tw-text-[#D4D4D8] tw-mt-4 tw-max-w-2xl" style="font-family: 'Switzer', sans-serif;">Complete operational parity across your club's most critical personas.</p>
 		</div>
 
-		<!-- Symmetric: 4 / 4 / 4 column weighting -->
+		<!-- Asymmetric: 8 / 4 / 12 column weighting -->
 		<div class="tw-grid tw-grid-cols-1 md:tw-grid-cols-12 tw-gap-4 md:tw-gap-6">
 			{#each features as feat}
 				<div data-bento={feat.bento} class="tw-col-span-1 {feat.cols} tw-transition-all tw-duration-300 tw-h-full bento-wrapper">
