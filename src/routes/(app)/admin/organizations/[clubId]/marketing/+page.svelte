@@ -158,7 +158,8 @@
 					</div>
 
 					<button
-						class="tw-px-4 tw-py-2 tw-bg-[#14b8a6] hover:tw-bg-[#0d9488] tw-text-[#020617] tw-font-mono tw-text-xs tw-font-bold tw-uppercase tw-tracking-wider tw-transition-colors disabled:tw-opacity-50 tw-w-fit tw-mt-2"
+						type="button"
+						class="v-toolbar-btn tw-border-[#14b8a6] tw-text-[#14b8a6] hover:tw-bg-[#14b8a6]/10 tw-w-fit tw-mt-2"
 						onclick={saveConfigs}
 						disabled={saving}
 					>
@@ -211,14 +212,14 @@
 						<div class="tw-bg-[#020617] tw-border tw-border-[#334155] tw-p-3 tw-flex tw-flex-col tw-gap-2">
 							<div class="tw-flex tw-items-center tw-justify-between">
 								<span class="tw-text-[10px] tw-font-mono tw-font-bold tw-uppercase tw-text-[#94a3b8]">Generated URL</span>
-								<button class="tw-px-2 tw-py-0.5 tw-text-[10px] tw-font-mono tw-text-[#14b8a6] hover:tw-bg-[#14b8a6]/10 tw-border tw-border-[#14b8a6]/40" onclick={copyUrl}>Copy</button>
+								<button type="button" class="v-toolbar-btn tw-h-6 tw-px-2 tw-py-0 tw-text-[10px] tw-border-[#14b8a6]/40 tw-text-[#14b8a6] hover:tw-bg-[#14b8a6]/10" onclick={copyUrl}>Copy</button>
 							</div>
 							<div class="tw-text-xs tw-font-mono tw-text-[#14b8a6] tw-break-all">{generatedUrl}</div>
 						</div>
 
 						<div class="tw-flex tw-gap-3 tw-mt-2">
-							<button class="tw-flex-1 tw-px-3 tw-py-2 tw-bg-[#020617] hover:tw-bg-white/[0.04] tw-border tw-border-[#334155] tw-text-[#FAFAFA] tw-font-mono tw-text-xs tw-font-bold tw-transition-colors" onclick={shareToMeta}>Share to Meta</button>
-							<button class="tw-flex-1 tw-px-3 tw-py-2 tw-bg-[#020617] hover:tw-bg-white/[0.04] tw-border tw-border-[#334155] tw-text-[#FAFAFA] tw-font-mono tw-text-xs tw-font-bold tw-transition-colors" onclick={shareToX}>Share to X</button>
+							<button type="button" class="v-toolbar-btn tw-flex-1 tw-justify-center" onclick={shareToMeta}>Share to Meta</button>
+							<button type="button" class="v-toolbar-btn tw-flex-1 tw-justify-center" onclick={shareToX}>Share to X</button>
 						</div>
 					{/if}
 				</div>

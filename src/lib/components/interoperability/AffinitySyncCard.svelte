@@ -55,38 +55,38 @@
   }
 </script>
 
-<div class="tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-rounded-[24px] tw-p-8 tw-mt-8">
-  <h3 class="tw-text-[#FAFAFA] tw-text-xl tw-font-bold tw-mb-6">Affinity Sports API Sync</h3>
+<div class="tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-p-8 tw-mt-4">
+  <h3 class="tw-text-[#FAFAFA] tw-text-base tw-font-mono tw-font-bold tw-uppercase tw-tracking-wider tw-mb-6">Affinity Sports API Sync</h3>
   
   <div class="tw-grid tw-grid-cols-1 md:tw-grid-cols-3 tw-gap-6 tw-mb-8">
     <div>
-      <label for="sidcode" class="tw-block tw-text-sm tw-font-bold tw-text-[#D4D4D8] tw-mb-2">SIDCODE</label>
+      <label for="sidcode" class="tw-block tw-text-xs tw-font-mono tw-font-bold tw-text-[#D4D4D8] tw-uppercase tw-mb-2">SIDCODE</label>
       <input 
         id="sidcode"
         type="text" 
         bind:value={sidcode} 
         placeholder="e.g. AFC-001"
-        class="tw-w-full tw-bg-[#1e293b] tw-border tw-border-[#334155] tw-text-[#FAFAFA] tw-rounded-md tw-px-4 tw-py-2"
+        class="tw-w-full tw-bg-[#020617] tw-border tw-border-[#334155] tw-text-[#FAFAFA] tw-font-mono tw-text-xs tw-px-3 tw-py-2 focus:tw-outline-none focus:tw-border-[#14b8a6]"
       />
     </div>
     
     <div>
-      <label for="seasonId" class="tw-block tw-text-sm tw-font-bold tw-text-[#D4D4D8] tw-mb-2">SeasonID</label>
+      <label for="seasonId" class="tw-block tw-text-xs tw-font-mono tw-font-bold tw-text-[#D4D4D8] tw-uppercase tw-mb-2">SeasonID</label>
       <input 
         id="seasonId"
         type="text" 
         bind:value={seasonId} 
         placeholder="e.g. 2026-FALL"
-        class="tw-w-full tw-bg-[#1e293b] tw-border tw-border-[#334155] tw-text-[#FAFAFA] tw-rounded-md tw-px-4 tw-py-2"
+        class="tw-w-full tw-bg-[#020617] tw-border tw-border-[#334155] tw-text-[#FAFAFA] tw-font-mono tw-text-xs tw-px-3 tw-py-2 focus:tw-outline-none focus:tw-border-[#14b8a6]"
       />
     </div>
     
     <div>
-      <label for="teamSelect" class="tw-block tw-text-sm tw-font-bold tw-text-[#D4D4D8] tw-mb-2">Target Team</label>
+      <label for="teamSelect" class="tw-block tw-text-xs tw-font-mono tw-font-bold tw-text-[#D4D4D8] tw-uppercase tw-mb-2">Target Team</label>
       <select 
         id="teamSelect"
         bind:value={selectedTeamId}
-        class="tw-w-full tw-bg-[#1e293b] tw-border tw-border-[#334155] tw-text-[#FAFAFA] tw-rounded-md tw-px-4 tw-py-2"
+        class="tw-w-full tw-bg-[#020617] tw-border tw-border-[#334155] tw-text-[#FAFAFA] tw-font-mono tw-text-xs tw-px-3 tw-py-2 focus:tw-outline-none focus:tw-border-[#14b8a6]"
       >
         <option value="">-- Select Team --</option>
         {#each teams as team}
@@ -96,18 +96,19 @@
     </div>
   </div>
 
-  <div class="tw-flex tw-items-center tw-justify-between">
-    <div class="tw-font-mono tw-text-sm tw-text-[#A1A1AA]">
+  <div class="tw-flex tw-items-center tw-justify-between tw-flex-wrap tw-gap-4 tw-pt-4 tw-border-t tw-border-[#334155]">
+    <div class="tw-font-mono tw-text-xs tw-text-[#A1A1AA]">
       Last Sync: 
       {#if lastAffinitySyncAt}
-        <span class="tw-text-[#10B981]">{new Date(lastAffinitySyncAt).toLocaleString()}</span>
+        <span class="tw-text-[#14b8a6] tw-font-bold">{new Date(lastAffinitySyncAt).toLocaleString()}</span>
       {:else}
         <span class="tw-text-[#64748B]">Never</span>
       {/if}
     </div>
     
     <button 
-      class="tw-bg-[#FAFAFA] tw-text-[#0f172a] tw-font-bold tw-px-6 tw-py-2 tw-rounded-md tw-hover:bg-[#D4D4D8] tw-transition-colors disabled:opacity-50"
+      type="button"
+      class="v-toolbar-btn tw-border-[#14b8a6] tw-text-[#14b8a6] hover:tw-bg-[#14b8a6]/10"
       onclick={handleBind}
       disabled={isBinding || !sidcode || !seasonId || !selectedTeamId}
     >

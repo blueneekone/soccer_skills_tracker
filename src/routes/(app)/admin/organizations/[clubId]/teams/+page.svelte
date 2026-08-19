@@ -228,7 +228,7 @@
 
 		<button
 			type="button"
-			class="tw-inline-flex tw-items-center tw-gap-2 tw-px-4 tw-py-2 tw-bg-[#fbbf24] hover:tw-bg-[#f59e0b] tw-text-[#020617] tw-font-mono tw-text-xs tw-font-bold tw-uppercase tw-tracking-wider tw-transition-colors"
+			class="v-toolbar-btn tw-border-[#14b8a6] tw-text-[#14b8a6] hover:tw-bg-[#14b8a6]/10"
 			onclick={() => { showAddModal = true; modalErr = ''; }}
 		>
 			<Icon name={"action.add" as IconName} size={14} />
@@ -332,13 +332,13 @@
 								<div class="tw-flex tw-items-center tw-justify-end tw-gap-2">
 									<a
 										href="/admin/organizations/{clubId}/teams/{t.id}/roster"
-										class="tw-px-3 tw-py-1 tw-bg-[#14b8a6]/10 hover:tw-bg-[#14b8a6]/20 tw-border tw-border-[#14b8a6]/40 tw-text-[#14b8a6] tw-font-mono tw-text-xs tw-font-bold tw-transition-colors"
+										class="v-toolbar-btn tw-h-7 tw-px-2.5 tw-py-0 tw-text-xs tw-border-[#14b8a6]/40 tw-text-[#14b8a6] hover:tw-bg-[#14b8a6]/10"
 									>
 										Manage Roster &rarr;
 									</a>
 									<button
 										type="button"
-										class="tw-px-2 tw-py-1 tw-text-xs tw-font-mono tw-text-[#94a3b8] hover:tw-text-[#ef4444] hover:tw-bg-[#ef4444]/10 tw-border tw-border-[#334155] hover:tw-border-[#ef4444]/40 tw-transition-colors"
+										class="v-toolbar-btn tw-h-7 tw-px-2.5 tw-py-0 tw-text-xs tw-border-rose-500/40 tw-text-rose-400 hover:tw-border-rose-500 hover:tw-bg-rose-500/10"
 										title="Delete team"
 										onclick={() => handleDeleteTeam(t)}
 									>
@@ -380,50 +380,48 @@
 
 			<div class="tw-flex tw-flex-col tw-gap-3">
 				<div>
+					<label for="team-suffix-input" class="tw-block tw-text-xs tw-font-mono tw-font-bold tw-text-[#D4D4D8] tw-uppercase tw-mb-1">
+						Team ID Suffix <span class="tw-text-[#ef4444]">*</span>
+					</label>
+					<div class="tw-flex tw-items-center tw-gap-2">
+						<span class="tw-text-xs tw-font-mono tw-text-[#94a3b8]">{clubId}_</span>
+						<input
+							id="team-suffix-input"
+							type="text"
+							class="tw-w-full tw-bg-[#020617] tw-border tw-border-[#334155] tw-text-[#FAFAFA] tw-font-mono tw-text-xs tw-px-3 tw-py-2 focus:tw-outline-none focus:tw-border-[#14b8a6]"
+							bind:value={teamSuffix}
+							placeholder="e.g. 16g_grey"
+							disabled={teamSaving}
+						/>
+					</div>
+				</div>
+
+				<div>
 					<label for="team-name-input" class="tw-block tw-text-xs tw-font-mono tw-font-bold tw-text-[#D4D4D8] tw-uppercase tw-mb-1">
-						Team Name <span class="tw-text-[#ef4444]">*</span>
+						Display Name <span class="tw-text-[#ef4444]">*</span>
 					</label>
 					<input
 						id="team-name-input"
 						type="text"
 						class="tw-w-full tw-bg-[#020617] tw-border tw-border-[#334155] tw-text-[#FAFAFA] tw-font-mono tw-text-xs tw-px-3 tw-py-2 focus:tw-outline-none focus:tw-border-[#14b8a6]"
 						bind:value={teamName}
-						placeholder="e.g. Aggies FC U11 2016 Girls Grey"
+						placeholder="e.g. Aggies FC 2016G Grey"
 						disabled={teamSaving}
 					/>
 				</div>
 
-				<div class="tw-grid tw-grid-cols-2 tw-gap-3">
-					<div>
-						<label for="team-suffix-input" class="tw-block tw-text-xs tw-font-mono tw-font-bold tw-text-[#D4D4D8] tw-uppercase tw-mb-1">
-							Team ID Suffix <span class="tw-text-[#ef4444]">*</span>
-						</label>
-						<input
-							id="team-suffix-input"
-							type="text"
-							class="tw-w-full tw-bg-[#020617] tw-border tw-border-[#334155] tw-text-[#FAFAFA] tw-font-mono tw-text-xs tw-px-3 tw-py-2 focus:tw-outline-none focus:tw-border-[#14b8a6]"
-							bind:value={teamSuffix}
-							placeholder="e.g. u11g_grey"
-							disabled={teamSaving}
-						/>
-						<span class="tw-text-[10px] tw-font-mono tw-text-[#94a3b8] tw-mt-1 tw-block">
-							Full ID: <code>{clubId}_{teamSuffix.trim() || '...'}</code>
-						</span>
-					</div>
-
-					<div>
-						<label for="team-age-group-input" class="tw-block tw-text-xs tw-font-mono tw-font-bold tw-text-[#D4D4D8] tw-uppercase tw-mb-1">
-							Age Group / Tier
-						</label>
-						<input
-							id="team-age-group-input"
-							type="text"
-							class="tw-w-full tw-bg-[#020617] tw-border tw-border-[#334155] tw-text-[#FAFAFA] tw-font-mono tw-text-xs tw-px-3 tw-py-2 focus:tw-outline-none focus:tw-border-[#14b8a6]"
-							bind:value={ageGroup}
-							placeholder="e.g. U11 / Tier 1"
-							disabled={teamSaving}
-						/>
-					</div>
+				<div>
+					<label for="team-age-input" class="tw-block tw-text-xs tw-font-mono tw-font-bold tw-text-[#D4D4D8] tw-uppercase tw-mb-1">
+						Age Group / Division (Optional)
+					</label>
+					<input
+						id="team-age-input"
+						type="text"
+						class="tw-w-full tw-bg-[#020617] tw-border tw-border-[#334155] tw-text-[#FAFAFA] tw-font-mono tw-text-xs tw-px-3 tw-py-2 focus:tw-outline-none focus:tw-border-[#14b8a6]"
+						bind:value={ageGroup}
+						placeholder="e.g. U11 / Tier 1"
+						disabled={teamSaving}
+					/>
 				</div>
 
 				<div>
@@ -444,7 +442,7 @@
 			<div class="tw-flex tw-items-center tw-justify-end tw-gap-3 tw-pt-3 tw-border-t tw-border-[#334155]">
 				<button
 					type="button"
-					class="tw-px-4 tw-py-2 tw-text-xs tw-font-mono tw-font-bold tw-text-[#94a3b8] hover:tw-text-[#FAFAFA]"
+					class="v-toolbar-btn"
 					onclick={() => (showAddModal = false)}
 					disabled={teamSaving}
 				>
@@ -452,7 +450,7 @@
 				</button>
 				<button
 					type="button"
-					class="tw-px-4 tw-py-2 tw-bg-[#14b8a6] hover:tw-bg-[#0d9488] tw-text-[#020617] tw-font-mono tw-text-xs tw-font-bold tw-uppercase tw-tracking-wider tw-transition-colors disabled:tw-opacity-50"
+					class="v-toolbar-btn tw-border-[#14b8a6] tw-text-[#14b8a6] hover:tw-bg-[#14b8a6]/10"
 					onclick={handleCreateTeam}
 					disabled={teamSaving}
 				>

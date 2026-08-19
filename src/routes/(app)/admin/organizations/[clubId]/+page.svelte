@@ -381,7 +381,7 @@
 				</div>
 				<button
 					type="button"
-					class="tw-px-4 tw-py-2 tw-bg-[#14b8a6] hover:tw-bg-[#0d9488] tw-text-[#020617] tw-font-mono tw-text-xs tw-font-bold tw-uppercase tw-tracking-wider tw-transition-colors disabled:tw-opacity-50"
+					class="v-toolbar-btn tw-border-[#14b8a6] tw-text-[#14b8a6] hover:tw-bg-[#14b8a6]/10"
 					disabled={licenseBusy}
 					onclick={onGenerateLicense}
 				>
@@ -437,7 +437,7 @@
 
 				<button
 					type="button"
-					class="tw-px-4 tw-py-2 tw-bg-[#14b8a6] hover:tw-bg-[#0d9488] tw-text-[#020617] tw-font-mono tw-text-xs tw-font-bold tw-uppercase tw-tracking-wider tw-transition-colors disabled:tw-opacity-50"
+					class="v-toolbar-btn tw-border-[#14b8a6] tw-text-[#14b8a6] hover:tw-bg-[#14b8a6]/10"
 					onclick={saveClubEdit}
 					disabled={editSaving}
 				>
@@ -468,7 +468,7 @@
 					/>
 					<button
 						type="button"
-						class="tw-px-4 tw-py-2 tw-bg-[#14b8a6] hover:tw-bg-[#0d9488] tw-text-[#020617] tw-font-mono tw-text-xs tw-font-bold tw-uppercase tw-tracking-wider tw-transition-colors disabled:tw-opacity-50"
+						class="v-toolbar-btn tw-border-[#14b8a6] tw-text-[#14b8a6] hover:tw-bg-[#14b8a6]/10"
 						onclick={assignDirector}
 						disabled={assignDirSaving}
 					>
@@ -489,7 +489,7 @@
 			</p>
 			<button
 				type="button"
-				class="tw-inline-flex tw-items-center tw-justify-center tw-gap-2 tw-w-fit tw-px-4 tw-py-2 tw-mt-2 tw-font-mono tw-text-xs tw-font-bold tw-uppercase tw-tracking-wider tw-border tw-border-[#ef4444]/50 tw-text-[#ef4444] hover:tw-bg-[#ef4444]/10 tw-transition-colors"
+				class="v-toolbar-btn tw-border-rose-500/40 tw-text-rose-400 hover:tw-border-rose-500 hover:tw-bg-rose-500/10 tw-w-fit"
 				onclick={handleDeleteRequest}
 			>
 				<Icon name={"action.delete" as IconName} size={14} />
@@ -517,8 +517,8 @@
 							You are about to permanently delete <span class="tw-text-[#FAFAFA] tw-font-bold">"{ctx.clubDoc?.name || ctx.clubId}"</span>. This will destroy the organization metadata.
 						</p>
 						<div class="tw-flex tw-items-center tw-justify-end tw-gap-3 tw-mt-3 tw-pt-3 tw-border-t tw-border-[#334155]">
-							<button type="button" class="tw-px-4 tw-py-2 tw-text-xs tw-font-mono tw-font-bold tw-text-[#94a3b8] hover:tw-text-[#FAFAFA]" onclick={() => deleteModalOpen = false}>Cancel</button>
-							<button type="button" class="tw-px-4 tw-py-2 tw-bg-[#fbbf24] hover:tw-bg-[#f59e0b] tw-text-[#020617] tw-font-mono tw-text-xs tw-font-bold tw-uppercase tw-tracking-wider" onclick={advanceDelete}>Yes, proceed</button>
+							<button type="button" class="v-toolbar-btn" onclick={() => deleteModalOpen = false}>Cancel</button>
+							<button type="button" class="v-toolbar-btn tw-border-amber-500 tw-text-amber-400 hover:tw-bg-amber-500/10" onclick={advanceDelete}>Yes, proceed</button>
 						</div>
 					{:else if deleteConfirmStep === 2}
 						<p class="tw-m-0 tw-flex tw-items-center tw-gap-2 tw-text-xs tw-font-mono tw-font-bold tw-tracking-wider tw-uppercase tw-text-[#ef4444]">
@@ -529,8 +529,8 @@
 							This is a destructive action that cannot be undone. Are you absolutely certain you want to annihilate this organization?
 						</p>
 						<div class="tw-flex tw-items-center tw-justify-end tw-gap-3 tw-mt-3 tw-pt-3 tw-border-t tw-border-[#334155]">
-							<button type="button" class="tw-px-4 tw-py-2 tw-text-xs tw-font-mono tw-font-bold tw-text-[#94a3b8] hover:tw-text-[#FAFAFA]" disabled={deleteExecuting} onclick={() => deleteModalOpen = false}>Cancel</button>
-							<button type="button" class="tw-px-4 tw-py-2 tw-bg-[#ef4444] hover:tw-bg-[#dc2626] tw-text-[#FAFAFA] tw-font-mono tw-text-xs tw-font-bold tw-uppercase tw-tracking-wider" disabled={deleteExecuting} onclick={executeDeletion}>
+							<button type="button" class="v-toolbar-btn" disabled={deleteExecuting} onclick={() => deleteModalOpen = false}>Cancel</button>
+							<button type="button" class="v-toolbar-btn tw-border-rose-500 tw-text-rose-400 hover:tw-bg-rose-500/10" disabled={deleteExecuting} onclick={executeDeletion}>
 								{deleteExecuting ? 'Deleting…' : 'Delete Permanently'}
 							</button>
 						</div>

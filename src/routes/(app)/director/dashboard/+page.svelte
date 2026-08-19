@@ -25,6 +25,7 @@
 	import DirectorRetentionReport from '$lib/components/compliance/DirectorRetentionReport.svelte';
 	import WeatherAlert from '$lib/components/weather/WeatherAlert.svelte';
 	import VampireImporter from '$lib/components/interoperability/VampireImporter.svelte';
+	import AffinitySyncCard from '$lib/components/interoperability/AffinitySyncCard.svelte';
 	import { teamsStore } from '$lib/stores/teams.svelte.js';
 	import { workspaceContextStore } from '$lib/stores/workspaceContext.svelte.js';
 
@@ -239,12 +240,15 @@
 		{:else if activeTab === 'retention'}
 			<DirectorRetentionReport />
 		{:else if activeTab === 'sync'}
-			<div class="tw-p-6 tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-rounded-none">
-				<h2 class="tw-text-xl tw-font-bold tw-text-amber-500 tw-mb-6 tw-flex tw-items-center tw-gap-2">
-					<Icon name={"nav.swap" as IconName} size={24} />
-					Data Sync
-				</h2>
-				<VampireImporter {clubId} />
+			<div class="tw-flex tw-flex-col tw-gap-6 tw-w-full">
+				<div class="tw-p-6 tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-rounded-none">
+					<h2 class="tw-text-xl tw-font-bold tw-text-amber-500 tw-mb-6 tw-flex tw-items-center tw-gap-2">
+						<Icon name={"nav.swap" as IconName} size={24} />
+						Data Sync &amp; Roster Ingestion
+					</h2>
+					<VampireImporter {clubId} />
+				</div>
+				<AffinitySyncCard {clubId} />
 			</div>
 		{:else}
 			<p class="director-console-fallback">Unknown section. Use the sidebar to navigate.</p>

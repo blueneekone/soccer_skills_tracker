@@ -493,7 +493,7 @@
 		<div class="roster-toolbar__right">
 			<button
 				type="button"
-				class="tw-inline-flex tw-items-center tw-gap-1.5 tw-px-3.5 tw-py-1.5 tw-bg-[#fbbf24] hover:tw-bg-[#f59e0b] tw-text-[#020617] tw-font-sans tw-text-xs tw-font-extrabold tw-uppercase tw-tracking-wider tw-transition-colors"
+				class="v-toolbar-btn tw-border-[#14b8a6] tw-text-[#14b8a6] hover:tw-bg-[#14b8a6]/10"
 				onclick={() => { showAddAthleteModal = true; athleteAddErr = ''; }}
 			>
 				<Icon name={"action.add" as IconName} />
@@ -766,7 +766,7 @@
 			<div class="tw-flex tw-items-center tw-justify-end tw-gap-3 tw-pt-3 tw-border-t tw-border-[#334155]">
 				<button
 					type="button"
-					class="tw-px-4 tw-py-2 tw-text-xs tw-font-mono tw-font-bold tw-text-[#94a3b8] hover:tw-text-[#FAFAFA]"
+					class="v-toolbar-btn"
 					onclick={() => (showAddAthleteModal = false)}
 					disabled={athleteSaving}
 				>
@@ -774,7 +774,7 @@
 				</button>
 				<button
 					type="button"
-					class="tw-px-4 tw-py-2 tw-bg-[#14b8a6] hover:tw-bg-[#0d9488] tw-text-[#020617] tw-font-sans tw-text-xs tw-font-extrabold tw-uppercase tw-tracking-wider tw-transition-colors disabled:tw-opacity-50"
+					class="v-toolbar-btn tw-border-[#14b8a6] tw-text-[#14b8a6] hover:tw-bg-[#14b8a6]/10"
 					onclick={handleAddAthlete}
 					disabled={athleteSaving}
 				>

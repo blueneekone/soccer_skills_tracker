@@ -264,7 +264,7 @@
 
 		<button
 			type="button"
-			class="tw-inline-flex tw-items-center tw-gap-2 tw-px-4 tw-py-2 tw-bg-[#fbbf24] hover:tw-bg-[#f59e0b] tw-text-[#020617] tw-font-mono tw-text-xs tw-font-bold tw-uppercase tw-tracking-wider tw-transition-colors"
+			class="v-toolbar-btn tw-border-[#14b8a6] tw-text-[#14b8a6] hover:tw-bg-[#14b8a6]/10"
 			onclick={() => { showAddModal = true; addErr = ''; }}
 		>
 			<Icon name={"action.add" as IconName} size={14} />
@@ -408,7 +408,7 @@
 							<td class="tw-px-4 tw-py-3.5 tw-text-right">
 								<button
 									type="button"
-									class="tw-px-2.5 tw-py-1 tw-text-xs tw-font-mono tw-text-[#94a3b8] hover:tw-text-[#ef4444] hover:tw-bg-[#ef4444]/10 tw-border tw-border-[#334155] hover:tw-border-[#ef4444]/40 tw-transition-colors"
+									class="v-toolbar-btn tw-h-7 tw-px-2.5 tw-py-0 tw-text-xs tw-border-rose-500/40 tw-text-rose-400 hover:tw-border-rose-500 hover:tw-bg-rose-500/10"
 									title="Remove from this organization"
 									onclick={() => handleRemoveFromOrg(user)}
 								>
@@ -497,7 +497,7 @@
 			<div class="tw-flex tw-items-center tw-justify-end tw-gap-3 tw-pt-3 tw-border-t tw-border-[#334155]">
 				<button
 					type="button"
-					class="tw-px-4 tw-py-2 tw-text-xs tw-font-mono tw-font-bold tw-text-[#94a3b8] hover:tw-text-[#FAFAFA]"
+					class="v-toolbar-btn"
 					onclick={() => (showAddModal = false)}
 					disabled={addSaving}
 				>
@@ -505,7 +505,7 @@
 				</button>
 				<button
 					type="button"
-					class="tw-px-4 tw-py-2 tw-bg-[#14b8a6] hover:tw-bg-[#0d9488] tw-text-[#020617] tw-font-mono tw-text-xs tw-font-bold tw-uppercase tw-tracking-wider tw-transition-colors disabled:tw-opacity-50"
+					class="v-toolbar-btn tw-border-[#14b8a6] tw-text-[#14b8a6] hover:tw-bg-[#14b8a6]/10"
 					onclick={handleAddUser}
 					disabled={addSaving}
 				>

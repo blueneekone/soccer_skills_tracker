@@ -26,16 +26,16 @@
 				</div>
 
 				<div class="tw-flex tw-flex-col tw-gap-2.5 tw-justify-center">
-					<button onclick={() => engine.executeCommand('resetUserPassword', { targetEmail: engine.userEmail })} class="tw-bg-[#020617] tw-border tw-border-amber-500/40 hover:tw-border-amber-500 hover:tw-bg-amber-500/10 tw-text-amber-400 tw-font-mono tw-text-xs tw-font-bold tw-py-2.5 tw-px-4 tw-transition-all tw-flex tw-items-center tw-gap-2.5">
+					<button type="button" onclick={() => engine.executeCommand('resetUserPassword', { targetEmail: engine.userEmail })} class="v-toolbar-btn tw-border-amber-500/40 tw-text-amber-400 hover:tw-border-amber-500 hover:tw-bg-amber-500/10">
 						<Icon name={"comm.mail" as IconName} size={14} class="tw-text-amber-400" /> Send Password Reset
 					</button>
-					<button onclick={() => engine.executeCommand('disableUser', { targetUid: engine.userUid, disabled: true })} class="tw-bg-[#020617] tw-border tw-border-amber-500/40 hover:tw-border-amber-500 hover:tw-bg-amber-500/10 tw-text-amber-400 tw-font-mono tw-text-xs tw-font-bold tw-py-2.5 tw-px-4 tw-transition-all tw-flex tw-items-center tw-gap-2.5">
+					<button type="button" onclick={() => engine.executeCommand('disableUser', { targetUid: engine.userUid, disabled: true })} class="v-toolbar-btn tw-border-amber-500/40 tw-text-amber-400 hover:tw-border-amber-500 hover:tw-bg-amber-500/10">
 						<Icon name={"sys.ban" as IconName} size={14} /> Disable Account
 					</button>
-					<button onclick={() => engine.executeCommand('disableUser', { targetUid: engine.userUid, disabled: false })} class="tw-bg-[#020617] tw-border tw-border-[#14b8a6]/40 hover:tw-border-[#14b8a6] hover:tw-bg-[#14b8a6]/10 tw-text-[#14b8a6] tw-font-mono tw-text-xs tw-font-bold tw-py-2.5 tw-px-4 tw-transition-all tw-flex tw-items-center tw-gap-2.5">
+					<button type="button" onclick={() => engine.executeCommand('disableUser', { targetUid: engine.userUid, disabled: false })} class="v-toolbar-btn tw-border-[#14b8a6]/40 tw-text-[#14b8a6] hover:tw-border-[#14b8a6] hover:tw-bg-[#14b8a6]/10">
 						<Icon name={"status.check-square" as IconName} size={14} /> Enable Account
 					</button>
-					<button onclick={() => engine.executeCommand('purgeUser', { targetUid: engine.userUid, targetEmail: engine.userEmail })} class="tw-bg-[#020617] tw-border tw-border-rose-500/40 hover:tw-border-rose-500 hover:tw-bg-rose-500/10 tw-text-rose-400 tw-font-mono tw-text-xs tw-font-bold tw-py-2.5 tw-px-4 tw-transition-all tw-flex tw-items-center tw-gap-2.5">
+					<button type="button" onclick={() => engine.executeCommand('purgeUser', { targetUid: engine.userUid, targetEmail: engine.userEmail })} class="v-toolbar-btn tw-border-rose-500/40 tw-text-rose-400 hover:tw-border-rose-500 hover:tw-bg-rose-500/10">
 						<Icon name={"status.shield-alert" as IconName} size={14} /> CASCADE PURGE USER
 					</button>
 				</div>
@@ -67,10 +67,10 @@
 						</div>
 					</div>
 					<div class="tw-flex tw-flex-row tw-gap-2 tw-mt-2">
-						<button onclick={() => engine.executeCommand('createTeam', { clubId: engine.teamClubId, teamName: engine.teamName, ageGroup: engine.teamAgeGroup, gender: engine.teamGender, sport: engine.teamSport })} class="tw-bg-[#14b8a6] hover:tw-bg-[#0d9488] tw-text-[#020617] tw-font-mono tw-text-xs tw-font-bold tw-uppercase tw-tracking-wider tw-py-2.5 tw-px-4 tw-flex-1 tw-flex tw-items-center tw-justify-center tw-gap-2 tw-transition-colors">
+						<button type="button" onclick={() => engine.executeCommand('createTeam', { clubId: engine.teamClubId, teamName: engine.teamName, ageGroup: engine.teamAgeGroup, gender: engine.teamGender, sport: engine.teamSport })} class="v-toolbar-btn tw-border-[#14b8a6] tw-text-[#14b8a6] hover:tw-bg-[#14b8a6]/10 tw-flex-1 tw-justify-center">
 							<Icon name={"action.add" as IconName} size={14} /> Create Team
 						</button>
-						<button onclick={() => engine.executeCommand('deleteTeam', { clubId: engine.teamClubId, teamId: engine.teamName })} class="tw-bg-[#020617] tw-border tw-border-rose-500/40 hover:tw-border-rose-500 hover:tw-bg-rose-500/10 tw-text-rose-400 tw-font-mono tw-text-xs tw-font-bold tw-py-2.5 tw-px-4 tw-flex-1 tw-flex tw-items-center tw-justify-center tw-gap-2 tw-transition-colors" title="Put Team ID in the Team Name field">
+						<button type="button" onclick={() => engine.executeCommand('deleteTeam', { clubId: engine.teamClubId, teamId: engine.teamName })} class="v-toolbar-btn tw-border-rose-500/40 tw-text-rose-400 hover:tw-border-rose-500 hover:tw-bg-rose-500/10 tw-flex-1 tw-justify-center" title="Put Team ID in the Team Name field">
 							<Icon name={"action.delete" as IconName} size={14} /> Delete Team
 						</button>
 					</div>
@@ -102,7 +102,7 @@
 						</div>
 					</div>
 					<div class="tw-flex tw-flex-col tw-mt-2">
-						<button onclick={() => engine.executeCommand('linkUserToTeam', { targetEmail: engine.linkEmail, role: engine.linkRole, clubId: engine.linkClubId, teamId: engine.linkTeamId })} class="tw-bg-[#fbbf24] hover:tw-bg-[#f59e0b] tw-text-[#020617] tw-font-mono tw-text-xs tw-font-bold tw-uppercase tw-tracking-wider tw-py-2.5 tw-px-4 tw-flex tw-items-center tw-justify-center tw-gap-2 tw-transition-colors">
+						<button type="button" onclick={() => engine.executeCommand('linkUserToTeam', { targetEmail: engine.linkEmail, role: engine.linkRole, clubId: engine.linkClubId, teamId: engine.linkTeamId })} class="v-toolbar-btn tw-border-amber-500 tw-text-amber-400 hover:tw-bg-amber-500/10 tw-justify-center">
 							<Icon name={"action.add" as IconName} size={14} /> Link User to Team
 						</button>
 					</div>
@@ -142,7 +142,7 @@
 				</div>
 
 				<div class="tw-flex tw-flex-col tw-justify-end">
-					<button onclick={() => engine.executeCommand('repairUserClaims', { targetEmail: engine.repairEmail, role: engine.repairRole, clubId: engine.repairClubId || null, teamId: engine.repairTeamId || null })} class="tw-bg-[#fbbf24] hover:tw-bg-[#f59e0b] tw-text-[#020617] tw-font-mono tw-text-xs tw-font-bold tw-uppercase tw-tracking-wider tw-py-3 tw-px-4 tw-flex tw-items-center tw-justify-center tw-gap-2 tw-transition-colors">
+					<button type="button" onclick={() => engine.executeCommand('repairUserClaims', { targetEmail: engine.repairEmail, role: engine.repairRole, clubId: engine.repairClubId || null, teamId: engine.repairTeamId || null })} class="v-toolbar-btn tw-border-amber-500 tw-text-amber-400 hover:tw-bg-amber-500/10 tw-justify-center">
 						<Icon name={"status.shield-check" as IconName} size={14} /> Repair Custom Claims
 					</button>
 				</div>
@@ -153,7 +153,7 @@
 			<h2 class="tw-text-sm tw-font-mono tw-font-bold tw-text-[#FAFAFA] tw-uppercase tw-tracking-wider tw-mb-5">System Data</h2>
 			<div class="tw-flex tw-flex-col tw-gap-4">
 				<p class="tw-text-xs tw-font-mono tw-text-[#94A3B8] tw-m-0">Database health stats and user query logs.</p>
-				<button onclick={() => engine.executeCommand('listAllUsers', { maxResults: 10 })} class="tw-bg-[#020617] tw-border tw-border-[#14b8a6]/40 hover:tw-border-[#14b8a6] hover:tw-bg-[#14b8a6]/10 tw-text-[#14b8a6] tw-font-mono tw-text-xs tw-font-bold tw-py-2.5 tw-px-4 tw-text-left tw-transition-colors tw-flex tw-items-center tw-gap-2 tw-w-fit">
+				<button type="button" onclick={() => engine.executeCommand('listAllUsers', { maxResults: 10 })} class="v-toolbar-btn tw-border-[#14b8a6] tw-text-[#14b8a6] hover:tw-bg-[#14b8a6]/10 tw-w-fit">
 					<Icon name={"user.group" as IconName} size={14} /> Fetch Recent Users (List 10)
 				</button>
 			</div>
