@@ -23,4 +23,12 @@ describe('CDO Protocol: Marketing Landing Page Audit', () => {
 		expect(PageSource).not.toMatch(/\/60/);
 		expect(PageSource).not.toMatch(/-\[0\.03\]/);
 	});
+
+	it('MUST enforce a brutalist headline under 10 words', () => {
+		const h1Match = PageSource.match(/<h1[^>]*>([\s\S]*?)<\/h1>/i);
+		expect(h1Match).not.toBeNull();
+		const h1Text = h1Match![1].replace(/<[^>]*>/g, '').trim();
+		const wordCount = h1Text.split(/\s+/).filter(Boolean).length;
+		expect(wordCount).toBeLessThan(10);
+	});
 });
