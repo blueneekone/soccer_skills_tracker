@@ -9,7 +9,7 @@ import {
 	loadLogWorkoutChildSnapshot,
 	parsePlayerStatsHud,
 	resolveChildAthleteUid,
-} from '$lib/parent/logWorkoutChildProfile.js';
+} from '$lib/parent/logWorkoutChildProfile.ts';
 
 const PAGE = join(process.cwd(), 'src/routes/(app)/parent/log-workout/+page.svelte');
 

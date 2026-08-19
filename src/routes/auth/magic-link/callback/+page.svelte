@@ -38,14 +38,23 @@
 			untrack(() => {
 				void navigateAfterLogin({ replaceState: true });
 			});
-		} catch (err) {
-			errorMsg = err instanceof Error ? err.message : 'Sign-in failed. Request a new link.';
+		} catch (err: any) {
+			const m = err?.message || '';
+			if (m.includes('auth/invalid-action-code') || m.includes('INVALID_OOB_CODE')) {
+				errorMsg = 'This magic link has already been used or expired. Please request a new one.';
+			} else {
+				errorMsg = err instanceof Error ? err.message : 'Sign-in failed. Request a new link.';
+			}
 			phase = 'error';
 		}
 	}
 
+	let initialized = false;
+
 	$effect(() => {
-		if (!browser) return;
+		if (!browser || initialized) return;
+		initialized = true;
+
 		if (!isSignInWithEmailLink(auth, window.location.href)) {
 			errorMsg = 'This link is invalid or has expired. Request a new magic link.';
 			phase = 'error';

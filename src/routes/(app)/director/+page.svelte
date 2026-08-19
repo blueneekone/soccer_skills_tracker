@@ -149,7 +149,7 @@
 	{:else if activeTab === 'comms'}
 		<section class="director-console-page__section">
 
-			<!-- channel=club_wide hub CTA -->
+			<!-- Director Comms Compliance Panel -->
 			<DirectorCommsCompliancePanel {clubId} teams={clubTeams} />
 		</section>
 	{:else}
