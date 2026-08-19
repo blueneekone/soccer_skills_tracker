@@ -213,7 +213,7 @@
 	<title>Organization Teams · NEXUS COMMAND</title>
 </svelte:head>
 
-<div class="tw-flex tw-flex-col tw-gap-5 tw-p-6">
+<div class="tw-flex tw-flex-col tw-gap-5 tw-w-full">
 	<!-- Page Header -->
 	<div class="tw-flex tw-flex-wrap tw-items-center tw-justify-between tw-gap-4">
 		<div class="tw-flex tw-flex-col tw-gap-1">
@@ -228,32 +228,32 @@
 
 		<button
 			type="button"
-			class="tw-inline-flex tw-items-center tw-gap-2 tw-px-4 tw-py-2 tw-bg-[#fbbf24] hover:tw-bg-[#f59e0b] tw-text-[#020617] tw-font-sans tw-text-xs tw-font-extrabold tw-uppercase tw-tracking-wider tw-transition-colors"
+			class="tw-inline-flex tw-items-center tw-gap-2 tw-px-4 tw-py-2 tw-bg-[#fbbf24] hover:tw-bg-[#f59e0b] tw-text-[#020617] tw-font-mono tw-text-xs tw-font-bold tw-uppercase tw-tracking-wider tw-transition-colors"
 			onclick={() => { showAddModal = true; modalErr = ''; }}
 		>
-			<Icon name={"action.add" as IconName} />
+			<Icon name={"action.add" as IconName} size={14} />
 			Add Team
 		</button>
 	</div>
 
 	<!-- Flash Messages -->
 	{#if error}
-		<div class="tw-p-4 tw-bg-[#1E293B] tw-border tw-border-[#ef4444] tw-text-[#ef4444] tw-font-mono tw-text-xs tw-font-bold tw-flex tw-items-center tw-gap-2" role="alert">
+		<div class="tw-p-3.5 tw-bg-[#1E293B] tw-border tw-border-[#ef4444] tw-text-[#ef4444] tw-font-mono tw-text-xs tw-font-bold tw-flex tw-items-center tw-gap-2" role="alert">
 			<Icon name={"status.warning-triangle" as IconName} />
 			<span>{error}</span>
 		</div>
 	{/if}
 	{#if successMsg}
-		<div class="tw-p-4 tw-bg-[#1E293B] tw-border tw-border-[#14b8a6] tw-text-[#14b8a6] tw-font-mono tw-text-xs tw-font-bold tw-flex tw-items-center tw-gap-2" role="status">
+		<div class="tw-p-3.5 tw-bg-[#1E293B] tw-border tw-border-[#14b8a6] tw-text-[#14b8a6] tw-font-mono tw-text-xs tw-font-bold tw-flex tw-items-center tw-gap-2" role="status">
 			<Icon name={"status.check" as IconName} />
 			<span>{successMsg}</span>
 		</div>
 	{/if}
 
 	<!-- Search Toolbar -->
-	<div class="tw-flex tw-items-center tw-justify-between tw-gap-3 tw-bg-[#0f172a] tw-p-3.5 tw-border tw-border-[#334155]">
+	<div class="tw-flex tw-items-center tw-justify-between tw-gap-3 tw-bg-[#0f172a] tw-p-3 tw-border tw-border-[#334155]">
 		<div class="tw-flex tw-items-center tw-gap-2 tw-flex-1 tw-max-w-md">
-			<Icon name={"action.search" as IconName} class="tw-text-[#94a3b8]" />
+			<Icon name={"action.search" as IconName} size={14} class="tw-text-[#94a3b8]" />
 			<input
 				type="search"
 				class="tw-w-full tw-bg-[#020617] tw-border tw-border-[#334155] tw-text-[#FAFAFA] tw-font-mono tw-text-xs tw-px-3 tw-py-1.5 focus:tw-outline-none focus:tw-border-[#14b8a6]"
@@ -267,102 +267,100 @@
 	</div>
 
 	<!-- Teams Table -->
-	<div class="tw-w-full tw-overflow-x-auto tw-border tw-border-[#334155] tw-bg-[#020617]">
-		<div class="tw-border tw-border-[#334155] tw-bg-[#0f172a] tw-p-4 tw-min-w-0 tw-overflow-x-auto">
-			<table class="tw-w-full tw-font-mono tw-text-sm tw-min-w-[700px] tw-text-left tw-border-collapse">
-				<thead class="tw-sticky tw-top-0 tw-z-10 tw-bg-[#020617] tw-border-b tw-border-[#334155]">
+	<div class="tw-w-full tw-overflow-x-auto tw-border tw-border-[#334155] tw-bg-[#0f172a]">
+		<table class="tw-w-full tw-font-mono tw-text-sm tw-min-w-[700px] tw-text-left tw-border-collapse">
+			<thead class="tw-sticky tw-top-0 tw-z-10 tw-bg-[#020617] tw-border-b tw-border-[#334155]">
+				<tr>
+					<th class="tw-px-4 tw-py-3 tw-text-xs tw-font-extrabold tw-tracking-wider tw-uppercase tw-text-[#D4D4D8]">Squad Name</th>
+					<th class="tw-px-4 tw-py-3 tw-text-xs tw-font-extrabold tw-tracking-wider tw-uppercase tw-text-[#D4D4D8]">Team ID</th>
+					<th class="tw-px-4 tw-py-3 tw-text-xs tw-font-extrabold tw-tracking-wider tw-uppercase tw-text-[#D4D4D8]">Head Coach</th>
+					<th class="tw-px-4 tw-py-3 tw-text-xs tw-font-extrabold tw-tracking-wider tw-uppercase tw-text-[#D4D4D8] tw-text-right">Actions</th>
+				</tr>
+			</thead>
+			<tbody>
+				{#if loading}
 					<tr>
-						<th class="tw-px-4 tw-py-3 tw-text-xs tw-font-extrabold tw-tracking-wider tw-uppercase tw-text-[#D4D4D8]">Squad Name</th>
-						<th class="tw-px-4 tw-py-3 tw-text-xs tw-font-extrabold tw-tracking-wider tw-uppercase tw-text-[#D4D4D8]">Team ID</th>
-						<th class="tw-px-4 tw-py-3 tw-text-xs tw-font-extrabold tw-tracking-wider tw-uppercase tw-text-[#D4D4D8]">Head Coach</th>
-						<th class="tw-px-4 tw-py-3 tw-text-xs tw-font-extrabold tw-tracking-wider tw-uppercase tw-text-[#D4D4D8] tw-text-right">Actions</th>
+						<td colspan="4" class="tw-px-4 tw-py-12 tw-text-center tw-text-xs tw-font-mono tw-text-[#94a3b8]">
+							<span class="tw-inline-block tw-animate-spin tw-mr-2">⟳</span> Loading teams...
+						</td>
 					</tr>
-				</thead>
-				<tbody>
-					{#if loading}
-						<tr>
-							<td colspan="4" class="tw-px-4 tw-py-12 tw-text-center tw-text-sm tw-font-bold tw-text-[#94a3b8]">
-								<span class="tw-inline-block tw-animate-spin tw-mr-2">⟳</span> Loading teams...
+				{:else if filteredTeams.length === 0}
+					<tr>
+						<td colspan="4" class="tw-px-4 tw-py-12 tw-text-center tw-text-xs tw-font-mono tw-text-[#94a3b8]">
+							{localTeams.length === 0 ? 'No teams created for this organization yet. Click "+ Add Team" to create one.' : 'No teams match your search.'}
+						</td>
+					</tr>
+				{:else}
+					{#each filteredTeams as t (t.id)}
+						<tr class="tw-border-b tw-border-[#334155]/60 hover:tw-bg-[#020617] tw-transition-colors last:tw-border-none">
+							<!-- Team Name & Age Group -->
+							<td class="tw-px-4 tw-py-3.5">
+								<div class="tw-flex tw-items-center tw-gap-2.5">
+									<div class="tw-w-7 tw-h-7 tw-bg-[#14b8a6]/10 tw-border tw-border-[#14b8a6]/30 tw-flex tw-items-center tw-justify-center tw-text-[#14b8a6]">
+										<Icon name={"user.group" as IconName} size={14} />
+									</div>
+									<div class="tw-flex tw-flex-col">
+										<span class="tw-text-xs tw-font-mono tw-font-bold tw-text-[#FAFAFA]">{t.name}</span>
+										{#if t.ageGroup}
+											<span class="tw-text-[10px] tw-font-mono tw-text-[#94a3b8]">{t.ageGroup}</span>
+										{/if}
+									</div>
+								</div>
+							</td>
+
+							<!-- Team ID -->
+							<td class="tw-px-4 tw-py-3.5">
+								<code class="tw-px-2 tw-py-0.5 tw-bg-[#020617] tw-border tw-border-[#334155] tw-text-xs tw-text-[#14b8a6] tw-font-mono">
+									{t.id}
+								</code>
+							</td>
+
+							<!-- Head Coach -->
+							<td class="tw-px-4 tw-py-3.5">
+								{#if t.coachEmail}
+									<div class="tw-flex tw-items-center tw-gap-2">
+										<span class="tw-w-2 tw-h-2 tw-rounded-full tw-bg-[#14b8a6]"></span>
+										<span class="tw-text-xs tw-font-mono tw-text-[#FAFAFA]">{t.coachEmail}</span>
+									</div>
+								{:else}
+									<span class="tw-text-xs tw-font-mono tw-text-[#64748b] tw-italic">Unassigned</span>
+								{/if}
+							</td>
+
+							<!-- Actions -->
+							<td class="tw-px-4 tw-py-3.5 tw-text-right">
+								<div class="tw-flex tw-items-center tw-justify-end tw-gap-2">
+									<a
+										href="/admin/organizations/{clubId}/teams/{t.id}/roster"
+										class="tw-px-3 tw-py-1 tw-bg-[#14b8a6]/10 hover:tw-bg-[#14b8a6]/20 tw-border tw-border-[#14b8a6]/40 tw-text-[#14b8a6] tw-font-mono tw-text-xs tw-font-bold tw-transition-colors"
+									>
+										Manage Roster &rarr;
+									</a>
+									<button
+										type="button"
+										class="tw-px-2 tw-py-1 tw-text-xs tw-font-mono tw-text-[#94a3b8] hover:tw-text-[#ef4444] hover:tw-bg-[#ef4444]/10 tw-border tw-border-[#334155] hover:tw-border-[#ef4444]/40 tw-transition-colors"
+										title="Delete team"
+										onclick={() => handleDeleteTeam(t)}
+									>
+										Delete
+									</button>
+								</div>
 							</td>
 						</tr>
-					{:else if filteredTeams.length === 0}
-						<tr>
-							<td colspan="4" class="tw-px-4 tw-py-12 tw-text-center tw-text-sm tw-font-bold tw-text-[#94a3b8]">
-								{localTeams.length === 0 ? 'No teams created for this organization yet. Click "+ Add Team" to create one.' : 'No teams match your search.'}
-							</td>
-						</tr>
-					{:else}
-						{#each filteredTeams as t (t.id)}
-							<tr class="tw-border-b tw-border-[#334155]/60 hover:tw-bg-[#0B0F19] tw-transition-colors last:tw-border-none">
-								<!-- Team Name & Age Group -->
-								<td class="tw-px-4 tw-py-3.5">
-									<div class="tw-flex items-center tw-gap-2.5">
-										<div class="tw-w-7 tw-h-7 tw-rounded tw-bg-[#14b8a6]/10 tw-border tw-border-[#14b8a6]/30 tw-flex tw-items-center tw-justify-center tw-text-[#14b8a6]">
-											<Icon name={"user.group" as IconName} size={14} />
-										</div>
-										<div class="tw-flex tw-flex-col">
-											<span class="tw-text-sm tw-font-sans tw-font-bold tw-text-[#FAFAFA]">{t.name}</span>
-											{#if t.ageGroup}
-												<span class="tw-text-[11px] tw-font-mono tw-text-[#94a3b8]">{t.ageGroup}</span>
-											{/if}
-										</div>
-									</div>
-								</td>
-
-								<!-- Team ID -->
-								<td class="tw-px-4 tw-py-3.5">
-									<code class="tw-px-2 tw-py-0.5 tw-bg-[#020617] tw-border tw-border-[#334155] tw-text-xs tw-text-[#14b8a6] tw-font-mono">
-										{t.id}
-									</code>
-								</td>
-
-								<!-- Head Coach -->
-								<td class="tw-px-4 tw-py-3.5">
-									{#if t.coachEmail}
-										<div class="tw-flex tw-items-center tw-gap-2">
-											<span class="tw-w-2 tw-h-2 tw-rounded-full tw-bg-[#14b8a6]"></span>
-											<span class="tw-text-xs tw-font-mono tw-text-[#FAFAFA]">{t.coachEmail}</span>
-										</div>
-									{:else}
-										<span class="tw-text-xs tw-font-mono tw-text-[#64748b] tw-italic">Unassigned</span>
-									{/if}
-								</td>
-
-								<!-- Actions -->
-								<td class="tw-px-4 tw-py-3.5 tw-text-right">
-									<div class="tw-flex tw-items-center tw-justify-end tw-gap-2">
-										<a
-											href="/admin/organizations/{clubId}/teams/{t.id}/roster"
-											class="tw-px-3 tw-py-1 tw-bg-[#14b8a6]/10 hover:tw-bg-[#14b8a6]/20 tw-border tw-border-[#14b8a6]/40 tw-text-[#14b8a6] tw-font-mono tw-text-xs tw-font-bold tw-transition-colors"
-										>
-											Manage Roster &rarr;
-										</a>
-										<button
-											type="button"
-											class="tw-px-2 tw-py-1 tw-text-xs tw-font-mono tw-text-[#94a3b8] hover:tw-text-[#ef4444] hover:tw-bg-[#ef4444]/10 tw-border tw-border-[#334155] hover:tw-border-[#ef4444]/40 tw-transition-colors"
-											title="Delete team"
-											onclick={() => handleDeleteTeam(t)}
-										>
-											Delete
-										</button>
-									</div>
-								</td>
-							</tr>
-						{/each}
-					{/if}
-				</tbody>
-			</table>
-		</div>
+					{/each}
+				{/if}
+			</tbody>
+		</table>
 	</div>
 </div>
 
 <!-- Modal: Add Team -->
 {#if showAddModal}
-	<div class="tw-fixed tw-inset-0 tw-z-50 tw-flex tw-items-center tw-justify-center tw-bg-black/80 tw-p-4" role="dialog" aria-modal="true">
+	<div class="tw-fixed tw-inset-0 tw-z-50 tw-flex tw-items-center tw-justify-center tw-bg-black/80 tw-backdrop-blur-sm tw-p-4" role="dialog" aria-modal="true">
 		<div class="tw-w-full tw-max-w-lg tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-p-6 tw-flex tw-flex-col tw-gap-4">
 			<div class="tw-flex tw-items-center tw-justify-between tw-border-b tw-border-[#334155] tw-pb-3">
 				<h2 class="tw-m-0 tw-text-base tw-font-extrabold tw-text-[#FAFAFA] tw-flex tw-items-center tw-gap-2">
-					<Icon name={"action.add" as IconName} class="tw-text-[#14b8a6]" />
+					<Icon name={"action.add" as IconName} size={16} class="tw-text-[#14b8a6]" />
 					Create New Team
 				</h2>
 				<button
@@ -454,7 +452,7 @@
 				</button>
 				<button
 					type="button"
-					class="tw-px-4 tw-py-2 tw-bg-[#14b8a6] hover:tw-bg-[#0d9488] tw-text-[#020617] tw-font-sans tw-text-xs tw-font-extrabold tw-uppercase tw-tracking-wider tw-transition-colors disabled:tw-opacity-50"
+					class="tw-px-4 tw-py-2 tw-bg-[#14b8a6] hover:tw-bg-[#0d9488] tw-text-[#020617] tw-font-mono tw-text-xs tw-font-bold tw-uppercase tw-tracking-wider tw-transition-colors disabled:tw-opacity-50"
 					onclick={handleCreateTeam}
 					disabled={teamSaving}
 				>

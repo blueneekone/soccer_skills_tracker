@@ -9,19 +9,18 @@
 </script>
 
 <svelte:head>
-	<title>Support Terminal | Admin OS</title>
+	<title>Support Terminal · NEXUS COMMAND</title>
 </svelte:head>
 
 <div
-	class="pd-page-root tw-flex tw-flex-col tw-w-full tw-min-w-0 tw-flex-1 tw-min-h-0 tw-gap-[clamp(16px,2vw,24px)] tw-bg-[#0B0F19] tw-text-[#FAFAFA] dark-form-surface cc-root tw-box-border tw-overflow-y-auto"
-	style="padding: var(--bento-pad-liquid, clamp(20px, 4vw, 32px)); box-sizing: border-box;"
+	class="tw-flex tw-flex-col tw-w-full tw-min-w-0 tw-flex-1 tw-gap-6 tw-bg-[#0B0F19] tw-text-[#FAFAFA] tw-p-6 lg:tw-p-8 tw-box-border tw-overflow-y-auto"
 	data-admin-shell="true"
 >
 	<!-- Header -->
 	<header class="tw-flex tw-justify-between tw-items-end tw-border-b tw-border-[#334155] tw-pb-4">
 		<div>
-			<h1 class="tw-text-2xl tw-font-bold tw-text-[#FAFAFA] tw-m-0 tw-leading-none">Support Terminal</h1>
-			<div class="tw-text-[#94A3B8] tw-text-sm tw-font-mono tw-mt-2">Direct Admin SDK execution bridge for global support agents.</div>
+			<h1 class="tw-text-xl lg:tw-text-2xl tw-font-extrabold tw-text-[#FAFAFA] tw-m-0 tw-leading-none">Support Terminal</h1>
+			<div class="tw-text-[#94A3B8] tw-text-xs tw-font-mono tw-mt-2">Direct Admin SDK execution bridge for global support agents</div>
 		</div>
 		<div class="tw-text-right">
 			<span class="tw-inline-flex tw-items-center tw-gap-1.5 tw-text-xs tw-font-mono tw-font-bold tw-text-emerald-400 tw-uppercase tw-tracking-wider tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-px-3 tw-py-1.5">
@@ -32,16 +31,14 @@
 	</header>
 
 	{#if authStore.isLoading}
-		<p class="tw-font-mono tw-text-[#A1A1AA]">Authenticating connection...</p>
+		<p class="tw-font-mono tw-text-[#A1A1AA] tw-text-xs">Authenticating connection...</p>
 	{:else if !['global_admin', 'super_admin', 'admin'].includes(authStore.role ?? '')}
-		<div class="tw-p-[clamp(16px,2vw,32px)] tw-bg-rose-500/10 tw-border tw-border-rose-500/30 tw-rounded-none">
-			<h3 class="tw-font-mono tw-text-base tw-font-bold tw-text-rose-300 tw-tracking-wide tw-m-0 tw-mb-2">ACCESS DENIED</h3>
-			<p class="tw-text-[#D4D4D8] tw-m-0">Your current clearance level ({authStore.role || 'none'}) is insufficient for the Support Terminal.</p>
+		<div class="tw-p-6 tw-bg-rose-500/10 tw-border tw-border-rose-500/30">
+			<h3 class="tw-font-mono tw-text-sm tw-font-bold tw-text-rose-300 tw-tracking-wide tw-m-0 tw-mb-2">ACCESS DENIED</h3>
+			<p class="tw-text-[#D4D4D8] tw-text-xs tw-font-mono tw-m-0">Your current clearance level ({authStore.role || 'none'}) is insufficient for the Support Terminal.</p>
 		</div>
 	{:else}
-		<section class="tw-flex tw-flex-col tw-flex-1 tw-min-h-0 tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-p-[clamp(16px,2vw,32px)] admin-support-panel">
-			<SupportConsoleHUD {engine} />
-			<SupportConsoleArena {engine} />
-		</section>
+		<SupportConsoleHUD {engine} />
+		<SupportConsoleArena {engine} />
 	{/if}
 </div>

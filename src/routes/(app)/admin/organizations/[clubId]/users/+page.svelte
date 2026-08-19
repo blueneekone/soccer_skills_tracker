@@ -149,26 +149,29 @@
 			successMsg = `Role updated to ${newRole} for ${users[idx]!.email || userId}`;
 			setTimeout(() => { successMsg = ''; }, 4000);
 		} catch (e) {
-			console.error('Role update failed', e);
 			users[idx]!.role = oldRole;
-			error = 'Failed to update role.';
+			error = 'Failed to update user role.';
+			setTimeout(() => { error = ''; }, 4000);
 		}
 	}
 
 	async function handleRemoveFromOrg(user: OrgUserRow) {
-		const ok = confirm(`Remove ${user.name || user.email || user.id} from this organization?`);
+		const ok = confirm(`Remove "${user.name || user.email || user.id}" from this organization?`);
 		if (!ok) return;
 		const activeDb = getActiveDb();
 		if (!activeDb || !authStore.isAuthenticated) return;
 
 		try {
 			await updateDoc(doc(activeDb, 'users', user.id), { clubId: '' });
-			await logSecurityEvent('REMOVE_USER_FROM_ORG', user.id, `Removed from ${clubId}`);
+			if (user.email) {
+				await updateDoc(doc(activeDb, 'coach_lookup', user.email), { clubId: '' }).catch(() => null);
+			}
+			await logSecurityEvent('REMOVE_USER_FROM_CLUB', user.id, `Removed from ${clubId}`);
 			users = users.filter((u) => u.id !== user.id);
-			successMsg = `${user.name || user.email} removed from organization.`;
+			successMsg = `User removed from organization.`;
 			setTimeout(() => { successMsg = ''; }, 4000);
 		} catch (e) {
-			console.error('Failed to remove user', e);
+			console.error('Remove user failed', e);
 			error = 'Failed to remove user from organization.';
 		}
 	}
@@ -177,48 +180,58 @@
 		addErr = '';
 		const email = newEmail.trim().toLowerCase();
 		const name = newName.trim();
-		if (!email || !email.includes('@')) {
-			addErr = 'Valid email is required.';
+		if (!email || !name) {
+			addErr = 'Full Name and Email are required.';
 			return;
 		}
-		if (!name) {
-			addErr = 'Full name is required.';
+		if (!clubId) {
+			addErr = 'Organization context is missing.';
 			return;
 		}
+
 		const activeDb = getActiveDb();
 		if (!activeDb || !authStore.isAuthenticated) {
-			addErr = 'Database not initialized.';
+			addErr = 'Database not available.';
 			return;
 		}
 
 		addSaving = true;
 		try {
-			const userPayload = {
+			const userPayload: Record<string, any> = {
 				email,
 				displayName: name,
-				name,
 				role: newRole,
 				clubId,
-				status: 'active',
 				updatedAt: serverTimestamp(),
 			};
+
 			await setDoc(doc(activeDb, 'users', email), userPayload, { merge: true });
 
 			if (newRole === 'coach') {
-				await setDoc(doc(activeDb, 'coach_lookup', email), {
-					email,
-					name,
-					role: 'coach',
-					clubId,
-				}, { merge: true });
+				await setDoc(
+					doc(activeDb, 'coach_lookup', email),
+					{ email, displayName: name, role: 'coach', clubId },
+					{ merge: true }
+				);
 			}
 
-			await logSecurityEvent('ASSIGN_USER_TO_ORG', email, `Assigned as ${newRole} in ${clubId}`);
+			await logSecurityEvent('ASSIGN_USER_TO_CLUB', email, `Role: ${newRole}, Club: ${clubId}`);
 
-			// Optimistically update table
-			users = [{ id: email, ...userPayload }, ...users.filter((u) => u.id !== email && u.email !== email)];
-			successMsg = `${name} (${email}) added as ${newRole}.`;
+			users = [
+				{
+					id: email,
+					email,
+					name,
+					displayName: name,
+					role: newRole,
+					status: 'active',
+				},
+				...users.filter((u) => u.id !== email && u.email !== email),
+			];
+
+			successMsg = `User "${name}" (${email}) added as ${newRole}.`;
 			setTimeout(() => { successMsg = ''; }, 4000);
+
 			showAddModal = false;
 			newEmail = '';
 			newName = '';
@@ -236,7 +249,7 @@
 	<title>Organization Users · NEXUS COMMAND</title>
 </svelte:head>
 
-<div class="tw-flex tw-flex-col tw-gap-5 tw-p-6">
+<div class="tw-flex tw-flex-col tw-gap-5 tw-w-full">
 	<!-- Header & Actions -->
 	<div class="tw-flex tw-flex-wrap tw-items-center tw-justify-between tw-gap-4">
 		<div class="tw-flex tw-flex-col tw-gap-1">
@@ -251,32 +264,32 @@
 
 		<button
 			type="button"
-			class="tw-inline-flex tw-items-center tw-gap-2 tw-px-4 tw-py-2 tw-bg-[#fbbf24] hover:tw-bg-[#f59e0b] tw-text-[#020617] tw-font-sans tw-text-xs tw-font-extrabold tw-uppercase tw-tracking-wider tw-transition-colors"
+			class="tw-inline-flex tw-items-center tw-gap-2 tw-px-4 tw-py-2 tw-bg-[#fbbf24] hover:tw-bg-[#f59e0b] tw-text-[#020617] tw-font-mono tw-text-xs tw-font-bold tw-uppercase tw-tracking-wider tw-transition-colors"
 			onclick={() => { showAddModal = true; addErr = ''; }}
 		>
-			<Icon name={"action.add" as IconName} />
+			<Icon name={"action.add" as IconName} size={14} />
 			Add / Assign User
 		</button>
 	</div>
 
 	<!-- Flash Messages -->
 	{#if error}
-		<div class="tw-p-4 tw-bg-[#1E293B] tw-border tw-border-[#ef4444] tw-text-[#ef4444] tw-font-mono tw-text-xs tw-font-bold tw-flex tw-items-center tw-gap-2" role="alert">
+		<div class="tw-p-3.5 tw-bg-[#1E293B] tw-border tw-border-[#ef4444] tw-text-[#ef4444] tw-font-mono tw-text-xs tw-font-bold tw-flex tw-items-center tw-gap-2" role="alert">
 			<Icon name={"status.warning-triangle" as IconName} />
 			<span>{error}</span>
 		</div>
 	{/if}
 	{#if successMsg}
-		<div class="tw-p-4 tw-bg-[#1E293B] tw-border tw-border-[#14b8a6] tw-text-[#14b8a6] tw-font-mono tw-text-xs tw-font-bold tw-flex tw-items-center tw-gap-2" role="status">
+		<div class="tw-p-3.5 tw-bg-[#1E293B] tw-border tw-border-[#14b8a6] tw-text-[#14b8a6] tw-font-mono tw-text-xs tw-font-bold tw-flex tw-items-center tw-gap-2" role="status">
 			<Icon name={"status.check" as IconName} />
 			<span>{successMsg}</span>
 		</div>
 	{/if}
 
 	<!-- Search & Filters Toolbar -->
-	<div class="tw-flex tw-flex-wrap tw-items-center tw-justify-between tw-gap-3 tw-bg-[#0f172a] tw-p-3.5 tw-border tw-border-[#334155]">
+	<div class="tw-flex tw-flex-wrap tw-items-center tw-justify-between tw-gap-3 tw-bg-[#0f172a] tw-p-3 tw-border tw-border-[#334155]">
 		<div class="tw-flex tw-items-center tw-gap-2 tw-flex-1 tw-min-w-[240px]">
-			<Icon name={"action.search" as IconName} class="tw-text-[#94a3b8]" />
+			<Icon name={"action.search" as IconName} size={14} class="tw-text-[#94a3b8]" />
 			<input
 				type="search"
 				class="tw-w-full tw-bg-[#020617] tw-border tw-border-[#334155] tw-text-[#FAFAFA] tw-font-mono tw-text-xs tw-px-3 tw-py-1.5 focus:tw-outline-none focus:tw-border-[#14b8a6]"
@@ -302,123 +315,121 @@
 	</div>
 
 	<!-- Data Table -->
-	<div class="tw-w-full tw-overflow-x-auto tw-border tw-border-[#334155] tw-bg-[#020617]">
-		<div class="tw-border tw-border-[#334155] tw-bg-[#0f172a] tw-p-4 tw-min-w-0 tw-overflow-x-auto">
-			<table class="tw-w-full tw-font-mono tw-text-sm tw-min-w-[700px] tw-text-left tw-border-collapse">
-				<thead class="tw-sticky tw-top-0 tw-z-10 tw-bg-[#020617] tw-border-b tw-border-[#334155]">
+	<div class="tw-w-full tw-overflow-x-auto tw-border tw-border-[#334155] tw-bg-[#0f172a]">
+		<table class="tw-w-full tw-font-mono tw-text-sm tw-min-w-[700px] tw-text-left tw-border-collapse">
+			<thead class="tw-sticky tw-top-0 tw-z-10 tw-bg-[#020617] tw-border-b tw-border-[#334155]">
+				<tr>
+					<th class="tw-px-4 tw-py-3 tw-text-xs tw-font-extrabold tw-tracking-wider tw-uppercase tw-text-[#D4D4D8]">Member</th>
+					<th class="tw-px-4 tw-py-3 tw-text-xs tw-font-extrabold tw-tracking-wider tw-uppercase tw-text-[#D4D4D8]">Email / ID</th>
+					<th class="tw-px-4 tw-py-3 tw-text-xs tw-font-extrabold tw-tracking-wider tw-uppercase tw-text-[#D4D4D8]">Role</th>
+					<th class="tw-px-4 tw-py-3 tw-text-xs tw-font-extrabold tw-tracking-wider tw-uppercase tw-text-[#D4D4D8]">Status</th>
+					<th class="tw-px-4 tw-py-3 tw-text-xs tw-font-extrabold tw-tracking-wider tw-uppercase tw-text-[#D4D4D8] tw-text-right">Actions</th>
+				</tr>
+			</thead>
+			<tbody>
+				{#if loading}
 					<tr>
-						<th class="tw-px-4 tw-py-3 tw-text-xs tw-font-extrabold tw-tracking-wider tw-uppercase tw-text-[#D4D4D8]">Member</th>
-						<th class="tw-px-4 tw-py-3 tw-text-xs tw-font-extrabold tw-tracking-wider tw-uppercase tw-text-[#D4D4D8]">Email / ID</th>
-						<th class="tw-px-4 tw-py-3 tw-text-xs tw-font-extrabold tw-tracking-wider tw-uppercase tw-text-[#D4D4D8]">Role</th>
-						<th class="tw-px-4 tw-py-3 tw-text-xs tw-font-extrabold tw-tracking-wider tw-uppercase tw-text-[#D4D4D8]">Status</th>
-						<th class="tw-px-4 tw-py-3 tw-text-xs tw-font-extrabold tw-tracking-wider tw-uppercase tw-text-[#D4D4D8] tw-text-right">Actions</th>
+						<td colspan="5" class="tw-px-4 tw-py-12 tw-text-center tw-text-xs tw-font-mono tw-text-[#94a3b8]">
+							<span class="tw-inline-block tw-animate-spin tw-mr-2">⟳</span> Loading organization roster...
+						</td>
 					</tr>
-				</thead>
-				<tbody>
-					{#if loading}
-						<tr>
-							<td colspan="5" class="tw-px-4 tw-py-12 tw-text-center tw-text-sm tw-font-bold tw-text-[#94a3b8]">
-								<span class="tw-inline-block tw-animate-spin tw-mr-2">⟳</span> Loading organization roster...
-							</td>
-						</tr>
-					{:else if filteredUsers.length === 0}
-						<tr>
-							<td colspan="5" class="tw-px-4 tw-py-12 tw-text-center tw-text-sm tw-font-bold tw-text-[#94a3b8]">
-								{users.length === 0 ? 'No members assigned to this organization yet.' : 'No users match your filter.'}
-							</td>
-						</tr>
-					{:else}
-						{#each filteredUsers as user (user.id)}
-							<tr class="tw-border-b tw-border-[#334155]/60 hover:tw-bg-[#0B0F19] tw-transition-colors last:tw-border-none">
-								<!-- Member avatar + Name -->
-								<td class="tw-px-4 tw-py-3.5">
-									<div class="tw-flex tw-items-center tw-gap-3">
-										<div class="tw-w-8 tw-h-8 tw-rounded-full tw-bg-[#1e293b] tw-border tw-border-[#334155] tw-flex tw-items-center tw-justify-center tw-font-bold tw-text-xs tw-text-[#14b8a6]">
-											{getInitials(user.name || user.displayName, user.email)}
-										</div>
-										<div class="tw-flex tw-flex-col">
-											<span class="tw-text-sm tw-font-sans tw-font-bold tw-text-[#FAFAFA]">
-												{user.name || user.displayName || 'Unnamed Member'}
-											</span>
-											{#if user.displayName && user.name && user.displayName !== user.name}
-												<span class="tw-text-[11px] tw-text-[#94a3b8]">{user.displayName}</span>
-											{/if}
-										</div>
+				{:else if filteredUsers.length === 0}
+					<tr>
+						<td colspan="5" class="tw-px-4 tw-py-12 tw-text-center tw-text-xs tw-font-mono tw-text-[#94a3b8]">
+							{users.length === 0 ? 'No members assigned to this organization yet.' : 'No users match your filter.'}
+						</td>
+					</tr>
+				{:else}
+					{#each filteredUsers as user (user.id)}
+						<tr class="tw-border-b tw-border-[#334155]/60 hover:tw-bg-[#020617] tw-transition-colors last:tw-border-none">
+							<!-- Member avatar + Name -->
+							<td class="tw-px-4 tw-py-3.5">
+								<div class="tw-flex tw-items-center tw-gap-3">
+									<div class="tw-w-8 tw-h-8 tw-rounded-full tw-bg-[#020617] tw-border tw-border-[#334155] tw-flex tw-items-center tw-justify-center tw-font-bold tw-text-xs tw-text-[#14b8a6]">
+										{getInitials(user.name || user.displayName, user.email)}
 									</div>
-								</td>
-
-								<!-- Email & UID -->
-								<td class="tw-px-4 tw-py-3.5">
 									<div class="tw-flex tw-flex-col">
-										<span class="tw-text-xs tw-text-[#FAFAFA] tw-font-mono">{user.email || '—'}</span>
-										{#if user.id && user.id !== user.email}
-											<span class="tw-text-[10px] tw-text-[#64748b] tw-font-mono tw-truncate tw-max-w-[180px]" title={user.id}>
-												ID: {user.id}
-											</span>
+										<span class="tw-text-xs tw-font-mono tw-font-bold tw-text-[#FAFAFA]">
+											{user.name || user.displayName || 'Unnamed Member'}
+										</span>
+										{#if user.displayName && user.name && user.displayName !== user.name}
+											<span class="tw-text-[10px] tw-text-[#94a3b8]">{user.displayName}</span>
 										{/if}
 									</div>
-								</td>
+								</div>
+							</td>
 
-								<!-- Role Switcher -->
-								<td class="tw-px-4 tw-py-3.5">
-									<div class="tw-flex tw-items-center tw-gap-2">
-										<span class="tw-px-2 tw-py-0.5 tw-text-[10px] tw-font-mono tw-font-bold tw-uppercase tw-border {getRoleBadgeClass(user.role)}">
-											{user.role || 'GUEST'}
-										</span>
-										<select
-											aria-label="Change role for {user.name || user.email || user.id}"
-											class="tw-bg-[#020617] tw-border tw-border-[#334155] tw-text-[#FAFAFA] tw-text-[11px] tw-font-mono tw-px-1.5 tw-py-1 focus:tw-outline-none focus:tw-border-[#14b8a6]"
-											value={user.role || ''}
-											onchange={(e) => updateRole(user.id, (e.target as HTMLSelectElement).value)}
-										>
-											<option value="coach">Coach</option>
-											<option value="director">Director</option>
-											<option value="player">Player</option>
-											<option value="guardian">Guardian</option>
-										</select>
-									</div>
-								</td>
-
-								<!-- Status -->
-								<td class="tw-px-4 tw-py-3.5">
-									{#if (user.status || '').toLowerCase() === 'suspended'}
-										<span class="tw-px-2 tw-py-0.5 tw-text-[10px] tw-font-mono tw-font-bold tw-uppercase tw-bg-[#ef4444]/10 tw-text-[#ef4444] tw-border tw-border-[#ef4444]/30">
-											Suspended
-										</span>
-									{:else}
-										<span class="tw-px-2 tw-py-0.5 tw-text-[10px] tw-font-mono tw-font-bold tw-uppercase tw-bg-[#14b8a6]/10 tw-text-[#14b8a6] tw-border tw-border-[#14b8a6]/30">
-											Active
+							<!-- Email & UID -->
+							<td class="tw-px-4 tw-py-3.5">
+								<div class="tw-flex tw-flex-col">
+									<span class="tw-text-xs tw-text-[#FAFAFA] tw-font-mono">{user.email || '—'}</span>
+									{#if user.id && user.id !== user.email}
+										<span class="tw-text-[10px] tw-text-[#64748b] tw-font-mono tw-truncate tw-max-w-[180px]" title={user.id}>
+											ID: {user.id}
 										</span>
 									{/if}
-								</td>
+								</div>
+							</td>
 
-								<!-- Actions -->
-								<td class="tw-px-4 tw-py-3.5 tw-text-right">
-									<button
-										type="button"
-										class="tw-px-2.5 tw-py-1 tw-text-xs tw-font-mono tw-text-[#94a3b8] hover:tw-text-[#ef4444] hover:tw-bg-[#ef4444]/10 tw-border tw-border-[#334155] hover:tw-border-[#ef4444]/40 tw-transition-colors"
-										title="Remove from this organization"
-										onclick={() => handleRemoveFromOrg(user)}
+							<!-- Role Switcher -->
+							<td class="tw-px-4 tw-py-3.5">
+								<div class="tw-flex tw-items-center tw-gap-2">
+									<span class="tw-px-2 tw-py-0.5 tw-text-[10px] tw-font-mono tw-font-bold tw-uppercase tw-border {getRoleBadgeClass(user.role)}">
+										{user.role || 'GUEST'}
+									</span>
+									<select
+										aria-label="Change role for {user.name || user.email || user.id}"
+										class="tw-bg-[#020617] tw-border tw-border-[#334155] tw-text-[#FAFAFA] tw-text-[11px] tw-font-mono tw-px-1.5 tw-py-1 focus:tw-outline-none focus:tw-border-[#14b8a6]"
+										value={user.role || ''}
+										onchange={(e) => updateRole(user.id, (e.target as HTMLSelectElement).value)}
 									>
-										Remove
-									</button>
-								</td>
-							</tr>
-						{/each}
-					{/if}
-				</tbody>
-			</table>
-		</div>
+										<option value="coach">Coach</option>
+										<option value="director">Director</option>
+										<option value="player">Player</option>
+										<option value="guardian">Guardian</option>
+									</select>
+								</div>
+							</td>
+
+							<!-- Status -->
+							<td class="tw-px-4 tw-py-3.5">
+								{#if (user.status || '').toLowerCase() === 'suspended'}
+									<span class="tw-px-2 tw-py-0.5 tw-text-[10px] tw-font-mono tw-font-bold tw-uppercase tw-bg-[#ef4444]/10 tw-text-[#ef4444] tw-border tw-border-[#ef4444]/30">
+										Suspended
+									</span>
+								{:else}
+									<span class="tw-px-2 tw-py-0.5 tw-text-[10px] tw-font-mono tw-font-bold tw-uppercase tw-bg-[#14b8a6]/10 tw-text-[#14b8a6] tw-border tw-border-[#14b8a6]/30">
+										Active
+									</span>
+								{/if}
+							</td>
+
+							<!-- Actions -->
+							<td class="tw-px-4 tw-py-3.5 tw-text-right">
+								<button
+									type="button"
+									class="tw-px-2.5 tw-py-1 tw-text-xs tw-font-mono tw-text-[#94a3b8] hover:tw-text-[#ef4444] hover:tw-bg-[#ef4444]/10 tw-border tw-border-[#334155] hover:tw-border-[#ef4444]/40 tw-transition-colors"
+									title="Remove from this organization"
+									onclick={() => handleRemoveFromOrg(user)}
+								>
+									Remove
+								</button>
+							</td>
+						</tr>
+					{/each}
+				{/if}
+			</tbody>
+		</table>
 	</div>
 </div>
 
 <!-- Modal: Add / Assign User -->
 {#if showAddModal}
-	<div class="tw-fixed tw-inset-0 tw-z-50 tw-flex tw-items-center tw-justify-center tw-bg-black/80 tw-p-4" role="dialog" aria-modal="true">
+	<div class="tw-fixed tw-inset-0 tw-z-50 tw-flex tw-items-center tw-justify-center tw-bg-black/80 tw-backdrop-blur-sm tw-p-4" role="dialog" aria-modal="true">
 		<div class="tw-w-full tw-max-w-md tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-p-6 tw-flex tw-flex-col tw-gap-4">
 			<div class="tw-flex tw-items-center tw-justify-between tw-border-b tw-border-[#334155] tw-pb-3">
 				<h2 class="tw-m-0 tw-text-base tw-font-extrabold tw-text-[#FAFAFA] tw-flex tw-items-center tw-gap-2">
-					<Icon name={"action.add" as IconName} class="tw-text-[#14b8a6]" />
+					<Icon name={"action.add" as IconName} size={16} class="tw-text-[#14b8a6]" />
 					Add / Assign Member
 				</h2>
 				<button
@@ -494,7 +505,7 @@
 				</button>
 				<button
 					type="button"
-					class="tw-px-4 tw-py-2 tw-bg-[#14b8a6] hover:tw-bg-[#0d9488] tw-text-[#020617] tw-font-sans tw-text-xs tw-font-extrabold tw-uppercase tw-tracking-wider tw-transition-colors disabled:tw-opacity-50"
+					class="tw-px-4 tw-py-2 tw-bg-[#14b8a6] hover:tw-bg-[#0d9488] tw-text-[#020617] tw-font-mono tw-text-xs tw-font-bold tw-uppercase tw-tracking-wider tw-transition-colors disabled:tw-opacity-50"
 					onclick={handleAddUser}
 					disabled={addSaving}
 				>

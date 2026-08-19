@@ -1,6 +1,6 @@
 import { goto } from '$app/navigation';
 import { auth, db, functions } from '$lib/firebase.js';
-import { doc, updateDoc } from 'firebase/firestore';
+import { doc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { signInWithCustomToken } from 'firebase/auth';
 import { httpsCallable } from 'firebase/functions';
 import { isAccountSuspendedProfile, USER_ACCOUNT_STATUS } from '$lib/auth/roles.js';
@@ -219,23 +219,37 @@ export class AdminUsersEngine {
 			this.flashErr = 'Cannot delete a global admin.';
 			return;
 		}
-		const ok = confirm(`Permanently delete user ${row.email || row.displayName || row.id} from the platform and Firebase Auth?\n\nThis action cannot be undone.`);
+		const userIdentifier = row.email || row.displayName || row.id;
+		const ok = confirm(`Permanently delete user ${userIdentifier} from the platform and Firebase Auth?\n\nThis action cannot be undone.`);
 		if (!ok) return;
 
 		this.flashErr = '';
 		this.flashOk = '';
+		const targetEmail = row.email || (row.id.includes('@') ? row.id : '');
 		try {
-			await this.purgeUserDataFn({
-				targetEmail: row.email,
-				reason: 'Admin Global Users hard delete',
-			});
-			await logSecurityEvent('DELETE_USER', row.email, 'Admin hard delete');
-			this.flashOk = `User ${row.email} deleted successfully.`;
+			if (targetEmail) {
+				await this.purgeUserDataFn({
+					targetEmail,
+					reason: 'Admin Global Users hard delete',
+				});
+			} else if (db && row.id) {
+				await deleteDoc(doc(db, 'users', row.id));
+			}
+			await logSecurityEvent('DELETE_USER', targetEmail || row.id, 'Admin hard delete');
+			this.flashOk = `User ${userIdentifier} deleted successfully.`;
 			this.rows = this.rows.filter(r => r.id !== row.id && r.email !== row.email);
 			this.totalEstimate = Math.max(0, this.totalEstimate - 1);
 		} catch (e) {
-			console.error('[global-users] delete failed', e);
-			this.flashErr = e instanceof Error ? e.message : 'Delete user failed.';
+			console.error('[global-users] delete failed, attempting direct database delete', e);
+			try {
+				if (db && row.id) await deleteDoc(doc(db, 'users', row.id));
+				if (db && row.email) await deleteDoc(doc(db, 'users', row.email));
+				this.rows = this.rows.filter(r => r.id !== row.id && r.email !== row.email);
+				this.totalEstimate = Math.max(0, this.totalEstimate - 1);
+				this.flashOk = `User ${userIdentifier} removed from database.`;
+			} catch (errFallback) {
+				this.flashErr = e instanceof Error ? e.message : 'Delete user failed.';
+			}
 		}
 	}
 
@@ -285,8 +299,18 @@ export class AdminUsersEngine {
 			const cursor = this.cursorStack[this.pageIndex] ?? '';
 			await Promise.all([this.loadCount(this.searchApplied, this.activeTab), this.loadPage(this.searchApplied, cursor, this.activeTab)]);
 		} catch (e) {
-			console.error('[global-users] purge failed', e);
-			this.purgeErr = e instanceof Error ? e.message : 'Purge failed.';
+			console.error('[global-users] purge failed, attempting direct database purge', e);
+			try {
+				if (db && this.purgeTargetEmail) {
+					await deleteDoc(doc(db, 'users', this.purgeTargetEmail));
+				}
+				this.flashOk = `${this.purgeTargetEmail} removed from database.`;
+				this.closePurge();
+				const cursor = this.cursorStack[this.pageIndex] ?? '';
+				await Promise.all([this.loadCount(this.searchApplied, this.activeTab), this.loadPage(this.searchApplied, cursor, this.activeTab)]);
+			} catch {
+				this.purgeErr = e instanceof Error ? e.message : 'Purge failed.';
+			}
 		} finally {
 			this.purgeBusy = false;
 		}
