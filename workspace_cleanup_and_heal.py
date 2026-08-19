@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import os
+import re
 import shutil
 import sys
 from pathlib import Path
@@ -134,13 +135,43 @@ def heal_local_codebase():
                     content = "\n".join(lines)
 
                 # D. SVELTEKIT SSR SESSION COOKIE SYNC (onIdTokenChanged)
+                # FIX: Skip import statements and ensure it is placed within an active execution block
                 if "onIdTokenChanged" in content and "SameSite=Strict" not in content:
                     lines = content.splitlines()
+                    in_import = False
+                    in_comment = False
                     for idx, line in enumerate(lines):
-                        if "onIdTokenChanged" in line:
+                        stripped = line.strip()
+
+                        if "/*" in stripped and "*/" not in stripped:
+                            in_comment = True
+                            continue
+                        if in_comment:
+                            if "*/" in stripped:
+                                in_comment = False
+                            continue
+
+                        if re.match(r"^\s*import\b", line):
+                            if ";" not in stripped and "from" not in stripped:
+                                in_import = True
+                            continue
+                        if in_import:
+                            if ";" in stripped or "from" in stripped:
+                                in_import = False
+                            continue
+
+                        if stripped.startswith("//") or stripped.startswith("*") or stripped.startswith("/*"):
+                            continue
+                        if "import" in line or "export" in line or "from" in line:
+                            continue
+
+                        # ONLY match if it is an actual function listener / call site in an active execution block
+                        if re.search(r"\bonIdTokenChanged\s*\(", line):
                             indentation = " " * (len(line) - len(line.lstrip()))
+                            param_match = re.search(r"onIdTokenChanged\s*\([^,]+,\s*(?:async\s*)?\(?\s*([a-zA-Z0-9_$]+)", line)
+                            user_var = param_match.group(1) if param_match and param_match.group(1) not in ("async", "function") else "newUser"
                             cookie_sync = (
-                                f"{indentation}  const token = newUser ? await newUser.getIdToken() : undefined;\n"
+                                f"{indentation}  const token = {user_var} ? await {user_var}.getIdToken() : undefined;\n"
                                 f"{indentation}  document.cookie = `token=${{token || ''}}; path=/; max-age=${{token ? 3600 : 0}}; SameSite=Strict; Secure`;\n"
                                 f"{indentation}  if (token && !document.cookie.includes('token')) {{\n"
                                 f"{indentation}    window.location.reload();\n"
