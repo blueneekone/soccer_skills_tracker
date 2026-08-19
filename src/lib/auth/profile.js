@@ -193,16 +193,21 @@ export async function resolveUserProfile(db, firebaseUser, forceTokenRefresh = t
 	}
 
 	if (role === 'super_admin' || role === 'global_admin' || role === 'director') {
+		const newProfile = {
+			...(baseProfile || {}),
+			playerName: fbName,
+			teamId: 'admin',
+			role
+		};
+		// Write the auto-assigned role to Firestore so `syncUserClaims` can mint the custom claim.
+		if (!baseProfile || baseProfile.role !== role || baseProfile.teamId !== 'admin') {
+			await setDoc(userRef, newProfile, { merge: true });
+		}
 		return {
 			role,
 			tenantId: resolvedTenantId,
 			cellId,
-			profile: {
-				...(baseProfile || {}),
-				playerName: fbName,
-				teamId: 'admin',
-				role
-			}
+			profile: newProfile
 		};
 	}
 
@@ -215,7 +220,7 @@ export async function resolveUserProfile(db, firebaseUser, forceTokenRefresh = t
 
 	if (userSnap.exists()) {
 		if (!role && baseProfile && typeof baseProfile.role === 'string' && baseProfile.role.trim() !== '') {
-			role = baseProfile.role.trim();
+			role = baseProfile.role.trim().toLowerCase();
 		}
 		if (!role) role = 'player';
 		let merged = { ...baseProfile, role, playerName: fbName };

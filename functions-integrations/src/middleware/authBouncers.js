@@ -98,7 +98,8 @@ function assertSuperAdmin(request) {
   if (!request.auth) {
     throw new HttpsError('unauthenticated', 'Sign in required.');
   }
-  if (request.auth.token.role !== 'super_admin') {
+  const role = request.auth.token.role;
+  if (role !== 'super_admin' && role !== 'global_admin' && role !== 'admin') {
     throw new HttpsError(
         'permission-denied',
         'Only application super admins may perform this action.',

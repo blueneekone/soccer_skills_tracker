@@ -1496,7 +1496,7 @@ exports.impersonateUser = onCall(
           details: JSON.stringify({ targetEmail: targetEmail || 'unknown', ip: request.rawRequest.ip || 'unknown' }),
         });
         logger.info('[impersonateUser] success', {actorUid: request.auth.uid, targetUid});
-        return {customToken};
+        return {customToken, token: customToken};
       } catch (err) {
         logger.error('[impersonateUser] failed to generate token', err);
         throw new HttpsError('internal', 'Failed to generate impersonation token.');
