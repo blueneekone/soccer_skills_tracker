@@ -1,9 +1,9 @@
 /**
- * sportsConfigs
+ * sportsConfigs.svelte.ts
  * ───────────────────────────
  * Phase 3, Epic 4 — Sports_Configs Dynamic Trees.
  *
- * Svelte 5 runes store for `sports_configs/{sportId}`.  Single source of
+ * Svelte 5 runes store for `sports_configs/{sportId}`. Single source of
  * truth on the client — all consumers (adapters, charts, radars, CRUD UI)
  * read through this store rather than the legacy hardcoded modules.
  *
@@ -24,8 +24,8 @@
  */
 
 import { browser } from '$app/environment';
-import { collection, onSnapshot, setDoc, doc } from 'firebase/firestore';
-import { db } from '$lib/firebase';
+import { collection, onSnapshot, setDoc, doc, updateDoc, addDoc } from 'firebase/firestore';
+import { db } from '$lib/firebase.js';
 import { workspaceContextStore } from '$lib/stores/workspaceContext.svelte.js';
 import { authStore } from '$lib/stores/auth.svelte.js';
 
@@ -179,6 +179,12 @@ let _unsubscribe = $state(/** @type {(() => void) | null} */ (null));
 function buildAliasIndex() {
   /** @type {Map<string, string>} */
   const index = new Map();
+  for (const [sportId, cfg] of Object.entries(LEGACY_SPORT_CONFIGS)) {
+    index.set(sportId, sportId);
+    for (const alias of (cfg.aliases || [])) {
+      index.set(alias.toLowerCase().trim(), sportId);
+    }
+  }
   for (const [sportId, cfg] of _configs) {
     index.set(sportId, sportId);
     for (const alias of (cfg.aliases || [])) {
@@ -195,8 +201,8 @@ function buildAliasIndex() {
  * @param {string} sportId
  * @param {import('$lib/types/sportsConfig').SportsConfigDoc} fallbackData
  */
-function queueReadRepair(sportId, fallbackData) {
-  if (!browser) return;
+function queueReadRepair(sportId: string, fallbackData: import('$lib/types/sportsConfig').SportsConfigDoc) {
+  if (!browser || !db) return;
   const ref = doc(db, 'sports_configs', sportId);
   setDoc(ref, { ...fallbackData, updatedAt: null }, { merge: true }).catch(() => {
     // read-repair is best-effort; offline is fine
@@ -255,9 +261,9 @@ function stopListener() {
  * @param {string} sportId
  * @returns {import('$lib/types/sportsConfig').SportsConfigDoc}
  */
-function getConfig(sportId) {
+function getConfig(sportId: string): import('$lib/types/sportsConfig').SportsConfigDoc {
   if (_configs.has(sportId)) {
-    return /** @type {import('$lib/types/sportsConfig').SportsConfigDoc} */ (_configs.get(sportId));
+    return /** @type {import('$lib/types/sportsConfig').SportsConfigDoc} */ (_configs.get(sportId)!);
   }
 
   const fallback = LEGACY_SPORT_CONFIGS[sportId] ?? LEGACY_SPORT_CONFIGS.generic;
@@ -275,20 +281,20 @@ function getConfig(sportId) {
  * @param {string | null | undefined} sportRaw
  * @returns {import('$lib/types/sportsConfig').SportsConfigDoc}
  */
-function resolveActiveConfig(sportRaw) {
+function resolveActiveConfig(sportRaw: string | null | undefined): import('$lib/types/sportsConfig').SportsConfigDoc {
   const norm = (sportRaw || '').toLowerCase().trim();
   if (!norm) return getConfig('generic');
 
   // 1. Try exact sportId match first (fastest path)
   if (_configs.has(norm)) {
-    return /** @type {import('$lib/types/sportsConfig').SportsConfigDoc} */ (_configs.get(norm));
+    return /** @type {import('$lib/types/sportsConfig').SportsConfigDoc} */ (_configs.get(norm)!);
   }
 
   // 2. Try alias index
   const aliasIndex = buildAliasIndex();
   const resolved = aliasIndex.get(norm);
-  if (resolved && _configs.has(resolved)) {
-    return /** @type {import('$lib/types/sportsConfig').SportsConfigDoc} */ (_configs.get(resolved));
+  if (resolved) {
+    return getConfig(resolved);
   }
 
   // 3. Substring legacy matches (mirror normalizeClubSport logic)
@@ -340,8 +346,6 @@ export const sportsConfigStore = {
 };
 
 // ── Admin Ops: Sports Configuration Engine ─────────────────────────────────────
-
-import { updateDoc, addDoc, deleteDoc } from 'firebase/firestore';
 
 /**
  * Creates a new sport configuration in the 'sports_configs' collection.

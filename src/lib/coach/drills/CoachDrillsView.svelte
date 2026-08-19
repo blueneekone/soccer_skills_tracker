@@ -27,7 +27,7 @@
 		copyPlatformDrillToTeam,
 		loadPlatformBasics,
 	} from '$lib/coach/platformDrillLibrary.js';
-	import { sportsConfigStore } from '$lib/services/sportsConfigs';
+	import { sportsConfigStore } from '$lib/services/sportsConfigs.svelte.js';
 	import FacilityScheduler from '$lib/components/coach/FacilityScheduler.svelte';
 
 	import { loadTeamDrills } from '$lib/utils/drillLoaders.js';

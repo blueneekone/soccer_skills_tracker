@@ -12,7 +12,7 @@
 	} from '$lib/player/workout/coachMissionFlow.js';
 	import { ensureRlPolicyCached, readRlPolicyCache } from '$lib/player/workout/rlPolicyCache.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
-	import { sportsConfigStore } from '$lib/services/sportsConfigs';
+	import { sportsConfigStore } from '$lib/services/sportsConfigs.svelte.js';
 	import { getRpgSportConfig } from '$lib/config/sports.js';
 	import TacticalDrillBoard from '$lib/components/tactical/TacticalDrillBoard.svelte';
 

@@ -52,7 +52,7 @@
     useWorkoutSkillTreePrefill,
   } from '$lib/player/workout/workoutPageDrillHooks.svelte.js';
   import { ensureRlPolicyCached, readRlPolicyCache } from '$lib/player/workout/rlPolicyCache.js';
-  import { sportsConfigStore } from '$lib/services/sportsConfigs';
+  import { sportsConfigStore } from '$lib/services/sportsConfigs.svelte.js';
   import {
     computeWorkoutTotalReps,
     formatPrescriptionVolumeLine,

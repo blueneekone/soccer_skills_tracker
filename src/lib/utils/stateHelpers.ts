@@ -19,11 +19,3 @@ export function snapshotState<T>(state: T): T {
     return state;
   }
 }
-
-export class BoundEventHandlerExample {
-  active = $state(false);
-
-  toggle = () => {
-    this.active = !this.active;
-  };
-}

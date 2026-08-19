@@ -15,7 +15,7 @@
 	import HUDContainer from '$lib/components/hud/HUDContainer.svelte';
 	import VanguardProtocolPanel from '$lib/components/player/dashboard/VanguardProtocolPanel.svelte';
 	import CarRideHome from '$lib/components/compliance/CarRideHome.svelte';
-	import { sportsConfigStore } from '$lib/services/sportsConfigs';
+	import { sportsConfigStore } from '$lib/services/sportsConfigs.svelte.js';
 	import { deriveVanguardPrism } from '$lib/utils/vanguard-prism.js';
 	import { getCurrentRank, getLevelProgressFromTotalXp } from '$lib/gamification/level.js';
 	import '$lib/styles/player-dashboard-hud.css';

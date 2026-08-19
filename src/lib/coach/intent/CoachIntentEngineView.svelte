@@ -4,7 +4,7 @@
 	import { resolve } from '$app/paths';
 	import { untrack } from 'svelte';
 	import { authStore } from '$lib/stores/auth.svelte.js';
-	import { sportsConfigStore } from '$lib/services/sportsConfigs';
+	import { sportsConfigStore } from '$lib/services/sportsConfigs.svelte.js';
 	import { CoachTeamScope } from '$lib/coach/context/coachTeamScope.svelte.js';
 	import { IntentEngine } from './IntentEngine.svelte.js';
 	import IntentArena from './IntentArena.svelte';
