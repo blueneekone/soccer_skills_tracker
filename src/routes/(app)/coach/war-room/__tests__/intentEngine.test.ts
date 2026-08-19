@@ -15,11 +15,20 @@ vi.mock('firebase/firestore', async () => {
 });
 
 vi.mock('$lib/firebase.js', () => ({
-	getActiveDb: vi.fn()
+	getActiveDb: vi.fn(),
+	auth: {},
+	db: {}
 }));
 
 vi.mock('$lib/utils/firestoreGuard.js', () => ({
 	isFirestoreReady: vi.fn()
+}));
+
+vi.mock('$lib/stores/auth.svelte.js', () => ({
+	authStore: {
+		isAuthenticated: true,
+		user: { uid: 'test-user' }
+	}
 }));
 
 describe('IntentEngine Physiological Feedback Loop', () => {
