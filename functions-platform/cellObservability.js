@@ -233,6 +233,14 @@ exports.evaluateCellPromotions = onSchedule(
  * Schedule: 03:33 ET — quiet window between night-owl writes and
  * morning load.
  */
+exports.purgeGatewayCaches = onSchedule(
+    {
+      schedule: '33 3 * * *',
+      region: REGION,
+      timeZone: 'America/New_York',
+    },
+    async () => {
+      const registry = getRegistryDb();
       const cutoff = admin.firestore.Timestamp.fromMillis(
           Date.now() - 24 * 60 * 60 * 1000,
       );

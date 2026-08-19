@@ -154,6 +154,33 @@ exports.listAllUsers = onCall({ region: REGION }, async (request) => {
   }
 });
 
+exports.repairUserClaims = onCall({ region: REGION }, async (request) => {
+  const adminContext = assertAdminTier(request);
+  const { targetEmail, role, clubId, teamId, tenantId } = request.data || {};
+
+  if (!targetEmail || !role) {
+    throw new HttpsError('invalid-argument', 'targetEmail and role are required.');
+  }
+
+  try {
+    const userRecord = await admin.auth().getUserByEmail(targetEmail);
+    const customClaims = { 
+      role, 
+      clubId: clubId || null, 
+      teamId: teamId || null,
+      tenantId: tenantId || null
+    };
+    await admin.auth().setCustomUserClaims(userRecord.uid, customClaims);
+    
+    // Also update the Firestore user doc
+    await db().collection('users').doc(userRecord.uid).set({
+      role,
+      clubId: clubId || null,
+      teamId: teamId || null,
+      tenantId: tenantId || null,
+      email: userRecord.email,
+      updatedAt: admin.firestore.FieldValue.serverTimestamp()
+    }, { merge: true });
 
     await writeAuditLog('repairUserClaims', adminContext.uid, adminContext.email, { targetEmail, targetUid: userRecord.uid, newClaims: customClaims });
     return { success: true, customClaims };

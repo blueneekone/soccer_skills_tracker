@@ -21,10 +21,12 @@ const db = () => admin.firestore();
 
 // DO NOT PURGE: Consents are legal attestations required for multi-year compliance retention.
 const SHRED_ROOT_COLLECTIONS = ['users', 'passports'];
-// EXEMPT: consent_logs and consent_records (COPPA 2.0 legal audit trails)
-const PURGE_EXEMPT_COLLECTIONS = ['consents', 'consent_logs', 'consent_records'];
 
 /** @type {readonly string[]} */
+const USER_PII_FIELDS = [
+  'playerName', 'displayName', 'email', 'emailLower', 'phoneNumber', 'phoneE164',
+  'dateOfBirth', 'parentEmail', 'verifiedAddress',
+];
 
 /** @type {readonly string[]} */
 const PASSPORT_PII_FIELDS = [
@@ -258,7 +260,3 @@ exports.SHRED_SENTINEL = SHRED_SENTINEL;
 exports.resolveLastActive = resolveLastActive;
 exports.buildShredPatch = buildShredPatch;
 exports.runShredPass = runShredPass;
-const USER_PII_FIELDS = [
-  'playerName', 'displayName', 'email', 'emailLower', 'phoneNumber', 'phoneE164',
-  'dateOfBirth', 'parentEmail', 'verifiedAddress',
-];
