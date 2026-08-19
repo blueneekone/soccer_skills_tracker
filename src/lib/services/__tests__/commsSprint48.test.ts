@@ -70,7 +70,7 @@ describe('Epic 4.8 — client CommsEngine + composer', () => {
 	});
 
 	it('mounted on /director?tab=comms via hub deep link (4.15a)', () => {
-		expect(directorPage).toMatch(/DirectorClubBroadcastComposer/);
+		expect(directorPage).toMatch(/DirectorCommsCompliancePanel/);
 		expect(directorPage).not.toMatch(/channel=club_wide/);
 		expect(directorPage).toMatch(/activeTab === 'comms'/);
 		expect(nav).toMatch(/tab:\s*['"]comms['"]/);

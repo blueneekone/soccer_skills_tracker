@@ -4,17 +4,13 @@ import { resolve } from 'path';
 
 export default defineConfig({
 	plugins: [
-		// Required so Vitest can transform .svelte files for jsdom render tests.
-		// Node-environment tests (CSS-source, logic) are unaffected.
 		svelte({ hot: !process.env.VITEST }),
 	],
 	resolve: {
-		// Prefer browser exports so Svelte 5 `mount()` uses the DOM build,
-		// not `index-server.js`, in jsdom-environment tests.
 		conditions: ['browser', 'import', 'module', 'default'],
 	},
 	test: {
-		setupFiles: [resolve(__dirname, '../src/setup/vitest.setup.ts')],
+		setupFiles: ['./src/setup/vitest.setup.ts'],
 		globals: true,
 		environment: 'node',
 		include: [
@@ -26,8 +22,8 @@ export default defineConfig({
 			'functions/src/__tests__/**/*.test.ts',
 		],
 		alias: {
-			$lib: resolve(__dirname, '../src/lib'),
-			$app: resolve(__dirname, '../src/app-stubs'),
+			$lib: resolve(__dirname, 'src/lib'),
+			$app: resolve(__dirname, 'src/app-stubs'),
 		},
 	},
 });
