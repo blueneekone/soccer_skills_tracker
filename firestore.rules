@@ -2,6 +2,7 @@
 // Enforces Zero-Trust Cell Routing and Multi-Tenant Isolation
 rules_version = '2';
 service cloud.firestore {
+  // Admin Gateway Rules
   match /databases/{database}/documents {
 
     // Standard helper to verify authentication state
@@ -177,6 +178,10 @@ service cloud.firestore {
     }
 
     // Enforce role and tenant check on users collection
+    match /organizations/{tenantId} {
+      allow read, list: if request.auth != null && request.auth.token.admin == true;
+    }
+
     match /users/{email} {
       allow read: if isGlobalAdmin() || (isAuthenticated() &&
         (

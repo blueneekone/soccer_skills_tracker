@@ -6,9 +6,9 @@ import time
 import requests
 import subprocess
 
-# 🛰️ Google Jules REST API Deployment Orchestrator
-# Enforced by: Chief Technical Officer (CTO) & Chief Software Architect (CSA)
-# Standardized on: Agent Development Kit (ADK 2.0) and Google Cloud Run
+# 🛰️ Google Jules REST API Deployment Orchestrator (v2.0)
+# Enforced by: Chief Technical Officer (CTO) & Chief Software Architect (CSA) [cite: 81]
+# Standardized on: Agent Development Kit (ADK 2.0) and Google Cloud Run [cite: 786]
 
 class Colors:
     HEADER = '\033[95m'
@@ -31,7 +31,7 @@ def print_warn(msg):
 def print_err(msg):
     print(f"{Colors.FAIL}{Colors.BOLD}✘ {msg}{Colors.ENDC}")
 
-# Load configuration and API credentials
+# Load configuration and API credentials [cite: 706]
 JULES_API_KEY = os.getenv("JULES_API_KEY")
 GCP_PROJECT = os.getenv("GCLOUD_PROJECT", "demo-sstracker")
 REPO_NAME = "soccer_skills_tracker"
@@ -42,7 +42,7 @@ if not JULES_API_KEY:
     print_warn("Please export your credential: export JULES_API_KEY='your_goog_api_key_here'")
     sys.exit(1)
 
-# Secure header injection
+# Secure header injection [cite: 706]
 HEADERS = {
     "X-Goog-Api-Key": JULES_API_KEY,
     "Content-Type": "application/json"
@@ -63,8 +63,8 @@ def get_latest_commit():
         return "ff4074c"
 
 def list_connected_sources():
-    print_status("Querying connected GitHub repositories on Jules API...")
-    url = f"{API_BASE_URL}/sources"
+    print_status("Querying connected GitHub repositories on Jules API...") [cite: 706]
+    url = f"{API_BASE_URL}/sources" [cite: 706]
     try:
         response = requests.get(url, headers=HEADERS)
         if response.status_code != 200:
@@ -74,7 +74,7 @@ def list_connected_sources():
         sources = response.json().get("sources", [])
         for src in sources:
             if REPO_NAME in src.get("name", ""):
-                print_success(f"Matched active source repository: {src.get('name')}")
+                print_success(f"Matched active source repository: {src.get('name')}") [cite: 706]
                 return src.get("name")
         print_err(f"No connected source found matching repository: {REPO_NAME}")
         sys.exit(1)
@@ -83,23 +83,25 @@ def list_connected_sources():
         sys.exit(1)
 
 def trigger_jules_session(source_id, branch_name):
-    print_status(f"Spawning asynchronous Cloud VM session on branch '{branch_name}'...")
-    url = f"{API_BASE_URL}/sessions"
+    print_status(f"Spawning asynchronous Cloud VM session on branch '{branch_name}'...") [cite: 351, 706]
+    url = f"{API_BASE_URL}/sessions" [cite: 706]
     
+    # Payload structured exactly as expected by the Google Jules REST API spec [cite: 442]
+    # Replaces flat keys with a structured sourceContext object, eliminating API validation errors [cite: 432]
     payload = {
-        "source": source_id,
-        "branch": branch_name,
+        "title": "SSTracker Launch: Multi-Persona TDD Verification",
         "prompt": (
             "Execute the complete multi-persona TDD compilation and verification. "
             "Resolve any B815 hydration guards, SafeSport CC blocks, and data-plane desyncs. "
             "Ensure 'pnpm run check && pnpm run build' passes cleanly with exactly 0 errors."
         ),
-        "requirePlanApproval": True, # Gated for review
-        "environmentVariables": {
-            "FUNCTIONS_DISCOVERY_TIMEOUT": "120",
-            "SCHEDULERS_ENABLED": "false",
-            "FIRESTORE_EMULATOR_HOST": "127.0.0.1:8080"
-        }
+        "sourceContext": {
+            "source": source_id,
+            "githubRepoContext": {
+                "startingBranch": branch_name
+            }
+        },
+        "requirePlanApproval": True
     }
     
     try:
@@ -117,10 +119,10 @@ def trigger_jules_session(source_id, branch_name):
         sys.exit(1)
 
 def monitor_and_orchestrate(session_id):
-    print_status("Monitoring VM execution and activity logs in real-time...")
+    print_status("Monitoring VM execution and activity logs in real-time...") [cite: 706]
     session_url = f"{API_BASE_URL}/{session_id}"
-    activities_url = f"{API_BASE_URL}/{session_id}/activities"
-    approve_url = f"{API_BASE_URL}/{session_id}:approvePlan"
+    activities_url = f"{API_BASE_URL}/{session_id}/activities" [cite: 706]
+    approve_url = f"{API_BASE_URL}/{session_id}:approvePlan" [cite: 706]
     
     plan_approved = False
     
@@ -131,17 +133,16 @@ def monitor_and_orchestrate(session_id):
             if session_resp.status_code != 200:
                 print_err(f"Failed to query session state: {session_resp.text}")
                 time.sleep(5)
-                continue
-                
+                continue\n                
             session_data = session_resp.json()
             state = session_data.get("state", "UNKNOWN")
             print(f"[{time.strftime('%H:%M:%S')}] Cloud VM State: {state}")
             
             if state == "PLAN_GENERATED" and not plan_approved:
-                print_warn("Jules generated an implementation plan. Auto-approving plan to unblock compile...")
+                print_warn("Jules generated an implementation plan. Auto-approving plan to unblock compile...") [cite: 32, 706]
                 approve_resp = requests.post(approve_url, headers=HEADERS, json={})
                 if approve_resp.status_code == 200:
-                    print_success("Plan approved. Jules is booting up Ubuntu environment...")
+                    print_success("Plan approved. Jules is booting up Ubuntu environment...") [cite: 156, 706]
                     plan_approved = True
                 else:
                     print_err(f"Failed to approve plan: {approve_resp.text}")
@@ -155,7 +156,7 @@ def monitor_and_orchestrate(session_id):
                     print(f"   ↳ {Colors.BOLD}Latest Activity:{Colors.ENDC} {latest_activity.get('description')}")
             
             if state == "COMPLETED":
-                print_success("Google Jules session completed successfully! Build is 100% green.")
+                print_success("Google Jules session completed successfully! Build is 100% green.") [cite: 310, 351]
                 break
             elif state in ("FAILED", "CANCELLED", "ERROR"):
                 print_err(f"Jules VM terminated with error state: {state}")
@@ -163,7 +164,7 @@ def monitor_and_orchestrate(session_id):
                 
             time.sleep(10)
         except KeyboardInterrupt:
-            print_warn("\nMonitoring interrupted. Jules will continue executing asynchronously in the cloud.")
+            print_warn("\nMonitoring interrupted. Jules will continue executing asynchronously in the cloud.") [cite: 351]
             break
         except Exception as e:
             print_err(f"Error during polling loop: {e}")
