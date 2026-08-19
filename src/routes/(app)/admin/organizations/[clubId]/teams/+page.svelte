@@ -1,521 +1,466 @@
 <script lang="ts">
 	import { page } from '$app/state';
-	import { db } from '$lib/firebase.js';
-	import { doc, setDoc } from 'firebase/firestore';
-	import { getContext } from 'svelte';
+	import { getActiveDb } from '$lib/firebase.js';
+	import { authStore } from '$lib/stores/auth.svelte.js';
+	import {
+		collection,
+		doc,
+		getDocs,
+		setDoc,
+		deleteDoc,
+		query,
+		where,
+		serverTimestamp,
+	} from 'firebase/firestore';
+	import { getContext, untrack } from 'svelte';
 	import { teamsStore } from '$lib/stores/teams.svelte.js';
 	import { logSecurityEvent } from '$lib/utils/security.js';
-	import '$lib/styles/enterprise-console.css';
 	import Icon from '$lib/components/ui/Icon.svelte';
 	import type { IconName } from '$lib/icons/registry.js';
 	import { ADMIN_CLUB_CTX_KEY, type AdminClubCtx } from '../adminClubCtx.js';
 
 	const ctx = getContext<AdminClubCtx>(ADMIN_CLUB_CTX_KEY);
+	const clubId = $derived(ctx?.clubId ?? '');
 
-	// ── Teams for this club (derived from global store) ─────────────────────────
-	const clubTeams = $derived(
-		teamsStore.teams.filter((t) => t.clubId === ctx.clubId),
-	);
+	interface TeamItem {
+		id: string;
+		clubId: string;
+		name: string;
+		coachEmail?: string;
+		ageGroup?: string;
+		createdAt?: any;
+	}
 
-	// ── Add Team form ────────────────────────────────────────────────────────────
-	let teamId      = $state('');
-	let teamName    = $state('');
-	let teamCoach   = $state('');
-	let teamSaving  = $state(false);
-	let teamAddErr  = $state('');
-	let showAddForm = $state(false);
+	let localTeams = $state<TeamItem[]>([]);
+	let loading = $state(false);
+	let error = $state('');
+	let successMsg = $state('');
+	let teamSearch = $state('');
 
-	const addTeam = async () => {
-		teamAddErr = '';
-		if (!ctx.clubId) {
-			teamAddErr = 'Organization context not loaded.';
+	// Add Team Modal
+	let showAddModal = $state(false);
+	let teamSuffix = $state('');
+	let teamName = $state('');
+	let teamCoach = $state('');
+	let ageGroup = $state('');
+	let teamSaving = $state(false);
+	let modalErr = $state('');
+
+	const filteredTeams = $derived.by(() => {
+		const q = teamSearch.trim().toLowerCase();
+		if (!q) return localTeams;
+		return localTeams.filter((t) =>
+			(t.name || '').toLowerCase().includes(q) ||
+			t.id.toLowerCase().includes(q) ||
+			(t.coachEmail || '').toLowerCase().includes(q)
+		);
+	});
+
+	$effect(() => {
+		const cid = clubId;
+		if (!cid) return;
+		let cancelled = false;
+
+		untrack(() => {
+			loading = true;
+			error = '';
+		});
+
+		void (async () => {
+			const activeDb = getActiveDb();
+			if (!activeDb || authStore.isLoading || !authStore.isAuthenticated) {
+				untrack(() => {
+					loading = false;
+					error = 'Missing permissions';
+				});
+				return;
+			}
+			try {
+				const q = query(
+					collection(activeDb, 'teams'),
+					where('clubId', '==', cid)
+				);
+				const snap = await getDocs(q);
+				if (cancelled) return;
+				const teamsList = snap.docs.map((d) => ({
+					id: d.id,
+					clubId: cid,
+					name: d.data().name || d.id,
+					coachEmail: d.data().coachEmail,
+					ageGroup: d.data().ageGroup,
+					createdAt: d.data().createdAt,
+				} as TeamItem));
+
+				untrack(() => {
+					localTeams = teamsList;
+					loading = false;
+				});
+			} catch (e) {
+				if (cancelled) return;
+				untrack(() => {
+					error = e instanceof Error ? e.message : 'Could not load teams.';
+					loading = false;
+				});
+			}
+		})();
+
+		return () => {
+			cancelled = true;
+		};
+	});
+
+	async function handleCreateTeam() {
+		modalErr = '';
+		if (!clubId) {
+			modalErr = 'Organization context not loaded.';
 			return;
 		}
-		if (!teamId.trim() || !teamName.trim()) {
-			teamAddErr = 'Enter a Team ID suffix and team name.';
+		const suffix = teamSuffix.trim().replace(/[^a-zA-Z0-9_-]/g, '');
+		const name = teamName.trim();
+		if (!suffix || !name) {
+			modalErr = 'Team ID suffix and Team Name are required.';
 			return;
 		}
-		const tid = `${ctx.clubId}_${teamId.trim()}`;
+		const tid = `${clubId}_${suffix}`;
+		const coachEmailClean = teamCoach.trim().toLowerCase();
+		const activeDb = getActiveDb();
+		if (!activeDb || !authStore.isAuthenticated) {
+			modalErr = 'Database not available.';
+			return;
+		}
+
 		teamSaving = true;
 		try {
-			await setDoc(doc(db, 'teams', tid), {
-				clubId: ctx.clubId,
-				name: teamName,
-				coachEmail: teamCoach.trim().toLowerCase(),
-				createdAt: new Date(),
-			});
-			if (teamCoach.trim()) {
-				const coachEmail = teamCoach.trim().toLowerCase();
+			const newTeamDoc: Record<string, any> = {
+				clubId,
+				name,
+				coachEmail: coachEmailClean || '',
+				createdAt: serverTimestamp(),
+			};
+			if (ageGroup.trim()) {
+				newTeamDoc.ageGroup = ageGroup.trim();
+			}
+
+			await setDoc(doc(activeDb, 'teams', tid), newTeamDoc);
+
+			if (coachEmailClean) {
 				await setDoc(
-					doc(db, 'users', coachEmail),
-					{ role: 'coach', clubId: ctx.clubId, teamId: tid },
-					{ merge: true },
+					doc(activeDb, 'users', coachEmailClean),
+					{ role: 'coach', clubId, teamId: tid, updatedAt: serverTimestamp() },
+					{ merge: true }
 				);
 				await setDoc(
-					doc(db, 'coach_lookup', coachEmail),
-					{ role: 'coach', clubId: ctx.clubId, teamId: tid },
-					{ merge: true },
+					doc(activeDb, 'coach_lookup', coachEmailClean),
+					{ role: 'coach', clubId, teamId: tid },
+					{ merge: true }
 				);
 			}
-			await logSecurityEvent('CREATE_TEAM', tid, teamName);
-			teamId = '';
+
+			await logSecurityEvent('CREATE_TEAM', tid, name);
+
+			// Optimistic local update
+			const createdItem: TeamItem = {
+				id: tid,
+				clubId,
+				name,
+				coachEmail: coachEmailClean,
+				ageGroup: ageGroup.trim() || undefined,
+			};
+			localTeams = [createdItem, ...localTeams.filter((t) => t.id !== tid)];
+
+			// Invalidate & refresh global store
+			teamsStore.invalidate();
+			void teamsStore.load('super_admin', { scope: 'admin_full', forceRefresh: true });
+
+			successMsg = `Team "${name}" (${tid}) created successfully.`;
+			setTimeout(() => { successMsg = ''; }, 4000);
+
+			showAddModal = false;
+			teamSuffix = '';
 			teamName = '';
 			teamCoach = '';
-			showAddForm = false;
-			await teamsStore.load('super_admin', { scope: 'admin_full', routePath: page.url.pathname });
+			ageGroup = '';
 		} catch (e) {
-			teamAddErr = e instanceof Error ? e.message : 'Could not create team.';
+			console.error('Create team error', e);
+			modalErr = e instanceof Error ? e.message : 'Could not create team.';
 		} finally {
 			teamSaving = false;
 		}
-	};
+	}
+
+	async function handleDeleteTeam(t: TeamItem) {
+		const ok = confirm(`Permanently delete team "${t.name}" (${t.id})?\n\nThis will remove the team and unlink its roster.`);
+		if (!ok) return;
+		const activeDb = getActiveDb();
+		if (!activeDb || !authStore.isAuthenticated) return;
+
+		try {
+			await deleteDoc(doc(activeDb, 'teams', t.id));
+			await logSecurityEvent('DELETE_TEAM', t.id, t.name);
+			localTeams = localTeams.filter((item) => item.id !== t.id);
+			teamsStore.invalidate();
+			void teamsStore.load('super_admin', { scope: 'admin_full', forceRefresh: true });
+			successMsg = `Team "${t.name}" deleted.`;
+			setTimeout(() => { successMsg = ''; }, 4000);
+		} catch (e) {
+			console.error('Delete team failed', e);
+			error = 'Failed to delete team.';
+		}
+	}
 </script>
 
-<div class="teams-page">
+<svelte:head>
+	<title>Organization Teams · NEXUS COMMAND</title>
+</svelte:head>
 
-	<!-- ── Page toolbar ─────────────────────────────────────────────────────────── -->
-	<div class="teams-page__toolbar">
-		<div class="teams-page__toolbar-left">
-			<h2 class="teams-page__title">
-				<Icon name={"user.group" as IconName} />
-				Teams
-			</h2>
-			{#if !ctx.clubLoading && ctx.clubDoc}
-				<span class="teams-page__count">
-					{clubTeams.length} team{clubTeams.length === 1 ? '' : 's'}
-				</span>
-			{/if}
+<div class="tw-flex tw-flex-col tw-gap-5 tw-p-6">
+	<!-- Page Header -->
+	<div class="tw-flex tw-flex-wrap tw-items-center tw-justify-between tw-gap-4">
+		<div class="tw-flex tw-flex-col tw-gap-1">
+			<h1 class="tw-m-0 tw-text-xl tw-font-extrabold tw-text-[#FAFAFA] tw-flex tw-items-center tw-gap-2.5">
+				<Icon name={"user.group" as IconName} class="tw-text-[#14b8a6]" />
+				Teams & Rosters
+			</h1>
+			<p class="tw-m-0 tw-text-xs tw-text-[#94a3b8] tw-font-mono">
+				Manage squads, head coaches, and athlete assignments for {ctx?.clubDoc?.name || clubId}
+			</p>
 		</div>
+
 		<button
 			type="button"
-			class="teams-add-btn"
-			onclick={() => (showAddForm = !showAddForm)}
-			aria-expanded={showAddForm}
+			class="tw-inline-flex tw-items-center tw-gap-2 tw-px-4 tw-py-2 tw-bg-[#fbbf24] hover:tw-bg-[#f59e0b] tw-text-[#020617] tw-font-sans tw-text-xs tw-font-extrabold tw-uppercase tw-tracking-wider tw-transition-colors"
+			onclick={() => { showAddModal = true; modalErr = ''; }}
 		>
-			<Icon name={showAddForm ? ("sys.close" as IconName) : ("action.add" as IconName)} />
-			{showAddForm ? 'Cancel' : 'Add Team'}
+			<Icon name={"action.add" as IconName} />
+			Add Team
 		</button>
 	</div>
 
-	<!-- ── Inline Add Team form ──────────────────────────────────────────────────── -->
-	{#if showAddForm}
-		<div class="teams-add-form">
-			{#if teamAddErr}
-				<p class="teams-flash teams-flash--err" role="alert">{teamAddErr}</p>
+	<!-- Flash Messages -->
+	{#if error}
+		<div class="tw-p-4 tw-bg-[#1E293B] tw-border tw-border-[#ef4444] tw-text-[#ef4444] tw-font-mono tw-text-xs tw-font-bold tw-flex tw-items-center tw-gap-2" role="alert">
+			<Icon name={"status.warning-triangle" as IconName} />
+			<span>{error}</span>
+		</div>
+	{/if}
+	{#if successMsg}
+		<div class="tw-p-4 tw-bg-[#1E293B] tw-border tw-border-[#14b8a6] tw-text-[#14b8a6] tw-font-mono tw-text-xs tw-font-bold tw-flex tw-items-center tw-gap-2" role="status">
+			<Icon name={"status.check" as IconName} />
+			<span>{successMsg}</span>
+		</div>
+	{/if}
+
+	<!-- Search Toolbar -->
+	<div class="tw-flex tw-items-center tw-justify-between tw-gap-3 tw-bg-[#0f172a] tw-p-3.5 tw-border tw-border-[#334155]">
+		<div class="tw-flex tw-items-center tw-gap-2 tw-flex-1 tw-max-w-md">
+			<Icon name={"action.search" as IconName} class="tw-text-[#94a3b8]" />
+			<input
+				type="search"
+				class="tw-w-full tw-bg-[#020617] tw-border tw-border-[#334155] tw-text-[#FAFAFA] tw-font-mono tw-text-xs tw-px-3 tw-py-1.5 focus:tw-outline-none focus:tw-border-[#14b8a6]"
+				bind:value={teamSearch}
+				placeholder="Filter squads by name, ID, or coach..."
+			/>
+		</div>
+		<div class="tw-text-xs tw-font-mono tw-text-[#94a3b8]">
+			{filteredTeams.length} {filteredTeams.length === 1 ? 'TEAM' : 'TEAMS'}
+		</div>
+	</div>
+
+	<!-- Teams Table -->
+	<div class="tw-w-full tw-overflow-x-auto tw-border tw-border-[#334155] tw-bg-[#020617]">
+		<div class="tw-border tw-border-[#334155] tw-bg-[#0f172a] tw-p-4 tw-min-w-0 tw-overflow-x-auto">
+			<table class="tw-w-full tw-font-mono tw-text-sm tw-min-w-[700px] tw-text-left tw-border-collapse">
+				<thead class="tw-sticky tw-top-0 tw-z-10 tw-bg-[#020617] tw-border-b tw-border-[#334155]">
+					<tr>
+						<th class="tw-px-4 tw-py-3 tw-text-xs tw-font-extrabold tw-tracking-wider tw-uppercase tw-text-[#D4D4D8]">Squad Name</th>
+						<th class="tw-px-4 tw-py-3 tw-text-xs tw-font-extrabold tw-tracking-wider tw-uppercase tw-text-[#D4D4D8]">Team ID</th>
+						<th class="tw-px-4 tw-py-3 tw-text-xs tw-font-extrabold tw-tracking-wider tw-uppercase tw-text-[#D4D4D8]">Head Coach</th>
+						<th class="tw-px-4 tw-py-3 tw-text-xs tw-font-extrabold tw-tracking-wider tw-uppercase tw-text-[#D4D4D8] tw-text-right">Actions</th>
+					</tr>
+				</thead>
+				<tbody>
+					{#if loading}
+						<tr>
+							<td colspan="4" class="tw-px-4 tw-py-12 tw-text-center tw-text-sm tw-font-bold tw-text-[#94a3b8]">
+								<span class="tw-inline-block tw-animate-spin tw-mr-2">⟳</span> Loading teams...
+							</td>
+						</tr>
+					{:else if filteredTeams.length === 0}
+						<tr>
+							<td colspan="4" class="tw-px-4 tw-py-12 tw-text-center tw-text-sm tw-font-bold tw-text-[#94a3b8]">
+								{localTeams.length === 0 ? 'No teams created for this organization yet. Click "+ Add Team" to create one.' : 'No teams match your search.'}
+							</td>
+						</tr>
+					{:else}
+						{#each filteredTeams as t (t.id)}
+							<tr class="tw-border-b tw-border-[#334155]/60 hover:tw-bg-[#0B0F19] tw-transition-colors last:tw-border-none">
+								<!-- Team Name & Age Group -->
+								<td class="tw-px-4 tw-py-3.5">
+									<div class="tw-flex items-center tw-gap-2.5">
+										<div class="tw-w-7 tw-h-7 tw-rounded tw-bg-[#14b8a6]/10 tw-border tw-border-[#14b8a6]/30 tw-flex tw-items-center tw-justify-center tw-text-[#14b8a6]">
+											<Icon name={"user.group" as IconName} size={14} />
+										</div>
+										<div class="tw-flex tw-flex-col">
+											<span class="tw-text-sm tw-font-sans tw-font-bold tw-text-[#FAFAFA]">{t.name}</span>
+											{#if t.ageGroup}
+												<span class="tw-text-[11px] tw-font-mono tw-text-[#94a3b8]">{t.ageGroup}</span>
+											{/if}
+										</div>
+									</div>
+								</td>
+
+								<!-- Team ID -->
+								<td class="tw-px-4 tw-py-3.5">
+									<code class="tw-px-2 tw-py-0.5 tw-bg-[#020617] tw-border tw-border-[#334155] tw-text-xs tw-text-[#14b8a6] tw-font-mono">
+										{t.id}
+									</code>
+								</td>
+
+								<!-- Head Coach -->
+								<td class="tw-px-4 tw-py-3.5">
+									{#if t.coachEmail}
+										<div class="tw-flex tw-items-center tw-gap-2">
+											<span class="tw-w-2 tw-h-2 tw-rounded-full tw-bg-[#14b8a6]"></span>
+											<span class="tw-text-xs tw-font-mono tw-text-[#FAFAFA]">{t.coachEmail}</span>
+										</div>
+									{:else}
+										<span class="tw-text-xs tw-font-mono tw-text-[#64748b] tw-italic">Unassigned</span>
+									{/if}
+								</td>
+
+								<!-- Actions -->
+								<td class="tw-px-4 tw-py-3.5 tw-text-right">
+									<div class="tw-flex tw-items-center tw-justify-end tw-gap-2">
+										<a
+											href="/admin/organizations/{clubId}/teams/{t.id}/roster"
+											class="tw-px-3 tw-py-1 tw-bg-[#14b8a6]/10 hover:tw-bg-[#14b8a6]/20 tw-border tw-border-[#14b8a6]/40 tw-text-[#14b8a6] tw-font-mono tw-text-xs tw-font-bold tw-transition-colors"
+										>
+											Manage Roster &rarr;
+										</a>
+										<button
+											type="button"
+											class="tw-px-2 tw-py-1 tw-text-xs tw-font-mono tw-text-[#94a3b8] hover:tw-text-[#ef4444] hover:tw-bg-[#ef4444]/10 tw-border tw-border-[#334155] hover:tw-border-[#ef4444]/40 tw-transition-colors"
+											title="Delete team"
+											onclick={() => handleDeleteTeam(t)}
+										>
+											Delete
+										</button>
+									</div>
+								</td>
+							</tr>
+						{/each}
+					{/if}
+				</tbody>
+			</table>
+		</div>
+	</div>
+</div>
+
+<!-- Modal: Add Team -->
+{#if showAddModal}
+	<div class="tw-fixed tw-inset-0 tw-z-50 tw-flex tw-items-center tw-justify-center tw-bg-black/80 tw-p-4" role="dialog" aria-modal="true">
+		<div class="tw-w-full tw-max-w-lg tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-p-6 tw-flex tw-flex-col tw-gap-4">
+			<div class="tw-flex tw-items-center tw-justify-between tw-border-b tw-border-[#334155] tw-pb-3">
+				<h2 class="tw-m-0 tw-text-base tw-font-extrabold tw-text-[#FAFAFA] tw-flex tw-items-center tw-gap-2">
+					<Icon name={"action.add" as IconName} class="tw-text-[#14b8a6]" />
+					Create New Team
+				</h2>
+				<button
+					type="button"
+					class="tw-text-[#94a3b8] hover:tw-text-[#FAFAFA]"
+					onclick={() => (showAddModal = false)}
+				>
+					<Icon name={"sys.close" as IconName} />
+				</button>
+			</div>
+
+			{#if modalErr}
+				<div class="tw-p-3 tw-bg-[#1E293B] tw-border tw-border-[#ef4444] tw-text-[#ef4444] tw-font-mono tw-text-xs tw-font-bold" role="alert">
+					{modalErr}
+				</div>
 			{/if}
-			{#if ctx.clubLoading}
-				<p class="teams-muted">Loading organization…</p>
-			{:else if ctx.clubErr}
-				<p class="teams-flash teams-flash--err" role="alert">{ctx.clubErr}</p>
-			{:else}
-				<p class="teams-muted">
-					Final Team ID: <code class="teams-code">{ctx.clubId}_{teamId.trim() || '…'}</code>
-				</p>
-				<div class="teams-add-grid">
-					<div class="teams-field">
-						<label class="teams-field__label" for="add-team-id">
-							Team ID suffix <span class="teams-req" aria-hidden="true">*</span>
+
+			<div class="tw-flex tw-flex-col tw-gap-3">
+				<div>
+					<label for="team-name-input" class="tw-block tw-text-xs tw-font-mono tw-font-bold tw-text-[#D4D4D8] tw-uppercase tw-mb-1">
+						Team Name <span class="tw-text-[#ef4444]">*</span>
+					</label>
+					<input
+						id="team-name-input"
+						type="text"
+						class="tw-w-full tw-bg-[#020617] tw-border tw-border-[#334155] tw-text-[#FAFAFA] tw-font-mono tw-text-xs tw-px-3 tw-py-2 focus:tw-outline-none focus:tw-border-[#14b8a6]"
+						bind:value={teamName}
+						placeholder="e.g. Aggies FC U11 2016 Girls Grey"
+						disabled={teamSaving}
+					/>
+				</div>
+
+				<div class="tw-grid tw-grid-cols-2 tw-gap-3">
+					<div>
+						<label for="team-suffix-input" class="tw-block tw-text-xs tw-font-mono tw-font-bold tw-text-[#D4D4D8] tw-uppercase tw-mb-1">
+							Team ID Suffix <span class="tw-text-[#ef4444]">*</span>
 						</label>
 						<input
-							id="add-team-id"
+							id="team-suffix-input"
 							type="text"
-							class="teams-input"
-							bind:value={teamId}
-							placeholder="e.g. u15bew"
+							class="tw-w-full tw-bg-[#020617] tw-border tw-border-[#334155] tw-text-[#FAFAFA] tw-font-mono tw-text-xs tw-px-3 tw-py-2 focus:tw-outline-none focus:tw-border-[#14b8a6]"
+							bind:value={teamSuffix}
+							placeholder="e.g. u11g_grey"
 							disabled={teamSaving}
 						/>
+						<span class="tw-text-[10px] tw-font-mono tw-text-[#94a3b8] tw-mt-1 tw-block">
+							Full ID: <code>{clubId}_{teamSuffix.trim() || '...'}</code>
+						</span>
 					</div>
-					<div class="teams-field">
-						<label class="teams-field__label" for="add-team-name">
-							Team Name <span class="teams-req" aria-hidden="true">*</span>
+
+					<div>
+						<label for="team-age-group-input" class="tw-block tw-text-xs tw-font-mono tw-font-bold tw-text-[#D4D4D8] tw-uppercase tw-mb-1">
+							Age Group / Tier
 						</label>
 						<input
-							id="add-team-name"
+							id="team-age-group-input"
 							type="text"
-							class="teams-input"
-							bind:value={teamName}
-							placeholder="e.g. Aggie FC U15 Boys"
-							disabled={teamSaving}
-						/>
-					</div>
-					<div class="teams-field">
-						<label class="teams-field__label" for="add-team-coach">Head Coach Email</label>
-						<input
-							id="add-team-coach"
-							type="email"
-							class="teams-input"
-							bind:value={teamCoach}
-							placeholder="coach@example.com"
+							class="tw-w-full tw-bg-[#020617] tw-border tw-border-[#334155] tw-text-[#FAFAFA] tw-font-mono tw-text-xs tw-px-3 tw-py-2 focus:tw-outline-none focus:tw-border-[#14b8a6]"
+							bind:value={ageGroup}
+							placeholder="e.g. U11 / Tier 1"
 							disabled={teamSaving}
 						/>
 					</div>
 				</div>
+
+				<div>
+					<label for="team-coach-input" class="tw-block tw-text-xs tw-font-mono tw-font-bold tw-text-[#D4D4D8] tw-uppercase tw-mb-1">
+						Head Coach Email
+					</label>
+					<input
+						id="team-coach-input"
+						type="email"
+						class="tw-w-full tw-bg-[#020617] tw-border tw-border-[#334155] tw-text-[#FAFAFA] tw-font-mono tw-text-xs tw-px-3 tw-py-2 focus:tw-outline-none focus:tw-border-[#14b8a6]"
+						bind:value={teamCoach}
+						placeholder="coach@aggiesfc.com"
+						disabled={teamSaving}
+					/>
+				</div>
+			</div>
+
+			<div class="tw-flex tw-items-center tw-justify-end tw-gap-3 tw-pt-3 tw-border-t tw-border-[#334155]">
 				<button
 					type="button"
-					class="teams-submit-btn"
-					onclick={addTeam}
+					class="tw-px-4 tw-py-2 tw-text-xs tw-font-mono tw-font-bold tw-text-[#94a3b8] hover:tw-text-[#FAFAFA]"
+					onclick={() => (showAddModal = false)}
 					disabled={teamSaving}
 				>
-					{teamSaving ? 'Creating…' : '+ Add Team'}
+					Cancel
 				</button>
-			{/if}
-		</div>
-	{/if}
-
-	<!-- ── Teams DataTable ──────────────────────────────────────────────────────── -->
-	<div class="teams-dt-container">
-		<div class="tw-border tw-border-[#334155] tw-bg-[#0f172a] tw-p-4 tw-min-w-0 tw-overflow-x-auto">
-			<table class="tw-w-full tw-font-mono tw-text-sm teams-dt" aria-label="Teams in this organization">
-			<thead class="teams-dt__head">
-				<tr>
-					<th class="teams-dt__th" scope="col">Team Name</th>
-					<th class="teams-dt__th" scope="col">Team ID</th>
-					<th class="teams-dt__th" scope="col">Head Coach</th>
-					<th class="teams-dt__th teams-dt__th--actions" scope="col">Roster</th>
-				</tr>
-			</thead>
-			<tbody>
-				{#if clubTeams.length === 0}
-					<tr>
-						<td colspan="4" class="teams-dt__td-empty">
-							No teams for this organization yet.
-						</td>
-					</tr>
-				{:else}
-					{#each clubTeams as t (t.id)}
-						<tr class="teams-dt__row">
-							<td class="teams-dt__td teams-dt__td--name">{t.name || '—'}</td>
-							<td class="teams-dt__td teams-dt__td--mono">{t.id}</td>
-							<td class="teams-dt__td teams-dt__td--muted">{t.coachEmail || '—'}</td>
-							<td class="teams-dt__td teams-dt__td--actions">
-								<a
-									href="/admin/organizations/{ctx.clubId}/teams/{t.id}/roster"
-									class="teams-roster-btn"
-									aria-label="View roster for {t.name || t.id}"
-								>
-									Roster &rarr;
-								</a>
-							</td>
-						</tr>
-					{/each}
-				{/if}
-			</tbody>
-		</table>
+				<button
+					type="button"
+					class="tw-px-4 tw-py-2 tw-bg-[#14b8a6] hover:tw-bg-[#0d9488] tw-text-[#020617] tw-font-sans tw-text-xs tw-font-extrabold tw-uppercase tw-tracking-wider tw-transition-colors disabled:tw-opacity-50"
+					onclick={handleCreateTeam}
+					disabled={teamSaving}
+				>
+					{teamSaving ? 'Creating...' : 'Create Team'}
+				</button>
+			</div>
 		</div>
 	</div>
-
-</div>
-
-<style>
-	.teams-page {
-		display: flex;
-		flex-direction: column;
-		gap: 0;
-	}
-
-	/* ── Toolbar ────────────────────────────────────────────────────── */
-	.teams-page__toolbar {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		gap: 16px;
-		flex-wrap: wrap;
-		padding-bottom: 14px;
-		border-bottom: 1px solid var(--border-subtle, #e5e5e5);
-		margin-bottom: 0;
-	}
-
-	:global(html.dark) .teams-page__toolbar {
-		border-bottom-color: rgba(255, 255, 255, 0.08);
-	}
-
-	.teams-page__toolbar-left {
-		display: flex;
-		align-items: baseline;
-		gap: 10px;
-		flex-shrink: 0;
-	}
-
-	.teams-page__title {
-		margin: 0;
-		font-size: 0.9375rem;
-		font-weight: 700;
-		letter-spacing: -0.02em;
-		color: var(--text-primary);
-		display: flex;
-		align-items: center;
-		gap: 7px;
-	}
-
-	.teams-page__count {
-		font-size: 0.75rem;
-		color: var(--text-secondary);
-		font-variant-numeric: tabular-nums;
-	}
-
-	.teams-add-btn {
-		display: inline-flex;
-		align-items: center;
-		gap: 6px;
-		height: 34px;
-		padding: 0 14px;
-		border-radius: 7px;
-		border: 1px solid var(--border-subtle, #e5e5e5);
-		background: var(--glass-bg, #fff);
-		font: inherit;
-		font-size: 0.8125rem;
-		font-weight: 600;
-		color: var(--text-primary);
-		cursor: pointer;
-		transition: background 0.1s ease, border-color 0.1s ease;
-		white-space: nowrap;
-	}
-
-	.teams-add-btn:hover {
-		background: rgba(0, 0, 0, 0.04);
-		border-color: rgba(0, 0, 0, 0.18);
-	}
-
-	:global(html.dark) .teams-add-btn {
-		background: rgba(255, 255, 255, 0.04);
-		border-color: rgba(255, 255, 255, 0.1);
-		color: #f4f4f5;
-	}
-
-	/* ── Add form ───────────────────────────────────────────────────── */
-	.teams-add-form {
-		padding: 16px 0 20px;
-		border-bottom: 1px solid var(--border-subtle, #e5e5e5);
-	}
-
-	:global(html.dark) .teams-add-form {
-		border-bottom-color: rgba(255, 255, 255, 0.08);
-	}
-
-	.teams-add-grid {
-		display: grid;
-		grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-		gap: 12px;
-		margin-bottom: 14px;
-	}
-
-	.teams-field {
-		display: flex;
-		flex-direction: column;
-		gap: 5px;
-	}
-
-	.teams-field__label {
-		font-size: 0.6875rem;
-		font-weight: 800;
-		text-transform: uppercase;
-		letter-spacing: 0.06em;
-		color: var(--text-secondary);
-	}
-
-	.teams-input {
-		height: 34px;
-		padding: 0 10px;
-		border-radius: 7px;
-		border: 1px solid var(--border-subtle, #e5e5e5);
-		background: var(--glass-bg, #fff);
-		font: inherit;
-		font-size: 0.8125rem;
-		color: var(--text-primary);
-		outline: none;
-		transition: border-color 0.12s ease;
-		box-sizing: border-box;
-		width: 100%;
-	}
-
-	.teams-input:focus { border-color: var(--brand-primary, #f59e0b); }
-	.teams-input:disabled { opacity: 0.55; cursor: not-allowed; }
-
-	:global(html.dark) .teams-input {
-		background: rgba(255, 255, 255, 0.04);
-		border-color: rgba(255, 255, 255, 0.10);
-		color: #f4f4f5;
-		box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.35);
-	}
-
-	.teams-req { color: var(--danger-red, #b91c1c); margin-left: 2px; }
-
-	.teams-submit-btn {
-		height: 34px;
-		padding: 0 16px;
-		border-radius: 7px;
-		border: none;
-		background: var(--brand-primary, #f59e0b);
-		font: inherit;
-		font-size: 0.8125rem;
-		font-weight: 700;
-		color: #0f172a;
-		cursor: pointer;
-		transition: filter 0.1s ease;
-	}
-
-	.teams-submit-btn:hover:not(:disabled) { filter: brightness(1.06); }
-	.teams-submit-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-
-	.teams-muted {
-		margin: 0 0 10px;
-		font-size: 0.8125rem;
-		color: var(--text-secondary);
-	}
-
-	.teams-code {
-		font-family: ui-monospace, SFMono-Regular, monospace;
-		font-size: 0.8125rem;
-		background: rgba(0, 0, 0, 0.05);
-		border-radius: 4px;
-		padding: 1px 5px;
-	}
-
-	:global(html.dark) .teams-code {
-		background: rgba(255, 255, 255, 0.08);
-	}
-
-	/* ── Flash / error ──────────────────────────────────────────────── */
-	.teams-flash {
-		margin: 0 0 10px;
-		padding: 10px 12px;
-		border-radius: 8px;
-		font-weight: 600;
-		font-size: 0.875rem;
-	}
-
-	.teams-flash--err {
-		background: rgba(185, 28, 28, 0.08);
-		color: var(--danger-red, #991b1b);
-		border: 1px solid rgba(185, 28, 28, 0.3);
-	}
-
-	/* ── DataTable ──────────────────────────────────────────────────── */
-	.teams-dt-container {
-		width: 100%;
-		overflow-x: auto;
-		-webkit-overflow-scrolling: touch;
-		border-top: 1px solid var(--border-subtle, #e5e5e5);
-		border-bottom: 1px solid var(--border-subtle, #e5e5e5);
-	}
-
-	:global(html.dark) .teams-dt-container {
-		border-color: rgba(255, 255, 255, 0.07);
-	}
-
-	.teams-dt {
-		width: 100%;
-		min-width: 520px;
-		border-collapse: collapse;
-		font-size: 0.8125rem;
-		letter-spacing: -0.01em;
-	}
-
-	.teams-dt__head {
-		position: sticky;
-		top: 0;
-		z-index: 10;
-	}
-
-	.teams-dt__th {
-		padding: 8px 12px;
-		text-align: left;
-		font-size: 0.6875rem;
-		font-weight: 800;
-		text-transform: uppercase;
-		letter-spacing: 0.07em;
-		color: var(--text-secondary);
-		background: var(--surface-subtle, #f9f9f9);
-		border-bottom: 1px solid var(--border-subtle, #e5e5e5);
-		white-space: nowrap;
-	}
-
-	:global(html.dark) .teams-dt__th {
-		background: #0d0d0f;
-		border-bottom-color: rgba(255, 255, 255, 0.07);
-	}
-
-	.teams-dt__th--actions {
-		width: 130px;
-		text-align: right;
-		padding-right: 16px;
-	}
-
-	.teams-dt__row {
-		border-bottom: 1px solid var(--border-subtle, #e5e5e5);
-		transition: background 0.07s ease;
-	}
-
-	.teams-dt__row:last-child { border-bottom: none; }
-
-	.teams-dt__row:hover {
-		background: rgba(0, 0, 0, 0.018);
-	}
-
-	:global(html.dark) .teams-dt__row {
-		border-bottom-color: rgba(255, 255, 255, 0.05);
-	}
-
-	:global(html.dark) .teams-dt__row:hover {
-		background: rgba(255, 255, 255, 0.025);
-	}
-
-	.teams-dt__td {
-		padding: 10px 12px;
-		vertical-align: middle;
-		color: var(--text-primary);
-	}
-
-	.teams-dt__td--name {
-		font-weight: 600;
-	}
-
-	.teams-dt__td--mono {
-		font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-		font-size: 0.75rem;
-		color: var(--text-secondary);
-	}
-
-	.teams-dt__td--muted {
-		color: var(--text-secondary);
-		font-size: 0.8125rem;
-	}
-
-	.teams-dt__td--actions {
-		text-align: right;
-		padding-right: 16px;
-		white-space: nowrap;
-	}
-
-	.teams-dt__td-empty {
-		text-align: center;
-		padding: 40px 20px !important;
-		color: var(--text-secondary);
-		font-size: 0.875rem;
-	}
-
-	/* ── Roster link button ─────────────────────────────────────────── */
-	.teams-roster-btn {
-		display: inline-flex;
-		align-items: center;
-		gap: 5px;
-		padding: 4px 10px;
-		border-radius: 6px;
-		border: 1px solid rgba(245, 158, 11, 0.35);
-		color: var(--brand-primary, #d97706);
-		font-size: 0.75rem;
-		font-weight: 700;
-		text-decoration: none;
-		transition: background 0.1s ease;
-		white-space: nowrap;
-	}
-
-	.teams-roster-btn:hover {
-		background: rgba(245, 158, 11, 0.07);
-	}
-
-	:global(html.dark) .teams-roster-btn {
-		color: #fbbf24;
-		border-color: rgba(245, 158, 11, 0.3);
-	}
-</style>
+{/if}

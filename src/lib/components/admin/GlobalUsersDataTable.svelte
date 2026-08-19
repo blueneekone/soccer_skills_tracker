@@ -26,6 +26,7 @@
 		onLoginAs: (row: GlobalUserRow) => void;
 		onDeactivate: (row: GlobalUserRow) => void;
 		onPurge: (row: GlobalUserRow) => void;
+		onDeleteUser?: (row: GlobalUserRow) => void;
 		onPrevPage: () => void;
 		onNextPage: () => void;
 	}
@@ -46,6 +47,7 @@
 		onLoginAs,
 		onDeactivate,
 		onPurge,
+		onDeleteUser,
 		onPrevPage,
 		onNextPage,
 	}: Props = $props();
@@ -245,6 +247,19 @@
 										>
 											<Icon name={'sys.ban' as IconName} aria-hidden="true" />
 											<span>Revoke access / Deactivate</span>
+										</button>
+
+										<div class="v-admin-menu__sep" aria-hidden="true"></div>
+
+										<button
+											type="button"
+											class="v-admin-menu__item v-admin-menu__item--danger"
+											role="menuitem"
+											onclick={() => onDeleteUser?.(row)}
+											disabled={row.role === 'super_admin' || row.role === 'global_admin'}
+										>
+											<Icon name={'action.delete' as IconName} aria-hidden="true" />
+											<span>Delete User</span>
 										</button>
 
 										<div class="v-admin-menu__sep" aria-hidden="true"></div>

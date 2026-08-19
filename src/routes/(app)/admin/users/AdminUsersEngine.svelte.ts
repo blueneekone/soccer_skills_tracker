@@ -176,9 +176,10 @@ export class AdminUsersEngine {
 		this.loginAsBusyFor = row.id;
 		try {
 			const res = await this.impersonateUserFn({ targetUid: row.id || row.uid, targetEmail: row.email });
-			const payload = (res.data || {}) as { customToken?: string };
-			if (!payload.customToken) throw new Error('Impersonation token missing from response.');
-			await signInWithCustomToken(auth, payload.customToken);
+			const payload = (res.data || {}) as { customToken?: string; token?: string };
+			const customToken = payload.customToken || payload.token;
+			if (!customToken) throw new Error('Impersonation token missing from response.');
+			await signInWithCustomToken(auth, customToken);
 			await auth.currentUser?.getIdToken(true);
 			await impersonationStore.touch();
 			await logSecurityEvent(
@@ -186,12 +187,55 @@ export class AdminUsersEngine {
 				row.email,
 				`Platform admin ${actorEmail} assumed session as ${row.email} (${row.role})`,
 			);
-			await goto('/dashboard', { replaceState: true });
+
+			// Dynamic role-based portal routing
+			const role = (row.role || '').toLowerCase();
+			if (role === 'director' || role === 'club_director' || role === 'registrar') {
+				await goto('/director?tab=home', { replaceState: true });
+			} else if (role === 'coach' || role === 'head_coach' || role === 'assistant_coach') {
+				await goto('/coach/dashboard', { replaceState: true });
+			} else if (role === 'parent' || role === 'guardian') {
+				await goto('/parent/household', { replaceState: true });
+			} else if (role === 'player' || role === 'athlete') {
+				await goto('/player/dashboard', { replaceState: true });
+			} else {
+				await goto('/admin/overview', { replaceState: true });
+			}
 		} catch (e) {
 			console.error('[global-users] impersonation failed', e);
 			this.flashErr = e instanceof Error ? e.message : 'Impersonation failed.';
 		} finally {
 			this.loginAsBusyFor = '';
+		}
+	}
+
+	deleteUser = async (row: GlobalUserRow) => {
+		this.openMenuFor = '';
+		if (this.isRevokeTargetSelf(row)) {
+			this.flashErr = 'You cannot delete your own account.';
+			return;
+		}
+		if (row.role === 'super_admin' || row.role === 'global_admin') {
+			this.flashErr = 'Cannot delete a global admin.';
+			return;
+		}
+		const ok = confirm(`Permanently delete user ${row.email || row.displayName || row.id} from the platform and Firebase Auth?\n\nThis action cannot be undone.`);
+		if (!ok) return;
+
+		this.flashErr = '';
+		this.flashOk = '';
+		try {
+			await this.purgeUserDataFn({
+				targetEmail: row.email,
+				reason: 'Admin Global Users hard delete',
+			});
+			await logSecurityEvent('DELETE_USER', row.email, 'Admin hard delete');
+			this.flashOk = `User ${row.email} deleted successfully.`;
+			this.rows = this.rows.filter(r => r.id !== row.id && r.email !== row.email);
+			this.totalEstimate = Math.max(0, this.totalEstimate - 1);
+		} catch (e) {
+			console.error('[global-users] delete failed', e);
+			this.flashErr = e instanceof Error ? e.message : 'Delete user failed.';
 		}
 	}
 
@@ -282,6 +326,7 @@ export class AdminUsersEngine {
 			return;
 		}
 		const key = row.email.toLowerCase();
+		const uidKey = row.id || row.uid;
 		this.deactivateBusy = true;
 		this.deactivateErr = '';
 		this.flashErr = '';
@@ -290,7 +335,14 @@ export class AdminUsersEngine {
 				status: USER_ACCOUNT_STATUS.suspended,
 				roles: [],
 				role: 'guest',
-			});
+			}).catch(() => null);
+			if (uidKey && uidKey !== key) {
+				await updateDoc(doc(db, 'users', uidKey), {
+					status: USER_ACCOUNT_STATUS.suspended,
+					roles: [],
+					role: 'guest',
+				}).catch(() => null);
+			}
 			await logSecurityEvent('SUSPEND_USER', key, 'Enterprise deactivation from Global Users');
 			this.rows = suspendUserRowLocally(this.rows, key);
 			this.flashOk = `Access revoked for ${row.email} — account suspended.`;

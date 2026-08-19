@@ -685,14 +685,14 @@ exports.impersonateUserFn = onCall({region: REGION}, async (request) => {
     throw new HttpsError('internal', 'Audit logging failed; impersonation aborted.');
   }
 
-  return { token: customToken, targetUid, targetEmail: targetEmail || null, targetRole: targetRole || null, impersonatedBy: adminEmail };
+  return { token: customToken, customToken, targetUid, targetEmail: targetEmail || null, targetRole: targetRole || null, impersonatedBy: adminEmail };
 });
 
 // ── Sprint 2.7 — GDPR Purge (right-to-be-forgotten) ─────────────────────────
 //
 // Hard-deletes a user's core identity footprint:
 //   • Firebase Auth record
-//   • users/{email}
+//   • users/{email} and users/{uid}
 //   • player_lookup, coach_lookup, registrar_lookup (any matching rows)
 // Writes a PURGE_USER_DATA audit record before the Auth deletion so the
 // audit trail survives even if the caller's token is invalidated.
@@ -708,18 +708,39 @@ async function executePurgeUserData(adminEmail, targetEmail, targetRole, reason)
     db().collection('security_audits').add(auditPayload),
   ]);
 
+  let targetUid = '';
+  try {
+    const rec = await admin.auth().getUserByEmail(targetEmail);
+    if (rec?.uid) targetUid = rec.uid;
+  } catch (err) {
+    if (err?.code !== 'auth/user-not-found') logger.warn('purgeUserDataFn: Auth lookup non-fatal', err);
+  }
+
   const batch = db().batch();
   batch.delete(db().collection('users').doc(targetEmail));
+  if (targetUid) {
+    batch.delete(db().collection('users').doc(targetUid));
+  }
   batch.delete(db().collection('player_lookup').doc(targetEmail));
   batch.delete(db().collection('coach_lookup').doc(targetEmail));
   batch.delete(db().collection('registrar_lookup').doc(targetEmail));
+
+  // Query any orphaned user records matching email
+  try {
+    const orphanedSnap = await db().collection('users').where('email', '==', targetEmail).get();
+    orphanedSnap.forEach((d) => batch.delete(d.ref));
+  } catch (err) {
+    logger.warn('purgeUserDataFn: orphan scan non-fatal', err);
+  }
+
   await batch.commit();
 
-  try {
-    const rec = await admin.auth().getUserByEmail(targetEmail);
-    await admin.auth().deleteUser(rec.uid);
-  } catch (err) {
-    if (err?.code !== 'auth/user-not-found') logger.warn('purgeUserDataFn: Auth deleteUser non-fatal', err);
+  if (targetUid) {
+    try {
+      await admin.auth().deleteUser(targetUid);
+    } catch (err) {
+      if (err?.code !== 'auth/user-not-found') logger.warn('purgeUserDataFn: Auth deleteUser non-fatal', err);
+    }
   }
 }
 

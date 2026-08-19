@@ -25,6 +25,7 @@
 		onLoginAs={(row) => void engine.loginAs(row)}
 		onDeactivate={engine.openDeactivate}
 		onPurge={engine.openPurge}
+		onDeleteUser={(row) => void engine.deleteUser(row)}
 		onPrevPage={() => void engine.goPrev()}
 		onNextPage={() => void engine.goNext()}
 	/>

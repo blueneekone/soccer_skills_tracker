@@ -8,6 +8,8 @@
 		doc,
 		getDoc,
 		getDocs,
+		setDoc,
+		updateDoc,
 		query,
 		where,
 		orderBy,
@@ -65,6 +67,17 @@
 
 	let invitePlayerName = $state('');
 	let showInviteModal = $state(false);
+
+	// ── Add Athlete Manual Entry Modal ──────────────────────────────────────────
+	let showAddAthleteModal = $state(false);
+	let athleteName = $state('');
+	let athleteEmail = $state('');
+	let athleteJersey = $state('');
+	let athleteGuardianEmail = $state('');
+	let athleteAgeGroup = $state('');
+	let athleteSaving = $state(false);
+	let athleteAddErr = $state('');
+	let athleteSuccessMsg = $state('');
 
 	const adminClubId = $derived(ctx?.clubId ?? page.params.clubId ?? '');
 
@@ -315,6 +328,124 @@
 		showInviteModal = false;
 		invitePlayerName = '';
 	}
+
+	async function handleAddAthlete() {
+		athleteAddErr = '';
+		const name = athleteName.trim();
+		if (!name) {
+			athleteAddErr = 'Athlete name is required.';
+			return;
+		}
+		const email = athleteEmail.trim().toLowerCase();
+		const guardian = athleteGuardianEmail.trim().toLowerCase();
+		const jersey = athleteJersey.trim();
+		const age = athleteAgeGroup.trim();
+
+		const activeDb = getActiveDb();
+		if (!activeDb || !authStore.isAuthenticated) {
+			athleteAddErr = 'Database not available.';
+			return;
+		}
+
+		athleteSaving = true;
+		try {
+			const rosterRef = doc(activeDb, 'rosters', teamId);
+			const rosterSnap = await getDoc(rosterRef);
+			const existingPlayers = rosterSnap.exists() && Array.isArray(rosterSnap.data()?.players)
+				? (rosterSnap.data()!.players as string[])
+				: [];
+
+			if (!existingPlayers.includes(name)) {
+				await setDoc(rosterRef, {
+					players: [...existingPlayers, name],
+					updatedAt: new Date(),
+					clubId: adminClubId,
+				}, { merge: true });
+			}
+
+			if (email) {
+				const lookupDoc = {
+					email,
+					playerName: name,
+					displayName: name,
+					teamId,
+					clubId: adminClubId,
+					ageGroup: age || parseAgeGroup(teamName) || '',
+					jersey: jersey || null,
+					parentEmails: guardian ? [guardian] : [],
+					vpcStatus: 'pending',
+					updatedAt: new Date(),
+				};
+				await setDoc(doc(activeDb, 'player_lookup', email), lookupDoc, { merge: true });
+				await setDoc(doc(activeDb, 'users', email), {
+					email,
+					displayName: name,
+					role: 'player',
+					teamId,
+					clubId: adminClubId,
+					updatedAt: new Date(),
+				}, { merge: true });
+
+				emailLinkedRows = [
+					{
+						email,
+						playerName: name,
+						ageGroup: age || parseAgeGroup(teamName) || undefined,
+						teamId,
+						parentEmails: guardian ? [guardian] : [],
+						householdId: undefined,
+						vpcStatus: 'pending',
+					},
+					...emailLinkedRows.filter((r) => r.email !== email),
+				];
+			} else {
+				if (!nameOnlyNames.includes(name)) {
+					nameOnlyNames = [...nameOnlyNames, name];
+				}
+			}
+
+			athleteSuccessMsg = `Athlete "${name}" added to roster.`;
+			setTimeout(() => { athleteSuccessMsg = ''; }, 4000);
+			showAddAthleteModal = false;
+			athleteName = '';
+			athleteEmail = '';
+			athleteJersey = '';
+			athleteGuardianEmail = '';
+			athleteAgeGroup = '';
+		} catch (e) {
+			console.error('Add athlete error', e);
+			athleteAddErr = e instanceof Error ? e.message : 'Could not add athlete.';
+		} finally {
+			athleteSaving = false;
+		}
+	}
+
+	async function handleRemoveAthlete(r: RosterRow) {
+		const ok = confirm(`Remove ${r.playerName || r.email} from this team roster?`);
+		if (!ok) return;
+		const activeDb = getActiveDb();
+		if (!activeDb || !authStore.isAuthenticated) return;
+
+		try {
+			const rosterRef = doc(activeDb, 'rosters', teamId);
+			const rosterSnap = await getDoc(rosterRef);
+			if (rosterSnap.exists()) {
+				const current = (rosterSnap.data()?.players || []) as string[];
+				const updated = current.filter((p) => p !== r.playerName);
+				await setDoc(rosterRef, { players: updated }, { merge: true });
+			}
+			if (r.email) {
+				await updateDoc(doc(activeDb, 'player_lookup', r.email), { teamId: '' }).catch(() => null);
+				emailLinkedRows = emailLinkedRows.filter((row) => row.email !== r.email);
+			}
+			nameOnlyNames = nameOnlyNames.filter((n) => n !== r.playerName);
+			athleteSuccessMsg = `${r.playerName || r.email} removed from roster.`;
+			setTimeout(() => { athleteSuccessMsg = ''; }, 4000);
+		} catch (e) {
+			console.error('Remove athlete failed', e);
+			rosterErr = 'Failed to remove athlete.';
+		}
+	}
 </script>
 
 {#if showInviteModal && invitePlayerName}
@@ -360,6 +491,15 @@
 			{/if}
 		</div>
 		<div class="roster-toolbar__right">
+			<button
+				type="button"
+				class="tw-inline-flex tw-items-center tw-gap-1.5 tw-px-3.5 tw-py-1.5 tw-bg-[#fbbf24] hover:tw-bg-[#f59e0b] tw-text-[#020617] tw-font-sans tw-text-xs tw-font-extrabold tw-uppercase tw-tracking-wider tw-transition-colors"
+				onclick={() => { showAddAthleteModal = true; athleteAddErr = ''; }}
+			>
+				<Icon name={"action.add" as IconName} />
+				Add Athlete
+			</button>
+
 			<UniversalExportHub
 				data={filteredRoster}
 				columns={EXPORT_COLUMNS}
@@ -391,6 +531,13 @@
 		</div>
 	</div>
 
+	{#if athleteSuccessMsg}
+		<div class="tw-p-4 tw-mb-4 tw-bg-[#1E293B] tw-border tw-border-[#14b8a6] tw-text-[#14b8a6] tw-font-mono tw-text-xs tw-font-bold tw-flex tw-items-center tw-gap-2" role="status">
+			<Icon name={"status.check" as IconName} />
+			<span>{athleteSuccessMsg}</span>
+		</div>
+	{/if}
+
 	{#if rosterErr}
 	<p class="roster-err" role="alert">
 		<Icon name={"status.warning-circle" as IconName} />
@@ -410,21 +557,22 @@
 					<th class="roster-dt__th" scope="col">VPC</th>
 					<th class="roster-dt__th" scope="col">Age Group</th>
 					<th class="roster-dt__th" scope="col">Household</th>
+					<th class="roster-dt__th tw-text-right" scope="col">Actions</th>
 				</tr>
 			</thead>
 			<tbody>
 				{#if rosterLoading}
 					<tr>
-						<td colspan="6" class="roster-dt__td-loading">
+						<td colspan="7" class="roster-dt__td-loading">
 							<span class="roster-spinner" aria-hidden="true"></span>
 							Loading roster…
 						</td>
 					</tr>
 				{:else if filteredRoster.length === 0}
 					<tr>
-						<td colspan="6" class="roster-dt__td-empty">
+						<td colspan="7" class="roster-dt__td-empty">
 							{roster.length === 0
-								? 'No athletes assigned to this team yet.'
+								? 'No athletes assigned to this team yet. Click "+ Add Athlete" above to add one.'
 								: 'No athletes match your filter.'}
 						</td>
 					</tr>
@@ -478,6 +626,16 @@
 							<td class="roster-dt__td roster-dt__td--mono roster-dt__td--muted">
 								{r.householdId || '—'}
 							</td>
+							<td class="roster-dt__td tw-text-right" onclick={(e) => e.stopPropagation()}>
+								<button
+									type="button"
+									class="tw-px-2 tw-py-1 tw-text-xs tw-font-mono tw-text-[#94a3b8] hover:tw-text-[#ef4444] hover:tw-bg-[#ef4444]/10 tw-border tw-border-[#334155] hover:tw-border-[#ef4444]/40 tw-transition-colors"
+									title="Remove athlete from team roster"
+									onclick={() => handleRemoveAthlete(r)}
+								>
+									Remove
+								</button>
+							</td>
 						</tr>
 					{/each}
 				{/if}
@@ -502,9 +660,130 @@
 			</button>
 		</div>
 	{/if}
-	</div>
-
 </div>
+</div>
+
+<!-- Modal: Add Athlete -->
+{#if showAddAthleteModal}
+	<div class="tw-fixed tw-inset-0 tw-z-50 tw-flex tw-items-center tw-justify-center tw-bg-black/80 tw-p-4" role="dialog" aria-modal="true">
+		<div class="tw-w-full tw-max-w-lg tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-p-6 tw-flex tw-flex-col tw-gap-4">
+			<div class="tw-flex tw-items-center tw-justify-between tw-border-b tw-border-[#334155] tw-pb-3">
+				<h2 class="tw-m-0 tw-text-base tw-font-extrabold tw-text-[#FAFAFA] tw-flex tw-items-center tw-gap-2">
+					<Icon name={"action.add" as IconName} class="tw-text-[#14b8a6]" />
+					Add Athlete to Roster
+				</h2>
+				<button
+					type="button"
+					class="tw-text-[#94a3b8] hover:tw-text-[#FAFAFA]"
+					onclick={() => (showAddAthleteModal = false)}
+				>
+					<Icon name={"sys.close" as IconName} />
+				</button>
+			</div>
+
+			{#if athleteAddErr}
+				<div class="tw-p-3 tw-bg-[#1E293B] tw-border tw-border-[#ef4444] tw-text-[#ef4444] tw-font-mono tw-text-xs tw-font-bold" role="alert">
+					{athleteAddErr}
+				</div>
+			{/if}
+
+			<div class="tw-flex tw-flex-col tw-gap-3">
+				<div>
+					<label for="athlete-name-input" class="tw-block tw-text-xs tw-font-mono tw-font-bold tw-text-[#D4D4D8] tw-uppercase tw-mb-1">
+						Athlete Full Name <span class="tw-text-[#ef4444]">*</span>
+					</label>
+					<input
+						id="athlete-name-input"
+						type="text"
+						class="tw-w-full tw-bg-[#020617] tw-border tw-border-[#334155] tw-text-[#FAFAFA] tw-font-mono tw-text-xs tw-px-3 tw-py-2 focus:tw-outline-none focus:tw-border-[#14b8a6]"
+						bind:value={athleteName}
+						placeholder="e.g. Mia Hamm"
+						disabled={athleteSaving}
+					/>
+				</div>
+
+				<div class="tw-grid tw-grid-cols-2 tw-gap-3">
+					<div>
+						<label for="athlete-email-input" class="tw-block tw-text-xs tw-font-mono tw-font-bold tw-text-[#D4D4D8] tw-uppercase tw-mb-1">
+							Athlete Email (optional)
+						</label>
+						<input
+							id="athlete-email-input"
+							type="email"
+							class="tw-w-full tw-bg-[#020617] tw-border tw-border-[#334155] tw-text-[#FAFAFA] tw-font-mono tw-text-xs tw-px-3 tw-py-2 focus:tw-outline-none focus:tw-border-[#14b8a6]"
+							bind:value={athleteEmail}
+							placeholder="athlete@example.com"
+							disabled={athleteSaving}
+						/>
+					</div>
+
+					<div>
+						<label for="athlete-jersey-input" class="tw-block tw-text-xs tw-font-mono tw-font-bold tw-text-[#D4D4D8] tw-uppercase tw-mb-1">
+							Jersey # (optional)
+						</label>
+						<input
+							id="athlete-jersey-input"
+							type="text"
+							class="tw-w-full tw-bg-[#020617] tw-border tw-border-[#334155] tw-text-[#FAFAFA] tw-font-mono tw-text-xs tw-px-3 tw-py-2 focus:tw-outline-none focus:tw-border-[#14b8a6]"
+							bind:value={athleteJersey}
+							placeholder="e.g. 10"
+							disabled={athleteSaving}
+						/>
+					</div>
+				</div>
+
+				<div class="tw-grid tw-grid-cols-2 tw-gap-3">
+					<div>
+						<label for="athlete-guardian-input" class="tw-block tw-text-xs tw-font-mono tw-font-bold tw-text-[#D4D4D8] tw-uppercase tw-mb-1">
+							Guardian Email (optional)
+						</label>
+						<input
+							id="athlete-guardian-input"
+							type="email"
+							class="tw-w-full tw-bg-[#020617] tw-border tw-border-[#334155] tw-text-[#FAFAFA] tw-font-mono tw-text-xs tw-px-3 tw-py-2 focus:tw-outline-none focus:tw-border-[#14b8a6]"
+							bind:value={athleteGuardianEmail}
+							placeholder="parent@example.com"
+							disabled={athleteSaving}
+						/>
+					</div>
+
+					<div>
+						<label for="athlete-age-input" class="tw-block tw-text-xs tw-font-mono tw-font-bold tw-text-[#D4D4D8] tw-uppercase tw-mb-1">
+							Age Group (optional)
+						</label>
+						<input
+							id="athlete-age-input"
+							type="text"
+							class="tw-w-full tw-bg-[#020617] tw-border tw-border-[#334155] tw-text-[#FAFAFA] tw-font-mono tw-text-xs tw-px-3 tw-py-2 focus:tw-outline-none focus:tw-border-[#14b8a6]"
+							bind:value={athleteAgeGroup}
+							placeholder="e.g. U11"
+							disabled={athleteSaving}
+						/>
+					</div>
+				</div>
+			</div>
+
+			<div class="tw-flex tw-items-center tw-justify-end tw-gap-3 tw-pt-3 tw-border-t tw-border-[#334155]">
+				<button
+					type="button"
+					class="tw-px-4 tw-py-2 tw-text-xs tw-font-mono tw-font-bold tw-text-[#94a3b8] hover:tw-text-[#FAFAFA]"
+					onclick={() => (showAddAthleteModal = false)}
+					disabled={athleteSaving}
+				>
+					Cancel
+				</button>
+				<button
+					type="button"
+					class="tw-px-4 tw-py-2 tw-bg-[#14b8a6] hover:tw-bg-[#0d9488] tw-text-[#020617] tw-font-sans tw-text-xs tw-font-extrabold tw-uppercase tw-tracking-wider tw-transition-colors disabled:tw-opacity-50"
+					onclick={handleAddAthlete}
+					disabled={athleteSaving}
+				>
+					{athleteSaving ? 'Adding...' : 'Add to Roster'}
+				</button>
+			</div>
+		</div>
+	</div>
+{/if}
 
 <style>
 	.roster-page {
