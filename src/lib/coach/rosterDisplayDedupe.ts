@@ -86,8 +86,20 @@ export function buildCoachRosterDisplayNames(input: {
 	statsByKey: Record<string, { playerName?: unknown }>;
 	linkedNameToEmail: Record<string, string>;
 }): string[] {
+	const staffRoles = new Set([
+		'coach',
+		'director',
+		'parent',
+		'admin',
+		'super_admin',
+		'global_admin',
+		'registrar',
+		'commissioner',
+		'recruiter',
+	]);
+
 	const userRows = input.userDocs
-		.filter((d) => d.data.role === 'player')
+		.filter((d) => !d.data.role || !staffRoles.has(String(d.data.role)))
 		.map((d) => {
 			const x = d.data;
 			const authUid = isValidAuthUid(x.uid) ? String(x.uid).trim() : '';
