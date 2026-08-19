@@ -129,7 +129,7 @@ describe('5. SafeSport "Shadow CC" Hub Trigger', () => {
       'minor-player-1': 'parent@aggiesfc.com'
     };
 
-    let ccParentEmails: string[] = [];
+    const ccParentEmails: string[] = [];
 
     // Server-side check: if a participant is a minor, cc their linked parent
     const hasMinor = participants.some(participant => participant.age < 18);

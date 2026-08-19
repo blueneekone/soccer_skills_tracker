@@ -1,4 +1,4 @@
-/* eslint-disable quotes */
+ 
 /**
  * commerce.js — Stripe Connect Commerce Engine
  * ─────────────────────────────────────────────

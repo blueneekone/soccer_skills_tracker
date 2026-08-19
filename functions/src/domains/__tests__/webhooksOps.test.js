@@ -40,5 +40,5 @@ setTimeout(() => {
   console.log(`webhooksOps.test.js — ${passed + failed} tests`);
   console.log(`  passed : ${passed}`);
   console.log(`  failed : ${failed}`);
-  if (failed > 0) process.exit(1);
+  if (failed > 0) throw new Error("Test failed");
 }, 500);

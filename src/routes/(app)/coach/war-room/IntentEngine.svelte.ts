@@ -2,6 +2,7 @@ import { untrack } from 'svelte';
 import { collection, query, where, onSnapshot, type Unsubscribe } from 'firebase/firestore';
 import { getActiveDb } from '$lib/firebase.js';
 import { isFirestoreReady } from '$lib/utils/firestoreGuard.js';
+import { authStore } from '$lib/stores/auth/facade.svelte.js';
 
 export interface HeartRateSample {
 	bpm: number;

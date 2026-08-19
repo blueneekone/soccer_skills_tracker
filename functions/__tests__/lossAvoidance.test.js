@@ -374,5 +374,5 @@ console.log(`  Tests: ${passed + failed}  |  Passed: ${passed}  |  Failed: ${fai
 console.log(`${'─'.repeat(50)}\n`);
 
 if (failed > 0) {
-  process.exit(1);
+  throw new Error("Test failed");
 }

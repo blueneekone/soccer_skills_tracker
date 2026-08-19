@@ -49,7 +49,7 @@ const https_1 = require("firebase-functions/v2/https");
 const admin = __importStar(require("firebase-admin"));
 const crypto_1 = require("crypto");
 // CommonJS middleware — keep runtime compatible with existing functions bundle.
-// eslint-disable-next-line @typescript-eslint/no-require-imports
+ 
 const { assertPlayer } = require('../src/middleware/authBouncers');
 exports.REGION = 'us-east1';
 exports.GRIT_XP = 50;

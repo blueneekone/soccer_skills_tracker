@@ -210,5 +210,5 @@ console.log('\nhouseholdMembership — graph reconciliation\n');
   });
 
   console.log(`\n${passed} passed, ${failed} failed\n`);
-  process.exit(failed > 0 ? 1 : 0);
+  if (failed > 0) throw new Error("Test failed");;
 })();

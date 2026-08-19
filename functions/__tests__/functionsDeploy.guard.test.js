@@ -561,7 +561,7 @@ describe('functionsDeploy guard — DEPLOY-O-deps-split', () => {
           '-e',
           "require('./index.js');" +
           "const sharpLoaded=Object.keys(require.cache).some(k=>/[/\\\\]sharp[/\\\\]/.test(k));" +
-          "if(sharpLoaded) { console.error('sharp loaded'); process.exit(1); }" +
+          "if(sharpLoaded) { console.error('sharp loaded'); throw new Error("Test failed"); }" +
           `console.log('${expectLabel}');`,
         ],
         {

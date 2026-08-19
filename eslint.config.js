@@ -37,7 +37,7 @@ export default ts.config(
 		}
 	},
 	{
-		files: ["**/*.svelte", "**/*.ts", "**/*.svelte.ts", "**/*.js"],
+		files: ["**/*.svelte", "**/*.ts", "**/*.svelte.ts", "**/*.js", "**/*.cjs", "**/*.mjs"],
 		rules: {
 			"max-lines-per-function": ["warn", { "max": 95, "skipBlankLines": true, "skipComments": true }],
 			"svelte/valid-prop-names-in-kit-pages": "off",

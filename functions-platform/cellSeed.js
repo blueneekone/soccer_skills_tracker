@@ -1,4 +1,4 @@
-/* eslint-disable quotes */
+ 
 /**
  * cellSeed.js
  * ───────────
@@ -226,7 +226,7 @@ exports.purgeSyntheticTenant = onCall(
       for (const coll of collections) {
         let count = 0;
         let lastDoc = null;
-        // eslint-disable-next-line no-constant-condition
+         
         while (true) {
           let q = db.collection(coll)
               .where('clubId', '==', tenantId)

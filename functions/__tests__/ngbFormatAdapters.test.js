@@ -133,4 +133,4 @@ test('resolveExportAdapter uses profile: prefix', () => {
 });
 
 console.log(`\n${passed} passed, ${failed} failed\n`);
-if (failed > 0) process.exit(1);
+if (failed > 0) throw new Error("Test failed");

@@ -172,7 +172,7 @@ async function runTests() {
   console.log(`\n${'─'.repeat(50)}`);
   console.log(`Results: ${passCount} passed, ${failCount} failed`);
   if (failCount > 0) {
-    process.exit(1);
+    throw new Error("Test failed");
   } else {
     console.log('All egress guard smoke tests passed ✓');
   }
@@ -180,5 +180,5 @@ async function runTests() {
 
 runTests().catch((err) => {
   console.error('Test runner crashed:', err);
-  process.exit(1);
+  throw new Error("Test failed");
 });
