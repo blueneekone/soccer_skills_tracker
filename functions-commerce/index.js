@@ -56,3 +56,4 @@ exports.dunningCommsDispatch = dunningOps.dunningCommsDispatch;
 
 const tutoringOps = require('./src/domains/tutoringOps');
 exports.bookTutoringSession = tutoringOps.bookTutoringSession;
+export { bookTutoringSession } from './src/domains/stripeConnect.js';
