@@ -182,9 +182,10 @@ service cloud.firestore {
       allow read, list: if request.auth != null && request.auth.token.admin == true;
     }
 
-    match /users/{email} {
+    match /users/{emailOrUid} {
       allow read: if isGlobalAdmin() || (isAuthenticated() &&
         (
+          resource == null ||
           resource.data.role != 'tutor' ||
           (
             canAccessDirectory() &&
@@ -198,6 +199,11 @@ service cloud.firestore {
         (!("role" in request.resource.data) || isGlobalAdmin());
       allow update: if isAuthenticated() && 
         (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['role']) || isGlobalAdmin());
+
+      // Passkeys subcollection (written by Admin SDK, read by client to check enrollment)
+      match /passkeys/{passkeyId} {
+        allow read: if isAuthenticated() && (request.auth.uid == emailOrUid || request.auth.token.email == emailOrUid);
+      }
     }
 
     match /recruiters/{document=**} {

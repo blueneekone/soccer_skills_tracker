@@ -36,7 +36,11 @@
 			phase = 'done';
 			// Mandatory passkey gate for email-link flows (see navigateAfterLogin).
 			untrack(() => {
-				void navigateAfterLogin({ replaceState: true });
+				navigateAfterLogin({ replaceState: true }).catch((err) => {
+					console.error('[MagicLink] Routing failed:', err);
+					errorMsg = 'Routing failed: ' + (err.message || String(err));
+					phase = 'error';
+				});
 			});
 		} catch (err: any) {
 			const m = err?.message || '';
@@ -52,8 +56,21 @@
 	let initialized = false;
 
 	$effect(() => {
-		if (!browser || initialized) return;
+		if (!browser || initialized || authStore.isLoading) return;
 		initialized = true;
+
+		// If user refreshed the page after successfully signing in with this link, they are already authenticated.
+		if (authStore.isAuthenticated) {
+			phase = 'done';
+			untrack(() => {
+				navigateAfterLogin({ replaceState: true }).catch((err) => {
+					console.error('[MagicLink] Routing failed:', err);
+					errorMsg = 'Routing failed: ' + (err.message || String(err));
+					phase = 'error';
+				});
+			});
+			return;
+		}
 
 		if (!isSignInWithEmailLink(auth, window.location.href)) {
 			errorMsg = 'This link is invalid or has expired. Request a new magic link.';

@@ -7,14 +7,18 @@ import RecruiterSearchEngine from '$lib/components/recruiter/RecruiterSearchEngi
 import { getDocs } from 'firebase/firestore';
 
 // Setup basic mocks using Proxy to avoid top-level hoisting ReferenceErrors in Vitest
-let mockAuthenticated = false;
-let mockUserProfile: any = null;
+const { mockAuthenticated, mockUserProfile } = vi.hoisted(() => {
+	return {
+		mockAuthenticated: { value: false },
+		mockUserProfile: { value: null as any }
+	};
+});
 
 vi.mock('$lib/stores/auth/facade.svelte.js', () => ({
 	authStore: new Proxy({}, {
 		get: (_, prop) => {
-			if (prop === 'isAuthenticated') return mockAuthenticated;
-			if (prop === 'userProfile') return mockUserProfile;
+			if (prop === 'isAuthenticated') return mockAuthenticated.value;
+			if (prop === 'userProfile') return mockUserProfile.value;
 			return undefined;
 		}
 	})
@@ -48,73 +52,73 @@ vi.mock('firebase/firestore', () => {
 
 describe('Checkr Recruiter Gate - RecruiterOnboardingEngine & isRecruiterCleared', () => {
 	beforeEach(() => {
-		mockAuthenticated = false;
-		mockUserProfile = null;
+		mockAuthenticated.value = false;
+		mockUserProfile.value = null;
 		vi.mocked(getDocs).mockClear();
 	});
 
 	it('returns false when the recruiter is not authenticated', () => {
-		mockAuthenticated = false;
-		mockUserProfile = { vettingStatus: 'cleared' };
+		mockAuthenticated.value = false;
+		mockUserProfile.value = { vettingStatus: 'cleared' };
 		expect(isRecruiterCleared()).toBe(false);
 	});
 
 	it('returns false when userProfile is null', () => {
-		mockAuthenticated = true;
-		mockUserProfile = null;
+		mockAuthenticated.value = true;
+		mockUserProfile.value = null;
 		expect(isRecruiterCleared()).toBe(false);
 	});
 
 	it('returns false for pending accounts', () => {
-		mockAuthenticated = true;
-		mockUserProfile = { vettingStatus: 'pending' };
+		mockAuthenticated.value = true;
+		mockUserProfile.value = { vettingStatus: 'pending' };
 		expect(isRecruiterCleared()).toBe(false);
 	});
 
 	it('returns false for consider accounts', () => {
-		mockAuthenticated = true;
-		mockUserProfile = { vettingStatus: 'consider' };
+		mockAuthenticated.value = true;
+		mockUserProfile.value = { vettingStatus: 'consider' };
 		expect(isRecruiterCleared()).toBe(false);
 	});
 
 	it('returns false for suspended accounts', () => {
-		mockAuthenticated = true;
-		mockUserProfile = { vettingStatus: 'suspended' };
+		mockAuthenticated.value = true;
+		mockUserProfile.value = { vettingStatus: 'suspended' };
 		expect(isRecruiterCleared()).toBe(false);
 	});
 
 	it('returns false for flagged accounts', () => {
-		mockAuthenticated = true;
-		mockUserProfile = { vettingStatus: 'flagged' };
+		mockAuthenticated.value = true;
+		mockUserProfile.value = { vettingStatus: 'flagged' };
 		expect(isRecruiterCleared()).toBe(false);
 	});
 
 	it('returns true ONLY for explicitly cleared accounts', () => {
-		mockAuthenticated = true;
-		mockUserProfile = { vettingStatus: 'cleared' };
+		mockAuthenticated.value = true;
+		mockUserProfile.value = { vettingStatus: 'cleared' };
 		expect(isRecruiterCleared()).toBe(true);
 	});
 
 	it('returns true when status in clearance sub-object is clear/cleared', () => {
-		mockAuthenticated = true;
-		mockUserProfile = { clearance: { status: 'cleared' } };
+		mockAuthenticated.value = true;
+		mockUserProfile.value = { clearance: { status: 'cleared' } };
 		expect(isRecruiterCleared()).toBe(true);
 
-		mockUserProfile = { clearance: { status: 'clear' } };
+		mockUserProfile.value = { clearance: { status: 'clear' } };
 		expect(isRecruiterCleared()).toBe(true);
 	});
 });
 
 describe('Checkr Recruiter Gate - RecruiterSearchEngine Search Query Lockout', () => {
 	beforeEach(() => {
-		mockAuthenticated = false;
-		mockUserProfile = null;
+		mockAuthenticated.value = false;
+		mockUserProfile.value = null;
 		vi.mocked(getDocs).mockClear();
 	});
 
 	it('should return empty array and NOT execute firestore query for pending recruiter', async () => {
-		mockAuthenticated = true;
-		mockUserProfile = { vettingStatus: 'pending' };
+		mockAuthenticated.value = true;
+		mockUserProfile.value = { vettingStatus: 'pending' };
 
 		render(RecruiterSearchEngine);
 
@@ -124,8 +128,8 @@ describe('Checkr Recruiter Gate - RecruiterSearchEngine Search Query Lockout', (
 	});
 
 	it('should return empty array and NOT execute firestore query for consider recruiter', async () => {
-		mockAuthenticated = true;
-		mockUserProfile = { vettingStatus: 'consider' };
+		mockAuthenticated.value = true;
+		mockUserProfile.value = { vettingStatus: 'consider' };
 
 		render(RecruiterSearchEngine);
 
@@ -134,8 +138,8 @@ describe('Checkr Recruiter Gate - RecruiterSearchEngine Search Query Lockout', (
 	});
 
 	it('should return empty array and NOT execute firestore query for suspended recruiter', async () => {
-		mockAuthenticated = true;
-		mockUserProfile = { vettingStatus: 'suspended' };
+		mockAuthenticated.value = true;
+		mockUserProfile.value = { vettingStatus: 'suspended' };
 
 		render(RecruiterSearchEngine);
 
@@ -144,8 +148,8 @@ describe('Checkr Recruiter Gate - RecruiterSearchEngine Search Query Lockout', (
 	});
 
 	it('should successfully execute query ONLY when recruiter is explicitly cleared', async () => {
-		mockAuthenticated = true;
-		mockUserProfile = { vettingStatus: 'cleared' };
+		mockAuthenticated.value = true;
+		mockUserProfile.value = { vettingStatus: 'cleared' };
 
 		render(RecruiterSearchEngine);
 

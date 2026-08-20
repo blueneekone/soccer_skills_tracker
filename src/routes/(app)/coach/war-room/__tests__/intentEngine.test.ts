@@ -24,7 +24,7 @@ vi.mock('$lib/utils/firestoreGuard.js', () => ({
 	isFirestoreReady: vi.fn()
 }));
 
-vi.mock('$lib/stores/auth.svelte.js', () => ({
+vi.mock('$lib/stores/auth/facade.svelte.js', () => ({
 	authStore: {
 		isAuthenticated: true,
 		user: { uid: 'test-user' }

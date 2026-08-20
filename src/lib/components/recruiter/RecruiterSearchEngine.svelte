@@ -65,10 +65,6 @@
 
 	async function runSearch() {
 		if (!db || !authStore.isAuthenticated) return;
-		if (authStore.userProfile?.checkr_status !== 'clear') {
-			results = [];
-			return;
-		}
 		if (!browser) return;
 		if (!isRecruiterCleared()) {
 			results = [];

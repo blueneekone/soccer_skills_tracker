@@ -61,7 +61,7 @@ describe('Sprint 4.2 — block coach→minor paths', () => {
 	});
 
 	it('NewMessageModal blocks staff selecting minor players', () => {
-		const src = readFileSync('/app/src/lib/components/coach/NewMessageEngine.svelte.ts', 'utf-8');
+		const src = readFileSync(join(ROOT, 'lib/components/coach/NewMessageEngine.svelte.ts'), 'utf-8');
 		expect(src).toMatch(/isMinor/);
 		// dummy
 		// dummy

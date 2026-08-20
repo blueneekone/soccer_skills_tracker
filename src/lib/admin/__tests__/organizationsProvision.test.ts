@@ -48,8 +48,9 @@ describe('organizationsProvision.validateAddClubInput', () => {
 
 	it('writeClubDocuments does not set per-club vpcPolicy (single parent-auto-finalize path)', async () => {
 		const { readFileSync } = await import('node:fs');
+		const path = await import('node:path');
 		const src = readFileSync(
-			new URL('../organizationsProvision.ts', import.meta.url),
+			path.join(process.cwd(), 'src/lib/admin/organizationsProvision.ts'),
 			'utf8',
 		);
 		expect(src).not.toMatch(/vpcPolicy/);

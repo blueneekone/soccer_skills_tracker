@@ -52,9 +52,15 @@ async function isPlayerRoleExempt(user: User | null): Promise<boolean> {
 
 /** True when the user's passkeys subcollection has at least one credential doc. */
 export async function userHasRegisteredPasskey(uid: string): Promise<boolean> {
-	const q = query(collection(db, 'users', uid, 'passkeys'), limit(1));
-	const snap = await getDocs(q);
-	return !snap.empty;
+	try {
+		if (!db || !authStore.isAuthenticated) return false;
+		const q = query(collection(db, 'users', uid, 'passkeys'), limit(1));
+		const snap = await getDocs(q);
+		return !snap.empty;
+	} catch (err) {
+		console.warn('[passkeyGate] Failed to check passkeys:', err);
+		return false;
+	}
 }
 
 /**
