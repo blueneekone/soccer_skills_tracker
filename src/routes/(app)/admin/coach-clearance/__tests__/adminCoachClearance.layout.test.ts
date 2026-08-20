@@ -90,9 +90,13 @@ describe('/admin/coach-clearance — CHECKR-QA-ADMIN', () => {
 		expect(navSrc).toMatch(/href:\s*'\/admin\/coach-clearance'/);
 	});
 
-	it('director nav separates player passports from staff clearance', () => {
-		expect(navSrc).toMatch(/Player passports/);
-		expect(navSrc).toMatch(/Staff clearance/);
-		expect(navSrc).toMatch(/href:\s*'\/director\/compliance'/);
+	it('director nav separates player passports from staff clearance in compliance-ops hub', () => {
+		const compEngineSrc = readFileSync(
+			join(__dirname, '..', '..', '..', 'director', 'compliance-ops', 'ComplianceOpsEngine.svelte.ts'),
+			'utf-8',
+		);
+		expect(compEngineSrc).toMatch(/Player Passports/);
+		expect(compEngineSrc).toMatch(/Staff Clearance/);
+		expect(navSrc).toMatch(/href:\s*'\/director\/compliance-ops'/);
 	});
 });

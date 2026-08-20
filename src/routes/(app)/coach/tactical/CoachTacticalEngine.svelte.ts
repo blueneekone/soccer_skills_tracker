@@ -11,7 +11,7 @@ import { untrack } from 'svelte';
 export class CoachTacticalEngine {
 	teamScope = new CoachTeamScope({
 		preferUrlTeamId: () => page.url.searchParams.get('teamId'),
-		includeDirector: false,
+		includeDirector: true,
 	});
 
 	warRoomTool = $state<'DRAG' | 'ROUTE'>('DRAG');

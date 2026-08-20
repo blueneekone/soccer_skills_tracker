@@ -22,21 +22,9 @@ export const adminLinks = [
 
 /** @type {ShellNavItem[]} */
 export const directorLinks = [
-	{ tab: 'home',       label: 'Overview',          icon: 'nav.home',           href: '/director?tab=home' },
-	{ tab: 'teams',      label: 'Roster & Teams',    icon: 'user.group',         href: '/director?tab=teams' },
-	{ tab: 'field',      label: 'Field Ops',         icon: 'sys.map-pin',        href: '/director?tab=field' },
-	{ tab: 'comms',      label: 'Comms',             icon: 'comm.broadcast',     href: '/director?tab=comms' },
-	{ tab: 'registrars', label: 'Registrars',        icon: 'nav.swap',           href: '/director?tab=registrars' },
-	{ tab: 'brand',      label: 'Club Branding',     icon: 'sys.palette',        href: '/director?tab=brand' },
-	{ tab: 'playbook',   label: 'Playbook',          icon: 'data.target',        href: '/director?tab=playbook' },
-	{ tab: 'licenses',   label: 'Licenses & Seats',  icon: 'sys.credit-card',   href: '/director?tab=licenses' },
-	{ tab: 'compliance', label: 'Player passports',  icon: 'status.shield-check',href: '/director?tab=compliance' },
-	{ label: 'Staff clearance', icon: 'status.verified',   href: '/director/compliance' },
-	{ tab: 'household',  label: 'Households & COPPA',icon: 'nav.home',           href: '/director?tab=household' },
-	{ tab: 'vanguard',   label: 'Mission Control',   icon: 'data.activity',      href: '/director?tab=vanguard' },
-	{ tab: 'retention',  label: 'Retention & PII',   icon: 'status.shield-check', href: '/director?tab=retention' },
-	{ label: 'Tournaments', icon: 'sys.calendar',     href: '/director/events' },
-	{ tab: 'sync',       label: 'Data Sync',         icon: 'nav.swap', href: '/director?tab=sync' },
+	{ tab: 'compliance-ops', label: 'Compliance & Ops', icon: 'status.shield-check', href: '/director/compliance-ops' },
+	{ tab: 'club-management', label: 'Club Management', icon: 'org.building', href: '/director/club-management' },
+	{ tab: 'tactics-and-training', label: 'Tactics & Training', icon: 'data.target', href: '/director/tactics-and-training' },
 ];
 
 /** @type {ShellNavItem[]} */

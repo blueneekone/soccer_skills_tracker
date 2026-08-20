@@ -5,23 +5,17 @@ import { join } from 'node:path';
 const ROOT = join(process.cwd());
 
 describe('Director OS Data Sync Tab Support', () => {
-	it('director/+page.svelte includes sync in VALID_DIR_TABS and mounts VampireImporter', () => {
-		const page = readFileSync(
-			join(ROOT, 'src/routes/(app)/director/+page.svelte'),
+	it('director/club-management includes sync tab and mounts VampireImporter', () => {
+		const arena = readFileSync(
+			join(ROOT, 'src/routes/(app)/director/club-management/ClubManagementArena.svelte'),
 			'utf-8',
 		);
-		expect(page).toMatch(/'sync'/);
-		expect(page).toMatch(/VampireImporter/);
-		expect(page).toMatch(/activeTab === 'sync'/);
-	});
-
-	it('director/dashboard/+page.svelte includes sync in VALID_DIR_TABS and mounts VampireImporter', () => {
-		const page = readFileSync(
-			join(ROOT, 'src/routes/(app)/director/dashboard/+page.svelte'),
+		const engine = readFileSync(
+			join(ROOT, 'src/routes/(app)/director/club-management/ClubManagementEngine.svelte.ts'),
 			'utf-8',
 		);
-		expect(page).toMatch(/'sync'/);
-		expect(page).toMatch(/VampireImporter/);
-		expect(page).toMatch(/activeTab === 'sync'/);
+		expect(engine).toMatch(/'sync'/);
+		expect(arena).toMatch(/VampireImporter/);
+		expect(arena).toMatch(/engine\.activeTab === 'sync'/);
 	});
 });
