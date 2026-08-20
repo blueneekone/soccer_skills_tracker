@@ -425,7 +425,9 @@
 	{/snippet}
 	{#if videoUrl}
 		<div class="rse-video-shell tw-font-mono">
-			<video class="rse-video-el tw-font-mono" controls playsinline src={videoUrl} preload="metadata"></video>
+			<video class="rse-video-el tw-font-mono" controls playsinline src={videoUrl} preload="metadata">
+				<track kind="captions" />
+			</video>
 			<p class="rse-video-note tw-font-mono">Coach-verified clip. Distribution subject to athlete opt-in.</p>
 		</div>
 	{/if}
