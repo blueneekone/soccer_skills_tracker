@@ -1,4 +1,4 @@
- 
+/* eslint-disable quotes */
 /**
  * processMedia.js — AEGIS Secure Media Pipeline
  * ─────────────────────────────────────────────

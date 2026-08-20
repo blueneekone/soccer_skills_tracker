@@ -1,5 +1,5 @@
-import '@testing-library/jest-dom';
 // @vitest-environment jsdom
+import '@testing-library/jest-dom';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, cleanup } from '@testing-library/svelte';
 import AdminDashboardHUD from '../AdminDashboardHUD.svelte';

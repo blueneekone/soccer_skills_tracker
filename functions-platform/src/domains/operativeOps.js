@@ -30,7 +30,8 @@ const {sanitizeChannelPayload} = require('../utils/channelSecurityGuard');
 const {getRegistryDb} = require('../../cellRouter');
 
 const REGION = 'us-east1';
-const db = () => getRegistryDb();
+/** Lazy Firestore accessor — defers init until first call. */
+const db = () => admin.firestore();
 
 /**
  * Stamp JWT team scope immediately after parent links operative (do not wait for syncUserClaims).
@@ -67,9 +68,6 @@ async function stampOperativeTeamClaims(childUid, userDoc, teamId, clubId, house
     minor: existingClaims.minor === true || baseClaims.minor === true,
   });
 }
-
-/** Lazy Firestore accessor — defers init until first call. */
-const db = () => admin.firestore();
 
 // ── Private helpers ──────────────────────────────────────────────────────────
 
