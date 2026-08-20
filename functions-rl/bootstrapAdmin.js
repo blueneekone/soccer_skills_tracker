@@ -37,16 +37,7 @@ function resolveFirebaseAdmin() {
   return require('firebase-admin');
 }
 
-const admin = resolveFirebaseAdmin();
-
-// Initialize default app on require outside unit tests so all direct
-// require('firebase-admin') consumers find an initialized default app.
-if (!process.env.VITEST && process.env.NODE_ENV !== 'test') {
-  initAdmin();
-}
-
-const rawAdmin = admin;
-
+const rawAdmin = resolveFirebaseAdmin();
 let initialized = false;
 
 function initAdmin() {
@@ -85,6 +76,12 @@ function initAdmin() {
 
   rawAdmin.initializeApp();
   initialized = true;
+}
+
+// Initialize default app on require outside unit tests so all direct
+// require('firebase-admin') consumers find an initialized default app.
+if (!process.env.VITEST && process.env.NODE_ENV !== 'test') {
+  initAdmin();
 }
 
 const adminProxy = new Proxy(rawAdmin, {
