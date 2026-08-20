@@ -39,7 +39,10 @@ export default class AdminDashboardEngine {
 		}
 
 		const activeDb = getActiveDb();
-		if (!activeDb || !authStore.isAuthenticated) return;
+		if (!activeDb || !authStore.isAuthenticated) {
+			this.isLoading = false;
+			return;
+		}
 
 		this.isLoading = true;
 		this.error = null;

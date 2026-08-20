@@ -3,7 +3,6 @@
 	import DirectorCommandCenter from '$lib/components/director/os/DirectorCommandCenter.svelte';
 	import FieldOpsModule from '$lib/components/director/os/FieldOpsModule.svelte';
 	import TeamsTab from '$lib/components/director/TeamsTab.svelte';
-	import BrandingTab from '$lib/components/director/BrandingTab.svelte';
 	import ComplianceTab from '$lib/components/director/ComplianceTab.svelte';
 	import UplinkTerminal from './UplinkTerminal.svelte';
 	import IntakePanopticon from './IntakePanopticon.svelte';
@@ -108,8 +107,6 @@
 					<section class="tw-mt-6" aria-label="Player transfer intake">
 						<TransferPortal role="director" />
 					</section>
-				{:else if engine.activeTab === 'brand'}
-					<BrandingTab clubId={engine.clubId} />
 				{:else if engine.activeTab === 'playbook'}
 					<PlaybookTab clubId={engine.clubId} />
 				{:else if engine.activeTab === 'licenses'}

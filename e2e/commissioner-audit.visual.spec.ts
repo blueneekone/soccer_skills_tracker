@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import path from 'node:path';
+import fs from 'node:fs';
 
 const OUT_DIR = path.resolve('audit-artifacts/commissioner');
 
@@ -25,8 +26,12 @@ async function bypassRouteGuards(context: any, role: string, uid: string) {
 	}, { role, uid });
 }
 
+test.use({ video: 'on' });
+
 test.describe('Commissioner OS Dashboard Visual Verification', () => {
 	test('captures commissioner dashboard layout and panels', async ({ page, context }) => {
+		fs.mkdirSync(OUT_DIR, { recursive: true });
+
 		await page.setViewportSize({ width: 1280, height: 900 });
 		await bypassRouteGuards(context, 'commissioner', 'mock-commissioner-uid');
 
@@ -41,5 +46,22 @@ test.describe('Commissioner OS Dashboard Visual Verification', () => {
 			path: path.join(OUT_DIR, 'commissioner-dashboard.png'),
 			fullPage: true
 		});
+
+		// Navigate to Federation Compliance Matrix
+		await page.goto('/commissioner/matrix');
+		await page.waitForTimeout(1000);
+
+		// Take screenshot of matrix view
+		await page.screenshot({
+			path: path.join(OUT_DIR, 'commissioner-matrix.png'),
+			fullPage: true
+		});
+
+		// Close page to flush video recording
+		await page.close();
+		const videoPath = await page.video()?.path();
+		if (videoPath && fs.existsSync(videoPath)) {
+			fs.copyFileSync(videoPath, path.join(OUT_DIR, 'walkthrough.webm'));
+		}
 	});
 });

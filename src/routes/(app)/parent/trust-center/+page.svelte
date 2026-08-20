@@ -84,7 +84,7 @@
 	<div class="tw-max-w-6xl tw-mx-auto tw-space-y-6">
 		
 		<!-- Header -->
-		<header class="tw-bg-[#0F172A] tw-border tw-border-[#1E293B] tw-p-6 tw-flex tw-flex-col md:tw-flex-row md:tw-items-center md:tw-justify-between tw-gap-4 tw-rounded-none">
+		<header class="tw-bg-[#0F172A] tw-border tw-border-[#1E293B] tw-p-6 tw-flex tw-flex-col md:tw-flex-row md:tw-items-center md:tw-justify-between tw-gap-4 tw-rounded-[24px]">
 			<div class="tw-flex tw-items-center tw-gap-4">
 				<div class="tw-w-12 tw-h-12 tw-bg-[#1E293B] tw-border tw-border-[#334155] tw-flex tw-items-center tw-justify-center tw-text-amber-500 tw-rounded-none">
 					<Icon name={"status.shield-check" as IconName} size={24} />
@@ -106,7 +106,7 @@
 		</header>
 
 		<!-- CSO: WebAuthn Biometric Enclave -->
-		<section class="st-bento tw-bg-[#0F172A] tw-border tw-border-[#1E293B] tw-p-6 lg:tw-p-8 tw-rounded-none">
+		<section class="st-bento tw-bg-[#0F172A] tw-border tw-border-[#1E293B] tw-p-6 lg:tw-p-8 tw-rounded-[24px]">
 			<div class="tw-flex tw-items-center tw-justify-between tw-mb-4">
 				<h2 class="tw-text-lg tw-font-bold tw-text-white tw-flex tw-items-center tw-gap-2 tw-m-0">
 					<Icon name={"sys.fingerprint" as IconName} size={20} class="tw-text-amber-500" />
@@ -141,7 +141,7 @@
 		<div class="bento-grid-container bento-grid--12col bento-grid--liquid tw-grid tw-grid-cols-1 lg:tw-grid-cols-12" style="grid-template-columns: repeat(auto-fit, minmax(min(100%, clamp(280px, 30vw, 350px)), 1fr)); tw-gap-6 tw-w-full tw-min-w-0">
 			
 			<!-- CSO: The Triad Protocol (Shadow CC Audit Log) (8 cols) -->
-			<section class="st-bento bento-col-8 lg:tw-col-span-8 tw-bg-[#0F172A] tw-border tw-border-[#1E293B] tw-p-6 tw-flex tw-flex-col tw-min-w-0 tw-rounded-none">
+			<section class="st-bento bento-col-8 lg:tw-col-span-8 tw-bg-[#0F172A] tw-border tw-border-[#1E293B] tw-p-6 tw-flex tw-flex-col tw-min-w-0 tw-rounded-[24px]">
 				<div class="tw-flex tw-items-center tw-justify-between tw-mb-4">
 					<h2 class="tw-text-lg tw-font-bold tw-text-white tw-flex tw-items-center tw-gap-2 tw-m-0">
 						<Icon name={"comm.chats" as IconName} size={18} class="tw-text-[#14b8a6]" />
@@ -178,7 +178,7 @@
 			</section>
 
 			<!-- CMO: Tremendous Bounty Terminal (Escrow) (4 cols) -->
-			<section class="st-bento bento-col-4 lg:tw-col-span-4 tw-bg-[#0F172A] tw-border tw-border-[#1E293B] tw-p-6 tw-rounded-none tw-flex tw-flex-col">
+			<section class="st-bento bento-col-4 lg:tw-col-span-4 tw-bg-[#0F172A] tw-border tw-border-[#1E293B] tw-p-6 tw-rounded-[24px] tw-flex tw-flex-col">
 				<div class="tw-flex tw-items-center tw-justify-between tw-mb-4">
 					<h2 class="tw-text-lg tw-font-bold tw-text-white tw-flex tw-items-center tw-gap-2 tw-m-0">
 						<Icon name={"sys.escrow" as IconName} size={18} class="tw-text-amber-500" />
@@ -212,7 +212,7 @@
 		</div>
 
 		<!-- CMO: The Car Ride Home Protocol Banner -->
-		<section class="st-bento tw-bg-[#0F172A] tw-border tw-border-[#1E293B] tw-p-6 tw-rounded-none">
+		<section class="st-bento tw-bg-[#0F172A] tw-border tw-border-[#1E293B] tw-p-6 tw-rounded-[24px]">
 			<div class="tw-flex tw-items-center tw-justify-between tw-mb-3">
 				<h2 class="tw-text-base tw-font-bold tw-text-white tw-flex tw-items-center tw-gap-2 tw-m-0">
 					<Icon name={"status.warning" as IconName} size={18} class="tw-text-[#f59e0b]" />

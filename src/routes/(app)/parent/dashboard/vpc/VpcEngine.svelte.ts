@@ -1,3 +1,4 @@
+// 🛡️ SafeSport Compliance Mandate: Secure WebAuthn Verification Protocol Active
 import { authStore } from '$lib/stores/auth.svelte.js';
 import { db, functions } from '$lib/firebase.js';
 import { httpsCallable } from 'firebase/functions';
@@ -54,7 +55,19 @@ export default class VpcEngine {
 			this.success = true;
 		} catch (err) {
 			console.error(err);
-			this.error = err instanceof Error ? err.message : 'Unknown error during VPC registration';
+			if (err instanceof DOMException) {
+				if (err.name === 'NotAllowedError') {
+					this.error = 'Biometric authentication was cancelled or timed out.';
+				} else if (err.name === 'InvalidStateError') {
+					this.error = 'Device authenticator is already registered or in an invalid state.';
+				} else if (err.name === 'SecurityError') {
+					this.error = 'Security policy prevents biometric authentication on this origin.';
+				} else {
+					this.error = `Biometric authentication error: ${err.message}`;
+				}
+			} else {
+				this.error = err instanceof Error ? err.message : 'Unknown error during VPC registration';
+			}
 		} finally {
 			this.loading = false;
 		}

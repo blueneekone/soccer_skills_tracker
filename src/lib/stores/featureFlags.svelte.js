@@ -76,6 +76,11 @@ function createFeatureFlagsStore() {
 
 	function subscribe() {
 		if (unsub) return unsub;
+		if (import.meta.env?.VITE_E2E_BYPASS_AUTH) {
+			flags = defaults();
+			loaded = true;
+			return () => {};
+		}
 		try {
 			const ref = doc(db, 'config', 'feature_flags');
 			unsub = onSnapshot(

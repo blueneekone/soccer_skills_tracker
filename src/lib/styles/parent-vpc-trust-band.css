@@ -14,16 +14,9 @@
 .parent-os-root .parent-vpc-z1-well {
 	padding: 2px;
 	background: var(--pd-grey-trim, #334155);
-	border-radius: 0;
+	border-radius: 24px;
 	box-shadow: none;
-	clip-path: polygon(
-		var(--pd-chamfer-md, 8px) 0%,
-		100% 0%,
-		100% calc(100% - var(--pd-chamfer-md, 8px)),
-		calc(100% - var(--pd-chamfer-md, 8px)) 100%,
-		0% 100%,
-		0% var(--pd-chamfer-md, 8px)
-	);
+	clip-path: none;
 }
 
 /* ── Z2 panel ──────────────────────────────────────────────────────────────── */
@@ -32,16 +25,9 @@
 	padding: var(--parent-lounge-gutter, 24px);
 	background: var(--pd-navy-panel, #0f172a);
 	border: 0;
-	border-radius: 0;
+	border-radius: 24px;
 	box-shadow: none;
-	clip-path: polygon(
-		calc(var(--pd-chamfer-md, 8px) - 2px) 0%,
-		100% 0%,
-		100% calc(100% - calc(var(--pd-chamfer-md, 8px) - 2px)),
-		calc(100% - calc(var(--pd-chamfer-md, 8px) - 2px)) 100%,
-		0% 100%,
-		0% calc(var(--pd-chamfer-md, 8px) - 2px)
-	);
+	clip-path: none;
 }
 
 /* ── Z3 minimal badge (top-right overlay) ──────────────────────────────────── */
@@ -61,17 +47,10 @@
 	letter-spacing: 0.1em;
 	text-transform: uppercase;
 	border: 1px solid var(--pd-grey-trim, #334155);
-	border-radius: 0;
+	border-radius: 6px;
 	background: var(--pd-navy-panel, #0f172a);
 	color: #94a3b8;
-	clip-path: polygon(
-		3px 0%,
-		100% 0%,
-		100% calc(100% - 3px),
-		calc(100% - 3px) 100%,
-		0% 100%,
-		0% 3px
-	);
+	clip-path: none;
 }
 
 .parent-os-root .parent-vpc-minimal-badge--verified {
@@ -105,16 +84,9 @@
 	color: #f8fafc;
 	background: var(--pd-navy-panel, #0f172a);
 	border: 1px solid var(--pd-grey-trim, #334155);
-	border-radius: 0;
+	border-radius: 12px;
 	box-shadow: none;
-	clip-path: polygon(
-		var(--pd-chamfer-sm, 4px) 0%,
-		100% 0%,
-		100% calc(100% - var(--pd-chamfer-sm, 4px)),
-		calc(100% - var(--pd-chamfer-sm, 4px)) 100%,
-		0% 100%,
-		0% var(--pd-chamfer-sm, 4px)
-	);
+	clip-path: none;
 }
 
 .parent-os-root .parent-vpc-z3-shield :global(svg) {
@@ -174,17 +146,10 @@
 	color: #ffffff;
 	background: transparent;
 	border: 1px solid var(--pd-grey-trim, #334155);
-	border-radius: 0;
+	border-radius: 12px;
 	box-shadow: none;
 	cursor: pointer;
-	clip-path: polygon(
-		var(--pd-chamfer-sm, 4px) 0%,
-		100% 0%,
-		100% calc(100% - var(--pd-chamfer-sm, 4px)),
-		calc(100% - var(--pd-chamfer-sm, 4px)) 100%,
-		0% 100%,
-		0% var(--pd-chamfer-sm, 4px)
-	);
+	clip-path: none;
 }
 
 .parent-os-root .parent-vpc-btn-update:hover:not(:disabled) {
@@ -281,15 +246,8 @@
 	padding: 0.75rem 0.85rem;
 	background: color-mix(in srgb, var(--pd-void-base, #000) 35%, var(--pd-navy-panel, #0f172a));
 	border: 1px solid var(--pd-grey-trim, #334155);
-	border-radius: 0;
-	clip-path: polygon(
-		var(--pd-chamfer-sm, 4px) 0%,
-		100% 0%,
-		100% calc(100% - var(--pd-chamfer-sm, 4px)),
-		calc(100% - var(--pd-chamfer-sm, 4px)) 100%,
-		0% 100%,
-		0% var(--pd-chamfer-sm, 4px)
-	);
+	border-radius: 12px;
+	clip-path: none;
 }
 
 .parent-os-root .parent-vpc-athlete-row__info {
@@ -397,16 +355,9 @@
 	color: #94a3b8;
 	background: transparent;
 	border: 1px solid var(--pd-grey-trim, #334155);
-	border-radius: 0;
+	border-radius: 8px;
 	cursor: pointer;
-	clip-path: polygon(
-		3px 0%,
-		100% 0%,
-		100% calc(100% - 3px),
-		calc(100% - 3px) 100%,
-		0% 100%,
-		0% 3px
-	);
+	clip-path: none;
 }
 
 .parent-os-root .parent-vpc-back-btn:hover {
@@ -432,15 +383,8 @@
 	color: #64748b;
 	background: transparent;
 	border: 1px solid var(--pd-grey-trim, #334155);
-	border-radius: 0;
-	clip-path: polygon(
-		3px 0%,
-		100% 0%,
-		100% calc(100% - 3px),
-		calc(100% - 3px) 100%,
-		0% 100%,
-		0% 3px
-	);
+	border-radius: 50%;
+	clip-path: none;
 }
 
 .parent-os-root .parent-vpc-wizard-progress__step--active {

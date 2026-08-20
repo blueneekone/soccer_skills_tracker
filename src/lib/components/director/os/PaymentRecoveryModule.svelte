@@ -19,12 +19,13 @@
 	}
 
 	let failedPayments = $state<FailedPayment[]>([]);
-	let loading = $state(true);
+	let hasScanned = $state(false);
+	let loading = $state(false);
 	let isResolving = $state(false);
 	let resolveError = $state('');
 
 	$effect(() => {
-		if (!browser || !clubId) return;
+		if (!browser || !clubId || !hasScanned) return;
 		loading = true;
 
 		const q = query(
@@ -93,19 +94,34 @@
 				<p class="prm-subtitle">Empathetic Lapsed Payment Assistant</p>
 			</div>
 		</div>
-		{#if failedPayments.length > 0}
-			<button
-				class="prm-btn-resolve"
-				disabled={isResolving}
-				onclick={() => void resolveBatch()}
-			>
-				<Icon name="status.verified" size={14} />
-				<span>{isResolving ? 'RESOLVING...' : 'RESOLVE ALL FAILED (HIGH-FIVE)'}</span>
-			</button>
-		{/if}
+		<div class="tw-flex tw-items-center tw-gap-4">
+			{#if hasScanned && failedPayments.length === 0 && !loading}
+				<button class="prm-btn-scan tw-opacity-60" onclick={() => { hasScanned = false; setTimeout(() => hasScanned = true, 50); }}>
+					<Icon name="nav.refresh" size={14} />
+					<span>RESCAN</span>
+				</button>
+			{/if}
+			{#if failedPayments.length > 0}
+				<button
+					class="prm-btn-resolve"
+					disabled={isResolving}
+					onclick={() => void resolveBatch()}
+				>
+					<Icon name="status.verified" size={14} />
+					<span>{isResolving ? 'RESOLVING...' : 'RESOLVE ALL FAILED (HIGH-FIVE)'}</span>
+				</button>
+			{/if}
+		</div>
 	</div>
 
-	{#if loading}
+	{#if !hasScanned}
+		<div class="prm-idle">
+			<button class="prm-btn-scan-large" onclick={() => hasScanned = true}>
+				<Icon name="action.search" size={18} />
+				<span>INITIATE RECOVERY SCAN</span>
+			</button>
+		</div>
+	{:else if loading}
 		<div class="prm-loading">
 			<span class="prm-spin"></span>
 			<span>Scanning for lapsed payments...</span>
@@ -211,6 +227,58 @@
 	.prm-btn-resolve:disabled {
 		opacity: 0.5;
 		cursor: not-allowed;
+	}
+
+	.prm-idle {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		padding: 2rem;
+	}
+
+	.prm-btn-scan-large {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		background: rgba(20, 184, 166, 0.1);
+		color: #14b8a6;
+		border: 1px solid rgba(20, 184, 166, 0.3);
+		border-radius: 999px;
+		padding: 0.75rem 1.5rem;
+		font-family: 'Geist Mono', monospace;
+		font-size: 0.8rem;
+		font-weight: 800;
+		letter-spacing: 0.05em;
+		cursor: pointer;
+		transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+	}
+
+	.prm-btn-scan-large:hover {
+		background: rgba(20, 184, 166, 0.2);
+		box-shadow: 0 0 15px rgba(20, 184, 166, 0.3);
+	}
+
+	.prm-btn-scan {
+		display: flex;
+		align-items: center;
+		gap: 6px;
+		background: transparent;
+		color: rgba(255, 255, 255, 0.6);
+		border: 1px solid rgba(255, 255, 255, 0.2);
+		border-radius: 999px;
+		padding: 0.5rem 1rem;
+		font-family: 'Geist Mono', monospace;
+		font-size: 0.7rem;
+		font-weight: 700;
+		letter-spacing: 0.05em;
+		cursor: pointer;
+		transition: all 0.2s ease;
+	}
+
+	.prm-btn-scan:hover {
+		color: #ffffff;
+		border-color: rgba(255, 255, 255, 0.4);
+		background: rgba(255, 255, 255, 0.05);
 	}
 
 	.prm-loading {

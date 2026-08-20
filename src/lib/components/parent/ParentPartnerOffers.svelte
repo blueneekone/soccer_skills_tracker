@@ -47,6 +47,8 @@
 		resolvedClubId: string,
 		maxRows: number,
 	): Promise<OfferRow[]> {
+		if (!db || !authStore.isAuthenticated) return [];
+
 		if (
 			offerCache &&
 			offerCache.email === email &&
@@ -111,7 +113,6 @@
 	});
 
 	function fmtDate(ts?: { toDate?: () => Date }) {
-    if (!db || !authStore.isAuthenticated) return;
 		if (!ts || typeof ts.toDate !== 'function') return '';
 		try {
 			return ts.toDate().toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
