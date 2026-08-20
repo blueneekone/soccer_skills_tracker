@@ -138,8 +138,8 @@
 		<!-- Data Polygon -->
 		<polygon
 			{points}
-			fill="rgba(251, 191, 36, 0.15)"
-			stroke="#fbbf24"
+			fill="rgba(218, 255, 10, 0.15)"
+			stroke="#daff0a"
 			stroke-width="4"
 			class="data-polygon"
 			filter="url(#neonBloom)"
@@ -153,7 +153,7 @@
 				cy={y}
 				r="6"
 				fill="#000000"
-				stroke="#fbbf24"
+				stroke="#daff0a"
 				stroke-width="4"
 				filter="url(#neonBloom)"
 			/>
