@@ -32,7 +32,10 @@ async function bypassRouteGuards(page: Page, role: string, uid: string = 'mock-t
             teamId: 'mock-team-123',
             playerName: 'Test Player',
             householdId: 'mock-household-123',
-            vpcStatus: 'verified'
+            vpcStatus: 'verified',
+            isConsented: true,
+            medicalSignatureVerified: true,
+            liabilityWaiverVerified: true
         };
         window.localStorage.setItem('auth_token', JSON.stringify({
             uid,
@@ -41,6 +44,7 @@ async function bypassRouteGuards(page: Page, role: string, uid: string = 'mock-t
         }));
         window.localStorage.setItem('user_profile', JSON.stringify(mockProfile));
         window.localStorage.setItem('auth_state', JSON.stringify(mockProfile));
+        window.localStorage.setItem('sstracker_e2e_bypass', 'true');
     }, { role, uid });
 }
 
@@ -351,6 +355,9 @@ test.describe('Player OS Gamified HUD & Skill Tree', () => {
         // Verify the SVG-based 6-axis Vanguard Prism radar chart is present
         const vanguardPrism = page.locator('canvas.vanguard-prism-radar, canvas');
         await expect(vanguardPrism.first()).toBeVisible();
+
+        // Wait for primary Action Gold CTA
+        await page.waitForSelector('[data-primary-cta]', { state: 'visible', timeout: 5000 });
 
         // Verify exactly ONE glowing Action Gold CTA per viewport
         await auditors.assertSingleCTA(page);
