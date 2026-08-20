@@ -44,7 +44,7 @@ export function getLoginWaterfallDestination(role, profile) {
 	if (role === 'director') {
 		const cid = typeof profile?.clubId === 'string' ? profile.clubId.trim() : '';
 		return {
-			path: '/director?tab=home',
+			path: '/director/dashboard?tab=home',
 			context: 'director',
 			pivotKey: cid ? `ctx-director-${cid}` : 'ctx-director-fallback',
 		};
@@ -59,7 +59,7 @@ export function getLoginWaterfallDestination(role, profile) {
 	if (role === 'registrar') {
 		const cid = typeof profile?.clubId === 'string' ? profile.clubId.trim() : '';
 		return {
-			path: '/director?tab=compliance',
+			path: '/director/dashboard?tab=compliance',
 			context: 'director',
 			pivotKey: cid ? `ctx-director-${cid}` : 'ctx-director-fallback',
 		};

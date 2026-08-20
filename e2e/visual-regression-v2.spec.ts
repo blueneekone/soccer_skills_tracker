@@ -25,12 +25,7 @@ const viewports = {
 // Helper function to inject authentication JWT into localStorage for unblocked testing
 async function bypassRouteGuards(page: Page, role: string, uid: string = 'mock-test-uid') {
     await page.addInitScript(({ role, uid }: { role: string, uid: string }) => {
-        window.localStorage.setItem('auth_token', JSON.stringify({
-            uid,
-            email: `${role}-test@sstracker.app`,
-            emailVerified: true
-        }));
-        window.localStorage.setItem('user_profile', JSON.stringify({
+        const mockProfile = {
             isProfileComplete: true,
             role: role,
             clubId: 'mock-club-123',
@@ -38,7 +33,14 @@ async function bypassRouteGuards(page: Page, role: string, uid: string = 'mock-t
             playerName: 'Test Player',
             householdId: 'mock-household-123',
             vpcStatus: 'verified'
+        };
+        window.localStorage.setItem('auth_token', JSON.stringify({
+            uid,
+            email: `${role}-test@sstracker.app`,
+            emailVerified: true
         }));
+        window.localStorage.setItem('user_profile', JSON.stringify(mockProfile));
+        window.localStorage.setItem('auth_state', JSON.stringify(mockProfile));
     }, { role, uid });
 }
 

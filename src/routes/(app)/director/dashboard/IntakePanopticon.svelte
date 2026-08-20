@@ -183,7 +183,8 @@
   {:else if pendingNodes.length === 0}
     <InboxZeroCelebration 
       title="ALL NODES CLEARED" 
-      message="No pending guardian verifications. Excellent work." 
+      message="No pending guardian verifications. Excellent work."
+      disableConfetti={true} 
     />
 
   <!-- ═══ DATA GRID ═══ -->

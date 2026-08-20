@@ -3,15 +3,17 @@
 	import Icon from '$lib/components/ui/Icon.svelte';
 	import { dopamineExplosion } from '$lib/services/dopamine.svelte.js';
 
-	let { title = 'INBOX ZERO', message = 'All queues cleared. Excellent work.' } = $props();
+	let { title = 'INBOX ZERO', message = 'All queues cleared. Excellent work.', disableConfetti = false } = $props();
 
 	onMount(() => {
 		// Massive, satisfying feedback loop for achieving Inbox Zero
 		// Delay slightly so the UI has time to transition
 		setTimeout(async () => {
-			await dopamineExplosion('levelUp');
-			await new Promise((r) => setTimeout(r, 300));
-			await dopamineExplosion('loadoutUnlock', { x: 0.5, y: 0.6 });
+			if (!disableConfetti) {
+				await dopamineExplosion('levelUp');
+				await new Promise((r) => setTimeout(r, 300));
+				await dopamineExplosion('loadoutUnlock', { x: 0.5, y: 0.6 });
+			}
 		}, 100);
 	});
 </script>

@@ -61,6 +61,10 @@
     overflow-x: hidden;
     font-family: 'Switzer', -apple-system, sans-serif !important; /* Standardize Switzer for highly legible body copy */
   }
+
+  h1, h2, h3, h4, h5 {
+    font-family: 'Geist Sans', Switzer, sans-serif !important;
+  }
 }
 
 /* 60-30-10 Palette Declarations */

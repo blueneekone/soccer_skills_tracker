@@ -38,8 +38,9 @@
 	<div class="dp-error">{engine.loadError}</div>
 {:else if engine.filtered.length === 0}
 	<InboxZeroCelebration 
-		title="COMPLIANCE INBOX ZERO" 
-		message="All coach background checks cleared. No pending liabilities." 
+		title="ALL COACHES CLEARED" 
+		message="All rostered staff have active verifications on file."
+		disableConfetti={true} 
 	/>
 {:else}
 	<div class="v-table-wrap tw-overflow-x-auto" role="region" aria-label="Compliance roster">
