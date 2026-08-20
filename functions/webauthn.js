@@ -125,8 +125,8 @@ exports.webauthnRegisterStart = onCall(
       rpName: RP_NAME,
       rpID: rpID,
       userID: new TextEncoder().encode(uid),
-      userName: request.auth.token.email || uid,
-      userDisplayName: request.auth.token.name || request.auth.token.email || uid,
+      userName: request.auth.token.email || uid || 'user',
+      userDisplayName: request.auth.token.name || request.auth.token.email || uid || 'user',
       attestationType: 'none',
       excludeCredentials: existingCreds.map((c) => ({
         id: c.id,
