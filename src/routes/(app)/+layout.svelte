@@ -150,11 +150,11 @@
 
 		routeGuardResolved = false;
 
-		const elevatedRoles = ['admin', 'global_admin', 'super_admin', 'commissioner', 'director', 'coach', 'parent'];
+		const validRoles = ['admin', 'global_admin', 'super_admin', 'commissioner', 'director', 'coach', 'parent', 'player', 'recruiter', 'fan', 'tutor', 'registrar'];
 
 		let shouldRedirectToOnboarding = false;
 		untrack(() => {
-			if (!authStore.isAuthenticated || !elevatedRoles.includes(authStore.role ?? '')) {
+			if (!authStore.isAuthenticated || !validRoles.includes(authStore.role ?? '')) {
 				shouldRedirectToOnboarding = true;
 				goto('/onboarding', { replaceState: true });
 			}

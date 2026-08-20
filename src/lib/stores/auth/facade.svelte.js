@@ -24,6 +24,15 @@ export function createAuthFacade() {
 	onIdTokenChanged(auth, async (user) => {
 		try {
 			if (typeof window !== 'undefined' && window.localStorage.getItem('sstracker_e2e_bypass') === 'true') {
+				try {
+					const e2eState = JSON.parse(window.localStorage.getItem('auth_state') || '{}');
+					if (e2eState && e2eState.role) {
+						userState.setProfile(e2eState);
+						sessionState.setRole(e2eState.role);
+						tenantState.applyResolved({ tenantId: e2eState.tenantId || e2eState.clubId || '', profile: e2eState });
+						sessionState.isAuthenticated = true;
+					}
+				} catch (e) { /* ignore */ }
 				sessionState.isLoading = false;
 				return;
 			}
