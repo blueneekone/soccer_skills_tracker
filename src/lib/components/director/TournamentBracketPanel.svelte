@@ -22,7 +22,7 @@
 	import type { BracketFormat, BracketSide } from '$lib/types/tournamentEvent.js';
 
 	interface Props {
-		bracket: TournamentBracket | null;
+		bracket?: TournamentBracket | null;
 		readonly?: boolean;
 		onchange?: (bracket: TournamentBracket | null) => void;
 	}
