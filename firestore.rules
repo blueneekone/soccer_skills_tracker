@@ -77,7 +77,10 @@ service cloud.firestore {
     }
 
     match /teams/{teamId} {
-      allow read: if isAuthenticated();
+      allow read: if isGlobalAdmin() || (isAuthenticated() && request.auth.token.clubId != null && (resource == null || resource.data.clubId == request.auth.token.clubId));
+      allow create: if isGlobalAdmin() || ((isDirector() || isCoach()) && request.auth.token.clubId != null && request.resource.data.clubId == request.auth.token.clubId);
+      allow update: if isGlobalAdmin() || ((isDirector() || isCoach()) && request.auth.token.clubId != null && resource.data.clubId == request.auth.token.clubId && (!('clubId' in request.resource.data) || request.resource.data.clubId == request.auth.token.clubId));
+      allow delete: if isGlobalAdmin() || ((isDirector() || isCoach()) && request.auth.token.clubId != null && resource.data.clubId == request.auth.token.clubId);
 
       match /telemetry_events/{eventId} {
         allow read, write: if coachStaffCanAccessTeam(teamId) || directorScopedToTeam(teamId);
@@ -96,9 +99,6 @@ service cloud.firestore {
       }
 
       match /intents/{intentId} {
-        allow read, write: if coachStaffCanAccessTeam(teamId) || directorScopedToTeam(teamId) || isGlobalAdmin();
-      }
-      match /tactics/{tacticId} {
         allow read, write: if coachStaffCanAccessTeam(teamId) || directorScopedToTeam(teamId) || isGlobalAdmin();
       }
     }

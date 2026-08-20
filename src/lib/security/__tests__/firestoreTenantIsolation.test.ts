@@ -145,4 +145,30 @@ describe.skipIf(!process.env.FIRESTORE_EMULATOR_HOST)(
 			.firestore();
 		await assertSucceeds(getDoc(doc(db, 'clubs/club-a')));
 	});
+
+	it('allows global admin reading/creating teams across any club', async () => {
+		const { setDoc } = await import('firebase/firestore');
+		const db = env.authenticatedContext('admin-uid', token({ role: 'super_admin' })).firestore();
+		await assertSucceeds(getDoc(doc(db, 'teams/team-a')));
+		await assertSucceeds(getDoc(doc(db, 'teams/team-b')));
+		await assertSucceeds(setDoc(doc(db, 'teams/team-c'), { clubId: 'club-b', name: 'Team C' }));
+	});
+
+	it('allows director & coach creating/managing teams in own club and denies cross-club', async () => {
+		const { setDoc, deleteDoc } = await import('firebase/firestore');
+		const dbDirectorA = env.authenticatedContext('director-a', token({ role: 'director', clubId: 'club-a' })).firestore();
+		const dbCoachA = env.authenticatedContext('coach-a', token({ role: 'coach', clubId: 'club-a' })).firestore();
+
+		await assertSucceeds(getDoc(doc(dbDirectorA, 'teams/team-a')));
+		await assertFails(getDoc(doc(dbDirectorA, 'teams/team-b')));
+
+		await assertSucceeds(setDoc(doc(dbDirectorA, 'teams/team-a-2'), { clubId: 'club-a', name: 'Team A2' }));
+		await assertFails(setDoc(doc(dbDirectorA, 'teams/team-b-2'), { clubId: 'club-b', name: 'Team B2' }));
+
+		await assertSucceeds(setDoc(doc(dbCoachA, 'teams/team-a-3'), { clubId: 'club-a', name: 'Team A3' }));
+		await assertFails(setDoc(doc(dbCoachA, 'teams/team-b-3'), { clubId: 'club-b', name: 'Team B3' }));
+
+		await assertSucceeds(deleteDoc(doc(dbDirectorA, 'teams/team-a-2')));
+		await assertFails(deleteDoc(doc(dbDirectorA, 'teams/team-b')));
+	});
 });
