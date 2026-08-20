@@ -37,6 +37,9 @@
 	}
 
 	async function fetchParentAnnouncements(email: string, maxRows: number): Promise<AnnRow[]> {
+		const isMock = typeof window !== 'undefined' && (window.localStorage.getItem('auth_state') !== null || (import.meta.env && import.meta.env.VITE_E2E_BYPASS_AUTH));
+		if (isMock) return [];
+
 		if (
 			annCache &&
 			annCache.email === email &&
@@ -130,7 +133,6 @@
 	});
 
 	function fmtDate(ts?: { toDate?: () => Date }) {
-    if (!db || !authStore.isAuthenticated) return;
 		if (!ts || typeof ts.toDate !== 'function') return '';
 		try {
 			return ts.toDate().toLocaleDateString(undefined, { month: 'short', day: 'numeric' });

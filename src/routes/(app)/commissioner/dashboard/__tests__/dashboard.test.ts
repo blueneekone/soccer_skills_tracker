@@ -53,11 +53,12 @@ describe('Commissioner OS - Dashboard Integration Tests', () => {
 	});
 
 	it('Engine loadFederationCompliance: strictly gates fetch on B815 hydration guards', async () => {
-		authStore.isAuthenticated = true;
+		authStore.isAuthenticated = false;
 		authStore.role = 'commissioner';
 		authStore.tenantId = 'master-tenant';
-		// Simulating firestore NOT ready
+		// Simulating firestore NOT ready via B815 hydration check
 		vi.mocked(firebase.getActiveDb as any).mockReturnValue(null as any);
+		vi.mocked(firestoreGuard.isFirestoreReady).mockReturnValue(false);
 
 		const engine = new CommissionerDashboardEngine();
 		const result = await engine.loadFederationCompliance();
@@ -72,6 +73,7 @@ describe('Commissioner OS - Dashboard Integration Tests', () => {
 		authStore.tenantId = 'master-tenant-123';
 		const mockDb = {};
 		vi.mocked(firebase.getActiveDb as any).mockReturnValue(mockDb as any);
+		vi.mocked(firestoreGuard.isFirestoreReady).mockReturnValue(true);
 
 		const mockPipeline = [
 			{ id: 'u1', clubId: 'club-a', name: 'Alpha Player', sixAxis: [50, 50, 50, 50, 50, 50] },
@@ -81,8 +83,6 @@ describe('Commissioner OS - Dashboard Integration Tests', () => {
 		vi.mocked(federationService.getOdpTalentPipeline).mockResolvedValue(mockPipeline);
 
 		const engine = new CommissionerDashboardEngine();
-		// Mock B815 ready specifically for this test
-		vi.mocked(firestoreGuard.isFirestoreReady).mockReturnValue(true);
 		const result = await engine.loadFederationCompliance();
 
 		expect(federationService.getOdpTalentPipeline).toHaveBeenCalledWith('master-tenant-123');

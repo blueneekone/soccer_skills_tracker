@@ -1,3 +1,4 @@
+<!-- 🛡️ SafeSport Compliance Mandate: Secure WebAuthn Verification Protocol Active -->
 <script lang="ts">
 	import { httpsCallable } from 'firebase/functions';
 	import { doc, getDoc } from 'firebase/firestore';
@@ -253,9 +254,18 @@
 			await reloadPlayerStatus(activePlayerEmail);
 			wizardStage = 'done';
 		} catch (e) {
-			submitError = e instanceof Error ? e.message : String(e);
-			if (submitError.includes('NotAllowedError')) {
-				submitError = 'Biometric attestation failed or was cancelled. Consent requires FaceID/TouchID verification.';
+			if (e instanceof DOMException) {
+				if (e.name === 'NotAllowedError') {
+					submitError = 'Biometric attestation failed or was cancelled. Consent requires FaceID/TouchID verification.';
+				} else if (e.name === 'InvalidStateError') {
+					submitError = 'Device authenticator is already registered or in an invalid state.';
+				} else if (e.name === 'SecurityError') {
+					submitError = 'Security policy prevents biometric verification on this origin.';
+				} else {
+					submitError = `Biometric error: ${e.message}`;
+				}
+			} else {
+				submitError = e instanceof Error ? e.message : String(e);
 			}
 		} finally {
 			submitting = false;

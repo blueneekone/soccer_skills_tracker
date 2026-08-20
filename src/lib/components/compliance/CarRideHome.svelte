@@ -14,7 +14,7 @@
 	}>();
 </script>
 
-<section class="tw-relative tw-w-full tw-rounded-none" style="clip-path: polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px); tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-overflow-hidden tw-z-30">
+<section class="tw-relative tw-w-full tw-rounded-[24px] tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-overflow-hidden tw-z-30">
 	<!-- Raw Athletic Data Underneath -->
 	<div class="tw-p-6">
 		<div class="tw-flex tw-justify-between tw-items-center tw-mb-6">
@@ -49,7 +49,10 @@
 
 			<!-- Empathetic Conversation Anchors in Geist Mono -->
 			<div class="tw-bg-[#0B0F19]/80 tw-border tw-border-[#334155] tw-rounded-xl tw-p-4 tw-w-full tw-max-w-md tw-mb-6">
-				<p class="tw-text-[#94a3b8] tw-text-xs tw-font-bold tw-tracking-widest tw-mb-3">SUGGESTED CONVERSATION ANCHORS:</p>
+				<p class="tw-text-[#94a3b8] tw-text-xs tw-font-bold tw-tracking-widest tw-mb-3">SUGGESTED CONVERSATION ANCHORS (15 MINUTES COOL-OFF EMBARGO):</p>
+				<p class="tw-text-xs tw-text-slate-300 tw-font-mono tw-mb-2">
+					A 15 minutes post-game embargo is active to encourage supportive conversation.
+				</p>
 				<ul class="tw-space-y-2 tw-font-mono tw-text-sm tw-text-white">
 					<li class="tw-flex tw-items-start tw-gap-2">
 						<span class="tw-text-[#14b8a6]">&gt;</span> "I love watching you play."
@@ -70,7 +73,7 @@
 			{/if}
 			
 			<button 
-				class="tw-bg-[#fbbf24] tw-text-black tw-px-6 tw-py-3 tw-rounded-none tw-font-mono tw-font-bold tw-text-xs tw-tracking-widest tw-uppercase hover:tw-bg-amber-400 tw-transition-colors"
+				class="tw-bg-[#fbbf24] tw-text-black tw-px-6 tw-py-3 tw-rounded-xl tw-font-mono tw-font-bold tw-text-xs tw-tracking-widest tw-uppercase hover:tw-bg-amber-400 tw-transition-colors"
 				onclick={signAttestation}
 			>
 				I Acknowledge The Safety Parameters

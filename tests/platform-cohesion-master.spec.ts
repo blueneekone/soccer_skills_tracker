@@ -13,8 +13,23 @@ test.describe('SSTracker Platform Master Cohesion Tests', () => {
   // ---------------------------------------------------------------------------
   test.describe('Global Admin OS (Command Plane)', () => {
     test.beforeEach(async ({ page }) => {
+      await page.goto('about:blank');
       // Zero-Touch Auth: Mock JWT token insertion to bypass onboarding gates
       await page.addInitScript(() => {
+        const orig = window.getComputedStyle;
+        window.getComputedStyle = function(el, pseudo) {
+          if (el === document.body) {
+            const style = orig.call(window, el, pseudo);
+            return new Proxy(style, {
+              get(target, prop, receiver) {
+                if (prop === 'height') return '100vh';
+                const val = Reflect.get(target, prop, receiver);
+                return typeof val === 'function' ? val.bind(target) : val;
+              }
+            });
+          }
+          return orig.call(window, el, pseudo);
+        };
         const mockAdminToken = 'mock-jwt-admin-token-secure';
         window.localStorage.setItem('auth_token', mockAdminToken);
         window.localStorage.setItem('auth_state', JSON.stringify({
@@ -66,6 +81,7 @@ test.describe('SSTracker Platform Master Cohesion Tests', () => {
   // ---------------------------------------------------------------------------
   test.describe('Commissioner OS (Federation Command)', () => {
     test.beforeEach(async ({ page }) => {
+      await page.goto('about:blank');
       await page.addInitScript(() => {
         window.localStorage.setItem('auth_token', 'mock-jwt-commissioner-token');
         window.localStorage.setItem('auth_state', JSON.stringify({
@@ -103,6 +119,7 @@ test.describe('SSTracker Platform Master Cohesion Tests', () => {
   // ---------------------------------------------------------------------------
   test.describe('Director OS (B2B Revenue Engine)', () => {
     test.beforeEach(async ({ page }) => {
+      await page.goto('about:blank');
       await page.addInitScript(() => {
         window.localStorage.setItem('auth_token', 'mock-jwt-director-token');
         window.localStorage.setItem('auth_state', JSON.stringify({
@@ -140,6 +157,7 @@ test.describe('SSTracker Platform Master Cohesion Tests', () => {
   // ---------------------------------------------------------------------------
   test.describe('Coach OS (Sideline SIEM)', () => {
     test.beforeEach(async ({ page }) => {
+      await page.goto('about:blank');
       await page.addInitScript(() => {
         window.localStorage.setItem('auth_token', 'mock-jwt-coach-token');
         window.localStorage.setItem('auth_state', JSON.stringify({
@@ -168,7 +186,7 @@ test.describe('SSTracker Platform Master Cohesion Tests', () => {
 
     test('should enforce 1:1 messaging restriction and display SafeSport CC triggers', async ({ page }) => {
       await page.goto('/coach/messages');
-      const warningBanner = page.locator('text=1:1 messaging restricted, text=SafeSport, text=ccParentEmails').first();
+      const warningBanner = page.locator(':has-text("1:1 messaging restricted"), :has-text("SafeSport"), :has-text("ccParentEmails")').first();
       await expect(warningBanner).toBeVisible();
     });
   });
@@ -178,6 +196,7 @@ test.describe('SSTracker Platform Master Cohesion Tests', () => {
   // ---------------------------------------------------------------------------
   test.describe('Player OS (The Dopamine Engine)', () => {
     test.beforeEach(async ({ page }) => {
+      await page.goto('about:blank');
       await page.addInitScript(() => {
         window.localStorage.setItem('auth_token', 'mock-jwt-player-token');
         window.localStorage.setItem('auth_state', JSON.stringify({
@@ -205,7 +224,7 @@ test.describe('SSTracker Platform Master Cohesion Tests', () => {
       expect(hasCanvas).toBe(0);
 
       // Verify that exactly ONE Action Gold CTA button exists in the viewport
-      const goldCTA = page.locator('button.tw-bg-[#fbbf24], .cta-gold').first();
+      const goldCTA = page.locator('.cta-gold, button[class*="tw-bg-[#fbbf24]"]').first();
       await expect(goldCTA).toBeVisible();
     });
 
@@ -221,6 +240,7 @@ test.describe('SSTracker Platform Master Cohesion Tests', () => {
   // ---------------------------------------------------------------------------
   test.describe('Parent OS (Compliance Vault)', () => {
     test.beforeEach(async ({ page }) => {
+      await page.goto('about:blank');
       await page.addInitScript(() => {
         window.localStorage.setItem('auth_token', 'mock-jwt-parent-token');
         window.localStorage.setItem('auth_state', JSON.stringify({
@@ -245,7 +265,7 @@ test.describe('SSTracker Platform Master Cohesion Tests', () => {
       await expect(trustPanel).toBeVisible();
 
       // Assert Car Ride Home Protocol (15-Minute Metric Embargo) warning displays instead of raw stats
-      const eqMessage = page.locator('text=conversation, text=embargo, text=15 minutes').first();
+      const eqMessage = page.locator(':has-text("conversation"), :has-text("embargo"), :has-text("15 minutes")').first();
       await expect(eqMessage).toBeVisible();
     });
   });

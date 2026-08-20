@@ -8,17 +8,18 @@
  * unless listed (super_admin may enter for troubleshooting).
  */
 export const ROLE_ROUTE_POLICIES = {
-	'/admin': ['super_admin', 'global_admin'],
-	'/director': ['super_admin', 'global_admin', 'director', 'registrar'],
-	'/registrar': ['super_admin', 'global_admin', 'director', 'registrar'],
-	'/recruiter': ['super_admin', 'global_admin', 'director'],
-	'/coach': ['super_admin', 'global_admin', 'director', 'coach'],
-	'/parent': ['parent'],
+	'/admin': ['admin', 'super_admin', 'global_admin'],
+	'/commissioner': ['commissioner', 'super_admin', 'global_admin'],
+	'/director': ['director', 'super_admin', 'global_admin', 'registrar'],
+	'/registrar': ['registrar', 'super_admin', 'global_admin', 'director'],
+	'/recruiter': ['recruiter', 'super_admin', 'global_admin', 'director'],
+	'/coach': ['coach', 'super_admin', 'global_admin', 'director'],
+	'/parent': ['parent', 'super_admin', 'global_admin'],
 	'/player': ['player', 'super_admin', 'global_admin'],
 	'/operative': ['player', 'super_admin', 'global_admin'],
-	'/tracker': ['player'],
-	'/stats': ['player'],
-	'/challenges': ['player'],
+	'/tracker': ['player', 'super_admin', 'global_admin'],
+	'/stats': ['player', 'super_admin', 'global_admin'],
+	'/challenges': ['player', 'super_admin', 'global_admin'],
 	'/passport': ['player', 'super_admin', 'global_admin'],
 	'/trophies': ['player', 'super_admin', 'global_admin'],
 	'/vpc-pending': ['player']

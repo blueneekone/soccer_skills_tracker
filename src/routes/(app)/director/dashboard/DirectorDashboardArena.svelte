@@ -3,7 +3,6 @@
 	import DirectorCommandCenter from '$lib/components/director/os/DirectorCommandCenter.svelte';
 	import FieldOpsModule from '$lib/components/director/os/FieldOpsModule.svelte';
 	import TeamsTab from '$lib/components/director/TeamsTab.svelte';
-	import BrandingTab from '$lib/components/director/BrandingTab.svelte';
 	import ComplianceTab from '$lib/components/director/ComplianceTab.svelte';
 	import UplinkTerminal from './UplinkTerminal.svelte';
 	import IntakePanopticon from './IntakePanopticon.svelte';
@@ -39,7 +38,7 @@
 					<div data-card="revenue" class="st-bento director-card revenue-engine-analytics dark-form-surface tw-border tw-border-slate-700 tw-bg-slate-900/80 tw-p-4 tw-rounded-none tw-min-w-0" style="border-radius: 0px !important; background: #0f172a;">
 						<div class="tw-flex tw-justify-between tw-items-center tw-mb-2 tw-min-w-0">
 							<h3 class="tw-text-xs tw-text-[#14b8a6] tw-uppercase tw-tracking-widest tw-min-w-0" style="font-family: 'Geist Sans', sans-serif;">Revenue Engine</h3>
-							<div class="compliance-status-dot tw-bg-emerald-500" style="width: 8px; height: 8px; border-radius: 50%; display: block;"></div>
+							<div class="compliance-indicator status-dot compliance-status-dot tw-bg-emerald-500" style="width: 8px; height: 8px; border-radius: 50%; display: block;"></div>
 						</div>
 						<div class="tw-text-[#D4D4D8] tw-text-sm tw-min-w-0" style="font-family: 'Switzer', sans-serif;">Club Revenue Analytics Offline</div>
 					</div>
@@ -108,8 +107,6 @@
 					<section class="tw-mt-6" aria-label="Player transfer intake">
 						<TransferPortal role="director" />
 					</section>
-				{:else if engine.activeTab === 'brand'}
-					<BrandingTab clubId={engine.clubId} />
 				{:else if engine.activeTab === 'playbook'}
 					<PlaybookTab clubId={engine.clubId} />
 				{:else if engine.activeTab === 'licenses'}
