@@ -157,7 +157,7 @@ describe('LAUNCH-staff-roster-transfer — registrarTransferPlayer UI', () => {
 	});
 
 	it('director and admin roster mount RegistrarRosterTransferPanel', () => {
-		const directorSrcPath = join(ROOT, 'src/routes/(app)/director/dashboard/+page.svelte');
+		const directorSrcPath = join(ROOT, 'src/routes/(app)/director/dashboard/DirectorDashboardArena.svelte');
 		const director = existsSync(directorSrcPath) ? readFileSync(directorSrcPath, 'utf-8') : '';
 		const admin = readFileSync(
 			join(ROOT, 'src/routes/(app)/admin/organizations/[clubId]/teams/[teamId]/roster/+page.svelte'),
