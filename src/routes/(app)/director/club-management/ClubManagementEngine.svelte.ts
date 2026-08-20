@@ -6,14 +6,15 @@ import { authStore } from '$lib/stores/auth.svelte.js';
 import { teamsStore } from '$lib/stores/teams.svelte.js';
 import { workspaceContextStore } from '$lib/stores/workspaceContext.svelte.js';
 import { db } from '$lib/firebase.js';
+import type { IconName } from '$lib/icons/registry.js';
 
 export const CLUB_MANAGEMENT_TABS = [
-	{ id: 'registrars', label: 'Registrars' },
-	{ id: 'branding', label: 'Club Branding' },
-	{ id: 'comms', label: 'Comms' },
-	{ id: 'licenses', label: 'Licenses & Sets' },
-	{ id: 'billing', label: 'Plans & Billing' },
-	{ id: 'sync', label: 'Data Sync' },
+	{ id: 'registrars', label: 'Registrars', icon: 'nav.swap' as IconName },
+	{ id: 'branding', label: 'Club Branding', icon: 'sys.palette' as IconName },
+	{ id: 'comms', label: 'Comms', icon: 'comm.broadcast' as IconName },
+	{ id: 'licenses', label: 'Licenses & Sets', icon: 'sys.credit-card' as IconName },
+	{ id: 'billing', label: 'Plans & Billing', icon: 'sys.credit-card' as IconName },
+	{ id: 'sync', label: 'Data Sync', icon: 'ph-arrows-left-right' as IconName },
 ] as const;
 
 export type ClubManagementTabId = typeof CLUB_MANAGEMENT_TABS[number]['id'];
@@ -86,5 +87,9 @@ export class ClubManagementEngine {
 		return teamsStore.teams
 			.filter((t) => t.clubId === this.clubId)
 			.map((t) => ({ id: t.id, name: t.name }));
+	}
+
+	get clubLabel() {
+		return teamsStore.clubs.find((c) => c.id === this.clubId)?.name || this.clubId || 'UNRESOLVED';
 	}
 }

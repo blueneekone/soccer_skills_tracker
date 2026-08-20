@@ -6,13 +6,14 @@ import { authStore } from '$lib/stores/auth.svelte.js';
 import { teamsStore } from '$lib/stores/teams.svelte.js';
 import { workspaceContextStore } from '$lib/stores/workspaceContext.svelte.js';
 import { db } from '$lib/firebase.js';
+import type { IconName } from '$lib/icons/registry.js';
 
 export const TACTICS_TRAINING_TABS = [
-	{ id: 'mission-control', label: 'Mission Control' },
-	{ id: 'playbook', label: 'Playbook' },
-	{ id: 'tournaments', label: 'Tournaments' },
-	{ id: 'field', label: 'Field Ops' },
-	{ id: 'war-room', label: 'War Room' },
+	{ id: 'mission-control', label: 'Mission Control', icon: 'data.activity' as IconName },
+	{ id: 'playbook', label: 'Playbook', icon: 'data.target' as IconName },
+	{ id: 'tournaments', label: 'Tournaments', icon: 'sys.calendar' as IconName },
+	{ id: 'field', label: 'Field Ops', icon: 'sys.map-pin' as IconName },
+	{ id: 'war-room', label: 'War Room', icon: 'action.edit' as IconName },
 ] as const;
 
 export type TacticsTrainingTabId = typeof TACTICS_TRAINING_TABS[number]['id'];
@@ -85,5 +86,9 @@ export class TacticsTrainingEngine {
 		return teamsStore.teams
 			.filter((t) => t.clubId === this.clubId)
 			.map((t) => ({ id: t.id, name: t.name }));
+	}
+
+	get clubLabel() {
+		return teamsStore.clubs.find((c) => c.id === this.clubId)?.name || this.clubId || 'UNRESOLVED';
 	}
 }

@@ -6,12 +6,13 @@ import { authStore } from '$lib/stores/auth.svelte.js';
 import { teamsStore } from '$lib/stores/teams.svelte.js';
 import { workspaceContextStore } from '$lib/stores/workspaceContext.svelte.js';
 import { db } from '$lib/firebase.js';
+import type { IconName } from '$lib/icons/registry.js';
 
 export const COMPLIANCE_OPS_TABS = [
-	{ id: 'passports', label: 'Player Passports' },
-	{ id: 'clearance', label: 'Staff Clearance' },
-	{ id: 'households', label: 'Households' },
-	{ id: 'coppa', label: 'COPPA' },
+	{ id: 'passports', label: 'Player Passports', icon: 'status.shield-check' as IconName },
+	{ id: 'clearance', label: 'Staff Clearance', icon: 'status.verified' as IconName },
+	{ id: 'households', label: 'Households', icon: 'nav.home' as IconName },
+	{ id: 'coppa', label: 'COPPA', icon: 'status.shield-check' as IconName },
 ] as const;
 
 export type ComplianceOpsTabId = typeof COMPLIANCE_OPS_TABS[number]['id'];
@@ -84,5 +85,9 @@ export class ComplianceOpsEngine {
 		return teamsStore.teams
 			.filter((t) => t.clubId === this.clubId)
 			.map((t) => ({ id: t.id, name: t.name }));
+	}
+
+	get clubLabel() {
+		return teamsStore.clubs.find((c) => c.id === this.clubId)?.name || this.clubId || 'UNRESOLVED';
 	}
 }
