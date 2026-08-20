@@ -25,6 +25,7 @@
 	let resolveError = $state('');
 
 	$effect(() => {
+		if (!db || !authStore.isAuthenticated || !authStore.clubId) return;
 		if (!browser || !clubId || !hasScanned) return;
 		loading = true;
 

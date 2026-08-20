@@ -60,7 +60,7 @@
 	}
 
 	$effect(() => {
-		if (!db || !authStore.isAuthenticated) return;
+		if (!db || !authStore.isAuthenticated || !authStore.clubId) return;
 		if (!clubId) {
 			registrations = [];
 			seasonId = '';

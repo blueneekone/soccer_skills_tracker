@@ -2,6 +2,7 @@
 	import { browser } from '$app/environment';
 	import { collection, doc, getCountFromServer, getDoc, query, where } from 'firebase/firestore';
 	import { db } from '$lib/firebase.js';
+	import { authStore } from '$lib/stores/auth.svelte.js';
 	import ActionInbox from '$lib/components/shell/ActionInbox.svelte';
 	import DirectorAnalyticsCharts from '$lib/components/shell/DirectorAnalyticsCharts.svelte';
 	import VpcApprovalQueue from '$lib/components/director/os/VpcApprovalQueue.svelte';
@@ -25,6 +26,7 @@
 	let loadingKpis = $state(true);
 
 	$effect(() => {
+		if (!db || !authStore.isAuthenticated || !authStore.clubId) return;
 		if (!browser || !clubId) {
 			kpis = { teams: 0, pendingInvites: 0, activeSeats: 0, seatsLimit: 0 };
 			loadingKpis = false;

@@ -12,7 +12,6 @@
 	let err = $state(/** @type {string | null} */ (null));
 
 	function teamLabel(teamId) {
-    if (!db || !authStore.isAuthenticated) return;
 		const t = teamsStore.teams.find((x) => x.id === teamId);
 		return t?.name || teamId;
 	}
@@ -26,6 +25,7 @@
 	}
 
 	$effect(() => {
+		if (!db || !authStore.isAuthenticated || !authStore.clubId) return;
 		if (!clubId) {
 			invites = [];
 			return;

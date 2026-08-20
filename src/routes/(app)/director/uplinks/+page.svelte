@@ -51,7 +51,7 @@
 	// Subscribe (and re-subscribe) once club context hydrates — onMount fired too
 	// early when userProfile was not yet loaded, leaving a permanent error state.
 	$effect(() => {
-		if (!db || !authStore.isAuthenticated) return;
+		if (!db || !authStore.isAuthenticated || !authStore.clubId) return;
 		const cid = clubId;
 		if (!cid) {
 			loadError = 'Club context not available.';

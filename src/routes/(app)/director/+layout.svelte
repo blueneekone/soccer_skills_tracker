@@ -6,6 +6,7 @@
 	import '$lib/styles/director-field-ops-map.css';
 	import DirectorReadOnlyBanner from '$lib/components/director/DirectorReadOnlyBanner.svelte';
 	import ReadOnlyUpgradeModal from '$lib/components/director/ReadOnlyUpgradeModal.svelte';
+	import { auth, db } from '$lib/firebase.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { licenseEntitlementStore } from '$lib/stores/licenseEntitlement.svelte.js';
 	import { isSubscriptionReadOnly } from '$lib/auth/billing.js';
@@ -29,6 +30,16 @@
 
 	setContext('openReadOnlyUpgrade', () => {
 		upgradeModalOpen = true;
+	});
+
+	// Force client SDK to dump stale cache and fetch fresh Custom Claims payload upon Director session init
+	$effect(() => {
+		if (!db || !authStore.isAuthenticated) return;
+		void auth.currentUser?.getIdToken(true).then(() => {
+			void authStore.refreshClaims();
+		}).catch((err) => {
+			console.warn('[Director OS Layout] Custom token refresh warning:', err);
+		});
 	});
 </script>
 

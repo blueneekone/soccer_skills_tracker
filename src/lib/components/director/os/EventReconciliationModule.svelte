@@ -1,7 +1,8 @@
 <script lang="ts">
 	import { onDestroy } from 'svelte';
 	import { collection, query, where, onSnapshot } from 'firebase/firestore';
-	import { getActiveDb } from '$lib/firebase';
+	import { db, getActiveDb } from '$lib/firebase.js';
+	import { authStore } from '$lib/stores/auth.svelte.js';
 	import Icon from '$lib/components/ui/Icon.svelte';
 	import type { IconName } from '$lib/icons/registry.js';
 
@@ -35,6 +36,7 @@
 	let unsubscribe: (() => void) | null = null;
 
 	$effect(() => {
+		if (!db || !authStore.isAuthenticated || !authStore.clubId) return;
 		if (!clubId) return;
 		loading = true;
 		const db = getActiveDb();

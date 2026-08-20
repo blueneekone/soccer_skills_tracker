@@ -42,6 +42,7 @@ import { untrack } from 'svelte';
 	let unsubscribe: (() => void) | null = null;
 
 	$effect(() => {
+		if (!db || !authStore.isAuthenticated || !authStore.clubId) return;
 		if (!eventId) return;
 		const db = getActiveDb();
 		unsubscribe = onSnapshot(doc(db, 'tournament_events', eventId), (snap) => {

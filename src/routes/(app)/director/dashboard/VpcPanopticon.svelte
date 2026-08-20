@@ -46,7 +46,7 @@
 
   // Real-time Firestore query — exception-only (pending_guardian)
   $effect(() => {
-		if (!db || !authStore.isAuthenticated) return;
+		if (!db || !authStore.isAuthenticated || !authStore.clubId) return;
     if (!browser || !currentClubId) {
       pendingNodes = [];
       isLoading = false;
