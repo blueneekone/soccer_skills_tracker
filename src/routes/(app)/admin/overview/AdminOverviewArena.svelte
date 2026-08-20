@@ -11,7 +11,7 @@
 	// - Grid Math: Enforce the asymmetric 12-column Bento Grid utilizing fluid anti-squish layout configuration.
 </script>
 
-<div class="pd-page-root tw-w-full tw-max-w-[1920px] tw-mx-auto tw-p-[clamp(16px,3vw,24px)] tw-flex-1 tw-flex tw-flex-col">
+<div class="pd-page-root tw-w-full tw-max-w-[1920px] tw-mx-auto tw-p-[clamp(16px,3vw,24px)] tw-flex-1 tw-flex tw-flex-col tw-text-slate-50">
 
 	{#if engine.isLoading}
 		<div class="tw-flex-1 tw-flex tw-items-center tw-justify-center">

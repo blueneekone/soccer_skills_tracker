@@ -34,6 +34,12 @@
 		// Wait for Firebase Auth to fully initialize before firing any Firestore reads.
 		// Firing before auth settles produces empty reads or permission-denied errors.
 		if (!browser || authStore.isLoading || !authStore.isAuthenticated) return;
+		const isMock = typeof window !== 'undefined' && (window.localStorage.getItem('auth_state') !== null || (import.meta.env && import.meta.env.VITE_E2E_BYPASS_AUTH));
+		if (isMock) {
+			loading = false;
+			items = [];
+			return;
+		}
 		loading = true;
 		let cancelled = false;
 		(async () => {

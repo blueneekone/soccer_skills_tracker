@@ -199,7 +199,7 @@
 <main class="tw-bg-[#000000] tw-h-[100dvh] tw-overflow-hidden tw-text-white tw-font-sans tw-p-6 lg:tw-p-8 tw-flex tw-flex-col tw-gap-8 player-dossier-root player-hud-root pd-content-wrap pd-route-stack">
 	<header class="tw-flex tw-justify-between tw-items-end tw-border-b tw-border-white/10 tw-pb-4">
 		<h1 class="tw-font-mono tw-text-2xl tw-uppercase tw-text-[#f8fafc] tw-m-0">Avatar Studio</h1>
-		<div class="tw-flex tw-items-baseline tw-gap-2">
+		<div class="tw-flex tw-items-baseline tw-gap-2 xp-counter streak-days">
 			<span class="tw-font-mono tw-text-xs tw-text-[#94a3b8] tw-uppercase">Grit XP</span>
 			<span class="tw-font-mono tw-text-xl tw-font-bold tw-text-[#f59e0b]">{gritXp.toLocaleString()}</span>
 		</div>

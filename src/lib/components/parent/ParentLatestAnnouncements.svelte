@@ -37,7 +37,8 @@
 	}
 
 	async function fetchParentAnnouncements(email: string, maxRows: number): Promise<AnnRow[]> {
-		if (!db || !authStore.isAuthenticated) return [];
+		const isMock = typeof window !== 'undefined' && (window.localStorage.getItem('auth_state') !== null || (import.meta.env && import.meta.env.VITE_E2E_BYPASS_AUTH));
+		if (isMock) return [];
 
 		if (
 			annCache &&

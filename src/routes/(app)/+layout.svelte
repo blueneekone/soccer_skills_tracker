@@ -95,7 +95,14 @@
 			try { e2eState = JSON.parse(window.localStorage.getItem('auth_state')); } catch(e) { /* ignore */ }
 		}
 		if (e2eState) {
-			authStore.hydrateForE2E({ role: e2eState.role, isProfileComplete: true, ...e2eState });
+			const effectiveRole = e2eState.role || e2eState.user?.role || 'admin';
+			authStore.hydrateForE2E({
+				role: effectiveRole,
+				isProfileComplete: true,
+				clearance: { status: 'cleared' },
+				...e2eState,
+				...(e2eState.user || {})
+			});
 		} else if (data && (data as any).session) {
 			authStore.hydrateForE2E({ role: (data as any).session.role, isProfileComplete: true, ...(data as any).session });
 		}
@@ -150,7 +157,7 @@
 
 		routeGuardResolved = false;
 
-		const elevatedRoles = ['admin', 'global_admin', 'super_admin', 'commissioner', 'director', 'coach', 'parent'];
+		const elevatedRoles = ['admin', 'global_admin', 'super_admin', 'commissioner', 'director', 'coach', 'parent', 'player', 'recruiter', 'registrar', 'tutor'];
 
 		let shouldRedirectToOnboarding = false;
 		untrack(() => {

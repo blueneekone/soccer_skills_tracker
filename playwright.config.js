@@ -12,8 +12,8 @@ export default defineConfig({
     'tests/**/*.spec.{js,ts}'
   ],
 
-  // Maximum time one test can run (30 seconds)
-  timeout: 30 * 1000,
+  // Maximum time one test can run (60 seconds for cold Svelte compilation)
+  timeout: 60 * 1000,
 
   expect: {
     // Maximum time expect() should wait for conditions (e.g. visual stability)
@@ -35,8 +35,8 @@ export default defineConfig({
   // Retry on CI only to catch transient rendering hydration or network drops
   retries: process.env.CI ? 2 : 0,
 
-  // Opt out of parallel tests on CI to preserve resources; utilize half-capacity locally
-  workers: process.env.CI ? 1 : undefined,
+  // Execute sequentially to preserve system resources during Svelte 5 SSR compilation
+  workers: 1,
 
   // Reporter selection: Line/List for TUI progress telemetry, HTML for full reports
   reporter: [
@@ -64,6 +64,13 @@ export default defineConfig({
   // Configure projects for major responsive viewports to test our "Anti-Squish" fluid clamp layout physics
   // Hardened to strict 16:9 widescreen aspect ratios matching your visual-regression suite expectations
   projects: [
+    {
+      name: 'chromium',
+      use: {
+        ...devices['Desktop Chrome'],
+        viewport: { width: 1280, height: 720 }, // Strict 16:9 HD widescreen viewport [cite: 1144]
+      },
+    },
     {
       name: 'desktop-chrome',
       use: {
