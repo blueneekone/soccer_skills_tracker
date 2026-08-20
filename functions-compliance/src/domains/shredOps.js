@@ -101,7 +101,7 @@ async function deleteLinkedVaultDocs(data) {
  */
 async function shredSubCollectionField(collection, field) {
   let shredded = 0;
-   
+  // eslint-disable-next-line no-constant-condition
   while (true) {
     const snap = await db().collection(collection).limit(PAGE_SIZE).get();
     if (snap.empty) break;

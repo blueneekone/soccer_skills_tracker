@@ -162,26 +162,8 @@
 	async function clientBatchInviteCoach(teamId, coachEmail) {
 		const emailLower = coachEmail.toLowerCase().trim();
 		if (!emailLower) throw new Error('Email is required.');
-		const batch = writeBatch(db);
-		
-		batch.set(doc(db, 'coach_lookup', emailLower), {
-			teamId,
-			clubId,
-			role: 'coach',
-			invitedAt: new Date()
-		}, { merge: true });
-		
-		batch.set(doc(db, 'users', emailLower), {
-			teamId,
-			clubId,
-			role: 'coach'
-		}, { merge: true });
-		
-		batch.set(doc(db, 'teams', teamId), {
-			coachEmail: emailLower
-		}, { merge: true });
-		
-		await batch.commit();
+		const fn = httpsCallable(functions, 'directorInviteCoach');
+		await fn({ teamId, coachEmail: emailLower });
 	}
 
 	// ── Create team ───────────────────────────────────────────────────────

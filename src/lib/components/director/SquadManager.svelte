@@ -16,6 +16,8 @@
 	import type { OrgManager } from '$lib/services/org.svelte.js';
 	import type { TenantTeam } from '$lib/types/tenant';
 	import { authStore } from '$lib/stores/auth.svelte.js';
+	import { functions } from '$lib/firebase.js';
+	import { httpsCallable } from 'firebase/functions';
 
 	interface Props {
 		org: OrgManager;
@@ -79,6 +81,11 @@
 		assignError = '';
 		assignLoading = true;
 		try {
+			const emailTrim = assignEmail.trim().toLowerCase();
+			if (emailTrim) {
+				const fn = httpsCallable(functions, 'directorInviteCoach');
+				await fn({ teamId: assignTarget.id, coachEmail: emailTrim });
+			}
 			await org.assignCoach({ teamId: assignTarget.id, coachEmail: assignEmail });
 			closeAssign();
 		} catch (err) {

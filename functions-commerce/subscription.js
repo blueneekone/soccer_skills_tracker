@@ -1,4 +1,4 @@
- 
+/* eslint-disable quotes */
 /**
  * subscription.js — Marketing / Stripe Checkout Stub
  * ────────────────────────────────────────────────────────────────────────────
