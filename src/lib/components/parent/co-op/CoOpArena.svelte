@@ -81,7 +81,7 @@
 	const displayBounties = $derived([...engine.activeBounties, ...engine.verifiedBounties]);
 </script>
 
-<div class="tw-bg-[#0F172A] tw-border tw-border-[#1E293B] tw-p-6 tw-flex tw-flex-col tw-gap-6 tw-rounded-none">
+<div class="tw-bg-[#0F172A] tw-border tw-border-[#1E293B] tw-p-6 tw-flex tw-flex-col tw-gap-6 tw-rounded-[24px]">
 	<div class="tw-flex tw-items-center tw-justify-between tw-border-b tw-border-[#1E293B] tw-pb-4">
 		<h2 class="tw-text-white tw-font-bold tw-text-lg tw-flex tw-items-center tw-gap-2.5 tw-m-0">
 			<Icon name={"sys.escrow" as IconName} size={20} class="tw-text-amber-500" />
@@ -98,7 +98,7 @@
 			<Icon name={"sys.credit-card" as IconName} size={16} class="tw-text-[#14b8a6]" />
 			<span>Stripe Billing & Funding Source</span>
 		</h3>
-		<div class="tw-bg-[#0B0F19] tw-p-4 tw-border tw-border-[#1E293B] tw-rounded-none">
+		<div class="tw-bg-[#0B0F19] tw-p-4 tw-border tw-border-[#1E293B] tw-rounded-2xl">
 			{#if engine.hasFundingSource}
 				<div class="tw-flex tw-justify-between tw-items-center">
 					<div>

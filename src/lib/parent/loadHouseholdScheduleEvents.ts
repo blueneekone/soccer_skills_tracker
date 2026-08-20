@@ -1,4 +1,5 @@
 import { db } from '$lib/firebase.js';
+import { authStore } from '$lib/stores/auth.svelte.js';
 import { collection, doc, getDoc, getDocs, limit, query, where } from 'firebase/firestore';
 
 export type HouseholdScheduleEvent = {
@@ -21,6 +22,7 @@ export type HouseholdMatchStream = {
  * Resolve team ids for household child emails via users + player_lookup.
  */
 export async function resolveTeamIdsForChildEmails(childEmails: string[]): Promise<string[]> {
+	if (!db || !authStore.isAuthenticated) return [];
 	const teamIds = new Set<string>();
 	for (const em of childEmails) {
 		const normalized = em.trim().toLowerCase();
@@ -84,6 +86,7 @@ export function buildMatchSessionId(teamId: string, when: Date = new Date()): st
 export async function loadHouseholdMatchStreams(
 	childEmails: string[],
 ): Promise<HouseholdMatchStream[]> {
+	if (!db || !authStore.isAuthenticated) return [];
 	const teamIds = await resolveTeamIdsForChildEmails(childEmails);
 	if (teamIds.length === 0) return [];
 
@@ -106,6 +109,7 @@ export async function loadHouseholdScheduleEvents(
 	childEmails: string[],
 	opts: { horizonDays?: number; maxEvents?: number; perTeamLimit?: number } = {},
 ): Promise<HouseholdScheduleEvent[]> {
+	if (!db || !authStore.isAuthenticated) return [];
 	const emails = childEmails.map((e) => e.trim().toLowerCase()).filter(Boolean);
 	if (emails.length === 0) return [];
 

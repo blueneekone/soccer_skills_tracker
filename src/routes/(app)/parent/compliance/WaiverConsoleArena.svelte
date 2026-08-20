@@ -30,7 +30,7 @@
 </script>
 
 <div class="waiver-console-arena tw-h-[100dvh] tw-overflow-hidden tw-bg-[#0B0F19] tw-text-white tw-p-6 tw-flex tw-flex-col tw-items-center tw-justify-center">
-	<div class="waiver-wrapper tw-max-w-2xl tw-w-full tw-bg-[#0F172A] tw-border tw-border-[#1E293B] tw-p-8 tw-rounded-none tw-shadow-2xl">
+	<div class="waiver-wrapper tw-max-w-2xl tw-w-full tw-bg-[#0F172A] tw-border tw-border-[#1E293B] tw-p-8 tw-rounded-[24px] tw-shadow-2xl">
 		<div class="tw-flex tw-items-center tw-justify-center tw-gap-2 tw-mb-2">
 			<Icon name={"status.shield-check" as IconName} size={24} class="tw-text-amber-500" />
 			<h1 class="tw-text-2xl tw-font-bold tw-tracking-tight tw-text-center tw-uppercase tw-text-white" style="font-family: 'Geist Sans', sans-serif;">
@@ -42,7 +42,7 @@
 		</h2>
 
 		<!-- Document Viewer -->
-		<div class="document-viewer tw-border tw-border-[#1E293B] tw-bg-[#0B0F19] tw-p-5 tw-h-64 tw-overflow-y-scroll tw-text-sm tw-text-slate-300 tw-leading-relaxed tw-mb-6 tw-rounded-none">
+		<div class="document-viewer tw-border tw-border-[#1E293B] tw-bg-[#0B0F19] tw-p-5 tw-h-64 tw-overflow-y-scroll tw-text-sm tw-text-slate-300 tw-leading-relaxed tw-mb-6 tw-rounded-2xl">
 			<h3 class="tw-font-bold tw-text-white tw-mb-2 tw-flex tw-items-center tw-gap-2">
 				<Icon name={"sys.info" as IconName} size={14} class="tw-text-[#14b8a6]" />
 				<span>1. ASSUMPTION OF RISK</span>
