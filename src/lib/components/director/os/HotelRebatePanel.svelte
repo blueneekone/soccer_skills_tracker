@@ -44,10 +44,11 @@
 	let unsubscribe: (() => void) | null = null;
 
 	$effect(() => {
-		if (!db || !authStore.isAuthenticated || !authStore.clubId) return;
+		const activeDb = getActiveDb();
+		if (!activeDb || !authStore.isAuthenticated || !authStore.clubId) return;
 		if (!clubId) return;
 		loading = true;
-		const db = getActiveDb();
+		const db = activeDb;
 		const q = query(
 			collection(db, 'hotel_rebates'),
 			where('tenantId', '==', clubId),

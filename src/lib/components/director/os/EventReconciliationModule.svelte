@@ -36,10 +36,11 @@
 	let unsubscribe: (() => void) | null = null;
 
 	$effect(() => {
-		if (!db || !authStore.isAuthenticated || !authStore.clubId) return;
+		const activeDb = getActiveDb();
+		if (!activeDb || !authStore.isAuthenticated || !authStore.clubId) return;
 		if (!clubId) return;
 		loading = true;
-		const db = getActiveDb();
+		const db = activeDb;
 
 		// Listen to all paid tickets for this host club, created today or later.
 		const todayStart = new Date();
