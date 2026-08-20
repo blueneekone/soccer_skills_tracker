@@ -52,6 +52,12 @@ export class SystemSettingsEngine {
 	secOk = $state('');
 
 	loadSecurityConfig = async () => {
+		if (import.meta.env?.VITE_E2E_BYPASS_AUTH) {
+			this.secMfaEnabled = true;
+			this.secPiiTtl = '24h';
+			this.secSessionTimeout = '4h';
+			return;
+		}
 		try {
 			const snap = await getDoc(doc(db, 'config', 'platform_security'));
 			if (snap.exists()) {
