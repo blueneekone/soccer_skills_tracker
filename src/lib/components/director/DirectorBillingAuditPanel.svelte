@@ -72,7 +72,7 @@
 
 	// ── Load ───────────────────────────────────────────────────────────────────
 	$effect(() => {
-		if (!db || !authStore.isAuthenticated) return;
+		if (!db || !authStore.isAuthenticated || !authStore.clubId) return;
 		const id = clubId.trim();
 		if (!id) {
 			lastLoadedClubId = '';
@@ -148,7 +148,7 @@
 	});
 
 	async function refreshNow() {
-    if (!db || !authStore.isAuthenticated) return;
+		if (!db || !authStore.isAuthenticated || !authStore.clubId) return;
 		const id = clubId.trim();
 		if (!id) return;
 		lastLoadedClubId = '';

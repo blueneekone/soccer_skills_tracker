@@ -19,10 +19,11 @@
 	const clubId = $derived(authStore.userProfile?.clubId ?? '');
 
 	$effect(() => {
-		if (!authStore.isAuthenticated) return;
+		const activeDb = getActiveDb();
+		if (!activeDb || !authStore.isAuthenticated || !authStore.clubId) return;
 		if (!clubId) return;
 		loading = true;
-		const db = getActiveDb();
+		const db = activeDb;
 		const q = query(
 			collection(db, 'tournament_events'),
 			where('hostClubId', '==', clubId),

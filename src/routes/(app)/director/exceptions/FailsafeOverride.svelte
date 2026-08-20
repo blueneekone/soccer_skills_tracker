@@ -30,6 +30,7 @@
 
 	// ── Data Loading ──────────────────────────────────────────────────────────
 	$effect(() => {
+		if (!db || !authStore.isAuthenticated || !authStore.clubId) return;
 		if (!isAuthorized) return;
 		const tenantId = authStore.tenantId;
 		if (!tenantId) return;
@@ -37,7 +38,6 @@
 		let cancelled = false;
 
 		async function loadNodes() {
-    if (!db || !authStore.isAuthenticated) return;
 			isLoadingNodes = true;
 			try {
 				const usersRef = collection(db, 'users');

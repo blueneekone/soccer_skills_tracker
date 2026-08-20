@@ -73,7 +73,6 @@
 	];
 
 	function slugifyInput(raw) {
-    if (!db || !authStore.isAuthenticated) return;
 		return String(raw || '')
 			.trim()
 			.toLowerCase()
@@ -90,7 +89,7 @@
 	}
 
 	$effect(() => {
-		if (!db || !authStore.isAuthenticated) return;
+		if (!db || !authStore.isAuthenticated || !authStore.clubId) return;
 		const cid = effectiveClubId;
 		if (!cid) {
 			publicSlug = '';

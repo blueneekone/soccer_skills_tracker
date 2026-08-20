@@ -29,6 +29,7 @@ export async function navigateAfterLogin(
 
 	try {
 		await auth.currentUser?.getIdToken(true);
+		await authStore.refreshClaims();
 	} catch {
 		/* non-fatal */
 	}

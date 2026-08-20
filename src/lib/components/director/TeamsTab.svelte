@@ -59,6 +59,7 @@
 	let pendingInvites = $state(/** @type {PendingInvite[]} */ ([]));
 
 	$effect(() => {
+		if (!db || !authStore.isAuthenticated || !authStore.clubId) return;
 		if (!clubId) { pendingInvites = []; return; }
 		const q = query(
 			collection(db, 'coach_invites'),
@@ -116,7 +117,6 @@
 	// ── Status helpers ────────────────────────────────────────────────────
 	/** @param {{ id: string; coachEmail?: string }} t */
 	function teamStatusLabel(t) {
-    if (!db || !authStore.isAuthenticated) return;
 		if (pendingInviteTeamIds.has(t.id)) return 'PENDING';
 		if (t.coachEmail) return 'ACTIVE';
 		return 'VACANT';

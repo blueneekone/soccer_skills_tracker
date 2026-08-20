@@ -71,6 +71,7 @@
 	]);
 
 	$effect(() => {
+		if (!db || !authStore.isAuthenticated || !authStore.clubId) return;
 		const pid = programId.trim();
 		if (!pid || !browser) {
 			sessions = [];
@@ -124,6 +125,7 @@
 	});
 
 	$effect(() => {
+		if (!db || !authStore.isAuthenticated || !authStore.clubId) return;
 		const pid = programId.trim();
 		if (!pid || !browser) return;
 		const ref = doc(db, 'tryout_programs', pid);

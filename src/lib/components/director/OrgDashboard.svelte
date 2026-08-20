@@ -67,6 +67,7 @@
 	}
 
 	$effect(() => {
+		if (!db || !authStore.isAuthenticated || !authStore.clubId) return;
 		if (!browser || !tenantId) {
 			detach();
 			org = null;

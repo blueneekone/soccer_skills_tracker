@@ -76,6 +76,7 @@ export function createAuthFacade() {
 		get role() { return sessionState.role; },
 		get tenantId() { return tenantState.tenantId; },
 		get currentTenantId() { return tenantState.currentTenantId; },
+		get clubId() { return tenantState.tenantId || userState.userProfile?.clubId || ''; },
 		get orgId() { return tenantState.orgId; },
 		get cellId() { return tenantState.cellId; },
 		get isCoach() { return sessionState.isCoach; },

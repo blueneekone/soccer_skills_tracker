@@ -1,7 +1,8 @@
 <script lang="ts">
 	import { onDestroy } from 'svelte';
 	import { collection, query, where, onSnapshot } from 'firebase/firestore';
-	import { getActiveDb } from '$lib/firebase';
+	import { db, getActiveDb } from '$lib/firebase.js';
+	import { authStore } from '$lib/stores/auth.svelte.js';
 	import Icon from '$lib/components/ui/Icon.svelte';
 	import type { IconName } from '$lib/icons/registry.js';
 
@@ -35,9 +36,11 @@
 	let unsubscribe: (() => void) | null = null;
 
 	$effect(() => {
+		const activeDb = getActiveDb();
+		if (!activeDb || !authStore.isAuthenticated || !authStore.clubId) return;
 		if (!clubId) return;
 		loading = true;
-		const db = getActiveDb();
+		const db = activeDb;
 
 		// Listen to all paid tickets for this host club, created today or later.
 		const todayStart = new Date();

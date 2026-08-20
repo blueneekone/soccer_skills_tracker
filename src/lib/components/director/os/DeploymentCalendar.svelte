@@ -25,7 +25,6 @@
 
 	/** @param {string | undefined} k */
 	function kindBadgeClass(k) {
-    if (!db || !authStore.isAuthenticated) return;
 		const v = typeof k === 'string' ? k.toLowerCase() : '';
 		if (v === 'match') return 'dep-badge dep-badge--match';
 		if (v === 'tournament') return 'dep-badge dep-badge--tournament';
@@ -74,6 +73,7 @@
 	];
 
 	$effect(() => {
+		if (!db || !authStore.isAuthenticated || !authStore.clubId) return;
 		if (!browser || !clubId) {
 			loading = false;
 			rows = [];

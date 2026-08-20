@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { authStore } from '$lib/stores/auth.svelte';
+	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { browser } from '$app/environment';
 	import {
 		collection,
@@ -21,7 +21,7 @@
 	let loadError = $state('');
 
 	$effect(() => {
-		if (!db || !authStore.isAuthenticated) return;
+		if (!db || !authStore.isAuthenticated || !authStore.clubId) return;
 		if (!browser || !clubId) {
 			records = [];
 			loading = false;

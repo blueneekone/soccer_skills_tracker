@@ -85,6 +85,7 @@
 	);
 
 	$effect(() => {
+		if (!db || !authStore.isAuthenticated || !authStore.clubId) return;
 		if (!browser || !resolvedClubId) {
 			weatherFacilityStatuses = [];
 			return;
@@ -226,6 +227,7 @@
 	});
 
 	$effect(() => {
+		if (!db || !authStore.isAuthenticated || !authStore.clubId) return;
 		if (!resolvedClubId) {
 			fields = [];
 			mapFacilities = [];
@@ -289,6 +291,7 @@
 	});
 
 	$effect(() => {
+		if (!db || !authStore.isAuthenticated || !authStore.clubId) return;
 		if (!fieldId || !scheduleDate) {
 			schedules = [];
 			return;
