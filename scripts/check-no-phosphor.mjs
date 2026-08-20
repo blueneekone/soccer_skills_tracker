@@ -58,6 +58,7 @@ const SVG_STROKE_ALLOWLIST = [
 	'SensitiveView.svelte',
 	'consent/',
 	'coach/+page.svelte',
+	'coach/war-room/+page.svelte',
 	'player/dashboard/+page.svelte',
 	'compliance/+page.svelte',
 ];
