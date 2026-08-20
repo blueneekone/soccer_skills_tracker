@@ -25,7 +25,7 @@ const {onCall, HttpsError} = require('firebase-functions/v2/https');
 // Use the bootstrapAdmin proxy so initializeApp() is guaranteed before any
 // Admin SDK access. Direct require('firebase-admin') returns an uninitialized
 // singleton when webauthn.js is loaded as a separate module (500 error fix).
-const admin = require('./bootstrapAdmin');
+const admin = require('./functions-shared/bootstrapAdmin');
 const {
   generateRegistrationOptions,
   verifyRegistrationResponse,

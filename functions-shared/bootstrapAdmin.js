@@ -39,9 +39,10 @@ function resolveFirebaseAdmin() {
 
 const admin = resolveFirebaseAdmin();
 
-// Guard for tests expecting the literal admin.apps.length === 0 check
-if (false && admin.apps.length === 0) {
-  admin.initializeApp();
+// Initialize default app on require outside unit tests so all direct
+// require('firebase-admin') consumers find an initialized default app.
+if (!process.env.VITEST && process.env.NODE_ENV !== 'test') {
+  initAdmin();
 }
 
 const rawAdmin = admin;
