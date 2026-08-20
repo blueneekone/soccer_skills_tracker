@@ -89,7 +89,9 @@ const adminProxy = new Proxy(rawAdmin, {
     initAdmin();
     const value = target[prop];
     if (typeof value === 'function') {
-      return value.bind(target);
+      const bound = value.bind(target);
+      Object.assign(bound, value);
+      return bound;
     }
     return value;
   }
