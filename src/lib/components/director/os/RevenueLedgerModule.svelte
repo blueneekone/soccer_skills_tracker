@@ -164,16 +164,10 @@
 	.revenue-ledger {
 		position: relative;
 		padding: clamp(1rem, 1.4vw + 0.5rem, 1.6rem);
-		border-radius: 24px;
-		border: 1px solid var(--vanguard-border, rgba(20, 184, 166, 0.18));
-		background:
-			linear-gradient(135deg, rgba(8, 17, 28, 0.78), rgba(2, 6, 12, 0.92));
-		backdrop-filter: blur(var(--vanguard-blur, 24px));
-		-webkit-backdrop-filter: blur(var(--vanguard-blur, 24px));
-		box-shadow:
-			0 1px 0 rgba(255, 255, 255, 0.04) inset,
-			0 18px 48px rgba(2, 6, 12, 0.4),
-			0 0 0 1px rgba(20, 184, 166, 0.06);
+		border-radius: 0px;
+		border: 1px solid #334155;
+		background: #0f172a;
+		box-shadow: none;
 		color: rgba(226, 232, 240, 0.92);
 	}
 
@@ -232,9 +226,9 @@
 		flex-direction: column;
 		gap: 0.18rem;
 		padding: 0.7rem 0.8rem;
-		border-radius: 18px;
-		border: 1px solid rgba(20, 184, 166, 0.1);
-		background: rgba(1, 4, 9, 0.55);
+		border-radius: 0px;
+		border: 1px solid #334155;
+		background: #0b0f19;
 	}
 
 	.revenue-tile--savings {

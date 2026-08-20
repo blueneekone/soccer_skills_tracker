@@ -42,9 +42,9 @@ import { untrack } from 'svelte';
 	let unsubscribe: (() => void) | null = null;
 
 	$effect(() => {
-		if (!eventId) return;
-		const db = getActiveDb();
-		unsubscribe = onSnapshot(doc(db, 'tournament_events', eventId), (snap) => {
+		if (!eventId || !db || !authStore.isAuthenticated) return;
+		const currentDb = getActiveDb();
+		unsubscribe = onSnapshot(doc(currentDb, 'tournament_events', eventId), (snap) => {
 			if (!snap.exists()) { loading = false; return; }
 			const data = snap.data() as Omit<TournamentEventDoc, 'id'>;
 			event = { id: snap.id, ...data };
@@ -459,16 +459,11 @@ import { untrack } from 'svelte';
 	}
 
 	.glass-panel.card {
-		background: rgba(255,255,255,0.04);
-		border: 1px solid rgba(255,255,255,0.08);
-		backdrop-filter: blur(12px);
-		-webkit-backdrop-filter: blur(12px);
-		border-radius: var(--vanguard-radius, 24px);
+		background: #0f172a;
+		border: 1px solid #334155;
+		border-radius: 0px;
 		padding: clamp(1.25rem, 2.5vw, 1.75rem);
-		box-shadow:
-			0 1px 3px rgba(0,0,0,0.3),
-			0 4px 16px rgba(0,0,0,0.2),
-			inset 0 1px 0 rgba(255,255,255,0.06);
+		box-shadow: none;
 		display: flex;
 		flex-direction: column;
 		gap: 1rem;

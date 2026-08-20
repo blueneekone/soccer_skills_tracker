@@ -23,7 +23,7 @@
 	);
 
 	$effect(() => {
-		if (!clubId) {
+		if (!clubId || !db || !authStore.isAuthenticated) {
 			loading = false;
 			return;
 		}
@@ -162,7 +162,7 @@
 		gap: 10px;
 		padding: 16px 18px;
 		border: 1px solid #334155;
-		border-radius: 12px;
+		border-radius: 0px;
 		background: #0f172a;
 		margin-bottom: 16px;
 	}

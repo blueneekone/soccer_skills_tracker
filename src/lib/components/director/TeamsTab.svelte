@@ -59,7 +59,7 @@
 	let pendingInvites = $state(/** @type {PendingInvite[]} */ ([]));
 
 	$effect(() => {
-		if (!clubId) { pendingInvites = []; return; }
+		if (!clubId || !db || !authStore.isAuthenticated) { pendingInvites = []; return; }
 		const q = query(
 			collection(db, 'coach_invites'),
 			where('clubId', '==', clubId),

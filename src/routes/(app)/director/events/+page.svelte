@@ -175,17 +175,17 @@
 	}
 
 	.btn-create {
-		background: linear-gradient(135deg, #6366f1, #8b5cf6);
-		color: white;
+		background: #daff0a;
+		color: #000000;
 		border: none;
-		border-radius: 24px;
+		border-radius: 0px;
 		padding: 0.65rem 1.4rem;
 		font-size: 0.9rem;
-		font-weight: 600;
+		font-weight: 800;
 		cursor: pointer;
 		white-space: nowrap;
 		transition: opacity 0.15s, transform 0.15s;
-		box-shadow: 0 4px 14px rgba(99, 102, 241, 0.35);
+		box-shadow: none;
 	}
 
 	.btn-create:hover:not(:disabled) { opacity: 0.88; transform: translateY(-1px); }
@@ -209,22 +209,17 @@
 	}
 
 	.event-card {
-		border-radius: var(--vanguard-radius, 24px);
+		border-radius: 0px;
 		padding: clamp(1.25rem, 2.5vw, 1.75rem);
-		background: rgba(255, 255, 255, 0.04);
-		border: 1px solid rgba(255, 255, 255, 0.08);
-		backdrop-filter: blur(12px);
-		-webkit-backdrop-filter: blur(12px);
+		background: #0f172a;
+		border: 1px solid #334155;
 		text-decoration: none;
 		color: inherit;
 		display: flex;
 		flex-direction: column;
 		gap: 0.6rem;
 		transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
-		box-shadow:
-			0 1px 3px rgba(0, 0, 0, 0.3),
-			0 4px 16px rgba(0, 0, 0, 0.2),
-			inset 0 1px 0 rgba(255, 255, 255, 0.07);
+		box-shadow: none;
 	}
 
 	.event-card:hover {
@@ -315,9 +310,9 @@
 	.empty-state {
 		text-align: center;
 		padding: 4rem 2rem;
-		background: rgba(255, 255, 255, 0.03);
-		border: 1px dashed rgba(255, 255, 255, 0.1);
-		border-radius: var(--vanguard-radius, 24px);
+		background: #0f172a;
+		border: 1px dashed #334155;
+		border-radius: 0px;
 	}
 
 	.empty-icon { font-size: 3rem; margin-bottom: 1rem; }

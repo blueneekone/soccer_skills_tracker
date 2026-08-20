@@ -37,7 +37,7 @@
 
 	$effect(() => {
 		const cid = clubId.trim();
-		if (!cid || !browser) {
+		if (!cid || !browser || !db || !authStore.isAuthenticated) {
 			programs = [];
 			loading = false;
 			return;

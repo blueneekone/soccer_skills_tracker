@@ -14,7 +14,7 @@
 
 <div class="pd-page-root tw-h-[100dvh] tw-overflow-hidden tw-bg-[#000000] tw-text-[#FAFAFA] tw-flex tw-flex-col">
 	<DirectorDashboardHUD {engine} />
-	<main class="tw-flex-1 tw-flex tw-flex-col tw-min-w-0">
+	<main class="tw-flex-1 tw-flex tw-flex-col tw-min-w-0 tw-min-h-0 tw-overflow-hidden">
 		<DirectorDashboardArena {engine} />
 	</main>
 </div>

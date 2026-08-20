@@ -63,32 +63,32 @@
 	</div>
 
 	<!-- Enterprise Data Table Conversion -->
-	<div class="v-table-wrap tw-overflow-x-auto tw-border tw-border-[#334155] tw-rounded-[var(--radius-premium,24px)] tw-bg-[#0f172a]">
+	<div class="v-table-wrap tw-overflow-x-auto tw-border tw-border-[#334155] tw-rounded-none tw-bg-[#0f172a]">
 		<table class="v-table tw-w-full tw-text-left tw-border-collapse">
 			<thead>
 				<tr>
-					<th class="tw-bg-slate-900/70 tw-text-xs tw-uppercase tw-tracking-wider tw-text-[#E2E8F0] tw-px-6 tw-py-4 tw-font-semibold">Household Primary (Parent)</th>
-					<th class="tw-bg-slate-900/70 tw-text-xs tw-uppercase tw-tracking-wider tw-text-[#E2E8F0] tw-px-6 tw-py-4 tw-font-semibold">Linked Operatives</th>
-					<th class="tw-bg-slate-900/70 tw-text-xs tw-uppercase tw-tracking-wider tw-text-[#E2E8F0] tw-px-6 tw-py-4 tw-font-semibold">VPC Status</th>
-					<th class="tw-bg-slate-900/70 tw-text-xs tw-uppercase tw-tracking-wider tw-text-[#E2E8F0] tw-px-6 tw-py-4 tw-font-semibold">SafeSport Flags</th>
-					<th class="tw-bg-slate-900/70 tw-text-xs tw-uppercase tw-tracking-wider tw-text-[#E2E8F0] tw-px-6 tw-py-4 tw-font-semibold tw-text-right">Actions</th>
+					<th class="v-th">Household Primary (Parent)</th>
+					<th class="v-th">Linked Operatives</th>
+					<th class="v-th">VPC Status</th>
+					<th class="v-th">SafeSport Flags</th>
+					<th class="v-th v-th--right">Actions</th>
 				</tr>
 			</thead>
 			<tbody class="v-table__body">
 				{#each paginatedHouseholds as hh}
 					<!-- svelte-ignore a11y_click_events_have_key_events -->
 					<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
-					<tr class="ec-table__row-click tw-border-t tw-border-[#334155] hover:tw-bg-slate-800/50 tw-cursor-pointer tw-transition-colors" onclick={() => openHouseholdDrawer(hh.id)}>
-						<td class="tw-px-6 tw-py-4">
+					<tr class="v-tr ec-table__row-click tw-cursor-pointer tw-transition-colors" onclick={() => openHouseholdDrawer(hh.id)}>
+						<td class="v-td">
 							<div class="tw-flex tw-flex-col">
 								<span class="tw-text-sm tw-font-bold tw-text-white">{hh.parentName}</span>
 								<span class="tw-text-xs tw-text-slate-400 tw-font-mono">{hh.parentEmail}</span>
 							</div>
 						</td>
-						<td class="tw-px-6 tw-py-4 tw-font-mono tw-text-sm tw-text-slate-300">
+						<td class="v-td tw-font-mono">
 							{hh.athletes} {hh.athletes === 1 ? 'Athlete' : 'Athletes'}
 						</td>
-						<td class="tw-px-6 tw-py-4">
+						<td class="v-td">
 							<div class="tw-flex tw-items-center tw-gap-2">
 								{#if hh.vpcStatus === 'Verified'}
 									<div class="tw-w-2 tw-h-2 tw-rounded-full tw-bg-green-500"></div>
@@ -105,14 +105,14 @@
 								{/if}
 							</div>
 						</td>
-						<td class="tw-px-6 tw-py-4">
+						<td class="v-td">
 							{#if hh.safeSportFlags > 0}
-								<span class="tw-px-2 tw-py-1 tw-rounded tw-bg-red-500/10 tw-text-red-400 tw-font-mono tw-text-xs tw-font-bold">{hh.safeSportFlags} FLAG{hh.safeSportFlags > 1 ? 'S' : ''}</span>
+								<span class="tw-px-2 tw-py-1 tw-rounded-none tw-bg-red-500/10 tw-text-red-400 tw-font-mono tw-text-xs tw-font-bold">{hh.safeSportFlags} FLAG{hh.safeSportFlags > 1 ? 'S' : ''}</span>
 							{:else}
 								<span class="tw-text-slate-500 tw-font-mono tw-text-xs tw-font-bold">0 FLAGS</span>
 							{/if}
 						</td>
-						<td class="tw-px-6 tw-py-4 tw-text-right">
+						<td class="v-td v-td--right">
 							<button class="tw-text-teal-400 hover:tw-text-teal-300 tw-text-xs tw-uppercase tw-tracking-wider tw-font-bold tw-transition-colors" onclick={(e) => { e.stopPropagation(); openHouseholdDrawer(hh.id); }}>
 								Review &rarr;
 							</button>

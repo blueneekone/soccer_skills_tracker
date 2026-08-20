@@ -26,7 +26,7 @@
 	}
 
 	$effect(() => {
-		if (!clubId) {
+		if (!clubId || !db || !authStore.isAuthenticated) {
 			invites = [];
 			return;
 		}

@@ -2,6 +2,7 @@
 	import { onDestroy } from 'svelte';
 	import { collection, query, where, onSnapshot } from 'firebase/firestore';
 	import { getActiveDb } from '$lib/firebase';
+	import { authStore } from '$lib/stores/auth.svelte.js';
 	import Icon from '$lib/components/ui/Icon.svelte';
 	import type { IconName } from '$lib/icons/registry.js';
 
@@ -35,7 +36,7 @@
 	let unsubscribe: (() => void) | null = null;
 
 	$effect(() => {
-		if (!clubId) return;
+		if (!clubId || !authStore.isAuthenticated) return;
 		loading = true;
 		const db = getActiveDb();
 

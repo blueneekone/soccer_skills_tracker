@@ -1,6 +1,7 @@
 <script>
 	import { db } from '$lib/firebase.js';
 	import { doc, onSnapshot } from 'firebase/firestore';
+	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { licenseEntitlementStore } from '$lib/stores/licenseEntitlement.svelte.js';
 
 	let { clubId = '' } = $props();
@@ -20,7 +21,7 @@
 	const isTransactionBilled = $derived(licenseEntitlementStore.isTransactionBilled);
 
 	$effect(() => {
-		if (!clubId) {
+		if (!clubId || !db || !authStore.isAuthenticated) {
 			loading = false;
 			err = 'No club scope on your profile.';
 			activeSeats = 0;

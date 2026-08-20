@@ -74,7 +74,7 @@
 	];
 
 	$effect(() => {
-		if (!browser || !clubId) {
+		if (!browser || !clubId || !db || !authStore.isAuthenticated) {
 			loading = false;
 			rows = [];
 			facilities = [];

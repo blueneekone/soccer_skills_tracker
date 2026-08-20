@@ -67,7 +67,7 @@
 	}
 
 	$effect(() => {
-		if (!browser || !tenantId) {
+		if (!browser || !tenantId || !db || !authStore.isAuthenticated) {
 			detach();
 			org = null;
 			teams = [];

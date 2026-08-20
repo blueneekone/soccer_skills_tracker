@@ -61,7 +61,7 @@
 	});
 
 	$effect(() => {
-		if (!clubId) return;
+		if (!clubId || !db || !authStore.isAuthenticated) return;
 		return onSnapshot(doc(db, 'license_entitlements', clubId), (snap) => {
 			if (!snap.exists()) {
 				masterSeatLimit = 0;
@@ -74,7 +74,7 @@
 	});
 
 	$effect(() => {
-		if (!clubId) return;
+		if (!clubId || !db || !authStore.isAuthenticated) return;
 		const teams = clubTeams;
 		const unsubs = /** @type {Array<() => void>} */ ([]);
 		for (const t of teams) {

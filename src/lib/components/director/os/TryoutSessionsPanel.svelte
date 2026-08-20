@@ -72,7 +72,7 @@
 
 	$effect(() => {
 		const pid = programId.trim();
-		if (!pid || !browser) {
+		if (!pid || !browser || !db || !authStore.isAuthenticated) {
 			sessions = [];
 			registrations = [];
 			loading = false;
@@ -125,7 +125,7 @@
 
 	$effect(() => {
 		const pid = programId.trim();
-		if (!pid || !browser) return;
+		if (!pid || !browser || !db || !authStore.isAuthenticated) return;
 		const ref = doc(db, 'tryout_programs', pid);
 		const unsub = onSnapshot(ref, (snap) => {
 			const plan = snap.data()?.evalPlan;

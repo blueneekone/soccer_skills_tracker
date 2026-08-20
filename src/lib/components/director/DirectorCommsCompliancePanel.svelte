@@ -35,7 +35,7 @@
 	const canView = $derived(authStore.isDirector || authStore.isAdmin);
 
 	$effect(() => {
-		if (!browser || !clubId || !canView) return;
+		if (!browser || !clubId || !canView || !db || !authStore.isAuthenticated) return;
 		void loadConsole();
 	});
 

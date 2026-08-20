@@ -25,7 +25,7 @@
 	let resolveError = $state('');
 
 	$effect(() => {
-		if (!browser || !clubId || !hasScanned) return;
+		if (!browser || !clubId || !hasScanned || !db || !authStore.isAuthenticated) return;
 		loading = true;
 
 		const q = query(
@@ -159,11 +159,10 @@
 		flex-direction: column;
 		gap: 1.5rem;
 		padding: 1.5rem;
-		background: linear-gradient(135deg, rgba(8, 17, 28, 0.78), rgba(2, 6, 12, 0.92));
-		backdrop-filter: blur(var(--vanguard-blur, 24px));
-		border: 1px solid rgba(251, 191, 36, 0.2);
-		border-radius: 12px;
-		box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+		background: #0f172a;
+		border: 1px solid #334155;
+		border-radius: 0px;
+		box-shadow: none;
 	}
 
 	.prm-header {
@@ -204,10 +203,10 @@
 		display: flex;
 		align-items: center;
 		gap: 6px;
-		background: #fbbf24;
+		background: #daff0a;
 		color: #000000;
 		border: none;
-		border-radius: 999px;
+		border-radius: 0px;
 		padding: 0.5rem 1.25rem;
 		font-family: 'Geist Mono', monospace;
 		font-size: 0.7rem;
@@ -215,7 +214,7 @@
 		letter-spacing: 0.05em;
 		cursor: pointer;
 		transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-		box-shadow: 0 0 15px rgba(251, 191, 36, 0.4);
+		box-shadow: none;
 	}
 
 	.prm-btn-resolve:hover:not(:disabled) {
@@ -242,8 +241,8 @@
 		gap: 8px;
 		background: rgba(20, 184, 166, 0.1);
 		color: #14b8a6;
-		border: 1px solid rgba(20, 184, 166, 0.3);
-		border-radius: 999px;
+		border: 1px solid #334155;
+		border-radius: 0px;
 		padding: 0.75rem 1.5rem;
 		font-family: 'Geist Mono', monospace;
 		font-size: 0.8rem;
@@ -264,8 +263,8 @@
 		gap: 6px;
 		background: transparent;
 		color: rgba(255, 255, 255, 0.6);
-		border: 1px solid rgba(255, 255, 255, 0.2);
-		border-radius: 999px;
+		border: 1px solid #334155;
+		border-radius: 0px;
 		padding: 0.5rem 1rem;
 		font-family: 'Geist Mono', monospace;
 		font-size: 0.7rem;
@@ -375,7 +374,7 @@
 		padding: 0.25rem 0.5rem;
 		border: 1px solid rgba(239, 68, 68, 0.3);
 		background: rgba(239, 68, 68, 0.1);
-		border-radius: 4px;
+		border-radius: 0px;
 		font-family: 'Geist Mono', monospace;
 		font-size: 0.65rem;
 		font-weight: 700;

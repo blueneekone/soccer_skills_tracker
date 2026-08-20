@@ -85,7 +85,7 @@
 	}
 
 	$effect(() => {
-		if (!clubId) return;
+		if (!clubId || !db || !authStore.isAuthenticated) return;
 		void loadEntries();
 	});
 

@@ -33,7 +33,7 @@
 	const pending = $derived(rows.filter((r) => r.status === 'pending'));
 
 	$effect(() => {
-		if (!browser || !clubId || !canManage) return;
+		if (!browser || !clubId || !canManage || !db || !authStore.isAuthenticated) return;
 		void loadRecommendations();
 	});
 
