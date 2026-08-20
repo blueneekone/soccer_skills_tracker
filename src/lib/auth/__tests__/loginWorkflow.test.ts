@@ -87,13 +87,13 @@ describe('T0-3: users doc keyed by normalized email (not UID)', () => {
 	});
 
 	it('handles null email with empty string fallback (no write guard)', () => {
-		const emailKey = (null ?? '').trim().toLowerCase();
+		const emailKey = ((null as unknown as string) || '').trim().toLowerCase();
 		expect(emailKey).toBe('');
 		expect(emailKey.length).toBe(0);
 	});
 
 	it('handles undefined email with empty string fallback (no write guard)', () => {
-		const emailKey = (undefined ?? '').trim().toLowerCase();
+		const emailKey = ((undefined as unknown as string) || '').trim().toLowerCase();
 		expect(emailKey).toBe('');
 		expect(emailKey.length).toBe(0);
 	});

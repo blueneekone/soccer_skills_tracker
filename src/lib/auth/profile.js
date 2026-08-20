@@ -9,7 +9,7 @@
  * - `lastActivityDate` (string `YYYY-MM-DD` UTC or Timestamp): last day daily
  *   XP was granted via `logPlayerActivity`.
  */
-import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc, deleteDoc } from 'firebase/firestore';
 import { getIdTokenResult } from 'firebase/auth';
 import { isAccountSuspendedProfile, SYNTHETIC_SUSPENDED_ROLE } from '$lib/auth/roles.js';
 import { userDocHasPlayerRole } from '$lib/auth/loginRouting.js';

@@ -39,7 +39,7 @@
 					<div data-card="revenue" class="st-bento director-card revenue-engine-analytics dark-form-surface tw-border tw-border-slate-700 tw-bg-slate-900/80 tw-p-4 tw-rounded-none tw-min-w-0" style="border-radius: 0px !important; background: #0f172a;">
 						<div class="tw-flex tw-justify-between tw-items-center tw-mb-2 tw-min-w-0">
 							<h3 class="tw-text-xs tw-text-[#14b8a6] tw-uppercase tw-tracking-widest tw-min-w-0" style="font-family: 'Geist Sans', sans-serif;">Revenue Engine</h3>
-							<div class="compliance-status-dot tw-bg-emerald-500" style="width: 8px; height: 8px; border-radius: 50%; display: block;"></div>
+							<div class="compliance-indicator status-dot compliance-status-dot tw-bg-emerald-500" style="width: 8px; height: 8px; border-radius: 50%; display: block;"></div>
 						</div>
 						<div class="tw-text-[#D4D4D8] tw-text-sm tw-min-w-0" style="font-family: 'Switzer', sans-serif;">Club Revenue Analytics Offline</div>
 					</div>

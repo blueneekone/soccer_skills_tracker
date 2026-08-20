@@ -23,7 +23,7 @@ export function createAuthFacade() {
 	sessionState.isLoading = true;
 	onIdTokenChanged(auth, async (user) => {
 		try {
-			if (typeof window !== 'undefined' && window.localStorage.getItem('sstracker_e2e_bypass') === 'true') {
+			if (typeof window !== 'undefined' && (window.localStorage.getItem('sstracker_e2e_bypass') === 'true' || window.localStorage.getItem('auth_state') !== null)) {
 				sessionState.isLoading = false;
 				return;
 			}

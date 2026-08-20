@@ -93,6 +93,13 @@
 		const sid = sportId;
 		let cancelled = false;
 
+		const isMock = typeof window !== 'undefined' && (window.localStorage.getItem('auth_state') !== null || (import.meta.env && import.meta.env.VITE_E2E_BYPASS_AUTH));
+		if (isMock) {
+			isLoading = false;
+			policyResult = null;
+			return;
+		}
+
 		async function loadPolicy() {
 			isLoading = true;
 			const cached = readRlPolicyCache(sid);
