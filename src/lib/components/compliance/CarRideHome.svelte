@@ -14,7 +14,7 @@
 	}>();
 </script>
 
-<section class="tw-relative tw-w-full tw-rounded-none" style="clip-path: polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px); tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-overflow-hidden tw-z-30">
+<section class="tw-relative tw-w-full tw-rounded-[24px] tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-overflow-hidden tw-z-30">
 	<!-- Raw Athletic Data Underneath -->
 	<div class="tw-p-6">
 		<div class="tw-flex tw-justify-between tw-items-center tw-mb-6">
@@ -70,7 +70,7 @@
 			{/if}
 			
 			<button 
-				class="tw-bg-[#fbbf24] tw-text-black tw-px-6 tw-py-3 tw-rounded-none tw-font-mono tw-font-bold tw-text-xs tw-tracking-widest tw-uppercase hover:tw-bg-amber-400 tw-transition-colors"
+				class="tw-bg-[#fbbf24] tw-text-black tw-px-6 tw-py-3 tw-rounded-xl tw-font-mono tw-font-bold tw-text-xs tw-tracking-widest tw-uppercase hover:tw-bg-amber-400 tw-transition-colors"
 				onclick={signAttestation}
 			>
 				I Acknowledge The Safety Parameters

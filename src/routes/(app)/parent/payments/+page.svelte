@@ -284,7 +284,7 @@
 	{:else}
 		<ul class="tw-m-0 tw-list-none tw-space-y-4 tw-p-0">
 			{#each players as player (player.email)}
-				<li class="st-bento tw-rounded-2xl tw-border tw-border-slate-800 tw-bg-slate-900/60 tw-p-5">
+				<li class="st-bento tw-rounded-[24px] tw-border tw-border-slate-800 tw-bg-slate-900/60 tw-p-5">
 					<div class="tw-flex tw-flex-wrap tw-items-center tw-justify-between tw-gap-4">
 						<div class="tw-flex tw-min-w-0 tw-items-center tw-gap-3">
 							<div
