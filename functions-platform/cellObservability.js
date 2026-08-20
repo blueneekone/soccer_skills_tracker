@@ -46,7 +46,9 @@
 const {onCall, HttpsError} = require('firebase-functions/v2/https');
 const {onSchedule} = require('firebase-functions/v2/scheduler');
 const logger = require('firebase-functions/logger');
-const admin = require('firebase-admin');
+// Use bootstrapAdmin proxy to ensure initializeApp() is called before any
+// Admin SDK access. Scheduler functions run in isolated cold-start contexts.
+const admin = require('./bootstrapAdmin');
 
 const {assertRole} = require('./tenantUtils');
 const {getRegistryDb} = require('./cellRouter');

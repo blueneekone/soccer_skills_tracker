@@ -22,7 +22,10 @@
 'use strict';
 
 const {onCall, HttpsError} = require('firebase-functions/v2/https');
-const admin = require('firebase-admin');
+// Use the bootstrapAdmin proxy so initializeApp() is guaranteed before any
+// Admin SDK access. Direct require('firebase-admin') returns an uninitialized
+// singleton when webauthn.js is loaded as a separate module (500 error fix).
+const admin = require('./bootstrapAdmin');
 const {
   generateRegistrationOptions,
   verifyRegistrationResponse,

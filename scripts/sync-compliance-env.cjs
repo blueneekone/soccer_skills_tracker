@@ -8,7 +8,7 @@ try {
   fs.copyFileSync(src, dest);
   console.log("Copied functions/.env.sports-skill-tracker-dev to functions-compliance/.env");
 
-  fs.appendFileSync(dest, '\nWEBAUTHN_RP_ID=sstracker.app\nWEBAUTHN_RP_ORIGIN=https://sstracker.app,https://preview.sstracker.app\n');
+  fs.appendFileSync(dest, '\nWEBAUTHN_RP_ID=sstracker.app\nWEBAUTHN_RP_ORIGIN=https://sstracker.app,https://preview.sstracker.app,http://localhost:5173,http://localhost:4173\n');
   console.log("Appended WEBAUTHN variables to functions-compliance/.env");
 } catch (err) {
   if (err.code === 'ENOENT') {
