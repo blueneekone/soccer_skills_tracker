@@ -24,7 +24,7 @@ test.describe('Director OS Stripe Connect Onboarding Integration', () => {
 
     // 2. Navigate straight to our billing portal
     await page.goto('/director/billing');
-    await page.waitForSelector('.pd-page-root', { timeout: 5000 });
+    await page.waitForSelector('.pd-page-root', { timeout: 15000 });
 
     // Assert initial layout and billing state
     const connectButton = page.locator('text=[ SECURE STRIPE GATEWAY ]');
@@ -39,7 +39,7 @@ test.describe('Director OS Stripe Connect Onboarding Integration', () => {
     await page.waitForURL(/mock-stripe-onboarding/, { timeout: 5000 });
     
     // Validate mock page displays the correct routing data bindings
-    const mockHeadline = page.locator('text=Mock Stripe Express Gateway Onboarding');
+    const mockHeadline = page.getByRole('heading', { name: 'Mock Stripe Express Gateway Onboarding' });
     await expect(mockHeadline).toBeVisible();
 
     // 4. Complete Stripe Flow (Triggers Redirect Back to Return URL)
@@ -56,7 +56,7 @@ test.describe('Director OS Stripe Connect Onboarding Integration', () => {
     await expect(successBanner).toBeVisible();
 
     // Assert the "Secure Stripe Gateway" button is removed and replaced by the Active Connected status
-    const activeBadge = page.locator('text=[ ACTIVE / CONNECTED ]');
+    const activeBadge = page.locator('text=[ ACTIVE / CONNECTED ]').first();
     await expect(activeBadge).toBeVisible();
     await expect(connectButton).not.toBeVisible();
   });

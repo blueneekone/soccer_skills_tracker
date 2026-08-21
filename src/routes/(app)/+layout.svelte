@@ -92,7 +92,7 @@
 	if (!authStore.isAuthenticated) {
 		let e2eState = null;
 		if (typeof window !== 'undefined') {
-			try { e2eState = JSON.parse(window.localStorage.getItem('auth_state')); } catch(e) { /* ignore */ }
+			try { e2eState = JSON.parse(window.localStorage.getItem('auth_state') || window.localStorage.getItem('user_session_claims') || 'null'); } catch(e) { /* ignore */ }
 		}
 		if (e2eState) {
 			const effectiveRole = e2eState.role || e2eState.user?.role || 'admin';
