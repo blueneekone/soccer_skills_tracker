@@ -4,7 +4,6 @@
 	import { DashboardEngine } from './DashboardEngine.svelte.js';
 	import DashboardArena from './DashboardArena.svelte';
 	import ClearanceGate from './ClearanceGate.svelte';
-	import CoachTeamRosterPanel from '$lib/coach/logistics/CoachTeamRosterPanel.svelte';
 	import HalftimeChoicePlanner from '$lib/components/coach/halftime-choice-planner.svelte';
 	import Icon from '$lib/components/ui/Icon.svelte';
 
@@ -120,19 +119,8 @@
 						Vygotsky inference active. Skill boundary scaling applied to central press and transitional width phases.
 					</p>
 				</div>
-			</section>
 
-			<!-- Roster Scannable Feed & Match Day -->
-			<section class="coach-hud-grid bento-span-12 tw-gap-4 tw-mt-6 tw-grid tw-min-w-0" style="grid-template-columns: repeat(auto-fit, minmax(min(100%, clamp(280px, 30vw, 350px)), 1fr));">
-				<div class="st-bento roster-panel vanguard-surface tw-rounded-none tw-border tw-border-slate-700 tw-bg-slate-900/80 tw-p-4 tw-col-span-1 lg:tw-col-span-2 tw-min-w-0" style="background: #0f172a;">
-					<h3 class="tw-text-xs tw-text-[#14b8a6] tw-mb-4 tw-uppercase tw-tracking-widest tw-min-w-0" style="font-family: 'Geist Sans', sans-serif;">Active Roster & Operatives</h3>
-					{#if engine.effectiveTeamId}
-						<CoachTeamRosterPanel teamId={engine.effectiveTeamId} />
-					{:else}
-						<div class="tw-text-[#D4D4D8] tw-text-sm tw-min-w-0" style="font-family: 'Switzer', sans-serif;">No active squad.</div>
-					{/if}
-				</div>
-
+				<!-- Match Day Integration -->
 				<div class="st-bento match-day-panel vanguard-surface tw-rounded-none tw-border tw-border-slate-700 tw-bg-slate-900/80 tw-p-4 tw-min-w-0" style="background: #0f172a;">
 					<h3 class="tw-text-xs tw-text-[#14b8a6] tw-mb-4 tw-uppercase tw-tracking-widest tw-min-w-0" style="font-family: 'Geist Sans', sans-serif;">Match Day Integration</h3>
 					<HalftimeChoicePlanner ageGroup={14} />
