@@ -114,43 +114,51 @@ function publicKeyToUint8Array(pk) {
 exports.webauthnRegisterStart = onCall(
   {region: 'us-east1'},
   async (request) => {
-    if (!request.auth) {
-      throw new HttpsError('unauthenticated', 'Sign in first to register a passkey.');
-    }
-    const uid = request.auth.uid;
+    try {
+      if (!request.auth) {
+        throw new HttpsError('unauthenticated', 'Sign in first to register a passkey.');
+      }
+      const uid = request.auth.uid;
 
-    const existingCreds = await loadCredentialsForUid(uid);
+      const existingCreds = await loadCredentialsForUid(uid);
 
-    const options = await generateRegistrationOptions({
-      rpName: RP_NAME,
-      rpID: rpID,
-      userID: new TextEncoder().encode(uid),
-      userName: request.auth.token.email || uid || 'user',
-      userDisplayName: request.auth.token.name || request.auth.token.email || uid || 'user',
-      attestationType: 'none',
-      excludeCredentials: existingCreds.map((c) => ({
-        id: c.id,
-        transports: c.transports,
-      })),
-      authenticatorSelection: {
-        residentKey: 'preferred',
-        userVerification: 'preferred',
-      },
-    });
-
-    // Persist challenge with TTL
-    await db
-      .collection('users')
-      .doc(uid)
-      .collection('passkey_challenges')
-      .doc('register')
-      .set({
-        challenge: options.challenge,
-        createdAt: admin.firestore.FieldValue.serverTimestamp(),
-        expiresAt: new Date(Date.now() + CHALLENGE_TTL_MS),
+      const options = await generateRegistrationOptions({
+        rpName: RP_NAME,
+        rpID: rpID,
+        userID: new TextEncoder().encode(uid),
+        userName: request.auth.token.email || uid || 'user',
+        userDisplayName: request.auth.token.name || request.auth.token.email || uid || 'user',
+        attestationType: 'none',
+        excludeCredentials: existingCreds.map((c) => ({
+          id: c.id,
+          transports: c.transports,
+        })),
+        authenticatorSelection: {
+          residentKey: 'preferred',
+          userVerification: 'preferred',
+        },
       });
 
-    return options;
+      // Persist challenge with TTL
+      await db
+        .collection('users')
+        .doc(uid)
+        .collection('passkey_challenges')
+        .doc('register')
+        .set({
+          challenge: options.challenge,
+          createdAt: admin.firestore.FieldValue.serverTimestamp(),
+          expiresAt: new Date(Date.now() + CHALLENGE_TTL_MS),
+        });
+
+      return options;
+    } catch (error) {
+      console.error('webauthnRegisterStart INTERNAL ERROR:', error);
+      if (error instanceof HttpsError) {
+        throw error;
+      }
+      throw new HttpsError('internal', error.message || 'Internal error');
+    }
   },
 );
 

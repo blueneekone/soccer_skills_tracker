@@ -50,17 +50,18 @@
 			stroke-linecap="round"
 			stroke-linejoin="round"
 			filter="url(#neonBloom)"
-			opacity="0.4"
+			opacity={route.pathKind === 'pass' ? "0.15" : "0.4"}
 			pointer-events="none"
 		/>
 		<!-- Sharp White Core Trail -->
 		<path
 			d={pathD}
 			fill="none"
-			stroke="#ffffff"
+			stroke={route.pathKind === 'pass' ? '#ffffff' : '#ffffff'}
 			stroke-width={isSelected ? 6 : 4}
 			stroke-linecap="round"
 			stroke-linejoin="round"
+			stroke-dasharray={route.pathKind === 'pass' ? '12 16' : 'none'}
 			marker-end="url(#arrowhead)"
 			filter="url(#lightCycleBloom)"
 			pointer-events="none"

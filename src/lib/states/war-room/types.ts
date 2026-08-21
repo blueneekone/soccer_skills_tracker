@@ -21,7 +21,7 @@ export type TacticalRoute = {
 	y2: number;
 	color: string;
 	bindPlayerId?: string | null;
-	pathKind?: 'curve' | 'cut';
+	pathKind?: 'curve' | 'cut' | 'pass';
 	delay?: number;
 };
 

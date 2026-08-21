@@ -77,6 +77,16 @@
 						class="coach-tac-z2-seg"
 						onclick={(e) => {
 							e.stopPropagation();
+							engine.injectBall();
+						}}
+					>
+						INJECT_BALL
+					</button>
+					<button
+						type="button"
+						class="coach-tac-z2-seg"
+						onclick={(e) => {
+							e.stopPropagation();
 							engine.recallBench();
 						}}
 					>

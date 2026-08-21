@@ -243,6 +243,10 @@ export function createTacticalWarRoom(host: TacticalGridHost) {
 		api.clearRoutesOnly(host, simulator, simRouteHoldPrev);
 	}
 
+	function injectBall() {
+		api.injectBall(host);
+	}
+
 	function deployTokenAt(t: TacticalToken, source: RadialSlotSource, p: { x: number; y: number }) {
 		api.deployTokenAt(host, t, source, p);
 	}
@@ -461,9 +465,31 @@ export function createTacticalWarRoom(host: TacticalGridHost) {
 		get pitchSvgEl() { return pitchSvgEl; },
 		set pitchSvgEl(v: SVGSVGElement | undefined) { pitchSvgEl = v; },
 		get activeRouteColor() { return activeRouteColor; },
-		set activeRouteColor(v: string) { activeRouteColor = v; },
+		set activeRouteColor(v: string) {
+			activeRouteColor = v;
+			if (selectedRouteId) {
+				host.drawnRoutes.set(
+					host.drawnRoutes.get().map((raw) => {
+						const r = normalizeRoute(raw);
+						if (r.id === selectedRouteId) return { ...r, color: v };
+						return raw;
+					})
+				);
+			}
+		},
 		get routeDrawKind() { return routeDrawKind; },
-		set routeDrawKind(v: 'curve' | 'cut') { routeDrawKind = v; },
+		set routeDrawKind(v: 'curve' | 'cut') {
+			routeDrawKind = v;
+			if (selectedRouteId) {
+				host.drawnRoutes.set(
+					host.drawnRoutes.get().map((raw) => {
+						const r = normalizeRoute(raw);
+						if (r.id === selectedRouteId) return { ...r, pathKind: v };
+						return raw;
+					})
+				);
+			}
+		},
 		get showLabels() { return showLabels; },
 		set showLabels(v: boolean) { showLabels = v; },
 		get focusedPlayerId() { return focusedPlayerId; },
@@ -511,6 +537,7 @@ export function createTacticalWarRoom(host: TacticalGridHost) {
 		onPitchPointerUpClearLongPress,
 		recallBench,
 		clearRoutesOnly,
+		injectBall,
 		serializeToCartridge,
 		ringColor,
 		resolvePitchToken,

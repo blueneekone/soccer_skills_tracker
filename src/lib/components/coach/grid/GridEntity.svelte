@@ -183,34 +183,44 @@
 					<animate attributeName="opacity" values="0.9;0.35;0.9" dur="1.4s" repeatCount="indefinite" />
 				</circle>
 			{/if}
-			<!-- Text background for maximum legibility -->
-			<rect
-				x="-14"
-				y="-10"
-				width="28"
-				height="20"
-				rx="3"
-				fill="#020202"
-				opacity="0.72"
-				pointer-events="none"
-			/>
-			<text
-				x="0"
-				y="0"
-				font-family="var(--font-mono, 'Geist Mono', monospace)"
-				font-size="14"
-				fill="#ffffff"
-				font-weight="bold"
-				text-anchor="middle"
-				dominant-baseline="central"
-				paint-order="stroke"
-				stroke="#020202"
-				stroke-width="3"
-				stroke-linejoin="round"
-				pointer-events="none"
-			>
-				{discLabel}
-			</text>
+			<!-- Text background for maximum legibility (unless it's a ball) -->
+			{#if player.position === 'BALL'}
+				<!-- Tron-style geometric wireframe ball -->
+				<circle cx="0" cy="0" r={DISC_R - 4} fill="#000000" stroke="#daff0a" stroke-width="1.5" style="filter: url(#premium-neon);" />
+				<circle cx="0" cy="0" r={DISC_R - 8} fill="none" stroke="#14b8a6" stroke-width="1" stroke-dasharray="2 2" />
+				<!-- Inner geometric core -->
+				<polygon points="0,-4 4,-1 2,3 -2,3 -4,-1" fill="none" stroke="#14b8a6" stroke-width="1.5" />
+				<line x1="0" y1="-4" x2="0" y2="-12" stroke="#14b8a6" stroke-width="1" />
+				<line x1="4" y1="-1" x2="10" y2="-3" stroke="#14b8a6" stroke-width="1" />
+				<line x1="2" y1="3" x2="6" y2="10" stroke="#14b8a6" stroke-width="1" />
+				<line x1="-2" y1="3" x2="-6" y2="10" stroke="#14b8a6" stroke-width="1" />
+				<line x1="-4" y1="-1" x2="-10" y2="-3" stroke="#14b8a6" stroke-width="1" />
+			{:else}
+				<rect
+					x="-14"
+					y="-10"
+					width="28"
+					height="20"
+					rx="3"
+					fill="#020202"
+					opacity="0.72"
+					pointer-events="none"
+				/>
+				<text
+					x="0"
+					y="0"
+					font-family="var(--font-mono, 'Geist Mono', monospace)"
+					font-size="12px"
+					font-weight="600"
+					fill={player.side === 'opponent' ? '#ffffff' : '#d4d4d8'}
+					text-anchor="middle"
+					alignment-baseline="central"
+					dy="1"
+					pointer-events="none"
+				>
+					{discLabel}
+				</text>
+			{/if}
 		</g>
 		<!--
 		  Holographic stat billboard — opacity-0 by default, fades in on group hover.

@@ -11,9 +11,9 @@ export type AnchorDrag = {
 	/** Route anchor's SVG position at drag start — never mutated; absolute delta applied each frame */
 	anchorX: number;
 	anchorY: number;
-	/** Client (screen) coordinates recorded at pointerdown — delta base for absolute tracking */
-	startClientX: number;
-	startClientY: number;
+	/** SVG coordinates recorded at pointerdown — delta base for absolute tracking */
+	startSvgX: number;
+	startSvgY: number;
 };
 export type RouteBodyDrag = { routeId: string; ox: number; oy: number; snap: TacticalRoute };
 

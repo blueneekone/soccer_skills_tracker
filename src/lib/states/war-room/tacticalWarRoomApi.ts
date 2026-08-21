@@ -68,3 +68,24 @@ export function deleteRoute(host: TacticalGridHost, routeId: string, getSelected
 	);
 	if (getSelected() === routeId) setSelected(null);
 }
+
+export function injectBall(host: TacticalGridHost) {
+	const pitchTokens = host.wrBucketPitch.get();
+	const oppTokens = host.wrOppPitch.get();
+	const hasBall = [...pitchTokens, ...oppTokens].some((t) => t.position === 'BALL');
+	if (!hasBall) {
+		host.wrBucketPitch.set([
+			...pitchTokens,
+			{
+				id: 'BALL',
+				name: '⚽',
+				number: '⚽',
+				position: 'BALL',
+				side: 'friendly',
+				color: '#ffffff',
+				x: 800,
+				y: 450,
+			},
+		]);
+	}
+}

@@ -1,18 +1,16 @@
 import { normalizeRoute, midCtrl } from '$lib/states/war-room/routeModel';
-import { VIEW_W, VIEW_H, FRIENDLY_RING, OPP_RING } from '$lib/states/war-room/constants';
+import { VIEW_W, VIEW_H, FRIENDLY_RING, OPP_RING, SIM_ROUTE_DURATION_MS } from '$lib/states/war-room/constants';
 import { snapPointToDockingCore } from '$lib/utils/canvasPhysics';
 import type { TacticalPointerHost, AnchorDrag } from '$lib/states/war-room/TacticalInputEngine.svelte';
 import type { TacticalToken, TacticalRoute } from '$lib/states/war-room/types';
 
 function handleAnchorDrag(ev: PointerEvent, host: TacticalPointerHost, ad: AnchorDrag) {
-	const svgEl = host.pitchSvgEl;
-	const rect = svgEl?.getBoundingClientRect();
-	const uniformScale = rect ? Math.max(VIEW_W / rect.width, VIEW_H / rect.height) : 1;
-	const dxScreen = ev.clientX - ad.startClientX;
-	const dyScreen = ev.clientY - ad.startClientY;
+	const rawNow = host.clientToSvg(ev);
+	const dxSvg = rawNow.x - ad.startSvgX;
+	const dySvg = rawNow.y - ad.startSvgY;
 	const p = host.clampToPitch(
-		ad.anchorX + dxScreen * uniformScale,
-		ad.anchorY + dyScreen * uniformScale,
+		ad.anchorX + dxSvg,
+		ad.anchorY + dySvg,
 	);
 	const { routeId, kind } = ad;
 	host.setDrawnRoutes(
@@ -224,6 +222,17 @@ export function executePointerUp(ev: PointerEvent, host: TacticalPointerHost, re
 			if (dock.bindPlayerId !== null) bindId = dock.bindPlayerId;
 			else if (!bindId) bindId = host.bindPlayerIdAtRouteStart(draft.x1, draft.y1);
 			const _newRoute = { id, x1: draft.x1, y1: draft.y1, cx: mc.cx, cy: mc.cy, x2: dock.x, y2: dock.y, color: host.activeRouteColor(), bindPlayerId: bindId, pathKind: draft.pathKind ?? host.routeDrawKind(), delay: draft.delay ?? 0 };
+			if (bindId === 'BALL') {
+				const sourceRoute = (host.drawnRoutes() as TacticalRoute[])
+					.map(normalizeRoute)
+					.find(r => Math.hypot(r.x2 - draft.x1, r.y2 - draft.y1) < 25);
+				if (sourceRoute) {
+					_newRoute.delay = sourceRoute.delay + SIM_ROUTE_DURATION_MS;
+					_newRoute.pathKind = 'pass';
+					_newRoute.x1 = sourceRoute.x2;
+					_newRoute.y1 = sourceRoute.y2;
+				}
+			}
 			host.setDrawnRoutes([...host.drawnRoutes(), _newRoute]);
 			host.setSelectedRouteId(id);
 		}
@@ -287,8 +296,9 @@ export function executeAnchorDown(ev: MouseEvent | PointerEvent, routeId: string
 
 	const route = (host.drawnRoutes() as TacticalRoute[]).map(normalizeRoute).find((r) => r.id === routeId);
 	const pe = ev as PointerEvent;
-	const startClientX = pe.clientX ?? 0;
-	const startClientY = pe.clientY ?? 0;
+	const startRaw = host.clientToSvg(pe);
+	const startSvgX = startRaw.x;
+	const startSvgY = startRaw.y;
 
 	let anchorX = 0;
 	let anchorY = 0;
@@ -298,7 +308,7 @@ export function executeAnchorDown(ev: MouseEvent | PointerEvent, routeId: string
 		else { anchorX = route.x2; anchorY = route.y2; }
 	}
 
-	host.setAnchorDrag({ routeId, kind, anchorX, anchorY, startClientX, startClientY });
+	host.setAnchorDrag({ routeId, kind, anchorX, anchorY, startSvgX, startSvgY });
 	const svgEl = host.pitchSvgEl;
 	if (svgEl && pe.pointerId != null && typeof svgEl.setPointerCapture === 'function') {
 		try {
