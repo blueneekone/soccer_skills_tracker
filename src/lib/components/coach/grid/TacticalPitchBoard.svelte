@@ -80,7 +80,12 @@
 		hubHoveredKey,
 		hubCenterLabel,
 		isLoadingCartridge = false,
-		cartridgeSweepEpoch = 0
+		cartridgeSweepEpoch = 0,
+		routeContextMenuOpen = false,
+		routeContextMenuPos = { x: 0, y: 0 },
+		routeContextMenuTargetId = null,
+		onRouteContextMenu = undefined,
+		onDeleteRoute = undefined
 	} = $props();
 </script>
 
@@ -98,7 +103,7 @@
 		<svg
 			bind:this={pitchSvgEl}
 			id="tactical-pitch"
-			class="tactical-pitch-canvas tw-absolute tw-inset-0 tw-w-full tw-h-full tw-opacity-90 tw-touch-none tw-select-none {warRoomTool ===
+			class="tactical-pitch-canvas tactical-arena-canvas tw-absolute tw-inset-0 tw-w-full tw-h-full tw-opacity-90 tw-touch-none tw-select-none {warRoomTool ===
 			'ROUTE'
 				? 'tw-cursor-crosshair'
 				: 'tw-cursor-default'}"
@@ -143,6 +148,7 @@
 							}}
 							onRouteHoverEnter={() => setHoveredRouteId(route.id)}
 							onRouteHoverLeave={() => setHoveredRouteId(null)}
+							{onRouteContextMenu}
 						/>
 					{/each}
 
@@ -339,6 +345,25 @@
 			/>
 		</svg>
 	</div>
+	{#if routeContextMenuOpen}
+		<div
+			class="tw-fixed tw-z-[2000] tw-font-mono"
+			style="left: {routeContextMenuPos.x}px; top: {routeContextMenuPos.y}px;"
+		>
+			<button
+				type="button"
+				class="coach-os-action-chip tw-border tw-border-[#ef4444] tw-bg-[#0a0a0a] tw-text-[#ef4444] hover:tw-bg-[#ef4444] hover:tw-text-[#0a0a0a] tw-px-3 tw-py-1.5 tw-text-xs tw-font-bold tw-rounded-none tw-shadow-lg tw-transition-colors"
+				onclick={(e) => {
+					e.stopPropagation();
+					if (routeContextMenuTargetId && onDeleteRoute) {
+						onDeleteRoute(routeContextMenuTargetId);
+					}
+				}}
+			>
+				[ DELETE ROUTE ]
+			</button>
+		</div>
+	{/if}
 </div>
 
 <style>

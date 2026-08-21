@@ -227,8 +227,43 @@ export function createTacticalWarRoom(host: TacticalGridHost) {
 		api.closeOverlay(host);
 	}
 
+	// ── Right-Click Route Context Menu ──────────────────────────────────────
+	let routeContextMenuOpen = $state(false);
+	let routeContextMenuPos = $state<{ x: number; y: number }>({ x: 0, y: 0 });
+	let routeContextMenuTargetId = $state<string | null>(null);
+
+	function onRouteContextMenu(e: MouseEvent, routeId: string) {
+		e.preventDefault();
+		e.stopPropagation();
+		const x = typeof e.clientX === 'number' && e.clientX > 0 ? e.clientX : 400;
+		const y = typeof e.clientY === 'number' && e.clientY > 0 ? e.clientY : 300;
+		routeContextMenuPos = { x, y };
+		routeContextMenuTargetId = routeId;
+		routeContextMenuOpen = true;
+	}
+
+	// ── Mistake State Ritual ───────────────────────────────────────────────
+	let isMistakeActive = $state(false);
+	let checkpointRoutes = $state<unknown[]>([]);
+
+	function triggerMistakeState() {
+		checkpointRoutes = JSON.parse(JSON.stringify(host.drawnRoutes.get()));
+		isMistakeActive = true;
+	}
+
+	function executeResetRitual() {
+		host.drawnRoutes.set(JSON.parse(JSON.stringify(checkpointRoutes)));
+		isMistakeActive = false;
+	}
+
 	function handleSvgClick(ev: MouseEvent | TouchEvent) {
 		if (contextMenuOpen) contextMenuOpen = false;
+		if ('button' in ev && (ev as MouseEvent).button === 0) {
+			if (routeContextMenuOpen) {
+				routeContextMenuOpen = false;
+				routeContextMenuTargetId = null;
+			}
+		}
 		radial.cancelRadialLongPress();
 		if (radial.radialBlocking()) {
 			radial.closeRadialHub();
@@ -390,6 +425,10 @@ export function createTacticalWarRoom(host: TacticalGridHost) {
 
 	function deleteRoute(routeId: string) {
 		api.deleteRoute(host, routeId, () => selectedRouteId, (v) => (selectedRouteId = v));
+		if (routeContextMenuTargetId === routeId) {
+			routeContextMenuOpen = false;
+			routeContextMenuTargetId = null;
+		}
 	}
 
 	/** Rewind timeline and restore pitch token x/y from last captured baseline. */
@@ -560,5 +599,17 @@ export function createTacticalWarRoom(host: TacticalGridHost) {
 		get contextMenuTargetId() { return contextMenuTargetId; },
 		openMenu,
 		closeMenu,
+
+		// Route context menu
+		get routeContextMenuOpen() { return routeContextMenuOpen; },
+		get routeContextMenuPos() { return routeContextMenuPos; },
+		get routeContextMenuTargetId() { return routeContextMenuTargetId; },
+		onRouteContextMenu,
+
+		// Mistake state ritual
+		get isMistakeActive() { return isMistakeActive; },
+		set isMistakeActive(v: boolean) { isMistakeActive = v; },
+		triggerMistakeState,
+		executeResetRitual,
 	};
 }

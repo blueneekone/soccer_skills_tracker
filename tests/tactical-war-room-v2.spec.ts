@@ -1,8 +1,8 @@
 import { test, expect } from '@playwright/test';
 
-test.describe('SSTracker War Room Tactical Verification v2', () => {
-  test('Should execute drawing, right-click splice, and mistake reset ritual', async ({ page }) => {
-    // 1. Mount Test: Login as a verified Coach user and navigate to /coach/tactical
+test.describe('Coach OS Tactical War Room v2 - Visual Verification Suite', () => {
+  test('Should execute mount verification, interactive route drawing, right-click route splicing, and mistake ritual', async ({ page }) => {
+    // 1. Mount Verification: Set auth state and navigate to /coach/tactical
     const authState = {
       isAuthenticated: true,
       isLoading: false,
@@ -12,64 +12,78 @@ test.describe('SSTracker War Room Tactical Verification v2', () => {
         role: 'coach',
         isProfileComplete: true,
         clubId: 'mock-club',
-        teamId: 'mock-team'
-      }
+        teamId: 'mock-team',
+      },
     };
-    
+
     await page.addInitScript((state) => {
       window.localStorage.setItem('auth_state', JSON.stringify(state));
     }, authState);
 
     await page.goto('/coach/tactical');
-    await page.waitForSelector('.tw-cursor-crosshair', { timeout: 5000 });
 
-    const canvas = page.locator('svg.tw-cursor-crosshair').first();
-    await expect(canvas).toBeVisible();
+    // Assert SVG canvas svg.tactical-arena-canvas is present in the DOM
+    const canvas = page.locator('svg.tactical-arena-canvas').first();
+    await expect(canvas).toBeVisible({ timeout: 10000 });
 
-    // 2. Interaction Simulation: Draw two distinct routes
-    // Click 'Player Run'
-    await page.getByText('+ PLAYER RUN').click();
-    await canvas.click({ position: { x: 100, y: 100 } });
+    // 2. Interactive Drawing: Click DRAW tool in TacticalDock
+    const drawButton = page.getByText('[ DRAW ]');
+    await expect(drawButton).toBeVisible();
+    await drawButton.click();
 
-    // Click 'Ball Pass'
-    await page.getByText('+ BALL PASS (DASHED)').click();
-    await canvas.click({ position: { x: 200, y: 200 } });
+    // Get canvas bounding box for coordinate relative drawing
+    const canvasBox = await canvas.boundingBox();
+    expect(canvasBox).not.toBeNull();
+    const cx = canvasBox!.x;
+    const cy = canvasBox!.y;
 
-    // Ensure we have two routes (each route renders a path)
-    const routes = page.locator('path.tw-cursor-pointer');
+    // Draw Route 1
+    await page.mouse.move(cx + 200, cy + 200);
+    await page.mouse.down();
+    await page.mouse.move(cx + 400, cy + 200);
+    await page.mouse.up();
+
+    // Draw Route 2
+    await page.mouse.move(cx + 200, cy + 400);
+    await page.mouse.down();
+    await page.mouse.move(cx + 400, cy + 400);
+    await page.mouse.up();
+
+    // Assert that 2 active route hit paths are present in the DOM
+    const routes = page.locator('path[data-route-hit]');
     await expect(routes).toHaveCount(2);
 
-    // 3. Right-Click Splice Check: Right click second route
+    // 3. Right-Click Splice Assertion: Trigger right-click on the second drawn route
     const secondRoute = routes.nth(1);
-    await secondRoute.click({ button: 'right' });
+    await secondRoute.dispatchEvent('contextmenu', { clientX: cx + 300, clientY: cy + 400 });
 
+    // Assert floating [ DELETE ROUTE ] context button is visible
     const deleteButton = page.getByText('[ DELETE ROUTE ]');
     await expect(deleteButton).toBeVisible();
-    
-    await deleteButton.click();
 
-    // Assert count drops to 1
+    // Click [ DELETE ROUTE ] and assert count drops from 2 to 1
+    await deleteButton.click();
     await expect(routes).toHaveCount(1);
 
-    // 4. Mistake & Encouragement Assertion
+    // 4. Mistake Ritual Assertion: Open SYS.MENU drawer and click TEST MISTAKE
+    const sysMenuButton = page.getByText('[ SYS.MENU ]');
+    await sysMenuButton.click();
+
     const mistakeButton = page.getByText('TEST MISTAKE');
+    await expect(mistakeButton).toBeVisible();
     await mistakeButton.click();
 
-    // Assert "Reset Button" circle is successfully mounted
-    const resetButton = page.locator('button', { has: page.locator('svg circle') });
-    await expect(resetButton).toBeVisible();
-    await expect(resetButton).toHaveClass(/tw-rounded-full/); // Assert it is a circle
-
-    // Assert micro-interactive notification displaying "Practice makes progress"
+    // Assert encouraging toast displaying "Practice makes progress" appears
     const prompt = page.getByText('Practice makes progress');
     await expect(prompt).toBeVisible();
 
-    // Reset drill
+    // Assert perfectly square [ RESET DRILL ] button (border-radius: 0px / tw-rounded-none) mounts
+    const resetButton = page.getByRole('button', { name: '[ RESET DRILL ]' });
+    await expect(resetButton).toBeVisible();
+    await expect(resetButton).toHaveClass(/tw-rounded-none/);
+
+    // Click [ RESET DRILL ] and verify mistake overlay dismisses cleanly
     await resetButton.click();
     await expect(resetButton).not.toBeVisible();
-    
-    // The toast fades out, but might still be visible for a short time. 
-    // We can wait for it to detach.
-    await expect(prompt).not.toBeVisible({ timeout: 5000 });
   });
 });

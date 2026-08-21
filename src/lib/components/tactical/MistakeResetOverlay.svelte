@@ -54,27 +54,15 @@
 </script>
 
 {#if isMistakeActive}
-  <!-- The 90-degree Atompunk physical reset button (SVG 3D Bevel) centered on screen -->
+  <!-- The 90-degree Atompunk square reset button centered on screen -->
   <div class="tw-absolute tw-inset-0 tw-flex tw-items-center tw-justify-center tw-z-50 tw-pointer-events-none" transition:fade={{ duration: 150 }}>
     <button
       type="button"
       onclick={handleReset}
-      class="tw-pointer-events-auto tw-relative tw-w-24 tw-h-24 tw-rounded-full tw-focus:outline-none"
+      class="tw-pointer-events-auto tw-relative tw-px-6 tw-py-4 tw-bg-[#0a0a0a] tw-border-2 tw-border-[#fbbf24] tw-text-[#fbbf24] tw-font-mono tw-text-sm tw-font-bold tw-rounded-none hover:tw-bg-[#fbbf24] hover:tw-text-[#0a0a0a] tw-transition-colors tw-shadow-2xl"
+      style="border-radius: 0px;"
     >
-      <svg viewBox="0 0 100 100" class="tw-w-full tw-h-full tw-drop-shadow-lg">
-        <!-- Base Drop Shadow / Bevel -->
-        <circle cx="50" cy="52" r="45" fill="#b45309" />
-        <!-- Main Button Surface -->
-        <circle cx="50" cy="50" r="45" fill="#fbbf24" class="hover:tw-fill-[#f59e0b] tw-transition-colors" />
-        <!-- Inner Bevel Highlight -->
-        <circle cx="50" cy="50" r="40" fill="none" stroke="#fcd34d" stroke-width="2" opacity="0.5" />
-        <!-- Icon / Text -->
-        <path d="M 35 50 A 15 15 0 1 1 65 50 A 15 15 0 0 1 35 50" fill="none" stroke="#0a0a0a" stroke-width="4" stroke-dasharray="70 20" stroke-linecap="round" />
-        <polygon points="60,45 70,50 60,55" fill="#0a0a0a" />
-      </svg>
-      {#if isRippling}
-        <div class="tw-absolute tw-inset-0 tw-rounded-full tw-bg-white tw-animate-ping tw-opacity-75"></div>
-      {/if}
+      [ RESET DRILL ]
     </button>
   </div>
 {/if}

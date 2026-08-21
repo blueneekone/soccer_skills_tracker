@@ -102,6 +102,16 @@
 					>
 						CLR_ROUTES
 					</button>
+					<button
+						type="button"
+						class="coach-tac-z2-seg coach-tac-z2-seg--danger"
+						onclick={(e) => {
+							e.stopPropagation();
+							engine.triggerMistakeState();
+						}}
+					>
+						TEST MISTAKE
+					</button>
 				</div>
 			</section>
 

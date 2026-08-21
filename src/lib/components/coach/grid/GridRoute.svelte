@@ -29,6 +29,7 @@
 		onControlPointDrag,
 		onRouteHoverEnter,
 		onRouteHoverLeave,
+		onRouteContextMenu = undefined,
 	} = $props();
 
 	const routeDistance = $derived(Math.hypot(route.x2 - route.x1, route.y2 - route.y1));
@@ -76,16 +77,21 @@
 		data-timeline-ms={timelineMs}
 		d={pathD}
 		fill="none"
-		stroke="transparent"
+		stroke="rgba(255,255,255,0.001)"
 		stroke-width={ROUTE_HIT_STROKE}
 		stroke-linecap="round"
 		stroke-linejoin="round"
-		class={warRoomTool === 'ROUTE' ? 'tw-cursor-grab active:tw-cursor-grabbing' : ''}
-		pointer-events={warRoomTool === 'ROUTE' ? 'stroke' : 'none'}
+		class={warRoomTool === 'ROUTE' ? 'tw-cursor-grab active:tw-cursor-grabbing' : 'tw-cursor-pointer'}
+		pointer-events="stroke"
 		role="presentation"
 		onmouseenter={() => onRouteHoverEnter?.()}
 		onmouseleave={() => onRouteHoverLeave?.()}
 		onpointerdown={(e) => onPathClick?.(e)}
+		oncontextmenu={(e) => {
+			e.preventDefault();
+			e.stopPropagation();
+			onRouteContextMenu?.(e, route.id);
+		}}
 	/>
 {/if}
 

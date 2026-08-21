@@ -158,7 +158,6 @@ export function executePointerDown(ev: MouseEvent | TouchEvent | PointerEvent, h
 
 	if (host.selectedRouteId() !== null) {
 		host.setSelectedRouteId(null);
-		return;
 	}
 
 	const raw = host.clientToSvg(ev);
