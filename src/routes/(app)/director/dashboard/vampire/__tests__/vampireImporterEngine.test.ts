@@ -104,6 +104,8 @@ describe('VampireImporterEngine', () => {
 
   it('Test 3: should correctly batch paginated datasets for massive files into 500 max writes', async () => {
     const engine = new VampireImporterEngine();
+    engine.teamId = 'team_u14_varsity';
+    vi.spyOn(authStore, 'clubId', 'get').mockReturnValue('club_nexus_1');
 
     // Generate 1200 valid rows (should be 3 batches: 500, 500, 200)
     const massiveData = Array.from({ length: 1200 }, (_, i) => ({
@@ -121,6 +123,7 @@ describe('VampireImporterEngine', () => {
     await engine.triggerIngestion();
 
     expect(engine.errorMessage).toBeNull();
+    expect(engine.successMessage).toBe('Successfully ingested 1200 rows.');
     expect(engine.ingestedCount).toBe(1200);
     // writeBatch should be called 3 times (ceil(1200/500))
     expect(writeBatch).toHaveBeenCalledTimes(3);

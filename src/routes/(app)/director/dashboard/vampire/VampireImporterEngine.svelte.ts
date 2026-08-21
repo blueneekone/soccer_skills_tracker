@@ -69,6 +69,7 @@ export class VampireImporterEngine {
 
     this.isUploading = true;
     this.errorMessage = null;
+    this.successMessage = null;
     this.ingestedCount = 0;
 
     try {
@@ -84,6 +85,8 @@ export class VampireImporterEngine {
           const docRef = doc(collectionRef); // auto-generate ID
           batch.set(docRef, {
             ...row,
+            teamId: this.teamId ? this.teamId.trim() : null,
+            clubId: authStore.clubId || null,
             uploadedAt: new Date().toISOString(),
             uploadedBy: authStore.user?.uid || 'unknown'
           });
@@ -92,6 +95,7 @@ export class VampireImporterEngine {
         await batch.commit();
         this.ingestedCount = this.ingestedCount + currentBatchRows.length;
       }
+      this.successMessage = `Successfully ingested ${this.ingestedCount} rows.`;
     } catch (error: any) {
       this.errorMessage = `Upload failed during batch processing: ${error.message}`;
     } finally {
