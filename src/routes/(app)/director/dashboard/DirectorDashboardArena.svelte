@@ -26,8 +26,8 @@
 
 </script>
 
-<div class="tw-h-full tw-w-full tw-overflow-y-auto tw-overflow-x-hidden tw-p-6 lg:tw-p-10 tw-bg-[#05050A]">
-	<div class="tw-max-w-[1920px] tw-mx-auto tw-flex tw-flex-col tw-gap-8 tw-min-h-full">
+<div class="tw-flex tw-flex-col tw-min-h-0 tw-h-full tw-min-w-0" style="overflow-y: auto;">
+	<div class="tw-max-w-[1920px] tw-mx-auto tw-flex tw-flex-col tw-gap-8 tw-min-h-full tw-w-full">
 		
 		{#if engine.activeTab === 'home'}
 			<section class="tw-flex tw-flex-col tw-gap-6 tw-w-full">

@@ -12,7 +12,10 @@
 <!-- AEGIS Lightning Alert — directors and above only -->
 <WeatherAlert />
 
-<div class="pd-page-root tw-h-[100dvh] tw-overflow-hidden tw-bg-[#000000] tw-text-[#FAFAFA] tw-flex tw-flex-col">
+<div
+	class="pd-page-root tw-flex tw-flex-col tw-w-full tw-min-w-0 tw-flex-1 tw-min-h-0 tw-bg-[#0B0F19] tw-text-[#FAFAFA] dark-form-surface cc-root tw-box-border"
+	style="padding: var(--bento-pad-liquid, clamp(20px, 4vw, 32px)); box-sizing: border-box;"
+>
 	<DirectorDashboardHUD {engine} />
 	<main class="tw-flex-1 tw-flex tw-flex-col tw-min-w-0">
 		<DirectorDashboardArena {engine} />

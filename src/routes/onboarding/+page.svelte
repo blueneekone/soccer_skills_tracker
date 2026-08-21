@@ -8,10 +8,12 @@
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { flushTokenCache } from '$lib/auth/onboardingHandshake.js';
 
+	import { applyLoginWaterfall } from '$lib/auth/loginRouting.js';
+
 	$effect(() => {
 		if (!db || !authStore.isAuthenticated) return;
 		if (authStore.role) {
-			untrack(() => goto('/coach/dashboard'));
+			untrack(() => goto(applyLoginWaterfall(authStore.role, authStore.userProfile)));
 		}
 	});
 

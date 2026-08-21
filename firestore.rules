@@ -12,7 +12,8 @@ service cloud.firestore {
 
     // Helper to verify if user has global platform admin powers
     function isGlobalAdmin() {
-      return isAuthenticated() && (request.auth.token.admin == true || request.auth.token.role == 'super_admin' || request.auth.token.role == 'global_admin');
+      return request.auth != null &&
+        (request.auth.token.role == 'super_admin' || request.auth.token.role == 'global_admin' || request.auth.token.role == 'admin');
     }
 
     function isCoach() {
