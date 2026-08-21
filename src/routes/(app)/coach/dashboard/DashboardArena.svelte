@@ -3,7 +3,6 @@
 	import WeatherHub from '$lib/components/coach/WeatherHub.svelte';
 	import SquadMatrix from '$lib/components/coach/SquadMatrix.svelte';
 	import WarRoomGrid from '$lib/components/coach/WarRoomGrid.svelte';
-	import CoachTeamRosterPanel from '$lib/coach/logistics/CoachTeamRosterPanel.svelte';
 	import Icon from '$lib/components/ui/Icon.svelte';
 
 	let { engine }: { engine: DashboardEngine } = $props();
@@ -31,18 +30,9 @@
 		<WarRoomGrid />
 	</div>
 
-	<!-- Weather & Roster (4 cols) -->
-	<div class="tw-col-span-12 lg:tw-col-span-4 tw-min-w-0 tw-flex tw-flex-col tw-gap-4">
+	<!-- WeatherHub (4 cols) -->
+	<div class="tw-col-span-12 lg:tw-col-span-4 tw-min-w-0">
 		<WeatherHub fieldLat={engine.fieldLat} fieldLng={engine.fieldLng} weatherCoords={engine.weatherCoords} />
-		
-		<div class="st-bento roster-panel vanguard-surface tw-rounded-none tw-border tw-border-slate-700 tw-bg-slate-900/80 tw-p-4 tw-min-w-0 tw-flex-1" style="background: #0f172a;">
-			<h3 class="tw-text-xs tw-text-[#14b8a6] tw-mb-4 tw-uppercase tw-tracking-widest tw-min-w-0" style="font-family: 'Geist Sans', sans-serif;">Active Roster & Operatives</h3>
-			{#if engine.effectiveTeamId}
-				<CoachTeamRosterPanel teamId={engine.effectiveTeamId} />
-			{:else}
-				<div class="tw-text-[#D4D4D8] tw-text-sm tw-min-w-0" style="font-family: 'Switzer', sans-serif;">No active squad.</div>
-			{/if}
-		</div>
 	</div>
 
 	<!-- SquadMatrix (12 cols) -->
