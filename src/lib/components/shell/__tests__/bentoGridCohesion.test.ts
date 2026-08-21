@@ -5,7 +5,7 @@ import { join } from 'path';
 describe('Bento Grid & Typography Cohesion Tests', () => {
 	const filesToTest = [
 		'src/routes/(app)/admin/overview/AdminOverviewArena.svelte',
-		'src/routes/(app)/director/dashboard/+page.svelte',
+		'src/routes/(app)/director/dashboard/DirectorDashboardArena.svelte',
 		'src/routes/(app)/coach/dashboard/+page.svelte',
 		'src/routes/(app)/player/dashboard/+page.svelte',
 		'src/routes/(app)/parent/dashboard/+page.svelte',

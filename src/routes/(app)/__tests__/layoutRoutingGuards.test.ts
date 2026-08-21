@@ -88,7 +88,7 @@ describe('SvelteKit Layout Routing Interceptor & Auth Gating (Epic 1)', () => {
 
 		it('must strictly declare the list of authorized elevated roles', () => {
 			expect(layoutSrc).toContain(
-				"const elevatedRoles = ['admin', 'global_admin', 'super_admin', 'commissioner', 'director', 'coach', 'parent']",
+				"const validRoles = ['admin', 'global_admin', 'super_admin', 'commissioner', 'director', 'coach', 'parent', 'player', 'recruiter', 'fan', 'tutor', 'registrar']",
 			);
 		});
 

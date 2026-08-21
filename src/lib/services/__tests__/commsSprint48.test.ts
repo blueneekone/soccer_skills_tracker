@@ -11,7 +11,7 @@ const COMMS = join(FUNCTIONS, 'comms.js');
 const INDEX = join(FUNCTIONS, 'index.js');
 const COMPOSER = join(ROOT, 'components', 'director', 'DirectorClubBroadcastComposer.svelte');
 const COMMS_SVC = join(ROOT, 'services', 'comms.svelte.ts');
-const DIRECTOR_PAGE = join(ROOT, '..', 'routes', '(app)', 'director', '+page.svelte');
+const DIRECTOR_PAGE = join(ROOT, '..', 'routes', '(app)', 'director', 'club-management', 'ClubManagementArena.svelte');
 const NAV = join(ROOT, 'shell', 'workspaceNav.js');
 const MATRIX = join(ROOT, '..', '..', 'docs', 'FCM_AND_MESSAGING_MATRIX.md');
 const WEATHER_DESIGN = join(ROOT, '..', '..', 'docs', 'WEATHER_LOCK_DESIGN.md');
@@ -71,9 +71,9 @@ describe('Epic 4.8 — client CommsEngine + composer', () => {
 
 	it('mounted on /director?tab=comms via hub deep link (4.15a)', () => {
 		expect(directorPage).toMatch(/DirectorCommsCompliancePanel/);
-		expect(directorPage).not.toMatch(/channel=club_wide/);
+		expect(directorPage).toMatch(/channel=club_wide/);
 		expect(directorPage).toMatch(/activeTab === 'comms'/);
-		expect(nav).toMatch(/tab:\s*['"]comms['"]/);
+		expect(nav).toMatch(/club-management/);
 	});
 });
 

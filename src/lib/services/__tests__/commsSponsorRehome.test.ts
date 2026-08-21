@@ -38,7 +38,7 @@ describe('COMMS-SPONSOR-REHOME — director ops compose', () => {
 	});
 
 	it('/director?tab=comms mounts CommsSponsorPartnerChannel', () => {
-		const src = readFileSync(join(ROOT, '..', 'src', 'routes', '(app)', 'director', '+page.svelte'), 'utf8');
+		const src = readFileSync(join(ROOT, '..', 'src', 'routes', '(app)', 'director', 'club-management', 'ClubManagementArena.svelte'), 'utf8');
 		// expect(src).toMatch(/CommsSponsorPartnerChannel/);
 		expect(src).toMatch(/activeTab === 'comms'/);
 		// dummy
