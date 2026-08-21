@@ -22,7 +22,15 @@ function handleAnchorDrag(ev: PointerEvent, host: TacticalPointerHost, ad: Ancho
 				const nextBindId = dock.bindPlayerId !== null ? dock.bindPlayerId : r.bindPlayerId;
 				return { ...r, x1: dock.x, y1: dock.y, bindPlayerId: nextBindId };
 			}
-			if (kind === 'ctrl') return { ...r, cx: p.x, cy: p.y };
+			if (kind === 'ctrl') {
+				const isCurve = r.pathKind !== 'cut';
+				const scale = isCurve ? 2 : 1;
+				const cp = host.clampToPitch(
+					ad.anchorX + dxSvg * scale,
+					ad.anchorY + dySvg * scale,
+				);
+				return { ...r, cx: cp.x, cy: cp.y };
+			}
 			const dock = snapPointToDockingCore(p.x, p.y, [...host.wrBucketPitch(), ...host.wrOppPitch()]);
 			return { ...r, x2: dock.x, y2: dock.y };
 		}),

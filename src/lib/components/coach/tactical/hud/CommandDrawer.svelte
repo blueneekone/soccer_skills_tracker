@@ -31,6 +31,7 @@
 						onclick={(e) => {
 							e.stopPropagation();
 							engine.routeDrawKind = 'curve';
+							engine.updateSelectedRouteShape?.('curve');
 						}}
 						aria-pressed={engine.routeDrawKind === 'curve'}
 					>
@@ -42,10 +43,23 @@
 						onclick={(e) => {
 							e.stopPropagation();
 							engine.routeDrawKind = 'cut';
+							engine.updateSelectedRouteShape?.('cut');
 						}}
 						aria-pressed={engine.routeDrawKind === 'cut'}
 					>
 						[ CUT ]
+					</button>
+					<button
+						type="button"
+						class="coach-tac-z2-seg {engine.routeDrawKind === 'pass' ? 'coach-tac-z2-seg--active' : ''}"
+						onclick={(e) => {
+							e.stopPropagation();
+							engine.routeDrawKind = 'pass';
+							engine.updateSelectedRouteShape?.('pass');
+						}}
+						aria-pressed={engine.routeDrawKind === 'pass'}
+					>
+						[ PASS ]
 					</button>
 				</div>
 			</section>
@@ -61,6 +75,7 @@
 							onclick={(e) => {
 								e.stopPropagation();
 								engine.activeRouteColor = color;
+								engine.updateSelectedRouteColor?.(color);
 							}}
 							aria-label="Route color {color}"
 							aria-pressed={engine.activeRouteColor === color}
@@ -69,6 +84,7 @@
 				</div>
 			</section>
 
+			<section>
 			<section>
 				<p class="coach-tac-z2-section-label">BOARD_OPS</p>
 				<div class="tw-flex tw-flex-col tw-gap-2">
@@ -97,10 +113,36 @@
 						class="coach-tac-z2-seg coach-tac-z2-seg--danger"
 						onclick={(e) => {
 							e.stopPropagation();
+							engine.clearPitch?.();
+						}}
+					>
+						CLR_PITCH
+					</button>
+					<button
+						type="button"
+						class="coach-tac-z2-seg coach-tac-z2-seg--danger"
+						onclick={(e) => {
+							e.stopPropagation();
 							engine.clearRoutesOnly();
 						}}
 					>
 						CLR_ROUTES
+					</button>
+				</div>
+			</section>
+
+			<section>
+				<p class="coach-tac-z2-section-label">SIMULATION</p>
+				<div class="tw-flex tw-flex-col tw-gap-2">
+					<button
+						type="button"
+						class="coach-tac-z2-action coach-tac-z2-action--outline"
+						onclick={(e) => {
+							e.stopPropagation();
+							engine.isMistakeActive = true;
+						}}
+					>
+						[ SIM MISTAKE ]
 					</button>
 				</div>
 			</section>

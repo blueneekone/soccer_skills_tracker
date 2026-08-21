@@ -1,5 +1,5 @@
 import type { TacticalGridHost } from './tacticalWarRoom.svelte';
-import type { TacticalToken } from './types';
+import type { TacticalToken, TacticalRoute } from './types';
 import { normalizeRoute } from './routeModel';
 import { FRIENDLY_RING, OPP_RING } from './constants';
 import type { RadialSlotSource } from './tacticalGridRadial.svelte';
@@ -69,6 +69,19 @@ export function deleteRoute(host: TacticalGridHost, routeId: string, getSelected
 	if (getSelected() === routeId) setSelected(null);
 }
 
+export function updateSelectedRoute(host: TacticalGridHost, routeId: string, updates: Partial<TacticalRoute>) {
+	if (!routeId) return;
+	host.drawnRoutes.set(
+		host.drawnRoutes.get().map((raw) => {
+			const r = normalizeRoute(raw as any);
+			if (r.id === routeId) {
+				return { ...r, ...updates };
+			}
+			return r;
+		})
+	);
+}
+
 export function injectBall(host: TacticalGridHost) {
 	const pitchTokens = host.wrBucketPitch.get();
 	const oppTokens = host.wrOppPitch.get();
@@ -88,4 +101,16 @@ export function injectBall(host: TacticalGridHost) {
 			},
 		]);
 	}
+}
+
+export function clearPitch(host: TacticalGridHost) {
+	const currentTokens = host.wrBucketPitch.get();
+	const nextBench = [...host.wrBucketBench.get()];
+	for (const token of currentTokens) {
+		if (token.id !== 'BALL') {
+			nextBench.push(token);
+		}
+	}
+	host.wrBucketPitch.set([]);
+	host.wrBucketBench.set(nextBench);
 }

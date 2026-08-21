@@ -67,6 +67,14 @@
 		onPitchContextMenu,
 		/** @type {(ev: MouseEvent, player: TacticalToken) => void} */
 		onTokenContextMenu = undefined,
+		/** @type {(ev: MouseEvent, routeId: string) => void} */
+		onRouteContextMenu = undefined,
+		routeContextMenuOpen = false,
+		/** @type {{ x: number, y: number } | null} */
+		routeContextMenuPos = null,
+		routeContextMenuTargetId = null,
+		/** @type {(id: string) => void} */
+		onDeleteRoute = undefined,
 		handleSvgClick,
 		setHoveredRouteId,
 		setHoveredDiscId,
@@ -140,6 +148,9 @@
 							onPathClick={(e) => {
 								e.stopPropagation();
 								onRouteStrokePointerDown(e, route);
+							}}
+							onPathContextMenu={(e) => {
+								onRouteContextMenu?.(e, route.id);
 							}}
 							onRouteHoverEnter={() => setHoveredRouteId(route.id)}
 							onRouteHoverLeave={() => setHoveredRouteId(null)}
@@ -338,6 +349,20 @@
 				{hubCenterLabel}
 			/>
 		</svg>
+		
+		{#if routeContextMenuOpen && routeContextMenuPos && routeContextMenuTargetId}
+			<!-- svelte-ignore a11y_consider_explicit_label -->
+			<button
+				class="tw-absolute tw-z-[1000] tw-flex tw-items-center tw-justify-center tw-rounded tw-border tw-border-[#ef4444] tw-bg-[#0f172a] tw-px-3 tw-py-1.5 tw-font-mono tw-text-[10px] tw-font-bold tw-tracking-widest tw-text-[#ef4444] tw-shadow-[0_0_15px_rgba(239,68,68,0.25)] hover:tw-bg-[#ef4444]/10"
+				style="left: {routeContextMenuPos.x}px; top: {routeContextMenuPos.y}px; transform: translate(-50%, -120%);"
+				onclick={(e) => {
+					e.stopPropagation();
+					if (onDeleteRoute) onDeleteRoute(routeContextMenuTargetId);
+				}}
+			>
+				[ DELETE ROUTE ]
+			</button>
+		{/if}
 	</div>
 </div>
 

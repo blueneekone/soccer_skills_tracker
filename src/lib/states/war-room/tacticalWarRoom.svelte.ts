@@ -118,9 +118,14 @@ export function createTacticalWarRoom(host: TacticalGridHost) {
 	let hoveredRouteId = $state<string | null>(null);
 	let selectedRouteId = $state<string | null>(null);
 
+	let routeContextMenuOpen = $state(false);
+	let routeContextMenuPos = $state<{ x: number; y: number } | null>(null);
+	let routeContextMenuTargetId = $state<string | null>(null);
+
 	let anchorDrag = $state<AnchorDrag | null>(null);
 	let routeBodyDrag = $state<RouteBodyDrag | null>(null);
 	let isDrawerOpen = $state(false);
+	let isMistakeActive = $state(false);
 
 	/** Snapshots for rewind — restored by `resetPositions()` (timeline + x/y). */
 	let playbackBaselinePitch = $state<TacticalToken[]>([]);
@@ -243,6 +248,10 @@ export function createTacticalWarRoom(host: TacticalGridHost) {
 		api.clearRoutesOnly(host, simulator, simRouteHoldPrev);
 	}
 
+	function clearPitch() {
+		api.clearPitch(host);
+	}
+
 	function injectBall() {
 		api.injectBall(host);
 	}
@@ -361,6 +370,22 @@ export function createTacticalWarRoom(host: TacticalGridHost) {
 		radial.openRadialHub(ev, null, true);
 	}
 
+	function onRouteContextMenu(ev: MouseEvent, routeId: string) {
+		ev.preventDefault();
+		ev.stopPropagation();
+		if (host.warRoomTool.get() !== 'DRAG' && host.warRoomTool.get() !== 'ROUTE') return;
+		
+		const pitchRect = pitchSvgEl?.getBoundingClientRect();
+		if (pitchRect) {
+			routeContextMenuPos = { 
+				x: ev.clientX - pitchRect.left, 
+				y: ev.clientY - pitchRect.top 
+			};
+			routeContextMenuTargetId = routeId;
+			routeContextMenuOpen = true;
+		}
+	}
+
 	function onPitchPointerUpClearLongPress() {
 		radial.cancelRadialLongPress();
 	}
@@ -368,6 +393,10 @@ export function createTacticalWarRoom(host: TacticalGridHost) {
 	function handleKeyDown(e: KeyboardEvent) {
 		if (e.key !== 'Escape') return;
 		e.preventDefault();
+		if (routeContextMenuOpen) {
+			routeContextMenuOpen = false;
+			return;
+		}
 		if (radial.radialBlocking()) {
 			radial.closeRadialHub();
 			return;
@@ -386,6 +415,18 @@ export function createTacticalWarRoom(host: TacticalGridHost) {
 
 	function showAnchorsFor(routeId: string) {
 		return selectedRouteId === routeId || hoveredRouteId === routeId;
+	}
+
+	function updateSelectedRouteShape(shape: 'curve' | 'cut' | 'pass') {
+		if (selectedRouteId) {
+			api.updateSelectedRoute(host, selectedRouteId, { pathKind: shape });
+		}
+	}
+
+	function updateSelectedRouteColor(color: string) {
+		if (selectedRouteId) {
+			api.updateSelectedRoute(host, selectedRouteId, { color });
+		}
 	}
 
 	function deleteRoute(routeId: string) {
@@ -510,7 +551,13 @@ export function createTacticalWarRoom(host: TacticalGridHost) {
 		get routingActive() { return routingActive; },
 		get routeDraft() { return routeDraft; },
 		get hoveredDiscId() { return hoveredDiscId; },
-		get selectedRouteId() { return selectedRouteId; },
+		get selectedRouteId() {
+			return selectedRouteId;
+		},
+		get routeContextMenuOpen() { return routeContextMenuOpen; },
+		set routeContextMenuOpen(v) { routeContextMenuOpen = v; },
+		get routeContextMenuPos() { return routeContextMenuPos; },
+		get routeContextMenuTargetId() { return routeContextMenuTargetId; },
 		get routesLive() { return routesLive; },
 		get canPlay() { return canPlay; },
 		get allRouteMarkerColors() { return allRouteMarkerColors; },
@@ -534,6 +581,7 @@ export function createTacticalWarRoom(host: TacticalGridHost) {
 		handleKeyDown,
 		onPitchContextMenu,
 		onTokenContextMenu,
+		onRouteContextMenu,
 		onPitchPointerUpClearLongPress,
 		recallBench,
 		clearRoutesOnly,
@@ -543,6 +591,8 @@ export function createTacticalWarRoom(host: TacticalGridHost) {
 		resolvePitchToken,
 		showAnchorsFor,
 		deleteRoute,
+		updateSelectedRouteShape,
+		updateSelectedRouteColor,
 		resetPositions,
 		setHoveredRouteId: (id: string | null) => (hoveredRouteId = id),
 		setHoveredDiscId: (id: string | null) => (hoveredDiscId = id),
@@ -560,5 +610,7 @@ export function createTacticalWarRoom(host: TacticalGridHost) {
 		get contextMenuTargetId() { return contextMenuTargetId; },
 		openMenu,
 		closeMenu,
+		get isMistakeActive() { return isMistakeActive; },
+		set isMistakeActive(v) { isMistakeActive = v; },
 	};
 }

@@ -29,6 +29,7 @@
 		onControlPointDrag,
 		onRouteHoverEnter,
 		onRouteHoverLeave,
+		onPathContextMenu,
 	} = $props();
 
 	const routeDistance = $derived(Math.hypot(route.x2 - route.x1, route.y2 - route.y1));
@@ -55,6 +56,7 @@
 		/>
 		<!-- Sharp White Core Trail -->
 		<path
+			class:route-dash-pass={route.pathKind === 'pass'}
 			d={pathD}
 			fill="none"
 			stroke={route.pathKind === 'pass' ? '#ffffff' : '#ffffff'}
@@ -86,6 +88,7 @@
 		onmouseenter={() => onRouteHoverEnter?.()}
 		onmouseleave={() => onRouteHoverLeave?.()}
 		onpointerdown={(e) => onPathClick?.(e)}
+		oncontextmenu={(e) => onPathContextMenu?.(e)}
 	/>
 {/if}
 
@@ -140,7 +143,7 @@
 		<!-- svelte-ignore a11y_no_static_element_interactions -->
 		<g
 			data-anchor-hit
-			transform="translate({route.cx},{route.cy}) rotate(45)"
+			transform="translate({route.pathKind !== 'cut' ? 0.25*route.x1 + 0.5*route.cx + 0.25*route.x2 : route.cx}, {route.pathKind !== 'cut' ? 0.25*route.y1 + 0.5*route.cy + 0.25*route.y2 : route.cy}) rotate(45)"
 			class="tw-cursor-pointer"
 			role="presentation"
 			onpointerdown={(e) => onControlPointDrag?.(e, 'ctrl')}
@@ -177,5 +180,15 @@
 <style>
 	:global(.disc-visual) {
 		transform-box: fill-box;
+	}
+
+	@keyframes dash-flow-pass {
+		to {
+			stroke-dashoffset: -56;
+		}
+	}
+
+	:global(.route-dash-pass) {
+		animation: dash-flow-pass 1.5s linear infinite;
 	}
 </style>

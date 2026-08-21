@@ -85,7 +85,7 @@
     class="tw-absolute tw-bottom-4 tw-right-4 tw-z-50 tw-overflow-hidden"
     transition:slide={{ duration: 300, axis: 'y' }}
   >
-    <div class="tw-bg-[#0a0a0a] tw-border tw-border-[#334155] tw-px-5 tw-py-2.5 tw-text-xs tw-text-[#94a3b8] tw-tracking-wider tw-rounded-none tw-shadow-lg tw-font-mono">
+    <div class="tw-bg-[#0a0a0a] tw-border tw-border-[#334155] tw-px-5 tw-py-2.5 tw-text-xs tw-text-[#94a3b8] tw-tracking-wider tw-rounded-none tw-shadow-lg tw-font-sans">
       🛡️ <span class="tw-text-[#06b6d4]">Practice makes progress</span>
     </div>
   </div>
