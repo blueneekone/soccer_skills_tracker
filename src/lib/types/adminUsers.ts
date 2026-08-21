@@ -22,6 +22,12 @@ export type GlobalUserRow = {
 	vpcStatus?: string | null;
 	/** Enriched one-line parent↔athlete graph (admin users page). */
 	householdGraphLabel?: string;
+	/** users.dateOfBirth Timestamp or ISO date string */
+	dateOfBirth?: unknown;
+	/** users.isMinor flag */
+	isMinor?: boolean;
+	/** users.ageBand string ('under13' | 'teen13to16' | 'adult') */
+	ageBand?: string;
 };
 
 export type GlobalUsersRoleFilter =

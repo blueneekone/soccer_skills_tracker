@@ -13,8 +13,9 @@
 	 * admins collection canonical without a separate audit sweep).
 	 */
 
-	import { db } from '$lib/firebase.js';
+	import { db, functions } from '$lib/firebase.js';
 	import { doc, updateDoc, setDoc } from 'firebase/firestore';
+	import { httpsCallable } from 'firebase/functions';
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { teamsStore } from '$lib/stores/teams.svelte.js';
 	import { logSecurityEvent } from '$lib/utils/security.js';
@@ -53,10 +54,21 @@
 	let verifiedAddress = $state('');
 	let primaryFacility = $state('');
 	let adminNotes      = $state('');
+	let dateOfBirth     = $state('');
 
 	let saving = $state(false);
 	let errMsg = $state('');
 	let okMsg  = $state('');
+
+	function formatDobInput(val: unknown): string {
+		if (!val) return '';
+		if (typeof val === 'string') return val.slice(0, 10);
+		if (val instanceof Date) return val.toISOString().slice(0, 10);
+		if (typeof val === 'object' && val !== null && 'toDate' in val && typeof (val as { toDate: () => Date }).toDate === 'function') {
+			return (val as { toDate: () => Date }).toDate().toISOString().slice(0, 10);
+		}
+		return '';
+	}
 
 	/** Rehydrate when the modal is opened against a new admin. */
 	$effect(() => {
@@ -78,6 +90,7 @@
 		verifiedAddress = typeof admin.verifiedAddress === 'string' ? admin.verifiedAddress : '';
 		primaryFacility = typeof admin.primaryFacility === 'string' ? admin.primaryFacility : '';
 		adminNotes      = typeof admin.adminNotes === 'string' ? admin.adminNotes : '';
+		dateOfBirth     = formatDobInput(admin.dateOfBirth);
 		errMsg = '';
 		okMsg = '';
 	});
@@ -129,6 +142,30 @@
 			if (previousRole !== role) {
 				patch.roleUpdatedAt = new Date();
 				patch.roleUpdatedBy = authStore.user?.email || 'EditAdminModal';
+			}
+
+			if (dateOfBirth) {
+				try {
+					const setPlayerDobFn = httpsCallable(functions, 'setPlayerDateOfBirth');
+					const res = await setPlayerDobFn({ playerEmail: admin.email || admin.id, dateOfBirth });
+					const dobData = res.data as { isMinor?: boolean; ageBand?: string; vpcStatus?: string };
+					if (dobData) {
+						patch.isMinor = dobData.isMinor;
+						patch.ageBand = dobData.ageBand;
+						patch.vpcStatus = dobData.vpcStatus;
+					}
+				} catch (e) {
+					console.warn('[EditAdminModal] setPlayerDateOfBirth failed, applying fallback DOB patch', e);
+					const dobDate = new Date(dateOfBirth);
+					if (!isNaN(dobDate.getTime())) {
+						const ageYears = (Date.now() - dobDate.getTime()) / (365.25 * 24 * 3600 * 1000);
+						const isMinor = ageYears < 17;
+						patch.dateOfBirth = dobDate;
+						patch.isMinor = isMinor;
+						patch.vpcStatus = isMinor ? 'pending' : 'not_required';
+						patch.ageBand = ageYears < 13 ? 'under13' : ageYears < 17 ? 'teen13to16' : 'adult';
+					}
+				}
 			}
 
 			await updateDoc(doc(db, 'users', admin.id), patch);
@@ -288,6 +325,19 @@
 						value={admin.email}
 						readonly
 						disabled
+					/>
+				</div>
+
+				<div class="eam-field">
+					<label class="eam-label" for="eam-dob">
+						Date of Birth (DOB)
+					</label>
+					<input
+						id="eam-dob"
+						type="date"
+						class="eam-input"
+						bind:value={dateOfBirth}
+						disabled={saving}
 					/>
 				</div>
 

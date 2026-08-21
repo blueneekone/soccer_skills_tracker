@@ -19,6 +19,9 @@ export function mapUserDocumentToRow(id: string, raw: Record<string, unknown>): 
 		typeof raw.householdId === 'string' && raw.householdId.trim() ? raw.householdId.trim() : '';
 	const vpcStatus =
 		typeof raw.vpcStatus === 'string' && raw.vpcStatus.trim() ? raw.vpcStatus.trim() : null;
+	const isMinor = typeof raw.isMinor === 'boolean' ? raw.isMinor : undefined;
+	const ageBand = typeof raw.ageBand === 'string' && raw.ageBand.trim() ? raw.ageBand.trim() : undefined;
+	const dateOfBirth = raw.dateOfBirth ?? undefined;
 
 	const candidates = [
 		{ k: 'lastActivityDate', v: toEpochMs(raw.lastActivityDate) },
@@ -44,6 +47,9 @@ export function mapUserDocumentToRow(id: string, raw: Record<string, unknown>): 
 		roles,
 		householdId,
 		vpcStatus,
+		dateOfBirth,
+		isMinor,
+		ageBand,
 	};
 }
 

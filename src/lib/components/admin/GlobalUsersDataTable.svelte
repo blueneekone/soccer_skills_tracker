@@ -69,6 +69,18 @@
 			onToggleMenu(openMenuFor);
 		}
 	}
+
+	function formatDobLabel(row: GlobalUserRow): string {
+		if (row.isMinor === true) {
+			return row.ageBand ? `Minor (${row.ageBand})` : 'Minor';
+		} else if (row.isMinor === false) {
+			return 'Adult';
+		}
+		if (row.ageBand) {
+			return row.ageBand === 'adult' ? 'Adult' : `Minor (${row.ageBand})`;
+		}
+		return '';
+	}
 </script>
 
 <svelte:window onclick={handleWindowClick} onscroll={handleWindowClick} />
@@ -128,7 +140,12 @@
 								<span class="gu-name__primary">
 									{row.displayName || row.playerName || row.email}
 								</span>
-								<span class="gu-name__email">{row.email}</span>
+								<span class="gu-name__email">
+									{row.email}
+									{#if formatDobLabel(row)}
+										<span class="gu-age-badge">• {formatDobLabel(row)}</span>
+									{/if}
+								</span>
 							</div>
 						</td>
 						<td class="v-td">
@@ -340,5 +357,11 @@
 		color: #d97706;
 		font-weight: 600;
 		font-size: 0.75rem;
+	}
+
+	.gu-age-badge {
+		color: #14b8a6;
+		font-size: 0.7rem;
+		font-weight: 600;
 	}
 </style>
