@@ -108,6 +108,7 @@
 			stroke="#14b8a6"
 			stroke-width="2"
 			filter="url(#pdDataBloom)"
+			class:ar-zero-track={allZero}
 			style="fill: var(--pd-accent-data, rgba(20,184,166,0.25)); stroke: var(--pd-accent-data, #14b8a6);"
 		/>
 

@@ -37,11 +37,11 @@ function resolveFirebaseAdmin() {
   return require('firebase-admin');
 }
 
-const rawAdmin = resolveFirebaseAdmin();
+const admin = resolveFirebaseAdmin();
 let initialized = false;
 
 function initAdmin() {
-  if (initialized || rawAdmin.apps.length > 0) {
+  if (initialized || admin.apps.length > 0) {
     initialized = true;
     return;
   }
@@ -62,11 +62,11 @@ function initAdmin() {
   if (fs.existsSync(keyPath)) {
     try {
       const certObj = require(keyPath);
-      credential = rawAdmin.credential.cert(certObj);
+      credential = admin.credential.cert(certObj);
       if (!process.env.GCLOUD_PROJECT) process.env.GCLOUD_PROJECT = certObj.project_id;
       if (!process.env.GCP_PROJECT) process.env.GCP_PROJECT = certObj.project_id;
       if (!process.env.FIREBASE_CONFIG) process.env.FIREBASE_CONFIG = JSON.stringify({ projectId: certObj.project_id });
-      rawAdmin.initializeApp({ credential, projectId: certObj.project_id });
+      admin.initializeApp({ credential, projectId: certObj.project_id });
       initialized = true;
       return;
     } catch (e) {
@@ -74,7 +74,9 @@ function initAdmin() {
     }
   }
 
-  rawAdmin.initializeApp();
+  if (admin.apps.length === 0) {
+    admin.initializeApp();
+  }
   initialized = true;
 }
 
@@ -84,7 +86,7 @@ if (!process.env.VITEST && process.env.NODE_ENV !== 'test') {
   initAdmin();
 }
 
-const adminProxy = new Proxy(rawAdmin, {
+const adminProxy = new Proxy(admin, {
   get(target, prop) {
     initAdmin();
     const value = target[prop];
