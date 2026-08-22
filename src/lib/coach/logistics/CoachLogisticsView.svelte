@@ -145,24 +145,34 @@
 		display: flex;
 		flex-wrap: wrap;
 		gap: 0;
-		border-bottom: 1px solid var(--pd-grey-trim, #334155);
+		border-bottom: 1px solid #334155;
 	}
 
 	.logistics-tab {
 		border: none;
 		border-bottom: 2px solid transparent;
 		border-radius: 0;
-		padding: 10px 16px;
-		font-size: 12px;
+		padding: 10px 18px;
+		font-family: 'Geist Mono', monospace;
+		font-size: 11px;
 		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.08em;
 		background: transparent;
 		color: #94a3b8;
 		cursor: pointer;
+		transition: all 150ms ease;
+	}
+
+	.logistics-tab:hover {
+		color: #fafafa;
+		background: rgba(255, 255, 255, 0.02);
 	}
 
 	.logistics-tab--active {
-		border-bottom-color: var(--pd-nav-cyan, #06b6d4);
-		color: #e2e8f0;
+		border-bottom-color: #14b8a6;
+		color: #14b8a6;
+		background: rgba(20, 184, 166, 0.05);
 	}
 
 	.logistics-team-label {

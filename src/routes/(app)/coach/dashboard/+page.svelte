@@ -5,7 +5,6 @@
 	import DashboardArena from './DashboardArena.svelte';
 	import ClearanceGate from './ClearanceGate.svelte';
 	import CoachTeamRosterPanel from '$lib/coach/logistics/CoachTeamRosterPanel.svelte';
-	import HalftimeChoicePlanner from '$lib/components/coach/halftime-choice-planner.svelte';
 	import Icon from '$lib/components/ui/Icon.svelte';
 
 	const engine = new DashboardEngine();
@@ -134,11 +133,7 @@
 						</p>
 					</div>
 
-					<!-- Match Day Integration -->
-					<div class="st-bento match-day-panel vanguard-surface tw-rounded-none tw-border tw-border-slate-700 tw-bg-slate-900/80 tw-p-4 tw-min-w-0" style="background: #0f172a;">
-						<h3 class="tw-text-xs tw-text-[#14b8a6] tw-mb-4 tw-uppercase tw-tracking-widest tw-min-w-0" style="font-family: 'Geist Sans', sans-serif;">Match Day Integration</h3>
-						<HalftimeChoicePlanner ageGroup={14} />
-					</div>
+					<!-- SIEM & Intelligence Feed -->
 				</div>
 			</section>
 		</main>

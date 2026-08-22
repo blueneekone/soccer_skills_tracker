@@ -34,7 +34,7 @@
 	/** @type {Record<string, string>} */
 	const STATUS_COLORS = {
 		READY: '#14b8a6',
-		FATIGUED: '#ffff00',
+		FATIGUED: '#daff0a',
 		INJURED: '#ff003c',
 		SUSPENDED: '#ff6600',
 		OFFLINE: '#666666',
@@ -51,10 +51,10 @@
 	);
 	const SKILL_LABELS = ['PAC', 'SHO', 'PAS', 'DRI', 'DEF', 'PHY'];
 	const staminaColor = $derived(
-		player ? (player.stamina >= 70 ? '#14b8a6' : player.stamina >= 40 ? '#ffff00' : '#ff003c') : '#14b8a6',
+		player ? (player.stamina >= 70 ? '#14b8a6' : player.stamina >= 40 ? '#daff0a' : '#ff003c') : '#14b8a6',
 	);
 	const hrColor = $derived(
-		player ? (player.hr <= 80 ? '#14b8a6' : player.hr <= 100 ? '#ffff00' : '#ff003c') : '#14b8a6',
+		player ? (player.hr <= 80 ? '#14b8a6' : player.hr <= 100 ? '#daff0a' : '#ff003c') : '#14b8a6',
 	);
 
 	/** @type {Array<{ name: string, status: string }>} */

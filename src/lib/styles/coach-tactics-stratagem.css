@@ -402,10 +402,10 @@
 	color: #64748b;
 }
 
-/* Exit control — Z4 chrome */
+/* Exit control — Z4 chrome (positioned top-left to avoid colliding with top-right HUD Help panel) */
 .coach-os-root .coach-tactics-shell .coach-tac-exit {
 	position: absolute;
 	top: 0.75rem;
-	right: 0.75rem;
+	left: 0.75rem;
 	z-index: 1060;
 }
