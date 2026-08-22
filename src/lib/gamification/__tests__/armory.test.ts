@@ -36,11 +36,39 @@ describe('armory — getAvailableItems', () => {
 		expect(getAvailableItems(undefined)).toEqual([]);
 		expect(getAvailableItems(NaN)).toEqual([]);
 		expect(getAvailableItems('invalid')).toEqual([]);
+		expect(getAvailableItems(true)).toEqual(getAvailableItems(1));
+		expect(getAvailableItems(false)).toEqual([]);
+		expect(getAvailableItems({})).toEqual([]);
+		expect(getAvailableItems([])).toEqual([]);
+		expect(getAvailableItems(Infinity)).toEqual(getAvailableItems(10));
+		expect(getAvailableItems(-Infinity)).toEqual([]);
 	});
 
-	it('does not mutate QUARTERMASTER_INVENTORY and returns a shallow copy', () => {
+	it('tests exact minLevel thresholds and boundary conditions', () => {
+		// minLevels in inventory are 2, 3, 5, 10
+		expect(getAvailableItems(1.99)).toEqual([]);
+		expect(getAvailableItems(2)).toHaveLength(1);
+		expect(getAvailableItems(2.99)).toHaveLength(1);
+		expect(getAvailableItems(3)).toHaveLength(2);
+		expect(getAvailableItems(4.99)).toHaveLength(2);
+		expect(getAvailableItems(5)).toHaveLength(3);
+		expect(getAvailableItems(9.99)).toHaveLength(3);
+		expect(getAvailableItems(10)).toHaveLength(4);
+	});
+
+	it('verifies cost sorting order is strictly non-decreasing across all levels', () => {
+		for (let level = 0; level <= 15; level++) {
+			const items = getAvailableItems(level);
+			for (let i = 0; i < items.length - 1; i++) {
+				expect(items[i].cost).toBeLessThanOrEqual(items[i + 1].cost);
+			}
+		}
+	});
+
+	it('does not mutate QUARTERMASTER_INVENTORY and returns a shallow copy with original references', () => {
 		const result = getAvailableItems(10);
 		expect(result).not.toBe(QUARTERMASTER_INVENTORY);
 		expect(Object.isFrozen(QUARTERMASTER_INVENTORY)).toBe(true);
+		expect(result[0]).toBe(QUARTERMASTER_INVENTORY.find((i) => i.id === result[0].id));
 	});
 });
