@@ -24,7 +24,7 @@
 		{ prefix: '/admin/users',                 label: 'Add User',       icon: 'user.plus',           href: '/admin/users' },
 		{ prefix: '/admin',                       label: 'Overview',       icon: 'data.chart-line',     href: '/admin/overview' },
 		{ prefix: '/coach/forge',                 label: 'Create Drill',   icon: 'game.dumbbell',       href: '/coach/forge' },
-		{ prefix: '/coach/match-day',             label: 'Log Match',      icon: 'data.activity',       href: '/coach/match-day' },
+		{ prefix: '/coach/matchday',              label: 'Log Match',      icon: 'data.activity',       href: '/coach/matchday' },
 	];
 
 	let { pathname }: Props = $props();

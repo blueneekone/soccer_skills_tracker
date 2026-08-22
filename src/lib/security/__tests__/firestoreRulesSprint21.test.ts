@@ -33,4 +33,14 @@ describe('Sprint 2.1 — Firestore rules structure', () => {
 		expect(consentsBlock).not.toBeNull();
 		expect(consentsBlock![0]).not.toMatch(/allow write: if true/);
 	});
+
+	it('restricts team_workouts write permissions to coaches and directors', () => {
+		expect(RULES).toMatch(/match \/team_workouts\/\{workoutId\}/);
+		expect(RULES).toMatch(
+			/match \/team_workouts\/\{workoutId\}[\s\S]*?allow read: if isAuthenticated\(\);[\s\S]*?allow write: if isCoach\(\) \|\| isDirector\(\);/,
+		);
+		const workoutsBlock = RULES.match(/match \/team_workouts\/\{workoutId\}[\s\S]*?(?=match \/|$)/);
+		expect(workoutsBlock).not.toBeNull();
+		expect(workoutsBlock![0]).not.toMatch(/allow read,\s*write:\s*if\s*isAuthenticated\(\);/);
+	});
 });

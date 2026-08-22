@@ -19,7 +19,7 @@
 			<Icon name="user.group" size={14} class="tw-text-slate-400 group-hover:tw-text-[#14b8a6]" />
 			<span>TEAM OPS</span>
 		</a>
-		<a href="/coach/match-day" class="vanguard-panel dashboard-card tw-flex tw-items-center tw-justify-center tw-gap-2 tw-text-center tw-p-3 tw-font-mono tw-font-bold tw-text-[10px] tw-uppercase tw-tracking-widest tw-text-slate-400 hover:tw-text-[#14b8a6] tw-transition-colors tw-no-underline" style="border-radius: 0px !important;">
+		<a href="/coach/matchday" class="vanguard-panel dashboard-card tw-flex tw-items-center tw-justify-center tw-gap-2 tw-text-center tw-p-3 tw-font-mono tw-font-bold tw-text-[10px] tw-uppercase tw-tracking-widest tw-text-slate-400 hover:tw-text-[#14b8a6] tw-transition-colors tw-no-underline" style="border-radius: 0px !important;">
 			<Icon name="data.activity" size={14} class="tw-text-slate-400 group-hover:tw-text-[#14b8a6]" />
 			<span>MATCH DAY</span>
 		</a>
