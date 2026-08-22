@@ -259,19 +259,34 @@ service cloud.firestore {
       allow create, update, delete: if false;
     }
 
+    function isClubStaff() {
+      return isAuthenticated() && (
+        request.auth.token.role == 'director' ||
+        request.auth.token.role == 'coach' ||
+        request.auth.token.role == 'registrar' ||
+        isGlobalAdmin()
+      );
+    }
+
     match /tryout_programs/{programId} {
-      allow read, write: if isAuthenticated();
+      allow read: if isGlobalAdmin() || (isClubStaff() && request.auth.token.clubId != null && resource.data.clubId == request.auth.token.clubId);
+      allow write: if isGlobalAdmin();
+
       match /registrations/{registrationId} {
-        allow read, write: if isAuthenticated();
+        allow read: if isGlobalAdmin() || (isClubStaff() && request.auth.token.clubId != null && get(/databases/$(database)/documents/tryout_programs/$(programId)).data.clubId == request.auth.token.clubId);
+        allow write: if isGlobalAdmin();
       }
       match /sessions/{sessionId} {
-        allow read, write: if isAuthenticated();
+        allow read: if isGlobalAdmin() || (isClubStaff() && request.auth.token.clubId != null && get(/databases/$(database)/documents/tryout_programs/$(programId)).data.clubId == request.auth.token.clubId);
+        allow write: if isGlobalAdmin();
       }
       match /evaluations/{registrationId} {
-        allow read, write: if isAuthenticated();
+        allow read: if isGlobalAdmin() || (isClubStaff() && request.auth.token.clubId != null && get(/databases/$(database)/documents/tryout_programs/$(programId)).data.clubId == request.auth.token.clubId);
+        allow write: if isGlobalAdmin();
       }
       match /comms/{commId} {
-        allow read, write: if isAuthenticated();
+        allow read: if isGlobalAdmin() || (isClubStaff() && request.auth.token.clubId != null && get(/databases/$(database)/documents/tryout_programs/$(programId)).data.clubId == request.auth.token.clubId);
+        allow write: if isGlobalAdmin();
       }
     }
 
