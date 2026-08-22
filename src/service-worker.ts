@@ -90,7 +90,7 @@ const PRECACHE: string[] = [...build, ...files];
 /** Lookup set for O(1) membership checks in the fetch handler. */
 const PRECACHE_SET = new Set(PRECACHE);
 
-const OFFLINE_ROUTES = ['/coach/match-day', '/director/scan'];
+const OFFLINE_ROUTES = ['/coach/matchday', '/coach/match-day', '/director/scan'];
 
 function isOfflineRoute(url: URL): boolean {
 	const p = url.pathname.toLowerCase();
