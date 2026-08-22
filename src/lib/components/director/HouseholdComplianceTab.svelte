@@ -58,7 +58,7 @@
 			type="text"
 			bind:value={searchQuery}
 			placeholder="Search households by parent name or email..."
-			class="tw-block tw-w-full tw-pl-10 tw-pr-3 tw-py-2 tw-border tw-border-[#334155] tw-rounded-md tw-bg-[#0f172a] tw-text-sm tw-text-white tw-placeholder-slate-400 focus:tw-outline-none focus:tw-ring-1 focus:tw-ring-teal-500 focus:tw-border-teal-500"
+			class="tw-block tw-w-full tw-pl-10 tw-pr-3 tw-py-2 tw-border tw-border-[#334155] tw-rounded-none tw-bg-[#0f172a] tw-text-sm tw-text-white tw-placeholder-slate-400 focus:tw-outline-none focus:tw-ring-1 focus:tw-ring-teal-500 focus:tw-border-teal-500"
 		/>
 	</div>
 

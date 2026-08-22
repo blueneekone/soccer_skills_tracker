@@ -94,7 +94,7 @@
 			</p>
 		</div>
 		{#if !loading && !err && seatsLimit > 0}
-			<span class="tw-tabular-nums tw-text-sm tw-font-bold tw-rounded-lg tw-px-3 tw-py-1 ent-badge">
+			<span class="tw-tabular-nums tw-text-sm tw-font-bold tw-rounded-none tw-px-3 tw-py-1 ent-badge">
 				{activeSeats} active · {reservedSeats} reserved · {seatsLimit} cap
 			</span>
 		{/if}
@@ -107,7 +107,7 @@
 			seat numbers are kept here for historical reference only.
 		</p>
 	{:else if loading}
-		<div class="tw-h-3 tw-rounded-full tw-animate-pulse ent-skeleton" aria-hidden="true"></div>
+		<div class="tw-h-3 tw-rounded-none tw-animate-pulse ent-skeleton" aria-hidden="true"></div>
 	{:else if clubInfinite}
 		<p class="tw-m-0 tw-text-sm ent-muted">
 			<strong>Unlimited enterprise license (promo).</strong> Seat metering and Stripe read-only rules are bypassed

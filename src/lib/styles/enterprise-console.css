@@ -439,12 +439,17 @@ html.dark .ec-sidebar__system {
 }
 
 .ec-nav-link:hover {
-	background: rgba(0, 0, 0, 0.05);
-	color: var(--text-primary);
+	background: rgba(20, 184, 166, 0.08);
+	color: #14b8a6;
+	outline: 1px solid rgba(6, 182, 212, 0.4);
+	box-shadow: 0 0 10px rgba(6, 182, 212, 0.2);
 }
 
 html.dark .ec-nav-link:hover {
-	background: rgba(255, 255, 255, 0.06);
+	background: rgba(20, 184, 166, 0.08);
+	color: #14b8a6;
+	outline: 1px solid rgba(6, 182, 212, 0.4);
+	box-shadow: 0 0 10px rgba(6, 182, 212, 0.2);
 }
 
 .ec-nav-link--active {
@@ -1644,7 +1649,10 @@ html.dark .ec-sidebar .ec-nav-link--active :global(svg) {
 }
 
 html.dark .ec-sidebar .ec-nav-link:hover:not(.ec-nav-link--active) {
-	background: rgba(255, 255, 255, 0.06);
+	background: rgba(20, 184, 166, 0.08);
+	color: #14b8a6;
+	outline: 1px solid rgba(6, 182, 212, 0.4);
+	box-shadow: 0 0 10px rgba(6, 182, 212, 0.2);
 }
 
 html.dark .ec-topbar {

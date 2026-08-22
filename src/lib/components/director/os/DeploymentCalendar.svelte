@@ -286,7 +286,7 @@
 		{#if canManage}
 			<button
 				type="button"
-				class="tw-inline-flex tw-shrink-0 tw-items-center tw-gap-2 tw-rounded-lg tw-border tw-border-emerald-500/40 tw-bg-emerald-950/35 tw-px-3 tw-py-2 tw-text-[10px] tw-font-bold tw-uppercase tw-tracking-wider tw-text-emerald-300 tw-shadow-[0_0_20px_rgba(52,211,153,0.12)] tw-transition hover:tw-border-emerald-400/60 hover:tw-bg-emerald-950/60 hover:tw-shadow-[0_0_28px_rgba(52,211,153,0.18)]"
+				class="tw-inline-flex tw-shrink-0 tw-items-center tw-gap-2 tw-rounded-none tw-border tw-border-emerald-500/40 tw-bg-emerald-950/35 tw-px-3 tw-py-2 tw-text-[10px] tw-font-bold tw-uppercase tw-tracking-wider tw-text-emerald-300 tw-shadow-[0_0_20px_rgba(52,211,153,0.12)] tw-transition hover:tw-border-emerald-400/60 hover:tw-bg-emerald-950/60 hover:tw-shadow-[0_0_28px_rgba(52,211,153,0.18)]"
 				onclick={openModal}
 			>
 				<Icon name="status.circle-plus" />
@@ -305,7 +305,7 @@
 		<p class="tw-m-0 tw-p-4 tw-text-sm tw-text-red-400">{listErr}</p>
 	{:else if rows.length === 0}
 		<div
-			class="tw-mx-3 tw-my-4 tw-rounded-xl tw-border tw-border-dashed tw-border-slate-700/80 tw-bg-black/25 tw-px-4 tw-py-10 tw-text-center"
+			class="tw-mx-3 tw-my-4 tw-rounded-none tw-border tw-border-dashed tw-border-slate-700/80 tw-bg-black/25 tw-px-4 tw-py-10 tw-text-center"
 		>
 			<p class="tw-m-0 tw-text-sm tw-font-semibold tw-tracking-tight tw-text-slate-200">
 				No deployments scheduled
@@ -318,7 +318,7 @@
 		<div class="dep-cal-list tw-flex tw-flex-col tw-gap-2 tw-p-3 tw-pb-4">
 			{#each rows as row (row.id)}
 				<article
-					class="dep-cal-card group tw-relative tw-flex tw-min-h-[88px] tw-flex-col tw-gap-1.5 tw-overflow-hidden tw-rounded-xl tw-border tw-border-slate-800/90 tw-bg-gradient-to-br tw-from-slate-950/90 tw-to-slate-900/70 tw-p-3 tw-pl-4 tw-shadow-inner tw-transition tw-duration-200 hover:tw-bg-slate-800/50 hover:tw-shadow-[0_8px_32px_rgba(0,0,0,0.35)] {kindAccent(
+					class="dep-cal-card group tw-relative tw-flex tw-min-h-[88px] tw-flex-col tw-gap-1.5 tw-overflow-hidden tw-rounded-none tw-border tw-border-slate-800/90 tw-bg-gradient-to-br tw-from-slate-950/90 tw-to-slate-900/70 tw-p-3 tw-pl-4 tw-shadow-inner tw-transition tw-duration-200 hover:tw-bg-slate-800/50 hover:tw-shadow-[0_8px_32px_rgba(0,0,0,0.35)] {kindAccent(
 						row.kind,
 					)}"
 				>
@@ -376,7 +376,7 @@
 	</div>
 {:else}
 	<section
-		class="tw-mb-4 tw-rounded-xl tw-border tw-border-slate-700/80 tw-bg-slate-950 tw-p-4 tw-shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]"
+		class="tw-mb-4 tw-rounded-none tw-border tw-border-slate-700/80 tw-bg-slate-950 tw-p-4 tw-shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]"
 		aria-labelledby="dep-cal-head"
 	>
 		{@render depCalHead()}
@@ -443,7 +443,7 @@
 		onclick={(e) => e.target === e.currentTarget && closeModal()}
 	>
 		<div
-			class="tw-w-full tw-max-w-md tw-rounded-xl tw-border tw-border-slate-700 tw-bg-slate-950 tw-p-5 tw-shadow-[0_24px_80px_rgba(0,0,0,0.65)]"
+			class="tw-w-full tw-max-w-md tw-rounded-none tw-border tw-border-slate-700 tw-bg-slate-950 tw-p-5 tw-shadow-[0_24px_80px_rgba(0,0,0,0.65)]"
 			role="dialog"
 			aria-modal="true"
 			aria-labelledby="dep-modal-title"

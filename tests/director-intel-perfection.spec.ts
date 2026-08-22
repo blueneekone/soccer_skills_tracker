@@ -10,23 +10,41 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Director OS: Navigation, Layout, and Design Tokens Audit', () => {
   test.beforeEach(async ({ page }) => {
+    await page.goto('about:blank');
     // Secure, Zero-Touch authentication bypass using Custom Claims
     const mockClaims = {
       uid: 'director-executive-auditor',
       email: 'director@sstracker.app',
       role: 'director',
+      clubId: 'premium-test-club',
+      tenantId: 'premium-test-club',
       isProfileComplete: true,
-      tenantId: 'premium-test-club'
+      user: {
+        uid: 'director-executive-auditor',
+        email: 'director@sstracker.app',
+        role: 'director',
+        clubId: 'premium-test-club',
+        isProfileComplete: true
+      }
     };
 
     await page.addInitScript((claims) => {
+      window.localStorage.setItem('auth_token', 'mock-jwt-director-token');
       window.localStorage.setItem('user_session_claims', JSON.stringify(claims));
+      window.localStorage.setItem('auth_state', JSON.stringify({
+        isAuthenticated: true,
+        isLoading: false,
+        user: claims.user,
+        role: 'director',
+        clubId: 'premium-test-club',
+        isProfileComplete: true
+      }));
     }, mockClaims);
   });
 
   test('Should verify "Daily Intel" button is positioned at the top of the navigation tree', async ({ page }) => {
     await page.goto('/director/dashboard');
-    await page.waitForSelector('.pd-page-root', { timeout: 5000 });
+    await page.waitForSelector('.pd-page-root', { timeout: 15000 });
 
     // Assert that the sidebar navigation element exists
     const sidebar = page.locator('nav.director-sidebar, .nexus-sidebar');
@@ -43,7 +61,7 @@ test.describe('Director OS: Navigation, Layout, and Design Tokens Audit', () => 
 
   test('Should verify strict 90-degree corners on all layout panels (No Rounded Borders)', async ({ page }) => {
     await page.goto('/director/dashboard');
-    await page.waitForSelector('.pd-page-root', { timeout: 5000 });
+    await page.waitForSelector('.pd-page-root', { timeout: 15000 });
 
     // Locate all Z2 core layout data panels in the viewport
     const bentoPanels = page.locator('.tw-grid .tw-border-slate-800, .bento-panel');

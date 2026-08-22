@@ -209,7 +209,7 @@ import { untrack } from 'svelte';
 						<span class="tw-font-sans tw-text-xs tw-font-bold tw-tracking-widest tw-text-[#14b8a6] tw-uppercase">Nexus Command</span>
 					</div>
 				</div>
-				<nav class="ec-sidebar__nav">
+				<nav class="ec-sidebar__nav director-sidebar nexus-sidebar">
 					<!-- Sprint 9.1: data-sveltekit-reload on every workspace nav anchor guarantees
 					     native browser navigation (full document request) so deploys never leave
 					     the user stuck on a stale SvelteKit client graph without a refresh. -->

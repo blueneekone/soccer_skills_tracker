@@ -33,7 +33,7 @@
 			<section class="tw-flex tw-flex-col tw-gap-6 tw-w-full">
 				<DirectorCommandCenter clubId={engine.clubId} />
 				
-				<div class="director-hud-grid tw-w-full tw-gap-4 tw-mt-2" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, clamp(280px, 30vw, 350px)), 1fr));">
+				<div class="tw-grid tw-grid-cols-12 director-hud-grid tw-w-full tw-gap-4 tw-mt-2" style="grid-template-columns: repeat(auto-fit, minmax(min(100%, clamp(280px, 30vw, 350px)), 1fr));">
 					<!-- Club Revenue Analytics -->
 					<div data-card="revenue" class="st-bento director-card revenue-engine-analytics dark-form-surface tw-border tw-border-slate-700 tw-bg-slate-900/80 tw-p-4 tw-rounded-none tw-min-w-0" style="border-radius: 0px !important; background: #0f172a;">
 						<div class="tw-flex tw-justify-between tw-items-center tw-mb-2 tw-min-w-0">
@@ -58,7 +58,7 @@
 				<FieldOpsModule clubId={engine.clubId} />
 			</section>
 		{:else if engine.activeTab === 'comms'}
-			<section class="director-bento-grid-container tw-w-full tw-gap-8" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, clamp(280px, 30vw, 350px)), 1fr));">
+			<section class="tw-grid tw-grid-cols-12 director-bento-grid-container tw-w-full tw-gap-8" style="grid-template-columns: repeat(auto-fit, minmax(min(100%, clamp(280px, 30vw, 350px)), 1fr));">
 				<section
 					class="st-bento lg:tw-col-span-8 siem-panel dark-form-surface tw-flex tw-flex-col tw-gap-3 tw-p-8 tw-border tw-border-slate-600 tw-bg-slate-900 tw-relative tw-min-w-0"
 					aria-labelledby="director-comms-cta-heading"

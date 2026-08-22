@@ -70,7 +70,7 @@
 	{:else}
 		<ul class="tw-m-0 tw-p-0 tw-list-none tw-flex tw-flex-col tw-gap-2">
 			{#each invites as inv (inv.id)}
-				<li class="tw-rounded-xl tw-px-3 tw-py-2 tw-text-xs tw-font-medium tw-border pil-invite-row">
+				<li class="tw-rounded-none tw-px-3 tw-py-2 tw-text-xs tw-font-medium tw-border pil-invite-row">
 					<div class="tw-flex tw-flex-wrap tw-justify-between tw-gap-2">
 						<span class="tw-font-bold tw-break-all">{inv.coachEmail}</span>
 						<span class="tw-tabular-nums tw-text-[11px] tw-font-bold pil-muted">
