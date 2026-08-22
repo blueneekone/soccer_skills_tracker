@@ -146,7 +146,8 @@ service cloud.firestore {
     }
 
     match /team_workouts/{workoutId} {
-      allow read, write: if isAuthenticated();
+      allow read: if isAuthenticated();
+      allow write: if isCoach() || isDirector();
 
       match /rsvps/{playerEmail} {
         allow read: if teamWorkoutRsvpReadOk();
