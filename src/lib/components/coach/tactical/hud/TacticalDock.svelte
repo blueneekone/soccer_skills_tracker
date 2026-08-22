@@ -71,6 +71,60 @@
 			</button>
 		{/each}
 
+		<button
+			type="button"
+			class="coach-tac-z4-btn {dockMode === 'draw' && model.routeDrawKind === 'cut' ? 'coach-tac-z4-btn--active' : ''}"
+			onclick={() => {
+				dockMode = 'draw';
+				model.setActiveTool('ROUTE');
+				model.routeDrawKind = 'cut';
+			}}
+		>
+			PLAYER RUN
+		</button>
+
+		<button
+			type="button"
+			class="coach-tac-z4-btn {dockMode === 'draw' && model.routeDrawKind === 'pass' ? 'coach-tac-z4-btn--active' : ''}"
+			onclick={() => {
+				dockMode = 'draw';
+				model.setActiveTool('ROUTE');
+				model.routeDrawKind = 'pass';
+			}}
+		>
+			BALL PASS
+		</button>
+
+		<button
+			type="button"
+			class="coach-tac-z4-btn {model.isOpponentDeployActive ? 'coach-tac-z4-btn--active' : ''}"
+			onclick={() => {
+				model.isOpponentDeployActive = !model.isOpponentDeployActive;
+			}}
+		>
+			OP DEPLOY
+		</button>
+
+		<select
+			class="position-deploy-selector tw-bg-[#0f172a] tw-text-[#fbbf24] tw-border tw-border-slate-700 tw-px-2 tw-py-1 tw-text-xs tw-font-mono"
+			style="border-radius: 0px;"
+			bind:value={model.selectedOpponentPosition}
+			onchange={() => {
+				model.isOpponentDeployActive = true;
+			}}
+		>
+			<option value="GK">GK</option>
+			<option value="CB">CB</option>
+			<option value="CDM">CDM</option>
+			<option value="LWB">LWB</option>
+			<option value="ST">ST</option>
+			<option value="LB">LB</option>
+			<option value="RB">RB</option>
+			<option value="CM">CM</option>
+			<option value="LW">LW</option>
+			<option value="RW">RW</option>
+		</select>
+
 		<span class="coach-tac-z4-divider" aria-hidden="true"></span>
 
 		<button

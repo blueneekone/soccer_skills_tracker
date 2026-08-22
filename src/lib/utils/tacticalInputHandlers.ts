@@ -133,14 +133,21 @@ export function executePointerMove(ev: PointerEvent, host: TacticalPointerHost) 
 export function executePointerDown(ev: MouseEvent | TouchEvent | PointerEvent, host: TacticalPointerHost) {
 	if (host.anchorDrag()) return;
 	const tgt = ev.target as EventTarget | null;
-	const hitRoute = tgt && (tgt as Element).closest?.('[data-route-hit]');
-	if (hitRoute) return;
-	const hitAnchor = tgt && (tgt as Element).closest?.('[data-anchor-hit]');
-	if (hitAnchor) return;
-
 	const onDisc = tgt && (tgt as Element).closest?.('[data-light-disc]');
 
+	if (host.isOpponentDeployActive?.() && !onDisc) {
+		const raw = host.clientToSvg(ev);
+		const p = host.clampToPitch(raw.x, raw.y);
+		host.deployOpponentTokenAt?.(p);
+		return;
+	}
+
 	if (host.warRoomTool() === 'DRAG') {
+		const hitRoute = tgt && (tgt as Element).closest?.('[data-route-hit]');
+		if (hitRoute) return;
+		const hitAnchor = tgt && (tgt as Element).closest?.('[data-anchor-hit]');
+		if (hitAnchor) return;
+
 		host.setSelectedRouteId(null);
 		const pe = 'pointerId' in ev ? (ev as PointerEvent) : undefined;
 		const primary = !pe || pe.pointerType !== 'mouse' || pe.button === 0;
@@ -166,7 +173,6 @@ export function executePointerDown(ev: MouseEvent | TouchEvent | PointerEvent, h
 
 	if (host.selectedRouteId() !== null) {
 		host.setSelectedRouteId(null);
-		return;
 	}
 
 	const raw = host.clientToSvg(ev);

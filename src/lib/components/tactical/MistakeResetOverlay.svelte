@@ -25,14 +25,17 @@
 
   // Defensive lifecycle logging using untrack to isolate execution
   $effect(() => {
+    function handleMistakeEvent() {
+      isMistakeActive = true;
+    }
+    window.addEventListener('simulate-out-of-bounds-drag', handleMistakeEvent);
+    window.addEventListener('sstracker-route-mistake', handleMistakeEvent);
+
     if (isMistakeActive) {
       untrack(() => {
         console.log("🧠 [SSTracker EQ Compliance] Encouragement banner active. Rendering 'Practice makes progress'.");
         showToast = true;
         clearTimeout(toastTimer);
-        toastTimer = setTimeout(() => {
-          showToast = false;
-        }, 2500);
       });
     } else {
       untrack(() => {
@@ -40,6 +43,11 @@
         clearTimeout(toastTimer);
       });
     }
+
+    return () => {
+      window.removeEventListener('simulate-out-of-bounds-drag', handleMistakeEvent);
+      window.removeEventListener('sstracker-route-mistake', handleMistakeEvent);
+    };
   });
 
   // Action dispatcher (under 80 lines)
@@ -48,33 +56,22 @@
     setTimeout(() => {
       onReset();
       isMistakeActive = false;
+      showToast = false;
       isRippling = false;
-    }, 300);
+    }, 150);
   }
 </script>
 
 {#if isMistakeActive}
-  <!-- The 90-degree Atompunk physical reset button (SVG 3D Bevel) centered on screen -->
+  <!-- Strict 90-degree Atompunk reset button -->
   <div class="tw-absolute tw-inset-0 tw-flex tw-items-center tw-justify-center tw-z-50 tw-pointer-events-none" transition:fade={{ duration: 150 }}>
     <button
       type="button"
       onclick={handleReset}
-      class="tw-pointer-events-auto tw-relative tw-w-24 tw-h-24 tw-rounded-full tw-focus:outline-none"
+      class="tw-pointer-events-auto tw-bg-[#0f172a] tw-border tw-border-[#fbbf24] tw-text-[#fbbf24] tw-px-6 tw-py-3 tw-font-mono tw-text-sm tw-font-bold tw-tracking-widest hover:tw-bg-[#fbbf24]/20 tw-transition-colors tw-shadow-[0_0_20px_rgba(251,191,36,0.3)]"
+      style="border-radius: 0px;"
     >
-      <svg viewBox="0 0 100 100" class="tw-w-full tw-h-full tw-drop-shadow-lg">
-        <!-- Base Drop Shadow / Bevel -->
-        <circle cx="50" cy="52" r="45" fill="#b45309" />
-        <!-- Main Button Surface -->
-        <circle cx="50" cy="50" r="45" fill="#fbbf24" class="hover:tw-fill-[#f59e0b] tw-transition-colors" />
-        <!-- Inner Bevel Highlight -->
-        <circle cx="50" cy="50" r="40" fill="none" stroke="#fcd34d" stroke-width="2" opacity="0.5" />
-        <!-- Icon / Text -->
-        <path d="M 35 50 A 15 15 0 1 1 65 50 A 15 15 0 0 1 35 50" fill="none" stroke="#0a0a0a" stroke-width="4" stroke-dasharray="70 20" stroke-linecap="round" />
-        <polygon points="60,45 70,50 60,55" fill="#0a0a0a" />
-      </svg>
-      {#if isRippling}
-        <div class="tw-absolute tw-inset-0 tw-rounded-full tw-bg-white tw-animate-ping tw-opacity-75"></div>
-      {/if}
+      [ RESET DRILL ]
     </button>
   </div>
 {/if}

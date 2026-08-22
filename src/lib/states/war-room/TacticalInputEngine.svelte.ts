@@ -73,6 +73,9 @@ export interface TacticalPointerHost {
 	teardownAnchorDrag(): void;
 	routeBodyCapture: CapturePair;
 	pitchDragCapture: CapturePair;
+	isOpponentDeployActive?(): boolean;
+	selectedOpponentPosition?(): string;
+	deployOpponentTokenAt?(p: { x: number; y: number }, posOverride?: string): void;
 	pitchSvgEl: SVGSVGElement | undefined;
 }
 

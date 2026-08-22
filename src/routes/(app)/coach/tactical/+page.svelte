@@ -27,7 +27,7 @@ import { untrack } from 'svelte';
   below command palette(9999) so Cmd+K remains accessible.
 -->
 <div
-	class="coach-tactics-shell tw-fixed tw-inset-0 tw-overflow-hidden tw-font-mono"
+	class="coach-tactics-shell pd-page-root tw-fixed tw-inset-0 tw-overflow-hidden tw-font-mono"
 	style="z-index: 1050;"
 	in:scale={{ duration: 350, start: 0.97, easing: quintOut }}
 >
