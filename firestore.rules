@@ -261,18 +261,34 @@ service cloud.firestore {
     }
 
     match /tryout_programs/{programId} {
-      allow read, write: if isAuthenticated();
+      allow read: if isGlobalAdmin() || (isAuthenticated() && request.auth.token.clubId != null && (resource == null || resource.data.clubId == request.auth.token.clubId));
+      allow create: if isGlobalAdmin() || ((isDirector() || isCoach()) && request.auth.token.clubId != null && request.resource.data.clubId == request.auth.token.clubId);
+      allow update: if isGlobalAdmin() || ((isDirector() || isCoach()) && request.auth.token.clubId != null && resource.data.clubId == request.auth.token.clubId && (!('clubId' in request.resource.data) || request.resource.data.clubId == request.auth.token.clubId));
+      allow delete: if isGlobalAdmin() || ((isDirector() || isCoach()) && request.auth.token.clubId != null && resource.data.clubId == request.auth.token.clubId);
+
       match /registrations/{registrationId} {
-        allow read, write: if isAuthenticated();
+        allow read: if isGlobalAdmin() || (isAuthenticated() && request.auth.token.clubId != null && (resource == null || resource.data.clubId == request.auth.token.clubId || get(/databases/$(database)/documents/tryout_programs/$(programId)).data.clubId == request.auth.token.clubId));
+        allow create: if isGlobalAdmin() || ((isDirector() || isCoach()) && request.auth.token.clubId != null && (request.resource.data.clubId == request.auth.token.clubId || get(/databases/$(database)/documents/tryout_programs/$(programId)).data.clubId == request.auth.token.clubId));
+        allow update: if isGlobalAdmin() || ((isDirector() || isCoach()) && request.auth.token.clubId != null && (resource.data.clubId == request.auth.token.clubId || get(/databases/$(database)/documents/tryout_programs/$(programId)).data.clubId == request.auth.token.clubId) && (!('clubId' in request.resource.data) || request.resource.data.clubId == request.auth.token.clubId));
+        allow delete: if isGlobalAdmin() || ((isDirector() || isCoach()) && request.auth.token.clubId != null && (resource.data.clubId == request.auth.token.clubId || get(/databases/$(database)/documents/tryout_programs/$(programId)).data.clubId == request.auth.token.clubId));
       }
       match /sessions/{sessionId} {
-        allow read, write: if isAuthenticated();
+        allow read: if isGlobalAdmin() || (isAuthenticated() && request.auth.token.clubId != null && (resource == null || resource.data.clubId == request.auth.token.clubId || get(/databases/$(database)/documents/tryout_programs/$(programId)).data.clubId == request.auth.token.clubId));
+        allow create: if isGlobalAdmin() || ((isDirector() || isCoach()) && request.auth.token.clubId != null && (request.resource.data.clubId == request.auth.token.clubId || get(/databases/$(database)/documents/tryout_programs/$(programId)).data.clubId == request.auth.token.clubId));
+        allow update: if isGlobalAdmin() || ((isDirector() || isCoach()) && request.auth.token.clubId != null && (resource.data.clubId == request.auth.token.clubId || get(/databases/$(database)/documents/tryout_programs/$(programId)).data.clubId == request.auth.token.clubId) && (!('clubId' in request.resource.data) || request.resource.data.clubId == request.auth.token.clubId));
+        allow delete: if isGlobalAdmin() || ((isDirector() || isCoach()) && request.auth.token.clubId != null && (resource.data.clubId == request.auth.token.clubId || get(/databases/$(database)/documents/tryout_programs/$(programId)).data.clubId == request.auth.token.clubId));
       }
       match /evaluations/{registrationId} {
-        allow read, write: if isAuthenticated();
+        allow read: if isGlobalAdmin() || (isAuthenticated() && request.auth.token.clubId != null && (resource == null || resource.data.clubId == request.auth.token.clubId || get(/databases/$(database)/documents/tryout_programs/$(programId)).data.clubId == request.auth.token.clubId));
+        allow create: if isGlobalAdmin() || ((isDirector() || isCoach()) && request.auth.token.clubId != null && (request.resource.data.clubId == request.auth.token.clubId || get(/databases/$(database)/documents/tryout_programs/$(programId)).data.clubId == request.auth.token.clubId));
+        allow update: if isGlobalAdmin() || ((isDirector() || isCoach()) && request.auth.token.clubId != null && (resource.data.clubId == request.auth.token.clubId || get(/databases/$(database)/documents/tryout_programs/$(programId)).data.clubId == request.auth.token.clubId) && (!('clubId' in request.resource.data) || request.resource.data.clubId == request.auth.token.clubId));
+        allow delete: if isGlobalAdmin() || ((isDirector() || isCoach()) && request.auth.token.clubId != null && (resource.data.clubId == request.auth.token.clubId || get(/databases/$(database)/documents/tryout_programs/$(programId)).data.clubId == request.auth.token.clubId));
       }
       match /comms/{commId} {
-        allow read, write: if isAuthenticated();
+        allow read: if isGlobalAdmin() || (isAuthenticated() && request.auth.token.clubId != null && (resource == null || resource.data.clubId == request.auth.token.clubId || get(/databases/$(database)/documents/tryout_programs/$(programId)).data.clubId == request.auth.token.clubId));
+        allow create: if isGlobalAdmin() || ((isDirector() || isCoach()) && request.auth.token.clubId != null && (request.resource.data.clubId == request.auth.token.clubId || get(/databases/$(database)/documents/tryout_programs/$(programId)).data.clubId == request.auth.token.clubId));
+        allow update: if isGlobalAdmin() || ((isDirector() || isCoach()) && request.auth.token.clubId != null && (resource.data.clubId == request.auth.token.clubId || get(/databases/$(database)/documents/tryout_programs/$(programId)).data.clubId == request.auth.token.clubId) && (!('clubId' in request.resource.data) || request.resource.data.clubId == request.auth.token.clubId));
+        allow delete: if isGlobalAdmin() || ((isDirector() || isCoach()) && request.auth.token.clubId != null && (resource.data.clubId == request.auth.token.clubId || get(/databases/$(database)/documents/tryout_programs/$(programId)).data.clubId == request.auth.token.clubId));
       }
     }
 
