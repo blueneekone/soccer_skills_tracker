@@ -83,7 +83,18 @@ function resolveTarget() {
   }
 
   const label = functionTarget || kService;
-  throw new Error(`Unknown FUNCTION_TARGET for integrations: ${label}`);
+  throw new UnknownTargetError(label);
 }
 
-module.exports = {resolveTarget, EXPORT_NAMES, LOWER_TO_EXPORT};
+class UnknownTargetError extends Error {
+  /**
+   * @param {string} target
+   */
+  constructor(target) {
+    super(`Unknown FUNCTION_TARGET for integrations: ${target}`);
+    this.name = 'UnknownTargetError';
+    this.target = target;
+  }
+}
+
+module.exports = {resolveTarget, EXPORT_NAMES, LOWER_TO_EXPORT, UnknownTargetError};
