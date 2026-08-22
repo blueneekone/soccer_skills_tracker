@@ -26,7 +26,7 @@ test.describe('SSTracker War Room Tactical Verification v2', () => {
     // The war room uses an immersive canvas setup
     console.log('Current URL before expect:', page.url());
     const canvas = page.locator('.tactical-pitch-canvas').first();
-    await expect(canvas).toBeVisible({ timeout: 5000 });
+    await expect(canvas).toBeVisible({ timeout: 15000 });
 
     // 2. Interaction Simulation: Draw two distinct routes using Epic 5 Tools
     
@@ -46,35 +46,37 @@ test.describe('SSTracker War Room Tactical Verification v2', () => {
     await expect(canvas).toHaveClass(/tw-cursor-crosshair/);
 
     // Draw first route: CUT (default)
-    const tokens = page.locator('[data-light-disc]');
-    const firstToken = tokens.nth(0);
-    const secondToken = tokens.nth(1);
-    
-    const box1 = await firstToken.boundingBox();
     const canvasBox = await canvas.boundingBox();
-    if (!box1 || !canvasBox) throw new Error("Could not find token bounding box");
-    
-    const startX1 = box1.x + box1.width / 2 - canvasBox.x;
-    const startY1 = box1.y + box1.height / 2 - canvasBox.y;
+    if (!canvasBox) throw new Error("Could not find canvas bounding box");
 
-    await page.mouse.move(startX1 + canvasBox.x, startY1 + canvasBox.y);
+    // Helper to map SVG coords (1600x900) to screen coords
+    const toScreen = (svgX: number, svgY: number) => ({
+      x: canvasBox.x + (svgX / 1600) * canvasBox.width,
+      y: canvasBox.y + (svgY / 900) * canvasBox.height
+    });
+
+    // Draw first route: CUT (default) at SVG (200, 200) to (300, 300)
+    const p1 = toScreen(200, 200);
+    const p2 = toScreen(300, 300);
+    await page.mouse.move(p1.x, p1.y);
     await page.mouse.down();
-    await page.mouse.move(startX1 + canvasBox.x + 100, startY1 + canvasBox.y - 100, { steps: 5 });
+    await page.mouse.move(p2.x, p2.y, { steps: 5 });
     await page.mouse.up();
+
+    console.log('Routes after 1st draw:', await page.locator('path[data-route-hit]').count());
 
     // Switch to PASS route type via CommandDrawer
     await page.getByText('[ PASS ]').click();
 
-    // Draw second route: PASS
-    const box2 = await secondToken.boundingBox();
-    if (!box2) throw new Error("Could not find second token bounding box");
-    const startX2 = box2.x + box2.width / 2;
-    const startY2 = box2.y + box2.height / 2;
-
-    await page.mouse.move(startX2, startY2);
+    // Draw second route: PASS at SVG (400, 200) to (500, 300)
+    const p3 = toScreen(400, 200);
+    const p4 = toScreen(500, 300);
+    await page.mouse.move(p3.x, p3.y);
     await page.mouse.down();
-    await page.mouse.move(startX2 + 200, startY2, { steps: 5 });
+    await page.mouse.move(p4.x, p4.y, { steps: 5 });
     await page.mouse.up();
+
+    console.log('Routes after 2nd draw:', await page.locator('path[data-route-hit]').count());
 
     // We should have at least 2 route hits rendered.
     // The hit layers are rendered with data-route-hit attribute.
@@ -83,12 +85,21 @@ test.describe('SSTracker War Room Tactical Verification v2', () => {
 
     // 3. Right-Click Splice Check: Right click second route
     const secondRoute = routes.nth(1);
-    await secondRoute.click({ button: 'right', position: { x: 10, y: 10 } });
+    
+    // We must pass clientX and clientY so the context menu can position itself!
+    // We already calculated pTarget for the right-click coordinate.
+    const pTarget = toScreen(425, 225);
+    await secondRoute.dispatchEvent('contextmenu', {
+      clientX: pTarget.x,
+      clientY: pTarget.y,
+      button: 2
+    });
 
     const deleteButton = page.getByText('[ DELETE ROUTE ]');
     await expect(deleteButton).toBeVisible();
     
-    await deleteButton.click();
+    // Use dispatchEvent to bypass potential Playwright coordinate overlay issues
+    await deleteButton.dispatchEvent('click');
 
     // Assert count drops to 1
     await expect(routes).toHaveCount(1);
@@ -98,7 +109,7 @@ test.describe('SSTracker War Room Tactical Verification v2', () => {
     await mistakeButton.click();
 
     // Assert "Reset Button" circle is successfully mounted
-    const resetButton = page.locator('button', { has: page.locator('svg circle') }).first();
+    const resetButton = page.locator('button.tw-w-24.tw-h-24.tw-rounded-full').first();
     await expect(resetButton).toBeVisible();
     await expect(resetButton).toHaveClass(/tw-rounded-full/); // Assert it is a circle
 

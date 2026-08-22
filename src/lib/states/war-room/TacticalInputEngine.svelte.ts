@@ -49,7 +49,7 @@ export interface TacticalPointerHost {
 	activeDragTrail(): TrailPt[];
 	setActiveDragTrail(v: TrailPt[]): void;
 	activeRouteColor(): string;
-	routeDrawKind(): 'curve' | 'cut';
+	routeDrawKind(): 'curve' | 'cut' | 'pass';
 	selectedRouteId(): string | null;
 	setSelectedRouteId(v: string | null): void;
 	ribbon: RibbonBox;

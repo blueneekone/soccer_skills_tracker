@@ -172,6 +172,7 @@ export function executePointerDown(ev: MouseEvent | TouchEvent | PointerEvent, h
 	const raw = host.clientToSvg(ev);
 	const p = host.clampToPitch(raw.x, raw.y);
 	const mc = midCtrl(p.x, p.y, p.x, p.y);
+	console.log(`[DEBUG] executePointerDown STARTING DRAFT at ${p.x}, ${p.y} with kind: ${host.routeDrawKind()}`);
 	host.setRoutingActive(true);
 	host.setSelectedRouteId(null);
 	host.setRouteDraft({
@@ -214,14 +215,16 @@ export function executePointerUp(ev: PointerEvent, host: TacticalPointerHost, re
 	}
 	const routingActive = host.routingActive();
 	const draft = host.routeDraft();
-	if (routingActive && draft && host.warRoomTool() === 'ROUTE') {
+	if (draft && host.routingActive()) {
+		host.setRoutingActive(false);
 		const raw = host.clientToSvg(ev);
 		const p = host.clampToPitch(raw.x, raw.y);
 		const dock = snapPointToDockingCore(p.x, p.y, [...host.wrBucketPitch(), ...host.wrOppPitch()]);
 		const dx = dock.x - draft.x1;
 		const dy = dock.y - draft.y1;
+		console.log(`[DEBUG] executePointerUp ENDING DRAFT: dx=${dx}, dy=${dy}, hypot=${Math.hypot(dx, dy)}`);
 		if (Math.hypot(dx, dy) > 14) {
-			const id =
+			let id =
 				typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
 					? crypto.randomUUID()
 					: `r-${Date.now()}`;
@@ -230,22 +233,25 @@ export function executePointerUp(ev: PointerEvent, host: TacticalPointerHost, re
 			if (dock.bindPlayerId !== null) bindId = dock.bindPlayerId;
 			else if (!bindId) bindId = host.bindPlayerIdAtRouteStart(draft.x1, draft.y1);
 			const _newRoute = { id, x1: draft.x1, y1: draft.y1, cx: mc.cx, cy: mc.cy, x2: dock.x, y2: dock.y, color: host.activeRouteColor(), bindPlayerId: bindId, pathKind: draft.pathKind ?? host.routeDrawKind(), delay: draft.delay ?? 0 };
+			console.log(`[DEBUG] executePointerUp SAVING ROUTE:`, _newRoute);
 			if (bindId === 'BALL') {
 				const sourceRoute = (host.drawnRoutes() as TacticalRoute[])
 					.map(normalizeRoute)
-					.find(r => Math.hypot(r.x2 - draft.x1, r.y2 - draft.y1) < 25);
+					.find((r) => r.bindPlayerId === 'BALL' && r.id !== id);
 				if (sourceRoute) {
-					_newRoute.delay = sourceRoute.delay + SIM_ROUTE_DURATION_MS;
-					_newRoute.pathKind = 'pass';
 					_newRoute.x1 = sourceRoute.x2;
 					_newRoute.y1 = sourceRoute.y2;
 				}
 			}
-			host.setDrawnRoutes([...host.drawnRoutes(), _newRoute]);
-			host.setSelectedRouteId(id);
+			if (host.warRoomTool() === 'ROUTE') {
+				console.log(`[DEBUG] executePointerUp updating drawnRoutes`);
+				host.setDrawnRoutes([...host.drawnRoutes(), _newRoute]);
+				host.setRouteDraft(null);
+				return anchorCapturePid;
+			}
 		}
+		host.setRouteDraft(null);
 	}
-	host.setRoutingActive(false);
 	host.setRouteDraft(null);
 	return anchorCapturePid;
 }

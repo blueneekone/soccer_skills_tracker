@@ -50,6 +50,7 @@
 		simulatorTime,
 		simulatorIsPlaying,
 		onRouteStrokePointerDown,
+		onRouteClick,
 		onAnchorDown,
 		routingActive,
 		routeDraft,
@@ -146,8 +147,12 @@
 							timelineMs={simulatorTime}
 							{warRoomTool}
 							onPathClick={(e) => {
-								e.stopPropagation();
-								onRouteStrokePointerDown(e, route);
+								if (warRoomTool === 'DRAG') {
+									onRouteClick?.(e, route.id);
+								} else {
+									e.stopPropagation();
+									onRouteStrokePointerDown(e, route);
+								}
 							}}
 							onPathContextMenu={(e) => {
 								onRouteContextMenu?.(e, route.id);
@@ -357,6 +362,7 @@
 				style="left: {routeContextMenuPos.x}px; top: {routeContextMenuPos.y}px; transform: translate(-50%, -120%);"
 				onclick={(e) => {
 					e.stopPropagation();
+					console.log('[DEBUG] Context menu click fired! target:', routeContextMenuTargetId);
 					if (onDeleteRoute) onDeleteRoute(routeContextMenuTargetId);
 				}}
 			>

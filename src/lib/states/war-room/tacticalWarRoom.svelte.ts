@@ -45,16 +45,45 @@ function buildKineticState(
 		const tNow = simulator.currentTime;
 		const dragId = draggingPlayer()?.id ?? null;
 		const routes = routesLive();
-		return allPitchTokens().map((tok) => {
-			if (dragId && tok.id === dragId) return tok;
-			const r = routes.find((x) => x.bindPlayerId === tok.id);
-			if (!r || typeof tok.x !== 'number' || typeof tok.y !== 'number') return tok;
-			const delay = Math.max(0, r.delay ?? 0);
-			const span = Math.max(1, maxT - delay);
-			const uRoute = tNow < delay ? 0 : Math.max(0, Math.min(1, (tNow - delay) / span));
-			const p = sampleRoutePointAt(r, uRoute);
-			return { ...tok, x: p.x, y: p.y };
-		});
+		const tokens = allPitchTokens();
+		
+		const kineticMap = new Map<string, TacticalToken>();
+
+		// Pass 1: Independent Route Interpolation
+		for (const tok of tokens) {
+			const kTok = { ...tok };
+			if (dragId && tok.id === dragId) {
+				// Dragging overrides everything else
+			} else {
+				const r = routes.find((x) => x.bindPlayerId === tok.id);
+				if (r && typeof tok.x === 'number' && typeof tok.y === 'number') {
+					const delay = Math.max(0, r.delay ?? 0);
+					const span = Math.max(1, maxT - delay);
+					const uRoute = tNow < delay ? 0 : Math.max(0, Math.min(1, (tNow - delay) / span));
+					const p = sampleRoutePointAt(r, uRoute);
+					kTok.x = p.x;
+					kTok.y = p.y;
+				}
+			}
+			kineticMap.set(tok.id, kTok);
+		}
+
+		// Pass 2: Attached tokens (e.g. Ball Possession) override position until their pass route begins
+		for (const tok of tokens) {
+			if (tok.attachedTo) {
+				const parent = kineticMap.get(tok.attachedTo);
+				const r = routes.find((x) => x.bindPlayerId === tok.id);
+				const delay = r ? Math.max(0, r.delay ?? 0) : Infinity;
+
+				if (tNow < delay && parent && typeof parent.x === 'number' && typeof parent.y === 'number') {
+					const kTok = kineticMap.get(tok.id)!;
+					kTok.x = parent.x;
+					kTok.y = parent.y;
+				}
+			}
+		}
+
+		return Array.from(kineticMap.values());
 	});
 
 	const timelineNorm = $derived(
@@ -84,7 +113,7 @@ export function createTacticalWarRoom(host: TacticalGridHost) {
 	let pitchSvgEl = $state<SVGSVGElement | undefined>();
 
 	let activeRouteColor = $state('#14b8a6');
-	let routeDrawKind = $state<'curve' | 'cut'>('curve');
+	let routeDrawKind = $state<'curve' | 'cut' | 'pass'>('cut');
 	let showLabels = $state(false);
 	let focusedPlayerId = $state<string | null>(null);
 	function ringColor(player: TacticalToken) {
@@ -250,6 +279,20 @@ export function createTacticalWarRoom(host: TacticalGridHost) {
 
 	function clearPitch() {
 		api.clearPitch(host);
+	}
+
+	function onRouteClick(e: PointerEvent, routeId: string) {
+		e.stopPropagation();
+		if (host.warRoomTool.get() === 'DRAG') {
+			const routes = host.drawnRoutes.get();
+			const r = routes.find((x: any) => x && typeof x === 'object' && x.id === routeId) as TacticalRoute | undefined;
+			if (r) {
+				host.warRoomTool.set('ROUTE');
+				activeRouteColor = r.color ?? '#14b8a6';
+				routeDrawKind = (r.pathKind === 'cut' || r.pathKind === 'pass') ? r.pathKind : 'curve';
+				host.showTacticalOverlay.set(true);
+			}
+		}
 	}
 
 	function injectBall() {
@@ -430,7 +473,9 @@ export function createTacticalWarRoom(host: TacticalGridHost) {
 	}
 
 	function deleteRoute(routeId: string) {
+		console.log('[DEBUG] gridEngine.deleteRoute called with', routeId);
 		api.deleteRoute(host, routeId, () => selectedRouteId, (v) => (selectedRouteId = v));
+		routeContextMenuOpen = false;
 	}
 
 	/** Rewind timeline and restore pitch token x/y from last captured baseline. */
@@ -519,7 +564,7 @@ export function createTacticalWarRoom(host: TacticalGridHost) {
 			}
 		},
 		get routeDrawKind() { return routeDrawKind; },
-		set routeDrawKind(v: 'curve' | 'cut') {
+		set routeDrawKind(v: 'curve' | 'cut' | 'pass') {
 			routeDrawKind = v;
 			if (selectedRouteId) {
 				host.drawnRoutes.set(
@@ -583,6 +628,8 @@ export function createTacticalWarRoom(host: TacticalGridHost) {
 		onTokenContextMenu,
 		onRouteContextMenu,
 		onPitchPointerUpClearLongPress,
+		clearPitch,
+		onRouteClick,
 		recallBench,
 		clearRoutesOnly,
 		injectBall,

@@ -8,6 +8,8 @@ export type TacticalToken = {
 	x?: number;
 	y?: number;
 	side?: 'friendly' | 'opponent';
+	isBall?: boolean;
+	attachedTo?: string;
 };
 
 /** Quadratic or cut polyline route with optional bound player. */

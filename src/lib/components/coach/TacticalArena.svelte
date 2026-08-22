@@ -60,6 +60,7 @@
 			routeContextMenuTargetId={model.routeContextMenuTargetId}
 			onDeleteRoute={model.deleteRoute}
 			handleSvgClick={model.handleSvgClick}
+			onRouteClick={model.onRouteClick}
 			setHoveredRouteId={model.setHoveredRouteId}
 			setHoveredDiscId={model.setHoveredDiscId}
 			setFocusedPlayerId={model.setFocusedPlayerId}
