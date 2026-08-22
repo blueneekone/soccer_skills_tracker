@@ -23,21 +23,43 @@
 	let impersonating = $state('');
 
 	async function doImpersonate(item: any) {
-    if (!db || !authStore.isAuthenticated) return;
+		if (!db || !authStore.isAuthenticated) return;
+
+		if (item.role === 'super_admin' || item.role === 'global_admin') {
+			alert('Cannot impersonate another global admin.');
+			return;
+		}
+		if (item.id === authStore.user?.uid || (item.name && item.name.toLowerCase() === (authStore.user?.email || '').toLowerCase())) {
+			alert('Cannot impersonate your own account.');
+			return;
+		}
+
 		const ok = confirm(`Begin impersonation session as ${item.name}?`);
 		if (!ok) return;
 
 		impersonating = item.id;
 		try {
 			const res = await impersonateUserFn({ targetUid: item.id, targetEmail: item.name });
-			const payload = (res.data || {}) as { customToken?: string };
-			if (!payload.customToken) throw new Error('Token missing.');
-			await signInWithCustomToken(auth, payload.customToken);
+			const payload = (res.data || {}) as { customToken?: string; token?: string; targetRole?: string };
+			const customToken = payload.customToken || payload.token;
+			if (!customToken) throw new Error('Token missing.');
+			await signInWithCustomToken(auth, customToken);
 			await auth.currentUser?.getIdToken(true);
 			await impersonationStore.touch();
 			untrack(() => {
 				open = false;
-				goto('/dashboard', { replaceState: true });
+				const role = (payload.targetRole || item.role || '').toLowerCase();
+				if (role === 'director' || role === 'club_director' || role === 'registrar') {
+					goto('/director?tab=home', { replaceState: true });
+				} else if (role === 'coach' || role === 'head_coach' || role === 'assistant_coach') {
+					goto('/coach/dashboard', { replaceState: true });
+				} else if (role === 'parent' || role === 'guardian') {
+					goto('/parent/household', { replaceState: true });
+				} else if (role === 'player' || role === 'athlete') {
+					goto('/player/dashboard', { replaceState: true });
+				} else {
+					goto('/admin/overview', { replaceState: true });
+				}
 			});
 		} catch (e) {
 			console.error('Impersonation failed', e);
@@ -119,7 +141,7 @@
 				});
 				usersSnap.forEach(doc => {
 					const data = doc.data();
-					newResults = [...newResults, { type: 'user', id: doc.id, name: data.email || doc.id }];
+					newResults = [...newResults, { type: 'user', id: doc.id, name: data.email || doc.id, role: data.role || '' }];
 				});
 
 				results = newResults;

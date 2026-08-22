@@ -1482,21 +1482,71 @@ exports.impersonateUser = onCall(
         throw new HttpsError('permission-denied', 'You must be a global admin to impersonate users.');
       }
 
-      const {targetUid, targetEmail} = request.data || {};
-      if (!targetUid || typeof targetUid !== 'string') {
-        throw new HttpsError('invalid-argument', '`targetUid` is required.');
+      const {targetUid: targetUidIn, targetEmail: targetEmailIn} = request.data || {};
+      if (!targetUidIn && !targetEmailIn) {
+        throw new HttpsError('invalid-argument', 'Provide targetUid or targetEmail.');
       }
 
+      const adminEmail = normEmail(request.auth.token.email) || request.auth.uid;
+
+      let userRecord;
       try {
-        const customToken = await admin.auth().createCustomToken(targetUid);
+        if (targetUidIn) {
+          userRecord = await admin.auth().getUser(targetUidIn);
+        } else {
+          userRecord = await admin.auth().getUserByEmail(normEmail(targetEmailIn) || targetEmailIn);
+        }
+      } catch (err) {
+        logger.warn('[impersonateUser] target lookup failed', { admin: adminEmail, targetUidIn, targetEmailIn, err: err?.message });
+        throw new HttpsError('not-found', 'Target user does not exist.');
+      }
+
+      const targetUid = userRecord.uid;
+      const targetEmail = normEmail(userRecord.email) || targetEmailIn || '';
+
+      if (request.auth.uid === targetUid) {
+        throw new HttpsError('failed-precondition', 'Cannot impersonate your own account.');
+      }
+
+      let targetRole = '';
+      if (targetEmail || targetUid) {
+        let userDocSnap = targetEmail ? await db().collection('users').doc(targetEmail).get().catch(() => null) : null;
+        if (!userDocSnap?.exists && targetUid) {
+          userDocSnap = await db().collection('users').doc(targetUid).get().catch(() => null);
+        }
+        if (userDocSnap?.exists) {
+          targetRole = typeof userDocSnap.data()?.role === 'string' ? userDocSnap.data().role : '';
+        }
+      }
+      if (targetRole === 'super_admin' || targetRole === 'global_admin') {
+        throw new HttpsError('permission-denied', 'Cannot impersonate another global admin.');
+      }
+
+      const additionalClaims = {
+        impersonation: true,
+        impersonatedBy: adminEmail,
+        impersonatedEmail: targetEmail || null,
+        impersonatedRole: targetRole || null,
+        impersonationStartedAt: Date.now(),
+      };
+
+      try {
+        const customToken = await admin.auth().createCustomToken(targetUid, additionalClaims);
         await writeSecurityAuditLog({
-          admin: request.auth.token.email || request.auth.uid,
+          admin: adminEmail,
           action: 'IMPERSONATION_SUCCESS',
           target: targetUid,
-          details: JSON.stringify({ targetEmail: targetEmail || 'unknown', ip: request.rawRequest.ip || 'unknown' }),
+          details: JSON.stringify({ targetEmail: targetEmail || 'unknown', targetRole, ip: request.rawRequest?.ip || 'unknown' }),
         });
-        logger.info('[impersonateUser] success', {actorUid: request.auth.uid, targetUid});
-        return {customToken, token: customToken};
+        logger.info('[impersonateUser] success', {actorUid: request.auth.uid, targetUid, targetRole});
+        return {
+          customToken,
+          token: customToken,
+          targetUid,
+          targetEmail: targetEmail || null,
+          targetRole: targetRole || null,
+          impersonatedBy: adminEmail,
+        };
       } catch (err) {
         logger.error('[impersonateUser] failed to generate token', err);
         throw new HttpsError('internal', 'Failed to generate impersonation token.');

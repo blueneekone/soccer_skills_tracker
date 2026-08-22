@@ -106,11 +106,12 @@ export async function executeLoginAsDirector(deps: {
 	if (!ok) return;
 
 	const res = await deps.impersonateUserFn({ targetEmail: email });
-	const payload = (res.data || {}) as { token?: string };
-	if (!payload.token) throw new Error('Impersonation token missing from response.');
+	const payload = (res.data || {}) as { token?: string; customToken?: string };
+	const tokenToUse = payload.customToken || payload.token;
+	if (!tokenToUse) throw new Error('Impersonation token missing from response.');
 
 	deps.onScope(deps.club.id);
-	await signInWithCustomToken(deps.auth, payload.token);
+	await signInWithCustomToken(deps.auth, tokenToUse);
 	await deps.auth.currentUser?.getIdToken(true);
 	await deps.touchImpersonation();
 	await logSecurityEvent(
