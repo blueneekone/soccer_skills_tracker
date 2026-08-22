@@ -60,9 +60,12 @@ export class DirectorDashboardEngine {
 		else if (rawProfileId && rawProfileId !== 'admin') {
 			targetId = rawProfileId;
 		} 
-		// Priority 3: Fallback to the first available club
-		else {
+		// Priority 3: Fallback to the first available club — safe because we guard length === 0 above
+		else if (teamsStore.clubs.length > 0) {
 			targetId = teamsStore.clubs[0].id;
+		} else {
+			// No clubs available yet — defer
+			return;
 		}
 
 		untrack(() => {

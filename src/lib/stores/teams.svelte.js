@@ -38,6 +38,15 @@ function createTeamsStore() {
 		
 		const snapAsst = await getDocs(query(collection(db, 'teams'), where('assistants', 'array-contains', head))).catch(e => { console.error('Error fetching teams by assistants', e); return null; });
 		if (snapAsst) snapAsst.forEach(d => teamsArr.push({ id: d.id, ...d.data() }));
+
+		// UID fallback: some clubs assign coaches by Firebase UID rather than email
+		// Import auth lazily to avoid circular dependency
+		const { auth } = await import('$lib/firebase.js');
+		const uid = auth?.currentUser?.uid;
+		if (uid) {
+			const snapUid = await getDocs(query(collection(db, 'teams'), where('coachUid', '==', uid))).catch(e => { console.error('Error fetching teams by coachUid', e); return null; });
+			if (snapUid) snapUid.forEach(d => teamsArr.push({ id: d.id, ...d.data() }));
+		}
 		
 		const byId = new Map();
 		for (const data of teamsArr) {
@@ -47,7 +56,8 @@ function createTeamsStore() {
 				(e) => (e || '').toLowerCase() === head,
 			);
 			const isAsst = (data.assistants || []).some(a => (a || '').toLowerCase() === head);
-			if (isHeadString || isHeadArray || isAsst) {
+			const isUid = uid && data.coachUid === uid;
+			if (isHeadString || isHeadArray || isAsst || isUid) {
 				byId.set(data.id, data);
 			}
 		}

@@ -17,6 +17,16 @@
 		teamScope.syncSelectedTeam();
 	});
 
+	// Override selected team when ?teamId= is present in URL (e.g. navigating from Coach Organizations page)
+	const teamIdFromUrl = $derived(page.url.searchParams.get('teamId'));
+	$effect(() => {
+		const urlTeam = teamIdFromUrl?.trim();
+		if (!urlTeam) return;
+		if (teamScope.myTeams.some((t) => t.id === urlTeam)) {
+			if (teamScope.selectedTeamId !== urlTeam) teamScope.selectedTeamId = urlTeam;
+		}
+	});
+
 	const myTeams = $derived(teamScope.myTeams);
 	const currentTeam = $derived(teamScope.currentTeam);
 	const teamClubId = $derived(teamScope.teamClubId);

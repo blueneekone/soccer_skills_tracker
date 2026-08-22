@@ -1,6 +1,6 @@
 <script>
 	/** Field mode: responsive enterprise shell — enterprise-console.css + EnterpriseConsoleShell (max-width 1023px). */
-	import { setContext } from 'svelte';
+	import { setContext, untrack } from 'svelte';
 	import '$lib/styles/director-os.css';
 	import '$lib/styles/director-command-center.css';
 	import '$lib/styles/director-field-ops-map.css';
@@ -32,13 +32,19 @@
 		upgradeModalOpen = true;
 	});
 
-	// Force client SDK to dump stale cache and fetch fresh Custom Claims payload upon Director session init
+	// Force client SDK to dump stale cache and fetch fresh Custom Claims payload upon Director session init.
+	// One-shot guard: only refresh once per layout mount to prevent the onIdTokenChanged → $effect loop.
+	let refreshedOnMount = false;
 	$effect(() => {
 		if (!db || !authStore.isAuthenticated) return;
-		void auth.currentUser?.getIdToken(true).then(() => {
-			void authStore.refreshClaims();
-		}).catch((err) => {
-			console.warn('[Director OS Layout] Custom token refresh warning:', err);
+		untrack(() => {
+			if (refreshedOnMount) return;
+			refreshedOnMount = true;
+			void auth.currentUser?.getIdToken(true).then(() => {
+				void authStore.refreshClaims();
+			}).catch((err) => {
+				console.warn('[Director OS Layout] Custom token refresh warning:', err);
+			});
 		});
 	});
 </script>

@@ -462,7 +462,7 @@
 				</div>
 				<div class="tt-matrix-cell tt-matrix-cell--acts" role="cell">
 					<a
-						href="/admin/organizations/{clubId}/teams/{t.id}/roster"
+						href="/director/team/{t.id}/roster"
 						class="tt-act-link"
 					>ROSTER</a>
 					<button
@@ -511,7 +511,7 @@
 				<!-- Card actions -->
 				<div class="tt-card-acts">
 					<a
-						href="/admin/organizations/{clubId}/teams/{t.id}/roster"
+						href="/director/team/{t.id}/roster"
 						class="tt-card-act-link"
 					>
 						<Icon name="user.group" /> ROSTER

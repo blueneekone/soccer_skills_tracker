@@ -180,7 +180,8 @@ service cloud.firestore {
 
     // Enforce role and tenant check on users collection
     match /organizations/{tenantId} {
-      allow read, list: if request.auth != null && request.auth.token.admin == true;
+      // Super Admins manage the full org catalog; Directors can read their own org's document
+      allow read, list: if request.auth != null && (request.auth.token.admin == true || isDirector());
     }
 
     match /users/{emailOrUid} {

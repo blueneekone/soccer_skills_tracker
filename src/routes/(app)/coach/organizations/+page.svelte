@@ -144,7 +144,7 @@
 														</span>
 													</div>
 													<a
-														href="/coach/logistics?tab-[#14b8a6]"
+														href="/coach/logistics?tab=roster&teamId={team.id}"
 														class="tw-text-[#14b8a6] hover:tw-text-teal-300 tw-font-mono tw-text-[10px] tw-uppercase tw-no-underline"
 													>
 														Team Ops &rarr;
