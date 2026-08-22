@@ -15,7 +15,7 @@
 			<button
 				type="button"
 				onclick={() => engine.logEvent('GOAL', 'GOAL LOGGED')}
-				class="tw-bg-[#daff0a] tw-text-black tw-font-mono tw-font-bold tw-px-4 tw-py-2 tw-text-sm hover:tw-opacity-90"
+				class="tw-bg-[#fbbf24] tw-text-black tw-font-mono tw-font-bold tw-px-4 tw-py-2 tw-text-sm hover:tw-opacity-90"
 				style="border-radius: 0px;"
 			>
 				+ LOG GOAL
@@ -56,7 +56,7 @@
 						class="match-event-row tw-bg-[#0a0a0a] tw-border tw-border-[#334155] tw-p-2 tw-flex tw-justify-between tw-items-center"
 						style="border-radius: 0px;"
 					>
-						<span class="tw-font-mono tw-text-xs tw-text-[#daff0a] tw-font-bold">{evt.label}</span>
+						<span class="tw-font-mono tw-text-xs tw-text-[#fbbf24] tw-font-bold">{evt.label}</span>
 						<span class="tw-font-mono tw-text-[11px] tw-text-gray-400">{evt.time}</span>
 					</div>
 				{/each}

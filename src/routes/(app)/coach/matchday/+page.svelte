@@ -15,7 +15,7 @@
 	style="background-color: rgb(10, 10, 10); border-radius: 0px;"
 >
 	<header class="tw-border-b tw-border-[#334155] tw-pb-4">
-		<h1 class="tw-font-mono tw-text-2xl tw-font-bold tw-text-[#daff0a] tw-uppercase tw-tracking-tight">
+		<h1 class="tw-font-mono tw-text-2xl tw-font-bold tw-text-[#fbbf24] tw-uppercase tw-tracking-tight">
 			Live Match Day Console
 		</h1>
 		<p class="tw-text-xs tw-text-gray-400 tw-font-mono">
