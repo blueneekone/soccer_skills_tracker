@@ -11,6 +11,8 @@ export class MatchDayEngine {
 	isWhistleActive = $state(true);
 	isShieldActive = $state(true);
 	lockedUntil = $state(Date.now() + 15 * 60 * 1000);
+	matchStatus = $state<'not_started' | 'running' | 'paused' | 'ended'>('not_started');
+	elapsedSeconds = $state(0);
 	events = $state<MatchEvent[]>([]);
 	showHalftimeOverlay = $state(false);
 	telemetryLogs = $state<string[]>(['[TELEMETRY] Match Day Console initialized']);
@@ -21,6 +23,36 @@ export class MatchDayEngine {
 		'Focus on spatial width',
 		'Autonomy support'
 	]);
+
+	startMatch = (): void => {
+		this.matchStatus = 'running';
+		this.logEvent('MATCH_START', 'MATCH STARTED (KICKOFF)');
+		this.telemetryLogs = ['[TELEMETRY] Match clock started', ...this.telemetryLogs];
+	};
+
+	pauseMatch = (): void => {
+		this.matchStatus = 'paused';
+		this.logEvent('MATCH_PAUSE', 'MATCH PAUSED');
+		this.telemetryLogs = ['[TELEMETRY] Match clock paused', ...this.telemetryLogs];
+	};
+
+	resumeMatch = (): void => {
+		this.matchStatus = 'running';
+		this.logEvent('MATCH_RESUME', 'MATCH RESUMED');
+		this.telemetryLogs = ['[TELEMETRY] Match clock resumed', ...this.telemetryLogs];
+	};
+
+	endMatch = (): void => {
+		this.matchStatus = 'ended';
+		this.logEvent('FINAL_WHISTLE', 'FINAL WHISTLE - MATCH CONCLUDED');
+		this.telemetryLogs = ['[TELEMETRY] Final whistle blown - match concluded', ...this.telemetryLogs];
+	};
+
+	resetClock = (): void => {
+		this.elapsedSeconds = 0;
+		this.matchStatus = 'not_started';
+		this.telemetryLogs = ['[TELEMETRY] Match clock reset', ...this.telemetryLogs];
+	};
 
 	toggleShield = (): void => {
 		this.isShieldActive = !this.isShieldActive;

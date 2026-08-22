@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { browser } from '$app/environment';
 	import type { MatchDayEngine } from './MatchDayEngine.svelte';
 
 	let { engine }: { engine: MatchDayEngine } = $props();
@@ -6,9 +7,92 @@
 	function formatTime(ts: number): string {
 		return new Date(ts).toLocaleTimeString();
 	}
+
+	const matchClockDisplay = $derived.by(() => {
+		const t = Math.max(0, engine.elapsedSeconds);
+		const m = Math.floor(t / 60);
+		const s = t % 60;
+		return `${m}:${String(s).padStart(2, '0')}`;
+	});
+
+	$effect(() => {
+		if (!browser) return;
+		let id: number | null = null;
+		if (engine.matchStatus === 'running') {
+			id = window.setInterval(() => {
+				engine.elapsedSeconds += 1;
+			}, 1000);
+		}
+		return () => {
+			if (id) window.clearInterval(id);
+		};
+	});
 </script>
 
 <div class="tw-bg-[#1e293b] tw-border tw-border-[#334155] tw-p-4 tw-rounded-none" style="border-radius: 0px;">
+	<!-- Game Clock & Match Controls Strap -->
+	<div class="tw-flex tw-flex-wrap tw-items-center tw-justify-between tw-gap-4 tw-mb-4 tw-p-3 tw-bg-[#0a0a0a] tw-border tw-border-[#334155]">
+		<div class="tw-flex tw-items-center tw-gap-4">
+			<div>
+				<div class="tw-font-mono tw-text-[10px] tw-text-slate-400 tw-uppercase tw-tracking-widest">GAME CLOCK</div>
+				<div class="tw-font-mono tw-text-2xl tw-font-black tw-text-[#daff0a] tw-tabular-nums">{matchClockDisplay}</div>
+			</div>
+			<span class="tw-text-[10px] tw-font-mono tw-px-2 tw-py-0.5 tw-border {engine.matchStatus === 'running' ? 'tw-bg-emerald-950/60 tw-border-emerald-500/60 tw-text-emerald-400 tw-animate-pulse' : engine.matchStatus === 'paused' ? 'tw-bg-amber-950/60 tw-border-amber-500/60 tw-text-amber-400' : engine.matchStatus === 'ended' ? 'tw-bg-slate-900 tw-border-slate-700 tw-text-slate-400' : 'tw-bg-slate-900 tw-border-slate-700 tw-text-[#daff0a]'}">
+				{engine.matchStatus === 'running' ? '● LIVE' : engine.matchStatus === 'paused' ? '⏸ PAUSED' : engine.matchStatus === 'ended' ? '✓ FINAL' : 'PRE-MATCH'}
+			</span>
+		</div>
+
+		<div class="tw-flex tw-items-center tw-gap-2">
+			{#if engine.matchStatus === 'not_started'}
+				<button
+					type="button"
+					onclick={() => engine.startMatch()}
+					class="tw-bg-[#daff0a] tw-text-black tw-font-mono tw-font-black tw-text-xs tw-px-4 tw-py-2 tw-uppercase hover:tw-bg-lime-400 tw-transition-all"
+				>
+					▶ START MATCH
+				</button>
+			{:else if engine.matchStatus === 'running'}
+				<button
+					type="button"
+					onclick={() => engine.pauseMatch()}
+					class="tw-bg-amber-500 tw-text-black tw-font-mono tw-font-bold tw-text-xs tw-px-3 tw-py-2 tw-uppercase hover:tw-bg-amber-400 tw-transition-colors"
+				>
+					⏸ PAUSE
+				</button>
+				<button
+					type="button"
+					onclick={() => engine.endMatch()}
+					class="tw-bg-red-600 tw-text-white tw-font-mono tw-font-bold tw-text-xs tw-px-3 tw-py-2 tw-uppercase hover:tw-bg-red-500 tw-transition-colors"
+				>
+					🏁 FINAL WHISTLE
+				</button>
+			{:else if engine.matchStatus === 'paused'}
+				<button
+					type="button"
+					onclick={() => engine.resumeMatch()}
+					class="tw-bg-emerald-500 tw-text-black tw-font-mono tw-font-bold tw-text-xs tw-px-3 tw-py-2 tw-uppercase hover:tw-bg-emerald-400 tw-transition-colors"
+				>
+					▶ RESUME
+				</button>
+				<button
+					type="button"
+					onclick={() => engine.endMatch()}
+					class="tw-bg-red-600 tw-text-white tw-font-mono tw-font-bold tw-text-xs tw-px-3 tw-py-2 tw-uppercase hover:tw-bg-red-500 tw-transition-colors"
+				>
+					🏁 FINAL WHISTLE
+				</button>
+			{:else if engine.matchStatus === 'ended'}
+				<button
+					type="button"
+					onclick={() => engine.resetClock()}
+					class="tw-bg-[#14b8a6] tw-text-black tw-font-mono tw-font-bold tw-text-xs tw-px-3 tw-py-2 tw-uppercase hover:tw-bg-teal-300 tw-transition-colors"
+				>
+					+ NEW MATCH
+				</button>
+			{/if}
+		</div>
+	</div>
+
 	<!-- Active Status Bar -->
 	<div class="tw-flex tw-flex-wrap tw-items-center tw-justify-between tw-gap-4 tw-mb-4 tw-border-b tw-border-[#334155] tw-pb-3">
 		<div class="tw-flex tw-items-center tw-gap-3">

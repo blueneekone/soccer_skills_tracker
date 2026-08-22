@@ -8,6 +8,8 @@
 		doc,
 		getDoc,
 		getDocs,
+		limit,
+		onSnapshot,
 		orderBy,
 		query,
 		serverTimestamp,
@@ -19,15 +21,17 @@
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { CoachTeamScope } from '$lib/coach/context/coachTeamScope.svelte.js';
 	import { normalizeLiveStreamUrl } from '$lib/live-stream/liveStreamEmbed.js';
+	import Icon from '$lib/components/ui/Icon.svelte';
 
 	/**
 	 * @typedef {{ id: string; shortId: string; name: string; role: string }} Operative
 	 * @typedef {'emerald' | 'rose' | 'cyan'} PadTone
 	 * @typedef {{ id: string; label: string; tone: PadTone }} TelemetryPadDef
 	 * @typedef {{ id: string; matchTs: string; line: string; tone: PadTone }} FeedLine
+	 * @typedef {'not_started' | 'running' | 'paused' | 'ended'} MatchState
 	 */
 
-	/** Strict Arc Reactor grid: 2Ã—3 â€” order row-major */
+	/** Strict Arc Reactor grid: 2×3 — order row-major */
 	const TELEMETRY_PAD = /** @type {const} */ ([
 		{ id: 'GOAL', label: 'GOAL', tone: 'emerald' },
 		{ id: 'SHOT_ON_TARGET', label: 'SHOT ON TARGET', tone: 'emerald' },
@@ -63,14 +67,25 @@
 		return n ? n.toUpperCase() : 'YOUR SQUAD';
 	});
 
+	let customMatchId = $state('');
+
 	/** Date-scoped session match ID — stable across reloads within the same calendar day. */
 	const sessionMatchId = $derived.by(() => {
+		if (customMatchId.trim()) return customMatchId.trim().slice(0, 128);
 		const tid = teamScope.selectedTeamId?.trim();
 		if (!tid) return '';
 		const d = new Date();
 		const ds = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 		return `md_${tid}_${ds}`.slice(0, 128);
 	});
+
+	/** Match state: 'not_started' | 'running' | 'paused' | 'ended' */
+	/** @type {MatchState} */
+	let matchState = $state('not_started');
+
+	/** @type {Array<Record<string, unknown> & { id: string }>} */
+	let savedMatches = $state([]);
+	let savedMatchesLoading = $state(false);
 
 	/** @type {Operative[]} */
 	let operatives = $state([]);
@@ -105,12 +120,19 @@
 	/** @type {Set<string>} */
 	let gameDayActiveRoster = $state(new Set());
 
+	// Game Clock Ticker — only runs when matchState === 'running'
 	$effect(() => {
 		if (!browser) return;
-		const id = window.setInterval(() => {
-			elapsedSeconds += 1;
-		}, 1000);
-		return () => window.clearInterval(id);
+		/** @type {number | null} */
+		let id = null;
+		if (matchState === 'running') {
+			id = window.setInterval(() => {
+				elapsedSeconds += 1;
+			}, 1000);
+		}
+		return () => {
+			if (id) window.clearInterval(id);
+		};
 	});
 
 	$effect(() => {
@@ -175,6 +197,30 @@
 		};
 	});
 
+	async function loadSavedMatches() {
+		const tid = teamScope.selectedTeamId?.trim();
+		if (!tid || !db || !authStore.isAuthenticated) return;
+		try {
+			savedMatchesLoading = true;
+			const q = query(
+				collection(db, 'teams', tid, 'match_sessions'),
+				orderBy('updatedAt', 'desc'),
+				limit(25),
+			);
+			const snap = await getDocs(q);
+			/** @type {Array<Record<string, unknown> & { id: string }>} */
+			const list = [];
+			snap.forEach((d) => {
+				list.push({ id: d.id, ...d.data() });
+			});
+			savedMatches = list;
+		} catch (e) {
+			console.warn('[MatchDay] load saved matches', e);
+		} finally {
+			savedMatchesLoading = false;
+		}
+	}
+
 	/** Hydrate scores + eventFeed from Firestore whenever the team or session match changes. */
 	$effect(() => {
 		if (!browser || authStore.isLoading || !authStore.isAuthenticated) return;
@@ -185,12 +231,17 @@
 		let cancelled = false;
 		void (async () => {
 			try {
+				void loadSavedMatches();
 				const sessionSnap = await getDoc(doc(db, 'teams', tid, 'match_sessions', mid));
 				if (cancelled) return;
 				if (sessionSnap.exists()) {
 					const data = sessionSnap.data();
 					if (typeof data.homeScore === 'number') homeScore = Math.max(0, data.homeScore);
 					if (typeof data.awayScore === 'number') awayScore = Math.max(0, data.awayScore);
+					if (typeof data.elapsedSeconds === 'number') elapsedSeconds = Math.max(0, data.elapsedSeconds);
+					if (typeof data.matchState === 'string' && ['not_started', 'running', 'paused', 'ended'].includes(data.matchState)) {
+						matchState = /** @type {MatchState} */ (data.matchState === 'running' ? 'paused' : data.matchState);
+					}
 					const stream =
 						typeof data.liveStreamUrl === 'string' ? data.liveStreamUrl.trim() : '';
 					liveStreamUrl = stream;
@@ -246,7 +297,7 @@
 	});
 
 	async function persistMatchSession() {
-    if (!db || !authStore.isAuthenticated) return;
+		if (!db || !authStore.isAuthenticated) return;
 		const tid = teamScope.selectedTeamId?.trim();
 		const mid = sessionMatchId;
 		const uid = authStore.user?.uid;
@@ -261,6 +312,8 @@
 				awayScore,
 				fieldLocation,
 				opponentTeam,
+				elapsedSeconds,
+				matchState,
 				gameDayRoster: Array.from(gameDayActiveRoster),
 				updatedBy: uid,
 				updatedAt: serverTimestamp(),
@@ -269,9 +322,138 @@
 				payload.liveStreamUrl = liveStreamUrl;
 			}
 			await setDoc(doc(db, 'teams', tid, 'match_sessions', mid), payload, { merge: true });
+			void loadSavedMatches();
 		} catch (e) {
 			console.error('[MatchDay] persist session', e);
 		}
+	}
+
+	async function startMatch() {
+		matchState = 'running';
+		const matchTs = formatMatchTs(elapsedSeconds);
+		const line = `[${matchTs}] MATCH >> START / KICKOFF`;
+		eventFeed = [
+			...eventFeed,
+			{
+				id: `ev_${Date.now()}_start`,
+				matchTs,
+				line,
+				tone: 'emerald',
+			},
+		];
+		const tid = teamScope.selectedTeamId?.trim();
+		const mid = sessionMatchId;
+		const uid = authStore.user?.uid;
+		if (tid && mid && uid && db) {
+			try {
+				await addDoc(collection(db, 'teams', tid, 'telemetry_events'), {
+					teamId: tid,
+					clubId: teamScope.teamClubId || '',
+					matchId: mid,
+					playerId: 'match_system',
+					action: 'MATCH_START',
+					points: 0,
+					matchTs,
+					line,
+					tone: 'emerald',
+					loggedBy: uid,
+					timestamp: serverTimestamp(),
+				});
+				await persistMatchSession();
+			} catch (e) {
+				console.error('[MatchDay] start error', e);
+			}
+		}
+	}
+
+	function pauseMatch() {
+		matchState = 'paused';
+		const matchTs = formatMatchTs(elapsedSeconds);
+		eventFeed = [
+			...eventFeed,
+			{
+				id: `ev_${Date.now()}_pause`,
+				matchTs,
+				line: `[${matchTs}] MATCH >> PAUSED`,
+				tone: 'cyan',
+			},
+		];
+		void persistMatchSession();
+	}
+
+	function resumeMatch() {
+		matchState = 'running';
+		const matchTs = formatMatchTs(elapsedSeconds);
+		eventFeed = [
+			...eventFeed,
+			{
+				id: `ev_${Date.now()}_resume`,
+				matchTs,
+				line: `[${matchTs}] MATCH >> RESUMED`,
+				tone: 'cyan',
+			},
+		];
+		void persistMatchSession();
+	}
+
+	async function endMatch() {
+		matchState = 'ended';
+		const matchTs = formatMatchTs(elapsedSeconds);
+		const line = `[${matchTs}] MATCH >> FINAL WHISTLE (${homeScore} - ${awayScore})`;
+		eventFeed = [
+			...eventFeed,
+			{
+				id: `ev_${Date.now()}_end`,
+				matchTs,
+				line,
+				tone: 'rose',
+			},
+		];
+		const tid = teamScope.selectedTeamId?.trim();
+		const mid = sessionMatchId;
+		const uid = authStore.user?.uid;
+		if (tid && mid && uid && db) {
+			try {
+				await addDoc(collection(db, 'teams', tid, 'telemetry_events'), {
+					teamId: tid,
+					clubId: teamScope.teamClubId || '',
+					matchId: mid,
+					playerId: 'match_system',
+					action: 'MATCH_END',
+					points: 0,
+					matchTs,
+					line,
+					tone: 'rose',
+					loggedBy: uid,
+					timestamp: serverTimestamp(),
+				});
+				await persistMatchSession();
+			} catch (e) {
+				console.error('[MatchDay] end error', e);
+			}
+		}
+	}
+
+	function createNewMatch() {
+		const tid = teamScope.selectedTeamId?.trim() || 'team';
+		const timestamp = Date.now();
+		const d = new Date();
+		const ds = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+		customMatchId = `md_${tid}_${ds}_${timestamp}`.slice(0, 128);
+		homeScore = 0;
+		awayScore = 0;
+		elapsedSeconds = 0;
+		matchState = 'not_started';
+		eventFeed = [];
+		opponentTeam = '';
+		fieldLocation = '';
+		liveStreamUrl = '';
+		liveStreamDraft = '';
+		void persistMatchSession();
+	}
+
+	function selectSavedMatch(mId) {
+		customMatchId = mId;
 	}
 
 	async function saveLiveStreamUrl() {
@@ -550,11 +732,115 @@
 <div class="coach-match-shell">
 	<a href="/coach/dashboard" class="coach-match-exit coach-os-action-chip">HUB</a>
 
+	<!-- Sub-header: Match Records / Session Navigation -->
+	<div class="tw-bg-[#0b0f19] tw-border-b tw-border-[#334155] tw-px-4 tw-py-2.5 tw-flex tw-flex-wrap tw-items-center tw-justify-between tw-gap-3 tw-z-20">
+		<div class="tw-flex tw-items-center tw-gap-2.5 tw-flex-wrap">
+			<span class="tw-text-[10px] tw-font-mono tw-font-bold tw-text-slate-400 tw-uppercase tw-tracking-widest">
+				GAME:
+			</span>
+			<span class="tw-text-xs tw-font-mono tw-font-bold tw-text-[#14b8a6]">
+				{opponentTeam ? `vs ${opponentTeam}` : 'Current Match'}
+			</span>
+			<span class="tw-text-[10px] tw-font-mono tw-px-2 tw-py-0.5 tw-border {matchState === 'running' ? 'tw-bg-emerald-950/60 tw-border-emerald-500/60 tw-text-emerald-400 tw-animate-pulse' : matchState === 'paused' ? 'tw-bg-amber-950/60 tw-border-amber-500/60 tw-text-amber-400' : matchState === 'ended' ? 'tw-bg-slate-900 tw-border-slate-700 tw-text-slate-400' : 'tw-bg-slate-900 tw-border-slate-700 tw-text-[#daff0a]'}">
+				{matchState === 'running' ? '● LIVE IN PLAY' : matchState === 'paused' ? '⏸ PAUSED' : matchState === 'ended' ? '✓ FINAL' : 'PRE-MATCH'}
+			</span>
+		</div>
+
+		<div class="tw-flex tw-items-center tw-gap-2.5">
+			<!-- Saved Match Records Dropdown -->
+			{#if savedMatches.length > 0}
+				<select
+					aria-label="Select match record"
+					class="tw-bg-[#0f172a] tw-border tw-border-slate-700 tw-text-slate-300 tw-font-mono tw-text-xs tw-px-2.5 tw-py-1.5 tw-outline-none hover:tw-border-[#14b8a6] tw-cursor-pointer"
+					value={sessionMatchId}
+					onchange={(e) => selectSavedMatch(e.currentTarget.value)}
+				>
+					<option value={sessionMatchId}>Current Game ({opponentTeam || 'Untitled'})</option>
+					{#each savedMatches as sm (sm.id)}
+						{#if sm.id !== sessionMatchId}
+							<option value={sm.id}>
+								{sm.opponentTeam ? `vs ${sm.opponentTeam}` : sm.id} ({sm.homeScore ?? 0}-{sm.awayScore ?? 0})
+								{sm.matchState === 'ended' ? '· Final' : '· Live'}
+							</option>
+						{/if}
+					{/each}
+				</select>
+			{/if}
+
+			<button
+				type="button"
+				onclick={createNewMatch}
+				class="tw-bg-[#14b8a6]/20 tw-border tw-border-[#14b8a6] tw-text-[#14b8a6] hover:tw-bg-[#14b8a6] hover:tw-text-black tw-font-mono tw-font-bold tw-text-xs tw-px-3 tw-py-1.5 tw-transition-colors"
+			>
+				+ NEW MATCH
+			</button>
+		</div>
+	</div>
+
 	<header class="coach-match-z4-strap" aria-label="Match clock">
-		<p class="coach-match-z4-strap__label">Match clock</p>
-		<p class="coach-match-z4-strap__clock" aria-live="polite">{matchClockDisplay}</p>
-		<p class="coach-match-z4-strap__period">{matchPeriodLabel}</p>
-		<p class="coach-match-z4-strap__team">{activeTeamLabel}</p>
+		<div class="tw-flex tw-flex-wrap tw-items-center tw-justify-between tw-gap-4">
+			<div>
+				<p class="coach-match-z4-strap__label">Match clock · {activeTeamLabel} {opponentTeam ? `vs ${opponentTeam.toUpperCase()}` : ''}</p>
+				<p class="coach-match-z4-strap__clock" aria-live="polite">{matchClockDisplay}</p>
+				<p class="coach-match-z4-strap__period">{matchPeriodLabel}</p>
+			</div>
+
+			<!-- Live Start / Pause / End Match Action Button Deck -->
+			<div class="tw-flex tw-items-center tw-gap-2.5 tw-flex-wrap">
+				{#if matchState === 'not_started'}
+					<button
+						type="button"
+						class="tw-bg-[#daff0a] tw-text-black tw-font-mono tw-font-black tw-text-xs tw-px-5 tw-py-2.5 tw-tracking-wider tw-uppercase hover:tw-bg-lime-400 tw-transition-all tw-shadow-[0_0_15px_rgba(218,255,10,0.3)]"
+						onclick={startMatch}
+					>
+						▶ START MATCH
+					</button>
+				{:else if matchState === 'running'}
+					<button
+						type="button"
+						class="tw-bg-amber-500 tw-text-black tw-font-mono tw-font-bold tw-text-xs tw-px-4 tw-py-2.5 tw-tracking-wider tw-uppercase hover:tw-bg-amber-400 tw-transition-colors"
+						onclick={pauseMatch}
+					>
+						⏸ PAUSE MATCH
+					</button>
+					<button
+						type="button"
+						class="tw-bg-red-600 tw-text-white tw-font-mono tw-font-bold tw-text-xs tw-px-4 tw-py-2.5 tw-tracking-wider tw-uppercase hover:tw-bg-red-500 tw-transition-colors"
+						onclick={endMatch}
+					>
+						🏁 FINAL WHISTLE
+					</button>
+				{:else if matchState === 'paused'}
+					<button
+						type="button"
+						class="tw-bg-emerald-500 tw-text-black tw-font-mono tw-font-black tw-text-xs tw-px-4 tw-py-2.5 tw-tracking-wider tw-uppercase hover:tw-bg-emerald-400 tw-transition-colors"
+						onclick={resumeMatch}
+					>
+						▶ RESUME MATCH
+					</button>
+					<button
+						type="button"
+						class="tw-bg-red-600 tw-text-white tw-font-mono tw-font-bold tw-text-xs tw-px-4 tw-py-2.5 tw-tracking-wider tw-uppercase hover:tw-bg-red-500 tw-transition-colors"
+						onclick={endMatch}
+					>
+						🏁 FINAL WHISTLE
+					</button>
+				{:else if matchState === 'ended'}
+					<div class="tw-flex tw-items-center tw-gap-2">
+						<span class="tw-px-3 tw-py-2 tw-bg-red-950/60 tw-border tw-border-red-500/60 tw-text-red-300 tw-font-mono tw-text-xs tw-font-bold tw-uppercase">
+							FINAL SCORE: {homeScore} - {awayScore}
+						</span>
+						<button
+							type="button"
+							class="tw-bg-[#14b8a6] tw-text-black tw-font-mono tw-font-bold tw-text-xs tw-px-4 tw-py-2 tw-uppercase hover:tw-bg-teal-300 tw-transition-colors"
+							onclick={createNewMatch}
+						>
+							+ NEW MATCH
+						</button>
+					</div>
+				{/if}
+			</div>
+		</div>
 	</header>
 
 	<div class="tw-flex tw-flex-col tw-gap-5 tw-bg-[#0f172a] tw-border-b tw-border-[#334155] tw-shrink-0" style="padding: clamp(12px, 3vw, 24px);">

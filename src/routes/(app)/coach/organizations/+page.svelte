@@ -1,7 +1,19 @@
 <script lang="ts">
+	import { browser } from '$app/environment';
+	import { goto } from '$app/navigation';
+	import { untrack } from 'svelte';
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { teamsStore } from '$lib/stores/teams.svelte.js';
 	import Icon from '$lib/components/ui/Icon.svelte';
+
+	// Auto-redirect coaches to Team Ops where team and roster management live
+	$effect(() => {
+		if (browser) {
+			untrack(() => {
+				void goto('/coach/logistics', { replaceState: true });
+			});
+		}
+	});
 
 	const userEmail = $derived((authStore.user?.email || '').trim());
 	const role = $derived(authStore.role);
