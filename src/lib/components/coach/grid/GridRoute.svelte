@@ -56,6 +56,7 @@
 		/>
 		<!-- Sharp White Core Trail -->
 		<path
+			class="tactical-vector-route"
 			class:route-dash-pass={route.pathKind === 'pass'}
 			d={pathD}
 			fill="none"
@@ -63,7 +64,7 @@
 			stroke-width={isSelected ? 6 : 4}
 			stroke-linecap="round"
 			stroke-linejoin="round"
-			stroke-dasharray={route.pathKind === 'pass' ? '12 16' : 'none'}
+			stroke-dasharray={route.pathKind === 'pass' ? '8,8' : 'none'}
 			marker-end="url(#arrowhead)"
 			filter="url(#lightCycleBloom)"
 			pointer-events="none"

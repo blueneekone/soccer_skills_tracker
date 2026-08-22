@@ -20,7 +20,7 @@ test.describe('SSTracker War Room Multi-Persona Feature Verification', () => {
     await page.waitForSelector('.pd-page-root', { timeout: 5000 });
 
     // 2. Assert Base Elements & Spacing Overlays
-    const canvas = page.locator('svg');
+    const canvas = page.locator('svg.tactical-pitch-canvas').first();
     await expect(canvas).toBeVisible();
 
     // 3. Test Selective Splicing (Right-Click Context Menu)

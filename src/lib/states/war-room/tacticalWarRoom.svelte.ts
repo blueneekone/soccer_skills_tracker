@@ -155,6 +155,24 @@ export function createTacticalWarRoom(host: TacticalGridHost) {
 	let routeBodyDrag = $state<RouteBodyDrag | null>(null);
 	let isDrawerOpen = $state(false);
 	let isMistakeActive = $state(false);
+	let selectedOpponentPosition = $state('CDM');
+	let isOpponentDeployActive = $state(false);
+
+	function deployOpponentTokenAt(p: { x: number; y: number }, posOverride?: string) {
+		const pos = posOverride || selectedOpponentPosition || 'CDM';
+		const newOpponent: TacticalToken = {
+			id: `opp_${Date.now()}_${Math.floor(Math.random() * 1000)}`,
+			name: pos,
+			number: pos,
+			position: pos,
+			side: 'opponent',
+			color: '#fbbf24',
+			x: p.x,
+			y: p.y
+		};
+		host.wrOppPitch.set([...host.wrOppPitch.get(), newOpponent]);
+		isOpponentDeployActive = false;
+	}
 
 	/** Snapshots for rewind — restored by `resetPositions()` (timeline + x/y). */
 	let playbackBaselinePitch = $state<TacticalToken[]>([]);
@@ -356,6 +374,9 @@ export function createTacticalWarRoom(host: TacticalGridHost) {
 		teardownAnchorDrag,
 		routeBodyCapture,
 		pitchDragCapture,
+		isOpponentDeployActive: () => isOpponentDeployActive,
+		selectedOpponentPosition: () => selectedOpponentPosition,
+		deployOpponentTokenAt,
 		get pitchSvgEl() { return pitchSvgEl; },
 	};
 
@@ -659,5 +680,10 @@ export function createTacticalWarRoom(host: TacticalGridHost) {
 		closeMenu,
 		get isMistakeActive() { return isMistakeActive; },
 		set isMistakeActive(v) { isMistakeActive = v; },
+		get selectedOpponentPosition() { return selectedOpponentPosition; },
+		set selectedOpponentPosition(v: string) { selectedOpponentPosition = v; },
+		get isOpponentDeployActive() { return isOpponentDeployActive; },
+		set isOpponentDeployActive(v: boolean) { isOpponentDeployActive = v; },
+		deployOpponentTokenAt,
 	};
 }

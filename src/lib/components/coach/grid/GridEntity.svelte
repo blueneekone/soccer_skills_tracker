@@ -52,8 +52,8 @@
 		player.side === 'opponent' ? (player.position || 'X') : player.number || '',
 	);
 
-	/** Base SIEM color: opponent = Ares Red (#ff2a2a), friendly = Cyan. */
-	const siemColor = $derived(player.side === 'opponent' ? '#ff2a2a' : '#14b8a6');
+	/** Base SIEM color: opponent = Atompunk Amber (#fbbf24), friendly = Cyan. */
+	const siemColor = $derived(player.side === 'opponent' ? '#fbbf24' : '#14b8a6');
 	/**
 	 * Contrast highlight: when an opponent token is selected or hovered the ring
 	 * flips to Cyan so it reads cleanly against the Ares Red disc body.
@@ -74,7 +74,7 @@
 	<g
 		data-light-disc
 		data-timeline-ms={timelineMs}
-		class="tw-group"
+		class="tw-group {player.side === 'opponent' ? 'hostile-opponent-node' : ''}"
 		class:tg-disc-charge={charging}
 		class:grid-entity--selected={isSelected}
 		pointer-events={pointerOn ? 'auto' : 'none'}
