@@ -51,6 +51,7 @@
 	}
 
 	let isHelpOpen = $state(false);
+	let isRosterOpen = $state(true);
 
 	function getPlayerInitials(name) {
 		if (!name) return '??';
@@ -79,27 +80,53 @@
   Child components opt back in with pointer-events-auto.
 -->
 <div class="tactical-hud-panel tw-pointer-events-none tw-absolute tw-inset-0 tw-z-10 tw-overflow-hidden" style="border-radius: 0px;">
-	<!-- Active Team Roster Sidebar -->
-	<div class="sstracker-roster-tray tw-pointer-events-auto tw-absolute tw-top-16 tw-left-4 tw-z-20 tw-w-48 tw-bg-[#0a0a0a]/90 tw-border tw-border-slate-800 tw-p-3 tw-backdrop-blur-md" style="border-radius: 0px;">
-		<div class="tw-text-[11px] tw-font-bold tw-tracking-wider tw-text-slate-400 tw-uppercase tw-mb-2 tw-border-b tw-border-slate-800 tw-pb-1 tw-flex tw-justify-between">
-			<span>ACTIVE ROSTER</span>
-			<span class="tw-text-[#06b6d4]">{rosterList.length}</span>
-		</div>
-		<div class="tw-flex tw-flex-col tw-gap-1.5 tw-max-h-60 tw-overflow-y-auto">
-			{#each rosterList as p (p.id)}
-				{@const initials = getPlayerInitials(p.name)}
-				<div
-					class="roster-player-token tw-flex tw-items-center tw-gap-2 tw-bg-slate-900/80 tw-border tw-border-slate-800 tw-px-2 tw-py-1 tw-text-xs tw-[#d4d4d8] hover:tw-border-[#06b6d4] tw-cursor-grab active:tw-scale-[0.98] tw-transition-all"
-					style="border-radius: 0px;"
+	<!-- [ ROSTER ] Toggle Trigger Button -->
+	<button
+		type="button"
+		class="sstracker-roster-trigger-btn tw-pointer-events-auto tw-absolute tw-top-3 tw-left-20 tw-z-30 tw-bg-[#0a0a0a]/90 tw-border tw-border-slate-800 tw-px-3 tw-py-1.5 tw-font-mono tw-text-xs {isRosterOpen ? 'tw-border-[#14b8a6] tw-text-[#14b8a6]' : 'tw-text-slate-400 hover:tw-border-[#14b8a6] hover:tw-text-[#14b8a6]'} active:tw-scale-[0.98] tw-transition-all"
+		style="border-radius: 0px;"
+		onclick={() => { isRosterOpen = !isRosterOpen; }}
+	>
+		[ 👥 ROSTER ({rosterList.length}) ]
+	</button>
+
+	<!-- Active Team Roster Sidebar (Collapsible Tray) -->
+	{#if isRosterOpen}
+		<div
+			class="sstracker-roster-tray tw-pointer-events-auto tw-absolute tw-top-14 tw-left-4 tw-z-40 tw-w-56 tw-bg-[#0a0a0a]/95 tw-border tw-border-slate-800 tw-p-3 tw-backdrop-blur-xl tw-shadow-2xl"
+			style="border-radius: 0px;"
+		>
+			<div class="tw-text-[11px] tw-font-bold tw-tracking-wider tw-text-slate-400 tw-uppercase tw-mb-2 tw-border-b tw-border-slate-800 tw-pb-1 tw-flex tw-items-center tw-justify-between">
+				<span>ACTIVE ROSTER ({rosterList.length})</span>
+				<button
+					type="button"
+					class="tw-text-slate-500 hover:tw-text-white tw-text-xs tw-px-1"
+					onclick={() => { isRosterOpen = false; }}
+					title="Collapse Roster"
+					aria-label="Collapse Roster"
 				>
-					<span class="tw-flex tw-items-center tw-justify-center tw-w-6 tw-h-6 tw-bg-[#14b8a6]/20 tw-border tw-border-[#14b8a6] tw-text-[#14b8a6] tw-font-bold tw-text-[10px]">
-						{initials}
-					</span>
-					<span class="tw-truncate tw-font-mono tw-text-[11px]">{p.name}</span>
-				</div>
-			{/each}
+					✕
+				</button>
+			</div>
+			<div class="tw-flex tw-flex-col tw-gap-1.5 tw-max-h-60 tw-overflow-y-auto">
+				{#each rosterList as p (p.id)}
+					{@const initials = getPlayerInitials(p.name)}
+					<div
+						class="roster-player-token tw-flex tw-items-center tw-gap-2 tw-bg-slate-900/90 tw-border tw-border-slate-800 tw-px-2 tw-py-1.5 tw-text-xs tw-text-[#d4d4d8] hover:tw-border-[#14b8a6] tw-cursor-grab active:tw-scale-[0.98] tw-transition-all"
+						style="border-radius: 0px;"
+					>
+						<span class="tw-flex tw-items-center tw-justify-center tw-w-6 tw-h-6 tw-bg-[#14b8a6]/20 tw-border tw-border-[#14b8a6] tw-text-[#14b8a6] tw-font-bold tw-text-[10px]">
+							{initials}
+						</span>
+						<div class="tw-flex tw-flex-col tw-min-w-0">
+							<span class="tw-truncate tw-font-mono tw-text-[11px] tw-text-slate-200">{p.name}</span>
+							<span class="tw-text-[9px] tw-font-mono tw-text-slate-500">{p.position || 'MID'}</span>
+						</div>
+					</div>
+				{/each}
+			</div>
 		</div>
-	</div>
+	{/if}
 
 	<!-- [ HUD_HELP ] Console Toggle Button -->
 	<button
