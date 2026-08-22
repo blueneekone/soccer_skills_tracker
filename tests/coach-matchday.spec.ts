@@ -51,6 +51,9 @@ test.describe('Coach OS: Match Day Console & Pediatric Safety Verification', () 
 		await page.goto('/coach/matchday');
 		await page.waitForSelector('.pd-matchday-root', { timeout: 10000 });
 
+		// Ensure lockout state is active
+		await request.post('/api/match/lockout', { data: { toggleShield: true } });
+
 		const response = await request.get('/api/match/lockout?type=metrics&player=minor-123');
 		expect(response.status()).toBe(423);
 
