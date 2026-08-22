@@ -1,4 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { getPrefsDefaults, loadUserPreferences, type UserPreferences } from '../playerSettingsHandlers';
+import { getDoc } from 'firebase/firestore';
 import {
 	computeIsMinorAccount,
 	computeIsOperativeProxy,
@@ -37,6 +39,27 @@ const defaults: UserPreferences = {
 	email_weeklyReport: false
 };
 
+describe('getPrefsDefaults', () => {
+	it('returns push_weatherAlerts = true for elevated/leadership roles', () => {
+		const roles = ['coach', 'director', 'super_admin', 'global_admin'];
+		for (const role of roles) {
+			const prefs = getPrefsDefaults(role);
+			expect(prefs.push_weatherAlerts).toBe(true);
+			expect(prefs.push_gameReminders).toBe(true);
+			expect(prefs.push_messages).toBe(true);
+			expect(prefs.email_weeklyReport).toBe(false);
+		}
+	});
+
+	it('returns push_weatherAlerts = false for non-leadership roles and unknown roles', () => {
+		const roles = ['player', 'parent', 'recruiter', 'fan', 'unknown', ''];
+		for (const role of roles) {
+			const prefs = getPrefsDefaults(role);
+			expect(prefs.push_weatherAlerts).toBe(false);
+			expect(prefs.push_gameReminders).toBe(true);
+			expect(prefs.push_messages).toBe(true);
+			expect(prefs.email_weeklyReport).toBe(false);
+		}
 describe('computeIsMinorAccount', () => {
 	it('returns false when profile is null or undefined', () => {
 		expect(computeIsMinorAccount(null)).toBe(false);
