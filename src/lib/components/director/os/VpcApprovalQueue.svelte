@@ -92,7 +92,7 @@
 				Verified minor consent records
 			</h3>
 		</div>
-		<span class="tw-inline-flex tw-shrink-0 tw-items-center tw-gap-1.5 tw-rounded-full tw-border tw-border-[#14b8a6]/30 tw-bg-[#14b8a6]/10 tw-px-2.5 tw-py-1 tw-font-mono tw-text-[10px] tw-font-bold tw-tabular-nums tw-tracking-widest tw-text-[#14b8a6]">
+		<span class="tw-inline-flex tw-shrink-0 tw-items-center tw-gap-1.5 tw-rounded-none tw-border tw-border-[#14b8a6]/30 tw-bg-[#14b8a6]/10 tw-px-2.5 tw-py-1 tw-font-mono tw-text-[10px] tw-font-bold tw-tabular-nums tw-tracking-widest tw-text-[#14b8a6]">
 			{records.length} RECORD{records.length === 1 ? '' : 'S'}
 		</span>
 	</header>
@@ -104,7 +104,7 @@
 		</p>
 	{:else if loadError}
 		<p
-			class="tw-flex tw-items-center tw-gap-2 tw-rounded-xl tw-border tw-border-[#ff003c]/40 tw-bg-[#ff003c]/10 tw-px-3 tw-py-2 tw-font-mono tw-text-xs tw-font-bold tw-text-[#ff003c]"
+			class="tw-flex tw-items-center tw-gap-2 tw-rounded-none tw-border tw-border-[#ff003c]/40 tw-bg-[#ff003c]/10 tw-px-3 tw-py-2 tw-font-mono tw-text-xs tw-font-bold tw-text-[#ff003c]"
 			role="alert"
 		>
 			<Icon name="status.warning-circle" /> {loadError}
@@ -117,7 +117,7 @@
 		<ul class="tw-m-0 tw-list-none tw-space-y-2 tw-p-0" role="list">
 			{#each records as rec (rec.id)}
 				<li
-					class="tw-flex tw-flex-wrap tw-items-center tw-justify-between tw-gap-3 tw-rounded-xl tw-border tw-border-white/8 tw-bg-black/40 tw-px-4 tw-py-3 tw-shadow-[inset_0_1px_1px_rgba(255,255,255,0.04)]"
+					class="tw-flex tw-flex-wrap tw-items-center tw-justify-between tw-gap-3 tw-rounded-none tw-border tw-border-white/8 tw-bg-black/40 tw-px-4 tw-py-3 tw-shadow-[inset_0_1px_1px_rgba(255,255,255,0.04)]"
 				>
 					<div class="tw-flex tw-min-w-0 tw-flex-1 tw-flex-col tw-gap-1">
 						<div class="tw-flex tw-min-w-0 tw-items-center tw-gap-2">

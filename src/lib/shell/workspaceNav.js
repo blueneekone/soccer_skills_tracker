@@ -22,6 +22,7 @@ export const adminLinks = [
 
 /** @type {ShellNavItem[]} */
 export const directorLinks = [
+	{ tab: '', label: 'Daily Intel', icon: 'content.grid', href: '/director/dashboard' },
 	{ tab: 'compliance-ops', label: 'Compliance & Ops', icon: 'status.shield-check', href: '/director/compliance-ops' },
 	{ tab: 'club-management', label: 'Club Management', icon: 'org.building', href: '/director/club-management' },
 	{ tab: 'tactics-and-training', label: 'Tactics & Training', icon: 'data.target', href: '/director/tactics-and-training' },

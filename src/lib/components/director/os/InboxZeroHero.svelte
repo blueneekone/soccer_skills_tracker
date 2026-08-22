@@ -21,7 +21,7 @@
 	}
 
 	.izh-box {
-		@apply tw-flex tw-max-w-md tw-flex-col tw-items-center tw-justify-center tw-rounded-2xl tw-border tw-border-white/5 tw-bg-slate-900/40 tw-p-8 tw-text-center tw-shadow-[inset_0_1px_1px_rgba(255,255,255,0.03)] tw-backdrop-blur-md tw-transition-all tw-duration-500 hover:tw-border-[#14b8a6]/20 hover:tw-bg-slate-900/60;
+		@apply tw-flex tw-max-w-md tw-flex-col tw-items-center tw-justify-center tw-rounded-none tw-border tw-border-white/5 tw-bg-slate-900/40 tw-p-8 tw-text-center tw-shadow-[inset_0_1px_1px_rgba(255,255,255,0.03)] tw-backdrop-blur-md tw-transition-all tw-duration-500 hover:tw-border-[#14b8a6]/20 hover:tw-bg-slate-900/60;
 	}
 
 	.izh-icon-wrap {

@@ -55,9 +55,9 @@ const DEFAULT_PINS: Record<NavPersonaKey, PinQuad> = {
 	player: ['/player/dashboard', '/player/workout', '/stats', MENU_PIN_HREF],
 	coach: ['/coach', '/coach/forge', '/messages', MENU_PIN_HREF],
 	parent: ['/parent/household', '/parent/vpc', '/parent/dashboard', MENU_PIN_HREF],
-	director: ['/director/compliance-ops', '/director/club-management', '/director/tactics-and-training', MENU_PIN_HREF],
+	director: ['/director/dashboard', '/director/compliance-ops', '/director/club-management', MENU_PIN_HREF],
 	admin: ['/admin/overview', '/admin/organizations', '/admin/users', MENU_PIN_HREF],
-	registrar: ['/director/compliance-ops', '/director/club-management', '/director/tactics-and-training', MENU_PIN_HREF],
+	registrar: ['/director/dashboard', '/director/compliance-ops', '/director/club-management', MENU_PIN_HREF],
 	recruiter: ['/recruiter', '/messages', null, MENU_PIN_HREF],
 };
 
