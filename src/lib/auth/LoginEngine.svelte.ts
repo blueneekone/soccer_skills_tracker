@@ -103,12 +103,30 @@ class LoginEngine {
     this.busy = true;
     this.error = '';
     try {
+      const res = await fetch('/api/auth/magic-link', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: trimmedEmail }),
+      });
+
+      if (res.status === 403) {
+        const data = await res.json().catch(() => ({}));
+        if (data.error === 'PASSKEY_REQUIRED') {
+          window.location.href = '/auth/passkey-setup';
+          return;
+        }
+      }
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.message || 'Failed to dispatch magic link authorization.');
+      }
+
       const actionCodeSettings: ActionCodeSettings = {
         url: `${window.location.origin}/auth/magic-link/callback`,
         handleCodeInApp: true,
       };
       await sendSignInLinkToEmail(auth, trimmedEmail, actionCodeSettings);
-      // Persist email so the callback page can complete sign-in without re-prompting
       try {
         window.localStorage.setItem('sstrack_magic_email', trimmedEmail);
       } catch {

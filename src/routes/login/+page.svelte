@@ -280,7 +280,7 @@
 			</div>
 
 			<!-- Unified auth block — all h-11 elements, single gap-4 container -->
-			<div class="tw-flex tw-w-full tw-flex-col tw-gap-4">
+			<form onsubmit={(e) => { e.preventDefault(); void handleMagicLink(); }} class="tw-flex tw-w-full tw-flex-col tw-gap-4">
 
 				<!-- Passkey -->
 				<button
@@ -331,8 +331,7 @@
 
 				<!-- Send Magic Link -->
 				<button
-					type="button"
-					onclick={handleMagicLink}
+					type="submit"
 					disabled={loginEngine.busy || googleBusy || navigating}
 					class="tw-flex tw-h-11 tw-w-full tw-items-center tw-justify-center tw-gap-3 tw-border tw-border-[#334155] tw-bg-[#1e293b] tw-text-sm tw-font-medium tw-text-[#cbd5e1] tw-transition-all tw-duration-200 hover:tw-border-[#475569] hover:tw-bg-[#334155] hover:tw-text-[#14b8a6] active:tw-scale-[0.98] disabled:tw-cursor-not-allowed disabled:tw-opacity-40 focus-visible:tw-outline-none focus-visible:tw-ring-1 focus-visible:tw-ring-[#14b8a633]"
 				>
@@ -348,7 +347,7 @@
 					{/if}
 				</button>
 
-			</div>
+			</form>
 
 			<!-- Magic link confirmation -->
 			{#if loginEngine.magicLinkSent}
