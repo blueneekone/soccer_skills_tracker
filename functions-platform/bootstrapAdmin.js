@@ -37,11 +37,11 @@ function resolveFirebaseAdmin() {
   return require('firebase-admin');
 }
 
-const rawAdmin = resolveFirebaseAdmin();
+const admin = resolveFirebaseAdmin();
 let initialized = false;
 
 function initAdmin() {
-  if (initialized || rawAdmin.apps.length > 0) {
+  if (initialized || admin.apps.length > 0) {
     initialized = true;
     return;
   }
@@ -74,7 +74,7 @@ function initAdmin() {
     }
   }
 
-  if (rawAdmin.apps.length === 0) {
+  if (admin.apps.length === 0) {
     rawAdmin.initializeApp();
   }
   initialized = true;
@@ -86,7 +86,7 @@ if (!process.env.VITEST && process.env.NODE_ENV !== 'test') {
   initAdmin();
 }
 
-const adminProxy = new Proxy(rawAdmin, {
+const adminProxy = new Proxy(admin, {
   get(target, prop) {
     initAdmin();
     const value = target[prop];
