@@ -124,11 +124,11 @@ import { untrack } from 'svelte';
 			{:else if phase === 'unsupported'}
 				<div class="tw-w-full tw-rounded-md tw-border tw-border-amber-500/40 tw-bg-amber-950/50 tw-px-3 tw-py-3 tw-font-mono tw-text-xs tw-text-amber-100 tw-text-center" role="alert">
 					This browser does not support passkey registration with a platform authenticator.
-					Try Chrome, Edge, or Safari on a recent OS, or switch devices.
+					You can continue using standard authentication.
 				</div>
 				<div class="tw-mt-5 tw-flex tw-w-full tw-flex-col tw-gap-3">
-					<button type="button" class="vanguard-btn-amber tw-flex tw-h-11 tw-w-full tw-items-center tw-justify-center tw-px-6 tw-font-mono tw-text-xs tw-uppercase tw-tracking-[0.2em] tw-font-bold tw-transition-colors tw-duration-200 active:tw-scale-[0.98]" onclick={() => window.location.reload()}>
-						Retry
+					<button type="button" class="vanguard-btn-amber tw-flex tw-h-11 tw-w-full tw-items-center tw-justify-center tw-px-6 tw-font-mono tw-text-xs tw-uppercase tw-tracking-[0.2em] tw-font-bold tw-transition-colors tw-duration-200 active:tw-scale-[0.98]" onclick={() => void navigateAfterLogin({ replaceState: true })}>
+						Continue to Dashboard
 					</button>
 					<button type="button" class="tw-flex tw-h-11 tw-w-full tw-items-center tw-justify-center tw-border tw-border-[#1e293b] tw-bg-transparent tw-font-mono tw-text-xs tw-uppercase tw-tracking-[0.15em] tw-text-[#475569] tw-transition-all hover:tw-bg-[#1e293b] hover:tw-text-[#94a3b8] focus-visible:tw-outline-none" onclick={() => void handleSignOut()}>Sign out</button>
 				</div>
@@ -150,7 +150,14 @@ import { untrack } from 'svelte';
 					>
 						{loginEngine.busy ? 'REGISTERING…' : 'REGISTER PASSKEY'}
 					</button>
-					<button type="button" class="tw-flex tw-h-11 tw-w-full tw-items-center tw-justify-center tw-border tw-border-[#1e293b] tw-bg-transparent tw-font-mono tw-text-xs tw-uppercase tw-tracking-[0.15em] tw-text-[#475569] tw-transition-all hover:tw-bg-[#1e293b] hover:tw-text-[#94a3b8] focus-visible:tw-outline-none" onclick={() => void handleSignOut()}>Sign out</button>
+					<button
+						type="button"
+						class="tw-flex tw-h-10 tw-w-full tw-items-center tw-justify-center tw-border tw-border-[#334155] tw-bg-[#0f172a] tw-font-mono tw-text-xs tw-text-[#14b8a6] hover:tw-bg-[#14b8a6]/20 tw-transition-all"
+						onclick={() => void navigateAfterLogin({ replaceState: true })}
+					>
+						Skip For Now →
+					</button>
+					<button type="button" class="tw-flex tw-h-10 tw-w-full tw-items-center tw-justify-center tw-border tw-border-[#1e293b] tw-bg-transparent tw-font-mono tw-text-xs tw-uppercase tw-tracking-[0.15em] tw-text-[#475569] tw-transition-all hover:tw-bg-[#1e293b] hover:tw-text-[#94a3b8] focus-visible:tw-outline-none" onclick={() => void handleSignOut()}>Sign out</button>
 				</div>
 			{/if}
 		</div>

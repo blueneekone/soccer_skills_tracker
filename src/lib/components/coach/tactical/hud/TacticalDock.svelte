@@ -1,6 +1,19 @@
 <script>
-	/** @type {{ model: import('$lib/components/coach/TacticalEngine.svelte.ts').TacticalWarRoomModel, deployPhase: string, onDeploy: () => void, isHalfField?: boolean, onToggleHalfField?: () => void, onToggleToolbar?: () => void }} */
-	let { model, deployPhase = 'idle', onDeploy, isHalfField, onToggleHalfField, onToggleToolbar } = $props();
+	import { goto } from '$app/navigation';
+	import { untrack } from 'svelte';
+
+	/** @type {{ model: import('$lib/components/coach/TacticalEngine.svelte.ts').TacticalWarRoomModel, deployPhase: string, onDeploy: () => void, isHalfField?: boolean, onToggleHalfField?: () => void, onToggleToolbar?: () => void, isLeftDrawerOpen?: boolean, onToggleLeftDrawer?: () => void, onExit?: () => void }} */
+	let {
+		model,
+		deployPhase = 'idle',
+		onDeploy,
+		isHalfField = false,
+		onToggleHalfField,
+		onToggleToolbar,
+		isLeftDrawerOpen = false,
+		onToggleLeftDrawer,
+		onExit,
+	} = $props();
 
 	/** @type {'cursor' | 'draw' | 'erase'} */
 	let dockMode = $state('cursor');
@@ -14,6 +27,16 @@
 	function pickMode(/** @type {'cursor' | 'draw' | 'erase'} */ mode) {
 		dockMode = mode;
 		model.setActiveTool(mode === 'draw' || mode === 'erase' ? 'ROUTE' : 'DRAG');
+	}
+
+	function handleExitClick() {
+		if (onExit) {
+			onExit();
+		} else {
+			untrack(() => {
+				goto('/coach/dashboard');
+			});
+		}
 	}
 
 	$effect(() => {
@@ -57,6 +80,20 @@
 <!-- Z1 timeline well + Z4 HUD actions -->
 <div class="coach-tac-z1-dock" aria-hidden="false">
 	<div class="coach-tac-z1-well" role="toolbar" aria-label="Tactical dock">
+		<!-- Left Drawer Toggle (Tools, Roster, Drill Info) -->
+		<button
+			type="button"
+			class="coach-tac-z4-btn {isLeftDrawerOpen ? 'coach-tac-z4-btn--active' : ''}"
+			onclick={onToggleLeftDrawer}
+			aria-pressed={isLeftDrawerOpen}
+			aria-label="Toggle tools and roster drawer"
+			title="Tools & Roster Drawer"
+		>
+			[ ⚡ TOOLS & ROSTER ]
+		</button>
+
+		<span class="coach-tac-z4-divider" aria-hidden="true"></span>
+
 		{#each TOOLS as tool (tool.id)}
 			<button
 				type="button"
@@ -186,9 +223,9 @@
 				model.isDrawerOpen = !model.isDrawerOpen;
 			}}
 			aria-pressed={model.isDrawerOpen}
-			aria-label="Toggle command drawer"
+			aria-label="Toggle command and help drawer"
 		>
-			[ SYS.MENU ]
+			[ ⚙ SYS & HELP ]
 		</button>
 
 		<span class="coach-tac-z4-divider" aria-hidden="true"></span>
@@ -224,6 +261,19 @@
 			disabled={deployPhase !== 'idle' || model.routesLive.length === 0}
 		>
 			{deployPhase !== 'idle' ? '[ ↑ DEPLOYING… ]' : '[ ↑ DEPLOY ]'}
+		</button>
+
+		<span class="coach-tac-z4-divider" aria-hidden="true"></span>
+
+		<!-- EXIT WAR ROOM Button on Bottom Tray -->
+		<button
+			type="button"
+			class="coach-tac-z4-btn coach-tac-z4-btn--exit tw-bg-red-950/50 tw-border tw-border-red-600/60 tw-text-red-300 hover:tw-bg-red-600 hover:tw-text-white tw-font-bold tw-transition-colors"
+			onclick={handleExitClick}
+			title="Exit War Room to Coach Dashboard"
+			aria-label="Exit War Room"
+		>
+			✕ EXIT WAR ROOM
 		</button>
 	</div>
 </div>

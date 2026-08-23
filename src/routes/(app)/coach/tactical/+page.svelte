@@ -33,7 +33,13 @@ import { untrack } from 'svelte';
 >
 	<TacticalArena model={engine.gridEngine} warRoomTool={engine.warRoomTool} isHalfField={engine.isHalfField} />
 	{#if engine.isToolbarVisible}
-		<TacticalHUD model={engine.gridEngine} isHalfField={engine.isHalfField} onToggleHalfField={() => engine.isHalfField = !engine.isHalfField} onToggleToolbar={() => engine.isToolbarVisible = !engine.isToolbarVisible} />
+		<TacticalHUD
+			model={engine.gridEngine}
+			isHalfField={engine.isHalfField}
+			onToggleHalfField={() => engine.isHalfField = !engine.isHalfField}
+			onToggleToolbar={() => engine.isToolbarVisible = !engine.isToolbarVisible}
+			onExit={() => { untrack(() => { goto('/coach/dashboard'); }); }}
+		/>
 	{:else}
 		<button
 			type="button"
@@ -43,12 +49,4 @@ import { untrack } from 'svelte';
 			<span class="tw-text-[#14b8a6]">↑ SHOW TOOLS</span>
 		</button>
 	{/if}
-	<button
-		type="button"
-		class="coach-tac-exit coach-os-action-chip"
-		aria-label="Exit War Room"
-		onclick={() => { untrack(() => { goto('/coach/dashboard'); }); }}
-	>
-		✕ Exit War Room
-	</button>
 </div>

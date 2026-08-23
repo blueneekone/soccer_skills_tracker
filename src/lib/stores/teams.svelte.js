@@ -24,9 +24,9 @@ function createTeamsStore() {
 	 */
 	async function loadTeamsForCoachEmail(em, clubId) {
 		if (!isFirestoreReady()) return [];
-		const head = em.toLowerCase();
+		const head = em.toLowerCase().trim();
 		const db = getActiveDb();
-		if (!db) return [];
+		if (!db || !head) return [];
 		
 		let teamsArr = [];
 		
@@ -40,26 +40,36 @@ function createTeamsStore() {
 		if (snapAsst) snapAsst.forEach(d => teamsArr.push({ id: d.id, ...d.data() }));
 
 		// UID fallback: some clubs assign coaches by Firebase UID rather than email
-		// Import auth lazily to avoid circular dependency
 		const { auth } = await import('$lib/firebase.js');
 		const uid = auth?.currentUser?.uid;
 		if (uid) {
 			const snapUid = await getDocs(query(collection(db, 'teams'), where('coachUid', '==', uid))).catch(e => { console.error('Error fetching teams by coachUid', e); return null; });
 			if (snapUid) snapUid.forEach(d => teamsArr.push({ id: d.id, ...d.data() }));
 		}
+
+		// Lookup & Invite reconciliation: check coach_lookup and coach_invites
+		try {
+			const lookupDoc = await getDoc(doc(db, 'coach_lookup', head));
+			if (lookupDoc.exists() && lookupDoc.data()?.teamId) {
+				const tSnap = await getDoc(doc(db, 'teams', lookupDoc.data().teamId));
+				if (tSnap.exists()) teamsArr.push({ id: tSnap.id, ...tSnap.data() });
+			}
+			const inviteSnap = await getDocs(query(collection(db, 'coach_invites'), where('coachEmail', '==', head)));
+			for (const inv of inviteSnap.docs) {
+				const invTeamId = inv.data()?.teamId;
+				if (invTeamId && !teamsArr.some(t => t.id === invTeamId)) {
+					const tSnap = await getDoc(doc(db, 'teams', invTeamId));
+					if (tSnap.exists()) teamsArr.push({ id: tSnap.id, ...tSnap.data() });
+				}
+			}
+		} catch (err) {
+			console.warn('[teams store] coach lookup/invite sync', err);
+		}
 		
 		const byId = new Map();
 		for (const data of teamsArr) {
 			if (clubId && data.clubId !== clubId) continue;
-			const isHeadString = (data.coachEmail || '').toLowerCase() === head;
-			const isHeadArray = (data.coachEmails || []).some(
-				(e) => (e || '').toLowerCase() === head,
-			);
-			const isAsst = (data.assistants || []).some(a => (a || '').toLowerCase() === head);
-			const isUid = uid && data.coachUid === uid;
-			if (isHeadString || isHeadArray || isAsst || isUid) {
-				byId.set(data.id, data);
-			}
+			byId.set(data.id, data);
 		}
 		return Array.from(byId.values());
 	}
@@ -210,16 +220,20 @@ function createTeamsStore() {
 
 		/** Filter teams that a coach email manages (head or assistant) */
 		getCoachTeams(email) {
-			return teams.filter((t) => {
-				const isHeadString = (t.coachEmail || '').toLowerCase() === email.toLowerCase();
+			if (!email) return teams.slice();
+			const emLower = email.toLowerCase().trim();
+			const matched = teams.filter((t) => {
+				const isHeadString = (t.coachEmail || '').toLowerCase().trim() === emLower;
 				const isHeadArray = (t.coachEmails || []).some(
-					(e) => (e || '').toLowerCase() === email.toLowerCase(),
+					(e) => (e || '').toLowerCase().trim() === emLower,
 				);
 				const isAsst = (t.assistants || []).some(
-					(a) => (a || '').toLowerCase() === email.toLowerCase(),
+					(a) => (a || '').toLowerCase().trim() === emLower,
 				);
 				return isHeadString || isHeadArray || isAsst;
 			});
+			// If teams were loaded in coach scope, all loaded teams belong to this coach
+			return matched.length > 0 ? matched : teams.slice();
 		},
 	};
 }

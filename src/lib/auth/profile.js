@@ -89,10 +89,11 @@ export function isProfileComplete(profile) {
 	if (isAccountSuspendedProfile(/** @type {Record<string, unknown>} */ (profile))) return false;
 	if (profile.isProfileComplete === true) return true;
 	if (isPlayerProfileComplete(/** @type {Record<string, unknown>} */ (profile))) return true;
-	if (profile.role === 'super_admin' || profile.role === 'global_admin') return true;
+	if (profile.role === 'super_admin' || profile.role === 'global_admin' || profile.role === 'admin') return true;
 	if (profile.role === 'director') return true;
-	if (profile.role === 'registrar' && profile.clubId) return true;
-	if (profile.role === 'coach' && profile.teamId) return true;
+	if (profile.role === 'coach') return true;
+	if (profile.role === 'registrar') return true;
+	if (profile.role === 'recruiter' || profile.role === 'fan' || profile.role === 'tutor' || profile.role === 'commissioner') return true;
 	if (isParentProfileComplete(/** @type {Record<string, unknown>} */ (profile))) return true;
 	// Bypass setup for test accounts (e.g. +parent)
 	if (profile.email && typeof profile.email === "string" && profile.email.includes("+")) return true;
