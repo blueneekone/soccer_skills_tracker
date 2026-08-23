@@ -19,22 +19,22 @@ Write-Host "====================================================================
 
 # 1. Ensure dependencies are in sync
 Write-Host "`n[STEP 1/3] Synchronizing platform dependencies..." -ForegroundColor Yellow
-try {
-    pnpm install
-    Write-Host "✅ Dependencies successfully synced." -ForegroundColor Green
-} catch {
+pnpm install
+if ($LASTEXITCODE -ne 0) {
     Write-Host "❌ Failed to run 'pnpm install'. Ensure pnpm is installed globally." -ForegroundColor Red
     exit 1
+} else {
+    Write-Host "✅ Dependencies successfully synced." -ForegroundColor Green
 }
 
 # 2. Compile-time check (Svelte 5 Strictness)
 Write-Host "`n[STEP 2/3] Executing Svelte 5 strict compilation audit..." -ForegroundColor Yellow
-try {
-    pnpm run check
-    Write-Host "✅ Compilation check passed with 0 errors and 0 warnings." -ForegroundColor Green
-} catch {
+pnpm run check
+if ($LASTEXITCODE -ne 0) {
     Write-Host "❌ Svelte compiler returned errors. Resolve Svelte 5 types before running visual tests." -ForegroundColor Red
     exit 1
+} else {
+    Write-Host "✅ Compilation check passed with 0 errors and 0 warnings." -ForegroundColor Green
 }
 
 # 3. Traversal of Persona Pages (Playwright specs)
@@ -57,13 +57,15 @@ foreach ($spec in $specs) {
     Write-Host "Target: $($spec.File)" -ForegroundColor Gray
     Write-Host "---------------------------------------------------------------------" -ForegroundColor Gray
 
-    try {
-        # Run Playwright in headed Chromium mode to inspect visually
-        pnpm playwright test $($spec.File) --project=chromium --headed
-        Write-Host "🟢 PASSED: $($spec.Name)" -ForegroundColor Green
-    } catch {
+    # Run Playwright in headed Chromium mode to inspect visually
+    $targetFile = $spec.File
+    pnpm playwright test "$targetFile" --project=chromium --headed
+    
+    if ($LASTEXITCODE -ne 0) {
         Write-Host "🔴 FAILED: $($spec.Name)" -ForegroundColor Red
         $failedSpecs += $spec.Name
+    } else {
+        Write-Host "🟢 PASSED: $($spec.Name)" -ForegroundColor Green
     }
 }
 
