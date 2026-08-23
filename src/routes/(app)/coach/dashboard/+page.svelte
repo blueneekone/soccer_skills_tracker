@@ -98,7 +98,7 @@
 					<!-- Sideline SIEM Live Feed -->
 					<div class="st-bento sideline-siem-panel vanguard-surface tw-rounded-none tw-border tw-border-slate-700 tw-bg-slate-900/80 tw-p-4 tw-min-w-0" style="background: #0f172a;">
 						<h3 class="tw-text-xs tw-text-[#14b8a6] tw-mb-2 tw-uppercase tw-tracking-widest tw-min-w-0" style="font-family: 'Geist Sans', sans-serif;">SIEM Live Feed</h3>
-						<div class="tw-text-[#D4D4D8] tw-text-sm tw-min-w-0" style="font-family: 'Switzer', sans-serif;">Awaiting Telemetry...</div>
+						<div class="tw-text-[#D4D4D8] tw-text-sm tw-min-w-0" style="font-family: 'Switzer', sans-serif;"><a href="/coach/matchday" class="tw-text-[#14b8a6] hover:tw-text-teal-300 tw-underline tw-underline-offset-4 tw-uppercase" style="font-family: 'Geist Mono', monospace; font-size: 0.75rem;">Enter Match Day &rarr;</a></div>
 					</div>
 
 					<!-- Tactical Playbook Board (Tron War Room) -->

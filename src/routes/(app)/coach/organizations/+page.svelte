@@ -211,7 +211,7 @@
 							href="/coach/dashboard"
 							class="tw-p-3 tw-bg-slate-900 hover:tw-bg-slate-800 tw-border tw-border-slate-800 tw-text-slate-200 hover:tw-text-white tw-font-mono tw-text-xs tw-flex tw-items-center tw-justify-between tw-no-underline tw-transition-colors"
 						>
-							<span>Daily Intel / Dashboard</span>
+							<span>Mission Control / Dashboard</span>
 							<span class="tw-text-[#14b8a6]">&rarr;</span>
 						</a>
 						<a

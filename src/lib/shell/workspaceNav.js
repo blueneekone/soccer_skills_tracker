@@ -22,7 +22,7 @@ export const adminLinks = [
 
 /** @type {ShellNavItem[]} */
 export const directorLinks = [
-	{ tab: '', label: 'Daily Intel', icon: 'content.grid', href: '/director/dashboard' },
+	{ tab: '', label: 'Mission Control', icon: 'content.grid', href: '/director/dashboard' },
 	{ tab: 'compliance-ops', label: 'Compliance & Ops', icon: 'status.shield-check', href: '/director/compliance-ops' },
 	{ tab: 'club-management', label: 'Club Management', icon: 'org.building', href: '/director/club-management' },
 	{ tab: 'tactics-and-training', label: 'Tactics & Training', icon: 'data.target', href: '/director/tactics-and-training' },
@@ -30,7 +30,7 @@ export const directorLinks = [
 
 /** @type {ShellNavItem[]} */
 export const coachLinks = [
-	{ label: 'Daily Intel',       href: '/coach/dashboard',               icon: 'content.grid' },
+	{ label: 'Mission Control',       href: '/coach/dashboard',               icon: 'content.grid' },
 	{ label: 'The Forge',         href: '/coach/forge',         icon: 'game.dumbbell' },
 	{ label: 'Field Station',     href: '/coach/drills',        icon: 'content.checks' },
 	// War Room (/coach/tactical) — Tier 2 per PRODUCT_SURFACE_REGISTRY PS-C04
