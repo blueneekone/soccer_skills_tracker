@@ -41,7 +41,7 @@ describe('COACH-ROSTER-IMPORT — Team Ops wiring', () => {
 		expect(src).toMatch(/Parsing…/);
 	});
 
-	it('Daily Intel links coaches to Team Ops roster import', () => {
+	it('Mission Control links coaches to Team Ops roster import', () => {
 		const src = readFileSync(SQUAD_TELEMETRY, 'utf-8');
 		expect(src).toMatch(/Import CSV on Team Ops/);
 		expect(src).toMatch(/\/coach\/logistics\?tab=roster/);

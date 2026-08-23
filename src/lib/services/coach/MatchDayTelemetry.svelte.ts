@@ -16,6 +16,12 @@ export class MatchDayEngine {
 	events = $state<MatchEvent[]>([]);
 	showHalftimeOverlay = $state(false);
 	telemetryLogs = $state<string[]>(['[TELEMETRY] Match Day Console initialized']);
+
+	opponentName = $state('');
+	finalScore = $state('');
+	matchStartTime = $state<number | null>(null);
+	activeTab = $state<'live' | 'roster' | 'review'>('live');
+	isHelpDrawerOpen = $state(false);
 	targetPrompts = $state([
 		'TASK FOCUS: Ask player what space they found',
 		'AUTONOMY CUE: Let players map the halftime layout',
@@ -26,8 +32,9 @@ export class MatchDayEngine {
 
 	startMatch = (): void => {
 		this.matchStatus = 'running';
+		this.matchStartTime = Date.now();
 		this.logEvent('MATCH_START', 'MATCH STARTED (KICKOFF)');
-		this.telemetryLogs = ['[TELEMETRY] Match clock started', ...this.telemetryLogs];
+		this.telemetryLogs = ['[TELEMETRY] Match clock started with locked timestamp', ...this.telemetryLogs];
 	};
 
 	pauseMatch = (): void => {
@@ -87,6 +94,20 @@ export class MatchDayEngine {
 		this.events = [newEvent, ...this.events];
 	};
 
+
+	logMistake = (): void => {
+		this.logEvent('MISTAKE', 'PLAYER MISTAKE LOGGED');
+		this.targetPrompts = ['RESET: Immediate cognitive refocus on next play', 'PARK IT: Save tactical adjustment for later', ...this.targetPrompts];
+		this.telemetryLogs = ['[TELEMETRY] Mistake logged, cues injected', ...this.telemetryLogs];
+	};
+
+	editEvent = (id: string, newLabel: string): void => {
+		const evt = this.events.find(e => e.id === id);
+		if (evt) {
+			evt.label = newLabel;
+			this.telemetryLogs = ['[TELEMETRY] Event edited post-match', ...this.telemetryLogs];
+		}
+	};
 	syncHalftimeChoice = (): void => {
 		this.showHalftimeOverlay = !this.showHalftimeOverlay;
 		this.telemetryLogs = ['[TELEMETRY] Halftime choice synced', ...this.telemetryLogs];

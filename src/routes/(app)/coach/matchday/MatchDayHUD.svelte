@@ -93,6 +93,24 @@
 		</div>
 	</div>
 
+
+	<div class="tw-flex tw-gap-4 tw-mb-4 tw-p-3 tw-bg-[#0a0a0a] tw-border tw-border-[#334155]">
+		<div class="tw-flex-1">
+			<label class="tw-block tw-font-mono tw-text-[10px] tw-text-slate-400 tw-uppercase tw-mb-1">Opposing Team Name</label>
+			<input type="text" bind:value={engine.opponentName} class="tw-w-full tw-bg-[#1e293b] tw-border tw-border-[#334155] tw-text-white tw-px-3 tw-py-2 tw-font-mono tw-text-sm" placeholder="Enter opponent..." />
+		</div>
+		<div class="tw-w-32">
+			<label class="tw-block tw-font-mono tw-text-[10px] tw-text-slate-400 tw-uppercase tw-mb-1">Final Score</label>
+			<input type="text" bind:value={engine.finalScore} class="tw-w-full tw-bg-[#1e293b] tw-border tw-border-[#334155] tw-text-white tw-px-3 tw-py-2 tw-font-mono tw-text-sm" placeholder="e.g. 2-1" />
+		</div>
+		<div class="tw-flex-1">
+			<label class="tw-block tw-font-mono tw-text-[10px] tw-text-slate-400 tw-uppercase tw-mb-1">Match Start Time</label>
+			<div class="tw-w-full tw-bg-[#1e293b] tw-border tw-border-[#334155] tw-text-gray-300 tw-px-3 tw-py-2 tw-font-mono tw-text-sm tw-h-9 tw-flex tw-items-center">
+				{engine.matchStartTime ? new Date(engine.matchStartTime).toLocaleString() : 'Not started'}
+			</div>
+		</div>
+	</div>
+
 	<!-- Active Status Bar -->
 	<div class="tw-flex tw-flex-wrap tw-items-center tw-justify-between tw-gap-4 tw-mb-4 tw-border-b tw-border-[#334155] tw-pb-3">
 		<div class="tw-flex tw-items-center tw-gap-3">
@@ -130,6 +148,15 @@
 			>
 				{engine.isWhistleActive ? 'GAME WHISTLE: ACTIVE' : 'GAME WHISTLE: INACTIVE'}
 			</button>
+
+			<button
+				type="button"
+				onclick={() => engine.isHelpDrawerOpen = true}
+				class="tw-bg-[#0a0a0a] tw-text-gray-400 tw-border tw-border-[#334155] tw-px-3 tw-py-1.5 tw-font-mono tw-text-xs tw-font-bold hover:tw-text-white tw-transition-colors"
+				style="border-radius: 0px;"
+			>
+				[ ? HELP ]
+			</button>
 		</div>
 	</div>
 
@@ -159,3 +186,26 @@
 		</ul>
 	</div>
 </div>
+
+
+	<!-- Slide-Out Help Drawer (Z4) -->
+	{#if engine.isHelpDrawerOpen}
+		<div class="tw-fixed tw-inset-y-0 tw-right-0 tw-w-80 tw-bg-[#0a0a0a] tw-border-l tw-border-[#334155] tw-z-50 tw-p-6 tw-transform tw-transition-transform">
+			<div class="tw-flex tw-justify-between tw-items-center tw-mb-6">
+				<h2 class="tw-font-mono tw-text-lg tw-text-[#fbbf24] tw-font-bold">Match Day Help</h2>
+				<button onclick={() => engine.isHelpDrawerOpen = false} class="tw-text-gray-400 hover:tw-text-white tw-font-mono">✕ CLOSE</button>
+			</div>
+
+			<div class="tw-space-y-6">
+				<div>
+					<h3 class="tw-font-mono tw-text-sm tw-text-[#06b6d4] tw-mb-2">Game Whistle</h3>
+					<p class="tw-text-sm tw-text-gray-300">Controls the active state of the match recording. Must be active to log events.</p>
+				</div>
+
+				<div>
+					<h3 class="tw-font-mono tw-text-sm tw-text-[#06b6d4] tw-mb-2">Toggle Shield</h3>
+					<p class="tw-text-sm tw-text-gray-300">Activates the "Car Ride Home" shield. This initiates a 15-minute post-game data lockout for parents and players to prevent immediate analysis in the car.</p>
+				</div>
+			</div>
+		</div>
+	{/if}

@@ -11,7 +11,7 @@ const SQUAD_TELEMETRY = join(
 	'SquadTelemetryView.svelte',
 );
 
-describe('COACH-DASHBOARD-LIVE-DATA — Daily Intel readiness matrix', () => {
+describe('COACH-DASHBOARD-LIVE-DATA — Mission Control readiness matrix', () => {
 	const src = readFileSync(SQUAD_TELEMETRY, 'utf-8');
 
 	it('SquadTelemetryView has no READINESS_ROSTER mock constant', () => {

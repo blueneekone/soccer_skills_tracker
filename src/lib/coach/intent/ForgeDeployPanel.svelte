@@ -690,7 +690,7 @@
 					{/each}
 				{:else if roster.length === 0}
 					<p class="tw-px-3 tw-py-3 tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-[#14b8a6]/35 tw-uppercase">
-						No operatives on this squad yet — add players on Daily Intel.
+						No operatives on this squad yet — add players on Mission Control.
 					</p>
 				{:else}
 					{#each roster as player (player.rosterKey)}
@@ -760,26 +760,26 @@
 			>
 				{#if draftScope === 'team'}
 					{nameOnlyRosterCount} name-only {nameOnlyRosterCount === 1 ? 'entry' : 'entries'} —
-					excluded from deploy until player accounts are linked on Daily Intel.
+					excluded from deploy until player accounts are linked on Mission Control.
 				{:else}
 					{nameOnlyRosterCount} name-only roster {nameOnlyRosterCount === 1 ? 'entry' : 'entries'} —
-					link player accounts on Daily Intel before individual assignment.
+					link player accounts on Mission Control before individual assignment.
 				{/if}
 			</p>
 		{/if}
 		{#if draftScope === 'players' && !isLoadingRoster && assignableRosterCount === 0}
 			<p class="tw-font-mono tw-text-[9px] tw-tracking-wide tw-text-slate-500 tw-uppercase" role="status">
-				No assignable players — sync roster emails on Daily Intel first.
+				No assignable players — sync roster emails on Mission Control first.
 			</p>
 		{/if}
 		{#if draftScope === 'team' && !isLoadingRoster && assignableRosterCount === 0 && roster.length > 0}
 			<p class="tw-font-mono tw-text-[9px] tw-tracking-wide tw-text-slate-500 tw-uppercase" role="status">
-				No linked player accounts — link accounts on Daily Intel before squad deploy.
+				No linked player accounts — link accounts on Mission Control before squad deploy.
 			</p>
 		{/if}
 		{#if draftScope === 'team' && !isLoadingRoster && roster.length === 0}
 			<p class="tw-font-mono tw-text-[9px] tw-tracking-wide tw-text-slate-500 tw-uppercase" role="status">
-				No roster entries — add players on Daily Intel or sync the squad list first.
+				No roster entries — add players on Mission Control or sync the squad list first.
 			</p>
 		{/if}
 
