@@ -1,6 +1,4 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { getPrefsDefaults, loadUserPreferences, type UserPreferences } from '../playerSettingsHandlers';
-import { getDoc } from 'firebase/firestore';
 import {
 	computeIsMinorAccount,
 	computeIsOperativeProxy,
@@ -15,7 +13,7 @@ import {
 } from '../playerSettingsHandlers';
 import { getDoc, updateDoc, doc } from 'firebase/firestore';
 import { sendPasswordResetEmail } from 'firebase/auth';
-import { auth } from '$lib/firebase.js';
+import { auth } from '../../firebase.js';
 
 vi.mock('firebase/firestore', () => ({
 	doc: vi.fn(() => ({})),
@@ -27,7 +25,7 @@ vi.mock('firebase/auth', () => ({
 	sendPasswordResetEmail: vi.fn()
 }));
 
-vi.mock('$lib/firebase.js', () => ({
+vi.mock('../../firebase.js', () => ({
 	auth: { currentUser: { email: 'test@example.com' } },
 	db: {}
 }));

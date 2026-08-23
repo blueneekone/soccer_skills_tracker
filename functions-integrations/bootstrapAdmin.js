@@ -80,11 +80,8 @@ function initAdmin() {
   initialized = true;
 }
 
-// Initialize default app on require outside unit tests so all direct
-// require('firebase-admin') consumers find an initialized default app.
-if (!process.env.VITEST && process.env.NODE_ENV !== 'test') {
-  initAdmin();
-}
+// Global initialization is strictly forbidden to prevent deployment timeouts
+// The Proxy below will lazily initialize the Admin SDK when first accessed.
 
 const adminProxy = new Proxy(admin, {
   get(target, prop) {
