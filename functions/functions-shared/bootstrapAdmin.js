@@ -80,8 +80,14 @@ function initAdmin() {
 
 // Initialize default app on require outside unit tests so all direct
 // require('firebase-admin') consumers find an initialized default app.
+// We skip this during Firebase CLI discovery (when neither K_SERVICE nor
+// FUNCTIONS_EMULATOR is set) to prevent gRPC connections from hanging the deploy.
 if (!process.env.VITEST && process.env.NODE_ENV !== 'test') {
-  initAdmin();
+  const isCloudFunction = !!process.env.K_SERVICE || !!process.env.FUNCTION_TARGET;
+  const isEmulator = process.env.FUNCTIONS_EMULATOR === 'true';
+  if (isCloudFunction || isEmulator) {
+    initAdmin();
+  }
 }
 
 const adminProxy = new Proxy(rawAdmin, {

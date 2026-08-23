@@ -57,9 +57,8 @@ export default class AdminDashboardEngine {
 			// Fetch recent active incidents/alerts (mock logic for demonstration)
 			const incidentsSnap = await getDocs(
 				query(
-					collection(activeDb, 'auditLogs'),
-					where('severity', '>=', 'HIGH'),
-					orderBy('createdAt', 'desc'),
+					collection(activeDb, 'security_audit'),
+					orderBy('timestamp', 'desc'),
 					limit(10)
 				)
 			);

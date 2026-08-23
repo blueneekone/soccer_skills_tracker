@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import { db } from '$lib/firebase.js';
+	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { doc, getDoc } from 'firebase/firestore';
 	import { setContext } from 'svelte';
 	import '$lib/styles/enterprise-console.css';
@@ -29,6 +30,7 @@
 		let cancelled = false;
 		clubLoading = true;
 		clubErr = '';
+		if (!db || !authStore.isAuthenticated) return;
 		void getDoc(doc(db, 'clubs', id))
 			.then((snap) => {
 				if (cancelled) return;
