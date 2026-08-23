@@ -62,11 +62,11 @@ function initAdmin() {
   if (fs.existsSync(keyPath)) {
     try {
       const certObj = require(keyPath);
-      credential = rawAdmin.credential.cert(certObj);
+      credential = admin.credential.cert(certObj);
       if (!process.env.GCLOUD_PROJECT) process.env.GCLOUD_PROJECT = certObj.project_id;
       if (!process.env.GCP_PROJECT) process.env.GCP_PROJECT = certObj.project_id;
       if (!process.env.FIREBASE_CONFIG) process.env.FIREBASE_CONFIG = JSON.stringify({ projectId: certObj.project_id });
-      rawAdmin.initializeApp({ credential, projectId: certObj.project_id });
+      admin.initializeApp({ credential, projectId: certObj.project_id });
       initialized = true;
       return;
     } catch (e) {
@@ -75,7 +75,7 @@ function initAdmin() {
   }
 
   if (admin.apps.length === 0) {
-    rawAdmin.initializeApp();
+    admin.initializeApp();
   }
   initialized = true;
 }

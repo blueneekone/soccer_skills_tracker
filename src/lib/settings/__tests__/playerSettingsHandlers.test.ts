@@ -60,6 +60,9 @@ describe('getPrefsDefaults', () => {
 			expect(prefs.push_messages).toBe(true);
 			expect(prefs.email_weeklyReport).toBe(false);
 		}
+	});
+});
+
 describe('computeIsMinorAccount', () => {
 	it('returns false when profile is null or undefined', () => {
 		expect(computeIsMinorAccount(null)).toBe(false);
