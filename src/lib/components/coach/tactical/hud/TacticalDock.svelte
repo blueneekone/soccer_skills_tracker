@@ -2,7 +2,7 @@
 	import { goto } from '$app/navigation';
 	import { untrack } from 'svelte';
 
-	/** @type {{ model: import('$lib/components/coach/TacticalEngine.svelte.ts').TacticalWarRoomModel, deployPhase: string, onDeploy: () => void, isHalfField?: boolean, onToggleHalfField?: () => void, onToggleToolbar?: () => void, isLeftDrawerOpen?: boolean, onToggleLeftDrawer?: () => void, onExit?: () => void }} */
+	/** @type {{ model: import('$lib/components/coach/TacticalEngine.svelte.ts').TacticalWarRoomModel, deployPhase: string, onDeploy: () => void, isHalfField?: boolean, onToggleHalfField?: () => void, onToggleToolbar?: () => void, isTacticsHubOpen?: boolean, onToggleTacticsHub?: () => void, onExit?: () => void }} */
 	let {
 		model,
 		deployPhase = 'idle',
@@ -10,8 +10,8 @@
 		isHalfField = false,
 		onToggleHalfField,
 		onToggleToolbar,
-		isLeftDrawerOpen = false,
-		onToggleLeftDrawer,
+		isTacticsHubOpen = false,
+		onToggleTacticsHub,
 		onExit,
 	} = $props();
 
@@ -80,16 +80,16 @@
 <!-- Z1 timeline well + Z4 HUD actions -->
 <div class="coach-tac-z1-dock" aria-hidden="false">
 	<div class="coach-tac-z1-well" role="toolbar" aria-label="Tactical dock">
-		<!-- Left Drawer Toggle (Tools, Roster, Drill Info) -->
+		<!-- Tactics Hub Toggle -->
 		<button
 			type="button"
-			class="coach-tac-z4-btn {isLeftDrawerOpen ? 'coach-tac-z4-btn--active' : ''}"
-			onclick={onToggleLeftDrawer}
-			aria-pressed={isLeftDrawerOpen}
-			aria-label="Toggle tools and roster drawer"
-			title="Tools & Roster Drawer"
+			class="coach-tac-z4-btn {isTacticsHubOpen ? 'coach-tac-z4-btn--active' : ''}"
+			onclick={onToggleTacticsHub}
+			aria-pressed={isTacticsHubOpen}
+			aria-label="Toggle Tactics Hub"
+			title="Tactics Hub"
 		>
-			[ ⚡ TOOLS & ROSTER ]
+			[ ⚡ TACTICS HUB ]
 		</button>
 
 		<span class="coach-tac-z4-divider" aria-hidden="true"></span>
@@ -131,36 +131,6 @@
 		>
 			BALL PASS
 		</button>
-
-		<button
-			type="button"
-			class="coach-tac-z4-btn {model.isOpponentDeployActive ? 'coach-tac-z4-btn--active' : ''}"
-			onclick={() => {
-				model.isOpponentDeployActive = !model.isOpponentDeployActive;
-			}}
-		>
-			OP DEPLOY
-		</button>
-
-		<select
-			class="position-deploy-selector tw-bg-[#0f172a] tw-text-[#fbbf24] tw-border tw-border-slate-700 tw-px-2 tw-py-1 tw-text-xs tw-font-mono"
-			style="border-radius: 0px;"
-			bind:value={model.selectedOpponentPosition}
-			onchange={() => {
-				model.isOpponentDeployActive = true;
-			}}
-		>
-			<option value="GK">GK</option>
-			<option value="CB">CB</option>
-			<option value="CDM">CDM</option>
-			<option value="LWB">LWB</option>
-			<option value="ST">ST</option>
-			<option value="LB">LB</option>
-			<option value="RB">RB</option>
-			<option value="CM">CM</option>
-			<option value="LW">LW</option>
-			<option value="RW">RW</option>
-		</select>
 
 		<span class="coach-tac-z4-divider" aria-hidden="true"></span>
 
@@ -215,23 +185,6 @@
 
 		<button
 			type="button"
-			class="coach-tac-z4-btn coach-tac-z4-btn--menu
-				{model.isDrawerOpen ? 'coach-tac-z4-btn--menu-active' : ''}"
-			onclick={(e) => {
-				e.preventDefault();
-				e.stopPropagation();
-				model.isDrawerOpen = !model.isDrawerOpen;
-			}}
-			aria-pressed={model.isDrawerOpen}
-			aria-label="Toggle command and help drawer"
-		>
-			[ ⚙ SYS & HELP ]
-		</button>
-
-		<span class="coach-tac-z4-divider" aria-hidden="true"></span>
-
-		<button
-			type="button"
 			class="coach-tac-z4-icon-btn {isHalfField ? 'coach-tac-z4-btn--active' : ''}"
 			onclick={onToggleHalfField}
 			title={isHalfField ? 'Full Field View' : 'Half Field View'}
@@ -260,7 +213,7 @@
 			onclick={onDeploy}
 			disabled={deployPhase !== 'idle' || model.routesLive.length === 0}
 		>
-			{deployPhase !== 'idle' ? '[ ↑ DEPLOYING… ]' : '[ ↑ DEPLOY ]'}
+			{deployPhase !== 'idle' ? '[ ↑ DEPLOYING… ]' : '[ OPS DEPLOY ]'}
 		</button>
 
 		<span class="coach-tac-z4-divider" aria-hidden="true"></span>
