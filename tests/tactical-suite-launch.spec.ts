@@ -35,8 +35,9 @@ test.describe('Coach Tactical War Room & Match Day Suite', () => {
     await page.addStyleTag({ content: '* { animation: none !important; transition: none !important; }' });
 
     // 2. Force a hard, clean-slate page navigation to flush memory
-    await page.goto('/coach/dashboard');
-    await page.waitForLoadState('networkidle');
+    await page.goto('/coach/dashboard', { waitUntil: 'load' });
+    // Let it settle but don't wait for pure network idle which may time out in WebKit
+    await page.waitForTimeout(100);
   });
 
   test('Should seamlessly transition from War Room strategy to Drill Designer', async ({ page }) => {
