@@ -1,5 +1,7 @@
  
 'use strict';
+const { setGlobalOptions } = require('firebase-functions/v2');
+setGlobalOptions({ maxInstances: 10 });
 
 /**
  * functions-platform — cell routing, /v1 apiGateway, admin + analytics.

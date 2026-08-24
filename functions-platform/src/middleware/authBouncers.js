@@ -31,6 +31,8 @@ const db = () => admin.firestore();
 const READONLY_SUBSCRIPTION_MSG =
     'Subscription inactive. Account is in read-only mode.';
 
+const isSuperRole = (role) => role === 'super_admin' || role === 'global_admin' || role === 'admin';
+
 // ── Bouncer implementations ───────────────────────────────────────────────────
 
 /**
@@ -42,7 +44,7 @@ function assertDirectorOrSuper(request) {
     throw new HttpsError('unauthenticated', 'Sign in required.');
   }
   const role = request.auth.token.role;
-  if (role !== 'super_admin' && role !== 'director') {
+  if (!isSuperRole(role) && role !== 'director') {
     throw new HttpsError(
         'permission-denied',
         'Only directors and application admins may perform this action.',
@@ -67,7 +69,7 @@ async function assertClubSubscriptionWritable(clubId, request) {
   if (!clubId || typeof clubId !== 'string' || !clubId.trim()) {
     return;
   }
-  if (request.auth && request.auth.token.role === 'super_admin') {
+  if (request.auth && isSuperRole(request.auth.token.role)) {
     return;
   }
   const snap =
@@ -99,7 +101,7 @@ function assertSuperAdmin(request) {
     throw new HttpsError('unauthenticated', 'Sign in required.');
   }
   const role = request.auth.token.role;
-  if (role !== 'super_admin' && role !== 'global_admin' && role !== 'admin') {
+  if (!isSuperRole(role)) {
     throw new HttpsError(
         'permission-denied',
         'Only application super admins may perform this action.',
@@ -137,7 +139,7 @@ async function assertCanSecureAddPlayer(request, teamId) {
   if (!clubId) {
     throw new HttpsError('failed-precondition', 'Team has no club scope.');
   }
-  if (role === 'super_admin') {
+  if (isSuperRole(role)) {
     return {clubId};
   }
   if (role === 'director' && tokenClub && tokenClub === clubId) {
@@ -242,7 +244,7 @@ function assertClubStaff(request) {
   }
   const role = request.auth.token.role;
   const clubId = request.auth.token.clubId || null;
-  if (role === 'super_admin') {
+  if (isSuperRole(role)) {
     return {role, clubId, email: request.auth.token.email};
   }
   if (role === 'director' || role === 'registrar') {
@@ -273,7 +275,7 @@ function assertCoachMessageSender(request) {
   const email = normEmail(request.auth.token.email);
   const teamId = request.auth.token.teamId || null;
   const clubId = request.auth.token.clubId || null;
-  if (role === 'super_admin') {
+  if (isSuperRole(role)) {
     return {role, teamId, clubId, email};
   }
   if (role === 'director') {
@@ -314,7 +316,7 @@ function assertActorCanAccessTeam(actor, teamId, tSnap) {
       typeof tSnap.data().clubId === 'string' ?
         tSnap.data().clubId.trim() :
         null;
-  if (actor.role === 'super_admin') {
+  if (isSuperRole(actor.role)) {
     return;
   }
   if (actor.role === 'coach') {
@@ -373,7 +375,7 @@ function assertPlayer(request) {
  */
 function assertDirectorClubOrSuper(request, clubId) {
   const actor = assertDirectorOrSuper(request);
-  if (actor.role === 'super_admin') {
+  if (isSuperRole(actor.role)) {
     return actor;
   }
   if (!clubId || actor.clubId !== clubId) {
@@ -397,7 +399,7 @@ function assertClubStaffOrSuper(request, clubId) {
   }
   const role = request.auth.token.role;
   const tokenClub = request.auth.token.clubId || null;
-  if (role === 'super_admin') {
+  if (isSuperRole(role)) {
     return {
       role,
       clubId: tokenClub,
