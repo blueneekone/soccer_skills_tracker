@@ -158,8 +158,14 @@ export function createTacticalWarRoom(host: TacticalGridHost) {
 	let selectedOpponentPosition = $state('CDM');
 	let isOpponentDeployActive = $state(false);
 
+	const CLINICAL_POSITIONS = ['GK', 'CB', 'CDM', 'ST'];
+	let nextPosIdx = 0;
+
 	function deployOpponentTokenAt(p: { x: number; y: number }, posOverride?: string) {
-		const pos = posOverride || selectedOpponentPosition || 'CDM';
+		const pos = posOverride || selectedOpponentPosition || CLINICAL_POSITIONS[nextPosIdx];
+		if (!posOverride && !selectedOpponentPosition) {
+			nextPosIdx = (nextPosIdx + 1) % CLINICAL_POSITIONS.length;
+		}
 		const newOpponent: TacticalToken = {
 			id: `opp_${Date.now()}_${Math.floor(Math.random() * 1000)}`,
 			name: pos,
@@ -171,7 +177,6 @@ export function createTacticalWarRoom(host: TacticalGridHost) {
 			y: p.y
 		};
 		host.wrOppPitch.set([...host.wrOppPitch.get(), newOpponent]);
-		isOpponentDeployActive = false;
 	}
 
 	/** Snapshots for rewind — restored by `resetPositions()` (timeline + x/y). */
@@ -422,7 +427,21 @@ export function createTacticalWarRoom(host: TacticalGridHost) {
 	function onPitchContextMenu(ev: Event) {
 		ev.preventDefault();
 		if (host.warRoomTool.get() !== 'DRAG' || anchorDrag) return;
-		radial.openRadialHub(ev as PointerEvent, null, true);
+
+		const pointerEv = ev as PointerEvent;
+		if (pitchSvgEl) {
+			const pt = pitchSvgEl.createSVGPoint();
+			pt.x = pointerEv.clientX;
+			pt.y = pointerEv.clientY;
+			const svgP = pt.matrixTransform(pitchSvgEl.getScreenCTM()!.inverse());
+
+			if (isOpponentDeployActive) {
+				deployOpponentTokenAt(svgP);
+				return;
+			}
+		}
+
+		radial.openRadialHub(pointerEv, null, true);
 	}
 
 	/** Token right-click: suppress native menu and open deploy radial (same rules as pitch context menu). */

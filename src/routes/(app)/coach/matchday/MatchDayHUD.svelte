@@ -30,6 +30,20 @@
 </script>
 
 <div class="tw-bg-[#1e293b] tw-border tw-border-[#334155] tw-p-4 tw-rounded-none" style="border-radius: 0px;">
+	{#if engine.lightningDistance <= 10}
+		<div
+			class="tw-w-full tw-p-3 tw-mb-4 tw-font-mono tw-text-sm tw-font-bold tw-text-black tw-uppercase tw-text-center {engine.lightningDistance < 6 ? 'tw-bg-[#dc2626] tw-animate-pulse' : 'tw-bg-[#f59e0b]'}"
+			style="border-radius: 0px;"
+			data-testid="weather-banner"
+		>
+			{#if engine.lightningDistance < 6}
+				[ RED LOCKDOWN ] LIGHTNING STRIKE WITHIN 6 MILES. FIELD LOCKED. EVACUATE PLAYERS IMMEDIATELY.
+			{:else}
+				[ AMBER ALERT ] LIGHTNING STRIKE WITHIN 10 MILES. PREPARE TO SEEK SHELTER.
+			{/if}
+		</div>
+	{/if}
+
 	<!-- Game Clock & Match Controls Strap -->
 	<div class="tw-flex tw-flex-wrap tw-items-center tw-justify-between tw-gap-4 tw-mb-4 tw-p-3 tw-bg-[#0a0a0a] tw-border tw-border-[#334155]">
 		<div class="tw-flex tw-items-center tw-gap-4">
@@ -166,25 +180,33 @@
 		{#each engine.telemetryLogs.slice(0, 3) as log}
 			<div class="tw-font-mono tw-text-xs tw-text-gray-300">{log}</div>
 		{/each}
+
+		<div class="tw-mt-2 tw-flex tw-gap-2 tw-opacity-20 hover:tw-opacity-100 tw-transition-opacity">
+			<button class="tw-text-[10px] tw-bg-gray-800 tw-px-2 tw-py-1" onclick={() => engine.simulateLightning(8.5)}>Sim 8.5m</button>
+			<button class="tw-text-[10px] tw-bg-gray-800 tw-px-2 tw-py-1" onclick={() => engine.simulateLightning(5.2)}>Sim 5.2m</button>
+			<button class="tw-text-[10px] tw-bg-gray-800 tw-px-2 tw-py-1" onclick={() => engine.simulateLightning(20)}>Sim Clear</button>
+		</div>
 	</div>
 
 	<!-- TARGET Coaching Prompt Engine -->
-	<div
-		class="target-prompt-container tw-bg-[#0a0a0a] tw-border tw-border-[#334155] tw-p-4"
-		style="font-family: Switzer, sans-serif; border-radius: 0px;"
-	>
-		<div class="tw-font-mono tw-text-xs tw-text-[#fbbf24] tw-font-bold tw-uppercase tw-tracking-wider tw-mb-2">
-			TARGET Coaching Cues
+	{#key engine.targetPrompts}
+		<div
+			class="target-prompt-container tw-bg-[#0a0a0a] tw-border tw-border-[#334155] tw-p-4 tw-transition-all tw-duration-300"
+			style="font-family: Switzer, sans-serif; border-radius: 0px;"
+		>
+			<div class="tw-font-mono tw-text-xs tw-text-[#fbbf24] tw-font-bold tw-uppercase tw-tracking-wider tw-mb-2">
+				TARGET Coaching Cues
+			</div>
+			<ul class="tw-space-y-1.5 tw-text-sm tw-text-gray-200">
+				{#each engine.targetPrompts as prompt}
+					<li class="tw-flex tw-items-start tw-gap-2">
+						<span class="tw-text-[#06b6d4] tw-font-bold">›</span>
+						<span class="{prompt.startsWith('RESET') || prompt.startsWith('PARK IT') ? 'tw-text-[#fbbf24] tw-font-bold' : ''}">{prompt}</span>
+					</li>
+				{/each}
+			</ul>
 		</div>
-		<ul class="tw-space-y-1.5 tw-text-sm tw-text-gray-200">
-			{#each engine.targetPrompts as prompt}
-				<li class="tw-flex tw-items-start tw-gap-2">
-					<span class="tw-text-[#06b6d4] tw-font-bold">›</span>
-					<span>{prompt}</span>
-				</li>
-			{/each}
-		</ul>
-	</div>
+	{/key}
 </div>
 
 

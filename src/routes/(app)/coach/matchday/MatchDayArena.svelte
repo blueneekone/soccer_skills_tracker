@@ -141,9 +141,9 @@
 			<table class="tw-w-full tw-text-left tw-border-collapse">
 				<thead>
 					<tr class="tw-border-b tw-border-[#334155]">
-						<th class="tw-p-2 tw-font-sans tw-text-xs tw-text-gray-400">Time</th>
-						<th class="tw-p-2 tw-font-sans tw-text-xs tw-text-gray-400">Event Type</th>
-						<th class="tw-p-2 tw-font-sans tw-text-xs tw-text-gray-400">Label (Click to Edit)</th>
+						<th class="tw-p-2 tw-font-mono tw-text-xs tw-text-gray-400">Time</th>
+						<th class="tw-p-2 tw-font-mono tw-text-xs tw-text-gray-400">Event Type</th>
+						<th class="tw-p-2 tw-font-mono tw-text-xs tw-text-gray-400">Label (Click to Edit)</th>
 					</tr>
 				</thead>
 				<tbody>
