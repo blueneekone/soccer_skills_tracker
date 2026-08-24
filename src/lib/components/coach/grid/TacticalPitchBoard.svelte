@@ -107,6 +107,7 @@
 		<svg
 			bind:this={pitchSvgEl}
 			id="tactical-pitch"
+			data-testid="pitch-canvas"
 			class="tactical-pitch-canvas tactical-arena-canvas tw-absolute tw-inset-0 tw-w-full tw-h-full tw-opacity-90 tw-touch-none tw-select-none {warRoomTool ===
 			'ROUTE'
 				? 'tw-cursor-crosshair'

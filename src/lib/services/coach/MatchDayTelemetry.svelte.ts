@@ -30,6 +30,22 @@ export class MatchDayEngine {
 		'Autonomy support'
 	]);
 
+	lightningDistance = $state<number>(20);
+	isFieldLocked = $state<boolean>(false);
+
+	simulateLightning = (distance: number): void => {
+		this.lightningDistance = distance;
+		if (distance < 6) {
+			this.isFieldLocked = true;
+			this.matchStatus = 'paused';
+			this.telemetryLogs = ['[ALARM] 6-MILE RED LOCKDOWN: SafeSport shadow CC sent. Evacuate immediately.', ...this.telemetryLogs];
+		} else if (distance <= 10) {
+			this.telemetryLogs = ['[WARN] 10-Mile Amber Alert: Prepare for potential shelter.', ...this.telemetryLogs];
+		} else {
+			this.isFieldLocked = false;
+		}
+	};
+
 	startMatch = (): void => {
 		this.matchStatus = 'running';
 		this.matchStartTime = Date.now();
