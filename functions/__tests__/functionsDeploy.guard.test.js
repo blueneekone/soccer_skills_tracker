@@ -732,6 +732,21 @@ describe('functionsDeploy guard — DEV-SCHEDULERS-GATE', () => {
         'deploy:comms-schedulers must exist for opt-in scheduler deploy',
     );
   });
+
+  it('deploy:integrations excludes SCHEDULERS_ENABLED-gated scheduler exports', () => {
+    const pkg = JSON.parse(readRepo('package.json'));
+    const script = pkg.scripts['deploy:integrations'];
+    assert.ok(script, 'deploy:integrations script must exist');
+    assert.doesNotMatch(
+        script,
+        /evaluateFieldWeatherLock/,
+        'deploy:integrations must not target evaluateFieldWeatherLock when dev gate is off',
+    );
+    assert.ok(
+        pkg.scripts['deploy:integrations-schedulers'],
+        'deploy:integrations-schedulers must exist for opt-in scheduler deploy',
+    );
+  });
 });
 
 describe('functionsDeploy guard — WebAuthn RP env', () => {
