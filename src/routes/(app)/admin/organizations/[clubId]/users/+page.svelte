@@ -13,6 +13,8 @@
 		limit,
 		serverTimestamp,
 	} from 'firebase/firestore';
+	import { httpsCallable } from 'firebase/functions';
+	import { functions } from '$lib/firebase.js';
 	import { ADMIN_CLUB_CTX_KEY, type AdminClubCtx } from '../adminClubCtx.js';
 	import Icon from '$lib/components/ui/Icon.svelte';
 	import type { IconName } from '$lib/icons/registry.js';
@@ -144,7 +146,8 @@
 		users[idx]!.role = newRole;
 
 		try {
-			await updateDoc(doc(activeDb, 'users', userId), { role: newRole });
+			const updateUserRoleFn = httpsCallable(functions, 'updateUserRole');
+			await updateUserRoleFn({ targetEmail: users[idx]?.email || userId, newRole });
 			await logSecurityEvent('UPDATE_USER_ROLE', userId, `Role changed to ${newRole}`);
 			successMsg = `Role updated to ${newRole} for ${users[idx]!.email || userId}`;
 			setTimeout(() => { successMsg = ''; }, 4000);

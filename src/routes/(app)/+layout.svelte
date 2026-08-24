@@ -229,7 +229,11 @@
 					return;
 				}
 
-				const prof = authStore.userProfile;
+				let prof;
+				untrack(() => {
+					prof = authStore.userProfile;
+				});
+
 				const pathVpc = untrack(() => page.url.pathname);
 				if (
 					authStore.role === 'player' &&
@@ -259,8 +263,8 @@
 				const pathIntake = untrack(() => page.url.pathname);
 				if (
 					authStore.role === 'player' &&
-					authStore.userProfile &&
-					!authStore.userProfile.medicalSignatureVerified &&
+					prof &&
+					!prof.medicalSignatureVerified &&
 					isDataCollectionRoute(pathIntake) &&
 					!pathIntake.startsWith('/player/intake')
 				) {
@@ -270,9 +274,9 @@
 
 				if (
 					authStore.role === 'player' &&
-					authStore.userProfile &&
-					authStore.userProfile.medicalSignatureVerified &&
-					!authStore.userProfile.liabilityWaiverVerified &&
+					prof &&
+					prof.medicalSignatureVerified &&
+					!prof.liabilityWaiverVerified &&
 					isDataCollectionRoute(pathIntake) &&
 					!pathIntake.startsWith('/player/waivers')
 				) {
@@ -293,10 +297,9 @@
 
 				const pathRole = untrack(() => page.url.pathname);
 				if (!isRouteAllowedForRole(pathRole, authStore.role)) {
-					const dest = untrack(() =>
-						applyLoginWaterfall(authStore.role, authStore.userProfile),
-					);
+					const dest = untrack(() => applyLoginWaterfall(authStore.role, prof));
 					untrack(() => goto(dest, { replaceState: true }));
+					return;
 				}
 			} finally {
 				if (!cancelled) {

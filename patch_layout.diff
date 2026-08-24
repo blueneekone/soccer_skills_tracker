@@ -1,43 +1,29 @@
 <<<<<<< SEARCH
-				// HIPAA & Medical Release Integrated Intake Gate
-				const pathIntake = untrack(() => page.url.pathname);
-				if (
-					authStore.role === 'player' &&
-					authStore.userProfile &&
-					!authStore.userProfile.medicalSignatureVerified &&
-					isDataCollectionRoute(pathIntake) &&
-					!pathIntake.startsWith('/player/intake')
-				) {
-					untrack(() => goto('/player/intake', { replaceState: true }));
+				untrack(() => {
+					if (!authStore.isProfileComplete && authStore.role !== 'admin' && authStore.role !== 'global_admin' && authStore.role !== 'super_admin') {
+						passkeyEligibilityConfirmed = true;
+						routeGuardResolved = true;
+						goto('/onboarding', { replaceState: true });
+					});
 					return;
 				}
 
-				const clearanceRoles = ['coach', 'recruiter', 'director', 'tutor'];
+				const prof = untrack(() => authStore.userProfile);
+				const pathVpc = untrack(() => page.url.pathname);
 =======
-				// HIPAA & Medical Release Integrated Intake Gate
-				const pathIntake = untrack(() => page.url.pathname);
-				if (
-					authStore.role === 'player' &&
-					authStore.userProfile &&
-					!authStore.userProfile.medicalSignatureVerified &&
-					isDataCollectionRoute(pathIntake) &&
-					!pathIntake.startsWith('/player/intake')
-				) {
-					untrack(() => goto('/player/intake', { replaceState: true }));
+				if (!authStore.isProfileComplete && authStore.role !== 'admin' && authStore.role !== 'global_admin' && authStore.role !== 'super_admin') {
+					untrack(() => {
+						passkeyEligibilityConfirmed = true;
+						routeGuardResolved = true;
+						goto('/onboarding', { replaceState: true });
+					});
 					return;
 				}
 
-				if (
-					authStore.role === 'player' &&
-					authStore.userProfile &&
-					authStore.userProfile.medicalSignatureVerified &&
-					!authStore.userProfile.liabilityWaiverVerified &&
-					isDataCollectionRoute(pathIntake) &&
-					!pathIntake.startsWith('/player/waivers')
-				) {
-					untrack(() => goto('/player/waivers', { replaceState: true }));
-					return;
-				}
+				let prof;
+				untrack(() => {
+					prof = authStore.userProfile;
+				});
 
-				const clearanceRoles = ['coach', 'recruiter', 'director', 'tutor'];
+				const pathVpc = untrack(() => page.url.pathname);
 >>>>>>> REPLACE
