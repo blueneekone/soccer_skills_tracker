@@ -1,29 +1,43 @@
 <<<<<<< SEARCH
-				untrack(() => {
-					if (!authStore.isProfileComplete && authStore.role !== 'admin' && authStore.role !== 'global_admin' && authStore.role !== 'super_admin') {
-						passkeyEligibilityConfirmed = true;
-						routeGuardResolved = true;
-						goto('/onboarding', { replaceState: true });
-					});
+				// HIPAA & Medical Release Integrated Intake Gate
+				const pathIntake = untrack(() => page.url.pathname);
+				if (
+					authStore.role === 'player' &&
+					authStore.userProfile &&
+					!authStore.userProfile.medicalSignatureVerified &&
+					isDataCollectionRoute(pathIntake) &&
+					!pathIntake.startsWith('/player/intake')
+				) {
+					untrack(() => goto('/player/intake', { replaceState: true }));
 					return;
 				}
 
-				const prof = untrack(() => authStore.userProfile);
-				const pathVpc = untrack(() => page.url.pathname);
+				const clearanceRoles = ['coach', 'recruiter', 'director', 'tutor'];
 =======
-				if (!authStore.isProfileComplete && authStore.role !== 'admin' && authStore.role !== 'global_admin' && authStore.role !== 'super_admin') {
-					untrack(() => {
-						passkeyEligibilityConfirmed = true;
-						routeGuardResolved = true;
-						goto('/onboarding', { replaceState: true });
-					});
+				// HIPAA & Medical Release Integrated Intake Gate
+				const pathIntake = untrack(() => page.url.pathname);
+				if (
+					authStore.role === 'player' &&
+					authStore.userProfile &&
+					!authStore.userProfile.medicalSignatureVerified &&
+					isDataCollectionRoute(pathIntake) &&
+					!pathIntake.startsWith('/player/intake')
+				) {
+					untrack(() => goto('/player/intake', { replaceState: true }));
 					return;
 				}
 
-				let prof;
-				untrack(() => {
-					prof = authStore.userProfile;
-				});
+				if (
+					authStore.role === 'player' &&
+					authStore.userProfile &&
+					authStore.userProfile.medicalSignatureVerified &&
+					!authStore.userProfile.liabilityWaiverVerified &&
+					isDataCollectionRoute(pathIntake) &&
+					!pathIntake.startsWith('/player/waivers')
+				) {
+					untrack(() => goto('/player/waivers', { replaceState: true }));
+					return;
+				}
 
-				const pathVpc = untrack(() => page.url.pathname);
+				const clearanceRoles = ['coach', 'recruiter', 'director', 'tutor'];
 >>>>>>> REPLACE

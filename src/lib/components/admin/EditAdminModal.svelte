@@ -55,7 +55,6 @@
 	let primaryFacility = $state('');
 	let adminNotes      = $state('');
 	let dateOfBirth     = $state('');
-	let selectedTeamId  = $state('');
 
 	let saving = $state(false);
 	let errMsg = $state('');
@@ -92,14 +91,9 @@
 		primaryFacility = typeof admin.primaryFacility === 'string' ? admin.primaryFacility : '';
 		adminNotes      = typeof admin.adminNotes === 'string' ? admin.adminNotes : '';
 		dateOfBirth     = formatDobInput(admin.dateOfBirth);
-		selectedTeamId  = typeof admin.teamId === 'string' ? admin.teamId : '';
 		errMsg = '';
 		okMsg = '';
 	});
-
-	const unassignedTeams = $derived(
-		teamsStore.teams.filter(t => !t.coachEmail && t.clubId === admin?.clubId)
-	);
 
 	$effect(() => {
 		if (!open) return;
@@ -174,20 +168,7 @@
 				}
 			}
 
-			const { role: newRole, roleUpdatedAt, roleUpdatedBy, ...otherPatchFields } = patch;
-			if (Object.keys(otherPatchFields).length > 0) {
-				await updateDoc(doc(db, 'users', admin.id), otherPatchFields);
-			}
-
-			if (previousRole !== role) {
-				const updateUserRoleFn = httpsCallable(functions, 'updateUserRole');
-				await updateUserRoleFn({ targetEmail: admin.email || admin.id, newRole: role });
-			}
-
-			if (role === 'coach' && selectedTeamId && selectedTeamId !== admin.teamId) {
-				const inviteCoachFn = httpsCallable(functions, 'directorInviteCoach');
-				await inviteCoachFn({ teamId: selectedTeamId, coachEmail: admin.email || admin.id });
-			}
+			await updateDoc(doc(db, 'users', admin.id), patch);
 
 			// Keep config/admins canonical if role changed.
 			try {
@@ -228,7 +209,7 @@
 			}
 
 			/** @type {UserRow} */
-			const merged = { ...admin, ...patch, role };
+			const merged = { ...admin, ...patch };
 			onSaved?.(merged);
 
 			okMsg = `Saved changes for ${admin.email || admin.id}.`;
@@ -320,18 +301,6 @@
 						<option value="player">Player</option>
 					</select>
 				</div>
-
-				{#if role === 'coach'}
-					<div class="eam-field">
-						<label class="eam-label tw-text-[#fbbf24]" for="eam-team">Assign Team</label>
-						<select id="eam-team" class="eam-input tw-border-[#fbbf24]/50 focus:tw-border-[#fbbf24]" bind:value={selectedTeamId} disabled={saving}>
-							<option value="">Unassigned</option>
-							{#each unassignedTeams as team (team.id)}
-								<option value={team.id}>{team.name || team.id}</option>
-							{/each}
-						</select>
-					</div>
-				{/if}
 
 				<div class="eam-field">
 					<label class="eam-label" for="eam-phone">Phone Number</label>
