@@ -75,7 +75,9 @@
 		routeContextMenuPos = null,
 		routeContextMenuTargetId = null,
 		/** @type {(id: string) => void} */
-		onDeleteRoute = undefined,
+		onDeleteRoute,
+		onDeletePlayer,
+		isEraseMode = false,
 		handleSvgClick,
 		setHoveredRouteId,
 		setHoveredDiscId,
@@ -192,7 +194,11 @@
 							onSelect={() => setFocusedPlayerId(player.id)}
 							onPointerDown={(e) => {
 								e.stopPropagation();
-								startDrag(e, player);
+								if (isEraseMode) {
+									onDeletePlayer?.(player.id);
+								} else {
+									startDrag(e, player);
+								}
 							}}
 							onRightClick={onTokenContextMenu
 								? (e) => onTokenContextMenu(e, player)

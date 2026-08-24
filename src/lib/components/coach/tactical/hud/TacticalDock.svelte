@@ -27,6 +27,7 @@
 	function pickMode(/** @type {'cursor' | 'draw' | 'erase'} */ mode) {
 		dockMode = mode;
 		model.setActiveTool(mode === 'draw' || mode === 'erase' ? 'ROUTE' : 'DRAG');
+		model.isEraseMode = mode === 'erase';
 	}
 
 	function handleExitClick() {
@@ -80,19 +81,6 @@
 <!-- Z1 timeline well + Z4 HUD actions -->
 <div class="coach-tac-z1-dock" aria-hidden="false">
 	<div class="coach-tac-z1-well" role="toolbar" aria-label="Tactical dock">
-		<!-- Tactics Hub Toggle -->
-		<button
-			type="button"
-			class="coach-tac-z4-btn {isTacticsHubOpen ? 'coach-tac-z4-btn--active' : ''}"
-			onclick={onToggleTacticsHub}
-			aria-pressed={isTacticsHubOpen}
-			aria-label="Toggle Tactics Hub"
-			title="Tactics Hub"
-		>
-			[ ⚡ TACTICS HUB ]
-		</button>
-
-		<span class="coach-tac-z4-divider" aria-hidden="true"></span>
 
 		{#each TOOLS as tool (tool.id)}
 			<button

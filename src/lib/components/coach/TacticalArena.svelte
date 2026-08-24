@@ -59,6 +59,8 @@
 			routeContextMenuPos={model.routeContextMenuPos}
 			routeContextMenuTargetId={model.routeContextMenuTargetId}
 			onDeleteRoute={model.deleteRoute}
+			onDeletePlayer={model.deletePlayer}
+			isEraseMode={model.isEraseMode}
 			handleSvgClick={model.handleSvgClick}
 			onRouteClick={model.onRouteClick}
 			setHoveredRouteId={model.setHoveredRouteId}

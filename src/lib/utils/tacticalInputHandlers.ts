@@ -239,8 +239,46 @@ export function executePointerUp(ev: PointerEvent, host: TacticalPointerHost, re
 			if (dock.bindPlayerId !== null) bindId = dock.bindPlayerId;
 			else if (!bindId) bindId = host.bindPlayerIdAtRouteStart(draft.x1, draft.y1);
 			const _newRoute = { id, x1: draft.x1, y1: draft.y1, cx: mc.cx, cy: mc.cy, x2: dock.x, y2: dock.y, color: host.activeRouteColor(), bindPlayerId: bindId, pathKind: draft.pathKind ?? host.routeDrawKind(), delay: draft.delay ?? 0 };
-			console.log(`[DEBUG] executePointerUp SAVING ROUTE:`, _newRoute);
-			if (bindId === 'BALL') {
+			const isPass = _newRoute.pathKind === 'pass';
+			if (isPass && bindId !== 'BALL') {
+				let startX = _newRoute.x1;
+				let startY = _newRoute.y1;
+				if (bindId) {
+					const playerRoute = (host.drawnRoutes() as TacticalRoute[])
+						.map(normalizeRoute)
+						.find((r) => r.bindPlayerId === bindId);
+					if (playerRoute) {
+						startX = playerRoute.x2;
+						startY = playerRoute.y2;
+					}
+				}
+				_newRoute.x1 = startX;
+				_newRoute.y1 = startY;
+				_newRoute.bindPlayerId = 'BALL';
+				
+				let ballToken = host.wrBucketPitch().find(t => t.id === 'BALL');
+				let newPitch = host.wrBucketPitch().map(t => {
+					if (t.id === 'BALL') return { ...t, x: startX, y: startY };
+					return t;
+				});
+				if (!ballToken) {
+					newPitch.push({
+						id: 'BALL',
+						name: 'BALL',
+						number: 'B',
+						position: 'BALL',
+						side: 'friendly',
+						color: '#ffffff',
+						x: startX,
+						y: startY
+					});
+				}
+				host.setWrBucketPitch(newPitch);
+				
+				const newMc = midCtrl(_newRoute.x1, _newRoute.y1, _newRoute.x2, _newRoute.y2);
+				_newRoute.cx = newMc.cx;
+				_newRoute.cy = newMc.cy;
+			} else if (bindId === 'BALL') {
 				const sourceRoute = (host.drawnRoutes() as TacticalRoute[])
 					.map(normalizeRoute)
 					.find((r) => r.bindPlayerId === 'BALL' && r.id !== id);

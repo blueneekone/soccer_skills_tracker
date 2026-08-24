@@ -154,6 +154,7 @@ export function createTacticalWarRoom(host: TacticalGridHost) {
 	let anchorDrag = $state<AnchorDrag | null>(null);
 	let routeBodyDrag = $state<RouteBodyDrag | null>(null);
 	let isDrawerOpen = $state(false);
+	let isEraseMode = $state(false);
 	let isMistakeActive = $state(false);
 	let selectedOpponentPosition = $state('CDM');
 	let isOpponentDeployActive = $state(false);
@@ -497,7 +498,7 @@ export function createTacticalWarRoom(host: TacticalGridHost) {
 	}
 
 	function showAnchorsFor(routeId: string) {
-		return selectedRouteId === routeId || hoveredRouteId === routeId;
+		return selectedRouteId === routeId;
 	}
 
 	function updateSelectedRouteShape(shape: 'curve' | 'cut' | 'pass') {
@@ -516,6 +517,18 @@ export function createTacticalWarRoom(host: TacticalGridHost) {
 		console.log('[DEBUG] gridEngine.deleteRoute called with', routeId);
 		api.deleteRoute(host, routeId, () => selectedRouteId, (v) => (selectedRouteId = v));
 		routeContextMenuOpen = false;
+	}
+
+	function deletePlayer(playerId: string) {
+		const f = host.wrBucketPitch.get().find((t) => t.id === playerId);
+		if (f) {
+			host.wrBucketPitch.set(host.wrBucketPitch.get().filter((t) => t.id !== playerId));
+			return;
+		}
+		const o = host.wrOppPitch.get().find((t) => t.id === playerId);
+		if (o) {
+			host.wrOppPitch.set(host.wrOppPitch.get().filter((t) => t.id !== playerId));
+		}
 	}
 
 	/** Rewind timeline and restore pitch token x/y from last captured baseline. */
@@ -622,6 +635,8 @@ export function createTacticalWarRoom(host: TacticalGridHost) {
 		set focusedPlayerId(v: string | null) { focusedPlayerId = v; },
 		get isDrawerOpen() { return isDrawerOpen; },
 		set isDrawerOpen(v: boolean) { isDrawerOpen = v; },
+		get isEraseMode() { return isEraseMode; },
+		set isEraseMode(v: boolean) { isEraseMode = v; },
 		// ── Reactive getters — $state/$derived must be exposed via get so that
 		// Svelte 5 component templates can track the underlying signal.
 		// Plain shorthand `{ routingActive }` copies the initial value and breaks reactivity.
@@ -678,6 +693,7 @@ export function createTacticalWarRoom(host: TacticalGridHost) {
 		resolvePitchToken,
 		showAnchorsFor,
 		deleteRoute,
+		deletePlayer,
 		updateSelectedRouteShape,
 		updateSelectedRouteColor,
 		resetPositions,

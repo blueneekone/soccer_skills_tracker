@@ -89,7 +89,7 @@
 		onmouseenter={() => onRouteHoverEnter?.()}
 		onmouseleave={() => onRouteHoverLeave?.()}
 		onpointerdown={(e) => onPathClick?.(e)}
-		oncontextmenu={(e) => onPathContextMenu?.(e)}
+		oncontextmenu={(e) => { e.preventDefault(); onPathContextMenu?.(e); }}
 	/>
 {/if}
 
