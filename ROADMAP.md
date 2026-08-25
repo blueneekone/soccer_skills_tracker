@@ -40,4 +40,5 @@
 - [x] **SSR COOKIE SYNC**: Resolved unauthenticated page loads by synchronizing IndexedDB token values to secure server cookies [cite: 50, 133, 134].
 - [x] **B815 HYDRATION GUARDS**: Standardized `if (!db || !authStore.isAuthenticated) return;` early checks on all dashboard queries to prevent loop quota blocks [cite: 345, 367].
 - [ ] **MARKETPLACE LAUNCH (Phase 4)**: Merge Svelte 5 Bento-grid view and deploy `bookTutoringSession` callable Stripe handler on `functions-commerce` [cite: 424].
+- [x] **CODE HEALTH**: Removed unused `showLiveTelemetry` prop from SquadMatrix component.
 - [x] **DIRECTOR OS & ADMIN OS OVERHAUL**: Admin active incidents click navigation and Director OS system-wide visual simplification.

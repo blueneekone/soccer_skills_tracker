@@ -35,7 +35,7 @@
 		],
 	};
 
-	let { teamId = '', teams = [], showLiveTelemetry = true } = $props();
+	let { teamId = '', teams = [] } = $props();
 
 	/** Isolates one bench-side logging session (new UUID when `teamId` changes). */
 	let activeMatchId = $state('');
