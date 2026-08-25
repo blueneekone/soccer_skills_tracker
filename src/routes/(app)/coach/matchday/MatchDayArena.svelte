@@ -18,6 +18,17 @@
 			Live Match Loggers (Sub-14ms Latency)
 		</div>
 
+
+		<div class="tw-mb-4">
+			<label class="tw-block tw-font-mono tw-text-xs tw-text-gray-400 tw-mb-1">Target Player</label>
+			<select bind:value={engine.selectedPlayerId} class="tw-w-full tw-bg-[#0a0a0a] tw-border tw-border-[#334155] tw-text-white tw-px-3 tw-py-2 tw-font-mono tw-text-sm" style="border-radius: 0px;">
+				<option value="">-- Select Player --</option>
+				{#each engine.roster as player}
+					<option value={player.id}>{player.name}</option>
+				{/each}
+			</select>
+		</div>
+
 		<div class="tw-flex tw-flex-wrap tw-gap-3 tw-mb-6">
 			<button
 				type="button"

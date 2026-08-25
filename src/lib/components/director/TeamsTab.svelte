@@ -177,6 +177,8 @@
 		try {
 			await setDoc(doc(db, 'teams', teamId), {
 				clubId,
+				tenantId: clubId,
+				coachId: '',
 				name: newTeamName.trim(),
 				createdAt: new Date(),
 			});

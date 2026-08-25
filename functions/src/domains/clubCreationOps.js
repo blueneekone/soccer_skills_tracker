@@ -36,6 +36,14 @@ exports.createClub = onCall({ region: REGION }, async (request) => {
       createdBy: uid,
       createdAt: admin.firestore.FieldValue.serverTimestamp()
     });
+
+    const licenseRef = clubRef.collection('license').doc('active_tier');
+    tx.set(licenseRef, {
+      status: 'active',
+      tier: 'Gold',
+      expiresAt: admin.firestore.Timestamp.fromDate(new Date(Date.now() + 365 * 24 * 60 * 60 * 1000)),
+      provisionedAt: admin.firestore.FieldValue.serverTimestamp()
+    });
   });
 
   return {
