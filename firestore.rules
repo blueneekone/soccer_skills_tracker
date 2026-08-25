@@ -233,7 +233,10 @@ service cloud.firestore {
 
     // Workout logs, physio reports, and training data — authenticated users
     match /workout_logs/{logId} {
-      allow read, write: if isAuthenticated();
+      allow read: if isAuthenticated() && (isGlobalAdmin() || isDirector() || isCoach() || resource == null || (('playerId' in resource.data) && resource.data.playerId == request.auth.uid) || (('playerUid' in resource.data) && resource.data.playerUid == request.auth.uid));
+      allow create: if isAuthenticated() && ((('playerId' in request.resource.data) && request.resource.data.playerId == request.auth.uid) || (('playerUid' in request.resource.data) && request.resource.data.playerUid == request.auth.uid) || isGlobalAdmin() || isDirector() || isCoach());
+      allow update: if isAuthenticated() && ((('playerId' in resource.data) && resource.data.playerId == request.auth.uid) || (('playerUid' in resource.data) && resource.data.playerUid == request.auth.uid) || isGlobalAdmin() || isDirector() || isCoach()) && (!('playerId' in request.resource.data) || request.resource.data.playerId == request.auth.uid || isGlobalAdmin() || isDirector() || isCoach()) && (!('playerUid' in request.resource.data) || request.resource.data.playerUid == request.auth.uid || isGlobalAdmin() || isDirector() || isCoach());
+      allow delete: if isAuthenticated() && ((('playerId' in resource.data) && resource.data.playerId == request.auth.uid) || (('playerUid' in resource.data) && resource.data.playerUid == request.auth.uid) || isGlobalAdmin() || isDirector() || isCoach());
     }
     match /grit_awards/{awardId} {
       allow read: if isAuthenticated();
