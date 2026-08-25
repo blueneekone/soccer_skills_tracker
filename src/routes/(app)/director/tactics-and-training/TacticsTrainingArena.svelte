@@ -9,7 +9,7 @@
 	let { engine }: { engine: TacticsTrainingEngine } = $props();
 </script>
 
-<div class="tw-h-full tw-w-full tw-p-6 lg:tw-p-10 tw-bg-[#05050A]">
+<div class="tw-h-[100dvh] tw-w-full tw-p-6 lg:tw-p-10 tw-bg-[#0a0a0a]">
 	<div class="tw-max-w-[1920px] tw-mx-auto tw-flex tw-flex-col tw-gap-8 tw-min-h-full">
 		{#if engine.activeTab === 'mission-control'}
 			<section class="tw-flex tw-flex-col tw-gap-6 tw-w-full">

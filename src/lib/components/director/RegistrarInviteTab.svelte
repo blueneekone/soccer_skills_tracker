@@ -123,7 +123,7 @@
 		width: 100%;
 		box-sizing: border-box;
 		padding: clamp(10px, 2vw, 12px);
-		border-radius: 16px;
+		border-radius: 0px;
 		border: 1px solid var(--glass-border);
 		font: inherit;
 	}

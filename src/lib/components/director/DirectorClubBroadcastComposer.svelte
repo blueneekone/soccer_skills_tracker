@@ -186,7 +186,7 @@
 		gap: 10px;
 		padding: 18px 20px;
 		border: 1px solid #334155;
-		border-radius: 12px;
+		border-radius: 0px;
 		background: #0f172a;
 		color: #e2e8f0;
 	}
@@ -229,7 +229,7 @@
 		gap: 6px;
 		flex-shrink: 0;
 		padding: 6px 10px;
-		border-radius: 999px;
+		border-radius: 0px;
 		font-size: 10px;
 		font-weight: 800;
 		text-transform: uppercase;
@@ -254,7 +254,7 @@
 
 	.dcb-fieldset {
 		border: 1px solid #334155;
-		border-radius: 10px;
+		border-radius: 0px;
 		padding: 10px 12px;
 		margin: 0;
 	}
@@ -303,7 +303,7 @@
 		width: 100%;
 		box-sizing: border-box;
 		border: 1px solid #334155;
-		border-radius: 10px;
+		border-radius: 0px;
 		padding: 10px 12px;
 		font: inherit;
 		font-size: 13px;
@@ -319,7 +319,7 @@
 	.dcb-ok {
 		margin: 0;
 		padding: 10px 12px;
-		border-radius: 10px;
+		border-radius: 0px;
 		font-size: 12px;
 		font-weight: 600;
 		color: #14b8a6;
@@ -341,7 +341,7 @@
 	}
 
 	.dcb-btn {
-		border-radius: 10px;
+		border-radius: 0px;
 		padding: 10px 18px;
 		font-size: 13px;
 		font-weight: 800;

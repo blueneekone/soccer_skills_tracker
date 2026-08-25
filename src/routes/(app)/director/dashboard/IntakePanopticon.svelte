@@ -331,7 +331,7 @@
     gap: 0;
     background: rgba(2, 2, 2, 0.92);
     border: 1px solid rgba(20, 184, 166, 0.15);
-    border-radius: 12px;
+    border-radius: 0px;
     overflow: hidden;
     backdrop-filter: blur(36px);
     -webkit-backdrop-filter: blur(36px);
@@ -383,7 +383,7 @@
     color: rgba(20, 184, 166, 0.8);
     border: 1px solid rgba(20, 184, 166, 0.3);
     background: rgba(20, 184, 166, 0.06);
-    border-radius: 999px;
+    border-radius: 0px;
     padding: 0.3rem 0.9rem;
     white-space: nowrap;
   }
@@ -505,7 +505,7 @@
     color: rgba(20, 184, 166, 0.7);
     border: 1px solid rgba(20, 184, 166, 0.25);
     background: rgba(20, 184, 166, 0.06);
-    border-radius: 3px;
+    border-radius: 0px;
     padding: 0.15rem 0.5rem;
     white-space: nowrap;
     overflow: hidden;
@@ -553,7 +553,7 @@
     color: #14b8a6;
     border: 1px solid rgba(20, 184, 166, 0.3);
     background: rgba(20, 184, 166, 0.04);
-    border-radius: 3px;
+    border-radius: 0px;
     padding: 0.25rem 0.55rem;
     white-space: nowrap;
     animation: ipStatusPulse 2s ease-in-out infinite;
@@ -569,7 +569,7 @@
     font-size: 0.56rem;
     font-weight: 700;
     letter-spacing: 0.12em;
-    border-radius: 4px;
+    border-radius: 0px;
     border: 1px solid transparent;
     cursor: pointer;
     transition: background 0.15s, border-color 0.15s, box-shadow 0.15s;
@@ -641,7 +641,7 @@
     max-width: 480px;
     background: rgba(2, 2, 2, 0.97);
     border: 1px solid rgba(20, 184, 166, 0.2);
-    border-radius: 14px;
+    border-radius: 0px;
     padding: 2rem;
     display: flex;
     flex-direction: column;
@@ -689,7 +689,7 @@
     padding: 0.85rem 1rem;
     border: 1px solid rgba(255, 165, 0, 0.18);
     background: rgba(255, 165, 0, 0.04);
-    border-radius: 6px;
+    border-radius: 0px;
   }
   .ip-attest-label {
     display: flex;
@@ -732,7 +732,7 @@
       padding: 1rem 1rem 1.1rem;
       background: rgba(4, 15, 22, 0.85);
       border: 1px solid rgba(20, 184, 166, 0.1);
-      border-radius: 8px;
+      border-radius: 0px;
       margin: 0.35rem 0.75rem;
     }
     .ip-row:last-child { border-bottom: 1px solid rgba(20, 184, 166, 0.1); }

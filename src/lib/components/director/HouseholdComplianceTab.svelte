@@ -63,7 +63,7 @@
 	</div>
 
 	<!-- Enterprise Data Table Conversion -->
-	<div class="v-table-wrap tw-overflow-x-auto tw-border tw-border-[#334155] tw-rounded-[var(--radius-premium,24px)] tw-bg-[#0f172a]">
+	<div class="v-table-wrap tw-overflow-x-auto tw-border tw-border-[#334155] tw-rounded-none tw-bg-[#0f172a]">
 		<table class="v-table tw-w-full tw-text-left tw-border-collapse">
 			<thead>
 				<tr>
@@ -91,15 +91,15 @@
 						<td class="tw-px-6 tw-py-4">
 							<div class="tw-flex tw-items-center tw-gap-2">
 								{#if hh.vpcStatus === 'Verified'}
-									<div class="tw-w-2 tw-h-2 tw-rounded-full tw-bg-green-500"></div>
+									<div class="tw-w-2 tw-h-2 tw-rounded-none tw-bg-green-500"></div>
 									<span class="tw-text-xs tw-text-green-400 tw-font-bold">Verified</span>
 								{:else if hh.vpcStatus === 'Pending'}
-									<div class="tw-w-2 tw-h-2 tw-rounded-full tw-bg-amber-500"></div>
+									<div class="tw-w-2 tw-h-2 tw-rounded-none tw-bg-amber-500"></div>
 									<span class="tw-text-xs tw-text-amber-400 tw-font-bold">Pending</span>
 								{:else}
 									<div class="tw-relative tw-flex tw-h-2 tw-w-2">
-										<span class="tw-animate-ping tw-absolute tw-inline-flex tw-h-full tw-w-full tw-rounded-full tw-bg-red-400 tw-opacity-75"></span>
-										<span class="tw-relative tw-inline-flex tw-rounded-full tw-h-2 tw-w-2 tw-bg-red-500"></span>
+										<span class="tw-animate-ping tw-absolute tw-inline-flex tw-h-full tw-w-full tw-rounded-none tw-bg-red-400 tw-opacity-75"></span>
+										<span class="tw-relative tw-inline-flex tw-rounded-none tw-h-2 tw-w-2 tw-bg-red-500"></span>
 									</div>
 									<span class="tw-text-xs tw-text-red-400 tw-font-bold">Action Required</span>
 								{/if}

@@ -190,7 +190,7 @@
 	.drill-inbox {
 		background: var(--glass-bg, #ffffff);
 		border: 1px solid var(--border-muted, #e5e5e5);
-		border-radius: 12px;
+		border-radius: 0px;
 		padding: 16px;
 		margin-bottom: 16px;
 	}
@@ -229,7 +229,7 @@
 
 	.drill-inbox__card {
 		border: 1px solid var(--border-muted, #e5e5e5);
-		border-radius: 10px;
+		border-radius: 0px;
 		padding: 12px;
 	}
 
@@ -249,7 +249,7 @@
 		font-size: 11px;
 		font-weight: 600;
 		padding: 2px 8px;
-		border-radius: 999px;
+		border-radius: 0px;
 		background: rgba(37, 99, 235, 0.12);
 		color: #1d4ed8;
 	}
@@ -290,7 +290,7 @@
 
 	.drill-inbox__btn {
 		padding: 8px 14px;
-		border-radius: 8px;
+		border-radius: 0px;
 		border: 1px solid var(--border-muted, #e5e5e5);
 		background: transparent;
 		font: inherit;
@@ -314,7 +314,7 @@
 	.drill-inbox__flash {
 		margin: 12px 0 0;
 		padding: 9px 12px;
-		border-radius: 8px;
+		border-radius: 0px;
 		font-size: 13px;
 	}
 

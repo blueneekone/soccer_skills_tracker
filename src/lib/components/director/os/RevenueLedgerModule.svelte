@@ -164,7 +164,7 @@
 	.revenue-ledger {
 		position: relative;
 		padding: clamp(1rem, 1.4vw + 0.5rem, 1.6rem);
-		border-radius: 24px;
+		border-radius: 0px;
 		border: 1px solid var(--vanguard-border, rgba(20, 184, 166, 0.18));
 		background:
 			linear-gradient(135deg, rgba(8, 17, 28, 0.78), rgba(2, 6, 12, 0.92));
@@ -232,7 +232,7 @@
 		flex-direction: column;
 		gap: 0.18rem;
 		padding: 0.7rem 0.8rem;
-		border-radius: 18px;
+		border-radius: 0px;
 		border: 1px solid rgba(20, 184, 166, 0.1);
 		background: rgba(1, 4, 9, 0.55);
 	}

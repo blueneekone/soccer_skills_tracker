@@ -57,7 +57,7 @@
 		width: 100%;
 		max-width: 420px;
 		padding: 1.5rem;
-		border-radius: 20px;
+		border-radius: 0px;
 	}
 
 	.romodal-title {
@@ -82,7 +82,7 @@
 	}
 
 	.romodal-btn {
-		border-radius: 12px;
+		border-radius: 0px;
 		padding: 0.55rem 1rem;
 		font-weight: 800;
 		font-size: 0.88rem;

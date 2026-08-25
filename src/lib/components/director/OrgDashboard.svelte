@@ -385,7 +385,7 @@
 		font-size: 9px;
 		letter-spacing: 0.2em;
 		border: 1px solid rgba(20, 184, 166, 0.4);
-		border-radius: 2px;
+		border-radius: 0px;
 		color: #14b8a6;
 		background: rgba(20, 184, 166, 0.06);
 	}
@@ -444,7 +444,7 @@
 		color: #94a3b8;
 		background: rgba(255, 255, 255, 0.04);
 		padding: 1px 6px;
-		border-radius: 2px;
+		border-radius: 0px;
 	}
 	.od-scope-sep {
 		color: #1e293b;
@@ -457,7 +457,7 @@
 		gap: 0.75rem;
 		background: rgba(251, 191, 36, 0.08);
 		border: 1px solid rgba(251, 191, 36, 0.25);
-		border-radius: 4px;
+		border-radius: 0px;
 		padding: 1rem 1.25rem;
 		font-size: 13px;
 		color: #fbbf24;
@@ -490,7 +490,7 @@
 	.od-team-card {
 		background: rgba(255, 255, 255, 0.03);
 		border: 1px solid rgba(255, 255, 255, 0.07);
-		border-radius: 6px;
+		border-radius: 0px;
 		padding: 1.25rem;
 		display: flex;
 		flex-direction: column;
@@ -519,7 +519,7 @@
 		font-size: 9px;
 		letter-spacing: 0.18em;
 		border: 1px solid rgba(20, 184, 166, 0.3);
-		border-radius: 2px;
+		border-radius: 0px;
 		padding: 1px 6px;
 		color: #14b8a6;
 		flex-shrink: 0;
@@ -558,7 +558,7 @@
 		font-size: 9px;
 		letter-spacing: 0.18em;
 		font-weight: 700;
-		border-radius: 3px;
+		border-radius: 0px;
 		cursor: pointer;
 		transition: all 0.15s;
 		border: 1px solid transparent;
@@ -611,7 +611,7 @@
 
 	/* ── Skeleton loader ─────────────────────────────────────────────────── */
 	.od-skeleton {
-		border-radius: 3px;
+		border-radius: 0px;
 		background: linear-gradient(90deg, #1e293b 25%, #0f172a 50%, #1e293b 75%);
 		background-size: 200% 100%;
 		animation: od-shimmer 1.4s infinite;
@@ -645,7 +645,7 @@
 	.od-modal {
 		background: #0a0f1a;
 		border: 1px solid rgba(20, 184, 166, 0.2);
-		border-radius: 8px;
+		border-radius: 0px;
 		width: min(420px, 92vw);
 		box-shadow: 0 0 40px rgba(20, 184, 166, 0.08);
 	}
@@ -701,7 +701,7 @@
 		gap: 0.75rem;
 		background: rgba(20, 184, 166, 0.04);
 		border: 1px solid rgba(20, 184, 166, 0.25);
-		border-radius: 6px;
+		border-radius: 0px;
 		padding: 0.75rem 1rem;
 	}
 	.od-code {
@@ -718,7 +718,7 @@
 		letter-spacing: 0.18em;
 		padding: 5px 12px;
 		border: 1px solid rgba(20, 184, 166, 0.4);
-		border-radius: 3px;
+		border-radius: 0px;
 		background: rgba(20, 184, 166, 0.08);
 		color: #14b8a6;
 		cursor: pointer;
@@ -743,7 +743,7 @@
 		letter-spacing: 0.18em;
 		font-weight: 700;
 		padding: 0.75rem;
-		border-radius: 4px;
+		border-radius: 0px;
 		cursor: pointer;
 		transition: all 0.15s;
 		width: 100%;
@@ -781,7 +781,7 @@
 		margin: 0;
 		padding: 0.5rem 0.75rem;
 		background: rgba(239, 68, 68, 0.08);
-		border-radius: 4px;
+		border-radius: 0px;
 		border: 1px solid rgba(239, 68, 68, 0.2);
 	}
 

@@ -482,7 +482,7 @@
 	.reg-roster-dnd__pool {
 		padding: 12px;
 		border: 1px dashed #334155;
-		border-radius: 8px;
+		border-radius: 0px;
 		background: rgba(15, 23, 42, 0.35);
 	}
 
@@ -501,7 +501,7 @@
 		gap: 2px;
 		padding: 8px 10px;
 		border: 1px solid #475569;
-		border-radius: 8px;
+		border-radius: 0px;
 		background: #0f172a;
 		cursor: grab;
 	}
@@ -545,7 +545,7 @@
 		min-height: 120px;
 		padding: 10px;
 		border: 2px dashed #334155;
-		border-radius: 8px;
+		border-radius: 0px;
 		background: rgba(2, 6, 23, 0.45);
 		transition: border-color 0.15s ease, background 0.15s ease;
 	}
@@ -567,7 +567,7 @@
 	.reg-roster-dnd__assigned-row {
 		font-size: 0.82rem;
 		padding: 4px 6px;
-		border-radius: 4px;
+		border-radius: 0px;
 		background: rgba(51, 65, 85, 0.45);
 	}
 

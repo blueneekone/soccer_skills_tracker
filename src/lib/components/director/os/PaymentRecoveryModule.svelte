@@ -163,7 +163,7 @@
 		background: linear-gradient(135deg, rgba(8, 17, 28, 0.78), rgba(2, 6, 12, 0.92));
 		backdrop-filter: blur(var(--vanguard-blur, 24px));
 		border: 1px solid rgba(251, 191, 36, 0.2);
-		border-radius: 12px;
+		border-radius: 0px;
 		box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
 	}
 
@@ -208,7 +208,7 @@
 		background: #fbbf24;
 		color: #000000;
 		border: none;
-		border-radius: 999px;
+		border-radius: 0px;
 		padding: 0.5rem 1.25rem;
 		font-family: 'Geist Mono', monospace;
 		font-size: 0.7rem;
@@ -244,7 +244,7 @@
 		background: rgba(20, 184, 166, 0.1);
 		color: #14b8a6;
 		border: 1px solid rgba(20, 184, 166, 0.3);
-		border-radius: 999px;
+		border-radius: 0px;
 		padding: 0.75rem 1.5rem;
 		font-family: 'Geist Mono', monospace;
 		font-size: 0.8rem;
@@ -266,7 +266,7 @@
 		background: transparent;
 		color: rgba(255, 255, 255, 0.6);
 		border: 1px solid rgba(255, 255, 255, 0.2);
-		border-radius: 999px;
+		border-radius: 0px;
 		padding: 0.5rem 1rem;
 		font-family: 'Geist Mono', monospace;
 		font-size: 0.7rem;
@@ -311,7 +311,7 @@
 		padding: 1rem;
 		background: rgba(239, 68, 68, 0.1);
 		border: 1px solid rgba(239, 68, 68, 0.3);
-		border-radius: 8px;
+		border-radius: 0px;
 		color: #fca5a5;
 		font-family: 'Geist Mono', monospace;
 		font-size: 0.8rem;
@@ -376,7 +376,7 @@
 		padding: 0.25rem 0.5rem;
 		border: 1px solid rgba(239, 68, 68, 0.3);
 		background: rgba(239, 68, 68, 0.1);
-		border-radius: 4px;
+		border-radius: 0px;
 		font-family: 'Geist Mono', monospace;
 		font-size: 0.65rem;
 		font-weight: 700;

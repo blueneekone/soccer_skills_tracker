@@ -183,7 +183,7 @@
 		background: transparent;
 		border: 1px solid rgba(255,255,255,0.12);
 		color: var(--vanguard-text-muted, #94a3b8);
-		border-radius: 10px;
+		border-radius: 0px;
 		padding: 0.4rem 0.85rem;
 		cursor: pointer;
 		font-size: 0.82rem;
@@ -198,7 +198,7 @@
 		font-size: 0.7rem;
 		font-weight: 600;
 		padding: 0.2rem 0.6rem;
-		border-radius: 99px;
+		border-radius: 0px;
 		background: rgba(52,211,153,0.12);
 		color: #34d399;
 		border: 1px solid rgba(52,211,153,0.25);
@@ -212,7 +212,7 @@
 	.queue-banner {
 		background: rgba(251,191,36,0.12);
 		border: 1px solid rgba(251,191,36,0.3);
-		border-radius: 10px;
+		border-radius: 0px;
 		padding: 0.6rem 1rem;
 		color: #fbbf24;
 		font-size: 0.82rem;
@@ -252,7 +252,7 @@
 	.event-id-note { font-size: 0.78rem; }
 	.event-id-note code {
 		background: rgba(255,255,255,0.07);
-		border-radius: 5px;
+		border-radius: 0px;
 		padding: 0.15rem 0.4rem;
 		font-family: monospace;
 	}
@@ -261,7 +261,7 @@
 		background: linear-gradient(135deg, #6366f1, #8b5cf6);
 		color: white;
 		border: none;
-		border-radius: 14px;
+		border-radius: 0px;
 		padding: 0.85rem 2rem;
 		font-size: 1rem;
 		font-weight: 700;
@@ -400,7 +400,7 @@
 	.error-banner {
 		background: rgba(239,68,68,0.12);
 		border: 1px solid rgba(239,68,68,0.35);
-		border-radius: 10px;
+		border-radius: 0px;
 		padding: 0.75rem 1rem;
 		color: #fca5a5;
 		font-size: 0.875rem;

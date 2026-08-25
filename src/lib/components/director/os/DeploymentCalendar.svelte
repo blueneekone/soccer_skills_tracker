@@ -323,7 +323,7 @@
 					)}"
 				>
 					<div
-						class="dep-cal-card__accent tw-pointer-events-none tw-absolute tw-inset-y-0 tw-left-0 tw-w-1 tw-rounded-l-xl tw-opacity-90"
+						class="dep-cal-card__accent tw-pointer-events-none tw-absolute tw-inset-y-0 tw-left-0 tw-w-1 tw-rounded-none tw-opacity-90"
 						aria-hidden="true"
 					></div>
 					<p
@@ -340,7 +340,7 @@
 						<span class={kindBadgeClass(row.kind)}>{kindLabel(row.kind)}</span>
 						{#if row.facilityId}
 							<span
-								class="tw-inline-flex tw-items-center tw-gap-1 tw-rounded-md tw-border tw-border-emerald-500/25 tw-bg-emerald-950/40 tw-px-2 tw-py-0.5 tw-font-semibold tw-normal-case tw-tracking-normal tw-text-emerald-300/95"
+								class="tw-inline-flex tw-items-center tw-gap-1 tw-rounded-none tw-border tw-border-emerald-500/25 tw-bg-emerald-950/40 tw-px-2 tw-py-0.5 tw-font-semibold tw-normal-case tw-tracking-normal tw-text-emerald-300/95"
 								title={facilityLabel(row.facilityId)}
 							>
 							<Icon name="sys.map-pin" class="tw-text-emerald-400/90" />
@@ -349,7 +349,7 @@
 						{/if}
 						{#if row.teamIds && row.teamIds[0]}
 							<span
-								class="tw-rounded-md tw-border tw-border-cyan-500/25 tw-bg-cyan-950/35 tw-px-2 tw-py-0.5 tw-font-semibold tw-normal-case tw-tracking-normal tw-text-cyan-300/90"
+								class="tw-rounded-none tw-border tw-border-cyan-500/25 tw-bg-cyan-950/35 tw-px-2 tw-py-0.5 tw-font-semibold tw-normal-case tw-tracking-normal tw-text-cyan-300/90"
 							>
 								{teamLabel(row.teamIds[0])}
 							</span>
@@ -405,7 +405,7 @@
 	.dep-badge {
 		display: inline-flex;
 		align-items: center;
-		border-radius: 6px;
+		border-radius: 0px;
 		padding: 3px 9px;
 		font-size: 10px;
 		font-weight: 800;
@@ -455,7 +455,7 @@
 				</h2>
 				<button
 					type="button"
-					class="tw-rounded-lg tw-p-1 tw-text-slate-500 hover:tw-bg-slate-900 hover:tw-text-slate-300"
+					class="tw-rounded-none tw-p-1 tw-text-slate-500 hover:tw-bg-slate-900 hover:tw-text-slate-300"
 					onclick={closeModal}
 					aria-label="Close"
 				>
@@ -469,7 +469,7 @@
 						>Event type</span
 					>
 					<select
-						class="tw-rounded-lg tw-border tw-border-slate-700 tw-bg-black/40 tw-px-3 tw-py-2 tw-text-sm tw-text-slate-100"
+						class="tw-rounded-none tw-border tw-border-slate-700 tw-bg-black/40 tw-px-3 tw-py-2 tw-text-sm tw-text-slate-100"
 						bind:value={eventKind}
 					>
 						{#each kindLabels as k}
@@ -484,7 +484,7 @@
 					>
 					<input
 						type="datetime-local"
-						class="tw-rounded-lg tw-border tw-border-slate-700 tw-bg-black/40 tw-px-3 tw-py-2 tw-text-sm tw-text-slate-100"
+						class="tw-rounded-none tw-border tw-border-slate-700 tw-bg-black/40 tw-px-3 tw-py-2 tw-text-sm tw-text-slate-100"
 						bind:value={startsLocal}
 					/>
 				</label>
@@ -495,7 +495,7 @@
 					>
 					<input
 						type="datetime-local"
-						class="tw-rounded-lg tw-border tw-border-slate-700 tw-bg-black/40 tw-px-3 tw-py-2 tw-text-sm tw-text-slate-100"
+						class="tw-rounded-none tw-border tw-border-slate-700 tw-bg-black/40 tw-px-3 tw-py-2 tw-text-sm tw-text-slate-100"
 						bind:value={endsLocal}
 					/>
 				</label>
@@ -505,7 +505,7 @@
 						>Assigned team</span
 					>
 					<select
-						class="tw-rounded-lg tw-border tw-border-slate-700 tw-bg-black/40 tw-px-3 tw-py-2 tw-text-sm tw-text-slate-100"
+						class="tw-rounded-none tw-border tw-border-slate-700 tw-bg-black/40 tw-px-3 tw-py-2 tw-text-sm tw-text-slate-100"
 						bind:value={teamId}
 					>
 						<option value="">Select team…</option>
@@ -520,7 +520,7 @@
 						>Location (facility)</span
 					>
 					<select
-						class="tw-rounded-lg tw-border tw-border-slate-700 tw-bg-black/40 tw-px-3 tw-py-2 tw-text-sm tw-text-slate-100"
+						class="tw-rounded-none tw-border tw-border-slate-700 tw-bg-black/40 tw-px-3 tw-py-2 tw-text-sm tw-text-slate-100"
 						bind:value={facilityId}
 					>
 						<option value="">Select facility…</option>
@@ -537,7 +537,7 @@
 					{/if}
 				</label>
 
-				<label class="tw-flex tw-cursor-pointer tw-items-start tw-gap-2 tw-rounded-lg tw-border tw-border-slate-800 tw-bg-black/20 tw-px-3 tw-py-2">
+				<label class="tw-flex tw-cursor-pointer tw-items-start tw-gap-2 tw-rounded-none tw-border tw-border-slate-800 tw-bg-black/20 tw-px-3 tw-py-2">
 					<input
 						type="checkbox"
 						class="tw-mt-0.5"
@@ -560,14 +560,14 @@
 				<div class="tw-flex tw-justify-end tw-gap-2 tw-pt-2">
 					<button
 						type="button"
-						class="tw-rounded-lg tw-border tw-border-slate-700 tw-bg-transparent tw-px-4 tw-py-2 tw-text-xs tw-font-bold tw-uppercase tw-tracking-wide tw-text-slate-400 hover:tw-bg-slate-900"
+						class="tw-rounded-none tw-border tw-border-slate-700 tw-bg-transparent tw-px-4 tw-py-2 tw-text-xs tw-font-bold tw-uppercase tw-tracking-wide tw-text-slate-400 hover:tw-bg-slate-900"
 						onclick={closeModal}
 					>
 						Cancel
 					</button>
 					<button
 						type="button"
-						class="tw-inline-flex tw-items-center tw-gap-1.5 tw-rounded-lg tw-border tw-border-emerald-500/40 tw-bg-emerald-950/50 tw-px-4 tw-py-2 tw-text-xs tw-font-black tw-uppercase tw-tracking-wide tw-text-emerald-300 hover:tw-bg-emerald-950 disabled:tw-opacity-50"
+						class="tw-inline-flex tw-items-center tw-gap-1.5 tw-rounded-none tw-border tw-border-emerald-500/40 tw-bg-emerald-950/50 tw-px-4 tw-py-2 tw-text-xs tw-font-black tw-uppercase tw-tracking-wide tw-text-emerald-300 hover:tw-bg-emerald-950 disabled:tw-opacity-50"
 						disabled={saving}
 						onclick={() => void submitDeployment()}
 					>

@@ -342,7 +342,7 @@
 	.dbap-card {
 		background: rgba(6, 8, 16, 0.92);
 		border: 1px solid rgba(20, 184, 166, 0.15);
-		border-radius: 12px;
+		border-radius: 0px;
 		overflow: hidden;
 		font-family: 'JetBrains Mono', monospace;
 	}
@@ -382,7 +382,7 @@
 		gap: 0.4rem;
 		padding: 0.3rem 0.75rem;
 		border: 1px solid;
-		border-radius: 999px;
+		border-radius: 0px;
 		font-size: 0.65rem;
 		font-weight: 700;
 		letter-spacing: 0.12em;
@@ -499,7 +499,7 @@
 		padding: 0.55rem 0.875rem;
 		background: rgba(248, 113, 113, 0.08);
 		border: 1px solid rgba(248, 113, 113, 0.2);
-		border-radius: 6px;
+		border-radius: 0px;
 		color: rgba(248, 113, 113, 0.85);
 		font-size: 0.7rem;
 	}
@@ -512,7 +512,7 @@
 		justify-content: center;
 		background: transparent;
 		border: 1px solid rgba(255, 255, 255, 0.1);
-		border-radius: 6px;
+		border-radius: 0px;
 		color: rgba(255, 255, 255, 0.35);
 		font-size: 0.95rem;
 		cursor: pointer;

@@ -375,7 +375,7 @@
 		background: rgba(1, 4, 9, 0.85);
 		backdrop-filter: blur(16px);
 		border: 1px solid rgba(255, 255, 255, 0.07);
-		border-radius: 8px;
+		border-radius: 0px;
 		font-family: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
 		color: #e2e8f0;
 		overflow: hidden;
@@ -417,7 +417,7 @@
 		letter-spacing: 0.18em;
 		font-weight: 700;
 		padding: 6px 12px;
-		border-radius: 3px;
+		border-radius: 0px;
 		cursor: pointer;
 		transition: all 0.15s;
 		white-space: nowrap;
@@ -456,7 +456,7 @@
 		font-size: 9px;
 		letter-spacing: 0.18em;
 		padding: 4px 10px;
-		border-radius: 2px;
+		border-radius: 0px;
 		border: 1px solid transparent;
 		background: transparent;
 		color: #475569;
@@ -473,7 +473,7 @@
 	}
 	.oi-tab-count {
 		background: rgba(255, 255, 255, 0.07);
-		border-radius: 2px;
+		border-radius: 0px;
 		padding: 0 5px;
 		font-size: 8px;
 	}
@@ -515,7 +515,7 @@
 		font-size: 8px;
 		letter-spacing: 0.18em;
 		padding: 2px 7px;
-		border-radius: 2px;
+		border-radius: 0px;
 		border: 1px solid;
 		white-space: nowrap;
 	}
@@ -528,13 +528,13 @@
 		flex: 1;
 		height: 3px;
 		background: rgba(255, 255, 255, 0.06);
-		border-radius: 2px;
+		border-radius: 0px;
 		overflow: hidden;
 	}
 	.oi-usage-fill {
 		height: 100%;
 		background: #14b8a6;
-		border-radius: 2px;
+		border-radius: 0px;
 		transition: width 0.4s;
 	}
 	.oi-usage-label {
@@ -593,7 +593,7 @@
 	.oi-modal {
 		background: #080d18;
 		border: 1px solid rgba(20, 184, 166, 0.18);
-		border-radius: 8px;
+		border-radius: 0px;
 		width: min(440px, 94vw);
 		box-shadow: 0 0 40px rgba(20, 184, 166, 0.07);
 	}
@@ -637,7 +637,7 @@
 		font-size: 9px;
 		letter-spacing: 0.15em;
 		padding: 6px;
-		border-radius: 3px;
+		border-radius: 0px;
 		border: 1px solid rgba(255, 255, 255, 0.08);
 		background: transparent;
 		color: #475569;
@@ -662,7 +662,7 @@
 	.oi-select {
 		background: rgba(255, 255, 255, 0.04);
 		border: 1px solid rgba(255, 255, 255, 0.1);
-		border-radius: 3px;
+		border-radius: 0px;
 		color: #e2e8f0;
 		font-family: inherit;
 		font-size: 12px;
@@ -679,7 +679,7 @@
 		font-size: 9px;
 		letter-spacing: 0.1em;
 		padding: 5px 10px;
-		border-radius: 3px;
+		border-radius: 0px;
 		border: 1px solid rgba(255, 255, 255, 0.08);
 		background: transparent;
 		color: #475569;
@@ -694,7 +694,7 @@
 	.oi-limit-input {
 		background: rgba(255, 255, 255, 0.04);
 		border: 1px solid rgba(255, 255, 255, 0.08);
-		border-radius: 3px;
+		border-radius: 0px;
 		color: #e2e8f0;
 		font-family: inherit;
 		font-size: 11px;
@@ -709,7 +709,7 @@
 		gap: 0.5rem;
 		background: rgba(20, 184, 166, 0.04);
 		border: 1px solid rgba(20, 184, 166, 0.2);
-		border-radius: 6px;
+		border-radius: 0px;
 		padding: 0.75rem 1rem;
 	}
 	/* ── Communications Failsafe URL block ─────────────────────────────── */
@@ -747,7 +747,7 @@
 		letter-spacing: 0.03em;
 		background: rgba(0, 0, 0, 0.4);
 		border: 1px solid rgba(20, 184, 166, 0.2);
-		border-radius: 3px;
+		border-radius: 0px;
 		color: rgba(20, 184, 166, 0.7);
 		outline: none;
 		cursor: text;
@@ -790,7 +790,7 @@
 		letter-spacing: 0.18em;
 		padding: 5px 12px;
 		border: 1px solid rgba(20, 184, 166, 0.4);
-		border-radius: 3px;
+		border-radius: 0px;
 		background: rgba(20, 184, 166, 0.08);
 		color: #14b8a6;
 		cursor: pointer;
@@ -812,7 +812,7 @@
 		letter-spacing: 0.18em;
 		font-weight: 700;
 		padding: 0.75rem;
-		border-radius: 4px;
+		border-radius: 0px;
 		width: 100%;
 		cursor: pointer;
 		transition: all 0.15s;
@@ -843,7 +843,7 @@
 		color: #ef4444;
 		background: rgba(239, 68, 68, 0.08);
 		border: 1px solid rgba(239, 68, 68, 0.2);
-		border-radius: 3px;
+		border-radius: 0px;
 		padding: 6px 10px;
 		margin: 0;
 	}
