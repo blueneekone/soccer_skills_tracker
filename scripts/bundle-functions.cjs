@@ -38,6 +38,7 @@ const CODEBASES = {
       'src/domains/b2bEnrollmentOps.js',
       'src/triggers/authSync.js',
       'src/domains/clubCreationOps.js',
+      'src/domains/matchOps.js',
       'src/domains/staffPermissionsOps.js',
       'lib/grit.js',
     ],
