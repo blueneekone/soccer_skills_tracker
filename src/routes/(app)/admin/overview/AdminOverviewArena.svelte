@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { goto } from '$app/navigation';
 	import type AdminDashboardEngine from './AdminDashboardEngine.svelte.ts';
 	import Icon from '$lib/components/ui/Icon.svelte';
 	import type { IconName } from '$lib/icons/registry.js';
@@ -47,7 +48,14 @@
 					</div>
 					<span class="tw-text-4xl tw-font-black tw-text-[#14b8a6]" style="font-family: 'Geist Mono', monospace;">{engine.usersCount}</span>
 				</div>
-				<div class="z2-panel siem-panel st-bento tw-p-[clamp(16px,3vw,24px)] tw-flex tw-flex-col tw-min-w-0 hover:tw-border-amber-500 hover:tw-shadow-neon-nuclear tw-transition-all" style="background: #0f172a; border: 1px solid #334155;">
+				<!-- svelte-ignore a11y_click_events_have_key_events -->
+				<div
+					role="button"
+					tabindex="0"
+					onclick={() => goto('/admin/audit-logs?status=active')}
+					class="z2-panel siem-panel st-bento tw-p-[clamp(16px,3vw,24px)] tw-flex tw-flex-col tw-min-w-0 hover:tw-border-amber-500 hover:tw-shadow-neon-nuclear tw-cursor-pointer tw-transition-all"
+					style="background: #0f172a; border: 1px solid #334155;"
+				>
 					<div class="tw-flex tw-items-center tw-justify-between tw-mb-2">
 						<span class="tw-text-[10px] tw-font-bold tw-uppercase tw-tracking-widest tw-text-[#A1A1AA]" style="font-family: 'Geist Sans', sans-serif;">Active Incidents</span>
 						<Icon name={"status.shield-alert" as IconName} size={16} class={engine.activeIncidents > 0 ? "tw-text-red-400" : "tw-text-amber-500"} />

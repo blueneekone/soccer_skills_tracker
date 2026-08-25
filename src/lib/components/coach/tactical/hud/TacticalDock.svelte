@@ -19,9 +19,9 @@
 	let dockMode = $state('cursor');
 
 	const TOOLS = /** @type {const} */ ([
-		{ id: 'cursor', label: 'CURSOR', glyph: '◌' },
-		{ id: 'draw', label: 'DRAW', glyph: '↗' },
-		{ id: 'erase', label: 'ERASE', glyph: '⊗' },
+		{ id: 'cursor', label: 'SELECT / MOVE', glyph: '◌' },
+		{ id: 'draw', label: 'OP DEPLOY: CDM', glyph: '↗' },
+		{ id: 'erase', label: 'TEST MISTAKE', glyph: '⊗' },
 	]);
 
 	function pickMode(/** @type {'cursor' | 'draw' | 'erase'} */ mode) {
@@ -96,17 +96,7 @@
 			</button>
 		{/each}
 
-		<button
-			type="button"
-			class="coach-tac-z4-btn {dockMode === 'draw' && model.routeDrawKind === 'cut' ? 'coach-tac-z4-btn--active' : ''}"
-			onclick={() => {
-				dockMode = 'draw';
-				model.setActiveTool('ROUTE');
-				model.routeDrawKind = 'cut';
-			}}
-		>
-			PLAYER RUN
-		</button>
+
 
 		<button
 			type="button"
@@ -117,7 +107,7 @@
 				model.routeDrawKind = 'pass';
 			}}
 		>
-			BALL PASS
+			[ BALL PASS ]
 		</button>
 
 		<span class="coach-tac-z4-divider" aria-hidden="true"></span>

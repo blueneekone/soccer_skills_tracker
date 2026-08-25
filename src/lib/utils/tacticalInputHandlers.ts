@@ -238,6 +238,17 @@ export function executePointerUp(ev: PointerEvent, host: TacticalPointerHost, re
 			let bindId = draft.bindPlayerId ?? null;
 			if (dock.bindPlayerId !== null) bindId = dock.bindPlayerId;
 			else if (!bindId) bindId = host.bindPlayerIdAtRouteStart(draft.x1, draft.y1);
+
+			// 25px ball proximity check for automatic pass
+			const ballToken = host.wrBucketPitch().find(t => t.id === 'BALL');
+			if (ballToken) {
+				const distToBall = Math.hypot(draft.x1 - ballToken.x, draft.y1 - ballToken.y);
+				if (distToBall <= 25) {
+					bindId = 'BALL';
+					draft.pathKind = 'pass';
+				}
+			}
+
 			const _newRoute = { id, x1: draft.x1, y1: draft.y1, cx: mc.cx, cy: mc.cy, x2: dock.x, y2: dock.y, color: host.activeRouteColor(), bindPlayerId: bindId, pathKind: draft.pathKind ?? host.routeDrawKind(), delay: draft.delay ?? 0 };
 			const isPass = _newRoute.pathKind === 'pass';
 			if (isPass && bindId !== 'BALL') {

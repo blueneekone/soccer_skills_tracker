@@ -21,9 +21,12 @@
 		onCommitted = async () => {},
 	} = $props();
 
-	const commitMatchTelemetry = httpsCallable(functions, 'commitMatchTelemetry');
+
 
 	/** Maps UI metric keys → Firestore action label + points for live feed. */
+	/** @type {{ type: 'error' | 'success'; text: string } | null} */
+	let feedback = $state(null);
+
 	const LIVE_ACTION = /** @type {const} */ ({
 		goals: /** @type {const} */ ({ action: 'goal', points: 10 }),
 		assists: /** @type {const} */ ({ action: 'assist', points: 6 }),
@@ -31,24 +34,9 @@
 		saves: /** @type {const} */ ({ action: 'save', points: 3 }),
 	});
 
-	/** @type {Record<string, { goals: number, assists: number, shots: number, saves: number }>} */
-	type PendingRow = { goals: number; assists: number; shots: number; saves: number };
-	let pending = $state<Record<string, PendingRow>>({});
 
-	let committing = $state(false);
-	/** @type {{ type: 'error' | 'success'; text: string } | null} */
-	let feedback = $state(null);
 
-	let lastTeamId = $state('');
-	/** `@statsDoc-metricKey` for CSS pulse on successful tap */
-	let pulseToken = $state(/** @type {string | null} */ (null));
 
-	$effect(() => {
-		if (teamId !== lastTeamId) {
-			lastTeamId = teamId;
-			pending = {};
-		}
-	});
 
 	/**
 	 * Streams one tap to `teams/{teamId}/telemetry_events` (same shape as `$userStore?.uid` → {@link authStore}.user?.uid).
@@ -64,14 +52,10 @@
 			return;
 		}
 		try {
-			addDoc(collection(db, 'teams', teamId, 'telemetry_events'), {
-				teamId,
-				matchId,
-				playerId,
-				action: actionType,
-				points,
+			addDoc(collection(db, 'matches', matchId, 'events'), {
+				playerId: playerId,
+				type: actionType,
 				timestamp: serverTimestamp(),
-				loggedBy: uid,
 			});
 			void Swal.fire({
 				icon: 'success',
@@ -103,70 +87,12 @@
 		if (!teamId) return;
 		const id = getStatsId(rosterName);
 		if (!id) return;
-		const cur = pending[id] || { goals: 0, assists: 0, shots: 0, saves: 0 };
-		pending = {
-			...pending,
-			[id]: { ...cur, [k]: cur[k] + 1 },
-		};
 		const spec = LIVE_ACTION[k];
-		const tok = `${id}-${k}`;
-		pulseToken = tok;
-		setTimeout(() => {
-			if (pulseToken === tok) pulseToken = null;
-		}, 520);
 		void logMatchEvent(spec.action, spec.points, id);
 	}
 
-	/**
-	 * @param {string} id
-	 */
-	function rowFor(id: string) {
-		return (
-			(pending[id] as { goals: number; assists: number; shots: number; saves: number } | undefined) ||
-			{ goals: 0, assists: 0, shots: 0, saves: 0 }
-		);
-	}
 
-	function hasAnyPending() {
-		for (const v of Object.values(pending)) {
-			if (v.goals + v.assists + v.shots + v.saves > 0) return true;
-		}
-		return false;
-	}
 
-	async function commit() {
-		if (!teamId || committing || !hasAnyPending()) return;
-		committing = true;
-		feedback = null;
-		const rows = [];
-		for (const p of players) {
-			const playerKey = getStatsId(p);
-			const r = rowFor(playerKey);
-			if (r.goals + r.assists + r.shots + r.saves === 0) continue;
-			rows.push({
-				playerKey,
-				goals: r.goals,
-				assists: r.assists,
-				shots: r.shots,
-				saves: r.saves,
-			});
-		}
-		if (rows.length === 0) {
-			committing = false;
-			return;
-		}
-		try {
-			await commitMatchTelemetry({ teamId, rows });
-			pending = {};
-			feedback = { type: 'success', text: 'Telemetry ingested to Firestore.' };
-			await onCommitted();
-		} catch (e) {
-			const msg = e && typeof e === 'object' && 'message' in e ? String(e.message) : 'Commit failed.';
-			feedback = { type: 'error', text: msg };
-		} finally {
-			committing = false;
-		}
-	}
 </script>
 
 <section class="ml-wrap" aria-labelledby="ml-live-telemetry" data-region="match-logger">
@@ -201,7 +127,7 @@
 		{:else}
 			{#each players as p (p + teamId)}
 				{@const sid = getStatsId(p)}
-				{@const row = rowFor(sid)}
+
 				<div class="ml-row" role="listitem">
 					<div class="ml-who">
 						<span class="ml-name">{p}</span>
@@ -209,44 +135,44 @@
 					<div class="ml-mets" aria-label="Session deltas — not yet committed">
 						<div class="ml-metric">
 							<span class="ml-lbl">G</span>
-							<span class="ml-val" aria-live="polite">{row.goals}</span
+							<span class="ml-val" aria-live="polite">0</span
 							><button
 								type="button"
 								class="ml-plus"
-								class:ml-plus--pulse={pulseToken === `${sid}-goals`}
+
 								aria-label="Add goal for {p}"
 								onclick={() => bump(p, 'goals')}>+</button
 							>
 						</div>
 						<div class="ml-metric">
 							<span class="ml-lbl">A</span>
-							<span class="ml-val" aria-live="polite">{row.assists}</span
+							<span class="ml-val" aria-live="polite">0</span
 							><button
 								type="button"
 								class="ml-plus"
-								class:ml-plus--pulse={pulseToken === `${sid}-assists`}
+
 								aria-label="Add assist for {p}"
 								onclick={() => bump(p, 'assists')}>+</button
 							>
 						</div>
 						<div class="ml-metric">
 							<span class="ml-lbl">Sht</span>
-							<span class="ml-val" aria-live="polite">{row.shots}</span
+							<span class="ml-val" aria-live="polite">0</span
 							><button
 								type="button"
 								class="ml-plus"
-								class:ml-plus--pulse={pulseToken === `${sid}-shots`}
+
 								aria-label="Add shot for {p}"
 								onclick={() => bump(p, 'shots')}>+</button
 							>
 						</div>
 						<div class="ml-metric">
 							<span class="ml-lbl">Sv</span>
-							<span class="ml-val" aria-live="polite">{row.saves}</span
+							<span class="ml-val" aria-live="polite">0</span
 							><button
 								type="button"
 								class="ml-plus"
-								class:ml-plus--pulse={pulseToken === `${sid}-saves`}
+
 								aria-label="Add save for {p}"
 								onclick={() => bump(p, 'saves')}>+</button
 							>
@@ -257,16 +183,7 @@
 		{/if}
 	</div>
 
-	<div class="ml-actions">
-		<button
-			type="button"
-			class="ml-commit"
-			disabled={!teamId || committing || !hasAnyPending()}
-			onclick={commit}
-		>
-			{committing ? 'Ingesting…' : 'Commit telemetry'}
-		</button>
-	</div>
+
 </section>
 
 <style>

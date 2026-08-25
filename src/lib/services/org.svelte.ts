@@ -303,6 +303,7 @@ export class OrgManager {
 			season: input.season?.trim() ?? '',
 			clubId: this._tenantId,   // legacy alias used by existing queries
 			tenantId: this._tenantId, // canonical field
+			coachId: null,
 			playerCount: 0,
 			coachEmail: null,
 			createdAt: serverTimestamp(),

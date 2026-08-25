@@ -23,10 +23,6 @@
 					<TransferPortal role="director" />
 				</section>
 			</section>
-		{:else if engine.activeTab === 'branding'}
-			<section class="tw-flex tw-flex-col tw-gap-6 tw-w-full">
-				<MarketingTab clubId={engine.clubId} />
-			</section>
 		{:else if engine.activeTab === 'comms'}
 			<section class="director-bento-grid-container tw-w-full tw-gap-8" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, clamp(280px, 30vw, 350px)), 1fr));">
 				<section

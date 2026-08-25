@@ -166,42 +166,6 @@
 		await fn({ teamId, coachEmail: emailLower });
 	}
 
-	// ── Create team ───────────────────────────────────────────────────────
-	const createTeam = async () => {
-		if (isReadOnly) { openReadOnlyUpgrade(); return; }
-		if (!clubId)              return alert('No club on your profile.');
-		if (!newTeamName.trim())  return alert('Please enter a team name.');
-		const slug   = newTeamName.toLowerCase().replace(/[^a-z0-9]/g, '');
-		const teamId = `${clubId}_${slug}`;
-		saving = true;
-		try {
-			await setDoc(doc(db, 'teams', teamId), {
-				clubId,
-				name: newTeamName.trim(),
-				createdAt: new Date(),
-			});
-			let msg = '';
-			if (newCoachEmail.trim()) {
-				try {
-					await clientBatchInviteCoach(teamId, newCoachEmail.trim());
-					msg = ' Coach invite queued.';
-				} catch (ie) {
-					const m = ie instanceof Error ? ie.message : String(ie);
-					msg = ` Team created — coach invite failed: ${m}`;
-				}
-			}
-			alert(`Squad "${newTeamName.trim()}" provisioned.${msg}`);
-			newTeamName   = '';
-			newCoachEmail = '';
-			showCreateForm = false;
-			await teamsStore.load('director', { clubId, scope: 'club', routePath: page.url.pathname, forceRefresh: true });
-		} catch (e) {
-			alert('Error: ' + (e instanceof Error ? e.message : String(e)));
-		} finally {
-			saving = false;
-		}
-	};
-
 	// ── Inline coach invite (per-card) ────────────────────────────────────
 	/** @param {string} teamId */
 	async function inviteCoachInline(teamId) {
@@ -319,48 +283,6 @@
 </div>
 
 <!-- ── Create Form (collapsible) ────────────────────────────────────────── -->
-{#if showCreateForm}
-	<div class="tt-create-panel">
-		<div class="tt-create-panel__inner">
-			<p class="tt-create-panel__head">
-				<Icon name="status.shield-plus" /> PROVISION NEW SQUAD
-			</p>
-			<div class="tt-create-fields">
-				<div class="tt-field-group">
-					<label for="tt-new-name" class="tt-label">Squad Label</label>
-					<input
-						id="tt-new-name"
-						type="text"
-						bind:value={newTeamName}
-						placeholder="U12 Gold"
-						class="tt-input"
-					/>
-				</div>
-				<div class="tt-field-group">
-					<label for="tt-new-coach" class="tt-label">Head Coach Email <span class="tt-label-opt">(optional)</span></label>
-					<input
-						id="tt-new-coach"
-						type="email"
-						bind:value={newCoachEmail}
-						placeholder="coach@club.com"
-						class="tt-input"
-					/>
-				</div>
-				<div class="tt-create-actions">
-					<button
-						class="tt-create-submit"
-						class:tt-create-submit--readonly={isReadOnly}
-						onclick={createTeam}
-						disabled={saving}
-					>
-						{saving ? 'PROVISIONING…' : 'PROVISION SQUAD'}
-					</button>
-					<button class="tt-create-cancel" onclick={() => (showCreateForm = false)}>CANCEL</button>
-				</div>
-			</div>
-		</div>
-	</div>
-{/if}
 
 <!-- ── Telemetry Strip ───────────────────────────────────────────────────── -->
 <div class="tt-telem-strip">

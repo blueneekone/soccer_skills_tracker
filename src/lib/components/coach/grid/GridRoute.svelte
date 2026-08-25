@@ -88,7 +88,7 @@
 		role="presentation"
 		onmouseenter={() => onRouteHoverEnter?.()}
 		onmouseleave={() => onRouteHoverLeave?.()}
-		onpointerdown={(e) => onPathClick?.(e)}
+		onpointerdown={(e) => { e.stopPropagation(); onPathClick?.(e); }}
 		oncontextmenu={(e) => { e.preventDefault(); onPathContextMenu?.(e); }}
 	/>
 {/if}
@@ -127,7 +127,7 @@
 			transform="translate({route.x1},{route.y1}) rotate(45)"
 			class="tw-cursor-pointer"
 			role="presentation"
-			onpointerdown={(e) => onControlPointDrag?.(e, 'start')}
+			onpointerdown={(e) => { e.stopPropagation(); onControlPointDrag?.(e, 'start'); }}
 		>
 			<circle cx="0" cy="0" r="36" fill="transparent" pointer-events="all" />
 			<rect
@@ -142,32 +142,26 @@
 			<circle cx="0" cy="0" r="2.5" fill="#ffffff" />
 		</g>
 		<!-- svelte-ignore a11y_no_static_element_interactions -->
+		{#if isSelected}
 		<g
 			data-anchor-hit
 			transform="translate({route.pathKind !== 'cut' ? 0.25*route.x1 + 0.5*route.cx + 0.25*route.x2 : route.cx}, {route.pathKind !== 'cut' ? 0.25*route.y1 + 0.5*route.cy + 0.25*route.y2 : route.cy}) rotate(45)"
 			class="tw-cursor-pointer"
 			role="presentation"
-			onpointerdown={(e) => onControlPointDrag?.(e, 'ctrl')}
+			onpointerdown={(e) => { e.stopPropagation(); onControlPointDrag?.(e, 'ctrl'); }}
 		>
 			<circle cx="0" cy="0" r="22" fill="transparent" pointer-events="all" />
-			<rect
-				x="-7"
-				y="-7"
-				width="14"
-				height="14"
-				fill="#050505"
-				stroke={route.color}
-				stroke-width="2"
-			/>
+			<circle cx="0" cy="0" r="8" fill="#fbbf24" />
 			<circle cx="0" cy="0" r="2.5" fill="#ffffff" />
 		</g>
+		{/if}
 		<!-- svelte-ignore a11y_no_static_element_interactions -->
 		<g
 			data-anchor-hit
 			transform="translate({route.x2},{route.y2})"
 			class="tw-cursor-pointer"
 			role="presentation"
-			onpointerdown={(e) => onControlPointDrag?.(e, 'end')}
+			onpointerdown={(e) => { e.stopPropagation(); onControlPointDrag?.(e, 'end'); }}
 		>
 			<circle cx="0" cy="0" r="22" fill="transparent" pointer-events="all" />
 			<circle cx="0" cy="0" r="11" fill="#050505" stroke={route.color} stroke-width="2" opacity="0.85" />
