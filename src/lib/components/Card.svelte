@@ -10,14 +10,6 @@
 		children,
 		headerSlot
 	} = $props();
-
-	const headerClass = $derived({
-		'bg-blue-header': headerVariant === 'blue',
-		'bg-gold-header': headerVariant === 'gold',
-		'bg-green-header': headerVariant === 'green',
-		'bg-red-header': headerVariant === 'red',
-		'bg-orange-header': headerVariant === 'orange'
-	});
 </script>
 
 <div
