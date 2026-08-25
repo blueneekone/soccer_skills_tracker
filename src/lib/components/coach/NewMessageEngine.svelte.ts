@@ -142,7 +142,6 @@ export class NewMessageEngine {
 	}
 
 	toggle(email: string) {
-		const c = this.candidates.find((x) => x.email === email);
 		const next = new Set(this.selected);
 		const k = email.toLowerCase();
 		if (next.has(k)) next.delete(k);
