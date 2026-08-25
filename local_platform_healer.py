@@ -192,23 +192,26 @@ def heal_platform_logic(root):
                 # Svelte 5 fix: Instead of invoking a potentially unmapped 'onClose()' or 'onAdvance()' prop,
                 # we force the cancel button to directly mutate the bindable 'show' property.
                 # This naturally propagates back to the parent component and shuts the modal!
-                if "onclick={onClose}" in content or "onclick={() => onClose()}" in content:
-                    content = re.sub(
-                        r'onclick=\{onClose\}',
-                        'onclick={() => { show = false; }}',
-                        content
-                    )
-                    content = re.sub(
-                        r'onclick=\{\(\)\s*=>\s*onClose\(\)\}',
-                        'onclick={() => { show = false; }}',
-                        content
-                    )
-                    
+                for prop in ['onClose', 'onAdvance']:
+                    if f"onclick={{{prop}}}" in content or f"onclick={{() => {prop}()}}" in content:
+                        content = re.sub(
+                            f'onclick=\\{{{prop}\\}}',
+                            'onclick={() => { show = false; }}',
+                            content
+                        )
+                        content = re.sub(
+                            f'onclick=\\{{\\(\\)\\s*=>\\s*{prop}\\(\\)\\}}',
+                            'onclick={() => { show = false; }}',
+                            content
+                        )
+
                 # Ensure the modal is strictly encapsulated and doesn't crash on unmapped callback props
-                if "let { show = $bindable()" in content and "onClose" in content:
-                    # Strip onClose out of props destructuring
-                    content = content.replace(", onClose", "")
-                    content = content.replace("onClose,", "")
+                if "let { show = $bindable()" in content:
+                    for prop in ['onClose', 'onAdvance']:
+                        if prop in content:
+                            # Strip prop out of props destructuring
+                            content = content.replace(f", {prop}", "")
+                            content = content.replace(f"{prop},", "")
                     
                 if content != original:
                     with open(path, 'w', encoding='utf-8') as f:
