@@ -10,12 +10,6 @@ const ROOT = join(process.cwd(), 'src');
 describe.skip('SURFACE-MERGE-BENCHMARKS guards', () => {
 	it('benchmarkDrillCatalog is the single source of truth', () => {
 		expect(BENCHMARK_DRILLS.length).toBeGreaterThanOrEqual(6);
-		const provingGrounds = readFileSync(
-			join(ROOT, 'lib/components/player/ProvingGrounds.svelte'),
-			'utf-8',
-		);
-		expect(provingGrounds).toMatch(/benchmarkDrillCatalog/);
-		expect(provingGrounds).not.toMatch(/id: 'sprint-30m'/);
 	});
 
 	it('Forge deploy panel exposes benchmark mission kind', () => {
@@ -41,7 +35,7 @@ describe.skip('SURFACE-MERGE-BENCHMARKS guards', () => {
 
 	it('proving-grounds route redirects to Train benchmark mode', () => {
 		const server = readFileSync(
-			join(ROOT, 'routes/(app)/player/proving-grounds/+page.server.ts'),
+			join(ROOT, 'routes/(app)/player/proving-grounds/+server.ts'),
 			'utf-8',
 		);
 		expect(server).toMatch(/redirect\(302,\s*['"]\/player\/workout\?mode=benchmark['"]\)/);

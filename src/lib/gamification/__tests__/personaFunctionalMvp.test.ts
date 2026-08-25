@@ -544,7 +544,7 @@ describe.skip('Functional audit backlog A–F — regression guards', () => {
 describe.skip('Functional audit — player workout surfaces (E1/E2/E3/E4)', () => {
 	it('proving-grounds route redirects to Train benchmark mode', () => {
 		const src = readFileSync(
-			join(ROOT, 'routes/(app)/player/proving-grounds/+page.server.ts'),
+			join(ROOT, 'routes/(app)/player/proving-grounds/+server.ts'),
 			'utf-8',
 		);
 		expect(src).toMatch(/\/player\/workout\?mode=benchmark/);
