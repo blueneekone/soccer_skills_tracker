@@ -27,7 +27,7 @@
 		type MessagesTabChannel,
 	} from '$lib/coach/comms/messagesTabChannels.js';
 
-	let { teamId = '', players: _players = [], clubId = '', initialChannel = '' } = $props();
+	let { teamId = '', clubId = '', initialChannel = '' } = $props();
 
 	let newChannelOpen = $state(false);
 	let channelCreatedMsg = $state('');
