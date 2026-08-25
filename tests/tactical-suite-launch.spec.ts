@@ -57,11 +57,11 @@ test.describe('Coach Tactical War Room & Match Day Suite', () => {
 
     // Tab switching check
     await page.evaluate(() => {
-        const drawToolsBtn = Array.from(document.querySelectorAll('button')).find(el => el.textContent?.includes('DRAW TOOLS'));
+        const drawToolsBtn = Array.from(document.querySelectorAll('button')).find(el => el.textContent?.includes('DRILLS'));
         drawToolsBtn?.click();
     });
 
-    await expect(page.locator('p:has-text("ROUTE_SHAPE")')).toBeVisible();
+    await expect(page.locator('span:has-text("[ DRILL LIBRARY SYNCING... ]")')).toBeVisible();
 
     // 3. Test Opponent token Right-Click logic
     // Select OPPONENT drop tool
