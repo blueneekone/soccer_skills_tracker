@@ -41,3 +41,4 @@
 - [x] **B815 HYDRATION GUARDS**: Standardized `if (!db || !authStore.isAuthenticated) return;` early checks on all dashboard queries to prevent loop quota blocks [cite: 345, 367].
 - [ ] **MARKETPLACE LAUNCH (Phase 4)**: Merge Svelte 5 Bento-grid view and deploy `bookTutoringSession` callable Stripe handler on `functions-commerce` [cite: 424].
 - [x] **DIRECTOR OS & ADMIN OS OVERHAUL**: Admin active incidents click navigation and Director OS system-wide visual simplification.
+- [x] **CODE HEALTH**: Removed unused `DISPATCH_INTEL` constant from SquadMatrix.

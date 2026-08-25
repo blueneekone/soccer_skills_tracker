@@ -26,15 +26,6 @@
 	import IntelModal from '$lib/components/ui/IntelModal.svelte';
 	import { buildCoachRosterDisplayNames } from '$lib/coach/rosterDisplayDedupe.js';
 
-	const DISPATCH_INTEL = {
-		title: 'DISPATCH PROTOCOL',
-		instructions: [
-			'1. Generate your 6-character code.',
-			'2. Text this code to your team parents.',
-			'3. Parents create an account, sign the COPPA waiver, and enter this code to instantly drop their player onto your roster.',
-		],
-	};
-
 	let { teamId = '', teams = [], showLiveTelemetry = true } = $props();
 
 	/** Isolates one bench-side logging session (new UUID when `teamId` changes). */
