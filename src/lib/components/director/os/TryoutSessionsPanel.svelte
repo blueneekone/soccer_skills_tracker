@@ -518,7 +518,7 @@
 
 	.tryouts-input {
 		border: 1px solid #334155;
-		border-radius: 8px;
+		border-radius: 0px;
 		padding: 0.45rem 0.55rem;
 		background: #1e293b;
 		color: #f8fafc;
@@ -528,7 +528,7 @@
 
 	.tryouts-btn {
 		border: none;
-		border-radius: 8px;
+		border-radius: 0px;
 		padding: 0.45rem 0.85rem;
 		font-size: 0.8125rem;
 		font-weight: 700;

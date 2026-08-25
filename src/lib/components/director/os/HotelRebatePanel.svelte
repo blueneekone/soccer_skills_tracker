@@ -232,7 +232,7 @@
 	.error-pill {
 		background: rgba(239,68,68,0.12);
 		border: 1px solid rgba(239,68,68,0.3);
-		border-radius: 8px;
+		border-radius: 0px;
 		padding: 0.35rem 0.75rem;
 		color: #fca5a5;
 		font-size: 0.78rem;
@@ -248,7 +248,7 @@
 	.bucket-tab {
 		background: rgba(255,255,255,0.04);
 		border: 1px solid rgba(255,255,255,0.08);
-		border-radius: 12px;
+		border-radius: 0px;
 		padding: 0.5rem 0.9rem;
 		cursor: pointer;
 		display: flex;
@@ -296,7 +296,7 @@
 		align-items: start;
 		background: rgba(255,255,255,0.03);
 		border: 1px solid rgba(255,255,255,0.06);
-		border-radius: 12px;
+		border-radius: 0px;
 		padding: 0.75rem 1rem;
 	}
 
@@ -347,7 +347,7 @@
 	.skeleton-row {
 		height: 68px;
 		background: rgba(255,255,255,0.04);
-		border-radius: 12px;
+		border-radius: 0px;
 		animation: pulse 1.5s ease-in-out infinite;
 	}
 
@@ -359,6 +359,6 @@
 		color: var(--vanguard-text-muted, #94a3b8);
 		font-size: 0.875rem;
 		border: 1px dashed rgba(255,255,255,0.1);
-		border-radius: 12px;
+		border-radius: 0px;
 	}
 </style>

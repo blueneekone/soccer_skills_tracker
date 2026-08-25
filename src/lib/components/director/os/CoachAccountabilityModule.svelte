@@ -178,7 +178,7 @@
 		align-items: center;
 		gap: 8px;
 		padding: 6px 12px;
-		border-radius: 999px;
+		border-radius: 0px;
 		border: 1px solid color-mix(in srgb, var(--brand-primary, #0f172a) 15%, transparent);
 		background: color-mix(in srgb, var(--brand-primary, #0f172a) 5%, transparent);
 		font-weight: 700;
@@ -189,7 +189,7 @@
 		display: inline-block;
 		width: 10px;
 		height: 10px;
-		border-radius: 999px;
+		border-radius: 0px;
 		flex-shrink: 0;
 	}
 
@@ -246,7 +246,7 @@
 	}
 
 	.acc-card {
-		border-radius: 14px;
+		border-radius: 0px;
 		border: 1px solid color-mix(in srgb, var(--brand-primary, #0f172a) 12%, transparent);
 		background: color-mix(in srgb, var(--glass-bg, #fff) 88%, transparent);
 		padding: 12px 14px;
@@ -321,7 +321,7 @@
 		font-weight: 800;
 		font-size: 0.8rem;
 		padding: 8px 12px;
-		border-radius: 10px;
+		border-radius: 0px;
 		border: 1px solid color-mix(in srgb, var(--brand-primary, #0f172a) 28%, transparent);
 		background: linear-gradient(
 			135deg,

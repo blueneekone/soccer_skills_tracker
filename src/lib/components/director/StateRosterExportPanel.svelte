@@ -254,7 +254,7 @@
 		margin-bottom: 1rem;
 		padding: 1rem 1.1rem;
 		border: 1px solid #334155;
-		border-radius: 12px;
+		border-radius: 0px;
 		background: #0f172a;
 	}
 
@@ -295,7 +295,7 @@
 	.sre-panel__sync-badge {
 		display: inline-flex;
 		padding: 0.2rem 0.55rem;
-		border-radius: 999px;
+		border-radius: 0px;
 		font-size: 0.72rem;
 		font-weight: 700;
 		text-transform: uppercase;
@@ -328,7 +328,7 @@
 	.sre-panel__sync-btn {
 		padding: 0.35rem 0.75rem;
 		border: 1px solid #334155;
-		border-radius: 8px;
+		border-radius: 0px;
 		background: #020617;
 		color: #e2e8f0;
 		font-size: 0.75rem;
@@ -367,7 +367,7 @@
 	.sre-panel__select {
 		padding: 0.55rem 0.65rem;
 		border: 1px solid #334155;
-		border-radius: 8px;
+		border-radius: 0px;
 		background: #020617;
 		color: #e2e8f0;
 		font-size: 0.88rem;
@@ -376,7 +376,7 @@
 	.sre-panel__btn {
 		padding: 0.55rem 1rem;
 		border: 1px solid rgba(251, 191, 36, 0.35);
-		border-radius: 8px;
+		border-radius: 0px;
 		background: rgba(251, 191, 36, 0.08);
 		color: #fbbf24;
 		font-size: 0.82rem;

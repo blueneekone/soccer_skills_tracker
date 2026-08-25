@@ -362,7 +362,7 @@ import { untrack } from 'svelte';
 		font-size: 0.85rem;
 		padding: 0.5rem 0.75rem;
 		background: rgba(255,255,255,0.03);
-		border-radius: 10px;
+		border-radius: 0px;
 		border: 1px solid rgba(255,255,255,0.06);
 	}
 	.rebate-partner { color: var(--vanguard-text-primary, #e2e8f0); font-weight: 600; flex: 1; }
@@ -388,7 +388,7 @@ import { untrack } from 'svelte';
 		background: transparent;
 		border: 1px solid rgba(255,255,255,0.12);
 		color: var(--vanguard-text-muted, #94a3b8);
-		border-radius: 12px;
+		border-radius: 0px;
 		padding: 0.45rem 1rem;
 		cursor: pointer;
 		font-size: 0.85rem;
@@ -409,7 +409,7 @@ import { untrack } from 'svelte';
 		text-transform: uppercase;
 		letter-spacing: 0.05em;
 		padding: 0.25rem 0.7rem;
-		border-radius: 99px;
+		border-radius: 0px;
 	}
 	.status-draft     { background: rgba(148,163,184,0.15); color: #94a3b8; }
 	.status-published { background: rgba(52,211,153,0.15);  color: #34d399; }
@@ -420,7 +420,7 @@ import { untrack } from 'svelte';
 		background: rgba(99,102,241,0.15);
 		border: 1px solid rgba(99,102,241,0.4);
 		color: #a5b4fc;
-		border-radius: 12px;
+		border-radius: 0px;
 		padding: 0.5rem 1.2rem;
 		font-size: 0.875rem;
 		font-weight: 600;
@@ -434,7 +434,7 @@ import { untrack } from 'svelte';
 		background: linear-gradient(135deg, #6366f1, #8b5cf6);
 		border: none;
 		color: white;
-		border-radius: 12px;
+		border-radius: 0px;
 		padding: 0.5rem 1.25rem;
 		font-size: 0.875rem;
 		font-weight: 600;
@@ -446,7 +446,7 @@ import { untrack } from 'svelte';
 	.btn-publish:disabled { opacity: 0.45; cursor: not-allowed; }
 
 	.alert {
-		border-radius: 12px;
+		border-radius: 0px;
 		padding: 0.85rem 1.2rem;
 		margin-bottom: 1.25rem;
 		font-size: 0.875rem;
@@ -508,7 +508,7 @@ import { untrack } from 'svelte';
 	.field-input {
 		background: rgba(255,255,255,0.05);
 		border: 1px solid rgba(255,255,255,0.1);
-		border-radius: 10px;
+		border-radius: 0px;
 		padding: 0.55rem 0.85rem;
 		color: var(--vanguard-text-primary, #e2e8f0);
 		font-size: 0.9rem;
@@ -552,7 +552,7 @@ import { untrack } from 'svelte';
 		background: rgba(99,102,241,0.12);
 		border: 1px solid rgba(99,102,241,0.3);
 		color: #a5b4fc;
-		border-radius: 10px;
+		border-radius: 0px;
 		padding: 0.35rem 0.85rem;
 		font-size: 0.82rem;
 		font-weight: 600;
@@ -564,7 +564,7 @@ import { untrack } from 'svelte';
 	.tier-card {
 		background: rgba(255,255,255,0.03);
 		border: 1px solid rgba(255,255,255,0.07);
-		border-radius: 16px;
+		border-radius: 0px;
 		padding: 1rem;
 		display: flex;
 		flex-direction: column;
@@ -589,7 +589,7 @@ import { untrack } from 'svelte';
 		background: transparent;
 		border: 1px solid rgba(239,68,68,0.3);
 		color: #f87171;
-		border-radius: 8px;
+		border-radius: 0px;
 		width: 26px;
 		height: 26px;
 		cursor: pointer;
@@ -606,7 +606,7 @@ import { untrack } from 'svelte';
 		font-size: 0.78rem;
 		color: #34d399;
 		background: rgba(52,211,153,0.08);
-		border-radius: 8px;
+		border-radius: 0px;
 		padding: 0.3rem 0.6rem;
 	}
 
@@ -616,7 +616,7 @@ import { untrack } from 'svelte';
 		color: var(--vanguard-text-muted, #94a3b8);
 		font-size: 0.875rem;
 		border: 1px dashed rgba(255,255,255,0.1);
-		border-radius: 12px;
+		border-radius: 0px;
 	}
 
 	.skeleton-block {

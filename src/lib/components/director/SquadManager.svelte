@@ -304,7 +304,7 @@
 		background: rgba(1, 4, 9, 0.85);
 		backdrop-filter: blur(16px);
 		border: 1px solid rgba(255, 255, 255, 0.07);
-		border-radius: 8px;
+		border-radius: 0px;
 		font-family: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
 		color: #e2e8f0;
 		overflow: hidden;
@@ -359,7 +359,7 @@
 		letter-spacing: 0.18em;
 		font-weight: 700;
 		padding: 7px 14px;
-		border-radius: 3px;
+		border-radius: 0px;
 		border: 1px solid rgba(20, 184, 166, 0.4);
 		background: rgba(20, 184, 166, 0.08);
 		color: #14b8a6;
@@ -461,7 +461,7 @@
 		font-size: 8px;
 		letter-spacing: 0.15em;
 		padding: 4px 9px;
-		border-radius: 2px;
+		border-radius: 0px;
 		cursor: pointer;
 		transition: all 0.15s;
 	}
@@ -480,7 +480,7 @@
 		letter-spacing: 0.1em;
 		color: rgba(148, 163, 184, 0.4);
 		border: 1px solid rgba(148, 163, 184, 0.15);
-		border-radius: 3px;
+		border-radius: 0px;
 		padding: 2px 6px;
 	}
 
@@ -512,7 +512,7 @@
 	.sm-modal {
 		background: #080d18;
 		border: 1px solid rgba(20, 184, 166, 0.18);
-		border-radius: 8px;
+		border-radius: 0px;
 		width: min(440px, 94vw);
 		box-shadow: 0 0 40px rgba(20, 184, 166, 0.07);
 	}
@@ -572,7 +572,7 @@
 	.sm-input {
 		background: rgba(255, 255, 255, 0.04);
 		border: 1px solid rgba(255, 255, 255, 0.1);
-		border-radius: 3px;
+		border-radius: 0px;
 		color: #e2e8f0;
 		font-family: inherit;
 		font-size: 12px;
@@ -599,7 +599,7 @@
 		color: #ef4444;
 		background: rgba(239, 68, 68, 0.08);
 		border: 1px solid rgba(239, 68, 68, 0.2);
-		border-radius: 3px;
+		border-radius: 0px;
 		padding: 6px 10px;
 		margin: 0;
 	}
@@ -609,7 +609,7 @@
 		letter-spacing: 0.18em;
 		font-weight: 700;
 		padding: 0.75rem;
-		border-radius: 4px;
+		border-radius: 0px;
 		width: 100%;
 		cursor: pointer;
 		transition: all 0.15s;

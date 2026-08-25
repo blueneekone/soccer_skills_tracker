@@ -264,6 +264,8 @@ exports.createTeam = onCall({ region: REGION }, async (request) => {
     await db().collection('teams').doc(teamId).set({
       id: teamId,
       clubId,
+      tenantId: clubId,
+      coachId: '',
       name: teamName,
       ageGroup: ageGroup || 'U12',
       gender: gender || 'Boys',

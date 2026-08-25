@@ -561,7 +561,7 @@
 		padding: 9px 36px 9px 36px;
 		background: rgba(20, 184, 166, 0.04);
 		border: 1px solid var(--tt-border);
-		border-radius: 10px;
+		border-radius: 0px;
 		color: #f8fafc;
 		font-family: var(--tt-mono);
 		font-size: 12px;
@@ -610,7 +610,7 @@
 
 	.tt-seg {
 		padding: 5px 10px;
-		border-radius: 6px;
+		border-radius: 0px;
 		border: 1px solid rgba(20, 184, 166, 0.12);
 		background: rgba(20, 184, 166, 0.03);
 		color: rgba(248, 250, 252, 0.45);
@@ -648,7 +648,7 @@
 	.tt-dense-track {
 		width: 30px;
 		height: 17px;
-		border-radius: 99px;
+		border-radius: 0px;
 		background: rgba(20, 184, 166, 0.1);
 		border: 1px solid var(--tt-border);
 		position: relative;
@@ -686,7 +686,7 @@
 		align-items: center;
 		gap: 6px;
 		padding: 6px 14px;
-		border-radius: 8px;
+		border-radius: 0px;
 		border: 1px solid rgba(20, 184, 166, 0.3);
 		background: rgba(20, 184, 166, 0.06);
 		color: var(--tt-accent);
@@ -707,7 +707,7 @@
 	/* ── Create Panel ──────────────────────────────────────────────────── */
 	.tt-create-panel {
 		margin-bottom: 16px;
-		border-radius: 12px;
+		border-radius: 0px;
 		border: 1px solid rgba(20, 184, 166, 0.2);
 		background: rgba(20, 184, 166, 0.03);
 		backdrop-filter: blur(24px);
@@ -747,7 +747,7 @@
 		padding: 8px 12px;
 		background: rgba(2, 8, 23, 0.7);
 		border: 1px solid var(--tt-border);
-		border-radius: 8px;
+		border-radius: 0px;
 		color: #f8fafc;
 		font-family: var(--tt-mono);
 		font-size: 12px;
@@ -761,7 +761,7 @@
 	.tt-create-actions { display: flex; gap: 8px; align-items: center; }
 	.tt-create-submit {
 		padding: 8px 18px;
-		border-radius: 8px;
+		border-radius: 0px;
 		border: 1px solid rgba(20, 184, 166, 0.4);
 		background: rgba(20, 184, 166, 0.1);
 		color: var(--tt-accent);
@@ -778,7 +778,7 @@
 	.tt-create-cancel {
 		background: none;
 		border: 1px solid rgba(248, 250, 252, 0.1);
-		border-radius: 8px;
+		border-radius: 0px;
 		color: rgba(248, 250, 252, 0.4);
 		font-family: var(--tt-mono);
 		font-size: 10px;
@@ -798,7 +798,7 @@
 		gap: 0;
 		margin-bottom: 16px;
 		padding: 10px 16px;
-		border-radius: 10px;
+		border-radius: 0px;
 		border: 1px solid var(--tt-border);
 		background: rgba(20, 184, 166, 0.02);
 	}
@@ -840,7 +840,7 @@
 		display: inline-flex;
 		align-items: center;
 		padding: 2px 8px;
-		border-radius: 99px;
+		border-radius: 0px;
 		font-family: var(--tt-mono);
 		font-size: 9px;
 		font-weight: 800;
@@ -873,7 +873,7 @@
 		align-items: center;
 		gap: 6px;
 		padding: 8px 18px;
-		border-radius: 8px;
+		border-radius: 0px;
 		border: 1px solid rgba(20, 184, 166, 0.3);
 		background: rgba(20, 184, 166, 0.06);
 		color: var(--tt-accent);
@@ -889,7 +889,7 @@
 	/* ── Dense Matrix ──────────────────────────────────────────────────── */
 	.tt-matrix {
 		border: 1px solid var(--tt-border);
-		border-radius: 12px;
+		border-radius: 0px;
 		overflow: hidden;
 		background: rgba(20, 184, 166, 0.015);
 		margin-bottom: 80px;
@@ -936,7 +936,7 @@
 	}
 	.tt-matrix-cell--cb { padding-left: 0; }
 	.tt-m-name { font-size: 12px; font-weight: 600; color: #f8fafc; letter-spacing: 0; }
-	.tt-m-code { font-size: 10px; color: rgba(20, 184, 166, 0.6); background: rgba(20, 184, 166, 0.06); padding: 2px 6px; border-radius: 4px; }
+	.tt-m-code { font-size: 10px; color: rgba(20, 184, 166, 0.6); background: rgba(20, 184, 166, 0.06); padding: 2px 6px; border-radius: 0px; }
 	.tt-m-coach { font-size: 11px; color: rgba(248, 250, 252, 0.5); }
 
 	.tt-act-link,
@@ -950,7 +950,7 @@
 		border: none;
 		cursor: pointer;
 		padding: 3px 8px;
-		border-radius: 4px;
+		border-radius: 0px;
 		text-decoration: none;
 		transition: background 0.15s;
 	}
@@ -966,7 +966,7 @@
 	}
 
 	.tt-squad-card {
-		border-radius: 14px;
+		border-radius: 0px;
 		border: 1px solid var(--tt-border);
 		background: rgba(20, 184, 166, 0.025);
 		backdrop-filter: blur(24px);
@@ -1005,7 +1005,7 @@
 		color: rgba(20, 184, 166, 0.5);
 		background: rgba(20, 184, 166, 0.06);
 		padding: 2px 6px;
-		border-radius: 4px;
+		border-radius: 0px;
 		display: block;
 		white-space: nowrap;
 		overflow: hidden;
@@ -1038,7 +1038,7 @@
 		align-items: center;
 		gap: 5px;
 		padding: 5px 10px;
-		border-radius: 6px;
+		border-radius: 0px;
 		font-family: var(--tt-mono);
 		font-size: 10px;
 		font-weight: 700;
@@ -1075,7 +1075,7 @@
 	.tt-inline-invite .tt-input--sm { flex: 1; }
 	.tt-invite-send {
 		padding: 6px 12px;
-		border-radius: 6px;
+		border-radius: 0px;
 		border: 1px solid rgba(249, 115, 22, 0.4);
 		background: rgba(249, 115, 22, 0.1);
 		color: var(--tt-orange);
@@ -1101,7 +1101,7 @@
 		align-items: center;
 		gap: 10px;
 		padding: 10px 20px;
-		border-radius: 99px;
+		border-radius: 0px;
 		border: 1px solid rgba(20, 184, 166, 0.4);
 		background: rgba(8, 13, 24, 0.95);
 		backdrop-filter: blur(32px);
@@ -1142,7 +1142,7 @@
 		align-items: center;
 		gap: 6px;
 		padding: 6px 12px;
-		border-radius: 8px;
+		border-radius: 0px;
 		border: 1px solid rgba(20, 184, 166, 0.2);
 		background: rgba(20, 184, 166, 0.05);
 		color: rgba(248, 250, 252, 0.8);

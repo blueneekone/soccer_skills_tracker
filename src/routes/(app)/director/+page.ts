@@ -8,8 +8,8 @@ export const load: PageLoad = ({ url }) => {
 			const sub = tab === 'compliance' ? 'passports' : tab === 'household' ? 'households' : tab === 'retention' ? 'coppa' : tab;
 			redirect(302, `/director/compliance-ops?tab=${sub}`);
 		}
-		if (['registrars', 'branding', 'brand', 'comms', 'licenses', 'billing', 'sync'].includes(tab)) {
-			const sub = tab === 'brand' ? 'branding' : tab;
+		if (['registrars', 'brand', 'comms', 'licenses', 'billing', 'sync'].includes(tab)) {
+			const sub = tab;
 			redirect(302, `/director/club-management?tab=${sub}`);
 		}
 		if (['mission-control', 'vanguard', 'playbook', 'tournaments', 'events', 'field', 'war-room', 'warRoom', 'teams', 'home'].includes(tab)) {

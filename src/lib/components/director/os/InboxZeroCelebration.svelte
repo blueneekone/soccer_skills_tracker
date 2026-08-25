@@ -37,7 +37,7 @@
 		text-align: center;
 		background: radial-gradient(circle at center, rgba(16, 185, 129, 0.08) 0%, transparent 60%);
 		border: 1px solid rgba(16, 185, 129, 0.1);
-		border-radius: 12px;
+		border-radius: 0px;
 		min-height: 300px;
 		animation: izFadeIn 0.5s ease-out forwards;
 	}

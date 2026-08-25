@@ -114,7 +114,7 @@
 		border: 1px solid #334155;
 		background: #0B0F19;
 		padding: 1.5rem;
-		border-radius: 0;
+		border-radius: 0px;
 	}
 	.rrt-panel__head {
 		margin-bottom: 1rem;
@@ -166,7 +166,7 @@
 		color: #FAFAFA;
 		font-size: 0.85rem;
 		font-family: 'Geist Mono', monospace;
-		border-radius: 0;
+		border-radius: 0px;
 		transition: border-color 0.15s ease;
 	}
 	.rrt-input:focus {
@@ -185,7 +185,7 @@
 		font-weight: 700;
 		text-transform: uppercase;
 		cursor: pointer;
-		border-radius: 0;
+		border-radius: 0px;
 		transition: transform 0.15s ease, background 0.15s ease, color 0.15s ease;
 	}
 	@media (min-width: 640px) {

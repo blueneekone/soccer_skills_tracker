@@ -92,11 +92,12 @@ export class DirectorDashboardEngine {
 		});
 	}
 
-	get clubTeams() {
+	clubTeams = $derived.by(() => {
+		if (!authStore.isAuthenticated || !authStore.userProfile || !this.clubId) return [];
 		return teamsStore.teams
 			.filter((t) => t.clubId === this.clubId)
 			.map((t) => ({ id: t.id, name: t.name }));
-	}
+	});
 
 	get clubLabel() {
 		return teamsStore.clubs.find((c) => c.id === this.clubId)?.name || this.clubId;

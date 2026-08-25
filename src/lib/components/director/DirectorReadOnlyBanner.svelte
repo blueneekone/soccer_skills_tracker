@@ -29,7 +29,7 @@
 		justify-content: center;
 		gap: 0.65rem 1rem;
 		padding: 0.65rem 1rem;
-		border-radius: 999px;
+		border-radius: 0px;
 		border: 1px solid color-mix(in srgb, #ef4444 35%, #f59e0b 25%);
 		background: linear-gradient(
 			120deg,
@@ -65,7 +65,7 @@
 
 	.dir-readonly-banner__cta {
 		border: none;
-		border-radius: 999px;
+		border-radius: 0px;
 		padding: 0.45rem 1rem;
 		font-weight: 800;
 		font-size: 0.8rem;

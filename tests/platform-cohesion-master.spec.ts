@@ -175,8 +175,8 @@ test.describe('SSTracker Platform Master Cohesion Tests', () => {
     });
 
     test('should display Coach Tactical War Room SVG field with proper screen coordinate transformations', async ({ page }) => {
-      await page.goto('/coach/war-room');
-      const svgCanvas = page.locator('svg[viewBox="0 0 1200 800"]');
+      await page.goto('/coach/tactical');
+      const svgCanvas = page.locator('svg[viewBox*="1600 900"]');
       await expect(svgCanvas).toBeVisible();
 
       // Ensure preserveAspectRatio aspect-ratio lock is correctly hardcoded

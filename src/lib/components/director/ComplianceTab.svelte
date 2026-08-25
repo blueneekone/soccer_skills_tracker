@@ -101,7 +101,7 @@
 			<!-- Overall score with Dot status indicator -->
 			<div class="tw-flex tw-items-center tw-gap-4">
 				<span
-					class="tw-w-4 tw-h-4 tw-rounded-full tw-inline-block compliance-status-dot"
+					class="tw-w-4 tw-h-4 tw-rounded-none tw-inline-block compliance-status-dot"
 					style="background-color: {getComplianceStatusColor(healthScore.overallScore)}"
 					aria-label="Status: {getComplianceStatusLabel(healthScore.overallScore)}"
 				></span>
@@ -223,7 +223,7 @@
 </div>
 
 <style>
-	.status-select             { margin: 0; padding: 4px; border-radius: 6px; font-weight: 700; font-size: 0.85rem; width: auto; }
+	.status-select             { margin: 0; padding: 4px; border-radius: 0px; font-weight: 700; font-size: 0.85rem; width: auto; }
 	.status-select--suspended  { color: #b91c1c; }
 	.status-select--clear      { color: #047857; }
 	.eligible-yes { color: #047857; font-weight: 700; }
