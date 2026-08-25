@@ -75,9 +75,6 @@ import { functions } from '$lib/firebase.js';
 	const durationMinutes = $derived(Math.max(0, Math.round((endMs - startMs) / 60000)));
 	const isValidTimeBlock = $derived(endMs > startMs + 5 * 60000);
 
-	const selectedFacility = $derived(
-		facilities.find((f) => f.facilityId === selectedFacilityId) ?? null,
-	);
 
 	// ── Helpers ───────────────────────────────────────────────────────────────
 
