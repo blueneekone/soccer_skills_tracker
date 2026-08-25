@@ -13,7 +13,6 @@
 	rangeStart={engine.rangeStart}
 	rangeEnd={engine.rangeEnd}
 	totalLabel={engine.totalLabel}
-	onSearchInput={(value) => (engine.searchInput = value)}
 	onSearchKey={engine.onSearchKey}
 	onRunSearch={() => void engine.runSearch()}
 	onClearSearch={() => void engine.clearSearch()}

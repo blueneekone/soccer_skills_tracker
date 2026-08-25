@@ -10,7 +10,6 @@
 		rangeStart: number;
 		rangeEnd: number;
 		totalLabel: string;
-		onSearchInput: (value: string) => void;
 		onSearchKey: (e: KeyboardEvent) => void;
 		onRunSearch: () => void;
 		onClearSearch: () => void;
@@ -24,7 +23,6 @@
 		rangeStart,
 		rangeEnd,
 		totalLabel,
-		onSearchInput,
 		onSearchKey,
 		onRunSearch,
 		onClearSearch,
