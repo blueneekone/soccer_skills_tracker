@@ -87,9 +87,7 @@ const devConfig: FirebaseClientConfig = {
 
 /** Production project: soccer-skills-tracker */
 const prodConfig: FirebaseClientConfig = {
-	apiKey:
-		import.meta.env.VITE_FIREBASE_PROD_API_KEY ??
-		'AIzaSyDNmo6dACOLzOSkC93elMd5yMbFmsUXO1w',
+	apiKey: import.meta.env.VITE_FIREBASE_PROD_API_KEY as string,
 	authDomain:
 		import.meta.env.VITE_FIREBASE_PROD_AUTH_DOMAIN ?? 'soccer.sstracker.app',
 	projectId:
