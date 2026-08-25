@@ -48,7 +48,7 @@ import {
 
 /** Development project — sports-skill-tracker-dev */
 const devConfig = {
-	apiKey: import.meta.env.VITE_FIREBASE_DEV_API_KEY || 'AIzaSyCiBoemXJHTkTnujTwM1vOJc4FrVZF8Lw8',
+	apiKey: import.meta.env.VITE_FIREBASE_DEV_API_KEY,
 	authDomain:
 		import.meta.env.VITE_FIREBASE_DEV_AUTH_DOMAIN ||
 		'sports-skill-tracker-dev.firebaseapp.com',
@@ -64,7 +64,7 @@ const devConfig = {
 
 /** Production project — soccer-skills-tracker */
 const prodConfig = {
-	apiKey: import.meta.env.VITE_FIREBASE_PROD_API_KEY || 'AIzaSyDNmo6dACOLzOSkC93elMd5yMbFmsUXO1w',
+	apiKey: import.meta.env.VITE_FIREBASE_PROD_API_KEY,
 	authDomain:
 		import.meta.env.VITE_FIREBASE_PROD_AUTH_DOMAIN || 'soccer.sstracker.app',
 	projectId: import.meta.env.VITE_FIREBASE_PROD_PROJECT_ID || 'soccer-skills-tracker',
