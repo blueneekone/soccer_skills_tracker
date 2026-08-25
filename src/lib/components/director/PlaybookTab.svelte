@@ -353,7 +353,7 @@
 	.pb-tab__panel {
 		background: var(--glass-bg, #ffffff);
 		border: 1px solid var(--border-muted, #e5e5e5);
-		border-radius: 12px;
+		border-radius: 0px;
 		padding: 16px;
 	}
 
@@ -401,7 +401,7 @@
 		font: inherit;
 		font-size: 14px;
 		border: 1px solid var(--border-muted, #e5e5e5);
-		border-radius: 8px;
+		border-radius: 0px;
 		background: #ffffff;
 		color: var(--text-primary, #09090b);
 		box-sizing: border-box;
@@ -460,7 +460,7 @@
 
 	.pb-tab__btn {
 		padding: 9px 16px;
-		border-radius: 8px;
+		border-radius: 0px;
 		border: 1px solid transparent;
 		font: inherit;
 		font-size: 14px;
@@ -485,7 +485,7 @@
 	.pb-tab__table-wrap {
 		overflow-x: auto;
 		border: 1px solid var(--border-muted, #e5e5e5);
-		border-radius: 10px;
+		border-radius: 0px;
 	}
 
 	:global(html.dark) .pb-tab__table-wrap {
@@ -539,7 +539,7 @@
 		font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 		font-size: 12px;
 		padding: 2px 6px;
-		border-radius: 4px;
+		border-radius: 0px;
 		background: #f4f4f5;
 		color: var(--text-primary, #09090b);
 	}
@@ -554,7 +554,7 @@
 		padding: 2px 8px;
 		font-size: 11px;
 		font-weight: 600;
-		border-radius: 999px;
+		border-radius: 0px;
 		text-transform: capitalize;
 	}
 
@@ -598,7 +598,7 @@
 	.pb-tab__flash {
 		margin: 0 0 12px;
 		padding: 9px 12px;
-		border-radius: 8px;
+		border-radius: 0px;
 		font-size: 13px;
 		border: 1px solid transparent;
 	}

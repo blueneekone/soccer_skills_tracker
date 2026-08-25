@@ -176,7 +176,7 @@
 		min-height: 500px;
 		height: 500px;
 		width: 100%;
-		border-radius: 14px;
+		border-radius: 0px;
 		border: 1px solid #e5e5e5;
 	}
 
@@ -196,7 +196,7 @@
 		gap: 0.75rem;
 		padding: 1rem 1.25rem;
 		text-align: center;
-		border-radius: 14px;
+		border-radius: 0px;
 		border: 1px solid #e4e4e7;
 	}
 

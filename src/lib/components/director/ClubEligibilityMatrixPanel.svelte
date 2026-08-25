@@ -157,7 +157,7 @@
 		margin-bottom: 1rem;
 		padding: 1rem 1.1rem;
 		border: 1px solid #334155;
-		border-radius: 12px;
+		border-radius: 0px;
 		background: #0f172a;
 	}
 
@@ -206,7 +206,7 @@
 
 	.em-panel__save {
 		border: none;
-		border-radius: 8px;
+		border-radius: 0px;
 		padding: 0.45rem 0.85rem;
 		font-size: 0.8125rem;
 		font-weight: 700;

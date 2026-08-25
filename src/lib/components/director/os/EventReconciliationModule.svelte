@@ -178,7 +178,7 @@
 	.error-pill {
 		background: rgba(239,68,68,0.12);
 		border: 1px solid rgba(239,68,68,0.3);
-		border-radius: 8px;
+		border-radius: 0px;
 		padding: 0.4rem 0.75rem;
 		color: #fca5a5;
 		font-size: 0.78rem;
@@ -193,7 +193,7 @@
 	.event-tile {
 		background: rgba(255,255,255,0.04);
 		border: 1px solid rgba(255,255,255,0.07);
-		border-radius: 16px;
+		border-radius: 0px;
 		padding: 0.9rem;
 		cursor: pointer;
 		text-decoration: none;
@@ -246,7 +246,7 @@
 	.scan-bar-wrap {
 		height: 4px;
 		background: rgba(255,255,255,0.08);
-		border-radius: 99px;
+		border-radius: 0px;
 		overflow: hidden;
 	}
 
@@ -254,7 +254,7 @@
 		height: 100%;
 		background: linear-gradient(90deg, #fbbf24, #14b8a6);
 		box-shadow: 0 0 8px rgba(251, 191, 36, 0.4);
-		border-radius: 99px;
+		border-radius: 0px;
 		transition: width 0.5s ease;
 	}
 
@@ -266,7 +266,7 @@
 	.skeleton-row {
 		height: 90px;
 		background: rgba(255,255,255,0.04);
-		border-radius: 16px;
+		border-radius: 0px;
 		animation: pulse 1.5s ease-in-out infinite;
 	}
 
@@ -278,7 +278,7 @@
 		color: var(--vanguard-text-muted, #94a3b8);
 		font-size: 0.875rem;
 		border: 1px dashed rgba(255,255,255,0.1);
-		border-radius: 14px;
+		border-radius: 0px;
 	}
 	.empty-link { color: #14b8a6; text-decoration: none; }
 	.empty-link:hover { text-decoration: underline; }

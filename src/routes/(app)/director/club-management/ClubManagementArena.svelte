@@ -2,7 +2,6 @@
 	import type { ClubManagementEngine } from './ClubManagementEngine.svelte.js';
 	import RegistrarInviteTab from '$lib/components/director/RegistrarInviteTab.svelte';
 	import TransferPortal from '$lib/components/player/TransferPortal.svelte';
-	import MarketingTab from '$lib/components/director/MarketingTab.svelte';
 	import DirectorCommsCompliancePanel from '$lib/components/director/DirectorCommsCompliancePanel.svelte';
 	import CommsSponsorPartnerChannel from '$lib/components/comms/CommsSponsorPartnerChannel.svelte';
 	import LicensesTab from '$lib/components/director/LicensesTab.svelte';
@@ -14,7 +13,7 @@
 	let { engine }: { engine: ClubManagementEngine } = $props();
 </script>
 
-<div class="tw-h-full tw-w-full tw-p-6 lg:tw-p-10 tw-bg-[#05050A]">
+<div class="tw-h-[100dvh] tw-w-full tw-p-6 lg:tw-p-10 tw-bg-[#0a0a0a]">
 	<div class="tw-max-w-[1920px] tw-mx-auto tw-flex tw-flex-col tw-gap-8 tw-min-h-full">
 		{#if engine.activeTab === 'registrars'}
 			<section class="tw-flex tw-flex-col tw-gap-6 tw-w-full">
@@ -22,10 +21,6 @@
 				<section class="tw-mt-6" aria-label="Player transfer intake">
 					<TransferPortal role="director" />
 				</section>
-			</section>
-		{:else if engine.activeTab === 'branding'}
-			<section class="tw-flex tw-flex-col tw-gap-6 tw-w-full">
-				<MarketingTab clubId={engine.clubId} />
 			</section>
 		{:else if engine.activeTab === 'comms'}
 			<section class="director-bento-grid-container tw-w-full tw-gap-8" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, clamp(280px, 30vw, 350px)), 1fr));">

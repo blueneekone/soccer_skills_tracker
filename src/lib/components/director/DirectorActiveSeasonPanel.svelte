@@ -162,7 +162,7 @@
 		gap: 10px;
 		padding: 16px 18px;
 		border: 1px solid #334155;
-		border-radius: 12px;
+		border-radius: 0px;
 		background: #0f172a;
 		margin-bottom: 16px;
 	}
@@ -210,7 +210,7 @@
 
 	.season-input {
 		border: 1px solid #334155;
-		border-radius: 8px;
+		border-radius: 0px;
 		padding: 8px 10px;
 		font-size: 13px;
 		background: #1e293b;
@@ -238,7 +238,7 @@
 	.season-btn {
 		align-self: flex-start;
 		border: none;
-		border-radius: 8px;
+		border-radius: 0px;
 		padding: 9px 16px;
 		font-size: 13px;
 		font-weight: 700;

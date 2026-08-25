@@ -29,7 +29,7 @@
 	}
 
 	.izh-glow {
-		@apply tw-absolute tw-h-24 tw-w-24 tw-rounded-full tw-bg-[#14b8a6] tw-opacity-10 tw-blur-2xl tw-transition-opacity tw-duration-700;
+		@apply tw-absolute tw-h-24 tw-w-24 tw-rounded-none tw-bg-[#14b8a6] tw-opacity-10 tw-blur-2xl tw-transition-opacity tw-duration-700;
 	}
 
 	.izh-box:hover .izh-glow {

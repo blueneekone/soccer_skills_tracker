@@ -299,7 +299,7 @@
 		color: rgba(20, 184, 166,0.8);
 		background: rgba(20, 184, 166,0.08);
 		border: 1px solid rgba(20, 184, 166,0.22);
-		border-radius: 4px;
+		border-radius: 0px;
 		padding: 2px 8px;
 		margin-bottom: 6px;
 	}
@@ -331,7 +331,7 @@
 		color: #14b8a6;
 		background: rgba(20, 184, 166,0.07);
 		border: 1px solid rgba(20, 184, 166,0.35);
-		border-radius: 8px;
+		border-radius: 0px;
 		text-decoration: none;
 		transition: background 0.18s, border-color 0.18s;
 		white-space: nowrap;
@@ -376,7 +376,7 @@
 
 	.tab-count {
 		background: rgba(255,255,255,0.08);
-		border-radius: 3px;
+		border-radius: 0px;
 		padding: 1px 5px;
 		font-size: 0.55rem;
 	}
@@ -391,7 +391,7 @@
 		padding: 0.75rem 1rem;
 		background: rgba(255,77,106,0.06);
 		border: 1px solid rgba(255,77,106,0.2);
-		border-radius: 8px;
+		border-radius: 0px;
 		font-size: 0.7rem;
 		color: rgba(255,77,106,0.8);
 	}
@@ -422,7 +422,7 @@
 	.row {
 		background: rgba(8,10,18,0.8);
 		border: 1px solid rgba(255,255,255,0.07);
-		border-radius: 12px;
+		border-radius: 0px;
 		padding: 1rem 1.1rem;
 		transition: border-color 0.15s;
 	}
@@ -466,7 +466,7 @@
 		font-weight: 700;
 		letter-spacing: 0.14em;
 		text-transform: uppercase;
-		border-radius: 4px;
+		border-radius: 0px;
 		padding: 2px 7px;
 		border: 1px solid;
 	}
@@ -499,7 +499,7 @@
 		color: rgba(20, 184, 166,0.7);
 		background: rgba(20, 184, 166,0.05);
 		border: 1px solid rgba(20, 184, 166,0.2);
-		border-radius: 6px;
+		border-radius: 0px;
 		cursor: pointer;
 		transition: background 0.15s, border-color 0.15s;
 	}
@@ -547,7 +547,7 @@
 	.modal {
 		background: #080a12;
 		border: 1px solid rgba(20, 184, 166,0.2);
-		border-radius: 16px;
+		border-radius: 0px;
 		padding: 1.5rem;
 		width: 100%;
 		max-width: 560px;
@@ -610,7 +610,7 @@
 		flex-wrap: wrap;
 		padding: 0.5rem 0.75rem;
 		background: rgba(255,255,255,0.03);
-		border-radius: 6px;
+		border-radius: 0px;
 		font-size: 0.62rem;
 	}
 

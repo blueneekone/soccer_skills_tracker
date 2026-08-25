@@ -47,13 +47,13 @@
 					</div>
 					<span class="tw-text-4xl tw-font-black tw-text-[#14b8a6]" style="font-family: 'Geist Mono', monospace;">{engine.usersCount}</span>
 				</div>
-				<div class="z2-panel siem-panel st-bento tw-p-[clamp(16px,3vw,24px)] tw-flex tw-flex-col tw-min-w-0 hover:tw-border-amber-500 hover:tw-shadow-neon-nuclear tw-transition-all" style="background: #0f172a; border: 1px solid #334155;">
+				<a href="/admin/audit-logs?status=active" class="tw-cursor-pointer z2-panel siem-panel st-bento tw-p-[clamp(16px,3vw,24px)] tw-flex tw-flex-col tw-min-w-0 hover:tw-border-amber-500 hover:tw-shadow-neon-nuclear tw-transition-all" style="background: #0f172a; border: 1px solid #334155; text-decoration: none;">
 					<div class="tw-flex tw-items-center tw-justify-between tw-mb-2">
 						<span class="tw-text-[10px] tw-font-bold tw-uppercase tw-tracking-widest tw-text-[#A1A1AA]" style="font-family: 'Geist Sans', sans-serif;">Active Incidents</span>
 						<Icon name={"status.shield-alert" as IconName} size={16} class={engine.activeIncidents > 0 ? "tw-text-red-400" : "tw-text-amber-500"} />
 					</div>
 					<span class="tw-text-4xl tw-font-black" class:tw-text-red-400={engine.activeIncidents > 0} class:tw-text-amber-500={engine.activeIncidents === 0} style="font-family: 'Geist Mono', monospace;">{engine.activeIncidents}</span>
-				</div>
+				</a>
 				<div class="z2-panel siem-panel st-bento tw-p-[clamp(16px,3vw,24px)] tw-flex tw-flex-col tw-min-w-0 hover:tw-border-amber-500 hover:tw-shadow-neon-nuclear tw-transition-all" style="background: #0f172a; border: 1px solid #334155;">
 					<div class="tw-flex tw-items-center tw-justify-between tw-mb-2">
 						<span class="tw-text-[10px] tw-font-bold tw-uppercase tw-tracking-widest tw-text-[#A1A1AA]" style="font-family: 'Geist Sans', sans-serif;">System Status</span>

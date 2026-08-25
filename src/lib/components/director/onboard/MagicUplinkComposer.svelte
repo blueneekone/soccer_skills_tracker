@@ -285,7 +285,7 @@
 		padding: 1.75rem;
 		background: rgba(2,4,9,0.88);
 		border: 1px solid rgba(20, 184, 166,0.14);
-		border-radius: 24px;
+		border-radius: 0px;
 		backdrop-filter: blur(36px);
 		-webkit-backdrop-filter: blur(36px);
 		font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;
@@ -321,7 +321,7 @@
 		color: rgba(20, 184, 166,0.85);
 		background: rgba(20, 184, 166,0.08);
 		border: 1px solid rgba(20, 184, 166,0.25);
-		border-radius: 4px;
+		border-radius: 0px;
 		padding: 2px 8px;
 		display: inline-block;
 		width: fit-content;
@@ -376,7 +376,7 @@
 	.field-input {
 		background: #010409;
 		border: 1px solid rgba(20, 184, 166,0.22);
-		border-radius: 8px;
+		border-radius: 0px;
 		color: #e5e7eb;
 		font-family: inherit;
 		font-size: 0.78rem;
@@ -412,7 +412,7 @@
 		width: 100%;
 		height: 3px;
 		background: rgba(20, 184, 166,0.15);
-		border-radius: 2px;
+		border-radius: 0px;
 		outline: none;
 		cursor: pointer;
 	}
@@ -440,7 +440,7 @@
 	.preview-pane {
 		background: rgba(20, 184, 166,0.025);
 		border: 1px solid rgba(20, 184, 166,0.12);
-		border-radius: 10px;
+		border-radius: 0px;
 		padding: 1rem 1.1rem;
 		display: flex;
 		flex-direction: column;
@@ -489,7 +489,7 @@
 		color: #14b8a6;
 		background: rgba(20, 184, 166,0.07);
 		border: 1px solid rgba(20, 184, 166,0.4);
-		border-radius: 10px;
+		border-radius: 0px;
 		cursor: pointer;
 		transition: background 0.18s, border-color 0.18s, box-shadow 0.18s, opacity 0.18s;
 		box-shadow: 0 0 18px rgba(20, 184, 166,0.06), inset 0 1px 0 rgba(20, 184, 166,0.07);
@@ -516,7 +516,7 @@
 		padding: 0.65rem 1rem;
 		background: rgba(0,230,130,0.07);
 		border: 1px solid rgba(0,230,130,0.3);
-		border-radius: 8px;
+		border-radius: 0px;
 		font-size: 0.66rem;
 		color: rgba(0,230,130,0.9);
 		letter-spacing: 0.06em;

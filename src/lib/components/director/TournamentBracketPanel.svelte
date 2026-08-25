@@ -509,7 +509,7 @@
 
 	.pairing-preview {
 		padding: 0.75rem 1rem;
-		border-radius: 12px;
+		border-radius: 0px;
 		background: rgba(99, 102, 241, 0.08);
 		border: 1px solid rgba(99, 102, 241, 0.2);
 	}
@@ -552,7 +552,7 @@
 	.field-input {
 		background: rgba(255, 255, 255, 0.05);
 		border: 1px solid rgba(255, 255, 255, 0.1);
-		border-radius: 10px;
+		border-radius: 0px;
 		padding: 0.55rem 0.85rem;
 		color: var(--vanguard-text-primary, #e2e8f0);
 		font-size: 0.9rem;
@@ -587,7 +587,7 @@
 	.btn-seed-move {
 		background: rgba(255, 255, 255, 0.05);
 		border: 1px solid rgba(255, 255, 255, 0.12);
-		border-radius: 6px;
+		border-radius: 0px;
 		color: var(--vanguard-text-muted, #94a3b8);
 		width: 1.75rem;
 		height: 1.35rem;
@@ -612,7 +612,7 @@
 		font-weight: 700;
 		color: #a5b4fc;
 		background: rgba(99, 102, 241, 0.15);
-		border-radius: 99px;
+		border-radius: 0px;
 		padding: 0.2rem 0.5rem;
 		min-width: 2rem;
 		text-align: center;
@@ -622,7 +622,7 @@
 	.btn-ghost,
 	.btn-live,
 	.btn-winner {
-		border-radius: 10px;
+		border-radius: 0px;
 		font-size: 0.8rem;
 		font-weight: 600;
 		cursor: pointer;
@@ -655,7 +655,7 @@
 		align-items: center;
 		gap: 0.75rem;
 		padding: 0.75rem 1rem;
-		border-radius: 12px;
+		border-radius: 0px;
 		background: linear-gradient(135deg, rgba(251, 191, 36, 0.12), rgba(99, 102, 241, 0.1));
 		border: 1px solid rgba(251, 191, 36, 0.35);
 	}
@@ -713,7 +713,7 @@
 	.match-card {
 		background: rgba(255, 255, 255, 0.03);
 		border: 1px solid rgba(255, 255, 255, 0.08);
-		border-radius: 14px;
+		border-radius: 0px;
 		padding: 0.75rem;
 		display: flex;
 		flex-direction: column;
@@ -739,7 +739,7 @@
 		text-transform: uppercase;
 		letter-spacing: 0.05em;
 		padding: 0.15rem 0.45rem;
-		border-radius: 99px;
+		border-radius: 0px;
 	}
 
 	.match-status--pending {
@@ -770,7 +770,7 @@
 		justify-content: space-between;
 		gap: 0.5rem;
 		padding: 0.45rem 0.55rem;
-		border-radius: 8px;
+		border-radius: 0px;
 		background: rgba(255, 255, 255, 0.02);
 		border: 1px solid rgba(255, 255, 255, 0.05);
 	}
@@ -800,7 +800,7 @@
 	.score-input {
 		background: rgba(255, 255, 255, 0.06);
 		border: 1px solid rgba(255, 255, 255, 0.12);
-		border-radius: 8px;
+		border-radius: 0px;
 		padding: 0.2rem;
 		color: var(--vanguard-text-primary, #e2e8f0);
 		font-size: 0.82rem;
@@ -836,6 +836,6 @@
 		color: var(--vanguard-text-muted, #94a3b8);
 		font-size: 0.875rem;
 		border: 1px dashed rgba(255, 255, 255, 0.1);
-		border-radius: 12px;
+		border-radius: 0px;
 	}
 </style>

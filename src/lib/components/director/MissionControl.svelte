@@ -256,7 +256,7 @@
 		letter-spacing: 0.18em;
 		padding: 8px 18px;
 		border: 1px solid rgba(255, 255, 255, 0.08);
-		border-radius: 3px;
+		border-radius: 0px;
 		background: transparent;
 		color: #475569;
 		cursor: pointer;
@@ -310,7 +310,7 @@
 		font-size: 8px;
 		letter-spacing: 0.2em;
 		border: 1px solid rgba(20, 184, 166, 0.35);
-		border-radius: 2px;
+		border-radius: 0px;
 		color: #14b8a6;
 		background: rgba(20, 184, 166, 0.06);
 	}
@@ -342,7 +342,7 @@
 		gap: 5px;
 		background: rgba(255, 255, 255, 0.03);
 		border: 1px solid rgba(255, 255, 255, 0.07);
-		border-radius: 3px;
+		border-radius: 0px;
 		padding: 3px 8px;
 	}
 	.mc-tenant-key {
@@ -362,7 +362,7 @@
 		grid-template-columns: repeat(auto-fit, minmax(min(100%, clamp(280px, 30vw, 350px)), 1fr));
 		gap: 1px; /* intentional 1px hairline gap between tiles */
 		background: rgba(255, 255, 255, 0.04);
-		border-radius: 8px;
+		border-radius: 0px;
 		overflow: hidden;
 	}
 	.mc-tile {
@@ -429,7 +429,7 @@
 	.mc-error-banner {
 		background: rgba(239, 68, 68, 0.07);
 		border: 1px solid rgba(239, 68, 68, 0.22);
-		border-radius: 4px;
+		border-radius: 0px;
 		padding: 0.6rem 1rem;
 		font-size: 11px;
 		color: #ef4444;
@@ -472,7 +472,7 @@
 	}
 	.mc-nav-badge {
 		background: rgba(255, 255, 255, 0.07);
-		border-radius: 2px;
+		border-radius: 0px;
 		padding: 1px 6px;
 		font-size: 9px;
 		color: #64748b;
@@ -490,7 +490,7 @@
 	/* ── Skeleton ────────────────────────────────────────────────────────── */
 	.mc-skeleton {
 		display: inline-block;
-		border-radius: 3px;
+		border-radius: 0px;
 		background: linear-gradient(90deg, #1e293b 25%, #0f172a 50%, #1e293b 75%);
 		background-size: 200% 100%;
 		animation: mc-shimmer 1.4s infinite;

@@ -179,7 +179,7 @@
 		background: linear-gradient(135deg, #6366f1, #8b5cf6);
 		color: white;
 		border: none;
-		border-radius: 24px;
+		border-radius: 0px;
 		padding: 0.65rem 1.4rem;
 		font-size: 0.9rem;
 		font-weight: 600;
@@ -195,7 +195,7 @@
 	.error-banner {
 		background: rgba(239, 68, 68, 0.15);
 		border: 1px solid rgba(239, 68, 68, 0.4);
-		border-radius: 12px;
+		border-radius: 0px;
 		padding: 0.85rem 1.2rem;
 		color: #fca5a5;
 		margin-bottom: 1.5rem;
@@ -260,7 +260,7 @@
 		text-transform: uppercase;
 		letter-spacing: 0.05em;
 		padding: 0.2rem 0.6rem;
-		border-radius: 99px;
+		border-radius: 0px;
 	}
 
 	.badge-draft     { background: rgba(148, 163, 184, 0.15); color: #94a3b8; }

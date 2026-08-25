@@ -321,7 +321,7 @@
 		font-weight: 700;
 		font-size: 0.8rem;
 		padding: 6px 10px;
-		border-radius: 10px;
+		border-radius: 0px;
 		border: 1px solid color-mix(in srgb, var(--brand-primary, #0f172a) 28%, transparent);
 		background: color-mix(in srgb, var(--brand-primary, #0f172a) 8%, transparent);
 		color: var(--brand-primary, var(--aggie-blue));
@@ -330,7 +330,7 @@
 
 	.team-seat-meter {
 		height: 8px;
-		border-radius: 999px;
+		border-radius: 0px;
 		background: color-mix(in srgb, var(--brand-primary, #0f172a) 12%, rgba(255, 255, 255, 0.5));
 		overflow: hidden;
 		margin-bottom: 6px;
@@ -344,7 +344,7 @@
 
 	.team-seat-meter__fill {
 		height: 100%;
-		border-radius: 999px;
+		border-radius: 0px;
 		background: linear-gradient(
 			90deg,
 			color-mix(in srgb, var(--brand-primary, #0f172a) 85%, white),

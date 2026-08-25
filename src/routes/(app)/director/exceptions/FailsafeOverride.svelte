@@ -198,7 +198,7 @@
 			{#if isLoadingNodes}
 				<div class="tw-flex tw-items-center tw-gap-2 tw-py-4">
 					<span
-						class="tw-inline-block tw-w-1.5 tw-h-1.5 tw-rounded-full tw-bg-[#14b8a6]
+						class="tw-inline-block tw-w-1.5 tw-h-1.5 tw-rounded-none tw-bg-[#14b8a6]
 						       tw-animate-pulse"
 					></span>
 					<p

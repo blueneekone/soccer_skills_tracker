@@ -119,7 +119,7 @@
 <style>
 	.hh-link {
 		border: 1px solid rgba(51, 65, 85, 0.55);
-		border-radius: 10px;
+		border-radius: 0px;
 		padding: 1.25rem 1.35rem;
 		background: rgba(15, 23, 42, 0.35);
 	}
@@ -178,7 +178,7 @@
 
 	.hh-link__input {
 		width: 100%;
-		border-radius: 7px;
+		border-radius: 0px;
 		border: 1px solid rgba(148, 163, 184, 0.25);
 		background: rgba(2, 6, 23, 0.55);
 		color: #e2e8f0;
@@ -200,7 +200,7 @@
 	.hh-link__btn {
 		margin-top: 0.85rem;
 		padding: 0.55rem 1.1rem;
-		border-radius: 7px;
+		border-radius: 0px;
 		border: 1px solid rgba(251, 191, 36, 0.35);
 		background: rgba(251, 191, 36, 0.12);
 		color: #fbbf24;

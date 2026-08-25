@@ -10,7 +10,6 @@ import type { IconName } from '$lib/icons/registry.js';
 
 export const CLUB_MANAGEMENT_TABS = [
 	{ id: 'registrars', label: 'Registrars', icon: 'nav.swap' as IconName },
-	{ id: 'branding', label: 'Club Branding', icon: 'sys.palette' as IconName },
 	{ id: 'comms', label: 'Comms', icon: 'comm.broadcast' as IconName },
 	{ id: 'licenses', label: 'Licenses & Sets', icon: 'sys.credit-card' as IconName },
 	{ id: 'billing', label: 'Plans & Billing', icon: 'sys.credit-card' as IconName },

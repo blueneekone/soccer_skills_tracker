@@ -290,7 +290,7 @@
 		gap: 14px;
 		padding: 18px 20px;
 		border: 1px solid #334155;
-		border-radius: 12px;
+		border-radius: 0px;
 		background: #0f172a;
 		margin-top: 16px;
 	}
@@ -320,7 +320,7 @@
 
 	.compliance-console__export {
 		border: 1px solid #334155;
-		border-radius: 8px;
+		border-radius: 0px;
 		padding: 8px 14px;
 		font-size: 12px;
 		font-weight: 700;
@@ -348,7 +348,7 @@
 
 	.compliance-console__panel {
 		border: 1px solid #334155;
-		border-radius: 10px;
+		border-radius: 0px;
 		padding: 12px;
 		background: #1e293b;
 		min-width: 0;

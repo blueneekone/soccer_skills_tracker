@@ -206,7 +206,7 @@
 		margin-bottom: 1.25rem;
 		padding: 1rem 1.1rem;
 		border: 1px solid #334155;
-		border-radius: 12px;
+		border-radius: 0px;
 		background: #0f172a;
 	}
 
@@ -260,7 +260,7 @@
 
 	.tryouts-input {
 		border: 1px solid #334155;
-		border-radius: 8px;
+		border-radius: 0px;
 		padding: 0.45rem 0.55rem;
 		background: #1e293b;
 		color: #f8fafc;
@@ -270,7 +270,7 @@
 
 	.tryouts-btn {
 		border: none;
-		border-radius: 8px;
+		border-radius: 0px;
 		padding: 0.45rem 0.85rem;
 		font-size: 0.8125rem;
 		font-weight: 700;
@@ -325,7 +325,7 @@
 		flex-direction: column;
 		gap: 0.5rem;
 		padding: 0.55rem 0.65rem;
-		border-radius: 8px;
+		border-radius: 0px;
 		border: 1px solid #334155;
 		background: #1e293b;
 		font-size: 0.8125rem;
