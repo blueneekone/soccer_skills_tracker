@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { totalRemainingCapacity, isEventOpen, type TournamentEventDoc } from '../tournamentEvent';
+import { totalRemainingCapacity, isEventOpen, labelToTierId, type TournamentEventDoc } from '../tournamentEvent';
 
 describe('tournamentEvent helpers', () => {
 	describe('totalRemainingCapacity', () => {
@@ -33,6 +33,28 @@ describe('tournamentEvent helpers', () => {
 			} as unknown as TournamentEventDoc;
 
 			expect(totalRemainingCapacity(event)).toBe(0);
+		});
+
+		it('returns 0 if all tiers are exactly sold out', () => {
+			const event = {
+				ticketTiers: {
+					tier1: { capacity: 10, soldCount: 10 },
+					tier2: { capacity: 5, soldCount: 5 }
+				}
+			} as unknown as TournamentEventDoc;
+
+			expect(totalRemainingCapacity(event)).toBe(0);
+		});
+
+		it('handles 0 capacity tiers correctly', () => {
+			const event = {
+				ticketTiers: {
+					tier1: { capacity: 0, soldCount: 0 },
+					tier2: { capacity: 10, soldCount: 5 }
+				}
+			} as unknown as TournamentEventDoc;
+
+			expect(totalRemainingCapacity(event)).toBe(5);
 		});
 	});
 
@@ -86,6 +108,28 @@ describe('tournamentEvent helpers', () => {
 			} as unknown as TournamentEventDoc;
 
 			expect(isEventOpen(eventConcluded)).toBe(false);
+		});
+	});
+
+	describe('labelToTierId', () => {
+		it('converts standard strings to lowercase and replaces spaces with underscores', () => {
+			expect(labelToTierId('General Admission')).toBe('general_admission');
+		});
+
+		it('replaces non-alphanumeric characters with underscores', () => {
+			expect(labelToTierId('VIP @ Main-Stage!')).toBe('vip_main_stage');
+		});
+
+		it('strips leading and trailing underscores', () => {
+			expect(labelToTierId('---Early Bird---')).toBe('early_bird');
+			expect(labelToTierId('___Staff___')).toBe('staff');
+		});
+
+		it('truncates the result to a maximum of 32 characters', () => {
+			const longLabel = 'This is a very very very very very long label';
+			const result = labelToTierId(longLabel);
+			expect(result.length).toBe(32);
+			expect(result).toBe('this_is_a_very_very_very_very_ve');
 		});
 	});
 });
