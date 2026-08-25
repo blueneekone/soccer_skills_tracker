@@ -92,6 +92,10 @@
 		const onKey = (e) => {
 			if (e.key === 'Escape' && !saving) onClose?.();
 		};
+		if (typeof window !== 'undefined') window.addEventListener('keydown', onKey);
+		return () => {
+			if (typeof window !== 'undefined') window.removeEventListener('keydown', onKey);
+		};
 	});
 
 	async function submit() {
