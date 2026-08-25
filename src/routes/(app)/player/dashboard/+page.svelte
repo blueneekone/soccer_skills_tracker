@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { browser } from '$app/environment';
-	import { goto } from '$app/navigation';
 	import Icon from '$lib/components/ui/Icon.svelte';
 	import type { IconName } from '$lib/icons/registry.js';
 	import { doc, getDoc, getDocs, onSnapshot, updateDoc, collection, query, where, orderBy, limit } from 'firebase/firestore';
