@@ -14,6 +14,9 @@ export class MatchDayEngine {
 	matchStatus = $state<'not_started' | 'running' | 'paused' | 'ended'>('not_started');
 	elapsedSeconds = $state(0);
 	events = $state<MatchEvent[]>([]);
+	selectedPlayerId = $state('');
+	matchId = $state('match_' + Date.now());
+	roster = $state<{id: string, name: string}[]>([]);
 	showHalftimeOverlay = $state(false);
 	telemetryLogs = $state<string[]>(['[TELEMETRY] Match Day Console initialized']);
 
@@ -100,7 +103,9 @@ export class MatchDayEngine {
 		}
 	};
 
-	logEvent = (type: string, label: string): void => {
+	logEvent = (type: string, label: string, playerId?: string): void => {
+		const targetPlayerId = playerId || this.selectedPlayerId || 'unknown_player';
+
 		const newEvent: MatchEvent = {
 			id: String(Date.now()),
 			type,
@@ -108,6 +113,25 @@ export class MatchDayEngine {
 			time: new Date().toLocaleTimeString()
 		};
 		this.events = [newEvent, ...this.events];
+
+		// Async firestore write
+		(async () => {
+			try {
+				const { getActiveDb } = await import('$lib/firebase.js');
+				const { collection, addDoc, serverTimestamp } = await import('firebase/firestore');
+				const db = getActiveDb();
+				if (db) {
+					await addDoc(collection(db, `matches/${this.matchId}/events`), {
+						playerId: targetPlayerId,
+						type,
+						minute: Math.floor(this.elapsedSeconds / 60),
+						timestamp: serverTimestamp()
+					});
+				}
+			} catch (err) {
+				console.error('Failed to log event to Firestore', err);
+			}
+		})();
 	};
 
 

@@ -1,5 +1,0 @@
-<<<<<<< SEARCH
-    "deploy:integrations": "firebase deploy --only \"functions:integrations:processMedia,functions:integrations:ingestRoster,functions:integrations:coachRosterIngest,functions:integrations:getSoccerNews,functions:integrations:searchPodcasts,functions:integrations:getPodcastEpisodes,functions:integrations:getWeatherConditions,functions:integrations:refreshClubWeatherLock,functions:integrations:getUploadToken,functions:integrations:deleteAllPlayerMedia,functions:integrations:facilityWeatherWebhook\"",
-=======
-    "deploy:integrations": "firebase deploy --only \"functions:integrations:processMedia,functions:integrations:ingestRoster,functions:integrations:coachRosterIngest,functions:integrations:getSoccerNews,functions:integrations:searchPodcasts,functions:integrations:getPodcastEpisodes,functions:integrations:getWeatherConditions,functions:integrations:evaluateFieldWeatherLock,functions:integrations:refreshClubWeatherLock,functions:integrations:getUploadToken,functions:integrations:deleteAllPlayerMedia,functions:integrations:facilityWeatherWebhook\"",
->>>>>>> REPLACE
