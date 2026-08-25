@@ -39,7 +39,6 @@
 		teamScope.syncSelectedTeam();
 	});
 
-	const role = $derived(teamScope.role);
 	const myTeams = $derived(teamScope.myTeams);
 	const currentTeam = $derived(teamScope.currentTeam);
 	const myEmail = $derived(authStore.user?.email ?? '');
