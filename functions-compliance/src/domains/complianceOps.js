@@ -1503,7 +1503,10 @@ const crypto = require('crypto');
 
 function encryptString(text) {
   if (!text) return '';
-  const secretKey = process.env.AES_SECRET_KEY || '12345678901234567890123456789012';
+  const secretKey = process.env.AES_SECRET_KEY;
+  if (!secretKey) {
+    throw new Error('AES_SECRET_KEY environment variable is missing.');
+  }
   const iv = crypto.randomBytes(16);
   const cipher = crypto.createCipheriv('aes-256-cbc', Buffer.from(secretKey), iv);
   let encrypted = cipher.update(text, 'utf-8', 'hex');
