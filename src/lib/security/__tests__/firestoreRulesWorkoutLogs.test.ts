@@ -1,0 +1,168 @@
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+import {
+	assertFails,
+	assertSucceeds,
+	initializeTestEnvironment,
+	type RulesTestEnvironment,
+} from '@firebase/rules-unit-testing';
+import { doc, getDoc, setDoc, deleteDoc } from 'firebase/firestore';
+import { afterAll, beforeAll, beforeEach, describe, it } from 'vitest';
+
+const RULES = readFileSync(resolve('firestore.rules'), 'utf8');
+const PROJECT = 'sst-sprint-workout-logs';
+const FIRESTORE_HOST = process.env.FIRESTORE_EMULATOR_HOST?.split(':')[0] ?? '127.0.0.1';
+const FIRESTORE_PORT = Number(process.env.FIRESTORE_EMULATOR_HOST?.split(':')[1] ?? 8080);
+
+function token(overrides: Record<string, unknown>) {
+	return {
+		email: 'actor@test.com',
+		role: 'player',
+		clubId: null,
+		teamId: null,
+		...overrides,
+	};
+}
+
+describe.skipIf(!process.env.FIRESTORE_EMULATOR_HOST)(
+	'Workout Logs Security Rules (emulator)',
+	() => {
+	let env: RulesTestEnvironment;
+
+	beforeAll(async () => {
+		env = await initializeTestEnvironment({
+			projectId: PROJECT,
+			firestore: {
+				rules: RULES,
+				host: FIRESTORE_HOST,
+				port: FIRESTORE_PORT,
+			},
+		});
+	});
+
+	beforeEach(async () => {
+		await env.clearFirestore();
+		await env.withSecurityRulesDisabled(async (context) => {
+			const db = context.firestore();
+			await setDoc(doc(db, 'workout_logs/log1'), {
+				playerId: 'player1-uid',
+			});
+			await setDoc(doc(db, 'workout_logs/log2'), {
+				playerUid: 'player2-uid',
+			});
+		});
+	});
+
+	afterAll(async () => {
+		await env.cleanup();
+	});
+
+	it('player can read their own workout log', async () => {
+		const db = env
+			.authenticatedContext('player1-uid', token({
+				email: 'player1@test.com',
+				role: 'player',
+			}))
+			.firestore();
+		await assertSucceeds(getDoc(doc(db, 'workout_logs/log1')));
+	});
+
+	it('player cannot read another player\'s workout log', async () => {
+		const db = env
+			.authenticatedContext('player2-uid', token({
+				email: 'player2@test.com',
+				role: 'player',
+			}))
+			.firestore();
+		await assertFails(getDoc(doc(db, 'workout_logs/log1')));
+	});
+
+	it('global admin can read any workout log', async () => {
+	    const db = env
+			.authenticatedContext('admin-uid', token({
+				email: 'admin@test.com',
+				role: 'global_admin',
+			}))
+			.firestore();
+		await assertSucceeds(getDoc(doc(db, 'workout_logs/log1')));
+	});
+
+	it('coach can read any workout log', async () => {
+	    const db = env
+			.authenticatedContext('coach-uid', token({
+				email: 'coach@test.com',
+				role: 'coach',
+			}))
+			.firestore();
+		await assertSucceeds(getDoc(doc(db, 'workout_logs/log1')));
+	});
+
+	it('player can create their own workout log', async () => {
+	    const db = env
+			.authenticatedContext('player3-uid', token({
+				email: 'player3@test.com',
+				role: 'player',
+			}))
+			.firestore();
+		await assertSucceeds(setDoc(doc(db, 'workout_logs/log3'), {
+		    playerId: 'player3-uid'
+		}));
+	});
+
+	it('player cannot create workout log for another player', async () => {
+	    const db = env
+			.authenticatedContext('player3-uid', token({
+				email: 'player3@test.com',
+				role: 'player',
+			}))
+			.firestore();
+		await assertFails(setDoc(doc(db, 'workout_logs/log3'), {
+		    playerId: 'player1-uid'
+		}));
+	});
+
+	it('player can delete their own workout log', async () => {
+	    const db = env
+			.authenticatedContext('player1-uid', token({
+				email: 'player1@test.com',
+				role: 'player',
+			}))
+			.firestore();
+		await assertSucceeds(deleteDoc(doc(db, 'workout_logs/log1')));
+	});
+
+	it('player cannot delete another player\'s workout log', async () => {
+	    const db = env
+			.authenticatedContext('player1-uid', token({
+				email: 'player1@test.com',
+				role: 'player',
+			}))
+			.firestore();
+		await assertFails(deleteDoc(doc(db, 'workout_logs/log2')));
+	});
+
+	it('player cannot update another player\'s workout log', async () => {
+	    const db = env
+			.authenticatedContext('player1-uid', token({
+				email: 'player1@test.com',
+				role: 'player',
+			}))
+			.firestore();
+		await assertFails(setDoc(doc(db, 'workout_logs/log2'), {
+		    playerUid: 'player2-uid',
+			someUpdate: true
+		}, { merge: true }));
+	});
+
+	it('player cannot transfer ownership of their workout log', async () => {
+	    const db = env
+			.authenticatedContext('player1-uid', token({
+				email: 'player1@test.com',
+				role: 'player',
+			}))
+			.firestore();
+		await assertFails(setDoc(doc(db, 'workout_logs/log1'), {
+		    playerId: 'player2-uid'
+		}, { merge: true }));
+	});
+});
