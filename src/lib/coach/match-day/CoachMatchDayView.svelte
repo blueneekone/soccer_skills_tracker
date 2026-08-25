@@ -60,7 +60,6 @@
 	});
 
 	const role = $derived(teamScope.role);
-	const myTeams = $derived(teamScope.myTeams);
 
 	const activeTeamLabel = $derived.by(() => {
 		const n = typeof teamScope.currentTeam?.name === 'string' ? teamScope.currentTeam.name.trim() : '';
