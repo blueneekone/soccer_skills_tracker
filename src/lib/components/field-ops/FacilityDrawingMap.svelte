@@ -307,11 +307,7 @@ type ExtendedAdvancedMarkerElement = any & { __facilityMarkerIndex?: number };
 		const refs = facilityDrawRefs;
 		const marker = refs?.drawnMarkers[idx];
 		if (marker) {
-			try {
-				marker.title = trimmed || 'Marker';
-			} catch {
-				/* ignore */
-			}
+			marker.title = trimmed || 'Marker';
 		}
 	}
 
