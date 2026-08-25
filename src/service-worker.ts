@@ -30,8 +30,8 @@
  *      Auth routes, WebAuthn, Firebase Identity REST APIs, SvelteKit API
  *      routes, __data.json, and /_app/ dynamic chunks.  These must NEVER
  *      be served from cache.  We call event.respondWith(fetch(req)) rather
- *      than returning silently to prevent Chromium navigation-preload from
- *      accidentally racing to a cached response.
+ *      than returning silently. (This is a permanent workaround for an
+ *      upstream Chromium navigation-preload bug on bypassed routes).
  *
  * 2. NAVIGATION — network-only pass-through
  *      SvelteKit owns HTML rendering server-side.  We never cache HTML.
@@ -253,8 +253,8 @@ sw.addEventListener('fetch', (event: FetchEvent) => {
 
 	// Programmatic bypass
 	if (shouldBypass(url)) {
-		// SvelteKit requires us to respond with fetch directly to avoid
-		// chromium navigation-preload bugs on bypassed routes
+		// SvelteKit requires us to respond with fetch directly.
+		// (Permanent workaround for upstream Chromium navigation-preload bugs)
 		event.respondWith(fetch(req));
 		return;
 	}
