@@ -28,6 +28,9 @@
 		dockMode = mode;
 		model.setActiveTool(mode === 'draw' || mode === 'erase' ? 'ROUTE' : 'DRAG');
 		model.isEraseMode = mode === 'erase';
+		if (mode === 'draw' && model.routeDrawKind === 'pass') {
+			model.routeDrawKind = 'cut';
+		}
 	}
 
 	function handleExitClick() {
@@ -42,7 +45,9 @@
 
 	$effect(() => {
 		if (dockMode === 'erase' && model.selectedRouteId) {
-			model.deleteRoute(model.selectedRouteId);
+			untrack(() => {
+				model.deleteRoute(model.selectedRouteId);
+			});
 		}
 	});
 
@@ -95,18 +100,6 @@
 				[ {tool.label} ]
 			</button>
 		{/each}
-
-		<button
-			type="button"
-			class="coach-tac-z4-btn {dockMode === 'draw' && model.routeDrawKind === 'cut' ? 'coach-tac-z4-btn--active' : ''}"
-			onclick={() => {
-				dockMode = 'draw';
-				model.setActiveTool('ROUTE');
-				model.routeDrawKind = 'cut';
-			}}
-		>
-			PLAYER RUN
-		</button>
 
 		<button
 			type="button"

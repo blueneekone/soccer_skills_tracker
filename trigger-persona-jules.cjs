@@ -14,7 +14,7 @@ PERSONAS.forEach((persona) => {
   const body = `@jules, please spin up a sandboxed cloud VM and run our visual and functional tests for the **${persona.toUpperCase()} OS** persona.
 
 ### 🏛️ MANDATORY INSTRUCTIONS:
-1. **Core Skills to Enforce:** Ensure you follow `.agents/skills/vanguard-trinity/`, `.agents/skills/svelte5-strictness/`, `.agents/skills/b815-hydration/`, and `.agents/skills/zero-trust/` during the audit.
+1. **Core Skills to Enforce:** Ensure you follow \`.agents/skills/vanguard-trinity/\`, \`.agents/skills/svelte5-strictness/\`, \`.agents/skills/b815-hydration/\`, and \`.agents/skills/zero-trust/\` during the audit.
 2. **Anti-Looping Circuit Breaker:** You are restricted to a maximum of 3 test-and-repair loops. If you fail to achieve 100% green compilation after 3 passes, revert, log the error under \`/audit-artifacts/${persona}/\`, and stop.
 3. **Authentication:** Do not use manual logins. Mint a Custom JWT token using \`admin.auth().createCustomToken(uid)\` and programmatically inject it to bypass client auth walls.
 4. **Layout Verification (Playwright):** 

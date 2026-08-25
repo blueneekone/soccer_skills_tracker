@@ -230,7 +230,7 @@ export function executePointerUp(ev: PointerEvent, host: TacticalPointerHost, re
 		const dy = dock.y - draft.y1;
 		console.log(`[DEBUG] executePointerUp ENDING DRAFT: dx=${dx}, dy=${dy}, hypot=${Math.hypot(dx, dy)}`);
 		if (Math.hypot(dx, dy) > 14) {
-			let id =
+			const id =
 				typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
 					? crypto.randomUUID()
 					: `r-${Date.now()}`;
@@ -256,8 +256,8 @@ export function executePointerUp(ev: PointerEvent, host: TacticalPointerHost, re
 				_newRoute.y1 = startY;
 				_newRoute.bindPlayerId = 'BALL';
 				
-				let ballToken = host.wrBucketPitch().find(t => t.id === 'BALL');
-				let newPitch = host.wrBucketPitch().map(t => {
+				const ballToken = host.wrBucketPitch().find(t => t.id === 'BALL');
+				const newPitch = host.wrBucketPitch().map(t => {
 					if (t.id === 'BALL') return { ...t, x: startX, y: startY };
 					return t;
 				});

@@ -10,7 +10,7 @@ interface LockState {
 }
 
 const FREEZE_DURATION_MS = 15 * 60 * 1000;
-let memoryLockState: LockState = {
+const memoryLockState: LockState = {
 	locked: true,
 	lockedUntil: Date.now() + FREEZE_DURATION_MS,
 	matchId: 'match-default',
