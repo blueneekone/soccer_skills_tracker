@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { untrack } from 'svelte';
 	import { authStore } from '$lib/stores/auth.svelte.js';
-	import { db } from '$lib/firebase.js';
 	import CarRideHome from '$lib/components/compliance/CarRideHome.svelte';
 	import CoOpArena from '$lib/components/parent/co-op/CoOpArena.svelte';
 	import BountyTerminal from '$lib/components/parent/co-op/BountyTerminal.svelte';
