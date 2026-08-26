@@ -14,12 +14,19 @@ function dispatchMasterSwarm() {
   const title = `Swarm Master E2E Interactive Audit & Self-Heal`;
   const body = `@jules, please spin up a sandboxed cloud VM and execute our full platform interactive audit workflow.
 
-### 🏛️ MANDATORY WORKFLOW REFERENCE:
-- Follow \`.agents/workflows/jules-builds/jules-all-personas-e2e-audit-and-repair.md\`
-- Execute the full interactive Playwright suite:
-  \`pnpm playwright test tests/persona-interactive-e2e.spec.ts tests/platform-cohesion-master.spec.ts --project=chromium\`
-- Enforce strict Svelte 5 runes, B815 defensive hydration, and 80-line function limits.
-- Save audit artifacts to \`/audit-artifacts/platform-e2e/\` and open a clean Pull Request into \`dev\`.`;
+### 🏛️ MANDATORY WORKFLOW & PROTOCOL ENFORCEMENT:
+1. **Reference Workflow**: \`.agents/workflows/jules-builds/jules-all-personas-e2e-audit-and-repair.md\`
+2. **Anti-Looping Circuit Breaker (CRITICAL)**:
+   - You are restricted to a **hard maximum of 3 test-and-repair iterations**.
+   - If a failure persists after 3 passes, you MUST immediately halt, capture the error log and screenshot in \`/audit-artifacts/platform-e2e/\`, and report the blocker rather than looping.
+3. **Multi-Persona Protocol**:
+   - Verify all 7 core personas (Coach, Director, Parent, Player, Commissioner, Admin, Fan/Recruiter).
+   - Use automated JWT / LocalStorage token injection to bypass login walls.
+4. **Bounded-Tests Law (\`.agents/rules/jules-focus.md\`)**:
+   - Isolate test sweeps strictly to the targeted routes without getting blocked by legacy rot.
+5. **Execution Command**:
+   \`pnpm playwright test tests/persona-interactive-e2e.spec.ts tests/platform-cohesion-master.spec.ts --project=chromium\`
+6. **Definition of Done**: 0 Svelte compilation errors (\`npm run check\`), green tests, screenshots saved, clean PR opened into \`dev\`.`;
 
   console.log(`🚀 Dispatching Master Interactive E2E Swarm...`);
   try {
@@ -36,14 +43,15 @@ function dispatchPersonaSwarm(persona) {
   const body = `@jules, please spin up a sandboxed cloud VM and run our visual and functional tests for the **${persona.toUpperCase()} OS** persona.
 
 ### 🏛️ MANDATORY INSTRUCTIONS:
-1. **Core Skills to Enforce:** Ensure you follow \`.agents/skills/vanguard-trinity/\`, \`.agents/skills/svelte5-strictness/\`, \`.agents/skills/b815-hydration/\`, and \`.agents/skills/zero-trust/\` during the audit.
-2. **Anti-Looping Circuit Breaker:** You are restricted to a maximum of 3 test-and-repair loops. If you fail to achieve 100% green compilation after 3 passes, revert, log the error under \`/audit-artifacts/${persona}/\`, and stop.
-3. **Authentication:** Do not use manual logins. Mint a Custom JWT token using \`admin.auth().createCustomToken(uid)\` and programmatically inject it to bypass client auth walls.
+1. **Core Skills to Enforce:** Follow \`.agents/skills/vanguard-trinity/\`, \`.agents/skills/svelte5-strictness/\`, \`.agents/skills/b815-hydration/\`, and \`.agents/skills/zero-trust/\`.
+2. **Anti-Looping Circuit Breaker (CRITICAL):**
+   - Hard maximum of **3 test-and-repair loops**.
+   - If green tests are not achieved within 3 iterations, stop, log to \`/audit-artifacts/${persona}/\`, and exit gracefully.
+3. **Authentication:** Do not use manual logins. Mint a Custom JWT token using \`admin.auth().createCustomToken(uid)\` or inject mock LocalStorage auth to bypass client auth walls.
 4. **Layout Verification (Playwright):** 
    - Execute: \`pnpm playwright test tests/persona-interactive-e2e.spec.ts tests/platform-cohesion-master.spec.ts --project=chromium --grep "@persona-${persona}"\`
-   - Verify Svelte 5 state reactivity and check design token compliance.
-   - Assert the 12-column asymmetric Bento Grid topology is intact, Geist Mono is used for technical readouts, and the 60-30-10 palette is enforced.
-5. **Artifact Capture:** Capture layout screenshots and visual recordings of successful navigations, saving them cleanly to \`/audit-artifacts/${persona}/\` before opening a clean Pull Request.`;
+   - Verify Svelte 5 runes reactivity and design token compliance (Geist Mono, 12-col Bento Grid, 60-30-10 palette).
+5. **Artifact Capture:** Save layout screenshots to \`/audit-artifacts/${persona}/\` before opening a clean Pull Request.`;
 
   console.log(`🚀 Dispatching cloud VM issue for: ${persona.toUpperCase()} OS...`);
   try {
@@ -59,19 +67,22 @@ function dispatchExhaustive360Swarm() {
   const title = `Swarm 360-Degree Platform Audit: Stripe, Tournaments, Gamification & Personas`;
   const body = `@jules, please spin up a sandboxed cloud VM and execute our 360-degree exhaustive platform audit workflow.
 
-### 🏛️ MANDATORY WORKFLOW REFERENCE:
-- Follow \`.agents/workflows/jules-builds/jules-exhaustive-platform-audit-and-monetization.md\`
-- Execute the complete exhaustive Playwright suite:
-  \`pnpm playwright test tests/platform-exhaustive-master.spec.ts tests/persona-interactive-e2e.spec.ts tests/platform-cohesion-master.spec.ts --project=chromium\`
-- Audit:
-  1. Public Marketing & ROI Calculators
-  2. Stripe Connect & Subscriptions
-  3. Tournaments & Commissioner Brackets
-  4. Player Gamification, Skill Trees & Habit Streaks
-  5. Recruiter Directory & Checkr Clearance
-  6. Fan Broadcast & Ticketing
-  7. Private Coaching Marketplace
-- Save audit artifacts to \`/audit-artifacts/platform-exhaustive/\` and open a clean Pull Request into \`dev\`.`;
+### 🏛️ MANDATORY WORKFLOW & CIRCUIT BREAKERS:
+1. **Reference Workflow**: \`.agents/workflows/jules-builds/jules-exhaustive-platform-audit-and-monetization.md\`
+2. **Anti-Looping Circuit Breaker (CRITICAL)**:
+   - Hard maximum of **3 test-and-repair iterations**.
+   - If any domain fails after 3 passes, record the failure snapshot in \`/audit-artifacts/platform-exhaustive/\` and exit without infinite loops.
+3. **7 Operational Domains Tested**:
+   - **Public Marketing & Funnels** (Hero CTA, Pricing Tiers, ROI Calculator)
+   - **Stripe Commerce & Subscriptions** (Stripe Connect, Seat Billing, Fee Splits)
+   - **Tournaments & Federation Matrix** (Bracket seeding, pitch scheduling, sanctions)
+   - **Player Gamification** (Scout's Six Radars, Skill Trees, XP Streaks, Skill Decay)
+   - **Recruiter Directory** (Talent search, Checkr background verification)
+   - **Fan Hub** (Sideline streaming, digital ticketing, Superdraws)
+   - **Tutoring Marketplace** (Coach booking, Stripe microcharge splits)
+4. **Execution Command**:
+   \`pnpm playwright test tests/platform-exhaustive-master.spec.ts tests/persona-interactive-e2e.spec.ts tests/platform-cohesion-master.spec.ts --project=chromium\`
+5. **Definition of Done**: 0 compilation errors, green assertions, screenshots captured in \`/audit-artifacts/platform-exhaustive/\`, PR opened into \`dev\`.`;
 
   console.log(`🚀 Dispatching 360-Degree Exhaustive Platform Swarm...`);
   try {
