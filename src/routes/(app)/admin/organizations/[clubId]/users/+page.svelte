@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { getContext, untrack } from 'svelte';
-	import { getActiveDb } from '$lib/firebase.js';
-	import { authStore } from '$lib/stores/auth.svelte.js';
+	import { getActiveDb, functions } from '$lib/firebase.js';
+	import { httpsCallable } from 'firebase/functions';
 	import {
 		collection,
 		doc,
@@ -13,6 +13,7 @@
 		limit,
 		serverTimestamp,
 	} from 'firebase/firestore';
+	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { ADMIN_CLUB_CTX_KEY, type AdminClubCtx } from '../adminClubCtx.js';
 	import Icon from '$lib/components/ui/Icon.svelte';
 	import type { IconName } from '$lib/icons/registry.js';
@@ -144,8 +145,8 @@
 		users[idx]!.role = newRole;
 
 		try {
-			await updateDoc(doc(activeDb, 'users', userId), { role: newRole });
-			await logSecurityEvent('UPDATE_USER_ROLE', userId, `Role changed to ${newRole}`);
+			const updateUserRole = httpsCallable(functions, 'updateUserRole');
+			await updateUserRole({ targetEmail: users[idx]!.email || userId, newRole });
 			successMsg = `Role updated to ${newRole} for ${users[idx]!.email || userId}`;
 			setTimeout(() => { successMsg = ''; }, 4000);
 		} catch (e) {

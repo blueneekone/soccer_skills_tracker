@@ -168,7 +168,18 @@
 				}
 			}
 
+			const roleChanged = patch.role && patch.role !== admin.role;
+			const newRole = patch.role;
+			if (roleChanged) {
+				delete patch.role;
+			}
+
 			await updateDoc(doc(db, 'users', admin.id), patch);
+
+			if (roleChanged) {
+				const updateUserRole = httpsCallable(functions, 'updateUserRole');
+				await updateUserRole({ targetEmail: admin.email || admin.id, newRole });
+			}
 
 			// Keep config/admins canonical if role changed.
 			try {

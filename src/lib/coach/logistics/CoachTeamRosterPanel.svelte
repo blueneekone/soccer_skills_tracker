@@ -12,12 +12,23 @@
 	import RosterPlayerRow from './RosterPlayerRow.svelte';
 	import CoachRosterImportPanel from '$lib/coach/logistics/CoachRosterImportPanel.svelte';
 
+	import { untrack } from 'svelte';
+	import { authStore } from '$lib/stores/auth.svelte.js';
+
 	let { teamId = '' } = $props();
 
 	const engine = new RosterPanelEngine();
 
 	$effect(() => {
-		engine.subscribe(teamId);
+		const activeTeamId = authStore.userProfile?.teamId || teamId;
+		untrack(() => {
+			if (!activeTeamId) {
+				engine.players = [];
+				engine.loading = false;
+				return;
+			}
+			engine.subscribe(activeTeamId);
+		});
 		return () => engine.detach();
 	});
 </script>
