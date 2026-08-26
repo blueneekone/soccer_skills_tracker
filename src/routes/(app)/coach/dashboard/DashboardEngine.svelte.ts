@@ -2,6 +2,7 @@ import { authStore } from '$lib/stores/auth.svelte.js';
 import { teamsStore } from '$lib/stores/teams.svelte.js';
 import { workspaceContextStore } from '$lib/stores/workspaceContext.svelte.js';
 import { deriveCoachClearanceStep } from '$lib/compliance/checkrCoachClearance.js';
+import { licenseEntitlementStore } from '$lib/stores/licenseEntitlement.svelte.js';
 
 export class DashboardEngine {
 	get role() {
@@ -14,6 +15,10 @@ export class DashboardEngine {
 
 	get isCleared() {
 		return authStore.isCleared;
+	}
+
+	get hasActiveTrial() {
+		return String(licenseEntitlementStore.entitlement?.tier).toLowerCase() === 'gold';
 	}
 
 	get userEmail() {

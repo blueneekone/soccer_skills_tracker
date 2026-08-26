@@ -9,10 +9,16 @@ import { page } from '$app/state';
 import { untrack } from 'svelte';
 
 export class CoachTacticalEngine {
+	isSandbox: boolean = false;
+
 	teamScope = new CoachTeamScope({
 		preferUrlTeamId: () => page.url.searchParams.get('teamId'),
 		includeDirector: true,
 	});
+
+	constructor(opts: { isSandbox?: boolean } = {}) {
+		this.isSandbox = !!opts.isSandbox;
+	}
 
 	warRoomTool = $state<'DRAG' | 'ROUTE'>('DRAG');
 	isHalfField = $state(false);
@@ -62,6 +68,7 @@ export class CoachTacticalEngine {
 	gridEngine = createTacticalWarRoom(this.host);
 
 	async saveBoardState() {
+		if (this.isSandbox) return;
 		const tid = this.teamScope.selectedTeamId;
 		const uid = authStore.user?.uid;
 		if (!tid || !uid) return;
@@ -87,6 +94,7 @@ export class CoachTacticalEngine {
 	}
 
 	async deployPlay(cartridge: any) {
+		if (this.isSandbox) return;
 		const tid = this.teamScope.selectedTeamId;
 		const uid = authStore.user?.uid;
 		if (!tid || !uid || !cartridge?.id) return;
@@ -119,6 +127,11 @@ export class CoachTacticalEngine {
 	}
 
 	async _loadBoardState(tid: string, uid: string) {
+		if (this.isSandbox) {
+			this.wrOppPitch = [];
+			this.boardLoadComplete = true;
+			return;
+		}
 		const isE2e = typeof localStorage !== 'undefined' && localStorage.getItem('sstracker_e2e_bypass') === 'true';
 		if ((!db || !authStore.isAuthenticated) && !isE2e) return;
 		this.boardLoadComplete = false;
@@ -151,20 +164,40 @@ export class CoachTacticalEngine {
 	}
 
 	async _loadRosters(tid: string) {
+		const getTwoLetterInitials = (name: string): string => {
+			if (!name) return 'PL';
+			const parts = name.trim().split(/\s+/);
+			if (parts.length >= 2) {
+				return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
+			}
+			return name.slice(0, 2).toUpperCase() || 'PL';
+		};
+
+		if (this.isSandbox) {
+			try {
+				const mockData = await import('$lib/mock/trialRoster.json');
+				const roster = mockData.default || mockData;
+
+				this.wrBucketXi = roster.map((p: any) => ({
+					id: p.id,
+					name: p.name,
+					number: p.jerseyNumber || getTwoLetterInitials(p.name),
+					position: p.position || '',
+					side: 'friendly',
+					color: '#14b8a6'
+				}));
+			} catch (e) {
+				console.error('[War Room Sandbox] mock roster load error:', e);
+				this.wrBucketXi = [];
+			}
+			return;
+		}
+
 		const isE2e = typeof localStorage !== 'undefined' && localStorage.getItem('sstracker_e2e_bypass') === 'true';
 		if ((!db || !authStore.isAuthenticated) && !isE2e) return;
 		try {
 			const effectiveTeamId = tid || this.teamScope.selectedTeamId || authStore.teamId || authStore.user?.teamId || '';
 			if (!effectiveTeamId) return;
-
-			const getTwoLetterInitials = (name: string): string => {
-				if (!name) return 'PL';
-				const parts = name.trim().split(/\s+/);
-				if (parts.length >= 2) {
-					return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
-				}
-				return name.slice(0, 2).toUpperCase() || 'PL';
-			};
 
 			const playerMap = new Map<string, TacticalToken>();
 

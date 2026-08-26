@@ -287,8 +287,18 @@
 					!authStore.isCleared &&
 					!pathClr.startsWith('/compliance')
 				) {
-					untrack(() => goto('/compliance', { replaceState: true }));
-					return;
+					if (
+						authStore.role === 'coach' &&
+						(pathClr.startsWith('/coach/dashboard') || pathClr.startsWith('/coach/sandbox'))
+					) {
+						// Let trial coaches pass through to the dashboard (gate) or sandbox
+					} else if (authStore.role === 'coach') {
+						untrack(() => goto('/coach/dashboard', { replaceState: true }));
+						return;
+					} else {
+						untrack(() => goto('/compliance', { replaceState: true }));
+						return;
+					}
 				}
 
 				const pathRole = untrack(() => page.url.pathname);

@@ -43,4 +43,14 @@
 	>
 		[ CONTACT COMPLIANCE OFFICER ]
 	</a>
+
+	{#if !engine.isCleared && engine.hasActiveTrial}
+		<a
+			href="/coach/sandbox"
+			class="clearance-gate__contact"
+			style="color: var(--vanguard-cyan); margin-top: 16px;"
+		>
+			[ ENTER TRIAL SANDBOX ]
+		</a>
+	{/if}
 </div>

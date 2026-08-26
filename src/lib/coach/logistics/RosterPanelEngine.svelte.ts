@@ -34,6 +34,12 @@ export interface RosterEditData {
 }
 
 export class RosterPanelEngine {
+	isSandbox: boolean = false;
+
+	constructor(opts: { isSandbox?: boolean } = {}) {
+		this.isSandbox = !!opts.isSandbox;
+	}
+
 	// ── Reactive state ────────────────────────────────────────────────────────
 	players = $state<RosterPlayer[]>([]);
 	loading = $state(true);
@@ -57,6 +63,28 @@ export class RosterPanelEngine {
 
 	subscribe(teamId: string): void {
 		this.detach();
+
+		if (this.isSandbox) {
+			this.err = '';
+			import('$lib/mock/trialRoster.json').then(mockData => {
+				const roster = mockData.default || mockData;
+				this.players = roster.map((p: any) => ({
+					id: p.id,
+					displayName: p.name,
+					email: `${p.name.toLowerCase().replace(' ', '.')}@example.com`,
+					jersey: p.jerseyNumber || '',
+					parentName: `Parent of ${p.name}`,
+					parentPhone: '555-0199',
+					parentEmail: `parent_${p.name.toLowerCase().replace(' ', '.')}@example.com`
+				}));
+				this.loading = false;
+			}).catch(e => {
+				this.err = 'Sandbox roster failed to load.';
+				this.loading = false;
+			});
+			return;
+		}
+
 		if (!db || !authStore.isAuthenticated) return;
 		if (!isFirestoreReady() || !teamId) {
 			this.players = [];
@@ -129,12 +157,32 @@ export class RosterPanelEngine {
 	}
 
 	async saveEdit(playerId: string): Promise<void> {
-		if (!this.editingPlayerId || !db) return;
+		if (!this.editingPlayerId) return;
 		const name = this.editData.displayName.trim();
 		const jersey = this.editData.jersey.trim();
 		const parentEmail = this.editData.parentEmail.trim().toLowerCase();
 		const parentPhone = this.editData.parentPhone.trim();
 		const parentName = this.editData.parentName.trim();
+
+		if (this.isSandbox) {
+			this.players = this.players.map(p => {
+				if (p.id === this.editingPlayerId) {
+					return {
+						...p,
+						displayName: name,
+						jersey,
+						parentEmail,
+						parentPhone,
+						parentName
+					};
+				}
+				return p;
+			});
+			this.editingPlayerId = null;
+			return;
+		}
+
+		if (!db) return;
 
 		// 1. Update jersey on roster document
 		if (this.teamId) {
@@ -197,6 +245,11 @@ export class RosterPanelEngine {
 	}
 
 	async removePlayer(player: RosterPlayer): Promise<void> {
+		if (this.isSandbox) {
+			this.players = this.players.filter(p => p.id !== player.id);
+			return;
+		}
+
 		if (!this.teamId || !player || !db) return;
 		const name = player.displayName.trim();
 		const rosterRef = doc(db, 'rosters', this.teamId);

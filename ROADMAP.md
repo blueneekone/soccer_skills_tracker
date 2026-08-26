@@ -44,4 +44,5 @@
 - [x] **DIRECTOR OS & ADMIN OS OVERHAUL**: Admin active incidents click navigation and Director OS system-wide visual simplification.
 - [x] **COACH OS DASHBOARD FIX**: Resolve coach team visibility and Mission Control tab configurations.
 - [x] **COACH OS OVERHAUL**: Simplified Match Day layout and normalized design system colors (Void Black, Navy Slate, Action Gold, Data Cyan).
+- [x] **TRIAL SANDBOX MODE**: Built and verified a strictly quarantined Sandbox Mode for uncleared trial coaches utilizing the Vanguard Trinity Pattern and Dependency Injection to ensure zero production database leakage.
 - [x] **PLAYER OS SWARM VISUAL AUDIT & SELF-HEAL**: Fixed unit tests (`rosterPanelEngine.test.ts`, `playerDashboard.layout.test.ts`, `playerHudSprint234.test.ts`) and Playwright E2E suites (`persona-interactive-e2e.spec.ts`).

@@ -1,0 +1,20 @@
+[
+  {
+    "id": "mock-player-001",
+    "name": "Jane Doe",
+    "position": "FW",
+    "jerseyNumber": "9"
+  },
+  {
+    "id": "mock-player-002",
+    "name": "John Smith",
+    "position": "MF",
+    "jerseyNumber": "10"
+  },
+  {
+    "id": "mock-player-003",
+    "name": "Alex Johnson",
+    "position": "DF",
+    "jerseyNumber": "4"
+  }
+]
