@@ -29,6 +29,10 @@ export function recallBench(host: any) {
 	if (host.engine) host.wrBucketBench.set(host.engine.getTacticalRoster());
 }
 
+export function clearOpponents(host: any) {
+	host.wrOppPitch.set([]);
+}
+
 export function clearRoutesOnly(host: any, simulator: any, simRouteHoldPrev: any) {
 	host.drawnRoutes.set([]);
 	simulator.clearSim();
@@ -112,5 +116,6 @@ export function clearPitch(host: TacticalGridHost) {
 		}
 	}
 	host.wrBucketPitch.set([]);
+	host.wrOppPitch.set([]);
 	host.wrBucketBench.set(nextBench);
 }

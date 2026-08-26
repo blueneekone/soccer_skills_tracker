@@ -2,22 +2,14 @@
 	/**
 	 * FacilityScheduler.svelte — Pitch Collision Avoidance UI
 	 * ─────────────────────────────────────────────────────────
-	 * Embeds into the War Room scheduling board.  Displays a facility picker,
-	 * time-block selector with live availability probing, and a glowing red
-	 * "RESOURCE UNAVAILABLE" overlay when a 409 conflict is detected.
-	 *
-	 * CONFLICT DETECTION FLOW
-	 * ────────────────────────
-	 *  User selects facility + date + time
-	 *  → checkFacilityAvailability CF (debounced, non-mutating)
-	 *  → if conflict: show RESOURCE UNAVAILABLE banner with conflicting events
-	 *  → "BOOK FACILITY" triggers bookFacility CF (transactional)
-	 *  → if 409 inside transaction: show COLLISION DETECTED error
+	 * High-contrast Tactical SIEM facility booking console.
+	 * Displays live pitch availability probing, instant conflict detection,
+	 * and zero-leak transactional booking.
 	 */
 
 	import { onMount } from 'svelte';
 	import { httpsCallable } from 'firebase/functions';
-import { functions } from '$lib/firebase.js';
+	import { functions } from '$lib/firebase.js';
 
 	interface Facility {
 		facilityId: string;
@@ -43,8 +35,6 @@ import { functions } from '$lib/firebase.js';
 
 	const fns = functions;
 
-	// ── State ─────────────────────────────────────────────────────────────────
-
 	let facilities = $state<Facility[]>([]);
 	let selectedFacilityId = $state('');
 	let date = $state(todayISO());
@@ -64,12 +54,6 @@ import { functions } from '$lib/firebase.js';
 	let bookError = $state<string | null>(null);
 	let bookSuccess = $state<string | null>(null);
 
-	// Glitch animation for conflict banner
-	let glitchActive = $state(false);
-	let glitchInterval: ReturnType<typeof setInterval> | null = null;
-
-	// ── Derived ───────────────────────────────────────────────────────────────
-
 	const startMs = $derived(dateTimeToMs(date, startTime));
 	const endMs = $derived(dateTimeToMs(date, endTime));
 	const durationMinutes = $derived(Math.max(0, Math.round((endMs - startMs) / 60000)));
@@ -78,8 +62,6 @@ import { functions } from '$lib/firebase.js';
 	const selectedFacility = $derived(
 		facilities.find((f) => f.facilityId === selectedFacilityId) ?? null,
 	);
-
-	// ── Helpers ───────────────────────────────────────────────────────────────
 
 	function todayISO(): string {
 		return new Date().toISOString().slice(0, 10);
@@ -94,8 +76,6 @@ import { functions } from '$lib/firebase.js';
 		return d.toTimeString().slice(0, 5);
 	}
 
-	// ── Load facilities ───────────────────────────────────────────────────────
-
 	onMount(async () => {
 		try {
 			const listFn = httpsCallable<object, { facilities: Facility[] }>(fns, 'listFacilities');
@@ -109,63 +89,56 @@ import { functions } from '$lib/firebase.js';
 		}
 	});
 
-	// ── Debounced availability check ──────────────────────────────────────────
-
 	let debounceTimer: ReturnType<typeof setTimeout> | null = null;
 
 	$effect(() => {
-		// Re-run whenever any of these change
 		const _a = selectedFacilityId, _b = date, _c = startTime, _d = endTime;
 		if (!_a || !_b || !_c || !_d) return;
 
 		if (debounceTimer) clearTimeout(debounceTimer);
-		availStatus = 'unknown';
-		conflicts = [];
-		checkError = null;
-
 		debounceTimer = setTimeout(() => {
-			if (isValidTimeBlock && selectedFacilityId) checkAvailability();
-		}, 600);
+			void checkAvailability();
+		}, 300);
 	});
 
-	function triggerGlitch() {
-		glitchActive = true;
-		if (glitchInterval) clearInterval(glitchInterval);
-		glitchInterval = setInterval(() => { glitchActive = !glitchActive; }, 120);
-		setTimeout(() => {
-			if (glitchInterval) clearInterval(glitchInterval);
-			glitchActive = false;
-		}, 1400);
-	}
-
-	// ── Availability probe ────────────────────────────────────────────────────
-
 	async function checkAvailability() {
+		if (!selectedFacilityId || !isValidTimeBlock) {
+			availStatus = 'unknown';
+			conflicts = [];
+			return;
+		}
+
 		isChecking = true;
+		checkError = null;
+
 		try {
 			const checkFn = httpsCallable<
 				object,
-				{ available: boolean; facilityName: string; conflicts: ConflictEntry[] }
+				{ available: boolean; conflicts: ConflictEntry[] }
 			>(fns, 'checkFacilityAvailability');
-			const res = await checkFn({ facilityId: selectedFacilityId, date, startMs, endMs });
-			availStatus = res.data.available ? 'available' : 'conflict';
-			conflicts = res.data.conflicts;
-			if (availStatus === 'conflict') triggerGlitch();
+			const res = await checkFn({
+				facilityId: selectedFacilityId,
+				date,
+				startMs,
+				endMs,
+			});
+			if (res.data.available) {
+				availStatus = 'available';
+				conflicts = [];
+			} else {
+				availStatus = 'conflict';
+				conflicts = res.data.conflicts ?? [];
+			}
 		} catch (err: unknown) {
 			availStatus = 'error';
-			checkError = err instanceof Error ? err.message : 'Availability check failed.';
+			checkError = err instanceof Error ? err.message : 'Availability probe failed.';
 		} finally {
 			isChecking = false;
 		}
 	}
 
-	// ── Book facility ─────────────────────────────────────────────────────────
-
 	async function handleBook() {
-		if (!label.trim()) { bookError = 'Event label is required.'; return; }
-		if (!isValidTimeBlock) { bookError = 'End time must be after start time.'; return; }
-		if (availStatus === 'conflict') { bookError = 'Cannot book a conflicted time slot.'; return; }
-
+		if (!selectedFacilityId || !isValidTimeBlock || !label.trim()) return;
 		isBooking = true;
 		bookError = null;
 		bookSuccess = null;
@@ -186,15 +159,12 @@ import { functions } from '$lib/firebase.js';
 			});
 			bookSuccess = res.data.bookingId;
 			onbooked?.(res.data.bookingId);
-			// Reset form
 			label = '';
 			availStatus = 'unknown';
 		} catch (err: unknown) {
 			const code = (err as { code?: string }).code;
 			if (code === 'functions/already-exists') {
-				// 409 Conflict from the transactional check
 				availStatus = 'conflict';
-				triggerGlitch();
 				bookError = 'COLLISION DETECTED in transaction: ' + (err instanceof Error ? err.message : 'Time block is occupied.');
 			} else {
 				bookError = err instanceof Error ? err.message : 'Booking failed.';
@@ -206,168 +176,197 @@ import { functions } from '$lib/firebase.js';
 </script>
 
 <div
-	class="tw-w-full tw-space-y-4 tw-font-mono tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-rounded-lg tw-p-5 tw-shadow-lg"
+	class="tw-w-full tw-space-y-5 tw-font-mono tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-p-6 tw-shadow-2xl"
+	style="border-radius: 0px;"
 >
-	<!-- Header -->
-	<div class="tw-flex tw-items-center tw-justify-between tw-border-b tw-border-[#334155] tw-pb-3">
-		<div class="tw-flex tw-items-center tw-gap-2">
-			<div class="tw-w-2 tw-h-2 tw-rounded-full tw-bg-[#14b8a6] tw-shadow-[0_0_8px_#14b8a6]"></div>
-			<span class="tw-text-xs tw-font-bold tw-tracking-widest tw-text-[#14b8a6] tw-uppercase">PITCH RADAR PROBE</span>
+	<!-- Header with Radar Probe Indicator -->
+	<div class="tw-flex tw-items-center tw-justify-between tw-border-b tw-border-[#334155] tw-pb-4">
+		<div class="tw-flex tw-items-center tw-gap-3">
+			<span class="tw-w-2.5 tw-h-2.5 tw-bg-[#14b8a6] tw-shadow-[0_0_10px_#14b8a6]"></span>
+			<div>
+				<h3 class="tw-text-xs tw-font-black tw-tracking-widest tw-text-white tw-uppercase tw-m-0">
+					PITCH RADAR PROBE & RESERVATION
+				</h3>
+				<span class="tw-text-[10px] tw-text-slate-400 tw-uppercase">FACILITY COLLISION AVOIDANCE</span>
+			</div>
 		</div>
-		{#if isChecking}
-			<span class="tw-text-xs tw-text-[#14b8a6] tw-animate-pulse">[ PROBING RADAR... ]</span>
-		{:else if availStatus === 'available'}
-			<span class="tw-text-xs tw-font-bold tw-text-[#34d399]">[ ■ AVAILABLE · CLEAR TO BOOK ]</span>
-		{:else if availStatus === 'conflict'}
-			<span class="tw-text-xs tw-font-bold tw-text-[#f87171]">[ ⚠ COLLISION DETECTED ]</span>
-		{/if}
+
+		<div>
+			{#if isChecking}
+				<span class="tw-text-xs tw-font-bold tw-text-[#14b8a6] tw-animate-pulse">PROBING SENSORS…</span>
+			{:else if availStatus === 'available'}
+				<span class="tw-text-xs tw-font-bold tw-text-emerald-400 tw-bg-emerald-950/60 tw-border tw-border-emerald-500 tw-px-2.5 tw-py-1">
+					● AVAILABLE · CLEAR TO BOOK
+				</span>
+			{:else if availStatus === 'conflict'}
+				<span class="tw-text-xs tw-font-bold tw-text-rose-400 tw-bg-rose-950/60 tw-border tw-border-rose-500 tw-px-2.5 tw-py-1">
+					⚠ COLLISION DETECTED
+				</span>
+			{/if}
+		</div>
 	</div>
 
-	<!-- ── RESOURCE UNAVAILABLE BANNER ────────────────────────────────────── -->
+	<!-- RESOURCE UNAVAILABLE / CONFLICT BANNER -->
 	{#if availStatus === 'conflict'}
-		<div
-			class="tw-relative tw-overflow-hidden tw-rounded-lg tw-p-4 tw-space-y-2 tw-bg-[#f87171]/10 tw-border tw-border-[#f87171] tw-transition-all"
-			style="box-shadow: 0 0 {glitchActive ? '20px' : '8px'} rgba(248, 113, 113, 0.2);"
-		>
+		<div class="tw-p-4 tw-bg-rose-950/40 tw-border tw-border-rose-500 tw-space-y-3">
 			<div class="tw-flex tw-items-center tw-gap-2">
-				<span class="tw-text-xs tw-font-black tw-tracking-widest tw-text-[#f87171] tw-uppercase">
-					⚠ PITCH COLLISION — RESOURCE OCCUPIED
+				<span class="tw-text-xs tw-font-black tw-tracking-widest tw-text-rose-400 tw-uppercase">
+					⚠ RESOURCE UNAVAILABLE — CONFLICTING BOOKINGS DETECTED
 				</span>
 			</div>
-
 			{#each conflicts as c}
-				<div class="tw-p-2.5 tw-rounded tw-bg-[#020617] tw-border-l-4 tw-border-[#f87171] tw-text-xs">
-					<div class="tw-font-bold tw-text-[#fafafa]">{c.label}</div>
-					<div class="tw-text-[#94a3b8] tw-mt-0.5">
+				<div class="tw-p-3 tw-bg-[#020617] tw-border-l-4 tw-border-rose-500 tw-text-xs">
+					<div class="tw-font-bold tw-text-white">{c.label}</div>
+					<div class="tw-text-slate-400 tw-mt-1">
 						{msToHHMM(c.startMs)} – {msToHHMM(c.endMs)}
-						{#if c.teamId}<span class="tw-ml-2 tw-text-[#14b8a6]">· {c.teamId}</span>{/if}
+						{#if c.teamId}<span class="tw-ml-2 tw-text-[#14b8a6]">· Team: {c.teamId}</span>{/if}
 					</div>
 				</div>
 			{/each}
 		</div>
 	{/if}
 
-	<!-- Facility selector -->
+	<!-- Facility Selection -->
 	{#if loadingFacilities}
-		<div class="tw-h-8 tw-flex tw-items-center">
-			<span class="tw-text-xs tw-text-[#94a3b8] tw-animate-pulse">Loading pitch facilities…</span>
+		<div class="tw-h-10 tw-flex tw-items-center tw-text-xs tw-text-slate-400 tw-animate-pulse">
+			Loading facility ground stations…
 		</div>
 	{:else if facilities.length === 0}
-		<div class="tw-text-xs tw-text-[#f59e0b] tw-p-3 tw-bg-[#020617] tw-border tw-border-[#334155] tw-rounded">
+		<div class="tw-text-xs tw-text-[#fbbf24] tw-p-3 tw-bg-[#020617] tw-border tw-border-[#334155]">
 			No active pitch facilities configured for this club yet.
 		</div>
 	{:else}
-		<div class="tw-space-y-1">
-			<label for="fs-pitch" class="tw-text-[10px] tw-font-bold tw-tracking-widest tw-text-[#94a3b8] tw-uppercase">SELECT FACILITY / PITCH</label>
+		<div class="tw-space-y-1.5">
+			<label for="fs-pitch" class="tw-block tw-text-[11px] tw-font-bold tw-text-slate-300 tw-uppercase tw-tracking-wider">
+				TARGET PITCH / FACILITY
+			</label>
 			<select
 				id="fs-pitch"
 				bind:value={selectedFacilityId}
-				class="tw-w-full tw-px-3 tw-py-2 tw-text-xs tw-bg-[#020617] tw-border tw-border-[#334155] focus:tw-border-[#14b8a6] tw-rounded-md tw-text-[#fafafa] tw-outline-none tw-cursor-pointer"
+				class="tw-w-full tw-px-3.5 tw-py-2.5 tw-text-xs tw-bg-[#020617] tw-border tw-border-[#334155] focus:tw-border-[#14b8a6] tw-text-white tw-outline-none"
+				style="border-radius: 0px;"
 			>
 				{#each facilities as f}
 					<option value={f.facilityId}>
-						{f.name} · {f.pitchType}{f.capacity ? ` · cap ${f.capacity}` : ''}
+						{f.name} · {f.pitchType}{f.capacity ? ` · Cap: ${f.capacity}` : ''}
 					</option>
 				{/each}
 			</select>
 		</div>
 	{/if}
 
-	<!-- Date and time row -->
+	<!-- Date and Time 3-Column Grid -->
 	<div class="tw-grid tw-grid-cols-1 sm:tw-grid-cols-3 tw-gap-3">
-		<div class="tw-space-y-1">
-			<label for="fs-date" class="tw-text-[10px] tw-font-bold tw-tracking-widest tw-text-[#94a3b8] tw-uppercase">DATE</label>
+		<div class="tw-space-y-1.5">
+			<label for="fs-date" class="tw-block tw-text-[11px] tw-font-bold tw-text-slate-300 tw-uppercase">
+				DATE
+			</label>
 			<input
 				id="fs-date"
 				type="date"
 				bind:value={date}
-				class="tw-w-full tw-px-3 tw-py-2 tw-text-xs tw-bg-[#020617] tw-border tw-border-[#334155] focus:tw-border-[#14b8a6] tw-rounded-md tw-text-[#fafafa] tw-outline-none"
+				class="tw-w-full tw-px-3.5 tw-py-2.5 tw-text-xs tw-bg-[#020617] tw-border tw-border-[#334155] focus:tw-border-[#14b8a6] tw-text-white tw-outline-none"
+				style="border-radius: 0px;"
 				min={todayISO()}
 			/>
 		</div>
-		<div class="tw-space-y-1">
-			<label for="fs-start" class="tw-text-[10px] tw-font-bold tw-tracking-widest tw-text-[#94a3b8] tw-uppercase">START TIME</label>
+
+		<div class="tw-space-y-1.5">
+			<label for="fs-start" class="tw-block tw-text-[11px] tw-font-bold tw-text-slate-300 tw-uppercase">
+				START TIME
+			</label>
 			<input
 				id="fs-start"
 				type="time"
 				bind:value={startTime}
-				class="tw-w-full tw-px-3 tw-py-2 tw-text-xs tw-bg-[#020617] tw-border tw-border-[#334155] focus:tw-border-[#14b8a6] tw-rounded-md tw-text-[#fafafa] tw-outline-none"
+				class="tw-w-full tw-px-3.5 tw-py-2.5 tw-text-xs tw-bg-[#020617] tw-border tw-border-[#334155] focus:tw-border-[#14b8a6] tw-text-white tw-outline-none"
+				style="border-radius: 0px;"
 			/>
 		</div>
-		<div class="tw-space-y-1">
-			<label for="fs-end" class="tw-text-[10px] tw-font-bold tw-tracking-widest tw-text-[#94a3b8] tw-uppercase">END TIME</label>
+
+		<div class="tw-space-y-1.5">
+			<label for="fs-end" class="tw-block tw-text-[11px] tw-font-bold tw-text-slate-300 tw-uppercase">
+				END TIME
+			</label>
 			<input
 				id="fs-end"
 				type="time"
 				bind:value={endTime}
-				class="tw-w-full tw-px-3 tw-py-2 tw-text-xs tw-bg-[#020617] tw-border tw-border-[#334155] focus:tw-border-[#14b8a6] tw-rounded-md tw-text-[#fafafa] tw-outline-none"
+				class="tw-w-full tw-px-3.5 tw-py-2.5 tw-text-xs tw-bg-[#020617] tw-border tw-border-[#334155] focus:tw-border-[#14b8a6] tw-text-white tw-outline-none"
+				style="border-radius: 0px;"
 			/>
 		</div>
 	</div>
 
 	{#if isValidTimeBlock}
-		<div class="tw-text-[11px] tw-text-[#14b8a6] tw-font-bold">
-			DURATION: {Math.floor(durationMinutes / 60)}h {durationMinutes % 60}m
+		<div class="tw-text-xs tw-text-[#14b8a6] tw-font-bold">
+			TOTAL DURATION: {Math.floor(durationMinutes / 60)}h {durationMinutes % 60}m
 		</div>
 	{:else if startMs > 0}
-		<div class="tw-text-[11px] tw-text-[#f59e0b]">⚠ End time must be after start time.</div>
+		<div class="tw-text-xs tw-text-[#fbbf24]">⚠ End time must be after start time.</div>
 	{/if}
 
-	<!-- Event details -->
-	<div class="tw-space-y-1">
-		<label for="fs-event" class="tw-text-[10px] tw-font-bold tw-tracking-widest tw-text-[#94a3b8] tw-uppercase">EVENT LABEL</label>
+	<!-- Event Label -->
+	<div class="tw-space-y-1.5">
+		<label for="fs-event" class="tw-block tw-text-[11px] tw-font-bold tw-text-slate-300 tw-uppercase">
+			SESSION / FIXTURE LABEL
+		</label>
 		<input
 			id="fs-event"
 			type="text"
 			bind:value={label}
-			placeholder="e.g. U14 Tactical Training Block"
-			class="tw-w-full tw-px-3 tw-py-2 tw-text-xs tw-bg-[#020617] tw-border tw-border-[#334155] focus:tw-border-[#14b8a6] tw-rounded-md tw-text-[#fafafa] tw-outline-none"
+			placeholder="e.g. U14 Tactical Shape & High Press Workshop"
+			class="tw-w-full tw-px-3.5 tw-py-2.5 tw-text-xs tw-bg-[#020617] tw-border tw-border-[#334155] focus:tw-border-[#14b8a6] tw-text-white tw-outline-none placeholder:tw-text-slate-600"
+			style="border-radius: 0px;"
 		/>
 	</div>
 
-	<div class="tw-space-y-1">
-		<div class="tw-text-[10px] tw-font-bold tw-tracking-widest tw-text-[#94a3b8] tw-uppercase">BLOCK TYPE</div>
+	<!-- Block Type Segmented Selector -->
+	<div class="tw-space-y-1.5">
+		<span class="tw-block tw-text-[11px] tw-font-bold tw-text-slate-300 tw-uppercase">
+			SESSION TYPE
+		</span>
 		<div class="tw-grid tw-grid-cols-3 tw-gap-2">
 			{#each (['practice', 'fixture', 'other'] as const) as et}
 				<button
 					type="button"
 					onclick={() => (eventType = et)}
-					class="tw-py-2 tw-text-xs tw-font-bold tw-tracking-wider tw-capitalize tw-transition-all tw-rounded-md tw-border"
-					style={eventType === et
-						? 'border-color: #14b8a6; background: rgba(20, 184, 166, 0.2); color: #2dd4bf;'
-						: 'border-color: #334155; background: #020617; color: #94a3b8;'}
-				>{et}</button>
+					class="tw-py-2.5 tw-text-xs tw-font-bold tw-tracking-wider tw-uppercase tw-transition-all tw-border {eventType === et ? 'tw-bg-[#14b8a6]/20 tw-border-[#14b8a6] tw-text-[#14b8a6]' : 'tw-bg-[#020617] tw-border-[#334155] tw-text-slate-400 hover:tw-border-slate-400'}"
+					style="border-radius: 0px;"
+				>
+					{et === 'practice' ? 'PRACTICE' : et === 'fixture' ? 'MATCH FIXTURE' : 'WORKSHOP'}
+				</button>
 			{/each}
 		</div>
 	</div>
 
-	<!-- Errors / success -->
+	<!-- Errors / Success Feedback -->
 	{#if bookError}
-		<div class="tw-px-3 tw-py-2 tw-text-xs tw-bg-[#f87171]/10 tw-border tw-border-[#f87171] tw-text-[#f87171] tw-rounded">
+		<div class="tw-p-3 tw-bg-rose-950/60 tw-border tw-border-rose-500 tw-text-rose-300 tw-text-xs tw-font-bold">
 			⚠ {bookError}
 		</div>
 	{/if}
 	{#if checkError}
-		<div class="tw-px-3 tw-py-2 tw-text-xs tw-text-[#f59e0b] tw-p-2 tw-bg-[#020617] tw-border tw-border-[#334155] tw-rounded">⚠ {checkError}</div>
+		<div class="tw-p-3 tw-bg-[#020617] tw-border tw-border-[#334155] tw-text-[#fbbf24] tw-text-xs">
+			⚠ {checkError}
+		</div>
 	{/if}
 	{#if bookSuccess}
-		<div class="tw-px-3 tw-py-2 tw-text-xs tw-bg-[#34d399]/10 tw-border tw-border-[#34d399] tw-text-[#34d399] tw-rounded">
+		<div class="tw-p-3 tw-bg-emerald-950/60 tw-border tw-border-emerald-500 tw-text-emerald-300 tw-text-xs tw-font-bold">
 			✓ BOOKING CONFIRMED · RESERVATION ID: {bookSuccess.slice(0, 8).toUpperCase()}
 		</div>
 	{/if}
 
-	<!-- Book button -->
+	<!-- Primary CTA (Action Gold #fbbf24) -->
 	<button
 		type="button"
 		onclick={handleBook}
 		disabled={isBooking || availStatus === 'conflict' || !isValidTimeBlock || !label.trim() || !selectedFacilityId}
-		class="tw-w-full tw-py-3 tw-text-xs tw-font-bold tw-tracking-widest tw-transition-all tw-duration-200 disabled:tw-opacity-30 disabled:tw-cursor-not-allowed tw-rounded-md tw-border"
-		style={availStatus === 'conflict'
-			? 'background: rgba(248, 113, 113, 0.15); border-color: #f87171; color: #f87171;'
-			: 'background: rgba(20, 184, 166, 0.15); border-color: #14b8a6; color: #14b8a6;'}
+		class="tw-w-full tw-py-3.5 tw-bg-[#fbbf24] hover:tw-bg-[#f59e0b] tw-text-black tw-text-xs tw-font-black tw-tracking-widest tw-uppercase tw-transition-all active:tw-scale-[0.99] disabled:tw-opacity-40 disabled:tw-cursor-not-allowed tw-shadow-[0_0_15px_rgba(251,191,36,0.3)]"
+		style="border-radius: 0px;"
 	>
-		{#if isBooking}[ LOCKING TIME BLOCK... ]
-		{:else if availStatus === 'conflict'}[ RESOURCE OCCUPIED — CHOOSE ANOTHER SLOT ]
-		{:else}[ CONFIRM PITCH RESERVATION ]{/if}
+		{#if isBooking}LOCKING TIME BLOCK IN DATABASE…
+		{:else if availStatus === 'conflict'}RESOURCE OCCUPIED — CHOOSE ANOTHER TIME SLOT
+		{:else}⚡ CONFIRM PITCH RESERVATION{/if}
 	</button>
 </div>

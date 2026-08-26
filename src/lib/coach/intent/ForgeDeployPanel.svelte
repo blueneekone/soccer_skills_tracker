@@ -24,18 +24,15 @@
 		draftPrescriptionSets = $bindable(3),
 		draftPrescriptionRepsPerSet = $bindable(10),
 		draftPrescriptionBilateral = $bindable(false),
-	draftPrescriptionDurationMin = $bindable(0),
-	draftPrescriptionTargetRpe = $bindable(0),
-	/** 0 = absent (no cadence). 1–21 = sessions per 7-day window. */
-	draftCadenceSessionsPerWindow = $bindable(0),
-	draftDrillId = $bindable(''),
+		draftPrescriptionDurationMin = $bindable(0),
+		draftPrescriptionTargetRpe = $bindable(0),
+		draftCadenceSessionsPerWindow = $bindable(0),
+		draftDrillId = $bindable(''),
 		draftDrillTitle = $bindable(''),
 		availableDrills = [] as Array<{ id: string; title: string; scope?: string }>,
 		isLoadingDrills = false,
-		/** B3 bundle drill entries (ordered). Empty = single-drill mode. */
 		draftBundleDrills = $bindable([] as Array<{ drillId: string; drillTitle: string; sets: number; repsPerSet: number }>),
-	/** B4a — coach opt-in: require parent verification (advisory). Default off. */
-	draftRequiresParentVerification = $bindable(false),
+		draftRequiresParentVerification = $bindable(false),
 		deployPhase = 'idle' as DeployPhase,
 		deployError = '',
 		rosterError = '',
@@ -60,22 +57,23 @@
 		onBenchmarkDrillChange = () => {},
 	} = $props();
 
+	function getPlayerInitials(name: string) {
+		if (!name) return 'PL';
+		const parts = String(name).trim().split(/\s+/);
+		if (parts.length >= 2) {
+			return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
+		}
+		return String(name).slice(0, 2).toUpperCase() || 'PL';
+	}
+
 	const deployBtnLabel = $derived(
 		deployPhase === 'saving'
-			? '[ TRANSMITTING... ]'
+			? 'TRANSMITTING INTENT…'
 			: deployPhase === 'success'
-				? '[ ✓ INTENT DEPLOYED ]'
+				? '✓ INTENT DEPLOYED TO SQUAD'
 				: deployPhase === 'error'
-					? '[ RETRY DEPLOY ]'
-					: '[ DEPLOY TACTICAL INTENT ]',
-	);
-
-	const deployBorderColor = $derived(
-		deployPhase === 'success'
-			? 'rgba(57,255,20,0.45)'
-			: deployPhase === 'error'
-				? 'rgba(255,48,64,0.45)'
-				: 'rgba(20, 184, 166,0.25)',
+					? 'RETRY DEPLOY'
+					: '⚡ DEPLOY TACTICAL INTENT',
 	);
 
 	const selectedAssignableCount = $derived(
@@ -84,7 +82,6 @@
 		).length,
 	);
 
-	/** Tracks prior XP so we only auto-seed cadence when crossing the multi-day threshold. */
 	let prevRequiredXp = draftRequiredXp;
 	$effect(() => {
 		if (
@@ -99,26 +96,22 @@
 
 	const cadenceDisplayLabel = $derived(
 		draftCadenceSessionsPerWindow > 0
-			? `${draftCadenceSessionsPerWindow}×/wk`
+			? `${draftCadenceSessionsPerWindow}× / week`
 			: draftRequiredXp >= 300
-				? '5×/wk default'
-				: 'off',
-	);
-
-	const showCadenceDefaultHint = $derived(
-		draftCadenceSessionsPerWindow === 0 && draftRequiredXp >= 300,
+				? '5× / week (default)'
+				: 'Open cadence',
 	);
 
 	const deployBlockReason = $derived.by(() => {
 		if (canDeploy || deployPhase !== 'idle') return '';
 		if (draftMissionKind === 'benchmark' && !draftBenchmarkDrillId) {
-			return 'Select a benchmark drill to deploy.';
+			return 'Select a benchmark combine drill to deploy.';
 		}
 		if (!draftAttributeId) return 'Select a target attribute to deploy.';
 		if (draftRequiredXp < 1) return 'Set XP bounty to at least 1.';
 		if (draftDurationDays < 1) return 'Set duration to at least 1 day.';
 		if (draftScope === 'team' && assignableRosterCount === 0) {
-			return 'No assignable operatives on squad — link player accounts first.';
+			return 'No assignable operatives on squad.';
 		}
 		if (draftScope === 'players' && selectedAssignableCount === 0) {
 			return 'Select at least one assignable operative.';
@@ -127,694 +120,454 @@
 	});
 </script>
 
-<!-- Full-page workbench deploy column — document flow, not fixed overlay -->
 <section
-	class="coach-forge-deploy-panel tw-w-full tw-p-5 tw-flex tw-flex-col tw-gap-4"
+	class="coach-forge-deploy-panel tw-w-full tw-p-6 tw-flex tw-flex-col tw-gap-6 tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-rounded-none tw-shadow-2xl tw-font-mono"
 	aria-label="Deploy intent workbench"
->		<!-- ── Header ──────────────────────────────────────── -->
-		<div class="tw-flex tw-flex-col tw-gap-0.5">
-			<span class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-[#14b8a6]/60 tw-uppercase">
-				[ DEPLOY WORKBENCH ]
+>
+	<!-- Header / Kicker -->
+	<div class="tw-flex tw-items-center tw-justify-between tw-border-b tw-border-[#334155] tw-pb-4">
+		<div class="tw-flex tw-items-center tw-gap-3">
+			<span class="tw-w-2.5 tw-h-2.5 tw-bg-[#14b8a6] tw-shadow-[0_0_10px_#14b8a6]"></span>
+			<div>
+				<h2 class="tw-text-sm tw-font-black tw-tracking-widest tw-text-white tw-uppercase tw-m-0">
+					TACTICAL INTENT DISPATCH
+				</h2>
+				<span class="tw-text-[11px] tw-text-slate-400 tw-tracking-wider tw-uppercase">
+					AUTOREGULATED HOMEWORK & COMBINE BLUEPRINT
+				</span>
+			</div>
+		</div>
+		<span class="tw-text-[10px] tw-font-bold tw-text-[#daff0a] tw-bg-[#daff0a]/10 tw-border tw-border-[#daff0a]/40 tw-px-2.5 tw-py-1">
+			ACTIVE FORGE
+		</span>
+	</div>
+
+	<!-- 1. Mission Kind Segmented Bar -->
+	<div class="tw-space-y-2">
+		<div class="tw-flex tw-items-center tw-justify-between">
+			<span class="tw-text-xs tw-font-bold tw-text-slate-300 tw-uppercase tw-tracking-wider">
+				1. MISSION ARCHITECTURE
+			</span>
+			<span class="tw-text-[11px] tw-text-slate-400">
+				{draftMissionKind === 'standard' ? 'Daily Homework Routine' : 'Scouting Combine Test'}
 			</span>
 		</div>
-
-		<div class="tw-h-px tw-w-full tw-bg-[#14b8a6]/10"></div>
-
-		<!-- ── Mission kind ───────────────────────────────── -->
-		<div class="tw-flex tw-flex-col tw-gap-1.5">
-			<span class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-[#14b8a6]/40 tw-uppercase">
-				Mission kind
-			</span>
-			<div class="tw-flex tw-gap-2">
-				<button
-					type="button"
-					class="tw-flex-1 tw-py-1.5 tw-rounded-lg tw-font-mono tw-text-[9px] tw-tracking-widest
-					       tw-uppercase tw-border tw-transition-all tw-min-h-[44px]"
-					style={draftMissionKind === 'standard'
-						? 'border-color:#14b8a6; color:#14b8a6; background:rgba(20, 184, 166,0.1);'
-						: 'border-color:rgba(20, 184, 166,0.2); color:rgba(20, 184, 166,0.35);'}
-					onclick={() => {
-						draftMissionKind = 'standard';
-						onMissionKindChange();
-					}}
-				>
-					Homework
-				</button>
-				<button
-					type="button"
-					class="tw-flex-1 tw-py-1.5 tw-rounded-lg tw-font-mono tw-text-[9px] tw-tracking-widest
-					       tw-uppercase tw-border tw-transition-all tw-min-h-[44px]"
-					style={draftMissionKind === 'benchmark'
-						? 'border-color:#14b8a6; color:#14b8a6; background:rgba(20, 184, 166,0.1);'
-						: 'border-color:rgba(20, 184, 166,0.2); color:rgba(20, 184, 166,0.35);'}
-					onclick={() => {
-						draftMissionKind = 'benchmark';
-						onMissionKindChange();
-					}}
-				>
-					Benchmark
-				</button>
-			</div>
-			<p class="tw-font-mono tw-text-[8px] tw-text-white/20 tw-leading-relaxed">
-				Benchmark missions assign a combine drill — player logs numeric result in Train.
-			</p>
-		</div>
-
-		{#if draftMissionKind === 'benchmark'}
-			<div class="tw-flex tw-flex-col tw-gap-1.5">
-				<label for="hud-benchmark" class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-[#14b8a6]/40 tw-uppercase">
-					Benchmark drill
-				</label>
-				<select
-					id="hud-benchmark"
-					bind:value={draftBenchmarkDrillId}
-					onchange={() => onBenchmarkDrillChange()}
-					class="tw-w-full tw-rounded-lg tw-border tw-border-[#14b8a6]/20 tw-bg-[#020202]
-					       tw-text-[#14b8a6]/80 tw-font-mono tw-text-[10px] tw-tracking-widest
-					       tw-px-3 tw-py-1.5 tw-outline-none tw-appearance-none
-					       focus:tw-border-[#14b8a6] tw-transition-colors"
-				>
-					{#each benchmarkDrills as drill (drill.id)}
-						<option value={drill.id}>
-							[{drill.category}] {drill.label} · {drill.baseXP}+ XP
-						</option>
-					{/each}
-				</select>
-				<div class="tw-flex tw-flex-col tw-gap-1">
-					<label for="hud-benchmark-target" class="tw-font-mono tw-text-[8px] tw-text-[#14b8a6]/35 tw-uppercase">
-						Target result (optional)
-					</label>
-					<input
-						id="hud-benchmark-target"
-						type="number"
-						step="any"
-						min="0"
-						placeholder="Coach target — optional"
-						bind:value={draftBenchmarkTargetValue}
-						class="tw-w-full tw-rounded-lg tw-border tw-border-[#14b8a6]/20 tw-bg-[#020202]
-						       tw-text-[#14b8a6]/80 tw-font-mono tw-text-[10px] tw-tracking-wide
-						       tw-px-2 tw-py-1.5 tw-outline-none focus:tw-border-[#14b8a6]
-						       placeholder:tw-text-white/20"
-					/>
-				</div>
-				<p class="tw-font-mono tw-text-[8px] tw-text-white/25 tw-leading-relaxed">
-					XP bounty auto-seeds from catalog base reward. Attribute maps to Scouts Six stat axis.
-				</p>
-			</div>
-		{/if}
-
-		{#if rosterError}
-			<div
-				class="tw-flex tw-flex-col tw-gap-2 tw-rounded-lg tw-border tw-border-[#ff3040]/30 tw-bg-[#ff3040]/5 tw-p-3"
-				role="alert"
+		<div class="tw-grid tw-grid-cols-2 tw-gap-2">
+			<button
+				type="button"
+				class="tw-py-3 tw-px-4 tw-border tw-text-xs tw-font-bold tw-tracking-wider tw-uppercase tw-transition-all {draftMissionKind === 'standard' ? 'tw-bg-[#14b8a6]/20 tw-border-[#14b8a6] tw-text-[#14b8a6] tw-shadow-[0_0_12px_rgba(20,184,166,0.25)]' : 'tw-bg-[#020617] tw-border-[#334155] tw-text-slate-400 hover:tw-border-slate-300'}"
+				onclick={() => {
+					draftMissionKind = 'standard';
+					onMissionKindChange();
+				}}
 			>
-				<p
-					class="tw-font-mono tw-text-[9px] tw-tracking-wide tw-text-[#ff3040] tw-leading-relaxed tw-uppercase"
-				>
-					{rosterError}
-				</p>
-				<button
-					type="button"
-					class="tw-self-start tw-font-mono tw-text-[9px] tw-tracking-widest tw-uppercase
-					       tw-text-[#14b8a6] tw-border tw-border-[#14b8a6]/30 tw-rounded tw-px-2.5 tw-py-1.5
-					       tw-min-h-[44px] hover:tw-border-[#14b8a6]/60"
-					onclick={() => onRefreshRoster()}
-				>
-					Refresh roster
-				</button>
-			</div>
-		{/if}
+				🏋 HOMEWORK INTENT
+			</button>
+			<button
+				type="button"
+				class="tw-py-3 tw-px-4 tw-border tw-text-xs tw-font-bold tw-tracking-wider tw-uppercase tw-transition-all {draftMissionKind === 'benchmark' ? 'tw-bg-[#daff0a]/20 tw-border-[#daff0a] tw-text-[#daff0a] tw-shadow-[0_0_12px_rgba(218,255,10,0.25)]' : 'tw-bg-[#020617] tw-border-[#334155] tw-text-slate-400 hover:tw-border-slate-300'}"
+				onclick={() => {
+					draftMissionKind = 'benchmark';
+					onMissionKindChange();
+				}}
+			>
+				⚡ COMBINE BENCHMARK
+			</button>
+		</div>
+	</div>
 
-		{#if draftMissionKind === 'standard'}
-		<!-- ── Attribute picker ───────────────────────────── -->
-		<div class="tw-flex tw-flex-col tw-gap-1.5">
-			<label for="hud-attr" class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-[#14b8a6]/40 tw-uppercase">
-				TARGET ATTRIBUTE
+	<!-- Benchmark Drill Picker (if benchmark mode) -->
+	{#if draftMissionKind === 'benchmark'}
+		<div class="tw-p-4 tw-bg-[#020617] tw-border tw-border-[#334155] tw-space-y-3">
+			<label for="forge-benchmark" class="tw-block tw-text-xs tw-font-bold tw-text-[#daff0a] tw-uppercase tw-tracking-wider">
+				Select Benchmark Combine Drill
 			</label>
 			<select
-				id="hud-attr"
-				bind:value={draftAttributeId}
-				onchange={() => onAttributeChange()}
-				class="tw-w-full tw-rounded-lg tw-border tw-border-[#14b8a6]/20 tw-bg-[#020202]
-				       tw-text-[#14b8a6]/80 tw-font-mono tw-text-[10px] tw-tracking-widest
-				       tw-px-3 tw-py-1.5 tw-outline-none tw-appearance-none
-				       focus:tw-border-[#14b8a6] tw-transition-colors"
+				id="forge-benchmark"
+				bind:value={draftBenchmarkDrillId}
+				onchange={() => onBenchmarkDrillChange()}
+				class="tw-w-full tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-text-white tw-px-3.5 tw-py-2.5 tw-text-xs focus:tw-border-[#daff0a] tw-outline-none"
 			>
-				{#each attributes as attr (attr.id)}
-					<option value={attr.id}>{attr.name}</option>
+				{#each benchmarkDrills as drill (drill.id)}
+					<option value={drill.id}>
+						[{drill.category}] {drill.label} · {drill.baseXP} Base XP
+					</option>
 				{/each}
 			</select>
+			<div>
+				<label for="forge-benchmark-target" class="tw-block tw-text-[11px] tw-text-slate-400 tw-uppercase tw-mb-1">
+					Target Numerical Goal (Optional)
+				</label>
+				<input
+					id="forge-benchmark-target"
+					type="number"
+					step="any"
+					min="0"
+					placeholder="e.g. 25 reps or 12.4 seconds"
+					bind:value={draftBenchmarkTargetValue}
+					class="tw-w-full tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-text-white tw-px-3.5 tw-py-2 tw-text-xs focus:tw-border-[#daff0a] tw-outline-none placeholder:tw-text-slate-600"
+				/>
+			</div>
+		</div>
+	{/if}
+
+	<!-- 2. Target Attribute Selector (Standard Mode) -->
+	{#if draftMissionKind === 'standard'}
+		<div class="tw-space-y-2">
+			<div class="tw-flex tw-items-center tw-justify-between">
+				<span class="tw-text-xs tw-font-bold tw-text-slate-300 tw-uppercase tw-tracking-wider">
+					2. TARGET SKILL ATTRIBUTE
+				</span>
+				{#if draftAttributeId}
+					{@const currentAttr = attributes.find(a => a.id === draftAttributeId)}
+					<span class="tw-text-[11px] tw-font-bold" style="color: {currentAttr?.hexColor || '#14b8a6'}">
+						{currentAttr?.name}
+					</span>
+				{/if}
+			</div>
+
+			<div class="tw-grid tw-grid-cols-2 sm:tw-grid-cols-3 tw-gap-2">
+				{#each attributes as attr (attr.id)}
+					{@const isSelected = draftAttributeId === attr.id}
+					<button
+						type="button"
+						class="tw-flex tw-items-center tw-gap-2.5 tw-p-3 tw-border tw-text-left tw-transition-all {isSelected ? 'tw-bg-[#0f172a] tw-border-white tw-shadow-[0_0_10px_rgba(255,255,255,0.2)]' : 'tw-bg-[#020617] tw-border-[#334155] hover:tw-border-slate-400'}"
+						onclick={() => {
+							draftAttributeId = attr.id;
+							onAttributeChange();
+						}}
+					>
+						<span
+							class="tw-w-3 tw-h-3 tw-rounded-full tw-shrink-0"
+							style="background: {attr.hexColor || '#14b8a6'}; box-shadow: 0 0 6px {attr.hexColor || '#14b8a6'};"
+						></span>
+						<span class="tw-text-xs tw-font-bold tw-text-white tw-truncate">{attr.name}</span>
+					</button>
+				{/each}
+			</div>
 		</div>
 
-		<!-- ── Prescription volume ──────────────────────── -->
-		<div class="tw-flex tw-flex-col tw-gap-2">
-			<span class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-[#14b8a6]/40 tw-uppercase">
-				DRILL PRESCRIPTION
-			</span>
-			<div class="tw-flex tw-flex-col tw-gap-1">
-				<label for="hud-drill" class="tw-font-mono tw-text-[8px] tw-text-[#14b8a6]/35 tw-uppercase">
-					Team drill
+		<!-- 3. Drill Selection & Prescription -->
+		<div class="tw-space-y-3 tw-p-4 tw-bg-[#020617] tw-border tw-border-[#334155]">
+			<div class="tw-flex tw-items-center tw-justify-between">
+				<span class="tw-text-xs tw-font-bold tw-text-[#14b8a6] tw-uppercase tw-tracking-wider">
+					3. DRILL PRESCRIPTION & REPETITIONS
+				</span>
+				{#if isLoadingDrills}
+					<span class="tw-text-[10px] tw-text-slate-400 tw-animate-pulse">Loading drills…</span>
+				{/if}
+			</div>
+
+			<div>
+				<label for="forge-drill" class="tw-block tw-text-[11px] tw-text-slate-400 tw-uppercase tw-mb-1">
+					Select Drill from Team Library
 				</label>
 				<select
-					id="hud-drill"
+					id="forge-drill"
 					bind:value={draftDrillId}
 					disabled={isLoadingDrills}
-					class="tw-w-full tw-rounded-lg tw-border tw-border-[#14b8a6]/20 tw-bg-[#020202]
-					       tw-text-[#14b8a6]/80 tw-font-mono tw-text-[10px] tw-tracking-widest
-					       tw-px-2 tw-py-1.5 tw-outline-none focus:tw-border-[#14b8a6]
-					       disabled:tw-opacity-40"
+					class="tw-w-full tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-text-white tw-px-3.5 tw-py-2.5 tw-text-xs focus:tw-border-[#14b8a6] tw-outline-none"
 				>
-					<option value="">
-						{isLoadingDrills ? 'Loading team drills…' : '— Open intent (RL suggests drill) —'}
-					</option>
+					<option value="">— Open intent (RL suggests drill) —</option>
 					{#each availableDrills as drill (drill.id)}
 						<option value={drill.id}>
 							{drill.scope === 'club' ? `[CLUB] ${drill.title}` : drill.title}
 						</option>
 					{/each}
 				</select>
-				{#if !isLoadingDrills && availableDrills.length === 0}
-					<p class="tw-font-mono tw-text-[8px] tw-text-white/25 tw-leading-relaxed">
-						No saved team drills — type a drill name below, copy from Drill library → Platform basics, or leave open for RL suggestion.
-					</p>
-				{/if}
-				{#if !draftDrillId}
-					<div class="tw-flex tw-flex-col tw-gap-1">
-						<label for="hud-drill-title" class="tw-font-mono tw-text-[8px] tw-text-[#14b8a6]/35 tw-uppercase">
-							Drill name (optional)
-						</label>
-						<input
-							id="hud-drill-title"
-							type="text"
-							maxlength="200"
-							placeholder="e.g. Toe taps"
-							bind:value={draftDrillTitle}
-							class="tw-w-full tw-rounded-lg tw-border tw-border-[#14b8a6]/20 tw-bg-[#020202]
-							       tw-text-[#14b8a6]/80 tw-font-mono tw-text-[10px] tw-tracking-wide
-							       tw-px-2 tw-py-1.5 tw-outline-none focus:tw-border-[#14b8a6]
-							       placeholder:tw-text-white/20"
-						/>
-					</div>
-				{/if}
 			</div>
-			<div class="tw-grid tw-grid-cols-2 tw-gap-2">
-				<div class="tw-flex tw-flex-col tw-gap-1">
-					<label for="hud-sets" class="tw-font-mono tw-text-[8px] tw-text-[#14b8a6]/35 tw-uppercase">Sets</label>
-					<input
-						id="hud-sets"
-						type="number"
-						min="1"
-						max="99"
-						bind:value={draftPrescriptionSets}
-						class="tw-w-full tw-rounded-lg tw-border tw-border-[#14b8a6]/20 tw-bg-[#020202]
-						       tw-text-[#14b8a6]/80 tw-font-mono tw-text-[10px] tw-px-2 tw-py-1 tw-outline-none
-						       focus:tw-border-[#14b8a6]"
-					/>
-				</div>
-				<div class="tw-flex tw-flex-col tw-gap-1">
-					<label for="hud-reps" class="tw-font-mono tw-text-[8px] tw-text-[#14b8a6]/35 tw-uppercase">Reps / set</label>
-					<input
-						id="hud-reps"
-						type="number"
-						min="0"
-						max="999"
-						bind:value={draftPrescriptionRepsPerSet}
-						class="tw-w-full tw-rounded-lg tw-border tw-border-[#14b8a6]/20 tw-bg-[#020202]
-						       tw-text-[#14b8a6]/80 tw-font-mono tw-text-[10px] tw-px-2 tw-py-1 tw-outline-none
-						       focus:tw-border-[#14b8a6]"
-					/>
-				</div>
-			</div>
-			<label class="tw-flex tw-items-center tw-gap-2 tw-cursor-pointer">
-				<input
-					type="checkbox"
-					bind:checked={draftPrescriptionBilateral}
-					class="tw-accent-[#14b8a6] tw-w-3 tw-h-3"
-				/>
-				<span class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-[#14b8a6]/55 tw-uppercase">
-					Both sides
-				</span>
-			</label>
-			<div class="tw-grid tw-grid-cols-2 tw-gap-2">
-				<div class="tw-flex tw-flex-col tw-gap-1">
-					<label for="hud-rx-dur" class="tw-font-mono tw-text-[8px] tw-text-[#14b8a6]/35 tw-uppercase">Target min (opt)</label>
-					<input
-						id="hud-rx-dur"
-						type="number"
-						min="0"
-						max="120"
-						bind:value={draftPrescriptionDurationMin}
-						placeholder="—"
-						class="tw-w-full tw-rounded-lg tw-border tw-border-[#14b8a6]/20 tw-bg-[#020202]
-						       tw-text-[#14b8a6]/80 tw-font-mono tw-text-[10px] tw-px-2 tw-py-1 tw-outline-none
-						       focus:tw-border-[#14b8a6]"
-					/>
-				</div>
-				<div class="tw-flex tw-flex-col tw-gap-1">
-					<label for="hud-rx-rpe" class="tw-font-mono tw-text-[8px] tw-text-[#14b8a6]/35 tw-uppercase">Target RPE (opt)</label>
-					<input
-						id="hud-rx-rpe"
-						type="number"
-						min="0"
-						max="10"
-						bind:value={draftPrescriptionTargetRpe}
-						placeholder="—"
-						class="tw-w-full tw-rounded-lg tw-border tw-border-[#14b8a6]/20 tw-bg-[#020202]
-						       tw-text-[#14b8a6]/80 tw-font-mono tw-text-[10px] tw-px-2 tw-py-1 tw-outline-none
-						       focus:tw-border-[#14b8a6]"
-					/>
-				</div>
-			</div>
-	<p class="tw-font-mono tw-text-[8px] tw-text-white/20 tw-leading-relaxed">
-		Team + club drills, or type a drill name. Platform basics: copy from Drill library first.
-	</p>
-</div>
 
-<!-- ── B3 Bundle drills (ordered sequence) ─────── -->
-<div class="tw-flex tw-flex-col tw-gap-2">
-	<div class="tw-flex tw-items-center tw-justify-between">
-		<span class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-[#14b8a6]/40 tw-uppercase">
-			Bundle drills <span class="tw-text-white/20">(opt)</span>
-		</span>
-		{#if draftBundleDrills.length < 8}
-			<button
-				class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-uppercase tw-text-[#14b8a6]/60
-				       hover:tw-text-[#14b8a6] tw-transition-colors"
-				onclick={() => onAddBundleDrill()}
-			>
-				+ Add drill
-			</button>
-		{/if}
-	</div>
-	{#if draftBundleDrills.length > 0}
-		<p class="tw-font-mono tw-text-[8px] tw-text-white/25 tw-leading-relaxed">
-			Player runs drills in order. Top single-drill fields above are replaced by this sequence.
-		</p>
-		{#each draftBundleDrills as entry, i (i)}
-			<div class="tw-flex tw-flex-col tw-gap-1 tw-rounded-lg tw-border tw-border-[#14b8a6]/15
-			             tw-bg-[#14b8a6]/5 tw-px-2 tw-py-2">
-				<div class="tw-flex tw-items-center tw-justify-between">
-					<span class="tw-font-mono tw-text-[8px] tw-text-[#14b8a6]/50 tw-uppercase">
-						Drill {i + 1}
-					</span>
-					<button
-						class="tw-font-mono tw-text-[8px] tw-text-white/30 hover:tw-text-red-400/70 tw-transition-colors"
-						onclick={() => onRemoveBundleDrill(i)}
-					>
-						remove
-					</button>
-				</div>
-				<select
-					value={entry.drillId}
-					onchange={(e) => onUpdateBundleDrill(i, { drillId: (e.target as HTMLSelectElement).value })}
-					disabled={isLoadingDrills}
-					class="tw-w-full tw-rounded tw-border tw-border-[#14b8a6]/20 tw-bg-[#020202]
-					       tw-text-[#14b8a6]/80 tw-font-mono tw-text-[10px] tw-px-2 tw-py-1
-					       tw-outline-none focus:tw-border-[#14b8a6] disabled:tw-opacity-40"
-				>
-					<option value="">— Select team drill —</option>
-					{#each availableDrills as drill (drill.id)}
-						<option value={drill.id}>{drill.scope === 'club' ? `[CLUB] ${drill.title}` : drill.title}</option>
-					{/each}
-				</select>
-				{#if !entry.drillId}
+			{#if !draftDrillId}
+				<div>
+					<label for="forge-drill-title" class="tw-block tw-text-[11px] tw-text-slate-400 tw-uppercase tw-mb-1">
+						Or Custom Drill Title
+					</label>
 					<input
+						id="forge-drill-title"
 						type="text"
 						maxlength="200"
-						placeholder="Or type drill name"
-						value={entry.drillTitle}
-						oninput={(e) => onUpdateBundleDrill(i, { drillTitle: (e.target as HTMLInputElement).value })}
-						class="tw-w-full tw-rounded tw-border tw-border-[#14b8a6]/20 tw-bg-[#020202]
-						       tw-text-[#14b8a6]/80 tw-font-mono tw-text-[10px] tw-px-2 tw-py-1
-						       tw-outline-none focus:tw-border-[#14b8a6] placeholder:tw-text-white/20"
+						placeholder="e.g. Wall Pass Precision & First Touch"
+						bind:value={draftDrillTitle}
+						class="tw-w-full tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-text-white tw-px-3.5 tw-py-2 tw-text-xs focus:tw-border-[#14b8a6] tw-outline-none placeholder:tw-text-slate-600"
 					/>
-				{/if}
-				<div class="tw-flex tw-gap-2">
-					<div class="tw-flex tw-flex-col tw-gap-0.5 tw-flex-1">
-						<label class="tw-font-mono tw-text-[8px] tw-text-[#14b8a6]/35 tw-uppercase">Sets</label>
+				</div>
+			{/if}
+
+			<!-- Sets & Reps Counters -->
+			<div class="tw-grid tw-grid-cols-2 sm:tw-grid-cols-4 tw-gap-3 tw-pt-2">
+				<div class="tw-space-y-1">
+					<label for="forge-sets" class="tw-block tw-text-[10px] tw-text-slate-400 tw-uppercase">Sets</label>
+					<div class="tw-flex tw-items-center">
+						<button
+							type="button"
+							class="tw-px-3 tw-py-1.5 tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-text-slate-300 hover:tw-text-white"
+							onclick={() => draftPrescriptionSets = Math.max(1, draftPrescriptionSets - 1)}
+						>-</button>
 						<input
+							id="forge-sets"
 							type="number"
 							min="1"
 							max="99"
-							value={entry.sets}
-							oninput={(e) => onUpdateBundleDrill(i, { sets: Number((e.target as HTMLInputElement).value) })}
-							class="tw-w-full tw-rounded tw-border tw-border-[#14b8a6]/20 tw-bg-[#020202]
-							       tw-text-[#14b8a6]/80 tw-font-mono tw-text-[10px] tw-px-2 tw-py-1
-							       tw-outline-none focus:tw-border-[#14b8a6]"
+							bind:value={draftPrescriptionSets}
+							class="tw-w-full tw-bg-[#0f172a] tw-border-y tw-border-[#334155] tw-text-center tw-text-[#daff0a] tw-font-bold tw-text-sm tw-py-1.5 tw-outline-none"
 						/>
+						<button
+							type="button"
+							class="tw-px-3 tw-py-1.5 tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-text-slate-300 hover:tw-text-white"
+							onclick={() => draftPrescriptionSets = draftPrescriptionSets + 1}
+						>+</button>
 					</div>
-					<div class="tw-flex tw-flex-col tw-gap-0.5 tw-flex-1">
-						<label class="tw-font-mono tw-text-[8px] tw-text-[#14b8a6]/35 tw-uppercase">Reps/set</label>
+				</div>
+
+				<div class="tw-space-y-1">
+					<label for="forge-reps" class="tw-block tw-text-[10px] tw-text-slate-400 tw-uppercase">Reps / Set</label>
+					<div class="tw-flex tw-items-center">
+						<button
+							type="button"
+							class="tw-px-3 tw-py-1.5 tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-text-slate-300 hover:tw-text-white"
+							onclick={() => draftPrescriptionRepsPerSet = Math.max(0, draftPrescriptionRepsPerSet - 5)}
+						>-</button>
 						<input
+							id="forge-reps"
 							type="number"
 							min="0"
 							max="999"
-							value={entry.repsPerSet}
-							oninput={(e) => onUpdateBundleDrill(i, { repsPerSet: Number((e.target as HTMLInputElement).value) })}
-							class="tw-w-full tw-rounded tw-border tw-border-[#14b8a6]/20 tw-bg-[#020202]
-							       tw-text-[#14b8a6]/80 tw-font-mono tw-text-[10px] tw-px-2 tw-py-1
-							       tw-outline-none focus:tw-border-[#14b8a6]"
+							bind:value={draftPrescriptionRepsPerSet}
+							class="tw-w-full tw-bg-[#0f172a] tw-border-y tw-border-[#334155] tw-text-center tw-text-[#daff0a] tw-font-bold tw-text-sm tw-py-1.5 tw-outline-none"
 						/>
+						<button
+							type="button"
+							class="tw-px-3 tw-py-1.5 tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-text-slate-300 hover:tw-text-white"
+							onclick={() => draftPrescriptionRepsPerSet = draftPrescriptionRepsPerSet + 5}
+						>+</button>
 					</div>
 				</div>
-			</div>
-		{/each}
-	{:else}
-		<p class="tw-font-mono tw-text-[8px] tw-text-white/20 tw-leading-relaxed">
-			Add 2+ drills for a sequential bundle session. Leave empty for single-drill (default).
-		</p>
-	{/if}
-</div>
-		{/if}
 
-		<!-- ── XP bounty ──────────────────────────────────── -->
-		<div class="tw-flex tw-flex-col tw-gap-1.5">
+				<div class="tw-space-y-1">
+					<label for="forge-min" class="tw-block tw-text-[10px] tw-text-slate-400 tw-uppercase">Target Min</label>
+					<input
+						id="forge-min"
+						type="number"
+						min="0"
+						max="120"
+						placeholder="0"
+						bind:value={draftPrescriptionDurationMin}
+						class="tw-w-full tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-text-center tw-text-[#daff0a] tw-font-bold tw-text-sm tw-py-1.5 tw-outline-none"
+					/>
+				</div>
+
+				<div class="tw-space-y-1">
+					<label for="forge-rpe" class="tw-block tw-text-[10px] tw-text-slate-400 tw-uppercase">Target RPE (1-10)</label>
+					<input
+						id="forge-rpe"
+						type="number"
+						min="0"
+						max="10"
+						placeholder="—"
+						bind:value={draftPrescriptionTargetRpe}
+						class="tw-w-full tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-text-center tw-text-[#daff0a] tw-font-bold tw-text-sm tw-py-1.5 tw-outline-none"
+					/>
+				</div>
+			</div>
+
+			<!-- Bilateral Checkbox -->
+			<label class="tw-flex tw-items-center tw-gap-2.5 tw-cursor-pointer tw-pt-1">
+				<input
+					type="checkbox"
+					bind:checked={draftPrescriptionBilateral}
+					class="tw-accent-[#14b8a6] tw-w-4 tw-h-4"
+				/>
+				<span class="tw-text-xs tw-text-slate-300 tw-font-bold tw-uppercase">
+					Bilateral Execution (Both Left & Right Foot Required)
+				</span>
+			</label>
+		</div>
+	{/if}
+
+	<!-- 4. XP Bounty & Duration -->
+	<div class="tw-grid tw-grid-cols-1 sm:tw-grid-cols-2 tw-gap-4 tw-p-4 tw-bg-[#020617] tw-border tw-border-[#334155]">
+		<div class="tw-space-y-2">
 			<div class="tw-flex tw-items-center tw-justify-between">
-				<label for="hud-xp" class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-[#14b8a6]/40 tw-uppercase">
-					XP BOUNTY
+				<label for="forge-xp" class="tw-text-xs tw-font-bold tw-text-slate-300 tw-uppercase">
+					XP BOUNTY REWARD
 				</label>
-				<span class="tw-font-mono tw-text-[14px] tw-tracking-wider tw-text-[#14b8a6] tw-font-bold">
-					{draftRequiredXp}
+				<span class="tw-text-base tw-font-black tw-text-[#daff0a]">
+					+{draftRequiredXp} XP
 				</span>
 			</div>
 			<input
-				id="hud-xp"
+				id="forge-xp"
 				type="range"
 				min="50"
 				max="2000"
 				step="25"
 				bind:value={draftRequiredXp}
-				class="tw-w-full tw-accent-[#14b8a6] tw-h-1 tw-rounded-full tw-cursor-pointer"
+				class="tw-w-full tw-accent-[#daff0a] tw-h-2 tw-bg-[#0f172a] tw-cursor-pointer"
 			/>
 		</div>
 
-		<!-- ── Duration ───────────────────────────────────── -->
-		<div class="tw-flex tw-flex-col tw-gap-1.5">
+		<div class="tw-space-y-2">
 			<div class="tw-flex tw-items-center tw-justify-between">
-				<label for="hud-dur" class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-[#14b8a6]/40 tw-uppercase">
-					DURATION
+				<label for="forge-dur" class="tw-text-xs tw-font-bold tw-text-slate-300 tw-uppercase">
+					MISSION TIMELINE
 				</label>
-				<span class="tw-font-mono tw-text-[14px] tw-tracking-wider tw-text-[#14b8a6] tw-font-bold">
-					{draftDurationDays}d
+				<span class="tw-text-base tw-font-black tw-text-[#14b8a6]">
+					{draftDurationDays} DAYS
 				</span>
 			</div>
 			<input
-				id="hud-dur"
+				id="forge-dur"
 				type="range"
 				min="1"
 				max="90"
 				step="1"
 				bind:value={draftDurationDays}
-				class="tw-w-full tw-accent-[#14b8a6] tw-h-1 tw-rounded-full tw-cursor-pointer"
+				class="tw-w-full tw-accent-[#14b8a6] tw-h-2 tw-bg-[#0f172a] tw-cursor-pointer"
 			/>
 		</div>
+	</div>
 
-	{#if draftMissionKind === 'standard'}
-	<!-- ── Cadence (optional sessions / week) ────────── -->
-	<div class="tw-flex tw-flex-col tw-gap-1.5">
+	<!-- 5. Scope & Operative Target Tray -->
+	<div class="tw-space-y-3">
 		<div class="tw-flex tw-items-center tw-justify-between">
-			<label for="hud-cadence" class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-[#14b8a6]/40 tw-uppercase">
-				Sessions / week <span class="tw-text-white/20">(opt)</span>
-			</label>
-			<span class="tw-font-mono tw-text-[11px] tw-tracking-wider tw-text-[#14b8a6]/60">
-				{cadenceDisplayLabel}
-			</span>
-		</div>
-		<input
-			id="hud-cadence"
-			type="range"
-			min="0"
-			max="7"
-			step="1"
-			bind:value={draftCadenceSessionsPerWindow}
-			class="tw-w-full tw-accent-[#14b8a6] tw-h-1 tw-rounded-full tw-cursor-pointer"
-		/>
-		<p class="tw-font-mono tw-text-[8px] tw-text-white/20 tw-leading-relaxed">
-			Recommended for multi-day XP goals. One credited session per UTC day — caps how fast players can finish.
-		</p>
-		{#if showCadenceDefaultHint}
-			<p class="tw-font-mono tw-text-[8px] tw-text-[#14b8a6]/45 tw-leading-relaxed" role="status">
-				Deploy will default to 5×/week unless you set Sessions/week.
-			</p>
-		{/if}
-	</div>
-	{/if}
-
-	<!-- ── Parent verification opt-in (B4a) ──────────── -->
-	<div class="tw-flex tw-items-center tw-justify-between tw-gap-3">
-		<label for="hud-parent-verify" class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-[#14b8a6]/40 tw-uppercase tw-leading-relaxed">
-			Require parent verification <span class="tw-text-white/20">(opt)</span>
-		</label>
-		<button
-			id="hud-parent-verify"
-			type="button"
-			role="switch"
-			aria-checked={draftRequiresParentVerification}
-			onclick={() => (draftRequiresParentVerification = !draftRequiresParentVerification)}
-			class="tw-w-8 tw-h-4 tw-rounded-full tw-border tw-transition-all tw-shrink-0"
-			style={draftRequiresParentVerification
-				? 'background:rgba(20,184,166,0.25); border-color:#14b8a6;'
-				: 'background:transparent; border-color:rgba(20,184,166,0.2);'}
-		>
-			<span
-				class="tw-block tw-w-2.5 tw-h-2.5 tw-rounded-full tw-transition-transform"
-				style={draftRequiresParentVerification
-					? 'background:#14b8a6; transform:translateX(18px);'
-					: 'background:rgba(20,184,166,0.3); transform:translateX(2px);'}
-			></span>
-		</button>
-	</div>
-	<p class="tw-font-mono tw-text-[8px] tw-text-white/20 tw-leading-relaxed tw-mt-[-4px]">
-		Player sees optional "Send proof" prompt after logging. Advisory — XP is never gated.
-	</p>
-
-	<!-- ── Priority mission toggle ──────────────────── -->
-	<div class="tw-flex tw-items-center tw-justify-between tw-gap-3 tw-min-h-[44px]">
-		<label for="forge-priority" class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-[#14b8a6]/40 tw-uppercase tw-leading-relaxed">
-			Priority mission
-		</label>
-		<button
-			id="forge-priority"
-			type="button"
-			role="switch"
-			aria-checked={draftPriorityMission}
-			onclick={() => (draftPriorityMission = !draftPriorityMission)}
-			class="tw-w-11 tw-h-6 tw-rounded-full tw-border tw-transition-all tw-shrink-0 tw-flex tw-items-center tw-justify-center"
-			style={draftPriorityMission
-				? 'background:rgba(20,184,166,0.25); border-color:#14b8a6;'
-				: 'background:transparent; border-color:rgba(20,184,166,0.2);'}
-		>
-			<span
-				class="tw-block tw-w-3 tw-h-3 tw-rounded-full tw-transition-transform"
-				style={draftPriorityMission
-					? 'background:#14b8a6; transform:translateX(8px);'
-					: 'background:rgba(20,184,166,0.3); transform:translateX(-8px);'}
-			></span>
-		</button>
-	</div>
-	<p class="tw-font-mono tw-text-[8px] tw-text-white/20 tw-leading-relaxed tw-mt-[-4px]">
-		When on, this mission ranks above other active workouts for the player.
-	</p>
-		<!-- ── Scope toggle ───────────────────────────────── -->
-		<div class="tw-flex tw-flex-col tw-gap-1.5">
-			<span class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-[#14b8a6]/40 tw-uppercase">
-				SCOPE
+			<span class="tw-text-xs tw-font-bold tw-text-slate-300 tw-uppercase tw-tracking-wider">
+				5. TARGET OPERATIVES ({roster.length} ATHLETES)
 			</span>
 			<div class="tw-flex tw-gap-2">
 				<button
-					class="tw-flex-1 tw-py-1.5 tw-rounded-lg tw-font-mono tw-text-[9px] tw-tracking-widest
-					       tw-uppercase tw-border tw-transition-all"
-					style={draftScope === 'team'
-						? 'border-color:#14b8a6; color:#14b8a6; background:rgba(20, 184, 166,0.1);'
-						: 'border-color:rgba(20, 184, 166,0.2); color:rgba(20, 184, 166,0.35);'}
-					onclick={() => (draftScope = 'team')}
+					type="button"
+					class="tw-px-3 tw-py-1 tw-text-xs tw-font-bold tw-border tw-transition-all {draftScope === 'team' ? 'tw-bg-[#14b8a6] tw-text-black tw-border-[#14b8a6]' : 'tw-bg-[#020617] tw-border-[#334155] tw-text-slate-400'}"
+					onclick={() => draftScope = 'team'}
 				>
-					SQUAD
+					ENTIRE SQUAD
 				</button>
 				<button
-					class="tw-flex-1 tw-py-1.5 tw-rounded-lg tw-font-mono tw-text-[9px] tw-tracking-widest
-					       tw-uppercase tw-border tw-transition-all"
-					style={draftScope === 'players'
-						? 'border-color:#14b8a6; color:#14b8a6; background:rgba(20, 184, 166,0.1);'
-						: 'border-color:rgba(20, 184, 166,0.2); color:rgba(20, 184, 166,0.35);'}
-					onclick={() => (draftScope = 'players')}
+					type="button"
+					class="tw-px-3 tw-py-1 tw-text-xs tw-font-bold tw-border tw-transition-all {draftScope === 'players' ? 'tw-bg-[#14b8a6] tw-text-black tw-border-[#14b8a6]' : 'tw-bg-[#020617] tw-border-[#334155] tw-text-slate-400'}"
+					onclick={() => draftScope = 'players'}
 				>
-					OPERATIVES
+					SPECIFIC ATHLETES
 				</button>
 			</div>
 		</div>
 
-		<!-- ── Squad roster (always visible — GP-ACQ-03) ─── -->
-		<div class="tw-flex tw-flex-col tw-gap-2">
-			<div class="tw-flex tw-items-center tw-justify-between tw-gap-2">
-				<span class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-[#14b8a6]/40 tw-uppercase">
-					Squad roster
-				</span>
-				<span class="tw-font-mono tw-text-[9px] tw-text-[#14b8a6]/30">
-					{assignableRosterCount} assignable · {roster.length} total
-				</span>
-			</div>
-
-			{#if draftScope === 'players'}
-				<div class="tw-flex tw-items-center tw-gap-2">
+		{#if draftScope === 'players'}
+			<div class="tw-flex tw-items-center tw-justify-between tw-bg-[#020617] tw-p-2.5 tw-border tw-border-[#334155]">
+				<div class="tw-flex tw-gap-2">
 					<button
 						type="button"
-						class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-uppercase
-						       tw-text-[#14b8a6]/50 hover:tw-text-[#14b8a6] tw-transition-colors tw-min-h-[44px]"
+						class="tw-px-3 tw-py-1 tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-text-xs tw-text-[#14b8a6] hover:tw-border-[#14b8a6]"
 						onclick={onSelectAll}
 					>
 						SELECT ALL
 					</button>
-					<span class="tw-text-[#14b8a6]/20">·</span>
 					<button
 						type="button"
-						class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-uppercase
-						       tw-text-[#14b8a6]/50 hover:tw-text-[#ff3040] tw-transition-colors tw-min-h-[44px]"
+						class="tw-px-3 tw-py-1 tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-text-xs tw-text-slate-400 hover:tw-text-white"
 						onclick={onClearSelection}
 					>
 						CLEAR
 					</button>
-					<span class="tw-ml-auto tw-font-mono tw-text-[9px] tw-text-[#14b8a6]/30">
-						{draftTargetUids.length} selected
-					</span>
 				</div>
-			{/if}
-
-			<div
-				class="coach-forge-deploy-panel__roster-scroll tw-flex tw-flex-col tw-gap-px tw-rounded-lg
-				       tw-border tw-border-[#14b8a6]/10"
-			>
-				{#if isLoadingRoster}
-					{#each [0, 1, 2] as i (i)}
-						<div class="tw-h-9 tw-w-full tw-bg-[#05050a] tw-animate-pulse"></div>
-					{/each}
-				{:else if roster.length === 0}
-					<p class="tw-px-3 tw-py-3 tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-[#14b8a6]/35 tw-uppercase">
-						No operatives on this squad yet — add players on Mission Control.
-					</p>
-				{:else}
-					{#each roster as player (player.rosterKey)}
-						{@const isChecked = draftTargetUids.includes(player.rosterKey)}
-						{@const canSelect = player.assignable !== false}
-						{#if draftScope === 'players' && canSelect}
-							<label
-								class="tw-flex tw-items-center tw-gap-2.5 tw-px-3 tw-py-2 tw-cursor-pointer
-								       tw-transition-colors hover:tw-bg-[#14b8a6]/5 tw-min-h-[44px]"
-								style={isChecked ? 'background:rgba(20, 184, 166,0.07);' : ''}
-							>
-								<input
-									type="checkbox"
-									checked={isChecked}
-									onchange={() => onToggleUid(player.rosterKey)}
-									class="tw-accent-[#14b8a6] tw-w-4 tw-h-4 tw-shrink-0"
-								/>
-								<span
-									class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-uppercase tw-truncate"
-									style={isChecked ? 'color:#14b8a6;' : 'color:rgba(20, 184, 166,0.45);'}
-								>
-									{player.playerName}
-								</span>
-							</label>
-						{:else if draftScope === 'players'}
-							<div
-								class="tw-flex tw-flex-col tw-gap-0.5 tw-px-3 tw-py-2 tw-opacity-50 tw-min-h-[44px]"
-								title="Add email to assign — name-only roster entry"
-							>
-								<span
-									class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-uppercase tw-truncate tw-text-slate-500"
-								>
-									{player.playerName}
-								</span>
-								<span class="tw-font-mono tw-text-[8px] tw-tracking-wide tw-text-amber-500/80">
-									Add email to assign
-								</span>
-							</div>
-						{:else}
-							<div
-								class="tw-flex tw-items-center tw-gap-2 tw-px-3 tw-py-2 tw-min-h-[44px]"
-								class:tw-opacity-50={!canSelect}
-							>
-								<span
-									class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-uppercase tw-truncate"
-									style={canSelect ? 'color:rgba(20,184,166,0.7);' : 'color:rgba(148,163,184,0.7);'}
-								>
-									{player.playerName}
-								</span>
-								{#if canSelect}
-									<span class="tw-ml-auto tw-font-mono tw-text-[8px] tw-text-[#14b8a6]/50">IN SCOPE</span>
-								{:else}
-									<span class="tw-ml-auto tw-font-mono tw-text-[8px] tw-text-amber-500/80">Add email</span>
-								{/if}
-							</div>
-						{/if}
-					{/each}
-				{/if}
+				<span class="tw-text-xs tw-font-bold tw-text-[#daff0a]">
+					{draftTargetUids.length} OF {roster.length} SELECTED
+				</span>
 			</div>
-		</div>
-
-		<!-- ── Name-only roster advisory (D9) ─────────────── -->
-		{#if nameOnlyRosterCount > 0}
-			<p
-				class="tw-font-mono tw-text-[9px] tw-tracking-wide tw-text-amber-500/90 tw-leading-relaxed tw-uppercase"
-				role="status"
-			>
-				{#if draftScope === 'team'}
-					{nameOnlyRosterCount} name-only {nameOnlyRosterCount === 1 ? 'entry' : 'entries'} —
-					excluded from deploy until player accounts are linked on Mission Control.
-				{:else}
-					{nameOnlyRosterCount} name-only roster {nameOnlyRosterCount === 1 ? 'entry' : 'entries'} —
-					link player accounts on Mission Control before individual assignment.
-				{/if}
-			</p>
-		{/if}
-		{#if draftScope === 'players' && !isLoadingRoster && assignableRosterCount === 0}
-			<p class="tw-font-mono tw-text-[9px] tw-tracking-wide tw-text-slate-500 tw-uppercase" role="status">
-				No assignable players — sync roster emails on Mission Control first.
-			</p>
-		{/if}
-		{#if draftScope === 'team' && !isLoadingRoster && assignableRosterCount === 0 && roster.length > 0}
-			<p class="tw-font-mono tw-text-[9px] tw-tracking-wide tw-text-slate-500 tw-uppercase" role="status">
-				No linked player accounts — link accounts on Mission Control before squad deploy.
-			</p>
-		{/if}
-		{#if draftScope === 'team' && !isLoadingRoster && roster.length === 0}
-			<p class="tw-font-mono tw-text-[9px] tw-tracking-wide tw-text-slate-500 tw-uppercase" role="status">
-				No roster entries — add players on Mission Control or sync the squad list first.
-			</p>
 		{/if}
 
-		<!-- ── Deploy button ──────────────────────────────── -->
-		<div class="tw-flex tw-flex-col tw-gap-1.5">
-			{#if deployPhase === 'error' && deployError}
-				<p class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-[#ff3040] tw-uppercase tw-leading-relaxed">
-					{deployError}
-				</p>
+		<!-- Operative Cards Grid -->
+		<div class="tw-grid tw-grid-cols-1 sm:tw-grid-cols-2 lg:tw-grid-cols-3 tw-gap-2 tw-max-h-[300px] tw-overflow-y-auto tw-p-2 tw-bg-[#020617] tw-border tw-border-[#334155]">
+			{#if isLoadingRoster}
+				<div class="tw-col-span-3 tw-p-6 tw-text-center tw-text-xs tw-text-slate-400 tw-animate-pulse">
+					Loading squad roster from database…
+				</div>
+			{:else if roster.length === 0}
+				<div class="tw-col-span-3 tw-p-6 tw-text-center">
+					<p class="tw-text-xs tw-text-[#fbbf24] tw-font-bold tw-mb-2">NO ATHLETES DETECTED ON SQUAD</p>
+					<button
+						type="button"
+						class="tw-px-3 tw-py-1.5 tw-bg-[#14b8a6] tw-text-black tw-text-xs tw-font-bold"
+						onclick={() => onRefreshRoster()}
+					>
+						REFRESH SQUAD ROSTER
+					</button>
+				</div>
+			{:else}
+				{#each roster as player (player.rosterKey)}
+					{@const isSelected = draftScope === 'team' || draftTargetUids.includes(player.rosterKey)}
+					{@const initials = getPlayerInitials(player.playerName)}
+					<button
+						type="button"
+						class="tw-flex tw-items-center tw-justify-between tw-p-2.5 tw-border tw-text-left tw-transition-all {isSelected ? 'tw-bg-[#0f172a] tw-border-[#14b8a6]' : 'tw-bg-[#000000] tw-border-[#334155] hover:tw-border-slate-400'} {draftScope === 'team' ? 'tw-cursor-default' : 'tw-cursor-pointer'}"
+						onclick={() => {
+							if (draftScope === 'players') onToggleUid(player.rosterKey);
+						}}
+					>
+						<div class="tw-flex tw-items-center tw-gap-2.5 tw-min-w-0">
+							<span class="tw-flex tw-h-7 tw-w-7 tw-items-center tw-justify-center tw-border tw-text-xs tw-font-black {isSelected ? 'tw-border-[#14b8a6] tw-bg-[#14b8a6]/20 tw-text-[#14b8a6]' : 'tw-border-[#334155] tw-bg-[#020617] tw-text-slate-400'}">
+								{initials}
+							</span>
+							<div class="tw-truncate">
+								<div class="tw-text-xs tw-font-bold tw-text-white tw-truncate">{player.playerName}</div>
+								<div class="tw-text-[10px] tw-text-slate-400 tw-truncate">{player.email || 'Linked Account'}</div>
+							</div>
+						</div>
+						<div class="tw-flex tw-items-center tw-shrink-0">
+							{#if isSelected}
+								<span class="tw-text-xs tw-text-[#14b8a6] tw-font-bold">✓</span>
+							{:else}
+								<span class="tw-text-xs tw-text-slate-600">○</span>
+							{/if}
+						</div>
+					</button>
+				{/each}
 			{/if}
-			{#if !canDeploy && deployBlockReason}
-				<p class="tw-font-mono tw-text-[8px] tw-tracking-wide tw-text-slate-500 tw-uppercase" role="status">
-					{deployBlockReason}
-				</p>
-			{/if}
-			<button
-				type="button"
-				class="tw-w-full tw-min-h-[44px] tw-py-3 tw-rounded-lg tw-font-mono tw-text-[10px] tw-tracking-widest
-				       tw-uppercase tw-border tw-transition-all tw-flex tw-items-center tw-justify-center tw-gap-2
-				       disabled:tw-opacity-30 disabled:tw-cursor-not-allowed
-				       enabled:hover:tw-brightness-125 active:tw-scale-[0.98]"
-				style="border-color:{deployBorderColor}; color:{deployPhase === 'success' ? '#2dd4bf' : deployPhase === 'error' ? '#ff3040' : '#14b8a6'};"
-				disabled={!canDeploy || deployPhase === 'saving'}
-				onclick={onDeploy}
-			>
-				{#if deployPhase === 'idle'}
-					<Icon name={"game.zap" as IconName} size={14} />
-				{/if}
-				{deployBtnLabel}
-			</button>
 		</div>
+	</div>
 
-		<!-- ── Footer ─────────────────────────────────────── -->
-		<div class="tw-h-px tw-w-full tw-bg-[#14b8a6]/10"></div>
-		<div class="tw-font-mono tw-text-[8px] tw-tracking-widest tw-text-white/10 tw-uppercase tw-text-center">
-			[ NEXUS INTENT ENGINE v1 ]
+	<!-- 6. Operational Flags -->
+	<div class="tw-flex tw-items-center tw-justify-between tw-p-3 tw-bg-[#020617] tw-border tw-border-[#334155] tw-flex-wrap tw-gap-3">
+		<label class="tw-flex tw-items-center tw-gap-2.5 tw-cursor-pointer">
+			<input
+				type="checkbox"
+				bind:checked={draftPriorityMission}
+				class="tw-accent-[#fbbf24] tw-w-4 tw-h-4"
+			/>
+			<span class="tw-text-xs tw-text-slate-200 tw-font-bold tw-uppercase">
+				⭐ Priority Mission (Ranks Top in Player Train Feed)
+			</span>
+		</label>
+
+		<label class="tw-flex tw-items-center tw-gap-2.5 tw-cursor-pointer">
+			<input
+				type="checkbox"
+				bind:checked={draftRequiresParentVerification}
+				class="tw-accent-[#14b8a6] tw-w-4 tw-h-4"
+			/>
+			<span class="tw-text-xs tw-text-slate-200 tw-font-bold tw-uppercase">
+				🛡 Request Parent Verification Proof
+			</span>
+		</label>
+	</div>
+
+	<!-- Error / Block Reason Banner -->
+	{#if deployPhase === 'error' && deployError}
+		<div class="tw-p-3 tw-bg-red-950/60 tw-border tw-border-red-500 tw-text-red-300 tw-text-xs tw-font-bold tw-uppercase" role="alert">
+			[ ERR ] {deployError}
 		</div>
+	{:else if !canDeploy && deployBlockReason}
+		<div class="tw-p-3 tw-bg-[#020617] tw-border tw-border-amber-500/40 tw-text-amber-300 tw-text-xs tw-font-bold tw-uppercase" role="status">
+			ℹ {deployBlockReason}
+		</div>
+	{/if}
+
+	<!-- 7. Primary Call-To-Action (Mandated Action Gold #fbbf24) -->
+	<button
+		type="button"
+		class="tw-w-full tw-py-4 tw-px-6 tw-bg-[#fbbf24] hover:tw-bg-[#f59e0b] tw-text-black tw-font-mono tw-text-sm tw-font-black tw-uppercase tw-tracking-widest tw-transition-all active:tw-scale-[0.99] disabled:tw-opacity-40 disabled:tw-cursor-not-allowed tw-shadow-[0_0_20px_rgba(251,191,36,0.3)]"
+		disabled={!canDeploy || deployPhase === 'saving'}
+		onclick={onDeploy}
+	>
+		{deployBtnLabel}
+	</button>
 </section>

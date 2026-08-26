@@ -56,32 +56,33 @@
 	});
 </script>
 
-<div class="tw-flex tw-flex-col tw-gap-3 tw-w-full">
-
-	<!-- Toolbar -->
-	<div class="tw-flex tw-items-center tw-justify-end tw-gap-2">
+<div class="tw-flex tw-flex-col tw-gap-4 tw-w-full tw-font-mono">
+	<!-- Toolbar / Live Radar Header -->
+	<div class="tw-flex tw-items-center tw-justify-between tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-p-3.5">
+		<div class="tw-flex tw-items-center tw-gap-2">
+			<span class="tw-w-2 tw-h-2 tw-bg-[#daff0a] tw-shadow-[0_0_8px_#daff0a]"></span>
+			<span class="tw-text-xs tw-font-black tw-tracking-widest tw-text-white tw-uppercase">
+				ACTIVE TACTICAL CARTRIDGES ({intents.length})
+			</span>
+		</div>
 		<button
 			type="button"
-			class="tw-pointer-events-auto tw-px-3 tw-py-1 tw-rounded tw-font-mono tw-text-[9px]
-			       tw-tracking-widest tw-uppercase tw-border tw-border-[#14b8a6]/25 tw-text-[#14b8a6]/60
-			       tw-transition-all hover:tw-border-[#14b8a6]/60 hover:tw-text-[#14b8a6]
-			       hover:tw-bg-[#14b8a6]/8 active:tw-scale-95 disabled:tw-opacity-40"
+			class="tw-px-3 tw-py-1 tw-bg-[#020617] tw-border tw-border-[#334155] tw-text-xs tw-font-bold tw-text-[#14b8a6] hover:tw-border-[#14b8a6] tw-transition-all active:tw-scale-95 disabled:tw-opacity-40"
 			disabled={isRefreshing || isLoading}
 			onclick={() => onRefresh()}
 		>
-			{isRefreshing ? 'SYNCING…' : 'REFRESH'}
+			{isRefreshing ? 'SYNCING RADAR…' : '↻ REFRESH INTENTS'}
 		</button>
 	</div>
 
 	<!-- Duplicate attribute warning -->
 	{#if duplicateAttributeWarnings.length > 0}
 		<div
-			class="tw-w-full tw-px-4 tw-py-2 tw-rounded-lg tw-border tw-border-[#fbbf24]/40 tw-bg-[#fbbf24]/10
-			       tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-[#fbbf24] tw-uppercase"
+			class="tw-w-full tw-px-4 tw-py-3 tw-border tw-border-[#fbbf24] tw-bg-[#fbbf24]/10 tw-text-xs tw-text-[#fbbf24] tw-font-bold tw-uppercase"
 			role="status"
 		>
 			{#each duplicateAttributeWarnings as dup (dup.attributeId)}
-				<p>[ WARN ] {dup.count} active intents target {dup.label} — players see separate mission rows.</p>
+				<p class="tw-m-0">[ WARN ] {dup.count} active intents target {dup.label} — players see separate mission rows.</p>
 			{/each}
 		</div>
 	{/if}
@@ -89,8 +90,7 @@
 	<!-- Mutation error banner -->
 	{#if mutationError}
 		<div
-			class="tw-w-full tw-px-4 tw-py-2 tw-rounded-lg tw-border tw-border-[#ff3040]/40 tw-bg-[#ff3040]/10
-			       tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-[#ff3040] tw-uppercase"
+			class="tw-w-full tw-px-4 tw-py-3 tw-border tw-border-red-500 tw-bg-red-950/60 tw-text-xs tw-text-red-300 tw-font-bold tw-uppercase"
 			role="alert"
 		>
 			[ ERR ] {mutationError}
@@ -100,8 +100,7 @@
 	<!-- Cancel / mutation success toast -->
 	{#if mutationSuccess}
 		<div
-			class="tw-w-full tw-px-4 tw-py-2 tw-rounded-lg tw-border tw-border-[#14b8a6]/40 tw-bg-[#14b8a6]/10
-			       tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-[#14b8a6] tw-uppercase"
+			class="tw-w-full tw-px-4 tw-py-3 tw-border tw-border-emerald-500 tw-bg-emerald-950/60 tw-text-xs tw-text-emerald-300 tw-font-bold tw-uppercase"
 			role="status"
 		>
 			[ OK ] {mutationSuccess}
@@ -110,122 +109,96 @@
 
 	<!-- Loading pulse -->
 	{#if isLoading && intents.length === 0}
-		<div class="tw-flex tw-flex-col tw-gap-2 tw-w-full">
+		<div class="tw-flex tw-flex-col tw-gap-3 tw-w-full">
 			{#each [0, 1, 2] as i (i)}
-				<div
-					class="tw-w-full tw-h-28 tw-rounded-xl tw-border tw-border-[#14b8a6]/10 tw-bg-[#05050a]
-					       tw-animate-pulse"
-				></div>
+				<div class="tw-w-full tw-h-36 tw-border tw-border-[#334155] tw-bg-[#0f172a] tw-animate-pulse"></div>
 			{/each}
 		</div>
 
 	<!-- Empty state -->
 	{:else if !isLoading && intents.length === 0}
-		<div
-			class="tw-w-full tw-flex tw-items-center tw-justify-center tw-py-16
-			       tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-[#14b8a6]/30 tw-uppercase"
-		>
-			[ NO ACTIVE TACTICAL INTENTS ]
+		<div class="tw-w-full tw-flex tw-flex-col tw-items-center tw-justify-center tw-py-16 tw-px-6 tw-bg-[#0f172a] tw-border tw-border-dashed tw-border-[#334155] tw-text-center">
+			<span class="tw-text-sm tw-font-black tw-tracking-widest tw-text-slate-400 tw-uppercase tw-mb-2">
+				NO ACTIVE TACTICAL INTENTS
+			</span>
+			<p class="tw-text-xs tw-text-slate-500 tw-max-w-md tw-m-0">
+				Use the dispatch workbench on the left to deploy homework assignments or combine test bounties to your squad.
+			</p>
 		</div>
 
 	<!-- Intent card list -->
 	{:else}
 		{#each intents as intent (intent.intentId)}
-			{@const scopeLabel = intent.scope === 'team' ? 'SQUAD' : 'PLAYERS'}
+			{@const scopeLabel = intent.scope === 'team' ? 'FULL SQUAD' : 'TARGETED ATHLETES'}
 			{@const visibleRows = intent.rosterRows.slice(0, MAX_PILLS)}
 			{@const extraCount = Math.max(0, intent.rosterRows.length - MAX_PILLS)}
 
-			<div
-				class="tw-w-full tw-rounded-xl tw-border tw-flex tw-flex-col tw-gap-3 tw-p-4"
-				style="background:#05050a; border-color:rgba(20, 184, 166,0.12);"
-			>
+			<div class="tw-w-full tw-border tw-border-[#334155] tw-bg-[#0f172a] tw-p-5 tw-shadow-xl tw-space-y-4">
 				<!-- Header row -->
-				<div class="tw-flex tw-items-center tw-gap-2 tw-flex-wrap">
-					<!-- Attribute name -->
-					<span
-						class="tw-font-mono tw-text-[11px] tw-tracking-widest tw-font-bold tw-uppercase"
-						style="color:{intent.attributeHexColor};"
-					>
-						{intent.attributeName}
-					</span>
-
-					<!-- Scope pill -->
-					<span
-						class="tw-px-2 tw-py-0.5 tw-rounded tw-font-mono tw-text-[9px] tw-tracking-widest tw-uppercase
-						       tw-border tw-border-[#14b8a6]/25 tw-text-[#14b8a6]/70"
-					>
-						{scopeLabel}
-					</span>
-
-					<!-- Days remaining -->
-					<span class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-[#14b8a6]/40 tw-uppercase tw-ml-auto">
-						{intent.daysRemaining}d remaining
-					</span>
-
-					<!-- Priority badge -->
-					<span
-						class="tw-px-2 tw-py-0.5 tw-rounded tw-font-mono tw-text-[9px] tw-tracking-widest tw-uppercase
-						       tw-border tw-border-[#a855f7]/30 tw-text-[#a855f7]/70"
-					>
-						P{intent.priority}
-					</span>
-				</div>
-
-				<!-- Progress bar -->
-				<div class="tw-w-full tw-flex tw-flex-col tw-gap-1">
-					<div class="tw-flex tw-items-center tw-justify-between">
-						<span class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-[#14b8a6]/40 tw-uppercase">
-							Progress since deploy
+				<div class="tw-flex tw-items-center tw-justify-between tw-border-b tw-border-[#334155] tw-pb-3 tw-flex-wrap tw-gap-2">
+					<div class="tw-flex tw-items-center tw-gap-2.5">
+						<span
+							class="tw-w-3 tw-h-3 tw-rounded-full tw-shrink-0"
+							style="background: {intent.attributeHexColor || '#14b8a6'}; box-shadow: 0 0 8px {intent.attributeHexColor || '#14b8a6'};"
+						></span>
+						<span class="tw-text-sm tw-font-black tw-tracking-wider tw-text-white tw-uppercase">
+							{intent.attributeName}
 						</span>
-						<span class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-[#14b8a6]">
-							{intent.overallProgressPct}%
+						<span class="tw-text-[10px] tw-font-bold tw-px-2 tw-py-0.5 tw-bg-[#020617] tw-border tw-border-[#334155] tw-text-[#14b8a6]">
+							{scopeLabel}
 						</span>
 					</div>
-					<div
-						class="tw-w-full tw-h-1.5 tw-rounded-full tw-overflow-hidden"
-						style="background:rgba(20, 184, 166,0.15);"
-					>
+
+					<div class="tw-flex tw-items-center tw-gap-2">
+						<span class="tw-text-xs tw-font-bold tw-text-[#daff0a]">
+							{intent.daysRemaining}D REMAINING
+						</span>
+						<span class="tw-text-[10px] tw-font-bold tw-px-2 tw-py-0.5 tw-bg-[#020617] tw-border tw-border-purple-500/40 tw-text-purple-400">
+							P{intent.priority}
+						</span>
+					</div>
+				</div>
+
+				<!-- Progress bar with Geist Mono readout -->
+				<div class="tw-space-y-1.5">
+					<div class="tw-flex tw-items-center tw-justify-between tw-text-xs">
+						<span class="tw-text-slate-400 tw-uppercase">Squad Fulfillment Progress</span>
+						<span class="tw-text-sm tw-font-black tw-text-[#daff0a]">{intent.overallProgressPct}%</span>
+					</div>
+					<div class="tw-w-full tw-h-2 tw-bg-[#000000] tw-border tw-border-[#334155]">
 						<div
-							class="tw-h-full tw-rounded-full tw-transition-all tw-duration-500"
-							style="width:{intent.overallProgressPct}%; background:#14b8a6;"
+							class="tw-h-full tw-bg-[#daff0a] tw-shadow-[0_0_10px_#daff0a] tw-transition-all tw-duration-500"
+							style="width: {intent.overallProgressPct}%;"
 						></div>
 					</div>
 				</div>
 
-				<!-- Fulfillment stat -->
-				<div class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-uppercase">
+				<!-- Fulfillment count -->
+				<div class="tw-text-xs tw-font-bold tw-uppercase">
 					{#if intent.fulfilledCount > 0}
-						<span style="color:#2dd4bf;">
-							{intent.fulfilledCount} / {intent.targetCount} OPERATIVES FULFILLED
+						<span class="tw-text-emerald-400">
+							✓ {intent.fulfilledCount} OF {intent.targetCount} OPERATIVES COMPLETED
 						</span>
 					{:else}
-						<span class="tw-text-[#14b8a6]/25">
-							0 / {intent.targetCount} OPERATIVES FULFILLED
+						<span class="tw-text-slate-400">
+							0 OF {intent.targetCount} OPERATIVES COMPLETED
 						</span>
 					{/if}
 				</div>
 
 				<!-- Roster heat-map pills -->
 				{#if intent.rosterRows.length > 0}
-					<div class="tw-flex tw-flex-wrap tw-gap-1.5">
+					<div class="tw-flex tw-flex-wrap tw-gap-1.5 tw-pt-1">
 						{#each visibleRows as row (row.uid)}
 							<div
-								class="tw-flex tw-items-center tw-gap-1 tw-px-2 tw-py-0.5 tw-rounded
-								       tw-font-mono tw-text-[9px] tw-tracking-widest tw-uppercase"
-								style={row.fulfilled
-									? 'border:1px solid #2dd4bf; color:#2dd4bf; box-shadow:0 0 6px rgba(57,255,20,0.35);'
-									: 'border:1px solid rgba(20, 184, 166,0.15); color:rgba(20, 184, 166,0.4);'}
+								class="tw-flex tw-items-center tw-gap-1.5 tw-px-2.5 tw-py-1 tw-border tw-text-xs tw-uppercase {row.fulfilled ? 'tw-bg-emerald-950/40 tw-border-emerald-500 tw-text-emerald-300' : 'tw-bg-[#020617] tw-border-[#334155] tw-text-slate-400'}"
 							>
-								<span>{row.playerName.split(' ')[0]}</span>
-								<span class="tw-opacity-60">{row.progressPct}%</span>
+								<span class="tw-font-bold">{row.playerName.split(' ')[0]}</span>
+								<span class="tw-text-[10px] tw-opacity-80">{row.progressPct}%</span>
 							</div>
 						{/each}
 						{#if extraCount > 0}
-							<div
-								class="tw-flex tw-items-center tw-px-2 tw-py-0.5 tw-rounded
-								       tw-font-mono tw-text-[9px] tw-tracking-widest tw-uppercase
-								       tw-border tw-border-[#14b8a6]/10 tw-text-[#14b8a6]/30"
-							>
+							<div class="tw-flex tw-items-center tw-px-2.5 tw-py-1 tw-border tw-border-[#334155] tw-bg-[#020617] tw-text-xs tw-text-slate-500">
 								+{extraCount} more
 							</div>
 						{/if}
@@ -233,29 +206,25 @@
 				{/if}
 
 				<!-- Footer actions -->
-				<div class="tw-flex tw-items-center tw-gap-2 tw-pt-1 tw-border-t tw-border-[#14b8a6]/8">
+				<div class="tw-flex tw-items-center tw-justify-between tw-pt-3 tw-border-t tw-border-[#334155]">
 					<button
-						class="tw-pointer-events-auto tw-px-3 tw-py-1 tw-rounded tw-font-mono tw-text-[9px]
-						       tw-tracking-widest tw-uppercase tw-border tw-border-[#ff3040]/30 tw-text-[#ff3040]/70
-						       tw-transition-all hover:tw-border-[#ff3040]/60 hover:tw-text-[#ff3040]
-						       hover:tw-bg-[#ff3040]/10 active:tw-scale-95 disabled:tw-opacity-40"
+						type="button"
+						class="tw-px-3 tw-py-1.5 tw-bg-[#020617] tw-border tw-border-[#14b8a6] tw-text-[#14b8a6] hover:tw-bg-[#14b8a6] hover:tw-text-black tw-text-xs tw-font-bold tw-uppercase tw-transition-all active:tw-scale-95"
+						onclick={() => onExtend(intent.intentId, 7)}
+					>
+						+ EXTEND 7 DAYS
+					</button>
+
+					<button
+						type="button"
+						class="tw-px-3 tw-py-1.5 tw-bg-red-950/40 tw-border tw-border-red-600/60 tw-text-red-300 hover:tw-bg-red-600 hover:tw-text-white tw-text-xs tw-font-bold tw-uppercase tw-transition-all active:tw-scale-95 disabled:tw-opacity-40"
 						disabled={cancellingIntentIds.includes(intent.intentId)}
 						onclick={() => onCancel(intent.intentId)}
 					>
-						{cancellingIntentIds.includes(intent.intentId) ? 'CANCELLING…' : 'CANCEL'}
-					</button>
-					<button
-						class="tw-pointer-events-auto tw-px-3 tw-py-1 tw-rounded tw-font-mono tw-text-[9px]
-						       tw-tracking-widest tw-uppercase tw-border tw-border-[#14b8a6]/25 tw-text-[#14b8a6]/60
-						       tw-transition-all hover:tw-border-[#14b8a6]/60 hover:tw-text-[#14b8a6]
-						       hover:tw-bg-[#14b8a6]/8 active:tw-scale-95"
-						onclick={() => onExtend(intent.intentId, 7)}
-					>
-						EXTEND +7d
+						{cancellingIntentIds.includes(intent.intentId) ? 'CANCELLING…' : '✕ CANCEL INTENT'}
 					</button>
 				</div>
 			</div>
 		{/each}
 	{/if}
-
 </div>

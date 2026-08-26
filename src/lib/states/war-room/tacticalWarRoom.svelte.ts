@@ -305,6 +305,10 @@ export function createTacticalWarRoom(host: TacticalGridHost) {
 		api.clearPitch(host);
 	}
 
+	function clearOpponents() {
+		api.clearOpponents(host);
+	}
+
 	function onRouteClick(e: PointerEvent, routeId: string) {
 		e.stopPropagation();
 		if (host.warRoomTool.get() === 'DRAG') {
@@ -684,6 +688,7 @@ export function createTacticalWarRoom(host: TacticalGridHost) {
 		onRouteContextMenu,
 		onPitchPointerUpClearLongPress,
 		clearPitch,
+		clearOpponents,
 		onRouteClick,
 		recallBench,
 		clearRoutesOnly,

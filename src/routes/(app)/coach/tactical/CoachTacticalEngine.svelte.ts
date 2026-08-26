@@ -130,11 +130,12 @@ export class CoachTacticalEngine {
 					this.wrBucketPitch = c.entities
 						.filter((e: any) => e.side !== 'opponent')
 						.map((e: any) => ({ ...e }));
+					// Completely purge legacy auto-seeded opponent tokens (opp_0 .. opp_10)
 					this.wrOppPitch = c.entities
-						.filter((e: any) => e.side === 'opponent')
+						.filter((e: any) => e.side === 'opponent' && !/^opp_\d+$/.test(e.id) && !e.id.startsWith('opp_'))
 						.map((e: any) => ({
 							...e,
-							number: e.position || e.number || 'OP',
+							number: e.position || 'OP',
 						}));
 					this.drawnRoutes = Array.isArray(c.routes) ? c.routes.map((r: any) => ({ ...r })) : [];
 				}

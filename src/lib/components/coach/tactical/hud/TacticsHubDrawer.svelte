@@ -191,6 +191,11 @@
 						>⊗ CLEAR ALL ROUTES</button>
 						<button
 							type="button"
+							class="tw-border tw-border-amber-700/60 tw-bg-amber-950/40 tw-px-3 tw-py-2.5 tw-text-xs tw-text-left tw-text-amber-300 hover:tw-bg-amber-900/60 hover:tw-border-amber-500 tw-transition-colors tw-rounded"
+							onclick={(e) => { e.stopPropagation(); engine.clearOpponents?.(); }}
+						>🛡 CLEAR OPPONENTS ONLY</button>
+						<button
+							type="button"
 							class="tw-border tw-border-red-700 tw-bg-red-950/70 tw-px-3 tw-py-2.5 tw-text-xs tw-text-left tw-text-red-200 hover:tw-bg-red-900 hover:tw-text-white tw-font-bold tw-transition-colors tw-rounded"
 							onclick={(e) => { e.stopPropagation(); engine.clearPitch?.(); }}
 						>✕ CLEAR ENTIRE PITCH</button>

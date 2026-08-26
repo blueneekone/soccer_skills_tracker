@@ -38,9 +38,9 @@
 
 	const myTeams = $derived(teamScope.myTeams);
 	const currentTeam = $derived(teamScope.currentTeam);
-
-	const tenantId = $derived(teamScope.teamClubId || authStore.tenantId);
-	const clubId = $derived(teamScope.teamClubId || authStore.tenantId);
+	const effectiveTeamId = $derived(teamScope.selectedTeamId || authStore.teamId || authStore.user?.teamId || '');
+	const tenantId = $derived(teamScope.teamClubId || authStore.clubId || authStore.tenantId || authStore.userProfile?.clubId || authStore.teamId || 'default');
+	const clubId = $derived(teamScope.teamClubId || authStore.clubId || authStore.tenantId || authStore.userProfile?.clubId || authStore.teamId || 'default');
 	const sportId = $derived(sportsConfigStore.currentSportConfig?.sportId ?? 'soccer');
 
 	const benchmarkDrillOptions = $derived(
@@ -53,8 +53,8 @@
 	);
 
 	$effect(() => {
-		if (!browser || !teamScope.selectedTeamId || !tenantId) return;
-		engine.connect(teamScope.selectedTeamId, tenantId, clubId, sportId);
+		if (!browser || !effectiveTeamId) return;
+		engine.connect(effectiveTeamId, tenantId, clubId, sportId);
 		return () => engine.destroy();
 	});
 </script>
