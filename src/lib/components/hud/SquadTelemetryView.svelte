@@ -357,6 +357,16 @@
 		return `${s.slice(0, 2)}-${s.slice(2)}`;
 	}
 
+	async function copyTeamCode() {
+		if (!teamInviteCode) return;
+		try {
+			await navigator.clipboard.writeText(teamInviteCode);
+			feedback = { type: 'success', text: 'Team code copied to clipboard.' };
+		} catch {
+			feedback = { type: 'error', text: 'Could not copy to clipboard.' };
+		}
+	}
+
 	async function generateTeamDispatchCode() {
 		if (!teamId || inviteBusy) return;
 		inviteBusy = true;
@@ -368,10 +378,10 @@
 				updatedAt: serverTimestamp(),
 			});
 			teamInviteCode = code;
-			feedback = { type: 'success', text: 'Team dispatch code issued.' };
+			feedback = { type: 'success', text: 'Persistent team code established.' };
 		} catch (e) {
 			console.error(e);
-			feedback = { type: 'error', text: 'Could not save dispatch code.' };
+			feedback = { type: 'error', text: 'Could not save team code.' };
 		} finally {
 			inviteBusy = false;
 		}
@@ -976,9 +986,9 @@
 	>
 		<div class="tw-flex tw-flex-col tw-gap-3 sm:tw-flex-row sm:tw-items-center sm:tw-justify-between">
 			<div class="tw-min-w-0">
-				<p id="stw-dispatch" class="stw__eyebrow tw-mb-1 tw-text-cyan-400/90">Strike 26 · Team dispatch</p>
+				<p id="stw-dispatch" class="stw__eyebrow tw-mb-1 tw-text-cyan-400/90">Persistent Squad Code</p>
 				<p class="stw__meta tw-m-0 tw-text-xs tw-text-white/60">
-					Parents enter this code when provisioning an operative to link the account to this squad.
+					Permanent team code. Parents enter this persistent code to link their player to this specific squad.
 				</p>
 			</div>
 			<div
@@ -992,10 +1002,18 @@
 					{#if teamInviteCode}
 						<div
 							class="stw__mono tw-flex tw-min-h-[2.75rem] tw-select-all tw-items-center tw-justify-center tw-rounded tw-border tw-border-cyan-500/40 tw-bg-[#05050a] tw-px-3 tw-py-2 tw-text-base tw-font-bold tw-tracking-widest tw-text-cyan-300"
-							title="Team invite code"
+							title="Persistent Team Code"
 						>
 							{teamInviteCode}
 						</div>
+						<button
+							type="button"
+							class="coach-os-action-chip tw-text-[10px] tw-min-h-[2.75rem] tw-px-3"
+							onclick={copyTeamCode}
+							title="Copy team code to clipboard"
+						>
+							COPY CODE
+						</button>
 					{:else}
 						<button
 							type="button"
@@ -1003,7 +1021,7 @@
 							disabled={!teamId || inviteBusy}
 							onclick={generateTeamDispatchCode}
 						>
-							{inviteBusy ? 'Issuing…' : 'Generate dispatch code'}
+							{inviteBusy ? 'Establishing…' : 'Establish Team Code'}
 						</button>
 					{/if}
 				</div>

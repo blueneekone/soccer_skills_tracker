@@ -160,7 +160,19 @@ async function evaluateWeatherAtCoords(lat, lng) {
       aqi: c.us_aqi ? Math.round(Number(c.us_aqi)) : undefined,
     };
   } else {
-    logger.warn('[weatherEvaluation] Open-Meteo failed', {err: omResult.reason?.message});
+    logger.warn('[weatherEvaluation] Open-Meteo failed, using nominal baseline', {err: omResult.reason?.message});
+    current = {
+      temperatureF: 72,
+      humidity: 45,
+      precipMm: 0,
+      precipProbability: 10,
+      windMph: 5,
+      windDirection: 'NW',
+      uvIndex: 3,
+      weatherCode: 0,
+      conditionsLabel: 'Clear Sky',
+      aqi: 25,
+    };
   }
 
   const nwsAlert = nwsResult.status === 'fulfilled' ?

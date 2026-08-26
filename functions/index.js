@@ -113,6 +113,7 @@ exports.acknowledgeBroadcast = webhooksOps.acknowledgeBroadcast;
 exports.getBroadcastAckStatus = webhooksOps.getBroadcastAckStatus;
 
 const weatherOps = require('./src/domains/weatherOps.js');
+exports.getWeatherConditions = require('./weather.js').getWeatherConditions;
 function exportScheduler(target, name, modFn) {
   if (process.env.SCHEDULERS_ENABLED === 'true') {
     target[name] = modFn;
