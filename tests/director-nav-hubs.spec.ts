@@ -46,9 +46,9 @@ test.describe('Director OS Navigation Restructure', () => {
 		await expect(page.getByRole('heading', { name: 'Club Management' })).toBeVisible();
 		await expect(page.locator('button:has-text("Registrars")')).toBeVisible();
 
-		// Click Club Branding tab
-		await page.click('button:has-text("Club Branding")');
-		await expect(page).toHaveURL(/tab=branding/);
+		// Click Registrars tab
+		await page.click('button:has-text("Registrars")');
+		await expect(page).toHaveURL(/tab=registrars/);
 
 		// Click Comms tab
 		await page.click('button:has-text("Comms")');
