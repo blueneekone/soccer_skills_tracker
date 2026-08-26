@@ -81,6 +81,7 @@ const CODEBASES = {
       'verifyDocument.js',
       'src/domains/complianceOps.js',
       'src/domains/operativeOps.js',
+      'src/domains/parentCoachDmOps.js',
     ],
   },
   integrations: {

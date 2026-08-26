@@ -1094,7 +1094,7 @@ function normalizeBulkPlayerRow(row) {
  * Atomic roster add with license_entitlements seat check
  * (no direct client writes).
  */
-exports.secureAddPlayer = onCall({region: REGION}, async (request) => {
+exports.secureAddPlayer = onCall({region: REGION, cors: true}, async (request) => {
   const data = request.data || {};
   const teamId = typeof data.teamId === 'string' ? data.teamId.trim().slice(0, 200) : '';
   let playerName = typeof data.playerName === 'string' ? data.playerName.trim().replace(/\s+/g, ' ') : '';
@@ -1162,7 +1162,7 @@ async function enqueueParentInviteEmail(reqDb, teamId, playerName, parentEmail) 
  * Bulk roster import — same per-row txn semantics as secureAddPlayer.
  * Coach / director / registrar / super_admin on assigned team only.
  */
-exports.secureBulkAddPlayers = onCall({region: REGION}, async (request) => {
+exports.secureBulkAddPlayers = onCall({region: REGION, cors: true}, async (request) => {
   const data = request.data || {};
   const teamId = typeof data.teamId === 'string' ? data.teamId.trim().slice(0, 200) : '';
   if (!teamId) throw new HttpsError('invalid-argument', 'teamId is required.');
@@ -1230,7 +1230,7 @@ exports.secureBulkAddPlayers = onCall({region: REGION}, async (request) => {
  * Atomic roster remove + license_entitlements seat release + player_lookup
  * cleanup (Admin SDK only).
  */
-exports.secureRemovePlayer = onCall({region: REGION}, async (request) => {
+exports.secureRemovePlayer = onCall({region: REGION, cors: true}, async (request) => {
   const data = request.data || {};
   const teamId = typeof data.teamId === 'string' ? data.teamId.trim().slice(0, 200) : '';
   let playerName = typeof data.playerName === 'string' ? data.playerName.trim().replace(/\s+/g, ' ') : '';

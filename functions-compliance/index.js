@@ -67,3 +67,8 @@ exports.operativeSignInWithDispatch = operativeOps.operativeSignInWithDispatch;
 exports.generatePlayerOTP = operativeOps.generatePlayerOTP;
 exports.validatePlayerOTP = operativeOps.validatePlayerOTP;
 exports.parentReconcileHousehold = operativeOps.parentReconcileHousehold;
+
+const parentCoachDmOps = require('./src/domains/parentCoachDmOps');
+exports.sendParentCoachMessage = parentCoachDmOps.sendParentCoachMessage;
+exports.listParentCoachDmThreads = parentCoachDmOps.listParentCoachDmThreads;
+

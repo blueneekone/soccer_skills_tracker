@@ -29,7 +29,7 @@ function normFormat(raw) {
 }
 
 exports.coachRosterIngest = onCall(
-    {region: REGION, secrets: [GEMINI_API_KEY], timeoutSeconds: 120},
+    {region: REGION, secrets: [GEMINI_API_KEY], timeoutSeconds: 120, cors: true},
     async (request) => {
       const data = request.data || {};
       const teamId =

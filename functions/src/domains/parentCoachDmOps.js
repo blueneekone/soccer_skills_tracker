@@ -210,7 +210,7 @@ async function resolveUidForEmail(email) {
  *   coachEmail — required when caller is parent
  *   threadId — optional (derived when omitted)
  */
-exports.sendParentCoachMessage = onCall({region: REGION}, async (request) => {
+exports.sendParentCoachMessage = onCall({region: REGION, cors: true}, async (request) => {
   if (!request.auth) {
     throw new HttpsError('unauthenticated', 'Sign in required.');
   }
@@ -459,7 +459,7 @@ exports.sendParentCoachMessage = onCall({region: REGION}, async (request) => {
  *
  * Input: clubId (required), teamId (optional filter)
  */
-exports.listParentCoachDmThreads = onCall({region: REGION}, async (request) => {
+exports.listParentCoachDmThreads = onCall({region: REGION, cors: true}, async (request) => {
   if (!request.auth) {
     throw new HttpsError('unauthenticated', 'Sign in required.');
   }

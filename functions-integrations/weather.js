@@ -1,4 +1,4 @@
-﻿'use strict';
+'use strict';
 
 /**
  * weather.js — AEGIS Weather & Safety Protocol (onCall proxy).
@@ -10,7 +10,7 @@ const {evaluateWeatherAtCoords} = require('./src/domains/weatherEvaluation');
 
 const REGION = 'us-east1';
 
-exports.getWeatherConditions = onCall({region: REGION}, async (request) => {
+exports.getWeatherConditions = onCall({region: REGION, cors: true}, async (request) => {
   if (!request.auth) {
     throw new HttpsError('unauthenticated', 'Sign in required.');
   }
