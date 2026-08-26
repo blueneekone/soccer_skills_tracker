@@ -1,4 +1,6 @@
-// 🛡️ SafeSport Compliance Mandate: Secure WebAuthn Verification Protocol Active
+import { CoachTeamScope } from '$lib/coach/context/coachTeamScope.svelte.js';
+import { authStore } from '$lib/stores/auth.svelte.js';
+import { untrack } from 'svelte';
 
 export interface MatchEvent {
 	id: string;
@@ -7,7 +9,26 @@ export interface MatchEvent {
 	time: string;
 }
 
+export interface MatchDayPlayer {
+	id: string;
+	name: string;
+	jersey?: string;
+	position?: string;
+	initials?: string;
+	status?: 'starter' | 'bench';
+}
+
+function getTwoLetterInitials(name: string): string {
+	if (!name) return 'PL';
+	const parts = String(name).trim().split(/\s+/);
+	if (parts.length >= 2) {
+		return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
+	}
+	return String(name).slice(0, 2).toUpperCase() || 'PL';
+}
+
 export class MatchDayEngine {
+	teamScope = new CoachTeamScope();
 	isWhistleActive = $state(true);
 	isShieldActive = $state(true);
 	lockedUntil = $state(Date.now() + 15 * 60 * 1000);
@@ -16,7 +37,10 @@ export class MatchDayEngine {
 	events = $state<MatchEvent[]>([]);
 	selectedPlayerId = $state('');
 	matchId = $state('match_' + Date.now());
-	roster = $state<{id: string, name: string}[]>([]);
+	roster = $state<MatchDayPlayer[]>([]);
+	starters = $state<MatchDayPlayer[]>([]);
+	bench = $state<MatchDayPlayer[]>([]);
+	loadingRoster = $state<boolean>(false);
 	showHalftimeOverlay = $state(false);
 	telemetryLogs = $state<string[]>(['[TELEMETRY] Match Day Console initialized']);
 
@@ -32,6 +56,135 @@ export class MatchDayEngine {
 		'Focus on spatial width',
 		'Autonomy support'
 	]);
+
+	async loadRoster(tid?: string): Promise<void> {
+		const effectiveTeamId = tid || this.teamScope.selectedTeamId || authStore.teamId || authStore.userProfile?.teamId || authStore.user?.teamId || '';
+		if (!effectiveTeamId) return;
+
+		this.loadingRoster = true;
+		try {
+			const { getActiveDb } = await import('$lib/firebase.js');
+			const { collection, getDocs, getDoc, doc, query, where } = await import('firebase/firestore');
+			const db = getActiveDb();
+			if (!db) return;
+
+			const playerMap = new Map<string, MatchDayPlayer>();
+
+			// 1. Fetch from player_lookup
+			const lookupSnap = await getDocs(
+				query(collection(db, 'player_lookup'), where('teamId', '==', effectiveTeamId))
+			).catch(() => null);
+
+			if (lookupSnap && lookupSnap.size > 0) {
+				lookupSnap.forEach((d) => {
+					const data = d.data() || {};
+					const name = (typeof data.playerName === 'string' && data.playerName.trim()) ||
+						(typeof data.displayName === 'string' && data.displayName.trim()) || d.id;
+					const nameKey = name.toLowerCase();
+					if (!playerMap.has(nameKey)) {
+						playerMap.set(nameKey, {
+							id: d.id,
+							name,
+							jersey: typeof data.jerseyNumber === 'string' ? data.jerseyNumber : (typeof data.jersey === 'string' ? data.jersey : ''),
+							position: typeof data.position === 'string' ? data.position : '',
+							initials: getTwoLetterInitials(name),
+							status: 'starter',
+						});
+					}
+				});
+			}
+
+			// 2. Fetch from rosters collection
+			const rosterSnap = await getDoc(doc(db, 'rosters', effectiveTeamId)).catch(() => null);
+			if (rosterSnap && rosterSnap.exists()) {
+				const rData = rosterSnap.data() || {};
+				const players = Array.isArray(rData.players) ? rData.players : [];
+				const jerseys = (rData.jerseys && typeof rData.jerseys === 'object') ? rData.jerseys : {};
+
+				players.forEach((pName: any) => {
+					const name = String(pName).trim();
+					if (!name) return;
+					const nameKey = name.toLowerCase();
+					const jersey = jerseys[name] || '';
+					if (playerMap.has(nameKey)) {
+						if (jersey && !playerMap.get(nameKey)!.jersey) {
+							playerMap.get(nameKey)!.jersey = String(jersey);
+						}
+					} else {
+						playerMap.set(nameKey, {
+							id: name.replace(/\s+/g, '_').toLowerCase(),
+							name,
+							jersey: jersey ? String(jersey) : '',
+							position: '',
+							initials: getTwoLetterInitials(name),
+							status: 'starter',
+						});
+					}
+				});
+			}
+
+			const loaded = Array.from(playerMap.values());
+			loaded.sort((a, b) => a.name.localeCompare(b.name));
+			this.roster = loaded;
+
+			if (loaded.length > 0) {
+				const starterCount = Math.min(11, loaded.length);
+				this.starters = loaded.slice(0, starterCount).map(p => ({ ...p, status: 'starter' }));
+				this.bench = loaded.slice(starterCount).map(p => ({ ...p, status: 'bench' }));
+			} else {
+				this.starters = [];
+				this.bench = [];
+			}
+		} catch (err) {
+			console.warn('[MatchDayEngine] Error loading roster:', err);
+		} finally {
+			this.loadingRoster = false;
+		}
+	}
+
+	subscribe(): void {
+		$effect.root(() => {
+			$effect(() => {
+				this.teamScope.syncSelectedTeam();
+			});
+
+			$effect(() => {
+				const tid = this.teamScope.selectedTeamId || authStore.teamId || authStore.userProfile?.teamId || '';
+				if (!tid) return;
+				untrack(() => {
+					void this.loadRoster(tid);
+				});
+			});
+		});
+	}
+
+	makeSubstitution = (starterId: string, benchPlayerId: string): void => {
+		const outPlayer = this.starters.find(p => p.id === starterId);
+		const inPlayer = this.bench.find(p => p.id === benchPlayerId);
+		if (!outPlayer || !inPlayer) return;
+
+		this.starters = this.starters.map(p => p.id === starterId ? { ...inPlayer, status: 'starter' } : p);
+		this.bench = this.bench.map(p => p.id === benchPlayerId ? { ...outPlayer, status: 'bench' } : p);
+
+		this.logEvent('SUB', `SUB: ${inPlayer.name} IN ↗ for ${outPlayer.name} OUT ↘`, inPlayer.id);
+		this.telemetryLogs = [`[SUB] ${inPlayer.name} entered replacing ${outPlayer.name}`, ...this.telemetryLogs];
+	};
+
+	moveToBench = (playerId: string): void => {
+		const p = this.starters.find(x => x.id === playerId);
+		if (!p) return;
+		this.starters = this.starters.filter(x => x.id !== playerId);
+		this.bench = [...this.bench, { ...p, status: 'bench' }];
+		this.logEvent('SUB', `${p.name} moved to bench`, p.id);
+	};
+
+	moveToStarters = (playerId: string): void => {
+		const p = this.bench.find(x => x.id === playerId);
+		if (!p) return;
+		this.bench = this.bench.filter(x => x.id !== playerId);
+		this.starters = [...this.starters, { ...p, status: 'starter' }];
+		this.logEvent('SUB', `${p.name} promoted to starting lineup`, p.id);
+	};
 
 	lightningDistance = $state<number>(20);
 	isFieldLocked = $state<boolean>(false);

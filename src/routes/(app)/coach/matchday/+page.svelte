@@ -4,6 +4,7 @@
 	import MatchDayArena from './MatchDayArena.svelte';
 
 	const engine = new MatchDayEngine();
+	engine.subscribe();
 </script>
 
 <svelte:head>

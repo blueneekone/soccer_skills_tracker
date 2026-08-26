@@ -51,20 +51,38 @@
 			<div class="tw-flex tw-items-center tw-justify-between tw-mb-1.5">
 				<label for="matchday-target-player" class="tw-block tw-font-mono tw-text-[10px] tw-text-slate-400 tw-uppercase tw-tracking-wider">Active Target Player</label>
 				{#if engine.selectedPlayerId}
-					<span class="tw-font-mono tw-text-[10px] tw-text-[#14b8a6] tw-font-bold">LOCKED</span>
+					{@const activeP = engine.roster.find(p => p.id === engine.selectedPlayerId)}
+					<span class="tw-font-mono tw-text-[10px] tw-text-[#14b8a6] tw-font-bold">LOCKED: {activeP?.name || engine.selectedPlayerId}</span>
 				{/if}
 			</div>
 			<select
 				id="matchday-target-player"
 				bind:value={engine.selectedPlayerId}
-				class="tw-w-full tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-text-white tw-px-3 tw-py-2 tw-font-mono tw-text-xs focus:tw-border-[#14b8a6] focus:tw-outline-none"
-				style="border-radius: 0px;"
+				class="tw-w-full tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-text-white tw-px-3 tw-py-2 tw-font-mono tw-text-xs focus:tw-border-[#14b8a6] focus:tw-outline-none tw-rounded-none"
 			>
 				<option value="">-- ALL SQUAD / UNASSIGNED --</option>
 				{#each engine.roster as player}
-					<option value={player.id}>{player.name}</option>
+					<option value={player.id}>
+						{player.jersey ? `#${player.jersey} ` : ''}{player.name} ({player.initials || 'PL'})
+					</option>
 				{/each}
 			</select>
+
+			<!-- Quick-Select Squad Chips -->
+			{#if engine.roster.length > 0}
+				<div class="tw-flex tw-flex-wrap tw-gap-1.5 tw-mt-2.5">
+					{#each engine.roster as player}
+						<button
+							type="button"
+							class="tw-flex tw-items-center tw-gap-1.5 tw-px-2 tw-py-1 tw-border tw-font-mono tw-text-[10px] tw-transition-all {engine.selectedPlayerId === player.id ? 'tw-bg-[#14b8a6]/20 tw-border-[#14b8a6] tw-text-[#14b8a6] tw-font-bold' : 'tw-bg-[#0f172a] tw-border-[#334155] tw-text-slate-300 hover:tw-border-slate-400'}"
+							onclick={() => { engine.selectedPlayerId = (engine.selectedPlayerId === player.id ? '' : player.id); }}
+						>
+							<span class="tw-text-[#daff0a] tw-font-bold">{player.jersey ? `#${player.jersey}` : player.initials}</span>
+							<span class="tw-truncate tw-max-w-[80px]">{player.name.split(' ')[0]}</span>
+						</button>
+					{/each}
+				</div>
+			{/if}
 		</div>
 
 		<!-- Uniform 5-Column Tactical Action Grid (Even Heights, Enterprise Palette) -->
@@ -231,30 +249,117 @@
 			<div class="tw-flex tw-items-center tw-gap-2">
 				<span class="tw-w-2 tw-h-2 tw-bg-[#fbbf24]"></span>
 				<h2 class="tw-font-mono tw-text-xs tw-font-bold tw-text-[#fbbf24] tw-uppercase tw-tracking-widest">
-					Matchday Roster Allocation & Substitution Deck
+					Matchday Squad & Active Rotation Deck ({engine.roster.length} Athletes)
 				</h2>
 			</div>
-			<span class="tw-font-mono tw-text-xs tw-text-slate-400">Drag & Drop Allocation</span>
+			<div class="tw-flex tw-items-center tw-gap-2">
+				<a
+					href="/coach/logistics?tab=roster"
+					class="tw-font-mono tw-text-[11px] tw-text-[#14b8a6] hover:tw-underline"
+				>
+					[ Manage Full Roster → ]
+				</a>
+			</div>
 		</div>
 
-		<div class="tw-grid tw-grid-cols-1 md:tw-grid-cols-2 tw-gap-6">
-			<div>
-				<h3 class="tw-font-mono tw-text-xs tw-font-bold tw-text-[#14b8a6] tw-uppercase tw-tracking-wider tw-mb-2.5">Starting XI (Pitch)</h3>
-				<div class="tw-space-y-2 tw-p-4 tw-bg-[#000000] tw-border tw-border-[#334155] tw-min-h-[260px] tw-flex tw-flex-col tw-justify-center tw-items-center">
-					<div class="tw-text-xs tw-text-slate-500 tw-font-mono text-center">
-						Drag starting players into active pitch formation slots...
+		{#if engine.loadingRoster}
+			<div class="tw-p-8 tw-bg-[#000000] tw-border tw-border-[#334155] tw-text-center">
+				<p class="tw-font-mono tw-text-xs tw-text-slate-400 tw-m-0">Loading team squad from database…</p>
+			</div>
+		{:else if engine.roster.length === 0}
+			<div class="tw-p-8 tw-bg-[#000000] tw-border tw-border-dashed tw-border-[#334155] tw-text-center">
+				<p class="tw-font-mono tw-text-xs tw-text-[#fbbf24] tw-font-bold tw-mb-2">NO SQUAD PLAYERS FOUND</p>
+				<p class="tw-font-mono tw-text-xs tw-text-slate-400 tw-mb-4">Ingest your team roster on the logistics tab to populate the matchday console.</p>
+				<a
+					href="/coach/logistics?tab=roster"
+					class="tw-inline-block tw-px-4 tw-py-2 tw-bg-[#14b8a6] tw-text-black tw-font-mono tw-text-xs tw-font-bold"
+				>
+					GO TO ROSTER INGESTION →
+				</a>
+			</div>
+		{:else}
+			<div class="tw-grid tw-grid-cols-1 lg:tw-grid-cols-2 tw-gap-6">
+				<!-- Starting Lineup Panel -->
+				<div class="tw-bg-[#000000] tw-border tw-border-[#334155] tw-p-4">
+					<div class="tw-flex tw-items-center tw-justify-between tw-border-b tw-border-[#334155] tw-pb-2.5 tw-mb-3">
+						<h3 class="tw-font-mono tw-text-xs tw-font-bold tw-text-[#14b8a6] tw-uppercase tw-tracking-wider tw-m-0">
+							Active Lineup on Pitch ({engine.starters.length})
+						</h3>
+						<span class="tw-font-mono tw-text-[10px] tw-text-emerald-400 tw-font-bold">● IN PLAY</span>
+					</div>
+					<div class="tw-flex tw-flex-col tw-gap-2">
+						{#each engine.starters as player (player.id)}
+							<div class="tw-flex tw-items-center tw-justify-between tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-p-2.5 hover:tw-border-[#14b8a6] tw-transition-colors">
+								<div class="tw-flex tw-items-center tw-gap-3 tw-min-w-0">
+									<span class="tw-flex tw-h-7 tw-w-7 tw-items-center tw-justify-center tw-border tw-border-[#14b8a6] tw-bg-[#14b8a6]/20 tw-text-[11px] tw-font-mono tw-font-black tw-text-[#14b8a6]">
+										{player.initials || 'PL'}
+									</span>
+									<div>
+										<div class="tw-font-mono tw-text-xs tw-font-bold tw-text-white tw-truncate">{player.name}</div>
+										<div class="tw-font-mono tw-text-[10px] tw-text-slate-400">
+											{player.jersey ? `JERSEY #${player.jersey}` : 'NO NUMBER'}
+											{player.position ? ` • ${player.position}` : ''}
+										</div>
+									</div>
+								</div>
+								<div class="tw-flex tw-items-center tw-gap-2">
+									<button
+										type="button"
+										class="tw-px-2.5 tw-py-1 tw-bg-amber-950/40 tw-border tw-border-amber-500/60 tw-text-amber-300 hover:tw-bg-amber-500 hover:tw-text-black tw-font-mono tw-text-[10px] tw-font-bold tw-transition-colors"
+										onclick={() => engine.moveToBench(player.id)}
+									>
+										↘ TO BENCH
+									</button>
+								</div>
+							</div>
+						{/each}
+						{#if engine.starters.length === 0}
+							<p class="tw-font-mono tw-text-xs tw-text-slate-500 tw-text-center tw-py-4">No active starters. Move players from the bench.</p>
+						{/if}
+					</div>
+				</div>
+
+				<!-- Bench / Substitutes Panel -->
+				<div class="tw-bg-[#000000] tw-border tw-border-[#334155] tw-p-4">
+					<div class="tw-flex tw-items-center tw-justify-between tw-border-b tw-border-[#334155] tw-pb-2.5 tw-mb-3">
+						<h3 class="tw-font-mono tw-text-xs tw-font-bold tw-text-[#fbbf24] tw-uppercase tw-tracking-wider tw-m-0">
+							Bench & Available Substitutes ({engine.bench.length})
+						</h3>
+						<span class="tw-font-mono tw-text-[10px] tw-text-slate-400">READY</span>
+					</div>
+					<div class="tw-flex tw-flex-col tw-gap-2">
+						{#each engine.bench as player (player.id)}
+							<div class="tw-flex tw-items-center tw-justify-between tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-p-2.5 hover:tw-border-[#fbbf24] tw-transition-colors">
+								<div class="tw-flex tw-items-center tw-gap-3 tw-min-w-0">
+									<span class="tw-flex tw-h-7 tw-w-7 tw-items-center tw-justify-center tw-border tw-border-[#334155] tw-bg-[#020617] tw-text-[11px] tw-font-mono tw-font-black tw-text-slate-300">
+										{player.initials || 'PL'}
+									</span>
+									<div>
+										<div class="tw-font-mono tw-text-xs tw-font-bold tw-text-slate-200 tw-truncate">{player.name}</div>
+										<div class="tw-font-mono tw-text-[10px] tw-text-slate-400">
+											{player.jersey ? `JERSEY #${player.jersey}` : 'NO NUMBER'}
+											{player.position ? ` • ${player.position}` : ''}
+										</div>
+									</div>
+								</div>
+								<div class="tw-flex tw-items-center tw-gap-2">
+									<button
+										type="button"
+										class="tw-px-2.5 tw-py-1 tw-bg-emerald-950/40 tw-border tw-border-emerald-500/60 tw-text-emerald-300 hover:tw-bg-emerald-500 hover:tw-text-black tw-font-mono tw-text-[10px] tw-font-bold tw-transition-colors"
+										onclick={() => engine.moveToStarters(player.id)}
+									>
+										↗ SUB IN
+									</button>
+								</div>
+							</div>
+						{/each}
+						{#if engine.bench.length === 0}
+							<p class="tw-font-mono tw-text-xs tw-text-slate-500 tw-text-center tw-py-4">No players currently on the bench.</p>
+						{/if}
 					</div>
 				</div>
 			</div>
-			<div>
-				<h3 class="tw-font-mono tw-text-xs tw-font-bold tw-text-slate-400 tw-uppercase tw-tracking-wider tw-mb-2.5">Available Substitutes (Bench)</h3>
-				<div class="tw-space-y-2 tw-p-4 tw-bg-[#000000] tw-border tw-border-[#334155] tw-min-h-[260px] tw-flex tw-flex-col tw-justify-center tw-items-center">
-					<div class="tw-text-xs tw-text-slate-500 tw-font-mono text-center">
-						Drag bench players here to stage substitution warmups...
-					</div>
-				</div>
-			</div>
-		</div>
+		{/if}
 	</div>
 	{/if}
 
