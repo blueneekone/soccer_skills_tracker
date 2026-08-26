@@ -81,6 +81,8 @@ const EGRESS_WHITELIST = Object.freeze([
   'firebase.google.com',
   'api.stripe.com',
   'sendgrid.net',            // covers *.sendgrid.net
+  'api.resend.com',          // Resend transactional email API
+  'resend.com',
   'api.twilio.com',          // Epic 4.16a — emergency SMS only
   'api.checkr.com',
   'api.open-meteo.com',

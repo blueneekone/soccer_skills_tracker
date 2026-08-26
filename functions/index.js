@@ -153,3 +153,7 @@ exports.registerIndependentCoach = orphanCoachOps.registerIndependentCoach;
 
 // Match Ops
 exports.syncMatchStats = matchOps.syncMatchStats;
+
+// Resend Outbound Transactional Mail Bus
+const resendService = require('./src/services/resendService');
+exports.processOutboundMail = resendService.processOutboundMail;
