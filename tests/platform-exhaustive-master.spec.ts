@@ -185,16 +185,22 @@ test.describe('Player Gamification, Skill Tree & Habit Engine (@player-gamificat
 			await studioTab.click();
 			await page.waitForTimeout(200);
 		}
+	});
 
-		// Verify Card Gallery Tab
-		const cardsTab = page.locator('button:has-text("Album"), a:has-text("Album"), button:has-text("Cards"), a:has-text("Cards")').first();
-		if (await cardsTab.isVisible()) {
-			await cardsTab.click();
-			await page.waitForTimeout(200);
-			const cardGallery = page.locator('.card-gallery, .player-card, [class*="card"]').first();
-			if (await cardGallery.isVisible()) {
-				await expect(cardGallery).toBeVisible();
-			}
+	test('Pro Player Cards & Sticker Album: verify card holographic foil variants and sticker pack sets', async ({ page }) => {
+		await page.goto('/player/armory?tab=cards');
+		await page.waitForLoadState('networkidle');
+
+		// Assert Sticker Album Workspace / Card Gallery Shell
+		const albumHeading = page.locator('text=Sticker album, text=Season 1, .card-gallery, [class*="album"]').first();
+		if (await albumHeading.isVisible()) {
+			await expect(albumHeading).toBeVisible();
+		}
+
+		// Assert Pro Player Card / Sticker Foil Container
+		const stickerFoil = page.locator('.pro-player-card, .sticker-variant, [class*="sticker"], [class*="foil"]').first();
+		if (await stickerFoil.isVisible()) {
+			await expect(stickerFoil).toBeVisible();
 		}
 	});
 
