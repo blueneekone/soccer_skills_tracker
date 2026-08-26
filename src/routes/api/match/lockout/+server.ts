@@ -1,6 +1,6 @@
 // 🛡️ SafeSport Compliance Mandate: Secure WebAuthn Verification Protocol Active
 import { json, type RequestHandler } from '@sveltejs/kit';
-import { getAdminDb } from '$lib/server/admin.js';
+import { getAdminDb } from '$lib/server/admin';
 
 interface LockState {
 	locked: boolean;

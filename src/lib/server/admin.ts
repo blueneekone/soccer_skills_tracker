@@ -6,11 +6,11 @@ import { resolve } from 'node:path';
 
 // Resolve the cellId dynamically for Firestore multi-tenancy
 // For standard instances or default DBs, passing undefined falls back to (default)
-function resolveCellId(cellId) {
+function resolveCellId(cellId?: string): string {
 	return cellId && cellId !== 'default' ? cellId : '(default)';
 }
 
-export function getAdminDb(cellId) {
+export function getAdminDb(cellId?: string) {
 	if (!getApps().length) {
 		const saJson = env.FIREBASE_SERVICE_ACCOUNT_JSON;
 		if (saJson) {
