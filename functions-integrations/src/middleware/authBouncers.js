@@ -142,15 +142,29 @@ async function assertCanSecureAddPlayer(request, teamId) {
   if (isSuperRole(role)) {
     return {clubId};
   }
-  if (role === 'director' && tokenClub && tokenClub === clubId) {
+  if (
+    (role === 'director' || role === 'club_admin' || role === 'registrar') &&
+    (!tokenClub || tokenClub === clubId)
+  ) {
     return {clubId};
   }
-  if (role === 'registrar' && tokenClub && tokenClub === clubId) {
+
+  const callerUid = request.auth.uid;
+  const callerEmail = normEmail(request.auth.token.email);
+  const teamData = teamSnap.data() || {};
+  const isAssignedCoach =
+    (role === 'coach' && tokenTeam === tid) ||
+    (role === 'coach' && tokenClub && tokenClub === clubId) ||
+    teamData.coachId === callerUid ||
+    teamData.headCoachId === callerUid ||
+    teamData.createdBy === callerUid ||
+    (Array.isArray(teamData.coaches) && teamData.coaches.includes(callerUid)) ||
+    (teamData.coachEmail && normEmail(teamData.coachEmail) === callerEmail);
+
+  if (isAssignedCoach) {
     return {clubId};
   }
-  if (role === 'coach' && tokenTeam === tid) {
-    return {clubId};
-  }
+
   throw new HttpsError(
       'permission-denied',
       'Only club staff assigned to this team may add players.',
