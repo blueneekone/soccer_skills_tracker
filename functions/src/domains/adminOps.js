@@ -955,11 +955,30 @@ async function secureAddPlayerTxn(transaction, params) {
   }
 
   const entSnap = await transaction.get(entRef);
-  if (!entSnap.exists) return {kind: 'no_entitlement'};
-  const entData = entSnap.data() || {};
-  const allocated = typeof entData.allocated_seats === 'number' ? entData.allocated_seats : 0;
-  const active = typeof entData.active_seats === 'number' ? entData.active_seats : 0;
-  if (active >= allocated) return {kind: 'full'};
+  if (!entSnap.exists) {
+    transaction.set(entRef, {
+      clubId,
+      allocated_seats: 100,
+      active_seats: 1,
+      tier: 'starter',
+      subscription_status: 'active',
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      updatedBy,
+    });
+  } else {
+    const entData = entSnap.data() || {};
+    const allocated = typeof entData.allocated_seats === 'number' ? entData.allocated_seats :
+      (typeof entData.seats_limit === 'number' ? entData.seats_limit : 100);
+    const active = typeof entData.active_seats === 'number' ? entData.active_seats : 0;
+    if (allocated > 0 && active >= allocated) return {kind: 'full'};
+
+    transaction.update(entRef, {
+      active_seats: admin.firestore.FieldValue.increment(1),
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      updatedBy,
+    });
+  }
 
   const jerseys = rosterSnap.exists && typeof rosterSnap.data().jerseys === 'object' ?
     {...rosterSnap.data().jerseys} : {};
@@ -973,11 +992,6 @@ async function secureAddPlayerTxn(transaction, params) {
     });
   }
 
-  transaction.update(entRef, {
-    active_seats: admin.firestore.FieldValue.increment(1),
-    updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-    updatedBy,
-  });
   transaction.set(rosterRef, {players: [...list, playerName], jerseys}, {merge: true});
 
   const lookupPayload = {
