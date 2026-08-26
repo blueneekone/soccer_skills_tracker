@@ -170,25 +170,47 @@ export class RosterPanelEngine {
 	// ── Private snapshot handlers ─────────────────────────────────────────────
 
 	private _recompute(): void {
-		const nameSet = new Set(this.rawLookupPlayers.map((p) => p.displayName.trim().toLowerCase()));
-		const nameOnlyPlayers: RosterPlayer[] = this.rawRosterNames
-			.filter((n) => !nameSet.has(n.trim().toLowerCase()))
-			.map((name) => ({
-				id: `nameonly:${name.trim().toLowerCase()}`,
-				displayName: name,
+		const playerMap = new Map<string, RosterPlayer>();
+
+		// 1. Seed from raw roster names (official team roster list)
+		for (const name of this.rawRosterNames) {
+			const key = name.trim().toLowerCase();
+			if (!key) continue;
+			playerMap.set(key, {
+				id: `player:${key}`,
+				displayName: name.trim(),
 				email: '',
-				jersey: this.rawJerseys[name] || '',
+				jersey: this.rawJerseys[name.trim()] || '',
 				parentName: '',
 				parentPhone: '',
 				parentEmail: '',
-			}));
+			});
+		}
 
-		const all = [...this.rawLookupPlayers, ...nameOnlyPlayers].map((p) => ({
-			...p,
-			jersey: this.rawJerseys[p.displayName] || p.jersey || '',
-		}));
+		// 2. Merge all player_lookup records (phone lookups + email lookups) into the exact athlete entry
+		for (const lookup of this.rawLookupPlayers) {
+			const key = lookup.displayName.trim().toLowerCase();
+			if (!key) continue;
+			const existing = playerMap.get(key);
+			const jersey = this.rawJerseys[lookup.displayName.trim()] || lookup.jersey || existing?.jersey || '';
+			const email = lookup.email || lookup.parentEmail || existing?.email || existing?.parentEmail || '';
+			const parentPhone = lookup.parentPhone || existing?.parentPhone || '';
+			const parentName = lookup.parentName || existing?.parentName || '';
 
-		this.players = all.sort((a, b) => a.displayName.localeCompare(b.displayName));
+			playerMap.set(key, {
+				id: lookup.id.includes('@') ? lookup.id : (existing?.id || lookup.id),
+				displayName: lookup.displayName.trim() || existing?.displayName || key,
+				email,
+				jersey,
+				parentName,
+				parentPhone,
+				parentEmail: email,
+			});
+		}
+
+		this.players = Array.from(playerMap.values()).sort((a, b) =>
+			a.displayName.localeCompare(b.displayName),
+		);
 		this.loading = false;
 	}
 
@@ -199,19 +221,20 @@ export class RosterPanelEngine {
 
 	private _mapDoc(d: any): RosterPlayer {
 		const data = d.data();
-		const email = (d.id as string).toLowerCase();
+		const docId = (d.id as string).toLowerCase();
+		const email = docId.includes('@') ? docId : (typeof data.playerEmail === 'string' ? data.playerEmail.trim().toLowerCase() : '');
 		const displayName =
 			(typeof data.displayName === 'string' && data.displayName.trim()) ||
 			(typeof data.playerName === 'string' && data.playerName.trim()) ||
-			email.split('@')[0];
+			(email ? email.split('@')[0] : docId);
 		return {
 			id: d.id,
 			displayName,
-			email: email.includes('@') ? email : '',
+			email,
 			jersey: typeof data.jersey === 'string' ? data.jersey : '',
 			parentName: typeof data.parentName === 'string' ? data.parentName : '',
 			parentPhone: typeof data.parentPhone === 'string' ? data.parentPhone : '',
-			parentEmail: typeof data.parentEmail === 'string' ? data.parentEmail : '',
+			parentEmail: typeof data.parentEmail === 'string' ? data.parentEmail : email,
 		};
 	}
 }
