@@ -10,7 +10,7 @@
 	<div class="ga-workspace tw-w-full lg:tw-col-span-12 tw-flex-1 tw-min-w-0">
 		{@render children()}
 	</div>
-	{#if authStore.role === 'super_admin' || authStore.role === 'global_admin' || authStore.role === 'admin'}
+	{#if authStore.role === 'super_admin' || authStore.role === 'global_admin'}
 		<AlertMatrix />
 	{/if}
 </div>

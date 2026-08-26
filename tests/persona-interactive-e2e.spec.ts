@@ -142,7 +142,7 @@ test.describe('Parent OS Interactive Audits (@persona-parent)', () => {
 		await page.goto('/parent/household');
 
 		// Assert Household Operatives / Athlete Cards rendered
-		const pageTitle = page.locator('h1, h2, .tw-text-xl, main').first();
+		const pageTitle = page.locator('h1, h2, .tw-text-xl').first();
 		await expect(pageTitle).toBeVisible();
 
 		// Assert dispatch code input field exists for squad linking

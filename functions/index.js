@@ -91,10 +91,6 @@ exports.sendSponsorPartnerDigest = sponsorPartnerOps.sendSponsorPartnerDigest;
 const parentVoiceSessionOps = require('./src/domains/parentVoiceSessionOps.js');
 exports.createParentVoiceSession = parentVoiceSessionOps.createParentVoiceSession;
 
-const parentCoachDmOps = require('./src/domains/parentCoachDmOps.js');
-exports.sendParentCoachMessage = parentCoachDmOps.sendParentCoachMessage;
-exports.listParentCoachDmThreads = parentCoachDmOps.listParentCoachDmThreads;
-
 const invites = require("./invites.js");
 exports.consumeInviteCode = invites.consumeInviteCode;
 

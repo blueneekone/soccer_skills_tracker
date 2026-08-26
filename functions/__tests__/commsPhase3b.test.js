@@ -25,7 +25,7 @@ const pkgSrc = fs.readFileSync(PKG, 'utf8');
 describe('commsPhase3b — emergencyClubBroadcast callable', () => {
   it('exports from comms.js and functions/index.js', () => {
     assert.match(commsSrc, /exports\.emergencyClubBroadcast\s*=\s*onCall/);
-    assert.match(indexSrc, /exports\.emergencyClubBroadcast\s*=\s*comms(?:Handlers)?\.emergencyClubBroadcast/);
+    assert.match(indexSrc, /exports\.emergencyClubBroadcast\s*=\s*commsHandlers\.emergencyClubBroadcast/);
   });
 
   it('requires subject and fans out via commitTeamBroadcast', () => {
