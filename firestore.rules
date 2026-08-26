@@ -45,6 +45,14 @@ service cloud.firestore {
       return isAuthenticated() && (request.auth.token.role == 'parent' || isGlobalAdmin());
     }
 
+    function isRegistrar() {
+      return isAuthenticated() && (request.auth.token.role == 'registrar' || isGlobalAdmin());
+    }
+
+    function userDoc() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
     function emailKey() {
       return request.auth.token.email;
     }
