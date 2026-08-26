@@ -11,7 +11,7 @@
  */
 
 import { db } from '$lib/firebase.js';
-import { collection, onSnapshot, query, where, doc, setDoc } from 'firebase/firestore';
+import { collection, onSnapshot, query, where, doc, setDoc, deleteField } from 'firebase/firestore';
 import { isFirestoreReady } from '$lib/utils/firestoreGuard.js';
 import { authStore } from '$lib/stores/auth.svelte.js';
 
@@ -19,6 +19,7 @@ export interface RosterPlayer {
 	id: string;
 	displayName: string;
 	email: string;
+	jersey?: string;
 	parentName: string;
 	parentPhone: string;
 	parentEmail: string;
@@ -26,6 +27,7 @@ export interface RosterPlayer {
 
 export interface RosterEditData {
 	displayName: string;
+	jersey: string;
 	parentName: string;
 	parentPhone: string;
 	parentEmail: string;
@@ -39,14 +41,17 @@ export class RosterPanelEngine {
 	editingPlayerId = $state<string | null>(null);
 	editData = $state<RosterEditData>({
 		displayName: '',
+		jersey: '',
 		parentName: '',
 		parentPhone: '',
 		parentEmail: '',
 	});
 
+	private teamId = '';
 	private unsubs: Array<() => void> = [];
 	private rawLookupPlayers: RosterPlayer[] = [];
 	private rawRosterNames: string[] = [];
+	private rawJerseys: Record<string, string> = {};
 
 	// ── Subscription ─────────────────────────────────────────────────────────
 
@@ -58,10 +63,12 @@ export class RosterPanelEngine {
 			this.loading = false;
 			return;
 		}
+		this.teamId = teamId;
 		this.loading = true;
 		this.err = '';
 		this.rawLookupPlayers = [];
 		this.rawRosterNames = [];
+		this.rawJerseys = {};
 
 		const q = query(collection(db, 'player_lookup'), where('teamId', '==', teamId));
 		const unsubLookup = onSnapshot(
@@ -84,8 +91,11 @@ export class RosterPanelEngine {
 					this.rawRosterNames = raw
 						.map((p: any) => (typeof p === 'string' ? p : p?.name || p?.playerName || ''))
 						.filter(Boolean);
+					this.rawJerseys =
+						data?.jerseys && typeof data.jerseys === 'object' ? data.jerseys : {};
 				} else {
 					this.rawRosterNames = [];
+					this.rawJerseys = {};
 				}
 				this._recompute();
 			},
@@ -107,9 +117,10 @@ export class RosterPanelEngine {
 		this.editingPlayerId = p.id;
 		this.editData = {
 			displayName: p.displayName,
+			jersey: p.jersey || '',
 			parentName: p.parentName,
 			parentPhone: p.parentPhone,
-			parentEmail: p.parentEmail,
+			parentEmail: p.parentEmail || p.email || '',
 		};
 	}
 
@@ -118,18 +129,41 @@ export class RosterPanelEngine {
 	}
 
 	async saveEdit(playerId: string): Promise<void> {
-		if (!this.editingPlayerId) return;
-		await setDoc(
-			doc(db, 'player_lookup', playerId),
-			{
-				displayName: this.editData.displayName,
-				playerName: this.editData.displayName,
-				parentName: this.editData.parentName,
-				parentPhone: this.editData.parentPhone,
-				parentEmail: this.editData.parentEmail,
-			},
-			{ merge: true },
-		);
+		if (!this.editingPlayerId || !db) return;
+		const name = this.editData.displayName.trim();
+		const jersey = this.editData.jersey.trim();
+		const parentEmail = this.editData.parentEmail.trim().toLowerCase();
+
+		// 1. Update jersey on roster document
+		if (this.teamId) {
+			const rosterRef = doc(db, 'rosters', this.teamId);
+			const jerseyPayload: Record<string, any> = {};
+			if (jersey) {
+				jerseyPayload[`jerseys.${name}`] = jersey;
+			} else {
+				jerseyPayload[`jerseys.${name}`] = deleteField();
+			}
+			await setDoc(rosterRef, jerseyPayload, { merge: true }).catch(() => {});
+		}
+
+		// 2. Update or create player_lookup entry for parent binding
+		const targetDocId = parentEmail || (playerId.startsWith('nameonly:') ? null : playerId);
+		if (targetDocId) {
+			await setDoc(
+				doc(db, 'player_lookup', targetDocId),
+				{
+					teamId: this.teamId,
+					displayName: name,
+					playerName: name,
+					jersey: jersey || null,
+					parentName: this.editData.parentName.trim(),
+					parentPhone: this.editData.parentPhone.trim(),
+					parentEmail: parentEmail,
+				},
+				{ merge: true },
+			);
+		}
+
 		this.editingPlayerId = null;
 	}
 
@@ -143,13 +177,18 @@ export class RosterPanelEngine {
 				id: `nameonly:${name.trim().toLowerCase()}`,
 				displayName: name,
 				email: '',
+				jersey: this.rawJerseys[name] || '',
 				parentName: '',
 				parentPhone: '',
 				parentEmail: '',
 			}));
-		this.players = [...this.rawLookupPlayers, ...nameOnlyPlayers].sort((a, b) =>
-			a.displayName.localeCompare(b.displayName),
-		);
+
+		const all = [...this.rawLookupPlayers, ...nameOnlyPlayers].map((p) => ({
+			...p,
+			jersey: this.rawJerseys[p.displayName] || p.jersey || '',
+		}));
+
+		this.players = all.sort((a, b) => a.displayName.localeCompare(b.displayName));
 		this.loading = false;
 	}
 
@@ -168,7 +207,8 @@ export class RosterPanelEngine {
 		return {
 			id: d.id,
 			displayName,
-			email,
+			email: email.includes('@') ? email : '',
+			jersey: typeof data.jersey === 'string' ? data.jersey : '',
 			parentName: typeof data.parentName === 'string' ? data.parentName : '',
 			parentPhone: typeof data.parentPhone === 'string' ? data.parentPhone : '',
 			parentEmail: typeof data.parentEmail === 'string' ? data.parentEmail : '',

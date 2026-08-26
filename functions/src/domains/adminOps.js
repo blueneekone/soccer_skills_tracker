@@ -1284,7 +1284,7 @@ exports.secureRemovePlayer = onCall({region: REGION, cors: true}, async (request
 /**
  * Jersey number updates on rosters/{teamId} (no license seat change).
  */
-exports.secureUpdateJersey = onCall({region: REGION}, async (request) => {
+exports.secureUpdateJersey = onCall({region: REGION, cors: true}, async (request) => {
   const data = request.data || {};
   const teamId = typeof data.teamId === 'string' ? data.teamId.trim().slice(0, 200) : '';
   let playerName = typeof data.playerName === 'string' ? data.playerName.trim().replace(/\s+/g, ' ') : '';
