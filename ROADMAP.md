@@ -42,3 +42,4 @@
 - [x] **SYSTEMIC BACKEND & REACTIVITY REPAIR**: RosterPanelEngine hydration logic and atomic claims sync via secure backend Cloud Functions.
 - [ ] **MARKETPLACE LAUNCH (Phase 4)**: Merge Svelte 5 Bento-grid view and deploy `bookTutoringSession` callable Stripe handler on `functions-commerce` [cite: 424].
 - [x] **DIRECTOR OS & ADMIN OS OVERHAUL**: Admin active incidents click navigation and Director OS system-wide visual simplification.
+- [x] **COACH OS DASHBOARD FIX**: Resolve coach team visibility and Mission Control tab configurations.

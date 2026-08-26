@@ -43,7 +43,7 @@ function createTeamsStore() {
 		const { auth } = await import('$lib/firebase.js');
 		const uid = auth?.currentUser?.uid;
 		if (uid) {
-			const snapUid = await getDocs(query(collection(db, 'teams'), where('coachUid', '==', uid))).catch(e => { console.error('Error fetching teams by coachUid', e); return null; });
+			const snapUid = await getDocs(query(collection(db, 'teams'), where('coachId', '==', uid))).catch(e => { console.error('Error fetching teams by coachId', e); return null; });
 			if (snapUid) snapUid.forEach(d => teamsArr.push({ id: d.id, ...d.data() }));
 		}
 
@@ -219,18 +219,19 @@ function createTeamsStore() {
 		},
 
 		/** Filter teams that a coach email manages (head or assistant) */
-		getCoachTeams(email) {
-			if (!email) return teams.slice();
-			const emLower = email.toLowerCase().trim();
+		getCoachTeams(email, uid) {
+			if (!email && !uid) return teams.slice();
+			const emLower = email ? email.toLowerCase().trim() : '';
 			const matched = teams.filter((t) => {
-				const isHeadString = (t.coachEmail || '').toLowerCase().trim() === emLower;
-				const isHeadArray = (t.coachEmails || []).some(
+				const isHeadString = emLower ? (t.coachEmail || '').toLowerCase().trim() === emLower : false;
+				const isHeadUid = uid ? t.coachId === uid : false;
+				const isHeadArray = emLower ? (t.coachEmails || []).some(
 					(e) => (e || '').toLowerCase().trim() === emLower,
-				);
-				const isAsst = (t.assistants || []).some(
+				) : false;
+				const isAsst = emLower ? (t.assistants || []).some(
 					(a) => (a || '').toLowerCase().trim() === emLower,
-				);
-				return isHeadString || isHeadArray || isAsst;
+				) : false;
+				return isHeadString || isHeadUid || isHeadArray || isAsst;
 			});
 			// If teams were loaded in coach scope, all loaded teams belong to this coach
 			return matched.length > 0 ? matched : teams.slice();
