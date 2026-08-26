@@ -71,17 +71,26 @@
     {
       "codebase": "core",
       "source": "functions-core",
-      "runtime": "nodejs22"
+      "runtime": "nodejs22",
+      "predeploy": [
+        "node scripts/bundle-functions.cjs"
+      ]
     },
     {
       "codebase": "rl",
       "source": "functions-rl",
-      "runtime": "nodejs22"
+      "runtime": "nodejs22",
+      "predeploy": [
+        "node scripts/bundle-functions.cjs"
+      ]
     },
     {
       "codebase": "commerce",
       "source": "functions-commerce",
-      "runtime": "nodejs22"
+      "runtime": "nodejs22",
+      "predeploy": [
+        "node scripts/bundle-functions.cjs"
+      ]
     },
     {
       "codebase": "compliance",
@@ -95,12 +104,18 @@
     {
       "codebase": "integrations",
       "source": "functions-integrations",
-      "runtime": "nodejs22"
+      "runtime": "nodejs22",
+      "predeploy": [
+        "node scripts/bundle-functions.cjs"
+      ]
     },
     {
       "codebase": "platform",
       "source": "functions-platform",
-      "runtime": "nodejs22"
+      "runtime": "nodejs22",
+      "predeploy": [
+        "node scripts/bundle-functions.cjs"
+      ]
     }
   ]
 }
