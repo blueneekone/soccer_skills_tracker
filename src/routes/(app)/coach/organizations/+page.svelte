@@ -16,13 +16,14 @@
 	});
 
 	const userEmail = $derived((authStore.user?.email || '').trim());
+	const userUid = $derived(authStore.user?.uid || '');
 	const role = $derived(authStore.role);
 
 	const myTeams = $derived.by(() => {
 		if (!teamsStore.loaded) return [];
 		if (role === 'super_admin' || role === 'global_admin') return teamsStore.teams.slice();
-		if (!userEmail) return [];
-		return teamsStore.getCoachTeams(userEmail);
+		if (!userEmail && !userUid) return [];
+		return teamsStore.getCoachTeams(userEmail, userUid);
 	});
 
 	const affiliatedClubs = $derived.by(() => {

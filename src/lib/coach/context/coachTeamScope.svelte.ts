@@ -38,6 +38,7 @@ export class CoachTeamScope {
 
 	role = $derived(authStore.role);
 	myEmail = $derived((authStore.user?.email || '').toLowerCase());
+	myUid = $derived(authStore.user?.uid || '');
 
 	myTeams = $derived.by((): CoachTeamRow[] => {
 		if (!teamsStore.loaded) return [];
@@ -50,8 +51,8 @@ export class CoachTeamScope {
 		) {
 			return teamsStore.teams.slice() as CoachTeamRow[];
 		}
-		if (!this.myEmail) return [];
-		return teamsStore.getCoachTeams(this.myEmail) as CoachTeamRow[];
+		if (!this.myEmail && !this.myUid) return [];
+		return teamsStore.getCoachTeams(this.myEmail, this.myUid) as CoachTeamRow[];
 	});
 
 	currentTeam = $derived(

@@ -20,6 +20,10 @@ export class DashboardEngine {
 		return (authStore.user?.email || '').trim();
 	}
 
+	get userUid() {
+		return authStore.user?.uid || '';
+	}
+
 	get clearanceStep() {
 		return deriveCoachClearanceStep(
 			/** @type {import('$lib/types/backgroundCheck.js').ClearanceDoc|undefined} */ (
@@ -42,8 +46,8 @@ export class DashboardEngine {
 	get myTeams() {
 		if (!teamsStore.loaded) return [];
 		if (this.role === 'super_admin' || this.role === 'global_admin') return teamsStore.teams.slice();
-		if (!this.userEmail) return [];
-		return teamsStore.getCoachTeams(this.userEmail);
+		if (!this.userEmail && !this.userUid) return [];
+		return teamsStore.getCoachTeams(this.userEmail, this.userUid);
 	}
 
 	get effectiveTeamId() {
