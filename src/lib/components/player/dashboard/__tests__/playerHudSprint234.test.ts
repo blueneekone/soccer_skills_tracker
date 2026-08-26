@@ -202,7 +202,7 @@ describe('Sprint 2.22 slice 6j closure — J-02 Z2 depth (remaining routes)', ()
 		expect(hudCss).toMatch(
 			/\.player-hud-root \.bento-card[\s\S]*--pd-depth-panel-gradient/,
 		);
-		const bentoBlock = pageSrc.match(/\.bento-card\s*\{([^}]+)\}/s)?.[1] ?? '';
+		const bentoBlock = pageSrc.match(/:global\(\.bento-card\)\s*\{([^}]+)\}/s)?.[1] ?? pageSrc.match(/\.bento-card\s*\{([^}]+)\}/s)?.[1] ?? '';
 		expect(bentoBlock).toMatch(/--pd-depth-panel-gradient/);
 		expect(bentoBlock).not.toMatch(/background:\s*var\(--pd-panel/);
 	});
