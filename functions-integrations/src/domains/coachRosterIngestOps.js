@@ -56,16 +56,20 @@ exports.coachRosterIngest = onCall(
         if (format === 'csv') {
           players = parseCsvBase64ToCoachPlayers(contentBase64);
         } else {
+          let apiKey = '';
+          try {
+            apiKey = GEMINI_API_KEY.value();
+          } catch {
+            logger.warn('[coachRosterIngest] GEMINI_API_KEY secret not bound');
+          }
           players = await parsePdfBase64ToCoachPlayers(
               contentBase64,
-              GEMINI_API_KEY.value(),
+              apiKey,
           );
         }
       } catch (err) {
+        logger.warn('[coachRosterIngest] Parse exception', err);
         const msg = err && err.message ? String(err.message) : 'Parse failed.';
-        if (msg.includes('GEMINI_API_KEY')) {
-          throw new HttpsError('failed-precondition', msg);
-        }
         throw new HttpsError('invalid-argument', msg);
       }
 

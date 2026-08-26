@@ -219,17 +219,17 @@ function extractPlayersFromPdfTextFallback(rawText) {
   let inPlayers = false;
 
   for (const line of lines) {
-    if (/^Admins\b/i.test(line) || /^Admin\s+ID/i.test(line)) {
+    if (/^Admins\b/i.test(line) || /^Admin\s*ID/i.test(line)) {
       inAdmins = true;
       inPlayers = false;
       continue;
     }
-    if (/^Players\b/i.test(line) || /^Player\s+ID/i.test(line)) {
+    if (/^Players\b/i.test(line) || /^Player\s*ID/i.test(line)) {
       inPlayers = true;
       inAdmins = false;
       continue;
     }
-    if (/^(Signatures|Printed\s+On)/i.test(line)) {
+    if (/^(Signatures|Printed\s*On|Team\s*Roster)/i.test(line)) {
       inAdmins = false;
       inPlayers = false;
       continue;
@@ -237,11 +237,12 @@ function extractPlayersFromPdfTextFallback(rawText) {
 
     if (inAdmins) continue;
 
-    // Pattern 1: Affinity / UYSA format: [ID] [LastName] [FirstName] [DOB] ...
-    const affinityMatch = line.match(/^\s*(\d{4,7}-\d{4,8})\s+([A-Za-z'.-]+)\s+([A-Za-z'.-]+)\s+(\d{1,2}\/\d{1,2}\/\d{2,4})/);
+    // Pattern 1: Affinity / UYSA format with or without spaces:
+    // e.g. 28990-249512MilleeAnderson10/08/2015... or 28990-249512 Millee Anderson 10/08/2015
+    const affinityMatch = line.match(/^\s*(\d{4,7}-\d{4,8})\s*([A-Z][a-z]+)\s*([A-Z][a-zA-Z'-]+)\s*(\d{1,2}\/\d{1,2}\/\d{2,4})/);
     if (affinityMatch) {
-      const lastName = affinityMatch[2].trim();
-      const firstName = affinityMatch[3].trim();
+      const firstName = affinityMatch[2].trim();
+      const lastName = affinityMatch[3].trim();
       players.push({
         displayName: `${firstName} ${lastName}`,
       });
