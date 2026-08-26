@@ -109,13 +109,18 @@ function mapCsvRowToCoachPlayer(row) {
   playerName = playerName.replace(/\s+/g, ' ');
   if (!playerName || playerName.length > 200) return null;
 
-  const emailRaw = getCol(row, 'email', 'email_address', 'player_email', 'e_mail');
+  const emailRaw = getCol(row, 'email', 'email_address', 'player_email', 'parent_email', 'e_mail');
   let playerEmail;
   if (emailRaw) {
     const normalized = normEmail(emailRaw);
-    if (!normalized || !isValidEmail(normalized)) return null;
-    playerEmail = normalized;
+    if (normalized && isValidEmail(normalized)) playerEmail = normalized;
   }
+
+  const phoneRaw = getCol(row, 'phone', 'parent_phone', 'mobile', 'cell', 'phone_number', 'contact_phone');
+  const parentPhone = phoneRaw ? phoneRaw.trim() : undefined;
+
+  const dobRaw = getCol(row, 'dob', 'date_of_birth', 'birthdate', 'birth_date');
+  const dob = dobRaw ? dobRaw.trim() : undefined;
 
   const jerseyRaw = getCol(row, 'number', 'jersey', 'jersey_number', 'shirt_number', 'no_');
   const jersey = jerseyRaw ? jerseyRaw.slice(0, 16) : undefined;
@@ -123,6 +128,8 @@ function mapCsvRowToCoachPlayer(row) {
   return {
     playerName,
     ...(playerEmail ? {playerEmail} : {}),
+    ...(parentPhone ? {parentPhone} : {}),
+    ...(dob ? {dob} : {}),
     ...(jersey ? {jersey} : {}),
   };
 }
@@ -141,11 +148,11 @@ async function extractPlayersFromPdfText(rawText, apiKey) {
       'You are a data extraction assistant for a soccer club management system.',
       'Extract ALL player entries from the following roster document text.',
       'Rosters often have an "Admins" (coaches/managers) section and a "Players" section. DO NOT include Coaches, Assistant Coaches, or Team Managers as players.',
-      'When rows list "Player ID Last Name First Name DOB ...", extract displayName as "First Name Last Name".',
-      'For each player, extract: email, displayName (full name), position, date of birth (ISO 8601), jerseyNumber.',
+      'When rows list "Player ID First Name Last Name DOB ...", extract displayName as "First Name Last Name".',
+      'For each player, extract: email, displayName (full name), parentPhone, position, dateOfBirth (ISO 8601), jerseyNumber.',
       'If a field is not present in the document, omit it from that player\'s object.',
       'Return ONLY a valid JSON array. No explanations, no markdown fences.',
-      'Example: [{"email":"j.smith@email.com","displayName":"John Smith","position":"Midfielder","dateOfBirth":"2008-03-15","jerseyNumber":"7"}]',
+      'Example: [{"email":"j.smith@email.com","displayName":"John Smith","parentPhone":"(555) 123-4567","position":"Midfielder","dateOfBirth":"2008-03-15","jerseyNumber":"7"}]',
       '',
       '--- ROSTER DOCUMENT TEXT ---',
       rawText.slice(0, 12000),
@@ -168,7 +175,7 @@ async function extractPlayersFromPdfText(rawText, apiKey) {
 
 /**
  * @param {unknown} player
- * @return {{ playerName: string, playerEmail?: string, jersey?: string } | null}
+ * @return {{ playerName: string, playerEmail?: string, parentPhone?: string, dob?: string, jersey?: string } | null}
  */
 function mapExtractedPlayerToCoach(player) {
   if (!player || typeof player !== 'object') return null;
@@ -187,6 +194,18 @@ function mapExtractedPlayerToCoach(player) {
     if (normalized && isValidEmail(normalized)) playerEmail = normalized;
   }
 
+  let parentPhone;
+  if (typeof p.parentPhone === 'string' && p.parentPhone.trim()) {
+    parentPhone = p.parentPhone.trim();
+  }
+
+  let dob;
+  if (typeof p.dob === 'string' && p.dob.trim()) {
+    dob = p.dob.trim();
+  } else if (typeof p.dateOfBirth === 'string' && p.dateOfBirth.trim()) {
+    dob = p.dateOfBirth.trim();
+  }
+
   let jersey;
   const jerseyRaw =
     typeof p.jerseyNumber === 'string' ? p.jerseyNumber :
@@ -202,6 +221,8 @@ function mapExtractedPlayerToCoach(player) {
   return {
     playerName,
     ...(playerEmail ? {playerEmail} : {}),
+    ...(parentPhone ? {parentPhone} : {}),
+    ...(dob ? {dob} : {}),
     ...(jersey ? {jersey} : {}),
   };
 }
@@ -209,7 +230,7 @@ function mapExtractedPlayerToCoach(player) {
 /**
  * Deterministic local fallback parser when Gemini is unavailable or returns empty.
  * @param {string} rawText
- * @return {Array<{ displayName?: string, email?: string, jerseyNumber?: string }>}
+ * @return {Array<{ displayName?: string, email?: string, parentPhone?: string, dob?: string, jerseyNumber?: string }>}
  */
 function extractPlayersFromPdfTextFallback(rawText) {
   if (!rawText || typeof rawText !== 'string') return [];
@@ -237,14 +258,18 @@ function extractPlayersFromPdfTextFallback(rawText) {
 
     if (inAdmins) continue;
 
-    // Pattern 1: Affinity / UYSA format with or without spaces:
-    // e.g. 28990-249512MilleeAnderson10/08/2015... or 28990-249512 Millee Anderson 10/08/2015
-    const affinityMatch = line.match(/^\s*(\d{4,7}-\d{4,8})\s*([A-Z][a-z]+)\s*([A-Z][a-zA-Z'-]+)\s*(\d{1,2}\/\d{1,2}\/\d{2,4})/);
+    // Pattern 1: Affinity / UYSA format with or without spaces + phone extraction:
+    // e.g. 28990-249512MilleeAnderson10/08/2015575 N 200 ELogan84321-4026(435) 770-155305/27/2026
+    const affinityMatch = line.match(/^\s*(\d{4,7}-\d{4,8})\s*([A-Z][a-z]+)\s*([A-Z][a-zA-Z'-]+)\s*(\d{1,2}\/\d{1,2}\/\d{2,4})(?:.*?((\(\d{3}\)\s*\d{3}-\d{4}|\d{3}-\d{3}-\d{4})))?/);
     if (affinityMatch) {
       const firstName = affinityMatch[2].trim();
       const lastName = affinityMatch[3].trim();
+      const dob = affinityMatch[4].trim();
+      const parentPhone = affinityMatch[5] ? affinityMatch[5].trim() : undefined;
       players.push({
         displayName: `${firstName} ${lastName}`,
+        dob,
+        ...(parentPhone ? {parentPhone} : {}),
       });
       continue;
     }
@@ -255,8 +280,10 @@ function extractPlayersFromPdfTextFallback(rawText) {
       const jersey = gotSportMatch[1];
       const lastName = gotSportMatch[2].trim();
       const firstName = gotSportMatch[3].trim();
+      const dob = gotSportMatch[4].trim();
       players.push({
         displayName: `${firstName} ${lastName}`,
+        dob,
         jerseyNumber: jersey,
       });
       continue;

@@ -238,6 +238,10 @@ Signatures: Head Coach : Team Manager : Registrar :
       'Braelynn Waechtler',
       'Abigail Watterson',
     ]);
+    assert.equal(players[0].parentPhone, '(435) 770-1553');
+    assert.equal(players[0].dob, '10/08/2015');
+    assert.equal(players[9].parentPhone, '(385) 831-8735');
+    assert.equal(players[9].dob, '08/14/2015');
     // Ensure no admin coach is in the extracted list
     assert.ok(!players.some((p) => p.displayName.includes('Evan')));
     assert.ok(!players.some((p) => p.displayName.includes('Aaron')));

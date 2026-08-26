@@ -5,6 +5,9 @@ export const MAX_ROSTER_CSV_ROWS = 200;
 export type CoachRosterCsvRow = {
 	playerName: string;
 	playerEmail?: string;
+	parentPhone?: string;
+	parentName?: string;
+	dob?: string;
 	jersey?: string;
 };
 
@@ -98,7 +101,7 @@ export function mapRowToCoachRosterRow(
 		return { ok: false as const, reason: 'name_too_long' };
 	}
 
-	const emailRaw = getCol(row, 'email', 'email_address', 'player_email', 'e_mail');
+	const emailRaw = getCol(row, 'email', 'email_address', 'player_email', 'parent_email', 'e_mail');
 	let playerEmail: string | undefined;
 	if (emailRaw) {
 		const normalized = normEmail(emailRaw);
@@ -108,6 +111,15 @@ export function mapRowToCoachRosterRow(
 		playerEmail = normalized;
 	}
 
+	const phoneRaw = getCol(row, 'phone', 'parent_phone', 'mobile', 'cell', 'phone_number', 'contact_phone');
+	const parentPhone = phoneRaw ? phoneRaw.trim() : undefined;
+
+	const parentNameRaw = getCol(row, 'parent_name', 'parent', 'guardian', 'guardian_name');
+	const parentName = parentNameRaw ? parentNameRaw.trim() : undefined;
+
+	const dobRaw = getCol(row, 'dob', 'date_of_birth', 'birthdate', 'birth_date');
+	const dob = dobRaw ? dobRaw.trim() : undefined;
+
 	const jerseyRaw = getCol(row, 'number', 'jersey', 'jersey_number', 'shirt_number', 'no_');
 	const jersey = jerseyRaw ? jerseyRaw.slice(0, 16) : undefined;
 
@@ -116,6 +128,9 @@ export function mapRowToCoachRosterRow(
 		row: {
 			playerName,
 			...(playerEmail ? { playerEmail } : {}),
+			...(parentPhone ? { parentPhone } : {}),
+			...(parentName ? { parentName } : {}),
+			...(dob ? { dob } : {}),
 			...(jersey ? { jersey } : {}),
 		},
 	};

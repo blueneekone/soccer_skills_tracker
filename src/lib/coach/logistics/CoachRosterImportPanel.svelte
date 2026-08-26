@@ -106,11 +106,21 @@
 						}>;
 				  }
 				| undefined;
-			const players = data?.players ?? [];
+			const players = (data?.players ?? []) as Array<{
+				playerName: string;
+				playerEmail?: string;
+				parentPhone?: string;
+				parentName?: string;
+				dob?: string;
+				jersey?: string;
+			}>;
 			previewRows = players.map((p, idx) => ({
 				line: idx + 1,
 				playerName: p.playerName,
 				...(p.playerEmail ? { playerEmail: p.playerEmail } : {}),
+				...(p.parentPhone ? { parentPhone: p.parentPhone } : {}),
+				...(p.parentName ? { parentName: p.parentName } : {}),
+				...(p.dob ? { dob: p.dob } : {}),
 				...(p.jersey ? { jersey: p.jersey } : {}),
 				status: 'ready' as const,
 			}));
@@ -170,7 +180,7 @@
 	let copiedInvite = $state(false);
 
 	async function copyParentOnboardingMessage() {
-		const msg = `Welcome to the squad! We use SSTracker for team communications, matchday schedules, and skill development. Please link your player profile at https://sports-skill-tracker-dev.web.app/parent/household`;
+		const msg = `Welcome parents! We use SSTracker for team communications, schedules, and skill metrics. Link your player in 1-tap: https://sports-skill-tracker-dev.web.app/parent/household`;
 		try {
 			await navigator.clipboard.writeText(msg);
 			copiedInvite = true;
@@ -198,6 +208,9 @@
 				players: readyRows.map((r) => ({
 					playerName: r.playerName,
 					...(r.playerEmail ? { playerEmail: r.playerEmail } : {}),
+					...(r.parentPhone ? { parentPhone: r.parentPhone } : {}),
+					...(r.parentName ? { parentName: r.parentName } : {}),
+					...(r.dob ? { dob: r.dob } : {}),
 					...(r.jersey ? { jersey: r.jersey } : {}),
 				})),
 			});
@@ -234,7 +247,7 @@
 					duplicates > 0 ? ` ${duplicates} already on roster.` : '';
 				feedback = {
 					type: 'success',
-					text: `Added ${added} player${added === 1 ? '' : 's'}.${dupPart}`,
+					text: `Successfully provisioned ${added} player${added === 1 ? '' : 's'} & auto-linked parent households!${dupPart}`,
 				};
 				clearPreview();
 			}
@@ -249,11 +262,14 @@
 </script>
 
 <section class="ops-import" aria-labelledby="ops-import-h">
-	<h3 id="ops-import-h" class="ops-import__title">Import roster</h3>
-	<p class="ops-import__sub">
-		Upload a roster spreadsheet (.csv) or league PDF. Preview rows before committing — linked players
-		appear below automatically.
-	</p>
+	<div class="tw-flex tw-items-center tw-justify-between">
+		<div>
+			<h3 id="ops-import-h" class="ops-import__title">Import Roster & Auto-Link Households</h3>
+			<p class="ops-import__sub">
+				Upload a roster spreadsheet (.csv) or league PDF (UYSA / Affinity / GotSport). The system automatically extracts athlete profiles and guardian contact info for simultaneous 1-click onboarding.
+			</p>
+		</div>
+	</div>
 
 	<!-- svelte-ignore a11y_no_static_element_interactions -->
 	<div
@@ -268,11 +284,11 @@
 	>
 		<p class="ops-import__drop-text">
 			{#if parsing}
-				Parsing…
+				Parsing PDF & extracting guardian profiles…
 			{:else if fileName}
 				<span class="ops-import__file">{fileName}</span>
 			{:else}
-				Drop a .csv or PDF file here or choose a file
+				Drop a league roster PDF or .csv here or choose a file
 			{/if}
 		</p>
 		<label class="ops-import__file-label">
@@ -307,22 +323,32 @@
 	{#if previewRows.length > 0}
 		<div class="ops-import__table-wrap">
 			<div class="tw-border tw-border-[#334155] tw-bg-[#0f172a] tw-p-4 tw-min-w-0 tw-overflow-x-auto">
-				<table class="tw-w-full tw-font-mono tw-text-sm ops-import__table">
+				<table class="tw-w-full tw-font-mono tw-text-xs ops-import__table">
 				<caption class="ops-import__caption">
 					{readyRows.length} ready · {previewRows.length - readyRows.length} with errors
 				</caption>
 				<thead>
 					<tr>
-						<th scope="col">Name</th>
-						<th scope="col">Parent Email (Optional)</th>
-						<th scope="col">Jersey</th>
-						<th scope="col">Status</th>
+						<th scope="col" class="tw-text-left">Athlete Name</th>
+						<th scope="col" class="tw-text-left">DOB</th>
+						<th scope="col" class="tw-text-left">Guardian Phone (Extracted)</th>
+						<th scope="col" class="tw-text-left">Guardian Email (Optional)</th>
+						<th scope="col" class="tw-text-left">Jersey</th>
+						<th scope="col" class="tw-text-left">Status</th>
 					</tr>
 				</thead>
 				<tbody>
 					{#each previewRows as row (row.line)}
 						<tr class:ops-import__row--err={row.status === 'error'}>
 							<td class="tw-font-bold tw-text-white">{row.playerName}</td>
+							<td class="tw-text-slate-400">{row.dob || '—'}</td>
+							<td class="tw-text-[#14b8a6]">
+								{#if row.parentPhone}
+									📞 {row.parentPhone}
+								{:else}
+									<span class="tw-text-slate-500">—</span>
+								{/if}
+							</td>
 							<td>
 								<input
 									type="email"
@@ -331,8 +357,17 @@
 									class="tw-w-full tw-rounded tw-border tw-border-slate-700 tw-bg-slate-950 tw-px-2 tw-py-1 tw-font-mono tw-text-xs tw-text-cyan-300 focus:tw-border-[#14b8a6] focus:tw-outline-none"
 								/>
 							</td>
-							<td>{row.jersey || '—'}</td>
-							<td>{statusLabel(row)}</td>
+							<td>
+								<input
+									type="text"
+									placeholder="#"
+									bind:value={row.jersey}
+									class="tw-w-12 tw-rounded tw-border tw-border-slate-700 tw-bg-slate-950 tw-px-2 tw-py-1 tw-font-mono tw-text-xs tw-text-[#daff0a] focus:tw-border-[#daff0a] focus:tw-outline-none"
+								/>
+							</td>
+							<td>
+								<span class="tw-text-emerald-400 font-bold">{statusLabel(row)}</span>
+							</td>
 						</tr>
 					{/each}
 				</tbody>
@@ -351,7 +386,7 @@
 				</button>
 			</div>
 			<button type="button" class="ops-btn" disabled={!canCommit} onclick={() => void commitImport()}>
-				{committing ? 'Importing…' : `Commit ${readyRows.length} player${readyRows.length === 1 ? '' : 's'}`}
+				{committing ? 'Provisioning Households…' : `Commit & Auto-Link ${readyRows.length} Athlete${readyRows.length === 1 ? '' : 's'}`}
 			</button>
 		</div>
 	{/if}

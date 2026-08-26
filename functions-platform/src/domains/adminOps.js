@@ -937,94 +937,44 @@ const MAX_BULK_ROSTER_ROWS = 200;
  */
 async function secureAddPlayerTxn(transaction, params) {
   const {
-    teamId,
-    clubId,
-    playerName,
-    jersey,
-    rosterRef,
-    entRef,
-    teamEntRef,
-    lookupRef,
+    teamId, clubId, playerName, playerEmail, jersey,
+    parentPhone, parentName, dob,
+    rosterRef, entRef, teamEntRef, lookupRef, phoneLookupRef,
     updatedBy,
   } = params;
 
   const rosterSnap = await transaction.get(rosterRef);
-  const list = rosterSnap.exists ?
-    (Array.isArray(rosterSnap.data().players) ?
-      rosterSnap.data().players :
-      []) :
-    [];
-  if (list.includes(playerName)) {
-    return {kind: 'duplicate'};
-  }
+  const list = rosterSnap.exists && Array.isArray(rosterSnap.data().players) ?
+    rosterSnap.data().players : [];
+  if (list.includes(playerName)) return {kind: 'duplicate'};
 
   if (lookupRef) {
     const lkSnap = await transaction.get(lookupRef);
-    if (lkSnap.exists) {
-      const existingTid = lkSnap.data().teamId;
-      if (existingTid && existingTid !== teamId) {
-        return {kind: 'email_in_use'};
-      }
+    if (lkSnap.exists && lkSnap.data().teamId && lkSnap.data().teamId !== teamId) {
+      return {kind: 'email_in_use'};
     }
   }
 
   const teamEntSnap = await transaction.get(teamEntRef);
   if (teamEntSnap.exists) {
     const td = teamEntSnap.data() || {};
-    const teClub =
-        typeof td.clubId === 'string' ? td.clubId.trim() : '';
-    if (teClub && teClub !== clubId) {
-      return {kind: 'no_entitlement'};
-    }
-    const tLimit =
-        typeof td.seats_limit === 'number' &&
-        !Number.isNaN(td.seats_limit) ?
-          td.seats_limit :
-          0;
-    const tActive =
-        typeof td.active_seats === 'number' &&
-        !Number.isNaN(td.active_seats) ?
-          td.active_seats :
-          0;
-    if (tActive >= tLimit) {
-      return {kind: 'team_full'};
-    }
+    const teClub = typeof td.clubId === 'string' ? td.clubId.trim() : '';
+    if (teClub && teClub !== clubId) return {kind: 'no_entitlement'};
+    const tLimit = typeof td.seats_limit === 'number' ? td.seats_limit : 0;
+    const tActive = typeof td.active_seats === 'number' ? td.active_seats : 0;
+    if (tLimit > 0 && tActive >= tLimit) return {kind: 'team_full'};
   }
 
   const entSnap = await transaction.get(entRef);
-  if (!entSnap.exists) {
-    return {kind: 'no_entitlement'};
-  }
-  const ent = entSnap.data() || {};
-  const seatsLimit =
-      typeof ent.seats_limit === 'number' && !Number.isNaN(ent.seats_limit) ?
-        ent.seats_limit :
-        0;
-  const activeSeats =
-      typeof ent.active_seats === 'number' &&
-      !Number.isNaN(ent.active_seats) ?
-        ent.active_seats :
-        0;
-  const reservedSeats =
-      typeof ent.reserved_seats === 'number' &&
-      !Number.isNaN(ent.reserved_seats) ?
-        ent.reserved_seats :
-        0;
-  if (activeSeats + reservedSeats >= seatsLimit) {
-    return {kind: 'full'};
-  }
+  if (!entSnap.exists) return {kind: 'no_entitlement'};
+  const entData = entSnap.data() || {};
+  const allocated = typeof entData.allocated_seats === 'number' ? entData.allocated_seats : 0;
+  const active = typeof entData.active_seats === 'number' ? entData.active_seats : 0;
+  if (active >= allocated) return {kind: 'full'};
 
-  const jerseys =
-      rosterSnap.exists &&
-      rosterSnap.data().jerseys &&
-      typeof rosterSnap.data().jerseys === 'object' ?
-        {...rosterSnap.data().jerseys} :
-        {};
-  if (jersey) {
-    jerseys[playerName] = jersey;
-  }
-
-  const newPlayers = [...list, playerName];
+  const jerseys = rosterSnap.exists && typeof rosterSnap.data().jerseys === 'object' ?
+    {...rosterSnap.data().jerseys} : {};
+  if (jersey) jerseys[playerName] = jersey;
 
   if (teamEntSnap.exists) {
     transaction.update(teamEntRef, {
@@ -1039,29 +989,29 @@ async function secureAddPlayerTxn(transaction, params) {
     updatedAt: admin.firestore.FieldValue.serverTimestamp(),
     updatedBy,
   });
-  transaction.set(
-      rosterRef,
-      {players: newPlayers, jerseys},
-      {merge: true},
-  );
-  if (lookupRef) {
-    transaction.set(
-        lookupRef,
-        {
-          teamId,
-          playerName,
-          clubId,
-        },
-        {merge: true},
-    );
-  }
+  transaction.set(rosterRef, {players: [...list, playerName], jerseys}, {merge: true});
+
+  const lookupPayload = {
+    teamId,
+    playerName,
+    clubId,
+    ...(playerEmail ? {playerEmail} : {}),
+    ...(parentPhone ? {parentPhone} : {}),
+    ...(parentName ? {parentName} : {}),
+    ...(dob ? {dob} : {}),
+    ...(jersey ? {jersey} : {}),
+    updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+  };
+
+  if (lookupRef) transaction.set(lookupRef, lookupPayload, {merge: true});
+  if (phoneLookupRef) transaction.set(phoneLookupRef, lookupPayload, {merge: true});
   return {kind: 'ok'};
 }
 
 /**
  * Normalize one bulk-import roster row.
  * @param {unknown} row
- * @return {{ok: true, playerName: string, playerEmail: string, jersey: string} | {ok: false, reason: string}}
+ * @return {{ok: true, playerName: string, playerEmail: string, parentPhone: string, parentName: string, dob: string, jersey: string} | {ok: false, reason: string}}
  */
 function normalizeBulkPlayerRow(row) {
   if (!row || typeof row !== 'object') {
@@ -1082,12 +1032,27 @@ function normalizeBulkPlayerRow(row) {
     }
   }
 
+  let parentPhone = '';
+  if (typeof row.parentPhone === 'string' && row.parentPhone.trim()) {
+    parentPhone = row.parentPhone.trim().slice(0, 30);
+  }
+
+  let parentName = '';
+  if (typeof row.parentName === 'string' && row.parentName.trim()) {
+    parentName = row.parentName.trim().slice(0, 100);
+  }
+
+  let dob = '';
+  if (typeof row.dob === 'string' && row.dob.trim()) {
+    dob = row.dob.trim().slice(0, 30);
+  }
+
   let jersey = '';
   if (typeof row.jersey === 'string' && row.jersey.trim()) {
     jersey = row.jersey.trim().slice(0, 16);
   }
 
-  return {ok: true, playerName, playerEmail, jersey};
+  return {ok: true, playerName, playerEmail, parentPhone, parentName, dob, jersey};
 }
 
 /**
@@ -1110,6 +1075,9 @@ exports.secureAddPlayer = onCall({region: REGION, cors: true}, async (request) =
     }
   }
 
+  let parentPhone = typeof data.parentPhone === 'string' ? data.parentPhone.trim().slice(0, 30) : '';
+  let parentName = typeof data.parentName === 'string' ? data.parentName.trim().slice(0, 100) : '';
+  let dob = typeof data.dob === 'string' ? data.dob.trim().slice(0, 30) : '';
   let jersey = typeof data.jersey === 'string' && data.jersey.trim() ? data.jersey.trim().slice(0, 16) : '';
 
   const {clubId} = await assertCanSecureAddPlayer(request, teamId);
@@ -1120,11 +1088,14 @@ exports.secureAddPlayer = onCall({region: REGION, cors: true}, async (request) =
   const entRef = getRegistryDb().collection('license_entitlements').doc(clubId);
   const teamEntRef = reqDb.collection('team_entitlements').doc(teamId);
   const lookupRef = playerEmail ? reqDb.collection('player_lookup').doc(playerEmail) : null;
+  const phoneKey = normalizePhoneLookupKey(parentPhone);
+  const phoneLookupRef = phoneKey ? reqDb.collection('player_lookup').doc(phoneKey) : null;
 
   const txnResult = await reqDb.runTransaction(async (transaction) =>
     secureAddPlayerTxn(transaction, {
       teamId, clubId, playerName, playerEmail, jersey,
-      rosterRef, entRef, teamEntRef, lookupRef,
+      parentPhone, parentName, dob,
+      rosterRef, entRef, teamEntRef, lookupRef, phoneLookupRef,
       updatedBy: 'system:secureAddPlayer',
     }),
   );
@@ -1194,13 +1165,16 @@ exports.secureBulkAddPlayers = onCall({region: REGION, cors: true}, async (reque
       continue;
     }
 
-    const {playerName, playerEmail, jersey} = normalized;
+    const {playerName, playerEmail, parentPhone, parentName, dob, jersey} = normalized;
     const lookupRef = playerEmail ? reqDb.collection('player_lookup').doc(playerEmail) : null;
+    const phoneKey = normalizePhoneLookupKey(parentPhone);
+    const phoneLookupRef = phoneKey ? reqDb.collection('player_lookup').doc(phoneKey) : null;
 
     const txnResult = await reqDb.runTransaction(async (transaction) =>
       secureAddPlayerTxn(transaction, {
         teamId, clubId, playerName, playerEmail, jersey,
-        rosterRef, entRef, teamEntRef, lookupRef,
+        parentPhone, parentName, dob,
+        rosterRef, entRef, teamEntRef, lookupRef, phoneLookupRef,
         updatedBy: 'system:secureBulkAddPlayers',
       }),
     );
