@@ -77,9 +77,9 @@ export class RosterPanelEngine {
 		const rosterDocRef = doc(db, 'rosters', teamId);
 		const unsubRoster = onSnapshot(
 			rosterDocRef,
-			(snap) => {
+			(snap: any) => {
 				if (typeof snap?.exists === 'function' ? snap.exists() : Boolean(snap?.exists)) {
-					const data = snap.data ? snap.data() : snap;
+					const data = typeof snap?.data === 'function' ? snap.data() : snap;
 					const raw = Array.isArray(data?.players) ? data.players : [];
 					this.rawRosterNames = raw
 						.map((p: any) => (typeof p === 'string' ? p : p?.name || p?.playerName || ''))

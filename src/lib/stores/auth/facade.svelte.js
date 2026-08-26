@@ -33,15 +33,32 @@ export function createAuthFacade() {
 					const e2eState = JSON.parse(
 						window.localStorage.getItem('auth_state') ||
 							window.localStorage.getItem('user_session_claims') ||
-							'{}'
+							'{}',
 					);
-					if (e2eState && e2eState.role) {
-						userState.setProfile(e2eState);
-						sessionState.setRole(e2eState.role);
-						tenantState.applyResolved({ tenantId: e2eState.tenantId || e2eState.clubId || '', profile: e2eState });
+					const resolvedRole =
+						e2eState.role || e2eState.user?.role || e2eState.userProfile?.role;
+					if (e2eState && resolvedRole) {
+						const profileObj = {
+							role: resolvedRole,
+							isProfileComplete: true,
+							...(e2eState.userProfile || e2eState.user || e2eState),
+						};
+						userState.setProfile(profileObj);
+						if (e2eState.user) userState.user = e2eState.user;
+						sessionState.setRole(resolvedRole);
+						tenantState.applyResolved({
+							tenantId:
+								e2eState.tenantId ||
+								e2eState.clubId ||
+								profileObj.clubId ||
+								'',
+							profile: profileObj,
+						});
 						sessionState.isAuthenticated = true;
 					}
-				} catch (e) { /* ignore */ }
+				} catch (e) {
+					/* ignore */
+				}
 				sessionState.isLoading = false;
 				return;
 			}
