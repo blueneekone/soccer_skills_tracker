@@ -206,67 +206,41 @@ import { functions } from '$lib/firebase.js';
 </script>
 
 <div
-	class="w-full space-y-4 font-mono"
-	style="
-		background: rgba(0, 8, 20, 0.95);
-		border: 1px solid rgba(0, 255, 255, 0.15);
-		border-radius: 4px;
-		padding: 1.25rem;
-	"
+	class="tw-w-full tw-space-y-4 tw-font-mono tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-rounded-lg tw-p-5 tw-shadow-lg"
 >
 	<!-- Header -->
-	<div class="flex items-center justify-between">
-		<div class="flex items-center gap-2">
-			<div class="w-1.5 h-1.5 rounded-full bg-cyan-400" style="box-shadow: 0 0 6px #14b8a6;"></div>
-			<span class="text-xs tracking-widest tw-font-mono" style="color: rgba(0,255,255,0.7);">FACILITY SCHEDULER</span>
+	<div class="tw-flex tw-items-center tw-justify-between tw-border-b tw-border-[#334155] tw-pb-3">
+		<div class="tw-flex tw-items-center tw-gap-2">
+			<div class="tw-w-2 tw-h-2 tw-rounded-full tw-bg-[#14b8a6] tw-shadow-[0_0_8px_#14b8a6]"></div>
+			<span class="tw-text-xs tw-font-bold tw-tracking-widest tw-text-[#14b8a6] tw-uppercase">PITCH RADAR PROBE</span>
 		</div>
 		{#if isChecking}
-			<span class="text-xs animate-pulse" style="color: rgba(0,255,255,0.4);">PROBING...</span>
+			<span class="tw-text-xs tw-text-[#14b8a6] tw-animate-pulse">[ PROBING RADAR... ]</span>
 		{:else if availStatus === 'available'}
-			<span class="text-xs" style="color: #2dd4bf;">■ AVAILABLE</span>
+			<span class="tw-text-xs tw-font-bold tw-text-[#34d399]">[ ■ AVAILABLE · CLEAR TO BOOK ]</span>
 		{:else if availStatus === 'conflict'}
-			<span class="text-xs" style="color: #ff4060; text-shadow: 0 0 8px #ff4060;">■ CONFLICT</span>
+			<span class="tw-text-xs tw-font-bold tw-text-[#f87171]">[ ⚠ COLLISION DETECTED ]</span>
 		{/if}
 	</div>
 
 	<!-- ── RESOURCE UNAVAILABLE BANNER ────────────────────────────────────── -->
 	{#if availStatus === 'conflict'}
 		<div
-			class="relative overflow-hidden rounded-sm p-3 space-y-2 tw-font-mono"
-			style="
-				background: rgba(255, 40, 64, 0.06);
-				border: 1px solid rgba(255, 64, 96, {glitchActive ? '0.9' : '0.5'});
-				box-shadow: 0 0 {glitchActive ? '30px' : '12px'} rgba(255,64,96,{glitchActive ? '0.25' : '0.1'});
-				transition: all 0.1s;
-				transform: translateX({glitchActive ? (Math.random() > 0.5 ? 1 : -1) : 0}px);
-			"
+			class="tw-relative tw-overflow-hidden tw-rounded-lg tw-p-4 tw-space-y-2 tw-bg-[#f87171]/10 tw-border tw-border-[#f87171] tw-transition-all"
+			style="box-shadow: 0 0 {glitchActive ? '20px' : '8px'} rgba(248, 113, 113, 0.2);"
 		>
-			<!-- Diagonal stripe overlay -->
-			<div class="absolute inset-0 pointer-events-none" style="
-				background: repeating-linear-gradient(
-					-45deg,
-					transparent,
-					transparent 8px,
-					rgba(255,64,96,0.03) 8px,
-					rgba(255,64,96,0.03) 9px
-				);
-			"></div>
-
-			<div class="flex items-center gap-2">
-				<span class="text-sm font-bold tracking-widest tw-font-mono" style="color: #ff4060; text-shadow: 0 0 12px rgba(255,64,96,0.7);">
-					⚠ RESOURCE UNAVAILABLE
+			<div class="tw-flex tw-items-center tw-gap-2">
+				<span class="tw-text-xs tw-font-black tw-tracking-widest tw-text-[#f87171] tw-uppercase">
+					⚠ PITCH COLLISION — RESOURCE OCCUPIED
 				</span>
 			</div>
 
 			{#each conflicts as c}
-				<div
-					class="px-2 py-1.5 rounded-sm text-xs space-y-0.5"
-					style="background: rgba(255,64,96,0.06); border-left: 2px solid rgba(255,64,96,0.4);"
-				>
-					<div class="font-bold" style="color: rgba(255,150,160,0.9);">{c.label}</div>
-					<div style="color: rgba(255,100,120,0.6);">
+				<div class="tw-p-2.5 tw-rounded tw-bg-[#020617] tw-border-l-4 tw-border-[#f87171] tw-text-xs">
+					<div class="tw-font-bold tw-text-[#fafafa]">{c.label}</div>
+					<div class="tw-text-[#94a3b8] tw-mt-0.5">
 						{msToHHMM(c.startMs)} – {msToHHMM(c.endMs)}
-						{#if c.teamId}<span class="ml-2 opacity-60">· {c.teamId}</span>{/if}
+						{#if c.teamId}<span class="tw-ml-2 tw-text-[#14b8a6]">· {c.teamId}</span>{/if}
 					</div>
 				</div>
 			{/each}
@@ -275,29 +249,23 @@ import { functions } from '$lib/firebase.js';
 
 	<!-- Facility selector -->
 	{#if loadingFacilities}
-		<div class="h-8 flex items-center">
-			<span class="text-xs animate-pulse" style="color: rgba(0,255,255,0.4);">LOADING FACILITIES...</span>
+		<div class="tw-h-8 tw-flex tw-items-center">
+			<span class="tw-text-xs tw-text-[#94a3b8] tw-animate-pulse">Loading pitch facilities…</span>
 		</div>
 	{:else if facilities.length === 0}
-		<div class="text-xs" style="color: rgba(255,200,100,0.6);">
-			No active facilities configured. Ask a Director to add facilities.
+		<div class="tw-text-xs tw-text-[#f59e0b] tw-p-3 tw-bg-[#020617] tw-border tw-border-[#334155] tw-rounded">
+			No active pitch facilities configured for this club yet.
 		</div>
 	{:else}
-		<div class="space-y-1">
-			<label for="fs-pitch" class="text-xs tracking-widest tw-font-mono" style="color: rgba(0,255,255,0.5);">PITCH / FACILITY</label>
+		<div class="tw-space-y-1">
+			<label for="fs-pitch" class="tw-text-[10px] tw-font-bold tw-tracking-widest tw-text-[#94a3b8] tw-uppercase">SELECT FACILITY / PITCH</label>
 			<select
 				id="fs-pitch"
 				bind:value={selectedFacilityId}
-				class="w-full px-3 py-2 text-xs bg-transparent outline-none cursor-pointer"
-				style="
-					border: 1px solid rgba(0,255,255,0.2);
-					border-radius: 2px;
-					color: #14b8a6;
-					background: rgba(0,255,255,0.02);
-				"
+				class="tw-w-full tw-px-3 tw-py-2 tw-text-xs tw-bg-[#020617] tw-border tw-border-[#334155] focus:tw-border-[#14b8a6] tw-rounded-md tw-text-[#fafafa] tw-outline-none tw-cursor-pointer"
 			>
 				{#each facilities as f}
-					<option value={f.facilityId} style="background: #000e1a; color: #14b8a6;">
+					<option value={f.facilityId}>
 						{f.name} · {f.pitchType}{f.capacity ? ` · cap ${f.capacity}` : ''}
 					</option>
 				{/each}
@@ -306,76 +274,68 @@ import { functions } from '$lib/firebase.js';
 	{/if}
 
 	<!-- Date and time row -->
-	<div class="grid grid-cols-3 gap-3 tw-font-mono">
-		<div class="space-y-1">
-			<label for="fs-date" class="text-xs tracking-widest tw-font-mono" style="color: rgba(0,255,255,0.5);">DATE</label>
+	<div class="tw-grid tw-grid-cols-1 sm:tw-grid-cols-3 tw-gap-3">
+		<div class="tw-space-y-1">
+			<label for="fs-date" class="tw-text-[10px] tw-font-bold tw-tracking-widest tw-text-[#94a3b8] tw-uppercase">DATE</label>
 			<input
 				id="fs-date"
 				type="date"
 				bind:value={date}
-				class="w-full px-2 py-2 text-xs bg-transparent outline-none"
-				style="border: 1px solid rgba(0,255,255,0.2); border-radius: 2px; color: #14b8a6; color-scheme: dark;"
+				class="tw-w-full tw-px-3 tw-py-2 tw-text-xs tw-bg-[#020617] tw-border tw-border-[#334155] focus:tw-border-[#14b8a6] tw-rounded-md tw-text-[#fafafa] tw-outline-none"
 				min={todayISO()}
 			/>
 		</div>
-		<div class="space-y-1">
-			<label for="fs-start" class="text-xs tracking-widest tw-font-mono" style="color: rgba(0,255,255,0.5);">START</label>
+		<div class="tw-space-y-1">
+			<label for="fs-start" class="tw-text-[10px] tw-font-bold tw-tracking-widest tw-text-[#94a3b8] tw-uppercase">START TIME</label>
 			<input
 				id="fs-start"
 				type="time"
 				bind:value={startTime}
-				class="w-full px-2 py-2 text-xs bg-transparent outline-none"
-				style="border: 1px solid rgba(0,255,255,0.2); border-radius: 2px; color: #14b8a6; color-scheme: dark;"
+				class="tw-w-full tw-px-3 tw-py-2 tw-text-xs tw-bg-[#020617] tw-border tw-border-[#334155] focus:tw-border-[#14b8a6] tw-rounded-md tw-text-[#fafafa] tw-outline-none"
 			/>
 		</div>
-		<div class="space-y-1">
-			<label for="fs-end" class="text-xs tracking-widest tw-font-mono" style="color: rgba(0,255,255,0.5);">END</label>
+		<div class="tw-space-y-1">
+			<label for="fs-end" class="tw-text-[10px] tw-font-bold tw-tracking-widest tw-text-[#94a3b8] tw-uppercase">END TIME</label>
 			<input
 				id="fs-end"
 				type="time"
 				bind:value={endTime}
-				class="w-full px-2 py-2 text-xs bg-transparent outline-none"
-				style="border: 1px solid rgba(0,255,255,0.2); border-radius: 2px; color: #14b8a6; color-scheme: dark;"
+				class="tw-w-full tw-px-3 tw-py-2 tw-text-xs tw-bg-[#020617] tw-border tw-border-[#334155] focus:tw-border-[#14b8a6] tw-rounded-md tw-text-[#fafafa] tw-outline-none"
 			/>
 		</div>
 	</div>
 
 	{#if isValidTimeBlock}
-		<div class="text-xs" style="color: rgba(0,255,255,0.35);">
+		<div class="tw-text-[11px] tw-text-[#14b8a6] tw-font-bold">
 			DURATION: {Math.floor(durationMinutes / 60)}h {durationMinutes % 60}m
 		</div>
 	{:else if startMs > 0}
-		<div class="text-xs" style="color: rgba(255,180,80,0.7);">⚠ End time must be after start time.</div>
+		<div class="tw-text-[11px] tw-text-[#f59e0b]">⚠ End time must be after start time.</div>
 	{/if}
 
 	<!-- Event details -->
-	<div class="space-y-1">
-		<label for="fs-event" class="text-xs tracking-widest tw-font-mono" style="color: rgba(0,255,255,0.5);">EVENT LABEL</label>
+	<div class="tw-space-y-1">
+		<label for="fs-event" class="tw-text-[10px] tw-font-bold tw-tracking-widest tw-text-[#94a3b8] tw-uppercase">EVENT LABEL</label>
 		<input
 			id="fs-event"
 			type="text"
 			bind:value={label}
-			placeholder="e.g. U14 Training Block"
-			class="w-full px-3 py-2 text-xs bg-transparent outline-none"
-			style="border: 1px solid rgba(0,255,255,0.2); border-radius: 2px; color: #14b8a6;"
-			onfocus={(e) => (e.currentTarget.style.borderColor = 'rgba(0,255,255,0.5)')}
-			onblur={(e) => (e.currentTarget.style.borderColor = 'rgba(0,255,255,0.2)')}
+			placeholder="e.g. U14 Tactical Training Block"
+			class="tw-w-full tw-px-3 tw-py-2 tw-text-xs tw-bg-[#020617] tw-border tw-border-[#334155] focus:tw-border-[#14b8a6] tw-rounded-md tw-text-[#fafafa] tw-outline-none"
 		/>
 	</div>
 
-	<div class="space-y-1">
-		<div class="text-xs tracking-widest tw-font-mono" style="color: rgba(0,255,255,0.5);">EVENT TYPE</div>
-		<div class="flex gap-2">
+	<div class="tw-space-y-1">
+		<div class="tw-text-[10px] tw-font-bold tw-tracking-widest tw-text-[#94a3b8] tw-uppercase">BLOCK TYPE</div>
+		<div class="tw-grid tw-grid-cols-3 tw-gap-2">
 			{#each (['practice', 'fixture', 'other'] as const) as et}
 				<button
+					type="button"
 					onclick={() => (eventType = et)}
-					class="flex-1 py-1.5 text-xs tracking-wider capitalize transition-all tw-font-mono"
-					style="
-						border: 1px solid {eventType === et ? 'rgba(0,255,255,0.5)' : 'rgba(0,255,255,0.15)'};
-						background: {eventType === et ? 'rgba(0,255,255,0.1)' : 'transparent'};
-						color: {eventType === et ? '#14b8a6' : 'rgba(0,255,255,0.4)'};
-						border-radius: 2px;
-					"
+					class="tw-py-2 tw-text-xs tw-font-bold tw-tracking-wider tw-capitalize tw-transition-all tw-rounded-md tw-border"
+					style={eventType === et
+						? 'border-color: #14b8a6; background: rgba(20, 184, 166, 0.2); color: #2dd4bf;'
+						: 'border-color: #334155; background: #020617; color: #94a3b8;'}
 				>{et}</button>
 			{/each}
 		</div>
@@ -383,35 +343,31 @@ import { functions } from '$lib/firebase.js';
 
 	<!-- Errors / success -->
 	{#if bookError}
-		<div class="px-3 py-2 text-xs" style="background: rgba(255,64,96,0.08); border: 1px solid rgba(255,64,96,0.3); color: #ff4060;">
+		<div class="tw-px-3 tw-py-2 tw-text-xs tw-bg-[#f87171]/10 tw-border tw-border-[#f87171] tw-text-[#f87171] tw-rounded">
 			⚠ {bookError}
 		</div>
 	{/if}
 	{#if checkError}
-		<div class="px-3 py-2 text-xs" style="color: rgba(255,200,100,0.6);">⚠ {checkError}</div>
+		<div class="tw-px-3 tw-py-2 tw-text-xs tw-text-[#f59e0b] tw-p-2 tw-bg-[#020617] tw-border tw-border-[#334155] tw-rounded">⚠ {checkError}</div>
 	{/if}
 	{#if bookSuccess}
-		<div class="px-3 py-2 text-xs" style="background: rgba(45, 212, 191,0.06); border: 1px solid rgba(45, 212, 191,0.3); color: #2dd4bf;">
-			✓ BOOKING CONFIRMED · ID: {bookSuccess.slice(0, 8).toUpperCase()}
+		<div class="tw-px-3 tw-py-2 tw-text-xs tw-bg-[#34d399]/10 tw-border tw-border-[#34d399] tw-text-[#34d399] tw-rounded">
+			✓ BOOKING CONFIRMED · RESERVATION ID: {bookSuccess.slice(0, 8).toUpperCase()}
 		</div>
 	{/if}
 
 	<!-- Book button -->
 	<button
+		type="button"
 		onclick={handleBook}
 		disabled={isBooking || availStatus === 'conflict' || !isValidTimeBlock || !label.trim() || !selectedFacilityId}
-		class="w-full py-2.5 text-xs font-bold tracking-widest transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed tw-font-mono"
-		style="
-			background: {availStatus === 'conflict' ? 'rgba(255,64,96,0.08)' : 'rgba(0,255,255,0.08)'};
-			border: 1px solid {availStatus === 'conflict' ? 'rgba(255,64,96,0.4)' : 'rgba(0,255,255,0.4)'};
-			color: {availStatus === 'conflict' ? '#ff4060' : '#14b8a6'};
-			border-radius: 2px;
-		"
-		onmouseenter={(e) => { if (!e.currentTarget.disabled) e.currentTarget.style.background = availStatus === 'conflict' ? 'rgba(255,64,96,0.14)' : 'rgba(0,255,255,0.14)'; }}
-		onmouseleave={(e) => { e.currentTarget.style.background = availStatus === 'conflict' ? 'rgba(255,64,96,0.08)' : 'rgba(0,255,255,0.08)'; }}
+		class="tw-w-full tw-py-3 tw-text-xs tw-font-bold tw-tracking-widest tw-transition-all tw-duration-200 disabled:tw-opacity-30 disabled:tw-cursor-not-allowed tw-rounded-md tw-border"
+		style={availStatus === 'conflict'
+			? 'background: rgba(248, 113, 113, 0.15); border-color: #f87171; color: #f87171;'
+			: 'background: rgba(20, 184, 166, 0.15); border-color: #14b8a6; color: #14b8a6;'}
 	>
 		{#if isBooking}[ LOCKING TIME BLOCK... ]
-		{:else if availStatus === 'conflict'}[ RESOURCE UNAVAILABLE ]
-		{:else}[ BOOK FACILITY ]{/if}
+		{:else if availStatus === 'conflict'}[ RESOURCE OCCUPIED — CHOOSE ANOTHER SLOT ]
+		{:else}[ CONFIRM PITCH RESERVATION ]{/if}
 	</button>
 </div>

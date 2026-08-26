@@ -848,7 +848,6 @@ export class IntentEngine {
 		let teamPlayerUids: string[] = [];
 		let rosterNames: string[] = [];
 		let rows: RosterEntry[] = [];
-		let queryFailed = false;
 
 		try {
 			const [teamSnap, rosterSnap] = await Promise.all([
@@ -867,40 +866,59 @@ export class IntentEngine {
 						.map((n) => n.trim())
 				:	[];
 
-			const snap = await getDocs(
+			// 1. Query users collection for registered players
+			const userSnap = await getDocs(
 				query(
 					collection(db, 'users'),
 					where('teamId', '==', this._teamId),
-					where('clubId', '==', this._clubId)
 				),
-			);
-			rows = snap.docs
-				.filter((d) => d.data().role === 'player')
-				.map((d) => this._userDocToRosterEntry(d.id, d.data()));
-			rows = dedupeRosterEntries(rows);
-
-			const claimedUids = new Set(rows.map((r) => r.uid).filter(Boolean));
-			const orphanUids = teamPlayerUids.filter((u) => !claimedUids.has(u));
-			const missingUidRows = rows.filter((r) => !r.uid);
-			if (missingUidRows.length === 1 && orphanUids.length === 1) {
-				const resolvedUid = orphanUids[0];
-				missingUidRows[0].uid = resolvedUid;
-				missingUidRows[0].rosterKey = resolvedUid;
-				missingUidRows[0].assignable = true;
+			).catch(() => null);
+			if (userSnap) {
+				rows = userSnap.docs
+					.filter((d) => d.data().role === 'player' || d.data().teamId === this._teamId)
+					.map((d) => this._userDocToRosterEntry(d.id, d.data()));
 			}
+
+			// 2. Query player_lookup for all ingested/linked athletes
+			const lookupSnap = await getDocs(
+				query(
+					collection(db, 'player_lookup'),
+					where('teamId', '==', this._teamId),
+				),
+			).catch(() => null);
+
+			if (lookupSnap) {
+				const existingKeys = new Set(rows.map((r) => r.rosterKey.toLowerCase()));
+				const existingNames = new Set(rows.map((r) => r.playerName.trim().toLowerCase()));
+
+				for (const docSnap of lookupSnap.docs) {
+					const data = docSnap.data() || {};
+					const docId = docSnap.id;
+					const name = (typeof data.playerName === 'string' && data.playerName.trim()) ||
+						(typeof data.displayName === 'string' && data.displayName.trim()) || docId;
+					const nameKey = name.toLowerCase();
+
+					if (existingNames.has(nameKey) || existingKeys.has(docId.toLowerCase())) continue;
+
+					const email = docId.includes('@') ? docId : (typeof data.playerEmail === 'string' ? data.playerEmail.trim() : '');
+					rows.push({
+						uid: '',
+						rosterKey: docId,
+						email,
+						playerName: name,
+						xpByAttribute: (data.xpByAttribute as Record<string, number>) || {},
+						assignable: true,
+						nameOnly: false,
+					});
+					existingNames.add(nameKey);
+				}
+			}
+
+			rows = dedupeRosterEntries(rows);
 		} catch (e) {
-			queryFailed = true;
 			console.error('[IntentEngine] roster load error:', e);
 			this.rosterError = this._formatRosterError(e);
 			rows = [];
-		}
-
-		const assignableCount = rows.filter((r) => r.assignable).length;
-		if ((queryFailed || assignableCount === 0) && teamPlayerUids.length > 0) {
-			rows = await this._resolveRosterFallback(teamPlayerUids, rows);
-			if (rows.some((r) => r.assignable)) {
-				this.rosterError = '';
-			}
 		}
 
 		try {

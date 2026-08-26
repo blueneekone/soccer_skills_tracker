@@ -59,18 +59,18 @@
 	});
 </script>
 
-<div class="tw-relative tw-h-[100dvh] tw-overflow-hidden tw-w-full tw-bg-[#020202] tw-font-mono coach-forge-workbench">
+<div class="tw-relative tw-min-h-screen tw-w-full tw-bg-[#020617] tw-text-[#fafafa] tw-font-mono coach-forge-workbench tw-pb-16">
 	<header
-		class="tw-bg-[#020202] tw-border-b tw-border-[#14b8a6]/10 tw-px-5 tw-py-4 tw-flex tw-items-center tw-justify-between tw-gap-4 tw-flex-wrap"
+		class="tw-bg-[#0f172a] tw-border-b tw-border-[#334155] tw-px-6 tw-py-4 tw-flex tw-items-center tw-justify-between tw-gap-4 tw-flex-wrap tw-sticky tw-top-0 tw-z-30 tw-shadow-lg"
 	>
 		<div class="tw-flex tw-flex-col tw-gap-0.5">
-			<h1 class="tw-text-2xl tw-font-black tw-tracking-tight tw-text-white">
+			<h1 class="tw-text-xl tw-font-black tw-tracking-wider tw-text-white tw-flex tw-items-center tw-gap-2">
 				<span class="tw-text-[#14b8a6]">{titleLead}</span>
 				{#if titleAccent}
-					 {titleAccent}
+					<span>{titleAccent}</span>
 				{/if}
 			</h1>
-			<p class="tw-text-[10px] tw-tracking-widest tw-text-white/30 tw-uppercase">
+			<p class="tw-text-[11px] tw-tracking-widest tw-text-[#94a3b8] tw-uppercase">
 				{subtitle}
 			</p>
 		</div>
@@ -79,22 +79,22 @@
 			{#if showDrillLibraryLink}
 				<a
 					href={resolve('/(app)/coach/drills', {})}
-					class="tw-text-[10px] tw-tracking-widest tw-uppercase tw-text-[#14b8a6]/70 tw-no-underline tw-border tw-border-[#14b8a6]/25 tw-rounded tw-px-2.5 tw-py-1 hover:tw-border-[#14b8a6]/50 hover:tw-text-[#14b8a6]"
+					class="tw-text-xs tw-font-bold tw-tracking-widest tw-uppercase tw-text-[#14b8a6] tw-no-underline tw-border tw-border-[#14b8a6]/40 tw-bg-[#14b8a6]/10 tw-rounded tw-px-3 tw-py-1.5 hover:tw-bg-[#14b8a6]/20 hover:tw-text-[#2dd4bf] tw-transition-all"
 				>
-					Drill library →
+					Drill Library →
 				</a>
 			{/if}
 
 			{#if currentTeam}
-				<span class="tw-text-[11px] tw-text-white/40 tw-font-mono tw-tracking-wide">
-					&#x25B6; {currentTeam.name}
+				<span class="tw-text-xs tw-text-[#e2e8f0] tw-font-mono tw-tracking-wide tw-bg-[#1e293b] tw-px-3 tw-py-1.5 tw-rounded tw-border tw-border-[#334155]">
+					<span class="tw-text-[#14b8a6]">&#x25B6;</span> {currentTeam.name}
 				</span>
 			{/if}
 
 			{#if myTeams.length > 1}
 				<select
 					bind:value={teamScope.selectedTeamId}
-					class="tw-bg-[#020202] tw-border tw-border-[#14b8a6]/20 tw-text-white/80 tw-rounded-lg tw-px-3 tw-py-2 tw-font-mono tw-text-xs tw-outline-none tw-cursor-pointer hover:tw-border-[#14b8a6]/40 tw-transition-colors tw-min-h-[44px]"
+					class="tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-text-[#fafafa] tw-rounded-lg tw-px-3 tw-py-2 tw-font-mono tw-text-xs tw-outline-none tw-cursor-pointer hover:tw-border-[#14b8a6] tw-transition-colors tw-min-h-[40px]"
 				>
 					{#each myTeams as team (team.id)}
 						<option value={team.id}>{team.name}</option>
@@ -104,7 +104,7 @@
 		</div>
 	</header>
 
-	<main class="tw-px-5 tw-py-6">
+	<main class="tw-px-4 md:tw-px-8 tw-py-6 tw-max-w-[1600px] tw-mx-auto">
 		<div class="coach-forge-workbench__grid">
 			<section class="coach-forge-workbench__deploy" aria-label="Deploy intent">
 				<ForgeDeployPanel

@@ -1,10 +1,13 @@
 /**
- * VS-3-Forge — full-page workbench layout for /coach/forge
- * Deploy column in document flow — no fixed HUD overlay.
+ * VS-3-Forge — Widescreen 12-Column Workbench for /coach/forge
+ * Multi-billion-dollar Tactical SIEM layout
  */
 
 .coach-forge-workbench {
 	width: 100%;
+	min-height: 100vh;
+	background: #020617;
+	color: #fafafa;
 }
 
 .coach-forge-workbench__grid {
@@ -12,10 +15,13 @@
 	gap: 1.5rem;
 	grid-template-columns: 1fr;
 	align-items: start;
+	max-width: 1400px;
+	margin: 0 auto;
 }
 
 .coach-forge-workbench__deploy {
 	order: 1;
+	min-width: 0;
 }
 
 .coach-forge-workbench__arena {
@@ -23,32 +29,33 @@
 	min-width: 0;
 }
 
-@media (min-width: 768px) {
+@media (min-width: 1024px) {
 	.coach-forge-workbench__grid {
-		grid-template-columns: minmax(0, 1fr) min(320px, 34%);
-		gap: 1.25rem;
+		grid-template-columns: 7fr 5fr;
+		gap: 1.75rem;
 	}
 
 	.coach-forge-workbench__deploy {
-		order: 2;
-		position: sticky;
-		top: 1rem;
-		max-height: calc(100dvh - 6rem);
-		overflow-y: auto;
+		order: 1;
 	}
 
 	.coach-forge-workbench__arena {
-		order: 1;
+		order: 2;
+		position: sticky;
+		top: 1.5rem;
+		max-height: calc(100dvh - 5rem);
+		overflow-y: auto;
 	}
 }
 
 .coach-forge-deploy-panel {
 	border-radius: 8px;
-	border: 1px solid rgba(20, 184, 166, 0.2);
-	background: var(--pd-navy-panel, #05050a);
+	border: 1px solid #334155;
+	background: #0f172a;
+	box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
 }
 
 .coach-forge-deploy-panel__roster-scroll {
-	max-height: min(240px, 40vh);
+	max-height: 320px;
 	overflow-y: auto;
 }
