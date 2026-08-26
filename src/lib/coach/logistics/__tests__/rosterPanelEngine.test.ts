@@ -17,30 +17,39 @@ vi.mock('firebase/firestore', () => ({
 	collection: vi.fn(),
 	query: vi.fn(),
 	where: vi.fn(),
-	onSnapshot: vi.fn((_q, onSnap, _onErr) => {
-		// Immediately invoke with a mock snapshot containing 2 players
-		onSnap({
-			docs: [
-				{
-					id: 'alice@test.com',
-					data: () => ({
-						displayName: 'Alice Smith',
-						parentName: 'Jane Smith',
-						parentPhone: '555-0001',
-						parentEmail: 'jane@test.com',
-					}),
-				},
-				{
-					id: 'bob@test.com',
-					data: () => ({
-						playerName: 'Bob Jones',
-						parentName: '',
-						parentPhone: '',
-						parentEmail: '',
-					}),
-				},
-			],
-		});
+	onSnapshot: vi.fn((qOrRef, onSnap, _onErr) => {
+		// Distinguish query vs doc ref in onSnapshot
+		if (qOrRef && typeof qOrRef === 'object' && 'id' in qOrRef) {
+			// Doc reference snapshot
+			onSnap({
+				exists: () => true,
+				data: () => ({ players: [] }),
+			});
+		} else {
+			// Collection query snapshot
+			onSnap({
+				docs: [
+					{
+						id: 'alice@test.com',
+						data: () => ({
+							displayName: 'Alice Smith',
+							parentName: 'Jane Smith',
+							parentPhone: '555-0001',
+							parentEmail: 'jane@test.com',
+						}),
+					},
+					{
+						id: 'bob@test.com',
+						data: () => ({
+							playerName: 'Bob Jones',
+							parentName: '',
+							parentPhone: '',
+							parentEmail: '',
+						}),
+					},
+				],
+			});
+		}
 		return vi.fn(); // unsub
 	}),
 	doc: vi.fn((_db, _col, id) => ({ id })),

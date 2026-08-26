@@ -35,7 +35,7 @@ describe('/player/dashboard — Liquid Bento (Slice 3)', () => {
 
 	it('.bento-card local CSS does NOT use backdrop-filter (opaque carve-out) and uses crisp borders', () => {
 		// Extract the .bento-card rule block
-		const m = src.match(/:global\(\.player-dossier-root \.bento-card\),\s*\.bento-card\s*\{([^}]+)\}/s);
+		const m = src.match(/:global\(\.player-dossier-root \.bento-card\),\s*:global\(\.bento-card\)\s*\{([^}]+)\}/s);
 		expect(m).not.toBeNull();
 		// Must not use glassmorphism / blur filter on Z2 data cards
 		expect(m![1]).not.toMatch(/backdrop-filter/);
