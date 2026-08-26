@@ -157,3 +157,7 @@ exports.syncMatchStats = matchOps.syncMatchStats;
 // Resend Outbound Transactional Mail Bus
 const resendService = require('./src/services/resendService');
 exports.processOutboundMail = resendService.processOutboundMail;
+
+// Onboarding Invitations Trigger
+const invitations = require('./lib/domains/invitations');
+exports.onInvitationCreated = invitations.onInvitationCreated;
