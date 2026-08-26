@@ -919,20 +919,16 @@ exports.secureAllocateTeamSeats = onCall({region: REGION}, async (request) => {
 
 const MAX_BULK_ROSTER_ROWS = 200;
 
+function normalizePhoneLookupKey(phone) {
+  if (!phone || typeof phone !== 'string') return '';
+  const digits = phone.replace(/\D/g, '');
+  return digits.length >= 10 ? `phone_${digits.slice(-10)}` : '';
+}
+
 /**
  * Shared roster-add transaction body for secureAddPlayer / secureBulkAddPlayers.
  * @param {admin.firestore.Transaction} transaction
  * @param {object} params
- * @param {string} params.teamId
- * @param {string} params.clubId
- * @param {string} params.playerName
- * @param {string} params.playerEmail
- * @param {string} params.jersey
- * @param {admin.firestore.DocumentReference} params.rosterRef
- * @param {admin.firestore.DocumentReference} params.entRef
- * @param {admin.firestore.DocumentReference} params.teamEntRef
- * @param {admin.firestore.DocumentReference|null} params.lookupRef
- * @param {string} params.updatedBy
  * @return {Promise<{kind: string}>}
  */
 async function secureAddPlayerTxn(transaction, params) {
@@ -947,13 +943,6 @@ async function secureAddPlayerTxn(transaction, params) {
   const list = rosterSnap.exists && Array.isArray(rosterSnap.data().players) ?
     rosterSnap.data().players : [];
   if (list.includes(playerName)) return {kind: 'duplicate'};
-
-  if (lookupRef) {
-    const lkSnap = await transaction.get(lookupRef);
-    if (lkSnap.exists && lkSnap.data().teamId && lkSnap.data().teamId !== teamId) {
-      return {kind: 'email_in_use'};
-    }
-  }
 
   const teamEntSnap = await transaction.get(teamEntRef);
   if (teamEntSnap.exists) {

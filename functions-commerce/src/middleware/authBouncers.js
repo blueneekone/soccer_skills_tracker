@@ -212,10 +212,12 @@ async function assertParentAsync(request) {
   if (!request.auth) {
     throw new HttpsError('unauthenticated', 'Sign in required.');
   }
-  if (request.auth.token.role !== 'parent') {
+  const role = request.auth.token.role;
+  const allowedRoles = ['parent', 'coach', 'assistant_coach', 'team_manager', 'director', 'admin', 'super_admin'];
+  if (role && !allowedRoles.includes(role)) {
     throw new HttpsError(
         'permission-denied',
-        'Only parent accounts may use this action.',
+        'Only parent or staff guardian accounts may use this action.',
     );
   }
   const email = normEmail(request.auth.token.email);
