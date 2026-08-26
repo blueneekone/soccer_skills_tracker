@@ -55,12 +55,43 @@ function dispatchPersonaSwarm(persona) {
   }
 }
 
+function dispatchExhaustive360Swarm() {
+  const title = `Swarm 360-Degree Platform Audit: Stripe, Tournaments, Gamification & Personas`;
+  const body = `@jules, please spin up a sandboxed cloud VM and execute our 360-degree exhaustive platform audit workflow.
+
+### 🏛️ MANDATORY WORKFLOW REFERENCE:
+- Follow \`.agents/workflows/jules-builds/jules-exhaustive-platform-audit-and-monetization.md\`
+- Execute the complete exhaustive Playwright suite:
+  \`pnpm playwright test tests/platform-exhaustive-master.spec.ts tests/persona-interactive-e2e.spec.ts tests/platform-cohesion-master.spec.ts --project=chromium\`
+- Audit:
+  1. Public Marketing & ROI Calculators
+  2. Stripe Connect & Subscriptions
+  3. Tournaments & Commissioner Brackets
+  4. Player Gamification, Skill Trees & Habit Streaks
+  5. Recruiter Directory & Checkr Clearance
+  6. Fan Broadcast & Ticketing
+  7. Private Coaching Marketplace
+- Save audit artifacts to \`/audit-artifacts/platform-exhaustive/\` and open a clean Pull Request into \`dev\`.`;
+
+  console.log(`🚀 Dispatching 360-Degree Exhaustive Platform Swarm...`);
+  try {
+    const command = `gh issue create --title "${title}" --body "${body}" --label "jules"`;
+    execSync(command, { stdio: 'inherit' });
+    console.log(`   ✅ 360 Swarm spawned successfully.\n`);
+  } catch (err) {
+    console.error(`   ❌ Failed to dispatch 360 Swarm: ${err.message}\n`);
+  }
+}
+
 if (targetArg === 'master') {
   dispatchMasterSwarm();
+} else if (targetArg === '360' || targetArg === 'exhaustive' || targetArg === 'full') {
+  dispatchExhaustive360Swarm();
 } else if (ALL_PERSONAS.includes(targetArg)) {
   dispatchPersonaSwarm(targetArg);
 } else {
-  // Dispatch all persona swarms and the master interactive suite
+  // Dispatch all persona swarms and the 360 exhaustive suite
+  dispatchExhaustive360Swarm();
   dispatchMasterSwarm();
   ALL_PERSONAS.forEach((p) => dispatchPersonaSwarm(p));
 }
