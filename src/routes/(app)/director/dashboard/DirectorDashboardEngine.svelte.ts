@@ -44,8 +44,6 @@ export class DirectorDashboardEngine {
 	}
 
 	syncTargetClub() {
-		if (!teamsStore.loaded || teamsStore.clubs.length === 0) return;
-
 		const prof = authStore.userProfile;
 		const activeCtx = workspaceContextStore.activeClubId?.trim();
 		const rawProfileId = typeof prof?.clubId === 'string' ? prof.clubId.trim() : '';
@@ -53,18 +51,17 @@ export class DirectorDashboardEngine {
 		let targetId = '';
 
 		// Priority 1: Did the user click a club in the Context Switcher?
-		if (activeCtx && teamsStore.clubs.some(c => c.id === activeCtx)) {
+		if (activeCtx && teamsStore.clubs.some((c) => c.id === activeCtx)) {
 			targetId = activeCtx;
 		} 
 		// Priority 2: Are they hard-assigned to a club in their user profile?
 		else if (rawProfileId && rawProfileId !== 'admin') {
 			targetId = rawProfileId;
 		} 
-		// Priority 3: Fallback to the first available club — safe because we guard length === 0 above
+		// Priority 3: Fallback to the first available club
 		else if (teamsStore.clubs.length > 0) {
 			targetId = teamsStore.clubs[0].id;
 		} else {
-			// No clubs available yet — defer
 			return;
 		}
 

@@ -47,7 +47,6 @@ export class ComplianceOpsEngine {
 
 	syncTargetClub() {
 		if (!db || !authStore.isAuthenticated) return;
-		if (!teamsStore.loaded || teamsStore.clubs.length === 0) return;
 
 		const prof = authStore.userProfile;
 		const activeCtx = workspaceContextStore.activeClubId?.trim();
@@ -58,8 +57,10 @@ export class ComplianceOpsEngine {
 			targetId = activeCtx;
 		} else if (rawProfileId && rawProfileId !== 'admin') {
 			targetId = rawProfileId;
-		} else {
+		} else if (teamsStore.clubs.length > 0) {
 			targetId = teamsStore.clubs[0].id;
+		} else {
+			return;
 		}
 
 		untrack(() => {
