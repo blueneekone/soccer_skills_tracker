@@ -68,7 +68,7 @@
 	<title>Background Screening — SSTracker</title>
 </svelte:head>
 
-<div class="coach-clearance-page">
+<div class="coach-clearance-page tw-p-8">
 	<div class="coach-clearance-page__inner">
 		<header class="coach-clearance-z4-chrome">
 			<div class="coach-clearance-z4-chrome__icon" aria-hidden="true">
