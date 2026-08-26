@@ -41,6 +41,6 @@
 - [x] **B815 HYDRATION GUARDS**: Standardized `if (!db || !authStore.isAuthenticated) return;` early checks on all dashboard queries to prevent loop quota blocks [cite: 345, 367].
 - [x] **SYSTEMIC BACKEND & REACTIVITY REPAIR**: RosterPanelEngine hydration logic and atomic claims sync via secure backend Cloud Functions.
 - [ ] **MARKETPLACE LAUNCH (Phase 4)**: Merge Svelte 5 Bento-grid view and deploy `bookTutoringSession` callable Stripe handler on `functions-commerce` [cite: 424].
-- [x] **DIRECTOR OS & ADMIN OS OVERHAUL**: Admin active incidents click navigation and Director OS system-wide visual simplification.
+- [x] **DIRECTOR OS & ADMIN OS OVERHAUL**: Admin active incidents click navigation, ADMIN OS persona visual audit, secure impersonation gating, and system-wide visual simplification.
 - [x] **COACH OS DASHBOARD FIX**: Resolve coach team visibility and Mission Control tab configurations.
 - [x] **COACH OS OVERHAUL**: Simplified Match Day layout and normalized design system colors (Void Black, Navy Slate, Action Gold, Data Cyan).

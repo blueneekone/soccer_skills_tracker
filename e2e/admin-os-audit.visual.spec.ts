@@ -36,7 +36,7 @@ const ADMIN_ROUTES = [
 	{ route: '/admin/users', name: 'admin-users.png', selector: '.v-table-wrap' },
 	{ route: '/admin/recruiters', name: 'admin-recruiters.png', selector: '.v-table-wrap, .pd-page-root, body' },
 	{ route: '/admin/coach-clearance', name: 'admin-coach-clearance.png', selector: '.v-table-wrap, .pd-page-root, body' },
-	{ route: '/admin/audit-log', name: 'admin-audit-log.png', selector: '.v-table-wrap, .pd-page-root, body' },
+	{ route: '/admin/audit-logs', name: 'admin-audit-log.png', selector: '.v-table-wrap, .pd-page-root, body' },
 	{ route: '/admin/system-settings', name: 'admin-system-settings.png', selector: '.pd-page-root, body' },
 	{ route: '/admin/support-terminal', name: 'admin-support-terminal.png', selector: '.pd-page-root, body' },
 	{ route: '/admin/rl-policy', name: 'admin-rl-policy.png', selector: '.page-shell, body' },
