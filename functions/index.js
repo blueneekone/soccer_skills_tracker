@@ -153,3 +153,5 @@ exports.registerIndependentCoach = orphanCoachOps.registerIndependentCoach;
 
 // Match Ops
 exports.syncMatchStats = matchOps.syncMatchStats;
+const invitations = require('./src/domains/invitations');
+exports.onInvitationCreated = invitations.onInvitationCreated;
