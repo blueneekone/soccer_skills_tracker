@@ -30,8 +30,8 @@ const OPP_FORMATION_LABELS = [
 /** Synthetic opposition roster for the radial deploy modal. */
 export const MOCK_OPPOSITION: TacticalToken[] = Array.from({ length: 11 }, (_, i) => ({
 	id: `OPP-${String(i + 1).padStart(2, '0')}`,
-	name: `HOSTILE ${String(i + 1).padStart(2, '0')}`,
-	number: String(i + 1).padStart(2, '0'),
+	name: `OPP ${OPP_FORMATION_LABELS[i] ?? 'FWD'}`,
+	number: OPP_FORMATION_LABELS[i] ?? 'OP',
 	position: OPP_FORMATION_LABELS[i] ?? 'X',
 	color: OPP_RING,
 	side: 'opponent' as const,

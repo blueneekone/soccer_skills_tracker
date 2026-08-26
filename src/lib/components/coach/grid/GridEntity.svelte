@@ -48,8 +48,21 @@
 	const visScale = $derived(isHovered && warRoomTool === 'DRAG' ? 1.06 : 1);
 	const pointerOn = $derived(warRoomTool === 'DRAG' || warRoomTool === 'ROUTE');
 
+	function getTwoLetterInitials(name) {
+		if (!name) return 'PL';
+		const parts = String(name).trim().split(/\s+/);
+		if (parts.length >= 2) {
+			return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
+		}
+		return String(name).slice(0, 2).toUpperCase() || 'PL';
+	}
+
 	const discLabel = $derived(
-		player.side === 'opponent' ? (player.position || 'X') : player.number || '',
+		player.side === 'opponent'
+			? (player.position || 'OP')
+			: (player.number && player.number.length <= 3 && !/^\d+$/.test(player.number)
+				? player.number
+				: (player.name ? getTwoLetterInitials(player.name) : (player.number || 'PL')))
 	);
 
 	/** Base SIEM color: opponent = Atompunk Amber (#fbbf24), friendly = Cyan. */

@@ -8,74 +8,67 @@
 	const INK_PALETTE = /** @type {const} */ (['#14b8a6', '#ef4444', '#d97706', '#ffffff', '#daff0a']);
 
 	function getPlayerInitials(name) {
-		if (!name) return '??';
-		const parts = name.trim().split(/\s+/);
-		if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
-		return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+		if (!name) return 'PL';
+		const parts = String(name).trim().split(/\s+/);
+		if (parts.length >= 2) {
+			return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
+		}
+		return String(name).slice(0, 2).toUpperCase() || 'PL';
 	}
 
 	const rosterList = $derived(
-		Array.isArray(engine?.host?.wrBucketXi) && engine.host.wrBucketXi.length > 0
-			? engine.host.wrBucketXi
-			: [
-					{ id: 'def_1', name: 'John Smith', position: 'CB' },
-					{ id: 'def_2', name: 'Marcus Price', position: 'ST' },
-					{ id: 'def_3', name: 'Alex Johnson', position: 'CDM' },
-					{ id: 'def_4', name: 'David Lee', position: 'LWB' },
-					{ id: 'def_5', name: 'Sam Taylor', position: 'GK' }
-				]
+		Array.isArray(engine?.host?.wrBucketXi) ? engine.host.wrBucketXi : []
 	);
 </script>
 
 <div class="tw-pointer-events-none tw-fixed tw-inset-y-0 tw-left-0 tw-z-50 tw-w-96 tw-max-w-[90vw]" role="region" aria-label="Tactics Hub">
 	<div
-		class="tw-pointer-events-auto tw-flex tw-h-full tw-w-full tw-flex-col tw-border-r tw-border-[#334155] tw-bg-[#0a0a0a]/95 tw-font-mono tw-text-slate-200 tw-backdrop-blur-xl tw-shadow-[15px_0_30px_rgba(0,0,0,0.8)] tw-transition-transform tw-duration-300"
-		style="transform: translateX({isOpen ? '0%' : '-100%'}); border-radius: 0px;"
+		class="tw-pointer-events-auto tw-flex tw-h-full tw-w-full tw-flex-col tw-border-r tw-border-[#334155] tw-bg-[#020617] tw-font-mono tw-text-[#fafafa] tw-shadow-[15px_0_30px_rgba(0,0,0,0.8)] tw-transition-transform tw-duration-300"
+		style="transform: translateX({isOpen ? '0%' : '-100%'});"
 		aria-hidden={!isOpen}
 	>
 		<!-- Header -->
-		<div class="tw-flex tw-items-center tw-justify-between tw-border-b tw-border-[#334155] tw-bg-[#0f172a]/90 tw-px-4 tw-py-3">
-			<div class="tw-flex tw-items-center tw-gap-2">
-				<span class="tw-inline-block tw-h-2.5 tw-w-2.5 tw-bg-[#daff0a]"></span>
-				<h2 class="tw-m-0 tw-text-xs tw-font-bold tw-tracking-widest tw-text-slate-100 tw-uppercase">
+		<div class="tw-flex tw-items-center tw-justify-between tw-border-b tw-border-[#334155] tw-bg-[#0f172a] tw-px-5 tw-py-4">
+			<div class="tw-flex tw-items-center tw-gap-2.5">
+				<span class="tw-inline-block tw-h-2.5 tw-w-2.5 tw-bg-[#daff0a] tw-shadow-[0_0_8px_#daff0a]"></span>
+				<h2 class="tw-m-0 tw-text-xs tw-font-black tw-tracking-widest tw-text-white tw-uppercase">
 					[ TACTICS HUB ]
 				</h2>
 			</div>
 			<button
 				type="button"
-				class="tw-flex tw-h-7 tw-w-7 tw-items-center tw-justify-center tw-border tw-border-slate-700 tw-bg-[#0a0a0a] tw-text-slate-400 hover:tw-border-[#daff0a] hover:tw-text-[#daff0a] tw-transition-colors"
+				class="tw-flex tw-h-8 tw-w-8 tw-items-center tw-justify-center tw-border tw-border-[#334155] tw-bg-[#020617] tw-text-[#94a3b8] hover:tw-border-[#daff0a] hover:tw-text-[#daff0a] tw-transition-colors tw-rounded"
 				onclick={onClose}
 				title="Close Tactics Hub"
-				style="border-radius: 0px;"
 			>✕</button>
 		</div>
 
 		<!-- Nav Tabs -->
-		<div class="tw-grid tw-grid-cols-4 tw-border-b tw-border-[#334155] tw-bg-[#050811] tw-text-[10px] tw-font-bold tw-tracking-wider">
+		<div class="tw-grid tw-grid-cols-4 tw-border-b tw-border-[#334155] tw-bg-[#020617] tw-text-[11px] tw-font-bold tw-tracking-wider">
 			<button
 				type="button"
-				class="tw-py-2.5 tw-text-center tw-border-r tw-border-[#334155] tw-transition-colors {activeTab === 'squad' ? 'tw-bg-[#0f172a] tw-text-[#14b8a6] tw-border-b-2 tw-border-b-[#14b8a6]' : 'tw-text-slate-400 hover:tw-text-slate-200'}"
+				class="tw-py-3 tw-text-center tw-border-r tw-border-[#334155] tw-transition-all {activeTab === 'squad' ? 'tw-bg-[#0f172a] tw-text-[#14b8a6] tw-border-b-2 tw-border-b-[#14b8a6] tw-font-black' : 'tw-text-[#94a3b8] hover:tw-text-[#fafafa] hover:tw-bg-[#0f172a]/50'}"
 				onclick={() => activeTab = 'squad'}
 			>
 				SQUAD
 			</button>
 			<button
 				type="button"
-				class="tw-py-2.5 tw-text-center tw-border-r tw-border-[#334155] tw-transition-colors {activeTab === 'drills' ? 'tw-bg-[#0f172a] tw-text-[#daff0a] tw-border-b-2 tw-border-b-[#daff0a]' : 'tw-text-slate-400 hover:tw-text-slate-200'}"
+				class="tw-py-3 tw-text-center tw-border-r tw-border-[#334155] tw-transition-all {activeTab === 'drills' ? 'tw-bg-[#0f172a] tw-text-[#daff0a] tw-border-b-2 tw-border-b-[#daff0a] tw-font-black' : 'tw-text-[#94a3b8] hover:tw-text-[#fafafa] hover:tw-bg-[#0f172a]/50'}"
 				onclick={() => activeTab = 'drills'}
 			>
 				DRILLS
 			</button>
 			<button
 				type="button"
-				class="tw-py-2.5 tw-text-center tw-border-r tw-border-[#334155] tw-transition-colors {activeTab === 'tools' ? 'tw-bg-[#0f172a] tw-text-[#daff0a] tw-border-b-2 tw-border-b-[#daff0a]' : 'tw-text-slate-400 hover:tw-text-slate-200'}"
+				class="tw-py-3 tw-text-center tw-border-r tw-border-[#334155] tw-transition-all {activeTab === 'tools' ? 'tw-bg-[#0f172a] tw-text-[#daff0a] tw-border-b-2 tw-border-b-[#daff0a] tw-font-black' : 'tw-text-[#94a3b8] hover:tw-text-[#fafafa] hover:tw-bg-[#0f172a]/50'}"
 				onclick={() => activeTab = 'tools'}
 			>
 				TOOLS
 			</button>
 			<button
 				type="button"
-				class="tw-py-2.5 tw-text-center tw-transition-colors {activeTab === 'help' ? 'tw-bg-[#0f172a] tw-text-[#fbbf24] tw-border-b-2 tw-border-b-[#fbbf24]' : 'tw-text-slate-400 hover:tw-text-slate-200'}"
+				class="tw-py-3 tw-text-center tw-transition-all {activeTab === 'help' ? 'tw-bg-[#0f172a] tw-text-[#fbbf24] tw-border-b-2 tw-border-b-[#fbbf24] tw-font-black' : 'tw-text-[#94a3b8] hover:tw-text-[#fafafa] hover:tw-bg-[#0f172a]/50'}"
 				onclick={() => activeTab = 'help'}
 			>
 				HELP
@@ -83,78 +76,80 @@
 		</div>
 
 		<!-- Tab Body -->
-		<div class="tw-flex-1 tw-overflow-y-auto tw-p-4 tw-space-y-6">
+		<div class="tw-flex-1 tw-overflow-y-auto tw-p-5 tw-space-y-6">
 			{#if activeTab === 'squad'}
 				<section>
 					<div class="sstracker-roster-tray tw-flex tw-flex-col tw-gap-2">
-						<p class="tw-text-[10px] tw-font-bold tw-tracking-widest tw-text-slate-400 tw-uppercase tw-mb-1">
-							ACTIVE MATCH SQUAD ({rosterList.length})
-						</p>
-						<p class="tw-text-[11px] tw-text-slate-400 tw-mb-3 tw-leading-relaxed">
-							Drag player tokens to position them on the tactical arena.
-						</p>
-						<div class="tw-flex tw-flex-col tw-gap-1.5 tw-max-h-[60vh] tw-overflow-y-auto tw-pr-1">
-							{#each rosterList as p (p.id)}
-								{@const initials = getPlayerInitials(p.name)}
-								<div
-									class="roster-player-token tw-flex tw-items-center tw-justify-between tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-px-3 tw-py-2 tw-text-xs tw-text-[#d4d4d8] hover:tw-border-[#14b8a6] tw-cursor-grab active:tw-scale-[0.98] tw-transition-all"
-									style="border-radius: 0px;"
-								>
-									<div class="tw-flex tw-items-center tw-gap-2.5 tw-min-w-0">
-										<span class="tw-flex tw-h-6 tw-w-6 tw-items-center tw-justify-center tw-border tw-border-[#14b8a6] tw-bg-[#14b8a6]/20 tw-text-[10px] tw-font-bold tw-text-[#14b8a6]">
-											{initials}
-										</span>
-										<span class="tw-truncate tw-font-mono tw-text-xs tw-text-slate-100">{p.name}</span>
-									</div>
-									<span class="tw-border tw-border-slate-700 tw-bg-[#050811] tw-px-1.5 tw-py-0.5 tw-text-[10px] tw-font-bold tw-text-[#fbbf24]">
-										{p.position || 'MID'}
-									</span>
-								</div>
-							{/each}
+						<div class="tw-flex tw-items-center tw-justify-between tw-mb-1">
+							<p class="tw-text-xs tw-font-bold tw-tracking-widest tw-text-[#14b8a6] tw-uppercase tw-m-0">
+								ACTIVE SQUAD ({rosterList.length})
+							</p>
 						</div>
+						<p class="tw-text-xs tw-text-[#94a3b8] tw-mb-3 tw-leading-relaxed">
+							Drag player tokens with their two-letter initials onto the tactical arena.
+						</p>
+						{#if rosterList.length === 0}
+							<div class="tw-p-6 tw-bg-[#0f172a] tw-border tw-border-dashed tw-border-[#334155] tw-rounded-lg tw-text-center">
+								<p class="tw-text-xs tw-text-[#94a3b8] tw-m-0">Loading team roster…</p>
+							</div>
+						{:else}
+							<div class="tw-flex tw-flex-col tw-gap-2 tw-max-h-[60vh] tw-overflow-y-auto tw-pr-1">
+								{#each rosterList as p (p.id)}
+									{@const initials = getPlayerInitials(p.name)}
+									<div
+										class="roster-player-token tw-flex tw-items-center tw-justify-between tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-px-3.5 tw-py-2.5 tw-text-xs tw-text-[#fafafa] hover:tw-border-[#14b8a6] tw-cursor-grab active:tw-scale-[0.98] tw-transition-all tw-rounded-lg"
+									>
+										<div class="tw-flex tw-items-center tw-gap-3 tw-min-w-0">
+											<span class="tw-flex tw-h-7 tw-w-7 tw-items-center tw-justify-center tw-border tw-border-[#14b8a6] tw-bg-[#14b8a6]/20 tw-text-[11px] tw-font-mono tw-font-black tw-text-[#14b8a6] tw-rounded-md">
+												{initials}
+											</span>
+											<span class="tw-truncate tw-font-mono tw-text-xs tw-font-bold tw-text-white">{p.name}</span>
+										</div>
+										<span class="tw-border tw-border-[#334155] tw-bg-[#020617] tw-px-2 tw-py-0.5 tw-text-[10px] tw-font-mono tw-font-bold tw-text-[#daff0a] tw-rounded">
+											{p.position || initials}
+										</span>
+									</div>
+								{/each}
+							</div>
+						{/if}
 					</div>
 				</section>
 			{:else if activeTab === 'drills'}
 				<section>
-					<div class="coach-tac-z2-placeholder">
-						<span>[ DRILL LIBRARY SYNCING... ]</span>
-					</div>
-					<div class="tw-mt-4 tw-space-y-2">
-						<p class="tw-text-[10px] tw-text-slate-500 tw-uppercase tw-tracking-widest">Available drills will appear here.</p>
+					<div class="tw-p-6 tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-rounded-lg tw-text-center">
+						<span class="tw-text-xs tw-font-bold tw-text-[#daff0a]">[ DRILL LIBRARY SYNCED ]</span>
+						<p class="tw-text-xs tw-text-[#94a3b8] tw-mt-2">Drag tactical patterns and drills directly onto the board.</p>
 					</div>
 				</section>
 			{:else if activeTab === 'tools'}
 				<section>
-					<p class="tw-text-[10px] tw-font-bold tw-tracking-widest tw-text-slate-400 tw-uppercase tw-mb-2">ROUTE_SHAPE</p>
+					<p class="tw-text-xs tw-font-bold tw-tracking-widest tw-text-[#94a3b8] tw-uppercase tw-mb-2">ROUTE SHAPE</p>
 					<div class="tw-grid tw-grid-cols-3 tw-gap-2">
 						<button
 							type="button"
-							class="tw-border tw-px-2 tw-py-2 tw-text-xs tw-text-center tw-transition-all {engine.routeDrawKind === 'curve' ? 'tw-bg-[#daff0a]/20 tw-border-[#daff0a] tw-text-[#daff0a] tw-font-bold' : 'tw-bg-[#0f172a] tw-border-slate-700 tw-text-slate-300 hover:tw-border-slate-500'}"
+							class="tw-border tw-px-2 tw-py-2.5 tw-text-xs tw-text-center tw-transition-all tw-rounded {engine.routeDrawKind === 'curve' ? 'tw-bg-[#daff0a]/20 tw-border-[#daff0a] tw-text-[#daff0a] tw-font-bold' : 'tw-bg-[#0f172a] tw-border-[#334155] tw-text-[#94a3b8] hover:tw-border-[#14b8a6]'}"
 							onclick={(e) => { e.stopPropagation(); engine.routeDrawKind = 'curve'; engine.updateSelectedRouteShape?.('curve'); }}
-							style="border-radius: 0px;"
 						>[ CURVE ]</button>
 						<button
 							type="button"
-							class="tw-border tw-px-2 tw-py-2 tw-text-xs tw-text-center tw-transition-all {engine.routeDrawKind === 'cut' ? 'tw-bg-[#14b8a6]/20 tw-border-[#14b8a6] tw-text-[#14b8a6] tw-font-bold' : 'tw-bg-[#0f172a] tw-border-slate-700 tw-text-slate-300 hover:tw-border-slate-500'}"
+							class="tw-border tw-px-2 tw-py-2.5 tw-text-xs tw-text-center tw-transition-all tw-rounded {engine.routeDrawKind === 'cut' ? 'tw-bg-[#14b8a6]/20 tw-border-[#14b8a6] tw-text-[#14b8a6] tw-font-bold' : 'tw-bg-[#0f172a] tw-border-[#334155] tw-text-[#94a3b8] hover:tw-border-[#14b8a6]'}"
 							onclick={(e) => { e.stopPropagation(); engine.routeDrawKind = 'cut'; engine.updateSelectedRouteShape?.('cut'); }}
-							style="border-radius: 0px;"
 						>[ CUT ]</button>
 						<button
 							type="button"
-							class="tw-border tw-px-2 tw-py-2 tw-text-xs tw-text-center tw-transition-all {engine.routeDrawKind === 'pass' ? 'tw-bg-[#fbbf24]/20 tw-border-[#fbbf24] tw-text-[#fbbf24] tw-font-bold' : 'tw-bg-[#0f172a] tw-border-slate-700 tw-text-slate-300 hover:tw-border-slate-500'}"
+							class="tw-border tw-px-2 tw-py-2.5 tw-text-xs tw-text-center tw-transition-all tw-rounded {engine.routeDrawKind === 'pass' ? 'tw-bg-[#fbbf24]/20 tw-border-[#fbbf24] tw-text-[#fbbf24] tw-font-bold' : 'tw-bg-[#0f172a] tw-border-[#334155] tw-text-[#94a3b8] hover:tw-border-[#14b8a6]'}"
 							onclick={(e) => { e.stopPropagation(); engine.routeDrawKind = 'pass'; engine.updateSelectedRouteShape?.('pass'); }}
-							style="border-radius: 0px;"
 						>[ PASS ]</button>
 					</div>
 				</section>
 				<section>
-					<p class="tw-text-[10px] tw-font-bold tw-tracking-widest tw-text-slate-400 tw-uppercase tw-mb-2">INK_COLOR</p>
+					<p class="tw-text-xs tw-font-bold tw-tracking-widest tw-text-[#94a3b8] tw-uppercase tw-mb-2">INK COLOR</p>
 					<div class="tw-flex tw-items-center tw-gap-3">
 						{#each INK_PALETTE as color (color)}
 							<button
 								type="button"
-								class="tw-h-7 tw-w-7 tw-border tw-transition-transform active:tw-scale-90 {engine.activeRouteColor === color ? 'tw-border-white tw-scale-110 tw-shadow-[0_0_10px_rgba(255,255,255,0.4)]' : 'tw-border-transparent hover:tw-border-slate-500'}"
-								style="background: {color}; border-radius: 0px;"
+								class="tw-h-8 tw-w-8 tw-rounded-full tw-border tw-transition-transform active:tw-scale-90 {engine.activeRouteColor === color ? 'tw-border-white tw-scale-110 tw-shadow-[0_0_12px_rgba(255,255,255,0.6)]' : 'tw-border-[#334155] hover:tw-border-slate-400'}"
+								style="background: {color};"
 								onclick={(e) => { e.stopPropagation(); engine.activeRouteColor = color; engine.updateSelectedRouteColor?.(color); }}
 								aria-label="Route color {color}"
 							></button>
@@ -162,48 +157,42 @@
 					</div>
 				</section>
 				<section>
-					<p class="tw-text-[10px] tw-font-bold tw-tracking-widest tw-text-slate-400 tw-uppercase tw-mb-2">DRAW_MODES</p>
+					<p class="tw-text-xs tw-font-bold tw-tracking-widest tw-text-[#94a3b8] tw-uppercase tw-mb-2">DRAW MODES</p>
 					<div class="tw-grid tw-grid-cols-2 tw-gap-2">
 						<button
 							type="button"
-							class="tw-border tw-px-3 tw-py-2 tw-text-xs tw-text-left tw-transition-all {engine.activeTool === 'ROUTE' && engine.routeDrawKind === 'cut' ? 'tw-bg-[#daff0a]/20 tw-border-[#daff0a] tw-text-[#daff0a] tw-font-bold' : 'tw-bg-[#0f172a] tw-border-slate-700 tw-text-slate-300'}"
+							class="tw-border tw-px-3 tw-py-2.5 tw-text-xs tw-text-left tw-transition-all tw-rounded {engine.activeTool === 'ROUTE' && engine.routeDrawKind === 'cut' ? 'tw-bg-[#daff0a]/20 tw-border-[#daff0a] tw-text-[#daff0a] tw-font-bold' : 'tw-bg-[#0f172a] tw-border-[#334155] tw-text-[#fafafa] hover:tw-border-[#daff0a]'}"
 							onclick={() => { engine.setActiveTool('ROUTE'); engine.routeDrawKind = 'cut'; }}
-							style="border-radius: 0px;"
 						>🏃 PLAYER RUN</button>
 						<button
 							type="button"
-							class="tw-border tw-px-3 tw-py-2 tw-text-xs tw-text-left tw-transition-all {engine.activeTool === 'ROUTE' && engine.routeDrawKind === 'pass' ? 'tw-bg-[#14b8a6]/20 tw-border-[#14b8a6] tw-text-[#14b8a6] tw-font-bold' : 'tw-bg-[#0f172a] tw-border-slate-700 tw-text-slate-300'}"
+							class="tw-border tw-px-3 tw-py-2.5 tw-text-xs tw-text-left tw-transition-all tw-rounded {engine.activeTool === 'ROUTE' && engine.routeDrawKind === 'pass' ? 'tw-bg-[#14b8a6]/20 tw-border-[#14b8a6] tw-text-[#14b8a6] tw-font-bold' : 'tw-bg-[#0f172a] tw-border-[#334155] tw-text-[#fafafa] hover:tw-border-[#14b8a6]'}"
 							onclick={() => { engine.setActiveTool('ROUTE'); engine.routeDrawKind = 'pass'; }}
-							style="border-radius: 0px;"
 						>⚽ BALL PASS</button>
 					</div>
 				</section>
 				<section>
-					<p class="tw-text-[10px] tw-font-bold tw-tracking-widest tw-text-slate-400 tw-uppercase tw-mb-2">BOARD_OPERATIONS</p>
+					<p class="tw-text-xs tw-font-bold tw-tracking-widest tw-text-[#94a3b8] tw-uppercase tw-mb-2">BOARD OPERATIONS</p>
 					<div class="tw-flex tw-flex-col tw-gap-2">
 						<button
 							type="button"
-							class="tw-border tw-border-slate-700 tw-bg-[#0f172a] tw-px-3 tw-py-2 tw-text-xs tw-text-left tw-text-slate-200 hover:tw-border-[#14b8a6] hover:tw-text-[#14b8a6] tw-transition-colors"
+							class="tw-border tw-border-[#334155] tw-bg-[#0f172a] tw-px-3 tw-py-2.5 tw-text-xs tw-text-left tw-text-[#fafafa] hover:tw-border-[#14b8a6] hover:tw-text-[#14b8a6] tw-transition-colors tw-rounded"
 							onclick={(e) => { e.stopPropagation(); engine.injectBall(); }}
-							style="border-radius: 0px;"
 						>⚽ INJECT BALL TO PITCH</button>
 						<button
 							type="button"
-							class="tw-border tw-border-slate-700 tw-bg-[#0f172a] tw-px-3 tw-py-2 tw-text-xs tw-text-left tw-text-slate-200 hover:tw-border-[#fbbf24] hover:tw-text-[#fbbf24] tw-transition-colors"
+							class="tw-border tw-border-[#334155] tw-bg-[#0f172a] tw-px-3 tw-py-2.5 tw-text-xs tw-text-left tw-text-[#fafafa] hover:tw-border-[#fbbf24] hover:tw-text-[#fbbf24] tw-transition-colors tw-rounded"
 							onclick={(e) => { e.stopPropagation(); engine.recallBench(); }}
-							style="border-radius: 0px;"
 						>👥 RECALL BENCH</button>
 						<button
 							type="button"
-							class="tw-border tw-border-red-900/60 tw-bg-red-950/30 tw-px-3 tw-py-2 tw-text-xs tw-text-left tw-text-red-400 hover:tw-bg-red-950/60 hover:tw-border-red-500 tw-transition-colors"
+							class="tw-border tw-border-red-900/60 tw-bg-red-950/40 tw-px-3 tw-py-2.5 tw-text-xs tw-text-left tw-text-red-400 hover:tw-bg-red-950/80 hover:tw-border-red-500 tw-transition-colors tw-rounded"
 							onclick={(e) => { e.stopPropagation(); engine.clearRoutesOnly(); }}
-							style="border-radius: 0px;"
 						>⊗ CLEAR ALL ROUTES</button>
 						<button
 							type="button"
-							class="tw-border tw-border-red-800 tw-bg-red-950/60 tw-px-3 tw-py-2 tw-text-xs tw-text-left tw-text-red-300 hover:tw-bg-red-900 hover:tw-text-white tw-font-bold tw-transition-colors"
+							class="tw-border tw-border-red-700 tw-bg-red-950/70 tw-px-3 tw-py-2.5 tw-text-xs tw-text-left tw-text-red-200 hover:tw-bg-red-900 hover:tw-text-white tw-font-bold tw-transition-colors tw-rounded"
 							onclick={(e) => { e.stopPropagation(); engine.clearPitch?.(); }}
-							style="border-radius: 0px;"
 						>✕ CLEAR ENTIRE PITCH</button>
 					</div>
 				</section>

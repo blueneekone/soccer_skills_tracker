@@ -46,6 +46,8 @@ vi.mock('firebase/firestore', () => ({
 	}),
 	doc: vi.fn((_db, _col, id) => ({ id })),
 	setDoc: vi.fn().mockResolvedValue(undefined),
+	deleteDoc: vi.fn().mockResolvedValue(undefined),
+	deleteField: vi.fn(() => ({ _isDeleteField: true })),
 }));
 
 vi.mock('$lib/utils/firestoreGuard.js', () => ({
@@ -112,10 +114,11 @@ describe('RosterPanelEngine', () => {
 		engine.startEdit(alice);
 		engine.editData.parentPhone = '999-1234';
 		await engine.saveEdit(alice.id);
-		expect(setDoc).toHaveBeenCalledOnce();
-		const payload = (setDoc as any).mock.calls[0][1];
-		expect(payload.parentPhone).toBe('999-1234');
-		expect(payload.displayName).toBe('Alice Smith');
+		expect(setDoc).toHaveBeenCalled();
+		const lookupCall = (setDoc as any).mock.calls.find((c: any) => c[1]?.displayName === 'Alice Smith');
+		expect(lookupCall).toBeDefined();
+		expect(lookupCall[1].parentPhone).toBe('999-1234');
+		expect(lookupCall[1].displayName).toBe('Alice Smith');
 	});
 
 	it('saveEdit() clears editingPlayerId on success', async () => {

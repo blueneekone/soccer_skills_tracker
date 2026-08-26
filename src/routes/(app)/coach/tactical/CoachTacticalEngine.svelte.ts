@@ -132,37 +132,19 @@ export class CoachTacticalEngine {
 						.map((e: any) => ({ ...e }));
 					this.wrOppPitch = c.entities
 						.filter((e: any) => e.side === 'opponent')
-						.map((e: any) => ({ ...e }));
+						.map((e: any) => ({
+							...e,
+							number: e.position || e.number || 'OP',
+						}));
 					this.drawnRoutes = Array.isArray(c.routes) ? c.routes.map((r: any) => ({ ...r })) : [];
 				}
 			} else {
-				// First time opening the War Room, provide a default opponent team
-				const positions = ['GK', 'LB', 'CB', 'CB', 'RB', 'CDM', 'CM', 'CM', 'LW', 'ST', 'RW'];
-				this.wrOppPitch = positions.map((pos, i) => ({
-					id: `opp_${i}`,
-					name: pos,
-					number: String(i + 1),
-					position: pos,
-					side: 'opponent',
-					color: '#d97706', // Atompunk Amber
-					x: 800 + (Math.random() * 200 - 100),
-					y: 400 + (Math.random() * 200 - 100)
-				}));
+				// Clean pitch on first open — start with zero opponent clutter
+				this.wrOppPitch = [];
 			}
 		} catch (e) {
 			console.error('[War Room] load error:', e);
-			// Fallback for E2E testing / permission errors: provide default opponent team
-			const positions = ['GK', 'LB', 'CB', 'CB', 'RB', 'CDM', 'CM', 'CM', 'LW', 'ST', 'RW'];
-			this.wrOppPitch = positions.map((pos, i) => ({
-				id: `opp_${i}`,
-				name: pos,
-				number: String(i + 1),
-				position: pos,
-				side: 'opponent',
-				color: '#d97706', // Atompunk Amber
-				x: 800 + (Math.random() * 200 - 100),
-				y: 400 + (Math.random() * 200 - 100)
-			}));
+			this.wrOppPitch = [];
 		}
 		this.boardLoadComplete = true;
 	}
@@ -171,67 +153,71 @@ export class CoachTacticalEngine {
 		const isE2e = typeof localStorage !== 'undefined' && localStorage.getItem('sstracker_e2e_bypass') === 'true';
 		if ((!db || !authStore.isAuthenticated) && !isE2e) return;
 		try {
-			const snap = await getDoc(doc(db, 'rosters', tid));
-			const rostersNames = (
-				snap.exists() && Array.isArray(snap.data()?.players)
-					? snap.data()!.players
-					: []
-			)
-				.map((x: any) => String(x).trim())
-				.filter(Boolean);
+			const effectiveTeamId = tid || this.teamScope.selectedTeamId || authStore.teamId || authStore.user?.teamId || '';
+			if (!effectiveTeamId) return;
 
-			if (rostersNames.length) {
-				this.wrBucketXi = rostersNames.map((name: any, i: number) => ({
-					id: `${tid}_p${i}`,
-					name,
-					number: String(i + 1).padStart(2, '0'),
-					position: '',
-					side: 'friendly',
-					color: '#14b8a6',
-				}));
-				return;
-			}
+			const getTwoLetterInitials = (name: string): string => {
+				if (!name) return 'PL';
+				const parts = name.trim().split(/\s+/);
+				if (parts.length >= 2) {
+					return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
+				}
+				return name.slice(0, 2).toUpperCase() || 'PL';
+			};
 
-			if (!isFirestoreReady()) return;
+			const playerMap = new Map<string, TacticalToken>();
+
+			// 1. Query player_lookup for all athletes on this team
 			const lookupSnap = await getDocs(
-				query(collection(db, 'player_lookup'), where('teamId', '==', tid)),
-			);
+				query(collection(db, 'player_lookup'), where('teamId', '==', effectiveTeamId)),
+			).catch(() => null);
 
-			if (lookupSnap.size > 0) {
-				const tokens: TacticalToken[] = [];
-				let idx = 0;
+			if (lookupSnap && lookupSnap.size > 0) {
 				lookupSnap.forEach((d) => {
-					const data = d.data();
-					const name =
-						typeof data.playerName === 'string' && data.playerName.trim()
-							? data.playerName.trim()
-							: d.id;
-					tokens.push({
-						id: `${tid}_${d.id}`,
-						name,
-						number: String(++idx).padStart(2, '0'),
-						position: typeof data.position === 'string' ? data.position : '',
-						side: 'friendly',
-						color: '#14b8a6',
-					});
+					const data = d.data() || {};
+					const name = (typeof data.playerName === 'string' && data.playerName.trim()) ||
+						(typeof data.displayName === 'string' && data.displayName.trim()) || d.id;
+					const nameKey = name.toLowerCase();
+					if (!playerMap.has(nameKey)) {
+						playerMap.set(nameKey, {
+							id: `${effectiveTeamId}_${d.id}`,
+							name,
+							number: getTwoLetterInitials(name),
+							position: typeof data.position === 'string' ? data.position : '',
+							side: 'friendly',
+							color: '#14b8a6',
+						});
+					}
 				});
-				tokens.sort((a, b) => (a.name ?? '').localeCompare(b.name ?? ''));
-				this.wrBucketXi = tokens;
-				return;
 			}
 
-			this.wrBucketXi = [];
+			// 2. Also check rosters collection
+			const snap = await getDoc(doc(db, 'rosters', effectiveTeamId)).catch(() => null);
+			if (snap && snap.exists() && Array.isArray(snap.data()?.players)) {
+				const players = snap.data()!.players as string[];
+				for (const pName of players) {
+					const name = String(pName).trim();
+					if (!name) continue;
+					const nameKey = name.toLowerCase();
+					if (!playerMap.has(nameKey)) {
+						playerMap.set(nameKey, {
+							id: `${effectiveTeamId}_${name.replace(/\s+/g, '_')}`,
+							name,
+							number: getTwoLetterInitials(name),
+							position: '',
+							side: 'friendly',
+							color: '#14b8a6',
+						});
+					}
+				}
+			}
+
+			const tokens = Array.from(playerMap.values());
+			tokens.sort((a, b) => (a.name ?? '').localeCompare(b.name ?? ''));
+			this.wrBucketXi = tokens;
 		} catch (e) {
 			console.error('[War Room] roster load error:', e);
-			const positions = ['GK', 'LB', 'CB', 'CB', 'RB', 'CDM', 'CM', 'CM', 'LW', 'ST', 'RW'];
-			this.wrBucketXi = positions.map((pos, i) => ({
-				id: `fallback_p${i}`,
-				name: `Test Player ${i + 1}`,
-				number: String(i + 1).padStart(2, '0'),
-				position: pos,
-				side: 'friendly',
-				color: '#14b8a6',
-			}));
+			this.wrBucketXi = [];
 		}
 	}
 

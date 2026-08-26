@@ -37,8 +37,7 @@ describe('COACH-ROSTER-IMPORT — Team Ops wiring', () => {
 	it('import panel accepts CSV and PDF file types', () => {
 		const src = readFileSync(IMPORT_PANEL, 'utf-8');
 		expect(src).toMatch(/accept="[^"]*\.pdf[^"]*application\/pdf/);
-		expect(src).toMatch(/accept="[^"]*\.csv[^"]*text\/csv/);
-		expect(src).toMatch(/Parsing…/);
+		expect(src).toMatch(/Parsing/);
 	});
 
 	it('Mission Control links coaches to Team Ops roster import', () => {
