@@ -78,7 +78,7 @@ export class RosterPanelEngine {
 		const unsubRoster = onSnapshot(
 			rosterDocRef,
 			(snap) => {
-				if (snap.exists()) {
+				if (snap && typeof snap.exists === 'function' && snap.exists()) {
 					const data = snap.data();
 					const raw = Array.isArray(data?.players) ? data.players : [];
 					this.rawRosterNames = raw
