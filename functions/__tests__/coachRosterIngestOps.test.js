@@ -161,6 +161,11 @@ describe('coachRosterIngest', () => {
     assert.equal(result.players[0].playerName, 'Alex Morgan');
   });
 
+  it('verifies index.js exports coachRosterIngest', () => {
+    const indexSrc = require('fs').readFileSync(require.resolve('../index.js'), 'utf8');
+    assert.match(indexSrc, /exports\.coachRosterIngest\s*=/);
+  });
+
   it('denies player role', async () => {
     await assert.rejects(
         () => coachRosterIngest(playerRequest({

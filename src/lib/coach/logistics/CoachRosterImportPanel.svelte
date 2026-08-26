@@ -34,6 +34,12 @@
 	}
 
 	function mapCallableError(code: string, message: string): string {
+		if (code === 'functions/not-found' || code === 'not-found') {
+			return 'PDF ingestion service is initializing. Please try again in a few moments.';
+		}
+		if (code === 'functions/permission-denied' || code === 'permission-denied') {
+			return 'You do not have permission to import rosters for this team.';
+		}
 		if (code === 'functions/resource-exhausted' || code === 'resource-exhausted') {
 			return 'Licensed roster seats are fully allocated. Contact your director to upgrade.';
 		}

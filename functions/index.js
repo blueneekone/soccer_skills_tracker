@@ -69,6 +69,7 @@ exports.createCommsChannel = operativeOps.createCommsChannel;
 
 
 const coachRosterIngestOps = require('./src/domains/coachRosterIngestOps.js');
+exports.coachRosterIngest = coachRosterIngestOps.coachRosterIngest;
 const commsChannelOps = require('./src/domains/commsChannelOps.js');
 exports.coachProvisionStaffInternal = commsChannelOps.coachProvisionStaffInternal;
 exports.coachProvisionParentLounge = commsChannelOps.coachProvisionParentLounge;

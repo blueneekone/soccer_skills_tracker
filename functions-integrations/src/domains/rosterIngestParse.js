@@ -205,6 +205,68 @@ function mapExtractedPlayerToCoach(player) {
 }
 
 /**
+ * Deterministic local fallback parser when Gemini is unavailable or returns empty.
+ * @param {string} rawText
+ * @return {Array<{ displayName?: string, email?: string, jerseyNumber?: string }>}
+ */
+function extractPlayersFromPdfTextFallback(rawText) {
+  if (!rawText || typeof rawText !== 'string') return [];
+  const lines = rawText
+      .replace(/\r\n/g, '\n')
+      .replace(/\r/g, '\n')
+      .split('\n')
+      .map((l) => l.trim())
+      .filter(Boolean);
+
+  const players = [];
+  const emailRegex = /([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/;
+  const jerseyRegex = /(?:#\s*(\d{1,3})|\bjersey\s*[:#]?\s*(\d{1,3})\b|\bno\.\s*(\d{1,3})\b)/i;
+
+  for (const line of lines) {
+    if (/^(page\s+\d+|roster|team\s+roster|player\s+name|date\s+of\s+birth|printed|official|usys|gotsport|club\s+name)/i.test(line)) {
+      continue;
+    }
+    let email = '';
+    const emailMatch = line.match(emailRegex);
+    if (emailMatch) email = normEmail(emailMatch[1]);
+
+    let jersey = '';
+    const jerseyMatch = line.match(jerseyRegex);
+    if (jerseyMatch) jersey = jerseyMatch[1] || jerseyMatch[2] || jerseyMatch[3];
+
+    let cleanLine = line;
+    if (email) cleanLine = cleanLine.replace(email, ' ');
+    if (jerseyMatch) cleanLine = cleanLine.replace(jerseyMatch[0], ' ');
+
+    const leadingNumMatch = cleanLine.match(/^\s*(\d{1,3})[\s.)\-]+(.*)$/);
+    if (leadingNumMatch) {
+      if (!jersey && parseInt(leadingNumMatch[1], 10) <= 99) jersey = leadingNumMatch[1];
+      cleanLine = leadingNumMatch[2];
+    }
+
+    cleanLine = cleanLine
+        .replace(/\b\d{4}[-/]\d{1,2}[-/]\d{1,2}\b/g, ' ')
+        .replace(/\b\d{1,2}[-/]\d{1,2}[-/]\d{2,4}\b/g, ' ')
+        .replace(/\b\d{3}[-.\s]\d{3}[-.\s]\d{4}\b/g, ' ')
+        .replace(/\b(forward|midfielder|defender|goalkeeper|striker|winger|f|m|d|gk)\b/gi, ' ')
+        .replace(/[,|;]/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+
+    if (cleanLine.length >= 2 && cleanLine.length <= 80 && /^[a-zA-ZÀ-ÿ'. -]+$/.test(cleanLine)) {
+      if (!/^(team|club|coach|manager|league|state|season|division|schedule|date|age|gender|status)$/i.test(cleanLine)) {
+        players.push({
+          displayName: cleanLine,
+          email: email || undefined,
+          jerseyNumber: jersey || undefined,
+        });
+      }
+    }
+  }
+  return players;
+}
+
+/**
  * @param {string} contentBase64
  * @param {string} apiKey
  * @return {Promise<Array<{ playerName: string, playerEmail?: string, jersey?: string }>>}
@@ -219,14 +281,26 @@ async function parsePdfBase64ToCoachPlayers(contentBase64, apiKey) {
   let pdfText = '';
   try {
     const pdfData = await pdfParse(pdfBuf);
-    pdfText = pdfData.text;
+    pdfText = (pdfData && pdfData.text) ? pdfData.text : '';
   } catch (err) {
     throw new Error(`PDF parse failed: ${err.message}`);
   }
-  if (!apiKey) {
-    throw new Error('GEMINI_API_KEY secret is not configured. PDF ingestion requires the Gemini API.');
+
+  let extracted = [];
+  if (apiKey) {
+    try {
+      extracted = await extractPlayersFromPdfText(pdfText, apiKey);
+    } catch (err) {
+      logger.warn('[rosterIngestParse] Gemini PDF extraction failed, using local parser', {
+        error: err && err.message ? err.message : String(err),
+      });
+    }
   }
-  const extracted = await extractPlayersFromPdfText(pdfText, apiKey);
+
+  if (!extracted || !extracted.length) {
+    extracted = extractPlayersFromPdfTextFallback(pdfText);
+  }
+
   return extracted.map(mapExtractedPlayerToCoach).filter(Boolean);
 }
 
