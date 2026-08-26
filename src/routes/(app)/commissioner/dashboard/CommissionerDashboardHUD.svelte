@@ -34,7 +34,7 @@
 			<div class="tw-flex tw-flex-col tw-items-end">
 				<span class="tw-text-[10px] tw-font-sans tw-text-slate-400 tw-uppercase tw-font-bold tw-tracking-widest">Network Status</span>
 				{#if engine.isLoading}
-					<span class="tw-text-[#daff0a] tw-font-mono tw-text-xs tw-font-bold tw-flex tw-items-center tw-gap-1">
+					<span class="tw-text-[#14b8a6] tw-font-mono tw-text-xs tw-font-bold tw-flex tw-items-center tw-gap-1">
 						<Icon name={"status.loading" as IconName} size={12} class="tw-animate-spin" />
 						SYNCING...
 					</span>
@@ -55,7 +55,7 @@
 
 			<button
 				type="button"
-				class="tw-px-3 tw-py-1.5 tw-text-xs tw-font-mono tw-font-bold tw-tracking-widest tw-uppercase tw-rounded-none tw-border tw-border-[#daff0a] tw-bg-[#1E293B] tw-text-[#daff0a] hover:tw-bg-[#daff0a] hover:tw-text-black tw-transition-colors tw-flex tw-items-center tw-gap-2 cursor-pointer"
+				class="tw-px-3 tw-py-1.5 tw-text-xs tw-font-mono tw-font-bold tw-tracking-widest tw-uppercase tw-rounded-none tw-border tw-border-[#14b8a6] tw-bg-[#1E293B] tw-text-[#14b8a6] hover:tw-bg-[#14b8a6] hover:tw-text-black tw-transition-colors tw-flex tw-items-center tw-gap-2 cursor-pointer"
 				onclick={() => engine.fetchFederationData()}
 				title="Refresh Federation Telemetry"
 			>
