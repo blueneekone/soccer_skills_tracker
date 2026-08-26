@@ -133,6 +133,8 @@ export class RosterPanelEngine {
 		const name = this.editData.displayName.trim();
 		const jersey = this.editData.jersey.trim();
 		const parentEmail = this.editData.parentEmail.trim().toLowerCase();
+		const parentPhone = this.editData.parentPhone.trim();
+		const parentName = this.editData.parentName.trim();
 
 		// 1. Update jersey on roster document
 		if (this.teamId) {
@@ -146,19 +148,37 @@ export class RosterPanelEngine {
 			await setDoc(rosterRef, jerseyPayload, { merge: true }).catch(() => {});
 		}
 
-		// 2. Update or create player_lookup entry for parent binding
-		const targetDocId = parentEmail || (playerId.startsWith('nameonly:') ? null : playerId);
-		if (targetDocId) {
+		// 2. Update player_lookup entry by email if provided
+		if (parentEmail) {
 			await setDoc(
-				doc(db, 'player_lookup', targetDocId),
+				doc(db, 'player_lookup', parentEmail),
 				{
 					teamId: this.teamId,
 					displayName: name,
 					playerName: name,
 					jersey: jersey || null,
-					parentName: this.editData.parentName.trim(),
-					parentPhone: this.editData.parentPhone.trim(),
-					parentEmail: parentEmail,
+					parentName,
+					parentPhone,
+					parentEmail,
+				},
+				{ merge: true },
+			);
+		}
+
+		// 3. Update player_lookup entry by phone if provided
+		const digits = parentPhone.replace(/\D/g, '');
+		const phoneKey = digits.length >= 10 ? `phone_${digits.slice(-10)}` : '';
+		if (phoneKey) {
+			await setDoc(
+				doc(db, 'player_lookup', phoneKey),
+				{
+					...(parentEmail ? {} : { teamId: this.teamId }),
+					displayName: name,
+					playerName: name,
+					jersey: jersey || null,
+					parentName,
+					parentPhone,
+					parentEmail,
 				},
 				{ merge: true },
 			);

@@ -235,18 +235,22 @@ service cloud.firestore {
       allow read, write: if isAuthenticated() && (isGlobalAdmin());
     }
 
-    // Auth-flow lookup collections — read-only for any authenticated user during login resolution
+    // Auth-flow lookup collections — read/write for authenticated staff during roster management
     match /coach_lookup/{email} {
       allow read: if isAuthenticated();
+      allow write: if isGlobalAdmin() || (isAuthenticated() && !isCommissioner());
     }
     match /player_lookup/{email} {
       allow read: if isAuthenticated();
+      allow write: if isGlobalAdmin() || (isAuthenticated() && !isCommissioner());
     }
     match /registrar_lookup/{email} {
       allow read: if isAuthenticated();
+      allow write: if isGlobalAdmin() || (isAuthenticated() && !isCommissioner());
     }
     match /households/{householdId} {
       allow read: if isAuthenticated();
+      allow write: if isGlobalAdmin() || (isAuthenticated() && !isCommissioner());
     }
 
     // Workout logs, physio reports, and training data — authenticated users
