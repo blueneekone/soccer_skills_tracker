@@ -21,7 +21,7 @@
   Firestore writes
   ────────────────
   Deploy Mission → `addDoc(active_missions, { drillId, targetPlayerIds, ... })`
-  Remove Player  → `updateDoc(users/{id}, { teamId: deleteField() })`
+  Remove Player  → secureRemovePlayer({ teamId, playerName })
                    (removes the player from this team scope; the onSnapshot
                     query then drops the row automatically for teamId queries)
 
@@ -37,15 +37,15 @@
 	import { db } from '$lib/firebase.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { TIER_DEFINITIONS } from '$lib/states/ArmoryEngine.svelte';
+	import { functions } from '$lib/firebase.js';
+	import { httpsCallable } from 'firebase/functions';
 	import {
 		addDoc,
 		collection,
-		deleteField,
 		getDocs,
 		onSnapshot,
 		query,
 		serverTimestamp,
-		updateDoc,
 		where,
 		doc,
 		orderBy,
@@ -301,7 +301,12 @@
 		roster = roster.map((p) => (p.id === playerId ? { ...p, _removing: true } : p));
 
 		try {
-			await updateDoc(doc(db, 'users', playerId), { teamId: deleteField() });
+			const playerToRemove = roster.find((p) => p.id === playerId);
+			if (!playerToRemove || !playerToRemove.playerName) {
+				throw new Error('Player not found or name missing');
+			}
+			const secureRemovePlayer = httpsCallable(functions, 'secureRemovePlayer');
+			await secureRemovePlayer({ teamId, playerName: playerToRemove.playerName.trim() });
 			// onSnapshot will automatically drop this row from a teamId-scoped query.
 			// For unscoped queries remove the row locally as well:
 			if (!teamId) {

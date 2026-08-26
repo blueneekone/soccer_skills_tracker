@@ -178,12 +178,21 @@
 				lastEditedAt: new Date(),
 				lastEditedBy: authStore.user?.email || 'EditAdminModal'
 			};
-			if (previousRole !== role) {
+			const roleChanged = previousRole !== role;
+			if (roleChanged) {
 				patch.roleUpdatedAt = new Date();
 				patch.roleUpdatedBy = authStore.user?.email || 'EditAdminModal';
+				delete patch.role;
 			}
 
 			await updateDoc(doc(db, 'users', admin.id), patch);
+
+			if (roleChanged) {
+				const { httpsCallable } = await import('firebase/functions');
+				const { functions } = await import('$lib/firebase.js');
+				const updateUserRole = httpsCallable(functions, 'updateUserRole');
+				await updateUserRole({ targetEmail: admin.email || admin.id, newRole: role });
+			}
 
 			// Refresh custom claims immediately if editing our own profile
 			if (admin.email === authStore.user?.email) {

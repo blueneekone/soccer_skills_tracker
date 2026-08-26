@@ -13,6 +13,7 @@
 import { db } from '$lib/firebase.js';
 import { collection, onSnapshot, query, where, doc, setDoc } from 'firebase/firestore';
 import { isFirestoreReady } from '$lib/utils/firestoreGuard.js';
+import { authStore } from '$lib/stores/auth.svelte.js';
 
 export interface RosterPlayer {
 	id: string;
@@ -49,7 +50,8 @@ export class RosterPanelEngine {
 
 	subscribe(teamId: string): void {
 		this.unsub?.();
-		if (!db || !isFirestoreReady() || !teamId) {
+		if (!db || !authStore.isAuthenticated) return;
+		if (!isFirestoreReady() || !teamId) {
 			this.players = [];
 			this.loading = false;
 			return;

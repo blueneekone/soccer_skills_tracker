@@ -51,6 +51,10 @@ vi.mock('$lib/utils/firestoreGuard.js', () => ({
 	isFirestoreReady: vi.fn(() => true),
 }));
 
+vi.mock('$lib/stores/auth.svelte.js', () => ({
+	authStore: { isAuthenticated: true },
+}));
+
 // ── Import after mocks ────────────────────────────────────────────────────────
 
 const { RosterPanelEngine } = await import('../RosterPanelEngine.svelte.js');
