@@ -215,7 +215,8 @@ class EgressBlockedError extends Error {
 function wrapFetch(originalFetch) {
   const isCloudFunction = !!process.env.K_SERVICE || !!process.env.FUNCTION_TARGET;
   const isEmulator = process.env.FUNCTIONS_EMULATOR === 'true';
-  if (!isCloudFunction && !isEmulator) {
+  const isTest = process.env.NODE_ENV === 'test' || typeof originalFetch === 'function';
+  if (!isCloudFunction && !isEmulator && !isTest) {
     logger.info('[egressGuard] Skipping fetch wrapper during deploy/discovery.');
     return;
   }

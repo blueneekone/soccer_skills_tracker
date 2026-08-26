@@ -1,8 +1,9 @@
 import admin from 'firebase-admin';
-
+import { createRequire } from 'node:module';
 import { describe, it, beforeEach } from 'node:test';
 import assert from 'node:assert';
 
+const require = createRequire(import.meta.url);
 // Import our weather lockout implementation
 const weatherOps = require('../domains/weatherOps.js');
 

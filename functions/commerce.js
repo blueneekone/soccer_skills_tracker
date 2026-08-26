@@ -62,12 +62,12 @@ const APP_BASE_URL = defineString('APP_BASE_URL', {default: 'https://vanguardcom
 
 const REGION = 'us-east1';
 
-// Phase 2, Epic 2 — Transaction-based pricing
+// Phase 2, Epic 2 ï¿½ Transaction-based pricing
 // --------------------------------------------
 // The hardcoded 3% platform fee was retired.  Fees now come from
 // `pricing_policy/default-v1` via `computePlatformFee()`, allowing live
 // rate updates without redeploy.  Stripe `application_fee_amount` is
-// still set per PaymentIntent — the SOURCE of the number is the only
+// still set per PaymentIntent ï¿½ the SOURCE of the number is the only
 // thing that changed.
 
 const db = new Proxy({}, { get: (t, p) => { const fs = admin.firestore(); const v = fs[p]; return typeof v === 'function' ? v.bind(fs) : v; } });
@@ -277,7 +277,7 @@ exports.createRegistrationIntent = onCall(
           policyVersion: String(policy.version),
           rateBp: String(fee.rateBp),
         },
-        description: `Season registration — ${orgSnap.data()?.name ?? tenantId}`,
+        description: `Season registration ï¿½ ${orgSnap.data()?.name ?? tenantId}`,
       });
 
       // Pre-create the registration document as 'pending'
@@ -474,7 +474,7 @@ async function maybeUnlockActiveSeason(batch, {tenantId, playerEmail, seasonId, 
         seasonPaidAt: admin.firestore.FieldValue.serverTimestamp(),
       });
     } else {
-      logger.info('[webhook] partial season payment — activeSeasonStatus unchanged', {
+      logger.info('[webhook] partial season payment â€” activeSeasonStatus unchanged', {
         piId, playerEmail, seasonId, reason: unlock.reason,
       });
     }

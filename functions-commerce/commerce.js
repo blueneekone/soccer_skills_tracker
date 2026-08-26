@@ -474,7 +474,7 @@ async function maybeUnlockActiveSeason(batch, {tenantId, playerEmail, seasonId, 
         seasonPaidAt: admin.firestore.FieldValue.serverTimestamp(),
       });
     } else {
-      logger.info('[webhook] partial season payment � activeSeasonStatus unchanged', {
+      logger.info('[webhook] partial season payment — activeSeasonStatus unchanged', {
         piId, playerEmail, seasonId, reason: unlock.reason,
       });
     }

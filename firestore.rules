@@ -336,8 +336,13 @@ service cloud.firestore {
     match /message_incidents/{incidentId} {
       allow read, write: if isDirector() && resource.data.clubId == tokenClub();
     }
-    match /broadcast_acknowledgements/{docId} {
-      allow read, write: if isAuthenticated() && (resource.data.parentUid == request.auth.uid || isDirector());
+    match /broadcast_acknowledgements/{ackId} {
+      allow read: if isAuthenticated() && (resource.data.parentUid == request.auth.uid || isDirector());
+      allow create, update, delete: if false;
+    }
+    match /sponsor_templates/{templateId} {
+      allow read: if isDirector() && resource.data.clubId == tokenClub();
+      allow create, update, delete: if false;
     }
     match /messaging_audit/{docId} {
       allow read: if isDirector() && resource.data.clubId == tokenClub();
@@ -364,14 +369,79 @@ service cloud.firestore {
       allow read, write: if isAuthenticated();
     }
 
+    function canReadParentVoiceSessionDoc(data) {
+      return isGlobalAdmin() ||
+        (isAuthenticated() && (
+          (isDirector() && data.clubId == tokenClub()) ||
+          (isCoach() && data.coachEmail == emailKey()) ||
+          (isParent() && request.auth.uid in data.participantUids)
+        ));
+    }
+
     match /parent_voice_sessions/{sessionId} {
-      allow read: if isAuthenticated();
-      allow write: if isGlobalAdmin();
+      allow read: if canReadParentVoiceSessionDoc(resource.data);
+      allow create, update, delete: if false;
     }
 
     match /completion_verifications/{verificationId} {
       allow read: if isAuthenticated();
       allow create, update, delete: if false;
+    }
+
+    function canReadParentCoachDmThreadDoc(data) {
+      return isGlobalAdmin() ||
+        (isAuthenticated() && (
+          data.parentEmail == emailKey() ||
+          data.coachEmail == emailKey() ||
+          (isDirector() && data.clubId == tokenClub())
+        ));
+    }
+
+    match /parent_coach_threads/{threadId} {
+      allow read: if canReadParentCoachDmThreadDoc(resource.data);
+      allow create, update, delete: if false;
+
+      match /messages/{messageId} {
+        allow read: if canReadParentCoachDmThreadDoc(get(/databases/$(database)/documents/parent_coach_threads/$(threadId)).data);
+        allow create, update, delete: if false;
+      }
+    }
+
+    function canReadStaffInternalChannel(ch) {
+      return isGlobalAdmin() || (isAuthenticated() && (isDirector() || isCoach() || isRegistrar()));
+    }
+
+    function canReadSponsorPartnerChannel(ch) {
+      return ch.channelType == 'sponsor_partner' && (resource.data.parentEmail == emailKey() || isDirector() || isGlobalAdmin());
+    }
+
+    match /channels/{channelId} {
+      allow read: if isAuthenticated() && (
+        resource.data.get('channelType', '') != 'staff_internal' || canReadStaffInternalChannel(resource.data)
+      );
+      allow write: if isGlobalAdmin();
+
+      match /messages/{msgId} {
+        allow read: if isAuthenticated() && (
+          (
+            resource.data.channelType == 'compliance' &&
+            (resource.data.parentEmail == emailKey() || resource.data.householdId == userDoc().householdId || isDirector() || isGlobalAdmin())
+          ) ||
+          (
+            canReadSponsorPartnerChannel(get(/databases/$(database)/documents/channels/$(channelId)).data)
+          ) ||
+          (
+            resource.data.get('channelType', '') != 'staff_internal' || canReadStaffInternalChannel(get(/databases/$(database)/documents/channels/$(channelId)).data)
+          )
+        );
+        allow create, update, delete: if false;
+      }
+    }
+
+    match /settings/comms {
+      // includeAdOnParentDms club comms flag
+      allow read: if isAuthenticated();
+      allow write: if isGlobalAdmin() || isDirector();
     }
 
     // Default match to prevent global unauthenticated reads/writes

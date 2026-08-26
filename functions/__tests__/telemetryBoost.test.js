@@ -61,15 +61,19 @@ async function runAll() {
  * @param {Array<{ multiplier: number, expiresAt: string, sponsoredByParentEmail: string }>} docs
  */
 function mockBoostFirestore(docs) {
-  admin.firestore = () => ({
-    collection: () => ({
-      where: () => ({
-        get: async () => ({
-          empty: docs.length === 0,
-          docs: docs.map((d) => ({data: () => d})),
+  Object.defineProperty(admin, 'firestore', {
+    value: () => ({
+      collection: () => ({
+        where: () => ({
+          get: async () => ({
+            empty: docs.length === 0,
+            docs: docs.map((d) => ({data: () => d})),
+          }),
         }),
       }),
     }),
+    configurable: true,
+    writable: true,
   });
 }
 
