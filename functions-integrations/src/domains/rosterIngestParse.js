@@ -140,7 +140,9 @@ async function extractPlayersFromPdfText(rawText, apiKey) {
     contents: [
       'You are a data extraction assistant for a soccer club management system.',
       'Extract ALL player entries from the following roster document text.',
-      'For each player, extract: email, full name, position, date of birth (ISO 8601), jersey number.',
+      'Rosters often have an "Admins" (coaches/managers) section and a "Players" section. DO NOT include Coaches, Assistant Coaches, or Team Managers as players.',
+      'When rows list "Player ID Last Name First Name DOB ...", extract displayName as "First Name Last Name".',
+      'For each player, extract: email, displayName (full name), position, date of birth (ISO 8601), jerseyNumber.',
       'If a field is not present in the document, omit it from that player\'s object.',
       'Return ONLY a valid JSON array. No explanations, no markdown fences.',
       'Example: [{"email":"j.smith@email.com","displayName":"John Smith","position":"Midfielder","dateOfBirth":"2008-03-15","jerseyNumber":"7"}]',
@@ -211,56 +213,61 @@ function mapExtractedPlayerToCoach(player) {
  */
 function extractPlayersFromPdfTextFallback(rawText) {
   if (!rawText || typeof rawText !== 'string') return [];
-  const lines = rawText
-      .replace(/\r\n/g, '\n')
-      .replace(/\r/g, '\n')
-      .split('\n')
-      .map((l) => l.trim())
-      .filter(Boolean);
-
+  const lines = rawText.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n').map((l) => l.trim()).filter(Boolean);
   const players = [];
-  const emailRegex = /([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/;
-  const jerseyRegex = /(?:#\s*(\d{1,3})|\bjersey\s*[:#]?\s*(\d{1,3})\b|\bno\.\s*(\d{1,3})\b)/i;
+  let inAdmins = false;
+  let inPlayers = false;
 
   for (const line of lines) {
-    if (/^(page\s+\d+|roster|team\s+roster|player\s+name|date\s+of\s+birth|printed|official|usys|gotsport|club\s+name)/i.test(line)) {
+    if (/^Admins\b/i.test(line) || /^Admin\s+ID/i.test(line)) {
+      inAdmins = true;
+      inPlayers = false;
       continue;
     }
-    let email = '';
-    const emailMatch = line.match(emailRegex);
-    if (emailMatch) email = normEmail(emailMatch[1]);
-
-    let jersey = '';
-    const jerseyMatch = line.match(jerseyRegex);
-    if (jerseyMatch) jersey = jerseyMatch[1] || jerseyMatch[2] || jerseyMatch[3];
-
-    let cleanLine = line;
-    if (email) cleanLine = cleanLine.replace(email, ' ');
-    if (jerseyMatch) cleanLine = cleanLine.replace(jerseyMatch[0], ' ');
-
-    const leadingNumMatch = cleanLine.match(/^\s*(\d{1,3})[\s.)\-]+(.*)$/);
-    if (leadingNumMatch) {
-      if (!jersey && parseInt(leadingNumMatch[1], 10) <= 99) jersey = leadingNumMatch[1];
-      cleanLine = leadingNumMatch[2];
+    if (/^Players\b/i.test(line) || /^Player\s+ID/i.test(line)) {
+      inPlayers = true;
+      inAdmins = false;
+      continue;
+    }
+    if (/^(Signatures|Printed\s+On)/i.test(line)) {
+      inAdmins = false;
+      inPlayers = false;
+      continue;
     }
 
-    cleanLine = cleanLine
-        .replace(/\b\d{4}[-/]\d{1,2}[-/]\d{1,2}\b/g, ' ')
-        .replace(/\b\d{1,2}[-/]\d{1,2}[-/]\d{2,4}\b/g, ' ')
-        .replace(/\b\d{3}[-.\s]\d{3}[-.\s]\d{4}\b/g, ' ')
-        .replace(/\b(forward|midfielder|defender|goalkeeper|striker|winger|f|m|d|gk)\b/gi, ' ')
-        .replace(/[,|;]/g, ' ')
-        .replace(/\s+/g, ' ')
-        .trim();
+    if (inAdmins) continue;
 
-    if (cleanLine.length >= 2 && cleanLine.length <= 80 && /^[a-zA-ZÀ-ÿ'. -]+$/.test(cleanLine)) {
-      if (!/^(team|club|coach|manager|league|state|season|division|schedule|date|age|gender|status)$/i.test(cleanLine)) {
-        players.push({
-          displayName: cleanLine,
-          email: email || undefined,
-          jerseyNumber: jersey || undefined,
-        });
-      }
+    // Pattern 1: Affinity / UYSA format: [ID] [LastName] [FirstName] [DOB] ...
+    const affinityMatch = line.match(/^\s*(\d{4,7}-\d{4,8})\s+([A-Za-z'.-]+)\s+([A-Za-z'.-]+)\s+(\d{1,2}\/\d{1,2}\/\d{2,4})/);
+    if (affinityMatch) {
+      const lastName = affinityMatch[2].trim();
+      const firstName = affinityMatch[3].trim();
+      players.push({
+        displayName: `${firstName} ${lastName}`,
+      });
+      continue;
+    }
+
+    // Pattern 2: GotSport format: [Jersey#] [LastName] [FirstName] [DOB] ...
+    const gotSportMatch = line.match(/^\s*#?\s*(\d{1,3})\s+([A-Za-z'.-]+)\s+([A-Za-z'.-]+)\s+(\d{1,2}\/\d{1,2}\/\d{2,4})/);
+    if (gotSportMatch && inPlayers) {
+      const jersey = gotSportMatch[1];
+      const lastName = gotSportMatch[2].trim();
+      const firstName = gotSportMatch[3].trim();
+      players.push({
+        displayName: `${firstName} ${lastName}`,
+        jerseyNumber: jersey,
+      });
+      continue;
+    }
+
+    // Pattern 3: Comma separated: [LastName], [FirstName]
+    const commaMatch = line.match(/^\s*([A-Za-z'.-]+),\s*([A-Za-z'.-]+)/);
+    if (commaMatch && inPlayers) {
+      players.push({
+        displayName: `${commaMatch[2].trim()} ${commaMatch[1].trim()}`,
+      });
+      continue;
     }
   }
   return players;
@@ -326,6 +333,7 @@ module.exports = {
   mapRowToSchema,
   mapCsvRowToCoachPlayer,
   extractPlayersFromPdfText,
+  extractPlayersFromPdfTextFallback,
   mapExtractedPlayerToCoach,
   parsePdfBase64ToCoachPlayers,
   parseCsvBase64ToCoachPlayers,

@@ -1137,6 +1137,27 @@ exports.secureAddPlayer = onCall({region: REGION}, async (request) => {
   return {ok: true};
 });
 
+async function enqueueParentInviteEmail(reqDb, teamId, playerName, parentEmail) {
+  if (!parentEmail) return;
+  try {
+    const teamDoc = await reqDb.collection('teams').doc(teamId).get();
+    const teamName = teamDoc.exists && teamDoc.data()?.name ? teamDoc.data().name : 'Your Squad';
+    const teamCode = teamDoc.exists && (teamDoc.data()?.inviteCode || teamDoc.data()?.dispatchCode) ?
+      (teamDoc.data().inviteCode || teamDoc.data().dispatchCode) : '';
+    await reqDb.collection('mail').add({
+      to: [parentEmail],
+      message: {
+        subject: `You're invited to join ${teamName} on SSTracker!`,
+        text: `Hello,\n\n${playerName} has been added to ${teamName}.\n\nYour Persistent Team Code is: ${teamCode}\n\nLink your player account: https://sports-skill-tracker-dev.web.app/parent/household\n\n- SSTracker`,
+        html: `<div style="font-family:sans-serif;background:#0f172a;color:#f8fafc;padding:24px;border-radius:8px;"><h2 style="color:#14b8a6;margin-top:0;">Welcome to ${teamName}!</h2><p><strong>${playerName}</strong> has been added to the team roster.</p><div style="background:#020617;border:1px solid #14b8a6;border-radius:6px;padding:16px;margin:20px 0;text-align:center;"><span style="font-size:12px;color:#94a3b8;">PERSISTENT TEAM CODE</span><br/><strong style="font-size:28px;font-family:monospace;color:#daff0a;">${teamCode}</strong></div><p style="text-align:center;"><a href="https://sports-skill-tracker-dev.web.app/parent/household" style="background:#fbbf24;color:#000;padding:12px 24px;text-decoration:none;font-weight:bold;border-radius:4px;display:inline-block;">Link Player Account</a></p></div>`,
+      },
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+  } catch (err) {
+    logger.warn('[adminOps] Failed to enqueue invite email', err);
+  }
+}
+
 /**
  * Bulk roster import — same per-row txn semantics as secureAddPlayer.
  * Coach / director / registrar / super_admin on assigned team only.
@@ -1184,7 +1205,13 @@ exports.secureBulkAddPlayers = onCall({region: REGION}, async (request) => {
       }),
     );
 
-    if (txnResult.kind === 'ok') { added++; continue; }
+    if (txnResult.kind === 'ok') {
+      added++;
+      if (playerEmail) {
+        await enqueueParentInviteEmail(reqDb, teamId, playerName, playerEmail);
+      }
+      continue;
+    }
     if (txnResult.kind === 'duplicate') { duplicates++; continue; }
     if (txnResult.kind === 'email_in_use') { errors.push({index, reason: 'email_in_use'}); skipped++; continue; }
     if (txnResult.kind === 'no_entitlement') throw new HttpsError('failed-precondition', 'Club license is not configured yet.');

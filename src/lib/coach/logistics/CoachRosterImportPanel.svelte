@@ -167,6 +167,19 @@
 		if (file) void readFile(file);
 	}
 
+	let copiedInvite = $state(false);
+
+	async function copyParentOnboardingMessage() {
+		const msg = `Welcome to the squad! We use SSTracker for team communications, matchday schedules, and skill development. Please link your player profile at https://sports-skill-tracker-dev.web.app/parent/household`;
+		try {
+			await navigator.clipboard.writeText(msg);
+			copiedInvite = true;
+			setTimeout(() => { copiedInvite = false; }, 3000);
+		} catch {
+			/* clipboard non-fatal */
+		}
+	}
+
 	function clearPreview() {
 		previewRows = [];
 		fileName = '';
@@ -301,7 +314,7 @@
 				<thead>
 					<tr>
 						<th scope="col">Name</th>
-						<th scope="col">Email</th>
+						<th scope="col">Parent Email (Optional)</th>
 						<th scope="col">Jersey</th>
 						<th scope="col">Status</th>
 					</tr>
@@ -309,8 +322,15 @@
 				<tbody>
 					{#each previewRows as row (row.line)}
 						<tr class:ops-import__row--err={row.status === 'error'}>
-							<td>{row.playerName}</td>
-							<td>{row.playerEmail || '—'}</td>
+							<td class="tw-font-bold tw-text-white">{row.playerName}</td>
+							<td>
+								<input
+									type="email"
+									placeholder="parent@email.com"
+									bind:value={row.playerEmail}
+									class="tw-w-full tw-rounded tw-border tw-border-slate-700 tw-bg-slate-950 tw-px-2 tw-py-1 tw-font-mono tw-text-xs tw-text-cyan-300 focus:tw-border-[#14b8a6] focus:tw-outline-none"
+								/>
+							</td>
 							<td>{row.jersey || '—'}</td>
 							<td>{statusLabel(row)}</td>
 						</tr>
@@ -319,8 +339,17 @@
 			</table>
 			</div>
 		</div>
-		<div class="ops-import__actions">
-			<button type="button" class="ops-btn ops-btn--secondary" onclick={clearPreview}>Clear</button>
+		<div class="ops-import__actions tw-flex tw-flex-wrap tw-items-center tw-justify-between tw-gap-3">
+			<div class="tw-flex tw-items-center tw-gap-2">
+				<button type="button" class="ops-btn ops-btn--secondary" onclick={clearPreview}>Clear</button>
+				<button
+					type="button"
+					class="tw-border tw-border-slate-700 tw-bg-slate-900 tw-px-3 tw-py-2 tw-font-mono tw-text-xs tw-font-bold tw-text-slate-200 hover:tw-border-[#14b8a6] hover:tw-text-[#14b8a6] tw-transition-colors"
+					onclick={copyParentOnboardingMessage}
+				>
+					{copiedInvite ? '✓ COPIED INVITE MESSAGE' : 'COPY PARENT INVITE TEXT'}
+				</button>
+			</div>
 			<button type="button" class="ops-btn" disabled={!canCommit} onclick={() => void commitImport()}>
 				{committing ? 'Importing…' : `Commit ${readyRows.length} player${readyRows.length === 1 ? '' : 's'}`}
 			</button>
