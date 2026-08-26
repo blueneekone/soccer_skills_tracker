@@ -156,6 +156,7 @@
 					onStartEdit={(p) => engine.startEdit(p)}
 					onCancelEdit={() => engine.cancelEdit()}
 					onSaveEdit={(id) => engine.saveEdit(id)}
+					onRemovePlayer={(p) => engine.removePlayer(p)}
 				/>
 			{/each}
 		</ul>

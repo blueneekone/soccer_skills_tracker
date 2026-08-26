@@ -11,7 +11,7 @@
  */
 
 import { db } from '$lib/firebase.js';
-import { collection, onSnapshot, query, where, doc, setDoc, deleteField } from 'firebase/firestore';
+import { collection, onSnapshot, query, where, doc, setDoc, updateDoc, arrayRemove, deleteField } from 'firebase/firestore';
 import { isFirestoreReady } from '$lib/utils/firestoreGuard.js';
 import { authStore } from '$lib/stores/auth.svelte.js';
 
@@ -148,7 +148,16 @@ export class RosterPanelEngine {
 			await setDoc(rosterRef, jerseyPayload, { merge: true }).catch(() => {});
 		}
 
-		// 2. Update player_lookup entry by email if provided
+		// 2. Clean up old lookup doc ID if email or phone changed
+		if (playerId && playerId !== parentEmail && !playerId.startsWith('player:')) {
+			if (playerId.startsWith('phone_')) {
+				await updateDoc(doc(db, 'player_lookup', playerId), { teamId: deleteField() }).catch(() => {});
+			} else if (playerId.includes('@')) {
+				await updateDoc(doc(db, 'player_lookup', playerId), { teamId: '' }).catch(() => {});
+			}
+		}
+
+		// 3. Update player_lookup entry by email if provided
 		if (parentEmail) {
 			await setDoc(
 				doc(db, 'player_lookup', parentEmail),
@@ -165,7 +174,7 @@ export class RosterPanelEngine {
 			);
 		}
 
-		// 3. Update player_lookup entry by phone if provided
+		// 4. Update player_lookup entry by phone if provided
 		const digits = parentPhone.replace(/\D/g, '');
 		const phoneKey = digits.length >= 10 ? `phone_${digits.slice(-10)}` : '';
 		if (phoneKey) {
@@ -185,6 +194,42 @@ export class RosterPanelEngine {
 		}
 
 		this.editingPlayerId = null;
+	}
+
+	async removePlayer(player: RosterPlayer): Promise<void> {
+		if (!this.teamId || !player || !db) return;
+		const name = player.displayName.trim();
+		const rosterRef = doc(db, 'rosters', this.teamId);
+
+		// 1. Remove from rosters document
+		await updateDoc(rosterRef, {
+			players: arrayRemove(name),
+			[`jerseys.${name}`]: deleteField(),
+		}).catch(() => {});
+
+		// 2. Unlink from player_lookup
+		if (player.id && !player.id.startsWith('player:')) {
+			if (player.id.startsWith('phone_')) {
+				await updateDoc(doc(db, 'player_lookup', player.id), { teamId: deleteField() }).catch(() => {});
+			} else if (player.id.includes('@')) {
+				await updateDoc(doc(db, 'player_lookup', player.id), { teamId: '' }).catch(() => {});
+			}
+		}
+		if (player.parentEmail) {
+			await updateDoc(doc(db, 'player_lookup', player.parentEmail.toLowerCase().trim()), { teamId: '' }).catch(() => {});
+		}
+
+		// 3. Invoke Cloud Function for authoritative license seat release
+		try {
+			const { functions } = await import('$lib/firebase.js');
+			if (functions) {
+				const { httpsCallable } = await import('firebase/functions');
+				const secureRemovePlayerFn = httpsCallable(functions, 'secureRemovePlayer');
+				await secureRemovePlayerFn({ teamId: this.teamId, playerName: name });
+			}
+		} catch (e) {
+			console.warn('[RosterPanelEngine] secureRemovePlayer error', e);
+		}
 	}
 
 	// ── Private snapshot handlers ─────────────────────────────────────────────
