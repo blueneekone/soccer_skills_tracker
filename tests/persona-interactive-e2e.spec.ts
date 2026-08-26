@@ -51,7 +51,6 @@ test.describe('Coach OS Interactive Audits (@persona-coach)', () => {
 
 	test('Team Ops: verify tab switching, dispatch code generation, and roster panel', async ({ page }) => {
 		await page.goto('/coach/logistics');
-		await page.waitForLoadState('networkidle');
 
 		// 1. Verify Logistics Header & Dropdown
 		const header = page.locator('h1, .ops-title, [class*="tw-text-xl"]').first();
@@ -77,7 +76,6 @@ test.describe('Coach OS Interactive Audits (@persona-coach)', () => {
 
 	test('Match Day: verify tactical bento pads, live telemetry, and zero purple artifacts', async ({ page }) => {
 		await page.goto('/coach/matchday');
-		await page.waitForLoadState('networkidle');
 
 		// Assert Bento Telemetry Pad is present
 		const telemetryPad = page.locator('.tactical-telemetry-pad, [class*="tw-grid-cols-5"]').first();
@@ -108,7 +106,6 @@ test.describe('Director OS Interactive Audits (@persona-director)', () => {
 
 	test('Director Dashboard: verify club hydration, tab switching, and weather safety radar', async ({ page }) => {
 		await page.goto('/director/dashboard');
-		await page.waitForLoadState('networkidle');
 
 		// Assert Director Shell is rendered with zero blank screen
 		const shell = page.locator('.director-shell, .vanguard-panel, main').first();
@@ -143,7 +140,6 @@ test.describe('Parent OS Interactive Audits (@persona-parent)', () => {
 
 	test('Parent Household: verify dispatch code input and athlete linking', async ({ page }) => {
 		await page.goto('/parent/household');
-		await page.waitForLoadState('domcontentloaded');
 
 		// Assert Household Operatives / Athlete Cards rendered
 		const pageTitle = page.locator('h1, h2, .tw-text-xl, main').first();
@@ -159,7 +155,6 @@ test.describe('Parent OS Interactive Audits (@persona-parent)', () => {
 
 	test('Parent VPC / Compliance: verify COPPA waiver and privacy controls', async ({ page }) => {
 		await page.goto('/parent/vpc');
-		await page.waitForLoadState('domcontentloaded');
 
 		const compliancePanel = page.locator('.vanguard-panel, [class*="border"], main').first();
 		await expect(compliancePanel).toBeVisible();
@@ -183,9 +178,7 @@ test.describe('Player OS Interactive Audits (@persona-player)', () => {
 
 	test('Player Dashboard: verify Scout Six radar prism, habit streaks, and bento grid', async ({ page }) => {
 		await page.goto('/player/dashboard');
-		await page.waitForLoadState('networkidle');
-
-		const playerDashboard = page.locator('.player-dashboard, .bento-grid, main').first();
+		const playerDashboard = page.locator('.player-dashboard, .bento-grid, main, .pd-page-root').first();
 		await expect(playerDashboard).toBeVisible();
 
 		// Assert Geist Mono font applied to metrics

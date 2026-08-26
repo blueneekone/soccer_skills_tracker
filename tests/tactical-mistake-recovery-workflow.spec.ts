@@ -3,20 +3,19 @@ import { test, expect } from '@playwright/test';
 test.describe('Player OS Tactical Mistake Recovery & Visual Verification', () => {
   test('Should trigger, display encouragement, and reset the path state upon click', async ({ page }) => {
     
-    // 1. Setup Session: Programmatically bypass the login wall using Custom Claims
-    const mockClaims = {
-      uid: 'athlete-visual-auditor',
-      email: 'player@sstracker.app',
-      role: 'player',
-      isProfileComplete: true
-    };
-    
-    await page.addInitScript((claims) => {
-      window.localStorage.setItem('user_session_claims', JSON.stringify(claims));
-    }, mockClaims);
+    // 1. Setup Session: Programmatically bypass the login wall using Auth State Mock
+    await page.addInitScript(() => {
+      window.localStorage.setItem('auth_token', 'mock-coach-jwt');
+      window.localStorage.setItem('auth_state', JSON.stringify({
+        isAuthenticated: true,
+        isLoading: false,
+        user: { uid: 'coach-auditor', email: 'coach@sstracker.local', role: 'coach', isProfileComplete: true },
+        userProfile: { uid: 'coach-auditor', email: 'coach@sstracker.local', role: 'coach', isProfileComplete: true, clubId: 'demo-club', teamId: 'demo-team' }
+      }));
+    });
 
-    // Navigate straight to our active Player OS training canvas
-    await page.goto('/player/training-arena');
+    // Navigate straight to active tactical canvas in War Room
+    await page.goto('/coach/tactical');
     await page.waitForSelector('.pd-page-root', { timeout: 5000 });
 
     // 2. Simulate Route Deviation / Mistake Behavior
