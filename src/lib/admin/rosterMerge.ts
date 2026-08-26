@@ -50,26 +50,37 @@ export function mergeAdminRoster(
 	rosterNames: string[],
 	teamId: string,
 ): RosterRow[] {
-	// Build a set of names already covered by an email-linked record (normalized).
-	const linkedNameSet = new Set<string>(
-		linkedRows
-			.map((r) => r.playerName.trim().toLowerCase())
-			.filter(Boolean),
-	);
+	const linkedMap = new Map<string, RosterRow>();
 
-	const emailRows: RosterRow[] = linkedRows.map((r) => ({
-		key: r.email,
-		email: r.email,
-		playerName: r.playerName,
-		ageGroup: r.ageGroup,
-		teamId: r.teamId,
-		nameOnly: false,
-		parentEmails: Array.isArray(r.parentEmails)
-			? r.parentEmails.filter((e) => typeof e === 'string' && e.trim())
-			: [],
-		householdId: r.householdId?.trim() ? r.householdId.trim() : null,
-		vpcStatus: r.vpcStatus?.trim() ? r.vpcStatus.trim() : null,
-	}));
+	for (const r of linkedRows) {
+		const name = r.playerName?.trim() || '';
+		const key = name.toLowerCase() || r.email.toLowerCase();
+		if (!key) continue;
+
+		const existing = linkedMap.get(key);
+		const email = r.email.includes('@') ? r.email : existing?.email || '';
+		const parentEmails = [
+			...(existing?.parentEmails || []),
+			...(Array.isArray(r.parentEmails) ? r.parentEmails.filter((e) => typeof e === 'string' && e.trim()) : []),
+		];
+
+		linkedMap.set(key, {
+			key: email || r.email || `player:${key}`,
+			email,
+			playerName: name || existing?.playerName || key,
+			ageGroup: r.ageGroup || existing?.ageGroup || null,
+			teamId: r.teamId || existing?.teamId || teamId,
+			nameOnly: false,
+			parentEmails: Array.from(new Set(parentEmails)),
+			householdId: r.householdId?.trim() || existing?.householdId || null,
+			vpcStatus: r.vpcStatus?.trim() || existing?.vpcStatus || null,
+		});
+	}
+
+	const linkedRowsDeduplicated = Array.from(linkedMap.values());
+	const linkedNameSet = new Set<string>(
+		linkedRowsDeduplicated.map((r) => r.playerName.trim().toLowerCase()).filter(Boolean),
+	);
 
 	const nameOnlyRows: RosterRow[] = rosterNames
 		.filter((n) => typeof n === 'string' && n.trim().length > 0)
@@ -86,7 +97,7 @@ export function mergeAdminRoster(
 			vpcStatus: null,
 		}));
 
-	return [...emailRows, ...nameOnlyRows].sort((a, b) =>
+	return [...linkedRowsDeduplicated, ...nameOnlyRows].sort((a, b) =>
 		a.playerName.localeCompare(b.playerName, undefined, { sensitivity: 'base' }),
 	);
 }

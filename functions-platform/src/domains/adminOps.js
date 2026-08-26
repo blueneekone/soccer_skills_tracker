@@ -1007,7 +1007,12 @@ async function secureAddPlayerTxn(transaction, params) {
   };
 
   if (lookupRef) transaction.set(lookupRef, lookupPayload, {merge: true});
-  if (phoneLookupRef) transaction.set(phoneLookupRef, lookupPayload, {merge: true});
+  if (phoneLookupRef) {
+    const phonePayload = playerEmail ?
+      {...lookupPayload, teamId: admin.firestore.FieldValue.delete()} :
+      lookupPayload;
+    transaction.set(phoneLookupRef, phonePayload, {merge: true});
+  }
   return {kind: 'ok'};
 }
 
