@@ -117,15 +117,16 @@
 				>
 					{copied ? '✓ COPIED' : 'COPY CODE'}
 				</button>
+			{:else}
+				<button
+					type="button"
+					class="tw-border tw-border-slate-700 tw-bg-slate-900 tw-px-3 tw-py-1.5 tw-font-mono tw-text-xs tw-font-bold tw-text-slate-200 hover:tw-border-[#daff0a] hover:tw-text-[#daff0a] tw-transition-colors disabled:tw-opacity-50"
+					onclick={handleGenerateCode}
+					disabled={codeBusy || !activeTeamId}
+				>
+					{codeBusy ? 'Establishing…' : '+ ESTABLISH TEAM CODE'}
+				</button>
 			{/if}
-			<button
-				type="button"
-				class="tw-border tw-border-slate-700 tw-bg-slate-900 tw-px-3 tw-py-1.5 tw-font-mono tw-text-xs tw-font-bold tw-text-slate-200 hover:tw-border-[#daff0a] hover:tw-text-[#daff0a] tw-transition-colors disabled:tw-opacity-50"
-				onclick={handleGenerateCode}
-				disabled={codeBusy || !activeTeamId}
-			>
-				{inviteCode ? '⟳ RE-ISSUE' : '+ ISSUE CODE'}
-			</button>
 		</div>
 	</div>
 

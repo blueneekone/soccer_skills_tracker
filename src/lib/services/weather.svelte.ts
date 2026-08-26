@@ -203,15 +203,96 @@ export class WeatherAegis {
 		}
 	}
 
+	private async _fetchDirect(lat: number, lng: number): Promise<WeatherSnapshot> {
+		const latRound = Math.round(lat * 10000) / 10000;
+		const lngRound = Math.round(lng * 10000) / 10000;
+		const url = `https://api.open-meteo.com/v1/forecast?latitude=${latRound}&longitude=${lngRound}&current=temperature_2m,relative_humidity_2m,precipitation,precipitation_probability,weather_code,wind_speed_10m,wind_direction_10m,uv_index&wind_speed_unit=mph&temperature_unit=fahrenheit&timezone=auto`;
+		
+		const res = await fetch(url);
+		if (!res.ok) throw new Error(`Weather service HTTP ${res.status}`);
+		const json = await res.json();
+		const c = json.current || {};
+		const wmoCode = Number(c.weather_code ?? 0);
+		const windMph = Math.round(Number(c.wind_speed_10m ?? 0));
+		const precipProb = Math.round(Number(c.precipitation_probability ?? 0));
+		const tempF = Math.round(Number(c.temperature_2m ?? 72));
+
+		const WMO_LABELS: Record<number, string> = {
+			0: 'Clear Sky', 1: 'Mainly Clear', 2: 'Partly Cloudy', 3: 'Overcast',
+			45: 'Foggy', 48: 'Rime Fog',
+			51: 'Light Drizzle', 53: 'Drizzle', 55: 'Dense Drizzle',
+			61: 'Slight Rain', 63: 'Rain', 65: 'Heavy Rain',
+			71: 'Slight Snow', 73: 'Snow', 75: 'Heavy Snow',
+			77: 'Snow Grains',
+			80: 'Slight Showers', 81: 'Showers', 82: 'Violent Showers',
+			85: 'Snow Showers', 86: 'Heavy Snow Showers',
+			95: 'Thunderstorm', 96: 'Thunderstorm + Hail', 99: 'Heavy Thunderstorm + Hail',
+		};
+
+		const dirs = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW'];
+		const windDirDeg = Number(c.wind_direction_10m ?? 0);
+		const windDirection = isFinite(windDirDeg) ? dirs[Math.round(windDirDeg / 22.5) % 16] : '—';
+
+		let alertLevel: AlertLevel = 'NORMAL';
+		if ([95, 96, 99].includes(wmoCode) || tempF >= 100) {
+			alertLevel = 'DANGER';
+		} else if ([17, 29, 91, 92, 93, 94].includes(wmoCode) || tempF >= 90) {
+			alertLevel = 'CAUTION';
+		}
+
+		let deploymentStatus: DeploymentStatus = 'GO';
+		if (alertLevel === 'DANGER' || windMph > 25 || precipProb >= 65 || tempF <= 20) {
+			deploymentStatus = 'NO-GO';
+		} else if (alertLevel === 'CAUTION') {
+			deploymentStatus = 'HOLD';
+		}
+
+		return {
+			current: {
+				temperatureF: tempF,
+				humidity: Math.round(Number(c.relative_humidity_2m ?? 45)),
+				precipMm: Number(c.precipitation ?? 0),
+				precipProbability: precipProb,
+				windMph,
+				windDirection,
+				uvIndex: Math.round(Number(c.uv_index ?? 3)),
+				weatherCode: wmoCode,
+				conditionsLabel: WMO_LABELS[wmoCode] ?? 'Clear Sky',
+			},
+			lightning: {
+				alertLevel,
+				estimatedMiles: alertLevel === 'DANGER' ? 2 : alertLevel === 'CAUTION' ? 14 : null,
+				nwsEvent: null,
+				nwsDescription: null,
+				nwsExpires: null,
+				detectedAt: alertLevel !== 'NORMAL' ? new Date().toISOString() : null,
+			},
+			deploymentStatus,
+			fetchedAt: new Date().toISOString(),
+			lat: latRound,
+			lng: lngRound,
+		};
+	}
+
 	// ── Private: data fetch ───────────────────────────────────────────────
 
 	private async _fetch(): Promise<void> {
-		if (!this._weatherFn || this._lat === null || this._lng === null) return;
+		if (this._lat === null || this._lng === null) return;
 		this.loading = true;
 		this.error = '';
 		try {
-			const res = await this._weatherFn({ lat: this._lat, lng: this._lng });
-			const data = res.data as WeatherSnapshot;
+			let data: WeatherSnapshot | null = null;
+			if (this._weatherFn) {
+				try {
+					const res = await this._weatherFn({ lat: this._lat, lng: this._lng });
+					data = res.data as WeatherSnapshot;
+				} catch (fnErr) {
+					console.warn('[WeatherAegis] Cloud function failed, attempting direct fetch fallback', fnErr);
+				}
+			}
+			if (!data) {
+				data = await this._fetchDirect(this._lat, this._lng);
+			}
 			const prevLevel = this.snapshot?.lightning?.alertLevel ?? 'NORMAL';
 			this.snapshot = data;
 			this._handleAlertTransition(prevLevel, data.lightning.alertLevel);
