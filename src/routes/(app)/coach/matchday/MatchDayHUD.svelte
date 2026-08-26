@@ -29,39 +29,42 @@
 	});
 </script>
 
-<div class="tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-p-4 tw-rounded-none" style="border-radius: 0px;">
+<div class="tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-p-4 sm:tw-p-5 tw-shadow-2xl" style="border-radius: 0px;">
 	{#if engine.lightningDistance <= 10}
 		<div
-			class="tw-w-full tw-p-3 tw-mb-4 tw-font-mono tw-text-sm tw-font-bold tw-text-black tw-uppercase tw-text-center {engine.lightningDistance < 6 ? 'tw-bg-[#dc2626] tw-animate-pulse' : 'tw-bg-[#f59e0b]'}"
+			class="tw-w-full tw-p-3 tw-mb-4 tw-font-mono tw-text-xs sm:tw-text-sm tw-font-bold tw-uppercase tw-text-center tw-tracking-wider tw-border {engine.lightningDistance < 6 ? 'tw-bg-rose-950/90 tw-border-rose-500 tw-text-rose-200 tw-animate-pulse' : 'tw-bg-amber-950/90 tw-border-amber-500 tw-text-amber-200'}"
 			style="border-radius: 0px;"
 			data-testid="weather-banner"
 		>
 			{#if engine.lightningDistance < 6}
-				[ RED LOCKDOWN ] LIGHTNING STRIKE WITHIN 6 MILES. FIELD LOCKED. EVACUATE PLAYERS IMMEDIATELY.
+				⚡ [ RED LOCKDOWN ] LIGHTNING DETECTED WITHIN {engine.lightningDistance} MILES. FIELD LOCKED. EVACUATE PLAYERS IMMEDIATELY.
 			{:else}
-				[ AMBER ALERT ] LIGHTNING STRIKE WITHIN 10 MILES. PREPARE TO SEEK SHELTER.
+				⚠️ [ AMBER ALERT ] LIGHTNING DETECTED WITHIN {engine.lightningDistance} MILES. PREPARE TO SEEK SHELTER.
 			{/if}
 		</div>
 	{/if}
 
-	<!-- Game Clock & Match Controls Strap -->
-	<div class="tw-flex tw-flex-wrap tw-items-center tw-justify-between tw-gap-4 tw-mb-4 tw-p-3 tw-bg-[#000000] tw-border tw-border-[#334155]">
+	<!-- Game Clock & Match Controls Strap (Z2 Well) -->
+	<div class="tw-flex tw-flex-wrap tw-items-center tw-justify-between tw-gap-4 tw-mb-4 tw-p-3.5 tw-bg-[#000000] tw-border tw-border-[#334155]">
 		<div class="tw-flex tw-items-center tw-gap-4">
 			<div>
 				<div class="tw-font-mono tw-text-[10px] tw-text-slate-400 tw-uppercase tw-tracking-widest">GAME CLOCK</div>
-				<div class="tw-font-mono tw-text-2xl tw-font-black tw-text-[#fbbf24] tw-tabular-nums">{matchClockDisplay}</div>
+				<div class="tw-font-mono tw-text-2xl sm:tw-text-3xl tw-font-black tw-text-[#fbbf24] tw-tabular-nums tw-tracking-tight">{matchClockDisplay}</div>
 			</div>
-			<span class="tw-text-[10px] tw-font-mono tw-px-2 tw-py-0.5 tw-border {engine.matchStatus === 'running' ? 'tw-bg-emerald-950/60 tw-border-emerald-500/60 tw-text-emerald-400 tw-animate-pulse' : engine.matchStatus === 'paused' ? 'tw-bg-amber-950/60 tw-border-amber-500/60 tw-text-amber-400' : engine.matchStatus === 'ended' ? 'tw-bg-slate-900 tw-border-slate-700 tw-text-slate-400' : 'tw-bg-slate-900 tw-border-slate-700 tw-text-[#fbbf24]'}">
-				{engine.matchStatus === 'running' ? '● LIVE' : engine.matchStatus === 'paused' ? '⏸ PAUSED' : engine.matchStatus === 'ended' ? '✓ FINAL' : 'PRE-MATCH'}
-			</span>
+			<div class="tw-flex tw-items-center tw-gap-1.5 tw-px-2.5 tw-py-1 tw-border tw-font-mono tw-text-[10px] tw-uppercase tw-tracking-wider {engine.matchStatus === 'running' ? 'tw-bg-emerald-950/60 tw-border-emerald-500/80 tw-text-emerald-400 tw-animate-pulse' : engine.matchStatus === 'paused' ? 'tw-bg-amber-950/60 tw-border-amber-500/80 tw-text-amber-400' : engine.matchStatus === 'ended' ? 'tw-bg-slate-900 tw-border-slate-700 tw-text-slate-400' : 'tw-bg-slate-900/80 tw-border-slate-700 tw-text-[#fbbf24]'}">
+				<span class="tw-w-1.5 tw-h-1.5 {engine.matchStatus === 'running' ? 'tw-bg-emerald-400' : engine.matchStatus === 'paused' ? 'tw-bg-amber-400' : engine.matchStatus === 'ended' ? 'tw-bg-slate-400' : 'tw-bg-[#fbbf24]'}"></span>
+				{engine.matchStatus === 'running' ? 'LIVE' : engine.matchStatus === 'paused' ? 'PAUSED' : engine.matchStatus === 'ended' ? 'FINAL' : 'PRE-MATCH'}
+			</div>
 		</div>
 
+		<!-- Match Action Controls (Symmetrical, Uniform Heights) -->
 		<div class="tw-flex tw-items-center tw-gap-2">
 			{#if engine.matchStatus === 'not_started'}
 				<button
 					type="button"
 					onclick={() => engine.startMatch()}
-					class="tw-bg-[#fbbf24] tw-text-black tw-font-mono tw-font-black tw-text-xs tw-px-4 tw-py-2 tw-uppercase hover:tw-bg-lime-400 tw-transition-all"
+					class="tw-inline-flex tw-items-center tw-justify-center tw-bg-[#fbbf24] tw-text-black tw-font-mono tw-font-black tw-text-xs tw-px-5 tw-h-10 tw-uppercase tw-tracking-wider hover:tw-bg-lime-400 tw-transition-all active:tw-scale-95 tw-shadow-md"
+					style="border-radius: 0px;"
 				>
 					▶ START MATCH
 				</button>
@@ -69,14 +72,16 @@
 				<button
 					type="button"
 					onclick={() => engine.pauseMatch()}
-					class="tw-bg-amber-500 tw-text-black tw-font-mono tw-font-bold tw-text-xs tw-px-3 tw-py-2 tw-uppercase hover:tw-bg-amber-400 tw-transition-colors"
+					class="tw-inline-flex tw-items-center tw-justify-center tw-bg-amber-500/20 tw-text-amber-300 tw-border tw-border-amber-500 tw-font-mono tw-font-bold tw-text-xs tw-px-4 tw-h-10 tw-uppercase hover:tw-bg-amber-500 hover:tw-text-black tw-transition-all active:tw-scale-95"
+					style="border-radius: 0px;"
 				>
 					⏸ PAUSE
 				</button>
 				<button
 					type="button"
 					onclick={() => engine.endMatch()}
-					class="tw-bg-red-600 tw-text-white tw-font-mono tw-font-bold tw-text-xs tw-px-3 tw-py-2 tw-uppercase hover:tw-bg-red-500 tw-transition-colors"
+					class="tw-inline-flex tw-items-center tw-justify-center tw-bg-rose-950/50 tw-text-rose-300 tw-border tw-border-rose-500 tw-font-mono tw-font-bold tw-text-xs tw-px-4 tw-h-10 tw-uppercase hover:tw-bg-rose-600 hover:tw-text-white tw-transition-all active:tw-scale-95"
+					style="border-radius: 0px;"
 				>
 					🏁 FINAL WHISTLE
 				</button>
@@ -84,14 +89,16 @@
 				<button
 					type="button"
 					onclick={() => engine.resumeMatch()}
-					class="tw-bg-emerald-500 tw-text-black tw-font-mono tw-font-bold tw-text-xs tw-px-3 tw-py-2 tw-uppercase hover:tw-bg-emerald-400 tw-transition-colors"
+					class="tw-inline-flex tw-items-center tw-justify-center tw-bg-emerald-500/20 tw-text-emerald-300 tw-border tw-border-emerald-500 tw-font-mono tw-font-bold tw-text-xs tw-px-4 tw-h-10 tw-uppercase hover:tw-bg-emerald-500 hover:tw-text-black tw-transition-all active:tw-scale-95"
+					style="border-radius: 0px;"
 				>
 					▶ RESUME
 				</button>
 				<button
 					type="button"
 					onclick={() => engine.endMatch()}
-					class="tw-bg-red-600 tw-text-white tw-font-mono tw-font-bold tw-text-xs tw-px-3 tw-py-2 tw-uppercase hover:tw-bg-red-500 tw-transition-colors"
+					class="tw-inline-flex tw-items-center tw-justify-center tw-bg-rose-950/50 tw-text-rose-300 tw-border tw-border-rose-500 tw-font-mono tw-font-bold tw-text-xs tw-px-4 tw-h-10 tw-uppercase hover:tw-bg-rose-600 hover:tw-text-white tw-transition-all active:tw-scale-95"
+					style="border-radius: 0px;"
 				>
 					🏁 FINAL WHISTLE
 				</button>
@@ -99,7 +106,8 @@
 				<button
 					type="button"
 					onclick={() => engine.resetClock()}
-					class="tw-bg-[#14b8a6] tw-text-black tw-font-mono tw-font-bold tw-text-xs tw-px-3 tw-py-2 tw-uppercase hover:tw-bg-teal-300 tw-transition-colors"
+					class="tw-inline-flex tw-items-center tw-justify-center tw-bg-[#14b8a6]/20 tw-text-[#14b8a6] tw-border tw-border-[#14b8a6] tw-font-mono tw-font-bold tw-text-xs tw-px-4 tw-h-10 tw-uppercase hover:tw-bg-[#14b8a6] hover:tw-text-black tw-transition-all active:tw-scale-95"
+					style="border-radius: 0px;"
 				>
 					+ NEW MATCH
 				</button>
@@ -107,31 +115,31 @@
 		</div>
 	</div>
 
-
-	<!-- Active Status Bar -->
+	<!-- Active Status Bar (Uniform Sizing & Proportions) -->
 	<div class="tw-flex tw-flex-wrap tw-items-center tw-justify-between tw-gap-4 tw-mb-4 tw-border-b tw-border-[#334155] tw-pb-3">
 		<div class="tw-flex tw-items-center tw-gap-3">
-			<span class="tw-inline-block tw-w-3 tw-h-3 tw-bg-[#fbbf24] tw-animate-pulse" style="border-radius: 0px;"></span>
+			<span class="tw-inline-block tw-w-2.5 tw-h-2.5 tw-bg-[#fbbf24] tw-animate-pulse" style="border-radius: 0px;"></span>
 			{#if engine.isShieldActive}
 				<div class="tw-font-mono tw-text-xs tw-text-[#fbbf24] tw-font-bold">
 					[ SHIELD_ACTIVE: CAR_RIDE_HOME_LOCKOUT ]
-					<span class="tw-block tw-text-[11px] tw-opacity-90">
+					<span class="tw-block tw-text-[11px] tw-text-slate-300 tw-font-normal">
 						CAR_RIDE_HOME_SHIELD_ACTIVE: SENSITIVE PLAYER CARD DATA LOCKED UNTIL {formatTime(engine.lockedUntil)}
 					</span>
 				</div>
 			{:else}
-				<div class="tw-font-mono tw-text-xs tw-text-gray-400">
+				<div class="tw-font-mono tw-text-xs tw-text-slate-400">
 					[ SHIELD_INACTIVE: UNLOCKED ]
 				</div>
 			{/if}
 		</div>
 
+		<!-- Status Buttons Deck (Matching Heights & Aesthetic) -->
 		<div class="tw-flex tw-items-center tw-gap-2">
 			<button
 				type="button"
 				aria-label="Toggle Car Ride Home Shield"
 				onclick={() => engine.toggleShield()}
-				class="tw-bg-[#000000] tw-text-[#fbbf24] tw-border tw-border-[#fbbf24] tw-px-3 tw-py-1.5 tw-font-mono tw-text-xs tw-font-bold hover:tw-bg-[#fbbf24] hover:tw-text-black tw-transition-colors"
+				class="tw-h-8 tw-bg-[#000000] tw-text-[#fbbf24] tw-border tw-border-[#fbbf24]/70 tw-px-3 tw-font-mono tw-text-xs tw-font-bold hover:tw-bg-[#fbbf24] hover:tw-text-black tw-transition-colors"
 				style="border-radius: 0px;"
 			>
 				TOGGLE SHIELD
@@ -140,7 +148,7 @@
 				type="button"
 				aria-label="Toggle Game Whistle"
 				onclick={() => engine.toggleWhistle()}
-				class="tw-bg-[#000000] tw-text-[#14b8a6] tw-border tw-border-[#14b8a6] tw-px-3 tw-py-1.5 tw-font-mono tw-text-xs tw-font-bold hover:tw-bg-[#14b8a6] hover:tw-text-black tw-transition-colors"
+				class="tw-h-8 tw-bg-[#000000] tw-text-[#14b8a6] tw-border tw-border-[#14b8a6]/70 tw-px-3 tw-font-mono tw-text-xs tw-font-bold hover:tw-bg-[#14b8a6] hover:tw-text-black tw-transition-colors"
 				style="border-radius: 0px;"
 			>
 				{engine.isWhistleActive ? 'GAME WHISTLE: ACTIVE' : 'GAME WHISTLE: INACTIVE'}
@@ -149,10 +157,10 @@
 			<button
 				type="button"
 				onclick={() => engine.isHelpDrawerOpen = true}
-				class="tw-bg-[#000000] tw-text-gray-400 tw-border tw-border-[#334155] tw-px-3 tw-py-1.5 tw-font-mono tw-text-xs tw-font-bold hover:tw-text-white tw-transition-colors"
+				class="tw-h-8 tw-bg-[#000000] tw-text-slate-400 tw-border tw-border-[#334155] tw-px-3 tw-font-mono tw-text-xs tw-font-bold hover:tw-text-white hover:tw-border-slate-400 tw-transition-colors"
 				style="border-radius: 0px;"
 			>
-				[ ? SETTINGS ]
+				⚙ SETTINGS
 			</button>
 		</div>
 	</div>
@@ -160,13 +168,13 @@
 	<!-- TARGET Coaching Prompt Engine -->
 	{#key engine.targetPrompts}
 		<div
-			class="target-prompt-container tw-bg-[#000000] tw-border tw-border-[#334155] tw-p-4 tw-transition-all tw-duration-300"
+			class="target-prompt-container tw-bg-[#000000] tw-border tw-border-[#334155] tw-p-3.5 tw-transition-all tw-duration-300"
 			style="font-family: Switzer, sans-serif; border-radius: 0px;"
 		>
-			<div class="tw-font-mono tw-text-xs tw-text-[#fbbf24] tw-font-bold tw-uppercase tw-tracking-wider tw-mb-2">
-				TARGET Coaching Cues
+			<div class="tw-font-mono tw-text-[11px] tw-text-[#fbbf24] tw-font-bold tw-uppercase tw-tracking-widest tw-mb-2">
+				🎯 TARGET Coaching Cues
 			</div>
-			<ul class="tw-space-y-1.5 tw-text-sm tw-text-gray-200">
+			<ul class="tw-space-y-1.5 tw-text-xs sm:tw-text-sm tw-text-slate-200">
 				{#each engine.targetPrompts as prompt}
 					<li class="tw-flex tw-items-start tw-gap-2">
 						<span class="tw-text-[#14b8a6] tw-font-bold">›</span>
@@ -178,55 +186,57 @@
 	{/key}
 </div>
 
+<!-- Slide-Out Help Drawer (Z4) -->
+{#if engine.isHelpDrawerOpen}
+	<div class="tw-fixed tw-inset-y-0 tw-right-0 tw-w-80 tw-bg-[#000000] tw-border-l tw-border-[#334155] tw-z-50 tw-p-6 tw-shadow-2xl tw-transform tw-transition-transform">
+		<div class="tw-flex tw-justify-between tw-items-center tw-mb-6 tw-border-b tw-border-[#334155] tw-pb-3">
+			<h2 class="tw-font-mono tw-text-sm tw-text-[#fbbf24] tw-font-bold tw-uppercase tw-tracking-wider">Match Day Settings</h2>
+			<button onclick={() => engine.isHelpDrawerOpen = false} class="tw-text-slate-400 hover:tw-text-white tw-font-mono tw-text-xs">✕ CLOSE</button>
+		</div>
 
-	<!-- Slide-Out Help Drawer (Z4) -->
-	{#if engine.isHelpDrawerOpen}
-		<div class="tw-fixed tw-inset-y-0 tw-right-0 tw-w-80 tw-bg-[#000000] tw-border-l tw-border-[#334155] tw-z-50 tw-p-6 tw-transform tw-transition-transform">
-			<div class="tw-flex tw-justify-between tw-items-center tw-mb-6">
-				<h2 class="tw-font-mono tw-text-lg tw-text-[#fbbf24] tw-font-bold">Match Day Settings</h2>
-				<button onclick={() => engine.isHelpDrawerOpen = false} class="tw-text-gray-400 hover:tw-text-white tw-font-mono">✕ CLOSE</button>
+		<div class="tw-space-y-5">
+			<div class="tw-flex tw-flex-col tw-gap-3.5">
+				<div>
+					<label class="tw-block tw-font-mono tw-text-[10px] tw-text-slate-400 tw-uppercase tw-mb-1">Opposing Team Name</label>
+					<input type="text" bind:value={engine.opponentName} class="tw-w-full tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-text-white tw-px-3 tw-py-1.5 tw-font-mono tw-text-xs focus:tw-border-[#14b8a6] focus:tw-outline-none" placeholder="Enter opponent..." style="border-radius: 0px;" />
+				</div>
+				<div>
+					<label class="tw-block tw-font-mono tw-text-[10px] tw-text-slate-400 tw-uppercase tw-mb-1">Final Score</label>
+					<input type="text" bind:value={engine.finalScore} class="tw-w-full tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-text-white tw-px-3 tw-py-1.5 tw-font-mono tw-text-xs focus:tw-border-[#14b8a6] focus:tw-outline-none" placeholder="e.g. 2-1" style="border-radius: 0px;" />
+				</div>
+				<div>
+					<label class="tw-block tw-font-mono tw-text-[10px] tw-text-slate-400 tw-uppercase tw-mb-1">Match Start Time</label>
+					<div class="tw-w-full tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-text-slate-300 tw-px-3 tw-py-1.5 tw-font-mono tw-text-xs tw-h-8 tw-flex tw-items-center" style="border-radius: 0px;">
+						{engine.matchStartTime ? new Date(engine.matchStartTime).toLocaleString() : 'Not started'}
+					</div>
+				</div>
 			</div>
 
-			<div class="tw-space-y-6">
-				<div class="tw-flex tw-flex-col tw-gap-4">
-					<div>
-						<label class="tw-block tw-font-mono tw-text-[10px] tw-text-slate-400 tw-uppercase tw-mb-1">Opposing Team Name</label>
-						<input type="text" bind:value={engine.opponentName} class="tw-w-full tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-text-white tw-px-3 tw-py-2 tw-font-mono tw-text-sm" placeholder="Enter opponent..." />
-					</div>
-					<div>
-						<label class="tw-block tw-font-mono tw-text-[10px] tw-text-slate-400 tw-uppercase tw-mb-1">Final Score</label>
-						<input type="text" bind:value={engine.finalScore} class="tw-w-full tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-text-white tw-px-3 tw-py-2 tw-font-mono tw-text-sm" placeholder="e.g. 2-1" />
-					</div>
-					<div>
-						<label class="tw-block tw-font-mono tw-text-[10px] tw-text-slate-400 tw-uppercase tw-mb-1">Match Start Time</label>
-						<div class="tw-w-full tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-text-gray-300 tw-px-3 tw-py-2 tw-font-mono tw-text-sm tw-h-9 tw-flex tw-items-center">
-							{engine.matchStartTime ? new Date(engine.matchStartTime).toLocaleString() : 'Not started'}
-						</div>
-					</div>
-				</div>
-
-				<div class="tw-p-2 tw-bg-[#000000] tw-border tw-border-[#334155]" style="border-radius: 0px;">
-					<div class="tw-font-mono tw-text-[10px] tw-text-[#14b8a6] tw-uppercase tw-tracking-widest tw-mb-1">Telemetry Stream</div>
-					{#each engine.telemetryLogs.slice(0, 3) as log}
-						<div class="tw-font-mono tw-text-xs tw-text-gray-300">{log}</div>
+			<div class="tw-p-3 tw-bg-[#0f172a] tw-border tw-border-[#334155]" style="border-radius: 0px;">
+				<div class="tw-font-mono tw-text-[10px] tw-text-[#14b8a6] tw-uppercase tw-tracking-widest tw-mb-2">Telemetry Stream</div>
+				<div class="tw-space-y-1 tw-max-h-28 tw-overflow-y-auto">
+					{#each engine.telemetryLogs.slice(0, 4) as log}
+						<div class="tw-font-mono tw-text-[10px] tw-text-slate-300 tw-truncate">{log}</div>
 					{/each}
-
-					<div class="tw-mt-2 tw-flex tw-gap-2 tw-opacity-20 hover:tw-opacity-100 tw-transition-opacity">
-						<button class="tw-text-[10px] tw-bg-gray-800 tw-px-2 tw-py-1" onclick={() => engine.simulateLightning(8.5)}>Sim 8.5m</button>
-						<button class="tw-text-[10px] tw-bg-gray-800 tw-px-2 tw-py-1" onclick={() => engine.simulateLightning(5.2)}>Sim 5.2m</button>
-						<button class="tw-text-[10px] tw-bg-gray-800 tw-px-2 tw-py-1" onclick={() => engine.simulateLightning(20)}>Sim Clear</button>
-					</div>
 				</div>
 
-				<div>
-					<h3 class="tw-font-mono tw-text-sm tw-text-[#14b8a6] tw-mb-2">Game Whistle</h3>
-					<p class="tw-text-sm tw-text-gray-300">Controls the active state of the match recording. Must be active to log events.</p>
+				<div class="tw-mt-3 tw-flex tw-gap-1.5">
+					<button class="tw-text-[10px] tw-font-mono tw-bg-slate-800 tw-border tw-border-slate-700 tw-text-slate-300 tw-px-2 tw-py-1 hover:tw-border-amber-400" onclick={() => engine.simulateLightning(8.5)} style="border-radius: 0px;">Sim 8.5m</button>
+					<button class="tw-text-[10px] tw-font-mono tw-bg-slate-800 tw-border tw-border-slate-700 tw-text-slate-300 tw-px-2 tw-py-1 hover:tw-border-rose-400" onclick={() => engine.simulateLightning(5.2)} style="border-radius: 0px;">Sim 5.2m</button>
+					<button class="tw-text-[10px] tw-font-mono tw-bg-slate-800 tw-border tw-border-slate-700 tw-text-slate-300 tw-px-2 tw-py-1 hover:tw-border-emerald-400" onclick={() => engine.simulateLightning(20)} style="border-radius: 0px;">Clear</button>
 				</div>
+			</div>
 
+			<div class="tw-text-xs tw-text-slate-300 tw-space-y-3">
 				<div>
-					<h3 class="tw-font-mono tw-text-sm tw-text-[#14b8a6] tw-mb-2">Toggle Shield</h3>
-					<p class="tw-text-sm tw-text-gray-300">Activates the "Car Ride Home" shield. This initiates a 15-minute post-game data lockout for parents and players to prevent immediate analysis in the car.</p>
+					<h3 class="tw-font-mono tw-text-xs tw-text-[#14b8a6] tw-font-bold tw-uppercase tw-mb-1">Game Whistle</h3>
+					<p class="tw-text-[11px] tw-text-slate-400">Controls the active state of match recording. Whistle must be active to log live events.</p>
+				</div>
+				<div>
+					<h3 class="tw-font-mono tw-text-xs tw-text-[#14b8a6] tw-font-bold tw-uppercase tw-mb-1">Car Ride Home Shield</h3>
+					<p class="tw-text-[11px] tw-text-slate-400">Activates the 15-minute post-match parent lockout protocol to eliminate car ride anxiety.</p>
 				</div>
 			</div>
 		</div>
-	{/if}
+	</div>
+{/if}
