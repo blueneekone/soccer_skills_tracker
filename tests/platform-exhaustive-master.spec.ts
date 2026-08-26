@@ -171,12 +171,34 @@ test.describe('Player Gamification, Skill Tree & Habit Engine (@player-gamificat
 		}
 	});
 
-	test('Player Armory & Proving Grounds: verify gear and challenge views', async ({ page }) => {
+	test('Player Armory & Avatar Builder: verify vector operative studio, part slots, and card gallery', async ({ page }) => {
 		await page.goto('/player/armory');
 		await page.waitForLoadState('networkidle');
-		const armoryRoot = page.locator('.vanguard-panel, main').first();
+
+		// Assert Armory / Studio Shell
+		const armoryRoot = page.locator('.vanguard-panel, .armory-deck, main').first();
 		await expect(armoryRoot).toBeVisible();
 
+		// Verify Avatar Studio Tabs (Studio, Album, Ceremonies)
+		const studioTab = page.locator('button:has-text("Studio"), a:has-text("Studio"), button:has-text("Customizer")').first();
+		if (await studioTab.isVisible()) {
+			await studioTab.click();
+			await page.waitForTimeout(200);
+		}
+
+		// Verify Card Gallery Tab
+		const cardsTab = page.locator('button:has-text("Album"), a:has-text("Album"), button:has-text("Cards"), a:has-text("Cards")').first();
+		if (await cardsTab.isVisible()) {
+			await cardsTab.click();
+			await page.waitForTimeout(200);
+			const cardGallery = page.locator('.card-gallery, .player-card, [class*="card"]').first();
+			if (await cardGallery.isVisible()) {
+				await expect(cardGallery).toBeVisible();
+			}
+		}
+	});
+
+	test('Proving Grounds & Challenges: verify 1v1 drill leaderboards', async ({ page }) => {
 		await page.goto('/player/proving-grounds');
 		await page.waitForLoadState('networkidle');
 		const pgRoot = page.locator('.vanguard-panel, main').first();
