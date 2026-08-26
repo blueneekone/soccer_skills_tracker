@@ -50,10 +50,10 @@ test.describe('Director OS: Navigation, Layout, and Design Tokens Audit', () => 
     const sidebar = page.locator('nav.director-sidebar, .nexus-sidebar');
     await expect(sidebar).toBeVisible();
 
-    // The first active button inside our sidebar navigation tree must be the "Mission Control" / "Daily Intel" node
+    // The first active button inside our sidebar navigation tree must be the "Daily Intel" node
     const firstNavNode = sidebar.locator('a, button').first();
     await expect(firstNavNode).toBeVisible();
-    await expect(firstNavNode).toContainText(/Mission Control|Daily Intel|Dashboard/i);
+    await expect(firstNavNode).toContainText(/Daily Intel|Dashboard/i);
 
     // Verify its styling utilizes our strict Data Cyan hover-accents
     await expect(firstNavNode).toHaveCSS('font-family', /Switzer|sans-serif/);

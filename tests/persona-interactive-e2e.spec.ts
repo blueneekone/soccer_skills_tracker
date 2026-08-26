@@ -143,10 +143,10 @@ test.describe('Parent OS Interactive Audits (@persona-parent)', () => {
 
 	test('Parent Household: verify dispatch code input and athlete linking', async ({ page }) => {
 		await page.goto('/parent/household');
-		await page.waitForLoadState('domcontentloaded');
+		await page.waitForLoadState('networkidle');
 
 		// Assert Household Operatives / Athlete Cards rendered
-		const pageTitle = page.locator('h1, h2, .tw-text-xl, main').first();
+		const pageTitle = page.locator('h1, h2, .tw-text-xl').first();
 		await expect(pageTitle).toBeVisible();
 
 		// Assert dispatch code input field exists for squad linking
@@ -159,7 +159,7 @@ test.describe('Parent OS Interactive Audits (@persona-parent)', () => {
 
 	test('Parent VPC / Compliance: verify COPPA waiver and privacy controls', async ({ page }) => {
 		await page.goto('/parent/vpc');
-		await page.waitForLoadState('domcontentloaded');
+		await page.waitForLoadState('networkidle');
 
 		const compliancePanel = page.locator('.vanguard-panel, [class*="border"], main').first();
 		await expect(compliancePanel).toBeVisible();
