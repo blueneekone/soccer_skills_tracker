@@ -18,6 +18,56 @@ function createTeamsStore() {
 	/** Avoid stale empty load before clubId is on profile (director/registrar). */
 	let lastLoadKey = $state('');
 
+	/** @param {any} db @param {string} teamId @param {any[]} teamsArr */
+	async function fetchTeamById(db, teamId, teamsArr) {
+		if (!teamId || teamsArr.some((t) => t.id === teamId)) return;
+		try {
+			const snap = await getDoc(doc(db, 'teams', teamId));
+			if (snap.exists()) teamsArr.push({ id: snap.id, ...snap.data() });
+		} catch (e) {
+			console.warn('[teams store] fetchTeamById error', e);
+		}
+	}
+
+	/** @param {any} db @param {string} head @param {string|undefined} uid @param {any[]} teamsArr */
+	async function reconcileProfileAndLookups(db, head, uid, teamsArr) {
+		try {
+			const userSnap = await getDoc(doc(db, 'users', head));
+			if (userSnap.exists()) {
+				const uData = userSnap.data() || {};
+				if (uData.teamId) await fetchTeamById(db, uData.teamId, teamsArr);
+				if (Array.isArray(uData.teamIds)) {
+					for (const tid of uData.teamIds) await fetchTeamById(db, tid, teamsArr);
+				}
+			}
+			if (uid && uid !== head) {
+				const uidSnap = await getDoc(doc(db, 'users', uid));
+				if (uidSnap.exists()) {
+					const uData = uidSnap.data() || {};
+					if (uData.teamId) await fetchTeamById(db, uData.teamId, teamsArr);
+					if (Array.isArray(uData.teamIds)) {
+						for (const tid of uData.teamIds) await fetchTeamById(db, tid, teamsArr);
+					}
+				}
+			}
+			const lookupDoc = await getDoc(doc(db, 'coach_lookup', head));
+			if (lookupDoc.exists() && lookupDoc.data()?.teamId) {
+				await fetchTeamById(db, lookupDoc.data().teamId, teamsArr);
+			}
+			const inviteSnap = await getDocs(
+				query(collection(db, 'coach_invites'), where('coachEmail', '==', head)),
+			).catch(() => null);
+			if (inviteSnap) {
+				for (const inv of inviteSnap.docs) {
+					const invTeamId = inv.data()?.teamId;
+					if (invTeamId) await fetchTeamById(db, invTeamId, teamsArr);
+				}
+			}
+		} catch (err) {
+			console.warn('[teams store] reconcileProfileAndLookups error', err);
+		}
+	}
+
 	/**
 	 * @param {string} em
 	 * @param {string} clubId
@@ -47,28 +97,15 @@ function createTeamsStore() {
 			if (snapUid) snapUid.forEach(d => teamsArr.push({ id: d.id, ...d.data() }));
 		}
 
-		// Lookup & Invite reconciliation: check coach_lookup and coach_invites
-		try {
-			const lookupDoc = await getDoc(doc(db, 'coach_lookup', head));
-			if (lookupDoc.exists() && lookupDoc.data()?.teamId) {
-				const tSnap = await getDoc(doc(db, 'teams', lookupDoc.data().teamId));
-				if (tSnap.exists()) teamsArr.push({ id: tSnap.id, ...tSnap.data() });
-			}
-			const inviteSnap = await getDocs(query(collection(db, 'coach_invites'), where('coachEmail', '==', head)));
-			for (const inv of inviteSnap.docs) {
-				const invTeamId = inv.data()?.teamId;
-				if (invTeamId && !teamsArr.some(t => t.id === invTeamId)) {
-					const tSnap = await getDoc(doc(db, 'teams', invTeamId));
-					if (tSnap.exists()) teamsArr.push({ id: tSnap.id, ...tSnap.data() });
-				}
-			}
-		} catch (err) {
-			console.warn('[teams store] coach lookup/invite sync', err);
+		if (clubId) {
+			const snapClub = await getDocs(query(collection(db, 'teams'), where('clubId', '==', clubId))).catch(() => null);
+			if (snapClub) snapClub.forEach(d => teamsArr.push({ id: d.id, ...d.data() }));
 		}
+
+		await reconcileProfileAndLookups(db, head, uid, teamsArr);
 		
 		const byId = new Map();
 		for (const data of teamsArr) {
-			if (clubId && data.clubId !== clubId) continue;
 			byId.set(data.id, data);
 		}
 		return Array.from(byId.values());

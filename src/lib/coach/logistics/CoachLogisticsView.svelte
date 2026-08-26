@@ -5,7 +5,7 @@
 	import CoachTeamAttendancePanel from '$lib/coach/logistics/CoachTeamAttendancePanel.svelte';
 	import CoachTeamCommsPanel from '$lib/coach/logistics/CoachTeamCommsPanel.svelte';
 	import { page } from '$app/state';
-	import { teamsStore } from '$lib/stores/teams.svelte.js';
+	import { teamsStore, resolveTeamsLoadScope } from '$lib/stores/teams.svelte.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { getActiveDb } from '$lib/firebase.js';
 	import { CoachTeamScope } from '$lib/coach/context/coachTeamScope.svelte.js';
@@ -15,6 +15,20 @@
 		const db = getActiveDb();
 		if (!db || !authStore.isAuthenticated) return;
 		teamScope.syncSelectedTeam();
+	});
+
+	$effect(() => {
+		if (!authStore.isAuthenticated || authStore.isLoading) return;
+		const coachEmail = authStore.user?.email || authStore.userProfile?.email;
+		if (coachEmail) {
+			const scope = resolveTeamsLoadScope(page.url.pathname, authStore.role);
+			void teamsStore.load(authStore.role, {
+				clubId: authStore.userProfile?.clubId,
+				coachEmail,
+				scope,
+				routePath: page.url.pathname,
+			});
+		}
 	});
 
 	// Override selected team when ?teamId= is present in URL (e.g. navigating from Coach Organizations page)

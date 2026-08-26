@@ -44,12 +44,14 @@ export class RosterPanelEngine {
 		parentEmail: '',
 	});
 
-	private unsub: (() => void) | null = null;
+	private unsubs: Array<() => void> = [];
+	private rawLookupPlayers: RosterPlayer[] = [];
+	private rawRosterNames: string[] = [];
 
 	// ── Subscription ─────────────────────────────────────────────────────────
 
 	subscribe(teamId: string): void {
-		this.unsub?.();
+		this.detach();
 		if (!db || !authStore.isAuthenticated) return;
 		if (!isFirestoreReady() || !teamId) {
 			this.players = [];
@@ -58,13 +60,45 @@ export class RosterPanelEngine {
 		}
 		this.loading = true;
 		this.err = '';
+		this.rawLookupPlayers = [];
+		this.rawRosterNames = [];
+
 		const q = query(collection(db, 'player_lookup'), where('teamId', '==', teamId));
-		this.unsub = onSnapshot(q, this._onSnapshot.bind(this), this._onError.bind(this));
+		const unsubLookup = onSnapshot(
+			q,
+			(snap) => {
+				this.rawLookupPlayers = snap.docs.map(this._mapDoc.bind(this));
+				this._recompute();
+			},
+			(e) => this._onError(e),
+		);
+		this.unsubs.push(unsubLookup);
+
+		const rosterDocRef = doc(db, 'rosters', teamId);
+		const unsubRoster = onSnapshot(
+			rosterDocRef,
+			(snap) => {
+				if (snap.exists()) {
+					const data = snap.data();
+					const raw = Array.isArray(data?.players) ? data.players : [];
+					this.rawRosterNames = raw
+						.map((p: any) => (typeof p === 'string' ? p : p?.name || p?.playerName || ''))
+						.filter(Boolean);
+				} else {
+					this.rawRosterNames = [];
+				}
+				this._recompute();
+			},
+			() => {
+				/* non-fatal if rosters doc is missing */
+			},
+		);
+		this.unsubs.push(unsubRoster);
 	}
 
 	detach(): void {
-		this.unsub?.();
-		this.unsub = null;
+		this.unsubs.forEach((u) => u());
+		this.unsubs = [];
 	}
 
 	// ── Edit actions ─────────────────────────────────────────────────────────
@@ -101,9 +135,20 @@ export class RosterPanelEngine {
 
 	// ── Private snapshot handlers ─────────────────────────────────────────────
 
-	private _onSnapshot(snap: any): void {
-		this.players = snap.docs.map(this._mapDoc).sort(
-			(a: RosterPlayer, b: RosterPlayer) => a.displayName.localeCompare(b.displayName),
+	private _recompute(): void {
+		const nameSet = new Set(this.rawLookupPlayers.map((p) => p.displayName.trim().toLowerCase()));
+		const nameOnlyPlayers: RosterPlayer[] = this.rawRosterNames
+			.filter((n) => !nameSet.has(n.trim().toLowerCase()))
+			.map((name) => ({
+				id: `nameonly:${name.trim().toLowerCase()}`,
+				displayName: name,
+				email: '',
+				parentName: '',
+				parentPhone: '',
+				parentEmail: '',
+			}));
+		this.players = [...this.rawLookupPlayers, ...nameOnlyPlayers].sort((a, b) =>
+			a.displayName.localeCompare(b.displayName),
 		);
 		this.loading = false;
 	}

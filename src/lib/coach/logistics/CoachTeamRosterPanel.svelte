@@ -20,7 +20,7 @@
 	const engine = new RosterPanelEngine();
 
 	$effect(() => {
-		const activeTeamId = authStore.userProfile?.teamId || teamId;
+		const activeTeamId = teamId || authStore.userProfile?.teamId;
 		untrack(() => {
 			if (!activeTeamId) {
 				engine.players = [];
