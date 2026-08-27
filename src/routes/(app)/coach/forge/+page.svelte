@@ -6,6 +6,7 @@
 	import { CoachIntentEngineView } from '$lib/coach/intent/index.js';
 	import CoachDrillDesignerStudio from '$lib/components/coach/drill/CoachDrillDesignerStudio.svelte';
 	import CoachDrillLibraryArena from '$lib/components/coach/drill/CoachDrillLibraryArena.svelte';
+	import CoachForgeHelpModal from '$lib/components/coach/drill/CoachForgeHelpModal.svelte';
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { CoachTeamScope } from '$lib/coach/context/coachTeamScope.svelte.js';
 
@@ -15,12 +16,17 @@
 	});
 
 	let activeTab = $state<'intent' | 'designer' | 'library'>('intent');
+	let showHelpModal = $state(false);
 
 	$effect(() => {
 		if (!browser) return;
 		const t = page.url.searchParams.get('tab') || page.url.searchParams.get('view');
 		if (t === 'designer' || t === 'library' || t === 'intent') {
 			activeTab = t as any;
+		}
+		const h = page.url.searchParams.get('help') || page.url.searchParams.get('manual');
+		if (h === '1' || h === 'true') {
+			showHelpModal = true;
 		}
 	});
 
@@ -66,16 +72,29 @@
 				{/if}
 			</div>
 
-			<!-- Right: Quick Bridge to War Room -->
-			<a
-				href="/coach/tactical"
-				class="tw-bg-[#0f172a] hover:tw-bg-slate-800 tw-border tw-border-slate-800 hover:tw-border-slate-700 tw-text-slate-300 hover:tw-text-white tw-font-mono tw-text-xs tw-font-medium tw-px-3.5 tw-py-1.5 tw-rounded-lg active:tw-scale-[0.98] tw-transition-all tw-no-underline tw-inline-flex tw-items-center tw-gap-2"
-				title="Open War Room Tactical Whiteboard"
-			>
-				<span class="tw-text-slate-400">⚡</span>
-				<span>Open War Room</span>
-				<span class="tw-text-slate-600">→</span>
-			</a>
+			<!-- Right: Help Manual & War Room Shortcut -->
+			<div class="tw-flex tw-items-center tw-gap-2">
+				<button
+					type="button"
+					onclick={() => showHelpModal = true}
+					class="tw-bg-[#0f172a] hover:tw-bg-slate-800 tw-border tw-border-slate-800 hover:tw-border-[#14b8a6]/60 tw-text-slate-300 hover:tw-text-[#14b8a6] tw-font-mono tw-text-xs tw-font-medium tw-px-3 tw-py-1.5 tw-rounded-lg active:tw-scale-[0.98] tw-transition-all tw-inline-flex tw-items-center tw-gap-2 tw-cursor-pointer"
+					title="Open Forge Operating Manual & System Help"
+				>
+					<span class="tw-text-[#14b8a6]">📖</span>
+					<span class="tw-hidden sm:tw-inline">Help & Manual</span>
+					<span class="sm:tw-hidden">Help</span>
+				</button>
+
+				<a
+					href="/coach/tactical"
+					class="tw-bg-[#0f172a] hover:tw-bg-slate-800 tw-border tw-border-slate-800 hover:tw-border-slate-700 tw-text-slate-300 hover:tw-text-white tw-font-mono tw-text-xs tw-font-medium tw-px-3.5 tw-py-1.5 tw-rounded-lg active:tw-scale-[0.98] tw-transition-all tw-no-underline tw-inline-flex tw-items-center tw-gap-2"
+					title="Open War Room Tactical Whiteboard"
+				>
+					<span class="tw-text-slate-400">⚡</span>
+					<span>Open War Room</span>
+					<span class="tw-text-slate-600">→</span>
+				</a>
+			</div>
 		</div>
 
 		<!-- Built-in Section Navigation (Dark Colors Only — Seamless In-Page Section Switching) -->
@@ -140,4 +159,7 @@
 			/>
 		{/if}
 	</main>
+
+	<!-- Coach Forge Operating Manual Modal -->
+	<CoachForgeHelpModal open={showHelpModal} onClose={() => (showHelpModal = false)} />
 </div>
