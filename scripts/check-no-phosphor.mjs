@@ -62,6 +62,8 @@ const SVG_STROKE_ALLOWLIST = [
 	'player/dashboard/+page.svelte',
 	'compliance/+page.svelte',
 	'CoachTeamStatsHub.svelte',
+	'CoachTacticalPreviewStage.svelte',
+	'CoachDrillDesignerStudio.svelte',
 ];
 
 const PATTERNS = {

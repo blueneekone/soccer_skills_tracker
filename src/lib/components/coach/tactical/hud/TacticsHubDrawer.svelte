@@ -122,9 +122,10 @@
 						</p>
 						<a
 							href="/coach/forge?tab=designer"
-							class="tw-mt-3 tw-inline-flex tw-items-center tw-justify-center tw-w-full tw-gap-2 tw-border tw-border-[#fbbf24] tw-bg-[#fbbf24] tw-text-black tw-font-mono tw-font-bold tw-text-xs tw-py-2.5 tw-uppercase hover:tw-bg-amber-400 tw-transition-colors tw-rounded"
+							class="tw-mt-3 tw-inline-flex tw-items-center tw-justify-center tw-w-full tw-gap-2 tw-bg-gradient-to-r tw-from-amber-400 tw-to-amber-500 hover:tw-from-amber-300 hover:tw-to-amber-400 tw-text-black tw-font-mono tw-font-bold tw-text-xs tw-py-2.5 tw-rounded-xl tw-shadow-[0_0_15px_rgba(251,191,36,0.3)] active:tw-scale-[0.98] tw-transition-all tw-no-underline"
 						>
-							➕ Open Drill Designer Sheet
+							<span>📐 Open in Drill Designer</span>
+							<span>→</span>
 						</a>
 					</div>
 					<div class="tw-border tw-border-[#334155] tw-bg-[#020617] tw-p-3 tw-rounded">

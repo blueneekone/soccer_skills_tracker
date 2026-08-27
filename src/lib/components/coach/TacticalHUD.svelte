@@ -62,25 +62,28 @@
 -->
 <div class="tactical-hud-panel tw-pointer-events-none tw-absolute tw-inset-0 tw-z-10 tw-overflow-hidden" style="border-radius: 0px;">
 	<!-- Top Bar Floating Action Deck -->
-	<div class="tw-pointer-events-auto tw-absolute tw-top-3 tw-left-3 tw-z-30 tw-flex tw-items-center tw-gap-2.5">
-		<!-- [ ⚡ TACTICS HUB ] Trigger Button -->
+	<div class="tw-pointer-events-auto tw-absolute tw-top-3 tw-left-3 tw-z-30 tw-flex tw-items-center tw-gap-2">
+		<!-- Tactical Hub Trigger Button -->
 		<button
 			type="button"
-			class="tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-px-3.5 tw-py-2 tw-font-mono tw-text-xs tw-font-bold {isTacticsHubOpen ? 'tw-border-[#daff0a] tw-text-[#daff0a] tw-shadow-[0_0_12px_rgba(218,255,10,0.3)]' : 'tw-text-[#fafafa] hover:tw-border-[#14b8a6] hover:tw-text-[#14b8a6]'} active:tw-scale-[0.98] tw-transition-all tw-rounded-md"
+			class="tw-bg-[#030712]/90 tw-backdrop-blur-md tw-border tw-border-slate-700/80 tw-px-3.5 tw-py-2 tw-font-mono tw-text-xs tw-font-semibold tw-tracking-wide {isTacticsHubOpen ? 'tw-bg-teal-950/70 tw-border-teal-500/80 tw-text-teal-300 tw-shadow-[0_0_15px_rgba(20,184,166,0.3)]' : 'tw-text-slate-200 hover:tw-text-white hover:tw-border-slate-500 hover:tw-bg-slate-800/80'} active:tw-scale-[0.98] tw-transition-all tw-rounded-xl tw-shadow-xl tw-flex tw-items-center tw-gap-2"
 			onclick={() => { isTacticsHubOpen = !isTacticsHubOpen; }}
-			title="Toggle Tactics Hub"
-			aria-label="Toggle Tactics Hub"
+			title="Toggle Tactics Hub Drawer"
+			aria-label="Toggle Tactics Hub Drawer"
 		>
-			[ ⚡ TACTICS HUB ]
+			<span class="tw-h-2 tw-w-2 tw-rounded-full {isTacticsHubOpen ? 'tw-bg-teal-400 tw-shadow-[0_0_8px_#2dd4bf]' : 'tw-bg-slate-500'}"></span>
+			<span>Tactical Hub</span>
 		</button>
 
 		<!-- Link to Drill Designer in The Forge -->
 		<a
 			href="/coach/forge?tab=designer"
-			class="tw-bg-[#0f172a] tw-border tw-border-[#daff0a]/50 hover:tw-border-[#daff0a] tw-text-[#daff0a] hover:tw-bg-[#daff0a]/10 tw-px-3.5 tw-py-2 tw-font-mono tw-text-xs tw-font-bold active:tw-scale-[0.98] tw-transition-all tw-rounded-md tw-no-underline tw-flex tw-items-center tw-gap-1.5 tw-shadow-[0_0_10px_rgba(218,255,10,0.15)]"
+			class="tw-bg-[#030712]/90 tw-backdrop-blur-md tw-border tw-border-slate-700/80 hover:tw-border-amber-400/60 tw-text-slate-200 hover:tw-text-amber-300 tw-px-3.5 tw-py-2 tw-font-mono tw-text-xs tw-font-semibold tw-tracking-wide active:tw-scale-[0.98] tw-transition-all tw-rounded-xl tw-no-underline tw-flex tw-items-center tw-gap-2 tw-shadow-xl"
 			title="Open Drill Designer in The Forge"
 		>
-			[ 📐 DRILL DESIGNER → ]
+			<span class="tw-text-amber-400">📐</span>
+			<span>Drill Designer</span>
+			<span class="tw-text-slate-500 tw-text-[11px]">→</span>
 		</a>
 	</div>
 
