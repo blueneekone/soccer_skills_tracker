@@ -43,7 +43,7 @@ jobs:
 
       - name: Execute Jules Persona UI/UX Sprint
         env:
-          AGY_API_KEY: ${{ secrets.AGY_API_KEY }}
-          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+          AGY_API_KEY: ${{ secrets['AGY_API_KEY'] }}
+          FIREBASE_TOKEN: ${{ secrets['FIREBASE_TOKEN'] }}
         run: |
           agy -p .agents/workflows/jules-builds/${{ matrix.persona }} --dangerously-skip-permissions
