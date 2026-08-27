@@ -1,6 +1,6 @@
 import { setContext } from 'svelte';
 import { SimulatorEngine } from '$lib/states/SimulatorEngine.svelte';
-import { normalizeRoute, routePathD, sampleRoutePointAt, DELAY_MAX_MS } from '$lib/states/war-room/routeModel';
+import { normalizeRoute, routePathD, sampleRoutePointAt, applyPassRouteKinematics, DELAY_MAX_MS } from '$lib/states/war-room/routeModel';
 import {
 	VIEW_W,
 	VIEW_H,
@@ -68,9 +68,13 @@ function buildKineticState(
 			kineticMap.set(tok.id, kTok);
 		}
 
-		// Pass 2: Attached tokens (e.g. Ball Possession) override position until their pass route begins
+		// Pass 2: Pass Route with Movable Pivot Point
+		const passRoutes = routes.filter((x) => x.pathKind === 'pass');
+		applyPassRouteKinematics(kineticMap, passRoutes, tokens, tNow, maxT, dragId);
+
+		// Pass 3: Attached tokens (e.g. Ball Possession) override position until their pass route begins
 		for (const tok of tokens) {
-			if (tok.attachedTo) {
+			if (tok.attachedTo && tok.id !== 'BALL') {
 				const parent = kineticMap.get(tok.attachedTo);
 				const r = routes.find((x) => x.bindPlayerId === tok.id);
 				const delay = r ? Math.max(0, r.delay ?? 0) : Infinity;
@@ -302,7 +306,11 @@ export function createTacticalWarRoom(host: TacticalGridHost) {
 	}
 
 	function clearPitch() {
-		api.clearPitch(host);
+		api.clearPitch(host, simulator);
+		selectedRouteId = null;
+		hoveredRouteId = null;
+		hoveredDiscId = null;
+		focusedPlayerId = null;
 	}
 
 	function clearOpponents() {

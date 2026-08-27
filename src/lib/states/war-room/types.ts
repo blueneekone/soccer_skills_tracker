@@ -25,6 +25,10 @@ export type TacticalRoute = {
 	bindPlayerId?: string | null;
 	pathKind?: 'curve' | 'cut' | 'pass';
 	delay?: number;
+	attachedPlayerId?: string | null;
+	pivotX?: number;
+	pivotY?: number;
+	releaseU?: number;
 };
 
 /** Persistent tactical play snapshot — decoupled from transient UI (HUD tool, holotable, selection). */

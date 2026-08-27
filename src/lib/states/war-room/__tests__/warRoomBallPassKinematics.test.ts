@@ -53,7 +53,7 @@ describe('War Room Ball Pass & Route Kinematics (Microscopic Math & Physics)', (
 			pathKind: 'pass',
 			delay: 0
 		};
-		expect(routePathD(passRoute)).toBe('M 100 100 Q 200 150 300 200');
+		expect(routePathD(passRoute)).toBe('M 100 100 L 200 150 L 300 200');
 
 		const cutRoute: TacticalRoute = {
 			...passRoute,
@@ -259,4 +259,78 @@ describe('War Room Ball Pass Workflow & Multi-Pass Chaining', () => {
 		expect(pass2.x1).toBe(500);
 		expect(pass2.x2).toBe(900);
 	});
+
+	it('applyPassRouteKinematics moves player and ball together to pivot before ball releases', async () => {
+		const { applyPassRouteKinematics } = await import('../routeModel');
+		const passer: TacticalToken = { id: 'p1', name: 'Passer', side: 'friendly', x: 100, y: 100 };
+		const ball: TacticalToken = { id: 'BALL', name: 'BALL', side: 'friendly', x: 100, y: 100 };
+		const tokens = [passer, ball];
+
+		const passRoute: TacticalRoute = {
+			id: 'pr-1',
+			x1: 100,
+			y1: 100,
+			cx: 200, // Pivot Point at (200, 100)
+			cy: 100,
+			x2: 300, // Destination at (300, 100)
+			y2: 100,
+			color: '#ffffff',
+			pathKind: 'pass',
+			attachedPlayerId: 'p1',
+			bindPlayerId: 'BALL',
+			delay: 0,
+		};
+
+		// 1. Mid-way to pivot point (t = 25% of total route)
+		const map1 = new Map<string, TacticalToken>([
+			['p1', { ...passer }],
+			['BALL', { ...ball }],
+		]);
+		applyPassRouteKinematics(map1, [passRoute], tokens, 2.5, 10, null);
+		const p1AtRun = map1.get('p1')!;
+		const ballAtRun = map1.get('BALL')!;
+		// Split is at 50% (d1 = 100, d2 = 100). At t=2.5/10 (u=0.25), player is at sub = 0.25/0.5 = 0.5 -> x = 150
+		expect(p1AtRun.x).toBe(150);
+		// Ball MUST stay locked to the running player's position!
+		expect(ballAtRun.x).toBe(150);
+
+		// 2. Beyond pivot point (t = 75% of total route)
+		const map2 = new Map<string, TacticalToken>([
+			['p1', { ...passer }],
+			['BALL', { ...ball }],
+		]);
+		applyPassRouteKinematics(map2, [passRoute], tokens, 7.5, 10, null);
+		const p1AtRelease = map2.get('p1')!;
+		const ballAtRelease = map2.get('BALL')!;
+		// Player has reached and remains at pivot point (200, 100)
+		expect(p1AtRelease.x).toBe(200);
+		// Ball has been released and traversed half of segment 2 -> sub = (0.75 - 0.5)/0.5 = 0.5 -> x = 250
+		expect(ballAtRelease.x).toBe(250);
+	});
+
+	it('clearPitch wipes friendly tokens, opponent tokens, drawn routes, and simulator timeline', async () => {
+		const { clearPitch } = await import('../tacticalWarRoomApi');
+		let pitch = [{ id: 'p1', side: 'friendly' }, { id: 'BALL', side: 'friendly' }];
+		let opp = [{ id: 'opp1', side: 'opponent' }];
+		let bench = [{ id: 'bench1', side: 'friendly' }];
+		let routes = [{ id: 'r1' }];
+		let simCleared = false;
+
+		const host: any = {
+			wrBucketPitch: { get: () => pitch, set: (v: any) => { pitch = v; } },
+			wrOppPitch: { get: () => opp, set: (v: any) => { opp = v; } },
+			wrBucketBench: { get: () => bench, set: (v: any) => { bench = v; } },
+			drawnRoutes: { get: () => routes, set: (v: any) => { routes = v; } },
+		};
+		const simulator = { clearSim: () => { simCleared = true; } };
+
+		clearPitch(host, simulator);
+
+		expect(pitch).toEqual([]);
+		expect(opp).toEqual([]);
+		expect(routes).toEqual([]);
+		expect(simCleared).toBe(true);
+		expect(bench.some((b: any) => b.id === 'p1')).toBe(true);
+	});
 });
+

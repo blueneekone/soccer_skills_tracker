@@ -90,7 +90,12 @@ export interface RpgAttributeProjection {
   grit:         string[];
 }
 
-// ── Main document ─────────────────────────────────────────────────────────────
+export interface SportPosition {
+  code: string;
+  name: string;
+  category: string;
+  description?: string;
+}
 
 /**
  * Canonical Firestore document shape for `sports_configs/{sportId}`.
@@ -153,6 +158,8 @@ export interface SportsConfigDoc {
    * Embedded on the doc so the projection works offline without code changes.
    */
   rpgProjection: RpgAttributeProjection;
+  /** Positions available for this sport. */
+  positions?: SportPosition[];
   /** UID of the super_admin who last wrote this doc. */
   updatedByUid?: string;
   /** Server timestamp of the last write. */

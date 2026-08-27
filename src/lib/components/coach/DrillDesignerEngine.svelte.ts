@@ -12,6 +12,12 @@ export class DrillDesignerEngine {
 	workoutName = $state('');
 	workoutDuration = $state(15);
 	workoutDesc = $state('');
+	ageGroup = $state('U12-U14');
+	playerCount = $state('8-12 Players');
+	intensity = $state('Medium');
+	equipment = $state('Cones, Agility Poles, Mini Goals, Balls');
+	constraints = $state('');
+	coachingPoints = $state('');
 
 	savedTeamDrills = $state<Array<{ id: string, title: string, attributeId?: string }>>([]);
 	loadingSaved = $state(false);
@@ -69,6 +75,12 @@ export class DrillDesignerEngine {
 				metricType: 'reps',
 				description: this.workoutDesc.trim().slice(0, 8000) || `${focusLabel} spatial drill`,
 				durationMinutes,
+				ageGroup: this.ageGroup,
+				playerCount: this.playerCount,
+				intensity: this.intensity,
+				equipment: this.equipment,
+				constraints: this.constraints.trim(),
+				coachingPoints: this.coachingPoints.trim(),
 				spatialLayout: layoutData,
 				scope: 'team',
 				createdBy: uid,

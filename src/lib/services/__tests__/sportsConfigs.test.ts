@@ -8,6 +8,8 @@ describe('sportsConfigs store', () => {
 		expect(soccerConfig.sportId).toBe('soccer');
 		expect(soccerConfig.displayName).toBe('Soccer');
 		expect(soccerConfig.attributes).toHaveLength(6);
+		expect(soccerConfig.positions).toBeDefined();
+		expect(soccerConfig.positions?.length).toBeGreaterThanOrEqual(11);
 	});
 
 	it('resolves active config from aliases', () => {

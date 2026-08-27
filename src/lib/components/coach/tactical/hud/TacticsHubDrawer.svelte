@@ -5,7 +5,6 @@
 	/** @type {'squad' | 'drills' | 'tools' | 'help'} */
 	let activeTab = $state('squad');
 
-	const INK_PALETTE = /** @type {const} */ (['#14b8a6', '#ef4444', '#d97706', '#ffffff', '#daff0a']);
 
 	function getPlayerInitials(name) {
 		if (!name) return 'PL';
@@ -115,10 +114,22 @@
 					</div>
 				</section>
 			{:else if activeTab === 'drills'}
-				<section>
-					<div class="tw-p-6 tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-rounded-lg tw-text-center">
-						<span class="tw-text-xs tw-font-bold tw-text-[#daff0a]">[ DRILL LIBRARY SYNCED ]</span>
-						<p class="tw-text-xs tw-text-[#94a3b8] tw-mt-2">Drag tactical patterns and drills directly onto the board.</p>
+				<section class="tw-space-y-4">
+					<div class="tw-p-5 tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-rounded-lg tw-text-left">
+						<span class="tw-text-xs tw-font-bold tw-text-[#daff0a] tw-tracking-widest tw-uppercase">[ PHYSICAL DRILL CREATOR ]</span>
+						<p class="tw-text-xs tw-text-[#94a3b8] tw-mt-2 tw-leading-relaxed">
+							Convert this tactical whiteboard into a structured, printable physical drill sheet complete with cones, flags, time constraints, and coaching cues.
+						</p>
+						<a
+							href="/coach/drills"
+							class="tw-mt-3 tw-inline-flex tw-items-center tw-justify-center tw-w-full tw-gap-2 tw-border tw-border-[#fbbf24] tw-bg-[#fbbf24] tw-text-black tw-font-mono tw-font-bold tw-text-xs tw-py-2.5 tw-uppercase hover:tw-bg-amber-400 tw-transition-colors tw-rounded"
+						>
+							➕ Open Drill Designer Sheet
+						</a>
+					</div>
+					<div class="tw-border tw-border-[#334155] tw-bg-[#020617] tw-p-3 tw-rounded">
+						<p class="tw-text-[11px] tw-font-bold tw-text-[#14b8a6] tw-uppercase tw-mb-1">Available Tactics</p>
+						<p class="tw-text-xs tw-text-slate-400">Save your play in the dock below to persist this pattern to your team playbook.</p>
 					</div>
 				</section>
 			{:else if activeTab === 'tools'}
@@ -143,20 +154,6 @@
 					</div>
 				</section>
 				<section>
-					<p class="tw-text-xs tw-font-bold tw-tracking-widest tw-text-[#94a3b8] tw-uppercase tw-mb-2">INK COLOR</p>
-					<div class="tw-flex tw-items-center tw-gap-3">
-						{#each INK_PALETTE as color (color)}
-							<button
-								type="button"
-								class="tw-h-8 tw-w-8 tw-rounded-full tw-border tw-transition-transform active:tw-scale-90 {engine.activeRouteColor === color ? 'tw-border-white tw-scale-110 tw-shadow-[0_0_12px_rgba(255,255,255,0.6)]' : 'tw-border-[#334155] hover:tw-border-slate-400'}"
-								style="background: {color};"
-								onclick={(e) => { e.stopPropagation(); engine.activeRouteColor = color; engine.updateSelectedRouteColor?.(color); }}
-								aria-label="Route color {color}"
-							></button>
-						{/each}
-					</div>
-				</section>
-				<section>
 					<p class="tw-text-xs tw-font-bold tw-tracking-widest tw-text-[#94a3b8] tw-uppercase tw-mb-2">DRAW MODES</p>
 					<div class="tw-grid tw-grid-cols-2 tw-gap-2">
 						<button
@@ -168,7 +165,7 @@
 							type="button"
 							class="tw-border tw-px-3 tw-py-2.5 tw-text-xs tw-text-left tw-transition-all tw-rounded {engine.activeTool === 'ROUTE' && engine.routeDrawKind === 'pass' ? 'tw-bg-[#14b8a6]/20 tw-border-[#14b8a6] tw-text-[#14b8a6] tw-font-bold' : 'tw-bg-[#0f172a] tw-border-[#334155] tw-text-[#fafafa] hover:tw-border-[#14b8a6]'}"
 							onclick={() => { engine.setActiveTool('ROUTE'); engine.routeDrawKind = 'pass'; }}
-						>⚽ BALL PASS</button>
+						>⚽ BALL PASS (PIVOT)</button>
 					</div>
 				</section>
 				<section>
@@ -204,13 +201,19 @@
 			{:else if activeTab === 'help'}
 				<div class="tw-space-y-6">
 					<div>
-						<h4 class="tw-text-[#fbbf24] tw-font-bold tw-uppercase tw-text-xs tw-mb-2">1. Core Maturation & Positional Blueprint</h4>
-						<ul class="tw-space-y-2 tw-text-slate-400 tw-text-xs">
-							<li><strong class="tw-text-slate-200">CB (Center Back):</strong> Spatial anchor; accelerated tactical orientation (sensitive ages 12–14).</li>
-							<li><strong class="tw-text-slate-200">CDM (Defensive Midfielder):</strong> Transition engine; kinesthetic differentiation (sensitive ages 10–11).</li>
-							<li><strong class="tw-text-slate-200">LWB (Wing Back):</strong> High-speed overlapping; aligns with agility adaptation (ages 8–13).</li>
-							<li><strong class="tw-text-slate-200">ST (Striker):</strong> Peak spatial reaction and synchronization (sensitive ages 6–10).</li>
-							<li><strong class="tw-text-slate-200">GK (Goalkeeper):</strong> Visual reactions and upper-body hand-eye coordination.</li>
+						<h4 class="tw-text-[#fbbf24] tw-font-bold tw-uppercase tw-text-xs tw-mb-2">1. Comprehensive Positional Blueprint</h4>
+						<ul class="tw-space-y-2 tw-text-slate-300 tw-text-xs">
+							<li><strong class="tw-text-[#daff0a]">GK (Goalkeeper):</strong> Visual reactions, spatial command, shot-stopping, progressive distribution.</li>
+							<li><strong class="tw-text-[#14b8a6]">CB / LCB / RCB (Center Back):</strong> Spatial defense anchor, aerial dominance, progressive line-breaking passes.</li>
+							<li><strong class="tw-text-[#14b8a6]">LB / RB (Fullback):</strong> 1v1 flank containment, channel progression, crossing & overlap capability.</li>
+							<li><strong class="tw-text-[#14b8a6]">LWB / RWB (Wing Back):</strong> High-speed dual-phase wing motor; width generator and recovery sprinter.</li>
+							<li><strong class="tw-text-[#fbbf24]">CDM / LDM / RDM (Defensive Mid):</strong> Central pivot shield, transition distribution, counter-press disruptor.</li>
+							<li><strong class="tw-text-[#fbbf24]">CM / LCM / RCM (Central Mid):</strong> Box-to-box engine, tempo controller, spatial linker (half-space shifts).</li>
+							<li><strong class="tw-text-[#fbbf24]">CAM / LAM / RAM (Attacking Mid):</strong> Half-space unlocker, creative playmaker, line-penetrating final passes.</li>
+							<li><strong class="tw-text-[#06b6d4]">LM / RM (Wide Mid):</strong> Flank balance, diagonal tracking, combination crossing service.</li>
+							<li><strong class="tw-text-[#06b6d4]">LW / RW (Winger):</strong> 1v1 isolation dribbling, cut-in shooting, aggressive wing penetration.</li>
+							<li><strong class="tw-text-[#ef4444]">CF / SS (Center Forward / Second Striker):</strong> False-9 link play, combining midfield to attack, pocket receiver.</li>
+							<li><strong class="tw-text-[#ef4444]">ST (Striker):</strong> Box penetration, target play, blind-side runs, clinical finishing.</li>
 						</ul>
 					</div>
 					<div>

@@ -47,14 +47,14 @@ describe('DrillDesignerTab', () => {
 		const { getByText, getByPlaceholderText } = render(DrillDesignerTab, { teamId: 'team-123' });
 		
 		expect(getByText(/Drill [Dd]esigner/)).toBeTruthy();
-		expect(getByPlaceholderText('Drill name (required)')).toBeTruthy();
+		expect(getByPlaceholderText('e.g. 3v2 Transition Counter-Press')).toBeTruthy();
 		expect(getByText('Spatial Layout')).toBeTruthy();
 	});
 
 	it('renders drag items correctly', () => {
 		const { getByLabelText } = render(DrillDesignerTab, { teamId: 'team-123' });
 		expect(getByLabelText('Cone')).toBeTruthy();
-		expect(getByLabelText('Soccer ball')).toBeTruthy();
+		expect(getByLabelText('Ball')).toBeTruthy();
 		expect(getByLabelText('Defender (X)')).toBeTruthy();
 	});
 });

@@ -29,11 +29,12 @@
 	} from '$lib/coach/platformDrillLibrary.js';
 	import { sportsConfigStore } from '$lib/services/sportsConfigs.svelte.js';
 	import FacilityScheduler from '$lib/components/coach/FacilityScheduler.svelte';
+	import DrillDesignerTab from '$lib/components/coach/DrillDesignerTab.svelte';
 
 	import { loadTeamDrills } from '$lib/utils/drillLoaders.js';
 	import { submitDrillAssignment } from '$lib/utils/drillAssignment.js';
 	import type { DrillRow } from '$lib/utils/drillLoaders.js';
-	// â”€â”€ Team context resolution â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+	// ── Team context resolution ──────────────────────────────────────────────
 	const teamScope = new CoachTeamScope({ preferProfileTeam: true });
 	$effect(() => {
 		teamScope.syncSelectedTeam();
@@ -47,12 +48,12 @@
 	/** @type {'library' | 'designer' | 'schedule'} */
 	let pageView = $state('library');
 
-	// Honor ?view= deep links (e.g. comms "Open training & schedule" CTA) â€” apply once.
+	// Honor ?view= and ?tab= deep links
 	let _viewInit = false;
 	$effect(() => {
 		if (_viewInit) return;
-		const v = page.url.searchParams.get('view');
-		if (v === 'schedule' || v === 'designer' || v === 'library') pageView = v;
+		const v = page.url.searchParams.get('view') || page.url.searchParams.get('tab');
+		if (v === 'schedule' || v === 'designer' || v === 'library') pageView = v as any;
 		_viewInit = true;
 	});
 
@@ -557,6 +558,14 @@
 				<button
 					type="button"
 					class="coach-drill-z4-nav__btn"
+					class:coach-drill-z4-nav__btn--active={pageView === 'designer'}
+					onclick={() => (pageView = 'designer')}
+				>
+					Drill designer
+				</button>
+				<button
+					type="button"
+					class="coach-drill-z4-nav__btn"
 					class:coach-drill-z4-nav__btn--active={pageView === 'schedule'}
 					onclick={() => (pageView = 'schedule')}
 				>
@@ -708,6 +717,16 @@
 				<FacilityScheduler teamId={teamScope.selectedTeamId} />
 			</section>
 		{/if}
+	{:else if pageView === 'designer'}
+		<div class="tw-p-4 tw-w-full">
+			<DrillDesignerTab
+				teamId={teamScope.selectedTeamId || ''}
+				onDrillSaved={() => {
+					reloadCounter++;
+					pageView = 'library';
+				}}
+			/>
+		</div>
 	{:else}
 	<nav class="coach-drill-z4-tabs" aria-label="Drill library sections">
 		<button

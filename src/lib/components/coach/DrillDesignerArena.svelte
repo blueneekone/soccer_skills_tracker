@@ -13,10 +13,12 @@
 
 	const DRAG_ITEMS = [
 		{ type: 'cone', glyph: '▲', label: 'Cone' },
-		{ type: 'ball', glyph: '●', label: 'Soccer ball' },
+		{ type: 'ball', glyph: '●', label: 'Ball' },
 		{ type: 'mini_goal', glyph: '▢', label: 'Mini goal' },
 		{ type: 'ladder', glyph: '▥', label: 'Agility ladder' },
-		{ type: 'flag', glyph: '⚑', label: 'Flag / pole' },
+		{ type: 'flag', glyph: '⚑', label: 'Agility pole / flag' },
+		{ type: 'hurdle', glyph: '⊓', label: 'Speed hurdle' },
+		{ type: 'mannequin', glyph: '🧍', label: 'Training mannequin' },
 		{ type: 'goal', glyph: '⌂', label: 'Full goal' },
 		{ type: 'player_x', glyph: 'X', label: 'Defender (X)' },
 		{ type: 'player_o', glyph: 'O', label: 'Attacker (O)' },

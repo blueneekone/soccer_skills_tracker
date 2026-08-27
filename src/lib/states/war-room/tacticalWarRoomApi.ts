@@ -107,15 +107,89 @@ export function injectBall(host: TacticalGridHost) {
 	}
 }
 
-export function clearPitch(host: TacticalGridHost) {
+export function clearPitch(host: TacticalGridHost, simulator?: any) {
 	const currentTokens = host.wrBucketPitch.get();
 	const nextBench = [...host.wrBucketBench.get()];
 	for (const token of currentTokens) {
-		if (token.id !== 'BALL') {
+		if (token.id !== 'BALL' && !nextBench.some((b) => b.id === token.id)) {
 			nextBench.push(token);
 		}
 	}
 	host.wrBucketPitch.set([]);
 	host.wrOppPitch.set([]);
 	host.wrBucketBench.set(nextBench);
+	host.drawnRoutes.set([]);
+	if (simulator && typeof simulator.clearSim === 'function') {
+		simulator.clearSim();
+	}
+}
+
+function getTwoLetterInitials(name: string): string {
+	if (!name) return 'PL';
+	const parts = name.trim().split(/\s+/);
+	if (parts.length >= 2) {
+		return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
+	}
+	return name.slice(0, 2).toUpperCase() || 'PL';
+}
+
+export async function fetchWarRoomRosterTokens(
+	db: any,
+	effectiveTeamId: string,
+	getDocsFn: any,
+	getDocFn: any,
+	collectionFn: any,
+	docFn: any,
+	queryFn: any,
+	whereFn: any
+): Promise<TacticalToken[]> {
+	if (!db || !effectiveTeamId) return [];
+	const playerMap = new Map<string, TacticalToken>();
+
+	const addToken = (id: string, name: string, pos: string) => {
+		const cleanName = (name || '').trim();
+		if (!cleanName) return;
+		const key = cleanName.toLowerCase();
+		if (!playerMap.has(key)) {
+			playerMap.set(key, {
+				id: `${effectiveTeamId}_${id}`,
+				name: cleanName,
+				number: getTwoLetterInitials(cleanName),
+				position: pos || '',
+				side: 'friendly',
+				color: '#14b8a6',
+			});
+		}
+	};
+
+	try {
+		const uSnap = await getDocsFn(queryFn(collectionFn(db, 'users'), whereFn('teamId', '==', effectiveTeamId)));
+		uSnap?.forEach?.((d: any) => {
+			const data = d.data() || {};
+			const n = data.playerName || data.displayName || data.name || d.id;
+			addToken(d.id, n, typeof data.position === 'string' ? data.position : '');
+		});
+	} catch {}
+
+	try {
+		const lSnap = await getDocsFn(queryFn(collectionFn(db, 'player_lookup'), whereFn('teamId', '==', effectiveTeamId)));
+		lSnap?.forEach?.((d: any) => {
+			const data = d.data() || {};
+			const n = data.playerName || data.displayName || d.id;
+			addToken(d.id, n, typeof data.position === 'string' ? data.position : '');
+		});
+	} catch {}
+
+	try {
+		const rSnap = await getDocFn(docFn(db, 'rosters', effectiveTeamId));
+		if (rSnap?.exists?.() && Array.isArray(rSnap.data()?.players)) {
+			for (const pName of rSnap.data().players) {
+				addToken(String(pName).replace(/\s+/g, '_'), String(pName), '');
+			}
+		}
+	} catch {}
+
+	const tokens = Array.from(playerMap.values());
+	tokens.sort((a, b) => (a.name ?? '').localeCompare(b.name ?? ''));
+	return tokens;
 }

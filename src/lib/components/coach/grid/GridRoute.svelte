@@ -42,33 +42,61 @@
 		aria-current={isSelected ? 'true' : undefined}
 		data-timeline-ms={timelineMs}
 	>
-		<!-- Glowing Tron Base Trail -->
-		<path
-			d={pathD}
-			fill="none"
-			stroke="#06b6d4"
-			stroke-width={isSelected ? 18 : 16}
-			stroke-linecap="round"
-			stroke-linejoin="round"
-			filter="url(#neonBloom)"
-			opacity={route.pathKind === 'pass' ? "0.15" : "0.4"}
-			pointer-events="none"
-		/>
-		<!-- Sharp White Core Trail -->
-		<path
-			class="tactical-vector-route"
-			class:route-dash-pass={route.pathKind === 'pass'}
-			d={pathD}
-			fill="none"
-			stroke={route.pathKind === 'pass' ? '#ffffff' : '#ffffff'}
-			stroke-width={isSelected ? 6 : 4}
-			stroke-linecap="round"
-			stroke-linejoin="round"
-			stroke-dasharray={route.pathKind === 'pass' ? '8,8' : 'none'}
-			marker-end="url(#arrowhead)"
-			filter="url(#lightCycleBloom)"
-			pointer-events="none"
-		/>
+		{#if route.pathKind === 'pass'}
+			<!-- Segment 1: Player run-with-ball trail to pivot -->
+			<path
+				d="M {route.x1} {route.y1} L {route.cx} {route.cy}"
+				fill="none"
+				stroke="#14b8a6"
+				stroke-width={isSelected ? 6 : 4}
+				stroke-linecap="round"
+				stroke-linejoin="round"
+				opacity="0.85"
+				filter="url(#neonBloom)"
+				pointer-events="none"
+			/>
+			<!-- Segment 2: Ball pass vector from pivot to destination -->
+			<path
+				class="tactical-vector-route route-dash-pass"
+				d="M {route.cx} {route.cy} L {route.x2} {route.y2}"
+				fill="none"
+				stroke="#ffffff"
+				stroke-width={isSelected ? 6 : 4}
+				stroke-linecap="round"
+				stroke-linejoin="round"
+				stroke-dasharray="8,8"
+				marker-end="url(#arrowhead)"
+				filter="url(#lightCycleBloom)"
+				pointer-events="none"
+			/>
+		{:else}
+			<!-- Glowing Tron Base Trail -->
+			<path
+				d={pathD}
+				fill="none"
+				stroke="#06b6d4"
+				stroke-width={isSelected ? 18 : 16}
+				stroke-linecap="round"
+				stroke-linejoin="round"
+				filter="url(#neonBloom)"
+				opacity="0.4"
+				pointer-events="none"
+			/>
+			<!-- Sharp White Core Trail -->
+			<path
+				class="tactical-vector-route"
+				d={pathD}
+				fill="none"
+				stroke="#ffffff"
+				stroke-width={isSelected ? 6 : 4}
+				stroke-linecap="round"
+				stroke-linejoin="round"
+				stroke-dasharray="none"
+				marker-end="url(#arrowhead)"
+				filter="url(#lightCycleBloom)"
+				pointer-events="none"
+			/>
+		{/if}
 	</g>
 {/if}
 
@@ -141,25 +169,35 @@
 			/>
 			<circle cx="0" cy="0" r="2.5" fill="#ffffff" />
 		</g>
+		<!-- Pivot Point / Mid Anchor -->
 		<!-- svelte-ignore a11y_no_static_element_interactions -->
 		<g
 			data-anchor-hit
-			transform="translate({route.pathKind !== 'cut' ? 0.25*route.x1 + 0.5*route.cx + 0.25*route.x2 : route.cx}, {route.pathKind !== 'cut' ? 0.25*route.y1 + 0.5*route.cy + 0.25*route.y2 : route.cy}) rotate(45)"
+			transform="translate({(route.pathKind === 'cut' || route.pathKind === 'pass') ? route.cx : 0.25*route.x1 + 0.5*route.cx + 0.25*route.x2}, {(route.pathKind === 'cut' || route.pathKind === 'pass') ? route.cy : 0.25*route.y1 + 0.5*route.cy + 0.25*route.y2})"
 			class="tw-cursor-pointer"
 			role="presentation"
 			onpointerdown={(e) => onControlPointDrag?.(e, 'ctrl')}
 		>
-			<circle cx="0" cy="0" r="22" fill="transparent" pointer-events="all" />
-			<rect
-				x="-7"
-				y="-7"
-				width="14"
-				height="14"
-				fill="#050505"
-				stroke={route.color}
-				stroke-width="2"
-			/>
-			<circle cx="0" cy="0" r="2.5" fill="#ffffff" />
+			<circle cx="0" cy="0" r="26" fill="transparent" pointer-events="all" />
+			{#if route.pathKind === 'pass'}
+				<!-- Movable Pivot Point Indicator -->
+				<circle cx="0" cy="0" r="10" fill="#0f172a" stroke="#fbbf24" stroke-width="2.5" />
+				<circle cx="0" cy="0" r="4" fill="#daff0a" />
+				<text x="0" y="-14" font-family="monospace" font-size="9" fill="#fbbf24" text-anchor="middle" font-weight="bold">⟳ PIVOT</text>
+			{:else}
+				<g transform="rotate(45)">
+					<rect
+						x="-7"
+						y="-7"
+						width="14"
+						height="14"
+						fill="#050505"
+						stroke={route.color}
+						stroke-width="2"
+					/>
+					<circle cx="0" cy="0" r="2.5" fill="#ffffff" />
+				</g>
+			{/if}
 		</g>
 		<!-- svelte-ignore a11y_no_static_element_interactions -->
 		<g

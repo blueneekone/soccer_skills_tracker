@@ -5,6 +5,7 @@ import { isFirestoreReady } from '$lib/utils/firestoreGuard.js';
 import { collection, doc, getDoc, getDocs, setDoc, query, where, serverTimestamp } from 'firebase/firestore';
 import { authStore } from '$lib/stores/auth.svelte.js';
 import type { TacticalToken } from '$lib/states/war-room/types.js';
+import { fetchWarRoomRosterTokens } from '$lib/states/war-room/tacticalWarRoomApi.js';
 import { page } from '$app/state';
 import { untrack } from 'svelte';
 
@@ -199,55 +200,16 @@ export class CoachTacticalEngine {
 			const effectiveTeamId = tid || this.teamScope.selectedTeamId || authStore.teamId || authStore.user?.teamId || '';
 			if (!effectiveTeamId) return;
 
-			const playerMap = new Map<string, TacticalToken>();
-
-			// 1. Query player_lookup for all athletes on this team
-			const lookupSnap = await getDocs(
-				query(collection(db, 'player_lookup'), where('teamId', '==', effectiveTeamId)),
-			).catch(() => null);
-
-			if (lookupSnap && lookupSnap.size > 0) {
-				lookupSnap.forEach((d) => {
-					const data = d.data() || {};
-					const name = (typeof data.playerName === 'string' && data.playerName.trim()) ||
-						(typeof data.displayName === 'string' && data.displayName.trim()) || d.id;
-					const nameKey = name.toLowerCase();
-					if (!playerMap.has(nameKey)) {
-						playerMap.set(nameKey, {
-							id: `${effectiveTeamId}_${d.id}`,
-							name,
-							number: getTwoLetterInitials(name),
-							position: typeof data.position === 'string' ? data.position : '',
-							side: 'friendly',
-							color: '#14b8a6',
-						});
-					}
-				});
-			}
-
-			// 2. Also check rosters collection
-			const snap = await getDoc(doc(db, 'rosters', effectiveTeamId)).catch(() => null);
-			if (snap && snap.exists() && Array.isArray(snap.data()?.players)) {
-				const players = snap.data()!.players as string[];
-				for (const pName of players) {
-					const name = String(pName).trim();
-					if (!name) continue;
-					const nameKey = name.toLowerCase();
-					if (!playerMap.has(nameKey)) {
-						playerMap.set(nameKey, {
-							id: `${effectiveTeamId}_${name.replace(/\s+/g, '_')}`,
-							name,
-							number: getTwoLetterInitials(name),
-							position: '',
-							side: 'friendly',
-							color: '#14b8a6',
-						});
-					}
-				}
-			}
-
-			const tokens = Array.from(playerMap.values());
-			tokens.sort((a, b) => (a.name ?? '').localeCompare(b.name ?? ''));
+			const tokens = await fetchWarRoomRosterTokens(
+				db,
+				effectiveTeamId,
+				getDocs,
+				getDoc,
+				collection,
+				doc,
+				query,
+				where
+			);
 			this.wrBucketXi = tokens;
 		} catch (e) {
 			console.error('[War Room] roster load error:', e);
@@ -270,7 +232,7 @@ export class CoachTacticalEngine {
 
 			$effect(() => {
 				const isE2e = typeof localStorage !== 'undefined' && localStorage.getItem('sstracker_e2e_bypass') === 'true';
-				const tid = this.teamScope.selectedTeamId || (isE2e ? 'e2e-team' : null);
+				const tid = this.teamScope.selectedTeamId || authStore.teamId || authStore.user?.teamId || (isE2e ? 'e2e-team' : null);
 				const uid = authStore.user?.uid || (isE2e ? 'e2e-user' : null);
 				if (!tid || authStore.isLoading || !uid) return;
 				untrack(() => {
@@ -280,7 +242,7 @@ export class CoachTacticalEngine {
 
 			$effect(() => {
 				const isE2e = typeof localStorage !== 'undefined' && localStorage.getItem('sstracker_e2e_bypass') === 'true';
-				const tid = this.teamScope.selectedTeamId || (isE2e ? 'e2e-team' : null);
+				const tid = this.teamScope.selectedTeamId || authStore.teamId || authStore.user?.teamId || (isE2e ? 'e2e-team' : null);
 				if (!tid) return;
 				untrack(() => {
 					void this._loadRosters(tid);
