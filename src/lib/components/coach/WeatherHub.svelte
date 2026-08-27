@@ -2,6 +2,7 @@
 	import WeatherWidget from '$lib/components/weather/WeatherWidget.svelte';
 	import { vanguardFlags } from '$lib/services/remoteConfig.svelte.js';
 	import { weatherAegis } from '$lib/services/weather.svelte.js';
+	import WeatherModal from '$lib/components/weather-modal/WeatherModal.svelte';
 
 	interface Props {
 		fieldLat?: number;
@@ -12,6 +13,8 @@
 	let { fieldLat = 41.633, fieldLng = -111.851, weatherCoords }: Props = $props();
 
 	const activeWeatherThreat = $derived(weatherAegis.alertLevel === 'DANGER');
+
+	let isModalOpen = $state(false);
 </script>
 
 <div class="tw-h-full tw-w-full tw-min-h-[220px] {activeWeatherThreat ? 'vanguard-panel-breach' : 'vanguard-panel'} tw-relative tw-flex tw-flex-col tw-overflow-hidden tw-font-mono">
@@ -21,6 +24,11 @@
 		<circle cx="50" cy="50" r="50" fill="none" stroke="#14b8a6" stroke-width="0.5" opacity="0.6" />
 		<circle cx="50" cy="50" r="85" fill="none" stroke="#14b8a6" stroke-width="0.75" stroke-dasharray="2 4" opacity="0.3" class="tw-animate-[spin_40s_linear_infinite_reverse]" style="transform-origin: center;" />
 	</svg>
+
+	<button class="tw-absolute tw-top-2 tw-right-2 tw-z-10 tw-bg-[#0a0a0a] tw-border tw-border-[#14b8a6] tw-text-[#14b8a6] tw-px-2 tw-py-1 tw-text-[10px] tw-rounded-none hover:tw-bg-[#14b8a6]/20" onclick={() => isModalOpen = true}>
+		MONITOR RADAR
+	</button>
+
 	{#if vanguardFlags.weatherEnabled}
 		<WeatherWidget lat={fieldLat} lng={fieldLng} coordsLabel={weatherCoords} />
 	{:else}
@@ -33,3 +41,5 @@
 		</div>
 	{/if}
 </div>
+
+<WeatherModal isOpen={isModalOpen} onClose={() => isModalOpen = false} />
