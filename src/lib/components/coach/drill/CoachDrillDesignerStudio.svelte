@@ -87,11 +87,17 @@
 				});
 
 				tactics = list;
-				if (list.length > 0 && !selectedTacticId) {
-					// Prefer tacticId from URL param (set by Deploy to Designer)
+				if (list.length > 0) {
 					const urlTacticId = browser ? page.url.searchParams.get('tacticId') : null;
 					const match = urlTacticId ? list.find((t) => t.id === urlTacticId) : null;
-					selectedTacticId = match ? match.id : list[0].id;
+					if (match) {
+						selectedTacticId = match.id;
+						if (match.name) {
+							drillTitle = match.name;
+						}
+					} else if (!selectedTacticId) {
+						selectedTacticId = list[0].id;
+					}
 				}
 				loadingTactics = false;
 			} catch (err) {
@@ -398,27 +404,39 @@
 				</label>
 			</div>
 
-			<!-- Multi-Billion-Dollar Action Bar -->
-			<div class="tw-flex tw-flex-col sm:tw-flex-row tw-gap-3 tw-mt-2 tw-pt-3 tw-border-t tw-border-[#1e293b]">
-				<!-- Primary CTA: Deploy as Team Intent -->
-				<button
-					type="button"
-					class="tw-flex-1 tw-bg-[#fbbf24] hover:tw-bg-amber-400 tw-text-black tw-font-mono tw-text-xs tw-font-bold tw-py-3 tw-px-4 tw-rounded-xl tw-shadow-[0_0_15px_rgba(251,191,36,0.3)] active:tw-scale-[0.98] tw-transition-all tw-flex tw-items-center tw-justify-center tw-gap-2"
-					disabled={isSaving}
-					onclick={() => saveDrill(true)}
-				>
-					<span>🚀 DEPLOY AS INTENT</span>
-				</button>
+			<!-- Team Playbook & Deployment Area -->
+			<div class="tw-bg-[#040814] tw-border tw-border-slate-800 tw-rounded-xl tw-p-4 tw-flex tw-flex-col tw-gap-3 tw-mt-1">
+				<div class="tw-flex tw-items-center tw-justify-between">
+					<div class="tw-flex tw-items-center tw-gap-2">
+						<span class="tw-text-amber-400">📖</span>
+						<span class="tw-font-mono tw-text-xs tw-font-bold tw-text-white tw-uppercase">Team Playbook Publication</span>
+					</div>
+					<span class="tw-font-mono tw-text-[10px] tw-text-[#14b8a6] tw-bg-[#14b8a6]/10 tw-border tw-border-[#14b8a6]/30 tw-px-2 tw-py-0.5 tw-rounded">
+						War Room Sync
+					</span>
+				</div>
+				<p class="tw-text-xs tw-text-slate-400 tw-leading-relaxed">
+					Publish this drill to your Team Playbook to make it immediately accessible on the War Room whiteboard under the Drills tab.
+				</p>
+				<div class="tw-flex tw-flex-col sm:tw-flex-row tw-gap-2.5 tw-pt-1">
+					<button
+						type="button"
+						class="tw-flex-1 tw-bg-[#14b8a6] hover:tw-bg-teal-400 tw-text-black tw-font-mono tw-text-xs tw-font-bold tw-py-3 tw-px-4 tw-rounded-xl tw-shadow-[0_0_15px_rgba(20,184,166,0.3)] active:tw-scale-[0.98] tw-transition-all tw-flex tw-items-center tw-justify-center tw-gap-2"
+						disabled={isSaving}
+						onclick={() => saveDrill(false)}
+					>
+						<span>💾 SAVE PLAYBOOK</span>
+					</button>
 
-				<!-- Secondary Action: Save to Team Playbook -->
-				<button
-					type="button"
-					class="tw-flex-1 tw-bg-[#14b8a6] hover:tw-bg-teal-400 tw-text-black tw-font-mono tw-text-xs tw-font-bold tw-py-3 tw-px-4 tw-rounded-xl tw-shadow-[0_0_15px_rgba(20,184,166,0.3)] active:tw-scale-[0.98] tw-transition-all tw-flex tw-items-center tw-justify-center tw-gap-2"
-					disabled={isSaving}
-					onclick={() => saveDrill(false)}
-				>
-					<span>💾 SAVE PLAYBOOK</span>
-				</button>
+					<button
+						type="button"
+						class="tw-flex-1 tw-bg-[#fbbf24] hover:tw-bg-amber-400 tw-text-black tw-font-mono tw-text-xs tw-font-bold tw-py-3 tw-px-4 tw-rounded-xl tw-shadow-[0_0_15px_rgba(251,191,36,0.3)] active:tw-scale-[0.98] tw-transition-all tw-flex tw-items-center tw-justify-center tw-gap-2"
+						disabled={isSaving}
+						onclick={() => saveDrill(true)}
+					>
+						<span>🚀 DEPLOY AS INTENT</span>
+					</button>
+				</div>
 			</div>
 		</div>
 	</div>

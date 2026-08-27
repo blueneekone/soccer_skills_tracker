@@ -6,8 +6,8 @@
 	import ContextRadial from './tactical/hud/ContextRadial.svelte';
 	import DrillDesignerOverlay from './tactical/hud/DrillDesignerOverlay.svelte';
 
-	/** @type {{ model: import('./TacticalEngine.svelte.ts').TacticalWarRoomModel, ondeploy?: (cartridge: import('$lib/states/war-room/types').TacticalCartridge) => void, isHalfField?: boolean, onToggleHalfField?: () => void, onToggleToolbar?: () => void, onExit?: () => void }} */
-	let { model, ondeploy, isHalfField, onToggleHalfField, onToggleToolbar, onExit } = $props();
+	/** @type {{ model: import('./TacticalEngine.svelte.ts').TacticalWarRoomModel, ondeploy?: (cartridge: import('$lib/states/war-room/types').TacticalCartridge) => void, isHalfField?: boolean, onToggleHalfField?: () => void, onToggleToolbar?: () => void, onExit?: () => void, teamId?: string }} */
+	let { model, ondeploy, isHalfField, onToggleHalfField, onToggleToolbar, onExit, teamId = '' } = $props();
 
 	// ── Deploy sequence — owned here, threaded to Dock (button) and ContextRadial (modal) ──
 	let deployPhase = $state(/** @type {'idle' | 'deploying' | 'success'} */ ('idle'));
@@ -89,6 +89,7 @@
 
 	<TacticsHubDrawer
 		{model}
+		{teamId}
 		isOpen={isTacticsHubOpen}
 		onClose={() => isTacticsHubOpen = false}
 	/>
@@ -97,7 +98,7 @@
 	<TacticalDock
 		{model}
 		{deployPhase}
-		onDeploy={() => isDrillDesignerOpen = true}
+		onDeploy={handleDeploy}
 		{isHalfField}
 		{onToggleHalfField}
 		{onToggleToolbar}

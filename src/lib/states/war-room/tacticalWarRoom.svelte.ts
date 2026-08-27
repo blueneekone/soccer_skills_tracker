@@ -702,6 +702,7 @@ export function createTacticalWarRoom(host: TacticalGridHost) {
 		clearRoutesOnly,
 		injectBall,
 		serializeToCartridge,
+		loadCartridge,
 		ringColor,
 		resolvePitchToken,
 		showAnchorsFor,

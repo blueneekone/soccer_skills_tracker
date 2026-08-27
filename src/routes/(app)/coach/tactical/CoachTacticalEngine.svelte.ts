@@ -96,14 +96,15 @@ export class CoachTacticalEngine {
 
 	async deployPlay(cartridge: any) {
 		if (this.isSandbox) return;
-		const tid = this.teamScope.selectedTeamId;
+		const tid = this.teamScope.selectedTeamId || authStore.teamId || authStore.user?.teamId;
 		const uid = authStore.user?.uid;
 		if (!tid || !uid || !cartridge?.id) return;
 		try {
 			const shortId = String(cartridge.id).slice(0, 8).toUpperCase();
-			const docRef = doc(db, 'teams', tid, 'tactics', `play_${shortId}_${Date.now()}`);
+			const docRef = doc(db, 'teams', tid, 'tactics', cartridge.id);
 			await setDoc(docRef, {
-				name: `Deployed ${shortId}`,
+				id: cartridge.id,
+				name: cartridge.title || `Tactical Play ${shortId}`,
 				canvasState: JSON.stringify({ entities: cartridge.entities, routes: cartridge.routes }),
 				createdBy: uid,
 				updatedAt: serverTimestamp(),

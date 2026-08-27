@@ -35,6 +35,8 @@ import { untrack } from 'svelte';
 	{#if engine.isToolbarVisible}
 		<TacticalHUD
 			model={engine.gridEngine}
+			teamId={engine.teamScope.selectedTeamId}
+			ondeploy={(cartridge) => engine.deployPlay(cartridge)}
 			isHalfField={engine.isHalfField}
 			onToggleHalfField={() => engine.isHalfField = !engine.isHalfField}
 			onToggleToolbar={() => engine.isToolbarVisible = !engine.isToolbarVisible}

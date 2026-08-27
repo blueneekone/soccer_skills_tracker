@@ -4,8 +4,8 @@
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { collection, getDocs, query, orderBy } from 'firebase/firestore';
 
-	/** @type {{ model: import('$lib/components/coach/TacticalEngine.svelte.ts').TacticalWarRoomModel, isOpen: boolean, onClose: () => void }} */
-	let { model: engine, isOpen = false, onClose } = $props();
+	/** @type {{ model: import('$lib/components/coach/TacticalEngine.svelte.ts').TacticalWarRoomModel, isOpen: boolean, onClose: () => void, teamId?: string }} */
+	let { model: engine, isOpen = false, onClose, teamId = '' } = $props();
 
 	/** @type {'squad' | 'drills' | 'tools' | 'help'} */
 	let activeTab = $state('squad');
@@ -16,18 +16,14 @@
 	let loadingDrills = $state(false);
 	let loadedForTeam = $state('');
 
-	const teamId = $derived(
-		/** @type {any} */ (engine?.host)?.wrBucketXi !== undefined
-			? (/** @type {any} */ (engine)._teamId ?? '')
-			: ''
-	);
-
 	$effect(() => {
 		if (!browser || !isOpen || activeTab !== 'drills') return;
 		if (!db || !authStore.isAuthenticated) return;
-		const tid = /** @type {any} */ (engine)?._teamId ||
-				/** @type {any} */ (engine)?.teamId ||
-				/** @type {any} */ (engine)?.host?._teamId || '';
+		const tid = teamId ||
+				authStore.teamId ||
+				authStore.user?.teamId ||
+				/** @type {any} */ (engine)?._teamId ||
+				/** @type {any} */ (engine)?.teamId || '';
 		if (!tid || tid === loadedForTeam) return;
 		loadedForTeam = tid;
 		loadingDrills = true;
@@ -65,17 +61,27 @@
 	function loadDrillToPitch(drill) {
 		if (!drill.entities?.length && !drill.routes?.length) return;
 		try {
-			if (drill.entities?.length) {
-				// Reset to drill's player positions
-				engine.host.wrBucketPitch.set(
-					drill.entities.filter((/** @type {any} */ e) => e.side !== 'opponent').map((/** @type {any} */ e) => ({ ...e }))
-				);
-				engine.host.wrOppPitch.set(
-					drill.entities.filter((/** @type {any} */ e) => e.side === 'opponent').map((/** @type {any} */ e) => ({ ...e }))
-				);
-			}
-			if (drill.routes?.length) {
-				engine.host.drawnRoutes.set(drill.routes.map((/** @type {any} */ r) => ({ ...r })));
+			if (typeof /** @type {any} */ (engine)?.loadCartridge === 'function') {
+				/** @type {any} */ (engine).loadCartridge({
+					id: drill.id,
+					title: drill.name,
+					schemaVersion: 1,
+					entities: drill.entities,
+					routes: drill.routes,
+					metadata: { sport: 'soccer', duration: 4000, tags: [] },
+				});
+			} else if (/** @type {any} */ (engine)?.host) {
+				if (drill.entities?.length) {
+					/** @type {any} */ (engine).host.wrBucketPitch.set(
+						drill.entities.filter((/** @type {any} */ e) => e.side !== 'opponent').map((/** @type {any} */ e) => ({ ...e }))
+					);
+					/** @type {any} */ (engine).host.wrOppPitch.set(
+						drill.entities.filter((/** @type {any} */ e) => e.side === 'opponent').map((/** @type {any} */ e) => ({ ...e }))
+					);
+				}
+				if (drill.routes?.length) {
+					/** @type {any} */ (engine).host.drawnRoutes.set(drill.routes.map((/** @type {any} */ r) => ({ ...r })));
+				}
 			}
 			onClose();
 		} catch (err) {
