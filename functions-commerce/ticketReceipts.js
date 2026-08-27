@@ -32,7 +32,8 @@ const admin = require('firebase-admin');
 const QRCode = require('qrcode');
 
 const SENDGRID_API_KEY = defineSecret('SENDGRID_API_KEY');
-const APP_BASE_URL = defineString('APP_BASE_URL', {default: 'https://vanguardcommand.app'});
+const RESEND_API_KEY = defineSecret('RESEND_API_KEY');
+const APP_BASE_URL = defineString('APP_BASE_URL', {default: 'https://sstracker.app'});
 
 const REGION = 'us-east1';
 const FLAG_DOC = 'feature_flags/brandedTicketReceipts';
@@ -138,26 +139,33 @@ async function _maybeSendReceipt(ticketId, ticketData) {
 </body>
 </html>`;
 
-  const sgMail = require('@sendgrid/mail');
-  sgMail.setApiKey(SENDGRID_API_KEY.value());
-
-  await sgMail.send({
+  const resendService = require('./src/services/resendService');
+  const resendResult = await resendService.sendEmail({
     to: purchaserEmail,
-    from: {email: 'tickets@vanguardcommand.app', name: 'Vanguard Tickets'},
+    from: 'SSTracker Tickets <noreply@sstracker.app>',
     subject: `Your ticket for event ${eventId} — ${totalFormatted}`,
     html,
-    attachments: [
-      {
-        content: qrBase64,
-        filename: 'ticket_qr.png',
-        type: 'image/png',
-        disposition: 'inline',
-        content_id: 'qr_code',
-      },
-    ],
   });
 
-  logger.info('[ticketReceipts] receipt sent', {ticketId, to: purchaserEmail});
+  if (resendResult.ok) {
+    logger.info('[ticketReceipts] receipt sent via Resend', {ticketId, to: purchaserEmail, id: resendResult.id});
+    return;
+  }
+
+  try {
+    const sgMail = require('@sendgrid/mail');
+    sgMail.setApiKey(SENDGRID_API_KEY.value());
+
+    await sgMail.send({
+      to: purchaserEmail,
+      from: {email: 'noreply@sstracker.app', name: 'SSTracker Tickets'},
+      subject: `Your ticket for event ${eventId} — ${totalFormatted}`,
+      html,
+    });
+    logger.info('[ticketReceipts] receipt sent via SendGrid', {ticketId, to: purchaserEmail});
+  } catch (err) {
+    logger.error('[ticketReceipts] Failed to send ticket receipt', {ticketId, to: purchaserEmail, err: err.message});
+  }
 }
 
 // Export the shared helper for testing.

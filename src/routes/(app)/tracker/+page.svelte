@@ -267,8 +267,10 @@
 		}
 		const mins = parseInt(String(totalMinutes || 0), 10);
 		if (mins <= 0) return alert('Enter how many minutes you trained.');
-		if (!profile?.teamId || !profile?.playerName) return alert('User profile is incomplete.');
-		if (authStore.role !== 'player') {
+		const teamId = profile?.teamId || authStore.teamId || authStore.user?.teamId || 'coach-squad';
+		const playerName = profile?.playerName || profile?.displayName || profile?.name || authStore.user?.displayName || 'Coach';
+		if (!teamId || !playerName) return alert('User profile is incomplete.');
+		if (authStore.role !== 'player' && authStore.role !== 'coach' && authStore.role !== 'director' && authStore.role !== 'super_admin' && authStore.role !== 'global_admin') {
 			return alert('Use the parent workout log for guardian-verified sessions.');
 		}
 
@@ -285,6 +287,8 @@
 				duration: mins,
 				reps: repTotal,
 				intensity: intensityApi,
+				teamId,
+				playerName,
 				...(homeworkAssignmentId ? { assignmentId: homeworkAssignmentId } : {}),
 			}),
 			{ kind: 'drill' },

@@ -13,16 +13,18 @@ const logger = require('firebase-functions/logger');
 const admin = require('firebase-admin');
 
 const {normEmail} = require('../utils/formatters');
+const resendService = require('../services/resendService');
 
 const SENDGRID_API_KEY = defineSecret('SENDGRID_API_KEY');
+const RESEND_API_KEY = defineSecret('RESEND_API_KEY');
 
 const EMAIL_FLAG_DOC = 'feature_flags/commsEmailFallback';
 const SMS_FLAG_DOC = 'feature_flags/commsSmsEmergency';
-const FROM_EMAIL = 'announcements@vanguardcommand.app';
-const FROM_NAME = 'Vanguard Team Comms';
+const FROM_EMAIL = 'noreply@sstracker.app';
+const FROM_NAME = 'SSTracker Comms';
 
-/** Bind on triggers — SendGrid only until owner configures Twilio secrets. */
-exports.OMNICHANNEL_SECRETS = [SENDGRID_API_KEY];
+/** Bind on triggers — Resend & SendGrid secrets. */
+exports.OMNICHANNEL_SECRETS = [RESEND_API_KEY, SENDGRID_API_KEY];
 
 const db = () => admin.firestore();
 
@@ -155,6 +157,24 @@ exports.sendBroadcastEmail = async ({
   }
 
   try {
+    const resendResult = await resendService.sendEmail({
+      to: recipient,
+      subject: String(subject || 'Team announcement').slice(0, 200),
+      html: String(bodyHtml || bodyText || '').slice(0, 16000),
+      text: String(bodyText || '').slice(0, 8000),
+      from: `${FROM_NAME} <${FROM_EMAIL}>`,
+    });
+    if (resendResult.ok) {
+      logger.info('[omnichannelOps] email sent via Resend', {to: recipient, messageId, id: resendResult.id});
+      return true;
+    }
+  } catch (resendErr) {
+    logger.warn('[omnichannelOps] Resend dispatch attempt failed, attempting fallback', {
+      err: resendErr instanceof Error ? resendErr.message : String(resendErr),
+    });
+  }
+
+  try {
     const sgMail = require('@sendgrid/mail');
     sgMail.setApiKey(SENDGRID_API_KEY.value());
     await sgMail.send({
@@ -169,7 +189,7 @@ exports.sendBroadcastEmail = async ({
         channelType: String(channelType || 'announcements'),
       },
     });
-    logger.info('[omnichannelOps] email sent', {to: recipient, messageId});
+    logger.info('[omnichannelOps] email sent via SendGrid', {to: recipient, messageId});
     return true;
   } catch (e) {
     logger.warn('[omnichannelOps] sendBroadcastEmail failed', {

@@ -613,18 +613,37 @@ export class IntentEngine {
 
 	async refreshIntents() {
 		if (!db || !authStore.isAuthenticated) return;
-		if (!this._teamId || this.isRefreshing) return;
+		const effectiveTeam = this._teamId || authStore.teamId || authStore.user?.teamId || '';
+		if (!effectiveTeam) {
+			this.mutationError = 'Select a squad to load and refresh intents.';
+			return;
+		}
+		this._teamId = effectiveTeam;
+		if (this.isRefreshing) return;
 		this.mutationError = '';
 		this.isRefreshing = true;
 		try {
-			const q = query(
-				collection(db, 'team_assignments'),
-				where('teamId', '==', this._teamId),
-				where('status', '==', 'active'),
-				orderBy('priority', 'asc'),
-			);
-			const snap = await getDocs(q);
-			this._applyIntentSnapshot(snap.docs);
+			let docs: Array<{ id: string; data: () => Record<string, unknown> }> = [];
+			try {
+				const q = query(
+					collection(db, 'team_assignments'),
+					where('teamId', '==', this._teamId),
+					where('status', '==', 'active'),
+					orderBy('priority', 'asc'),
+				);
+				const snap = await getDocs(q);
+				docs = snap.docs;
+			} catch (queryErr) {
+				console.warn('[IntentEngine] ordered query failed, trying unordered fallback:', queryErr);
+				const qFallback = query(
+					collection(db, 'team_assignments'),
+					where('teamId', '==', this._teamId),
+					where('status', '==', 'active'),
+				);
+				const snap = await getDocs(qFallback);
+				docs = snap.docs;
+			}
+			this._applyIntentSnapshot(docs);
 			this._subscribeIntents();
 			await this.refreshRoster();
 		} catch (e) {
@@ -664,7 +683,9 @@ export class IntentEngine {
 	}
 
 	private _applyIntentSnapshot(docs: Array<{ id: string; data: () => Record<string, unknown> }>) {
-		this.intents = docs.map((d) => ({ ...d.data(), intentId: d.id }) as IntentDoc);
+		const list = docs.map((d) => ({ ...d.data(), intentId: d.id }) as IntentDoc);
+		list.sort((a, b) => (Number(a.priority) || 0) - (Number(b.priority) || 0));
+		this.intents = list;
 	}
 
 	private _formatCallableError(e: unknown, fallback: string): string {
@@ -691,6 +712,8 @@ export class IntentEngine {
 		if (!isFirestoreReady() || !this._teamId) return;
 
 		this.isLoadingIntents = true;
+		if (!db || !authStore.isAuthenticated) return;
+
 		const q = query(
 			collection(db, 'team_assignments'),
 			where('teamId', '==', this._teamId),
@@ -698,7 +721,6 @@ export class IntentEngine {
 			orderBy('priority', 'asc'),
 		);
 
-		if (!db || !authStore.isAuthenticated) return;
 		this._unsubIntents = onSnapshot(
 			q,
 			(snap) => {
@@ -707,9 +729,25 @@ export class IntentEngine {
 				this.error = '';
 			},
 			(err) => {
-				console.error('[IntentEngine] intents snapshot error:', err);
-				this.error = err.message;
-				this.isLoadingIntents = false;
+				console.warn('[IntentEngine] intents ordered snapshot error, trying unordered fallback:', err);
+				const qFallback = query(
+					collection(db, 'team_assignments'),
+					where('teamId', '==', this._teamId),
+					where('status', '==', 'active'),
+				);
+				this._unsubIntents = onSnapshot(
+					qFallback,
+					(snapFallback) => {
+						this._applyIntentSnapshot(snapFallback.docs);
+						this.isLoadingIntents = false;
+						this.error = '';
+					},
+					(fallbackErr) => {
+						console.error('[IntentEngine] intents fallback snapshot error:', fallbackErr);
+						this.error = fallbackErr.message;
+						this.isLoadingIntents = false;
+					},
+				);
 			},
 		);
 	}

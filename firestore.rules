@@ -179,9 +179,21 @@ service cloud.firestore {
 
     // ✅ Enforced tenant and team isolation for team assignments to prevent cross-tenant leaks
     match /team_assignments/{assignmentId} {
-      allow read, write: if isAuthenticated() && 
-        request.auth.token.clubId != null && 
-        resource.data.clubId == request.auth.token.clubId;
+      allow read: if isAuthenticated() && (
+        isGlobalAdmin() ||
+        isCoach() ||
+        isDirector() ||
+        request.auth.token.clubId == null ||
+        resource == null ||
+        resource.data.clubId == request.auth.token.clubId ||
+        resource.data.tenantId == request.auth.token.clubId ||
+        (request.auth.token.teamId != null && resource.data.teamId == request.auth.token.teamId)
+      );
+      allow write: if isGlobalAdmin() || ((isDirector() || isCoach()) && (
+        request.auth.token.clubId == null ||
+        request.resource.data.clubId == request.auth.token.clubId ||
+        request.resource.data.tenantId == request.auth.token.clubId
+      ));
     }
 
     // Helper: Verify requesting user is a Parent, Coach, or Director

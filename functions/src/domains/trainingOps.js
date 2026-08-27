@@ -216,8 +216,17 @@ async function resolveTrainingLogActor(request, data) {
     playerEmail = normEmail(request.auth.token.email);
     if (!playerEmail) throw new HttpsError('failed-precondition', 'Missing auth email.');
     verificationMethod = 'player_self_log';
+  } else if (['coach', 'director', 'super_admin', 'global_admin'].includes(role) || isGlobalAdmin(request)) {
+    playerEmail = normEmail(data.playerEmail) || normEmail(request.auth.token.email);
+    if (!playerEmail) throw new HttpsError('invalid-argument', 'playerEmail is required.');
+    verifiedByUid = request.auth.uid;
+    verifiedByEmail = normEmail(request.auth.token.email);
+    verifiedByLegalName = typeof data.verifierLegalName === 'string' && data.verifierLegalName.trim()
+      ? data.verifierLegalName.trim()
+      : (request.auth.token.name || 'Coach Verified');
+    verificationMethod = 'coach_auth_callable';
   } else {
-    throw new HttpsError('permission-denied', 'Only player or parent accounts may log training.');
+    throw new HttpsError('permission-denied', 'Only player, coach, or parent accounts may log training.');
   }
 
   return {
@@ -340,13 +349,25 @@ exports.logTrainingSession = onCall(
     const actorInfo = await resolveTrainingLogActor(request, data);
 
     const uRef = db().collection('users').doc(actorInfo.playerEmail);
-    const uSnap = await uRef.get();
-    if (!uSnap.exists) {
-      throw new HttpsError('failed-precondition', 'Athlete profile not found. Complete setup first.');
+    let uSnap = await uRef.get();
+    let u = uSnap.exists ? uSnap.data() : null;
+    const role = request.auth.token.role || 'player';
+    if (!u) {
+      if (['coach', 'director', 'super_admin', 'global_admin'].includes(role) || isGlobalAdmin(request)) {
+        u = {
+          role,
+          email: actorInfo.playerEmail,
+          displayName: request.auth.token.name || 'Coach',
+          playerName: request.auth.token.name || 'Coach',
+          teamId: data.teamId || 'coach-squad',
+        };
+        await uRef.set(u, { merge: true });
+      } else {
+        throw new HttpsError('failed-precondition', 'Athlete profile not found. Complete setup first.');
+      }
     }
-    const u = uSnap.data();
-    const teamId = u.teamId || null;
-    const playerName = u.playerName || null;
+    const teamId = u.teamId || data.teamId || (Array.isArray(u.teamIds) && u.teamIds[0]) || 'coach-squad';
+    const playerName = u.playerName || u.displayName || u.name || data.playerName || (actorInfo.playerEmail ? actorInfo.playerEmail.split('@')[0] : 'Coach');
     if (!teamId || teamId === 'admin' || !playerName) {
       throw new HttpsError('failed-precondition', 'Athlete profile is missing team or display name.');
     }
@@ -356,8 +377,12 @@ exports.logTrainingSession = onCall(
       const au = await admin.auth().getUserByEmail(actorInfo.playerEmail);
       athleteUid = au.uid;
     } catch (e) {
-      logger.error('logTrainingSession: getUserByEmail failed', e);
-      throw new HttpsError('failed-precondition', 'Could not resolve athlete account.');
+      if (request.auth && normEmail(request.auth.token?.email) === actorInfo.playerEmail) {
+        athleteUid = request.auth.uid;
+      } else {
+        logger.error('logTrainingSession: getUserByEmail failed', e);
+        throw new HttpsError('failed-precondition', 'Could not resolve athlete account.');
+      }
     }
 
     const earned = calculateTrainingSessionEarnedXp({
