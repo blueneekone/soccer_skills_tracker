@@ -76,22 +76,30 @@ async function executeBatchPagination(sanitizedRows, db, teamId, clubId, authUid
   let batch = db.batch();
   let opCount = 0;
   let totalProcessed = 0;
+  const now = new Date().toISOString();
 
   for (let i = 0; i < sanitizedRows.length; i++) {
-    const row = sanitizedRows[i];
-    const docId = `vamp_${teamId}_${Date.now()}_${i}_${Math.floor(Math.random() * 100000)}`;
-    const ref = db.collection('roster_staging').doc(docId);
-    batch.set(ref, {
-      ...row,
-      teamId,
-      clubId,
-      createdBy: authUid,
-      ingestedAt: new Date().toISOString()
+    const { email, firstName, lastName, jerseyNumber, ...rest } = sanitizedRows[i];
+    const ts = Date.now();
+    const rnd = Math.floor(Math.random() * 100000);
+    const householdId = `hh_${teamId}_${ts}_${i}_${rnd}`;
+
+    const playerData = { firstName, lastName, type: 'player', teamId, clubId, householdId, createdBy: authUid, ingestedAt: now, ...rest };
+    if (jerseyNumber !== undefined) playerData.jerseyNumber = jerseyNumber;
+
+    const pRef = db.collection('roster_staging').doc(`vamp_p_${ts}_${rnd}`);
+    batch.set(pRef, playerData);
+
+    const gRef = db.collection('roster_staging').doc(`vamp_g_${ts}_${rnd}`);
+    batch.set(gRef, {
+      email, type: 'guardian', role: 'guardian', isCleared: false,
+      householdId, clubId, teamId, createdBy: authUid, ingestedAt: now
     });
-    opCount++;
+
+    opCount += 2;
     totalProcessed++;
 
-    if (opCount === 500) {
+    if (opCount >= 499) {
       await batch.commit();
       batch = db.batch();
       opCount = 0;
@@ -99,7 +107,6 @@ async function executeBatchPagination(sanitizedRows, db, teamId, clubId, authUid
   }
 
   if (opCount > 0) await batch.commit();
-
   return totalProcessed;
 }
 
