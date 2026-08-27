@@ -21,7 +21,8 @@ vi.mock('papaparse', () => ({
 
       const parsedData = JSON.parse(content);
       config.complete({ data: parsedData });
-    })
+    }),
+    unparse: vi.fn((data) => JSON.stringify(data))
   }
 }));
 
@@ -36,6 +37,15 @@ vi.mock('firebase/firestore', async (importOriginal) => {
     })),
     doc: vi.fn(() => ({ id: 'mocked-doc-id' })),
     collection: vi.fn(() => ({ id: 'roster_staging' }))
+  };
+});
+
+// Mock Firebase Functions
+vi.mock('firebase/functions', async (importOriginal) => {
+  const actual = (await importOriginal()) as any;
+  return {
+    ...actual,
+    httpsCallable: vi.fn(() => vi.fn().mockResolvedValue({ data: { success: true, count: 1200 } }))
   };
 });
 
@@ -119,14 +129,14 @@ describe('VampireImporterEngine', () => {
 
     expect(engine.parsedRows.length).toBe(1200);
 
-    const { writeBatch } = await import('firebase/firestore');
+    const { httpsCallable } = await import('firebase/functions');
     await engine.triggerIngestion();
 
     expect(engine.errorMessage).toBeNull();
     expect(engine.successMessage).toBe('Successfully ingested 1200 rows.');
     expect(engine.ingestedCount).toBe(1200);
-    // writeBatch should be called 3 times (ceil(1200/500))
-    expect(writeBatch).toHaveBeenCalledTimes(3);
+    // writeBatch logic was moved to backend, ensure callable was triggered
+    expect(httpsCallable).toHaveBeenCalledWith(expect.anything(), 'vampireIngestRows');
   });
 
   it('Test 4: should return early and block db write if hydration guard is false', async () => {
@@ -144,7 +154,7 @@ describe('VampireImporterEngine', () => {
     expect(engine.isUploading).toBe(false);
     expect(engine.ingestedCount).toBe(0);
 
-    const { writeBatch } = await import('firebase/firestore');
-    expect(writeBatch).not.toHaveBeenCalled();
+    const { httpsCallable } = await import('firebase/functions');
+    expect(httpsCallable).not.toHaveBeenCalled();
   });
 });

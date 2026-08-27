@@ -1,6 +1,7 @@
-import { getActiveDb } from '$lib/firebase.js';
+import { getActiveDb, functions } from '$lib/firebase.js';
 import { authStore } from '$lib/stores/auth/facade.svelte.js';
-import { writeBatch, doc, collection } from 'firebase/firestore';
+import { httpsCallable } from 'firebase/functions';
+import Papa from 'papaparse';
 import { parseAndSanitizeCSV, type VampireRow } from '$lib/utils/vampireSanitizer.js';
 
 export class VampireImporterEngine {
@@ -73,28 +74,10 @@ export class VampireImporterEngine {
     this.ingestedCount = 0;
 
     try {
-      const BATCH_LIMIT = 500;
-      const rows = [...this.parsedRows];
-      const collectionRef = collection(db, 'roster_staging');
-
-      for (let i = 0; i < rows.length; i += BATCH_LIMIT) {
-        const batch = writeBatch(db);
-        const currentBatchRows = rows.slice(i, i + BATCH_LIMIT);
-
-        for (const row of currentBatchRows) {
-          const docRef = doc(collectionRef); // auto-generate ID
-          batch.set(docRef, {
-            ...row,
-            teamId: this.teamId ? this.teamId.trim() : null,
-            clubId: authStore.clubId || null,
-            uploadedAt: new Date().toISOString(),
-            uploadedBy: authStore.user?.uid || 'unknown'
-          });
-        }
-
-        await batch.commit();
-        this.ingestedCount = this.ingestedCount + currentBatchRows.length;
-      }
+      const csvPayload = Papa.unparse(this.parsedRows);
+      const vampireIngestRows = httpsCallable(functions, 'vampireIngestRows');
+      const res = await vampireIngestRows({ csvPayload, teamId: this.teamId });
+      this.ingestedCount = (res.data as any).count || 0;
       this.successMessage = `Successfully ingested ${this.ingestedCount} rows.`;
     } catch (error: any) {
       this.errorMessage = `Upload failed during batch processing: ${error.message}`;

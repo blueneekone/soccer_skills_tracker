@@ -16,6 +16,7 @@
 3. **Director OS (B2B Revenue Engine)**: 🟢 **READY**
    * CSV Roster Import ("The Vampire Importer") throttled and capped at atomic batches of 500 writes to protect Firestore database locks [cite: 132, 427].
    * The Vampire Importer successfully fractures CSV rows into distinct Player Stubs and Guardian Stubs connected by a secure `householdId` graph.
+   * Fixed Persona Bleeding Issue: Zero-Trust backend explicitly segregates Guardian (phone, clearance) from Player OS gamification metrics and limits DB mutations to server-side components.
 
 4. **Coach OS (Sideline SIEM)**: 🟢 **READY**
    * SafeSport Shadow CC verification sequences fully active. Automated workout triggers dynamically updated with temporal checks [cite: 424, 431].
