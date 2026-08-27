@@ -1,4 +1,6 @@
 <script>
+	import { goto } from '$app/navigation';
+	import { untrack } from 'svelte';
 	import TacticalDock from './tactical/hud/TacticalDock.svelte';
 	import TacticsHubDrawer from './tactical/hud/TacticsHubDrawer.svelte';
 	import ContextRadial from './tactical/hud/ContextRadial.svelte';
@@ -36,14 +38,23 @@
 		void ondeploy?.(cartridge);
 
 		const start = performance.now();
-		const duration = 1800;
+		const duration = 1200;
+		const tacticId = cartridge.id;
 
 		function step() {
 			deployProgress = Math.min(1, (performance.now() - start) / duration);
 			if (deployProgress < 1) {
 				requestAnimationFrame(step);
 			} else {
-				setTimeout(() => { deployPhase = 'success'; }, 180);
+				setTimeout(() => {
+					deployPhase = 'success';
+					// Navigate to Drill Designer with the tactic pre-loaded
+					setTimeout(() => {
+						untrack(() => {
+							goto(`/coach/forge?tab=designer&tacticId=${encodeURIComponent(tacticId)}`);
+						});
+					}, 600);
+				}, 180);
 			}
 		}
 		requestAnimationFrame(step);
@@ -63,15 +74,16 @@
 <div class="tactical-hud-panel tw-pointer-events-none tw-absolute tw-inset-0 tw-z-10 tw-overflow-hidden" style="border-radius: 0px;">
 	<!-- Top Bar Floating Action Deck -->
 	<div class="tw-pointer-events-auto tw-absolute tw-top-3 tw-left-3 tw-z-30 tw-flex tw-items-center tw-gap-2">
-		<!-- [ ⚡ TACTICS HUB ] Trigger Button -->
+		<!-- Tactical Hub Trigger Button -->
 		<button
 			type="button"
-			class="tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-px-3.5 tw-py-2 tw-font-mono tw-text-xs tw-font-bold {isTacticsHubOpen ? 'tw-border-[#daff0a] tw-text-[#daff0a] tw-shadow-[0_0_12px_rgba(218,255,10,0.3)]' : 'tw-text-[#fafafa] hover:tw-border-[#14b8a6] hover:tw-text-[#14b8a6]'} active:tw-scale-[0.98] tw-transition-all tw-rounded-md"
+			class="tw-bg-[#030712]/90 tw-backdrop-blur-md tw-border tw-border-slate-700/80 tw-px-3.5 tw-py-2 tw-font-mono tw-text-xs tw-font-semibold tw-tracking-wide {isTacticsHubOpen ? 'tw-bg-teal-950/70 tw-border-teal-500/80 tw-text-teal-300 tw-shadow-[0_0_15px_rgba(20,184,166,0.3)]' : 'tw-text-slate-200 hover:tw-text-white hover:tw-border-slate-500 hover:tw-bg-slate-800/80'} active:tw-scale-[0.98] tw-transition-all tw-rounded-xl tw-shadow-xl tw-flex tw-items-center tw-gap-2"
 			onclick={() => { isTacticsHubOpen = !isTacticsHubOpen; }}
-			title="Toggle Tactics Hub"
-			aria-label="Toggle Tactics Hub"
+			title="Toggle Tactics Hub Drawer"
+			aria-label="Toggle Tactics Hub Drawer"
 		>
-			[ ⚡ TACTICS HUB ]
+			<span class="tw-h-2 tw-w-2 tw-rounded-full {isTacticsHubOpen ? 'tw-bg-teal-400 tw-shadow-[0_0_8px_#2dd4bf]' : 'tw-bg-slate-500'}"></span>
+			<span>Tactical Hub</span>
 		</button>
 	</div>
 

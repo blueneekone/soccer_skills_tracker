@@ -52,12 +52,13 @@ describe.skip('navPinCatalog (NAV-OPTION-D)', () => {
 		expect(getDefaultPins('recruiter')).toEqual(['/recruiter', '/messages', null]);
 	});
 
-	it('coach sheet catalog includes War Room /coach/tactical', () => {
+	it('coach sheet catalog includes War Room /coach/tactical and excludes Field Station', () => {
 		const coachCatalog = getNavCatalog('coach');
 		const hrefs = coachCatalog.map((item) => item.href);
 		expect(hrefs).toContain('/coach/tactical');
+		expect(hrefs).toContain('/coach/forge');
 		expect(hrefs).not.toContain('/coach/tactics-board');
-		expect(hrefs).toContain('/coach/drills');
+		expect(hrefs).not.toContain('/coach/drills');
 		expect(hrefs).toContain('/messages');
 	});
 

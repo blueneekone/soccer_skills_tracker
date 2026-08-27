@@ -531,45 +531,30 @@
 </script>
 
 <svelte:head>
-	<title>Coach Â· Field Station Â· SSTRACKER</title>
+	<title>Coach · Drill Library & Playbook · SSTRACKER</title>
 </svelte:head>
 
-<!-- VS-3c â€” Coach drill library SIEM shell -->
+<!-- VS-3c — Coach drill library SIEM shell -->
 <div class="coach-drill-lib tw-relative tw-h-[100dvh] tw-overflow-hidden tw-w-full tw-px-3 tw-py-6 sm:tw-px-5">
 <section class="cdm-page">
 	<header class="coach-drill-z4">
 		<div>
-			<h1 class="coach-drill-z4__title">Field operations</h1>
+			<h1 class="coach-drill-z4__title">Drill Library & Playbook</h1>
 			<p class="coach-drill-z4__sub">
 				Team &rsaquo; {currentTeam?.name || teamScope.selectedTeamId || '&mdash;'}
 			</p>
 			<nav class="coach-drill-z4-nav" aria-label="Coach section">
-				<a href="/coach/forge" class="coach-drill-z4-nav__btn coach-drill-z4-nav__btn--link" title="Deploy macro-goal intents â€” individualized drills per player">
-					The Forge
+				<a href="/coach/forge?tab=intent" class="coach-drill-z4-nav__btn coach-drill-z4-nav__btn--link" title="Intent Engine">
+					Intent Engine
+				</a>
+				<a href="/coach/forge?tab=designer" class="coach-drill-z4-nav__btn coach-drill-z4-nav__btn--link" title="Drill Designer">
+					Drill Designer
 				</a>
 				<button
 					type="button"
-					class="coach-drill-z4-nav__btn"
-					class:coach-drill-z4-nav__btn--active={pageView === 'library'}
-					onclick={() => (pageView = 'library')}
+					class="coach-drill-z4-nav__btn coach-drill-z4-nav__btn--active"
 				>
-					Drill library
-				</button>
-				<button
-					type="button"
-					class="coach-drill-z4-nav__btn"
-					class:coach-drill-z4-nav__btn--active={pageView === 'designer'}
-					onclick={() => (pageView = 'designer')}
-				>
-					Drill designer
-				</button>
-				<button
-					type="button"
-					class="coach-drill-z4-nav__btn"
-					class:coach-drill-z4-nav__btn--active={pageView === 'schedule'}
-					onclick={() => (pageView = 'schedule')}
-				>
-					Team schedule
+					Drill Library
 				</button>
 			</nav>
 		</div>

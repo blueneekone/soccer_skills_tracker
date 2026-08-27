@@ -190,11 +190,13 @@
 		<button
 			type="button"
 			class="coach-tac-z4-btn coach-tac-z4-btn--deploy tw-truncate"
-			style="max-width: 140px;"
+			style="max-width: 180px;"
 			onclick={onDeploy}
 			disabled={deployPhase !== 'idle' || model.routesLive.length === 0}
+			title="Deploy this play to the Drill Designer Studio"
+			aria-label="Deploy play to Drill Designer Studio"
 		>
-			{deployPhase !== 'idle' ? '[ ↑ DEPLOYING… ]' : '[ OPS DEPLOY ]'}
+			{deployPhase !== 'idle' ? '[ ↑ DEPLOYING… ]' : '[ DEPLOY TO DESIGNER ]'}
 		</button>
 
 		<span class="coach-tac-z4-divider" aria-hidden="true"></span>
