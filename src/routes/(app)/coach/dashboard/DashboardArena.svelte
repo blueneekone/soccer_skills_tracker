@@ -41,6 +41,11 @@
 
 	<!-- SquadMatrix (12 cols) -->
 	<div class="tw-col-span-12 tw-min-w-0">
-		<SquadMatrix teamId={engine.effectiveTeamId} teams={engine.myTeams} />
+		<SquadMatrix
+			teamId={engine.effectiveTeamId}
+			teams={engine.myTeams}
+			selectedPlayerId={engine.selectedPlayerId}
+			onSelectPlayer={(id) => engine.selectPlayer(id)}
+		/>
 	</div>
 </div>

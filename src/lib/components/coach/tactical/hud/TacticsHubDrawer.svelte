@@ -2,7 +2,7 @@
 	import { browser } from '$app/environment';
 	import { db } from '$lib/firebase.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
-	import { collection, getDocs, query, orderBy } from 'firebase/firestore';
+	import { collection, getDocs, query, orderBy, where } from 'firebase/firestore';
 
 	/** @type {{ model: import('$lib/components/coach/TacticalEngine.svelte.ts').TacticalWarRoomModel, isOpen: boolean, onClose: () => void, teamId?: string }} */
 	let { model: engine, isOpen = false, onClose, teamId = '' } = $props();
@@ -98,9 +98,74 @@
 		return String(name).slice(0, 2).toUpperCase() || 'PL';
 	}
 
-	const rosterList = $derived(
-		Array.isArray(engine?.host?.wrBucketXi) ? engine.host.wrBucketXi : []
+	const rawHostXi = $derived(
+		typeof engine?.host?.wrBucketXi?.get === 'function'
+			? engine.host.wrBucketXi.get()
+			: (Array.isArray(engine?.host?.wrBucketXi) ? engine.host.wrBucketXi : (Array.isArray(engine?.wrBucketXi) ? engine.wrBucketXi : []))
 	);
+
+	let fallbackRoster = $state([]);
+
+	$effect(() => {
+		if (rawHostXi.length > 0) return;
+		if (!browser || !isOpen || activeTab !== 'squad') return;
+		if (!db || !authStore.isAuthenticated) return;
+		const tid = teamId ||
+			authStore.teamId ||
+			authStore.user?.teamId ||
+			/** @type {any} */ (engine)?._teamId ||
+			/** @type {any} */ (engine)?.teamId || '';
+		if (!tid) return;
+
+		const q = query(collection(db, 'player_lookup'), where('teamId', '==', tid));
+		getDocs(q).then((snap) => {
+			if (!snap.empty) {
+				fallbackRoster = snap.docs.map((d) => {
+					const data = d.data() || {};
+					const name = data.playerName || data.displayName || d.id;
+					return {
+						id: d.id,
+						name,
+						number: data.jersey ? String(data.jersey) : getPlayerInitials(name),
+						position: data.position || 'CM',
+						side: 'friendly',
+						color: '#14b8a6',
+					};
+				});
+			}
+		}).catch(() => {});
+	});
+
+	const rosterList = $derived(rawHostXi.length > 0 ? rawHostXi : fallbackRoster);
+
+	function addPlayerToPitch(p) {
+		const currentPitch = typeof engine?.host?.wrBucketPitch?.get === 'function'
+			? engine.host.wrBucketPitch.get()
+			: (Array.isArray(engine?.host?.wrBucketPitch) ? engine.host.wrBucketPitch : (engine?.wrBucketPitch || []));
+
+		if (currentPitch.some((t) => t.id === p.id || t.name === p.name)) return;
+
+		const count = currentPitch.length;
+		const x = 25 + (count % 4) * 16;
+		const y = 25 + Math.floor(count / 4) * 16;
+
+		const newToken = {
+			id: p.id || `p_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+			name: p.name,
+			number: p.number || getPlayerInitials(p.name),
+			position: p.position || '',
+			x,
+			y,
+			side: 'friendly',
+			color: '#14b8a6',
+		};
+
+		if (typeof engine?.host?.wrBucketPitch?.set === 'function') {
+			engine.host.wrBucketPitch.set([...currentPitch, newToken]);
+		} else if (engine?.wrBucketPitch) {
+			engine.wrBucketPitch = [...currentPitch, newToken];
+		}
+	}
 </script>
 
 <div class="tw-pointer-events-none tw-fixed tw-inset-y-0 tw-left-0 tw-z-50 tw-w-96 tw-max-w-[90vw]" role="region" aria-label="Tactics Hub">
@@ -178,18 +243,27 @@
 							<div class="tw-flex tw-flex-col tw-gap-2 tw-max-h-[60vh] tw-overflow-y-auto tw-pr-1">
 								{#each rosterList as p (p.id)}
 									{@const initials = getPlayerInitials(p.name)}
+									<!-- svelte-ignore a11y_click_events_have_key_events -->
 									<div
-										class="roster-player-token tw-flex tw-items-center tw-justify-between tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-px-3.5 tw-py-2.5 tw-text-xs tw-text-[#fafafa] hover:tw-border-[#14b8a6] tw-cursor-grab active:tw-scale-[0.98] tw-transition-all tw-rounded-lg"
+										class="roster-player-token tw-flex tw-items-center tw-justify-between tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-px-3.5 tw-py-2.5 tw-text-xs tw-text-[#fafafa] hover:tw-border-[#14b8a6] tw-cursor-pointer active:tw-scale-[0.98] tw-transition-all tw-rounded-lg"
+										onclick={() => addPlayerToPitch(p)}
+										role="button"
+										tabindex="0"
 									>
 										<div class="tw-flex tw-items-center tw-gap-3 tw-min-w-0">
 											<span class="tw-flex tw-h-7 tw-w-7 tw-items-center tw-justify-center tw-border tw-border-[#14b8a6] tw-bg-[#14b8a6]/20 tw-text-[11px] tw-font-mono tw-font-black tw-text-[#14b8a6] tw-rounded-md">
-												{initials}
+												{p.number || initials}
 											</span>
 											<span class="tw-truncate tw-font-mono tw-text-xs tw-font-bold tw-text-white">{p.name}</span>
 										</div>
-										<span class="tw-border tw-border-[#334155] tw-bg-[#020617] tw-px-2 tw-py-0.5 tw-text-[10px] tw-font-mono tw-font-bold tw-text-[#daff0a] tw-rounded">
-											{p.position || initials}
-										</span>
+										<div class="tw-flex tw-items-center tw-gap-2">
+											<span class="tw-border tw-border-[#334155] tw-bg-[#020617] tw-px-2 tw-py-0.5 tw-text-[10px] tw-font-mono tw-font-bold tw-text-[#daff0a] tw-rounded">
+												{p.position || initials}
+											</span>
+											<span class="tw-text-[10px] tw-font-mono tw-font-bold tw-text-[#14b8a6]">
+												+ ADD
+											</span>
+										</div>
 									</div>
 								{/each}
 							</div>

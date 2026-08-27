@@ -1,6 +1,7 @@
 <script lang="ts">
 	import TacticalPitchBoard from './grid/TacticalPitchBoard.svelte';
 	import MistakeResetOverlay from '../tactical/MistakeResetOverlay.svelte';
+	import TacticalPlayerContextHUD from './tactical/hud/TacticalPlayerContextHUD.svelte';
 	/** @typedef {import('../../states/war-room/tacticalWarRoomApi.ts').TacticalWarRoomModel} TacticalWarRoomModel */
 
 	/** @type {{ model: any; warRoomTool: 'DRAG' | 'ROUTE'; isHalfField: boolean }} */
@@ -86,4 +87,17 @@
         model.tacticsCore?.dispatchClearAll();
       }}
     />
+
+	<TacticalPlayerContextHUD
+		open={model.tokenContextMenuOpen}
+		pos={model.tokenContextMenuPos}
+		player={model.tokenContextMenuPlayer}
+		availableRoster={typeof model.host?.wrBucketXi?.get === 'function' ? model.host.wrBucketXi.get() : (Array.isArray(model.host?.wrBucketXi) ? model.host.wrBucketXi : [])}
+		onSwap={(p) => model.swapTokenPlayer(p)}
+		onUpdatePosition={(pos) => model.updateTokenPosition(pos)}
+		onToggleSide={() => model.toggleTokenSide()}
+		onClearRoutes={() => model.clearPlayerRoutes()}
+		onBench={() => model.benchPlayerToken()}
+		onClose={() => { model.tokenContextMenuOpen = false; }}
+	/>
 </div>

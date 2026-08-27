@@ -994,17 +994,22 @@ async function secureAddPlayerTxn(transaction, params) {
 
   transaction.set(rosterRef, {players: [...list, playerName], jerseys}, {merge: true});
 
-  const lookupPayload = {
-    teamId,
-    playerName,
-    clubId,
-    ...(playerEmail ? {playerEmail} : {}),
-    ...(parentPhone ? {parentPhone} : {}),
-    ...(parentName ? {parentName} : {}),
-    ...(dob ? {dob} : {}),
-    ...(jersey ? {jersey} : {}),
-    updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-  };
+  const householdId = playerEmail ?
+    `hh_${crypto.createHash('sha256').update(playerEmail.toLowerCase().trim()).digest('hex').slice(0, 16)}` : null;
+
+  if (householdId && rosterRef && rosterRef.firestore) {
+    const hhRef = rosterRef.firestore.collection('households').doc(householdId);
+    transaction.set(hhRef, {
+      id: householdId,
+      parentEmails: admin.firestore.FieldValue.arrayUnion(playerEmail.toLowerCase().trim()),
+      playerNames: admin.firestore.FieldValue.arrayUnion(playerName),
+      clubId,
+      teamId,
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    }, {merge: true});
+  }
+
+  const lookupPayload = buildLookupPayload(params, householdId);
 
   if (lookupRef) transaction.set(lookupRef, lookupPayload, {merge: true});
   if (phoneLookupRef) {
@@ -1014,6 +1019,22 @@ async function secureAddPlayerTxn(transaction, params) {
     transaction.set(phoneLookupRef, phonePayload, {merge: true});
   }
   return {kind: 'ok'};
+}
+
+function buildLookupPayload(params, householdId) {
+  const { teamId, playerName, clubId, playerEmail, parentPhone, parentName, dob, jersey } = params;
+  return {
+    teamId,
+    playerName,
+    clubId,
+    ...(playerEmail ? {playerEmail, parentEmails: [playerEmail.toLowerCase().trim()]} : {}),
+    ...(householdId ? {householdId} : {}),
+    ...(parentPhone ? {parentPhone} : {}),
+    ...(parentName ? {parentName} : {}),
+    ...(dob ? {dob} : {}),
+    ...(jersey ? {jersey} : {}),
+    updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+  };
 }
 
 /**

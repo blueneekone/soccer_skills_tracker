@@ -8,9 +8,11 @@
 
 	interface Props {
 		teamId: string;
+		selectedPlayerId?: string;
+		onSelectPlayer?: (id: string) => void;
 	}
 
-	let { teamId }: Props = $props();
+	let { teamId, selectedPlayerId: propPlayerId = 'ALL', onSelectPlayer }: Props = $props();
 
 	interface SquadMemberStat {
 		id: string;
@@ -34,6 +36,17 @@
 	let selectedPlayerId = $state<string>('ALL'); // 'ALL' = team average
 	let loading = $state(true);
 	let dailyVelocity = $state<DailyVelocity[]>([]);
+
+	$effect(() => {
+		if (propPlayerId !== undefined) {
+			selectedPlayerId = propPlayerId;
+		}
+	});
+
+	function handleSelect(id: string) {
+		selectedPlayerId = id;
+		onSelectPlayer?.(id);
+	}
 
 	const AXIS_KEYS = ['PAC', 'TEC', 'IQ', 'PHY', 'MEN', 'DEF'];
 	const AXIS_LABELS = ['Pace', 'Technical', 'Game IQ', 'Physical', 'Mental', 'Defending'];
@@ -239,7 +252,8 @@
 		<div class="tw-flex tw-items-center tw-gap-2">
 			<span class="tw-font-mono tw-text-[11px] tw-text-slate-400 tw-uppercase">Drill Down:</span>
 			<select
-				bind:value={selectedPlayerId}
+				value={selectedPlayerId}
+				onchange={(e) => handleSelect((e.target as HTMLSelectElement).value)}
 				class="tw-bg-[#020617] tw-border tw-border-[#334155] tw-text-white tw-font-mono tw-text-xs tw-rounded-lg tw-px-3 tw-py-2 focus:tw-border-[#14b8a6] focus:tw-outline-none tw-cursor-pointer hover:tw-border-slate-500 tw-transition-colors"
 			>
 				<option value="ALL">🌐 ENTIRE SQUAD (AVERAGE)</option>

@@ -84,7 +84,11 @@
 
 			{#if engine.effectiveTeamId}
 				<div class="bento-span-12 tw-mt-4">
-					<CoachTeamStatsHub teamId={engine.effectiveTeamId} />
+					<CoachTeamStatsHub
+						teamId={engine.effectiveTeamId}
+						selectedPlayerId={engine.selectedPlayerId}
+						onSelectPlayer={(id) => engine.selectPlayer(id)}
+					/>
 				</div>
 			{/if}
 
@@ -92,7 +96,11 @@
 				<!-- Primary Area (8 cols functionally via col-span-2): Roster Matrix -->
 				<div class="tw-col-span-1 lg:tw-col-span-2 tw-min-w-0 tw-flex tw-flex-col tw-gap-4">
 					{#if engine.effectiveTeamId}
-						<CoachSquadTileMatrix teamId={engine.effectiveTeamId} />
+						<CoachSquadTileMatrix
+							teamId={engine.effectiveTeamId}
+							selectedPlayerId={engine.selectedPlayerId}
+							onSelectPlayer={(id) => engine.selectPlayer(id)}
+						/>
 					{:else}
 						<div class="st-bento roster-panel vanguard-surface tw-rounded-none tw-border tw-border-slate-700 tw-bg-slate-900/80 tw-p-4 tw-min-w-0" style="background: #0f172a;">
 							<h3 class="tw-text-xs tw-text-[#14b8a6] tw-mb-2 tw-uppercase tw-tracking-widest tw-min-w-0" style="font-family: 'Geist Sans', sans-serif;">Active Roster & Operatives</h3>

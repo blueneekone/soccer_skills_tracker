@@ -24,7 +24,7 @@ export type AccessGate =
 
 export function deriveRoleFlags(role: string): RoleFlags {
 	return {
-		isCoach: role === 'coach',
+		isCoach: role === 'coach' || role === 'assistant_coach' || role === 'head_coach',
 		isAdmin: role === 'global_admin' || role === 'super_admin',
 		isDirector: role === 'director',
 		isPlayer: role === 'player',

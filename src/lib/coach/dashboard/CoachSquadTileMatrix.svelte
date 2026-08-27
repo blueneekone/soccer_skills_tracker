@@ -1,12 +1,17 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { db } from '$lib/firebase.js';
-	import { collection, query, where, onSnapshot, doc, getDoc, type Unsubscribe } from 'firebase/firestore';
+	import { db, functions } from '$lib/firebase.js';
+	import { collection, query, where, onSnapshot, doc, getDoc, addDoc, serverTimestamp, type Unsubscribe } from 'firebase/firestore';
+	import { httpsCallable } from 'firebase/functions';
 	import { isFirestoreReady } from '$lib/utils/firestoreGuard.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
+	import { enterprisePlayerDrawer } from '$lib/stores/enterprisePlayerDrawer.svelte.js';
+	import Swal from 'sweetalert2';
 
 	interface Props {
 		teamId: string;
+		selectedPlayerId?: string;
+		onSelectPlayer?: (id: string, name: string) => void;
 	}
 
 	interface SquadMember {
@@ -19,11 +24,13 @@
 		initials: string;
 	}
 
-	let { teamId }: Props = $props();
+	let { teamId, selectedPlayerId = 'ALL', onSelectPlayer }: Props = $props();
 
 	let members = $state<SquadMember[]>([]);
 	let loading = $state(true);
 	let dispatchCode = $state('');
+
+	const secureUpdateJersey = httpsCallable(functions, 'secureUpdateJersey');
 
 	function getInitials(name: string): string {
 		const parts = name.trim().split(/\s+/);
@@ -31,6 +38,86 @@
 			return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
 		}
 		return name.slice(0, 2).toUpperCase() || 'PL';
+	}
+
+	async function editPlayerJersey(player: SquadMember) {
+		const result = await Swal.fire({
+			title: 'Update Jersey Number',
+			input: 'text',
+			inputValue: player.jersey || '',
+			showCancelButton: true,
+			confirmButtonText: 'Save',
+			cancelButtonText: 'Cancel',
+			background: '#05050a',
+			color: '#fafafa',
+			confirmButtonColor: '#14b8a6',
+		});
+		if (!result.isConfirmed) return;
+		try {
+			await secureUpdateJersey({
+				teamId,
+				playerName: player.name,
+				jersey: String(result.value ?? '').trim(),
+			});
+			player.jersey = String(result.value ?? '').trim();
+		} catch (err: any) {
+			console.error('Failed to update jersey:', err);
+		}
+	}
+
+	async function requestDropPlayer(player: SquadMember) {
+		const result = await Swal.fire({
+			title: `Drop ${player.name}?`,
+			input: 'textarea',
+			inputLabel: 'Reason for director approval',
+			showCancelButton: true,
+			confirmButtonText: 'Submit Drop Request',
+			background: '#05050a',
+			color: '#fafafa',
+			confirmButtonColor: '#f59e0b',
+		});
+		if (!result.isConfirmed || !result.value) return;
+		try {
+			await addDoc(collection(db, 'roster_drop_requests'), {
+				teamId,
+				playerName: player.name,
+				reason: String(result.value).trim(),
+				status: 'pending',
+				requestedAt: serverTimestamp(),
+			});
+			await Swal.fire({
+				icon: 'success',
+				title: 'Drop request submitted to Director.',
+				background: '#05050a',
+				color: '#fafafa',
+			});
+		} catch (e) {
+			console.error(e);
+		}
+	}
+
+	function handleOpenEditDrawer(e: MouseEvent, player: SquadMember) {
+		e.stopPropagation();
+		enterprisePlayerDrawer.open(
+			{
+				id: `${teamId}_${player.name}`,
+				displayName: player.name,
+				teamId,
+				teamLabel: 'Active Squad',
+				statsDocId: player.id,
+				playerEmail: player.parentEmail || null,
+				jersey: player.jersey || null,
+				ageGroup: null,
+				position: null,
+				status: 'active',
+				lastActiveLabel: '—',
+				source: 'coach',
+			},
+			{
+				editProfile: () => void editPlayerJersey(player),
+				removeFromRoster: () => void requestDropPlayer(player),
+			}
+		);
 	}
 
 	$effect(() => {
@@ -144,7 +231,18 @@
 		<!-- Compact Squad Grid -->
 		<div class="tw-grid tw-grid-cols-1 sm:tw-grid-cols-2 lg:tw-grid-cols-3 xl:tw-grid-cols-4 tw-gap-2.5">
 			{#each members as player (player.id)}
-				<div class="squad-tile tw-group tw-relative tw-p-3 tw-bg-[#020617] tw-border tw-border-[#334155] hover:tw-border-[#14b8a6]/60 tw-rounded-lg tw-flex tw-items-center tw-gap-3 tw-transition-all hover:tw-bg-[#0b1329]">
+				{@const isSelected = selectedPlayerId === player.id || selectedPlayerId === player.name.toLowerCase()}
+				<!-- svelte-ignore a11y_click_events_have_key_events -->
+				<!-- svelte-ignore a11y_no_static_element_interactions -->
+				<div
+					class="squad-tile tw-group tw-relative tw-p-3 tw-bg-[#020617] tw-border tw-rounded-lg tw-flex tw-items-center tw-gap-3 tw-transition-all tw-cursor-pointer hover:tw-bg-[#0b1329]"
+					class:tw-border-[#daff0a]={isSelected}
+					class:tw-shadow-[0_0_15px_rgba(218,255,10,0.25)]={isSelected}
+					class:tw-border-[#334155]={!isSelected}
+					onclick={() => onSelectPlayer?.(player.id, player.name)}
+					role="button"
+					tabindex="0"
+				>
 					<!-- Jersey / Avatar Badge -->
 					<div class="tw-relative tw-shrink-0">
 						{#if player.jersey}
@@ -182,6 +280,16 @@
 							{/if}
 						</div>
 					</div>
+
+					<!-- Edit Drawer Button -->
+					<button
+						type="button"
+						class="tw-p-1.5 tw-rounded tw-bg-[#0f172a] tw-border tw-border-slate-700 tw-text-slate-400 hover:tw-text-[#daff0a] hover:tw-border-[#daff0a] tw-transition-colors tw-opacity-80 group-hover:tw-opacity-100"
+						title="Edit athlete profile drawer"
+						onclick={(e) => handleOpenEditDrawer(e, player)}
+					>
+						✎
+					</button>
 
 					<!-- Status Dot -->
 					<div

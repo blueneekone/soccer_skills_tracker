@@ -155,6 +155,10 @@ export function createTacticalWarRoom(host: TacticalGridHost) {
 	let routeContextMenuPos = $state<{ x: number; y: number } | null>(null);
 	let routeContextMenuTargetId = $state<string | null>(null);
 
+	let tokenContextMenuOpen = $state(false);
+	let tokenContextMenuPos = $state<{ x: number; y: number } | null>(null);
+	let tokenContextMenuPlayer = $state<TacticalToken | null>(null);
+
 	let anchorDrag = $state<AnchorDrag | null>(null);
 	let routeBodyDrag = $state<RouteBodyDrag | null>(null);
 	let isDrawerOpen = $state(false);
@@ -291,6 +295,7 @@ export function createTacticalWarRoom(host: TacticalGridHost) {
 
 	function handleSvgClick(ev: MouseEvent | TouchEvent) {
 		if (contextMenuOpen) contextMenuOpen = false;
+		if (tokenContextMenuOpen) tokenContextMenuOpen = false;
 		radial.cancelRadialLongPress();
 		if (radial.radialBlocking()) {
 			radial.closeRadialHub();
@@ -457,13 +462,106 @@ export function createTacticalWarRoom(host: TacticalGridHost) {
 		radial.openRadialHub(pointerEv, null, true);
 	}
 
-	/** Token right-click: suppress native menu and open deploy radial (same rules as pitch context menu). */
+	/** Token right-click: suppress native menu and open tactical context HUD. */
 	function onTokenContextMenu(ev: MouseEvent, player: TacticalToken) {
 		ev.preventDefault();
 		ev.stopPropagation();
-		if (host.warRoomTool.get() !== 'DRAG' || anchorDrag) return;
+		if (anchorDrag) return;
 		focusedPlayerId = player.id;
-		radial.openRadialHub(ev, null, true);
+		tokenContextMenuPos = { x: ev.clientX, y: ev.clientY };
+		tokenContextMenuPlayer = player;
+		tokenContextMenuOpen = true;
+	}
+
+	function swapTokenPlayer(newPlayer: TacticalToken) {
+		if (!tokenContextMenuPlayer) return;
+		const targetId = tokenContextMenuPlayer.id;
+		const fList = host.wrBucketPitch.get();
+		const fIdx = fList.findIndex((t) => t.id === targetId);
+		if (fIdx !== -1) {
+			const updated = [...fList];
+			updated[fIdx] = {
+				...updated[fIdx],
+				id: newPlayer.id,
+				name: newPlayer.name,
+				number: newPlayer.number,
+				position: newPlayer.position || updated[fIdx].position,
+			};
+			host.wrBucketPitch.set(updated);
+			tokenContextMenuPlayer = updated[fIdx];
+			return;
+		}
+		const oList = host.wrOppPitch.get();
+		const oIdx = oList.findIndex((t) => t.id === targetId);
+		if (oIdx !== -1) {
+			const updated = [...oList];
+			updated[oIdx] = {
+				...updated[oIdx],
+				id: newPlayer.id,
+				name: newPlayer.name,
+				number: newPlayer.number,
+				position: newPlayer.position || updated[oIdx].position,
+			};
+			host.wrOppPitch.set(updated);
+			tokenContextMenuPlayer = updated[oIdx];
+		}
+	}
+
+	function updateTokenPosition(position: string) {
+		if (!tokenContextMenuPlayer) return;
+		const targetId = tokenContextMenuPlayer.id;
+		const fList = host.wrBucketPitch.get();
+		const fIdx = fList.findIndex((t) => t.id === targetId);
+		if (fIdx !== -1) {
+			const updated = [...fList];
+			updated[fIdx] = { ...updated[fIdx], position };
+			host.wrBucketPitch.set(updated);
+			tokenContextMenuPlayer = updated[fIdx];
+			return;
+		}
+		const oList = host.wrOppPitch.get();
+		const oIdx = oList.findIndex((t) => t.id === targetId);
+		if (oIdx !== -1) {
+			const updated = [...oList];
+			updated[oIdx] = { ...updated[oIdx], position };
+			host.wrOppPitch.set(updated);
+			tokenContextMenuPlayer = updated[oIdx];
+		}
+	}
+
+	function toggleTokenSide() {
+		if (!tokenContextMenuPlayer) return;
+		const targetId = tokenContextMenuPlayer.id;
+		const f = host.wrBucketPitch.get().find((t) => t.id === targetId);
+		if (f) {
+			host.wrBucketPitch.set(host.wrBucketPitch.get().filter((t) => t.id !== targetId));
+			const opp: TacticalToken = { ...f, side: 'opponent', color: '#fbbf24' };
+			host.wrOppPitch.set([...host.wrOppPitch.get(), opp]);
+			tokenContextMenuPlayer = opp;
+			return;
+		}
+		const o = host.wrOppPitch.get().find((t) => t.id === targetId);
+		if (o) {
+			host.wrOppPitch.set(host.wrOppPitch.get().filter((t) => t.id !== targetId));
+			const friendly: TacticalToken = { ...o, side: 'friendly', color: '#14b8a6' };
+			host.wrBucketPitch.set([...host.wrBucketPitch.get(), friendly]);
+			tokenContextMenuPlayer = friendly;
+		}
+	}
+
+	function clearPlayerRoutes() {
+		if (!tokenContextMenuPlayer) return;
+		const targetId = tokenContextMenuPlayer.id;
+		const routes = host.drawnRoutes.get() as any[];
+		if (Array.isArray(routes)) {
+			host.drawnRoutes.set(routes.filter((r) => r.playerId !== targetId && r.originId !== targetId));
+		}
+	}
+
+	function benchPlayerToken() {
+		if (!tokenContextMenuPlayer) return;
+		deletePlayer(tokenContextMenuPlayer.id);
+		tokenContextMenuOpen = false;
 	}
 
 	function onRouteContextMenu(ev: MouseEvent, routeId: string) {
@@ -670,6 +768,15 @@ export function createTacticalWarRoom(host: TacticalGridHost) {
 		set routeContextMenuOpen(v) { routeContextMenuOpen = v; },
 		get routeContextMenuPos() { return routeContextMenuPos; },
 		get routeContextMenuTargetId() { return routeContextMenuTargetId; },
+		get tokenContextMenuOpen() { return tokenContextMenuOpen; },
+		set tokenContextMenuOpen(v: boolean) { tokenContextMenuOpen = v; },
+		get tokenContextMenuPos() { return tokenContextMenuPos; },
+		get tokenContextMenuPlayer() { return tokenContextMenuPlayer; },
+		swapTokenPlayer,
+		updateTokenPosition,
+		toggleTokenSide,
+		clearPlayerRoutes,
+		benchPlayerToken,
 		get routesLive() { return routesLive; },
 		get canPlay() { return canPlay; },
 		get allRouteMarkerColors() { return allRouteMarkerColors; },

@@ -35,7 +35,7 @@
 		],
 	};
 
-	let { teamId = '', teams = [], showLiveTelemetry = true } = $props();
+	let { teamId = '', teams = [], showLiveTelemetry = true, selectedPlayerId = 'ALL', onSelectPlayer = undefined } = $props();
 
 	/** Isolates one bench-side logging session (new UUID when `teamId` changes). */
 	let activeMatchId = $state('');
@@ -683,6 +683,7 @@
 	function openDrawer(p) {
 		const statsId = resolveStatsId(p, playerStats);
 		const em = nameToEmail[p] || null;
+		onSelectPlayer?.(statsId || p, p);
 		enterprisePlayerDrawer.open(
 			{
 				id: `${teamId}_${p}`,

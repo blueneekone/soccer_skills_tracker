@@ -96,4 +96,10 @@ export class DashboardEngine {
 	get weatherCoords() {
 		return `LAT ${Math.abs(this.fieldLat).toFixed(3)}° ${this.fieldLat >= 0 ? 'N' : 'S'}  ·  LON ${Math.abs(this.fieldLng).toFixed(3)}° ${this.fieldLng >= 0 ? 'E' : 'W'}`;
 	}
+
+	selectedPlayerId = $state<string>('ALL');
+
+	selectPlayer(id: string) {
+		this.selectedPlayerId = id || 'ALL';
+	}
 }
