@@ -95,14 +95,30 @@ function buildDirectorCatalog(): NavPinItem[] {
 }
 
 function buildCoachCatalog(): NavPinItem[] {
+	const tacticsLink =
+		coachLinks.find((l) => l.href === '/coach/tactics-and-training') ||
+		coachLinks.find((l) => l.href === '/coach/forge') ||
+		{ label: 'Tactics & Training', href: '/coach/tactics-and-training', icon: 'data.target' };
+
 	const tier1: ShellLink[] = [
 		coachLinks.find((l) => l.href === '/coach/dashboard')!,
-		coachLinks.find((l) => l.href === '/coach/forge')!,
+		tacticsLink,
 		messagesNavItem,
 	];
-	const tier2 = coachLinks.filter(
-		(l) => l.href !== '/coach/dashboard' && l.href !== '/coach/forge',
-	);
+
+	const subroutes: ShellLink[] = [
+		{ label: 'The Forge', href: '/coach/forge', icon: 'game.dumbbell' },
+		{ label: 'War Room', href: '/coach/tactical', icon: 'action.edit' },
+		{ label: 'Match Day', href: '/coach/matchday', icon: 'data.activity' },
+	];
+
+	const tier2 = [
+		...coachLinks.filter(
+			(l) => l.href !== '/coach/dashboard' && l.href !== '/coach/tactics-and-training' && l.href !== '/coach/forge',
+		),
+		...subroutes,
+	];
+
 	return [
 		...mapLinks(tier1, 'Tier 1 / exec'),
 		...mapLinks(tier2, 'Operations (Tier 2)'),
