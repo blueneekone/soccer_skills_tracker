@@ -45,3 +45,4 @@
 - [x] **COACH OS DASHBOARD FIX**: Resolve coach team visibility and Mission Control tab configurations.
 - [x] **COACH OS OVERHAUL**: Simplified Match Day layout and normalized design system colors (Void Black, Navy Slate, Action Gold, Data Cyan).
 - [x] **PLAYER OS SWARM VISUAL AUDIT & SELF-HEAL**: Fixed unit tests (`rosterPanelEngine.test.ts`, `playerDashboard.layout.test.ts`, `playerHudSprint234.test.ts`) and Playwright E2E suites (`persona-interactive-e2e.spec.ts`).
+- [x] **PUBLIC AI SUPPORT CORE**: Integrated Gemini-backed Support Chat Widget with automated high-priority ticket escalation to Admin OS Active Incidents.
