@@ -79,7 +79,7 @@ async function executeBatchPagination(sanitizedRows, db, teamId, clubId, authUid
   const now = new Date().toISOString();
 
   for (let i = 0; i < sanitizedRows.length; i++) {
-    const { email, firstName, lastName, jerseyNumber, ...rest } = sanitizedRows[i];
+    const { email, firstName, lastName, jerseyNumber, phone, ...rest } = sanitizedRows[i];
     const ts = Date.now();
     const rnd = Math.floor(Math.random() * 100000);
     const householdId = `hh_${teamId}_${ts}_${i}_${rnd}`;
@@ -92,7 +92,7 @@ async function executeBatchPagination(sanitizedRows, db, teamId, clubId, authUid
 
     const gRef = db.collection('roster_staging').doc(`vamp_g_${ts}_${rnd}`);
     batch.set(gRef, {
-      email, type: 'guardian', role: 'guardian', isCleared: false,
+      email, phone: phone || null, type: 'guardian', role: 'guardian', isCleared: false,
       householdId, clubId, teamId, createdBy: authUid, ingestedAt: now
     });
 
