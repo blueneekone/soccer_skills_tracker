@@ -1,0 +1,12 @@
+[
+  { "date": "MON", "icon": "☀️", "tempMax": 82, "tempMin": 65, "precip": 10 },
+  { "date": "TUE", "icon": "⛅", "tempMax": 78, "tempMin": 63, "precip": 20 },
+  { "date": "WED", "icon": "☁️", "tempMax": 75, "tempMin": 60, "precip": 40 },
+  { "date": "THU", "icon": "🌧️", "tempMax": 72, "tempMin": 58, "precip": 80 },
+  { "date": "FRI", "icon": "⛈️", "tempMax": 70, "tempMin": 55, "precip": 90 },
+  { "date": "SAT", "icon": "☀️", "tempMax": 77, "tempMin": 59, "precip": 10 },
+  { "date": "SUN", "icon": "☀️", "tempMax": 80, "tempMin": 62, "precip": 5 },
+  { "date": "MON", "icon": "⛅", "tempMax": 81, "tempMin": 63, "precip": 15 },
+  { "date": "TUE", "icon": "☁️", "tempMax": 79, "tempMin": 61, "precip": 30 },
+  { "date": "WED", "icon": "🌧️", "tempMax": 74, "tempMin": 59, "precip": 70 }
+]
