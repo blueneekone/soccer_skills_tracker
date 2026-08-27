@@ -7,6 +7,35 @@ export interface MatchEvent {
 	type: string;
 	label: string;
 	time: string;
+	minute?: number;
+	playerId?: string;
+	playerName?: string;
+	jersey?: string;
+	note?: string;
+}
+
+export interface PlayerBoxScore {
+	id: string;
+	name: string;
+	jersey: string;
+	goals: number;
+	assists: number;
+	shots: number;
+	tackles: number;
+	saves: number;
+	fouls: number;
+	yellowCards: number;
+	redCards: number;
+	mistakes: number;
+}
+
+export interface MistakeReminder {
+	id: string;
+	time: string;
+	minute: number;
+	playerId: string;
+	playerName: string;
+	note: string;
 }
 
 export interface MatchDayPlayer {
@@ -43,6 +72,13 @@ export class MatchDayEngine {
 	loadingRoster = $state<boolean>(false);
 	showHalftimeOverlay = $state(false);
 	telemetryLogs = $state<string[]>(['[TELEMETRY] Match Day Console initialized']);
+
+	homeScore = $state(0);
+	awayScore = $state(0);
+	playerStats = $state<Record<string, PlayerBoxScore>>({});
+	mistakes = $state<MistakeReminder[]>([]);
+	isSavingMatch = $state(false);
+	lastSavedAt = $state<string | null>(null);
 
 	opponentName = $state('');
 	finalScore = $state('');
@@ -126,6 +162,25 @@ export class MatchDayEngine {
 			const loaded = Array.from(playerMap.values());
 			loaded.sort((a, b) => a.name.localeCompare(b.name));
 			this.roster = loaded;
+
+			for (const p of loaded) {
+				if (!this.playerStats[p.id]) {
+					this.playerStats[p.id] = {
+						id: p.id,
+						name: p.name,
+						jersey: p.jersey || '',
+						goals: 0,
+						assists: 0,
+						shots: 0,
+						tackles: 0,
+						saves: 0,
+						fouls: 0,
+						yellowCards: 0,
+						redCards: 0,
+						mistakes: 0,
+					};
+				}
+			}
 
 			if (loaded.length > 0) {
 				const starterCount = Math.min(11, loaded.length);
@@ -225,6 +280,7 @@ export class MatchDayEngine {
 		this.matchStatus = 'ended';
 		this.logEvent('FINAL_WHISTLE', 'FINAL WHISTLE - MATCH CONCLUDED');
 		this.telemetryLogs = ['[TELEMETRY] Final whistle blown - match concluded', ...this.telemetryLogs];
+		void this.saveMatchRecord();
 	};
 
 	resetClock = (): void => {
@@ -256,18 +312,53 @@ export class MatchDayEngine {
 		}
 	};
 
-	logEvent = (type: string, label: string, playerId?: string): void => {
-		const targetPlayerId = playerId || this.selectedPlayerId || 'unknown_player';
+	logEvent = (type: string, label?: string, playerId?: string, note?: string): void => {
+		const targetPlayerId = playerId || this.selectedPlayerId || '';
+		const player = this.roster.find((p) => p.id === targetPlayerId);
+		const playerName = player ? player.name : (targetPlayerId ? targetPlayerId : '');
+		const jersey = player?.jersey ? `#${player.jersey}` : '';
+
+		const finalLabel = label || buildEventLabel(type, playerName, jersey, note);
+		const minute = Math.floor(this.elapsedSeconds / 60);
 
 		const newEvent: MatchEvent = {
 			id: String(Date.now()),
 			type,
-			label,
-			time: new Date().toLocaleTimeString()
+			label: finalLabel,
+			time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
+			minute,
+			playerId: targetPlayerId || undefined,
+			playerName: playerName || undefined,
+			jersey: player?.jersey || undefined,
+			note,
 		};
 		this.events = [newEvent, ...this.events];
 
-		// Async firestore write
+		if (type === 'GOAL') {
+			this.homeScore += 1;
+			this.finalScore = `${this.homeScore} - ${this.awayScore}`;
+		}
+
+		if (targetPlayerId) {
+			if (!this.playerStats[targetPlayerId]) {
+				this.playerStats[targetPlayerId] = {
+					id: targetPlayerId,
+					name: playerName,
+					jersey: player?.jersey || '',
+					goals: 0,
+					assists: 0,
+					shots: 0,
+					tackles: 0,
+					saves: 0,
+					fouls: 0,
+					yellowCards: 0,
+					redCards: 0,
+					mistakes: 0,
+				};
+			}
+			applyStatCounter(this.playerStats[targetPlayerId], type);
+		}
+
 		(async () => {
 			try {
 				const { getActiveDb } = await import('$lib/firebase.js');
@@ -275,10 +366,13 @@ export class MatchDayEngine {
 				const db = getActiveDb();
 				if (db) {
 					await addDoc(collection(db, `matches/${this.matchId}/events`), {
-						playerId: targetPlayerId,
+						playerId: targetPlayerId || 'unassigned',
+						playerName: playerName || 'Unassigned',
 						type,
-						minute: Math.floor(this.elapsedSeconds / 60),
-						timestamp: serverTimestamp()
+						label: finalLabel,
+						minute,
+						note: note || null,
+						timestamp: serverTimestamp(),
 					});
 				}
 			} catch (err) {
@@ -287,12 +381,89 @@ export class MatchDayEngine {
 		})();
 	};
 
+	logMistake = (note?: string, playerId?: string): void => {
+		const targetPlayerId = playerId || this.selectedPlayerId || '';
+		const player = this.roster.find((p) => p.id === targetPlayerId);
+		const playerName = player ? player.name : (targetPlayerId || 'Squad Member');
+		const cleanNote = (note || 'Turnover / technical error').trim();
 
-	logMistake = (): void => {
-		this.logEvent('MISTAKE', 'PLAYER MISTAKE LOGGED');
-		this.targetPrompts = ['RESET: Immediate cognitive refocus on next play', 'PARK IT: Save tactical adjustment for later', ...this.targetPrompts];
-		this.telemetryLogs = ['[TELEMETRY] Mistake logged, cues injected', ...this.telemetryLogs];
+		this.logEvent('MISTAKE', `⚡ MISTAKE: ${playerName} — "${cleanNote}"`, targetPlayerId, cleanNote);
+
+		const mistakeItem: MistakeReminder = {
+			id: `mistake_${Date.now()}`,
+			time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+			minute: Math.floor(this.elapsedSeconds / 60),
+			playerId: targetPlayerId,
+			playerName,
+			note: cleanNote,
+		};
+		this.mistakes = [mistakeItem, ...this.mistakes];
+
+		this.targetPrompts = [
+			`REMINDER (${playerName}): ${cleanNote}`,
+			'RESET: Immediate cognitive refocus on next play',
+			...this.targetPrompts.slice(0, 3),
+		];
+		this.telemetryLogs = [`[MISTAKE] ${playerName}: "${cleanNote}" logged for review`, ...this.telemetryLogs];
 	};
+
+	async saveMatchRecord(): Promise<{ ok: boolean; id: string; error?: string }> {
+		const effectiveTeamId =
+			this.teamScope.selectedTeamId ||
+			authStore.teamId ||
+			authStore.userProfile?.teamId ||
+			authStore.user?.teamId ||
+			'';
+		if (!effectiveTeamId) {
+			return { ok: false, id: this.matchId, error: 'No active team selected' };
+		}
+
+		this.isSavingMatch = true;
+		try {
+			const { getActiveDb } = await import('$lib/firebase.js');
+			const { doc, setDoc, serverTimestamp } = await import('firebase/firestore');
+			const db = getActiveDb();
+			if (!db) throw new Error('Firestore not initialized');
+
+			const homeScore = Math.max(0, this.homeScore);
+			const awayScore = Math.max(0, this.awayScore);
+			const result = homeScore > awayScore ? 'WIN' : homeScore < awayScore ? 'LOSS' : 'DRAW';
+
+			const payload = {
+				id: this.matchId,
+				teamId: effectiveTeamId,
+				teamName: this.teamScope.teamLabel || 'Your Squad',
+				opponentName: this.opponentName.trim() || 'Opponent',
+				homeScore,
+				awayScore,
+				finalScore: `${homeScore} - ${awayScore}`,
+				result,
+				matchDate: this.matchStartTime ? new Date(this.matchStartTime).toISOString() : new Date().toISOString(),
+				elapsedSeconds: this.elapsedSeconds,
+				durationMinutes: Math.max(1, Math.round(this.elapsedSeconds / 60)),
+				status: 'completed',
+				events: this.events,
+				playerStats: this.playerStats,
+				mistakes: this.mistakes,
+				starters: this.starters.map((p) => ({ id: p.id, name: p.name, jersey: p.jersey || '', position: p.position || '' })),
+				bench: this.bench.map((p) => ({ id: p.id, name: p.name, jersey: p.jersey || '', position: p.position || '' })),
+				updatedAt: serverTimestamp(),
+				createdAt: serverTimestamp(),
+			};
+
+			await setDoc(doc(db, 'teams', effectiveTeamId, 'matches', this.matchId), payload, { merge: true });
+			await setDoc(doc(db, 'teams', effectiveTeamId, 'match_sessions', this.matchId), payload, { merge: true });
+
+			this.lastSavedAt = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+			this.telemetryLogs = [`[MATCH SAVED] Match record ${this.matchId} committed to Team Ops`, ...this.telemetryLogs];
+			return { ok: true, id: this.matchId };
+		} catch (err: any) {
+			console.error('[MatchDayEngine] Failed to save match record:', err);
+			return { ok: false, id: this.matchId, error: err?.message || 'Unknown error' };
+		} finally {
+			this.isSavingMatch = false;
+		}
+	}
 
 	editEvent = (id: string, newLabel: string): void => {
 		const evt = this.events.find(e => e.id === id);
@@ -305,4 +476,34 @@ export class MatchDayEngine {
 		this.showHalftimeOverlay = !this.showHalftimeOverlay;
 		this.telemetryLogs = ['[TELEMETRY] Halftime choice synced', ...this.telemetryLogs];
 	};
+}
+
+function buildEventLabel(type: string, playerName: string, jersey: string, note?: string): string {
+	const num = jersey ? `${jersey}` : '';
+	switch (type) {
+		case 'GOAL': return `⚽ GOAL: ${playerName} ${num}`.trim();
+		case 'ASSIST': return `👟 ASSIST: ${playerName} ${num}`.trim();
+		case 'SHOT':
+		case 'SHOT_ON_TARGET': return `🎯 SHOT: ${playerName} ${num}`.trim();
+		case 'TACKLE':
+		case 'TACKLE_WON': return `🛡️ TACKLE: ${playerName} ${num}`.trim();
+		case 'SAVE': return `🧤 SAVE: ${playerName} ${num}`.trim();
+		case 'FOUL': return `⚠️ FOUL: ${playerName} ${num}`.trim();
+		case 'YELLOW_CARD': return `🟨 YELLOW CARD: ${playerName} ${num}`.trim();
+		case 'RED_CARD': return `🟥 RED CARD: ${playerName} ${num}`.trim();
+		case 'MISTAKE': return `⚡ MISTAKE: ${playerName}${note ? ` — "${note}"` : ''}`.trim();
+		default: return `${type} LOGGED${playerName ? ` (${playerName})` : ''}`;
+	}
+}
+
+function applyStatCounter(stat: PlayerBoxScore, type: string): void {
+	if (type === 'GOAL') stat.goals += 1;
+	else if (type === 'ASSIST') stat.assists += 1;
+	else if (type === 'SHOT' || type === 'SHOT_ON_TARGET') stat.shots += 1;
+	else if (type === 'TACKLE' || type === 'TACKLE_WON') stat.tackles += 1;
+	else if (type === 'SAVE') stat.saves += 1;
+	else if (type === 'FOUL') stat.fouls += 1;
+	else if (type === 'YELLOW_CARD') stat.yellowCards += 1;
+	else if (type === 'RED_CARD') stat.redCards += 1;
+	else if (type === 'MISTAKE') stat.mistakes += 1;
 }

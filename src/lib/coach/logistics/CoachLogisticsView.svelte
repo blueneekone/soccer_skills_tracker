@@ -4,6 +4,7 @@
 	import CoachTeamRosterPanel from '$lib/coach/logistics/CoachTeamRosterPanel.svelte';
 	import CoachTeamAttendancePanel from '$lib/coach/logistics/CoachTeamAttendancePanel.svelte';
 	import CoachTeamCommsPanel from '$lib/coach/logistics/CoachTeamCommsPanel.svelte';
+	import CoachTeamMatchesPanel from '$lib/coach/logistics/CoachTeamMatchesPanel.svelte';
 	import { page } from '$app/state';
 	import { teamsStore, resolveTeamsLoadScope } from '$lib/stores/teams.svelte.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
@@ -46,7 +47,7 @@
 	const teamClubId = $derived(teamScope.teamClubId);
 	const teamLabel = $derived(teamScope.teamLabel);
 
-	/** @type {'comms' | 'schedule' | 'roster' | 'attendance'} */
+	/** @type {'comms' | 'schedule' | 'roster' | 'attendance' | 'matches'} */
 	let activeTab = $state('comms');
 
 	const tabs = [
@@ -54,6 +55,7 @@
 		{ id: 'schedule', label: 'Schedule' },
 		{ id: 'roster', label: 'Roster' },
 		{ id: 'attendance', label: 'Attendance' },
+		{ id: 'matches', label: 'Match Reviews' },
 	] as const;
 
 	const tabFromUrl = $derived(page.url.searchParams.get('tab'));
@@ -121,6 +123,8 @@
 				<CoachTeamRosterPanel teamId={teamScope.selectedTeamId} />
 			{:else if activeTab === 'attendance'}
 				<CoachTeamAttendancePanel teamId={teamScope.selectedTeamId} />
+			{:else if activeTab === 'matches'}
+				<CoachTeamMatchesPanel teamId={teamScope.selectedTeamId} />
 			{/if}
 		</div>
 	{/if}
