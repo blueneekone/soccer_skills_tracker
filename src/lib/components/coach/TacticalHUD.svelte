@@ -1,4 +1,6 @@
 <script>
+	import { goto } from '$app/navigation';
+	import { untrack } from 'svelte';
 	import TacticalDock from './tactical/hud/TacticalDock.svelte';
 	import TacticsHubDrawer from './tactical/hud/TacticsHubDrawer.svelte';
 	import ContextRadial from './tactical/hud/ContextRadial.svelte';
@@ -36,14 +38,23 @@
 		void ondeploy?.(cartridge);
 
 		const start = performance.now();
-		const duration = 1800;
+		const duration = 1200;
+		const tacticId = cartridge.id;
 
 		function step() {
 			deployProgress = Math.min(1, (performance.now() - start) / duration);
 			if (deployProgress < 1) {
 				requestAnimationFrame(step);
 			} else {
-				setTimeout(() => { deployPhase = 'success'; }, 180);
+				setTimeout(() => {
+					deployPhase = 'success';
+					// Navigate to Drill Designer with the tactic pre-loaded
+					setTimeout(() => {
+						untrack(() => {
+							goto(`/coach/forge?tab=designer&tacticId=${encodeURIComponent(tacticId)}`);
+						});
+					}, 600);
+				}, 180);
 			}
 		}
 		requestAnimationFrame(step);
@@ -74,17 +85,6 @@
 			<span class="tw-h-2 tw-w-2 tw-rounded-full {isTacticsHubOpen ? 'tw-bg-teal-400 tw-shadow-[0_0_8px_#2dd4bf]' : 'tw-bg-slate-500'}"></span>
 			<span>Tactical Hub</span>
 		</button>
-
-		<!-- Link to Drill Designer in The Forge -->
-		<a
-			href="/coach/forge?tab=designer"
-			class="tw-bg-[#030712]/90 tw-backdrop-blur-md tw-border tw-border-slate-700/80 hover:tw-border-amber-400/60 tw-text-slate-200 hover:tw-text-amber-300 tw-px-3.5 tw-py-2 tw-font-mono tw-text-xs tw-font-semibold tw-tracking-wide active:tw-scale-[0.98] tw-transition-all tw-rounded-xl tw-no-underline tw-flex tw-items-center tw-gap-2 tw-shadow-xl"
-			title="Open Drill Designer in The Forge"
-		>
-			<span class="tw-text-amber-400">📐</span>
-			<span>Drill Designer</span>
-			<span class="tw-text-slate-500 tw-text-[11px]">→</span>
-		</a>
 	</div>
 
 	<TacticsHubDrawer

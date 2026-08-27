@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { browser } from '$app/environment';
 	import { goto } from '$app/navigation';
+	import { page } from '$app/state';
 	import { untrack } from 'svelte';
 	import { db } from '$lib/firebase.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
@@ -87,7 +88,10 @@
 
 				tactics = list;
 				if (list.length > 0 && !selectedTacticId) {
-					selectedTacticId = list[0].id;
+					// Prefer tacticId from URL param (set by Deploy to Designer)
+					const urlTacticId = browser ? page.url.searchParams.get('tacticId') : null;
+					const match = urlTacticId ? list.find((t) => t.id === urlTacticId) : null;
+					selectedTacticId = match ? match.id : list[0].id;
 				}
 				loadingTactics = false;
 			} catch (err) {
@@ -160,6 +164,9 @@
 			warRoomTacticName: activeTactic?.name || null,
 			tacticEntitiesCount: activeTactic?.entities?.length || 0,
 			tacticRoutesCount: activeTactic?.routes?.length || 0,
+			// Persist full tactic canvas so War Room can load the drill back onto the pitch
+			entities: activeTactic?.entities || [],
+			routes: activeTactic?.routes || [],
 			scope: 'team',
 			createdBy: authStore.user.uid,
 			createdAt: serverTimestamp(),

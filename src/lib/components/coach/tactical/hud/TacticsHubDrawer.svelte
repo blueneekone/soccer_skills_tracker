@@ -1,10 +1,87 @@
 <script>
+	import { browser } from '$app/environment';
+	import { db } from '$lib/firebase.js';
+	import { authStore } from '$lib/stores/auth.svelte.js';
+	import { collection, getDocs, query, orderBy } from 'firebase/firestore';
+
 	/** @type {{ model: import('$lib/components/coach/TacticalEngine.svelte.ts').TacticalWarRoomModel, isOpen: boolean, onClose: () => void }} */
 	let { model: engine, isOpen = false, onClose } = $props();
 
 	/** @type {'squad' | 'drills' | 'tools' | 'help'} */
 	let activeTab = $state('squad');
 
+	// ── Playbook Drills (from teams/{teamId}/drills where inPlaybook=true) ─────
+	/** @type {Array<{id: string, name: string, focusArea?: string, durationMinutes?: number, entities: any[], routes: any[]}>} */
+	let playbookDrills = $state([]);
+	let loadingDrills = $state(false);
+	let loadedForTeam = $state('');
+
+	const teamId = $derived(
+		/** @type {any} */ (engine?.host)?.wrBucketXi !== undefined
+			? (/** @type {any} */ (engine)._teamId ?? '')
+			: ''
+	);
+
+	$effect(() => {
+		if (!browser || !isOpen || activeTab !== 'drills') return;
+		if (!db || !authStore.isAuthenticated) return;
+		const tid = /** @type {any} */ (engine)?._teamId ||
+				/** @type {any} */ (engine)?.teamId ||
+				/** @type {any} */ (engine)?.host?._teamId || '';
+		if (!tid || tid === loadedForTeam) return;
+		loadedForTeam = tid;
+		loadingDrills = true;
+		(async () => {
+			try {
+				const snap = await getDocs(
+					query(collection(db, 'teams', tid, 'drills'), orderBy('createdAt', 'desc'))
+				);
+				/** @type {Array<{id: string, name: string, focusArea?: string, durationMinutes?: number, entities: any[], routes: any[]}>} */
+				const list = [];
+				snap.forEach((docSnap) => {
+					const d = docSnap.data() || {};
+					list.push({
+						id: docSnap.id,
+						name: d.name || d.title || 'Untitled Drill',
+						focusArea: d.focusArea || d.category || '',
+						durationMinutes: d.durationMinutes || 15,
+						entities: Array.isArray(d.entities) ? d.entities : [],
+						routes: Array.isArray(d.routes) ? d.routes : [],
+					});
+				});
+				playbookDrills = list;
+			} catch (e) {
+				console.error('[TacticsHubDrawer] drills load error:', e);
+			} finally {
+				loadingDrills = false;
+			}
+		})();
+	});
+
+	/**
+	 * Load a playbook drill's entities and routes onto the War Room pitch board.
+	 * @param {{entities: any[], routes: any[]}} drill
+	 */
+	function loadDrillToPitch(drill) {
+		if (!drill.entities?.length && !drill.routes?.length) return;
+		try {
+			if (drill.entities?.length) {
+				// Reset to drill's player positions
+				engine.host.wrBucketPitch.set(
+					drill.entities.filter((/** @type {any} */ e) => e.side !== 'opponent').map((/** @type {any} */ e) => ({ ...e }))
+				);
+				engine.host.wrOppPitch.set(
+					drill.entities.filter((/** @type {any} */ e) => e.side === 'opponent').map((/** @type {any} */ e) => ({ ...e }))
+				);
+			}
+			if (drill.routes?.length) {
+				engine.host.drawnRoutes.set(drill.routes.map((/** @type {any} */ r) => ({ ...r })));
+			}
+			onClose();
+		} catch (err) {
+			console.error('[TacticsHubDrawer] loadDrillToPitch error:', err);
+		}
+	}
 
 	function getPlayerInitials(name) {
 		if (!name) return 'PL';
@@ -115,23 +192,82 @@
 				</section>
 			{:else if activeTab === 'drills'}
 				<section class="tw-space-y-4">
-					<div class="tw-p-5 tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-rounded-lg tw-text-left">
-						<span class="tw-text-xs tw-font-bold tw-text-[#daff0a] tw-tracking-widest tw-uppercase">[ PHYSICAL DRILL CREATOR ]</span>
-						<p class="tw-text-xs tw-text-[#94a3b8] tw-mt-2 tw-leading-relaxed">
-							Convert this tactical whiteboard into a structured, printable physical drill sheet complete with cones, flags, time constraints, and coaching cues.
-						</p>
+					<!-- Playbook Drills Header -->
+					<div class="tw-flex tw-items-center tw-justify-between">
+						<div>
+							<p class="tw-text-[11px] tw-font-black tw-tracking-widest tw-text-[#14b8a6] tw-uppercase tw-mb-0">
+								TEAM PLAYBOOK
+							</p>
+							<p class="tw-text-[10px] tw-text-slate-500 tw-mt-0.5">
+								Drills saved in The Forge Drill Designer. Click Load to inject onto the pitch.
+							</p>
+						</div>
 						<a
 							href="/coach/forge?tab=designer"
-							class="tw-mt-3 tw-inline-flex tw-items-center tw-justify-center tw-w-full tw-gap-2 tw-bg-gradient-to-r tw-from-amber-400 tw-to-amber-500 hover:tw-from-amber-300 hover:tw-to-amber-400 tw-text-black tw-font-mono tw-font-bold tw-text-xs tw-py-2.5 tw-rounded-xl tw-shadow-[0_0_15px_rgba(251,191,36,0.3)] active:tw-scale-[0.98] tw-transition-all tw-no-underline"
+							class="tw-flex-shrink-0 tw-bg-[#0f172a] hover:tw-bg-slate-800 tw-border tw-border-slate-700 tw-text-slate-400 hover:tw-text-white tw-font-mono tw-text-[10px] tw-px-2 tw-py-1 tw-rounded-lg tw-no-underline tw-transition-all"
+							title="Design new drill in The Forge"
 						>
-							<span>📐 Open in Drill Designer</span>
-							<span>→</span>
+							+ New Drill
 						</a>
 					</div>
-					<div class="tw-border tw-border-[#334155] tw-bg-[#020617] tw-p-3 tw-rounded">
-						<p class="tw-text-[11px] tw-font-bold tw-text-[#14b8a6] tw-uppercase tw-mb-1">Available Tactics</p>
-						<p class="tw-text-xs tw-text-slate-400">Save your play in the dock below to persist this pattern to your team playbook.</p>
-					</div>
+
+					{#if loadingDrills}
+						<div class="tw-p-4 tw-text-center tw-text-slate-500 tw-font-mono tw-text-xs">
+							Loading playbook…
+						</div>
+					{:else if playbookDrills.length === 0}
+						<div class="tw-p-5 tw-bg-[#0f172a] tw-border tw-border-dashed tw-border-[#334155] tw-rounded-xl tw-text-center">
+							<p class="tw-text-[11px] tw-font-bold tw-text-[#daff0a] tw-uppercase tw-tracking-widest tw-mb-1">
+								No Playbook Drills Yet
+							</p>
+							<p class="tw-text-xs tw-text-slate-400 tw-leading-relaxed">
+								Use <span class="tw-text-[#fbbf24] tw-font-bold">[ DEPLOY TO DESIGNER ]</span> in the dock below to send your War Room play to the Drill Designer, fill in the drill info, and save it to the Team Playbook.
+							</p>
+						</div>
+					{:else}
+						<div class="tw-flex tw-flex-col tw-gap-2 tw-max-h-[55vh] tw-overflow-y-auto tw-pr-1">
+							{#each playbookDrills as drill (drill.id)}
+								<div class="tw-bg-[#0f172a] tw-border tw-border-[#334155] hover:tw-border-[#14b8a6]/50 tw-rounded-xl tw-p-3 tw-flex tw-flex-col tw-gap-2.5 tw-transition-all">
+									<div class="tw-flex tw-items-start tw-justify-between tw-gap-2">
+										<div class="tw-min-w-0">
+											<p class="tw-text-xs tw-font-bold tw-text-white tw-truncate tw-mb-0.5">
+												{drill.name}
+											</p>
+											<div class="tw-flex tw-items-center tw-gap-1.5">
+												{#if drill.focusArea}
+													<span class="tw-bg-[#14b8a6]/10 tw-border tw-border-[#14b8a6]/30 tw-text-[#14b8a6] tw-font-mono tw-text-[9px] tw-px-1.5 tw-py-0.5 tw-rounded">
+														{drill.focusArea}
+													</span>
+												{/if}
+												<span class="tw-text-[9px] tw-text-slate-500 tw-font-mono">
+													{drill.durationMinutes}min
+												</span>
+											</div>
+										</div>
+									</div>
+									<div class="tw-flex tw-gap-1.5">
+										{#if drill.entities?.length || drill.routes?.length}
+											<button
+												type="button"
+												class="tw-flex-1 tw-bg-[#14b8a6]/20 hover:tw-bg-[#14b8a6]/40 tw-border tw-border-[#14b8a6]/50 tw-text-[#14b8a6] tw-font-mono tw-text-[10px] tw-font-bold tw-py-1.5 tw-rounded-lg tw-transition-all active:tw-scale-[0.97]"
+												onclick={() => loadDrillToPitch(drill)}
+												title="Load drill players and routes onto the War Room pitch"
+											>
+												▶ Load to Pitch
+											</button>
+										{/if}
+										<a
+											href="/coach/forge?tab=designer"
+											class="tw-flex-shrink-0 tw-bg-[#020617] hover:tw-bg-[#0f172a] tw-border tw-border-[#334155] hover:tw-border-[#fbbf24]/40 tw-text-slate-400 hover:tw-text-[#fbbf24] tw-font-mono tw-text-[10px] tw-px-2.5 tw-py-1.5 tw-rounded-lg tw-no-underline tw-transition-all"
+											title="Edit this drill in The Forge"
+										>
+											Edit
+										</a>
+									</div>
+								</div>
+							{/each}
+						</div>
+					{/if}
 				</section>
 			{:else if activeTab === 'tools'}
 				<section>

@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { onDestroy } from 'svelte';
+
 	interface TacticalEntity {
 		id: string;
 		x: number;
@@ -18,9 +20,14 @@
 		x2: number;
 		y2: number;
 		kind: 'cut' | 'curve' | 'pass';
+		pathKind?: 'cut' | 'curve' | 'pass';
 		color?: string;
 		passPivotX?: number;
 		passPivotY?: number;
+		pivotX?: number;
+		pivotY?: number;
+		bindPlayerId?: string | null;
+		delay?: number;
 	}
 
 	interface Props {
@@ -37,6 +44,26 @@
 		onOpenWarRoom,
 	}: Props = $props();
 
+	// ── View mode toggle ───────────────────────────────────────────────────────
+	let viewMode = $state<'static' | 'animated'>('static');
+
+	// ── Animation engine ───────────────────────────────────────────────────────
+	const ANIM_DURATION_MS = 4000;
+	let animProgress = $state(0);
+	let isPlaying = $state(false);
+	let rafId: number | null = null;
+	let animStart: number | null = null;
+	let pausedAt = 0;
+
+	function sampleBezier(x1: number, y1: number, cx: number, cy: number, x2: number, y2: number, t: number) {
+		const mt = 1 - t;
+		return { x: mt * mt * x1 + 2 * mt * t * cx + t * t * x2, y: mt * mt * y1 + 2 * mt * t * cy + t * t * y2 };
+	}
+
+	function sampleLinear(x1: number, y1: number, x2: number, y2: number, t: number) {
+		return { x: x1 + (x2 - x1) * t, y: y1 + (y2 - y1) * t };
+	}
+
 	// Default baseline squad if no entities in cartridge yet
 	const baselineEntities: TacticalEntity[] = [
 		{ id: 'b_gk', x: 120, y: 450, position: 'GK', number: '1', side: 'team' },
@@ -50,13 +77,66 @@
 		{ id: 'b_opp2', x: 850, y: 520, position: 'OP', number: '3', side: 'opponent' },
 	];
 
-	const displayEntities = $derived(
-		entities.length > 0 ? entities : baselineEntities
-	);
+	const displayEntities = $derived(entities.length > 0 ? entities : baselineEntities);
 
-	const passRoutes = $derived(routes.filter((r) => r.kind === 'pass'));
-	const runRoutes = $derived(routes.filter((r) => r.kind !== 'pass'));
+	const animatedEntities = $derived.by(() => {
+		if (viewMode === 'static' || routes.length === 0) return displayEntities;
+		const prog = animProgress;
+		return displayEntities.map((ent) => {
+			const route = routes.find((r) => r.bindPlayerId === ent.id);
+			if (!route) return ent;
+			const delayNorm = Math.max(0, (route.delay ?? 0) / ANIM_DURATION_MS);
+			const span = Math.max(0.001, 1 - delayNorm);
+			const u = prog < delayNorm ? 0 : Math.min(1, (prog - delayNorm) / span);
+			const pk = route.pathKind ?? route.kind ?? 'curve';
+			let pos: { x: number; y: number };
+			if (pk === 'cut' || pk === 'pass') {
+				const px = route.pivotX ?? route.passPivotX ?? route.cx;
+				const py = route.pivotY ?? route.passPivotY ?? route.cy;
+				pos = u < 0.5 ? sampleLinear(route.x1, route.y1, px, py, u * 2) : sampleLinear(px, py, route.x2, route.y2, (u - 0.5) * 2);
+			} else {
+				pos = sampleBezier(route.x1, route.y1, route.cx, route.cy, route.x2, route.y2, u);
+			}
+			return { ...ent, x: pos.x, y: pos.y };
+		});
+	});
+
+	function startAnimation() {
+		if (rafId !== null) cancelAnimationFrame(rafId);
+		isPlaying = true;
+		const fromProgress = pausedAt;
+		animStart = null;
+		function step(ts: number) {
+			if (animStart === null) animStart = ts - fromProgress * ANIM_DURATION_MS;
+			animProgress = Math.min(1, (ts - animStart) / ANIM_DURATION_MS);
+			if (animProgress < 1) { rafId = requestAnimationFrame(step); }
+			else { isPlaying = false; pausedAt = 0; rafId = null; }
+		}
+		rafId = requestAnimationFrame(step);
+	}
+
+	function pauseAnimation() {
+		if (rafId !== null) { cancelAnimationFrame(rafId); rafId = null; }
+		isPlaying = false; pausedAt = animProgress;
+	}
+
+	function resetAnimation() {
+		if (rafId !== null) { cancelAnimationFrame(rafId); rafId = null; }
+		isPlaying = false; animProgress = 0; pausedAt = 0;
+	}
+
+	function scrubAnimation(e: Event) {
+		const val = parseFloat((e.target as HTMLInputElement).value);
+		animProgress = val; pausedAt = val;
+		if (rafId !== null) { cancelAnimationFrame(rafId); rafId = null; isPlaying = false; }
+	}
+
+	onDestroy(() => { if (rafId !== null) cancelAnimationFrame(rafId); });
+
+	const passRoutes = $derived(routes.filter((r) => (r.pathKind ?? r.kind) === 'pass'));
+	const runRoutes = $derived(routes.filter((r) => (r.pathKind ?? r.kind) !== 'pass'));
 </script>
+
 
 <div class="tw-flex tw-flex-col tw-h-full tw-bg-[#090d16] tw-border tw-border-[#1e293b] tw-rounded-2xl tw-overflow-hidden tw-shadow-2xl">
 	<!-- Stage Top Action Bar -->
@@ -81,6 +161,26 @@
 				<span class="tw-text-[#14b8a6]">→</span>
 			</button>
 		{/if}
+
+		<!-- View Mode Switcher -->
+		<div class="tw-flex tw-items-center tw-gap-1 tw-bg-[#020617] tw-border tw-border-slate-800 tw-rounded-lg tw-p-0.5">
+			<button
+				type="button"
+				class="tw-px-2.5 tw-py-1 tw-font-mono tw-text-[10px] tw-font-bold tw-rounded tw-transition-all {viewMode === 'static' ? 'tw-bg-[#1e293b] tw-text-white' : 'tw-text-slate-500 hover:tw-text-slate-300'}"
+				onclick={() => { viewMode = 'static'; resetAnimation(); }}
+			>
+				📋 Static
+			</button>
+			<button
+				type="button"
+				class="tw-px-2.5 tw-py-1 tw-font-mono tw-text-[10px] tw-font-bold tw-rounded tw-transition-all {viewMode === 'animated' ? 'tw-bg-[#1e293b] tw-text-[#daff0a]' : 'tw-text-slate-500 hover:tw-text-slate-300'}"
+				onclick={() => { viewMode = 'animated'; }}
+				disabled={routes.length === 0}
+				title={routes.length === 0 ? 'No routes to animate — draw routes in the War Room first' : 'Animate player motions'}
+			>
+				📹 Animated
+			</button>
+		</div>
 	</div>
 
 	<!-- Interactive Pitch Stage (SVG 1600x900) -->
@@ -197,7 +297,7 @@
 			{/each}
 
 			<!-- ── Tactical Tokens / Players ── -->
-			{#each displayEntities as entity (entity.id)}
+			{#each animatedEntities as entity (entity.id)}
 				{@const isOpp = entity.side === 'opponent'}
 				<g transform="translate({entity.x}, {entity.y})">
 					<!-- Token Base Circle -->
@@ -229,6 +329,63 @@
 			{/each}
 		</svg>
 	</div>
+
+	<!-- Animated Playback Controls -->
+	{#if viewMode === 'animated'}
+		<div class="tw-bg-[#050811] tw-border-t tw-border-[#1e293b] tw-px-4 tw-py-2.5 tw-flex tw-items-center tw-gap-3">
+			<!-- Rewind -->
+			<button
+				type="button"
+				class="tw-text-slate-400 hover:tw-text-white tw-font-mono tw-text-xs tw-w-7 tw-h-7 tw-flex tw-items-center tw-justify-center tw-rounded tw-border tw-border-slate-800 hover:tw-border-slate-600 tw-transition-all"
+				onclick={resetAnimation}
+				title="Rewind"
+				aria-label="Rewind animation"
+			>
+				<span aria-hidden="true">|◀</span>
+			</button>
+
+			<!-- Play / Pause -->
+			<button
+				type="button"
+				class="tw-w-8 tw-h-8 tw-flex tw-items-center tw-justify-center tw-rounded-full tw-border tw-transition-all {isPlaying ? 'tw-bg-[#daff0a]/20 tw-border-[#daff0a]/60 tw-text-[#daff0a]' : 'tw-bg-[#14b8a6]/15 tw-border-[#14b8a6]/50 tw-text-[#14b8a6]'}"
+				onclick={() => { if (isPlaying) { pauseAnimation(); } else { if (animProgress >= 1) { resetAnimation(); } startAnimation(); } }}
+				title={isPlaying ? 'Pause' : 'Play animation'}
+				aria-label={isPlaying ? 'Pause animation' : 'Play animation'}
+				aria-pressed={isPlaying}
+			>
+				{#if isPlaying}
+					<svg class="tw-w-3.5 tw-h-3.5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+						<path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
+					</svg>
+				{:else}
+					<svg class="tw-w-3.5 tw-h-3.5 tw-translate-x-[1px]" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+						<path d="M8 5v14l11-7z"/>
+					</svg>
+				{/if}
+			</button>
+
+			<!-- Timeline Scrubber -->
+			<input
+				type="range"
+				min="0"
+				max="1"
+				step="0.002"
+				value={animProgress}
+				oninput={scrubAnimation}
+				class="tw-flex-1 tw-accent-[#daff0a] tw-h-1 tw-cursor-pointer"
+				aria-label="Animation timeline scrubber"
+			/>
+
+			<!-- Time display -->
+			<span class="tw-font-mono tw-text-[10px] tw-text-[#daff0a] tw-w-10 tw-text-right">
+				{(animProgress * 4).toFixed(1)}s
+			</span>
+
+			<span class="tw-font-mono tw-text-[10px] tw-text-slate-600 tw-hidden sm:tw-block">
+				{routes.length} routes
+			</span>
+		</div>
+	{/if}
 
 	<!-- Stage Footer Telemetry Bar -->
 	<div class="tw-bg-[#0f172a] tw-border-t tw-border-[#1e293b] tw-px-4 tw-py-2.5 tw-flex tw-items-center tw-justify-between tw-text-[11px] tw-font-mono tw-text-slate-400">
