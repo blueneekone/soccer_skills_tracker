@@ -61,6 +61,7 @@ const SVG_STROKE_ALLOWLIST = [
 	'coach/war-room/+page.svelte',
 	'player/dashboard/+page.svelte',
 	'compliance/+page.svelte',
+	'CoachTeamStatsHub.svelte',
 ];
 
 const PATTERNS = {

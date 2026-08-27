@@ -491,9 +491,10 @@ describe.skip('Functional audit backlog A–F — regression guards', () => {
 		expect(hud).toMatch(/excluded from deploy until player accounts are linked/);
 	});
 
-	it('F2 coach nav includes Field Station and War Room per PRODUCT_SURFACE_REGISTRY', () => {
+	it('F2 coach nav consolidates Drill Studio into The Forge and keeps War Room', () => {
 		const nav = readFileSync(WORKSPACE_NAV, 'utf-8');
-		expect(nav).toMatch(/href:\s*'\/coach\/drills'/);
+		expect(nav).not.toMatch(/label:\s*'Field Station'/);
+		expect(nav).toMatch(/label:\s*'The Forge'[\s\S]*href:\s*'\/coach\/forge'/);
 		expect(nav).toMatch(/label:\s*'War Room'/);
 		expect(nav).toMatch(/href:\s*'\/coach\/tactical'/);
 	});

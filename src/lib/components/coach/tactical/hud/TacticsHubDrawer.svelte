@@ -121,7 +121,7 @@
 							Convert this tactical whiteboard into a structured, printable physical drill sheet complete with cones, flags, time constraints, and coaching cues.
 						</p>
 						<a
-							href="/coach/drills"
+							href="/coach/forge?tab=designer"
 							class="tw-mt-3 tw-inline-flex tw-items-center tw-justify-center tw-w-full tw-gap-2 tw-border tw-border-[#fbbf24] tw-bg-[#fbbf24] tw-text-black tw-font-mono tw-font-bold tw-text-xs tw-py-2.5 tw-uppercase hover:tw-bg-amber-400 tw-transition-colors tw-rounded"
 						>
 							➕ Open Drill Designer Sheet

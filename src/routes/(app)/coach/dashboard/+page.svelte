@@ -5,6 +5,7 @@
 	import DashboardArena from './DashboardArena.svelte';
 	import ClearanceGate from './ClearanceGate.svelte';
 	import CoachSquadTileMatrix from '$lib/coach/dashboard/CoachSquadTileMatrix.svelte';
+	import CoachTeamStatsHub from '$lib/components/coach/stats/CoachTeamStatsHub.svelte';
 	import Icon from '$lib/components/ui/Icon.svelte';
 
 	const engine = new DashboardEngine();
@@ -80,6 +81,13 @@
 			style="padding: var(--bento-pad-liquid); padding-bottom: calc(var(--bento-pad-liquid) + 84px + env(safe-area-inset-bottom, 0px));"
 		>
 			<DashboardArena {engine} />
+
+			{#if engine.effectiveTeamId}
+				<div class="bento-span-12 tw-mt-4">
+					<CoachTeamStatsHub teamId={engine.effectiveTeamId} />
+				</div>
+			{/if}
+
 			<section class="coach-hud-grid bento-span-12 tw-gap-4 tw-mt-6 tw-grid tw-min-w-0" style="grid-template-columns: repeat(auto-fit, minmax(min(100%, clamp(280px, 30vw, 350px)), 1fr));">
 				<!-- Primary Area (8 cols functionally via col-span-2): Roster Matrix -->
 				<div class="tw-col-span-1 lg:tw-col-span-2 tw-min-w-0 tw-flex tw-flex-col tw-gap-4">
@@ -93,21 +101,8 @@
 					{/if}
 				</div>
 
-				<!-- Sidecar Area (4 cols functionally via col-span-1): Telemetry & Match Day -->
+				<!-- Sidecar Area (4 cols functionally via col-span-1): Telemetry & Intelligence -->
 				<div class="tw-col-span-1 tw-min-w-0 tw-flex tw-flex-col tw-gap-4">
-					<!-- Sideline SIEM Live Feed -->
-					<div class="st-bento sideline-siem-panel vanguard-surface tw-rounded-none tw-border tw-border-slate-700 tw-bg-slate-900/80 tw-p-4 tw-min-w-0" style="background: #0f172a;">
-						<h3 class="tw-text-xs tw-text-[#14b8a6] tw-mb-2 tw-uppercase tw-tracking-widest tw-min-w-0" style="font-family: 'Geist Sans', sans-serif;">SIEM Live Feed</h3>
-						<div class="tw-text-[#D4D4D8] tw-text-sm tw-min-w-0" style="font-family: 'Switzer', sans-serif;"><a href="/coach/matchday" class="tw-text-[#14b8a6] hover:tw-text-teal-300 tw-underline tw-underline-offset-4 tw-uppercase" style="font-family: 'Geist Mono', monospace; font-size: 0.75rem;">Enter Match Day &rarr;</a></div>
-					</div>
-
-					<!-- Tactical Playbook Board (Tron War Room) -->
-					<div class="st-bento tactical-playbook-board vanguard-surface tw-rounded-none tw-border tw-border-slate-700 tw-bg-slate-900/80 tw-p-4 tw-flex tw-flex-col tw-min-w-0" style="background: #0f172a;">
-						<h3 class="tw-text-xs tw-text-[#14b8a6] tw-mb-2 tw-uppercase tw-tracking-widest tw-min-w-0" style="font-family: 'Geist Sans', sans-serif;">Tactical Playbook</h3>
-						<div class="tw-text-[#D4D4D8] tw-text-sm tw-min-w-0 tw-flex-1 tw-min-w-0" style="font-family: 'Switzer', sans-serif;">
-							<a href="/coach/war-room" class="tw-text-[#14b8a6] hover:tw-text-teal-300 tw-underline tw-underline-offset-4 tw-uppercase" style="font-family: 'Geist Mono', monospace; font-size: 0.75rem;">Enter War Room &rarr;</a>
-						</div>
-					</div>
 
 					<!-- Intent Engine (RL Volume) -->
 					<div class="st-bento intent-engine-panel vanguard-surface tw-rounded-none tw-border tw-border-slate-700 tw-bg-slate-900/80 tw-p-4 tw-flex tw-flex-col tw-min-w-0" style="background: #0f172a;">

@@ -62,7 +62,7 @@
 -->
 <div class="tactical-hud-panel tw-pointer-events-none tw-absolute tw-inset-0 tw-z-10 tw-overflow-hidden" style="border-radius: 0px;">
 	<!-- Top Bar Floating Action Deck -->
-	<div class="tw-pointer-events-auto tw-absolute tw-top-3 tw-left-3 tw-z-30 tw-flex tw-items-center tw-gap-2">
+	<div class="tw-pointer-events-auto tw-absolute tw-top-3 tw-left-3 tw-z-30 tw-flex tw-items-center tw-gap-2.5">
 		<!-- [ ⚡ TACTICS HUB ] Trigger Button -->
 		<button
 			type="button"
@@ -73,6 +73,15 @@
 		>
 			[ ⚡ TACTICS HUB ]
 		</button>
+
+		<!-- Link to Drill Designer in The Forge -->
+		<a
+			href="/coach/forge?tab=designer"
+			class="tw-bg-[#0f172a] tw-border tw-border-[#daff0a]/50 hover:tw-border-[#daff0a] tw-text-[#daff0a] hover:tw-bg-[#daff0a]/10 tw-px-3.5 tw-py-2 tw-font-mono tw-text-xs tw-font-bold active:tw-scale-[0.98] tw-transition-all tw-rounded-md tw-no-underline tw-flex tw-items-center tw-gap-1.5 tw-shadow-[0_0_10px_rgba(218,255,10,0.15)]"
+			title="Open Drill Designer in The Forge"
+		>
+			[ 📐 DRILL DESIGNER → ]
+		</a>
 	</div>
 
 	<TacticsHubDrawer

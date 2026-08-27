@@ -32,7 +32,6 @@ export const directorLinks = [
 export const coachLinks = [
 	{ label: 'Mission Control',       href: '/coach/dashboard',               icon: 'content.grid' },
 	{ label: 'The Forge',         href: '/coach/forge',         icon: 'game.dumbbell' },
-	{ label: 'Field Station',     href: '/coach/drills',        icon: 'content.checks' },
 	// War Room (/coach/tactical) — Tier 2 per PRODUCT_SURFACE_REGISTRY PS-C04
 	{ label: 'War Room',          href: '/coach/tactical',      icon: 'action.edit' },
 	{ label: 'Match Day',         href: '/coach/matchday',      icon: 'data.activity' },
