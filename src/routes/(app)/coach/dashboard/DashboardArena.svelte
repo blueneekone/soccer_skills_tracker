@@ -45,7 +45,7 @@
 			teamId={engine.effectiveTeamId}
 			teams={engine.myTeams}
 			selectedPlayerId={engine.selectedPlayerId}
-			onSelectPlayer={(id) => engine.selectPlayer(id)}
+			onSelectPlayer={(id: string) => engine.selectPlayer(id)}
 		/>
 	</div>
 </div>

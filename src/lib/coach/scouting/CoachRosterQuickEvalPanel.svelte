@@ -40,7 +40,7 @@
 	});
 
 	$effect(() => {
-		if (!browser || !teamId) {
+		if (!browser || !teamId || !db || !authStore.isAuthenticated) {
 			rosterNames = [];
 			return;
 		}
@@ -79,7 +79,7 @@
 		const skill = skillKey.trim();
 		const result = resultText.trim();
 		if (!tid || !player || !skill || !result) {
-			err = 'Player, skill slot, and result are required.';
+			err = 'Player, attribute slot, and result measurement are required.';
 			return;
 		}
 		const email = authStore.user?.email?.toLowerCase() || '';
@@ -100,7 +100,7 @@
 				source: 'coach_roster_quick_log',
 				timestamp: serverTimestamp(),
 			});
-			okMsg = 'Observation logged. Squad telemetry syncs on the next dossier refresh.';
+			okMsg = `Observation recorded for ${player} (${skill}: ${result}). Synchronized to squad telemetry.`;
 			resultText = '';
 		} catch (e) {
 			err = e instanceof Error ? e.message : 'Could not save observation.';
@@ -111,33 +111,44 @@
 </script>
 
 <section
-	class="tw-rounded-2xl tw-border tw-border-white/5 tw-bg-slate-900/60 tw-p-5 tw-shadow-xl tw-backdrop-blur-md md:tw-p-6"
+	class="tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-p-5 sm:tw-p-6 tw-font-mono tw-text-[#fafafa]"
+	style="border-radius: 0px;"
 	aria-labelledby="roster-eval-heading"
 >
-	<div class="tw-mb-4">
-		<h2
-			id="roster-eval-heading"
-			class="tw-m-0 tw-text-sm tw-font-black tw-uppercase tw-tracking-[0.2em] tw-text-slate-200"
-		>
-			Roster quick log
-		</h2>
-		<p class="tw-m-0 tw-mt-2 tw-max-w-prose tw-text-sm tw-text-slate-400">
-			Log coach-verified scores keyed to your sport&apos;s attribute slots (
-			<strong class="tw-text-slate-300">{schema.canonicalKey}</strong>). Stored as structured trial rows — no
-			media uploads.
+	<div class="tw-border-b tw-border-[#334155] tw-pb-4 tw-mb-5">
+		<div class="tw-flex tw-items-center tw-gap-2">
+			<span class="tw-w-2.5 tw-h-2.5 tw-bg-[#14b8a6]"></span>
+			<h2
+				id="roster-eval-heading"
+				class="tw-m-0 tw-text-sm sm:tw-text-base tw-font-bold tw-uppercase tw-tracking-widest tw-text-white"
+			>
+				ROSTER QUICK LOG (TRIALS & BENCHMARKS)
+			</h2>
+		</div>
+		<p class="tw-m-0 tw-mt-1.5 tw-text-xs tw-text-slate-400 tw-font-sans">
+			Log coach-verified field trials keyed to active sport taxonomy (
+			<strong class="tw-text-[#14b8a6] tw-font-mono">{schema.canonicalKey}</strong>). Stored in the <code class="tw-text-[#daff0a]">trials</code> telemetry stream.
 		</p>
 	</div>
 
 	{#if loading}
-		<p class="tw-m-0 tw-font-mono tw-text-xs tw-text-slate-500">Loading roster…</p>
+		<div class="tw-p-8 tw-text-center tw-bg-[#080d1a] tw-border tw-border-[#334155]" style="border-radius: 0px;">
+			<p class="tw-m-0 tw-text-xs tw-text-slate-400">Loading squad roster…</p>
+		</div>
 	{:else if err && !rosterNames.length}
-		<p class="tw-m-0 tw-text-sm tw-text-amber-300" role="alert">{err}</p>
+		<div class="tw-p-4 tw-bg-rose-950/40 tw-border tw-border-rose-800 tw-text-rose-300 tw-text-xs" role="alert" style="border-radius: 0px;">
+			{err}
+		</div>
 	{:else}
-		<div class="tw-grid tw-gap-4 md:tw-grid-cols-2">
-			<label class="tw-flex tw-flex-col tw-gap-2">
-				<span class="tw-text-[10px] tw-font-bold tw-uppercase tw-tracking-widest tw-text-slate-500"> Player </span>
+		<div class="tw-grid tw-grid-cols-1 md:tw-grid-cols-12 tw-gap-4">
+			<!-- Player Selection -->
+			<label class="md:tw-col-span-4 tw-flex tw-flex-col tw-gap-1.5">
+				<span class="tw-text-[10px] tw-font-bold tw-uppercase tw-tracking-widest tw-text-slate-400">
+					SQUAD ATHLETE
+				</span>
 				<select
-					class="tw-rounded-xl tw-border tw-border-white/10 tw-bg-slate-950/80 tw-px-3 tw-py-2.5 tw-text-sm tw-text-slate-100"
+					class="tw-bg-[#080d1a] tw-border tw-border-[#334155] tw-text-white tw-px-3 tw-py-2 tw-text-xs tw-font-mono tw-outline-none focus:tw-border-[#14b8a6]"
+					style="border-radius: 0px;"
 					bind:value={playerName}
 				>
 					{#each rosterNames as name (name)}
@@ -145,12 +156,15 @@
 					{/each}
 				</select>
 			</label>
-			<label class="tw-flex tw-flex-col tw-gap-2">
-				<span class="tw-text-[10px] tw-font-bold tw-uppercase tw-tracking-widest tw-text-slate-500">
-					Attribute slot
+
+			<!-- Attribute Slot -->
+			<label class="md:tw-col-span-4 tw-flex tw-flex-col tw-gap-1.5">
+				<span class="tw-text-[10px] tw-font-bold tw-uppercase tw-tracking-widest tw-text-slate-400">
+					ATTRIBUTE SLOT ({schema.canonicalKey})
 				</span>
 				<select
-					class="tw-rounded-xl tw-border tw-border-white/10 tw-bg-slate-950/80 tw-px-3 tw-py-2.5 tw-text-sm tw-text-slate-100"
+					class="tw-bg-[#080d1a] tw-border tw-border-[#334155] tw-text-white tw-px-3 tw-py-2 tw-text-xs tw-font-mono tw-outline-none focus:tw-border-[#14b8a6]"
+					style="border-radius: 0px;"
 					bind:value={skillKey}
 				>
 					{#each schema.keys as k, i (k)}
@@ -158,39 +172,44 @@
 					{/each}
 				</select>
 			</label>
-			<label class="tw-flex tw-flex-col tw-gap-2 md:tw-col-span-2">
-				<span class="tw-text-[10px] tw-font-bold tw-uppercase tw-tracking-widest tw-text-slate-500">
-					Result (numeric, fraction e.g. 17/20, or label)
+
+			<!-- Result Input -->
+			<label class="md:tw-col-span-4 tw-flex tw-flex-col tw-gap-1.5">
+				<span class="tw-text-[10px] tw-font-bold tw-uppercase tw-tracking-widest tw-text-slate-400">
+					RESULT (SCORE, TIME, REPS)
 				</span>
 				<input
-					class="tw-rounded-xl tw-border tw-border-white/10 tw-bg-slate-950/80 tw-px-3 tw-py-2.5 tw-font-mono tw-text-sm tw-text-slate-100 placeholder:tw-text-slate-600"
+					class="tw-bg-[#080d1a] tw-border tw-border-[#334155] tw-text-white tw-px-3 tw-py-2 tw-text-xs tw-font-mono tw-outline-none focus:tw-border-[#14b8a6] placeholder:tw-text-slate-600"
+					style="border-radius: 0px;"
 					type="text"
 					autocomplete="off"
-					placeholder="e.g. 82 / 88 / 17/20"
+					placeholder="e.g. 88 / 4.45s / 18/20 reps"
 					bind:value={resultText}
 				/>
 			</label>
 		</div>
 
 		{#if err}
-			<p class="tw-mt-3 tw-mb-0 tw-text-sm tw-text-amber-300" role="alert">{err}</p>
+			<p class="tw-mt-3 tw-mb-0 tw-text-xs tw-text-rose-400" role="alert">⚠ {err}</p>
 		{/if}
 		{#if okMsg}
-			<p class="tw-mt-3 tw-mb-0 tw-text-sm tw-text-emerald-300" role="status">{okMsg}</p>
+			<p class="tw-mt-3 tw-mb-0 tw-text-xs tw-text-[#14b8a6]" role="status">✓ {okMsg}</p>
 		{/if}
 
-		<div class="tw-mt-5 tw-flex tw-flex-wrap tw-gap-3">
+		<div class="tw-mt-5 tw-flex tw-flex-wrap tw-items-center tw-justify-between tw-gap-3 tw-border-t tw-border-[#334155] tw-pt-4">
 			<button
 				type="button"
-				class="tw-w-full tw-truncate tw-rounded-xl tw-border tw-border-emerald-500/40 tw-bg-emerald-950/50 tw-px-5 tw-py-3 tw-text-xs tw-font-black tw-uppercase tw-tracking-[0.18em] tw-text-emerald-200 hover:tw-border-emerald-400/60 hover:tw-bg-emerald-900/40 disabled:tw-opacity-50"
+				class="tw-px-6 tw-py-3 tw-bg-[#14b8a6] hover:tw-bg-[#0d9488] tw-text-black tw-font-bold tw-text-xs tw-uppercase tw-tracking-wider tw-cursor-pointer tw-transition-all active:tw-scale-[0.98] disabled:tw-opacity-50"
+				style="border-radius: 0px;"
 				disabled={saving || !rosterNames.length}
 				onclick={() => void submitTrial()}
 			>
-				{saving ? 'Saving…' : 'Record observation'}
+				{saving ? 'RECORDING OBSERVATION…' : '⚡ RECORD TRIAL OBSERVATION'}
 			</button>
+
 			{#if !rosterNames.length}
-				<span class="tw-self-center tw-text-xs tw-font-semibold tw-text-slate-500">
-					Add athletes to this roster before logging observations.
+				<span class="tw-text-xs tw-text-slate-500">
+					Add athletes to this roster in Team Ops before recording trials.
 				</span>
 			{/if}
 		</div>

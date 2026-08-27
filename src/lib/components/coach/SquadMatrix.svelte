@@ -709,6 +709,13 @@
 
 	function handleCardClick(p: { name: string; rosterKey: string }) {
 		onSelectPlayer?.(p.name, p.rosterKey);
+		// Scroll to the Team Telemetry Hub so player stats are immediately visible
+		if (browser) {
+			const hub = document.getElementById('team-telemetry-hub');
+			if (hub) {
+				hub.scrollIntoView({ behavior: 'smooth', block: 'start' });
+			}
+		}
 	}
 
 	function isPlayerSelected(p: { name: string; rosterKey: string }) {
@@ -914,8 +921,8 @@
 				</h2>
 			</div>
 			<div class="tw-flex tw-items-center tw-gap-2">
-				<span class="tw-font-mono tw-text-[11px] tw-text-slate-400">
-					Click card to spotlight telemetry radar
+				<span class="tw-font-mono tw-text-[11px] tw-text-[#daff0a] tw-bg-[#daff0a]/10 tw-border tw-border-[#daff0a]/30 tw-px-2 tw-py-0.5">
+					↓ Click card → opens telemetry radar
 				</span>
 			</div>
 		</div>

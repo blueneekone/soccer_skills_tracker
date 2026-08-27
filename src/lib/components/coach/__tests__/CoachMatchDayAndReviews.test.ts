@@ -335,7 +335,7 @@ describe('Match Day Player Stat Attribution & Mistake Prompts', () => {
 		);
 
 		expect(fileSrc).toMatch(/CoachTeamMatchesPanel/);
-		expect(fileSrc).toMatch(/'matches', label: 'Match Reviews'/);
+		expect(fileSrc).toMatch(/id: 'matches'/);
 		expect(fileSrc).toMatch(/activeTab === 'matches'/);
 	});
 });

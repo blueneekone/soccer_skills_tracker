@@ -1,11 +1,9 @@
-﻿<script lang="ts">
+<script lang="ts">
 	import { CoachLogisticsView } from '$lib/coach/logistics/index.js';
 </script>
 
 <svelte:head>
-	<title>Coach • Team Ops • Vanguard OS</title>
+	<title>Team Ops Command · Vanguard OS</title>
 </svelte:head>
 
-<div class="tw-p-4">
-	<CoachLogisticsView />
-</div>
+<CoachLogisticsView />

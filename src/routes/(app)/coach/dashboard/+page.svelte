@@ -4,8 +4,8 @@
 	import { DashboardEngine } from './DashboardEngine.svelte.js';
 	import DashboardArena from './DashboardArena.svelte';
 	import ClearanceGate from './ClearanceGate.svelte';
-	import CoachSquadTileMatrix from '$lib/coach/dashboard/CoachSquadTileMatrix.svelte';
 	import CoachTeamStatsHub from '$lib/components/coach/stats/CoachTeamStatsHub.svelte';
+	import NexusSystemIntelCard from '$lib/components/coach/NexusSystemIntelCard.svelte';
 	import Icon from '$lib/components/ui/Icon.svelte';
 
 	const engine = new DashboardEngine();
@@ -82,63 +82,23 @@
 		>
 			<DashboardArena {engine} />
 
-			{#if engine.effectiveTeamId}
-				<div class="bento-span-12 tw-mt-4">
+			<!-- ── TEAM TELEMETRY ANCHOR (Readiness cards scroll here on click) ── -->
+			<div id="team-telemetry-hub" class="bento-span-12 tw-mt-4 tw-scroll-mt-20">
+				{#if engine.effectiveTeamId}
 					<CoachTeamStatsHub
 						teamId={engine.effectiveTeamId}
 						selectedPlayerId={engine.selectedPlayerId}
 						onSelectPlayer={(id) => engine.selectPlayer(id)}
 					/>
+				{/if}
+			</div>
+
+			<!-- ── SIDECAR: Nexus System Intelligence ─────────────────────────── -->
+			{#if engine.effectiveTeamId}
+				<div class="bento-span-12 tw-mt-4">
+					<NexusSystemIntelCard />
 				</div>
 			{/if}
-
-			<section class="coach-hud-grid bento-span-12 tw-gap-4 tw-mt-6 tw-grid tw-min-w-0" style="grid-template-columns: repeat(auto-fit, minmax(min(100%, clamp(280px, 30vw, 350px)), 1fr));">
-				<!-- Primary Area (8 cols functionally via col-span-2): Roster Matrix -->
-				<div class="tw-col-span-1 lg:tw-col-span-2 tw-min-w-0 tw-flex tw-flex-col tw-gap-4">
-					{#if engine.effectiveTeamId}
-						<CoachSquadTileMatrix
-							teamId={engine.effectiveTeamId}
-							selectedPlayerId={engine.selectedPlayerId}
-							onSelectPlayer={(id) => engine.selectPlayer(id)}
-						/>
-					{:else}
-						<div class="st-bento roster-panel vanguard-surface tw-rounded-none tw-border tw-border-slate-700 tw-bg-slate-900/80 tw-p-4 tw-min-w-0" style="background: #0f172a;">
-							<h3 class="tw-text-xs tw-text-[#14b8a6] tw-mb-2 tw-uppercase tw-tracking-widest tw-min-w-0" style="font-family: 'Geist Sans', sans-serif;">Active Roster & Operatives</h3>
-							<div class="tw-text-[#D4D4D8] tw-text-sm tw-min-w-0" style="font-family: 'Switzer', sans-serif;">No active squad selected.</div>
-						</div>
-					{/if}
-				</div>
-
-				<!-- Sidecar Area (4 cols functionally via col-span-1): Telemetry & Intelligence -->
-				<div class="tw-col-span-1 tw-min-w-0 tw-flex tw-flex-col tw-gap-4">
-
-					<!-- Intent Engine (RL Volume) -->
-					<div class="st-bento intent-engine-panel vanguard-surface tw-rounded-none tw-border tw-border-slate-700 tw-bg-slate-900/80 tw-p-4 tw-flex tw-flex-col tw-min-w-0" style="background: #0f172a;">
-						<h3 class="tw-text-xs tw-text-[#14b8a6] tw-mb-2 tw-uppercase tw-tracking-widest tw-min-w-0" style="font-family: 'Geist Sans', sans-serif;">The Forge & Intent Engine</h3>
-						<div class="tw-mt-2 tw-flex tw-flex-wrap tw-items-baseline tw-justify-between tw-gap-2 tw-min-w-0">
-							<span class="tw-text-xs tw-text-[#A1A1AA] tw-uppercase tw-font-bold" style="font-family: 'Geist Sans', sans-serif;">RL Inference</span>
-							<span class="tw-text-lg tw-text-[#14b8a6]" style="font-family: 'Geist Mono', monospace;">+12% Intensity</span>
-						</div>
-						<div class="tw-w-full tw-bg-slate-800 tw-h-1.5 tw-mt-2 tw-border tw-border-slate-700 tw-min-w-0">
-							<div class="tw-bg-[#14b8a6] tw-h-full" style="width: 62%;"></div>
-						</div>
-					</div>
-
-					<!-- ZPD Engine (Dynamic Difficulty) -->
-					<div class="st-bento zpd-engine-panel vanguard-surface tw-rounded-none tw-border tw-border-slate-700 tw-bg-slate-900/80 tw-p-4 tw-flex tw-flex-col tw-min-w-0" style="background: #0f172a;">
-						<h3 class="tw-text-xs tw-text-[#14b8a6] tw-mb-2 tw-uppercase tw-tracking-widest tw-min-w-0" style="font-family: 'Geist Sans', sans-serif;">ZPD Engine (Dynamic Difficulty)</h3>
-						<div class="tw-mt-2 tw-flex tw-flex-wrap tw-items-baseline tw-justify-between tw-gap-2 tw-min-w-0">
-							<span class="tw-text-xs tw-text-[#A1A1AA] tw-uppercase tw-font-bold" style="font-family: 'Geist Sans', sans-serif;">Latency</span>
-							<span class="tw-text-lg tw-text-[#14b8a6]" style="font-family: 'Geist Mono', monospace;">14ms</span>
-						</div>
-						<p class="tw-mt-2 tw-text-[10px] tw-text-[#D4D4D8] tw-leading-relaxed tw-min-w-0" style="font-family: 'Switzer', sans-serif;">
-							Vygotsky inference active. Skill boundary scaling applied to central press and transitional width phases.
-						</p>
-					</div>
-
-					<!-- SIEM & Intelligence Feed -->
-				</div>
-			</section>
 		</main>
 	</div>
 {/if}
