@@ -42,7 +42,7 @@ describe('Core Public Drills Database Seeding Script', () => {
       const data = doc.data();
       expect(data.title).toBe('Passing Y-Drill');
       expect(data.sport).toBe('soccer');
-      expect(data.category).toBe('passing');
+      expect(data.category).toBe('Passing');
       expect(data.isPublic).toBe(true);
       expect(data.diagramData).toBeDefined();
 
@@ -68,5 +68,23 @@ describe('Core Public Drills Database Seeding Script', () => {
     expect(sports.has('soccer')).toBe(true);
     expect(sports.has('basketball')).toBe(true);
     expect(sports.has('football')).toBe(true);
+  });
+
+  it('should strictly adhere to the Scout\'s Six taxonomy axes per sport', async () => {
+    const snapshot = await db.collection('public_drills').get();
+    const soccerTaxonomy = ['Passing', 'Shooting', 'Dribbling', 'Defending', 'Tactics', 'Conditioning'];
+    const bballTaxonomy = ['3Pt', 'Mid-Range', 'Free Throw', 'Finishing', 'Ball Handling', 'Agility'];
+    const footballTaxonomy = ['Offense', 'Defense', 'Special Teams', 'Footwork', 'Agility', 'Tactics'];
+
+    snapshot.docs.forEach((doc) => {
+      const data = doc.data();
+      if (data.sport === 'soccer') {
+        expect(soccerTaxonomy).toContain(data.category);
+      } else if (data.sport === 'basketball') {
+        expect(bballTaxonomy).toContain(data.category);
+      } else if (data.sport === 'football') {
+        expect(footballTaxonomy).toContain(data.category);
+      }
+    });
   });
 });
