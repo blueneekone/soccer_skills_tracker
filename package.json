@@ -55,7 +55,8 @@
     "cap:android": "cap open android",
     "native:prepare": "npm run build && cap sync",
     "prepare": "husky",
-    "audit": "node scripts/run-audit.js"
+    "audit": "node scripts/run-audit.js",
+    "db:seed-drills": "node functions/src/scripts/seedPublicDrills.js"
   },
   "devDependencies": {
     "@babel/core": "^8.0.1",
