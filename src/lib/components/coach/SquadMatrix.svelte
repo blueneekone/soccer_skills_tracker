@@ -707,6 +707,18 @@
 		);
 	}
 
+	function handleCardClick(p: { name: string; rosterKey: string }) {
+		onSelectPlayer?.(p.name, p.rosterKey);
+	}
+
+	function isPlayerSelected(p: { name: string; rosterKey: string }) {
+		if (!selectedPlayerId || selectedPlayerId === 'ALL') return false;
+		const target = selectedPlayerId.trim().toLowerCase();
+		const pName = p.name.toLowerCase();
+		const rKey = p.rosterKey.toLowerCase();
+		return target === pName || target === rKey || target.includes(pName) || pName.includes(target);
+	}
+
 	/**
 	 * @param {string} id
 	 * @param {'approve' | 'reject'} d
@@ -817,95 +829,189 @@
 	);
 </script>
 
-<!-- ── SQUAD UPTIME — aggregate readiness ticker (Epic 1.2 bento HUD) ─────── -->
-<div class="hud-telemetry-root bento-grid bento-grid--12col bento-grid--liquid tw-w-full tw-min-w-0 tw-grid-cols-1 lg:tw-grid-cols-12" style="display: grid;">
-<section
-	class="tw-col-span-full hud-telemetry-panel tw-backdrop-blur-3xl tw-shadow-[inset_0_1px_1px_rgba(255,255,255,0.06),_0_0_30px_rgba(20, 184, 166,0.08)] tw-border-[#14b8a6]/25"
-	aria-label="Squad uptime"
->
-	<div class="hud-telemetry-uptime__grid">
-		<div class="hud-telemetry-uptime__label">
-			<p class="tw-font-mono tw-text-[10px] tw-font-black tw-uppercase tw-tracking-[0.3em] tw-text-[#14b8a6]/85 tw-m-0">
-				<span class="tw-inline-block tw-h-2 tw-w-2 tw-animate-pulse tw-rounded-full tw-bg-[#14b8a6] tw-shadow-[0_0_8px_rgba(20, 184, 166,0.95)] tw-mr-2 tw-align-middle"></span>
-				SQUAD UPTIME · LIVE TICKER
-			</p>
-		</div>
-		<div class="hud-telemetry-uptime__score">
-			<span class="tw-text-[10px] tw-font-bold tw-uppercase tw-tracking-widest tw-text-white/35 tw-font-mono">READINESS SCORE</span>
-			<span class="tw-text-3xl tw-font-black tw-tabular-nums tw-text-[#14b8a6] tw-drop-shadow-[0_0_12px_rgba(20, 184, 166,0.55)] tw-font-mono">{squadUptimePct}%</span>
-		</div>
-		<div class="hud-telemetry-uptime__bar">
-			<div class="hud-telemetry-uptime__bar-fill" style="width: {squadUptimePct}%;"></div>
-		</div>
-	</div>
-</section>
-
-<!-- ── Readiness Matrix (glassmorphic SIEM grid) ──────────────────────────── -->
-<section
-	class="tw-col-span-full hud-telemetry-panel"
-	aria-labelledby="readiness-matrix-title"
->
-	<div class="hud-telemetry-matrix__head">
-		<div class="hud-telemetry-matrix__title">
-			<h2
-				id="readiness-matrix-title"
-				class="tw-font-mono tw-text-xs tw-font-bold tw-uppercase tw-tracking-[0.2em] tw-text-[#14b8a6] tw-m-0"
-			>
-				<span class="tw-inline-block tw-h-2 tw-w-2 tw-animate-pulse tw-rounded-full tw-bg-[#14b8a6] tw-shadow-[0_0_8px_rgba(20, 184, 166,0.8)] tw-mr-2 tw-align-middle"></span>
-				READINESS MATRIX · {readinessMatrixLabel}
-			</h2>
-		</div>
-		<div class="hud-telemetry-matrix__stats">
-			<span class="tw-font-mono tw-text-[10px] tw-font-bold tw-uppercase tw-tracking-widest tw-text-white/35">
-				COMBAT READY <span class="tw-ml-1 tw-tabular-nums tw-text-[#14b8a6]">{rmReady}</span>
-			</span>
-			<span class="tw-font-mono tw-text-[10px] tw-font-bold tw-uppercase tw-tracking-widest tw-text-white/35">
-				CONSENT PENDING <span class="tw-ml-1 tw-tabular-nums tw-text-[#ff003c]">{rmConsent}</span>
-			</span>
-			<span class="tw-font-mono tw-text-[10px] tw-font-bold tw-uppercase tw-tracking-widest tw-text-white/35">
-				OFFLINE <span class="tw-ml-1 tw-tabular-nums tw-text-white/50">{rmOffline}</span>
-			</span>
-			<span class="tw-font-mono tw-text-[10px] tw-font-bold tw-uppercase tw-tracking-widest tw-text-white/35">
-				INJURY RISK <span class="tw-ml-1 tw-tabular-nums tw-text-[#ff003c]">{rmAtRisk}</span>
-			</span>
-		</div>
-	</div>
-
-	{#if loading}
-		<p class="tw-font-mono tw-text-[11px] tw-uppercase tw-tracking-widest tw-text-white/40 tw-m-0 tw-py-4">
-			Loading roster…
-		</p>
-	{:else if readinessRoster.length === 0}
-		<p class="tw-font-mono tw-text-[11px] tw-uppercase tw-tracking-widest tw-text-white/40 tw-m-0 tw-py-4">
-			No athletes on roster — ingest below or
-			<a class="tw-text-[#14b8a6] tw-underline tw-underline-offset-2" href="/coach/logistics?tab=roster"
-				>import CSV on Team Ops</a
-			>.
-		</p>
-	{:else}
-		<div class="bento-grid bento-grid--12col bento-grid--liquid tw-grid-cols-1 lg:tw-grid-cols-12" style="display: grid;">
-			{#each readinessRoster as p (p.id)}
-				{@const staminaFill = Math.max(0, Math.min(1, p.stamina / 100))}
-				<div
-					class="tw-col-span-1 md:tw-col-span-6 lg:tw-col-span-3 hud-readiness-card hud-telemetry-panel"
-					role="button"
-					tabindex="0"
-					onclick={() => openDrawer(p.rosterKey)}
-					onkeydown={(e) => e.key === 'Enter' && openDrawer(p.rosterKey)}
-				>
-					<div class="hud-readiness-card__ring hud-telemetry-avatar">
-						
+<!-- ── SQUAD UPTIME — live ticker ─────── -->
+<div class="tw-w-full tw-flex tw-flex-col tw-gap-4">
+	<section
+		class="vanguard-panel tw-w-full tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-rounded-xl tw-p-4 tw-shadow-2xl"
+		aria-label="Squad uptime"
+	>
+		<div class="tw-flex tw-flex-col lg:tw-flex-row lg:tw-items-center tw-justify-between tw-gap-4">
+			<!-- Live Indicator & Title -->
+			<div class="tw-flex tw-items-center tw-gap-3">
+				<span class="tw-relative tw-flex tw-h-3 tw-w-3">
+					<span class="tw-animate-ping tw-absolute tw-inline-flex tw-h-full tw-w-full tw-rounded-full tw-bg-[#14b8a6] tw-opacity-75"></span>
+					<span class="tw-relative tw-inline-flex tw-rounded-full tw-h-3 tw-w-3 tw-bg-[#14b8a6]"></span>
+				</span>
+				<div>
+					<div class="tw-flex tw-items-center tw-gap-2">
+						<span class="tw-font-mono tw-text-xs tw-font-black tw-tracking-[0.2em] tw-text-[#14b8a6] tw-uppercase">
+							SQUAD UPTIME · LIVE TICKER
+						</span>
+						<span class="tw-bg-[#14b8a6]/10 tw-border tw-border-[#14b8a6]/40 tw-text-[#14b8a6] tw-text-[9px] tw-font-mono tw-px-1.5 tw-py-0.5 tw-rounded">
+							SIEM v2
+						</span>
 					</div>
-					<div class="hud-readiness-card__meta">
-						<p class="tw-font-mono tw-text-[10px] tw-font-black tw-uppercase tw-tracking-wider tw-text-white tw-m-0">{p.name}</p>
-						<p class="tw-font-mono tw-text-[10px] tw-text-[#14b8a6] tw-m-0">{p.position} · #{p.number}</p>
-						<p class="tw-font-mono tw-text-[10px] tw-uppercase tw-tracking-widest tw-m-0" style="color: {p.status === 'READY' ? '#14b8a6' : p.status === 'INJURY RISK' ? '#ff003c' : '#666'}">{p.status}</p>
-					</div>
+					<p class="tw-font-mono tw-text-[11px] tw-text-slate-400 tw-m-0 tw-mt-0.5">
+						Real-time readiness telemetry for {readinessMatrixLabel}
+					</p>
 				</div>
-			{/each}
+			</div>
+
+			<!-- Score & Status Chips -->
+			<div class="tw-flex tw-flex-wrap tw-items-center tw-gap-4">
+				<!-- Big tabular readiness percentage -->
+				<div class="tw-flex tw-items-baseline tw-gap-2 tw-bg-[#020617] tw-border tw-border-[#334155] tw-px-3 tw-py-1.5 tw-rounded-lg">
+					<span class="tw-font-mono tw-text-[10px] tw-font-bold tw-uppercase tw-tracking-widest tw-text-slate-400">
+						READINESS SCORE
+					</span>
+					<span class="tw-font-mono tw-text-2xl tw-font-black tw-tabular-nums tw-text-[#daff0a] tw-drop-shadow-[0_0_8px_rgba(218,255,10,0.4)]">
+						{squadUptimePct}%
+					</span>
+				</div>
+
+				<!-- Telemetry Status Badges -->
+				<div class="tw-flex tw-flex-wrap tw-items-center tw-gap-2">
+					<span class="tw-font-mono tw-text-[10px] tw-font-bold tw-px-2 tw-py-1 tw-rounded tw-bg-[#14b8a6]/15 tw-border tw-border-[#14b8a6]/40 tw-text-[#14b8a6]">
+						● COMBAT READY: <span class="tw-text-white tw-ml-1">{rmReady}</span>
+					</span>
+					<span class="tw-font-mono tw-text-[10px] tw-font-bold tw-px-2 tw-py-1 tw-rounded tw-bg-[#f59e0b]/15 tw-border tw-border-[#f59e0b]/40 tw-text-[#f59e0b]">
+						⏳ CONSENT PENDING: <span class="tw-text-white tw-ml-1">{rmConsent}</span>
+					</span>
+					<span class="tw-font-mono tw-text-[10px] tw-font-bold tw-px-2 tw-py-1 tw-rounded tw-bg-slate-800 tw-border tw-border-slate-700 tw-text-slate-400">
+						○ OFFLINE: <span class="tw-text-white tw-ml-1">{rmOffline}</span>
+					</span>
+					{#if rmAtRisk > 0}
+						<span class="tw-font-mono tw-text-[10px] tw-font-bold tw-px-2 tw-py-1 tw-rounded tw-bg-[#ef4444]/15 tw-border tw-border-[#ef4444]/40 tw-text-[#ef4444]">
+							⚠ INJURY RISK: <span class="tw-text-white tw-ml-1">{rmAtRisk}</span>
+						</span>
+					{/if}
+				</div>
+			</div>
 		</div>
-	{/if}
-</section>
+
+		<!-- Horizontal Telemetry Progress Bar -->
+		<div class="tw-w-full tw-h-2 tw-bg-[#020617] tw-border tw-border-[#334155] tw-rounded-full tw-overflow-hidden tw-mt-3">
+			<div
+				class="tw-h-full tw-bg-gradient-to-r tw-from-[#14b8a6] tw-to-[#daff0a] tw-transition-all tw-duration-500"
+				style="width: {squadUptimePct}%;"
+			></div>
+		</div>
+	</section>
+
+	<!-- ── Readiness Matrix SIEM Section ──────────────────────────── -->
+	<section
+		class="vanguard-panel tw-w-full tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-rounded-xl tw-p-5 tw-shadow-2xl"
+		aria-labelledby="readiness-matrix-title"
+	>
+		<div class="tw-flex tw-flex-col sm:tw-flex-row sm:tw-items-center tw-justify-between tw-gap-3 tw-border-b tw-border-[#334155] tw-pb-3 tw-mb-4">
+			<div class="tw-flex tw-items-center tw-gap-2">
+				<span class="tw-inline-block tw-h-2 tw-w-2 tw-rounded-full tw-bg-[#14b8a6] tw-shadow-[0_0_8px_#14b8a6]"></span>
+				<h2
+					id="readiness-matrix-title"
+					class="tw-font-mono tw-text-xs tw-font-black tw-uppercase tw-tracking-[0.2em] tw-text-[#14b8a6] tw-m-0"
+				>
+					READINESS MATRIX · {readinessMatrixLabel}
+				</h2>
+			</div>
+			<div class="tw-flex tw-items-center tw-gap-2">
+				<span class="tw-font-mono tw-text-[11px] tw-text-slate-400">
+					Click card to spotlight telemetry radar
+				</span>
+			</div>
+		</div>
+
+		{#if loading}
+			<div class="tw-py-8 tw-text-center">
+				<p class="tw-font-mono tw-text-xs tw-text-slate-400 tw-animate-pulse tw-m-0">
+					Loading squad readiness matrix…
+				</p>
+			</div>
+		{:else if readinessRoster.length === 0}
+			<div class="tw-border tw-border-dashed tw-border-slate-800 tw-p-8 tw-text-center tw-bg-[#020617] tw-rounded-lg">
+				<p class="tw-font-mono tw-text-xs tw-text-slate-400 tw-m-0">
+					No athletes on roster —
+					<a class="tw-text-[#14b8a6] tw-underline tw-underline-offset-2" href="/coach/logistics?tab=roster">
+						import CSV on Team Ops
+					</a>.
+				</p>
+			</div>
+		{:else}
+			<div class="tw-grid tw-grid-cols-1 sm:tw-grid-cols-2 md:tw-grid-cols-3 lg:tw-grid-cols-4 xl:tw-grid-cols-6 tw-gap-3">
+				{#each readinessRoster as p (p.id)}
+					{@const active = isPlayerSelected(p)}
+					<div
+						class="tw-group tw-relative tw-flex tw-flex-col tw-justify-between tw-rounded-lg tw-p-3.5 tw-transition-all tw-duration-150 tw-cursor-pointer tw-select-none {active ? 'tw-bg-[#0f172a] tw-border-2 tw-border-[#daff0a] tw-shadow-[0_0_18px_rgba(218,255,10,0.25)]' : 'tw-bg-[#020617] tw-border tw-border-[#334155] hover:tw-border-[#14b8a6] hover:tw-bg-[#0b1329]'}"
+						role="button"
+						tabindex="0"
+						onclick={() => handleCardClick(p)}
+						onkeydown={(e) => e.key === 'Enter' && handleCardClick(p)}
+					>
+						<!-- Top: Jersey, Position, and Edit Action -->
+						<div class="tw-flex tw-items-center tw-justify-between tw-gap-2">
+							<div class="tw-flex tw-items-center tw-gap-1.5">
+								<span class="tw-font-mono tw-text-xs tw-font-black tw-px-1.5 tw-py-0.5 tw-rounded {active ? 'tw-bg-[#daff0a] tw-text-black' : 'tw-bg-slate-800 tw-text-[#daff0a]'}">
+									#{p.number}
+								</span>
+								<span class="tw-font-mono tw-text-[10px] tw-font-bold tw-text-[#14b8a6] tw-bg-[#14b8a6]/10 tw-px-1.5 tw-py-0.5 tw-rounded tw-border tw-border-[#14b8a6]/30">
+									{p.position}
+								</span>
+							</div>
+
+							<!-- Edit Profile Button -->
+							<button
+								type="button"
+								onclick={(e) => {
+									e.stopPropagation();
+									openDrawer(p.rosterKey);
+								}}
+								class="tw-bg-[#0f172a] hover:tw-bg-slate-700 tw-border tw-border-slate-700 hover:tw-border-[#14b8a6] tw-text-slate-300 hover:tw-text-white tw-font-mono tw-text-[10px] tw-px-2 tw-py-0.5 tw-rounded tw-transition-colors tw-cursor-pointer"
+								title="Edit profile in drawer"
+							>
+								✎ Profile
+							</button>
+						</div>
+
+						<!-- Middle: Athlete Name & Status -->
+						<div class="tw-my-3">
+							<h3 class="tw-font-mono tw-text-xs tw-font-black tw-text-white tw-tracking-wide tw-m-0 tw-truncate" title={p.name}>
+								{p.name}
+							</h3>
+							<div class="tw-flex tw-items-center tw-gap-1.5 tw-mt-1.5">
+								{#if p.status === 'READY'}
+									<span class="tw-inline-block tw-h-1.5 tw-w-1.5 tw-rounded-full tw-bg-[#14b8a6] tw-shadow-[0_0_6px_#14b8a6]"></span>
+									<span class="tw-font-mono tw-text-[10px] tw-font-bold tw-text-[#14b8a6] tw-uppercase">Combat Ready</span>
+								{:else if p.status === 'INJURY RISK'}
+									<span class="tw-inline-block tw-h-1.5 tw-w-1.5 tw-rounded-full tw-bg-[#ef4444] tw-shadow-[0_0_6px_#ef4444]"></span>
+									<span class="tw-font-mono tw-text-[10px] tw-font-bold tw-text-[#ef4444] tw-uppercase">Injury Risk</span>
+								{:else}
+									<span class="tw-inline-block tw-h-1.5 tw-w-1.5 tw-rounded-full tw-bg-slate-500"></span>
+									<span class="tw-font-mono tw-text-[10px] tw-font-bold tw-text-slate-400 tw-uppercase">
+										{!p.vpc_approved ? 'VPC Pending' : 'Offline'}
+									</span>
+								{/if}
+							</div>
+						</div>
+
+						<!-- Bottom: Telemetry / Stamina Indicator -->
+						<div class="tw-pt-2 tw-border-t tw-border-slate-800/80 tw-flex tw-items-center tw-justify-between">
+							{#if active}
+								<span class="tw-font-mono tw-text-[9px] tw-font-black tw-text-[#daff0a] tw-tracking-widest tw-uppercase tw-animate-pulse">
+									● ACTIVE RADAR
+								</span>
+							{:else}
+								<span class="tw-font-mono tw-text-[9px] tw-text-slate-500 tw-uppercase tw-tracking-wider">
+									STAMINA: {p.stamina}%
+								</span>
+							{/if}
+							<span class="tw-font-mono tw-text-[9px] tw-text-[#14b8a6] group-hover:tw-translate-x-0.5 tw-transition-transform">
+								SELECT →
+							</span>
+						</div>
+					</div>
+				{/each}
+			</div>
+		{/if}
+	</section>
 </div>
 
 

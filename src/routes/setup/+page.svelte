@@ -6,7 +6,7 @@
 	import Icon from '$lib/components/ui/Icon.svelte';
 	import VanguardAppMark from '$lib/components/ui/VanguardAppMark.svelte';
 	import { httpsCallable } from 'firebase/functions';
-	import { doc, setDoc } from 'firebase/firestore';
+	import { doc, setDoc, getDoc } from 'firebase/firestore';
 	import { getIdTokenResult } from 'firebase/auth';
 	import { applyLoginWaterfall } from '$lib/auth/loginRouting.js';
 	import { handleSignOut } from '$lib/auth/signOutFlow.js';
@@ -84,10 +84,12 @@
 
 	let setupRole = $state<SetupRole>('parent');
 	let wizardStep = $state(1);
+	let firstName = $state('');
+	let lastName = $state('');
 	let displayName = $state('');
 	let orgTab = $state<OrgTab>('dispatch');
 	let dispatchCode = $state('');
-	let dispatchResolved = $state<{ clubId: string; clubName: string; teamName: string } | null>(null);
+	let dispatchResolved = $state<{ clubId: string; teamId?: string; clubName: string; teamName: string } | null>(null);
 	let joinableClubs = $state<JoinableClub[]>([]);
 	let clubsLoading = $state(false);
 	let clubsLoadError = $state('');
@@ -148,7 +150,12 @@
 
 	function canAdvanceFromStep(step: number): boolean {
 		if (step === 1) return true;
-		if (step === 2) return displayName.trim().length > 0;
+		if (step === 2) {
+			if (setupRole === 'parent') {
+				return firstName.trim().length > 0 && lastName.trim().length > 0;
+			}
+			return displayName.trim().length > 0;
+		}
 		if (setupRole === 'parent' && step === 3) {
 			return !!(dispatchResolved?.clubId || selectedClubId);
 		}
@@ -160,8 +167,11 @@
 	function goNext() {
 		errorMsg = '';
 		if (!canAdvanceFromStep(wizardStep)) {
-			if (wizardStep === 2) errorMsg = 'Please enter your display name.';
-			else if (setupRole === 'parent' && wizardStep === 3) {
+			if (wizardStep === 2) {
+				errorMsg = setupRole === 'parent'
+					? 'Please enter both your first and last name.'
+					: 'Please enter your display name.';
+			} else if (setupRole === 'parent' && wizardStep === 3) {
 				errorMsg =
 					'Select a club or enter a valid dispatch code from your coach.';
 			} else if (
@@ -231,6 +241,7 @@
 			}
 			dispatchResolved = {
 				clubId: data.clubId,
+				teamId: data.teamId,
 				clubName: data.clubName,
 				teamName: data.teamName,
 			};
@@ -258,15 +269,20 @@
 	}
 
 	async function completeSetup() {
-		const name = displayName.trim();
+		const fName = firstName.trim();
+		const lName = lastName.trim();
+		const fullName = setupRole === 'parent'
+			? `${fName} ${lName}`.trim()
+			: (displayName.trim() || `${fName} ${lName}`.trim());
+
 		if (!termsAccepted) {
 			return (errorMsg = 'You must acknowledge the Vanguard Protocol Terms before continuing.');
 		}
 		if (setupRole === 'parent' && !resolvedClubId()) {
 			return (errorMsg = 'Please select your club or enter a dispatch code.');
 		}
-		if (!name) {
-			return (errorMsg = 'Please enter your display name.');
+		if (!fullName) {
+			return (errorMsg = 'Please enter your name.');
 		}
 
 		const userEmail = auth.currentUser?.email?.toLowerCase();
@@ -280,10 +296,6 @@
 			const userRef = doc(db, 'users', userEmail);
 			const joinedAt = new Date();
 
-			// Force a fresh token so the Firestore rules' authed() check
-			// receives the current claims (role + clubId) in the JWT.
-			// Without this, a brand-new Google sign-in has no claims yet
-			// and authed() returns false, causing a 403.
 			if (auth.currentUser) {
 				try {
 					await auth.currentUser.getIdToken(true);
@@ -293,14 +305,48 @@
 			}
 
 			if (setupRole === 'parent') {
-				// Strip the Svelte 5 Proxy from all reactive state before
-				// passing to Firestore — prevents 400 serialization failures on mobile.
 				const payload = $state.snapshot({
-					playerName: name,
+					firstName: fName,
+					lastName: lName,
+					displayName: fullName,
+					parentName: fullName,
+					playerName: fullName,
+					role: 'parent',
+					clubId: resolvedClubId() || null,
+					teamId: dispatchResolved?.teamId || null,
 					joinedAt,
 					...basePrivacy,
 				});
 				await setDoc(userRef, payload, { merge: true });
+
+				const uSnap = await getDoc(userRef);
+				const existingHhId = uSnap.exists() ? uSnap.data()?.householdId : null;
+				const effectiveHhId = existingHhId || `hh_${userEmail.replace(/[^a-zA-Z0-9]/g, '_').slice(0, 24)}`;
+				const hhRef = doc(db, 'households', effectiveHhId);
+				await setDoc(
+					hhRef,
+					{
+						id: effectiveHhId,
+						parentFirstName: fName,
+						parentLastName: lName,
+						parentNames: [fullName],
+						parentEmails: [userEmail],
+						clubId: resolvedClubId() || null,
+						teamId: dispatchResolved?.teamId || null,
+						guardians: [{
+							email: userEmail,
+							firstName: fName,
+							lastName: lName,
+							name: fullName,
+						}],
+						updatedAt: new Date(),
+					},
+					{ merge: true }
+				);
+
+				if (!existingHhId) {
+					await setDoc(userRef, { householdId: effectiveHhId }, { merge: true });
+				}
 			} else {
 				const claimResult = await claimCoachInviteCallable({});
 				const claimData = claimResult.data as { ok: boolean; claimed: boolean; teamId?: string };
@@ -310,10 +356,9 @@
 					saving = false;
 					return;
 				}
-				// claimCoachInvite writes role+clubId+teamId via Admin SDK.
-				// We only write safe, non-RBAC profile fields from the client.
 				const payload = $state.snapshot({
-					playerName: name,
+					displayName: fullName,
+					playerName: fullName,
 					joinedAt,
 					...basePrivacy,
 				});
@@ -420,26 +465,47 @@
 					Club directors are invited by your organization admin — use the link you received or contact support.
 				</p>
 			{:else if wizardStep === 2}
-				<label for="setup-name">
-					{#if setupRole === 'parent'}
-						Your name (as parent / guardian)
-					{:else}
-						Your name (as coach)
-					{/if}
-				</label>
-				<input
-					id="setup-name"
-					type="text"
-					bind:value={displayName}
-					placeholder="e.g. Alex Morgan"
-					autocomplete="name"
-				/>
 				{#if setupRole === 'parent'}
-					<p class="setup-helper-text">
-						Players under 13 must be created by a parent in the Household Clearance flow — you cannot add a
-						"player account" here.
+					<div class="tw-grid tw-grid-cols-2 tw-gap-3">
+						<div>
+							<label for="setup-first-name" class="tw-block tw-font-mono tw-text-xs tw-text-slate-300 tw-mb-1">
+								First name
+							</label>
+							<input
+								id="setup-first-name"
+								type="text"
+								bind:value={firstName}
+								placeholder="e.g. Sarah"
+								autocomplete="given-name"
+								class="tw-w-full tw-bg-slate-900 tw-border tw-border-slate-700 tw-rounded tw-px-3 tw-py-2 tw-text-white tw-font-mono tw-text-sm focus:tw-border-cyan-500 focus:tw-outline-none"
+							/>
+						</div>
+						<div>
+							<label for="setup-last-name" class="tw-block tw-font-mono tw-text-xs tw-text-slate-300 tw-mb-1">
+								Last name
+							</label>
+							<input
+								id="setup-last-name"
+								type="text"
+								bind:value={lastName}
+								placeholder="e.g. Vance"
+								autocomplete="family-name"
+								class="tw-w-full tw-bg-slate-900 tw-border tw-border-slate-700 tw-rounded tw-px-3 tw-py-2 tw-text-white tw-font-mono tw-text-sm focus:tw-border-cyan-500 focus:tw-outline-none"
+							/>
+						</div>
+					</div>
+					<p class="setup-helper-text tw-mt-2">
+						Your first and last name will appear on your household roster and team clearance records.
 					</p>
 				{:else}
+					<label for="setup-name">Your name (as coach)</label>
+					<input
+						id="setup-name"
+						type="text"
+						bind:value={displayName}
+						placeholder="e.g. Alex Morgan"
+						autocomplete="name"
+					/>
 					<p class="setup-helper-text">
 						Your director must send an invite to your email address first. You'll claim that invite on the final
 						step.

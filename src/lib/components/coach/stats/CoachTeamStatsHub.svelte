@@ -157,7 +157,22 @@
 
 	// ── Derived Aggregate Metrics ──────────────────────────────────────────────
 	const selectedPlayer = $derived(
-		selectedPlayerId === 'ALL' ? null : members.find((m) => m.id === selectedPlayerId) || null
+		selectedPlayerId === 'ALL'
+			? null
+			: members.find((m) => {
+					if (!selectedPlayerId) return false;
+					const target = selectedPlayerId.trim().toLowerCase();
+					const mId = m.id.toLowerCase();
+					const mName = m.name.toLowerCase();
+					return (
+						mId === target ||
+						mName === target ||
+						target.includes(mName) ||
+						mName.includes(target) ||
+						mId.includes(target.replace(/\s+/g, '_')) ||
+						target.includes(mId)
+					);
+				}) || null
 	);
 
 	const teamAverageSkills = $derived.by(() => {
@@ -252,7 +267,7 @@
 		<div class="tw-flex tw-items-center tw-gap-2">
 			<span class="tw-font-mono tw-text-[11px] tw-text-slate-400 tw-uppercase">Drill Down:</span>
 			<select
-				value={selectedPlayerId}
+				value={selectedPlayer ? selectedPlayer.id : 'ALL'}
 				onchange={(e) => handleSelect((e.target as HTMLSelectElement).value)}
 				class="tw-bg-[#020617] tw-border tw-border-[#334155] tw-text-white tw-font-mono tw-text-xs tw-rounded-lg tw-px-3 tw-py-2 focus:tw-border-[#14b8a6] focus:tw-outline-none tw-cursor-pointer hover:tw-border-slate-500 tw-transition-colors"
 			>
@@ -263,6 +278,16 @@
 					</option>
 				{/each}
 			</select>
+			{#if selectedPlayer}
+				<button
+					type="button"
+					onclick={() => handleSelect('ALL')}
+					class="tw-bg-slate-800 hover:tw-bg-slate-700 tw-border tw-border-slate-600 tw-text-slate-200 tw-font-mono tw-text-[11px] tw-px-2.5 tw-py-2 tw-rounded-lg tw-transition-colors tw-cursor-pointer"
+					title="Reset to squad average"
+				>
+					✕ Reset
+				</button>
+			{/if}
 		</div>
 	</div>
 

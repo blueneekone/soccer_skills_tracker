@@ -2,7 +2,19 @@
 	import { browser } from '$app/environment';
 	import { db, functions } from '$lib/firebase.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
-	import { collection, query, where, onSnapshot, doc, getDoc, type Unsubscribe } from 'firebase/firestore';
+	import {
+		collection,
+		query,
+		where,
+		onSnapshot,
+		doc,
+		getDoc,
+		getDocs,
+		updateDoc,
+		arrayUnion,
+		arrayRemove,
+		type Unsubscribe,
+	} from 'firebase/firestore';
 	import { httpsCallable } from 'firebase/functions';
 
 	interface Props {
@@ -12,6 +24,9 @@
 
 	interface HouseholdRow {
 		id: string;
+		parentName?: string;
+		parentFirstName?: string;
+		parentLastName?: string;
 		parentEmails: string[];
 		playerNames: string[];
 		phone?: string;
@@ -28,6 +43,90 @@
 
 	const callableUpdateStaffRole = httpsCallable(functions, 'callableUpdateStaffRole');
 
+	function parseHouseholdDocs(docs: any[], staffSet: Set<string>, hhMap: Map<string, HouseholdRow>) {
+		for (const hDoc of docs) {
+			const hData = hDoc.data() || {};
+			const hid = hDoc.id;
+			const pEmails = Array.isArray(hData.parentEmails) ? hData.parentEmails : [];
+			const pNames = Array.isArray(hData.playerNames) ? hData.playerNames : [];
+			const pName = hData.parentName ||
+				(hData.parentFirstName ? `${hData.parentFirstName} ${hData.parentLastName || ''}`.trim() :
+				(Array.isArray(hData.parentNames) ? hData.parentNames[0] : ''));
+			const primaryEmail = pEmails[0] ? pEmails[0].toLowerCase().trim() : '';
+			const isStaff = primaryEmail && staffSet.has(primaryEmail);
+
+			hhMap.set(hid, {
+				id: hid,
+				parentName: pName || '',
+				parentFirstName: hData.parentFirstName || '',
+				parentLastName: hData.parentLastName || '',
+				parentEmails: pEmails.map((e: string) => e.toLowerCase().trim()).filter(Boolean),
+				playerNames: pNames,
+				phone: hData.phone || '',
+				assignedRole: isStaff ? 'assistant_coach' : 'none',
+			});
+		}
+	}
+
+	function parseLookupDocs(docs: any[], staffSet: Set<string>, hhMap: Map<string, HouseholdRow>) {
+		for (const docSnap of docs) {
+			const d = docSnap.data() || {};
+			const pEmails = Array.isArray(d.parentEmails) ? d.parentEmails : d.parentEmail ? [d.parentEmail] : [];
+			const playerName = d.playerName || d.displayName || 'Athlete';
+			const phone = d.parentPhone || '';
+			const hid = d.householdId || (pEmails[0] ? `hh_${pEmails[0]}` : docSnap.id);
+			const pName = d.parentName || (d.parentFirstName ? `${d.parentFirstName} ${d.parentLastName || ''}`.trim() : '');
+
+			const existing = hhMap.get(hid);
+			if (existing) {
+				if (!existing.playerNames.includes(playerName)) existing.playerNames.push(playerName);
+				pEmails.forEach((em: string) => {
+					const norm = em.toLowerCase().trim();
+					if (norm && !existing.parentEmails.includes(norm)) existing.parentEmails.push(norm);
+				});
+				if (!existing.phone && phone) existing.phone = phone;
+				if (!existing.parentName && pName) existing.parentName = pName;
+			} else {
+				const primaryEmail = pEmails[0] ? pEmails[0].toLowerCase().trim() : '';
+				const isStaff = primaryEmail && staffSet.has(primaryEmail);
+				hhMap.set(hid, {
+					id: hid,
+					parentName: pName || '',
+					parentFirstName: d.parentFirstName || '',
+					parentLastName: d.parentLastName || '',
+					parentEmails: pEmails.map((e: string) => e.toLowerCase().trim()).filter(Boolean),
+					playerNames: [playerName],
+					phone,
+					assignedRole: isStaff ? 'assistant_coach' : 'none',
+				});
+			}
+		}
+	}
+
+	async function enrichWithUserData(rows: HouseholdRow[]) {
+		for (const row of rows) {
+			if (!row.parentName && row.parentEmails.length > 0) {
+				for (const em of row.parentEmails) {
+					try {
+						const uSnap = await getDoc(doc(db, 'users', em));
+						if (uSnap.exists()) {
+							const u = uSnap.data() || {};
+							const name = u.displayName || (u.firstName ? `${u.firstName} ${u.lastName || ''}`.trim() : u.parentName);
+							if (name) {
+								row.parentName = name;
+								row.parentFirstName = u.firstName || '';
+								row.parentLastName = u.lastName || '';
+								break;
+							}
+						}
+					} catch {
+						// Non-blocking
+					}
+				}
+			}
+		}
+	}
+
 	$effect(() => {
 		if (!browser || !teamId || !db || !authStore.isAuthenticated) {
 			loading = false;
@@ -37,7 +136,6 @@
 		loading = true;
 		errorMsg = '';
 
-		// 1. Fetch team expandedStaff
 		let staffSet = new Set<string>();
 		getDoc(doc(db, 'teams', teamId))
 			.then((snap) => {
@@ -49,41 +147,27 @@
 			})
 			.catch((e) => console.warn('[RosterHouseholdsTab] team load warning:', e));
 
-		// 2. Query households and player_lookup for team
 		const qLookup = query(collection(db, 'player_lookup'), where('teamId', '==', teamId));
+		const qHh = query(collection(db, 'households'), where('teamId', '==', teamId));
+
 		const unsub: Unsubscribe = onSnapshot(
 			qLookup,
 			async (lookupSnap) => {
 				const hhMap = new Map<string, HouseholdRow>();
 
-				for (const docSnap of lookupSnap.docs) {
-					const d = docSnap.data() || {};
-					const pEmails = Array.isArray(d.parentEmails) ? d.parentEmails : d.parentEmail ? [d.parentEmail] : [];
-					const playerName = d.playerName || d.displayName || 'Athlete';
-					const phone = d.parentPhone || '';
-					const hid = d.householdId || (pEmails[0] ? `hh_${pEmails[0]}` : docSnap.id);
-
-					const existing = hhMap.get(hid);
-					if (existing) {
-						if (!existing.playerNames.includes(playerName)) existing.playerNames.push(playerName);
-						pEmails.forEach((em: string) => {
-							if (!existing.parentEmails.includes(em.toLowerCase())) existing.parentEmails.push(em.toLowerCase());
-						});
-						if (!existing.phone && phone) existing.phone = phone;
-					} else {
-						const primaryEmail = pEmails[0] ? pEmails[0].toLowerCase().trim() : '';
-						const isStaff = primaryEmail && staffSet.has(primaryEmail);
-						hhMap.set(hid, {
-							id: hid,
-							parentEmails: pEmails.map((e: string) => e.toLowerCase().trim()),
-							playerNames: [playerName],
-							phone,
-							assignedRole: isStaff ? 'assistant_coach' : 'parent',
-						});
-					}
+				try {
+					const hhSnap = await getDocs(qHh);
+					parseHouseholdDocs(hhSnap.docs, staffSet, hhMap);
+				} catch {
+					// Soft fallback if households collection is restricted
 				}
 
-				households = Array.from(hhMap.values());
+				parseLookupDocs(lookupSnap.docs, staffSet, hhMap);
+
+				const rows = Array.from(hhMap.values());
+				await enrichWithUserData(rows);
+
+				households = rows;
 				loading = false;
 			},
 			(err) => {
@@ -111,7 +195,19 @@
 				role: newRole,
 			});
 			household.assignedRole = newRole;
-			successMsg = `Updated ${targetEmail} to ${newRole === 'assistant_coach' ? 'Assistant Coach (Coach OS access granted)' : newRole}.`;
+
+			const emNorm = targetEmail.toLowerCase().trim();
+			if (newRole === 'none' || newRole === 'clear') {
+				await updateDoc(doc(db, 'teams', teamId), {
+					expandedStaff: arrayRemove(emNorm)
+				}).catch(() => {});
+				successMsg = `Cleared additional staff role for ${targetEmail}. Guardian status maintained.`;
+			} else {
+				await updateDoc(doc(db, 'teams', teamId), {
+					expandedStaff: arrayUnion(emNorm)
+				}).catch(() => {});
+				successMsg = `Assigned ${newRole === 'assistant_coach' ? 'Assistant Coach' : newRole} to ${targetEmail}.`;
+			}
 			setTimeout(() => { successMsg = ''; }, 4000);
 		} catch (err: any) {
 			console.error('[RosterHouseholdsTab] update role error:', err);
@@ -147,11 +243,12 @@
 			<table class="tw-w-full tw-text-left tw-border-collapse tw-font-mono tw-text-xs">
 				<thead>
 					<tr class="tw-bg-[#020617] tw-border-b tw-border-slate-800 tw-text-[#14b8a6]">
+						<th class="tw-p-3 tw-font-bold tw-tracking-wider">PARENT / GUARDIAN</th>
 						<th class="tw-p-3 tw-font-bold tw-tracking-wider">GUARDIAN EMAIL</th>
 						<th class="tw-p-3 tw-font-bold tw-tracking-wider">PHONE</th>
 						<th class="tw-p-3 tw-font-bold tw-tracking-wider">ATHLETES</th>
-						<th class="tw-p-3 tw-font-bold tw-tracking-wider">CURRENT ROLE</th>
-						<th class="tw-p-3 tw-font-bold tw-tracking-wider tw-text-right">ASSIGN ROLE</th>
+						<th class="tw-p-3 tw-font-bold tw-tracking-wider">STAFF PERMISSIONS</th>
+						<th class="tw-p-3 tw-font-bold tw-tracking-wider tw-text-right">ASSIGN ADDITIONAL ROLE</th>
 					</tr>
 				</thead>
 				<tbody class="tw-divide-y tw-divide-slate-800/80 tw-bg-[#0f172a]/60">
@@ -159,6 +256,15 @@
 						{@const primaryEmail = hh.parentEmails[0] || '—'}
 						<tr class="hover:tw-bg-[#0f172a] tw-transition-colors">
 							<td class="tw-p-3 tw-text-white tw-font-bold">
+								{#if hh.parentName}
+									<span class="tw-text-white tw-font-bold">{hh.parentName}</span>
+								{:else}
+									<span class="tw-text-amber-400/90 tw-text-[10px] tw-font-mono tw-border tw-border-amber-500/30 tw-bg-amber-950/30 tw-px-2 tw-py-0.5 tw-rounded">
+										⏳ Pending Onboarding
+									</span>
+								{/if}
+							</td>
+							<td class="tw-p-3 tw-text-slate-200">
 								{primaryEmail}
 								{#if hh.parentEmails.length > 1}
 									<span class="tw-text-slate-500 tw-text-[10px] tw-block">+{hh.parentEmails.length - 1} more</span>
@@ -185,23 +291,28 @@
 									<span class="tw-bg-amber-500/20 tw-border tw-border-amber-500 tw-text-amber-300 tw-px-2 tw-py-0.5 tw-rounded tw-font-bold tw-text-[10px]">
 										📋 TEAM MANAGER
 									</span>
+								{:else if hh.assignedRole === 'schedule_manager'}
+									<span class="tw-bg-sky-500/20 tw-border tw-border-sky-500 tw-text-sky-300 tw-px-2 tw-py-0.5 tw-rounded tw-font-bold tw-text-[10px]">
+										📅 SCHEDULE COORD
+									</span>
 								{:else}
-									<span class="tw-text-slate-400 tw-text-[11px]">
-										Guardian / Parent
+									<span class="tw-text-slate-500 tw-text-[11px]">
+										Guardian Only
 									</span>
 								{/if}
 							</td>
 							<td class="tw-p-3 tw-text-right">
 								<div class="tw-flex tw-items-center tw-justify-end tw-gap-1.5">
 									<select
-										class="tw-bg-[#020617] tw-border tw-border-slate-700 tw-text-slate-200 tw-px-2 tw-py-1 tw-rounded tw-text-[11px] focus:tw-border-[#14b8a6] focus:tw-outline-none"
-										value={hh.assignedRole}
+										class="tw-bg-[#020617] tw-border tw-border-slate-700 tw-text-slate-200 tw-px-2.5 tw-py-1.5 tw-rounded tw-text-[11px] focus:tw-border-[#14b8a6] focus:tw-outline-none"
+										value={hh.assignedRole || 'none'}
 										disabled={hh.isUpdating || !primaryEmail || primaryEmail === '—'}
 										onchange={(e) => handleAssignRole(hh, primaryEmail, (e.target as HTMLSelectElement).value)}
 									>
-										<option value="parent">Parent / Guardian</option>
-										<option value="assistant_coach">Assistant Coach</option>
-										<option value="team_manager">Team Manager</option>
+										<option value="none">None (Guardian Only)</option>
+										<option value="assistant_coach">⚡ Assistant Coach (Coach OS)</option>
+										<option value="team_manager">📋 Team Manager</option>
+										<option value="schedule_manager">📅 Schedule Coordinator</option>
 									</select>
 								</div>
 							</td>
@@ -212,3 +323,4 @@
 		</div>
 	{/if}
 </div>
+

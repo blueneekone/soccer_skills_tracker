@@ -42,6 +42,15 @@ describe('Domain 1: Guardian Personas & Ingest Household Decoupling', () => {
 		expect(src).toMatch(/households/);
 		expect(src).toMatch(/buildLookupPayload/);
 	});
+
+	it('setup page captures parent first and last name and persists to households entity', () => {
+		const setupSrc = readFileSync(join(ROOT, 'src/routes/setup/+page.svelte'), 'utf-8');
+		expect(setupSrc).toMatch(/setup-first-name/);
+		expect(setupSrc).toMatch(/setup-last-name/);
+		expect(setupSrc).toMatch(/parentFirstName/);
+		expect(setupSrc).toMatch(/parentLastName/);
+		expect(setupSrc).toMatch(/households/);
+	});
 });
 
 describe('Domain 2: Team Ops Multi-Tab Roster & Role Assignment', () => {
@@ -75,11 +84,28 @@ describe('Domain 2: Team Ops Multi-Tab Roster & Role Assignment', () => {
 		expect(src).toMatch(/RosterTournamentFeesTab/);
 	});
 
-	it('RosterHouseholdsTab wires callableUpdateStaffRole to promote parent to assistant_coach', () => {
+	it('RosterHouseholdsTab renders guardian names and emails from multi-source queries', () => {
 		const src = readFileSync(HOUSEHOLDS_TAB, 'utf-8');
-		expect(src).toMatch(/callableUpdateStaffRole/);
-		expect(src).toMatch(/assistant_coach/);
-		expect(src).toMatch(/team_manager/);
+		expect(src).toMatch(/PARENT \/ GUARDIAN/);
+		expect(src).toMatch(/GUARDIAN EMAIL/);
+		expect(src).toMatch(/parseHouseholdDocs/);
+		expect(src).toMatch(/parseLookupDocs/);
+		expect(src).toMatch(/enrichWithUserData/);
+	});
+
+	it('RosterHouseholdsTab offers additional role options and baseline guardian status', () => {
+		const src = readFileSync(HOUSEHOLDS_TAB, 'utf-8');
+		expect(src).toMatch(/None \(Guardian Only\)/);
+		expect(src).toMatch(/Assistant Coach/);
+		expect(src).toMatch(/Team Manager/);
+		expect(src).toMatch(/Schedule Coordinator/);
+	});
+
+	it('staffPermissionsOps supports none and clear to restore baseline parent role', () => {
+		const staffSrc = readFileSync(join(ROOT, 'functions/src/domains/staffPermissionsOps.js'), 'utf-8');
+		expect(staffSrc).toMatch(/clearStaffAuthAndTeam/);
+		expect(staffSrc).toMatch(/ALLOWED_STAFF_ROLES\.has\(newRole\)/);
+		expect(staffSrc).toMatch(/newRole === 'none' \|\| newRole === 'clear'/);
 	});
 });
 
@@ -97,10 +123,21 @@ describe('Domain 3: Mission Control Readiness & Telemetry Integration', () => {
 		expect(src).toMatch(/editProfile/);
 	});
 
-	it('CoachTeamStatsHub synchronizes selectedPlayerId prop to focus individual radar', () => {
+	it('CoachTeamStatsHub synchronizes selectedPlayerId prop and provides reset action', () => {
 		const src = readFileSync(STATS_HUB, 'utf-8');
 		expect(src).toMatch(/propPlayerId/);
 		expect(src).toMatch(/onSelectPlayer/);
+		expect(src).toMatch(/handleSelect/);
+		expect(src).toMatch(/✕ Reset/);
+	});
+
+	it('SquadMatrix implements card selection and dedicated profile drawer button', () => {
+		const squadMatrixSrc = readFileSync(join(ROOT, 'src/lib/components/coach/SquadMatrix.svelte'), 'utf-8');
+		expect(squadMatrixSrc).toMatch(/handleCardClick/);
+		expect(squadMatrixSrc).toMatch(/isPlayerSelected/);
+		expect(squadMatrixSrc).toMatch(/openDrawer\(p\.rosterKey\)/);
+		expect(squadMatrixSrc).toMatch(/SQUAD UPTIME · LIVE TICKER/);
+		expect(squadMatrixSrc).toMatch(/READINESS SCORE/);
 	});
 });
 

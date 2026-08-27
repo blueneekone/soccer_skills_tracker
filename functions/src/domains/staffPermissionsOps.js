@@ -13,6 +13,8 @@ const ALLOWED_STAFF_ROLES = new Set([
   'schedule_manager',
   'event_manager',
   'head_coach',
+  'none',
+  'clear',
 ]);
 
 async function syncStaffAuthAndTeam(clubId, teamId, targetUserId, newRole) {
@@ -49,6 +51,33 @@ async function syncStaffAuthAndTeam(clubId, teamId, targetUserId, newRole) {
     });
   } catch (e) {
     logger.warn('[callableUpdateStaffRole] claims update skipped', e);
+  }
+}
+
+async function clearStaffAuthAndTeam(clubId, teamId, targetUserId) {
+  const emailNorm = targetUserId.toLowerCase().trim();
+  await db().collection('teams').doc(teamId).set(
+    { expandedStaff: admin.firestore.FieldValue.arrayRemove(emailNorm) },
+    { merge: true }
+  );
+
+  const uRef = db().collection('users').doc(emailNorm);
+  const uSnap = await uRef.get();
+  if (uSnap.exists) {
+    await uRef.update({ role: 'parent', updatedAt: admin.firestore.FieldValue.serverTimestamp() });
+  }
+
+  try {
+    const userRecord = emailNorm.includes('@') ?
+      await admin.auth().getUserByEmail(emailNorm) :
+      await admin.auth().getUser(emailNorm);
+    const existingClaims = userRecord.customClaims || {};
+    await admin.auth().setCustomUserClaims(userRecord.uid, {
+      ...existingClaims,
+      role: 'parent',
+    });
+  } catch (e) {
+    logger.warn('[callableUpdateStaffRole] claims clear skipped', e);
   }
 }
 
@@ -90,8 +119,15 @@ exports.callableUpdateStaffRole = onCall({ region: REGION }, async (request) => 
   }
 
   const staffRef = db().collection('clubs').doc(clubId).collection('teams').doc(teamId).collection('staff').doc(targetUserId);
-  const now = admin.firestore.FieldValue.serverTimestamp();
 
+  if (newRole === 'none' || newRole === 'clear') {
+    await staffRef.delete().catch(() => {});
+    await clearStaffAuthAndTeam(clubId, teamId, targetUserId);
+    logger.info(`[callableUpdateStaffRole] Cleared staff role for ${targetUserId} in team ${teamId}`);
+    return { ok: true, clubId, teamId, targetUserId, role: 'none' };
+  }
+
+  const now = admin.firestore.FieldValue.serverTimestamp();
   await staffRef.set(
     { clubId, teamId, userId: targetUserId, role: newRole, updatedAt: now, updatedBy: request.auth.uid },
     { merge: true }
