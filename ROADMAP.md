@@ -7,6 +7,9 @@
 
 ### 8-Persona System Readiness Status:
 
+0. **Login / Onboarding Router**: 🟢 **READY**
+   * Multi-Persona onboarding flows added and the hydration race condition in the layout routing guard resolved.
+
 1. **Global Admin OS (Command Plane)**: 🟢 **READY**
    * Verified `impersonateUserFn` security claims and route mappings. Patch implemented to prevent unauthenticated client modifications [cite: 361].
 
