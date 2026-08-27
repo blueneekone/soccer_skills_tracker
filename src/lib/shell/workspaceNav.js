@@ -31,13 +31,9 @@ export const directorLinks = [
 /** @type {ShellNavItem[]} */
 export const coachLinks = [
 	{ label: 'Mission Control',       href: '/coach/dashboard',               icon: 'content.grid' },
-	{ label: 'The Forge',         href: '/coach/forge',         icon: 'game.dumbbell' },
-	// War Room (/coach/tactical) — Tier 2 per PRODUCT_SURFACE_REGISTRY PS-C04
-	{ label: 'War Room',          href: '/coach/tactical',      icon: 'action.edit' },
-	{ label: 'Match Day',         href: '/coach/matchday',      icon: 'data.activity' },
-	{ label: 'Scouting',          href: '/coach/scouting',      icon: 'data.target' },
+	{ label: 'Tactics & Training',    href: '/coach/tactics-and-training',     icon: 'data.target' },
+	{ label: 'Scouting',          href: '/coach/scouting',      icon: 'data.activity' },
 	{ label: 'Team Ops',          href: '/coach/logistics',     icon: 'sys.calendar' },
-	// Trial Builder (/coach/trial-builder) — REMOVED per SURFACE-MERGE-TRIAL-EVAL; redirect → /coach/scouting?tab=roster-eval
 ];
 
 /**
@@ -108,7 +104,7 @@ function buildPrimaryFieldNavLinks(links, ctx, role) {
 	switch (ctx) {
 		case 'coach': {
 			const pick = (/** @type {string} */ href) => links.find((l) => l.href === href);
-			return [pick('/coach'), pick('/coach/forge'), coachTeamCommsNavItem].filter(Boolean);
+			return [pick('/coach'), pick('/coach/tactics-and-training') || pick('/coach/forge'), coachTeamCommsNavItem].filter(Boolean);
 		}
 		case 'household':
 			if (role === 'parent') {
