@@ -59,42 +59,46 @@
 	});
 </script>
 
-<div class="tw-relative tw-min-h-screen tw-w-full tw-bg-[#020617] tw-text-[#fafafa] tw-font-mono coach-forge-workbench tw-pb-16">
-	<header
-		class="tw-bg-[#0f172a] tw-border-b tw-border-[#334155] tw-px-6 tw-py-4 tw-flex tw-items-center tw-justify-between tw-gap-4 tw-flex-wrap tw-sticky tw-top-0 tw-z-30 tw-shadow-lg"
-	>
-		<div class="tw-flex tw-flex-col tw-gap-0.5">
-			<h1 class="tw-text-xl tw-font-black tw-tracking-wider tw-text-white tw-flex tw-items-center tw-gap-2">
-				<span class="tw-text-[#14b8a6]">{titleLead}</span>
-				{#if titleAccent}
-					<span>{titleAccent}</span>
-				{/if}
-			</h1>
-			<p class="tw-text-[11px] tw-tracking-widest tw-text-[#94a3b8] tw-uppercase">
-				{subtitle}
-			</p>
+<div class="tw-flex tw-flex-col tw-gap-6 tw-w-full tw-text-slate-200 tw-font-mono coach-forge-workbench">
+	<!-- Executive Header & Control Bar (Matching Drill Designer & Library) -->
+	<div class="tw-bg-[#080d1a]/60 tw-backdrop-blur-md tw-border tw-border-slate-800/80 tw-rounded-2xl tw-p-6 tw-flex tw-flex-col md:tw-flex-row md:tw-items-center tw-justify-between tw-gap-5 tw-shadow-2xl">
+		<div class="tw-flex tw-items-center tw-gap-4">
+			<div class="tw-h-12 tw-w-12 tw-rounded-xl tw-bg-slate-800/60 tw-border tw-border-slate-700/80 tw-flex tw-items-center tw-justify-center tw-text-slate-200 tw-font-mono tw-font-bold tw-text-xl tw-shadow-inner">
+				🎯
+			</div>
+			<div>
+				<h2 class="tw-text-slate-100 tw-font-bold tw-text-lg tw-flex tw-items-center tw-gap-3">
+					<span>{titleLead} {titleAccent}</span>
+					<span class="tw-bg-slate-800 tw-text-slate-300 tw-border tw-border-slate-700 tw-font-mono tw-text-[10px] tw-px-2.5 tw-py-1 tw-rounded-md tw-tracking-widest tw-uppercase">
+						ACTIVE ROSTER
+					</span>
+				</h2>
+				<p class="tw-text-sm tw-text-slate-400 tw-mt-1">
+					Deploy training missions, prescribe volume & XP benchmarks, and monitor active assignments across your squad.
+				</p>
+			</div>
 		</div>
 
-		<div class="tw-flex tw-items-center tw-gap-3 tw-flex-wrap">
+		<div class="tw-flex tw-items-center tw-gap-3 tw-bg-[#030712]/50 tw-p-2 tw-rounded-xl tw-border tw-border-slate-800/60">
 			{#if showDrillLibraryLink}
 				<a
-					href={resolve('/(app)/coach/drills', {})}
-					class="tw-text-xs tw-font-bold tw-tracking-widest tw-uppercase tw-text-[#14b8a6] tw-no-underline tw-border tw-border-[#14b8a6]/40 tw-bg-[#14b8a6]/10 tw-rounded tw-px-3 tw-py-1.5 hover:tw-bg-[#14b8a6]/20 hover:tw-text-[#2dd4bf] tw-transition-all"
+					href={resolve('/(app)/coach/forge', {})}
+					class="tw-text-xs tw-font-mono tw-font-semibold tw-text-slate-300 hover:tw-text-white tw-no-underline tw-border tw-border-slate-700 tw-bg-slate-800/80 tw-rounded-lg tw-px-3 tw-py-1.5 hover:tw-bg-slate-700 tw-transition-all"
 				>
 					Drill Library →
 				</a>
 			{/if}
 
 			{#if currentTeam}
-				<span class="tw-text-xs tw-text-[#e2e8f0] tw-font-mono tw-tracking-wide tw-bg-[#1e293b] tw-px-3 tw-py-1.5 tw-rounded tw-border tw-border-[#334155]">
-					<span class="tw-text-[#14b8a6]">&#x25B6;</span> {currentTeam.name}
+				<span class="tw-font-mono tw-text-xs tw-text-slate-300 tw-px-2.5 tw-py-1 tw-flex tw-items-center tw-gap-1.5">
+					<span class="tw-text-slate-500">▶</span> {currentTeam.name}
 				</span>
 			{/if}
 
 			{#if myTeams.length > 1}
 				<select
 					bind:value={teamScope.selectedTeamId}
-					class="tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-text-[#fafafa] tw-rounded-lg tw-px-3 tw-py-2 tw-font-mono tw-text-xs tw-outline-none tw-cursor-pointer hover:tw-border-[#14b8a6] tw-transition-colors tw-min-h-[40px]"
+					class="tw-bg-[#0f172a] tw-border tw-border-slate-700 tw-text-slate-200 tw-font-mono tw-text-xs tw-rounded-lg tw-px-3 tw-py-2 focus:tw-border-slate-500 focus:tw-outline-none tw-cursor-pointer hover:tw-border-slate-500 tw-transition-all"
 				>
 					{#each myTeams as team (team.id)}
 						<option value={team.id}>{team.name}</option>
@@ -102,9 +106,10 @@
 				</select>
 			{/if}
 		</div>
-	</header>
+	</div>
 
-	<main class="tw-px-4 md:tw-px-8 tw-py-6 tw-max-w-[1600px] tw-mx-auto">
+	<!-- 12-Column Workbench Grid -->
+	<div class="tw-w-full">
 		<div class="coach-forge-workbench__grid">
 			<section class="coach-forge-workbench__deploy" aria-label="Deploy intent">
 				<ForgeDeployPanel
@@ -170,5 +175,5 @@
 				/>
 			</section>
 		</div>
-	</main>
+	</div>
 </div>

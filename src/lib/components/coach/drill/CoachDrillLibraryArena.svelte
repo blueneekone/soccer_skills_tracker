@@ -128,36 +128,39 @@
 </script>
 
 <div class="tw-flex tw-flex-col tw-gap-6 tw-w-full tw-text-slate-200">
-	<!-- Executive Header & Control Bar (Multi-Billion-Dollar Design) -->
-	<div class="tw-bg-[#0f172a] tw-border tw-border-[#1e293b] tw-rounded-2xl tw-p-5 tw-flex tw-flex-col tw-gap-4 tw-shadow-xl">
+	<!-- Executive Header & Control Bar (Matching Intent Engine & Designer) -->
+	<div class="tw-bg-[#080d1a]/60 tw-backdrop-blur-md tw-border tw-border-slate-800/80 tw-rounded-2xl tw-p-6 tw-flex tw-flex-col tw-gap-5 tw-shadow-2xl">
 		<div class="tw-flex tw-flex-col sm:tw-flex-row sm:tw-items-center tw-justify-between tw-gap-4">
-			<div>
-				<div class="tw-flex tw-items-center tw-gap-2.5">
-					<span class="tw-h-2.5 tw-w-2.5 tw-rounded-full tw-bg-[#fbbf24] tw-shadow-[0_0_8px_#fbbf24]"></span>
-					<h2 class="tw-text-white tw-font-bold tw-text-base tw-tracking-wide">
-						Tactical Drill Library & Playbook
-					</h2>
-					<span class="tw-font-mono tw-text-xs tw-text-slate-400">
-						({filteredDrills.length} Available)
-					</span>
+			<div class="tw-flex tw-items-center tw-gap-4">
+				<div class="tw-h-12 tw-w-12 tw-rounded-xl tw-bg-slate-800/60 tw-border tw-border-slate-700/80 tw-flex tw-items-center tw-justify-center tw-text-slate-200 tw-font-mono tw-font-bold tw-text-xl tw-shadow-inner">
+					📚
 				</div>
-				<p class="tw-text-xs tw-text-slate-400 tw-mt-0.5">
-					Browse platform exercises and team tactical playbooks to assign via Intent Engine.
-				</p>
+				<div>
+					<h2 class="tw-text-slate-100 tw-font-bold tw-text-lg tw-flex tw-items-center tw-gap-3">
+						<span>Tactical Drill Library & Playbook</span>
+						<span class="tw-bg-slate-800 tw-text-slate-300 tw-border tw-border-slate-700 tw-font-mono tw-text-[10px] tw-px-2.5 tw-py-1 tw-rounded-md tw-tracking-widest tw-uppercase">
+							{filteredDrills.length} Available
+						</span>
+					</h2>
+					<p class="tw-text-sm tw-text-slate-400 tw-mt-1">
+						Browse platform exercises and team tactical playbooks to assign via Intent Engine.
+					</p>
+				</div>
 			</div>
 
-			<!-- New Drill CTA Button -->
+			<!-- New Drill CTA Button (Dark Aesthetic) -->
 			<button
 				type="button"
-				class="tw-bg-[#14b8a6] hover:tw-bg-teal-400 tw-text-black tw-font-mono tw-text-xs tw-font-bold tw-px-4 tw-py-2.5 tw-rounded-xl tw-shadow-[0_0_15px_rgba(20,184,166,0.3)] active:tw-scale-[0.98] tw-transition-all tw-flex tw-items-center tw-gap-2 tw-self-start sm:tw-self-auto"
+				class="tw-bg-slate-800 hover:tw-bg-slate-700 tw-border tw-border-slate-700 hover:tw-border-slate-600 tw-text-slate-100 tw-font-mono tw-text-xs tw-font-bold tw-px-5 tw-py-2.5 tw-rounded-xl active:tw-scale-[0.98] tw-transition-all tw-duration-200 tw-flex tw-items-center tw-gap-2 tw-self-start sm:tw-self-auto"
 				onclick={onNewDrill}
 			>
-				<span>➕ DESIGN NEW DRILL</span>
+				<span>➕</span>
+				<span>DESIGN NEW DRILL</span>
 			</button>
 		</div>
 
 		<!-- Search & Filter Controls -->
-		<div class="tw-grid tw-grid-cols-1 md:tw-grid-cols-12 tw-gap-3 tw-pt-2 tw-border-t tw-border-[#1e293b]">
+		<div class="tw-grid tw-grid-cols-1 md:tw-grid-cols-12 tw-gap-4 tw-pt-4 tw-border-t tw-border-slate-800/80">
 			<!-- Search Bar (7 cols) -->
 			<div class="md:tw-col-span-7 tw-relative">
 				<input

@@ -188,34 +188,34 @@
 </script>
 
 <div class="tw-flex tw-flex-col tw-gap-6 tw-w-full tw-text-slate-200">
-	<!-- Top Bar: Tactical Selection & Status -->
-	<div class="tw-bg-[#0f172a] tw-border tw-border-[#1e293b] tw-rounded-2xl tw-p-4 tw-flex tw-flex-col md:tw-flex-row md:tw-items-center tw-justify-between tw-gap-4 tw-shadow-xl">
-		<div class="tw-flex tw-items-center tw-gap-3">
-			<div class="tw-h-10 tw-w-10 tw-rounded-xl tw-bg-[#daff0a]/10 tw-border tw-border-[#daff0a]/30 tw-flex tw-items-center tw-justify-center tw-text-[#daff0a] tw-font-mono tw-font-bold tw-text-lg">
+	<!-- Top Bar: Tactical Selection & Status (Matching Intent Engine & Library) -->
+	<div class="tw-bg-[#080d1a]/60 tw-backdrop-blur-md tw-border tw-border-slate-800/80 tw-rounded-2xl tw-p-6 tw-flex tw-flex-col md:tw-flex-row md:tw-items-center tw-justify-between tw-gap-5 tw-shadow-2xl">
+		<div class="tw-flex tw-items-center tw-gap-4">
+			<div class="tw-h-12 tw-w-12 tw-rounded-xl tw-bg-slate-800/60 tw-border tw-border-slate-700/80 tw-flex tw-items-center tw-justify-center tw-text-slate-200 tw-font-mono tw-font-bold tw-text-xl tw-shadow-inner">
 				📐
 			</div>
 			<div>
-				<h2 class="tw-text-white tw-font-bold tw-text-base tw-flex tw-items-center tw-gap-2">
-					Tactical Drill Designer Studio
-					<span class="tw-bg-[#14b8a6]/15 tw-text-[#14b8a6] tw-border tw-border-[#14b8a6]/30 tw-font-mono tw-text-[10px] tw-px-2 tw-py-0.5 tw-rounded-md">
+				<h2 class="tw-text-slate-100 tw-font-bold tw-text-lg tw-flex tw-items-center tw-gap-3">
+					<span>Tactical Drill Designer Studio</span>
+					<span class="tw-bg-slate-800 tw-text-slate-300 tw-border tw-border-slate-700 tw-font-mono tw-text-[10px] tw-px-2.5 tw-py-1 tw-rounded-md tw-tracking-widest tw-uppercase">
 						WAR ROOM INTEGRATED
 					</span>
 				</h2>
-				<p class="tw-text-xs tw-text-slate-400">
+				<p class="tw-text-sm tw-text-slate-400 tw-mt-1">
 					Select a play drawn in the War Room to build a structured, printable physical drill sheet.
 				</p>
 			</div>
 		</div>
 
 		<!-- War Room Tactic Picker -->
-		<div class="tw-flex tw-items-center tw-gap-2.5">
-			<span class="tw-font-mono tw-text-xs tw-text-slate-400 tw-uppercase">War Room Play:</span>
+		<div class="tw-flex tw-items-center tw-gap-3 tw-bg-[#030712]/50 tw-p-2 tw-rounded-xl tw-border tw-border-slate-800/60">
+			<span class="tw-font-mono tw-text-xs tw-text-slate-500 tw-uppercase tw-tracking-wider tw-pl-2">War Room Play:</span>
 			{#if loadingTactics}
-				<span class="tw-font-mono tw-text-xs tw-text-slate-400">Loading tactics…</span>
+				<span class="tw-font-mono tw-text-xs tw-text-slate-400 tw-px-3">Loading tactics…</span>
 			{:else if tactics.length > 0}
 				<select
 					bind:value={selectedTacticId}
-					class="tw-bg-[#020617] tw-border tw-border-[#334155] tw-text-white tw-font-mono tw-text-xs tw-rounded-xl tw-px-3 tw-py-2 focus:tw-border-[#14b8a6] focus:tw-outline-none tw-cursor-pointer hover:tw-border-slate-500 tw-transition-colors"
+					class="tw-bg-[#0f172a] tw-border tw-border-slate-700 tw-text-slate-200 tw-font-mono tw-text-sm tw-rounded-lg tw-px-3 tw-py-2 focus:tw-border-slate-500 focus:tw-outline-none tw-cursor-pointer hover:tw-border-slate-500 tw-transition-all"
 				>
 					{#each tactics as t (t.id)}
 						<option value={t.id}>{t.name}</option>
@@ -224,7 +224,7 @@
 			{:else}
 				<button
 					type="button"
-					class="tw-bg-[#daff0a] hover:tw-bg-lime-400 tw-text-black tw-font-mono tw-text-xs tw-font-bold tw-px-3.5 tw-py-2 tw-rounded-xl tw-transition-colors"
+					class="tw-bg-slate-800 hover:tw-bg-slate-700 tw-border tw-border-slate-700 tw-text-slate-200 tw-font-mono tw-text-xs tw-font-semibold tw-px-4 tw-py-2 tw-rounded-lg tw-transition-all"
 					onclick={openWarRoom}
 				>
 					⚡ Open War Room to Draw Play →
