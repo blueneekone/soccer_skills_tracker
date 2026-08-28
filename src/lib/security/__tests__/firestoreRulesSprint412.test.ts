@@ -171,8 +171,7 @@ describe.skipIf(!process.env.FIRESTORE_EMULATOR_HOST)(
 
 		it('player reads in-club team_broadcast — succeeds', async () => {
 			const db = env
-				.authenticatedContext('player-uid', token({
-					email: 'player@test.com',
+				.authenticatedContext('player-uid', token({ isCleared: true, email: 'player@test.com',
 					role: 'player',
 					clubId: 'club-a',
 					teamId: 'team-a',
@@ -183,8 +182,7 @@ describe.skipIf(!process.env.FIRESTORE_EMULATOR_HOST)(
 
 		it('client create on team_broadcasts — denied', async () => {
 			const db = env
-				.authenticatedContext('coach-uid', token({
-					email: 'coach@test.com',
+				.authenticatedContext('coach-uid', token({ isCleared: true, email: 'coach@test.com',
 					role: 'coach',
 					clubId: 'club-a',
 					teamId: 'team-a',
@@ -201,8 +199,7 @@ describe.skipIf(!process.env.FIRESTORE_EMULATOR_HOST)(
 
 		it('director reads message_incidents in club — succeeds', async () => {
 			const db = env
-				.authenticatedContext('director-uid', token({
-					email: 'director@test.com',
+				.authenticatedContext('director-uid', token({ isCleared: true, email: 'director@test.com',
 					role: 'director',
 					clubId: 'club-a',
 				}))
@@ -212,8 +209,7 @@ describe.skipIf(!process.env.FIRESTORE_EMULATOR_HOST)(
 
 		it('client create on message_incidents — denied', async () => {
 			const db = env
-				.authenticatedContext('parent-uid', token({
-					email: 'parent@test.com',
+				.authenticatedContext('parent-uid', token({ isCleared: true, email: 'parent@test.com',
 					role: 'parent',
 					clubId: 'club-a',
 					householdId: 'hh-a',
@@ -230,8 +226,7 @@ describe.skipIf(!process.env.FIRESTORE_EMULATOR_HOST)(
 
 		it('coach writes attendance_sessions with required fields — succeeds', async () => {
 			const db = env
-				.authenticatedContext('coach-uid', token({
-					email: 'coach@test.com',
+				.authenticatedContext('coach-uid', token({ isCleared: true, email: 'coach@test.com',
 					role: 'coach',
 					clubId: 'club-a',
 					teamId: 'team-a',
@@ -250,8 +245,7 @@ describe.skipIf(!process.env.FIRESTORE_EMULATOR_HOST)(
 
 		it('player read attendance_sessions on own team — succeeds', async () => {
 			const db = env
-				.authenticatedContext('player-uid', token({
-					email: 'player@test.com',
+				.authenticatedContext('player-uid', token({ isCleared: true, email: 'player@test.com',
 					role: 'player',
 					clubId: 'club-a',
 					teamId: 'team-a',
@@ -262,8 +256,7 @@ describe.skipIf(!process.env.FIRESTORE_EMULATOR_HOST)(
 
 		it('director reads messaging_audit for club team — succeeds', async () => {
 			const db = env
-				.authenticatedContext('director-uid', token({
-					email: 'director@test.com',
+				.authenticatedContext('director-uid', token({ isCleared: true, email: 'director@test.com',
 					role: 'director',
 					clubId: 'club-a',
 				}))
@@ -273,8 +266,7 @@ describe.skipIf(!process.env.FIRESTORE_EMULATOR_HOST)(
 
 		it('client write messaging_audit — denied', async () => {
 			const db = env
-				.authenticatedContext('coach-uid', token({
-					email: 'coach@test.com',
+				.authenticatedContext('coach-uid', token({ isCleared: true, email: 'coach@test.com',
 					role: 'coach',
 					clubId: 'club-a',
 					teamId: 'team-a',
