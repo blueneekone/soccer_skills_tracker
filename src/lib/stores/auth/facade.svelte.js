@@ -23,6 +23,18 @@ export function createAuthFacade() {
 	sessionState.isLoading = true;
 	onIdTokenChanged(auth, async (user) => {
 		try {
+			if (user && typeof window !== 'undefined') {
+				const token = await getIdToken(user);
+				await fetch('/api/auth/sync-session', {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify({ idToken: token })
+				}).catch(console.error);
+			}
+		} catch (err) {
+			console.warn('Failed to sync session cookie on client:', err);
+		}
+		try {
 			if (
 				typeof window !== 'undefined' &&
 				(window.localStorage.getItem('sstracker_e2e_bypass') === 'true' ||
