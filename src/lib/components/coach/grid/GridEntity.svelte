@@ -17,8 +17,8 @@
 
 	let {
 		player,
-		isHovered = false,
-		isSelected = false,
+		isHovered = $bindable(false),
+		isSelected = $bindable(false),
 		isDragging = false,
 		ringStroke,
 		charging = false,
@@ -149,9 +149,10 @@
 				cx="0"
 				cy="0"
 				r={DISC_R}
-				fill="#000000"
-				stroke={isDragging ? '#d97706' : '#06b6d4'}
-				stroke-width="2.5"
+				class={isDragging || isSelected || isHovered ? "identity-disc-magenta" : ""}
+				fill={isDragging || isSelected || isHovered ? "transparent" : "#000000"}
+				stroke={isDragging || isSelected || isHovered ? "transparent" : (isDragging ? '#d97706' : '#06b6d4')}
+				stroke-width={isDragging || isSelected || isHovered ? "0" : "2.5"}
 			/>
 			<circle
 				cx="0"
