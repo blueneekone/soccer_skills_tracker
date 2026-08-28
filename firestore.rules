@@ -6,6 +6,15 @@ service cloud.firestore {
   match /databases/{database}/documents {
 
     // Standard helper to verify authentication state
+
+    function isCleared() {
+      return !request.auth.token.keys().hasAny(['isCleared']) || request.auth.token.isCleared == true;
+    }
+
+    function isOwner(uid) {
+      return request.auth.uid == uid || request.auth.token.email == uid;
+    }
+
     function isAuthenticated() {
       return request.auth != null;
     }
@@ -25,11 +34,11 @@ service cloud.firestore {
     }
 
     function coachStaffCanAccessTeam(teamId) {
-      return isAuthenticated();
+      return false; // Replaced to fix security hole
     }
 
     function directorScopedToTeam(teamId) {
-      return isAuthenticated();
+      return false;
     }
 
     // Helper for team workout RSVP reads
@@ -38,7 +47,7 @@ service cloud.firestore {
     }
 
     function tokenClub() {
-      return request.auth.token.clubId;
+      return request.auth.token.get("clubId", null);
     }
 
     function isParent() {
@@ -72,8 +81,8 @@ service cloud.firestore {
 
     // ✅ Multi-Tenant Integrity Guard via Custom Claims
     match /clubs/{clubId} {
-      allow read: if isAuthenticated();
-      allow write: if isAuthenticated() && (request.auth.token.clubId == clubId || isGlobalAdmin());
+      allow read: if isGlobalAdmin() || (isAuthenticated() && request.auth.token.clubId == clubId);
+      allow write: if isGlobalAdmin() || (isAuthenticated() && request.auth.token.clubId == clubId);
       
       match /shared_drills/{drillId} {
         allow read: if isCoach() || isDirector();
@@ -87,7 +96,10 @@ service cloud.firestore {
     }
 
     match /teams/{teamId} {
-      allow read: if isGlobalAdmin() || (isAuthenticated() && (
+      match /attendance_sessions/{sessionId} {
+        allow read, write: if isAuthenticated();
+      }
+      allow read: if isGlobalAdmin() || (isAuthenticated() && isCleared() && (
         (request.auth.token.clubId != null && (resource == null || resource.data.clubId == request.auth.token.clubId)) ||
         (request.auth.token.email != null && resource != null && (
           resource.data.coachEmail == request.auth.token.email ||
@@ -97,9 +109,9 @@ service cloud.firestore {
         (resource != null && (resource.data.coachId == request.auth.uid || resource.data.coachEmail == request.auth.token.email)) ||
         coachStaffCanAccessTeam(teamId)
       ));
-      allow create: if isGlobalAdmin() || ((isDirector() || isCoach()) && (request.auth.token.clubId == null || request.resource.data.clubId == request.auth.token.clubId));
-      allow update: if isGlobalAdmin() || ((isDirector() || isCoach()) && (request.auth.token.clubId == null || resource.data.clubId == request.auth.token.clubId || resource.data.coachEmail == request.auth.token.email || resource.data.coachId == request.auth.uid) && (!('clubId' in request.resource.data) || request.auth.token.clubId == null || request.resource.data.clubId == request.auth.token.clubId));
-      allow delete: if isGlobalAdmin() || ((isDirector() || isCoach()) && (request.auth.token.clubId == null || resource.data.clubId == request.auth.token.clubId));
+      allow create: if isGlobalAdmin() || (isAuthenticated() && isCleared() && (isDirector() || isCoach()) && (request.auth.token.clubId == null || request.resource.data.clubId == request.auth.token.clubId));
+      allow update: if isGlobalAdmin() || (isAuthenticated() && isCleared() && (isDirector() || isCoach()) && (request.auth.token.clubId == null || resource.data.clubId == request.auth.token.clubId || resource.data.coachEmail == request.auth.token.email || resource.data.coachId == request.auth.uid) && (!('clubId' in request.resource.data) || request.auth.token.clubId == null || request.resource.data.clubId == request.auth.token.clubId));
+      allow delete: if isGlobalAdmin() || (isAuthenticated() && isCleared() && (isDirector() || isCoach()) && (request.auth.token.clubId == null || resource.data.clubId == request.auth.token.clubId));
 
       match /telemetry_events/{eventId} {
         allow read, write: if coachStaffCanAccessTeam(teamId) || directorScopedToTeam(teamId);
@@ -127,8 +139,8 @@ service cloud.firestore {
     }
 
     match /rosters/{teamId} {
-      allow read: if isAuthenticated();
-      allow write: if isGlobalAdmin() || (isAuthenticated() && !isCommissioner());
+      allow read: if isGlobalAdmin() || (isAuthenticated() && isCleared());
+      allow write: if isGlobalAdmin() || (isAuthenticated() &&  !isCommissioner());
     }
 
     match /direct_messages/{messageId} {
@@ -140,13 +152,9 @@ service cloud.firestore {
       allow read: if isAuthenticated();
     }
 
-    match /messaging_audit/{docId} {
-      allow read: if isGlobalAdmin() || isDirector();
-    }
 
-    match /team_broadcasts/{docId} {
-      allow read: if isGlobalAdmin() || isDirector() || isCoach();
-    }
+
+
     match /config/{configId} {
       allow read: if isAuthenticated();
     }
@@ -211,27 +219,21 @@ service cloud.firestore {
 
     // Enforce role and tenant check on users collection
     match /organizations/{tenantId} {
-      // Super Admins manage the full org catalog; Directors can read their own org's document
-      allow read, list: if request.auth != null && (request.auth.token.admin == true || isDirector());
+      allow read, list: if isGlobalAdmin() || (isAuthenticated() && (
+        request.auth.token.tenantId == tenantId || request.auth.token.clubId == tenantId
+      ));
     }
 
     match /users/{emailOrUid} {
-      allow read: if isGlobalAdmin() || (isAuthenticated() &&
-        (
-          resource == null ||
-          resource.data.role != 'tutor' ||
-          (
-            canAccessDirectory() &&
-            resource.data.sport == getUserSport(request.auth.token.email) &&
-            resource.data.tutorProfile.isListingActive == true
-          )
-        ));
+      allow read: if isGlobalAdmin() || (isAuthenticated() && (
+        isOwner(emailOrUid) ||
+        (request.auth.token.clubId != null && resource.data.clubId == request.auth.token.clubId) ||
+        (request.auth.token.tenantId != null && resource.data.tenantId == request.auth.token.tenantId)
+      ));
 
-      // Role field cannot be mutated directly by client-side unauthenticated or basic user writes
-      allow create: if isAuthenticated() && 
-        (!("role" in request.resource.data) || isGlobalAdmin());
-      allow update: if isAuthenticated() && 
-        (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['role']) || isGlobalAdmin());
+      allow write: if isGlobalAdmin() || (isAuthenticated() && isOwner(emailOrUid) &&
+        !request.resource.data.diff(resource == null ? {} : resource.data).affectedKeys().hasAny(['role', 'isCleared', 'isAdult', 'isMinor'])
+      );
 
       // Passkeys subcollection (written by Admin SDK, read by client to check enrollment)
       match /passkeys/{passkeyId} {
@@ -331,7 +333,7 @@ service cloud.firestore {
     }
 
     match /club_playbooks/{playbookId} {
-      allow read, write: if isAuthenticated() && resource.data.clubId == tokenClub();
+      allow read, write: if isAuthenticated() && resource.data.get('clubId', null) == tokenClub();
     }
 
     match /consents/{consentId} {
@@ -340,8 +342,10 @@ service cloud.firestore {
     }
 
     match /workouts/{docId} {
-      allow read: if isAuthenticated();
-      allow create: if authed() && playerVpcAllowed();
+      allow read: if isGlobalAdmin() || (isAuthenticated() && (
+        resource.data.get('clubId', null) == tokenClub()
+      ));
+      allow create: if isGlobalAdmin() || (authed() && playerVpcAllowed());
     }
 
     match /pii_vault/{sealId} {
@@ -358,18 +362,19 @@ service cloud.firestore {
       allow read, write: if isGlobalAdmin();
     }
     match /message_incidents/{incidentId} {
-      allow read, write: if isDirector() && resource.data.clubId == tokenClub();
+      allow read: if isDirector() && resource.data.get('clubId', null) == tokenClub();
+      allow write: if false; // Callable created only
     }
     match /broadcast_acknowledgements/{ackId} {
       allow read: if isAuthenticated() && (resource.data.parentUid == request.auth.uid || isDirector());
       allow create, update, delete: if false;
     }
     match /sponsor_templates/{templateId} {
-      allow read: if isDirector() && resource.data.clubId == tokenClub();
+      allow read: if isDirector() && resource.data.get('clubId', null) == tokenClub();
       allow create, update, delete: if false;
     }
     match /messaging_audit/{docId} {
-      allow read: if isDirector() && resource.data.clubId == tokenClub();
+      allow read: if isGlobalAdmin() || isDirector();
     }
     match /auditLogs/{document=**} {
       allow read, write: if isGlobalAdmin();
@@ -390,7 +395,10 @@ service cloud.firestore {
     }
 
     match /attendance_sessions/{sessionId} {
-      allow read, write: if isAuthenticated();
+      allow read: if isAuthenticated() && (
+         get(/databases/$(database)/documents/teams/$(resource.data.teamId)).data.clubId == request.auth.token.get('clubId', null)
+      );
+      allow write: if isAuthenticated() && coachStaffCanAccessTeam(resource.data.teamId); // Fix client denies
     }
 
     function canReadParentVoiceSessionDoc(data) {
@@ -469,6 +477,11 @@ service cloud.firestore {
     }
 
     // Default match to prevent global unauthenticated reads/writes
+
+    match /public_drills/{drillId} {
+      allow read: if isAuthenticated();
+      allow write: if isGlobalAdmin();
+    }
     match /{document=**} {
       allow read, write: if false;
     }
