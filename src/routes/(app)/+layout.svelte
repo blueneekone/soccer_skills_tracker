@@ -208,7 +208,7 @@
 					untrack(() => goto('/onboarding/role-select', { replaceState: true }));
 				}
 				shouldRedirectToOnboarding = true;
-			} else if (isCleared === false) {
+			} else if (isCleared === false && role !== 'admin' && role !== 'super_admin' && role !== 'global_admin') {
 			    if (!currentPath.startsWith('/onboarding/clearance') && !(role === 'coach' && currentPath.startsWith('/coach/sandbox'))) {
 			        untrack(() => goto(`/onboarding/clearance/${role}`, { replaceState: true }));
 			        shouldRedirectToOnboarding = true;
@@ -216,7 +216,8 @@
 			        // Already on a valid clearance or sandbox page
 			    }
 			} else if (currentPath === '/onboarding' || currentPath === '/onboarding/') {
-			    untrack(() => goto(`/${role}/dashboard`, { replaceState: true }));
+			    const dest = untrack(() => applyLoginWaterfall(role, authStore.userProfile));
+			    untrack(() => goto(dest, { replaceState: true }));
 			    shouldRedirectToOnboarding = true;
 			}
 			}
@@ -590,7 +591,7 @@
 {:else if maintenanceLockout}
 	<!-- Sprint 2.7: Global Kill Switch — full-screen maintenance UI. -->
 	<MaintenanceGate message={featureFlagsStore.maintenanceMessage} />
-{:else if (authStore.isAuthenticated && authStore.isProfileComplete && passkeyEligibilityConfirmed && routeGuardResolved && !holdShellForConsent)}
+{:else if (authStore.isAuthenticated && (authStore.isProfileComplete || authStore.role === 'admin' || authStore.role === 'global_admin' || authStore.role === 'super_admin') && passkeyEligibilityConfirmed && routeGuardResolved && !holdShellForConsent)}
 	<div class="app-shell tw-flex tw-flex-col tw-w-full tw-h-[100dvh] tw-overflow-hidden tw-bg-[#000000]">
 		
 		<main class="tw-flex-1 tw-flex tw-flex-col tw-min-w-0 tw-min-h-0 tw-overflow-hidden">

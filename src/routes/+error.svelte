@@ -27,35 +27,45 @@
 	import { telemetryTracker } from '$lib/services/telemetryTracker.svelte.js';
 	import { collection, doc, serverTimestamp } from 'firebase/firestore';
 
+	import { goto } from '$app/navigation';
+	import { applyLoginWaterfall } from '$lib/auth/loginRouting.js';
+	import { signOut } from 'firebase/auth';
+	import { auth } from '$lib/firebase.js';
+
 	const isDev = import.meta.env.DEV;
 
 	/** Stable key to write telemetry at-most-once per mount. */
 	let loggedSignature = $state(/** @type {string} */(''));
 
 	/**
-	 * Safely extract a display-safe signal label from the error.
-	 * In production: only the message, stripped of internal paths and stack lines.
+	 * Extract human-readable error message.
 	 * @param {App.Error | null | undefined} error
 	 * @returns {string}
 	 */
 	function getSignal(error) {
-		if (!error) return 'Unknown fault';
-		if (typeof error === 'string') return isDev ? error.slice(0, 300) : 'Signal redacted in production.';
+		if (!error) return 'An unexpected error occurred during route rendering.';
+		if (typeof error === 'string') return error;
 		if (typeof error === 'object' && 'message' in error && typeof error.message === 'string') {
-			const msg = error.message;
-			// In production: strip anything that looks like an internal path or token
-			if (!isDev) {
-				const sanitised = msg.replace(/(?:at\s+\S+|\/.+?\.(?:js|ts|svelte):\d+)/g, '').trim();
-				return sanitised.slice(0, 200) || 'Signal redacted in production.';
-			}
-			return msg.slice(0, 600);
+			return error.message;
 		}
-		return 'Signal redacted in production.';
+		try {
+			return JSON.stringify(error);
+		} catch {
+			return 'An unhandled system exception occurred.';
+		}
+	}
+
+	function getStatusLabel(status) {
+		const s = Number(status) || 500;
+		if (s === 404) return 'ROUTE OR ASSET NOT FOUND';
+		if (s === 403) return 'ACCESS RESTRICTED / CLEARANCE REQUIRED';
+		if (s === 401) return 'AUTHENTICATION SESSION REQUIRED';
+		if (s >= 500) return 'INTERNAL RUNTIME ANOMALY';
+		return `HTTP STATUS ${s}`;
 	}
 
 	/**
 	 * Build the full diagnostic payload for Firestore telemetry.
-	 * Captures full message + stack — only sent to Admin SDK, never displayed.
 	 * @param {import('@sveltejs/kit').NumericRange<400, 599>} status
 	 * @param {App.Error | null | undefined} error
 	 * @param {URL} url
@@ -122,18 +132,37 @@
 		if (browser) window.location.reload();
 	}
 
+	function goToDashboard() {
+		if (!browser) return;
+		const dest = applyLoginWaterfall(authStore.role, authStore.userProfile);
+		window.location.href = dest;
+	}
+
+	async function handleSignOut() {
+		if (!browser) return;
+		try {
+			await signOut(auth);
+		} catch (e) {
+			console.warn('[+error] sign-out failed', e);
+		}
+		window.location.href = '/login';
+	}
+
 	function reportCriticalFailure() {
 		if (!browser) return;
 		const tenantId = authStore.userProfile?.clubId ?? authStore.tenantId ?? 'UNKNOWN';
 		const uid      = authStore.user?.uid ?? 'ANONYMOUS';
 		const path     = page.url?.pathname ?? '(unknown)';
 		const status   = page.status ?? 500;
+		const errSignal = getSignal(page.error);
 		const subject  = encodeURIComponent(`CRITICAL FAILURE — STATUS ${status} — ${path}`);
 		const body     = encodeURIComponent(
 			`[VANGUARD CRITICAL FAILURE REPORT]\n` +
 			`──────────────────────────────────\n` +
 			`Status:   ${status}\n` +
 			`Path:     ${path}\n` +
+			`Error:    ${errSignal}\n` +
+			`Role:     ${authStore.role || 'NONE'}\n` +
 			`Tenant:   ${tenantId}\n` +
 			`UID:      ${uid}\n` +
 			`Ref:      ${loggedSignature || 'NONE'}\n` +
@@ -167,15 +196,13 @@
 		<!-- Status badge -->
 		<div class="va-badge">
 			<span class="va-badge-dot"></span>
-			SYSTEM ANOMALY · CODE {page.status || 500}
+			{getStatusLabel(page.status || 500)} · CODE {page.status || 500}
 		</div>
 
 		<!-- Primary message -->
-		<h1 class="va-title">NEURAL LINK SEVERED.</h1>
+		<h1 class="va-title">SYSTEM ANOMALY DETECTED</h1>
 		<p class="va-sub">
-			A critical fault has interrupted your session. Telemetry has been
-			dispatched to the on-call engineering team. No further action is
-			required from you — or proceed to reboot the connection.
+			An error interrupted your current route request. Detailed diagnostic information is provided below.
 		</p>
 
 		<!-- Diagnostic panel -->
@@ -189,43 +216,55 @@
 				<span class="va-diag-val va-diag-val--status">{page.status || 500}</span>
 			</div>
 			<div class="va-diag-row">
-				<span class="va-diag-key">PATH</span>
+				<span class="va-diag-key">FAILED PATH</span>
 				<code class="va-diag-val va-diag-val--mono">{page.url?.pathname || '(unknown)'}</code>
 			</div>
-			{#if page.error}
+			<div class="va-diag-row">
+				<span class="va-diag-key">DIAGNOSTIC</span>
+				<span class="va-diag-val va-diag-val--signal">{getSignal(page.error)}</span>
+			</div>
+			{#if authStore.role}
 				<div class="va-diag-row">
-					<span class="va-diag-key">SIGNAL</span>
-					<span class="va-diag-val va-diag-val--signal">{getSignal(page.error)}</span>
+					<span class="va-diag-key">ACTIVE ROLE</span>
+					<span class="va-diag-val va-diag-val--signal">{authStore.role}</span>
 				</div>
 			{/if}
 			{#if loggedSignature}
 				<div class="va-diag-row">
-					<span class="va-diag-key">REF</span>
+					<span class="va-diag-key">TELEMETRY REF</span>
 					<code class="va-diag-val va-diag-val--mono va-diag-ref">{loggedSignature}</code>
 				</div>
 			{/if}
 		</div>
 
 		<!-- Actions -->
-		<div class="va-actions">
-			<button type="button" class="va-btn va-btn--primary" onclick={reboot}>
+		<div class="va-actions tw-flex tw-flex-wrap tw-gap-3 tw-justify-center tw-mt-6">
+			<button type="button" class="va-btn va-btn--primary" onclick={goToDashboard}>
+				<span class="va-btn-icon">⌂</span>
+				[ RETURN TO MY DASHBOARD ]
+			</button>
+			<button type="button" class="va-btn va-btn--ghost" onclick={reboot}>
 				<span class="va-btn-icon">↺</span>
-				[ INITIATE SYSTEM REBOOT ]
+				[ RELOAD VIEW ]
+			</button>
+			<button type="button" class="va-btn va-btn--ghost" onclick={handleSignOut}>
+				<span class="va-btn-icon">⎋</span>
+				[ SIGN OUT & RESET ]
 			</button>
 			<button type="button" class="va-btn va-btn--ghost" onclick={reportCriticalFailure}>
 				<span class="va-btn-icon">⚠</span>
-				[ REPORT CRITICAL FAILURE ]
+				[ REPORT INCIDENT ]
 			</button>
 		</div>
 
-		<div class="tw-mt-8 tw-text-left tw-bg-[#0f172a] tw-p-4 tw-rounded tw-border tw-border-slate-800 tw-overflow-x-auto tw-text-sm">
-			<pre>
-Error Message: {page.error?.message}
-Error Stack: {page.error?.stack}
-			</pre>
-		</div>
+		{#if page.error && typeof page.error === 'object' && 'stack' in page.error && page.error.stack}
+			<details class="tw-mt-6 tw-text-left tw-bg-[#0f172a] tw-p-4 tw-rounded tw-border tw-border-slate-800 tw-overflow-x-auto tw-text-xs">
+				<summary class="tw-font-mono tw-text-slate-400 tw-cursor-pointer hover:tw-text-white">Technical Stack Trace</summary>
+				<pre class="tw-mt-2 tw-text-red-400 tw-font-mono">{page.error.stack}</pre>
+			</details>
+		{/if}
 
-		<p class="va-foot">
+		<p class="va-foot tw-mt-4">
 			Fault telemetry recorded · REF: <code class="va-foot-code">{loggedSignature || '—'}</code>
 		</p>
 	</div>

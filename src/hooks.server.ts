@@ -54,3 +54,20 @@ export async function handle({ event, resolve }) {
     const response = await resolve(event);
     return response;
 }
+
+/** @type {import('@sveltejs/kit').HandleServerError} */
+export function handleError({ error, event, status, message }) {
+    const err = error as (Error & { code?: string }) | undefined;
+    const errorMessage = err?.message || message || 'An unexpected server error occurred.';
+    console.error('[SvelteKit Server Error]', {
+        status,
+        path: event.url.pathname,
+        message: errorMessage,
+        stack: err?.stack,
+        error,
+    });
+    return {
+        message: errorMessage,
+        status: status || 500,
+    };
+}
