@@ -35,6 +35,10 @@ export async function handleSignOut(opts = {}) {
 	}
 
 	try {
+		if (browser) {
+			window.localStorage.removeItem('user_session_claims');
+			window.localStorage.removeItem('active_session_claims');
+		}
 		fieldMenu.close();
 		// Execute Firebase sign-out FIRST so authStore.isAuthenticated becomes false,
 		// preventing the /login page from auto-redirecting us back to the app.
