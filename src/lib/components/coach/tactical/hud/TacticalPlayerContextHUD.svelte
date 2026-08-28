@@ -80,30 +80,45 @@
 			</button>
 		</div>
 
+		<!-- Section 1.5: Mission Control Link -->
+		<div class="tw-mb-3">
+			<a
+				href="/coach/dashboard?player={player.id}"
+				class="tw-w-full tw-flex tw-items-center tw-justify-between tw-bg-[#0f172a] hover:tw-bg-[#14b8a6]/20 tw-border tw-border-[#14b8a6]/50 hover:tw-border-[#14b8a6] tw-rounded tw-px-2.5 tw-py-2 tw-text-xs tw-text-[#14b8a6] hover:tw-text-[#daff0a] tw-transition-all tw-no-underline"
+			>
+				<span class="tw-font-bold tw-uppercase tw-tracking-widest">📊 Mission Control Stats</span>
+				<span>↗</span>
+			</a>
+		</div>
+
 		<!-- Section 1: Quick Swap Athlete -->
 		<div class="tw-mb-3">
-			<label for="swap-athlete-select" class="tw-block tw-text-[10px] tw-font-bold tw-text-slate-400 tw-uppercase tw-tracking-wider tw-mb-1">
+			<div class="tw-block tw-text-[10px] tw-font-bold tw-text-slate-400 tw-uppercase tw-tracking-wider tw-mb-1.5">
 				Swap Athlete on Pitch
-			</label>
-			<select
-				id="swap-athlete-select"
-				class="tw-w-full tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-rounded tw-px-2 tw-py-1.5 tw-text-xs tw-text-white focus:tw-border-[#14b8a6] focus:tw-outline-none"
-				onchange={(e) => {
-					const targetId = (e.target as HTMLSelectElement).value;
-					const found = availableRoster.find((r) => r.id === targetId);
-					if (found) {
-						onSwap?.(found);
-						onClose?.();
-					}
-				}}
-			>
-				<option value="">-- Choose Roster Athlete --</option>
+			</div>
+			<div class="tw-max-h-24 tw-overflow-y-auto tw-border tw-border-slate-800 tw-rounded tw-bg-[#05050a] st-scrollbar">
 				{#each availableRoster as r (r.id)}
 					{#if r.id !== player.id}
-						<option value={r.id}>#{r.number || '—'} {r.name} ({r.position || '—'})</option>
+						<button
+							type="button"
+							class="tw-w-full tw-flex tw-items-center tw-justify-between tw-px-2 tw-py-1.5 tw-text-left tw-text-xs tw-text-slate-300 hover:tw-bg-slate-800 hover:tw-text-white tw-border-b tw-border-slate-800/50 last:tw-border-0 tw-transition-colors"
+							onclick={(e) => {
+								e.stopPropagation();
+								onSwap?.(r);
+								onClose?.();
+							}}
+						>
+							<span>#{r.number || '—'} {r.name}</span>
+							<span class="tw-text-[9px] tw-text-slate-500">{r.position || '—'}</span>
+						</button>
 					{/if}
 				{/each}
-			</select>
+				{#if availableRoster.length <= 1}
+					<div class="tw-px-2 tw-py-2 tw-text-[10px] tw-text-slate-500 tw-text-center tw-italic">
+						No other athletes available.
+					</div>
+				{/if}
+			</div>
 		</div>
 
 		<!-- Section 2: Position Quick-Pills -->

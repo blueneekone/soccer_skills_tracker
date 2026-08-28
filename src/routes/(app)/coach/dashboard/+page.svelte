@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { browser } from '$app/environment';
+	import { page } from '$app/state';
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { DashboardEngine } from './DashboardEngine.svelte.js';
 	import DashboardArena from './DashboardArena.svelte';
@@ -9,6 +10,20 @@
 	import Icon from '$lib/components/ui/Icon.svelte';
 
 	const engine = new DashboardEngine();
+
+	$effect(() => {
+		if (!browser) return;
+		const playerId = page.url.searchParams.get('player');
+		if (playerId) {
+			engine.selectedPlayerId = playerId;
+			
+			// Smooth scroll to the telemetry hub when loaded from deep link
+			setTimeout(() => {
+				const el = document.getElementById('team-telemetry-hub');
+				if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+			}, 100);
+		}
+	});
 
 	let tickerNow = $state('--:--:--');
 	$effect(() => {
