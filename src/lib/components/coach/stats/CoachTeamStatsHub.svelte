@@ -249,45 +249,86 @@
 </script>
 
 <div class="tw-w-full tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-rounded-xl tw-p-5 tw-font-sans tw-shadow-2xl tw-text-slate-200">
-	<!-- Top Bar: Header & Interactive Drill-Down Selector -->
-	<div class="tw-flex tw-flex-col sm:tw-flex-row sm:tw-items-center tw-justify-between tw-gap-4 tw-border-b tw-border-[#334155] tw-pb-4">
+	<!-- Top Bar: Header & Interactive Drill-Down Selector / Spotlight Capsule -->
+	<div class="tw-flex tw-flex-col lg:tw-flex-row lg:tw-items-center tw-justify-between tw-gap-4 tw-border-b tw-border-[#334155] tw-pb-4">
 		<div>
 			<div class="tw-flex tw-items-center tw-gap-2">
-				<span class="tw-inline-block tw-h-2.5 tw-w-2.5 tw-rounded-full tw-bg-[#14b8a6] tw-shadow-[0_0_10px_#14b8a6]"></span>
-				<span class="tw-font-mono tw-text-xs tw-font-black tw-tracking-widest tw-text-[#14b8a6] tw-uppercase">
-					TEAM TELEMETRY & ATTRIBUTE INTELLIGENCE
+				<span
+					class="tw-inline-block tw-h-2.5 tw-w-2.5 tw-rounded-full"
+					class:tw-bg-[#14b8a6]={!selectedPlayer}
+					class:tw-bg-[#daff0a]={!!selectedPlayer}
+					class:tw-shadow-[0_0_10px_#14b8a6]={!selectedPlayer}
+					class:tw-shadow-[0_0_12px_#daff0a]={!!selectedPlayer}
+				></span>
+				<span class="tw-font-mono tw-text-xs tw-font-black tw-tracking-widest tw-uppercase" class:tw-text-[#14b8a6]={!selectedPlayer} class:tw-text-[#daff0a]={!!selectedPlayer}>
+					{selectedPlayer ? 'ATHLETE SPOTLIGHT & ATTRIBUTE INTELLIGENCE' : 'TEAM TELEMETRY & ATTRIBUTE INTELLIGENCE'}
 				</span>
 			</div>
 			<p class="tw-text-xs tw-text-slate-400 tw-mt-0.5">
-				Live squad performance analytics with individual player drill-down
+				{#if selectedPlayer}
+					Spotlight telemetry for <strong class="tw-text-white">#{selectedPlayer.jersey || '—'} {selectedPlayer.name}</strong> vs. squad average benchmark
+				{:else}
+					Live squad performance analytics with individual player drill-down
+				{/if}
 			</p>
 		</div>
 
-		<!-- Drill-Down Filter Picker -->
-		<div class="tw-flex tw-items-center tw-gap-2">
-			<span class="tw-font-mono tw-text-[11px] tw-text-slate-400 tw-uppercase">Drill Down:</span>
-			<select
-				value={selectedPlayer ? selectedPlayer.id : 'ALL'}
-				onchange={(e) => handleSelect((e.target as HTMLSelectElement).value)}
-				class="tw-bg-[#020617] tw-border tw-border-[#334155] tw-text-white tw-font-mono tw-text-xs tw-rounded-lg tw-px-3 tw-py-2 focus:tw-border-[#14b8a6] focus:tw-outline-none tw-cursor-pointer hover:tw-border-slate-500 tw-transition-colors"
-			>
-				<option value="ALL">🌐 ENTIRE SQUAD (AVERAGE)</option>
-				{#each members as m (m.id)}
-					<option value={m.id}>
-						#{m.jersey || '—'} {m.name} ({m.position})
-					</option>
-				{/each}
-			</select>
+		<!-- Interactive Tactical Operative Selector & Spotlight Capsule -->
+		<div class="tw-flex tw-items-center tw-flex-wrap tw-gap-2.5">
 			{#if selectedPlayer}
-				<button
-					type="button"
-					onclick={() => handleSelect('ALL')}
-					class="tw-bg-slate-800 hover:tw-bg-slate-700 tw-border tw-border-slate-600 tw-text-slate-200 tw-font-mono tw-text-[11px] tw-px-2.5 tw-py-2 tw-rounded-lg tw-transition-colors tw-cursor-pointer"
-					title="Reset to squad average"
-				>
-					✕ Reset
-				</button>
+				<!-- Active Athlete Spotlight Badge -->
+				<div class="tw-flex tw-items-center tw-gap-2 tw-bg-[#020617] tw-border tw-border-[#daff0a]/50 tw-shadow-[0_0_12px_rgba(218,255,10,0.2)] tw-px-3 tw-py-1.5 tw-rounded-lg">
+					<span class="tw-bg-[#daff0a] tw-text-black tw-font-mono tw-font-black tw-text-xs tw-px-1.5 tw-py-0.5 tw-rounded">
+						#{selectedPlayer.jersey || '—'}
+					</span>
+					<div class="tw-flex tw-flex-col tw-min-w-0">
+						<span class="tw-font-mono tw-text-xs tw-font-bold tw-text-white tw-truncate">
+							{selectedPlayer.name}
+						</span>
+						<span class="tw-font-mono tw-text-[9px] tw-text-[#14b8a6] tw-tracking-wider tw-uppercase">
+							{selectedPlayer.position} · {selectedPlayer.status}
+						</span>
+					</div>
+					<button
+						type="button"
+						class="tw-ml-1 tw-bg-slate-800 hover:tw-bg-slate-700 tw-text-[#fbbf24] hover:tw-text-white tw-border tw-border-slate-600 tw-font-mono tw-text-[10px] tw-font-bold tw-px-2 tw-py-1 tw-rounded tw-transition-colors tw-cursor-pointer"
+						onclick={() => openPassport(selectedPlayer)}
+						title="Open athlete dossier passport drawer"
+					>
+						📋 Passport
+					</button>
+				</div>
 			{/if}
+
+			<!-- Drill-Down Switcher Dropdown (Role Combobox) -->
+			<div class="tw-flex tw-items-center tw-gap-1.5">
+				<label for="athlete-drilldown-select" class="tw-sr-only">Select Athlete for Drill Down</label>
+				<select
+					id="athlete-drilldown-select"
+					role="combobox"
+					aria-label="Select athlete for drill down"
+					value={selectedPlayer ? selectedPlayer.name : 'ALL'}
+					onchange={(e) => handleSelect((e.target as HTMLSelectElement).value)}
+					class="tw-bg-[#020617] tw-border tw-border-[#334155] tw-text-white tw-font-mono tw-text-xs tw-rounded-lg tw-px-3 tw-py-2 focus:tw-border-[#14b8a6] focus:tw-outline-none tw-cursor-pointer hover:tw-border-slate-500 tw-transition-colors"
+				>
+					<option value="ALL">🌐 ENTIRE SQUAD (AVERAGE)</option>
+					{#each members as m (m.id)}
+						<option value={m.name}>
+							#{m.jersey || '—'} {m.name} ({m.position})
+						</option>
+					{/each}
+				</select>
+				{#if selectedPlayer}
+					<button
+						type="button"
+						onclick={() => handleSelect('ALL')}
+						class="tw-bg-slate-800 hover:tw-bg-slate-700 tw-border tw-border-slate-600 tw-text-slate-200 hover:tw-text-[#14b8a6] tw-font-mono tw-text-[11px] tw-px-2.5 tw-py-2 tw-rounded-lg tw-transition-colors tw-cursor-pointer"
+						title="Reset to squad average benchmark"
+					>
+						✕ Reset
+					</button>
+				{/if}
+			</div>
 		</div>
 	</div>
 
