@@ -161,3 +161,6 @@ exports.processOutboundMail = resendService.processOutboundMail;
 // Onboarding Invitations Trigger
 const invitations = require('./lib/domains/invitations');
 exports.onInvitationCreated = invitations.onInvitationCreated;
+
+// User Onboarding Triggers
+exports.onUserProfileCleared = require('./lib/triggers/userOnboardingTriggers').onUserProfileCleared;
