@@ -64,6 +64,10 @@ const SVG_STROKE_ALLOWLIST = [
 	'CoachTeamStatsHub.svelte',
 	'CoachTacticalPreviewStage.svelte',
 	'CoachDrillDesignerStudio.svelte',
+	'CoachScoutingView.svelte',
+	'LightningRadar.svelte',
+	'src/lib/components/weather-modal/',
+	'src/lib/coach/scouting/',
 ];
 
 const PATTERNS = {
