@@ -67,4 +67,235 @@ h1, h2, h3, h4, h5, h6, p, span, div, button, a,
 }
 
 /* --- Dyslexia-Friendly Monospace Typography --- */
-.telemetry-readout,\n.stats-column,\n.hud-numeric,\n.mono-telemetry {\n  font-family: 'Geist Mono', monospace;\n  font-variant-numeric: tabular-nums;\n  letter-spacing: 0.08em;\n  color: var(--color-data-cyan);\n}\n\n.mono-magenta {\n  font-family: 'Geist Mono', monospace;\n  color: var(--color-cyber-magenta);\n  text-shadow: 0 0 8px var(--text-glow-magenta);\n}\n\n/* --- Dynamic KPI Overlap Prevention --- */\n.kpi-metric-display {\n  display: flex;\n  flex-direction: column;\n  min-width: 0;\n  width: 100%;\n}\n\n.kpi-metric-value {\n  font-family: 'Geist Mono', monospace;\n  font-size: clamp(1.5rem, 5vw, 3.5rem); /* Dynamic scale based on viewport to prevent overlap crashes */\n  line-height: 1;\n  font-weight: 800;\n  overflow: hidden;\n  text-overflow: ellipsis;\n  white-space: nowrap;\n}\n\n/* --- The 12-Column Asymmetric Bento Grid --- */\n.bento-grid-container {\n  display: grid;\n  grid-template-columns: repeat(12, minmax(0, 1fr));\n  gap: clamp(12px, 2vw, 24px);\n  width: 100%;\n}\n\n.bento-col-8 {\n  grid-column: span 8 / span 8;\n}\n\n.bento-col-6 {\n  grid-column: span 6 / span 6;\n}\n\n.bento-col-4 {\n  grid-column: span 4 / span 4;\n}\n\n.bento-col-2 {\n  grid-column: span 2 / span 2;\n}\n\n@media (max-width: 1024px) {\n  .bento-col-8, .bento-col-6, .bento-col-4, .bento-col-2 {\n    grid-column: span 12 / span 12;\n  }\n}\n\n/* --- Material Depth Hierarchy (No Blended Depth Levels Allowed) --- */\n.z0-canvas {\n  background-color: var(--color-void-black);\n  min-height: var(--viewport-locked-height);\n}\n\n.z1-well {\n  background-color: #020617;\n  border: 1px solid var(--color-structural-grey);\n  box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.8);\n}\n\n.z2-panel {\n  background-color: var(--color-navy-slate);\n  border: 1px solid var(--color-structural-grey);\n  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);\n  transition: border-color var(--transition-visceral), box-shadow var(--transition-visceral);\n  min-width: 0; /* Enforce boundary limits */\n  overflow: hidden; /* Force clipping containment on tight viewports */\n}\n\n.z2-panel:hover {\n  border-color: var(--color-data-cyan);\n  box-shadow: 0 0 15px var(--text-glow-cyan);\n}\n\n/* --- Interactive Hover High-Voltage Triggers --- */\n.z2-panel-nuclear:hover {\n  border-color: var(--color-nuclear-yellow);\n  box-shadow: 0 0 15px var(--text-glow-yellow);\n}\n\n.z2-panel-cyber:hover {\n  border-color: var(--color-cyber-magenta);\n  box-shadow: 0 0 15px var(--text-glow-magenta);\n}\n\n/* --- Persona CSS Trims & Structural Specifications --- */\n\n/* 1. Global Admin & Director OS (Tactical SIEM) */\n.siem-panel {\n  border-radius: 0px !important; /* Rigid, 90-degree corners */\n  border-left: 3px solid var(--color-data-cyan);\n  min-width: 0;\n  overflow: hidden;\n}\n\n.siem-warning {\n  border-left: 3px solid var(--color-atompunk-amber);\n}\n\n.siem-nuclear {\n  border-left: 3px solid var(--color-nuclear-yellow);\n}\n\n.siem-cyber {\n  border-left: 3px solid var(--color-cyber-magenta);\n}\n\n/* 2. Player OS & Fan OS (The Gamified HUD / Broadcast Overlay) */\n.player-card-wrapper {\n  background-color: var(--color-navy-slate);\n  border: 1px solid var(--color-structural-grey);\n  clip-path: polygon(16px 0%, 100% 0%, 100% calc(100% - 16px), calc(100% - 16px) 100%, 0% 100%, 0% 16px);\n  transition: transform var(--transition-visceral), border-color var(--transition-visceral);\n}\n\n.player-card-wrapper:hover {\n  transform: translateY(-4px);\n  border-color: var(--color-nuclear-yellow);\n}\n\n.player-card-active {\n  border-color: var(--color-cyber-magenta) !important;\n  box-shadow: 0 0 15px var(--text-glow-magenta);\n}\n\n/* The Singular Action Gold CTA - Comprehensive Label Wrapping */\n.primary-mission-cta {\n  background-color: var(--color-action-gold);\n  color: var(--color-void-black);\n  font-weight: 700;\n  text-transform: uppercase;\n  letter-spacing: 0.05em;\n  border-radius: 4px;\n  border: none;\n  box-shadow: 0 0 10px rgba(251, 191, 36, 0.3);\n  transition: filter var(--transition-visceral), box-shadow var(--transition-visceral);\n  white-space: normal; /* Guarantee labels wrap rather than expanding button containers */\n  overflow-wrap: break-word;\n  word-wrap: break-word;\n  padding: clamp(8px, 1.5vh, 16px) clamp(16px, 2.5vw, 24px);\n  max-width: 100%;\n}\n\n.primary-mission-cta:hover {\n  filter: brightness(1.1);\n  box-shadow: 0 0 20px rgba(251, 191, 36, 0.6);\n}\n\n/* High-Voltage Progress Bars & Accent Highlights */\n.nuclear-meter-fill {\n  background-color: var(--color-nuclear-yellow);\n  box-shadow: 0 0 10px var(--text-glow-yellow);\n}\n\n.cyber-meter-fill {\n  background-color: var(--color-cyber-magenta);\n  box-shadow: 0 0 10px var(--text-glow-magenta);\n}\n\n/* 3. Parent OS (The Compliance Shield) */\n.shield-panel {\n  border-radius: 24px; /* Comforting rounded edges for trust */\n  border: 1px solid var(--color-structural-grey);\n  background-color: var(--color-navy-slate);\n}\n\n.car-ride-home-timer {\n  background: radial-gradient(circle, var(--text-glow-amber) 0%, rgba(0,0,0,0) 70%);\n  font-family: 'Geist Mono', monospace;\n  color: var(--color-atompunk-amber);\n}\n\n/* --- Anti-Clipping Button Overrides --- */\nbutton, .btn, .siem-panel button {\n  white-space: normal;\n  overflow-wrap: break-word;\n  word-wrap: break-word;\n  min-width: 0;\n  max-width: 100%;\n}\n\nbutton.tw-w-auto, .btn-auto {\n  width: auto !important;\n  display: inline-flex;\n  align-items: center;\n  justify-content: center;\n}\n\n/* --- SVG \"Tron\" Tactical Field Vector Coordinates --- */\n.identity-disc {\n  fill: var(--color-void-black);\n  stroke: var(--color-data-cyan);\n  stroke-width: 2;\n  filter: url(#neon-bloom);\n}\n\n.identity-disc-amber {\n  fill: var(--color-void-black);\n  stroke: var(--color-atompunk-amber);\n  stroke-width: 2;\n  filter: url(#neon-bloom-amber);\n}\n\n.identity-disc-nuclear {\n  fill: var(--color-void-black);\n  stroke: var(--color-nuclear-yellow);\n  stroke-width: 2;\n  filter: url(#neon-bloom-nuclear);\n}\n\n.identity-disc-magenta {\n  fill: var(--color-void-black);\n  stroke: var(--color-cyber-magenta);\n  stroke-width: 2.5;\n  filter: url(#neon-bloom-magenta);\n}\n
+.telemetry-readout,
+.stats-column,
+.hud-numeric,
+.mono-telemetry {
+  font-family: 'Geist Mono', monospace;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.08em;
+  color: var(--color-data-cyan);
+}
+
+.mono-magenta {
+  font-family: 'Geist Mono', monospace;
+  color: var(--color-cyber-magenta);
+  text-shadow: 0 0 8px var(--text-glow-magenta);
+}
+
+/* --- Dynamic KPI Overlap Prevention --- */
+.kpi-metric-display {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  width: 100%;
+}
+
+.kpi-metric-value {
+  font-family: 'Geist Mono', monospace;
+  font-size: clamp(1.5rem, 5vw, 3.5rem); /* Dynamic scale based on viewport to prevent overlap crashes */
+  line-height: 1;
+  font-weight: 800;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* --- The 12-Column Asymmetric Bento Grid --- */
+.bento-grid-container {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: clamp(12px, 2vw, 24px);
+  width: 100%;
+}
+
+.bento-col-8 {
+  grid-column: span 8 / span 8;
+}
+
+.bento-col-6 {
+  grid-column: span 6 / span 6;
+}
+
+.bento-col-4 {
+  grid-column: span 4 / span 4;
+}
+
+.bento-col-2 {
+  grid-column: span 2 / span 2;
+}
+
+@media (max-width: 1024px) {
+  .bento-col-8, .bento-col-6, .bento-col-4, .bento-col-2 {
+    grid-column: span 12 / span 12;
+  }
+}
+
+/* --- Material Depth Hierarchy (No Blended Depth Levels Allowed) --- */
+.z0-canvas {
+  background-color: var(--color-void-black);
+  min-height: var(--viewport-locked-height);
+}
+
+.z1-well {
+  background-color: #020617;
+  border: 1px solid var(--color-structural-grey);
+  box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.8);
+}
+
+.z2-panel {
+  background-color: var(--color-navy-slate);
+  border: 1px solid var(--color-structural-grey);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+  transition: border-color var(--transition-visceral), box-shadow var(--transition-visceral);
+  min-width: 0; /* Enforce boundary limits */
+  overflow: hidden; /* Force clipping containment on tight viewports */
+}
+
+.z2-panel:hover {
+  border-color: var(--color-data-cyan);
+  box-shadow: 0 0 15px var(--text-glow-cyan);
+}
+
+/* --- Interactive Hover High-Voltage Triggers --- */
+.z2-panel-nuclear:hover {
+  border-color: var(--color-nuclear-yellow);
+  box-shadow: 0 0 15px var(--text-glow-yellow);
+}
+
+.z2-panel-cyber:hover {
+  border-color: var(--color-cyber-magenta);
+  box-shadow: 0 0 15px var(--text-glow-magenta);
+}
+
+/* --- Persona CSS Trims & Structural Specifications --- */
+
+/* 1. Global Admin & Director OS (Tactical SIEM) */
+.siem-panel {
+  border-radius: 0px !important; /* Rigid, 90-degree corners */
+  border-left: 3px solid var(--color-data-cyan);
+  min-width: 0;
+  overflow: hidden;
+}
+
+.siem-warning {
+  border-left: 3px solid var(--color-atompunk-amber);
+}
+
+.siem-nuclear {
+  border-left: 3px solid var(--color-nuclear-yellow);
+}
+
+.siem-cyber {
+  border-left: 3px solid var(--color-cyber-magenta);
+}
+
+/* 2. Player OS & Fan OS (The Gamified HUD / Broadcast Overlay) */
+.player-card-wrapper {
+  background-color: var(--color-navy-slate);
+  border: 1px solid var(--color-structural-grey);
+  clip-path: polygon(16px 0%, 100% 0%, 100% calc(100% - 16px), calc(100% - 16px) 100%, 0% 100%, 0% 16px);
+  transition: transform var(--transition-visceral), border-color var(--transition-visceral);
+}
+
+.player-card-wrapper:hover {
+  transform: translateY(-4px);
+  border-color: var(--color-nuclear-yellow);
+}
+
+.player-card-active {
+  border-color: var(--color-cyber-magenta) !important;
+  box-shadow: 0 0 15px var(--text-glow-magenta);
+}
+
+/* The Singular Action Gold CTA - Comprehensive Label Wrapping */
+.primary-mission-cta {
+  background-color: var(--color-action-gold);
+  color: var(--color-void-black);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-radius: 4px;
+  border: none;
+  box-shadow: 0 0 10px rgba(251, 191, 36, 0.3);
+  transition: filter var(--transition-visceral), box-shadow var(--transition-visceral);
+  white-space: normal; /* Guarantee labels wrap rather than expanding button containers */
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  padding: clamp(8px, 1.5vh, 16px) clamp(16px, 2.5vw, 24px);
+  max-width: 100%;
+}
+
+.primary-mission-cta:hover {
+  filter: brightness(1.1);
+  box-shadow: 0 0 20px rgba(251, 191, 36, 0.6);
+}
+
+/* High-Voltage Progress Bars & Accent Highlights */
+.nuclear-meter-fill {
+  background-color: var(--color-nuclear-yellow);
+  box-shadow: 0 0 10px var(--text-glow-yellow);
+}
+
+.cyber-meter-fill {
+  background-color: var(--color-cyber-magenta);
+  box-shadow: 0 0 10px var(--text-glow-magenta);
+}
+
+/* 3. Parent OS (The Compliance Shield) */
+.shield-panel {
+  border-radius: 24px; /* Comforting rounded edges for trust */
+  border: 1px solid var(--color-structural-grey);
+  background-color: var(--color-navy-slate);
+}
+
+.car-ride-home-timer {
+  background: radial-gradient(circle, var(--text-glow-amber) 0%, rgba(0,0,0,0) 70%);
+  font-family: 'Geist Mono', monospace;
+  color: var(--color-atompunk-amber);
+}
+
+/* --- Anti-Clipping Button Overrides --- */
+button, .btn, .siem-panel button {
+  white-space: normal;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  min-width: 0;
+  max-width: 100%;
+}
+
+button.tw-w-auto, .btn-auto {
+  width: auto !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* --- SVG \"Tron\" Tactical Field Vector Coordinates --- */
+.identity-disc {
+  fill: var(--color-void-black);
+  stroke: var(--color-data-cyan);
+  stroke-width: 2;
+  filter: url(#neon-bloom);
+}
+
+.identity-disc-amber {
+  fill: var(--color-void-black);
+  stroke: var(--color-atompunk-amber);
+  stroke-width: 2;
+  filter: url(#neon-bloom-amber);
+}
+
+.identity-disc-nuclear {
+  fill: var(--color-void-black);
+  stroke: var(--color-nuclear-yellow);
+  stroke-width: 2;
+  filter: url(#neon-bloom-nuclear);
+}
+
+.identity-disc-magenta {
+  fill: var(--color-void-black);
+  stroke: var(--color-cyber-magenta);
+  stroke-width: 2.5;
+  filter: url(#neon-bloom-magenta);
+}
