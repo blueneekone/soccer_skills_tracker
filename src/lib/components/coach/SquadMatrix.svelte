@@ -708,14 +708,8 @@
 	}
 
 	function handleCardClick(p: { name: string; rosterKey: string }) {
+		openDrawer(p.rosterKey || p.name);
 		onSelectPlayer?.(p.name, p.rosterKey);
-		// Scroll to the Team Telemetry Hub so player stats are immediately visible
-		if (browser) {
-			const hub = document.getElementById('team-telemetry-hub');
-			if (hub) {
-				hub.scrollIntoView({ behavior: 'smooth', block: 'start' });
-			}
-		}
 	}
 
 	function isPlayerSelected(p: { name: string; rosterKey: string }) {

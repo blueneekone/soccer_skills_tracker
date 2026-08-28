@@ -103,34 +103,70 @@
 		/>
 
 	{:else if engine.activeTab === 'war-room'}
-		<!-- WAR ROOM TACTICAL WHITEBOARD -->
-		<div class="coach-tactics-shell tw-w-full tw-h-[calc(100vh-115px)] tw-min-h-[700px] tw-relative tw-overflow-hidden tw-font-mono tw-bg-[#020617]" style="border-radius: 0px;">
-			<TacticalArena
-				model={warRoomEngine.gridEngine}
-				warRoomTool={warRoomEngine.warRoomTool}
-				isHalfField={warRoomEngine.isHalfField}
-			/>
+		<!-- WAR ROOM COMMAND LAUNCHPAD & WHITEBOARD -->
+		<div class="tw-max-w-[1700px] tw-mx-auto tw-p-4 sm:tw-p-6 tw-space-y-6">
+			<!-- Hero Command Banner -->
+			<div class="tw-bg-[#0f172a]/95 tw-backdrop-blur-md tw-border tw-border-[#334155] tw-rounded-xl tw-p-6 tw-shadow-[0_12px_40px_-8px_rgba(0,0,0,0.8)] tw-border-t-[rgba(255,255,255,0.08)] tw-flex tw-flex-col md:tw-flex-row md:tw-items-center md:tw-justify-between tw-gap-4">
+				<div>
+					<div class="tw-flex tw-items-center tw-gap-2.5">
+						<span class="tw-inline-block tw-h-3 tw-w-3 tw-rounded-full tw-bg-[#fbbf24] tw-shadow-[0_0_12px_#fbbf24] tw-animate-pulse"></span>
+						<h2 class="tw-font-mono tw-font-black tw-text-base sm:tw-text-lg tw-tracking-widest tw-text-white tw-uppercase tw-m-0">
+							TACTICAL WAR ROOM STUDIO
+						</h2>
+					</div>
+					<p class="tw-text-xs sm:tw-text-sm tw-text-slate-400 tw-mt-1 tw-max-w-2xl">
+						Full-pitch vector whiteboard with coordinate-mapped passing routes, defensive press triggers, and real-time playbook compilation.
+					</p>
+				</div>
+				<div class="tw-flex tw-items-center tw-gap-3">
+					<a
+						href="/coach/tactical"
+						class="tw-inline-flex tw-items-center tw-gap-2.5 tw-bg-[#fbbf24] hover:tw-bg-[#f59e0b] tw-text-black tw-font-mono tw-text-xs tw-font-black tw-uppercase tw-tracking-wider tw-px-5 tw-py-3 tw-rounded-lg tw-shadow-[0_0_20px_rgba(251,191,36,0.4)] hover:tw-shadow-[0_0_25px_rgba(251,191,36,0.6)] active:tw-scale-[0.98] tw-transition-all tw-no-underline tw-cursor-pointer"
+					>
+						<span>↗</span>
+						<span>LAUNCH FULLSCREEN WAR ROOM</span>
+					</a>
+				</div>
+			</div>
 
-			{#if warRoomEngine.isToolbarVisible}
-				<TacticalHUD
-					model={warRoomEngine.gridEngine}
-					teamId={warRoomEngine.teamScope.selectedTeamId || engine.effectiveTeamId}
-					ondeploy={(cartridge) => warRoomEngine.deployPlay(cartridge)}
-					isHalfField={warRoomEngine.isHalfField}
-					onToggleHalfField={() => warRoomEngine.isHalfField = !warRoomEngine.isHalfField}
-					onToggleToolbar={() => warRoomEngine.isToolbarVisible = !warRoomEngine.isToolbarVisible}
-					onExit={() => engine.setTab('forge')}
-				/>
-			{:else}
-				<button
-					type="button"
-					class="coach-os-action-chip tw-absolute tw-bottom-4 tw-left-4 tw-z-[2000] tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-px-3 tw-py-1.5 tw-font-mono tw-text-xs tw-cursor-pointer"
-					style="border-radius: 0px;"
-					onclick={() => warRoomEngine.isToolbarVisible = true}
+			<!-- Interactive Tactical Pitch Stage -->
+			<div class="coach-tactics-shell tw-w-full tw-h-[calc(100vh-260px)] tw-min-h-[620px] tw-relative tw-overflow-hidden tw-font-mono tw-bg-[#020617] tw-border tw-border-[#334155] tw-rounded-xl tw-shadow-2xl">
+				<!-- Top Right Pop-Out Overlay Button -->
+				<a
+					href="/coach/tactical"
+					class="tw-absolute tw-top-4 tw-right-4 tw-z-[2000] tw-bg-[#0f172a]/90 hover:tw-bg-[#0f172a] tw-backdrop-blur-md tw-border tw-border-[#fbbf24]/60 hover:tw-border-[#fbbf24] tw-text-[#fbbf24] hover:tw-text-white tw-font-mono tw-text-xs tw-font-bold tw-px-3.5 tw-py-2 tw-rounded-lg tw-shadow-lg tw-flex tw-items-center tw-gap-2 tw-transition-all tw-no-underline"
+					title="Pop out into dedicated full-page view"
 				>
-					<span class="tw-text-[#14b8a6]">↑ SHOW TOOLS</span>
-				</button>
-			{/if}
+					<span>⤢</span>
+					<span>EXPAND FULL SCREEN</span>
+				</a>
+
+				<TacticalArena
+					model={warRoomEngine.gridEngine}
+					warRoomTool={warRoomEngine.warRoomTool}
+					isHalfField={warRoomEngine.isHalfField}
+				/>
+
+				{#if warRoomEngine.isToolbarVisible}
+					<TacticalHUD
+						model={warRoomEngine.gridEngine}
+						teamId={warRoomEngine.teamScope.selectedTeamId || engine.effectiveTeamId}
+						ondeploy={(cartridge) => warRoomEngine.deployPlay(cartridge)}
+						isHalfField={warRoomEngine.isHalfField}
+						onToggleHalfField={() => warRoomEngine.isHalfField = !warRoomEngine.isHalfField}
+						onToggleToolbar={() => warRoomEngine.isToolbarVisible = !warRoomEngine.isToolbarVisible}
+						onExit={() => engine.setTab('forge')}
+					/>
+				{:else}
+					<button
+						type="button"
+						class="coach-os-action-chip tw-absolute tw-bottom-4 tw-left-4 tw-z-[2000] tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-px-3 tw-py-1.5 tw-font-mono tw-text-xs tw-cursor-pointer tw-rounded"
+						onclick={() => warRoomEngine.isToolbarVisible = true}
+					>
+						<span class="tw-text-[#14b8a6]">↑ SHOW TOOLS</span>
+					</button>
+				{/if}
+			</div>
 		</div>
 
 	{:else if engine.activeTab === 'matchday'}

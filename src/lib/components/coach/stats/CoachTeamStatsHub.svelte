@@ -2,7 +2,7 @@
 	import { browser } from '$app/environment';
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { db } from '$lib/firebase.js';
-	import { collection, getDocs, query, where } from 'firebase/firestore';
+	import { collection, doc, getDoc, getDocs, query, where } from 'firebase/firestore';
 	import { sportsConfigStore } from '$lib/services/sportsConfigs.svelte.js';
 	import { enterprisePlayerDrawer } from '$lib/stores/enterprisePlayerDrawer.svelte.js';
 
@@ -51,7 +51,7 @@
 	const AXIS_KEYS = ['PAC', 'TEC', 'IQ', 'PHY', 'MEN', 'DEF'];
 	const AXIS_LABELS = ['Pace', 'Technical', 'Game IQ', 'Physical', 'Mental', 'Defending'];
 
-	// ── B815 Hydration & Realtime Query ─────────────────────────────────────────
+	// ── B815 Hydration & Multi-Source Roster Ingestion ─────────────────────────
 	$effect(() => {
 		if (!browser || !teamId || !db || !authStore.isAuthenticated) {
 			loading = false;
@@ -63,10 +63,11 @@
 
 		(async () => {
 			try {
-				const [lookupSnap, statsSnap, repsSnap] = await Promise.all([
+				const [lookupSnap, statsSnap, repsSnap, rosterDocSnap] = await Promise.all([
 					getDocs(query(collection(db, 'player_lookup'), where('teamId', '==', teamId))),
 					getDocs(query(collection(db, 'player_stats'), where('teamId', '==', teamId))),
 					getDocs(query(collection(db, 'reps'), where('teamId', '==', teamId))),
+					getDoc(doc(db, 'rosters', teamId)).catch(() => null),
 				]);
 
 				if (cancelled) return;
@@ -80,12 +81,17 @@
 					statsMap.set(docSnap.id, data);
 				});
 
-				// 2. Process members
+				// 2. Process members across player_lookup, rosters, and player_stats
 				const memberList: SquadMemberStat[] = [];
+				const seenNames = new Set<string>();
+
+				// Add from player_lookup
 				lookupSnap.forEach((docSnap) => {
 					const lData = docSnap.data() || {};
 					const name = (lData.playerName || lData.displayName || docSnap.id).trim();
+					if (!name) return;
 					const nameKey = name.toLowerCase();
+					seenNames.add(nameKey);
 					const sData = statsMap.get(nameKey) || statsMap.get(docSnap.id) || {};
 
 					const skills: Record<string, number> = {};
@@ -104,6 +110,68 @@
 						streak: Number(sData.streak_days || sData.streakDays || 0),
 						stamina: Number(sData.stamina || 75),
 						status: (sData.status || lData.status || 'active').toUpperCase(),
+						skills,
+					});
+				});
+
+				// Merge from rosters/{teamId} if any players are not in player_lookup
+				if (rosterDocSnap?.exists()) {
+					const rData = rosterDocSnap.data() || {};
+					const rPlayers = Array.isArray(rData.players) ? rData.players : [];
+					rPlayers.forEach((pName: string, idx: number) => {
+						const cleanName = String(pName || '').trim();
+						if (!cleanName) return;
+						const nameKey = cleanName.toLowerCase();
+						if (seenNames.has(nameKey)) return;
+						seenNames.add(nameKey);
+
+						const sData = statsMap.get(nameKey) || {};
+						const skills: Record<string, number> = {};
+						for (const key of AXIS_KEYS) {
+							const direct = Number(sData[key]);
+							const nested = Number(sData?.skills?.[key]);
+							skills[key] = Number.isFinite(direct) ? direct : Number.isFinite(nested) ? nested : 60;
+						}
+
+						memberList.push({
+							id: `roster_${idx}_${nameKey}`,
+							name: cleanName,
+							jersey: sData.jersey ? String(sData.jersey) : '',
+							position: sData.position || 'CM',
+							totalXp: Number(sData.total_xp || sData.totalXp || 0),
+							streak: Number(sData.streak_days || sData.streakDays || 0),
+							stamina: Number(sData.stamina || 75),
+							status: (sData.status || 'active').toUpperCase(),
+							skills,
+						});
+					});
+				}
+
+				// Merge from player_stats if any are still missing
+				statsSnap.forEach((docSnap) => {
+					const sData = docSnap.data() || {};
+					const name = (sData.playerName || docSnap.id).trim();
+					if (!name) return;
+					const nameKey = name.toLowerCase();
+					if (seenNames.has(nameKey)) return;
+					seenNames.add(nameKey);
+
+					const skills: Record<string, number> = {};
+					for (const key of AXIS_KEYS) {
+						const direct = Number(sData[key]);
+						const nested = Number(sData?.skills?.[key]);
+						skills[key] = Number.isFinite(direct) ? direct : Number.isFinite(nested) ? nested : 60;
+					}
+
+					memberList.push({
+						id: docSnap.id,
+						name,
+						jersey: sData.jersey ? String(sData.jersey) : '',
+						position: sData.position || 'CM',
+						totalXp: Number(sData.total_xp || sData.totalXp || 0),
+						streak: Number(sData.streak_days || sData.streakDays || 0),
+						stamina: Number(sData.stamina || 75),
+						status: (sData.status || 'active').toUpperCase(),
 						skills,
 					});
 				});
@@ -248,7 +316,7 @@
 	}
 </script>
 
-<div class="tw-w-full tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-rounded-xl tw-p-5 tw-font-sans tw-shadow-2xl tw-text-slate-200">
+<div class="tw-w-full tw-bg-[#0f172a]/95 tw-backdrop-blur-md tw-border tw-border-[#334155] tw-rounded-xl tw-p-5 tw-font-sans tw-shadow-[0_12px_40px_-8px_rgba(0,0,0,0.8)] tw-border-t-[rgba(255,255,255,0.08)] tw-text-slate-200">
 	<!-- Top Bar: Header & Interactive Drill-Down Selector / Spotlight Capsule -->
 	<div class="tw-flex tw-flex-col lg:tw-flex-row lg:tw-items-center tw-justify-between tw-gap-4 tw-border-b tw-border-[#334155] tw-pb-4">
 		<div>
