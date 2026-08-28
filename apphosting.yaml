@@ -7,3 +7,14 @@ runConfig:
   minInstances: 1 # Enforce hot standby instance to prevent cold starts and ensure zero-downtime cutover
   maxInstances: 50
   concurrency: 80
+
+# Environment variables mapping for Google Cloud Secret Manager
+env:
+  - variable: GEMINI_API_KEY
+    secret: GEMINI_API_KEY
+  - variable: STRIPE_SECRET_KEY
+    secret: STRIPE_SECRET_KEY
+  - variable: CHECKR_API_KEY
+    secret: CHECKR_API_KEY
+  - variable: RESEND_API_KEY
+    secret: RESEND_API_KEY
