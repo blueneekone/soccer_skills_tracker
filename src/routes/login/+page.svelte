@@ -75,7 +75,8 @@
 					{ email: user.email, displayName: user.displayName, photoURL: user.photoURL ?? null, lastLogin: serverTimestamp() },
 					{ merge: true },
 				);
-				while (authStore.isLoading) {
+				let maxWait = 40;
+				while (authStore.isLoading && --maxWait > 0) {
 					await new Promise((r) => setTimeout(r, 50));
 				}
 				await navigateAfterLogin({ replaceState: true });
@@ -93,7 +94,8 @@
 		googleError = '';
 		await loginEngine.loginWithPasskey();
 		if (loginEngine.error) { navigating = false; return; }
-		while (authStore.isLoading) {
+		let maxWait = 40;
+		while (authStore.isLoading && --maxWait > 0) {
 			await new Promise((r) => setTimeout(r, 50));
 		}
 		await navigateAfterLogin({ replaceState: true });

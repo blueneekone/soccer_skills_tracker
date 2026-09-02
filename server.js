@@ -47,7 +47,8 @@ function serveFile(res, filePath, statusCode = 200) {
 	res.writeHead(statusCode, {
 		'Content-Type': contentType,
 		'Cache-Control': cacheControl,
-		'X-Content-Type-Options': 'nosniff'
+		'X-Content-Type-Options': 'nosniff',
+		'Cross-Origin-Opener-Policy': 'same-origin-allow-popups'
 	});
 	fs.createReadStream(filePath).pipe(res);
 }
