@@ -32,6 +32,10 @@ const config = {
 				if (path.startsWith('/videos/')) {
 					return;
 				}
+				// Planned compliance pages linked from marketing footer — not yet implemented as routes
+				if (path === '/coppa' || path === '/safesport-compliance') {
+					return;
+				}
 				console.error('HTTP_ERROR:', {path, message}); throw new Error(message);
 			},
 		}
