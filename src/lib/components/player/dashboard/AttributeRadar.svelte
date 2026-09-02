@@ -123,7 +123,16 @@
 				stroke-width="1.5"
 				class="tw-cursor-pointer hover:tw-r-6 tw-transition-all"
 				style="fill: var(--pd-accent-data, #14b8a6);"
+				role="button"
+				tabindex="0"
+				aria-label="Select {vtx.axis} skill attribute"
 				onclick={() => onAxisSelect?.(vtx.axis)}
+				onkeydown={(e) => {
+					if (e.key === 'Enter' || e.key === ' ') {
+						e.preventDefault();
+						onAxisSelect?.(vtx.axis);
+					}
+				}}
 			/>
 		{/each}
 

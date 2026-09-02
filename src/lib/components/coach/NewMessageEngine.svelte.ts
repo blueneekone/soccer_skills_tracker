@@ -7,11 +7,11 @@ import { httpsCallable } from 'firebase/functions';
 type LocalCandidateUser = { email: string; role: string; label: string; isMinor?: boolean };
 
 export class NewMessageEngine {
-	clubId: string;
-	teamId: string;
-	myEmail: string;
-	myRole: string;
-	onChannelCreated: (id: string) => void;
+	private _getClubId: () => string;
+	private _getTeamId: () => string;
+	private _getMyEmail: () => string;
+	private _getMyRole: () => string;
+	private _getOnChannelCreated: () => (id: string) => void;
 
 	candidates = $state<LocalCandidateUser[]>([]);
 	loadErr = $state('');
@@ -23,18 +23,26 @@ export class NewMessageEngine {
 	createErr = $state('');
 
 	constructor(
-		clubId: string,
-		teamId: string,
-		myEmail: string,
-		myRole: string,
-		onChannelCreated: (id: string) => void
+		clubId: string | (() => string) = '',
+		teamId: string | (() => string) = '',
+		myEmail: string | (() => string) = '',
+		myRole: string | (() => string) = 'player',
+		onChannelCreated?: ((id: string) => void) | (() => (id: string) => void)
 	) {
-		this.clubId = clubId;
-		this.teamId = teamId;
-		this.myEmail = myEmail;
-		this.myRole = myRole;
-		this.onChannelCreated = onChannelCreated;
+		this._getClubId = typeof clubId === 'function' ? clubId : () => clubId;
+		this._getTeamId = typeof teamId === 'function' ? teamId : () => teamId;
+		this._getMyEmail = typeof myEmail === 'function' ? myEmail : () => myEmail;
+		this._getMyRole = typeof myRole === 'function' ? myRole : () => myRole;
+		this._getOnChannelCreated = typeof onChannelCreated === 'function' 
+			? (onChannelCreated.length === 0 ? (onChannelCreated as () => (id: string) => void) : () => (onChannelCreated as (id: string) => void))
+			: () => (onChannelCreated ?? (() => {}));
 	}
+
+	get clubId() { return this._getClubId(); }
+	get teamId() { return this._getTeamId(); }
+	get myEmail() { return this._getMyEmail(); }
+	get myRole() { return this._getMyRole(); }
+	get onChannelCreated() { return this._getOnChannelCreated(); }
 
 	get myKey() {
 		return (this.myEmail || '').toLowerCase();

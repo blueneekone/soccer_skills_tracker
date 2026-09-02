@@ -785,18 +785,6 @@
 		color: #d4d4d8;
 	}
 
-	.setup-wizard-nav {
-		display: flex;
-		gap: 0.65rem;
-		margin-bottom: 0.75rem;
-	}
-
-	.setup-wizard-nav .primary-btn,
-	.setup-wizard-nav .secondary-btn {
-		flex: 1;
-		min-height: 2.75rem;
-	}
-
 	.setup-cancel {
 		margin-top: 0.25rem;
 	}

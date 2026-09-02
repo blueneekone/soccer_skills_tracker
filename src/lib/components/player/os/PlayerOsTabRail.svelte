@@ -16,7 +16,7 @@
 	} = $props();
 </script>
 
-<nav
+<div
 	class="pd-os-tab-rail qa-workspace qa-workspace--premium{className ? ` ${className}` : ''}"
 	aria-label={ariaLabel}
 	role="tablist"
@@ -34,4 +34,4 @@
 			{item.label}
 		</button>
 	{/each}
-</nav>
+</div>

@@ -284,8 +284,7 @@
 
 {#if armoryWorkspace === 'studio'}
 	{#await import('$lib/components/player/OperativeLoadoutStudio.svelte') then { default: OperativeLoadoutStudioComponent }}
-		<svelte:component
-			this={OperativeLoadoutStudioComponent}
+		<OperativeLoadoutStudioComponent
 			initialPortraitPart={studioInitialPart as any}
 			ownedPortraitParts={ownedPortraitParts}
 			bind:operativeAvatar={operativeAvatar}

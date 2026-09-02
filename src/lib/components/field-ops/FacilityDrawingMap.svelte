@@ -1411,13 +1411,6 @@ type ExtendedAdvancedMarkerElement = any & { __facilityMarkerIndex?: number };
 		border-color: var(--border-strong);
 	}
 
-	.fd-map-draw-btn--active {
-		border-color: var(--ec-ops-accent, #14b8a6);
-		box-shadow:
-			var(--shadow-premium),
-			var(--ec-ops-glow, 0 0 24px rgba(20, 184, 166, 0.08));
-	}
-
 	.fd-map-draw-btn--primary {
 		color: var(--enterprise-primary-fg);
 		background: var(--brand-primary);
@@ -1477,7 +1470,7 @@ type ExtendedAdvancedMarkerElement = any & { __facilityMarkerIndex?: number };
 		border-color: color-mix(in srgb, var(--danger-red) 35%, transparent);
 	}
 
-	.fd-map-empty__icon {
+	:global(.fd-map-empty__icon) {
 		font-size: 2.25rem;
 		line-height: 1;
 		color: var(--brand-primary);

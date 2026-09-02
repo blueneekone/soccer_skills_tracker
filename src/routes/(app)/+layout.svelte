@@ -88,24 +88,28 @@
 
 	let { data, children } = $props();
 
-	if (!authStore.isAuthenticated) {
-		let e2eState = null;
-		if (typeof window !== 'undefined') {
-			try { e2eState = JSON.parse(window.localStorage.getItem('auth_state') || window.localStorage.getItem('user_session_claims') || 'null'); } catch(e) { /* ignore */ }
-		}
-		if (e2eState) {
-			const effectiveRole = e2eState.role || e2eState.user?.role || 'admin';
-			authStore.hydrateForE2E({
-				role: effectiveRole,
-				isProfileComplete: true,
-				clearance: { status: 'cleared' },
-				...e2eState,
-				...(e2eState.user || {})
+	$effect(() => {
+		if (!authStore.isAuthenticated) {
+			untrack(() => {
+				let e2eState = null;
+				if (typeof window !== 'undefined') {
+					try { e2eState = JSON.parse(window.localStorage.getItem('auth_state') || window.localStorage.getItem('user_session_claims') || 'null'); } catch(e) { /* ignore */ }
+				}
+				if (e2eState) {
+					const effectiveRole = e2eState.role || e2eState.user?.role || 'admin';
+					authStore.hydrateForE2E({
+						role: effectiveRole,
+						isProfileComplete: true,
+						clearance: { status: 'cleared' },
+						...e2eState,
+						...(e2eState.user || {})
+					});
+				} else if (data && (data as any).session) {
+					authStore.hydrateForE2E({ role: (data as any).session.role, isProfileComplete: true, ...(data as any).session });
+				}
 			});
-		} else if (data && (data as any).session) {
-			authStore.hydrateForE2E({ role: (data as any).session.role, isProfileComplete: true, ...(data as any).session });
 		}
-	}
+	});
 
 	// Sync club license doc for read-only / pricing UX — Global Admin exempt.
 	$effect(() => {

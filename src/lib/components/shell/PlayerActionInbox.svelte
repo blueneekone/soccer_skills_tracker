@@ -155,13 +155,6 @@
 		letter-spacing: 0.07em;
 		color: var(--text-secondary);
 		margin-bottom: 12px;
-	}
-
-	.pai__head .ph-lightning {
-		font-size: 1.1rem;
-		color: var(--brand-primary, #6366f1);
-	}
-
 	.pai__muted {
 		margin: 0;
 		font-size: 13px;

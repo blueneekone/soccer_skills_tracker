@@ -641,13 +641,13 @@
 				<div class="workout-summary-box">
 					<label for="legacy-mins">Total Session Time (Minutes)</label>
 					<input id="legacy-mins" type="number" placeholder="e.g. 45" bind:value={totalMinutes} />
-					<label>How did you do?</label>
+					<span class="workout-field-label">How did you do?</span>
 					<div class="outcome-row">
 						{#each ['Struggled', 'Good', 'Mastered'] as opt}
 							<button class="outcome-btn" class:active={outcome === opt} onclick={() => (outcome = opt)}>{opt}</button>
 						{/each}
 					</div>
-					<label>Intensity (XP multiplier)</label>
+					<span class="workout-field-label">Intensity (XP multiplier)</span>
 					<div class="outcome-row">
 						{#each ['low', 'medium', 'high'] as tier}
 							<button
@@ -752,10 +752,6 @@
 		color: #fb923c;
 	}
 
-	.gw-hud__value--streak i {
-		font-size: 1.15rem;
-	}
-
 	.gw-banner {
 		padding: 12px 14px;
 		border-radius: 14px;
@@ -847,15 +843,6 @@
 			0 0 0 1px rgba(99, 102, 241, 0.25),
 			0 0 28px -6px rgba(139, 92, 246, 0.45);
 		background: linear-gradient(145deg, rgba(79, 70, 229, 0.18), rgba(168, 85, 247, 0.1));
-	}
-
-	.gw-focus-card__icon {
-		font-size: 1.5rem;
-		color: #a5b4fc;
-	}
-
-	.gw-focus-card--active .gw-focus-card__icon {
-		color: #c4b5fd;
 	}
 
 	.gw-focus-card__label {
@@ -1034,16 +1021,6 @@
 		font-weight: 800;
 		font-size: 0.9rem;
 		cursor: pointer;
-	}
-
-	.gw-accordion-btn__icon {
-		transition: transform 0.2s ease;
-		font-size: 1.1rem;
-		color: rgba(228, 228, 231, 0.6);
-	}
-
-	.gw-accordion-btn__icon--open {
-		transform: rotate(180deg);
 	}
 
 	.gw-builder {

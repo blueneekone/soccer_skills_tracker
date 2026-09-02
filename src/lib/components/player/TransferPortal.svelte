@@ -344,8 +344,9 @@ import { functions } from '$lib/firebase.js';
 				</div>
 
 				<div class="space-y-1">
-					<label class="text-xs tracking-widest tw-font-mono" style="color: rgba(0,255,255,0.5);">ENTER AUTH CODE (from email)</label>
+					<label for="tp-auth-code" class="text-xs tracking-widest tw-font-mono" style="color: rgba(0,255,255,0.5);">ENTER AUTH CODE (from email)</label>
 					<input
+						id="tp-auth-code"
 						type="text"
 						bind:value={authCode}
 						placeholder="XXXXXXXXXXXX"
@@ -385,8 +386,9 @@ import { functions } from '$lib/firebase.js';
 				</div>
 
 				<div class="space-y-1">
-					<label class="text-xs tracking-widest tw-font-mono" style="color: rgba(0,255,255,0.5);">TRANSFER TOKEN</label>
+					<label for="tp-dir-token" class="text-xs tracking-widest tw-font-mono" style="color: rgba(0,255,255,0.5);">TRANSFER TOKEN</label>
 					<textarea
+						id="tp-dir-token"
 						bind:value={directorTokenInput}
 						placeholder="64-character transfer token"
 						rows="2"
