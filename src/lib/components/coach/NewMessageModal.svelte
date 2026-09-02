@@ -29,7 +29,13 @@
 	}: Props = $props();
 
 	// Initialize the Brain (Engine)
-	const engine = new NewMessageEngine(clubId, teamId, myEmail, myRole, onChannelCreated);
+	const engine = new NewMessageEngine(
+		() => clubId,
+		() => teamId,
+		() => myEmail,
+		() => myRole,
+		() => onChannelCreated
+	);
 
 	$effect(() => {
 		if (!browser || !open || !clubId) return;

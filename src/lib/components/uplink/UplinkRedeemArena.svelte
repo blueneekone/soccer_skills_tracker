@@ -193,15 +193,6 @@
 		to { transform: rotate(360deg); }
 	}
 
-	.pulse .icon-wrap {
-		animation: pulse-glow 2s ease-in-out infinite;
-	}
-
-	@keyframes pulse-glow {
-		0%, 100% { box-shadow: 0 0 0 0 rgba(var(--accent), 0.3); }
-		50%       { box-shadow: 0 0 0 8px rgba(var(--accent), 0); }
-	}
-
 	.badge {
 		display: inline-block;
 		background: rgba(var(--accent), 0.1);

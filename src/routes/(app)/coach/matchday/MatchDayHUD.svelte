@@ -276,15 +276,15 @@
 		<div class="tw-space-y-5">
 			<div class="tw-flex tw-flex-col tw-gap-3.5">
 				<div>
-					<label class="tw-block tw-font-mono tw-text-[10px] tw-text-slate-400 tw-uppercase tw-mb-1">Opposing Team Name</label>
-					<input type="text" bind:value={engine.opponentName} class="tw-w-full tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-text-white tw-px-3 tw-py-1.5 tw-font-mono tw-text-xs focus:tw-border-[#14b8a6] focus:tw-outline-none" placeholder="Enter opponent..." style="border-radius: 0px;" />
+					<label for="md-opp-name" class="tw-block tw-font-mono tw-text-[10px] tw-text-slate-400 tw-uppercase tw-mb-1">Opposing Team Name</label>
+					<input id="md-opp-name" type="text" bind:value={engine.opponentName} class="tw-w-full tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-text-white tw-px-3 tw-py-1.5 tw-font-mono tw-text-xs focus:tw-border-[#14b8a6] focus:tw-outline-none" placeholder="Enter opponent..." style="border-radius: 0px;" />
 				</div>
 				<div>
-					<label class="tw-block tw-font-mono tw-text-[10px] tw-text-slate-400 tw-uppercase tw-mb-1">Final Score</label>
-					<input type="text" bind:value={engine.finalScore} class="tw-w-full tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-text-white tw-px-3 tw-py-1.5 tw-font-mono tw-text-xs focus:tw-border-[#14b8a6] focus:tw-outline-none" placeholder="e.g. 2-1" style="border-radius: 0px;" />
+					<label for="md-final-score" class="tw-block tw-font-mono tw-text-[10px] tw-text-slate-400 tw-uppercase tw-mb-1">Final Score</label>
+					<input id="md-final-score" type="text" bind:value={engine.finalScore} class="tw-w-full tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-text-white tw-px-3 tw-py-1.5 tw-font-mono tw-text-xs focus:tw-border-[#14b8a6] focus:tw-outline-none" placeholder="e.g. 2-1" style="border-radius: 0px;" />
 				</div>
 				<div>
-					<label class="tw-block tw-font-mono tw-text-[10px] tw-text-slate-400 tw-uppercase tw-mb-1">Match Start Time</label>
+					<span class="tw-block tw-font-mono tw-text-[10px] tw-text-slate-400 tw-uppercase tw-mb-1">Match Start Time</span>
 					<div class="tw-w-full tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-text-slate-300 tw-px-3 tw-py-1.5 tw-font-mono tw-text-xs tw-h-8 tw-flex tw-items-center" style="border-radius: 0px;">
 						{engine.matchStartTime ? new Date(engine.matchStartTime).toLocaleString() : 'Not started'}
 					</div>

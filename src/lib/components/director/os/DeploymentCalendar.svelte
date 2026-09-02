@@ -447,7 +447,7 @@
 			role="dialog"
 			aria-modal="true"
 			aria-labelledby="dep-modal-title"
-			onclick={(e) => e.stopPropagation()}
+			tabindex="-1"
 		>
 			<div class="tw-flex tw-items-start tw-justify-between tw-gap-2 tw-mb-4">
 				<h2 id="dep-modal-title" class="tw-m-0 tw-text-base tw-font-black tw-text-slate-100">

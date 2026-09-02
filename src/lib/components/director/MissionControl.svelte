@@ -482,11 +482,6 @@
 		color: #14b8a6;
 	}
 
-	/* ── Content ─────────────────────────────────────────────────────────── */
-	.mc-content {
-		/* Children (SquadManager, OrgInvites) fill this container */
-	}
-
 	/* ── Skeleton ────────────────────────────────────────────────────────── */
 	.mc-skeleton {
 		display: inline-block;

@@ -5,7 +5,7 @@
 </script>
 
 <div class="inbox-zero-hero" role="status">
-	<div class="izh-glass">
+	<div class="izh-glass izh-box">
 		<div class="izh-icon-wrap" aria-hidden="true">
 			<div class="izh-glow"></div>
 			<Icon name="status.inbox-zero" size={56} class="izh-icon" />

@@ -26,8 +26,8 @@ jobs:
       - name: Execute Master E2E Swarm Audit
         env:
           # Injecting your secure tokens so the agent can operate headless
-          AGY_API_KEY: ${{ secrets['AGY_API_KEY'] }}
-          FIREBASE_TOKEN: ${{ secrets['FIREBASE_TOKEN'] }}
+          AGY_API_KEY: ${{ secrets.AGY_API_KEY }}
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
         run: |
           # The -p flag executes the workflow non-interactively in the pipeline
           # agy -p .agents/workflows/master-e2e-swarm-audit.md

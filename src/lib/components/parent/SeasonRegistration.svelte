@@ -454,10 +454,11 @@
 
 					<!-- Cardholder name -->
 					<div class="space-y-1">
-						<label class="font-mono text-xs tracking-widest tw-font-mono" style="color: rgba(0,255,255,0.5);">
+						<label for="sr-cardholder-name" class="font-mono text-xs tracking-widest tw-font-mono" style="color: rgba(0,255,255,0.5);">
 							CARDHOLDER IDENTITY
 						</label>
 						<input
+							id="sr-cardholder-name"
 							type="text"
 							bind:value={cardholderName}
 							placeholder="FULL NAME ON CARD"
@@ -476,9 +477,9 @@
 
 					<!-- Card element container -->
 					<div class="space-y-1">
-						<label class="font-mono text-xs tracking-widest tw-font-mono" style="color: rgba(0,255,255,0.5);">
+						<span class="block font-mono text-xs tracking-widest tw-font-mono" style="color: rgba(0,255,255,0.5);">
 							PAYMENT VECTOR
-						</label>
+						</span>
 						<div
 							use:mountCard
 							class="w-full px-3 py-3"

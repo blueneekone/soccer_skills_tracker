@@ -344,10 +344,4 @@
 		font-size: 0.75rem;
 		color: #6b7280;
 	}
-
-	.ai-caret {
-		flex-shrink: 0;
-		color: #6b7280;
-		font-size: 0.875rem;
-	}
 </style>
