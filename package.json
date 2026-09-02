@@ -10,6 +10,7 @@
     "check:file-budget": "node scripts/check-file-budget.mjs",
     "prebuild": "node scripts/check-no-phosphor.mjs && node scripts/check-file-budget.mjs",
     "build": "vite build",
+    "start": "node server.js",
     "build:acquisition-pdfs": "node scripts/build-acquisition-pdfs.mjs",
     "bundle:dataroom": "node scripts/bundle-acquisition-dataroom.mjs",
     "preview": "vite preview",
