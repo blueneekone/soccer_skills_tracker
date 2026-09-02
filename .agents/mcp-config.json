@@ -1,0 +1,22 @@
+{
+  "mcpServers": {
+    "firebase": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@firebase/mcp-server-firestore"
+      ],
+      "env": {
+        "FIRESTORE_EMULATOR_HOST": "localhost:8080"
+      }
+    },
+    "filesystem": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-filesystem",
+        "."
+      ]
+    }
+  }
+}
