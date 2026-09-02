@@ -13,6 +13,7 @@ const {
   collectFcmTokensForUids,
   collectPlayerCoachUidsForClub,
 } = require('./notificationOps');
+const { triggerWeatherLockdown } = require('./weatherLocks');
 
 const REGION = 'us-east1';
 const WEBHOOK_AUTH_TOKEN = defineSecret('WEBHOOK_AUTH_TOKEN');
@@ -171,6 +172,7 @@ exports.facilityWeatherWebhook = onRequest(
             },
             {merge: true},
         );
+        await triggerWeatherLockdown(clubId, db());
       } catch (e) {
         logger.error('facilityWeatherWebhook: facility lock write failed', {
           clubId,

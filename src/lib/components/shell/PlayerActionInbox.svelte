@@ -155,6 +155,7 @@
 		letter-spacing: 0.07em;
 		color: var(--text-secondary);
 		margin-bottom: 12px;
+	}
 	.pai__muted {
 		margin: 0;
 		font-size: 13px;
