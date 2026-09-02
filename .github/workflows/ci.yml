@@ -1,38 +1,87 @@
-name: SSTracker Continuous Integration
+# .github/workflows/ci.yml
+# =============================================================================
+# SSTRACKER NEXUS COMMAND: MASTER CI/CD & SWARM ORCHESTRATION PIPELINE (v2.0)
+# =============================================================================
+# Automatically executes validation checks, runs test suites, and spawns the
+# autonomous 16-agent debugging swarm to fix any compilation or test failures.
+# =============================================================================
+
+name: Master CI & Swarm Autopilot
 
 on:
   push:
-    branches: [ dev, main ]
+    branches: [ master, main, 'release/*' ]
   pull_request:
-    branches: [ dev, main ]
+    branches: [ master, main ]
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
 
 jobs:
-  build-and-test:
+  validate-and-test:
+    name: 🛡️ Code Validation & Verification Suite
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout Repository
+      - name: 📥 Clone Repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-      - name: Install pnpm
+      - name: 📦 Setup Node.js Runtime
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
+
+      - name: 🚀 Install pnpm Package Manager
         uses: pnpm/action-setup@v3
         with:
           version: 9
 
-      - name: Set up Node.js 24
-        uses: actions/setup-node@v4
-        with:
-          node-version: 24
-          cache: 'pnpm'
-
-      - name: Install Dependencies
+      - name: 📥 Install Dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Sync SvelteKit
-        run: pnpm exec svelte-kit sync
-
-      - name: Verify Svelte 5 Compilation
+      - name: 🔍 Svelte & TypeScript Code Check
         run: pnpm run check
 
-      - name: Execute Headless Backend Unit Tests
-        run: pnpm test:unit
+      - name: ⚡ Run Vitest Unit & Integration Suites
+        run: pnpm run test:unit
+
+      - name: 🎭 Run Playwright E2E Visual Verification (Headless)
+        run: pnpm exec playwright test
+        env:
+          CI: true
+
+  spawn-swarm-on-failure:
+    name: 🤖 Trigger 16-Agent Swarm Autopilot on Failure
+    needs: validate-and-test
+    if: failure() && github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📥 Clone Repository
+        uses: actions/checkout@v4
+
+      - name: 🚀 Dispatch Swarm Diagnostic & Fix Workflow
+        uses: google-labs-code/jules-action@v1
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          gemini-api-key: ${{ secrets.GEMINI_API_KEY }}
+          agent-directory: '.agents/agents'
+          workflow-file: '.agents/workflows/swarm-master-coordination.md'
+          auto-commit: true
+          create-pull-request: true
+          title: "🤖 Swarm Autopilot: Automated Architectural & Visual Bug Fixes"
+          body: |
+            ## 🚨 Automated Swarm Remediation Pipeline Triggered
+            
+            Our automated build pipeline failed verification checks. In response, the **Master CI & Swarm Autopilot** has spawned our 16-agent virtual engineering team.
+            
+            ### 🧑‍💻 Active Swarm Specialists:
+            1. **Triage Diagnostician (`diagnostician`):** Investigating compile and runtime logs.
+            2. **Chief Design Officer (`cdo`):** Restoring the Nuclear Americana Tech Noir palette and asymmetric grids.
+            3. **Chief Architect (`architect`):** Securing tenant boundaries and fixing firestore rules.
+            4. **Chief Reliability Officer (`cro`):** Resolving Svelte 5 and Playwright assertion regressions.
+            
+            *This Pull Request is managed entirely by your autonomous engineering swarm. Relax, grab some coffee, and let the swarm fix the code.*
