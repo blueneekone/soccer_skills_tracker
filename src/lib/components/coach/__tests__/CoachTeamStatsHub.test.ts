@@ -18,16 +18,21 @@ vi.mock('$lib/services/sportsConfigs.svelte.js', () => ({
 	}
 }));
 
-vi.mock('firebase/firestore', () => ({
-	collection: vi.fn(),
-	query: vi.fn(),
-	where: vi.fn(),
-	getDocs: vi.fn(() => Promise.resolve({
-		forEach: (cb: any) => {
-			// Mock documents
-		}
-	}))
-}));
+vi.mock('firebase/firestore', async (importOriginal) => {
+	const actual = (await importOriginal()) as any;
+	return {
+		...actual,
+		collection: vi.fn(),
+		query: vi.fn(),
+		where: vi.fn(),
+		getDoc: vi.fn(() => Promise.resolve({ exists: () => false })),
+		getDocs: vi.fn(() => Promise.resolve({
+			forEach: (cb: any) => {
+				// Mock documents
+			}
+		}))
+	};
+});
 
 describe('CoachTeamStatsHub', () => {
 	beforeEach(() => {

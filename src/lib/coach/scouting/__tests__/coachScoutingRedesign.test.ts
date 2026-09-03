@@ -31,6 +31,9 @@ vi.mock('$lib/stores/teams.svelte.js', () => ({
 		teams: [
 			{ id: 'team_alpha_123', name: 'Lightning FC', sport: 'soccer' },
 		],
+		getCoachTeams: vi.fn(() => [
+			{ id: 'team_alpha_123', name: 'Lightning FC', sport: 'soccer' },
+		]),
 	},
 }));
 
@@ -59,28 +62,31 @@ vi.mock('firebase/firestore', async (importOriginal) => {
 		serverTimestamp: vi.fn(() => ({ _methodName: 'serverTimestamp' })),
 		setDoc: vi.fn().mockResolvedValue(undefined),
 		onSnapshot: vi.fn((_q, callback) => {
-			callback({
-				docs: [
-					{
-						id: 'player1@fc.com',
-						data: () => ({
-							displayName: 'Sophia Smith',
-							position: 'Forward / Winger',
-							jerseyNumber: '11',
-							teamId: 'team_alpha_123',
-						}),
-					},
-					{
-						id: 'player2@fc.com',
-						data: () => ({
-							displayName: 'Naomi Girma',
-							position: 'Center Back',
-							jerseyNumber: '4',
-							teamId: 'team_alpha_123',
-						}),
-					},
-				],
-			});
+			setTimeout(() => {
+				callback({
+					docs: [
+						{
+							id: 'player1@fc.com',
+							data: () => ({
+								displayName: 'Sophia Smith',
+								position: 'Forward / Winger',
+								jerseyNumber: '11',
+								teamId: 'team_alpha_123',
+							}),
+						},
+						{
+							id: 'player2@fc.com',
+							data: () => ({
+								displayName: 'Naomi Girma',
+								position: 'Center Back',
+								jerseyNumber: '4',
+								teamId: 'team_alpha_123',
+							}),
+						},
+					],
+					docChanges: vi.fn(() => []),
+				});
+			}, 0);
 			return vi.fn();
 		}),
 	};
@@ -94,11 +100,11 @@ describe('Coach Scouting Suite Redesign', () => {
 		expect(getByText(/SIEM v2/i)).toBeTruthy();
 	});
 
-	it('renders prospect roster with athlete count and position filters', () => {
-		const { getByText, getAllByText } = render(CoachScoutingView);
+	it('renders prospect roster with athlete count and position filters', async () => {
+		const { getByText, getAllByText, findByText } = render(CoachScoutingView);
 
-		expect(getByText(/PROSPECT ROSTER/i)).toBeTruthy();
-		expect(getByText(/2 ATHLETES/i)).toBeTruthy();
+		expect(await findByText(/PROSPECT ROSTER/i)).toBeTruthy();
+		expect(await findByText(/2 ATHLETES/i)).toBeTruthy();
 		expect(getByText('ALL')).toBeTruthy();
 		expect(getByText('FW')).toBeTruthy();
 		expect(getByText('MF')).toBeTruthy();
@@ -107,10 +113,10 @@ describe('Coach Scouting Suite Redesign', () => {
 		expect(getByText('Sophia Smith')).toBeTruthy();
 	});
 
-	it('renders Scout\'s Six Radar profile with SVG polygon and axis labels', () => {
-		const { getByText } = render(CoachScoutingView);
+	it('renders Scout\'s Six Radar profile with SVG polygon and axis labels', async () => {
+		const { getByText, findByText } = render(CoachScoutingView);
 
-		expect(getByText(/SCOUT'S SIX RADAR PROFILE/i)).toBeTruthy();
+		expect(await findByText(/SCOUT'S SIX RADAR PROFILE/i)).toBeTruthy();
 		expect(getByText('PACE')).toBeTruthy();
 		expect(getByText('TECH')).toBeTruthy();
 		expect(getByText('VISION')).toBeTruthy();
@@ -119,10 +125,10 @@ describe('Coach Scouting Suite Redesign', () => {
 		expect(getByText('MENT')).toBeTruthy();
 	});
 
-	it('renders tactile steppers and qualitative scouting tags', () => {
-		const { getByText } = render(CoachScoutingView);
+	it('renders tactile steppers and qualitative scouting tags', async () => {
+		const { getByText, findByText } = render(CoachScoutingView);
 
-		expect(getByText('Pace')).toBeTruthy();
+		expect(await findByText('Pace')).toBeTruthy();
 		expect(getByText('Technique')).toBeTruthy();
 		expect(getByText('Tactical Vision')).toBeTruthy();
 		expect(getByText('Physicality')).toBeTruthy();
@@ -136,10 +142,10 @@ describe('Coach Scouting Suite Redesign', () => {
 		expect(getByText(/CONFIDENTIAL SCOUTING & RECRUITMENT NOTES/i)).toBeTruthy();
 	});
 
-	it('renders primary Action Gold Lock & Submit button', () => {
-		const { getByText } = render(CoachScoutingView);
+	it('renders primary Action Gold Lock & Submit button', async () => {
+		const { getByText, findByText } = render(CoachScoutingView);
 
-		const lockBtn = getByText(/LOCK & SUBMIT ASSESSMENT/i);
+		const lockBtn = await findByText(/LOCK & SUBMIT ASSESSMENT/i);
 		expect(lockBtn).toBeTruthy();
 	});
 });

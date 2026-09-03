@@ -31,6 +31,7 @@ export const directorLinks = [
 /** @type {ShellNavItem[]} */
 export const coachLinks = [
 	{ label: 'Mission Control',       href: '/coach/dashboard',               icon: 'content.grid' },
+	{ label: 'War Room',              href: '/coach/tactical',                icon: 'data.target' },
 	{ label: 'Tactics & Training',    href: '/coach/tactics-and-training',     icon: 'data.target' },
 	{ label: 'Scouting',          href: '/coach/scouting',      icon: 'data.activity' },
 	{ label: 'Team Ops',          href: '/coach/logistics',     icon: 'sys.calendar' },
