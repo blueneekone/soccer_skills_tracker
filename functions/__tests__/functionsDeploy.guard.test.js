@@ -235,7 +235,7 @@ describe('functionsDeploy guard — firebase.json codebases', () => {
     'platform',
   ];
 
-  it.skip('registers all split codebases with bundle predeploy', () => {
+  it('registers all split codebases with bundle predeploy', () => {
     const firebase = JSON.parse(readRepo('firebase.json'));
     const entries = firebase.functions;
     assert.ok(Array.isArray(entries), 'firebase.json must have functions array');
@@ -283,7 +283,7 @@ describe('functionsDeploy guard — monolith slim (DEPLOY-N)', () => {
     // Temporarily removed to allow bugfix exports
   ];
 
-  it.skip('functions/index.js does not export symbols owned by split codebases', () => {
+  it('functions/index.js does not export symbols owned by split codebases', () => {
     const src = readRepo('functions/index.js');
     for (const name of MIGRATED_FROM_DEFAULT) {
       assert.doesNotMatch(
@@ -398,7 +398,7 @@ describe('functionsDeploy guard — DEPLOY-O-platform-init', () => {
     }
   });
 
-  it.skip('platform, core, and rl indexes load for Firebase discovery (smoke require)', () => {
+  it('platform, core, and rl indexes load for Firebase discovery (smoke require)', () => {
     execFileSync(process.execPath, ['scripts/bundle-functions.cjs'], {
       cwd: REPO_ROOT,
       stdio: 'pipe',
