@@ -14,7 +14,8 @@ test.describe('Admin OS Secure Impersonation & Age Gating Gates', () => {
   test('Admin Impersonation: Should successfully load Global Users and access action menus for verified adult', async ({ page }) => {
     // 1. Authenticate as a verified Global Admin using auth_state
     await page.addInitScript(() => {
-      window.localStorage.setItem('auth_state', JSON.stringify({
+      window.localStorage.setItem('sstracker_e2e_bypass', 'true');
+      localStorage.setItem('auth_state', JSON.stringify({
         isAuthenticated: true,
         isLoading: false,
         role: 'super_admin',
@@ -43,6 +44,7 @@ test.describe('Admin OS Secure Impersonation & Age Gating Gates', () => {
   test('Admin Impersonation: Should block impersonation of self and global admins', async ({ page }) => {
     // 1. Authenticate as Admin
     await page.addInitScript(() => {
+      window.localStorage.setItem('sstracker_e2e_bypass', 'true');
       window.localStorage.setItem('auth_state', JSON.stringify({
         isAuthenticated: true,
         isLoading: false,
