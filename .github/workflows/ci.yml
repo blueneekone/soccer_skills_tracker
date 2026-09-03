@@ -57,7 +57,7 @@ jobs:
   spawn-swarm-on-failure:
     name: 🤖 Trigger 16-Agent Swarm Autopilot on Failure
     needs: validate-and-test
-    if: failure() && github.event_name == 'pull_request'
+    if: failure() && github.event_name == 'pull_request' && github.actor != 'github-actions[bot]' && !contains(github.actor, 'jules')
     runs-on: ubuntu-latest
     steps:
       - name: 📥 Clone Repository
