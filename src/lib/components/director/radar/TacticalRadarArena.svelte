@@ -2,8 +2,6 @@
 	import { onDestroy, onMount } from 'svelte';
 	import { browser } from '$app/environment';
 	import { ensureGoogleMapsLoaded, getGoogleMapsApiKey, getGoogleMapsMapId } from '$lib/maps/ensureGoogleMaps.js';
-	import { getToken } from 'firebase/app-check';
-	import { appCheck } from '$lib/firebase/config';
 	import type { LightningRadarEngine } from '../../../../routes/(app)/director/logistics/radar/LightningRadarEngine.svelte';
 
 	let { engine }: { engine: LightningRadarEngine } = $props();
@@ -47,9 +45,6 @@
 
 		(async () => {
 			try {
-				const tokenResult = await getToken(appCheck, false);
-				if (cancelled) return;
-
 				await ensureGoogleMapsLoaded();
 				if (cancelled) return;
 
