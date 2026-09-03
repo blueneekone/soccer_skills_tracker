@@ -32,7 +32,7 @@
 
 		{#if engine.activeTab === 'overview'}
 			<!-- Telemetry Tiles (Bento 4-column row) -->
-			<div class="bento-grid-container tw-mb-6 tw-grid tw-gap-4" style="grid-template-columns: repeat(auto-fit, minmax(min(100%, clamp(280px, 30vw, 350px)), 1fr));">
+			<div class="tw-grid tw-grid-cols-12 bento-grid-container tw-mb-6 tw-gap-4" style="grid-template-columns: repeat(auto-fit, minmax(min(100%, clamp(280px, 30vw, 350px)), 1fr));">
 				<div class="z2-panel siem-panel st-bento tw-p-[clamp(16px,3vw,24px)] tw-flex tw-flex-col tw-min-w-0 hover:tw-border-amber-500 hover:tw-shadow-neon-nuclear tw-transition-all" style="background: #0f172a; border: 1px solid #334155;">
 					<div class="tw-flex tw-items-center tw-justify-between tw-mb-2">
 						<span class="tw-text-[10px] tw-font-bold tw-uppercase tw-tracking-widest tw-text-[#A1A1AA]" style="font-family: 'Geist Sans', sans-serif;">Total Organizations</span>
@@ -64,7 +64,7 @@
 			</div>
 
 			<!-- Asymmetric 12-column Bento Grid with fluid anti-squish -->
-			<div class="bento-grid-container tw-grid tw-grid-cols-1 lg:tw-grid-cols-12 tw-gap-4">
+			<div class="tw-grid tw-grid-cols-1 lg:tw-grid-cols-12 bento-grid-container tw-gap-4">
 
 				<!-- Main Activity Matrix (Spans 8 cols on lg) -->
 				<div class="lg:tw-col-span-8 z2-panel siem-panel st-bento tw-p-[clamp(16px,3vw,24px)] tw-min-h-[400px] tw-flex tw-flex-col tw-min-w-0 hover:tw-border-amber-500/50 tw-transition-all" style="background: #0f172a; border: 1px solid #334155;">
@@ -98,7 +98,7 @@
 				</div>
 			</div>
 
-			<div class="admin-hud-grid bento-grid-container tw-mt-6 tw-grid tw-grid-cols-1 lg:tw-grid-cols-12 tw-gap-4">
+			<div class="tw-grid tw-grid-cols-1 lg:tw-grid-cols-12 admin-hud-grid bento-grid-container tw-mt-6 tw-gap-4">
 				<!-- Global Telemetry Feed (8 cols) -->
 				<div class="global-telemetry-feed lg:tw-col-span-8 z2-panel siem-panel st-bento tw-p-[clamp(16px,3vw,24px)] tw-min-w-0 hover:tw-border-amber-500/50 tw-transition-all" style="background: #0f172a; border: 1px solid #334155;">
 					<h3 class="tw-text-xs tw-text-amber-500 tw-mb-2 tw-uppercase tw-tracking-widest tw-flex tw-items-center tw-gap-2" style="font-family: 'Geist Sans', sans-serif;">

@@ -34,7 +34,7 @@
   }
 </script>
 
-<div class="arena-root bento-grid-container st-bento tw-font-mono">
+<div class="arena-root bento-grid-container tw-font-mono">
   <!-- Left rail: sport list -->
   <aside class="arena-rail lg:tw-col-span-4">
     <div class="rail-header">

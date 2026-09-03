@@ -3,9 +3,7 @@ import { test, expect } from '@playwright/test';
 test.describe('Generate Persona Audit Screenshots', () => {
   test('Admin OS', async ({ page }) => {
     await page.addInitScript(() => {
-      window.localStorage.setItem('sstracker_e2e_bypass', 'true');
-      localStorage.setItem('auth_token', 'mock-admin');
-      window.localStorage.setItem('sstracker_e2e_bypass', 'true');
+      window.localStorage.setItem('auth_token', 'mock-admin');
       window.localStorage.setItem('auth_state', JSON.stringify({
         isAuthenticated: true, isLoading: false, user: { uid: 'admin', email: 'admin@test.com', role: 'admin', isProfileComplete: true }
       }));

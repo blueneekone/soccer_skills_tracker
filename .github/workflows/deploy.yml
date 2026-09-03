@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-      - dev
   workflow_dispatch:
     inputs:
       environment:
@@ -23,10 +22,10 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  # Auto-detect target: push to dev -> dev, push to main -> prod, workflow_dispatch -> uses input
-  DEPLOY_TARGET: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.environment || (github.ref == 'refs/heads/dev' && 'dev' || 'prod') }}
-  VITE_USE_PROD: ${{ (github.event_name == 'workflow_dispatch' && github.event.inputs.environment != 'dev') || (github.event_name != 'workflow_dispatch' && github.ref != 'refs/heads/dev') && 'true' || 'false' }}
-  FIREBASE_PROJECT_ID: ${{ (github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'dev') || (github.event_name != 'workflow_dispatch' && github.ref == 'refs/heads/dev') && 'sports-skill-tracker-dev' || 'soccer-skills-tracker' }}
+  # workflow_dispatch dev → sports-skill-tracker-dev; prod or push-to-main → soccer-skills-tracker (A-04)
+  DEPLOY_TARGET: ${{ github.event.inputs.environment == 'dev' && 'dev' || 'prod' }}
+  VITE_USE_PROD: ${{ github.event.inputs.environment != 'dev' && 'true' || 'false' }}
+  FIREBASE_PROJECT_ID: ${{ github.event.inputs.environment == 'dev' && 'sports-skill-tracker-dev' || 'soccer-skills-tracker' }}
 
 jobs:
   # ─────────────────────────────────────────────────────────────────────────

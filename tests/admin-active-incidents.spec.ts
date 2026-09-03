@@ -4,8 +4,7 @@ test('Admin Active Incidents click navigation', async ({ page }) => {
   await page.goto('/onboarding');
   // Inject auth bypass
   await page.evaluate(() => {
-    localStorage.setItem('sstracker_e2e_bypass', 'true');
-      localStorage.setItem('auth_state', JSON.stringify({
+    localStorage.setItem('auth_state', JSON.stringify({
       uid: 'admin1',
       email: 'admin@example.com',
       role: 'super_admin'
