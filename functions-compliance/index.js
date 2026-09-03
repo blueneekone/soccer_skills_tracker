@@ -72,3 +72,7 @@ const parentCoachDmOps = require('./src/domains/parentCoachDmOps');
 exports.sendParentCoachMessage = parentCoachDmOps.sendParentCoachMessage;
 exports.listParentCoachDmThreads = parentCoachDmOps.listParentCoachDmThreads;
 
+
+const lazy = (mod, fn) => (...args) => require(mod)[fn](...args);
+exports.initializeIndependentDirector = onCall({ region: "us-east1", secrets: ["STRIPE_SECRET_KEY"] }, (req) => lazy("./src/domains/directorOnboarding", "initializeIndependentDirector")(req));
+exports.initializeGovernedDirector = onCall({ region: "us-east1", secrets: ["STRIPE_SECRET_KEY"] }, (req) => lazy("./src/domains/directorOnboarding", "initializeGovernedDirector")(req));
