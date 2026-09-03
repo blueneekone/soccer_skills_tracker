@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { browser } from '$app/environment';
 	import { onMount, tick } from 'svelte';
-	import { collection, doc, getDoc, getDocs, onSnapshot } from 'firebase/firestore';
+	import { collection, doc, getDoc, getDocs, onSnapshot, query, where, getCountFromServer } from 'firebase/firestore';
 	import { db } from '$lib/firebase.js';
 	import { isFirestoreReady } from '$lib/utils/firestoreGuard.js';
 	import {
@@ -26,8 +26,8 @@
 	let seatsLimit = $state(0);
 	let clubInfinite = $state(false);
 
-	/** @type {{ labels: string[], values: number[] }} */
-	let playersByClub = $state({ labels: [], values: [] });
+	/** @type {{ labels: string[], values: number[], teamIds: string[] }} */
+	let playersByTeam = $state({ labels: [], values: [], teamIds: [] });
 
 	$effect(() => {
 		if (!browser || !clubId) return;
@@ -53,72 +53,38 @@
 	});
 
 	$effect(() => {
-		if (!browser || !isFirestoreReady()) return; // b815 guard — prevents Quota Exceeded on unauthenticated renders
+		if (!browser || !isFirestoreReady()) return; // b815 guard
 		let cancelled = false;
 		(async () => {
 			try {
-				const [clubsSnap, teamsSnap, lookupSnap] = await Promise.all([
-					getDocs(collection(db, 'clubs')),
-					getDocs(collection(db, 'teams')),
-					getDocs(collection(db, 'player_lookup')),
-				]);
+				const teamsSnap = await getDocs(query(collection(db, 'teams'), where('clubId', '==', clubId)));
 				if (cancelled) return;
 
-				/** @type {Record<string, string>} */
-				const teamClub = {};
-				teamsSnap.forEach((d) => {
-					const t = d.data();
-					if (typeof t.clubId === 'string' && t.clubId.trim()) {
-						teamClub[d.id] = t.clubId.trim();
+				const teamTasks = teamsSnap.docs.map(async (d) => {
+					const t = /** @type {Record<string, any>} */ (d.data());
+					const name = typeof t.name === 'string' && t.name.trim() ? t.name.trim() : d.id;
+					try {
+						// Using a server-side count query instead of downloading documents
+						const countSnap = await getCountFromServer(query(collection(db, 'player_lookup'), where('teamId', '==', d.id)));
+						return { id: d.id, name, count: countSnap.data().count };
+					} catch {
+						return { id: d.id, name, count: 0 };
 					}
 				});
 
-				/** @type {Record<string, string>} */
-				const clubNameById = {};
-				clubsSnap.forEach((d) => {
-					const c = d.data();
-					clubNameById[d.id] =
-						typeof c.name === 'string' && c.name.trim() ? c.name.trim() : d.id;
-				});
+				const counts = await Promise.all(teamTasks);
+				if (cancelled) return;
 
-				/** @type {Record<string, number>} */
-				const counts = {};
-				lookupSnap.forEach((d) => {
-					const row = d.data();
-					const teamId = typeof row.teamId === 'string' ? row.teamId : '';
-					const cid = teamClub[teamId] || clubId;
-					if (!cid) return;
-					counts[cid] = (counts[cid] || 0) + 1;
-				});
+				const rows = counts.sort((a, b) => b.count - a.count).slice(0, 8);
 
-				const rows = Object.entries(counts)
-					.map(([id, count]) => ({ id, name: clubNameById[id] || id, count: count as number }))
-					.sort((a, b) => b.count - a.count)
-					.slice(0, 8);
-
-				playersByClub = {
+				playersByTeam = {
 					labels: rows.map((r) => r.name),
 					values: rows.map((r) => r.count),
+					teamIds: rows.map((r) => r.id),
 				};
-			} catch {
-				// Fallback to current-club only count (strict role rules can block global reads).
-				try {
-					const lookupSnap = await getDocs(collection(db, 'player_lookup'));
-					let n = 0;
-					lookupSnap.forEach((d) => {
-						const row = d.data();
-						const teamId = typeof row.teamId === 'string' ? row.teamId : '';
-						if (teamId.startsWith(`${clubId}_`)) n++;
-					});
-					if (!cancelled) {
-						const cl = await getDoc(doc(db, 'clubs', clubId));
-						const name =
-							cl.exists() && typeof cl.data()?.name === 'string' ? cl.data().name : 'Current Club';
-						playersByClub = { labels: [name], values: [n] };
-					}
-				} catch {
-					if (!cancelled) playersByClub = { labels: ['Current Club'], values: [0] };
-				}
+			} catch (e) {
+				console.error('[DirectorAnalyticsCharts] Failed to load team stats', e);
+				if (!cancelled) playersByTeam = { labels: ['Error loading data'], values: [0], teamIds: [] };
 			}
 		})();
 		return () => {
@@ -183,8 +149,9 @@
 
 	$effect(() => {
 		if (!browser || !mounted || !clubCanvas) return;
-		const labels = playersByClub.labels;
-		const values = playersByClub.values;
+		const labels = playersByTeam.labels;
+		const values = playersByTeam.values;
+		const teamIds = playersByTeam.teamIds;
 		// Same `destroyed` guard as seatChart — prevents orphaned Chart.js instance
 		// accumulation across client-side navigation.
 		let destroyed = false;
@@ -199,7 +166,7 @@
 			clubChart = new Chart(clubCanvas, {
 				type: 'bar',
 				data: {
-					labels: labels.length ? labels : ['Current Club'],
+					labels: labels.length ? labels : ['No Teams'],
 					datasets: [
 						{
 							label: 'Active players',
@@ -216,6 +183,15 @@
 					plugins: {
 						...opts.plugins,
 						legend: { display: false },
+					},
+					onClick: (e, elements) => {
+						if (elements && elements.length > 0) {
+							const idx = elements[0].index;
+							const tId = teamIds[idx];
+							if (tId) {
+								window.location.href = `/director/team/${tId}/roster`;
+							}
+						}
 					},
 					scales: {
 						x: {
@@ -244,79 +220,26 @@
 </script>
 
 {#if clubId}
-	<div class="ec-dir-analytics">
-		<div class="ec-dir-analytics__card">
-			<h3 class="ec-dir-analytics__title">Platform seat utilization</h3>
-			<p class="ec-dir-analytics__sub">Current allocated seats (active + reserved) against licensed capacity.</p>
+	<div class="tw-grid tw-grid-cols-1 md:tw-grid-cols-2 tw-gap-4">
+		<div class="st-bento vanguard-card tw-bg-[#0f172a] tw-border tw-border-slate-800 tw-p-5 tw-flex tw-flex-col tw-h-full">
+			<h3 class="tw-text-sm tw-font-bold tw-text-slate-100 tw-mb-1" style="font-family: 'Geist Sans', sans-serif;">Platform seat utilization</h3>
+			<p class="tw-text-xs tw-text-slate-400 tw-mb-4" style="font-family: 'Switzer', sans-serif;">Current allocated seats (active + reserved) against licensed capacity.</p>
 			{#if clubInfinite}
-				<p class="ec-dir-analytics__promo">
-					<strong>Unlimited license (promo).</strong> Capacity is uncapped for this club.
+				<p class="tw-text-sm tw-text-amber-500 tw-bg-amber-500/10 tw-border tw-border-amber-500/20 tw-p-3 tw-rounded-md">
+					<strong class="tw-font-bold">Unlimited license (promo).</strong> Capacity is uncapped for this club.
 				</p>
 			{:else}
-				<div class="ec-dir-analytics__chart">
+				<div class="tw-relative tw-flex-1 tw-min-h-[200px]">
 					<canvas bind:this={seatCanvas} aria-label="Platform seat utilization chart"></canvas>
 				</div>
 			{/if}
 		</div>
-		<div class="ec-dir-analytics__card">
-			<h3 class="ec-dir-analytics__title">Active players per club</h3>
-			<p class="ec-dir-analytics__sub">Top clubs by active roster size (player lookup records).</p>
-			<div class="ec-dir-analytics__chart">
-				<canvas bind:this={clubCanvas} aria-label="Active players per club chart"></canvas>
+		<div class="st-bento vanguard-card tw-bg-[#0f172a] tw-border tw-border-slate-800 tw-p-5 tw-flex tw-flex-col tw-h-full">
+			<h3 class="tw-text-sm tw-font-bold tw-text-slate-100 tw-mb-1" style="font-family: 'Geist Sans', sans-serif;">Active players per team</h3>
+			<p class="tw-text-xs tw-text-slate-400 tw-mb-4" style="font-family: 'Switzer', sans-serif;">Top teams by active roster size. Click a bar to view the roster logs.</p>
+			<div class="tw-relative tw-flex-1 tw-min-h-[200px] tw-cursor-pointer">
+				<canvas bind:this={clubCanvas} aria-label="Active players per team chart"></canvas>
 			</div>
 		</div>
 	</div>
 {/if}
-
-<style>
-	.ec-dir-analytics {
-		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(min(100%, clamp(280px, 30vw, 350px)), 1fr));
-		gap: 14px;
-		margin-bottom: 20px;
-		align-items: stretch;
-	}
-
-	.ec-dir-analytics__card {
-		display: flex;
-		flex-direction: column;
-		height: 100%;
-		border: 1px solid #e5e5e5;
-		border-radius: 14px;
-		background: #ffffff;
-		padding: 1.25rem;
-		box-sizing: border-box;
-	}
-
-	:global(html.dark) .ec-dir-analytics__card {
-		border-color: rgba(255, 255, 255, 0.1);
-		background: #0f172a;
-	}
-
-	.ec-dir-analytics__title {
-		margin: 0 0 4px;
-		font-size: 14px;
-		font-weight: 700;
-		color: var(--text-primary);
-	}
-
-	.ec-dir-analytics__sub {
-		margin: 0 0 12px;
-		font-size: 12px;
-		color: var(--text-secondary);
-	}
-
-	.ec-dir-analytics__chart {
-		position: relative;
-		flex: 1 1 auto;
-		height: 200px;
-		max-width: 100%;
-	}
-
-	.ec-dir-analytics__promo {
-		margin: 0;
-		font-size: 13px;
-		line-height: 1.45;
-		color: var(--text-secondary);
-	}
-</style>

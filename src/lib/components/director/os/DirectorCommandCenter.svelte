@@ -11,8 +11,6 @@
 	import HotelRebatePanel from '$lib/components/director/os/HotelRebatePanel.svelte';
 	import CoachAccountabilityModule from '$lib/components/director/os/CoachAccountabilityModule.svelte';
 	import PaymentRecoveryModule from '$lib/components/director/os/PaymentRecoveryModule.svelte';
-	import WorkspaceSocShell from '$lib/components/workspace/WorkspaceSocShell.svelte';
-	import WorkspaceSocMetricGrid from '$lib/components/workspace/WorkspaceSocMetricGrid.svelte';
 	import Icon from '$lib/components/ui/Icon.svelte';
 
 	let { clubId = '' } = $props();
@@ -99,7 +97,6 @@
 		const L = loadingKpis;
 		const cap = kpis.seatsLimit;
 		const util = cap > 0 ? kpis.activeSeats / cap : 0;
-		/** @type {'crit' | 'high' | 'med' | 'low' | 'ok' | 'info'} */
 		let utilBand = 'info';
 		if (cap <= 0) utilBand = 'info';
 		else if (util >= 0.98) utilBand = 'high';
@@ -109,94 +106,75 @@
 		const inviteBand = kpis.pendingInvites > 5 ? 'med' : kpis.pendingInvites > 0 ? 'low' : 'ok';
 
 		return [
-			{
-				label: 'Teams',
-				value: L ? '…' : String(kpis.teams),
-				hint: 'Program containers',
-				band: /** @type {const} */ ('info'),
-				delta: '—',
-				deltaDir: /** @type {const} */ ('flat'),
-			},
-			{
-				label: 'Pending invites',
-				value: L ? '…' : String(kpis.pendingInvites),
-				hint: 'Coach seats',
-				band: inviteBand,
-				delta: '—',
-				deltaDir: /** @type {const} */ ('flat'),
-			},
-			{
-				label: 'Active seats',
-				value: L ? '…' : String(kpis.activeSeats),
-				hint: 'Billing draw',
-				band: /** @type {const} */ ('low'),
-				delta: '—',
-				deltaDir: /** @type {const} */ ('flat'),
-			},
-			{
-				label: 'Seat cap',
-				value: L ? '…' : cap ? String(cap) : '—',
-				hint: 'License entitlement',
-				band: /** @type {const} */ ('info'),
-				delta: '—',
-				deltaDir: /** @type {const} */ ('flat'),
-			},
-			{
-				label: 'Utilization',
-				value: L ? '…' : cap ? `${Math.round(util * 100)}%` : '—',
-				hint: 'Active / cap',
-				band: utilBand,
-				delta: '—',
-				deltaDir: /** @type {const} */ ('flat'),
-			},
+			{ label: 'Teams', value: L ? '…' : String(kpis.teams), hint: 'Program containers', band: 'info' },
+			{ label: 'Pending invites', value: L ? '…' : String(kpis.pendingInvites), hint: 'Coach seats', band: inviteBand },
+			{ label: 'Active seats', value: L ? '…' : String(kpis.activeSeats), hint: 'Billing draw', band: 'low' },
+			{ label: 'Seat cap', value: L ? '…' : cap ? String(cap) : '—', hint: 'License entitlement', band: 'info' },
+			{ label: 'Utilization', value: L ? '…' : cap ? `${Math.round(util * 100)}%` : '—', hint: 'Active / cap', band: utilBand },
 		];
 	});
 </script>
 
-<section class="director-command-center" aria-labelledby="dir-os-heading">
-	<WorkspaceSocShell
-		eyebrow="Director workspace · club operations"
-		title="Command center"
-		lede="Firestore KPIs, compliance queues, and club-ops telemetry. Severity bands mirror risk — scroll for queues and charts."
-		ribbon={ribbonRows}
-		metaLine="Club scope · client"
-	>
-		<h2 id="dir-os-heading" class="tw-sr-only">Director command center</h2>
-		<WorkspaceSocMetricGrid
-			metrics={metrics}
-			gridClass="tw-grid tw-grid-cols-2 md:tw-grid-cols-5 tw-gap-4 director-cc-kpi-grid"
-		/>
+<section class="director-command-center tw-flex tw-flex-col tw-gap-6" aria-labelledby="dir-os-heading">
+	<div class="tw-flex tw-flex-col tw-mb-2">
+		<h2 id="dir-os-heading" class="tw-text-xl tw-font-bold tw-text-slate-50 tw-tracking-wide" style="font-family: 'Geist Sans', sans-serif;">
+			Command Center
+		</h2>
+		<p class="tw-text-sm tw-text-slate-400 tw-mt-1" style="font-family: 'Switzer', sans-serif;">
+			Firestore KPIs, compliance queues, and club-ops telemetry.
+		</p>
+	</div>
 
-		<div class="tw-w-full tw-grid tw-grid-cols-1 lg:tw-grid-cols-12 tw-gap-6 tw-mt-6 tw-font-mono">
-			<!-- 8-Column Primary Canvas -->
-			<div class="lg:tw-col-span-8 tw-flex tw-flex-col tw-gap-6 tw-min-w-0">
-				<div class="director-cc-z2-panel wsd-surface-accent">
-					<ActionInbox {clubId} />
+	<!-- KPIs Grid -->
+	<div class="tw-grid tw-grid-cols-2 md:tw-grid-cols-5 tw-gap-4">
+		{#each metrics as m}
+			<div class="st-bento vanguard-card tw-bg-[#0f172a] tw-border tw-border-slate-800 tw-p-4 tw-flex tw-flex-col tw-gap-1">
+				<div class="tw-text-[0.65rem] tw-uppercase tw-tracking-widest tw-text-slate-500 tw-font-mono">{m.label}</div>
+				<div class="tw-text-2xl tw-font-bold tw-text-slate-100" style="font-family: 'Geist Mono', monospace;">
+					{m.value}
 				</div>
+				<div class="tw-text-xs tw-text-slate-500">{m.hint}</div>
+			</div>
+		{/each}
+	</div>
 
+	<!-- Main Canvas -->
+	<div class="tw-w-full tw-grid tw-grid-cols-1 lg:tw-grid-cols-12 tw-gap-6 tw-mt-2">
+		<!-- 8-Column Primary Canvas -->
+		<div class="lg:tw-col-span-8 tw-flex tw-flex-col tw-gap-6 tw-min-w-0">
+			<div class="st-bento tw-bg-[#0f172a] tw-border tw-border-slate-800 tw-rounded-xl tw-overflow-hidden">
+				<ActionInbox {clubId} />
+			</div>
+			<div class="st-bento tw-bg-[#0f172a] tw-border tw-border-slate-800 tw-rounded-xl tw-overflow-hidden">
 				<RevenueLedgerModule {clubId} />
-
+			</div>
+			<div class="st-bento tw-bg-[#0f172a] tw-border tw-border-slate-800 tw-rounded-xl tw-overflow-hidden">
 				<PaymentRecoveryModule {clubId} />
-
+			</div>
+			<div class="st-bento tw-bg-[#0f172a] tw-border tw-border-slate-800 tw-rounded-xl tw-overflow-hidden">
 				<EventReconciliationModule {clubId} />
+			</div>
+			
+			<DirectorAnalyticsCharts {clubId} />
+		</div>
 
-				<DirectorAnalyticsCharts {clubId} />
+		<!-- 4-Column Sidecar -->
+		<div class="lg:tw-col-span-4 tw-flex tw-flex-col tw-gap-6 tw-min-w-0">
+			<div class="st-bento tw-bg-[#0f172a] tw-border tw-border-slate-800 tw-rounded-xl tw-overflow-hidden tw-p-5">
+				<div class="tw-flex tw-items-center tw-gap-2 tw-text-[#f59e0b] tw-mb-4 tw-font-mono tw-text-xs tw-uppercase tw-tracking-widest">
+					<Icon name="status.shield-check" />
+					<span>Consent audit</span>
+				</div>
+				<VpcApprovalQueue {clubId} />
 			</div>
 
-			<!-- 4-Column Sidecar -->
-			<div class="lg:tw-col-span-4 tw-flex tw-flex-col tw-gap-6 tw-min-w-0">
-				<div class="director-cc-compliance-band">
-					<div class="director-cc-compliance-band__head">
-						<Icon name="status.shield-check" />
-						<span>Consent audit</span>
-					</div>
-					<VpcApprovalQueue {clubId} />
-				</div>
-
+			<div class="st-bento tw-bg-[#0f172a] tw-border tw-border-slate-800 tw-rounded-xl tw-overflow-hidden">
 				<HotelRebatePanel {clubId} />
+			</div>
 
+			<div class="st-bento tw-bg-[#0f172a] tw-border tw-border-slate-800 tw-rounded-xl tw-overflow-hidden">
 				<CoachAccountabilityModule {clubId} />
 			</div>
 		</div>
-	</WorkspaceSocShell>
+	</div>
 </section>

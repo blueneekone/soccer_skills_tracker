@@ -31,8 +31,17 @@
 
 		void (async () => {
 			try {
+				const today = new Date();
+				today.setHours(0, 0, 0, 0);
+				const sevenDaysAgo = new Date(today);
+				sevenDaysAgo.setDate(today.getDate() - 6);
+
 				const [repsSnap, teamSnap, statsSnap, lookupSnap] = await Promise.all([
-					getDocs(query(collection(db, 'reps'), where('teamId', '==', teamId))),
+					getDocs(query(
+						collection(db, 'reps'),
+						where('teamId', '==', teamId),
+						where('timestamp', '>=', sevenDaysAgo)
+					)),
 					getDoc(doc(db, 'teams', teamId)),
 					getDocs(query(collection(db, 'player_stats'), where('teamId', '==', teamId))),
 					getDocs(query(collection(db, 'player_lookup'), where('teamId', '==', teamId))),
@@ -56,7 +65,7 @@
 					const heightPct = Math.max(18, Math.round((xp / maxDayXp) * 92));
 					const [y, m, day] = k.split('-').map(Number);
 					const dt = new Date(y, m - 1, day);
-					return { label: shortWeekLabel(dt), heightPct, xp };
+					return { label: shortWeekLabel(dt), heightPct, xp, dateKey: k };
 				});
 
 				const teamData = teamSnap.exists() ? teamSnap.data() : {};
@@ -228,15 +237,17 @@
 			<div class="ec-coach-xp__bars">
 				{#each velocityBars as bar, i (`${bar.label}-${i}-${bar.xp}`)}
 					<div class="ec-coach-xp__bar-col">
-						<div
-							class="ec-coach-xp__bar-track"
+						<button
+							class="ec-coach-xp__bar-track hover:tw-bg-[rgba(20,184,166,0.08)] tw-transition-colors tw-cursor-pointer tw-border-none tw-p-0 tw-m-0 tw-appearance-none"
+							aria-label="View reps for {bar.dateKey}"
+							onclick={() => window.location.href = `/director/team/${teamId}/reps?date=${bar.dateKey}`}
 						>
 							<div
 								class="w-[72%] max-w-[3rem] rounded-t-md bg-gradient-to-t from-cyan-600 to-cyan-400 shadow-[0_0_18px_rgba(20, 184, 166,0.45)] transition-[height] duration-300"
 								style="height: {bar.heightPct}%"
 								title="{bar.xp} XP"
 							></div>
-						</div>
+						</button>
 						<span class="ec-coach-xp__bar-label">{bar.label}</span>
 					</div>
 				{/each}
