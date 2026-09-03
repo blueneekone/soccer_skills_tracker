@@ -31,6 +31,9 @@ vi.mock('$lib/stores/teams.svelte.js', () => ({
 		teams: [
 			{ id: 'team_alpha_123', name: 'Lightning FC', sport: 'soccer' },
 		],
+		getCoachTeams: vi.fn(() => [
+			{ id: 'team_alpha_123', name: 'Lightning FC', sport: 'soccer' },
+		]),
 	},
 }));
 
@@ -59,27 +62,29 @@ vi.mock('firebase/firestore', async (importOriginal) => {
 		serverTimestamp: vi.fn(() => ({ _methodName: 'serverTimestamp' })),
 		setDoc: vi.fn().mockResolvedValue(undefined),
 		onSnapshot: vi.fn((_q, callback) => {
+			const docs = [
+				{
+					id: 'player1@fc.com',
+					data: () => ({
+						displayName: 'Sophia Smith',
+						position: 'Forward / Winger',
+						jerseyNumber: '11',
+						teamId: 'team_alpha_123',
+					}),
+				},
+				{
+					id: 'player2@fc.com',
+					data: () => ({
+						displayName: 'Naomi Girma',
+						position: 'Center Back',
+						jerseyNumber: '4',
+						teamId: 'team_alpha_123',
+					}),
+				},
+			];
 			callback({
-				docs: [
-					{
-						id: 'player1@fc.com',
-						data: () => ({
-							displayName: 'Sophia Smith',
-							position: 'Forward / Winger',
-							jerseyNumber: '11',
-							teamId: 'team_alpha_123',
-						}),
-					},
-					{
-						id: 'player2@fc.com',
-						data: () => ({
-							displayName: 'Naomi Girma',
-							position: 'Center Back',
-							jerseyNumber: '4',
-							teamId: 'team_alpha_123',
-						}),
-					},
-				],
+				docs,
+				docChanges: () => docs.map(doc => ({ type: 'added', doc }))
 			});
 			return vi.fn();
 		}),
