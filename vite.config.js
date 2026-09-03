@@ -13,11 +13,6 @@ export default defineConfig(({ mode }) => ({
 			ignored: ['**/recordings/**', '**/static/videos/**', '**/scripts/**']
 		}
 	},
-	preview: {
-		headers: {
-			'Cross-Origin-Opener-Policy': 'same-origin-allow-popups'
-		}
-	},
 
 	/**
 	 * Sprint 1.1 — content-hash asset versioning (.cursorrules asset_versioning).

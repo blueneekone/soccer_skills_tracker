@@ -1,17 +1,23 @@
-const admin = require('firebase-admin');
-const logger = require('firebase-functions/logger');
+const admin = require("firebase-admin");
+const logger = require("firebase-functions/logger");
 
 /**
  * Executes SafeSport Automated Lockdown when a critical lightning strike occurs.
  * Suspends active schedules and triggers Shadow CC broadcast.
  */
-exports.triggerWeatherLockdown = async function(clubId, db) {
+exports.triggerWeatherLockdown = async function (clubId, db) {
   try {
-    const schedulesRef = db.collection('schedules').where('clubId', '==', clubId).where('sessionStatus', 'in', ['active', 'scheduled']);
+    const schedulesRef = db
+      .collection("schedules")
+      .where("clubId", "==", clubId)
+      .where("sessionStatus", "in", ["active", "scheduled"]);
     const schedSnap = await schedulesRef.get();
 
     if (schedSnap.empty) {
-      logger.info('triggerWeatherLockdown: No active schedules found for club', { clubId });
+      logger.info(
+        "triggerWeatherLockdown: No active schedules found for club",
+        { clubId },
+      );
       return;
     }
 
@@ -23,10 +29,10 @@ exports.triggerWeatherLockdown = async function(clubId, db) {
 
       const teamIds = new Set();
 
-      chunk.forEach(doc => {
+      chunk.forEach((doc) => {
         batch.update(doc.ref, {
-          fieldStatus: 'locked',
-          sessionStatus: 'suspended'
+          fieldStatus: "locked",
+          sessionStatus: "suspended",
         });
         if (doc.data().teamId) {
           teamIds.add(doc.data().teamId);
@@ -35,22 +41,29 @@ exports.triggerWeatherLockdown = async function(clubId, db) {
 
       // Dispatch SafeSport Shadow CC broadcast for each affected team
       for (const tId of teamIds) {
-        const broadcastRef = db.collection('team_broadcasts').doc();
+        const broadcastRef = db.collection("team_broadcasts").doc();
         batch.set(broadcastRef, {
           teamId: tId,
           clubId,
-          message: 'CRITICAL WEATHER ALERT: Lightning in area. Clear the pitch immediately and seek shelter in vehicles.',
-          type: 'emergency_broadcast',
-          channelType: 'parent_lounge', // Required for safeSportBroadcast trigger matching
+          message:
+            "CRITICAL WEATHER ALERT: Lightning in area. Clear the pitch immediately and seek shelter in vehicles.",
+          type: "emergency_broadcast",
+          channelType: "parent_lounge", // Required for safeSportBroadcast trigger matching
           safesportMonitored: true,
-          createdAt: admin.firestore.FieldValue.serverTimestamp()
+          createdAt: admin.firestore.FieldValue.serverTimestamp(),
         });
       }
 
       await batch.commit();
-      logger.info('triggerWeatherLockdown: Processed batch lockdown', { clubId, count: chunk.length });
+      logger.info("triggerWeatherLockdown: Processed batch lockdown", {
+        clubId,
+        count: chunk.length,
+      });
     }
   } catch (error) {
-    logger.error('triggerWeatherLockdown: Failed', { clubId, error: error.message });
+    logger.error("triggerWeatherLockdown: Failed", {
+      clubId,
+      error: error.message,
+    });
   }
 };

@@ -59,10 +59,7 @@ const BYPASS_REGEXES = [
 	/firestore\.googleapis\.com/,
 	/cloudfunctions\.net/,
 	/__\/auth/,
-	/securetoken\.googleapis\.com/,
-	/identitytoolkit\.googleapis\.com/,
-	/firebaseinstallations\.googleapis\.com/,
-	/fcmregistrations\.googleapis\.com/
+	/securetoken\.googleapis\.com/
 ];
 
 const sw = self as unknown as ServiceWorkerGlobalScope;
@@ -210,18 +207,10 @@ sw.addEventListener('activate', (event: ExtendableEvent) => {
 
 sw.addEventListener('fetch', (event: FetchEvent) => {
 	const req = event.request;
-
-	// Non-GET requests (POST, PUT, DELETE, PATCH, etc.) can never be cached in CacheStorage.
-	// Bypassing directly to native browser networking guarantees authentication,
-	// passkeys, Firebase Auth, and API mutations never fail with "Request method 'POST' is unsupported".
-	if (req.method !== 'GET') {
-		return;
-	}
-
 	const url = new URL(req.url);
 
 	// Immediately exit and hand off to native browser networking for Firebase / Firestore APIs
-	if (BYPASS_REGEXES.some((regex) => regex.test(url.href)) || isFirebaseEndpoint(url)) {
+	if (BYPASS_REGEXES.some((regex) => regex.test(url.href))) {
 		return;
 	}
 
@@ -231,7 +220,7 @@ sw.addEventListener('fetch', (event: FetchEvent) => {
 			caches.open(RUNTIME_CACHE).then(async (cache) => {
 				try {
 					const fresh = await fetch(req);
-					if (fresh.status === 200 && req.method === 'GET') {
+					if (fresh.status === 200) {
 						cache.put(req, fresh.clone());
 					}
 					return fresh;
@@ -253,7 +242,7 @@ sw.addEventListener('fetch', (event: FetchEvent) => {
 				const cached = await cache.match(req);
 				if (cached) return cached;
 				const fresh = await fetch(req);
-				if (fresh.status === 200 && req.method === 'GET') {
+				if (fresh.status === 200) {
 					cache.put(req, fresh.clone());
 				}
 				return fresh;
@@ -270,6 +259,8 @@ sw.addEventListener('fetch', (event: FetchEvent) => {
 		return;
 	}
 
+	if (event.request.method !== 'GET') return;
+
 	// Sprint 2.7: Stale-While-Revalidate for offline routes
 	const isOfflineData = url.pathname.endsWith('__data.json') && OFFLINE_ROUTES.some((r) => url.pathname.replace(/__data\.json$/, '').startsWith(r));
 	if (isOfflineRoute(url) || isOfflineData) {
@@ -277,7 +268,7 @@ sw.addEventListener('fetch', (event: FetchEvent) => {
 			caches.open(RUNTIME_CACHE).then(async (cache) => {
 				const cachedResponse = await cache.match(req);
 				const networkPromise = fetch(req).then((networkResponse) => {
-					if (networkResponse && networkResponse.status === 200 && req.method === 'GET') {
+					if (networkResponse && networkResponse.status === 200) {
 						cache.put(req, networkResponse.clone());
 					}
 					return networkResponse;
