@@ -1,5 +1,9 @@
 <script lang="ts">
 	import { onDestroy, onMount } from 'svelte';
+	import { browser } from '$app/environment';
+	import { ensureGoogleMapsLoaded, getGoogleMapsApiKey, getGoogleMapsMapId } from '$lib/maps/ensureGoogleMaps.js';
+	import { getToken } from 'firebase/app-check';
+	import { appCheck } from '$lib/firebase/config';
 	import type { LightningRadarEngine } from '../../../../routes/(app)/director/logistics/radar/LightningRadarEngine.svelte';
 
 	let { engine }: { engine: LightningRadarEngine } = $props();
@@ -8,6 +12,10 @@
 	let map: any | undefined;
 	let rotationAngle = $state(0);
 	let animationFrame: number;
+	let loadError = $state(false);
+
+	const apiKey = getGoogleMapsApiKey();
+	const mapsMapId = getGoogleMapsMapId();
 
 	const voidBlackTheme = [
 		{ elementType: "geometry", stylers: [{ color: "#000000" }] },
@@ -33,28 +41,48 @@
 	];
 
 	onMount(() => {
-		// Mock Google Maps initialization - in a real app, load the script first
-		const win = window as any;
-		if (typeof window !== 'undefined' && win.google && win.google.maps) {
-			map = new win.google.maps.Map(mapContainer, {
-				center: { lat: engine.clubLat, lng: engine.clubLng },
-				zoom: 10,
-				styles: voidBlackTheme,
-				disableDefaultUI: true,
-			});
-		}
+		if (!browser || !mapContainer || !apiKey || !mapsMapId) return;
+
+		let cancelled = false;
+
+		(async () => {
+			try {
+				const tokenResult = await getToken(appCheck, false);
+				if (cancelled) return;
+
+				await ensureGoogleMapsLoaded();
+				if (cancelled) return;
+
+				const win = window as any;
+				if (win.google && win.google.maps) {
+					map = new win.google.maps.Map(mapContainer, {
+						center: { lat: engine.clubLat, lng: engine.clubLng },
+						zoom: 10,
+						styles: voidBlackTheme,
+						disableDefaultUI: true,
+						mapId: mapsMapId
+					});
+				}
+			} catch (e) {
+				console.error('[TacticalRadarArena]', e);
+				loadError = true;
+			}
+		})();
 
 		const animate = () => {
 			rotationAngle = (rotationAngle + 2) % 360;
 			animationFrame = requestAnimationFrame(animate);
 		};
 		animationFrame = requestAnimationFrame(animate);
+
+		return () => {
+			cancelled = true;
+		};
 	});
 
 	onDestroy(() => {
 		if (animationFrame) cancelAnimationFrame(animationFrame);
 		if (map) {
-			// Teardown map listeners if they were added
 			const win = window as any;
 			win.google?.maps?.event?.clearInstanceListeners(map);
 			map = undefined;
