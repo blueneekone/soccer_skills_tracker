@@ -3,9 +3,16 @@
 </svelte:head>
 
 <script lang="ts">
+	import { onMount } from 'svelte';
 	import { browser } from '$app/environment';
 	import { auth, functions } from '$lib/firebase.js';
-	import { signInWithPopup, GoogleAuthProvider, signInWithCustomToken } from 'firebase/auth';
+	import {
+		signInWithRedirect,
+		getRedirectResult,
+		GoogleAuthProvider,
+		signInWithCustomToken,
+		type User
+	} from 'firebase/auth';
 	import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
 	import { db } from '$lib/firebase.js';
 	import { httpsCallable } from 'firebase/functions';
@@ -44,6 +51,39 @@
 
 	let handledByRedirect = $state(false);
 
+	async function finishGoogleUserLogin(user: User): Promise<void> {
+		handledByRedirect = true;
+		const emailKey = (user.email ?? '').trim().toLowerCase();
+		if (!emailKey) throw new Error('Google account has no email address — cannot create profile.');
+		await setDoc(
+			doc(db, 'users', emailKey),
+			{ email: user.email, displayName: user.displayName, photoURL: user.photoURL ?? null, lastLogin: serverTimestamp() },
+			{ merge: true },
+		);
+		let maxWait = 40;
+		while (authStore.isLoading && --maxWait > 0) {
+			await new Promise((r) => setTimeout(r, 50));
+		}
+		await navigateAfterLogin({ replaceState: true });
+	}
+
+	onMount(async () => {
+		if (!browser) return;
+		try {
+			const result = await getRedirectResult(auth);
+			if (result && result.user) {
+				navigating = true;
+				googleBusy = true;
+				await finishGoogleUserLogin(result.user);
+			}
+		} catch (err) {
+			console.error('[Google Auth Redirect] Error:', err);
+			googleError = err instanceof Error ? err.message : 'Google sign-in failed.';
+			navigating = false;
+			googleBusy = false;
+		}
+	});
+
 	$effect(() => {
 		if (browser && !authStore.isLoading) {
 			if (authStore.isAuthenticated && !navigating && !handledByRedirect) {
@@ -64,23 +104,8 @@
 		loginEngine.error = '';
 		try {
 			const provider = new GoogleAuthProvider();
-			const result = await signInWithPopup(auth, provider);
-			if (result && result.user) {
-				handledByRedirect = true;
-				const user = result.user;
-				const emailKey = (user.email ?? '').trim().toLowerCase();
-				if (!emailKey) throw new Error('Google account has no email address — cannot create profile.');
-				await setDoc(
-					doc(db, 'users', emailKey),
-					{ email: user.email, displayName: user.displayName, photoURL: user.photoURL ?? null, lastLogin: serverTimestamp() },
-					{ merge: true },
-				);
-				let maxWait = 40;
-				while (authStore.isLoading && --maxWait > 0) {
-					await new Promise((r) => setTimeout(r, 50));
-				}
-				await navigateAfterLogin({ replaceState: true });
-			}
+			provider.setCustomParameters({ prompt: 'select_account' });
+			await signInWithRedirect(auth, provider);
 		} catch (err) {
 			googleError = err instanceof Error ? err.message : 'Google sign-in failed.';
 			navigating = false;
