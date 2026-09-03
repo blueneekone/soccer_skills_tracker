@@ -169,7 +169,9 @@ export async function fetchWarRoomRosterTokens(
 			const n = data.playerName || data.displayName || data.name || d.id;
 			addToken(d.id, n, typeof data.position === 'string' ? data.position : '');
 		});
-	} catch {}
+	} catch (e) {
+		console.warn('tacticalWarRoomApi users error', e);
+	}
 
 	try {
 		const lSnap = await getDocsFn(queryFn(collectionFn(db, 'player_lookup'), whereFn('teamId', '==', effectiveTeamId)));
@@ -178,7 +180,9 @@ export async function fetchWarRoomRosterTokens(
 			const n = data.playerName || data.displayName || d.id;
 			addToken(d.id, n, typeof data.position === 'string' ? data.position : '');
 		});
-	} catch {}
+	} catch (e) {
+		console.warn('tacticalWarRoomApi player_lookup error', e);
+	}
 
 	try {
 		const rSnap = await getDocFn(docFn(db, 'rosters', effectiveTeamId));
@@ -187,7 +191,9 @@ export async function fetchWarRoomRosterTokens(
 				addToken(String(pName).replace(/\s+/g, '_'), String(pName), '');
 			}
 		}
-	} catch {}
+	} catch (e) {
+		console.warn('tacticalWarRoomApi rosters error', e);
+	}
 
 	const tokens = Array.from(playerMap.values());
 	tokens.sort((a, b) => (a.name ?? '').localeCompare(b.name ?? ''));

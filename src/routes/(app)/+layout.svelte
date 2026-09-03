@@ -185,7 +185,9 @@
 		                isCleared = parsed.userProfile?.isCleared !== undefined ? parsed.userProfile.isCleared : isCleared;
 		                isAuthed = parsed.isAuthenticated !== undefined ? parsed.isAuthenticated : true;
 		            }
-		        } catch(e) {}
+		        } catch(e) {
+		        	console.warn('Failed to parse auth_state from localStorage', e);
+		        }
 		    }
 
 		    // if the store hasn't initialized correctly or states we are still loading,

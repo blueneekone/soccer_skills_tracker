@@ -126,8 +126,8 @@ describe('War Room Ball Pass Workflow & Multi-Pass Chaining', () => {
 		let oppTokens: TacticalToken[] = [];
 		let draft: TacticalRoute | null = null;
 		let routingActiveState = false;
-		let activeTool: 'DRAG' | 'ROUTE' = 'ROUTE';
-		let drawKind: 'curve' | 'cut' | 'pass' = 'pass';
+		const activeTool: 'DRAG' | 'ROUTE' = 'ROUTE';
+		const drawKind: 'curve' | 'cut' | 'pass' = 'pass';
 		let selectedRouteIdState: string | null = null;
 
 		return {
