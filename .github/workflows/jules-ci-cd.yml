@@ -20,8 +20,12 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: lts/*
+      - name: Install pnpm Package Manager
+        uses: pnpm/action-setup@v3
+        with:
+          version: 9
       - name: Install dependencies
-        run: npm ci
+        run: pnpm install --frozen-lockfile
       - name: Install Playwright Browsers & OS Dependencies
         run: npx playwright install --with-deps
       - name: Run Playwright tests
