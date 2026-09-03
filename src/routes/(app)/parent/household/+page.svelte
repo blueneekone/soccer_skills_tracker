@@ -18,6 +18,7 @@
 	import IntelModal from '$lib/components/ui/IntelModal.svelte';
 	import { lockBody, unlockBody } from '$lib/utils/modalLock.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
+	import { auth } from '$lib/firebase.js';
 	import Icon from '$lib/components/ui/Icon.svelte';
 	import type { IconName } from '$lib/icons/registry.js';
 	import ParentPrivacyDashboard from '$lib/components/compliance/ParentPrivacyDashboard.svelte';
@@ -142,6 +143,7 @@
 	/** @returns {Promise<void>} */
 	async function refreshHouseholdOperatives() {
     if (!db || !authStore.isAuthenticated) return;
+		if (!db || !authStore.isAuthenticated) return;
 		operativeRows = await loadHouseholdOperativeRows(db, householdId);
 	}
 
@@ -243,6 +245,7 @@
 				teamInviteCode: code,
 			});
 			linkTeamCodes = { ...linkTeamCodes, [em]: '' };
+			await auth.currentUser?.getIdToken(true);
 			await authStore.refresh({ silent: true });
 			await refreshHouseholdOperatives();
 			actErr = '';
@@ -327,6 +330,7 @@
 			if (d && typeof d === 'object' && 'householdId' in d) {
 				householdId = String(/** @type {*} */(d).householdId);
 			}
+			await auth.currentUser?.getIdToken(true);
 			await authStore.refresh({ silent: true });
 			const hid = (authStore.userProfile?.householdId || '').toString() || householdId;
 			if (hid) {
@@ -388,6 +392,7 @@
 			childName = '';
 			operativeCallsign = '';
 			teamDispatchCode = '';
+			await auth.currentUser?.getIdToken(true);
 			await authStore.refresh({ silent: true });
 			if (householdId) {
 				const hs = await getDoc(doc(db, 'households', householdId));

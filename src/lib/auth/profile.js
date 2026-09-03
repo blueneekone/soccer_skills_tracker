@@ -150,19 +150,8 @@ export async function resolveUserProfile(db, firebaseUser, forceTokenRefresh = t
 		role = role === 'global_admin' ? 'global_admin' : 'super_admin';
 	}
 
-	let userRef = doc(db, 'users', emailKey);
-	let userSnap = await getDoc(userRef);
-
-	if (!userSnap.exists()) {
-		const uidRef = doc(db, 'users', uidKey);
-		const uidSnap = await getDoc(uidRef);
-		if (uidSnap.exists()) {
-			const data = uidSnap.data();
-			await setDoc(doc(db, 'users', emailKey), data);
-			await deleteDoc(doc(db, 'users', uidKey));
-			userSnap = await getDoc(userRef);
-		}
-	}
+	const userRef = doc(db, 'users', emailKey);
+	const userSnap = await getDoc(userRef);
 
 	const baseProfile = userSnap.exists() ? userSnap.data() : null;
 	const fbName = fallbackPlayerName(baseProfile, firebaseUser.email);
