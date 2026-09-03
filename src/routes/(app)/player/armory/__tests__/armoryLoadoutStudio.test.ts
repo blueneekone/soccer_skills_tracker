@@ -2,6 +2,10 @@
  * armoryLoadoutStudio.test.ts — Sprint 3.1 / 3.1.1 Armory Studio tab wiring
  */
 import { describe, it, expect } from 'vitest';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 import { readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 const ROOT = join(__dirname, '..');
