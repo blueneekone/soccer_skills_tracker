@@ -25,6 +25,7 @@
  */
 
 import { db, auth } from '$lib/firebase.js';
+import { getSessionItemSafe } from '$lib/stores/auth/storage.js';
 import { isFirestoreReady } from '$lib/utils/firestoreGuard.js';
 import {
 	collection,
@@ -222,6 +223,7 @@ export class CarRideEngine {
 
 	/** Load the public score for a specific fixture and check for prior attestation. */
 	private async _tryLoadFixture(fixtureId: string): Promise<void> {
+		if (!db || !getSessionItemSafe('auth_state')) return;
 		if (!isFirestoreReady()) return;
 		const pubSnap = await getDoc(doc(db, 'match_results_public', fixtureId));
 		if (!pubSnap.exists()) {
@@ -245,6 +247,7 @@ export class CarRideEngine {
 	 * player in the last 24 hours that has not yet been attested.
 	 */
 	private async _detectPendingFixture(): Promise<void> {
+		if (!db || !getSessionItemSafe('auth_state')) return;
 		if (!isFirestoreReady()) return;
 		if (!this._linkedPlayerEmail || !this._tenantId) return;
 
