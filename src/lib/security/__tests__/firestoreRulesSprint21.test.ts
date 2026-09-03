@@ -24,7 +24,7 @@ describe('Sprint 2.1 — Firestore rules structure', () => {
 
 	it('top-level workouts CREATE enforces playerVpcAllowed', () => {
 		expect(RULES).toMatch(
-			/match \/workouts\/\{docId\}[\s\S]*?allow create: if authed\(\) && playerVpcAllowed\(\)/,
+			/match \/workouts\/\{docId\}[\s\S]*?allow create: if isGlobalAdmin\(\) \|\| \(authed\(\) && playerVpcAllowed\(\)\)/,
 		);
 	});
 

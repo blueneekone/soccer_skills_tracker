@@ -39,7 +39,7 @@ describe('Epic 4.10 — reportMessageIncident callable', () => {
 
 	it('firestore rules gate message_incidents read to director club + reporter', () => {
 		expect(rules).toMatch(/match \/message_incidents\/\{incidentId\}/);
-		expect(rules).toMatch(/resource\.data\.clubId == tokenClub\(\)/);
+		expect(rules).toMatch(/resource\.data\.get\('clubId', null\) == tokenClub\(\)/);
 		// dummy
 	});
 
