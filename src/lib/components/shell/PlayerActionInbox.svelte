@@ -156,10 +156,7 @@
 		color: var(--text-secondary);
 		margin-bottom: 12px;
 	}
-<<<<<<< HEAD
 
-=======
->>>>>>> 5a6c4996 (feat(platform): implement secure geocoding places api and Svelte 5 tactical weather radar)
 	.pai__muted {
 		margin: 0;
 		font-size: 13px;
