@@ -1,5 +1,6 @@
 allowBuilds:
   '@firebase/util': true
+  '@sentry/cli': set this to true or false
   canvas: true
   esbuild: true
   protobufjs: true

@@ -1,0 +1,143 @@
+# Instructions
+
+- Following Playwright test failed.
+- Explain why, be concise, respect Playwright best practices.
+- Provide a snippet of code with the fix, if possible.
+
+# Test info
+
+- Name: onboarding-flow-suite.spec.ts >> Onboarding Flow Suite >> Loop Verification for uncleared coach routes
+- Location: tests\onboarding-flow-suite.spec.ts:5:3
+
+# Error details
+
+```
+Error: expect(page).toHaveURL(expected) failed
+
+Expected pattern: /\/onboarding\/clearance\/coach/
+Received string:  "http://localhost:5173/login"
+Timeout: 5000ms
+
+Call log:
+  - Expect "toHaveURL" with timeout 5000ms
+    14 × locator resolved to <html lang="en">…</html>
+       - unexpected value "http://localhost:5173/login"
+
+```
+
+```yaml
+- heading "NEXUS COMMAND" [level=1]
+- paragraph: VANGUARD AUTH PROTOCOL
+- button "Sign in with Passkey" [disabled]
+- button "Continue with Google" [disabled]
+- text: Or
+- textbox "Email address"
+- button "Send Magic Link" [disabled]
+- paragraph: TACTICAL OPERATIONS PLATFORM
+- link "Initialize Operative":
+  - /url: /login
+- text: Login · NEXUS COMMAND
+```
+
+# Test source
+
+```ts
+  1  | import { test, expect } from '@playwright/test';
+  2  | 
+  3  | test.describe('Onboarding Flow Suite', () => {
+  4  | 
+  5  |   test('Loop Verification for uncleared coach routes', async ({ page }) => {
+  6  |     // Authenticate a user, mock an uncleared profile state (isCleared: false),
+  7  |     // navigate to /coach/dashboard, and verify that SvelteKit aggressively
+  8  |     // throws a 307 redirect back to /onboarding/clearance/coach
+  9  | 
+  10 |     // Inject mock state
+  11 |     await page.addInitScript(() => {
+  12 |       window.localStorage.setItem('sstracker_e2e_bypass', 'true');
+  13 |       window.localStorage.setItem('auth_state', JSON.stringify({
+  14 |         isAuthenticated: true,
+  15 |         session: { role: 'coach', isCleared: false },
+  16 |         userProfile: { role: 'coach', isCleared: false },
+  17 |         isProfileComplete: true
+  18 |       }));
+  19 |     });
+  20 | 
+  21 |     // Mock parent function response for +layout.json
+  22 |     await page.route('**/+layout.json', async route => {
+  23 |       route.fulfill({
+  24 |           status: 200,
+  25 |           contentType: 'application/json',
+  26 |           body: JSON.stringify({
+  27 |               data: {
+  28 |                   session: { role: 'coach', isCleared: false },
+  29 |                   userProfile: { role: 'coach', isCleared: false }
+  30 |               }
+  31 |           })
+  32 |       });
+  33 |     });
+  34 | 
+  35 |     await page.goto('/coach/dashboard');
+  36 | 
+  37 |     // Check if it redirects
+> 38 |     await expect(page).toHaveURL(/\/onboarding\/clearance\/coach/);
+     |                        ^ Error: expect(page).toHaveURL(expected) failed
+  39 |   });
+  40 | 
+  41 |   test('Parent Matching Flow successfully merges household graph', async ({ page }) => {
+  42 |     await page.addInitScript(() => {
+  43 |       window.localStorage.setItem('sstracker_e2e_bypass', 'true');
+  44 |       window.localStorage.setItem('auth_state', JSON.stringify({
+  45 |         isAuthenticated: true,
+  46 |         session: { role: 'guardian', isCleared: false, email: 'parent@example.com' },
+  47 |         userProfile: { role: 'guardian', isCleared: false, email: 'parent@example.com' },
+  48 |         isProfileComplete: true
+  49 |       }));
+  50 |     });
+  51 | 
+  52 |     await page.route('**/+layout.json', async route => {
+  53 |         route.fulfill({
+  54 |             status: 200,
+  55 |             contentType: 'application/json',
+  56 |             body: JSON.stringify({
+  57 |                 data: {
+  58 |                     session: { role: 'guardian', isCleared: false, email: 'parent@example.com' },
+  59 |                     userProfile: { role: 'guardian', isCleared: false, email: 'parent@example.com' }
+  60 |                 }
+  61 |             })
+  62 |         });
+  63 |     });
+  64 | 
+  65 |     await page.goto('/onboarding/clearance/guardian');
+  66 |     await expect(page).toHaveURL(/.*\/onboarding\/clearance\/guardian.*/);
+  67 |   });
+  68 | 
+  69 |   test('Coach Sandbox Isolation blocks real Firestore requests', async ({ page }) => {
+  70 |     await page.addInitScript(() => {
+  71 |       window.localStorage.setItem('sstracker_e2e_bypass', 'true');
+  72 |       window.localStorage.setItem('auth_state', JSON.stringify({
+  73 |         isAuthenticated: true,
+  74 |         session: { role: 'coach', isCleared: true },
+  75 |         userProfile: { role: 'coach', isCleared: true },
+  76 |         isProfileComplete: true
+  77 |       }));
+  78 |     });
+  79 | 
+  80 |     let firestoreRequestFound = false;
+  81 |     page.on('request', request => {
+  82 |       if (request.url().includes('firestore.googleapis.com')) {
+  83 |         firestoreRequestFound = true;
+  84 |       }
+  85 |     });
+  86 | 
+  87 |     await page.goto('/coach/sandbox');
+  88 |     await page.waitForTimeout(1000);
+  89 |     expect(firestoreRequestFound).toBe(false);
+  90 |   });
+  91 | 
+  92 |   test('Spectator Authorization loads match without login', async ({ page }) => {
+  93 |     await page.goto('/public/match/test-match-id?matchToken=valid-crypto-token-1234');
+  94 |     await expect(page).not.toHaveURL(/\/login/);
+  95 |   });
+  96 | });
+  97 | 
+```
