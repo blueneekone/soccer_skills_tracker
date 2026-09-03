@@ -86,7 +86,10 @@
 
 	const teamScope = new CoachTeamScope({ preferProfileTeam: true });
 	$effect(() => {
-		teamScope.syncSelectedTeam();
+		// Track myTeams reactively so the effect re-runs when teams load,
+		// but write selectedTeamId through untrack() to avoid the circular loop.
+		const teams = teamScope.myTeams;
+		untrack(() => teamScope.syncSelectedTeam());
 	});
 
 	const activeTab = $derived.by((): ScoutingTab => {
@@ -200,48 +203,56 @@
 		if (!db || !authStore.isAuthenticated) return;
 		const teamId = teamScope.selectedTeamId;
 		if (!browser || !teamId) {
-			prospects = [];
-			rosterLoading = false;
+			untrack(() => {
+				prospects = [];
+				rosterLoading = false;
+			});
 			return;
 		}
-		rosterLoading = true;
-		rosterErr = '';
+		untrack(() => {
+			rosterLoading = true;
+			rosterErr = '';
+		});
 		const q = query(collection(db, 'player_lookup'), where('teamId', '==', teamId));
 		const unsub = onSnapshot(
 			q,
 			(snap) => {
-				prospects = snap.docs.map((d) => {
-					const data = d.data();
-					const email = d.id.toLowerCase();
-					const displayName =
-						(typeof data.displayName === 'string' && data.displayName.trim()) ||
-						(typeof data.playerName === 'string' && data.playerName.trim()) ||
-						email.split('@')[0];
-					const role =
-						(typeof data.position === 'string' && data.position.trim()) ||
-						(typeof data.role === 'string' && data.role.trim()) ||
-						'Squad Player';
-					const jerseyNumber =
-						typeof data.jerseyNumber === 'string' || typeof data.jerseyNumber === 'number'
-							? String(data.jerseyNumber)
-							: undefined;
-					return {
-						id: email,
-						email,
-						label: displayName,
-						role,
-						jerseyNumber,
-					};
+				untrack(() => {
+					prospects = snap.docs.map((d) => {
+						const data = d.data();
+						const email = d.id.toLowerCase();
+						const displayName =
+							(typeof data.displayName === 'string' && data.displayName.trim()) ||
+							(typeof data.playerName === 'string' && data.playerName.trim()) ||
+							email.split('@')[0];
+						const role =
+							(typeof data.position === 'string' && data.position.trim()) ||
+							(typeof data.role === 'string' && data.role.trim()) ||
+							'Squad Player';
+						const jerseyNumber =
+							typeof data.jerseyNumber === 'string' || typeof data.jerseyNumber === 'number'
+								? String(data.jerseyNumber)
+								: undefined;
+						return {
+							id: email,
+							email,
+							label: displayName,
+							role,
+							jerseyNumber,
+						};
+					});
+					prospects.sort((a, b) => a.label.localeCompare(b.label));
+					if (!activeId || !prospects.some((p) => p.id === activeId)) {
+						activeId = prospects[0]?.id ?? '';
+					}
+					rosterLoading = false;
 				});
-				prospects.sort((a, b) => a.label.localeCompare(b.label));
-				if (!activeId || !prospects.some((p) => p.id === activeId)) {
-					activeId = prospects[0]?.id ?? '';
-				}
-				rosterLoading = false;
 			},
 			(e) => {
-				rosterErr = e.message || 'Could not load squad roster.';
-				rosterLoading = false;
+				untrack(() => {
+					rosterErr = e.message || 'Could not load squad roster.';
+					rosterLoading = false;
+				});
 			},
 		);
 		return () => unsub();
@@ -251,25 +262,27 @@
 		const teamId = teamScope.selectedTeamId;
 		if (!browser || !teamId || !db || !authStore.isAuthenticated) return;
 		const unsub = onSnapshot(collection(db, 'teams', teamId, 'scouting_assessments'), (snap) => {
-			const nextScores = { ...scoresByProspect };
-			const nextNotes = { ...notesByProspect };
-			const nextTags = { ...tagsByProspect };
-			const nextLocked = { ...lockedAssessments };
+			untrack(() => {
+				const nextScores = { ...scoresByProspect };
+				const nextNotes = { ...notesByProspect };
+				const nextTags = { ...tagsByProspect };
+				const nextLocked = { ...lockedAssessments };
 
-			for (const d of snap.docs) {
-				const data = d.data() as Record<string, unknown>;
-				const key = d.id.toLowerCase();
-				nextScores[key] = matrixFromData(data);
-				if (typeof data.notes === 'string') nextNotes[key] = data.notes;
-				if (Array.isArray(data.tags)) nextTags[key] = data.tags.map(String);
-				if (typeof data.overallGrade === 'number') {
-					nextLocked[key] = { grade: data.overallGrade, lockedAt: data.lockedAt };
+				for (const d of snap.docs) {
+					const data = d.data() as Record<string, unknown>;
+					const key = d.id.toLowerCase();
+					nextScores[key] = matrixFromData(data);
+					if (typeof data.notes === 'string') nextNotes[key] = data.notes;
+					if (Array.isArray(data.tags)) nextTags[key] = data.tags.map(String);
+					if (typeof data.overallGrade === 'number') {
+						nextLocked[key] = { grade: data.overallGrade, lockedAt: data.lockedAt };
+					}
 				}
-			}
-			scoresByProspect = nextScores;
-			notesByProspect = nextNotes;
-			tagsByProspect = nextTags;
-			lockedAssessments = nextLocked;
+				scoresByProspect = nextScores;
+				notesByProspect = nextNotes;
+				tagsByProspect = nextTags;
+				lockedAssessments = nextLocked;
+			});
 		});
 		return () => unsub();
 	});
