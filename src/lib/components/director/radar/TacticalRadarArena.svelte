@@ -114,13 +114,13 @@
 		<!-- Center Point -->
 		<circle cx="50%" cy="50%" r="4" fill="#14b8a6" />
 		<circle cx="50%" cy="50%" r="250" fill="url(#radarGlow)" />
-		<circle cx="50%" cy="50%" r="250" fill="none" stroke="#14b8a6" stroke-width="1" stroke-opacity="0.5" />
-		<circle cx="50%" cy="50%" r="500" fill="none" stroke="#14b8a6" stroke-width="1" stroke-opacity="0.2" />
+		<circle cx="50%" cy="50%" r="250" fill="none" stroke="#14b8a6" stroke-width="1.5" stroke-opacity="0.5" />
+		<circle cx="50%" cy="50%" r="500" fill="none" stroke="#14b8a6" stroke-width="1.5" stroke-opacity="0.2" />
 
 		<!-- Radial Sweep -->
 		<g style="transform-origin: 50% 50%; transform: rotate({rotationAngle}deg);">
 			<path d="M 500 500 L 500 0 A 500 500 0 0 1 650 23 Z" fill="#14b8a6" opacity="0.15" />
-			<line x1="500" y1="500" x2="500" y2="0" stroke="#14b8a6" stroke-width="2" />
+			<line x1="500" y1="500" x2="500" y2="0" stroke="#14b8a6" stroke-width="1.5" />
 		</g>
 
 		<!-- Strikes Overlay (Mocked positions based on distance/angle) -->
@@ -133,7 +133,7 @@
 					r="15"
 					fill="none"
 					stroke="#ff007f"
-					stroke-width="3"
+					stroke-width="1.5"
 					filter="url(#neonBloom)"
 					class="tw-animate-pulse"
 					onmousedown={stopProp}

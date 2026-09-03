@@ -21,7 +21,7 @@
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { impersonationStore } from '$lib/stores/impersonation.svelte.js';
 	import { playerEngine } from '$lib/stores/playerEngine.svelte.js';
-	import { onDestroy } from 'svelte';
+	import { untrack, onDestroy } from 'svelte';
 	import { TrajectoryEngine } from '$lib/states/TrajectoryEngine.svelte.js';
 	import { vanguardFlags } from '$lib/services/remoteConfig.svelte.js';
 	import MemoryCapsuleArena from '$lib/components/player/trajectory/MemoryCapsuleArena.svelte';
@@ -122,7 +122,6 @@
 
 	// Simulate data fetch
 	$effect(() => {
-		const { untrack } = require('svelte');
 		untrack(() => {
 			setTimeout(() => {
 				matchData = {
