@@ -654,65 +654,6 @@ exports.claimCoachInvite = onCall({region: REGION}, async (request) => {
 /**
  * Director / registrar / coach (own team) / super_admin — field metadata.
  */
-exports.directorUpsertField = onCall({region: REGION}, async (request) => {
-  const data = request.data || {};
-  const fieldId =
-      typeof data.fieldId === 'string' ? data.fieldId.trim().slice(0, 128) : '';
-  const clubId =
-      typeof data.clubId === 'string' ? data.clubId.trim().slice(0, 128) : '';
-  const name =
-      typeof data.name === 'string' ? data.name.trim().slice(0, 200) : '';
-  const location =
-      typeof data.location === 'string' ?
-        data.location.trim().slice(0, 500) :
-        '';
-  const statusRaw =
-      typeof data.status === 'string' ?
-        data.status.trim().toLowerCase() :
-        '';
-  const status =
-      statusRaw === 'maintenance' || statusRaw === 'closed' ?
-        statusRaw :
-        'active';
-
-  if (!fieldId || !clubId || !name) {
-    throw new HttpsError(
-        'invalid-argument',
-        'fieldId, clubId, and name are required.',
-    );
-  }
-
-  if (!request.auth) {
-    throw new HttpsError('unauthenticated', 'Sign in required.');
-  }
-  const role = request.auth.token.role;
-  const tokenClub = request.auth.token.clubId || null;
-  if (role !== 'super_admin') {
-    if (role !== 'director' && role !== 'registrar') {
-      throw new HttpsError(
-          'permission-denied',
-          'Only club staff may manage fields.',
-      );
-    }
-    if (!tokenClub || tokenClub !== clubId) {
-      throw new HttpsError('permission-denied', 'Club mismatch.');
-    }
-  }
-
-  await db().collection('fields').doc(fieldId).set(
-      {
-        clubId,
-        name,
-        location: location || '',
-        status,
-        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-        updatedBy: normEmail(request.auth.token.email) || 'unknown',
-      },
-      {merge: true},
-  );
-  return {ok: true};
-});
-
 /**
  * Atomic field schedule booking with same-day overlap check ("bouncer").
  */
