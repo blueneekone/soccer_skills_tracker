@@ -968,7 +968,6 @@ exports.parentProvisionOperative = onCall({region: REGION}, async (request) => {
   if (teamIdForUser) {
     await provisionLoungesForParentHousehold({ parentEmail, childEmails: [childEmail], parentClubId: clubId }).catch((e) => logger.warn('[parentProvisionOperative] lounge failed', e));
   }
-  await admin.auth().setCustomUserClaims(request.auth.uid, { role: 'parent', householdId: hid });
 
   return { ok: true, householdId: hid, childEmail, dispatchCode, teamLinked: Boolean(teamIdForUser), teamId: teamIdForUser || null, message: 'Share this dispatch code with your athlete.' };
 });
@@ -1149,7 +1148,6 @@ exports.generatePlayerOTP = onCall({region: REGION}, async (request) => {
 exports.parentReconcileHousehold = onCall({region: REGION}, async (request) => {
   const actor = await assertParentAsync(request);
   const result = await reconcileParentHouseholdGraph(actor.email);
-  await admin.auth().setCustomUserClaims(request.auth.uid, { role: 'parent', householdId: result.householdId });
   return {
     ok: true,
     householdId: result.householdId,
