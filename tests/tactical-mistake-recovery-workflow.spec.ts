@@ -5,7 +5,9 @@ test.describe('Player OS Tactical Mistake Recovery & Visual Verification', () =>
     
     // 1. Setup Session: Programmatically bypass the login wall using Auth State Mock
     await page.addInitScript(() => {
-      window.localStorage.setItem('auth_token', 'mock-coach-jwt');
+      window.localStorage.setItem('sstracker_e2e_bypass', 'true');
+      localStorage.setItem('auth_token', 'mock-coach-jwt');
+      window.localStorage.setItem('sstracker_e2e_bypass', 'true');
       window.localStorage.setItem('auth_state', JSON.stringify({
         isAuthenticated: true,
         isLoading: false,
