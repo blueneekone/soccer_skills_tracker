@@ -21,7 +21,6 @@
 
   let showToast = $state(false);
   let isRippling = $state(false);
-  let toastTimer: ReturnType<typeof setTimeout>;
 
   // Defensive lifecycle logging using untrack to isolate execution
   $effect(() => {
@@ -35,12 +34,10 @@
       untrack(() => {
         console.log("🧠 [SSTracker EQ Compliance] Encouragement banner active. Rendering 'Practice makes progress'.");
         showToast = true;
-        clearTimeout(toastTimer);
       });
     } else {
       untrack(() => {
         showToast = false;
-        clearTimeout(toastTimer);
       });
     }
 
