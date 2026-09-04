@@ -11,10 +11,8 @@ import { test, expect } from '@playwright/test';
 function setupAuth(page: any, role: string, email: string, uid: string, extraProfile: Record<string, any> = {}) {
 	return page.addInitScript(({ role, email, uid, extraProfile }) => {
 		const mockToken = `mock-jwt-${role}-exhaustive-token`;
-		window.localStorage.setItem('sstracker_e2e_bypass', 'true');
-      localStorage.setItem('auth_token', mockToken);
-		window.localStorage.setItem('sstracker_e2e_bypass', 'true');
-      window.localStorage.setItem('auth_state', JSON.stringify({
+		window.localStorage.setItem('auth_token', mockToken);
+		window.localStorage.setItem('auth_state', JSON.stringify({
 			isAuthenticated: true,
 			isLoading: false,
 			user: { uid, email, role, isProfileComplete: true },

@@ -12,7 +12,7 @@
 
 {#if engine.phase === 'idle' || engine.phase === 'parsing'}
 	<div
-		class="drop-zone glass-panel st-bento bento-grid-container"
+		class="drop-zone glass-panel bento-grid-container"
 		class:drag-active={engine.dragOver}
 		role="region"
 		aria-label="CSV drop zone"

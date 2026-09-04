@@ -29,10 +29,8 @@ test.describe('Director OS: Navigation, Layout, and Design Tokens Audit', () => 
     };
 
     await page.addInitScript((claims) => {
-      window.localStorage.setItem('sstracker_e2e_bypass', 'true');
-      localStorage.setItem('auth_token', 'mock-jwt-director-token');
+      window.localStorage.setItem('auth_token', 'mock-jwt-director-token');
       window.localStorage.setItem('user_session_claims', JSON.stringify(claims));
-      window.localStorage.setItem('sstracker_e2e_bypass', 'true');
       window.localStorage.setItem('auth_state', JSON.stringify({
         isAuthenticated: true,
         isLoading: false,

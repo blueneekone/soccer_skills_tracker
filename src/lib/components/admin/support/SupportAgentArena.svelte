@@ -21,7 +21,7 @@
 	});
 </script>
 
-<div class="sa-arena vanguard-card st-bento bento-grid-container tw-font-mono">
+<div class="sa-arena vanguard-card bento-grid-container tw-font-mono">
 	<div class="sa-header">
 		<div class="sa-title-row">
 			<Icon name="game.zap" size={24} class="sa-icon-zap" />
