@@ -1,3 +1,5 @@
+const { processHouseholdAndParent } = require('./rosterHelpers');
+const { dispatchParentInviteNotification } = require('../domains/notificationOps');
 /**
  * Processes a query using cursor pagination, accumulating writes into batches
  * and committing them sequentially to respect the 500 operation limit.
@@ -73,40 +75,58 @@ module.exports = {
  * Utility for handling paginated batched writes in Firestore for vampire import.
  */
 async function executeBatchPagination(sanitizedRows, db, teamId, clubId, authUid) {
-  let batch = db.batch();
-  let opCount = 0;
   let totalProcessed = 0;
   const now = new Date().toISOString();
 
+  // Process rows sequentially to avoid transaction limits, but run ops in transactions
   for (let i = 0; i < sanitizedRows.length; i++) {
-    const { email, firstName, lastName, jerseyNumber, phone, ...rest } = sanitizedRows[i];
-    const ts = Date.now();
-    const rnd = Math.floor(Math.random() * 100000);
-    const householdId = `hh_${teamId}_${ts}_${i}_${rnd}`;
+    const {
+      email, firstName, lastName, jerseyNumber, phone,
+      ParentName, ParentEmail, PlayerDOB, SportBranch,
+      ...rest
+    } = sanitizedRows[i];
 
-    const playerData = { firstName, lastName, type: 'player', teamId, clubId, householdId, createdBy: authUid, ingestedAt: now, ...rest };
-    if (jerseyNumber !== undefined) playerData.jerseyNumber = jerseyNumber;
+    let isNewParentGlobal = false;
+    let inviteTokenGlobal = null;
+    let parentEmailGlobal = null;
+    let childEmailGlobal = email ? email.toLowerCase().trim() : `child_${Date.now()}_${i}@temp.com`;
 
-    const pRef = db.collection('roster_staging').doc(`vamp_p_${ts}_${rnd}`);
-    batch.set(pRef, playerData);
+    await db.runTransaction(async (transaction) => {
+      let householdId = `hh_${teamId}_${Date.now()}_${i}_${Math.floor(Math.random() * 100000)}`;
 
-    const gRef = db.collection('roster_staging').doc(`vamp_g_${ts}_${rnd}`);
-    batch.set(gRef, {
-      email, phone: phone || null, type: 'guardian', role: 'guardian', isCleared: false,
-      householdId, clubId, teamId, createdBy: authUid, ingestedAt: now
+      if (ParentEmail) {
+        const result = await processHouseholdAndParent(db, transaction, ParentEmail, teamId);
+        householdId = result.householdId;
+        isNewParentGlobal = result.isNewParent;
+        inviteTokenGlobal = result.inviteToken;
+        parentEmailGlobal = result.parentEmailLower;
+      }
+
+      const playerData = {
+        firstName, lastName, type: 'player', teamId, clubId,
+        householdId, createdBy: authUid, ingestedAt: now,
+        status: ParentEmail ? 'AWAITING_PARENT_VERIFICATION' : 'ACTIVE',
+        isCleared: !ParentEmail,
+        ...rest
+      };
+      if (PlayerDOB !== undefined) playerData.PlayerDOB = PlayerDOB;
+      if (SportBranch !== undefined) playerData.SportBranch = SportBranch;
+      if (jerseyNumber !== undefined) playerData.jerseyNumber = jerseyNumber;
+
+      const pRef = db.collection('users').doc(childEmailGlobal);
+      transaction.set(pRef, playerData);
+
+      // Keep old staging write for backward compatibility if needed, or remove.
+      // Instructions specify writing to `/users/{childEmailLower}`
     });
 
-    opCount += 2;
-    totalProcessed++;
-
-    if (opCount >= 499) {
-      await batch.commit();
-      batch = db.batch();
-      opCount = 0;
+    if (isNewParentGlobal && inviteTokenGlobal) {
+      await dispatchParentInviteNotification(parentEmailGlobal, inviteTokenGlobal);
     }
+
+    totalProcessed++;
   }
 
-  if (opCount > 0) await batch.commit();
   return totalProcessed;
 }
 
