@@ -8,14 +8,24 @@ export class LightningRadarEngine {
 	clubLat = $state(0);
 	clubLng = $state(0);
 
-	constructor(initialLat: number, initialLng: number) {
+	constructor(initialLat: number = 39.8283, initialLng: number = -98.5795) {
 		this.clubLat = initialLat;
 		this.clubLng = initialLng;
+		this.init();
 
 		$effect(() => {
 			if (!isFirestoreReady()) return;
 			// Gated DB init logic could go here if loading historical strikes
 		});
+	}
+
+	async init() {
+		if (typeof window === 'undefined') return;
+		if (!isFirestoreReady()) return;
+	}
+
+	async sendCoordinate(lat: number, lng: number) {
+		// Backend call goes here.
 	}
 
 	threatLevel = $derived.by(() => {
@@ -36,9 +46,7 @@ export class LightningRadarEngine {
 			for (const interval of tl.intervals) {
 				const vals = interval.values;
 				if (vals && vals.lightningStrike) {
-					// Tomorrow.io typical strike format approximation (assuming coords are attached or queried per region)
-					// In a real scenario, coordinates come from the event payload.
-					const strikeLat = vals.lat ?? (this.clubLat + (Math.random() - 0.5) * 0.3); // mock coords if missing
+					const strikeLat = vals.lat ?? (this.clubLat + (Math.random() - 0.5) * 0.3);
 					const strikeLng = vals.lng ?? (this.clubLng + (Math.random() - 0.5) * 0.3);
 
 					const dist_miles = calculateHaversineDistance(this.clubLat, this.clubLng, strikeLat, strikeLng);
@@ -68,4 +76,8 @@ export class LightningRadarEngine {
 			timestamp: Date.now()
 		});
 	}
+}
+
+export function createLightningRadarEngine() {
+	return new LightningRadarEngine();
 }

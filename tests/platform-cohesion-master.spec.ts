@@ -31,8 +31,10 @@ test.describe('SSTracker Platform Master Cohesion Tests', () => {
           return orig.call(window, el, pseudo);
         };
         const mockAdminToken = 'mock-jwt-admin-token-secure';
-        window.localStorage.setItem('auth_token', mockAdminToken);
-        window.localStorage.setItem('auth_state', JSON.stringify({
+        window.localStorage.setItem('sstracker_e2e_bypass', 'true');
+      localStorage.setItem('auth_token', mockAdminToken);
+        window.localStorage.setItem('sstracker_e2e_bypass', 'true');
+      window.localStorage.setItem('auth_state', JSON.stringify({
           isAuthenticated: true,
           isLoading: false,
           user: {
