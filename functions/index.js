@@ -68,8 +68,7 @@ const operativeOps = require('./src/domains/operativeOps.js');
 exports.createCommsChannel = operativeOps.createCommsChannel;
 
 
-const coachRosterIngestOps = require('./src/domains/coachRosterIngestOps.js');
-exports.coachRosterIngest = coachRosterIngestOps.coachRosterIngest;
+
 const commsChannelOps = require('./src/domains/commsChannelOps.js');
 exports.coachProvisionStaffInternal = commsChannelOps.coachProvisionStaffInternal;
 exports.coachProvisionParentLounge = commsChannelOps.coachProvisionParentLounge;
@@ -92,9 +91,7 @@ exports.sendSponsorPartnerDigest = sponsorPartnerOps.sendSponsorPartnerDigest;
 const parentVoiceSessionOps = require('./src/domains/parentVoiceSessionOps.js');
 exports.createParentVoiceSession = parentVoiceSessionOps.createParentVoiceSession;
 
-const parentCoachDmOps = require('./src/domains/parentCoachDmOps.js');
-exports.sendParentCoachMessage = parentCoachDmOps.sendParentCoachMessage;
-exports.listParentCoachDmThreads = parentCoachDmOps.listParentCoachDmThreads;
+
 
 const invites = require("./invites.js");
 exports.consumeInviteCode = invites.consumeInviteCode;
@@ -112,8 +109,7 @@ const webhooksOps = require('./src/domains/webhooksOps.js');
 exports.acknowledgeBroadcast = webhooksOps.acknowledgeBroadcast;
 exports.getBroadcastAckStatus = webhooksOps.getBroadcastAckStatus;
 
-const weatherOps = require('./src/domains/weatherOps.js');
-exports.getWeatherConditions = require('./weather.js').getWeatherConditions;
+
 function exportScheduler(target, name, modFn) {
   if (process.env.SCHEDULERS_ENABLED === 'true') {
     target[name] = modFn;
