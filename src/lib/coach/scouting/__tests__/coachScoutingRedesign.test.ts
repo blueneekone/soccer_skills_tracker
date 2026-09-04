@@ -115,13 +115,10 @@ describe('Coach Scouting Suite Redesign', () => {
 	});
 
 	it('renders prospect roster with athlete count and position filters', async () => {
-		const { getByText, getAllByText } = render(CoachScoutingView);
-		await tick();
-		await new Promise(r => setTimeout(r, 10)); // Allow microtasks to settle
-		await tick();
+		const { getByText, getAllByText, findByText } = render(CoachScoutingView);
 
-		expect(getByText(/PROSPECT ROSTER/i)).toBeTruthy();
-		expect(getByText(/2 ATHLETES/i)).toBeTruthy();
+		expect(await findByText(/PROSPECT ROSTER/i)).toBeTruthy();
+		expect(await findByText(/2 ATHLETES/i)).toBeTruthy();
 		expect(getByText('ALL')).toBeTruthy();
 		expect(getByText('FW')).toBeTruthy();
 		expect(getByText('MF')).toBeTruthy();
@@ -131,12 +128,9 @@ describe('Coach Scouting Suite Redesign', () => {
 	});
 
 	it('renders Scout\'s Six Radar profile with SVG polygon and axis labels', async () => {
-		const { getByText } = render(CoachScoutingView);
-		await tick();
-		await new Promise(r => setTimeout(r, 10)); // Allow microtasks to settle
-		await tick();
+		const { getByText, findByText } = render(CoachScoutingView);
 
-		expect(getByText(/SCOUT'S SIX RADAR PROFILE/i)).toBeTruthy();
+		expect(await findByText(/SCOUT'S SIX RADAR PROFILE/i)).toBeTruthy();
 		expect(getByText('PACE')).toBeTruthy();
 		expect(getByText('TECH')).toBeTruthy();
 		expect(getByText('VISION')).toBeTruthy();
@@ -146,12 +140,9 @@ describe('Coach Scouting Suite Redesign', () => {
 	});
 
 	it('renders tactile steppers and qualitative scouting tags', async () => {
-		const { getByText } = render(CoachScoutingView);
-		await tick();
-		await new Promise(r => setTimeout(r, 10)); // Allow microtasks to settle
-		await tick();
+		const { getByText, findByText } = render(CoachScoutingView);
 
-		expect(getByText('Pace')).toBeTruthy();
+		expect(await findByText('Pace')).toBeTruthy();
 		expect(getByText('Technique')).toBeTruthy();
 		expect(getByText('Tactical Vision')).toBeTruthy();
 		expect(getByText('Physicality')).toBeTruthy();
@@ -166,12 +157,9 @@ describe('Coach Scouting Suite Redesign', () => {
 	});
 
 	it('renders primary Action Gold Lock & Submit button', async () => {
-		const { getByText } = render(CoachScoutingView);
-		await tick();
-		await new Promise(r => setTimeout(r, 10)); // Allow microtasks to settle
-		await tick();
+		const { getByText, findByText } = render(CoachScoutingView);
 
-		const lockBtn = getByText(/LOCK & SUBMIT ASSESSMENT/i);
+		const lockBtn = await findByText(/LOCK & SUBMIT ASSESSMENT/i);
 		expect(lockBtn).toBeTruthy();
 	});
 });
