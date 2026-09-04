@@ -42,4 +42,4 @@
 	{/if}
 </div>
 
-<WeatherModal isOpen={isModalOpen} onClose={() => isModalOpen = false} />
+<WeatherModal isOpen={isModalOpen} onClose={() => isModalOpen = false} {fieldLat} {fieldLng} />
