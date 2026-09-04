@@ -37,6 +37,7 @@ export function createAuthFacade() {
 		try {
 			if (
 				typeof window !== 'undefined' &&
+				import.meta.env.VITE_E2E_BYPASS_AUTH === 'true' &&
 				(window.localStorage.getItem('sstracker_e2e_bypass') === 'true' ||
 					window.localStorage.getItem('auth_state') !== null ||
 					window.localStorage.getItem('user_session_claims') !== null)
