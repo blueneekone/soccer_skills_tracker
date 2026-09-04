@@ -23,6 +23,7 @@
 
 	let googleBusy = $state(false);
 	let googleError = $state('');
+	// navigating is set ONLY after a successful auth result — never before the popup resolves.
 	let navigating = $state(false);
 
 	let opCallsign = $state('');
@@ -43,51 +44,53 @@
 		opCode = (e.target as HTMLInputElement).value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 8);
 	}
 
-	let handledByRedirect = $state(false);
-
+	// The $effect is the SINGLE source of navigation after auth state changes.
+	// It fires whenever isAuthenticated or isLoading changes, and is the only
+	// way Google sign-in triggers routing. This prevents all busy-wait races.
 	$effect(() => {
-		if (browser && !authStore.isLoading) {
-			if (authStore.isAuthenticated && !navigating && !handledByRedirect) {
-				untrack(() => {
-					navigating = true;
-					void navigateAfterLogin({ replaceState: true });
-				});
-			} else if (!authStore.isAuthenticated && navigating) {
-				// Re-enable the login form if a sign-out finishes while the page is mounted
-				untrack(() => {
-					navigating = false;
-					googleBusy = false;
-				});
-			}
+		if (!browser) return;
+		const authed = authStore.isAuthenticated;
+		const loading = authStore.isLoading;
+		if (!loading && authed && !navigating) {
+			untrack(() => {
+				navigating = true;
+				void navigateAfterLogin({ replaceState: true });
+			});
+		} else if (!loading && !authed && navigating) {
+			// Re-enable the login form if a sign-out finishes while the page is mounted
+			untrack(() => {
+				navigating = false;
+				googleBusy = false;
+			});
 		}
 	});
 
+	// Google sign-in: only sets busy state. Navigation is handled exclusively
+	// by the $effect above, which fires when onIdTokenChanged updates authStore.
+	// We NEVER set navigating=true here — that would block the $effect guard.
 	const handleGoogleLogin = async () => {
-		navigating = true;
 		googleBusy = true;
 		googleError = '';
 		loginEngine.error = '';
 		try {
 			const provider = new GoogleAuthProvider();
 			const result = await signInWithPopup(auth, provider);
-			if (result && result.user) {
-				handledByRedirect = true;
-				const user = result.user;
-				const emailKey = (user.email ?? '').trim().toLowerCase();
+			if (result?.user) {
+				const emailKey = (result.user.email ?? '').trim().toLowerCase();
 				if (!emailKey) throw new Error('Google account has no email address — cannot create profile.');
-				await setDoc(
+				// Fire-and-forget profile touch — does not block navigation.
+				// The $effect will trigger routing once onIdTokenChanged resolves.
+				void setDoc(
 					doc(db, 'users', emailKey),
-					{ email: user.email, displayName: user.displayName, photoURL: user.photoURL ?? null, lastLogin: serverTimestamp() },
+					{ email: result.user.email, displayName: result.user.displayName, photoURL: result.user.photoURL ?? null, lastLogin: serverTimestamp() },
 					{ merge: true },
 				);
-				while (authStore.isLoading) {
-					await new Promise((r) => setTimeout(r, 50));
-				}
-				await navigateAfterLogin({ replaceState: true });
+				// googleBusy stays true until the $effect navigates away.
+				// If something goes wrong, the 8s timeout below will reset it.
+				setTimeout(() => { googleBusy = false; }, 8000);
 			}
 		} catch (err) {
 			googleError = err instanceof Error ? err.message : 'Google sign-in failed.';
-			navigating = false;
 			googleBusy = false;
 		}
 	};
@@ -98,10 +101,12 @@
 		googleError = '';
 		await loginEngine.loginWithPasskey();
 		if (loginEngine.error) { navigating = false; return; }
-		while (authStore.isLoading) {
-			await new Promise((r) => setTimeout(r, 50));
-		}
-		await navigateAfterLogin({ replaceState: true });
+		// Passkey flow uses signInWithCustomToken which may not fire onIdTokenChanged
+		// in all browsers, so we call navigateAfterLogin directly with a timeout guard.
+		const timeout = new Promise<void>((_, reject) => setTimeout(() => reject(new Error('Auth timeout')), 10000));
+		await Promise.race([navigateAfterLogin({ replaceState: true }), timeout]).catch(() => {
+			navigating = false;
+		});
 	};
 
 	const handleMagicLink = async () => {

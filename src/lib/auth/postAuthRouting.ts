@@ -22,14 +22,25 @@ export async function navigateAfterLogin(
 	const replaceState = options?.replaceState ?? true;
 
 	try {
-		await authStore.refresh({ silent: true });
+		const refreshTimeout = new Promise<void>((_, reject) =>
+			setTimeout(() => reject(new Error('refresh timeout')), 7000),
+		);
+		await Promise.race([authStore.refresh({ silent: true }), refreshTimeout]);
 	} catch {
-		/* non-fatal */
+		/* non-fatal — proceed with current auth state */
 	}
 
 	try {
-		await auth.currentUser?.getIdToken(true);
-		await authStore.refreshClaims();
+		const tokenTimeout = new Promise<void>((_, reject) =>
+			setTimeout(() => reject(new Error('token timeout')), 5000),
+		);
+		await Promise.race([
+			(async () => {
+				await auth.currentUser?.getIdToken(true);
+				await authStore.refreshClaims();
+			})(),
+			tokenTimeout,
+		]);
 	} catch {
 		/* non-fatal */
 	}
