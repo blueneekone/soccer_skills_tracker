@@ -14,20 +14,20 @@ export const HERO_SUBHEADLINE =
 
 export const HERO_BADGE = 'SSTRACKER · CLUB OPERATING SYSTEM';
 
-/** Trust campaign hero — Option A (director-facing, Utah 2026). Wired in LandingHero.svelte. */
-export const HERO_TRUST_BADGE = 'SSTRACKER · TRUST & REGISTRATION · 2026';
-export const HERO_TRUST_HEADLINE = "When statewide registration pauses, athlete development shouldn't.";
+/** Trust campaign hero — strength-first positioning. Wired in LandingHero.svelte. */
+export const HERO_TRUST_BADGE = 'SSTRACKER · CLUB OPERATING SYSTEM · 2026';
+export const HERO_TRUST_HEADLINE = 'The first platform built for athlete development, not just season scheduling.';
 export const HERO_TRUST_SUBHEADLINE =
-	'In June 2026, Utah families reported unauthorized card activity after youth soccer registration—and sign-ups stopped while the platform investigated. SSTracker separates season payments (Stripe Connect), minor consent (household VPC), and athlete development on tenant-scoped infrastructure. One registration outage shouldn\'t freeze your entire club OS.';
+	'SSTracker unifies coach intent, player progression, household consent, and club operations on one tenant-scoped platform — with SafeSport-native comms and COPPA compliance built in from the ground up, not bolted on.';
 
 export const HERO_TRUST_MICRO_STRIP = [
-	'Stripe Connect · cards at processor',
-	'VPC + consent audit trail',
-	'SafeSport · no coach→minor DMs',
+	'Coach intent → Player train loop',
+	'SafeSport-native · no coach→minor DMs',
+	'COPPA / VPC · household consent built-in',
 ] as const;
 
 export const HERO_TRUST_LEGAL =
-	'SSTracker does not comment on Stack Sports\' investigation. Utah reports described potential unauthorized charges; a formal breach was not publicly confirmed at time of writing.';
+	'SSTracker is an independent athlete development platform. Free to start — no upfront registration fees.';
 
 export interface CompareRow {
 	id: string;
