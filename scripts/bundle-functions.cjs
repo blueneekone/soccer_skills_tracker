@@ -124,6 +124,7 @@ const CODEBASES = {
       'src/onChannelCreated.js',
       'src/domains/weatherOps.js',
       'src/domains/weatherEvaluation.js',
+      'src/domains/fieldOps.js',
     ],
   },
 };
