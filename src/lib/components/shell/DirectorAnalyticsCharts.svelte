@@ -11,6 +11,9 @@
 		EC_INK_LIGHT
 	} from '$lib/charts/enterpriseChartTheme.js';
 
+	const DATA_CYAN = '#14b8a6';
+	const CYBER_YELLOW = '#daff0a';
+
 	let { clubId = '' } = $props();
 
 	let seatCanvas = $state(/** @type {HTMLCanvasElement | null} */ (null));
@@ -115,9 +118,9 @@
 						{
 							label: 'Seat count',
 							data: [allocatedSeats, seatsLimit],
-							borderColor: EC_ACCENT,
-							backgroundColor: 'rgba(245, 158, 11, 0.14)',
-							pointBackgroundColor: EC_INK,
+							borderColor: CYBER_YELLOW,
+							backgroundColor: 'rgba(218, 255, 10, 0.14)',
+							pointBackgroundColor: CYBER_YELLOW,
 							fill: true,
 							tension: 0.25,
 						},
@@ -171,10 +174,11 @@
 						{
 							label: 'Active players',
 							data: values.length ? values : [0],
-							backgroundColor: EC_INK,
-							hoverBackgroundColor: EC_ACCENT,
+							backgroundColor: 'rgba(20, 184, 166, 0.2)', // Data Cyan faint
+							hoverBackgroundColor: DATA_CYAN,
+							borderColor: DATA_CYAN,
+							borderWidth: 1,
 							borderRadius: 6,
-							borderWidth: 0,
 						},
 					],
 				},
@@ -195,13 +199,13 @@
 					},
 					scales: {
 						x: {
-							grid: { color: 'rgba(0,0,0,0.04)' },
-							ticks: { color: EC_INK_LIGHT, font: { size: 11 } },
+							grid: { color: 'rgba(255,255,255,0.06)' },
+							ticks: { color: '#a1a1aa', font: { size: 11, family: 'Geist Mono' } },
 						},
 						y: {
 							beginAtZero: true,
-							grid: { color: 'rgba(0,0,0,0.04)' },
-							ticks: { color: EC_INK_LIGHT, font: { size: 11 } },
+							grid: { color: 'rgba(255,255,255,0.06)' },
+							ticks: { color: '#a1a1aa', font: { size: 11, family: 'Geist Mono' } },
 						},
 					} as Record<string, unknown>,
 				},

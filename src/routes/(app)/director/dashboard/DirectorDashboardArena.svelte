@@ -19,6 +19,7 @@
 	import DirectorRetentionReport from '$lib/components/compliance/DirectorRetentionReport.svelte';
 	import VampireImporter from '$lib/components/interoperability/VampireImporter.svelte';
 	import AffinitySyncCard from '$lib/components/interoperability/AffinitySyncCard.svelte';
+	import DirectorAnalyticsCharts from '$lib/components/shell/DirectorAnalyticsCharts.svelte';
 	import Icon from '$lib/components/ui/Icon.svelte';
 	import type { IconName } from '$lib/icons/registry.js';
 
@@ -33,24 +34,8 @@
 			<section class="tw-flex tw-flex-col tw-gap-6 tw-w-full">
 				<DirectorCommandCenter clubId={engine.clubId} />
 				
-				<div class="tw-grid tw-grid-cols-12 director-hud-grid tw-w-full tw-gap-4 tw-mt-2" style="grid-template-columns: repeat(auto-fit, minmax(min(100%, clamp(280px, 30vw, 350px)), 1fr));">
-					<!-- Club Revenue Analytics -->
-					<div data-card="revenue" class="st-bento director-card revenue-engine-analytics dark-form-surface tw-border tw-border-slate-700 tw-bg-slate-900/80 tw-p-4 tw-rounded-none tw-min-w-0" style="border-radius: 0px !important; background: #0f172a;">
-						<div class="tw-flex tw-justify-between tw-items-center tw-mb-2 tw-min-w-0">
-							<h3 class="tw-text-xs tw-text-[#14b8a6] tw-uppercase tw-tracking-widest tw-min-w-0" style="font-family: 'Geist Sans', sans-serif;">Revenue Engine</h3>
-							<div class="compliance-indicator status-dot compliance-status-dot tw-bg-emerald-500" style="width: 8px; height: 8px; border-radius: 50%; display: block;"></div>
-						</div>
-						<div class="tw-text-[#D4D4D8] tw-text-sm tw-min-w-0" style="font-family: 'Switzer', sans-serif;">Club Revenue Analytics Offline</div>
-					</div>
-
-					<!-- God-Mode Club Roster Tree -->
-					<div data-card="roster" class="st-bento director-card roster-hierarchy-tree dark-form-surface tw-border tw-border-slate-700 tw-bg-slate-900/80 tw-p-4 tw-rounded-none tw-min-w-0" style="border-radius: 0px !important; background: #0f172a;">
-						<div class="tw-flex tw-justify-between tw-items-center tw-mb-2 tw-min-w-0">
-							<h3 class="tw-text-xs tw-text-[#14b8a6] tw-uppercase tw-tracking-widest tw-min-w-0" style="font-family: 'Geist Sans', sans-serif;">Roster Hierarchy</h3>
-							<div class="compliance-status-dot tw-bg-emerald-500" style="width: 8px; height: 8px; border-radius: 50%; display: block;"></div>
-						</div>
-						<div class="tw-text-[#D4D4D8] tw-text-sm tw-min-w-0" style="font-family: 'Switzer', sans-serif;">God-Mode Tree Offline</div>
-					</div>
+				<div class="tw-w-full tw-mt-4">
+					<DirectorAnalyticsCharts clubId={engine.clubId} />
 				</div>
 			</section>
 		{:else if engine.activeTab === 'field'}

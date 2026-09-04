@@ -106,13 +106,13 @@ jobs:
   # JOB 3 — Deploy (sequential: Rules → codebases → default → Hosting)
   # ─────────────────────────────────────────────────────────────────────────
   deploy:
-    name: 🔥 Deploy (${{ env.FIREBASE_PROJECT_ID }})
+    name: 🔥 Deploy (${{ github.event.inputs.environment == 'dev' && 'sports-skill-tracker-dev' || 'soccer-skills-tracker' }})
     runs-on: ubuntu-latest
     timeout-minutes: 20
     needs: build
     environment:
-      name: ${{ env.DEPLOY_TARGET == 'dev' && 'development' || 'production' }}
-      url: ${{ env.DEPLOY_TARGET == 'dev' && 'https://sstracker.app' || 'https://soccer.sstracker.app' }}
+      name: ${{ github.event.inputs.environment == 'dev' && 'development' || 'production' }}
+      url: ${{ github.event.inputs.environment == 'dev' && 'https://sstracker.app' || 'https://soccer.sstracker.app' }}
 
     steps:
       - name: Checkout
@@ -204,7 +204,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     needs: deploy
-    if: env.DEPLOY_TARGET == 'dev' && secrets.FIREBASE_CI_TOKEN != ''
+    if: github.event.inputs.environment == 'dev' && secrets.FIREBASE_CI_TOKEN != ''
 
     steps:
       - name: Checkout
