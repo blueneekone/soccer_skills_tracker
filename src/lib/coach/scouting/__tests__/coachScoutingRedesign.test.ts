@@ -62,45 +62,63 @@ vi.mock('firebase/firestore', async (importOriginal) => {
 		serverTimestamp: vi.fn(() => ({ _methodName: 'serverTimestamp' })),
 		setDoc: vi.fn().mockResolvedValue(undefined),
 		onSnapshot: vi.fn((_q, callback) => {
-			const docs = [
-				{
-					id: 'player1@fc.com',
-					data: () => ({
-						displayName: 'Sophia Smith',
-						position: 'Forward / Winger',
-						jerseyNumber: '11',
-						teamId: 'team_alpha_123',
-					}),
-				},
-				{
-					id: 'player2@fc.com',
-					data: () => ({
-						displayName: 'Naomi Girma',
-						position: 'Center Back',
-						jerseyNumber: '4',
-						teamId: 'team_alpha_123',
-					}),
-				},
-			];
-			callback({
-				docs,
-				docChanges: () => docs.map(doc => ({ type: 'added', doc }))
+			Promise.resolve().then(() => {
+				const docs = [
+					{
+						id: 'player1@fc.com',
+						data: () => ({
+							displayName: 'Sophia Smith',
+							position: 'Forward / Winger',
+							jerseyNumber: '11',
+							teamId: 'team_alpha_123',
+						}),
+					},
+					{
+						id: 'player2@fc.com',
+						data: () => ({
+							displayName: 'Naomi Girma',
+							position: 'Center Back',
+							jerseyNumber: '4',
+							teamId: 'team_alpha_123',
+						}),
+					},
+				];
+				callback({
+					docs,
+					docChanges: () => docs.map(doc => ({ type: 'added', doc }))
+				});
 			});
 			return vi.fn();
 		}),
 	};
 });
 
+import { cleanup } from '@testing-library/svelte';
+import { afterEach } from 'vitest';
+
+import { tick } from 'svelte';
+
 describe('Coach Scouting Suite Redesign', () => {
-	it('renders top command header with SIEM beacon and squad anchor', () => {
+	afterEach(() => {
+		cleanup();
+		vi.clearAllMocks();
+	});
+
+	it('renders top command header with SIEM beacon and squad anchor', async () => {
 		const { getByText } = render(CoachScoutingView);
+		await tick();
+		await new Promise(r => setTimeout(r, 10)); // Allow microtasks to settle
+		await tick();
 
 		expect(getByText(/SCOUTING DOSSIER & TALENT MATRIX/i)).toBeTruthy();
 		expect(getByText(/SIEM v2/i)).toBeTruthy();
 	});
 
-	it('renders prospect roster with athlete count and position filters', () => {
+	it('renders prospect roster with athlete count and position filters', async () => {
 		const { getByText, getAllByText } = render(CoachScoutingView);
+		await tick();
+		await new Promise(r => setTimeout(r, 10)); // Allow microtasks to settle
+		await tick();
 
 		expect(getByText(/PROSPECT ROSTER/i)).toBeTruthy();
 		expect(getByText(/2 ATHLETES/i)).toBeTruthy();
@@ -112,8 +130,11 @@ describe('Coach Scouting Suite Redesign', () => {
 		expect(getByText('Sophia Smith')).toBeTruthy();
 	});
 
-	it('renders Scout\'s Six Radar profile with SVG polygon and axis labels', () => {
+	it('renders Scout\'s Six Radar profile with SVG polygon and axis labels', async () => {
 		const { getByText } = render(CoachScoutingView);
+		await tick();
+		await new Promise(r => setTimeout(r, 10)); // Allow microtasks to settle
+		await tick();
 
 		expect(getByText(/SCOUT'S SIX RADAR PROFILE/i)).toBeTruthy();
 		expect(getByText('PACE')).toBeTruthy();
@@ -124,8 +145,11 @@ describe('Coach Scouting Suite Redesign', () => {
 		expect(getByText('MENT')).toBeTruthy();
 	});
 
-	it('renders tactile steppers and qualitative scouting tags', () => {
+	it('renders tactile steppers and qualitative scouting tags', async () => {
 		const { getByText } = render(CoachScoutingView);
+		await tick();
+		await new Promise(r => setTimeout(r, 10)); // Allow microtasks to settle
+		await tick();
 
 		expect(getByText('Pace')).toBeTruthy();
 		expect(getByText('Technique')).toBeTruthy();
@@ -141,8 +165,11 @@ describe('Coach Scouting Suite Redesign', () => {
 		expect(getByText(/CONFIDENTIAL SCOUTING & RECRUITMENT NOTES/i)).toBeTruthy();
 	});
 
-	it('renders primary Action Gold Lock & Submit button', () => {
+	it('renders primary Action Gold Lock & Submit button', async () => {
 		const { getByText } = render(CoachScoutingView);
+		await tick();
+		await new Promise(r => setTimeout(r, 10)); // Allow microtasks to settle
+		await tick();
 
 		const lockBtn = getByText(/LOCK & SUBMIT ASSESSMENT/i);
 		expect(lockBtn).toBeTruthy();
