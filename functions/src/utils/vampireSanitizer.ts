@@ -16,6 +16,18 @@ export function sanitizeVampireRow(row: any): any {
   if (typeof sanitized.email === 'string') {
     sanitized.email = sanitized.email.toLowerCase().trim();
   }
+  if (typeof sanitized.ParentName === 'string') {
+    sanitized.ParentName = sanitized.ParentName.trim();
+  }
+  if (typeof sanitized.ParentEmail === 'string') {
+    sanitized.ParentEmail = sanitized.ParentEmail.toLowerCase().trim();
+  }
+  if (typeof sanitized.PlayerDOB === 'string') {
+    sanitized.PlayerDOB = sanitized.PlayerDOB.trim();
+  }
+  if (typeof sanitized.SportBranch === 'string') {
+    sanitized.SportBranch = sanitized.SportBranch.trim();
+  }
 
   return sanitized;
 }

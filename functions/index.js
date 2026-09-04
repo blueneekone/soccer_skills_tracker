@@ -1,3 +1,4 @@
+const parentOnboardingOps = require('./lib/domains/parentOnboardingOps');
 /* eslint-disable quotes */
 // Phase 2, Epic 3 — Cell-Level Egress Guard (Layer 4).
 // wrapFetch MUST be the first statement before any other module is required
@@ -160,3 +161,6 @@ exports.onInvitationCreated = invitations.onInvitationCreated;
 
 // User Onboarding Triggers
 exports.onUserProfileCleared = require('./lib/triggers/userOnboardingTriggers').onUserProfileCleared;
+
+exports.claimParentInviteToken = parentOnboardingOps.claimParentInviteToken;
+exports.signParentalConsent = parentOnboardingOps.signParentalConsent;

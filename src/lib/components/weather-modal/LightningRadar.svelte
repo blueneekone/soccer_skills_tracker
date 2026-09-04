@@ -8,7 +8,7 @@
 	const MOCK_PROB = 0.05; // 5% chance per tick
 
 	let mapContainer: HTMLElement;
-	let mapInstance: google.maps.Map | undefined;
+	let mapInstance: any | undefined;
 
 	onMount(async () => {
 		if (typeof window === 'undefined') return;
@@ -25,7 +25,7 @@
 				});
 
 				// @ts-ignore: Types for this specific loader version may lack importLibrary signature
-				const { Map } = await loader.importLibrary('maps') as google.maps.MapsLibrary;
+				const { Map } = await loader.importLibrary('maps') as any;
 
 				mapInstance = new Map(mapContainer, {
 					center: { lat: fieldLat, lng: fieldLng },

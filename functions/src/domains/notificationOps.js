@@ -1038,3 +1038,24 @@ exports.onDeploymentCalendarEntryCreated = onDocumentCreated(
       }
     },
 );
+
+exports.dispatchParentInviteNotification = async function(parentEmail, inviteToken) {
+  const db = admin.firestore();
+
+  if (!parentEmail || !inviteToken) {
+    logger.warn('dispatchParentInviteNotification: Missing parentEmail or token');
+    return;
+  }
+
+  // Log dispatch event to /security_audits/
+  const auditMsg = `Invite dispatched to ${parentEmail} with secure signup route: /register?inviteToken=${inviteToken}`;
+
+  await db.collection('security_audits').add({
+    event: 'parent_invite_dispatched',
+    parentEmail: parentEmail,
+    message: auditMsg,
+    timestamp: admin.firestore.FieldValue.serverTimestamp()
+  });
+
+  logger.info('dispatchParentInviteNotification: Audit logged', { parentEmail });
+};
