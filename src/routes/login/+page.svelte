@@ -13,6 +13,7 @@
 	import { navigateAfterLogin } from '$lib/auth/postAuthRouting.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import Icon from '$lib/components/ui/Icon.svelte';
+	import { untrack } from 'svelte';
 
 	type LoginView = 'command' | 'operative';
 	type OperativeMode = 'otp' | 'dispatch';
@@ -47,12 +48,16 @@
 	$effect(() => {
 		if (browser && !authStore.isLoading) {
 			if (authStore.isAuthenticated && !navigating && !handledByRedirect) {
-				navigating = true;
-				void navigateAfterLogin({ replaceState: true });
+				untrack(() => {
+					navigating = true;
+					void navigateAfterLogin({ replaceState: true });
+				});
 			} else if (!authStore.isAuthenticated && navigating) {
 				// Re-enable the login form if a sign-out finishes while the page is mounted
-				navigating = false;
-				googleBusy = false;
+				untrack(() => {
+					navigating = false;
+					googleBusy = false;
+				});
 			}
 		}
 	});

@@ -81,11 +81,11 @@ export async function persistMobileNavPinsToFirestore(
 	email: string,
 	personaKey: NavPersonaKey,
 	pins: PinQuad,
+	updatedAt: number,
 ): Promise<void> {
 	if (!browser || !email) return;
 	const key = email.trim().toLowerCase();
 	if (!key) return;
-	const updatedAt = Date.now();
 	await updateDoc(doc(db, 'users', key), {
 		[`mobileNavPins.${personaKey}`]: pins,
 		[`mobileNavPinsUpdatedAt.${personaKey}`]: updatedAt,

@@ -4,6 +4,7 @@
 	import Icon from '$lib/components/ui/Icon.svelte';
 	import {
 		catalogSections,
+		getDefaultPins,
 		showWorkspaceSwitcher,
 		type NavPersonaKey,
 		type NavPinItem,
@@ -80,18 +81,22 @@
 		return idx >= 0 ? (idx as 0 | 1 | 2 | 3) : -1;
 	}
 
-	function firstEmptyPinSlot(): 0 | 1 | 2 | 3 | null {
-		for (let i = 0; i < 4; i++) {
-			if (navPinsStore.pins[i] === null) return i as 0 | 1 | 2 | 3;
+	function firstAvailablePinSlot(): 0 | 1 | 2 | 3 | null {
+		const defaults = getDefaultPins(personaKey);
+		for (let i = 0; i < 3; i++) {
+			if (navPinsStore.pins[i] === defaults[i]) return i as 0 | 1 | 2 | 3;
 		}
-		return null;
+		return 0; // fallback to replacing first slot
 	}
 
 	function pinToBar(href: string, e: MouseEvent) {
 		e.preventDefault();
 		e.stopPropagation();
-		const slot = firstEmptyPinSlot();
-		if (slot !== null) navPinsStore.setPin(slot, href);
+		const slot = firstAvailablePinSlot();
+		if (slot !== null) {
+			navPinsStore.setPin(slot, href);
+			onDismiss();
+		}
 	}
 
 	function unpinFromBar(href: string, e: MouseEvent) {

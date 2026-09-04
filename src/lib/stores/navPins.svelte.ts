@@ -69,7 +69,7 @@ function persistPins(next: PinQuad): void {
 		writeLocalPinsUpdatedAt(activeUid, activePersonaKey, updatedAt);
 	}
 	if (activeEmail) {
-		void persistMobileNavPinsToFirestore(activeEmail, activePersonaKey, next).catch((err) => {
+		void persistMobileNavPinsToFirestore(activeEmail, activePersonaKey, next, updatedAt).catch((err) => {
 			console.warn('[navPinsStore] Firestore sync failed (local copy kept):', err);
 		});
 	}
