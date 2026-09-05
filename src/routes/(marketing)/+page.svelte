@@ -10,7 +10,6 @@
 	import StakeholderBento from '$lib/components/marketing/landing/StakeholderBento.svelte';
 	import IntegrationsBar from '$lib/components/marketing/landing/IntegrationsBar.svelte';
 	import FinalCtaPanel from '$lib/components/marketing/landing/FinalCtaPanel.svelte';
-	import MarketingFooter from '$lib/components/marketing/MarketingFooter.svelte';
 	import { WIN_MESSAGE } from '$lib/components/marketing/landing/landingContent';
 </script>
 
@@ -34,10 +33,10 @@
 	</style>
 </svelte:head>
 
-<div class="tw-flex tw-w-full tw-min-h-dvh tw-flex-col tw-bg-[#0f172a] tw-text-[#FAFAFA]">
+<div class="tw-flex tw-w-full tw-min-h-dvh tw-flex-col tw-bg-[#000000] tw-text-[#FAFAFA]">
 	<h1 class="tw-sr-only">Stop managing teams. Start developing athletes.</h1>
 
-	<main class="tw-flex-1">
+	<div class="tw-flex-1">
 		<LandingHero />
 		<PoweredByStrip />
 		<TrustStripPanel />
@@ -46,7 +45,5 @@
 		<StakeholderBento />
 		<IntegrationsBar />
 		<FinalCtaPanel />
-	</main>
-
-	<MarketingFooter />
+	</div>
 </div>

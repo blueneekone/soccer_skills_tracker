@@ -37,9 +37,10 @@
 
 <style>
 	.cp {
-		padding: clamp(3rem, 7vw, 5rem) clamp(1rem, 5vw, 3rem);
-		background: linear-gradient(180deg, rgb(2 6 23) 0%, rgb(15 23 42 / 0.55) 100%);
-		border-bottom: 1px solid rgb(30 41 59);
+		padding: clamp(3.5rem, 6vw, 5.5rem) clamp(1rem, 5vw, 3rem);
+		background: #020617;
+		border-top: 1px solid rgba(51, 65, 85, 0.4);
+		border-bottom: 1px solid rgba(51, 65, 85, 0.4);
 	}
 
 	.cp__inner {
@@ -52,11 +53,12 @@
 
 	.cp__eyebrow {
 		margin: 0;
-		font-family: var(--font-mono);
+		font-family: 'Geist Mono', monospace;
 		font-size: 0.6875rem;
 		font-weight: 700;
-		letter-spacing: 0.22em;
-		color: rgb(148 163 184 / 0.7);
+		letter-spacing: 0.25em;
+		color: #14b8a6;
+		text-transform: uppercase;
 	}
 
 	.cp__sr-only {
@@ -79,28 +81,30 @@
 
 	.cp__win p {
 		margin: 0;
-		font-family: var(--font-display);
-		font-size: clamp(1.25rem, 3.2vw, 1.75rem);
+		font-family: 'Geist Sans', var(--font-display, sans-serif);
+		font-size: clamp(1.25rem, 3vw, 1.75rem);
 		font-weight: 600;
 		line-height: 1.45;
 		letter-spacing: -0.02em;
-		color: rgb(248 250 252);
+		color: #ffffff;
 	}
 
 	.cp__compare {
 		display: flex;
 		flex-direction: column;
-		gap: 0.65rem;
+		gap: 0.75rem;
 	}
 
 	.cp__row {
 		display: grid;
-		grid-template-columns: minmax(7rem, 9rem) 1fr;
-		gap: 0.75rem 1rem;
-		padding: 0.75rem 1rem;
+		grid-template-columns: minmax(8rem, 11rem) 1fr;
+		gap: 0.75rem 1.25rem;
+		padding: 0.85rem 1.25rem;
 		border-radius: 8px;
-		border: 1px solid rgb(51 65 85 / 0.45);
-		background: rgb(15 23 42 / 0.35);
+		border: 1px solid rgba(51, 65, 85, 0.5);
+		background: rgba(15, 23, 42, 0.5);
+		backdrop-filter: blur(8px);
+		transition: all 0.2s ease;
 	}
 
 	@media (max-width: 540px) {
@@ -111,31 +115,34 @@
 	}
 
 	.cp__row--us {
-		border-color: rgb(20 184 166 / 0.45);
-		background: rgb(20 184 166 / 0.08);
+		border-color: rgba(20, 184, 166, 0.7);
+		background: rgba(20, 184, 166, 0.08);
+		box-shadow: 0 0 25px rgba(20, 184, 166, 0.12);
 	}
 
 	.cp__platform {
-		font-family: var(--font-mono);
-		font-size: 0.75rem;
+		font-family: 'Geist Mono', monospace;
+		font-size: 0.8125rem;
 		font-weight: 800;
 		letter-spacing: 0.08em;
-		color: rgb(226 232 240);
+		color: #e2e8f0;
+		align-self: center;
 	}
 
 	.cp__row--us .cp__platform {
-		color: rgb(94 234 212);
+		color: #14b8a6;
 	}
 
 	.cp__tag {
-		font-family: var(--font-sans);
+		font-family: 'Switzer', var(--font-sans, sans-serif);
 		font-size: 0.875rem;
 		line-height: 1.5;
-		color: rgb(148 163 184);
+		color: #94a3b8;
+		align-self: center;
 	}
 
 	.cp__row--us .cp__tag {
-		color: rgb(226 232 240);
+		color: #f1f5f9;
 	}
 
 	.cp__pillars {
@@ -151,25 +158,34 @@
 	}
 
 	.cp__pillar {
-		padding: 1rem 1.1rem;
-		border-radius: 10px;
-		border: 1px solid rgb(51 65 85 / 0.35);
-		background: rgb(2 6 23 / 0.5);
+		padding: 1.25rem 1.25rem;
+		border-radius: 8px;
+		border: 1px solid rgba(51, 65, 85, 0.5);
+		background: rgba(15, 23, 42, 0.65);
+		backdrop-filter: blur(8px);
+		transition: all 0.2s ease;
+	}
+
+	.cp__pillar:hover {
+		border-color: rgba(251, 191, 36, 0.5);
+		transform: translateY(-2px);
 	}
 
 	.cp__pillar-title {
 		margin: 0 0 0.4rem;
+		font-family: 'Geist Mono', monospace;
 		font-size: 0.8125rem;
 		font-weight: 800;
-		letter-spacing: 0.06em;
+		letter-spacing: 0.08em;
 		text-transform: uppercase;
-		color: rgb(251 191 36);
+		color: #fbbf24;
 	}
 
 	.cp__pillar-body {
 		margin: 0;
+		font-family: 'Switzer', var(--font-sans, sans-serif);
 		font-size: 0.8125rem;
-		line-height: 1.55;
-		color: rgb(203 213 225);
+		line-height: 1.6;
+		color: #94a3b8;
 	}
 </style>

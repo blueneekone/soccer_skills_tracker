@@ -15,7 +15,7 @@
 				model — without blending gamification into staff tools.
 			</p>
 		</div>
-		<div class="sb-grid tw-font-mono">
+		<div class="sb-grid">
 			{#each STAKEHOLDERS as card (card.id)}
 				<StakeholderCard {card} gridLg={card.gridLg} />
 			{/each}
@@ -28,6 +28,7 @@
 		padding-block: clamp(4rem, 8vw, 6rem);
 		padding-inline: clamp(1rem, 5vw, 3rem);
 		position: relative;
+		background: #000000;
 	}
 
 	.sb-inner {

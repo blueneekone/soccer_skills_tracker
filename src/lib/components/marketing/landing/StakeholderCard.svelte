@@ -35,10 +35,13 @@
   .sc-root {
     display: flex;
     flex-direction: column;
-    gap: clamp(0.65rem, 1.5vw, 1rem);
-    padding: var(--bento-pad);
-    border-radius: 4px;
-    transition: border-color 150ms ease, box-shadow 150ms ease;
+    gap: clamp(0.75rem, 1.5vw, 1.1rem);
+    padding: var(--bento-pad, clamp(1.25rem, 3vw, 1.75rem));
+    border-radius: 8px;
+    background: rgba(15, 23, 42, 0.7);
+    border: 1px solid rgba(51, 65, 85, 0.6);
+    backdrop-filter: blur(12px);
+    transition: all 200ms cubic-bezier(0.16, 1, 0.3, 1);
     position: relative;
     overflow: hidden;
     grid-column: var(--gcol, auto);
@@ -59,16 +62,17 @@
     pointer-events: none;
     background: radial-gradient(
       ellipse at top left,
-      color-mix(in srgb, var(--sc-accent) 8%, transparent),
-      transparent 60%
+      color-mix(in srgb, var(--sc-accent) 12%, transparent),
+      transparent 65%
     );
     opacity: 0;
-    transition: opacity 0.3s;
+    transition: opacity 0.3s ease;
   }
 
   .sc-root--hovered {
-    border-color: rgb(71 85 105);
-    box-shadow: none;
+    border-color: var(--sc-accent);
+    box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.6), 0 0 25px color-mix(in srgb, var(--sc-accent) 25%, transparent);
+    transform: translateY(-2px);
   }
 
   .sc-root--hovered::before {
@@ -81,7 +85,7 @@
   }
 
   :global(.stakeholder-card--coaches) {
-    --sc-accent: #8b5cf6;
+    --sc-accent: #14b8a6;
   }
 
   :global(.stakeholder-card--athletes) {
@@ -114,20 +118,20 @@
   }
 
   .sc-headline {
-    font-family: 'Geist Mono', ui-monospace, monospace;
-    font-size: clamp(0.8rem, 1.8vw, 1rem);
-    font-weight: 800;
-    color: white;
+    font-family: 'Geist Sans', var(--font-display, sans-serif);
+    font-size: clamp(1.05rem, 2vw, 1.25rem);
+    font-weight: 700;
+    color: #ffffff;
     margin: 0;
-    line-height: 1.35;
+    line-height: 1.3;
   }
 
   .sc-body {
-    font-family: var(--font-sans);
+    font-family: 'Switzer', var(--font-sans, sans-serif);
     font-size: clamp(0.875rem, 1.2vw, 0.9375rem);
     font-weight: 400;
-    color: var(--vanguard-text-2, #e2e8f0);
-    line-height: 1.8;
+    color: #94a3b8;
+    line-height: 1.7;
     margin: 0;
     flex: 1;
   }

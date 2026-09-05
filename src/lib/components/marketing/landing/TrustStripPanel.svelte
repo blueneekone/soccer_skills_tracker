@@ -23,11 +23,11 @@
 
 <style>
 	.ts-root {
-		padding-block: clamp(2.5rem, 5vw, 4rem);
+		padding-block: clamp(2rem, 4vw, 3rem);
 		padding-inline: clamp(1rem, 5vw, 3rem);
-		border-top: 1px solid rgb(30 41 59);
-		border-bottom: 1px solid rgb(30 41 59);
-		background: rgb(2 6 23);
+		border-top: 1px solid rgba(51, 65, 85, 0.4);
+		border-bottom: 1px solid rgba(51, 65, 85, 0.4);
+		background: #020617;
 	}
 
 	.ts-inner {
@@ -36,15 +36,15 @@
 		display: flex;
 		flex-direction: column;
 		align-items: center;
-		gap: clamp(1.25rem, 3vw, 2rem);
+		gap: clamp(1rem, 2.5vw, 1.75rem);
 	}
 
 	.ts-headline {
 		font-family: 'Geist Mono', ui-monospace, monospace;
 		font-size: var(--vanguard-text-eyebrow-size, 0.6875rem);
 		font-weight: 700;
-		letter-spacing: 0.35em;
-		color: var(--vanguard-text-eyebrow, #a5b4fc);
+		letter-spacing: 0.3em;
+		color: #14b8a6;
 		text-transform: uppercase;
 	}
 
@@ -52,25 +52,27 @@
 		display: flex;
 		flex-wrap: wrap;
 		justify-content: center;
-		gap: clamp(0.5rem, 1.5vw, 0.85rem);
+		gap: clamp(0.5rem, 1.2vw, 0.75rem);
 	}
 
 	.ts-badge {
-		padding: clamp(0.6rem, 1.5vw, 0.85rem) clamp(0.85rem, 2vw, 1.25rem);
+		padding: 0.65rem 1.1rem;
 		display: flex;
 		flex-direction: column;
 		align-items: center;
-		gap: 2px;
-		border-radius: 4px;
-		transition:
-			border-color 0.2s ease;
+		gap: 4px;
+		border-radius: 6px;
+		background: rgba(15, 23, 42, 0.65);
+		border: 1px solid rgba(51, 65, 85, 0.6);
+		backdrop-filter: blur(8px);
+		transition: all 0.2s ease;
 		cursor: default;
-		box-shadow: none;
 	}
 
 	.ts-badge:hover {
-		border-color: rgb(71 85 105);
-		box-shadow: none;
+		border-color: #14b8a6;
+		background: rgba(20, 184, 166, 0.08);
+		transform: translateY(-1px);
 	}
 
 	.ts-badge__label {

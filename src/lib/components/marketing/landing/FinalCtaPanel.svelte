@@ -14,7 +14,7 @@
 		</p>
 		<div class="fc-actions">
 			<a href="/setup" class="tw-btn-primary">
-				Start your club →
+				GET STARTED — $0 PLATFORM FEE →
 			</a>
 			<a href="/pricing" class="fc-link-cta">VIEW PRICING →</a>
 			<a href="/acquisition" class="fc-link-cta">STRATEGIC ACQUISITION →</a>
@@ -33,18 +33,18 @@
 <style>
 	.fc-root {
 		position: relative;
-		padding-block: clamp(5rem, 10vw, 8rem);
+		padding-block: clamp(5rem, 8vw, 7.5rem);
 		padding-inline: clamp(1rem, 5vw, 3rem);
-		border-top: 1px solid rgb(30 41 59);
+		border-top: 1px solid rgba(51, 65, 85, 0.4);
 		text-align: center;
 		overflow: hidden;
-		background: rgb(2 6 23);
+		background: radial-gradient(circle at 50% 15%, rgba(20, 184, 166, 0.12) 0%, #000000 70%);
 	}
 
 	.fc-inner {
 		position: relative;
 		z-index: 1;
-		max-width: 720px;
+		max-width: 760px;
 		margin: 0 auto;
 		display: flex;
 		flex-direction: column;
@@ -57,28 +57,28 @@
 		font-size: var(--vanguard-text-eyebrow-size, 0.6875rem);
 		font-weight: 700;
 		letter-spacing: 0.3em;
-		color: var(--vanguard-text-eyebrow, #a5b4fc);
+		color: #14b8a6;
 		text-transform: uppercase;
 	}
 
 	.fc-h2 {
-		font-family: var(--font-display);
-		font-size: clamp(1.5rem, 4vw, 2.8rem);
+		font-family: 'Geist Sans', var(--font-display, sans-serif);
+		font-size: clamp(1.75rem, 4vw, 3rem);
 		font-weight: 800;
-		line-height: 1.08;
+		line-height: 1.1;
 		letter-spacing: -0.02em;
-		color: var(--vanguard-text-1, #ffffff);
+		color: #ffffff;
 		margin: 0;
 	}
 
 	.fc-sub {
-		font-family: var(--font-sans);
-		font-size: clamp(0.9375rem, 1.5vw, 1rem);
+		font-family: 'Switzer', var(--font-sans, sans-serif);
+		font-size: clamp(1rem, 1.5vw, 1.125rem);
 		font-weight: 400;
-		color: var(--vanguard-text-2, #e2e8f0);
-		line-height: 1.75;
+		color: #94a3b8;
+		line-height: 1.7;
 		margin: 0;
-		max-width: 540px;
+		max-width: 580px;
 	}
 
 	.fc-actions {

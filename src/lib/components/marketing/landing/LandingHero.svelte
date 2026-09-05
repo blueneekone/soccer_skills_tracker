@@ -59,7 +59,7 @@
 
 			<div class="hero__ctas">
 				<a href="{base}/setup" class="tw-btn-primary">
-					Start your club →
+					GET STARTED FREE →
 				</a>
 				<a href="{base}/acquisition" class="tw-vanguard-btn-secondary">
 					Director trust brief →
@@ -81,25 +81,25 @@
 			<div class="hero__stage vanguard-surface tw-border-slate-800">
 				<div class="hero__status-bar" aria-hidden="true">
 					<span class="hero__status-dot"></span>
-					<span class="hero__status-label">SSTRACKER · PLAYER HQ · PREVIEW</span>
-					<span class="hero__status-meta">SYNC OK</span>
+					<span class="hero__status-label">SSTRACKER · MISSION CONTROL · LIVE OPERATIONAL HUD</span>
+					<span class="hero__status-meta">ALL CELLS SYNCED</span>
 				</div>
 
 				<div class="hero__body">
 					<div class="hero__media-wrap tw-w-full">
 						<video
 							bind:this={videoEl}
-							class="hero__video tw-w-full tw-h-auto tw-font-mono"
-							data-src="/marketing/hero-demo.mp4"
+							class="hero__video tw-w-full tw-h-auto"
+							data-src="/assets/video/marketing-hero.mp4"
+							src="/assets/video/marketing-hero.mp4"
 							playsinline
 							muted
 							loop
-							preload="none"
+							preload="auto"
 							aria-hidden="true"
 							poster="/marketing/hero-poster.svg"
 						></video>
 					</div>
-
 				</div>
 			</div>
 		</div>
@@ -114,13 +114,13 @@
 <style>
 	.hero {
 		position: relative;
-		min-height: 100dvh;
+		min-height: 94dvh;
 		display: flex;
 		flex-direction: column;
 		align-items: center;
 		justify-content: center;
-		padding: clamp(4.75rem, 9vw, 7rem) clamp(1rem, 5vw, 3rem) clamp(3rem, 6vw, 4rem);
-		font-family: var(--font-mono);
+		padding: clamp(4.75rem, 8vw, 6.5rem) clamp(1rem, 5vw, 3rem) clamp(2.5rem, 5vw, 3.5rem);
+		font-family: var(--font-sans, 'Switzer', sans-serif);
 	}
 
 	.hero__inner {
@@ -130,21 +130,20 @@
 		display: grid;
 		grid-template-columns: 1fr;
 		gap: clamp(2rem, 5vw, 3.25rem);
-		align-items: start;
+		align-items: center;
 	}
 
 	@media (min-width: 64rem) {
 		.hero__inner {
-			grid-template-columns: minmax(0, min(100%, 26rem)) minmax(0, 1fr);
-			column-gap: clamp(1.5rem, 3.5vw, 2.75rem);
+			grid-template-columns: minmax(0, 1.05fr) minmax(0, 1.2fr);
+			column-gap: clamp(2rem, 4vw, 3.5rem);
 			align-items: center;
 		}
 
 		.hero__demo-wrap {
-			width: min(108%, calc(100% + 2.5rem));
+			width: 100%;
 			max-width: none;
-			justify-self: end;
-			margin-right: clamp(-0.5rem, -1.25vw, 0);
+			justify-self: center;
 		}
 	}
 
@@ -184,21 +183,21 @@
 	}
 
 	.hero__h1 {
-		font-family: var(--font-display);
-		font-size: clamp(2rem, 5.2vw, 3.5rem);
+		font-family: 'Geist Sans', var(--font-display, sans-serif);
+		font-size: clamp(2.25rem, 4.5vw, 3.75rem);
 		font-weight: 800;
-		line-height: 1.06;
-		letter-spacing: -0.02em;
-		color: var(--vanguard-text-1, #ffffff);
+		line-height: 1.08;
+		letter-spacing: -0.025em;
+		color: #ffffff;
 		margin: 0;
 	}
 
 	.hero__sub {
-		font-family: var(--font-sans);
-		font-size: clamp(0.9375rem, 1.8vw, 1.0625rem);
-		color: var(--vanguard-text-2, #e2e8f0);
+		font-family: 'Switzer', var(--font-sans, sans-serif);
+		font-size: clamp(1rem, 1.6vw, 1.125rem);
+		color: #cbd5e1;
 		line-height: 1.7;
-		max-width: 480px;
+		max-width: 540px;
 		margin: 0;
 		font-weight: 400;
 	}
@@ -207,6 +206,7 @@
 		display: flex;
 		gap: 0.85rem;
 		flex-wrap: wrap;
+		align-items: center;
 	}
 
 	.hero__trust-strip {
@@ -219,21 +219,24 @@
 	}
 
 	.hero__trust-strip li {
+		font-family: 'Geist Mono', monospace;
 		font-size: var(--vanguard-text-eyebrow-size, 0.6875rem);
-		color: var(--vanguard-text-eyebrow, #a5b4fc);
+		color: #14b8a6;
 		letter-spacing: 0.06em;
-		padding: 0.25rem 0.65rem;
-		border: 1px solid rgb(30 41 59);
+		padding: 0.3rem 0.75rem;
+		border: 1px solid rgba(51, 65, 85, 0.7);
 		border-radius: 9999px;
-		background: rgb(15 23 42 / 0.45);
+		background: rgba(15, 23, 42, 0.6);
+		backdrop-filter: blur(6px);
 	}
 
 	.hero__disclaimer {
+		font-family: 'Geist Mono', monospace;
 		font-size: var(--vanguard-text-eyebrow-size, 0.6875rem);
-		color: var(--vanguard-text-3, #cbd5e1);
-		letter-spacing: 0.08em;
+		color: #94a3b8;
+		letter-spacing: 0.06em;
 		margin: 0;
-		opacity: 0.55;
+		opacity: 0.75;
 	}
 
 	.hero__demo-wrap {
@@ -243,12 +246,14 @@
 
 	.hero__stage {
 		position: relative;
-		border-radius: 4px;
+		border-radius: 8px;
 		overflow: hidden;
 		display: flex;
 		flex-direction: column;
-		min-height: clamp(260px, 42vw, 500px);
-		box-shadow: none;
+		min-height: clamp(280px, 35vw, 460px);
+		border: 1px solid rgba(51, 65, 85, 0.7);
+		background: #0f172a;
+		box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7), 0 0 35px rgba(20, 184, 166, 0.12);
 	}
 
 	.hero__status-bar {

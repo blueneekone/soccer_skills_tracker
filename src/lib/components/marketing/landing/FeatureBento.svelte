@@ -34,7 +34,7 @@
 			</p>
 		</div>
 
-		<div class="fb-grid tw-grid tw-grid-cols-1 lg:tw-grid-cols-12 tw-gap-4 tw-w-full tw-font-mono">
+		<div class="fb-grid tw-grid tw-grid-cols-1 lg:tw-grid-cols-12 tw-gap-4 tw-w-full">
 			{#each FEATURE_BENTO as cell, idx (cell.id)}
 				<a
 					href={cell.href}
@@ -50,7 +50,7 @@
 					aria-label="{cell.eyebrow}: {cell.headline}"
 				>
 					<div class="fb-cell__glyph" aria-hidden="true">
-						<Icon name={cell.icon} size={56} class="fb-cell__icon" />
+						<Icon name={cell.icon} size={48} class="fb-cell__icon" />
 					</div>
 
 					<div class="fb-cell__content">
@@ -71,7 +71,7 @@
 		padding-block: clamp(4rem, 8vw, 6rem);
 		padding-inline: clamp(1rem, 5vw, 3rem);
 		overflow: hidden;
-		background-color: #0B0F19;
+		background-color: #000000;
 	}
 
 	.fb-inner {
@@ -182,25 +182,25 @@
 		font-family: 'Geist Mono', ui-monospace, monospace;
 		font-size: var(--vanguard-text-eyebrow-size, 0.6875rem);
 		font-weight: 700;
-		letter-spacing: 0.22em;
-		color: var(--vanguard-text-eyebrow, #a5b4fc);
+		letter-spacing: 0.2em;
+		color: var(--cell-accent);
 		text-transform: uppercase;
 	}
 
 	.fb-cell__headline {
-		font-family: 'Geist Mono', ui-monospace, monospace;
-		font-size: clamp(0.9rem, 2vw, 1.1rem);
-		font-weight: 800;
-		color: var(--vanguard-text-1, #ffffff);
+		font-family: 'Geist Sans', var(--font-display, sans-serif);
+		font-size: clamp(1rem, 2vw, 1.25rem);
+		font-weight: 700;
+		color: #ffffff;
 		margin: 0;
 		line-height: 1.3;
 	}
 
 	.fb-cell__body {
-		font-family: var(--font-sans);
+		font-family: 'Switzer', var(--font-sans, sans-serif);
 		font-size: clamp(0.875rem, 1.3vw, 0.9375rem);
 		font-weight: 400;
-		color: var(--vanguard-text-2, #e2e8f0);
+		color: #94a3b8;
 		line-height: 1.7;
 		margin: 0;
 		flex: 1;
@@ -209,14 +209,19 @@
 	.fb-cell__cta {
 		font-family: 'Geist Mono', ui-monospace, monospace;
 		font-size: var(--vanguard-text-eyebrow-size, 0.6875rem);
-		font-weight: 600;
+		font-weight: 700;
 		letter-spacing: 0.15em;
-		color: var(--vanguard-text-eyebrow, #a5b4fc);
+		color: var(--cell-accent);
 		text-transform: uppercase;
 		margin-top: auto;
 		padding-top: 0.5rem;
-		opacity: 0;
-		transition: opacity 0.2s ease;
+		opacity: 0.85;
+		transition: opacity 0.2s ease, transform 0.2s ease;
+	}
+
+	.fb-cell:hover .fb-cell__cta {
+		opacity: 1;
+		transform: translateX(3px);
 	}
 
 	.fb-cell:hover .fb-cell__cta {
