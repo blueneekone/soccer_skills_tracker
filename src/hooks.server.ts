@@ -1,8 +1,11 @@
 import { getAuth } from 'firebase-admin/auth';
 import { getApps, initializeApp, cert, applicationDefault } from 'firebase-admin/app';
+import { getFirestore } from 'firebase-admin/firestore';
 import { env } from '$env/dynamic/private';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
+
+let maintenanceCache = { value: false, expiresAt: 0 };
 
 function ensureAdminAuth() {
 	if (!getApps().length) {
@@ -19,6 +22,23 @@ function ensureAdminAuth() {
 		}
 	}
 	return getAuth();
+}
+
+async function getMaintenanceMode() {
+    // Make sure admin auth/firebase app is initialized before calling firestore
+    ensureAdminAuth();
+
+    const now = Date.now();
+    if (now < maintenanceCache.expiresAt) return maintenanceCache.value;
+    try {
+        const db = getFirestore();
+        const doc = await db.collection('platform_config').doc('maintenance').get();
+        const value = doc.exists ? doc.data()?.maintenanceMode === true : false;
+        maintenanceCache = { value, expiresAt: now + 5000 };
+        return value;
+    } catch {
+        return false;
+    }
 }
 
 /** @type {import('@sveltejs/kit').Handle} */
@@ -45,6 +65,13 @@ export async function handle({ event, resolve }) {
 
     const role = event.locals.user?.role;
     const path = event.url.pathname;
+
+    if (path !== '/maintenance') {
+        const isMaintenance = await getMaintenanceMode();
+        if (isMaintenance && role !== 'admin') {
+            return new Response(null, { status: 307, headers: { location: '/maintenance' } });
+        }
+    }
 
     if ((path.startsWith('/coach') && role !== 'coach') || (path.startsWith('/director') && role !== 'director')) {
         const isDataReq = event.request.headers.get('accept')?.includes('application/json') || event.isDataRequest;
