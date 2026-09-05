@@ -43,9 +43,9 @@ describe('parent Tier-1 nav + workflow integration guards', () => {
 		expect(shell).toMatch(/pinBarSkin = \$derived\(authStore\.role === 'parent' \? 'parent-trust'/);
 	});
 
-	it('MobilePinBar Menu pin uses touch-first open path (QA-NAV-03 / household dashboard fix)', () => {
+	it('MobilePinBar Menu pin uses anchor-first routing path', () => {
 		expect(pinBar).toContain('MENU_PIN_HREF');
-		expect(pinBar).toContain('ontouchstart={openMenuFromPin}');
+		expect(pinBar).toMatch(/<a[\s\S]*href="#\{item\.href\}"[\s\S]*openMenuFromPin\(e\)/);
 		expect(pinBar).toMatch(/openMenuFromPin[\s\S]*onMenuOpen\(\)/);
 	});
 

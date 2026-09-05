@@ -117,18 +117,20 @@
 				{@const slot = slotIndex as 0 | 1 | 2 | 3}
 				{#if item}
 					{#if item.href === MENU_PIN_HREF}
-						<button
-							type="button"
-							role="tab"
+						<a
+							href="#{item.href}"
+							role="button"
 							aria-selected={false}
 							aria-label={item.label}
 							class="mobile-pin-bar__slot mobile-pin-bar__slot--pin mobile-pin-bar__slot--menu"
-							ontouchstart={openMenuFromPin}
-							onclick={openMenuFromPin}
+							onclick={(e) => {
+								e.preventDefault();
+								openMenuFromPin(e);
+							}}
 						>
 							<Icon name={item.icon as IconName} size={22} />
 							<span class="mobile-pin-bar__label">{item.label}</span>
-						</button>
+						</a>
 					{:else}
 						{@const active = isActive(item.href)}
 						{@const gated = gatedHrefs.has(item.href)}
@@ -175,16 +177,19 @@
 			{/each}
 
 			{#if showMenuSlot}
-				<button
-					type="button"
+				<a
+					href="#{MENU_PIN_HREF}"
+					role="button"
 					class="mobile-pin-bar__slot mobile-pin-bar__slot--menu"
 					aria-label="Open menu"
-					ontouchstart={openMenuFromPin}
-					onclick={openMenuFromPin}
+					onclick={(e) => {
+						e.preventDefault();
+						openMenuFromPin(e);
+					}}
 				>
 					<Icon name="nav.menu" size={22} />
 					<span class="mobile-pin-bar__label">Menu</span>
-				</button>
+				</a>
 			{/if}
 		</div>
 	</nav>

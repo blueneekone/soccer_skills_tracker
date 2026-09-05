@@ -330,15 +330,18 @@
 							<span>Report Anomaly</span>
 						</button>
 					{/if}
-					<button
-						type="button"
+					<a
 						class="app-menu-sheet__link app-menu-sheet__link--sign-out"
-						disabled={signingOut}
-						onclick={() => void disconnect()}
+						class:app-menu-sheet__link--disabled={signingOut}
+						href="#sign-out"
+						onclick={(e) => {
+							e.preventDefault();
+							void disconnect();
+						}}
 					>
 						<Icon name="nav.sign-out" size={18} />
 						<span>{signingOut ? 'Signing out…' : 'Sign out'}</span>
-					</button>
+					</a>
 				</section>
 			{/if}
 		</div>
@@ -558,9 +561,11 @@
 		color: rgba(248, 113, 113, 0.82);
 	}
 
-	.app-menu-sheet__link:disabled {
+	.app-menu-sheet__link:disabled,
+	.app-menu-sheet__link--disabled {
 		opacity: 0.55;
 		cursor: not-allowed;
+		pointer-events: none;
 	}
 
 	.app-menu-sheet__badge {

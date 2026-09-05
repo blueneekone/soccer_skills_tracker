@@ -72,8 +72,8 @@ describe('field menu sheet portal guards', () => {
 		expect(pinBar).toMatch(/z-index:\s*10001/);
 	});
 
-	it('Menu pin uses ontouchstart + stopPropagation iOS tap fix', () => {
-		expect(pinBar).toContain('ontouchstart={openMenuFromPin}');
+	it('Menu pin uses standard anchor tag for robust routing handling', () => {
+		expect(pinBar).toMatch(/<a[\s\S]*href="#\{item\.href\}"[\s\S]*openMenuFromPin\(e\)/);
 		expect(pinBar).toMatch(/openMenuFromPin[\s\S]*stopPropagation/);
 		expect(pinBar).toContain('MENU_PIN_HREF');
 	});
