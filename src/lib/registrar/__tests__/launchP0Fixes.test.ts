@@ -7,18 +7,20 @@ import { describe, expect, it } from 'vitest';
 
 const ROOT = join(process.cwd());
 const HOUSEHOLD = join(ROOT, 'src/routes/(app)/parent/household/+page.svelte');
+const HOUSEHOLD_ENGINE = join(ROOT, 'src/routes/(app)/parent/household/HouseholdEngine.svelte.ts');
+const HOUSEHOLD_ARENA = join(ROOT, 'src/routes/(app)/parent/household/HouseholdArena.svelte');
 const VPC_PENDING = join(ROOT, 'src/routes/(app)/vpc-pending/+page.svelte');
 const TENANT_RESET = join(ROOT, 'scripts/dev-tenant-reset.mjs');
 
 describe('LAUNCH-p0 — household + vpc-pending copy', () => {
 	it('waiver button renders ampersand (not HTML entity in text expression)', () => {
-		const src = readFileSync(HOUSEHOLD, 'utf8');
+		const src = readFileSync(HOUSEHOLD, 'utf8') + readFileSync(HOUSEHOLD_ENGINE, 'utf8') + readFileSync(HOUSEHOLD_ARENA, 'utf8');
 		expect(src).toMatch(/Sign waiver & authorize/);
 		expect(src).not.toMatch(/Sign waiver &amp; authorize/);
 	});
 
 	it('dispatch code help text matches coach team code format (not 6-digit)', () => {
-		const src = readFileSync(HOUSEHOLD, 'utf8');
+		const src = readFileSync(HOUSEHOLD, 'utf8') + readFileSync(HOUSEHOLD_ENGINE, 'utf8') + readFileSync(HOUSEHOLD_ARENA, 'utf8');
 		expect(src).toMatch(/team dispatch code/i);
 		expect(src).toMatch(/AB-1K2M/);
 		expect(src).not.toMatch(/6-digit team code/i);
@@ -104,7 +106,7 @@ describe('LAUNCH-parent-link-team — parentLinkOperativeToTeam + household UI',
 	});
 
 	it('household page calls parentLinkOperativeToTeam with dispatch code', () => {
-		const src = readFileSync(HOUSEHOLD, 'utf8');
+		const src = readFileSync(HOUSEHOLD, 'utf8') + readFileSync(HOUSEHOLD_ENGINE, 'utf8') + readFileSync(HOUSEHOLD_ARENA, 'utf8');
 		expect(src).toMatch(/parentLinkOperativeToTeam/);
 		expect(src).toMatch(/linkOperativeTeam/);
 		expect(src).toMatch(/QA-PP26/);
@@ -128,9 +130,9 @@ describe('LAUNCH-parent-link-team — parentLinkOperativeToTeam + household UI',
 
 describe('PARENT-DISPATCH-6064 — household page Firestore db consistency', () => {
 	it('household operative reads use default db — not getActiveDb cell routing', () => {
-		const src = readFileSync(HOUSEHOLD, 'utf8');
+		const src = readFileSync(HOUSEHOLD, 'utf8') + readFileSync(HOUSEHOLD_ENGINE, 'utf8') + readFileSync(HOUSEHOLD_ARENA, 'utf8');
 		expect(src).toMatch(/fetchHouseholdClearance\(db,\s*hid\)/);
-		expect(src).toMatch(/loadHouseholdOperativeRows\(db,\s*householdId\)/);
+		expect(src).toMatch(/loadHouseholdOperativeRows\(db,\s*(?:this\.)?householdId\)/);
 		expect(src).toMatch(/buildEnrichedOperativeRows\(db,\s*hs\.data\(\)/);
 		expect(src).not.toMatch(/getActiveDb\(\)/);
 	});

@@ -1161,6 +1161,77 @@ exports.parentReconcileHousehold = onCall({region: REGION}, async (request) => {
 });
 
 /**
+ * Parent: Invite a co-parent to jointly manage the household.
+ */
+exports.parentInviteCoParent = onCall({region: REGION}, async (request) => {
+  const actor = await assertParentAsync(request);
+  const data = request.data || {};
+  const targetEmailRaw = typeof data.coParentEmail === 'string' ? data.coParentEmail : '';
+  const targetEmail = normEmail(targetEmailRaw);
+  if (!targetEmail) {
+    throw new HttpsError('invalid-argument', 'Co-parent email is required.');
+  }
+
+  const {householdId} = await reconcileParentHouseholdGraph(actor.email);
+  if (!householdId) {
+    throw new HttpsError('failed-precondition', 'You do not have an active household.');
+  }
+
+  const batch = db().writeBatch();
+
+  // 1. Ensure target user has role: parent and householdId
+  const uRef = db().collection('users').doc(targetEmail);
+  const uSnap = await uRef.get();
+  if (!uSnap.exists) {
+    batch.set(uRef, {
+      email: targetEmail,
+      role: 'parent',
+      roles: ['parent'],
+      householdId: householdId,
+      clubId: actor.clubId || null,
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    }, {merge: true});
+  } else {
+    batch.update(uRef, {
+      role: 'parent',
+      roles: admin.firestore.FieldValue.arrayUnion('parent'),
+      householdId: householdId,
+      clubId: actor.clubId || null,
+    });
+  }
+
+  // 2. Add co-parent to households array
+  const hRef = db().collection('households').doc(householdId);
+  batch.update(hRef, {
+    parentEmails: admin.firestore.FieldValue.arrayUnion(targetEmail),
+  });
+
+  // 3. Add to player_lookup for all athletes in the household
+  const hSnap = await hRef.get();
+  if (hSnap.exists) {
+    const d = hSnap.data() || {};
+    const playerEmails = Array.isArray(d.playerEmails) ? d.playerEmails : [];
+    for (const em of playerEmails) {
+      if (em) {
+        batch.update(db().collection('player_lookup').doc(em), {
+          parentEmails: admin.firestore.FieldValue.arrayUnion(targetEmail),
+        });
+      }
+    }
+  }
+
+  await batch.commit();
+
+  logger.info('[parentInviteCoParent] linked new parent to household', {
+    actor: actor.email,
+    target: targetEmail,
+    householdId,
+  });
+
+  return {ok: true, householdId, coParentEmail: targetEmail};
+});
+
+/**
  * Public: validate 6-char Clearance Code; mints a custom token for the child
  * (one use). Unauthenticated by design (child login) — do not require
  * `request.auth`.

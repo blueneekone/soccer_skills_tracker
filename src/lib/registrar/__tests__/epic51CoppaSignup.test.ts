@@ -8,6 +8,8 @@ import { describe, expect, it } from 'vitest';
 const ROOT = join(process.cwd());
 const MATRIX = join(ROOT, 'docs/COPPA_SIGNUP_MATRIX.md');
 const HOUSEHOLD = join(ROOT, 'src/routes/(app)/parent/household/+page.svelte');
+const HOUSEHOLD_ENGINE = join(ROOT, 'src/routes/(app)/parent/household/HouseholdEngine.svelte.ts');
+const HOUSEHOLD_ARENA = join(ROOT, 'src/routes/(app)/parent/household/HouseholdArena.svelte');
 const APP_LAYOUT = join(ROOT, 'src/routes/(app)/+layout.svelte');
 const VPC_PENDING = join(ROOT, 'src/routes/(app)/vpc-pending/+page.svelte');
 const ROUTE_POLICIES = join(ROOT, 'src/lib/auth/route-policies.js');
@@ -23,7 +25,7 @@ describe('Epic 5.1 — COPPA & household provisioning', () => {
 
 	it('parent household route exists with COPPA workflow surface', () => {
 		expect(existsSync(HOUSEHOLD)).toBe(true);
-		const src = readFileSync(HOUSEHOLD, 'utf8');
+		const src = readFileSync(HOUSEHOLD, 'utf8') + readFileSync(HOUSEHOLD_ENGINE, 'utf8') + readFileSync(HOUSEHOLD_ARENA, 'utf8');
 		expect(src).toMatch(/coppa/i);
 		expect(src).toMatch(/households/);
 	});

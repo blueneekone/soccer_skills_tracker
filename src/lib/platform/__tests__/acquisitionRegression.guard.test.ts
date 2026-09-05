@@ -21,6 +21,8 @@ const ROOT = join(__dirname, '..', '..', '..');
 
 const SETUP_PAGE = join(ROOT, 'routes/setup/+page.svelte');
 const HOUSEHOLD_PAGE = join(ROOT, 'routes/(app)/parent/household/+page.svelte');
+const HOUSEHOLD_ENGINE = join(ROOT, 'routes/(app)/parent/household/HouseholdEngine.svelte.ts');
+const HOUSEHOLD_ARENA = join(ROOT, 'routes/(app)/parent/household/HouseholdArena.svelte');
 const LOAD_CLEARANCE = join(ROOT, 'lib/parent/loadHouseholdClearance.ts');
 const MISSION_RAIL = join(ROOT, 'lib/player/dashboard/missionRailCoachIntents.ts');
 const ACTIVE_BOUNTIES = join(ROOT, 'lib/components/hud/ActiveBounties.svelte');
@@ -57,7 +59,7 @@ describe('GP-GATE / SETUP — acquisition profile + setup guards', () => {
 
 describe('GP-ACQ-01 / household — clearance load regression guards', () => {
 	const loadClearance = readFileSync(LOAD_CLEARANCE, 'utf-8');
-	const householdPage = readFileSync(HOUSEHOLD_PAGE, 'utf-8');
+	const householdPage = readFileSync(HOUSEHOLD_PAGE, 'utf-8') + readFileSync(HOUSEHOLD_ENGINE, 'utf-8') + readFileSync(HOUSEHOLD_ARENA, 'utf-8');
 
 	it('loadHouseholdClearance uses passed db — not getActiveDb for households read', () => {
 		expect(loadClearance).toMatch(/fetchHouseholdClearance\(\s*db:\s*Firestore/);

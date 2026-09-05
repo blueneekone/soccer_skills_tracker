@@ -7,6 +7,8 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, '..', '..', '..');
 
 const HOUSEHOLD_PAGE = join(ROOT, 'routes/(app)/parent/household/+page.svelte');
+const HOUSEHOLD_ENGINE = join(ROOT, 'routes/(app)/parent/household/HouseholdEngine.svelte.ts');
+const HOUSEHOLD_ARENA = join(ROOT, 'routes/(app)/parent/household/HouseholdArena.svelte');
 const DASHBOARD_PAGE = join(ROOT, 'routes/(app)/parent/dashboard/+page.svelte');
 const VPC_PAGE = join(ROOT, 'routes/(app)/parent/vpc/+page.svelte');
 const LOAD_CLEARANCE = join(ROOT, 'lib/parent/loadHouseholdClearance.ts');
@@ -24,7 +26,7 @@ describe('parent Tier-1 nav + workflow integration guards', () => {
 	const pinBar = readFileSync(PIN_BAR, 'utf-8');
 	const fieldMenu = readFileSync(FIELD_MENU, 'utf-8');
 	const loadClearance = readFileSync(LOAD_CLEARANCE, 'utf-8');
-	const householdPage = readFileSync(HOUSEHOLD_PAGE, 'utf-8');
+	const householdPage = readFileSync(HOUSEHOLD_PAGE, 'utf-8') + readFileSync(HOUSEHOLD_ENGINE, 'utf-8') + readFileSync(HOUSEHOLD_ARENA, 'utf-8');
 
 	it('navPinCatalog parent defaults cover Tier-1 routes + Menu pin in slot 4', () => {
 		expect(catalog).toMatch(
@@ -58,8 +60,8 @@ describe('parent Tier-1 nav + workflow integration guards', () => {
 	});
 
 	it('household clearance uses stable hid derived + generation-guarded loadBusy', () => {
-		expect(householdPage).toContain('const clearanceHid = $derived(normalizeHouseholdId');
-		expect(householdPage).toContain('const clearanceLoadReady = $derived');
+		expect(householdPage).toMatch(/get\s+clearanceHid\(\)\s*\{\s*return normalizeHouseholdId/);
+		expect(householdPage).toMatch(/get\s+clearanceLoadReady\(\)/);
 		expect(householdPage).toContain('shouldClearLoadBusy');
 		expect(householdPage).toContain('clearanceFetchGeneration');
 		expect(householdPage).toContain('clearanceLastFetchHid');
