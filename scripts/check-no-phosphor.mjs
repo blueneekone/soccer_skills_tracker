@@ -66,6 +66,7 @@ const SVG_STROKE_ALLOWLIST = [
 	'CoachDrillDesignerStudio.svelte',
 	'CoachScoutingView.svelte',
 	'LightningRadar.svelte',
+	'AthleteQuickStatsModal.svelte',
 	'src/lib/components/weather-modal/',
 	'src/lib/coach/scouting/',
 ];
