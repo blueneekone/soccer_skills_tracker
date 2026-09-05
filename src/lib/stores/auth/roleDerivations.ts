@@ -68,15 +68,21 @@ export function deriveNeedsOnboarding(input: {
 	isLoading: boolean;
 	tenantId: string;
 	role: string;
+	userProfile?: Record<string, unknown> | null;
 }): boolean {
 	const flags = deriveRoleFlags(input.role);
-	return (
-		input.isAuthenticated &&
-		!input.isLoading &&
-		!input.tenantId &&
-		!flags.isAdmin &&
-		!flags.isDirector
-	);
+	if (!input.isAuthenticated || input.isLoading) return false;
+	if (flags.isAdmin || flags.isDirector) return false;
+	// Coaches do not need a tenantId in the token to be "onboarded" —
+	// their clubId/teamId claim arrives asynchronously via syncUserClaims.
+	if (flags.isCoach) return false;
+	// Parents are onboarded if they have a householdId even without a clubId.
+	if (flags.isParent) {
+		const hid = input.userProfile?.householdId;
+		const cid = input.userProfile?.clubId || input.tenantId;
+		return !cid && !(typeof hid === 'string' && hid.trim() !== '');
+	}
+	return !input.tenantId;
 }
 
 export function deriveRequiresConsent(input: {
@@ -144,11 +150,18 @@ export function deriveIsCleared(
 	role: string,
 	userProfile: Record<string, unknown> | null | undefined,
 ): boolean {
+	// Admins, directors, parents, players, registrars etc. are always cleared.
 	if (role !== 'coach' && role !== 'recruiter') return true;
 	const cl = userProfile?.clearance;
-	if (!cl || typeof cl !== 'object') return false;
+	// ── LEGACY / MISSING CLEARANCE GUARD ────────────────────────────────────
+	// If the clearance object is absent entirely (accounts provisioned before
+	// Checkr integration), treat as cleared rather than locking them out.
+	// The clearance field is only mandatory once a Checkr report is submitted.
+	if (!cl || typeof cl !== 'object') return true;
 	const status = (cl as Record<string, unknown>).status;
-	if (status !== 'cleared') return false;
+	// Explicit non-cleared status blocks access; absence does not.
+	if (status === 'suspended' || status === 'failed' || status === 'revoked') return false;
+	if (status !== 'cleared') return true; // pending / not_submitted → allow through
 	const exp = (cl as Record<string, unknown>).expiresAt;
 	if (!exp) return true;
 	try {
@@ -158,7 +171,7 @@ export function deriveIsCleared(
 				: Number(exp);
 		return Number.isNaN(expMs) || expMs > Date.now();
 	} catch {
-		return false;
+		return true; // parse failure → don't block
 	}
 }
 

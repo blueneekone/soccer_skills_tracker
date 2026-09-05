@@ -14,6 +14,7 @@ export function createAuthGates(userState, sessionState, tenantState) {
 			isLoading: sessionState.isLoading,
 			tenantId: tenantState.tenantId,
 			role: sessionState.role,
+			userProfile: userState.userProfile,
 		}),
 	);
 

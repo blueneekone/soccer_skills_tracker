@@ -20,6 +20,9 @@ describe('auth/roleDerivations', () => {
 	});
 
 	it('deriveNeedsOnboarding is true for authenticated users without tenant (non-admin)', () => {
+		// Coaches are exempt from the tenantId gate — their clubId/teamId claims
+		// arrive asynchronously via syncUserClaims AFTER the first login token.
+		// Previously this returned true (locking coaches out); now it must be false.
 		expect(
 			deriveNeedsOnboarding({
 				isAuthenticated: true,
@@ -27,7 +30,7 @@ describe('auth/roleDerivations', () => {
 				tenantId: '',
 				role: 'coach',
 			}),
-		).toBe(true);
+		).toBe(false); // coaches bypass — claims arrive async
 		expect(
 			deriveNeedsOnboarding({
 				isAuthenticated: true,
@@ -36,6 +39,15 @@ describe('auth/roleDerivations', () => {
 				role: 'coach',
 			}),
 		).toBe(false);
+		// Non-coach roles without tenantId still trigger onboarding
+		expect(
+			deriveNeedsOnboarding({
+				isAuthenticated: true,
+				isLoading: false,
+				tenantId: '',
+				role: 'player',
+			}),
+		).toBe(true);
 	});
 
 	it('deriveRequiresConsent gates minor players without granted coppaStatus', () => {
@@ -194,7 +206,15 @@ describe('auth/roleDerivations', () => {
 	it('deriveIsCleared exempts non-coach roles and validates clearance expiry', () => {
 		expect(deriveIsCleared('director', null)).toBe(true);
 		expect(deriveIsCleared('coach', { clearance: { status: 'cleared' } })).toBe(true);
-		expect(deriveIsCleared('coach', { clearance: { status: 'pending' } })).toBe(false);
+		// Missing clearance → legacy coach, do NOT block (allow through)
+		expect(deriveIsCleared('coach', null)).toBe(true);
+		expect(deriveIsCleared('coach', {})).toBe(true);
+		// pending / not_submitted → allow through (only explicit revoked/suspended/failed blocks)
+		expect(deriveIsCleared('coach', { clearance: { status: 'pending' } })).toBe(true);
+		// Explicit disqualifying statuses block access
+		expect(deriveIsCleared('coach', { clearance: { status: 'revoked' } })).toBe(false);
+		expect(deriveIsCleared('coach', { clearance: { status: 'suspended' } })).toBe(false);
+		expect(deriveIsCleared('coach', { clearance: { status: 'failed' } })).toBe(false);
 	});
 
 	it('canAccess is the UI permission matrix (Sprint 1.3)', () => {
