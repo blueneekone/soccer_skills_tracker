@@ -36,7 +36,7 @@ describe('login-to-dashboard workflow (Phase C regression guards)', () => {
 				tenantId: '',
 				role: 'coach',
 			}),
-		).toBe(true);
+		).toBe(false);
 	});
 
 	it('directors with tenantId skip onboarding gate', () => {
@@ -166,8 +166,8 @@ describe('isProfileComplete — player role completeness gate', () => {
 		expect(isProfileComplete({ role: 'coach', teamId: 'team-1' })).toBe(true);
 	});
 
-	it('coach without teamId is NOT complete', () => {
-		expect(isProfileComplete({ role: 'coach' })).toBe(false);
+	it('coach without teamId is complete (unblocks coach dashboard)', () => {
+		expect(isProfileComplete({ role: 'coach' })).toBe(true);
 	});
 
 	it('parent with clubId is complete', () => {
