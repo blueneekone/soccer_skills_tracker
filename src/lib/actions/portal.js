@@ -13,5 +13,11 @@ export function portal(node, target = undefined) {
 			: /** @type {HTMLElement | null} */ (document.querySelector('#modal-portal-host'));
 	const mount = host instanceof HTMLElement ? host : document.body;
 	mount.appendChild(node);
-	return {};
+	return {
+		destroy() {
+			if (node.parentNode) {
+				node.parentNode.removeChild(node);
+			}
+		}
+	};
 }

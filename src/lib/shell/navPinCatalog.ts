@@ -53,7 +53,7 @@ const DIRECTOR_COMMAND_TABS = new Set([
 
 const DEFAULT_PINS: Record<NavPersonaKey, PinQuad> = {
 	player: ['/player/dashboard', '/player/workout', '/stats', MENU_PIN_HREF],
-	coach: ['/coach', '/coach/forge', '/messages', MENU_PIN_HREF],
+	coach: ['/coach/dashboard', '/coach/forge', '/messages', MENU_PIN_HREF],
 	parent: ['/parent/household', '/parent/vpc', '/parent/dashboard', MENU_PIN_HREF],
 	director: ['/director/dashboard', '/director/compliance-ops', '/director/club-management', MENU_PIN_HREF],
 	admin: ['/admin/overview', '/admin/organizations', '/admin/users', MENU_PIN_HREF],
@@ -108,7 +108,7 @@ function buildCoachCatalog(): NavPinItem[] {
 
 	const subroutes: ShellLink[] = [
 		{ label: 'The Forge', href: '/coach/forge', icon: 'game.dumbbell' },
-		{ label: 'War Room', href: '/coach/tactical', icon: 'action.edit' },
+		{ label: 'War Room', href: '/coach/tactical', icon: 'data.target' },
 		{ label: 'Match Day', href: '/coach/matchday', icon: 'data.activity' },
 	];
 

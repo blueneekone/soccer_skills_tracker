@@ -16,12 +16,6 @@
 		const playerId = page.url.searchParams.get('player');
 		if (playerId) {
 			engine.selectedPlayerId = playerId;
-			
-			// Smooth scroll to the telemetry hub when loaded from deep link
-			setTimeout(() => {
-				const el = document.getElementById('team-telemetry-hub');
-				if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-			}, 100);
 		}
 	});
 
@@ -95,10 +89,12 @@
 			class="coach-dashboard-root coach-nexus-main tw-relative tw-z-10 tw-mx-auto tw-box-border tw-w-full tw-max-w-7xl tw-flex-1 tw-min-h-0 tw-min-w-0 bento-grid-container z0-canvas"
 			style="grid-template-columns: repeat(auto-fit, minmax(min(100%, clamp(280px, 30vw, 350px)), 1fr)); padding: var(--bento-pad-liquid); padding-bottom: calc(var(--bento-pad-liquid) + 84px + env(safe-area-inset-bottom, 0px));"
 		>
-			<DashboardArena {engine} />
+			<div class="bento-span-12 tw-w-full" style="grid-column: 1 / -1;">
+				<DashboardArena {engine} />
+			</div>
 
 			<!-- ── TEAM TELEMETRY ANCHOR (Readiness cards scroll here on click) ── -->
-			<div id="team-telemetry-hub" class="bento-span-12 tw-mt-4 tw-scroll-mt-20">
+			<div id="team-telemetry-hub" class="bento-span-12 tw-mt-4 tw-scroll-mt-20" style="grid-column: 1 / -1;">
 				{#if engine.effectiveTeamId}
 					<CoachTeamStatsHub
 						teamId={engine.effectiveTeamId}
@@ -110,7 +106,7 @@
 
 			<!-- ── SIDECAR: Nexus System Intelligence ─────────────────────────── -->
 			{#if engine.effectiveTeamId}
-				<div class="bento-span-12 tw-mt-4">
+				<div class="bento-span-12 tw-mt-4" style="grid-column: 1 / -1;">
 					<NexusSystemIntelCard />
 				</div>
 			{/if}

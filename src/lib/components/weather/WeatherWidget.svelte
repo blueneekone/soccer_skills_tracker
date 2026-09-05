@@ -24,9 +24,10 @@
 		lng?: number;
 		/** Override coordinates display label. E.g. "LAT 41.633° N  ·  LON 111.851° W" */
 		coordsLabel?: string;
+		onOpenRadar?: () => void;
 	}
 
-	const { lat = 41.633, lng = -111.851, coordsLabel }: Props = $props();
+	const { lat = 41.633, lng = -111.851, coordsLabel, onOpenRadar }: Props = $props();
 
 	const role = $derived(authStore.role ?? '');
 	const snap = $derived(weatherAegis.snapshot);
@@ -96,6 +97,19 @@
 				<span class="ww-badge__dot"></span>
 				DEPLOYMENT · {status}
 			</span>
+
+			{#if onOpenRadar}
+				<button
+					type="button"
+					class="ww-radar-btn"
+					onclick={onOpenRadar}
+					aria-label="Open Tactical Lightning Radar"
+					title="Monitor Tactical Lightning Radar & Weather Station"
+				>
+					<span class="ww-radar-btn__dot"></span>
+					RADAR // MAP
+				</button>
+			{/if}
 
 			<!-- Manual refresh -->
 			<button
@@ -294,6 +308,39 @@
 	}
 	.ww-badge--nogo .ww-badge__dot,
 	.ww-badge--go .ww-badge__dot {
+		animation: ww-dotPulse 1.2s ease-in-out infinite;
+	}
+
+	/* ── Radar Launcher button ─────────────────────────────────────────────── */
+	.ww-radar-btn {
+		display: inline-flex;
+		align-items: center;
+		gap: 6px;
+		padding: 4px 10px;
+		border-radius: 9999px;
+		border: 1px solid rgba(20, 184, 166, 0.45);
+		background: rgba(20, 184, 166, 0.12);
+		color: #14b8a6;
+		font-family: 'JetBrains Mono', monospace;
+		font-size: 0.6rem;
+		font-weight: 800;
+		letter-spacing: 0.15em;
+		text-transform: uppercase;
+		cursor: pointer;
+		transition: all 0.2s ease;
+	}
+	.ww-radar-btn:hover {
+		background: rgba(20, 184, 166, 0.25);
+		border-color: #14b8a6;
+		color: #5eead4;
+		box-shadow: 0 0 10px rgba(20, 184, 166, 0.35);
+	}
+	.ww-radar-btn__dot {
+		width: 5px;
+		height: 5px;
+		border-radius: 50%;
+		background: #14b8a6;
+		box-shadow: 0 0 5px #14b8a6;
 		animation: ww-dotPulse 1.2s ease-in-out infinite;
 	}
 

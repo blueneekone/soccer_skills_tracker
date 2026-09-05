@@ -24,6 +24,7 @@
 	import { enterprisePlayerDrawer } from '$lib/stores/enterprisePlayerDrawer.svelte.js';
 	import LiveTelemetrySection from '$lib/components/coach/LiveTelemetrySection.svelte';
 	import IntelModal from '$lib/components/ui/IntelModal.svelte';
+	import AthleteQuickStatsModal from './AthleteQuickStatsModal.svelte';
 	import { buildCoachRosterDisplayNames } from '$lib/coach/rosterDisplayDedupe.js';
 
 	const DISPATCH_INTEL = {
@@ -40,6 +41,7 @@
 	/** Isolates one bench-side logging session (new UUID when `teamId` changes). */
 	let activeMatchId = $state('');
 	let matchSessionTeamId = $state('');
+	let quickModalPlayer = $state<any | null>(null);
 
 	/** Real-time rows from `teams/{teamId}/telemetry_events` (Firestore snapshot stream). */
 	/** @type {Array<Record<string, unknown> & { id: string }>} */
@@ -708,8 +710,7 @@
 	}
 
 	function handleCardClick(p: { name: string; rosterKey: string }) {
-		openDrawer(p.rosterKey || p.name);
-		onSelectPlayer?.(p.name, p.rosterKey);
+		quickModalPlayer = p;
 	}
 
 	function isPlayerSelected(p: { name: string; rosterKey: string }) {
@@ -916,7 +917,7 @@
 			</div>
 			<div class="tw-flex tw-items-center tw-gap-2">
 				<span class="tw-font-mono tw-text-[11px] tw-text-[#daff0a] tw-bg-[#daff0a]/10 tw-border tw-border-[#daff0a]/30 tw-px-2 tw-py-0.5">
-					↓ Click card → opens telemetry radar
+					↓ Click card → athlete quick stats modal · [✎ Edit Profile] opens drawer
 				</span>
 			</div>
 		</div>
@@ -958,17 +959,17 @@
 								</span>
 							</div>
 
-							<!-- Edit Profile Button -->
+							<!-- Edit Profile Button (ONLY this opens the drawer) -->
 							<button
 								type="button"
 								onclick={(e) => {
 									e.stopPropagation();
-									openDrawer(p.rosterKey);
+									openDrawer(p.rosterKey || p.name);
 								}}
-								class="tw-bg-[#0f172a] hover:tw-bg-slate-700 tw-border tw-border-slate-700 hover:tw-border-[#14b8a6] tw-text-slate-300 hover:tw-text-white tw-font-mono tw-text-[10px] tw-px-2 tw-py-0.5 tw-rounded tw-transition-colors tw-cursor-pointer"
+								class="tw-bg-[#0f172a] hover:tw-bg-slate-700 tw-border tw-border-slate-700 hover:tw-border-[#14b8a6] tw-text-slate-300 hover:tw-text-white tw-font-mono tw-text-[10px] tw-px-2.5 tw-py-1 tw-rounded tw-transition-colors tw-cursor-pointer"
 								title="Edit profile in drawer"
 							>
-								✎ Profile
+								✎ Edit Profile
 							</button>
 						</div>
 
@@ -1014,5 +1015,17 @@
 		{/if}
 	</section>
 </div>
+
+<AthleteQuickStatsModal
+	isOpen={!!quickModalPlayer}
+	player={quickModalPlayer}
+	statsDoc={quickModalPlayer ? playerStats[resolveStatsId(quickModalPlayer.rosterKey || quickModalPlayer.name, playerStats)] : null}
+	onClose={() => (quickModalPlayer = null)}
+	onOpenEditProfile={() => {
+		const p = quickModalPlayer;
+		quickModalPlayer = null;
+		if (p) openDrawer(p.rosterKey || p.name);
+	}}
+/>
 
 
