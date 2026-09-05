@@ -14,14 +14,23 @@ export class LightningRadarEngine {
 		this.init();
 
 		$effect(() => {
-			if (!isFirestoreReady()) return;
-			// Gated DB init logic could go here if loading historical strikes
+			untrack(() => {
+				if (!isFirestoreReady()) return;
+				// Gated DB init logic could go here if loading historical strikes
+			});
 		});
 	}
 
 	async init() {
 		if (typeof window === 'undefined') return;
 		if (!isFirestoreReady()) return;
+
+		if (navigator.geolocation) {
+			navigator.geolocation.getCurrentPosition((pos) => {
+				this.clubLat = pos.coords.latitude;
+				this.clubLng = pos.coords.longitude;
+			});
+		}
 	}
 
 	async sendCoordinate(lat: number, lng: number) {
@@ -59,8 +68,22 @@ export class LightningRadarEngine {
 						dist_miles,
 						timestamp: new Date(interval.startTime).getTime()
 					});
+
+					if (dist_miles < 10) {
+						this.triggerCarRideHomeLockout();
+					}
 				}
 			}
+		}
+	}
+
+	triggerCarRideHomeLockout() {
+		if (typeof window !== 'undefined') {
+			fetch('/api/match/lockout', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ toggleShield: true, matchId: 'global', tenantId: 'global' })
+			}).catch(console.error);
 		}
 	}
 
@@ -75,6 +98,10 @@ export class LightningRadarEngine {
 			dist_miles: miles,
 			timestamp: Date.now()
 		});
+
+		if (miles < 10) {
+			this.triggerCarRideHomeLockout();
+		}
 	}
 }
 
