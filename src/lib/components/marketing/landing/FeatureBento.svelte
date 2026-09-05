@@ -57,7 +57,12 @@
 						<span class="fb-cell__eyebrow">{cell.eyebrow}</span>
 						<h3 class="fb-cell__headline">{cell.headline}</h3>
 						<p class="fb-cell__body">{cell.body}</p>
-						<span class="fb-cell__cta" aria-hidden="true">LEARN MORE →</span>
+						<div class="fb-cell__btn-wrap">
+							<span class="fb-btn">
+								<span>LEARN MORE</span>
+								<span class="fb-btn__arrow" aria-hidden="true">→</span>
+							</span>
+						</div>
 					</div>
 				</a>
 			{/each}
@@ -131,9 +136,13 @@
 		position: relative;
 		display: flex;
 		flex-direction: column;
-		gap: 1rem;
-		padding: var(--bento-pad, clamp(1rem, 3vw, 1.75rem));
-		border-radius: 4px;
+		height: 100%;
+		gap: 1.25rem;
+		padding: var(--bento-pad, clamp(1.25rem, 3vw, 1.75rem));
+		border-radius: 8px;
+		background: rgba(15, 23, 42, 0.7);
+		border: 1px solid rgba(51, 65, 85, 0.6);
+		backdrop-filter: blur(12px);
 		text-decoration: none;
 		color: inherit;
 		box-shadow: none;
@@ -144,7 +153,8 @@
 		transition:
 			opacity 0.4s ease,
 			transform 0.4s ease,
-			border-color 150ms ease;
+			border-color 150ms ease,
+			box-shadow 150ms ease;
 	}
 
 	@media (max-width: 63.99rem) {
@@ -206,26 +216,44 @@
 		flex: 1;
 	}
 
-	.fb-cell__cta {
-		font-family: 'Geist Mono', ui-monospace, monospace;
-		font-size: var(--vanguard-text-eyebrow-size, 0.6875rem);
-		font-weight: 700;
-		letter-spacing: 0.15em;
-		color: var(--cell-accent);
-		text-transform: uppercase;
+	.fb-cell__btn-wrap {
 		margin-top: auto;
-		padding-top: 0.5rem;
-		opacity: 0.85;
-		transition: opacity 0.2s ease, transform 0.2s ease;
+		padding-top: 1rem;
+		border-top: 1px solid color-mix(in srgb, var(--cell-accent) 20%, rgba(51, 65, 85, 0.4));
 	}
 
-	.fb-cell:hover .fb-cell__cta {
-		opacity: 1;
+	.fb-btn {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.5rem;
+		padding: 0.55rem 1rem;
+		border-radius: 6px;
+		background: rgba(15, 23, 42, 0.85);
+		border: 1px solid color-mix(in srgb, var(--cell-accent) 45%, rgba(51, 65, 85, 0.8));
+		color: var(--cell-accent);
+		font-family: 'Geist Mono', ui-monospace, monospace;
+		font-size: 0.75rem;
+		font-weight: 700;
+		letter-spacing: 0.1em;
+		transition: all 180ms cubic-bezier(0.16, 1, 0.3, 1);
+		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+	}
+
+	.fb-cell:hover .fb-btn {
+		background: color-mix(in srgb, var(--cell-accent) 20%, #0f172a);
+		border-color: var(--cell-accent);
+		color: #ffffff;
+		box-shadow: 0 0 16px color-mix(in srgb, var(--cell-accent) 35%, transparent);
+		transform: translateY(-1px);
+	}
+
+	.fb-btn__arrow {
+		font-weight: 900;
+		transition: transform 180ms ease;
+	}
+
+	.fb-cell:hover .fb-btn__arrow {
 		transform: translateX(3px);
-	}
-
-	.fb-cell:hover .fb-cell__cta {
-		opacity: 1;
 	}
 
 	@media (prefers-reduced-motion: reduce) {
@@ -233,7 +261,8 @@
 			transition: opacity 0.3s ease;
 			transform: none;
 		}
-		.fb-cell__cta {
+		.fb-btn,
+		.fb-btn__arrow {
 			transition: none;
 		}
 	}

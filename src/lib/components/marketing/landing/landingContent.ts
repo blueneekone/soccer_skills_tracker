@@ -107,7 +107,7 @@ export const STAKEHOLDERS: StakeholderCard[] = [
 			'Multi-team tenant isolation',
 		],
 		accentLabel: 'DIRECTOR OS',
-		gridLg: { col: '1 / 8', row: '1 / 2' },
+		gridLg: { col: '1 / 7', row: '1 / 2' },
 	},
 	{
 		id: 'coaches',
@@ -122,7 +122,7 @@ export const STAKEHOLDERS: StakeholderCard[] = [
 			'Match-day + scouting pipeline',
 		],
 		accentLabel: 'COACH OS',
-		gridLg: { col: '8 / 13', row: '1 / 2' },
+		gridLg: { col: '7 / 13', row: '1 / 2' },
 	},
 	{
 		id: 'athletes',
@@ -137,7 +137,7 @@ export const STAKEHOLDERS: StakeholderCard[] = [
 			'Armory + stats investigation',
 		],
 		accentLabel: 'PLAYER OS',
-		gridLg: { col: '1 / 4', row: '2 / 3' },
+		gridLg: { col: '1 / 7', row: '2 / 3' },
 	},
 	{
 		id: 'parents',
@@ -152,7 +152,7 @@ export const STAKEHOLDERS: StakeholderCard[] = [
 			'Parent Lounge per team',
 		],
 		accentLabel: 'PARENT OS',
-		gridLg: { col: '4 / 13', row: '2 / 3' },
+		gridLg: { col: '7 / 13', row: '2 / 3' },
 	},
 ];
 
@@ -243,7 +243,7 @@ export interface FeatureCell {
 export const FEATURE_BENTO: FeatureCell[] = [
 	{
 		id: 'develop',
-		gridLg: { col: '1 / 9', row: '1 / 2' },
+		gridLg: { col: '1 / 7', row: '1 / 2' },
 		eyebrow: 'DEVELOPMENT OS (RL-READY)',
 		headline: 'Coach intent → Player Train.',
 		body: 'Deploy bounties with prescriptions. Athletes log sessions; XP and streaks update on HQ. Adaptive homework suggests the next drill when your policy allows.',
@@ -253,7 +253,7 @@ export const FEATURE_BENTO: FeatureCell[] = [
 	},
 	{
 		id: 'octalysis',
-		gridLg: { col: '9 / 13', row: '1 / 2' },
+		gridLg: { col: '7 / 13', row: '1 / 2' },
 		eyebrow: 'OCTALYSIS ENGINE',
 		headline: 'Systemic Churn-Reduction.',
 		body: 'Gamified progression frameworks that keep athletes engaged week-over-week. Turn practice into a mission, driving gross retention.',
@@ -263,7 +263,7 @@ export const FEATURE_BENTO: FeatureCell[] = [
 	},
 	{
 		id: 'compliance',
-		gridLg: { col: '1 / 5', row: '2 / 3' },
+		gridLg: { col: '1 / 7', row: '2 / 3' },
 		eyebrow: 'SAFESPORT COMMS',
 		headline: 'Household-First Compliance.',
 		body: 'Coach→minor DMs blocked. Parent CC on broadcasts. Household threads for families. Monitored channels — not a free-for-all team chat.',
@@ -273,7 +273,7 @@ export const FEATURE_BENTO: FeatureCell[] = [
 	},
 	{
 		id: 'vampire-engine',
-		gridLg: { col: '5 / 13', row: '2 / 3' },
+		gridLg: { col: '7 / 13', row: '2 / 3' },
 		eyebrow: 'THE VAMPIRE ENGINE',
 		headline: 'Frictionless 5-second imports.',
 		body: 'Migrate off legacy platforms seamlessly. Headless ingestion vacuums existing rosters, schedules, and compliance docs without manual data entry.',
@@ -283,7 +283,7 @@ export const FEATURE_BENTO: FeatureCell[] = [
 	},
 	{
 		id: 'car-ride',
-		gridLg: { col: '1 / 9', row: '3 / 4' },
+		gridLg: { col: '1 / 7', row: '3 / 4' },
 		eyebrow: 'CAR RIDE HOME PROTOCOL',
 		headline: 'Co-op partner, not spectator.',
 		body: 'Transform the dreaded "car ride home" into an alignment session. Parents receive coach intent briefings and post-match debrief structures instantly.',
@@ -293,7 +293,7 @@ export const FEATURE_BENTO: FeatureCell[] = [
 	},
 	{
 		id: 'director-ops',
-		gridLg: { col: '9 / 13', row: '3 / 4' },
+		gridLg: { col: '7 / 13', row: '3 / 4' },
 		eyebrow: 'DIRECTOR OS',
 		headline: 'Field ops · compliance.',
 		body: 'Deployment calendar, eligibility matrix, coach clearance, registration programs, and club broadcasts — tenant-scoped director surfaces.',

@@ -27,14 +27,20 @@
         {feature}
       </li>
     {/each}
-  </ul>
-  <div class="sc-accent-label">{card.accentLabel}</div>
+  <div class="sc-footer-action">
+    <a href="/setup?role={card.id}" class="sc-action-btn">
+      <span>EXPLORE {card.role}</span>
+      <span class="sc-btn-arrow" aria-hidden="true">→</span>
+    </a>
+    <span class="sc-badge-tag">{card.accentLabel}</span>
+  </div>
 </article>
 
 <style>
   .sc-root {
     display: flex;
     flex-direction: column;
+    height: 100%;
     gap: clamp(0.75rem, 1.5vw, 1.1rem);
     padding: var(--bento-pad, clamp(1.25rem, 3vw, 1.75rem));
     border-radius: 8px;
@@ -163,15 +169,63 @@
     opacity: 0.7;
   }
 
-  .sc-accent-label {
+  .sc-footer-action {
     margin-top: auto;
-    padding-top: 0.75rem;
-    border-top: 1px solid color-mix(in srgb, var(--sc-accent) 20%, transparent);
+    padding-top: 0.9rem;
+    border-top: 1px solid color-mix(in srgb, var(--sc-accent) 20%, rgba(51, 65, 85, 0.4));
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+  }
+
+  .sc-action-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.55rem 1rem;
+    border-radius: 6px;
+    background: rgba(15, 23, 42, 0.85);
+    border: 1px solid color-mix(in srgb, var(--sc-accent) 45%, rgba(51, 65, 85, 0.8));
+    color: #ffffff;
+    font-family: 'Geist Mono', ui-monospace, monospace;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-decoration: none;
+    transition: all 180ms cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  }
+
+  .sc-action-btn:hover {
+    background: color-mix(in srgb, var(--sc-accent) 20%, #0f172a);
+    border-color: var(--sc-accent);
+    color: #ffffff;
+    box-shadow: 0 0 16px color-mix(in srgb, var(--sc-accent) 35%, transparent);
+    transform: translateY(-1px);
+  }
+
+  .sc-action-btn:active {
+    transform: scale(0.98);
+  }
+
+  .sc-btn-arrow {
+    font-weight: 900;
+    color: var(--sc-accent);
+    transition: transform 180ms ease;
+  }
+
+  .sc-action-btn:hover .sc-btn-arrow {
+    transform: translateX(3px);
+  }
+
+  .sc-badge-tag {
     font-family: 'Geist Mono', ui-monospace, monospace;
     font-size: var(--vanguard-text-eyebrow-size, 0.6875rem);
     font-weight: 700;
     letter-spacing: 0.2em;
-    color: color-mix(in srgb, var(--sc-accent) 75%, white);
+    color: color-mix(in srgb, var(--sc-accent) 70%, #94a3b8);
   }
 
   @keyframes badge-pulse {

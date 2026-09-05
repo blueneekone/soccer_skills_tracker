@@ -20,7 +20,6 @@
 		player: PlayerData | null;
 		statsDoc?: Record<string, any> | null;
 		onClose: () => void;
-		onOpenEditProfile: () => void;
 	}
 
 	let {
@@ -28,7 +27,6 @@
 		player,
 		statsDoc = null,
 		onClose,
-		onOpenEditProfile,
 	}: Props = $props();
 
 	const AXIS_KEYS = ['PAC', 'TEC', 'IQ', 'PHY', 'MEN', 'DEF'];
@@ -233,25 +231,13 @@
 				<span class="tw-text-[10px] tw-text-slate-500">
 					ATHLETE DOSSIER // QUICK TELEMETRY
 				</span>
-				<div class="tw-flex tw-gap-2">
-					<button
-						type="button"
-						onclick={onClose}
-						class="tw-px-3 tw-py-1.5 tw-text-xs tw-font-mono tw-text-slate-300 hover:tw-text-white tw-bg-transparent hover:tw-bg-slate-800 tw-border tw-border-[#334155] tw-rounded-lg tw-transition-colors tw-cursor-pointer"
-					>
-						Close
-					</button>
-					<button
-						type="button"
-						onclick={() => {
-							onClose();
-							onOpenEditProfile();
-						}}
-						class="tw-px-3.5 tw-py-1.5 tw-text-xs tw-font-mono tw-font-bold tw-text-black tw-bg-[#daff0a] hover:tw-bg-lime-400 tw-rounded-lg tw-transition-colors tw-cursor-pointer tw-shadow-[0_0_12px_rgba(218,255,10,0.3)]"
-					>
-						✎ Edit Profile Drawer
-					</button>
-				</div>
+				<button
+					type="button"
+					onclick={onClose}
+					class="tw-px-4 tw-py-1.5 tw-text-xs tw-font-mono tw-text-slate-300 hover:tw-text-white tw-bg-[#020617] hover:tw-bg-slate-800 tw-border tw-border-[#334155] tw-rounded-lg tw-transition-colors tw-cursor-pointer"
+				>
+					Close
+				</button>
 			</div>
 		</div>
 	</div>

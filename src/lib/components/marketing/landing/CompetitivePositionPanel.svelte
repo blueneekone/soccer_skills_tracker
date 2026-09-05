@@ -158,11 +158,14 @@
 	}
 
 	.cp__pillar {
-		padding: 1.25rem 1.25rem;
+		display: flex;
+		flex-direction: column;
+		height: 100%;
+		padding: 1.35rem 1.35rem;
 		border-radius: 8px;
-		border: 1px solid rgba(51, 65, 85, 0.5);
-		background: rgba(15, 23, 42, 0.65);
-		backdrop-filter: blur(8px);
+		border: 1px solid rgba(51, 65, 85, 0.6);
+		background: rgba(15, 23, 42, 0.7);
+		backdrop-filter: blur(12px);
 		transition: all 0.2s ease;
 	}
 

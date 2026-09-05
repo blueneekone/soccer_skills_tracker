@@ -58,11 +58,13 @@
 			<p class="hero__sub">{HERO_TRUST_SUBHEADLINE}</p>
 
 			<div class="hero__ctas">
-				<a href="{base}/setup" class="tw-btn-primary">
-					GET STARTED FREE →
+				<a href="{base}/setup" class="hero__btn-primary">
+					<span>GET STARTED FREE</span>
+					<span class="hero__btn-arrow" aria-hidden="true">→</span>
 				</a>
-				<a href="{base}/acquisition" class="tw-vanguard-btn-secondary">
-					Director trust brief →
+				<a href="{base}/acquisition" class="hero__btn-secondary">
+					<span>DIRECTOR TRUST BRIEF</span>
+					<span class="hero__btn-arrow" aria-hidden="true">→</span>
 				</a>
 			</div>
 
@@ -207,6 +209,75 @@
 		gap: 0.85rem;
 		flex-wrap: wrap;
 		align-items: center;
+	}
+
+	.hero__btn-primary {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.6rem;
+		padding: 0.85rem 1.6rem;
+		border-radius: 6px;
+		background: #fbbf24;
+		border: 1px solid #f59e0b;
+		color: #000000;
+		font-family: 'Geist Mono', ui-monospace, monospace;
+		font-size: 0.875rem;
+		font-weight: 800;
+		letter-spacing: 0.08em;
+		text-decoration: none;
+		box-shadow: 0 0 20px rgba(251, 191, 36, 0.35), 0 2px 8px rgba(0, 0, 0, 0.5);
+		transition: all 180ms cubic-bezier(0.16, 1, 0.3, 1);
+	}
+
+	.hero__btn-primary:hover {
+		background: #f59e0b;
+		box-shadow: 0 0 28px rgba(251, 191, 36, 0.6), 0 4px 12px rgba(0, 0, 0, 0.6);
+		transform: translateY(-2px);
+	}
+
+	.hero__btn-primary:active {
+		transform: scale(0.98);
+	}
+
+	.hero__btn-secondary {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.6rem;
+		padding: 0.85rem 1.6rem;
+		border-radius: 6px;
+		background: rgba(15, 23, 42, 0.8);
+		border: 1px solid rgba(51, 65, 85, 0.8);
+		backdrop-filter: blur(8px);
+		color: #e2e8f0;
+		font-family: 'Geist Mono', ui-monospace, monospace;
+		font-size: 0.875rem;
+		font-weight: 700;
+		letter-spacing: 0.08em;
+		text-decoration: none;
+		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+		transition: all 180ms cubic-bezier(0.16, 1, 0.3, 1);
+	}
+
+	.hero__btn-secondary:hover {
+		background: rgba(30, 41, 59, 0.9);
+		border-color: #14b8a6;
+		color: #ffffff;
+		box-shadow: 0 0 20px rgba(20, 184, 166, 0.3);
+		transform: translateY(-2px);
+	}
+
+	.hero__btn-secondary:active {
+		transform: scale(0.98);
+	}
+
+	.hero__btn-arrow {
+		font-weight: 900;
+		transition: transform 180ms ease;
+	}
+
+	.hero__btn-primary:hover .hero__btn-arrow,
+	.hero__btn-secondary:hover .hero__btn-arrow {
+		transform: translateX(4px);
 	}
 
 	.hero__trust-strip {

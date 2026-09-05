@@ -16,8 +16,14 @@
 			<a href="/setup" class="tw-btn-primary">
 				GET STARTED — $0 PLATFORM FEE →
 			</a>
-			<a href="/pricing" class="fc-link-cta">VIEW PRICING →</a>
-			<a href="/acquisition" class="fc-link-cta">STRATEGIC ACQUISITION →</a>
+			<a href="/pricing" class="fc-btn-secondary">
+				<span>VIEW PRICING</span>
+				<span class="fc-btn-arrow" aria-hidden="true">→</span>
+			</a>
+			<a href="/acquisition" class="fc-btn-secondary">
+				<span>STRATEGIC ACQUISITION</span>
+				<span class="fc-btn-arrow" aria-hidden="true">→</span>
+			</a>
 		</div>
 		<ul class="fc-checklist" aria-label="Included features">
 			{#each FINAL_CTA_FEATURES as item (item)}
@@ -89,20 +95,45 @@
 		flex-wrap: wrap;
 	}
 
-	/* Plain mono link CTA — secondary weight, not a button */
-	.fc-link-cta {
-		font-family: var(--font-mono);
-		font-size: var(--vanguard-text-eyebrow-size, 0.6875rem);
+	.fc-btn-secondary {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.5rem;
+		padding: 0.85rem 1.4rem;
+		border-radius: 6px;
+		background: rgba(15, 23, 42, 0.85);
+		border: 1px solid rgba(51, 65, 85, 0.8);
+		backdrop-filter: blur(8px);
+		color: #e2e8f0;
+		font-family: 'Geist Mono', ui-monospace, monospace;
+		font-size: 0.8125rem;
 		font-weight: 700;
-		letter-spacing: 0.12em;
-		color: var(--vanguard-text-3, #cbd5e1);
+		letter-spacing: 0.08em;
 		text-decoration: none;
-		transition: color 150ms ease;
-		align-self: center;
+		transition: all 180ms cubic-bezier(0.16, 1, 0.3, 1);
+		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 	}
 
-	.fc-link-cta:hover {
-		color: var(--vanguard-text-1, #ffffff);
+	.fc-btn-secondary:hover {
+		background: rgba(30, 41, 59, 0.9);
+		border-color: #14b8a6;
+		color: #ffffff;
+		box-shadow: 0 0 16px rgba(20, 184, 166, 0.25);
+		transform: translateY(-1px);
+	}
+
+	.fc-btn-secondary:active {
+		transform: scale(0.98);
+	}
+
+	.fc-btn-arrow {
+		font-weight: 900;
+		color: #14b8a6;
+		transition: transform 180ms ease;
+	}
+
+	.fc-btn-secondary:hover .fc-btn-arrow {
+		transform: translateX(3px);
 	}
 
 	.fc-checklist {

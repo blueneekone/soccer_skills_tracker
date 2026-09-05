@@ -1021,11 +1021,6 @@
 	player={quickModalPlayer}
 	statsDoc={quickModalPlayer ? playerStats[resolveStatsId(quickModalPlayer.rosterKey || quickModalPlayer.name, playerStats)] : null}
 	onClose={() => (quickModalPlayer = null)}
-	onOpenEditProfile={() => {
-		const p = quickModalPlayer;
-		quickModalPlayer = null;
-		if (p) openDrawer(p.rosterKey || p.name);
-	}}
 />
 
 

@@ -14,10 +14,15 @@
 				</div>
 			{/each}
 		</div>
-		<p class="ts-note">
-			All security, compliance, and data practices are independently audited.
-			<a href="/privacy" class="ts-note-link">View full privacy policy →</a>
-		</p>
+		<div class="ts-note-wrap">
+			<span class="ts-note-text">
+				All security, compliance, and data practices are independently audited.
+			</span>
+			<a href="/privacy" class="ts-privacy-btn">
+				<span>VIEW FULL PRIVACY POLICY</span>
+				<span class="ts-btn-arrow" aria-hidden="true">→</span>
+			</a>
+		</div>
 	</div>
 </section>
 
@@ -49,30 +54,46 @@
 	}
 
 	.ts-badges {
-		display: flex;
-		flex-wrap: wrap;
-		justify-content: center;
-		gap: clamp(0.5rem, 1.2vw, 0.75rem);
+		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: 0.75rem;
+		width: 100%;
+		max-width: 1100px;
+	}
+
+	@media (min-width: 640px) {
+		.ts-badges {
+			grid-template-columns: repeat(3, minmax(0, 1fr));
+		}
+	}
+
+	@media (min-width: 1024px) {
+		.ts-badges {
+			grid-template-columns: repeat(6, minmax(0, 1fr));
+		}
 	}
 
 	.ts-badge {
-		padding: 0.65rem 1.1rem;
+		padding: 0.85rem 1rem;
 		display: flex;
 		flex-direction: column;
 		align-items: center;
-		gap: 4px;
-		border-radius: 6px;
+		justify-content: center;
+		gap: 6px;
+		border-radius: 8px;
 		background: rgba(15, 23, 42, 0.65);
 		border: 1px solid rgba(51, 65, 85, 0.6);
 		backdrop-filter: blur(8px);
 		transition: all 0.2s ease;
 		cursor: default;
+		height: 100%;
 	}
 
 	.ts-badge:hover {
 		border-color: #14b8a6;
 		background: rgba(20, 184, 166, 0.08);
-		transform: translateY(-1px);
+		transform: translateY(-2px);
+		box-shadow: 0 4px 15px rgba(20, 184, 166, 0.15);
 	}
 
 	.ts-badge__label {
@@ -90,24 +111,57 @@
 		letter-spacing: 0.15em;
 		color: var(--vanguard-text-eyebrow, #a5b4fc);
 		text-transform: uppercase;
-	}
-
-	.ts-note {
-		font-family: 'Geist Mono', ui-monospace, monospace;
-		font-size: var(--vanguard-text-eyebrow-size, 0.6875rem);
-		color: var(--vanguard-text-3, #cbd5e1);
-		margin: 0;
 		text-align: center;
-		opacity: 0.7;
 	}
 
-	.ts-note-link {
-		color: var(--vanguard-text-eyebrow, #a5b4fc);
+	.ts-note-wrap {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 1rem;
+		flex-wrap: wrap;
+		margin-top: 0.75rem;
+	}
+
+	.ts-note-text {
+		font-family: 'Switzer', var(--font-sans, sans-serif);
+		font-size: 0.8125rem;
+		color: #94a3b8;
+		text-align: center;
+	}
+
+	.ts-privacy-btn {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.45rem;
+		padding: 0.4rem 0.85rem;
+		border-radius: 6px;
+		background: rgba(15, 23, 42, 0.85);
+		border: 1px solid rgba(51, 65, 85, 0.8);
+		color: #14b8a6;
+		font-family: 'Geist Mono', ui-monospace, monospace;
+		font-size: 0.6875rem;
+		font-weight: 700;
+		letter-spacing: 0.08em;
 		text-decoration: none;
-		transition: color 0.15s;
+		transition: all 180ms cubic-bezier(0.16, 1, 0.3, 1);
+		box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
 	}
 
-	.ts-note-link:hover {
-		color: var(--vanguard-accent);
+	.ts-privacy-btn:hover {
+		background: rgba(20, 184, 166, 0.12);
+		border-color: #14b8a6;
+		color: #ffffff;
+		box-shadow: 0 0 12px rgba(20, 184, 166, 0.25);
+		transform: translateY(-1px);
+	}
+
+	.ts-btn-arrow {
+		font-weight: 900;
+		transition: transform 180ms ease;
+	}
+
+	.ts-privacy-btn:hover .ts-btn-arrow {
+		transform: translateX(3px);
 	}
 </style>
