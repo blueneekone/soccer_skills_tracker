@@ -964,7 +964,7 @@
 								type="button"
 								onclick={(e) => {
 									e.stopPropagation();
-									openDrawer(p.rosterKey || p.name);
+									openDrawer(p.rosterKey);
 								}}
 								class="tw-bg-[#0f172a] hover:tw-bg-slate-700 tw-border tw-border-slate-700 hover:tw-border-[#14b8a6] tw-text-slate-300 hover:tw-text-white tw-font-mono tw-text-[10px] tw-px-2.5 tw-py-1 tw-rounded tw-transition-colors tw-cursor-pointer"
 								title="Edit profile in drawer"
