@@ -68,11 +68,8 @@ import { untrack } from 'svelte';
 		try {
 			await loginEngine.registerPasskey();
 			if (loginEngine.passkeyRegistered && auth.currentUser) {
-				const stillNeed = await requiresPasskeyEnrollmentBeforeApp(auth.currentUser);
-				if (!stillNeed) {
-					phase = 'routing';
-					await navigateAfterLogin({ replaceState: true });
-				}
+				phase = 'routing';
+				await navigateAfterLogin({ replaceState: true });
 			}
 		} catch (e) {
 			console.error('[enroll-passkey] registerAndContinue', e);

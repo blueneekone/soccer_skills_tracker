@@ -1,0 +1,224 @@
+/* 🛰️ SSTracker "Tech Noir" Tactical Radar Animation Suite (v1.0)
+   Designed for the Tomorrow.io Google Maps Overlay & Weather HUD
+   Compatible with Tailwind CSS, custom SVG filters, and Svelte 5 component boundaries */
+
+:root {
+  --neon-cyan: #06b6d4;
+  --atompunk-amber: #f59e0b;
+  --radar-green: #10b981;
+  --threat-red: #ef4444;
+  --void-black: #000000;
+  --slate-blue: #334155;
+}
+
+/* ==========================================================================
+   1. RADAR DISK ROTATION & COORDINATE SWEEPS
+   ========================================================================== */
+
+/* The primary sweep overlay rotating continuously across the Google Map */
+.radar-sweep-active {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 200%;
+  height: 200%;
+  transform: translate(-50%, -50%);
+  background: conic-gradient(
+    from 0deg,
+    rgba(6, 182, 212, 0.15) 0deg,
+    rgba(6, 182, 212, 0.05) 120deg,
+    transparent 270deg,
+    transparent 360deg
+  );
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 10;
+  animation: radar-sweep-spin 4s linear infinite;
+  transform-origin: center center;
+}
+
+@keyframes radar-sweep-spin {
+  from {
+    transform: translate(-50%, -50%) rotate(0deg);
+  }
+  to {
+    transform: translate(-50%, -50%) rotate(360deg);
+  }
+}
+
+/* ==========================================================================
+   2. NEON LIGHTNING BLOOMS (STRIKE IMPACT TARGETS)
+   ========================================================================== */
+
+/* Concentric warning rings pulsating at the strike coordinates */
+.lightning-bloom-target {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  z-index: 20;
+}
+
+.lightning-bloom-ring {
+  border: 1.5px solid var(--threat-red);
+  border-radius: 50%;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  opacity: 0;
+  box-shadow: 0 0 10px rgba(239, 68, 68, 0.4), inset 0 0 10px rgba(239, 68, 68, 0.4);
+}
+
+.lightning-bloom-ring:nth-child(1) {
+  width: 10px;
+  height: 10px;
+  animation: neon-bloom-outward 2s cubic-bezier(0.1, 0.8, 0.3, 1) infinite;
+}
+
+.lightning-bloom-ring:nth-child(2) {
+  width: 10px;
+  height: 10px;
+  animation: neon-bloom-outward 2s cubic-bezier(0.1, 0.8, 0.3, 1) infinite;
+  animation-delay: 0.6s;
+}
+
+.lightning-bloom-ring:nth-child(3) {
+  width: 10px;
+  height: 10px;
+  animation: neon-bloom-outward 2s cubic-bezier(0.1, 0.8, 0.3, 1) infinite;
+  animation-delay: 1.2s;
+}
+
+@keyframes neon-bloom-outward {
+  0% {
+    width: 10px;
+    height: 10px;
+    opacity: 1;
+  }
+  100% {
+    width: 120px;
+    height: 120px;
+    opacity: 0;
+  }
+}
+
+/* ==========================================================================
+   3. ISOMORPHIC GRID INTERFACE INDICATORS
+   ========================================================================== */
+
+/* Pulse animation for HUD status lights (Green = Safe, Amber = Advisory, Red = Severe) */
+.hud-status-pulse {
+  border-radius: 50%;
+  box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+  animation: status-glow-wave 2s infinite;
+}
+
+.hud-status-pulse.safe {
+  background-color: var(--radar-green);
+  box-shadow: 0 0 8px var(--radar-green);
+  animation: status-glow-wave-green 2s infinite;
+}
+
+.hud-status-pulse.warning {
+  background-color: var(--atompunk-amber);
+  box-shadow: 0 0 8px var(--atompunk-amber);
+  animation: status-glow-wave-amber 2s infinite;
+}
+
+.hud-status-pulse.severe {
+  background-color: var(--threat-red);
+  box-shadow: 0 0 12px var(--threat-red);
+  animation: status-glow-wave-red 1s infinite; /* Faster frequency for severe status */
+}
+
+@keyframes status-glow-wave-green {
+  0% {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.6);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(16, 185, 129, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+  }
+}
+
+@keyframes status-glow-wave-amber {
+  0% {
+    box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.6);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(245, 158, 11, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(245, 158, 11, 0);
+  }
+}
+
+@keyframes status-glow-wave-red {
+  0% {
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.8);
+  }
+  70% {
+    box-shadow: 0 0 0 14px rgba(239, 68, 68, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+  }
+}
+
+/* ==========================================================================
+   4. ATMOSPHERIC SCANNING EFFECTS
+   ========================================================================== */
+
+/* Simulated background static lines to enforce the "Tech Noir" military HUD look */
+.radar-grid-glass {
+  position: relative;
+  overflow: hidden;
+}
+
+.radar-grid-glass::after {
+  content: " ";
+  display: block;
+  position: absolute;
+  top: 0; left: 0; bottom: 0; right: 0;
+  background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+  z-index: 15;
+  background-size: 100% 4px, 6px 100%;
+  pointer-events: none;
+}
+
+/* Subtle glowing pulse across the grid layout to prevent static visual burn-in */
+.bento-grid-pulse {
+  animation: bento-glimmer 4s ease-in-out infinite alternate;
+}
+
+@keyframes bento-glimmer {
+  0% {
+    border-color: rgba(51, 65, 85, 0.5); /* Navy Slate */
+    box-shadow: 0 0 5px rgba(6, 182, 212, 0.02);
+  }
+  100% {
+    border-color: rgba(6, 182, 212, 0.3); /* Cyan pulse */
+    box-shadow: 0 0 15px rgba(6, 182, 212, 0.08);
+  }
+}
+
+/* ==========================================================================
+   5. WEATHER INDICATOR FORECAST CARDS
+   ========================================================================== */
+
+/* Sliding animations for forecast transitions */
+.forecast-card-transition {
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.4s ease-out;
+}
+
+.forecast-card-enter {
+  opacity: 0;
+  transform: translateY(10px);
+}
+
+.forecast-card-active {
+  opacity: 1;
+  transform: translateY(0);
+}
