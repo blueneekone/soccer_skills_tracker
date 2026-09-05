@@ -175,7 +175,9 @@ export class AdminUsersEngine {
 		const actorEmail = authStore.user?.email || 'unknown';
 		this.loginAsBusyFor = row.id;
 		try {
-			const res = await this.impersonateUserFn({ targetUid: row.id || row.uid, targetEmail: row.email });
+			const targetEmail = row.email || (row.id.includes('@') ? row.id : '');
+			const targetUid = !row.id.includes('@') ? row.id : (row.uid || '');
+			const res = await this.impersonateUserFn({ targetUid, targetEmail });
 			const payload = (res.data || {}) as { customToken?: string; token?: string };
 			const customToken = payload.customToken || payload.token;
 			if (!customToken) throw new Error('Impersonation token missing from response.');

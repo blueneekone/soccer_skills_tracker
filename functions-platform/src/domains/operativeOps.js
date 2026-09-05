@@ -628,8 +628,12 @@ exports.sendHouseholdMessage = onCall({region: REGION}, async (request) => {
 
 async function resolveImpersonationTargetUser(targetUidIn, targetEmailIn, adminEmail) {
   try {
-    if (targetUidIn) return await admin.auth().getUser(targetUidIn);
-    return await admin.auth().getUserByEmail(normEmail(targetEmailIn) || targetEmailIn);
+    if (targetUidIn && !targetUidIn.includes('@')) {
+      return await admin.auth().getUser(targetUidIn);
+    }
+    const emailToUse = targetEmailIn || (targetUidIn?.includes('@') ? targetUidIn : null);
+    if (!emailToUse) throw new Error('No valid identifier provided');
+    return await admin.auth().getUserByEmail(normEmail(emailToUse) || emailToUse);
   } catch (err) {
     logger.warn('impersonateUserFn: target lookup failed', { admin: adminEmail, targetEmailIn, targetUidIn, err: err?.message });
     throw new HttpsError('not-found', 'Target user does not exist.');
