@@ -15,8 +15,11 @@ const __dirname = dirname(__filename);
 import { readFileSync } from 'fs';
 import { join } from 'path';
 
-const PAGE = join(__dirname, '..', '+page.svelte');
-const src = readFileSync(PAGE, 'utf-8');
+const src = [
+	readFileSync(join(__dirname, '..', '+page.svelte'), 'utf-8'),
+	readFileSync(join(__dirname, '..', 'HouseholdEngine.svelte.ts'), 'utf-8'),
+	readFileSync(join(__dirname, '..', 'HouseholdArena.svelte'), 'utf-8')
+].join('\\n');
 
 describe('/parent/household — Liquid aesthetic (Sprint 1.1)', () => {
 	it('uses parent lounge Z2 panels on main sections', () => {

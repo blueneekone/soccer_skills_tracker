@@ -13,7 +13,7 @@
 			one.
 		</p>
 		<div class="fc-actions">
-			<a href="/setup" class="tw-btn-primary">
+			<a href="/setup" class="fc-btn-primary">
 				GET STARTED — $0 PLATFORM FEE →
 			</a>
 			<a href="/pricing" class="fc-btn-secondary">
@@ -93,6 +93,33 @@
 		justify-content: center;
 		gap: clamp(0.75rem, 2vw, 1.25rem);
 		flex-wrap: wrap;
+	}
+
+	.fc-btn-primary {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		padding: 0.85rem 1.75rem;
+		border-radius: 6px;
+		background: #fbbf24;
+		color: #000000;
+		font-family: 'Geist Mono', ui-monospace, monospace;
+		font-size: 0.8125rem;
+		font-weight: 800;
+		letter-spacing: 0.08em;
+		text-decoration: none;
+		transition: all 180ms cubic-bezier(0.16, 1, 0.3, 1);
+		box-shadow: 0 4px 14px rgba(251, 191, 36, 0.4);
+	}
+
+	.fc-btn-primary:hover {
+		background: #f59e0b;
+		box-shadow: 0 6px 20px rgba(245, 158, 11, 0.6);
+		transform: translateY(-2px);
+	}
+
+	.fc-btn-primary:active {
+		transform: scale(0.98);
 	}
 
 	.fc-btn-secondary {

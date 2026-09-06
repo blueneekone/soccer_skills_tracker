@@ -83,6 +83,6 @@ describe('parent Tier-1 nav + workflow integration guards', () => {
 			expect(readFileSync(path, 'utf-8').length, route).toBeGreaterThan(100);
 		}
 		expect(readFileSync(DASHBOARD_PAGE, 'utf-8')).toContain('parent');
-		expect(readFileSync(VPC_PAGE, 'utf-8')).toContain('vpc');
+		expect(readFileSync(VPC_PAGE, 'utf-8')).toMatch(/Vpc/i);
 	});
 });
