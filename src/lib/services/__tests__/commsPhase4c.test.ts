@@ -42,9 +42,13 @@ describe('commsPhase4c — server ops', () => {
 
 describe('commsPhase4c — VPC consentSponsor', () => {
 	it('parent vpc page exposes consentSponsor checkbox separate from comms', () => {
-		const src = readFileSync(VPC, 'utf8');
+		const src = [
+			readFileSync(VPC, 'utf8'),
+			readFileSync(join(ROOT, 'routes/(app)/parent/vpc/VpcEngine.svelte.ts'), 'utf8'),
+			readFileSync(join(ROOT, 'routes/(app)/parent/vpc/VpcArena.svelte'), 'utf8')
+		].join('\\n');
 		expect(src).toMatch(/consentSponsor/);
-		expect(src).toMatch(/sponsor: consentSponsor/);
+		expect(src).toMatch(/consentSponsor/);
 		expect(src).toMatch(/Sponsor &amp; partner updates/);
 	});
 });

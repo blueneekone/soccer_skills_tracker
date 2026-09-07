@@ -7,11 +7,10 @@
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import '$lib/styles/parent-vpc-trust-band.css';
 	const parentGrantVpcConsentFn = httpsCallable(functions, 'parentGrantVpcConsent');
+	import { VpcEngine } from './VpcEngine.svelte';
+	import VpcArena from './VpcArena.svelte';
 
-	const profile = $derived(authStore.userProfile);
-	const householdId = $derived(
-		profile?.householdId ? String(profile.householdId) : ''
-	);
+	const engine = new VpcEngine();
 
 	let household = $state(/** @type {Record<string, unknown> | null} */ (null));
 	let playerStatuses = $state<Record<string, string>>({});
@@ -109,16 +108,7 @@
 	// the container without needing to scroll (e.g., very large viewport).
 	// Runs after each render whenever wizardStage reaches 'step1'.
 	$effect(() => {
-		if (wizardStage !== 'step1') return;
-		const el = disclosureEl;
-		if (!el) return;
-		// Use rAF to let the DOM settle after Svelte renders the disclosure block.
-		const id = requestAnimationFrame(() => {
-			if (el.scrollHeight <= el.clientHeight + 10) {
-				disclosureScrolled = true;
-			}
-		});
-		return () => cancelAnimationFrame(id);
+		engine.load();
 	});
 
 	const playerEmails = $derived.by(() => {
@@ -620,21 +610,10 @@
 				{#if submitError}
 					<p class="parent-vpc-error tw-text-[#f59e0b]" role="alert">{submitError}</p>
 				{/if}
+</script>
 
-				<button
-					type="button"
-					class="parent-vpc-btn-update parent-vpc-btn-update--block"
-					disabled={submitting || !parentDisplayName.trim()}
-					onclick={submitConsent}
-				>
-					{#if submitting}
-						<Icon name="status.loading" /> Submitting…
-					{:else}
-						<Icon name="status.seal-check" /> Submit consent
-					{/if}
-				</button>
-			{/if}
-			</div>
-		</div>
-	</div>
-</div>
+<svelte:head>
+	<title>Verifiable Parental Consent · Parent OS</title>
+</svelte:head>
+
+<VpcArena {engine} />

@@ -47,10 +47,11 @@ describe('F4/F5 audit guards', () => {
 	});
 
 	it('parent log-workout loads drills from focusDrillCatalog', () => {
-		const src = readFileSync(
-			join(process.cwd(), 'src/routes/(app)/parent/log-workout/+page.svelte'),
-			'utf-8',
-		);
+		const src = [
+			readFileSync(join(process.cwd(), 'src/routes/(app)/parent/log-workout/+page.svelte'), 'utf-8'),
+			readFileSync(join(process.cwd(), 'src/routes/(app)/parent/log-workout/LogWorkoutEngine.svelte.ts'), 'utf-8'),
+			readFileSync(join(process.cwd(), 'src/routes/(app)/parent/log-workout/LogWorkoutArena.svelte'), 'utf-8')
+		].join('\\n');
 		expect(src).toMatch(/loadDrillTitlesForFocus/);
 		expect(src).not.toMatch(/drillsByFocus\s*=\s*\{/);
 	});
