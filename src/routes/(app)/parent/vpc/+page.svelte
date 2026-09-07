@@ -2,7 +2,7 @@
 <script lang="ts">
 	import { httpsCallable } from 'firebase/functions';
 	import { doc, getDoc } from 'firebase/firestore';
-	import { db, functions } from '$lib/firebase.js';
+	import { db, functions, auth } from '$lib/firebase.js';
 	import Icon from '$lib/components/ui/Icon.svelte';
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import '$lib/styles/parent-vpc-trust-band.css';
@@ -51,6 +51,7 @@
 	}
 
 	$effect(() => {
+		if (!db || !authStore.isAuthenticated) return;
 		if (!householdId || authStore.role !== 'parent') {
 			household = null;
 			loadingHousehold = false;
@@ -252,6 +253,7 @@
 			});
 			await parentGrantVpcConsentFn(payload);
 			await reloadPlayerStatus(activePlayerEmail);
+			await auth.currentUser?.getIdToken(true);
 			wizardStage = 'done';
 		} catch (e) {
 			if (e instanceof DOMException) {
@@ -337,7 +339,7 @@
 				<p class="parent-vpc-muted">Loading household…</p>
 
 			{:else if loadErr}
-				<p class="parent-vpc-error" role="alert">{loadErr}</p>
+				<p class="parent-vpc-error tw-text-[#f59e0b]" role="alert">{loadErr}</p>
 
 			{:else if !household}
 				<p class="parent-vpc-muted">Household data unavailable.</p>
@@ -616,7 +618,7 @@
 				</div>
 
 				{#if submitError}
-					<p class="parent-vpc-error" role="alert">{submitError}</p>
+					<p class="parent-vpc-error tw-text-[#f59e0b]" role="alert">{submitError}</p>
 				{/if}
 
 				<button
