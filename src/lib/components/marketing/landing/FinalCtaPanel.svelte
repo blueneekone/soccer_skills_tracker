@@ -14,7 +14,7 @@
 		</p>
 		<div class="fc-actions">
 			<a href="/setup" class="fc-btn-primary">
-				GET STARTED — $0 PLATFORM FEE →
+				Deploy Your Club
 			</a>
 			<a href="/pricing" class="fc-btn-secondary">
 				<span>VIEW PRICING</span>
