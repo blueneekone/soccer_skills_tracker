@@ -37,6 +37,8 @@
 	let parentDisplayName = $state('');
 	let submitting = $state(false);
 	let submitError = $state('');
+	let profile = $derived(authStore.profile);
+	let householdId = $derived(profile?.householdId);
 
 	async function resolvePlayerVpcStatus(playerEmail) {
 		const snap = await getDoc(doc(db, 'users', playerEmail));
@@ -610,9 +612,14 @@
 				{#if submitError}
 					<p class="parent-vpc-error tw-text-[#f59e0b]" role="alert">{submitError}</p>
 				{/if}
-</script>
 
-<svelte:head>
+
+
+{/if}
+</div>
+</div>
+</div>
+</div><svelte:head>
 	<title>Verifiable Parental Consent · Parent OS</title>
 </svelte:head>
 
