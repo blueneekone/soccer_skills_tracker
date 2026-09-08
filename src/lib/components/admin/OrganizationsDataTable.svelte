@@ -127,7 +127,7 @@
 						</td>
 
 						<td class="tw-px-4 tw-py-2.5 tw-border-t tw-border-\[#334155\] tw-text-[#D4D4D8] tw-truncate tw-min-w-0 tw-whitespace-nowrap telemetry-readout">
-							<button class="tw-text-[#14b8a6] hover:tw-text-emerald-400 tw-font-bold tw-text-xs tw-flex tw-items-center tw-gap-1 tw-cursor-pointer" onclick={() => untrack(() => goto(`/admin/organizations/${cl.id}`))} aria-label="View {cl.name || cl.id}">
+							<button class="tw-text-[#14b8a6] hover:tw-text-emerald-400 tw-font-bold tw-text-xs tw-flex tw-items-center tw-gap-1 tw-cursor-pointer" onclick={() => goto(`/admin/organizations/${cl.id}`)} aria-label="View {cl.name || cl.id}">
 								View <Icon name={'nav.arrow-right' as IconName} aria-hidden="true" />
 							</button>
 						</td>
