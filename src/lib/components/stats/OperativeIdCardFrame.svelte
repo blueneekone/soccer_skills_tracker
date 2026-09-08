@@ -109,10 +109,6 @@
 		[callsign, typeLine, rankLine, showLevelChip ? levelChipLabel : ''].filter(Boolean).join(' · ') ||
 			'Operative ID card',
 	);
-
-	const safeBannerSvg = $derived(sanitizeSvg(bannerSvg));
-	const safePortraitSvg = $derived(sanitizeSvg(portraitSvg));
-	const safeBorderSvg = $derived(sanitizeSvg(borderSvg));
 </script>
 
 <div
