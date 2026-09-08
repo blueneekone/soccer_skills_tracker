@@ -109,6 +109,10 @@
 		[callsign, typeLine, rankLine, showLevelChip ? levelChipLabel : ''].filter(Boolean).join(' · ') ||
 			'Operative ID card',
 	);
+
+	const safeBannerSvg = $derived(sanitizeSvg(bannerSvg));
+	const safePortraitSvg = $derived(sanitizeSvg(portraitSvg));
+	const safeBorderSvg = $derived(sanitizeSvg(borderSvg));
 </script>
 
 <div
@@ -127,7 +131,7 @@
 	<p class="oicf-type-line qa-mono">{typeLine}</p>
 
 	<div class="oicf-art-well" aria-hidden="true">
-		{#if bannerSvg}
+		{#if safeBannerSvg}
 			<div class="oicf-banner">
 				<!-- eslint-disable-next-line svelte/no-at-html-tags -->
           {@html safeBannerSvg}
@@ -145,7 +149,7 @@
 					<!-- eslint-disable-next-line svelte/no-at-html-tags -->
           {@html safePortraitSvg}
 				</div>
-				{#if borderSvg}
+				{#if safeBorderSvg}
 					<div class="oicf-loadout-border" aria-hidden="true">
 						<!-- eslint-disable-next-line svelte/no-at-html-tags -->
           {@html safeBorderSvg}
