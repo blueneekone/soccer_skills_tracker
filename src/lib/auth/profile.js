@@ -41,12 +41,16 @@ function cellIdFromClaims(tokenResult) {
  * @param {string} email
  */
 export function fallbackPlayerName(baseProfile, email) {
-	const local = email ? String(email).split('@')[0] : 'unknown';
-	return (
-		(baseProfile &&
-			(baseProfile.playerName || baseProfile.name || baseProfile.player)) ||
-		local
-	);
+  if (baseProfile?.displayName) return baseProfile.displayName;
+  if (baseProfile?.firstName && baseProfile?.lastName) return `${baseProfile.firstName} ${baseProfile.lastName}`;
+  if (baseProfile?.firstName) return baseProfile.firstName;
+
+  if (email) {
+    const parts = email.split('@');
+    if (parts.length > 0 && parts[0]) return parts[0];
+  }
+
+  return 'Unknown Player';
 }
 
 /**
