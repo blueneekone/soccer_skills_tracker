@@ -613,21 +613,6 @@
 				{#if submitError}
 					<p class="parent-vpc-error" role="alert">{submitError}</p>
 				{/if}
-					{/if}
-				</div>
-			</div>
-		</div>
-	</div>
-
-
-
-{/if}
-</div>
-</div>
-</div>
-</div><svelte:head>
-	<title>Verifiable Parental Consent · Parent OS</title>
-</svelte:head>
 
 				<button
 					type="button"

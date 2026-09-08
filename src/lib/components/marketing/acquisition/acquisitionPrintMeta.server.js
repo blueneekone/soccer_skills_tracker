@@ -1,4 +1,5 @@
-import { execFileSync } from 'node:child_process';
+import fs from 'node:fs';
+import path from 'node:path';
 
 /** @returns {{ buildDate: string; shortSha: string }} */
 export function loadAcquisitionPrintMeta() {
@@ -12,9 +13,14 @@ export function loadAcquisitionPrintMeta() {
 		shortSha = shortSha.slice(0, 7);
 	} else {
 		try {
-			shortSha = execFileSync('git', ['rev-parse', '--short', 'HEAD'], {
-				encoding: 'utf-8',
-			}).trim();
+			const headPath = path.join(process.cwd(), '.git', 'HEAD');
+			const head = fs.readFileSync(headPath, 'utf-8').trim();
+			if (head.startsWith('ref: ')) {
+				const refPath = path.join(process.cwd(), '.git', head.substring(5));
+				shortSha = fs.readFileSync(refPath, 'utf-8').trim().substring(0, 7);
+			} else {
+				shortSha = head.substring(0, 7);
+			}
 		} catch {
 			shortSha = 'dev';
 		}
