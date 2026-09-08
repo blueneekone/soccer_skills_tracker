@@ -30,7 +30,8 @@ exports.affinityWebhook = onRequest({ secrets: [affinityWebhookSecret] }, async 
   const signatureBuffer = Buffer.from(signature);
   const expectedBuffer = Buffer.from(expectedSignature);
   
-  if (signatureBuffer.length !== expectedBuffer.length || !crypto.timingSafeEqual(signatureBuffer, expectedBuffer)) {
+  const valid = signatureBuffer.length === expectedBuffer.length;
+  if (!crypto.timingSafeEqual(valid ? signatureBuffer : expectedBuffer, expectedBuffer) || !valid) {
     logger.error('[affinityWebhook] Invalid HMAC signature');
     res.status(401).send('Unauthorized');
     return;

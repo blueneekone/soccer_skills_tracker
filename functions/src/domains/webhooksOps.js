@@ -971,8 +971,9 @@ function verifyAffinityHmac(rawBuffer, signatureHeader, secret) {
   } catch (e) {
     throw new Error('Invalid signature hex');
   }
-  if (provided.length !== expected.length ||
-      !crypto.timingSafeEqual(provided, expected)) {
+
+  const valid = provided.length === expected.length;
+  if (!crypto.timingSafeEqual(valid ? provided : expected, expected) || !valid) {
     throw new Error('HMAC verification failed');
   }
 }

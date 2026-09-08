@@ -583,8 +583,8 @@ function verifyCheckrWebhookSignature(rawBody, signatureHeader, secret) {
     .update(rawBody)
     .digest();
 
-  if (provided.length !== expected.length) return false;
-  return crypto.timingSafeEqual(provided, expected);
+  const valid = provided.length === expected.length;
+  return crypto.timingSafeEqual(valid ? provided : expected, expected) && valid;
 }
 
 /**

@@ -90,8 +90,8 @@ exports.facilityWeatherWebhook = onRequest(
       const tokenBuffer = Buffer.from(token, 'utf8');
       const expectedBuffer = Buffer.from(expectedToken, 'utf8');
 
-      if (tokenBuffer.length !== expectedBuffer.length ||
-          !crypto.timingSafeEqual(tokenBuffer, expectedBuffer)) {
+      const valid = tokenBuffer.length === expectedBuffer.length;
+      if (!crypto.timingSafeEqual(valid ? tokenBuffer : expectedBuffer, expectedBuffer) || !valid) {
         res.status(403).send('Forbidden');
         return;
       }
