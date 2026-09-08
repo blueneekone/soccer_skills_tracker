@@ -1,0 +1,41 @@
+--- src/lib/admin/__tests__/organizationsFilters.test.ts
++++ src/lib/admin/__tests__/organizationsFilters.test.ts
+@@ -72,5 +72,38 @@
+			const filtered = filterClubsBySport(SAMPLE, 'football' as any);
+			expect(filtered).toHaveLength(0);
+		});
++
++		it('normalizes sport names with different casing and whitespace', () => {
++			const noisySample = [
++				{ id: '1', name: 'A', sport: ' SOCCER ' },
++				{ id: '2', name: 'B', sport: 'BasketBall' },
++				{ id: '3', name: 'C', sport: 'generic' }
++			] as AdminClub[];
++			expect(filterClubsBySport(noisySample, 'soccer')).toHaveLength(1);
++			expect(filterClubsBySport(noisySample, 'basketball')).toHaveLength(1);
++			expect(filterClubsBySport(noisySample, 'soccer')[0]?.id).toBe('1');
++		});
++
++		it('normalizes sport names using substrings explicitly handled by normalizeClubSport', () => {
++			const substringSample = [
++				{ id: '1', name: 'A', sport: 'ice skating' },
++				{ id: '2', name: 'B', sport: 'basket' },
++				{ id: '3', name: 'C', sport: 'volley ball' }
++			] as AdminClub[];
++			expect(filterClubsBySport(substringSample, 'hockey')).toHaveLength(1);
++			expect(filterClubsBySport(substringSample, 'basketball')).toHaveLength(1);
++			expect(filterClubsBySport(substringSample, 'volleyball')).toHaveLength(1);
++			expect(filterClubsBySport(substringSample, 'hockey')[0]?.id).toBe('1');
++		});
++
++		it('handles undefined and missing sports safely', () => {
++			const missingSample = [
++				{ id: '1', name: 'A', sport: undefined },
++				{ id: '2', name: 'B', sport: '' },
++				{ id: '3', name: 'C', sport: 'soccer' }
++			] as AdminClub[];
++			expect(filterClubsBySport(missingSample, 'generic')).toHaveLength(2);
++			expect(filterClubsBySport(missingSample, 'soccer')).toHaveLength(1);
++		});
+	});
+ });
