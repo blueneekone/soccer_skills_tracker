@@ -236,8 +236,6 @@ describe('LAUNCH-player-teamless-train — VPC teamless training guards', () => 
 			resolve(process.cwd(), 'functions/src/domains/trainingOps.js'),
 			'utf8',
 		);
-		// expect(ops).toMatch(/teamlessOk/);
-		// expect(ops).toMatch(/VPC clearance is required before training without a team/);
 	});
 
 	it('player branch offers sign-out, not role-write actions', () => {
