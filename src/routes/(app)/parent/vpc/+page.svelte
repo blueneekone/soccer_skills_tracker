@@ -54,7 +54,8 @@
 	}
 
 	$effect(() => {
-		if (!householdId || authStore.role !== 'parent') {
+		if (!db || !authStore.isAuthenticated) return;
+		if (!authStore.householdId || authStore.role !== 'parent') {
 			household = null;
 			loadingHousehold = false;
 			return;
@@ -65,7 +66,7 @@
 
 		(async () => {
 			try {
-				const snap = await getDoc(doc(db, 'households', householdId));
+				const snap = await getDoc(doc(db, 'households', authStore.householdId));
 				if (cancelled) return;
 				if (!snap.exists()) {
 					loadErr = 'Household record not found. Ask your director to link your account.';
@@ -173,7 +174,7 @@
 		consentAnalytics = false;
 		consentComms = false;
 		consentSponsor = false;
-		parentDisplayName = profile?.playerName || '';
+		parentDisplayName = authStore.profile?.playerName || '';
 		submitError = '';
 		wizardStage = 'step1';
 	}
@@ -222,7 +223,7 @@
 						},
 						user: {
 							id: userId,
-							name: profile?.email || "parent@vanguard.com",
+							name: authStore.profile?.email || "parent@vanguard.com",
 							displayName: parentDisplayName.trim()
 						},
 						pubKeyCredParams: [
@@ -270,7 +271,7 @@
 <div class="parent-vpc-trust-band">
 	<div class="parent-vpc-z1-well">
 		<div class="parent-vpc-z2-panel">
-			{#if authStore.role === 'parent' && householdId && !loadingHousehold && !loadErr && household && playerEmails.length > 0 && wizardStage !== 'done'}
+			{#if authStore.role === 'parent' && authStore.householdId && !loadingHousehold && !loadErr && household && playerEmails.length > 0 && wizardStage !== 'done'}
 				<span
 					class="parent-vpc-minimal-badge parent-vpc-minimal-badge--{aggregateTrustStatus === 'verified'
 						? 'verified'
@@ -287,7 +288,7 @@
 				</div>
 				<div class="parent-vpc-trust-hero__body">
 					<h2 class="parent-vpc-trust-hero__title">Verifiable parental consent</h2>
-					{#if authStore.role === 'parent' && householdId && !loadingHousehold && !loadErr && household && playerEmails.length > 0}
+					{#if authStore.role === 'parent' && authStore.householdId && !loadingHousehold && !loadErr && household && playerEmails.length > 0}
 						<p
 							class="parent-vpc-status-label parent-vpc-status-label--{aggregateTrustStatus === 'verified'
 								? 'verified'
@@ -303,7 +304,7 @@
 						</p>
 					{/if}
 				</div>
-				{#if authStore.role === 'parent' && householdId && !loadingHousehold && !loadErr && household && playerEmails.length > 0 && wizardStage === 'select' && firstPendingEmail}
+				{#if authStore.role === 'parent' && authStore.householdId && !loadingHousehold && !loadErr && household && playerEmails.length > 0 && wizardStage === 'select' && firstPendingEmail}
 					<button
 						type="button"
 						class="parent-vpc-btn-update"
@@ -318,7 +319,7 @@
 			{#if authStore.role !== 'parent'}
 				<p class="parent-vpc-muted">This page is for parent accounts only.</p>
 
-			{:else if !householdId}
+			{:else if !authStore.householdId}
 				<div class="parent-vpc-empty-state">
 					<Icon name="user.group" class="parent-vpc-empty-state__icon" />
 					<p class="parent-vpc-empty-state__text">
@@ -612,6 +613,11 @@
 				{#if submitError}
 					<p class="parent-vpc-error" role="alert">{submitError}</p>
 				{/if}
+					{/if}
+				</div>
+			</div>
+		</div>
+	</div>
 
 
 
