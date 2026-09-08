@@ -22,8 +22,6 @@ export type RlPolicyCacheEntry = {
 	result: GetAdaptiveWorkoutPolicyResult;
 };
 
-const inflightBySport = new Map<string, Promise<GetAdaptiveWorkoutPolicyResult | null>>();
-const memoryCache = new Map<string, { fetchedAt: number; result: GetAdaptiveWorkoutPolicyResult | null }>();
 const NULL_TTL_MS = 60_000; // 1 minute
 
 const EXPLANATION_CODES = new Set<ExplanationCode>([
@@ -148,8 +146,69 @@ export function writeRlPolicyCache(
 		fetchedAt: Math.floor(fetchedAt),
 		result,
 	};
-	sessionStorage.setItem(getCacheKey(sId), JSON.stringify(entry));
+	const rawEntry = JSON.stringify(entry);
+	sessionStorage.setItem(getCacheKey(sId), rawEntry);
+	// fallback for omit-sportId ActiveBounties handoff
+	sessionStorage.setItem(RL_POLICY_CACHE_KEY, rawEntry);
 }
+
+export class RlPolicyCacheManager {
+	private inflightBySport = new Map<string, Promise<GetAdaptiveWorkoutPolicyResult | null>>();
+	private memoryCache = new Map<string, { fetchedAt: number; result: GetAdaptiveWorkoutPolicyResult | null }>();
+
+	async ensureCached(input: {
+		sportId: string;
+		fetchPolicy: (sportId: string) => Promise<unknown>;
+		force?: boolean;
+	}): Promise<GetAdaptiveWorkoutPolicyResult | null> {
+		const sportId = input.sportId.trim() || 'soccer';
+
+		if (input.force) {
+			this.memoryCache.delete(sportId);
+		} else {
+			const mem = this.memoryCache.get(sportId);
+			if (mem) {
+				if (mem.result !== null && Date.now() - mem.fetchedAt < RL_POLICY_CACHE_TTL_MS) {
+					return mem.result;
+				}
+				if (mem.result === null && Date.now() - mem.fetchedAt < NULL_TTL_MS) {
+					return null;
+				}
+			}
+
+			const cached = readRlPolicyCache(sportId);
+			if (cached) {
+				this.memoryCache.set(sportId, { fetchedAt: Date.now(), result: cached });
+				return cached;
+			}
+		}
+
+		const inflight = this.inflightBySport.get(sportId);
+		if (inflight) return inflight;
+
+		const promise = (async () => {
+			try {
+				const raw = await input.fetchPolicy(sportId);
+				const result = normalizePolicyResult(raw);
+				if (result) {
+					writeRlPolicyCache(sportId, result);
+				}
+				this.memoryCache.set(sportId, { fetchedAt: Date.now(), result });
+				return result;
+			} catch {
+				this.memoryCache.set(sportId, { fetchedAt: Date.now(), result: null });
+				return null;
+			} finally {
+				this.inflightBySport.delete(sportId);
+			}
+		})();
+
+		this.inflightBySport.set(sportId, promise);
+		return promise;
+	}
+}
+
+let clientCache: RlPolicyCacheManager | null = null;
 
 /**
  * Return cached policy or invoke fetchPolicy once per sport (deduped in-flight).
@@ -160,48 +219,14 @@ export async function ensureRlPolicyCached(input: {
 	fetchPolicy: (sportId: string) => Promise<unknown>;
 	force?: boolean;
 }): Promise<GetAdaptiveWorkoutPolicyResult | null> {
-	const sportId = input.sportId.trim() || 'soccer';
-
-	if (input.force) {
-		memoryCache.delete(sportId);
-	} else {
-		const mem = memoryCache.get(sportId);
-		if (mem) {
-			if (mem.result !== null && Date.now() - mem.fetchedAt < RL_POLICY_CACHE_TTL_MS) {
-				return mem.result;
-			}
-			if (mem.result === null && Date.now() - mem.fetchedAt < NULL_TTL_MS) {
-				return null;
-			}
-		}
-
-		const cached = readRlPolicyCache(sportId);
-		if (cached) {
-			memoryCache.set(sportId, { fetchedAt: Date.now(), result: cached });
-			return cached;
-		}
+	if (typeof window === 'undefined') {
+		// Server-side: bypass memory caching to prevent SSR tenant data leaks
+		const manager = new RlPolicyCacheManager();
+		return manager.ensureCached(input);
 	}
 
-	const inflight = inflightBySport.get(sportId);
-	if (inflight) return inflight;
-
-	const promise = (async () => {
-		try {
-			const raw = await input.fetchPolicy(sportId);
-			const result = normalizePolicyResult(raw);
-			if (result) {
-				writeRlPolicyCache(sportId, result);
-			}
-			memoryCache.set(sportId, { fetchedAt: Date.now(), result });
-			return result;
-		} catch {
-			memoryCache.set(sportId, { fetchedAt: Date.now(), result: null });
-			return null;
-		} finally {
-			inflightBySport.delete(sportId);
-		}
-	})();
-
-	inflightBySport.set(sportId, promise);
-	return promise;
+	if (!clientCache) {
+		clientCache = new RlPolicyCacheManager();
+	}
+	return clientCache.ensureCached(input);
 }
