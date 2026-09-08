@@ -12,6 +12,8 @@
 		profile?.householdId ? String(profile.householdId) : ''
 	);
 
+	const householdId = $derived(authStore.userProfile?.householdId);
+	const profile = $derived(authStore.userProfile);
 	let household = $state(/** @type {Record<string, unknown> | null} */ (null));
 	let playerStatuses = $state<Record<string, string>>({});
 	let loadErr = $state('');
@@ -608,6 +610,16 @@
 				{#if submitError}
 					<p class="parent-vpc-error" role="alert">{submitError}</p>
 				{/if}
+				{/if}
+				</div>
+			</div>
+		</div>
+	</div>
+
+
+<svelte:head>
+	<title>Verifiable Parental Consent · Parent OS</title>
+</svelte:head>
 
 				<button
 					type="button"

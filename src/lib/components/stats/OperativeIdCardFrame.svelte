@@ -3,6 +3,7 @@
 		RARITY_CHIP_LABELS,
 		type OperativeCardMetadata,
 	} from '$lib/gamification/cardCollectibleMetadata.js';
+	import { sanitizeSvg } from '$lib/utils/sanitizeSvg.js';
 
 	const ARC_FLOURISH_MAX_CHARS = 12;
 	const LONG_NAME_THRESHOLD = 16;
@@ -48,6 +49,10 @@
 
 	const uid = $props.id();
 	const nameArcId = `oicf-name-arc-${uid}`;
+
+	const safePortraitSvg = $derived(sanitizeSvg(portraitSvg));
+	const safeBorderSvg = $derived(sanitizeSvg(borderSvg));
+	const safeBannerSvg = $derived(sanitizeSvg(bannerSvg));
 
 	const callsign = $derived((displayName || 'Operative').trim().toUpperCase());
 
@@ -125,7 +130,7 @@
 		{#if bannerSvg}
 			<div class="oicf-banner">
 				<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-          {@html bannerSvg}
+          {@html safeBannerSvg}
 			</div>
 		{/if}
 		<div class="oicf-portrait-stage">
@@ -138,12 +143,12 @@
 			>
 				<div class="oicf-portrait">
 					<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-          {@html portraitSvg}
+          {@html safePortraitSvg}
 				</div>
 				{#if borderSvg}
 					<div class="oicf-loadout-border" aria-hidden="true">
 						<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-          {@html borderSvg}
+          {@html safeBorderSvg}
 					</div>
 				{/if}
 			</div>

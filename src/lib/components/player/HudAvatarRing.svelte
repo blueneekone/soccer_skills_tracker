@@ -2,6 +2,7 @@
 	import { renderOperativeAvatarSvg } from '$lib/avatars/operativeAvatar.js';
 	import { parseOperativePortrait } from '$lib/avatars/portraitV2Schema.js';
 	import { composeOperativePortrait } from '$lib/gamification/renderOperativeLoadout.js';
+	import { sanitizeSvg } from '$lib/utils/sanitizeSvg.js';
 
 	let {
 		operativeAvatar = undefined,
@@ -50,6 +51,9 @@
 	const c = 2 * Math.PI * R;
 	const fill = $derived(Math.min(1, Math.max(0, Number(xpFill) || 0)));
 	const dashOffset = $derived(c * (1 - fill));
+
+	const safeInnerPortraitSvg = $derived(sanitizeSvg(innerPortraitSvg));
+	const safeBorderSvg = $derived(sanitizeSvg(portraitLayers.borderSvg));
 </script>
 
 <div
@@ -78,12 +82,12 @@
 	<div class="hud-avatar-ring__avatar-wrap">
 		<div class="hud-avatar-ring__portrait" aria-hidden="true">
 			<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-          {@html innerPortraitSvg}
+          {@html safeInnerPortraitSvg}
 		</div>
 		{#if portraitLayers.borderSvg}
 			<div class="hud-avatar-ring__loadout-border" aria-hidden="true">
 				<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-          {@html portraitLayers.borderSvg}
+          {@html safeBorderSvg}
 			</div>
 		{/if}
 	</div>
