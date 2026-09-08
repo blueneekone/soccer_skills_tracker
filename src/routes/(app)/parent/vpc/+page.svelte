@@ -12,8 +12,6 @@
 		profile?.householdId ? String(profile.householdId) : ''
 	);
 
-	const householdId = $derived(authStore.userProfile?.householdId);
-	const profile = $derived(authStore.userProfile);
 	let household = $state(/** @type {Record<string, unknown> | null} */ (null));
 	let playerStatuses = $state<Record<string, string>>({});
 	let loadErr = $state('');
@@ -39,8 +37,6 @@
 	let parentDisplayName = $state('');
 	let submitting = $state(false);
 	let submitError = $state('');
-	let profile = $derived(authStore.profile);
-	let householdId = $derived(profile?.householdId);
 
 	async function resolvePlayerVpcStatus(playerEmail) {
 		const snap = await getDoc(doc(db, 'users', playerEmail));
