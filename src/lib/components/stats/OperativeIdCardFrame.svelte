@@ -124,10 +124,10 @@
 	<p class="oicf-type-line qa-mono">{typeLine}</p>
 
 	<div class="oicf-art-well" aria-hidden="true">
-		{#if safeBannerSvg}
+		{#if bannerSvg}
 			<div class="oicf-banner">
 				<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-          {@html safeBannerSvg}
+          {@html bannerSvg}
 			</div>
 		{/if}
 		<div class="oicf-portrait-stage">
@@ -140,12 +140,12 @@
 			>
 				<div class="oicf-portrait">
 					<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-          {@html safePortraitSvg}
+          {@html portraitSvg}
 				</div>
-				{#if safeBorderSvg}
+				{#if borderSvg}
 					<div class="oicf-loadout-border" aria-hidden="true">
 						<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-          {@html safeBorderSvg}
+          {@html borderSvg}
 					</div>
 				{/if}
 			</div>
