@@ -38,6 +38,20 @@ describe('cells type definitions and helpers', () => {
 			expect(isDefaultCell('  ')).toBe(true);
 		});
 
+		it('returns true for padded strings', () => {
+			expect(isDefaultCell(`  ${DEFAULT_CELL_ID}  `)).toBe(true);
+			expect(isDefaultCell('  default  ')).toBe(true);
+			expect(isDefaultCell('\t(default)\n')).toBe(true);
+		});
+
+		it('returns true for non-string runtime inputs', () => {
+			// Using type coercion any to verify runtime safety behavior
+			expect(isDefaultCell(null as any)).toBe(true);
+			expect(isDefaultCell(undefined as any)).toBe(true);
+			expect(isDefaultCell(123 as any)).toBe(true);
+			expect(isDefaultCell({} as any)).toBe(true);
+		});
+
 		it('returns false for dedicated cell IDs', () => {
 			expect(isDefaultCell('cell-use1-001')).toBe(false);
 			expect(isDefaultCell('cell-usc1-042')).toBe(false);
