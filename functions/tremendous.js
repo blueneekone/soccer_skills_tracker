@@ -224,10 +224,15 @@ function verifyWebhookSignature(rawBody, signature, secret) {
 
   const received = sigParts.v1 || signature;
 
-  if (!crypto.timingSafeEqual(
-      Buffer.from(expected, 'hex'),
-      Buffer.from(received.padEnd(expected.length, '0').slice(0, expected.length), 'hex'),
-  )) {
+  const expectedBuffer = Buffer.from(expected, 'hex');
+  const receivedBuffer = Buffer.from(received.padEnd(expected.length, '0').slice(0, expected.length), 'hex');
+
+  const isValidLength = expectedBuffer.length === receivedBuffer.length;
+  const compareBuffer = isValidLength ? receivedBuffer : expectedBuffer;
+  let isValid = crypto.timingSafeEqual(compareBuffer, expectedBuffer);
+  isValid = isValid && isValidLength;
+
+  if (!isValid) {
     throw new Error('Tremendous webhook signature mismatch');
   }
 }
