@@ -12,6 +12,10 @@ import type {
 export const RL_POLICY_CACHE_KEY = 'player_rl_policy_cache_v1';
 export const RL_POLICY_CACHE_TTL_MS = 86_400_000;
 
+function getCacheKey(sportId: string): string {
+	return `${RL_POLICY_CACHE_KEY}_${sportId.trim() || 'soccer'}`;
+}
+
 export type RlPolicyCacheEntry = {
 	sportId: string;
 	fetchedAt: number;
@@ -106,11 +110,30 @@ export function isRlPolicyCacheFresh(
 /** Read cached policy when fresh. Omit sportId to accept any sport (ActiveBounties handoff). */
 export function readRlPolicyCache(sportId?: string): GetAdaptiveWorkoutPolicyResult | null {
 	if (typeof sessionStorage === 'undefined') return null;
-	const raw = sessionStorage.getItem(RL_POLICY_CACHE_KEY);
-	if (!raw) return null;
-	const entry = parseCacheEntry(raw);
-	if (!isRlPolicyCacheFresh(entry, sportId)) return null;
-	return entry!.result;
+	if (sportId) {
+		const raw = sessionStorage.getItem(getCacheKey(sportId));
+		if (!raw) return null;
+		const entry = parseCacheEntry(raw);
+		if (!isRlPolicyCacheFresh(entry, sportId)) return null;
+		return entry!.result;
+	} else {
+		let latestEntry: RlPolicyCacheEntry | null = null;
+		for (let i = 0; i < sessionStorage.length; i++) {
+			const key = sessionStorage.key(i);
+			if (key && key.startsWith(`${RL_POLICY_CACHE_KEY}_`)) {
+				const raw = sessionStorage.getItem(key);
+				if (raw) {
+					const entry = parseCacheEntry(raw);
+					if (isRlPolicyCacheFresh(entry)) {
+						if (!latestEntry || entry!.fetchedAt > latestEntry.fetchedAt) {
+							latestEntry = entry;
+						}
+					}
+				}
+			}
+		}
+		return latestEntry ? latestEntry.result : null;
+	}
 }
 
 export function writeRlPolicyCache(
@@ -119,12 +142,13 @@ export function writeRlPolicyCache(
 	fetchedAt = Date.now(),
 ): void {
 	if (typeof sessionStorage === 'undefined') return;
+	const sId = sportId.trim() || 'soccer';
 	const entry: RlPolicyCacheEntry = {
-		sportId: sportId.trim() || 'soccer',
+		sportId: sId,
 		fetchedAt: Math.floor(fetchedAt),
 		result,
 	};
-	sessionStorage.setItem(RL_POLICY_CACHE_KEY, JSON.stringify(entry));
+	sessionStorage.setItem(getCacheKey(sId), JSON.stringify(entry));
 }
 
 /**
