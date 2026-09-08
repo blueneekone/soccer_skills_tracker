@@ -152,17 +152,15 @@ def heal_local_codebase():
                             continue
 
                         if re.match(r"^\s*import\b", line):
-                            if ";" not in stripped and "from" not in stripped:
+                            if ";" not in stripped and not re.search(r"\bfrom\b", stripped):
                                 in_import = True
                             continue
                         if in_import:
-                            if ";" in stripped or "from" in stripped:
+                            if ";" in stripped or re.search(r"\bfrom\b", stripped):
                                 in_import = False
                             continue
 
                         if stripped.startswith("//") or stripped.startswith("*") or stripped.startswith("/*"):
-                            continue
-                        if "import" in line or "export" in line or "from" in line:
                             continue
 
                         # ONLY match if it is an actual function listener / call site in an active execution block
