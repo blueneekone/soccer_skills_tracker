@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+	countClubsBySport,
 	filterClubsBySport,
 	filterOrganizations,
 	tierForClub,
@@ -53,6 +54,42 @@ describe('organizationsFilters', () => {
 		});
 		expect(filtered).toHaveLength(1);
 		expect(filtered[0]?.id).toBe('tx-club');
+	});
+
+	describe('countClubsBySport', () => {
+		it('returns all: 0 for empty array', () => {
+			expect(countClubsBySport([])).toEqual({ all: 0 });
+		});
+
+		it('correctly aggregates clubs by sport', () => {
+			const clubs: AdminClub[] = [
+				{ ...SAMPLE[0]!, id: '1', sport: 'soccer' },
+				{ ...SAMPLE[0]!, id: '2', sport: 'soccer' },
+				{ ...SAMPLE[0]!, id: '3', sport: 'basketball' },
+				{ ...SAMPLE[0]!, id: '4', sport: 'volleyball' },
+			];
+			const counts = countClubsBySport(clubs);
+			expect(counts).toEqual({
+				all: 4,
+				soccer: 2,
+				basketball: 1,
+				volleyball: 1,
+			});
+		});
+
+		it('normalizes sport names for counting', () => {
+			const clubs: AdminClub[] = [
+				{ ...SAMPLE[0]!, id: '1', sport: 'Soccer' },
+				{ ...SAMPLE[0]!, id: '2', sport: 'SOCCER' },
+				{ ...SAMPLE[0]!, id: '3', sport: ' basketball ' },
+			];
+			const counts = countClubsBySport(clubs);
+			expect(counts).toEqual({
+				all: 3,
+				soccer: 2,
+				basketball: 1,
+			});
+		});
 	});
 
 	describe('filterClubsBySport', () => {
