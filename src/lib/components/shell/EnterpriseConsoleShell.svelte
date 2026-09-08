@@ -319,7 +319,7 @@ import { untrack } from 'svelte';
 				<button
 					type="button"
 					class="ec-icon-btn icon-tap"
-					onclick={() => () => { untrack(() => { goto('/admin/system-settings'); }); }}
+					onclick={() => untrack(() => goto('/admin/system-settings'))}
 					aria-label="Settings"
 				>
 					<Icon name="sys.settings" size={18} />
