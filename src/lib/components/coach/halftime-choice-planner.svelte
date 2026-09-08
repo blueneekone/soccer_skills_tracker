@@ -59,6 +59,8 @@
     const newOption: ChoiceOption = {
       id: `custom-${Date.now()}`,
       title: customOptionTitle,
+      // customOptionDesc is actively bound to the UI input field.
+      // This is not an unused variable. We fall back to a default if it's empty.
       description: customOptionDesc || 'Coach-defined tactical modification.',
       votes: 0
     };
