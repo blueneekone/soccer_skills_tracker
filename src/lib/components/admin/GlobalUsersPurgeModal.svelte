@@ -72,7 +72,7 @@
         
         <div class="tw-flex tw-flex-col sm:tw-flex-row tw-justify-end tw-gap-3">
             <button class="tw-px-4 tw-py-2 tw-bg-slate-800 hover:tw-bg-slate-700 tw-text-white tw-font-mono tw-text-sm"
-                    onclick={() => { show = false; }} disabled={busy}>
+                    onclick={close} disabled={busy}>
                 Cancel
             </button>
             <button class="tw-px-4 tw-py-2 tw-bg-red-700 hover:tw-bg-red-600 tw-text-white tw-font-mono tw-text-sm"
@@ -93,7 +93,7 @@
 
         <div class="tw-flex tw-flex-col sm:tw-flex-row tw-justify-end tw-gap-3">
             <button class="tw-px-4 tw-py-2 tw-bg-slate-800 hover:tw-bg-slate-700 tw-text-white tw-font-mono tw-text-sm"
-                    onclick={() => { show = false; }} disabled={busy}>
+                    onclick={close} disabled={busy}>
                 Cancel
             </button>
             <button class="tw-px-4 tw-py-2 tw-bg-red-700 hover:tw-bg-red-600 tw-text-white tw-font-mono tw-text-sm disabled:tw-opacity-50"

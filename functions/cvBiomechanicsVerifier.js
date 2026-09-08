@@ -1,7 +1,7 @@
 const { onCall, HttpsError } = require('firebase-functions/v2/https');
 const logger = require('firebase-functions/logger');
 
-exports.cvBiomechanicsVerifier = onCall({ region: 'us-east1', enforceAppCheck: true }, async (request) => {
+exports.cvBiomechanicsVerifier = onCall({ region: 'us-east1' }, async (request) => {
 	if (!request.auth) {
 		throw new HttpsError('unauthenticated', 'Sign in required.');
 	}

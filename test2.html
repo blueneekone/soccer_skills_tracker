@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html><body style='background: #333; padding: 50px;'>
+<style>
+  .vanguard-panel {
+    position: relative;
+    width: 200px;
+    height: 100px;
+    filter: drop-shadow(0 0 20px rgba(255, 0, 0, 1));
+  }
+  .vanguard-panel::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: white;
+    clip-path: polygon(20px 0, 100% 0, 100% calc(100% - 20px), calc(100% - 20px) 100%, 0 100%, 0 20px);
+    z-index: -1;
+  }
+</style>
+<div class='vanguard-panel' style='color: black; padding: 20px;'>
+  Content inside
+</div>
+</body></html>

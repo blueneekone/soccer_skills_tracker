@@ -214,24 +214,12 @@ export class MatchDayEngine {
 	}
 
 	makeSubstitution = (starterId: string, benchPlayerId: string): void => {
-		const outIndex = this.starters.findIndex(p => p.id === starterId);
-		const inIndex = this.bench.findIndex(p => p.id === benchPlayerId);
-		if (outIndex === -1 || inIndex === -1) return;
+		const outPlayer = this.starters.find(p => p.id === starterId);
+		const inPlayer = this.bench.find(p => p.id === benchPlayerId);
+		if (!outPlayer || !inPlayer) return;
 
-		const outPlayer = this.starters[outIndex];
-		const inPlayer = this.bench[inIndex];
-
-		this.starters = [
-			...this.starters.slice(0, outIndex),
-			{ ...inPlayer, status: 'starter' },
-			...this.starters.slice(outIndex + 1)
-		];
-
-		this.bench = [
-			...this.bench.slice(0, inIndex),
-			{ ...outPlayer, status: 'bench' },
-			...this.bench.slice(inIndex + 1)
-		];
+		this.starters = this.starters.map(p => p.id === starterId ? { ...inPlayer, status: 'starter' } : p);
+		this.bench = this.bench.map(p => p.id === benchPlayerId ? { ...outPlayer, status: 'bench' } : p);
 
 		this.logEvent('SUB', `SUB: ${inPlayer.name} IN ↗ for ${outPlayer.name} OUT ↘`, inPlayer.id);
 		this.telemetryLogs = [`[SUB] ${inPlayer.name} entered replacing ${outPlayer.name}`, ...this.telemetryLogs];

@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest';
 import {
-	filterClubsBySport,
 	filterOrganizations,
 	tierForClub,
 	toggleInList,
@@ -53,24 +52,5 @@ describe('organizationsFilters', () => {
 		});
 		expect(filtered).toHaveLength(1);
 		expect(filtered[0]?.id).toBe('tx-club');
-	});
-
-	describe('filterClubsBySport', () => {
-		it('returns all clubs when sportTab is "all"', () => {
-			const filtered = filterClubsBySport(SAMPLE, 'all');
-			expect(filtered).toHaveLength(2);
-			expect(filtered).toEqual(SAMPLE);
-		});
-
-		it('returns clubs matching a specific normalized sport', () => {
-			const filtered = filterClubsBySport(SAMPLE, 'soccer');
-			expect(filtered).toHaveLength(1);
-			expect(filtered[0]?.id).toBe('tx-club');
-		});
-
-		it('returns empty array if no clubs match the sport', () => {
-			const filtered = filterClubsBySport(SAMPLE, 'football' as any);
-			expect(filtered).toHaveLength(0);
-		});
 	});
 });

@@ -255,23 +255,7 @@ sw.addEventListener('fetch', (event: FetchEvent) => {
 	if (shouldBypass(url)) {
 		// SvelteKit requires us to respond with fetch directly.
 		// (Permanent workaround for upstream Chromium navigation-preload bugs)
-		if (req.mode === 'navigate') {
-			event.respondWith(
-				(async () => {
-					try {
-						const preloadResponse = await event.preloadResponse;
-						if (preloadResponse) {
-							return preloadResponse;
-						}
-					} catch (e) {
-						// Fallback to fetch on error
-					}
-					return fetch(req);
-				})()
-			);
-		} else {
-			event.respondWith(fetch(req));
-		}
+		event.respondWith(fetch(req));
 		return;
 	}
 

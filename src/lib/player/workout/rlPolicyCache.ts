@@ -19,8 +19,6 @@ export type RlPolicyCacheEntry = {
 };
 
 const inflightBySport = new Map<string, Promise<GetAdaptiveWorkoutPolicyResult | null>>();
-const memoryCache = new Map<string, { fetchedAt: number; result: GetAdaptiveWorkoutPolicyResult | null }>();
-const NULL_TTL_MS = 60_000; // 1 minute
 
 const EXPLANATION_CODES = new Set<ExplanationCode>([
 	'RESTING',
@@ -137,25 +135,9 @@ export async function ensureRlPolicyCached(input: {
 	force?: boolean;
 }): Promise<GetAdaptiveWorkoutPolicyResult | null> {
 	const sportId = input.sportId.trim() || 'soccer';
-
-	if (input.force) {
-		memoryCache.delete(sportId);
-	} else {
-		const mem = memoryCache.get(sportId);
-		if (mem) {
-			if (mem.result !== null && Date.now() - mem.fetchedAt < RL_POLICY_CACHE_TTL_MS) {
-				return mem.result;
-			}
-			if (mem.result === null && Date.now() - mem.fetchedAt < NULL_TTL_MS) {
-				return null;
-			}
-		}
-
+	if (!input.force) {
 		const cached = readRlPolicyCache(sportId);
-		if (cached) {
-			memoryCache.set(sportId, { fetchedAt: Date.now(), result: cached });
-			return cached;
-		}
+		if (cached) return cached;
 	}
 
 	const inflight = inflightBySport.get(sportId);
@@ -165,13 +147,9 @@ export async function ensureRlPolicyCached(input: {
 		try {
 			const raw = await input.fetchPolicy(sportId);
 			const result = normalizePolicyResult(raw);
-			if (result) {
-				writeRlPolicyCache(sportId, result);
-			}
-			memoryCache.set(sportId, { fetchedAt: Date.now(), result });
+			if (result) writeRlPolicyCache(sportId, result);
 			return result;
 		} catch {
-			memoryCache.set(sportId, { fetchedAt: Date.now(), result: null });
 			return null;
 		} finally {
 			inflightBySport.delete(sportId);

@@ -192,7 +192,7 @@ def heal_platform_logic(root):
                 # Svelte 5 fix: Instead of invoking a potentially unmapped 'onClose()' or 'onAdvance()' prop,
                 # we force the cancel button to directly mutate the bindable 'show' property.
                 # This naturally propagates back to the parent component and shuts the modal!
-                for prop in ['onClose', 'onAdvance', 'close']:
+                for prop in ['onClose', 'onAdvance']:
                     if f"onclick={{{prop}}}" in content or f"onclick={{() => {prop}()}}" in content:
                         content = re.sub(
                             f'onclick=\\{{{prop}\\}}',
@@ -207,7 +207,7 @@ def heal_platform_logic(root):
 
                 # Ensure the modal is strictly encapsulated and doesn't crash on unmapped callback props
                 if "let { show = $bindable()" in content:
-                    for prop in ['onClose', 'onAdvance', 'close']:
+                    for prop in ['onClose', 'onAdvance']:
                         if prop in content:
                             # Strip prop out of props destructuring
                             content = content.replace(f", {prop}", "")
