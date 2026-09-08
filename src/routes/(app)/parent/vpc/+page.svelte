@@ -1,16 +1,16 @@
-<!-- 🛡️ SafeSport Compliance Mandate: Secure WebAuthn Verification Protocol Active -->
 <script lang="ts">
 	import { httpsCallable } from 'firebase/functions';
 	import { doc, getDoc } from 'firebase/firestore';
-	import { db, functions, auth } from '$lib/firebase.js';
+	import { db, functions } from '$lib/firebase.js';
 	import Icon from '$lib/components/ui/Icon.svelte';
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import '$lib/styles/parent-vpc-trust-band.css';
 	const parentGrantVpcConsentFn = httpsCallable(functions, 'parentGrantVpcConsent');
-	import { VpcEngine } from './VpcEngine.svelte';
-	import VpcArena from './VpcArena.svelte';
 
-	const engine = new VpcEngine();
+	const profile = $derived(authStore.userProfile);
+	const householdId = $derived(
+		profile?.householdId ? String(profile.householdId) : ''
+	);
 
 	const householdId = $derived(authStore.userProfile?.householdId);
 	const profile = $derived(authStore.userProfile);
@@ -52,7 +52,6 @@
 	}
 
 	$effect(() => {
-		if (!db || !authStore.isAuthenticated) return;
 		if (!householdId || authStore.role !== 'parent') {
 			household = null;
 			loadingHousehold = false;
@@ -110,7 +109,16 @@
 	// the container without needing to scroll (e.g., very large viewport).
 	// Runs after each render whenever wizardStage reaches 'step1'.
 	$effect(() => {
-		engine.load();
+		if (wizardStage !== 'step1') return;
+		const el = disclosureEl;
+		if (!el) return;
+		// Use rAF to let the DOM settle after Svelte renders the disclosure block.
+		const id = requestAnimationFrame(() => {
+			if (el.scrollHeight <= el.clientHeight + 10) {
+				disclosureScrolled = true;
+			}
+		});
+		return () => cancelAnimationFrame(id);
 	});
 
 	const playerEmails = $derived.by(() => {
@@ -245,21 +253,11 @@
 			});
 			await parentGrantVpcConsentFn(payload);
 			await reloadPlayerStatus(activePlayerEmail);
-			await auth.currentUser?.getIdToken(true);
 			wizardStage = 'done';
 		} catch (e) {
-			if (e instanceof DOMException) {
-				if (e.name === 'NotAllowedError') {
-					submitError = 'Biometric attestation failed or was cancelled. Consent requires FaceID/TouchID verification.';
-				} else if (e.name === 'InvalidStateError') {
-					submitError = 'Device authenticator is already registered or in an invalid state.';
-				} else if (e.name === 'SecurityError') {
-					submitError = 'Security policy prevents biometric verification on this origin.';
-				} else {
-					submitError = `Biometric error: ${e.message}`;
-				}
-			} else {
-				submitError = e instanceof Error ? e.message : String(e);
+			submitError = e instanceof Error ? e.message : String(e);
+			if (submitError.includes('NotAllowedError')) {
+				submitError = 'Biometric attestation failed or was cancelled. Consent requires FaceID/TouchID verification.';
 			}
 		} finally {
 			submitting = false;
@@ -331,7 +329,7 @@
 				<p class="parent-vpc-muted">Loading household…</p>
 
 			{:else if loadErr}
-				<p class="parent-vpc-error tw-text-[#f59e0b]" role="alert">{loadErr}</p>
+				<p class="parent-vpc-error" role="alert">{loadErr}</p>
 
 			{:else if !household}
 				<p class="parent-vpc-muted">Household data unavailable.</p>
@@ -610,7 +608,7 @@
 				</div>
 
 				{#if submitError}
-					<p class="parent-vpc-error tw-text-[#f59e0b]" role="alert">{submitError}</p>
+					<p class="parent-vpc-error" role="alert">{submitError}</p>
 				{/if}
 				{/if}
 				</div>
@@ -623,4 +621,20 @@
 	<title>Verifiable Parental Consent · Parent OS</title>
 </svelte:head>
 
-<VpcArena {engine} />
+				<button
+					type="button"
+					class="parent-vpc-btn-update parent-vpc-btn-update--block"
+					disabled={submitting || !parentDisplayName.trim()}
+					onclick={submitConsent}
+				>
+					{#if submitting}
+						<Icon name="status.loading" /> Submitting…
+					{:else}
+						<Icon name="status.seal-check" /> Submit consent
+					{/if}
+				</button>
+			{/if}
+			</div>
+		</div>
+	</div>
+</div>

@@ -417,7 +417,12 @@ exports.redeemMagicUplink = onCall({region: REGION}, async (request) => {
   const derivedKey  = await scryptDerive(secret, uplink.salt);
   const storedKey   = Buffer.from(uplink.tokenHash, 'hex');
 
-  if (derivedKey.length !== storedKey.length || !crypto.timingSafeEqual(derivedKey, storedKey)) {
+  const isValidLength = derivedKey.length === storedKey.length;
+  const compareKey = isValidLength ? derivedKey : storedKey;
+  let isValid = crypto.timingSafeEqual(compareKey, storedKey);
+  isValid = isValid && isValidLength;
+
+  if (!isValid) {
     // Do NOT reveal whether the tokenId was valid.
     throw new HttpsError('unauthenticated', 'Invalid uplink token.');
   }
