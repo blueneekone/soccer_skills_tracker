@@ -391,13 +391,10 @@ exports.verifyScanToken = onCall(
           .update(`${ticketId}:${piId}`)
           .digest('base64url');
 
-      const providedBuffer = Buffer.from(qrToken);
-      const expectedBuffer = Buffer.from(expectedHmac);
-      const isValidLength = providedBuffer.length === expectedBuffer.length;
-      const compareBuffer = isValidLength ? providedBuffer : expectedBuffer;
-      let tokenMatch = crypto.timingSafeEqual(compareBuffer, expectedBuffer);
-      tokenMatch = tokenMatch && isValidLength;
-
+      const tokenMatch = crypto.timingSafeEqual(
+          Buffer.from(qrToken),
+          Buffer.from(expectedHmac),
+      );
       if (!tokenMatch) {
         return {valid: false, status: 'invalid'};
       }

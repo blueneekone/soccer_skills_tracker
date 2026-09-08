@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { sanitizeSvg } from '$lib/utils/sanitizeSvg.js';
 
 	const NAME_TRUNCATE_THRESHOLD = 20;
 	const LONG_NAME_THRESHOLD = 16;
@@ -43,10 +42,6 @@
 
 	const uid = $props.id();
 	const nameArcId = `operative-id-name-arc-${uid}`;
-
-	const safePortraitSvg = $derived(sanitizeSvg(portraitSvg));
-	const safeBorderSvg = $derived(sanitizeSvg(borderSvg));
-	const safeBannerSvg = $derived(sanitizeSvg(bannerSvg));
 
 	const emblemLogical = 200;
 
@@ -132,7 +127,7 @@
 				aria-hidden="true"
 			>
 				<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-          {@html safeBannerSvg}
+          {@html bannerSvg}
 			</div>
 		{/if}
 
@@ -148,12 +143,12 @@
 					class="oie-portrait tw-flex tw-h-full tw-w-full tw-items-center tw-justify-center tw-overflow-hidden tw-rounded-full tw-border-2 tw-border-cyan-500 tw-bg-slate-700 tw-font-mono"
 				>
 					<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-          {@html safePortraitSvg}
+          {@html portraitSvg}
 				</div>
 				{#if borderSvg}
 					<div class="oie-loadout-border tw-pointer-events-none tw-absolute tw-inset-0" aria-hidden="true">
 						<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-          {@html safeBorderSvg}
+          {@html borderSvg}
 					</div>
 				{/if}
 				{#if showLevelBadge && levelAnchor === 'ring'}
