@@ -1603,9 +1603,16 @@ exports.executeSupportCommand = onCall(
     }
 
     // Support Agent Command Parsing
-    if (cmdStr.startsWith('/sync-roster')) {
-      const match = cmdStr.match(/clubId=([a-zA-Z0-9_-]+)/);
-      const clubId = match ? match[1] : null;
+    const args = cmdStr.split(/\s+/);
+    const cmd = args[0];
+
+    if (cmd === '/sync-roster') {
+      const clubIdArg = args.find((a) => a.startsWith('clubId='));
+      const rawClubId = clubIdArg ? clubIdArg.substring(7) : null;
+
+      // Strict regex validation for exact match
+      const isValidClubId = rawClubId && /^[a-zA-Z0-9_-]+$/.test(rawClubId);
+      const clubId = isValidClubId ? rawClubId : null;
       
       if (!clubId) {
         return { reply: "Usage: /sync-roster clubId=<id>" };
@@ -1622,9 +1629,13 @@ exports.executeSupportCommand = onCall(
       return { reply: `Roster synchronization successfully queued for club: ${clubId}.` };
     }
 
-    if (cmdStr.startsWith('/clear-queue')) {
-      const match = cmdStr.match(/clubId=([a-zA-Z0-9_-]+)/);
-      const clubId = match ? match[1] : null;
+    if (cmd === '/clear-queue') {
+      const clubIdArg = args.find((a) => a.startsWith('clubId='));
+      const rawClubId = clubIdArg ? clubIdArg.substring(7) : null;
+
+      const isValidClubId = rawClubId && /^[a-zA-Z0-9_-]+$/.test(rawClubId);
+      const clubId = isValidClubId ? rawClubId : null;
+
       if (!clubId) {
         return { reply: "Usage: /clear-queue clubId=<id>" };
       }
@@ -1633,7 +1644,7 @@ exports.executeSupportCommand = onCall(
       return { reply: `Compliance queues flushed for club: ${clubId}.` };
     }
 
-    return { reply: `Command not recognized: ${cmdStr.split(' ')[0]}. Available commands: /sync-roster, /clear-queue` };
+    return { reply: `Command not recognized: ${cmd}. Available commands: /sync-roster, /clear-queue` };
   }
 );
 
