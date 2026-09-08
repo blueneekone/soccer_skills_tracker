@@ -25,19 +25,23 @@ describe('loginRouting', () => {
 			expect(userDocHasPlayerRole(undefined)).toBe(false);
 		});
 
-		it('returns false if profile has no roles array', () => {
+		it('returns false if profile has no roles or roles is not an array', () => {
 			expect(userDocHasPlayerRole({})).toBe(false);
 			expect(userDocHasPlayerRole({ roles: 'player' })).toBe(false);
+			expect(userDocHasPlayerRole({ roles: null })).toBe(false);
+			expect(userDocHasPlayerRole({ roles: 123 })).toBe(false);
 		});
 
 		it('returns true if profile roles includes player', () => {
 			expect(userDocHasPlayerRole({ roles: ['player'] })).toBe(true);
 			expect(userDocHasPlayerRole({ roles: ['admin', 'player'] })).toBe(true);
+			expect(userDocHasPlayerRole({ roles: ['player', 'coach'] })).toBe(true);
 		});
 
 		it('returns false if profile roles does not include player', () => {
 			expect(userDocHasPlayerRole({ roles: ['parent'] })).toBe(false);
 			expect(userDocHasPlayerRole({ roles: [] })).toBe(false);
+			expect(userDocHasPlayerRole({ roles: ['admin', 'coach'] })).toBe(false);
 		});
 	});
 
@@ -212,6 +216,9 @@ describe('loginRouting', () => {
 		it('handles malformed URLs gracefully', () => {
 			// Actually URL parsing handles a lot, let's just make sure it doesn't crash on weird inputs
 			expect(getContextFromHref('http://[::1]')).toBe(''); // valid url, unrecognized path
+
+			// Passing a Symbol will throw a TypeError in URL constructor, testing the catch block
+			expect(getContextFromHref(Symbol('invalid-url') as any)).toBe('');
 		});
 	});
 });
