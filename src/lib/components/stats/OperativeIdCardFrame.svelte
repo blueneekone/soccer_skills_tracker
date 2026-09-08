@@ -50,6 +50,10 @@
 	const uid = $props.id();
 	const nameArcId = `oicf-name-arc-${uid}`;
 
+	const safePortraitSvg = $derived(sanitizeSvg(portraitSvg));
+	const safeBorderSvg = $derived(sanitizeSvg(borderSvg));
+	const safeBannerSvg = $derived(sanitizeSvg(bannerSvg));
+
 	const callsign = $derived((displayName || 'Operative').trim().toUpperCase());
 
 	const showLevelChip = $derived(
