@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
 	filterClubsBySport,
 	filterOrganizations,
+	stateForClub,
 	tierForClub,
 	toggleInList,
 	verificationForClub,
@@ -29,6 +30,35 @@ describe('organizationsFilters', () => {
 	it('verificationForClub requires address and phone', () => {
 		expect(verificationForClub(SAMPLE[0]!)).toBe('verified');
 		expect(verificationForClub(SAMPLE[1]!)).toBe('pending');
+	});
+
+	describe('stateForClub', () => {
+		it('extracts state from standard 5-digit zip address', () => {
+			expect(stateForClub({ ...SAMPLE[0]!, verifiedAddress: '123 Main, Austin, TX 78701' })).toBe('TX');
+		});
+
+		it('extracts state from 9-digit zip address', () => {
+			expect(stateForClub({ ...SAMPLE[0]!, verifiedAddress: '123 Main, Austin, TX 78701-1234' })).toBe('TX');
+		});
+
+		it('returns empty string if address is empty', () => {
+			expect(stateForClub({ ...SAMPLE[0]!, verifiedAddress: '' })).toBe('');
+		});
+
+		it('returns empty string if address is undefined', () => {
+			expect(stateForClub({ ...SAMPLE[0]!, verifiedAddress: undefined })).toBe('');
+		});
+
+		it('returns empty string if address regex does not match', () => {
+			// Missing zip code
+			expect(stateForClub({ ...SAMPLE[0]!, verifiedAddress: '123 Main, Austin, TX' })).toBe('');
+			// Lowercase state (regex strictly requires uppercase A-Z)
+			expect(stateForClub({ ...SAMPLE[0]!, verifiedAddress: '123 Main, Austin, tx 78701' })).toBe('');
+			// Malformed zip code
+			expect(stateForClub({ ...SAMPLE[0]!, verifiedAddress: '123 Main, Austin, TX 7870' })).toBe('');
+			// Only state and zip code string
+			expect(stateForClub({ ...SAMPLE[0]!, verifiedAddress: 'NY 10001' })).toBe('NY');
+		});
 	});
 
 	it('tierForClub normalizes subscriptionTier', () => {
