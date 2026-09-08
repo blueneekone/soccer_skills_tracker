@@ -28,6 +28,27 @@ describe('stateHelpers', () => {
       expect(result).toEqual([1, 2, 3]);
       expect(result).not.toBe(arr);
     });
+
+    it('should append an item to an empty array', () => {
+      const arr: number[] = [];
+      const result = appendItem(arr, 1);
+      expect(result).toEqual([1]);
+      expect(result).not.toBe(arr);
+    });
+
+    it('should append an item to an existing array without mutating original', () => {
+      const arr = [1, 2, 3];
+      const result = appendItem(arr, 4);
+      expect(result).toEqual([1, 2, 3, 4]);
+      expect(result).not.toBe(arr);
+      expect(arr).toEqual([1, 2, 3]); // ensure original array is not mutated
+    });
+
+    it('should work with string arrays', () => {
+      const arr = ['a', 'b'];
+      const result = appendItem(arr, 'c');
+      expect(result).toEqual(['a', 'b', 'c']);
+    });
   });
 
   describe('navigateSafely', () => {
