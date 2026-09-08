@@ -228,20 +228,26 @@ async function verifyPartnerSignature(headers, rawBody) {
   // ── API key verification (constant-time scrypt comparison) ──────────────
   const scryptHash = getScryptHash();
   const candidateHash = await scryptHash(apiKey, partner.keySalt);
-  const mainMatch = crypto.timingSafeEqual(
-      Buffer.from(candidateHash, 'hex'),
-      Buffer.from(partner.apiKeyHash, 'hex'),
-  );
+
+  const mainCandidateBuffer = Buffer.from(candidateHash, 'hex');
+  const mainExpectedBuffer = Buffer.from(partner.apiKeyHash, 'hex');
+  const mainIsValidLength = mainCandidateBuffer.length === mainExpectedBuffer.length;
+  const mainCompareBuffer = mainIsValidLength ? mainCandidateBuffer : mainExpectedBuffer;
+  let mainMatch = crypto.timingSafeEqual(mainCompareBuffer, mainExpectedBuffer);
+  mainMatch = mainMatch && mainIsValidLength;
 
   let gracePeriodMatch = false;
   if (!mainMatch && partner.previousApiKeyHash && partner.previousApiKeyHashUntil) {
     const gracePeriodExpiry = new Date(partner.previousApiKeyHashUntil).getTime();
     if (Date.now() < gracePeriodExpiry) {
       const prevHash = await scryptHash(apiKey, partner.keySalt);
-      gracePeriodMatch = crypto.timingSafeEqual(
-          Buffer.from(prevHash, 'hex'),
-          Buffer.from(partner.previousApiKeyHash, 'hex'),
-      );
+
+      const prevCandidateBuffer = Buffer.from(prevHash, 'hex');
+      const prevExpectedBuffer = Buffer.from(partner.previousApiKeyHash, 'hex');
+      const prevIsValidLength = prevCandidateBuffer.length === prevExpectedBuffer.length;
+      const prevCompareBuffer = prevIsValidLength ? prevCandidateBuffer : prevExpectedBuffer;
+      gracePeriodMatch = crypto.timingSafeEqual(prevCompareBuffer, prevExpectedBuffer);
+      gracePeriodMatch = gracePeriodMatch && prevIsValidLength;
     }
   }
 
@@ -279,10 +285,12 @@ async function verifyPartnerSignature(headers, rawBody) {
 
   let sigMatch = false;
   try {
-    sigMatch = crypto.timingSafeEqual(
-        Buffer.from(bodySignatureHeader.toLowerCase(), 'hex'),
-        Buffer.from(expectedSig, 'hex'),
-    );
+    const providedBuffer = Buffer.from(bodySignatureHeader.toLowerCase(), 'hex');
+    const expectedBuffer = Buffer.from(expectedSig, 'hex');
+    const isValidLength = providedBuffer.length === expectedBuffer.length;
+    const compareBuffer = isValidLength ? providedBuffer : expectedBuffer;
+    sigMatch = crypto.timingSafeEqual(compareBuffer, expectedBuffer);
+    sigMatch = sigMatch && isValidLength;
   } catch {
     sigMatch = false;
   }
