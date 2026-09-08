@@ -1,6 +1,7 @@
 <script>
 	import { parseOperativeLoadout } from '$lib/gamification/loadoutSchema.js';
 	import { composeOperativePortrait } from '$lib/gamification/renderOperativeLoadout.js';
+	import { sanitizeSvg } from '$lib/utils/sanitizeSvg.js';
 
 	/**
 	 * Read-only dossier preview — portrait + equipped digital slots (border, badge).
@@ -39,6 +40,11 @@
 		const titleId = parsed.equipped.title;
 		return typeof titleId === 'string' && titleId ? titleId.replace(/^title_/, '').replace(/_/g, ' ') : '';
 	});
+
+	const safeBannerSvg = $derived(sanitizeSvg(layers.bannerSvg));
+	const safePortraitSvg = $derived(sanitizeSvg(layers.portraitSvg));
+	const safeBorderSvg = $derived(sanitizeSvg(layers.borderSvg));
+	const safeBadgeSvg = $derived(sanitizeSvg(layers.badgeSvg));
 </script>
 
 <div
@@ -51,23 +57,23 @@
 		{#if layers.bannerSvg}
 			<div class="olp-banner" aria-hidden="true">
 				<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-          {@html layers.bannerSvg}
+          {@html safeBannerSvg}
 			</div>
 		{/if}
 		<div class="olp-portrait" aria-hidden="true">
 			<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-          {@html layers.portraitSvg}
+          {@html safePortraitSvg}
 		</div>
 		{#if layers.borderSvg}
 			<div class="olp-border" aria-hidden="true">
 				<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-          {@html layers.borderSvg}
+          {@html safeBorderSvg}
 			</div>
 		{/if}
 		{#if layers.badgeSvg}
 			<div class="olp-badge" aria-hidden="true">
 				<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-          {@html layers.badgeSvg}
+          {@html safeBadgeSvg}
 			</div>
 		{/if}
 	</div>
