@@ -624,7 +624,6 @@ export function createTacticalWarRoom(host: TacticalGridHost) {
 	}
 
 	function deleteRoute(routeId: string) {
-		console.log('[DEBUG] gridEngine.deleteRoute called with', routeId);
 		api.deleteRoute(host, routeId, () => selectedRouteId, (v) => (selectedRouteId = v));
 		routeContextMenuOpen = false;
 	}
