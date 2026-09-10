@@ -17,7 +17,7 @@
 	}
 </script>
 
-<div class="waiver-container tw-max-w-md tw-mx-auto tw-p-6 tw-bg-black tw-border tw-border-[#1e293b] tw-text-white tw-mt-10">
+<div class="waiver-container tw-max-w-md tw-mx-auto tw-p-6 tw-bg-black tw-border tw-border-[#1e293b] tw-text-white tw-mt-10 player-os-root">
 	<h1 class="tw-text-xl tw-font-bold tw-mb-4 tw-text-[#14b8a6]">Liability & Media Waivers</h1>
 	<p class="tw-text-sm tw-text-gray-400 tw-mb-6">Please complete this single-column document reader before continuing to player performance data.</p>
 

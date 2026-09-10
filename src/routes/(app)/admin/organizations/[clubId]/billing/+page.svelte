@@ -108,7 +108,7 @@
 	}
 </script>
 
-<div class="tw-flex tw-flex-col tw-gap-6 tw-w-full">
+<div class="tw-flex tw-flex-col tw-gap-6 tw-w-full admin-os-root">
 	
 	<!-- ── Financial Routing (Stripe Connect) ───────────────────────── -->
 	<div class="tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-rounded-none tw-p-6">

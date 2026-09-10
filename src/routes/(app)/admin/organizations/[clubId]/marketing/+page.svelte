@@ -110,7 +110,7 @@
 	}
 </script>
 
-<div class="tw-flex tw-flex-col tw-gap-5 tw-w-full">
+<div class="tw-flex tw-flex-col tw-gap-5 tw-w-full admin-os-root">
 	<div class="tw-flex tw-flex-col tw-gap-1">
 		<h1 class="tw-m-0 tw-text-xl tw-font-extrabold tw-text-[#FAFAFA] tw-flex tw-items-center tw-gap-2.5">
 			<Icon name={"data.target" as IconName} class="tw-text-[#14b8a6]" />

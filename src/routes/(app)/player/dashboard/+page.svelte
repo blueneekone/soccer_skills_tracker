@@ -412,7 +412,7 @@
 
 {#if authStore.isLoading}
 	<div
-		class="player-dossier-root tw-flex tw-h-64 tw-min-h-[40vh] tw-w-full tw-items-center tw-justify-center tw-py-16"
+		class="player-dossier-root tw-flex tw-h-64 tw-min-h-[40vh] tw-w-full tw-items-center tw-justify-center tw-py-16 player-os-root"
 		style="background: var(--pd-bg, #000); color: var(--pd-text-muted, #A1A1AA);"
 		role="status"
 		aria-live="polite"

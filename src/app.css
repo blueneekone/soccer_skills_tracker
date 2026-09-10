@@ -1,4 +1,4 @@
-@import "./design-tokens.css";
+@import "./design-tokens-v2.css";
 
 @tailwind base;
 @tailwind components;
@@ -88,11 +88,58 @@ button:active, .btn:active, a:active, [role="button"]:active {
 }
 
 /* Fluid Bento Grid clamps to prevent grid-squish bugs */
+
 .bento-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(clamp(280px, 30vw, 350px), 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, clamp(280px, 30vw, 350px)), 1fr));
   gap: 1.25rem;
 }
+
+.bento-grid > * {
+    min-width: 0; /* anti-squish child math */
+}
+
+/* Base Top-lit Hairlines and Tactile Glows for all Bento/Dashboard Cards */
+.card, .bento-card, .z2-panel, .player-card {
+  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.08);
+  transition: transform 200ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 200ms, border-color 200ms !important;
+}
+
+/* Generic Interactive tactile hovers */
+a.card:hover, button.card:hover, div[role="button"].card:hover,
+a.bento-card:hover, button.bento-card:hover, div[role="button"].bento-card:hover,
+a.z2-panel:hover, button.z2-panel:hover, div[role="button"].z2-panel:hover,
+a.player-card:hover, button.player-card:hover, div[role="button"].player-card:hover,
+.hover-tactile:hover {
+  border-color: #daff0a !important;
+  box-shadow: 0 0 15px rgba(218, 255, 10, 0.15), inset 0 1px 0 0 rgba(255, 255, 255, 0.08) !important;
+}
+
+/* Persona Specific Geometries - Admin, Commissioner, Director, Coach */
+.coach-os-root .card, .coach-os-root .bento-card, .coach-os-root .z2-panel,
+.admin-os-root .card, .admin-os-root .bento-card, .admin-os-root .z2-panel,
+.director-os-root .card, .director-os-root .bento-card, .director-os-root .z2-panel,
+.commissioner-os-root .card, .commissioner-os-root .bento-card, .commissioner-os-root .z2-panel {
+    border-radius: 0px !important;
+}
+
+/* Persona Specific Geometries - Parent */
+.parent-os-root .card, .parent-os-root .bento-card, .parent-os-root .z2-panel {
+    border-radius: 24px !important;
+}
+
+/* Persona Specific Geometries - Player OS */
+.player-os-root .card, .player-os-root .bento-card, .player-os-root .z2-panel, .player-card {
+    clip-path: polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px);
+    border-radius: 0 !important; /* wipe standard radii if clipped */
+}
+
+/* Force Table and Telemetry fonts */
+table, td.stats-cell, td.telemetry-cell {
+    font-family: 'Geist Mono', monospace !important;
+    font-variant-numeric: tabular-nums !important;
+}
+
 
 /* Glow filters for EKG lines and tactical radar loops */
 .glow-pulse {
@@ -176,4 +223,8 @@ button:active,
     @apply tw-bg-[#f87171];
     box-shadow: 0 0 15px rgba(239, 68, 68, 0.4);
   }
+}
+/* Add global anti-squish to flex/grid children */
+.tw-flex > *, .tw-grid > *, .bento-grid > *, .dashboard-grid > * {
+    min-width: 0;
 }

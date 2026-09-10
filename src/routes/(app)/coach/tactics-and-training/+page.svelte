@@ -10,7 +10,7 @@
 	<title>Coach • Tactics & Training | SSTracker</title>
 </svelte:head>
 
-<div class="pd-tactics-training-root tw-min-h-screen tw-bg-[#000000] tw-text-[#fafafa]">
+<div class="pd-tactics-training-root tw-min-h-screen tw-bg-[#000000] tw-text-[#fafafa] coach-os-root">
 	<TacticsTrainingHUD {engine} />
 	<TacticsTrainingArena {engine} />
 </div>

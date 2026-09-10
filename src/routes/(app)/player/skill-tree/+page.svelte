@@ -91,7 +91,7 @@
 	<title>Skill Tree · Physical Progression · SSTRACKER</title>
 </svelte:head>
 
-<div class="pd-page-root player-dossier-root st-page tw-h-[100dvh] tw-min-w-0 tw-overflow-hidden tw-flex tw-flex-col tw-text-white tw-font-mono" style="background: var(--pd-bg);">
+<div class="pd-page-root player-dossier-root st-page tw-h-[100dvh] tw-min-w-0 tw-overflow-hidden tw-flex tw-flex-col tw-text-white tw-font-mono player-os-root" style="background: var(--pd-bg);">
 
 	<div class="pd-content-wrap tw-flex-1 tw-min-h-0 tw-overflow-y-auto">
 	<PlayerOsPageStrap eyebrow="Progress / Skill tree" title="Physical progression">

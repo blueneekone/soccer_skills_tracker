@@ -23,7 +23,7 @@
 	<title>Commissioner OS | State-Wide Federation Command</title>
 </svelte:head>
 
-<div class="commissioner-dashboard-shell tw-flex tw-flex-col tw-w-full tw-h-full tw-bg-[#000000]">
+<div class="commissioner-dashboard-shell tw-flex tw-flex-col tw-w-full tw-h-full tw-bg-[#000000] commissioner-os-root">
 	<!-- The HUD -->
 	<CommissionerDashboardHUD bind:engine />
 

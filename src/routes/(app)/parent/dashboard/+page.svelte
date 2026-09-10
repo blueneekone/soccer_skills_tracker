@@ -51,7 +51,7 @@
 </svelte:head>
 
 <!-- Parent OS Trusted Co-Op Partner Aesthetic -->
-<div class="pd-page-root compliance-vault tw-bg-[#0B0F19] tw-text-white tw-p-6 lg:tw-p-8 tw-font-sans tw-min-h-0">
+<div class="pd-page-root compliance-vault tw-bg-[#0B0F19] tw-text-white tw-p-6 lg:tw-p-8 tw-font-sans tw-min-h-0 parent-os-root">
 	<div class="tw-max-w-[1600px] tw-mx-auto tw-space-y-6">
 		
 		<!-- Header / Command Plane Status HUD -->

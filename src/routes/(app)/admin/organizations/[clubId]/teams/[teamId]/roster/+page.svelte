@@ -456,7 +456,7 @@ import { getContext, untrack } from 'svelte';
 	/>
 {/if}
 
-<div class="roster-page">
+<div class="roster-page admin-os-root">
 
 	<!-- ── Extended breadcrumb (Organizations > Club > Teams > Team > Roster) ──── -->
 	<nav class="roster-breadcrumb" aria-label="Breadcrumb">

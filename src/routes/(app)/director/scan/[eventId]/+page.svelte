@@ -59,7 +59,7 @@ import { onDestroy, untrack } from 'svelte';
 	}
 </script>
 
-<div class="scanner-page">
+<div class="scanner-page director-os-root">
 	<header class="scan-header">
 		<button class="btn-back" onclick={() => goto('/director/events')}>← Events</button>
 		<div class="header-center">

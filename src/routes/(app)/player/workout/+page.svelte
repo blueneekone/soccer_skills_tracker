@@ -676,7 +676,7 @@
     selectedDrill = drill;
   }
 </script>
-<div class="pd-page-root player-dossier-root">
+<div class="pd-page-root player-dossier-root player-os-root">
 <PlayerWorkoutPageView
   {hasCoachIntents}
   {activeMissionId}

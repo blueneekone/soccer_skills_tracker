@@ -17,7 +17,7 @@
 </svelte:head>
 
 {#if !authStore.isSuper}
-  <div class="tw-flex tw-items-center tw-justify-center tw-min-h-[60vh] tw-text-[#A1A1AA]">
+  <div class="tw-flex tw-items-center tw-justify-center tw-min-h-[60vh] tw-text-[#A1A1AA] admin-os-root">
     <p>Super-admin access required.</p>
   </div>
 {:else}

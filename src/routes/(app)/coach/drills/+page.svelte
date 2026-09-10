@@ -23,6 +23,6 @@
 	<title>Coach · Redirecting to The Forge · SSTRACKER</title>
 </svelte:head>
 
-<div class="tw-p-8 tw-text-center tw-font-mono tw-text-xs tw-text-slate-400">
+<div class="tw-p-8 tw-text-center tw-font-mono tw-text-xs tw-text-slate-400 coach-os-root">
 	Redirecting to Tactical Forge & Playbook Studio…
 </div>

@@ -6,7 +6,7 @@
   ]);
 </script>
 
-<div class="tw-p-6 tw-[#0f172a] tw-text-white tw-rounded-[24px] tw-border tw-border-slate-700">
+<div class="tw-p-6 tw-[#0f172a] tw-text-white tw-rounded-[24px] tw-border tw-border-slate-700 parent-os-root">
   <h1 class="tw-text-2xl tw-font-bold tw-mb-4">Parent OS - Emotional Safety Enjoyment Feed</h1>
   <p class="tw-text-slate-400 tw-text-sm tw-mb-6">
     Qualitative metrics focused exclusively on emotional safety, team climate, and athlete well-being.

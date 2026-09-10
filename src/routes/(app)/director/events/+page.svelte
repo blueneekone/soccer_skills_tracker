@@ -87,7 +87,7 @@ import { onDestroy, onMount, untrack } from 'svelte';
 	}
 </script>
 
-<div class="events-page">
+<div class="events-page director-os-root">
 	<header class="page-header">
 		<div class="header-content">
 			<h1 class="page-title">Events</h1>

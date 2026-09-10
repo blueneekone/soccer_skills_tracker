@@ -12,7 +12,7 @@
 	<title>Commissioner OS | Federation Compliance Matrix</title>
 </svelte:head>
 
-<div class="commissioner-matrix-shell tw-h-screen tw-w-full tw-bg-[#000000] tw-text-white tw-overflow-hidden tw-flex tw-flex-col tw-font-sans tw-rounded-none">
+<div class="commissioner-matrix-shell tw-h-screen tw-w-full tw-bg-[#000000] tw-text-white tw-overflow-hidden tw-flex tw-flex-col tw-font-sans tw-rounded-none commissioner-os-root">
 	<!-- Commissioner HUD (Header / Command Plane Status) -->
 	<CommissionerHUD />
 

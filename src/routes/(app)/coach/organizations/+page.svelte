@@ -57,7 +57,7 @@
 	<title>Organizations · Coach OS · Vanguard OS</title>
 </svelte:head>
 
-<div class="pd-page-root tw-min-h-[100dvh] tw-bg-[#020617] tw-text-slate-300 tw-flex tw-flex-col tw-overflow-x-hidden">
+<div class="pd-page-root tw-min-h-[100dvh] tw-bg-[#020617] tw-text-slate-300 tw-flex tw-flex-col tw-overflow-x-hidden coach-os-root">
 	<!-- Nexus Header Banner -->
 	<header class="tw-w-full tw-bg-[#0b0f19] tw-border-b tw-border-slate-800 tw-py-6 tw-px-6">
 		<div class="tw-max-w-7xl tw-mx-auto tw-flex tw-flex-wrap tw-items-center tw-justify-between tw-gap-4">

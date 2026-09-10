@@ -20,7 +20,7 @@
 <svelte:window onkeydown={engine.gridEngine.handleKeyDown} />
 
 <div
-	class="coach-tactics-shell pd-page-root tw-fixed tw-inset-0 tw-overflow-hidden tw-font-mono"
+	class="coach-tactics-shell pd-page-root tw-fixed tw-inset-0 tw-overflow-hidden tw-font-mono coach-os-root"
 	style="z-index: 1050;"
 	in:scale={{ duration: 350, start: 0.97, easing: quintOut }}
 >

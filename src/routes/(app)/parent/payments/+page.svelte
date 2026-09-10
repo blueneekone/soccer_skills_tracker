@@ -236,7 +236,7 @@
 	/>
 {/if}
 
-<div class="pd-page-root compliance-vault pp-root tw-mx-auto tw-box-border tw-w-full tw-max-w-3xl tw-min-w-0 tw-px-4 tw-pb-24 tw-pt-6">
+<div class="pd-page-root compliance-vault pp-root tw-mx-auto tw-box-border tw-w-full tw-max-w-3xl tw-min-w-0 tw-px-4 tw-pb-24 tw-pt-6 parent-os-root">
 	<header class="tw-mb-8 tw-min-w-0">
 		<p class="tw-mb-1 tw-font-mono tw-text-xs tw-uppercase tw-tracking-widest tw-text-slate-500">
 			Parent Portal

@@ -216,7 +216,7 @@ import { getContext, untrack } from 'svelte';
 	}
 </script>
 
-<div class="tw-flex tw-flex-col tw-gap-6 tw-w-full">
+<div class="tw-flex tw-flex-col tw-gap-6 tw-w-full admin-os-root">
 	{#if ctx.clubLoading}
 		<div class="tw-p-10 tw-text-center tw-text-[#A1A1AA] tw-font-mono tw-text-xs">Loading organization…</div>
 	{:else if ctx.clubErr}

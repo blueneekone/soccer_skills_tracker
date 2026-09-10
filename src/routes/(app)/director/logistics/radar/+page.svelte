@@ -15,7 +15,7 @@
 	}
 </script>
 
-<div class="tw-h-[100dvh] tw-w-full tw-overflow-hidden tw-flex tw-bg-[#0a0a0a]">
+<div class="tw-h-[100dvh] tw-w-full tw-overflow-hidden tw-flex tw-bg-[#0a0a0a] director-os-root">
 	<!-- Main Arena (Glass) -->
 	<div class="tw-flex-1 tw-relative">
 		<TacticalRadarArena {engine} />

@@ -65,7 +65,7 @@
 	<title>Roster Importer — Director OS</title>
 </svelte:head>
 
-<div class="pd-page-root tw-min-h-screen tw-bg-[#000000] tw-text-white tw-p-8 tw-font-sans">
+<div class="pd-page-root tw-min-h-screen tw-bg-[#000000] tw-text-white tw-p-8 tw-font-sans director-os-root">
 	<div class="tw-max-w-4xl tw-mx-auto tw-space-y-6">
 		<div class="tw-flex tw-items-center tw-justify-between">
 			<div>

@@ -278,7 +278,7 @@
 </svelte:head>
 
 
-<div class="tw-bg-[#000000] tw-min-h-dvh tw-text-white tw-font-sans tw-overflow-y-auto tw-p-4 lg:tw-p-8">
+<div class="tw-bg-[#000000] tw-min-h-dvh tw-text-white tw-font-sans tw-overflow-y-auto tw-p-4 lg:tw-p-8 parent-os-root">
 	<div class="tw-max-w-4xl tw-mx-auto">
 		<div class="tw-rounded-[24px] tw-border tw-border-[#334155] tw-bg-slate-900 tw-shadow-2xl tw-flex tw-flex-col tw-overflow-hidden">
 

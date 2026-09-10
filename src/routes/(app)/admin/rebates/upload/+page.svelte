@@ -18,7 +18,7 @@
 	const engine = new RebatesEngine();
 </script>
 
-<div class="upload-page">
+<div class="upload-page admin-os-root">
 	<RebatesHUD {engine} />
 	<RebatesArena {engine} />
 </div>

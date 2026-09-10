@@ -2,7 +2,7 @@
 	// 🛡️ SafeSport Compliance Mandate: Secure WebAuthn Verification Protocol Active
 </script>
 
-<div class="pd-page-root tw-min-h-screen tw-bg-[#020617] tw-text-white tw-p-8 tw-font-sans">
+<div class="pd-page-root tw-min-h-screen tw-bg-[#020617] tw-text-white tw-p-8 tw-font-sans coach-os-root">
 	<div class="tw-max-w-4xl tw-mx-auto tw-space-y-6">
 		<h1 class="tw-text-2xl tw-font-bold tw-tracking-tight">Coach Messages & Communications</h1>
 

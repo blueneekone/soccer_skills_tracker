@@ -47,7 +47,7 @@
 	<title>Coach · Tactical Forge & Playbook Studio · SSTRACKER</title>
 </svelte:head>
 
-<div class="tw-min-h-screen tw-bg-[#020617] tw-text-slate-100 tw-font-sans">
+<div class="tw-min-h-screen tw-bg-[#020617] tw-text-slate-100 tw-font-sans coach-os-root">
 	<!-- Unified Master Forge Interface Header -->
 	<header class="tw-bg-[#080d1a] tw-border-b tw-border-slate-800/80 tw-sticky tw-top-0 tw-z-40 tw-shadow-2xl">
 		<!-- Top Command Bar: Identity, Squad Anchor, and War Room Shortcut -->

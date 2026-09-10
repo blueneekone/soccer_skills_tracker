@@ -64,7 +64,7 @@
 </script>
 
 <!-- 12-Column Bento Directory Layout -->
-<div class="grid grid-cols-12 gap-6 p-6 tw-font-mono">
+<div class="grid grid-cols-12 gap-6 p-6 tw-font-mono director-os-root">
     <!-- Search Banner (Span 12) -->
     <div class="col-span-12 bg-gray-900 border border-teal-500/20 p-6 rounded-xl flex items-center justify-between">
         <h1 class="text-2xl font-bold text-white">Sport Tutoring Marketplace</h1>

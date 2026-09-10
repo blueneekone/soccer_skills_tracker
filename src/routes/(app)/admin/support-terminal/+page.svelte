@@ -13,7 +13,7 @@
 </svelte:head>
 
 <div
-	class="tw-flex tw-flex-col tw-w-full tw-min-w-0 tw-flex-1 tw-gap-6 tw-bg-[#0B0F19] tw-text-[#FAFAFA] tw-p-6 lg:tw-p-8 tw-box-border tw-overflow-y-auto"
+	class="tw-flex tw-flex-col tw-w-full tw-min-w-0 tw-flex-1 tw-gap-6 tw-bg-[#0B0F19] tw-text-[#FAFAFA] tw-p-6 lg:tw-p-8 tw-box-border tw-overflow-y-auto admin-os-root"
 	data-admin-shell="true"
 >
 	<!-- Header -->
