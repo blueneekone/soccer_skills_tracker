@@ -56,6 +56,12 @@
 
 	$effect(() => {
 		if (!db || !authStore.isAuthenticated) return;
+		if (auth.currentUser && (!authStore.clubId || !authStore.userProfile?.claims?.clubId)) {
+			(async () => {
+				await auth.currentUser.getIdToken(true);
+				await authStore.syncClaims();
+			})();
+		}
 		if (!householdId || authStore.role !== 'parent') {
 			household = null;
 			loadingHousehold = false;
@@ -70,7 +76,7 @@
 				const snap = await getDoc(doc(db, 'households', householdId));
 				if (cancelled) return;
 				if (!snap.exists()) {
-					loadErr = 'Household record not found. Ask your director to link your account.';
+					loadErr = (!authStore.clubId) ? 'Not Assigned to a Club. Ask your director to link your account.' : 'Household record not found. Ask your director to link your account.';
 					household = null;
 					loadingHousehold = false;
 					return;
