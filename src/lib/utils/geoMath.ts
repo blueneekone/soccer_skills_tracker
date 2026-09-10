@@ -28,7 +28,8 @@ export function calculateHaversineDistance(
 			Math.sin(dLon / 2);
 
 	const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-	return EARTH_RADIUS_MILES * c;
+	const R = 3958.8; // Earth radius in miles
+	return R * c;
 }
 
 /**

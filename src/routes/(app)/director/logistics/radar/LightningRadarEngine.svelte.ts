@@ -1,6 +1,7 @@
 import { isFirestoreReady } from '$lib/utils/firestoreGuard.js';
 import { untrack } from 'svelte';
 import { calculateHaversineDistance } from '$lib/utils/geoMath.js';
+import { getFirestore, collection, query, where, onSnapshot } from 'firebase/firestore';
 
 export class LightningRadarEngine {
 	// Threat levels: Green (safe), Amber (warning, 10-15 miles), Red (critical, < 10 miles)
@@ -14,9 +15,13 @@ export class LightningRadarEngine {
 		this.init();
 
 		$effect(() => {
-			untrack(() => {
+			return untrack(() => {
 				if (!isFirestoreReady()) return;
-				// Gated DB init logic could go here if loading historical strikes
+				const q = query(collection(getFirestore(), 'strikes'), where('timestamp', '>=', new Date(Date.now() - 30 * 60 * 1000).getTime()));
+				const unsub = onSnapshot(q, (snap) => {
+					this.strikes = snap.docs.map(doc => doc.data()) as any;
+				});
+				return () => unsub();
 			});
 		});
 	}
