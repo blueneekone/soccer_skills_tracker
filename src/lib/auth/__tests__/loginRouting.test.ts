@@ -25,11 +25,18 @@ describe('loginRouting', () => {
 			expect(userDocHasPlayerRole(undefined)).toBe(false);
 		});
 
+		it('returns false for primitive profile types', () => {
+			expect(userDocHasPlayerRole('string profile' as any)).toBe(false);
+			expect(userDocHasPlayerRole(123 as any)).toBe(false);
+			expect(userDocHasPlayerRole(true as any)).toBe(false);
+		});
+
 		it('returns false if profile has no roles or roles is not an array', () => {
 			expect(userDocHasPlayerRole({})).toBe(false);
 			expect(userDocHasPlayerRole({ roles: 'player' })).toBe(false);
 			expect(userDocHasPlayerRole({ roles: null })).toBe(false);
 			expect(userDocHasPlayerRole({ roles: 123 })).toBe(false);
+			expect(userDocHasPlayerRole({ roles: { 0: 'player', length: 1 } })).toBe(false); // array-like object
 		});
 
 		it('returns true if profile roles includes player', () => {
@@ -38,10 +45,21 @@ describe('loginRouting', () => {
 			expect(userDocHasPlayerRole({ roles: ['player', 'coach'] })).toBe(true);
 		});
 
+		it('returns false if profile roles does not include player (case-sensitive)', () => {
+			expect(userDocHasPlayerRole({ roles: ['Player'] })).toBe(false);
+			expect(userDocHasPlayerRole({ roles: ['PLAYER'] })).toBe(false);
+			expect(userDocHasPlayerRole({ roles: [' player '] })).toBe(false);
+		});
+
 		it('returns false if profile roles does not include player', () => {
 			expect(userDocHasPlayerRole({ roles: ['parent'] })).toBe(false);
 			expect(userDocHasPlayerRole({ roles: [] })).toBe(false);
 			expect(userDocHasPlayerRole({ roles: ['admin', 'coach'] })).toBe(false);
+		});
+
+		it('returns false gracefully when roles array contains unexpected types', () => {
+			expect(userDocHasPlayerRole({ roles: [null, undefined, 123, {}] })).toBe(false);
+			expect(userDocHasPlayerRole({ roles: [null, 'player'] })).toBe(true);
 		});
 	});
 
