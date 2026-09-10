@@ -44,8 +44,8 @@ describe('commsPhase4c — VPC consentSponsor', () => {
 	it('parent vpc page exposes consentSponsor checkbox separate from comms', () => {
 		const src = [
 			readFileSync(VPC, 'utf8'),
-			readFileSync(join(ROOT, 'routes/(app)/parent/vpc/VpcEngine.svelte.ts'), 'utf8'),
-			readFileSync(join(ROOT, 'routes/(app)/parent/vpc/VpcArena.svelte'), 'utf8')
+			readFileSync(join(ROOT, 'lib/components/compliance/VpcStep2Assertions.svelte'), 'utf8'),
+			readFileSync(join(ROOT, 'lib/components/compliance/VpcStep3Attestation.svelte'), 'utf8')
 		].join('\\n');
 		expect(src).toMatch(/consentSponsor/);
 		expect(src).toMatch(/consentSponsor/);
@@ -91,7 +91,7 @@ describe('commsPhase4c — client surfaces', () => {
 	});
 });
 
-describe.skip('commsPhase4c — deploy + roadmap', () => {
+describe('commsPhase4c — deploy + roadmap', () => {
 	it('index and deploy:comms wire sponsor callables', () => {
 		expect(readFileSync(INDEX, 'utf8')).toMatch(/sendSponsorPartnerDigest/);
 		const pkg = readFileSync(PKG, 'utf8');
@@ -105,7 +105,7 @@ describe.skip('commsPhase4c — deploy + roadmap', () => {
 		expect(rules).toMatch(/sponsor_partner/);
 	});
 
-	it.skip('ROADMAP 4.16c marked Done', () => {
+	it('ROADMAP 4.16c marked Done', () => {
 		const roadmap = readFileSync(ROADMAP, 'utf8');
 		expect(roadmap).toMatch(/\| 4\.16c \| \*\*Done\*\*/);
 	});
