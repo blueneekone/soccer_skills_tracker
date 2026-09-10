@@ -50,6 +50,9 @@
 	const uid = $props.id();
 	const nameArcId = `oicf-name-arc-${uid}`;
 
+	const safePortraitSvg = $derived(sanitizeSvg(portraitSvg));
+	const safeBorderSvg = $derived(sanitizeSvg(borderSvg));
+	const safeBannerSvg = $derived(sanitizeSvg(bannerSvg));
 
 	const callsign = $derived((displayName || 'Operative').trim().toUpperCase());
 
@@ -106,6 +109,7 @@
 		[callsign, typeLine, rankLine, showLevelChip ? levelChipLabel : ''].filter(Boolean).join(' · ') ||
 			'Operative ID card',
 	);
+
 </script>
 
 <div
@@ -124,10 +128,10 @@
 	<p class="oicf-type-line qa-mono">{typeLine}</p>
 
 	<div class="oicf-art-well" aria-hidden="true">
-		{#if bannerSvg}
+		{#if safeBannerSvg}
 			<div class="oicf-banner">
 				<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-          {@html bannerSvg}
+          {@html safeBannerSvg}
 			</div>
 		{/if}
 		<div class="oicf-portrait-stage">
@@ -140,12 +144,12 @@
 			>
 				<div class="oicf-portrait">
 					<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-          {@html portraitSvg}
+          {@html safePortraitSvg}
 				</div>
-				{#if borderSvg}
+				{#if safeBorderSvg}
 					<div class="oicf-loadout-border" aria-hidden="true">
 						<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-          {@html borderSvg}
+          {@html safeBorderSvg}
 					</div>
 				{/if}
 			</div>
