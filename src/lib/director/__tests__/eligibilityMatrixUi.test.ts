@@ -60,4 +60,74 @@ describe("eligibilityMatrixUi", () => {
       expect(countActiveEligibilityGates(partialWithExtra)).toBe(2);
     });
   });
+
+  describe("describeEligibilityMatrixValidation", () => {
+    it("returns warning state when matrix is null or undefined", () => {
+      const resultNull = describeEligibilityMatrixValidation(null);
+      expect(resultNull).toMatchObject({
+        level: "warn",
+        activeCount: 0,
+        totalCount: 5, // DEFAULT_ELIGIBILITY_MATRIX keys length
+        message: "No gates are enabled — every roster player will show as eligible.",
+      });
+
+      const resultUndefined = describeEligibilityMatrixValidation(undefined);
+      expect(resultUndefined).toMatchObject({
+        level: "warn",
+        activeCount: 0,
+        totalCount: 5,
+      });
+    });
+
+    it("returns warning state when all gates are disabled", () => {
+      const allOff = normalizeEligibilityMatrix({
+        requireWaiver: false,
+        requirePassportVerified: false,
+        requireVpcForMinors: false,
+        requireGuardianLinked: false,
+        requireSafeSportClearance: false,
+      });
+      const result = describeEligibilityMatrixValidation(allOff);
+      expect(result).toMatchObject({
+        level: "warn",
+        activeCount: 0,
+        totalCount: 5,
+        message: "No gates are enabled — every roster player will show as eligible.",
+      });
+    });
+
+    it("returns ok state with correct count when some gates are enabled", () => {
+      const partial = normalizeEligibilityMatrix({
+        requireWaiver: true,
+        requirePassportVerified: false,
+        requireVpcForMinors: true,
+        requireGuardianLinked: false,
+        requireSafeSportClearance: false,
+      });
+      const result = describeEligibilityMatrixValidation(partial);
+      expect(result).toMatchObject({
+        level: "ok",
+        activeCount: 2,
+        totalCount: 5,
+        message: "2 of 5 gates active.",
+      });
+    });
+
+    it("returns ok state with correct count when all gates are enabled", () => {
+      const allOn = normalizeEligibilityMatrix({
+        requireWaiver: true,
+        requirePassportVerified: true,
+        requireVpcForMinors: true,
+        requireGuardianLinked: true,
+        requireSafeSportClearance: true,
+      });
+      const result = describeEligibilityMatrixValidation(allOn);
+      expect(result).toMatchObject({
+        level: "ok",
+        activeCount: 5,
+        totalCount: 5,
+        message: "5 of 5 gates active.",
+      });
+    });
+  });
 });
