@@ -1,4 +1,5 @@
 <script lang="ts">
+import { onDestroy, onMount, untrack } from 'svelte';
 	/**
 	 * /account/settings/phone — Phone Number Verification Shell
 	 * ──────────────────────────────────────────────────────────
@@ -14,9 +15,7 @@
 	 *     (PhoneLinkArena) together.
 	 */
 
-	import { onMount, onDestroy } from 'svelte';
 	import { goto } from '$app/navigation';
-	import { untrack } from 'svelte';
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { PhoneLinkEngine } from '$lib/components/phone/PhoneLinkEngine.svelte.js';
 	import PhoneLinkArena from '$lib/components/phone/PhoneLinkArena.svelte';

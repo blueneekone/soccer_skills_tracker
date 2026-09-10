@@ -1,9 +1,8 @@
 <script lang="ts">
+import { onDestroy, untrack } from 'svelte';
 	import { page } from '$app/state';
 	import { browser } from '$app/environment';
-	import { onDestroy } from 'svelte';
 	import { goto } from '$app/navigation';
-	import { untrack } from 'svelte';
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { createTicketScanner } from '$lib/services/ticketScanner.svelte.js';
 
