@@ -41,7 +41,7 @@
 	<ClearanceGate {engine} />
 {:else}
 	<!-- Vanguard root: deep void background, native page scrolling, no overflow traps. -->
-	<div class="coach-nexus-canvas tw-relative tw-flex tw-flex-col tw-h-full tw-w-full tw-text-[#FAFAFA]">
+	<div class="coach-nexus-canvas tw-relative tw-flex tw-flex-col tw-h-full tw-w-full tw-text-[#FAFAFA] coach-os-root">
 		<!-- Background ambient grid -->
 		<div
 			class="tw-pointer-events-none tw-absolute tw-inset-0 tw-z-0 tw-opacity-[0.08]"

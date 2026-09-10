@@ -26,7 +26,7 @@
   }
 </script>
 
-<div class="tw-p-6 tw-bg-[#0f172a] tw-text-white tw-rounded-[24px] tw-border tw-border-slate-700">
+<div class="tw-p-6 tw-bg-[#0f172a] tw-text-white tw-rounded-[24px] tw-border tw-border-slate-700 parent-os-root">
   <h1 class="tw-text-2xl tw-font-bold tw-mb-4">Parent OS - COPPA Gates & Cryptographic Digital Waivers</h1>
 
   {#if !challengeSubmitted}

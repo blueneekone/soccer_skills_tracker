@@ -14,7 +14,7 @@
     let targetCellId = $state('');
 </script>
 
-<div class="tw-p-8 tw-bg-[#0a0a0a] tw-text-[#f8fafc] tw-min-h-[100dvh] tw-font-sans tw-rounded-none">
+<div class="tw-p-8 tw-bg-[#0a0a0a] tw-text-[#f8fafc] tw-min-h-[100dvh] tw-font-sans tw-rounded-none admin-os-root">
     <h1 class="tw-text-2xl tw-font-bold tw-text-[#14b8a6] tw-mb-6 tw-uppercase tw-tracking-wider">Cell Migrations Console</h1>
 
     <div class="tw-grid tw-grid-cols-12 tw-gap-4">

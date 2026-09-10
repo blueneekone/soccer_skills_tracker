@@ -250,7 +250,7 @@
 	<title>Organization Users · NEXUS COMMAND</title>
 </svelte:head>
 
-<div class="tw-flex tw-flex-col tw-gap-5 tw-w-full">
+<div class="tw-flex tw-flex-col tw-gap-5 tw-w-full admin-os-root">
 	<!-- Header & Actions -->
 	<div class="tw-flex tw-flex-wrap tw-items-center tw-justify-between tw-gap-4">
 		<div class="tw-flex tw-flex-col tw-gap-1">

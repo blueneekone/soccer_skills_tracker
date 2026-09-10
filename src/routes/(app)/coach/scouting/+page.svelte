@@ -7,7 +7,7 @@
 	<title>Coach • Scouting Dossier & Talent Matrix • SSTracker</title>
 </svelte:head>
 
-<div class="pd-page-root tw-min-h-screen tw-bg-[#000000] tw-text-[#fafafa] tw-flex tw-flex-col tw-overflow-x-hidden">
+<div class="pd-page-root tw-min-h-screen tw-bg-[#000000] tw-text-[#fafafa] tw-flex tw-flex-col tw-overflow-x-hidden coach-os-root">
 	<!-- Primary Scouting Surface (Prospect Matrix & Roster Quick Log) -->
 	<CoachScoutingView />
 

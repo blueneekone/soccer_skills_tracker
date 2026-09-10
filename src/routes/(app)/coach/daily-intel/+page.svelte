@@ -10,7 +10,7 @@
 	<title>Mission Control · Coach OS</title>
 </svelte:head>
 
-<div class="tw-p-8 tw-bg-[#000000] tw-h-[100dvh] tw-overflow-hidden tw-text-white pd-page-root st-bento">
+<div class="tw-p-8 tw-bg-[#000000] tw-h-[100dvh] tw-overflow-hidden tw-text-white pd-page-root st-bento coach-os-root">
 	<h1 class="tw-font-sans tw-text-2xl tw-font-bold tw-mb-6">Mission Control</h1>
 
 	<!-- .intel-panel with 24px vertical padding (tw-py-6) and 16px horizontal padding (tw-px-4) -->

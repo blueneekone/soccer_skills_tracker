@@ -67,7 +67,7 @@
 	<title>Roster — {teamMeta?.name ?? teamId} · Director OS · Vanguard OS</title>
 </svelte:head>
 
-<div class="dtr-root">
+<div class="dtr-root director-os-root">
 	<header class="dtr-header">
 		<nav class="dtr-breadcrumb" aria-label="Breadcrumb">
 			<a href="/director/dashboard?tab=teams" class="dtr-bc-link">← Teams</a>

@@ -25,7 +25,7 @@
 
 </script>
 
-<div class="tw-p-8 tw-bg-[#0a0a0a] tw-text-[#f8fafc] tw-min-h-[100dvh] tw-font-sans tw-rounded-none">
+<div class="tw-p-8 tw-bg-[#0a0a0a] tw-text-[#f8fafc] tw-min-h-[100dvh] tw-font-sans tw-rounded-none admin-os-root">
     <div class="tw-flex tw-justify-between tw-items-center tw-mb-6">
         <h1 class="tw-text-2xl tw-font-bold tw-text-[#14b8a6] tw-uppercase tw-tracking-wider">Stripe Entitlement Reconciliation</h1>
     </div>

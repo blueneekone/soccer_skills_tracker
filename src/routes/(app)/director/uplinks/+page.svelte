@@ -142,7 +142,7 @@
 	<title>Magic Uplinks — Vanguard Director</title>
 </svelte:head>
 
-<div class="console">
+<div class="console director-os-root">
 
 	<!-- ── Page header ────────────────────────────────────────────────────── -->
 	<div class="page-header">

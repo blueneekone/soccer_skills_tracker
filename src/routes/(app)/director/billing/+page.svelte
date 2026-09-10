@@ -62,7 +62,7 @@
 	<title>Billing Portal — Director OS</title>
 </svelte:head>
 
-<div class="pd-page-root tw-h-[100dvh] tw-overflow-hidden tw-bg-[#000000] tw-text-[#FAFAFA] tw-flex tw-flex-col tw-font-mono tw-p-6">
+<div class="pd-page-root tw-h-[100dvh] tw-overflow-hidden tw-bg-[#000000] tw-text-[#FAFAFA] tw-flex tw-flex-col tw-font-mono tw-p-6 director-os-root">
 	<div class="tw-max-w-4xl tw-w-full tw-mx-auto tw-space-y-6">
 		<header class="tw-border-b tw-border-[#334155] tw-pb-4 tw-flex tw-items-center tw-justify-between">
 			<div>

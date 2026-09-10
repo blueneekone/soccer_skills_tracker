@@ -9,6 +9,6 @@
 	});
 </script>
 
-<div class="tw-p-6 tw-text-[#D4D4D8] tw-bg-[#0f172a] tw-font-mono tw-text-sm">
+<div class="tw-p-6 tw-text-[#D4D4D8] tw-bg-[#0f172a] tw-font-mono tw-text-sm director-os-root">
 	Redirecting to Director Events...
 </div>

@@ -171,7 +171,7 @@ import { onDestroy, untrack } from 'svelte';
 	}
 </script>
 
-<div class="builder-page">
+<div class="builder-page director-os-root">
 	<header class="page-header">
 		<button class="btn-back" onclick={() => () => { untrack(() => { goto('/director/events'); }); }}>← Events</button>
 		<div class="header-actions">

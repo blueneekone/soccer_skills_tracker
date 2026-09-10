@@ -13,4 +13,4 @@
 	});
 </script>
 
-<div class="pd-page-root tw-fixed tw-inset-0 tw-bg-[#000000]"></div>
+<div class="pd-page-root tw-fixed tw-inset-0 tw-bg-[#000000] coach-os-root"></div>

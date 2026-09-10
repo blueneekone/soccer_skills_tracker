@@ -29,7 +29,7 @@
 	});
 </script>
 
-<div class="page-shell">
+<div class="page-shell admin-os-root">
 	{#if !isSuper}
 		<div class="access-denied">
 			<span class="mono tw-text-[10px] tw-tracking-widest tw-text-[var(--text-muted)] tw-font-mono">
