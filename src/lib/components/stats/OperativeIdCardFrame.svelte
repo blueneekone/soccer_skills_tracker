@@ -50,9 +50,7 @@
 
 	const uid = $props.id();
 
-	let safeBannerSvg = $derived(DOMPurify.sanitize(bannerSvg || ''));
-	let safePortraitSvg = $derived(DOMPurify.sanitize(portraitSvg || ''));
-	let safeBorderSvg = $derived(DOMPurify.sanitize(borderSvg || ''));
+
 	const nameArcId = `oicf-name-arc-${uid}`;
 
 	const safePortraitSvg = $derived(sanitizeSvg(portraitSvg));
