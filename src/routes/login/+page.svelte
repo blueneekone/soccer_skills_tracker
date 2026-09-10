@@ -4,10 +4,9 @@
 
 <script lang="ts">
 	import { browser } from '$app/environment';
-	import { auth, functions } from '$lib/firebase.js';
+	import { auth, functions, db } from '$lib/firebase.js';
 	import { signInWithPopup, GoogleAuthProvider, signInWithCustomToken } from 'firebase/auth';
 	import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
-	import { db } from '$lib/firebase.js';
 	import { httpsCallable } from 'firebase/functions';
 	import { loginEngine } from '$lib/auth/LoginEngine.svelte.js';
 	import { navigateAfterLogin } from '$lib/auth/postAuthRouting.js';

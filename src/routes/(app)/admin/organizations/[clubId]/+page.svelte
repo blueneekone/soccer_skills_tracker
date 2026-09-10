@@ -1,11 +1,10 @@
 <script lang="ts">
-	import { untrack } from 'svelte';
+import { getContext, untrack } from 'svelte';
 	import { clubSportIconToken } from '$lib/utils/sport-icon.js';
 	import { page } from '$app/state';
 	import { db, functions } from '$lib/firebase.js';
 	import { doc, setDoc, deleteDoc, getDoc } from 'firebase/firestore';
 	import { httpsCallable } from 'firebase/functions';
-	import { getContext } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { teamsStore } from '$lib/stores/teams.svelte.js';
 	import { logSecurityEvent } from '$lib/utils/security.js';

@@ -18,25 +18,11 @@
 
 import { browser } from '$app/environment';
 import { auth, functions } from '$lib/firebase.js';
-import {
-  sendSignInLinkToEmail,
-  signInWithCustomToken,
-  signInWithEmailAndPassword,
-  type ActionCodeSettings,
-} from 'firebase/auth';
+import { sendSignInLinkToEmail, signInWithCustomToken, signInWithEmailAndPassword, type ActionCodeSettings } from 'firebase/auth';
 import { httpsCallable } from 'firebase/functions';
-import {
-  startAuthentication,
-  startRegistration,
-} from '@simplewebauthn/browser';
-import type {
-  PublicKeyCredentialCreationOptionsJSON,
-  PublicKeyCredentialRequestOptionsJSON,
-} from '@simplewebauthn/types';
-import {
-  loginStartUserMessage,
-  parseLoginStartData,
-} from '$lib/auth/passkeys.js';
+import { startAuthentication, startRegistration } from '@simplewebauthn/browser';
+import type { PublicKeyCredentialCreationOptionsJSON, PublicKeyCredentialRequestOptionsJSON } from '@simplewebauthn/types';
+import { loginStartUserMessage, parseLoginStartData } from '$lib/auth/passkeys.js';
 
 // ── Callable references ──────────────────────────────────────────────────────
 const webauthnLoginStartFn = httpsCallable<

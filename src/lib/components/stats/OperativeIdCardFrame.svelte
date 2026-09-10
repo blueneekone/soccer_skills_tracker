@@ -4,7 +4,6 @@
 		type OperativeCardMetadata,
 	} from '$lib/gamification/cardCollectibleMetadata.js';
 	import { sanitizeSvg } from '$lib/utils/sanitizeSvg.js';
-	import DOMPurify from 'isomorphic-dompurify';
 
 	const ARC_FLOURISH_MAX_CHARS = 12;
 	const LONG_NAME_THRESHOLD = 16;
@@ -50,14 +49,11 @@
 
 	const uid = $props.id();
 
-	let safeBannerSvg = $derived(DOMPurify.sanitize(bannerSvg || ''));
-	let safePortraitSvg = $derived(DOMPurify.sanitize(portraitSvg || ''));
-	let safeBorderSvg = $derived(DOMPurify.sanitize(borderSvg || ''));
 	const nameArcId = `oicf-name-arc-${uid}`;
 
-	const safePortraitSvg = $derived(sanitizeSvg(portraitSvg));
-	const safeBorderSvg = $derived(sanitizeSvg(borderSvg));
-	const safeBannerSvg = $derived(sanitizeSvg(bannerSvg));
+	let safeBannerSvg = $derived(sanitizeSvg(bannerSvg));
+	let safePortraitSvg = $derived(sanitizeSvg(portraitSvg));
+	let safeBorderSvg = $derived(sanitizeSvg(borderSvg));
 
 	const callsign = $derived((displayName || 'Operative').trim().toUpperCase());
 

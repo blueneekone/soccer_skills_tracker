@@ -1,7 +1,6 @@
 <script lang="ts">
-	import { onDestroy, onMount } from 'svelte';
+import { onDestroy, onMount, untrack } from 'svelte';
 	import { browser } from '$app/environment';
-	import { untrack } from 'svelte';
 	import { ensureGoogleMapsLoaded, getGoogleMapsApiKey, getGoogleMapsMapId } from '$lib/maps/ensureGoogleMaps.js';
 	import Icon from '$lib/components/ui/Icon.svelte';
 	import type { LightningRadarEngine } from '../../../../routes/(app)/director/logistics/radar/LightningRadarEngine.svelte';

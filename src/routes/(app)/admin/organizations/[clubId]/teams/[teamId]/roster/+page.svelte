@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { untrack } from 'svelte';
+import { getContext, untrack } from 'svelte';
 	import { page } from '$app/state';
 	import { getActiveDb } from '$lib/firebase.js';
 	import { authStore } from '$lib/stores/auth.svelte.js';
@@ -16,7 +16,6 @@
 		limit,
 		startAfter,
 	} from 'firebase/firestore';
-	import { getContext } from 'svelte';
 	import '$lib/styles/enterprise-console.css';
 	import Icon from '$lib/components/ui/Icon.svelte';
 	import type { IconName } from '$lib/icons/registry.js';

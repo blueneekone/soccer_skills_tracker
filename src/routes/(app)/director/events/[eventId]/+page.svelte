@@ -1,8 +1,7 @@
 <script lang="ts">
+import { onDestroy, untrack } from 'svelte';
 	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
-import { untrack } from 'svelte';
-	import { onDestroy } from 'svelte';
 	import { getFunctions, httpsCallable } from 'firebase/functions';
 	import { doc, onSnapshot } from 'firebase/firestore';
 	import { db, getActiveDb } from '$lib/firebase.js';
