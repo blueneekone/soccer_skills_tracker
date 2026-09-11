@@ -64,6 +64,33 @@
 - [x] **WEATHER LOCKOUT HUD & PROXIMITY RADAR**: Implemented public/coach Weather Monitoring modal displaying active storm watches, an SVG lightning-strike proximity radar (with dynamic sweep animation and mock coordinate strikes), multi-day forecasts (via local mock JSON), and actionable coaching advisories including an automated 8-mile safety lockout countdown mechanism.
 - [x] **COACH OS FULL-SCREEN DESKTOP LAYOUT, WAR ROOM ICON & TACTICAL GEOGRAPHIC WEATHER RADAR**: Fixed root bento grid column spanning (`grid-column: 1 / -1`) to eliminate squishing and restore the full 12-column desktop dashboard with 8-column War Room and 4-column Weather Hub; updated War Room quick launch and pin icons from pencil to tactical crosshair target (`data.target`); decoupled player card clicks (which now spotlight athlete telemetry and radar attributes without opening drawers) from the explicit `✎ Edit Profile` button; overhauled AEGIS Weather Monitoring into a high-precision tactical lightning radar featuring dark geographic cartography (inverted OpenStreetMap tiles), 8/15/30-mile safety perimeter rings (NFHS/NSSL 30-30 Rule), nearest strike bearing/distance HUD, and interactive 5/7/10-day forecast drill-down with compact hourly storm tracking.
 - [x] **PUBLIC MARKETING SITE & LANDING PAGE OVERHAUL**: Modernized public landing page layout from clunky prototype to high-end enterprise SaaS standard; eliminated duplicate footer rendering between `+layout.svelte` and `+page.svelte`; fixed nested semantic `<main>` tag hierarchy; corrected broken video demo asset reference by linking `/assets/video/marketing-hero.mp4` with poster fallback inside a glowing hardware HUD frame; unconstrained cramped 416px column widths with a balanced 12-column responsive desktop layout; replaced monospace body text with crisp `Geist Sans` and `Switzer` typography; elevated Trust Strip, Feature Bento, Competitive Grid, and Stakeholder cards with sleek liquid glassmorphism; deployed live to both dev (`sports-skill-tracker-dev`) and prod (`soccer-skills-tracker`).
-- [x] **MULTI-PERSONA GAP ANALYSIS & RESILIENCE HARDENING (Phase 1 & 2)**: Diagnosed 5 systemic fragility vectors across 8 personas; unblocked Fan OS by implementing the complete Vanguard Trinity Pattern (`BroadcastArena.svelte`, `BroadcastHUD.svelte`, `+page.svelte`), mapping role `'fan'` in `loginRouting.js`, and creating automated trinity test suites; created Scholar / Tutor test suites in `src/lib/tutor/__tests__/tutorMarketplace.test.ts`; eliminated ghost duplicate routes (`/coach/match-day`, `/parent/vpc`, `/admin/audit-logs`) with canonical redirects; patched B815 hydration leaks in `scholar.svelte.ts`, `MediaVault.svelte`, `SquadTelemetryView.svelte`, and `ParentLatestAnnouncements.svelte`; stripped banned `<!-- HUD -->` template comments to achieve 0 integrity violations and 0 `svelte-check` compiler errors.
-| 4.16c | **Done** |
+- [x] **MULTI-PERSONA GAP ANALYSIS & RESILIENCE HARDENING (Forensic Audit)**: Diagnosed 5 systemic fragility vectors across 8 personas; unblocked Fan OS with Vanguard Trinity (`BroadcastArena.svelte`, `BroadcastHUD.svelte`, `+page.svelte`), mapped role `'fan'` in `loginRouting.js`, created Scholar/Tutor test suites, deprecated ghost duplicate routes (`/coach/match-day`, `/parent/vpc`, `/admin/audit-logs`), and patched initial B815 hydration leaks.
 
+---
+
+### 🛡️ 16-Sprint Resilience & Anti-Fragility Execution Pipeline (Two-File Governance)
+*Executing in small, isolated runs with 0 compiler errors and 100% test passes before moving to the next sprint:*
+
+#### Phase 1: Codebase Resilience Core
+- [ ] **Sprint 1.1**: Guard Extraction — Auth & Maintenance Boundaries (`AuthRouteGuard.svelte`, `MaintenanceModeGuard.svelte`, route tests)
+- [ ] **Sprint 1.2**: Guard Extraction — Security & License Boundaries (`PasskeyGateGuard.svelte`, `ImpersonationGuard.svelte`, `LicenseSyncGuard.svelte`, de-monolith `+layout.svelte` <180 lines)
+- [ ] **Sprint 1.3**: Multi-Persona Dual-Role State (`authStore` `activeContext: 'parent' | 'coach'`, role preservation tests)
+- [ ] **Sprint 1.4**: Systematic B815 Defensive Hydration Sweep across secondary utilities and panels
+
+#### Phase 2: Missing Personas & Broken Route Remediation
+- [x] **Sprint 2.1**: Fan OS Trinity & Login Routing (`BroadcastArena.svelte`, `BroadcastHUD.svelte`, `loginRouting.js`) ✅
+- [x] **Sprint 2.2**: Ghost Route Elimination & Canonical Redirects (`/coach/matchday`, `/parent/dashboard/vpc`, `/admin/audit-log`) ✅
+- [ ] **Sprint 2.3**: Tutoring Marketplace Trinity Fracturing (`TutorEngine.svelte.ts`, `TutorArena.svelte`, `TutorHUD.svelte`, SafeSport sport scoping)
+- [ ] **Sprint 2.4**: Recruiter OS Trinity Fracturing (`RecruiterEngine.svelte.ts`, `RecruiterArena.svelte`, `RecruiterHUD.svelte`, Checkr verification gate)
+
+#### Phase 3: Player OS & Parent OS Vanguard Trinity Overhaul
+- [ ] **Sprint 3.1**: Player Dashboard Trinity Fracturing (`PlayerDashboardEngine.svelte.ts`, `PlayerArena.svelte`, `PlayerHUD.svelte`, XP decoupling)
+- [ ] **Sprint 3.2**: Player Armory & Skill Tree Trinity (isolate cosmetic styling bleed, clean canvas unmount)
+- [ ] **Sprint 3.3**: Parent Household Management Trinity (`ParentHouseholdEngine.svelte.ts`, `ParentHouseholdArena.svelte`, `ParentHouseholdHUD.svelte`)
+- [ ] **Sprint 3.4**: Parent Workout Log & Compliance Trinity (15-min Car Ride Home lockout isolation)
+
+#### Phase 4: Test Suite Stabilization & Unskipping Campaign
+- [ ] **Sprint 4.1**: Coach Intent Engine Test Stabilization (unskip 8 `describe.skip` blocks in `intentModule.test.ts`)
+- [ ] **Sprint 4.2**: Recruiter Engine Test Stabilization (unskip 3 test suites in `recruitersEngine.test.ts`)
+- [ ] **Sprint 4.3**: Commissioner RBAC Guard Test Stabilization (unskip regional scoping tests in `commissionerAuthGuard.test.ts`)
+- [ ] **Sprint 4.4**: Global Trinity & Visual Regression Audit (100% green tests, 0 skipped tests, 0 compiler errors)
