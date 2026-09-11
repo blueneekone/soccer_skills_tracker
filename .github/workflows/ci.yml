@@ -52,34 +52,11 @@ jobs:
       - name: ⚡ Run Vitest Unit & Integration Suites
         run: pnpm run test:unit
 
-  spawn-swarm-on-failure:
-    name: 🤖 Trigger 16-Agent Swarm Autopilot on Failure
+  notify-on-failure:
+    name: 🚨 Report Pipeline Failure
     needs: validate-and-test
     if: failure() && github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     steps:
-      - name: 📥 Clone Repository
-        uses: actions/checkout@v4
-
-      - name: 🚀 Dispatch Swarm Diagnostic & Fix Workflow
-        uses: google-labs-code/jules-action@v1
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          gemini-api-key: ${{ secrets.GEMINI_API_KEY }}
-          agent-directory: '.agents/agents'
-          workflow-file: '.agents/workflows/swarm-master-coordination.md'
-          auto-commit: true
-          create-pull-request: true
-          title: "🤖 Swarm Autopilot: Automated Architectural & Visual Bug Fixes"
-          body: |
-            ## 🚨 Automated Swarm Remediation Pipeline Triggered
-            
-            Our automated build pipeline failed verification checks. In response, the **Master CI & Swarm Autopilot** has spawned our 16-agent virtual engineering team.
-            
-            ### 🧑‍💻 Active Swarm Specialists:
-            1. **Triage Diagnostician (`diagnostician`):** Investigating compile and runtime logs.
-            2. **Chief Design Officer (`cdo`):** Restoring the Nuclear Americana Tech Noir palette and asymmetric grids.
-            3. **Chief Architect (`architect`):** Securing tenant boundaries and fixing firestore rules.
-            4. **Chief Reliability Officer (`cro`):** Resolving Svelte 5 and Playwright assertion regressions.
-            
-            *This Pull Request is managed entirely by your autonomous engineering swarm. Relax, grab some coffee, and let the swarm fix the code.*
+      - name: 📋 Failure Log
+        run: echo "CI pipeline verification failed on branch ${{ github.head_ref }}. Pre-commit auth regression and build gates must pass."
