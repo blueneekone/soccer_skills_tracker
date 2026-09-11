@@ -23,7 +23,8 @@
 	import ParentFcmPrompt from '$lib/components/notifications/ParentFcmPrompt.svelte';
 	import EnterpriseConsoleShell from '$lib/components/shell/EnterpriseConsoleShell.svelte';
 	import PlayerShell from '$lib/components/shell/PlayerShell.svelte';
-	import MaintenanceGate from '$lib/components/shell/MaintenanceGate.svelte';
+	import MaintenanceModeGuard from '$lib/components/shell/guards/MaintenanceModeGuard.svelte';
+	import AuthRouteGuard from '$lib/components/shell/guards/AuthRouteGuard.svelte';
 	import ImpersonationBanner from '$lib/components/shell/ImpersonationBanner.svelte';
 	import OfflineBanner from '$lib/components/shell/OfflineBanner.svelte';
 	import ConsentOverlay from '$lib/components/coppa/ConsentOverlay.svelte';
@@ -126,17 +127,7 @@
 		licenseEntitlementStore.syncFromUser(auth.currentUser);
 	});
 
-	// Sprint 2.7 — subscribe to platform feature flags (maintenance mode kill
-	// switch). Subscription requires an authenticated session; we tear it down
-	// on sign-out to avoid permission-denied snapshot errors.
-	$effect(() => {
-		if (!db || !authStore.isAuthenticated) return;
-		if (authStore.isLoading) return;
-		featureFlagsStore.subscribe();
-		return () => {
-			featureFlagsStore.teardown();
-		};
-	});
+
 
 	// Sprint 2.6.1 — claims-driven impersonation detection.
 	// `impersonationStore` listens to `onIdTokenChanged`, which fires across
@@ -261,20 +252,7 @@
 				
 				const currentPath = untrack(() => page.url.pathname);
 				
-				// ── Global Infrastructure Kill Switch ────────────────────────────────
-				try {
-					if (auth.currentUser) {
-						const coreSnap = await getDoc(doc(db, 'platform_settings', 'core'));
-						if (coreSnap.exists() && coreSnap.data()?.maintenance_mode === true) {
-							if (authStore.role !== 'global_admin' && authStore.role !== 'super_admin' && !currentPath.startsWith('/maintenance')) {
-								await untrack(() => goto('/maintenance', { replaceState: true }));
-								return;
-							}
-						}
-					}
-				} catch (e) {
-					console.warn('[layout] maintenance check failed', e);
-				}
+
 				
 				if (requiresPasskey && !currentPath.startsWith(PASSKEY_ENROLL_ROUTE)) {
 
@@ -549,16 +527,6 @@
 		return () => disconnectLoadoutUnlockListener();
 	});
 
-	// Sprint 2.7 — Global Kill Switch: block rendering for every role except
-	// Global Admin when maintenanceMode === true. Global Admins retain full
-	// access so they can disable the flag from System Settings → Feature Flags.
-	// Accepts both legacy `super_admin` and new `global_admin` role tokens.
-	const maintenanceLockout = $derived(
-		featureFlagsStore.loaded &&
-			featureFlagsStore.maintenanceMode &&
-			authStore.role !== 'super_admin' &&
-			authStore.role !== 'global_admin',
-	);
 
 	/**
 	 * Hide enterprise / player shells until we know a legacy email session either
@@ -579,25 +547,24 @@
 <!-- Global Vanguard SVG filter defs — referenced by url(#neonBloom) / url(#aresBloom) across every portal. -->
 <VanguardVFX />
 
-{#if authStore.isLoading || !routeGuardResolved}
-	<div
-		class="auth-splash"
-		role="status"
-		aria-live="polite"
-		aria-label="Verifying your session with Firebase"
-	>
-		<div class="auth-splash__mark-wrapper" aria-hidden="true">
-			<div class="auth-splash__mark">
-				<VanguardAppMark size={48} />
+<MaintenanceModeGuard>
+	<AuthRouteGuard onResolved={(resolved) => { routeGuardResolved = resolved; }}>
+		{#if authStore.isLoading || !routeGuardResolved}
+			<div
+				class="auth-splash"
+				role="status"
+				aria-live="polite"
+				aria-label="Verifying your session with Firebase"
+			>
+				<div class="auth-splash__mark-wrapper" aria-hidden="true">
+					<div class="auth-splash__mark">
+						<VanguardAppMark size={48} />
+					</div>
+				</div>
+				<div class="auth-splash__spinner" aria-hidden="true"></div>
+				<p class="auth-splash__label">VANGUARD</p>
 			</div>
-		</div>
-		<div class="auth-splash__spinner" aria-hidden="true"></div>
-		<p class="auth-splash__label">VANGUARD</p>
-	</div>
-{:else if maintenanceLockout}
-	<!-- Sprint 2.7: Global Kill Switch — full-screen maintenance UI. -->
-	<MaintenanceGate message={featureFlagsStore.maintenanceMessage} />
-{:else if (authStore.isAuthenticated && (authStore.isProfileComplete || authStore.role === 'admin' || authStore.role === 'global_admin' || authStore.role === 'super_admin') && passkeyEligibilityConfirmed && routeGuardResolved && !holdShellForConsent)}
+		{:else if (authStore.isAuthenticated && (authStore.isProfileComplete || authStore.role === 'admin' || authStore.role === 'global_admin' || authStore.role === 'super_admin') && passkeyEligibilityConfirmed && routeGuardResolved && !holdShellForConsent)}
 	<div class="app-shell tw-flex tw-flex-col tw-w-full tw-h-[100dvh] tw-overflow-hidden tw-bg-[#000000]">
 		
 		<main class="tw-flex-1 tw-flex tw-flex-col tw-min-w-0 tw-min-h-0 tw-overflow-hidden">
@@ -663,6 +630,8 @@
 		<div class="auth-splash__spinner" aria-hidden="true"></div>
 	</div>
 {/if}
+	</AuthRouteGuard>
+</MaintenanceModeGuard>
 
 <style>
 	.auth-splash {
