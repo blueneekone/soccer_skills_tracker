@@ -21,3 +21,7 @@ To prevent context drift, excessive cloud VM compute consumption, and pipeline b
 
 ### 3. THE CRITIC EXEMPTION FOR LEGACY ROT
 *   Your internal Critic agent must evaluate your candidate patch based *solely* on the changed file scope. If the Critic flags a regression in a file you did not modify, mark it as "Exempt - Legacy Rot" and bypass the blocker.
+
+### 4. THE AUTHENTICATION & SECURITY FORTRESS LAW (NON-NEGOTIABLE)
+*   **Mandatory Auth Regression Gate:** If your changes touch `src/routes/(app)/+layout.svelte`, any file in `src/lib/components/shell/guards/`, `src/lib/stores/auth.svelte.js`, or any file under `src/lib/auth/`, you are STRICTLY FORBIDDEN from opening a Pull Request without executing `npm run test:regression:auth` and verifying 100% green passes.
+*   **Zero Bypassed Auth Checks:** You must NEVER comment out or bypass `if (!db || !authStore.isAuthenticated) return;` or remove `untrack(() => { ... })` closures around route navigations. Any violation will be automatically rejected by the pre-commit gate and the Orchestrator.

@@ -73,7 +73,7 @@
 
 #### Phase 1: Codebase Resilience Core
 - [x] **Sprint 1.1**: Guard Extraction — Auth & Maintenance Boundaries (`AuthRouteGuard.svelte`, `MaintenanceModeGuard.svelte`, route tests) ✅
-- [ ] **Sprint 1.2**: Guard Extraction — Security & License Boundaries (`PasskeyGateGuard.svelte`, `ImpersonationGuard.svelte`, `LicenseSyncGuard.svelte`, de-monolith `+layout.svelte` <180 lines)
+- [ ] **Sprint 1.2**: Guard Extraction — Security & License Boundaries (`PasskeyGateGuard.svelte`, `ImpersonationGuard.svelte`, `LicenseSyncGuard.svelte`, de-monolith `+layout.svelte` <180 lines) 🚀 *(DISPATCHED TO JULES — Session `13085577750817173998`)*
 - [ ] **Sprint 1.3**: Multi-Persona Dual-Role State (`authStore` `activeContext: 'parent' | 'coach'`, role preservation tests)
 - [ ] **Sprint 1.4**: Systematic B815 Defensive Hydration Sweep across secondary utilities and panels
 
@@ -99,5 +99,5 @@
 - [ ] **Sprint 5.1**: Auth Regression Guard Master Suite (`authRegressionGuard.test.ts`, token hydration, canonical email, zero redirect loops)
 - [ ] **Sprint 5.2**: Multi-Tenant Custom Claims & Cell Boundary Gates (`tenantClaimsBoundary.test.ts`, zero cross-tenant leakages)
 - [ ] **Sprint 5.3**: WebAuthn Biometric Enclave & Passkey Attestation Tests (`passkeyEnclaveVerification.test.ts`, origin-binding tamper protection)
-- [ ] **Sprint 5.4**: CI & Pre-Commit Auth Lockdown Hook (`.husky/pre-commit` & `ci.yml` blocking any regression from cloud agent runs)
+- [x] **Sprint 5.4**: CI & Pre-Commit Auth Lockdown Hook (`.husky/pre-commit` & `ci.yml` blocking any regression from cloud agent runs) ✅
 

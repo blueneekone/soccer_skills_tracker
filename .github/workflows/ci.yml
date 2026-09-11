@@ -10,9 +10,9 @@ name: Master CI & Swarm Autopilot
 
 on:
   push:
-    branches: [ master, main, 'release/*' ]
+    branches: [ master, main, dev, 'release/*' ]
   pull_request:
-    branches: [ master, main ]
+    branches: [ master, main, dev ]
 
 permissions:
   contents: write
@@ -45,6 +45,9 @@ jobs:
 
       - name: 🔍 Svelte & TypeScript Code Check
         run: pnpm run check
+
+      - name: 🔒 Run Auth Regression Master Suite
+        run: pnpm run test:regression:auth
 
       - name: ⚡ Run Vitest Unit & Integration Suites
         run: pnpm run test:unit
