@@ -94,3 +94,10 @@
 - [ ] **Sprint 4.2**: Recruiter Engine Test Stabilization (unskip 3 test suites in `recruitersEngine.test.ts`)
 - [ ] **Sprint 4.3**: Commissioner RBAC Guard Test Stabilization (unskip regional scoping tests in `commissionerAuthGuard.test.ts`)
 - [ ] **Sprint 4.4**: Global Trinity & Visual Regression Audit (100% green tests, 0 skipped tests, 0 compiler errors)
+
+#### Phase 5: Authentication & Security Integrity Fortress (Jules Cloud VM Lockdown)
+- [ ] **Sprint 5.1**: Auth Regression Guard Master Suite (`authRegressionGuard.test.ts`, token hydration, canonical email, zero redirect loops)
+- [ ] **Sprint 5.2**: Multi-Tenant Custom Claims & Cell Boundary Gates (`tenantClaimsBoundary.test.ts`, zero cross-tenant leakages)
+- [ ] **Sprint 5.3**: WebAuthn Biometric Enclave & Passkey Attestation Tests (`passkeyEnclaveVerification.test.ts`, origin-binding tamper protection)
+- [ ] **Sprint 5.4**: CI & Pre-Commit Auth Lockdown Hook (`.husky/pre-commit` & `ci.yml` blocking any regression from cloud agent runs)
+

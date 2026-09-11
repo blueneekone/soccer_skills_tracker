@@ -1,2 +1,3 @@
 npm run check
+npm run test:regression:auth
 npm run test:regression:acquisition
