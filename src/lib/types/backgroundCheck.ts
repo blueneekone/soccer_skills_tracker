@@ -111,3 +111,22 @@ export function clearanceLabel(c?: ClearanceDoc | null): {
 			return { label: 'Pending', tone: 'pending' };
 	}
 }
+
+/** Checkr status directly from recruiter background verification flows. */
+export type RecruiterCheckStatus = 'pending' | 'invited' | 'clear' | 'cleared' | 'consider' | 'suspended';
+
+/** Recruiter profile structure stored in Firestore recruiters collection. */
+export interface RecruiterProfile {
+	uid: string;
+	email: string;
+	organizationName: string;
+	firstName?: string;
+	lastName?: string;
+	checkrCandidateId?: string;
+	checkrReportId?: string;
+	checkrInvitationId?: string;
+	checkrStatus: RecruiterCheckStatus;
+	vettingStatus?: RecruiterCheckStatus;
+	accessGrantedAt?: string | null;
+	createdAt: string;
+}

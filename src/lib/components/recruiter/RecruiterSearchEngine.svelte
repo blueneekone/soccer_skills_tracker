@@ -11,7 +11,7 @@
 		startAfter,
 		where,
 	} from 'firebase/firestore';
-	import { isRecruiterCleared } from './RecruiterOnboardingEngine.svelte.js';
+	import { isRecruiterCleared } from '$lib/compliance/checkrRecruiterClearance.js';
 	import Modal from '$lib/components/Modal.svelte';
 	import ClubLogoMark from '$lib/components/ClubLogoMark.svelte';
 	import LevelProgressRing from '$lib/components/LevelProgressRing.svelte';

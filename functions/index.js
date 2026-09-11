@@ -163,4 +163,4 @@ exports.onUserProfileCleared = require('./lib/triggers/userOnboardingTriggers').
 
 exports.claimParentInviteToken = parentOnboardingOps.claimParentInviteToken;
 exports.signParentalConsent = parentOnboardingOps.signParentalConsent;
-exports.inviteRecruiterCheckr = require('./lib/domains/recruiterOps.js').inviteRecruiterCheckr;
+exports.inviteRecruiterCheckr = require('./src/domains/recruiterOps.js').inviteRecruiterCheckr;
