@@ -80,7 +80,7 @@
 #### Phase 2: Missing Personas & Broken Route Remediation
 - [x] **Sprint 2.1**: Fan OS Trinity & Login Routing (`BroadcastArena.svelte`, `BroadcastHUD.svelte`, `loginRouting.js`) ✅
 - [x] **Sprint 2.2**: Ghost Route Elimination & Canonical Redirects (`/coach/matchday`, `/parent/dashboard/vpc`, `/admin/audit-log`) ✅
-- [ ] **Sprint 2.3**: Tutoring Marketplace Trinity Fracturing (`TutorEngine.svelte.ts`, `TutorArena.svelte`, `TutorHUD.svelte`, SafeSport sport scoping)
+- [x] **Sprint 2.3**: Tutoring Marketplace Trinity Fracturing (`TutorEngine.svelte.ts`, `TutorArena.svelte`, `TutorHUD.svelte`, SafeSport sport scoping) ✅
 - [ ] **Sprint 2.4**: Recruiter OS Trinity Fracturing (`RecruiterEngine.svelte.ts`, `RecruiterArena.svelte`, `RecruiterHUD.svelte`, Checkr verification gate)
 
 #### Phase 3: Player OS & Parent OS Vanguard Trinity Overhaul
@@ -96,7 +96,7 @@
 - [ ] **Sprint 4.4**: Global Trinity & Visual Regression Audit (100% green tests, 0 skipped tests, 0 compiler errors)
 
 #### Phase 5: Authentication & Security Integrity Fortress (Jules Cloud VM Lockdown)
-- [ ] **Sprint 5.1**: Auth Regression Guard Master Suite (`authRegressionGuard.test.ts`, token hydration, canonical email, zero redirect loops)
+- [x] **Sprint 5.1**: Auth Regression Guard Master Suite (`authRegressionGuard.test.ts`, token hydration, canonical email, zero redirect loops) ✅
 - [ ] **Sprint 5.2**: Multi-Tenant Custom Claims & Cell Boundary Gates (`tenantClaimsBoundary.test.ts`, zero cross-tenant leakages)
 - [ ] **Sprint 5.3**: WebAuthn Biometric Enclave & Passkey Attestation Tests (`passkeyEnclaveVerification.test.ts`, origin-binding tamper protection)
 - [x] **Sprint 5.4**: CI & Pre-Commit Auth Lockdown Hook (`.husky/pre-commit` & `ci.yml` blocking any regression from cloud agent runs) ✅
