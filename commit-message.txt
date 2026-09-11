@@ -1,1 +1,0 @@
-fix: patch admin permissions crash and deploy full-stack build
