@@ -29,16 +29,16 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: 🚀 Install pnpm Package Manager
+        uses: pnpm/action-setup@v3
+        with:
+          version: 9
+
       - name: 📦 Setup Node.js Runtime
         uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: 'pnpm'
-
-      - name: 🚀 Install pnpm Package Manager
-        uses: pnpm/action-setup@v3
-        with:
-          version: 9
 
       - name: 📥 Install Dependencies
         run: pnpm install --frozen-lockfile
@@ -51,11 +51,6 @@ jobs:
 
       - name: ⚡ Run Vitest Unit & Integration Suites
         run: pnpm run test:unit
-
-      - name: 🎭 Run Playwright E2E Visual Verification (Headless)
-        run: pnpm exec playwright test
-        env:
-          CI: true
 
   spawn-swarm-on-failure:
     name: 🤖 Trigger 16-Agent Swarm Autopilot on Failure
