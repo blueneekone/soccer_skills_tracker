@@ -18,14 +18,15 @@
 	import { featureFlagsStore } from '$lib/stores/featureFlags.svelte.js';
 	import { impersonationStore } from '$lib/stores/impersonation.svelte.js';
 	import { isDataCollectionRoute, isRouteAllowedForRole } from '$lib/auth/route-policies.js';
-	import { PASSKEY_ENROLL_ROUTE, requiresPasskeyEnrollmentBeforeApp, userHasLegacyEmailProvider } from '$lib/auth/passkeyGate.js';
 	import { applyLoginWaterfall } from '$lib/auth/loginRouting.js';
 	import ParentFcmPrompt from '$lib/components/notifications/ParentFcmPrompt.svelte';
 	import EnterpriseConsoleShell from '$lib/components/shell/EnterpriseConsoleShell.svelte';
 	import PlayerShell from '$lib/components/shell/PlayerShell.svelte';
 	import MaintenanceModeGuard from '$lib/components/shell/guards/MaintenanceModeGuard.svelte';
 	import AuthRouteGuard from '$lib/components/shell/guards/AuthRouteGuard.svelte';
-	import ImpersonationBanner from '$lib/components/shell/ImpersonationBanner.svelte';
+	import PasskeyGateGuard from '$lib/components/shell/guards/PasskeyGateGuard.svelte';
+	import ImpersonationGuard from '$lib/components/shell/guards/ImpersonationGuard.svelte';
+	import LicenseSyncGuard from '$lib/components/shell/guards/LicenseSyncGuard.svelte';
 	import OfflineBanner from '$lib/components/shell/OfflineBanner.svelte';
 	import ConsentOverlay from '$lib/components/coppa/ConsentOverlay.svelte';
 	import ReportAnomaly from '$lib/components/alpha/ReportAnomaly.svelte';
@@ -34,10 +35,6 @@
 	import MiniPlayer from '$lib/components/media/MiniPlayer.svelte';
 	import VanguardVFX from '../../components/VanguardVFX.svelte';
 	import LoadoutUnlockCeremony from '$lib/components/player/LoadoutUnlockCeremony.svelte';
-	import NexusSidebar from '$lib/components/layout/NexusSidebar.svelte';
-	import AlertMatrix from '$lib/components/layout/AlertMatrix.svelte';
-	import DunningBanner from '$lib/components/shell/DunningBanner.svelte';
-	import LockoutInterstitial from '$lib/components/shell/LockoutInterstitial.svelte';
 	import {
 		connectLoadoutUnlockListener,
 		disconnectLoadoutUnlockListener,
@@ -110,36 +107,6 @@
 				}
 			});
 		}
-	});
-
-	// Sync club license doc for read-only / pricing UX — Global Admin exempt.
-	$effect(() => {
-		if (!db || !authStore.isAuthenticated) return;
-		if (authStore.isLoading) return;
-		if (!authStore.isProfileComplete && !authStore.userState?.email?.includes("+")) {
-			licenseEntitlementStore.syncFromUser(null);
-			return;
-		}
-		if (authStore.role === 'super_admin' || authStore.role === 'global_admin') {
-			licenseEntitlementStore.syncFromUser(null);
-			return;
-		}
-		licenseEntitlementStore.syncFromUser(auth.currentUser);
-	});
-
-
-
-	// Sprint 2.6.1 — claims-driven impersonation detection.
-	// `impersonationStore` listens to `onIdTokenChanged`, which fires across
-	// tabs when Firebase Auth's IndexedDB-persisted session changes. This
-	// guarantees the banner renders in EVERY tab that inherits an
-	// impersonation session, closing the previous cross-tab desync hole.
-	$effect(() => {
-		if (!db || !authStore.isAuthenticated) return;
-		impersonationStore.init();
-		return () => {
-			impersonationStore.teardown();
-		};
 	});
 
 	// Auth guard: driven by `onAuthStateChanged` in `auth.svelte.js` (cache wipe → no user).
@@ -226,43 +193,11 @@
 
 		let cancelled = false;
 		void (async () => {
-			let requiresPasskey = false;
-
 			try {
-				const user = auth.currentUser;
-				const legacyProbe =
-					!!user &&
-					authStore.isProfileComplete &&
-					userHasLegacyEmailProvider(user);
-
-				if (legacyProbe && !cancelled) {
-					passkeyEligibilityConfirmed = false;
-				}
-
-				if (user) {
-					try {
-						requiresPasskey = await requiresPasskeyEnrollmentBeforeApp(user);
-					} catch (err) {
-						console.warn('[layout] passkey enrollment check failed', err);
-					}
-				}
-
 				if (cancelled || !browser) return;
-
-				
-				const currentPath = untrack(() => page.url.pathname);
-				
-
-				
-				if (requiresPasskey && !currentPath.startsWith(PASSKEY_ENROLL_ROUTE)) {
-
-					await untrack(() => goto(PASSKEY_ENROLL_ROUTE, { replaceState: true }));
-					return;
-				}
 
 				if (!authStore.isProfileComplete && authStore.role !== 'admin' && authStore.role !== 'global_admin' && authStore.role !== 'super_admin') {
 					untrack(() => {
-						passkeyEligibilityConfirmed = true;
 						routeGuardResolved = true;
 						goto('/onboarding', { replaceState: true });
 					});
@@ -330,9 +265,6 @@
 			} finally {
 				if (!cancelled) {
 					routeGuardResolved = true;
-					if (!requiresPasskey) {
-						passkeyEligibilityConfirmed = true;
-					}
 				}
 			}
 		})();
@@ -528,13 +460,7 @@
 	});
 
 
-	/**
-	 * Hide enterprise / player shells until we know a legacy email session either
-	 * has a passkey or is being redirected to enrolment (avoids dashboard flash).
-	 */
-	let passkeyEligibilityConfirmed = $state(true);
-
-	/** Hide shell until auth guard (passkey, VPC, consent) async checks finish. */
+	/** Hide shell until auth guard (VPC, consent) async checks finish. */
 	let routeGuardResolved = $state(false);
 
 	const holdShellForConsent = $derived(
@@ -549,87 +475,87 @@
 
 <MaintenanceModeGuard>
 	<AuthRouteGuard onResolved={(resolved) => { routeGuardResolved = resolved; }}>
-		{#if authStore.isLoading || !routeGuardResolved}
-			<div
-				class="auth-splash"
-				role="status"
-				aria-live="polite"
-				aria-label="Verifying your session with Firebase"
-			>
-				<div class="auth-splash__mark-wrapper" aria-hidden="true">
-					<div class="auth-splash__mark">
-						<VanguardAppMark size={48} />
+		<PasskeyGateGuard>
+			{#if authStore.isLoading || !routeGuardResolved}
+				<div
+					class="auth-splash"
+					role="status"
+					aria-live="polite"
+					aria-label="Verifying your session with Firebase"
+				>
+					<div class="auth-splash__mark-wrapper" aria-hidden="true">
+						<div class="auth-splash__mark">
+							<VanguardAppMark size={48} />
+						</div>
 					</div>
+					<div class="auth-splash__spinner" aria-hidden="true"></div>
+					<p class="auth-splash__label">VANGUARD</p>
 				</div>
-				<div class="auth-splash__spinner" aria-hidden="true"></div>
-				<p class="auth-splash__label">VANGUARD</p>
-			</div>
-		{:else if (authStore.isAuthenticated && (authStore.isProfileComplete || authStore.role === 'admin' || authStore.role === 'global_admin' || authStore.role === 'super_admin') && passkeyEligibilityConfirmed && routeGuardResolved && !holdShellForConsent)}
-	<div class="app-shell tw-flex tw-flex-col tw-w-full tw-h-[100dvh] tw-overflow-hidden tw-bg-[#000000]">
-		
-		<main class="tw-flex-1 tw-flex tw-flex-col tw-min-w-0 tw-min-h-0 tw-overflow-hidden">
-			<DunningBanner />
-			<LockoutInterstitial />
-			{#if impersonationStore.active}
-				<ImpersonationBanner />
+			{:else if (authStore.isAuthenticated && (authStore.isProfileComplete || authStore.role === 'admin' || authStore.role === 'global_admin' || authStore.role === 'super_admin') && routeGuardResolved && !holdShellForConsent)}
+				<ImpersonationGuard>
+					<LicenseSyncGuard>
+						<div class="app-shell tw-flex tw-flex-col tw-w-full tw-h-[100dvh] tw-overflow-hidden tw-bg-[#000000]">
+							<main class="tw-flex-1 tw-flex tw-flex-col tw-min-w-0 tw-min-h-0 tw-overflow-hidden">
+								<!-- Phase 1, Epic 1 — surfaces offline / post-reconnect sync state.
+								     Mounts the syncStatus singleton on first render; subsequent
+								     navigations are no-ops thanks to the internal init guard. -->
+								<OfflineBanner />
+								<ParentFcmPrompt />
+								<!-- Alpha-phase feedback receptacle — hidden on Player OS (Sprint 2.16). -->
+								{#if authStore.role !== 'player'}
+									<ReportAnomaly />
+								{/if}
+								<!-- PWA install prompt — fires when browser emits beforeinstallprompt (Android)
+								     or when iOS Safari is detected and app is not in standalone mode. -->
+								<InstallPrompt />
+								<!-- Global audio player — persists across route changes during podcast sessions. -->
+								<MiniPlayer />
+						{#if authStore.role === 'player'}
+							<!-- Player OS: dark-mode, gamified, mobile-first shell -->
+							<PlayerShell>
+								{@render children()}
+							</PlayerShell>
+							<!--
+								COPPA 2026 / Privacy Shield — Parental Consent Gate.
+								Rendered on top of PlayerShell (z-index: 9999) when:
+								  • Player is a minor (isMinor === true from server-side profile)
+								  • coppaStatus is not 'granted' (server-written by verifyParentalConsent CF)
+								The overlay renders INSIDE the player block so VanguardVFX/scanlines are
+								still active beneath it, maintaining the Stark aesthetic.
+							-->
+							{#if authStore.requiresEmailConsent}
+								<ConsentOverlay />
+							{/if}
+							<LoadoutUnlockCeremony
+								playerEmail={(authStore.user?.email ?? '').toLowerCase()}
+								operativeAvatar={authStore.userProfile?.operativeAvatar}
+								operativeLoadout={authStore.userProfile?.operativeLoadout}
+								ownedCosmetics={Array.isArray(authStore.userProfile?.ownedCosmetics) ?
+									authStore.userProfile.ownedCosmetics.filter((id) => typeof id === 'string')
+								:	[]}
+							/>
+						{:else}
+							<!-- Enterprise shell: admin, director, coach, registrar, recruiter, parent -->
+							<EnterpriseConsoleShell>
+								{@render children()}
+							</EnterpriseConsoleShell>
+						{/if}
+							</main>
+						</div>
+					</LicenseSyncGuard>
+				</ImpersonationGuard>
+			{:else}
+				<!-- Signed out, incomplete profile, or redirect in flight — never show dashboard chrome -->
+				<div
+					class="auth-splash auth-splash--quiet"
+					role="status"
+					aria-live="polite"
+					aria-label="Redirecting"
+				>
+					<div class="auth-splash__spinner" aria-hidden="true"></div>
+				</div>
 			{/if}
-			<!-- Phase 1, Epic 1 — surfaces offline / post-reconnect sync state.
-			     Mounts the syncStatus singleton on first render; subsequent
-			     navigations are no-ops thanks to the internal init guard. -->
-			<OfflineBanner />
-			<ParentFcmPrompt />
-			<!-- Alpha-phase feedback receptacle — hidden on Player OS (Sprint 2.16). -->
-			{#if authStore.role !== 'player'}
-				<ReportAnomaly />
-			{/if}
-			<!-- PWA install prompt — fires when browser emits beforeinstallprompt (Android)
-			     or when iOS Safari is detected and app is not in standalone mode. -->
-			<InstallPrompt />
-			<!-- Global audio player — persists across route changes during podcast sessions. -->
-			<MiniPlayer />
-	{#if authStore.role === 'player'}
-		<!-- Player OS: dark-mode, gamified, mobile-first shell -->
-		<PlayerShell>
-			{@render children()}
-		</PlayerShell>
-		<!--
-			COPPA 2026 / Privacy Shield — Parental Consent Gate.
-			Rendered on top of PlayerShell (z-index: 9999) when:
-			  • Player is a minor (isMinor === true from server-side profile)
-			  • coppaStatus is not 'granted' (server-written by verifyParentalConsent CF)
-			The overlay renders INSIDE the player block so VanguardVFX/scanlines are
-			still active beneath it, maintaining the Stark aesthetic.
-		-->
-		{#if authStore.requiresEmailConsent}
-			<ConsentOverlay />
-		{/if}
-		<LoadoutUnlockCeremony
-			playerEmail={(authStore.user?.email ?? '').toLowerCase()}
-			operativeAvatar={authStore.userProfile?.operativeAvatar}
-			operativeLoadout={authStore.userProfile?.operativeLoadout}
-			ownedCosmetics={Array.isArray(authStore.userProfile?.ownedCosmetics) ?
-				authStore.userProfile.ownedCosmetics.filter((id) => typeof id === 'string')
-			:	[]}
-		/>
-	{:else}
-		<!-- Enterprise shell: admin, director, coach, registrar, recruiter, parent -->
-		<EnterpriseConsoleShell>
-			{@render children()}
-		</EnterpriseConsoleShell>
-	{/if}
-		</main>
-	</div>
-{:else}
-	<!-- Signed out, incomplete profile, or redirect in flight — never show dashboard chrome -->
-	<div
-		class="auth-splash auth-splash--quiet"
-		role="status"
-		aria-live="polite"
-		aria-label="Redirecting"
-	>
-		<div class="auth-splash__spinner" aria-hidden="true"></div>
-	</div>
-{/if}
+		</PasskeyGateGuard>
 	</AuthRouteGuard>
 </MaintenanceModeGuard>
 
