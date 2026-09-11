@@ -86,7 +86,7 @@
 			</div>
 		</div>
 
-		<div class="tw-flex tw-gap-2 tw-overflow-x-auto tw-pb-2 tw-scrollbar-thin">
+		<div class="tw-flex tw-gap-2 tw-overflow-x-auto tw-pb-2 scrollbar-custom">
 			{#each forecastDays as day}
 				<div class="tw-flex-1 tw-min-w-[60px] tw-border {day.isSevere ? 'tw-border-[#f59e0b] tw-bg-[#f59e0b]/10' : 'tw-border-[#334155] tw-bg-black'} tw-p-2 tw-flex tw-flex-col tw-items-center tw-text-center">
 					<span class="tw-text-[10px] tw-font-bold tw-text-slate-400">{day.date}</span>
@@ -109,3 +109,8 @@
 		</button>
 	</div>
 </div>
+
+<style>
+	.scrollbar-custom::-webkit-scrollbar { height: 4px; }
+	.scrollbar-custom::-webkit-scrollbar-thumb { background: #f59e0b; border-radius: 9999px; }
+</style>
