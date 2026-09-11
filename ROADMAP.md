@@ -74,7 +74,7 @@
 #### Phase 1: Codebase Resilience Core
 - [x] **Sprint 1.1**: Guard Extraction — Auth & Maintenance Boundaries (`AuthRouteGuard.svelte`, `MaintenanceModeGuard.svelte`, route tests) ✅
 - [x] **Sprint 1.2**: Guard Extraction — Security & License Boundaries (`PasskeyGateGuard.svelte`, `ImpersonationGuard.svelte`, `LicenseSyncGuard.svelte`, de-monolith `+layout.svelte`) ✅
-- [ ] **Sprint 1.3**: Multi-Persona Dual-Role State (`authStore` `activeContext: 'parent' | 'coach'`, role preservation tests) 🚀 *(DISPATCHING TO JULES)*
+- [x] **Sprint 1.3**: Multi-Persona Dual-Role State (`authStore` `activeContext: 'parent' | 'coach'`, role preservation tests) ✅
 - [ ] **Sprint 1.4**: Systematic B815 Defensive Hydration Sweep across secondary utilities and panels
 
 #### Phase 2: Missing Personas & Broken Route Remediation
