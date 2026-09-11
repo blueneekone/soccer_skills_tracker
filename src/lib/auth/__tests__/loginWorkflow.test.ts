@@ -18,7 +18,7 @@ describe('login-to-dashboard workflow (Phase C regression guards)', () => {
 
 	it('routes global admins to admin overview', () => {
 		const dest = getLoginWaterfallDestination('global_admin', {});
-		expect(dest.path).toBe('/admin/overview');
+		expect(dest.path).toBe('/admin/dashboard');
 	});
 
 	it('routes players to player dashboard', () => {
@@ -62,11 +62,11 @@ describe('login-to-dashboard workflow (Phase C regression guards)', () => {
 function getRoleDestinationPure(role: string | null | undefined): string {
 	switch (role) {
 		case 'super_admin':
-		case 'global_admin': return '/admin/overview';
+		case 'global_admin': return '/admin/dashboard';
 		case 'director':     return '/director';
 		case 'coach':        return '/coach';
 		case 'registrar':    return '/director';
-		case 'parent':       return '/parent/household';
+		case 'parent':       return '/parent/dashboard';
 		case 'player':       return '/player/dashboard';
 		case 'recruiter':    return '/recruiter';
 		case 'tutor':        return '/tutor';
@@ -114,8 +114,8 @@ describe('T0-3: users doc keyed by normalized email (not UID)', () => {
 		expect(getRoleDestinationPure('player')).toBe('/player/dashboard');
 	});
 
-	it('existing parent profile routes to /parent/household after email-keyed doc read', () => {
-		expect(getRoleDestinationPure('parent')).toBe('/parent/household');
+	it('existing parent profile routes to /parent/dashboard after email-keyed doc read', () => {
+		expect(getRoleDestinationPure('parent')).toBe('/parent/dashboard');
 	});
 });
 

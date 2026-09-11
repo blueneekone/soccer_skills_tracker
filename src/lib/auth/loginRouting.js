@@ -27,7 +27,7 @@ const SIMPLE_ROLE_DESTINATIONS = /** @type {Record<string, { path: string; conte
 		pivotKey: 'ctx-coach-default',
 	},
 	parent: {
-		path: '/parent/household',
+		path: '/parent/dashboard',
 		context: 'household',
 		pivotKey: 'ctx-parent-portal',
 	},
@@ -46,6 +46,11 @@ const SIMPLE_ROLE_DESTINATIONS = /** @type {Record<string, { path: string; conte
 		context: 'recruiter',
 		pivotKey: 'ctx-recruiter-portal',
 	},
+	commissioner: {
+		path: '/commissioner/dashboard',
+		context: 'admin',
+		pivotKey: 'ctx-commissioner-portal',
+	},
 	fan: {
 		path: '/fan/watch',
 		context: 'household',
@@ -61,7 +66,7 @@ const SIMPLE_ROLE_DESTINATIONS = /** @type {Record<string, { path: string; conte
 export function getLoginWaterfallDestination(role, profile) {
 	if (role === 'admin' || role === 'super_admin' || role === 'global_admin') {
 		return {
-			path: '/admin/overview',
+			path: '/admin/dashboard',
 			context: 'admin',
 			pivotKey: 'ctx-platform-admin',
 		};
@@ -77,7 +82,7 @@ export function getLoginWaterfallDestination(role, profile) {
 	if (role === 'director') {
 		const cid = typeof profile?.clubId === 'string' ? profile.clubId.trim() : '';
 		return {
-			path: '/director/dashboard?tab=home',
+			path: '/director/dashboard',
 			context: 'director',
 			pivotKey: cid ? `ctx-director-${cid}` : 'ctx-director-fallback',
 		};

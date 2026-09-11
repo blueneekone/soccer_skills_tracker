@@ -45,7 +45,9 @@ export function getRoleDestination(role: UserRole | string | null | undefined): 
 	switch (role) {
 		case 'super_admin':
 		case 'global_admin':
-			return '/admin/overview';
+			return '/admin/dashboard';
+		case 'commissioner':
+			return '/commissioner/dashboard';
 		case 'director':
 			return '/director';
 		case 'coach':
@@ -53,7 +55,7 @@ export function getRoleDestination(role: UserRole | string | null | undefined): 
 		case 'registrar':
 			return '/director';
 		case 'parent':
-			return '/parent/household';
+			return '/parent/dashboard';
 		case 'player':
 			return '/player/dashboard';
 		case 'recruiter':

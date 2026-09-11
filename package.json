@@ -17,7 +17,7 @@
     "check": "svelte-check --tsconfig ./jsconfig.json --threshold error",
     "test": "vitest run",
     "test:unit": "vitest run src/lib/director/__tests__ src/lib/components/director",
-    "test:regression:auth": "vitest run src/lib/components/shell/guards/__tests__",
+    "test:regression:auth": "vitest run src/lib/components/shell/guards/__tests__ src/lib/auth/__tests__",
     "test:regression:acquisition": "vitest run src/lib/platform/__tests__/acquisitionRegression.guard.test.ts src/lib/registrar/__tests__/launchP0Fixes.test.ts src/lib/parent/__tests__/householdOperatives.test.ts src/lib/parent/__tests__/householdClearanceLoad.test.ts src/lib/player/dashboard/__tests__/activeBounties.test.ts src/lib/shell/__tests__/fieldMenuSheet.test.ts src/lib/platform/__tests__/parentNavWorkflow.guard.test.ts src/lib/gamification/__tests__/personaFunctionalMvp.test.ts",
     "test:visual:walkthrough": "playwright test tests/universal-persona-walkthrough.spec.ts",
     "audit:pre-deploy": "node scripts/regression-audit.cjs",

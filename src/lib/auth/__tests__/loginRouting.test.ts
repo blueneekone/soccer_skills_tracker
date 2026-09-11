@@ -66,7 +66,7 @@ describe('loginRouting', () => {
 	describe('getLoginWaterfallDestination', () => {
 		it('routes admin roles to admin overview', () => {
 			const expected = {
-				path: '/admin/overview',
+				path: '/admin/dashboard',
 				context: 'admin',
 				pivotKey: 'ctx-platform-admin',
 			};
@@ -91,7 +91,7 @@ describe('loginRouting', () => {
 		it('routes director with clubId', () => {
 			const profile = { clubId: 'club-123' };
 			const expected = {
-				path: '/director/dashboard?tab=home',
+				path: '/director/dashboard',
 				context: 'director',
 				pivotKey: 'ctx-director-club-123',
 			};
@@ -101,7 +101,7 @@ describe('loginRouting', () => {
 		it('routes director without clubId to fallback', () => {
 			const profile = { clubId: '' };
 			const expected = {
-				path: '/director/dashboard?tab=home',
+				path: '/director/dashboard',
 				context: 'director',
 				pivotKey: 'ctx-director-fallback',
 			};
@@ -139,7 +139,7 @@ describe('loginRouting', () => {
 
 		it('routes parent', () => {
 			const expected = {
-				path: '/parent/household',
+				path: '/parent/dashboard',
 				context: 'household',
 				pivotKey: 'ctx-parent-portal',
 			};
@@ -206,7 +206,7 @@ describe('loginRouting', () => {
 
 	describe('getContextFromHref', () => {
 		it('returns admin for /admin routes', () => {
-			expect(getContextFromHref('/admin/overview')).toBe('admin');
+			expect(getContextFromHref('/admin/dashboard')).toBe('admin');
 			expect(getContextFromHref('/admin')).toBe('admin');
 		});
 
@@ -224,7 +224,7 @@ describe('loginRouting', () => {
 		});
 
 		it('returns household for parent, home, stats, trophies, settings routes', () => {
-			expect(getContextFromHref('/parent/household')).toBe('household');
+			expect(getContextFromHref('/parent/dashboard')).toBe('household');
 			expect(getContextFromHref('/home')).toBe('household');
 			expect(getContextFromHref('/home/dashboard')).toBe('household');
 			expect(getContextFromHref('/stats')).toBe('household');
