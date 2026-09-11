@@ -173,6 +173,15 @@ describe('loginRouting', () => {
 			expect(getLoginWaterfallDestination('recruiter', null)).toEqual(expected);
 		});
 
+		it('routes fan', () => {
+			const expected = {
+				path: '/fan/watch',
+				context: 'household',
+				pivotKey: 'ctx-fan-portal',
+			};
+			expect(getLoginWaterfallDestination('fan', null)).toEqual(expected);
+		});
+
 		it('routes unrecognized role to onboarding', () => {
 			const expected = {
 				path: '/onboarding',

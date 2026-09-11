@@ -6,6 +6,7 @@
 	import { untrack } from 'svelte';
 	import { browser } from '$app/environment';
 	import { db } from '$lib/firebase.js';
+	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { collection, query, where, orderBy, onSnapshot } from 'firebase/firestore';
 	import Icon from '$lib/components/ui/Icon.svelte';
 	import type { IconName } from '$lib/icons/registry.js';
@@ -23,7 +24,7 @@
 		let unsub;
 
 		untrack(() => {
-			if (!browser || !tid || !mid) {
+			if (!browser || !db || !authStore.isAuthenticated || !tid || !mid) {
 				events = [];
 				errorState = '';
 				return;

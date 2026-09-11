@@ -20,6 +20,39 @@ export function userDocHasPlayerRole(profile) {
 	return profile.roles.includes('player');
 }
 
+const SIMPLE_ROLE_DESTINATIONS = /** @type {Record<string, { path: string; context: LoginActiveContext; pivotKey: string }>} */ ({
+	coach: {
+		path: '/coach/dashboard',
+		context: 'coach',
+		pivotKey: 'ctx-coach-default',
+	},
+	parent: {
+		path: '/parent/household',
+		context: 'household',
+		pivotKey: 'ctx-parent-portal',
+	},
+	player: {
+		path: '/player/dashboard',
+		context: 'household',
+		pivotKey: 'ctx-player-home',
+	},
+	tutor: {
+		path: '/tutor',
+		context: 'household',
+		pivotKey: 'ctx-tutor-portal',
+	},
+	recruiter: {
+		path: '/recruiter',
+		context: 'recruiter',
+		pivotKey: 'ctx-recruiter-portal',
+	},
+	fan: {
+		path: '/fan/watch',
+		context: 'household',
+		pivotKey: 'ctx-fan-portal',
+	},
+});
+
 /**
  * @param {string} role
  * @param {Record<string, unknown> | null | undefined} profile
@@ -49,13 +82,6 @@ export function getLoginWaterfallDestination(role, profile) {
 			pivotKey: cid ? `ctx-director-${cid}` : 'ctx-director-fallback',
 		};
 	}
-	if (role === 'coach') {
-		return {
-			path: '/coach/dashboard',
-			context: 'coach',
-			pivotKey: 'ctx-coach-default',
-		};
-	}
 	if (role === 'registrar') {
 		const cid = typeof profile?.clubId === 'string' ? profile.clubId.trim() : '';
 		return {
@@ -64,33 +90,8 @@ export function getLoginWaterfallDestination(role, profile) {
 			pivotKey: cid ? `ctx-director-${cid}` : 'ctx-director-fallback',
 		};
 	}
-	if (role === 'parent') {
-		return {
-			path: '/parent/household',
-			context: 'household',
-			pivotKey: 'ctx-parent-portal',
-		};
-	}
-	if (role === 'player') {
-		return {
-			path: '/player/dashboard',
-			context: 'household',
-			pivotKey: 'ctx-player-home',
-		};
-	}
-	if (role === 'tutor') {
-		return {
-			path: '/tutor',
-			context: 'household',
-			pivotKey: 'ctx-tutor-portal',
-		};
-	}
-	if (role === 'recruiter') {
-		return {
-			path: '/recruiter',
-			context: 'recruiter',
-			pivotKey: 'ctx-recruiter-portal',
-		};
+	if (SIMPLE_ROLE_DESTINATIONS[role]) {
+		return SIMPLE_ROLE_DESTINATIONS[role];
 	}
 	// No recognized role — route to onboarding for invite-code / profile setup
 	return {
@@ -127,6 +128,8 @@ export function getContextFromHref(href) {
 		if (path.startsWith('/coach')) return 'coach';
 		if (path.startsWith('/recruiter')) return 'recruiter';
 		if (path.startsWith('/parent')) return 'household';
+		if (path.startsWith('/fan')) return 'household';
+		if (path.startsWith('/tutor')) return 'household';
 		if (path === '/home' || path.startsWith('/home/')) return 'household';
 		if (path.startsWith('/stats')) return 'household';
 		if (path.startsWith('/trophies')) return 'household';

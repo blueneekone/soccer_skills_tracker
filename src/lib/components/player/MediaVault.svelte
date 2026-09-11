@@ -99,6 +99,7 @@ import { functions } from '$lib/firebase.js';
 	// ── Lifecycle ─────────────────────────────────────────────────────────────
 
 	onMount(() => {
+		if (!db || !authStore.isAuthenticated) { loading = false; return; }
 		if (!playerUid) { loading = false; return; }
 
 		const clipsRef = collection(db, `player_media/${playerUid}/clips`);

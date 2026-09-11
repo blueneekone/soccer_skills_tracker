@@ -1,9 +1,11 @@
 <script lang="ts">
-	import { CoachMatchDayView } from '$lib/coach/match-day/index.js';
+	import { goto } from '$app/navigation';
+	import { untrack } from 'svelte';
+
+	$effect(() => {
+		untrack(() => {
+			goto('/coach/matchday', { replaceState: true });
+		});
+	});
 </script>
 
-<svelte:head>
-	<title>Coach • Match Day • Sideline Terminal</title>
-</svelte:head>
-
-<CoachMatchDayView />

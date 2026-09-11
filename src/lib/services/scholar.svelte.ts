@@ -131,6 +131,7 @@ export class ScholarEngine {
 
 	subscribe(): void {
 		if (!browser || !this._playerEmail) return;
+		if (!db || !authStore.isAuthenticated) return;
 		this._unsub?.();
 		this.loading = true;
 
@@ -230,6 +231,7 @@ export class TutorRosterEngine {
 	}
 
 	private async _loadAssignments(): Promise<void> {
+		if (!db || !authStore.isAuthenticated) return;
 		this.loading = true;
 		this.error = '';
 		try {

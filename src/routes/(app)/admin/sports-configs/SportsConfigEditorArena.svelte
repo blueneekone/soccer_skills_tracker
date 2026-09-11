@@ -87,7 +87,6 @@
 
     {:else if engine.dirtyBuffer}
       <div class="editor-scroll">
-        <!-- HUD -->
         <div class="tw-flex tw-justify-end tw-mb-4">
           <SportsConfigEditorHUD
             selectedConfig={engine.selectedConfig}

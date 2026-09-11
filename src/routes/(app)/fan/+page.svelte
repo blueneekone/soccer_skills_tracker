@@ -4,7 +4,7 @@
 
 	$effect(() => {
 		untrack(() => {
-			goto('/admin/audit-log', { replaceState: true });
+			goto('/fan/watch', { replaceState: true });
 		});
 	});
 </script>
