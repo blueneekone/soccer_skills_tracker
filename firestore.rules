@@ -210,15 +210,27 @@ service cloud.firestore {
 
     // Helper: Verify requesting user is a Parent, Coach, or Director
     function canAccessDirectory() {
-      return request.auth != null &&
-        (request.auth.token.role == "parent" ||
-         request.auth.token.role == "coach" ||
+      return request.auth != null && 
+        (request.auth.token.role == "parent" || 
+         request.auth.token.role == "coach" || 
          request.auth.token.role == "director");
     }
 
     // Helper: Grab user's sport context for strict containment matching
     function getUserSport(email) {
       return get(/databases/$(database)/documents/users/$(email)).data.sport;
+    }
+
+    // Secure Directory Rules
+    match /users/{tutorEmail} {
+      // Allow directory reads only if the requester is authorized and shares the same sport
+      allow read: if canAccessDirectory() 
+                  && resource.data.role == "tutor"
+                  && resource.data.sport == getUserSport(request.auth.token.email)
+                  && resource.data.tutorProfile.isListingActive == true;
+                  
+      // Prevent unauthorized client-side updates to tutor roles
+      allow write: if false; // All listings/registration handled server-side via functions-compliance
     }
 
     // Enforce role and tenant check on users collection
