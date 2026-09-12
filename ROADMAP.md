@@ -101,3 +101,9 @@
 - [ ] **Sprint 5.3**: WebAuthn Biometric Enclave & Passkey Attestation Tests (`passkeyEnclaveVerification.test.ts`, origin-binding tamper protection)
 - [x] **Sprint 5.4**: CI & Pre-Commit Auth Lockdown Hook (`.husky/pre-commit` & `ci.yml` blocking any regression from cloud agent runs) ✅
 
+#### Phase 6: Persona Marketing Engine, Training Triangle & Demo Video Pipeline
+- [ ] **Sprint 6.1**: Persona Storytelling & Narrative Blueprint (`landingContent.ts` expansion — Coach OS SIEM, Director Panopticon, Parent Compliance Shield, Player Dopamine Engine, Recruiter Checkr Vault)
+- [ ] **Sprint 6.2**: The "Training Triangle" Interactive Interactive Showcase Component (`TrainingTriangleShowcase.svelte` — unified friction-free feedback loop connecting Coach intents, Player XP, and Parent compliance)
+- [ ] **Sprint 6.3**: Playwright Headless Product Demo Video Automation (`scripts/capture-persona-demos.mjs` — automated 60fps diegetic recordings for `marketing-hero.mp4`, `coach-os-demo.mp4`, `director-os-demo.mp4`, `player-os-demo.mp4`, `parent-os-demo.mp4`)
+- [ ] **Sprint 6.4**: Public Video Showcase Integration (`LandingHero.svelte` & `StakeholderBento.svelte` dynamic video modals, poster fallbacks, and fast-start MP4 streaming)
+
