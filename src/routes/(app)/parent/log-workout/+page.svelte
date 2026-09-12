@@ -1,8 +1,8 @@
 <script lang="ts">
-	import { LogWorkoutEngine } from './LogWorkoutEngine.svelte';
-	import LogWorkoutArena from './LogWorkoutArena.svelte';
+	import { ParentWorkoutEngine } from './ParentWorkoutEngine.svelte';
+	import ParentWorkoutArena from './ParentWorkoutArena.svelte';
 
-	const engine = new LogWorkoutEngine();
+	const engine = new ParentWorkoutEngine();
 
 	$effect(() => {
 		engine.loadChildren();
@@ -13,4 +13,4 @@
 	<title>Log Workout · Parent OS</title>
 </svelte:head>
 
-<LogWorkoutArena {engine} />
+<ParentWorkoutArena {engine} />

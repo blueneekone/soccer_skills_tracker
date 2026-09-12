@@ -59,8 +59,8 @@ describe('PARENT-LOG-WORKOUT-PROFILE — dual XP HUD helpers', () => {
 describe('PARENT-LOG-WORKOUT-PROFILE — route source guards', () => {
 	const src = [
 		readFileSync(join(process.cwd(), 'src/routes/(app)/parent/log-workout/+page.svelte'), 'utf-8'),
-		readFileSync(join(process.cwd(), 'src/routes/(app)/parent/log-workout/LogWorkoutEngine.svelte.ts'), 'utf-8'),
-		readFileSync(join(process.cwd(), 'src/routes/(app)/parent/log-workout/LogWorkoutArena.svelte'), 'utf-8')
+		readFileSync(join(process.cwd(), 'src/routes/(app)/parent/log-workout/ParentWorkoutEngine.svelte.ts'), 'utf-8'),
+		readFileSync(join(process.cwd(), 'src/routes/(app)/parent/log-workout/ParentWorkoutArena.svelte'), 'utf-8')
 	].join('\\n');
 
 	it('imports dual-read helper and player_stats path', () => {

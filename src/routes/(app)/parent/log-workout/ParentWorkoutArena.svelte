@@ -3,9 +3,10 @@
 	import type { IconName } from '$lib/icons/registry.js';
 	import IntelModal from '$lib/components/ui/IntelModal.svelte';
 	import { WORKOUT_FOCUS_AREAS } from '$lib/player/workout/focusDrillCatalog.js';
-	import type { LogWorkoutEngine } from './LogWorkoutEngine.svelte';
+	import type { ParentWorkoutEngine } from './ParentWorkoutEngine.svelte';
+	import ParentWorkoutHUD from './ParentWorkoutHUD.svelte';
 
-	let { engine }: { engine: LogWorkoutEngine } = $props();
+	let { engine }: { engine: ParentWorkoutEngine } = $props();
 
 	const TELEMETRY_INTEL = {
 		title: 'GUARDIAN TELEMETRY',
@@ -141,15 +142,7 @@
 					</div>
 				</div>
 
-				<div class="tw-bg-[#0B0F19] tw-border tw-border-[#14b8a6]/30 tw-p-4 tw-rounded-none tw-mt-4">
-					<span class="tw-text-[#14b8a6] tw-font-mono tw-text-[10px] tw-font-bold tw-uppercase tw-tracking-widest tw-mb-3 tw-block">Guardian Attestation</span>
-					<label class="tw-sr-only" for="plw-legal">Your full legal name</label>
-					<input id="plw-legal" type="text" autocomplete="name" placeholder="First and last (verifying parent)" bind:value={engine.verifierLegalName} class="tw-w-full tw-bg-black tw-border tw-border-[#334155] tw-text-white tw-p-3 tw-font-mono tw-text-sm focus:tw-outline-none focus:tw-border-[#fbbf24] tw-rounded-none tw-mb-4 tw-transition-colors" />
-					<label class="tw-flex tw-items-center tw-gap-3 tw-cursor-pointer">
-						<input type="checkbox" bind:checked={engine.parentVerifiedAck} class="tw-accent-[#fbbf24] tw-w-4 tw-h-4" />
-						<span class="tw-text-xs tw-text-[#94a3b8]">I confirm this session was completed as logged for the selected operative.</span>
-					</label>
-				</div>
+				<ParentWorkoutHUD {engine} />
 
 				<button class="tw-w-full tw-py-4 tw-px-6 tw-flex tw-items-center tw-justify-center tw-gap-2 tw-bg-[#fbbf24] tw-text-black tw-font-mono tw-text-sm tw-font-bold tw-uppercase tw-tracking-widest hover:tw-bg-[#f59e0b] hover:tw-shadow-[0_0_20px_rgba(251,191,36,0.4)] tw-transition-all tw-rounded-none disabled:tw-opacity-50 disabled:tw-cursor-not-allowed" disabled={!engine.selectedChildEmail || !engine.selectedDrill || engine.logSubmitting || !engine.parentVerifiedAck || !engine.verifierLegalName.trim()} onclick={() => engine.submitWorkout()}>
 					{#if engine.logSubmitting}

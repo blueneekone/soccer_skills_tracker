@@ -10,7 +10,7 @@ import { dopamineOnCallable } from '$lib/services/dopamine.svelte.js';
 import { loadDrillTitlesForFocus, type WorkoutFocus } from '$lib/player/workout/focusDrillCatalog.js';
 import { deriveHudStreak, deriveHudXp, deriveProfileXp, loadLogWorkoutChildSnapshot } from '$lib/parent/logWorkoutChildProfile.js';
 
-export class LogWorkoutEngine {
+export class ParentWorkoutEngine {
 	children = $state<Array<{ email: string; playerName: string; teamId: string }>>([]);
 	childrenLoading = $state(true);
 	selectedChildEmail = $state('');
@@ -71,6 +71,7 @@ export class LogWorkoutEngine {
 
 	async loadChildren() {
 		if (!browser) return;
+		if (!db || !authStore.isAuthenticated) return;
 		try {
 			this.childrenLoading = true;
 			const uid = authStore.user?.uid;
@@ -93,6 +94,7 @@ export class LogWorkoutEngine {
 
 	async handleChildChange() {
 		if (!this.selectedChildEmail || !browser) return;
+		if (!db || !authStore.isAuthenticated) return;
 		this.childProfileLoading = true;
 		this.childProfileError = '';
 		try {
@@ -109,6 +111,7 @@ export class LogWorkoutEngine {
 
 	async loadDrills() {
 		if (!browser) return;
+		if (!db || !authStore.isAuthenticated) return;
 		this.drillsLoading = true;
 		try {
 			const teamId = String(this.childProfile?.teamId || this.selectedChild?.teamId || '').trim();

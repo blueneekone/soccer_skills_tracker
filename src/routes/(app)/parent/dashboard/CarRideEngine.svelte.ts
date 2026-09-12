@@ -25,6 +25,7 @@
  */
 
 import { db, auth } from '$lib/firebase.js';
+import { authStore } from '$lib/stores/auth.svelte.js';
 import { getSessionItemSafe } from '$lib/stores/auth/storage.js';
 import { isFirestoreReady } from '$lib/utils/firestoreGuard.js';
 import {
@@ -138,6 +139,7 @@ export class CarRideEngine {
 		clubId: string,
 		urlFixtureId?: string | null,
 	): Promise<void> {
+		if (!db || !authStore.isAuthenticated) return;
 		const user = auth.currentUser;
 		if (!user) return;
 

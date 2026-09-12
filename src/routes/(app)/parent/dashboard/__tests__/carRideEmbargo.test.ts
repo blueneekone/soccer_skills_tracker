@@ -12,6 +12,12 @@ vi.mock('$lib/firebase.js', () => ({
 	}
 }));
 
+vi.mock('$lib/stores/auth.svelte.js', () => ({
+	authStore: {
+		isAuthenticated: true,
+	}
+}));
+
 vi.mock('$lib/utils/firestoreGuard.js', () => ({
 	isFirestoreReady: () => true
 }));
