@@ -220,6 +220,7 @@ export class LeagueManager {
 	 */
 	connect(tenantId: string, teamId?: string) {
 		if (!browser || !tenantId || tenantId === this._tenantId) return;
+		if (!db || !authStore.isAuthenticated) return;
 
 		this._tenantId = tenantId;
 		if (teamId !== undefined) this._teamId = teamId;

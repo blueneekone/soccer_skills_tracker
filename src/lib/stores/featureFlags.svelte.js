@@ -82,6 +82,7 @@ function createFeatureFlagsStore() {
 			return () => {};
 		}
 		try {
+			if (!db) return () => {};
 			const ref = doc(db, 'config', 'feature_flags');
 			unsub = onSnapshot(
 				ref,

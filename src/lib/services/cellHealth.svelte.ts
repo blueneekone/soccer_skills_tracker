@@ -33,6 +33,7 @@
 
 import { browser } from '$app/environment';
 import { getDb } from '$lib/firebase.js';
+import { authStore } from '$lib/stores/auth.svelte.js';
 import { DEFAULT_CELL_ID, type CellDoc, type CellPolicyDoc, type CellPromotionQueueDoc } from '$lib/types/cells';
 import { collection, doc, onSnapshot, query, orderBy } from 'firebase/firestore';
 
@@ -60,6 +61,7 @@ class CellHealth {
 	 */
 	init(): void {
 		if (!browser || this.isLive) return;
+		if (!authStore.isAuthenticated) return;
 		this.isLive = true;
 
 		// The cell registry always lives on the (default) cell, regardless

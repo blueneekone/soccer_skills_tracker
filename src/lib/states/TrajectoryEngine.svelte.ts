@@ -44,6 +44,7 @@
 
 import { browser } from '$app/environment';
 import { db } from '$lib/firebase.js';
+import { authStore } from '$lib/stores/auth.svelte.js';
 import {
 	collection,
 	doc,
@@ -201,6 +202,7 @@ export class TrajectoryEngine {
 	 */
 	connect(userKey: string): void {
 		if (!browser || !userKey) return;
+		if (!db || !authStore.isAuthenticated) return;
 
 		this.#userKey = userKey;
 		this.#unsubAll();

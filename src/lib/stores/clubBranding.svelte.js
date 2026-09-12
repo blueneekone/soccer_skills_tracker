@@ -1,5 +1,6 @@
 import { browser } from '$app/environment';
 import { db } from '$lib/firebase.js';
+import { authStore } from '$lib/stores/auth.svelte.js';
 import { doc, onSnapshot } from 'firebase/firestore';
 import {
 	applySixtyThirtyTenPalette,
@@ -41,6 +42,7 @@ function createClubBrandingStore() {
 	 */
 	function loadForClub(cid) {
 		if (!browser) return;
+		if (!db || !authStore.isAuthenticated) return;
 		const id = typeof cid === 'string' ? cid.trim() : '';
 		if (!id) {
 			clear();

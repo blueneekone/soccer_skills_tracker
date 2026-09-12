@@ -72,4 +72,29 @@ describe('isFirestoreReady — b815 Defensive Hydration Guard', () => {
 			);
 		expect(src).toMatch(/isFirestoreReady/);
 	});
+
+	it('enforces B815 defensive hydration in OrgManager', () => {
+		const src = require('fs').readFileSync('src/lib/services/org.svelte.ts', 'utf-8');
+		expect(src).toMatch(/if \(!db \|\| !authStore\.isAuthenticated\) return;/);
+	});
+
+	it('enforces B815 defensive hydration in LeagueManager', () => {
+		const src = require('fs').readFileSync('src/lib/services/league.svelte.ts', 'utf-8');
+		expect(src).toMatch(/if \(!db \|\| !authStore\.isAuthenticated\) return;/);
+	});
+
+	it('enforces B815 defensive hydration in FeeLedger', () => {
+		const src = require('fs').readFileSync('src/lib/services/feeLedger.svelte.ts', 'utf-8');
+		expect(src).toMatch(/if \(!db \|\| !authStore\.isAuthenticated\)/);
+	});
+
+	it('enforces B815 defensive hydration in LoadoutUnlocks', () => {
+		const src = require('fs').readFileSync('src/lib/services/loadoutUnlocks.svelte.ts', 'utf-8');
+		expect(src).toMatch(/if \(!db \|\| !authStore\.isAuthenticated\) return;/);
+	});
+
+	it('enforces B815 defensive hydration in TrajectoryEngine', () => {
+		const src = require('fs').readFileSync('src/lib/states/TrajectoryEngine.svelte.ts', 'utf-8');
+		expect(src).toMatch(/if \(!db \|\| !authStore\.isAuthenticated\) return;/);
+	});
 });

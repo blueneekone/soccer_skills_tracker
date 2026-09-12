@@ -169,6 +169,7 @@ export class OrgManager {
 	 */
 	connect(tenantId: string) {
 		if (!browser || !tenantId || tenantId === this._tenantId) return;
+		if (!db || !authStore.isAuthenticated) return;
 
 		this._tenantId = tenantId;
 		this._detach();

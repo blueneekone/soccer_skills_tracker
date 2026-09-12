@@ -38,6 +38,7 @@
 	$effect(() => {
 		if (!eventId || !browser) return;
 		const db = getActiveDb();
+		if (!db) return;
 		unsubscribe = onSnapshot(doc(db, 'tournament_events', eventId), (snap) => {
 			if (!snap.exists()) {
 				notFound = true;

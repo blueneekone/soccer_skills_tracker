@@ -36,6 +36,7 @@
 
 	$effect(() => {
 		if (!browser) return;
+		if (!db || !authStore.isAuthenticated) return;
 		const email = authStore.user?.email ?? authStore.userProfile?.email;
 		if (!email) return;
 

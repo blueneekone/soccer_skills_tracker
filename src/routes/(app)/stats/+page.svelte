@@ -221,6 +221,7 @@
 
 	$effect(() => {
 		if (!browser || !userUid) return;
+		if (!db || !authStore.isAuthenticated) return;
 
 		const refPub = doc(db, 'public_player_profiles', userUid);
 		const refPs = doc(db, 'player_stats', userUid);

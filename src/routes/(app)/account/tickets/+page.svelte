@@ -39,8 +39,9 @@
 
 	$effect(() => {
 		if (!emailKey || !browser) return;
-		loading = true;
 		const db = getActiveDb();
+		if (!db || !authStore.isAuthenticated) return;
+		loading = true;
 		const q = query(
 			collection(db, 'tickets'),
 			where('purchaserEmail', '==', emailKey),

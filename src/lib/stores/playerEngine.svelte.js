@@ -5,6 +5,7 @@
  */
 import { addDoc, collection, doc, onSnapshot, serverTimestamp } from 'firebase/firestore';
 import { db } from '$lib/firebase.js';
+import { authStore } from '$lib/stores/auth.svelte.js';
 import { getCardTierFromLevel, getLevelProgressFromTotalXp } from '$lib/gamification/level.js';
 
 function createPlayerEngine() {
@@ -67,6 +68,7 @@ function createPlayerEngine() {
 		 */
 		attach(uid) {
 			if (!uid) return;
+			if (!db || !authStore.isAuthenticated) return;
 			if (boundUid === uid && unsubscribe) return;
 			detach();
 			boundUid = uid;

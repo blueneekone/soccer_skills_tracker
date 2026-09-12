@@ -8,6 +8,7 @@
 import { browser } from '$app/environment';
 import { doc, onSnapshot } from 'firebase/firestore';
 import { db } from '$lib/firebase.js';
+import { authStore } from '$lib/stores/auth.svelte.js';
 import { ceremonyOnCosmeticUnlock } from '$lib/services/dopamine.svelte.js';
 
 export type LoadoutUnlockCeremonyItem = {
@@ -65,6 +66,7 @@ export const loadoutUnlockQueue = {
  */
 export function connectLoadoutUnlockListener(email: string): void {
 	if (!browser) return;
+	if (!db || !authStore.isAuthenticated) return;
 	const key = email.trim().toLowerCase();
 	if (!key) {
 		disconnectLoadoutUnlockListener();

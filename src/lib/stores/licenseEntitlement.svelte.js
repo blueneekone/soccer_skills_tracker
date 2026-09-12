@@ -47,6 +47,10 @@ function createLicenseEntitlementStore() {
 				loading = false;
 				return;
 			}
+			if (!db) {
+				loading = false;
+				return;
+			}
 			clubIdResolved = cid;
 
 			unsubClub = onSnapshot(

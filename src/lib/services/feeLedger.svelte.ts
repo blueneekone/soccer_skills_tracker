@@ -31,6 +31,7 @@ import {
 	type Unsubscribe,
 } from 'firebase/firestore';
 import { getActiveDb } from '$lib/firebase.js';
+import { authStore } from '$lib/stores/auth.svelte.js';
 import type { PlatformFeeLedgerEntry, TransactionType } from '$lib/types/pricing';
 
 // ── Public types ────────────────────────────────────────────────────────────
@@ -145,6 +146,10 @@ export class FeeLedgerEngine {
 		this.error = null;
 
 		const db = getActiveDb();
+		if (!db || !authStore.isAuthenticated) {
+			this.loading = false;
+			return;
+		}
 
 		// YTD aggregate — headline numbers.
 		this._unsubYtd = onSnapshot(
