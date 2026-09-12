@@ -1,409 +1,16 @@
 <script lang="ts">
-	import { browser } from '$app/environment';
 	import Icon from '$lib/components/ui/Icon.svelte';
-	import type { IconName } from '$lib/icons/registry.js';
-	import { doc, getDoc, getDocs, onSnapshot, updateDoc, collection, query, where, orderBy, limit } from 'firebase/firestore';
-	import { db } from '$lib/firebase.js';
-	import ActiveBounties from '$lib/components/player/dashboard/ActiveBounties.svelte';
-	import OperativeHub from '$lib/components/player/dashboard/OperativeHub.svelte';
-	import OperativeQuickOps from '$lib/components/player/dashboard/OperativeQuickOps.svelte';
-	import OperativePathwayPreview from '$lib/components/player/dashboard/OperativePathwayPreview.svelte';
-	import HqWorldContextStrip from '$lib/components/player/dashboard/HqWorldContextStrip.svelte';
-	// PlayerHudHeader deprecated in Sprint 1.6 — replaced by IdentityBentoModule
-	import IdentityBentoModule from '$lib/components/player/dashboard/IdentityBentoModule.svelte';
 	import HUDContainer from '$lib/components/hud/HUDContainer.svelte';
-	import VanguardProtocolPanel from '$lib/components/player/dashboard/VanguardProtocolPanel.svelte';
-	import CarRideHome from '$lib/components/compliance/CarRideHome.svelte';
-	import { sportsConfigStore } from '$lib/services/sportsConfigs.svelte.js';
-	import { deriveVanguardPrism } from '$lib/utils/vanguard-prism.js';
-	import { getCurrentRank, getLevelProgressFromTotalXp } from '$lib/gamification/level.js';
 	import '$lib/styles/player-dashboard-hud.css';
 	import { authStore } from '$lib/stores/auth.svelte.js';
 	import { impersonationStore } from '$lib/stores/impersonation.svelte.js';
-	import { playerEngine } from '$lib/stores/playerEngine.svelte.js';
-	import { untrack, onDestroy } from 'svelte';
-	import { TrajectoryEngine } from '$lib/states/TrajectoryEngine.svelte.js';
 	import { vanguardFlags } from '$lib/services/remoteConfig.svelte.js';
-	import MemoryCapsuleArena from '$lib/components/player/trajectory/MemoryCapsuleArena.svelte';
-	import type { VanguardAxisId } from '$lib/player/dashboard/vanguardProtocol.js';
-	import { hasVanguardTelemetry } from '$lib/player/dashboard/vanguardProtocol.js';
-	import {
-		mapScheduleDoc,
-		pickNextScheduleEvent,
-		resolveHqStatusBadges,
-		resolveNextEventLabel,
-		type HqScheduleEventLike,
-	} from '$lib/player/dashboard/hqWorldContext.js';
-	import { getCompletedAlbumSetChipLabels } from '$lib/gamification/albumSetBonuses.js';
-	import { resolveOperativeCardMetadata } from '$lib/gamification/cardCollectibleMetadata.js';
-	import { parseOperativePortrait } from '$lib/avatars/portraitV2Schema.js';
-	import {
-		readRepairOperativeAvatar,
-		queuePortraitReadRepairWrite,
-	} from '$lib/avatars/portraitReadRepair.js';
-	import { fetchClubDisplayName } from '$lib/player/fetchClubDisplayName.js';
-	import AdaptiveHomework from './AdaptiveHomework.svelte';
-	import { ArmoryEngine } from '$lib/states/ArmoryEngine.svelte.js';
-	import PlayerActivityStreak from '$lib/components/shell/PlayerActivityStreak.svelte';
+	import { PlayerDashboardEngine } from './PlayerDashboardEngine.svelte.js';
+	import PlayerArena from './PlayerArena.svelte';
+	import PlayerHUD from './PlayerHUD.svelte';
 
-	const armory = new ArmoryEngine();
-
-	/**
-	 * Effective operative for this lobby: Firestore profile for the signed-in Firebase user.
-	 * Under impersonation the JWT session is already the target athlete, so this is their
-	 * `users/{email}` doc — no separate `impersonationStore.activePlayer` object exists; the
-	 * store only carries session metadata (never null; avoid throwing if claims are mid-resolve).
-	 */
-	const activePlayer = $derived(
-		/** @type {Record<string, unknown> | null} */ (authStore.userProfile ?? null),
-	);
-	const profileXp = $derived(Math.max(0, Math.floor(Number(activePlayer?.totalXp ?? activePlayer?.xp) || 0)));
-	const totalXpHud = $derived(
-		playerEngine.hydrated ? Math.max(playerEngine.totalXp, profileXp) : profileXp,
-	);
-	const rankProgress = $derived(getCurrentRank(totalXpHud));
-	const osLevel = $derived(getLevelProgressFromTotalXp(totalXpHud).level);
-	const email = $derived((authStore.user?.email || '').toLowerCase());
-	const uid = $derived(authStore.user?.uid || '');
-
-	let selectedVanguardAxis = $state<VanguardAxisId | null>(null);
-
-	// ── Trajectory Engine (memory capsules) ──────────────────────────────────
-	const trajectoryEngine = new TrajectoryEngine();
-
-	$effect(() => {
-		if (!browser || authStore.isLoading) return;
-		if (email) trajectoryEngine.connect(email);
-	});
-
-	$effect(() => {
-		if (!browser || authStore.isLoading) return;
-		if (uid && email) armory.loadPlayerData(uid, email);
-	});
-
-	onDestroy(() => trajectoryEngine.destroy());
-
-	/** @type {Record<string, unknown> | null} */
-	let statsRaw = $state(null);
-	/** @type {string | null} */
-	let teamSportFromDoc = $state(null);
-
-	const resolvedSportRaw = $derived(
-		typeof teamSportFromDoc === 'string' && teamSportFromDoc.trim() ?
-			teamSportFromDoc.trim().toLowerCase()
-		:	'soccer',
-	);
-	const attrRadarValues = $derived(
-		deriveVanguardPrism(
-			statsRaw && typeof statsRaw === 'object' ? /** @type {Record<string,unknown>} */(statsRaw) : null,
-			/** @type {import('$lib/utils/vanguard-prism.js').ArmoryStats} */ (
-				/** @type {Record<string, unknown> | null} */ (activePlayer)?.armory?.stats ?? {}
-			),
-		)
-	);
-
-	const streak = $derived(Number(activePlayer?.currentStreak) || 0);
-	const longestStreak = $derived(Number(activePlayer?.longestStreak) || streak);
-	const telemetryReady = $derived(hasVanguardTelemetry(attrRadarValues));
-	const lastTrainingUtc = $derived(
-		statsRaw && typeof statsRaw === 'object' && typeof statsRaw.last_training_utc === 'string' ?
-			statsRaw.last_training_utc
-		:	null,
-	);
-
-	/** Controls the one-time profile setup modal. */
-	let showInitModal = $state(false);
-
-	// Mock match data for post-match car ride home telemetry
-	let matchData = $state<any>(null);
-	let isEmbargoed = $state(false);
-	let attestationSigned = $state(false);
-	let countdown = $state('15:00');
-
-	// Simulate data fetch
-	$effect(() => {
-		untrack(() => {
-			setTimeout(() => {
-				matchData = {
-					opponent: 'Metro City Elite',
-					result: 'L 1-2',
-					date: new Date().toISOString(),
-					rpe: 8,
-					successRate: 84
-				};
-				isEmbargoed = true;
-			}, 1000);
-		});
-	});
-
-	function signAttestation() {
-		attestationSigned = true;
-	}
-
-	let coachBountyCount = $state(0);
-	let heroQuestId = $state<string | null>(null);
-	/** @type {HqScheduleEventLike | null} */
-	let nextScheduleEvent = $state(null);
-
-	const callsign = $derived(
-		(activePlayer?.playerName && String(activePlayer.playerName).trim()) ||
-			email.split('@')[0] ||
-			'—',
-	);
-
-	/** Repaired v2 portrait for HQ identity + ring (lazy read-repair from Firestore profile). */
-	let displayOperativeAvatar = $state<unknown>(undefined);
-	let lastPortraitRepairSig = '';
-
-	const profilePortraitRepairSig = $derived.by(() => {
-		const oa = activePlayer?.operativeAvatar;
-		const opp = activePlayer?.ownedPortraitParts;
-		const ageBand =
-			typeof activePlayer?.ageBand === 'string' ? activePlayer.ageBand
-			: typeof authStore.userProfile?.ageBand === 'string' ? authStore.userProfile.ageBand
-			: '';
-		const oaNorm = oa && typeof oa === 'object' ? JSON.stringify(oa) : '';
-		const oppNorm = Array.isArray(opp) ? JSON.stringify([...opp].sort()) : '';
-		return `${email}:${ageBand}:${oaNorm}:${oppNorm}`;
-	});
-
-	$effect(() => {
-		if (!browser || authStore.isLoading) return;
-		void profilePortraitRepairSig;
-		if (!email) {
-			lastPortraitRepairSig = '';
-			displayOperativeAvatar = undefined;
-			return;
-		}
-		if (profilePortraitRepairSig === lastPortraitRepairSig) return;
-		lastPortraitRepairSig = profilePortraitRepairSig;
-
-		const { operativeAvatar, ownedPortraitParts, didMigrate } = readRepairOperativeAvatar(
-			activePlayer?.operativeAvatar,
-			activePlayer?.ownedPortraitParts,
-			{
-				ageBand:
-					typeof activePlayer?.ageBand === 'string' ? activePlayer.ageBand
-					: typeof authStore.userProfile?.ageBand === 'string' ? authStore.userProfile.ageBand
-					: undefined,
-			},
-		);
-		displayOperativeAvatar = operativeAvatar;
-		if (didMigrate) {
-			void queuePortraitReadRepairWrite(email, { operativeAvatar, ownedPortraitParts });
-		}
-	});
-
-	const operativeAvatarForHud = $derived(
-		displayOperativeAvatar ?? activePlayer?.operativeAvatar,
-	);
-
-	const hasArmoryProfile = $derived(
-		parseOperativePortrait(operativeAvatarForHud) !== null,
-	);
-
-	const nextEventLabel = $derived(resolveNextEventLabel(nextScheduleEvent));
-	const ownedSeasonOneCardIds = $derived(
-		Array.isArray(activePlayer?.ownedSeasonOneCards) ?
-			activePlayer.ownedSeasonOneCards.filter((id) => typeof id === 'string')
-		:	[],
-	);
-	const hqCardMetadata = $derived(
-		resolveOperativeCardMetadata({
-			operativeLoadout: activePlayer?.operativeLoadout,
-			ownedSeasonOneCards: ownedSeasonOneCardIds,
-			totalXp: totalXpHud,
-			rankName: rankProgress.rank,
-			emailKey: email,
-		}),
-	);
-	const completedAlbumSetChips = $derived(
-		getCompletedAlbumSetChipLabels(ownedSeasonOneCardIds),
-	);
-	const hqStatusBadges = $derived(
-		resolveHqStatusBadges({
-			profileIncomplete: !hasArmoryProfile,
-			streak,
-			lastTrainingUtc,
-			coachBountyCount,
-			heroQuestId,
-			suppressProfileIncompleteBadge: !hasArmoryProfile,
-			completedAlbumSetChips,
-		}),
-	);
-
-	/** @type {string} */
-	let teamAssignmentLabel = $state('');
-	let clubDisplayName = $state('');
-
-	$effect(() => {
-		if (!browser) return;
-		const u = authStore.user;
-		if (authStore.role === 'player' && u?.uid) {
-			playerEngine.attach(u.uid);
-			return () => playerEngine.detach();
-		}
-		playerEngine.detach();
-	});
-
-	$effect(() => {
-		if (!browser || !uid) {
-			statsRaw = null;
-			return;
-		}
-		const isMock = typeof window !== 'undefined' && (window.localStorage.getItem('auth_state') !== null || (import.meta.env && import.meta.env.VITE_E2E_BYPASS_AUTH));
-		if (isMock) {
-			statsRaw = { pac: 85, acc: 80, pow: 90, comp: 88, stm: 82, agi: 86 };
-			return;
-		}
-		const ref = doc(db, 'player_stats', uid);
-		const unsub = onSnapshot(
-			ref,
-			(snap) => {
-				if (!snap.exists()) {
-					statsRaw = null;
-					return;
-				}
-				statsRaw = snap.data();
-			},
-			(e) => {
-				console.error('[player dashboard] player_stats', e);
-				statsRaw = null;
-			},
-		);
-		return () => unsub();
-	});
-
-	$effect(() => {
-		if (!browser) return;
-		const tid = /** @type {string | undefined} */ (activePlayer?.teamId);
-		if (!tid || tid === 'admin') {
-			teamAssignmentLabel = '';
-			teamSportFromDoc = null;
-			return;
-		}
-		let cancelled = false;
-		(async () => {
-			try {
-				const snap = await getDoc(doc(db, 'teams', tid));
-				if (cancelled) return;
-				if (snap.exists()) {
-					const d = snap.data();
-					teamAssignmentLabel =
-						typeof d.teamName === 'string' && d.teamName.trim() ?
-							d.teamName.trim()
-						:	typeof d.name === 'string' && d.name.trim() ?
-							d.name.trim()
-						:	tid;
-					const sp = d.sport;
-					teamSportFromDoc =
-						typeof sp === 'string' && sp.trim() ? sp.trim().toLowerCase() : null;
-				} else {
-					teamAssignmentLabel = tid;
-					teamSportFromDoc = null;
-				}
-			} catch (e) {
-				console.error('[player dashboard] team label', e);
-				if (!cancelled) {
-					teamAssignmentLabel = tid;
-					teamSportFromDoc = null;
-				}
-			}
-		})();
-		return () => {
-			cancelled = true;
-		};
-	});
-
-	$effect(() => {
-		if (!browser) return;
-		const profile = activePlayer;
-		let cancelled = false;
-		(async () => {
-			const name = await fetchClubDisplayName(db, profile);
-			if (!cancelled) clubDisplayName = name;
-		})();
-		return () => {
-			cancelled = true;
-		};
-	});
-
-	async function loadLegacyScheduleFallback(tid: string, now: Date) {
-    if (!db || !authStore.isAuthenticated) return;
-		// T0-2: read from team_workouts (coach-written), client-filter scheduled_event.
-		const fallbackQ = query(collection(db, 'team_workouts'), where('teamId', '==', tid));
-		const snap = await getDocs(fallbackQ);
-		const events = snap.docs
-			.filter((d) => d.data().recordType === 'scheduled_event')
-			.map((d) => mapScheduleDoc(d.id, d.data()));
-		nextScheduleEvent = pickNextScheduleEvent(events, now);
-	}
-
-	$effect(() => {
-		if (!browser) return;
-		const isMock = typeof window !== 'undefined' && (window.localStorage.getItem('auth_state') !== null || (import.meta.env && import.meta.env.VITE_E2E_BYPASS_AUTH));
-		if (isMock) return;
-		const tid =
-			typeof activePlayer?.teamId === 'string' ? activePlayer.teamId.trim() : '';
-		if (!tid || tid === 'admin') {
-			nextScheduleEvent = null;
-			return;
-		}
-
-		const now = new Date();
-		// T0-2: repointed from `schedules`/`startAt` to `team_workouts`/`startTimestamp`.
-		// recordType filtered client-side to avoid a 3-field composite index
-		// (teamId + recordType + startTimestamp). Requires composite index: teamId + startTimestamp.
-		const scheduleQ = query(
-			collection(db, 'team_workouts'),
-			where('teamId', '==', tid),
-			where('startTimestamp', '>=', now.getTime()),
-			orderBy('startTimestamp', 'asc'),
-			limit(5),
-		);
-
-		let cancelled = false;
-
-		const unsub = onSnapshot(
-			scheduleQ,
-			(snap) => {
-				if (cancelled) return;
-				const scheduledDocs = snap.docs.filter(
-					(d) => d.data().recordType === 'scheduled_event',
-				);
-				if (scheduledDocs.length > 0) {
-					nextScheduleEvent = mapScheduleDoc(scheduledDocs[0].id, scheduledDocs[0].data());
-					return;
-				}
-				void loadLegacyScheduleFallback(tid, now).catch(() => {
-					if (!cancelled) nextScheduleEvent = null;
-				});
-			},
-			(e) => {
-				console.warn('[player dashboard] team_workouts schedule', e);
-				void loadLegacyScheduleFallback(tid, now).catch(() => {
-					if (!cancelled) nextScheduleEvent = null;
-				});
-			},
-		);
-
-		return () => {
-			cancelled = true;
-			unsub();
-		};
-	});
-
-	// Read-Repair: silently stamp sportId = 'soccer' on user profiles missing it.
-	$effect(() => {
-		if (!browser || !email || authStore.isLoading) return;
-		const profile = activePlayer;
-		if (!profile || typeof profile.sportId === 'string') return;
-		// Fire-and-forget — non-fatal if it fails
-		updateDoc(doc(db, 'users', email), { sportId: sportsConfigStore.currentSportConfig?.sportId ?? 'soccer' }).catch(
-			(e) => console.warn('[player-dash] sportId read-repair failed', e),
-		);
-	});
-
+	const engine = new PlayerDashboardEngine();
+	engine.subscribe();
 </script>
 
 <svelte:head>
@@ -421,7 +28,7 @@
 		<Icon name="status.loading" class="tw-animate-spin tw-text-4xl tw-text-[color:var(--pd-text-muted)]" />
 		<span class="tw-sr-only">Loading player dashboard</span>
 	</div>
-{:else if !activePlayer}
+{:else if !engine.activePlayer}
 	<div
 		class="tw-mx-auto tw-flex tw-min-h-[40vh] tw-max-w-lg tw-flex-col tw-items-center tw-justify-center bento-gap-md tw-rounded-xl tw-border tw-border-amber-500/25 tw-bg-slate-950/90 tw-px-6 tw-py-14 tw-text-center tw-text-slate-200"
 		role="alert"
@@ -447,217 +54,20 @@
 	data-dopamine={vanguardFlags.dopamineEnabled ? 'on' : 'off'}
 >
 	<div class="pd-content-wrap">
-	<HUDContainer ariaLabel="Player operations HUD">
-		<header class="pd-strap pd-strap--premium bento-span-12" aria-label="Operative headquarters">
-			<div class="pd-strap__grid">
-				<div class="pd-strap__id">
-					<p class="pd-eyebrow">Command / HQ</p>
-					<h1 class="pd-strap__title">{callsign || 'Operative HQ'}</h1>
-				</div>
-				<div class="pd-strap__status" role="status">
-					<p class="pd-label pd-mono">
-						{rankProgress.rank} · LVL {String(osLevel).padStart(2, '0')}
-					</p>
-				</div>
-			</div>
-			<div class="pd-strap__context">
-				<HqWorldContextStrip
-					inline
-					nextEventLabel={nextEventLabel}
-					badges={hqStatusBadges}
-				/>
-			</div>
-		</header>
-		<div class="pd-hq-glance-band bento-span-12" aria-label="Operative glance stats">
-			<div class="pd-hq-glance-band__cell">
-				<span class="pd-hq-glance-band__label">LVL</span>
-				<span class="pd-hq-glance-band__value">{String(osLevel).padStart(2, '0')}</span>
-			</div>
-			<div class="pd-hq-glance-band__cell">
-				<span class="pd-hq-glance-band__label">Rank</span>
-				<span class="pd-hq-glance-band__value">{rankProgress.rank}</span>
-			</div>
-			<div class="pd-hq-glance-band__cell">
-				<span class="pd-hq-glance-band__label">Streak</span>
-				<span class="pd-hq-glance-band__value">{streak}d</span>
-			</div>
-			<div class="pd-hq-glance-band__cell">
-				<span class="pd-hq-glance-band__label">Bounties</span>
-				<span class="pd-hq-glance-band__value">{coachBountyCount}</span>
-			</div>
-		</div>
-		<OperativeHub>
-				{#snippet identity()}
-					<IdentityBentoModule
-						embedded={true}
-						hideDisplayName={true}
-						uid={uid}
-						operativeAvatar={operativeAvatarForHud}
-						operativeLoadout={activePlayer?.operativeLoadout}
-						ownedCosmetics={Array.isArray(activePlayer?.ownedCosmetics) ?
-							activePlayer.ownedCosmetics.filter((id) => typeof id === 'string')
-						:	[]}
-						displayName={callsign}
-						clubName={clubDisplayName}
-						teamLabel={teamAssignmentLabel}
-						rankName={rankProgress.rank}
-						level={osLevel}
-						totalXp={totalXpHud}
-						currentStreak={streak}
-						longestStreak={longestStreak}
-						xpInTier={rankProgress.xpInCurrentTier}
-						xpToNextRank={rankProgress.xpToNextRank}
-						nextRank={rankProgress.nextRank}
-						rankProgressPercent={rankProgress.progressPercent}
-						atMaxRank={rankProgress.atMaxRank}
-						lastTrainingUtc={lastTrainingUtc}
-						profileIncomplete={!hasArmoryProfile}
-						cardMetadata={hqCardMetadata}
-						onProfileSetup={() => (showInitModal = true)}
-					/>
-				{/snippet}
-				{#snippet metrics()}
-					<PlayerActivityStreak {armory} />
-					{#if !telemetryReady}
-						<p class="hmp-vectors-collapsed hmp-vectors-collapsed--premium" role="status">
-							AWAITING TELEMETRY · LOG A SESSION TO UNLOCK VECTORS
-						</p>
-					{/if}
-				{/snippet}
-				{#snippet quests()}
-					<ActiveBounties
-						embedded
-						lastTrainingUtc={lastTrainingUtc}
-						onCoachBountyCount={(count) => (coachBountyCount = count)}
-						onHeroQuestId={(id) => (heroQuestId = id)}
-					/>
-				{/snippet}
-		</OperativeHub>
-
-		<AdaptiveHomework />
-
-		<OperativeQuickOps />
-
-		<OperativePathwayPreview level={osLevel} />
-
-	<section
-		class="bento-span-12 player-analytics-void pd-os-deck pd-os-deck--recessed tw-relative tw-z-30 tw-flex tw-min-h-0 tw-min-w-0 tw-flex-col"
-		class:player-analytics-void--compact={!telemetryReady}
-		aria-label="Player analytics deck"
-		data-region="player-analytics-void"
-	>
-		<header class="pd-hq-section-head player-analytics-void__head">
-			<h2 class="pd-hq-section-head__title player-analytics-void__title">Vanguard telemetry</h2>
-			<p class="pd-hq-section-head__eyebrow pd-label player-analytics-void__eyebrow">Performance</p>
-		</header>
-		{#if authStore.isConsented}
-			<div class="tw-relative tw-min-w-0">
-				{#if isEmbargoed && !attestationSigned}
-					<CarRideHome
-						{matchData}
-						{isEmbargoed}
-						{attestationSigned}
-						{countdown}
-						{signAttestation}
-					/>
-				{:else}
-					<div class="vanguard-prism-svg prism-chart tw-w-full">
-						<VanguardProtocolPanel
-							prismValues={attrRadarValues}
-							bind:selectedAxis={selectedVanguardAxis}
-							compact={!telemetryReady}
-							hideHeadTitle={true}
-						/>
-					</div>
-					<div class="tw-mt-4 tw-flex tw-justify-center">
-						<button class="tw-bg-[#fbbf24] cta-gold tw-text-black tw-font-bold tw-px-6 tw-py-2 tw-rounded-none">
-							LAUNCH MISSION
-						</button>
-					</div>
-				{/if}
-			</div>
-			<footer class="player-capsules-strip player-capsules-strip--void" aria-labelledby="lobby-capsules-h">
-				{#if vanguardFlags.capsulesEnabled && trajectoryEngine.activeCapsule}
-					<header class="pd-hq-section-head player-capsules-strip__head">
-						<h2 id="lobby-capsules-h" class="pd-hq-section-head__title player-capsules-strip__title">
-							Time-lapse memory capsules
-						</h2>
-						<p class="pd-hq-section-head__eyebrow pd-label player-capsules-strip__eyebrow">Self comparison</p>
-					</header>
-					<MemoryCapsuleArena
-						dossierMode={true}
-						capsule={trajectoryEngine.activeCapsule}
-						baselineDaysAgo={trajectoryEngine.baselineDaysAgo}
-						capsuleHeadline={trajectoryEngine.capsuleHeadline}
-					/>
-				{:else}
-					<header class="pd-hq-section-head player-capsules-strip__head">
-						<h2 id="lobby-capsules-h" class="pd-hq-section-head__title player-capsules-strip__title">
-							Memory capsules
-						</h2>
-						<p class="pd-hq-section-head__eyebrow pd-label player-capsules-strip__eyebrow">Self comparison</p>
-					</header>
-					<div class="lobby-capsule-ghost-wrap">
-						<div
-							class="pd-empty-state pd-empty-state--compact lobby-capsule-ghost-card"
-							role="status"
-							aria-labelledby="lobby-capsules-h"
-						>
-							<div class="tw-drop-shadow-[0_0_12px_rgba(20,184,166,0.18)]" aria-hidden="true">
-								<div class="pd-empty-state__icon"></div>
-							</div>
-							<div class="pd-empty-state__copy">
-								<p class="pd-empty-state__title">Ghost profile</p>
-								<p class="pd-empty-state__lede">Awaiting first memory capsule</p>
-							</div>
-						</div>
-					</div>
-				{/if}
-			</footer>
-		{:else}
-			<div class="tw-p-6 tw-text-center tw-bg-slate-900/50 tw-border tw-border-slate-800 tw-rounded-lg tw-m-4">
-				<p class="tw-font-mono tw-text-[10px] tw-uppercase tw-tracking-widest tw-text-[#fbbf24]">
-					Telemetry blocked: Verifiable Parental Consent (VPC) Required
-				</p>
-			</div>
-		{/if}
-	</section>
-	<section class="player-hud-grid bento-span-12  tw-gap-4 tw-mt-6" style="grid-template-columns: repeat(auto-fit, minmax(min(100%, clamp(280px, 30vw, 350px)), 1fr));">
-		<!-- Biometrics Cardiac Module -->
-		<div data-chamfer="true" class="chamfered-card hud-biometrics-card pd-panel tw-min-w-0 tw-bg-slate-900/50 tw-p-4 tw-border tw-border-slate-800" style="clip-path: polygon(16px 0px, 100% 0px, 100% calc(100% - 16px), calc(100% - 16px) 100%, 0px 100%, 0px 16px);">
-			<h3 class="tw-font-mono tw-text-xs tw-text-teal-400 tw-mb-2 tw-uppercase tw-tracking-widest">Biometrics</h3>
-			<div class="tw-text-slate-300 tw-text-sm tw-min-w-0">Cardiac Module Offline</div>
-		</div>
-
-		<!-- Tactical Live Play Map -->
-		<div data-chamfer="true" class="chamfered-card hud-tactical-map pd-panel tw-min-w-0 tw-bg-slate-900/50 tw-p-4 tw-border tw-border-slate-800" style="clip-path: polygon(16px 0px, 100% 0px, 100% calc(100% - 16px), calc(100% - 16px) 100%, 0px 100%, 0px 16px);">
-			<h3 class="tw-font-mono tw-text-xs tw-text-teal-400 tw-mb-2 tw-uppercase tw-tracking-widest">Tactical</h3>
-			<div class="tw-text-slate-300 tw-text-sm tw-min-w-0">Live Play Map</div>
-		</div>
-
-		<!-- Equipment Durability Schematic -->
-		<div data-chamfer="true" class="chamfered-card hud-equipment-schematic pd-panel tw-min-w-0 tw-bg-slate-900/50 tw-p-4 tw-border tw-border-slate-800" style="clip-path: polygon(16px 0px, 100% 0px, 100% calc(100% - 16px), calc(100% - 16px) 100%, 0px 100%, 0px 16px);">
-			<h3 class="tw-font-mono tw-text-xs tw-text-teal-400 tw-mb-2 tw-uppercase tw-tracking-widest">Armory</h3>
-			<div class="tw-text-slate-300 tw-text-sm tw-min-w-0">Equipment Durability Schematic</div>
-		</div>
-
-		<!-- Avatar Customization Station -->
-		<div data-chamfer="true" class="chamfered-card hud-avatar-station pd-panel tw-min-w-0 tw-bg-slate-900/50 tw-p-4 tw-border tw-border-slate-800" style="clip-path: polygon(16px 0px, 100% 0px, 100% calc(100% - 16px), calc(100% - 16px) 100%, 0px 100%, 0px 16px);">
-			<h3 class="tw-font-mono tw-text-xs tw-text-teal-400 tw-mb-2 tw-uppercase tw-tracking-widest">Identity</h3>
-			<div class="tw-text-slate-300 tw-text-sm tw-min-w-0">Avatar Customization Station</div>
-		</div>
-	</section>
-	</HUDContainer>
+		<HUDContainer ariaLabel="Player operations HUD">
+			<PlayerHUD {engine} />
+			<PlayerArena {engine} />
+		</HUDContainer>
 	</div>
 </div>
 
 <!-- Sprint 9.2: Initialize Operative — distinct one-time setup modal -->
-{#if showInitModal}
+{#if engine.showInitModal}
 <div
 	class="init-modal-scrim tw-fixed tw-inset-0 tw-z-[500] tw-flex tw-items-center tw-justify-center tw-p-4"
 	style="background: var(--surface-modal-scrim, rgba(0,0,0,0.75)); backdrop-filter: blur(4px);"
 	role="presentation"
-	onclick={(e) => { if (e.target === e.currentTarget) showInitModal = false; }}
+	onclick={(e) => { if (e.target === e.currentTarget) engine.showInitModal = false; }}
 >
 	<div
 		class="init-modal pd-panel tw-relative tw-w-full tw-max-w-md tw-p-6 tw-shadow-2xl"
@@ -668,7 +78,7 @@
 		<button
 			type="button"
 			class="init-modal__close tw-absolute tw-right-3 tw-top-3 tw-flex tw-min-h-[44px] tw-min-w-[44px] tw-items-center tw-justify-center tw-rounded-lg"
-			onclick={() => (showInitModal = false)}
+			onclick={() => (engine.showInitModal = false)}
 			aria-label="Close"
 		>
 			<Icon name="sys.close" size={14} />
@@ -705,7 +115,7 @@
 				href="/player/armory?tab=studio"
 				class="init-modal__cta init-modal__cta--primary tw-inline-flex tw-min-h-[44px] tw-w-fit tw-items-center tw-justify-center tw-gap-2 tw-px-5 tw-font-mono tw-text-[0.5625rem] tw-font-bold tw-uppercase tw-tracking-[0.14em] tw-no-underline tw-transition-all tw-duration-150 active:tw-scale-[0.98]"
 				data-sveltekit-preload-data="hover"
-				onclick={() => (showInitModal = false)}
+				onclick={() => (engine.showInitModal = false)}
 			>
 				<Icon name="status.shield-check" size={13} />
 				Open Identity Studio
@@ -713,7 +123,7 @@
 			<button
 				type="button"
 				class="init-modal__cta init-modal__cta--secondary tw-inline-flex tw-min-h-[44px] tw-w-fit tw-items-center tw-justify-center tw-px-4 tw-font-mono tw-text-[0.5625rem] tw-font-bold tw-uppercase tw-tracking-[0.14em] tw-transition-all tw-duration-150 active:tw-scale-[0.98]"
-				onclick={() => (showInitModal = false)}
+				onclick={() => (engine.showInitModal = false)}
 			>
 				Later
 			</button>
