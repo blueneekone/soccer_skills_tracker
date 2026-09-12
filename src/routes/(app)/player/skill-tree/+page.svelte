@@ -17,9 +17,9 @@
 		TIER_DEFINITIONS,
 		type ArmoryTier,
 	} from '$lib/states/ArmoryEngine.svelte.js';
-	import { SkillTreeEngine } from '$lib/components/player/skill-tree/SkillTreeEngine.svelte.js';
-	import SkillTreeArena from '$lib/components/player/skill-tree/SkillTreeArena.svelte';
-	import SkillTreeHUD from '$lib/components/player/skill-tree/SkillTreeHUD.svelte';
+	import { SkillTreeEngine } from './SkillTreeEngine.svelte.js';
+	import SkillTreeArena from './SkillTreeArena.svelte';
+	import SkillTreeHUD from './SkillTreeHUD.svelte';
 	import PlayerOsPageStrap from '$lib/components/player/PlayerOsPageStrap.svelte';
 	import SkillTierUnlockModal from '$lib/components/hud/SkillTierUnlockModal.svelte';
 

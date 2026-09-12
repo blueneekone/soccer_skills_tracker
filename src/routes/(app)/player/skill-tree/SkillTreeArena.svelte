@@ -98,23 +98,29 @@
 			prevNodeVisibility.set(node.id, node.visible);
 		}
 
+		let timers: ReturnType<typeof setTimeout>[] = [];
+
 		if (newlyDecayed.size > 0) {
 			decayedNodeIds = new Set([...decayedNodeIds, ...newlyDecayed]);
-			setTimeout(() => {
+			timers.push(setTimeout(() => {
 				decayedNodeIds = new Set(
 					[...decayedNodeIds].filter((id) => !newlyDecayed.has(id)),
 				);
-			}, 1400);
+			}, 1400));
 		}
 
 		if (newlyRevealed.size > 0) {
 			engine.revealedTransitions = new Set([...engine.revealedTransitions, ...newlyRevealed]);
-			setTimeout(() => {
+			timers.push(setTimeout(() => {
 				engine.revealedTransitions = new Set(
 					[...engine.revealedTransitions].filter((id) => !newlyRevealed.has(id)),
 				);
-			}, 1400);
+			}, 1400));
 		}
+
+		return () => {
+			timers.forEach(clearTimeout);
+		};
 	});
 
 	// ── Pure render helpers (no state, safe to call from template) ────────────
