@@ -17,8 +17,9 @@ import { join } from 'path';
 
 const src = [
 	readFileSync(join(__dirname, '..', '+page.svelte'), 'utf-8'),
-	readFileSync(join(__dirname, '..', 'HouseholdEngine.svelte.ts'), 'utf-8'),
-	readFileSync(join(__dirname, '..', 'HouseholdArena.svelte'), 'utf-8')
+	readFileSync(join(__dirname, '..', 'ParentHouseholdEngine.svelte.ts'), 'utf-8'),
+	readFileSync(join(__dirname, '..', 'ParentHouseholdArena.svelte'), 'utf-8'),
+	readFileSync(join(__dirname, '..', 'ParentHouseholdHUD.svelte'), 'utf-8')
 ].join('\\n');
 
 describe('/parent/household — Liquid aesthetic (Sprint 1.1)', () => {

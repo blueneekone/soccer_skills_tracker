@@ -28,22 +28,24 @@ const START_TIME = Date.now();
 // Sprint execution queue (in strict dependency order)
 const SPRINT_QUEUE = [
   {
-    id: 'sprint-5.1',
-    name: 'sprint-5.1-auth-regression-suite',
-    sessionId: '3338406104858834322',
-    workflowFile: '.agents/workflows/jules-builds/sprint-5.1-auth-regression-suite.md',
+    id: 'sprint-3.2',
+    name: 'sprint-3.2-player-armory-trinity',
+    sessionId: '17634747530390108836',
+    workflowFile: '.agents/workflows/jules-builds/sprint-3.2-player-armory-trinity.md',
     dispatched: true
   },
   {
-    id: 'sprint-2.3',
-    name: 'sprint-2.3-tutoring-marketplace-trinity',
-    workflowFile: '.agents/workflows/jules-builds/tutoring-directory-blueprint.md',
+    id: 'sprint-3.3',
+    name: 'sprint-3.3-parent-household-trinity',
+    sessionId: null,
+    workflowFile: '.agents/workflows/jules-builds/sprint-3.3-parent-household-trinity.md',
     dispatched: false
   },
   {
-    id: 'sprint-2.4',
-    name: 'sprint-2.4-recruiter-trinity',
-    workflowFile: '.agents/workflows/jules-builds/build-recruiter-vetting-pipeline.md',
+    id: 'sprint-3.4',
+    name: 'sprint-3.4-parent-workout-trinity',
+    sessionId: null,
+    workflowFile: '.agents/workflows/jules-builds/sprint-3.4-parent-workout-trinity.md',
     dispatched: false
   }
 ];
@@ -140,6 +142,10 @@ async function main() {
         run('git push origin dev');
         try { run(`gh pr close ${pr.number}`); } catch {}
         console.log(`🌟 PR #${pr.number} merged into dev!`);
+        
+        console.log(`🚀 [DEPLOY] Deploying verified build to Firebase Hosting...`);
+        run('firebase deploy --only hosting');
+        
         dispatchNextSprint();
         await sleep(60_000);
       } catch (err) {
@@ -163,6 +169,10 @@ async function main() {
         run('git push origin dev');
         completedSession.completed = true;
         console.log(`🌟 Session ${completedSession.sessionId} successfully verified and merged into dev!`);
+
+        console.log(`🚀 [DEPLOY] Deploying verified build to Firebase Hosting...`);
+        run('firebase deploy --only hosting');
+
         dispatchNextSprint();
         await sleep(60_000);
       } catch (err) {

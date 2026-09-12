@@ -86,7 +86,7 @@
 #### Phase 3: Player OS & Parent OS Vanguard Trinity Overhaul
 - [x] **Sprint 3.1**: Player Dashboard Trinity Fracturing (`PlayerDashboardEngine.svelte.ts`, `PlayerArena.svelte`, `PlayerHUD.svelte`, XP decoupling) ✅
 - [ ] **Sprint 3.2**: Player Armory & Skill Tree Trinity (isolate cosmetic styling bleed, clean canvas unmount)
-- [ ] **Sprint 3.3**: Parent Household Management Trinity (`ParentHouseholdEngine.svelte.ts`, `ParentHouseholdArena.svelte`, `ParentHouseholdHUD.svelte`)
+- [x] **Sprint 3.3**: Parent Household Management Trinity (`ParentHouseholdEngine.svelte.ts`, `ParentHouseholdArena.svelte`, `ParentHouseholdHUD.svelte`) ✅
 - [ ] **Sprint 3.4**: Parent Workout Log & Compliance Trinity (15-min Car Ride Home lockout isolation)
 
 #### Phase 4: Test Suite Stabilization & Unskipping Campaign

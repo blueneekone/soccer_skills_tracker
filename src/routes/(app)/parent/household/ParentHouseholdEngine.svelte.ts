@@ -23,7 +23,7 @@ import {
 	shouldClearLoadBusy,
 } from '$lib/parent/loadHouseholdClearance.js';
 
-export class HouseholdEngine {
+export class ParentHouseholdEngine {
 	private readonly parentSignCoppaWaiver = httpsCallable(functions, 'parentSignCoppaWaiver');
 	private readonly parentProvisionOperative = httpsCallable(functions, 'parentProvisionOperative');
 	private readonly parentLinkOperativeToTeam = httpsCallable(functions, 'parentLinkOperativeToTeam');

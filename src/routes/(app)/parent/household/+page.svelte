@@ -1,9 +1,11 @@
 <script lang="ts">
-	import { HouseholdEngine } from './HouseholdEngine.svelte.js';
-	import HouseholdArena from './HouseholdArena.svelte';
+	import { ParentHouseholdEngine } from './ParentHouseholdEngine.svelte.js';
+	import ParentHouseholdArena from './ParentHouseholdArena.svelte';
+	import ParentHouseholdHUD from './ParentHouseholdHUD.svelte';
 
-	const engine = new HouseholdEngine();
+	const engine = new ParentHouseholdEngine();
 	engine.init();
 </script>
 
-<HouseholdArena {engine} />
+<ParentHouseholdHUD {engine} />
+<ParentHouseholdArena {engine} />

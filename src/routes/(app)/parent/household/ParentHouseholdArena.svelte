@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { HouseholdEngine } from './HouseholdEngine.svelte.js';
+	import type { ParentHouseholdEngine } from './ParentHouseholdEngine.svelte.js';
 	import Icon from '$lib/components/ui/Icon.svelte';
 	import IntelModal from '$lib/components/ui/IntelModal.svelte';
 	import ParentPrivacyDashboard from '$lib/components/compliance/ParentPrivacyDashboard.svelte';
@@ -7,7 +7,7 @@
 	import type { IconName } from '$lib/icons/registry.js';
 
 	interface Props {
-		engine: HouseholdEngine;
+		engine: ParentHouseholdEngine;
 	}
 	let { engine }: Props = $props();
 
@@ -77,21 +77,6 @@
 					By signing, you assert parental authority to provision credentials per club policy and
 					federal child-privacy law.
 				</p>
-				<div
-					class="phh-row tw-mb-3 tw-flex tw-min-h-[3.25rem] tw-flex-col tw-gap-1 tw-border tw-border-white/10 tw-bg-black/60 tw-px-3 tw-py-2.5 sm:tw-flex-row sm:tw-items-center sm:tw-justify-between"
-				>
-					<span class="phh-eyebrow">Clearance file</span>
-					<div class="tw-text-right">
-						{#if engine.coppaSigned}
-							<span class="phh-mono tw-text-cyan-300">SIGNED</span>
-							<div class="phh-mono tw-text-xs tw-text-[var(--text-secondary)]">{engine.fmtTs(engine.coppaAt)}</div>
-						{:else if engine.loadBusy}
-							<span class="phh-mono tw-text-[var(--text-muted)]">SCANNING…</span>
-						{:else}
-							<span class="phh-mono tw-text-amber-400">PENDING SIGNATURE</span>
-						{/if}
-					</div>
-				</div>
 				<p class="phh-eyebrow tw-mb-2">Household / club line</p>
 				<div class="phh-mono tw-mb-3 tw-text-xs tw-break-all tw-text-[var(--text-secondary)]">
 					HH: {engine.householdId || '— (created on sign)'} · Club: {engine.profile?.clubId ? String(engine.profile.clubId) : '—'}
