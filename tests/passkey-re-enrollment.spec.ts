@@ -42,7 +42,7 @@ test.describe('Authentication Security: Passkey Enforcement & Re-enrollment Gate
     await page.click('button[type="submit"]');
 
     // 4. Assert that the client-side router intercepts the server's 403 and redirects strictly to the passkey re-enrollment gate
-    await page.waitForURL('**/auth/passkey-setup');
+    await page.waitForURL('**/auth/passkey-setup', { timeout: 10000 });
     
     const bannerText = page.locator('text=Mandatory Passkey Re-enrollment');
     await expect(bannerText).toBeVisible();

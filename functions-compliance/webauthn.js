@@ -122,6 +122,22 @@ exports.webauthnRegisterStart = onCall(
 
       const existingCreds = await loadCredentialsForUid(uid);
 
+      const userDoc = await db.collection('users').doc(uid).get();
+      const userData = userDoc.data() || {};
+      const dob = userData.dateOfBirth;
+      if (dob) {
+        const birthDate = new Date(dob);
+        const today = new Date();
+        let age = today.getFullYear() - birthDate.getFullYear();
+        const monthDiff = today.getMonth() - birthDate.getMonth();
+        if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+          age--;
+        }
+        if (age < 18) {
+          throw new HttpsError('permission-denied', 'Biometric passkey enrollment is restricted to verified adult accounts (age 18+).');
+        }
+      }
+
       const options = await generateRegistrationOptions({
         rpName: RP_NAME,
         rpID: rpID,
