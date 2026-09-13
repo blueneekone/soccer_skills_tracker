@@ -83,8 +83,8 @@
 				</div>
 				<button
 					type="button"
-					class="phh-btn btn-vanguard tw-w-full tw-min-h-[3.25rem] tw-px-4 tw-text-base tw-font-extrabold tw-uppercase tw-tracking-widest tw-inline-flex tw-items-center tw-justify-center tw-gap-2 tw-font-mono"
-					class:phh-btn--dim={engine.coppaSigned}
+					class="tw-vanguard-btn-primary tw-w-full"
+					class:tw-opacity-50={engine.coppaSigned}
 					disabled={engine.coppaSigned || engine.actionBusy}
 					onclick={() => engine.signWaiver()}
 				>
@@ -170,7 +170,7 @@
 												>
 													<button
 														type="button"
-														class="phh-gt-approve tw-inline-flex tw-items-center tw-gap-1.5 btn-vanguard"
+														class="tw-vanguard-btn-secondary tw-w-full sm:tw-w-auto"
 														disabled={!engine.coppaSigned ||
 															engine.gtActionBusyKey !== null ||
 															engine.actionBusy ||
@@ -182,7 +182,7 @@
 													</button>
 													<button
 														type="button"
-														class="phh-gt-deny tw-inline-flex tw-items-center tw-gap-1.5 btn-vanguard"
+														class="tw-vanguard-btn-secondary tw-w-full sm:tw-w-auto"
 														disabled={!engine.coppaSigned || engine.gtActionBusyKey !== null || engine.actionBusy}
 														onclick={() => engine.denyGamertagForRow(row)}
 													>
@@ -204,7 +204,7 @@
 											</p>
 											<div class="tw-flex tw-flex-col tw-gap-2 sm:tw-flex-row sm:tw-items-center">
 												<input
-													class="phh-input phh-input--cyan tw-min-h-[2.75rem] tw-flex-1"
+													class="vanguard-input tw-flex-1"
 													type="text"
 													autocomplete="off"
 													spellcheck="false"
@@ -219,7 +219,7 @@
 												/>
 												<button
 													type="button"
-													class="phh-btn phh-btn--cyan tw-min-h-[2.75rem] tw-shrink-0 tw-px-4 tw-text-xs tw-inline-flex tw-items-center tw-gap-1.5 btn-vanguard"
+													class="tw-vanguard-btn-secondary tw-shrink-0"
 													disabled={!engine.coppaSigned ||
 														engine.linkTeamBusyKey !== null ||
 														engine.actionBusy ||
@@ -240,7 +240,7 @@
 								<div class="tw-flex tw-shrink-0 sm:tw-justify-end">
 									<button
 										type="button"
-										class="phh-dispatch-gen tw-w-full sm:tw-w-auto tw-inline-flex tw-items-center tw-justify-center tw-gap-1.5 btn-vanguard"
+										class="tw-vanguard-btn-secondary tw-w-full sm:tw-w-auto"
 										disabled={!engine.coppaSigned ||
 											engine.otpGenBusyKey !== null ||
 											engine.gtActionBusyKey !== null ||
@@ -281,7 +281,7 @@
 					<label class="phh-field tw-block tw-w-full">
 						<span class="phh-eyebrow tw-mb-1 tw-block">Operative name</span>
 						<input
-							class="phh-input vanguard-input"
+							class="vanguard-input"
 							type="text"
 							autocomplete="name"
 							placeholder="Full name (minor)"
@@ -293,7 +293,7 @@
 							>Operative Callsign <span class="tw-text-red-300/80">(required)</span></span
 						>
 						<input
-							class="phh-input vanguard-input"
+							class="vanguard-input"
 							type="text"
 							autocomplete="username"
 							placeholder="e.g. Red-Fox, striker99"
@@ -315,7 +315,7 @@
 						</div>
 						<input
 							id="phh-dispatch-code"
-							class="phh-input phh-input--cyan vanguard-input"
+							class="vanguard-input"
 							type="text"
 							autocomplete="off"
 							spellcheck="false"
@@ -331,7 +331,7 @@
 				<div class="bento-mt-md">
 					<button
 						type="button"
-						class="phh-btn phh-btn--cyan tw-w-full tw-min-h-[3.25rem] tw-px-4 tw-text-base tw-font-extrabold tw-uppercase tw-tracking-widest tw-inline-flex tw-items-center tw-justify-center tw-gap-2 tw-font-mono btn-vanguard"
+						class="tw-vanguard-btn-primary tw-w-full"
 						disabled={!engine.coppaSigned || engine.actionBusy}
 						onclick={() => engine.provision()}
 					>
@@ -370,7 +370,7 @@
                     <label class="phh-field tw-block tw-w-full">
                         <span class="phh-eyebrow tw-mb-1 tw-block">Co-Parent Email</span>
                         <input
-                            class="phh-input vanguard-input"
+                            class="vanguard-input"
                             type="email"
                             autocomplete="email"
                             placeholder="guardian@example.com"
@@ -384,8 +384,7 @@
                 <div class="bento-mt-md">
                     <button
                         type="button"
-                        class="phh-btn tw-w-full tw-min-h-[3.25rem] tw-px-4 tw-text-base tw-font-extrabold tw-uppercase tw-tracking-widest tw-inline-flex tw-items-center tw-justify-center tw-gap-2 tw-font-mono btn-vanguard"
-                        style="color: var(--action-gold); border-color: var(--action-gold);"
+                        class="tw-vanguard-btn-primary tw-w-full"
                         disabled={!engine.coppaSigned || engine.coParentBusy || !engine.coParentEmail}
                         onclick={() => engine.inviteCoParent()}
                     >
@@ -467,11 +466,11 @@
 				>
 			</div>
 			<div class="tw-flex tw-flex-col tw-gap-2 sm:tw-flex-row">
-				<button type="button" class="phh-btn phh-btn--cyan phh-otp-btn tw-inline-flex tw-items-center tw-justify-center tw-gap-2 btn-vanguard" onclick={() => engine.copyOtpToClipboard()}>
+				<button type="button" class="tw-vanguard-btn-primary tw-w-full sm:tw-w-auto tw-inline-flex tw-items-center tw-justify-center tw-gap-2" onclick={() => engine.copyOtpToClipboard()}>
 					<Icon name={"action.copy" as IconName} size={16} />
 					<span>{engine.copyFeedback ? 'Copied' : 'Copy to clipboard'}</span>
 				</button>
-				<button type="button" class="phh-btn phh-otp-btn phh-otp-btn--close btn-vanguard" onclick={() => engine.closeOtpDialog()}
+				<button type="button" class="tw-vanguard-btn-secondary tw-w-full sm:tw-w-auto" onclick={() => engine.closeOtpDialog()}
 					>Dismiss</button
 				>
 			</div>

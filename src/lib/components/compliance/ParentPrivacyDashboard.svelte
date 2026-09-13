@@ -68,7 +68,7 @@
 		try {
 			const cutoff = Timestamp.fromDate(new Date(Date.now() - THIRTY_DAYS_MS));
 			const q = query(
-				collection(db, 'audit_logs'),
+				collection(db, 'security_audit'),
 				where('targetEmail', '==', childEmail.toLowerCase()),
 				where('timestamp', '>=', cutoff),
 				orderBy('timestamp', 'desc'),
@@ -120,7 +120,7 @@
 	}
 </script>
 
-<div class="ppd-root">
+<div class="vanguard-panel ppd-root">
 	<header class="ppd-header">
 		<div class="ppd-header__left">
 			<span class="ppd-eyebrow">PRIVACY DASHBOARD · 30-DAY LOG</span>

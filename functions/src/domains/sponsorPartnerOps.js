@@ -349,7 +349,7 @@ exports.sendSponsorPartnerDigest = onCall({region: REGION}, async (request) => {
   });
 
   const auditRef = db().collection('audit_logs').doc();
-  batch.set(auditRef, {
+  const auditPayload = {
     action: 'sendSponsorPartnerDigest',
     channelType: 'sponsor_partner',
     clubId,
@@ -360,6 +360,13 @@ exports.sendSponsorPartnerDigest = onCall({region: REGION}, async (request) => {
     skippedCount: audience.parentSkipped.length,
     messageIds,
     createdAt: now,
+  };
+  batch.set(auditRef, auditPayload);
+  batch.set(db().collection('security_audit').doc(auditRef.id), {
+    ...auditPayload,
+    admin: normEmail(actor.email),
+    target: clubId,
+    details: 'Sent sponsor partner digest'
   });
 
   await batch.commit();

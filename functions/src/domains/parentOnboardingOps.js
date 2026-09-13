@@ -38,10 +38,15 @@ exports.claimParentInviteToken = onCall({ region: 'us-east1' }, async (request) 
       inviteTokenExpiresAt: admin.firestore.FieldValue.delete()
     });
 
-    await admin.auth().setCustomUserClaims(auth.uid, {
+    const claimsPayload = {
       role: 'parent',
       householdId: householdId
-    });
+    };
+    if (userData.clubId) {
+      claimsPayload.clubId = userData.clubId;
+    }
+
+    await admin.auth().setCustomUserClaims(auth.uid, claimsPayload);
 
     return { success: true, householdId };
   });
@@ -88,13 +93,21 @@ exports.signParentalConsent = onCall({ region: 'us-east1' }, async (request) => 
     });
 
     const auditRef = db.collection('consent_logs').doc();
-    transaction.set(auditRef, {
+    const auditPayload = {
       parentUid: auth.uid,
       parentEmail: parentEmailLower,
       childEmail: childEmail.toLowerCase(),
       householdId,
       timestamp: admin.firestore.FieldValue.serverTimestamp(),
       action: 'PARENTAL_CONSENT_SIGNED'
+    };
+    transaction.set(auditRef, auditPayload);
+    transaction.set(db.collection('security_audit').doc(auditRef.id), {
+      ...auditPayload,
+      admin: parentEmailLower,
+      target: childEmail.toLowerCase(),
+      details: 'Parent signed COPPA consent',
+      createdAt: admin.firestore.FieldValue.serverTimestamp()
     });
 
     return { success: true };

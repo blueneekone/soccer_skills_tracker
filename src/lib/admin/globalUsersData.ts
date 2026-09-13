@@ -28,10 +28,10 @@ export function buildUsersBaseQuery(db: Firestore, searchTerm: string, tab: Glob
 		parts.push(where('role', 'in', rf.values));
 	}
 	if (term) {
-		parts.push(where(documentId(), '>=', term));
-		parts.push(where(documentId(), '<=', `${term}\uf8ff`));
+		parts.push(where('email', '>=', term));
+		parts.push(where('email', '<=', `${term}\uf8ff`));
 	}
-	parts.push(orderBy(documentId()));
+	parts.push(orderBy('email'));
 	return query(col, ...parts);
 }
 

@@ -295,7 +295,8 @@ exports.createParentVoiceSession = onCall({region: REGION}, async (request) => {
 
   const deliveryReport = await buildSessionScheduleDeliveryReport(teamId, sessionRef.id);
 
-  await db().collection('messaging_audit').doc().set({
+  const msgAuditRef = db().collection('messaging_audit').doc();
+  await msgAuditRef.set({
     action: 'parent_voice_session_scheduled',
     channelType: 'parent_voice_session',
     sessionId: sessionRef.id,
@@ -303,11 +304,18 @@ exports.createParentVoiceSession = onCall({region: REGION}, async (request) => {
     teamId,
     calendarEventId,
     title: eventTitle.slice(0, 200),
-    hostEmail: callerEmail,
-    hostRole: callerRole,
     actorUid: request.auth.uid,
+    actorEmail: normEmail(actor.email),
+    vendorEnabled: await readParentVoiceEnabled(),
     deliveryReport,
     at: now,
+  });
+  await db().collection('security_audit').doc(msgAuditRef.id).set({
+    action: 'parent_voice_session_scheduled',
+    admin: normEmail(actor.email),
+    target: sessionId,
+    details: 'Scheduled parent voice session',
+    createdAt: now
   });
 
   logger.info('[createParentVoiceSession] scheduled', {
@@ -436,7 +444,8 @@ exports.joinParentVoiceSession = onCall({region: REGION}, async (request) => {
       'parent_voice_session_leave' :
       'parent_voice_session_join';
 
-  await db().collection('messaging_audit').doc().set({
+  const msgAuditRef = db().collection('messaging_audit').doc();
+  await msgAuditRef.set({
     action: auditAction,
     channelType: 'parent_voice_session',
     sessionId,
@@ -449,6 +458,13 @@ exports.joinParentVoiceSession = onCall({region: REGION}, async (request) => {
     vendorEnabled,
     recordingEnabled: false,
     at: now,
+  });
+  await db().collection('security_audit').doc(msgAuditRef.id).set({
+    action: auditAction,
+    admin: callerEmail,
+    target: sessionId,
+    details: 'Parent voice session participant event',
+    createdAt: now
   });
 
   let vendorToken = null;
