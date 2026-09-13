@@ -2,6 +2,17 @@
 	import { browser } from '$app/environment';
 	import Icon from '$lib/components/ui/Icon.svelte';
 	import type { IconName } from '$lib/icons/registry.js';
+	import Modal from '$lib/components/Modal.svelte';
+
+	let isModalOpen = $state(false);
+	let currentVideo = $state('');
+	let currentTitle = $state('');
+
+	function openVideo(src: string, title: string) {
+		currentVideo = src;
+		currentTitle = title;
+		isModalOpen = true;
+	}
 </script>
 
 <svelte:head>
@@ -41,8 +52,10 @@
 				</p>
 				<div class="tw-mt-auto tw-w-full tw-aspect-video tw-bg-[#020617] tw-border tw-border-[#334155] tw-rounded-sm tw-overflow-hidden tw-relative tw-group">
 					<!-- Media Container -->
-					<div class="tw-absolute tw-inset-0 tw-flex tw-items-center tw-justify-center tw-z-10">
-						<button class="tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-rounded-full tw-p-4 tw-text-[#f8fafc] tw-transition-colors tw-duration-150 group-hover:tw-text-amber-500" aria-label="Play video">
+					<!-- svelte-ignore a11y_no_static_element_interactions -->
+					<!-- svelte-ignore a11y_click_events_have_key_events -->
+					<div class="tw-absolute tw-inset-0 tw-flex tw-items-center tw-justify-center tw-z-10 tw-bg-slate-900/40 tw-opacity-0 group-hover:tw-opacity-100 tw-transition-opacity tw-duration-300 tw-cursor-pointer" onclick={() => openVideo('/videos/player-os-demo.webm', 'PLAYER OS')} onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openVideo('/videos/player-os-demo.webm', 'PLAYER OS'); } }} tabindex="0" role="button" aria-label="Play video">
+						<button class="tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-rounded-full tw-p-4 tw-text-[#f8fafc] tw-transition-all tw-duration-300 group-hover:tw-text-[#fbbf24] tw-shadow-[0_0_20px_rgba(251,191,36,0.3)] tw-transform tw-scale-90 group-hover:tw-scale-100" aria-hidden="true" tabindex="-1">
 							<Icon name={"media.play" as IconName} size={32} />
 						</button>
 					</div>
@@ -59,7 +72,15 @@
 				<p class="tw-text-[#94a3b8] tw-text-sm tw-leading-relaxed tw-mb-8" style="font-family: 'Switzer', sans-serif;">
 					Orchestrate your tactical vision. Leverage the RAG AI Tactical Assistant and Intent Engine to draft session plans instantly.
 				</p>
-				<div class="tw-mt-auto tw-w-full tw-aspect-square tw-bg-[#020617] tw-border tw-border-[#334155] tw-rounded-sm tw-overflow-hidden tw-relative">
+				<div class="tw-mt-auto tw-w-full tw-aspect-square tw-bg-[#020617] tw-border tw-border-[#334155] tw-rounded-sm tw-overflow-hidden tw-relative tw-group">
+					<!-- Media Container -->
+					<!-- svelte-ignore a11y_no_static_element_interactions -->
+					<!-- svelte-ignore a11y_click_events_have_key_events -->
+					<div class="tw-absolute tw-inset-0 tw-flex tw-items-center tw-justify-center tw-z-10 tw-bg-slate-900/40 tw-opacity-0 group-hover:tw-opacity-100 tw-transition-opacity tw-duration-300 tw-cursor-pointer" onclick={() => openVideo('/videos/coach-os-demo.webm', 'COACH OS')} onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openVideo('/videos/coach-os-demo.webm', 'COACH OS'); } }} tabindex="0" role="button" aria-label="Play video">
+						<button class="tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-rounded-full tw-p-4 tw-text-[#f8fafc] tw-transition-all tw-duration-300 group-hover:tw-text-[#f59e0b] tw-shadow-[0_0_20px_rgba(245,158,11,0.3)] tw-transform tw-scale-90 group-hover:tw-scale-100" aria-hidden="true" tabindex="-1">
+							<Icon name={"media.play" as IconName} size={32} />
+						</button>
+					</div>
 					<video src="/videos/coach-os-demo.webm" autoplay loop muted playsinline class="tw-w-full tw-h-full tw-object-cover tw-opacity-50"></video>
 				</div>
 			</div>
@@ -73,7 +94,15 @@
 				<p class="tw-text-[#94a3b8] tw-text-sm tw-leading-relaxed tw-mb-8" style="font-family: 'Switzer', sans-serif;">
 					Ensure complete emotional safety. The Car Ride Home embargo locks match metrics for 15 minutes post-game. Verified guardians receive Tremendous bounty payouts for squad-level commitments.
 				</p>
-				<div class="tw-mt-auto tw-w-full tw-aspect-square tw-bg-[#020617] tw-border tw-border-[#334155] tw-rounded-sm tw-overflow-hidden tw-relative">
+				<div class="tw-mt-auto tw-w-full tw-aspect-square tw-bg-[#020617] tw-border tw-border-[#334155] tw-rounded-sm tw-overflow-hidden tw-relative tw-group">
+					<!-- Media Container -->
+					<!-- svelte-ignore a11y_no_static_element_interactions -->
+					<!-- svelte-ignore a11y_click_events_have_key_events -->
+					<div class="tw-absolute tw-inset-0 tw-flex tw-items-center tw-justify-center tw-z-10 tw-bg-slate-900/40 tw-opacity-0 group-hover:tw-opacity-100 tw-transition-opacity tw-duration-300 tw-cursor-pointer" onclick={() => openVideo('/videos/parent-os-demo.webm', 'PARENT OS')} onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openVideo('/videos/parent-os-demo.webm', 'PARENT OS'); } }} tabindex="0" role="button" aria-label="Play video">
+						<button class="tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-rounded-full tw-p-4 tw-text-[#f8fafc] tw-transition-all tw-duration-300 group-hover:tw-text-[#14b8a6] tw-shadow-[0_0_20px_rgba(20,184,166,0.3)] tw-transform tw-scale-90 group-hover:tw-scale-100" aria-hidden="true" tabindex="-1">
+							<Icon name={"media.play" as IconName} size={32} />
+						</button>
+					</div>
 					<video src="/videos/parent-os-demo.webm" autoplay loop muted playsinline class="tw-w-full tw-h-full tw-object-cover tw-opacity-50"></video>
 				</div>
 			</div>
@@ -87,7 +116,15 @@
 				<p class="tw-text-[#94a3b8] tw-text-sm tw-leading-relaxed tw-mb-8" style="font-family: 'Switzer', sans-serif;">
 					Complete administrative panopticon. Director surfaces cover deployment calendar, eligibility matrix, coach clearance (Checkr embed), and Stripe Financial Telemetry. Maintain club compliance health at a glance.
 				</p>
-				<div class="tw-mt-auto tw-w-full tw-aspect-video tw-bg-[#020617] tw-border tw-border-[#334155] tw-rounded-sm tw-overflow-hidden tw-relative">
+				<div class="tw-mt-auto tw-w-full tw-aspect-video tw-bg-[#020617] tw-border tw-border-[#334155] tw-rounded-sm tw-overflow-hidden tw-relative tw-group">
+					<!-- Media Container -->
+					<!-- svelte-ignore a11y_no_static_element_interactions -->
+					<!-- svelte-ignore a11y_click_events_have_key_events -->
+					<div class="tw-absolute tw-inset-0 tw-flex tw-items-center tw-justify-center tw-z-10 tw-bg-slate-900/40 tw-opacity-0 group-hover:tw-opacity-100 tw-transition-opacity tw-duration-300 tw-cursor-pointer" onclick={() => openVideo('/videos/director-os-demo.webm', 'DIRECTOR OS')} onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openVideo('/videos/director-os-demo.webm', 'DIRECTOR OS'); } }} tabindex="0" role="button" aria-label="Play video">
+						<button class="tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-rounded-full tw-p-4 tw-text-[#f8fafc] tw-transition-all tw-duration-300 group-hover:tw-text-[#14b8a6] tw-shadow-[0_0_20px_rgba(20,184,166,0.3)] tw-transform tw-scale-90 group-hover:tw-scale-100" aria-hidden="true" tabindex="-1">
+							<Icon name={"media.play" as IconName} size={32} />
+						</button>
+					</div>
 					<video src="/videos/director-os-demo.webm" autoplay loop muted playsinline class="tw-w-full tw-h-full tw-object-cover tw-opacity-50"></video>
 				</div>
 			</div>
@@ -111,3 +148,24 @@
 	</section>
 
 </div>
+
+<Modal bind:open={isModalOpen} maxWidth="1200px">
+	{#snippet titleSlot()}
+		<div class="tw-font-mono tw-font-bold tw-text-lg tw-text-white tw-tracking-widest">
+			SSTRACKER DEMO: {currentTitle}
+		</div>
+	{/snippet}
+	<div class="tw-w-full tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-rounded-xl tw-overflow-hidden tw-shadow-[0_0_30px_rgba(20,184,166,0.15)] tw-p-1">
+		{#if currentVideo}
+			<video
+				class="tw-w-full tw-h-auto tw-rounded-lg tw-bg-black"
+				src={currentVideo}
+				controls
+				playsinline
+				autoplay
+			>
+				<track kind="captions" />
+			</video>
+		{/if}
+	</div>
+</Modal>
