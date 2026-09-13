@@ -23,6 +23,10 @@
 		try {
 			const enabled = window.localStorage.getItem('sstracker_e2e_bypass') === 'true';
 			if (!enabled) return null;
+			const rawProfile = window.localStorage.getItem('sstracker_mock_profile');
+			if (rawProfile) {
+				return { isAuthenticated: true, userProfile: JSON.parse(rawProfile) };
+			}
 			const raw = window.localStorage.getItem('auth_state');
 			return raw ? JSON.parse(raw) : null;
 		} catch {

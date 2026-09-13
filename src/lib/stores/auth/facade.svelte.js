@@ -39,17 +39,19 @@ export function createAuthFacade() {
 				typeof window !== 'undefined' &&
 				import.meta.env.VITE_E2E_BYPASS_AUTH === 'true' &&
 				(window.localStorage.getItem('sstracker_e2e_bypass') === 'true' ||
+					window.localStorage.getItem('sstracker_mock_profile') !== null ||
 					window.localStorage.getItem('auth_state') !== null ||
 					window.localStorage.getItem('user_session_claims') !== null)
 			) {
 				try {
 					const e2eState = JSON.parse(
+						window.localStorage.getItem('sstracker_mock_profile') ||
 						window.localStorage.getItem('auth_state') ||
 							window.localStorage.getItem('user_session_claims') ||
 							'{}',
 					);
 					const resolvedRole =
-						e2eState.role || e2eState.user?.role || e2eState.userProfile?.role;
+						e2eState.role || e2eState.user?.role || e2eState.userProfile?.role || window.localStorage.getItem('sstracker_mock_role');
 					if (e2eState && resolvedRole) {
 						const profileObj = {
 							role: resolvedRole,
