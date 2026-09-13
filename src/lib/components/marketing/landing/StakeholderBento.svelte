@@ -1,6 +1,27 @@
 <script lang="ts">
 	import { STAKEHOLDERS } from './landingContent.js';
 	import StakeholderCard from './StakeholderCard.svelte';
+	import Modal from '$lib/components/Modal.svelte';
+
+	let isModalOpen = $state(false);
+	let activeVideoUrl = $state<string | null>(null);
+	let activeModalTitle = $state<string>('');
+
+	function openDemo(roleId: string, headline: string) {
+		let videoMap: Record<string, string> = {
+			'directors': '/assets/video/director-os-demo.mp4',
+			'coaches': '/assets/video/coach-os-demo.mp4',
+			'athletes': '/assets/video/player-os-demo.mp4',
+			'parents': '/assets/video/parent-os-demo.mp4'
+		};
+
+		const url = videoMap[roleId];
+		if (url) {
+			activeVideoUrl = url;
+			activeModalTitle = headline;
+			isModalOpen = true;
+		}
+	}
 </script>
 
 <section class="sb-section" aria-labelledby="sb-heading">
@@ -17,11 +38,35 @@
 		</div>
 		<div class="sb-grid">
 			{#each STAKEHOLDERS as card (card.id)}
-				<StakeholderCard {card} gridLg={card.gridLg} />
+				<StakeholderCard {card} gridLg={card.gridLg} onClick={['directors', 'coaches', 'athletes', 'parents'].includes(card.id) ? () => openDemo(card.id, card.headline) : undefined} />
 			{/each}
 		</div>
 	</div>
 </section>
+
+
+<Modal bind:open={isModalOpen} maxWidth="1200px">
+	{#snippet titleSlot()}
+		<div class="tw-font-mono tw-font-bold tw-text-lg tw-text-white tw-tracking-widest tw-uppercase">
+			{activeModalTitle} SHOWCASE
+		</div>
+	{/snippet}
+	{#if activeVideoUrl}
+		<div class="tw-w-full tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-rounded-xl tw-overflow-hidden tw-shadow-[0_0_30px_rgba(20,184,166,0.15)] tw-p-1">
+			<video
+				class="tw-w-full tw-h-auto tw-rounded-lg tw-bg-black"
+				src={activeVideoUrl}
+				controls
+				playsinline
+				autoplay
+				poster="/marketing/hero-poster.svg"
+			>
+				<track kind="captions" />
+			</video>
+		</div>
+	{/if}
+</Modal>
+
 
 <style>
 	.sb-section {

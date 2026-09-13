@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { base } from '$app/paths';
 	import { browser } from '$app/environment';
+	import Modal from '$lib/components/Modal.svelte';
 	import {
 		HERO_TRUST_BADGE,
 		HERO_TRUST_HEADLINE,
@@ -12,6 +13,11 @@
 	let eyebrowVisible = $state(false);
 	let videoEl: HTMLVideoElement;
 	let stageEl: HTMLDivElement;
+	let isModalOpen = $state(false);
+
+	function openModal() {
+		isModalOpen = true;
+	}
 
 	$effect(() => {
 		if (!browser) return;
@@ -76,7 +82,14 @@
 		</div>
 
 		<div class="hero__demo-wrap" bind:this={stageEl} id="stage" aria-label="Product demo preview">
-			<div class="hero__stage vanguard-surface tw-border-slate-800">
+			<!-- svelte-ignore a11y_no_static_element_interactions -->
+			<!-- svelte-ignore a11y_click_events_have_key_events -->
+			<div class="hero__stage vanguard-surface tw-border-slate-800 tw-cursor-pointer tw-group" onclick={openModal} onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') openModal(); }} tabindex="0" role="button" aria-label="Play Hero Video">
+				<div class="tw-absolute tw-inset-0 tw-z-10 tw-flex tw-items-center tw-justify-center tw-bg-slate-900/40 tw-opacity-0 group-hover:tw-opacity-100 tw-transition-opacity tw-duration-300">
+					<div class="tw-bg-[#daff0a] tw-text-black tw-rounded-full tw-p-4 tw-shadow-[0_0_20px_rgba(218,255,10,0.5)] tw-transform tw-scale-90 group-hover:tw-scale-100 tw-transition-transform tw-duration-300">
+						<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+					</div>
+				</div>
 				<div class="hero__status-bar" aria-hidden="true">
 					<span class="hero__status-dot"></span>
 					<span class="hero__status-label">SSTRACKER · MISSION CONTROL · LIVE OPERATIONAL HUD</span>
@@ -108,6 +121,28 @@
 		<span class="hero__scroll-label">SCROLL</span>
 	</div>
 </section>
+
+
+<Modal bind:open={isModalOpen} maxWidth="1200px">
+	{#snippet titleSlot()}
+		<div class="tw-font-mono tw-font-bold tw-text-lg tw-text-white tw-tracking-widest">
+			SSTRACKER PLATFORM SHOWCASE
+		</div>
+	{/snippet}
+	<div class="tw-w-full tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-rounded-xl tw-overflow-hidden tw-shadow-[0_0_30px_rgba(20,184,166,0.15)] tw-p-1">
+		<video
+			class="tw-w-full tw-h-auto tw-rounded-lg tw-bg-black"
+			src="/assets/video/marketing-hero.mp4"
+			controls
+			playsinline
+			autoplay
+			poster="/marketing/hero-poster.svg"
+		>
+			<track kind="captions" />
+		</video>
+	</div>
+</Modal>
+
 
 <style>
 	.hero {

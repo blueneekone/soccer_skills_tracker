@@ -1,11 +1,13 @@
 <script lang="ts">
   import type { StakeholderCard } from './landingContent.js';
 
-  let { card, gridLg }: { card: StakeholderCard; gridLg?: { col: string; row: string } } = $props();
+  let { card, gridLg, onClick }: { card: StakeholderCard; gridLg?: { col: string; row: string }; onClick?: () => void } = $props();
 
   let hovered = $state(false);
 </script>
 
+<!-- svelte-ignore a11y_no_static_element_interactions -->
+<!-- svelte-ignore a11y_click_events_have_key_events -->
 <article
   class="sc-root vanguard-card tw-border-slate-800 {card.roleClass}"
   class:sc-root--hovered={hovered}
@@ -13,6 +15,11 @@
   style={gridLg ? `--gcol: ${gridLg.col}; --grow: ${gridLg.row}` : undefined}
   onmouseenter={() => (hovered = true)}
   onmouseleave={() => (hovered = false)}
+  onclick={onClick}
+  onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') onClick?.(); }}
+  tabindex={onClick ? 0 : undefined}
+  role={onClick ? "button" : undefined}
+  class:tw-cursor-pointer={!!onClick}
 >
   <div class="sc-role-badge">
     <span class="sc-badge-dot"></span>
