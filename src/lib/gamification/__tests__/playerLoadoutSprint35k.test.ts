@@ -22,6 +22,9 @@ const PRO_BACK = join(ROOT, 'lib/components/stats/ProPlayerCardBack.svelte');
 const IBM = join(ROOT, 'lib/components/player/dashboard/IdentityBentoModule.svelte');
 const STUDIO = join(ROOT, 'lib/components/player/OperativeLoadoutStudio.svelte');
 const DASHBOARD = join(ROOT, 'routes/(app)/player/dashboard/+page.svelte');
+const ARENA = join(ROOT, 'routes/(app)/player/dashboard/PlayerArena.svelte');
+const HUD = join(ROOT, 'routes/(app)/player/dashboard/PlayerHUD.svelte');
+const ENGINE = join(ROOT, 'routes/(app)/player/dashboard/PlayerDashboardEngine.svelte.ts');
 const RECRUIT = join(ROOT, 'routes/recruit/[playerKey]/+page.svelte');
 
 describe('Sprint 3.5k — resolveOperativeCardMetadata', () => {
@@ -110,7 +113,7 @@ describe('Sprint 3.5k — ProPlayerCard back + budget', () => {
 describe('Sprint 3.5k — wiring guards', () => {
 	it('IdentityBentoModule + dashboard pass cardMetadata', () => {
 		const ibmSrc = readFileSync(IBM, 'utf-8');
-		const dashboardSrc = readFileSync(DASHBOARD, 'utf-8');
+		const dashboardSrc = (existsSync(DASHBOARD) ? readFileSync(DASHBOARD, 'utf-8') : '') + (existsSync(ARENA) ? readFileSync(ARENA, 'utf-8') : '') + (existsSync(HUD) ? readFileSync(HUD, 'utf-8') : '') + (existsSync(ENGINE) ? readFileSync(ENGINE, 'utf-8') : '');
 		expect(ibmSrc).toMatch(/cardMetadata/);
 		expect(dashboardSrc).toMatch(/resolveOperativeCardMetadata/);
 		expect(dashboardSrc).toMatch(/cardMetadata=\{hqCardMetadata\}/);

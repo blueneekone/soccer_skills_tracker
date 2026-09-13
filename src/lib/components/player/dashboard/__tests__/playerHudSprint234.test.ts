@@ -19,6 +19,8 @@ const QUICK_OPS = join(ROOT, 'lib/components/player/dashboard/OperativeQuickOps.
 const HUB = join(ROOT, 'lib/components/player/dashboard/OperativeHub.svelte');
 const PATHWAY = join(ROOT, 'lib/components/player/dashboard/OperativePathwayPreview.svelte');
 const PAGE = join(ROOT, 'routes/(app)/player/dashboard/+page.svelte');
+const ARENA = join(ROOT, 'routes/(app)/player/dashboard/PlayerArena.svelte');
+const HUD = join(ROOT, 'routes/(app)/player/dashboard/PlayerHUD.svelte');
 const STATS = join(ROOT, 'routes/(app)/stats/+page.svelte');
 const SETTINGS_PAGE = join(ROOT, 'routes/(app)/player/settings/+page.svelte');
 const SETTINGS_PANEL = join(ROOT, 'lib/components/player/PlayerSettingsPanel.svelte');
@@ -38,6 +40,8 @@ const quickOpsSrc = existsSync(QUICK_OPS) ? readFileSync(QUICK_OPS, 'utf-8') : '
 const hubSrc = existsSync(HUB) ? readFileSync(HUB, 'utf-8') : '';
 const pathwaySrc = existsSync(PATHWAY) ? readFileSync(PATHWAY, 'utf-8') : '';
 const pageSrc = existsSync(PAGE) ? readFileSync(PAGE, 'utf-8') : '';
+const arenaSrc = existsSync(ARENA) ? readFileSync(ARENA, 'utf-8') : '';
+const hudSrc = existsSync(HUD) ? readFileSync(HUD, 'utf-8') : '';
 const statsSrc = existsSync(STATS) ? readFileSync(STATS, 'utf-8') : '';
 const settingsPageSrc = existsSync(SETTINGS_PAGE) ? readFileSync(SETTINGS_PAGE, 'utf-8') : '';
 const settingsPanelSrc = existsSync(SETTINGS_PANEL) ? readFileSync(SETTINGS_PANEL, 'utf-8') : '';
@@ -65,7 +69,7 @@ describe('Sprint 2.22 slice 6j-a — pd-os-deck depth kit (translatable)', () =>
 		expect(quickOpsSrc).not.toMatch(/pg-bracket|oqo-deck--edge-lit|pd-page-panel/);
 		expect(pathwaySrc).toMatch(/pd-os-deck__well/);
 		expect(pathwaySrc).not.toMatch(/pg-bracket/);
-		expect(pageSrc).toMatch(/player-analytics-void pd-os-deck pd-os-deck--recessed/);
+		expect(pageSrc + arenaSrc + hudSrc).toMatch(/player-analytics-void pd-os-deck pd-os-deck--recessed/);
 		expect(hudCss).toMatch(/\.operative-hub \.hcs-scanlines[\s\S]*display:\s*none/);
 		expect(hudCss).toMatch(
 			/:is\(\.player-analytics-void, \.stats-analytics-void\) \.vpp-chart--premium[\s\S]*--pd-z1-well-bg/,
@@ -163,7 +167,7 @@ describe('Sprint 2.22 slice 6j-a — HQ spatial composition', () => {
 
 describe('Sprint 2.22 slice 6j-a — capsules ghost whisper', () => {
 	it('.lobby-capsule-ghost-card is contained with inset well (no outer bleed)', () => {
-		expect(pageSrc).toMatch(/lobby-capsule-ghost-wrap/);
+		expect(pageSrc + arenaSrc + hudSrc).toMatch(/lobby-capsule-ghost-wrap/);
 		expect(hudCss).toMatch(/max-height:\s*56px/);
 		expect(hudCss).toMatch(/lobby-capsule-ghost-card[\s\S]*overflow:\s*hidden/);
 		expect(hudCss).toMatch(/--pd-z1-inset-shadow/);

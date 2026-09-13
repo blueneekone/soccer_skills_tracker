@@ -12,6 +12,8 @@ const HUD_CSS = join(ROOT, 'lib/styles/player-dashboard-hud.css');
 const DOSSIER_CSS = join(ROOT, 'lib/styles/player-dossier.css');
 const BOUNTIES = join(ROOT, 'lib/components/hud/ActiveBounties.svelte');
 const PAGE = join(ROOT, 'routes/(app)/player/dashboard/+page.svelte');
+const ARENA = join(ROOT, 'routes/(app)/player/dashboard/PlayerArena.svelte');
+const HUD = join(ROOT, 'routes/(app)/player/dashboard/PlayerHUD.svelte');
 const ARMORY = join(ROOT, 'routes/(app)/player/armory/+page.svelte');
 const INTEL = join(ROOT, 'lib/components/ui/IntelModal.svelte');
 const WORKOUT = join(ROOT, 'routes/(app)/player/workout/+page.svelte');
@@ -23,6 +25,8 @@ const hudCssSrc = existsSync(HUD_CSS) ? readFileSync(HUD_CSS, 'utf-8') : '';
 const dossierCssSrc = existsSync(DOSSIER_CSS) ? readFileSync(DOSSIER_CSS, 'utf-8') : '';
 const bountiesSrc = existsSync(BOUNTIES) ? readFileSync(BOUNTIES, 'utf-8') : '';
 const pageSrc = existsSync(PAGE) ? readFileSync(PAGE, 'utf-8') : '';
+const arenaSrc = existsSync(ARENA) ? readFileSync(ARENA, 'utf-8') : '';
+const hudSrc = existsSync(HUD) ? readFileSync(HUD, 'utf-8') : '';
 const armorySrc = existsSync(ARMORY) ? readFileSync(ARMORY, 'utf-8') : '';
 const intelSrc = existsSync(INTEL) ? readFileSync(INTEL, 'utf-8') : '';
 const workoutSrc = existsSync(WORKOUT) ? readFileSync(WORKOUT, 'utf-8') : '';
@@ -54,14 +58,14 @@ describe.skip('Sprint 2.11.1 — player-missions.css consolidates embedded missi
 
 describe.skip('Sprint 2.11.1 — dashboard loading + single telemetry surface', () => {
 	it('loading gate does not use #0B0F19', () => {
-		expect(pageSrc).not.toMatch(/tw-bg-\[#0B0F19\]/);
-		expect(pageSrc).toMatch(/--pd-bg|var\(--pd-bg/);
+		expect(pageSrc + arenaSrc + hudSrc).not.toMatch(/tw-bg-\[#0B0F19\]/);
+		expect(pageSrc + arenaSrc + hudSrc).toMatch(/--pd-bg|var\(--pd-bg/);
 	});
 
 	it('single telemetry surface — hub collapsed when !telemetryReady; VPP always mounted', () => {
-		expect(pageSrc).toMatch(/\{#if !telemetryReady\}[\s\S]*?hmp-vectors-collapsed/);
-		expect(pageSrc).toMatch(/VanguardProtocolPanel/);
-		expect(pageSrc).not.toMatch(/\{#if telemetryReady\}[\s\S]*?HudMetricsPanel/);
+		expect(pageSrc + arenaSrc + hudSrc).toMatch(/\{#if !telemetryReady\}[\s\S]*?hmp-vectors-collapsed/);
+		expect(pageSrc + arenaSrc + hudSrc).toMatch(/VanguardProtocolPanel/);
+		expect(pageSrc + arenaSrc + hudSrc).not.toMatch(/\{#if telemetryReady\}[\s\S]*?HudMetricsPanel/);
 	});
 
 	it('HudMetricsPanel hides embedded vectors when !telemetryReady', () => {

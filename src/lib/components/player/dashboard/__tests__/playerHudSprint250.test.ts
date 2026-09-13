@@ -16,6 +16,8 @@ import { join } from 'node:path';
 const ROOT = join(__dirname, '..', '..', '..', '..', '..');
 const WORKOUT = join(ROOT, 'routes/(app)/player/workout/+page.svelte');
 const PAGE = join(ROOT, 'routes/(app)/player/dashboard/+page.svelte');
+const ARENA = join(ROOT, 'routes/(app)/player/dashboard/PlayerArena.svelte');
+const HUD = join(ROOT, 'routes/(app)/player/dashboard/PlayerHUD.svelte');
 const HUB = join(ROOT, 'lib/components/player/dashboard/OperativeHub.svelte');
 const QUICK_OPS = join(ROOT, 'lib/components/player/dashboard/OperativeQuickOps.svelte');
 const PATHWAY = join(ROOT, 'lib/components/player/dashboard/OperativePathwayPreview.svelte');
@@ -29,6 +31,8 @@ const SPRINT248 = join(__dirname, 'playerHudSprint248.test.ts');
 
 const workoutSrc = existsSync(WORKOUT) ? readFileSync(WORKOUT, 'utf-8') : '';
 const pageSrc = existsSync(PAGE) ? readFileSync(PAGE, 'utf-8') : '';
+const arenaSrc = existsSync(ARENA) ? readFileSync(ARENA, 'utf-8') : '';
+const hudSrc = existsSync(HUD) ? readFileSync(HUD, 'utf-8') : '';
 const hubSrc = existsSync(HUB) ? readFileSync(HUB, 'utf-8') : '';
 const quickOpsSrc = existsSync(QUICK_OPS) ? readFileSync(QUICK_OPS, 'utf-8') : '';
 const pathwaySrc = existsSync(PATHWAY) ? readFileSync(PATHWAY, 'utf-8') : '';
@@ -112,7 +116,7 @@ describe.skip('Phase 7 · G4 — Train workout markup (Execute inner terminal)',
 
 describe.skip('Phase 7 · G4 — HQ regression (no Execute chrome leak)', () => {
 	it('HQ dashboard route files omit pg-bracket / pg-scanline / pg-terminal-chrome', () => {
-		expect(pageSrc).not.toMatch(/pg-bracket|pg-scanline|pg-terminal-chrome/);
+		expect(pageSrc + arenaSrc + hudSrc).not.toMatch(/pg-bracket|pg-scanline|pg-terminal-chrome/);
 		expect(hubSrc).not.toMatch(/pg-bracket|pg-scanline|pg-terminal-chrome/);
 		expect(quickOpsSrc).not.toMatch(/pg-bracket|pg-scanline|pg-terminal-chrome/);
 		expect(pathwaySrc).not.toMatch(/pg-bracket|pg-scanline|pg-terminal-chrome/);

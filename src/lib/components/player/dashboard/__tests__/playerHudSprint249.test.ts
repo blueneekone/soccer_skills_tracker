@@ -15,6 +15,8 @@ const HUD_CSS = join(ROOT, 'lib/styles/player-dashboard-hud.css');
 const DOSSIER_CSS = join(ROOT, 'lib/styles/player-dossier.css');
 const RADAR = join(ROOT, 'lib/components/player/dashboard/AttributeRadar.svelte');
 const PAGE = join(ROOT, 'routes/(app)/player/dashboard/+page.svelte');
+const ARENA = join(ROOT, 'routes/(app)/player/dashboard/PlayerArena.svelte');
+const HUD = join(ROOT, 'routes/(app)/player/dashboard/PlayerHUD.svelte');
 const STATS = join(ROOT, 'routes/(app)/stats/+page.svelte');
 const ROADMAP = join(ROOT, '..', 'ROADMAP.md');
 const SPRINT247 = join(__dirname, 'playerHudSprint247.test.ts');
@@ -25,6 +27,8 @@ const hudCss = existsSync(HUD_CSS) ? readFileSync(HUD_CSS, 'utf-8') : '';
 const dossierCss = existsSync(DOSSIER_CSS) ? readFileSync(DOSSIER_CSS, 'utf-8') : '';
 const radarSrc = existsSync(RADAR) ? readFileSync(RADAR, 'utf-8') : '';
 const pageSrc = existsSync(PAGE) ? readFileSync(PAGE, 'utf-8') : '';
+const arenaSrc = existsSync(ARENA) ? readFileSync(ARENA, 'utf-8') : '';
+const hudSrc = existsSync(HUD) ? readFileSync(HUD, 'utf-8') : '';
 const statsSrc = existsSync(STATS) ? readFileSync(STATS, 'utf-8') : '';
 const roadmapSrc = existsSync(ROADMAP) ? readFileSync(ROADMAP, 'utf-8') : '';
 const sprint247Src = existsSync(SPRINT247) ? readFileSync(SPRINT247, 'utf-8') : '';
@@ -103,10 +107,10 @@ describe('Phase 7 · G3 — Telemetry inner documented + unified selectors', () 
 
 describe('Phase 7 · G3 — route markup parity', () => {
 	it('HQ page retains player-analytics-void + VPP + compact={!telemetryReady}', () => {
-		expect(pageSrc).toMatch(/data-region="player-analytics-void"/);
-		expect(pageSrc).toMatch(/player-analytics-void pd-os-deck pd-os-deck--recessed/);
-		expect(pageSrc).toMatch(/VanguardProtocolPanel/);
-		expect(pageSrc).toMatch(/compact=\{!telemetryReady\}/);
+		expect(pageSrc + arenaSrc + hudSrc).toMatch(/data-region="player-analytics-void"/);
+		expect(pageSrc + arenaSrc + hudSrc).toMatch(/player-analytics-void pd-os-deck pd-os-deck--recessed/);
+		expect(pageSrc + arenaSrc + hudSrc).toMatch(/VanguardProtocolPanel/);
+		expect(pageSrc + arenaSrc + hudSrc).toMatch(/compact=\{!telemetryReady\}/);
 	});
 
 	it('Stats player block retains stats-analytics-void + VPP + pd-os-deck--recessed', () => {
@@ -131,7 +135,7 @@ describe('Phase 7 · G3 — anti-patterns + regression hooks', () => {
 		expect(dossierCss).toMatch(/Phase 7 · G1 — HQ shared frame tokens/);
 		expect(hudCss).toMatch(/Phase 7 · G1 — HQ shared frame: raised Z2 decks/);
 		expect(hudCss).toMatch(/\.player-analytics-void\.pd-os-deck--recessed[\s\S]*?var\(--pd-hq-deck-rim\)/);
-		expect(pageSrc).toMatch(/player-analytics-void pd-os-deck pd-os-deck--recessed/);
+		expect(pageSrc + arenaSrc + hudSrc).toMatch(/player-analytics-void pd-os-deck pd-os-deck--recessed/);
 	});
 
 	it('G2 regression — Navigation/Progression scoping unchanged (no accidental G3 cross-chrome)', () => {

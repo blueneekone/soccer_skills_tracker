@@ -11,12 +11,16 @@ const IDENTITY = join(ROOT, 'lib/components/player/dashboard/IdentityBentoModule
 const METRICS = join(ROOT, 'lib/components/player/dashboard/HudMetricsPanel.svelte');
 const OPERATIVE = join(ROOT, 'lib/components/player/dashboard/OperativeHub.svelte');
 const PAGE = join(ROOT, 'routes/(app)/player/dashboard/+page.svelte');
+const ARENA = join(ROOT, 'routes/(app)/player/dashboard/PlayerArena.svelte');
+const HUD = join(ROOT, 'routes/(app)/player/dashboard/PlayerHUD.svelte');
 const HUD_CSS = join(ROOT, 'lib/styles/player-dashboard-hud.css');
 
 const identitySrc = existsSync(IDENTITY) ? readFileSync(IDENTITY, 'utf-8') : '';
 const metricsSrc = existsSync(METRICS) ? readFileSync(METRICS, 'utf-8') : '';
 const operativeSrc = existsSync(OPERATIVE) ? readFileSync(OPERATIVE, 'utf-8') : '';
 const pageSrc = existsSync(PAGE) ? readFileSync(PAGE, 'utf-8') : '';
+const arenaSrc = existsSync(ARENA) ? readFileSync(ARENA, 'utf-8') : '';
+const hudSrc = existsSync(HUD) ? readFileSync(HUD, 'utf-8') : '';
 const hudCssSrc = existsSync(HUD_CSS) ? readFileSync(HUD_CSS, 'utf-8') : '';
 
 describe('Sprint 1.8 — OperativeHub bento spans preserved', () => {
@@ -46,7 +50,7 @@ describe('Sprint 1.8 — IdentityBentoModule embedded flush (no double chrome)',
 	});
 
 	it('+page passes embedded={true} to IdentityBentoModule inside OperativeHub', () => {
-		expect(pageSrc).toMatch(/IdentityBentoModule[\s\S]*?embedded=\{true\}/);
+		expect(pageSrc + arenaSrc + hudSrc).toMatch(/IdentityBentoModule[\s\S]*?embedded=\{true\}/);
 	});
 });
 
@@ -63,8 +67,8 @@ describe('Sprint 1.8 — HudMetricsPanel embedded flush + Vanguard vectors only'
 	});
 
 	it('+page collapses hub vectors when !telemetryReady (VPP owns radar — no HudMetricsPanel on page)', () => {
-		expect(pageSrc).toMatch(/hmp-vectors-collapsed/);
-		expect(pageSrc).not.toMatch(/<HudMetricsPanel/);
+		expect(pageSrc + arenaSrc + hudSrc).toMatch(/hmp-vectors-collapsed/);
+		expect(pageSrc + arenaSrc + hudSrc).not.toMatch(/<HudMetricsPanel/);
 	});
 
 	it('HudMetricsPanel shows Vanguard vector labels (PAC, ACC, POW, COMP, STM, AGI)', () => {

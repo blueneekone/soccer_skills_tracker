@@ -19,6 +19,8 @@ const MISSIONS_CSS = join(ROOT, 'lib/styles/player-missions.css');
 const PATHWAY = join(ROOT, 'lib/components/player/dashboard/OperativePathwayPreview.svelte');
 const QUICK_OPS = join(ROOT, 'lib/components/player/dashboard/OperativeQuickOps.svelte');
 const PAGE = join(ROOT, 'routes/(app)/player/dashboard/+page.svelte');
+const ARENA = join(ROOT, 'routes/(app)/player/dashboard/PlayerArena.svelte');
+const HUD = join(ROOT, 'routes/(app)/player/dashboard/PlayerHUD.svelte');
 const HUB = join(ROOT, 'lib/components/player/dashboard/OperativeHub.svelte');
 const ROADMAP = join(ROOT, '..', 'ROADMAP.md');
 const SPRINT242 = join(__dirname, 'playerHudSprint242.test.ts');
@@ -28,6 +30,8 @@ const missionsCss = existsSync(MISSIONS_CSS) ? readFileSync(MISSIONS_CSS, 'utf-8
 const pathwaySrc = existsSync(PATHWAY) ? readFileSync(PATHWAY, 'utf-8') : '';
 const quickOpsSrc = existsSync(QUICK_OPS) ? readFileSync(QUICK_OPS, 'utf-8') : '';
 const pageSrc = existsSync(PAGE) ? readFileSync(PAGE, 'utf-8') : '';
+const arenaSrc = existsSync(ARENA) ? readFileSync(ARENA, 'utf-8') : '';
+const hudSrc = existsSync(HUD) ? readFileSync(HUD, 'utf-8') : '';
 const hubSrc = existsSync(HUB) ? readFileSync(HUB, 'utf-8') : '';
 const roadmapSrc = existsSync(ROADMAP) ? readFileSync(ROADMAP, 'utf-8') : '';
 const sprint242Src = existsSync(SPRINT242) ? readFileSync(SPRINT242, 'utf-8') : '';
@@ -128,7 +132,7 @@ describe('Wave B′ — HQ anti-patterns', () => {
 	});
 
 	it('HQ route files omit pg-bracket / pg-scanline / pg-terminal-chrome', () => {
-		expect(pageSrc).not.toMatch(/pg-bracket|pg-scanline|pg-terminal-chrome/);
+		expect(pageSrc + arenaSrc + hudSrc).not.toMatch(/pg-bracket|pg-scanline|pg-terminal-chrome/);
 		expect(hubSrc).not.toMatch(/pg-bracket|pg-scanline|pg-terminal-chrome/);
 		expect(quickOpsSrc).not.toMatch(/pg-bracket|pg-scanline|pg-terminal-chrome/);
 		expect(pathwaySrc).not.toMatch(/pg-bracket|pg-scanline|pg-terminal-chrome/);

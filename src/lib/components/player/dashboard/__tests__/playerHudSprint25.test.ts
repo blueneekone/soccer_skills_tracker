@@ -13,6 +13,8 @@ const HMP = join(ROOT, 'lib/components/player/dashboard/HudMetricsPanel.svelte')
 const RADAR = join(ROOT, 'lib/components/player/dashboard/AttributeRadar.svelte');
 const BOUNTIES = join(ROOT, 'lib/components/hud/ActiveBounties.svelte');
 const PAGE = join(ROOT, 'routes/(app)/player/dashboard/+page.svelte');
+const ARENA = join(ROOT, 'routes/(app)/player/dashboard/PlayerArena.svelte');
+const HUD = join(ROOT, 'routes/(app)/player/dashboard/PlayerHUD.svelte');
 const HUD_CSS = join(ROOT, 'lib/styles/player-dashboard-hud.css');
 const PLAYER_OS = join(ROOT, '..', 'docs/vision/PLAYER_OS.md');
 
@@ -22,6 +24,8 @@ const hmpSrc = existsSync(HMP) ? readFileSync(HMP, 'utf-8') : '';
 const radarSrc = existsSync(RADAR) ? readFileSync(RADAR, 'utf-8') : '';
 const bountiesSrc = existsSync(BOUNTIES) ? readFileSync(BOUNTIES, 'utf-8') : '';
 const pageSrc = existsSync(PAGE) ? readFileSync(PAGE, 'utf-8') : '';
+const arenaSrc = existsSync(ARENA) ? readFileSync(ARENA, 'utf-8') : '';
+const hudSrc = existsSync(HUD) ? readFileSync(HUD, 'utf-8') : '';
 const hudCssSrc = existsSync(HUD_CSS) ? readFileSync(HUD_CSS, 'utf-8') : '';
 const playerOsSrc = existsSync(PLAYER_OS) ? readFileSync(PLAYER_OS, 'utf-8') : '';
 
@@ -69,16 +73,16 @@ describe('Sprint 2.5 — HudMetricsPanel embedded vectors only', () => {
 
 describe('Sprint 2.5 — +page.svelte wiring', () => {
 	it('passes profileIncomplete={!hasArmoryProfile} to IdentityBentoModule', () => {
-		expect(pageSrc).toMatch(/profileIncomplete=\{!hasArmoryProfile\}/);
+		expect(pageSrc + arenaSrc + hudSrc).toMatch(/profileIncomplete=\{!hasArmoryProfile\}/);
 	});
 
 	it('has player-analytics-void with VanguardProtocolPanel', () => {
-		expect(pageSrc).toMatch(/player-analytics-void/);
-		expect(pageSrc).toMatch(/<VanguardProtocolPanel/);
+		expect(pageSrc + arenaSrc + hudSrc).toMatch(/player-analytics-void/);
+		expect(pageSrc + arenaSrc + hudSrc).toMatch(/<VanguardProtocolPanel/);
 	});
 
 	it('does NOT import PlayerCommandCenter (2.1.1 guard)', () => {
-		expect(pageSrc).not.toMatch(/PlayerCommandCenter/);
+		expect(pageSrc + arenaSrc + hudSrc).not.toMatch(/PlayerCommandCenter/);
 	});
 });
 

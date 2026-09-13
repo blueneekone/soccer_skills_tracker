@@ -16,6 +16,8 @@ const HUB = join(ROOT, 'lib/components/player/dashboard/OperativeHub.svelte');
 const IBM = join(ROOT, 'lib/components/player/dashboard/IdentityBentoModule.svelte');
 const BOUNTIES = join(ROOT, 'lib/components/hud/ActiveBounties.svelte');
 const PAGE = join(ROOT, 'routes/(app)/player/dashboard/+page.svelte');
+const ARENA = join(ROOT, 'routes/(app)/player/dashboard/PlayerArena.svelte');
+const HUD = join(ROOT, 'routes/(app)/player/dashboard/PlayerHUD.svelte');
 const ROADMAP = join(ROOT, '..', 'ROADMAP.md');
 const PLAYER_OS = join(ROOT, '..', 'docs/vision/PLAYER_OS.md');
 
@@ -28,6 +30,8 @@ const hubSrc = existsSync(HUB) ? readFileSync(HUB, 'utf-8') : '';
 const ibmSrc = existsSync(IBM) ? readFileSync(IBM, 'utf-8') : '';
 const bountiesSrc = existsSync(BOUNTIES) ? readFileSync(BOUNTIES, 'utf-8') : '';
 const pageSrc = existsSync(PAGE) ? readFileSync(PAGE, 'utf-8') : '';
+const arenaSrc = existsSync(ARENA) ? readFileSync(ARENA, 'utf-8') : '';
+const hudSrc = existsSync(HUD) ? readFileSync(HUD, 'utf-8') : '';
 const roadmapSrc = existsSync(ROADMAP) ? readFileSync(ROADMAP, 'utf-8') : '';
 const playerOsSrc = existsSync(PLAYER_OS) ? readFileSync(PLAYER_OS, 'utf-8') : '';
 
@@ -97,30 +101,30 @@ describe('Sprint 2.12 — mission rail premium card faces', () => {
 
 describe('Sprint 2.12 — single telemetry surface (+page.svelte)', () => {
 	it('does NOT render embedded HudMetricsPanel when telemetryReady (VPP owns radar)', () => {
-		expect(pageSrc).not.toMatch(/\{#if telemetryReady\}[\s\S]*?HudMetricsPanel/);
-		expect(pageSrc).toMatch(/VanguardProtocolPanel/);
+		expect(pageSrc + arenaSrc + hudSrc).not.toMatch(/\{#if telemetryReady\}[\s\S]*?HudMetricsPanel/);
+		expect(pageSrc + arenaSrc + hudSrc).toMatch(/VanguardProtocolPanel/);
 	});
 
 	it('shows collapsed hub one-liner when !telemetryReady only', () => {
-		expect(pageSrc).toMatch(/\{#if !telemetryReady\}[\s\S]*?hmp-vectors-collapsed/);
-		expect(pageSrc).not.toMatch(
+		expect(pageSrc + arenaSrc + hudSrc).toMatch(/\{#if !telemetryReady\}[\s\S]*?hmp-vectors-collapsed/);
+		expect(pageSrc + arenaSrc + hudSrc).not.toMatch(
 			/HudMetricsPanel[\s\S]{0,300}embedded=\{true\}/,
 		);
 	});
 
 	it('VPP compact mode tracks telemetryReady', () => {
-		expect(pageSrc).toMatch(/compact=\{!telemetryReady\}/);
+		expect(pageSrc + arenaSrc + hudSrc).toMatch(/compact=\{!telemetryReady\}/);
 	});
 });
 
 describe('Sprint 2.12 — HQ canvas + shell ambient', () => {
 	it('PlayerShell canvas owns pd-grain; HQ page keeps dopamine data attribute', () => {
 		expect(shellSrc).toMatch(/pd-grain/);
-		expect(pageSrc).toMatch(/data-dopamine=\{vanguardFlags\.dopamineEnabled/);
+		expect(pageSrc + arenaSrc + hudSrc).toMatch(/data-dopamine=\{vanguardFlags\.dopamineEnabled/);
 	});
 
 	it('strap uses pd-strap--premium', () => {
-		expect(pageSrc).toMatch(/pd-strap--premium/);
+		expect(pageSrc + arenaSrc + hudSrc).toMatch(/pd-strap--premium/);
 	});
 
 	it('bento gap tightened to clamp 12–20px', () => {

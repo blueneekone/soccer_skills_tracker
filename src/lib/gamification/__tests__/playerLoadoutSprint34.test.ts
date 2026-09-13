@@ -21,6 +21,9 @@ const ARMORY_PAGE = join(ROOT, 'routes/(app)/player/armory/+page.svelte');
 const ALBUM_WS = join(ROOT, 'lib/components/player/ArmoryAlbumWorkspace.svelte');
 const HQ_CTX = join(ROOT, 'lib/player/dashboard/hqWorldContext.ts');
 const DASHBOARD = join(ROOT, 'routes/(app)/player/dashboard/+page.svelte');
+const ARENA = join(ROOT, 'routes/(app)/player/dashboard/PlayerArena.svelte');
+const HUD = join(ROOT, 'routes/(app)/player/dashboard/PlayerHUD.svelte');
+const ENGINE = join(ROOT, 'routes/(app)/player/dashboard/PlayerDashboardEngine.svelte.ts');
 const RENDER = join(ROOT, 'lib/gamification/renderOperativeLoadout.js');
 const MANIFEST = join(ROOT, 'lib/gamification/cosmetics.manifest.json');
 const SPRINT33 = join(__dirname, 'playerLoadoutSprint33.test.ts');
@@ -78,7 +81,7 @@ describe('Sprint 3.4 — client wiring', () => {
 
 	it('hqWorldContext and dashboard pass album set chips', () => {
 		expect(readFileSync(HQ_CTX, 'utf-8')).toMatch(/completedAlbumSetChips/);
-		const dash = readFileSync(DASHBOARD, 'utf-8');
+		const dash = (existsSync(DASHBOARD) ? readFileSync(DASHBOARD, 'utf-8') : '') + (existsSync(ARENA) ? readFileSync(ARENA, 'utf-8') : '') + (existsSync(HUD) ? readFileSync(HUD, 'utf-8') : '') + (existsSync(ENGINE) ? readFileSync(ENGINE, 'utf-8') : '');
 		expect(dash).toMatch(/getCompletedAlbumSetChipLabels/);
 		expect(dash).toMatch(/completedAlbumSetChips/);
 	});

@@ -21,6 +21,8 @@ const VPP = join(ROOT, 'lib/components/player/dashboard/VanguardProtocolPanel.sv
 const QUICK_OPS = join(ROOT, 'lib/components/player/dashboard/OperativeQuickOps.svelte');
 const PATHWAY = join(ROOT, 'lib/components/player/dashboard/OperativePathwayPreview.svelte');
 const PAGE = join(ROOT, 'routes/(app)/player/dashboard/+page.svelte');
+const ARENA = join(ROOT, 'routes/(app)/player/dashboard/PlayerArena.svelte');
+const HUD = join(ROOT, 'routes/(app)/player/dashboard/PlayerHUD.svelte');
 const ROADMAP = join(ROOT, '..', 'ROADMAP.md');
 const SPRINT247 = join(__dirname, 'playerHudSprint247.test.ts');
 const SPRINT248 = join(__dirname, 'playerHudSprint248.test.ts');
@@ -34,6 +36,8 @@ const vppSrc = existsSync(VPP) ? readFileSync(VPP, 'utf-8') : '';
 const quickOpsSrc = existsSync(QUICK_OPS) ? readFileSync(QUICK_OPS, 'utf-8') : '';
 const pathwaySrc = existsSync(PATHWAY) ? readFileSync(PATHWAY, 'utf-8') : '';
 const pageSrc = existsSync(PAGE) ? readFileSync(PAGE, 'utf-8') : '';
+const arenaSrc = existsSync(ARENA) ? readFileSync(ARENA, 'utf-8') : '';
+const hudSrc = existsSync(HUD) ? readFileSync(HUD, 'utf-8') : '';
 const roadmapSrc = existsSync(ROADMAP) ? readFileSync(ROADMAP, 'utf-8') : '';
 const sprint247Src = existsSync(SPRINT247) ? readFileSync(SPRINT247, 'utf-8') : '';
 const sprint248Src = existsSync(SPRINT248) ? readFileSync(SPRINT248, 'utf-8') : '';
@@ -83,17 +87,17 @@ describe('Phase 7 · G6 — Telemetry void section head (G8: pd-hq-section-head 
 			pageSrc.match(
 				/<section[\s\S]*?data-region="player-analytics-void"[\s\S]*?<\/section>/,
 			)?.[0] ?? '';
-		expect(pageSrc).toMatch(/player-analytics-void pd-os-deck pd-os-deck--recessed/);
+		expect(pageSrc + arenaSrc + hudSrc).toMatch(/player-analytics-void pd-os-deck pd-os-deck--recessed/);
 		expect(analyticsBlock).toMatch(/pd-hq-section-head player-analytics-void__head/);
 		expect(analyticsBlock).toMatch(/Performance/);
 		expect(analyticsBlock).toMatch(/Vanguard telemetry/);
 		expect(analyticsBlock).toMatch(/hideHeadTitle=\{true\}/);
 		expect(analyticsBlock).toMatch(/<VanguardProtocolPanel/);
-		expect(pageSrc).not.toMatch(/player-analytics-band/);
+		expect(pageSrc + arenaSrc + hudSrc).not.toMatch(/player-analytics-band/);
 	});
 
 	it('VPP hideHeadTitle prop optional; HQ page suppresses native head (G8)', () => {
-		expect(pageSrc).toMatch(/hideHeadTitle=\{true\}/);
+		expect(pageSrc + arenaSrc + hudSrc).toMatch(/hideHeadTitle=\{true\}/);
 		expect(vppSrc).toMatch(/hideHeadTitle\s*=\s*false/);
 		expect(vppSrc).toMatch(/\{#if !hideHeadTitle\}/);
 		expect(vppSrc).not.toMatch(/showVppHead/);

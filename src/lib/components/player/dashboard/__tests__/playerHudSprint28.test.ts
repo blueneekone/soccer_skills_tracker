@@ -11,6 +11,8 @@ const DOSSIER_CSS = join(ROOT, 'lib/styles/player-dossier.css');
 const HUD_CSS = join(ROOT, 'lib/styles/player-dashboard-hud.css');
 const SHELL_CSS = join(ROOT, 'lib/styles/player-shell.css');
 const PAGE = join(ROOT, 'routes/(app)/player/dashboard/+page.svelte');
+const ARENA = join(ROOT, 'routes/(app)/player/dashboard/PlayerArena.svelte');
+const HUD = join(ROOT, 'routes/(app)/player/dashboard/PlayerHUD.svelte');
 const HUB = join(ROOT, 'lib/components/player/dashboard/OperativeHub.svelte');
 const RADAR = join(ROOT, 'lib/components/player/dashboard/AttributeRadar.svelte');
 const VPP = join(ROOT, 'lib/components/player/dashboard/VanguardProtocolPanel.svelte');
@@ -21,6 +23,8 @@ const dossierCssSrc = existsSync(DOSSIER_CSS) ? readFileSync(DOSSIER_CSS, 'utf-8
 const hudCssSrc = existsSync(HUD_CSS) ? readFileSync(HUD_CSS, 'utf-8') : '';
 const shellCssSrc = existsSync(SHELL_CSS) ? readFileSync(SHELL_CSS, 'utf-8') : '';
 const pageSrc = existsSync(PAGE) ? readFileSync(PAGE, 'utf-8') : '';
+const arenaSrc = existsSync(ARENA) ? readFileSync(ARENA, 'utf-8') : '';
+const hudSrc = existsSync(HUD) ? readFileSync(HUD, 'utf-8') : '';
 const hubSrc = existsSync(HUB) ? readFileSync(HUB, 'utf-8') : '';
 const radarSrc = existsSync(RADAR) ? readFileSync(RADAR, 'utf-8') : '';
 const vppSrc = existsSync(VPP) ? readFileSync(VPP, 'utf-8') : '';
@@ -47,20 +51,20 @@ describe('Sprint 2.8 — player-dossier.css canonical tokens', () => {
 
 describe('Sprint 2.8 — dashboard +page dossier shell', () => {
 	it('uses player-hud-root pd-page-root dossier shell (CSS via shell/components)', () => {
-		expect(pageSrc).toMatch(/player-hud-root/);
-		expect(pageSrc).toMatch(/pd-page-root/);
-		expect(pageSrc).toMatch(/var\(--pd-bg/);
+		expect(pageSrc + arenaSrc + hudSrc).toMatch(/player-hud-root/);
+		expect(pageSrc + arenaSrc + hudSrc).toMatch(/pd-page-root/);
+		expect(pageSrc + arenaSrc + hudSrc).toMatch(/var\(--pd-bg/);
 	});
 
 	it('uses black dossier page background (not bare #0f172a)', () => {
-		expect(pageSrc).toMatch(/var\(--pd-bg/);
-		expect(pageSrc).not.toMatch(/background:\s*var\(--color-dominant,\s*#0f172a\)/);
+		expect(pageSrc + arenaSrc + hudSrc).toMatch(/var\(--pd-bg/);
+		expect(pageSrc + arenaSrc + hudSrc).not.toMatch(/background:\s*var\(--color-dominant,\s*#0f172a\)/);
 	});
 
 	it('has pd-strap dossier header above OperativeHub', () => {
-		expect(pageSrc).toMatch(/pd-strap/);
-		expect(pageSrc).toMatch(/Command \/ HQ/);
-		expect(pageSrc).toMatch(/<OperativeHub/);
+		expect(pageSrc + arenaSrc + hudSrc).toMatch(/pd-strap/);
+		expect(pageSrc + arenaSrc + hudSrc).toMatch(/Command \/ HQ/);
+		expect(pageSrc + arenaSrc + hudSrc).toMatch(/<OperativeHub/);
 		const strapIdx = pageSrc.indexOf('pd-strap');
 		const hubIdx = pageSrc.indexOf('<OperativeHub');
 		expect(strapIdx).toBeGreaterThan(-1);

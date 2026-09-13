@@ -11,6 +11,8 @@ const HQ_WORLD = join(ROOT, 'lib/player/dashboard/hqWorldContext.ts');
 const HQ_WORLD_TEST = join(ROOT, 'lib/player/dashboard/__tests__/hqWorldContext.test.ts');
 const STRIP = join(ROOT, 'lib/components/player/dashboard/HqWorldContextStrip.svelte');
 const PAGE = join(ROOT, 'routes/(app)/player/dashboard/+page.svelte');
+const ARENA = join(ROOT, 'routes/(app)/player/dashboard/PlayerArena.svelte');
+const HUD = join(ROOT, 'routes/(app)/player/dashboard/PlayerHUD.svelte');
 const BOUNTIES = join(ROOT, 'lib/components/hud/ActiveBounties.svelte');
 const HUD_CSS = join(ROOT, 'lib/styles/player-dashboard-hud.css');
 const DOSSIER_CSS = join(ROOT, 'lib/styles/player-dossier.css');
@@ -20,6 +22,8 @@ const hqWorldSrc = existsSync(HQ_WORLD) ? readFileSync(HQ_WORLD, 'utf-8') : '';
 const hqWorldTestSrc = existsSync(HQ_WORLD_TEST) ? readFileSync(HQ_WORLD_TEST, 'utf-8') : '';
 const stripSrc = existsSync(STRIP) ? readFileSync(STRIP, 'utf-8') : '';
 const pageSrc = existsSync(PAGE) ? readFileSync(PAGE, 'utf-8') : '';
+const arenaSrc = existsSync(ARENA) ? readFileSync(ARENA, 'utf-8') : '';
+const hudSrc = existsSync(HUD) ? readFileSync(HUD, 'utf-8') : '';
 const bountiesSrc = existsSync(BOUNTIES) ? readFileSync(BOUNTIES, 'utf-8') : '';
 const hudCssSrc = existsSync(HUD_CSS) ? readFileSync(HUD_CSS, 'utf-8') : '';
 const dossierCssSrc = existsSync(DOSSIER_CSS) ? readFileSync(DOSSIER_CSS, 'utf-8') : '';
@@ -27,9 +31,9 @@ const playerOsSrc = existsSync(PLAYER_OS) ? readFileSync(PLAYER_OS, 'utf-8') : '
 
 describe('Sprint 2.10.1 — inline world context in pd-strap', () => {
 	it('places HqWorldContextStrip inside pd-strap__context with inline prop', () => {
-		expect(pageSrc).toMatch(/pd-strap__context/);
-		expect(pageSrc).toMatch(/<HqWorldContextStrip[\s\S]*inline/);
-		expect(pageSrc).not.toMatch(
+		expect(pageSrc + arenaSrc + hudSrc).toMatch(/pd-strap__context/);
+		expect(pageSrc + arenaSrc + hudSrc).toMatch(/<HqWorldContextStrip[\s\S]*inline/);
+		expect(pageSrc + arenaSrc + hudSrc).not.toMatch(
 			/<\/header>\s*\n\s*<HqWorldContextStrip/,
 		);
 	});
@@ -66,9 +70,9 @@ describe('Sprint 2.10.1 — badge dedupe (hqWorldContext.ts)', () => {
 	});
 
 	it('page passes heroQuestId and suppressProfileIncompleteBadge', () => {
-		expect(pageSrc).toMatch(/heroQuestId/);
-		expect(pageSrc).toMatch(/suppressProfileIncompleteBadge/);
-		expect(pageSrc).toMatch(/onHeroQuestId/);
+		expect(pageSrc + arenaSrc + hudSrc).toMatch(/heroQuestId/);
+		expect(pageSrc + arenaSrc + hudSrc).toMatch(/suppressProfileIncompleteBadge/);
+		expect(pageSrc + arenaSrc + hudSrc).toMatch(/onHeroQuestId/);
 	});
 });
 

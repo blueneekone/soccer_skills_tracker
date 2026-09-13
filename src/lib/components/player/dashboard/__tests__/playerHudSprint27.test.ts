@@ -15,6 +15,8 @@ const IDENTITY = join(ROOT, 'lib/components/player/dashboard/IdentityBentoModule
 const HMP = join(ROOT, 'lib/components/player/dashboard/HudMetricsPanel.svelte');
 const VPP = join(ROOT, 'lib/components/player/dashboard/VanguardProtocolPanel.svelte');
 const PAGE = join(ROOT, 'routes/(app)/player/dashboard/+page.svelte');
+const ARENA = join(ROOT, 'routes/(app)/player/dashboard/PlayerArena.svelte');
+const HUD = join(ROOT, 'routes/(app)/player/dashboard/PlayerHUD.svelte');
 const HUD_CSS = join(ROOT, 'lib/styles/player-dashboard-hud.css');
 const PLAYER_OS = join(ROOT, '..', 'docs/vision/PLAYER_OS.md');
 
@@ -26,6 +28,8 @@ const identitySrc = existsSync(IDENTITY) ? readFileSync(IDENTITY, 'utf-8') : '';
 const hmpSrc = existsSync(HMP) ? readFileSync(HMP, 'utf-8') : '';
 const vppSrc = existsSync(VPP) ? readFileSync(VPP, 'utf-8') : '';
 const pageSrc = existsSync(PAGE) ? readFileSync(PAGE, 'utf-8') : '';
+const arenaSrc = existsSync(ARENA) ? readFileSync(ARENA, 'utf-8') : '';
+const hudSrc = existsSync(HUD) ? readFileSync(HUD, 'utf-8') : '';
 const hudCssSrc = existsSync(HUD_CSS) ? readFileSync(HUD_CSS, 'utf-8') : '';
 const playerOsSrc = existsSync(PLAYER_OS) ? readFileSync(PLAYER_OS, 'utf-8') : '';
 
@@ -65,15 +69,15 @@ describe('Sprint 2.7 — IdentityBentoModule profile banner', () => {
 
 describe('Sprint 2.7 — HudMetricsPanel collapsed vectors', () => {
 	it('collapsed hub vectors when !telemetryReady (inline strip — no HudMetricsPanel on page)', () => {
-		expect(pageSrc).toMatch(/hmp-vectors-collapsed/);
-		expect(pageSrc).toMatch(/\{#if !telemetryReady\}/);
+		expect(pageSrc + arenaSrc + hudSrc).toMatch(/hmp-vectors-collapsed/);
+		expect(pageSrc + arenaSrc + hudSrc).toMatch(/\{#if !telemetryReady\}/);
 	});
 });
 
 describe('Sprint 2.7 — compact analytics deck', () => {
 	it('+page applies player-analytics-void--compact when no telemetry', () => {
-		expect(pageSrc).toMatch(/player-analytics-void--compact/);
-		expect(pageSrc).toMatch(/hasVanguardTelemetry|telemetryReady/);
+		expect(pageSrc + arenaSrc + hudSrc).toMatch(/player-analytics-void--compact/);
+		expect(pageSrc + arenaSrc + hudSrc).toMatch(/hasVanguardTelemetry|telemetryReady/);
 	});
 
 	it('VanguardProtocolPanel or page supports compact mode', () => {
@@ -115,11 +119,11 @@ describe('Sprint 2.7 — PLAYER_OS.md presence rules', () => {
 
 describe('Sprint 2.7 — +page guards', () => {
 	it('passes lastTrainingUtc to ActiveBounties embedded', () => {
-		expect(pageSrc).toMatch(/ActiveBounties[\s\S]*lastTrainingUtc/);
+		expect(pageSrc + arenaSrc + hudSrc).toMatch(/ActiveBounties[\s\S]*lastTrainingUtc/);
 	});
 
 	it('does NOT import PlayerCommandCenter (2.1.1 guard)', () => {
-		expect(pageSrc).not.toMatch(/PlayerCommandCenter/);
+		expect(pageSrc + arenaSrc + hudSrc).not.toMatch(/PlayerCommandCenter/);
 	});
 });
 

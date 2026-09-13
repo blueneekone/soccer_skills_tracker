@@ -12,6 +12,9 @@ const FUNCTIONS_RL_INDEX = join(ROOT, '..', 'functions-rl/index.js');
 const FUNCTIONS_INDEX = join(ROOT, '..', 'functions/index.js');
 const ADAPTIVE_HOMEWORK = join(ROOT, 'routes/(app)/player/dashboard/AdaptiveHomework.svelte');
 const DASHBOARD_PAGE = join(ROOT, 'routes/(app)/player/dashboard/+page.svelte');
+const ARENA = join(ROOT, 'routes/(app)/player/dashboard/PlayerArena.svelte');
+const HUD = join(ROOT, 'routes/(app)/player/dashboard/PlayerHUD.svelte');
+const ENGINE = join(ROOT, 'routes/(app)/player/dashboard/PlayerDashboardEngine.svelte.ts');
 const FUNCTIONAL_MVP = join(ROOT, '..', 'docs/vision/FUNCTIONAL_MVP.md');
 const COACH_MISSION_FLOW = join(ROOT, 'lib/player/workout/coachMissionFlow.ts');
 const RL_POLICY_CACHE = join(ROOT, 'lib/player/workout/rlPolicyCache.ts');
@@ -181,7 +184,7 @@ describe('Sprint RL-transition-guards — transition pipeline wiring', () => {
 describe('Sprint RL-audit — HQ visibility', () => {
 	it('player dashboard mounts AdaptiveHomework for RL policy path', () => {
 		expect(existsSync(DASHBOARD_PAGE)).toBe(true);
-		const page = readFileSync(DASHBOARD_PAGE, 'utf-8');
+		const page = (existsSync(DASHBOARD_PAGE) ? readFileSync(DASHBOARD_PAGE, 'utf-8') : '') + (existsSync(ARENA) ? readFileSync(ARENA, 'utf-8') : '') + (existsSync(HUD) ? readFileSync(HUD, 'utf-8') : '') + (existsSync(ENGINE) ? readFileSync(ENGINE, 'utf-8') : '');
 		expect(page).toMatch(/import AdaptiveHomework from '\.\/AdaptiveHomework\.svelte'/);
 		expect(page).toMatch(/<AdaptiveHomework\s*\/>/);
 		expect(readFileSync(ADAPTIVE_HOMEWORK, 'utf-8')).toMatch(/aria-label="Adaptive homework"/);

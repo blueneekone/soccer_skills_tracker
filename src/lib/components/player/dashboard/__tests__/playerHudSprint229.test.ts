@@ -9,16 +9,20 @@ import { join } from 'node:path';
 const ROOT = join(__dirname, '..', '..', '..', '..', '..');
 const HUD_CSS = join(ROOT, 'lib/styles/player-dashboard-hud.css');
 const PAGE = join(ROOT, 'routes/(app)/player/dashboard/+page.svelte');
+const ARENA = join(ROOT, 'routes/(app)/player/dashboard/PlayerArena.svelte');
+const HUD = join(ROOT, 'routes/(app)/player/dashboard/PlayerHUD.svelte');
 const ROADMAP = join(ROOT, '..', 'ROADMAP.md');
 
 const hudCssSrc = existsSync(HUD_CSS) ? readFileSync(HUD_CSS, 'utf-8') : '';
 const pageSrc = existsSync(PAGE) ? readFileSync(PAGE, 'utf-8') : '';
+const arenaSrc = existsSync(ARENA) ? readFileSync(ARENA, 'utf-8') : '';
+const hudSrc = existsSync(HUD) ? readFileSync(HUD, 'utf-8') : '';
 const roadmapSrc = existsSync(ROADMAP) ? readFileSync(ROADMAP, 'utf-8') : '';
 
 describe('Sprint 2.22 slice 6c — analytics void island', () => {
 	it('+page.svelte uses player-analytics-void on analytics section', () => {
-		expect(pageSrc).toMatch(/player-analytics-void/);
-		expect(pageSrc).toMatch(/data-region="player-analytics-void"/);
+		expect(pageSrc + arenaSrc + hudSrc).toMatch(/player-analytics-void/);
+		expect(pageSrc + arenaSrc + hudSrc).toMatch(/data-region="player-analytics-void"/);
 	});
 
 	it('analytics section does not combine bento-card + pd-surface-premium on same element', () => {
@@ -31,7 +35,7 @@ describe('Sprint 2.22 slice 6c — analytics void island', () => {
 	it('player-dashboard-hud.css contains Sprint 2.22 slice 6c block with pd-os-deck recessed analytics', () => {
 		expect(hudCssSrc).toMatch(/Sprint 2\.22 slice 6c — analytics layout inside pd-os-deck--recessed/);
 		expect(hudCssSrc).toMatch(/\.player-analytics-void\.pd-os-deck--recessed/);
-		expect(pageSrc).toMatch(/player-analytics-void pd-os-deck pd-os-deck--recessed/);
+		expect(pageSrc + arenaSrc + hudSrc).toMatch(/player-analytics-void pd-os-deck pd-os-deck--recessed/);
 	});
 
 	it('.vpp-chart--premium still references --pd-z1-well-bg', () => {
@@ -40,7 +44,7 @@ describe('Sprint 2.22 slice 6c — analytics void island', () => {
 
 	it('.player-capsules-strip--void present in CSS and +page', () => {
 		expect(hudCssSrc).toMatch(/\.player-capsules-strip--void/);
-		expect(pageSrc).toMatch(/player-capsules-strip--void/);
+		expect(pageSrc + arenaSrc + hudSrc).toMatch(/player-capsules-strip--void/);
 	});
 
 	it('void context demotes vpp-head--premium matte frame', () => {

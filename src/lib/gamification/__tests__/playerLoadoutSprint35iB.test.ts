@@ -23,6 +23,9 @@ const STUDIO = join(ROOT, 'lib/components/player/OperativeLoadoutStudio.svelte')
 const PICKER = join(ROOT, 'lib/components/player/OperativePortraitPartPicker.svelte');
 const REPAIR = join(ROOT, 'lib/avatars/portraitReadRepair.ts');
 const DASHBOARD = join(ROOT, 'routes/(app)/player/dashboard/+page.svelte');
+const ARENA = join(ROOT, 'routes/(app)/player/dashboard/PlayerArena.svelte');
+const HUD = join(ROOT, 'routes/(app)/player/dashboard/PlayerHUD.svelte');
+const ENGINE = join(ROOT, 'routes/(app)/player/dashboard/PlayerDashboardEngine.svelte.ts');
 const ARMORY = join(ROOT, 'routes/(app)/player/armory/+page.svelte');
 
 describe('Sprint 3.5i-b — resolveBodyScaleFromAgeBand', () => {
@@ -115,7 +118,7 @@ describe('Sprint 3.5i-b — wiring guards', () => {
 	});
 
 	it('dashboard + armory pass ageBand into readRepairOperativeAvatar', () => {
-		const dashboardSrc = readFileSync(DASHBOARD, 'utf-8');
+		const dashboardSrc = (existsSync(DASHBOARD) ? readFileSync(DASHBOARD, 'utf-8') : '') + (existsSync(ARENA) ? readFileSync(ARENA, 'utf-8') : '') + (existsSync(HUD) ? readFileSync(HUD, 'utf-8') : '') + (existsSync(ENGINE) ? readFileSync(ENGINE, 'utf-8') : '');
 		const armorySrc = readFileSync(ARMORY, 'utf-8');
 		expect(dashboardSrc).toMatch(/readRepairOperativeAvatar\([\s\S]*ageBand/);
 		expect(armorySrc).toMatch(/readRepairOperativeAvatar\([\s\S]*ageBand/);

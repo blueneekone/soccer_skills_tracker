@@ -17,6 +17,8 @@ const ROOT = join(__dirname, '..', '..', '..', '..', '..');
 const HUD_CSS = join(ROOT, 'lib/styles/player-dashboard-hud.css');
 const VPP = join(ROOT, 'lib/components/player/dashboard/VanguardProtocolPanel.svelte');
 const PAGE = join(ROOT, 'routes/(app)/player/dashboard/+page.svelte');
+const ARENA = join(ROOT, 'routes/(app)/player/dashboard/PlayerArena.svelte');
+const HUD = join(ROOT, 'routes/(app)/player/dashboard/PlayerHUD.svelte');
 const ROADMAP = join(ROOT, '..', 'ROADMAP.md');
 const SPRINT254 = join(__dirname, 'playerHudSprint254.test.ts');
 const SPRINT253 = join(__dirname, 'playerHudSprint253.test.ts');
@@ -25,6 +27,8 @@ const SPRINT249 = join(__dirname, 'playerHudSprint249.test.ts');
 const hudCss = existsSync(HUD_CSS) ? readFileSync(HUD_CSS, 'utf-8') : '';
 const vppSrc = existsSync(VPP) ? readFileSync(VPP, 'utf-8') : '';
 const pageSrc = existsSync(PAGE) ? readFileSync(PAGE, 'utf-8') : '';
+const arenaSrc = existsSync(ARENA) ? readFileSync(ARENA, 'utf-8') : '';
+const hudSrc = existsSync(HUD) ? readFileSync(HUD, 'utf-8') : '';
 const roadmapSrc = existsSync(ROADMAP) ? readFileSync(ROADMAP, 'utf-8') : '';
 const sprint254Src = existsSync(SPRINT254) ? readFileSync(SPRINT254, 'utf-8') : '';
 const sprint253Src = existsSync(SPRINT253) ? readFileSync(SPRINT253, 'utf-8') : '';
@@ -98,9 +102,9 @@ describe('Phase 7 · G6″ — VPP flush below divider', () => {
 
 describe('Phase 7 · G6″ — page markup (G8: pd-hq-section-head before VPP in void)', () => {
 	it('single data-region="player-analytics-void"; no player-analytics-band; band head before VPP', () => {
-		expect(pageSrc).not.toMatch(/player-analytics-band/);
-		expect(pageSrc).not.toMatch(/data-region="player-analytics-band"/);
-		expect(pageSrc).toMatch(/data-region="player-analytics-void"/);
+		expect(pageSrc + arenaSrc + hudSrc).not.toMatch(/player-analytics-band/);
+		expect(pageSrc + arenaSrc + hudSrc).not.toMatch(/data-region="player-analytics-band"/);
+		expect(pageSrc + arenaSrc + hudSrc).toMatch(/data-region="player-analytics-void"/);
 		expect(analyticsVoidBlock).toMatch(/pd-hq-section-head player-analytics-void__head/);
 		const headIdx = analyticsVoidBlock.indexOf('player-analytics-void__head');
 		const vppIdx = analyticsVoidBlock.indexOf('<VanguardProtocolPanel');
@@ -111,7 +115,7 @@ describe('Phase 7 · G6″ — page markup (G8: pd-hq-section-head before VPP in
 
 describe('Phase 7 · G6″ — VPP hideHeadTitle (G8: suppressed on HQ)', () => {
 	it('HQ page passes hideHeadTitle={true}; {#if !hideHeadTitle} guard in VPP', () => {
-		expect(pageSrc).toMatch(/hideHeadTitle=\{true\}/);
+		expect(pageSrc + arenaSrc + hudSrc).toMatch(/hideHeadTitle=\{true\}/);
 		expect(vppSrc).toMatch(/\{#if !hideHeadTitle\}/);
 		expect(vppSrc).not.toMatch(/showVppHead/);
 	});

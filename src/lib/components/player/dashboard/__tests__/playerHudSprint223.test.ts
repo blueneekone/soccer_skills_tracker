@@ -10,12 +10,16 @@ const ROOT = join(__dirname, '..', '..', '..', '..', '..');
 const PREVIEW = join(ROOT, 'lib/components/player/dashboard/OperativePathwayPreview.svelte');
 const PATHWAY = join(ROOT, 'lib/components/player/OperativePathway.svelte');
 const PAGE = join(ROOT, 'routes/(app)/player/dashboard/+page.svelte');
+const ARENA = join(ROOT, 'routes/(app)/player/dashboard/PlayerArena.svelte');
+const HUD = join(ROOT, 'routes/(app)/player/dashboard/PlayerHUD.svelte');
 const ARMORY = join(ROOT, 'routes/(app)/player/armory/+page.svelte');
 const HUD_CSS = join(ROOT, 'lib/styles/player-dashboard-hud.css');
 
 const previewSrc = existsSync(PREVIEW) ? readFileSync(PREVIEW, 'utf-8') : '';
 const pathwaySrc = existsSync(PATHWAY) ? readFileSync(PATHWAY, 'utf-8') : '';
 const pageSrc = existsSync(PAGE) ? readFileSync(PAGE, 'utf-8') : '';
+const arenaSrc = existsSync(ARENA) ? readFileSync(ARENA, 'utf-8') : '';
+const hudSrc = existsSync(HUD) ? readFileSync(HUD, 'utf-8') : '';
 const armorySrc = existsSync(ARMORY) ? readFileSync(ARMORY, 'utf-8') : '';
 const hudCssSrc = existsSync(HUD_CSS) ? readFileSync(HUD_CSS, 'utf-8') : '';
 
@@ -35,10 +39,10 @@ describe('Sprint 2.22 slice 4 — HQ pathway preview', () => {
 	});
 
 	it('+page.svelte imports OperativePathwayPreview and passes level={osLevel}', () => {
-		expect(pageSrc).toMatch(
+		expect(pageSrc + arenaSrc + hudSrc).toMatch(
 			/import OperativePathwayPreview from '\$lib\/components\/player\/dashboard\/OperativePathwayPreview\.svelte'/,
 		);
-		expect(pageSrc).toMatch(/<OperativePathwayPreview[^>]*level=\{osLevel\}/);
+		expect(pageSrc + arenaSrc + hudSrc).toMatch(/<OperativePathwayPreview[^>]*level=\{osLevel\}/);
 	});
 
 	it('+page.svelte order: OperativePathwayPreview AFTER OperativeQuickOps and BEFORE analytics void', () => {

@@ -21,6 +21,8 @@ const HUB = join(ROOT, 'lib/components/player/dashboard/OperativeHub.svelte');
 const QUICK_OPS = join(ROOT, 'lib/components/player/dashboard/OperativeQuickOps.svelte');
 const PATHWAY = join(ROOT, 'lib/components/player/dashboard/OperativePathwayPreview.svelte');
 const PAGE = join(ROOT, 'routes/(app)/player/dashboard/+page.svelte');
+const ARENA = join(ROOT, 'routes/(app)/player/dashboard/PlayerArena.svelte');
+const HUD = join(ROOT, 'routes/(app)/player/dashboard/PlayerHUD.svelte');
 const ROADMAP = join(ROOT, '..', 'ROADMAP.md');
 const SPRINT253 = join(__dirname, 'playerHudSprint253.test.ts');
 const SPRINT249 = join(__dirname, 'playerHudSprint249.test.ts');
@@ -33,6 +35,8 @@ const hubSrc = existsSync(HUB) ? readFileSync(HUB, 'utf-8') : '';
 const quickOpsSrc = existsSync(QUICK_OPS) ? readFileSync(QUICK_OPS, 'utf-8') : '';
 const pathwaySrc = existsSync(PATHWAY) ? readFileSync(PATHWAY, 'utf-8') : '';
 const pageSrc = existsSync(PAGE) ? readFileSync(PAGE, 'utf-8') : '';
+const arenaSrc = existsSync(ARENA) ? readFileSync(ARENA, 'utf-8') : '';
+const hudSrc = existsSync(HUD) ? readFileSync(HUD, 'utf-8') : '';
 const roadmapSrc = existsSync(ROADMAP) ? readFileSync(ROADMAP, 'utf-8') : '';
 const sprint253Src = existsSync(SPRINT253) ? readFileSync(SPRINT253, 'utf-8') : '';
 const sprint249Src = existsSync(SPRINT249) ? readFileSync(SPRINT249, 'utf-8') : '';
@@ -55,10 +59,10 @@ describe('Phase 7 · G6′ — HQ telemetry band structure documented in CSS', (
 
 describe('Phase 7 · G6′ — collapsed single void deck (G8: pd-hq-section-head band banner restored)', () => {
 	it('dashboard +page: no player-analytics-band wrapper; single recessed void section', () => {
-		expect(pageSrc).not.toMatch(/player-analytics-band/);
-		expect(pageSrc).not.toMatch(/data-region="player-analytics-band"/);
-		expect(pageSrc).toMatch(/data-region="player-analytics-void"/);
-		expect(pageSrc).toMatch(/player-analytics-void pd-os-deck pd-os-deck--recessed/);
+		expect(pageSrc + arenaSrc + hudSrc).not.toMatch(/player-analytics-band/);
+		expect(pageSrc + arenaSrc + hudSrc).not.toMatch(/data-region="player-analytics-band"/);
+		expect(pageSrc + arenaSrc + hudSrc).toMatch(/data-region="player-analytics-void"/);
+		expect(pageSrc + arenaSrc + hudSrc).toMatch(/player-analytics-void pd-os-deck pd-os-deck--recessed/);
 	});
 
 	it('HQ void uses external pd-hq-section-head before VanguardProtocolPanel', () => {
@@ -72,7 +76,7 @@ describe('Phase 7 · G6′ — collapsed single void deck (G8: pd-hq-section-hea
 	});
 
 	it('HQ page passes hideHeadTitle={true} (G8 banner parity)', () => {
-		expect(pageSrc).toMatch(/hideHeadTitle=\{true\}/);
+		expect(pageSrc + arenaSrc + hudSrc).toMatch(/hideHeadTitle=\{true\}/);
 	});
 });
 

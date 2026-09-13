@@ -14,6 +14,8 @@ const VPP = join(ROOT, 'lib/components/player/dashboard/VanguardProtocolPanel.sv
 const BOUNTIES = join(ROOT, 'lib/components/hud/ActiveBounties.svelte');
 const ACTIVE_BOUNTIES_TS = join(ROOT, 'lib/player/dashboard/activeBounties.ts');
 const PAGE = join(ROOT, 'routes/(app)/player/dashboard/+page.svelte');
+const ARENA = join(ROOT, 'routes/(app)/player/dashboard/PlayerArena.svelte');
+const HUD = join(ROOT, 'routes/(app)/player/dashboard/PlayerHUD.svelte');
 const ROADMAP = join(ROOT, '..', 'ROADMAP.md');
 
 const dossierCssSrc = existsSync(DOSSIER_CSS) ? readFileSync(DOSSIER_CSS, 'utf-8') : '';
@@ -25,6 +27,8 @@ const activeBountiesTsSrc = existsSync(ACTIVE_BOUNTIES_TS)
 	? readFileSync(ACTIVE_BOUNTIES_TS, 'utf-8')
 	: '';
 const pageSrc = existsSync(PAGE) ? readFileSync(PAGE, 'utf-8') : '';
+const arenaSrc = existsSync(ARENA) ? readFileSync(ARENA, 'utf-8') : '';
+const hudSrc = existsSync(HUD) ? readFileSync(HUD, 'utf-8') : '';
 const roadmapSrc = existsSync(ROADMAP) ? readFileSync(ROADMAP, 'utf-8') : '';
 
 describe('Sprint 2.12.1 — IBM premium + inset coexist', () => {
@@ -51,7 +55,7 @@ describe('Sprint 2.12.1 — IBM premium + inset coexist', () => {
 
 describe('Sprint 2.12.1 — analytics deck premium parity', () => {
 	it('analytics region uses void island (no matte bento-card slab on +page)', () => {
-		expect(pageSrc).toMatch(/player-analytics-void/);
+		expect(pageSrc + arenaSrc + hudSrc).toMatch(/player-analytics-void/);
 		const voidSection = pageSrc.match(/<section[\s\S]*?player-analytics-void[\s\S]*?>/);
 		expect(voidSection?.[0]).toBeTruthy();
 		expect(voidSection![0]).not.toMatch(/bento-card/);

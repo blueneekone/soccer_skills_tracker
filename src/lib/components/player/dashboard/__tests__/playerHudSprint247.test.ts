@@ -23,6 +23,8 @@ const BOUNTIES = join(ROOT, 'lib/components/hud/ActiveBounties.svelte');
 const QUICK_OPS = join(ROOT, 'lib/components/player/dashboard/OperativeQuickOps.svelte');
 const PATHWAY = join(ROOT, 'lib/components/player/dashboard/OperativePathwayPreview.svelte');
 const PAGE = join(ROOT, 'routes/(app)/player/dashboard/+page.svelte');
+const ARENA = join(ROOT, 'routes/(app)/player/dashboard/PlayerArena.svelte');
+const HUD = join(ROOT, 'routes/(app)/player/dashboard/PlayerHUD.svelte');
 const ROADMAP = join(ROOT, '..', 'ROADMAP.md');
 const SPRINT241 = join(__dirname, 'playerHudSprint241.test.ts');
 const SPRINT242 = join(__dirname, 'playerHudSprint242.test.ts');
@@ -37,6 +39,8 @@ const bountiesSrc = existsSync(BOUNTIES) ? readFileSync(BOUNTIES, 'utf-8') : '';
 const quickOpsSrc = existsSync(QUICK_OPS) ? readFileSync(QUICK_OPS, 'utf-8') : '';
 const pathwaySrc = existsSync(PATHWAY) ? readFileSync(PATHWAY, 'utf-8') : '';
 const pageSrc = existsSync(PAGE) ? readFileSync(PAGE, 'utf-8') : '';
+const arenaSrc = existsSync(ARENA) ? readFileSync(ARENA, 'utf-8') : '';
+const hudSrc = existsSync(HUD) ? readFileSync(HUD, 'utf-8') : '';
 const roadmapSrc = existsSync(ROADMAP) ? readFileSync(ROADMAP, 'utf-8') : '';
 const sprint241Src = existsSync(SPRINT241) ? readFileSync(SPRINT241, 'utf-8') : '';
 const sprint242Src = existsSync(SPRINT242) ? readFileSync(SPRINT242, 'utf-8') : '';
@@ -91,7 +95,7 @@ describe('Phase 7 · G1 — HQ bands reference shared frame', () => {
 	});
 
 	it('analytics void retains pd-os-deck--recessed with G1 rim family', () => {
-		expect(pageSrc).toMatch(/player-analytics-void pd-os-deck pd-os-deck--recessed/);
+		expect(pageSrc + arenaSrc + hudSrc).toMatch(/player-analytics-void pd-os-deck pd-os-deck--recessed/);
 		expect(hudCss).toMatch(
 			/\.player-analytics-void\.pd-os-deck--recessed[\s\S]*?var\(--pd-hq-deck-rim\)/,
 		);
@@ -143,7 +147,7 @@ describe('Phase 7 · G1 — anti-patterns + prior sprint hooks', () => {
 	});
 
 	it('HQ dashboard route files omit pg-bracket / pg-scanline / pg-terminal-chrome', () => {
-		expect(pageSrc).not.toMatch(/pg-bracket|pg-scanline|pg-terminal-chrome/);
+		expect(pageSrc + arenaSrc + hudSrc).not.toMatch(/pg-bracket|pg-scanline|pg-terminal-chrome/);
 		expect(hubSrc).not.toMatch(/pg-bracket|pg-scanline|pg-terminal-chrome/);
 		expect(quickOpsSrc).not.toMatch(/pg-bracket|pg-scanline|pg-terminal-chrome/);
 		expect(pathwaySrc).not.toMatch(/pg-bracket|pg-scanline|pg-terminal-chrome/);

@@ -23,6 +23,8 @@ const BOUNTIES = join(ROOT, 'lib/components/hud/ActiveBounties.svelte');
 const QUICK_OPS = join(ROOT, 'lib/components/player/dashboard/OperativeQuickOps.svelte');
 const PATHWAY = join(ROOT, 'lib/components/player/dashboard/OperativePathwayPreview.svelte');
 const PAGE = join(ROOT, 'routes/(app)/player/dashboard/+page.svelte');
+const ARENA = join(ROOT, 'routes/(app)/player/dashboard/PlayerArena.svelte');
+const HUD = join(ROOT, 'routes/(app)/player/dashboard/PlayerHUD.svelte');
 const ROADMAP = join(ROOT, '..', 'ROADMAP.md');
 const GAP_MATRIX = join(ROOT, '..', 'docs/vision/PLAYER_OS_RUBRIC_GAP_MATRIX.md');
 
@@ -35,6 +37,8 @@ const bountiesSrc = existsSync(BOUNTIES) ? readFileSync(BOUNTIES, 'utf-8') : '';
 const quickOpsSrc = existsSync(QUICK_OPS) ? readFileSync(QUICK_OPS, 'utf-8') : '';
 const pathwaySrc = existsSync(PATHWAY) ? readFileSync(PATHWAY, 'utf-8') : '';
 const pageSrc = existsSync(PAGE) ? readFileSync(PAGE, 'utf-8') : '';
+const arenaSrc = existsSync(ARENA) ? readFileSync(ARENA, 'utf-8') : '';
+const hudSrc = existsSync(HUD) ? readFileSync(HUD, 'utf-8') : '';
 const roadmapSrc = existsSync(ROADMAP) ? readFileSync(ROADMAP, 'utf-8') : '';
 const gapMatrixSrc = existsSync(GAP_MATRIX) ? readFileSync(GAP_MATRIX, 'utf-8') : '';
 
@@ -107,7 +111,7 @@ describe('Wave B — identity void + single gold focal', () => {
 
 describe('Wave B — analytics void + Quick Ops pathway kit', () => {
 	it('HQ analytics section uses pd-os-deck--recessed void island', () => {
-		expect(pageSrc).toMatch(/player-analytics-void pd-os-deck pd-os-deck--recessed/);
+		expect(pageSrc + arenaSrc + hudSrc).toMatch(/player-analytics-void pd-os-deck pd-os-deck--recessed/);
 		expect(hudCss).toMatch(/\.player-analytics-void\.pd-os-deck--recessed/);
 	});
 
@@ -136,7 +140,7 @@ describe('Wave B — analytics void + Quick Ops pathway kit', () => {
 
 describe('Wave B — HQ anti-patterns + strap grammar', () => {
 	it('dashboard route files omit pg-terminal-chrome / pg-scanline', () => {
-		expect(pageSrc).not.toMatch(/pg-terminal-chrome|pg-scanline|pg-bracket/);
+		expect(pageSrc + arenaSrc + hudSrc).not.toMatch(/pg-terminal-chrome|pg-scanline|pg-bracket/);
 		expect(hubSrc).not.toMatch(/pg-terminal-chrome|pg-scanline|pg-bracket/);
 		expect(quickOpsSrc).not.toMatch(/pg-terminal-chrome|pg-scanline|pg-bracket/);
 		expect(pathwaySrc).not.toMatch(/pg-terminal-chrome|pg-scanline|pg-bracket/);
@@ -148,8 +152,8 @@ describe('Wave B — HQ anti-patterns + strap grammar', () => {
 	});
 
 	it('HQ page uses canonical pd-strap (not qa-strap)', () => {
-		expect(pageSrc).toMatch(/class="pd-strap/);
-		expect(pageSrc).not.toMatch(/qa-strap/);
+		expect(pageSrc + arenaSrc + hudSrc).toMatch(/class="pd-strap/);
+		expect(pageSrc + arenaSrc + hudSrc).not.toMatch(/qa-strap/);
 	});
 });
 

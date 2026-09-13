@@ -24,6 +24,8 @@ const HUB = join(ROOT, 'lib/components/player/dashboard/OperativeHub.svelte');
 const QUICK_OPS = join(ROOT, 'lib/components/player/dashboard/OperativeQuickOps.svelte');
 const PATHWAY = join(ROOT, 'lib/components/player/dashboard/OperativePathwayPreview.svelte');
 const PAGE = join(ROOT, 'routes/(app)/player/dashboard/+page.svelte');
+const ARENA = join(ROOT, 'routes/(app)/player/dashboard/PlayerArena.svelte');
+const HUD = join(ROOT, 'routes/(app)/player/dashboard/PlayerHUD.svelte');
 const WORKOUT = join(ROOT, 'routes/(app)/player/workout/+page.svelte');
 const STATS = join(ROOT, 'routes/(app)/stats/+page.svelte');
 const ARMORY = join(ROOT, 'routes/(app)/player/armory/+page.svelte');
@@ -46,6 +48,8 @@ const hubSrc = existsSync(HUB) ? readFileSync(HUB, 'utf-8') : '';
 const quickOpsSrc = existsSync(QUICK_OPS) ? readFileSync(QUICK_OPS, 'utf-8') : '';
 const pathwaySrc = existsSync(PATHWAY) ? readFileSync(PATHWAY, 'utf-8') : '';
 const pageSrc = existsSync(PAGE) ? readFileSync(PAGE, 'utf-8') : '';
+const arenaSrc = existsSync(ARENA) ? readFileSync(ARENA, 'utf-8') : '';
+const hudSrc = existsSync(HUD) ? readFileSync(HUD, 'utf-8') : '';
 const workoutSrc = existsSync(WORKOUT) ? readFileSync(WORKOUT, 'utf-8') : '';
 const statsSrc = existsSync(STATS) ? readFileSync(STATS, 'utf-8') : '';
 const armorySrc = existsSync(ARMORY) ? readFileSync(ARMORY, 'utf-8') : '';
@@ -139,8 +143,8 @@ describe.skip('G9 · VA manifest (MCP screenshots)', () => {
 
 describe.skip('COHESION — route straps + shared HQ header grammar', () => {
 	it('dashboard uses pd-strap (not qa-strap); sub-routes use PlayerOsPageStrap', () => {
-		expect(pageSrc).toMatch(/pd-strap/);
-		expect(pageSrc).not.toMatch(/\bqa-strap\b/);
+		expect(pageSrc + arenaSrc + hudSrc).toMatch(/pd-strap/);
+		expect(pageSrc + arenaSrc + hudSrc).not.toMatch(/\bqa-strap\b/);
 		for (const src of [workoutSrc, statsSrc, armorySrc, trackerSrc, settingsSrc]) {
 			expect(src).toMatch(/PlayerOsPageStrap/);
 		}

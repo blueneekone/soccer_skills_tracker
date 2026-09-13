@@ -10,6 +10,8 @@ const ROOT = join(__dirname, '..', '..', '..', '..', '..');
 const HUD_RING = join(ROOT, 'lib/components/player/HudAvatarRing.svelte');
 const HUD_HEADER = join(ROOT, 'lib/components/player/dashboard/PlayerHudHeader.svelte');
 const PAGE = join(ROOT, 'routes/(app)/player/dashboard/+page.svelte');
+const ARENA = join(ROOT, 'routes/(app)/player/dashboard/PlayerArena.svelte');
+const HUD = join(ROOT, 'routes/(app)/player/dashboard/PlayerHUD.svelte');
 const HUD_CSS = join(ROOT, 'lib/styles/player-dashboard-hud.css');
 
 const ringSrc = readFileSync(HUD_RING, 'utf-8');
@@ -43,16 +45,16 @@ describe('Sprint 1.4 — PlayerHudHeader & HudAvatarRing', () => {
 
 describe('Sprint 1.4 — Dashboard page & dead CSS', () => {
 	it('dashboard does not mount PlayerCommandCenter overlay (shell nav only)', () => {
-		expect(pageSrc).not.toMatch(/PlayerCommandCenter/);
-		expect(pageSrc).not.toMatch(/commandCenterOpen/);
+		expect(pageSrc + arenaSrc + hudSrc).not.toMatch(/PlayerCommandCenter/);
+		expect(pageSrc + arenaSrc + hudSrc).not.toMatch(/commandCenterOpen/);
 		expect(headerSrc).toMatch(/cmd-center-trigger/);
 		expect(headerSrc).toMatch(/onOpenCommandCenter/);
 	});
 
 	it('dashboard scoped styles omit legacy operative-casefile blocks', () => {
-		expect(pageSrc).not.toMatch(/\.operative-casefile/);
-		expect(pageSrc).not.toMatch(/\.lobby-glass/);
-		expect(pageSrc).not.toMatch(/\.combat-hud-shell/);
+		expect(pageSrc + arenaSrc + hudSrc).not.toMatch(/\.operative-casefile/);
+		expect(pageSrc + arenaSrc + hudSrc).not.toMatch(/\.lobby-glass/);
+		expect(pageSrc + arenaSrc + hudSrc).not.toMatch(/\.combat-hud-shell/);
 	});
 
 	it('player-dashboard-hud.css omits dead casefile/tile selectors', () => {

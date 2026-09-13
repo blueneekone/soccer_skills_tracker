@@ -87,7 +87,7 @@ describe('Sprint 2.15 — data-dopamine off disables motion', () => {
 	it('dashboard retains data-dopamine on player-hud-root', () => {
 		const page = join(ROOT, 'routes/(app)/player/dashboard/+page.svelte');
 		const pageSrc = readFileSync(page, 'utf-8');
-		expect(pageSrc).toMatch(/data-dopamine=\{vanguardFlags\.dopamineEnabled/);
+		expect(pageSrc + arenaSrc + hudSrc).toMatch(/data-dopamine=\{vanguardFlags\.dopamineEnabled/);
 	});
 
 	it('data-dopamine off selectors disable HQ and shell motion', () => {

@@ -13,6 +13,8 @@ const IBM = join(ROOT, 'lib/components/player/dashboard/IdentityBentoModule.svel
 const HUB = join(ROOT, 'lib/components/player/dashboard/OperativeHub.svelte');
 const BOUNTIES = join(ROOT, 'lib/components/hud/ActiveBounties.svelte');
 const PAGE = join(ROOT, 'routes/(app)/player/dashboard/+page.svelte');
+const ARENA = join(ROOT, 'routes/(app)/player/dashboard/PlayerArena.svelte');
+const HUD = join(ROOT, 'routes/(app)/player/dashboard/PlayerHUD.svelte');
 const HUD_CSS = join(ROOT, 'lib/styles/player-dashboard-hud.css');
 const PLAYER_OS = join(ROOT, '..', 'docs/vision/PLAYER_OS.md');
 
@@ -22,6 +24,8 @@ const ibmSrc = existsSync(IBM) ? readFileSync(IBM, 'utf-8') : '';
 const hubSrc = existsSync(HUB) ? readFileSync(HUB, 'utf-8') : '';
 const bountiesSrc = existsSync(BOUNTIES) ? readFileSync(BOUNTIES, 'utf-8') : '';
 const pageSrc = existsSync(PAGE) ? readFileSync(PAGE, 'utf-8') : '';
+const arenaSrc = existsSync(ARENA) ? readFileSync(ARENA, 'utf-8') : '';
+const hudSrc = existsSync(HUD) ? readFileSync(HUD, 'utf-8') : '';
 const hudCssSrc = existsSync(HUD_CSS) ? readFileSync(HUD_CSS, 'utf-8') : '';
 const playerOsSrc = existsSync(PLAYER_OS) ? readFileSync(PLAYER_OS, 'utf-8') : '';
 
@@ -95,7 +99,7 @@ describe('Sprint 2.3 — PLAYER_OS design system docs', () => {
 
 describe('Sprint 2.3 — Sprint 2.1.1 guard (no PlayerCommandCenter on page)', () => {
 	it('+page.svelte does NOT import PlayerCommandCenter', () => {
-		expect(pageSrc).not.toMatch(/PlayerCommandCenter/);
+		expect(pageSrc + arenaSrc + hudSrc).not.toMatch(/PlayerCommandCenter/);
 	});
 });
 

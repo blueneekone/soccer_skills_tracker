@@ -9,10 +9,14 @@ import { join } from 'node:path';
 const ROOT = join(__dirname, '..', '..', '..', '..', '..');
 const QUICK_OPS = join(ROOT, 'lib/components/player/dashboard/OperativeQuickOps.svelte');
 const PAGE = join(ROOT, 'routes/(app)/player/dashboard/+page.svelte');
+const ARENA = join(ROOT, 'routes/(app)/player/dashboard/PlayerArena.svelte');
+const HUD = join(ROOT, 'routes/(app)/player/dashboard/PlayerHUD.svelte');
 const HUD_CSS = join(ROOT, 'lib/styles/player-dashboard-hud.css');
 
 const quickOpsSrc = existsSync(QUICK_OPS) ? readFileSync(QUICK_OPS, 'utf-8') : '';
 const pageSrc = existsSync(PAGE) ? readFileSync(PAGE, 'utf-8') : '';
+const arenaSrc = existsSync(ARENA) ? readFileSync(ARENA, 'utf-8') : '';
+const hudSrc = existsSync(HUD) ? readFileSync(HUD, 'utf-8') : '';
 const hudCssSrc = existsSync(HUD_CSS) ? readFileSync(HUD_CSS, 'utf-8') : '';
 
 describe('Sprint 2.22 slice 3 — HQ Quick Ops deck', () => {
@@ -21,7 +25,7 @@ describe('Sprint 2.22 slice 3 — HQ Quick Ops deck', () => {
 	});
 
 	it('+page.svelte imports OperativeQuickOps', () => {
-		expect(pageSrc).toMatch(/import OperativeQuickOps from '\$lib\/components\/player\/dashboard\/OperativeQuickOps\.svelte'/);
+		expect(pageSrc + arenaSrc + hudSrc).toMatch(/import OperativeQuickOps from '\$lib\/components\/player\/dashboard\/OperativeQuickOps\.svelte'/);
 	});
 
 	it('+page.svelte order: OperativeQuickOps after OperativeHub and before player-analytics-deck', () => {

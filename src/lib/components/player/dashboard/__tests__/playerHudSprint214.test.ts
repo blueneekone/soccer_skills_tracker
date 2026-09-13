@@ -15,6 +15,8 @@ const BOUNTIES = join(ROOT, 'lib/components/hud/ActiveBounties.svelte');
 const IBM = join(ROOT, 'lib/components/player/dashboard/IdentityBentoModule.svelte');
 const CAPSULE = join(ROOT, 'lib/components/player/trajectory/MemoryCapsuleArena.svelte');
 const PAGE = join(ROOT, 'routes/(app)/player/dashboard/+page.svelte');
+const ARENA = join(ROOT, 'routes/(app)/player/dashboard/PlayerArena.svelte');
+const HUD = join(ROOT, 'routes/(app)/player/dashboard/PlayerHUD.svelte');
 const ARMORY = join(ROOT, 'routes/(app)/player/armory/+page.svelte');
 const WORKOUT = join(ROOT, 'routes/(app)/player/workout/+page.svelte');
 const SKILL_TREE = join(ROOT, 'routes/(app)/player/skill-tree/+page.svelte');
@@ -29,6 +31,8 @@ const bountiesSrc = existsSync(BOUNTIES) ? readFileSync(BOUNTIES, 'utf-8') : '';
 const ibmSrc = existsSync(IBM) ? readFileSync(IBM, 'utf-8') : '';
 const capsuleSrc = existsSync(CAPSULE) ? readFileSync(CAPSULE, 'utf-8') : '';
 const pageSrc = existsSync(PAGE) ? readFileSync(PAGE, 'utf-8') : '';
+const arenaSrc = existsSync(ARENA) ? readFileSync(ARENA, 'utf-8') : '';
+const hudSrc = existsSync(HUD) ? readFileSync(HUD, 'utf-8') : '';
 const armorySrc = existsSync(ARMORY) ? readFileSync(ARMORY, 'utf-8') : '';
 const workoutSrc = existsSync(WORKOUT) ? readFileSync(WORKOUT, 'utf-8') : '';
 const skillTreeSrc = existsSync(SKILL_TREE) ? readFileSync(SKILL_TREE, 'utf-8') : '';
@@ -51,8 +55,8 @@ describe.skip('Sprint 2.14 — VPP premium CSS + empty state', () => {
 
 	it('player-analytics-void nests capsules strip in void band', () => {
 		expect(hudCssSrc).toMatch(/\.player-capsules-strip--void|\.player-capsules-strip--premium/);
-		expect(pageSrc).toMatch(/player-capsules-strip--void|player-capsules-strip--premium/);
-		expect(pageSrc).toMatch(/pd-empty-state/);
+		expect(pageSrc + arenaSrc + hudSrc).toMatch(/player-capsules-strip--void|player-capsules-strip--premium/);
+		expect(pageSrc + arenaSrc + hudSrc).toMatch(/pd-empty-state/);
 	});
 });
 

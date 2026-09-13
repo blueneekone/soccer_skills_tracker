@@ -11,12 +11,16 @@ const CHIP = join(ROOT, 'lib/components/player/dashboard/HudMetricChip.svelte');
 const IBM = join(ROOT, 'lib/components/player/dashboard/IdentityBentoModule.svelte');
 const RING = join(ROOT, 'lib/components/hud/HudSeededRingCanvas.svelte');
 const PAGE = join(ROOT, 'routes/(app)/player/dashboard/+page.svelte');
+const ARENA = join(ROOT, 'routes/(app)/player/dashboard/PlayerArena.svelte');
+const HUD = join(ROOT, 'routes/(app)/player/dashboard/PlayerHUD.svelte');
 const HUD_CSS = join(ROOT, 'lib/styles/player-dashboard-hud.css');
 
 const chipSrc = existsSync(CHIP) ? readFileSync(CHIP, 'utf-8') : '';
 const ibmSrc = existsSync(IBM) ? readFileSync(IBM, 'utf-8') : '';
 const ringSrc = existsSync(RING) ? readFileSync(RING, 'utf-8') : '';
 const pageSrc = existsSync(PAGE) ? readFileSync(PAGE, 'utf-8') : '';
+const arenaSrc = existsSync(ARENA) ? readFileSync(ARENA, 'utf-8') : '';
+const hudSrc = existsSync(HUD) ? readFileSync(HUD, 'utf-8') : '';
 const hudCssSrc = existsSync(HUD_CSS) ? readFileSync(HUD_CSS, 'utf-8') : '';
 
 describe('Sprint 2.1 — HudMetricChip component', () => {
@@ -88,9 +92,9 @@ describe('Sprint 2.1 — player-dashboard-hud.css palette', () => {
 
 describe('Sprint 2.1 — capsule section header mono pass', () => {
 	it('capsule section uses pd-hq-section-head typography (supersedes lobby-eyebrow tw-font-mono)', () => {
-		expect(pageSrc).toMatch(/player-capsules-strip__head/);
-		expect(pageSrc).toMatch(/pd-hq-section-head__title|pd-label/);
-		expect(pageSrc).toMatch(/id="lobby-capsules-h"|lobby-capsules-h/);
+		expect(pageSrc + arenaSrc + hudSrc).toMatch(/player-capsules-strip__head/);
+		expect(pageSrc + arenaSrc + hudSrc).toMatch(/pd-hq-section-head__title|pd-label/);
+		expect(pageSrc + arenaSrc + hudSrc).toMatch(/id="lobby-capsules-h"|lobby-capsules-h/);
 	});
 });
 

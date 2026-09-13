@@ -11,6 +11,8 @@ const METRICS = join(ROOT, 'lib/player/dashboard/playerHudMetrics.ts');
 const IDENTITY = join(ROOT, 'lib/components/player/dashboard/IdentityBentoModule.svelte');
 const BOUNTIES = join(ROOT, 'lib/components/hud/ActiveBounties.svelte');
 const PAGE = join(ROOT, 'routes/(app)/player/dashboard/+page.svelte');
+const ARENA = join(ROOT, 'routes/(app)/player/dashboard/PlayerArena.svelte');
+const HUD = join(ROOT, 'routes/(app)/player/dashboard/PlayerHUD.svelte');
 const HUD_CSS = join(ROOT, 'lib/styles/player-dashboard-hud.css');
 const PLAYER_OS = join(ROOT, '..', 'docs/vision/PLAYER_OS.md');
 
@@ -18,6 +20,8 @@ const metricsSrc = existsSync(METRICS) ? readFileSync(METRICS, 'utf-8') : '';
 const identitySrc = existsSync(IDENTITY) ? readFileSync(IDENTITY, 'utf-8') : '';
 const bountiesSrc = existsSync(BOUNTIES) ? readFileSync(BOUNTIES, 'utf-8') : '';
 const pageSrc = existsSync(PAGE) ? readFileSync(PAGE, 'utf-8') : '';
+const arenaSrc = existsSync(ARENA) ? readFileSync(ARENA, 'utf-8') : '';
+const hudSrc = existsSync(HUD) ? readFileSync(HUD, 'utf-8') : '';
 const hudCssSrc = existsSync(HUD_CSS) ? readFileSync(HUD_CSS, 'utf-8') : '';
 const playerOsSrc = existsSync(PLAYER_OS) ? readFileSync(PLAYER_OS, 'utf-8') : '';
 
@@ -61,15 +65,15 @@ describe('Sprint 2.6 — ActiveBounties embedded hero mission', () => {
 
 describe('Sprint 2.6 — +page.svelte wiring', () => {
 	it('passes lastTrainingUtc and rank progress fields to IdentityBentoModule', () => {
-		expect(pageSrc).toMatch(/lastTrainingUtc/);
-		expect(pageSrc).toMatch(/last_training_utc/);
-		expect(pageSrc).toMatch(/rankProgressPercent|progressPercent/);
-		expect(pageSrc).toMatch(/atMaxRank/);
-		expect(pageSrc).toMatch(/nextRank/);
+		expect(pageSrc + arenaSrc + hudSrc).toMatch(/lastTrainingUtc/);
+		expect(pageSrc + arenaSrc + hudSrc).toMatch(/last_training_utc/);
+		expect(pageSrc + arenaSrc + hudSrc).toMatch(/rankProgressPercent|progressPercent/);
+		expect(pageSrc + arenaSrc + hudSrc).toMatch(/atMaxRank/);
+		expect(pageSrc + arenaSrc + hudSrc).toMatch(/nextRank/);
 	});
 
 	it('does NOT import PlayerCommandCenter (2.1.1 guard)', () => {
-		expect(pageSrc).not.toMatch(/PlayerCommandCenter/);
+		expect(pageSrc + arenaSrc + hudSrc).not.toMatch(/PlayerCommandCenter/);
 	});
 });
 

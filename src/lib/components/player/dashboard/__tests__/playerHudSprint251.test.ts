@@ -23,6 +23,8 @@ const HUB = join(ROOT, 'lib/components/player/dashboard/OperativeHub.svelte');
 const QUICK_OPS = join(ROOT, 'lib/components/player/dashboard/OperativeQuickOps.svelte');
 const PATHWAY = join(ROOT, 'lib/components/player/dashboard/OperativePathwayPreview.svelte');
 const PAGE = join(ROOT, 'routes/(app)/player/dashboard/+page.svelte');
+const ARENA = join(ROOT, 'routes/(app)/player/dashboard/PlayerArena.svelte');
+const HUD = join(ROOT, 'routes/(app)/player/dashboard/PlayerHUD.svelte');
 const ROADMAP = join(ROOT, '..', 'ROADMAP.md');
 const SPRINT243 = join(__dirname, 'playerHudSprint243.test.ts');
 const SPRINT247 = join(__dirname, 'playerHudSprint247.test.ts');
@@ -39,6 +41,8 @@ const hubSrc = existsSync(HUB) ? readFileSync(HUB, 'utf-8') : '';
 const quickOpsSrc = existsSync(QUICK_OPS) ? readFileSync(QUICK_OPS, 'utf-8') : '';
 const pathwaySrc = existsSync(PATHWAY) ? readFileSync(PATHWAY, 'utf-8') : '';
 const pageSrc = existsSync(PAGE) ? readFileSync(PAGE, 'utf-8') : '';
+const arenaSrc = existsSync(ARENA) ? readFileSync(ARENA, 'utf-8') : '';
+const hudSrc = existsSync(HUD) ? readFileSync(HUD, 'utf-8') : '';
 const roadmapSrc = existsSync(ROADMAP) ? readFileSync(ROADMAP, 'utf-8') : '';
 const sprint243Src = existsSync(SPRINT243) ? readFileSync(SPRINT243, 'utf-8') : '';
 const sprint247Src = existsSync(SPRINT247) ? readFileSync(SPRINT247, 'utf-8') : '';
@@ -178,7 +182,7 @@ describe('Phase 7 · G5 — anti-patterns + regression hooks', () => {
 	});
 
 	it('HQ / Quick Ops / Pathway still omit pg-bracket / pg-scanline (G4 guard)', () => {
-		expect(pageSrc).not.toMatch(/pg-bracket|pg-scanline|pg-terminal-chrome/);
+		expect(pageSrc + arenaSrc + hudSrc).not.toMatch(/pg-bracket|pg-scanline|pg-terminal-chrome/);
 		expect(hubSrc).not.toMatch(/pg-bracket|pg-scanline|pg-terminal-chrome/);
 		expect(quickOpsSrc).not.toMatch(/pg-bracket|pg-scanline|pg-terminal-chrome/);
 		expect(pathwaySrc).not.toMatch(/pg-bracket|pg-scanline|pg-terminal-chrome/);

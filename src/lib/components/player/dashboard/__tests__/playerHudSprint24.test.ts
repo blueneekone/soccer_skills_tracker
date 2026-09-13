@@ -11,6 +11,8 @@ const RADAR = join(ROOT, 'lib/components/player/dashboard/AttributeRadar.svelte'
 const VPP = join(ROOT, 'lib/components/player/dashboard/VanguardProtocolPanel.svelte');
 const HMP = join(ROOT, 'lib/components/player/dashboard/HudMetricsPanel.svelte');
 const PAGE = join(ROOT, 'routes/(app)/player/dashboard/+page.svelte');
+const ARENA = join(ROOT, 'routes/(app)/player/dashboard/PlayerArena.svelte');
+const HUD = join(ROOT, 'routes/(app)/player/dashboard/PlayerHUD.svelte');
 const HUD_CSS = join(ROOT, 'lib/styles/player-dashboard-hud.css');
 const PLAYER_OS = join(ROOT, '..', 'docs/vision/PLAYER_OS.md');
 
@@ -18,6 +20,8 @@ const radarSrc = existsSync(RADAR) ? readFileSync(RADAR, 'utf-8') : '';
 const vppSrc = existsSync(VPP) ? readFileSync(VPP, 'utf-8') : '';
 const hmpSrc = existsSync(HMP) ? readFileSync(HMP, 'utf-8') : '';
 const pageSrc = existsSync(PAGE) ? readFileSync(PAGE, 'utf-8') : '';
+const arenaSrc = existsSync(ARENA) ? readFileSync(ARENA, 'utf-8') : '';
+const hudSrc = existsSync(HUD) ? readFileSync(HUD, 'utf-8') : '';
 const hudCssSrc = existsSync(HUD_CSS) ? readFileSync(HUD_CSS, 'utf-8') : '';
 const playerOsSrc = existsSync(PLAYER_OS) ? readFileSync(PLAYER_OS, 'utf-8') : '';
 
@@ -78,8 +82,8 @@ describe('Sprint 2.4 — HudMetricsPanel embedded empty state', () => {
 
 describe('Sprint 2.4 — +page.svelte two-band analytics deck', () => {
 	it('has player-analytics-void wrapper combining VPP + capsules', () => {
-		expect(pageSrc).toMatch(/player-analytics-void/);
-		expect(pageSrc).toMatch(/<VanguardProtocolPanel[\s\S]*?player-capsules-strip|player-analytics-void[\s\S]*?<VanguardProtocolPanel/);
+		expect(pageSrc + arenaSrc + hudSrc).toMatch(/player-analytics-void/);
+		expect(pageSrc + arenaSrc + hudSrc).toMatch(/<VanguardProtocolPanel[\s\S]*?player-capsules-strip|player-analytics-void[\s\S]*?<VanguardProtocolPanel/);
 	});
 
 	it('does NOT have two separate top-level bento-card sections for telemetry AND capsules', () => {
@@ -94,7 +98,7 @@ describe('Sprint 2.4 — +page.svelte two-band analytics deck', () => {
 	});
 
 	it('does NOT import PlayerCommandCenter (2.1.1 guard)', () => {
-		expect(pageSrc).not.toMatch(/PlayerCommandCenter/);
+		expect(pageSrc + arenaSrc + hudSrc).not.toMatch(/PlayerCommandCenter/);
 	});
 });
 

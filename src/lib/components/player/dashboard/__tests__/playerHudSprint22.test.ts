@@ -11,12 +11,16 @@ const HAR = join(ROOT, 'lib/components/player/HudAvatarRing.svelte');
 const IBM = join(ROOT, 'lib/components/player/dashboard/IdentityBentoModule.svelte');
 const VPP = join(ROOT, 'lib/components/player/dashboard/VanguardProtocolPanel.svelte');
 const PAGE = join(ROOT, 'routes/(app)/player/dashboard/+page.svelte');
+const ARENA = join(ROOT, 'routes/(app)/player/dashboard/PlayerArena.svelte');
+const HUD = join(ROOT, 'routes/(app)/player/dashboard/PlayerHUD.svelte');
 const HUD_CSS = join(ROOT, 'lib/styles/player-dashboard-hud.css');
 
 const harSrc = existsSync(HAR) ? readFileSync(HAR, 'utf-8') : '';
 const ibmSrc = existsSync(IBM) ? readFileSync(IBM, 'utf-8') : '';
 const vppSrc = existsSync(VPP) ? readFileSync(VPP, 'utf-8') : '';
 const pageSrc = existsSync(PAGE) ? readFileSync(PAGE, 'utf-8') : '';
+const arenaSrc = existsSync(ARENA) ? readFileSync(ARENA, 'utf-8') : '';
+const hudSrc = existsSync(HUD) ? readFileSync(HUD, 'utf-8') : '';
 const hudCssSrc = existsSync(HUD_CSS) ? readFileSync(HUD_CSS, 'utf-8') : '';
 
 describe('Sprint 2.2 — gold-forward player HUD avatar', () => {
@@ -66,7 +70,7 @@ describe('Sprint 2.2 — subtle motion micro-interactions', () => {
 
 describe('Sprint 2.2 — Sprint 2.1.1 guard (no PlayerCommandCenter on page)', () => {
 	it('+page.svelte does NOT import PlayerCommandCenter', () => {
-		expect(pageSrc).not.toMatch(/PlayerCommandCenter/);
+		expect(pageSrc + arenaSrc + hudSrc).not.toMatch(/PlayerCommandCenter/);
 	});
 });
 

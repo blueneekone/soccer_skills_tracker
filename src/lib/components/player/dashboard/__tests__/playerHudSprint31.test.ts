@@ -9,11 +9,15 @@ import { join } from 'node:path';
 const ROOT = join(__dirname, '..', '..', '..', '..', '..');
 const HUD_CSS = join(ROOT, 'lib/styles/player-dashboard-hud.css');
 const PAGE = join(ROOT, 'routes/(app)/player/dashboard/+page.svelte');
+const ARENA = join(ROOT, 'routes/(app)/player/dashboard/PlayerArena.svelte');
+const HUD = join(ROOT, 'routes/(app)/player/dashboard/PlayerHUD.svelte');
 const IDENTITY = join(ROOT, 'lib/components/player/dashboard/IdentityBentoModule.svelte');
 const HUD_RING = join(ROOT, 'lib/components/player/HudAvatarRing.svelte');
 
 const hudCssSrc = existsSync(HUD_CSS) ? readFileSync(HUD_CSS, 'utf-8') : '';
 const pageSrc = existsSync(PAGE) ? readFileSync(PAGE, 'utf-8') : '';
+const arenaSrc = existsSync(ARENA) ? readFileSync(ARENA, 'utf-8') : '';
+const hudSrc = existsSync(HUD) ? readFileSync(HUD, 'utf-8') : '';
 const identitySrc = existsSync(IDENTITY) ? readFileSync(IDENTITY, 'utf-8') : '';
 const ringSrc = existsSync(HUD_RING) ? readFileSync(HUD_RING, 'utf-8') : '';
 
@@ -41,13 +45,13 @@ describe('Sprint 3.1 Part A — hud-stat-cell dossier tokens', () => {
 
 describe('Sprint 3.1 Part A — init modal dossier remap', () => {
 	it('init modal shell does not use tw-bg-slate-900', () => {
-		expect(pageSrc).not.toMatch(/init-modal[\s\S]{0,120}tw-bg-slate-900/);
-		expect(pageSrc).toMatch(/init-modal[\s\S]{0,120}pd-panel/);
+		expect(pageSrc + arenaSrc + hudSrc).not.toMatch(/init-modal[\s\S]{0,120}tw-bg-slate-900/);
+		expect(pageSrc + arenaSrc + hudSrc).toMatch(/init-modal[\s\S]{0,120}pd-panel/);
 	});
 
 	it('init modal primary CTA uses gold action accent classes (not teal cyber)', () => {
-		expect(pageSrc).toMatch(/init-modal__cta--primary/);
-		expect(pageSrc).not.toMatch(/init-modal[\s\S]{0,800}tw-border-teal-600/);
+		expect(pageSrc + arenaSrc + hudSrc).toMatch(/init-modal__cta--primary/);
+		expect(pageSrc + arenaSrc + hudSrc).not.toMatch(/init-modal[\s\S]{0,800}tw-border-teal-600/);
 	});
 
 	it('init modal styles target global overlay or player-dossier-root in hud css', () => {
@@ -70,7 +74,7 @@ describe('Sprint 3.1 Part B — HQ loadout wiring', () => {
 	});
 
 	it('dashboard passes operativeLoadout to IdentityBentoModule', () => {
-		expect(pageSrc).toMatch(/operativeLoadout=\{activePlayer\?\.operativeLoadout\}/);
-		expect(pageSrc).toMatch(/ownedCosmetics/);
+		expect(pageSrc + arenaSrc + hudSrc).toMatch(/operativeLoadout=\{activePlayer\?\.operativeLoadout\}/);
+		expect(pageSrc + arenaSrc + hudSrc).toMatch(/ownedCosmetics/);
 	});
 });

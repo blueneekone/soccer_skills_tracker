@@ -8,11 +8,15 @@ import { join } from 'node:path';
 
 const ROOT = join(__dirname, '..', '..', '..', '..', '..');
 const PAGE = join(ROOT, 'routes/(app)/player/dashboard/+page.svelte');
+const ARENA = join(ROOT, 'routes/(app)/player/dashboard/PlayerArena.svelte');
+const HUD = join(ROOT, 'routes/(app)/player/dashboard/PlayerHUD.svelte');
 const HUD_CSS = join(ROOT, 'lib/styles/player-dashboard-hud.css');
 const PLAYER_OS = join(ROOT, '..', 'docs/vision/PLAYER_OS.md');
 const SPRINT281 = join(ROOT, 'lib/components/player/dashboard/__tests__/playerHudSprint281.test.ts');
 
 const pageSrc = existsSync(PAGE) ? readFileSync(PAGE, 'utf-8') : '';
+const arenaSrc = existsSync(ARENA) ? readFileSync(ARENA, 'utf-8') : '';
+const hudSrc = existsSync(HUD) ? readFileSync(HUD, 'utf-8') : '';
 const hudCssSrc = existsSync(HUD_CSS) ? readFileSync(HUD_CSS, 'utf-8') : '';
 const playerOsSrc = existsSync(PLAYER_OS) ? readFileSync(PLAYER_OS, 'utf-8') : '';
 
@@ -43,9 +47,9 @@ describe('Sprint 2.8.2 — compact radar stays hero-readable', () => {
 
 describe('Sprint 2.8.2 — +page compact deck wiring', () => {
 	it('+page still applies player-analytics-void--compact when !telemetryReady', () => {
-		expect(pageSrc).toMatch(/player-analytics-void--compact=\{!telemetryReady\}/);
-		expect(pageSrc).toMatch(/compact=\{!telemetryReady\}/);
-		expect(pageSrc).toMatch(/telemetryReady\s*=\s*\$derived\(hasVanguardTelemetry/);
+		expect(pageSrc + arenaSrc + hudSrc).toMatch(/player-analytics-void--compact=\{!telemetryReady\}/);
+		expect(pageSrc + arenaSrc + hudSrc).toMatch(/compact=\{!telemetryReady\}/);
+		expect(pageSrc + arenaSrc + hudSrc).toMatch(/telemetryReady\s*=\s*\$derived\(hasVanguardTelemetry/);
 	});
 });
 

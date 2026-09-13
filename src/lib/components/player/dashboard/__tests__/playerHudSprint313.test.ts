@@ -10,11 +10,15 @@ const ROOT = join(__dirname, '..', '..', '..', '..', '..');
 const APP_CSS = join(ROOT, 'app.css');
 const HUD_CSS = join(ROOT, 'lib/styles/player-dashboard-hud.css');
 const PAGE = join(ROOT, 'routes/(app)/player/dashboard/+page.svelte');
+const ARENA = join(ROOT, 'routes/(app)/player/dashboard/PlayerArena.svelte');
+const HUD = join(ROOT, 'routes/(app)/player/dashboard/PlayerHUD.svelte');
 const STUDIO = join(ROOT, 'lib/components/player/OperativeLoadoutStudio.svelte');
 
 const appCssSrc = existsSync(APP_CSS) ? readFileSync(APP_CSS, 'utf-8') : '';
 const hudCssSrc = existsSync(HUD_CSS) ? readFileSync(HUD_CSS, 'utf-8') : '';
 const pageSrc = existsSync(PAGE) ? readFileSync(PAGE, 'utf-8') : '';
+const arenaSrc = existsSync(ARENA) ? readFileSync(ARENA, 'utf-8') : '';
+const hudSrc = existsSync(HUD) ? readFileSync(HUD, 'utf-8') : '';
 const studioSrc = existsSync(STUDIO) ? readFileSync(STUDIO, 'utf-8') : '';
 
 describe('Sprint 3.1.3 — bento-span-5 in app.css', () => {

@@ -11,6 +11,8 @@ const HQ_WORLD = join(ROOT, 'lib/player/dashboard/hqWorldContext.ts');
 const HQ_WORLD_TEST = join(ROOT, 'lib/player/dashboard/__tests__/hqWorldContext.test.ts');
 const STRIP = join(ROOT, 'lib/components/player/dashboard/HqWorldContextStrip.svelte');
 const PAGE = join(ROOT, 'routes/(app)/player/dashboard/+page.svelte');
+const ARENA = join(ROOT, 'routes/(app)/player/dashboard/PlayerArena.svelte');
+const HUD = join(ROOT, 'routes/(app)/player/dashboard/PlayerHUD.svelte');
 const BOUNTIES = join(ROOT, 'lib/components/hud/ActiveBounties.svelte');
 const HUD_CSS = join(ROOT, 'lib/styles/player-dashboard-hud.css');
 const PLAYER_OS = join(ROOT, '..', 'docs/vision/PLAYER_OS.md');
@@ -19,6 +21,8 @@ const hqWorldSrc = existsSync(HQ_WORLD) ? readFileSync(HQ_WORLD, 'utf-8') : '';
 const hqWorldTestSrc = existsSync(HQ_WORLD_TEST) ? readFileSync(HQ_WORLD_TEST, 'utf-8') : '';
 const stripSrc = existsSync(STRIP) ? readFileSync(STRIP, 'utf-8') : '';
 const pageSrc = existsSync(PAGE) ? readFileSync(PAGE, 'utf-8') : '';
+const arenaSrc = existsSync(ARENA) ? readFileSync(ARENA, 'utf-8') : '';
+const hudSrc = existsSync(HUD) ? readFileSync(HUD, 'utf-8') : '';
 const bountiesSrc = existsSync(BOUNTIES) ? readFileSync(BOUNTIES, 'utf-8') : '';
 const hudCssSrc = existsSync(HUD_CSS) ? readFileSync(HUD_CSS, 'utf-8') : '';
 const playerOsSrc = existsSync(PLAYER_OS) ? readFileSync(PLAYER_OS, 'utf-8') : '';
@@ -50,19 +54,19 @@ describe('Sprint 2.10 — HqWorldContextStrip component', () => {
 
 describe('Sprint 2.10 — +page.svelte wiring', () => {
 	it('embeds HqWorldContextStrip inline inside pd-strap', () => {
-		expect(pageSrc).toMatch(/pd-strap__context/);
-		expect(pageSrc).toMatch(/HqWorldContextStrip[\s\S]*inline/);
+		expect(pageSrc + arenaSrc + hudSrc).toMatch(/pd-strap__context/);
+		expect(pageSrc + arenaSrc + hudSrc).toMatch(/HqWorldContextStrip[\s\S]*inline/);
 	});
 
 	it('queries team_workouts collection with listener and defensive fallback', () => {
-		expect(pageSrc).toMatch(/collection\(db,\s*['"]team_workouts['"]\)/);
-		expect(pageSrc).toMatch(/onSnapshot/);
-		expect(pageSrc).toMatch(/pickNextScheduleEvent|loadLegacyScheduleFallback/);
+		expect(pageSrc + arenaSrc + hudSrc).toMatch(/collection\(db,\s*['"]team_workouts['"]\)/);
+		expect(pageSrc + arenaSrc + hudSrc).toMatch(/onSnapshot/);
+		expect(pageSrc + arenaSrc + hudSrc).toMatch(/pickNextScheduleEvent|loadLegacyScheduleFallback/);
 	});
 
 	it('derives coach bounty count from ActiveBounties callback', () => {
-		expect(pageSrc).toMatch(/onCoachBountyCount/);
-		expect(pageSrc).toMatch(/resolveHqStatusBadges/);
+		expect(pageSrc + arenaSrc + hudSrc).toMatch(/onCoachBountyCount/);
+		expect(pageSrc + arenaSrc + hudSrc).toMatch(/resolveHqStatusBadges/);
 	});
 });
 
