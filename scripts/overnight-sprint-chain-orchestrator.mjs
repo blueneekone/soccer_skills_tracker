@@ -27,45 +27,10 @@ const START_TIME = Date.now();
 
 const SPRINT_QUEUE = [
   {
-    id: 'sprint-5.2',
-    name: 'sprint-5.2-tenant-claims',
+    id: 'sprint-6.5',
+    name: 'sprint-6.5-training-triangle-video-capture',
     sessionId: null,
-    workflowFile: '.agents/workflows/jules-builds/sprint-5.2-tenant-claims.md',
-    dispatched: false
-  },
-  {
-    id: 'sprint-5.3',
-    name: 'sprint-5.3-webauthn-biometrics',
-    sessionId: null,
-    workflowFile: '.agents/workflows/jules-builds/sprint-5.3-webauthn-biometrics.md',
-    dispatched: false
-  },
-  {
-    id: 'sprint-6.1',
-    name: 'sprint-6.1-persona-storytelling',
-    sessionId: null,
-    workflowFile: '.agents/workflows/jules-builds/sprint-6.1-persona-storytelling.md',
-    dispatched: false
-  },
-  {
-    id: 'sprint-6.2',
-    name: 'sprint-6.2-training-triangle',
-    sessionId: null,
-    workflowFile: '.agents/workflows/jules-builds/sprint-6.2-training-triangle.md',
-    dispatched: false
-  },
-  {
-    id: 'sprint-6.3',
-    name: 'sprint-6.3-playwright-demo-videos',
-    sessionId: null,
-    workflowFile: '.agents/workflows/jules-builds/sprint-6.3-playwright-demo-videos.md',
-    dispatched: false
-  },
-  {
-    id: 'sprint-6.4',
-    name: 'sprint-6.4-video-integration',
-    sessionId: null,
-    workflowFile: '.agents/workflows/jules-builds/sprint-6.4-video-integration.md',
+    workflowFile: '.agents/workflows/jules-builds/sprint-6.5-training-triangle-video-capture.md',
     dispatched: false
   },
   {
