@@ -13,6 +13,14 @@ Before you write any code, you MUST adhere to the `playwright-video-pipeline` SK
 - **Output Filename:** `static/videos/marketing-hero.webm`
 - **Aspect Ratio:** 16:9 at 1920x1080 resolution.
 - **Isolated Contexts:** Create separate BrowserContexts for each clip, and explicitly `await context.close()` after each clip to finalize the recording on disk.
+- **Role Assignment Bypass:** You MUST bypass the Firebase Auth/Role assignment gate by injecting the `sstracker_e2e_bypass` flag into the browser's `localStorage` via `page.addInitScript`. Do not use standard email/password login. Example injection:
+  ```javascript
+  await page.addInitScript(({ role }) => {
+    window.localStorage.setItem('sstracker_e2e_bypass', 'true');
+    window.localStorage.setItem('sstracker_mock_role', role); // 'coach', 'household', or 'player'
+    window.localStorage.setItem('sstracker_mock_profile', JSON.stringify({ role, isProfileComplete: true }));
+  }, { role: 'coach' });
+  ```
 - **Merge/Transcode:** Ensure the script ends by triggering `node scripts/merge-marketing-video.mjs` to transcode the `.webm` to `static/assets/video/marketing-hero.mp4` using FFmpeg with `-pix_fmt yuv420p` and `-movflags +faststart`.
 - **Diegetic Motion:** Interpolate cursor movements across 20-35 steps (roughly 60fps). Do not use instant 0ms clicks or jarring jumps. Ensure cursor paths sweep across the UI components naturally.
 
