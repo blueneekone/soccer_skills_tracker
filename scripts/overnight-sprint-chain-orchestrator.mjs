@@ -67,6 +67,62 @@ const SPRINT_QUEUE = [
     sessionId: null,
     workflowFile: '.agents/workflows/jules-builds/sprint-6.4-video-integration.md',
     dispatched: false
+  },
+  {
+    id: 'sprint-r1',
+    name: 'sprint-r1-parent-compliance-overhaul',
+    sessionId: null,
+    workflowFile: '.agents/workflows/jules-builds/sprint-r1-parent-compliance-overhaul.md',
+    dispatched: false
+  },
+  {
+    id: 'sprint-r2',
+    name: 'sprint-r2-transfer-portal-upgrade',
+    sessionId: null,
+    workflowFile: '.agents/workflows/jules-builds/sprint-r2-transfer-portal-upgrade.md',
+    dispatched: false
+  },
+  {
+    id: 'sprint-r3',
+    name: 'sprint-r3-global-geist-migration',
+    sessionId: null,
+    workflowFile: '.agents/workflows/jules-builds/sprint-r3-global-geist-migration.md',
+    dispatched: false
+  },
+  {
+    id: 'sprint-r4',
+    name: 'sprint-r4-consent-token-polish',
+    sessionId: null,
+    workflowFile: '.agents/workflows/jules-builds/sprint-r4-consent-token-polish.md',
+    dispatched: false
+  },
+  {
+    id: 'sprint-r5',
+    name: 'sprint-r5-ghost-route-cleanup',
+    sessionId: null,
+    workflowFile: '.agents/workflows/jules-builds/sprint-r5-ghost-route-cleanup.md',
+    dispatched: false
+  },
+  {
+    id: 'sprint-r6',
+    name: 'sprint-r6-color-normalization',
+    sessionId: null,
+    workflowFile: '.agents/workflows/jules-builds/sprint-r6-color-normalization.md',
+    dispatched: false
+  },
+  {
+    id: 'sprint-r7',
+    name: 'sprint-r7-raw-cyan-purge',
+    sessionId: null,
+    workflowFile: '.agents/workflows/jules-builds/sprint-r7-raw-cyan-purge.md',
+    dispatched: false
+  },
+  {
+    id: 'sprint-r8',
+    name: 'sprint-r8-backend-parity',
+    sessionId: null,
+    workflowFile: '.agents/workflows/jules-builds/sprint-r8-backend-parity.md',
+    dispatched: false
   }
 ];
 
