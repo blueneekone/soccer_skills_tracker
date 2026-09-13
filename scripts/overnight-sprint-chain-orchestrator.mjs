@@ -27,20 +27,6 @@ const START_TIME = Date.now();
 
 const SPRINT_QUEUE = [
   {
-    id: 'sprint-6.5',
-    name: 'sprint-6.5-training-triangle-video-capture',
-    sessionId: null,
-    workflowFile: '.agents/workflows/jules-builds/sprint-6.5-training-triangle-video-capture.md',
-    dispatched: false
-  },
-  {
-    id: 'sprint-r1',
-    name: 'sprint-r1-parent-compliance-overhaul',
-    sessionId: null,
-    workflowFile: '.agents/workflows/jules-builds/sprint-r1-parent-compliance-overhaul.md',
-    dispatched: false
-  },
-  {
     id: 'sprint-r2',
     name: 'sprint-r2-transfer-portal-upgrade',
     sessionId: null,
