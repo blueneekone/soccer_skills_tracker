@@ -92,7 +92,7 @@
 #### Phase 4: Test Suite Stabilization & Unskipping Campaign
 - [x] **Sprint 4.1**: Coach Intent Engine Test Stabilization (`intentModule.test.ts` 30/30 green, `prescriptionSchema.test.ts` 35/35 green) ✅
 - [x] **Sprint 4.2**: Recruiter Engine Test Stabilization (`recruitersEngine.test.ts` 2/2 green) ✅
-- [ ] **Sprint 4.3**: Commissioner RBAC Guard Test Stabilization (unskip regional scoping tests in `commissionerAuthGuard.test.ts`)
+- [x] **Sprint 4.3**: Commissioner RBAC Guard Test Stabilization (unskip regional scoping tests in `commissionerAuthGuard.test.ts`) ✅
 - [x] **Sprint 4.4**: Global Trinity & Visual Regression Audit (100% green tests, 0 skipped tests, 0 compiler errors) ✅
 - [x] **Sprint 4.5 (GAP REMEDIATION)**: Repair `playerHudSprint*.test.ts` and `playerLoadout*.test.ts` static string-match assertions to align with the new Player OS Vanguard Trinity `engine` architecture. ✅
 - [x] **Sprint 4.6 (GAP REMEDIATION)**: Clean up remaining ghost route tests (e.g., `coachModule.test.ts` for `/coach/match-day`). ✅
@@ -105,7 +105,16 @@
 
 #### Phase 6: Persona Marketing Engine, Training Triangle & Demo Video Pipeline
 - [ ] **Sprint 6.1**: Persona Storytelling & Narrative Blueprint (`landingContent.ts` expansion — Coach OS SIEM, Director Panopticon, Parent Compliance Shield, Player Dopamine Engine, Recruiter Checkr Vault)
-- [ ] **Sprint 6.2**: The "Training Triangle" Interactive Interactive Showcase Component (`TrainingTriangleShowcase.svelte` — unified friction-free feedback loop connecting Coach intents, Player XP, and Parent compliance)
+- [x] **Sprint 6.2**: The "Training Triangle" Interactive Interactive Showcase Component (`TrainingTriangleShowcase.svelte` — unified friction-free feedback loop connecting Coach intents, Player XP, and Parent compliance) ✅
 - [ ] **Sprint 6.3**: Playwright Headless Product Demo Video Automation (`scripts/capture-persona-demos.mjs` — automated 60fps diegetic recordings for `marketing-hero.mp4`, `coach-os-demo.mp4`, `director-os-demo.mp4`, `player-os-demo.mp4`, `parent-os-demo.mp4`)
 - [ ] **Sprint 6.4**: Public Video Showcase Integration (`LandingHero.svelte` & `StakeholderBento.svelte` dynamic video modals, poster fallbacks, and fast-start MP4 streaming)
 
+#### Phase 7: Ultra-Premium Design Remediation & Visual Parity Audit (Forensic Gap Analysis v3.0)
+- [ ] **Sprint R1 (P0)**: Parent Compliance Form Complete Overhaul — Delete 85-line prototype `+page.svelte`, wire page to existing `WaiverConsoleArena.svelte` + `WaiverController.svelte.ts` Trinity, replace banned `tw-bg-blue-600` / `tw-bg-emerald-600` with Enterprise Palette CTAs (Action Gold `#fbbf24`), add `Geist Mono` + `Switzer` typography, add Icon component usage
+- [ ] **Sprint R2 (P0)**: Transfer Portal Full Prefix Fix + Design Upgrade — Add `tw-` prefix to 100+ bare Tailwind utility classes in `TransferPortal.svelte` (currently renders with zero styling in production), replace all `rgba(0,255,255,...)` with `#14b8a6` Data Cyan, fix `border-radius: 4px` → `0`/`2px`, fix `font-size: 8px` → minimum `10px`, replace inline `onmouseenter`/`onmouseleave` with CSS `:hover`
+- [ ] **Sprint R3 (P1)**: Global `JetBrains Mono` → `Geist Mono` Migration — Atomic find-and-replace across 37 files (`consent/[token]`, `terms`, `privacy`, `reset`, `clearance-policy`, `MarketingNav`, `PricingTable`, `+error.svelte`, `VanguardEmptyState`, `VanguardPrism`, `SkillTreeArena`, `RecruiterPortal`, `ParentHouseholdArena`, and 24 more)
+- [ ] **Sprint R4 (P1)**: Consent Token Page Design Polish — Migrate `JetBrains Mono` → `Geist Mono` in `consent/[token]/+page.svelte`, fix `#020208` → `#000000`/`#0B0F19`, fix `#ffffff` → `#fafafa` (halation), consider extracting 340-line `<style>` block per 500-line extraction mandate
+- [ ] **Sprint R5 (P2)**: Ghost Route Cleanup — Delete duplicate `/coach/match-day` (keep `/coach/matchday`), delete `/admin/audit-log` (keep `/admin/audit-logs`), delete `/parent/vpc` (keep `/parent/dashboard/vpc`), add `goto()` redirects from deleted paths
+- [ ] **Sprint R6 (P2)**: Generic Color Normalization — Migrate `tw-bg-emerald-*` success badges to Data Cyan `#14b8a6` tokens across 12 files, audit `tw-bg-green-500` indicator in `HouseholdComplianceTab.svelte`
+- [ ] **Sprint R7 (P2)**: Raw Cyan Purge — Replace `rgba(0,255,255,...)` → `#14b8a6` / `rgba(20,184,166,...)` in `VanguardEmptyState.svelte`, `SeasonRegistration.svelte`, `TransferPortal.svelte`
+- [ ] **Sprint R8 (P0)**: Backend Functional Parity — Implement missing `httpsCallable` endpoints for all personas (`commitMatchTelemetry`, `getAccountabilityReport`, `secureFulfillIntent`, `initiateStripeConnect`, `logPlayerActivity`, `getPublicRecruitProfile`, `extractTenantData`, `replayIngestionRow`)

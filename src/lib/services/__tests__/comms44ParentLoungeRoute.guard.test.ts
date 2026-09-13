@@ -24,7 +24,7 @@ const src = readFileSync(MESSAGES_PAGE, 'utf-8');
 
 // ── Import ────────────────────────────────────────────────────────────────────
 
-describe.skip('Epic 4.4 W4 — /messages imports ParentLoungePanel', () => {
+describe('Epic 4.4 W4 — /messages imports ParentLoungePanel', () => {
 	it('imports ParentLoungePanel from comms directory', () => {
 		expect(src).toMatch(/import\s+ParentLoungePanel\s+from\s+['"].*comms\/ParentLoungePanel\.svelte['"]/);
 	});
@@ -32,7 +32,7 @@ describe.skip('Epic 4.4 W4 — /messages imports ParentLoungePanel', () => {
 
 // ── Props passed to component ────────────────────────────────────────────────
 
-describe.skip('Epic 4.4 W4 — ParentLoungePanel receives clubId and teamId props', () => {
+describe('Epic 4.4 W4 — ParentLoungePanel receives clubId and teamId props', () => {
 	it('passes clubId prop to ParentLoungePanel', () => {
 		// Match the actual component usage <ParentLoungePanel clubId=...
 		expect(src).toMatch(/<ParentLoungePanel[^>]*clubId\s*=/);
@@ -45,7 +45,7 @@ describe.skip('Epic 4.4 W4 — ParentLoungePanel receives clubId and teamId prop
 
 // ── Parent role branch ────────────────────────────────────────────────────────
 
-describe.skip('Epic 4.4 W4 — ParentLoungePanel rendered only in parent branch', () => {
+describe('Epic 4.4 W4 — ParentLoungePanel rendered only in parent branch', () => {
 	it('lounge section is inside an role === parent conditional', () => {
 		// Template uses {#if role === 'parent'} — verify both the conditional and
 		// that ParentLoungePanel appears after the lounge-section marker
@@ -66,7 +66,7 @@ describe.skip('Epic 4.4 W4 — ParentLoungePanel rendered only in parent branch'
 // appears immediately after household-link even before the first CC message.
 // CC'd in_app_messages remain as a fallback in the same $derived.
 
-describe.skip('Epic 4.4 W4b — parentLounges sourced from children\'s team data (primary)', () => {
+describe('Epic 4.4 W4b — parentLounges sourced from children\'s team data (primary)', () => {
 	it('declares parentLoungeTeams $state as primary lounge source', () => {
 		expect(src).toMatch(/let\s+parentLoungeTeams\s*=\s*\$state/);
 	});
@@ -105,7 +105,7 @@ describe.skip('Epic 4.4 W4b — parentLounges sourced from children\'s team data
 
 // ── No new household query ────────────────────────────────────────────────────
 
-describe.skip('Epic 4.4 W4 — no new household Firestore collection query added', () => {
+describe('Epic 4.4 W4 — no new household Firestore collection query added', () => {
 	it('does not introduce a new households collection query', () => {
 		// The page may already reference householdId for HouseholdThreadPanel —
 		// but must NOT add a new getDocs/onSnapshot over the households collection.
@@ -123,7 +123,7 @@ describe.skip('Epic 4.4 W4 — no new household Firestore collection query added
 
 // ── Zero-teams case ────────────────────────────────────────────────────────────
 
-describe.skip('Epic 4.4 W4 — zero-teams case handled gracefully', () => {
+describe('Epic 4.4 W4 — zero-teams case handled gracefully', () => {
 	it('handles empty parentLounges array without crashing (conditional render)', () => {
 		expect(src).toMatch(/parentLounges\.length\s*===\s*0|parentLounges\.length\s*==\s*0|!\s*parentLounges\.length/);
 	});
@@ -131,7 +131,7 @@ describe.skip('Epic 4.4 W4 — zero-teams case handled gracefully', () => {
 
 // ── Does not create a new /parent/messages route ──────────────────────────────
 
-describe.skip('Epic 4.4 W4 — no new parallel route created', () => {
+describe('Epic 4.4 W4 — no new parallel route created', () => {
 	it('page lives at /messages not /parent/messages (file path check)', () => {
 		expect(MESSAGES_PAGE).toMatch(/\(app\)[/\\]messages[/\\]\+page\.svelte$/);
 	});

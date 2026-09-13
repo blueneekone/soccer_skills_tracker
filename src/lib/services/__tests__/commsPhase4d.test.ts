@@ -78,7 +78,7 @@ describe('commsPhase4d — canon doc sync', () => {
 		expect(doc).not.toMatch(/\*\*Comms UX\*\* \| Partial/);
 	});
 
-	it.skip('ROADMAP 4.16d Done', () => {
+	it('ROADMAP 4.16d Done', () => {
 		// skip readFileSync(ROADMAP)
 	});
 });

@@ -7,7 +7,7 @@ import { describe, expect, it } from 'vitest';
 
 const ROOT = join(process.cwd());
 
-describe.skip('LAUNCH-parent-pwa', () => {
+describe('LAUNCH-parent-pwa', () => {
 	it('InstallPrompt uses SSTracker branding', () => {
 		const src = readFileSync(
 			join(ROOT, 'src/lib/components/pwa/InstallPrompt.svelte'),

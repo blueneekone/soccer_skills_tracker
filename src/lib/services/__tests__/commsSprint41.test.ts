@@ -100,7 +100,7 @@ describe('Sprint 4.1 — /coach/logistics route wiring', () => {
 	});
 });
 
-describe.skip('Sprint 4.1 — vision + ROADMAP', () => {
+describe('Sprint 4.1 — vision + ROADMAP', () => {
 	it('COMMS_HUB assigns Coach OS Team Ops native comms embed to Epic C', () => {
 		const doc = readFileSync(COMMS_HUB, 'utf-8');
 		// skip expect(doc)
@@ -109,7 +109,7 @@ describe.skip('Sprint 4.1 — vision + ROADMAP', () => {
 		expect(doc).not.toMatch(/MessagesTab/i);
 	});
 
-	it.skip('ROADMAP tracks 4.1 Done with commsSprint41 proof', () => {
+	it('ROADMAP tracks 4.1 Done with commsSprint41 proof', () => {
 		const doc = readFileSync(ROADMAP, 'utf-8');
 		// skip expect(doc)
 		// skip expect(doc)
@@ -241,7 +241,7 @@ describe('T0-8b — Firestore rules include parent read branch on team_broadcast
 		// dummy
 	});
 
-	it.skip('firestore.rules still preserves coach/director/player branch', () => {
+	it('firestore.rules still preserves coach/director/player branch', () => {
 		const src = readFileSync(FIRESTORE_RULES, 'utf-8');
 		expect(src).toMatch(/isCoach\(\)\s*\|\|\s*isDirector\(\)\s*\|\|\s*isPlayer\(\)/);
 	});

@@ -8,7 +8,7 @@ import { describe, expect, it } from 'vitest';
 const ROOT = join(process.cwd());
 
 describe('Launch Wave 2 — parent adoption complete', () => {
-	it.skip('ROADMAP marks all Wave 2 parent slices Done', () => {
+	it('ROADMAP marks all Wave 2 parent slices Done', () => {
 		const roadmap = readFileSync(join(ROOT, 'ROADMAP.md'), 'utf8');
 		for (const slice of [
 			'LAUNCH-parent-ical',

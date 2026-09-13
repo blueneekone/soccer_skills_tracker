@@ -14,7 +14,7 @@ import {
 
 const ROOT = join(process.cwd());
 
-describe.skip('LAUNCH-native-shell', () => {
+describe('LAUNCH-native-shell', () => {
 	it('nativeShell constants target sstracker.app parent household', () => {
 		expect(NATIVE_SERVER_ORIGIN).toBe('https://sstracker.app');
 		expect(NATIVE_PARENT_FIRST_ROUTE).toBe('/parent/household');

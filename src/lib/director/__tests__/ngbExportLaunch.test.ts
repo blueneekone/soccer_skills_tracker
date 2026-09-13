@@ -45,7 +45,7 @@ describe('LAUNCH-fed-ngb — state roster CSV export', () => {
 		expect(panel).toMatch(/player_lookup/);
 	});
 
-	it.skip('FEDERATION_ROADMAP documents phased NGB export plan', () => {
+	it('FEDERATION_ROADMAP documents phased NGB export plan', () => {
 		const doc = readFileSync(join(ROOT, 'docs/acquisition/FEDERATION_ROADMAP.md'), 'utf-8');
 		// skip expect(doc)
 		// skip expect(doc)

@@ -6,7 +6,7 @@ import { setDoc, doc, getDoc } from 'firebase/firestore';
 
 let testEnv: RulesTestEnvironment;
 
-describe.skip('Coach Clearance Read', () => {
+describe('Coach Clearance Read', () => {
   beforeAll(async () => {
     testEnv = await initializeTestEnvironment({
       projectId: 'sst-sprint-13-rules',

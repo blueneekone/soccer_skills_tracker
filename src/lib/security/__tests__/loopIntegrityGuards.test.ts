@@ -41,7 +41,7 @@ function token(overrides: Record<string, unknown>) {
     ...overrides
   };
 }
-describe.skip('LAUNCH-test-integrity — Loop Integrity Guards G1–G5, G7–G10 (emulator)', () => {
+describe('LAUNCH-test-integrity — Loop Integrity Guards G1–G5, G7–G10 (emulator)', () => {
   let env: RulesTestEnvironment;
   beforeAll(async () => {
     env = await initializeTestEnvironment({
