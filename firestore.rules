@@ -305,7 +305,9 @@ service cloud.firestore {
       allow read, write: if isAuthenticated();
     }
     match /tenants/{tenantId} {
-      allow read: if isAuthenticated();
+      allow read, list: if isGlobalAdmin() || (isAuthenticated() && (
+        request.auth.token.tenantId == tenantId || request.auth.token.clubId == tenantId
+      ));
     }
 
     match /deployment_calendar_entries/{entryId} {

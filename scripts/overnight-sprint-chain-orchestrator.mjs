@@ -146,6 +146,11 @@ function dispatchNextSprint() {
 async function main() {
   console.log('🤖 [ORCHESTRATOR v2] Dual-Mode PR & Jules Session Sentry initialized.');
 
+  // If no sprints are currently dispatched, kick off the first one
+  if (!SPRINT_QUEUE.some(s => s.dispatched)) {
+    dispatchNextSprint();
+  }
+
   while (Date.now() - START_TIME < MAX_TOTAL_WAIT_MS) {
     // Mode 1: Check for GitHub PRs
     const prs = getOpenPrs();
