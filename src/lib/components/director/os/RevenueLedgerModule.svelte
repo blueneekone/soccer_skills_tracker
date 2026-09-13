@@ -185,7 +185,7 @@
 	}
 
 	.revenue-ledger__eyebrow {
-		font-family: 'JetBrains Mono', ui-monospace, monospace;
+		font-family: 'Geist Mono', ui-monospace, monospace;
 		font-size: 10px;
 		letter-spacing: 0.18em;
 		text-transform: uppercase;
@@ -210,7 +210,7 @@
 
 	.revenue-ledger__status {
 		margin: 0;
-		font-family: 'JetBrains Mono', ui-monospace, monospace;
+		font-family: 'Geist Mono', ui-monospace, monospace;
 		font-size: 11px;
 		letter-spacing: 0.06em;
 		color: rgba(148, 163, 184, 0.85);
@@ -243,7 +243,7 @@
 	}
 
 	.revenue-tile__label {
-		font-family: 'JetBrains Mono', ui-monospace, monospace;
+		font-family: 'Geist Mono', ui-monospace, monospace;
 		font-size: 9px;
 		letter-spacing: 0.16em;
 		text-transform: uppercase;
@@ -258,7 +258,7 @@
 	}
 
 	.revenue-tile__hint {
-		font-family: 'JetBrains Mono', ui-monospace, monospace;
+		font-family: 'Geist Mono', ui-monospace, monospace;
 		font-size: 10px;
 		letter-spacing: 0.04em;
 		color: rgba(148, 163, 184, 0.65);
@@ -290,7 +290,7 @@
 	}
 
 	.revenue-ledger__breakdown thead th {
-		font-family: 'JetBrains Mono', ui-monospace, monospace;
+		font-family: 'Geist Mono', ui-monospace, monospace;
 		font-size: 9px;
 		letter-spacing: 0.16em;
 		text-transform: uppercase;

@@ -398,7 +398,7 @@
 		align-items: center;
 		gap: 0.5rem;
 		margin: 0;
-		font-family: 'JetBrains Mono', monospace;
+		font-family: 'Geist Mono', monospace;
 		font-size: 0.75rem;
 		font-weight: 700;
 		color: rgba(255, 255, 255, 0.6);
@@ -407,7 +407,7 @@
 
 	.sv-locked__note {
 		margin: 0;
-		font-family: 'JetBrains Mono', monospace;
+		font-family: 'Geist Mono', monospace;
 		font-size: 0.64rem;
 		line-height: 1.6;
 		color: rgba(255, 255, 255, 0.28);
@@ -422,7 +422,7 @@
 		font-size: 0.58rem;
 		font-weight: 800;
 		letter-spacing: 0.14em;
-		font-family: 'JetBrains Mono', monospace;
+		font-family: 'Geist Mono', monospace;
 	}
 
 	.sv-badge--restricted {
@@ -444,7 +444,7 @@
 
 	.sv-no-access__icon { font-size: 0.9rem; color: rgba(240, 80, 80, 0.5); }
 	.sv-no-access__text {
-		font-family: 'JetBrains Mono', monospace;
+		font-family: 'Geist Mono', monospace;
 		font-size: 0.68rem;
 		color: rgba(255, 255, 255, 0.35);
 	}
@@ -460,7 +460,7 @@
 		border: 1px solid rgba(20, 184, 166, 0.25);
 		border-radius: 6px;
 		color: rgba(20, 184, 166, 0.7);
-		font-family: 'JetBrains Mono', monospace;
+		font-family: 'Geist Mono', monospace;
 		font-size: 0.7rem;
 		font-weight: 700;
 		letter-spacing: 0.1em;
@@ -523,7 +523,7 @@
 	}
 
 	.sv-audit-banner__text {
-		font-family: 'JetBrains Mono', monospace;
+		font-family: 'Geist Mono', monospace;
 		font-size: 0.6rem;
 		font-weight: 700;
 		letter-spacing: 0.08em;
@@ -541,7 +541,7 @@
 	}
 
 	.sv-audit-banner__timer {
-		font-family: 'JetBrains Mono', monospace;
+		font-family: 'Geist Mono', monospace;
 		font-size: 0.65rem;
 		color: rgba(240, 199, 94, 0.8);
 		letter-spacing: 0.08em;
@@ -556,7 +556,7 @@
 		border: 1px solid rgba(255, 255, 255, 0.15);
 		border-radius: 4px;
 		color: rgba(255, 255, 255, 0.4);
-		font-family: 'JetBrains Mono', monospace;
+		font-family: 'Geist Mono', monospace;
 		font-size: 0.58rem;
 		font-weight: 700;
 		letter-spacing: 0.1em;
@@ -598,7 +598,7 @@
 
 	.sv-document__file-name {
 		margin: 0;
-		font-family: 'JetBrains Mono', monospace;
+		font-family: 'Geist Mono', monospace;
 		font-size: 0.78rem;
 		font-weight: 700;
 		color: rgba(255, 255, 255, 0.7);
@@ -609,7 +609,7 @@
 
 	.sv-document__file-type {
 		margin: 0;
-		font-family: 'JetBrains Mono', monospace;
+		font-family: 'Geist Mono', monospace;
 		font-size: 0.62rem;
 		color: rgba(20, 184, 166, 0.5);
 		letter-spacing: 0.08em;
@@ -617,13 +617,13 @@
 
 	.sv-document__audit-id {
 		margin: 0.2rem 0 0;
-		font-family: 'JetBrains Mono', monospace;
+		font-family: 'Geist Mono', monospace;
 		font-size: 0.58rem;
 		color: rgba(255, 255, 255, 0.22);
 	}
 
 	.sv-code {
-		font-family: 'JetBrains Mono', monospace;
+		font-family: 'Geist Mono', monospace;
 		font-size: 0.58rem;
 		color: rgba(20, 184, 166, 0.4);
 		background: rgba(20, 184, 166, 0.05);
@@ -642,7 +642,7 @@
 		border: 1px solid rgba(20, 184, 166, 0.3);
 		border-radius: 6px;
 		color: #14b8a6;
-		font-family: 'JetBrains Mono', monospace;
+		font-family: 'Geist Mono', monospace;
 		font-size: 0.65rem;
 		font-weight: 700;
 		letter-spacing: 0.1em;
@@ -677,7 +677,7 @@
 
 	.sv-error__msg {
 		margin: 0;
-		font-family: 'JetBrains Mono', monospace;
+		font-family: 'Geist Mono', monospace;
 		font-size: 0.72rem;
 		line-height: 1.6;
 		color: rgba(255, 100, 100, 0.8);
@@ -689,7 +689,7 @@
 		border: 1px solid rgba(255, 255, 255, 0.12);
 		border-radius: 4px;
 		color: rgba(255, 255, 255, 0.4);
-		font-family: 'JetBrains Mono', monospace;
+		font-family: 'Geist Mono', monospace;
 		font-size: 0.65rem;
 		letter-spacing: 0.08em;
 		cursor: pointer;

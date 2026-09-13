@@ -129,7 +129,7 @@
 	/* Corner reference codes */
 	.ves-corner {
 		position: absolute;
-		font-family: 'JetBrains Mono', 'Space Mono', ui-monospace, monospace;
+		font-family: 'Geist Mono', 'Space Mono', ui-monospace, monospace;
 		font-size: 9px;
 		letter-spacing: 0.12em;
 		color: rgba(0, 255, 255, 0.18);
@@ -162,7 +162,7 @@
 	/* Title */
 	.ves-title {
 		margin: 0;
-		font-family: 'JetBrains Mono', 'Space Mono', ui-monospace, monospace;
+		font-family: 'Geist Mono', 'Space Mono', ui-monospace, monospace;
 		font-size: 12px;
 		font-weight: 700;
 		letter-spacing: 0.2em;
@@ -183,7 +183,7 @@
 	/* Message */
 	.ves-message {
 		margin: 0;
-		font-family: 'JetBrains Mono', 'Space Mono', ui-monospace, monospace;
+		font-family: 'Geist Mono', 'Space Mono', ui-monospace, monospace;
 		font-size: 10px;
 		letter-spacing: 0.15em;
 		color: rgba(0, 255, 255, 0.35);
@@ -196,7 +196,7 @@
 		align-items: center;
 		margin-top: 4px;
 		padding: 8px 20px;
-		font-family: 'JetBrains Mono', 'Space Mono', ui-monospace, monospace;
+		font-family: 'Geist Mono', 'Space Mono', ui-monospace, monospace;
 		font-size: 10px;
 		font-weight: 700;
 		letter-spacing: 0.2em;

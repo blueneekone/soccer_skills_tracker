@@ -325,7 +325,7 @@
 		min-height: 100vh;
 		background: #010409;
 		color: rgba(226, 232, 240, 0.9);
-		font-family: 'JetBrains Mono', monospace;
+		font-family: 'Geist Mono', monospace;
 	}
 
 	/* ── Locked state ─────────────────────────────────────────────────────────── */
@@ -336,7 +336,7 @@
 		justify-content: center;
 		min-height: 50vh;
 		gap: 0.75rem;
-		font-family: 'JetBrains Mono', monospace;
+		font-family: 'Geist Mono', monospace;
 		text-align: center;
 		padding: 2rem;
 	}
@@ -610,7 +610,7 @@
 		border-radius: 6px;
 		border: 1px solid rgba(255,255,255,0.1);
 		background: rgba(255,255,255,0.03);
-		font-family: 'JetBrains Mono', monospace;
+		font-family: 'Geist Mono', monospace;
 		font-size: 0.5rem;
 		font-weight: 700;
 		letter-spacing: 0.1em;
@@ -703,7 +703,7 @@
 		border: 1px solid rgba(255,255,255,0.12);
 		border-radius: 6px;
 		padding: 0.55rem 0.8rem;
-		font-family: 'JetBrains Mono', monospace;
+		font-family: 'Geist Mono', monospace;
 		font-size: 0.85rem;
 		font-variant-numeric: tabular-nums;
 		color: white;
@@ -737,7 +737,7 @@
 		border-radius: 7px;
 		border: 1px solid rgba(255,255,255,0.1);
 		background: rgba(255,255,255,0.03);
-		font-family: 'JetBrains Mono', monospace;
+		font-family: 'Geist Mono', monospace;
 		font-size: 0.6rem;
 		font-weight: 700;
 		letter-spacing: 0.1em;
@@ -751,7 +751,7 @@
 		border-radius: 7px;
 		border: 1px solid rgba(251,191,36,0.4);
 		background: rgba(251,191,36,0.08);
-		font-family: 'JetBrains Mono', monospace;
+		font-family: 'Geist Mono', monospace;
 		font-size: 0.6rem;
 		font-weight: 800;
 		letter-spacing: 0.1em;

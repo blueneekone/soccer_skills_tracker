@@ -102,7 +102,7 @@
 		justify-content: space-between;
 		gap: 1rem;
 		padding: 0.65rem 1.25rem;
-		font-family: 'JetBrains Mono', monospace;
+		font-family: 'Geist Mono', monospace;
 		z-index: 900;
 		overflow: hidden;
 		border-bottom: 1px solid currentColor;

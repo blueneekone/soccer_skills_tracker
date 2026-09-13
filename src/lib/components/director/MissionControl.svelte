@@ -229,7 +229,7 @@
 		align-items: center;
 		justify-content: center;
 		gap: 1rem;
-		font-family: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
+		font-family: 'Geist Mono', 'Fira Code', ui-monospace, monospace;
 		color: #475569;
 		text-align: center;
 		padding: 3rem;
@@ -270,7 +270,7 @@
 
 	/* ── Root ─────────────────────────────────────────────────────────────── */
 	.mc-root {
-		font-family: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
+		font-family: 'Geist Mono', 'Fira Code', ui-monospace, monospace;
 		color: #e2e8f0;
 		display: flex;
 		flex-direction: column;

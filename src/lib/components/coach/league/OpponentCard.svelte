@@ -201,7 +201,7 @@
 		border: 1px solid rgba(255, 255, 255, 0.06);
 		border-radius: 6px;
 		padding: 1rem 1.1rem 0.85rem;
-		font-family: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
+		font-family: 'Geist Mono', 'Fira Code', ui-monospace, monospace;
 		color: #e2e8f0;
 		overflow: hidden;
 		transition: background 0.15s, border-color 0.15s;

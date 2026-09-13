@@ -337,7 +337,7 @@
 		backdrop-filter: blur(16px);
 		border: 1px solid rgba(255, 255, 255, 0.07);
 		border-radius: 8px;
-		font-family: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
+		font-family: 'Geist Mono', 'Fira Code', ui-monospace, monospace;
 		color: #e2e8f0;
 		overflow: hidden;
 	}

@@ -357,7 +357,7 @@
 	}
 	.mc-header__left { display: flex; flex-direction: column; gap: 0.6rem; }
 	.mc-eyebrow {
-		font-family: 'JetBrains Mono', monospace;
+		font-family: 'Geist Mono', monospace;
 		font-size: 0.5rem; font-weight: 800; letter-spacing: 0.25em;
 		color: rgba(20, 184, 166, 0.45);
 	}
@@ -367,7 +367,7 @@
 		padding: 0.45rem 0.875rem;
 		background: transparent;
 		border: none; border-bottom: 2px solid transparent;
-		font-family: 'JetBrains Mono', monospace;
+		font-family: 'Geist Mono', monospace;
 		font-size: 0.62rem; font-weight: 700; letter-spacing: 0.12em;
 		color: rgba(255, 255, 255, 0.3);
 		cursor: pointer; transition: all 0.15s;
@@ -402,7 +402,7 @@
 		background: rgba(255, 255, 255, 0.04);
 		border: 1px solid rgba(255, 255, 255, 0.08);
 		border-radius: 4px;
-		font-family: 'JetBrains Mono', monospace;
+		font-family: 'Geist Mono', monospace;
 		font-size: 0.58rem; font-weight: 700; letter-spacing: 0.12em;
 		color: rgba(255, 255, 255, 0.3);
 		cursor: pointer; transition: all 0.15s;
@@ -424,7 +424,7 @@
 		background: rgba(255, 255, 255, 0.04);
 		border: 1px solid rgba(255, 255, 255, 0.08);
 		border-radius: 4px;
-		font-family: 'JetBrains Mono', monospace;
+		font-family: 'Geist Mono', monospace;
 		font-size: 0.68rem;
 		color: rgba(255, 255, 255, 0.7);
 		outline: none; transition: border-color 0.15s;
@@ -447,7 +447,7 @@
 	.mc-loading {
 		display: flex; align-items: center; justify-content: center; gap: 0.6rem;
 		padding: 3rem 1rem;
-		font-family: 'JetBrains Mono', monospace;
+		font-family: 'Geist Mono', monospace;
 		font-size: 0.65rem; letter-spacing: 0.12em;
 		color: rgba(20, 184, 166, 0.4);
 	}
@@ -514,11 +514,11 @@
 	.mc-news-card__meta { display: flex; align-items: center; gap: 0.5rem; }
 	.mc-news-card__source {
 		font-size: 0.55rem; font-weight: 700; letter-spacing: 0.15em;
-		color: rgba(20, 184, 166, 0.55); font-family: 'JetBrains Mono', monospace;
+		color: rgba(20, 184, 166, 0.55); font-family: 'Geist Mono', monospace;
 	}
 	.mc-news-card__date {
 		font-size: 0.55rem; color: rgba(255, 255, 255, 0.25);
-		font-family: 'JetBrains Mono', monospace;
+		font-family: 'Geist Mono', monospace;
 	}
 	.mc-news-card__title {
 		font-size: 0.78rem; font-weight: 700; line-height: 1.35;
@@ -574,7 +574,7 @@
 	.mc-pod-author {
 		display: block; font-size: 0.62rem;
 		color: rgba(255, 255, 255, 0.3);
-		font-family: 'JetBrains Mono', monospace;
+		font-family: 'Geist Mono', monospace;
 	}
 
 	/* ── EPISODE LIST ─────────────────────────────────────────────────────── */
@@ -596,7 +596,7 @@
 	.mc-ep--active .mc-ep__title { color: #14b8a6; }
 	.mc-ep__meta {
 		display: block; font-size: 0.58rem;
-		font-family: 'JetBrains Mono', monospace;
+		font-family: 'Geist Mono', monospace;
 		color: rgba(255, 255, 255, 0.25);
 	}
 

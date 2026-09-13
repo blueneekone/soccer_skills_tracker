@@ -305,7 +305,7 @@
 		backdrop-filter: blur(16px);
 		border: 1px solid rgba(255, 255, 255, 0.07);
 		border-radius: 0px;
-		font-family: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
+		font-family: 'Geist Mono', 'Fira Code', ui-monospace, monospace;
 		color: #e2e8f0;
 		overflow: hidden;
 	}
@@ -475,7 +475,7 @@
 		box-shadow: 0 0 10px rgba(168, 85, 247, 0.2);
 	}
 	.sm-read-only-tag {
-		font-family: 'JetBrains Mono', monospace;
+		font-family: 'Geist Mono', monospace;
 		font-size: 0.6rem;
 		letter-spacing: 0.1em;
 		color: rgba(148, 163, 184, 0.4);

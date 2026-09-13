@@ -300,7 +300,7 @@
 					y={node.cy - 20}
 					text-anchor="middle"
 					dominant-baseline="auto"
-					font-family="'JetBrains Mono', 'Fira Code', monospace"
+					font-family="'Geist Mono', 'Fira Code', monospace"
 					font-size="8"
 					letter-spacing="0.15em"
 					fill={labelFill(node.state, node.rank)}

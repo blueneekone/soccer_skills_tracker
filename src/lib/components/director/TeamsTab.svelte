@@ -610,7 +610,7 @@
 		--tt-orange:   #f97316;
 		--tt-pending:  #f59e0b;
 		--tt-vacant:   rgba(248, 250, 252, 0.35);
-		--tt-mono:     'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
+		--tt-mono:     'Geist Mono', 'Fira Code', ui-monospace, monospace;
 	}
 
 	/* ── Control Bar ───────────────────────────────────────────────────── */

@@ -275,7 +275,7 @@
 				{x} {y}
 				text-anchor="middle"
 				dominant-baseline="middle"
-				font-family="'JetBrains Mono', 'Fira Code', monospace"
+				font-family="'Geist Mono', 'Fira Code', monospace"
 				font-size="10"
 				font-weight="700"
 				fill={accent}

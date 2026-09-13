@@ -351,7 +351,7 @@
 		min-height: 100vh;
 		background: #010409;
 		color: #e2e8f0;
-		font-family: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
+		font-family: 'Geist Mono', 'Fira Code', ui-monospace, monospace;
 		padding: 2rem;
 	}
 

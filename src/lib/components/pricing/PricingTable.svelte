@@ -294,7 +294,7 @@
 
 	.pricing-footnote {
 		margin: 0.3rem 0 0 0;
-		font-family: 'JetBrains Mono', ui-monospace, monospace;
+		font-family: 'Geist Mono', ui-monospace, monospace;
 		font-size: 11px;
 		letter-spacing: 0.04em;
 		color: rgba(148, 163, 184, 0.65);

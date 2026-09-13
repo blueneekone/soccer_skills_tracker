@@ -133,7 +133,7 @@
 		filter: drop-shadow(0 0 6px color-mix(in srgb, #fbbf24 40%, transparent));
 	}
 	.mn-brand__text {
-		font-family: 'JetBrains Mono', monospace;
+		font-family: 'Geist Mono', monospace;
 		font-size: 0.75rem;
 		font-weight: 900;
 		letter-spacing: 0.18em;
@@ -159,7 +159,7 @@
 	.mn-link {
 		padding: 0.4rem 0.75rem;
 		border-radius: 6px;
-		font-family: 'JetBrains Mono', monospace;
+		font-family: 'Geist Mono', monospace;
 		font-size: 0.6rem;
 		font-weight: 600;
 		letter-spacing: 0.1em;
@@ -227,7 +227,7 @@
 	}
 	.mn-mobile__link {
 		padding: 0.65rem 0;
-		font-family: 'JetBrains Mono', monospace;
+		font-family: 'Geist Mono', monospace;
 		font-size: 0.7rem;
 		font-weight: 600;
 		letter-spacing: 0.08em;

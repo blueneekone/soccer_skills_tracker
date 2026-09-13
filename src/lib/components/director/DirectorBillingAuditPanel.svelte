@@ -344,7 +344,7 @@
 		border: 1px solid rgba(20, 184, 166, 0.15);
 		border-radius: 0px;
 		overflow: hidden;
-		font-family: 'JetBrains Mono', monospace;
+		font-family: 'Geist Mono', monospace;
 	}
 
 	.dbap-card__header {
@@ -462,7 +462,7 @@
 	}
 
 	.dbap-cell--mono {
-		font-family: 'JetBrains Mono', monospace;
+		font-family: 'Geist Mono', monospace;
 	}
 
 	.dbap-cell--dim {

@@ -193,7 +193,7 @@
 		border: 1px solid rgba(255, 50, 80, 0.2);
 		border-radius: 12px;
 		overflow: hidden;
-		font-family: 'JetBrains Mono', monospace;
+		font-family: 'Geist Mono', monospace;
 	}
 
 	.ppd-header {
@@ -319,7 +319,7 @@
 		display: flex; align-items: center; gap: 0.4rem;
 		font-weight: 700; font-size: 0.6rem; letter-spacing: 0.1em;
 	}
-	.ppd-cell--mono { font-family: 'JetBrains Mono', monospace; }
+	.ppd-cell--mono { font-family: 'Geist Mono', monospace; }
 	.ppd-cell--dim { color: rgba(255, 255, 255, 0.4); }
 
 	.ppd-dot {

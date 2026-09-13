@@ -565,7 +565,7 @@
 		background: rgba(255, 50, 80, 0.04);
 		cursor: pointer;
 		list-style: none;
-		font-family: 'JetBrains Mono', monospace;
+		font-family: 'Geist Mono', monospace;
 	}
 	.phh-privacy-summary::-webkit-details-marker { display: none; }
 	.phh-privacy-label {

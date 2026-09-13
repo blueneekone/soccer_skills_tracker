@@ -339,7 +339,7 @@
 	/* ─── Header ────────────────────────────────────────────────────────────── */
 	.co-eyebrow {
 		margin: 0 0 0.4rem;
-		font-family: 'JetBrains Mono', 'Fira Code', monospace;
+		font-family: 'Geist Mono', 'Fira Code', monospace;
 		font-size: 0.6rem;
 		font-weight: 700;
 		letter-spacing: 0.2em;
@@ -349,7 +349,7 @@
 
 	.co-title {
 		margin: 0 0 0.75rem;
-		font-family: 'JetBrains Mono', monospace;
+		font-family: 'Geist Mono', monospace;
 		font-size: 1.2rem;
 		font-weight: 900;
 		letter-spacing: 0.08em;
@@ -404,7 +404,7 @@
 		font-size: 0.72rem;
 		line-height: 1.7;
 		color: rgba(255, 255, 255, 0.4);
-		font-family: 'JetBrains Mono', monospace;
+		font-family: 'Geist Mono', monospace;
 	}
 
 	/* ─── Form ──────────────────────────────────────────────────────────────── */
@@ -421,7 +421,7 @@
 	}
 
 	.co-form__label {
-		font-family: 'JetBrains Mono', monospace;
+		font-family: 'Geist Mono', monospace;
 		font-size: 0.65rem;
 		font-weight: 700;
 		letter-spacing: 0.14em;
@@ -449,7 +449,7 @@
 		border: 1px solid rgba(20, 184, 166, 0.2);
 		border-radius: 8px;
 		color: #ffffff;
-		font-family: 'JetBrains Mono', monospace;
+		font-family: 'Geist Mono', monospace;
 		font-size: 0.85rem;
 		outline: none;
 		transition: border-color 0.2s, box-shadow 0.2s;
@@ -471,7 +471,7 @@
 
 	.co-form__error {
 		margin: 0;
-		font-family: 'JetBrains Mono', monospace;
+		font-family: 'Geist Mono', monospace;
 		font-size: 0.68rem;
 		color: #ff4d6a;
 		letter-spacing: 0.04em;
@@ -488,7 +488,7 @@
 		border: 1px solid rgba(20, 184, 166, 0.45);
 		border-radius: 8px;
 		color: #14b8a6;
-		font-family: 'JetBrains Mono', monospace;
+		font-family: 'Geist Mono', monospace;
 		font-size: 0.75rem;
 		font-weight: 700;
 		letter-spacing: 0.12em;
@@ -550,7 +550,7 @@
 
 	.co-sent-title {
 		margin: 0;
-		font-family: 'JetBrains Mono', monospace;
+		font-family: 'Geist Mono', monospace;
 		font-size: 1rem;
 		font-weight: 900;
 		letter-spacing: 0.1em;
@@ -567,7 +567,7 @@
 	.co-sent-email {
 		color: #14b8a6;
 		font-weight: 700;
-		font-family: 'JetBrains Mono', monospace;
+		font-family: 'Geist Mono', monospace;
 	}
 
 	.co-sent-steps {
@@ -590,7 +590,7 @@
 	}
 
 	.co-step__num {
-		font-family: 'JetBrains Mono', monospace;
+		font-family: 'Geist Mono', monospace;
 		font-size: 0.65rem;
 		font-weight: 900;
 		color: rgba(45, 212, 191, 0.5);
@@ -610,7 +610,7 @@
 		border: 1px solid rgba(255, 255, 255, 0.12);
 		border-radius: 6px;
 		color: rgba(255, 255, 255, 0.4);
-		font-family: 'JetBrains Mono', monospace;
+		font-family: 'Geist Mono', monospace;
 		font-size: 0.68rem;
 		letter-spacing: 0.1em;
 		cursor: pointer;
@@ -640,7 +640,7 @@
 
 	.co-footer__text {
 		margin: 0;
-		font-family: 'JetBrains Mono', monospace;
+		font-family: 'Geist Mono', monospace;
 		font-size: 0.65rem;
 		line-height: 1.6;
 		color: rgba(255, 255, 255, 0.25);

@@ -134,7 +134,7 @@
 
 	.cp-eyebrow {
 		margin: 0;
-		font-family: 'JetBrains Mono', ui-monospace, monospace;
+		font-family: 'Geist Mono', ui-monospace, monospace;
 		font-size: 10px;
 		letter-spacing: 0.22em;
 		text-transform: uppercase;
@@ -199,7 +199,7 @@
 	}
 
 	.cp-card code {
-		font-family: 'JetBrains Mono', ui-monospace, monospace;
+		font-family: 'Geist Mono', ui-monospace, monospace;
 		font-size: 0.85em;
 		padding: 0.05rem 0.32rem;
 		border-radius: 6px;

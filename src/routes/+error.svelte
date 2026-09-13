@@ -288,7 +288,7 @@
 			radial-gradient(ellipse 80% 60% at 50% 100%,  rgba(80, 0, 0, 0.5) 0%, transparent 55%),
 			#1a0000;
 		color: #fca5a5;
-		font-family: 'JetBrains Mono', 'Space Mono', ui-monospace, monospace;
+		font-family: 'Geist Mono', 'Space Mono', ui-monospace, monospace;
 		overflow: hidden;
 		min-height: 100vh;
 		min-height: 100dvh;

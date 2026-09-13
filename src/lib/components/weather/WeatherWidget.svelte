@@ -227,7 +227,7 @@
 	}
 	.ww-title {
 		margin: 0;
-		font-family: 'JetBrains Mono', monospace;
+		font-family: 'Geist Mono', monospace;
 		font-size: 0.7rem;
 		font-weight: 900;
 		letter-spacing: 0.2em;
@@ -245,7 +245,7 @@
 		gap: 0.35rem;
 		padding: 2px 8px;
 		border-radius: 9999px;
-		font-family: 'JetBrains Mono', monospace;
+		font-family: 'Geist Mono', monospace;
 		font-size: 0.55rem;
 		font-weight: 800;
 		letter-spacing: 0.12em;
@@ -275,7 +275,7 @@
 		padding: 4px 10px;
 		border-radius: 9999px;
 		border: 1px solid;
-		font-family: 'JetBrains Mono', monospace;
+		font-family: 'Geist Mono', monospace;
 		font-size: 0.6rem;
 		font-weight: 900;
 		letter-spacing: 0.25em;
@@ -321,7 +321,7 @@
 		border: 1px solid rgba(20, 184, 166, 0.45);
 		background: rgba(20, 184, 166, 0.12);
 		color: #14b8a6;
-		font-family: 'JetBrains Mono', monospace;
+		font-family: 'Geist Mono', monospace;
 		font-size: 0.6rem;
 		font-weight: 800;
 		letter-spacing: 0.15em;
@@ -376,7 +376,7 @@
 		border-radius: 0.5rem;
 		background: rgba(255, 0, 51, 0.08);
 		border: 1px solid rgba(255, 0, 51, 0.2);
-		font-family: 'JetBrains Mono', monospace;
+		font-family: 'Geist Mono', monospace;
 		font-size: 0.6rem;
 		color: rgba(255, 80, 100, 0.9);
 	}
@@ -404,7 +404,7 @@
 		border: 1px solid rgba(255, 255, 255, 0.05);
 		background: rgba(0, 0, 0, 0.3);
 		padding: 0.75rem;
-		font-family: 'JetBrains Mono', monospace;
+		font-family: 'Geist Mono', monospace;
 		transition: border-color 0.3s;
 	}
 	.ww-card--warning {
@@ -449,7 +449,7 @@
 		margin-top: 0.75rem;
 		padding-top: 0.6rem;
 		border-top: 1px solid rgba(255, 255, 255, 0.06);
-		font-family: 'JetBrains Mono', monospace;
+		font-family: 'Geist Mono', monospace;
 	}
 	.ww-coords {
 		font-size: 0.6rem;
@@ -472,7 +472,7 @@
 		border-radius: 0.5rem;
 		background: rgba(234, 179, 8, 0.05);
 		border: 1px solid rgba(234, 179, 8, 0.2);
-		font-family: 'JetBrains Mono', monospace;
+		font-family: 'Geist Mono', monospace;
 		font-size: 0.6rem;
 		color: rgba(234, 179, 8, 0.7);
 	}

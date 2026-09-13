@@ -50,7 +50,7 @@
 		backdrop-filter: blur(24px);
 		border-radius: 16px;
 		text-align: center;
-		font-family: 'JetBrains Mono', monospace;
+		font-family: 'Geist Mono', monospace;
 	}
 	.recruiter-locked__icon {
 		font-size: 2.5rem;
@@ -85,7 +85,7 @@
 		border-radius: 8px;
 		border: 1px solid rgba(20, 184, 166, 0.35);
 		background: rgba(20, 184, 166, 0.06);
-		font-family: 'JetBrains Mono', monospace;
+		font-family: 'Geist Mono', monospace;
 		font-size: 0.65rem;
 		font-weight: 800;
 		letter-spacing: 0.15em;
@@ -102,7 +102,7 @@
 		text-align: center;
 		color: rgba(148, 163, 184, 0.5);
 		padding: 48px 16px;
-		font-family: 'JetBrains Mono', monospace;
+		font-family: 'Geist Mono', monospace;
 		font-size: 0.65rem;
 		letter-spacing: 0.1em;
 	}

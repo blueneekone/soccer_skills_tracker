@@ -219,7 +219,7 @@
 		border: 1px solid rgba(20, 184, 166, 0.1);
 		border-radius: 12px;
 		overflow: hidden;
-		font-family: 'JetBrains Mono', monospace;
+		font-family: 'Geist Mono', monospace;
 	}
 
 	.drr-header {

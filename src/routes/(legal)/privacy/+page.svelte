@@ -224,7 +224,7 @@
 
 	.legal-brand__name {
 		margin: 0;
-		font-family: 'JetBrains Mono', monospace;
+		font-family: 'Geist Mono', monospace;
 		font-size: 0.65rem;
 		font-weight: 700;
 		letter-spacing: 0.18em;
@@ -233,7 +233,7 @@
 
 	.legal-brand__sub {
 		margin: 0.2rem 0 0;
-		font-family: 'JetBrains Mono', monospace;
+		font-family: 'Geist Mono', monospace;
 		font-size: 0.55rem;
 		letter-spacing: 0.1em;
 		color: rgba(255, 255, 255, 0.2);
@@ -261,7 +261,7 @@
 		background: rgba(20, 184, 166, 0.1);
 		border: 1px solid rgba(20, 184, 166, 0.25);
 		border-radius: 4px;
-		font-family: 'JetBrains Mono', monospace;
+		font-family: 'Geist Mono', monospace;
 		font-size: 0.6rem;
 		font-weight: 800;
 		letter-spacing: 0.2em;
@@ -271,7 +271,7 @@
 
 	.legal-doc-title {
 		margin: 0;
-		font-family: 'JetBrains Mono', monospace;
+		font-family: 'Geist Mono', monospace;
 		font-size: 1.5rem;
 		font-weight: 900;
 		letter-spacing: 0.06em;
@@ -280,7 +280,7 @@
 
 	.legal-doc-subtitle {
 		margin: 0;
-		font-family: 'JetBrains Mono', monospace;
+		font-family: 'Geist Mono', monospace;
 		font-size: 0.65rem;
 		color: rgba(255, 255, 255, 0.3);
 		letter-spacing: 0.06em;
@@ -302,7 +302,7 @@
 
 	.legal-h2 {
 		margin: 0;
-		font-family: 'JetBrains Mono', monospace;
+		font-family: 'Geist Mono', monospace;
 		font-size: 0.7rem;
 		font-weight: 800;
 		letter-spacing: 0.16em;
@@ -321,7 +321,7 @@
 	.legal-body strong { color: rgba(255, 255, 255, 0.75); font-weight: 600; }
 
 	.legal-code {
-		font-family: 'JetBrains Mono', monospace;
+		font-family: 'Geist Mono', monospace;
 		font-size: 0.75rem;
 		color: rgba(20, 184, 166, 0.6);
 		background: rgba(20, 184, 166, 0.06);
@@ -339,7 +339,7 @@
 	}
 
 	.legal-footer__link {
-		font-family: 'JetBrains Mono', monospace;
+		font-family: 'Geist Mono', monospace;
 		font-size: 0.65rem;
 		color: rgba(20, 184, 166, 0.45);
 		text-decoration: none;

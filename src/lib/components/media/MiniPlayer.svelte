@@ -230,7 +230,7 @@
 		box-shadow: var(--vanguard-elev-2);
 		backdrop-filter: blur(var(--vanguard-blur)) saturate(180%);
 		-webkit-backdrop-filter: blur(var(--vanguard-blur)) saturate(180%);
-		font-family: 'JetBrains Mono', monospace;
+		font-family: 'Geist Mono', monospace;
 		animation: mpRise 0.25s cubic-bezier(0.22, 1, 0.36, 1);
 		min-height: 64px;
 	}
@@ -339,7 +339,7 @@
 		background: rgba(255, 50, 80, 0.12);
 		border: 1px solid rgba(255, 50, 80, 0.3);
 		border-radius: 6px; font-size: 0.65rem;
-		color: rgba(255, 50, 80, 0.85); font-family: 'JetBrains Mono', monospace;
+		color: rgba(255, 50, 80, 0.85); font-family: 'Geist Mono', monospace;
 		white-space: nowrap;
 	}
 

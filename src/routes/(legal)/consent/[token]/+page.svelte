@@ -554,7 +554,7 @@
 
 	.cv-brand__sub {
 		margin: 0;
-		font-family: 'JetBrains Mono', monospace;
+		font-family: 'Geist Mono', monospace;
 		font-size: 0.65rem;
 		font-weight: 700;
 		letter-spacing: 0.16em;
@@ -563,7 +563,7 @@
 
 	.cv-brand__law {
 		margin: 0.2rem 0 0;
-		font-family: 'JetBrains Mono', monospace;
+		font-family: 'Geist Mono', monospace;
 		font-size: 0.55rem;
 		letter-spacing: 0.12em;
 		color: rgba(255, 255, 255, 0.25);
@@ -586,7 +586,7 @@
 
 	/* ─── Idle phase content ────────────────────────────────────────────────── */
 	.cv-eyebrow {
-		font-family: 'JetBrains Mono', monospace;
+		font-family: 'Geist Mono', monospace;
 		font-size: 0.62rem;
 		font-weight: 700;
 		letter-spacing: 0.2em;
@@ -595,7 +595,7 @@
 
 	.cv-title {
 		margin: 0;
-		font-family: 'JetBrains Mono', monospace;
+		font-family: 'Geist Mono', monospace;
 		font-size: 1.5rem;
 		font-weight: 900;
 		letter-spacing: 0.05em;
@@ -625,7 +625,7 @@
 
 	.cv-legal-heading {
 		margin: 0;
-		font-family: 'JetBrains Mono', monospace;
+		font-family: 'Geist Mono', monospace;
 		font-size: 0.65rem;
 		font-weight: 700;
 		letter-spacing: 0.15em;
@@ -669,7 +669,7 @@
 		gap: 0.5rem;
 		padding: 0.9rem 1.25rem;
 		border-radius: 8px;
-		font-family: 'JetBrains Mono', monospace;
+		font-family: 'Geist Mono', monospace;
 		font-size: 0.75rem;
 		font-weight: 700;
 		letter-spacing: 0.12em;
@@ -708,7 +708,7 @@
 
 	.cv-audit-notice {
 		margin: 0;
-		font-family: 'JetBrains Mono', monospace;
+		font-family: 'Geist Mono', monospace;
 		font-size: 0.64rem;
 		line-height: 1.6;
 		color: rgba(255, 255, 255, 0.22);
@@ -734,7 +734,7 @@
 
 	.cv-state__title {
 		margin: 0;
-		font-family: 'JetBrains Mono', monospace;
+		font-family: 'Geist Mono', monospace;
 		font-size: 1.1rem;
 		font-weight: 900;
 		letter-spacing: 0.1em;
@@ -780,7 +780,7 @@
 	}
 
 	.cv-confirmation-strip__text {
-		font-family: 'JetBrains Mono', monospace;
+		font-family: 'Geist Mono', monospace;
 		font-size: 0.65rem;
 		line-height: 1.6;
 		color: rgba(255, 255, 255, 0.25);
@@ -791,7 +791,7 @@
 
 	.cv-footer__text {
 		margin: 0;
-		font-family: 'JetBrains Mono', monospace;
+		font-family: 'Geist Mono', monospace;
 		font-size: 0.6rem;
 		line-height: 1.7;
 		color: rgba(255, 255, 255, 0.15);
@@ -810,7 +810,7 @@
 		font-size: 0.78rem;
 		line-height: 1.6;
 		color: rgba(20, 184, 166, 0.75);
-		font-family: 'JetBrains Mono', monospace;
+		font-family: 'Geist Mono', monospace;
 	}
 	.cv-biometric-notice__icon { font-size: 1.1rem; flex-shrink: 0; }
 
@@ -825,7 +825,7 @@
 		font-size: 0.72rem;
 		line-height: 1.6;
 		color: rgba(240, 199, 94, 0.7);
-		font-family: 'JetBrains Mono', monospace;
+		font-family: 'Geist Mono', monospace;
 	}
 
 	/* Biometric state icon */

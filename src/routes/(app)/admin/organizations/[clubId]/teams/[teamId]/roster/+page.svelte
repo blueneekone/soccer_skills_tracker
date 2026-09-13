@@ -1096,7 +1096,7 @@ import { getContext, untrack } from 'svelte';
 		border: 1px solid rgba(20, 184, 166, 0.2);
 		border-radius: 7px;
 		color: rgba(20, 184, 166, 0.6);
-		font-family: 'JetBrains Mono', monospace;
+		font-family: 'Geist Mono', monospace;
 		font-size: 0.65rem;
 		font-weight: 700;
 		letter-spacing: 0.12em;

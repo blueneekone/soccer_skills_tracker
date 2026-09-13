@@ -842,7 +842,7 @@
 		min-height: 100vh;
 		background: #010409;
 		color: rgba(226, 232, 240, 0.9);
-		font-family: 'JetBrains Mono', monospace;
+		font-family: 'Geist Mono', monospace;
 	}
 
 	/* ── Header ──────────────────────────────────────────────────────────────── */
@@ -900,7 +900,7 @@
 		align-items: center;
 		gap: 0.4rem;
 		padding: 0.4rem 1rem;
-		font-family: 'JetBrains Mono', monospace;
+		font-family: 'Geist Mono', monospace;
 		font-size: 0.6rem;
 		font-weight: 800;
 		letter-spacing: 0.15em;
@@ -959,7 +959,7 @@
 		border: 1px solid rgba(255, 255, 255, 0.1);
 		border-radius: 5px;
 		padding: 0.35rem 0.6rem;
-		font-family: 'JetBrains Mono', monospace;
+		font-family: 'Geist Mono', monospace;
 		font-size: 0.65rem;
 		color: rgba(226, 232, 240, 0.9);
 		outline: none;
@@ -973,7 +973,7 @@
 		border: 1px solid rgba(255, 255, 255, 0.1);
 		border-radius: 5px;
 		padding: 0.35rem 0.6rem;
-		font-family: 'JetBrains Mono', monospace;
+		font-family: 'Geist Mono', monospace;
 		font-size: 0.6rem;
 		color: rgba(226, 232, 240, 0.7);
 		outline: none;
@@ -1207,7 +1207,7 @@
 		border: 1px solid rgba(255, 255, 255, 0.12);
 		border-radius: 6px;
 		padding: 0.4rem 0.9rem;
-		font-family: 'JetBrains Mono', monospace;
+		font-family: 'Geist Mono', monospace;
 		font-size: 0.55rem;
 		font-weight: 700;
 		letter-spacing: 0.15em;
@@ -1472,7 +1472,7 @@
 		border-radius: 8px;
 		border: 1px solid rgba(20, 184, 166, 0.35);
 		background: rgba(20, 184, 166, 0.06);
-		font-family: 'JetBrains Mono', monospace;
+		font-family: 'Geist Mono', monospace;
 		font-size: 0.6rem;
 		font-weight: 800;
 		letter-spacing: 0.1em;

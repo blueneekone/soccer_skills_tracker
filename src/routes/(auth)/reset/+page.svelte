@@ -193,7 +193,7 @@
 		background:
 			radial-gradient(ellipse 100% 60% at 50% 0%, rgba(0, 255, 255, 0.05), transparent 55%),
 			#000810;
-		font-family: 'JetBrains Mono', 'Space Mono', ui-monospace, monospace;
+		font-family: 'Geist Mono', 'Space Mono', ui-monospace, monospace;
 		color: #e2e8f0;
 		overflow: hidden;
 		min-height: 100vh;

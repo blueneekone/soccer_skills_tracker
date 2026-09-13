@@ -187,7 +187,7 @@
 
 	.ip-copy__title {
 		margin: 0;
-		font-family: 'JetBrains Mono', monospace;
+		font-family: 'Geist Mono', monospace;
 		font-size: 0.65rem;
 		font-weight: 900;
 		letter-spacing: 0.14em;
@@ -196,7 +196,7 @@
 
 	.ip-copy__sub {
 		margin: 0.2rem 0 0;
-		font-family: 'JetBrains Mono', monospace;
+		font-family: 'Geist Mono', monospace;
 		font-size: 0.58rem;
 		line-height: 1.5;
 		color: rgba(255, 255, 255, 0.4);
@@ -214,7 +214,7 @@
 	.ip-btn {
 		padding: 0.35rem 0.75rem;
 		border-radius: 6px;
-		font-family: 'JetBrains Mono', monospace;
+		font-family: 'Geist Mono', monospace;
 		font-size: 0.65rem;
 		font-weight: 800;
 		letter-spacing: 0.1em;
