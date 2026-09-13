@@ -84,7 +84,7 @@
 		<div class="hero__demo-wrap" bind:this={stageEl} id="stage" aria-label="Product demo preview">
 			<!-- svelte-ignore a11y_no_static_element_interactions -->
 			<!-- svelte-ignore a11y_click_events_have_key_events -->
-			<div class="hero__stage vanguard-surface tw-border-slate-800 tw-cursor-pointer tw-group" onclick={openModal} onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') openModal(); }} tabindex="0" role="button" aria-label="Play Hero Video">
+			<div class="hero__stage vanguard-surface tw-border-slate-800 tw-cursor-pointer tw-group" onclick={openModal} onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openModal(); } }} tabindex="0" role="button" aria-label="Play Hero Video">
 				<div class="tw-absolute tw-inset-0 tw-z-10 tw-flex tw-items-center tw-justify-center tw-bg-slate-900/40 tw-opacity-0 group-hover:tw-opacity-100 tw-transition-opacity tw-duration-300">
 					<div class="tw-bg-[#daff0a] tw-text-black tw-rounded-full tw-p-4 tw-shadow-[0_0_20px_rgba(218,255,10,0.5)] tw-transform tw-scale-90 group-hover:tw-scale-100 tw-transition-transform tw-duration-300">
 						<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
