@@ -27,6 +27,7 @@
         {feature}
       </li>
     {/each}
+  </ul>
   <div class="sc-footer-action">
     <a href="/setup?role={card.id}" class="sc-action-btn">
       <span>EXPLORE {card.role}</span>
@@ -100,6 +101,22 @@
 
   :global(.stakeholder-card--parents) {
     --sc-accent: #10b981;
+  }
+
+  :global(.stakeholder-card--recruiters) {
+    --sc-accent: #f59e0b;
+  }
+
+  :global(.stakeholder-card--commissioners) {
+    --sc-accent: #8b5cf6;
+  }
+
+  :global(.stakeholder-card--fans) {
+    --sc-accent: #ec4899;
+  }
+
+  :global(.stakeholder-card--admins) {
+    --sc-accent: #ef4444;
   }
 
   .sc-role-badge {
