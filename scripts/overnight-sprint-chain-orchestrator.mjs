@@ -25,27 +25,47 @@ const POLL_INTERVAL_MS = 30_000; // 30 seconds
 const MAX_TOTAL_WAIT_MS = 24 * 60 * 60 * 1000; // 24 hours execution window
 const START_TIME = Date.now();
 
-// Sprint execution queue (in strict dependency order)
 const SPRINT_QUEUE = [
   {
-    id: 'sprint-3.2',
-    name: 'sprint-3.2-player-armory-trinity',
-    sessionId: '17634747530390108836',
-    workflowFile: '.agents/workflows/jules-builds/sprint-3.2-player-armory-trinity.md',
-    dispatched: true
-  },
-  {
-    id: 'sprint-3.3',
-    name: 'sprint-3.3-parent-household-trinity',
+    id: 'sprint-5.2',
+    name: 'sprint-5.2-tenant-claims',
     sessionId: null,
-    workflowFile: '.agents/workflows/jules-builds/sprint-3.3-parent-household-trinity.md',
+    workflowFile: '.agents/workflows/jules-builds/sprint-5.2-tenant-claims.md',
     dispatched: false
   },
   {
-    id: 'sprint-3.4',
-    name: 'sprint-3.4-parent-workout-trinity',
+    id: 'sprint-5.3',
+    name: 'sprint-5.3-webauthn-biometrics',
     sessionId: null,
-    workflowFile: '.agents/workflows/jules-builds/sprint-3.4-parent-workout-trinity.md',
+    workflowFile: '.agents/workflows/jules-builds/sprint-5.3-webauthn-biometrics.md',
+    dispatched: false
+  },
+  {
+    id: 'sprint-6.1',
+    name: 'sprint-6.1-persona-storytelling',
+    sessionId: null,
+    workflowFile: '.agents/workflows/jules-builds/sprint-6.1-persona-storytelling.md',
+    dispatched: false
+  },
+  {
+    id: 'sprint-6.2',
+    name: 'sprint-6.2-training-triangle',
+    sessionId: null,
+    workflowFile: '.agents/workflows/jules-builds/sprint-6.2-training-triangle.md',
+    dispatched: false
+  },
+  {
+    id: 'sprint-6.3',
+    name: 'sprint-6.3-playwright-demo-videos',
+    sessionId: null,
+    workflowFile: '.agents/workflows/jules-builds/sprint-6.3-playwright-demo-videos.md',
+    dispatched: false
+  },
+  {
+    id: 'sprint-6.4',
+    name: 'sprint-6.4-video-integration',
+    sessionId: null,
+    workflowFile: '.agents/workflows/jules-builds/sprint-6.4-video-integration.md',
     dispatched: false
   }
 ];
