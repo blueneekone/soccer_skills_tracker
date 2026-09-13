@@ -62,10 +62,6 @@
 					<span>GET STARTED FREE</span>
 					<span class="hero__btn-arrow" aria-hidden="true">→</span>
 				</a>
-				<a href="{base}/acquisition" class="hero__btn-secondary">
-					<span>DIRECTOR TRUST BRIEF</span>
-					<span class="hero__btn-arrow" aria-hidden="true">→</span>
-				</a>
 			</div>
 
 			<ul class="hero__trust-strip" aria-label="Platform trust signals">
@@ -239,36 +235,6 @@
 		transform: scale(0.98);
 	}
 
-	.hero__btn-secondary {
-		display: inline-flex;
-		align-items: center;
-		gap: 0.6rem;
-		padding: 0.85rem 1.6rem;
-		border-radius: 6px;
-		background: rgba(15, 23, 42, 0.8);
-		border: 1px solid rgba(51, 65, 85, 0.8);
-		backdrop-filter: blur(8px);
-		color: #e2e8f0;
-		font-family: 'Geist Mono', ui-monospace, monospace;
-		font-size: 0.875rem;
-		font-weight: 700;
-		letter-spacing: 0.08em;
-		text-decoration: none;
-		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-		transition: all 180ms cubic-bezier(0.16, 1, 0.3, 1);
-	}
-
-	.hero__btn-secondary:hover {
-		background: rgba(30, 41, 59, 0.9);
-		border-color: #14b8a6;
-		color: #ffffff;
-		box-shadow: 0 0 20px rgba(20, 184, 166, 0.3);
-		transform: translateY(-2px);
-	}
-
-	.hero__btn-secondary:active {
-		transform: scale(0.98);
-	}
 
 	.hero__btn-arrow {
 		font-weight: 900;
