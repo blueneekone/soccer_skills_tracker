@@ -161,39 +161,39 @@ import { functions } from '$lib/firebase.js';
 	function stepColor(n: number): string {
 		if (n < currentStep) return '#2dd4bf';
 		if (n === currentStep) return '#14b8a6';
-		return 'rgba(0,255,255,0.2)';
+		return 'rgba(20, 184, 166, 0.2)';
 	}
 </script>
 
 <div
-	class="w-full max-w-xl mx-auto font-mono space-y-0"
+	class="tw-w-full tw-max-w-xl tw-mx-auto tw-font-mono tw-space-y-0"
 	style="
 		background: rgba(0, 6, 16, 0.97);
-		border: 1px solid rgba(0, 255, 255, 0.18);
-		border-radius: 4px;
+		border: 1px solid rgba(20, 184, 166, 0.18);
+		border-radius: 2px;
 	"
 >
 	<!-- ── Header ─────────────────────────────────────────────────────────── -->
 	<div
-		class="flex items-center justify-between px-5 py-3"
-		style="border-bottom: 1px solid rgba(0,255,255,0.1); background: rgba(0,255,255,0.03);"
+		class="tw-flex tw-items-center tw-justify-between tw-px-5 tw-py-3"
+		style="border-bottom: 1px solid rgba(20, 184, 166, 0.1); background: rgba(20, 184, 166, 0.03);"
 	>
-		<div class="flex items-center gap-3">
-			<div class="relative">
+		<div class="tw-flex tw-items-center tw-gap-3">
+			<div class="tw-relative">
 				<svg width="20" height="20" viewBox="0 0 24 24" fill="none">
 					<path d="M13 3l9 9-9 9" stroke="#14b8a6" stroke-width="1.5" stroke-linecap="round" opacity="0.4"/>
 					<path d="M3 3l9 9-9 9" stroke="#14b8a6" stroke-width="1.5" stroke-linecap="round"/>
 				</svg>
 			</div>
 			<div>
-				<div class="text-xs font-bold tracking-widest tw-font-mono" style="color: rgba(0,255,255,0.9);">VANGUARD TRANSFER PROTOCOL</div>
-				<div class="text-xs" style="color: rgba(0,255,255,0.35);">
+				<div class="tw-text-xs tw-font-bold tw-tracking-widest tw-font-mono" style="color: rgba(20, 184, 166, 0.9);">VANGUARD TRANSFER PROTOCOL</div>
+				<div class="tw-text-xs" style="color: rgba(20, 184, 166, 0.35);">
 					{isParent ? 'PARENT AUTHORIZATION TERMINAL' : 'DIRECTOR TOKEN ACCEPTANCE MODULE'}
 				</div>
 			</div>
 		</div>
 		<div
-			class="px-2 py-0.5 text-xs tracking-wider tw-font-mono"
+			class="tw-px-2 tw-py-0.5 tw-text-xs tw-tracking-wider tw-font-mono"
 			style="
 				border: 1px solid rgba(255,180,40,0.4);
 				color: rgba(255,180,40,0.8);
@@ -203,45 +203,45 @@ import { functions } from '$lib/firebase.js';
 	</div>
 
 	<!-- ── Progress rail ──────────────────────────────────────────────────── -->
-	<div class="px-5 py-4" style="border-bottom: 1px solid rgba(0,255,255,0.06);">
-		<div class="flex items-center gap-0">
+	<div class="tw-px-5 tw-py-4" style="border-bottom: 1px solid rgba(20, 184, 166, 0.06);">
+		<div class="tw-flex tw-items-center tw-gap-0">
 			{#each [
 				{ n: 1, label: 'PARENT INITIATES' },
 				{ n: 2, label: 'DIRECTOR ACCEPTS' },
 				{ n: 3, label: 'PARENT CONFIRMS' },
 				{ n: 4, label: 'DATA PORTED' },
 			] as step}
-				<div class="flex-1 flex flex-col items-center gap-1">
+				<div class="tw-flex-1 tw-flex tw-flex-col tw-items-center tw-gap-1">
 					<div
-						class="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold transition-all duration-500"
+						class="tw-w-6 tw-h-6 tw-rounded-full tw-flex tw-items-center tw-justify-center tw-text-xs tw-font-bold tw-transition-all tw-duration-500"
 						style="
 							border: 1.5px solid {stepColor(step.n)};
 							color: {stepColor(step.n)};
-							background: {step.n < currentStep ? 'rgba(45, 212, 191,0.1)' : step.n === currentStep ? 'rgba(0,255,255,0.08)' : 'transparent'};
-							box-shadow: {step.n === currentStep ? '0 0 12px rgba(0,255,255,0.3)' : 'none'};
+							background: {step.n < currentStep ? 'rgba(45, 212, 191,0.1)' : step.n === currentStep ? 'rgba(20, 184, 166, 0.08)' : 'transparent'};
+							box-shadow: {step.n === currentStep ? '0 0 12px rgba(20, 184, 166, 0.3)' : 'none'};
 						"
 					>
 						{step.n < currentStep ? '✓' : step.n}
 					</div>
-					<span class="text-center" style="font-size: 8px; color: {stepColor(step.n)}; letter-spacing: 0.05em;">
+					<span class="tw-text-center" style="font-size: 10px; color: {stepColor(step.n)}; letter-spacing: 0.05em;">
 						{step.label}
 					</span>
 				</div>
 				{#if step.n < 4}
-					<div class="flex-1 h-px" style="background: {step.n < currentStep ? 'rgba(45, 212, 191,0.5)' : 'rgba(0,255,255,0.1)'};"></div>
+					<div class="tw-flex-1 tw-h-px" style="background: {step.n < currentStep ? 'rgba(45, 212, 191,0.5)' : 'rgba(20, 184, 166, 0.1)'};"></div>
 				{/if}
 			{/each}
 		</div>
 	</div>
 
 	<!-- ── Active panel ───────────────────────────────────────────────────── -->
-	<div class="p-5 space-y-4">
+	<div class="tw-p-5 tw-space-y-4">
 
 		<!-- ── COMPLETED ───────────────────────────────────────────────────── -->
 		{#if stage === 'completed'}
-			<div class="flex flex-col items-center gap-4 py-4 text-center">
+			<div class="tw-flex tw-flex-col tw-items-center tw-gap-4 tw-py-4 tw-text-center">
 			<div
-				class="w-16 h-16 rounded-full flex items-center justify-center"
+				class="tw-w-16 tw-h-16 tw-rounded-full tw-flex tw-items-center tw-justify-center"
 				style="
 					background: rgba(45, 212, 191,0.08);
 					border: 2px solid rgba(45, 212, 191,0.6);
@@ -251,78 +251,72 @@ import { functions } from '$lib/firebase.js';
 			>
 				<Icon name="status.check" size={28} strokeWidth={2.5} />
 			</div>
-				<div class="space-y-1">
-					<div class="text-sm font-bold" style="color: #2dd4bf; text-shadow: 0 0 20px rgba(45, 212, 191,0.5);">
+				<div class="tw-space-y-1">
+					<div class="tw-text-sm tw-font-bold" style="color: #2dd4bf; text-shadow: 0 0 20px rgba(45, 212, 191,0.5);">
 						TRANSFER PROTOCOL COMPLETE
 					</div>
 					{#if completedResult}
-						<div class="text-xs" style="color: rgba(0,255,255,0.5);">
+						<div class="tw-text-xs" style="color: rgba(20, 184, 166, 0.5);">
 							{completedResult.playerName} has been ported to the new club.<br/>
 							XP, Tier, and Scout's Six stats preserved.
 						</div>
-						<div class="text-xs mt-1" style="color: rgba(0,255,255,0.25);">
+						<div class="tw-text-xs tw-mt-1" style="color: rgba(20, 184, 166, 0.25);">
 							DESTINATION TENANT: {completedResult.newTenantId}
 						</div>
 					{/if}
 				</div>
 				<button
 					onclick={reset}
-					class="px-5 py-2 text-xs tracking-widest transition-all tw-font-mono"
-					style="border: 1px solid rgba(45, 212, 191,0.4); color: #2dd4bf;"
-					onmouseenter={(e) => (e.currentTarget.style.background = 'rgba(45, 212, 191,0.08)')}
-					onmouseleave={(e) => (e.currentTarget.style.background = 'transparent')}
+					class="tw-px-5 tw-py-2 tw-text-xs tw-tracking-widest tw-transition-all tw-font-mono hover:tw-bg-[rgba(45,212,191,0.08)]"
+				style="border: 1px solid rgba(45, 212, 191,0.4); color: #2dd4bf;"
 				>[ CLOSE PROTOCOL ]</button>
 			</div>
 
 		<!-- ── ERROR ─────────────────────────────────────────────────────── -->
 		{:else if stage === 'error'}
-			<div class="space-y-4">
-				<div class="px-4 py-3 space-y-1" style="background: rgba(255,64,96,0.07); border: 1px solid rgba(255,64,96,0.4);">
-					<div class="text-xs font-bold" style="color: #ff4060;">⚠ PROTOCOL FAILURE</div>
-					<div class="text-xs" style="color: rgba(255,100,120,0.8);">{errorMsg}</div>
+			<div class="tw-space-y-4">
+				<div class="tw-px-4 tw-py-3 tw-space-y-1" style="background: rgba(255,64,96,0.07); border: 1px solid rgba(255,64,96,0.4);">
+					<div class="tw-text-xs tw-font-bold" style="color: #ff4060;">⚠ PROTOCOL FAILURE</div>
+					<div class="tw-text-xs" style="color: rgba(255,100,120,0.8);">{errorMsg}</div>
 				</div>
 				<button
 					onclick={reset}
-					class="px-5 py-2 text-xs tracking-widest transition-all tw-font-mono"
-					style="border: 1px solid rgba(255,64,96,0.4); color: #ff4060;"
-					onmouseenter={(e) => (e.currentTarget.style.background = 'rgba(255,64,96,0.08)')}
-					onmouseleave={(e) => (e.currentTarget.style.background = 'transparent')}
+					class="tw-px-5 tw-py-2 tw-text-xs tw-tracking-widest tw-transition-all tw-font-mono hover:tw-bg-[rgba(255,64,96,0.08)]"
+				style="border: 1px solid rgba(255,64,96,0.4); color: #ff4060;"
 				>[ RESET ]</button>
 			</div>
 
 		<!-- ── PARENT: STEP 1 — INITIATE ─────────────────────────────────── -->
 		{:else if isParent && (stage === 'idle' || stage === 'parent_initiating')}
-			<div class="space-y-4">
-				<div class="px-3 py-2.5 text-xs leading-relaxed" style="background: rgba(255,180,40,0.04); border: 1px solid rgba(255,180,40,0.2); color: rgba(255,200,80,0.7);">
+			<div class="tw-space-y-4">
+				<div class="tw-px-3 tw-py-2.5 tw-text-xs tw-leading-relaxed" style="background: rgba(255,180,40,0.04); border: 1px solid rgba(255,180,40,0.2); color: rgba(255,200,80,0.7);">
 					⚠ ZERO-TRUST PROTOCOL: Transfers are irreversible without re-initiation.
 					Only the COPPA-verified parent account may authorize movement of player data.
 				</div>
 
-				<div class="space-y-1">
-					<label class="text-xs tracking-widest tw-font-mono" style="color: rgba(0,255,255,0.5);">PLAYER EMAIL</label>
+				<div class="tw-space-y-1">
+					<label class="tw-text-xs tw-tracking-widest tw-font-mono" style="color: rgba(20, 184, 166, 0.5);">PLAYER EMAIL</label>
 					<input
 						type="email"
 						bind:value={targetPlayerEmail}
 						placeholder="player@club.com"
 						autocomplete="email"
-						class="w-full px-3 py-2.5 text-xs bg-transparent outline-none"
-						style="border: 1px solid rgba(0,255,255,0.2); border-radius: 2px; color: #14b8a6;"
-						onfocus={(e) => (e.currentTarget.style.borderColor = 'rgba(0,255,255,0.5)')}
-						onblur={(e) => (e.currentTarget.style.borderColor = 'rgba(0,255,255,0.2)')}
+						class="tw-w-full tw-px-3 tw-py-2.5 tw-text-xs tw-bg-transparent tw-outline-none"
+						style="border: 1px solid rgba(20, 184, 166, 0.2); border-radius: 2px; color: #14b8a6;"
+						onfocus={(e) => (e.currentTarget.style.borderColor = 'rgba(20, 184, 166, 0.5)')}
+						onblur={(e) => (e.currentTarget.style.borderColor = 'rgba(20, 184, 166, 0.2)')}
 					/>
 				</div>
 
 				{#if errorMsg}
-					<div class="text-xs px-3 py-1.5" style="color: #ff4060; border: 1px solid rgba(255,64,96,0.3);">{errorMsg}</div>
+					<div class="tw-text-xs tw-px-3 tw-py-1.5" style="color: #ff4060; border: 1px solid rgba(255,64,96,0.3);">{errorMsg}</div>
 				{/if}
 
 				<button
 					onclick={handleInitiate}
 					disabled={isLoading}
-					class="w-full py-2.5 text-xs font-bold tracking-widest transition-all disabled:opacity-40 tw-font-mono"
-					style="background: rgba(0,255,255,0.08); border: 1px solid rgba(0,255,255,0.4); color: #14b8a6;"
-					onmouseenter={(e) => { if (!e.currentTarget.disabled) e.currentTarget.style.background = 'rgba(0,255,255,0.15)'; }}
-					onmouseleave={(e) => (e.currentTarget.style.background = 'rgba(0,255,255,0.08)')}
+					class="tw-w-full tw-py-2.5 tw-text-xs tw-font-bold tw-tracking-widest tw-transition-all disabled:tw-opacity-40 tw-font-mono  tw-bg-[rgba(20,184,166,0.08)] enabled:hover:tw-bg-[rgba(20,184,166,0.15)]"
+					style=" border: 1px solid rgba(20, 184, 166, 0.4); color: #14b8a6;"
 				>
 					{isLoading ? '[ GENERATING TOKEN... ]' : '[ INITIATE TRANSFER PROTOCOL ]'}
 				</button>
@@ -330,48 +324,46 @@ import { functions } from '$lib/firebase.js';
 
 		<!-- ── PARENT: STEP 1 DONE — Show token + auth code entry ──────── -->
 		{:else if isParent && stage === 'parent_initiated'}
-			<div class="space-y-4">
-				<div class="px-3 py-3 space-y-2" style="background: rgba(0,255,255,0.04); border: 1px solid rgba(0,255,255,0.2);">
-					<div class="text-xs tracking-widest tw-font-mono" style="color: rgba(0,255,255,0.5);">TRANSFER TOKEN GENERATED</div>
-					<div class="text-xs font-bold break-all" style="color: #14b8a6; word-break: break-all;">{tokenId}</div>
+			<div class="tw-space-y-4">
+				<div class="tw-px-3 tw-py-3 tw-space-y-2" style="background: rgba(20, 184, 166, 0.04); border: 1px solid rgba(20, 184, 166, 0.2);">
+					<div class="tw-text-xs tw-tracking-widest tw-font-mono" style="color: rgba(20, 184, 166, 0.5);">TRANSFER TOKEN GENERATED</div>
+					<div class="tw-text-xs tw-font-bold tw-break-all" style="color: #14b8a6; word-break: break-all;">{tokenId}</div>
 					{#if expiresAt}
-						<div class="text-xs" style="color: rgba(0,255,255,0.3);">EXPIRES: {new Date(expiresAt).toLocaleString()}</div>
+						<div class="tw-text-xs" style="color: rgba(20, 184, 166, 0.3);">EXPIRES: {new Date(expiresAt).toLocaleString()}</div>
 					{/if}
-					<div class="text-xs" style="color: rgba(0,255,255,0.4);">
+					<div class="tw-text-xs" style="color: rgba(20, 184, 166, 0.4);">
 						Send this token to the receiving Club Director.<br/>
 						Your auth code has been emailed to your COPPA-verified address.
 					</div>
 				</div>
 
-				<div class="space-y-1">
-					<label for="tp-auth-code" class="text-xs tracking-widest tw-font-mono" style="color: rgba(0,255,255,0.5);">ENTER AUTH CODE (from email)</label>
+				<div class="tw-space-y-1">
+					<label for="tp-auth-code" class="tw-text-xs tw-tracking-widest tw-font-mono" style="color: rgba(20, 184, 166, 0.5);">ENTER AUTH CODE (from email)</label>
 					<input
 						id="tp-auth-code"
 						type="text"
 						bind:value={authCode}
 						placeholder="XXXXXXXXXXXX"
 						maxlength="12"
-						class="w-full px-3 py-2.5 text-sm font-bold tracking-[0.25em] bg-transparent outline-none uppercase"
-						style="border: 1px solid rgba(0,255,255,0.2); border-radius: 2px; color: #14b8a6;"
-						onfocus={(e) => (e.currentTarget.style.borderColor = 'rgba(0,255,255,0.5)')}
-						onblur={(e) => (e.currentTarget.style.borderColor = 'rgba(0,255,255,0.2)')}
+						class="tw-w-full tw-px-3 tw-py-2.5 tw-text-sm tw-font-bold tw-tracking-[0.25em] tw-bg-transparent tw-outline-none tw-uppercase"
+						style="border: 1px solid rgba(20, 184, 166, 0.2); border-radius: 2px; color: #14b8a6;"
+						onfocus={(e) => (e.currentTarget.style.borderColor = 'rgba(20, 184, 166, 0.5)')}
+						onblur={(e) => (e.currentTarget.style.borderColor = 'rgba(20, 184, 166, 0.2)')}
 					/>
-					<div class="text-xs" style="color: rgba(0,255,255,0.3);">
+					<div class="tw-text-xs" style="color: rgba(20, 184, 166, 0.3);">
 						Auth code is available after the Director accepts the token (Step 2).
 					</div>
 				</div>
 
 				{#if errorMsg}
-					<div class="text-xs px-3 py-1.5" style="color: #ff4060; border: 1px solid rgba(255,64,96,0.3);">{errorMsg}</div>
+					<div class="tw-text-xs tw-px-3 tw-py-1.5" style="color: #ff4060; border: 1px solid rgba(255,64,96,0.3);">{errorMsg}</div>
 				{/if}
 
 				<button
 					onclick={handleConfirm}
 					disabled={isLoading || !authCode.trim()}
-					class="w-full py-2.5 text-xs font-bold tracking-widest transition-all disabled:opacity-40 tw-font-mono"
-					style="background: rgba(0,255,255,0.08); border: 1px solid rgba(0,255,255,0.4); color: #14b8a6;"
-					onmouseenter={(e) => { if (!e.currentTarget.disabled) e.currentTarget.style.background = 'rgba(0,255,255,0.15)'; }}
-					onmouseleave={(e) => (e.currentTarget.style.background = 'rgba(0,255,255,0.08)')}
+					class="tw-w-full tw-py-2.5 tw-text-xs tw-font-bold tw-tracking-widest tw-transition-all disabled:tw-opacity-40 tw-font-mono  tw-bg-[rgba(20,184,166,0.08)] enabled:hover:tw-bg-[rgba(20,184,166,0.15)]"
+					style=" border: 1px solid rgba(20, 184, 166, 0.4); color: #14b8a6;"
 				>
 					{isLoading ? '[ AUTHORIZING... ]' : '[ CRYPTOGRAPHIC CONFIRM ]'}
 				</button>
@@ -379,37 +371,35 @@ import { functions } from '$lib/firebase.js';
 
 		<!-- ── DIRECTOR: STEP 2 — Enter token ────────────────────────────── -->
 		{:else if isDirector && (stage === 'idle' || stage === 'director_entering')}
-			<div class="space-y-4">
-				<div class="px-3 py-2.5 text-xs leading-relaxed" style="background: rgba(0,255,255,0.03); border: 1px solid rgba(0,255,255,0.1); color: rgba(0,255,255,0.5);">
+			<div class="tw-space-y-4">
+				<div class="tw-px-3 tw-py-2.5 tw-text-xs tw-leading-relaxed" style="background: rgba(20, 184, 166, 0.03); border: 1px solid rgba(20, 184, 166, 0.1); color: rgba(20, 184, 166, 0.5);">
 					Obtain the Transfer Token from the player's parent account, then enter it below.
 					The parent will receive a cryptographic auth code to confirm the transfer.
 				</div>
 
-				<div class="space-y-1">
-					<label for="tp-dir-token" class="text-xs tracking-widest tw-font-mono" style="color: rgba(0,255,255,0.5);">TRANSFER TOKEN</label>
+				<div class="tw-space-y-1">
+					<label for="tp-dir-token" class="tw-text-xs tw-tracking-widest tw-font-mono" style="color: rgba(20, 184, 166, 0.5);">TRANSFER TOKEN</label>
 					<textarea
 						id="tp-dir-token"
 						bind:value={directorTokenInput}
 						placeholder="64-character transfer token"
 						rows="2"
-						class="w-full px-3 py-2.5 text-xs font-mono bg-transparent outline-none resize-none"
-						style="border: 1px solid rgba(0,255,255,0.2); border-radius: 2px; color: #14b8a6; word-break: break-all;"
-						onfocus={(e) => (e.currentTarget.style.borderColor = 'rgba(0,255,255,0.5)')}
-						onblur={(e) => (e.currentTarget.style.borderColor = 'rgba(0,255,255,0.2)')}
+						class="tw-w-full tw-px-3 tw-py-2.5 tw-text-xs tw-font-mono tw-bg-transparent tw-outline-none tw-resize-none"
+						style="border: 1px solid rgba(20, 184, 166, 0.2); border-radius: 2px; color: #14b8a6; word-break: break-all;"
+						onfocus={(e) => (e.currentTarget.style.borderColor = 'rgba(20, 184, 166, 0.5)')}
+						onblur={(e) => (e.currentTarget.style.borderColor = 'rgba(20, 184, 166, 0.2)')}
 					></textarea>
 				</div>
 
 				{#if errorMsg}
-					<div class="text-xs px-3 py-1.5" style="color: #ff4060; border: 1px solid rgba(255,64,96,0.3);">{errorMsg}</div>
+					<div class="tw-text-xs tw-px-3 tw-py-1.5" style="color: #ff4060; border: 1px solid rgba(255,64,96,0.3);">{errorMsg}</div>
 				{/if}
 
 				<button
 					onclick={handleDirectorPresent}
 					disabled={isLoading || !directorTokenInput.trim()}
-					class="w-full py-2.5 text-xs font-bold tracking-widest transition-all disabled:opacity-40 tw-font-mono"
-					style="background: rgba(0,255,255,0.08); border: 1px solid rgba(0,255,255,0.4); color: #14b8a6;"
-					onmouseenter={(e) => { if (!e.currentTarget.disabled) e.currentTarget.style.background = 'rgba(0,255,255,0.15)'; }}
-					onmouseleave={(e) => (e.currentTarget.style.background = 'rgba(0,255,255,0.08)')}
+					class="tw-w-full tw-py-2.5 tw-text-xs tw-font-bold tw-tracking-widest tw-transition-all disabled:tw-opacity-40 tw-font-mono  tw-bg-[rgba(20,184,166,0.08)] enabled:hover:tw-bg-[rgba(20,184,166,0.15)]"
+					style=" border: 1px solid rgba(20, 184, 166, 0.4); color: #14b8a6;"
 				>
 					{isLoading ? '[ VALIDATING TOKEN... ]' : '[ ACCEPT TRANSFER TOKEN ]'}
 				</button>
@@ -418,36 +408,36 @@ import { functions } from '$lib/firebase.js';
 		<!-- ── DIRECTOR: STEP 2 DONE — awaiting parent ───────────────────── -->
 		{:else if isDirector && stage === 'director_accepted'}
 			{#if directorResult}
-				<div class="space-y-3">
-					<div class="px-3 py-3" style="background: rgba(45, 212, 191,0.05); border: 1px solid rgba(45, 212, 191,0.3);">
-						<div class="text-xs font-bold mb-1" style="color: #2dd4bf;">TOKEN ACCEPTED</div>
-						<div class="text-xs space-y-0.5" style="color: rgba(0,255,255,0.5);">
-							<div>PLAYER: <span style="color: rgba(0,255,255,0.8);">{directorResult.playerName}</span></div>
-							<div>DESTINATION: <span style="color: rgba(0,255,255,0.8);">{directorResult.destinationClubName}</span></div>
+				<div class="tw-space-y-3">
+					<div class="tw-px-3 tw-py-3" style="background: rgba(45, 212, 191,0.05); border: 1px solid rgba(45, 212, 191,0.3);">
+						<div class="tw-text-xs tw-font-bold tw-mb-1" style="color: #2dd4bf;">TOKEN ACCEPTED</div>
+						<div class="tw-text-xs tw-space-y-0.5" style="color: rgba(20, 184, 166, 0.5);">
+							<div>PLAYER: <span style="color: rgba(20, 184, 166, 0.8);">{directorResult.playerName}</span></div>
+							<div>DESTINATION: <span style="color: rgba(20, 184, 166, 0.8);">{directorResult.destinationClubName}</span></div>
 						</div>
 					</div>
-					<div class="text-xs leading-relaxed" style="color: rgba(0,255,255,0.45);">
-						Auth code dispatched to <strong style="color: rgba(0,255,255,0.7);">{directorResult.authCodeSentTo}</strong>.<br/>
+					<div class="tw-text-xs tw-leading-relaxed" style="color: rgba(20, 184, 166, 0.45);">
+						Auth code dispatched to <strong style="color: rgba(20, 184, 166, 0.7);">{directorResult.authCodeSentTo}</strong>.<br/>
 						The parent must enter the code to complete the transfer.<br/>
 						This terminal will remain open until confirmation is received.
 					</div>
-					<div class="flex items-center gap-2 animate-pulse">
-						<div class="w-2 h-2 rounded-full" style="background: #14b8a6; box-shadow: 0 0 6px #14b8a6;"></div>
-						<span class="text-xs" style="color: rgba(0,255,255,0.5);">AWAITING PARENT AUTHORIZATION...</span>
+					<div class="tw-flex tw-items-center tw-gap-2 tw-animate-pulse">
+						<div class="tw-w-2 tw-h-2 tw-rounded-full" style="background: #14b8a6; box-shadow: 0 0 6px #14b8a6;"></div>
+						<span class="tw-text-xs" style="color: rgba(20, 184, 166, 0.5);">AWAITING PARENT AUTHORIZATION...</span>
 					</div>
 				</div>
 			{/if}
 
 		<!-- ── PARENT CONFIRMING ──────────────────────────────────────────── -->
 		{:else if stage === 'parent_confirming'}
-			<div class="flex flex-col items-center gap-4 py-4 text-center">
-				<div class="relative w-12 h-12">
-					<div class="w-full h-full rounded-full border-2 animate-spin" style="border-color: rgba(0,255,255,0.15); border-top-color: #14b8a6;"></div>
+			<div class="tw-flex tw-flex-col tw-items-center tw-gap-4 tw-py-4 tw-text-center">
+				<div class="tw-relative tw-w-12 tw-h-12">
+					<div class="tw-w-full tw-h-full tw-rounded-full tw-border-2 tw-animate-spin" style="border-color: rgba(20, 184, 166, 0.15); border-top-color: #14b8a6;"></div>
 				</div>
-				<span class="text-xs animate-pulse" style="color: rgba(0,255,255,0.6);">
+				<span class="tw-text-xs tw-animate-pulse" style="color: rgba(20, 184, 166, 0.6);">
 					EXECUTING ATOMIC DATA PORT...
 				</span>
-				<span class="text-xs" style="color: rgba(0,255,255,0.3);">
+				<span class="tw-text-xs" style="color: rgba(20, 184, 166, 0.3);">
 					XP · TIER · SCOUT'S SIX STATS · ACADEMIC RECORDS
 				</span>
 			</div>
@@ -457,13 +447,13 @@ import { functions } from '$lib/firebase.js';
 
 	<!-- ── Footer ─────────────────────────────────────────────────────────── -->
 	<div
-		class="px-5 py-2 flex items-center justify-between"
-		style="border-top: 1px solid rgba(0,255,255,0.06);"
+		class="tw-px-5 tw-py-2 tw-flex tw-items-center tw-justify-between"
+		style="border-top: 1px solid rgba(20, 184, 166, 0.06);"
 	>
-		<span class="text-xs" style="font-size: 10px; color: rgba(0,255,255,0.2);">
+		<span class="tw-text-xs" style="font-size: 10px; color: rgba(20, 184, 166, 0.2);">
 			COPPA-VERIFIED · HMAC-SHA256 · 48H TOKEN TTL
 		</span>
-		<span class="text-xs" style="font-size: 10px; color: rgba(0,255,255,0.2);">
+		<span class="tw-text-xs" style="font-size: 10px; color: rgba(20, 184, 166, 0.2);">
 			VANGUARD NEXUS v4
 		</span>
 	</div>
