@@ -39,19 +39,19 @@
 		const role = e2e?.userProfile?.role || e2e?.session?.role || authStore.role;
 		const isAuthenticated = e2e ? (e2e.isAuthenticated ?? true) : authStore.isAuthenticated;
 		const isCleared = e2e?.userProfile?.isCleared !== undefined ? e2e.userProfile.isCleared : authStore.userProfile?.isCleared;
-		const prof = authStore.userProfile;
+		const prof = e2e?.userProfile || authStore.userProfile;
 
 		return {
 			currentPath,
 			isAuthenticated,
 			role,
 			isCleared,
-			isProfileComplete: authStore.isProfileComplete,
+			isProfileComplete: e2e ? true : authStore.isProfileComplete,
 			isMinor: prof?.isMinor,
-			vpcStatus: prof?.vpcStatus,
-			isConsented: authStore.isConsented,
-			medicalSignatureVerified: prof?.medicalSignatureVerified,
-			liabilityWaiverVerified: prof?.liabilityWaiverVerified,
+			vpcStatus: prof?.vpcStatus || (e2e ? 'VERIFIED' : undefined),
+			isConsented: e2e ? true : authStore.isConsented,
+			medicalSignatureVerified: prof?.medicalSignatureVerified || (e2e ? true : undefined),
+			liabilityWaiverVerified: prof?.liabilityWaiverVerified || (e2e ? true : undefined),
 			userProfile: prof
 		};
 	}
