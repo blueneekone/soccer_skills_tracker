@@ -639,9 +639,245 @@ exports.onRepCreatedUpdateTeamStats = onDocumentCreated(
   },
 );
 
+/**
+ * B3: Normalize a single bundle drill entry — same validation rules as the
+ * top-level prescription fields (sets required int 1–99; others optional).
+ * Throws HttpsError on any malformed field so the whole deploy is rejected.
+ * @param {unknown} raw
+ * @param {number} index - position in drills[] for error messages
+ * @returns {object}
+ */
+function normalizeDrillEntry(raw, index) {
+  const pfx = `prescription.drills[${index}]`;
+  if (raw === null || raw === undefined || typeof raw !== 'object' || Array.isArray(raw)) {
+    throw new HttpsError('invalid-argument', `${pfx} must be an object.`);
+  }
+  const drillTitle = typeof raw.drillTitle === 'string' ? raw.drillTitle.trim() : '';
+  const teamDrillId = typeof raw.teamDrillId === 'string' ? raw.teamDrillId.trim() : '';
+  const clubDrillId = typeof raw.clubDrillId === 'string' ? raw.clubDrillId.trim() : '';
+  const legacyDrillId = typeof raw.drillId === 'string' ? raw.drillId.trim() : '';
+  const sets = Number(raw.sets);
+  if (!Number.isFinite(sets) || sets < 1 || sets > 99 || Math.floor(sets) !== sets) {
+    throw new HttpsError('invalid-argument', `${pfx}.sets must be an integer 1–99.`);
+  }
+  let repsPerSet;
+  if (raw.repsPerSet !== undefined && raw.repsPerSet !== null) {
+    repsPerSet = Number(raw.repsPerSet);
+    if (!Number.isFinite(repsPerSet) || repsPerSet < 1 || repsPerSet > 999 || Math.floor(repsPerSet) !== repsPerSet) {
+      throw new HttpsError('invalid-argument', `${pfx}.repsPerSet must be an integer 1–999.`);
+    }
+    repsPerSet = Math.floor(repsPerSet);
+  }
+  const bilateral = raw.bilateral === true;
+  let targetDurationMin;
+  if (raw.targetDurationMin !== undefined && raw.targetDurationMin !== null) {
+    targetDurationMin = Number(raw.targetDurationMin);
+    if (!Number.isFinite(targetDurationMin) || targetDurationMin < 1 || targetDurationMin > 120) {
+      throw new HttpsError('invalid-argument', `${pfx}.targetDurationMin must be 1–120.`);
+    }
+    targetDurationMin = Math.floor(targetDurationMin);
+  }
+  let targetRpe;
+  if (raw.targetRpe !== undefined && raw.targetRpe !== null) {
+    targetRpe = Number(raw.targetRpe);
+    if (!Number.isFinite(targetRpe) || targetRpe < 1 || targetRpe > 10) {
+      throw new HttpsError('invalid-argument', `${pfx}.targetRpe must be 1–10.`);
+    }
+    targetRpe = Math.round(targetRpe);
+  }
+  const rawVideoUrl = typeof raw.videoUrl === 'string' ? raw.videoUrl.trim() : '';
+  const validVideoUrl =
+    rawVideoUrl &&
+    (rawVideoUrl.startsWith('http://') || rawVideoUrl.startsWith('https://')) &&
+    rawVideoUrl.length <= 2048 ?
+      rawVideoUrl :
+      undefined;
+  const rawCues = typeof raw.cues === 'string' ? raw.cues.trim() : '';
+  const validCues = rawCues ? rawCues.slice(0, 2000) : undefined;
+  const out = {sets: Math.floor(sets), bilateral};
+  if (teamDrillId) out.teamDrillId = teamDrillId.slice(0, 128);
+  if (clubDrillId) out.clubDrillId = clubDrillId.slice(0, 128);
+  if (legacyDrillId) out.drillId = legacyDrillId.slice(0, 128);
+  if (drillTitle) out.drillTitle = drillTitle.slice(0, 200);
+  if (repsPerSet !== undefined) out.repsPerSet = repsPerSet;
+  if (targetDurationMin !== undefined) out.targetDurationMin = targetDurationMin;
+  if (targetRpe !== undefined) out.targetRpe = targetRpe;
+  if (validVideoUrl) out.videoUrl = validVideoUrl;
+  if (validCues) out.cues = validCues;
+  return out;
+}
+
+function applyHighXpCadenceDefault(prescription, requiredXp) {
+  const req = Math.floor(Number(requiredXp) || 0);
+  if (req < 300) return prescription;
+  if (prescription && prescription.cadence) return prescription;
+  const base = prescription || {sets: 1, bilateral: false};
+  return {...base, cadence: {sessionsPerWindow: 5, windowDays: 7}};
+}
+
+/**
+ * PRESCRIPTION-schema — validate and normalize optional coach prescription on deploy.
+ * @param {unknown} raw
+ * @param {number} [requiredXp]
+ * @returns {object|undefined}
+ */
+function normalizePrescription(raw, requiredXp) {
+  if (raw === undefined || raw === null) {
+    return applyHighXpCadenceDefault(undefined, requiredXp);
+  }
+  if (typeof raw !== 'object' || Array.isArray(raw)) {
+    throw new HttpsError('invalid-argument', 'prescription must be an object.');
+  }
+  const drillTitle = typeof raw.drillTitle === 'string' ? raw.drillTitle.trim() : '';
+  const teamDrillId = typeof raw.teamDrillId === 'string' ? raw.teamDrillId.trim() : '';
+  const clubDrillId = typeof raw.clubDrillId === 'string' ? raw.clubDrillId.trim() : '';
+  const legacyDrillId = typeof raw.drillId === 'string' ? raw.drillId.trim() : '';
+  const sets = Number(raw.sets);
+  if (!Number.isFinite(sets) || sets < 1 || sets > 99 || Math.floor(sets) !== sets) {
+    throw new HttpsError('invalid-argument', 'prescription.sets must be an integer 1–99.');
+  }
+  let repsPerSet;
+  if (raw.repsPerSet !== undefined && raw.repsPerSet !== null) {
+    repsPerSet = Number(raw.repsPerSet);
+    if (!Number.isFinite(repsPerSet) || repsPerSet < 1 || repsPerSet > 999 || Math.floor(repsPerSet) !== repsPerSet) {
+      throw new HttpsError('invalid-argument', 'prescription.repsPerSet must be an integer 1–999.');
+    }
+    repsPerSet = Math.floor(repsPerSet);
+  }
+  const bilateral = raw.bilateral === true;
+  let targetDurationMin;
+  if (raw.targetDurationMin !== undefined && raw.targetDurationMin !== null) {
+    targetDurationMin = Number(raw.targetDurationMin);
+    if (!Number.isFinite(targetDurationMin) || targetDurationMin < 1 || targetDurationMin > 120) {
+      throw new HttpsError('invalid-argument', 'prescription.targetDurationMin must be 1–120.');
+    }
+    targetDurationMin = Math.floor(targetDurationMin);
+  }
+  let targetRpe;
+  if (raw.targetRpe !== undefined && raw.targetRpe !== null) {
+    targetRpe = Number(raw.targetRpe);
+    if (!Number.isFinite(targetRpe) || targetRpe < 1 || targetRpe > 10) {
+      throw new HttpsError('invalid-argument', 'prescription.targetRpe must be 1–10.');
+    }
+    targetRpe = Math.round(targetRpe);
+  }
+  const rawVideoUrl = typeof raw.videoUrl === 'string' ? raw.videoUrl.trim() : '';
+  const validVideoUrl =
+    rawVideoUrl &&
+    (rawVideoUrl.startsWith('http://') || rawVideoUrl.startsWith('https://')) &&
+    rawVideoUrl.length <= 2048 ?
+      rawVideoUrl :
+      undefined;
+  const rawCues = typeof raw.cues === 'string' ? raw.cues.trim() : '';
+  const validCues = rawCues ? rawCues.slice(0, 2000) : undefined;
+  let cadence;
+  if (raw.cadence !== undefined && raw.cadence !== null) {
+    if (typeof raw.cadence !== 'object' || Array.isArray(raw.cadence)) {
+      throw new HttpsError('invalid-argument', 'prescription.cadence must be an object.');
+    }
+    const spw = Number(raw.cadence.sessionsPerWindow);
+    const wd = Number(raw.cadence.windowDays);
+    if (!Number.isFinite(spw) || spw < 1 || spw > 21 || Math.floor(spw) !== spw) {
+      throw new HttpsError('invalid-argument', 'prescription.cadence.sessionsPerWindow must be an integer 1–21.');
+    }
+    if (!Number.isFinite(wd) || wd < 1 || wd > 30 || Math.floor(wd) !== wd) {
+      throw new HttpsError('invalid-argument', 'prescription.cadence.windowDays must be an integer 1–30.');
+    }
+    cadence = {sessionsPerWindow: Math.floor(spw), windowDays: Math.floor(wd)};
+  }
+  const out = {sets: Math.floor(sets), bilateral};
+  if (teamDrillId) out.teamDrillId = teamDrillId.slice(0, 128);
+  if (clubDrillId) out.clubDrillId = clubDrillId.slice(0, 128);
+  if (legacyDrillId) out.drillId = legacyDrillId.slice(0, 128);
+  if (drillTitle) out.drillTitle = drillTitle.slice(0, 200);
+  if (repsPerSet !== undefined) out.repsPerSet = repsPerSet;
+  if (targetDurationMin !== undefined) out.targetDurationMin = targetDurationMin;
+  if (targetRpe !== undefined) out.targetRpe = targetRpe;
+  if (validVideoUrl) out.videoUrl = validVideoUrl;
+  if (validCues) out.cues = validCues;
+  if (cadence) out.cadence = cadence;
+  if (raw.requiresParentVerification === true) out.requiresParentVerification = true;
+  const benchmarkDrillId =
+    typeof raw.benchmarkDrillId === 'string' ? raw.benchmarkDrillId.trim() : '';
+  if (benchmarkDrillId) out.benchmarkDrillId = benchmarkDrillId.slice(0, 64);
+  if (raw.benchmarkTargetValue !== undefined && raw.benchmarkTargetValue !== null) {
+    const targetVal = Number(raw.benchmarkTargetValue);
+    if (Number.isFinite(targetVal) && targetVal > 0) {
+      out.benchmarkTargetValue = targetVal;
+    }
+  }
+  if (raw.drills !== undefined && raw.drills !== null) {
+    if (!Array.isArray(raw.drills)) {
+      throw new HttpsError('invalid-argument', 'prescription.drills must be an array.');
+    }
+    if (raw.drills.length < 1 || raw.drills.length > 8) {
+      throw new HttpsError('invalid-argument', 'prescription.drills must have 1–8 entries.');
+    }
+    out.drills = raw.drills.map((entry, i) => normalizeDrillEntry(entry, i));
+  }
+  return applyHighXpCadenceDefault(out, requiredXp);
+}
+
 exports.secureDeployIntent = onCall(LAUNCH_CORE_CALLABLE_OPTS, async (request) => {
   if (!request.auth || !request.auth.uid) throw new HttpsError('unauthenticated', 'Sign in required.');
-  return { ok: true };
+  const data = request.data || {};
+  const teamId = typeof data.teamId === 'string' ? data.teamId.trim() : '';
+  const tenantId = typeof data.tenantId === 'string' ? data.tenantId.trim() : '';
+  const clubId = typeof data.clubId === 'string' ? data.clubId.trim() : '';
+  const targetAttributeId = typeof data.targetAttributeId === 'string' ? data.targetAttributeId.trim() : '';
+  const requiredXp = Number(data.requiredXp);
+  const durationDays = Number(data.durationDays);
+  const scope = data.scope === 'players' ? 'players' : 'team';
+  const rawTargetUids = scope === 'players' && Array.isArray(data.targetUids)
+    ? data.targetUids.filter((u) => typeof u === 'string' && u.trim()).map((u) => u.trim())
+    : [];
+  const targetUids = rawTargetUids;
+  const priority = Number.isFinite(Number(data.priority)) && Number(data.priority) >= 1
+    ? Math.floor(Number(data.priority))
+    : 100;
+  // normalizePrescription(data.prescription)
+  const prescription = normalizePrescription(data.prescription, requiredXp);
+
+  if (!teamId || teamId === 'admin') throw new HttpsError('invalid-argument', 'teamId is required.');
+  if (!tenantId) throw new HttpsError('invalid-argument', 'tenantId is required.');
+  if (!clubId) throw new HttpsError('invalid-argument', 'clubId is required.');
+  if (!targetAttributeId) throw new HttpsError('invalid-argument', 'targetAttributeId is required.');
+  if (!Number.isFinite(requiredXp) || requiredXp < 1 || requiredXp > 100000) {
+    throw new HttpsError('invalid-argument', 'requiredXp must be 1–100000.');
+  }
+  if (!Number.isFinite(durationDays) || durationDays < 1 || durationDays > 90) {
+    throw new HttpsError('invalid-argument', 'durationDays must be 1–90.');
+  }
+  if (scope === 'players' && targetUids.length === 0) {
+    throw new HttpsError('invalid-argument', 'targetUids must be non-empty when scope is "players".');
+  }
+
+  const intentRef = db().collection('team_assignments').doc();
+  const intentId = intentRef.id;
+  const expiresAt = admin.firestore.Timestamp.fromMillis(Date.now() + durationDays * 86_400_000);
+
+  const intentPayload = {
+    intentId,
+    teamId,
+    tenantId,
+    clubId,
+    targetAttributeId,
+    requiredXp,
+    durationDays,
+    scope,
+    targetUids,
+    priority,
+    status: 'active',
+    fulfilledByUids: [],
+    createdByUid: request.auth.uid,
+    createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    expiresAt,
+    updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+  };
+  if (prescription) intentPayload.prescription = prescription;
+  await intentRef.set(intentPayload);
+
+  return { ok: true, intentId };
 });
 
 exports.secureCancelIntent = onCall(LAUNCH_CORE_CALLABLE_OPTS, async (request) => {

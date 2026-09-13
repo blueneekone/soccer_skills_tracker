@@ -7,8 +7,8 @@ import { describe, expect, it } from 'vitest';
 
 const ROOT = join(process.cwd());
 const HOUSEHOLD = join(ROOT, 'src/routes/(app)/parent/household/+page.svelte');
-const HOUSEHOLD_ENGINE = join(ROOT, 'src/routes/(app)/parent/household/HouseholdEngine.svelte.ts');
-const HOUSEHOLD_ARENA = join(ROOT, 'src/routes/(app)/parent/household/HouseholdArena.svelte');
+const HOUSEHOLD_ENGINE = join(ROOT, 'src/routes/(app)/parent/household/ParentHouseholdEngine.svelte.ts');
+const HOUSEHOLD_ARENA = join(ROOT, 'src/routes/(app)/parent/household/ParentHouseholdArena.svelte');
 const VPC_PENDING = join(ROOT, 'src/routes/(app)/vpc-pending/+page.svelte');
 const TENANT_RESET = join(ROOT, 'scripts/dev-tenant-reset.mjs');
 

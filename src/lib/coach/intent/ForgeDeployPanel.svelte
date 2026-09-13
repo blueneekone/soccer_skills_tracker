@@ -427,11 +427,39 @@
 		</div>
 	</div>
 
+	<!-- Cadence Frequency Guidance -->
+	<div class="tw-p-4 tw-bg-[#020617] tw-border tw-border-[#334155] tw-space-y-2">
+		<div class="tw-flex tw-items-center tw-justify-between">
+			<label for="forge-cadence" class="tw-text-xs tw-font-bold tw-text-slate-300 tw-uppercase">
+				WEEKLY CADENCE FREQUENCY
+			</label>
+			<span class="tw-text-xs tw-font-black tw-text-[#14b8a6]">
+				{cadenceDisplayLabel}
+			</span>
+		</div>
+		<input
+			id="forge-cadence"
+			type="range"
+			min="0"
+			max="7"
+			step="1"
+			bind:value={draftCadenceSessionsPerWindow}
+			class="tw-w-full tw-accent-[#14b8a6] tw-h-2 tw-bg-[#0f172a] tw-cursor-pointer"
+		/>
+		<div class="tw-text-[11px] tw-text-slate-400 tw-space-y-0.5">
+			<p class="tw-m-0">Recommended for multi-day XP goals.</p>
+			<p class="tw-m-0">One credited session per UTC day.</p>
+			{#if draftCadenceSessionsPerWindow === 0 && draftRequiredXp >= 300}
+				<p class="tw-m-0 tw-text-[#daff0a]">Deploy will default to 5×/week pacing.</p>
+			{/if}
+		</div>
+	</div>
+
 	<!-- 5. Scope & Operative Target Tray -->
 	<div class="tw-space-y-3">
 		<div class="tw-flex tw-items-center tw-justify-between">
 			<span class="tw-text-xs tw-font-bold tw-text-slate-300 tw-uppercase tw-tracking-wider">
-				5. TARGET OPERATIVES ({roster.length} ATHLETES)
+				5. TARGET OPERATIVES — Squad roster ({roster.length} ATHLETES)
 			</span>
 			<div class="tw-flex tw-gap-2">
 				<button
@@ -494,13 +522,15 @@
 				</div>
 			{:else}
 				{#each roster as player (player.rosterKey)}
+					{@const isAssignable = player.assignable !== false && !player.nameOnly}
 					{@const isSelected = draftScope === 'team' || draftTargetUids.includes(player.rosterKey)}
 					{@const initials = getPlayerInitials(player.playerName)}
 					<button
 						type="button"
-						class="tw-flex tw-items-center tw-justify-between tw-p-2.5 tw-border tw-text-left tw-transition-all {isSelected ? 'tw-bg-[#0f172a] tw-border-[#14b8a6]' : 'tw-bg-[#000000] tw-border-[#334155] hover:tw-border-slate-400'} {draftScope === 'team' ? 'tw-cursor-default' : 'tw-cursor-pointer'}"
+						class="tw-flex tw-items-center tw-justify-between tw-p-2.5 tw-border tw-text-left tw-transition-all {isSelected ? 'tw-bg-[#0f172a] tw-border-[#14b8a6]' : 'tw-bg-[#000000] tw-border-[#334155] hover:tw-border-slate-400'} {!isAssignable ? 'tw-opacity-50 tw-cursor-not-allowed' : (draftScope === 'team' ? 'tw-cursor-default' : 'tw-cursor-pointer')}"
+						disabled={!isAssignable}
 						onclick={() => {
-							if (draftScope === 'players') onToggleUid(player.rosterKey);
+							if (draftScope === 'players' && isAssignable) onToggleUid(player.rosterKey);
 						}}
 					>
 						<div class="tw-flex tw-items-center tw-gap-2.5 tw-min-w-0">
@@ -509,12 +539,18 @@
 							</span>
 							<div class="tw-truncate">
 								<div class="tw-text-xs tw-font-bold tw-text-white tw-truncate">{player.playerName}</div>
-								<div class="tw-text-[10px] tw-text-slate-400 tw-truncate">{player.email || 'Linked Account'}</div>
+								{#if !isAssignable}
+									<div class="tw-text-[10px] tw-text-amber-400 tw-truncate">Add email to assign</div>
+								{:else}
+									<div class="tw-text-[10px] tw-text-slate-400 tw-truncate">{player.email || 'Linked Account'}</div>
+								{/if}
 							</div>
 						</div>
 						<div class="tw-flex tw-items-center tw-shrink-0">
-							{#if isSelected}
+							{#if isSelected && isAssignable}
 								<span class="tw-text-xs tw-text-[#14b8a6] tw-font-bold">✓</span>
+							{:else if !isAssignable}
+								<span class="tw-text-xs tw-text-amber-500/60">⛔</span>
 							{:else}
 								<span class="tw-text-xs tw-text-slate-600">○</span>
 							{/if}
@@ -527,9 +563,11 @@
 
 	<!-- 6. Operational Flags -->
 	<div class="tw-flex tw-items-center tw-justify-between tw-p-3 tw-bg-[#020617] tw-border tw-border-[#334155] tw-flex-wrap tw-gap-3">
-		<label class="tw-flex tw-items-center tw-gap-2.5 tw-cursor-pointer">
+		<label class="tw-flex tw-items-center tw-gap-2.5 tw-cursor-pointer tw-min-h-[44px]">
 			<input
 				type="checkbox"
+				role="switch"
+				aria-checked={draftPriorityMission}
 				bind:checked={draftPriorityMission}
 				class="tw-accent-[#fbbf24] tw-w-4 tw-h-4"
 			/>
@@ -538,7 +576,7 @@
 			</span>
 		</label>
 
-		<label class="tw-flex tw-items-center tw-gap-2.5 tw-cursor-pointer">
+		<label class="tw-flex tw-items-center tw-gap-2.5 tw-cursor-pointer tw-min-h-[44px]">
 			<input
 				type="checkbox"
 				bind:checked={draftRequiresParentVerification}

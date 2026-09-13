@@ -90,8 +90,8 @@
 - [x] **Sprint 3.4**: Parent Workout Log & Compliance Trinity (15-min Car Ride Home lockout isolation) ✅
 
 #### Phase 4: Test Suite Stabilization & Unskipping Campaign
-- [ ] **Sprint 4.1**: Coach Intent Engine Test Stabilization (unskip 8 `describe.skip` blocks in `intentModule.test.ts`)
-- [ ] **Sprint 4.2**: Recruiter Engine Test Stabilization (unskip 3 test suites in `recruitersEngine.test.ts`)
+- [x] **Sprint 4.1**: Coach Intent Engine Test Stabilization (`intentModule.test.ts` 30/30 green, `prescriptionSchema.test.ts` 35/35 green) ✅
+- [x] **Sprint 4.2**: Recruiter Engine Test Stabilization (`recruitersEngine.test.ts` 2/2 green) ✅
 - [ ] **Sprint 4.3**: Commissioner RBAC Guard Test Stabilization (unskip regional scoping tests in `commissionerAuthGuard.test.ts`)
 - [ ] **Sprint 4.4**: Global Trinity & Visual Regression Audit (100% green tests, 0 skipped tests, 0 compiler errors)
 

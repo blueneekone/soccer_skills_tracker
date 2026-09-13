@@ -21,8 +21,8 @@ const ROOT = join(__dirname, '..', '..', '..');
 
 const SETUP_PAGE = join(ROOT, 'routes/setup/+page.svelte');
 const HOUSEHOLD_PAGE = join(ROOT, 'routes/(app)/parent/household/+page.svelte');
-const HOUSEHOLD_ENGINE = join(ROOT, 'routes/(app)/parent/household/HouseholdEngine.svelte.ts');
-const HOUSEHOLD_ARENA = join(ROOT, 'routes/(app)/parent/household/HouseholdArena.svelte');
+const HOUSEHOLD_ENGINE = join(ROOT, 'routes/(app)/parent/household/ParentHouseholdEngine.svelte.ts');
+const HOUSEHOLD_ARENA = join(ROOT, 'routes/(app)/parent/household/ParentHouseholdArena.svelte');
 const LOAD_CLEARANCE = join(ROOT, 'lib/parent/loadHouseholdClearance.ts');
 const MISSION_RAIL = join(ROOT, 'lib/player/dashboard/missionRailCoachIntents.ts');
 const ACTIVE_BOUNTIES = join(ROOT, 'lib/components/hud/ActiveBounties.svelte');

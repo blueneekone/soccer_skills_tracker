@@ -7,8 +7,8 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, '..', '..', '..');
 
 const HOUSEHOLD_PAGE = join(ROOT, 'routes/(app)/parent/household/+page.svelte');
-const HOUSEHOLD_ENGINE = join(ROOT, 'routes/(app)/parent/household/HouseholdEngine.svelte.ts');
-const HOUSEHOLD_ARENA = join(ROOT, 'routes/(app)/parent/household/HouseholdArena.svelte');
+const HOUSEHOLD_ENGINE = join(ROOT, 'routes/(app)/parent/household/ParentHouseholdEngine.svelte.ts');
+const HOUSEHOLD_ARENA = join(ROOT, 'routes/(app)/parent/household/ParentHouseholdArena.svelte');
 const DASHBOARD_PAGE = join(ROOT, 'routes/(app)/parent/dashboard/+page.svelte');
 const VPC_PAGE = join(ROOT, 'routes/(app)/parent/vpc/+page.svelte');
 const LOAD_CLEARANCE = join(ROOT, 'lib/parent/loadHouseholdClearance.ts');

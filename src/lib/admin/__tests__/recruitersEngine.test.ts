@@ -3,7 +3,8 @@ import { loadRecruitersData } from '../recruitersLoad.js';
 import { updateRecruiterVerification } from '../recruitersVerification.js';
 
 vi.mock('$lib/firebase.js', () => ({
-	db: {}
+	db: {},
+	getActiveDb: () => ({})
 }));
 
 vi.mock('firebase/firestore', () => ({
@@ -25,7 +26,9 @@ vi.mock('firebase/firestore', () => ({
 
 vi.mock('$lib/stores/auth.svelte.js', () => ({
 	authStore: {
-		user: { email: 'admin@example.com' }
+		user: { email: 'admin@example.com' },
+		isAuthenticated: true,
+		isLoading: false
 	}
 }));
 
@@ -33,8 +36,8 @@ vi.mock('$lib/utils/security.js', () => ({
 	logSecurityEvent: vi.fn(() => Promise.resolve())
 }));
 
-describe.skip('Admin Recruiters Engine', () => {
-	describe.skip('loadRecruitersData', () => {
+describe('Admin Recruiters Engine', () => {
+	describe('loadRecruitersData', () => {
 		it('fetches recruiters from Firestore and maps correctly', async () => {
 			const rows = await loadRecruitersData();
 			expect(rows.length).toBe(1);
@@ -44,7 +47,7 @@ describe.skip('Admin Recruiters Engine', () => {
 		});
 	});
 
-	describe.skip('updateRecruiterVerification', () => {
+	describe('updateRecruiterVerification', () => {
 		it('updates the verification status and logs the event', async () => {
 			const mockRow = {
 				id: 'rec_1',

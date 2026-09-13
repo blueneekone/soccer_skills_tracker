@@ -162,7 +162,7 @@
 				<!-- Progress bar with Geist Mono readout -->
 				<div class="tw-space-y-1.5">
 					<div class="tw-flex tw-items-center tw-justify-between tw-text-xs">
-						<span class="tw-text-slate-400 tw-uppercase">Squad Fulfillment Progress</span>
+						<span class="tw-text-slate-400 tw-uppercase">Squad Fulfillment Progress (Progress since deploy)</span>
 						<span class="tw-text-sm tw-font-black tw-text-[#daff0a]">{intent.overallProgressPct}%</span>
 					</div>
 					<div class="tw-w-full tw-h-2 tw-bg-[#000000] tw-border tw-border-[#334155]">

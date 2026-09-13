@@ -29,6 +29,15 @@
 	min-width: 0;
 }
 
+@media (min-width: 768px) {
+	.coach-forge-workbench__deploy {
+		order: 1;
+	}
+	.coach-forge-workbench__arena {
+		order: 2;
+	}
+}
+
 @media (min-width: 1024px) {
 	.coach-forge-workbench__grid {
 		grid-template-columns: 7fr 5fr;

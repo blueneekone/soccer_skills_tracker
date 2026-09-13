@@ -281,7 +281,6 @@ export class IntentEngine {
 		).length,
 	);
 
-	/** True if draft is ready to deploy. */
 	canDeploy = $derived.by(() => {
 		if (
 			!this.draftAttributeId ||
@@ -294,10 +293,7 @@ export class IntentEngine {
 		if (this.draftMissionKind === 'benchmark') {
 			if (!getBenchmarkDrillById(this.draftBenchmarkDrillId)) return false;
 		}
-		if (this.draftScope === 'team') {
-			return this.assignableRosterCount > 0;
-		}
-		return this.selectedAssignableCount > 0;
+		return this.draftScope === 'team' ? this.assignableRosterCount > 0 : this.selectedAssignableCount > 0;
 	});
 
 	/** Attributes from the sport config for the attribute picker. */
