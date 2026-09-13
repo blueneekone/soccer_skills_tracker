@@ -94,6 +94,8 @@
 - [x] **Sprint 4.2**: Recruiter Engine Test Stabilization (`recruitersEngine.test.ts` 2/2 green) ✅
 - [ ] **Sprint 4.3**: Commissioner RBAC Guard Test Stabilization (unskip regional scoping tests in `commissionerAuthGuard.test.ts`)
 - [ ] **Sprint 4.4**: Global Trinity & Visual Regression Audit (100% green tests, 0 skipped tests, 0 compiler errors)
+- [ ] **Sprint 4.5 (GAP REMEDIATION)**: Repair `playerHudSprint*.test.ts` and `playerLoadout*.test.ts` static string-match assertions to align with the new Player OS Vanguard Trinity `engine` architecture.
+- [ ] **Sprint 4.6 (GAP REMEDIATION)**: Clean up remaining ghost route tests (e.g., `coachModule.test.ts` for `/coach/match-day`).
 
 #### Phase 5: Authentication & Security Integrity Fortress (Jules Cloud VM Lockdown)
 - [x] **Sprint 5.1**: Auth Regression Guard Master Suite (`authRegressionGuard.test.ts`, token hydration, canonical email, zero redirect loops) ✅
