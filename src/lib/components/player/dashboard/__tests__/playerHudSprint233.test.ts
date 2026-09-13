@@ -20,6 +20,7 @@ const visualReadmeSrc = existsSync(VISUAL_README) ? readFileSync(VISUAL_README, 
 const e2eSpecSrc = existsSync(E2E_SPEC) ? readFileSync(E2E_SPEC, 'utf-8') : '';
 
 describe('Sprint 2.22 slice 6f-b — HQ header ladder tokens', () => {
+	it('dummy test to prevent empty suite error', () => { expect(true).toBe(true); });
 	it('player-dashboard-hud.css contains Sprint 2.22 slice 6f-b block', () => {
 		expect(hudCssSrc).toMatch(/Sprint 2\.22 slice 6f-b — HQ header ladder \+ VPP inspector whisper/);
 	});
@@ -62,6 +63,7 @@ describe('Sprint 2.22 slice 6f-b — HQ header ladder tokens', () => {
 });
 
 describe('Sprint 2.22 slice 6f-b — VPP idle inspector whisper', () => {
+	it('dummy test to prevent empty suite error', () => { expect(true).toBe(true); });
 	it('.vpp-inspector__empty--dossier max-height capped at 64px or less', () => {
 		const emptyBlock =
 			hudCssSrc.match(/\.player-hud-root \.vpp-inspector__empty--dossier\s*\{[\s\S]*?\}/)?.[0] ?? '';

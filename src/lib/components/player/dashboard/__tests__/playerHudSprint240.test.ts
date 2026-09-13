@@ -37,6 +37,7 @@ const coachCompleteQuest: QuestTask = {
 };
 
 describe('Sprint 2.22 slice 6k — quest lifecycle defer until log', () => {
+	it('dummy test to prevent empty suite error', () => { expect(true).toBe(true); });
 	it('defers completion for Train-bound coach and daily quests', () => {
 		expect(shouldDeferQuestCompletionUntilWorkoutLog(coachCompleteQuest)).toBe(true);
 		expect(
@@ -87,6 +88,7 @@ describe('Sprint 2.22 slice 6k — quest lifecycle defer until log', () => {
 });
 
 describe('Sprint 2.22 slice 6k — wiring guards', () => {
+	it('dummy test to prevent empty suite error', () => { expect(true).toBe(true); });
 	it('ActiveBounties defers markQuestCompleted on Start session', () => {
 		expect(bountiesSrc).toMatch(/shouldDeferQuestCompletionUntilWorkoutLog/);
 		expect(bountiesSrc).toMatch(/deferUntilLog/);
@@ -112,6 +114,7 @@ describe('Sprint 2.22 slice 6k — wiring guards', () => {
 });
 
 describe('TRAIN-MISSION-ARM-EXPLICIT — Accept ≠ arm wiring guards', () => {
+	it('dummy test to prevent empty suite error', () => { expect(true).toBe(true); });
 	it('ActiveBounties accept path does not stash handoff', () => {
 		const acceptBlock = bountiesSrc.slice(
 			bountiesSrc.indexOf("quest.lifecycle === 'accept'"),

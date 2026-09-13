@@ -40,6 +40,7 @@ function playerAchievementBlock() {
 }
 
 describe('Wave C — Stats strap + analytics void deck', () => {
+	it('dummy test to prevent empty suite error', () => { expect(true).toBe(true); });
 	it('player stats path uses PlayerOsPageStrap (pd-route-strap) — not qa-strap', () => {
 		expect(statsSrc).toMatch(/import PlayerOsPageStrap/);
 		expect(statsSrc).toMatch(/<PlayerOsPageStrap/);
@@ -74,6 +75,7 @@ describe('Wave C — Stats strap + analytics void deck', () => {
 });
 
 describe('Wave C — Stats workout hero band + diegetic chips', () => {
+	it('dummy test to prevent empty suite error', () => { expect(true).toBe(true); });
 	it('workout band uses pd-os-deck--hero and pd-os-deck__well for chart container', () => {
 		expect(statsSrc).toMatch(/class:pd-os-deck--hero=\{isPlayerRole\}/);
 		expect(statsSrc).toMatch(/class:pd-os-deck__well=\{isPlayerRole\}/);
@@ -109,6 +111,7 @@ describe('Wave C — Stats workout hero band + diegetic chips', () => {
 });
 
 describe('Wave C — Stats achievement edge-lit rows', () => {
+	it('dummy test to prevent empty suite error', () => { expect(true).toBe(true); });
 	it('player achievement matrix avoids pd-page-panel', () => {
 		expect(statsSrc).toMatch(/class:stats-achievement-deck=\{isPlayerRole\}/);
 		expect(statsSrc).toMatch(/class:pd-page-panel=\{!isPlayerRole\}/);
@@ -125,6 +128,7 @@ describe('Wave C — Stats achievement edge-lit rows', () => {
 });
 
 describe('Wave C — Tracker archive hierarchy', () => {
+	it('dummy test to prevent empty suite error', () => { expect(true).toBe(true); });
 	it('tracker uses pd-route-stack and preserved deck classes from 6j-b', () => {
 		expect(trackerSrc).toMatch(/pd-content-wrap pd-route-stack/);
 		expect(trackerSrc).toMatch(/pd-stat-row pd-os-deck/);

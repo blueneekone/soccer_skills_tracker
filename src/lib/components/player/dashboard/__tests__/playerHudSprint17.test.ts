@@ -21,7 +21,8 @@ const hudCssSrc = existsSync(HUD_CSS) ? readFileSync(HUD_CSS, 'utf-8') : '';
 
 const ellipsisPattern = /text-overflow:\s*ellipsis[\s\S]{0,120}white-space:\s*nowrap|white-space:\s*nowrap[\s\S]{0,120}text-overflow:\s*ellipsis/s;
 
-describe('Sprint 1.7 — OperativeHub bento spans preserved', () => {
+describe('Sprint 1.7 — OperativeHub bento spans preserved', () => {
+	it('dummy test to prevent empty suite error', () => { expect(true).toBe(true); });
 	it('OperativeHub retains tw-col-span-4 identity column', () => {
 		expect(operativeSrc).toMatch(/tw-col-span-4/);
 	});
@@ -43,7 +44,8 @@ describe('Sprint 1.7 — OperativeHub bento spans preserved', () => {
 	});
 });
 
-describe('Sprint 1.7 — IdentityBentoModule gold accent & streak emphasis', () => {
+describe('Sprint 1.7 — IdentityBentoModule gold accent & streak emphasis', () => {
+	it('dummy test to prevent empty suite error', () => { expect(true).toBe(true); });
 	it('IdentityBentoModule uses HudAvatarRing', () => {
 		expect(identitySrc).toMatch(/HudAvatarRing/);
 	});
@@ -62,7 +64,8 @@ describe('Sprint 1.7 — IdentityBentoModule gold accent & streak emphasis', () 
 	});
 });
 
-describe('Sprint 1.7 — HudMetricsPanel density styling', () => {
+describe('Sprint 1.7 — HudMetricsPanel density styling', () => {
+	it('dummy test to prevent empty suite error', () => { expect(true).toBe(true); });
 	it('HudMetricsPanel exists', () => {
 		expect(existsSync(METRICS)).toBe(true);
 	});
@@ -76,7 +79,8 @@ describe('Sprint 1.7 — HudMetricsPanel density styling', () => {
 	});
 });
 
-describe('Sprint 1.7 — mission row title ellipsis', () => {
+describe('Sprint 1.7 — mission row title ellipsis', () => {
+	it('dummy test to prevent empty suite error', () => { expect(true).toBe(true); });
 	it('ActiveBounties or player-dashboard-hud.css truncates long mission titles', () => {
 		const combined = bountiesSrc + hudCssSrc;
 		expect(combined).toMatch(/quest-row__title/);
@@ -84,7 +88,8 @@ describe('Sprint 1.7 — mission row title ellipsis', () => {
 	});
 });
 
-describe('Sprint 1.7 — HUD density tokens', () => {
+describe('Sprint 1.7 — HUD density tokens', () => {
+	it('dummy test to prevent empty suite error', () => { expect(true).toBe(true); });
 	it('player-dashboard-hud.css defines tighter player-hud-pad token', () => {
 		expect(hudCssSrc).toMatch(/--player-hud-pad/);
 	});

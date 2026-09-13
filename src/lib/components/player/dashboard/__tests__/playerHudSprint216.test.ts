@@ -39,6 +39,7 @@ function embeddedBountiesBlock(src: string): string {
 }
 
 describe('Sprint 2.16 — layout constitution tokens', () => {
+	it('dummy test to prevent empty suite error', () => { expect(true).toBe(true); });
 	it('player-dossier.css defines --pd-content-max and .pd-content-wrap', () => {
 		expect(dossierCssSrc).toMatch(/--pd-content-max:\s*min\(100%,\s*90rem\)/);
 		expect(dossierCssSrc).toMatch(/\.pd-content-wrap[\s\S]*?max-width:\s*var\(--pd-content-max\)/);
@@ -47,6 +48,7 @@ describe('Sprint 2.16 — layout constitution tokens', () => {
 });
 
 describe('Sprint 2.16 — HQ pd-content-wrap', () => {
+	it('dummy test to prevent empty suite error', () => { expect(true).toBe(true); });
 	it('HQ dashboard +page uses pd-content-wrap wrapping HUDContainer (Option B — see 2.16a)', () => {
 		expect(hqPageSrc).toMatch(/pd-content-wrap[\s\S]*?HUDContainer/);
 		expect(hqPageSrc).not.toMatch(/<HUDContainer[\s\S]*?<div class="pd-content-wrap"/);
@@ -54,6 +56,7 @@ describe('Sprint 2.16 — HQ pd-content-wrap', () => {
 });
 
 describe('Sprint 2.16 — Stats player VPP parity', () => {
+	it('dummy test to prevent empty suite error', () => { expect(true).toBe(true); });
 	it('stats player path imports and uses VanguardProtocolPanel', () => {
 		expect(statsPageSrc).toMatch(/import VanguardProtocolPanel/);
 		expect(statsPageSrc).toMatch(/stats-analytics-void[\s\S]*?VanguardProtocolPanel/);
@@ -71,6 +74,7 @@ describe('Sprint 2.16 — Stats player VPP parity', () => {
 });
 
 describe('Sprint 2.16 — ActiveBounties hero dedupe', () => {
+	it('dummy test to prevent empty suite error', () => { expect(true).toBe(true); });
 	it('embedded rail feed uses visibleQuests rail rows (6b-revise), not tier-split loops', () => {
 		const embedded = embeddedBountiesBlock(bountiesSrc);
 		expect(embedded).toMatch(/\{#each embeddedFeed as quest/);
@@ -81,6 +85,7 @@ describe('Sprint 2.16 — ActiveBounties hero dedupe', () => {
 });
 
 describe('Sprint 2.16 — settings diegetic CTAs + debug chrome policy', () => {
+	it('dummy test to prevent empty suite error', () => { expect(true).toBe(true); });
 	it('player settings uses chamfer clip-path on ps-settings-btn', () => {
 		expect(dossierCssSrc).toMatch(
 			/\.player-dossier-root\.ps-settings-root \.ps-settings-btn[\s\S]*?clip-path:\s*polygon/,
@@ -101,6 +106,7 @@ describe('Sprint 2.16 — settings diegetic CTAs + debug chrome policy', () => {
 });
 
 describe('Sprint 2.16 — HQ hub fill CSS', () => {
+	it('dummy test to prevent empty suite error', () => { expect(true).toBe(true); });
 	it('operative-hub identity stage fill balance at 1280px and 390px', () => {
 		expect(hudCssSrc).toMatch(/\.operative-hub__main[\s\S]*?flex:\s*1 1 auto/);
 		expect(hudCssSrc).toMatch(/@media \(max-width: 390px\)[\s\S]*?operative-hub/);

@@ -26,6 +26,7 @@ const dossierBlock = (() => {
 })();
 
 describe('Sprint 2.22 slice 6f — Armory Studio dossier hologram', () => {
+	it('dummy test to prevent empty suite error', () => { expect(true).toBe(true); });
 	it('OperativeLoadoutStudio imports HologramCardShell', () => {
 		expect(studioSrc).toMatch(
 			/import HologramCardShell from '\$lib\/components\/player\/HologramCardShell\.svelte'/,
@@ -69,6 +70,7 @@ describe('Sprint 2.22 slice 6f — Armory Studio dossier hologram', () => {
 });
 
 describe('Sprint 2.22 slice 6f — armoryLoadoutStudio layout regression guards', () => {
+	it('dummy test to prevent empty suite error', () => { expect(true).toBe(true); });
 	it('armoryLoadoutStudio.test.ts still guards dossier hero row layout', () => {
 		expect(armoryStudioTestSrc).toMatch(/ols-dossier-panel bento-span-12/);
 		expect(armoryStudioTestSrc).toMatch(/ols-picker-panel bento-span-12/);

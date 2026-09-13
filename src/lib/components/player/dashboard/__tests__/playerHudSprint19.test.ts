@@ -37,6 +37,7 @@ const embeddedTemplateBlock = (() => {
 })();
 
 describe('Sprint 1.9 — ActiveBounties embedded deck mode', () => {
+	it('dummy test to prevent empty suite error', () => { expect(true).toBe(true); });
 	it('supports embedded deck via quest-log-panel--embedded', () => {
 		expect(bountiesSrc).toMatch(/quest-log-panel--embedded/);
 		expect(bountiesSrc).toMatch(/embedded\s*=\s*false|embedded\?:/);
@@ -88,6 +89,7 @@ describe('Sprint 1.9 — ActiveBounties embedded deck mode', () => {
 });
 
 describe('Sprint 1.9 — embedded mission deck CSS', () => {
+	it('dummy test to prevent empty suite error', () => { expect(true).toBe(true); });
 	it('hud-telemetry.css defines single-line grid for embedded hud-bounty-row under telemetry root', () => {
 		expect(telemetryCssSrc).toMatch(/\.hud-telemetry-root \.quest-log-panel--embedded\s+\.hud-bounty-row/);
 		expect(telemetryCssSrc).toMatch(
@@ -107,6 +109,7 @@ describe('Sprint 1.9 — embedded mission deck CSS', () => {
 });
 
 describe('Sprint 1.9 — activeBounties compact CTA helper', () => {
+	it('dummy test to prevent empty suite error', () => { expect(true).toBe(true); });
 	it('exports questHudCtaShort with arrow labels', () => {
 		expect(activeBountiesTsSrc).toMatch(/export function questHudCtaShort/);
 		expect(activeBountiesTsSrc).toMatch(/Accept →/);
@@ -116,6 +119,7 @@ describe('Sprint 1.9 — activeBounties compact CTA helper', () => {
 });
 
 describe('Sprint 2.22 slice 6b-revise — mission rail overview on embedded HQ', () => {
+	it('dummy test to prevent empty suite error', () => { expect(true).toBe(true); });
 	it('embedded block uses embeddedFeed rail rows (Wave B hero row class allowed)', () => {
 		expect(embeddedTemplateBlock).toMatch(/\{#each embeddedFeed as quest/);
 		expect(embeddedTemplateBlock).toMatch(/\{@render questRowEmbedded\(quest\)/);

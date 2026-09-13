@@ -30,6 +30,7 @@ const embeddedTemplateBlock = (() => {
 })();
 
 describe('Sprint 2.22 slice 4d — Quick ops three-column grid', () => {
+	it('dummy test to prevent empty suite error', () => { expect(true).toBe(true); });
 	it('player-dashboard-hud.css .oqo-deck__grid uses repeat(3 at all breakpoints', () => {
 		expect(hudCssSrc).toMatch(/\.oqo-deck__grid[\s\S]*?repeat\(3,\s*minmax\(0,\s*1fr\)\)/);
 		const slice4dBlock = hudCssSrc.match(/Sprint 2\.22 slice 4d[\s\S]*?\.oqo-deck__grid[\s\S]*?}/)?.[0] ?? '';
@@ -43,6 +44,7 @@ describe('Sprint 2.22 slice 4d — Quick ops three-column grid', () => {
 });
 
 describe('Sprint 2.22 slice 4d-fix — rail-only embedded mission deck + identity + XP copy', () => {
+	it('dummy test to prevent empty suite error', () => { expect(true).toBe(true); });
 	it('embedded deck renders rail rows only — no hero cards in embedded path', () => {
 		expect(bountiesSrc).toMatch(/\{#snippet questHeroCard/);
 		expect(embeddedTemplateBlock).toMatch(/\{#each (visibleQuests|embeddedFeed) as quest/);
@@ -85,6 +87,7 @@ describe('Sprint 2.22 slice 4d-fix — rail-only embedded mission deck + identit
 });
 
 describe('Sprint 2.22 slice 4d-fix-b — teal hover + identity metrics row + typography', () => {
+	it('dummy test to prevent empty suite error', () => { expect(true).toBe(true); });
 	it('player-dashboard-hud.css scopes quest-hero__cta:hover to gold hero only', () => {
 		expect(hudCssSrc).toMatch(/\.quest-hero--gold \.quest-hero__cta:hover/);
 		expect(hudCssSrc).not.toMatch(

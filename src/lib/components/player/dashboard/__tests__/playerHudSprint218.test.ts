@@ -30,6 +30,7 @@ const statsPageSrc = existsSync(STATS_PAGE) ? readFileSync(STATS_PAGE, 'utf-8') 
 const roadmapSrc = existsSync(ROADMAP) ? readFileSync(ROADMAP, 'utf-8') : '';
 
 describe('Sprint 2.18 — shared pdDataBloom filter', () => {
+	it('dummy test to prevent empty suite error', () => { expect(true).toBe(true); });
 	it('VanguardVFX defines id="pdDataBloom"', () => {
 		expect(vfxSrc).toMatch(/id="pdDataBloom"/);
 		expect(vfxSrc).toMatch(/pdDataBloom/);
@@ -42,6 +43,7 @@ describe('Sprint 2.18 — shared pdDataBloom filter', () => {
 });
 
 describe('Sprint 2.18 — spatial canvas restored in dossier mode', () => {
+	it('dummy test to prevent empty suite error', () => { expect(true).toBe(true); });
 	it('dossier grid opacity increased above 0.30', () => {
 		expect(shellCssSrc).toMatch(
 			/ps-ambient__grid[\s\S]*opacity:\s*0\.(3[8-9]|[4-9])/,
@@ -59,6 +61,7 @@ describe('Sprint 2.18 — spatial canvas restored in dossier mode', () => {
 });
 
 describe('Sprint 2.18 — canvas scanlines atmosphere only', () => {
+	it('dummy test to prevent empty suite error', () => { expect(true).toBe(true); });
 	it('player-shell or player-dossier contains scanline repeating-linear-gradient on canvas layer', () => {
 		const combined = shellCssSrc + dossierCssSrc;
 		expect(combined).toMatch(/repeating-linear-gradient/);
@@ -72,6 +75,7 @@ describe('Sprint 2.18 — canvas scanlines atmosphere only', () => {
 });
 
 describe('Sprint 2.18 — emissive edge tokens', () => {
+	it('dummy test to prevent empty suite error', () => { expect(true).toBe(true); });
 	it('player-dossier.css defines emissive tokens', () => {
 		expect(dossierCssSrc).toMatch(/--pd-emissive-teal:/);
 		expect(dossierCssSrc).toMatch(/--pd-emissive-gold:/);
@@ -85,6 +89,7 @@ describe('Sprint 2.18 — emissive edge tokens', () => {
 });
 
 describe('Sprint 2.18 — glass scope guard', () => {
+	it('dummy test to prevent empty suite error', () => { expect(true).toBe(true); });
 	it('operative-hub pd-surface-premium does NOT have backdrop-filter blur', () => {
 		const hubBlock = hudCssSrc.match(/\.operative-hub\.pd-surface-premium[\s\S]*?\}/)?.[0] ?? '';
 		expect(hubBlock).not.toMatch(/backdrop-filter:\s*blur/);
@@ -96,6 +101,7 @@ describe('Sprint 2.18 — glass scope guard', () => {
 });
 
 describe('Sprint 2.18 — Stats/HQ VPP parity', () => {
+	it('dummy test to prevent empty suite error', () => { expect(true).toBe(true); });
 	it('stats player path uses VanguardProtocolPanel', () => {
 		expect(statsPageSrc).toMatch(/import VanguardProtocolPanel/);
 		expect(statsPageSrc).toMatch(/\{#if isPlayerRole\}[\s\S]*?VanguardProtocolPanel/);

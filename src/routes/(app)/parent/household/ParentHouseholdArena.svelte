@@ -62,7 +62,7 @@
 		<div class="bento-col-8 lg:tw-col-span-8 tw-flex tw-flex-col tw-gap-6 tw-min-w-0">
 			<!-- COPPA & liability block -->
 			<section
-				class="st-bento phh-surface parent-lounge-z2-panel parent-lounge-z2-panel--warn tw-min-w-0 tw-px-3 tw-py-4 sm:tw-px-4 md:tw-px-5 vanguard-panel"
+				class="st-bento z2-panel siem-panel tw-min-w-0 tw-px-3 tw-py-4 sm:tw-px-4 md:tw-px-5 vanguard-panel"
 				aria-labelledby="phh-coppa"
 			>
 				<div class="tw-mb-3 tw-flex tw-flex-col tw-gap-1">
@@ -96,7 +96,7 @@
 			<!-- Linked operatives — ephemeral OTP login -->
 			{#if engine.operativeRows.length > 0}
 				<section
-					class="st-bento phh-surface parent-lounge-z2-panel tw-min-w-0 tw-px-3 tw-py-4 sm:tw-px-4 md:tw-px-5 vanguard-panel"
+					class="st-bento z2-panel siem-panel tw-min-w-0 tw-px-3 tw-py-4 sm:tw-px-4 md:tw-px-5 vanguard-panel"
 					aria-labelledby="phh-active-ops"
 				>
 					<div class="tw-mb-3">
@@ -262,7 +262,7 @@
 		<div class="bento-col-4 lg:tw-col-span-4 tw-flex tw-flex-col tw-gap-6 tw-min-w-0">
 			<!-- Operative generation -->
 			<section
-				class="st-bento phh-surface parent-lounge-z2-panel tw-min-w-0 tw-px-3 tw-py-4 sm:tw-px-4 md:tw-px-5 vanguard-panel"
+				class="st-bento z2-panel siem-panel tw-min-w-0 tw-px-3 tw-py-4 sm:tw-px-4 md:tw-px-5 vanguard-panel"
 				aria-labelledby="phh-ops"
 			>
 				<div class="tw-mb-3">
@@ -354,7 +354,7 @@
 
             <!-- Co-Parent Invitation -->
             <section
-                class="st-bento phh-surface parent-lounge-z2-panel tw-min-w-0 tw-px-3 tw-py-4 sm:tw-px-4 md:tw-px-5 vanguard-panel"
+                class="st-bento z2-panel siem-panel tw-min-w-0 tw-px-3 tw-py-4 sm:tw-px-4 md:tw-px-5 vanguard-panel"
                 aria-labelledby="phh-coparent"
             >
                 <div class="tw-mb-3">
@@ -395,7 +395,7 @@
             </section>
 
 			<section
-				class="st-bento phh-surface parent-lounge-z2-panel tw-min-w-0 tw-px-3 tw-py-4 sm:tw-px-4 md:tw-px-5 vanguard-panel"
+				class="st-bento z2-panel siem-panel tw-min-w-0 tw-px-3 tw-py-4 sm:tw-px-4 md:tw-px-5 vanguard-panel"
 				aria-labelledby="phh-transfer"
 			>
 				<div class="tw-mb-3">
@@ -495,143 +495,7 @@
 	.phh-title {
 		font-family: system-ui, sans-serif;
 	}
-	.phh-surface {
-		background: #05050a;
-		box-shadow: var(--shadow-liquid);
-		background-image: linear-gradient(
-			160deg,
-			rgba(255, 255, 255, 0.03) 0%,
-			rgba(255, 255, 255, 0) 60%
-		);
-	}
-	.phh-mono {
-		font-family: ui-monospace, 'Cascadia Code', 'SFMono-Regular', Menlo, Consolas, monospace;
-	}
-	.phh-input {
-		width: 100%;
-		min-height: 3.25rem;
-		padding: 0.7rem 0.9rem;
-		font-size: 1rem;
-		touch-action: manipulation;
-		border: 1px solid rgba(255, 255, 255, 0.1);
-		background: transparent;
-		color: #fafafa;
-		border-radius: 0.25rem;
-	}
-	.phh-input::placeholder {
-		color: #94a3b8;
-	}
-	.phh-input:focus {
-		outline: 1px solid #00d4ff;
-		outline-offset: 1px;
-		box-shadow: 0 0 18px rgba(0, 212, 255, 0.2);
-	}
-	.phh-input--cyan {
-		min-height: 3.25rem;
-		border: 1px solid rgba(0, 212, 255, 0.45);
-		background: transparent;
-	}
-	.phh-input--cyan:focus {
-		outline: 1px solid #00d4ff;
-		outline-offset: 1px;
-		border-color: rgba(0, 212, 255, 0.7);
-		box-shadow: 0 0 20px rgba(0, 212, 255, 0.25);
-	}
-	.phh-btn {
-		background: #000;
-		color: #fff;
-		border: 1px solid rgba(248, 113, 113, 0.5);
-		cursor: pointer;
-		transition: box-shadow 0.2s, border-color 0.2s;
-	}
-	.phh-btn:hover:not(:disabled) {
-		box-shadow: 0 0 22px rgba(248, 113, 113, 0.35);
-	}
-	.phh-btn:disabled,
-	.phh-btn--dim:disabled,
-	.phh-btn--dim {
-		cursor: not-allowed;
-		opacity: 0.5;
-		box-shadow: none;
-	}
-	.phh-btn--cyan {
-		border-color: rgba(0, 212, 255, 0.45);
-		color: #c9f4ff;
-	}
-	.phh-btn--cyan:hover:not(:disabled) {
-		box-shadow: 0 0 22px rgba(0, 212, 255, 0.35);
-	}
 
-	.phh-dispatch-gen {
-		flex-shrink: 0;
-		align-self: stretch;
-		padding: 0.55rem 0.75rem;
-		font-size: 0.58rem;
-		font-weight: 900;
-		letter-spacing: 0.1em;
-		text-transform: uppercase;
-		font-family: ui-monospace, 'Cascadia Code', 'SFMono-Regular', Menlo, Consolas, monospace;
-		color: #67e8f9;
-		background: rgba(8, 47, 73, 0.55);
-		border: 1px solid rgba(20, 184, 166, 0.45);
-		border-radius: 0.2rem;
-		cursor: pointer;
-		box-shadow: none;
-		transition:
-			background 0.12s ease,
-			border-color 0.12s ease;
-	}
-
-	.phh-dispatch-gen:hover:not(:disabled) {
-		background: rgba(8, 47, 73, 0.75);
-		border-color: rgba(20, 184, 166, 0.65);
-	}
-
-	.phh-dispatch-gen:disabled {
-		opacity: 0.4;
-		cursor: not-allowed;
-	}
-
-	.phh-cmd-callsign {
-		font-variant-ligatures: none;
-		letter-spacing: 0.04em;
-	}
-
-	.phh-gt-approve,
-	.phh-gt-deny {
-		min-height: 2.5rem;
-		padding: 0.4rem 0.9rem;
-		font-size: 0.65rem;
-		font-weight: 900;
-		letter-spacing: 0.12em;
-		text-transform: uppercase;
-		font-family: ui-monospace, 'Cascadia Code', 'SFMono-Regular', Menlo, Consolas, monospace;
-		border-radius: 0.2rem;
-		cursor: pointer;
-	}
-	.phh-gt-approve {
-		color: #000000;
-		background: #fbbf24;
-		border: 1px solid #fbbf24;
-		box-shadow: 0 0 12px rgba(251, 191, 36, 0.4);
-	}
-	.phh-gt-approve:hover:not(:disabled) {
-		background: #ebff47;
-		box-shadow: 0 0 16px rgba(251, 191, 36, 0.6);
-	}
-	.phh-gt-approve:disabled {
-		opacity: 0.45;
-		cursor: not-allowed;
-	}
-	.phh-gt-deny {
-		color: #fecaca;
-		background: rgba(127, 29, 29, 0.4);
-		border: 1px solid rgba(248, 113, 113, 0.45);
-	}
-	.phh-gt-deny:disabled {
-		opacity: 0.45;
-		cursor: not-allowed;
-	}
 
 	.phh-otp-backdrop {
 		position: fixed;

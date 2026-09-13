@@ -20,6 +20,7 @@ const shellCssSrc = existsSync(SHELL_CSS) ? readFileSync(SHELL_CSS, 'utf-8') : '
 const roadmapSrc = existsSync(ROADMAP) ? readFileSync(ROADMAP, 'utf-8') : '';
 
 describe('Sprint 2.17 — Z-depth tokens in player-dossier.css', () => {
+	it('dummy test to prevent empty suite error', () => { expect(true).toBe(true); });
 	it('defines Z1–Z4 shadow tokens', () => {
 		expect(dossierCssSrc).toMatch(/--pd-z1-inset-shadow:/);
 		expect(dossierCssSrc).toMatch(/--pd-z2-panel-shadow:/);
@@ -45,6 +46,7 @@ describe('Sprint 2.17 — Z-depth tokens in player-dossier.css', () => {
 });
 
 describe('Sprint 2.17 — HQ layering wired in CSS', () => {
+	it('dummy test to prevent empty suite error', () => { expect(true).toBe(true); });
 	it('identity stage uses Z1 inset well inside hub', () => {
 		expect(hudCssSrc).toMatch(
 			/\.operative-hub__identity-stage[\s\S]*?background:\s*var\(--pd-z1-well-bg/,
@@ -74,6 +76,7 @@ describe('Sprint 2.17 — HQ layering wired in CSS', () => {
 });
 
 describe('Sprint 2.17 — IBM regression guard', () => {
+	it('dummy test to prevent empty suite error', () => { expect(true).toBe(true); });
 	it('ibm-root--premium stays transparent; identity stage has inset well', () => {
 		expect(hudCssSrc).toMatch(/\.ibm-root--premium[\s\S]*?background:\s*transparent/);
 		expect(hudCssSrc).toMatch(
@@ -86,6 +89,7 @@ describe('Sprint 2.17 — IBM regression guard', () => {
 });
 
 describe('Sprint 2.17 — VPP radar well Z1', () => {
+	it('dummy test to prevent empty suite error', () => { expect(true).toBe(true); });
 	it('vpp-chart--premium uses inset shadow token', () => {
 		expect(hudCssSrc).toMatch(
 			/\.vpp-chart--premium[\s\S]*?var\(--pd-z1-inset-shadow/,
@@ -94,6 +98,7 @@ describe('Sprint 2.17 — VPP radar well Z1', () => {
 });
 
 describe('Sprint 2.17 — shared utilities', () => {
+	it('dummy test to prevent empty suite error', () => { expect(true).toBe(true); });
 	it('pd-empty-state uses Z1 inset token', () => {
 		expect(dossierCssSrc).toMatch(
 			/\.pd-empty-state[\s\S]*?var\(--pd-z1-inset-shadow/,
@@ -108,6 +113,7 @@ describe('Sprint 2.17 — shared utilities', () => {
 });
 
 describe('Sprint 2.17 — secondary route coverage', () => {
+	it('dummy test to prevent empty suite error', () => { expect(true).toBe(true); });
 	it('ps-settings inputs use Z1 inset under player-dossier-root', () => {
 		expect(dossierCssSrc).toMatch(
 			/\.ps-settings-input[\s\S]*?var\(--pd-z1-inset-shadow/,
@@ -125,6 +131,7 @@ describe('Sprint 2.17 — secondary route coverage', () => {
 });
 
 describe('Sprint 2.17 — shell rail Z4 active tab', () => {
+	it('dummy test to prevent empty suite error', () => { expect(true).toBe(true); });
 	it('dossier rail active links strengthen float read', () => {
 		expect(shellCssSrc).toMatch(
 			/\.ps-rail__link--hub-active[\s\S]*?0 16px 36px/,

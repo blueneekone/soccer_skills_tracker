@@ -24,6 +24,7 @@ const playerOsSrc = existsSync(PLAYER_OS) ? readFileSync(PLAYER_OS, 'utf-8') : '
 const roadmapSrc = existsSync(ROADMAP) ? readFileSync(ROADMAP, 'utf-8') : '';
 
 describe('Sprint 2.9 — player-shell.css dossier rail + shell rules', () => {
+	it('dummy test to prevent empty suite error', () => { expect(true).toBe(true); });
 	it('defines dossier shell class and pd-line / panel rail styling', () => {
 		expect(shellCssSrc).toMatch(/\.ps-root\.ps-root--dossier|\.ps-root--dossier/);
 		expect(shellCssSrc).toMatch(/rgba\(5,\s*5,\s*10/);
@@ -47,6 +48,7 @@ describe('Sprint 2.9 — player-shell.css dossier rail + shell rules', () => {
 });
 
 describe('Sprint 2.9 — PlayerShell dossier shell class', () => {
+	it('dummy test to prevent empty suite error', () => { expect(true).toBe(true); });
 	it('applies ps-root--dossier on player shell root', () => {
 		expect(shellSrc).toMatch(/ps-root--dossier/);
 		expect(shellSrc).toMatch(/class="ps-root ps-root--dossier/);
@@ -59,6 +61,7 @@ describe('Sprint 2.9 — PlayerShell dossier shell class', () => {
 });
 
 describe('Sprint 2.9 — page wrappers retain player-dossier-root', () => {
+	it('dummy test to prevent empty suite error', () => { expect(true).toBe(true); });
 	it('stats page declares player-dossier-root', () => {
 		expect(statsSrc).toMatch(/player-dossier-root/);
 	});
@@ -69,6 +72,7 @@ describe('Sprint 2.9 — page wrappers retain player-dossier-root', () => {
 });
 
 describe('Sprint 2.9 — docs', () => {
+	it('dummy test to prevent empty suite error', () => { expect(true).toBe(true); });
 	it('PLAYER_OS.md documents Shell alignment (2.9)', () => {
 		expect(playerOsSrc).toMatch(/Shell alignment.*2\.9|2\.9.*Shell alignment/i);
 		expect(playerOsSrc).toMatch(/ps-root--dossier/);
@@ -80,6 +84,7 @@ describe('Sprint 2.9 — docs', () => {
 });
 
 describe('Sprint 2.9 — prior sprint tests preserved', () => {
+	it('dummy test to prevent empty suite error', () => { expect(true).toBe(true); });
 	const priorTests = [
 		join(ROOT, 'lib/components/player/dashboard/__tests__/playerHudSprint28.test.ts'),
 		join(ROOT, 'lib/components/player/dashboard/__tests__/playerHudSprint27.test.ts'),

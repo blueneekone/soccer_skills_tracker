@@ -236,31 +236,34 @@
 {#if role === 'player'}
 	<!-- Redirecting to /player/settings -->
 {:else}
-<div class="st-root">
+<div class="pd-page-root tw-w-full tw-max-w-4xl tw-mx-auto tw-p-4 md:tw-p-6">
 
 	<div class="pd-content-wrap">
 	<!-- Terminal header -->
-	<div class="st-header">
-		<div class="st-header-left">
-			<div class="st-header-dot"></div>
+	<div class="tw-flex tw-flex-col md:tw-flex-row md:tw-items-center tw-justify-between tw-mb-8 tw-gap-4">
+		<div class="tw-flex tw-items-center tw-gap-4">
+			<div class="tw-w-2 tw-h-2 tw-rounded-full tw-bg-[#14b8a6] tw-animate-pulse"></div>
 			<div>
-				<div class="st-header-title">VANGUARD SETTINGS TERMINAL</div>
-				<div class="st-header-meta">{email} · {role.toUpperCase()}</div>
+				<div class="tw-text-xl tw-font-bold tw-text-[#FAFAFA]">VANGUARD SETTINGS TERMINAL</div>
+				<div class="tw-text-xs tw-font-mono tw-text-amber-500">{email} · {role.toUpperCase()}</div>
 			</div>
 		</div>
 		<div class="st-header-right">
-			<span class="st-header-ref">UID:{uid.slice(0,8).toUpperCase()}</span>
+			<span class="tw-text-[10px] tw-font-mono tw-text-[#94A3B8]">UID:{uid.slice(0,8).toUpperCase()}</span>
 		</div>
 	</div>
 
 	<!-- Tab rail -->
-	<nav class="st-tabs" aria-label="Settings sections">
+	<nav class="tw-flex tw-gap-2 tw-overflow-x-auto tw-mb-6 tw-pb-2 tw-border-b tw-border-[#334155]" aria-label="Settings sections">
 		{#each TABS as item (item.key)}
 			{#if item.show}
 				<button
-					class="st-tab"
-					class:st-tab--active={activeTab === item.key}
-					class:st-tab--danger={item.key === 'danger' && activeTab !== 'danger'}
+					class="tw-px-4 tw-py-2 tw-text-xs tw-font-bold tw-uppercase tw-tracking-widest tw-text-[#94A3B8] hover:tw-text-amber-500 tw-whitespace-nowrap tw-transition-colors"
+					class:tw-text-amber-500={activeTab === item.key}
+					class:tw-border-b-2={activeTab === item.key}
+					class:tw-border-amber-500={activeTab === item.key}
+					class:tw-text-red-400={item.key === 'danger' && activeTab !== 'danger'}
+					class:hover:tw-text-red-300={item.key === 'danger' && activeTab !== 'danger'}
 					onclick={() => (activeTab = item.key)}
 					aria-selected={activeTab === item.key}
 					role="tab"
@@ -271,54 +274,54 @@
 
 	<!-- ── PANEL: PROFILE ─────────────────────────────────────────────────── -->
 	{#if activeTab === 'profile'}
-		<div class="st-panel">
+		<div class="z2-panel siem-panel st-bento tw-p-[clamp(16px,3vw,24px)] tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-flex tw-flex-col tw-gap-6 tw-mb-6">
 
-			<div class="st-section">
-				<div class="st-section-label">IDENTITY MATRIX</div>
-				<div class="st-info-grid tw-font-mono">
-					<div class="st-info-row"><span class="st-info-key">EMAIL</span><span class="st-info-val">{email || '—'}</span></div>
-					<div class="st-info-row"><span class="st-info-key">ROLE</span><span class="st-info-val" style="color: #14b8a6;">{role.toUpperCase()}</span></div>
-					<div class="st-info-row"><span class="st-info-key">CLUB</span><span class="st-info-val">{clubLabel}</span></div>
-					<div class="st-info-row"><span class="st-info-key">TEAM</span><span class="st-info-val">{teamLabel}</span></div>
-					<div class="st-info-row"><span class="st-info-key">TENANT</span><span class="st-info-val" style="font-size:10px;">{tenantId || '—'}</span></div>
+			<div class="tw-flex tw-flex-col tw-gap-4">
+				<div class="tw-text-xs tw-font-bold tw-uppercase tw-tracking-widest tw-text-amber-500">IDENTITY MATRIX</div>
+				<div class="tw-grid tw-grid-cols-1 md:tw-grid-cols-2 tw-gap-4 tw-font-mono">
+					<div class="tw-flex tw-flex-col tw-gap-1 tw-p-3 tw-bg-[#000000] tw-border tw-border-[#334155]"><span class="tw-text-[10px] tw-font-bold tw-uppercase tw-tracking-widest tw-text-[#A1A1AA]">EMAIL</span><span class="tw-text-sm tw-font-mono tw-text-[#FAFAFA]">{email || '—'}</span></div>
+					<div class="tw-flex tw-flex-col tw-gap-1 tw-p-3 tw-bg-[#000000] tw-border tw-border-[#334155]"><span class="tw-text-[10px] tw-font-bold tw-uppercase tw-tracking-widest tw-text-[#A1A1AA]">ROLE</span><span class="tw-text-sm tw-font-mono tw-text-[#FAFAFA]" style="color: #14b8a6;">{role.toUpperCase()}</span></div>
+					<div class="tw-flex tw-flex-col tw-gap-1 tw-p-3 tw-bg-[#000000] tw-border tw-border-[#334155]"><span class="tw-text-[10px] tw-font-bold tw-uppercase tw-tracking-widest tw-text-[#A1A1AA]">CLUB</span><span class="tw-text-sm tw-font-mono tw-text-[#FAFAFA]">{clubLabel}</span></div>
+					<div class="tw-flex tw-flex-col tw-gap-1 tw-p-3 tw-bg-[#000000] tw-border tw-border-[#334155]"><span class="tw-text-[10px] tw-font-bold tw-uppercase tw-tracking-widest tw-text-[#A1A1AA]">TEAM</span><span class="tw-text-sm tw-font-mono tw-text-[#FAFAFA]">{teamLabel}</span></div>
+					<div class="tw-flex tw-flex-col tw-gap-1 tw-p-3 tw-bg-[#000000] tw-border tw-border-[#334155]"><span class="tw-text-[10px] tw-font-bold tw-uppercase tw-tracking-widest tw-text-[#A1A1AA]">TENANT</span><span class="tw-text-sm tw-font-mono tw-text-[#FAFAFA]" style="font-size:10px;">{tenantId || '—'}</span></div>
 				</div>
 			</div>
 
-			<div class="st-section">
-				<div class="st-section-label">DISPLAY NAME</div>
+			<div class="tw-flex tw-flex-col tw-gap-4">
+				<div class="tw-text-xs tw-font-bold tw-uppercase tw-tracking-widest tw-text-amber-500">DISPLAY NAME</div>
 				{#if isOperativeProxy}
-					<p class="st-hint">Call sign changes require parent approval. Use <a href="/operative/profile" class="st-link">Operative Profile</a>.</p>
-					<input class="st-input" type="text" readonly value={String(profile?.playerName || playerName || '—')} />
+					<p class="tw-text-xs tw-text-[#94A3B8]">Call sign changes require parent approval. Use <a href="/operative/profile" class="st-link">Operative Profile</a>.</p>
+					<input class="vanguard-input tw-w-full" type="text" readonly value={String(profile?.playerName || playerName || '—')} />
 				{:else}
-					<input class="st-input" id="display-name" type="text" autocomplete="name" bind:value={playerName} placeholder="Display name…" />
+					<input class="vanguard-input tw-w-full" id="display-name" type="text" autocomplete="name" bind:value={playerName} placeholder="Display name…" />
 				{/if}
 			</div>
 
 			{#if !isMinorAccount}
-				<div class="st-section">
-					<div class="st-section-label">PRIVACY PROFILE</div>
-					<select class="st-input" bind:value={privacyProfile}>
+				<div class="tw-flex tw-flex-col tw-gap-4">
+					<div class="tw-text-xs tw-font-bold tw-uppercase tw-tracking-widest tw-text-amber-500">PRIVACY PROFILE</div>
+					<select class="vanguard-input tw-w-full" bind:value={privacyProfile}>
 						<option value="strict_minor_defaults">Strict defaults (recommended)</option>
 						<option value="standard">Standard</option>
 					</select>
 				</div>
 
-				<div class="st-section">
+				<div class="tw-flex tw-flex-col tw-gap-4">
 					<label class="st-checkbox-row">
 						<input type="checkbox" bind:checked={telemetryOptIn} />
 						<span>Allow optional telemetry & analytics sharing</span>
 					</label>
 				</div>
 			{:else}
-				<div class="st-section">
-					<div class="st-hint st-hint--amber">
+				<div class="tw-flex tw-flex-col tw-gap-4">
+					<div class="tw-text-xs tw-text-amber-500">
 						⚠ Minor account — privacy is locked to strict defaults.
 					</div>
 				</div>
 			{/if}
 
-			<div class="st-section">
-				<div class="st-section-label">APPEARANCE</div>
+			<div class="tw-flex tw-flex-col tw-gap-4">
+				<div class="tw-text-xs tw-font-bold tw-uppercase tw-tracking-widest tw-text-amber-500">APPEARANCE</div>
 				<div class="st-theme-row" role="group" aria-label="Theme">
 					{#each THEME_OPTIONS as opt (opt.key)}
 						<button
@@ -332,8 +335,8 @@
 
 		<!-- ── Phone Verification Bento card (Phase 2, Epic 3) ────────────── -->
 		{#if !isMinorAccount}
-			<div class="st-section">
-				<div class="st-section-label">PHONE VERIFICATION</div>
+			<div class="tw-flex tw-flex-col tw-gap-4">
+				<div class="tw-text-xs tw-font-bold tw-uppercase tw-tracking-widest tw-text-amber-500">PHONE VERIFICATION</div>
 				<div class="phone-card">
 					{#if authStore.phoneVerified && authStore.phoneNumber}
 						<div class="phone-verified-row">
@@ -341,21 +344,21 @@
 							<span class="phone-ending">·· {authStore.phoneNumber.slice(-4)}</span>
 						</div>
 						<button
-							class="st-action-btn st-action-btn--danger"
+							class="tw-vanguard-btn-primary st-action-btn--danger"
 							onclick={handleUnlinkPhone}
 							disabled={phoneUnlinking}
 						>
 							{phoneUnlinking ? '[ UNLINKING… ]' : '[ UNLINK PHONE ]'}
 						</button>
 						{#if phoneUnlinkError}
-							<div class="st-error">⚠ {phoneUnlinkError}</div>
+							<div class="tw-text-xs tw-text-red-400 tw-font-mono">⚠ {phoneUnlinkError}</div>
 						{/if}
 					{:else}
-						<p class="st-hint">
+						<p class="tw-text-xs tw-text-[#94A3B8]">
 							Link a verified mobile number for enhanced account security.
 							Your number is never shared or displayed in full.
 						</p>
-						<a href="/account/settings/phone" class="st-action-btn" style="text-decoration:none; display:inline-flex; align-items:center; justify-content:center;">
+						<a href="/account/settings/phone" class="tw-vanguard-btn-primary" style="text-decoration:none; display:inline-flex; align-items:center; justify-content:center;">
 							⚡ ADD PHONE NUMBER
 						</a>
 					{/if}
@@ -364,27 +367,27 @@
 		{/if}
 
 		{#if profileError}
-			<div class="st-error">⚠ {profileError}</div>
+			<div class="tw-text-xs tw-text-red-400 tw-font-mono">⚠ {profileError}</div>
 		{/if}
 		{#if profileSaveMsg}
-			<div class="st-success">✓ {profileSaveMsg}</div>
+			<div class="tw-text-xs tw-text-[#2dd4bf] tw-font-mono">✓ {profileSaveMsg}</div>
 		{/if}
 
-		<button class="st-action-btn" onclick={saveProfile} disabled={profileSaving}>
+		<button class="tw-vanguard-btn-primary" onclick={saveProfile} disabled={profileSaving}>
 			{profileSaving ? '[ SYNCING... ]' : '[ SAVE PROFILE ]'}
 		</button>
 	</div>
 
 	<!-- ── PANEL: NOTIFICATIONS ───────────────────────────────────────────── -->
 	{:else if activeTab === 'notifications'}
-		<div class="st-panel">
+		<div class="z2-panel siem-panel st-bento tw-p-[clamp(16px,3vw,24px)] tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-flex tw-flex-col tw-gap-6 tw-mb-6">
 
 			<!-- FCM permission status -->
-			<div class="st-section">
-				<div class="st-section-label">DEVICE TELEMETRY UPLINK</div>
+			<div class="tw-flex tw-flex-col tw-gap-4">
+				<div class="tw-text-xs tw-font-bold tw-uppercase tw-tracking-widest tw-text-amber-500">DEVICE TELEMETRY UPLINK</div>
 
 				{#if fcmService.permission === 'unsupported'}
-					<div class="st-hint st-hint--amber">
+					<div class="tw-text-xs tw-text-amber-500">
 						⚠ Web Push is not supported in this browser or the VAPID key is not configured.
 					</div>
 
@@ -427,7 +430,7 @@
 
 					{#if showPermissionContext}
 						<div class="st-context-box">
-							<div class="st-context-label">TELEMETRY SCOPE</div>
+							<div class="tw-text-[10px] tw-font-bold tw-tracking-widest tw-text-[#94A3B8] tw-mb-2">TELEMETRY SCOPE</div>
 							<ul class="st-context-list">
 								<li>⛅ Weather & lightning safety alerts (AEGIS)</li>
 								<li>🏟 Match day reminders (24h + 1h before kickoff)</li>
@@ -435,28 +438,28 @@
 							</ul>
 							<p class="st-context-note">You can disable any category below. This prompt authorises the browser only.</p>
 							<div class="st-context-actions">
-								<button class="st-action-btn" onclick={handleRequestPermission} disabled={fcmService.isRegistering}>
+								<button class="tw-vanguard-btn-primary" onclick={handleRequestPermission} disabled={fcmService.isRegistering}>
 									{fcmService.isRegistering ? '[ AUTHORIZING... ]' : '[ AUTHORIZE TELEMETRY ]'}
 								</button>
-								<button class="st-ghost-btn" onclick={() => (showPermissionContext = false)}>CANCEL</button>
+								<button class="tw-vanguard-btn-secondary" onclick={() => (showPermissionContext = false)}>CANCEL</button>
 							</div>
 						</div>
 					{:else}
-						<button class="st-action-btn" style="margin-top: 0.75rem;" onclick={() => (showPermissionContext = true)}>
+						<button class="tw-vanguard-btn-primary" style="margin-top: 0.75rem;" onclick={() => (showPermissionContext = true)}>
 							[ ENABLE PUSH NOTIFICATIONS ]
 						</button>
 					{/if}
 
 					{#if fcmService.error}
-						<div class="st-error">⚠ {fcmService.error}</div>
+						<div class="tw-text-xs tw-text-red-400 tw-font-mono">⚠ {fcmService.error}</div>
 					{/if}
 				{/if}
 			</div>
 
 			<!-- Notification matrix -->
-			<div class="st-section">
-				<div class="st-section-label">NOTIFICATION MATRIX</div>
-				<p class="st-hint">Toggle each relay independently. Changes sync automatically.</p>
+			<div class="tw-flex tw-flex-col tw-gap-4">
+				<div class="tw-text-xs tw-font-bold tw-uppercase tw-tracking-widest tw-text-amber-500">NOTIFICATION MATRIX</div>
+				<p class="tw-text-xs tw-text-[#94A3B8]">Toggle each relay independently. Changes sync automatically.</p>
 
 				<div class="st-matrix">
 					{@render relayRow(
@@ -494,46 +497,46 @@
 				</div>
 
 				{#if prefsSyncMsg}
-					<div class="st-sync-flash">{prefsSyncMsg}</div>
+					<div class="tw-text-xs tw-font-bold tw-text-[#7dff9a] tw-tracking-widest">{prefsSyncMsg}</div>
 				{/if}
 			</div>
 		</div>
 
 	<!-- ── PANEL: OPERATIONS (director / coach) ───────────────────────────── -->
 	{:else if activeTab === 'operations' && showOps}
-		<div class="st-panel">
-			<div class="st-section">
-				<div class="st-section-label">BILLING & SUBSCRIPTION</div>
-				<p class="st-hint">Manage your club's plan, payment method, and invoice history.</p>
-			<a href="/upgrade" class="st-action-btn tw-no-underline tw-inline-flex">
+		<div class="z2-panel siem-panel st-bento tw-p-[clamp(16px,3vw,24px)] tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-flex tw-flex-col tw-gap-6 tw-mb-6">
+			<div class="tw-flex tw-flex-col tw-gap-4">
+				<div class="tw-text-xs tw-font-bold tw-uppercase tw-tracking-widest tw-text-amber-500">BILLING & SUBSCRIPTION</div>
+				<p class="tw-text-xs tw-text-[#94A3B8]">Manage your club's plan, payment method, and invoice history.</p>
+			<a href="/upgrade" class="tw-vanguard-btn-primary tw-no-underline tw-inline-flex">
 				[ BILLING PORTAL ]
 			</a>
 			</div>
 
-			<div class="st-section">
-				<div class="st-section-label">ORGANISATION MANAGEMENT</div>
-				<div class="st-link-grid tw-font-mono">
-					<a href="/director/dashboard" class="st-link-card">
-						<div class="st-link-card-title">MISSION CONTROL</div>
-						<div class="st-link-card-sub">Roster, invites, season config</div>
+			<div class="tw-flex tw-flex-col tw-gap-4">
+				<div class="tw-text-xs tw-font-bold tw-uppercase tw-tracking-widest tw-text-amber-500">ORGANISATION MANAGEMENT</div>
+				<div class="tw-grid tw-grid-cols-1 md:tw-grid-cols-2 tw-gap-4 tw-font-mono">
+					<a href="/director/dashboard" class="tw-flex tw-flex-col tw-gap-1 tw-p-4 tw-bg-[#000000] tw-border tw-border-[#334155] hover:tw-border-amber-500 tw-transition-colors tw-no-underline">
+						<div class="tw-text-sm tw-font-bold tw-text-amber-500">MISSION CONTROL</div>
+						<div class="tw-text-xs tw-text-[#94A3B8]">Roster, invites, season config</div>
 					</a>
-					<a href="/coach/tactical" class="st-link-card">
-						<div class="st-link-card-title">WAR ROOM</div>
-						<div class="st-link-card-sub">Tactical board, fixtures, facilities</div>
+					<a href="/coach/tactical" class="tw-flex tw-flex-col tw-gap-1 tw-p-4 tw-bg-[#000000] tw-border tw-border-[#334155] hover:tw-border-amber-500 tw-transition-colors tw-no-underline">
+						<div class="tw-text-sm tw-font-bold tw-text-amber-500">WAR ROOM</div>
+						<div class="tw-text-xs tw-text-[#94A3B8]">Tactical board, fixtures, facilities</div>
 					</a>
 					{#if isDirector}
-						<a href="/admin/organizations" class="st-link-card">
-							<div class="st-link-card-title">ADMIN CONSOLE</div>
-							<div class="st-link-card-sub">Clubs, teams, global users</div>
+						<a href="/admin/organizations" class="tw-flex tw-flex-col tw-gap-1 tw-p-4 tw-bg-[#000000] tw-border tw-border-[#334155] hover:tw-border-amber-500 tw-transition-colors tw-no-underline">
+							<div class="tw-text-sm tw-font-bold tw-text-amber-500">ADMIN CONSOLE</div>
+							<div class="tw-text-xs tw-text-[#94A3B8]">Clubs, teams, global users</div>
 						</a>
 					{/if}
 				</div>
 			</div>
 
-			<div class="st-section">
-				<div class="st-section-label">STRIPE CONNECT</div>
-				<p class="st-hint">Connect your club's bank account to receive season registration fees directly.</p>
-			<a href="/director?stripe=onboard" class="st-ghost-btn tw-inline-flex tw-no-underline">
+			<div class="tw-flex tw-flex-col tw-gap-4">
+				<div class="tw-text-xs tw-font-bold tw-uppercase tw-tracking-widest tw-text-amber-500">STRIPE CONNECT</div>
+				<p class="tw-text-xs tw-text-[#94A3B8]">Connect your club's bank account to receive season registration fees directly.</p>
+			<a href="/director?stripe=onboard" class="tw-vanguard-btn-secondary tw-inline-flex tw-no-underline">
 				[ CONNECT STRIPE ACCOUNT ]
 			</a>
 			</div>
@@ -541,77 +544,77 @@
 
 	<!-- ── PANEL: FAMILY UNIT (parent) ───────────────────────────────────── -->
 	{:else if activeTab === 'family' && showFamily}
-		<div class="st-panel">
-			<div class="st-section">
-				<div class="st-section-label">COPPA VERIFICATION STATUS</div>
-				<div class="st-info-grid tw-font-mono">
-					<div class="st-info-row">
-						<span class="st-info-key">VPC STATUS</span>
-						<span class="st-info-val" style="color: {profile?.vpcVerified ? '#2dd4bf' : '#f59e0b'};">
+		<div class="z2-panel siem-panel st-bento tw-p-[clamp(16px,3vw,24px)] tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-flex tw-flex-col tw-gap-6 tw-mb-6">
+			<div class="tw-flex tw-flex-col tw-gap-4">
+				<div class="tw-text-xs tw-font-bold tw-uppercase tw-tracking-widest tw-text-amber-500">COPPA VERIFICATION STATUS</div>
+				<div class="tw-grid tw-grid-cols-1 md:tw-grid-cols-2 tw-gap-4 tw-font-mono">
+					<div class="tw-flex tw-flex-col tw-gap-1 tw-p-3 tw-bg-[#000000] tw-border tw-border-[#334155]">
+						<span class="tw-text-[10px] tw-font-bold tw-uppercase tw-tracking-widest tw-text-[#A1A1AA]">VPC STATUS</span>
+						<span class="tw-text-sm tw-font-mono tw-text-[#FAFAFA]" style="color: {profile?.vpcVerified ? '#2dd4bf' : '#f59e0b'};">
 							{profile?.vpcVerified ? '✓ VERIFIED' : '⚠ PENDING VERIFICATION'}
 						</span>
 					</div>
-					<div class="st-info-row">
-						<span class="st-info-key">HOUSEHOLD</span>
-						<span class="st-info-val">{profile?.householdId ?? '—'}</span>
+					<div class="tw-flex tw-flex-col tw-gap-1 tw-p-3 tw-bg-[#000000] tw-border tw-border-[#334155]">
+						<span class="tw-text-[10px] tw-font-bold tw-uppercase tw-tracking-widest tw-text-[#A1A1AA]">HOUSEHOLD</span>
+						<span class="tw-text-sm tw-font-mono tw-text-[#FAFAFA]">{profile?.householdId ?? '—'}</span>
 					</div>
 				</div>
 				{#if !profile?.vpcVerified}
-					<div class="st-hint st-hint--amber">
+					<div class="tw-text-xs tw-text-amber-500">
 						Your COPPA parental consent is pending. Check your email for the verification link
 						or contact your club director.
 					</div>
 				{/if}
 			</div>
 
-			<div class="st-section">
-				<div class="st-section-label">LINKED PLAYERS</div>
+			<div class="tw-flex tw-flex-col tw-gap-4">
+				<div class="tw-text-xs tw-font-bold tw-uppercase tw-tracking-widest tw-text-amber-500">LINKED PLAYERS</div>
 				{#if profile?.playerEmails?.length > 0}
-					<div class="st-info-grid tw-font-mono">
+					<div class="tw-grid tw-grid-cols-1 md:tw-grid-cols-2 tw-gap-4 tw-font-mono">
 						{#each profile.playerEmails as playerEmail (playerEmail)}
-							<div class="st-info-row">
-								<span class="st-info-key">PLAYER</span>
-								<span class="st-info-val">{playerEmail}</span>
+							<div class="tw-flex tw-flex-col tw-gap-1 tw-p-3 tw-bg-[#000000] tw-border tw-border-[#334155]">
+								<span class="tw-text-[10px] tw-font-bold tw-uppercase tw-tracking-widest tw-text-[#A1A1AA]">PLAYER</span>
+								<span class="tw-text-sm tw-font-mono tw-text-[#FAFAFA]">{playerEmail}</span>
 							</div>
 						{/each}
 					</div>
 				{:else}
-					<p class="st-hint">No players linked. Contact your club director to link your child's account.</p>
+					<p class="tw-text-xs tw-text-[#94A3B8]">No players linked. Contact your club director to link your child's account.</p>
 				{/if}
 			</div>
 
-			<div class="st-section">
-				<div class="st-section-label" style="color: rgba(239,68,68,0.8);">MINOR DATA PROTOCOL</div>
-				<p class="st-hint">
+			<div class="tw-flex tw-flex-col tw-gap-4">
+				<div class="tw-text-xs tw-font-bold tw-uppercase tw-tracking-widest tw-text-amber-500" style="color: rgba(239,68,68,0.8);">MINOR DATA PROTOCOL</div>
+				<p class="tw-text-xs tw-text-[#94A3B8]">
 					To request deletion of a minor's data under COPPA, contact your club director
 					or platform support. All data deletion requests are logged and audited.
 				</p>
 			<a
 				href={`mailto:support@sstracker.app?subject=MINOR%20DATA%20DELETION&body=Tenant%20ID%3A%20${tenantId}%0AParent%20UID%3A%20${uid}%0ARequest%3A%20Delete%20minor%20data`}
-				class="st-danger-btn tw-inline-flex tw-no-underline"
+				class="tw-vanguard-btn-secondary tw-border-red-500 tw-text-red-400 tw-inline-flex tw-no-underline"
 			>[ REQUEST DATA DELETION ]</a>
 			</div>
 		</div>
 
 	<!-- ── PANEL: DANGER ZONE ─────────────────────────────────────────────── -->
 	{:else if activeTab === 'danger'}
-		<div class="st-panel">
-			<div class="st-section">
-				<div class="st-section-label" style="color: rgba(239,68,68,0.8);">PASSWORD RESET</div>
-				<p class="st-hint">Send a password reset link to {email}.</p>
+		<div class="z2-panel siem-panel st-bento tw-p-[clamp(16px,3vw,24px)] tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-flex tw-flex-col tw-gap-6 tw-mb-6">
+			<div class="tw-flex tw-flex-col tw-gap-4">
+				<div class="tw-text-xs tw-font-bold tw-uppercase tw-tracking-widest tw-text-amber-500" style="color: rgba(239,68,68,0.8);">PASSWORD RESET</div>
+				<p class="tw-text-xs tw-text-[#94A3B8]">Send a password reset link to {email}.</p>
 				{#if resetSent}
-					<div class="st-success">✓ Reset link sent to {email}</div>
+					<div class="tw-text-xs tw-text-[#2dd4bf] tw-font-mono">✓ Reset link sent to {email}</div>
 				{:else}
-					<button class="st-danger-btn" onclick={sendPasswordReset}>
+					<button class="tw-vanguard-btn-secondary tw-border-red-500 tw-text-red-400" onclick={sendPasswordReset}>
 						[ SEND RESET LINK ]
 					</button>
-					{#if resetError}<div class="st-error">⚠ {resetError}</div>{/if}
+					{#if resetError}<div class="tw-text-xs tw-text-red-400 tw-font-mono">⚠ {resetError}</div>{/if}
 				{/if}
 			</div>
 
-			<div class="st-section">
-				<div class="st-section-label" style="color: rgba(239,68,68,0.8);">ANOMALY REPORT</div>
-				<p class="st-hint">
+			<div class="tw-flex tw-flex-col tw-gap-4">
+				<div class="tw-text-xs tw-font-bold tw-uppercase tw-tracking-widest tw-text-amber-500" style="color: rgba(239,68,68,0.8);">ANOMALY REPORT</div>
+				<p class="tw-text-xs tw-text-[#94A3B8]">
 					Found a data error? Use the Report Anomaly button in the sidebar
 					to send a pre-formatted correction request to the platform team.
 				</p>
@@ -631,10 +634,10 @@
 	onChange: (v: boolean) => void,
 	enabled: boolean,
 )}
-	<div class="st-relay-row" class:st-relay-row--disabled={!enabled}>
-		<div class="st-relay-info">
-			<div class="st-relay-label">{label}</div>
-			<div class="st-relay-desc">{description}</div>
+	<div class="tw-flex tw-items-center tw-justify-between tw-p-4 tw-bg-[#000000] tw-border tw-border-[#334155] tw-mb-2" class:st-relay-row--disabled={!enabled}>
+		<div class="tw-flex tw-flex-col tw-gap-1">
+			<div class="tw-text-sm tw-font-bold tw-text-[#FAFAFA]">{label}</div>
+			<div class="tw-text-xs tw-text-[#94A3B8]">{description}</div>
 		</div>
 		<button
 			class="st-relay"
@@ -663,479 +666,3 @@
 	</div>
 {/snippet}
 
-<style>
-	/* ── Root ─────────────────────────────────────────────────────────────── */
-	.st-root {
-		max-width: 740px;
-		margin: 0 auto;
-		font-family: 'JetBrains Mono', 'Space Mono', ui-monospace, monospace;
-		color: var(--text-secondary, #e2e8f0);
-	}
-
-	/* ── Terminal Header ──────────────────────────────────────────────────── */
-	.st-header {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		padding: 14px 20px 12px;
-		background: var(--vanguard-surface, rgba(0, 8, 20, 0.9));
-		border: 1px solid var(--vanguard-border, rgba(0, 255, 255, 0.15));
-		border-bottom: none;
-		border-radius: 4px 4px 0 0;
-	}
-	.st-header-left { display: flex; align-items: center; gap: 12px; }
-	.st-header-dot {
-		width: 8px; height: 8px;
-		border-radius: 50%;
-		background: #14b8a6;
-		box-shadow: 0 0 8px #14b8a6;
-		animation: st-dot-pulse 2.5s ease-in-out infinite;
-	}
-	@keyframes st-dot-pulse {
-		0%, 100% { opacity: 0.6; box-shadow: 0 0 6px #14b8a6; }
-		50%       { opacity: 1;   box-shadow: 0 0 16px #14b8a6; }
-	}
-	.st-header-title {
-		font-size: 10px;
-		font-weight: 700;
-		letter-spacing: 0.22em;
-		color: rgba(0, 255, 255, 0.9);
-		text-shadow: 0 0 14px rgba(0, 255, 255, 0.4);
-	}
-	.st-header-meta {
-		font-size: 9px;
-		letter-spacing: 0.08em;
-		color: rgba(0, 255, 255, 0.35);
-		margin-top: 2px;
-	}
-	.st-header-right { display: flex; align-items: center; }
-	.st-header-ref {
-		font-size: 9px;
-		letter-spacing: 0.12em;
-		color: rgba(0, 255, 255, 0.2);
-	}
-
-	/* ── Tab Rail ─────────────────────────────────────────────────────────── */
-	.st-tabs {
-		display: flex;
-		background: var(--vanguard-surface-raised, rgba(0, 6, 16, 0.95));
-		border-left: 1px solid var(--vanguard-border, rgba(0, 255, 255, 0.15));
-		border-right: 1px solid var(--vanguard-border, rgba(0, 255, 255, 0.15));
-		border-bottom: 1px solid var(--vanguard-border, rgba(0, 255, 255, 0.12));
-		overflow-x: auto;
-	}
-	.st-tab {
-		flex-shrink: 0;
-		padding: 10px 18px;
-		font-family: inherit;
-		font-size: 9px;
-		font-weight: 700;
-		letter-spacing: 0.18em;
-		color: rgba(0, 255, 255, 0.35);
-		background: transparent;
-		border: none;
-		border-bottom: 2px solid transparent;
-		cursor: pointer;
-		transition: all 0.15s;
-		white-space: nowrap;
-	}
-	.st-tab:hover { color: rgba(0, 255, 255, 0.7); background: rgba(0, 255, 255, 0.04); }
-	.st-tab--active {
-		color: #14b8a6;
-		border-bottom-color: #14b8a6;
-		background: rgba(0, 255, 255, 0.06);
-		text-shadow: 0 0 10px rgba(0, 255, 255, 0.4);
-	}
-	.st-tab--danger { color: rgba(239, 68, 68, 0.4); }
-	.st-tab--danger:hover { color: rgba(239, 68, 68, 0.75); background: rgba(239, 68, 68, 0.04); }
-
-	/* ── Panel ────────────────────────────────────────────────────────────── */
-	.st-panel {
-		background: var(--vanguard-surface, rgba(0, 8, 20, 0.9));
-		border: 1px solid var(--vanguard-border, rgba(0, 255, 255, 0.12));
-		border-top: none;
-		border-radius: 0 0 4px 4px;
-		padding: 0;
-	}
-
-	/* ── Section ──────────────────────────────────────────────────────────── */
-	.st-section {
-		padding: 18px 20px;
-		border-bottom: 1px solid rgba(0, 255, 255, 0.06);
-	}
-	.st-section:last-child { border-bottom: none; }
-
-	.st-section-label {
-		font-size: 8px;
-		font-weight: 700;
-		letter-spacing: 0.25em;
-		color: rgba(0, 255, 255, 0.5);
-		margin-bottom: 10px;
-	}
-
-	/* ── Info grid ────────────────────────────────────────────────────────── */
-	.st-info-grid { display: flex; flex-direction: column; gap: 4px; }
-	.st-info-row {
-		display: flex;
-		align-items: baseline;
-		gap: 12px;
-		padding: 3px 0;
-		border-bottom: 1px solid rgba(0, 255, 255, 0.04);
-	}
-	.st-info-row:last-child { border-bottom: none; }
-	.st-info-key {
-		font-size: 8px;
-		letter-spacing: 0.18em;
-		color: rgba(0, 255, 255, 0.35);
-		min-width: 70px;
-		flex-shrink: 0;
-	}
-	.st-info-val { font-size: 11px; color: rgba(0, 255, 255, 0.75); word-break: break-all; }
-
-	/* ── Input / Select ───────────────────────────────────────────────────── */
-	.st-input {
-		width: 100%;
-		padding: 8px 10px;
-		font-family: inherit;
-		font-size: 11px;
-		background: rgba(0, 0, 0, 0.4);
-		border: 1px solid rgba(0, 255, 255, 0.18);
-		border-radius: 2px;
-		color: #e2e8f0;
-		outline: none;
-		transition: border-color 0.15s;
-		box-sizing: border-box;
-		margin-top: 6px;
-		/* Support dark color-scheme for native date/time pickers */
-		color-scheme: dark;
-	}
-	.st-input:focus { border-color: rgba(0, 255, 255, 0.45); }
-
-	/* ── Checkbox row ─────────────────────────────────────────────────────── */
-	.st-checkbox-row {
-		display: flex;
-		align-items: center;
-		gap: 8px;
-		font-size: 11px;
-		color: rgba(0, 255, 255, 0.6);
-		cursor: pointer;
-	}
-	.st-checkbox-row input { accent-color: #14b8a6; }
-
-	/* ── Hints ────────────────────────────────────────────────────────────── */
-	.st-hint {
-		font-size: 10px;
-		color: rgba(0, 255, 255, 0.35);
-		line-height: 1.5;
-		margin: 0 0 8px;
-	}
-	.st-hint--amber { color: rgba(251, 191, 36, 0.7); }
-
-	/* ── Messages ─────────────────────────────────────────────────────────── */
-	.st-error {
-		font-size: 10px;
-		color: #f87171;
-		padding: 6px 10px;
-		background: rgba(239, 68, 68, 0.07);
-		border: 1px solid rgba(239, 68, 68, 0.25);
-		border-radius: 2px;
-		margin-top: 8px;
-	}
-	.st-success {
-		font-size: 10px;
-		color: #4ade80;
-		padding: 6px 10px;
-		background: rgba(74, 222, 128, 0.07);
-		border: 1px solid rgba(74, 222, 128, 0.25);
-		border-radius: 2px;
-		margin-top: 8px;
-	}
-
-	/* ── Buttons ──────────────────────────────────────────────────────────── */
-	.st-action-btn {
-		padding: 9px 20px;
-		font-family: inherit;
-		font-size: 9px;
-		font-weight: 700;
-		letter-spacing: 0.2em;
-		color: #14b8a6;
-		background: rgba(0, 255, 255, 0.08);
-		border: 1px solid rgba(0, 255, 255, 0.4);
-		border-radius: 2px;
-		cursor: pointer;
-		transition: background 0.15s, box-shadow 0.15s;
-		margin-top: 10px;
-		min-height: 38px;
-	}
-	.st-action-btn:hover:not(:disabled) {
-		background: rgba(0, 255, 255, 0.16);
-		box-shadow: 0 0 14px rgba(0, 255, 255, 0.2);
-	}
-	.st-action-btn:disabled { opacity: 0.35; cursor: not-allowed; }
-	.st-action-btn--danger {
-		color: rgba(255,77,106,0.85);
-		background: rgba(255,77,106,0.06);
-		border-color: rgba(255,77,106,0.35);
-	}
-	.st-action-btn--danger:hover:not(:disabled) {
-		background: rgba(255,77,106,0.12);
-		border-color: rgba(255,77,106,0.6);
-	}
-
-	/* ── Phone Verification card ── */
-	.phone-card {
-		display: flex;
-		flex-direction: column;
-		gap: 0.65rem;
-		padding: 0.85rem 1rem;
-		background: rgba(20, 184, 166,0.025);
-		border: 1px solid rgba(20, 184, 166,0.1);
-		border-radius: 10px;
-	}
-	.phone-verified-row {
-		display: flex;
-		align-items: center;
-		gap: 0.6rem;
-	}
-	.phone-verified-badge {
-		font-size: 0.55rem;
-		font-weight: 700;
-		letter-spacing: 0.16em;
-		color: rgba(0,230,130,0.9);
-		background: rgba(0,230,130,0.08);
-		border: 1px solid rgba(0,230,130,0.25);
-		border-radius: 4px;
-		padding: 2px 8px;
-	}
-	.phone-ending {
-		font-size: 0.65rem;
-		color: rgba(255,255,255,0.35);
-		letter-spacing: 0.1em;
-		font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;
-	}
-	.st-ghost-btn {
-		padding: 7px 14px;
-		font-family: inherit;
-		font-size: 9px;
-		letter-spacing: 0.16em;
-		color: rgba(0, 255, 255, 0.4);
-		background: transparent;
-		border: 1px solid rgba(0, 255, 255, 0.15);
-		border-radius: 2px;
-		cursor: pointer;
-		margin-top: 10px;
-		transition: color 0.15s;
-	}
-	.st-ghost-btn:hover { color: rgba(0, 255, 255, 0.7); }
-	.st-danger-btn {
-		padding: 9px 18px;
-		font-family: inherit;
-		font-size: 9px;
-		font-weight: 700;
-		letter-spacing: 0.2em;
-		color: rgba(239, 68, 68, 0.9);
-		background: rgba(239, 68, 68, 0.06);
-		border: 1px solid rgba(239, 68, 68, 0.3);
-		border-radius: 2px;
-		cursor: pointer;
-		transition: background 0.15s;
-		margin-top: 8px;
-	}
-	.st-danger-btn:hover { background: rgba(239, 68, 68, 0.13); }
-
-	/* ── Theme picker ─────────────────────────────────────────────────────── */
-	.st-theme-row { display: flex; gap: 4px; margin-top: 8px; }
-	.st-theme-btn {
-		flex: 1;
-		padding: 7px;
-		font-family: inherit;
-		font-size: 8px;
-		letter-spacing: 0.15em;
-		background: transparent;
-		border: 1px solid rgba(0, 255, 255, 0.15);
-		border-radius: 2px;
-		color: rgba(0, 255, 255, 0.4);
-		cursor: pointer;
-		transition: all 0.15s;
-	}
-	.st-theme-btn--active {
-		background: rgba(0, 255, 255, 0.1);
-		border-color: rgba(0, 255, 255, 0.5);
-		color: #14b8a6;
-	}
-
-	/* ── FCM Permission cards ─────────────────────────────────────────────── */
-	.st-permission-card {
-		display: flex;
-		align-items: flex-start;
-		gap: 14px;
-		padding: 12px 14px;
-		border-radius: 3px;
-		margin-bottom: 10px;
-	}
-	.st-permission-card--pending {
-		background: rgba(0, 255, 255, 0.03);
-		border: 1px solid rgba(0, 255, 255, 0.12);
-	}
-	.st-permission-card--active {
-		background: rgba(45, 212, 191, 0.05);
-		border: 1px solid rgba(45, 212, 191, 0.25);
-	}
-	.st-permission-card--denied {
-		background: rgba(239, 68, 68, 0.04);
-		border: 1px solid rgba(239, 68, 68, 0.2);
-	}
-	.st-permission-icon {
-		font-size: 20px;
-		color: rgba(0, 255, 255, 0.4);
-		flex-shrink: 0;
-		margin-top: 2px;
-	}
-	.st-permission-title { font-size: 10px; font-weight: 700; letter-spacing: 0.18em; color: rgba(0, 255, 255, 0.8); margin-bottom: 4px; }
-	.st-permission-sub { font-size: 10px; color: rgba(0, 255, 255, 0.4); margin: 0; line-height: 1.5; }
-
-	.st-context-box {
-		background: rgba(0, 255, 255, 0.04);
-		border: 1px solid rgba(0, 255, 255, 0.15);
-		border-radius: 3px;
-		padding: 14px;
-		margin-top: 8px;
-	}
-	.st-context-label { font-size: 8px; letter-spacing: 0.22em; color: rgba(0, 255, 255, 0.45); margin-bottom: 8px; }
-	.st-context-list { margin: 0 0 8px 0; padding-left: 1.2em; font-size: 10px; color: rgba(0, 255, 255, 0.55); line-height: 1.8; }
-	.st-context-note { font-size: 9px; color: rgba(0, 255, 255, 0.3); margin: 0 0 10px; }
-	.st-context-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-
-	/* ── Notification Matrix ──────────────────────────────────────────────── */
-	.st-matrix { display: flex; flex-direction: column; gap: 2px; margin-top: 10px; }
-
-	.st-relay-row {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		padding: 10px 12px;
-		background: rgba(0, 0, 0, 0.2);
-		border: 1px solid rgba(0, 255, 255, 0.07);
-		border-radius: 2px;
-		gap: 12px;
-		transition: background 0.15s;
-	}
-	.st-relay-row:hover { background: rgba(0, 255, 255, 0.03); }
-	.st-relay-row--disabled { opacity: 0.4; }
-
-	.st-relay-info { flex: 1; min-width: 0; }
-	.st-relay-label { font-size: 9px; font-weight: 700; letter-spacing: 0.18em; color: rgba(0, 255, 255, 0.8); margin-bottom: 2px; }
-	.st-relay-desc { font-size: 9px; color: rgba(0, 255, 255, 0.3); line-height: 1.4; }
-
-	/* ── Circuit Breaker / Relay toggle ───────────────────────────────────── */
-	.st-relay {
-		position: relative;
-		display: flex;
-		align-items: center;
-		width: 68px;
-		height: 26px;
-		flex-shrink: 0;
-		background: rgba(0, 0, 0, 0.5);
-		border: 1px solid rgba(0, 255, 255, 0.15);
-		border-radius: 2px;
-		cursor: pointer;
-		padding: 3px 4px;
-		gap: 2px;
-		transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
-		overflow: hidden;
-	}
-	.st-relay:focus-visible { outline: 1px solid rgba(0, 255, 255, 0.6); }
-	.st-relay--on {
-		background: rgba(0, 255, 255, 0.08);
-		border-color: rgba(0, 255, 255, 0.5);
-		box-shadow: 0 0 12px rgba(0, 255, 255, 0.18), inset 0 0 8px rgba(0, 255, 255, 0.04);
-	}
-	.st-relay--disabled { cursor: not-allowed; }
-
-	/* Segment "teeth" — decorative circuit indicators */
-	.st-relay-seg {
-		width: 8px;
-		height: 12px;
-		border-radius: 1px;
-		background: rgba(0, 255, 255, 0.1);
-		border: 1px solid rgba(0, 255, 255, 0.12);
-		transition: background 0.2s, border-color 0.2s, box-shadow 0.2s;
-		flex-shrink: 0;
-	}
-	.st-relay-seg--lit {
-		background: rgba(0, 255, 255, 0.35);
-		border-color: rgba(0, 255, 255, 0.5);
-		box-shadow: 0 0 5px rgba(0, 255, 255, 0.3);
-	}
-	/* Tip segment — the "live contact" indicator */
-	.st-relay-seg--tip {
-		width: 6px;
-		height: 14px;
-		margin-left: 1px;
-	}
-	.st-relay--on .st-relay-seg--tip {
-		background: #14b8a6;
-		border-color: #14b8a6;
-		box-shadow: 0 0 8px rgba(0, 255, 255, 0.8);
-	}
-
-	/* Knob — slides right when ON */
-	.st-relay-knob {
-		position: absolute;
-		right: 6px;
-		top: 50%;
-		transform: translateY(-50%);
-		width: 6px;
-		height: 18px;
-		background: rgba(0, 255, 255, 0.2);
-		border: 1px solid rgba(0, 255, 255, 0.3);
-		border-radius: 1px;
-		transition: background 0.2s, box-shadow 0.2s;
-	}
-	.st-relay--on .st-relay-knob {
-		background: #14b8a6;
-		box-shadow: 0 0 8px rgba(0, 255, 255, 0.7);
-	}
-
-	/* State label */
-	.st-relay-state {
-		position: absolute;
-		right: 15px;
-		font-size: 7px;
-		font-weight: 700;
-		letter-spacing: 0.1em;
-		color: rgba(0, 255, 255, 0.25);
-		pointer-events: none;
-	}
-	.st-relay--on .st-relay-state { color: rgba(0, 255, 255, 0.5); }
-
-	/* ── Sync flash ───────────────────────────────────────────────────────── */
-	.st-sync-flash {
-		margin-top: 10px;
-		font-size: 9px;
-		letter-spacing: 0.18em;
-		color: #2dd4bf;
-		text-shadow: 0 0 8px rgba(45, 212, 191, 0.5);
-		animation: st-flash 0.3s ease-out;
-	}
-	@keyframes st-flash {
-		from { opacity: 0; transform: translateY(-4px); }
-		to   { opacity: 1; transform: translateY(0); }
-	}
-
-	/* ── Operations: link grid ────────────────────────────────────────────── */
-	.st-link-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 8px; margin-top: 8px; }
-	.st-link-card {
-		padding: 12px;
-		background: rgba(0, 255, 255, 0.03);
-		border: 1px solid rgba(0, 255, 255, 0.12);
-		border-radius: 3px;
-		text-decoration: none;
-		transition: background 0.15s, border-color 0.15s;
-	}
-	.st-link-card:hover { background: rgba(0, 255, 255, 0.07); border-color: rgba(0, 255, 255, 0.28); }
-	.st-link-card-title { font-size: 9px; font-weight: 700; letter-spacing: 0.18em; color: rgba(0, 255, 255, 0.8); margin-bottom: 3px; }
-	.st-link-card-sub { font-size: 9px; color: rgba(0, 255, 255, 0.3); line-height: 1.4; }
-
-	.st-link { color: rgba(0, 255, 255, 0.7); text-decoration: underline; }
-</style>

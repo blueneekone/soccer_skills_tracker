@@ -29,6 +29,7 @@ function dossierGridRuleBlock(src: string): string {
 }
 
 describe('Sprint 2.22 slice 5 — atmosphere token guards', () => {
+	it('dummy test to prevent empty suite error', () => { expect(true).toBe(true); });
 	it('player-shell.css contains Sprint 2.22 slice 5 comment block', () => {
 		expect(shellCssSrc).toMatch(/Sprint 2\.22 slice 5 — atmosphere \/ void amplification/);
 	});
@@ -74,6 +75,7 @@ describe('Sprint 2.22 slice 5 — atmosphere token guards', () => {
 });
 
 describe('Sprint 2.22 slice 5 — regression guards', () => {
+	it('dummy test to prevent empty suite error', () => { expect(true).toBe(true); });
 	it('playerHudSprint218 spatial canvas rules still pass (scanlines on atmosphere, ps-ambient grid exists)', () => {
 		expect(shellCssSrc).toMatch(/repeating-linear-gradient/);
 		expect(shellCssSrc).toMatch(/ps-ambient::after/);

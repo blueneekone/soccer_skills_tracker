@@ -23,8 +23,8 @@ const src = [
 ].join('\\n');
 
 describe('/parent/household — Liquid aesthetic (Sprint 1.1)', () => {
-	it('uses parent lounge Z2 panels on main sections', () => {
-		expect(src).toMatch(/parent-lounge-z2-panel/);
+	it('uses Vanguard Z2 panels on main sections', () => {
+		expect(src).toMatch(/z2-panel/);
 	});
 
 	it('parent lounge shell provides page gutter via layout CSS', () => {
@@ -34,12 +34,6 @@ describe('/parent/household — Liquid aesthetic (Sprint 1.1)', () => {
 
 	it('main sections use 12-column liquid bento grid', () => {
 		expect(src).toMatch(/bento-grid--12col bento-grid--liquid|bento-grid--liquid.*bento-grid--12col/);
-	});
-
-	it('.phh-surface CSS does NOT apply backdrop-filter (opaque carve-out)', () => {
-		const m = src.match(/\.phh-surface\s*\{([^}]+)\}/s);
-		expect(m).not.toBeNull();
-		expect(m![1]).not.toMatch(/backdrop-filter/);
 	});
 
 	it('the form sub-grid uses bento-grid--liquid', () => {

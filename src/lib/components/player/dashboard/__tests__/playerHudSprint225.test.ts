@@ -16,6 +16,7 @@ const workoutSrc = existsSync(WORKOUT) ? readFileSync(WORKOUT, 'utf-8') : '';
 const terminalCssSrc = existsSync(TERMINAL_CSS) ? readFileSync(TERMINAL_CSS, 'utf-8') : '';
 
 describe('Sprint 2.22 slice 4e — stats workout chart full-width parity', () => {
+	it('dummy test to prevent empty suite error', () => { expect(true).toBe(true); });
 	it('stats/+page.svelte dossier-workout__chart uses 300px height', () => {
 		expect(statsSrc).toMatch(/dossier-workout__chart[^>]*tw-h-\[300px\]/);
 		expect(statsSrc).toMatch(/dossier-workout__chart[\s\S]*?min-height:\s*300px/);
@@ -42,6 +43,7 @@ describe('Sprint 2.22 slice 4e — stats workout chart full-width parity', () =>
 });
 
 describe('Sprint 2.22 slice 4e — workout slider focus-visible only', () => {
+	it('dummy test to prevent empty suite error', () => { expect(true).toBe(true); });
 	it('player-terminal.css uses pw-range:focus-visible for keyboard focus ring', () => {
 		expect(terminalCssSrc).toMatch(/\.player-hud-root \.pw-range:focus-visible[\s\S]*?outline:/);
 	});

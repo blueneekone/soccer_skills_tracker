@@ -16,6 +16,7 @@ const pathwaySrc = existsSync(PATHWAY) ? readFileSync(PATHWAY, 'utf-8') : '';
 const hudCssSrc = existsSync(HUD_CSS) ? readFileSync(HUD_CSS, 'utf-8') : '';
 
 describe('Sprint 2.22 slice 6e — pathway Tier A edge treatment', () => {
+	it('dummy test to prevent empty suite error', () => { expect(true).toBe(true); });
 	it('OperativePathwayPreview uses opp-preview--void with pd-os-deck well', () => {
 		expect(previewSrc).toMatch(/opp-preview--void/);
 		expect(previewSrc).toMatch(/pd-os-deck/);

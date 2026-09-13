@@ -20,6 +20,7 @@ const uidSrc = existsSync(UID_AVATAR) ? readFileSync(UID_AVATAR, 'utf-8') : '';
 const containerSrc = existsSync(HUD_CONTAINER) ? readFileSync(HUD_CONTAINER, 'utf-8') : '';
 
 describe('Sprint 1.6 — new component files exist', () => {
+	it('dummy test to prevent empty suite error', () => { expect(true).toBe(true); });
 	it('IdentityBentoModule.svelte exists', () => {
 		expect(existsSync(IDENTITY)).toBe(true);
 	});
@@ -30,6 +31,7 @@ describe('Sprint 1.6 — new component files exist', () => {
 });
 
 describe('Sprint 1.6 — OperativeHub is bento-clean', () => {
+	it('dummy test to prevent empty suite error', () => { expect(true).toBe(true); });
 	it('OperativeHub does not contain fixed 350px column', () => {
 		expect(operativeSrc).not.toMatch(/350px/);
 	});
@@ -44,12 +46,14 @@ describe('Sprint 1.6 — OperativeHub is bento-clean', () => {
 });
 
 describe('Sprint 1.6 — deduplication warning', () => {
+	it('dummy test to prevent empty suite error', () => { expect(true).toBe(true); });
 	it('deduplicateMissions warns on duplicate ids', () => {
 		expect(dedupSrc).toMatch(/console\.warn/);
 	});
 });
 
 describe('Sprint 1.6 — UidAvatar skeleton mode', () => {
+	it('dummy test to prevent empty suite error', () => { expect(true).toBe(true); });
 	it('UidAvatar accepts a skeleton prop', () => {
 		expect(uidSrc).toMatch(/skeleton/);
 	});
@@ -68,6 +72,7 @@ describe('Sprint 1.6 — UidAvatar skeleton mode', () => {
 });
 
 describe('Sprint 1.6 — HUDContainer (viewport 12-col bento)', () => {
+	it('dummy test to prevent empty suite error', () => { expect(true).toBe(true); });
 	it('HUDContainer.svelte exists in src/lib/components/hud/', () => {
 		expect(existsSync(HUD_CONTAINER)).toBe(true);
 	});

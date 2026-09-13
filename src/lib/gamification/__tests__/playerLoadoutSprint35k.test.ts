@@ -116,7 +116,7 @@ describe('Sprint 3.5k — wiring guards', () => {
 		const dashboardSrc = (existsSync(DASHBOARD) ? readFileSync(DASHBOARD, 'utf-8') : '') + (existsSync(ARENA) ? readFileSync(ARENA, 'utf-8') : '') + (existsSync(HUD) ? readFileSync(HUD, 'utf-8') : '') + (existsSync(ENGINE) ? readFileSync(ENGINE, 'utf-8') : '');
 		expect(ibmSrc).toMatch(/cardMetadata/);
 		expect(dashboardSrc).toMatch(/resolveOperativeCardMetadata/);
-		expect(dashboardSrc).toMatch(/cardMetadata=\{hqCardMetadata\}/);
+		expect(dashboardSrc).toMatch(/cardMetadata=\{engine.hqCardMetadata\}/);
 	});
 
 	it('Studio dossier resolves metadata from album + loadout', () => {

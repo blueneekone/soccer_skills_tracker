@@ -78,6 +78,24 @@ export class AdminAuditEngine {
 		const seq = ++this.loadSeq;
 		this.loading = true;
 		this.loadErr = '';
+
+		const isMock = typeof window !== 'undefined' && (window.localStorage.getItem('auth_state') !== null || (import.meta.env && import.meta.env.VITE_E2E_BYPASS_AUTH));
+		if (isMock) {
+			if (!append) {
+				this.logs = Array.from({ length: 10 }).map((_, i) => ({
+					id: `mock-audit-${i}`,
+					timestamp: Date.now() - i * 1000 * 60 * 60,
+					admin: 'system@sstracker.local',
+					action: i % 2 === 0 ? 'UPDATE_ROLE' : 'REVOKE_ACCESS',
+					target: `user-${i}`,
+					details: 'Mock anomaly detected',
+				}));
+			}
+			this.totalLoaded = this.logs.length;
+			this.loading = false;
+			return;
+		}
+
 		try {
 			const snap = await this.fetchAuditPage(append, append ? this.lastDoc : null);
 			if (seq !== this.loadSeq) return;

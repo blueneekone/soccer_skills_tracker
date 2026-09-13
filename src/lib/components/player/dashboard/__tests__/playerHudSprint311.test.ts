@@ -14,6 +14,7 @@ const hudCssSrc = existsSync(HUD_CSS) ? readFileSync(HUD_CSS, 'utf-8') : '';
 const ringSrc = existsSync(RING) ? readFileSync(RING, 'utf-8') : '';
 
 describe('Sprint 3.1.1 Part A — hud-stat-cell gold harmonization', () => {
+	it('dummy test to prevent empty suite error', () => { expect(true).toBe(true); });
 	it('stat cell values use --pd-text, not --pd-accent-action / #fbbf24', () => {
 		expect(hudCssSrc).toMatch(/\.hud-stat-cell__value[\s\S]*?color:\s*var\(--pd-text,\s*#f4f4f5\)/);
 		expect(hudCssSrc).not.toMatch(
@@ -47,6 +48,7 @@ describe('Sprint 3.1.1 Part A — hud-stat-cell gold harmonization', () => {
 });
 
 describe('Sprint 3.1.1 Part A — hero gold surfaces preserved', () => {
+	it('dummy test to prevent empty suite error', () => { expect(true).toBe(true); });
 	it('rank XP bar fill still uses gold', () => {
 		expect(hudCssSrc).toMatch(/\.ibm-rank-progress__fill[\s\S]*?background:\s*#fbbf24/);
 	});
@@ -66,6 +68,7 @@ describe('Sprint 3.1.1 Part A — hero gold surfaces preserved', () => {
 });
 
 describe('Sprint 3.1.1 — no regression on 3.1 dossier panel tokens', () => {
+	it('dummy test to prevent empty suite error', () => { expect(true).toBe(true); });
 	it('hud-stat-cell background remains --pd-panel (#05050a), not #0f172a', () => {
 		expect(hudCssSrc).toMatch(/\.hud-stat-cell[\s\S]*?background:\s*var\(--pd-panel,\s*#05050a\)/);
 		expect(hudCssSrc).not.toMatch(

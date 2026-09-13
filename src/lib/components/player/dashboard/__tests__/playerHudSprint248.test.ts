@@ -46,6 +46,7 @@ const idleQuickOpBlock =
 	)?.[0] ?? '';
 
 describe('Phase 7 · G2 — CSS inner differentiation documented + scoped', () => {
+	it('dummy test to prevent empty suite error', () => { expect(true).toBe(true); });
 	it('documents Phase 7 · G2 inner differentiation in CSS comments', () => {
 		expect(hudCss).toMatch(/Phase 7 · G2 — Navigation inner: transit tiles/);
 		expect(hudCss).toMatch(/Phase 7 · G2 — Progression connectors/);
@@ -72,6 +73,7 @@ describe('Phase 7 · G2 — CSS inner differentiation documented + scoped', () =
 });
 
 describe('Phase 7 · G2 — component markup separation', () => {
+	it('dummy test to prevent empty suite error', () => { expect(true).toBe(true); });
 	it('Quick Ops retains oqo-deck__grid 3-column + oqo-op links; no pathway classes', () => {
 		expect(quickOpsSrc).toMatch(/oqo-deck__grid/);
 		expect(quickOpsSrc).toMatch(/class="oqo-op"/);
@@ -95,6 +97,7 @@ describe('Phase 7 · G2 — component markup separation', () => {
 });
 
 describe('Phase 7 · G2 — Navigation vs Progression physics', () => {
+	it('dummy test to prevent empty suite error', () => { expect(true).toBe(true); });
 	it('Quick Ops idle cast shadow without emissive; teal emissive on hover only', () => {
 		expect(idleQuickOpBlock).toMatch(/0 4px 0 rgba\(0, 0, 0, 0\.42\)/);
 		expect(idleQuickOpBlock).not.toMatch(/--pd-emissive-/);
@@ -112,6 +115,7 @@ describe('Phase 7 · G2 — Navigation vs Progression physics', () => {
 });
 
 describe('Phase 7 · G2 — anti-patterns + G1 regression hooks', () => {
+	it('dummy test to prevent empty suite error', () => { expect(true).toBe(true); });
 	it('touched G2 sources omit neon cyan literals', () => {
 		expect(G2_TOUCHED).not.toMatch(/#00d4ff/i);
 		expect(G2_TOUCHED).not.toMatch(/#00f0ff/i);

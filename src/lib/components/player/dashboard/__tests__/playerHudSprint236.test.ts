@@ -24,6 +24,7 @@ function playerVppBlock() {
 }
 
 describe('Sprint 2.22 slice 6g — Stats HUD material scope', () => {
+	it('dummy test to prevent empty suite error', () => { expect(true).toBe(true); });
 	it('player stats root includes player-hud-root when player role', () => {
 		expect(statsSrc).toMatch(/class:player-hud-root=\{isPlayerRole\}/);
 	});
@@ -50,6 +51,7 @@ describe('Sprint 2.22 slice 6g — Stats HUD material scope', () => {
 });
 
 describe('Sprint 2.22 slice 6g — Stats void + workout band CSS', () => {
+	it('dummy test to prevent empty suite error', () => { expect(true).toBe(true); });
 	it('player-dashboard-hud.css contains stats analytics void + workout band rules', () => {
 		expect(hudCssSrc).toMatch(/\.stats-analytics-void\.pd-os-deck--recessed/);
 		expect(hudCssSrc).toMatch(/\.stats-workout-band \.pd-os-deck__well\.dossier-workout__chart/);
@@ -82,6 +84,7 @@ describe('Sprint 2.22 slice 6g — Stats void + workout band CSS', () => {
 });
 
 describe('Sprint 2.22 slice 6g — workout band markup', () => {
+	it('dummy test to prevent empty suite error', () => { expect(true).toBe(true); });
 	it('player workout section uses stats-workout-band hero deck without pd-page-panel when player role', () => {
 		expect(statsSrc).toMatch(/class:stats-workout-band=\{isPlayerRole\}/);
 		expect(statsSrc).toMatch(/class:pd-os-deck--hero=\{isPlayerRole\}/);

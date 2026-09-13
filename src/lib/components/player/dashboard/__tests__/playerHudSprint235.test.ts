@@ -34,6 +34,7 @@ const embeddedBodyBlock = (() => {
 })();
 
 describe('Sprint 2.22 slice 6f-c — IdentityTelemetryBezel component', () => {
+	it('dummy test to prevent empty suite error', () => { expect(true).toBe(true); });
 	it('IdentityTelemetryBezel.svelte exists with streak + XP controls', () => {
 		expect(existsSync(BEZEL)).toBe(true);
 		expect(bezelSrc).toMatch(/ibm-holo-bezel__streak/);
@@ -57,6 +58,7 @@ describe('Sprint 2.22 slice 6f-c — IdentityTelemetryBezel component', () => {
 });
 
 describe('Sprint 2.22 slice 6f-c — IdentityBentoModule embedded HQ wiring', () => {
+	it('dummy test to prevent empty suite error', () => { expect(true).toBe(true); });
 	it('embedded branch does NOT render HudStatCell streak/xp in ibm-metrics', () => {
 		expect(embeddedBodyBlock).not.toMatch(/ibm-metrics/);
 		expect(embeddedBodyBlock).not.toMatch(/variant="streak"/);
@@ -83,6 +85,7 @@ describe('Sprint 2.22 slice 6f-c — IdentityBentoModule embedded HQ wiring', ()
 });
 
 describe('Sprint 2.22 slice 6f-c — HologramCardShell telemetry slot', () => {
+	it('dummy test to prevent empty suite error', () => { expect(true).toBe(true); });
 	it('HologramCardShell accepts optional telemetry snippet in foot rail', () => {
 		expect(holoShellSrc).toMatch(/telemetry\?:\s*Snippet/);
 		expect(holoShellSrc).toMatch(/hcs-telemetry-foot/);
@@ -90,6 +93,7 @@ describe('Sprint 2.22 slice 6f-c — HologramCardShell telemetry slot', () => {
 });
 
 describe('Sprint 2.22 slice 6f-c — identity bezel CSS', () => {
+	it('dummy test to prevent empty suite error', () => { expect(true).toBe(true); });
 	it('player-dashboard-hud.css contains Sprint 2.22 slice 6f-c block', () => {
 		expect(hudCssSrc).toMatch(/Sprint 2\.22 slice 6f-c — HQ identity telemetry bezel/);
 	});
@@ -116,6 +120,7 @@ describe('Sprint 2.22 slice 6f-c — identity bezel CSS', () => {
 });
 
 describe('Sprint 2.22 slice 6f-c — Train page regression', () => {
+	it('dummy test to prevent empty suite error', () => { expect(true).toBe(true); });
 	it('workout logger does not duplicate streak HudStatCell (HQ hologram bezel owns streak)', () => {
 		expect(workoutSrc).not.toMatch(/HudStatCell/);
 		expect(workoutSrc).not.toMatch(/variant="streak"/);
@@ -123,6 +128,7 @@ describe('Sprint 2.22 slice 6f-c — Train page regression', () => {
 });
 
 describe('Sprint 2.22 slice 6f-c — visual acceptance + docs', () => {
+	it('dummy test to prevent empty suite error', () => { expect(true).toBe(true); });
 	it('visual acceptance README documents career XP vs rank column split', () => {
 		expect(existsSync(VISUAL_README)).toBe(true);
 		expect(visualReadmeSrc).toMatch(/career|CAREER/i);

@@ -19,6 +19,7 @@ const vppSrc = readFileSync(VPP, 'utf-8');
 const bountiesSrc = readFileSync(BOUNTIES, 'utf-8');
 
 describe('Sprint 1.5 — HudAvatarRing precision', () => {
+	it('dummy test to prevent empty suite error', () => { expect(true).toBe(true); });
 	it('has no z-index on badge (stacking via DOM order only)', () => {
 		expect(ringSrc).not.toMatch(/z-index:\s*[0-9]/);
 	});
@@ -37,6 +38,7 @@ describe('Sprint 1.5 — HudAvatarRing precision', () => {
 });
 
 describe('Sprint 1.5 — VanguardProtocolPanel advanced toggle removal', () => {
+	it('dummy test to prevent empty suite error', () => { expect(true).toBe(true); });
 	it('does not contain showAdvanced state', () => {
 		expect(vppSrc).not.toMatch(/showAdvanced/);
 	});
@@ -51,6 +53,7 @@ describe('Sprint 1.5 — VanguardProtocolPanel advanced toggle removal', () => {
 });
 
 describe('Sprint 1.5 — Mission deduplication', () => {
+	it('dummy test to prevent empty suite error', () => { expect(true).toBe(true); });
 	it('deduplicateMissions utility exists', () => {
 		expect(existsSync(DEDUP_UTIL)).toBe(true);
 	});

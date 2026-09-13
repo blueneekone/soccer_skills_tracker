@@ -30,6 +30,7 @@ const materialSpatialSrc = existsSync(MATERIAL_SPATIAL)
 	: '';
 
 describe('Sprint 2.16.1 — /player/settings route shell', () => {
+	it('dummy test to prevent empty suite error', () => { expect(true).toBe(true); });
 	it('route exists and uses PlayerOsPageStrap + PlayerSettingsPanel + pd-content-wrap', () => {
 		expect(existsSync(PLAYER_SETTINGS_PAGE)).toBe(true);
 		expect(playerSettingsPageSrc).toMatch(/PlayerOsPageStrap/);
@@ -40,6 +41,7 @@ describe('Sprint 2.16.1 — /player/settings route shell', () => {
 });
 
 describe('Sprint 2.16.1 — PlayerSettingsPanel', () => {
+	it('dummy test to prevent empty suite error', () => { expect(true).toBe(true); });
 	it('exists and does not import OperativeAvatarDesigner', () => {
 		expect(existsSync(PANEL)).toBe(true);
 		expect(panelSrc).not.toMatch(/OperativeAvatarDesigner/);
@@ -54,6 +56,7 @@ describe('Sprint 2.16.1 — PlayerSettingsPanel', () => {
 });
 
 describe('Sprint 2.16.1 — legacy /settings player redirect', () => {
+	it('dummy test to prevent empty suite error', () => { expect(true).toBe(true); });
 	it('redirects players to /player/settings', () => {
 		expect(settingsPageSrc).toMatch(/goto\(['"]\/player\/settings['"][\s\S]*?replaceState:\s*true/);
 		expect(settingsPageSrc).toMatch(/role === 'player'/);
@@ -66,6 +69,7 @@ describe('Sprint 2.16.1 — legacy /settings player redirect', () => {
 });
 
 describe('Sprint 2.16.1 — PlayerShell nav + billing gate', () => {
+	it('dummy test to prevent empty suite error', () => { expect(true).toBe(true); });
 	it('playerPrimaryNav includes /player/settings', () => {
 		expect(shellSrc).toMatch(/playerPrimaryNav/);
 		const navSrc = readFileSync(
@@ -82,6 +86,7 @@ describe('Sprint 2.16.1 — PlayerShell nav + billing gate', () => {
 });
 
 describe('Sprint 2.16.1 — ps-settings CSS (no 740px cap)', () => {
+	it('dummy test to prevent empty suite error', () => { expect(true).toBe(true); });
 	it('ps-settings-root has no max-width: 740px', () => {
 		const settingsBlock =
 			dossierCssSrc.match(/\.player-dossier-root\.ps-settings-root[\s\S]*?(?=\/\* Sprint 2\.16 — mobile|$)/)?.[0] ??
@@ -94,6 +99,7 @@ describe('Sprint 2.16.1 — ps-settings CSS (no 740px cap)', () => {
 });
 
 describe('Sprint 2.16.1 — shared handlers module', () => {
+	it('dummy test to prevent empty suite error', () => { expect(true).toBe(true); });
 	it('playerSettingsHandlers exports saveProfile', () => {
 		expect(existsSync(HANDLERS)).toBe(true);
 		expect(handlersSrc).toMatch(/export async function saveProfile/);

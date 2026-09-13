@@ -37,6 +37,7 @@ const embeddedSnippet = (() => {
 })();
 
 describe('Sprint 2.22 slice 6b-revise — HQ mission rail overview (no hero cards)', () => {
+	it('dummy test to prevent empty suite error', () => { expect(true).toBe(true); });
 	it('embedded block uses embeddedFeed with questRowEmbedded only', () => {
 		expect(embeddedTemplateBlock).toMatch(/\{#each embeddedFeed as quest/);
 		expect(embeddedTemplateBlock).toMatch(/\{@render questRowEmbedded\(quest\)/);

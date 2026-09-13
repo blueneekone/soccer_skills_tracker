@@ -33,7 +33,7 @@ export default class AdminDashboardEngine {
 		if (isMock) {
 			this.clubsCount = 42;
 			this.usersCount = 1250;
-			this.activeIncidents = 0;
+			this.activeIncidents = 10;
 			this.isLoading = false;
 			return;
 		}
@@ -53,6 +53,12 @@ export default class AdminDashboardEngine {
 				query(collection(activeDb, 'clubs'), limit(100))
 			);
 			this.clubsCount = clubsSnap.size; // Note: For a real dashboard, use aggregation queries if available
+
+			// Fetch total users
+			const usersSnap = await getDocs(
+				query(collection(activeDb, 'users'), limit(100))
+			);
+			this.usersCount = usersSnap.size;
 
 			// Fetch recent active incidents/alerts (mock logic for demonstration)
 			const incidentsSnap = await getDocs(
