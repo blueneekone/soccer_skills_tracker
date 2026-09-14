@@ -49,6 +49,9 @@ jobs:
       - name: Install frontend dependencies
         run: npm ci
 
+      - name: Sync SvelteKit
+        run: npx svelte-kit sync
+
       - name: Type-check (svelte-check)
         # Fail the pipeline on errors; allow existing pre-existing warnings.
         run: npm run check
