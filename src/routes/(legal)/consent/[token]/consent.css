@@ -1,0 +1,343 @@
+	/* ─── Root ──────────────────────────────────────────────────────────────── */
+	.cv-root {
+		min-height: 100dvh;
+		background: #000000;
+		position: relative;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		padding: 1.5rem 1rem;
+	}
+
+	.cv-scanlines {
+		position: fixed;
+		inset: 0;
+		pointer-events: none;
+		background: repeating-linear-gradient(
+			0deg, transparent, transparent 2px,
+			rgba(20, 184, 166, 0.015) 2px, rgba(20, 184, 166, 0.015) 4px
+		);
+		z-index: 0;
+	}
+
+	.cv-grid {
+		position: fixed;
+		inset: 0;
+		pointer-events: none;
+		background-image:
+			linear-gradient(rgba(20, 184, 166, 0.03) 1px, transparent 1px),
+			linear-gradient(90deg, rgba(20, 184, 166, 0.03) 1px, transparent 1px);
+		background-size: 56px 56px;
+		z-index: 0;
+	}
+
+	/* ─── Main ──────────────────────────────────────────────────────────────── */
+	.cv-main {
+		position: relative;
+		z-index: 1;
+		width: 100%;
+		max-width: 600px;
+		display: flex;
+		flex-direction: column;
+		gap: 1.5rem;
+	}
+
+	/* ─── Brand header ──────────────────────────────────────────────────────── */
+	.cv-brand {
+		display: flex;
+		align-items: center;
+		gap: 0.875rem;
+	}
+
+	.cv-brand__mark svg {
+		width: 36px;
+		height: 36px;
+		filter: drop-shadow(0 0 8px rgba(20, 184, 166, 0.3));
+	}
+
+	.cv-brand__sub {
+		margin: 0;
+		font-family: 'Geist Mono', monospace;
+		font-size: 0.65rem;
+		font-weight: 700;
+		letter-spacing: 0.16em;
+		color: rgba(20, 184, 166, 0.7);
+	}
+
+	.cv-brand__law {
+		margin: 0.2rem 0 0;
+		font-family: 'Geist Mono', monospace;
+		font-size: 0.55rem;
+		letter-spacing: 0.12em;
+		color: rgba(255, 255, 255, 0.25);
+	}
+
+	/* ─── Panel ─────────────────────────────────────────────────────────────── */
+	.cv-panel {
+		background: #0B0F19;
+		border: 1px solid rgba(20, 184, 166, 0.14);
+		border-radius: 16px;
+		box-shadow:
+			0 0 60px rgba(20, 184, 166, 0.06),
+			0 0 120px rgba(0, 0, 0, 0.8),
+			inset 0 1px 0 rgba(20, 184, 166, 0.1);
+		padding: 2.5rem 2rem;
+		display: flex;
+		flex-direction: column;
+		gap: 1.5rem;
+	}
+
+	/* ─── Idle phase content ────────────────────────────────────────────────── */
+	.cv-eyebrow {
+		font-family: 'Geist Mono', monospace;
+		font-size: 0.62rem;
+		font-weight: 700;
+		letter-spacing: 0.2em;
+		color: rgba(20, 184, 166, 0.5);
+	}
+
+	.cv-title {
+		margin: 0;
+		font-family: 'Geist Mono', monospace;
+		font-size: 1.5rem;
+		font-weight: 900;
+		letter-spacing: 0.05em;
+		color: #fafafa;
+	}
+
+	.cv-body {
+		margin: 0;
+		font-size: 0.875rem;
+		line-height: 1.7;
+		color: rgba(255, 255, 255, 0.55);
+	}
+
+	.cv-accent { color: #14b8a6; font-weight: 700; }
+	.cv-accent-green { color: #2dd4bf; font-weight: 700; }
+
+	/* ─── Legal box ─────────────────────────────────────────────────────────── */
+	.cv-legal-box {
+		background: rgba(20, 184, 166, 0.03);
+		border: 1px solid rgba(20, 184, 166, 0.1);
+		border-radius: 10px;
+		padding: 1.25rem;
+		display: flex;
+		flex-direction: column;
+		gap: 0.75rem;
+	}
+
+	.cv-legal-heading {
+		margin: 0;
+		font-family: 'Geist Mono', monospace;
+		font-size: 0.65rem;
+		font-weight: 700;
+		letter-spacing: 0.15em;
+		color: rgba(20, 184, 166, 0.6);
+	}
+
+	.cv-legal-text {
+		margin: 0;
+		font-size: 0.78rem;
+		line-height: 1.7;
+		color: rgba(255, 255, 255, 0.45);
+	}
+
+	.cv-legal-list {
+		margin: 0;
+		padding: 0 0 0 1.25rem;
+		display: flex;
+		flex-direction: column;
+		gap: 0.4rem;
+	}
+
+	.cv-legal-list li {
+		font-size: 0.78rem;
+		line-height: 1.6;
+		color: rgba(255, 255, 255, 0.4);
+	}
+
+	/* ─── Action buttons ────────────────────────────────────────────────────── */
+	.cv-actions {
+		display: flex;
+		gap: 0.75rem;
+		flex-wrap: wrap;
+	}
+
+	.cv-btn {
+		flex: 1;
+		min-width: 160px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 0.5rem;
+		padding: 0.9rem 1.25rem;
+		border-radius: 8px;
+		font-family: 'Geist Mono', monospace;
+		font-size: 0.75rem;
+		font-weight: 700;
+		letter-spacing: 0.12em;
+		cursor: pointer;
+		transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+	}
+
+	.cv-btn__icon { font-size: 0.75rem; }
+
+	.cv-btn--grant {
+		background: linear-gradient(135deg, rgba(45, 212, 191, 0.15), rgba(0, 200, 100, 0.08));
+		border: 1px solid rgba(45, 212, 191, 0.45);
+		color: #2dd4bf;
+	}
+
+	.cv-btn--grant:hover:not(:disabled) {
+		background: linear-gradient(135deg, rgba(45, 212, 191, 0.22), rgba(0, 200, 100, 0.14));
+		border-color: rgba(45, 212, 191, 0.7);
+		box-shadow: 0 0 20px rgba(45, 212, 191, 0.18), 0 4px 16px rgba(0, 0, 0, 0.4);
+		transform: translateY(-1px);
+	}
+
+	.cv-btn--deny {
+		background: transparent;
+		border: 1px solid rgba(255, 77, 106, 0.25);
+		color: rgba(255, 77, 106, 0.6);
+	}
+
+	.cv-btn--deny:hover:not(:disabled) {
+		background: rgba(255, 77, 106, 0.05);
+		border-color: rgba(255, 77, 106, 0.45);
+		color: rgba(255, 77, 106, 0.9);
+	}
+
+	.cv-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+	.cv-audit-notice {
+		margin: 0;
+		font-family: 'Geist Mono', monospace;
+		font-size: 0.64rem;
+		line-height: 1.6;
+		color: rgba(255, 255, 255, 0.22);
+		letter-spacing: 0.02em;
+	}
+
+	/* ─── State screens ─────────────────────────────────────────────────────── */
+	.cv-state {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 1rem;
+		padding: 1rem 0;
+		text-align: center;
+	}
+
+	.cv-state__icon {
+		font-size: 2.5rem;
+		line-height: 1;
+	}
+
+	.cv-state__icon--success svg { width: 60px; height: 60px; filter: drop-shadow(0 0 12px rgba(45, 212, 191, 0.35)); }
+
+	.cv-state__title {
+		margin: 0;
+		font-family: 'Geist Mono', monospace;
+		font-size: 1.1rem;
+		font-weight: 900;
+		letter-spacing: 0.1em;
+		color: #fafafa;
+	}
+
+	.cv-state__title--success { color: #2dd4bf; }
+
+	.cv-state__body {
+		margin: 0;
+		font-size: 0.82rem;
+		line-height: 1.7;
+		color: rgba(255, 255, 255, 0.5);
+		max-width: 440px;
+	}
+
+	.cv-state__body--small { font-size: 0.75rem; color: rgba(255, 255, 255, 0.35); }
+
+	.cv-state--success { color: #2dd4bf; }
+	.cv-state--error .cv-state__icon { color: rgba(255, 240, 94, 0.7); }
+	.cv-state--loading .cv-state__title { color: rgba(255, 255, 255, 0.6); }
+
+	.cv-state__spinner {
+		width: 32px;
+		height: 32px;
+		border: 2.5px solid rgba(20, 184, 166, 0.2);
+		border-top-color: #14b8a6;
+		border-radius: 50%;
+		animation: spin 0.75s linear infinite;
+	}
+
+	@keyframes spin { to { transform: rotate(360deg); } }
+
+	.cv-confirmation-strip {
+		display: flex;
+		align-items: flex-start;
+		gap: 0.5rem;
+		padding: 0.75rem 1rem;
+		background: rgba(0, 0, 0, 0.3);
+		border: 1px solid rgba(255, 255, 255, 0.06);
+		border-radius: 6px;
+		max-width: 440px;
+	}
+
+	.cv-confirmation-strip__text {
+		font-family: 'Geist Mono', monospace;
+		font-size: 0.65rem;
+		line-height: 1.6;
+		color: rgba(255, 255, 255, 0.25);
+	}
+
+	/* ─── Footer ────────────────────────────────────────────────────────────── */
+	.cv-footer { text-align: center; }
+
+	.cv-footer__text {
+		margin: 0;
+		font-family: 'Geist Mono', monospace;
+		font-size: 0.6rem;
+		line-height: 1.7;
+		color: rgba(255, 255, 255, 0.15);
+		letter-spacing: 0.04em;
+	}
+
+	/* ─── WebAuthn notice banners ───────────────────────────────────────────── */
+	.cv-biometric-notice {
+		display: flex;
+		align-items: flex-start;
+		gap: 0.6rem;
+		padding: 0.85rem 1rem;
+		background: rgba(20, 184, 166, 0.04);
+		border: 1px solid rgba(20, 184, 166, 0.2);
+		border-radius: 8px;
+		font-size: 0.78rem;
+		line-height: 1.6;
+		color: rgba(20, 184, 166, 0.75);
+		font-family: 'Geist Mono', monospace;
+	}
+	.cv-biometric-notice__icon { font-size: 1.1rem; flex-shrink: 0; }
+
+	.cv-fallback-notice {
+		display: flex;
+		align-items: flex-start;
+		gap: 0.6rem;
+		padding: 0.75rem 1rem;
+		background: rgba(240, 199, 94, 0.04);
+		border: 1px solid rgba(240, 199, 94, 0.22);
+		border-radius: 8px;
+		font-size: 0.72rem;
+		line-height: 1.6;
+		color: rgba(240, 199, 94, 0.7);
+		font-family: 'Geist Mono', monospace;
+	}
+
+	/* Biometric state icon */
+	.cv-state__biometric-icon {
+		font-size: 3rem;
+		line-height: 1;
+		animation: pulse-glow 1.4s ease-in-out infinite alternate;
+	}
+	@keyframes pulse-glow {
+		from { filter: drop-shadow(0 0 4px rgba(20, 184, 166,0.3)); }
+		to   { filter: drop-shadow(0 0 18px rgba(20, 184, 166,0.75)); }
+	}
