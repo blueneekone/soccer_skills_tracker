@@ -172,7 +172,7 @@
 								id: 'hw',
 								label: `${n} household assignment${n === 1 ? '' : 's'} to complete`,
 								meta: 'Household',
-								href: '/parent/vpc',
+								href: '/parent/dashboard/vpc',
 							});
 						}
 					}
@@ -195,7 +195,7 @@
 									id: 'waivers',
 									label: `${missing} player${missing === 1 ? '' : 's'} missing waiver`,
 									meta: 'Compliance · Waivers',
-									href: '/parent/vpc',
+									href: '/parent/dashboard/vpc',
 								});
 							}
 						}

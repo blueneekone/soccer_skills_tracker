@@ -105,7 +105,7 @@ describe('PRODUCT_SURFACE_REGISTRY gospel guards', () => {
 	});
 
 	it('Parent Tier 1 rows link PARENT_OS foundation and VA', () => {
-		for (const route of ['/parent/household', '/parent/vpc', '/parent/dashboard']) {
+		for (const route of ['/parent/household', '/parent/dashboard/vpc', '/parent/dashboard']) {
 			const row = rows.find((r) => r.route === route);
 			expect(row, route).toBeDefined();
 			expect(row!.foundationDoc).toContain('PARENT_OS_FOUNDATION.md');

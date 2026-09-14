@@ -87,7 +87,7 @@
 			</p>
 		</div>
 		<div class="parent-comms-consent-banner__actions">
-			<a class="parent-comms-consent-banner__cta" href="/parent/vpc">Update VPC consent</a>
+			<a class="parent-comms-consent-banner__cta" href="/parent/dashboard/vpc">Update VPC consent</a>
 			<button type="button" class="parent-comms-consent-banner__dismiss" onclick={dismiss}>
 				Dismiss for now
 			</button>

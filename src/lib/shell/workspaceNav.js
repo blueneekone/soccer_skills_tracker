@@ -14,7 +14,7 @@ export const adminLinks = [
 	{ label: 'Global Users',    icon: 'content.globe',     href: '/admin/users' },
 	{ label: 'Recruiters',      icon: 'sys.binoculars',    href: '/admin/recruiters' },
 	{ label: 'Coach clearance', icon: 'status.verified',   href: '/admin/coach-clearance' },
-	{ label: 'Audit Log',       icon: 'status.shield-check', href: '/admin/audit-log' },
+	{ label: 'Audit Log',       icon: 'status.shield-check', href: '/admin/audit-logs' },
 	{ label: 'System Settings', icon: 'sys.settings-adv',  href: '/admin/system-settings' },
 	{ label: 'Support Terminal', icon: 'game.zap',         href: '/admin/support-terminal' },
 	{ label: 'Data Sync',       icon: 'sys.server',       href: '/admin/interoperability' },
@@ -54,7 +54,7 @@ const athleteHouseholdLinks = [
 export const parentLinks = [
 	{ tab: '', label: 'Household',      icon: 'nav.home',            href: '/parent/household' },
 	{ tab: '', label: 'Co-op Command',  icon: 'content.grid',        href: '/parent/dashboard' },
-	{ tab: '', label: 'Consent (VPC)',  icon: 'status.shield-check', href: '/parent/vpc' },
+	{ tab: '', label: 'Consent (VPC)',  icon: 'status.shield-check', href: '/parent/dashboard/vpc' },
 	{ tab: '', label: 'Log Workout', icon: 'user.check',           href: '/parent/log-workout' },
 	{ tab: '', label: 'Payments',    icon: 'sys.credit-card',      href: '/parent/payments' },
 	{ tab: '', label: 'Messages',    icon: 'comm.chat',            href: '/messages' },
@@ -111,7 +111,7 @@ function buildPrimaryFieldNavLinks(links, ctx, role) {
 			if (role === 'parent') {
 				const order = [
 					'/parent/household',
-					'/parent/vpc',
+					'/parent/dashboard/vpc',
 					'/parent/dashboard',
 					'/messages',
 				];

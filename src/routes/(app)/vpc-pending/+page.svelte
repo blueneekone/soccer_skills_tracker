@@ -53,7 +53,7 @@
 
 	function copyParentLink() {
 		if (!browser) return;
-		const link = `${window.location.origin}/parent/vpc`;
+		const link = `${window.location.origin}/parent/dashboard/vpc`;
 		navigator.clipboard.writeText(link).then(() => {
 			copyDone = true;
 			setTimeout(() => (copyDone = false), 2500);

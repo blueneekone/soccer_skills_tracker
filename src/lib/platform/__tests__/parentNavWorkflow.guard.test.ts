@@ -10,7 +10,7 @@ const HOUSEHOLD_PAGE = join(ROOT, 'routes/(app)/parent/household/+page.svelte');
 const HOUSEHOLD_ENGINE = join(ROOT, 'routes/(app)/parent/household/ParentHouseholdEngine.svelte.ts');
 const HOUSEHOLD_ARENA = join(ROOT, 'routes/(app)/parent/household/ParentHouseholdArena.svelte');
 const DASHBOARD_PAGE = join(ROOT, 'routes/(app)/parent/dashboard/+page.svelte');
-const VPC_PAGE = join(ROOT, 'routes/(app)/parent/vpc/+page.svelte');
+const VPC_PAGE = join(ROOT, 'routes/(app)/parent/dashboard/vpc/+page.svelte');
 const LOAD_CLEARANCE = join(ROOT, 'lib/parent/loadHouseholdClearance.ts');
 const FIELD_MENU = join(ROOT, 'lib/stores/fieldMenu.svelte.ts');
 const ENTERPRISE_SHELL = join(ROOT, 'lib/components/shell/EnterpriseConsoleShell.svelte');
@@ -18,7 +18,7 @@ const PIN_BAR = join(ROOT, 'lib/components/shell/MobilePinBar.svelte');
 const NAV_CATALOG = join(ROOT, 'lib/shell/navPinCatalog.ts');
 
 /** Parent Tier-1 routes that must expose Option D field chrome + working Menu path. */
-const PARENT_TIER1_ROUTES = ['/parent/household', '/parent/vpc', '/parent/dashboard'] as const;
+const PARENT_TIER1_ROUTES = ['/parent/household', '/parent/dashboard/vpc', '/parent/dashboard'] as const;
 
 describe('parent Tier-1 nav + workflow integration guards', () => {
 	const catalog = readFileSync(NAV_CATALOG, 'utf-8');
@@ -30,7 +30,7 @@ describe('parent Tier-1 nav + workflow integration guards', () => {
 
 	it('navPinCatalog parent defaults cover Tier-1 routes + Menu pin in slot 4', () => {
 		expect(catalog).toMatch(
-			/parent:\s*\[['"]\/parent\/household['"],\s*['"]\/parent\/vpc['"],\s*['"]\/parent\/dashboard['"],\s*MENU_PIN_HREF\]/,
+			/parent:\s*\[['"]\/parent\/household['"],\s*['"]\/parent\/dashboard\/vpc['"],\s*['"]\/parent\/dashboard['"],\s*MENU_PIN_HREF\]/,
 		);
 		for (const route of PARENT_TIER1_ROUTES) {
 			expect(catalog, `missing parent catalog route ${route}`).toContain(route);

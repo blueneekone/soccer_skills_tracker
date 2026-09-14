@@ -35,22 +35,23 @@ You must program the Playwright script to execute the following continuous narra
 2. Authenticate as a Coach persona using standard mock credentials.
 3. Navigate to the Coach OS Dashboard (Sideline SIEM).
 4. Smoothly click into the "Intent Engine" / "Drill Designer".
-5. Emphasize a cursor sweep over the tactical whiteboard UI, assign a tactical drill/mission to an athlete, and quickly view the tracking dashboard to demonstrate how easy it is for the coach to assign and monitor progress.
+5. Emphasize a cursor sweep over the **main workout builder**. Assign a basic drill from the global library to an athlete using mock names, and quickly view the tracking dashboard to demonstrate how easy it is for the coach to assign and monitor progress.
 6. `await context.close()` to save the clip.
 
 ### Sequence 2: Player OS (Dopamine Engine)
 1. Create a new `1920x1080` context.
 2. Authenticate as the Athlete persona assigned in Sequence 1.
 3. Navigate to the Player OS Dashboard.
-4. Smoothly hover over the new mission objective on the dark-mode HUD.
-5. Click to "complete" the mission. Pause and meticulously capture the Dopamine Engine in action: the XP level-up animation, badges unlocking, and the visceral progression feedback loop, ensuring the cursor hovers near the Cyber Yellow (`#daff0a`) telemetry gauges.
-6. `await context.close()` to save the clip.
+4. Smoothly hover over the **player workout builder/bounty acceptance area**.
+5. Click to "complete" the mission, emphasizing the **workout completion triggers**.
+6. Pause and meticulously capture the Dopamine Engine in action: the XP level-up animation, **player unlocks**, and the **avatar builder**, ensuring the cursor hovers near the Cyber Yellow (`#daff0a`) telemetry gauges.
+7. `await context.close()` to save the clip.
 
 ### Sequence 3: Parent OS (Compliance Shield)
 1. Create a new `1920x1080` context.
 2. Authenticate as the Parent persona linked to the Athlete.
 3. Navigate to the Parent OS (Co-Op Trust Center).
-4. Smoothly scroll the Household feed to view the completed activity log, highlighting the parent's crucial role in the process.
+4. Smoothly scroll the Household feed to view the completed activity log and hover over the **parent involvement loop**, highlighting the parent's crucial role in the process.
 5. Hover the cursor over the Data Cyan (`#14b8a6`) compliance status indicators to emphasize the parent's verification and emotional safety role.
 6. `await context.close()` to save the clip.
 

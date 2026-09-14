@@ -19,26 +19,46 @@ function fixTests() {
             let originalContent = content;
             
             // Fix DASHBOARD_PAGE (used in playerRlFunctional)
-            if (content.includes('const DASHBOARD_PAGE = join(ROOT, \'routes/(app)/player/dashboard/+page.svelte\');') && !content.includes('PlayerArena.svelte')) {
+            if (content.includes('const DASHBOARD_PAGE = join(ROOT, \\'routes/(app)/player/dashboard/+page.svelte\\');') && !content.includes('PlayerArena.svelte')) {
                 content = content.replace(
                     /const DASHBOARD_PAGE = join\(ROOT, 'routes\/\(app\)\/player\/dashboard\/\+page\.svelte'\);/,
-                    `const DASHBOARD_PAGE = join(ROOT, 'routes/(app)/player/dashboard/+page.svelte');\nconst ARENA = join(ROOT, 'routes/(app)/player/dashboard/PlayerArena.svelte');\nconst HUD = join(ROOT, 'routes/(app)/player/dashboard/PlayerHUD.svelte');\nconst ENGINE = join(ROOT, 'routes/(app)/player/dashboard/PlayerDashboardEngine.svelte.ts');`
+                    [
+                        "const DASHBOARD_PAGE = join(ROOT, 'routes/(app)/player/dashboard/+page.svelte');",
+                        "const ARENA = join(ROOT, 'routes/(app)/player/dashboard/PlayerArena.svelte');",
+                        "const HUD = join(ROOT, 'routes/(app)/player/dashboard/PlayerHUD.svelte');",
+                        "const ENGINE = join(ROOT, 'routes/(app)/player/dashboard/PlayerDashboardEngine.svelte.ts');"
+                    ].join('\\n')
                 );
                 content = content.replace(
                     /readFileSync\(DASHBOARD_PAGE, 'utf-8'\)/g,
-                    `(existsSync(DASHBOARD_PAGE) ? readFileSync(DASHBOARD_PAGE, 'utf-8') : '') + (existsSync(ARENA) ? readFileSync(ARENA, 'utf-8') : '') + (existsSync(HUD) ? readFileSync(HUD, 'utf-8') : '') + (existsSync(ENGINE) ? readFileSync(ENGINE, 'utf-8') : '')`
+                    [
+                        "(existsSync(DASHBOARD_PAGE) ? readFileSync(DASHBOARD_PAGE, 'utf-8') : '')",
+                        "+ (existsSync(ARENA) ? readFileSync(ARENA, 'utf-8') : '')",
+                        "+ (existsSync(HUD) ? readFileSync(HUD, 'utf-8') : '')",
+                        "+ (existsSync(ENGINE) ? readFileSync(ENGINE, 'utf-8') : '')"
+                    ].join('\\n                    ')
                 );
             }
             
             // Fix DASHBOARD
-            if (content.includes('const DASHBOARD = join(ROOT, \'routes/(app)/player/dashboard/+page.svelte\');') && !content.includes('PlayerArena.svelte')) {
+            if (content.includes('const DASHBOARD = join(ROOT, \\'routes/(app)/player/dashboard/+page.svelte\\');') && !content.includes('PlayerArena.svelte')) {
                 content = content.replace(
                     /const DASHBOARD = join\(ROOT, 'routes\/\(app\)\/player\/dashboard\/\+page\.svelte'\);/,
-                    `const DASHBOARD = join(ROOT, 'routes/(app)/player/dashboard/+page.svelte');\nconst ARENA = join(ROOT, 'routes/(app)/player/dashboard/PlayerArena.svelte');\nconst HUD = join(ROOT, 'routes/(app)/player/dashboard/PlayerHUD.svelte');\nconst ENGINE = join(ROOT, 'routes/(app)/player/dashboard/PlayerDashboardEngine.svelte.ts');`
+                    [
+                        "const DASHBOARD = join(ROOT, 'routes/(app)/player/dashboard/+page.svelte');",
+                        "const ARENA = join(ROOT, 'routes/(app)/player/dashboard/PlayerArena.svelte');",
+                        "const HUD = join(ROOT, 'routes/(app)/player/dashboard/PlayerHUD.svelte');",
+                        "const ENGINE = join(ROOT, 'routes/(app)/player/dashboard/PlayerDashboardEngine.svelte.ts');"
+                    ].join('\\n')
                 );
                 content = content.replace(
                     /readFileSync\(DASHBOARD, 'utf-8'\)/g,
-                    `(existsSync(DASHBOARD) ? readFileSync(DASHBOARD, 'utf-8') : '') + (existsSync(ARENA) ? readFileSync(ARENA, 'utf-8') : '') + (existsSync(HUD) ? readFileSync(HUD, 'utf-8') : '') + (existsSync(ENGINE) ? readFileSync(ENGINE, 'utf-8') : '')`
+                    [
+                        "(existsSync(DASHBOARD) ? readFileSync(DASHBOARD, 'utf-8') : '')",
+                        "+ (existsSync(ARENA) ? readFileSync(ARENA, 'utf-8') : '')",
+                        "+ (existsSync(HUD) ? readFileSync(HUD, 'utf-8') : '')",
+                        "+ (existsSync(ENGINE) ? readFileSync(ENGINE, 'utf-8') : '')"
+                    ].join('\\n                    ')
                 );
             }
             

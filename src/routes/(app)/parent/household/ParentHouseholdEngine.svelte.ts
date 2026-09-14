@@ -109,7 +109,7 @@ export class ParentHouseholdEngine {
             if (browser && !authStore.isLoading && authStore.isAuthenticated) {
                 if (this.role !== 'parent') {
                     untrack(() => {
-                        goto('/parent/vpc', { replaceState: true });
+                        goto('/parent/dashboard/vpc', { replaceState: true });
                     });
                 }
             }

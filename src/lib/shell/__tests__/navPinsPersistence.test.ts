@@ -9,7 +9,7 @@ describe('navPinsPersistence', () => {
 	const personaKey = 'parent' as const;
 	const defaults: PinQuad = [
 		'/parent/household',
-		'/parent/vpc',
+		'/parent/dashboard/vpc',
 		'/parent/dashboard',
 		MENU_PIN_HREF,
 	];
@@ -45,7 +45,7 @@ describe('navPinsPersistence', () => {
 
 	it('prefers newer Firestore profile over stale localStorage', () => {
 		localWrites.length = 0;
-		const local: PinQuad = ['/parent/household', '/parent/vpc', '/parent/dashboard', MENU_PIN_HREF];
+		const local: PinQuad = ['/parent/household', '/parent/dashboard/vpc', '/parent/dashboard', MENU_PIN_HREF];
 		const remote: PinQuad = ['/parent/household', '/messages', '/parent/dashboard', MENU_PIN_HREF];
 		const resolved = resolveHydratedPins(
 			uid,
@@ -64,7 +64,7 @@ describe('navPinsPersistence', () => {
 	it('prefers local when local updatedAt is newer than profile', () => {
 		localWrites.length = 0;
 		const local: PinQuad = ['/parent/household', '/messages', '/parent/dashboard', MENU_PIN_HREF];
-		const remote: PinQuad = ['/parent/household', '/parent/vpc', '/parent/dashboard', MENU_PIN_HREF];
+		const remote: PinQuad = ['/parent/household', '/parent/dashboard/vpc', '/parent/dashboard', MENU_PIN_HREF];
 		const resolved = resolveHydratedPins(
 			uid,
 			personaKey,
@@ -82,7 +82,7 @@ describe('navPinsPersistence', () => {
 	it('prefers local when timestamps tie (existing device override)', () => {
 		localWrites.length = 0;
 		const local: PinQuad = ['/parent/household', '/messages', '/parent/dashboard', MENU_PIN_HREF];
-		const remote: PinQuad = ['/parent/household', '/parent/vpc', '/parent/dashboard', MENU_PIN_HREF];
+		const remote: PinQuad = ['/parent/household', '/parent/dashboard/vpc', '/parent/dashboard', MENU_PIN_HREF];
 		const resolved = resolveHydratedPins(
 			uid,
 			personaKey,

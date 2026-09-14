@@ -22,7 +22,7 @@
 	const JUMP_ACTIONS = [
 		{ type: 'action', label: 'Go to Overview',       sub: '/admin/overview',       icon: 'data.chart-line',   href: '/admin/overview' },
 		{ type: 'action', label: 'Go to Organizations',   sub: '/admin/organizations',  icon: 'org.building',      href: '/admin/organizations' },
-		{ type: 'action', label: 'Go to Audit Log',       sub: '/admin/audit-log',      icon: 'status.shield-check', href: '/admin/audit-log' },
+		{ type: 'action', label: 'Go to Audit Log',       sub: '/admin/audit-logs',      icon: 'status.shield-check', href: '/admin/audit-logs' },
 		{ type: 'action', label: 'Go to System Settings', sub: '/admin/system-settings',icon: 'sys.settings-adv', href: '/admin/system-settings' },
 	];
 

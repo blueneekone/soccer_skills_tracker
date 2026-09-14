@@ -85,7 +85,7 @@ export function buildWorkspaceMenu({ role, profile, email, clubs, teams }) {
 	} else if (role === 'parent') {
 		sections.push({
 			title: 'Household',
-			items: [{ id: 'ctx-parent-portal', label: 'Parent · Household', href: '/parent/vpc' }],
+			items: [{ id: 'ctx-parent-portal', label: 'Parent · Household', href: '/parent/dashboard/vpc' }],
 		});
 	} else if (role === 'player') {
 		sections.push({

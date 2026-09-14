@@ -68,7 +68,7 @@
 	<div class="tw-absolute tw-bottom-6 tw-left-6 tw-w-6 tw-h-6 tw-border-b-2 tw-border-l-2 tw-border-[#334155]"></div>
 	<div class="tw-absolute tw-bottom-6 tw-right-6 tw-w-6 tw-h-6 tw-border-b-2 tw-border-r-2 tw-border-[#334155]"></div>
 
-	<div class="tw-relative tw-w-full tw-aspect-square md:tw-aspect-[4/3] tw-max-w-4xl tw-mx-auto tw-p-12 tw-flex tw-items-center tw-justify-center">
+	<div class="tw-relative tw-w-full tw-aspect-square tw-max-w-3xl tw-mx-auto tw-p-8 md:tw-p-12 tw-flex tw-items-center tw-justify-center">
 		
 		<!-- Rotating Radar Rings -->
 		<div class="tw-absolute tw-inset-0 tw-flex tw-items-center tw-justify-center tw-opacity-30 tw-pointer-events-none tw-z-0">

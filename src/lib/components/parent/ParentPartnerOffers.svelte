@@ -165,7 +165,7 @@
 		</ul>
 	{/if}
 
-	<a class="parent-partner-strip__link" href="/parent/vpc">Manage sponsor opt-in on VPC →</a>
+	<a class="parent-partner-strip__link" href="/parent/dashboard/vpc">Manage sponsor opt-in on VPC →</a>
 </section>
 
 <style>

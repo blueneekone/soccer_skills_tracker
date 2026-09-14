@@ -83,7 +83,7 @@
 				</div>
 				<button
 					type="button"
-					class="tw-vanguard-btn-primary tw-w-full"
+					class={engine.coppaSigned ? 'tw-vanguard-btn-secondary tw-w-full' : 'tw-vanguard-btn-amber tw-w-full'}
 					class:tw-opacity-50={engine.coppaSigned}
 					disabled={engine.coppaSigned || engine.actionBusy}
 					onclick={() => engine.signWaiver()}
@@ -331,7 +331,7 @@
 				<div class="bento-mt-md">
 					<button
 						type="button"
-						class="tw-vanguard-btn-primary tw-w-full"
+						class={engine.coppaSigned ? 'tw-vanguard-btn-amber tw-w-full' : 'tw-vanguard-btn-secondary tw-w-full'}
 						disabled={!engine.coppaSigned || engine.actionBusy}
 						onclick={() => engine.provision()}
 					>
@@ -384,7 +384,7 @@
                 <div class="bento-mt-md">
                     <button
                         type="button"
-                        class="tw-vanguard-btn-primary tw-w-full"
+                        class="tw-vanguard-btn-secondary tw-w-full"
                         disabled={!engine.coppaSigned || engine.coParentBusy || !engine.coParentEmail}
                         onclick={() => engine.inviteCoParent()}
                     >
@@ -466,7 +466,7 @@
 				>
 			</div>
 			<div class="tw-flex tw-flex-col tw-gap-2 sm:tw-flex-row">
-				<button type="button" class="tw-vanguard-btn-primary tw-w-full sm:tw-w-auto tw-inline-flex tw-items-center tw-justify-center tw-gap-2" onclick={() => engine.copyOtpToClipboard()}>
+				<button type="button" class="tw-vanguard-btn-amber tw-w-full sm:tw-w-auto tw-inline-flex tw-items-center tw-justify-center tw-gap-2" onclick={() => engine.copyOtpToClipboard()}>
 					<Icon name={"action.copy" as IconName} size={16} />
 					<span>{engine.copyFeedback ? 'Copied' : 'Copy to clipboard'}</span>
 				</button>

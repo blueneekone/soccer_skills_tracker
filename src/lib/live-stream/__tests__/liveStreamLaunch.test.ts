@@ -63,7 +63,7 @@ describe('LAUNCH-live-stream — wiring', () => {
 
 	it('CoachMatchDayView persists liveStreamUrl on match_sessions', () => {
 		const view = readFileSync(
-			join(ROOT, 'src/lib/coach/match-day/CoachMatchDayView.svelte'),
+			join(ROOT, 'src/lib/coach/matchday/CoachMatchDayView.svelte'),
 			'utf8',
 		);
 		expect(view).toMatch(/liveStreamUrl/);
