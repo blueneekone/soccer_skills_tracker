@@ -62,7 +62,7 @@ export class ParentHouseholdEngine {
     coParentBusy = $state(false);
     coParentErr = $state('');
 
-    get role() { return authStore.role; }
+    get role() { return (authStore as any).activeContext; }
     get profile() { return authStore.userProfile; }
     get userEmail() { return (authStore.user?.email || '').toLowerCase(); }
     get clearanceHid() { return normalizeHouseholdId(this.profile?.householdId); }
@@ -73,6 +73,7 @@ export class ParentHouseholdEngine {
             userEmail: this.userEmail,
         });
     }
+	get clubId() { return (authStore as any).clubId || ((this.operativeRows && this.operativeRows.length > 0) ? (this.operativeRows[0] as any).clubId : ''); }
 
 	get otpSecondsLeft() {
 		const dialog = this.otpDialog;
@@ -109,7 +110,7 @@ export class ParentHouseholdEngine {
             if (browser && !authStore.isLoading && authStore.isAuthenticated) {
                 if (this.role !== 'parent') {
                     untrack(() => {
-                        goto('/parent/dashboard/vpc', { replaceState: true });
+                        goto('/', { replaceState: true });
                     });
                 }
             }

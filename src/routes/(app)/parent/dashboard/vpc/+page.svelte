@@ -1,5 +1,5 @@
 <script lang="ts">
-	import VpcEngine from './VpcEngine.svelte';
+	import VpcEngine from './VpcEngine.svelte.js';
 	import VpcArena from './VpcArena.svelte';
 	import VpcHUD from './VpcHUD.svelte';
 

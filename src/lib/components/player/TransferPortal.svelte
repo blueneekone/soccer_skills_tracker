@@ -165,40 +165,24 @@ import { functions } from '$lib/firebase.js';
 	}
 </script>
 
-<div
-	class="tw-w-full tw-max-w-xl tw-mx-auto tw-font-mono tw-space-y-0"
-	style="
-		background: rgba(0, 6, 16, 0.97);
-		border: 1px solid rgba(20, 184, 166, 0.18);
-		border-radius: 2px;
-	"
->
+<div class="vanguard-panel z2-panel siem-panel tw-w-full tw-mx-auto tw-font-mono tw-space-y-0 tw-overflow-hidden">
 	<!-- ── Header ─────────────────────────────────────────────────────────── -->
-	<div
-		class="tw-flex tw-items-center tw-justify-between tw-px-5 tw-py-3"
-		style="border-bottom: 1px solid rgba(20, 184, 166, 0.1); background: rgba(20, 184, 166, 0.03);"
-	>
-		<div class="tw-flex tw-items-center tw-gap-3">
+	<div class="tw-flex tw-items-center tw-justify-between tw-px-5 tw-py-4 tw-bg-slate-800/40 tw-border-b tw-border-slate-800">
+		<div class="tw-flex tw-items-center tw-gap-4">
 			<div class="tw-relative">
-				<svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-					<path d="M13 3l9 9-9 9" stroke="#14b8a6" stroke-width="1.5" stroke-linecap="round" opacity="0.4"/>
-					<path d="M3 3l9 9-9 9" stroke="#14b8a6" stroke-width="1.5" stroke-linecap="round"/>
-				</svg>
+				<Icon name="status.shield-check" size={24} class="tw-text-data-cyan tw-drop-shadow-[0_0_8px_rgba(20,184,166,0.5)]" />
 			</div>
 			<div>
-				<div class="tw-text-xs tw-font-bold tw-tracking-widest tw-font-mono" style="color: rgba(20, 184, 166, 0.9);">VANGUARD TRANSFER PROTOCOL</div>
-				<div class="tw-text-xs" style="color: rgba(20, 184, 166, 0.35);">
+				<h2 class="tw-m-0 tw-text-sm tw-font-bold tw-uppercase tw-tracking-widest tw-text-white tw-font-mono">
+					Vanguard transfer protocol
+				</h2>
+				<div class="tw-text-xs tw-text-slate-400 tw-mt-1 tw-tracking-wide">
 					{isParent ? 'PARENT AUTHORIZATION TERMINAL' : 'DIRECTOR TOKEN ACCEPTANCE MODULE'}
 				</div>
 			</div>
 		</div>
 		<div
-			class="tw-px-2 tw-py-0.5 tw-text-xs tw-tracking-wider tw-font-mono"
-			style="
-				border: 1px solid rgba(255,180,40,0.4);
-				color: rgba(255,180,40,0.8);
-				background: rgba(255,180,40,0.05);
-			"
+			class="tw-px-2.5 tw-py-1 tw-text-[10px] tw-font-bold tw-tracking-widest tw-font-mono tw-border tw-border-amber-500/40 tw-text-amber-500 tw-bg-amber-500/10 tw-rounded tw-uppercase"
 		>RESTRICTED</div>
 	</div>
 
@@ -289,22 +273,20 @@ import { functions } from '$lib/firebase.js';
 		<!-- ── PARENT: STEP 1 — INITIATE ─────────────────────────────────── -->
 		{:else if isParent && (stage === 'idle' || stage === 'parent_initiating')}
 			<div class="tw-space-y-4">
-				<div class="tw-px-3 tw-py-2.5 tw-text-xs tw-leading-relaxed" style="background: rgba(255,180,40,0.04); border: 1px solid rgba(255,180,40,0.2); color: rgba(255,200,80,0.7);">
-					⚠ ZERO-TRUST PROTOCOL: Transfers are irreversible without re-initiation.
+				<div class="tw-px-4 tw-py-3 tw-text-xs tw-leading-relaxed tw-bg-amber-500/10 tw-border tw-border-amber-500/30 tw-text-amber-500/90 tw-rounded-md">
+					<Icon name="status.warning" size={16} class="tw-inline tw-mr-1.5 tw-align-text-bottom" />
+					ZERO-TRUST PROTOCOL: Transfers are irreversible without re-initiation.
 					Only the COPPA-verified parent account may authorize movement of player data.
 				</div>
 
 				<div class="tw-space-y-1">
-					<label class="tw-text-xs tw-tracking-widest tw-font-mono" style="color: rgba(20, 184, 166, 0.5);">PLAYER EMAIL</label>
+					<label class="tw-text-[10px] tw-tracking-widest tw-font-mono tw-text-slate-400 tw-uppercase">Player Email</label>
 					<input
 						type="email"
 						bind:value={targetPlayerEmail}
 						placeholder="player@club.com"
 						autocomplete="email"
-						class="tw-w-full tw-px-3 tw-py-2.5 tw-text-xs tw-bg-transparent tw-outline-none"
-						style="border: 1px solid rgba(20, 184, 166, 0.2); border-radius: 2px; color: #14b8a6;"
-						onfocus={(e) => (e.currentTarget.style.borderColor = 'rgba(20, 184, 166, 0.5)')}
-						onblur={(e) => (e.currentTarget.style.borderColor = 'rgba(20, 184, 166, 0.2)')}
+						class="tw-w-full tw-px-3 tw-py-2.5 tw-text-sm tw-font-mono tw-bg-slate-900/50 tw-outline-none tw-border tw-border-slate-700 tw-text-white focus:tw-border-data-cyan tw-rounded-md tw-transition-colors"
 					/>
 				</div>
 
@@ -315,42 +297,38 @@ import { functions } from '$lib/firebase.js';
 				<button
 					onclick={handleInitiate}
 					disabled={isLoading}
-					class="tw-w-full tw-py-2.5 tw-text-xs tw-font-bold tw-tracking-widest tw-transition-all disabled:tw-opacity-40 tw-font-mono  tw-bg-[rgba(20,184,166,0.08)] enabled:hover:tw-bg-[rgba(20,184,166,0.15)]"
-					style=" border: 1px solid rgba(20, 184, 166, 0.4); color: #14b8a6;"
+					class="vanguard-btn-primary tw-w-full"
 				>
-					{isLoading ? '[ GENERATING TOKEN... ]' : '[ INITIATE TRANSFER PROTOCOL ]'}
+					{isLoading ? 'Generating Token...' : 'Initiate Transfer Protocol'}
 				</button>
 			</div>
 
 		<!-- ── PARENT: STEP 1 DONE — Show token + auth code entry ──────── -->
 		{:else if isParent && stage === 'parent_initiated'}
-			<div class="tw-space-y-4">
-				<div class="tw-px-3 tw-py-3 tw-space-y-2" style="background: rgba(20, 184, 166, 0.04); border: 1px solid rgba(20, 184, 166, 0.2);">
-					<div class="tw-text-xs tw-tracking-widest tw-font-mono" style="color: rgba(20, 184, 166, 0.5);">TRANSFER TOKEN GENERATED</div>
-					<div class="tw-text-xs tw-font-bold tw-break-all" style="color: #14b8a6; word-break: break-all;">{tokenId}</div>
+			<div class="tw-space-y-5">
+				<div class="tw-px-4 tw-py-4 tw-space-y-2 tw-bg-data-cyan/10 tw-border tw-border-data-cyan/30 tw-rounded-md">
+					<div class="tw-text-[10px] tw-tracking-widest tw-font-mono tw-text-data-cyan/70">TRANSFER TOKEN GENERATED</div>
+					<div class="tw-text-sm tw-font-mono tw-font-bold tw-break-all tw-text-data-cyan">{tokenId}</div>
 					{#if expiresAt}
-						<div class="tw-text-xs" style="color: rgba(20, 184, 166, 0.3);">EXPIRES: {new Date(expiresAt).toLocaleString()}</div>
+						<div class="tw-text-[10px] tw-text-data-cyan/60 tw-font-mono">EXPIRES: {new Date(expiresAt).toLocaleString()}</div>
 					{/if}
-					<div class="tw-text-xs" style="color: rgba(20, 184, 166, 0.4);">
+					<div class="tw-text-xs tw-text-data-cyan/80 tw-mt-2">
 						Send this token to the receiving Club Director.<br/>
 						Your auth code has been emailed to your COPPA-verified address.
 					</div>
 				</div>
 
 				<div class="tw-space-y-1">
-					<label for="tp-auth-code" class="tw-text-xs tw-tracking-widest tw-font-mono" style="color: rgba(20, 184, 166, 0.5);">ENTER AUTH CODE (from email)</label>
+					<label for="tp-auth-code" class="tw-text-[10px] tw-tracking-widest tw-font-mono tw-text-slate-400 tw-uppercase">Enter Auth Code (from email)</label>
 					<input
 						id="tp-auth-code"
 						type="text"
 						bind:value={authCode}
 						placeholder="XXXXXXXXXXXX"
 						maxlength="12"
-						class="tw-w-full tw-px-3 tw-py-2.5 tw-text-sm tw-font-bold tw-tracking-[0.25em] tw-bg-transparent tw-outline-none tw-uppercase"
-						style="border: 1px solid rgba(20, 184, 166, 0.2); border-radius: 2px; color: #14b8a6;"
-						onfocus={(e) => (e.currentTarget.style.borderColor = 'rgba(20, 184, 166, 0.5)')}
-						onblur={(e) => (e.currentTarget.style.borderColor = 'rgba(20, 184, 166, 0.2)')}
+						class="tw-w-full tw-px-4 tw-py-3 tw-text-lg tw-font-bold tw-tracking-[0.25em] tw-font-mono tw-bg-slate-900/50 tw-outline-none tw-uppercase tw-border tw-border-slate-700 tw-text-white focus:tw-border-data-cyan tw-rounded-md tw-transition-colors"
 					/>
-					<div class="tw-text-xs" style="color: rgba(20, 184, 166, 0.3);">
+					<div class="tw-text-xs tw-text-slate-500 tw-mt-1">
 						Auth code is available after the Director accepts the token (Step 2).
 					</div>
 				</div>
@@ -362,32 +340,29 @@ import { functions } from '$lib/firebase.js';
 				<button
 					onclick={handleConfirm}
 					disabled={isLoading || !authCode.trim()}
-					class="tw-w-full tw-py-2.5 tw-text-xs tw-font-bold tw-tracking-widest tw-transition-all disabled:tw-opacity-40 tw-font-mono  tw-bg-[rgba(20,184,166,0.08)] enabled:hover:tw-bg-[rgba(20,184,166,0.15)]"
-					style=" border: 1px solid rgba(20, 184, 166, 0.4); color: #14b8a6;"
+					class="vanguard-btn-primary tw-w-full"
 				>
-					{isLoading ? '[ AUTHORIZING... ]' : '[ CRYPTOGRAPHIC CONFIRM ]'}
+					{isLoading ? 'Authorizing...' : 'Cryptographic Confirm'}
 				</button>
 			</div>
 
 		<!-- ── DIRECTOR: STEP 2 — Enter token ────────────────────────────── -->
 		{:else if isDirector && (stage === 'idle' || stage === 'director_entering')}
-			<div class="tw-space-y-4">
-				<div class="tw-px-3 tw-py-2.5 tw-text-xs tw-leading-relaxed" style="background: rgba(20, 184, 166, 0.03); border: 1px solid rgba(20, 184, 166, 0.1); color: rgba(20, 184, 166, 0.5);">
+			<div class="tw-space-y-5">
+				<div class="tw-px-4 tw-py-3 tw-text-xs tw-leading-relaxed tw-bg-slate-800/50 tw-border tw-border-slate-700 tw-text-slate-300 tw-rounded-md">
+					<Icon name="status.info" size={16} class="tw-inline tw-mr-1.5 tw-align-text-bottom tw-text-slate-400" />
 					Obtain the Transfer Token from the player's parent account, then enter it below.
 					The parent will receive a cryptographic auth code to confirm the transfer.
 				</div>
 
 				<div class="tw-space-y-1">
-					<label for="tp-dir-token" class="tw-text-xs tw-tracking-widest tw-font-mono" style="color: rgba(20, 184, 166, 0.5);">TRANSFER TOKEN</label>
+					<label for="tp-dir-token" class="tw-text-[10px] tw-tracking-widest tw-font-mono tw-text-slate-400 tw-uppercase">Transfer Token</label>
 					<textarea
 						id="tp-dir-token"
 						bind:value={directorTokenInput}
 						placeholder="64-character transfer token"
 						rows="2"
-						class="tw-w-full tw-px-3 tw-py-2.5 tw-text-xs tw-font-mono tw-bg-transparent tw-outline-none tw-resize-none"
-						style="border: 1px solid rgba(20, 184, 166, 0.2); border-radius: 2px; color: #14b8a6; word-break: break-all;"
-						onfocus={(e) => (e.currentTarget.style.borderColor = 'rgba(20, 184, 166, 0.5)')}
-						onblur={(e) => (e.currentTarget.style.borderColor = 'rgba(20, 184, 166, 0.2)')}
+						class="tw-w-full tw-px-3 tw-py-3 tw-text-sm tw-font-mono tw-bg-slate-900/50 tw-outline-none tw-resize-none tw-border tw-border-slate-700 tw-text-white focus:tw-border-data-cyan tw-rounded-md tw-transition-colors tw-break-all"
 					></textarea>
 				</div>
 
@@ -398,32 +373,31 @@ import { functions } from '$lib/firebase.js';
 				<button
 					onclick={handleDirectorPresent}
 					disabled={isLoading || !directorTokenInput.trim()}
-					class="tw-w-full tw-py-2.5 tw-text-xs tw-font-bold tw-tracking-widest tw-transition-all disabled:tw-opacity-40 tw-font-mono  tw-bg-[rgba(20,184,166,0.08)] enabled:hover:tw-bg-[rgba(20,184,166,0.15)]"
-					style=" border: 1px solid rgba(20, 184, 166, 0.4); color: #14b8a6;"
+					class="vanguard-btn-primary tw-w-full"
 				>
-					{isLoading ? '[ VALIDATING TOKEN... ]' : '[ ACCEPT TRANSFER TOKEN ]'}
+					{isLoading ? 'Validating Token...' : 'Accept Transfer Token'}
 				</button>
 			</div>
 
 		<!-- ── DIRECTOR: STEP 2 DONE — awaiting parent ───────────────────── -->
 		{:else if isDirector && stage === 'director_accepted'}
 			{#if directorResult}
-				<div class="tw-space-y-3">
-					<div class="tw-px-3 tw-py-3" style="background: rgba(45, 212, 191,0.05); border: 1px solid rgba(45, 212, 191,0.3);">
-						<div class="tw-text-xs tw-font-bold tw-mb-1" style="color: #2dd4bf;">TOKEN ACCEPTED</div>
-						<div class="tw-text-xs tw-space-y-0.5" style="color: rgba(20, 184, 166, 0.5);">
-							<div>PLAYER: <span style="color: rgba(20, 184, 166, 0.8);">{directorResult.playerName}</span></div>
-							<div>DESTINATION: <span style="color: rgba(20, 184, 166, 0.8);">{directorResult.destinationClubName}</span></div>
+				<div class="tw-space-y-4">
+					<div class="tw-px-4 tw-py-4 tw-bg-data-cyan/10 tw-border tw-border-data-cyan/30 tw-rounded-md">
+						<div class="tw-text-[10px] tw-tracking-widest tw-font-mono tw-font-bold tw-text-data-cyan tw-mb-2">TOKEN ACCEPTED</div>
+						<div class="tw-text-xs tw-space-y-1 tw-text-data-cyan/70 tw-font-mono">
+							<div>PLAYER: <span class="tw-text-data-cyan tw-font-bold">{directorResult.playerName}</span></div>
+							<div>DESTINATION: <span class="tw-text-data-cyan tw-font-bold">{directorResult.destinationClubName}</span></div>
 						</div>
 					</div>
-					<div class="tw-text-xs tw-leading-relaxed" style="color: rgba(20, 184, 166, 0.45);">
-						Auth code dispatched to <strong style="color: rgba(20, 184, 166, 0.7);">{directorResult.authCodeSentTo}</strong>.<br/>
+					<div class="tw-text-xs tw-leading-relaxed tw-text-slate-400">
+						Auth code dispatched to <strong class="tw-text-slate-200">{directorResult.authCodeSentTo}</strong>.<br/>
 						The parent must enter the code to complete the transfer.<br/>
 						This terminal will remain open until confirmation is received.
 					</div>
-					<div class="tw-flex tw-items-center tw-gap-2 tw-animate-pulse">
-						<div class="tw-w-2 tw-h-2 tw-rounded-full" style="background: #14b8a6; box-shadow: 0 0 6px #14b8a6;"></div>
-						<span class="tw-text-xs" style="color: rgba(20, 184, 166, 0.5);">AWAITING PARENT AUTHORIZATION...</span>
+					<div class="tw-flex tw-items-center tw-gap-2 tw-animate-pulse tw-mt-2">
+						<div class="tw-w-2 tw-h-2 tw-rounded-full tw-bg-data-cyan tw-shadow-[0_0_8px_rgba(20,184,166,0.8)]"></div>
+						<span class="tw-text-xs tw-font-mono tw-text-data-cyan/80 tw-tracking-widest">AWAITING PARENT AUTHORIZATION...</span>
 					</div>
 				</div>
 			{/if}
@@ -446,14 +420,11 @@ import { functions } from '$lib/firebase.js';
 	</div>
 
 	<!-- ── Footer ─────────────────────────────────────────────────────────── -->
-	<div
-		class="tw-px-5 tw-py-2 tw-flex tw-items-center tw-justify-between"
-		style="border-top: 1px solid rgba(20, 184, 166, 0.06);"
-	>
-		<span class="tw-text-xs" style="font-size: 10px; color: rgba(20, 184, 166, 0.2);">
+	<div class="tw-px-5 tw-py-3 tw-flex tw-items-center tw-justify-between tw-bg-slate-900/50 tw-border-t tw-border-slate-800">
+		<span class="tw-text-[10px] tw-font-mono tw-text-slate-500 tw-tracking-widest">
 			COPPA-VERIFIED · HMAC-SHA256 · 48H TOKEN TTL
 		</span>
-		<span class="tw-text-xs" style="font-size: 10px; color: rgba(20, 184, 166, 0.2);">
+		<span class="tw-text-[10px] tw-font-mono tw-text-slate-500 tw-tracking-widest">
 			VANGUARD NEXUS v4
 		</span>
 	</div>

@@ -87,10 +87,6 @@ import { onDestroy, onMount, untrack } from 'svelte';
 			map = undefined;
 		};
 	});
-
-	function stopProp(e: MouseEvent) {
-		e.stopPropagation();
-	}
 </script>
 
 {#if !apiKey || !mapsMapId || loadError}
@@ -145,15 +141,14 @@ import { onDestroy, onMount, untrack } from 'svelte';
 						stroke-width="1.5"
 						filter="url(#neonBloom)"
 						class="tw-animate-pulse"
-						onmousedown={stopProp}
-						onclick={stopProp}
 					/>
-					<circle cx="{500 + strike.dist_miles * 20}" cy="{500 - strike.dist_miles * 10}" r="4" fill="#ff007f" filter="url(#neonBloom)" onmousedown={stopProp} onclick={stopProp} />
+					<circle cx="{500 + strike.dist_miles * 20}" cy="{500 - strike.dist_miles * 10}" r="4" fill="#ff007f" filter="url(#neonBloom)" />
 				{:else}
 					<!-- Amber for warning -->
-					<circle cx="{500 - strike.dist_miles * 15}" cy="{500 + strike.dist_miles * 5}" r="4" fill="#f59e0b" onmousedown={stopProp} onclick={stopProp} />
+					<circle cx="{500 - strike.dist_miles * 15}" cy="{500 + strike.dist_miles * 5}" r="4" fill="#f59e0b" />
 				{/if}
 			{/each}
 		</svg>
 	</div>
 {/if}
+

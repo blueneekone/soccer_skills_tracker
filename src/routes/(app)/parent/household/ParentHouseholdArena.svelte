@@ -79,7 +79,7 @@
 				</p>
 				<p class="phh-eyebrow tw-mb-2">Household / club line</p>
 				<div class="phh-mono tw-mb-3 tw-text-xs tw-break-all tw-text-[var(--text-secondary)]">
-					HH: {engine.householdId || '— (created on sign)'} · Club: {engine.profile?.clubId ? String(engine.profile.clubId) : '—'}
+					HH: {engine.householdId || '— (created on sign)'} · Club: {engine.clubId ? String(engine.clubId) : '—'}
 				</div>
 				<button
 					type="button"
@@ -394,30 +394,14 @@
                 </div>
             </section>
 
-			<section
-				class="st-bento z2-panel siem-panel tw-min-w-0 tw-px-3 tw-py-4 sm:tw-px-4 md:tw-px-5 vanguard-panel"
-				aria-labelledby="phh-transfer"
-			>
-				<div class="tw-mb-3">
-					<span class="phh-eyebrow tw-text-[var(--text-secondary)]">Club transfer</span>
-					<h2
-						id="phh-transfer"
-						class="tw-m-0 tw-text-sm tw-font-bold tw-uppercase tw-tracking-widest tw-text-white tw-font-mono"
-					>
-						Vanguard transfer protocol
-					</h2>
-				</div>
-				<p class="tw-mb-3 tw-text-xs tw-leading-relaxed tw-text-[var(--text-secondary)]">
-					Initiate a player transfer to another club. You will receive a token to share with the
-					destination registrar; confirm with their auth code when prompted.
-				</p>
+			<div class="tw-mt-6">
 				<TransferPortal
 					role="parent"
 					playerEmail={engine.operativeRows[0]?.email && !engine.operativeRows[0].email.endsWith('@operative.local')
 						? engine.operativeRows[0].email
 						: ''}
 				/>
-			</section>
+			</div>
 		</div>
 	</div>
 

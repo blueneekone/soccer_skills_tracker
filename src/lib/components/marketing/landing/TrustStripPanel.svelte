@@ -96,14 +96,6 @@
 		box-shadow: 0 4px 15px rgba(20, 184, 166, 0.15);
 	}
 
-	.ts-badge__label {
-		font-family: 'Geist Mono', ui-monospace, monospace;
-		font-size: clamp(0.6875rem, 1.2vw, 0.75rem);
-		font-weight: 900;
-		letter-spacing: 0.12em;
-		color: var(--vanguard-text-1, #ffffff);
-	}
-
 	.ts-badge__sub {
 		font-family: 'Geist Mono', ui-monospace, monospace;
 		font-size: var(--vanguard-text-eyebrow-size, 0.6875rem);

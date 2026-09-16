@@ -195,6 +195,8 @@ button:active,
   .vanguard-btn-amber:hover, .tw-vanguard-btn-amber:hover {
     @apply tw-bg-[#fbbf24] tw-text-[#020617];
     box-shadow: 0 0 15px rgba(251, 191, 36, 0.5);
+    border-color: transparent !important;
+    outline: none !important;
   }
 
   /* Data Cyan CTA */
@@ -222,6 +224,8 @@ button:active,
   .vanguard-btn-danger:hover, .tw-vanguard-btn-danger:hover {
     @apply tw-bg-[#f87171];
     box-shadow: 0 0 15px rgba(239, 68, 68, 0.4);
+    border-color: #f87171 !important;
+    outline: none !important;
   }
 }
 /* Add global anti-squish to flex/grid children */

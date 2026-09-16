@@ -19,7 +19,7 @@ function fixTests() {
             let originalContent = content;
             
             // Fix DASHBOARD_PAGE (used in playerRlFunctional)
-            if (content.includes('const DASHBOARD_PAGE = join(ROOT, \\'routes/(app)/player/dashboard/+page.svelte\\');') && !content.includes('PlayerArena.svelte')) {
+            if (content.includes("const DASHBOARD_PAGE = join(ROOT, 'routes/(app)/player/dashboard/+page.svelte');") && !content.includes('PlayerArena.svelte')) {
                 content = content.replace(
                     /const DASHBOARD_PAGE = join\(ROOT, 'routes\/\(app\)\/player\/dashboard\/\+page\.svelte'\);/,
                     [
@@ -27,7 +27,7 @@ function fixTests() {
                         "const ARENA = join(ROOT, 'routes/(app)/player/dashboard/PlayerArena.svelte');",
                         "const HUD = join(ROOT, 'routes/(app)/player/dashboard/PlayerHUD.svelte');",
                         "const ENGINE = join(ROOT, 'routes/(app)/player/dashboard/PlayerDashboardEngine.svelte.ts');"
-                    ].join('\\n')
+                    ].join('\n')
                 );
                 content = content.replace(
                     /readFileSync\(DASHBOARD_PAGE, 'utf-8'\)/g,
@@ -36,12 +36,12 @@ function fixTests() {
                         "+ (existsSync(ARENA) ? readFileSync(ARENA, 'utf-8') : '')",
                         "+ (existsSync(HUD) ? readFileSync(HUD, 'utf-8') : '')",
                         "+ (existsSync(ENGINE) ? readFileSync(ENGINE, 'utf-8') : '')"
-                    ].join('\\n                    ')
+                    ].join('\n                    ')
                 );
             }
             
             // Fix DASHBOARD
-            if (content.includes('const DASHBOARD = join(ROOT, \\'routes/(app)/player/dashboard/+page.svelte\\');') && !content.includes('PlayerArena.svelte')) {
+            if (content.includes("const DASHBOARD = join(ROOT, 'routes/(app)/player/dashboard/+page.svelte');") && !content.includes('PlayerArena.svelte')) {
                 content = content.replace(
                     /const DASHBOARD = join\(ROOT, 'routes\/\(app\)\/player\/dashboard\/\+page\.svelte'\);/,
                     [
@@ -49,7 +49,7 @@ function fixTests() {
                         "const ARENA = join(ROOT, 'routes/(app)/player/dashboard/PlayerArena.svelte');",
                         "const HUD = join(ROOT, 'routes/(app)/player/dashboard/PlayerHUD.svelte');",
                         "const ENGINE = join(ROOT, 'routes/(app)/player/dashboard/PlayerDashboardEngine.svelte.ts');"
-                    ].join('\\n')
+                    ].join('\n')
                 );
                 content = content.replace(
                     /readFileSync\(DASHBOARD, 'utf-8'\)/g,
@@ -58,7 +58,7 @@ function fixTests() {
                         "+ (existsSync(ARENA) ? readFileSync(ARENA, 'utf-8') : '')",
                         "+ (existsSync(HUD) ? readFileSync(HUD, 'utf-8') : '')",
                         "+ (existsSync(ENGINE) ? readFileSync(ENGINE, 'utf-8') : '')"
-                    ].join('\\n                    ')
+                    ].join('\n                    ')
                 );
             }
             

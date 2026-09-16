@@ -83,7 +83,7 @@ async function loginWithToken(page, token) {
 
 async function recordTrainingTriangleHero(browser) {
   console.log('🌱 Seeding fresh dev database state...');
-  execSync('node scripts/seed-training-triangle.mjs', { stdio: 'inherit' });
+// execSync('node scripts/seed-training-triangle.mjs', { stdio: 'inherit' });
   
   const tokens = JSON.parse(fs.readFileSync(path.join(__dirname, 'mock-tokens.json'), 'utf-8'));
 
