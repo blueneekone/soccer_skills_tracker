@@ -218,6 +218,36 @@
 
 ---
 
+### Phase 7B: Ultra-Premium Platform Design Sweep — "Nuclear Americana Tech Noir" 🆕
+
+> **Context**: Phase 7 targeted specific known violations. Phase 7B is the full-platform design sweep required before launch — enforcing the GEMINI.md 60-30-10 palette harmony, Atompunk Z-depth architecture, Liquid Glassmorphism 2.0, micro-animation physics, anti-squish math, Void Density, WCAG 2.2 AA compliance, and Action Gold CTA governance across all 600 components. Each sprint includes a Vitest static assertion file to lock the design system permanently.
+
+- [ ] **Sprint DS1 (P0)**: 60-30-10 Palette Enforcement & Static Assertion Lock
+  - **Status**: 🔴 NOT STARTED — No programmatic guard exists to prevent palette regressions
+  - **Jules Prompt**: (1) Create `src/lib/styles/__tests__/paletteEnforcement.test.ts` using Vitest with JSDOM. Write static regex-based assertions that scan every `.svelte` file under `src/` and FAIL the build if any of the following banned patterns are detected: `bg-white`, `bg-black` (raw Tailwind without token), `text-white`, `text-black`, `#ffffff` (literal — must use `#fafafa`), `#ff0000`/`#00ff00`/`#0000ff` (primary hues banned), `bg-blue-*`, `bg-red-*`, `bg-purple-*` (non-palette generics), `rgba(0,255,255` (raw cyan — must be `#14b8a6`), `rgba(0,0,0,1)` (must be `#000000` token). (2) Create `src/lib/styles/design-tokens.css` consolidating ALL palette variables: `--color-void: #000000`, `--color-navy: #0f172a`, `--color-structural: #334155`, `--color-text-primary: #fafafa`, `--color-text-secondary: #d4d4d8`, `--color-cyan: #14b8a6`, `--color-yellow: #daff0a`, `--color-gold: #fbbf24`, `--color-amber: #f59e0b`. (3) Import `design-tokens.css` in `src/app.css` at the top. (4) Run `pnpm test -- src/lib/styles/__tests__/paletteEnforcement.test.ts` — must be 100% green before proceeding.
+
+- [ ] **Sprint DS2 (P0)**: Action Gold Single-CTA Enforcement & Viewport Governor
+  - **Status**: 🔴 NOT STARTED — Multiple Action Gold CTAs visible on same viewport in 14+ pages
+  - **Jules Prompt**: (1) Create `src/lib/styles/__tests__/ctaGovernor.test.ts`. Write Vitest assertions that scan every `+page.svelte` and `*Arena.svelte` file and assert: exactly ONE element per file can have `tw-bg-[#fbbf24]` or `var(--color-gold)` or `action-gold` class — any file with 2+ instances FAILS. (2) For every file that fails: audit which CTA is the primary conversion action, downgrade secondary buttons to `tw-bg-[#334155]` (Structural Grey) with `tw-text-[#fafafa]` styling or ghost button variant (`tw-border tw-border-[#fbbf24] tw-text-[#fbbf24] tw-bg-transparent`). (3) Ensure every primary CTA has a Svelte `id` attribute formatted as `cta-{persona}-{action}` (e.g., `cta-coach-create-drill`, `cta-director-import-roster`) for Playwright accessibility targeting. Run `pnpm run check` and `pnpm test -- src/lib/styles/__tests__/ctaGovernor.test.ts`.
+
+- [ ] **Sprint DS3 (P0)**: Liquid Glassmorphism 2.0 & Z-Depth Architecture Sweep
+  - **Status**: 🔴 NOT STARTED — Z-depth inconsistency across persona panels; glow shadows clipped in 8+ components
+  - **Jules Prompt**: (1) In `src/app.css`, define the five Z-depth utility classes: `.z0-canvas { background: #000000; }`, `.z1-well { background: #0a0f1a; }`, `.z2-panel { background: rgba(15,23,42,0.85); backdrop-filter: blur(12px) saturate(180%); border: 1px solid rgba(51,65,85,0.6); box-shadow: 0 0 24px rgba(20,184,166,0.08), inset 0 1px 0 rgba(255,255,255,0.04); }`, `.z3-identity { background: rgba(15,23,42,0.95); border: 1px solid #334155; }`, `.z4-nav { background: #000000; border-bottom: 1px solid #334155; }`. (2) Audit every `*Arena.svelte`, `*HUD.svelte`, and panel component — replace ad-hoc `bg-slate-900`, `bg-gray-900`, `bg-neutral-900` with the correct Z-depth class. (3) Fix the overflow-hidden bug: search for any parent container that has BOTH `overflow-hidden` AND contains a `.z2-panel` or `.glass-panel` child — remove `overflow-hidden` from the parent and add `border-radius: inherit; overflow: hidden` to the child instead, preserving the box-shadow glow. (4) Verify no glow is clipped by running Playwright visual snapshot: `npx playwright test --grep "z-depth" e2e/visual-regression.spec.ts`. Run `pnpm run check` to verify 0 errors.
+
+- [ ] **Sprint DS4 (P1)**: Micro-Animation Physics & "I See You" Protocol Implementation
+  - **Status**: 🔴 NOT STARTED — Interactive elements lack visceral 150-250ms feedback; no haptic/pulse on data commit
+  - **Jules Prompt**: (1) In `src/app.css`, define the core animation token library: `--anim-fast: 150ms`, `--anim-std: 250ms`, `--anim-slow: 400ms`, `--ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1)`, `--ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1)`. Add global utility classes: `.interactive { transition: transform var(--anim-fast) var(--ease-out-expo), box-shadow var(--anim-fast) ease, opacity var(--anim-fast) ease; } .interactive:hover { transform: translateY(-1px); box-shadow: 0 4px 20px rgba(20,184,166,0.2); } .interactive:active { transform: translateY(0) scale(0.98); }`. (2) Add `.pulse-confirm { animation: pulseConfirm var(--anim-std) var(--ease-spring); } @keyframes pulseConfirm { 0% { box-shadow: 0 0 0 0 rgba(20,184,166,0.6); } 100% { box-shadow: 0 0 0 12px rgba(20,184,166,0); } }`. (3) Apply `.interactive` class to ALL buttons, cards, nav items, and interactive table rows across every persona — search for `<button`, `<a href`, role=`button`, and card click handlers and add `class="interactive"`. (4) Add `.pulse-confirm` triggered via `$effect` immediately after any verified Firestore `writeBatch` commit (in `writes.svelte.ts`, `feeLedger.svelte.ts`, `offlineSync.svelte.ts`). (5) Create `src/lib/styles/__tests__/microAnimations.test.ts` asserting `.interactive` class presence on all CTA buttons. Run `pnpm run check`.
+
+- [ ] **Sprint DS5 (P1)**: Anti-Squish Math, Asymmetric Bento Grid & 100dvh App-Flow
+  - **Status**: 🔴 NOT STARTED — Static `px` margins exist throughout; Admin/Director/Coach dashboards have double-scrollbar issues
+  - **Jules Prompt**: (1) Global static margin/padding sweep: run `grep -rn "margin: [0-9]\+px\|padding: [0-9]\+px" src/ --include="*.svelte" --include="*.css"` — for every result, replace fixed pixel spacing with `clamp()` function: `4px → clamp(2px, 0.5vw, 4px)`, `8px → clamp(4px, 1vw, 8px)`, `16px → clamp(8px, 2vw, 16px)`, `24px → clamp(12px, 3vw, 24px)`, `32px → clamp(16px, 4vw, 32px)`, `48px → clamp(24px, 5vw, 48px)`. (2) Asymmetric Bento Grid: for every data-heavy dashboard (`CommandCenter.svelte`, `DirectorDashboardArena.svelte`, `AdminDashboard`, `CommissionerDashboard`) — replace any symmetric `grid-cols-2` or `grid-cols-3` CSS Grid with a 12-column asymmetric layout using `grid-template-columns: repeat(12, 1fr)` and varied `grid-column: span N` assignments (primary content: `span 8`, supporting: `span 4`). Symmetrical grids are banned. (3) 100dvh App-Flow: for Coach OS, Director OS, and Admin OS root layout containers — add `height: 100dvh; display: grid; grid-template-rows: auto 1fr auto; overflow: hidden` to the shell layout. Inner scrollable areas get `overflow-y: auto; min-height: 0; flex: 1 1 auto`. This eliminates double scrollbars. (4) Create `src/lib/styles/__tests__/layoutPhysics.test.ts` with static regex assertions: FAIL if any `margin: \d+px` or `padding: \d+px` is found without `clamp`. Run `pnpm run check`.
+
+- [ ] **Sprint DS6 (P1)**: Void Density & WCAG 2.2 AA Accessibility Compliance Sweep
+  - **Status**: 🔴 NOT STARTED — No programmatic enforcement of 40% void density or WCAG contrast ratios
+  - **Jules Prompt**: (1) Void Density enforcement: create `src/lib/styles/__tests__/voidDensity.test.ts`. Write assertions that scan `*Arena.svelte` and `+page.svelte` files — FAIL if a file uses more than 3 distinct non-void background colors per component (i.e., backgrounds other than `#000000`, `#0f172a`, `#0a0f1a`, and the Z2 glassmorphism token). Any component with `bg-white`, `bg-gray-50`, `bg-slate-50`, `bg-neutral-50`, or similar light backgrounds FAILS — these destroy the 40% void density target. (2) WCAG 2.2 AA contrast: install `color-contrast` package, create a test that verifies every text/background color pairing in `design-tokens.css` meets ≥4.5:1 ratio for normal text, ≥3:1 for large text. Primary pairs to check: `#fafafa on #0f172a`, `#d4d4d8 on #000000`, `#14b8a6 on #000000`, `#fbbf24 on #000000`, `#daff0a on #000000`. (3) Halation prevention: run `grep -rn "color: #ffffff\|color: white" src/ --include="*.svelte"` — every result must be changed to `#fafafa`. Run `grep -rn "background.*#ffffff\|background.*white" src/ --include="*.svelte"` — every result must be changed to `#0f172a` or `#000000`. (4) Typography x-height: verify `Switzer` is loaded at 79% x-height via `font-size-adjust: 0.79` on the body selector in `app.css`. Verify `Geist Mono` is applied to ALL elements matching: `[data-readout]`, `[data-metric]`, `[data-stat]`, `[data-timestamp]`, `.kpi-value`, `.telemetry-value`. (5) SVG physics lock: scan all `*.svelte` files containing `<svg` — assert `viewBox` attribute is present on every SVG, `preserveAspectRatio` is set to `xMidYMid meet` or `slice` for tactical arenas, and NO `tw-text-[Npx]` class is applied inside SVG elements (must use native `font-size="N"` attribute instead). Run `pnpm run check` and `pnpm test -- src/lib/styles/__tests__/`.
+
+---
+
 ### Phase 8: Monolithic File Extraction (Anti-Fragility — 500-Line Mandate) 🆕
 
 > **Context**: The Vanguard Trinity Pattern and 500-line extraction mandate require monolithic files to be fractured into Shell+Brain+Glass+HUD. 15 files currently violate this. Ordered by severity (largest first).
@@ -272,15 +302,19 @@
 | Phase 5: Auth & Security | 4 | 2 | **2** | 🟡 IN PROGRESS |
 | Phase 6: Marketing & Demo | 4 | 1 | **3** | 🟡 IN PROGRESS |
 | Phase 7: Design Remediation | 8 | 1 | **7** | 🔴 CRITICAL |
+| **Phase 7B: Platform Design Sweep** | **6** | **0** | **6** | 🔴 NEW — LAUNCH BLOCKER |
 | Phase 8: Monolith Extraction | 7 | 0 | **7** | 🔴 NEW |
 | Phase 9: Deploy Readiness | 4 | 0 | **4** | 🔴 NEW |
-| **TOTAL** | **45** | **22** | **23** | **49% Complete** |
+| **TOTAL** | **51** | **22** | **29** | **43% Complete** |
 
-### Recommended Execution Order (Critical Path):
+### 🚀 Recommended Execution Order (Critical Path to Launch):
 1. **Sprint R8** (Backend Parity) → Unblocks all persona functional testing
 2. **Sprint 5.2 + 5.3** (Security Tests) → Unblocks compliance sign-off
-3. **Sprint R5 + R6 + R7** (Design Cleanup) → Low-risk, high-visibility improvements
-4. **Sprint R2 + R3 + R4** (Visual Polish) → Pre-launch design parity
-5. **Sprint M1-M7** (Monolith Extraction) → Code health, can run in parallel with above
-6. **Sprint D1-D4** (Deploy Readiness) → Final gate before production launch
-7. **Sprint 6.1 + 6.3 + 6.4** (Marketing) → Can run post-launch if needed
+3. **Sprint R5 + R6 + R7** (Quick Design Cleanup) → Low-risk, high-velocity wins
+4. **Sprint R2 + R3 + R4** (Visual Polish) → Pre-launch visual parity
+5. **Sprint DS1 + DS2** (Palette Lock + CTA Governor) → Design system immutability gate 🆕
+6. **Sprint DS3 + DS4** (Glassmorphism + Micro-Animations) → Premium aesthetic enforcement 🆕
+7. **Sprint DS5 + DS6** (Layout Physics + Void Density + WCAG) → Final premium sweep 🆕
+8. **Sprint M1-M7** (Monolith Extraction) → Code health, can run in parallel with DS sprints
+9. **Sprint D1-D4** (Deploy Readiness) → Final gate before production launch
+10. **Sprint 6.1 + 6.3 + 6.4** (Marketing Videos) → Can ship post-launch if needed
