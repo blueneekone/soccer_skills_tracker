@@ -115,22 +115,22 @@
 					<ul class="tw-m-0 tw-list-none bento-stack-sm tw-p-0">
 						{#each engine.operativeRows as row (row.email)}
 							<li
-								class="tw-flex tw-min-w-0 tw-flex-col tw-gap-2 tw-border tw-border-white/10 tw-bg-black/50 tw-px-3 tw-py-3 glass-panel"
+								class="tw-flex tw-min-w-0 tw-flex-col tw-gap-2 tw-border tw-border-[var(--color-structural-grey)] tw-bg-[var(--color-void-black)] tw-px-3 tw-py-3 glass-panel"
 							>
 								<div class="tw-min-w-0">
 									<p class="phh-mono tw-m-0 tw-text-sm tw-font-bold tw-text-cyan-100/90">
 										{row.name}
 									</p>
 									{#if row.email.endsWith('@operative.local')}
-										<div class="phh-cmd-hud tw-mt-2 tw-border tw-border-cyan-500/20 tw-bg-black/60 tw-px-2 tw-py-2">
-											<p class="phh-eyebrow tw-mb-0.5 !tw-text-[0.5rem] tw-text-cyan-200/60">
+										<div class="phh-cmd-hud tw-mt-2 tw-border tw-border-[var(--color-structural-grey)] tw-bg-[var(--color-navy-slate)] tw-px-2 tw-py-2">
+											<p class="phh-eyebrow tw-mb-0.5 !tw-text-[0.5rem] tw-text-[var(--color-data-cyan)]/80">
 												Login Callsign
 											</p>
-											<p class="phh-cmd-callsign phh-mono tw-m-0 tw-text-lg tw-font-black tw-text-cyan-200 sm:tw-text-xl">
+											<p class="phh-cmd-callsign phh-mono tw-m-0 tw-text-lg tw-font-black tw-text-[var(--color-data-cyan)] sm:tw-text-xl tw-font-mono">
 												{row.loginCallsign || '—'}
 											</p>
 											<p
-												class="phh-mono tw-m-0 tw-mt-1 tw-text-[0.65rem] tw-break-all tw-text-[var(--text-muted)]"
+												class="phh-mono tw-m-0 tw-mt-1 tw-text-[0.65rem] tw-break-all tw-text-[var(--text-muted)] tw-font-mono"
 											>
 												{row.email}
 											</p>
@@ -150,7 +150,7 @@
 										</div>
 										{#if row.pendingGamertag}
 											<div
-												class="phh-gt-queue tw-mt-2 tw-border tw-border-amber-500/50 tw-bg-amber-950/20 tw-px-2.5 tw-py-2.5"
+												class="phh-gt-queue tw-mt-2 tw-border tw-border-[var(--color-atompunk-amber)]/50 tw-bg-[var(--color-navy-slate)] tw-px-2.5 tw-py-2.5"
 												role="status"
 											>
 												<p
@@ -193,9 +193,9 @@
 											</div>
 										{/if}
 										<div
-											class="tw-mt-2 tw-border tw-border-cyan-500/25 tw-bg-cyan-950/10 tw-px-2.5 tw-py-2.5"
+											class="tw-mt-2 tw-border tw-border-[var(--color-structural-grey)] tw-bg-[var(--color-navy-slate)] tw-px-2.5 tw-py-2.5"
 										>
-											<p class="phh-eyebrow tw-mb-1 !tw-text-[0.55rem] tw-text-cyan-200/80">
+											<p class="phh-eyebrow tw-mb-1 !tw-text-[0.55rem] tw-text-[var(--color-data-cyan)]/80">
 												Link to team roster
 											</p>
 											<p class="tw-m-0 tw-mb-2 tw-text-xs tw-leading-relaxed tw-text-[var(--text-secondary)]">
@@ -204,7 +204,7 @@
 											</p>
 											<div class="tw-flex tw-flex-col tw-gap-2 sm:tw-flex-row sm:tw-items-center">
 												<input
-													class="vanguard-input tw-flex-1"
+													class="vanguard-input tw-flex-1 tw-font-mono"
 													type="text"
 													autocomplete="off"
 													spellcheck="false"
@@ -232,7 +232,7 @@
 											</div>
 										</div>
 									{:else}
-										<p class="phh-mono tw-m-0 tw-text-xs tw-text-[var(--text-muted)]">
+										<p class="phh-mono tw-m-0 tw-text-xs tw-text-[var(--text-muted)] tw-font-mono">
 											{row.callsign ? `Callsign: ${row.callsign}` : row.email}
 										</p>
 									{/if}
@@ -281,7 +281,7 @@
 					<label class="phh-field tw-block tw-w-full">
 						<span class="phh-eyebrow tw-mb-1 tw-block">Operative name</span>
 						<input
-							class="vanguard-input"
+							class="vanguard-input tw-font-mono"
 							type="text"
 							autocomplete="name"
 							placeholder="Full name (minor)"
@@ -293,7 +293,7 @@
 							>Operative Callsign <span class="tw-text-red-300/80">(required)</span></span
 						>
 						<input
-							class="vanguard-input"
+							class="vanguard-input tw-font-mono"
 							type="text"
 							autocomplete="username"
 							placeholder="e.g. Red-Fox, striker99"
@@ -315,7 +315,7 @@
 						</div>
 						<input
 							id="phh-dispatch-code"
-							class="vanguard-input"
+							class="vanguard-input tw-font-mono"
 							type="text"
 							autocomplete="off"
 							spellcheck="false"
@@ -341,11 +341,11 @@
 				</div>
 				{#if engine.lastDispatch}
 					<div
-						class="tw-mt-3 tw-min-w-0 tw-border tw-border-[#2dd4bf]/40 tw-bg-[#05050a] tw-px-3 tw-py-3"
+						class="tw-mt-3 tw-min-w-0 tw-border tw-border-[var(--color-data-cyan)]/40 tw-bg-[var(--color-navy-slate)] tw-px-3 tw-py-3"
 						role="status"
 					>
-						<p class="phh-eyebrow tw-mb-1 tw-text-[#2dd4bf]">Last dispatch (share once; keep secure)</p>
-						<p class="phh-mono tw-break-all tw-text-lg tw-text-[#7dff9a] sm:tw-text-xl">
+						<p class="phh-eyebrow tw-mb-1 tw-text-[var(--color-data-cyan)]">Last dispatch (share once; keep secure)</p>
+						<p class="phh-mono tw-break-all tw-text-lg tw-text-[#7dff9a] sm:tw-text-xl tw-font-mono">
 							{engine.lastDispatch}
 						</p>
 					</div>
@@ -370,7 +370,7 @@
                     <label class="phh-field tw-block tw-w-full">
                         <span class="phh-eyebrow tw-mb-1 tw-block">Co-Parent Email</span>
                         <input
-                            class="vanguard-input"
+                            class="vanguard-input tw-font-mono"
                             type="email"
                             autocomplete="email"
                             placeholder="guardian@example.com"

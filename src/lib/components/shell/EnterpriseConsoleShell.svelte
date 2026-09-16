@@ -324,7 +324,7 @@ import { untrack } from 'svelte';
 						let settingsPath = '/admin/settings';
 						if (role === 'director') settingsPath = '/director/club-management';
 						else if (role === 'coach') settingsPath = '/coach/settings';
-						else if (role === 'parent') settingsPath = '/parent/settings';
+						else if (role === 'parent') settingsPath = '/parent/household';
 						else if (role === 'player') settingsPath = '/player/settings';
 						else if (role === 'commissioner') settingsPath = '/commissioner/matrix';
 						untrack(() => goto(settingsPath));

@@ -51,7 +51,9 @@ export async function handle({ event, resolve }) {
     if (token) {
         try {
             const auth = ensureAdminAuth();
-            const decodedToken = await auth.verifyIdToken(token);
+            const decodedToken = sessionCookie
+                ? await auth.verifySessionCookie(token)
+                : await auth.verifyIdToken(token);
             event.locals.user = {
                 uid: decodedToken.uid,
                 email: decodedToken.email,

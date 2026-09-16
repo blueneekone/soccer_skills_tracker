@@ -745,6 +745,7 @@ html.dark .ec-topbar {
 	background: transparent;
 	color: var(--text-secondary);
 	cursor: pointer;
+	outline: none;
 	transition: background var(--motion-fast) var(--motion-ease), color var(--motion-fast) var(--motion-ease);
 }
 

@@ -167,7 +167,7 @@ import { functions } from '$lib/firebase.js';
 
 <div class="vanguard-panel z2-panel siem-panel tw-w-full tw-mx-auto tw-font-mono tw-space-y-0 tw-overflow-hidden">
 	<!-- ── Header ─────────────────────────────────────────────────────────── -->
-	<div class="tw-flex tw-items-center tw-justify-between tw-px-5 tw-py-4 tw-bg-slate-800/40 tw-border-b tw-border-slate-800">
+	<div class="tw-flex tw-items-center tw-justify-between tw-px-5 tw-py-4 tw-bg-[var(--color-navy-slate)] tw-border-b tw-border-[var(--color-structural-grey)]">
 		<div class="tw-flex tw-items-center tw-gap-4">
 			<div class="tw-relative">
 				<Icon name="status.shield-check" size={24} class="tw-text-data-cyan tw-drop-shadow-[0_0_8px_rgba(20,184,166,0.5)]" />
@@ -273,7 +273,7 @@ import { functions } from '$lib/firebase.js';
 		<!-- ── PARENT: STEP 1 — INITIATE ─────────────────────────────────── -->
 		{:else if isParent && (stage === 'idle' || stage === 'parent_initiating')}
 			<div class="tw-space-y-4">
-				<div class="tw-px-4 tw-py-3 tw-text-xs tw-leading-relaxed tw-bg-amber-500/10 tw-border tw-border-amber-500/30 tw-text-amber-500/90 tw-rounded-md">
+				<div class="tw-px-4 tw-py-3 tw-text-xs tw-leading-relaxed tw-bg-[var(--color-atompunk-amber)]/10 tw-border tw-border-[var(--color-atompunk-amber)]/30 tw-text-[var(--color-atompunk-amber)]/90 tw-rounded-md">
 					<Icon name="status.warning" size={16} class="tw-inline tw-mr-1.5 tw-align-text-bottom" />
 					ZERO-TRUST PROTOCOL: Transfers are irreversible without re-initiation.
 					Only the COPPA-verified parent account may authorize movement of player data.
@@ -286,7 +286,7 @@ import { functions } from '$lib/firebase.js';
 						bind:value={targetPlayerEmail}
 						placeholder="player@club.com"
 						autocomplete="email"
-						class="tw-w-full tw-px-3 tw-py-2.5 tw-text-sm tw-font-mono tw-bg-slate-900/50 tw-outline-none tw-border tw-border-slate-700 tw-text-white focus:tw-border-data-cyan tw-rounded-md tw-transition-colors"
+						class="vanguard-input tw-font-mono tw-w-full"
 					/>
 				</div>
 
@@ -326,7 +326,7 @@ import { functions } from '$lib/firebase.js';
 						bind:value={authCode}
 						placeholder="XXXXXXXXXXXX"
 						maxlength="12"
-						class="tw-w-full tw-px-4 tw-py-3 tw-text-lg tw-font-bold tw-tracking-[0.25em] tw-font-mono tw-bg-slate-900/50 tw-outline-none tw-uppercase tw-border tw-border-slate-700 tw-text-white focus:tw-border-data-cyan tw-rounded-md tw-transition-colors"
+						class="vanguard-input tw-font-mono tw-w-full tw-text-lg tw-font-bold tw-tracking-[0.25em] tw-uppercase"
 					/>
 					<div class="tw-text-xs tw-text-slate-500 tw-mt-1">
 						Auth code is available after the Director accepts the token (Step 2).
@@ -349,7 +349,7 @@ import { functions } from '$lib/firebase.js';
 		<!-- ── DIRECTOR: STEP 2 — Enter token ────────────────────────────── -->
 		{:else if isDirector && (stage === 'idle' || stage === 'director_entering')}
 			<div class="tw-space-y-5">
-				<div class="tw-px-4 tw-py-3 tw-text-xs tw-leading-relaxed tw-bg-slate-800/50 tw-border tw-border-slate-700 tw-text-slate-300 tw-rounded-md">
+				<div class="tw-px-4 tw-py-3 tw-text-xs tw-leading-relaxed tw-bg-[var(--color-navy-slate)] tw-border tw-border-[var(--color-structural-grey)] tw-text-[var(--text-secondary)] tw-rounded-md">
 					<Icon name="status.info" size={16} class="tw-inline tw-mr-1.5 tw-align-text-bottom tw-text-slate-400" />
 					Obtain the Transfer Token from the player's parent account, then enter it below.
 					The parent will receive a cryptographic auth code to confirm the transfer.
@@ -362,7 +362,7 @@ import { functions } from '$lib/firebase.js';
 						bind:value={directorTokenInput}
 						placeholder="64-character transfer token"
 						rows="2"
-						class="tw-w-full tw-px-3 tw-py-3 tw-text-sm tw-font-mono tw-bg-slate-900/50 tw-outline-none tw-resize-none tw-border tw-border-slate-700 tw-text-white focus:tw-border-data-cyan tw-rounded-md tw-transition-colors tw-break-all"
+						class="vanguard-input tw-font-mono tw-w-full tw-resize-none tw-break-all"
 					></textarea>
 				</div>
 
@@ -420,7 +420,7 @@ import { functions } from '$lib/firebase.js';
 	</div>
 
 	<!-- ── Footer ─────────────────────────────────────────────────────────── -->
-	<div class="tw-px-5 tw-py-3 tw-flex tw-items-center tw-justify-between tw-bg-slate-900/50 tw-border-t tw-border-slate-800">
+	<div class="tw-px-5 tw-py-3 tw-flex tw-items-center tw-justify-between tw-bg-[var(--color-void-black)] tw-border-t tw-border-[var(--color-structural-grey)]">
 		<span class="tw-text-[10px] tw-font-mono tw-text-slate-500 tw-tracking-widest">
 			COPPA-VERIFIED · HMAC-SHA256 · 48H TOKEN TTL
 		</span>
