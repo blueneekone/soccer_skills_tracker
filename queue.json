@@ -1,0 +1,205 @@
+[
+  {
+    "id": "sprint-5.2",
+    "name": "sprint-5.2",
+    "sessionId": null,
+    "workflowFile": ".agents/workflows/jules-builds/sprint-5.2.md",
+    "dispatched": false
+  },
+  {
+    "id": "sprint-5.3",
+    "name": "sprint-5.3",
+    "sessionId": null,
+    "workflowFile": ".agents/workflows/jules-builds/sprint-5.3.md",
+    "dispatched": false
+  },
+  {
+    "id": "sprint-r8",
+    "name": "sprint-r8",
+    "sessionId": null,
+    "workflowFile": ".agents/workflows/jules-builds/sprint-r8.md",
+    "dispatched": false
+  },
+  {
+    "id": "sprint-r2",
+    "name": "sprint-r2",
+    "sessionId": null,
+    "workflowFile": ".agents/workflows/jules-builds/sprint-r2.md",
+    "dispatched": false
+  },
+  {
+    "id": "sprint-r3",
+    "name": "sprint-r3",
+    "sessionId": null,
+    "workflowFile": ".agents/workflows/jules-builds/sprint-r3.md",
+    "dispatched": false
+  },
+  {
+    "id": "sprint-r4",
+    "name": "sprint-r4",
+    "sessionId": null,
+    "workflowFile": ".agents/workflows/jules-builds/sprint-r4.md",
+    "dispatched": false
+  },
+  {
+    "id": "sprint-r5",
+    "name": "sprint-r5",
+    "sessionId": null,
+    "workflowFile": ".agents/workflows/jules-builds/sprint-r5.md",
+    "dispatched": false
+  },
+  {
+    "id": "sprint-r6",
+    "name": "sprint-r6",
+    "sessionId": null,
+    "workflowFile": ".agents/workflows/jules-builds/sprint-r6.md",
+    "dispatched": false
+  },
+  {
+    "id": "sprint-r7",
+    "name": "sprint-r7",
+    "sessionId": null,
+    "workflowFile": ".agents/workflows/jules-builds/sprint-r7.md",
+    "dispatched": false
+  },
+  {
+    "id": "sprint-ds1",
+    "name": "sprint-ds1",
+    "sessionId": null,
+    "workflowFile": ".agents/workflows/jules-builds/sprint-ds1.md",
+    "dispatched": false
+  },
+  {
+    "id": "sprint-ds2",
+    "name": "sprint-ds2",
+    "sessionId": null,
+    "workflowFile": ".agents/workflows/jules-builds/sprint-ds2.md",
+    "dispatched": false
+  },
+  {
+    "id": "sprint-ds3",
+    "name": "sprint-ds3",
+    "sessionId": null,
+    "workflowFile": ".agents/workflows/jules-builds/sprint-ds3.md",
+    "dispatched": false
+  },
+  {
+    "id": "sprint-ds4",
+    "name": "sprint-ds4",
+    "sessionId": null,
+    "workflowFile": ".agents/workflows/jules-builds/sprint-ds4.md",
+    "dispatched": false
+  },
+  {
+    "id": "sprint-ds5",
+    "name": "sprint-ds5",
+    "sessionId": null,
+    "workflowFile": ".agents/workflows/jules-builds/sprint-ds5.md",
+    "dispatched": false
+  },
+  {
+    "id": "sprint-ds6",
+    "name": "sprint-ds6",
+    "sessionId": null,
+    "workflowFile": ".agents/workflows/jules-builds/sprint-ds6.md",
+    "dispatched": false
+  },
+  {
+    "id": "sprint-m1",
+    "name": "sprint-m1",
+    "sessionId": null,
+    "workflowFile": ".agents/workflows/jules-builds/sprint-m1.md",
+    "dispatched": false
+  },
+  {
+    "id": "sprint-m2",
+    "name": "sprint-m2",
+    "sessionId": null,
+    "workflowFile": ".agents/workflows/jules-builds/sprint-m2.md",
+    "dispatched": false
+  },
+  {
+    "id": "sprint-m3",
+    "name": "sprint-m3",
+    "sessionId": null,
+    "workflowFile": ".agents/workflows/jules-builds/sprint-m3.md",
+    "dispatched": false
+  },
+  {
+    "id": "sprint-m4",
+    "name": "sprint-m4",
+    "sessionId": null,
+    "workflowFile": ".agents/workflows/jules-builds/sprint-m4.md",
+    "dispatched": false
+  },
+  {
+    "id": "sprint-m5",
+    "name": "sprint-m5",
+    "sessionId": null,
+    "workflowFile": ".agents/workflows/jules-builds/sprint-m5.md",
+    "dispatched": false
+  },
+  {
+    "id": "sprint-m6",
+    "name": "sprint-m6",
+    "sessionId": null,
+    "workflowFile": ".agents/workflows/jules-builds/sprint-m6.md",
+    "dispatched": false
+  },
+  {
+    "id": "sprint-m7",
+    "name": "sprint-m7",
+    "sessionId": null,
+    "workflowFile": ".agents/workflows/jules-builds/sprint-m7.md",
+    "dispatched": false
+  },
+  {
+    "id": "sprint-d1",
+    "name": "sprint-d1",
+    "sessionId": null,
+    "workflowFile": ".agents/workflows/jules-builds/sprint-d1.md",
+    "dispatched": false
+  },
+  {
+    "id": "sprint-d2",
+    "name": "sprint-d2",
+    "sessionId": null,
+    "workflowFile": ".agents/workflows/jules-builds/sprint-d2.md",
+    "dispatched": false
+  },
+  {
+    "id": "sprint-d3",
+    "name": "sprint-d3",
+    "sessionId": null,
+    "workflowFile": ".agents/workflows/jules-builds/sprint-d3.md",
+    "dispatched": false
+  },
+  {
+    "id": "sprint-d4",
+    "name": "sprint-d4",
+    "sessionId": null,
+    "workflowFile": ".agents/workflows/jules-builds/sprint-d4.md",
+    "dispatched": false
+  },
+  {
+    "id": "sprint-6.1",
+    "name": "sprint-6.1",
+    "sessionId": null,
+    "workflowFile": ".agents/workflows/jules-builds/sprint-6.1.md",
+    "dispatched": false
+  },
+  {
+    "id": "sprint-6.3",
+    "name": "sprint-6.3",
+    "sessionId": null,
+    "workflowFile": ".agents/workflows/jules-builds/sprint-6.3.md",
+    "dispatched": false
+  },
+  {
+    "id": "sprint-6.4",
+    "name": "sprint-6.4",
+    "sessionId": null,
+    "workflowFile": ".agents/workflows/jules-builds/sprint-6.4.md",
+    "dispatched": false
+  }
+]
