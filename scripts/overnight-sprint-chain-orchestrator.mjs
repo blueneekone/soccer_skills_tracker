@@ -27,6 +27,13 @@ const START_TIME = Date.now();
 
 const SPRINT_QUEUE = [
   {
+    "id": "sprint-3.5-tremendous",
+    "name": "sprint-3.5-tremendous",
+    "sessionId": null,
+    "workflowFile": ".agents/workflows/jules-builds/sprint-3.5-tremendous.md",
+    "dispatched": false
+  },
+  {
     "id": "sprint-5.2",
     "name": "sprint-5.2",
     "sessionId": null,
