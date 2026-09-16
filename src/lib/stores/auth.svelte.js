@@ -28,7 +28,7 @@ function handleSwitchContext(target, targetRole) {
 
 const authProxyHandler = {
     get(target, prop) {
-        if (prop === 'activeContext') return activeContext;
+        if (prop === 'activeContext') return activeContext || target.role;
         if (prop === 'switchContext') return /** @param {string} role */ (role) => handleSwitchContext(target, role);
         return Reflect.get(target, prop);
     }
