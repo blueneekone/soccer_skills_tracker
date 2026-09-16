@@ -1,0 +1,2 @@
+### Sprint D2: Service Worker Cache Strategy Verification
+**Jules Prompt**: Audit `src/service-worker.ts` for: (1) 'Network First' strategy on API/callable endpoints, (2) 'Cache First' on hashed static assets, (3) proper cache invalidation on deploy (file-hash versioning in `vite.config.js`), (4) offline fallback page for disconnected state. Verify `InstallPrompt.svelte` handles update-available lifecycle correctly.

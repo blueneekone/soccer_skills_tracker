@@ -1,0 +1,2 @@
+### Sprint 6.3: Playwright Headless Product Demo Video Automation
+**Jules Prompt**: Create `scripts/capture-persona-demos.mjs` using Playwright. Script must: (1) launch headless Chromium at 1920x1080 @60fps, (2) authenticate as each persona role using test credentials from `.env.test`, (3) navigate through 3-5 key screens per persona with 2-second dwell times and smooth scroll animations, (4) record to WebM and convert to MP4 via ffmpeg, (5) output files to `static/assets/video/`. Add `"demo:record": "node scripts/capture-persona-demos.mjs"` to `package.json` scripts.

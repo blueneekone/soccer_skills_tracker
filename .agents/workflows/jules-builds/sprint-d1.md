@@ -1,0 +1,2 @@
+### Sprint D1: Firestore Security Rules Audit
+**Jules Prompt**: Audit all 510 lines of `firestore.rules` against actual collection paths used in code (`/tenants/{tenantId}`, `/devices/{deviceId}`, `/clubs/{clubId}`, `/team_assignments/{assignmentId}`, `teams/{teamId}/matches`, `match_sessions`). Verify RBAC claim checks (`request.auth.token.clubId`, `request.auth.token.role`) cover all write paths. Verify PII collections (`users`, `passports`) have TTL-compatible read rules. Add missing rules for any new collections added since last audit.

@@ -1,0 +1,4 @@
+### Sprint 5.3: WebAuthn Biometric Enclave & Passkey Attestation Tests
+**Jules Prompt**: Create `functions/__tests__/passkeyEnclaveVerification.test.ts`. Write 8+ test cases that verify: (1) `navigator.credentials.create()` attestation object parsing, (2) origin-binding tamper protection (reject mismatched `rpId`), (3) challenge replay prevention (used nonces rejected), (4) authenticator data flag validation (`UV` bit set for biometric), (5) credential storage to `devices/{deviceId}` collection, (6) assertion verification flow (`navigator.credentials.get()`), (7) cross-origin attack rejection, (8) passkey deletion cascade cleanup. Use Vitest with mocked WebAuthn CBOR payloads. All tests must pass with `pnpm test -- functions/__tests__/passkeyEnclaveVerification.test.ts`.
+
+## Phase 7: Ultra-Premium Design Remediation & Visual Parity Audit

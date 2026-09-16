@@ -1,0 +1,2 @@
+### Sprint 6.1: Persona Storytelling & Narrative Blueprint
+**Jules Prompt**: Expand `src/lib/components/marketing/landing/landingContent.ts` (or `.js`) with comprehensive narrative objects for all 8 personas. Each persona object must include: `heroTitle`, `heroSubtitle`, `features[]` (3-5 each with `icon`, `title`, `description`), `ctaLabel`, `ctaRoute`, `demoVideoSrc` (placeholder path). Export as `PERSONA_NARRATIVES` array. Run `pnpm run check` to verify 0 errors.

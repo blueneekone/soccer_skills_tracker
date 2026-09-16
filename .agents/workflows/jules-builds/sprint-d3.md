@@ -1,0 +1,2 @@
+### Sprint D3: End-to-End Smoke Test Suite
+**Jules Prompt**: Create `e2e/production-smoke.spec.ts` Playwright suite that: (1) verifies login flow for each persona role, (2) navigates to dashboard for each persona, (3) verifies no white-screen-of-death on any primary route, (4) checks B815 guard prevents unauthorized Firestore access, (5) verifies marketing landing page renders with correct SEO meta tags. Must run in CI via `.github/workflows/ci.yml`.

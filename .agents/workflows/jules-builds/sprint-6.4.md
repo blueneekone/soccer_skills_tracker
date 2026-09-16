@@ -1,0 +1,2 @@
+### Sprint 6.4: Public Video Showcase Integration
+**Jules Prompt**: Update `src/lib/components/marketing/landing/LandingHero.svelte` and create `StakeholderBento.svelte` persona video modals. Each persona card must: (1) show a play button overlay on hover, (2) open a centered modal with `<video>` element on click, (3) use `poster` attribute for first-frame fallback, (4) implement fast-start MP4 streaming with `preload="metadata"`, (5) auto-pause on modal close. Wire video `src` to `PERSONA_NARRATIVES[].demoVideoSrc`. Run `pnpm run check` to verify 0 errors.

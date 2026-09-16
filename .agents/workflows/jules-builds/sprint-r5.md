@@ -1,0 +1,2 @@
+### Sprint R5: Ghost Route Final Deletion
+**Jules Prompt**: (1) Verify `src/routes/(app)/coach/matchday/` has a working `+page.svelte`, (2) delete `src/routes/(app)/coach/match-day/` entirely, (3) verify `src/routes/(app)/admin/audit-logs/` has a working `+page.svelte`, (4) delete `src/routes/(app)/admin/audit-log/` entirely, (5) search for any remaining imports/links referencing `/coach/match-day` or `/admin/audit-log` and update them to canonical paths. Run `pnpm run check` and `pnpm test` to verify 0 errors. Update any test files that reference ghost paths.
