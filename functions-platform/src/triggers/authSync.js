@@ -22,8 +22,8 @@ exports.authOnCreate = auth.user().onCreate(async (user) => {
       email: emailLower,
       displayName: displayName || null,
       createdAt: admin.firestore.FieldValue.serverTimestamp()
-    });
-    console.log(`[authSync] Profile created for ${emailLower}`);
+    }, { merge: true });
+    console.log(`[authSync] Profile created/merged for ${emailLower}`);
   } catch (err) {
     console.error(`[authSync] Failed to create profile for ${emailLower}`, err);
     try {

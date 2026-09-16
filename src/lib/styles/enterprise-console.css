@@ -740,7 +740,7 @@ html.dark .ec-topbar {
 	justify-content: center;
 	width: 36px;
 	height: 36px;
-	border-radius: var(--vanguard-radius-sm);
+	border-radius: 50%;
 	border: 1px solid transparent;
 	background: transparent;
 	color: var(--text-secondary);

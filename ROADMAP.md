@@ -141,26 +141,12 @@
 - [ ] **Sprint 5.3**: WebAuthn Biometric Enclave & Passkey Attestation Tests
   - **Status**: 🔴 NOT STARTED — `passkeyEnclaveVerification.test.ts` does not exist
   - **Gap**: Backend `webauthn.js` (14KB) exists with full passkey logic but has zero verification tests
-  - **Jules Prompt**: Create `functions/__tests__/passkeyEnclaveVerification.test.ts`. Write 8+ test cases that verify: (1) `navigator.credentials.create()` attestation object parsing, (2) origin-binding tamper protection (reject mismatched `rpId`), (3) challenge replay prevention (used nonces rejected), (4) authenticator data flag validation (`UV` bit set for biometric), (5) credential storage to `devices/{deviceId}` collection, (6) assertion verification flow (`navigator.credentials.get()`), (7) cross-origin attack rejection, (8) passkey deletion cascade cleanup. Use Vitest with mocked WebAuthn CBOR payloads. All tests must pass with `pnpm test -- functions/__tests__/passkeyEnclaveVerification.test.ts`.
+  - **Jules Prompt**: Create `functions/__tests__/passkeyEnclaveVerification.test.ts` (or in `functions-compliance`). Write 8+ test cases that verify: (1) `navigator.credentials.create()` attestation object parsing, (2) origin-binding tamper protection (reject mismatched `rpId`), (3) challenge replay prevention (used nonces rejected), (4) authenticator data flag validation (`UV` bit set for biometric), (5) credential storage to `devices/{deviceId}` collection, (6) assertion verification flow (`navigator.credentials.get()`), (7) cross-origin attack rejection, (8) passkey deletion cascade cleanup. Use native `node:test` runner with proxyquire (or native node mocking) and mocked WebAuthn CBOR payloads. All tests must pass with `node --test functions/__tests__/passkeyEnclaveVerification.test.ts`.
 - [x] **Sprint 5.4**: CI & Pre-Commit Auth Lockdown Hook (`.husky/pre-commit` & `ci.yml` blocking any regression from cloud agent runs) ✅
 
 ---
 
-### Phase 6: Persona Marketing Engine, Training Triangle & Demo Video Pipeline
-- [ ] **Sprint 6.1**: Persona Storytelling & Narrative Blueprint
-  - **Status**: 🟡 PARTIAL — `landingContent.ts` exists but needs 8-persona expansion
-  - **Jules Prompt**: Expand `src/lib/components/marketing/landing/landingContent.ts` (or `.js`) with comprehensive narrative objects for all 8 personas: Coach OS ("Sideline SIEM" — tactical intent engine, squad matrix, war room), Director OS ("The Panopticon" — CSV import, billing, compliance dashboard), Parent OS ("Compliance Shield" — VPC, car ride home protocol, household management), Player OS ("The Dopamine Engine" — XP, skill tree, armory, streaks), Recruiter OS ("Checkr Vault" — background verification gate, talent search), Commissioner OS ("Federation Command" — multi-tenant analytics, tournament engine), Fan OS ("Broadcast Hub" — live stream, team following), Tutor Marketplace ("Direct-to-Parent Network" — tutoring directory, Stripe Connect booking). Each persona object must include: `heroTitle`, `heroSubtitle`, `features[]` (3-5 each with `icon`, `title`, `description`), `ctaLabel`, `ctaRoute`, `demoVideoSrc` (placeholder path). Export as `PERSONA_NARRATIVES` array. Run `pnpm run check` to verify 0 errors.
-- [x] **Sprint 6.2**: The "Training Triangle" Interactive Interactive Showcase Component (`TrainingTriangleShowcase.svelte` — unified friction-free feedback loop connecting Coach intents, Player XP, and Parent compliance) ✅
-- [ ] **Sprint 6.3**: Playwright Headless Product Demo Video Automation
-  - **Status**: 🔴 NOT STARTED — No `scripts/capture-persona-demos.mjs` exists
-  - **Jules Prompt**: Create `scripts/capture-persona-demos.mjs` using Playwright. Script must: (1) launch headless Chromium at 1920x1080 @60fps, (2) authenticate as each persona role (coach, director, parent, player) using test credentials from `.env.test`, (3) navigate through 3-5 key screens per persona with 2-second dwell times and smooth scroll animations, (4) record to WebM and convert to MP4 via ffmpeg, (5) output files to `static/assets/video/` as `marketing-hero.mp4`, `coach-os-demo.mp4`, `director-os-demo.mp4`, `player-os-demo.mp4`, `parent-os-demo.mp4`. Add `"demo:record": "node scripts/capture-persona-demos.mjs"` to `package.json` scripts. Include graceful fallback if ffmpeg is not installed (keep WebM).
-- [ ] **Sprint 6.4**: Public Video Showcase Integration
-  - **Status**: 🔴 NOT STARTED — Landing page hero references placeholder video
-  - **Jules Prompt**: Update `src/lib/components/marketing/landing/LandingHero.svelte` and create `StakeholderBento.svelte` persona video modals. Each persona card in the Stakeholder section must: (1) show a play button overlay on hover with glassmorphism backdrop, (2) open a centered modal with `<video>` element on click, (3) use `poster` attribute for first-frame fallback, (4) implement fast-start MP4 streaming with `preload="metadata"`, (5) auto-pause on modal close and cleanup event listeners. Wire video `src` to `PERSONA_NARRATIVES[].demoVideoSrc` from Sprint 6.1. Use Vanguard design tokens (Void Black modal backdrop, Data Cyan play button, Action Gold close button). Run `pnpm run check` to verify 0 errors.
-
----
-
-### Phase 7: Ultra-Premium Design Remediation & Visual Parity Audit
+### Phase 6: Ultra-Premium Design Remediation & Visual Parity Audit
 
 - [x] **Sprint R1 (P0)**: Parent Compliance Form Complete Overhaul ✅
   - Deleted 85-line prototype `+page.svelte`, wired page to existing `WaiverConsoleArena.svelte` + `WaiverController.svelte.ts` Trinity, replaced banned `tw-bg-blue-600` / `tw-bg-emerald-600` with Enterprise Palette CTAs (Action Gold `#fbbf24`), added `Geist Mono` + `Switzer` typography, added Icon component usage.
@@ -218,7 +204,7 @@
 
 ---
 
-### Phase 7B: Ultra-Premium Platform Design Sweep — "Nuclear Americana Tech Noir" 🆕
+### Phase 7: Ultra-Premium Platform Design Sweep — "Nuclear Americana Tech Noir" 🆕
 
 > **Context**: Phase 7 targeted specific known violations. Phase 7B is the full-platform design sweep required before launch — enforcing the GEMINI.md 60-30-10 palette harmony, Atompunk Z-depth architecture, Liquid Glassmorphism 2.0, micro-animation physics, anti-squish math, Void Density, WCAG 2.2 AA compliance, and Action Gold CTA governance across all 600 components. Each sprint includes a Vitest static assertion file to lock the design system permanently.
 
@@ -318,3 +304,17 @@
 8. **Sprint M1-M7** (Monolith Extraction) → Code health, can run in parallel with DS sprints
 9. **Sprint D1-D4** (Deploy Readiness) → Final gate before production launch
 10. **Sprint 6.1 + 6.3 + 6.4** (Marketing Videos) → Can ship post-launch if needed
+
+---
+
+### Phase 9: Persona Marketing Engine, Training Triangle & Demo Video Pipeline
+- [ ] **Sprint 9.1**: Persona Storytelling & Narrative Blueprint
+  - **Status**: 🟡 PARTIAL — `landingContent.ts` exists but needs 8-persona expansion
+  - **Jules Prompt**: Expand `src/lib/components/marketing/landing/landingContent.ts` (or `.js`) with comprehensive narrative objects for all 8 personas: Coach OS ("Sideline SIEM" — tactical intent engine, squad matrix, war room), Director OS ("The Panopticon" — CSV import, billing, compliance dashboard), Parent OS ("Compliance Shield" — VPC, car ride home protocol, household management), Player OS ("The Dopamine Engine" — XP, skill tree, armory, streaks), Recruiter OS ("Checkr Vault" — background verification gate, talent search), Commissioner OS ("Federation Command" — multi-tenant analytics, tournament engine), Fan OS ("Broadcast Hub" — live stream, team following), Tutor Marketplace ("Direct-to-Parent Network" — tutoring directory, Stripe Connect booking). Each persona object must include: `heroTitle`, `heroSubtitle`, `features[]` (3-5 each with `icon`, `title`, `description`), `ctaLabel`, `ctaRoute`, `demoVideoSrc` (placeholder path). Export as `PERSONA_NARRATIVES` array. Run `pnpm run check` to verify 0 errors.
+- [x] **Sprint 9.2**: The "Training Triangle" Interactive Interactive Showcase Component (`TrainingTriangleShowcase.svelte` — unified friction-free feedback loop connecting Coach intents, Player XP, and Parent compliance) ✅
+- [ ] **Sprint 9.3**: Playwright Headless Product Demo Video Automation
+  - **Status**: 🔴 NOT STARTED — No `scripts/capture-persona-demos.mjs` exists
+  - **Jules Prompt**: Create `scripts/capture-persona-demos.mjs` using Playwright. Script must: (1) launch headless Chromium at 1920x1080 @60fps, (2) authenticate as each persona role (coach, director, parent, player) using test credentials from `.env.test`, (3) navigate through 3-5 key screens per persona with 2-second dwell times and smooth scroll animations, (4) record to WebM and convert to MP4 via ffmpeg, (5) output files to `static/assets/video/` as `marketing-hero.mp4`, `coach-os-demo.mp4`, `director-os-demo.mp4`, `player-os-demo.mp4`, `parent-os-demo.mp4`. Add `"demo:record": "node scripts/capture-persona-demos.mjs"` to `package.json` scripts. Include graceful fallback if ffmpeg is not installed (keep WebM).
+- [ ] **Sprint 9.4**: Public Video Showcase Integration
+  - **Status**: 🔴 NOT STARTED — Landing page hero references placeholder video
+  - **Jules Prompt**: Update `src/lib/components/marketing/landing/LandingHero.svelte` and create `StakeholderBento.svelte` persona video modals. Each persona card in the Stakeholder section must: (1) show a play button overlay on hover with glassmorphism backdrop, (2) open a centered modal with `<video>` element on click, (3) use `poster` attribute for first-frame fallback, (4) implement fast-start MP4 streaming with `preload="metadata"`, (5) auto-pause on modal close and cleanup event listeners. Wire video `src` to `PERSONA_NARRATIVES[].demoVideoSrc` from Sprint 9.1. Use Vanguard design tokens (Void Black modal backdrop, Data Cyan play button, Action Gold close button). Run `pnpm run check` to verify 0 errors.

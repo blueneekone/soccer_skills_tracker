@@ -321,11 +321,8 @@ import { untrack } from 'svelte';
 					class="ec-icon-btn icon-tap"
 					onclick={() => {
 						const role = authStore.role;
-						let settingsPath = '/admin/settings';
+						let settingsPath = '/settings';
 						if (role === 'director') settingsPath = '/director/club-management';
-						else if (role === 'coach') settingsPath = '/coach/settings';
-						else if (role === 'parent') settingsPath = '/parent/household';
-						else if (role === 'player') settingsPath = '/player/settings';
 						else if (role === 'commissioner') settingsPath = '/commissioner/matrix';
 						untrack(() => goto(settingsPath));
 					}}

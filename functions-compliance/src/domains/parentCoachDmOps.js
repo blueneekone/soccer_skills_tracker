@@ -370,7 +370,8 @@ exports.sendParentCoachMessage = onCall({region: REGION, cors: true}, async (req
     });
   }
 
-  await db().collection('messaging_audit').doc().set({
+  const msgAuditRef = db().collection('messaging_audit').doc();
+  await msgAuditRef.set({
     action: 'parent_coach_dm_message',
     channelType: 'parent_coach_dm',
     threadId,
@@ -387,6 +388,13 @@ exports.sendParentCoachMessage = onCall({region: REGION, cors: true}, async (req
     includeAdOnParentDms,
     actorUid: request.auth.uid,
     at: now,
+  });
+  await db().collection('security_audit').doc(msgAuditRef.id).set({
+    action: 'parent_coach_dm_message',
+    admin: callerEmail,
+    target: parentEmail,
+    details: 'Parent Coach DM message',
+    createdAt: now
   });
 
   if (senderRole === 'coach') {

@@ -65,11 +65,8 @@ import { untrack } from 'svelte';
 				class="tw-pointer-events-auto tw-flex tw-h-10 tw-w-10 tw-items-center tw-justify-center tw-rounded-lg tw-bg-[#020202]/70 tw-text-[#14b8a6] tw-backdrop-blur-md tw-transition-all hover:tw-bg-[#14b8a6]/10 hover:tw-shadow-[0_0_18px_rgba(20, 184, 166,0.3)] focus:tw-outline-none"
 				onclick={() => { untrack(() => {
 						const role = authStore.role;
-						let settingsPath = '/admin/settings';
+						let settingsPath = '/settings';
 						if (role === 'director') settingsPath = '/director/club-management';
-						else if (role === 'coach') settingsPath = '/coach/settings';
-						else if (role === 'parent') settingsPath = '/parent/household';
-						else if (role === 'player') settingsPath = '/player/settings';
 						else if (role === 'commissioner') settingsPath = '/commissioner/matrix';
 						goto(settingsPath);
 					}); }}

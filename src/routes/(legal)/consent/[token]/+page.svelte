@@ -59,6 +59,7 @@
 	let childDisplayName = $state('');
 	let errorMsg = $state('');
 	let webAuthnSupported = $state(false);
+	let fellBackToClassical = $state(false);
 
 	// WebAuthn challenge data (set after generateConsentAttestationChallenge succeeds).
 	let challengeB64 = $state('');
@@ -194,6 +195,7 @@
 			}
 			// Any other WebAuthn error → classical fallback.
 			webAuthnSupported = false;
+			fellBackToClassical = true;
 			await handleClassical(action);
 			return;
 		}
@@ -425,6 +427,15 @@
 						Your child's app will update automatically within a few minutes.
 						If they are currently on the consent screen, they can refresh the page.
 					</p>
+					{#if fellBackToClassical}
+						<div class="cv-biometric-notice tw-mt-4">
+							<span class="cv-biometric-notice__icon" aria-hidden="true">⚠</span>
+							<span>
+								<strong>Biometric Unavailable.</strong> Your device's scanner was not found or timed out.
+								Your consent was successfully recorded using a classical signature instead.
+							</span>
+						</div>
+					{/if}
 					<div class="cv-confirmation-strip">
 						<span class="cv-confirmation-strip__icon">🔒</span>
 						<span class="cv-confirmation-strip__text">
