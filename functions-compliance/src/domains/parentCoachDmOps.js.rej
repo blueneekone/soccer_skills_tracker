@@ -1,0 +1,25 @@
+diff a/functions-compliance/src/domains/parentCoachDmOps.js b/functions-compliance/src/domains/parentCoachDmOps.js	(rejected hunks)
+@@ -370,7 +370,8 @@ exports.sendParentCoachMessage = onCall({region: REGION, cors: true}, async (req
+     });
+   }
+ 
+-  await db().collection('messaging_audit').doc().set({
++  const msgAuditRef = db().collection('messaging_audit').doc();
++  await msgAuditRef.set({
+     action: 'parent_coach_dm_message',
+     channelType: 'parent_coach_dm',
+     threadId,
+@@ -388,6 +389,13 @@ exports.sendParentCoachMessage = onCall({region: REGION, cors: true}, async (req
+     actorUid: request.auth.uid,
+     at: now,
+   });
++  await db().collection('security_audit').doc(msgAuditRef.id).set({
++    action: 'parent_coach_dm_message',
++    admin: callerEmail,
++    target: parentEmail,
++    details: 'Parent Coach DM message',
++    createdAt: now
++  });
+ 
+   if (senderRole === 'coach') {
+     deliveryReport = buildCoachSendDeliveryReport(

@@ -1,5 +1,5 @@
-### Sprint R3: Global Typography Audit & Normalization
-**Jules Prompt**: Run `grep -rn "font-family" src/ --include="*.svelte"` and audit every file for: (1) technical/data text must use `'Geist Mono', ui-monospace, monospace`, (2) body copy must use `'Switzer', system-ui, sans-serif`, (3) no browser-default `serif` or `sans-serif` without explicit font family, (4) verify files: `consent/[token]/+page.svelte`, `terms/+page.svelte`, `privacy/+page.svelte`, `+error.svelte`, `VanguardEmptyState.svelte`, `VanguardPrism.svelte`, `SkillTreeArena.svelte`, `RecruiterPortal.svelte`, `ParentHouseholdArena.svelte`, `MarketingNav.svelte`, `PricingTable.svelte`. Run `pnpm run check` to verify 0 errors.
+### Sprint R4: Consent Token Page Design Polish
+**Jules Prompt**: Open `src/routes/(legal)/consent/[token]/+page.svelte`. Fix: (1) replace `#020208` with `#000000` (Void Black) or `#0f172a` (Navy Slate) per Z-depth, (2) replace `#ffffff` with `#fafafa` (anti-halation muted off-white), (3) if `<style>` block exceeds 200 lines, extract reusable CSS into `src/lib/styles/consent-tokens.css` and `@import` it, (4) ensure single Action Gold CTA per viewport, (5) verify `Geist Mono` for token display, `Switzer` for body. Run `pnpm run check` to verify 0 errors.
 
 
 CRITICAL DIRECTIVE: You are running in fully autonomous CI mode. DO NOT ask clarifying questions. Make safe assumptions and proceed with full execution of the sprint. Once done, mark the task as complete.

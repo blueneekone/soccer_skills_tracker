@@ -69,7 +69,7 @@
 		font-family: 'Geist Mono', monospace;
 		font-size: 0.55rem;
 		letter-spacing: 0.12em;
-		color: rgba(255, 255, 255, 0.25);
+		color: rgba(250, 250, 250, 0.25);
 	}
 
 	/* ─── Panel ─────────────────────────────────────────────────────────────── */
@@ -106,10 +106,11 @@
 	}
 
 	.cv-body {
+		font-family: 'Switzer', sans-serif;
 		margin: 0;
 		font-size: 0.875rem;
 		line-height: 1.7;
-		color: rgba(255, 255, 255, 0.55);
+		color: rgba(250, 250, 250, 0.55);
 	}
 
 	.cv-accent { color: #14b8a6; font-weight: 700; }
@@ -139,7 +140,7 @@
 		margin: 0;
 		font-size: 0.78rem;
 		line-height: 1.7;
-		color: rgba(255, 255, 255, 0.45);
+		color: rgba(250, 250, 250, 0.45);
 	}
 
 	.cv-legal-list {
@@ -153,7 +154,7 @@
 	.cv-legal-list li {
 		font-size: 0.78rem;
 		line-height: 1.6;
-		color: rgba(255, 255, 255, 0.4);
+		color: rgba(250, 250, 250, 0.4);
 	}
 
 	/* ─── Action buttons ────────────────────────────────────────────────────── */
@@ -214,7 +215,7 @@
 		font-family: 'Geist Mono', monospace;
 		font-size: 0.64rem;
 		line-height: 1.6;
-		color: rgba(255, 255, 255, 0.22);
+		color: rgba(250, 250, 250, 0.22);
 		letter-spacing: 0.02em;
 	}
 
@@ -250,15 +251,15 @@
 		margin: 0;
 		font-size: 0.82rem;
 		line-height: 1.7;
-		color: rgba(255, 255, 255, 0.5);
+		color: rgba(250, 250, 250, 0.5);
 		max-width: 440px;
 	}
 
-	.cv-state__body--small { font-size: 0.75rem; color: rgba(255, 255, 255, 0.35); }
+	.cv-state__body--small { font-size: 0.75rem; color: rgba(250, 250, 250, 0.35); }
 
 	.cv-state--success { color: #2dd4bf; }
 	.cv-state--error .cv-state__icon { color: rgba(255, 240, 94, 0.7); }
-	.cv-state--loading .cv-state__title { color: rgba(255, 255, 255, 0.6); }
+	.cv-state--loading .cv-state__title { color: rgba(250, 250, 250, 0.6); }
 
 	.cv-state__spinner {
 		width: 32px;
@@ -277,7 +278,7 @@
 		gap: 0.5rem;
 		padding: 0.75rem 1rem;
 		background: rgba(0, 0, 0, 0.3);
-		border: 1px solid rgba(255, 255, 255, 0.06);
+		border: 1px solid rgba(250, 250, 250, 0.06);
 		border-radius: 6px;
 		max-width: 440px;
 	}
@@ -286,7 +287,7 @@
 		font-family: 'Geist Mono', monospace;
 		font-size: 0.65rem;
 		line-height: 1.6;
-		color: rgba(255, 255, 255, 0.25);
+		color: rgba(250, 250, 250, 0.25);
 	}
 
 	/* ─── Footer ────────────────────────────────────────────────────────────── */
@@ -297,7 +298,7 @@
 		font-family: 'Geist Mono', monospace;
 		font-size: 0.6rem;
 		line-height: 1.7;
-		color: rgba(255, 255, 255, 0.15);
+		color: rgba(250, 250, 250, 0.15);
 		letter-spacing: 0.04em;
 	}
 

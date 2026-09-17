@@ -1,0 +1,131 @@
+diff a/functions-platform/src/domains/operativeOps.js b/functions-platform/src/domains/operativeOps.js	(rejected hunks)
+@@ -357,12 +357,20 @@ exports.sendCoachPlayerMessage = onCall({region: REGION}, async (request) => {
+     body: bodyRaw, bodyPreview, minorRecipient: false, ccParentEmails: [],
+     createdAt: now, createdByRole: actor.role,
+   });
+-  batch.set(db().collection('messaging_audit').doc(), {
++  const msgAuditRef = db().collection('messaging_audit').doc();
++  batch.set(msgAuditRef, {
+     action: 'coach_player_message', messageId: msgRef.id,
+     teamId, fromEmail: actorEmail, toPlayerEmail, toPlayerName: playerName,
+     minorRecipient: false, ccParentEmails: [], bodyPreview, bodyLength: bodyRaw.length,
+     actorUid: request.auth.uid, at: now,
+   });
++  batch.set(db().collection('security_audit').doc(msgAuditRef.id), {
++    action: 'coach_player_message',
++    admin: actorEmail,
++    target: toPlayerEmail,
++    details: 'Coach player message',
++    createdAt: now,
++  });
+   await batch.commit();
+ 
+   try {
+@@ -488,13 +496,21 @@ exports.sendChannelMessage = onCall({region: REGION}, async (request) => {
+     ...(safesportMonitored && channelType !== 'staff_internal' ? {ccParentEmails} : {}),
+   });
+ 
+-  batch.set(db().collection('messaging_audit').doc(), {
++  const msgAuditRef = db().collection('messaging_audit').doc();
++  batch.set(msgAuditRef, {
+     action: 'channel_message', channelId, clubId,
+     teamId: channel.teamId || null, channelType: channelType || null,
+     fromEmail: callerEmail, safesportMonitored,
+     ccParentEmails: safesportMonitored && channelType !== 'staff_internal' ? ccParentEmails : [],
+     bodyLength: rawText.length, actorUid: callerUid, at: now,
+   });
++  batch.set(db().collection('security_audit').doc(msgAuditRef.id), {
++    action: 'channel_message',
++    admin: callerEmail,
++    target: channelId,
++    details: 'Channel message',
++    createdAt: now,
++  });
+ 
+   await batch.commit();
+ 
+@@ -603,7 +619,8 @@ exports.sendHouseholdMessage = onCall({region: REGION}, async (request) => {
+     createdAt: now,
+   });
+ 
+-  await db().collection('messaging_audit').doc().set({
++  const msgAuditRef = db().collection('messaging_audit').doc();
++  await msgAuditRef.set({
+     action: 'household_thread_message',
+     householdId: actor.householdId,
+     fromEmail: actor.email,
+@@ -613,6 +630,13 @@ exports.sendHouseholdMessage = onCall({region: REGION}, async (request) => {
+     actorUid: request.auth.uid,
+     at: now,
+   });
++  await db().collection('security_audit').doc(msgAuditRef.id).set({
++    action: 'household_thread_message',
++    admin: actor.email,
++    target: actor.householdId,
++    details: 'Household thread message',
++    createdAt: now,
++  });
+ 
+   return {ok: true, messageId: msgRef.id, householdId: actor.householdId};
+ });
+@@ -647,8 +671,7 @@ async function writeImpersonationAuditLogs(adminEmail, targetEmail, targetUid, t
+     details: JSON.stringify({ targetUid, targetEmail: targetEmail || null, targetRole: targetRole || null, callerUid }).slice(0, 2000),
+   };
+   await Promise.all([
+-    db().collection('security_audit').add(auditPayload),
+-    db().collection('security_audits').add(auditPayload),
++    db().collection('security_audit').add(auditPayload)
+   ]);
+ }
+ 
+@@ -708,8 +731,7 @@ async function executePurgeUserData(adminEmail, targetEmail, targetRole, reason)
+     details: JSON.stringify({ targetRole: targetRole || null, reason: reason || null }).slice(0, 2000),
+   };
+   await Promise.all([
+-    db().collection('security_audit').add(auditPayload),
+-    db().collection('security_audits').add(auditPayload),
++    db().collection('security_audit').add(auditPayload)
+   ]);
+ 
+   let targetUid = '';
+@@ -794,7 +816,7 @@ async function createParentHousehold(email, clubId, u, request, now) {
+   try {
+     const parentRec = await admin.auth().getUser(request.auth.uid);
+     const existingClaims = parentRec.customClaims || {};
+-    await admin.auth().setCustomUserClaims(request.auth.uid, {...existingClaims, householdId: hid});
++    await admin.auth().setCustomUserClaims(request.auth.uid, {...existingClaims, householdId: hid, clubId});
+   } catch (e) {
+     logger.warn('[parentSignCoppaWaiver] fast-path failed', e);
+   }
+@@ -819,7 +841,7 @@ async function updateParentHousehold(email, clubId, hid, request, now) {
+   try {
+     const parentRec = await admin.auth().getUser(request.auth.uid);
+     const existingClaims = parentRec.customClaims || {};
+-    await admin.auth().setCustomUserClaims(request.auth.uid, {...existingClaims, householdId: hid});
++    await admin.auth().setCustomUserClaims(request.auth.uid, {...existingClaims, householdId: hid, clubId});
+   } catch (e) {
+     logger.warn('[parentSignCoppaWaiver] fast-path failed', e);
+   }
+@@ -1042,6 +1064,7 @@ exports.parentLinkOperativeToTeam = onCall({region: REGION}, async (request) =>
+   const now = admin.firestore.FieldValue.serverTimestamp();
+   const batch = db().batch();
+   batch.set(uRef, { teamId: teamIdForUser, clubId, householdId: hid, role: 'player', updatedAt: now }, {merge: true});
++  batch.set(db().collection('users').doc(parentEmail), { clubId, updatedAt: now }, {merge: true});
+   batch.set(db().collection('player_lookup').doc(childEmail), {
+     clubId, teamId: teamIdForUser, playerName, role: 'player', householdId: hid,
+     parentEmails: (h.parentEmails || []).map((x) => normEmail(String(x || ''))).filter(Boolean),
+@@ -1052,6 +1075,14 @@ exports.parentLinkOperativeToTeam = onCall({region: REGION}, async (request) =>
+   await batch.commit();
+ 
+   await stampOperativeTeamClaims(childUid, u, teamIdForUser, clubId, hid);
++  try {
++    const pAuth = await admin.auth().getUserByEmail(parentEmail).catch(() => null);
++    if (pAuth) {
++      await admin.auth().setCustomUserClaims(pAuth.uid, { ...(pAuth.customClaims || {}), clubId });
++    }
++  } catch (e) {
++    logger.warn('[parentLinkOperativeToTeam] parent claim update failed', e);
++  }
+   await provisionLoungesForParentHousehold({ parentEmail, childEmails: [childEmail], parentClubId: clubId }).catch((e) => logger.warn('[parentLinkOperativeToTeam] lounge failed', e));
+ 
+   return { ok: true, childEmail, teamId: teamIdForUser, teamLinked: true, inviteCode: teamCodeNorm };
