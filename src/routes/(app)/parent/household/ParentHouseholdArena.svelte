@@ -522,19 +522,7 @@
 		font-variant-numeric: tabular-nums;
 	}
 
-	.phh-otp-btn {
-		min-height: 2.75rem;
-		margin: 0;
-	}
 
-	.phh-otp-btn--close {
-		border-color: rgba(255, 255, 255, 0.2);
-		color: rgba(255, 255, 255, 0.8);
-	}
-
-	.phh-otp-btn--close:hover {
-		border-color: rgba(255, 255, 255, 0.4);
-	}
 
 	.phh-privacy-details {
 		border: 1px solid rgba(255, 50, 80, 0.15);
