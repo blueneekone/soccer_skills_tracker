@@ -135,12 +135,14 @@
 ### Phase 5: Authentication & Security Integrity Fortress
 - [x] **Sprint 5.1**: Auth Regression Guard Master Suite (`authRegressionGuard.test.ts`, token hydration, canonical email, zero redirect loops) ✅
 - [ ] **Sprint 5.2**: Multi-Tenant Custom Claims & Cell Boundary Gates
-  - **Status**: 🔴 NOT STARTED — `tenantClaimsBoundary.test.ts` does not exist
-  - **Gap**: Zero-trust cross-tenant leakage tests are completely missing
+  - **Status**: 🟡 COMPLETED BY JULES (Session `9111178344597737019`) — **UNMERGED** — patch must be pulled into `dev`
+  - **Gap**: Zero-trust cross-tenant leakage tests were completed by Jules but never integrated
+  - **Action**: Pull session `9111178344597737019`, run `svelte-check` + `test:regression:auth`, merge to `dev`
   - **Jules Prompt**: Create `src/lib/security/__tests__/tenantClaimsBoundary.test.ts`. Write 10+ test cases that verify: (1) `request.auth.token.clubId == clubId` claim matching on `/clubs/{clubId}` reads/writes, (2) cross-tenant read attempts return `permission-denied`, (3) `getActiveDb(cellId)` returns isolated Firestore instances per tenant, (4) `cellRouter.js` routes to correct cell based on custom claims, (5) admin impersonation respects tenant boundaries. Use Vitest with mocked Firestore admin SDK. All tests must pass with `pnpm test -- src/lib/security/__tests__/tenantClaimsBoundary.test.ts`.
 - [ ] **Sprint 5.3**: WebAuthn Biometric Enclave & Passkey Attestation Tests
-  - **Status**: 🔴 NOT STARTED — `passkeyEnclaveVerification.test.ts` does not exist
-  - **Gap**: Backend `webauthn.js` (14KB) exists with full passkey logic but has zero verification tests
+  - **Status**: 🟡 COMPLETED BY JULES (Session `15682637641134645018`) — **UNMERGED** — patch must be pulled into `dev`
+  - **Gap**: `passkeyEnclaveVerification.test.ts` exists in `src/lib/auth/__tests__/` (4 tests pass) but Jules session patch was never merged
+  - **Action**: Pull session `15682637641134645018`, run `svelte-check` + `test:regression:auth`, merge to `dev`
   - **Jules Prompt**: Create `functions/__tests__/passkeyEnclaveVerification.test.ts` (or in `functions-compliance`). Write 8+ test cases that verify: (1) `navigator.credentials.create()` attestation object parsing, (2) origin-binding tamper protection (reject mismatched `rpId`), (3) challenge replay prevention (used nonces rejected), (4) authenticator data flag validation (`UV` bit set for biometric), (5) credential storage to `devices/{deviceId}` collection, (6) assertion verification flow (`navigator.credentials.get()`), (7) cross-origin attack rejection, (8) passkey deletion cascade cleanup. Use native `node:test` runner with proxyquire (or native node mocking) and mocked WebAuthn CBOR payloads. All tests must pass with `node --test functions/__tests__/passkeyEnclaveVerification.test.ts`.
 - [x] **Sprint 5.4**: CI & Pre-Commit Auth Lockdown Hook (`.husky/pre-commit` & `ci.yml` blocking any regression from cloud agent runs) ✅
 
@@ -151,18 +153,20 @@
 - [x] **Sprint R1 (P0)**: Parent Compliance Form Complete Overhaul ✅
   - Deleted 85-line prototype `+page.svelte`, wired page to existing `WaiverConsoleArena.svelte` + `WaiverController.svelte.ts` Trinity, replaced banned `tw-bg-blue-600` / `tw-bg-emerald-600` with Enterprise Palette CTAs (Action Gold `#fbbf24`), added `Geist Mono` + `Switzer` typography, added Icon component usage.
 
-- [x] **Sprint R2 (P0)**: Transfer Portal Visual Audit & Design Upgrade
-  - **Status**: 🟡 PARTIAL — `tw-` prefix applied (0 bare classes), but full visual audit needed
-  - **Gap Audit Result**: `TransferPortal.svelte` has `tw-` prefixes applied. No `rgba(0,255,255)` found in this file. However, the component still needs: `border-radius` normalization, minimum font-size enforcement (no `8px`), CSS `:hover` replacement for inline mouse handlers, and full Enterprise Palette color compliance.
+- [ ] **Sprint R2 (P0)**: Transfer Portal Visual Audit & Design Upgrade
+  - **Status**: 🟡 IN PROGRESS — Jules session `10718623827822778892` currently running
+  - **Gap Audit Result (v4.0)**: `tw-` prefixes applied, raw cyan purged. Remaining: inline `onmouseenter` handlers in 7 files, `border-radius` normalization, min font-size enforcement (6 files have sub-8px), Enterprise Palette color compliance.
   - **Jules Prompt**: Open `src/lib/components/player/TransferPortal.svelte`. Audit and fix: (1) replace any `border-radius: 4px` with `0` or `2px` per design system, (2) replace any `font-size` below `10px` with minimum `clamp(0.625rem, 1vw, 0.75rem)`, (3) replace inline `onmouseenter`/`onmouseleave` handlers with CSS `:hover` pseudo-selectors, (4) verify all colors use Enterprise Palette tokens (Data Cyan `#14b8a6`, Action Gold `#fbbf24`, Void Black `#000000`, Navy Slate `#0f172a`), (5) add `Geist Mono` for data readouts, `Switzer` for body copy. Run `pnpm run check` and `pnpm test -- src/lib/components/player/__tests__/` to verify 0 errors.
 
-- [x] **Sprint R3 (P1)**: Global Typography Audit & Normalization
-  - **Status**: 🟡 PARTIAL — `Geist Mono` already used in legal pages, but consistency audit needed
-  - **Jules Prompt**: Run `grep -rn "font-family" src/ --include="*.svelte"` and audit every file for: (1) technical/data text must use `'Geist Mono', ui-monospace, monospace`, (2) body copy must use `'Switzer', system-ui, sans-serif`, (3) no browser-default `serif` or `sans-serif` without explicit font family, (4) verify files: `consent/[token]/+page.svelte`, `terms/+page.svelte`, `privacy/+page.svelte`, `+error.svelte`, `VanguardEmptyState.svelte`, `VanguardPrism.svelte`, `SkillTreeArena.svelte`, `RecruiterPortal.svelte`, `ParentHouseholdArena.svelte`, `MarketingNav.svelte`, `PricingTable.svelte`. Run `pnpm run check` to verify 0 errors.
+- [ ] **Sprint R3 (P1)**: Global Typography Audit & Normalization
+  - **Status**: 🟡 PARTIAL — `Geist Mono` adopted in some files, but `font-size-adjust: 0.79` for Switzer NOT applied. 6 files still have sub-8px font sizes.
+  - **Gap Audit Result (v4.0)**: Sub-8px fonts found in: `+error.svelte`, `reset/+page.svelte`, `OperativeIdCardFrame.svelte`, `PlayerCard.svelte`, `CommandCenter.svelte`, `OpponentCard.svelte`.
+  - **Jules Prompt**: Run `grep -rn "font-family" src/ --include="*.svelte"` and audit every file for: (1) technical/data text must use `'Geist Mono', ui-monospace, monospace`, (2) body copy must use `'Switzer', system-ui, sans-serif`, (3) no browser-default `serif` or `sans-serif` without explicit font family, (4) add `font-size-adjust: 0.79` to body selector in `app.css`, (5) fix sub-8px fonts in the 6 flagged files. Run `pnpm run check` to verify 0 errors.
 
-- [x] **Sprint R4 (P1)**: Consent Token Page Design Polish
-  - **Status**: 🔴 NOT STARTED
-  - **Jules Prompt**: Open `src/routes/(legal)/consent/[token]/+page.svelte`. Fix: (1) replace `#020208` with `#000000` (Void Black) or `#0f172a` (Navy Slate) per Z-depth, (2) replace `#ffffff` with `#fafafa` (anti-halation muted off-white), (3) if `<style>` block exceeds 200 lines, extract reusable CSS into `src/lib/styles/consent-tokens.css` and `@import` it, (4) ensure single Action Gold CTA per viewport, (5) verify `Geist Mono` for token display, `Switzer` for body. Run `pnpm run check` to verify 0 errors.
+- [ ] **Sprint R4 (P1)**: Consent Token Page Design Polish & Global Halation Purge
+  - **Status**: 🟡 PARTIAL — `consent-tokens.css` extracted, but 23 files still contain `color: #ffffff` halation violations
+  - **Gap Audit Result (v4.0)**: 23 files contain `color: #ffffff` (must be `#fafafa`). Key offenders: `Button.svelte`, `Table.svelte`, `LandingHero.svelte`, `FeatureBento.svelte`, `StakeholderCard.svelte`, `FacilityMapVault.svelte`, `FacilityDrawingMap.svelte`, `privacy/+page.svelte`, `terms/+page.svelte`.
+  - **Jules Prompt**: (1) Replace `color: #ffffff` → `color: #fafafa` in all 23 flagged files, (2) replace `#020208` → `#000000` where found, (3) verify `Geist Mono` for token display, `Switzer` for body, (4) ensure single Action Gold CTA per viewport. Run `pnpm run check` to verify 0 errors.
 
 - [x] **Sprint R5 (P2)**: Ghost Route Deletional Deletion
   - **Status**: 🟡 PARTIAL — Redirects exist as `+server.ts` files, but directories not deleted
@@ -208,37 +212,43 @@
 
 > **Context**: Phase 7 targeted specific known violations. Phase 7B is the full-platform design sweep required before launch — enforcing the GEMINI.md 60-30-10 palette harmony, Atompunk Z-depth architecture, Liquid Glassmorphism 2.0, micro-animation physics, anti-squish math, Void Density, WCAG 2.2 AA compliance, and Action Gold CTA governance across all 600 components. Each sprint includes a Vitest static assertion file to lock the design system permanently.
 
-- [x] **Sprint DS2 (P1)**: Navy Slate Z2 Panel Enforcement & Static Assertion Lock
-  - **Status**: 🔴 NOT STARTED — No programmatic guard exists to prevent palette regressions
-  - **Jules Prompt**: (1) Create `src/lib/styles/__tests__/paletteEnforcement.test.ts` using Vitest with JSDOM. Write static regex-based assertions that scan every `.svelte` file under `src/` and FAIL the build if any of the following banned patterns are detected: `bg-white`, `bg-black` (raw Tailwind without token), `text-white`, `text-black`, `#ffffff` (literal — must use `#fafafa`), `#ff0000`/`#00ff00`/`#0000ff` (primary hues banned), `bg-blue-*`, `bg-red-*`, `bg-purple-*` (non-palette generics), `rgba(0,255,255` (raw cyan — must be `#14b8a6`), `rgba(0,0,0,1)` (must be `#000000` token). (2) Create `src/lib/styles/design-tokens.css` consolidating ALL palette variables: `--color-void: #000000`, `--color-navy: #0f172a`, `--color-structural: #334155`, `--color-text-primary: #fafafa`, `--color-text-secondary: #d4d4d8`, `--color-cyan: #14b8a6`, `--color-yellow: #daff0a`, `--color-gold: #fbbf24`, `--color-amber: #f59e0b`. (3) Import `design-tokens.css` in `src/app.css` at the top. (4) Run `pnpm test -- src/lib/styles/__tests__/paletteEnforcement.test.ts` — must be 100% green before proceeding.
+- [ ] **Sprint DS2 (P1)**: Navy Slate Z2 Panel Enforcement & Static Assertion Lock
+  - **Status**: 🔴 NOT DONE — `design-tokens.css` exists ✅ but `paletteEnforcement.test.ts` **DOES NOT EXIST**. Additionally: 2 files still have `tw-bg-blue-*`, 41+ files have `tw-bg-red-*`, 3 files have `tw-bg-green-*`, 1 file has `tw-bg-purple-*`, 14 files have `bg-white`, 23 files have `color: #ffffff`
+  - **Gap Audit Result (v4.0)**: Palette CSS token file created but the mandatory Vitest regression lock was never written. Banned color classes remain in production.
+  - **Jules Prompt**: (1) Create `src/lib/styles/__tests__/paletteEnforcement.test.ts` using Vitest with JSDOM. Write static regex-based assertions that scan every `.svelte` file under `src/` and FAIL the build if any of the following banned patterns are detected: `bg-white`, `bg-black` (raw Tailwind without token), `text-white`, `text-black`, `#ffffff` (literal — must use `#fafafa`), `#ff0000`/`#00ff00`/`#0000ff` (primary hues banned), `bg-blue-*`, `bg-red-*`, `bg-purple-*` (non-palette generics), `rgba(0,255,255` (raw cyan — must be `#14b8a6`), `rgba(0,0,0,1)` (must be `#000000` token). (2) Fix the 2 `tw-bg-blue-*` files (`parent/compliance/+page.svelte`, `coach/matchday/MatchDayArena.svelte`), 3 `tw-bg-green-*` files, and 1 `tw-bg-purple-*` file. (3) Classify 41+ `tw-bg-red-*` files — exempt semantic danger indicators, replace generic non-semantic red with Atompunk Amber. (4) Run `pnpm test -- src/lib/styles/__tests__/paletteEnforcement.test.ts` — must be 100% green before proceeding.
 
-- [x] **Sprint DS3 (P1)**: Action Gold CTA Governance-CTA Enforcement & Viewport Governor
-  - **Status**: 🔴 NOT STARTED — Multiple Action Gold CTAs visible on same viewport in 14+ pages
+- [ ] **Sprint DS3 (P1)**: Action Gold CTA Governance — CTA Enforcement & Viewport Governor
+  - **Status**: 🔴 NOT DONE — `ctaGovernor.test.ts` **DOES NOT EXIST**. No `cta-{persona}-{action}` IDs found in codebase. Multiple Action Gold CTAs visible on same viewport in 14+ pages.
+  - **Gap Audit Result (v4.0)**: No programmatic CTA governance exists. Zero Playwright-targetable CTA IDs.
   - **Jules Prompt**: (1) Create `src/lib/styles/__tests__/ctaGovernor.test.ts`. Write Vitest assertions that scan every `+page.svelte` and `*Arena.svelte` file and assert: exactly ONE element per file can have `tw-bg-[#fbbf24]` or `var(--color-gold)` or `action-gold` class — any file with 2+ instances FAILS. (2) For every file that fails: audit which CTA is the primary conversion action, downgrade secondary buttons to `tw-bg-[#334155]` (Structural Grey) with `tw-text-[#fafafa]` styling or ghost button variant (`tw-border tw-border-[#fbbf24] tw-text-[#fbbf24] tw-bg-transparent`). (3) Ensure every primary CTA has a Svelte `id` attribute formatted as `cta-{persona}-{action}` (e.g., `cta-coach-create-drill`, `cta-director-import-roster`) for Playwright accessibility targeting. Run `pnpm run check` and `pnpm test -- src/lib/styles/__tests__/ctaGovernor.test.ts`.
 
-- [ ] **Sprint DS3 (P0)**: Liquid Glassmorphism 2.0 & Z-Depth Architecture Sweep
-  - **Status**: 🔴 NOT STARTED — Z-depth inconsistency across persona panels; glow shadows clipped in 8+ components
+- [ ] **Sprint DS3-GLASS (P0)**: Liquid Glassmorphism 2.0 & Z-Depth Architecture Sweep
+  - **Status**: 🔴 NOT STARTED — `.z2-panel` used in only ~11 of 605 components. 50+ files have `overflow-hidden` potentially clipping glow shadows.
+  - **Gap Audit Result (v4.0)**: Z-depth classes defined in `design-tokens.css` but adopted in <2% of components. Ad-hoc backgrounds (`bg-slate-900`, `bg-gray-900`) still prevalent.
   - **Jules Prompt**: (1) In `src/app.css`, define the five Z-depth utility classes: `.z0-canvas { background: #000000; }`, `.z1-well { background: #0a0f1a; }`, `.z2-panel { background: rgba(15,23,42,0.85); backdrop-filter: blur(12px) saturate(180%); border: 1px solid rgba(51,65,85,0.6); box-shadow: 0 0 24px rgba(20,184,166,0.08), inset 0 1px 0 rgba(255,255,255,0.04); }`, `.z3-identity { background: rgba(15,23,42,0.95); border: 1px solid #334155; }`, `.z4-nav { background: #000000; border-bottom: 1px solid #334155; }`. (2) Audit every `*Arena.svelte`, `*HUD.svelte`, and panel component — replace ad-hoc `bg-slate-900`, `bg-gray-900`, `bg-neutral-900` with the correct Z-depth class. (3) Fix the overflow-hidden bug: search for any parent container that has BOTH `overflow-hidden` AND contains a `.z2-panel` or `.glass-panel` child — remove `overflow-hidden` from the parent and add `border-radius: inherit; overflow: hidden` to the child instead, preserving the box-shadow glow. (4) Verify no glow is clipped by running Playwright visual snapshot: `npx playwright test --grep "z-depth" e2e/visual-regression.spec.ts`. Run `pnpm run check` to verify 0 errors.
 
-- [ ] **Sprint DS4 (P1)**: Micro-Animation Physics & "I See You" Protocol Implementation
-  - **Status**: 🔴 NOT STARTED — Interactive elements lack visceral 150-250ms feedback; no haptic/pulse on data commit
+- [ ] **Sprint DS4-ANIM (P1)**: Micro-Animation Physics & "I See You" Protocol Implementation
+  - **Status**: 🔴 NOT STARTED — `--anim-fast` token does not exist. `.interactive` class does not exist. Zero micro-animation infrastructure.
+  - **Gap Audit Result (v4.0)**: No animation tokens, no utility classes, no "I See You" pulse-confirm infrastructure.
   - **Jules Prompt**: (1) In `src/app.css`, define the core animation token library: `--anim-fast: 150ms`, `--anim-std: 250ms`, `--anim-slow: 400ms`, `--ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1)`, `--ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1)`. Add global utility classes: `.interactive { transition: transform var(--anim-fast) var(--ease-out-expo), box-shadow var(--anim-fast) ease, opacity var(--anim-fast) ease; } .interactive:hover { transform: translateY(-1px); box-shadow: 0 4px 20px rgba(20,184,166,0.2); } .interactive:active { transform: translateY(0) scale(0.98); }`. (2) Add `.pulse-confirm { animation: pulseConfirm var(--anim-std) var(--ease-spring); } @keyframes pulseConfirm { 0% { box-shadow: 0 0 0 0 rgba(20,184,166,0.6); } 100% { box-shadow: 0 0 0 12px rgba(20,184,166,0); } }`. (3) Apply `.interactive` class to ALL buttons, cards, nav items, and interactive table rows across every persona — search for `<button`, `<a href`, role=`button`, and card click handlers and add `class="interactive"`. (4) Add `.pulse-confirm` triggered via `$effect` immediately after any verified Firestore `writeBatch` commit (in `writes.svelte.ts`, `feeLedger.svelte.ts`, `offlineSync.svelte.ts`). (5) Create `src/lib/styles/__tests__/microAnimations.test.ts` asserting `.interactive` class presence on all CTA buttons. Run `pnpm run check`.
 
-- [ ] **Sprint DS5 (P1)**: Anti-Squish Math, Asymmetric Bento Grid & 100dvh App-Flow
-  - **Status**: 🔴 NOT STARTED — Static `px` margins exist throughout; Admin/Director/Coach dashboards have double-scrollbar issues
+- [ ] **Sprint DS5-LAYOUT (P1)**: Anti-Squish Math, Asymmetric Bento Grid & 100dvh App-Flow
+  - **Status**: 🔴 NOT STARTED — 47+ files contain static `margin: Npx`. `layoutPhysics.test.ts` does not exist. Admin/Director/Coach dashboards have double-scrollbar issues.
+  - **Gap Audit Result (v4.0)**: `100dvh` present in ~50 files but no systematic `grid-template-rows: auto 1fr auto` app-flow verified for Coach/Director/Admin shells.
   - **Jules Prompt**: (1) Global static margin/padding sweep: run `grep -rn "margin: [0-9]\+px\|padding: [0-9]\+px" src/ --include="*.svelte" --include="*.css"` — for every result, replace fixed pixel spacing with `clamp()` function: `4px → clamp(2px, 0.5vw, 4px)`, `8px → clamp(4px, 1vw, 8px)`, `16px → clamp(8px, 2vw, 16px)`, `24px → clamp(12px, 3vw, 24px)`, `32px → clamp(16px, 4vw, 32px)`, `48px → clamp(24px, 5vw, 48px)`. (2) Asymmetric Bento Grid: for every data-heavy dashboard (`CommandCenter.svelte`, `DirectorDashboardArena.svelte`, `AdminDashboard`, `CommissionerDashboard`) — replace any symmetric `grid-cols-2` or `grid-cols-3` CSS Grid with a 12-column asymmetric layout using `grid-template-columns: repeat(12, 1fr)` and varied `grid-column: span N` assignments (primary content: `span 8`, supporting: `span 4`). Symmetrical grids are banned. (3) 100dvh App-Flow: for Coach OS, Director OS, and Admin OS root layout containers — add `height: 100dvh; display: grid; grid-template-rows: auto 1fr auto; overflow: hidden` to the shell layout. Inner scrollable areas get `overflow-y: auto; min-height: 0; flex: 1 1 auto`. This eliminates double scrollbars. (4) Create `src/lib/styles/__tests__/layoutPhysics.test.ts` with static regex assertions: FAIL if any `margin: \d+px` or `padding: \d+px` is found without `clamp`. Run `pnpm run check`.
 
-- [x] **Sprint DS4 (P2)**: Void Density / Background Standardizationbility Compliance Sweep
-  - **Status**: 🔴 NOT STARTED — No programmatic enforcement of 40% void density or WCAG contrast ratios
+- [ ] **Sprint DS4-VOID (P2)**: Void Density / WCAG Accessibility Compliance Sweep
+  - **Status**: 🔴 NOT DONE — `voidDensity.test.ts` **DOES NOT EXIST**. 14 files contain `bg-white`. 23 files contain `color: #ffffff`. `font-size-adjust: 0.79` not applied.
+  - **Gap Audit Result (v4.0)**: No programmatic enforcement of 40% void density, WCAG contrast ratios, or halation prevention. SVG physics lock not verified.
   - **Jules Prompt**: (1) Void Density enforcement: create `src/lib/styles/__tests__/voidDensity.test.ts`. Write assertions that scan `*Arena.svelte` and `+page.svelte` files — FAIL if a file uses more than 3 distinct non-void background colors per component (i.e., backgrounds other than `#000000`, `#0f172a`, `#0a0f1a`, and the Z2 glassmorphism token). Any component with `bg-white`, `bg-gray-50`, `bg-slate-50`, `bg-neutral-50`, or similar light backgrounds FAILS — these destroy the 40% void density target. (2) WCAG 2.2 AA contrast: install `color-contrast` package, create a test that verifies every text/background color pairing in `design-tokens.css` meets ≥4.5:1 ratio for normal text, ≥3:1 for large text. Primary pairs to check: `#fafafa on #0f172a`, `#d4d4d8 on #000000`, `#14b8a6 on #000000`, `#fbbf24 on #000000`, `#daff0a on #000000`. (3) Halation prevention: run `grep -rn "color: #ffffff\|color: white" src/ --include="*.svelte"` — every result must be changed to `#fafafa`. Run `grep -rn "background.*#ffffff\|background.*white" src/ --include="*.svelte"` — every result must be changed to `#0f172a` or `#000000`. (4) Typography x-height: verify `Switzer` is loaded at 79% x-height via `font-size-adjust: 0.79` on the body selector in `app.css`. Verify `Geist Mono` is applied to ALL elements matching: `[data-readout]`, `[data-metric]`, `[data-stat]`, `[data-timestamp]`, `.kpi-value`, `.telemetry-value`. (5) SVG physics lock: scan all `*.svelte` files containing `<svg` — assert `viewBox` attribute is present on every SVG, `preserveAspectRatio` is set to `xMidYMid meet` or `slice` for tactical arenas, and NO `tw-text-[Npx]` class is applied inside SVG elements (must use native `font-size="N"` attribute instead). Run `pnpm run check` and `pnpm test -- src/lib/styles/__tests__/`.
 
 ---
 
 ### Phase 8: Monolithic File Extraction (Anti-Fragility — 500-Line Mandate) 🆕
 
-> **Context**: The Vanguard Trinity Pattern and 500-line extraction mandate require monolithic files to be fractured into Shell+Brain+Glass+HUD. 15 files currently violate this. Ordered by severity (largest first).
+> **Context**: The Vanguard Trinity Pattern and 500-line extraction mandate require monolithic files to be fractured into Shell+Brain+Glass+HUD. **25+ files** currently violate this (15 original + 10 newly discovered over 700 lines). Ordered by severity (largest first).
 
-- [ ] **Sprint M1 (P1)**: Extract `FacilityMapVault.svelte` (1834 lines)
+- [ ] **Sprint M1 (P1)**: Extract `FacilityMapVault.svelte` (1701 lines)
   - **Jules Prompt**: Fracture `src/lib/components/field-ops/FacilityMapVault.svelte` into: (1) `FacilityMapVaultEngine.svelte.ts` — all `$state`, `$derived`, map data loading, facility CRUD logic, (2) `FacilityMapVaultArena.svelte` — the map rendering, pin placement, drawing overlays, (3) `FacilityMapVaultHUD.svelte` — toolbar, facility list sidebar, search/filter controls. The original file becomes the Shell importing all three. Each file must stay under 500 lines. Preserve all existing functionality. Run `pnpm run check` and `pnpm test -- src/lib/components/field-ops/` to verify 0 errors.
 
 - [ ] **Sprint M2 (P1)**: Extract `SquadTelemetryView.svelte` (1553 lines) & `RecruiterPortal.svelte` (1529 lines)
@@ -256,8 +266,22 @@
 - [ ] **Sprint M6 (P2)**: Extract `SquadMatrix.svelte` (1026 lines), `ComplianceHub.svelte` (989 lines) & `CoachMatchDayView.svelte` (970 lines)
   - **Jules Prompt**: Fracture each into Engine+Arena+HUD following Vanguard Trinity. (A) `SquadMatrix` — Engine gets player data + attendance state, Arena gets the matrix grid, HUD gets filters + bulk actions. (B) `ComplianceHub` — Engine gets compliance data fetching + status calculations, Arena gets the compliance dashboard layout, HUD gets action buttons + status filters. (C) `CoachMatchDayView` — Engine gets match state + event logging, Arena gets the pitch view + scoreboard, HUD gets player attribution picker + event controls. Each file under 500 lines. Run `pnpm run check`.
 
-- [ ] **Sprint M7 (P2)**: Extract `stats/+page.svelte` (933 lines), `ClipAnalyzer.svelte` (862 lines) & `OrgInvites.svelte` (861 lines)
+- [ ] **Sprint M7 (P2)**: Extract `stats/+page.svelte` (858 lines), `ClipAnalyzer.svelte` (785 lines) & `OrgInvites.svelte` (826 lines)
   - **Jules Prompt**: Fracture each into Shell/Engine+Arena+HUD. (A) `stats/+page.svelte` becomes thin shell importing `StatsEngine.svelte.ts` + `StatsArena.svelte` + `StatsHUD.svelte`. (B) `ClipAnalyzer` — Engine gets video processing state + frame analysis, Arena gets video player + annotation overlay, HUD gets timeline scrubber + analysis controls. (C) `OrgInvites` — Engine gets invite CRUD + status tracking, Arena gets invite list + detail cards, HUD gets create invite form + filters. Each file under 500 lines. Run `pnpm run check`.
+
+- [ ] **Sprint M8 (P3)**: Extract Secondary Monoliths (10 newly discovered 700+ line files) 🆕
+  - **Gap Audit Result (v4.0)**: The following files were not on the original roadmap but exceed 700 lines and violate the 500-line extraction mandate:
+    - `setup/+page.svelte` (774 lines)
+    - `ActiveBounties.svelte` (769 lines)
+    - `OrgDashboard.svelte` (758 lines)
+    - `TournamentBracketPanel.svelte` (752 lines)
+    - `TutorDashboard.svelte` (739 lines)
+    - `PlayerWorkoutPageView.svelte` (731 lines)
+    - `ParentCoachDmPanel.svelte` (721 lines)
+    - `CoachScoutingView.svelte` (715 lines)
+    - `MediaVault.svelte` (715 lines)
+    - `IntakePanopticon.svelte` (712 lines)
+  - **Jules Prompt**: Fracture each into Engine+Arena+HUD following Vanguard Trinity Pattern. Process in batches of 3-4 files per Jules session to stay within governance limits. Each resulting file must be under 500 lines. Run `pnpm run check` after each batch.
 
 ---
 
@@ -266,48 +290,73 @@
 - [ ] **Sprint D1 (P0)**: Firestore Security Rules Audit
   - **Scope**: Audit all 510 lines of `firestore.rules` against actual collection paths used in code (`/tenants/{tenantId}`, `/devices/{deviceId}`, `/clubs/{clubId}`, `/team_assignments/{assignmentId}`, `teams/{teamId}/matches`, `match_sessions`). Verify RBAC claim checks (`request.auth.token.clubId`, `request.auth.token.role`) cover all write paths. Verify PII collections (`users`, `passports`) have TTL-compatible read rules. Add missing rules for any new collections added since last audit.
 
-- [x] **Sprint DS5 (P2)**: Bento Grid Constraint Verification
+- [ ] **Sprint D2 (P1)**: Service Worker & PWA Caching Audit
+  - **Status**: 🟡 PARTIAL — Service worker has `NetworkFirst` comment but needs full verification
   - **Scope**: Audit `src/service-worker.ts` for: (1) 'Network First' strategy on API/callable endpoints, (2) 'Cache First' on hashed static assets, (3) proper cache invalidation on deploy (file-hash versioning in `vite.config.js`), (4) offline fallback page for disconnected state. Verify `InstallPrompt.svelte` handles update-available lifecycle correctly.
 
 - [ ] **Sprint D3 (P1)**: End-to-End Smoke Test Suite
+  - **Status**: 🔴 NOT STARTED — `production-smoke.spec.ts` does not exist
   - **Scope**: Create `e2e/production-smoke.spec.ts` Playwright suite that: (1) verifies login flow for each persona role, (2) navigates to dashboard for each persona, (3) verifies no white-screen-of-death on any primary route, (4) checks B815 guard prevents unauthorized Firestore access, (5) verifies marketing landing page renders with correct SEO meta tags. Must run in CI via `.github/workflows/ci.yml`.
 
 - [ ] **Sprint D4 (P1)**: Environment Variable & Secret Audit
+  - **Status**: 🔴 NOT STARTED — `.env.example` exists but completeness unverified
   - **Scope**: Audit `functions/.env`, `.env.example`, `.env.soccer-skills-tracker`, `.env.sports-skill-tracker-dev` for: (1) no leaked API keys or secrets committed to git, (2) all required env vars documented in `.env.example`, (3) Stripe keys, Resend keys, Google Maps keys, Checkr keys, and Firebase config all present for both dev and prod. Verify `firebase.json` codebase splits reference correct source directories.
+
+- [ ] **Sprint D5 (P2)**: Test Health Recovery — Legacy Rot Triage 🆕
+  - **Status**: 🔴 NOT STARTED — 35 test files failing (125 individual tests), 3 skipped
+  - **Gap Audit Result (v4.0)**: Last test run: 218 passed / 35 failed / 3 skipped (256 total files). 1,907 tests pass / 125 fail / 81 skipped (2,113 total). Key failures include `commsSprint41.test.ts` (regex mismatch against firestore.rules) and `resolveAppPath.test.ts` (SvelteKit resolve API change).
+  - **Scope**: Triage all 35 failing test files. For each: (1) determine if failure is legacy rot (unrelated to recent changes), (2) if legacy rot, fix the assertion or add to exemption array, (3) if genuine regression, create a targeted fix. Target: 0 failing test files.
 
 ---
 
-## 📈 Sprint Completion Summary
+## 📈 Sprint Completion Summary (Corrected v4.0 — Forensic Audit 2026-09-17)
 
-| Phase | Sprints | Completed | Remaining | Status |
+> ⚠️ **14 sprints previously marked `[x]` were corrected to `[ ]` after forensic codebase verification revealed missing test files and partial implementations.**
+
+| Phase | Total Sprints | Actually Complete | Remaining | Status |
 |---|---|---|---|---|
 | Phase 1: Resilience Core | 4 | 4 | 0 | ✅ DONE |
 | Phase 2: Personas & Routes | 4 | 4 | 0 | ✅ DONE |
 | Phase 3: Player & Parent Trinity | 4 | 4 | 0 | ✅ DONE |
 | Phase 4: Test Stabilization | 6 | 6 | 0 | ✅ DONE |
-| Phase 5: Auth & Security | 4 | 2 | **2** | 🟡 IN PROGRESS |
-| Phase 6: Marketing & Demo | 4 | 1 | **3** | 🟡 IN PROGRESS |
-| Phase 7: Design Remediation | 8 | 8 | **0** | ✅ DONE |
-| **Phase 7B: Platform Design Sweep** | **6** | **5** | **1** | 🟡 IN PROGRESS |
-| Phase 8: Monolith Extraction | 7 | 0 | **7** | 🔴 NEW |
-| Phase 9: Deploy Readiness | 4 | 0 | **4** | 🔴 NEW |
-| **TOTAL** | **51** | **22** | **29** | **43% Complete** |
+| Phase 5: Auth & Security | 4 | 2 | **2** | 🟡 Jules sessions complete, unmerged |
+| Phase 6: Design Remediation | 8 | 5 | **3** | 🟡 R2 in progress, R3/R4 partial |
+| **Phase 7B: Platform Design Sweep** | **7** | **0** | **7** | 🔴 ALL test locks missing |
+| Phase 8: Monolith Extraction | **8** | 0 | **8** | 🔴 NOT STARTED (M8 added) |
+| Phase 9: Deploy Readiness | **5** | 0 | **5** | 🔴 NOT STARTED (D2/D5 added) |
+| Phase 9B: Marketing & Demos | 4 | 1 | **3** | 🔴 Post-launch priority |
+| **TOTAL** | **54** | **26** | **28** | **~48% Complete** |
+
+### 📊 Codebase Health Census (v4.0)
+| Metric | Count |
+|---|---|
+| Svelte Components | **605** |
+| Test Files | **255** (218 pass, 35 fail, 3 skip) |
+| Individual Tests | **2,113** (1,907 pass, 125 fail, 81 skip) |
+| Monolithic Files (>500 lines) | **25+** |
+| `color: #ffffff` halation violations | **23 files** |
+| `bg-white` void-density violations | **14 files** |
+| Static `margin: Npx` anti-squish violations | **47+ files** |
+| Non-palette color violations (`tw-bg-red/blue/green/purple`) | **47+ files** |
+| Sub-8px font-size violations | **6 files** |
 
 ### 🚀 Recommended Execution Order (Critical Path to Launch):
-1. **Sprint R8** (Backend Parity) → Unblocks all persona functional testing
-2. **Sprint 5.2 + 5.3** (Security Tests) → Unblocks compliance sign-off
-3. **Sprint R5 + R6 + R7** (Quick Design Cleanup) → Low-risk, high-velocity wins
-4. **Sprint R2 + R3 + R4** (Visual Polish) → Pre-launch visual parity
-5. **Sprint DS1 + DS2** (Palette Lock + CTA Governor) → Design system immutability gate 🆕
-6. **Sprint DS3 + DS4** (Glassmorphism + Micro-Animations) → Premium aesthetic enforcement 🆕
-7. **Sprint DS5 + DS6** (Layout Physics + Void Density + WCAG) → Final premium sweep 🆕
-8. **Sprint M1-M7** (Monolith Extraction) → Code health, can run in parallel with DS sprints
-9. **Sprint D1-D4** (Deploy Readiness) → Final gate before production launch
-10. **Sprint 6.1 + 6.3 + 6.4** (Marketing Videos) → Can ship post-launch if needed
+1. **Pull 5.2 + 5.3** (Completed Jules sessions) → Immediate merge, ~30 min
+2. **Sprint R2** (Transfer Portal — already in progress) → Jules session active
+3. **Sprint DS2** (Palette Enforcement Test Lock) → Permanent regression gate
+4. **Sprint DS3** (CTA Governor Test Lock) → CTA governance
+5. **Sprint R3 + R4** (Typography + Halation Purge) → Batch visual fix
+6. **Sprint DS4-VOID** (Void Density & WCAG Sweep) → Accessibility compliance
+7. **Sprint DS3-GLASS** (Glassmorphism Z-Depth Sweep) → Premium aesthetics
+8. **Sprint DS4-ANIM** (Micro-Animation Infrastructure) → "I See You" protocol
+9. **Sprint DS5-LAYOUT** (Anti-Squish & Layout Physics) → Final layout sweep
+10. **Sprint M1-M8** (Monolith Extraction) → Code health, parallelizable
+11. **Sprint D1-D5** (Deploy Readiness + Test Health) → Final gate
+12. **Sprint 9.1 + 9.3 + 9.4** (Marketing Videos) → Post-launch if needed
 
 ---
 
-### Phase 9: Persona Marketing Engine, Training Triangle & Demo Video Pipeline
+### Phase 9B: Persona Marketing Engine, Training Triangle & Demo Video Pipeline
 - [ ] **Sprint 9.1**: Persona Storytelling & Narrative Blueprint
   - **Status**: 🟡 PARTIAL — `landingContent.ts` exists but needs 8-persona expansion
   - **Jules Prompt**: Expand `src/lib/components/marketing/landing/landingContent.ts` (or `.js`) with comprehensive narrative objects for all 8 personas: Coach OS ("Sideline SIEM" — tactical intent engine, squad matrix, war room), Director OS ("The Panopticon" — CSV import, billing, compliance dashboard), Parent OS ("Compliance Shield" — VPC, car ride home protocol, household management), Player OS ("The Dopamine Engine" — XP, skill tree, armory, streaks), Recruiter OS ("Checkr Vault" — background verification gate, talent search), Commissioner OS ("Federation Command" — multi-tenant analytics, tournament engine), Fan OS ("Broadcast Hub" — live stream, team following), Tutor Marketplace ("Direct-to-Parent Network" — tutoring directory, Stripe Connect booking). Each persona object must include: `heroTitle`, `heroSubtitle`, `features[]` (3-5 each with `icon`, `title`, `description`), `ctaLabel`, `ctaRoute`, `demoVideoSrc` (placeholder path). Export as `PERSONA_NARRATIVES` array. Run `pnpm run check` to verify 0 errors.
