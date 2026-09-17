@@ -15,7 +15,7 @@
 		<div>
 			<div class="tw-flex tw-items-center tw-justify-between tw-mb-2">
 				<span class="phh-eyebrow tw-text-red-400/90">COPPA &amp; LIABILITY</span>
-				<Icon name={"status.seal-check" as IconName} size={18} class={engine.coppaSigned ? "tw-text-cyan-400" : "tw-text-amber-500"} />
+				<Icon name={"status.seal-check" as IconName} size={18} class={engine.coppaSigned ? "tw-text-cyan-400" : "tw-text-[#f59e0b]"} />
 			</div>
 			<div class="tw-text-sm tw-font-bold tw-text-white tw-font-mono tw-uppercase">
 				{engine.coppaSigned ? 'Cleared' : 'Pending Signature'}
@@ -44,7 +44,7 @@
 		<div>
 			<div class="tw-flex tw-items-center tw-justify-between tw-mb-2">
 				<span class="phh-eyebrow tw-text-amber-200/80">Season & Tournament Fees</span>
-				<Icon name={"finance.bank" as IconName} size={18} class="tw-text-amber-400" />
+				<Icon name={"finance.bank" as IconName} size={18} class="tw-text-[#fbbf24]" />
 			</div>
 			<div class="tw-text-sm tw-font-bold tw-text-white tw-font-mono tw-uppercase">
 				Fully Cleared

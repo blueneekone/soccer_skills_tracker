@@ -28,7 +28,7 @@
 </script>
 
 <div class="tw-flex tw-flex-col tw-min-h-0 tw-h-[100dvh] tw-min-w-0" style="overflow-y: auto;">
-	<div class="tw-max-w-[1920px] tw-mx-auto tw-flex tw-flex-col tw-gap-8 tw-min-h-full tw-w-full">
+	<div class="tw-w-full tw-flex tw-flex-col tw-gap-8 tw-min-h-full">
 		
 		{#if engine.activeTab === 'home'}
 			<section class="tw-flex tw-flex-col tw-gap-6 tw-w-full">
@@ -45,13 +45,13 @@
 		{:else if engine.activeTab === 'comms'}
 			<section class="tw-grid tw-grid-cols-12 director-bento-grid-container tw-w-full tw-gap-8" style="grid-template-columns: repeat(auto-fit, minmax(min(100%, clamp(280px, 30vw, 350px)), 1fr));">
 				<section
-					class="st-bento lg:tw-col-span-8 siem-panel dark-form-surface tw-flex tw-flex-col tw-gap-3 tw-p-8 tw-border tw-border-slate-600 tw-bg-slate-900 tw-relative tw-min-w-0"
+					class="st-bento lg:tw-col-span-8 siem-panel dark-form-surface tw-flex tw-flex-col tw-gap-3 tw-p-8 tw-border tw-border-slate-600 tw-bg-[#0f172a] tw-relative tw-min-w-0"
 					aria-labelledby="director-comms-cta-heading"
 				>
 					<h2 id="director-comms-cta-heading" class="tw-m-0 tw-text-base tw-font-extrabold tw-text-slate-50" style="font-family: 'Geist Sans', sans-serif;">
 						Club broadcast
 					</h2>
-					<p class="tw-m-0 tw-text-sm tw-leading-relaxed tw-text-[#D4D4D8] tw-max-w-2xl" style="font-family: 'Switzer', sans-serif;">
+					<p class="tw-m-0 tw-text-sm tw-leading-relaxed tw-text-[#D4D4D8]" style="font-family: 'Switzer', sans-serif;">
 						Compose club-wide announcements in the unified Comms hub — one surface for fan-out,
 						delivery receipts, and SafeSport parent CC per team.
 					</p>
@@ -64,13 +64,13 @@
 					</a>
 				</section>
 				<section
-					class="st-bento lg:tw-col-span-4 siem-panel dark-form-surface tw-flex tw-flex-col tw-gap-3 tw-p-8 tw-border tw-border-slate-600 tw-bg-slate-900 tw-relative tw-min-w-0"
+					class="st-bento lg:tw-col-span-4 siem-panel dark-form-surface tw-flex tw-flex-col tw-gap-3 tw-p-8 tw-border tw-border-slate-600 tw-bg-[#0f172a] tw-relative tw-min-w-0"
 					aria-labelledby="director-sponsor-ops-heading"
 				>
 					<h2 id="director-sponsor-ops-heading" class="tw-m-0 tw-text-base tw-font-extrabold tw-text-slate-50" style="font-family: 'Geist Sans', sans-serif;">
 						Partner offers
 					</h2>
-					<p class="tw-m-0 tw-text-sm tw-leading-relaxed tw-text-[#D4D4D8] tw-max-w-2xl" style="font-family: 'Switzer', sans-serif;">
+					<p class="tw-m-0 tw-text-sm tw-leading-relaxed tw-text-[#D4D4D8]" style="font-family: 'Switzer', sans-serif;">
 						Create, approve, and send sponsor digests to opted-in guardians. Parents see delivered
 						offers on their dashboard — not in the Comms hub rail.
 					</p>
@@ -112,7 +112,7 @@
 				{:else if engine.activeTab === 'sync'}
 					<div class="tw-flex tw-flex-col tw-gap-6 tw-w-full">
 						<div class="tw-p-6 tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-rounded-none">
-							<h2 class="tw-text-xl tw-font-bold tw-text-amber-500 tw-mb-6 tw-flex tw-items-center tw-gap-2">
+							<h2 class="tw-text-xl tw-font-bold tw-text-[#f59e0b] tw-mb-6 tw-flex tw-items-center tw-gap-2">
 								<Icon name={"nav.swap" as IconName} size={24} />
 								Data Sync &amp; Roster Ingestion
 							</h2>

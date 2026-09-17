@@ -15,9 +15,9 @@
 	export let submitConsent: () => void;
 </script>
 
-<div class="tw-rounded-[24px] tw-border tw-border-[#334155] tw-bg-slate-900 tw-p-6 tw-shadow-2xl tw-mb-6">
+<div class="tw-rounded-[24px] tw-border tw-border-[#334155] tw-bg-[#0f172a] tw-p-6 tw-shadow-2xl tw-mb-6">
 	<div class="tw-flex tw-items-center tw-mb-8">
-		<button type="button" class="tw-w-8 tw-h-8 tw-bg-black/50 tw-border tw-border-[#334155] tw-rounded-lg tw-flex tw-items-center tw-justify-center tw-text-[#94a3b8] hover:tw-text-white tw-transition-colors tw-mr-4" onclick={() => wizardStage = 'step2'} aria-label="Back">
+		<button type="button" class="tw-w-8 tw-h-8 tw-bg-[#000000]/50 tw-border tw-border-[#334155] tw-rounded-lg tw-flex tw-items-center tw-justify-center tw-text-[#94a3b8] hover:tw-text-white tw-transition-colors tw-mr-4" onclick={() => wizardStage = 'step2'} aria-label="Back">
 			<Icon name={"nav.arrow-left" as IconName} size={14} />
 		</button>
 		<div class="tw-flex tw-items-center tw-gap-2 tw-flex-1">

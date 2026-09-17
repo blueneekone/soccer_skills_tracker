@@ -73,7 +73,7 @@
 					type="button"
 					onclick={handleSaveRecord}
 					disabled={engine.isSavingMatch}
-					class="tw-inline-flex tw-items-center tw-gap-2 tw-px-5 tw-py-2.5 tw-bg-[#fbbf24] hover:tw-bg-amber-400 active:tw-scale-95 tw-text-black tw-font-mono tw-text-xs tw-font-black tw-uppercase tw-tracking-wider tw-transition-all tw-cursor-pointer disabled:tw-opacity-50"
+					class="tw-inline-flex tw-items-center tw-gap-2 tw-px-5 tw-py-2.5 tw-bg-[#fbbf24] hover:tw-bg-[#fbbf24] active:tw-scale-95 tw-text-black tw-font-mono tw-text-xs tw-font-black tw-uppercase tw-tracking-wider tw-transition-all tw-cursor-pointer disabled:tw-opacity-50"
 					style="border-radius: 0px;"
 				>
 					<span>💾</span>
@@ -86,7 +86,7 @@
 		<div class="tw-grid tw-grid-cols-2 sm:tw-grid-cols-4 tw-gap-3">
 			<div class="tw-bg-[#000000] tw-border tw-border-[#334155] tw-p-3">
 				<div class="tw-font-mono tw-text-[10px] tw-text-slate-400 tw-uppercase">FINAL RESULT</div>
-				<div class="tw-font-mono tw-text-lg tw-font-black {engine.homeScore > engine.awayScore ? 'tw-text-[#14b8a6]' : engine.homeScore < engine.awayScore ? 'tw-text-rose-400' : 'tw-text-amber-400'}">
+				<div class="tw-font-mono tw-text-lg tw-font-black {engine.homeScore > engine.awayScore ? 'tw-text-[#14b8a6]' : engine.homeScore < engine.awayScore ? 'tw-text-rose-400' : 'tw-text-[#fbbf24]'}">
 					{engine.homeScore > engine.awayScore ? 'WIN' : engine.homeScore < engine.awayScore ? 'LOSS' : 'DRAW'} ({engine.homeScore} - {engine.awayScore})
 				</div>
 			</div>
@@ -177,7 +177,7 @@
 						<th class="tw-p-2.5 tw-font-mono tw-text-xs tw-text-slate-400 tw-uppercase tw-text-center">Tackles</th>
 						<th class="tw-p-2.5 tw-font-mono tw-text-xs tw-text-slate-400 tw-uppercase tw-text-center">Saves</th>
 						<th class="tw-p-2.5 tw-font-mono tw-text-xs tw-text-slate-400 tw-uppercase tw-text-center">Fouls</th>
-						<th class="tw-p-2.5 tw-font-mono tw-text-xs tw-text-amber-400 tw-uppercase tw-text-center">Cards</th>
+						<th class="tw-p-2.5 tw-font-mono tw-text-xs tw-text-[#fbbf24] tw-uppercase tw-text-center">Cards</th>
 						<th class="tw-p-2.5 tw-font-mono tw-text-xs tw-text-rose-400 tw-uppercase tw-text-center">Mistakes</th>
 					</tr>
 				</thead>
@@ -205,12 +205,12 @@
 							<td class="tw-p-2.5 tw-font-mono tw-text-xs tw-text-center {player.saves > 0 ? 'tw-text-slate-200' : 'tw-text-slate-500'}">
 								{player.saves}
 							</td>
-							<td class="tw-p-2.5 tw-font-mono tw-text-xs tw-text-center {player.fouls > 0 ? 'tw-text-amber-400' : 'tw-text-slate-500'}">
+							<td class="tw-p-2.5 tw-font-mono tw-text-xs tw-text-center {player.fouls > 0 ? 'tw-text-[#fbbf24]' : 'tw-text-slate-500'}">
 								{player.fouls}
 							</td>
 							<td class="tw-p-2.5 tw-font-mono tw-text-xs tw-text-center">
 								{#if player.yellowCards > 0 || player.redCards > 0}
-									<span class="tw-text-amber-400">{player.yellowCards}Y</span>
+									<span class="tw-text-[#fbbf24]">{player.yellowCards}Y</span>
 									{#if player.redCards > 0}
 										<span class="tw-text-rose-400 tw-ml-1">{player.redCards}R</span>
 									{/if}
@@ -254,7 +254,7 @@
 						<tr class="hover:tw-bg-[#000000]/70 tw-transition-colors">
 							<td class="tw-p-3 tw-font-mono tw-text-xs tw-text-slate-300">{evt.time}</td>
 							<td class="tw-p-3 tw-font-mono tw-text-xs">
-								<span class="tw-px-2 tw-py-0.5 tw-border {evt.type === 'GOAL' ? 'tw-bg-[#14b8a6]/60 tw-border-[#14b8a6] tw-text-[#14b8a6]' : evt.type.includes('CARD') ? 'tw-bg-amber-950/60 tw-border-amber-400 tw-text-amber-300' : evt.type === 'SUB' ? 'tw-bg-teal-950/60 tw-border-[#14b8a6] tw-text-[#14b8a6]' : evt.type === 'MISTAKE' ? 'tw-bg-rose-950/60 tw-border-rose-500 tw-text-rose-300' : 'tw-bg-slate-900 tw-border-slate-600 tw-text-slate-300'}">
+								<span class="tw-px-2 tw-py-0.5 tw-border {evt.type === 'GOAL' ? 'tw-bg-[#14b8a6]/60 tw-border-[#14b8a6] tw-text-[#14b8a6]' : evt.type.includes('CARD') ? 'tw-bg-amber-950/60 tw-border-amber-400 tw-text-amber-300' : evt.type === 'SUB' ? 'tw-bg-teal-950/60 tw-border-[#14b8a6] tw-text-[#14b8a6]' : evt.type === 'MISTAKE' ? 'tw-bg-rose-950/60 tw-border-rose-500 tw-text-rose-300' : 'tw-bg-[#0f172a] tw-border-slate-600 tw-text-slate-300'}">
 									{evt.type}
 								</span>
 							</td>

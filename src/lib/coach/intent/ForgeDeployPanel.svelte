@@ -540,7 +540,7 @@
 							<div class="tw-truncate">
 								<div class="tw-text-xs tw-font-bold tw-text-white tw-truncate">{player.playerName}</div>
 								{#if !isAssignable}
-									<div class="tw-text-[10px] tw-text-amber-400 tw-truncate">Add email to assign</div>
+									<div class="tw-text-[10px] tw-text-[#fbbf24] tw-truncate">Add email to assign</div>
 								{:else}
 									<div class="tw-text-[10px] tw-text-slate-400 tw-truncate">{player.email || 'Linked Account'}</div>
 								{/if}
@@ -550,7 +550,7 @@
 							{#if isSelected && isAssignable}
 								<span class="tw-text-xs tw-text-[#14b8a6] tw-font-bold">✓</span>
 							{:else if !isAssignable}
-								<span class="tw-text-xs tw-text-amber-500/60">⛔</span>
+								<span class="tw-text-xs tw-text-[#f59e0b]/60">⛔</span>
 							{:else}
 								<span class="tw-text-xs tw-text-slate-600">○</span>
 							{/if}
@@ -594,7 +594,7 @@
 			[ ERR ] {deployError}
 		</div>
 	{:else if !canDeploy && deployBlockReason}
-		<div class="tw-p-3 tw-bg-[#020617] tw-border tw-border-amber-500/40 tw-text-amber-300 tw-text-xs tw-font-bold tw-uppercase" role="status">
+		<div class="tw-p-3 tw-bg-[#020617] tw-border tw-border-[#f59e0b]/40 tw-text-amber-300 tw-text-xs tw-font-bold tw-uppercase" role="status">
 			ℹ {deployBlockReason}
 		</div>
 	{/if}

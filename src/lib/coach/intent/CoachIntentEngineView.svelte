@@ -63,13 +63,13 @@
 	<!-- Executive Header & Control Bar (Matching Drill Designer & Library) -->
 	<div class="tw-bg-[#080d1a]/60 tw-backdrop-blur-md tw-border tw-border-slate-800/80 tw-rounded-2xl tw-p-6 tw-flex tw-flex-col md:tw-flex-row md:tw-items-center tw-justify-between tw-gap-5 tw-shadow-2xl">
 		<div class="tw-flex tw-items-center tw-gap-4">
-			<div class="tw-h-12 tw-w-12 tw-rounded-xl tw-bg-slate-800/60 tw-border tw-border-slate-700/80 tw-flex tw-items-center tw-justify-center tw-text-slate-200 tw-font-mono tw-font-bold tw-text-xl tw-shadow-inner">
+			<div class="tw-h-12 tw-w-12 tw-rounded-xl tw-bg-[#0f172a]/60 tw-border tw-border-slate-700/80 tw-flex tw-items-center tw-justify-center tw-text-slate-200 tw-font-mono tw-font-bold tw-text-xl tw-shadow-inner">
 				🎯
 			</div>
 			<div>
 				<h2 class="tw-text-slate-100 tw-font-bold tw-text-lg tw-flex tw-items-center tw-gap-3">
 					<span>{titleLead} {titleAccent}</span>
-					<span class="tw-bg-slate-800 tw-text-slate-300 tw-border tw-border-slate-700 tw-font-mono tw-text-[10px] tw-px-2.5 tw-py-1 tw-rounded-md tw-tracking-widest tw-uppercase">
+					<span class="tw-bg-[#0f172a] tw-text-slate-300 tw-border tw-border-slate-700 tw-font-mono tw-text-[10px] tw-px-2.5 tw-py-1 tw-rounded-md tw-tracking-widest tw-uppercase">
 						ACTIVE ROSTER
 					</span>
 				</h2>
@@ -83,7 +83,7 @@
 			{#if showDrillLibraryLink}
 				<a
 					href={resolve('/(app)/coach/forge', {})}
-					class="tw-text-xs tw-font-mono tw-font-semibold tw-text-slate-300 hover:tw-text-white tw-no-underline tw-border tw-border-slate-700 tw-bg-slate-800/80 tw-rounded-lg tw-px-3 tw-py-1.5 hover:tw-bg-slate-700 tw-transition-all"
+					class="tw-text-xs tw-font-mono tw-font-semibold tw-text-slate-300 hover:tw-text-white tw-no-underline tw-border tw-border-slate-700 tw-bg-[#0f172a]/80 tw-rounded-lg tw-px-3 tw-py-1.5 hover:tw-bg-slate-700 tw-transition-all"
 				>
 					Drill Library →
 				</a>

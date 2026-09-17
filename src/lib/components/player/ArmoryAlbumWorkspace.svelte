@@ -149,7 +149,7 @@
 								<div class="tw-aspect-[280/380] tw-w-full tw-shrink-0 tw-overflow-hidden tw-font-mono" style="background: var(--pd-panel, #05050a);">
 									<img src={card.imagePath} alt="" class="tw-h-full tw-w-full tw-object-cover" draggable="false" />
 								</div>
-								<div class="tw-border-t tw-border-white/5 tw-bg-black/40 tw-p-2">
+								<div class="tw-border-t tw-border-white/5 tw-bg-[#000000]/40 tw-p-2">
 									<p class="tw-m-0 tw-truncate tw-text-xs tw-font-bold tw-text-slate-100">{card.name}</p>
 									<p class="qa-mono tw-m-0 tw-mt-1 tw-text-[0.6rem] tw-uppercase tw-tracking-wider tw-text-cyan-300/85 tw-font-mono">
 										{card.rarity}

@@ -117,7 +117,7 @@
 									<div class="tw-w-[6px] tw-h-[6px] tw-rounded-none tw-bg-[#14b8a6]" aria-hidden="true"></div>
 									<span class="tw-font-mono tw-[font-variant-numeric:tabular-nums] tw-text-[10px] tw-uppercase tw-text-[#FAFAFA]">Compliant</span>
 								{:else if compliance.status === 'watch'}
-									<div class="tw-w-[6px] tw-h-[6px] tw-rounded-none tw-bg-amber-400" aria-hidden="true"></div>
+									<div class="tw-w-[6px] tw-h-[6px] tw-rounded-none tw-bg-[#fbbf24]" aria-hidden="true"></div>
 									<span class="tw-font-mono tw-[font-variant-numeric:tabular-nums] tw-text-[10px] tw-uppercase tw-text-[#FAFAFA]">Watch</span>
 								{:else}
 									<div class="tw-w-[6px] tw-h-[6px] tw-rounded-none tw-bg-rose-400" aria-hidden="true"></div>

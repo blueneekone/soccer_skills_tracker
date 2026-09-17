@@ -84,7 +84,7 @@
 
 <div class="op-profile tw-mx-auto tw-w-full tw-max-w-lg tw-px-4 tw-pt-4 tw-pb-28 sm:tw-pb-8">
 	<header class="tw-mb-6">
-		<p class="tw-m-0 tw-mb-1 tw-text-[0.65rem] tw-font-extrabold tw-uppercase tw-tracking-[0.2em] tw-text-amber-500/90">
+		<p class="tw-m-0 tw-mb-1 tw-text-[0.65rem] tw-font-extrabold tw-uppercase tw-tracking-[0.2em] tw-text-[#f59e0b]/90">
 			Operative
 		</p>
 		<h1 class="tw-m-0 tw-text-2xl tw-font-black tw-tracking-tight tw-text-zinc-100">Call sign</h1>
@@ -95,7 +95,7 @@
 	</header>
 
 	<div
-		class="tw-rounded-2xl tw-border tw-border-white/10 tw-bg-black/50 tw-px-4 tw-py-5 tw-shadow-lg tw-shadow-black/30"
+		class="tw-rounded-2xl tw-border tw-border-white/10 tw-bg-[#000000]/50 tw-px-4 tw-py-5 tw-shadow-lg tw-shadow-black/30"
 	>
 		<p class="tw-m-0 tw-mb-1 tw-text-xs tw-font-semibold tw-uppercase tw-tracking-wide tw-text-zinc-500">
 			Active on file
@@ -121,7 +121,7 @@
 			</div>
 		{:else if pendingGamertag}
 			<div
-				class="tw-mb-4 tw-rounded-lg tw-border tw-border-amber-500/30 tw-bg-amber-950/20 tw-px-3 tw-py-2 tw-text-sm tw-text-amber-100/95"
+				class="tw-mb-4 tw-rounded-lg tw-border tw-border-[#f59e0b]/30 tw-bg-amber-950/20 tw-px-3 tw-py-2 tw-text-sm tw-text-amber-100/95"
 				role="status"
 			>
 				Callsign change to &ldquo;{pendingGamertag}&rdquo; is awaiting Parent Command approval.

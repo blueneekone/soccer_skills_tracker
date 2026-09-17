@@ -136,7 +136,7 @@
 	border-bottom: 1px solid rgba(255,255,255,0.04);
 	white-space: nowrap;
 }
-.preview-table td.mono { font-family: monospace; font-size: 0.75rem; }
+.preview-table td.mono { font-family: 'Geist Mono', ui-monospace, monospace; font-size: 0.75rem; }
 .preview-table td.credit { color: #34d399; }
 
 .action-row {
@@ -212,6 +212,6 @@
 .result-icon { font-weight: 700; }
 .result-row.ok .result-icon { color: #34d399; }
 .result-row.fail .result-icon { color: #f87171; }
-.result-key { font-family: monospace; font-size: 0.75rem; color: var(--vanguard-text-muted, #94a3b8); }
+.result-key { font-family: 'Geist Mono', ui-monospace, monospace; font-size: 0.75rem; color: var(--vanguard-text-muted, #94a3b8); }
 .result-msg { color: var(--vanguard-text-primary, #e2e8f0); }
 .done-actions { display: flex; justify-content: flex-end; }

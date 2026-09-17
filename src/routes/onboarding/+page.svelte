@@ -34,10 +34,10 @@
 </svelte:head>
 
 <div class="tw-h-[100dvh] tw-overflow-hidden tw-bg-[#020617] tw-flex tw-items-center tw-justify-center tw-px-4">
-	<div class="tw-w-full tw-max-w-[26rem] tw-bg-slate-900 tw-border tw-border-slate-800 tw-rounded-lg tw-p-8 tw-flex tw-flex-col tw-gap-6">
+	<div class="tw-w-full tw-max-w-[26rem] tw-bg-[#0f172a] tw-border tw-border-slate-800 tw-rounded-lg tw-p-8 tw-flex tw-flex-col tw-gap-6">
 
 		<!-- Shield icon -->
-		<div class="tw-flex tw-items-center tw-justify-center tw-h-[40px] tw-w-[40px] tw-rounded-md tw-bg-slate-800 tw-border tw-border-slate-700 tw-self-start">
+		<div class="tw-flex tw-items-center tw-justify-center tw-h-[40px] tw-w-[40px] tw-rounded-md tw-bg-[#0f172a] tw-border tw-border-slate-700 tw-self-start">
 			<svg
 				width="20"
 				height="20"
@@ -74,7 +74,7 @@
 		</p>
 
 		<!-- Status chip -->
-		<div class="tw-inline-flex tw-items-center tw-gap-2 tw-rounded-md tw-border tw-border-slate-700 tw-bg-slate-800 tw-px-3 tw-py-1.5 tw-self-start">
+		<div class="tw-inline-flex tw-items-center tw-gap-2 tw-rounded-md tw-border tw-border-slate-700 tw-bg-[#0f172a] tw-px-3 tw-py-1.5 tw-self-start">
 			<span class="tw-h-1.5 tw-w-1.5 tw-rounded-full tw-bg-teal-500 tw-animate-pulse"></span>
 			<span class="tw-font-mono tw-text-[0.6rem] tw-font-bold tw-uppercase tw-tracking-[0.16em] tw-text-slate-300">
 				PENDING ROLE ASSIGNMENT

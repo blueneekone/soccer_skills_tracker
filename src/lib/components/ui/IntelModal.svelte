@@ -68,7 +68,7 @@
 {#if open}
 	<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
 	<div
-		class="im-backdrop tw-fixed tw-inset-0 tw-z-[9999] tw-flex tw-items-center tw-justify-center tw-p-4 tw-bg-black/80 tw-backdrop-blur-sm"
+		class="im-backdrop tw-fixed tw-inset-0 tw-z-[9999] tw-flex tw-items-center tw-justify-center tw-p-4 tw-bg-[#000000]/80 tw-backdrop-blur-sm"
 		role="presentation"
 		transition:fade={{ duration: 150 }}
 		onclick={onBackdrop}

@@ -62,7 +62,7 @@
 	<header class="tw-w-full tw-bg-[#0b0f19] tw-border-b tw-border-slate-800 tw-py-6 tw-px-6">
 		<div class="tw-max-w-7xl tw-mx-auto tw-flex tw-flex-wrap tw-items-center tw-justify-between tw-gap-4">
 			<div class="tw-flex tw-items-center tw-gap-3">
-				<div class="tw-w-10 tw-h-10 tw-bg-slate-900 tw-border tw-border-[#14b8a6]/40 tw-flex tw-items-center tw-justify-center tw-text-[#14b8a6]">
+				<div class="tw-w-10 tw-h-10 tw-bg-[#0f172a] tw-border tw-border-[#14b8a6]/40 tw-flex tw-items-center tw-justify-center tw-text-[#14b8a6]">
 					<Icon name="org.building" size={20} />
 				</div>
 				<div>
@@ -75,10 +75,10 @@
 				</div>
 			</div>
 			<div class="tw-flex tw-items-center tw-gap-3 tw-font-mono tw-text-xs">
-				<span class="tw-px-3 tw-py-1 tw-bg-slate-900 tw-border tw-border-slate-800 tw-text-[#daff0a] tw-font-bold">
+				<span class="tw-px-3 tw-py-1 tw-bg-[#0f172a] tw-border tw-border-slate-800 tw-text-[#daff0a] tw-font-bold">
 					{affiliatedClubs.length} ACTIVE {affiliatedClubs.length === 1 ? 'CLUB' : 'CLUBS'}
 				</span>
-				<span class="tw-px-3 tw-py-1 tw-bg-slate-900 tw-border tw-border-slate-800 tw-text-[#14b8a6]">
+				<span class="tw-px-3 tw-py-1 tw-bg-[#0f172a] tw-border tw-border-slate-800 tw-text-[#14b8a6]">
 					{totalSquads} {totalSquads === 1 ? 'SQUAD' : 'SQUADS'} ASSIGNED
 				</span>
 			</div>
@@ -113,7 +113,7 @@
 						</p>
 						<a
 							href="/coach/dashboard"
-							class="tw-inline-flex tw-items-center tw-gap-2 tw-px-4 tw-py-2 tw-bg-[#daff0a] tw-text-black tw-font-mono tw-font-bold tw-text-xs tw-uppercase tw-no-underline hover:tw-bg-amber-400 tw-transition-colors"
+							class="tw-inline-flex tw-items-center tw-gap-2 tw-px-4 tw-py-2 tw-bg-[#daff0a] tw-text-black tw-font-mono tw-font-bold tw-text-xs tw-uppercase tw-no-underline hover:tw-bg-[#fbbf24] tw-transition-colors"
 						>
 							Return to Nexus Command
 						</a>
@@ -121,7 +121,7 @@
 				{:else}
 					<div class="tw-flex tw-flex-col tw-gap-6">
 						{#each affiliatedClubs as item (item.club.id)}
-							<div class="tw-border tw-border-slate-800 tw-bg-slate-900/60 tw-p-4">
+							<div class="tw-border tw-border-slate-800 tw-bg-[#0f172a]/60 tw-p-4">
 								<div class="tw-flex tw-flex-wrap tw-items-center tw-justify-between tw-gap-2 tw-mb-3 tw-border-b tw-border-slate-800/60 tw-pb-2">
 									<div>
 										<h3 class="tw-m-0 tw-font-mono tw-text-base tw-font-bold tw-text-white">
@@ -184,7 +184,7 @@
 					<div class="tw-bg-slate-950/70 tw-p-3 tw-border tw-border-slate-800 tw-mb-4">
 						<div class="tw-flex tw-items-center tw-justify-between tw-mb-1">
 							<span class="tw-font-mono tw-text-[11px] tw-text-slate-400">STATUS</span>
-							<span class="tw-font-mono tw-text-[11px] tw-font-bold {authStore.isCleared ? 'tw-text-[#14b8a6]' : 'tw-text-amber-400'} tw-uppercase">
+							<span class="tw-font-mono tw-text-[11px] tw-font-bold {authStore.isCleared ? 'tw-text-[#14b8a6]' : 'tw-text-[#fbbf24]'} tw-uppercase">
 								{authStore.isCleared ? 'VERIFIED CLEARED' : 'PENDING CLEARANCE'}
 							</span>
 						</div>
@@ -196,7 +196,7 @@
 					</div>
 					<a
 						href="/onboarding/coach"
-						class="tw-w-full tw-flex tw-items-center tw-justify-center tw-gap-2 tw-px-4 tw-py-2 tw-bg-slate-800 hover:tw-bg-slate-700 tw-text-white tw-font-mono tw-text-xs tw-font-bold tw-uppercase tw-no-underline tw-border tw-border-slate-700 tw-transition-colors"
+						class="tw-w-full tw-flex tw-items-center tw-justify-center tw-gap-2 tw-px-4 tw-py-2 tw-bg-[#0f172a] hover:tw-bg-slate-700 tw-text-white tw-font-mono tw-text-xs tw-font-bold tw-uppercase tw-no-underline tw-border tw-border-slate-700 tw-transition-colors"
 					>
 						Check Clearance Status
 					</a>
@@ -210,21 +210,21 @@
 					<div class="tw-flex tw-flex-col tw-gap-2">
 						<a
 							href="/coach/dashboard"
-							class="tw-p-3 tw-bg-slate-900 hover:tw-bg-slate-800 tw-border tw-border-slate-800 tw-text-slate-200 hover:tw-text-white tw-font-mono tw-text-xs tw-flex tw-items-center tw-justify-between tw-no-underline tw-transition-colors"
+							class="tw-p-3 tw-bg-[#0f172a] hover:tw-bg-[#0f172a] tw-border tw-border-slate-800 tw-text-slate-200 hover:tw-text-white tw-font-mono tw-text-xs tw-flex tw-items-center tw-justify-between tw-no-underline tw-transition-colors"
 						>
 							<span>Mission Control / Dashboard</span>
 							<span class="tw-text-[#14b8a6]">&rarr;</span>
 						</a>
 						<a
 							href="/coach/logistics"
-							class="tw-p-3 tw-bg-slate-900 hover:tw-bg-slate-800 tw-border tw-border-slate-800 tw-text-slate-200 hover:tw-text-white tw-font-mono tw-text-xs tw-flex tw-items-center tw-justify-between tw-no-underline tw-transition-colors"
+							class="tw-p-3 tw-bg-[#0f172a] hover:tw-bg-[#0f172a] tw-border tw-border-slate-800 tw-text-slate-200 hover:tw-text-white tw-font-mono tw-text-xs tw-flex tw-items-center tw-justify-between tw-no-underline tw-transition-colors"
 						>
 							<span>Team Ops & Logistics</span>
 							<span class="tw-text-[#14b8a6]">&rarr;</span>
 						</a>
 						<a
 							href="/coach/tactical"
-							class="tw-p-3 tw-bg-slate-900 hover:tw-bg-slate-800 tw-border tw-border-slate-800 tw-text-slate-200 hover:tw-text-white tw-font-mono tw-text-xs tw-flex tw-items-center tw-justify-between tw-no-underline tw-transition-colors"
+							class="tw-p-3 tw-bg-[#0f172a] hover:tw-bg-[#0f172a] tw-border tw-border-slate-800 tw-text-slate-200 hover:tw-text-white tw-font-mono tw-text-xs tw-flex tw-items-center tw-justify-between tw-no-underline tw-transition-colors"
 						>
 							<span>War Room & Tactics</span>
 							<span class="tw-text-[#14b8a6]">&rarr;</span>

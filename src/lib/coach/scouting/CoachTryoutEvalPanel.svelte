@@ -377,7 +377,7 @@
 						</div>
 						<button
 							type="button"
-							class="tw-px-4 tw-py-2 tw-bg-[#fbbf24] hover:tw-bg-amber-400 tw-text-black tw-font-bold tw-text-xs tw-uppercase tw-tracking-wider tw-cursor-pointer active:tw-scale-[0.98]"
+							class="tw-px-4 tw-py-2 tw-bg-[#fbbf24] hover:tw-bg-[#fbbf24] tw-text-black tw-font-bold tw-text-xs tw-uppercase tw-tracking-wider tw-cursor-pointer active:tw-scale-[0.98]"
 							style="border-radius: 0px;"
 							disabled={saving}
 							onclick={() => void lockEval()}

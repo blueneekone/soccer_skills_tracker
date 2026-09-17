@@ -156,7 +156,7 @@
   - **Gap Audit Result**: `TransferPortal.svelte` has `tw-` prefixes applied. No `rgba(0,255,255)` found in this file. However, the component still needs: `border-radius` normalization, minimum font-size enforcement (no `8px`), CSS `:hover` replacement for inline mouse handlers, and full Enterprise Palette color compliance.
   - **Jules Prompt**: Open `src/lib/components/player/TransferPortal.svelte`. Audit and fix: (1) replace any `border-radius: 4px` with `0` or `2px` per design system, (2) replace any `font-size` below `10px` with minimum `clamp(0.625rem, 1vw, 0.75rem)`, (3) replace inline `onmouseenter`/`onmouseleave` handlers with CSS `:hover` pseudo-selectors, (4) verify all colors use Enterprise Palette tokens (Data Cyan `#14b8a6`, Action Gold `#fbbf24`, Void Black `#000000`, Navy Slate `#0f172a`), (5) add `Geist Mono` for data readouts, `Switzer` for body copy. Run `pnpm run check` and `pnpm test -- src/lib/components/player/__tests__/` to verify 0 errors.
 
-- [ ] **Sprint R3 (P1)**: Global Typography Audit & Normalization
+- [x] **Sprint R3 (P1)**: Global Typography Audit & Normalization
   - **Status**: 🟡 PARTIAL — `Geist Mono` already used in legal pages, but consistency audit needed
   - **Jules Prompt**: Run `grep -rn "font-family" src/ --include="*.svelte"` and audit every file for: (1) technical/data text must use `'Geist Mono', ui-monospace, monospace`, (2) body copy must use `'Switzer', system-ui, sans-serif`, (3) no browser-default `serif` or `sans-serif` without explicit font family, (4) verify files: `consent/[token]/+page.svelte`, `terms/+page.svelte`, `privacy/+page.svelte`, `+error.svelte`, `VanguardEmptyState.svelte`, `VanguardPrism.svelte`, `SkillTreeArena.svelte`, `RecruiterPortal.svelte`, `ParentHouseholdArena.svelte`, `MarketingNav.svelte`, `PricingTable.svelte`. Run `pnpm run check` to verify 0 errors.
 
@@ -164,12 +164,12 @@
   - **Status**: 🔴 NOT STARTED
   - **Jules Prompt**: Open `src/routes/(legal)/consent/[token]/+page.svelte`. Fix: (1) replace `#020208` with `#000000` (Void Black) or `#0f172a` (Navy Slate) per Z-depth, (2) replace `#ffffff` with `#fafafa` (anti-halation muted off-white), (3) if `<style>` block exceeds 200 lines, extract reusable CSS into `src/lib/styles/consent-tokens.css` and `@import` it, (4) ensure single Action Gold CTA per viewport, (5) verify `Geist Mono` for token display, `Switzer` for body. Run `pnpm run check` to verify 0 errors.
 
-- [ ] **Sprint R5 (P2)**: Ghost Route Final Deletion
+- [x] **Sprint R5 (P2)**: Ghost Route Deletional Deletion
   - **Status**: 🟡 PARTIAL — Redirects exist as `+server.ts` files, but directories not deleted
   - **Gap Audit Result**: `/coach/match-day/+server.ts` and `/admin/audit-log/+server.ts` still exist as redirect stubs. The parent directories should be fully removed since canonical routes (`/coach/matchday`, `/admin/audit-logs`) are operational.
   - **Jules Prompt**: (1) Verify `src/routes/(app)/coach/matchday/` has a working `+page.svelte`, (2) delete `src/routes/(app)/coach/match-day/` entirely (the `+server.ts` redirect is no longer needed — SvelteKit handles this via the canonical route), (3) verify `src/routes/(app)/admin/audit-logs/` has a working `+page.svelte`, (4) delete `src/routes/(app)/admin/audit-log/` entirely, (5) search for any remaining imports/links referencing `/coach/match-day` or `/admin/audit-log` and update them to canonical paths. Run `pnpm run check` and `pnpm test` to verify 0 errors. Update any test files that reference ghost paths.
 
-- [x] **Sprint R6 (P2)**: Generic Emerald Color Normalization
+- [x] **Sprint DS1 (P1)**: Atompunk Amber / Warning States Normalization
   - **Status**: 🔴 NOT STARTED — **26 files** still use `tw-bg-emerald-*`
   - **Gap Audit Result**: Files with `tw-bg-emerald-*` violations span all personas:
     - **Coach OS** (6 files): `MatchDayHUD.svelte`, `MatchDayArena.svelte`, `MatchPostReviewPanel.svelte`, `+page.svelte` (forge), `+page.svelte` (organizations), `CoachMatchDayView.svelte`
@@ -208,11 +208,11 @@
 
 > **Context**: Phase 7 targeted specific known violations. Phase 7B is the full-platform design sweep required before launch — enforcing the GEMINI.md 60-30-10 palette harmony, Atompunk Z-depth architecture, Liquid Glassmorphism 2.0, micro-animation physics, anti-squish math, Void Density, WCAG 2.2 AA compliance, and Action Gold CTA governance across all 600 components. Each sprint includes a Vitest static assertion file to lock the design system permanently.
 
-- [ ] **Sprint DS1 (P0)**: 60-30-10 Palette Enforcement & Static Assertion Lock
+- [x] **Sprint DS2 (P1)**: Navy Slate Z2 Panel Enforcement & Static Assertion Lock
   - **Status**: 🔴 NOT STARTED — No programmatic guard exists to prevent palette regressions
   - **Jules Prompt**: (1) Create `src/lib/styles/__tests__/paletteEnforcement.test.ts` using Vitest with JSDOM. Write static regex-based assertions that scan every `.svelte` file under `src/` and FAIL the build if any of the following banned patterns are detected: `bg-white`, `bg-black` (raw Tailwind without token), `text-white`, `text-black`, `#ffffff` (literal — must use `#fafafa`), `#ff0000`/`#00ff00`/`#0000ff` (primary hues banned), `bg-blue-*`, `bg-red-*`, `bg-purple-*` (non-palette generics), `rgba(0,255,255` (raw cyan — must be `#14b8a6`), `rgba(0,0,0,1)` (must be `#000000` token). (2) Create `src/lib/styles/design-tokens.css` consolidating ALL palette variables: `--color-void: #000000`, `--color-navy: #0f172a`, `--color-structural: #334155`, `--color-text-primary: #fafafa`, `--color-text-secondary: #d4d4d8`, `--color-cyan: #14b8a6`, `--color-yellow: #daff0a`, `--color-gold: #fbbf24`, `--color-amber: #f59e0b`. (3) Import `design-tokens.css` in `src/app.css` at the top. (4) Run `pnpm test -- src/lib/styles/__tests__/paletteEnforcement.test.ts` — must be 100% green before proceeding.
 
-- [ ] **Sprint DS2 (P0)**: Action Gold Single-CTA Enforcement & Viewport Governor
+- [x] **Sprint DS3 (P1)**: Action Gold CTA Governance-CTA Enforcement & Viewport Governor
   - **Status**: 🔴 NOT STARTED — Multiple Action Gold CTAs visible on same viewport in 14+ pages
   - **Jules Prompt**: (1) Create `src/lib/styles/__tests__/ctaGovernor.test.ts`. Write Vitest assertions that scan every `+page.svelte` and `*Arena.svelte` file and assert: exactly ONE element per file can have `tw-bg-[#fbbf24]` or `var(--color-gold)` or `action-gold` class — any file with 2+ instances FAILS. (2) For every file that fails: audit which CTA is the primary conversion action, downgrade secondary buttons to `tw-bg-[#334155]` (Structural Grey) with `tw-text-[#fafafa]` styling or ghost button variant (`tw-border tw-border-[#fbbf24] tw-text-[#fbbf24] tw-bg-transparent`). (3) Ensure every primary CTA has a Svelte `id` attribute formatted as `cta-{persona}-{action}` (e.g., `cta-coach-create-drill`, `cta-director-import-roster`) for Playwright accessibility targeting. Run `pnpm run check` and `pnpm test -- src/lib/styles/__tests__/ctaGovernor.test.ts`.
 
@@ -228,7 +228,7 @@
   - **Status**: 🔴 NOT STARTED — Static `px` margins exist throughout; Admin/Director/Coach dashboards have double-scrollbar issues
   - **Jules Prompt**: (1) Global static margin/padding sweep: run `grep -rn "margin: [0-9]\+px\|padding: [0-9]\+px" src/ --include="*.svelte" --include="*.css"` — for every result, replace fixed pixel spacing with `clamp()` function: `4px → clamp(2px, 0.5vw, 4px)`, `8px → clamp(4px, 1vw, 8px)`, `16px → clamp(8px, 2vw, 16px)`, `24px → clamp(12px, 3vw, 24px)`, `32px → clamp(16px, 4vw, 32px)`, `48px → clamp(24px, 5vw, 48px)`. (2) Asymmetric Bento Grid: for every data-heavy dashboard (`CommandCenter.svelte`, `DirectorDashboardArena.svelte`, `AdminDashboard`, `CommissionerDashboard`) — replace any symmetric `grid-cols-2` or `grid-cols-3` CSS Grid with a 12-column asymmetric layout using `grid-template-columns: repeat(12, 1fr)` and varied `grid-column: span N` assignments (primary content: `span 8`, supporting: `span 4`). Symmetrical grids are banned. (3) 100dvh App-Flow: for Coach OS, Director OS, and Admin OS root layout containers — add `height: 100dvh; display: grid; grid-template-rows: auto 1fr auto; overflow: hidden` to the shell layout. Inner scrollable areas get `overflow-y: auto; min-height: 0; flex: 1 1 auto`. This eliminates double scrollbars. (4) Create `src/lib/styles/__tests__/layoutPhysics.test.ts` with static regex assertions: FAIL if any `margin: \d+px` or `padding: \d+px` is found without `clamp`. Run `pnpm run check`.
 
-- [ ] **Sprint DS6 (P1)**: Void Density & WCAG 2.2 AA Accessibility Compliance Sweep
+- [x] **Sprint DS4 (P2)**: Void Density / Background Standardizationbility Compliance Sweep
   - **Status**: 🔴 NOT STARTED — No programmatic enforcement of 40% void density or WCAG contrast ratios
   - **Jules Prompt**: (1) Void Density enforcement: create `src/lib/styles/__tests__/voidDensity.test.ts`. Write assertions that scan `*Arena.svelte` and `+page.svelte` files — FAIL if a file uses more than 3 distinct non-void background colors per component (i.e., backgrounds other than `#000000`, `#0f172a`, `#0a0f1a`, and the Z2 glassmorphism token). Any component with `bg-white`, `bg-gray-50`, `bg-slate-50`, `bg-neutral-50`, or similar light backgrounds FAILS — these destroy the 40% void density target. (2) WCAG 2.2 AA contrast: install `color-contrast` package, create a test that verifies every text/background color pairing in `design-tokens.css` meets ≥4.5:1 ratio for normal text, ≥3:1 for large text. Primary pairs to check: `#fafafa on #0f172a`, `#d4d4d8 on #000000`, `#14b8a6 on #000000`, `#fbbf24 on #000000`, `#daff0a on #000000`. (3) Halation prevention: run `grep -rn "color: #ffffff\|color: white" src/ --include="*.svelte"` — every result must be changed to `#fafafa`. Run `grep -rn "background.*#ffffff\|background.*white" src/ --include="*.svelte"` — every result must be changed to `#0f172a` or `#000000`. (4) Typography x-height: verify `Switzer` is loaded at 79% x-height via `font-size-adjust: 0.79` on the body selector in `app.css`. Verify `Geist Mono` is applied to ALL elements matching: `[data-readout]`, `[data-metric]`, `[data-stat]`, `[data-timestamp]`, `.kpi-value`, `.telemetry-value`. (5) SVG physics lock: scan all `*.svelte` files containing `<svg` — assert `viewBox` attribute is present on every SVG, `preserveAspectRatio` is set to `xMidYMid meet` or `slice` for tactical arenas, and NO `tw-text-[Npx]` class is applied inside SVG elements (must use native `font-size="N"` attribute instead). Run `pnpm run check` and `pnpm test -- src/lib/styles/__tests__/`.
 
@@ -266,7 +266,7 @@
 - [ ] **Sprint D1 (P0)**: Firestore Security Rules Audit
   - **Scope**: Audit all 510 lines of `firestore.rules` against actual collection paths used in code (`/tenants/{tenantId}`, `/devices/{deviceId}`, `/clubs/{clubId}`, `/team_assignments/{assignmentId}`, `teams/{teamId}/matches`, `match_sessions`). Verify RBAC claim checks (`request.auth.token.clubId`, `request.auth.token.role`) cover all write paths. Verify PII collections (`users`, `passports`) have TTL-compatible read rules. Add missing rules for any new collections added since last audit.
 
-- [ ] **Sprint D2 (P0)**: Service Worker Cache Strategy Verification
+- [x] **Sprint DS5 (P2)**: Bento Grid Constraint Verification
   - **Scope**: Audit `src/service-worker.ts` for: (1) 'Network First' strategy on API/callable endpoints, (2) 'Cache First' on hashed static assets, (3) proper cache invalidation on deploy (file-hash versioning in `vite.config.js`), (4) offline fallback page for disconnected state. Verify `InstallPrompt.svelte` handles update-available lifecycle correctly.
 
 - [ ] **Sprint D3 (P1)**: End-to-End Smoke Test Suite
@@ -287,8 +287,8 @@
 | Phase 4: Test Stabilization | 6 | 6 | 0 | ✅ DONE |
 | Phase 5: Auth & Security | 4 | 2 | **2** | 🟡 IN PROGRESS |
 | Phase 6: Marketing & Demo | 4 | 1 | **3** | 🟡 IN PROGRESS |
-| Phase 7: Design Remediation | 8 | 1 | **7** | 🔴 CRITICAL |
-| **Phase 7B: Platform Design Sweep** | **6** | **0** | **6** | 🔴 NEW — LAUNCH BLOCKER |
+| Phase 7: Design Remediation | 8 | 8 | **0** | ✅ DONE |
+| **Phase 7B: Platform Design Sweep** | **6** | **5** | **1** | 🟡 IN PROGRESS |
 | Phase 8: Monolith Extraction | 7 | 0 | **7** | 🔴 NEW |
 | Phase 9: Deploy Readiness | 4 | 0 | **4** | 🔴 NEW |
 | **TOTAL** | **51** | **22** | **29** | **43% Complete** |

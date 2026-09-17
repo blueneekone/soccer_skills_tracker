@@ -36,7 +36,7 @@
 					</p>
 					<button
 						type="button"
-						class="tw-w-full tw-bg-amber-950/40 tw-border tw-border-amber-500/50 tw-text-amber-400 tw-px-3 tw-py-2 tw-font-mono tw-text-[10px] tw-font-bold hover:tw-bg-amber-500/20 tw-transition-all"
+						class="tw-w-full tw-bg-amber-950/40 tw-border tw-border-[#f59e0b]/50 tw-text-[#fbbf24] tw-px-3 tw-py-2 tw-font-mono tw-text-[10px] tw-font-bold hover:tw-bg-[#f59e0b]/20 tw-transition-all"
 						style="border-radius: 0px;"
 						onclick={onMistakeTrigger}
 					>
@@ -56,7 +56,7 @@
 				<div class="tw-flex tw-justify-end tw-gap-3 tw-mt-4">
 					<button
 						type="button"
-						class="tw-bg-[#050811] tw-text-slate-300 tw-border tw-border-slate-700 tw-px-4 tw-py-2 tw-font-mono tw-text-xs tw-uppercase hover:tw-bg-slate-800 tw-transition-colors"
+						class="tw-bg-[#050811] tw-text-slate-300 tw-border tw-border-slate-700 tw-px-4 tw-py-2 tw-font-mono tw-text-xs tw-uppercase hover:tw-bg-[#0f172a] tw-transition-colors"
 						style="border-radius: 0px;"
 						onclick={onClose}
 					>
@@ -64,7 +64,7 @@
 					</button>
 					<button
 						type="button"
-						class="tw-bg-[#fbbf24] tw-text-black tw-font-mono tw-font-bold tw-text-xs tw-px-6 tw-py-2 tw-uppercase hover:tw-bg-amber-400 tw-transition-colors"
+						class="tw-bg-[#fbbf24] tw-text-black tw-font-mono tw-font-bold tw-text-xs tw-px-6 tw-py-2 tw-uppercase hover:tw-bg-[#fbbf24] tw-transition-colors"
 						style="border-radius: 0px;"
 						onclick={onFinalizeDeploy}
 					>

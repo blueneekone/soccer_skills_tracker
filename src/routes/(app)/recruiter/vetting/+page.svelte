@@ -32,17 +32,17 @@
           type="text"
           bind:value={searchKeyword}
           placeholder="Search prospects..."
-          class="tw-w-full tw-bg-slate-900 tw-border tw-border-[#334155] tw-p-2 tw-font-mono tw-text-sm tw-text-white"
+          class="tw-w-full tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-p-2 tw-font-mono tw-text-sm tw-text-white"
         />
 
         <div id="recruiter-prospects-list" class="tw-space-y-2">
           {#each filteredAthletes as prospect}
-            <div class="tw-bg-slate-900 tw-border tw-border-[#334155] tw-p-4 tw-flex tw-justify-between tw-items-center">
+            <div class="tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-p-4 tw-flex tw-justify-between tw-items-center">
               <div>
                 <div class="tw-font-mono tw-text-base tw-font-bold tw-text-white">{prospect.name}</div>
                 <div class="tw-font-mono tw-text-xs tw-text-slate-400">{prospect.position} | AGE {prospect.age}</div>
               </div>
-              <div class="tw-font-mono tw-text-xs tw-text-amber-400">
+              <div class="tw-font-mono tw-text-xs tw-text-[#fbbf24]">
                 CONTACT: {prospect.email}
               </div>
             </div>

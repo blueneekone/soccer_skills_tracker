@@ -182,7 +182,7 @@ import { functions } from '$lib/firebase.js';
 			</div>
 		</div>
 		<div
-			class="tw-px-2.5 tw-py-1 tw-text-[length:clamp(0.625rem,1vw,0.75rem)] tw-font-bold tw-tracking-widest tw-font-mono tw-border tw-border-amber-500/40 tw-text-amber-500 tw-bg-amber-500/10 tw-rounded-[2px] tw-uppercase"
+			class="tw-px-2.5 tw-py-1 tw-text-[length:clamp(0.625rem,1vw,0.75rem)] tw-font-bold tw-tracking-widest tw-font-mono tw-border tw-border-[#f59e0b]/40 tw-text-[#f59e0b] tw-bg-[#f59e0b]/10 tw-rounded-[2px] tw-uppercase"
 		>RESTRICTED</div>
 	</div>
 

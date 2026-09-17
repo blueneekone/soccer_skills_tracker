@@ -117,7 +117,7 @@
 				</span>
 				<button
 					type="button"
-					class="tw-border tw-border-slate-700 tw-bg-slate-900 tw-px-3 tw-py-1.5 tw-font-mono tw-text-xs tw-font-bold tw-text-slate-200 hover:tw-border-[#14b8a6] hover:tw-text-[#14b8a6] tw-transition-colors"
+					class="tw-border tw-border-slate-700 tw-bg-[#0f172a] tw-px-3 tw-py-1.5 tw-font-mono tw-text-xs tw-font-bold tw-text-slate-200 hover:tw-border-[#14b8a6] hover:tw-text-[#14b8a6] tw-transition-colors"
 					onclick={copyCode}
 				>
 					{copied ? '✓ COPIED' : 'COPY CODE'}
@@ -125,7 +125,7 @@
 			{:else}
 				<button
 					type="button"
-					class="tw-border tw-border-slate-700 tw-bg-slate-900 tw-px-3 tw-py-1.5 tw-font-mono tw-text-xs tw-font-bold tw-text-slate-200 hover:tw-border-[#daff0a] hover:tw-text-[#daff0a] tw-transition-colors disabled:tw-opacity-50"
+					class="tw-border tw-border-slate-700 tw-bg-[#0f172a] tw-px-3 tw-py-1.5 tw-font-mono tw-text-xs tw-font-bold tw-text-slate-200 hover:tw-border-[#daff0a] hover:tw-text-[#daff0a] tw-transition-colors disabled:tw-opacity-50"
 					onclick={handleGenerateCode}
 					disabled={codeBusy || !activeTeamId}
 				>

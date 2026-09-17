@@ -94,7 +94,7 @@ import { onDestroy, onMount, untrack } from 'svelte';
 		<Icon name="sys.map-pin" class="tw-text-[#334155]" size={36} />
 	</div>
 {:else}
-	<div class="tw-relative tw-w-full tw-h-full tw-bg-black tw-overflow-hidden">
+	<div class="tw-relative tw-w-full tw-h-full tw-bg-[#000000] tw-overflow-hidden">
 		<div bind:this={mapContainer} class="tw-absolute tw-inset-0"></div>
 
 		<!-- SVG Radar Overlay -->

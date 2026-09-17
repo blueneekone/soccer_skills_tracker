@@ -19,13 +19,13 @@
 
     <div class="tw-grid tw-grid-cols-12 tw-gap-4">
         <!-- Cells Grid -->
-        <div class="tw-col-span-12 lg:tw-col-span-6 tw-border tw-border-[#334155] tw-bg-black tw-p-6 tw-rounded-none">
+        <div class="tw-col-span-12 lg:tw-col-span-6 tw-border tw-border-[#334155] tw-bg-[#000000] tw-p-6 tw-rounded-none">
             <h2 class="tw-text-lg tw-font-bold tw-mb-4 tw-border-b tw-border-[#334155] tw-pb-2">Active Tenant Cells</h2>
             <div class="tw-flex tw-flex-col tw-gap-3">
                 {#each cells as cell}
                     <div class="tw-flex tw-justify-between tw-items-center tw-p-3 tw-bg-[#111] tw-border tw-border-[#334155] tw-rounded-none">
                         <span class="tw-font-mono tw-text-sm">{cell.id}</span>
-                        <span class="tw-text-xs tw-uppercase tw-px-2 tw-py-1 {cell.status === 'active' ? 'tw-bg-[#14b8a6] tw-text-black' : 'tw-bg-amber-500 tw-text-black'} tw-font-bold">
+                        <span class="tw-text-xs tw-uppercase tw-px-2 tw-py-1 {cell.status === 'active' ? 'tw-bg-[#14b8a6] tw-text-black' : 'tw-bg-[#f59e0b] tw-text-black'} tw-font-bold">
                             {cell.status}
                         </span>
                         <span class="tw-font-mono tw-text-sm tw-text-slate-400">Load: {cell.load}</span>
@@ -35,7 +35,7 @@
         </div>
 
         <!-- Migrations and Metrics Grid -->
-        <div class="tw-col-span-12 lg:tw-col-span-6 tw-border tw-border-[#334155] tw-bg-black tw-p-6 tw-rounded-none tw-flex tw-flex-col tw-gap-6">
+        <div class="tw-col-span-12 lg:tw-col-span-6 tw-border tw-border-[#334155] tw-bg-[#000000] tw-p-6 tw-rounded-none tw-flex tw-flex-col tw-gap-6">
 
             <div>
                 <h2 class="tw-text-lg tw-font-bold tw-mb-4 tw-border-b tw-border-[#334155] tw-pb-2">Execute Migration (Dry-Run Mode)</h2>
@@ -71,7 +71,7 @@
                     <button
                         type="submit"
                         disabled={isProcessing || !targetTenantId || !targetCellId}
-                        class="tw-w-full tw-bg-amber-600 hover:tw-bg-amber-500 disabled:tw-bg-slate-700 tw-text-white tw-font-bold tw-py-3 tw-px-4 tw-rounded-none tw-transition-colors"
+                        class="tw-w-full tw-bg-amber-600 hover:tw-bg-[#f59e0b] disabled:tw-bg-slate-700 tw-text-white tw-font-bold tw-py-3 tw-px-4 tw-rounded-none tw-transition-colors"
                     >
                         {isProcessing ? 'Processing Migration...' : 'Trigger Cell Cutover'}
                     </button>

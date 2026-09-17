@@ -259,7 +259,7 @@
 								{#if hh.parentName}
 									<span class="tw-text-white tw-font-bold">{hh.parentName}</span>
 								{:else}
-									<span class="tw-text-amber-400/90 tw-text-[10px] tw-font-mono tw-border tw-border-amber-500/30 tw-bg-amber-950/30 tw-px-2 tw-py-0.5 tw-rounded">
+									<span class="tw-text-[#fbbf24]/90 tw-text-[10px] tw-font-mono tw-border tw-border-[#f59e0b]/30 tw-bg-amber-950/30 tw-px-2 tw-py-0.5 tw-rounded">
 										⏳ Pending Onboarding
 									</span>
 								{/if}
@@ -288,7 +288,7 @@
 										⚡ ASSISTANT COACH
 									</span>
 								{:else if hh.assignedRole === 'team_manager'}
-									<span class="tw-bg-amber-500/20 tw-border tw-border-amber-500 tw-text-amber-300 tw-px-2 tw-py-0.5 tw-rounded tw-font-bold tw-text-[10px]">
+									<span class="tw-bg-[#f59e0b]/20 tw-border tw-border-[#f59e0b] tw-text-amber-300 tw-px-2 tw-py-0.5 tw-rounded tw-font-bold tw-text-[10px]">
 										📋 TEAM MANAGER
 									</span>
 								{:else if hh.assignedRole === 'schedule_manager'}

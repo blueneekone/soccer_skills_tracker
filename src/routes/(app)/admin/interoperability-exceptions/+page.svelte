@@ -82,7 +82,7 @@
         </div>
     {/if}
 
-    <div class="tw-border tw-border-[#334155] tw-bg-black tw-rounded-none tw-overflow-hidden">
+    <div class="tw-border tw-border-[#334155] tw-bg-[#000000] tw-rounded-none tw-overflow-hidden">
         {#if loading}
             <div class="tw-p-8 tw-text-center tw-text-slate-500 tw-font-mono tw-uppercase tw-tracking-widest">
                 Loading exceptions...

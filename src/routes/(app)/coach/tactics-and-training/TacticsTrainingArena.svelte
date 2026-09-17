@@ -39,7 +39,7 @@
 <div class="tw-w-full tw-min-h-[calc(100vh-120px)] tw-bg-[#000000] tw-text-[#fafafa]">
 	{#if engine.activeTab === 'forge'}
 		<!-- THE FORGE WORKSPACE -->
-		<div class="tw-max-w-[1700px] tw-mx-auto tw-p-4 sm:tw-p-6">
+		<div class="tw-w-full tw-p-4 sm:tw-p-6">
 			<!-- Sub-nav: Intent Engine | Drill Designer | Drill Library -->
 			<div class="tw-flex tw-items-center tw-justify-between tw-border-b tw-border-[#334155] tw-pb-3 tw-mb-6">
 				<nav class="tw-flex tw-items-center tw-gap-2 tw-overflow-x-auto" aria-label="Forge Workspace Tabs">
@@ -145,7 +145,7 @@
 
 	{:else if engine.activeTab === 'matchday'}
 		<!-- MATCH DAY CONSOLE -->
-		<div class="tw-max-w-[1700px] tw-mx-auto tw-p-4 sm:tw-p-6 tw-space-y-6">
+		<div class="tw-w-full tw-p-4 sm:tw-p-6 tw-space-y-6">
 			<MatchDayHUD engine={matchDayEngine} />
 			<MatchDayArena engine={matchDayEngine} />
 		</div>

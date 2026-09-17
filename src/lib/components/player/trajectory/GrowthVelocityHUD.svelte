@@ -55,13 +55,13 @@
 				};
 			case 'PLATEAU':
 				return {
-					badgeBg: 'tw-bg-amber-500/10',
-					badgeBorder: 'tw-border-amber-500/30',
-					badgeText: 'tw-text-amber-400',
+					badgeBg: 'tw-bg-[#f59e0b]/10',
+					badgeBorder: 'tw-border-[#f59e0b]/30',
+					badgeText: 'tw-text-[#fbbf24]',
 					glow: 'tw-shadow-[0_0_20px_rgba(251,191,36,0.1)]',
-					barCurrent: 'tw-bg-amber-400',
+					barCurrent: 'tw-bg-[#fbbf24]',
 					barCurrentGlow: 'tw-shadow-[0_0_6px_rgba(251,191,36,0.5)]',
-					valueColor: 'tw-text-amber-400',
+					valueColor: 'tw-text-[#fbbf24]',
 				};
 			case 'IGNITING':
 			default:

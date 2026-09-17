@@ -83,7 +83,7 @@
 
 {#if isOpen && player}
 	<div
-		class="tw-fixed tw-inset-0 tw-z-[10010] tw-flex tw-items-center tw-justify-center tw-bg-black/85 tw-backdrop-blur-md tw-p-4"
+		class="tw-fixed tw-inset-0 tw-z-[10010] tw-flex tw-items-center tw-justify-center tw-bg-[#000000]/85 tw-backdrop-blur-md tw-p-4"
 		use:portal
 		role="dialog"
 		aria-modal="true"
@@ -130,7 +130,7 @@
 				<button
 					type="button"
 					onclick={onClose}
-					class="tw-text-slate-400 hover:tw-text-white tw-bg-[#020617] hover:tw-bg-slate-800 tw-border tw-border-[#334155] tw-rounded-lg tw-p-1.5 tw-transition-colors tw-cursor-pointer"
+					class="tw-text-slate-400 hover:tw-text-white tw-bg-[#020617] hover:tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-rounded-lg tw-p-1.5 tw-transition-colors tw-cursor-pointer"
 					aria-label="Close modal"
 				>
 					<Icon name="sys.close" size={18} />
@@ -213,7 +213,7 @@
 						<div class="tw-flex tw-items-center tw-justify-between tw-text-xs">
 							<span class="tw-text-slate-400 tw-text-[11px]">{AXIS_LABELS[i]} ({key})</span>
 							<div class="tw-flex tw-items-center tw-gap-2">
-								<div class="tw-w-20 tw-h-1.5 tw-bg-slate-800 tw-rounded-full tw-overflow-hidden">
+								<div class="tw-w-20 tw-h-1.5 tw-bg-[#0f172a] tw-rounded-full tw-overflow-hidden">
 									<div
 										class="tw-h-full tw-bg-gradient-to-r tw-from-[#14b8a6] tw-to-[#daff0a]"
 										style="width: {score}%;"
@@ -234,7 +234,7 @@
 				<button
 					type="button"
 					onclick={onClose}
-					class="tw-px-4 tw-py-1.5 tw-text-xs tw-font-mono tw-text-slate-300 hover:tw-text-white tw-bg-[#020617] hover:tw-bg-slate-800 tw-border tw-border-[#334155] tw-rounded-lg tw-transition-colors tw-cursor-pointer"
+					class="tw-px-4 tw-py-1.5 tw-text-xs tw-font-mono tw-text-slate-300 hover:tw-text-white tw-bg-[#020617] hover:tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-rounded-lg tw-transition-colors tw-cursor-pointer"
 				>
 					Close
 				</button>

@@ -88,7 +88,7 @@
 
 		<div class="tw-flex tw-gap-2 tw-overflow-x-auto tw-pb-2 scrollbar-custom">
 			{#each forecastDays as day}
-				<div class="tw-flex-1 tw-min-w-[60px] tw-border {day.isSevere ? 'tw-border-[#f59e0b] tw-bg-[#f59e0b]/10' : 'tw-border-[#334155] tw-bg-black'} tw-p-2 tw-flex tw-flex-col tw-items-center tw-text-center">
+				<div class="tw-flex-1 tw-min-w-[60px] tw-border {day.isSevere ? 'tw-border-[#f59e0b] tw-bg-[#f59e0b]/10' : 'tw-border-[#334155] tw-bg-[#000000]'} tw-p-2 tw-flex tw-flex-col tw-items-center tw-text-center">
 					<span class="tw-text-[10px] tw-font-bold tw-text-slate-400">{day.date}</span>
 					<span class="tw-text-sm tw-font-bold tw-font-mono tw-text-white tw-mt-1">{day.temp}°</span>
 					<span class="tw-text-[9px] tw-font-bold tw-font-mono tw-mt-1 {day.isSevere ? 'tw-text-[#f59e0b]' : 'tw-text-[#14b8a6]'}">

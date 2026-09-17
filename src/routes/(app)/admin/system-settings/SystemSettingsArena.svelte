@@ -218,7 +218,7 @@
 		<div class="tw-flex tw-justify-end">
 			<button
 				type="button"
-				class="v-toolbar-btn tw-border-amber-500 tw-text-amber-500 hover:tw-bg-amber-500/10"
+				class="v-toolbar-btn tw-border-[#f59e0b] tw-text-[#f59e0b] hover:tw-bg-[#f59e0b]/10"
 				onclick={() => void engine.saveSecurityConfig()}
 				disabled={engine.secSaving}
 			>
@@ -243,12 +243,12 @@
 				<article class="tw-flex tw-flex-col tw-gap-2 tw-border tw-border-slate-800 tw-bg-[#0f172a] tw-p-[clamp(16px,2vw,24px)]" aria-labelledby="ss-int-{spec.id}">
 					<header class="tw-flex tw-items-center tw-justify-between">
 						<h3 id="ss-int-{spec.id}" class="tw-font-sans tw-tracking-tight tw-font-bold tw-text-[#FAFAFA]">{spec.label}</h3>
-						<span class="tw-text-[10px] tw-uppercase tw-font-bold tw-tracking-widest tw-bg-slate-800 tw-text-[#D4D4D8] tw-px-2 tw-py-1">Secret Manager</span>
+						<span class="tw-text-[10px] tw-uppercase tw-font-bold tw-tracking-widest tw-bg-[#0f172a] tw-text-[#D4D4D8] tw-px-2 tw-py-1">Secret Manager</span>
 					</header>
 					<p class="tw-text-[#D4D4D8] tw-text-sm">{spec.description}</p>
 					<div class="tw-flex tw-items-center tw-gap-2 tw-mt-auto tw-pt-4">
 						<span class="tw-text-xs tw-text-[#A1A1AA] tw-uppercase tw-font-bold tw-tracking-widest">Secret</span>
-						<code class="tw-font-mono tw-tracking-widest tw-text-xs tw-text-[#14b8a6] tw-bg-slate-900 tw-px-2 tw-py-1">{spec.secretName}</code>
+						<code class="tw-font-mono tw-tracking-widest tw-text-xs tw-text-[#14b8a6] tw-bg-[#0f172a] tw-px-2 tw-py-1">{spec.secretName}</code>
 					</div>
 					<p class="tw-text-xs tw-text-[#A1A1AA] tw-mt-2">{spec.statusHint}</p>
 				</article>
@@ -343,7 +343,7 @@
 								{#if featureFlagsStore.flags.maintenanceMode}
 									<span class="tw-text-[10px] tw-uppercase tw-font-bold tw-tracking-widest tw-bg-[#f43f5e] tw-text-[#FAFAFA] tw-px-2 tw-py-1">ACTIVE</span>
 								{:else}
-									<span class="tw-text-[10px] tw-uppercase tw-font-bold tw-tracking-widest tw-bg-slate-800 tw-text-[#A1A1AA] tw-px-2 tw-py-1">OFF</span>
+									<span class="tw-text-[10px] tw-uppercase tw-font-bold tw-tracking-widest tw-bg-[#0f172a] tw-text-[#A1A1AA] tw-px-2 tw-py-1">OFF</span>
 								{/if}
 							</td>
 							<td class="v-td v-td--right">
@@ -366,7 +366,7 @@
 									{#if featureFlagsStore.flags[flagKey as keyof typeof featureFlagsStore.flags]}
 										<span class="tw-text-[10px] tw-uppercase tw-font-bold tw-tracking-widest tw-bg-[#10b981] tw-text-[#FAFAFA] tw-px-2 tw-py-1">ON</span>
 									{:else}
-										<span class="tw-text-[10px] tw-uppercase tw-font-bold tw-tracking-widest tw-bg-slate-800 tw-text-[#A1A1AA] tw-px-2 tw-py-1">OFF</span>
+										<span class="tw-text-[10px] tw-uppercase tw-font-bold tw-tracking-widest tw-bg-[#0f172a] tw-text-[#A1A1AA] tw-px-2 tw-py-1">OFF</span>
 									{/if}
 								</td>
 								<td class="v-td v-td--right">

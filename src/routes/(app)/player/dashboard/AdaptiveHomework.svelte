@@ -237,7 +237,7 @@
 
 			{#if recentFrustration === 'high'}
 				<div
-					class="tw-min-w-0 tw-rounded-lg tw-border tw-border-slate-700/70 tw-bg-slate-800 tw-py-1.5 tw-px-3"
+					class="tw-min-w-0 tw-rounded-lg tw-border tw-border-slate-700/70 tw-bg-[#0f172a] tw-py-1.5 tw-px-3"
 				>
 					<p class="tw-m-0 tw-font-mono tw-text-[9px] tw-leading-relaxed tw-tracking-wide tw-text-slate-400 tw-break-words">
 						[ SCAFFOLDING ACTIVE: EQ PROTECTION MODE ]
@@ -265,7 +265,7 @@
 								</button>
 							{/if}
 							<span
-								class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-px-1.5 tw-py-0.5 tw-rounded tw-bg-slate-800/60 tw-text-teal-400/60 tw-border tw-border-slate-700/60"
+								class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-px-1.5 tw-py-0.5 tw-rounded tw-bg-[#0f172a]/60 tw-text-teal-400/60 tw-border tw-border-slate-700/60"
 							>
 								{suggestedDrill.mediaType === 'tactical_svg' ? '[ SVG ]' : '[ YT ]'}
 							</span>
@@ -310,8 +310,8 @@
 				type="button"
 				data-primary-cta
 				class="tw-w-full tw-py-2.5 tw-rounded-xl tw-font-mono tw-text-[10px] tw-tracking-widest
-				       tw-uppercase tw-border tw-border-amber-400/35 tw-text-amber-400 tw-bg-amber-400/10
-				       hover:tw-bg-amber-400/20 tw-transition-colors"
+				       tw-uppercase tw-border tw-border-amber-400/35 tw-text-[#fbbf24] tw-bg-[#fbbf24]/10
+				       hover:tw-bg-[#fbbf24]/20 tw-transition-colors"
 				disabled={!suggestedDrill}
 				onclick={logOnTrain}
 			>

@@ -9,7 +9,7 @@
 	const glassPanel = 'vanguard-surface';
 
 	const segBtn =
-		'tw-pointer-events-auto tw-rounded-full tw-border tw-border-white/12 tw-bg-black/40 tw-px-3 tw-py-2 tw-font-mono tw-text-[9px] tw-font-bold tw-tracking-[0.14em] tw-text-white/75 tw-transition-colors hover:tw-border-[#14b8a6]/40 hover:tw-text-[#14b8a6]';
+		'tw-pointer-events-auto tw-rounded-full tw-border tw-border-white/12 tw-bg-[#000000]/40 tw-px-3 tw-py-2 tw-font-mono tw-text-[9px] tw-font-bold tw-tracking-[0.14em] tw-text-white/75 tw-transition-colors hover:tw-border-[#14b8a6]/40 hover:tw-text-[#14b8a6]';
 
 	const segBtnOn =
 		'tw-border-[#14b8a6]/50 tw-bg-[#14b8a6]/10 tw-text-[#14b8a6] tw-shadow-[inset_0_0_10px_rgba(20, 184, 166,0.12)]';

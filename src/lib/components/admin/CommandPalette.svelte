@@ -185,7 +185,7 @@
 	<!-- svelte-ignore a11y_no_static_element_interactions -->
 	<!-- Z4 Floating Chrome: Heavy Liquid Glassmorphism backdrop -->
 	<div 
-		class="tw-fixed tw-inset-0 tw-z-50 tw-flex tw-items-start tw-justify-center tw-pt-[10vh] tw-bg-black/60 tw-backdrop-blur-[20px]" 
+		class="tw-fixed tw-inset-0 tw-z-50 tw-flex tw-items-start tw-justify-center tw-pt-[10vh] tw-bg-[#000000]/60 tw-backdrop-blur-[20px]" 
 		onclick={() => open = false}
 	>
 		<!-- Container: solid deep slate background to preserve text contrast -->

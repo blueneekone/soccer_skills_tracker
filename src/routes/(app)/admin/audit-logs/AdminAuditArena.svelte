@@ -76,7 +76,7 @@
 	<div class="tw-flex tw-items-center tw-gap-[clamp(8px,1vw,16px)] tw-mt-[clamp(8px,1vw,16px)]">
 		<button
 			type="button"
-			class="v-toolbar-btn tw-border-amber-500/40 tw-text-amber-500 hover:tw-border-amber-500 hover:tw-bg-amber-500/10 tw-flex tw-items-center tw-gap-2"
+			class="v-toolbar-btn tw-border-[#f59e0b]/40 tw-text-[#f59e0b] hover:tw-border-[#f59e0b] hover:tw-bg-[#f59e0b]/10 tw-flex tw-items-center tw-gap-2"
 			onclick={() => engine.loadLogs(true)}
 			disabled={engine.loading}
 		>

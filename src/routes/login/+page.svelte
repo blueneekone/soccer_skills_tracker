@@ -324,9 +324,9 @@
 
 				<!-- Sleek divider -->
 				<div class="tw-my-1 tw-flex tw-w-full tw-items-center tw-gap-3">
-					<div class="tw-h-px tw-flex-1 tw-bg-slate-800"></div>
+					<div class="tw-h-px tw-flex-1 tw-bg-[#0f172a]"></div>
 					<span class="tw-font-mono tw-text-[10px] tw-uppercase tw-tracking-widest tw-text-slate-500">Or</span>
-					<div class="tw-h-px tw-flex-1 tw-bg-slate-800"></div>
+					<div class="tw-h-px tw-flex-1 tw-bg-[#0f172a]"></div>
 				</div>
 
 				<!-- Email input -->

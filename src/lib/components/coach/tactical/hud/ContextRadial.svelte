@@ -20,7 +20,7 @@
 	>
 		<!-- Backdrop — click-to-close only once deploy succeeds -->
 		<div
-			class="tw-absolute tw-inset-0 tw-bg-black/75 tw-backdrop-blur-sm"
+			class="tw-absolute tw-inset-0 tw-bg-[#000000]/75 tw-backdrop-blur-sm"
 			onclick={() => deployPhase === 'success' && onClose?.()}
 		></div>
 

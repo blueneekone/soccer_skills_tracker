@@ -143,7 +143,7 @@
 			<div class="hero-badge">
 				{#if isEventOpen(event)}
 					<span class="open-badge tw-inline-flex tw-items-center tw-gap-1.5">
-						<Icon name={"status.circle-check" as IconName} size={14} class="tw-text-amber-500" />
+						<Icon name={"status.circle-check" as IconName} size={14} class="tw-text-[#f59e0b]" />
 						Tickets Available
 					</span>
 				{:else}

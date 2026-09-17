@@ -30,10 +30,10 @@
 	</div>
 {:else if !engine.activePlayer}
 	<div
-		class="tw-mx-auto tw-flex tw-min-h-[40vh] tw-max-w-lg tw-flex-col tw-items-center tw-justify-center bento-gap-md tw-rounded-xl tw-border tw-border-amber-500/25 tw-bg-slate-950/90 tw-px-6 tw-py-14 tw-text-center tw-text-slate-200"
+		class="tw-mx-auto tw-flex tw-min-h-[40vh] tw-max-w-lg tw-flex-col tw-items-center tw-justify-center bento-gap-md tw-rounded-xl tw-border tw-border-[#f59e0b]/25 tw-bg-slate-950/90 tw-px-6 tw-py-14 tw-text-center tw-text-slate-200"
 		role="alert"
 	>
-		<Icon name="status.warning-circle" class="tw-text-4xl tw-text-amber-400" />
+		<Icon name="status.warning-circle" class="tw-text-4xl tw-text-[#fbbf24]" />
 		<p class="tw-m-0 tw-text-base tw-font-semibold tw-text-slate-100">
 			Unable to load this operative profile. Try refreshing the page.
 		</p>

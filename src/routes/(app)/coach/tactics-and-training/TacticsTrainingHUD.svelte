@@ -58,7 +58,7 @@
 				<button
 					type="button"
 					onclick={() => engine.toggleHelpModal()}
-					class="tw-bg-[#0f172a] hover:tw-bg-slate-800 tw-border tw-border-[#334155] hover:tw-border-[#14b8a6]/60 tw-text-slate-300 hover:tw-text-[#14b8a6] tw-font-mono tw-text-xs tw-font-medium tw-px-3 tw-py-1.5 active:tw-scale-[0.98] tw-transition-all tw-inline-flex tw-items-center tw-gap-2 tw-cursor-pointer"
+					class="tw-bg-[#0f172a] hover:tw-bg-[#0f172a] tw-border tw-border-[#334155] hover:tw-border-[#14b8a6]/60 tw-text-slate-300 hover:tw-text-[#14b8a6] tw-font-mono tw-text-xs tw-font-medium tw-px-3 tw-py-1.5 active:tw-scale-[0.98] tw-transition-all tw-inline-flex tw-items-center tw-gap-2 tw-cursor-pointer"
 					style="border-radius: 0px;"
 					title="Open Forge Operating Manual & System Help"
 				>
@@ -86,7 +86,7 @@
 					<button
 						type="button"
 						onclick={() => engine.setTab(tab.id)}
-						class="tw-flex tw-items-center tw-gap-2.5 tw-px-4 tw-py-2 tw-font-mono tw-text-xs tw-font-bold tw-uppercase tw-tracking-wider tw-transition-all tw-whitespace-nowrap tw-cursor-pointer {isActive ? 'tw-bg-[#0f172a] tw-text-[#fbbf24] tw-border tw-border-[#fbbf24] tw-shadow-lg' : 'tw-bg-transparent tw-text-slate-400 tw-border tw-border-transparent hover:tw-text-white hover:tw-bg-slate-900/60'}"
+						class="tw-flex tw-items-center tw-gap-2.5 tw-px-4 tw-py-2 tw-font-mono tw-text-xs tw-font-bold tw-uppercase tw-tracking-wider tw-transition-all tw-whitespace-nowrap tw-cursor-pointer {isActive ? 'tw-bg-[#0f172a] tw-text-[#fbbf24] tw-border tw-border-[#fbbf24] tw-shadow-lg' : 'tw-bg-transparent tw-text-slate-400 tw-border tw-border-transparent hover:tw-text-white hover:tw-bg-[#0f172a]/60'}"
 						style="border-radius: 0px;"
 					>
 						<span class="tw-text-sm">{tab.icon}</span>

@@ -40,7 +40,7 @@
 			</div>
 			<button
 				type="button"
-				class="ctrl-btn tw-flex tw-items-center tw-gap-2 tw-bg-amber-500 tw-text-void-black tw-border-amber-500"
+				class="ctrl-btn tw-flex tw-items-center tw-gap-2 tw-bg-[#f59e0b] tw-text-void-black tw-border-[#f59e0b]"
 				disabled={engine.saveState === 'saving'}
 				onclick={() => engine.initPolicy()}
 			>
@@ -68,7 +68,7 @@
 			<div class="ctrl-range-ends"><span>0% (off)</span><span>100% (all)</span></div>
 			<button
 				type="button"
-				class="ctrl-btn tw-flex tw-items-center tw-gap-2 tw-bg-amber-500 tw-text-void-black tw-border-amber-500"
+				class="ctrl-btn tw-flex tw-items-center tw-gap-2 tw-bg-[#f59e0b] tw-text-void-black tw-border-[#f59e0b]"
 				disabled={engine.saveState === 'saving' || engine.frozen}
 				onclick={() => engine.setAbPercent(engine.draftAbPercent)}
 			>
@@ -89,7 +89,7 @@
 				type="button"
 				class="ctrl-btn tw-flex tw-items-center tw-gap-2"
 				class:ctrl-btn--danger={!engine.frozen}
-				class:tw-bg-amber-500={engine.frozen}
+				class:tw-bg-[#f59e0b]={engine.frozen}
 				class:tw-text-void-black={engine.frozen}
 				disabled={engine.saveState === 'saving'}
 				onclick={() => engine.toggleFreeze()}
@@ -213,7 +213,7 @@
 	}
 
 	.panel-title {
-		font-family: monospace;
+		font-family: 'Geist Mono', ui-monospace, monospace;
 		font-size: 0.65rem;
 		letter-spacing: 0.12em;
 		color: rgba(0, 212, 255, 0.6);
@@ -230,7 +230,7 @@
 	.ctrl-label {
 		display: flex;
 		justify-content: space-between;
-		font-family: monospace;
+		font-family: 'Geist Mono', ui-monospace, monospace;
 		font-size: 0.7rem;
 		font-weight: 700;
 		color: rgba(226, 232, 240, 0.55);
@@ -255,7 +255,7 @@
 	.ctrl-range-ends {
 		display: flex;
 		justify-content: space-between;
-		font-family: monospace;
+		font-family: 'Geist Mono', ui-monospace, monospace;
 		font-size: 0.6rem;
 		color: rgba(226, 232, 240, 0.25);
 	}
@@ -263,7 +263,7 @@
 	.ctrl-btn {
 		align-self: flex-start;
 		padding: 0.5rem 1.25rem;
-		font-family: monospace;
+		font-family: 'Geist Mono', ui-monospace, monospace;
 		font-size: 0.7rem;
 		font-weight: 800;
 		letter-spacing: 0.1em;
@@ -296,7 +296,7 @@
 	.ctrl-input {
 		width: 80px;
 		padding: 0.4rem 0.6rem;
-		font-family: monospace;
+		font-family: 'Geist Mono', ui-monospace, monospace;
 		font-size: 0.75rem;
 		background: rgba(255, 255, 255, 0.04);
 		border: 1px solid rgba(255, 255, 255, 0.1);
@@ -305,21 +305,21 @@
 	}
 
 	.ctrl-error {
-		font-family: monospace;
+		font-family: 'Geist Mono', ui-monospace, monospace;
 		font-size: 0.7rem;
 		color: #ff6b6b;
 		margin: 0.5rem 0 0;
 	}
 
 	.ctrl-success {
-		font-family: monospace;
+		font-family: 'Geist Mono', ui-monospace, monospace;
 		font-size: 0.7rem;
 		color: #2dd4bf;
 		margin: 0.5rem 0 0;
 	}
 
 	.empty-state {
-		font-family: monospace;
+		font-family: 'Geist Mono', ui-monospace, monospace;
 		font-size: 0.65rem;
 		color: rgba(255, 255, 255, 0.2);
 		letter-spacing: 0.08em;
@@ -355,7 +355,7 @@
 	.runs-table {
 		width: 100%;
 		border-collapse: collapse;
-		font-family: monospace;
+		font-family: 'Geist Mono', ui-monospace, monospace;
 		font-size: 0.65rem;
 	}
 
@@ -385,7 +385,7 @@
 	}
 
 	.mono {
-		font-family: monospace;
+		font-family: 'Geist Mono', ui-monospace, monospace;
 	}
 
 	.badge {

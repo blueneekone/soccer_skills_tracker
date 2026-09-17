@@ -477,7 +477,7 @@
 								bind:value={firstName}
 								placeholder="e.g. Sarah"
 								autocomplete="given-name"
-								class="tw-w-full tw-bg-slate-900 tw-border tw-border-slate-700 tw-rounded tw-px-3 tw-py-2 tw-text-white tw-font-mono tw-text-sm focus:tw-border-cyan-500 focus:tw-outline-none"
+								class="tw-w-full tw-bg-[#0f172a] tw-border tw-border-slate-700 tw-rounded tw-px-3 tw-py-2 tw-text-white tw-font-mono tw-text-sm focus:tw-border-cyan-500 focus:tw-outline-none"
 							/>
 						</div>
 						<div>
@@ -490,7 +490,7 @@
 								bind:value={lastName}
 								placeholder="e.g. Vance"
 								autocomplete="family-name"
-								class="tw-w-full tw-bg-slate-900 tw-border tw-border-slate-700 tw-rounded tw-px-3 tw-py-2 tw-text-white tw-font-mono tw-text-sm focus:tw-border-cyan-500 focus:tw-outline-none"
+								class="tw-w-full tw-bg-[#0f172a] tw-border tw-border-slate-700 tw-rounded tw-px-3 tw-py-2 tw-text-white tw-font-mono tw-text-sm focus:tw-border-cyan-500 focus:tw-outline-none"
 							/>
 						</div>
 					</div>

@@ -131,7 +131,7 @@
 
 					<!-- Storm Probability Bar -->
 					<div class="tw-flex-1 tw-mx-3 tw-hidden sm:tw-flex tw-items-center tw-gap-2">
-						<div class="tw-flex-1 tw-h-1.5 tw-bg-slate-800 tw-rounded-full tw-overflow-hidden">
+						<div class="tw-flex-1 tw-h-1.5 tw-bg-[#0f172a] tw-rounded-full tw-overflow-hidden">
 							<div
 								class="tw-h-full tw-transition-all"
 								class:tw-bg-[#14b8a6]={!row.isSevere && !row.isElevated}

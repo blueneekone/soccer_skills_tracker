@@ -197,7 +197,7 @@
 	<!-- Modal Backdrop -->
 	<!-- svelte-ignore a11y_click_events_have_key_events -->
 	<div
-		class="tw-fixed tw-inset-0 tw-z-[9999] tw-flex tw-items-center tw-justify-center tw-p-3 sm:tw-p-6 tw-bg-black/85 tw-backdrop-blur-md"
+		class="tw-fixed tw-inset-0 tw-z-[9999] tw-flex tw-items-center tw-justify-center tw-p-3 sm:tw-p-6 tw-bg-[#000000]/85 tw-backdrop-blur-md"
 		role="presentation"
 		transition:fade={{ duration: 150 }}
 		onclick={handleBackdrop}
@@ -238,7 +238,7 @@
 				<button
 					type="button"
 					onclick={handleClose}
-					class="tw-h-8 tw-w-8 tw-rounded-lg tw-bg-slate-900 hover:tw-bg-slate-800 tw-border tw-border-slate-700 tw-text-slate-400 hover:tw-text-white tw-flex tw-items-center tw-justify-center tw-font-mono tw-text-xs tw-transition-colors tw-cursor-pointer"
+					class="tw-h-8 tw-w-8 tw-rounded-lg tw-bg-[#0f172a] hover:tw-bg-[#0f172a] tw-border tw-border-slate-700 tw-text-slate-400 hover:tw-text-white tw-flex tw-items-center tw-justify-center tw-font-mono tw-text-xs tw-transition-colors tw-cursor-pointer"
 					title="Close manual (ESC)"
 				>
 					✕
@@ -251,42 +251,42 @@
 				<nav class="tw-flex tw-items-center tw-gap-1.5 tw-overflow-x-auto tw-no-scrollbar" aria-label="Manual Sections">
 					<button
 						type="button"
-						class="tw-font-mono tw-text-[11px] tw-font-bold tw-px-2.5 tw-py-1 tw-rounded-md tw-transition-colors tw-whitespace-nowrap {activeSection === 'all' ? 'tw-bg-[#14b8a6] tw-text-black' : 'tw-bg-slate-900 tw-text-slate-400 hover:tw-text-slate-200'}"
+						class="tw-font-mono tw-text-[11px] tw-font-bold tw-px-2.5 tw-py-1 tw-rounded-md tw-transition-colors tw-whitespace-nowrap {activeSection === 'all' ? 'tw-bg-[#14b8a6] tw-text-black' : 'tw-bg-[#0f172a] tw-text-slate-400 hover:tw-text-slate-200'}"
 						onclick={() => activeSection = 'all'}
 					>
 						ALL
 					</button>
 					<button
 						type="button"
-						class="tw-font-mono tw-text-[11px] tw-font-bold tw-px-2.5 tw-py-1 tw-rounded-md tw-transition-colors tw-whitespace-nowrap {activeSection === 'intent' ? 'tw-bg-[#14b8a6] tw-text-black' : 'tw-bg-slate-900 tw-text-slate-400 hover:tw-text-slate-200'}"
+						class="tw-font-mono tw-text-[11px] tw-font-bold tw-px-2.5 tw-py-1 tw-rounded-md tw-transition-colors tw-whitespace-nowrap {activeSection === 'intent' ? 'tw-bg-[#14b8a6] tw-text-black' : 'tw-bg-[#0f172a] tw-text-slate-400 hover:tw-text-slate-200'}"
 						onclick={() => activeSection = 'intent'}
 					>
 						🎯 INTENT
 					</button>
 					<button
 						type="button"
-						class="tw-font-mono tw-text-[11px] tw-font-bold tw-px-2.5 tw-py-1 tw-rounded-md tw-transition-colors tw-whitespace-nowrap {activeSection === 'designer' ? 'tw-bg-[#14b8a6] tw-text-black' : 'tw-bg-slate-900 tw-text-slate-400 hover:tw-text-slate-200'}"
+						class="tw-font-mono tw-text-[11px] tw-font-bold tw-px-2.5 tw-py-1 tw-rounded-md tw-transition-colors tw-whitespace-nowrap {activeSection === 'designer' ? 'tw-bg-[#14b8a6] tw-text-black' : 'tw-bg-[#0f172a] tw-text-slate-400 hover:tw-text-slate-200'}"
 						onclick={() => activeSection = 'designer'}
 					>
 						📐 DESIGNER
 					</button>
 					<button
 						type="button"
-						class="tw-font-mono tw-text-[11px] tw-font-bold tw-px-2.5 tw-py-1 tw-rounded-md tw-transition-colors tw-whitespace-nowrap {activeSection === 'library' ? 'tw-bg-[#14b8a6] tw-text-black' : 'tw-bg-slate-900 tw-text-slate-400 hover:tw-text-slate-200'}"
+						class="tw-font-mono tw-text-[11px] tw-font-bold tw-px-2.5 tw-py-1 tw-rounded-md tw-transition-colors tw-whitespace-nowrap {activeSection === 'library' ? 'tw-bg-[#14b8a6] tw-text-black' : 'tw-bg-[#0f172a] tw-text-slate-400 hover:tw-text-slate-200'}"
 						onclick={() => activeSection = 'library'}
 					>
 						📚 LIBRARY
 					</button>
 					<button
 						type="button"
-						class="tw-font-mono tw-text-[11px] tw-font-bold tw-px-2.5 tw-py-1 tw-rounded-md tw-transition-colors tw-whitespace-nowrap {activeSection === 'warroom' ? 'tw-bg-[#14b8a6] tw-text-black' : 'tw-bg-slate-900 tw-text-slate-400 hover:tw-text-slate-200'}"
+						class="tw-font-mono tw-text-[11px] tw-font-bold tw-px-2.5 tw-py-1 tw-rounded-md tw-transition-colors tw-whitespace-nowrap {activeSection === 'warroom' ? 'tw-bg-[#14b8a6] tw-text-black' : 'tw-bg-[#0f172a] tw-text-slate-400 hover:tw-text-slate-200'}"
 						onclick={() => activeSection = 'warroom'}
 					>
 						⚡ WAR ROOM
 					</button>
 					<button
 						type="button"
-						class="tw-font-mono tw-text-[11px] tw-font-bold tw-px-2.5 tw-py-1 tw-rounded-md tw-transition-colors tw-whitespace-nowrap {activeSection === 'tips' ? 'tw-bg-[#14b8a6] tw-text-black' : 'tw-bg-slate-900 tw-text-slate-400 hover:tw-text-slate-200'}"
+						class="tw-font-mono tw-text-[11px] tw-font-bold tw-px-2.5 tw-py-1 tw-rounded-md tw-transition-colors tw-whitespace-nowrap {activeSection === 'tips' ? 'tw-bg-[#14b8a6] tw-text-black' : 'tw-bg-[#0f172a] tw-text-slate-400 hover:tw-text-slate-200'}"
 						onclick={() => activeSection = 'tips'}
 					>
 						💡 TIPS
@@ -388,7 +388,7 @@
 			<!-- Modal Footer -->
 			<footer class="tw-bg-[#040814] tw-border-t tw-border-slate-800/80 tw-px-6 tw-py-3.5 tw-flex tw-flex-col sm:tw-flex-row sm:tw-items-center tw-justify-between tw-gap-3">
 				<span class="tw-font-mono tw-text-[11px] tw-text-slate-500">
-					Press <kbd class="tw-bg-slate-900 tw-border tw-border-slate-700 tw-text-slate-300 tw-px-1.5 tw-py-0.5 tw-rounded">ESC</kbd> or click outside to dismiss
+					Press <kbd class="tw-bg-[#0f172a] tw-border tw-border-slate-700 tw-text-slate-300 tw-px-1.5 tw-py-0.5 tw-rounded">ESC</kbd> or click outside to dismiss
 				</span>
 				<button
 					type="button"

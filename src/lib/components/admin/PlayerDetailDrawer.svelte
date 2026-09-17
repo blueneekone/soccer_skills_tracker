@@ -62,7 +62,7 @@
 	<!-- svelte-ignore a11y_click_events_have_key_events -->
 	<!-- svelte-ignore a11y_no_static_element_interactions -->
 	<div 
-		class="tw-fixed tw-inset-0 tw-z-[300] tw-bg-black/60 tw-backdrop-blur-sm tw-transition-opacity"
+		class="tw-fixed tw-inset-0 tw-z-[300] tw-bg-[#000000]/60 tw-backdrop-blur-sm tw-transition-opacity"
 		onclick={closeDrawer}
 	></div>
 
@@ -149,7 +149,7 @@
 					</div>
 					<div class="tw-flex tw-justify-between tw-items-center">
 						<span class="tw-text-sm tw-text-[#D4D4D8]">Status</span>
-						<span class="tw-font-mono tw-[font-variant-numeric:tabular-nums] tw-text-[10px] tw-uppercase {enterprisePlayerDrawer.selected.status === 'active' ? 'tw-text-[#14b8a6]' : 'tw-text-amber-400'}">
+						<span class="tw-font-mono tw-[font-variant-numeric:tabular-nums] tw-text-[10px] tw-uppercase {enterprisePlayerDrawer.selected.status === 'active' ? 'tw-text-[#14b8a6]' : 'tw-text-[#fbbf24]'}">
 							{enterprisePlayerDrawer.selected.status}
 						</span>
 					</div>

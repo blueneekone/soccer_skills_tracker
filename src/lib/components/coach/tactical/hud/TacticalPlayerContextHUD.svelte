@@ -45,7 +45,7 @@
 	<!-- svelte-ignore a11y_click_events_have_key_events -->
 	<!-- svelte-ignore a11y_no_static_element_interactions -->
 	<div
-		class="tw-fixed tw-inset-0 tw-z-[200] tw-bg-black/20"
+		class="tw-fixed tw-inset-0 tw-z-[200] tw-bg-[#000000]/20"
 		onclick={() => onClose?.()}
 	></div>
 
@@ -73,7 +73,7 @@
 			</div>
 			<button
 				type="button"
-				class="tw-text-slate-400 hover:tw-text-white tw-text-xs tw-px-1.5 tw-py-0.5 tw-rounded hover:tw-bg-slate-800 tw-transition-colors"
+				class="tw-text-slate-400 hover:tw-text-white tw-text-xs tw-px-1.5 tw-py-0.5 tw-rounded hover:tw-bg-[#0f172a] tw-transition-colors"
 				onclick={() => onClose?.()}
 			>
 				✕
@@ -101,7 +101,7 @@
 					{#if r.id !== player.id}
 						<button
 							type="button"
-							class="tw-w-full tw-flex tw-items-center tw-justify-between tw-px-2 tw-py-1.5 tw-text-left tw-text-xs tw-text-slate-300 hover:tw-bg-slate-800 hover:tw-text-white tw-border-b tw-border-slate-800/50 last:tw-border-0 tw-transition-colors"
+							class="tw-w-full tw-flex tw-items-center tw-justify-between tw-px-2 tw-py-1.5 tw-text-left tw-text-xs tw-text-slate-300 hover:tw-bg-[#0f172a] hover:tw-text-white tw-border-b tw-border-slate-800/50 last:tw-border-0 tw-transition-colors"
 							onclick={(e) => {
 								e.stopPropagation();
 								onSwap?.(r);
@@ -167,7 +167,7 @@
 				}}
 			>
 				<span>Clear Athlete Routes</span>
-				<span class="tw-text-[10px] tw-text-amber-400 tw-font-bold">✕ Clear</span>
+				<span class="tw-text-[10px] tw-text-[#fbbf24] tw-font-bold">✕ Clear</span>
 			</button>
 
 			<button

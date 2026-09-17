@@ -28,7 +28,7 @@
 <svelte:window onkeydown={engine.onOtpKeydown} />
 
 <div
-	class="pd-page-root household-graph phh parent-lounge-page tw-mx-auto tw-w-full tw-max-w-5xl"
+	class="pd-page-root household-graph phh parent-lounge-page tw-w-full"
 	style="padding-bottom: env(safe-area-inset-bottom, 0px);"
 	data-region="household-clearance"
 >
@@ -38,7 +38,7 @@
 			<h1 class="phh-title tw-mb-2 tw-text-xl tw-font-extrabold tw-tracking-tight tw-text-white md:tw-text-2xl">
 				Household Clearance Center
 			</h1>
-			<p class="tw-mx-auto tw-max-w-prose tw-text-sm tw-text-[var(--text-secondary)]">
+			<p class="tw-text-sm tw-text-[var(--text-secondary)]">
 				Classified provisioning. Minors do not self-register. Digital signatures and dispatch codes
 				are the only valid ingress paths.
 			</p>
@@ -88,7 +88,7 @@
 					disabled={engine.coppaSigned || engine.actionBusy}
 					onclick={() => engine.signWaiver()}
 				>
-					<Icon name={"status.seal-check" as IconName} size={18} class="tw-text-amber-500" />
+					<Icon name={"status.seal-check" as IconName} size={18} class="tw-text-[#f59e0b]" />
 					<span>{engine.coppaSigned ? 'Waiver on file' : 'Sign waiver & authorize'}</span>
 				</button>
 			</section>
@@ -247,7 +247,7 @@
 											engine.actionBusy}
 										onclick={() => engine.generateOtpForRow(row)}
 									>
-										<Icon name={"sys.key" as IconName} size={14} class="tw-text-amber-500" />
+										<Icon name={"sys.key" as IconName} size={14} class="tw-text-[#f59e0b]" />
 										<span>{engine.otpGenBusyKey === row.email ? 'Working…' : 'Generate clearance code'}</span>
 									</button>
 								</div>
@@ -358,7 +358,7 @@
                 aria-labelledby="phh-coparent"
             >
                 <div class="tw-mb-3">
-                    <span class="phh-eyebrow tw-text-amber-400/80">Household Management</span>
+                    <span class="phh-eyebrow tw-text-[#fbbf24]/80">Household Management</span>
                     <h2 id="phh-coparent" class="tw-m-0 tw-text-sm tw-font-bold tw-uppercase tw-tracking-widest tw-text-white tw-font-mono">
                         Invite Co-Parent
                     </h2>
@@ -407,7 +407,7 @@
 
 	{#if engine.actErr}
 		<div
-			class="bento-mt-md tw-border tw-border-amber-500/50 tw-bg-amber-950/20 tw-px-4 tw-py-3 tw-text-sm tw-text-amber-100"
+			class="bento-mt-md tw-border tw-border-[#f59e0b]/50 tw-bg-amber-950/20 tw-px-4 tw-py-3 tw-text-sm tw-text-amber-100"
 			role="alert"
 		>
 			{engine.actErr}
@@ -567,7 +567,7 @@
 </style>
 
 {#if engine.operativeRows.length > 0}
-	<div class="tw-mx-auto tw-w-full tw-max-w-3xl tw-px-3 tw-pb-6 md:tw-px-6">
+	<div class="tw-w-full tw-px-3 tw-pb-6 md:tw-px-6">
 		{#each engine.operativeRows as row (row.email)}
 			<details class="phh-privacy-details bento-mt-md">
 				<summary class="phh-privacy-summary">

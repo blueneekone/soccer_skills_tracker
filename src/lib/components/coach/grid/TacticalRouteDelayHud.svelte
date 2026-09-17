@@ -19,7 +19,7 @@
 			<span class="tw-tracking-wide">HOLD: {(hudRoute.delay / 1000).toFixed(1)}s</span>
 			<button
 				type="button"
-				class="tw-shrink-0 tw-rounded-full tw-border tw-border-[#14b8a6]/60 tw-bg-black/50 tw-px-2 tw-py-0.5 tw-font-mono tw-text-[10px] tw-text-[#14b8a6] tw-transition-colors hover:tw-bg-[#14b8a6]/15"
+				class="tw-shrink-0 tw-rounded-full tw-border tw-border-[#14b8a6]/60 tw-bg-[#000000]/50 tw-px-2 tw-py-0.5 tw-font-mono tw-text-[10px] tw-text-[#14b8a6] tw-transition-colors hover:tw-bg-[#14b8a6]/15"
 				aria-label="Decrease route delay"
 				onclick={(e) => {
 					e.stopPropagation();
@@ -30,7 +30,7 @@
 			</button>
 			<button
 				type="button"
-				class="tw-shrink-0 tw-rounded-full tw-border tw-border-[#14b8a6]/60 tw-bg-black/50 tw-px-2 tw-py-0.5 tw-font-mono tw-text-[10px] tw-text-[#14b8a6] tw-transition-colors hover:tw-bg-[#14b8a6]/15"
+				class="tw-shrink-0 tw-rounded-full tw-border tw-border-[#14b8a6]/60 tw-bg-[#000000]/50 tw-px-2 tw-py-0.5 tw-font-mono tw-text-[10px] tw-text-[#14b8a6] tw-transition-colors hover:tw-bg-[#14b8a6]/15"
 				aria-label="Increase route delay"
 				onclick={(e) => {
 					e.stopPropagation();

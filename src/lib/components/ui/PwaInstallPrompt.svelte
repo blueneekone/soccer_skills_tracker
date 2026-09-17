@@ -135,7 +135,7 @@
 				</p>
 				<div class="tw-flex tw-items-center tw-justify-center tw-gap-2" aria-hidden="true">
 					<span
-						class="tw-inline-flex tw-h-7 tw-w-7 tw-items-center tw-justify-center tw-rounded-md tw-border tw-border-cyan-500/50 tw-bg-black/50 tw-text-cyan-300"
+						class="tw-inline-flex tw-h-7 tw-w-7 tw-items-center tw-justify-center tw-rounded-md tw-border tw-border-cyan-500/50 tw-bg-[#000000]/50 tw-text-cyan-300"
 					>
 						<Icon name={"comm.share" as IconName} size={16} />
 					</span>

@@ -106,19 +106,19 @@
 		</div>
 
 		{#if isUploading}
-			<div class="tw-p-4 tw-rounded-none tw-bg-slate-900 tw-border tw-border-slate-800 tw-space-y-2">
+			<div class="tw-p-4 tw-rounded-none tw-bg-[#0f172a] tw-border tw-border-slate-800 tw-space-y-2">
 				<div class="tw-flex tw-justify-between tw-text-xs tw-font-mono tw-text-teal-400">
 					<span>INGESTING BATCHES...</span>
 					<span>{progressPercent}%</span>
 				</div>
-				<div data-testid="upload-progress-bar" class="tw-w-full tw-bg-slate-800 tw-h-2 tw-rounded-none tw-overflow-hidden">
+				<div data-testid="upload-progress-bar" class="tw-w-full tw-bg-[#0f172a] tw-h-2 tw-rounded-none tw-overflow-hidden">
 					<div class="tw-bg-teal-400 tw-h-full tw-transition-all tw-duration-200" style="width: {progressPercent}%;"></div>
 				</div>
 			</div>
 		{/if}
 
 		{#if statusMessage}
-			<div class="tw-p-4 tw-rounded-none tw-bg-slate-900 tw-border tw-border-slate-800 tw-text-slate-200 tw-font-mono tw-text-sm">
+			<div class="tw-p-4 tw-rounded-none tw-bg-[#0f172a] tw-border tw-border-slate-800 tw-text-slate-200 tw-font-mono tw-text-sm">
 				{statusMessage}
 			</div>
 		{/if}

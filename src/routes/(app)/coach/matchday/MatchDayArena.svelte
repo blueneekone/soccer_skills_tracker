@@ -46,7 +46,7 @@
 	<button
 		type="button"
 		onclick={() => engine.activeTab = 'live'}
-		class="tw-flex-1 tw-min-w-[120px] tw-px-4 tw-py-2 tw-font-mono tw-text-xs tw-font-bold tw-uppercase tw-tracking-wider tw-transition-all {engine.activeTab === 'live' ? 'tw-bg-[#000000] tw-text-[#14b8a6] tw-border tw-border-[#14b8a6] tw-shadow-md' : 'tw-bg-transparent tw-text-slate-400 tw-border tw-border-transparent hover:tw-text-white hover:tw-bg-slate-800/50'}"
+		class="tw-flex-1 tw-min-w-[120px] tw-px-4 tw-py-2 tw-font-mono tw-text-xs tw-font-bold tw-uppercase tw-tracking-wider tw-transition-all {engine.activeTab === 'live' ? 'tw-bg-[#000000] tw-text-[#14b8a6] tw-border tw-border-[#14b8a6] tw-shadow-md' : 'tw-bg-transparent tw-text-slate-400 tw-border tw-border-transparent hover:tw-text-white hover:tw-bg-[#0f172a]/50'}"
 		style="border-radius: 0px;"
 	>
 		● LIVE TELEMETRY
@@ -54,7 +54,7 @@
 	<button
 		type="button"
 		onclick={() => engine.activeTab = 'roster'}
-		class="tw-flex-1 tw-min-w-[120px] tw-px-4 tw-py-2 tw-font-mono tw-text-xs tw-font-bold tw-uppercase tw-tracking-wider tw-transition-all {engine.activeTab === 'roster' ? 'tw-bg-[#000000] tw-text-[#14b8a6] tw-border tw-border-[#14b8a6] tw-shadow-md' : 'tw-bg-transparent tw-text-slate-400 tw-border tw-border-transparent hover:tw-text-white hover:tw-bg-slate-800/50'}"
+		class="tw-flex-1 tw-min-w-[120px] tw-px-4 tw-py-2 tw-font-mono tw-text-xs tw-font-bold tw-uppercase tw-tracking-wider tw-transition-all {engine.activeTab === 'roster' ? 'tw-bg-[#000000] tw-text-[#14b8a6] tw-border tw-border-[#14b8a6] tw-shadow-md' : 'tw-bg-transparent tw-text-slate-400 tw-border tw-border-transparent hover:tw-text-white hover:tw-bg-[#0f172a]/50'}"
 		style="border-radius: 0px;"
 	>
 		👥 ROSTER & SUBS
@@ -62,7 +62,7 @@
 	<button
 		type="button"
 		onclick={() => engine.activeTab = 'review'}
-		class="tw-flex-1 tw-min-w-[120px] tw-px-4 tw-py-2 tw-font-mono tw-text-xs tw-font-bold tw-uppercase tw-tracking-wider tw-transition-all {engine.activeTab === 'review' ? 'tw-bg-[#000000] tw-text-[#14b8a6] tw-border tw-border-[#14b8a6] tw-shadow-md' : 'tw-bg-transparent tw-text-slate-400 tw-border tw-border-transparent hover:tw-text-white hover:tw-bg-slate-800/50'}"
+		class="tw-flex-1 tw-min-w-[120px] tw-px-4 tw-py-2 tw-font-mono tw-text-xs tw-font-bold tw-uppercase tw-tracking-wider tw-transition-all {engine.activeTab === 'review' ? 'tw-bg-[#000000] tw-text-[#14b8a6] tw-border tw-border-[#14b8a6] tw-shadow-md' : 'tw-bg-transparent tw-text-slate-400 tw-border tw-border-transparent hover:tw-text-white hover:tw-bg-[#0f172a]/50'}"
 		style="border-radius: 0px;"
 	>
 		📊 POST-MATCH REVIEW
@@ -185,7 +185,7 @@
 				<button
 					type="button"
 					onclick={() => handleStatClick('FOUL')}
-					class="tw-flex tw-flex-col tw-items-center tw-justify-center tw-h-16 tw-p-2 tw-bg-slate-900 tw-border tw-border-amber-600/80 tw-text-amber-300 hover:tw-bg-amber-600 hover:tw-text-black tw-transition-all active:tw-scale-95 group tw-cursor-pointer"
+					class="tw-flex tw-flex-col tw-items-center tw-justify-center tw-h-16 tw-p-2 tw-bg-[#0f172a] tw-border tw-border-amber-600/80 tw-text-amber-300 hover:tw-bg-amber-600 hover:tw-text-black tw-transition-all active:tw-scale-95 group tw-cursor-pointer"
 					style="border-radius: 0px;"
 				>
 					<span class="tw-font-mono tw-text-xs tw-font-bold tw-tracking-wider group-hover:tw-text-black">+ FOUL</span>
@@ -196,7 +196,7 @@
 				<button
 					type="button"
 					onclick={() => handleStatClick('YELLOW_CARD')}
-					class="tw-flex tw-flex-col tw-items-center tw-justify-center tw-h-16 tw-p-2 tw-bg-amber-950/40 tw-border tw-border-amber-400/80 tw-text-amber-300 hover:tw-bg-amber-400 hover:tw-text-black tw-transition-all active:tw-scale-95 group tw-cursor-pointer"
+					class="tw-flex tw-flex-col tw-items-center tw-justify-center tw-h-16 tw-p-2 tw-bg-amber-950/40 tw-border tw-border-amber-400/80 tw-text-amber-300 hover:tw-bg-[#fbbf24] hover:tw-text-black tw-transition-all active:tw-scale-95 group tw-cursor-pointer"
 					style="border-radius: 0px;"
 				>
 					<span class="tw-font-mono tw-text-xs tw-font-black tw-tracking-wider group-hover:tw-text-black">+ YELLOW</span>
@@ -218,7 +218,7 @@
 				<button
 					type="button"
 					onclick={() => engine.logEvent('SUB', 'PLAYER SUB LOGGED')}
-					class="tw-flex tw-flex-col tw-items-center tw-justify-center tw-h-16 tw-p-2 tw-bg-slate-900 tw-border tw-border-[#14b8a6]/80 tw-text-[#14b8a6] hover:tw-bg-[#14b8a6] hover:tw-text-black tw-transition-all active:tw-scale-95 group tw-cursor-pointer"
+					class="tw-flex tw-flex-col tw-items-center tw-justify-center tw-h-16 tw-p-2 tw-bg-[#0f172a] tw-border tw-border-[#14b8a6]/80 tw-text-[#14b8a6] hover:tw-bg-[#14b8a6] hover:tw-text-black tw-transition-all active:tw-scale-95 group tw-cursor-pointer"
 					style="border-radius: 0px;"
 				>
 					<span class="tw-font-mono tw-text-xs tw-font-black tw-tracking-wider group-hover:tw-text-black">+ SUB</span>
@@ -260,7 +260,7 @@
 						style="border-radius: 0px;"
 					>
 						<div class="tw-flex tw-items-center tw-gap-2.5">
-							<span class="tw-w-1.5 tw-h-1.5 {evt.type === 'GOAL' ? 'tw-bg-[#14b8a6]' : evt.type.includes('CARD') ? 'tw-bg-amber-400' : evt.type === 'SUB' ? 'tw-bg-[#14b8a6]' : 'tw-bg-rose-400'}"></span>
+							<span class="tw-w-1.5 tw-h-1.5 {evt.type === 'GOAL' ? 'tw-bg-[#14b8a6]' : evt.type.includes('CARD') ? 'tw-bg-[#fbbf24]' : evt.type === 'SUB' ? 'tw-bg-[#14b8a6]' : 'tw-bg-rose-400'}"></span>
 							<span class="tw-font-mono tw-text-xs tw-text-white tw-font-bold">{evt.label}</span>
 						</div>
 						<span class="tw-font-mono tw-text-[10px] tw-text-[#14b8a6] tw-bg-[#000000] tw-px-2 tw-py-0.5 tw-border tw-border-[#334155]">
@@ -325,7 +325,7 @@
 				</div>
 				<div class="tw-flex tw-justify-between tw-items-center tw-p-2 tw-bg-[#000000] tw-border tw-border-[#334155]">
 					<span class="tw-text-slate-400">LIGHTNING PROXIMITY:</span>
-					<span class="tw-font-bold {engine.lightningDistance < 6 ? 'tw-text-rose-400' : engine.lightningDistance <= 10 ? 'tw-text-amber-400' : 'tw-text-[#14b8a6]'}">
+					<span class="tw-font-bold {engine.lightningDistance < 6 ? 'tw-text-rose-400' : engine.lightningDistance <= 10 ? 'tw-text-[#fbbf24]' : 'tw-text-[#14b8a6]'}">
 						{engine.lightningDistance} MILES
 					</span>
 				</div>
@@ -397,7 +397,7 @@
 								<div class="tw-flex tw-items-center tw-gap-2">
 									<button
 										type="button"
-										class="tw-px-2.5 tw-py-1 tw-bg-amber-950/40 tw-border tw-border-amber-500/60 tw-text-amber-300 hover:tw-bg-amber-500 hover:tw-text-black tw-font-mono tw-text-[10px] tw-font-bold tw-transition-colors"
+										class="tw-px-2.5 tw-py-1 tw-bg-amber-950/40 tw-border tw-border-[#f59e0b]/60 tw-text-amber-300 hover:tw-bg-[#f59e0b] hover:tw-text-black tw-font-mono tw-text-[10px] tw-font-bold tw-transition-colors"
 										onclick={() => engine.moveToBench(player.id)}
 									>
 										↘ TO BENCH

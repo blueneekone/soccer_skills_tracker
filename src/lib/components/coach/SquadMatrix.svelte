@@ -879,7 +879,7 @@
 					<span class="tw-font-mono tw-text-[10px] tw-font-bold tw-px-2 tw-py-1 tw-rounded tw-bg-[#f59e0b]/15 tw-border tw-border-[#f59e0b]/40 tw-text-[#f59e0b]">
 						⏳ CONSENT PENDING: <span class="tw-text-white tw-ml-1">{rmConsent}</span>
 					</span>
-					<span class="tw-font-mono tw-text-[10px] tw-font-bold tw-px-2 tw-py-1 tw-rounded tw-bg-slate-800 tw-border tw-border-slate-700 tw-text-slate-400">
+					<span class="tw-font-mono tw-text-[10px] tw-font-bold tw-px-2 tw-py-1 tw-rounded tw-bg-[#0f172a] tw-border tw-border-slate-700 tw-text-slate-400">
 						○ OFFLINE: <span class="tw-text-white tw-ml-1">{rmOffline}</span>
 					</span>
 					{#if rmAtRisk > 0}
@@ -951,7 +951,7 @@
 						<!-- Top: Jersey, Position, and Edit Action -->
 						<div class="tw-flex tw-items-center tw-justify-between tw-gap-2">
 							<div class="tw-flex tw-items-center tw-gap-1.5">
-								<span class="tw-font-mono tw-text-xs tw-font-black tw-px-1.5 tw-py-0.5 tw-rounded {active ? 'tw-bg-[#daff0a] tw-text-black' : 'tw-bg-slate-800 tw-text-[#daff0a]'}">
+								<span class="tw-font-mono tw-text-xs tw-font-black tw-px-1.5 tw-py-0.5 tw-rounded {active ? 'tw-bg-[#daff0a] tw-text-black' : 'tw-bg-[#0f172a] tw-text-[#daff0a]'}">
 									#{p.number}
 								</span>
 								<span class="tw-font-mono tw-text-[10px] tw-font-bold tw-text-[#14b8a6] tw-bg-[#14b8a6]/10 tw-px-1.5 tw-py-0.5 tw-rounded tw-border tw-border-[#14b8a6]/30">

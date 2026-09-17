@@ -138,7 +138,7 @@
 	<div class="tw-pt-2 tw-flex tw-flex-col tw-gap-2">
 		<button
 			type="button"
-			class="tw-w-full tw-bg-[#fbbf24] hover:tw-bg-amber-400 tw-text-black tw-font-mono tw-font-bold tw-py-2.5 tw-px-4 tw-rounded-lg tw-text-xs tw-uppercase tw-transition-colors tw-shadow-[0_0_15px_rgba(251,191,36,0.2)]"
+			class="tw-w-full tw-bg-[#fbbf24] hover:tw-bg-[#fbbf24] tw-text-black tw-font-mono tw-font-bold tw-py-2.5 tw-px-4 tw-rounded-lg tw-text-xs tw-uppercase tw-transition-colors tw-shadow-[0_0_15px_rgba(251,191,36,0.2)]"
 			onclick={() => engine.saveWorkout()}
 		>
 			💾 SAVE DRILL TO PLAYBOOK

@@ -46,7 +46,7 @@
 	{#if !vpc_approved}
 		<!-- COPPA lock — parental consent required -->
 		<div
-			class="tw-relative tw-flex tw-h-full tw-w-full tw-flex-col tw-items-center tw-justify-center tw-rounded-full tw-border tw-border-red-500/30 tw-bg-slate-900/80 tw-backdrop-blur-md tw-shadow-[inset_0_0_40px_rgba(255,0,60,0.08),0_0_30px_rgba(255,0,60,0.15)]"
+			class="tw-relative tw-flex tw-h-full tw-w-full tw-flex-col tw-items-center tw-justify-center tw-rounded-full tw-border tw-border-red-500/30 tw-bg-[#0f172a]/80 tw-backdrop-blur-md tw-shadow-[inset_0_0_40px_rgba(255,0,60,0.08),0_0_30px_rgba(255,0,60,0.15)]"
 			role="img"
 			aria-label="Avatar locked — parental consent required"
 		>
@@ -72,7 +72,7 @@
 		{#if showInitializeCta && !resolvedPortrait}
 			<a
 				href={resolveAppPath('/player/armory')}
-				class="oap-init-cta tw-absolute tw-bottom-2 tw-left-1/2 tw-z-[2] tw-inline-flex tw--translate-x-1/2 tw-items-center tw-justify-center tw-rounded-full tw-border tw-border-slate-700 tw-bg-slate-900/90 tw-px-2.5 tw-py-1.5 tw-font-mono tw-text-[0.48rem] tw-font-bold tw-uppercase tw-tracking-[0.14em] tw-text-slate-200 tw-no-underline tw-backdrop-blur-sm tw-transition-colors tw-duration-150 hover:tw-border-slate-600 hover:tw-bg-slate-800 sm:tw-bottom-3 sm:tw-px-3 sm:tw-text-[0.52rem]"
+				class="oap-init-cta tw-absolute tw-bottom-2 tw-left-1/2 tw-z-[2] tw-inline-flex tw--translate-x-1/2 tw-items-center tw-justify-center tw-rounded-full tw-border tw-border-slate-700 tw-bg-[#0f172a]/90 tw-px-2.5 tw-py-1.5 tw-font-mono tw-text-[0.48rem] tw-font-bold tw-uppercase tw-tracking-[0.14em] tw-text-slate-200 tw-no-underline tw-backdrop-blur-sm tw-transition-colors tw-duration-150 hover:tw-border-slate-600 hover:tw-bg-[#0f172a] sm:tw-bottom-3 sm:tw-px-3 sm:tw-text-[0.52rem]"
 				data-sveltekit-preload-data="hover"
 			>
 				Customize operative

@@ -169,7 +169,7 @@
 	function statusColor(s: PaymentDisplayStatus): string {
 		if (s === 'paid') return 'tw-text-[#14b8a6]';
 		if (s === 'partial') return 'tw-text-sky-400';
-		if (s === 'pending' || s === 'processing') return 'tw-text-amber-400';
+		if (s === 'pending' || s === 'processing') return 'tw-text-[#fbbf24]';
 		if (s === 'failed') return 'tw-text-red-400';
 		return 'tw-text-slate-400';
 	}
@@ -284,11 +284,11 @@
 	{:else}
 		<ul class="tw-m-0 tw-list-none tw-space-y-4 tw-p-0">
 			{#each players as player (player.email)}
-				<li class="st-bento tw-rounded-[24px] tw-border tw-border-slate-800 tw-bg-slate-900/60 tw-p-5">
+				<li class="st-bento tw-rounded-[24px] tw-border tw-border-slate-800 tw-bg-[#0f172a]/60 tw-p-5">
 					<div class="tw-flex tw-flex-wrap tw-items-center tw-justify-between tw-gap-4">
 						<div class="tw-flex tw-min-w-0 tw-items-center tw-gap-3">
 							<div
-								class="tw-flex tw-h-10 tw-w-10 tw-shrink-0 tw-items-center tw-justify-center tw-rounded-full tw-bg-slate-800 tw-font-mono tw-text-sm tw-font-black tw-text-slate-300"
+								class="tw-flex tw-h-10 tw-w-10 tw-shrink-0 tw-items-center tw-justify-center tw-rounded-full tw-bg-[#0f172a] tw-font-mono tw-text-sm tw-font-black tw-text-slate-300"
 								aria-hidden="true"
 							>
 								{player.displayName.slice(0, 2).toUpperCase()}
@@ -330,7 +330,7 @@
 							{:else if canPay(player.ledger)}
 								<button
 									type="button"
-									class="tw-inline-flex tw-items-center tw-justify-center tw-gap-1.5 tw-rounded-none tw-border tw-border-amber-500 tw-bg-amber-500 tw-px-3.5 tw-py-2 tw-font-mono tw-text-xs tw-font-bold tw-tracking-wide tw-text-black tw-transition-all hover:tw-bg-amber-400 hover:tw-shadow-[0_0_15px_rgba(251, 191, 36,0.5)]"
+									class="tw-inline-flex tw-items-center tw-justify-center tw-gap-1.5 tw-rounded-none tw-border tw-border-[#f59e0b] tw-bg-[#f59e0b] tw-px-3.5 tw-py-2 tw-font-mono tw-text-xs tw-font-bold tw-tracking-wide tw-text-black tw-transition-all hover:tw-bg-[#fbbf24] hover:tw-shadow-[0_0_15px_rgba(251, 191, 36,0.5)]"
 									onclick={() => openPayment(player.email)}
 								>
 									<Icon name={"sys.credit-card" as IconName} size={14} />

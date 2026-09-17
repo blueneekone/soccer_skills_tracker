@@ -119,7 +119,7 @@ import { untrack } from 'svelte';
 					</p>
 				</div>
 			{:else if phase === 'unsupported'}
-				<div class="tw-w-full tw-rounded-md tw-border tw-border-amber-500/40 tw-bg-amber-950/50 tw-px-3 tw-py-3 tw-font-mono tw-text-xs tw-text-amber-100 tw-text-center" role="alert">
+				<div class="tw-w-full tw-rounded-md tw-border tw-border-[#f59e0b]/40 tw-bg-amber-950/50 tw-px-3 tw-py-3 tw-font-mono tw-text-xs tw-text-amber-100 tw-text-center" role="alert">
 					This browser does not support passkey registration with a platform authenticator.
 					You can continue using standard authentication.
 				</div>

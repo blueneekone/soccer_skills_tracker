@@ -359,7 +359,7 @@
 					</div>
 					<button
 						type="button"
-						class="tw-ml-1 tw-bg-slate-800 hover:tw-bg-slate-700 tw-text-[#fbbf24] hover:tw-text-white tw-border tw-border-slate-600 tw-font-mono tw-text-[10px] tw-font-bold tw-px-2 tw-py-1 tw-rounded tw-transition-colors tw-cursor-pointer"
+						class="tw-ml-1 tw-bg-[#0f172a] hover:tw-bg-slate-700 tw-text-[#fbbf24] hover:tw-text-white tw-border tw-border-slate-600 tw-font-mono tw-text-[10px] tw-font-bold tw-px-2 tw-py-1 tw-rounded tw-transition-colors tw-cursor-pointer"
 						onclick={() => openPassport(selectedPlayer)}
 						title="Open athlete dossier passport drawer"
 					>
@@ -390,7 +390,7 @@
 					<button
 						type="button"
 						onclick={() => handleSelect('ALL')}
-						class="tw-bg-slate-800 hover:tw-bg-slate-700 tw-border tw-border-slate-600 tw-text-slate-200 hover:tw-text-[#14b8a6] tw-font-mono tw-text-[11px] tw-px-2.5 tw-py-2 tw-rounded-lg tw-transition-colors tw-cursor-pointer"
+						class="tw-bg-[#0f172a] hover:tw-bg-slate-700 tw-border tw-border-slate-600 tw-text-slate-200 hover:tw-text-[#14b8a6] tw-font-mono tw-text-[11px] tw-px-2.5 tw-py-2 tw-rounded-lg tw-transition-colors tw-cursor-pointer"
 						title="Reset to squad average benchmark"
 					>
 						✕ Reset
@@ -589,7 +589,7 @@
 
 					<button
 						type="button"
-						class="tw-bg-[#fbbf24] hover:tw-bg-amber-400 tw-text-black tw-font-mono tw-font-bold tw-text-[11px] tw-px-3 tw-py-2 tw-rounded-lg tw-transition-colors"
+						class="tw-bg-[#fbbf24] hover:tw-bg-[#fbbf24] tw-text-black tw-font-mono tw-font-bold tw-text-[11px] tw-px-3 tw-py-2 tw-rounded-lg tw-transition-colors"
 						onclick={() => openPassport(selectedPlayer)}
 					>
 						Full Passport →

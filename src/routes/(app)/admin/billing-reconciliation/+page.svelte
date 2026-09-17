@@ -44,7 +44,7 @@
         </div>
     {/if}
 
-    <div class="tw-border tw-border-[#334155] tw-bg-black tw-rounded-none tw-overflow-hidden">
+    <div class="tw-border tw-border-[#334155] tw-bg-[#000000] tw-rounded-none tw-overflow-hidden">
         <table class="tw-w-full tw-text-left">
             <thead class="tw-bg-[#111] tw-border-b tw-border-[#334155]">
                 <tr>
@@ -86,7 +86,7 @@
                                 <button
                                     type="submit"
                                     disabled={row.status === 'synced' || processingClub === row.clubId}
-                                    class="tw-bg-amber-600 hover:tw-bg-amber-500 disabled:tw-bg-slate-700 tw-text-white tw-font-bold tw-py-1 tw-px-3 tw-text-xs tw-rounded-none tw-transition-colors"
+                                    class="tw-bg-amber-600 hover:tw-bg-[#f59e0b] disabled:tw-bg-slate-700 tw-text-white tw-font-bold tw-py-1 tw-px-3 tw-text-xs tw-rounded-none tw-transition-colors"
                                 >
                                     {processingClub === row.clubId ? 'Syncing...' : 'Force Sync'}
                                 </button>

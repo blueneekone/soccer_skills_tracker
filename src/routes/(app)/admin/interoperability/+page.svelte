@@ -76,7 +76,7 @@
         let html = `
           <html><head><title>Export</title>
           <style>
-            body { font-family: monospace; padding: 20px; }
+            body { font-family: 'Geist Mono', ui-monospace, monospace; padding: 20px; }
             table { width: 100%; border-collapse: collapse; }
             th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
           </style>

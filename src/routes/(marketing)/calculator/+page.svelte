@@ -10,7 +10,7 @@
 
 <div class="tw-min-h-screen tw-bg-[#000000] tw-text-white tw-p-8 tw-font-sans">
   <div class="tw-max-w-4xl tw-mx-auto tw-border tw-border-[#334155] tw-p-6">
-    <h1 class="tw-font-mono tw-text-3xl tw-font-bold tw-text-amber-400 tw-mb-6 tw-uppercase">
+    <h1 class="tw-font-mono tw-text-3xl tw-font-bold tw-text-[#fbbf24] tw-mb-6 tw-uppercase">
       B2B COST SAVINGS CALCULATOR
     </h1>
 
@@ -30,21 +30,21 @@
     </div>
 
     <div id="pricing-comparison-table" class="tw-grid tw-grid-cols-1 md:tw-grid-cols-3 tw-gap-4 tw-mb-8">
-      <div class="tw-bg-slate-900 tw-border tw-border-[#334155] tw-p-4">
+      <div class="tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-p-4">
         <div class="tw-font-mono tw-text-xs tw-text-slate-400">TRADITIONAL / TEAMSNAP</div>
         <div class="tw-font-mono tw-text-2xl tw-font-bold tw-text-red-400">${totalTeamSnapCost.toLocaleString()}</div>
         <div class="tw-text-xs tw-text-slate-500">${teamSnapAnnualCost}/player/yr</div>
       </div>
 
-      <div class="tw-bg-slate-900 tw-border tw-border-[#334155] tw-p-4">
+      <div class="tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-p-4">
         <div class="tw-font-mono tw-text-xs tw-text-slate-400">SSTRACKER ENTERPRISE</div>
         <div class="tw-font-mono tw-text-2xl tw-font-bold tw-text-[#14b8a6]">${totalSstCost.toLocaleString()}</div>
         <div class="tw-text-xs tw-text-slate-500">${sstPerPlayerCost}/player/yr</div>
       </div>
 
-      <div class="tw-bg-slate-900 tw-border tw-border-amber-500/50 tw-p-4">
-        <div class="tw-font-mono tw-text-xs tw-text-amber-400">TOTAL ANNUAL SAVINGS</div>
-        <div id="total-annual-savings" class="tw-font-mono tw-text-2xl tw-font-bold tw-text-amber-400">${annualSavings.toLocaleString()}</div>
+      <div class="tw-bg-[#0f172a] tw-border tw-border-[#f59e0b]/50 tw-p-4">
+        <div class="tw-font-mono tw-text-xs tw-text-[#fbbf24]">TOTAL ANNUAL SAVINGS</div>
+        <div id="total-annual-savings" class="tw-font-mono tw-text-2xl tw-font-bold tw-text-[#fbbf24]">${annualSavings.toLocaleString()}</div>
         <div class="tw-text-xs tw-text-amber-300">Reinvested in Club Ops</div>
       </div>
     </div>

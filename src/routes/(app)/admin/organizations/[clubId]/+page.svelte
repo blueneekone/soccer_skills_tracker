@@ -500,7 +500,7 @@ import { getContext, untrack } from 'svelte';
 			<!-- svelte-ignore a11y_click_events_have_key_events -->
 			<!-- svelte-ignore a11y_no_static_element_interactions -->
 			<div
-				class="tw-fixed tw-inset-0 tw-z-50 tw-flex tw-items-center tw-justify-center tw-bg-black/80 tw-backdrop-blur-sm tw-p-4"
+				class="tw-fixed tw-inset-0 tw-z-50 tw-flex tw-items-center tw-justify-center tw-bg-[#000000]/80 tw-backdrop-blur-sm tw-p-4"
 				onclick={() => { if (!deleteExecuting) deleteModalOpen = false; }}
 			>
 				<div
@@ -517,7 +517,7 @@ import { getContext, untrack } from 'svelte';
 						</p>
 						<div class="tw-flex tw-items-center tw-justify-end tw-gap-3 tw-mt-3 tw-pt-3 tw-border-t tw-border-[#334155]">
 							<button type="button" class="v-toolbar-btn" onclick={() => deleteModalOpen = false}>Cancel</button>
-							<button type="button" class="v-toolbar-btn tw-border-amber-500 tw-text-amber-400 hover:tw-bg-amber-500/10" onclick={advanceDelete}>Yes, proceed</button>
+							<button type="button" class="v-toolbar-btn tw-border-[#f59e0b] tw-text-[#fbbf24] hover:tw-bg-[#f59e0b]/10" onclick={advanceDelete}>Yes, proceed</button>
 						</div>
 					{:else if deleteConfirmStep === 2}
 						<p class="tw-m-0 tw-flex tw-items-center tw-gap-2 tw-text-xs tw-font-mono tw-font-bold tw-tracking-wider tw-uppercase tw-text-[#ef4444]">

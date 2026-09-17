@@ -132,13 +132,13 @@
 	<div class="tw-bg-[#080d1a]/60 tw-backdrop-blur-md tw-border tw-border-slate-800/80 tw-rounded-2xl tw-p-6 tw-flex tw-flex-col tw-gap-5 tw-shadow-2xl">
 		<div class="tw-flex tw-flex-col sm:tw-flex-row sm:tw-items-center tw-justify-between tw-gap-4">
 			<div class="tw-flex tw-items-center tw-gap-4">
-				<div class="tw-h-12 tw-w-12 tw-rounded-xl tw-bg-slate-800/60 tw-border tw-border-slate-700/80 tw-flex tw-items-center tw-justify-center tw-text-slate-200 tw-font-mono tw-font-bold tw-text-xl tw-shadow-inner">
+				<div class="tw-h-12 tw-w-12 tw-rounded-xl tw-bg-[#0f172a]/60 tw-border tw-border-slate-700/80 tw-flex tw-items-center tw-justify-center tw-text-slate-200 tw-font-mono tw-font-bold tw-text-xl tw-shadow-inner">
 					📚
 				</div>
 				<div>
 					<h2 class="tw-text-slate-100 tw-font-bold tw-text-lg tw-flex tw-items-center tw-gap-3">
 						<span>Tactical Drill Library & Playbook</span>
-						<span class="tw-bg-slate-800 tw-text-slate-300 tw-border tw-border-slate-700 tw-font-mono tw-text-[10px] tw-px-2.5 tw-py-1 tw-rounded-md tw-tracking-widest tw-uppercase">
+						<span class="tw-bg-[#0f172a] tw-text-slate-300 tw-border tw-border-slate-700 tw-font-mono tw-text-[10px] tw-px-2.5 tw-py-1 tw-rounded-md tw-tracking-widest tw-uppercase">
 							{filteredDrills.length} Available
 						</span>
 					</h2>
@@ -151,7 +151,7 @@
 			<!-- New Drill CTA Button (Dark Aesthetic) -->
 			<button
 				type="button"
-				class="tw-bg-slate-800 hover:tw-bg-slate-700 tw-border tw-border-slate-700 hover:tw-border-slate-600 tw-text-slate-100 tw-font-mono tw-text-xs tw-font-bold tw-px-5 tw-py-2.5 tw-rounded-xl active:tw-scale-[0.98] tw-transition-all tw-duration-200 tw-flex tw-items-center tw-gap-2 tw-self-start sm:tw-self-auto"
+				class="tw-bg-[#0f172a] hover:tw-bg-slate-700 tw-border tw-border-slate-700 hover:tw-border-slate-600 tw-text-slate-100 tw-font-mono tw-text-xs tw-font-bold tw-px-5 tw-py-2.5 tw-rounded-xl active:tw-scale-[0.98] tw-transition-all tw-duration-200 tw-flex tw-items-center tw-gap-2 tw-self-start sm:tw-self-auto"
 				onclick={onNewDrill}
 			>
 				<span>➕</span>
@@ -290,7 +290,7 @@
 
 						<button
 							type="button"
-							class="tw-bg-[#fbbf24] hover:tw-bg-amber-400 tw-text-black tw-font-mono tw-text-[11px] tw-font-bold tw-py-2 tw-px-2 tw-rounded-xl active:tw-scale-[0.98] tw-transition-all tw-text-center"
+							class="tw-bg-[#fbbf24] hover:tw-bg-[#fbbf24] tw-text-black tw-font-mono tw-text-[11px] tw-font-bold tw-py-2 tw-px-2 tw-rounded-xl active:tw-scale-[0.98] tw-transition-all tw-text-center"
 							onclick={() => onDeployToIntent(drill)}
 						>
 							🚀 Deploy Intent

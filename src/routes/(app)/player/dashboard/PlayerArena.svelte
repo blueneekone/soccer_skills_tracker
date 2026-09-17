@@ -146,7 +146,7 @@
 				{/if}
 			</footer>
 		{:else}
-			<div class="tw-p-6 tw-text-center tw-bg-slate-900/50 tw-border tw-border-slate-800 tw-rounded-lg tw-m-4">
+			<div class="tw-p-6 tw-text-center tw-bg-[#0f172a]/50 tw-border tw-border-slate-800 tw-rounded-lg tw-m-4">
 				<p class="tw-font-mono tw-text-[10px] tw-uppercase tw-tracking-widest tw-text-[#fbbf24]">
 					Telemetry blocked: Verifiable Parental Consent (VPC) Required
 				</p>
@@ -155,22 +155,22 @@
 	</section>
 
 	<section class="player-hud-grid bento-span-12 tw-gap-4 tw-mt-6" style="grid-template-columns: repeat(auto-fit, minmax(min(100%, clamp(280px, 30vw, 350px)), 1fr));">
-		<div data-chamfer="true" class="chamfered-card hud-biometrics-card pd-panel tw-min-w-0 tw-bg-slate-900/50 tw-p-4 tw-border tw-border-slate-800" style="clip-path: polygon(16px 0px, 100% 0px, 100% calc(100% - 16px), calc(100% - 16px) 100%, 0px 100%, 0px 16px);">
+		<div data-chamfer="true" class="chamfered-card hud-biometrics-card pd-panel tw-min-w-0 tw-bg-[#0f172a]/50 tw-p-4 tw-border tw-border-slate-800" style="clip-path: polygon(16px 0px, 100% 0px, 100% calc(100% - 16px), calc(100% - 16px) 100%, 0px 100%, 0px 16px);">
 			<h3 class="tw-font-mono tw-text-xs tw-text-teal-400 tw-mb-2 tw-uppercase tw-tracking-widest">Biometrics</h3>
 			<div class="tw-text-slate-300 tw-text-sm tw-min-w-0">Cardiac Module Offline</div>
 		</div>
 
-		<div data-chamfer="true" class="chamfered-card hud-tactical-map pd-panel tw-min-w-0 tw-bg-slate-900/50 tw-p-4 tw-border tw-border-slate-800" style="clip-path: polygon(16px 0px, 100% 0px, 100% calc(100% - 16px), calc(100% - 16px) 100%, 0px 100%, 0px 16px);">
+		<div data-chamfer="true" class="chamfered-card hud-tactical-map pd-panel tw-min-w-0 tw-bg-[#0f172a]/50 tw-p-4 tw-border tw-border-slate-800" style="clip-path: polygon(16px 0px, 100% 0px, 100% calc(100% - 16px), calc(100% - 16px) 100%, 0px 100%, 0px 16px);">
 			<h3 class="tw-font-mono tw-text-xs tw-text-teal-400 tw-mb-2 tw-uppercase tw-tracking-widest">Tactical</h3>
 			<div class="tw-text-slate-300 tw-text-sm tw-min-w-0">Live Play Map</div>
 		</div>
 
-		<div data-chamfer="true" class="chamfered-card hud-equipment-schematic pd-panel tw-min-w-0 tw-bg-slate-900/50 tw-p-4 tw-border tw-border-slate-800" style="clip-path: polygon(16px 0px, 100% 0px, 100% calc(100% - 16px), calc(100% - 16px) 100%, 0px 100%, 0px 16px);">
+		<div data-chamfer="true" class="chamfered-card hud-equipment-schematic pd-panel tw-min-w-0 tw-bg-[#0f172a]/50 tw-p-4 tw-border tw-border-slate-800" style="clip-path: polygon(16px 0px, 100% 0px, 100% calc(100% - 16px), calc(100% - 16px) 100%, 0px 100%, 0px 16px);">
 			<h3 class="tw-font-mono tw-text-xs tw-text-teal-400 tw-mb-2 tw-uppercase tw-tracking-widest">Armory</h3>
 			<div class="tw-text-slate-300 tw-text-sm tw-min-w-0">Equipment Durability Schematic</div>
 		</div>
 
-		<div data-chamfer="true" class="chamfered-card hud-avatar-station pd-panel tw-min-w-0 tw-bg-slate-900/50 tw-p-4 tw-border tw-border-slate-800" style="clip-path: polygon(16px 0px, 100% 0px, 100% calc(100% - 16px), calc(100% - 16px) 100%, 0px 100%, 0px 16px);">
+		<div data-chamfer="true" class="chamfered-card hud-avatar-station pd-panel tw-min-w-0 tw-bg-[#0f172a]/50 tw-p-4 tw-border tw-border-slate-800" style="clip-path: polygon(16px 0px, 100% 0px, 100% calc(100% - 16px), calc(100% - 16px) 100%, 0px 100%, 0px 16px);">
 			<h3 class="tw-font-mono tw-text-xs tw-text-teal-400 tw-mb-2 tw-uppercase tw-tracking-widest">Identity</h3>
 			<div class="tw-text-slate-300 tw-text-sm tw-min-w-0">Avatar Customization Station</div>
 		</div>

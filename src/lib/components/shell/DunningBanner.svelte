@@ -17,7 +17,7 @@
 				URGENT: Your billing account is past due. You have {daysRemaining} day{daysRemaining === 1 ? '' : 's'} remaining until platform access is restricted.
 			</span>
 		</div>
-		<a href={`/admin/organizations/${licenseEntitlementStore.clubIdResolved}/billing`} class="tw-bg-black tw-text-[#f59e0b] tw-px-4 tw-py-1 tw-rounded-md tw-hover:bg-gray-900 tw-transition-colors">
+		<a href={`/admin/organizations/${licenseEntitlementStore.clubIdResolved}/billing`} class="tw-bg-[#000000] tw-text-[#f59e0b] tw-px-4 tw-py-1 tw-rounded-md tw-hover:bg-gray-900 tw-transition-colors">
 			Update Billing
 		</a>
 	</div>

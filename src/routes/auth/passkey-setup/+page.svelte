@@ -109,11 +109,11 @@
 	<div class="tw-relative tw-z-10 tw-w-full tw-max-w-md">
 		<!-- Tactical SIEM style 0px rounded corner card -->
 		<div class="bento-panel tw-w-full tw-border tw-border-slate-800 tw-bg-[#0f172a] tw-p-8 tw-rounded-none tw-flex tw-flex-col tw-items-center" style="border-radius: 0px;">
-			<div class="tw-mb-4 tw-flex tw-h-12 tw-w-12 tw-items-center tw-justify-center tw-border tw-border-amber-500/40 tw-bg-amber-500/10">
-				<Icon name="status.shield-alert" size={24} class="tw-text-amber-400" />
+			<div class="tw-mb-4 tw-flex tw-h-12 tw-w-12 tw-items-center tw-justify-center tw-border tw-border-[#f59e0b]/40 tw-bg-[#f59e0b]/10">
+				<Icon name="status.shield-alert" size={24} class="tw-text-[#fbbf24]" />
 			</div>
 
-			<h1 class="tw-m-0 tw-mb-2 tw-text-center tw-font-mono tw-text-base tw-font-bold tw-uppercase tw-tracking-[0.14em] tw-text-amber-400">
+			<h1 class="tw-m-0 tw-mb-2 tw-text-center tw-font-mono tw-text-base tw-font-bold tw-uppercase tw-tracking-[0.14em] tw-text-[#fbbf24]">
 				Mandatory Passkey Re-enrollment
 			</h1>
 

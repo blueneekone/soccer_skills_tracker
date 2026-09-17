@@ -89,7 +89,7 @@
 <div class="prm-showcase vanguard-card">
 	<div class="prm-header">
 		<div class="prm-title-row">
-			<Icon name="status.warning" size={24} class="prm-icon-warn tw-text-amber-500" />
+			<Icon name="status.warning" size={24} class="prm-icon-warn tw-text-[#f59e0b]" />
 			<div>
 				<h3 class="prm-title">PAYMENT RECOVERY SHOWCASE</h3>
 				<p class="prm-subtitle">Empathetic Lapsed Payment Assistant</p>

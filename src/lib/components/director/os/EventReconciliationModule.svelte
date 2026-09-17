@@ -95,7 +95,7 @@
 <div class="recon-module">
 	<div class="module-header">
 		<h3 class="module-title">
-			<Icon name={'business.ticket' as IconName} size={18} class="tw-text-amber-500" />
+			<Icon name={'business.ticket' as IconName} size={18} class="tw-text-[#f59e0b]" />
 			<span>Event Reconciliation</span>
 		</h3>
 		<a class="module-link" href="/director/events">Manage Events →</a>
@@ -212,7 +212,7 @@
 		font-size: 0.72rem;
 		font-weight: 600;
 		color: var(--vanguard-text-muted, #94a3b8);
-		font-family: monospace;
+		font-family: 'Geist Mono', ui-monospace, monospace;
 		overflow: hidden;
 		text-overflow: ellipsis;
 		white-space: nowrap;

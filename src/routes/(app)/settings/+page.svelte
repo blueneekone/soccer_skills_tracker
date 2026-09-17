@@ -245,7 +245,7 @@
 			<div class="tw-w-2 tw-h-2 tw-rounded-full tw-bg-[#14b8a6] tw-animate-pulse"></div>
 			<div>
 				<div class="tw-text-xl tw-font-bold tw-text-[#FAFAFA]">VANGUARD SETTINGS TERMINAL</div>
-				<div class="tw-text-xs tw-font-mono tw-text-amber-500">{email} · {role.toUpperCase()}</div>
+				<div class="tw-text-xs tw-font-mono tw-text-[#f59e0b]">{email} · {role.toUpperCase()}</div>
 			</div>
 		</div>
 		<div class="st-header-right">
@@ -258,10 +258,10 @@
 		{#each TABS as item (item.key)}
 			{#if item.show}
 				<button
-					class="tw-px-4 tw-py-2 tw-text-xs tw-font-bold tw-uppercase tw-tracking-widest tw-text-[#94A3B8] hover:tw-text-amber-500 tw-whitespace-nowrap tw-transition-colors"
-					class:tw-text-amber-500={activeTab === item.key}
+					class="tw-px-4 tw-py-2 tw-text-xs tw-font-bold tw-uppercase tw-tracking-widest tw-text-[#94A3B8] hover:tw-text-[#f59e0b] tw-whitespace-nowrap tw-transition-colors"
+					class:tw-text-[#f59e0b]={activeTab === item.key}
 					class:tw-border-b-2={activeTab === item.key}
-					class:tw-border-amber-500={activeTab === item.key}
+					class:tw-border-[#f59e0b]={activeTab === item.key}
 					class:tw-text-red-400={item.key === 'danger' && activeTab !== 'danger'}
 					class:hover:tw-text-red-300={item.key === 'danger' && activeTab !== 'danger'}
 					onclick={() => (activeTab = item.key)}
@@ -277,7 +277,7 @@
 		<div class="z2-panel siem-panel st-bento tw-p-[clamp(16px,3vw,24px)] tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-flex tw-flex-col tw-gap-6 tw-mb-6">
 
 			<div class="tw-flex tw-flex-col tw-gap-4">
-				<div class="tw-text-xs tw-font-bold tw-uppercase tw-tracking-widest tw-text-amber-500">IDENTITY MATRIX</div>
+				<div class="tw-text-xs tw-font-bold tw-uppercase tw-tracking-widest tw-text-[#f59e0b]">IDENTITY MATRIX</div>
 				<div class="tw-grid tw-grid-cols-1 md:tw-grid-cols-2 tw-gap-4 tw-font-mono">
 					<div class="tw-flex tw-flex-col tw-gap-1 tw-p-3 tw-bg-[#000000] tw-border tw-border-[#334155]"><span class="tw-text-[10px] tw-font-bold tw-uppercase tw-tracking-widest tw-text-[#A1A1AA]">EMAIL</span><span class="tw-text-sm tw-font-mono tw-text-[#FAFAFA]">{email || '—'}</span></div>
 					<div class="tw-flex tw-flex-col tw-gap-1 tw-p-3 tw-bg-[#000000] tw-border tw-border-[#334155]"><span class="tw-text-[10px] tw-font-bold tw-uppercase tw-tracking-widest tw-text-[#A1A1AA]">ROLE</span><span class="tw-text-sm tw-font-mono tw-text-[#FAFAFA]" style="color: #14b8a6;">{role.toUpperCase()}</span></div>
@@ -288,7 +288,7 @@
 			</div>
 
 			<div class="tw-flex tw-flex-col tw-gap-4">
-				<div class="tw-text-xs tw-font-bold tw-uppercase tw-tracking-widest tw-text-amber-500">DISPLAY NAME</div>
+				<div class="tw-text-xs tw-font-bold tw-uppercase tw-tracking-widest tw-text-[#f59e0b]">DISPLAY NAME</div>
 				{#if isOperativeProxy}
 					<p class="tw-text-xs tw-text-[#94A3B8]">Call sign changes require parent approval. Use <a href="/operative/profile" class="st-link">Operative Profile</a>.</p>
 					<input class="vanguard-input tw-w-full" type="text" readonly value={String(profile?.playerName || playerName || '—')} />
@@ -299,7 +299,7 @@
 
 			{#if !isMinorAccount}
 				<div class="tw-flex tw-flex-col tw-gap-4">
-					<div class="tw-text-xs tw-font-bold tw-uppercase tw-tracking-widest tw-text-amber-500">PRIVACY PROFILE</div>
+					<div class="tw-text-xs tw-font-bold tw-uppercase tw-tracking-widest tw-text-[#f59e0b]">PRIVACY PROFILE</div>
 					<select class="vanguard-input tw-w-full" bind:value={privacyProfile}>
 						<option value="strict_minor_defaults">Strict defaults (recommended)</option>
 						<option value="standard">Standard</option>
@@ -314,14 +314,14 @@
 				</div>
 			{:else}
 				<div class="tw-flex tw-flex-col tw-gap-4">
-					<div class="tw-text-xs tw-text-amber-500">
+					<div class="tw-text-xs tw-text-[#f59e0b]">
 						⚠ Minor account — privacy is locked to strict defaults.
 					</div>
 				</div>
 			{/if}
 
 			<div class="tw-flex tw-flex-col tw-gap-4">
-				<div class="tw-text-xs tw-font-bold tw-uppercase tw-tracking-widest tw-text-amber-500">APPEARANCE</div>
+				<div class="tw-text-xs tw-font-bold tw-uppercase tw-tracking-widest tw-text-[#f59e0b]">APPEARANCE</div>
 				<div class="st-theme-row" role="group" aria-label="Theme">
 					{#each THEME_OPTIONS as opt (opt.key)}
 						<button
@@ -336,7 +336,7 @@
 		<!-- ── Phone Verification Bento card (Phase 2, Epic 3) ────────────── -->
 		{#if !isMinorAccount}
 			<div class="tw-flex tw-flex-col tw-gap-4">
-				<div class="tw-text-xs tw-font-bold tw-uppercase tw-tracking-widest tw-text-amber-500">PHONE VERIFICATION</div>
+				<div class="tw-text-xs tw-font-bold tw-uppercase tw-tracking-widest tw-text-[#f59e0b]">PHONE VERIFICATION</div>
 				<div class="phone-card">
 					{#if authStore.phoneVerified && authStore.phoneNumber}
 						<div class="phone-verified-row">
@@ -384,10 +384,10 @@
 
 			<!-- FCM permission status -->
 			<div class="tw-flex tw-flex-col tw-gap-4">
-				<div class="tw-text-xs tw-font-bold tw-uppercase tw-tracking-widest tw-text-amber-500">DEVICE TELEMETRY UPLINK</div>
+				<div class="tw-text-xs tw-font-bold tw-uppercase tw-tracking-widest tw-text-[#f59e0b]">DEVICE TELEMETRY UPLINK</div>
 
 				{#if fcmService.permission === 'unsupported'}
-					<div class="tw-text-xs tw-text-amber-500">
+					<div class="tw-text-xs tw-text-[#f59e0b]">
 						⚠ Web Push is not supported in this browser or the VAPID key is not configured.
 					</div>
 
@@ -458,7 +458,7 @@
 
 			<!-- Notification matrix -->
 			<div class="tw-flex tw-flex-col tw-gap-4">
-				<div class="tw-text-xs tw-font-bold tw-uppercase tw-tracking-widest tw-text-amber-500">NOTIFICATION MATRIX</div>
+				<div class="tw-text-xs tw-font-bold tw-uppercase tw-tracking-widest tw-text-[#f59e0b]">NOTIFICATION MATRIX</div>
 				<p class="tw-text-xs tw-text-[#94A3B8]">Toggle each relay independently. Changes sync automatically.</p>
 
 				<div class="st-matrix">
@@ -506,7 +506,7 @@
 	{:else if activeTab === 'operations' && showOps}
 		<div class="z2-panel siem-panel st-bento tw-p-[clamp(16px,3vw,24px)] tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-flex tw-flex-col tw-gap-6 tw-mb-6">
 			<div class="tw-flex tw-flex-col tw-gap-4">
-				<div class="tw-text-xs tw-font-bold tw-uppercase tw-tracking-widest tw-text-amber-500">BILLING & SUBSCRIPTION</div>
+				<div class="tw-text-xs tw-font-bold tw-uppercase tw-tracking-widest tw-text-[#f59e0b]">BILLING & SUBSCRIPTION</div>
 				<p class="tw-text-xs tw-text-[#94A3B8]">Manage your club's plan, payment method, and invoice history.</p>
 			<a href="/upgrade" class="tw-vanguard-btn-primary tw-no-underline tw-inline-flex">
 				[ BILLING PORTAL ]
@@ -514,19 +514,19 @@
 			</div>
 
 			<div class="tw-flex tw-flex-col tw-gap-4">
-				<div class="tw-text-xs tw-font-bold tw-uppercase tw-tracking-widest tw-text-amber-500">ORGANISATION MANAGEMENT</div>
+				<div class="tw-text-xs tw-font-bold tw-uppercase tw-tracking-widest tw-text-[#f59e0b]">ORGANISATION MANAGEMENT</div>
 				<div class="tw-grid tw-grid-cols-1 md:tw-grid-cols-2 tw-gap-4 tw-font-mono">
-					<a href="/director/dashboard" class="tw-flex tw-flex-col tw-gap-1 tw-p-4 tw-bg-[#000000] tw-border tw-border-[#334155] hover:tw-border-amber-500 tw-transition-colors tw-no-underline">
-						<div class="tw-text-sm tw-font-bold tw-text-amber-500">MISSION CONTROL</div>
+					<a href="/director/dashboard" class="tw-flex tw-flex-col tw-gap-1 tw-p-4 tw-bg-[#000000] tw-border tw-border-[#334155] hover:tw-border-[#f59e0b] tw-transition-colors tw-no-underline">
+						<div class="tw-text-sm tw-font-bold tw-text-[#f59e0b]">MISSION CONTROL</div>
 						<div class="tw-text-xs tw-text-[#94A3B8]">Roster, invites, season config</div>
 					</a>
-					<a href="/coach/tactical" class="tw-flex tw-flex-col tw-gap-1 tw-p-4 tw-bg-[#000000] tw-border tw-border-[#334155] hover:tw-border-amber-500 tw-transition-colors tw-no-underline">
-						<div class="tw-text-sm tw-font-bold tw-text-amber-500">WAR ROOM</div>
+					<a href="/coach/tactical" class="tw-flex tw-flex-col tw-gap-1 tw-p-4 tw-bg-[#000000] tw-border tw-border-[#334155] hover:tw-border-[#f59e0b] tw-transition-colors tw-no-underline">
+						<div class="tw-text-sm tw-font-bold tw-text-[#f59e0b]">WAR ROOM</div>
 						<div class="tw-text-xs tw-text-[#94A3B8]">Tactical board, fixtures, facilities</div>
 					</a>
 					{#if isDirector}
-						<a href="/admin/organizations" class="tw-flex tw-flex-col tw-gap-1 tw-p-4 tw-bg-[#000000] tw-border tw-border-[#334155] hover:tw-border-amber-500 tw-transition-colors tw-no-underline">
-							<div class="tw-text-sm tw-font-bold tw-text-amber-500">ADMIN CONSOLE</div>
+						<a href="/admin/organizations" class="tw-flex tw-flex-col tw-gap-1 tw-p-4 tw-bg-[#000000] tw-border tw-border-[#334155] hover:tw-border-[#f59e0b] tw-transition-colors tw-no-underline">
+							<div class="tw-text-sm tw-font-bold tw-text-[#f59e0b]">ADMIN CONSOLE</div>
 							<div class="tw-text-xs tw-text-[#94A3B8]">Clubs, teams, global users</div>
 						</a>
 					{/if}
@@ -534,7 +534,7 @@
 			</div>
 
 			<div class="tw-flex tw-flex-col tw-gap-4">
-				<div class="tw-text-xs tw-font-bold tw-uppercase tw-tracking-widest tw-text-amber-500">STRIPE CONNECT</div>
+				<div class="tw-text-xs tw-font-bold tw-uppercase tw-tracking-widest tw-text-[#f59e0b]">STRIPE CONNECT</div>
 				<p class="tw-text-xs tw-text-[#94A3B8]">Connect your club's bank account to receive season registration fees directly.</p>
 			<a href="/director?stripe=onboard" class="tw-vanguard-btn-secondary tw-inline-flex tw-no-underline">
 				[ CONNECT STRIPE ACCOUNT ]
@@ -546,7 +546,7 @@
 	{:else if activeTab === 'family' && showFamily}
 		<div class="z2-panel siem-panel st-bento tw-p-[clamp(16px,3vw,24px)] tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-flex tw-flex-col tw-gap-6 tw-mb-6">
 			<div class="tw-flex tw-flex-col tw-gap-4">
-				<div class="tw-text-xs tw-font-bold tw-uppercase tw-tracking-widest tw-text-amber-500">COPPA VERIFICATION STATUS</div>
+				<div class="tw-text-xs tw-font-bold tw-uppercase tw-tracking-widest tw-text-[#f59e0b]">COPPA VERIFICATION STATUS</div>
 				<div class="tw-grid tw-grid-cols-1 md:tw-grid-cols-2 tw-gap-4 tw-font-mono">
 					<div class="tw-flex tw-flex-col tw-gap-1 tw-p-3 tw-bg-[#000000] tw-border tw-border-[#334155]">
 						<span class="tw-text-[10px] tw-font-bold tw-uppercase tw-tracking-widest tw-text-[#A1A1AA]">VPC STATUS</span>
@@ -560,7 +560,7 @@
 					</div>
 				</div>
 				{#if !profile?.vpcVerified}
-					<div class="tw-text-xs tw-text-amber-500">
+					<div class="tw-text-xs tw-text-[#f59e0b]">
 						Your COPPA parental consent is pending. Check your email for the verification link
 						or contact your club director.
 					</div>
@@ -568,7 +568,7 @@
 			</div>
 
 			<div class="tw-flex tw-flex-col tw-gap-4">
-				<div class="tw-text-xs tw-font-bold tw-uppercase tw-tracking-widest tw-text-amber-500">LINKED PLAYERS</div>
+				<div class="tw-text-xs tw-font-bold tw-uppercase tw-tracking-widest tw-text-[#f59e0b]">LINKED PLAYERS</div>
 				{#if profile?.playerEmails?.length > 0}
 					<div class="tw-grid tw-grid-cols-1 md:tw-grid-cols-2 tw-gap-4 tw-font-mono">
 						{#each profile.playerEmails as playerEmail (playerEmail)}
@@ -584,7 +584,7 @@
 			</div>
 
 			<div class="tw-flex tw-flex-col tw-gap-4">
-				<div class="tw-text-xs tw-font-bold tw-uppercase tw-tracking-widest tw-text-amber-500" style="color: rgba(239,68,68,0.8);">MINOR DATA PROTOCOL</div>
+				<div class="tw-text-xs tw-font-bold tw-uppercase tw-tracking-widest tw-text-[#f59e0b]" style="color: rgba(239,68,68,0.8);">MINOR DATA PROTOCOL</div>
 				<p class="tw-text-xs tw-text-[#94A3B8]">
 					To request deletion of a minor's data under COPPA, contact your club director
 					or platform support. All data deletion requests are logged and audited.
@@ -600,7 +600,7 @@
 	{:else if activeTab === 'danger'}
 		<div class="z2-panel siem-panel st-bento tw-p-[clamp(16px,3vw,24px)] tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-flex tw-flex-col tw-gap-6 tw-mb-6">
 			<div class="tw-flex tw-flex-col tw-gap-4">
-				<div class="tw-text-xs tw-font-bold tw-uppercase tw-tracking-widest tw-text-amber-500" style="color: rgba(239,68,68,0.8);">PASSWORD RESET</div>
+				<div class="tw-text-xs tw-font-bold tw-uppercase tw-tracking-widest tw-text-[#f59e0b]" style="color: rgba(239,68,68,0.8);">PASSWORD RESET</div>
 				<p class="tw-text-xs tw-text-[#94A3B8]">Send a password reset link to {email}.</p>
 				{#if resetSent}
 					<div class="tw-text-xs tw-text-[#2dd4bf] tw-font-mono">✓ Reset link sent to {email}</div>
@@ -613,7 +613,7 @@
 			</div>
 
 			<div class="tw-flex tw-flex-col tw-gap-4">
-				<div class="tw-text-xs tw-font-bold tw-uppercase tw-tracking-widest tw-text-amber-500" style="color: rgba(239,68,68,0.8);">ANOMALY REPORT</div>
+				<div class="tw-text-xs tw-font-bold tw-uppercase tw-tracking-widest tw-text-[#f59e0b]" style="color: rgba(239,68,68,0.8);">ANOMALY REPORT</div>
 				<p class="tw-text-xs tw-text-[#94A3B8]">
 					Found a data error? Use the Report Anomaly button in the sidebar
 					to send a pre-formatted correction request to the platform team.

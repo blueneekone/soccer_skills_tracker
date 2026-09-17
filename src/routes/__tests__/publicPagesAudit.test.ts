@@ -30,12 +30,12 @@ describe('CDO Protocol: Login Page Audit', () => {
 
 	it('MUST use solid hex backgrounds, not opacity-modified slate backgrounds', () => {
 		// bg-slate-800/40 is banned; use bg-[#0f172a] or similar solid
-		expect(LoginSource).not.toContain('tw-bg-slate-800/40');
-		expect(LoginSource).not.toContain('tw-bg-slate-900/60');
+		expect(LoginSource).not.toContain('tw-bg-[#0f172a]/40');
+		expect(LoginSource).not.toContain('tw-bg-[#0f172a]/60');
 	});
 
 	it('MUST use solid hex bg on the outer glass card, not glassmorphism opacity', () => {
-		// tw-bg-slate-900/60 tw-backdrop-blur-2xl is banned
+		// tw-bg-[#0f172a]/60 tw-backdrop-blur-2xl is banned
 		expect(LoginSource).not.toContain('tw-backdrop-blur-2xl');
 	});
 });

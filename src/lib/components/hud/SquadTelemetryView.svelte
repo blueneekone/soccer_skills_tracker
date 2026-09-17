@@ -981,7 +981,7 @@
 	{/if}
 
 	<section
-		class="stw__dispatch tw-mb-4 tw-rounded-lg tw-border tw-border-cyan-500/35 tw-bg-black/50 tw-px-3 tw-py-3 sm:tw-px-4"
+		class="stw__dispatch tw-mb-4 tw-rounded-lg tw-border tw-border-cyan-500/35 tw-bg-[#000000]/50 tw-px-3 tw-py-3 sm:tw-px-4"
 		aria-labelledby="stw-dispatch"
 	>
 		<div class="tw-flex tw-flex-col tw-gap-3 sm:tw-flex-row sm:tw-items-center sm:tw-justify-between">

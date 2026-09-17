@@ -190,7 +190,7 @@
 				<span class="pas__unit">day{streakDays === 1 ? '' : 's'} in a row</span>
 			{:else if mode === 'at_risk'}
 				<span class="pas__num pas__num--risk">{streakDays}</span>
-				<span class="pas__unit tw-text-amber-400">day{streakDays === 1 ? '' : 's'} — log today!</span>
+				<span class="pas__unit tw-text-[#fbbf24]">day{streakDays === 1 ? '' : 's'} — log today!</span>
 			{:else if mode === 'frozen'}
 				<span class="pas__num pas__num--frozen">{streakDays}</span>
 				<span class="pas__unit tw-text-[#14b8a6]">day{streakDays === 1 ? '' : 's'} protected</span>
@@ -202,7 +202,7 @@
 		</p>
 
 		{#if mode === 'at_risk' && graceCountdown}
-			<p class="pas__hint tw-text-amber-400/80">
+			<p class="pas__hint tw-text-[#fbbf24]/80">
 				Grace ends in {graceCountdown} — log now to save your streak.
 			</p>
 		{:else if mode === 'frozen'}

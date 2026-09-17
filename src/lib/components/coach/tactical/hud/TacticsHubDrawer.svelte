@@ -284,7 +284,7 @@
 						</div>
 						<a
 							href="/coach/forge?tab=designer"
-							class="tw-flex-shrink-0 tw-bg-[#0f172a] hover:tw-bg-slate-800 tw-border tw-border-slate-700 tw-text-slate-400 hover:tw-text-white tw-font-mono tw-text-[10px] tw-px-2 tw-py-1 tw-rounded-lg tw-no-underline tw-transition-all"
+							class="tw-flex-shrink-0 tw-bg-[#0f172a] hover:tw-bg-[#0f172a] tw-border tw-border-slate-700 tw-text-slate-400 hover:tw-text-white tw-font-mono tw-text-[10px] tw-px-2 tw-py-1 tw-rounded-lg tw-no-underline tw-transition-all"
 							title="Design new drill in The Forge"
 						>
 							+ New Drill
@@ -405,7 +405,7 @@
 						>⊗ CLEAR ALL ROUTES</button>
 						<button
 							type="button"
-							class="tw-border tw-border-amber-700/60 tw-bg-amber-950/40 tw-px-3 tw-py-2.5 tw-text-xs tw-text-left tw-text-amber-300 hover:tw-bg-amber-900/60 hover:tw-border-amber-500 tw-transition-colors tw-rounded"
+							class="tw-border tw-border-amber-700/60 tw-bg-amber-950/40 tw-px-3 tw-py-2.5 tw-text-xs tw-text-left tw-text-amber-300 hover:tw-bg-amber-900/60 hover:tw-border-[#f59e0b] tw-transition-colors tw-rounded"
 							onclick={(e) => { e.stopPropagation(); engine.clearOpponents?.(); }}
 						>🛡 CLEAR OPPONENTS ONLY</button>
 						<button

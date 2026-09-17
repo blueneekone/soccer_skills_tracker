@@ -132,13 +132,13 @@
 		</span>
 	</div>
 
-	<div class="tw-w-full tw-h-px tw-bg-slate-800/60"></div>
+	<div class="tw-w-full tw-h-px tw-bg-[#0f172a]/60"></div>
 
 	{#if isLoading}
 		<div class="tw-flex tw-items-center tw-justify-center tw-py-10">
 			<div class="tw-flex tw-flex-col tw-items-center tw-gap-3 tw-w-full">
 				<div
-					class="tw-w-full tw-h-1 tw-bg-slate-800/60 tw-rounded-full tw-overflow-hidden tw-relative"
+					class="tw-w-full tw-h-1 tw-bg-[#0f172a]/60 tw-rounded-full tw-overflow-hidden tw-relative"
 				>
 					<div class="scan-bar tw-absolute tw-inset-y-0 tw-w-1/3 tw-bg-teal-400/60 tw-rounded-full">
 					</div>

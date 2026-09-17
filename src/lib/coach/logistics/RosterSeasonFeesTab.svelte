@@ -155,7 +155,7 @@
 										✓ PAID IN FULL
 									</span>
 								{:else if row.status === 'PARTIAL'}
-									<span class="tw-bg-amber-500/20 tw-border tw-border-amber-500 tw-text-amber-300 tw-px-2 tw-py-0.5 tw-rounded tw-font-bold tw-text-[10px]">
+									<span class="tw-bg-[#f59e0b]/20 tw-border tw-border-[#f59e0b] tw-text-amber-300 tw-px-2 tw-py-0.5 tw-rounded tw-font-bold tw-text-[10px]">
 										⏳ PARTIAL
 									</span>
 								{:else if row.status === 'SCHOLARSHIP'}

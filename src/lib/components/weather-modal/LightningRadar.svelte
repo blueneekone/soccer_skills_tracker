@@ -196,7 +196,7 @@
 				{@const compass = bearingToCompass(nearestStrike.bearingDeg)}
 				{@const isDanger = nearestStrike.distMiles <= 8}
 				{@const isCaution = nearestStrike.distMiles <= 15 && !isDanger}
-				<span class="tw-px-2 tw-py-0.5 tw-rounded tw-text-xs tw-font-black {isDanger ? 'tw-bg-red-950 tw-border tw-border-red-600 tw-text-red-400 animate-pulse' : isCaution ? 'tw-bg-amber-950 tw-border tw-border-amber-600 tw-text-amber-400' : 'tw-bg-teal-950 tw-border tw-border-[#14b8a6] tw-text-[#14b8a6]'}">
+				<span class="tw-px-2 tw-py-0.5 tw-rounded tw-text-xs tw-font-black {isDanger ? 'tw-bg-red-950 tw-border tw-border-red-600 tw-text-red-400 animate-pulse' : isCaution ? 'tw-bg-amber-950 tw-border tw-border-amber-600 tw-text-[#fbbf24]' : 'tw-bg-teal-950 tw-border tw-border-[#14b8a6] tw-text-[#14b8a6]'}">
 					⚡ {nearestStrike.distMiles} MI · {nearestStrike.bearingDeg}° {compass}
 				</span>
 			{:else}

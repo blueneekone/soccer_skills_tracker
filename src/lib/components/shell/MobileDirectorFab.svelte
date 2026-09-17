@@ -127,7 +127,7 @@
 		right: calc(100% + 10px);
 		bottom: 0;
 		white-space: nowrap;
-		font-family: monospace;
+		font-family: 'Geist Mono', ui-monospace, monospace;
 		font-size: 9px;
 		text-transform: uppercase;
 		letter-spacing: 0.14em;
@@ -176,7 +176,7 @@
 		position: absolute;
 		right: calc(100% + 8px);
 		white-space: nowrap;
-		font-family: monospace;
+		font-family: 'Geist Mono', ui-monospace, monospace;
 		font-size: 9px;
 		text-transform: uppercase;
 		letter-spacing: 0.14em;

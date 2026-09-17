@@ -36,7 +36,7 @@
                     
                     <button 
                         type="button"
-                        class="tw-mt-6 tw-bg-slate-800 tw-text-white tw-font-mono tw-text-xs tw-px-3 tw-py-2 tw-rounded-md hover:tw-bg-slate-700 disabled:tw-opacity-50"
+                        class="tw-mt-6 tw-bg-[#0f172a] tw-text-white tw-font-mono tw-text-xs tw-px-3 tw-py-2 tw-rounded-md hover:tw-bg-slate-700 disabled:tw-opacity-50"
                         disabled={engine.saving}
                         onclick={() => engine.issueReward(reward.id, 10, 'child_1', 'milestone_1')}
                     >

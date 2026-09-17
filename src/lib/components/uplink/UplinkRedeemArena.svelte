@@ -199,7 +199,7 @@
 		border: 1px solid rgba(var(--accent), 0.3);
 		border-radius: 6px;
 		padding: 3px 10px;
-		font-family: monospace;
+		font-family: 'Geist Mono', ui-monospace, monospace;
 		font-size: 10px;
 		color: rgb(var(--accent));
 		letter-spacing: 0.18em;
@@ -226,7 +226,7 @@
 		border: 1px solid rgba(255,77,106,0.15);
 		border-radius: 8px;
 		padding: 12px;
-		font-family: monospace;
+		font-family: 'Geist Mono', ui-monospace, monospace;
 		font-size: 11px;
 		color: rgba(255,77,106,0.7);
 		text-align: left;

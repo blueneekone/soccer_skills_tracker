@@ -339,8 +339,8 @@
 				</div>
 				<div class="gw-hud__cell">
 					<span class="gw-hud__label">Day streak</span>
-					<span class="gw-hud__value gw-hud__value--streak tw-text-amber-500">
-						<Icon name="game.flame" class="tw-text-amber-500" />
+					<span class="gw-hud__value gw-hud__value--streak tw-text-[#f59e0b]">
+						<Icon name="game.flame" class="tw-text-[#f59e0b]" />
 						{streakDays}d
 					</span>
 				</div>

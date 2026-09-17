@@ -253,7 +253,7 @@ import { onDestroy, untrack } from 'svelte';
 		background: rgba(255,255,255,0.07);
 		border-radius: 0px;
 		padding: 0.15rem 0.4rem;
-		font-family: monospace;
+		font-family: 'Geist Mono', ui-monospace, monospace;
 	}
 
 	.btn-start {

@@ -296,7 +296,7 @@
 	}
 
 	.mobile-pin-bar__label {
-		font-family: monospace;
+		font-family: 'Geist Mono', ui-monospace, monospace;
 		font-size: 9px;
 		text-transform: uppercase;
 		letter-spacing: 0.1em;

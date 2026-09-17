@@ -70,7 +70,7 @@
 		{:else if engine.activeTab === 'sync'}
 			<section class="tw-flex tw-flex-col tw-gap-6 tw-w-full">
 				<div class="tw-p-6 tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-rounded-none">
-					<h2 class="tw-text-xl tw-font-bold tw-text-amber-500 tw-mb-6 tw-flex tw-items-center tw-gap-2">
+					<h2 class="tw-text-xl tw-font-bold tw-text-[#f59e0b] tw-mb-6 tw-flex tw-items-center tw-gap-2">
 						<Icon name="nav.swap" size={24} />
 						Data Sync &amp; Roster Ingestion
 					</h2>

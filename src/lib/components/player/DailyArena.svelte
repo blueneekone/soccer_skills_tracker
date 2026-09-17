@@ -49,7 +49,7 @@
       <select
         id="daily-arena-session-type"
         bind:value={sessionType}
-        class="tw-w-full tw-bg-slate-900 tw-border tw-border-[#334155] tw-p-2 tw-font-mono tw-text-sm tw-text-white"
+        class="tw-w-full tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-p-2 tw-font-mono tw-text-sm tw-text-white"
       >
         <option value="backyard_juggle">BACKYARD JUGGLING</option>
         <option value="wall_rebound">WALL REBOUNDER</option>
@@ -63,7 +63,7 @@
         id="daily-arena-touches"
         type="number"
         bind:value={touchCount}
-        class="tw-w-full tw-bg-slate-900 tw-border tw-border-[#334155] tw-p-2 tw-font-mono tw-text-sm tw-text-white"
+        class="tw-w-full tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-p-2 tw-font-mono tw-text-sm tw-text-white"
       />
     </div>
 
@@ -74,7 +74,7 @@
         type="number"
         step="0.5"
         bind:value={durationHours}
-        class="tw-w-full tw-bg-slate-900 tw-border tw-border-[#334155] tw-p-2 tw-font-mono tw-text-sm tw-text-white"
+        class="tw-w-full tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-p-2 tw-font-mono tw-text-sm tw-text-white"
       />
     </div>
   </div>
@@ -82,7 +82,7 @@
   <button
     id="log-deliberate-play-btn"
     onclick={handleLogTouchSession}
-    class="tw-w-full tw-bg-[#fbbf24] tw-text-black tw-font-mono tw-font-bold tw-py-2 tw-uppercase hover:tw-bg-amber-400 tw-transition-colors"
+    class="tw-w-full tw-bg-[#fbbf24] tw-text-black tw-font-mono tw-font-bold tw-py-2 tw-uppercase hover:tw-bg-[#fbbf24] tw-transition-colors"
   >
     LOG BACKYARD TOUCHES
   </button>
@@ -92,7 +92,7 @@
       <span>WEEKLY VOLUME: {capStatus.totalWeeklyHours} HRS</span>
       <span>RECOMMENDED MAX: {capStatus.ageYears} HRS</span>
     </div>
-    <div class="tw-w-full tw-bg-slate-800 tw-h-2">
+    <div class="tw-w-full tw-bg-[#0f172a] tw-h-2">
       <div
         class="tw-h-2 {capStatus.exceedsCap ? 'tw-bg-red-500' : 'tw-bg-[#14b8a6]'}"
         style="width: {Math.min(100, (capStatus.totalWeeklyHours / (capStatus.ageYears || 1)) * 100)}%"

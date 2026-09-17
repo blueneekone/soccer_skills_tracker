@@ -12,7 +12,7 @@
 </svelte:head>
 
 <div class="ro-shell tw-flex tw-flex-col tw-h-[100dvh] tw-overflow-hidden tw-bg-[#020617] tw-text-white">
-	<header class="tw-p-4 tw-border-b tw-border-slate-800 tw-bg-slate-900/50 tw-backdrop-blur">
+	<header class="tw-p-4 tw-border-b tw-border-slate-800 tw-bg-[#0f172a]/50 tw-backdrop-blur">
 		<h1 class="tw-font-mono tw-text-lg tw-font-bold tw-text-[#fbbf24] tw-tracking-wide tw-uppercase">
 			RECRUITER VETTING PORTAL
 		</h1>

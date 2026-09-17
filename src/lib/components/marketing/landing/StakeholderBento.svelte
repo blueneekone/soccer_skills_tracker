@@ -54,7 +54,7 @@
 	{#if activeVideoUrl}
 		<div class="tw-w-full tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-rounded-xl tw-overflow-hidden tw-shadow-[0_0_30px_rgba(20,184,166,0.15)] tw-p-1">
 			<video
-				class="tw-w-full tw-h-auto tw-rounded-lg tw-bg-black"
+				class="tw-w-full tw-h-auto tw-rounded-lg tw-bg-[#000000]"
 				src={activeVideoUrl}
 				controls
 				playsinline

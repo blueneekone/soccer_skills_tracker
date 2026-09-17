@@ -52,7 +52,7 @@
 	<!-- Backdrop -->
 	<!-- svelte-ignore a11y_click_events_have_key_events -->
 	<div
-		class="tw-fixed tw-inset-0 tw-z-[9999] tw-flex tw-items-center tw-justify-center tw-p-4 tw-bg-black/80 tw-backdrop-blur-sm"
+		class="tw-fixed tw-inset-0 tw-z-[9999] tw-flex tw-items-center tw-justify-center tw-p-4 tw-bg-[#000000]/80 tw-backdrop-blur-sm"
 		role="presentation"
 		transition:fade={{ duration: 120 }}
 		onclick={onClose}
@@ -127,7 +127,7 @@
 				<button
 					type="button"
 					onclick={onClose}
-					class="tw-px-3 tw-py-1.5 tw-bg-[#0f172a] hover:tw-bg-slate-800 tw-border tw-border-[#334155] tw-text-slate-300 tw-font-mono tw-text-xs tw-cursor-pointer"
+					class="tw-px-3 tw-py-1.5 tw-bg-[#0f172a] hover:tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-text-slate-300 tw-font-mono tw-text-xs tw-cursor-pointer"
 					style="border-radius: 0px;"
 				>
 					Cancel

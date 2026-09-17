@@ -38,7 +38,7 @@
 					OPEN
 				</span>
 			{:else}
-				<span class="tw-inline-flex tw-items-center tw-rounded-full tw-bg-amber-500/10 tw-px-2.5 tw-py-0.5 tw-text-xs tw-font-medium tw-text-amber-400 tw-border tw-border-amber-500/20">
+				<span class="tw-inline-flex tw-items-center tw-rounded-full tw-bg-[#f59e0b]/10 tw-px-2.5 tw-py-0.5 tw-text-xs tw-font-medium tw-text-[#fbbf24] tw-border tw-border-[#f59e0b]/20">
 					LOCKED
 				</span>
 			{/if}

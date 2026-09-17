@@ -67,18 +67,18 @@
 		<table class="v-table tw-w-full tw-text-left tw-border-collapse">
 			<thead>
 				<tr>
-					<th class="tw-bg-slate-900/70 tw-text-xs tw-uppercase tw-tracking-wider tw-text-[#E2E8F0] tw-px-6 tw-py-4 tw-font-semibold">Household Primary (Parent)</th>
-					<th class="tw-bg-slate-900/70 tw-text-xs tw-uppercase tw-tracking-wider tw-text-[#E2E8F0] tw-px-6 tw-py-4 tw-font-semibold">Linked Operatives</th>
-					<th class="tw-bg-slate-900/70 tw-text-xs tw-uppercase tw-tracking-wider tw-text-[#E2E8F0] tw-px-6 tw-py-4 tw-font-semibold">VPC Status</th>
-					<th class="tw-bg-slate-900/70 tw-text-xs tw-uppercase tw-tracking-wider tw-text-[#E2E8F0] tw-px-6 tw-py-4 tw-font-semibold">SafeSport Flags</th>
-					<th class="tw-bg-slate-900/70 tw-text-xs tw-uppercase tw-tracking-wider tw-text-[#E2E8F0] tw-px-6 tw-py-4 tw-font-semibold tw-text-right">Actions</th>
+					<th class="tw-bg-[#0f172a]/70 tw-text-xs tw-uppercase tw-tracking-wider tw-text-[#E2E8F0] tw-px-6 tw-py-4 tw-font-semibold">Household Primary (Parent)</th>
+					<th class="tw-bg-[#0f172a]/70 tw-text-xs tw-uppercase tw-tracking-wider tw-text-[#E2E8F0] tw-px-6 tw-py-4 tw-font-semibold">Linked Operatives</th>
+					<th class="tw-bg-[#0f172a]/70 tw-text-xs tw-uppercase tw-tracking-wider tw-text-[#E2E8F0] tw-px-6 tw-py-4 tw-font-semibold">VPC Status</th>
+					<th class="tw-bg-[#0f172a]/70 tw-text-xs tw-uppercase tw-tracking-wider tw-text-[#E2E8F0] tw-px-6 tw-py-4 tw-font-semibold">SafeSport Flags</th>
+					<th class="tw-bg-[#0f172a]/70 tw-text-xs tw-uppercase tw-tracking-wider tw-text-[#E2E8F0] tw-px-6 tw-py-4 tw-font-semibold tw-text-right">Actions</th>
 				</tr>
 			</thead>
 			<tbody class="v-table__body">
 				{#each paginatedHouseholds as hh}
 					<!-- svelte-ignore a11y_click_events_have_key_events -->
 					<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
-					<tr class="ec-table__row-click tw-border-t tw-border-[#334155] hover:tw-bg-slate-800/50 tw-cursor-pointer tw-transition-colors" onclick={() => openHouseholdDrawer(hh.id)}>
+					<tr class="ec-table__row-click tw-border-t tw-border-[#334155] hover:tw-bg-[#0f172a]/50 tw-cursor-pointer tw-transition-colors" onclick={() => openHouseholdDrawer(hh.id)}>
 						<td class="tw-px-6 tw-py-4">
 							<div class="tw-flex tw-flex-col">
 								<span class="tw-text-sm tw-font-bold tw-text-white">{hh.parentName}</span>
@@ -94,8 +94,8 @@
 									<div class="tw-w-2 tw-h-2 tw-rounded-none tw-bg-[#14b8a6]"></div>
 									<span class="tw-text-xs tw-text-green-400 tw-font-bold">Verified</span>
 								{:else if hh.vpcStatus === 'Pending'}
-									<div class="tw-w-2 tw-h-2 tw-rounded-none tw-bg-amber-500"></div>
-									<span class="tw-text-xs tw-text-amber-400 tw-font-bold">Pending</span>
+									<div class="tw-w-2 tw-h-2 tw-rounded-none tw-bg-[#f59e0b]"></div>
+									<span class="tw-text-xs tw-text-[#fbbf24] tw-font-bold">Pending</span>
 								{:else}
 									<div class="tw-relative tw-flex tw-h-2 tw-w-2">
 										<span class="tw-animate-ping tw-absolute tw-inline-flex tw-h-full tw-w-full tw-rounded-none tw-bg-red-400 tw-opacity-75"></span>
@@ -134,7 +134,7 @@
 	<!-- Pagination Controls -->
 	<div class="tw-flex tw-items-center tw-justify-between tw-px-4 tw-py-2 tw-font-mono tw-text-sm tw-text-slate-400">
 		<button 
-			class="tw-px-3 tw-py-1 tw-rounded hover:tw-bg-slate-800 disabled:tw-opacity-50 disabled:tw-cursor-not-allowed tw-transition-colors"
+			class="tw-px-3 tw-py-1 tw-rounded hover:tw-bg-[#0f172a] disabled:tw-opacity-50 disabled:tw-cursor-not-allowed tw-transition-colors"
 			onclick={prevPage}
 			disabled={currentPage === 1}
 		>
@@ -144,7 +144,7 @@
 		<span>Page {currentPage} of {totalPages}</span>
 		
 		<button 
-			class="tw-px-3 tw-py-1 tw-rounded hover:tw-bg-slate-800 disabled:tw-opacity-50 disabled:tw-cursor-not-allowed tw-transition-colors"
+			class="tw-px-3 tw-py-1 tw-rounded hover:tw-bg-[#0f172a] disabled:tw-opacity-50 disabled:tw-cursor-not-allowed tw-transition-colors"
 			onclick={nextPage}
 			disabled={currentPage === totalPages}
 		>

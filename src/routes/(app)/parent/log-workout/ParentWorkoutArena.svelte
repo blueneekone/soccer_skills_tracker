@@ -36,7 +36,7 @@
 	<div class="tw-max-w-5xl tw-mx-auto tw-space-y-6">
 		<header class="tw-bg-[#0F172A] tw-border tw-border-[#334155] tw-p-6 tw-flex tw-flex-col md:tw-flex-row md:tw-items-center md:tw-justify-between tw-gap-4 tw-rounded-none">
 			<div class="tw-flex tw-items-center tw-gap-4">
-				<div class="tw-w-12 tw-h-12 tw-bg-black tw-border tw-border-[#334155] tw-flex tw-items-center tw-justify-center tw-text-[#14b8a6] tw-rounded-none">
+				<div class="tw-w-12 tw-h-12 tw-bg-[#000000] tw-border tw-border-[#334155] tw-flex tw-items-center tw-justify-center tw-text-[#14b8a6] tw-rounded-none">
 					<Icon name="data.activity" size={24} />
 				</div>
 				<div>
@@ -57,7 +57,7 @@
 					{:else if engine.children.length === 0}
 						<p class="tw-text-red-400 tw-font-mono tw-text-xs">No operatives found in household.</p>
 					{:else}
-						<select id="operative-select" class="tw-w-full tw-bg-black tw-border tw-border-[#334155] tw-text-white tw-p-3 tw-font-mono tw-text-sm focus:tw-outline-none focus:tw-border-[#fbbf24] tw-rounded-none tw-transition-colors" bind:value={engine.selectedChildEmail} onchange={() => engine.handleChildChange()}>
+						<select id="operative-select" class="tw-w-full tw-bg-[#000000] tw-border tw-border-[#334155] tw-text-white tw-p-3 tw-font-mono tw-text-sm focus:tw-outline-none focus:tw-border-[#fbbf24] tw-rounded-none tw-transition-colors" bind:value={engine.selectedChildEmail} onchange={() => engine.handleChildChange()}>
 							<option value="">— Select Operative —</option>
 							{#each engine.children as c}
 								<option value={c.email}>{c.playerName}</option>
@@ -71,7 +71,7 @@
 				{:else if engine.childProfileError}
 					<p class="tw-text-red-400 tw-font-mono tw-text-xs">{engine.childProfileError}</p>
 				{:else if engine.selectedChildEmail && engine.childProfile}
-					<div class="tw-bg-black tw-border tw-border-[#334155] tw-p-4 tw-rounded-none">
+					<div class="tw-bg-[#000000] tw-border tw-border-[#334155] tw-p-4 tw-rounded-none">
 						<div class="tw-flex tw-justify-between tw-items-center tw-mb-2">
 							<span class="tw-text-[#a5b4fc] tw-font-mono tw-text-[10px] tw-uppercase tw-tracking-widest">Rank</span>
 							<span class="tw-text-white tw-font-bold tw-text-sm">Lvl {engine.level}</span>
@@ -97,7 +97,7 @@
 					<span class="tw-text-[#a5b4fc] tw-font-mono tw-text-[10px] tw-font-bold tw-uppercase tw-tracking-widest tw-mb-3 tw-block">1 · Focus Area</span>
 					<div class="tw-grid tw-grid-cols-2 sm:tw-grid-cols-4 tw-gap-2">
 						{#each WORKOUT_FOCUS_AREAS as focus}
-							<button class="tw-flex tw-flex-col tw-items-center tw-p-3 tw-border tw-border-[#334155] tw-rounded-none tw-transition-colors {engine.selectedFocus === focus.id ? 'tw-bg-[#14b8a6]/10 tw-border-[#14b8a6]' : 'tw-bg-black hover:tw-border-[#94a3b8]'}" disabled={!engine.selectedChildEmail} onclick={() => { engine.selectedFocus = focus.id; engine.selectedDrill = null; engine.loadDrills(); }}>
+							<button class="tw-flex tw-flex-col tw-items-center tw-p-3 tw-border tw-border-[#334155] tw-rounded-none tw-transition-colors {engine.selectedFocus === focus.id ? 'tw-bg-[#14b8a6]/10 tw-border-[#14b8a6]' : 'tw-bg-[#000000] hover:tw-border-[#94a3b8]'}" disabled={!engine.selectedChildEmail} onclick={() => { engine.selectedFocus = focus.id; engine.selectedDrill = null; engine.loadDrills(); }}>
 								<span class="tw-font-mono tw-text-[10px] tw-mb-1 {engine.selectedFocus === focus.id ? 'tw-text-[#14b8a6]' : 'tw-text-[#64748b]'}">{focus.op}</span>
 								<span class="tw-text-xs tw-font-bold {engine.selectedFocus === focus.id ? 'tw-text-white' : 'tw-text-[#94a3b8]'}">{focus.label}</span>
 							</button>
@@ -112,7 +112,7 @@
 					{/if}
 					<div class="tw-flex tw-flex-wrap tw-gap-2">
 						{#each engine.availableDrills as drill}
-							<button class="tw-px-3 tw-py-1.5 tw-font-mono tw-text-xs tw-border tw-rounded-none tw-transition-colors {engine.selectedDrill === drill ? 'tw-bg-[#fbbf24]/10 tw-border-[#fbbf24] tw-text-[#fbbf24]' : 'tw-bg-black tw-border-[#334155] tw-text-[#94a3b8] hover:tw-border-[#94a3b8]'}" disabled={!engine.selectedChildEmail} onclick={() => engine.selectedDrill = drill}>
+							<button class="tw-px-3 tw-py-1.5 tw-font-mono tw-text-xs tw-border tw-rounded-none tw-transition-colors {engine.selectedDrill === drill ? 'tw-bg-[#fbbf24]/10 tw-border-[#fbbf24] tw-text-[#fbbf24]' : 'tw-bg-[#000000] tw-border-[#334155] tw-text-[#94a3b8] hover:tw-border-[#94a3b8]'}" disabled={!engine.selectedChildEmail} onclick={() => engine.selectedDrill = drill}>
 								{drill}
 							</button>
 						{/each}
@@ -120,7 +120,7 @@
 				</div>
 
 				<div class="tw-grid tw-grid-cols-1 sm:tw-grid-cols-2 tw-gap-6">
-					<div class="tw-bg-black tw-border tw-border-[#334155] tw-p-4 tw-rounded-none">
+					<div class="tw-bg-[#000000] tw-border tw-border-[#334155] tw-p-4 tw-rounded-none">
 						<div class="tw-flex tw-justify-between tw-items-center tw-mb-3">
 							<span class="tw-text-[#a5b4fc] tw-font-mono tw-text-[10px] tw-uppercase tw-tracking-widest">Time on task (min)</span>
 							<span class="tw-text-[#14b8a6] tw-font-mono tw-text-sm tw-font-bold">{engine.duration}</span>
@@ -130,7 +130,7 @@
 						</div>
 						<input type="range" min="1" max="1440" step="1" bind:value={engine.duration} class="tw-w-full tw-accent-[#14b8a6]" />
 					</div>
-					<div class="tw-bg-black tw-border tw-border-[#334155] tw-p-4 tw-rounded-none">
+					<div class="tw-bg-[#000000] tw-border tw-border-[#334155] tw-p-4 tw-rounded-none">
 						<div class="tw-flex tw-justify-between tw-items-center tw-mb-3">
 							<span class="tw-text-[#a5b4fc] tw-font-mono tw-text-[10px] tw-uppercase tw-tracking-widest">RPE (1-10)</span>
 							<span class="tw-text-[#f59e0b] tw-font-mono tw-text-sm tw-font-bold">{engine.intensity} / 10</span>

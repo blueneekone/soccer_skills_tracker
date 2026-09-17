@@ -85,14 +85,14 @@
 		letter-spacing: 0.12em;
 		text-transform: uppercase;
 		color: rgba(226, 232, 240, 0.35);
-		font-family: monospace;
+		font-family: 'Geist Mono', ui-monospace, monospace;
 	}
 
 	.hud-value {
 		font-size: 0.75rem;
 		font-weight: 800;
 		color: #e2e8f0;
-		font-family: monospace;
+		font-family: 'Geist Mono', ui-monospace, monospace;
 	}
 
 	.hud-warn {
@@ -123,7 +123,7 @@
 		font-weight: 700;
 		letter-spacing: 0.1em;
 		text-transform: uppercase;
-		font-family: monospace;
+		font-family: 'Geist Mono', ui-monospace, monospace;
 	}
 
 	.hud-overrides {

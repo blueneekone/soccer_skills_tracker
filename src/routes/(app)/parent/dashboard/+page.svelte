@@ -77,16 +77,16 @@
 
 			<!-- Quick Telemetry Links -->
 			<div class="tw-flex tw-items-center tw-gap-3 tw-font-mono tw-text-xs">
-				<a href="/parent/household" class="tw-inline-flex tw-items-center tw-gap-1.5 tw-px-3 tw-py-2 tw-border tw-border-[#334155] tw-bg-[#1E293B]/60 tw-text-slate-200 hover:tw-border-amber-500/60 hover:tw-text-amber-500 tw-transition-colors tw-no-underline">
-					<Icon name={"user.group" as IconName} size={14} class="tw-text-amber-500" />
+				<a href="/parent/household" class="tw-inline-flex tw-items-center tw-gap-1.5 tw-px-3 tw-py-2 tw-border tw-border-[#334155] tw-bg-[#1E293B]/60 tw-text-slate-200 hover:tw-border-[#f59e0b]/60 hover:tw-text-[#f59e0b] tw-transition-colors tw-no-underline">
+					<Icon name={"user.group" as IconName} size={14} class="tw-text-[#f59e0b]" />
 					<span>HOUSEHOLD OPS</span>
 				</a>
 				<a href="/parent/payments" class="tw-inline-flex tw-items-center tw-gap-1.5 tw-px-3 tw-py-2 tw-border tw-border-[#334155] tw-bg-[#1E293B]/60 tw-text-slate-200 hover:tw-border-[#14b8a6] hover:tw-text-[#14b8a6] tw-transition-colors tw-no-underline">
 					<Icon name={"sys.credit-card" as IconName} size={14} class="tw-text-[#14b8a6]" />
 					<span>PAYMENTS</span>
 				</a>
-				<a href="/parent/log-workout" class="tw-inline-flex tw-items-center tw-gap-1.5 tw-px-3 tw-py-2 tw-border tw-border-amber-500/50 tw-bg-amber-500/10 tw-text-amber-500 hover:tw-bg-amber-500/20 tw-transition-colors tw-no-underline font-bold">
-					<Icon name={"game.zap" as IconName} size={14} class="tw-text-amber-500" />
+				<a href="/parent/log-workout" class="tw-inline-flex tw-items-center tw-gap-1.5 tw-px-3 tw-py-2 tw-border tw-border-[#f59e0b]/50 tw-bg-[#f59e0b]/10 tw-text-[#f59e0b] hover:tw-bg-[#f59e0b]/20 tw-transition-colors tw-no-underline font-bold">
+					<Icon name={"game.zap" as IconName} size={14} class="tw-text-[#f59e0b]" />
 					<span>LOG WORKOUT</span>
 				</a>
 			</div>

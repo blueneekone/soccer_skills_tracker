@@ -27,7 +27,7 @@
 	
 	<!-- Header -->
 	<header class="tw-max-w-7xl tw-mx-auto tw-w-full tw-px-6 tw-pt-24 tw-pb-16 tw-flex tw-flex-col tw-items-center tw-text-center tw-gap-6">
-		<span class="tw-font-mono tw-text-xs tw-font-bold tw-tracking-[0.3em] tw-text-amber-500">PERSONA SURFACES</span>
+		<span class="tw-font-mono tw-text-xs tw-font-bold tw-tracking-[0.3em] tw-text-[#f59e0b]">PERSONA SURFACES</span>
 		<h1 class="tw-text-5xl md:tw-text-6xl tw-font-bold tw-text-[#f8fafc] tw-tracking-tight tw-leading-tight" style="font-family: 'Geist Sans', sans-serif;">
 			What SSTracker ships today.
 		</h1>
@@ -42,9 +42,9 @@
 		<div class="tw-grid tw-grid-cols-1 md:tw-grid-cols-12 tw-gap-6">
 			
 			<!-- Player OS (Dopamine Engine) - Spans 8 Cols -->
-			<div id="development" class="md:tw-col-span-8 tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-p-8 hover:tw-border-amber-500 tw-transition-colors tw-duration-150 tw-flex tw-flex-col">
+			<div id="development" class="md:tw-col-span-8 tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-p-8 hover:tw-border-[#f59e0b] tw-transition-colors tw-duration-150 tw-flex tw-flex-col">
 				<div class="tw-flex tw-items-center tw-gap-3 tw-mb-6">
-					<Icon name={"game.rocket" as IconName} size={28} class="tw-text-amber-500" />
+					<Icon name={"game.rocket" as IconName} size={28} class="tw-text-[#f59e0b]" />
 					<h2 class="tw-text-2xl tw-font-bold" style="font-family: 'Geist Sans', sans-serif;">Player OS: The Dopamine Engine</h2>
 				</div>
 				<p class="tw-text-[#94a3b8] tw-text-sm tw-leading-relaxed tw-mb-8" style="font-family: 'Switzer', sans-serif;">
@@ -54,7 +54,7 @@
 					<!-- Media Container -->
 					<!-- svelte-ignore a11y_no_static_element_interactions -->
 					<!-- svelte-ignore a11y_click_events_have_key_events -->
-					<div class="tw-absolute tw-inset-0 tw-flex tw-items-center tw-justify-center tw-z-10 tw-bg-slate-900/40 tw-opacity-0 group-hover:tw-opacity-100 tw-transition-opacity tw-duration-300 tw-cursor-pointer" onclick={() => openVideo('/videos/player-os-demo.webm', 'PLAYER OS')} onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openVideo('/videos/player-os-demo.webm', 'PLAYER OS'); } }} tabindex="0" role="button" aria-label="Play video">
+					<div class="tw-absolute tw-inset-0 tw-flex tw-items-center tw-justify-center tw-z-10 tw-bg-[#0f172a]/40 tw-opacity-0 group-hover:tw-opacity-100 tw-transition-opacity tw-duration-300 tw-cursor-pointer" onclick={() => openVideo('/videos/player-os-demo.webm', 'PLAYER OS')} onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openVideo('/videos/player-os-demo.webm', 'PLAYER OS'); } }} tabindex="0" role="button" aria-label="Play video">
 						<button class="tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-rounded-full tw-p-4 tw-text-[#f8fafc] tw-transition-all tw-duration-300 group-hover:tw-text-[#fbbf24] tw-shadow-[0_0_20px_rgba(251,191,36,0.3)] tw-transform tw-scale-90 group-hover:tw-scale-100" aria-hidden="true" tabindex="-1">
 							<Icon name={"media.play" as IconName} size={32} />
 						</button>
@@ -76,7 +76,7 @@
 					<!-- Media Container -->
 					<!-- svelte-ignore a11y_no_static_element_interactions -->
 					<!-- svelte-ignore a11y_click_events_have_key_events -->
-					<div class="tw-absolute tw-inset-0 tw-flex tw-items-center tw-justify-center tw-z-10 tw-bg-slate-900/40 tw-opacity-0 group-hover:tw-opacity-100 tw-transition-opacity tw-duration-300 tw-cursor-pointer" onclick={() => openVideo('/videos/coach-os-demo.webm', 'COACH OS')} onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openVideo('/videos/coach-os-demo.webm', 'COACH OS'); } }} tabindex="0" role="button" aria-label="Play video">
+					<div class="tw-absolute tw-inset-0 tw-flex tw-items-center tw-justify-center tw-z-10 tw-bg-[#0f172a]/40 tw-opacity-0 group-hover:tw-opacity-100 tw-transition-opacity tw-duration-300 tw-cursor-pointer" onclick={() => openVideo('/videos/coach-os-demo.webm', 'COACH OS')} onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openVideo('/videos/coach-os-demo.webm', 'COACH OS'); } }} tabindex="0" role="button" aria-label="Play video">
 						<button class="tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-rounded-full tw-p-4 tw-text-[#f8fafc] tw-transition-all tw-duration-300 group-hover:tw-text-[#f59e0b] tw-shadow-[0_0_20px_rgba(245,158,11,0.3)] tw-transform tw-scale-90 group-hover:tw-scale-100" aria-hidden="true" tabindex="-1">
 							<Icon name={"media.play" as IconName} size={32} />
 						</button>
@@ -98,7 +98,7 @@
 					<!-- Media Container -->
 					<!-- svelte-ignore a11y_no_static_element_interactions -->
 					<!-- svelte-ignore a11y_click_events_have_key_events -->
-					<div class="tw-absolute tw-inset-0 tw-flex tw-items-center tw-justify-center tw-z-10 tw-bg-slate-900/40 tw-opacity-0 group-hover:tw-opacity-100 tw-transition-opacity tw-duration-300 tw-cursor-pointer" onclick={() => openVideo('/videos/parent-os-demo.webm', 'PARENT OS')} onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openVideo('/videos/parent-os-demo.webm', 'PARENT OS'); } }} tabindex="0" role="button" aria-label="Play video">
+					<div class="tw-absolute tw-inset-0 tw-flex tw-items-center tw-justify-center tw-z-10 tw-bg-[#0f172a]/40 tw-opacity-0 group-hover:tw-opacity-100 tw-transition-opacity tw-duration-300 tw-cursor-pointer" onclick={() => openVideo('/videos/parent-os-demo.webm', 'PARENT OS')} onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openVideo('/videos/parent-os-demo.webm', 'PARENT OS'); } }} tabindex="0" role="button" aria-label="Play video">
 						<button class="tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-rounded-full tw-p-4 tw-text-[#f8fafc] tw-transition-all tw-duration-300 group-hover:tw-text-[#14b8a6] tw-shadow-[0_0_20px_rgba(20,184,166,0.3)] tw-transform tw-scale-90 group-hover:tw-scale-100" aria-hidden="true" tabindex="-1">
 							<Icon name={"media.play" as IconName} size={32} />
 						</button>
@@ -120,7 +120,7 @@
 					<!-- Media Container -->
 					<!-- svelte-ignore a11y_no_static_element_interactions -->
 					<!-- svelte-ignore a11y_click_events_have_key_events -->
-					<div class="tw-absolute tw-inset-0 tw-flex tw-items-center tw-justify-center tw-z-10 tw-bg-slate-900/40 tw-opacity-0 group-hover:tw-opacity-100 tw-transition-opacity tw-duration-300 tw-cursor-pointer" onclick={() => openVideo('/videos/director-os-demo.webm', 'DIRECTOR OS')} onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openVideo('/videos/director-os-demo.webm', 'DIRECTOR OS'); } }} tabindex="0" role="button" aria-label="Play video">
+					<div class="tw-absolute tw-inset-0 tw-flex tw-items-center tw-justify-center tw-z-10 tw-bg-[#0f172a]/40 tw-opacity-0 group-hover:tw-opacity-100 tw-transition-opacity tw-duration-300 tw-cursor-pointer" onclick={() => openVideo('/videos/director-os-demo.webm', 'DIRECTOR OS')} onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openVideo('/videos/director-os-demo.webm', 'DIRECTOR OS'); } }} tabindex="0" role="button" aria-label="Play video">
 						<button class="tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-rounded-full tw-p-4 tw-text-[#f8fafc] tw-transition-all tw-duration-300 group-hover:tw-text-[#14b8a6] tw-shadow-[0_0_20px_rgba(20,184,166,0.3)] tw-transform tw-scale-90 group-hover:tw-scale-100" aria-hidden="true" tabindex="-1">
 							<Icon name={"media.play" as IconName} size={32} />
 						</button>
@@ -135,7 +135,7 @@
 		<div class="tw-mt-24 tw-text-center">
 			<h2 class="tw-text-3xl tw-font-bold tw-mb-8" style="font-family: 'Geist Sans', sans-serif;">Ready to secure your club's future?</h2>
 			<div class="tw-flex tw-items-center tw-justify-center tw-gap-6 tw-flex-wrap">
-				<a href="/pricing" class="tw-bg-amber-500 tw-text-[#000000] hover:tw-bg-amber-500/90 tw-px-8 tw-py-4 tw-rounded-sm tw-font-mono tw-font-bold tw-text-sm tw-uppercase tw-tracking-wider tw-transition-colors tw-duration-150 tw-flex tw-items-center tw-gap-2 tw-shadow-[0_0_20px_rgba(251,191,36,0.25)]">
+				<a href="/pricing" class="tw-bg-[#f59e0b] tw-text-[#000000] hover:tw-bg-[#f59e0b]/90 tw-px-8 tw-py-4 tw-rounded-sm tw-font-mono tw-font-bold tw-text-sm tw-uppercase tw-tracking-wider tw-transition-colors tw-duration-150 tw-flex tw-items-center tw-gap-2 tw-shadow-[0_0_20px_rgba(251,191,36,0.25)]">
 					View Commercial Pricing
 					<Icon name={"nav.arrow-right" as IconName} size={16} />
 				</a>
@@ -158,7 +158,7 @@
 	<div class="tw-w-full tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-rounded-xl tw-overflow-hidden tw-shadow-[0_0_30px_rgba(20,184,166,0.15)] tw-p-1">
 		{#if currentVideo}
 			<video
-				class="tw-w-full tw-h-auto tw-rounded-lg tw-bg-black"
+				class="tw-w-full tw-h-auto tw-rounded-lg tw-bg-[#000000]"
 				src={currentVideo}
 				controls
 				playsinline

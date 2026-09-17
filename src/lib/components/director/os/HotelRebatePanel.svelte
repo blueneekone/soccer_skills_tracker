@@ -129,7 +129,7 @@
 <div class="rebate-panel">
 	<div class="panel-header">
 		<h3 class="panel-title">
-			<Icon name={'business.hotel' as IconName} size={18} class="tw-text-amber-500" />
+			<Icon name={'business.hotel' as IconName} size={18} class="tw-text-[#f59e0b]" />
 			<span>Hotel Rebates</span>
 		</h3>
 		<span class="panel-note">Read-only — contact platform support to dispute.</span>

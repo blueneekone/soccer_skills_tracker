@@ -30,13 +30,13 @@
   <h1 class="tw-text-2xl tw-font-bold tw-mb-4">Parent OS - COPPA Gates & Cryptographic Digital Waivers</h1>
 
   {#if !challengeSubmitted}
-    <div id="coppa-dob-form" class="tw-bg-slate-800 tw-p-4 tw-rounded-[24px] tw-mb-4">
+    <div id="coppa-dob-form" class="tw-bg-[#0f172a] tw-p-4 tw-rounded-[24px] tw-mb-4">
       <label for="child-dob-input" class="tw-block tw-text-sm tw-font-medium tw-mb-2">Enter Child Date of Birth</label>
       <input
         id="child-dob-input"
         type="date"
         bind:value={childDob}
-        class="tw-bg-slate-900 tw-border tw-border-slate-600 tw-p-2 tw-rounded-md tw-text-white tw-mb-4"
+        class="tw-bg-[#0f172a] tw-border tw-border-slate-600 tw-p-2 tw-rounded-md tw-text-white tw-mb-4"
       />
       <button
         id="submit-dob-btn"
@@ -48,7 +48,7 @@
     </div>
   {:else}
     {#if isUnder13}
-      <div id="coppa-gate-block" class="tw-bg-amber-900/40 tw-border tw-border-amber-500 tw-p-4 tw-rounded-[24px] tw-mb-4">
+      <div id="coppa-gate-block" class="tw-bg-amber-900/40 tw-border tw-border-[#f59e0b] tw-p-4 tw-rounded-[24px] tw-mb-4">
         <h3 class="tw-text-amber-300 tw-font-semibold tw-mb-2">⚠️ COPPA Compliance Verification Required (&lt; 13 Yrs)</h3>
         <p class="tw-text-sm tw-text-slate-300 tw-mb-3">Parental consent is mandatory before account execution proceeds.</p>
         <label class="tw-flex tw-items-center tw-gap-2 tw-cursor-pointer">
@@ -58,7 +58,7 @@
       </div>
     {/if}
 
-    <div class="tw-bg-slate-800 tw-p-4 tw-rounded-[24px] tw-mb-4">
+    <div class="tw-bg-[#0f172a] tw-p-4 tw-rounded-[24px] tw-mb-4">
       <h3 class="tw-text-lg tw-font-semibold tw-mb-2">SafeSport & Athletic Liability Digital Waiver</h3>
       <label class="tw-flex tw-items-center tw-gap-2 tw-cursor-pointer tw-mb-4">
         <input id="safesport-checkbox" type="checkbox" bind:checked={safeSportSigned} />

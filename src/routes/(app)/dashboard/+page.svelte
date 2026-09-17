@@ -39,7 +39,7 @@
 			</div>
 
 			<!-- XP progress bar -->
-			<div class="tw-mt-6 tw-h-2 tw-w-full tw-overflow-hidden tw-rounded-full tw-border tw-border-slate-800/50 tw-bg-black/40">
+			<div class="tw-mt-6 tw-h-2 tw-w-full tw-overflow-hidden tw-rounded-full tw-border tw-border-slate-800/50 tw-bg-[#000000]/40">
 				<div class="tw-h-full tw-w-[81%] tw-rounded-full tw-bg-teal-500 tw-shadow-[0_0_10px_rgba(20,184,166,0.5)]"></div>
 			</div>
 		</div>
@@ -53,7 +53,7 @@
 				Engagement Streak
 			</h2>
 			<div class="tw-flex tw-flex-1 tw-flex-col tw-items-center tw-justify-center">
-				<span class="tw-mb-2 tw-font-mono tw-text-5xl tw-tracking-tighter tw-text-amber-500">
+				<span class="tw-mb-2 tw-font-mono tw-text-5xl tw-tracking-tighter tw-text-[#f59e0b]">
 					12 DAYS
 				</span>
 				<p class="tw-text-center tw-font-mono tw-text-xs tw-text-slate-500">
@@ -80,7 +80,7 @@
 			</div>
 
 			<div class="tw-flex tw-flex-col tw-gap-3">
-				<div class="tw-flex tw-h-16 tw-w-full tw-cursor-pointer tw-items-center tw-justify-between tw-rounded-lg tw-border tw-border-slate-800/50 tw-bg-black/20 tw-px-4 tw-transition-colors hover:tw-border-slate-600">
+				<div class="tw-flex tw-h-16 tw-w-full tw-cursor-pointer tw-items-center tw-justify-between tw-rounded-lg tw-border tw-border-slate-800/50 tw-bg-[#000000]/20 tw-px-4 tw-transition-colors hover:tw-border-slate-600">
 					<div class="tw-flex tw-items-center tw-gap-4">
 						<div class="tw-h-2 tw-w-2 tw-rounded-full tw-bg-teal-500 tw-shadow-[0_0_8px_rgba(20,184,166,0.8)]"></div>
 						<span class="tw-font-mono tw-text-sm tw-text-slate-200">Dynamic Ball Mastery v4</span>

@@ -428,7 +428,7 @@
 			</div>
 		{:else if teamScope.myTeams.length === 0}
 			<div class="tw-p-12 tw-text-center tw-bg-[#0f172a] tw-border tw-border-[#334155]" style="border-radius: 0px;">
-				<p class="tw-text-sm tw-text-amber-400">No active team assigned. Link an active roster in Team Ops or contact your Director.</p>
+				<p class="tw-text-sm tw-text-[#fbbf24]">No active team assigned. Link an active roster in Team Ops or contact your Director.</p>
 			</div>
 		{:else if activeTab === 'roster-eval'}
 			<CoachRosterQuickEvalPanel teamId={teamScope.selectedTeamId} sportHint={sportHint} />
@@ -661,7 +661,7 @@
 											<div class="tw-flex tw-items-center tw-gap-2">
 												<button
 													type="button"
-													class="tw-w-7 tw-h-6 tw-bg-[#0f172a] hover:tw-bg-slate-800 tw-border tw-border-[#334155] tw-text-xs tw-text-white tw-cursor-pointer"
+													class="tw-w-7 tw-h-6 tw-bg-[#0f172a] hover:tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-text-xs tw-text-white tw-cursor-pointer"
 													style="border-radius: 0px;"
 													onclick={() => adjustScore(item.key, -5)}
 												>
@@ -672,7 +672,7 @@
 												</span>
 												<button
 													type="button"
-													class="tw-w-7 tw-h-6 tw-bg-[#0f172a] hover:tw-bg-slate-800 tw-border tw-border-[#334155] tw-text-xs tw-text-white tw-cursor-pointer"
+													class="tw-w-7 tw-h-6 tw-bg-[#0f172a] hover:tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-text-xs tw-text-white tw-cursor-pointer"
 													style="border-radius: 0px;"
 													onclick={() => adjustScore(item.key, 5)}
 												>

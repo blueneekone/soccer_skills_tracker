@@ -213,7 +213,7 @@
 		if (determined === 'LOSS') {
 			return { label: 'LOSS', bg: 'tw-bg-rose-950/70', border: 'tw-border-rose-500', text: 'tw-text-rose-300' };
 		}
-		return { label: 'DRAW', bg: 'tw-bg-amber-950/70', border: 'tw-border-amber-500', text: 'tw-text-amber-300' };
+		return { label: 'DRAW', bg: 'tw-bg-amber-950/70', border: 'tw-border-[#f59e0b]', text: 'tw-text-amber-300' };
 	}
 </script>
 
@@ -235,7 +235,7 @@
 
 			<a
 				href="/coach/matchday"
-				class="tw-inline-flex tw-items-center tw-gap-2 tw-px-4 tw-py-2 tw-bg-[#fbbf24] hover:tw-bg-amber-400 active:tw-scale-95 tw-text-black tw-font-mono tw-text-xs tw-font-black tw-uppercase tw-tracking-wider tw-transition-all tw-no-underline"
+				class="tw-inline-flex tw-items-center tw-gap-2 tw-px-4 tw-py-2 tw-bg-[#fbbf24] hover:tw-bg-[#fbbf24] active:tw-scale-95 tw-text-black tw-font-mono tw-text-xs tw-font-black tw-uppercase tw-tracking-wider tw-transition-all tw-no-underline"
 				style="border-radius: 0px;"
 			>
 				<span>▶</span>
@@ -363,7 +363,7 @@
 	<!-- Backdrop -->
 	<!-- svelte-ignore a11y_click_events_have_key_events -->
 	<div
-		class="tw-fixed tw-inset-0 tw-z-[9999] tw-flex tw-items-center tw-justify-center tw-p-4 tw-bg-black/85 tw-backdrop-blur-sm"
+		class="tw-fixed tw-inset-0 tw-z-[9999] tw-flex tw-items-center tw-justify-center tw-p-4 tw-bg-[#000000]/85 tw-backdrop-blur-sm"
 		role="presentation"
 		transition:fade={{ duration: 120 }}
 		onclick={() => selectedMatch = null}
@@ -474,7 +474,7 @@
 									<th class="tw-p-2.5 tw-font-mono tw-text-xs tw-text-slate-400 tw-uppercase tw-text-center">Tackles</th>
 									<th class="tw-p-2.5 tw-font-mono tw-text-xs tw-text-slate-400 tw-uppercase tw-text-center">Saves</th>
 									<th class="tw-p-2.5 tw-font-mono tw-text-xs tw-text-slate-400 tw-uppercase tw-text-center">Fouls</th>
-									<th class="tw-p-2.5 tw-font-mono tw-text-xs tw-text-amber-400 tw-uppercase tw-text-center">Cards</th>
+									<th class="tw-p-2.5 tw-font-mono tw-text-xs tw-text-[#fbbf24] tw-uppercase tw-text-center">Cards</th>
 									<th class="tw-p-2.5 tw-font-mono tw-text-xs tw-text-rose-400 tw-uppercase tw-text-center">Mistakes</th>
 								</tr>
 							</thead>
@@ -488,10 +488,10 @@
 										<td class="tw-p-2.5 tw-font-mono tw-text-xs tw-text-center {player.shots > 0 ? 'tw-text-slate-200' : 'tw-text-slate-500'}">{player.shots}</td>
 										<td class="tw-p-2.5 tw-font-mono tw-text-xs tw-text-center {player.tackles > 0 ? 'tw-text-slate-200' : 'tw-text-slate-500'}">{player.tackles}</td>
 										<td class="tw-p-2.5 tw-font-mono tw-text-xs tw-text-center {player.saves > 0 ? 'tw-text-slate-200' : 'tw-text-slate-500'}">{player.saves}</td>
-										<td class="tw-p-2.5 tw-font-mono tw-text-xs tw-text-center {player.fouls > 0 ? 'tw-text-amber-400' : 'tw-text-slate-500'}">{player.fouls}</td>
+										<td class="tw-p-2.5 tw-font-mono tw-text-xs tw-text-center {player.fouls > 0 ? 'tw-text-[#fbbf24]' : 'tw-text-slate-500'}">{player.fouls}</td>
 										<td class="tw-p-2.5 tw-font-mono tw-text-xs tw-text-center">
 											{#if player.yellowCards > 0 || player.redCards > 0}
-												<span class="tw-text-amber-400">{player.yellowCards}Y</span>
+												<span class="tw-text-[#fbbf24]">{player.yellowCards}Y</span>
 												{#if player.redCards > 0}
 													<span class="tw-text-rose-400 tw-ml-1">{player.redCards}R</span>
 												{/if}
@@ -530,7 +530,7 @@
 							<div class="tw-flex tw-items-center tw-justify-between tw-text-xs tw-font-mono tw-p-1.5 tw-bg-[#0f172a] tw-border tw-border-[#334155]/60">
 								<div class="tw-flex tw-items-center tw-gap-2.5">
 									<span class="tw-text-slate-500 tw-tabular-nums">{evt.time}</span>
-									<span class="tw-px-1.5 tw-py-0.5 tw-text-[10px] tw-border {evt.type === 'GOAL' ? 'tw-bg-[#14b8a6] tw-border-[#14b8a6] tw-text-[#14b8a6]' : evt.type.includes('CARD') ? 'tw-bg-amber-950 tw-border-amber-400 tw-text-amber-300' : evt.type === 'MISTAKE' ? 'tw-bg-rose-950 tw-border-rose-500 tw-text-rose-300' : 'tw-bg-slate-900 tw-border-slate-700 tw-text-slate-300'}">
+									<span class="tw-px-1.5 tw-py-0.5 tw-text-[10px] tw-border {evt.type === 'GOAL' ? 'tw-bg-[#14b8a6] tw-border-[#14b8a6] tw-text-[#14b8a6]' : evt.type.includes('CARD') ? 'tw-bg-amber-950 tw-border-amber-400 tw-text-amber-300' : evt.type === 'MISTAKE' ? 'tw-bg-rose-950 tw-border-rose-500 tw-text-rose-300' : 'tw-bg-[#0f172a] tw-border-slate-700 tw-text-slate-300'}">
 										{evt.type}
 									</span>
 									<span class="tw-text-white tw-font-bold">{evt.label}</span>
@@ -549,7 +549,7 @@
 				<button
 					type="button"
 					onclick={() => selectedMatch = null}
-					class="tw-px-4 tw-py-2 tw-bg-[#0f172a] hover:tw-bg-slate-800 tw-border tw-border-[#334155] tw-text-slate-300 tw-font-mono tw-text-xs tw-cursor-pointer"
+					class="tw-px-4 tw-py-2 tw-bg-[#0f172a] hover:tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-text-slate-300 tw-font-mono tw-text-xs tw-cursor-pointer"
 					style="border-radius: 0px;"
 				>
 					Close Dossier

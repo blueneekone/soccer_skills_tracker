@@ -8,7 +8,7 @@
 </script>
 
 {#if isOpen}
-	<div class="tw-fixed tw-inset-0 tw-z-[10005] tw-flex tw-items-center tw-justify-center tw-bg-black/85 tw-backdrop-blur-md tw-p-3 sm:tw-p-6" use:portal>
+	<div class="tw-fixed tw-inset-0 tw-z-[10005] tw-flex tw-items-center tw-justify-center tw-bg-[#000000]/85 tw-backdrop-blur-md tw-p-3 sm:tw-p-6" use:portal>
 		<div class="tw-bg-[#020617] tw-border tw-border-[#334155] tw-rounded-xl tw-w-full tw-max-w-6xl tw-h-full tw-max-h-[92vh] tw-flex tw-flex-col tw-font-mono tw-text-white tw-shadow-[0_0_50px_rgba(0,0,0,0.9)] tw-overflow-hidden">
 			<!-- Header -->
 			<div class="tw-flex tw-justify-between tw-items-center tw-p-3 sm:tw-p-4 tw-border-b tw-border-[#334155] tw-shrink-0">

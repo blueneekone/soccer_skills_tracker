@@ -14,7 +14,7 @@
 
   <div class="tw-grid tw-grid-cols-1 md:tw-grid-cols-3 tw-gap-4">
     {#each cardMetrics as metric}
-      <div class="tw-bg-slate-800 tw-p-4 tw-rounded-[24px] tw-border tw-border-slate-600">
+      <div class="tw-bg-[#0f172a] tw-p-4 tw-rounded-[24px] tw-border tw-border-slate-600">
         <h3 class="tw-text-[#14b8a6] tw-font-semibold tw-text-lg tw-mb-2">{metric.title}</h3>
         <p class="tw-text-slate-200 tw-font-medium">{metric.rating}</p>
       </div>

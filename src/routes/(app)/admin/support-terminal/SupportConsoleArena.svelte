@@ -10,7 +10,7 @@
 	<div class="lg:tw-col-span-8 tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-p-6">
 		{#if engine.activeTab === 'users'}
 			<h2 class="tw-text-sm tw-font-mono tw-font-bold tw-text-[#FAFAFA] tw-uppercase tw-tracking-wider tw-mb-5 tw-flex tw-items-center tw-gap-2">
-				<Icon name={"user.settings" as IconName} size={16} class="tw-text-amber-500" /> User Operations
+				<Icon name={"user.settings" as IconName} size={16} class="tw-text-[#f59e0b]" /> User Operations
 			</h2>
 
 			<div class="tw-grid tw-grid-cols-1 md:tw-grid-cols-2 tw-gap-6">
@@ -26,10 +26,10 @@
 				</div>
 
 				<div class="tw-flex tw-flex-col tw-gap-2.5 tw-justify-center">
-					<button type="button" onclick={() => engine.executeCommand('resetUserPassword', { targetEmail: engine.userEmail })} class="v-toolbar-btn tw-border-amber-500/40 tw-text-amber-400 hover:tw-border-amber-500 hover:tw-bg-amber-500/10">
-						<Icon name={"comm.mail" as IconName} size={14} class="tw-text-amber-400" /> Send Password Reset
+					<button type="button" onclick={() => engine.executeCommand('resetUserPassword', { targetEmail: engine.userEmail })} class="v-toolbar-btn tw-border-[#f59e0b]/40 tw-text-[#fbbf24] hover:tw-border-[#f59e0b] hover:tw-bg-[#f59e0b]/10">
+						<Icon name={"comm.mail" as IconName} size={14} class="tw-text-[#fbbf24]" /> Send Password Reset
 					</button>
-					<button type="button" onclick={() => engine.executeCommand('disableUser', { targetUid: engine.userUid, disabled: true })} class="v-toolbar-btn tw-border-amber-500/40 tw-text-amber-400 hover:tw-border-amber-500 hover:tw-bg-amber-500/10">
+					<button type="button" onclick={() => engine.executeCommand('disableUser', { targetUid: engine.userUid, disabled: true })} class="v-toolbar-btn tw-border-[#f59e0b]/40 tw-text-[#fbbf24] hover:tw-border-[#f59e0b] hover:tw-bg-[#f59e0b]/10">
 						<Icon name={"sys.ban" as IconName} size={14} /> Disable Account
 					</button>
 					<button type="button" onclick={() => engine.executeCommand('disableUser', { targetUid: engine.userUid, disabled: false })} class="v-toolbar-btn tw-border-[#14b8a6]/40 tw-text-[#14b8a6] hover:tw-border-[#14b8a6] hover:tw-bg-[#14b8a6]/10">
@@ -102,7 +102,7 @@
 						</div>
 					</div>
 					<div class="tw-flex tw-flex-col tw-mt-2">
-						<button type="button" onclick={() => engine.executeCommand('linkUserToTeam', { targetEmail: engine.linkEmail, role: engine.linkRole, clubId: engine.linkClubId, teamId: engine.linkTeamId })} class="v-toolbar-btn tw-border-amber-500 tw-text-amber-400 hover:tw-bg-amber-500/10 tw-justify-center">
+						<button type="button" onclick={() => engine.executeCommand('linkUserToTeam', { targetEmail: engine.linkEmail, role: engine.linkRole, clubId: engine.linkClubId, teamId: engine.linkTeamId })} class="v-toolbar-btn tw-border-[#f59e0b] tw-text-[#fbbf24] hover:tw-bg-[#f59e0b]/10 tw-justify-center">
 							<Icon name={"action.add" as IconName} size={14} /> Link User to Team
 						</button>
 					</div>
@@ -142,7 +142,7 @@
 				</div>
 
 				<div class="tw-flex tw-flex-col tw-justify-end">
-					<button type="button" onclick={() => engine.executeCommand('repairUserClaims', { targetEmail: engine.repairEmail, role: engine.repairRole, clubId: engine.repairClubId || null, teamId: engine.repairTeamId || null })} class="v-toolbar-btn tw-border-amber-500 tw-text-amber-400 hover:tw-bg-amber-500/10 tw-justify-center">
+					<button type="button" onclick={() => engine.executeCommand('repairUserClaims', { targetEmail: engine.repairEmail, role: engine.repairRole, clubId: engine.repairClubId || null, teamId: engine.repairTeamId || null })} class="v-toolbar-btn tw-border-[#f59e0b] tw-text-[#fbbf24] hover:tw-bg-[#f59e0b]/10 tw-justify-center">
 						<Icon name={"status.shield-check" as IconName} size={14} /> Repair Custom Claims
 					</button>
 				</div>
@@ -163,7 +163,7 @@
 	<!-- Output Console (Spans 4 cols on lg) -->
 	<div class="lg:tw-col-span-4 tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-p-5 tw-min-h-[220px] tw-font-mono tw-text-xs tw-flex tw-flex-col">
 		<h3 class="tw-text-[#94A3B8] tw-uppercase tw-tracking-widest tw-mb-3 tw-flex tw-items-center tw-gap-2 tw-text-xs tw-font-bold tw-m-0">
-			<Icon name={"data.radar" as IconName} size={14} class="tw-text-amber-500" /> Terminal Output
+			<Icon name={"data.radar" as IconName} size={14} class="tw-text-[#f59e0b]" /> Terminal Output
 		</h3>
 		<div class="tw-flex-1 tw-p-3.5 tw-bg-[#000000] tw-border tw-border-[#334155] tw-min-h-[160px] tw-overflow-y-auto">
 			{#if engine.lastOutput}

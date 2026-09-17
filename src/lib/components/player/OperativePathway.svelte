@@ -148,14 +148,14 @@
 					'unlocked' ?
 						dossierMode ?
 							'opp-node--unlocked-dossier tw-opacity-50'
-						:	'tw-bg-slate-800 tw-border-[#14b8a6]/30 tw-opacity-50'
+						:	'tw-bg-[#0f172a] tw-border-[#14b8a6]/30 tw-opacity-50'
 					: state === 'current' ?
 						dossierMode ?
 							'opp-node--current-dossier tw-relative tw-z-[2] tw-opacity-100'
-						:	'tw-relative tw-z-[2] tw-bg-slate-900 tw-border-cyan-400 tw-opacity-100 tw-shadow-[0_0_15px_rgba(20, 184, 166,0.4)]'
+						:	'tw-relative tw-z-[2] tw-bg-[#0f172a] tw-border-cyan-400 tw-opacity-100 tw-shadow-[0_0_15px_rgba(20, 184, 166,0.4)]'
 					: dossierMode ?
 						'opp-node--locked-dossier tw-opacity-80'
-					:	'tw-bg-slate-900/40 tw-border-white/5 tw-opacity-80'}"
+					:	'tw-bg-[#0f172a]/40 tw-border-white/5 tw-opacity-80'}"
 					class:opp-node--milestone={isMilestoneTier(tier)}
 					aria-label={tierLabel(tier)}
 					data-opp-current={state === 'current' ? 'true' : undefined}

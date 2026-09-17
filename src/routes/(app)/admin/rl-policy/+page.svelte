@@ -71,7 +71,7 @@
 	}
 
 	.page-mono {
-		font-family: monospace;
+		font-family: 'Geist Mono', ui-monospace, monospace;
 		font-size: 0.65rem;
 		letter-spacing: 0.12em;
 		color: rgba(0, 212, 255, 0.5);
@@ -101,6 +101,6 @@
 	}
 
 	.mono {
-		font-family: monospace;
+		font-family: 'Geist Mono', ui-monospace, monospace;
 	}
 </style>

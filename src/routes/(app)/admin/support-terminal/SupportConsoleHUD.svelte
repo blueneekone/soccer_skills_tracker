@@ -26,8 +26,8 @@
 	
 	<div class="tw-flex-1 tw-flex tw-justify-end">
 		{#if engine.isProcessing}
-			<span class="tw-inline-flex tw-items-center tw-gap-2 tw-text-xs tw-font-mono tw-text-amber-400 tw-uppercase tw-tracking-wider">
-				<span class="tw-w-2 tw-h-2 tw-bg-amber-400 tw-animate-pulse"></span>
+			<span class="tw-inline-flex tw-items-center tw-gap-2 tw-text-xs tw-font-mono tw-text-[#fbbf24] tw-uppercase tw-tracking-wider">
+				<span class="tw-w-2 tw-h-2 tw-bg-[#fbbf24] tw-animate-pulse"></span>
 				PROCESSING
 			</span>
 		{:else}

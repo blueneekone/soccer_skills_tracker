@@ -741,7 +741,7 @@
 			<span class="tw-text-xs tw-font-mono tw-font-bold tw-text-[#14b8a6]">
 				{opponentTeam ? `vs ${opponentTeam}` : 'Current Match'}
 			</span>
-			<span class="tw-text-[10px] tw-font-mono tw-px-2 tw-py-0.5 tw-border {matchState === 'running' ? 'tw-bg-[#14b8a6]/60 tw-border-[#14b8a6]/60 tw-text-[#14b8a6] tw-animate-pulse' : matchState === 'paused' ? 'tw-bg-amber-950/60 tw-border-amber-500/60 tw-text-amber-400' : matchState === 'ended' ? 'tw-bg-slate-900 tw-border-slate-700 tw-text-slate-400' : 'tw-bg-slate-900 tw-border-slate-700 tw-text-[#daff0a]'}">
+			<span class="tw-text-[10px] tw-font-mono tw-px-2 tw-py-0.5 tw-border {matchState === 'running' ? 'tw-bg-[#14b8a6]/60 tw-border-[#14b8a6]/60 tw-text-[#14b8a6] tw-animate-pulse' : matchState === 'paused' ? 'tw-bg-amber-950/60 tw-border-[#f59e0b]/60 tw-text-[#fbbf24]' : matchState === 'ended' ? 'tw-bg-[#0f172a] tw-border-slate-700 tw-text-slate-400' : 'tw-bg-[#0f172a] tw-border-slate-700 tw-text-[#daff0a]'}">
 				{matchState === 'running' ? '● LIVE IN PLAY' : matchState === 'paused' ? '⏸ PAUSED' : matchState === 'ended' ? '✓ FINAL' : 'PRE-MATCH'}
 			</span>
 		</div>
@@ -798,7 +798,7 @@
 				{:else if matchState === 'running'}
 					<button
 						type="button"
-						class="tw-bg-amber-500 tw-text-black tw-font-mono tw-font-bold tw-text-xs tw-px-4 tw-py-2.5 tw-tracking-wider tw-uppercase hover:tw-bg-amber-400 tw-transition-colors"
+						class="tw-bg-[#f59e0b] tw-text-black tw-font-mono tw-font-bold tw-text-xs tw-px-4 tw-py-2.5 tw-tracking-wider tw-uppercase hover:tw-bg-[#fbbf24] tw-transition-colors"
 						onclick={pauseMatch}
 					>
 						⏸ PAUSE MATCH

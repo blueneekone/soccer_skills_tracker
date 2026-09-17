@@ -278,7 +278,7 @@
 			</h4>
 			<p class="tw-m-0 tw-mt-1 tw-text-[11px] tw-leading-relaxed tw-text-slate-500">
 				Live logistics matrix ·
-				<code class="tw-rounded tw-bg-black/50 tw-px-1 tw-py-0.5 tw-font-mono tw-text-[10px] tw-text-[#14b8a6]/85"
+				<code class="tw-rounded tw-bg-[#000000]/50 tw-px-1 tw-py-0.5 tw-font-mono tw-text-[10px] tw-text-[#14b8a6]/85"
 					>deployment_calendar_entries</code
 				>
 			</p>
@@ -305,7 +305,7 @@
 		<p class="tw-m-0 tw-p-4 tw-text-sm tw-text-red-400">{listErr}</p>
 	{:else if rows.length === 0}
 		<div
-			class="tw-mx-3 tw-my-4 tw-rounded-none tw-border tw-border-dashed tw-border-slate-700/80 tw-bg-black/25 tw-px-4 tw-py-10 tw-text-center"
+			class="tw-mx-3 tw-my-4 tw-rounded-none tw-border tw-border-dashed tw-border-slate-700/80 tw-bg-[#000000]/25 tw-px-4 tw-py-10 tw-text-center"
 		>
 			<p class="tw-m-0 tw-text-sm tw-font-semibold tw-tracking-tight tw-text-slate-200">
 				No deployments scheduled
@@ -318,7 +318,7 @@
 		<div class="dep-cal-list tw-flex tw-flex-col tw-gap-2 tw-p-3 tw-pb-4">
 			{#each rows as row (row.id)}
 				<article
-					class="dep-cal-card group tw-relative tw-flex tw-min-h-[88px] tw-flex-col tw-gap-1.5 tw-overflow-hidden tw-rounded-none tw-border tw-border-slate-800/90 tw-bg-gradient-to-br tw-from-slate-950/90 tw-to-slate-900/70 tw-p-3 tw-pl-4 tw-shadow-inner tw-transition tw-duration-200 hover:tw-bg-slate-800/50 hover:tw-shadow-[0_8px_32px_rgba(0,0,0,0.35)] {kindAccent(
+					class="dep-cal-card group tw-relative tw-flex tw-min-h-[88px] tw-flex-col tw-gap-1.5 tw-overflow-hidden tw-rounded-none tw-border tw-border-slate-800/90 tw-bg-gradient-to-br tw-from-slate-950/90 tw-to-slate-900/70 tw-p-3 tw-pl-4 tw-shadow-inner tw-transition tw-duration-200 hover:tw-bg-[#0f172a]/50 hover:tw-shadow-[0_8px_32px_rgba(0,0,0,0.35)] {kindAccent(
 						row.kind,
 					)}"
 				>
@@ -438,7 +438,7 @@
 	<!-- svelte-ignore a11y_click_events_have_key_events -->
 	<!-- svelte-ignore a11y_no_static_element_interactions -->
 	<div
-		class="tw-fixed tw-inset-0 tw-z-[100] tw-flex tw-items-center tw-justify-center tw-bg-black/70 tw-p-4 tw-backdrop-blur-sm"
+		class="tw-fixed tw-inset-0 tw-z-[100] tw-flex tw-items-center tw-justify-center tw-bg-[#000000]/70 tw-p-4 tw-backdrop-blur-sm"
 		role="presentation"
 		onclick={(e) => e.target === e.currentTarget && closeModal()}
 	>
@@ -455,7 +455,7 @@
 				</h2>
 				<button
 					type="button"
-					class="tw-rounded-none tw-p-1 tw-text-slate-500 hover:tw-bg-slate-900 hover:tw-text-slate-300"
+					class="tw-rounded-none tw-p-1 tw-text-slate-500 hover:tw-bg-[#0f172a] hover:tw-text-slate-300"
 					onclick={closeModal}
 					aria-label="Close"
 				>
@@ -469,7 +469,7 @@
 						>Event type</span
 					>
 					<select
-						class="tw-rounded-none tw-border tw-border-slate-700 tw-bg-black/40 tw-px-3 tw-py-2 tw-text-sm tw-text-slate-100"
+						class="tw-rounded-none tw-border tw-border-slate-700 tw-bg-[#000000]/40 tw-px-3 tw-py-2 tw-text-sm tw-text-slate-100"
 						bind:value={eventKind}
 					>
 						{#each kindLabels as k}
@@ -484,7 +484,7 @@
 					>
 					<input
 						type="datetime-local"
-						class="tw-rounded-none tw-border tw-border-slate-700 tw-bg-black/40 tw-px-3 tw-py-2 tw-text-sm tw-text-slate-100"
+						class="tw-rounded-none tw-border tw-border-slate-700 tw-bg-[#000000]/40 tw-px-3 tw-py-2 tw-text-sm tw-text-slate-100"
 						bind:value={startsLocal}
 					/>
 				</label>
@@ -495,7 +495,7 @@
 					>
 					<input
 						type="datetime-local"
-						class="tw-rounded-none tw-border tw-border-slate-700 tw-bg-black/40 tw-px-3 tw-py-2 tw-text-sm tw-text-slate-100"
+						class="tw-rounded-none tw-border tw-border-slate-700 tw-bg-[#000000]/40 tw-px-3 tw-py-2 tw-text-sm tw-text-slate-100"
 						bind:value={endsLocal}
 					/>
 				</label>
@@ -505,7 +505,7 @@
 						>Assigned team</span
 					>
 					<select
-						class="tw-rounded-none tw-border tw-border-slate-700 tw-bg-black/40 tw-px-3 tw-py-2 tw-text-sm tw-text-slate-100"
+						class="tw-rounded-none tw-border tw-border-slate-700 tw-bg-[#000000]/40 tw-px-3 tw-py-2 tw-text-sm tw-text-slate-100"
 						bind:value={teamId}
 					>
 						<option value="">Select team…</option>
@@ -520,7 +520,7 @@
 						>Location (facility)</span
 					>
 					<select
-						class="tw-rounded-none tw-border tw-border-slate-700 tw-bg-black/40 tw-px-3 tw-py-2 tw-text-sm tw-text-slate-100"
+						class="tw-rounded-none tw-border tw-border-slate-700 tw-bg-[#000000]/40 tw-px-3 tw-py-2 tw-text-sm tw-text-slate-100"
 						bind:value={facilityId}
 					>
 						<option value="">Select facility…</option>
@@ -531,13 +531,13 @@
 						{/each}
 					</select>
 					{#if selectedFacilityWeatherLocked}
-						<p class="tw-m-0 tw-text-[10px] tw-font-semibold tw-text-amber-400" role="status">
+						<p class="tw-m-0 tw-text-[10px] tw-font-semibold tw-text-[#fbbf24]" role="status">
 							Weather lock active — scheduling blocked for this facility.
 						</p>
 					{/if}
 				</label>
 
-				<label class="tw-flex tw-cursor-pointer tw-items-start tw-gap-2 tw-rounded-none tw-border tw-border-slate-800 tw-bg-black/20 tw-px-3 tw-py-2">
+				<label class="tw-flex tw-cursor-pointer tw-items-start tw-gap-2 tw-rounded-none tw-border tw-border-slate-800 tw-bg-[#000000]/20 tw-px-3 tw-py-2">
 					<input
 						type="checkbox"
 						class="tw-mt-0.5"
@@ -560,7 +560,7 @@
 				<div class="tw-flex tw-justify-end tw-gap-2 tw-pt-2">
 					<button
 						type="button"
-						class="tw-rounded-none tw-border tw-border-slate-700 tw-bg-transparent tw-px-4 tw-py-2 tw-text-xs tw-font-bold tw-uppercase tw-tracking-wide tw-text-slate-400 hover:tw-bg-slate-900"
+						class="tw-rounded-none tw-border tw-border-slate-700 tw-bg-transparent tw-px-4 tw-py-2 tw-text-xs tw-font-bold tw-uppercase tw-tracking-wide tw-text-slate-400 hover:tw-bg-[#0f172a]"
 						onclick={closeModal}
 					>
 						Cancel

@@ -229,7 +229,7 @@
 			<h3 class="tw-text-sm tw-font-bold tw-text-slate-100 tw-mb-1" style="font-family: 'Geist Sans', sans-serif;">Platform seat utilization</h3>
 			<p class="tw-text-xs tw-text-slate-400 tw-mb-4" style="font-family: 'Switzer', sans-serif;">Current allocated seats (active + reserved) against licensed capacity.</p>
 			{#if clubInfinite}
-				<p class="tw-text-sm tw-text-amber-500 tw-bg-amber-500/10 tw-border tw-border-amber-500/20 tw-p-3 tw-rounded-md">
+				<p class="tw-text-sm tw-text-[#f59e0b] tw-bg-[#f59e0b]/10 tw-border tw-border-[#f59e0b]/20 tw-p-3 tw-rounded-md">
 					<strong class="tw-font-bold">Unlimited license (promo).</strong> Capacity is uncapped for this club.
 				</p>
 			{:else}

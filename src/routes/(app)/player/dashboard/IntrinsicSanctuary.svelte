@@ -52,7 +52,7 @@
 		</span>
 	</div>
 
-	<div class="tw-w-full tw-h-px tw-bg-slate-800"></div>
+	<div class="tw-w-full tw-h-px tw-bg-[#0f172a]"></div>
 
 	<!-- Question 1: Fun Score -->
 	<div class="tw-flex tw-flex-col tw-gap-3">
@@ -104,13 +104,13 @@
 		</div>
 	</div>
 
-	<div class="tw-w-full tw-h-px tw-bg-slate-800"></div>
+	<div class="tw-w-full tw-h-px tw-bg-[#0f172a]"></div>
 
 	<!-- Save Button -->
 	<button
 		onclick={handleSave}
 		disabled={isSaving}
-		class="tw-w-full tw-py-3 tw-px-4 tw-rounded-xl tw-border tw-border-slate-600/70 tw-bg-slate-800 tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-slate-300 tw-transition-all tw-duration-200 hover:tw-bg-slate-700/60 hover:tw-border-slate-600  disabled:tw-opacity-40 disabled:tw-cursor-not-allowed"
+		class="tw-w-full tw-py-3 tw-px-4 tw-rounded-xl tw-border tw-border-slate-600/70 tw-bg-[#0f172a] tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-slate-300 tw-transition-all tw-duration-200 hover:tw-bg-slate-700/60 hover:tw-border-slate-600  disabled:tw-opacity-40 disabled:tw-cursor-not-allowed"
 	>
 		{isSaving ? '[ SECURING... ]' : '[ LOG PRIVATE ENTRY ]'}
 	</button>
@@ -118,7 +118,7 @@
 	<!-- Flash: Success -->
 	{#if saveSuccess}
 		<div
-			class="tw-flex tw-items-center tw-justify-center tw-py-2 tw-rounded-lg tw-border tw-border-slate-700/70 tw-bg-slate-800 tw-animate-pulse"
+			class="tw-flex tw-items-center tw-justify-center tw-py-2 tw-rounded-lg tw-border tw-border-slate-700/70 tw-bg-[#0f172a] tw-animate-pulse"
 		>
 			<span class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-slate-300">
 				[ ✓ ENTRY SECURED ]

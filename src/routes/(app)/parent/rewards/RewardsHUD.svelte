@@ -6,7 +6,7 @@
     let { engine }: { engine: RewardsEngine } = $props();
 </script>
 
-<div class="tw-bg-slate-900 tw-p-4 tw-rounded-[24px] tw-border tw-border-slate-800 tw-flex tw-items-center tw-justify-between">
+<div class="tw-bg-[#0f172a] tw-p-4 tw-rounded-[24px] tw-border tw-border-slate-800 tw-flex tw-items-center tw-justify-between">
     <div class="tw-flex tw-items-center tw-gap-3">
         <Icon name={"status.shield-check" as IconName} size={24} />
         <div>

@@ -117,7 +117,7 @@
 		<ul class="tw-m-0 tw-list-none tw-space-y-2 tw-p-0" role="list">
 			{#each records as rec (rec.id)}
 				<li
-					class="tw-flex tw-flex-wrap tw-items-center tw-justify-between tw-gap-3 tw-rounded-none tw-border tw-border-white/8 tw-bg-black/40 tw-px-4 tw-py-3 tw-shadow-[inset_0_1px_1px_rgba(255,255,255,0.04)]"
+					class="tw-flex tw-flex-wrap tw-items-center tw-justify-between tw-gap-3 tw-rounded-none tw-border tw-border-white/8 tw-bg-[#000000]/40 tw-px-4 tw-py-3 tw-shadow-[inset_0_1px_1px_rgba(255,255,255,0.04)]"
 				>
 					<div class="tw-flex tw-min-w-0 tw-flex-1 tw-flex-col tw-gap-1">
 						<div class="tw-flex tw-min-w-0 tw-items-center tw-gap-2">

@@ -260,7 +260,7 @@
 	<!-- svelte-ignore a11y_click_events_have_key_events -->
 	<!-- svelte-ignore a11y_no_static_element_interactions -->
 	<div 
-		class="tw-fixed tw-inset-0 tw-bg-black/60 tw-backdrop-blur-sm tw-z-[90] tw-transition-opacity" 
+		class="tw-fixed tw-inset-0 tw-bg-[#000000]/60 tw-backdrop-blur-sm tw-z-[90] tw-transition-opacity" 
 		onclick={() => !saving && onClose?.()}
 	></div>
 

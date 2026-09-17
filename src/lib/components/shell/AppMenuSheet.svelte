@@ -418,7 +418,7 @@
 	}
 
 	.app-menu-sheet__title {
-		font-family: monospace;
+		font-family: 'Geist Mono', ui-monospace, monospace;
 		font-size: 11px;
 		font-weight: 700;
 		letter-spacing: 0.14em;
@@ -491,7 +491,7 @@
 		border-radius: 6px;
 		background: rgba(15, 23, 42, 0.6);
 		color: #94a3b8;
-		font-family: monospace;
+		font-family: 'Geist Mono', ui-monospace, monospace;
 		font-size: 9px;
 		font-weight: 600;
 		letter-spacing: 0.06em;
@@ -571,7 +571,7 @@
 	.app-menu-sheet__badge {
 		margin-left: auto;
 		font-size: 9px;
-		font-family: monospace;
+		font-family: 'Geist Mono', ui-monospace, monospace;
 		letter-spacing: 0.1em;
 		text-transform: uppercase;
 		color: #14b8a6;
@@ -590,7 +590,7 @@
 		border-radius: 8px;
 		background: transparent;
 		color: #94a3b8;
-		font-family: monospace;
+		font-family: 'Geist Mono', ui-monospace, monospace;
 		font-size: 10px;
 		letter-spacing: 0.08em;
 		text-transform: uppercase;

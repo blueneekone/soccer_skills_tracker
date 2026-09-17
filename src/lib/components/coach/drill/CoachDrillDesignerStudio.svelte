@@ -204,13 +204,13 @@
 	<!-- Top Bar: Tactical Selection & Status (Matching Intent Engine & Library) -->
 	<div class="tw-bg-[#080d1a]/60 tw-backdrop-blur-md tw-border tw-border-slate-800/80 tw-rounded-2xl tw-p-6 tw-flex tw-flex-col md:tw-flex-row md:tw-items-center tw-justify-between tw-gap-5 tw-shadow-2xl">
 		<div class="tw-flex tw-items-center tw-gap-4">
-			<div class="tw-h-12 tw-w-12 tw-rounded-xl tw-bg-slate-800/60 tw-border tw-border-slate-700/80 tw-flex tw-items-center tw-justify-center tw-text-slate-200 tw-font-mono tw-font-bold tw-text-xl tw-shadow-inner">
+			<div class="tw-h-12 tw-w-12 tw-rounded-xl tw-bg-[#0f172a]/60 tw-border tw-border-slate-700/80 tw-flex tw-items-center tw-justify-center tw-text-slate-200 tw-font-mono tw-font-bold tw-text-xl tw-shadow-inner">
 				📐
 			</div>
 			<div>
 				<h2 class="tw-text-slate-100 tw-font-bold tw-text-lg tw-flex tw-items-center tw-gap-3">
 					<span>Tactical Drill Designer Studio</span>
-					<span class="tw-bg-slate-800 tw-text-slate-300 tw-border tw-border-slate-700 tw-font-mono tw-text-[10px] tw-px-2.5 tw-py-1 tw-rounded-md tw-tracking-widest tw-uppercase">
+					<span class="tw-bg-[#0f172a] tw-text-slate-300 tw-border tw-border-slate-700 tw-font-mono tw-text-[10px] tw-px-2.5 tw-py-1 tw-rounded-md tw-tracking-widest tw-uppercase">
 						WAR ROOM INTEGRATED
 					</span>
 				</h2>
@@ -237,7 +237,7 @@
 			{:else}
 				<button
 					type="button"
-					class="tw-bg-slate-800 hover:tw-bg-slate-700 tw-border tw-border-slate-700 tw-text-slate-200 tw-font-mono tw-text-xs tw-font-semibold tw-px-4 tw-py-2 tw-rounded-lg tw-transition-all"
+					class="tw-bg-[#0f172a] hover:tw-bg-slate-700 tw-border tw-border-slate-700 tw-text-slate-200 tw-font-mono tw-text-xs tw-font-semibold tw-px-4 tw-py-2 tw-rounded-lg tw-transition-all"
 					onclick={openWarRoom}
 				>
 					⚡ Open War Room to Draw Play →
@@ -408,7 +408,7 @@
 			<div class="tw-bg-[#040814] tw-border tw-border-slate-800 tw-rounded-xl tw-p-4 tw-flex tw-flex-col tw-gap-3 tw-mt-1">
 				<div class="tw-flex tw-items-center tw-justify-between">
 					<div class="tw-flex tw-items-center tw-gap-2">
-						<span class="tw-text-amber-400">📖</span>
+						<span class="tw-text-[#fbbf24]">📖</span>
 						<span class="tw-font-mono tw-text-xs tw-font-bold tw-text-white tw-uppercase">Team Playbook Publication</span>
 					</div>
 					<span class="tw-font-mono tw-text-[10px] tw-text-[#14b8a6] tw-bg-[#14b8a6]/10 tw-border tw-border-[#14b8a6]/30 tw-px-2 tw-py-0.5 tw-rounded">
@@ -430,7 +430,7 @@
 
 					<button
 						type="button"
-						class="tw-flex-1 tw-bg-[#fbbf24] hover:tw-bg-amber-400 tw-text-black tw-font-mono tw-text-xs tw-font-bold tw-py-3 tw-px-4 tw-rounded-xl tw-shadow-[0_0_15px_rgba(251,191,36,0.3)] active:tw-scale-[0.98] tw-transition-all tw-flex tw-items-center tw-justify-center tw-gap-2"
+						class="tw-flex-1 tw-bg-[#fbbf24] hover:tw-bg-[#fbbf24] tw-text-black tw-font-mono tw-text-xs tw-font-bold tw-py-3 tw-px-4 tw-rounded-xl tw-shadow-[0_0_15px_rgba(251,191,36,0.3)] active:tw-scale-[0.98] tw-transition-all tw-flex tw-items-center tw-justify-center tw-gap-2"
 						disabled={isSaving}
 						onclick={() => saveDrill(true)}
 					>

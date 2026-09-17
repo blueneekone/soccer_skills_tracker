@@ -130,7 +130,7 @@
 	<title>Live Fan OS Broadcast Overlay HUD</title>
 </svelte:head>
 
-<div class="bento-grid-container tw-h-[100dvh] tw-overflow-hidden tw-w-full tw-bg-black tw-p-8 tw-text-[#FAFAFA] tw-font-mono" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, clamp(280px, 30vw, 350px)), 1fr)); gap: 1.5rem; align-items: start;">
+<div class="bento-grid-container tw-h-[100dvh] tw-overflow-hidden tw-w-full tw-bg-[#000000] tw-p-8 tw-text-[#FAFAFA] tw-font-mono" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, clamp(280px, 30vw, 350px)), 1fr)); gap: 1.5rem; align-items: start;">
 
 	<!-- COLUMN 1: Broadcast Video Feed & Live Overlay HUD -->
 	<div class="st-bento siem-panel tw-min-w-0" style="display: flex; flex-direction: column; gap: 1rem;">

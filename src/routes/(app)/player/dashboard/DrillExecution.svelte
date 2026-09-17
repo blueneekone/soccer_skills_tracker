@@ -108,7 +108,7 @@
 	<!-- Grit Explosion Overlay -->
 	{#if gritFlash}
 		<div
-			class="tw-absolute tw-inset-0 tw-z-20 tw-flex tw-flex-col tw-items-center tw-justify-center tw-gap-4 tw-bg-slate-900 tw-pointer-events-none tw-rounded-xl grit-pulse-overlay tw-border tw-border-slate-700/50"
+			class="tw-absolute tw-inset-0 tw-z-20 tw-flex tw-flex-col tw-items-center tw-justify-center tw-gap-4 tw-bg-[#0f172a] tw-pointer-events-none tw-rounded-xl grit-pulse-overlay tw-border tw-border-slate-700/50"
 		>
 			<span
 				class="tw-font-mono tw-text-xs tw-text-slate-300 tw-text-center tw-leading-relaxed tw-px-6 tw-tracking-wider"
@@ -137,13 +137,13 @@
 	<!-- Attribute Badge -->
 	<div class="tw-inline-flex">
 		<span
-			class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-px-2.5 tw-py-1 tw-rounded tw-border tw-border-slate-700/70 tw-bg-slate-800/60 tw-text-teal-400"
+			class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-px-2.5 tw-py-1 tw-rounded tw-border tw-border-slate-700/70 tw-bg-[#0f172a]/60 tw-text-teal-400"
 		>
 			{attributeLabel}
 		</span>
 	</div>
 
-	<div class="tw-w-full tw-h-px tw-bg-slate-800/60"></div>
+	<div class="tw-w-full tw-h-px tw-bg-[#0f172a]/60"></div>
 
 	<!-- Actions -->
 	<div class="tw-flex tw-flex-col tw-gap-3">
@@ -151,7 +151,7 @@
 		<button
 			onclick={handleComplete}
 			disabled={isCompleting}
-			class="tw-w-full tw-py-4 tw-px-4 tw-rounded-xl tw-border tw-border-teal-500/50 tw-bg-slate-800/60 tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-teal-400 tw-transition-all tw-duration-200 hover:tw-bg-slate-700/60  disabled:tw-opacity-40 disabled:tw-cursor-not-allowed"
+			class="tw-w-full tw-py-4 tw-px-4 tw-rounded-xl tw-border tw-border-teal-500/50 tw-bg-[#0f172a]/60 tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-teal-400 tw-transition-all tw-duration-200 hover:tw-bg-slate-700/60  disabled:tw-opacity-40 disabled:tw-cursor-not-allowed"
 		>
 			{isCompleting ? '[ LOGGING... ]' : '[ COMPLETE DRILL ]'}
 		</button>
@@ -165,7 +165,7 @@
 			{:else}
 				<button
 					onclick={handleGrit}
-					class="tw-w-full tw-py-4 tw-px-4 tw-rounded-xl tw-border tw-border-slate-700 tw-bg-slate-900 tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-slate-300 tw-transition-all tw-duration-200 hover:tw-bg-slate-800  "
+					class="tw-w-full tw-py-4 tw-px-4 tw-rounded-xl tw-border tw-border-slate-700 tw-bg-[#0f172a] tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-slate-300 tw-transition-all tw-duration-200 hover:tw-bg-[#0f172a]  "
 				>
 					[ FAILED ATTEMPT: LOG GRIT ]
 				</button>
@@ -176,7 +176,7 @@
 	<!-- Completion Flash -->
 	{#if completionFlash}
 		<div
-			class="tw-flex tw-items-center tw-justify-center tw-py-2 tw-rounded-lg tw-border tw-border-teal-500/40 tw-bg-slate-800/60 tw-animate-pulse tw-text-teal-400/60"
+			class="tw-flex tw-items-center tw-justify-center tw-py-2 tw-rounded-lg tw-border tw-border-teal-500/40 tw-bg-[#0f172a]/60 tw-animate-pulse tw-text-teal-400/60"
 		>
 			<span class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-teal-400">
 				[ ✓ +{baseXp} XP SECURED ]

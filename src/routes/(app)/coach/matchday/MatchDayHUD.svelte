@@ -32,7 +32,7 @@
 <div class="tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-p-4 sm:tw-p-5 tw-shadow-2xl" style="border-radius: 0px;">
 	{#if engine.lightningDistance <= 10}
 		<div
-			class="tw-w-full tw-p-3 tw-mb-4 tw-font-mono tw-text-xs sm:tw-text-sm tw-font-bold tw-uppercase tw-text-center tw-tracking-wider tw-border {engine.lightningDistance < 6 ? 'tw-bg-rose-950/90 tw-border-rose-500 tw-text-rose-200 tw-animate-pulse' : 'tw-bg-amber-950/90 tw-border-amber-500 tw-text-amber-200'}"
+			class="tw-w-full tw-p-3 tw-mb-4 tw-font-mono tw-text-xs sm:tw-text-sm tw-font-bold tw-uppercase tw-text-center tw-tracking-wider tw-border {engine.lightningDistance < 6 ? 'tw-bg-rose-950/90 tw-border-rose-500 tw-text-rose-200 tw-animate-pulse' : 'tw-bg-amber-950/90 tw-border-[#f59e0b] tw-text-amber-200'}"
 			style="border-radius: 0px;"
 			data-testid="weather-banner"
 		>
@@ -63,7 +63,7 @@
 				<button
 					type="button"
 					onclick={() => { if (engine.homeScore > 0) engine.homeScore -= 1; engine.finalScore = `${engine.homeScore} - ${engine.awayScore}`; }}
-					class="tw-w-6 tw-h-6 tw-bg-slate-900 hover:tw-bg-slate-800 tw-border tw-border-slate-700 tw-text-slate-400 hover:tw-text-white tw-font-mono tw-text-xs tw-flex tw-items-center tw-justify-center tw-cursor-pointer"
+					class="tw-w-6 tw-h-6 tw-bg-[#0f172a] hover:tw-bg-[#0f172a] tw-border tw-border-slate-700 tw-text-slate-400 hover:tw-text-white tw-font-mono tw-text-xs tw-flex tw-items-center tw-justify-center tw-cursor-pointer"
 					title="Decrease Home Score"
 				>
 					-
@@ -74,7 +74,7 @@
 				<button
 					type="button"
 					onclick={() => { engine.homeScore += 1; engine.finalScore = `${engine.homeScore} - ${engine.awayScore}`; }}
-					class="tw-w-6 tw-h-6 tw-bg-slate-900 hover:tw-bg-slate-800 tw-border tw-border-slate-700 tw-text-slate-400 hover:tw-text-white tw-font-mono tw-text-xs tw-flex tw-items-center tw-justify-center tw-cursor-pointer"
+					class="tw-w-6 tw-h-6 tw-bg-[#0f172a] hover:tw-bg-[#0f172a] tw-border tw-border-slate-700 tw-text-slate-400 hover:tw-text-white tw-font-mono tw-text-xs tw-flex tw-items-center tw-justify-center tw-cursor-pointer"
 					title="Increase Home Score"
 				>
 					+
@@ -91,7 +91,7 @@
 					<button
 						type="button"
 						onclick={() => { engine.awayScore += 1; engine.finalScore = `${engine.homeScore} - ${engine.awayScore}`; }}
-						class="tw-w-5 tw-h-3.5 tw-bg-slate-900 hover:tw-bg-slate-800 tw-border tw-border-slate-700 tw-text-slate-400 hover:tw-text-white tw-font-mono tw-text-[9px] tw-flex tw-items-center tw-justify-center tw-cursor-pointer"
+						class="tw-w-5 tw-h-3.5 tw-bg-[#0f172a] hover:tw-bg-[#0f172a] tw-border tw-border-slate-700 tw-text-slate-400 hover:tw-text-white tw-font-mono tw-text-[9px] tw-flex tw-items-center tw-justify-center tw-cursor-pointer"
 						title="Opponent Goal (+1)"
 					>
 						▲
@@ -99,7 +99,7 @@
 					<button
 						type="button"
 						onclick={() => { if (engine.awayScore > 0) engine.awayScore -= 1; engine.finalScore = `${engine.homeScore} - ${engine.awayScore}`; }}
-						class="tw-w-5 tw-h-3.5 tw-bg-slate-900 hover:tw-bg-slate-800 tw-border tw-border-slate-700 tw-text-slate-400 hover:tw-text-white tw-font-mono tw-text-[9px] tw-flex tw-items-center tw-justify-center tw-cursor-pointer"
+						class="tw-w-5 tw-h-3.5 tw-bg-[#0f172a] hover:tw-bg-[#0f172a] tw-border tw-border-slate-700 tw-text-slate-400 hover:tw-text-white tw-font-mono tw-text-[9px] tw-flex tw-items-center tw-justify-center tw-cursor-pointer"
 						title="Opponent Goal (-1)"
 					>
 						▼
@@ -130,8 +130,8 @@
 				<div class="tw-font-mono tw-text-[10px] tw-text-slate-400 tw-uppercase tw-tracking-widest">GAME CLOCK</div>
 				<div class="tw-font-mono tw-text-2xl sm:tw-text-3xl tw-font-black tw-text-[#fbbf24] tw-tabular-nums tw-tracking-tight">{matchClockDisplay}</div>
 			</div>
-			<div class="tw-flex tw-items-center tw-gap-1.5 tw-px-2.5 tw-py-1 tw-border tw-font-mono tw-text-[10px] tw-uppercase tw-tracking-wider {engine.matchStatus === 'running' ? 'tw-bg-[#14b8a6]/60 tw-border-[#14b8a6]/80 tw-text-[#14b8a6] tw-animate-pulse' : engine.matchStatus === 'paused' ? 'tw-bg-amber-950/60 tw-border-amber-500/80 tw-text-amber-400' : engine.matchStatus === 'ended' ? 'tw-bg-slate-900 tw-border-slate-700 tw-text-slate-400' : 'tw-bg-slate-900/80 tw-border-slate-700 tw-text-[#fbbf24]'}">
-				<span class="tw-w-1.5 tw-h-1.5 {engine.matchStatus === 'running' ? 'tw-bg-[#14b8a6]' : engine.matchStatus === 'paused' ? 'tw-bg-amber-400' : engine.matchStatus === 'ended' ? 'tw-bg-slate-400' : 'tw-bg-[#fbbf24]'}"></span>
+			<div class="tw-flex tw-items-center tw-gap-1.5 tw-px-2.5 tw-py-1 tw-border tw-font-mono tw-text-[10px] tw-uppercase tw-tracking-wider {engine.matchStatus === 'running' ? 'tw-bg-[#14b8a6]/60 tw-border-[#14b8a6]/80 tw-text-[#14b8a6] tw-animate-pulse' : engine.matchStatus === 'paused' ? 'tw-bg-amber-950/60 tw-border-[#f59e0b]/80 tw-text-[#fbbf24]' : engine.matchStatus === 'ended' ? 'tw-bg-[#0f172a] tw-border-slate-700 tw-text-slate-400' : 'tw-bg-[#0f172a]/80 tw-border-slate-700 tw-text-[#fbbf24]'}">
+				<span class="tw-w-1.5 tw-h-1.5 {engine.matchStatus === 'running' ? 'tw-bg-[#14b8a6]' : engine.matchStatus === 'paused' ? 'tw-bg-[#fbbf24]' : engine.matchStatus === 'ended' ? 'tw-bg-slate-400' : 'tw-bg-[#fbbf24]'}"></span>
 				{engine.matchStatus === 'running' ? 'LIVE' : engine.matchStatus === 'paused' ? 'PAUSED' : engine.matchStatus === 'ended' ? 'FINAL' : 'PRE-MATCH'}
 			</div>
 		</div>
@@ -151,7 +151,7 @@
 				<button
 					type="button"
 					onclick={() => engine.pauseMatch()}
-					class="tw-inline-flex tw-items-center tw-justify-center tw-bg-amber-500/20 tw-text-amber-300 tw-border tw-border-amber-500 tw-font-mono tw-font-bold tw-text-xs tw-px-4 tw-h-10 tw-uppercase hover:tw-bg-amber-500 hover:tw-text-black tw-transition-all active:tw-scale-95"
+					class="tw-inline-flex tw-items-center tw-justify-center tw-bg-[#f59e0b]/20 tw-text-amber-300 tw-border tw-border-[#f59e0b] tw-font-mono tw-font-bold tw-text-xs tw-px-4 tw-h-10 tw-uppercase hover:tw-bg-[#f59e0b] hover:tw-text-black tw-transition-all active:tw-scale-95"
 					style="border-radius: 0px;"
 				>
 					⏸ PAUSE
@@ -300,9 +300,9 @@
 				</div>
 
 				<div class="tw-mt-3 tw-flex tw-gap-1.5">
-					<button class="tw-text-[10px] tw-font-mono tw-bg-slate-800 tw-border tw-border-slate-700 tw-text-slate-300 tw-px-2 tw-py-1 hover:tw-border-amber-400" onclick={() => engine.simulateLightning(8.5)} style="border-radius: 0px;">Sim 8.5m</button>
-					<button class="tw-text-[10px] tw-font-mono tw-bg-slate-800 tw-border tw-border-slate-700 tw-text-slate-300 tw-px-2 tw-py-1 hover:tw-border-rose-400" onclick={() => engine.simulateLightning(5.2)} style="border-radius: 0px;">Sim 5.2m</button>
-					<button class="tw-text-[10px] tw-font-mono tw-bg-slate-800 tw-border tw-border-slate-700 tw-text-slate-300 tw-px-2 tw-py-1 hover:tw-border-[#14b8a6]" onclick={() => engine.simulateLightning(20)} style="border-radius: 0px;">Clear</button>
+					<button class="tw-text-[10px] tw-font-mono tw-bg-[#0f172a] tw-border tw-border-slate-700 tw-text-slate-300 tw-px-2 tw-py-1 hover:tw-border-amber-400" onclick={() => engine.simulateLightning(8.5)} style="border-radius: 0px;">Sim 8.5m</button>
+					<button class="tw-text-[10px] tw-font-mono tw-bg-[#0f172a] tw-border tw-border-slate-700 tw-text-slate-300 tw-px-2 tw-py-1 hover:tw-border-rose-400" onclick={() => engine.simulateLightning(5.2)} style="border-radius: 0px;">Sim 5.2m</button>
+					<button class="tw-text-[10px] tw-font-mono tw-bg-[#0f172a] tw-border tw-border-slate-700 tw-text-slate-300 tw-px-2 tw-py-1 hover:tw-border-[#14b8a6]" onclick={() => engine.simulateLightning(20)} style="border-radius: 0px;">Clear</button>
 				</div>
 			</div>
 

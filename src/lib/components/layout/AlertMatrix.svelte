@@ -41,7 +41,7 @@
 	{#if engine}
 		<article class="tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-p-[clamp(16px,2vw,24px)] tw-mt-2">
 			<header class="tw-flex tw-items-start tw-gap-3 tw-mb-4">
-				<div class="tw-bg-amber-500/20 tw-text-amber-500 tw-p-2" aria-hidden="true">
+				<div class="tw-bg-[#f59e0b]/20 tw-text-[#f59e0b] tw-p-2" aria-hidden="true">
 					<Icon name={"status.warning" as IconName} />
 				</div>
 				<div>
@@ -67,7 +67,7 @@
 			<header class="tw-flex tw-flex-col tw-gap-1 tw-mb-4">
 				<h2 class="tw-text-[#FAFAFA] tw-font-bold tw-text-base tw-m-0">Live event stream</h2>
 				<p class="tw-text-[#D4D4D8] tw-text-xs tw-m-0">
-					<code class="tw-bg-slate-800 tw-px-1 tw-py-0.5 tw-text-[10px]">security_audit</code>
+					<code class="tw-bg-[#0f172a] tw-px-1 tw-py-0.5 tw-text-[10px]">security_audit</code>
 					· {engine.liveFeed.length} events ingested
 				</p>
 			</header>
@@ -111,22 +111,22 @@
 	{:else}
 		<ul class="tw-flex tw-flex-col tw-gap-2 tw-list-none tw-p-0 tw-m-0 tw-mt-4">
 			<li
-				class="tw-px-3 tw-py-2 tw-bg-slate-900 tw-border tw-border-slate-800 tw-rounded-md tw-text-sm tw-font-mono tw-text-[#D4D4D8] hover:tw-bg-slate-800 hover:tw-border-slate-700 tw-transition-colors tw-duration-150 tw-ease-out"
+				class="tw-px-3 tw-py-2 tw-bg-[#0f172a] tw-border tw-border-slate-800 tw-rounded-md tw-text-sm tw-font-mono tw-text-[#D4D4D8] hover:tw-bg-[#0f172a] hover:tw-border-slate-700 tw-transition-colors tw-duration-150 tw-ease-out"
 			>
 				SafeSport Intercept: Clear
 			</li>
 			<li
-				class="tw-px-3 tw-py-2 tw-bg-slate-900 tw-border tw-border-slate-800 tw-rounded-md tw-text-sm tw-font-mono tw-text-[#D4D4D8] hover:tw-bg-slate-800 hover:tw-border-slate-700 tw-transition-colors tw-duration-150 tw-ease-out"
+				class="tw-px-3 tw-py-2 tw-bg-[#0f172a] tw-border tw-border-slate-800 tw-rounded-md tw-text-sm tw-font-mono tw-text-[#D4D4D8] hover:tw-bg-[#0f172a] hover:tw-border-slate-700 tw-transition-colors tw-duration-150 tw-ease-out"
 			>
 				Tomorrow.io: Optimal
 			</li>
 			<li
-				class="tw-px-3 tw-py-2 tw-bg-slate-900 tw-border tw-border-slate-800 tw-rounded-md tw-text-sm tw-font-mono tw-text-[#D4D4D8] hover:tw-bg-slate-800 hover:tw-border-slate-700 tw-transition-colors tw-duration-150 tw-ease-out"
+				class="tw-px-3 tw-py-2 tw-bg-[#0f172a] tw-border tw-border-slate-800 tw-rounded-md tw-text-sm tw-font-mono tw-text-[#D4D4D8] hover:tw-bg-[#0f172a] hover:tw-border-slate-700 tw-transition-colors tw-duration-150 tw-ease-out"
 			>
 				VPC Bottlenecks: Nominal
 			</li>
 			<li
-				class="tw-px-3 tw-py-2 tw-bg-slate-900 tw-border tw-border-slate-800 tw-rounded-md tw-text-sm tw-font-mono tw-text-[#D4D4D8] hover:tw-bg-slate-800 hover:tw-border-slate-700 tw-transition-colors tw-duration-150 tw-ease-out"
+				class="tw-px-3 tw-py-2 tw-bg-[#0f172a] tw-border tw-border-slate-800 tw-rounded-md tw-text-sm tw-font-mono tw-text-[#D4D4D8] hover:tw-bg-[#0f172a] hover:tw-border-slate-700 tw-transition-colors tw-duration-150 tw-ease-out"
 			>
 				Stripe: Nominal
 			</li>
