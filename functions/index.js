@@ -1,4 +1,4 @@
-const parentOnboardingOps = require('./lib/domains/parentOnboardingOps');
+const parentOnboardingOps = require('./src/domains/parentOnboardingOps.js');
 /* eslint-disable quotes */
 // Phase 2, Epic 3 — Cell-Level Egress Guard (Layer 4).
 // wrapFetch MUST be the first statement before any other module is required
@@ -164,3 +164,12 @@ exports.onUserProfileCleared = require('./lib/triggers/userOnboardingTriggers').
 exports.claimParentInviteToken = parentOnboardingOps.claimParentInviteToken;
 exports.signParentalConsent = parentOnboardingOps.signParentalConsent;
 exports.inviteRecruiterCheckr = require('./src/domains/recruiterOps.js').inviteRecruiterCheckr;
+
+exports.getPublicRecruitProfile = require('./src/domains/trainingOps.js').getPublicRecruitProfile;
+exports.commitMatchTelemetry = require('./src/domains/matchOps.js').commitMatchTelemetry;
+exports.getAccountabilityReport = require('./src/domains/reportOps.js').getAccountabilityReport;
+exports.secureFulfillIntent = require('./commerce.js').secureFulfillIntent;
+exports.initiateStripeConnect = require('./commerce.js').initiateStripeConnect;
+exports.logPlayerActivity = require('./src/domains/progression.js').logPlayerActivity;
+exports.extractTenantData = require('./src/domains/adminOps.js').extractTenantData;
+exports.replayIngestionRow = require('./src/domains/rosterIngestParse.js').replayIngestionRow;

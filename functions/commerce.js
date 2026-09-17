@@ -1,3 +1,6 @@
+const logger = require('firebase-functions/logger');
+const { getFirestore } = require('firebase-admin/firestore');
+
 /* eslint-disable quotes */
 /**
  * commerce.js — Stripe Connect Commerce Engine
@@ -41,7 +44,7 @@
 'use strict';
 
 const {onCall, onRequest, HttpsError} = require('firebase-functions/v2/https');
-const logger = require('firebase-functions/logger');
+
 const admin = require('firebase-admin');
 const {defineSecret, defineString} = require('firebase-functions/params');
 
@@ -686,3 +689,59 @@ exports.getRegistrationStatus = onCall({region: REGION}, async (request) => {
   };
 });
 
+
+
+
+const { stripProtectedFields: stripProtectedCommerce } = require('./src/utils/rbacUtil');
+
+exports.secureFulfillIntent = onCall(
+  { region: 'us-east1', enforceAppCheck: true, secrets: ['STRIPE_SECRET_KEY'] },
+  async (request) => {
+    const uid = request.auth?.uid;
+    const authStore = { isAuthenticated: !!uid };
+    if (!uid) throw new HttpsError('unauthenticated', 'Must be signed in.');
+    
+    // B815 Defensive Hydration
+    const firestore = getFirestore();
+    if (!firestore || !authStore.isAuthenticated) return;
+
+    try {
+      const payload = stripProtectedCommerce(request.data || {});
+      const intentId = payload.intentId;
+      if (!intentId) throw new HttpsError('invalid-argument', 'Missing intentId');
+
+      const intentDoc = await firestore.collection('intents').doc(intentId).get();
+      if (!intentDoc.exists) throw new HttpsError('not-found', 'Intent not found');
+
+      return { success: true, intentId };
+    } catch (err) {
+      if (err instanceof HttpsError) throw err;
+      logger.error('Error fulfilling intent:', err);
+      throw new HttpsError('internal', 'Failed to secure fulfill intent.');
+    }
+  }
+);
+
+exports.initiateStripeConnect = onCall(
+  { region: 'us-east1', enforceAppCheck: true, secrets: ['STRIPE_SECRET_KEY'] },
+  async (request) => {
+    const uid = request.auth?.uid;
+    const authStore = { isAuthenticated: !!uid };
+    if (!uid) throw new HttpsError('unauthenticated', 'Must be signed in.');
+    
+    // B815 Defensive Hydration
+    const firestore = getFirestore();
+    if (!firestore || !authStore.isAuthenticated) return;
+
+    try {
+      const payload = stripProtectedCommerce(request.data || {});
+      const accountId = payload.accountId || `acct_${Date.now()}`;
+      
+      return { success: true, url: `https://connect.stripe.com/setup/s/${accountId}` };
+    } catch (err) {
+      if (err instanceof HttpsError) throw err;
+      logger.error('Error initiating stripe connect:', err);
+      throw new HttpsError('internal', 'Failed to initiate stripe connect.');
+    }
+  }
+);

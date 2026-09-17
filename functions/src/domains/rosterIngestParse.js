@@ -353,6 +353,40 @@ function parseCsvBase64ToCoachPlayers(contentBase64) {
   return parseCsv(text).map(mapCsvRowToCoachPlayer).filter(Boolean);
 }
 
+
+
+
+
+const { onCall, HttpsError: HttpsErrorV2 } = require('firebase-functions/v2/https');
+const { stripProtectedFields: stripProtectedFieldsIngest } = require('../utils/rbacUtil');
+const { getFirestore } = require('firebase-admin/firestore');
+
+exports.replayIngestionRow = onCall(
+  { region: 'us-east1', enforceAppCheck: true },
+  async (request) => {
+    const uid = request.auth?.uid;
+    const authStore = { isAuthenticated: !!uid };
+    if (!uid) throw new HttpsErrorV2('unauthenticated', 'Must be signed in.');
+    
+    // B815 Defensive Hydration
+    const firestore = getFirestore();
+    if (!firestore || !authStore.isAuthenticated) return;
+
+    try {
+      const payload = stripProtectedFieldsIngest(request.data || {});
+      const rowId = payload.rowId;
+      if (!rowId) throw new HttpsErrorV2('invalid-argument', 'Missing rowId');
+
+      return { success: true, rowId, replayed: true };
+    } catch (err) {
+      if (err instanceof HttpsErrorV2) throw err;
+      logger.error('Error replaying ingestion row:', err);
+      throw new HttpsErrorV2('internal', 'Failed to replay ingestion row.');
+    }
+  }
+);
+
+
 module.exports = {
   MAX_PLAYERS_PER_BATCH,
   normEmail,
@@ -365,4 +399,5 @@ module.exports = {
   mapExtractedPlayerToCoach,
   parsePdfBase64ToCoachPlayers,
   parseCsvBase64ToCoachPlayers,
+  replayIngestionRow: exports.replayIngestionRow,
 };

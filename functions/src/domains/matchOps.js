@@ -1,3 +1,4 @@
+const { getFirestore } = require('firebase-admin/firestore');
 'use strict';
 const { onDocumentCreated } = require('firebase-functions/v2/firestore');
 const logger = require('firebase-functions/logger');
@@ -42,6 +43,39 @@ exports.syncMatchStats = onDocumentCreated(
       logger.info(`Successfully synced ${type} for player ${playerId}`);
     } catch (err) {
       logger.error(`Error syncing match stats for ${playerId}:`, err);
+    }
+  }
+);
+
+
+const { onCall, HttpsError: HttpsErrorMatch } = require('firebase-functions/v2/https');
+const { stripProtectedFields: stripProtectedFieldsMatch } = require('../utils/rbacUtil');
+
+exports.commitMatchTelemetry = onCall(
+  { region: 'us-east1', enforceAppCheck: true },
+  async (request) => {
+    const uid = request.auth?.uid;
+    const authStore = { isAuthenticated: !!uid };
+    if (!uid) throw new HttpsErrorMatch('unauthenticated', 'Must be signed in.');
+    
+    // B815 Defensive Hydration
+    const firestore = getFirestore();
+    if (!firestore || !authStore.isAuthenticated) return;
+
+    try {
+      const payload = stripProtectedFieldsMatch(request.data || {});
+      const telemetryId = payload.telemetryId || `tlm_${Date.now()}`;
+      
+      await firestore.collection('match_telemetry').doc(telemetryId).set({
+        ...payload,
+        submittedBy: uid,
+        timestamp: new Date()
+      });
+      return { success: true, telemetryId };
+    } catch (err) {
+      if (err instanceof HttpsErrorMatch) throw err;
+      logger.error('Error committing match telemetry:', err);
+      throw new HttpsErrorMatch('internal', 'Failed to commit telemetry.');
     }
   }
 );

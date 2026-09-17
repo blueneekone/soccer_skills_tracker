@@ -1,5 +1,5 @@
 const { onCall, HttpsError } = require('firebase-functions/v2/https');
-const { getAdminDb } = require('../utils/adminDb.js');
+const { getAdminDb } = require('../../cellRouter');
 const { defineSecret, defineString } = require('firebase-functions/params');
 const CHECKR_API_KEY = defineSecret('CHECKR_API_KEY');
 const CHECKR_API_ENV = defineString('CHECKR_API_ENV', { default: 'production' });

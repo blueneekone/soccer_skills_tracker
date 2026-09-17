@@ -1,3 +1,4 @@
+const { getFirestore } = require('firebase-admin/firestore');
 const logger = require('firebase-functions/logger');
 const admin = require('firebase-admin');
 const { onCall, HttpsError } = require('firebase-functions/v2/https');
@@ -77,3 +78,36 @@ exports.calculatePlayerProgression = onCall({ region: 'us-central1' }, async (re
 
   return { success: true, percentiles: parityPercentiles };
 });
+
+
+const { HttpsError: HttpsErrorProg } = require('firebase-functions/v2/https');
+const { stripProtectedFields: stripProtectedFieldsProg } = require('../utils/rbacUtil');
+
+exports.logPlayerActivity = onCall(
+  { region: 'us-east1', enforceAppCheck: true },
+  async (request) => {
+    const uid = request.auth?.uid;
+    const authStore = { isAuthenticated: !!uid };
+    if (!uid) throw new HttpsErrorProg('unauthenticated', 'Must be signed in.');
+    
+    // B815 Defensive Hydration
+    const firestore = getFirestore();
+    if (!firestore || !authStore.isAuthenticated) return;
+
+    try {
+      const payload = stripProtectedFieldsProg(request.data || {});
+      const activityId = payload.activityId || `act_${Date.now()}`;
+      
+      await firestore.collection('player_activities').doc(activityId).set({
+        ...payload,
+        playerUid: uid,
+        loggedAt: new Date()
+      });
+      return { success: true, activityId };
+    } catch (err) {
+      if (err instanceof HttpsErrorProg) throw err;
+      logger.error('Error logging player activity:', err);
+      throw new HttpsErrorProg('internal', 'Failed to log activity.');
+    }
+  }
+);

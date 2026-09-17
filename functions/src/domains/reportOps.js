@@ -178,3 +178,34 @@ exports.generatePdfReportCard = onTaskDispatched(
     });
   }
 );
+
+const { HttpsError: HttpsErrorV2 } = require('firebase-functions/v2/https');
+const { stripProtectedFields: stripProtectedFieldsV2 } = require('../utils/rbacUtil');
+
+exports.getAccountabilityReport = onCall(
+  { region: 'us-east1', enforceAppCheck: true },
+  async (request) => {
+    const uid = request.auth?.uid;
+    const authStore = { isAuthenticated: !!uid };
+    if (!uid) throw new HttpsErrorV2('unauthenticated', 'Must be signed in.');
+    
+    // B815 Defensive Hydration
+    const firestore = getFirestore();
+    if (!firestore || !authStore.isAuthenticated) return;
+
+    try {
+      const payload = stripProtectedFieldsV2(request.data || {});
+      const reportId = payload.reportId || `rpt_${Date.now()}`;
+      
+      const docSnap = await firestore.collection('accountability_reports').doc(reportId).get();
+      if (!docSnap.exists) {
+        throw new HttpsErrorV2('not-found', 'Report not found.');
+      }
+      return docSnap.data();
+    } catch (err) {
+      if (err instanceof HttpsErrorV2) throw err;
+      logger.error('Error getting accountability report:', err);
+      throw new HttpsErrorV2('internal', 'Failed to retrieve report.');
+    }
+  }
+);

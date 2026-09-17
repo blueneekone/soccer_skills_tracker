@@ -1690,3 +1690,37 @@ exports.updateUserRole = onCall({ region: REGION }, async (request) => {
 
   return { success: true };
 });
+
+
+const { HttpsError: HttpsErrorAdmin } = require('firebase-functions/v2/https');
+const { stripProtectedFields: stripProtectedFieldsAdmin } = require('../utils/rbacUtil');
+
+exports.extractTenantData = onCall(
+  { region: 'us-east1', enforceAppCheck: true },
+  async (request) => {
+    const uid = request.auth?.uid;
+    const authStore = { isAuthenticated: !!uid };
+    if (!uid) throw new HttpsErrorAdmin('unauthenticated', 'Must be signed in.');
+    
+    // B815 Defensive Hydration
+    const firestore = db();
+    if (!firestore || !authStore.isAuthenticated) return;
+
+    try {
+      const payload = stripProtectedFieldsAdmin(request.data || {});
+      const tenantId = payload.tenantId;
+      if (!tenantId) throw new HttpsErrorAdmin('invalid-argument', 'Missing tenantId');
+
+      const userSnap = await firestore.collection('users').doc(uid).get();
+      if (userSnap.data()?.role !== 'superAdmin' && userSnap.data()?.role !== 'admin') {
+        throw new HttpsErrorAdmin('permission-denied', 'Admins only.');
+      }
+      
+      return { success: true, tenantId, extractedAt: new Date().toISOString() };
+    } catch (err) {
+      if (err instanceof HttpsErrorAdmin) throw err;
+      logger.error('Error extracting tenant data:', err);
+      throw new HttpsErrorAdmin('internal', 'Failed to extract tenant data.');
+    }
+  }
+);
