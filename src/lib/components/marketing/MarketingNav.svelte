@@ -137,7 +137,7 @@
 		font-size: 0.75rem;
 		font-weight: 900;
 		letter-spacing: 0.18em;
-		color: white;
+		color: #fafafa;
 		line-height: 1;
 	}
 	.mn-brand__sub {
@@ -239,7 +239,7 @@
 		border-bottom: 1px solid rgba(255, 255, 255, 0.04);
 		transition: color 0.15s;
 	}
-	.mn-mobile__link:hover, .mn-mobile__link--active { color: white; }
+	.mn-mobile__link:hover, .mn-mobile__link--active { color: #fafafa; }
 	.mn-mobile__sep { margin: 0.5rem 0; height: 1px; background: rgba(255,255,255,0.06); }
 	.mn-mobile__cta {
 		margin-top: 0.5rem;

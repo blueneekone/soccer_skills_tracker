@@ -176,7 +176,7 @@ import { onDestroy, onMount, untrack } from 'svelte';
 
 	.btn-create {
 		background: linear-gradient(135deg, #6366f1, #8b5cf6);
-		color: white;
+		color: #fafafa;
 		border: none;
 		border-radius: 0px;
 		padding: 0.65rem 1.4rem;

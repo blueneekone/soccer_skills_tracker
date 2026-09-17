@@ -1237,7 +1237,7 @@
 		cursor: pointer;
 		font-weight: 700;
 		color: var(--muted-slate);
-		background: white;
+		background: #0f172a;
 		display: flex;
 		flex-direction: column;
 		align-items: center;
@@ -1248,7 +1248,7 @@
 	.outcome-btn.active {
 		border-color: var(--aggie-blue);
 		background: var(--aggie-blue);
-		color: white;
+		color: #fafafa;
 	}
 	.btn-log-workout {
 		width: 100%;

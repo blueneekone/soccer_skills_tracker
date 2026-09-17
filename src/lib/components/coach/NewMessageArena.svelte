@@ -86,7 +86,7 @@
 		padding: 4px 8px 4px 10px;
 		border-radius: 999px;
 		border: 1px solid #e5e5e5;
-		background: #ffffff;
+		background: #0f172a;
 		font-size: 12px;
 	}
 

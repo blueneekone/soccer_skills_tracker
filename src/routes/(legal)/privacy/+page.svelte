@@ -275,7 +275,7 @@
 		font-size: 1.5rem;
 		font-weight: 900;
 		letter-spacing: 0.06em;
-		color: #ffffff;
+		color: #fafafa;
 	}
 
 	.legal-doc-subtitle {

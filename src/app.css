@@ -60,6 +60,7 @@
     @apply tw-bg-void-black tw-text-slate-100 tw-font-sans tw-antialiased selection:tw-bg-data-cyan/30;
     overflow-x: hidden;
     font-family: 'Switzer', -apple-system, sans-serif !important; /* Standardize Switzer for highly legible body copy */
+    font-size-adjust: 0.79;
   }
 
   h1, h2, h3, h4, h5 {
@@ -75,7 +76,8 @@
 }
 
 /* Universal Monospace standard for technical data */
-.tw-font-mono, .telemetry-readout, .stats-column, .hud-numeric, .mono-telemetry {
+.tw-font-mono, .telemetry-readout, .stats-column, .hud-numeric, .mono-telemetry,
+[data-readout], [data-metric], [data-stat], [data-timestamp], .kpi-value, .telemetry-value {
   font-family: 'Geist Mono', monospace !important;
 }
 

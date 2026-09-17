@@ -191,7 +191,7 @@
 		font-size: 0.65rem;
 		font-weight: 900;
 		letter-spacing: 0.14em;
-		color: #ffffff;
+		color: #fafafa;
 	}
 
 	.ip-copy__sub {

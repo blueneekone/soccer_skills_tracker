@@ -221,7 +221,7 @@
 		font-weight: 800;
 		line-height: 1.08;
 		letter-spacing: -0.025em;
-		color: #ffffff;
+		color: #fafafa;
 		margin: 0;
 	}
 

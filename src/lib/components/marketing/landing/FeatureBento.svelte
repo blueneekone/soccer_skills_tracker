@@ -201,7 +201,7 @@
 		font-family: 'Geist Sans', var(--font-display, sans-serif);
 		font-size: clamp(1rem, 2vw, 1.25rem);
 		font-weight: 700;
-		color: #ffffff;
+		color: #fafafa;
 		margin: 0;
 		line-height: 1.3;
 	}
@@ -242,7 +242,7 @@
 	.fb-cell:hover .fb-btn {
 		background: color-mix(in srgb, var(--cell-accent) 20%, #0f172a);
 		border-color: var(--cell-accent);
-		color: #ffffff;
+		color: #fafafa;
 		box-shadow: 0 0 16px color-mix(in srgb, var(--cell-accent) 35%, transparent);
 		transform: translateY(-1px);
 	}

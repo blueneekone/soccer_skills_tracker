@@ -398,7 +398,7 @@
 	.btn-find {
 		display: inline-block;
 		background: linear-gradient(135deg, #6366f1, #8b5cf6);
-		color: white;
+		color: #fafafa;
 		text-decoration: none;
 		border-radius: 14px;
 		padding: 0.7rem 1.5rem;

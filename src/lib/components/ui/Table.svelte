@@ -60,7 +60,7 @@
 		font-family: var(--font-mono, 'Geist Mono', monospace);
 		font-size: 0.875rem;
 		text-align: left;
-		color: #ffffff;
+		color: #fafafa;
 	}
 
 	.v-th,

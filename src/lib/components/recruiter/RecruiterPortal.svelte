@@ -1051,7 +1051,7 @@
 		font-size: 0.68rem;
 		font-weight: 900;
 		letter-spacing: 0.08em;
-		color: white;
+		color: #fafafa;
 		white-space: nowrap;
 		overflow: hidden;
 		text-overflow: ellipsis;
@@ -1284,7 +1284,7 @@
 		font-size: 1.1rem;
 		font-weight: 900;
 		letter-spacing: 0.08em;
-		color: white;
+		color: #fafafa;
 	}
 	.rp-detail__sub {
 		margin: 2px 0 0;
@@ -1325,7 +1325,7 @@
 		font-size: 1.25rem;
 		font-weight: 900;
 		font-variant-numeric: tabular-nums;
-		color: white;
+		color: #fafafa;
 		line-height: 1;
 	}
 	.rp-detail__kpi-chip {
@@ -1382,7 +1382,7 @@
 	.rp-detail__stat-value {
 		font-size: 0.85rem;
 		font-weight: 700;
-		color: white;
+		color: #fafafa;
 		font-variant-numeric: tabular-nums;
 	}
 
@@ -1432,7 +1432,7 @@
 	.rp-sparkline-card__last {
 		font-size: 0.8rem;
 		font-weight: 900;
-		color: white;
+		color: #fafafa;
 		font-variant-numeric: tabular-nums;
 		line-height: 1;
 	}

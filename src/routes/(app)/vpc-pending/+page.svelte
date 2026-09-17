@@ -160,7 +160,7 @@
 	.vpc-pending-card {
 		width: 100%;
 		max-width: 540px;
-		background: var(--surface-primary, #ffffff);
+		background: var(--surface-primary, #0f172a);
 		border: 1px solid rgba(15, 23, 42, 0.09);
 		border-radius: var(--radius-premium, 24px);
 		padding: clamp(1.75rem, 5vw, 3rem);

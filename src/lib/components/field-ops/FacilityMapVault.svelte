@@ -1332,7 +1332,7 @@
 	}
 
 	.fm-panel {
-		background: #ffffff;
+		background: #0f172a;
 		border: 1px solid rgba(0, 0, 0, 0.1);
 		border-radius: 14px;
 		padding: 16px;
@@ -1558,7 +1558,7 @@
 		font-size: 13px;
 		border-radius: 8px;
 		border: 1px solid rgba(0, 0, 0, 0.12);
-		background: #ffffff;
+		background: #0f172a;
 		color: var(--text-primary);
 	}
 
@@ -1574,7 +1574,7 @@
 		padding: 8px 12px;
 		border-radius: 8px;
 		border: 1px solid rgba(0, 0, 0, 0.12);
-		background: #ffffff;
+		background: #0f172a;
 		color: var(--text-primary);
 		cursor: pointer;
 	}
@@ -1603,7 +1603,7 @@
 	.fm-btn--danger {
 		border-color: rgba(220, 38, 38, 0.35);
 		color: #b91c1c;
-		background: #ffffff;
+		background: #0f172a;
 	}
 
 	.fm-btn--danger:hover {
@@ -1657,7 +1657,7 @@
 			rgba(15, 23, 42, 0.9) 48%,
 			rgba(9, 9, 11, 0.96) 100%
 		);
-		color: #ffffff;
+		color: #fafafa;
 	}
 
 	:global(html.dark) .fm-btn--primary {

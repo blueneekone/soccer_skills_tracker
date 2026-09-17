@@ -73,7 +73,7 @@
 		font-weight: 800;
 		line-height: 1.1;
 		letter-spacing: -0.02em;
-		color: #ffffff;
+		color: #fafafa;
 		margin: 0;
 	}
 
@@ -144,7 +144,7 @@
 	.fc-btn-secondary:hover {
 		background: rgba(30, 41, 59, 0.9);
 		border-color: #14b8a6;
-		color: #ffffff;
+		color: #fafafa;
 		box-shadow: 0 0 16px rgba(20, 184, 166, 0.25);
 		transform: translateY(-1px);
 	}

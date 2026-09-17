@@ -264,7 +264,7 @@
 		font-size: 0.72rem;
 		font-weight: 900;
 		font-variant-numeric: tabular-nums;
-		color: #ffffff;
+		color: #fafafa;
 		white-space: nowrap;
 	}
 

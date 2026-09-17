@@ -353,7 +353,7 @@
 		font-size: 1.2rem;
 		font-weight: 900;
 		letter-spacing: 0.08em;
-		color: #ffffff;
+		color: #fafafa;
 		text-align: center;
 		text-shadow: 0 0 20px rgba(20, 184, 166, 0.3);
 	}
@@ -448,7 +448,7 @@
 		background: rgba(20, 184, 166, 0.04);
 		border: 1px solid rgba(20, 184, 166, 0.2);
 		border-radius: 8px;
-		color: #ffffff;
+		color: #fafafa;
 		font-family: 'Geist Mono', monospace;
 		font-size: 0.85rem;
 		outline: none;

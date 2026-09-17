@@ -115,7 +115,7 @@
 		padding: 10px 12px;
 		font: inherit;
 		font-size: 13px;
-		background: #ffffff;
+		background: #0f172a;
 		color: var(--text-primary);
 	}
 
@@ -158,7 +158,7 @@
 	}
 
 	.nm-btn--ghost {
-		background: #ffffff;
+		background: #0f172a;
 		color: var(--text-primary);
 	}
 

@@ -341,7 +341,7 @@
 		padding: 2rem;
 	}
 	.td-locked__icon { font-size: 2rem; }
-	.td-locked h2 { margin: 0; font-size: 0.85rem; letter-spacing: 0.2em; color: white; }
+	.td-locked h2 { margin: 0; font-size: 0.85rem; letter-spacing: 0.2em; color: #fafafa; }
 	.td-locked p { font-size: 0.65rem; color: rgba(255,255,255,0.35); margin: 0; }
 
 	/* ── Header ──────────────────────────────────────────────────────────────── */
@@ -394,7 +394,7 @@
 		font-size: 1.4rem;
 		font-weight: 900;
 		font-variant-numeric: tabular-nums;
-		color: white;
+		color: #fafafa;
 		line-height: 1;
 	}
 	.td-kpi__val--cyan { color: #14b8a6; }
@@ -483,7 +483,7 @@
 		font-size: 0.72rem;
 		font-weight: 900;
 		letter-spacing: 0.08em;
-		color: white;
+		color: #fafafa;
 		white-space: nowrap;
 		overflow: hidden;
 		text-overflow: ellipsis;
@@ -547,7 +547,7 @@
 		font-size: 1.1rem;
 		font-weight: 900;
 		font-variant-numeric: tabular-nums;
-		color: white;
+		color: #fafafa;
 	}
 	.td-card__hours-label {
 		font-size: 0.42rem;
@@ -678,7 +678,7 @@
 		font-size: 0.65rem;
 		min-height: 32px;
 	}
-	.td-edit-panel__close:hover { color: white; }
+	.td-edit-panel__close:hover { color: #fafafa; }
 
 	.td-edit-form {
 		padding: 1.5rem;
@@ -706,7 +706,7 @@
 		font-family: 'Geist Mono', monospace;
 		font-size: 0.85rem;
 		font-variant-numeric: tabular-nums;
-		color: white;
+		color: #fafafa;
 		outline: none;
 		transition: border-color 0.2s;
 	}

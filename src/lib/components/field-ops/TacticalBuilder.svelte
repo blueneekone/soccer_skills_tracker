@@ -474,7 +474,7 @@
 
 	.fm-tactical-root--embed .fm-tactical-err {
 		color: #b91c1c;
-		background: #ffffff;
+		background: #0f172a;
 	}
 
 	:global(html.dark) .fm-tactical-root--embed .fm-tactical-err {
@@ -605,7 +605,7 @@
 		gap: 8px 12px;
 		max-width: calc(100% - 2rem);
 		padding: 10px 16px;
-		background: #ffffff;
+		background: #0f172a;
 		border: 1px solid rgba(0, 0, 0, 0.1);
 		border-radius: 9999px;
 		box-shadow:
@@ -679,7 +679,7 @@
 	.fm-tb-btn--danger {
 		border-color: rgba(220, 38, 38, 0.35);
 		color: #b91c1c;
-		background: #ffffff;
+		background: #0f172a;
 	}
 
 	.fm-tb-btn--danger:hover:not(:disabled) {

@@ -151,7 +151,7 @@
     font-family: 'Geist Sans', var(--font-display, sans-serif);
     font-size: clamp(1.05rem, 2vw, 1.25rem);
     font-weight: 700;
-    color: #ffffff;
+    color: #fafafa;
     margin: 0;
     line-height: 1.3;
   }
@@ -212,7 +212,7 @@
     border-radius: 6px;
     background: rgba(15, 23, 42, 0.85);
     border: 1px solid color-mix(in srgb, var(--sc-accent) 45%, rgba(51, 65, 85, 0.8));
-    color: #ffffff;
+    color: #fafafa;
     font-family: 'Geist Mono', ui-monospace, monospace;
     font-size: 0.75rem;
     font-weight: 700;
@@ -225,7 +225,7 @@
   .sc-action-btn:hover {
     background: color-mix(in srgb, var(--sc-accent) 20%, #0f172a);
     border-color: var(--sc-accent);
-    color: #ffffff;
+    color: #fafafa;
     box-shadow: 0 0 16px color-mix(in srgb, var(--sc-accent) 35%, transparent);
     transform: translateY(-1px);
   }

@@ -712,7 +712,7 @@
 		overflow: hidden;
 		min-height: 520px;
 		font-family: ui-monospace, 'SFMono-Regular', monospace;
-		color: white;
+		color: #fafafa;
 	}
 
 	/* ── Page header ───────────────────────────────────────────────────── */
@@ -939,7 +939,7 @@
 
 	.cc-select option {
 		background: #0a0e14;
-		color: white;
+		color: #fafafa;
 		letter-spacing: 0;
 		text-transform: none;
 	}

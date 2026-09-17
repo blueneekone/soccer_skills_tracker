@@ -469,7 +469,7 @@ import { functions } from '$lib/firebase.js';
 		color: rgba(255, 255, 255, 0.55);
 		line-height: 1.7;
 	}
-	.mv-confirm-body strong { color: white; }
+	.mv-confirm-body strong { color: #fafafa; }
 	.mv-confirm-warn {
 		margin: 0;
 		font-size: 0.5rem;

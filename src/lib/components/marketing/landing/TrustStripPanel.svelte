@@ -143,7 +143,7 @@
 	.ts-privacy-btn:hover {
 		background: rgba(20, 184, 166, 0.12);
 		border-color: #14b8a6;
-		color: #ffffff;
+		color: #fafafa;
 		box-shadow: 0 0 12px rgba(20, 184, 166, 0.25);
 		transform: translateY(-1px);
 	}

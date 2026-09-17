@@ -658,7 +658,7 @@
 		padding: 1.25rem;
 		border-radius: 12px;
 		border: 1px solid #e5e5e5;
-		background: #ffffff;
+		background: #0f172a;
 		box-sizing: border-box;
 	}
 
@@ -675,7 +675,7 @@
 		align-items: center;
 		justify-content: center;
 		color: var(--brand-primary, #6366f1);
-		background: color-mix(in srgb, var(--brand-primary, #6366f1) 12%, #ffffff);
+		background: color-mix(in srgb, var(--brand-primary, #6366f1) 12%, #0f172a);
 		border: 1px solid color-mix(in srgb, var(--brand-primary, #6366f1) 28%, #e5e5e5);
 	}
 
@@ -687,7 +687,7 @@
 
 	.epd__badge-icon--violet {
 		color: #5b21b6;
-		background: color-mix(in srgb, #7c3aed 14%, #ffffff);
+		background: color-mix(in srgb, #7c3aed 14%, #0f172a);
 		border-color: rgba(124, 58, 237, 0.25);
 	}
 

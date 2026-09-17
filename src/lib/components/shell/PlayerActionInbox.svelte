@@ -135,7 +135,7 @@
 		overflow: hidden;
 		border: 1px solid #e5e5e5;
 		border-radius: 14px;
-		background: #ffffff;
+		background: #0f172a;
 		padding: 14px 14px 16px;
 		box-sizing: border-box;
 	}

@@ -585,7 +585,7 @@ import { functions } from '$lib/firebase.js';
 		font-size: 0.75rem;
 		font-weight: 900;
 		letter-spacing: 0.1em;
-		color: white;
+		color: #fafafa;
 		word-break: break-all;
 	}
 	.ca-drop-zone__sub {
@@ -699,7 +699,7 @@ import { functions } from '$lib/firebase.js';
 		margin: 0;
 		font-size: 0.75rem;
 		font-weight: 700;
-		color: white;
+		color: #fafafa;
 		line-height: 1.5;
 		display: flex;
 		align-items: flex-start;
@@ -802,7 +802,7 @@ import { functions } from '$lib/firebase.js';
 		font-size: 0.9rem;
 		font-weight: 900;
 		letter-spacing: 0.2em;
-		color: white;
+		color: #fafafa;
 	}
 	.ca-complete__sub {
 		margin: 0;

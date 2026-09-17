@@ -63,7 +63,7 @@
 		font-size: 1rem;
 		font-weight: 900;
 		letter-spacing: 0.2em;
-		color: white;
+		color: #fafafa;
 	}
 	.recruiter-locked__lead {
 		margin: 0 0 1.5rem;

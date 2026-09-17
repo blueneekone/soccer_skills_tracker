@@ -7,7 +7,7 @@
 	 */
 </script>
 
-<svg
+<svg viewBox="0 0 0 0"
 	class="vanguard-vfx-defs tw-pointer-events-none tw-fixed tw-left-0 tw-top-0 tw-z-[2147483647] tw-h-0 tw-w-0 tw-overflow-hidden tw-opacity-0"
 	width="0"
 	height="0"

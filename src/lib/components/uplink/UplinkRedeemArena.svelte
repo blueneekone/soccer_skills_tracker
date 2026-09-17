@@ -210,7 +210,7 @@
 		margin: 0 0 12px;
 		font-size: clamp(20px, 4vw, 26px);
 		font-weight: 900;
-		color: #ffffff;
+		color: #fafafa;
 		letter-spacing: 0.03em;
 	}
 

@@ -141,7 +141,7 @@
 	}
 
 	.hud-mini-ring--prominent .hud-mini-ring__value {
-		color: #ffffff;
+		color: #fafafa;
 	}
 
 	.hud-mini-ring__sub {

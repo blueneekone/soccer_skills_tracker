@@ -232,7 +232,7 @@
 		font-weight: 900;
 		letter-spacing: 0.2em;
 		text-transform: uppercase;
-		color: white;
+		color: #fafafa;
 	}
 	.ww-live {
 		color: rgba(20, 184, 166, 0.7);
@@ -421,7 +421,7 @@
 	.ww-card__value {
 		font-size: 1.5rem;
 		font-weight: 900;
-		color: white;
+		color: #fafafa;
 		font-variant-numeric: tabular-nums;
 		line-height: 1;
 	}

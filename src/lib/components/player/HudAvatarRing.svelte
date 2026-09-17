@@ -209,7 +209,7 @@
 		font-weight: 900;
 		letter-spacing: 0.1em;
 		text-transform: uppercase;
-		color: #ffffff;
+		color: #fafafa;
 		white-space: nowrap;
 	}
 

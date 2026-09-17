@@ -258,7 +258,7 @@ import { onDestroy, untrack } from 'svelte';
 
 	.btn-start {
 		background: linear-gradient(135deg, #6366f1, #8b5cf6);
-		color: white;
+		color: #fafafa;
 		border: none;
 		border-radius: 0px;
 		padding: 0.85rem 2rem;
@@ -313,14 +313,14 @@ import { onDestroy, untrack } from 'svelte';
 	.result-icon {
 		font-size: 5rem;
 		line-height: 1;
-		color: white;
+		color: #fafafa;
 		font-weight: 900;
 	}
 
 	.result-label {
 		font-size: 2rem;
 		font-weight: 900;
-		color: white;
+		color: #fafafa;
 		text-transform: uppercase;
 		letter-spacing: 0.06em;
 	}
@@ -341,7 +341,7 @@ import { onDestroy, untrack } from 'svelte';
 		gap: 0.75rem;
 		background: rgba(0,0,0,0.55);
 		border-radius: var(--vanguard-radius, 24px);
-		color: white;
+		color: #fafafa;
 		font-size: 0.9rem;
 		font-weight: 600;
 	}
@@ -350,7 +350,7 @@ import { onDestroy, untrack } from 'svelte';
 		width: 40px;
 		height: 40px;
 		border: 3px solid rgba(255,255,255,0.2);
-		border-top-color: white;
+		border-top-color: #fafafa;
 		border-radius: 50%;
 		animation: spin 0.8s linear infinite;
 	}

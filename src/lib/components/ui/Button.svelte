@@ -72,7 +72,7 @@
 
 	.v-btn-primary {
 		background-color: #0f172a;
-		color: #ffffff;
+		color: #fafafa;
 	}
 	.v-btn-primary:hover:not(:disabled) {
 		background-color: #1e293b;
@@ -97,7 +97,7 @@
 
 	.v-btn-danger {
 		background-color: #ff003c;
-		color: #ffffff;
+		color: #fafafa;
 	}
 	.v-btn-danger:hover:not(:disabled) {
 		background-color: #cc0030;

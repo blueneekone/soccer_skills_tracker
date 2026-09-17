@@ -432,7 +432,7 @@ import { onDestroy, untrack } from 'svelte';
 	.btn-publish {
 		background: linear-gradient(135deg, #6366f1, #8b5cf6);
 		border: none;
-		color: white;
+		color: #fafafa;
 		border-radius: 0px;
 		padding: 0.5rem 1.25rem;
 		font-size: 0.875rem;

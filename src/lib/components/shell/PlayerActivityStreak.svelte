@@ -336,7 +336,7 @@
 		margin: 0 0 6px;
 		font-size: 0.95rem;
 		font-weight: 700;
-		color: #ffffff;
+		color: #fafafa;
 		line-height: 1.35;
 	}
 

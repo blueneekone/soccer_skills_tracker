@@ -170,7 +170,7 @@
 		align-items: center;
 		gap: 2px;
 		padding: 6px 10px;
-		background: #ffffff;
+		background: #0f172a;
 		border: 1px solid rgba(0, 0, 0, 0.1);
 		border-radius: 9999px;
 		box-shadow:

@@ -1153,7 +1153,7 @@ type ExtendedAdvancedMarkerElement = any & { __facilityMarkerIndex?: number };
 			rgba(15, 23, 42, 0.9) 48%,
 			rgba(9, 9, 11, 0.96) 100%
 		);
-		color: #ffffff;
+		color: #fafafa;
 		box-shadow:
 			0 0 0 1px rgba(0, 0, 0, 0.38) inset,
 			0 12px 26px rgba(0, 0, 0, 0.32);
@@ -1189,7 +1189,7 @@ type ExtendedAdvancedMarkerElement = any & { __facilityMarkerIndex?: number };
 			rgba(15, 23, 42, 0.88) 48%,
 			rgba(9, 9, 11, 0.96) 100%
 		);
-		color: #ffffff;
+		color: #fafafa;
 		box-shadow:
 			0 0 0 1px rgba(0, 0, 0, 0.38) inset,
 			0 12px 26px rgba(0, 0, 0, 0.32);

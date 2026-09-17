@@ -499,7 +499,7 @@
 		overflow-x: hidden;
 		overflow-y: auto;
 		border-radius: 16px;
-		background: #ffffff;
+		background: #0f172a;
 		color: #18181b;
 		border: 1px solid #e4e4e7;
 		box-shadow:
@@ -674,7 +674,7 @@
 		padding: 0 12px;
 		border-radius: 8px;
 		border: 1px solid #e4e4e7;
-		background: #ffffff;
+		background: #0f172a;
 		color: #18181b;
 		font: inherit;
 		font-size: 0.875rem;

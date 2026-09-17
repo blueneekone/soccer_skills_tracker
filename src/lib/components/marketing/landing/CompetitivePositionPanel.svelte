@@ -86,7 +86,7 @@
 		font-weight: 600;
 		line-height: 1.45;
 		letter-spacing: -0.02em;
-		color: #ffffff;
+		color: #fafafa;
 	}
 
 	.cp__compare {

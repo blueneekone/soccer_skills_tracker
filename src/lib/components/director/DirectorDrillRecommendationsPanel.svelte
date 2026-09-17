@@ -188,7 +188,7 @@
 
 <style>
 	.drill-inbox {
-		background: var(--glass-bg, #ffffff);
+		background: var(--glass-bg, #0f172a);
 		border: 1px solid var(--border-muted, #e5e5e5);
 		border-radius: 0px;
 		padding: 16px;

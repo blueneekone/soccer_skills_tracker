@@ -351,7 +351,7 @@
 	}
 
 	.pb-tab__panel {
-		background: var(--glass-bg, #ffffff);
+		background: var(--glass-bg, #0f172a);
 		border: 1px solid var(--border-muted, #e5e5e5);
 		border-radius: 0px;
 		padding: 16px;
@@ -402,7 +402,7 @@
 		font-size: 14px;
 		border: 1px solid var(--border-muted, #e5e5e5);
 		border-radius: 0px;
-		background: #ffffff;
+		background: #0f172a;
 		color: var(--text-primary, #09090b);
 		box-sizing: border-box;
 	}
@@ -470,7 +470,7 @@
 
 	.pb-tab__btn--primary {
 		background: #2563eb;
-		color: #ffffff;
+		color: #fafafa;
 	}
 
 	.pb-tab__btn--primary:hover:not(:disabled) {

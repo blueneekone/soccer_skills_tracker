@@ -10,7 +10,7 @@
 	 *
 	 * RULES
 	 * ─────
-	 * - Always use this component — never raw <i class="ph ph-*"> or inline <svg>.
+	 * - Always use this component — never raw <i class="ph ph-*"> or inline <svg viewBox="0 0 24 24">.
 	 * - Color via tw-text-* only; stroke inherits currentColor automatically.
 	 * - `decorative` defaults to true (aria-hidden). Set false + label for icons
 	 *   that carry meaning without adjacent text.

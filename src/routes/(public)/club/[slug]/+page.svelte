@@ -222,7 +222,7 @@
 		font-size: 2rem;
 		font-weight: 800;
 		letter-spacing: -0.03em;
-		color: #ffffff;
+		color: #fafafa;
 		line-height: 1.1;
 	}
 
@@ -230,7 +230,7 @@
 		margin: 0 0 0.25rem;
 		font-size: 1.25rem;
 		font-weight: 700;
-		color: #ffffff;
+		color: #fafafa;
 	}
 
 	.clp-lead {
@@ -353,7 +353,7 @@
 		margin: 0 0 0.25rem;
 		font-size: 1rem;
 		font-weight: 700;
-		color: #ffffff;
+		color: #fafafa;
 	}
 
 	.clp-meta {

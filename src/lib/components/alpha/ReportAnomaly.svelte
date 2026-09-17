@@ -320,7 +320,7 @@
 		font-size: 0.9rem;
 		font-weight: 900;
 		letter-spacing: 0.1em;
-		color: #ffffff;
+		color: #fafafa;
 	}
 
 	.ra-close {
@@ -409,7 +409,7 @@
 		background: rgba(20, 184, 166, 0.03);
 		border: 1px solid rgba(20, 184, 166, 0.15);
 		border-radius: 7px;
-		color: #ffffff;
+		color: #fafafa;
 		font-family: var(--font-mono);
 		font-size: 0.75rem;
 		line-height: 1.6;

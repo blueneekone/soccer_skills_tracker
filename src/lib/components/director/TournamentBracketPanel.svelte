@@ -633,7 +633,7 @@
 		align-self: flex-start;
 		background: linear-gradient(135deg, #6366f1, #8b5cf6);
 		border: none;
-		color: white;
+		color: #fafafa;
 		padding: 0.55rem 1.1rem;
 		box-shadow: 0 4px 14px rgba(99, 102, 241, 0.3);
 	}
