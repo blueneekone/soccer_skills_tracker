@@ -27,18 +27,25 @@ const START_TIME = Date.now();
 
 const SPRINT_QUEUE = [
   {
-    "id": "sprint-r8",
-    "name": "sprint-r8",
-    "sessionId": "12511209801158717737",
-    "workflowFile": ".agents/workflows/jules-builds/sprint-r8.md",
-    "dispatched": true
+    "id": "sprint-5.2",
+    "name": "sprint-5.2",
+    "sessionId": null,
+    "workflowFile": ".agents/workflows/jules-builds/sprint-5.2.md",
+    "dispatched": false
+  },
+  {
+    "id": "sprint-5.3",
+    "name": "sprint-5.3",
+    "sessionId": null,
+    "workflowFile": ".agents/workflows/jules-builds/sprint-5.3.md",
+    "dispatched": false
   },
   {
     "id": "sprint-r2",
     "name": "sprint-r2",
-    "sessionId": null,
+    "sessionId": "10718623827822778892",
     "workflowFile": ".agents/workflows/jules-builds/sprint-r2.md",
-    "dispatched": false
+    "dispatched": true
   },
   {
     "id": "sprint-r3",
@@ -52,62 +59,6 @@ const SPRINT_QUEUE = [
     "name": "sprint-r4",
     "sessionId": null,
     "workflowFile": ".agents/workflows/jules-builds/sprint-r4.md",
-    "dispatched": false
-  },
-  {
-    "id": "sprint-r5",
-    "name": "sprint-r5",
-    "sessionId": null,
-    "workflowFile": ".agents/workflows/jules-builds/sprint-r5.md",
-    "dispatched": false
-  },
-  {
-    "id": "sprint-r6",
-    "name": "sprint-r6",
-    "sessionId": null,
-    "workflowFile": ".agents/workflows/jules-builds/sprint-r6.md",
-    "dispatched": false
-  },
-  {
-    "id": "sprint-r7",
-    "name": "sprint-r7",
-    "sessionId": null,
-    "workflowFile": ".agents/workflows/jules-builds/sprint-r7.md",
-    "dispatched": false
-  },
-  {
-    "id": "sprint-ds1",
-    "name": "sprint-ds1",
-    "sessionId": null,
-    "workflowFile": ".agents/workflows/jules-builds/sprint-ds1.md",
-    "dispatched": false
-  },
-  {
-    "id": "sprint-ds2",
-    "name": "sprint-ds2",
-    "sessionId": null,
-    "workflowFile": ".agents/workflows/jules-builds/sprint-ds2.md",
-    "dispatched": false
-  },
-  {
-    "id": "sprint-ds3",
-    "name": "sprint-ds3",
-    "sessionId": null,
-    "workflowFile": ".agents/workflows/jules-builds/sprint-ds3.md",
-    "dispatched": false
-  },
-  {
-    "id": "sprint-ds4",
-    "name": "sprint-ds4",
-    "sessionId": null,
-    "workflowFile": ".agents/workflows/jules-builds/sprint-ds4.md",
-    "dispatched": false
-  },
-  {
-    "id": "sprint-ds5",
-    "name": "sprint-ds5",
-    "sessionId": null,
-    "workflowFile": ".agents/workflows/jules-builds/sprint-ds5.md",
     "dispatched": false
   },
   {

@@ -189,8 +189,8 @@
     - `src/lib/components/parent/SeasonRegistration.svelte` — raw `rgba(0,255,255,...)` in inline styles or CSS
   - **Jules Prompt**: (1) Open `src/lib/components/ui/VanguardEmptyState.svelte`, find all instances of `rgba(0,255,255` and replace with `#14b8a6` (Data Cyan) or `rgba(20,184,166,...)` for opacity variants, (2) open `src/lib/components/parent/SeasonRegistration.svelte` and perform the same replacement, (3) verify no other files contain raw cyan by running `grep -rn "rgba(0,255,255" src/ --include="*.svelte"` — expect 0 results. Run `pnpm run check` to verify 0 errors.
 
-- [ ] **Sprint R8 (P0)**: Backend Functional Parity — Missing `httpsCallable` Endpoints
-  - **Status**: 🔴 NOT STARTED — 8 callables referenced by client code but not exported from `functions/index.js`
+- [x] **Sprint R8 (P0)**: Backend Functional Parity — Missing `httpsCallable` Endpoints
+  - **Status**: ✅ DONE — 8 callables implemented and deployed
   - **Gap Audit Result**: `functions/index.js` exports 70+ functions but is missing these 8 critical endpoints. Some may have partial implementations in domain files but are not wired to the export surface:
     1. `commitMatchTelemetry` — Client expects this for match stat persistence. `syncMatchStats` exists in `matchOps.js` and IS exported, but client may reference wrong name.
     2. `getAccountabilityReport` — Parent OS accountability data endpoint. No implementation found.
