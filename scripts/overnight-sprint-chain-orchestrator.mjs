@@ -29,16 +29,16 @@ const SPRINT_QUEUE = [
   {
     "id": "sprint-5.2",
     "name": "sprint-5.2",
-    "sessionId": null,
+    "sessionId": "9111178344597737019",
     "workflowFile": ".agents/workflows/jules-builds/sprint-5.2.md",
-    "dispatched": false
+    "dispatched": true
   },
   {
     "id": "sprint-5.3",
     "name": "sprint-5.3",
-    "sessionId": null,
+    "sessionId": "15682637641134645018",
     "workflowFile": ".agents/workflows/jules-builds/sprint-5.3.md",
-    "dispatched": false
+    "dispatched": true
   },
   {
     "id": "sprint-r2",
@@ -224,7 +224,12 @@ function dispatchNextSprint() {
   console.log(`\n📡 [ORCHESTRATOR] Dispatching ${nextSprint.name} to Jules...`);
   try {
     const promptContent = fs.readFileSync(fullWfPath, 'utf-8');
-    const cmd = `powershell -Command "Get-Content -Raw '${fullWfPath}' | jules remote new --repo blueneekone/soccer_skills_tracker"`;
+    const autoInstruction = "\n\nCRITICAL DIRECTIVE: You are running in fully autonomous CI mode. DO NOT ask clarifying questions. Make safe assumptions and proceed with full execution of the sprint. Once done, mark the task as complete.";
+    
+    const tempFile = path.join(REPO_ROOT, '.agents', 'workflows', 'temp-dispatch.md');
+    fs.writeFileSync(tempFile, promptContent + autoInstruction, 'utf-8');
+    
+    const cmd = `powershell -Command "Get-Content -Raw '${tempFile.replace(/\\/g, '\\\\')}' | jules remote new --repo blueneekone/soccer_skills_tracker"`;
     const out = run(cmd, { capture: true });
     
     const match = out.match(/ID:\s*(\d+)/);
