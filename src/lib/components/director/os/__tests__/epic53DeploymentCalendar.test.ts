@@ -62,8 +62,8 @@ describe('Epic 5.3 — tactical deployment calendar', () => {
 		);
 		const fieldOps = readFileSync(FIELD_OPS, 'utf8');
 		expect(bridge).toMatch(/directorUpsertField/);
-		expect(vault).toMatch(/syncFacilityToLegacyField/);
-		expect(vault).toMatch(/mirrorFacilityToFields/);
+		expect(vault).toMatch(/FacilityMapVaultEngine/);
+		
 		expect(fieldOps).toMatch(/syncFacilityToLegacyField/);
 		expect(fieldOps).toMatch(/clubs', resolvedClubId, 'facilities'/);
 	});

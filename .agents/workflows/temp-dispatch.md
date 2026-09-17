@@ -1,9 +1,5 @@
-### Sprint DS6: Void Density & WCAG 2.2 AA Accessibility Compliance Sweep
-**Jules Prompt**: (1) Void Density: create `src/lib/styles/__tests__/voidDensity.test.ts` — FAIL if any `*Arena.svelte` or `+page.svelte` uses light background tokens (`bg-white`, `bg-gray-50`, `bg-slate-50`, `bg-neutral-50`). (2) WCAG 2.2 AA contrast: install `color-contrast` package, write tests verifying every palette pair meets ≥4.5:1 ratio: `#fafafa on #0f172a`, `#d4d4d8 on #000000`, `#14b8a6 on #000000`, `#fbbf24 on #000000`, `#daff0a on #000000`. (3) Halation purge: `grep -rn "color: #ffffff\|color: white" src/ --include="*.svelte"` → change all to `#fafafa`. `grep -rn "background.*#ffffff\|background.*white" src/ --include="*.svelte"` → change all to `#0f172a` or `#000000`. (4) Typography: add `font-size-adjust: 0.79` for Switzer on `body` in `app.css`. Apply `font-family: 'Geist Mono'` to all `[data-readout]`, `[data-metric]`, `[data-stat]`, `[data-timestamp]`, `.kpi-value`, `.telemetry-value` selectors. (5) SVG physics lock: scan all `*.svelte` files containing `<svg` — assert `viewBox` present on every SVG, no `tw-text-[Npx]` class inside SVG elements (use native `font-size="N"` attribute). Run `pnpm run check` and `pnpm test -- src/lib/styles/__tests__/`.
-
----
-
-## Phase 8: Monolithic File Extraction (Anti-Fragility — 500-Line Mandate)
+### Sprint M1: Extract FacilityMapVault.svelte (1834 lines)
+**Jules Prompt**: Fracture `src/lib/components/field-ops/FacilityMapVault.svelte` into: (1) `FacilityMapVaultEngine.svelte.ts`, (2) `FacilityMapVaultArena.svelte`, (3) `FacilityMapVaultHUD.svelte`. The original file becomes the Shell. Each file must stay under 500 lines. Preserve functionality. Run `pnpm run check` and `pnpm test -- src/lib/components/field-ops/`.
 
 
 CRITICAL DIRECTIVE: You are running in fully autonomous CI mode. DO NOT ask clarifying questions. Make safe assumptions and proceed with full execution of the sprint. Once done, mark the task as complete.
