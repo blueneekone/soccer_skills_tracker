@@ -23,8 +23,8 @@
 			<div class="tw-text-[#94A3B8] tw-text-xs tw-font-mono tw-mt-2">Direct Admin SDK execution bridge for global support agents</div>
 		</div>
 		<div class="tw-text-right">
-			<span class="tw-inline-flex tw-items-center tw-gap-1.5 tw-text-xs tw-font-mono tw-font-bold tw-text-emerald-400 tw-uppercase tw-tracking-wider tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-px-3 tw-py-1.5">
-				<span class="tw-inline-block tw-w-2 tw-h-2 tw-rounded-full tw-bg-emerald-400 tw-animate-pulse"></span>
+			<span class="tw-inline-flex tw-items-center tw-gap-1.5 tw-text-xs tw-font-mono tw-font-bold tw-text-[#14b8a6] tw-uppercase tw-tracking-wider tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-px-3 tw-py-1.5">
+				<span class="tw-inline-block tw-w-2 tw-h-2 tw-rounded-full tw-bg-[#14b8a6] tw-animate-pulse"></span>
 				ONLINE
 			</span>
 		</div>

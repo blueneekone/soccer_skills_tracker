@@ -9,7 +9,7 @@
 	</div>
 	<div>
 		{#if engine.status === 'clear'}
-			<span class="tw-bg-emerald-900/50 tw-text-emerald-400 tw-border tw-border-emerald-500/30 tw-px-3 tw-py-1 tw-rounded-full tw-text-xs tw-font-mono tw-font-bold">CLEARED</span>
+			<span class="tw-bg-[#14b8a6]/50 tw-text-[#14b8a6] tw-border tw-border-[#14b8a6]/30 tw-px-3 tw-py-1 tw-rounded-full tw-text-xs tw-font-mono tw-font-bold">CLEARED</span>
 		{:else if engine.status === 'invited'}
 			<span class="tw-bg-amber-900/50 tw-text-amber-400 tw-border tw-border-amber-500/30 tw-px-3 tw-py-1 tw-rounded-full tw-text-xs tw-font-mono tw-font-bold">INVITATION SENT</span>
 		{:else}

@@ -30,10 +30,10 @@
 			<button class="tw-bg-amber-500 tw-text-slate-900 tw-font-bold tw-py-2 tw-px-4 tw-rounded tw-mt-4 tw-cursor-pointer hover:tw-bg-amber-400" onclick={() => engine.forcePoll()}>Check Verification</button>
 		</div>
 	{:else if engine.status === 'clear'}
-		<div class="tw-bg-slate-800 tw-p-6 tw-rounded-[24px] tw-border tw-border-emerald-600/50">
-			<h2 class="tw-text-xl tw-font-bold tw-mb-4 tw-text-emerald-400">Clearance Verified</h2>
+		<div class="tw-bg-slate-800 tw-p-6 tw-rounded-[24px] tw-border tw-border-[#14b8a6]/50">
+			<h2 class="tw-text-xl tw-font-bold tw-mb-4 tw-text-[#14b8a6]">Clearance Verified</h2>
 			<p class="tw-text-slate-300">Your National Criminal Database background check is clear. You now have authorized access to prospect data.</p>
-			<a href="/recruiter" class="tw-inline-block tw-bg-emerald-500 tw-text-slate-900 tw-font-bold tw-py-2 tw-px-4 tw-rounded tw-mt-4 tw-no-underline hover:tw-bg-emerald-400">Proceed to Recruiter HUD</a>
+			<a href="/recruiter" class="tw-inline-block tw-bg-[#14b8a6] tw-text-slate-900 tw-font-bold tw-py-2 tw-px-4 tw-rounded tw-mt-4 tw-no-underline hover:tw-bg-[#14b8a6]">Proceed to Recruiter HUD</a>
 		</div>
 	{:else}
 		<div class="tw-bg-slate-800 tw-p-6 tw-rounded-[24px] tw-border tw-border-amber-600/50">

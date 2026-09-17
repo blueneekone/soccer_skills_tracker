@@ -26,7 +26,7 @@
     {/if}
 
     {#if engine.successMessage}
-      <div class="tw-flex tw-flex-col tw-items-end tw-text-green-500">
+      <div class="tw-flex tw-flex-col tw-items-end tw-text-[#14b8a6]">
         <span class="tw-text-xs">Status</span>
         <span>{engine.successMessage}</span>
       </div>

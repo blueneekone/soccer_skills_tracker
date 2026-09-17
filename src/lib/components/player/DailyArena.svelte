@@ -94,7 +94,7 @@
     </div>
     <div class="tw-w-full tw-bg-slate-800 tw-h-2">
       <div
-        class="tw-h-2 {capStatus.exceedsCap ? 'tw-bg-red-500' : 'tw-bg-emerald-400'}"
+        class="tw-h-2 {capStatus.exceedsCap ? 'tw-bg-red-500' : 'tw-bg-[#14b8a6]'}"
         style="width: {Math.min(100, (capStatus.totalWeeklyHours / (capStatus.ageYears || 1)) * 100)}%"
       ></div>
     </div>

@@ -208,7 +208,7 @@
 	function getResultBadge(res?: string, home = 0, away = 0) {
 		const determined = res || (home > away ? 'WIN' : home < away ? 'LOSS' : 'DRAW');
 		if (determined === 'WIN') {
-			return { label: 'WIN', bg: 'tw-bg-emerald-950/70', border: 'tw-border-emerald-500', text: 'tw-text-emerald-300' };
+			return { label: 'WIN', bg: 'tw-bg-[#14b8a6]/70', border: 'tw-border-[#14b8a6]', text: 'tw-text-[#14b8a6]' };
 		}
 		if (determined === 'LOSS') {
 			return { label: 'LOSS', bg: 'tw-bg-rose-950/70', border: 'tw-border-rose-500', text: 'tw-text-rose-300' };
@@ -418,7 +418,7 @@
 
 				{#if !selectedMatch.mistakes || selectedMatch.mistakes.length === 0}
 					<div class="tw-p-4 tw-bg-[#000000] tw-border tw-border-[#334155] tw-text-center">
-						<p class="tw-font-mono tw-text-xs tw-text-emerald-400 tw-m-0">
+						<p class="tw-font-mono tw-text-xs tw-text-[#14b8a6] tw-m-0">
 							✓ Clean performance — zero critical mistake reminders recorded for this match.
 						</p>
 					</div>
@@ -468,7 +468,7 @@
 								<tr class="tw-border-b tw-border-[#334155] tw-bg-[#000000]">
 									<th class="tw-p-2.5 tw-font-mono tw-text-xs tw-text-slate-400 tw-uppercase">Player</th>
 									<th class="tw-p-2.5 tw-font-mono tw-text-xs tw-text-slate-400 tw-uppercase">#</th>
-									<th class="tw-p-2.5 tw-font-mono tw-text-xs tw-text-emerald-400 tw-uppercase tw-text-center">Goals</th>
+									<th class="tw-p-2.5 tw-font-mono tw-text-xs tw-text-[#14b8a6] tw-uppercase tw-text-center">Goals</th>
 									<th class="tw-p-2.5 tw-font-mono tw-text-xs tw-text-teal-400 tw-uppercase tw-text-center">Assists</th>
 									<th class="tw-p-2.5 tw-font-mono tw-text-xs tw-text-slate-400 tw-uppercase tw-text-center">Shots</th>
 									<th class="tw-p-2.5 tw-font-mono tw-text-xs tw-text-slate-400 tw-uppercase tw-text-center">Tackles</th>
@@ -483,7 +483,7 @@
 									<tr class="hover:tw-bg-[#000000]/60 tw-transition-colors">
 										<td class="tw-p-2.5 tw-font-mono tw-text-xs tw-font-bold tw-text-white">{player.name}</td>
 										<td class="tw-p-2.5 tw-font-mono tw-text-xs tw-text-slate-400">{player.jersey ? `#${player.jersey}` : '-'}</td>
-										<td class="tw-p-2.5 tw-font-mono tw-text-xs tw-text-center tw-font-bold {player.goals > 0 ? 'tw-text-emerald-400' : 'tw-text-slate-500'}">{player.goals}</td>
+										<td class="tw-p-2.5 tw-font-mono tw-text-xs tw-text-center tw-font-bold {player.goals > 0 ? 'tw-text-[#14b8a6]' : 'tw-text-slate-500'}">{player.goals}</td>
 										<td class="tw-p-2.5 tw-font-mono tw-text-xs tw-text-center tw-font-bold {player.assists > 0 ? 'tw-text-teal-400' : 'tw-text-slate-500'}">{player.assists}</td>
 										<td class="tw-p-2.5 tw-font-mono tw-text-xs tw-text-center {player.shots > 0 ? 'tw-text-slate-200' : 'tw-text-slate-500'}">{player.shots}</td>
 										<td class="tw-p-2.5 tw-font-mono tw-text-xs tw-text-center {player.tackles > 0 ? 'tw-text-slate-200' : 'tw-text-slate-500'}">{player.tackles}</td>
@@ -530,7 +530,7 @@
 							<div class="tw-flex tw-items-center tw-justify-between tw-text-xs tw-font-mono tw-p-1.5 tw-bg-[#0f172a] tw-border tw-border-[#334155]/60">
 								<div class="tw-flex tw-items-center tw-gap-2.5">
 									<span class="tw-text-slate-500 tw-tabular-nums">{evt.time}</span>
-									<span class="tw-px-1.5 tw-py-0.5 tw-text-[10px] tw-border {evt.type === 'GOAL' ? 'tw-bg-emerald-950 tw-border-emerald-500 tw-text-emerald-300' : evt.type.includes('CARD') ? 'tw-bg-amber-950 tw-border-amber-400 tw-text-amber-300' : evt.type === 'MISTAKE' ? 'tw-bg-rose-950 tw-border-rose-500 tw-text-rose-300' : 'tw-bg-slate-900 tw-border-slate-700 tw-text-slate-300'}">
+									<span class="tw-px-1.5 tw-py-0.5 tw-text-[10px] tw-border {evt.type === 'GOAL' ? 'tw-bg-[#14b8a6] tw-border-[#14b8a6] tw-text-[#14b8a6]' : evt.type.includes('CARD') ? 'tw-bg-amber-950 tw-border-amber-400 tw-text-amber-300' : evt.type === 'MISTAKE' ? 'tw-bg-rose-950 tw-border-rose-500 tw-text-rose-300' : 'tw-bg-slate-900 tw-border-slate-700 tw-text-slate-300'}">
 										{evt.type}
 									</span>
 									<span class="tw-text-white tw-font-bold">{evt.label}</span>

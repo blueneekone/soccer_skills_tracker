@@ -65,7 +65,7 @@
 			<!-- Save to Team Ops Button -->
 			<div class="tw-flex tw-items-center tw-gap-3">
 				{#if saveFeedback}
-					<span class="tw-font-mono tw-text-xs {saveStatus === 'saved' ? 'tw-text-emerald-400' : 'tw-text-rose-400'}">
+					<span class="tw-font-mono tw-text-xs {saveStatus === 'saved' ? 'tw-text-[#14b8a6]' : 'tw-text-rose-400'}">
 						{saveFeedback}
 					</span>
 				{/if}
@@ -86,7 +86,7 @@
 		<div class="tw-grid tw-grid-cols-2 sm:tw-grid-cols-4 tw-gap-3">
 			<div class="tw-bg-[#000000] tw-border tw-border-[#334155] tw-p-3">
 				<div class="tw-font-mono tw-text-[10px] tw-text-slate-400 tw-uppercase">FINAL RESULT</div>
-				<div class="tw-font-mono tw-text-lg tw-font-black {engine.homeScore > engine.awayScore ? 'tw-text-emerald-400' : engine.homeScore < engine.awayScore ? 'tw-text-rose-400' : 'tw-text-amber-400'}">
+				<div class="tw-font-mono tw-text-lg tw-font-black {engine.homeScore > engine.awayScore ? 'tw-text-[#14b8a6]' : engine.homeScore < engine.awayScore ? 'tw-text-rose-400' : 'tw-text-amber-400'}">
 					{engine.homeScore > engine.awayScore ? 'WIN' : engine.homeScore < engine.awayScore ? 'LOSS' : 'DRAW'} ({engine.homeScore} - {engine.awayScore})
 				</div>
 			</div>
@@ -100,7 +100,7 @@
 
 			<div class="tw-bg-[#000000] tw-border tw-border-[#334155] tw-p-3">
 				<div class="tw-font-mono tw-text-[10px] tw-text-slate-400 tw-uppercase">GOALS SCORED</div>
-				<div class="tw-font-mono tw-text-lg tw-font-black tw-text-emerald-400">
+				<div class="tw-font-mono tw-text-lg tw-font-black tw-text-[#14b8a6]">
 					{engine.homeScore}
 				</div>
 			</div>
@@ -128,7 +128,7 @@
 
 		{#if engine.mistakes.length === 0}
 			<div class="tw-p-6 tw-bg-[#000000] tw-border tw-border-[#334155] tw-text-center">
-				<p class="tw-font-mono tw-text-xs tw-text-emerald-400 tw-m-0">
+				<p class="tw-font-mono tw-text-xs tw-text-[#14b8a6] tw-m-0">
 					✓ Clean performance — zero critical mistake reminders recorded for this match.
 				</p>
 			</div>
@@ -171,7 +171,7 @@
 					<tr class="tw-border-b tw-border-[#334155] tw-bg-[#000000]">
 						<th class="tw-p-2.5 tw-font-mono tw-text-xs tw-text-slate-400 tw-uppercase">Player</th>
 						<th class="tw-p-2.5 tw-font-mono tw-text-xs tw-text-slate-400 tw-uppercase">#</th>
-						<th class="tw-p-2.5 tw-font-mono tw-text-xs tw-text-emerald-400 tw-uppercase tw-text-center">Goals</th>
+						<th class="tw-p-2.5 tw-font-mono tw-text-xs tw-text-[#14b8a6] tw-uppercase tw-text-center">Goals</th>
 						<th class="tw-p-2.5 tw-font-mono tw-text-xs tw-text-teal-400 tw-uppercase tw-text-center">Assists</th>
 						<th class="tw-p-2.5 tw-font-mono tw-text-xs tw-text-slate-400 tw-uppercase tw-text-center">Shots</th>
 						<th class="tw-p-2.5 tw-font-mono tw-text-xs tw-text-slate-400 tw-uppercase tw-text-center">Tackles</th>
@@ -190,7 +190,7 @@
 							<td class="tw-p-2.5 tw-font-mono tw-text-xs tw-text-slate-400">
 								{player.jersey ? `#${player.jersey}` : '-'}
 							</td>
-							<td class="tw-p-2.5 tw-font-mono tw-text-xs tw-text-center tw-font-bold {player.goals > 0 ? 'tw-text-emerald-400' : 'tw-text-slate-500'}">
+							<td class="tw-p-2.5 tw-font-mono tw-text-xs tw-text-center tw-font-bold {player.goals > 0 ? 'tw-text-[#14b8a6]' : 'tw-text-slate-500'}">
 								{player.goals}
 							</td>
 							<td class="tw-p-2.5 tw-font-mono tw-text-xs tw-text-center tw-font-bold {player.assists > 0 ? 'tw-text-teal-400' : 'tw-text-slate-500'}">
@@ -254,7 +254,7 @@
 						<tr class="hover:tw-bg-[#000000]/70 tw-transition-colors">
 							<td class="tw-p-3 tw-font-mono tw-text-xs tw-text-slate-300">{evt.time}</td>
 							<td class="tw-p-3 tw-font-mono tw-text-xs">
-								<span class="tw-px-2 tw-py-0.5 tw-border {evt.type === 'GOAL' ? 'tw-bg-emerald-950/60 tw-border-emerald-500 tw-text-emerald-300' : evt.type.includes('CARD') ? 'tw-bg-amber-950/60 tw-border-amber-400 tw-text-amber-300' : evt.type === 'SUB' ? 'tw-bg-teal-950/60 tw-border-[#14b8a6] tw-text-[#14b8a6]' : evt.type === 'MISTAKE' ? 'tw-bg-rose-950/60 tw-border-rose-500 tw-text-rose-300' : 'tw-bg-slate-900 tw-border-slate-600 tw-text-slate-300'}">
+								<span class="tw-px-2 tw-py-0.5 tw-border {evt.type === 'GOAL' ? 'tw-bg-[#14b8a6]/60 tw-border-[#14b8a6] tw-text-[#14b8a6]' : evt.type.includes('CARD') ? 'tw-bg-amber-950/60 tw-border-amber-400 tw-text-amber-300' : evt.type === 'SUB' ? 'tw-bg-teal-950/60 tw-border-[#14b8a6] tw-text-[#14b8a6]' : evt.type === 'MISTAKE' ? 'tw-bg-rose-950/60 tw-border-rose-500 tw-text-rose-300' : 'tw-bg-slate-900 tw-border-slate-600 tw-text-slate-300'}">
 									{evt.type}
 								</span>
 							</td>

@@ -151,7 +151,7 @@
 - [x] **Sprint R1 (P0)**: Parent Compliance Form Complete Overhaul ✅
   - Deleted 85-line prototype `+page.svelte`, wired page to existing `WaiverConsoleArena.svelte` + `WaiverController.svelte.ts` Trinity, replaced banned `tw-bg-blue-600` / `tw-bg-emerald-600` with Enterprise Palette CTAs (Action Gold `#fbbf24`), added `Geist Mono` + `Switzer` typography, added Icon component usage.
 
-- [ ] **Sprint R2 (P0)**: Transfer Portal Visual Audit & Design Upgrade
+- [x] **Sprint R2 (P0)**: Transfer Portal Visual Audit & Design Upgrade
   - **Status**: 🟡 PARTIAL — `tw-` prefix applied (0 bare classes), but full visual audit needed
   - **Gap Audit Result**: `TransferPortal.svelte` has `tw-` prefixes applied. No `rgba(0,255,255)` found in this file. However, the component still needs: `border-radius` normalization, minimum font-size enforcement (no `8px`), CSS `:hover` replacement for inline mouse handlers, and full Enterprise Palette color compliance.
   - **Jules Prompt**: Open `src/lib/components/player/TransferPortal.svelte`. Audit and fix: (1) replace any `border-radius: 4px` with `0` or `2px` per design system, (2) replace any `font-size` below `10px` with minimum `clamp(0.625rem, 1vw, 0.75rem)`, (3) replace inline `onmouseenter`/`onmouseleave` handlers with CSS `:hover` pseudo-selectors, (4) verify all colors use Enterprise Palette tokens (Data Cyan `#14b8a6`, Action Gold `#fbbf24`, Void Black `#000000`, Navy Slate `#0f172a`), (5) add `Geist Mono` for data readouts, `Switzer` for body copy. Run `pnpm run check` and `pnpm test -- src/lib/components/player/__tests__/` to verify 0 errors.
@@ -160,7 +160,7 @@
   - **Status**: 🟡 PARTIAL — `Geist Mono` already used in legal pages, but consistency audit needed
   - **Jules Prompt**: Run `grep -rn "font-family" src/ --include="*.svelte"` and audit every file for: (1) technical/data text must use `'Geist Mono', ui-monospace, monospace`, (2) body copy must use `'Switzer', system-ui, sans-serif`, (3) no browser-default `serif` or `sans-serif` without explicit font family, (4) verify files: `consent/[token]/+page.svelte`, `terms/+page.svelte`, `privacy/+page.svelte`, `+error.svelte`, `VanguardEmptyState.svelte`, `VanguardPrism.svelte`, `SkillTreeArena.svelte`, `RecruiterPortal.svelte`, `ParentHouseholdArena.svelte`, `MarketingNav.svelte`, `PricingTable.svelte`. Run `pnpm run check` to verify 0 errors.
 
-- [ ] **Sprint R4 (P1)**: Consent Token Page Design Polish
+- [x] **Sprint R4 (P1)**: Consent Token Page Design Polish
   - **Status**: 🔴 NOT STARTED
   - **Jules Prompt**: Open `src/routes/(legal)/consent/[token]/+page.svelte`. Fix: (1) replace `#020208` with `#000000` (Void Black) or `#0f172a` (Navy Slate) per Z-depth, (2) replace `#ffffff` with `#fafafa` (anti-halation muted off-white), (3) if `<style>` block exceeds 200 lines, extract reusable CSS into `src/lib/styles/consent-tokens.css` and `@import` it, (4) ensure single Action Gold CTA per viewport, (5) verify `Geist Mono` for token display, `Switzer` for body. Run `pnpm run check` to verify 0 errors.
 
@@ -169,7 +169,7 @@
   - **Gap Audit Result**: `/coach/match-day/+server.ts` and `/admin/audit-log/+server.ts` still exist as redirect stubs. The parent directories should be fully removed since canonical routes (`/coach/matchday`, `/admin/audit-logs`) are operational.
   - **Jules Prompt**: (1) Verify `src/routes/(app)/coach/matchday/` has a working `+page.svelte`, (2) delete `src/routes/(app)/coach/match-day/` entirely (the `+server.ts` redirect is no longer needed — SvelteKit handles this via the canonical route), (3) verify `src/routes/(app)/admin/audit-logs/` has a working `+page.svelte`, (4) delete `src/routes/(app)/admin/audit-log/` entirely, (5) search for any remaining imports/links referencing `/coach/match-day` or `/admin/audit-log` and update them to canonical paths. Run `pnpm run check` and `pnpm test` to verify 0 errors. Update any test files that reference ghost paths.
 
-- [ ] **Sprint R6 (P2)**: Generic Emerald Color Normalization
+- [x] **Sprint R6 (P2)**: Generic Emerald Color Normalization
   - **Status**: 🔴 NOT STARTED — **26 files** still use `tw-bg-emerald-*`
   - **Gap Audit Result**: Files with `tw-bg-emerald-*` violations span all personas:
     - **Coach OS** (6 files): `MatchDayHUD.svelte`, `MatchDayArena.svelte`, `MatchPostReviewPanel.svelte`, `+page.svelte` (forge), `+page.svelte` (organizations), `CoachMatchDayView.svelte`
@@ -182,7 +182,7 @@
     - **Shared** (6 files): `CoachClearanceArena.svelte`, `FacilityScheduler.svelte`, `CoOpArena.svelte`, `IntentArena.svelte`, `CoachTeamMatchesPanel.svelte`, `clearance/+page.svelte`
   - **Jules Prompt**: For each of the 26 files listed above: (1) replace `tw-bg-emerald-500` / `tw-bg-emerald-600` / `tw-bg-emerald-700` with `tw-bg-[#14b8a6]` (Data Cyan) for success indicators, (2) replace `tw-text-emerald-*` with `tw-text-[#14b8a6]`, (3) replace `tw-border-emerald-*` with `tw-border-[#14b8a6]`, (4) audit `tw-bg-green-500` indicators in `HouseholdComplianceTab.svelte` and normalize to Data Cyan. Process files in batches of 5-6 to stay within the 2-3 task governance limit. Run `pnpm run check` after each batch. Total expected: ~80 class replacements across 26 files.
 
-- [ ] **Sprint R7 (P2)**: Raw Cyan Purge
+- [x] **Sprint R7 (P2)**: Raw Cyan Purge
   - **Status**: 🔴 NOT STARTED — **2 files** still contain `rgba(0,255,255,...)`
   - **Gap Audit Result**: Confirmed violations in:
     - `src/lib/components/ui/VanguardEmptyState.svelte` — raw `rgba(0,255,255,...)` in inline styles or CSS

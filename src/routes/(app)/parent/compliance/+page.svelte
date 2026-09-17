@@ -69,14 +69,14 @@
         id="commit-digital-signature-btn"
         disabled={isUnder13 ? (!parentConsentSigned || !safeSportSigned) : !safeSportSigned}
         onclick={handleSignWaivers}
-        class="tw-bg-emerald-600 disabled:tw-opacity-50 tw-text-white tw-px-4 tw-py-2 tw-rounded-md"
+        class="tw-bg-[#14b8a6] disabled:tw-opacity-50 tw-text-white tw-px-4 tw-py-2 tw-rounded-md"
       >
         Commit Cryptographic Signature to Cloud Storage
       </button>
     </div>
 
     {#if signatureHash}
-      <div id="waiver-signature-hash" class="tw-bg-emerald-950 tw-border tw-border-emerald-500 tw-p-4 tw-rounded-[24px] tw-text-emerald-300 tw-font-mono tw-text-xs">
+      <div id="waiver-signature-hash" class="tw-bg-[#14b8a6] tw-border tw-border-[#14b8a6] tw-p-4 tw-rounded-[24px] tw-text-[#14b8a6] tw-font-mono tw-text-xs">
         ✅ WAIVER SIGNED & COMMITTED: {signatureHash}
       </div>
     {/if}

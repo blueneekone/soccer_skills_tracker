@@ -366,7 +366,7 @@
 								/>
 							</td>
 							<td>
-								<span class="tw-text-emerald-400 font-bold">{statusLabel(row)}</span>
+								<span class="tw-text-[#14b8a6] font-bold">{statusLabel(row)}</span>
 							</td>
 						</tr>
 					{/each}

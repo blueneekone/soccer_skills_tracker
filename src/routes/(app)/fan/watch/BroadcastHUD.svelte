@@ -9,10 +9,10 @@
 	<div class="tw-flex tw-items-center tw-gap-4">
 		<div class="tw-flex tw-items-center tw-gap-2">
 			<span class="tw-relative tw-flex tw-h-3 tw-w-3">
-				<span class="tw-animate-ping tw-absolute tw-inline-flex tw-h-full tw-w-full tw-rounded-full tw-bg-emerald-400 tw-opacity-75"></span>
-				<span class="tw-relative tw-inline-flex tw-rounded-full tw-h-3 tw-w-3 tw-bg-emerald-500"></span>
+				<span class="tw-animate-ping tw-absolute tw-inline-flex tw-h-full tw-w-full tw-rounded-full tw-bg-[#14b8a6] tw-opacity-75"></span>
+				<span class="tw-relative tw-inline-flex tw-rounded-full tw-h-3 tw-w-3 tw-bg-[#14b8a6]"></span>
 			</span>
-			<span class="tw-font-mono tw-text-xs tw-font-bold tw-tracking-widest tw-uppercase tw-text-emerald-400">LIVE FEED</span>
+			<span class="tw-font-mono tw-text-xs tw-font-bold tw-tracking-widest tw-uppercase tw-text-[#14b8a6]">LIVE FEED</span>
 		</div>
 		<div class="tw-h-4 tw-w-[1px] tw-bg-[#334155]"></div>
 		<span class="tw-font-mono tw-text-xs tw-text-[#d4d4d8]">
@@ -34,7 +34,7 @@
 		<div class="tw-flex tw-items-center tw-gap-2">
 			<span class="tw-text-xs tw-font-mono tw-text-[#d4d4d8]">VOTING:</span>
 			{#if engine.isVotingOpen}
-				<span class="tw-inline-flex tw-items-center tw-rounded-full tw-bg-emerald-500/10 tw-px-2.5 tw-py-0.5 tw-text-xs tw-font-medium tw-text-emerald-400 tw-border tw-border-emerald-500/20">
+				<span class="tw-inline-flex tw-items-center tw-rounded-full tw-bg-[#14b8a6]/10 tw-px-2.5 tw-py-0.5 tw-text-xs tw-font-medium tw-text-[#14b8a6] tw-border tw-border-[#14b8a6]/20">
 					OPEN
 				</span>
 			{:else}

@@ -160,7 +160,7 @@
 						<Icon name={"status.shield-check" as IconName} size={18} class="tw-text-[#f59e0b]" />
 						<span>Household Thread</span>
 					</h3>
-					<span class="tw-px-2 tw-py-0.5 tw-bg-emerald-500/10 tw-border tw-border-emerald-500/30 tw-text-emerald-400 tw-text-[10px] tw-font-mono tw-tracking-widest tw-rounded-none">
+					<span class="tw-px-2 tw-py-0.5 tw-bg-[#14b8a6]/10 tw-border tw-border-[#14b8a6]/30 tw-text-[#14b8a6] tw-text-[10px] tw-font-mono tw-tracking-widest tw-rounded-none">
 						SAFESPORT_COMPLIANT
 					</span>
 				</div>

@@ -10,7 +10,7 @@ const {evaluateWeatherAtCoords} = require('./src/domains/weatherEvaluation');
 
 const REGION = 'us-east1';
 
-exports.getWeatherConditions = onCall({region: REGION, cors: true}, async (request) => {
+exports.getWeatherConditions = onCall({region: REGION, cors: [/soccerskillstracker\\.com$/, /localhost:[0-9]+$/]}, async (request) => {
   if (!request.auth) {
     throw new HttpsError('unauthenticated', 'Sign in required.');
   }

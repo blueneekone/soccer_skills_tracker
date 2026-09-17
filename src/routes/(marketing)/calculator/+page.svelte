@@ -38,7 +38,7 @@
 
       <div class="tw-bg-slate-900 tw-border tw-border-[#334155] tw-p-4">
         <div class="tw-font-mono tw-text-xs tw-text-slate-400">SSTRACKER ENTERPRISE</div>
-        <div class="tw-font-mono tw-text-2xl tw-font-bold tw-text-emerald-400">${totalSstCost.toLocaleString()}</div>
+        <div class="tw-font-mono tw-text-2xl tw-font-bold tw-text-[#14b8a6]">${totalSstCost.toLocaleString()}</div>
         <div class="tw-text-xs tw-text-slate-500">${sstPerPlayerCost}/player/yr</div>
       </div>
 

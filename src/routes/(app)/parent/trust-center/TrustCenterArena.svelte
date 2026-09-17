@@ -45,7 +45,7 @@
 			</p>
 			
 			{#if engine.vpcStatus === 'attested'}
-				<div class="tw-bg-emerald-950/30 tw-border tw-border-emerald-500/40 tw-rounded-none tw-p-4 tw-flex tw-items-center tw-gap-3">
+				<div class="tw-bg-[#14b8a6]/30 tw-border tw-border-[#14b8a6]/40 tw-rounded-none tw-p-4 tw-flex tw-items-center tw-gap-3">
 					<Icon name={"status.seal-check" as IconName} size={20} class="tw-text-amber-500" />
 					<span class="tw-text-amber-500 tw-font-mono tw-text-xs tw-font-bold">VPC VERIFIED VIA HARDWARE ENCLAVE ATTESTATION</span>
 				</div>

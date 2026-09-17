@@ -111,10 +111,10 @@
 						<td class="tw-px-4 tw-py-2.5 tw-border-t tw-border-\[#334155\] tw-text-[#D4D4D8] tw-truncate tw-min-w-0 tw-whitespace-nowrap telemetry-readout">
 							<div class="tw-flex tw-items-center tw-gap-2" title={compliance ? `${compliance.verified}/${compliance.total} VPC verified` : ''}>
 								{#if cl.isInfinite === true && !compliance}
-									<div class="tw-w-[6px] tw-h-[6px] tw-rounded-none tw-bg-emerald-400" aria-hidden="true"></div>
+									<div class="tw-w-[6px] tw-h-[6px] tw-rounded-none tw-bg-[#14b8a6]" aria-hidden="true"></div>
 									<span class="tw-font-mono tw-[font-variant-numeric:tabular-nums] tw-text-[10px] tw-uppercase tw-text-[#A1A1AA]">N/A</span>
 								{:else if compliance === null || compliance.status === 'clean'}
-									<div class="tw-w-[6px] tw-h-[6px] tw-rounded-none tw-bg-emerald-400" aria-hidden="true"></div>
+									<div class="tw-w-[6px] tw-h-[6px] tw-rounded-none tw-bg-[#14b8a6]" aria-hidden="true"></div>
 									<span class="tw-font-mono tw-[font-variant-numeric:tabular-nums] tw-text-[10px] tw-uppercase tw-text-[#FAFAFA]">Compliant</span>
 								{:else if compliance.status === 'watch'}
 									<div class="tw-w-[6px] tw-h-[6px] tw-rounded-none tw-bg-amber-400" aria-hidden="true"></div>
@@ -127,7 +127,7 @@
 						</td>
 
 						<td class="tw-px-4 tw-py-2.5 tw-border-t tw-border-\[#334155\] tw-text-[#D4D4D8] tw-truncate tw-min-w-0 tw-whitespace-nowrap telemetry-readout">
-							<button class="tw-text-[#14b8a6] hover:tw-text-emerald-400 tw-font-bold tw-text-xs tw-flex tw-items-center tw-gap-1 tw-cursor-pointer" onclick={() => goto(`/admin/organizations/${cl.id}`)} aria-label="View {cl.name || cl.id}">
+							<button class="tw-text-[#14b8a6] hover:tw-text-[#14b8a6] tw-font-bold tw-text-xs tw-flex tw-items-center tw-gap-1 tw-cursor-pointer" onclick={() => goto(`/admin/organizations/${cl.id}`)} aria-label="View {cl.name || cl.id}">
 								View <Icon name={'nav.arrow-right' as IconName} aria-hidden="true" />
 							</button>
 						</td>

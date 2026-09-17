@@ -100,7 +100,7 @@
 	<!-- Cancel / mutation success toast -->
 	{#if mutationSuccess}
 		<div
-			class="tw-w-full tw-px-4 tw-py-3 tw-border tw-border-emerald-500 tw-bg-emerald-950/60 tw-text-xs tw-text-emerald-300 tw-font-bold tw-uppercase"
+			class="tw-w-full tw-px-4 tw-py-3 tw-border tw-border-[#14b8a6] tw-bg-[#14b8a6]/60 tw-text-xs tw-text-[#14b8a6] tw-font-bold tw-uppercase"
 			role="status"
 		>
 			[ OK ] {mutationSuccess}
@@ -176,7 +176,7 @@
 				<!-- Fulfillment count -->
 				<div class="tw-text-xs tw-font-bold tw-uppercase">
 					{#if intent.fulfilledCount > 0}
-						<span class="tw-text-emerald-400">
+						<span class="tw-text-[#14b8a6]">
 							✓ {intent.fulfilledCount} OF {intent.targetCount} OPERATIVES COMPLETED
 						</span>
 					{:else}
@@ -191,7 +191,7 @@
 					<div class="tw-flex tw-flex-wrap tw-gap-1.5 tw-pt-1">
 						{#each visibleRows as row (row.uid)}
 							<div
-								class="tw-flex tw-items-center tw-gap-1.5 tw-px-2.5 tw-py-1 tw-border tw-text-xs tw-uppercase {row.fulfilled ? 'tw-bg-emerald-950/40 tw-border-emerald-500 tw-text-emerald-300' : 'tw-bg-[#020617] tw-border-[#334155] tw-text-slate-400'}"
+								class="tw-flex tw-items-center tw-gap-1.5 tw-px-2.5 tw-py-1 tw-border tw-text-xs tw-uppercase {row.fulfilled ? 'tw-bg-[#14b8a6]/40 tw-border-[#14b8a6] tw-text-[#14b8a6]' : 'tw-bg-[#020617] tw-border-[#334155] tw-text-slate-400'}"
 							>
 								<span class="tw-font-bold">{row.playerName.split(' ')[0]}</span>
 								<span class="tw-text-[10px] tw-opacity-80">{row.progressPct}%</span>

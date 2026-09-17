@@ -30,7 +30,7 @@
 	}
 
 	function deltaClass(delta: number): string {
-		if (delta > 0) return 'tw-text-emerald-400';
+		if (delta > 0) return 'tw-text-[#14b8a6]';
 		if (delta < 0) return 'tw-text-orange-400';
 		return 'tw-text-white/30';
 	}
@@ -210,7 +210,7 @@
 			</span>
 			<span
 				class="tw-font-mono tw-font-bold tw-tabular-nums {capsule.deltaSummary.levelDelta >= 0
-					? 'tw-text-emerald-400'
+					? 'tw-text-[#14b8a6]'
 					: 'tw-text-orange-400'}"
 				style="font-size: clamp(1rem, 2vw, 1.25rem);"
 			>
@@ -237,7 +237,7 @@
 			</span>
 			<span
 				class="tw-font-mono tw-font-bold tw-tabular-nums {capsule.deltaSummary.streakDelta >= 0
-					? 'tw-text-emerald-400'
+					? 'tw-text-[#14b8a6]'
 					: 'tw-text-orange-400'}"
 				style="font-size: clamp(1rem, 2vw, 1.25rem);"
 			>

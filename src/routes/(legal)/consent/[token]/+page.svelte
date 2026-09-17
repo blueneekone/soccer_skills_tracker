@@ -24,7 +24,7 @@
 	 *   is the stronger audit trail but not the only valid path.
 	 */
 
-	import './consent.css';
+	import '$lib/styles/consent-tokens.css';
 	import { onMount } from 'svelte';
 	import { page } from '$app/state';
 	import { httpsCallable } from 'firebase/functions';

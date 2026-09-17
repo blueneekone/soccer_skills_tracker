@@ -236,7 +236,7 @@
 					</ul>
 
 					{#if checkoutPhase === 'success' && checkoutTierId === tier.id}
-						<div class="tw-w-full tw-py-3 tw-text-center tw-bg-green-500/10 tw-border tw-border-green-500/30 tw-text-green-400 tw-font-mono tw-text-xs tw-font-bold tw-tracking-widest tw-rounded-sm">
+						<div class="tw-w-full tw-py-3 tw-text-center tw-bg-[#14b8a6]/10 tw-border tw-border-green-500/30 tw-text-green-400 tw-font-mono tw-text-xs tw-font-bold tw-tracking-widest tw-rounded-sm">
 							ACTIVATED
 						</div>
 					{:else}

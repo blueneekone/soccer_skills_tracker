@@ -80,14 +80,14 @@
 						<!-- Clearance status -->
 						<td class="tw-px-4 tw-py-2.5 tw-border-t tw-border-slate-900 tw-text-[#E2E8F0] tw-whitespace-nowrap tw-min-w-0 dp-cell dp-cell--status">
 							<div class="tw-inline-flex tw-items-center tw-gap-1.5 tw-text-xs tw-font-bold tw-uppercase tw-tracking-wider
-								{status === 'cleared' ? 'tw-text-emerald-500' : status === 'flagged' ? 'tw-text-rose-500' : 'tw-text-amber-500'}">
+								{status === 'cleared' ? 'tw-text-[#14b8a6]' : status === 'flagged' ? 'tw-text-rose-500' : 'tw-text-amber-500'}">
 							{#if status === 'cleared'}
 								<Icon name="status.verified" />
 							{:else if status === 'flagged'}
 								<Icon name="status.warning-circle" />
 								{:else}
 									<span class="tw-inline-block tw-w-2 tw-h-2 tw-rounded-full tw-animate-pulse
-										{status === 'cleared' ? 'tw-bg-emerald-500' : status === 'flagged' ? 'tw-bg-rose-500' : 'tw-bg-amber-500'}"></span>
+										{status === 'cleared' ? 'tw-bg-[#14b8a6]' : status === 'flagged' ? 'tw-bg-rose-500' : 'tw-bg-amber-500'}"></span>
 								{/if}
 								{status.toUpperCase()}
 							</div>

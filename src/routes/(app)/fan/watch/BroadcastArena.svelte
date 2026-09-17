@@ -56,7 +56,7 @@
 			</div>
 
 			{#if voteStatusMsg}
-				<div class="tw-text-xs tw-font-mono tw-text-emerald-400 tw-bg-emerald-500/10 tw-border tw-border-emerald-500/20 tw-p-2 tw-rounded">
+				<div class="tw-text-xs tw-font-mono tw-text-[#14b8a6] tw-bg-[#14b8a6]/10 tw-border tw-border-[#14b8a6]/20 tw-p-2 tw-rounded">
 					{voteStatusMsg}
 				</div>
 			{/if}

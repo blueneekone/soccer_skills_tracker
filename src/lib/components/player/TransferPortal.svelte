@@ -159,7 +159,7 @@ import { functions } from '$lib/firebase.js';
 	// ── Progress step helper ──────────────────────────────────────────────────
 
 	function stepColor(n: number): string {
-		if (n < currentStep) return '#2dd4bf';
+		if (n < currentStep) return '#14b8a6';
 		if (n === currentStep) return '#14b8a6';
 		return 'rgba(20, 184, 166, 0.2)';
 	}
@@ -182,7 +182,7 @@ import { functions } from '$lib/firebase.js';
 			</div>
 		</div>
 		<div
-			class="tw-px-2.5 tw-py-1 tw-text-[10px] tw-font-bold tw-tracking-widest tw-font-mono tw-border tw-border-amber-500/40 tw-text-amber-500 tw-bg-amber-500/10 tw-rounded tw-uppercase"
+			class="tw-px-2.5 tw-py-1 tw-text-[length:clamp(0.625rem,1vw,0.75rem)] tw-font-bold tw-tracking-widest tw-font-mono tw-border tw-border-amber-500/40 tw-text-amber-500 tw-bg-amber-500/10 tw-rounded-[2px] tw-uppercase"
 		>RESTRICTED</div>
 	</div>
 
@@ -201,18 +201,18 @@ import { functions } from '$lib/firebase.js';
 						style="
 							border: 1.5px solid {stepColor(step.n)};
 							color: {stepColor(step.n)};
-							background: {step.n < currentStep ? 'rgba(45, 212, 191,0.1)' : step.n === currentStep ? 'rgba(20, 184, 166, 0.08)' : 'transparent'};
+							background: {step.n < currentStep ? 'rgba(20, 184, 166,0.1)' : step.n === currentStep ? 'rgba(20, 184, 166, 0.08)' : 'transparent'};
 							box-shadow: {step.n === currentStep ? '0 0 12px rgba(20, 184, 166, 0.3)' : 'none'};
 						"
 					>
 						{step.n < currentStep ? '✓' : step.n}
 					</div>
-					<span class="tw-text-center" style="font-size: 10px; color: {stepColor(step.n)}; letter-spacing: 0.05em;">
+					<span class="tw-text-center" style="font-size: clamp(0.625rem, 1vw, 0.75rem); color: {stepColor(step.n)}; letter-spacing: 0.05em;">
 						{step.label}
 					</span>
 				</div>
 				{#if step.n < 4}
-					<div class="tw-flex-1 tw-h-px" style="background: {step.n < currentStep ? 'rgba(45, 212, 191,0.5)' : 'rgba(20, 184, 166, 0.1)'};"></div>
+					<div class="tw-flex-1 tw-h-px" style="background: {step.n < currentStep ? 'rgba(20, 184, 166,0.5)' : 'rgba(20, 184, 166, 0.1)'};"></div>
 				{/if}
 			{/each}
 		</div>
@@ -227,16 +227,16 @@ import { functions } from '$lib/firebase.js';
 			<div
 				class="tw-w-16 tw-h-16 tw-rounded-full tw-flex tw-items-center tw-justify-center"
 				style="
-					background: rgba(45, 212, 191,0.08);
-					border: 2px solid rgba(45, 212, 191,0.6);
-					box-shadow: 0 0 40px rgba(45, 212, 191,0.2);
-					color: #2dd4bf;
+					background: rgba(20, 184, 166,0.08);
+					border: 2px solid rgba(20, 184, 166,0.6);
+					box-shadow: 0 0 40px rgba(20, 184, 166,0.2);
+					color: #14b8a6;
 				"
 			>
 				<Icon name="status.check" size={28} strokeWidth={2.5} />
 			</div>
 				<div class="tw-space-y-1">
-					<div class="tw-text-sm tw-font-bold" style="color: #2dd4bf; text-shadow: 0 0 20px rgba(45, 212, 191,0.5);">
+					<div class="tw-text-sm tw-font-bold" style="color: #14b8a6; text-shadow: 0 0 20px rgba(20, 184, 166,0.5);">
 						TRANSFER PROTOCOL COMPLETE
 					</div>
 					{#if completedResult}
@@ -251,8 +251,8 @@ import { functions } from '$lib/firebase.js';
 				</div>
 				<button
 					onclick={reset}
-					class="tw-px-5 tw-py-2 tw-text-xs tw-tracking-widest tw-transition-all tw-font-mono hover:tw-bg-[rgba(45,212,191,0.08)]"
-				style="border: 1px solid rgba(45, 212, 191,0.4); color: #2dd4bf;"
+					class="tw-px-5 tw-py-2 tw-text-xs tw-tracking-widest tw-transition-all tw-font-mono hover:tw-bg-[rgba(20, 184, 166,0.08)]"
+				style="border: 1px solid rgba(20, 184, 166,0.4); color: #14b8a6;"
 				>[ CLOSE PROTOCOL ]</button>
 			</div>
 
@@ -273,14 +273,14 @@ import { functions } from '$lib/firebase.js';
 		<!-- ── PARENT: STEP 1 — INITIATE ─────────────────────────────────── -->
 		{:else if isParent && (stage === 'idle' || stage === 'parent_initiating')}
 			<div class="tw-space-y-4">
-				<div class="tw-px-4 tw-py-3 tw-text-xs tw-leading-relaxed tw-bg-[var(--color-atompunk-amber)]/10 tw-border tw-border-[var(--color-atompunk-amber)]/30 tw-text-[var(--color-atompunk-amber)]/90 tw-rounded-md">
+				<div class="tw-px-4 tw-py-3 tw-text-xs tw-leading-relaxed tw-bg-[var(--color-atompunk-amber)]/10 tw-border tw-border-[var(--color-atompunk-amber)]/30 tw-text-[var(--color-atompunk-amber)]/90 tw-rounded-[2px]">
 					<Icon name="status.warning" size={16} class="tw-inline tw-mr-1.5 tw-align-text-bottom" />
 					ZERO-TRUST PROTOCOL: Transfers are irreversible without re-initiation.
 					Only the COPPA-verified parent account may authorize movement of player data.
 				</div>
 
 				<div class="tw-space-y-1">
-					<label class="tw-text-[10px] tw-tracking-widest tw-font-mono tw-text-slate-400 tw-uppercase">Player Email</label>
+					<label class="tw-text-[length:clamp(0.625rem,1vw,0.75rem)] tw-tracking-widest tw-font-mono tw-text-slate-400 tw-uppercase">Player Email</label>
 					<input
 						type="email"
 						bind:value={targetPlayerEmail}
@@ -306,11 +306,11 @@ import { functions } from '$lib/firebase.js';
 		<!-- ── PARENT: STEP 1 DONE — Show token + auth code entry ──────── -->
 		{:else if isParent && stage === 'parent_initiated'}
 			<div class="tw-space-y-5">
-				<div class="tw-px-4 tw-py-4 tw-space-y-2 tw-bg-data-cyan/10 tw-border tw-border-data-cyan/30 tw-rounded-md">
-					<div class="tw-text-[10px] tw-tracking-widest tw-font-mono tw-text-data-cyan/70">TRANSFER TOKEN GENERATED</div>
+				<div class="tw-px-4 tw-py-4 tw-space-y-2 tw-bg-data-cyan/10 tw-border tw-border-data-cyan/30 tw-rounded-[2px]">
+					<div class="tw-text-[length:clamp(0.625rem,1vw,0.75rem)] tw-tracking-widest tw-font-mono tw-text-data-cyan/70">TRANSFER TOKEN GENERATED</div>
 					<div class="tw-text-sm tw-font-mono tw-font-bold tw-break-all tw-text-data-cyan">{tokenId}</div>
 					{#if expiresAt}
-						<div class="tw-text-[10px] tw-text-data-cyan/60 tw-font-mono">EXPIRES: {new Date(expiresAt).toLocaleString()}</div>
+						<div class="tw-text-[length:clamp(0.625rem,1vw,0.75rem)] tw-text-data-cyan/60 tw-font-mono">EXPIRES: {new Date(expiresAt).toLocaleString()}</div>
 					{/if}
 					<div class="tw-text-xs tw-text-data-cyan/80 tw-mt-2">
 						Send this token to the receiving Club Director.<br/>
@@ -319,7 +319,7 @@ import { functions } from '$lib/firebase.js';
 				</div>
 
 				<div class="tw-space-y-1">
-					<label for="tp-auth-code" class="tw-text-[10px] tw-tracking-widest tw-font-mono tw-text-slate-400 tw-uppercase">Enter Auth Code (from email)</label>
+					<label for="tp-auth-code" class="tw-text-[length:clamp(0.625rem,1vw,0.75rem)] tw-tracking-widest tw-font-mono tw-text-slate-400 tw-uppercase">Enter Auth Code (from email)</label>
 					<input
 						id="tp-auth-code"
 						type="text"
@@ -349,14 +349,14 @@ import { functions } from '$lib/firebase.js';
 		<!-- ── DIRECTOR: STEP 2 — Enter token ────────────────────────────── -->
 		{:else if isDirector && (stage === 'idle' || stage === 'director_entering')}
 			<div class="tw-space-y-5">
-				<div class="tw-px-4 tw-py-3 tw-text-xs tw-leading-relaxed tw-bg-[var(--color-navy-slate)] tw-border tw-border-[var(--color-structural-grey)] tw-text-[var(--text-secondary)] tw-rounded-md">
+				<div class="tw-px-4 tw-py-3 tw-text-xs tw-leading-relaxed tw-bg-[var(--color-navy-slate)] tw-border tw-border-[var(--color-structural-grey)] tw-text-[var(--text-secondary)] tw-rounded-[2px]">
 					<Icon name="status.info" size={16} class="tw-inline tw-mr-1.5 tw-align-text-bottom tw-text-slate-400" />
 					Obtain the Transfer Token from the player's parent account, then enter it below.
 					The parent will receive a cryptographic auth code to confirm the transfer.
 				</div>
 
 				<div class="tw-space-y-1">
-					<label for="tp-dir-token" class="tw-text-[10px] tw-tracking-widest tw-font-mono tw-text-slate-400 tw-uppercase">Transfer Token</label>
+					<label for="tp-dir-token" class="tw-text-[length:clamp(0.625rem,1vw,0.75rem)] tw-tracking-widest tw-font-mono tw-text-slate-400 tw-uppercase">Transfer Token</label>
 					<textarea
 						id="tp-dir-token"
 						bind:value={directorTokenInput}
@@ -383,8 +383,8 @@ import { functions } from '$lib/firebase.js';
 		{:else if isDirector && stage === 'director_accepted'}
 			{#if directorResult}
 				<div class="tw-space-y-4">
-					<div class="tw-px-4 tw-py-4 tw-bg-data-cyan/10 tw-border tw-border-data-cyan/30 tw-rounded-md">
-						<div class="tw-text-[10px] tw-tracking-widest tw-font-mono tw-font-bold tw-text-data-cyan tw-mb-2">TOKEN ACCEPTED</div>
+					<div class="tw-px-4 tw-py-4 tw-bg-data-cyan/10 tw-border tw-border-data-cyan/30 tw-rounded-[2px]">
+						<div class="tw-text-[length:clamp(0.625rem,1vw,0.75rem)] tw-tracking-widest tw-font-mono tw-font-bold tw-text-data-cyan tw-mb-2">TOKEN ACCEPTED</div>
 						<div class="tw-text-xs tw-space-y-1 tw-text-data-cyan/70 tw-font-mono">
 							<div>PLAYER: <span class="tw-text-data-cyan tw-font-bold">{directorResult.playerName}</span></div>
 							<div>DESTINATION: <span class="tw-text-data-cyan tw-font-bold">{directorResult.destinationClubName}</span></div>
@@ -421,10 +421,10 @@ import { functions } from '$lib/firebase.js';
 
 	<!-- ── Footer ─────────────────────────────────────────────────────────── -->
 	<div class="tw-px-5 tw-py-3 tw-flex tw-items-center tw-justify-between tw-bg-[var(--color-void-black)] tw-border-t tw-border-[var(--color-structural-grey)]">
-		<span class="tw-text-[10px] tw-font-mono tw-text-slate-500 tw-tracking-widest">
+		<span class="tw-text-[length:clamp(0.625rem,1vw,0.75rem)] tw-font-mono tw-text-slate-500 tw-tracking-widest">
 			COPPA-VERIFIED · HMAC-SHA256 · 48H TOKEN TTL
 		</span>
-		<span class="tw-text-[10px] tw-font-mono tw-text-slate-500 tw-tracking-widest">
+		<span class="tw-text-[length:clamp(0.625rem,1vw,0.75rem)] tw-font-mono tw-text-slate-500 tw-tracking-widest">
 			VANGUARD NEXUS v4
 		</span>
 	</div>

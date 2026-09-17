@@ -130,7 +130,7 @@
 				<button
 					type="button"
 					onclick={() => handleStatClick('GOAL')}
-					class="tw-flex tw-flex-col tw-items-center tw-justify-center tw-h-16 tw-p-2 tw-bg-emerald-950/40 tw-border tw-border-emerald-500/80 tw-text-emerald-300 hover:tw-bg-emerald-500 hover:tw-text-black tw-transition-all active:tw-scale-95 group tw-cursor-pointer"
+					class="tw-flex tw-flex-col tw-items-center tw-justify-center tw-h-16 tw-p-2 tw-bg-[#14b8a6]/40 tw-border tw-border-[#14b8a6]/80 tw-text-[#14b8a6] hover:tw-bg-[#14b8a6] hover:tw-text-black tw-transition-all active:tw-scale-95 group tw-cursor-pointer"
 					style="border-radius: 0px;"
 				>
 					<span class="tw-font-mono tw-text-xs tw-font-black tw-tracking-wider group-hover:tw-text-black">+ GOAL</span>
@@ -260,7 +260,7 @@
 						style="border-radius: 0px;"
 					>
 						<div class="tw-flex tw-items-center tw-gap-2.5">
-							<span class="tw-w-1.5 tw-h-1.5 {evt.type === 'GOAL' ? 'tw-bg-emerald-400' : evt.type.includes('CARD') ? 'tw-bg-amber-400' : evt.type === 'SUB' ? 'tw-bg-[#14b8a6]' : 'tw-bg-rose-400'}"></span>
+							<span class="tw-w-1.5 tw-h-1.5 {evt.type === 'GOAL' ? 'tw-bg-[#14b8a6]' : evt.type.includes('CARD') ? 'tw-bg-amber-400' : evt.type === 'SUB' ? 'tw-bg-[#14b8a6]' : 'tw-bg-rose-400'}"></span>
 							<span class="tw-font-mono tw-text-xs tw-text-white tw-font-bold">{evt.label}</span>
 						</div>
 						<span class="tw-font-mono tw-text-[10px] tw-text-[#14b8a6] tw-bg-[#000000] tw-px-2 tw-py-0.5 tw-border tw-border-[#334155]">
@@ -325,7 +325,7 @@
 				</div>
 				<div class="tw-flex tw-justify-between tw-items-center tw-p-2 tw-bg-[#000000] tw-border tw-border-[#334155]">
 					<span class="tw-text-slate-400">LIGHTNING PROXIMITY:</span>
-					<span class="tw-font-bold {engine.lightningDistance < 6 ? 'tw-text-rose-400' : engine.lightningDistance <= 10 ? 'tw-text-amber-400' : 'tw-text-emerald-400'}">
+					<span class="tw-font-bold {engine.lightningDistance < 6 ? 'tw-text-rose-400' : engine.lightningDistance <= 10 ? 'tw-text-amber-400' : 'tw-text-[#14b8a6]'}">
 						{engine.lightningDistance} MILES
 					</span>
 				</div>
@@ -377,7 +377,7 @@
 						<h3 class="tw-font-mono tw-text-xs tw-font-bold tw-text-[#14b8a6] tw-uppercase tw-tracking-wider tw-m-0">
 							Active Lineup on Pitch ({engine.starters.length})
 						</h3>
-						<span class="tw-font-mono tw-text-[10px] tw-text-emerald-400 tw-font-bold">● IN PLAY</span>
+						<span class="tw-font-mono tw-text-[10px] tw-text-[#14b8a6] tw-font-bold">● IN PLAY</span>
 					</div>
 					<div class="tw-flex tw-flex-col tw-gap-2">
 						{#each engine.starters as player (player.id)}
@@ -437,7 +437,7 @@
 								<div class="tw-flex tw-items-center tw-gap-2">
 									<button
 										type="button"
-										class="tw-px-2.5 tw-py-1 tw-bg-emerald-950/40 tw-border tw-border-emerald-500/60 tw-text-emerald-300 hover:tw-bg-emerald-500 hover:tw-text-black tw-font-mono tw-text-[10px] tw-font-bold tw-transition-colors"
+										class="tw-px-2.5 tw-py-1 tw-bg-[#14b8a6]/40 tw-border tw-border-[#14b8a6]/60 tw-text-[#14b8a6] hover:tw-bg-[#14b8a6] hover:tw-text-black tw-font-mono tw-text-[10px] tw-font-bold tw-transition-colors"
 										onclick={() => engine.moveToStarters(player.id)}
 									>
 										↗ SUB IN

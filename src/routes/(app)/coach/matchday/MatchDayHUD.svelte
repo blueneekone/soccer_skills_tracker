@@ -130,8 +130,8 @@
 				<div class="tw-font-mono tw-text-[10px] tw-text-slate-400 tw-uppercase tw-tracking-widest">GAME CLOCK</div>
 				<div class="tw-font-mono tw-text-2xl sm:tw-text-3xl tw-font-black tw-text-[#fbbf24] tw-tabular-nums tw-tracking-tight">{matchClockDisplay}</div>
 			</div>
-			<div class="tw-flex tw-items-center tw-gap-1.5 tw-px-2.5 tw-py-1 tw-border tw-font-mono tw-text-[10px] tw-uppercase tw-tracking-wider {engine.matchStatus === 'running' ? 'tw-bg-emerald-950/60 tw-border-emerald-500/80 tw-text-emerald-400 tw-animate-pulse' : engine.matchStatus === 'paused' ? 'tw-bg-amber-950/60 tw-border-amber-500/80 tw-text-amber-400' : engine.matchStatus === 'ended' ? 'tw-bg-slate-900 tw-border-slate-700 tw-text-slate-400' : 'tw-bg-slate-900/80 tw-border-slate-700 tw-text-[#fbbf24]'}">
-				<span class="tw-w-1.5 tw-h-1.5 {engine.matchStatus === 'running' ? 'tw-bg-emerald-400' : engine.matchStatus === 'paused' ? 'tw-bg-amber-400' : engine.matchStatus === 'ended' ? 'tw-bg-slate-400' : 'tw-bg-[#fbbf24]'}"></span>
+			<div class="tw-flex tw-items-center tw-gap-1.5 tw-px-2.5 tw-py-1 tw-border tw-font-mono tw-text-[10px] tw-uppercase tw-tracking-wider {engine.matchStatus === 'running' ? 'tw-bg-[#14b8a6]/60 tw-border-[#14b8a6]/80 tw-text-[#14b8a6] tw-animate-pulse' : engine.matchStatus === 'paused' ? 'tw-bg-amber-950/60 tw-border-amber-500/80 tw-text-amber-400' : engine.matchStatus === 'ended' ? 'tw-bg-slate-900 tw-border-slate-700 tw-text-slate-400' : 'tw-bg-slate-900/80 tw-border-slate-700 tw-text-[#fbbf24]'}">
+				<span class="tw-w-1.5 tw-h-1.5 {engine.matchStatus === 'running' ? 'tw-bg-[#14b8a6]' : engine.matchStatus === 'paused' ? 'tw-bg-amber-400' : engine.matchStatus === 'ended' ? 'tw-bg-slate-400' : 'tw-bg-[#fbbf24]'}"></span>
 				{engine.matchStatus === 'running' ? 'LIVE' : engine.matchStatus === 'paused' ? 'PAUSED' : engine.matchStatus === 'ended' ? 'FINAL' : 'PRE-MATCH'}
 			</div>
 		</div>
@@ -168,7 +168,7 @@
 				<button
 					type="button"
 					onclick={() => engine.resumeMatch()}
-					class="tw-inline-flex tw-items-center tw-justify-center tw-bg-emerald-500/20 tw-text-emerald-300 tw-border tw-border-emerald-500 tw-font-mono tw-font-bold tw-text-xs tw-px-4 tw-h-10 tw-uppercase hover:tw-bg-emerald-500 hover:tw-text-black tw-transition-all active:tw-scale-95"
+					class="tw-inline-flex tw-items-center tw-justify-center tw-bg-[#14b8a6]/20 tw-text-[#14b8a6] tw-border tw-border-[#14b8a6] tw-font-mono tw-font-bold tw-text-xs tw-px-4 tw-h-10 tw-uppercase hover:tw-bg-[#14b8a6] hover:tw-text-black tw-transition-all active:tw-scale-95"
 					style="border-radius: 0px;"
 				>
 					▶ RESUME
@@ -302,7 +302,7 @@
 				<div class="tw-mt-3 tw-flex tw-gap-1.5">
 					<button class="tw-text-[10px] tw-font-mono tw-bg-slate-800 tw-border tw-border-slate-700 tw-text-slate-300 tw-px-2 tw-py-1 hover:tw-border-amber-400" onclick={() => engine.simulateLightning(8.5)} style="border-radius: 0px;">Sim 8.5m</button>
 					<button class="tw-text-[10px] tw-font-mono tw-bg-slate-800 tw-border tw-border-slate-700 tw-text-slate-300 tw-px-2 tw-py-1 hover:tw-border-rose-400" onclick={() => engine.simulateLightning(5.2)} style="border-radius: 0px;">Sim 5.2m</button>
-					<button class="tw-text-[10px] tw-font-mono tw-bg-slate-800 tw-border tw-border-slate-700 tw-text-slate-300 tw-px-2 tw-py-1 hover:tw-border-emerald-400" onclick={() => engine.simulateLightning(20)} style="border-radius: 0px;">Clear</button>
+					<button class="tw-text-[10px] tw-font-mono tw-bg-slate-800 tw-border tw-border-slate-700 tw-text-slate-300 tw-px-2 tw-py-1 hover:tw-border-[#14b8a6]" onclick={() => engine.simulateLightning(20)} style="border-radius: 0px;">Clear</button>
 				</div>
 			</div>
 

@@ -278,7 +278,7 @@
 			</h4>
 			<p class="tw-m-0 tw-mt-1 tw-text-[11px] tw-leading-relaxed tw-text-slate-500">
 				Live logistics matrix ·
-				<code class="tw-rounded tw-bg-black/50 tw-px-1 tw-py-0.5 tw-font-mono tw-text-[10px] tw-text-emerald-400/85"
+				<code class="tw-rounded tw-bg-black/50 tw-px-1 tw-py-0.5 tw-font-mono tw-text-[10px] tw-text-[#14b8a6]/85"
 					>deployment_calendar_entries</code
 				>
 			</p>
@@ -286,7 +286,7 @@
 		{#if canManage}
 			<button
 				type="button"
-				class="tw-inline-flex tw-shrink-0 tw-items-center tw-gap-2 tw-rounded-none tw-border tw-border-emerald-500/40 tw-bg-emerald-950/35 tw-px-3 tw-py-2 tw-text-[10px] tw-font-bold tw-uppercase tw-tracking-wider tw-text-emerald-300 tw-shadow-[0_0_20px_rgba(52,211,153,0.12)] tw-transition hover:tw-border-emerald-400/60 hover:tw-bg-emerald-950/60 hover:tw-shadow-[0_0_28px_rgba(52,211,153,0.18)]"
+				class="tw-inline-flex tw-shrink-0 tw-items-center tw-gap-2 tw-rounded-none tw-border tw-border-[#14b8a6]/40 tw-bg-[#14b8a6]/35 tw-px-3 tw-py-2 tw-text-[10px] tw-font-bold tw-uppercase tw-tracking-wider tw-text-[#14b8a6] tw-shadow-[0_0_20px_rgba(52,211,153,0.12)] tw-transition hover:tw-border-[#14b8a6]/60 hover:tw-bg-[#14b8a6]/60 hover:tw-shadow-[0_0_28px_rgba(52,211,153,0.18)]"
 				onclick={openModal}
 			>
 				<Icon name="status.circle-plus" />
@@ -340,10 +340,10 @@
 						<span class={kindBadgeClass(row.kind)}>{kindLabel(row.kind)}</span>
 						{#if row.facilityId}
 							<span
-								class="tw-inline-flex tw-items-center tw-gap-1 tw-rounded-none tw-border tw-border-emerald-500/25 tw-bg-emerald-950/40 tw-px-2 tw-py-0.5 tw-font-semibold tw-normal-case tw-tracking-normal tw-text-emerald-300/95"
+								class="tw-inline-flex tw-items-center tw-gap-1 tw-rounded-none tw-border tw-border-[#14b8a6]/25 tw-bg-[#14b8a6]/40 tw-px-2 tw-py-0.5 tw-font-semibold tw-normal-case tw-tracking-normal tw-text-[#14b8a6]/95"
 								title={facilityLabel(row.facilityId)}
 							>
-							<Icon name="sys.map-pin" class="tw-text-emerald-400/90" />
+							<Icon name="sys.map-pin" class="tw-text-[#14b8a6]/90" />
 							{facilityLabel(row.facilityId)}
 							</span>
 						{/if}
@@ -567,7 +567,7 @@
 					</button>
 					<button
 						type="button"
-						class="tw-inline-flex tw-items-center tw-gap-1.5 tw-rounded-none tw-border tw-border-emerald-500/40 tw-bg-emerald-950/50 tw-px-4 tw-py-2 tw-text-xs tw-font-black tw-uppercase tw-tracking-wide tw-text-emerald-300 hover:tw-bg-emerald-950 disabled:tw-opacity-50"
+						class="tw-inline-flex tw-items-center tw-gap-1.5 tw-rounded-none tw-border tw-border-[#14b8a6]/40 tw-bg-[#14b8a6]/50 tw-px-4 tw-py-2 tw-text-xs tw-font-black tw-uppercase tw-tracking-wide tw-text-[#14b8a6] hover:tw-bg-[#14b8a6] disabled:tw-opacity-50"
 						disabled={saving}
 						onclick={() => void submitDeployment()}
 					>

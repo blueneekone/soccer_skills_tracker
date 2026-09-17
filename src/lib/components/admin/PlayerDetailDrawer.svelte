@@ -149,7 +149,7 @@
 					</div>
 					<div class="tw-flex tw-justify-between tw-items-center">
 						<span class="tw-text-sm tw-text-[#D4D4D8]">Status</span>
-						<span class="tw-font-mono tw-[font-variant-numeric:tabular-nums] tw-text-[10px] tw-uppercase {enterprisePlayerDrawer.selected.status === 'active' ? 'tw-text-emerald-400' : 'tw-text-amber-400'}">
+						<span class="tw-font-mono tw-[font-variant-numeric:tabular-nums] tw-text-[10px] tw-uppercase {enterprisePlayerDrawer.selected.status === 'active' ? 'tw-text-[#14b8a6]' : 'tw-text-amber-400'}">
 							{enterprisePlayerDrawer.selected.status}
 						</span>
 					</div>

@@ -43,7 +43,7 @@
 				return 'tw-bg-amber-500/15 tw-text-amber-500 tw-border-amber-500/40';
 			case 'verified':
 			case 'paid':
-				return 'tw-bg-emerald-500/20 tw-text-emerald-400 tw-border-emerald-500/40';
+				return 'tw-bg-[#14b8a6]/20 tw-text-[#14b8a6] tw-border-[#14b8a6]/40';
 			case 'failed':
 				return 'tw-bg-red-500/20 tw-text-red-400 tw-border-red-500/40';
 			case 'expired':
@@ -106,7 +106,7 @@
 						<p class="tw-text-white tw-font-bold tw-text-sm">{engine.fundingSource?.label || 'Active Source'}</p>
 						<p class="tw-text-slate-400 tw-text-xs tw-font-mono">Method: {engine.fundingSource?.method || 'N/A'}</p>
 					</div>
-					<div class="tw-px-3 tw-py-1 tw-bg-emerald-500/10 tw-border tw-border-emerald-500/30 tw-text-emerald-400 tw-rounded-none tw-text-xs tw-font-mono tw-font-bold tw-flex tw-items-center tw-gap-1.5">
+					<div class="tw-px-3 tw-py-1 tw-bg-[#14b8a6]/10 tw-border tw-border-[#14b8a6]/30 tw-text-[#14b8a6] tw-rounded-none tw-text-xs tw-font-mono tw-font-bold tw-flex tw-items-center tw-gap-1.5">
 						<Icon name={"status.seal-check" as IconName} size={14} />
 						<span>VERIFIED</span>
 					</div>

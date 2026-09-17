@@ -74,7 +74,7 @@
 
 	/* ─── Panel ─────────────────────────────────────────────────────────────── */
 	.cv-panel {
-		background: #0B0F19;
+		background: #0f172a;
 		border: 1px solid rgba(20, 184, 166, 0.14);
 		border-radius: 16px;
 		box-shadow:
@@ -183,15 +183,15 @@
 	.cv-btn__icon { font-size: 0.75rem; }
 
 	.cv-btn--grant {
-		background: linear-gradient(135deg, rgba(45, 212, 191, 0.15), rgba(0, 200, 100, 0.08));
-		border: 1px solid rgba(45, 212, 191, 0.45);
-		color: #2dd4bf;
+		background: #fbbf24;
+		border: 1px solid rgba(251, 191, 36, 0.45);
+		color: #000000;
 	}
 
 	.cv-btn--grant:hover:not(:disabled) {
-		background: linear-gradient(135deg, rgba(45, 212, 191, 0.22), rgba(0, 200, 100, 0.14));
-		border-color: rgba(45, 212, 191, 0.7);
-		box-shadow: 0 0 20px rgba(45, 212, 191, 0.18), 0 4px 16px rgba(0, 0, 0, 0.4);
+		background: rgba(251, 191, 36, 0.9);
+		border-color: rgba(251, 191, 36, 0.7);
+		box-shadow: 0 0 20px rgba(251, 191, 36, 0.18), 0 4px 16px rgba(0, 0, 0, 0.4);
 		transform: translateY(-1px);
 	}
 

@@ -145,7 +145,7 @@
 			<p class="tw-mb-2 tw-text-sm tw-text-red-300" role="alert">{err}</p>
 		{/if}
 		{#if ok}
-			<p class="tw-mb-2 tw-text-sm tw-text-emerald-300" role="status">{ok}</p>
+			<p class="tw-mb-2 tw-text-sm tw-text-[#14b8a6]" role="status">{ok}</p>
 		{/if}
 
 		<button

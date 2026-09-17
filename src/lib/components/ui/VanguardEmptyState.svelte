@@ -120,7 +120,7 @@
 		position: absolute;
 		inset: 0;
 		background-image:
-			radial-gradient(circle, rgba(0,255,255,0.12) 1px, transparent 1px);
+			radial-gradient(circle, rgba(20,184,166,0.12) 1px, transparent 1px);
 		background-size: 20px 20px;
 		mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black, transparent);
 		pointer-events: none;
@@ -132,7 +132,7 @@
 		font-family: 'Geist Mono', 'Space Mono', ui-monospace, monospace;
 		font-size: 9px;
 		letter-spacing: 0.12em;
-		color: rgba(0, 255, 255, 0.18);
+		color: rgba(20, 184, 166, 0.18);
 		pointer-events: none;
 	}
 	.ves-corner--tl { top: 10px; left: 12px; }
@@ -152,11 +152,11 @@
 	/* Diamond icon — pulsing glow */
 	.ves-icon {
 		animation: ves-pulse 3s ease-in-out infinite;
-		filter: drop-shadow(0 0 8px rgba(0, 255, 255, 0.3));
+		filter: drop-shadow(0 0 8px rgba(20, 184, 166, 0.3));
 	}
 	@keyframes ves-pulse {
-		0%, 100% { opacity: 0.6; filter: drop-shadow(0 0 6px rgba(0, 255, 255, 0.25)); }
-		50%       { opacity: 1;   filter: drop-shadow(0 0 18px rgba(0, 255, 255, 0.55)); }
+		0%, 100% { opacity: 0.6; filter: drop-shadow(0 0 6px rgba(20, 184, 166, 0.25)); }
+		50%       { opacity: 1;   filter: drop-shadow(0 0 18px rgba(20, 184, 166, 0.55)); }
 	}
 
 	/* Title */
@@ -166,8 +166,8 @@
 		font-size: 12px;
 		font-weight: 700;
 		letter-spacing: 0.2em;
-		color: rgba(0, 255, 255, 0.85);
-		text-shadow: 0 0 18px rgba(0, 255, 255, 0.35);
+		color: rgba(20, 184, 166, 0.85);
+		text-shadow: 0 0 18px rgba(20, 184, 166, 0.35);
 		white-space: nowrap;
 	}
 
@@ -175,7 +175,7 @@
 	.ves-cursor {
 		display: inline-block;
 		width: 8px;
-		color: rgba(0, 255, 255, 0.9);
+		color: rgba(20, 184, 166, 0.9);
 		transition: opacity 0.05s;
 	}
 	.ves-cursor--hidden { opacity: 0; }
@@ -186,7 +186,7 @@
 		font-family: 'Geist Mono', 'Space Mono', ui-monospace, monospace;
 		font-size: 10px;
 		letter-spacing: 0.15em;
-		color: rgba(0, 255, 255, 0.35);
+		color: rgba(20, 184, 166, 0.35);
 		max-width: 320px;
 	}
 
@@ -201,8 +201,8 @@
 		font-weight: 700;
 		letter-spacing: 0.2em;
 		color: #14b8a6;
-		background: rgba(0, 255, 255, 0.07);
-		border: 1px solid rgba(0, 255, 255, 0.35);
+		background: rgba(20, 184, 166, 0.07);
+		border: 1px solid rgba(20, 184, 166, 0.35);
 		border-radius: 2px;
 		text-decoration: none;
 		cursor: pointer;
@@ -210,8 +210,8 @@
 	}
 	.ves-cta:hover,
 	.ves-cta:focus-visible {
-		background: rgba(0, 255, 255, 0.14);
-		box-shadow: 0 0 16px rgba(0, 255, 255, 0.2);
+		background: rgba(20, 184, 166, 0.14);
+		box-shadow: 0 0 16px rgba(20, 184, 166, 0.2);
 		outline: none;
 	}
 </style>

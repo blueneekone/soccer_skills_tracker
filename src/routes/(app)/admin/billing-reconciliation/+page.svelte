@@ -62,7 +62,7 @@
                         <td class="tw-px-4 tw-py-4 tw-font-mono tw-text-sm">{row.clubId}</td>
                         <td class="tw-px-4 tw-py-4 tw-font-bold">{row.name}</td>
                         <td class="tw-px-4 tw-py-4 tw-font-mono">{row.activeSeats}</td>
-                        <td class="tw-px-4 tw-py-4 tw-font-mono {row.activeSeats !== row.stripeSeats ? 'tw-text-red-500' : 'tw-text-green-500'}">
+                        <td class="tw-px-4 tw-py-4 tw-font-mono {row.activeSeats !== row.stripeSeats ? 'tw-text-red-500' : 'tw-text-[#14b8a6]'}">
                             {row.stripeSeats}
                         </td>
                         <td class="tw-px-4 tw-py-4">

@@ -167,7 +167,7 @@
 	}
 
 	function statusColor(s: PaymentDisplayStatus): string {
-		if (s === 'paid') return 'tw-text-emerald-400';
+		if (s === 'paid') return 'tw-text-[#14b8a6]';
 		if (s === 'partial') return 'tw-text-sky-400';
 		if (s === 'pending' || s === 'processing') return 'tw-text-amber-400';
 		if (s === 'failed') return 'tw-text-red-400';
@@ -354,7 +354,7 @@
 									</span>
 									<span
 										class={item.status === 'paid'
-											? 'tw-text-emerald-400'
+											? 'tw-text-[#14b8a6]'
 											: item.status === 'overdue'
 												? 'tw-text-red-400'
 												: item.status === 'due'

@@ -67,9 +67,9 @@
 				</header>
 
 				{#if isVpcTriggered}
-					<div class="tw-bg-emerald-900/20 tw-border tw-border-emerald-500/30 tw-rounded-[24px] tw-p-6 tw-text-center">
-						<h2 class="tw-text-emerald-400 tw-font-bold tw-text-lg tw-mb-2">VPC Verification Triggered</h2>
-						<p class="tw-text-emerald-200/70 tw-text-sm">
+					<div class="tw-bg-[#14b8a6]/20 tw-border tw-border-[#14b8a6]/30 tw-rounded-[24px] tw-p-6 tw-text-center">
+						<h2 class="tw-text-[#14b8a6] tw-font-bold tw-text-lg tw-mb-2">VPC Verification Triggered</h2>
+						<p class="tw-text-[#14b8a6]/70 tw-text-sm">
 							Please check your email to complete the Verifiable Parental Consent process.
 						</p>
 					</div>

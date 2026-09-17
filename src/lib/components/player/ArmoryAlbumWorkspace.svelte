@@ -154,7 +154,7 @@
 									<p class="qa-mono tw-m-0 tw-mt-1 tw-text-[0.6rem] tw-uppercase tw-tracking-wider tw-text-cyan-300/85 tw-font-mono">
 										{card.rarity}
 										<span class="tw-text-slate-500"> · </span>
-										<span class="tw-text-emerald-300/90">{formatVariantLabel(card.variant)}</span>
+										<span class="tw-text-[#14b8a6]/90">{formatVariantLabel(card.variant)}</span>
 									</p>
 								</div>
 							</article>

@@ -55,7 +55,7 @@
 			<!-- Left: Identity & Squad Anchor -->
 			<div class="tw-flex tw-items-center tw-gap-3">
 				<div class="tw-flex tw-items-center tw-gap-2">
-					<div class="tw-h-2.5 tw-w-2.5 tw-rounded-full tw-bg-emerald-400 tw-shadow-[0_0_10px_rgba(52,211,153,0.6)]"></div>
+					<div class="tw-h-2.5 tw-w-2.5 tw-rounded-full tw-bg-[#14b8a6] tw-shadow-[0_0_10px_rgba(52,211,153,0.6)]"></div>
 					<span class="tw-font-mono tw-font-black tw-text-base tw-tracking-widest tw-text-white">
 						THE FORGE
 					</span>

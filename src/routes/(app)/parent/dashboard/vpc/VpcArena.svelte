@@ -24,7 +24,7 @@
 	{/if}
 
 	{#if engine.success}
-		<div class="tw-p-4 tw-rounded-xl tw-bg-emerald-950/30 tw-border tw-border-emerald-500/30 tw-flex tw-items-center tw-gap-2">
+		<div class="tw-p-4 tw-rounded-xl tw-bg-[#14b8a6]/30 tw-border tw-border-[#14b8a6]/30 tw-flex tw-items-center tw-gap-2">
 			<Icon name={"status.seal-check" as IconName} size={18} class="tw-text-amber-500" />
 			<p class="tw-text-sm tw-text-amber-500 tw-font-mono tw-font-bold">Biometric VPC Registration Complete</p>
 		</div>

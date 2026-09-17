@@ -111,7 +111,7 @@
 <div class="tw-w-full">
   {#if ingestResult}
     <div class="tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-p-6 tw-rounded-lg tw-flex tw-items-center tw-gap-4 tw-mb-8">
-      <CheckCircle strokeWidth={1.5} class="tw-w-8 tw-h-8 tw-text-green-500" />
+      <CheckCircle strokeWidth={1.5} class="tw-w-8 tw-h-8 tw-text-[#14b8a6]" />
       <div>
         <h3 class="tw-text-[#FAFAFA] tw-font-bold">Ingestion Complete</h3>
         <p class="tw-text-[#A1A1AA]">Successfully ingested {ingestResult.ingested} records.</p>

@@ -131,7 +131,7 @@
 											ID: {item.club.id}
 										</span>
 									</div>
-									<span class="tw-font-mono tw-text-[10px] tw-px-2 tw-py-0.5 tw-bg-emerald-950/80 tw-text-emerald-400 tw-border tw-border-emerald-800/50 tw-uppercase">
+									<span class="tw-font-mono tw-text-[10px] tw-px-2 tw-py-0.5 tw-bg-[#14b8a6]/80 tw-text-[#14b8a6] tw-border tw-border-[#14b8a6]/50 tw-uppercase">
 										Active Organization
 									</span>
 								</div>
@@ -184,7 +184,7 @@
 					<div class="tw-bg-slate-950/70 tw-p-3 tw-border tw-border-slate-800 tw-mb-4">
 						<div class="tw-flex tw-items-center tw-justify-between tw-mb-1">
 							<span class="tw-font-mono tw-text-[11px] tw-text-slate-400">STATUS</span>
-							<span class="tw-font-mono tw-text-[11px] tw-font-bold {authStore.isCleared ? 'tw-text-emerald-400' : 'tw-text-amber-400'} tw-uppercase">
+							<span class="tw-font-mono tw-text-[11px] tw-font-bold {authStore.isCleared ? 'tw-text-[#14b8a6]' : 'tw-text-amber-400'} tw-uppercase">
 								{authStore.isCleared ? 'VERIFIED CLEARED' : 'PENDING CLEARANCE'}
 							</span>
 						</div>

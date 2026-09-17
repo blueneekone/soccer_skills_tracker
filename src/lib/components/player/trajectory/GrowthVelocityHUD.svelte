@@ -35,13 +35,13 @@
 		switch (gviTier) {
 			case 'BREAKOUT':
 				return {
-					badgeBg: 'tw-bg-emerald-500/15',
-					badgeBorder: 'tw-border-emerald-500/40',
-					badgeText: 'tw-text-emerald-400',
+					badgeBg: 'tw-bg-[#14b8a6]/15',
+					badgeBorder: 'tw-border-[#14b8a6]/40',
+					badgeText: 'tw-text-[#14b8a6]',
 					glow: 'tw-shadow-[0_0_20px_rgba(52,211,153,0.2)]',
-					barCurrent: 'tw-bg-emerald-400',
+					barCurrent: 'tw-bg-[#14b8a6]',
 					barCurrentGlow: 'tw-shadow-[0_0_6px_rgba(52,211,153,0.7)]',
-					valueColor: 'tw-text-emerald-400',
+					valueColor: 'tw-text-[#14b8a6]',
 				};
 			case 'CLIMBING':
 				return {

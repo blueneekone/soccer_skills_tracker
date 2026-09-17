@@ -27,32 +27,11 @@ const START_TIME = Date.now();
 
 const SPRINT_QUEUE = [
   {
-    "id": "sprint-3.5-tremendous",
-    "name": "sprint-3.5-tremendous",
-    "sessionId": null,
-    "workflowFile": ".agents/workflows/jules-builds/sprint-3.5-tremendous.md",
-    "dispatched": false
-  },
-  {
-    "id": "sprint-5.2",
-    "name": "sprint-5.2",
-    "sessionId": null,
-    "workflowFile": ".agents/workflows/jules-builds/sprint-5.2.md",
-    "dispatched": false
-  },
-  {
-    "id": "sprint-5.3",
-    "name": "sprint-5.3",
-    "sessionId": null,
-    "workflowFile": ".agents/workflows/jules-builds/sprint-5.3.md",
-    "dispatched": false
-  },
-  {
     "id": "sprint-r8",
     "name": "sprint-r8",
-    "sessionId": null,
+    "sessionId": "12511209801158717737",
     "workflowFile": ".agents/workflows/jules-builds/sprint-r8.md",
-    "dispatched": false
+    "dispatched": true
   },
   {
     "id": "sprint-r2",

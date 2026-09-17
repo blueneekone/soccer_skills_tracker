@@ -148,7 +148,7 @@
 					'unlocked' ?
 						dossierMode ?
 							'opp-node--unlocked-dossier tw-opacity-50'
-						:	'tw-bg-slate-800 tw-border-emerald-500/30 tw-opacity-50'
+						:	'tw-bg-slate-800 tw-border-[#14b8a6]/30 tw-opacity-50'
 					: state === 'current' ?
 						dossierMode ?
 							'opp-node--current-dossier tw-relative tw-z-[2] tw-opacity-100'
@@ -174,7 +174,7 @@
 					</div>
 
 					{#if state === 'unlocked'}
-						<Icon name={"status.verified" as IconName} size={20} class="tw-text-emerald-400/90" aria-hidden="true" />
+						<Icon name={"status.verified" as IconName} size={20} class="tw-text-[#14b8a6]/90" aria-hidden="true" />
 						<span class="tw-sr-only">Cleared</span>
 					{:else if state === 'current'}
 						<span

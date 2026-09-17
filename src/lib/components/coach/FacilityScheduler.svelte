@@ -195,7 +195,7 @@
 			{#if isChecking}
 				<span class="tw-text-xs tw-font-bold tw-text-[#14b8a6] tw-animate-pulse">PROBING SENSORS…</span>
 			{:else if availStatus === 'available'}
-				<span class="tw-text-xs tw-font-bold tw-text-emerald-400 tw-bg-emerald-950/60 tw-border tw-border-emerald-500 tw-px-2.5 tw-py-1">
+				<span class="tw-text-xs tw-font-bold tw-text-[#14b8a6] tw-bg-[#14b8a6]/60 tw-border tw-border-[#14b8a6] tw-px-2.5 tw-py-1">
 					● AVAILABLE · CLEAR TO BOOK
 				</span>
 			{:else if availStatus === 'conflict'}
@@ -352,7 +352,7 @@
 		</div>
 	{/if}
 	{#if bookSuccess}
-		<div class="tw-p-3 tw-bg-emerald-950/60 tw-border tw-border-emerald-500 tw-text-emerald-300 tw-text-xs tw-font-bold">
+		<div class="tw-p-3 tw-bg-[#14b8a6]/60 tw-border tw-border-[#14b8a6] tw-text-[#14b8a6] tw-text-xs tw-font-bold">
 			✓ BOOKING CONFIRMED · RESERVATION ID: {bookSuccess.slice(0, 8).toUpperCase()}
 		</div>
 	{/if}
