@@ -494,7 +494,7 @@
 			{:else if (authStore.isAuthenticated && (authStore.isProfileComplete || authStore.role === 'admin' || authStore.role === 'global_admin' || authStore.role === 'super_admin') && routeGuardResolved && !holdShellForConsent)}
 				<ImpersonationGuard>
 					<LicenseSyncGuard>
-						<div class="app-shell tw-flex tw-flex-col tw-w-full tw-h-[100dvh] tw-overflow-hidden tw-bg-[#000000]">
+						<div class="app-shell z0-carbon-fiber tw-flex tw-flex-col tw-w-full tw-h-[100dvh] tw-overflow-hidden tw-bg-[#000000]">
 							<main class="tw-flex-1 tw-flex tw-flex-col tw-min-w-0 tw-min-h-0 tw-overflow-hidden">
 								<!-- Phase 1, Epic 1 — surfaces offline / post-reconnect sync state.
 								     Mounts the syncStatus singleton on first render; subsequent
