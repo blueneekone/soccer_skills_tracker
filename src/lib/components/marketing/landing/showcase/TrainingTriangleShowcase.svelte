@@ -54,7 +54,7 @@
 	});
 </script>
 
-<div class="tw-relative tw-w-full tw-max-w-5xl tw-mx-auto tw-bg-[#000000] tw-rounded-[2px] tw-border-y tw-border-[#334155] tw-overflow-hidden tw-shadow-[0_0_120px_rgba(20,184,166,0.08)]">
+<div class="tw-relative tw-w-full tw-max-w-5xl tw-mx-auto tw-bg-[#000000] tw-rounded-[2px] tw-border-y tw-border-[#334155] tw-shadow-[0_0_120px_rgba(20,184,166,0.08)]">
 	
 	<!-- Tech Noir Grid Background -->
 	<div class="tw-absolute tw-inset-0 tw-opacity-10" style="background-image: linear-gradient(#334155 1px, transparent 1px), linear-gradient(90deg, #334155 1px, transparent 1px); background-size: 40px 40px;"></div>
@@ -68,7 +68,7 @@
 	<div class="tw-absolute tw-bottom-6 tw-left-6 tw-w-6 tw-h-6 tw-border-b-2 tw-border-l-2 tw-border-[#334155]"></div>
 	<div class="tw-absolute tw-bottom-6 tw-right-6 tw-w-6 tw-h-6 tw-border-b-2 tw-border-r-2 tw-border-[#334155]"></div>
 
-	<div class="tw-relative tw-w-full tw-aspect-square tw-max-w-3xl tw-mx-auto tw-p-8 md:tw-p-12 tw-flex tw-items-center tw-justify-center">
+	<div class="tw-relative tw-w-full tw-aspect-square tw-max-w-3xl tw-mx-auto tw-p-16 md:tw-p-24 tw-flex tw-items-center tw-justify-center">
 		
 		<!-- Rotating Radar Rings -->
 		<div class="tw-absolute tw-inset-0 tw-flex tw-items-center tw-justify-center tw-opacity-30 tw-pointer-events-none tw-z-0">
@@ -151,15 +151,16 @@
 			onmouseenter={() => activeNode = 'coach'}
 			onmouseleave={() => activeNode = null}
 		>
-			<div class="tw-relative tw-w-16 tw-h-16 md:tw-w-24 md:tw-h-24 tw-bg-[#0F172A]/80 tw-backdrop-blur-md tw-border-2 tw-rounded-none tw-flex tw-items-center tw-justify-center tw-transition-all tw-duration-300"
-				 style="border-color: {activeNode === 'coach' ? '#fbbf24' : '#334155'}; clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);"
-				 class:tw-shadow-[0_0_40px_rgba(251,191,36,0.6)]={activeNode === 'coach'}
-				 class:tw-scale-110={activeNode === 'coach'}
+			<div class="tw-relative tw-w-14 tw-h-14 md:tw-w-20 md:tw-h-20 tw-flex tw-items-center tw-justify-center tw-transition-all tw-duration-300"
+				 style="
+					clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+					background: {activeNode === 'coach' ? 'rgba(251,191,36,0.15)' : 'rgba(15,23,42,0.85)'};
+					filter: {activeNode === 'coach' ? 'drop-shadow(0 0 12px rgba(251,191,36,0.7))' : 'drop-shadow(0 0 4px rgba(51,65,85,0.4))'};
+					transition: filter 0.3s ease, background 0.3s ease;
+				"
+				class:tw-scale-110={activeNode === 'coach'}
 			>
-				<Icon name="data.target" class="tw-w-8 tw-h-8 md:tw-w-10 md:tw-h-10 tw-transition-colors tw-duration-300 {activeNode === 'coach' ? 'tw-text-[#fbbf24]' : 'tw-text-slate-500'}" />
-				{#if activeNode === 'coach'}
-					<div class="tw-absolute tw-inset-0 tw-border tw-border-[#fbbf24] tw-animate-ping tw-opacity-30" style="clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);"></div>
-				{/if}
+				<Icon name="data.target" size={24} class="tw-transition-colors tw-duration-300 {activeNode === 'coach' ? 'tw-text-[#fbbf24]' : 'tw-text-slate-500'}" />
 			</div>
 			<!-- High Contrast Label -->
 			<div class="tw-mt-4 tw-px-4 tw-py-1 tw-bg-[#0F172A] tw-border tw-border-[#fbbf24] tw-rounded-none tw-opacity-0 tw-translate-y-2 group-hover:tw-opacity-100 group-hover:tw-translate-y-0 tw-transition-all tw-duration-300 tw-shadow-[0_0_15px_rgba(251,191,36,0.4)]">
@@ -175,15 +176,16 @@
 			onmouseenter={() => activeNode = 'athlete'}
 			onmouseleave={() => activeNode = null}
 		>
-			<div class="tw-relative tw-w-16 tw-h-16 md:tw-w-24 md:tw-h-24 tw-bg-[#0F172A]/80 tw-backdrop-blur-md tw-border-2 tw-rounded-none tw-flex tw-items-center tw-justify-center tw-transition-all tw-duration-300"
-				 style="border-color: {activeNode === 'athlete' ? '#daff0a' : '#334155'}; clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);"
-				 class:tw-shadow-[0_0_40px_rgba(218,255,10,0.4)]={activeNode === 'athlete'}
-				 class:tw-scale-110={activeNode === 'athlete'}
+			<div class="tw-relative tw-w-14 tw-h-14 md:tw-w-20 md:tw-h-20 tw-flex tw-items-center tw-justify-center tw-transition-all tw-duration-300"
+				 style="
+					clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+					background: {activeNode === 'athlete' ? 'rgba(218,255,10,0.15)' : 'rgba(15,23,42,0.85)'};
+					filter: {activeNode === 'athlete' ? 'drop-shadow(0 0 12px rgba(218,255,10,0.6))' : 'drop-shadow(0 0 4px rgba(51,65,85,0.4))'};
+					transition: filter 0.3s ease, background 0.3s ease;
+				"
+				class:tw-scale-110={activeNode === 'athlete'}
 			>
-				<Icon name="game.zap" class="tw-w-8 tw-h-8 md:tw-w-10 md:tw-h-10 tw-transition-colors tw-duration-300 {activeNode === 'athlete' ? 'tw-text-[#daff0a]' : 'tw-text-slate-500'}" />
-				{#if activeNode === 'athlete'}
-					<div class="tw-absolute tw-inset-0 tw-border tw-border-[#daff0a] tw-animate-ping tw-opacity-30" style="clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);"></div>
-				{/if}
+				<Icon name="game.zap" size={24} class="tw-transition-colors tw-duration-300 {activeNode === 'athlete' ? 'tw-text-[#daff0a]' : 'tw-text-slate-500'}" />
 			</div>
 			<!-- High Contrast Label -->
 			<div class="tw-mt-4 tw-px-4 tw-py-1 tw-bg-[#0F172A] tw-border tw-border-[#daff0a] tw-rounded-none tw-opacity-0 tw-translate-y-2 group-hover:tw-opacity-100 group-hover:tw-translate-y-0 tw-transition-all tw-duration-300 tw-shadow-[0_0_15px_rgba(218,255,10,0.3)]">
@@ -199,15 +201,16 @@
 			onmouseenter={() => activeNode = 'parent'}
 			onmouseleave={() => activeNode = null}
 		>
-			<div class="tw-relative tw-w-16 tw-h-16 md:tw-w-24 md:tw-h-24 tw-bg-[#0F172A]/80 tw-backdrop-blur-md tw-border-2 tw-rounded-none tw-flex tw-items-center tw-justify-center tw-transition-all tw-duration-300"
-				 style="border-color: {activeNode === 'parent' ? '#14b8a6' : '#334155'}; clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);"
-				 class:tw-shadow-[0_0_40px_rgba(20,184,166,0.5)]={activeNode === 'parent'}
-				 class:tw-scale-110={activeNode === 'parent'}
+			<div class="tw-relative tw-w-14 tw-h-14 md:tw-w-20 md:tw-h-20 tw-flex tw-items-center tw-justify-center tw-transition-all tw-duration-300"
+				 style="
+					clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+					background: {activeNode === 'parent' ? 'rgba(20,184,166,0.15)' : 'rgba(15,23,42,0.85)'};
+					filter: {activeNode === 'parent' ? 'drop-shadow(0 0 12px rgba(20,184,166,0.7))' : 'drop-shadow(0 0 4px rgba(51,65,85,0.4))'};
+					transition: filter 0.3s ease, background 0.3s ease;
+				"
+				class:tw-scale-110={activeNode === 'parent'}
 			>
-				<Icon name="status.shield-check" class="tw-w-8 tw-h-8 md:tw-w-10 md:tw-h-10 tw-transition-colors tw-duration-300 {activeNode === 'parent' ? 'tw-text-[#14b8a6]' : 'tw-text-slate-500'}" />
-				{#if activeNode === 'parent'}
-					<div class="tw-absolute tw-inset-0 tw-border tw-border-[#14b8a6] tw-animate-ping tw-opacity-30" style="clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);"></div>
-				{/if}
+				<Icon name="status.shield-check" size={24} class="tw-transition-colors tw-duration-300 {activeNode === 'parent' ? 'tw-text-[#14b8a6]' : 'tw-text-slate-500'}" />
 			</div>
 			<!-- High Contrast Label -->
 			<div class="tw-mt-4 tw-px-4 tw-py-1 tw-bg-[#0F172A] tw-border tw-border-[#14b8a6] tw-rounded-none tw-opacity-0 tw-translate-y-2 group-hover:tw-opacity-100 group-hover:tw-translate-y-0 tw-transition-all tw-duration-300 tw-shadow-[0_0_15px_rgba(20,184,166,0.4)]">
