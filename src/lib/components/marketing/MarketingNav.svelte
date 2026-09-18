@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { browser } from '$app/environment';
 	import { page } from '$app/state';
+	import SSTrackerLogo from '$lib/components/ui/SSTrackerLogo.svelte';
 
 	let scrolled = $state(false);
 	let mobileOpen = $state(false);
@@ -26,11 +27,7 @@
 	<div class="mn-inner">
 		<!-- Brand -->
 		<a href="/" class="mn-brand" aria-label="SSTracker home">
-			<svg class="mn-brand__hex" viewBox="0 0 28 32" fill="none" aria-hidden="true">
-				<polygon points="14,1 27,8 27,24 14,31 1,24 1,8" stroke="#fbbf24" stroke-width="1.5" fill="color-mix(in srgb, #fbbf24 6%, transparent)"/>
-				<polygon points="14,7 22,12 22,20 14,25 6,20 6,12" stroke="#334155" stroke-width="0.7" fill="color-mix(in srgb, #334155 20%, transparent)" opacity="0.8"/>
-			</svg>
-			<span class="mn-brand__text">SSTRACKER<span class="mn-brand__sub">CLUB OS</span></span>
+			<SSTrackerLogo context="default" size="md" />
 		</a>
 
 		<!-- Desktop links -->
@@ -48,8 +45,8 @@
 
 		<!-- Desktop CTAs -->
 		<div class="mn-ctas">
-			<a href="/login" class="tw-vanguard-btn-secondary mn-cta-size">Sign In</a>
-			<a href="/setup" class="tw-vanguard-btn-secondary mn-cta-size tw-border-[#14b8a6] tw-text-[#14b8a6] hover:tw-border-[#14b8a6] hover:tw-bg-[#14b8a6]/10">Start club →</a>
+			<a href="/login" class="mn-cta-ghost mn-cta-size">Sign In</a>
+			<a href="/setup" class="mn-cta-ghost mn-cta-size" id="cta-nav-start-club">Start club →</a>
 		</div>
 
 		<!-- Mobile hamburger -->
@@ -98,10 +95,11 @@
 		border-bottom: 1px solid transparent;
 	}
 	.mn-root--scrolled {
-		background: rgba(1, 4, 9, 0.85);
-		backdrop-filter: blur(var(--vanguard-blur)) saturate(180%);
-		-webkit-backdrop-filter: blur(var(--vanguard-blur)) saturate(180%);
-		border-bottom-color: rgba(255, 255, 255, 0.06);
+		background: rgba(1, 4, 9, 0.75);
+		backdrop-filter: blur(24px) saturate(180%);
+		-webkit-backdrop-filter: blur(24px) saturate(180%);
+		border-bottom-color: rgba(255, 255, 255, 0.08);
+		box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
 	}
 
 	.mn-inner {
@@ -118,35 +116,13 @@
 	.mn-brand {
 		display: flex;
 		align-items: center;
-		gap: 0.5rem;
 		text-decoration: none;
 		flex-shrink: 0;
 		color: currentColor;
-		transition: color 0.15s;
+		transition: opacity 0.15s;
 	}
 	.mn-brand:hover {
-		color: #14b8a6;
-	}
-	.mn-brand__hex {
-		width: 28px;
-		height: 32px;
-		filter: drop-shadow(0 0 6px color-mix(in srgb, #fbbf24 40%, transparent));
-	}
-	.mn-brand__text {
-		font-family: 'Geist Mono', monospace;
-		font-size: 0.75rem;
-		font-weight: 900;
-		letter-spacing: 0.18em;
-		color: #fafafa;
-		line-height: 1;
-	}
-	.mn-brand__sub {
-		display: block;
-		font-size: 0.45rem;
-		font-weight: 500;
-		letter-spacing: 0.25em;
-		color: color-mix(in srgb, #94a3b8 80%, transparent);
-		margin-top: 1px;
+		opacity: 0.85;
 	}
 
 	/* Desktop nav links */
@@ -173,12 +149,28 @@
 	}
 	.mn-link--active { color: #fbbf24; }
 
-	/* CTAs */
-	.mn-ctas {
-		display: flex;
+	/* Ghost button for nav — does NOT compete with hero CTA */
+	.mn-cta-ghost {
+		display: inline-flex;
 		align-items: center;
-		gap: 0.65rem;
-		flex-shrink: 0;
+		gap: 0.4rem;
+		border-radius: 4px;
+		border: 1px solid rgba(51, 65, 85, 0.8);
+		background: transparent;
+		color: #d4d4d8;
+		font-family: 'Geist Mono', ui-monospace, monospace;
+		font-size: 0.625rem;
+		font-weight: 700;
+		letter-spacing: 0.1em;
+		text-decoration: none;
+		padding: 0 0.85rem;
+		min-height: 34px;
+		transition: border-color 150ms ease, color 150ms ease, background 150ms ease;
+	}
+	.mn-cta-ghost:hover {
+		border-color: #fafafa;
+		color: #fafafa;
+		background: rgba(255, 255, 255, 0.04);
 	}
 	/* Compact size override for nav context */
 	.mn-cta-size {

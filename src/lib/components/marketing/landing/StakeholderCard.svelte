@@ -51,10 +51,12 @@
     height: 100%;
     gap: clamp(0.75rem, 1.5vw, 1.1rem);
     padding: var(--bento-pad, clamp(1.25rem, 3vw, 1.75rem));
-    border-radius: 8px;
-    background: rgba(15, 23, 42, 0.7);
-    border: 1px solid rgba(51, 65, 85, 0.6);
-    backdrop-filter: blur(12px);
+    border-radius: 12px;
+    background: rgba(15, 23, 42, 0.6);
+    border: 1px solid rgba(51, 65, 85, 0.8);
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
     transition: all 200ms cubic-bezier(0.16, 1, 0.3, 1);
     position: relative;
     overflow: hidden;
@@ -93,37 +95,37 @@
     opacity: 1;
   }
 
-  /* Per-role accent colors */
+  /* Per-role accent colors — Enterprise Palette ONLY (Data Cyan, Action Gold, Atompunk Amber) */
   :global(.stakeholder-card--directors) {
-    --sc-accent: #6366f1;
+    --sc-accent: #14b8a6; /* Data Cyan */
   }
 
   :global(.stakeholder-card--coaches) {
-    --sc-accent: #14b8a6;
+    --sc-accent: #14b8a6; /* Data Cyan */
   }
 
   :global(.stakeholder-card--athletes) {
-    --sc-accent: #06b6d4;
+    --sc-accent: #fbbf24; /* Action Gold */
   }
 
   :global(.stakeholder-card--parents) {
-    --sc-accent: #10b981;
+    --sc-accent: #f59e0b; /* Atompunk Amber */
   }
 
   :global(.stakeholder-card--recruiters) {
-    --sc-accent: #f59e0b;
+    --sc-accent: #fbbf24; /* Action Gold */
   }
 
   :global(.stakeholder-card--commissioners) {
-    --sc-accent: #8b5cf6;
+    --sc-accent: #14b8a6; /* Data Cyan */
   }
 
   :global(.stakeholder-card--fans) {
-    --sc-accent: #ec4899;
+    --sc-accent: #f59e0b; /* Atompunk Amber */
   }
 
   :global(.stakeholder-card--admins) {
-    --sc-accent: #ef4444;
+    --sc-accent: #14b8a6; /* Data Cyan */
   }
 
   .sc-role-badge {
