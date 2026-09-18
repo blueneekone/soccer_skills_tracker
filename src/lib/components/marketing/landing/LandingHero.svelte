@@ -222,7 +222,7 @@
 
 	.hero__h1 {
 		font-family: 'Geist Sans', var(--font-display, sans-serif);
-		font-size: clamp(1.8rem, 3.5vw, 3rem);
+		font-size: clamp(1.4rem, 2.8vw, 2.4rem);
 		font-weight: 900;
 		line-height: 1.1;
 		letter-spacing: -0.02em;
@@ -232,7 +232,7 @@
 
 	.hero__sub {
 		font-family: 'Switzer', var(--font-sans, sans-serif);
-		font-size: clamp(0.95rem, 1.2vw, 1.15rem);
+		font-size: clamp(0.875rem, 1vw, 0.975rem);
 		color: #cbd5e1;
 		line-height: 1.6;
 		max-width: 580px;

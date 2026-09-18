@@ -107,7 +107,7 @@
 
 	.fb-h2 {
 		font-family: var(--font-display);
-		font-size: clamp(1.6rem, 4vw, 2.8rem);
+		font-size: clamp(1.25rem, 2.8vw, 2rem);
 		font-weight: 800;
 		line-height: 1.08;
 		letter-spacing: -0.02em;

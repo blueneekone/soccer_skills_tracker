@@ -172,7 +172,7 @@
 		<!-- svelte-ignore a11y_no_static_element_interactions -->
 		<!-- svelte-ignore a11y_mouse_events_have_key_events -->
 		<div 
-			class="tw-absolute tw-top-[70%] tw-left-[20%] tw--translate-x-1/2 tw--translate-y-1/2 tw-flex tw-flex-col tw-items-center tw-cursor-pointer tw-group tw-z-20"
+			class="tw-absolute tw-top-[65%] tw-left-[20%] tw--translate-x-1/2 tw--translate-y-1/2 tw-flex tw-flex-col tw-items-center tw-cursor-pointer tw-group tw-z-20"
 			onmouseenter={() => activeNode = 'athlete'}
 			onmouseleave={() => activeNode = null}
 		>
@@ -197,7 +197,7 @@
 		<!-- svelte-ignore a11y_no_static_element_interactions -->
 		<!-- svelte-ignore a11y_mouse_events_have_key_events -->
 		<div 
-			class="tw-absolute tw-top-[70%] tw-left-[80%] tw--translate-x-1/2 tw--translate-y-1/2 tw-flex tw-flex-col tw-items-center tw-cursor-pointer tw-group tw-z-20"
+			class="tw-absolute tw-top-[65%] tw-left-[80%] tw--translate-x-1/2 tw--translate-y-1/2 tw-flex tw-flex-col tw-items-center tw-cursor-pointer tw-group tw-z-20"
 			onmouseenter={() => activeNode = 'parent'}
 			onmouseleave={() => activeNode = null}
 		>

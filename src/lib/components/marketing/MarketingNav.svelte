@@ -149,6 +149,14 @@
 	}
 	.mn-link--active { color: #fbbf24; }
 
+	/* CTAs */
+	.mn-ctas {
+		display: flex;
+		align-items: center;
+		gap: 0.65rem;
+		flex-shrink: 0;
+	}
+
 	/* Ghost button for nav — does NOT compete with hero CTA */
 	.mn-cta-ghost {
 		display: inline-flex;
