@@ -222,7 +222,7 @@
 
 	.hero__h1 {
 		font-family: 'Geist Sans', var(--font-display, sans-serif);
-		font-size: clamp(1.4rem, 2.8vw, 2.4rem);
+		font-size: clamp(1.1rem, 2.2vw, 1.9rem);
 		font-weight: 900;
 		line-height: 1.1;
 		letter-spacing: -0.02em;

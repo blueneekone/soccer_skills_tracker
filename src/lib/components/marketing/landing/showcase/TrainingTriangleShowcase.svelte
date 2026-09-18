@@ -54,7 +54,7 @@
 	});
 </script>
 
-<div class="tw-relative tw-w-full tw-max-w-5xl tw-mx-auto tw-bg-[#000000] tw-rounded-[2px] tw-border-y tw-border-[#334155] tw-shadow-[0_0_120px_rgba(20,184,166,0.08)]">
+<div class="tw-flex tw-flex-col tw-w-full tw-max-w-5xl tw-mx-auto tw-bg-[#000000] tw-rounded-[2px] tw-border-y tw-border-[#334155] tw-shadow-[0_0_120px_rgba(20,184,166,0.08)]">
 	
 	<!-- Tech Noir Grid Background -->
 	<div class="tw-absolute tw-inset-0 tw-opacity-10" style="background-image: linear-gradient(#334155 1px, transparent 1px), linear-gradient(90deg, #334155 1px, transparent 1px); background-size: 40px 40px;"></div>
@@ -219,9 +219,9 @@
 		</div>
 	</div>
 
-	<!-- High-Tech Data Readout HUD -->
-	<div class="tw-absolute tw-bottom-0 tw-left-0 tw-w-full tw-bg-gradient-to-t tw-from-[#000000] tw-to-transparent tw-pt-32 tw-pb-8 tw-px-8 tw-flex tw-justify-center tw-z-30 tw-pointer-events-none">
-		<div class="tw-w-full tw-max-w-3xl tw-bg-[#0F172A]/90 tw-backdrop-blur-xl tw-border-t-2 tw-border-x tw-rounded-t-[8px] tw-p-6 tw-shadow-[0_-20px_40px_rgba(0,0,0,0.8)] tw-transition-all tw-duration-500 tw-min-h-[160px] tw-flex tw-flex-col tw-justify-center"
+	<!-- High-Tech Data Readout HUD — in document flow, below triangle -->
+	<div class="tw-w-full tw-bg-gradient-to-t tw-from-[#000000] tw-to-transparent tw-pt-4 tw-pb-8 tw-px-8 tw-flex tw-justify-center tw-z-30">
+		<div class="tw-w-full tw-max-w-3xl tw-bg-[#0F172A]/90 tw-backdrop-blur-xl tw-border-t-2 tw-border-x tw-rounded-t-[8px] tw-p-6 tw-shadow-[0_-20px_40px_rgba(0,0,0,0.8)] tw-transition-all tw-duration-500 tw-min-h-[140px] tw-flex tw-flex-col tw-justify-center"
 			 class:tw-border-[#fbbf24]={activeNode === 'coach'}
 			 class:tw-border-[#daff0a]={activeNode === 'athlete'}
 			 class:tw-border-[#14b8a6]={activeNode === 'parent'}
