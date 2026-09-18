@@ -101,7 +101,7 @@
 		font-size: var(--vanguard-text-eyebrow-size, 0.6875rem);
 		font-weight: 600;
 		letter-spacing: 0.15em;
-		color: var(--vanguard-text-eyebrow, #a5b4fc);
+		color: #14b8a6; /* Data Cyan — enterprise palette only */
 		text-transform: uppercase;
 		text-align: center;
 	}

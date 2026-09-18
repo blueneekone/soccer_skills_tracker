@@ -97,7 +97,7 @@
 		font-size: var(--vanguard-text-eyebrow-size, 0.6875rem);
 		font-weight: 700;
 		letter-spacing: 0.3em;
-		color: var(--vanguard-text-eyebrow, #a5b4fc);
+		color: #14b8a6; /* Data Cyan — enterprise palette only */
 		text-transform: uppercase;
 	}
 
@@ -107,7 +107,7 @@
 		font-weight: 800;
 		line-height: 1.08;
 		letter-spacing: -0.02em;
-		color: var(--vanguard-text-1, #ffffff);
+		color: #fafafa; /* Halation-safe off-white */
 		margin: 0;
 	}
 

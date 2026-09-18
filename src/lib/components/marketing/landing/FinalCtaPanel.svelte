@@ -183,7 +183,7 @@
 	}
 
 	.fc-check-icon {
-		color: var(--vanguard-text-eyebrow, #a5b4fc);
+		color: #14b8a6; /* Data Cyan — enterprise palette only */
 		font-size: var(--vanguard-text-eyebrow-size, 0.6875rem);
 	}
 
