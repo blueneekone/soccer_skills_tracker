@@ -27,6 +27,14 @@ As a seasoned graphic and web designer, you must operate with pixel-perfect prec
 * **Component Rhythm:** Align elements to a strict grid. Maintain consistent gaps (`gap-4`, `gap-6`) between cards and standard border-radii for structural trust.
 * **Visual Trust & Clarity:** Do not design for decoration; design for time-to-value. The user must immediately understand the UI. Over-sized text, squished nodes, and overlapping panels instantly destroy credibility.
 
+## 🎨 ENTERPRISE PLATFORM ARTISTRY & UX ENGINEERING
+To elevate SSTracker to a "work of freaking art" standard, you must design for workflow mastery, not just static pages:
+* **Progressive Disclosure:** Expert users need power, novices need simplicity. Hide deep complexity behind contextual menus or hover states, preventing cognitive overload on initial load.
+* **Context is King:** In deep workflows, users lose their place. Use persistent context panes (e.g., sticky headers or sidebars) to keep vital state information visible at all times.
+* **Micro-Interactions & Kinetics:** Software should feel alive. Enforce lightning-fast state changes (150-250ms transitions) and tactile feedback on buttons (`active:tw-scale-[0.98]`) so interactions feel like physical haptic responses.
+* **Data Visualization as Art:** Do not settle for generic charts. Style data visualizations with our Neon Data Cyan, glowing gridlines, and bespoke SVG elements. The data must look like a high-end SIEM tactical dashboard.
+* **State Management Aesthetics:** Empty states, loading skeletons, and error boundaries must be beautifully designed and empathetic. Never throw a raw error or show a blank white screen; always provide graceful, styled degradation.
+
 ## 📸 STRICT VISUAL VERIFICATION WORKFLOW (THE GOLDEN RULE)
 You are strictly forbidden from committing or declaring a UI fix complete without visual proof. You must follow this exact loop:
 1. **Audit:** Before any CSS or design change, use the `browser_subagent` to take a live browser screenshot of the current state.
