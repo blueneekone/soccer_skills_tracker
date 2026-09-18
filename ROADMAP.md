@@ -134,13 +134,13 @@
 
 ### Phase 5: Authentication & Security Integrity Fortress
 - [x] **Sprint 5.1**: Auth Regression Guard Master Suite (`authRegressionGuard.test.ts`, token hydration, canonical email, zero redirect loops) ✅
-- [ ] **Sprint 5.2**: Multi-Tenant Custom Claims & Cell Boundary Gates
-  - **Status**: 🟡 COMPLETED BY JULES (Session `9111178344597737019`) — **UNMERGED** — patch must be pulled into `dev`
+- [x] **Sprint 5.2**: Multi-Tenant Custom Claims & Cell Boundary Gates
+  - **Status**: ✅ DONE — patch pulled and merged into `dev`
   - **Gap**: Zero-trust cross-tenant leakage tests were completed by Jules but never integrated
   - **Action**: Pull session `9111178344597737019`, run `svelte-check` + `test:regression:auth`, merge to `dev`
   - **Jules Prompt**: Create `src/lib/security/__tests__/tenantClaimsBoundary.test.ts`. Write 10+ test cases that verify: (1) `request.auth.token.clubId == clubId` claim matching on `/clubs/{clubId}` reads/writes, (2) cross-tenant read attempts return `permission-denied`, (3) `getActiveDb(cellId)` returns isolated Firestore instances per tenant, (4) `cellRouter.js` routes to correct cell based on custom claims, (5) admin impersonation respects tenant boundaries. Use Vitest with mocked Firestore admin SDK. All tests must pass with `pnpm test -- src/lib/security/__tests__/tenantClaimsBoundary.test.ts`.
-- [ ] **Sprint 5.3**: WebAuthn Biometric Enclave & Passkey Attestation Tests
-  - **Status**: 🟡 COMPLETED BY JULES (Session `15682637641134645018`) — **UNMERGED** — patch must be pulled into `dev`
+- [x] **Sprint 5.3**: WebAuthn Biometric Enclave & Passkey Attestation Tests
+  - **Status**: ✅ DONE — patch pulled and merged into `dev`
   - **Gap**: `passkeyEnclaveVerification.test.ts` exists in `src/lib/auth/__tests__/` (4 tests pass) but Jules session patch was never merged
   - **Action**: Pull session `15682637641134645018`, run `svelte-check` + `test:regression:auth`, merge to `dev`
   - **Jules Prompt**: Create `functions/__tests__/passkeyEnclaveVerification.test.ts` (or in `functions-compliance`). Write 8+ test cases that verify: (1) `navigator.credentials.create()` attestation object parsing, (2) origin-binding tamper protection (reject mismatched `rpId`), (3) challenge replay prevention (used nonces rejected), (4) authenticator data flag validation (`UV` bit set for biometric), (5) credential storage to `devices/{deviceId}` collection, (6) assertion verification flow (`navigator.credentials.get()`), (7) cross-origin attack rejection, (8) passkey deletion cascade cleanup. Use native `node:test` runner with proxyquire (or native node mocking) and mocked WebAuthn CBOR payloads. All tests must pass with `node --test functions/__tests__/passkeyEnclaveVerification.test.ts`.
@@ -153,8 +153,8 @@
 - [x] **Sprint R1 (P0)**: Parent Compliance Form Complete Overhaul ✅
   - Deleted 85-line prototype `+page.svelte`, wired page to existing `WaiverConsoleArena.svelte` + `WaiverController.svelte.ts` Trinity, replaced banned `tw-bg-blue-600` / `tw-bg-emerald-600` with Enterprise Palette CTAs (Action Gold `#fbbf24`), added `Geist Mono` + `Switzer` typography, added Icon component usage.
 
-- [ ] **Sprint R2 (P0)**: Transfer Portal Visual Audit & Design Upgrade
-  - **Status**: 🟡 IN PROGRESS — Jules session `10718623827822778892` currently running
+- [x] **Sprint R2 (P0)**: Transfer Portal Visual Audit & Design Upgrade
+  - **Status**: ✅ DONE — Jules session completed and verified
   - **Gap Audit Result (v4.0)**: `tw-` prefixes applied, raw cyan purged. Remaining: inline `onmouseenter` handlers in 7 files, `border-radius` normalization, min font-size enforcement (6 files have sub-8px), Enterprise Palette color compliance.
   - **Jules Prompt**: Open `src/lib/components/player/TransferPortal.svelte`. Audit and fix: (1) replace any `border-radius: 4px` with `0` or `2px` per design system, (2) replace any `font-size` below `10px` with minimum `clamp(0.625rem, 1vw, 0.75rem)`, (3) replace inline `onmouseenter`/`onmouseleave` handlers with CSS `:hover` pseudo-selectors, (4) verify all colors use Enterprise Palette tokens (Data Cyan `#14b8a6`, Action Gold `#fbbf24`, Void Black `#000000`, Navy Slate `#0f172a`), (5) add `Geist Mono` for data readouts, `Switzer` for body copy. Run `pnpm run check` and `pnpm test -- src/lib/components/player/__tests__/` to verify 0 errors.
 
@@ -254,7 +254,7 @@
 - [ ] **Sprint M2 (P1)**: Extract `SquadTelemetryView.svelte` (1553 lines) & `RecruiterPortal.svelte` (1529 lines)
   - **Jules Prompt**: (A) Fracture `src/lib/components/hud/SquadTelemetryView.svelte` into Engine+Arena+HUD. The Arena gets chart rendering (VanguardPrism radar, bar charts), the HUD gets player selection controls and KPI cards, the Engine gets all reactive state and data fetching. (B) Fracture `src/lib/components/recruiter/RecruiterPortal.svelte` into Engine+Arena+HUD. The Arena gets the search results grid and player cards, the HUD gets search filters and Checkr status badges, the Engine gets all Firestore queries and Checkr verification logic. Each resulting file must be under 500 lines. Run `pnpm run check` after each extraction.
 
-- [ ] **Sprint M3 (P1)**: Extract `FacilityDrawingMap.svelte` (1498 lines) & `MessagesTab.svelte` (1331 lines)
+- [x] **Sprint M3 (P1)**: Extract `FacilityDrawingMap.svelte` (1498 lines) & `MessagesTab.svelte` (1331 lines)
   - **Jules Prompt**: (A) Fracture `src/lib/components/field-ops/FacilityDrawingMap.svelte` into Engine (drawing state, tool selection, undo/redo stack) + Arena (SVG canvas, shape rendering) + HUD (toolbar, color picker, layer controls). (B) Fracture `src/lib/components/coach/MessagesTab.svelte` into Engine (message fetching, send logic, Shadow CC routing) + Arena (message thread list, conversation view) + HUD (compose bar, channel selector, search). Each file under 500 lines. Run `pnpm run check`.
 
 - [ ] **Sprint M4 (P2)**: Extract `tracker/+page.svelte` (1283 lines) & `TeamsTab.svelte` (1264 lines)
