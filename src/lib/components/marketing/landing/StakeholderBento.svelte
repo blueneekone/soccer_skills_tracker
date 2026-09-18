@@ -105,7 +105,7 @@
 		font-family: var(--font-display);
 		font-size: clamp(1.25rem, 2.8vw, 2rem);
 		font-weight: 800;
-		line-height: 1.08;
+		line-height: 1.25;
 		letter-spacing: -0.02em;
 		color: #fafafa; /* Halation-safe off-white */
 		margin: 0;
@@ -124,7 +124,7 @@
 	.sb-grid {
 		display: grid;
 		grid-template-columns: repeat(12, minmax(0, 1fr));
-		gap: clamp(0.75rem, 1.25vw, 1.25rem);
+		gap: clamp(1.5rem, 2.5vw, 2rem);
 		align-items: stretch;
 	}
 

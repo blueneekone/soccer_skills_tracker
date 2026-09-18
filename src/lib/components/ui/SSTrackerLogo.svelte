@@ -35,12 +35,12 @@
 	<!-- Wordmark -->
 	<div class="tw-flex tw-flex-col tw-justify-center tw-min-w-0">
 		<span
-			class="{titleSizeClass} tw-font-black tw-tracking-[0.14em] tw-text-[#fafafa] tw-uppercase tw-truncate tw-leading-none"
+			class="{titleSizeClass} tw-font-black tw-tracking-[0.14em] tw-text-[#fafafa] tw-uppercase tw-leading-tight"
 			style="font-family: 'Geist Mono', ui-monospace, monospace;"
 		>SSTracker</span>
 		{#if context === 'nexus'}
 			<span
-				class="{subtitleSizeClass} tw-font-bold tw-tracking-[0.28em] tw-text-[#14b8a6] tw-uppercase tw-truncate tw-mt-[2px] tw-leading-none"
+				class="{subtitleSizeClass} tw-font-bold tw-tracking-[0.28em] tw-text-[#14b8a6] tw-uppercase tw-mt-[2px] tw-leading-tight"
 				style="font-family: 'Geist Mono', ui-monospace, monospace;"
 			>Nexus Command</span>
 		{/if}

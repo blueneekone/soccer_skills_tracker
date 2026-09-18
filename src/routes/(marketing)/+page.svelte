@@ -41,16 +41,16 @@
 		<LandingHero />
 		<PoweredByStrip />
 		<TrustStripPanel />
-		<FeatureBento />
-		<CompetitivePositionPanel />
 		<div class="tw-py-24">
 			<div class="tw-flex tw-flex-col tw-items-center tw-text-center tw-mb-16 tw-px-4">
 				<span class="tw-font-mono tw-text-xs tw-text-[#14b8a6] tw-tracking-widest tw-mb-4" style="font-family: 'Geist Mono', monospace;">SYS.ECOSYSTEM</span>
-				<h2 class="tw-text-4xl tw-font-bold tw-text-[#FAFAFA] tw-tracking-tight" style="font-family: 'Geist Sans', sans-serif;">The Training Triangle</h2>
+				<h2 class="tw-text-xl tw-font-bold tw-text-[#FAFAFA] tw-tracking-tight tw-leading-snug" style="font-family: 'Geist Sans', sans-serif;">The Training Triangle</h2>
 				<p class="tw-text-[#D4D4D8] tw-mt-4 tw-max-w-2xl" style="font-family: 'Switzer', sans-serif;">A unified ecosystem powering athletes, coaches, and parents.</p>
 			</div>
 			<TrainingTriangleShowcase />
 		</div>
+		<FeatureBento />
+		<CompetitivePositionPanel />
 		<StakeholderBento />
 		<IntegrationsBar />
 		<FinalCtaPanel />

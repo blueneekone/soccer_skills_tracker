@@ -224,7 +224,7 @@
 		font-family: 'Geist Sans', var(--font-display, sans-serif);
 		font-size: clamp(1.1rem, 2.2vw, 1.9rem);
 		font-weight: 900;
-		line-height: 1.1;
+		line-height: 1.35;
 		letter-spacing: -0.02em;
 		color: #fafafa;
 		margin: 0;
