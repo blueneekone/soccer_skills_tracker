@@ -30,6 +30,7 @@ import { untrack } from 'svelte';
 	import Icon from '$lib/components/ui/Icon.svelte';
 	import type { IconName } from '$lib/icons/registry.js';
 	import VanguardAvatar from '$lib/components/shell/VanguardAvatar.svelte';
+	import SSTrackerLogo from '$lib/components/ui/SSTrackerLogo.svelte';
 
 	import type { Snippet } from 'svelte';
 
@@ -203,21 +204,8 @@ import { untrack } from 'svelte';
 		>
 			<div class="ec-sidebar__panel">
 				<div class="ec-sidebar__brand ec-sidebar__brand--switcher">
-					<div class="tw-flex tw-items-center tw-gap-2 tw-px-3 tw-py-2 tw-whitespace-nowrap">
-						<!-- Spark Mark SVG -->
-						<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="tw-w-5 tw-h-5 tw-shrink-0 tw-drop-shadow-[0_0_8px_rgba(20,184,166,0.5)]">
-							<path d="M13 2L3 14H12L11 22L21 10H12L13 2Z" fill="url(#sparkGradient)"/>
-							<defs>
-								<linearGradient id="sparkGradient" x1="3" y1="2" x2="21" y2="22" gradientUnits="userSpaceOnUse">
-									<stop stop-color="#14b8a6"/> <!-- Data Cyan -->
-									<stop offset="1" stop-color="#daff0a"/> <!-- Cybernetic Nuclear Yellow -->
-								</linearGradient>
-							</defs>
-						</svg>
-						<!-- Wordmark -->
-						<span class="tw-font-sans tw-text-sm tw-font-extrabold tw-tracking-widest tw-text-[#FAFAFA] tw-uppercase tw-shrink-0">SSTracker</span>
-						<span class="tw-text-[#334155] tw-shrink-0">|</span>
-						<span class="tw-font-sans tw-text-xs tw-font-bold tw-tracking-widest tw-text-[#14b8a6] tw-uppercase tw-shrink-0">Nexus Command</span>
+					<div class="tw-flex tw-items-center tw-gap-2 tw-px-3 tw-py-2 tw-overflow-hidden">
+						<SSTrackerLogo context="nexus" />
 					</div>
 				</div>
 				<nav class="ec-sidebar__nav director-sidebar nexus-sidebar">
@@ -284,7 +272,10 @@ import { untrack } from 'svelte';
 				>
 					<Icon name="nav.sidebar" size={20} />
 				</button>
-				<div class="ec-breadcrumb tw-truncate tw-pl-4">
+				<div class="tw-ml-2 tw-block lg:tw-hidden">
+					<SSTrackerLogo context="nexus" />
+				</div>
+				<div class="ec-breadcrumb tw-truncate tw-pl-4 tw-hidden lg:tw-block">
 					{#if breadcrumb}
 						{breadcrumb}
 					{:else}

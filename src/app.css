@@ -190,7 +190,7 @@ button:active,
 @layer components {
   /* Action Gold CTA - Atompunk Chamfered */
   .vanguard-btn-amber, .tw-vanguard-btn-amber {
-    @apply tw-bg-[#f59e0b] tw-text-[#020617] tw-border-none tw-rounded-none;
+    @apply tw-bg-[#f59e0b] tw-text-[#020617] tw-border-none tw-rounded-none tw-inline-flex tw-items-center tw-justify-center tw-gap-2 tw-px-4 tw-py-2.5 tw-text-sm tw-font-bold tw-transition-colors;
     clip-path: polygon(12px 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%, 0 12px);
     box-shadow: 0 0 10px rgba(245, 158, 11, 0.2);
   }
@@ -203,7 +203,7 @@ button:active,
 
   /* Data Cyan CTA */
   .vanguard-btn-primary, .tw-vanguard-btn-primary {
-    @apply tw-bg-[#14b8a6] tw-text-[#020617] tw-border tw-border-[#2dd4bf] tw-rounded-none;
+    @apply tw-bg-[#14b8a6] tw-text-[#020617] tw-border tw-border-[#2dd4bf] tw-rounded-none tw-inline-flex tw-items-center tw-justify-center tw-gap-2 tw-px-4 tw-py-2.5 tw-text-sm tw-font-bold tw-transition-colors;
     box-shadow: 0 0 10px rgba(20, 184, 166, 0.2);
   }
   .vanguard-btn-primary:hover, .tw-vanguard-btn-primary:hover {
@@ -213,7 +213,7 @@ button:active,
 
   /* Subtle / Outlined CTA */
   .vanguard-btn-secondary, .tw-vanguard-btn-secondary {
-    @apply tw-bg-transparent tw-text-[#f8fafc] tw-border tw-border-[#334155] tw-rounded-none;
+    @apply tw-bg-transparent tw-text-[#f8fafc] tw-border tw-border-[#334155] tw-rounded-none tw-inline-flex tw-items-center tw-justify-center tw-gap-2 tw-px-4 tw-py-2.5 tw-text-sm tw-font-bold tw-transition-colors;
   }
   .vanguard-btn-secondary:hover, .tw-vanguard-btn-secondary:hover {
     @apply tw-border-[#475569] tw-bg-[#0f172a];
@@ -221,13 +221,219 @@ button:active,
 
   /* Destructive CTA */
   .vanguard-btn-danger, .tw-vanguard-btn-danger {
-    @apply tw-bg-[#ef4444] tw-text-[#020617] tw-border tw-border-[#f87171] tw-rounded-none;
+    @apply tw-bg-[#ef4444] tw-text-[#020617] tw-border tw-border-[#f87171] tw-rounded-none tw-inline-flex tw-items-center tw-justify-center tw-gap-2 tw-px-4 tw-py-2.5 tw-text-sm tw-font-bold tw-transition-colors;
   }
   .vanguard-btn-danger:hover, .tw-vanguard-btn-danger:hover {
     @apply tw-bg-[#f87171];
     box-shadow: 0 0 15px rgba(239, 68, 68, 0.4);
     border-color: #f87171 !important;
     outline: none !important;
+  }
+
+  /* Vanguard Input */
+  .vanguard-input {
+    --tw-brightness:  ;
+    --tw-contrast:  ;
+    --tw-grayscale:  ;
+    --tw-hue-rotate:  ;
+    --tw-invert:  ;
+    --tw-saturate:  ;
+    --tw-sepia:  ;
+    --tw-drop-shadow:  ;
+    --tw-backdrop-blur:  ;
+    --tw-backdrop-brightness:  ;
+    --tw-backdrop-contrast:  ;
+    --tw-backdrop-grayscale:  ;
+    --tw-backdrop-hue-rotate:  ;
+    --tw-backdrop-invert:  ;
+    --tw-backdrop-opacity:  ;
+    --tw-backdrop-saturate:  ;
+    --tw-backdrop-sepia:  ;
+    --tw-text-opacity: 1 !important; /* Strictly ban rgba() text opacities or Tailwind text-opacity modifiers */
+  }
+  body {
+    @apply tw-bg-void-black tw-text-slate-100 tw-font-sans tw-antialiased selection:tw-bg-data-cyan/30;
+    overflow-x: hidden;
+    font-family: 'Switzer', -apple-system, sans-serif !important; /* Standardize Switzer for highly legible body copy */
+    font-size-adjust: 0.79;
+  }
+
+  h1, h2, h3, h4, h5 {
+    font-family: 'Geist Sans', Switzer, sans-serif !important;
+  }
+}
+
+/* 60-30-10 Palette Declarations */
+:root {
+  --color-void-black: #000000;      /* 60% Void Black Canvas base */
+  --color-structural-grey: #334155;  /* 30% Structural Grey rigid 1px layout borders */
+  --color-data-cyan: #14b8a6;       /* 10% Data Cyan High-Contrast Telemetry & Action Accent */
+}
+
+/* Universal Monospace standard for technical data */
+.tw-font-mono, .telemetry-readout, .stats-column, .hud-numeric, .mono-telemetry,
+[data-readout], [data-metric], [data-stat], [data-timestamp], .kpi-value, .telemetry-value {
+  font-family: 'Geist Mono', monospace !important;
+}
+
+/* Micro-interactions compile with a transition duration locked to 150-250ms with 1% scale active feedback */
+button, .btn, a, [role="button"] {
+  transition: transform 200ms cubic-bezier(0.16, 1, 0.3, 1), background-color 200ms, border-color 200ms !important;
+}
+button:active, .btn:active, a:active, [role="button"]:active {
+  transform: scale(0.99) !important;
+}
+
+/* Fluid Bento Grid clamps to prevent grid-squish bugs */
+
+.bento-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, clamp(280px, 30vw, 350px)), 1fr));
+  gap: 1.25rem;
+}
+
+.bento-grid > * {
+    min-width: 0; /* anti-squish child math */
+}
+
+/* Base Top-lit Hairlines and Tactile Glows for all Bento/Dashboard Cards */
+.card, .bento-card, .z2-panel, .player-card {
+  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.08);
+  transition: transform 200ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 200ms, border-color 200ms !important;
+}
+
+/* Generic Interactive tactile hovers */
+a.card:hover, button.card:hover, div[role="button"].card:hover,
+a.bento-card:hover, button.bento-card:hover, div[role="button"].bento-card:hover,
+a.z2-panel:hover, button.z2-panel:hover, div[role="button"].z2-panel:hover,
+a.player-card:hover, button.player-card:hover, div[role="button"].player-card:hover,
+.hover-tactile:hover {
+  border-color: #daff0a !important;
+  box-shadow: 0 0 15px rgba(218, 255, 10, 0.15), inset 0 1px 0 0 rgba(255, 255, 255, 0.08) !important;
+}
+
+/* Persona Specific Geometries - Admin, Commissioner, Director, Coach */
+.coach-os-root .card, .coach-os-root .bento-card, .coach-os-root .z2-panel,
+.admin-os-root .card, .admin-os-root .bento-card, .admin-os-root .z2-panel,
+.director-os-root .card, .director-os-root .bento-card, .director-os-root .z2-panel,
+.commissioner-os-root .card, .commissioner-os-root .bento-card, .commissioner-os-root .z2-panel {
+    border-radius: 0px !important;
+}
+
+/* Persona Specific Geometries - Parent */
+.parent-os-root .card, .parent-os-root .bento-card, .parent-os-root .z2-panel {
+    border-radius: 24px !important;
+}
+
+/* Persona Specific Geometries - Player OS */
+.player-os-root .card, .player-os-root .bento-card, .player-os-root .z2-panel, .player-card {
+    clip-path: polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px);
+    border-radius: 0 !important; /* wipe standard radii if clipped */
+}
+
+/* Force Table and Telemetry fonts */
+table, td.stats-cell, td.telemetry-cell {
+    font-family: 'Geist Mono', monospace !important;
+    font-variant-numeric: tabular-nums !important;
+}
+
+
+/* Glow filters for EKG lines and tactical radar loops */
+.glow-pulse {
+  filter: drop-shadow(0 0 6px #14b8a6);
+  animation: pulse-glow 2s infinite ease-in-out;
+}
+
+@keyframes pulse-glow {
+  0%, 100% { filter: drop-shadow(0 0 4px #14b8a6); opacity: 0.8; }
+  50% { filter: drop-shadow(0 0 10px #14b8a6); opacity: 1; }
+}
+
+body, .app-shell, .ec-canvas { background-color: #000000 !important; }
+
+/* Kinetic transitions (150-250ms range, e.g. 150ms / 200ms) and tactile active shrink feedback for interactive elements */
+button,
+.vanguard-btn-amber,
+.tw-vanguard-btn-amber,
+.vanguard-btn-primary,
+.tw-vanguard-btn-primary,
+.vanguard-btn-secondary,
+.tw-vanguard-btn-secondary,
+.vanguard-btn-danger,
+.tw-vanguard-btn-danger,
+.v-toolbar-btn,
+.ec-nav-link {
+  transition: transform 150ms cubic-bezier(0.4, 0, 0.2, 1), background-color 150ms, border-color 150ms, box-shadow 150ms !important;
+}
+
+button:active,
+.vanguard-btn-amber:active,
+.tw-vanguard-btn-amber:active,
+.vanguard-btn-primary:active,
+.tw-vanguard-btn-primary:active,
+.vanguard-btn-secondary:active,
+.tw-vanguard-btn-secondary:active,
+.vanguard-btn-danger:active,
+.tw-vanguard-btn-danger:active,
+.v-toolbar-btn:active,
+.ec-nav-link:active {
+  transform: scale(0.98) !important;
+}
+
+.tw-font-mono { font-family: 'Geist Mono', monospace !important; }
+
+@layer components {
+  /* Action Gold CTA - Atompunk Chamfered */
+  .vanguard-btn-amber, .tw-vanguard-btn-amber {
+    @apply tw-bg-[#f59e0b] tw-text-[#020617] tw-border-none tw-rounded-none tw-inline-flex tw-items-center tw-justify-center tw-gap-2 tw-px-4 tw-py-2.5 tw-text-sm tw-font-bold tw-transition-colors;
+    clip-path: polygon(12px 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%, 0 12px);
+    box-shadow: 0 0 10px rgba(245, 158, 11, 0.2);
+  }
+  .vanguard-btn-amber:hover, .tw-vanguard-btn-amber:hover {
+    @apply tw-bg-[#fbbf24] tw-text-[#020617];
+    box-shadow: 0 0 15px rgba(251, 191, 36, 0.5);
+    border-color: transparent !important;
+    outline: none !important;
+  }
+
+  /* Data Cyan CTA */
+  .vanguard-btn-primary, .tw-vanguard-btn-primary {
+    @apply tw-bg-[#14b8a6] tw-text-[#020617] tw-border tw-border-[#2dd4bf] tw-rounded-none tw-inline-flex tw-items-center tw-justify-center tw-gap-2 tw-px-4 tw-py-2.5 tw-text-sm tw-font-bold tw-transition-colors;
+    box-shadow: 0 0 10px rgba(20, 184, 166, 0.2);
+  }
+  .vanguard-btn-primary:hover, .tw-vanguard-btn-primary:hover {
+    @apply tw-bg-[#2dd4bf];
+    box-shadow: 0 0 15px rgba(20, 184, 166, 0.4);
+  }
+
+  /* Subtle / Outlined CTA */
+  .vanguard-btn-secondary, .tw-vanguard-btn-secondary {
+    @apply tw-bg-transparent tw-text-[#f8fafc] tw-border tw-border-[#334155] tw-rounded-none tw-inline-flex tw-items-center tw-justify-center tw-gap-2 tw-px-4 tw-py-2.5 tw-text-sm tw-font-bold tw-transition-colors;
+  }
+  .vanguard-btn-secondary:hover, .tw-vanguard-btn-secondary:hover {
+    @apply tw-border-[#475569] tw-bg-[#0f172a];
+  }
+
+  /* Destructive CTA */
+  .vanguard-btn-danger, .tw-vanguard-btn-danger {
+    @apply tw-bg-[#ef4444] tw-text-[#020617] tw-border tw-border-[#f87171] tw-rounded-none tw-inline-flex tw-items-center tw-justify-center tw-gap-2 tw-px-4 tw-py-2.5 tw-text-sm tw-font-bold tw-transition-colors;
+  }
+  .vanguard-btn-danger:hover, .tw-vanguard-btn-danger:hover {
+    @apply tw-bg-[#f87171];
+    box-shadow: 0 0 15px rgba(239, 68, 68, 0.4);
+    border-color: #f87171 !important;
+    outline: none !important;
+  }
+
+  /* Vanguard Input */
+  .vanguard-input {
+    @apply tw-bg-[var(--color-void-black)] tw-text-[#f8fafc] tw-border tw-border-[var(--color-structural-grey)] tw-rounded-none tw-px-3 tw-py-2 tw-text-sm tw-transition-colors;
+  }
+  .vanguard-input:focus {
+    @apply tw-outline-none tw-border-[#14b8a6] tw-ring-1 tw-ring-[#14b8a6]/50;
+  }
+  .vanguard-input::placeholder {
+    @apply tw-text-[#475569];
   }
 }
 /* Add global anti-squish to flex/grid children */

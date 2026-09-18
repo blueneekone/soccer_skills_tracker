@@ -1,5 +1,5 @@
-### Sprint M1: Extract FacilityMapVault.svelte (1834 lines)
-**Jules Prompt**: Fracture `src/lib/components/field-ops/FacilityMapVault.svelte` into: (1) `FacilityMapVaultEngine.svelte.ts`, (2) `FacilityMapVaultArena.svelte`, (3) `FacilityMapVaultHUD.svelte`. The original file becomes the Shell. Each file must stay under 500 lines. Preserve functionality. Run `pnpm run check` and `pnpm test -- src/lib/components/field-ops/`.
+### Sprint M2: Extract SquadTelemetryView (1553 lines) & RecruiterPortal (1529 lines)
+**Jules Prompt**: (A) Fracture `src/lib/components/hud/SquadTelemetryView.svelte` into Engine+Arena+HUD. (B) Fracture `src/lib/components/recruiter/RecruiterPortal.svelte` into Engine+Arena+HUD. Each resulting file must be under 500 lines. Run `pnpm run check` after each extraction.
 
 
 CRITICAL DIRECTIVE: You are running in fully autonomous CI mode. DO NOT ask clarifying questions. Make safe assumptions and proceed with full execution of the sprint. Once done, mark the task as complete.
