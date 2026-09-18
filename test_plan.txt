@@ -1,0 +1,15 @@
+1. Refactor `src/routes/(app)/tracker/+page.svelte` into Vanguard Trinity:
+  - Create `src/routes/(app)/tracker/TrackerEngine.svelte.ts` containing the logic and state (Engine)
+  - Create `src/routes/(app)/tracker/TrackerHUD.svelte` containing HUD components (e.g. read-only status elements, level stats, streak)
+  - Create `src/routes/(app)/tracker/TrackerArena.svelte` containing the interactive blocks (Arena)
+  - Modify `src/routes/(app)/tracker/+page.svelte` to be a thin Shell that instantiates the Engine and passes it to HUD and Arena.
+
+2. Refactor `src/lib/components/director/TeamsTab.svelte` into Vanguard Trinity:
+  - Create `src/lib/components/director/TeamsEngine.svelte.ts` (data loading, CRUD, roster management)
+  - Create `src/lib/components/director/TeamsArena.svelte` (team cards grid, roster table)
+  - Create `src/lib/components/director/TeamsHUD.svelte` (create team form, filter/sort controls)
+  - Modify `src/lib/components/director/TeamsTab.svelte` to be a thin Shell using Engine, Arena, HUD.
+
+3. Ensure no component exceeds 500 lines. The original tracker/+page.svelte was ~1283 lines and TeamsTab.svelte was ~1264 lines.
+
+4. Run `pnpm run check` and ensure there are no Svelte or TS compiler errors.
