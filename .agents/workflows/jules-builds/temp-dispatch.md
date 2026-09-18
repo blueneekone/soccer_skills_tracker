@@ -1,5 +1,15 @@
-### Sprint M3: Extract FacilityDrawingMap (1498 lines) & MessagesTab (1331 lines)
-**Jules Prompt**: (A) Fracture `src/lib/components/field-ops/FacilityDrawingMap.svelte` into Engine+Arena+HUD. (B) Fracture `src/lib/components/coach/MessagesTab.svelte` into Engine+Arena+HUD. Each file under 500 lines. Run `pnpm run check`.
+# SSTRACKER AUTONOMOUS DISPATCH WORKFLOW
 
+## Target Phase: Phase 8 - Monolithic File Extraction
+## Current Sprint: Sprint M4 (P2)
 
-CRITICAL DIRECTIVE: You are running in fully autonomous CI mode. DO NOT ask clarifying questions. Make safe assumptions and proceed with full execution of the sprint. Once done, mark the task as complete.
+### Execution Prompt for Jules
+(A) Fracture `src/routes/(app)/tracker/+page.svelte` into Shell+Engine+Arena+HUD following Vanguard Trinity. The `+page.svelte` becomes a thin shell.
+(B) Fracture `src/lib/components/director/TeamsTab.svelte` into Engine (team data loading, CRUD, roster management) + Arena (team cards grid, roster table) + HUD (create team form, filter/sort controls). Each file under 500 lines. Run `pnpm run check`.
+
+### Definition of Done
+* 0 Svelte compiler errors
+* 0 TypeScript violations
+* All tests pass 100% green
+
+Make safe assumptions and proceed with full execution of the sprint.
