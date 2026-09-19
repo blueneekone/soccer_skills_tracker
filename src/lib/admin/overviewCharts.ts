@@ -39,7 +39,7 @@ export async function mountMauLineChart(
 					pointRadius: 3,
 					pointHoverRadius: 5,
 					pointBackgroundColor: '#14b8a6',
-					pointBorderColor: '#ffffff',
+					pointBorderColor: '#fafafa',
 					pointBorderWidth: 1.5,
 				},
 			],
