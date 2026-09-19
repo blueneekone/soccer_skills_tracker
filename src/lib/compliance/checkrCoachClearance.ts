@@ -232,8 +232,8 @@ export function buildCheckrEmbedStyles(): CheckrEmbedStyles {
 			'box-shadow': '0 0 0 3px rgba(37, 99, 235, 0.15)',
 		},
 		'.btn-primary': {
-			'background-color': '#2563eb',
-			color: '#ffffff',
+			'background-color': '#0f172a',
+			color: '#fafafa',
 			border: 'none',
 			'border-radius': '6px',
 			padding: '0.625rem 1.25rem',

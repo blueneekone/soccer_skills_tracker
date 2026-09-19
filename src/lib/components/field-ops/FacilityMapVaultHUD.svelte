@@ -41,7 +41,7 @@
 					<tr>
 						<td>
 							{#if r.routingUrl}
-								<Icon name={"geo.pin" as IconName} size={14} class="tw-mr-1 tw-inline tw-text-emerald-500 tw-align-text-bottom" />
+								<Icon name={"geo.pin" as IconName} size={14} class="tw-mr-1 tw-inline tw-text-[#14b8a6] tw-align-text-bottom" />
 							{/if}
 							{r.name}
 						</td>

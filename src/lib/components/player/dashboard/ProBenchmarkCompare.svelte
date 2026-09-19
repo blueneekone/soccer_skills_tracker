@@ -39,7 +39,7 @@
 						<span class="font-mono text-xs text-slate-500">/ {proScore}</span>
 					</div>
 					{#if diff > 0}
-						<span class="font-mono text-xs font-medium text-emerald-400">+{diff}</span>
+						<span class="tw-font-mono tw-text-xs tw-font-medium tw-text-[#14b8a6]">+{diff}</span>
 					{:else if diff < 0}
 						<span class="font-mono text-xs font-medium text-rose-400">{diff}</span>
 					{:else}

@@ -295,7 +295,7 @@
 					<span
 						class="mt-1 inline-block rounded-full px-3 py-1 text-[11px] font-semibold tracking-wide {p.variant ===
 						'ok'
-							? 'bg-emerald-400/10 text-emerald-400'
+							? 'tw-bg-[#14b8a6]/10 tw-text-[#14b8a6]'
 							: 'bg-red-400/10 text-red-400'}"
 					>
 						{p.status}

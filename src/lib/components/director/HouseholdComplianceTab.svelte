@@ -92,7 +92,7 @@
 							<div class="tw-flex tw-items-center tw-gap-2">
 								{#if hh.vpcStatus === 'Verified'}
 									<div class="tw-w-2 tw-h-2 tw-rounded-none tw-bg-[#14b8a6]"></div>
-									<span class="tw-text-xs tw-text-green-400 tw-font-bold">Verified</span>
+									<span class="tw-text-xs tw-text-[#14b8a6] tw-font-bold">Verified</span>
 								{:else if hh.vpcStatus === 'Pending'}
 									<div class="tw-w-2 tw-h-2 tw-rounded-none tw-bg-[#f59e0b]"></div>
 									<span class="tw-text-xs tw-text-[#fbbf24] tw-font-bold">Pending</span>
