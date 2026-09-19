@@ -83,7 +83,7 @@
 		display: inline-flex;
 		align-items: center;
 		gap: 6px;
-		padding: 4px 8px 4px 10px;
+		padding: clamp(2px, 0.5vw, 4px) 8px 4px 10px;
 		border-radius: 999px;
 		border: 1px solid #e5e5e5;
 		background: #0f172a;
@@ -111,7 +111,7 @@
 		border: none;
 		background: transparent;
 		cursor: pointer;
-		padding: 2px;
+		padding: clamp(2px, 0.5vw, 4px);
 		color: var(--text-secondary);
 		display: flex;
 		align-items: center;
@@ -137,7 +137,7 @@
 		grid-template-columns: 1fr auto;
 		grid-template-rows: auto auto;
 		gap: 0 10px;
-		padding: 10px 12px;
+		padding: clamp(10px, 1vw, 12px);
 		border: none;
 		border-bottom: 1px solid rgba(0, 0, 0, 0.06);
 		background: transparent;

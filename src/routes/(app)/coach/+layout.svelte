@@ -6,6 +6,6 @@
 	let { children }: { children?: Snippet } = $props();
 </script>
 
-<div class="coach-os-root tw-min-w-0">
+<div class="coach-os-root tw-flex tw-flex-col tw-h-full tw-flex-1 tw-min-h-0 tw-min-w-0">
 	{@render children?.()}
 </div>

@@ -254,7 +254,7 @@
 		font-family: inherit;
 		font-size: 10px;
 		letter-spacing: 0.18em;
-		padding: 8px 18px;
+		padding: clamp(4px, 1vw, 8px) 18px;
 		border: 1px solid rgba(255, 255, 255, 0.08);
 		border-radius: 0px;
 		background: transparent;
@@ -292,7 +292,7 @@
 		letter-spacing: 0.3em;
 		color: #14b8a6;
 		display: block;
-		margin-bottom: 4px;
+		margin-bottom: clamp(2px, 0.5vw, 4px);
 	}
 	.mc-title {
 		font-size: 1.75rem;

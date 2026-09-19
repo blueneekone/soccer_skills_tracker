@@ -235,7 +235,7 @@
 		font: inherit;
 		font-size: 12px;
 		font-weight: 800;
-		padding: 8px 14px;
+		padding: clamp(4px, 1vw, 8px) 14px;
 		border-radius: 10px;
 		border: 1px solid transparent;
 		cursor: pointer;
@@ -283,7 +283,7 @@
 		min-width: 0;
 		border-radius: 10px;
 		border: 1px solid #e5e5e5;
-		padding: 8px 10px;
+		padding: clamp(4px, 1vw, 8px) 10px;
 		background: rgba(0, 0, 0, 0.02);
 		box-sizing: border-box;
 	}
@@ -314,7 +314,7 @@
 	}
 
 	.pai__list {
-		margin: 8px 0 0;
+		margin: clamp(4px, 1vw, 8px) 0 0;
 		padding-left: 1.15rem;
 		font-size: 13px;
 		line-height: 1.45;
@@ -322,7 +322,7 @@
 	}
 
 	.pai__li {
-		margin-bottom: 4px;
+		margin-bottom: clamp(2px, 0.5vw, 4px);
 		min-width: 0;
 	}
 

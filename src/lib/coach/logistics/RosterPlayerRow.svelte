@@ -163,7 +163,7 @@
 
 	/* Edit mode */
 	.rpr-edit { display: flex; flex-direction: column; gap: 6px; }
-	.rpr-edit__header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+	.rpr-edit__header { display: flex; justify-content: space-between; align-items: center; margin-bottom: clamp(2px, 0.5vw, 4px); }
 	.rpr-edit__title { font-size: 13px; font-weight: 700; color: #e2e8f0; }
 	.rpr-label { font-size: 10px; font-weight: 700; color: #94a3b8; letter-spacing: 0.08em; text-transform: uppercase; margin-top: 6px; }
 	.rpr-input {
@@ -175,7 +175,7 @@
 	.rpr-err { font-size: 12px; color: #f87171; margin: 2px 0 0; }
 	.rpr-save {
 		background: rgba(20,184,166,0.15); color: #14b8a6; border: 1px solid #14b8a6;
-		border-radius: 8px; padding: 8px 16px; font-size: 12px; font-weight: 700;
+		border-radius: 8px; padding: clamp(4px, 1vw, 8px) 16px; font-size: 12px; font-weight: 700;
 		font-family: 'Geist Mono', ui-monospace, monospace; letter-spacing: 0.05em; cursor: pointer;
 		transition: background 0.15s;
 	}

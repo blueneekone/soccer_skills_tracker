@@ -312,7 +312,7 @@
 		display: flex;
 		flex-direction: column;
 		gap: 6px;
-		padding-top: 4px;
+		padding-top: clamp(2px, 0.5vw, 4px);
 		border-top: 1px dashed color-mix(in srgb, var(--brand-primary, #0f172a) 15%, transparent);
 	}
 
@@ -320,7 +320,7 @@
 		font: inherit;
 		font-weight: 800;
 		font-size: 0.8rem;
-		padding: 8px 12px;
+		padding: clamp(4px, 1vw, 8px) 12px;
 		border-radius: 0px;
 		border: 1px solid color-mix(in srgb, var(--brand-primary, #0f172a) 28%, transparent);
 		background: linear-gradient(

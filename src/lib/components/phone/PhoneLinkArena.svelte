@@ -274,7 +274,7 @@
 		background: rgba(var(--accent), 0.08);
 		border: 1px solid rgba(var(--accent), 0.25);
 		border-radius: 4px;
-		padding: 2px 8px;
+		padding: clamp(2px, 0.5vw, 8px);
 	}
 	.subtitle {
 		margin: 0;

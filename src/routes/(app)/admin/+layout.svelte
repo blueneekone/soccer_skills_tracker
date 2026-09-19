@@ -6,8 +6,8 @@
 	let { children } = $props();
 </script>
 
-<div class="tw-flex tw-w-full">
-	<div class="ga-workspace tw-w-full lg:tw-col-span-12 tw-flex-1 tw-min-w-0">
+<div class="tw-flex tw-flex-1 tw-h-full tw-w-full tw-min-h-0">
+	<div class="ga-workspace tw-flex tw-flex-col tw-w-full lg:tw-col-span-12 tw-flex-1 tw-min-h-0 tw-min-w-0">
 		{@render children()}
 	</div>
 	{#if authStore.role === 'super_admin' || authStore.role === 'global_admin' || authStore.role === 'admin'}

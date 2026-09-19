@@ -440,7 +440,7 @@
 		font-family: inherit;
 		color: #fafafa;
 		box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
-		margin-top: 4px;
+		margin-top: clamp(2px, 0.5vw, 4px);
 	}
 	:global(.pac-item) {
 		padding: 10px 12px;
@@ -556,7 +556,7 @@
 	}
 
 	.eom-sub {
-		margin: 4px 0 0;
+		margin: clamp(2px, 0.5vw, 4px) 0 0;
 		font-size: 0.8125rem;
 		color: #52525b;
 	}
@@ -630,7 +630,7 @@
 	}
 
 	.eom-form {
-		padding: 16px 20px 20px;
+		padding: clamp(8px, 2vw, 16px) 20px 20px;
 	}
 
 	.eom-grid {

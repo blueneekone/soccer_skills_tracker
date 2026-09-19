@@ -154,7 +154,7 @@
 	}
 
 	.comms-compliance__head {
-		padding-bottom: 8px;
+		padding-bottom: clamp(4px, 1vw, 8px);
 		border-bottom: 1px solid #334155;
 	}
 
@@ -239,7 +239,7 @@
 	}
 
 	.comms-compliance__ref {
-		margin: 8px 0 0;
+		margin: clamp(4px, 1vw, 8px) 0 0;
 		font-size: 10px;
 		font-family: ui-monospace, monospace;
 		color: #64748b;

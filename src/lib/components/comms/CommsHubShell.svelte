@@ -631,7 +631,7 @@
 
 	.comms-hub-shell__space-context {
 		margin: 0 0 8px;
-		padding: 8px 10px;
+		padding: clamp(4px, 1vw, 8px) 10px;
 		border: 1px solid var(--pd-grey-trim, #334155);
 		background: rgba(15, 23, 42, 0.35);
 		font-size: 11px;

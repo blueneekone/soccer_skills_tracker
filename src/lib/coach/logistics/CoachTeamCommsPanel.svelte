@@ -211,7 +211,7 @@
 
 	.coach-team-comms :global(.plp-sub),
 	.coach-team-comms :global(.plp-hint) {
-		margin: 4px 0 0;
+		margin: clamp(2px, 0.5vw, 4px) 0 0;
 		font-size: 12px;
 		line-height: 1.45;
 		color: #94a3b8;
@@ -225,7 +225,7 @@
 		min-height: 200px;
 		max-height: 420px;
 		overflow-y: auto;
-		padding: 4px 0;
+		padding: clamp(2px, 0.5vw, 4px) 0;
 		border: 1px solid var(--pd-grey-trim, #334155);
 		border-radius: var(--pd-chamfer-sm, 4px);
 		background: var(--pd-void-base, #000);
@@ -266,7 +266,7 @@
 		display: flex;
 		gap: 8px;
 		align-items: center;
-		margin-bottom: 4px;
+		margin-bottom: clamp(2px, 0.5vw, 4px);
 		flex-wrap: wrap;
 	}
 
@@ -304,7 +304,7 @@
 		display: flex;
 		gap: 8px;
 		align-items: flex-end;
-		margin-top: 4px;
+		margin-top: clamp(2px, 0.5vw, 4px);
 	}
 
 	.coach-team-comms :global(.plp-input) {
@@ -312,7 +312,7 @@
 		min-width: 0;
 		border: 1px solid var(--pd-grey-trim, #334155);
 		border-radius: var(--pd-chamfer-sm, 4px);
-		padding: 8px 10px;
+		padding: clamp(4px, 1vw, 8px) 10px;
 		font: inherit;
 		font-size: 13px;
 		background: var(--pd-void-base, #000);

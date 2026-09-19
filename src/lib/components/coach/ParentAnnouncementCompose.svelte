@@ -179,7 +179,7 @@
 	}
 
 	.pac-sub {
-		margin: 4px 0 0;
+		margin: clamp(2px, 0.5vw, 4px) 0 0;
 		font-size: 12px;
 		line-height: 1.45;
 		color: #64748b;
@@ -290,7 +290,7 @@
 		display: flex;
 		justify-content: flex-end;
 		gap: 10px;
-		margin-top: 4px;
+		margin-top: clamp(2px, 0.5vw, 4px);
 	}
 
 	.pac-btn {

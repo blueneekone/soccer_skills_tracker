@@ -169,9 +169,9 @@
 			<p class="v-flash v-flash--ok" role="status">{engine.secOk}</p>
 		{/if}
 
-		<div class="tw-grid st-bento tw-grid-cols-1 md:tw-grid-cols-3 tw-gap-[clamp(16px,2vw,24px)]">
+		<div class="tw-grid st-bento tw-grid-cols-1 lg:tw-grid-cols-12 tw-gap-[clamp(16px,2vw,24px)]">
 			<!-- MFA Toggle -->
-			<div class="tw-bg-[#0f172a] tw-border tw-border-slate-800 tw-p-[clamp(12px,1.5vw,20px)] tw-flex tw-flex-col tw-gap-3">
+			<div class="lg:tw-col-span-5 tw-bg-[#0f172a] tw-border tw-border-slate-800 tw-p-[clamp(12px,1.5vw,20px)] tw-flex tw-flex-col tw-gap-3">
 				<span class="tw-text-xs tw-font-bold tw-uppercase tw-tracking-widest tw-text-[#A1A1AA]">Enforce Global MFA</span>
 				<p class="tw-text-xs tw-text-[#D4D4D8]">Require multi-factor authentication for all admin and director accounts.</p>
 				<label class="tw-flex tw-items-center tw-gap-3 tw-cursor-pointer">
@@ -185,7 +185,7 @@
 			</div>
 
 			<!-- PII TTL Schedule -->
-			<div class="tw-bg-[#0f172a] tw-border tw-border-slate-800 tw-p-[clamp(12px,1.5vw,20px)] tw-flex tw-flex-col tw-gap-3">
+			<div class="lg:tw-col-span-4 tw-bg-[#0f172a] tw-border tw-border-slate-800 tw-p-[clamp(12px,1.5vw,20px)] tw-flex tw-flex-col tw-gap-3">
 				<span class="tw-text-xs tw-font-bold tw-uppercase tw-tracking-widest tw-text-[#A1A1AA]">PII Purge (TTL) Schedule</span>
 				<p class="tw-text-xs tw-text-[#D4D4D8]">Automated COPPA-compliant PII overwrite cycle for inactive records.</p>
 				<select
@@ -200,7 +200,7 @@
 			</div>
 
 			<!-- Session Timeout -->
-			<div class="tw-bg-[#0f172a] tw-border tw-border-slate-800 tw-p-[clamp(12px,1.5vw,20px)] tw-flex tw-flex-col tw-gap-3">
+			<div class="lg:tw-col-span-3 tw-bg-[#0f172a] tw-border tw-border-slate-800 tw-p-[clamp(12px,1.5vw,20px)] tw-flex tw-flex-col tw-gap-3">
 				<span class="tw-text-xs tw-font-bold tw-uppercase tw-tracking-widest tw-text-[#A1A1AA]">Default Session Timeout</span>
 				<p class="tw-text-xs tw-text-[#D4D4D8]">Maximum idle time before sessions are force-expired platform-wide.</p>
 				<select
@@ -238,9 +238,9 @@
 			Pro league data feeds, webhook health, and third-party credentials. API keys are stored in Google Secret Manager — never in Firestore.
 		</p>
 
-		<div class="tw-grid st-bento tw-grid-cols-1 md:tw-grid-cols-2 tw-gap-[clamp(16px,2vw,24px)]">
-			{#each integrationSpecs as spec (spec.id)}
-				<article class="tw-flex tw-flex-col tw-gap-2 tw-border tw-border-slate-800 tw-bg-[#0f172a] tw-p-[clamp(16px,2vw,24px)]" aria-labelledby="ss-int-{spec.id}">
+		<div class="tw-grid st-bento tw-grid-cols-1 lg:tw-grid-cols-12 tw-gap-[clamp(16px,2vw,24px)]">
+			{#each integrationSpecs as spec, i (spec.id)}
+				<article class="tw-flex tw-flex-col tw-gap-2 tw-border tw-border-slate-800 tw-bg-[#0f172a] tw-p-[clamp(16px,2vw,24px)] {i % 3 === 0 ? 'lg:tw-col-span-8' : 'lg:tw-col-span-4'}" aria-labelledby="ss-int-{spec.id}">
 					<header class="tw-flex tw-items-center tw-justify-between">
 						<h3 id="ss-int-{spec.id}" class="tw-font-sans tw-tracking-tight tw-font-bold tw-text-[#FAFAFA]">{spec.label}</h3>
 						<span class="tw-text-[10px] tw-uppercase tw-font-bold tw-tracking-widest tw-bg-[#0f172a] tw-text-[#D4D4D8] tw-px-2 tw-py-1">Secret Manager</span>
@@ -264,9 +264,9 @@
 			Platform-level connectors the Director Onboarding flow will turn on once the handshake ships.
 		</p>
 
-		<div class="tw-grid st-bento tw-grid-cols-1 md:tw-grid-cols-2 tw-gap-[clamp(16px,2vw,24px)]">
-			{#each upcomingIntegrations as spec (spec.id)}
-				<article class="tw-flex tw-flex-col tw-gap-2 tw-border tw-border-slate-800 tw-bg-[#0f172a] tw-p-[clamp(16px,2vw,24px)]" aria-labelledby="ss-upcoming-{spec.id}">
+		<div class="tw-grid st-bento tw-grid-cols-1 lg:tw-grid-cols-12 tw-gap-[clamp(16px,2vw,24px)]">
+			{#each upcomingIntegrations as spec, i (spec.id)}
+				<article class="tw-flex tw-flex-col tw-gap-2 tw-border tw-border-slate-800 tw-bg-[#0f172a] tw-p-[clamp(16px,2vw,24px)] {i % 3 === 0 ? 'lg:tw-col-span-8' : 'lg:tw-col-span-4'}" aria-labelledby="ss-upcoming-{spec.id}">
 					<header class="tw-flex tw-items-start tw-gap-4">
 						<span class="tw-flex tw-items-center tw-justify-center tw-w-10 tw-h-10" style="background: {spec.accent}1f; color: {spec.accent};" aria-hidden="true">
 							<Icon name={spec.icon as IconName} />

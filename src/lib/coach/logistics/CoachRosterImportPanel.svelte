@@ -398,7 +398,7 @@
 		flex-direction: column;
 		gap: 10px;
 		min-width: 0;
-		padding: 16px;
+		padding: clamp(8px, 2vw, 16px);
 		border: 1px solid #334155;
 		border-radius: 8px;
 		background: rgba(15, 23, 42, 0.7);
@@ -487,7 +487,7 @@
 	.ops-import__caption {
 		caption-side: top;
 		text-align: left;
-		padding: 8px 10px;
+		padding: clamp(4px, 1vw, 8px) 10px;
 		font-weight: 700;
 		color: #94a3b8;
 		background: rgba(15, 23, 42, 0.8);
@@ -495,7 +495,7 @@
 	}
 	.ops-import__table th,
 	.ops-import__table td {
-		padding: 8px 10px;
+		padding: clamp(4px, 1vw, 8px) 10px;
 		text-align: left;
 		border-bottom: 1px solid #1e293b;
 		color: #e2e8f0;

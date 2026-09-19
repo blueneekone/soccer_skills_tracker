@@ -129,7 +129,7 @@
 		flex-direction: column;
 		gap: 12px;
 		min-width: 0;
-		padding: 16px 18px;
+		padding: clamp(8px, 2vw, 16px) 18px;
 	}
 
 	.comms-workspace__mobile-picker {
@@ -138,7 +138,7 @@
 
 	.comms-workspace__space-context {
 		margin: 0 0 8px;
-		padding: 8px 10px;
+		padding: clamp(4px, 1vw, 8px) 10px;
 		border: 1px solid var(--pd-grey-trim, #334155);
 		background: rgba(15, 23, 42, 0.35);
 		font-size: 11px;
@@ -236,7 +236,7 @@
 		left: 0;
 		right: 0;
 		margin: 0;
-		padding: 4px 0;
+		padding: clamp(2px, 0.5vw, 4px) 0;
 		list-style: none;
 		border: 1px solid var(--pd-grey-trim, #334155);
 		background: var(--pd-navy-panel, #0f172a);

@@ -281,7 +281,7 @@
 		inset: 0;
 		display: grid;
 		place-items: center;
-		padding: 24px;
+		padding: clamp(12px, 3vw, 24px);
 		/* Critical red — deep, intentional, not an accident */
 		background:
 			radial-gradient(ellipse 120% 80% at 50% 0%,   rgba(120, 0, 0, 0.7) 0%, transparent 60%),
@@ -334,7 +334,7 @@
 		position: relative;
 		z-index: 1;
 		width: min(580px, 100%);
-		padding: 32px 32px 28px;
+		padding: clamp(16px, 4vw, 32px) 32px 28px;
 		background:
 			linear-gradient(135deg, rgba(60, 0, 0, 0.9), rgba(30, 0, 0, 0.95));
 		border: 1px solid rgba(239, 68, 68, 0.3);
@@ -402,7 +402,7 @@
 		display: inline-flex;
 		align-items: center;
 		gap: 8px;
-		padding: 4px 12px;
+		padding: clamp(2px, 0.5vw, 4px) 12px;
 		font-size: 8px;
 		font-weight: 800;
 		letter-spacing: 0.22em;
@@ -410,7 +410,7 @@
 		background: rgba(239, 68, 68, 0.08);
 		border: 1px solid rgba(239, 68, 68, 0.35);
 		border-radius: 2px;
-		margin-bottom: 16px;
+		margin-bottom: clamp(8px, 2vw, 16px);
 	}
 	.va-badge-dot {
 		width: 6px; height: 6px;
@@ -453,7 +453,7 @@
 		display: flex;
 		justify-content: space-between;
 		align-items: center;
-		margin-bottom: 8px;
+		margin-bottom: clamp(4px, 1vw, 8px);
 		padding-bottom: 6px;
 		border-bottom: 1px solid rgba(239, 68, 68, 0.1);
 	}
@@ -533,7 +533,7 @@
 
 	/* ── Footer ────────────────────────────────────────────────────────────── */
 	.va-foot {
-		margin: 16px 0 0;
+		margin: clamp(8px, 2vw, 16px) 0 0;
 		font-size: 8px;
 		color: rgba(239, 68, 68, 0.2);
 	}
@@ -548,7 +548,7 @@
 	}
 
 	@media (max-width: 520px) {
-		.va-card { padding: 24px 20px 22px; }
+		.va-card { padding: clamp(12px, 3vw, 24px) 20px 22px; }
 		.va-title { font-size: 1.25rem; }
 	}
 </style>

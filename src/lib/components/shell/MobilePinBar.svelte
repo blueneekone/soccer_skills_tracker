@@ -252,7 +252,7 @@
 		gap: 2px;
 		min-height: 44px;
 		min-width: 44px;
-		padding: 4px 2px;
+		padding: clamp(2px, 0.5vw, 4px) 2px;
 		border: none;
 		background: transparent;
 		color: rgba(255, 255, 255, 0.45);

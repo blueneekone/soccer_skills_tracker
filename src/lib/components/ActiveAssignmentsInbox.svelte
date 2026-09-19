@@ -190,7 +190,7 @@
 	.aa-inbox__hint,
 	.aa-inbox__err {
 		margin: 0;
-		padding: 16px;
+		padding: clamp(8px, 2vw, 16px);
 		font-size: 0.9rem;
 	}
 

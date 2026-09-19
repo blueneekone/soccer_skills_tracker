@@ -354,7 +354,7 @@
 		background: var(--glass-bg, #0f172a);
 		border: 1px solid var(--border-muted, #e5e5e5);
 		border-radius: 0px;
-		padding: 16px;
+		padding: clamp(8px, 2vw, 16px);
 	}
 
 	:global(html.dark) .pb-tab__panel {

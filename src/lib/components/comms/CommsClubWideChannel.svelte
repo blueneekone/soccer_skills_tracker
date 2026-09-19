@@ -315,7 +315,7 @@
 	}
 
 	.comms-club-wide__preview {
-		margin: 4px 0 0;
+		margin: clamp(2px, 0.5vw, 4px) 0 0;
 		font-size: 12px;
 		color: #94a3b8;
 		line-height: 1.4;

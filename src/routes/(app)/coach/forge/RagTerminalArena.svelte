@@ -61,7 +61,7 @@
 	}
 	.terminal-history {
 		flex: 1;
-		padding: 24px;
+		padding: clamp(12px, 3vw, 24px);
 		overflow-y: auto;
 		display: flex;
 		flex-direction: column;
@@ -91,14 +91,14 @@
 		display: flex;
 		align-items: flex-start;
 		gap: 12px;
-		padding: 16px;
+		padding: clamp(8px, 2vw, 16px);
 		background: #0f172a;
 		border-top: 1px solid #334155;
 	}
 	.input-prefix {
 		font-family: var(--font-mono, 'Geist Mono', monospace);
 		color: #14b8a6;
-		margin-top: 8px;
+		margin-top: clamp(4px, 1vw, 8px);
 	}
 	.terminal-input {
 		flex: 1;
@@ -110,7 +110,7 @@
 		resize: none;
 		outline: none;
 		line-height: 1.5;
-		padding: 8px 0;
+		padding: clamp(4px, 1vw, 8px) 0;
 	}
 	.terminal-input::placeholder { color: #475569; }
 	.btn-execute {
@@ -119,10 +119,10 @@
 		font-family: var(--font-mono, 'Geist Mono', monospace);
 		font-weight: 700;
 		border: none;
-		padding: 8px 16px;
+		padding: clamp(4px, 1vw, 8px) 16px;
 		cursor: pointer;
 		text-transform: uppercase;
-		margin-top: 4px;
+		margin-top: clamp(2px, 0.5vw, 4px);
 	}
 	.btn-execute:disabled {
 		background: #334155;

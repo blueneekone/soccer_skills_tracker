@@ -155,7 +155,7 @@
 	}
 
 	.vm-sub {
-		margin: 4px 0 0;
+		margin: clamp(2px, 0.5vw, 4px) 0 0;
 		font-size: 0.75rem;
 		color: #94a3b8;
 	}
@@ -193,7 +193,7 @@
 
 	.vm-req {
 		color: #f87171;
-		margin-left: 4px;
+		margin-left: clamp(2px, 0.5vw, 4px);
 	}
 
 	.vm-select {
@@ -201,7 +201,7 @@
 		color: #f1f5f9;
 		border: 1px solid #334155;
 		border-radius: 4px;
-		padding: 4px 8px;
+		padding: clamp(2px, 0.5vw, 4px) 8px;
 		font-family: 'Geist Mono', monospace;
 		font-size: 0.75rem;
 		width: 100%;

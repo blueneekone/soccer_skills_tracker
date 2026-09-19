@@ -509,7 +509,7 @@
 	:global(html.dark) .eam-title { color: #fafafa; }
 
 	.eam-sub {
-		margin: 4px 0 0;
+		margin: clamp(2px, 0.5vw, 4px) 0 0;
 		font-size: 0.8125rem;
 		color: #52525b;
 	}
@@ -572,7 +572,7 @@
 
 	:global(html.dark) .eam-flash--ok { color: #86efac; }
 
-	.eam-form { padding: 16px 20px 20px; }
+	.eam-form { padding: clamp(8px, 2vw, 16px) 20px 20px; }
 
 	.eam-grid {
 		display: grid;

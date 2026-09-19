@@ -402,7 +402,7 @@
 	.app-menu-sheet__handle {
 		width: 36px;
 		height: 4px;
-		margin: 8px auto 4px;
+		margin: clamp(4px, 1vw, 8px) auto 4px;
 		border-radius: 999px;
 		background: rgba(148, 163, 184, 0.35);
 		flex-shrink: 0;
@@ -412,7 +412,7 @@
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
-		padding: 8px 16px 12px;
+		padding: clamp(4px, 1vw, 8px) 16px 12px;
 		border-bottom: 1px solid rgba(148, 163, 184, 0.12);
 		flex-shrink: 0;
 	}
@@ -446,7 +446,7 @@
 		overflow-y: auto;
 		flex: 1 1 auto;
 		min-height: 0;
-		padding: 8px 12px 12px;
+		padding: clamp(4px, 1vw, 8px) 12px 12px;
 	}
 
 	.app-menu-sheet__section {
@@ -579,7 +579,7 @@
 
 	.app-menu-sheet__footer {
 		flex-shrink: 0;
-		padding: 8px 16px 12px;
+		padding: clamp(4px, 1vw, 8px) 16px 12px;
 		border-top: 1px solid rgba(148, 163, 184, 0.12);
 	}
 

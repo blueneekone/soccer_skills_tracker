@@ -499,7 +499,7 @@
 		display: flex;
 		flex-direction: column;
 		gap: 2px;
-		padding: 8px 10px;
+		padding: clamp(4px, 1vw, 8px) 10px;
 		border: 1px solid #475569;
 		border-radius: 0px;
 		background: #0f172a;
@@ -566,7 +566,7 @@
 
 	.reg-roster-dnd__assigned-row {
 		font-size: 0.82rem;
-		padding: 4px 6px;
+		padding: clamp(2px, 0.5vw, 4px) 6px;
 		border-radius: 0px;
 		background: rgba(51, 65, 85, 0.45);
 	}

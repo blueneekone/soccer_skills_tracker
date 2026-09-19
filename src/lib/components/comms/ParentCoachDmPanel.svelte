@@ -579,7 +579,7 @@
 		display: flex;
 		flex-direction: column;
 		gap: 4px;
-		margin-bottom: 4px;
+		margin-bottom: clamp(2px, 0.5vw, 4px);
 	}
 
 	.pcdm-disclosure {
@@ -748,7 +748,7 @@
 
 	.pcdm-recipient-row {
 		width: 100%;
-		padding: 8px 10px;
+		padding: clamp(4px, 1vw, 8px) 10px;
 		border: 1px solid var(--pd-grey-trim, #334155);
 		border-left: 3px solid transparent;
 		border-radius: 0;
@@ -765,7 +765,7 @@
 	}
 
 	.pcdm-empty {
-		padding: 24px 0;
+		padding: clamp(12px, 3vw, 24px) 0;
 	}
 
 	@media (max-width: 767px) {

@@ -641,18 +641,18 @@
           style="width:100%; resize:vertical; font-size:11px; background:rgba(20,184,166,0.04); border:1px solid rgba(20,184,166,0.15); border-radius:6px; padding:6px 8px; color:#e2e8f0;"
         ></textarea>
 
-        <label class="pw-mono" style="display:block; margin-top:8px; font-size:10px; color:rgba(20,184,166,0.6); letter-spacing:0.08em;">
+        <label class="pw-mono" style="display:block; margin-top: clamp(4px, 1vw, 8px); font-size:10px; color:rgba(20,184,166,0.6); letter-spacing:0.08em;">
           ATTACH PHOTO OR SHORT VIDEO <span style="opacity:0.5;">(optional)</span>
           <input
             type="file"
             accept="image/*,video/*"
             disabled={proofSubmitting}
             onchange={onProofFileChange}
-            style="display:block; margin-top:4px; font-size:10px; color:#e2e8f0;"
+            style="display:block; margin-top: clamp(2px, 0.5vw, 4px); font-size:10px; color:#e2e8f0;"
           />
         </label>
         {#if proofMediaFile}
-          <p class="pw-mono" style="font-size:10px; color:rgba(20,184,166,0.7); margin-top:4px;">
+          <p class="pw-mono" style="font-size:10px; color:rgba(20,184,166,0.7); margin-top: clamp(2px, 0.5vw, 4px);">
             {proofMediaFile.name} selected
             {#if proofUploadProgress !== null}
               · uploading {proofUploadProgress}%
@@ -660,7 +660,7 @@
           </p>
         {/if}
         {#if proofMediaError}
-          <p class="pw-mono" style="font-size:10px; color:rgba(255,80,60,0.8); margin-top:4px;" role="alert">{proofMediaError}</p>
+          <p class="pw-mono" style="font-size:10px; color:rgba(255,80,60,0.8); margin-top: clamp(2px, 0.5vw, 4px);" role="alert">{proofMediaError}</p>
         {/if}
 
         <div class="tw-flex tw-gap-2 tw-mt-2">
@@ -689,7 +689,7 @@
   {/if}
 
   {#if proofSubmitted}
-    <p class="pw-mono pw-dim" style="font-size:11px; padding:8px 0;" aria-live="polite">
+    <p class="pw-mono pw-dim" style="font-size:11px; padding: clamp(4px, 1vw, 8px) 0;" aria-live="polite">
       Proof sent to parent.
     </p>
   {/if}

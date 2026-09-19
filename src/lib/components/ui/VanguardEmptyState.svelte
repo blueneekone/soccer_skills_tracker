@@ -194,8 +194,8 @@
 	.ves-cta {
 		display: inline-flex;
 		align-items: center;
-		margin-top: 4px;
-		padding: 8px 20px;
+		margin-top: clamp(2px, 0.5vw, 4px);
+		padding: clamp(4px, 1vw, 8px) 20px;
 		font-family: 'Geist Mono', 'Space Mono', ui-monospace, monospace;
 		font-size: 10px;
 		font-weight: 700;

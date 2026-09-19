@@ -160,11 +160,11 @@
 		display: flex;
 		flex-direction: column;
 		gap: 10px;
-		padding: 16px 18px;
+		padding: clamp(8px, 2vw, 16px) 18px;
 		border: 1px solid #334155;
 		border-radius: 0px;
 		background: #0f172a;
-		margin-bottom: 16px;
+		margin-bottom: clamp(8px, 2vw, 16px);
 	}
 
 	.season-panel__title {
@@ -211,7 +211,7 @@
 	.season-input {
 		border: 1px solid #334155;
 		border-radius: 0px;
-		padding: 8px 10px;
+		padding: clamp(4px, 1vw, 8px) 10px;
 		font-size: 13px;
 		background: #1e293b;
 		color: #f8fafc;

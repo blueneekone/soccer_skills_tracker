@@ -320,7 +320,7 @@
 		display: flex;
 		flex-direction: column;
 		align-items: center;
-		margin-left: 4px;
+		margin-left: clamp(2px, 0.5vw, 4px);
 	}
 	.oc-gp-label {
 		font-size: 9px;

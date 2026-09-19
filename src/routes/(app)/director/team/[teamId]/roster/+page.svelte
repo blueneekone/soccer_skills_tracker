@@ -138,11 +138,11 @@
 	.dtr-bc-active { color: #fafafa; font-weight: 700; }
 	.dtr-title-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
 	.dtr-title { margin: 0; font-family: 'Geist Mono', monospace; font-size: clamp(16px,2.5vw,22px); font-weight: 900; text-transform: uppercase; letter-spacing: 0.06em; color: #fafafa; }
-	.dtr-subtitle { margin: 4px 0 0; font-size: 12px; color: #94a3b8; }
+	.dtr-subtitle { margin: clamp(2px, 0.5vw, 4px) 0 0; font-size: 12px; color: #94a3b8; }
 	.dtr-code { font-family: 'Geist Mono', monospace; font-size: 11px; color: #14b8a6; background: #0f172a; border: 1px solid #334155; padding: 1px 6px; }
 	.dtr-count-badge { font-family: 'Geist Mono', monospace; font-size: 11px; font-weight: 700; color: #daff0a; background: #0f172a; border: 1px solid #334155; padding: 6px 14px; white-space: nowrap; align-self: center; }
 	.dtr-main { flex: 1; padding: clamp(20px,3vw,32px) clamp(20px,4vw,40px); }
-	.dtr-loading { display: flex; align-items: center; gap: 12px; padding: 48px 0; }
+	.dtr-loading { display: flex; align-items: center; gap: 12px; padding: clamp(24px, 5vw, 48px) 0; }
 	.dtr-spinner { width: 18px; height: 18px; border: 2px solid #334155; border-top-color: #14b8a6; border-radius: 50%; animation: dtr-spin 0.8s linear infinite; }
 	@keyframes dtr-spin { to { transform: rotate(360deg); } }
 	.dtr-loading-text { font-family: 'Geist Mono', monospace; font-size: 12px; color: #64748b; margin: 0; }

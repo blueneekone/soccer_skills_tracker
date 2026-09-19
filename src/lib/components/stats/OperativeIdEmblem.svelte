@@ -290,7 +290,7 @@
 	.oie-rank {
 		color: rgba(34, 211, 238, 0.85);
 		text-transform: uppercase;
-		margin-top: 4px;
+		margin-top: clamp(2px, 0.5vw, 4px);
 	}
 
 	.oie-name-arc__text {

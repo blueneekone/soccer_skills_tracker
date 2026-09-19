@@ -317,7 +317,7 @@
 		font-family: inherit;
 		color: #fafafa;
 		box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
-		margin-top: 4px;
+		margin-top: clamp(2px, 0.5vw, 4px);
 	}
 	:global(.pac-item) {
 		padding: 10px 12px;

@@ -49,8 +49,8 @@
 	});
 </script>
 
-<div class="tw-flex tw-w-full">
-	<div class="director-os-root director-command-center-shell tw-flex-1 tw-min-w-0">
+<div class="tw-flex tw-flex-1 tw-h-full tw-w-full tw-min-h-0">
+	<div class="director-os-root director-command-center-shell tw-flex tw-flex-col tw-flex-1 tw-min-h-0 tw-min-w-0">
 		{#if isReadOnly}
 			<DirectorReadOnlyBanner onUpgrade={() => (upgradeModalOpen = true)} />
 		{/if}

@@ -80,7 +80,7 @@
 		z-index: 9999;
 		display: grid;
 		place-items: center;
-		padding: 24px;
+		padding: clamp(12px, 3vw, 24px);
 		background: radial-gradient(
 			ellipse at 50% 40%,
 			#18181b 0%,
@@ -185,7 +185,7 @@
 		display: flex;
 		justify-content: center;
 		gap: 12px;
-		margin-bottom: 24px;
+		margin-bottom: clamp(12px, 3vw, 24px);
 	}
 
 	.mnt-btn-secondary {

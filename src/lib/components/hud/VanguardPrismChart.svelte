@@ -103,7 +103,7 @@
 		/* Z1 recessed well */
 		background: #0f172a;
 		border-radius: 12px;
-		padding: 16px;
+		padding: clamp(8px, 2vw, 16px);
 		box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.5);
 		border: 1px solid rgba(20, 184, 166, 0.15);
 	}

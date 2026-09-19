@@ -273,7 +273,7 @@
 		display: grid;
 		grid-template-columns: repeat(auto-fit, minmax(min(100%, clamp(280px, 30vw, 350px)), 1fr));
 		gap: 14px;
-		margin-bottom: 16px;
+		margin-bottom: clamp(8px, 2vw, 16px);
 		align-items: stretch;
 	}
 

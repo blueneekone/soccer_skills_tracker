@@ -552,7 +552,7 @@ import { untrack } from 'svelte';
 	.ec-anomaly-close:hover { color: rgba(251, 191, 36, 0.85); }
 
 	.ec-anomaly-body {
-		padding: 16px;
+		padding: clamp(8px, 2vw, 16px);
 		display: flex;
 		flex-direction: column;
 		gap: 12px;
@@ -603,7 +603,7 @@ import { untrack } from 'svelte';
 		width: 100%;
 		resize: vertical;
 		min-height: 90px;
-		padding: 8px 10px;
+		padding: clamp(4px, 1vw, 8px) 10px;
 		font-family: inherit;
 		font-size: 11px;
 		background: rgba(0, 0, 0, 0.4);

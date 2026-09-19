@@ -1238,7 +1238,7 @@ type ExtendedAdvancedMarkerElement = any & { __facilityMarkerIndex?: number };
 		text-transform: uppercase;
 		letter-spacing: 0.05em;
 		color: var(--text-secondary);
-		margin-right: 4px;
+		margin-right: clamp(2px, 0.5vw, 4px);
 	}
 
 	.fd-map-field-style__color {
@@ -1326,7 +1326,7 @@ type ExtendedAdvancedMarkerElement = any & { __facilityMarkerIndex?: number };
 	@media (min-width: 640px) {
 		.fd-map-marker-label-input {
 			min-height: 40px;
-			padding: 8px 12px;
+			padding: clamp(4px, 1vw, 8px) 12px;
 		}
 	}
 

@@ -368,7 +368,7 @@
 		50%       { opacity: 1; }
 	}
 
-	.cr-footer-links { margin-top: 16px; text-align: center; }
+	.cr-footer-links { margin-top: clamp(8px, 2vw, 16px); text-align: center; }
 	.cr-link {
 		font-size: 8px;
 		letter-spacing: 0.14em;
@@ -432,7 +432,7 @@
 
 	.cr-back-link {
 		display: inline-block;
-		margin-top: 4px;
+		margin-top: clamp(2px, 0.5vw, 4px);
 		font-size: 8px;
 		letter-spacing: 0.14em;
 		color: rgba(20, 184, 166, 0.25);

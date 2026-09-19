@@ -269,7 +269,7 @@
 	.ops-fieldset { border: 1px solid #334155; border-radius: 8px; padding: 12px; margin: 0; background: #020617; }
 	.ops-label { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; color: #94a3b8; }
 	.ops-input {
-		border: 1px solid #334155; border-radius: 6px; padding: 8px 12px;
+		border: 1px solid #334155; border-radius: 6px; padding: clamp(4px, 1vw, 8px) 12px;
 		font-size: 13px; background: #020617; color: #fafafa; width: 100%; box-sizing: border-box;
 	}
 	.ops-input:focus { outline: none; border-color: #14b8a6; box-shadow: 0 0 0 2px rgba(20, 184, 166, 0.2); }
@@ -299,6 +299,6 @@
 	.event-badge--game { background: rgba(218, 255, 10, 0.2); color: #daff0a; border: 1px solid #daff0a; }
 	.ops-rsvp { font-size: 11px; color: #94a3b8; font-family: 'Geist Mono', monospace; }
 	.ops-stream { font-size: 11px; color: #f87171; font-weight: 700; text-decoration: underline; text-underline-offset: 2px; }
-	.ops-facility { margin-top: 16px; }
+	.ops-facility { margin-top: clamp(8px, 2vw, 16px); }
 </style>
 

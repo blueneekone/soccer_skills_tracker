@@ -199,7 +199,7 @@
 		letter-spacing: 0.18em;
 		border: 1px solid rgb(30 41 59);
 		border-radius: 9999px;
-		padding: 4px 14px;
+		padding: clamp(2px, 0.5vw, 4px) 14px;
 		color: #14b8a6; /* Data Cyan — enterprise palette only */
 		background: rgb(15 23 42 / 0.65);
 		width: fit-content;

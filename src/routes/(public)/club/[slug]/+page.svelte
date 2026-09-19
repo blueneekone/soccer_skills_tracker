@@ -366,7 +366,7 @@
 		flex-shrink: 0;
 		background: #000000;
 		border-radius: 50%;
-		padding: 4px;
+		padding: clamp(2px, 0.5vw, 4px);
 		border: 1px solid #27272a;
 	}
 

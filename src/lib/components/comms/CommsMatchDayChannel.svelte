@@ -113,7 +113,7 @@
 	}
 
 	.comms-match__head {
-		padding-bottom: 8px;
+		padding-bottom: clamp(4px, 1vw, 8px);
 		border-bottom: 1px solid #334155;
 	}
 

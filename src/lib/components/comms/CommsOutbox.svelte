@@ -234,7 +234,7 @@
 
 	.outbox-sub,
 	.outbox-hint {
-		margin: 4px 0 0;
+		margin: clamp(2px, 0.5vw, 4px) 0 0;
 		font-size: 12px;
 		color: #94a3b8;
 	}
@@ -280,13 +280,13 @@
 	}
 
 	.outbox-preview {
-		margin: 4px 0 0;
+		margin: clamp(2px, 0.5vw, 4px) 0 0;
 		font-size: 12px;
 		color: #cbd5e1;
 	}
 
 	.outbox-delivery {
-		margin: 8px 0 0;
+		margin: clamp(4px, 1vw, 8px) 0 0;
 		font-size: 11px;
 		font-weight: 600;
 		color: #14b8a6;
@@ -300,7 +300,7 @@
 	}
 
 	.outbox-ack-pending {
-		margin: 4px 0 0;
+		margin: clamp(2px, 0.5vw, 4px) 0 0;
 		font-size: 10px;
 		line-height: 1.4;
 		color: #94a3b8;

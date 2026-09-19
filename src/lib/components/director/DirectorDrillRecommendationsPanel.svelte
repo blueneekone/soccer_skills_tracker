@@ -191,8 +191,8 @@
 		background: var(--glass-bg, #0f172a);
 		border: 1px solid var(--border-muted, #e5e5e5);
 		border-radius: 0px;
-		padding: 16px;
-		margin-bottom: 16px;
+		padding: clamp(8px, 2vw, 16px);
+		margin-bottom: clamp(8px, 2vw, 16px);
 	}
 
 	:global(html.dark) .drill-inbox {
@@ -242,7 +242,7 @@
 		flex-wrap: wrap;
 		align-items: center;
 		gap: 8px;
-		margin-bottom: 8px;
+		margin-bottom: clamp(4px, 1vw, 8px);
 	}
 
 	.drill-inbox__chip {
@@ -289,7 +289,7 @@
 	}
 
 	.drill-inbox__btn {
-		padding: 8px 14px;
+		padding: clamp(4px, 1vw, 8px) 14px;
 		border-radius: 0px;
 		border: 1px solid var(--border-muted, #e5e5e5);
 		background: transparent;

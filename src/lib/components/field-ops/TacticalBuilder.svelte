@@ -463,7 +463,7 @@
 
 	.fm-tactical-err {
 		margin: 0 0 8px;
-		padding: 8px 12px;
+		padding: clamp(4px, 1vw, 8px) 12px;
 		font-size: 12px;
 		font-weight: 600;
 		color: #fecaca;
@@ -635,7 +635,7 @@
 			width: 100%;
 			justify-content: center;
 			border-top: 1px solid rgba(0, 0, 0, 0.1);
-			padding-top: 8px;
+			padding-top: clamp(4px, 1vw, 8px);
 		}
 	}
 

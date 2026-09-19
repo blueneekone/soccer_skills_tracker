@@ -122,7 +122,7 @@
 	}
 
 	.delivery-receipt__list {
-		margin: 8px 0 0;
+		margin: clamp(4px, 1vw, 8px) 0 0;
 		padding-left: 1.1rem;
 	}
 
@@ -169,7 +169,7 @@
 	}
 
 	.delivery-receipt__audit {
-		margin: 8px 0 0;
+		margin: clamp(4px, 1vw, 8px) 0 0;
 		font-size: 11px;
 		color: #64748b;
 	}

@@ -284,7 +284,7 @@
 	}
 
 	.team-ops-header__title {
-		margin: 4px 0 2px;
+		margin: clamp(2px, 0.5vw, 4px) 0 2px;
 		font-family: 'Geist Mono', monospace;
 		font-size: clamp(22px, 4vw, 32px);
 		font-weight: 900;
@@ -392,7 +392,7 @@
 		gap: 2px;
 		background: #020617;
 		border: 1px solid #334155;
-		padding: 8px 14px;
+		padding: clamp(4px, 1vw, 8px) 14px;
 	}
 
 	/* ── State Panels (loading / empty) ──────────────────────────────────── */

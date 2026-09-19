@@ -44,7 +44,7 @@
 		display: inline-flex;
 		align-items: center;
 		gap: 10px;
-		padding: 8px 16px;
+		padding: clamp(4px, 1vw, 8px) 16px;
 		border-radius: var(--vanguard-radius-sm, 12px);
 		font-size: 0.8125rem;
 		font-weight: 600;

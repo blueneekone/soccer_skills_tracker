@@ -232,7 +232,7 @@
 	:global(.clearance-gate__shield) {
 		position: relative;
 		z-index: 10;
-		margin-bottom: 24px;
+		margin-bottom: clamp(12px, 3vw, 24px);
 		animation: pulse-red 2s infinite;
 	}
 
@@ -243,7 +243,7 @@
 		font-weight: 700;
 		letter-spacing: 0.25em;
 		color: var(--vanguard-red);
-		margin-bottom: 8px;
+		margin-bottom: clamp(4px, 1vw, 8px);
 	}
 
 	:global(.clearance-gate__title) {
@@ -275,7 +275,7 @@
 	:global(.clearance-gate__contact) {
 		position: relative;
 		z-index: 10;
-		margin-top: 32px;
+		margin-top: clamp(16px, 4vw, 32px);
 		font-size: 0.875rem;
 		font-weight: 700;
 		color: var(--vanguard-slate);

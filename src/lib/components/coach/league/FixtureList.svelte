@@ -399,7 +399,7 @@
 		font-family: inherit;
 		font-size: 9px;
 		letter-spacing: 0.18em;
-		padding: 4px 10px;
+		padding: clamp(2px, 0.5vw, 4px) 10px;
 		border-radius: 2px;
 		border: 1px solid transparent;
 		background: transparent;

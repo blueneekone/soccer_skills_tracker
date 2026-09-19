@@ -272,7 +272,7 @@
 		display: inline-flex;
 		align-items: center;
 		gap: 0.4rem;
-		padding: 4px 10px;
+		padding: clamp(2px, 0.5vw, 4px) 10px;
 		border-radius: 9999px;
 		border: 1px solid;
 		font-family: 'Geist Mono', monospace;
@@ -316,7 +316,7 @@
 		display: inline-flex;
 		align-items: center;
 		gap: 6px;
-		padding: 4px 10px;
+		padding: clamp(2px, 0.5vw, 4px) 10px;
 		border-radius: 9999px;
 		border: 1px solid rgba(20, 184, 166, 0.45);
 		background: rgba(20, 184, 166, 0.12);

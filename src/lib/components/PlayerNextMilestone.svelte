@@ -46,7 +46,7 @@
 
 <style>
 	.pnm {
-		padding: 16px;
+		padding: clamp(8px, 2vw, 16px);
 		border-radius: 14px;
 		border: 1px solid var(--border-subtle, #e5e5e5);
 		background: var(--surface-subtle, #fafafa);

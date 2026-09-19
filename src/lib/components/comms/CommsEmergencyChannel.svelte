@@ -273,7 +273,7 @@
 	}
 
 	.comms-emergency__badge {
-		padding: 4px 8px;
+		padding: clamp(2px, 0.5vw, 4px) 8px;
 		border-radius: 999px;
 		font-size: 10px;
 		font-weight: 800;
@@ -295,7 +295,7 @@
 	}
 
 	.comms-emergency__warn {
-		padding: 8px 10px;
+		padding: clamp(4px, 1vw, 8px) 10px;
 		border-radius: 8px;
 		background: rgba(127, 29, 29, 0.35);
 		border: 1px solid rgba(239, 68, 68, 0.25);
@@ -343,7 +343,7 @@
 
 	.comms-emergency__team-list {
 		list-style: none;
-		margin: 8px 0 0;
+		margin: clamp(4px, 1vw, 8px) 0 0;
 		padding: 0;
 		display: flex;
 		flex-direction: column;
@@ -401,7 +401,7 @@
 		display: flex;
 		justify-content: flex-end;
 		gap: 10px;
-		margin-top: 4px;
+		margin-top: clamp(2px, 0.5vw, 4px);
 	}
 
 	.comms-emergency__btn {
@@ -436,7 +436,7 @@
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		padding: 16px;
+		padding: clamp(8px, 2vw, 16px);
 		background: rgba(15, 23, 42, 0.72);
 	}
 
@@ -466,6 +466,6 @@
 		display: flex;
 		justify-content: flex-end;
 		gap: 10px;
-		margin-top: 16px;
+		margin-top: clamp(8px, 2vw, 16px);
 	}
 </style>

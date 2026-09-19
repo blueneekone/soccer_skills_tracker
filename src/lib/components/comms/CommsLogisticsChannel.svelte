@@ -80,7 +80,7 @@
 	}
 
 	.comms-logistics__sub {
-		padding: 8px 12px;
+		padding: clamp(4px, 1vw, 8px) 12px;
 		border: 1px solid var(--pd-grey-trim, #334155);
 		font-size: 12px;
 		font-weight: 700;

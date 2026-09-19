@@ -168,7 +168,7 @@
 
 .fm-table-empty {
 		text-align: center;
-		padding: 32px 16px;
+		padding: clamp(16px, 4vw, 32px) 16px;
 		color: #64748b;
 		font-style: italic;
 	}

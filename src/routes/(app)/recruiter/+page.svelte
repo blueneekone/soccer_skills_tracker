@@ -101,7 +101,7 @@
 	.recruiter-checking {
 		text-align: center;
 		color: rgba(148, 163, 184, 0.5);
-		padding: 48px 16px;
+		padding: clamp(24px, 5vw, 48px) 16px;
 		font-family: 'Geist Mono', monospace;
 		font-size: 0.65rem;
 		letter-spacing: 0.1em;

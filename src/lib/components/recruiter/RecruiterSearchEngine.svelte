@@ -658,7 +658,7 @@
 		display: flex;
 		justify-content: space-between;
 		gap: 10px;
-		padding: 8px 10px;
+		padding: clamp(4px, 1vw, 8px) 10px;
 		border-radius: 12px;
 		background: rgba(15, 23, 42, 0.55);
 		border: 1px solid rgba(148, 163, 184, 0.15);
@@ -679,7 +679,7 @@
 		grid-column: 1 / -1;
 		text-align: center;
 		color: #94a3b8;
-		padding: 32px 16px;
+		padding: clamp(16px, 4vw, 32px) 16px;
 	}
 
 	.rse-modal-head {
@@ -688,7 +688,7 @@
 	}
 
 	.rse-modal-body {
-		padding: 4px 0 8px;
+		padding: clamp(2px, 0.5vw, 4px) 0 8px;
 		color: #e2e8f0;
 	}
 
@@ -701,7 +701,7 @@
 	.rse-modal-ring {
 		display: flex;
 		justify-content: center;
-		margin-bottom: 16px;
+		margin-bottom: clamp(8px, 2vw, 16px);
 	}
 
 	.rse-attr-label {
@@ -757,7 +757,7 @@
 	}
 
 	.rse-video-shell {
-		padding: 4px 0 8px;
+		padding: clamp(2px, 0.5vw, 4px) 0 8px;
 	}
 
 	.rse-video-el {

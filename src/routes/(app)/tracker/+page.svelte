@@ -714,7 +714,7 @@
 		flex-direction: column;
 		gap: 4px;
 		min-width: 0;
-		padding: 8px 6px;
+		padding: clamp(4px, 1vw, 8px) 6px;
 	}
 
 	.gw-hud__label {
@@ -941,7 +941,7 @@
 
 	.gw-slider-wrap {
 		position: relative;
-		padding: 8px 0 4px;
+		padding: clamp(4px, 1vw, 8px) 0 4px;
 	}
 
 	.gw-slider {
@@ -992,7 +992,7 @@
 	.gw-slider-ticks {
 		display: flex;
 		justify-content: space-between;
-		margin-top: 8px;
+		margin-top: clamp(4px, 1vw, 8px);
 		padding: 0 10px;
 	}
 
@@ -1115,7 +1115,7 @@
 		font-size: 1.25rem;
 		line-height: 1;
 		cursor: pointer;
-		padding: 4px 8px;
+		padding: clamp(2px, 0.5vw, 4px) 8px;
 	}
 
 	.gw-schedule-row {
@@ -1226,7 +1226,7 @@
 	.outcome-row {
 		display: flex;
 		gap: 10px;
-		margin-bottom: 16px;
+		margin-bottom: clamp(8px, 2vw, 16px);
 	}
 	.outcome-btn {
 		flex: 1;
@@ -1252,7 +1252,7 @@
 	}
 	.btn-log-workout {
 		width: 100%;
-		margin-bottom: 16px;
+		margin-bottom: clamp(8px, 2vw, 16px);
 	}
 	.workout-summary-box {
 		background: var(--input-bg);
@@ -1278,6 +1278,6 @@
 		cursor: pointer;
 		color: var(--danger-red);
 		font-size: 1rem;
-		padding: 4px 8px;
+		padding: clamp(2px, 0.5vw, 4px) 8px;
 	}
 </style>

@@ -207,7 +207,7 @@
 	}
 
 	.dcb-sub {
-		margin: 4px 0 0;
+		margin: clamp(2px, 0.5vw, 4px) 0 0;
 		font-size: 12px;
 		line-height: 1.45;
 		color: #94a3b8;
@@ -216,7 +216,7 @@
 
 	.dcb-hub-link {
 		display: inline-flex;
-		margin-top: 8px;
+		margin-top: clamp(4px, 1vw, 8px);
 		font-size: 12px;
 		font-weight: 800;
 		color: #0f172a;
@@ -289,7 +289,7 @@
 
 	.dcb-team-list {
 		list-style: none;
-		margin: 8px 0 0;
+		margin: clamp(4px, 1vw, 8px) 0 0;
 		padding: 0;
 		display: flex;
 		flex-direction: column;
@@ -337,7 +337,7 @@
 		display: flex;
 		justify-content: flex-end;
 		gap: 10px;
-		margin-top: 4px;
+		margin-top: clamp(2px, 0.5vw, 4px);
 	}
 
 	.dcb-btn {

@@ -372,7 +372,7 @@
 		background: #0f172a;
 	}
 .fm-preview-body {
-		padding: 24px;
+		padding: clamp(12px, 3vw, 24px);
 		overflow-y: auto;
 		display: flex;
 		flex-direction: column;
@@ -403,7 +403,7 @@
 		background: #1e293b;
 		border: 1px solid #334155;
 		border-radius: 6px;
-		padding: 16px;
+		padding: clamp(8px, 2vw, 16px);
 		display: flex;
 		flex-direction: column;
 		gap: 12px;
@@ -428,7 +428,7 @@
 .fm-routing-uri-input {
 		font-family: var(--font-mono);
 		font-size: 11px;
-		padding: 2px 6px;
+		padding: clamp(2px, 0.5vw, 6px);
 		border-radius: 4px;
 		background: rgba(15, 23, 42, 0.85);
 		border: 1px solid rgba(52, 211, 153, 0.25);

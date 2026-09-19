@@ -43,7 +43,7 @@
 				<FieldOpsModule clubId={engine.clubId} />
 			</section>
 		{:else if engine.activeTab === 'comms'}
-			<section class="tw-grid tw-grid-cols-12 director-bento-grid-container tw-w-full tw-gap-8" style="grid-template-columns: repeat(auto-fit, minmax(min(100%, clamp(280px, 30vw, 350px)), 1fr));">
+			<section class="tw-grid tw-grid-cols-1 lg:tw-grid-cols-12 director-bento-grid-container tw-w-full tw-gap-8">
 				<section
 					class="st-bento lg:tw-col-span-8 siem-panel dark-form-surface tw-flex tw-flex-col tw-gap-3 tw-p-8 tw-border tw-border-slate-600 tw-bg-[#0f172a] tw-relative tw-min-w-0"
 					aria-labelledby="director-comms-cta-heading"

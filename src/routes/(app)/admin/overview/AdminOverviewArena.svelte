@@ -32,29 +32,29 @@
 
 		{#if engine.activeTab === 'overview'}
 			<!-- Telemetry Tiles (Bento 4-column row) -->
-			<div class="tw-grid tw-grid-cols-12 bento-grid-container tw-mb-6 tw-gap-4" style="grid-template-columns: repeat(auto-fit, minmax(min(100%, clamp(280px, 30vw, 350px)), 1fr));">
-				<div class="z2-panel siem-panel st-bento tw-p-[clamp(16px,3vw,24px)] tw-flex tw-flex-col tw-min-w-0 hover:tw-border-[#f59e0b] hover:tw-shadow-neon-nuclear tw-transition-all" style="background: #0f172a; border: 1px solid #334155;">
+			<div class="tw-grid tw-grid-cols-1 lg:tw-grid-cols-12 bento-grid-container tw-mb-6 tw-gap-4">
+				<div class="lg:tw-col-span-3 z2-panel siem-panel st-bento tw-p-[clamp(16px,3vw,24px)] tw-flex tw-flex-col tw-min-w-0 hover:tw-border-[#f59e0b] hover:tw-shadow-neon-nuclear tw-transition-all" style="background: #0f172a; border: 1px solid #334155;">
 					<div class="tw-flex tw-items-center tw-justify-between tw-mb-2">
 						<span class="tw-text-[10px] tw-font-bold tw-uppercase tw-tracking-widest tw-text-[#A1A1AA]" style="font-family: 'Geist Sans', sans-serif;">Total Organizations</span>
 						<Icon name={"org.building" as IconName} size={16} class="tw-text-[#f59e0b]" />
 					</div>
 					<span class="tw-text-4xl tw-font-black tw-text-[#f59e0b]" style="font-family: 'Geist Mono', monospace;">{engine.clubsCount}</span>
 				</div>
-				<div class="z2-panel siem-panel st-bento tw-p-[clamp(16px,3vw,24px)] tw-flex tw-flex-col tw-min-w-0 hover:tw-border-[#f59e0b] hover:tw-shadow-neon-nuclear tw-transition-all" style="background: #0f172a; border: 1px solid #334155;">
+				<div class="lg:tw-col-span-3 z2-panel siem-panel st-bento tw-p-[clamp(16px,3vw,24px)] tw-flex tw-flex-col tw-min-w-0 hover:tw-border-[#f59e0b] hover:tw-shadow-neon-nuclear tw-transition-all" style="background: #0f172a; border: 1px solid #334155;">
 					<div class="tw-flex tw-items-center tw-justify-between tw-mb-2">
 						<span class="tw-text-[10px] tw-font-bold tw-uppercase tw-tracking-widest tw-text-[#A1A1AA]" style="font-family: 'Geist Sans', sans-serif;">Total Users</span>
 						<Icon name={"user.group" as IconName} size={16} class="tw-text-[#14b8a6]" />
 					</div>
 					<span class="tw-text-4xl tw-font-black tw-text-[#14b8a6]" style="font-family: 'Geist Mono', monospace;">{engine.usersCount}</span>
 				</div>
-				<a href="/admin/audit-logs?status=active" class="tw-cursor-pointer z2-panel siem-panel st-bento tw-p-[clamp(16px,3vw,24px)] tw-flex tw-flex-col tw-min-w-0 hover:tw-border-[#f59e0b] hover:tw-shadow-neon-nuclear tw-transition-all" style="background: #0f172a; border: 1px solid #334155; text-decoration: none;">
+				<a href="/admin/audit-logs?status=active" class="lg:tw-col-span-3 tw-cursor-pointer z2-panel siem-panel st-bento tw-p-[clamp(16px,3vw,24px)] tw-flex tw-flex-col tw-min-w-0 hover:tw-border-[#f59e0b] hover:tw-shadow-neon-nuclear tw-transition-all" style="background: #0f172a; border: 1px solid #334155; text-decoration: none;">
 					<div class="tw-flex tw-items-center tw-justify-between tw-mb-2">
 						<span class="tw-text-[10px] tw-font-bold tw-uppercase tw-tracking-widest tw-text-[#A1A1AA]" style="font-family: 'Geist Sans', sans-serif;">Active Incidents</span>
 						<Icon name={"status.shield-alert" as IconName} size={16} class={engine.activeIncidents > 0 ? "tw-text-red-400" : "tw-text-[#f59e0b]"} />
 					</div>
 					<span class="tw-text-4xl tw-font-black" class:tw-text-red-400={engine.activeIncidents > 0} class:tw-text-[#f59e0b]={engine.activeIncidents === 0} style="font-family: 'Geist Mono', monospace;">{engine.activeIncidents}</span>
 				</a>
-				<div class="z2-panel siem-panel st-bento tw-p-[clamp(16px,3vw,24px)] tw-flex tw-flex-col tw-min-w-0 hover:tw-border-[#f59e0b] hover:tw-shadow-neon-nuclear tw-transition-all" style="background: #0f172a; border: 1px solid #334155;">
+				<div class="lg:tw-col-span-3 z2-panel siem-panel st-bento tw-p-[clamp(16px,3vw,24px)] tw-flex tw-flex-col tw-min-w-0 hover:tw-border-[#f59e0b] hover:tw-shadow-neon-nuclear tw-transition-all" style="background: #0f172a; border: 1px solid #334155;">
 					<div class="tw-flex tw-items-center tw-justify-between tw-mb-2">
 						<span class="tw-text-[10px] tw-font-bold tw-uppercase tw-tracking-widest tw-text-[#A1A1AA]" style="font-family: 'Geist Sans', sans-serif;">System Status</span>
 						<Icon name={"status.shield-check" as IconName} size={16} class="tw-text-[#f59e0b]" />

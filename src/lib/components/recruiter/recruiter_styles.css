@@ -32,11 +32,11 @@
 .rp-card--vanguard { border-color: rgba(20, 184, 166, 0.2); box-shadow: 0 0 20px rgba(20, 184, 166, 0.08); }
 .rp-card--watched { border-color: rgba(245, 158, 11, 0.2); }
 .rp-card__accent-bar { position: absolute; top: 0; left: 0; right: 0; height: 2px; opacity: 0.7; }
-.rp-card__head { display: flex; align-items: flex-start; justify-content: space-between; gap: 0.4rem; margin-top: 4px; }
+.rp-card__head { display: flex; align-items: flex-start; justify-content: space-between; gap: 0.4rem; margin-top: clamp(2px, 0.5vw, 4px); }
 .rp-card__name-block { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 .rp-card__name { font-size: 0.68rem; font-weight: 900; letter-spacing: 0.08em; color: #fafafa; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .rp-card__pos { font-size: 0.5rem; letter-spacing: 0.12em; color: rgba(255, 255, 255, 0.35); text-transform: uppercase; }
-.rp-watch-btn { padding: 4px; background: transparent; border: none; color: rgba(255, 255, 255, 0.2); cursor: pointer; border-radius: 4px; transition: color 0.2s, background 0.2s; flex-shrink: 0; min-height: 28px; min-width: 28px; display: flex; align-items: center; justify-content: center; }
+.rp-watch-btn { padding: clamp(2px, 0.5vw, 4px); background: transparent; border: none; color: rgba(255, 255, 255, 0.2); cursor: pointer; border-radius: 4px; transition: color 0.2s, background 0.2s; flex-shrink: 0; min-height: 28px; min-width: 28px; display: flex; align-items: center; justify-content: center; }
 .rp-watch-btn:hover { color: rgba(245, 158, 11, 0.8); background: rgba(245, 158, 11, 0.07); }
 .rp-watch-btn--active { color: rgba(245, 158, 11, 0.9); }
 .rp-card__metrics { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }

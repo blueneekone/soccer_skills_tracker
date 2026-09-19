@@ -449,7 +449,7 @@
 
 	:global(html.dark) .eam-flash--ok { color: #86efac; }
 
-	.eam-form { padding: 16px 20px 20px; }
+	.eam-form { padding: clamp(8px, 2vw, 16px) 20px 20px; }
 
 	.eam-grid {
 		display: grid;

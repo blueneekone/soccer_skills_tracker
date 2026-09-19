@@ -455,7 +455,7 @@
 		font-family: inherit;
 		font-size: 9px;
 		letter-spacing: 0.18em;
-		padding: 4px 10px;
+		padding: clamp(2px, 0.5vw, 4px) 10px;
 		border-radius: 0px;
 		border: 1px solid transparent;
 		background: transparent;
@@ -666,7 +666,7 @@
 		color: #e2e8f0;
 		font-family: inherit;
 		font-size: 12px;
-		padding: 8px 10px;
+		padding: clamp(4px, 1vw, 8px) 10px;
 		outline: none;
 	}
 	.oi-limit-row {

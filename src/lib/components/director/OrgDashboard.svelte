@@ -623,7 +623,7 @@
 	}
 	.od-skeleton--line {
 		height: 14px;
-		margin-bottom: 8px;
+		margin-bottom: clamp(4px, 1vw, 8px);
 		width: 100%;
 	}
 	.od-skeleton--line-short {

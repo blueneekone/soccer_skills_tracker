@@ -11,7 +11,7 @@
 	display: flex;
 	flex-direction: column;
 	gap: 16px;
-	padding: 24px;
+	padding: clamp(12px, 3vw, 24px);
 	min-height: 100%;
 	background: #0B0F19; /* Void Black */
 	color: #FAFAFA;
@@ -30,7 +30,7 @@
 	display: flex;
 	flex-wrap: wrap;
 	gap: 8px;
-	padding: 8px;
+	padding: clamp(4px, 1vw, 8px);
 	background: #0f172a;
 	border: 1px solid #334155;
 	border-radius: 0;
@@ -128,7 +128,7 @@
 	position: sticky;
 	top: 0;
 	z-index: 1;
-	padding: 16px 24px;
+	padding: clamp(8px, 2vw, 16px) 24px;
 	text-align: left;
 	font-size: 0.75rem;
 	font-weight: 700;
@@ -146,7 +146,7 @@
 .v-th--center { text-align: center; }
 
 .v-td {
-	padding: 16px 24px;
+	padding: clamp(8px, 2vw, 16px) 24px;
 	border-bottom: 1px solid #334155 !important; /* Structural Grey */
 	vertical-align: middle;
 	color: #D4D4D8 !important; /* Secondary Text */
@@ -223,7 +223,7 @@
 	min-width: 180px;
 	display: flex;
 	flex-direction: column;
-	padding: 4px 0;
+	padding: clamp(2px, 0.5vw, 4px) 0;
 }
 
 .v-admin-menu__item {
@@ -262,7 +262,7 @@
 .v-admin-menu__sep {
 	height: 1px;
 	background: #1e293b;
-	margin: 4px 0;
+	margin: clamp(2px, 0.5vw, 4px) 0;
 }
 
 .v-admin-menu__spin {

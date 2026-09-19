@@ -618,7 +618,7 @@
 		display: flex;
 		flex-direction: column;
 		gap: 10px;
-		margin-bottom: 16px;
+		margin-bottom: clamp(8px, 2vw, 16px);
 	}
 
 	.tt-search-wrap {
@@ -666,7 +666,7 @@
 		border: none;
 		color: rgba(248, 250, 252, 0.4);
 		cursor: pointer;
-		padding: 4px;
+		padding: clamp(2px, 0.5vw, 4px);
 		display: flex;
 		align-items: center;
 		font-size: 14px;
@@ -786,7 +786,7 @@
 
 	/* ── Create Panel ──────────────────────────────────────────────────── */
 	.tt-create-panel {
-		margin-bottom: 16px;
+		margin-bottom: clamp(8px, 2vw, 16px);
 		border-radius: 0px;
 		border: 1px solid rgba(20, 184, 166, 0.2);
 		background: rgba(20, 184, 166, 0.03);
@@ -824,7 +824,7 @@
 	}
 	.tt-label-opt { opacity: 0.6; font-weight: 400; }
 	.tt-input {
-		padding: 8px 12px;
+		padding: clamp(4px, 1vw, 8px) 12px;
 		background: rgba(2, 8, 23, 0.7);
 		border: 1px solid var(--tt-border);
 		border-radius: 0px;
@@ -840,7 +840,7 @@
 	.tt-input--sm { padding: 6px 10px; font-size: 11px; }
 	.tt-create-actions { display: flex; gap: 8px; align-items: center; }
 	.tt-create-submit {
-		padding: 8px 18px;
+		padding: clamp(4px, 1vw, 8px) 18px;
 		border-radius: 0px;
 		border: 1px solid rgba(20, 184, 166, 0.4);
 		background: rgba(20, 184, 166, 0.1);
@@ -864,7 +864,7 @@
 		font-size: 10px;
 		font-weight: 700;
 		letter-spacing: 0.1em;
-		padding: 8px 12px;
+		padding: clamp(4px, 1vw, 8px) 12px;
 		cursor: pointer;
 		transition: all 0.15s;
 		white-space: nowrap;
@@ -876,7 +876,7 @@
 		display: flex;
 		align-items: center;
 		gap: 0;
-		margin-bottom: 16px;
+		margin-bottom: clamp(8px, 2vw, 16px);
 		padding: 10px 16px;
 		border-radius: 0px;
 		border: 1px solid var(--tt-border);
@@ -952,7 +952,7 @@
 		display: flex;
 		align-items: center;
 		gap: 6px;
-		padding: 8px 18px;
+		padding: clamp(4px, 1vw, 8px) 18px;
 		border-radius: 0px;
 		border: 1px solid rgba(20, 184, 166, 0.3);
 		background: rgba(20, 184, 166, 0.06);
@@ -978,7 +978,7 @@
 		display: grid;
 		grid-template-columns: 40px 1fr 200px 200px 90px 160px;
 		gap: 0;
-		padding: 8px 12px;
+		padding: clamp(4px, 1vw, 8px) 12px;
 		background: rgba(20, 184, 166, 0.04);
 		border-bottom: 1px solid var(--tt-border);
 	}
@@ -986,7 +986,7 @@
 		display: grid;
 		grid-template-columns: 40px 1fr 200px 200px 90px 160px;
 		gap: 0;
-		padding: 8px 12px;
+		padding: clamp(4px, 1vw, 8px) 12px;
 		border-bottom: 1px solid rgba(20, 184, 166, 0.06);
 		transition: background 0.15s;
 		align-items: center;
@@ -1050,7 +1050,7 @@
 		border: 1px solid var(--tt-border);
 		background: rgba(20, 184, 166, 0.025);
 		backdrop-filter: blur(24px);
-		padding: 16px;
+		padding: clamp(8px, 2vw, 16px);
 		display: flex;
 		flex-direction: column;
 		gap: 12px;

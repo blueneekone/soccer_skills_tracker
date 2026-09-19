@@ -128,7 +128,7 @@
 	}
 
 	.comms-reg__head {
-		padding-bottom: 8px;
+		padding-bottom: clamp(4px, 1vw, 8px);
 		border-bottom: 1px solid #334155;
 	}
 
@@ -149,7 +149,7 @@
 	}
 
 	.comms-reg__empty {
-		padding: 16px;
+		padding: clamp(8px, 2vw, 16px);
 		border: 1px dashed #334155;
 		font-size: 13px;
 		color: #94a3b8;

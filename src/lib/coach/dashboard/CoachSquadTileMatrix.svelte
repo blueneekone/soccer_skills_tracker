@@ -309,7 +309,7 @@
 		background: #0f172a;
 		border: 1px solid #334155;
 		border-radius: 8px;
-		padding: 16px;
+		padding: clamp(8px, 2vw, 16px);
 	}
 
 	.squad-tile {

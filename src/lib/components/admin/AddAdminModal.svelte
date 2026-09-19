@@ -499,7 +499,7 @@
 
 	/* ── Form ────────────────────────────────────────────────────────────── */
 	.aam-form {
-		padding: 16px 22px 22px;
+		padding: clamp(8px, 2vw, 16px) 22px 22px;
 	}
 
 	.aam-grid {
@@ -618,7 +618,7 @@
 		align-items: center;
 		gap: 10px;
 		padding-top: 18px;
-		margin-top: 16px;
+		margin-top: clamp(8px, 2vw, 16px);
 		border-top: 1px solid #e4e4e7;
 	}
 

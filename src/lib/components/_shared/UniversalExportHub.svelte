@@ -158,7 +158,7 @@
 		gap: 8px;
 		background: #0b0f19;
 		border: 1px solid rgba(255, 255, 255, 0.1);
-		padding: 4px 8px;
+		padding: clamp(2px, 0.5vw, 4px) 8px;
 		border-radius: 6px;
 	}
 
@@ -185,7 +185,7 @@
 		border: 1px solid rgba(255, 255, 255, 0.08);
 		color: #e2e8f0;
 		border-radius: 4px;
-		padding: 4px 8px;
+		padding: clamp(2px, 0.5vw, 4px) 8px;
 		font-family: 'Geist Mono', monospace;
 		font-size: 0.7rem;
 		font-weight: 600;

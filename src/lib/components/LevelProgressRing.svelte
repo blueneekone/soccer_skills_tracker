@@ -283,7 +283,7 @@
 		-webkit-box-orient: vertical;
 		-webkit-line-clamp: 2;
 		line-clamp: 2;
-		margin-top: 4px;
+		margin-top: clamp(2px, 0.5vw, 4px);
 		font-size: clamp(0.55rem, 1.5cqw, 0.65rem);
 		font-weight: 800;
 		font-variant-numeric: tabular-nums;

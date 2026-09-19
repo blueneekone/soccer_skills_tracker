@@ -154,7 +154,7 @@
 
 <style>
 	.challenge-subtitle {
-		margin: 4px 0 0;
+		margin: clamp(2px, 0.5vw, 4px) 0 0;
 		font-size: 0.9rem;
 		opacity: 0.85;
 	}

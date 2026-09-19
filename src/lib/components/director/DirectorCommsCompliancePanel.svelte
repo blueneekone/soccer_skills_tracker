@@ -292,7 +292,7 @@
 		border: 1px solid #334155;
 		border-radius: 0px;
 		background: #0f172a;
-		margin-top: 16px;
+		margin-top: clamp(8px, 2vw, 16px);
 	}
 
 	.compliance-console__head {
@@ -311,7 +311,7 @@
 	}
 
 	.compliance-console__sub {
-		margin: 4px 0 0;
+		margin: clamp(2px, 0.5vw, 4px) 0 0;
 		font-size: 12px;
 		line-height: 1.45;
 		color: #94a3b8;
@@ -321,7 +321,7 @@
 	.compliance-console__export {
 		border: 1px solid #334155;
 		border-radius: 0px;
-		padding: 8px 14px;
+		padding: clamp(4px, 1vw, 8px) 14px;
 		font-size: 12px;
 		font-weight: 700;
 		background: #1e293b;

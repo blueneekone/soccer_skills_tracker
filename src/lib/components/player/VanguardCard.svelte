@@ -424,7 +424,7 @@
 		display: flex;
 		align-items: center;
 		gap: 3px;
-		margin-top: 4px;
+		margin-top: clamp(2px, 0.5vw, 4px);
 		padding: 2px 5px;
 		border-radius: 4px;
 		border: 1px solid rgba(148, 163, 184, 0.2);

@@ -171,7 +171,7 @@
 	}
 
 	.recruit-foot {
-		margin: 16px 0 0;
+		margin: clamp(8px, 2vw, 16px) 0 0;
 		font-size: 0.88rem;
 		font-weight: 600;
 		color: rgba(148, 163, 184, 0.95);

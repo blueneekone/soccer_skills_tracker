@@ -138,7 +138,7 @@
 		color: #f8fafc;
 		font-family: var(--font-switzer);
 		font-size: 0.95rem;
-		padding: 8px 12px;
+		padding: clamp(4px, 1vw, 8px) 12px;
 		transition: border-color 0.15s, box-shadow 0.15s;
 		box-sizing: border-box;
 	}
@@ -162,7 +162,7 @@
 		grid-column: 1 / -1;
 		display: flex;
 		justify-content: flex-end;
-		margin-top: 4px;
+		margin-top: clamp(2px, 0.5vw, 4px);
 	}
 
 	.fm-btn {
@@ -176,7 +176,7 @@
 		font-family: var(--font-switzer);
 		font-weight: 600;
 		font-size: 0.9rem;
-		padding: 8px 16px;
+		padding: clamp(4px, 1vw, 8px) 16px;
 		border-radius: 4px;
 		cursor: pointer;
 		transition: all 0.15s;
@@ -227,7 +227,7 @@
 	}
 
 	.fm-btn--sm {
-		padding: 4px 10px;
+		padding: clamp(2px, 0.5vw, 4px) 10px;
 		font-size: 0.8rem;
 	}
 

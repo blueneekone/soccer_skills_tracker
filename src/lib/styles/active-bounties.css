@@ -428,7 +428,7 @@
 	border: 1px solid rgba(251, 191, 36, 0.4);
 	border-radius: 8px;
 	padding: 12px;
-	margin-bottom: 8px;
+	margin-bottom: clamp(4px, 1vw, 8px);
 }
 .quest-terminal-row--bounty .quest-row__xp--cash {
 	color: #fbbf24;

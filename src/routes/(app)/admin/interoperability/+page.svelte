@@ -78,7 +78,7 @@
           <style>
             body { font-family: 'Geist Mono', ui-monospace, monospace; padding: 20px; }
             table { width: 100%; border-collapse: collapse; }
-            th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+            th, td { border: 1px solid #ddd; padding: clamp(4px, 1vw, 8px); text-align: left; }
           </style>
           </head><body>
           <h2>Tenant Data Export</h2>

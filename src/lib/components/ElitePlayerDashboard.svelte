@@ -341,7 +341,7 @@
 		align-items: center;
 		justify-content: space-between;
 		gap: 16px;
-		padding: 16px 18px;
+		padding: clamp(8px, 2vw, 16px) 18px;
 		border-radius: 14px;
 		box-sizing: border-box;
 	}
@@ -511,7 +511,7 @@
 	.epd__grit {
 		color: #f59e0b; /* Atompunk Amber */
 		font-size: 0.8125rem;
-		margin: 4px 0 0 0;
+		margin: clamp(2px, 0.5vw, 4px) 0 0 0;
 		font-family: var(--font-mono, 'Geist Mono', monospace);
 		font-weight: bold;
 	}
@@ -715,7 +715,7 @@
 		background: #09090b;
 		border: 1px solid rgba(20, 184, 166, 0.4);
 		border-radius: 12px;
-		padding: 24px;
+		padding: clamp(12px, 3vw, 24px);
 		display: flex;
 		flex-direction: column;
 		gap: 12px;

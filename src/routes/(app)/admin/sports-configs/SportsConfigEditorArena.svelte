@@ -461,7 +461,7 @@
     border-radius: 6px;
     border: 1px solid rgba(255,255,255,0.15);
     cursor: pointer;
-    padding: 1px;
+    padding: clamp(1px, 0.2vw, 2px);
     background: transparent;
     flex-shrink: 0;
   }
@@ -484,7 +484,7 @@
     color: #ffcc00;
     border: 1px solid rgba(255, 204, 0, 0.3);
     border-radius: 9999px;
-    padding: 1px 8px;
+    padding: clamp(1px, 0.2vw, 2px) clamp(4px, 1vw, 8px);
     font-size: 9px;
     font-weight: 700;
   }

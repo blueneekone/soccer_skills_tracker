@@ -223,7 +223,7 @@
 </div>
 
 <style>
-	.status-select             { margin: 0; padding: 4px; border-radius: 0px; font-weight: 700; font-size: 0.85rem; width: auto; }
+	.status-select             { margin: 0; padding: clamp(2px, 0.5vw, 4px); border-radius: 0px; font-weight: 700; font-size: 0.85rem; width: auto; }
 	.status-select--suspended  { color: #b91c1c; }
 	.status-select--clear      { color: #047857; }
 	.eligible-yes { color: #047857; font-weight: 700; }

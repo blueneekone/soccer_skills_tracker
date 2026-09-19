@@ -160,7 +160,7 @@
 				</div>
 			</div>
 
-			<div class="hud-scoreboard tw-font-mono" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); pointer-events: none; z-index: 20; text-align: center; background: rgba(0,0,0,0.85); border: 1px solid #334155; padding: 8px 16px;">
+			<div class="hud-scoreboard tw-font-mono" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); pointer-events: none; z-index: 20; text-align: center; background: rgba(0,0,0,0.85); border: 1px solid #334155; padding: clamp(4px, 1vw, 8px) 16px;">
 				<div class="font-mono-tech tw-text-[#FAFAFA] tw-font-bold tw-text-xs" style="letter-spacing: 0.1em; margin-bottom: 2px;">
 					TITANS FC <span class="tw-text-[#fbbf24]">2 - 1</span> AURA ACADEMY
 				</div>
@@ -169,7 +169,7 @@
 				</div>
 			</div>
 
-			<div class="hud-bottom-bar font-mono-tech tw-text-[#D4D4D8]" style="position: absolute; bottom: 12px; left: 12px; right: 12px; display: flex; justify-content: space-between; align-items: center; pointer-events: none; z-index: 30; font-size: 0.75rem; background: rgba(0,0,0,0.75); padding: 4px 8px; border: 1px solid #334155;">
+			<div class="hud-bottom-bar font-mono-tech tw-text-[#D4D4D8]" style="position: absolute; bottom: 12px; left: 12px; right: 12px; display: flex; justify-content: space-between; align-items: center; pointer-events: none; z-index: 30; font-size: 0.75rem; background: rgba(0,0,0,0.75); padding: clamp(2px, 0.5vw, 4px) 8px; border: 1px solid #334155;">
 				<span>FPS: 60.0 | SECURE: AES-256</span>
 				<span class="tw-text-[#fbbf24]">LATENCY: 14ms</span>
 			</div>
@@ -205,18 +205,18 @@
 
 			<!-- Pool and Price Meta Columns -->
 			<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 0.5rem;">
-				<div style="border-left: 2px solid #fbbf24; padding-left: 8px;">
+				<div style="border-left: 2px solid #fbbf24; padding-left: clamp(4px, 1vw, 8px);">
 					<div class="font-switzer-body tw-text-[#A1A1AA] tw-text-xs uppercase tw-tracking-wider tw-font-mono">Active Prize Pool</div>
 					<div class="font-mono-tech tw-text-[#FAFAFA] tw-text-lg tw-font-bold">${activePool.toLocaleString()} USD</div>
 				</div>
-				<div style="border-left: 2px solid #334155; padding-left: 8px;">
+				<div style="border-left: 2px solid #334155; padding-left: clamp(4px, 1vw, 8px);">
 					<div class="font-switzer-body tw-text-[#A1A1AA] tw-text-xs uppercase tw-tracking-wider tw-font-mono">Ticket Price</div>
 					<div class="font-mono-tech tw-text-[#FAFAFA] tw-text-lg tw-font-bold">$5.00 USD</div>
 				</div>
 			</div>
 
 			<!-- Ticket Quantity Selection -->
-			<div style="display: flex; align-items: center; justify-content: space-between; margin-top: 0.5rem; background: #161e2e; padding: 8px 12px; border: 1px solid #334155;">
+			<div style="display: flex; align-items: center; justify-content: space-between; margin-top: 0.5rem; background: #161e2e; padding: clamp(4px, 1vw, 8px) 12px; border: 1px solid #334155;">
 				<span class="font-switzer-body tw-text-[#D4D4D8] tw-text-xs uppercase">Quantity:</span>
 				<div style="display: flex; align-items: center; gap: 8px;">
 					<button
@@ -242,7 +242,7 @@
 			</div>
 
 			<!-- End Time Warning readout -->
-			<div class="font-mono-tech tw-text-[#A1A1AA]" style="font-size: 0.7rem; border-top: 1px dashed #334155; padding-top: 8px;">
+			<div class="font-mono-tech tw-text-[#A1A1AA]" style="font-size: 0.7rem; border-top: 1px dashed #334155; padding-top: clamp(4px, 1vw, 8px);">
 				Campaign End Time: <span class="tw-text-[#FAFAFA]">2029-12-31 23:59:59 (UTC)</span>
 			</div>
 
@@ -354,7 +354,7 @@
 		font-size: 1.25rem;
 		background: #161e2e;
 		border: 1px solid #334155;
-		padding: 8px 12px;
+		padding: clamp(4px, 1vw, 8px) 12px;
 		display: inline-flex;
 		align-items: center;
 		justify-content: center;

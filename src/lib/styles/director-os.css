@@ -308,7 +308,7 @@ html.dark .dir-os-btn-primary.dir-os-btn--readonly {
 	bottom: 4px;
 	pointer-events: auto;
 	border-radius: var(--vanguard-radius-sm);
-	padding: 4px 6px;
+	padding: clamp(2px, 0.5vw, 4px) 6px;
 	overflow: hidden;
 	background: var(--brand-primary);
 	color: #fafafa;

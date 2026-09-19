@@ -66,7 +66,7 @@
 		background: #09090b;
 		border: 1px solid rgba(255, 255, 255, 0.1);
 		border-radius: 12px;
-		padding: 24px;
+		padding: clamp(12px, 3vw, 24px);
 	}
 
 	.telemetry-panel__header {

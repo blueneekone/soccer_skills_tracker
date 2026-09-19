@@ -79,7 +79,7 @@
 		display: flex;
 		align-items: center;
 		gap: 12px;
-		padding: 8px 16px;
+		padding: clamp(4px, 1vw, 8px) 16px;
 		min-height: 40px;
 		background: linear-gradient(90deg, #b45309 0%, #d97706 50%, #b45309 100%);
 		color: #fef3c7;
@@ -191,7 +191,7 @@
 	@media (max-width: 640px) {
 		.imp-banner {
 			gap: 8px;
-			padding: 8px 12px;
+			padding: clamp(4px, 1vw, 8px) 12px;
 			font-size: 0.75rem;
 		}
 		.imp-banner__meta-dim {

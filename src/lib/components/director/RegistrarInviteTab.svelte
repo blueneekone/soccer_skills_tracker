@@ -132,7 +132,7 @@
 		display: flex;
 		flex-wrap: wrap;
 		gap: 12px;
-		margin-top: 8px;
+		margin-top: clamp(4px, 1vw, 8px);
 	}
 
 	.ok-msg {

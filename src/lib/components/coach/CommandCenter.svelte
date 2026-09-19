@@ -381,12 +381,12 @@
 	</div>
 
 	<!-- ── TWO-COLUMN BODY ─────────────────────────────────────────────── -->
-	<div class="tw-flex tw-flex-col lg:tw-flex-row tw-gap-0 tw-min-h-0 tw-flex-1">
+	<div class="tw-grid tw-grid-cols-1 lg:tw-grid-cols-12 tw-gap-0 tw-min-h-0 tw-flex-1">
 
 		<!-- ─────────────────────────────────────────────────────────────── -->
-		<!-- LEFT 70%: ROSTER GRID                                          -->
+		<!-- LEFT 8 COLUMNS: ROSTER GRID                                    -->
 		<!-- ─────────────────────────────────────────────────────────────── -->
-		<section class="cc-roster-pane">
+		<section class="cc-roster-pane lg:tw-col-span-8">
 			<div class="tw-px-5 tw-py-3 tw-border-b tw-border-white/6 tw-flex tw-items-center tw-justify-between">
 				<p class="tw-text-[8px] tw-uppercase tw-tracking-[0.42em] tw-text-[#fafafa]/30">
 					ROSTER GRID · {roster.length} OPERATIVE{roster.length !== 1 ? 'S' : ''}
@@ -545,9 +545,9 @@
 		</section>
 
 		<!-- ─────────────────────────────────────────────────────────────── -->
-		<!-- RIGHT 30%: MISSION CONSOLE                                     -->
+		<!-- RIGHT 4 COLUMNS: MISSION CONSOLE                               -->
 		<!-- ─────────────────────────────────────────────────────────────── -->
-		<aside class="cc-mission-pane">
+		<aside class="cc-mission-pane lg:tw-col-span-4">
 			<div class="tw-px-5 tw-py-3 tw-border-b tw-border-white/6">
 				<p class="tw-text-[8px] tw-uppercase tw-tracking-[0.42em] tw-text-[#fafafa]/30">
 					MISSION CONSOLE · DIRECTIVE AUTHORING
@@ -720,7 +720,7 @@
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
-		padding: 16px 20px 14px;
+		padding: clamp(8px, 2vw, 16px) 20px 14px;
 		border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 		flex-shrink: 0;
 	}
@@ -739,8 +739,6 @@
 		.cc-roster-pane {
 			border-bottom: none;
 			border-right: 1px solid rgba(255, 255, 255, 0.06);
-			/* ~70% width */
-			flex: 7;
 		}
 	}
 
@@ -752,9 +750,7 @@
 
 	@media (min-width: 1024px) {
 		.cc-mission-pane {
-			/* ~30% width */
-			flex: 3;
-			max-width: 320px;
+			/* No flex overrides needed */
 		}
 	}
 
@@ -794,7 +790,7 @@
 	}
 
 	.cc-table th {
-		padding: 10px 16px;
+		padding: clamp(10px, 1vw, 16px);
 		font-size: 8px;
 		font-weight: 700;
 		letter-spacing: 0.38em;
@@ -805,7 +801,7 @@
 	}
 
 	.cc-table td {
-		padding: 12px 16px;
+		padding: clamp(12px, 1vw, 16px);
 		font-size: 11px;
 		letter-spacing: 0.08em;
 		color: rgba(255, 255, 255, 0.6);
@@ -839,7 +835,7 @@
 		font-weight: 700;
 		letter-spacing: 0.25em;
 		text-transform: uppercase;
-		padding: 2px 7px;
+		padding: clamp(2px, 0.5vw, 7px);
 		border-radius: 3px;
 		border: 1px solid;
 	}
@@ -909,7 +905,7 @@
 		background: rgba(10, 14, 20, 0.9);
 		border: 1px solid rgba(255, 255, 255, 0.1);
 		border-radius: 4px;
-		padding: 8px 10px;
+		padding: clamp(4px, 1vw, 8px) 10px;
 		font-size: 10px;
 		letter-spacing: 0.18em;
 		text-transform: uppercase;
@@ -946,13 +942,13 @@
 
 	.cc-select--sm {
 		font-size: 9px;
-		padding: 6px 28px 6px 10px;
+		padding: clamp(6px, 1vw, 10px) clamp(16px, 2vw, 28px) clamp(6px, 1vw, 10px) clamp(10px, 1vw, 16px);
 	}
 
 	/* ── Target mode buttons ───────────────────────────────────────────── */
 	.cc-mode-btn {
 		flex: 1;
-		padding: 5px 6px;
+		padding: clamp(5px, 0.5vw, 8px);
 		font-family: inherit;
 		font-size: 7px;
 		font-weight: 700;
@@ -990,7 +986,7 @@
 		display: flex;
 		align-items: center;
 		gap: 8px;
-		padding: 7px 10px;
+		padding: clamp(7px, 1vw, 10px);
 		cursor: pointer;
 		border-bottom: 1px solid rgba(255, 255, 255, 0.04);
 		transition: background 0.1s ease;
@@ -1015,7 +1011,7 @@
 	/* ── Deploy button ─────────────────────────────────────────────────── */
 	.cc-deploy-btn {
 		width: 100%;
-		padding: 14px 20px;
+		padding: clamp(14px, 1.5vw, 20px);
 		font-family: inherit;
 		font-size: 11px;
 		font-weight: 700;

@@ -442,7 +442,7 @@
 	}
 
 	.cp-section-label {
-		padding: 8px 16px 4px;
+		padding: clamp(4px, 1vw, 8px) 16px 4px;
 		font-size: 0.65rem;
 		font-weight: 800;
 		text-transform: uppercase;
@@ -459,7 +459,7 @@
 		display: flex;
 		align-items: center;
 		gap: 10px;
-		padding: 8px 14px;
+		padding: clamp(4px, 1vw, 8px) 14px;
 		cursor: pointer;
 		transition: background 0.08s ease;
 		border-radius: 0;
@@ -589,7 +589,7 @@
 		display: flex;
 		align-items: center;
 		gap: 14px;
-		padding: 8px 16px;
+		padding: clamp(4px, 1vw, 8px) 16px;
 		border-top: 1px solid rgba(0, 0, 0, 0.07);
 		background: rgba(0, 0, 0, 0.02);
 		flex-shrink: 0;

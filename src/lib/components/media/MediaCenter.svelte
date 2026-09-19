@@ -378,7 +378,7 @@
 
 	.mc-close {
 		width: 36px; height: 36px; min-height: 44px; /* touch target via padding */
-		padding: 4px;
+		padding: clamp(2px, 0.5vw, 4px);
 		display: flex; align-items: center; justify-content: center;
 		background: transparent;
 		border: 1px solid rgba(255, 255, 255, 0.08);

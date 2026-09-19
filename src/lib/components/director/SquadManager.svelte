@@ -460,7 +460,7 @@
 		font-family: inherit;
 		font-size: 8px;
 		letter-spacing: 0.15em;
-		padding: 4px 9px;
+		padding: clamp(2px, 0.5vw, 4px) 9px;
 		border-radius: 0px;
 		cursor: pointer;
 		transition: all 0.15s;
@@ -576,7 +576,7 @@
 		color: #e2e8f0;
 		font-family: inherit;
 		font-size: 12px;
-		padding: 8px 10px;
+		padding: clamp(4px, 1vw, 8px) 10px;
 		outline: none;
 		transition: border-color 0.15s;
 		width: 100%;

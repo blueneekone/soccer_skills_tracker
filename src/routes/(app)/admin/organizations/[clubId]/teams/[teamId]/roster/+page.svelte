@@ -1054,7 +1054,7 @@ import { getContext, untrack } from 'svelte';
 		margin-top: 6px;
 		border: 1px solid #14b8a6;
 		border-radius: 0;
-		padding: 4px 10px;
+		padding: clamp(2px, 0.5vw, 4px) 10px;
 		font-size: 0.75rem;
 		font-family: 'Geist Mono', monospace;
 		font-weight: 700;

@@ -48,7 +48,7 @@
 		<a
 			href="/coach/sandbox"
 			class="clearance-gate__contact"
-			style="color: var(--vanguard-cyan); margin-top: 16px;"
+			style="color: var(--vanguard-cyan); margin-top: clamp(8px, 2vw, 16px);"
 		>
 			[ ENTER TRIAL SANDBOX ]
 		</a>

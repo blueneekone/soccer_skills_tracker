@@ -207,7 +207,7 @@
 
 	.parent-ann-strip__emergency-badge {
 		display: inline-block;
-		margin-bottom: 4px;
+		margin-bottom: clamp(2px, 0.5vw, 4px);
 		padding: 2px 8px;
 		border-radius: 999px;
 		font-size: 10px;
@@ -227,7 +227,7 @@
 	}
 
 	.parent-ann-strip__preview {
-		margin: 4px 0 0;
+		margin: clamp(2px, 0.5vw, 4px) 0 0;
 		font-size: 12px;
 		color: #475569;
 		line-height: 1.4;

@@ -164,7 +164,7 @@
 		display: flex;
 		flex-direction: column;
 		gap: 8px;
-		padding: 16px;
+		padding: clamp(8px, 2vw, 16px);
 		background: #020617;
 	}
 
@@ -268,7 +268,7 @@
 		bottom: 44px;
 		left: 0;
 		right: 0;
-		padding: 8px 10px 4px;
+		padding: clamp(4px, 1vw, 8px) 10px 4px;
 		background: linear-gradient(to top, rgba(2, 6, 23, 0.95) 0%, rgba(2, 6, 23, 0.7) 70%, transparent 100%);
 		z-index: 10;
 	}
@@ -307,7 +307,7 @@
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		padding: 4px;
+		padding: clamp(2px, 0.5vw, 4px);
 	}
 
 	.card-prism-hud canvas {
@@ -343,7 +343,7 @@
 		letter-spacing: 0.3em;
 		color: #14b8a6;
 		text-align: center;
-		padding-bottom: 8px;
+		padding-bottom: clamp(4px, 1vw, 8px);
 		border-bottom: 1px solid #1e293b;
 	}
 
@@ -411,7 +411,7 @@
 		color: #020617;
 		background: #fbbf24;
 		border: none;
-		padding: 8px 20px;
+		padding: clamp(4px, 1vw, 8px) 20px;
 		cursor: pointer;
 		clip-path: polygon(6px 0%, 100% 0%, calc(100% - 6px) 100%, 0% 100%);
 		transition: background 0.15s ease, transform 0.1s ease;

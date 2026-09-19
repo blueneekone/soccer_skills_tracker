@@ -142,7 +142,7 @@
 		border: none;
 		background: transparent;
 		cursor: pointer;
-		padding: 8px;
+		padding: clamp(4px, 1vw, 8px);
 		border-radius: 9999px;
 		color: var(--text-secondary);
 		font-size: 18px;

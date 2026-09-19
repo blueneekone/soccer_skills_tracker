@@ -758,7 +758,7 @@
 	.matrix__hint,
 	.matrix__empty {
 		margin: 0;
-		padding: 16px 20px;
+		padding: clamp(8px, 2vw, 16px) 20px;
 		font-size: 13px;
 		color: var(--text-secondary, #64748b);
 	}
@@ -790,7 +790,7 @@
 		display: inline-flex;
 		align-items: center;
 		gap: 6px;
-		padding: 8px 14px;
+		padding: clamp(4px, 1vw, 8px) 14px;
 		border-radius: 9999px;
 		border: 1px solid #e2e8f0;
 		background: #f8fafc;
@@ -862,10 +862,10 @@
 		color: var(--text-secondary, #64748b);
 	}
 	.matrix__new-channel {
-		margin-top: 8px;
+		margin-top: clamp(4px, 1vw, 8px);
 		display: inline-flex;
 		align-items: center;
-		padding: 4px 10px;
+		padding: clamp(2px, 0.5vw, 4px) 10px;
 		font-size: 11px;
 		font-weight: 600;
 		border: 1px solid #cbd5e1;
@@ -881,7 +881,7 @@
 	}
 	.matrix__ok {
 		margin: 0 0 10px;
-		padding: 8px 12px;
+		padding: clamp(4px, 1vw, 8px) 12px;
 		font-size: 12px;
 		border-radius: 6px;
 		background: rgba(20, 184, 166, 0.12);
@@ -909,7 +909,7 @@
 	.matrix__nav {
 		display: flex;
 		flex-direction: column;
-		padding: 8px 0 12px;
+		padding: clamp(4px, 1vw, 8px) 0 12px;
 		gap: 2px;
 		overflow-y: visible;
 	}
@@ -976,7 +976,7 @@
 		align-items: flex-start;
 		justify-content: space-between;
 		gap: 12px;
-		padding: 16px 20px 14px;
+		padding: clamp(8px, 2vw, 16px) 20px 14px;
 		border-bottom: 1px solid var(--mx-border, #e2e8f0);
 		background: var(--mx-elev, #fff);
 		position: sticky;
@@ -1000,7 +1000,7 @@
 		margin-right: 2px;
 	}
 	.matrix__h2-sub {
-		margin: 4px 0 0;
+		margin: clamp(2px, 0.5vw, 4px) 0 0;
 		font-size: 12px;
 		color: #64748b;
 		font-weight: 500;
@@ -1013,14 +1013,14 @@
 		color: #94a3b8;
 		border: 1px solid #e2e8f0;
 		border-radius: 8px;
-		padding: 4px 8px;
+		padding: clamp(2px, 0.5vw, 4px) 8px;
 	}
 
 	.matrix__day {
 		display: flex;
 		align-items: center;
 		gap: 12px;
-		margin: 4px 0 16px;
+		margin: clamp(2px, 0.5vw, 4px) 0 16px;
 		user-select: none;
 	}
 	.matrix__day-line {
@@ -1163,7 +1163,7 @@
 		align-items: center;
 		gap: 8px;
 		flex-wrap: wrap;
-		margin-bottom: 4px;
+		margin-bottom: clamp(2px, 0.5vw, 4px);
 	}
 	.matrix__name {
 		font-size: 12px;
@@ -1274,7 +1274,7 @@
 			gap: 10px;
 			width: 15rem;
 			min-width: 15rem;
-			padding: 16px 14px;
+			padding: clamp(8px, 2vw, 16px) 14px;
 			border-left: 1px solid #e2e8f0;
 			background: #fff;
 		}
@@ -1301,7 +1301,7 @@
 	.matrix__code {
 		font-size: 10px;
 		display: block;
-		margin-top: 4px;
+		margin-top: clamp(2px, 0.5vw, 4px);
 		padding: 6px 8px;
 		border-radius: 8px;
 		background: #f1f5f9;
@@ -1312,8 +1312,8 @@
 		color: #a1a1aa;
 	}
 	.matrix__link {
-		margin-top: 4px;
-		padding: 8px 12px;
+		margin-top: clamp(2px, 0.5vw, 4px);
+		padding: clamp(4px, 1vw, 8px) 12px;
 		border-radius: 10px;
 		border: 1px solid #e2e8f0;
 		background: #f8fafc;

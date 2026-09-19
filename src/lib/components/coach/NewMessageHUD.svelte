@@ -72,7 +72,7 @@
 		text-transform: uppercase;
 		letter-spacing: 0.05em;
 		color: var(--text-secondary);
-		margin-top: 4px;
+		margin-top: clamp(2px, 0.5vw, 4px);
 	}
 
 	.nm-search-wrap {
@@ -81,7 +81,7 @@
 		gap: 8px;
 		border: 1px solid rgba(255, 255, 255, 0.12);
 		border-radius: 9999px;
-		padding: 8px 12px;
+		padding: clamp(4px, 1vw, 8px) 12px;
 		background: #fafafa;
 	}
 
@@ -140,7 +140,7 @@
 		display: flex;
 		justify-content: flex-end;
 		gap: 10px;
-		margin-top: 4px;
+		margin-top: clamp(2px, 0.5vw, 4px);
 	}
 
 	.nm-btn {

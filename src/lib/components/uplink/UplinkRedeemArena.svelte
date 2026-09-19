@@ -198,7 +198,7 @@
 		background: rgba(var(--accent), 0.1);
 		border: 1px solid rgba(var(--accent), 0.3);
 		border-radius: 6px;
-		padding: 3px 10px;
+		padding: clamp(3px, 0.5vw, 10px);
 		font-family: 'Geist Mono', ui-monospace, monospace;
 		font-size: 10px;
 		color: rgb(var(--accent));
@@ -225,18 +225,18 @@
 		background: rgba(255,77,106,0.06);
 		border: 1px solid rgba(255,77,106,0.15);
 		border-radius: 8px;
-		padding: 12px;
+		padding: clamp(10px, 1vw, 12px);
 		font-family: 'Geist Mono', ui-monospace, monospace;
 		font-size: 11px;
 		color: rgba(255,77,106,0.7);
 		text-align: left;
 		white-space: pre-wrap;
 		word-break: break-all;
-		margin-bottom: 16px;
+		margin-bottom: clamp(8px, 2vw, 16px);
 	}
 
 	.contact-block {
-		margin-top: 24px;
+		margin-top: clamp(12px, 3vw, 24px);
 		padding-top: 20px;
 		border-top: 1px solid rgba(255,255,255,0.07);
 	}

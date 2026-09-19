@@ -225,7 +225,7 @@
 	flex-wrap: wrap;
 	align-items: center;
 	gap: 8px;
-	margin-bottom: 8px;
+	margin-bottom: clamp(4px, 1vw, 8px);
 }
 
 .comms-hub-msg-date {
@@ -257,7 +257,7 @@
 .comms-hub-msg-parties {
 	font-size: 0.86rem;
 	line-height: 1.5;
-	margin-bottom: 8px;
+	margin-bottom: clamp(4px, 1vw, 8px);
 	word-break: break-word;
 	color: #cbd5e1;
 }
@@ -279,7 +279,7 @@
 
 .comms-hub-cc-line {
 	font-size: 0.8rem;
-	margin-bottom: 8px;
+	margin-bottom: clamp(4px, 1vw, 8px);
 	color: #94a3b8;
 	word-break: break-word;
 }
@@ -505,14 +505,14 @@
 }
 
 .comms-hub .ann-ack-deadline {
-	margin: 8px 0 0;
+	margin: clamp(4px, 1vw, 8px) 0 0;
 	font-size: 0.75rem;
 	color: #fbbf24;
 }
 
 .comms-hub .ann-ack-btn {
 	margin-top: 10px;
-	padding: 8px 14px;
+	padding: clamp(4px, 1vw, 8px) 14px;
 	border: 1px solid #fbbf24;
 	background: rgba(251, 191, 36, 0.1);
 	color: #fbbf24;
@@ -527,7 +527,7 @@
 }
 
 .comms-hub .ann-ack-done {
-	margin: 8px 0 0;
+	margin: clamp(4px, 1vw, 8px) 0 0;
 	font-size: 0.78rem;
 	font-weight: 700;
 	color: #34d399;
@@ -632,7 +632,7 @@
 .comms-hub .hht-hint,
 .comms-hub .plp-sub,
 .comms-hub .plp-hint {
-	margin: 4px 0 0;
+	margin: clamp(2px, 0.5vw, 4px) 0 0;
 	font-size: 12px;
 	line-height: 1.45;
 	color: #64748b;
@@ -645,7 +645,7 @@
 	gap: 10px;
 	max-height: 360px;
 	overflow-y: auto;
-	padding: 4px 2px;
+	padding: clamp(2px, 0.5vw, 4px) 2px;
 }
 
 .comms-hub .hht-row,
@@ -688,7 +688,7 @@
 	display: flex;
 	gap: 8px;
 	align-items: center;
-	margin-bottom: 4px;
+	margin-bottom: clamp(2px, 0.5vw, 4px);
 	flex-wrap: wrap;
 }
 
@@ -732,7 +732,7 @@
 .comms-hub .hht-time,
 .comms-hub .plp-time {
 	display: block;
-	margin-top: 4px;
+	margin-top: clamp(2px, 0.5vw, 4px);
 	font-size: 10px;
 	color: #64748b;
 }
@@ -749,7 +749,7 @@
 	display: flex;
 	gap: 10px;
 	align-items: flex-end;
-	padding-top: 4px;
+	padding-top: clamp(2px, 0.5vw, 4px);
 }
 
 .comms-hub .hht-input,
@@ -902,7 +902,7 @@
 	box-sizing: border-box;
 	border: 1px solid var(--pd-grey-trim, #334155);
 	border-radius: 0;
-	padding: 8px 10px;
+	padding: clamp(4px, 1vw, 8px) 10px;
 	font: inherit;
 	font-size: 13px;
 	background: var(--pd-void-base, #000000);
@@ -988,7 +988,7 @@
 	display: flex;
 	flex-direction: column;
 	gap: 4px;
-	padding-bottom: 8px;
+	padding-bottom: clamp(4px, 1vw, 8px);
 	border-bottom: 1px solid var(--pd-grey-trim, #334155);
 }
 
@@ -1006,7 +1006,7 @@
 .comms-hub-shell__space-select {
 	width: 100%;
 	box-sizing: border-box;
-	padding: 8px 10px;
+	padding: clamp(4px, 1vw, 8px) 10px;
 	border: 1px solid var(--pd-grey-trim, #334155);
 	background: var(--pd-navy-panel, #0f172a);
 	color: #e2e8f0;
@@ -1068,7 +1068,7 @@
 }
 
 .comms-hub-shell__main-tab {
-	padding: 8px 14px;
+	padding: clamp(4px, 1vw, 8px) 14px;
 	border: 1px solid var(--pd-grey-trim, #334155);
 	background: rgba(15, 23, 42, 0.5);
 	color: #94a3b8;
@@ -1102,8 +1102,8 @@
 	top: 100%;
 	left: 0;
 	right: 0;
-	margin: 4px 0 0;
-	padding: 4px;
+	margin: clamp(2px, 0.5vw, 4px) 0 0;
+	padding: clamp(2px, 0.5vw, 4px);
 	list-style: none;
 	border: 1px solid var(--pd-grey-trim, #334155);
 	background: var(--pd-navy-panel, #0f172a);
@@ -1149,8 +1149,8 @@
 	}
 
 	.comms-hub-shell__space-picker--mobile {
-		margin-bottom: 8px;
-		padding-bottom: 8px;
+		margin-bottom: clamp(4px, 1vw, 8px);
+		padding-bottom: clamp(4px, 1vw, 8px);
 		border-bottom: 1px solid var(--pd-grey-trim, #334155);
 	}
 }

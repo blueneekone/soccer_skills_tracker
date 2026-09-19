@@ -358,7 +358,7 @@
 	}
 
 	.eom-form {
-		padding: 16px 20px 20px;
+		padding: clamp(8px, 2vw, 16px) 20px 20px;
 	}
 
 	.eom-grid {
