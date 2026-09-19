@@ -55,6 +55,9 @@ jobs:
       - name: ⚡ Run Vitest Unit & Integration Suites
         run: pnpm run test:unit
 
+      - name: 🎭 Run Production Smoke Tests
+        run: npx playwright test e2e/production-smoke.spec.ts
+
   notify-on-failure:
     name: 🚨 Report Pipeline Failure
     needs: validate-and-test
