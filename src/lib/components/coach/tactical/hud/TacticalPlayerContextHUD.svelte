@@ -50,7 +50,7 @@
 	></div>
 
 	<div
-		class="tactical-hud-card tw-fixed tw-z-[201] tw-w-72 tw-bg-[#020617]/95 tw-backdrop-blur-md tw-border tw-border-[#334155] tw-rounded-xl tw-p-3.5 tw-font-mono tw-text-white tw-shadow-[0_10px_35px_rgba(0,0,0,0.85)] tw-transition-all tw-animate-in tw-fade-in tw-zoom-in-95 tw-duration-150"
+		class="tactical-hud-card tw-fixed tw-z-[201] tw-w-72 tw-bg-[#020617]/95 tw-backdrop-blur-md tw-border tw-border-[#334155] tw-rounded-xl tw-p-3.5 tw-font-mono tw-text-[#fafafa] tw-shadow-[0_10px_35px_rgba(0,0,0,0.85)] tw-transition-all tw-animate-in tw-fade-in tw-zoom-in-95 tw-duration-150"
 		style="left: {leftPx}px; top: {topPx}px;"
 		role="dialog"
 		aria-label="Tactical Athlete Context Menu"
@@ -65,7 +65,7 @@
 					{player.number || (player.name ? player.name.slice(0, 2).toUpperCase() : 'PL')}
 				</div>
 				<div class="tw-min-w-0">
-					<h4 class="tw-m-0 tw-text-xs tw-font-bold tw-text-white tw-truncate">{player.name}</h4>
+					<h4 class="tw-m-0 tw-text-xs tw-font-bold tw-text-[#fafafa] tw-truncate">{player.name}</h4>
 					<span class="tw-text-[10px] tw-tracking-wider tw-uppercase" style="color: {player.side === 'opponent' ? '#fbbf24' : '#14b8a6'};">
 						{player.side === 'opponent' ? 'Opponent Marker' : 'Active Friendly'}
 					</span>
@@ -73,7 +73,7 @@
 			</div>
 			<button
 				type="button"
-				class="tw-text-slate-400 hover:tw-text-white tw-text-xs tw-px-1.5 tw-py-0.5 tw-rounded hover:tw-bg-[#0f172a] tw-transition-colors"
+				class="tw-text-slate-400 hover:tw-text-[#fafafa] tw-text-xs tw-px-1.5 tw-py-0.5 tw-rounded hover:tw-bg-[#0f172a] tw-transition-colors"
 				onclick={() => onClose?.()}
 			>
 				✕
@@ -101,7 +101,7 @@
 					{#if r.id !== player.id}
 						<button
 							type="button"
-							class="tw-w-full tw-flex tw-items-center tw-justify-between tw-px-2 tw-py-1.5 tw-text-left tw-text-xs tw-text-slate-300 hover:tw-bg-[#0f172a] hover:tw-text-white tw-border-b tw-border-slate-800/50 last:tw-border-0 tw-transition-colors"
+							class="tw-w-full tw-flex tw-items-center tw-justify-between tw-px-2 tw-py-1.5 tw-text-left tw-text-xs tw-text-slate-300 hover:tw-bg-[#0f172a] hover:tw-text-[#fafafa] tw-border-b tw-border-slate-800/50 last:tw-border-0 tw-transition-colors"
 							onclick={(e) => {
 								e.stopPropagation();
 								onSwap?.(r);
@@ -130,7 +130,7 @@
 				{#each ROLES as role}
 					<button
 						type="button"
-						class="tw-py-1 tw-px-1 tw-text-[10px] tw-font-bold tw-border tw-rounded tw-transition-all {player.position === role ? 'tw-bg-[#daff0a] tw-text-[#020617] tw-border-[#daff0a] tw-shadow-[0_0_8px_#daff0a]' : 'tw-bg-[#0f172a] tw-border-slate-800 tw-text-slate-300 hover:tw-border-slate-600 hover:tw-text-white'}"
+						class="tw-py-1 tw-px-1 tw-text-[10px] tw-font-bold tw-border tw-rounded tw-transition-all {player.position === role ? 'tw-bg-[#daff0a] tw-text-[#020617] tw-border-[#daff0a] tw-shadow-[0_0_8px_#daff0a]' : 'tw-bg-[#0f172a] tw-border-slate-800 tw-text-slate-300 hover:tw-border-slate-600 hover:tw-text-[#fafafa]'}"
 						onclick={() => {
 							onUpdatePosition?.(role);
 							onClose?.();
@@ -146,7 +146,7 @@
 		<div class="tw-border-t tw-border-slate-800 tw-pt-2.5 tw-flex tw-flex-col tw-gap-1.5">
 			<button
 				type="button"
-				class="tw-w-full tw-flex tw-items-center tw-justify-between tw-bg-[#0f172a] hover:tw-bg-[#1e293b] tw-border tw-border-slate-800 tw-rounded tw-px-2.5 tw-py-1.5 tw-text-xs tw-text-slate-200 hover:tw-text-white tw-transition-colors"
+				class="tw-w-full tw-flex tw-items-center tw-justify-between tw-bg-[#0f172a] hover:tw-bg-[#1e293b] tw-border tw-border-slate-800 tw-rounded tw-px-2.5 tw-py-1.5 tw-text-xs tw-text-slate-200 hover:tw-text-[#fafafa] tw-transition-colors"
 				onclick={() => {
 					onToggleSide?.();
 					onClose?.();
@@ -160,7 +160,7 @@
 
 			<button
 				type="button"
-				class="tw-w-full tw-flex tw-items-center tw-justify-between tw-bg-[#0f172a] hover:tw-bg-[#1e293b] tw-border tw-border-slate-800 tw-rounded tw-px-2.5 tw-py-1.5 tw-text-xs tw-text-slate-200 hover:tw-text-white tw-transition-colors"
+				class="tw-w-full tw-flex tw-items-center tw-justify-between tw-bg-[#0f172a] hover:tw-bg-[#1e293b] tw-border tw-border-slate-800 tw-rounded tw-px-2.5 tw-py-1.5 tw-text-xs tw-text-slate-200 hover:tw-text-[#fafafa] tw-transition-colors"
 				onclick={() => {
 					onClearRoutes?.();
 					onClose?.();
@@ -172,7 +172,7 @@
 
 			<button
 				type="button"
-				class="tw-w-full tw-flex tw-items-center tw-justify-between tw-bg-red-950/30 hover:tw-bg-red-950/60 tw-border tw-border-red-900/60 tw-rounded tw-px-2.5 tw-py-1.5 tw-text-xs tw-text-red-300 hover:tw-text-red-200 tw-transition-colors"
+				class="tw-w-full tw-flex tw-items-center tw-justify-between tw-bg-[#f59e0b]/30 hover:tw-bg-[#f59e0b]/60 tw-border tw-border-red-900/60 tw-rounded tw-px-2.5 tw-py-1.5 tw-text-xs tw-text-red-300 hover:tw-text-red-200 tw-transition-colors"
 				onclick={() => {
 					onBench?.();
 					onClose?.();

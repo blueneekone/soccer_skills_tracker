@@ -134,7 +134,7 @@
 			16px 100%,
 			0 calc(100% - 16px)
 		);
-		border: 1px solid rgba(0, 255, 255, 0.15);
+		border: 1px solid rgba(20, 184, 166, 0.15);
 	}
 
 	.player-hud-header--embedded {

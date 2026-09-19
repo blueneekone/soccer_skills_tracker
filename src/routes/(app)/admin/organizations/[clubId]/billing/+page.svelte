@@ -168,7 +168,7 @@
 					class="tw-w-10 tw-h-5 tw-rounded-none tw-relative tw-transition-colors {autoChaseEnabled ? 'tw-bg-[#14b8a6]' : 'tw-bg-[#334155]'}"
 					onclick={() => autoChaseEnabled = !autoChaseEnabled}
 				>
-					<div class="tw-absolute tw-w-4 tw-h-4 tw-bg-white tw-rounded-none tw-top-0.5 tw-transition-transform {autoChaseEnabled ? 'tw-translate-x-5' : 'tw-translate-x-1'}"></div>
+					<div class="tw-absolute tw-w-4 tw-h-4 tw-tw-bg-[#0f172a] tw-rounded-none tw-top-0.5 tw-transition-transform {autoChaseEnabled ? 'tw-translate-x-5' : 'tw-translate-x-1'}"></div>
 				</button>
 			</div>
 			

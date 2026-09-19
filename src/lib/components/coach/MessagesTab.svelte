@@ -733,7 +733,7 @@
 	.matrix {
 		--mx-radius: 24px;
 		--mx-surface: #f4f6fa;
-		--mx-elev: #ffffff;
+		--mx-elev: #fafafa;
 		--mx-border: #e2e8f0;
 		display: flex;
 		flex-direction: column;

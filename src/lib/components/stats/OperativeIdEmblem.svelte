@@ -294,7 +294,7 @@
 	}
 
 	.oie-name-arc__text {
-		fill: #ffffff;
+		fill: #fafafa;
 		font-size: 11px;
 		font-weight: 800;
 		letter-spacing: 0.1em;

@@ -259,7 +259,7 @@
 
 		{#if page.error && typeof page.error === 'object' && 'stack' in page.error && page.error.stack}
 			<details class="tw-mt-6 tw-text-left tw-bg-[#0f172a] tw-p-4 tw-rounded tw-border tw-border-slate-800 tw-overflow-x-auto tw-text-xs">
-				<summary class="tw-font-mono tw-text-slate-400 tw-cursor-pointer hover:tw-text-white">Technical Stack Trace</summary>
+				<summary class="tw-font-mono tw-text-slate-400 tw-cursor-pointer hover:tw-text-[#fafafa]">Technical Stack Trace</summary>
 				<pre class="tw-mt-2 tw-text-red-400 tw-font-mono">{page.error.stack}</pre>
 			</details>
 		{/if}

@@ -83,7 +83,7 @@
 			{#if showDrillLibraryLink}
 				<a
 					href={resolve('/(app)/coach/forge', {})}
-					class="tw-text-xs tw-font-mono tw-font-semibold tw-text-slate-300 hover:tw-text-white tw-no-underline tw-border tw-border-slate-700 tw-bg-[#0f172a]/80 tw-rounded-lg tw-px-3 tw-py-1.5 hover:tw-bg-slate-700 tw-transition-all"
+					class="tw-text-xs tw-font-mono tw-font-semibold tw-text-slate-300 hover:tw-text-[#fafafa] tw-no-underline tw-border tw-border-slate-700 tw-bg-[#0f172a]/80 tw-rounded-lg tw-px-3 tw-py-1.5 hover:tw-bg-slate-700 tw-transition-all"
 				>
 					Drill Library →
 				</a>

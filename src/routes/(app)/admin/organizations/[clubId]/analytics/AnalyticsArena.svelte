@@ -112,7 +112,7 @@
 		<div class="vanguard-panel tw-p-6 tw-flex tw-items-center tw-justify-between">
 			<div>
 				<h3 class="tw-text-slate-400 tw-text-sm tw-tracking-widest tw-uppercase tw-mb-1">SafeSport Compliance</h3>
-				<div class="tw-text-3xl tw-font-bold tw-text-white tw-font-mono">
+				<div class="tw-text-3xl tw-font-bold tw-text-[#fafafa] tw-font-mono">
 					{engine.complianceHealth.safeSport}%
 				</div>
 			</div>
@@ -126,7 +126,7 @@
 		<div class="vanguard-panel tw-p-6 tw-flex tw-items-center tw-justify-between">
 			<div>
 				<h3 class="tw-text-slate-400 tw-text-sm tw-tracking-widest tw-uppercase tw-mb-1">VPC Parent Verification</h3>
-				<div class="tw-text-3xl tw-font-bold tw-text-white tw-font-mono">
+				<div class="tw-text-3xl tw-font-bold tw-text-[#fafafa] tw-font-mono">
 					{engine.complianceHealth.vpc}%
 				</div>
 			</div>
@@ -140,7 +140,7 @@
 
 	<!-- Line Chart -->
 	<div class="vanguard-panel tw-col-span-1 md:tw-col-span-8 tw-p-6 tw-flex tw-flex-col">
-		<h2 class="tw-text-white tw-font-bold tw-mb-4">Seasonal Engagement Trend</h2>
+		<h2 class="tw-text-[#fafafa] tw-font-bold tw-mb-4">Seasonal Engagement Trend</h2>
 		<div class="tw-flex-1 tw-min-h-[300px] tw-relative">
 			<canvas bind:this={lineChartCanvas}></canvas>
 		</div>
@@ -148,7 +148,7 @@
 
 	<!-- Doughnut Chart -->
 	<div class="vanguard-panel tw-col-span-1 md:tw-col-span-4 tw-p-6 tw-flex tw-flex-col">
-		<h2 class="tw-text-white tw-font-bold tw-mb-4">Global Seat Distribution</h2>
+		<h2 class="tw-text-[#fafafa] tw-font-bold tw-mb-4">Global Seat Distribution</h2>
 		<div class="tw-flex-1 tw-min-h-[300px] tw-relative">
 			<canvas bind:this={doughnutChartCanvas}></canvas>
 		</div>

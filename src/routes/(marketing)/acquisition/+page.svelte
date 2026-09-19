@@ -170,7 +170,7 @@
 		display: flex;
 		flex-direction: column;
 		gap: clamp(1.75rem, 4vw, 2.5rem);
-		color: var(--vanguard-text-1, #ffffff);
+		color: var(--vanguard-text-1, #fafafa);
 	}
 
 	.acq-hero {
@@ -349,7 +349,7 @@
 	}
 
 	.acq-list__item strong {
-		color: var(--vanguard-text-1, #ffffff);
+		color: var(--vanguard-text-1, #fafafa);
 		font-weight: 700;
 	}
 
@@ -370,7 +370,7 @@
 		display: block;
 		font-size: 0.8125rem;
 		font-weight: 700;
-		color: var(--vanguard-text-1, #ffffff);
+		color: var(--vanguard-text-1, #fafafa);
 	}
 
 	.acq-limit__status {
@@ -465,7 +465,7 @@
 	}
 
 	.acq-cta__ghost:hover {
-		color: var(--vanguard-text-1, #ffffff);
+		color: var(--vanguard-text-1, #fafafa);
 	}
 
 	@media (max-width: 640px) {

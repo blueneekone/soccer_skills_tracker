@@ -17,7 +17,7 @@
 			</div>
 		</div>
 	{:else if !engine.isAuthorized}
-		<div class="z2-panel siem-panel tw-flex tw-flex-col tw-items-center tw-justify-center tw-h-64 tw-border tw-border-red-500 tw-bg-red-950 tw-p-8 tw-rounded-none">
+		<div class="z2-panel siem-panel tw-flex tw-flex-col tw-items-center tw-justify-center tw-h-64 tw-border tw-border-red-500 tw-bg-[#f59e0b] tw-p-8 tw-rounded-none">
 			<Icon name={"status.shield-alert" as IconName} size={32} class="tw-text-red-400 tw-mb-3" />
 			<span class="tw-text-red-400 tw-font-mono tw-text-base tw-tracking-widest tw-font-bold">ACCESS DENIED: INSUFFICIENT CLEARANCE</span>
 			<span class="tw-text-slate-400 tw-font-mono tw-text-xs tw-mt-2">Commissioner cryptographic clearance level required.</span>
@@ -105,7 +105,7 @@
 						</a>
 						<button
 							type="button"
-							class="tw-px-3 tw-py-2 tw-text-xs tw-font-mono tw-font-bold tw-tracking-wider tw-uppercase tw-bg-transparent tw-border tw-border-[#14b8a6] tw-text-[#14b8a6] hover:tw-bg-[#14b8a6] hover:tw-text-black tw-transition-colors tw-flex tw-items-center tw-justify-between cursor-pointer tw-rounded-none"
+							class="tw-px-3 tw-py-2 tw-text-xs tw-font-mono tw-font-bold tw-tracking-wider tw-uppercase tw-bg-transparent tw-border tw-border-[#14b8a6] tw-text-[#14b8a6] hover:tw-bg-[#14b8a6] hover:tw-text-[#000000] tw-transition-colors tw-flex tw-items-center tw-justify-between cursor-pointer tw-rounded-none"
 							onclick={() => engine.fetchFederationData()}
 						>
 							<span class="tw-flex tw-items-center tw-gap-2">

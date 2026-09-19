@@ -104,7 +104,7 @@
 						</div>
 
 						<button
-							class="tw-w-full tw-bg-[#fbbf24] hover:tw-bg-[#f59e0b] tw-text-black tw-font-bold tw-py-4 tw-px-6 tw-rounded-[24px] tw-transition-colors tw-disabled:opacity-50"
+							class="tw-w-full tw-bg-[#fbbf24] hover:tw-bg-[#f59e0b] tw-text-[#000000] tw-font-bold tw-py-4 tw-px-6 tw-rounded-[24px] tw-transition-colors tw-disabled:opacity-50"
 							onclick={submitGuardian}
 							disabled={isSearching || !childName.trim()}
 						>

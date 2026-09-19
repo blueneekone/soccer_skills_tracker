@@ -243,7 +243,7 @@ describe('T0-8b — Firestore rules include parent read branch on team_broadcast
 
 	it('firestore.rules still preserves coach/director/player branch', () => {
 		const src = readFileSync(FIRESTORE_RULES, 'utf-8');
-		expect(src).toMatch(/isCoach\(\)\s*\|\|\s*isDirector\(\)\s*\|\|\s*isPlayer\(\)/);
+		expect(src).toMatch(/isCoach\(\)\s*\|\|\s*isDirector\(\)\s*\|\|\s*isRegistrar\(\)/);
 	});
 });
 

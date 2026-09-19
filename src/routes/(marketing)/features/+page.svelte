@@ -151,7 +151,7 @@
 
 <Modal bind:open={isModalOpen} maxWidth="1200px">
 	{#snippet titleSlot()}
-		<div class="tw-font-mono tw-font-bold tw-text-lg tw-text-white tw-tracking-widest">
+		<div class="tw-font-mono tw-font-bold tw-text-lg tw-text-[#fafafa] tw-tracking-widest">
 			SSTRACKER DEMO: {currentTitle}
 		</div>
 	{/snippet}

@@ -21,7 +21,7 @@
 			</div>
 		</div>
 	{:else if engine.error}
-		<div class="z2-panel siem-panel siem-warning tw-p-[clamp(16px,3vw,24px)] tw-border tw-border-red-500/50 tw-bg-red-950/20">
+		<div class="z2-panel siem-panel siem-warning tw-p-[clamp(16px,3vw,24px)] tw-border tw-border-red-500/50 tw-bg-[#f59e0b]/20">
 			<h2 class="tw-text-red-400 tw-font-bold tw-uppercase tw-tracking-widest tw-text-sm tw-mb-2 tw-flex tw-items-center tw-gap-2">
 				<Icon name={"status.shield-alert" as IconName} size={16} />
 				System Error
@@ -148,8 +148,8 @@
 					</div>
 					<button
 						class="tw-px-4 tw-py-2 tw-text-xs tw-font-bold tw-tracking-widest tw-uppercase tw-rounded-none tw-border tw-transition-colors tw-flex tw-items-center tw-gap-2"
-						class:tw-bg-red-500={engine.maintenanceMode}
-						class:tw-text-white={engine.maintenanceMode}
+						class:tw-bg-[#f59e0b]={engine.maintenanceMode}
+						class:tw-text-[#fafafa]={engine.maintenanceMode}
 						class:tw-border-red-600={engine.maintenanceMode}
 						class:tw-bg-transparent={!engine.maintenanceMode}
 						class:tw-text-[#f59e0b]={!engine.maintenanceMode}

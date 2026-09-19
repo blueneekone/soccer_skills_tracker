@@ -46,7 +46,7 @@
 	<button
 		type="button"
 		onclick={() => engine.activeTab = 'live'}
-		class="tw-flex-1 tw-min-w-[120px] tw-px-4 tw-py-2 tw-font-mono tw-text-xs tw-font-bold tw-uppercase tw-tracking-wider tw-transition-all {engine.activeTab === 'live' ? 'tw-bg-[#000000] tw-text-[#14b8a6] tw-border tw-border-[#14b8a6] tw-shadow-md' : 'tw-bg-transparent tw-text-slate-400 tw-border tw-border-transparent hover:tw-text-white hover:tw-bg-[#0f172a]/50'}"
+		class="tw-flex-1 tw-min-w-[120px] tw-px-4 tw-py-2 tw-font-mono tw-text-xs tw-font-bold tw-uppercase tw-tracking-wider tw-transition-all {engine.activeTab === 'live' ? 'tw-bg-[#000000] tw-text-[#14b8a6] tw-border tw-border-[#14b8a6] tw-shadow-md' : 'tw-bg-transparent tw-text-slate-400 tw-border tw-border-transparent hover:tw-text-[#fafafa] hover:tw-bg-[#0f172a]/50'}"
 		style="border-radius: 0px;"
 	>
 		● LIVE TELEMETRY
@@ -54,7 +54,7 @@
 	<button
 		type="button"
 		onclick={() => engine.activeTab = 'roster'}
-		class="tw-flex-1 tw-min-w-[120px] tw-px-4 tw-py-2 tw-font-mono tw-text-xs tw-font-bold tw-uppercase tw-tracking-wider tw-transition-all {engine.activeTab === 'roster' ? 'tw-bg-[#000000] tw-text-[#14b8a6] tw-border tw-border-[#14b8a6] tw-shadow-md' : 'tw-bg-transparent tw-text-slate-400 tw-border tw-border-transparent hover:tw-text-white hover:tw-bg-[#0f172a]/50'}"
+		class="tw-flex-1 tw-min-w-[120px] tw-px-4 tw-py-2 tw-font-mono tw-text-xs tw-font-bold tw-uppercase tw-tracking-wider tw-transition-all {engine.activeTab === 'roster' ? 'tw-bg-[#000000] tw-text-[#14b8a6] tw-border tw-border-[#14b8a6] tw-shadow-md' : 'tw-bg-transparent tw-text-slate-400 tw-border tw-border-transparent hover:tw-text-[#fafafa] hover:tw-bg-[#0f172a]/50'}"
 		style="border-radius: 0px;"
 	>
 		👥 ROSTER & SUBS
@@ -62,7 +62,7 @@
 	<button
 		type="button"
 		onclick={() => engine.activeTab = 'review'}
-		class="tw-flex-1 tw-min-w-[120px] tw-px-4 tw-py-2 tw-font-mono tw-text-xs tw-font-bold tw-uppercase tw-tracking-wider tw-transition-all {engine.activeTab === 'review' ? 'tw-bg-[#000000] tw-text-[#14b8a6] tw-border tw-border-[#14b8a6] tw-shadow-md' : 'tw-bg-transparent tw-text-slate-400 tw-border tw-border-transparent hover:tw-text-white hover:tw-bg-[#0f172a]/50'}"
+		class="tw-flex-1 tw-min-w-[120px] tw-px-4 tw-py-2 tw-font-mono tw-text-xs tw-font-bold tw-uppercase tw-tracking-wider tw-transition-all {engine.activeTab === 'review' ? 'tw-bg-[#000000] tw-text-[#14b8a6] tw-border tw-border-[#14b8a6] tw-shadow-md' : 'tw-bg-transparent tw-text-slate-400 tw-border tw-border-transparent hover:tw-text-[#fafafa] hover:tw-bg-[#0f172a]/50'}"
 		style="border-radius: 0px;"
 	>
 		📊 POST-MATCH REVIEW
@@ -95,7 +95,7 @@
 			<select
 				id="matchday-target-player"
 				bind:value={engine.selectedPlayerId}
-				class="tw-w-full tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-text-white tw-px-3 tw-py-2 tw-font-mono tw-text-xs focus:tw-border-[#14b8a6] focus:tw-outline-none tw-rounded-none"
+				class="tw-w-full tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-text-[#fafafa] tw-px-3 tw-py-2 tw-font-mono tw-text-xs focus:tw-border-[#14b8a6] focus:tw-outline-none tw-rounded-none"
 			>
 				<option value="">-- ALL SQUAD / UNASSIGNED (CLICK TO PICK) --</option>
 				{#each engine.roster as player}
@@ -130,110 +130,110 @@
 				<button
 					type="button"
 					onclick={() => handleStatClick('GOAL')}
-					class="tw-flex tw-flex-col tw-items-center tw-justify-center tw-h-16 tw-p-2 tw-bg-[#14b8a6]/40 tw-border tw-border-[#14b8a6]/80 tw-text-[#14b8a6] hover:tw-bg-[#14b8a6] hover:tw-text-black tw-transition-all active:tw-scale-95 group tw-cursor-pointer"
+					class="tw-flex tw-flex-col tw-items-center tw-justify-center tw-h-16 tw-p-2 tw-bg-[#14b8a6]/40 tw-border tw-border-[#14b8a6]/80 tw-text-[#14b8a6] hover:tw-bg-[#14b8a6] hover:tw-text-[#000000] tw-transition-all active:tw-scale-95 group tw-cursor-pointer"
 					style="border-radius: 0px;"
 				>
-					<span class="tw-font-mono tw-text-xs tw-font-black tw-tracking-wider group-hover:tw-text-black">+ GOAL</span>
-					<span class="tw-font-mono tw-text-[9px] tw-opacity-80 group-hover:tw-text-black/80">+10 XP</span>
+					<span class="tw-font-mono tw-text-xs tw-font-black tw-tracking-wider group-hover:tw-text-[#000000]">+ GOAL</span>
+					<span class="tw-font-mono tw-text-[9px] tw-opacity-80 group-hover:tw-text-[#000000]/80">+10 XP</span>
 				</button>
 
 				<!-- 2. ASSIST -->
 				<button
 					type="button"
 					onclick={() => handleStatClick('ASSIST')}
-					class="tw-flex tw-flex-col tw-items-center tw-justify-center tw-h-16 tw-p-2 tw-bg-teal-950/40 tw-border tw-border-teal-400/80 tw-text-teal-300 hover:tw-bg-teal-400 hover:tw-text-black tw-transition-all active:tw-scale-95 group tw-cursor-pointer"
+					class="tw-flex tw-flex-col tw-items-center tw-justify-center tw-h-16 tw-p-2 tw-bg-teal-950/40 tw-border tw-border-teal-400/80 tw-text-teal-300 hover:tw-bg-teal-400 hover:tw-text-[#000000] tw-transition-all active:tw-scale-95 group tw-cursor-pointer"
 					style="border-radius: 0px;"
 				>
-					<span class="tw-font-mono tw-text-xs tw-font-black tw-tracking-wider group-hover:tw-text-black">+ ASSIST</span>
-					<span class="tw-font-mono tw-text-[9px] tw-opacity-80 group-hover:tw-text-black/80">+6 XP</span>
+					<span class="tw-font-mono tw-text-xs tw-font-black tw-tracking-wider group-hover:tw-text-[#000000]">+ ASSIST</span>
+					<span class="tw-font-mono tw-text-[9px] tw-opacity-80 group-hover:tw-text-[#000000]/80">+6 XP</span>
 				</button>
 
 				<!-- 3. SHOT -->
 				<button
 					type="button"
 					onclick={() => handleStatClick('SHOT')}
-					class="tw-flex tw-flex-col tw-items-center tw-justify-center tw-h-16 tw-p-2 tw-bg-cyan-950/40 tw-border tw-border-cyan-400/80 tw-text-cyan-300 hover:tw-bg-cyan-400 hover:tw-text-black tw-transition-all active:tw-scale-95 group tw-cursor-pointer"
+					class="tw-flex tw-flex-col tw-items-center tw-justify-center tw-h-16 tw-p-2 tw-bg-cyan-950/40 tw-border tw-border-cyan-400/80 tw-text-cyan-300 hover:tw-bg-cyan-400 hover:tw-text-[#000000] tw-transition-all active:tw-scale-95 group tw-cursor-pointer"
 					style="border-radius: 0px;"
 				>
-					<span class="tw-font-mono tw-text-xs tw-font-black tw-tracking-wider group-hover:tw-text-black">+ SHOT</span>
-					<span class="tw-font-mono tw-text-[9px] tw-opacity-80 group-hover:tw-text-black/80">TARGET</span>
+					<span class="tw-font-mono tw-text-xs tw-font-black tw-tracking-wider group-hover:tw-text-[#000000]">+ SHOT</span>
+					<span class="tw-font-mono tw-text-[9px] tw-opacity-80 group-hover:tw-text-[#000000]/80">TARGET</span>
 				</button>
 
 				<!-- 4. TACKLE -->
 				<button
 					type="button"
 					onclick={() => handleStatClick('TACKLE')}
-					class="tw-flex tw-flex-col tw-items-center tw-justify-center tw-h-16 tw-p-2 tw-bg-blue-950/40 tw-border tw-border-blue-400/80 tw-text-blue-300 hover:tw-bg-blue-400 hover:tw-text-black tw-transition-all active:tw-scale-95 group tw-cursor-pointer"
+					class="tw-flex tw-flex-col tw-items-center tw-justify-center tw-h-16 tw-p-2 tw-bg-[#14b8a6]/10 tw-border tw-border-[#14b8a6]/50 tw-text-[#14b8a6] hover:tw-bg-[#14b8a6] hover:tw-text-[#000000] tw-transition-all active:tw-scale-95 group tw-cursor-pointer"
 					style="border-radius: 0px;"
 				>
-					<span class="tw-font-mono tw-text-xs tw-font-black tw-tracking-wider group-hover:tw-text-black">+ TACKLE</span>
-					<span class="tw-font-mono tw-text-[9px] tw-opacity-80 group-hover:tw-text-black/80">WON</span>
+					<span class="tw-font-mono tw-text-xs tw-font-black tw-tracking-wider group-hover:tw-text-[#000000]">+ TACKLE</span>
+					<span class="tw-font-mono tw-text-[9px] tw-opacity-80 group-hover:tw-text-[#000000]/80">WON</span>
 				</button>
 
 				<!-- 5. SAVE -->
 				<button
 					type="button"
 					onclick={() => handleStatClick('SAVE')}
-					class="tw-flex tw-flex-col tw-items-center tw-justify-center tw-h-16 tw-p-2 tw-bg-sky-950/40 tw-border tw-border-sky-400/80 tw-text-sky-300 hover:tw-bg-sky-400 hover:tw-text-black tw-transition-all active:tw-scale-95 group tw-cursor-pointer"
+					class="tw-flex tw-flex-col tw-items-center tw-justify-center tw-h-16 tw-p-2 tw-bg-sky-950/40 tw-border tw-border-sky-400/80 tw-text-sky-300 hover:tw-bg-sky-400 hover:tw-text-[#000000] tw-transition-all active:tw-scale-95 group tw-cursor-pointer"
 					style="border-radius: 0px;"
 				>
-					<span class="tw-font-mono tw-text-xs tw-font-black tw-tracking-wider group-hover:tw-text-black">+ SAVE</span>
-					<span class="tw-font-mono tw-text-[9px] tw-opacity-80 group-hover:tw-text-black/80">KEEPER</span>
+					<span class="tw-font-mono tw-text-xs tw-font-black tw-tracking-wider group-hover:tw-text-[#000000]">+ SAVE</span>
+					<span class="tw-font-mono tw-text-[9px] tw-opacity-80 group-hover:tw-text-[#000000]/80">KEEPER</span>
 				</button>
 
 				<!-- 6. FOUL -->
 				<button
 					type="button"
 					onclick={() => handleStatClick('FOUL')}
-					class="tw-flex tw-flex-col tw-items-center tw-justify-center tw-h-16 tw-p-2 tw-bg-[#0f172a] tw-border tw-border-amber-600/80 tw-text-amber-300 hover:tw-bg-amber-600 hover:tw-text-black tw-transition-all active:tw-scale-95 group tw-cursor-pointer"
+					class="tw-flex tw-flex-col tw-items-center tw-justify-center tw-h-16 tw-p-2 tw-bg-[#0f172a] tw-border tw-border-amber-600/80 tw-text-amber-300 hover:tw-bg-amber-600 hover:tw-text-[#000000] tw-transition-all active:tw-scale-95 group tw-cursor-pointer"
 					style="border-radius: 0px;"
 				>
-					<span class="tw-font-mono tw-text-xs tw-font-bold tw-tracking-wider group-hover:tw-text-black">+ FOUL</span>
-					<span class="tw-font-mono tw-text-[9px] tw-opacity-80 group-hover:tw-text-black/80">WHISTLE</span>
+					<span class="tw-font-mono tw-text-xs tw-font-bold tw-tracking-wider group-hover:tw-text-[#000000]">+ FOUL</span>
+					<span class="tw-font-mono tw-text-[9px] tw-opacity-80 group-hover:tw-text-[#000000]/80">WHISTLE</span>
 				</button>
 
 				<!-- 7. YELLOW CARD -->
 				<button
 					type="button"
 					onclick={() => handleStatClick('YELLOW_CARD')}
-					class="tw-flex tw-flex-col tw-items-center tw-justify-center tw-h-16 tw-p-2 tw-bg-amber-950/40 tw-border tw-border-amber-400/80 tw-text-amber-300 hover:tw-bg-[#fbbf24] hover:tw-text-black tw-transition-all active:tw-scale-95 group tw-cursor-pointer"
+					class="tw-flex tw-flex-col tw-items-center tw-justify-center tw-h-16 tw-p-2 tw-bg-amber-950/40 tw-border tw-border-amber-400/80 tw-text-amber-300 hover:tw-bg-[#fbbf24] hover:tw-text-[#000000] tw-transition-all active:tw-scale-95 group tw-cursor-pointer"
 					style="border-radius: 0px;"
 				>
-					<span class="tw-font-mono tw-text-xs tw-font-black tw-tracking-wider group-hover:tw-text-black">+ YELLOW</span>
-					<span class="tw-font-mono tw-text-[9px] tw-opacity-80 group-hover:tw-text-black/80">CAUTION</span>
+					<span class="tw-font-mono tw-text-xs tw-font-black tw-tracking-wider group-hover:tw-text-[#000000]">+ YELLOW</span>
+					<span class="tw-font-mono tw-text-[9px] tw-opacity-80 group-hover:tw-text-[#000000]/80">CAUTION</span>
 				</button>
 
 				<!-- 8. RED CARD -->
 				<button
 					type="button"
 					onclick={() => handleStatClick('RED_CARD')}
-					class="tw-flex tw-flex-col tw-items-center tw-justify-center tw-h-16 tw-p-2 tw-bg-rose-950/40 tw-border tw-border-rose-500/80 tw-text-rose-300 hover:tw-bg-rose-600 hover:tw-text-white tw-transition-all active:tw-scale-95 group tw-cursor-pointer"
+					class="tw-flex tw-flex-col tw-items-center tw-justify-center tw-h-16 tw-p-2 tw-bg-rose-950/40 tw-border tw-border-rose-500/80 tw-text-rose-300 hover:tw-bg-rose-600 hover:tw-text-[#fafafa] tw-transition-all active:tw-scale-95 group tw-cursor-pointer"
 					style="border-radius: 0px;"
 				>
-					<span class="tw-font-mono tw-text-xs tw-font-black tw-tracking-wider group-hover:tw-text-white">+ RED CARD</span>
-					<span class="tw-font-mono tw-text-[9px] tw-opacity-80 group-hover:tw-text-white/80">DISMISSAL</span>
+					<span class="tw-font-mono tw-text-xs tw-font-black tw-tracking-wider group-hover:tw-text-[#fafafa]">+ RED CARD</span>
+					<span class="tw-font-mono tw-text-[9px] tw-opacity-80 group-hover:tw-text-[#fafafa]/80">DISMISSAL</span>
 				</button>
 
 				<!-- 9. SUB -->
 				<button
 					type="button"
 					onclick={() => engine.logEvent('SUB', 'PLAYER SUB LOGGED')}
-					class="tw-flex tw-flex-col tw-items-center tw-justify-center tw-h-16 tw-p-2 tw-bg-[#0f172a] tw-border tw-border-[#14b8a6]/80 tw-text-[#14b8a6] hover:tw-bg-[#14b8a6] hover:tw-text-black tw-transition-all active:tw-scale-95 group tw-cursor-pointer"
+					class="tw-flex tw-flex-col tw-items-center tw-justify-center tw-h-16 tw-p-2 tw-bg-[#0f172a] tw-border tw-border-[#14b8a6]/80 tw-text-[#14b8a6] hover:tw-bg-[#14b8a6] hover:tw-text-[#000000] tw-transition-all active:tw-scale-95 group tw-cursor-pointer"
 					style="border-radius: 0px;"
 				>
-					<span class="tw-font-mono tw-text-xs tw-font-black tw-tracking-wider group-hover:tw-text-black">+ SUB</span>
-					<span class="tw-font-mono tw-text-[9px] tw-opacity-80 group-hover:tw-text-black/80">ROTATION</span>
+					<span class="tw-font-mono tw-text-xs tw-font-black tw-tracking-wider group-hover:tw-text-[#000000]">+ SUB</span>
+					<span class="tw-font-mono tw-text-[9px] tw-opacity-80 group-hover:tw-text-[#000000]/80">ROTATION</span>
 				</button>
 
 				<!-- 10. LOG MISTAKE WITH PROMPT -->
 				<button
 					type="button"
 					onclick={() => showMistakeModal = true}
-					class="tw-flex tw-flex-col tw-items-center tw-justify-center tw-h-16 tw-p-2 tw-bg-rose-950/50 tw-border tw-border-rose-500 tw-text-rose-200 hover:tw-bg-rose-600 hover:tw-text-white tw-transition-all active:tw-scale-95 group tw-cursor-pointer"
+					class="tw-flex tw-flex-col tw-items-center tw-justify-center tw-h-16 tw-p-2 tw-bg-rose-950/50 tw-border tw-border-rose-500 tw-text-rose-200 hover:tw-bg-rose-600 hover:tw-text-[#fafafa] tw-transition-all active:tw-scale-95 group tw-cursor-pointer"
 					style="border-radius: 0px;"
 				>
-					<span class="tw-font-mono tw-text-xs tw-font-bold tw-tracking-wider group-hover:tw-text-white">⚡ MISTAKE</span>
-					<span class="tw-font-mono tw-text-[9px] tw-opacity-80 group-hover:tw-text-white/90">NOTE PROMPT</span>
+					<span class="tw-font-mono tw-text-xs tw-font-bold tw-tracking-wider group-hover:tw-text-[#fafafa]">⚡ MISTAKE</span>
+					<span class="tw-font-mono tw-text-[9px] tw-opacity-80 group-hover:tw-text-[#fafafa]/90">NOTE PROMPT</span>
 				</button>
 			</div>
 		</div>
@@ -261,7 +261,7 @@
 					>
 						<div class="tw-flex tw-items-center tw-gap-2.5">
 							<span class="tw-w-1.5 tw-h-1.5 {evt.type === 'GOAL' ? 'tw-bg-[#14b8a6]' : evt.type.includes('CARD') ? 'tw-bg-[#fbbf24]' : evt.type === 'SUB' ? 'tw-bg-[#14b8a6]' : 'tw-bg-rose-400'}"></span>
-							<span class="tw-font-mono tw-text-xs tw-text-white tw-font-bold">{evt.label}</span>
+							<span class="tw-font-mono tw-text-xs tw-text-[#fafafa] tw-font-bold">{evt.label}</span>
 						</div>
 						<span class="tw-font-mono tw-text-[10px] tw-text-[#14b8a6] tw-bg-[#000000] tw-px-2 tw-py-0.5 tw-border tw-border-[#334155]">
 							{evt.time}
@@ -289,7 +289,7 @@
 			<button
 				type="button"
 				onclick={() => engine.syncHalftimeChoice()}
-				class="tw-w-full tw-h-11 tw-bg-[#000000] tw-text-[#fbbf24] tw-border tw-border-[#fbbf24] tw-px-4 tw-font-mono tw-text-xs tw-font-bold tw-uppercase tw-tracking-wider hover:tw-bg-[#fbbf24] hover:tw-text-black tw-transition-all active:tw-scale-95 tw-shadow-lg"
+				class="tw-w-full tw-h-11 tw-bg-[#000000] tw-text-[#fbbf24] tw-border tw-border-[#fbbf24] tw-px-4 tw-font-mono tw-text-xs tw-font-bold tw-uppercase tw-tracking-wider hover:tw-bg-[#fbbf24] hover:tw-text-[#000000] tw-transition-all active:tw-scale-95 tw-shadow-lg"
 				style="border-radius: 0px;"
 			>
 				⚡ SYNC HALFTIME CHOICE
@@ -317,7 +317,7 @@
 			<div class="tw-space-y-2 tw-font-mono tw-text-xs">
 				<div class="tw-flex tw-justify-between tw-items-center tw-p-2 tw-bg-[#000000] tw-border tw-border-[#334155]">
 					<span class="tw-text-slate-400">OPPONENT:</span>
-					<span class="tw-text-white tw-font-bold">{engine.opponentName || 'NOT SPECIFIED'}</span>
+					<span class="tw-text-[#fafafa] tw-font-bold">{engine.opponentName || 'NOT SPECIFIED'}</span>
 				</div>
 				<div class="tw-flex tw-justify-between tw-items-center tw-p-2 tw-bg-[#000000] tw-border tw-border-[#334155]">
 					<span class="tw-text-slate-400">SCORE:</span>
@@ -364,7 +364,7 @@
 				<p class="tw-font-mono tw-text-xs tw-text-slate-400 tw-mb-4">Ingest your team roster on the logistics tab to populate the matchday console.</p>
 				<a
 					href="/coach/logistics?tab=roster"
-					class="tw-inline-block tw-px-4 tw-py-2 tw-bg-[#14b8a6] tw-text-black tw-font-mono tw-text-xs tw-font-bold"
+					class="tw-inline-block tw-px-4 tw-py-2 tw-bg-[#14b8a6] tw-text-[#000000] tw-font-mono tw-text-xs tw-font-bold"
 				>
 					GO TO ROSTER INGESTION →
 				</a>
@@ -387,7 +387,7 @@
 										{player.initials || 'PL'}
 									</span>
 									<div>
-										<div class="tw-font-mono tw-text-xs tw-font-bold tw-text-white tw-truncate">{player.name}</div>
+										<div class="tw-font-mono tw-text-xs tw-font-bold tw-text-[#fafafa] tw-truncate">{player.name}</div>
 										<div class="tw-font-mono tw-text-[10px] tw-text-slate-400">
 											{player.jersey ? `JERSEY #${player.jersey}` : 'NO NUMBER'}
 											{player.position ? ` • ${player.position}` : ''}
@@ -397,7 +397,7 @@
 								<div class="tw-flex tw-items-center tw-gap-2">
 									<button
 										type="button"
-										class="tw-px-2.5 tw-py-1 tw-bg-amber-950/40 tw-border tw-border-[#f59e0b]/60 tw-text-amber-300 hover:tw-bg-[#f59e0b] hover:tw-text-black tw-font-mono tw-text-[10px] tw-font-bold tw-transition-colors"
+										class="tw-px-2.5 tw-py-1 tw-bg-amber-950/40 tw-border tw-border-[#f59e0b]/60 tw-text-amber-300 hover:tw-bg-[#f59e0b] hover:tw-text-[#000000] tw-font-mono tw-text-[10px] tw-font-bold tw-transition-colors"
 										onclick={() => engine.moveToBench(player.id)}
 									>
 										↘ TO BENCH
@@ -437,7 +437,7 @@
 								<div class="tw-flex tw-items-center tw-gap-2">
 									<button
 										type="button"
-										class="tw-px-2.5 tw-py-1 tw-bg-[#14b8a6]/40 tw-border tw-border-[#14b8a6]/60 tw-text-[#14b8a6] hover:tw-bg-[#14b8a6] hover:tw-text-black tw-font-mono tw-text-[10px] tw-font-bold tw-transition-colors"
+										class="tw-px-2.5 tw-py-1 tw-bg-[#14b8a6]/40 tw-border tw-border-[#14b8a6]/60 tw-text-[#14b8a6] hover:tw-bg-[#14b8a6] hover:tw-text-[#000000] tw-font-mono tw-text-[10px] tw-font-bold tw-transition-colors"
 										onclick={() => engine.moveToStarters(player.id)}
 									>
 										↗ SUB IN

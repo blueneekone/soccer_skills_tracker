@@ -72,7 +72,7 @@
 	padding: 0 12px 0 14px;
 	box-sizing: border-box;
 	border-bottom: 1px solid var(--ec-sidebar-border, #e5e5e5);
-	background: var(--glass-bg, #ffffff);
+	background: var(--glass-bg, #fafafa);
 	flex-shrink: 0;
 }
 
@@ -597,7 +597,7 @@ html.dark .ec-sidebar-toggle:hover {
 	gap: 16px;
 	padding: 0 16px 0 20px;
 	border-bottom: 1px solid var(--ec-sidebar-border, #e5e5e5);
-	background: var(--glass-bg, #ffffff);
+	background: var(--glass-bg, #fafafa);
 	box-sizing: border-box;
 	min-width: 0;
 }
@@ -721,7 +721,7 @@ html.dark .ec-topbar {
 	line-height: 1.25;
 	border: 1px solid var(--input-border, #e5e5e5);
 	border-radius: var(--vanguard-radius-sm);
-	background: var(--input-bg, #ffffff);
+	background: var(--input-bg, #fafafa);
 	color: var(--text-primary);
 	box-sizing: border-box;
 }
@@ -781,7 +781,7 @@ html.dark .ec-icon-btn:hover {
 	top: 0;
 	z-index: 30;
 	margin: 0;
-	background: var(--ec-topbar-bg, #ffffff);
+	background: var(--ec-topbar-bg, #fafafa);
 	border-bottom: 1px solid var(--ec-sidebar-border, #e5e5e5);
 	padding: 8px var(--bento-pad-liquid) 0;
 }
@@ -801,7 +801,7 @@ html.dark .ec-page-subnav {
 	-webkit-overflow-scrolling: touch;
 	border: 1px solid rgba(0, 0, 0, 0.08);
 	border-radius: var(--vanguard-radius-sm);
-	background: #ffffff;
+	background: #fafafa;
 }
 
 html.dark .ec-table-wrap {
@@ -960,7 +960,7 @@ html.enterprise-console-active body {
 	min-width: 320px;
 	max-width: 100%;
 	height: 100vh;
-	background: var(--glass-bg, #ffffff);
+	background: var(--glass-bg, #fafafa);
 	border-left: 1px solid rgba(0, 0, 0, 0.08);
 	box-shadow: none;
 	z-index: 210;
@@ -1068,7 +1068,7 @@ html.dark .ec-drawer__close:hover {
 	min-width: 300px;
 	max-width: 100%;
 	height: 100vh;
-	background: #ffffff;
+	background: #fafafa;
 	border-left: 1px solid rgba(0, 0, 0, 0.1);
 	box-shadow: none;
 	z-index: 310;
@@ -1253,7 +1253,7 @@ html.dark .ec-pdrawer__section {
 	padding: 8px 12px;
 	border-radius: var(--vanguard-radius-sm);
 	border: 1px solid rgba(0, 0, 0, 0.12);
-	background: #ffffff;
+	background: #fafafa;
 	color: var(--text-primary);
 	cursor: pointer;
 }

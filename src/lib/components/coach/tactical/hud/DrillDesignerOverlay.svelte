@@ -64,7 +64,7 @@
 					</button>
 					<button
 						type="button"
-						class="tw-bg-[#fbbf24] tw-text-black tw-font-mono tw-font-bold tw-text-xs tw-px-6 tw-py-2 tw-uppercase hover:tw-bg-[#fbbf24] tw-transition-colors"
+						class="tw-bg-[#fbbf24] tw-text-[#000000] tw-font-mono tw-font-bold tw-text-xs tw-px-6 tw-py-2 tw-uppercase hover:tw-bg-[#fbbf24] tw-transition-colors"
 						style="border-radius: 0px;"
 						onclick={onFinalizeDeploy}
 					>

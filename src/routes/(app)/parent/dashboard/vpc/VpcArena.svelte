@@ -7,7 +7,7 @@
 </script>
 
 <div class="tw-p-6 tw-bg-[#0F172A] tw-rounded-[24px] tw-border tw-border-[#1E293B]">
-	<h2 class="tw-text-lg tw-font-bold tw-text-white tw-mb-3 tw-flex tw-items-center tw-gap-2">
+	<h2 class="tw-text-lg tw-font-bold tw-text-[#fafafa] tw-mb-3 tw-flex tw-items-center tw-gap-2">
 		<Icon name={"sys.fingerprint" as IconName} size={20} class="tw-text-[#f59e0b]" />
 		<span>Biometric Registration (VPC)</span>
 	</h2>
@@ -17,7 +17,7 @@
 	</p>
 
 	{#if engine.error}
-		<div class="tw-p-4 tw-mb-4 tw-rounded-xl tw-bg-red-950/30 tw-border tw-border-red-500/30 tw-flex tw-items-center tw-gap-2">
+		<div class="tw-p-4 tw-mb-4 tw-rounded-xl tw-bg-[#f59e0b]/30 tw-border tw-border-red-500/30 tw-flex tw-items-center tw-gap-2">
 			<Icon name={"status.error" as IconName} size={16} class="tw-text-red-400" />
 			<p class="tw-text-sm tw-text-red-300 tw-font-mono">{engine.error}</p>
 		</div>
@@ -32,7 +32,7 @@
 		<button
 			onclick={() => engine.register()}
 			disabled={engine.loading || !engine.isReady}
-			class="tw-w-full tw-py-3.5 tw-px-6 tw-rounded-xl tw-bg-[#f59e0b] tw-text-black tw-font-mono tw-text-xs tw-font-bold tw-tracking-widest tw-uppercase hover:tw-bg-[#fbbf24] disabled:tw-opacity-50 disabled:tw-cursor-not-allowed tw-transition-all tw-flex tw-items-center tw-justify-center tw-gap-2"
+			class="tw-w-full tw-py-3.5 tw-px-6 tw-rounded-xl tw-bg-[#f59e0b] tw-text-[#000000] tw-font-mono tw-text-xs tw-font-bold tw-tracking-widest tw-uppercase hover:tw-bg-[#fbbf24] disabled:tw-opacity-50 disabled:tw-cursor-not-allowed tw-transition-all tw-flex tw-items-center tw-justify-center tw-gap-2"
 		>
 			<Icon name={"sys.fingerprint" as IconName} size={18} />
 			<span>

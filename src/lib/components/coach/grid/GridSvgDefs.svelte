@@ -151,7 +151,7 @@
 			markerUnits="userSpaceOnUse"
 		>
 			<circle cx="12" cy="12" r="9" fill="transparent" stroke={c} stroke-width="3" />
-			<circle cx="12" cy="12" r="5" fill="#050505" stroke="#ffffff" stroke-width="1.5" />
+			<circle cx="12" cy="12" r="5" fill="#050505" stroke="#fafafa" stroke-width="1.5" />
 		</marker>
 	{/each}
 </defs>

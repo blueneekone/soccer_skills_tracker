@@ -513,7 +513,7 @@
 	}
 	.fl-time {
 		font-size: 10px;
-		color: rgba(0, 255, 255, 0.55);
+		color: rgba(20, 184, 166, 0.55);
 		white-space: nowrap;
 		display: flex;
 		align-items: center;
@@ -523,7 +523,7 @@
 	.fl-tz-abbr {
 		font-size: 8px;
 		letter-spacing: 0.12em;
-		color: rgba(0, 255, 255, 0.3);
+		color: rgba(20, 184, 166, 0.3);
 	}
 	/* Amber pulsing warning icon for cross-timezone fixtures */
 	.fl-tz-warn {

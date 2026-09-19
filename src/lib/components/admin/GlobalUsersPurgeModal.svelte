@@ -71,11 +71,11 @@
         </p>
         
         <div class="tw-flex tw-flex-col sm:tw-flex-row tw-justify-end tw-gap-3">
-            <button class="tw-px-4 tw-py-2 tw-bg-[#0f172a] hover:tw-bg-slate-700 tw-text-white tw-font-mono tw-text-sm"
+            <button class="tw-px-4 tw-py-2 tw-bg-[#0f172a] hover:tw-bg-slate-700 tw-text-[#fafafa] tw-font-mono tw-text-sm"
                     onclick={() => { show = false; }} disabled={busy}>
                 Cancel
             </button>
-            <button class="tw-px-4 tw-py-2 tw-bg-red-700 hover:tw-bg-red-600 tw-text-white tw-font-mono tw-text-sm"
+            <button class="tw-px-4 tw-py-2 tw-bg-[#f59e0b] hover:tw-bg-[#f59e0b] tw-text-[#fafafa] tw-font-mono tw-text-sm"
                     onclick={nextStep} disabled={busy}>
                 Next
             </button>
@@ -83,20 +83,20 @@
         {:else}
         <div class="tw-mb-4">
             <label for="purge-confirm-input" class="tw-block tw-text-xs tw-text-slate-400 tw-mb-1 tw-font-mono">Type <strong>{emailToPurge}</strong> to confirm</label>
-            <input id="purge-confirm-input" type="text" class="tw-w-full tw-bg-[#0f172a] tw-border tw-border-slate-700 tw-text-white tw-px-3 tw-py-2 tw-text-sm tw-font-mono" bind:value={typedConfirmation} disabled={busy} />
+            <input id="purge-confirm-input" type="text" class="tw-w-full tw-bg-[#0f172a] tw-border tw-border-slate-700 tw-text-[#fafafa] tw-px-3 tw-py-2 tw-text-sm tw-font-mono" bind:value={typedConfirmation} disabled={busy} />
         </div>
 
         <div class="tw-mb-6">
             <label for="purge-reason-input" class="tw-block tw-text-xs tw-text-slate-400 tw-mb-1 tw-font-mono">Reason for Purge</label>
-            <textarea id="purge-reason-input" class="tw-w-full tw-bg-[#0f172a] tw-border tw-border-slate-700 tw-text-white tw-px-3 tw-py-2 tw-text-sm tw-font-sans" rows="3" bind:value={reason} disabled={busy}></textarea>
+            <textarea id="purge-reason-input" class="tw-w-full tw-bg-[#0f172a] tw-border tw-border-slate-700 tw-text-[#fafafa] tw-px-3 tw-py-2 tw-text-sm tw-font-sans" rows="3" bind:value={reason} disabled={busy}></textarea>
         </div>
 
         <div class="tw-flex tw-flex-col sm:tw-flex-row tw-justify-end tw-gap-3">
-            <button class="tw-px-4 tw-py-2 tw-bg-[#0f172a] hover:tw-bg-slate-700 tw-text-white tw-font-mono tw-text-sm"
+            <button class="tw-px-4 tw-py-2 tw-bg-[#0f172a] hover:tw-bg-slate-700 tw-text-[#fafafa] tw-font-mono tw-text-sm"
                     onclick={() => { show = false; }} disabled={busy}>
                 Cancel
             </button>
-            <button class="tw-px-4 tw-py-2 tw-bg-red-700 hover:tw-bg-red-600 tw-text-white tw-font-mono tw-text-sm disabled:tw-opacity-50"
+            <button class="tw-px-4 tw-py-2 tw-bg-[#f59e0b] hover:tw-bg-[#f59e0b] tw-text-[#fafafa] tw-font-mono tw-text-sm disabled:tw-opacity-50"
                     onclick={handleConfirm} disabled={busy || !typedConfirmation || !reason}>
                 {busy ? 'Purging...' : 'Purge Profile'}
             </button>

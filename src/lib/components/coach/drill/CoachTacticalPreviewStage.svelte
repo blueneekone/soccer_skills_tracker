@@ -143,7 +143,7 @@
 	<div class="tw-bg-[#0f172a] tw-border-b tw-border-[#1e293b] tw-px-4 tw-py-3 tw-flex tw-items-center tw-justify-between tw-gap-3">
 		<div class="tw-flex tw-items-center tw-gap-2.5">
 			<span class="tw-h-2 tw-w-2 tw-rounded-full tw-bg-[#14b8a6] tw-shadow-[0_0_8px_#14b8a6]"></span>
-			<span class="tw-font-mono tw-text-xs tw-font-bold tw-text-white tw-tracking-wide tw-truncate tw-max-w-[260px]">
+			<span class="tw-font-mono tw-text-xs tw-font-bold tw-text-[#fafafa] tw-tracking-wide tw-truncate tw-max-w-[260px]">
 				{tacticName}
 			</span>
 			<span class="tw-bg-[#14b8a6]/15 tw-border tw-border-[#14b8a6]/30 tw-text-[#14b8a6] tw-font-mono tw-text-[10px] tw-px-2 tw-py-0.5 tw-rounded-md">
@@ -154,7 +154,7 @@
 		{#if onOpenWarRoom}
 			<button
 				type="button"
-				class="tw-inline-flex tw-items-center tw-gap-1.5 tw-bg-[#1e293b] hover:tw-bg-slate-700 tw-border tw-border-slate-600/60 tw-text-slate-200 hover:tw-text-white tw-font-mono tw-text-[11px] tw-font-semibold tw-px-3 tw-py-1.5 tw-rounded-lg active:tw-scale-[0.98] tw-transition-all"
+				class="tw-inline-flex tw-items-center tw-gap-1.5 tw-bg-[#1e293b] hover:tw-bg-slate-700 tw-border tw-border-slate-600/60 tw-text-slate-200 hover:tw-text-[#fafafa] tw-font-mono tw-text-[11px] tw-font-semibold tw-px-3 tw-py-1.5 tw-rounded-lg active:tw-scale-[0.98] tw-transition-all"
 				onclick={onOpenWarRoom}
 			>
 				<span>⚡ Edit in War Room</span>
@@ -166,7 +166,7 @@
 		<div class="tw-flex tw-items-center tw-gap-1 tw-bg-[#020617] tw-border tw-border-slate-800 tw-rounded-lg tw-p-0.5">
 			<button
 				type="button"
-				class="tw-px-2.5 tw-py-1 tw-font-mono tw-text-[10px] tw-font-bold tw-rounded tw-transition-all {viewMode === 'static' ? 'tw-bg-[#1e293b] tw-text-white' : 'tw-text-slate-500 hover:tw-text-slate-300'}"
+				class="tw-px-2.5 tw-py-1 tw-font-mono tw-text-[10px] tw-font-bold tw-rounded tw-transition-all {viewMode === 'static' ? 'tw-bg-[#1e293b] tw-text-[#fafafa]' : 'tw-text-slate-500 hover:tw-text-slate-300'}"
 				onclick={() => { viewMode = 'static'; resetAnimation(); }}
 			>
 				📋 Static
@@ -336,7 +336,7 @@
 			<!-- Rewind -->
 			<button
 				type="button"
-				class="tw-text-slate-400 hover:tw-text-white tw-font-mono tw-text-xs tw-w-7 tw-h-7 tw-flex tw-items-center tw-justify-center tw-rounded tw-border tw-border-slate-800 hover:tw-border-slate-600 tw-transition-all"
+				class="tw-text-slate-400 hover:tw-text-[#fafafa] tw-font-mono tw-text-xs tw-w-7 tw-h-7 tw-flex tw-items-center tw-justify-center tw-rounded tw-border tw-border-slate-800 hover:tw-border-slate-600 tw-transition-all"
 				onclick={resetAnimation}
 				title="Rewind"
 				aria-label="Rewind animation"
@@ -390,7 +390,7 @@
 	<!-- Stage Footer Telemetry Bar -->
 	<div class="tw-bg-[#0f172a] tw-border-t tw-border-[#1e293b] tw-px-4 tw-py-2.5 tw-flex tw-items-center tw-justify-between tw-text-[11px] tw-font-mono tw-text-slate-400">
 		<div class="tw-flex tw-items-center tw-gap-4">
-			<span>Players on pitch: <strong class="tw-text-white">{displayEntities.length}</strong></span>
+			<span>Players on pitch: <strong class="tw-text-[#fafafa]">{displayEntities.length}</strong></span>
 			<span>Movement routes: <strong class="tw-text-[#daff0a]">{runRoutes.length}</strong></span>
 			<span>Pass sequences: <strong class="tw-text-[#fbbf24]">{passRoutes.length}</strong></span>
 		</div>

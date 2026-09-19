@@ -127,7 +127,7 @@
 					<p class="tw-m-0 tw-font-mono tw-text-xs tw-text-slate-400">Verifying credential state…</p>
 				</div>
 			{:else if phase === 'minor_blocked'}
-				<div class="tw-mb-4 tw-w-full tw-border tw-border-red-500/30 tw-bg-red-500/10 tw-p-4 tw-font-mono tw-text-xs tw-text-red-400 tw-text-center" role="alert">
+				<div class="tw-mb-4 tw-w-full tw-border tw-border-red-500/30 tw-bg-[#f59e0b]/10 tw-p-4 tw-font-mono tw-text-xs tw-text-red-400 tw-text-center" role="alert">
 					{ageError}
 				</div>
 				<button type="button" class="tw-flex tw-h-11 tw-w-full tw-items-center tw-justify-center tw-border tw-border-[#1e293b] tw-bg-transparent tw-font-mono tw-text-xs tw-uppercase tw-tracking-[0.15em] tw-text-[#475569] hover:tw-bg-[#1e293b] hover:tw-text-[#94a3b8]" onclick={() => void handleSignOut()}>
@@ -146,7 +146,7 @@
 				{/if}
 
 				{#if loginEngine.error}
-					<div class="tw-mb-4 tw-w-full tw-border tw-border-red-500/30 tw-bg-red-500/10 tw-p-3 tw-font-mono tw-text-xs tw-text-red-400 tw-text-center" role="alert">
+					<div class="tw-mb-4 tw-w-full tw-border tw-border-red-500/30 tw-bg-[#f59e0b]/10 tw-p-3 tw-font-mono tw-text-xs tw-text-red-400 tw-text-center" role="alert">
 						{loginEngine.error}
 					</div>
 				{/if}

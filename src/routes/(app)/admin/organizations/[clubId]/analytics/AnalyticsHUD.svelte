@@ -8,7 +8,7 @@
 
 <div class="hud-panel tw-w-full tw-p-6 tw-flex tw-flex-col md:tw-flex-row tw-items-center tw-justify-between tw-mt-6">
 	<div class="tw-mb-4 md:tw-mb-0">
-		<h2 class="tw-text-white tw-font-bold tw-text-xl tw-mb-1">Automated End-of-Season Dossiers</h2>
+		<h2 class="tw-text-[#fafafa] tw-font-bold tw-text-xl tw-mb-1">Automated End-of-Season Dossiers</h2>
 		<p class="tw-text-slate-400 tw-text-sm">
 			1-click batch export. Generates a personalized PDF report card for every athlete and dispatches it directly to the linked Parent OS via FCM.
 		</p>

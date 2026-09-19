@@ -45,7 +45,7 @@
 			case 'paid':
 				return 'tw-bg-[#14b8a6]/20 tw-text-[#14b8a6] tw-border-[#14b8a6]/40';
 			case 'failed':
-				return 'tw-bg-red-500/20 tw-text-red-400 tw-border-red-500/40';
+				return 'tw-bg-[#f59e0b]/20 tw-text-red-400 tw-border-red-500/40';
 			case 'expired':
 			case 'voided':
 				return 'tw-bg-[#1E293B] tw-text-slate-400 tw-border-[#334155]';
@@ -83,7 +83,7 @@
 
 <div class="tw-bg-[#0F172A] tw-border tw-border-[#1E293B] tw-p-6 tw-flex tw-flex-col tw-gap-6 tw-rounded-[24px]">
 	<div class="tw-flex tw-items-center tw-justify-between tw-border-b tw-border-[#1E293B] tw-pb-4">
-		<h2 class="tw-text-white tw-font-bold tw-text-lg tw-flex tw-items-center tw-gap-2.5 tw-m-0">
+		<h2 class="tw-text-[#fafafa] tw-font-bold tw-text-lg tw-flex tw-items-center tw-gap-2.5 tw-m-0">
 			<Icon name={"sys.escrow" as IconName} size={20} class="tw-text-[#f59e0b]" />
 			<span>Co-Op Arena</span>
 		</h2>
@@ -103,7 +103,7 @@
 				<div class="tw-flex tw-justify-between tw-items-center">
 					<div>
 						<p class="tw-text-slate-400 tw-text-xs tw-font-mono tw-tracking-widest tw-mb-1">LINKED ACCOUNT</p>
-						<p class="tw-text-white tw-font-bold tw-text-sm">{engine.fundingSource?.label || 'Active Source'}</p>
+						<p class="tw-text-[#fafafa] tw-font-bold tw-text-sm">{engine.fundingSource?.label || 'Active Source'}</p>
 						<p class="tw-text-slate-400 tw-text-xs tw-font-mono">Method: {engine.fundingSource?.method || 'N/A'}</p>
 					</div>
 					<div class="tw-px-3 tw-py-1 tw-bg-[#14b8a6]/10 tw-border tw-border-[#14b8a6]/30 tw-text-[#14b8a6] tw-rounded-none tw-text-xs tw-font-mono tw-font-bold tw-flex tw-items-center tw-gap-1.5">
@@ -116,7 +116,7 @@
 					<p class="tw-text-slate-400 tw-text-xs">No primary funding source linked. Link an account to fund athlete bounties.</p>
 					{#if availableSources.length === 0 && !loadingSources}
 						<button 
-							class="tw-inline-flex tw-items-center tw-gap-2 tw-bg-[#f59e0b] tw-text-black tw-font-mono tw-text-xs tw-font-bold tw-tracking-widest tw-uppercase tw-px-4 tw-py-2.5 tw-rounded-none hover:tw-bg-[#fbbf24] hover:tw-shadow-[0_0_15px_rgba(251, 191, 36,0.5)] tw-transition-all tw-w-fit" 
+							class="tw-inline-flex tw-items-center tw-gap-2 tw-bg-[#f59e0b] tw-text-[#000000] tw-font-mono tw-text-xs tw-font-bold tw-tracking-widest tw-uppercase tw-px-4 tw-py-2.5 tw-rounded-none hover:tw-bg-[#fbbf24] hover:tw-shadow-[0_0_15px_rgba(251, 191, 36,0.5)] tw-transition-all tw-w-fit" 
 							onclick={fetchSources} 
 							disabled={loadingSources}
 						>
@@ -130,14 +130,14 @@
 						</p>
 					{:else}
 						<div class="tw-flex tw-flex-col sm:tw-flex-row tw-gap-2">
-							<select bind:value={selectedSourceId} class="tw-flex-1 tw-bg-[#0F172A] tw-text-white tw-border tw-border-[#1E293B] tw-rounded-none tw-px-3 tw-py-2 tw-font-mono tw-text-xs focus:tw-outline-none focus:tw-border-[#f59e0b]">
+							<select bind:value={selectedSourceId} class="tw-flex-1 tw-bg-[#0F172A] tw-text-[#fafafa] tw-border tw-border-[#1E293B] tw-rounded-none tw-px-3 tw-py-2 tw-font-mono tw-text-xs focus:tw-outline-none focus:tw-border-[#f59e0b]">
 								<option value="" disabled>Select Source</option>
 								{#each availableSources as src (src.id)}
 									<option value={src.id}>{src.label} ({src.method})</option>
 								{/each}
 							</select>
 							<button 
-								class="tw-inline-flex tw-items-center tw-gap-1.5 tw-bg-[#f59e0b] tw-text-black tw-font-mono tw-text-xs tw-font-bold tw-px-4 tw-py-2 tw-rounded-none hover:tw-bg-[#fbbf24] tw-transition-all disabled:tw-opacity-50" 
+								class="tw-inline-flex tw-items-center tw-gap-1.5 tw-bg-[#f59e0b] tw-text-[#000000] tw-font-mono tw-text-xs tw-font-bold tw-px-4 tw-py-2 tw-rounded-none hover:tw-bg-[#fbbf24] tw-transition-all disabled:tw-opacity-50" 
 								onclick={handleLinkSource} 
 								disabled={!selectedSourceId || linkingSource || engine.mutating}
 							>
@@ -173,7 +173,7 @@
 					<div class="tw-bg-[#0B0F19] tw-p-4 tw-border tw-border-[#1E293B] tw-rounded-none">
 						<div class="tw-flex tw-justify-between tw-items-start tw-mb-3">
 							<div>
-								<h4 class="tw-text-white tw-font-bold tw-text-sm tw-m-0">{bounty.title}</h4>
+								<h4 class="tw-text-[#fafafa] tw-font-bold tw-text-sm tw-m-0">{bounty.title}</h4>
 								<p class="tw-text-slate-400 tw-text-xs tw-font-mono tw-mt-0.5">→ {bounty.playerEmail}</p>
 							</div>
 							<div class="tw-flex tw-gap-2">
@@ -207,7 +207,7 @@
 								<span class="tw-text-slate-400 tw-text-xs tw-font-mono">EXP: {formatExpiry(bounty.expiresAt)}</span>
 								{#if bounty.status === 'active'}
 									<button 
-										class="tw-text-red-400 tw-text-xs tw-font-mono tw-font-bold hover:tw-text-red-300 tw-transition-colors tw-border tw-border-red-500/30 tw-px-2 tw-py-0.5 tw-bg-red-950/20" 
+										class="tw-text-red-400 tw-text-xs tw-font-mono tw-font-bold hover:tw-text-red-300 tw-transition-colors tw-border tw-border-red-500/30 tw-px-2 tw-py-0.5 tw-bg-[#f59e0b]/20" 
 										onclick={() => engine.voidBounty(bounty.id!)} 
 										disabled={engine.mutating}
 									>

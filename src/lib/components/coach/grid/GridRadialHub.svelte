@@ -142,7 +142,7 @@
 					pointer-events="none"
 					y="5"
 					text-anchor="middle"
-					fill="#ffffff"
+					fill="#fafafa"
 					font-family="var(--font-mono, 'Geist Mono', monospace)"
 					font-size="13"
 					font-weight="bold"

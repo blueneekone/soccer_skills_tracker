@@ -86,14 +86,14 @@
 			<div class="tw-flex tw-items-center tw-justify-between tw-border-b tw-border-[#334155] tw-pb-3 tw-mb-4">
 				<div class="tw-flex tw-items-center tw-gap-2.5">
 					<span class="tw-w-2.5 tw-h-2.5 tw-bg-rose-500"></span>
-					<h3 class="tw-font-mono tw-text-sm tw-font-black tw-text-white tw-uppercase tw-tracking-wider tw-m-0">
+					<h3 class="tw-font-mono tw-text-sm tw-font-black tw-text-[#fafafa] tw-uppercase tw-tracking-wider tw-m-0">
 						⚡ LOG MISTAKE & TACTICAL REMINDER
 					</h3>
 				</div>
 				<button
 					type="button"
 					onclick={onClose}
-					class="tw-text-slate-400 hover:tw-text-white tw-font-mono tw-text-xs tw-px-2 tw-py-1"
+					class="tw-text-slate-400 hover:tw-text-[#fafafa] tw-font-mono tw-text-xs tw-px-2 tw-py-1"
 				>
 					✕
 				</button>
@@ -111,7 +111,7 @@
 				<select
 					id="mistake-player-select"
 					bind:value={selectedPlayerId}
-					class="tw-w-full tw-bg-[#0f172a] tw-border tw-border-[#334155] focus:tw-border-rose-400 tw-text-white tw-font-mono tw-text-xs tw-px-3 tw-py-2 tw-outline-none"
+					class="tw-w-full tw-bg-[#0f172a] tw-border tw-border-[#334155] focus:tw-border-rose-400 tw-text-[#fafafa] tw-font-mono tw-text-xs tw-px-3 tw-py-2 tw-outline-none"
 					style="border-radius: 0px;"
 				>
 					{#each roster as player}
@@ -154,7 +154,7 @@
 					bind:value={noteText}
 					rows="3"
 					placeholder="What happened? (e.g. Lost mark on 6-yard box; rushed first touch under pressure)..."
-					class="tw-w-full tw-bg-[#0f172a] tw-border tw-border-[#334155] focus:tw-border-rose-400 tw-text-white tw-font-mono tw-text-xs tw-p-2.5 tw-outline-none tw-resize-none"
+					class="tw-w-full tw-bg-[#0f172a] tw-border tw-border-[#334155] focus:tw-border-rose-400 tw-text-[#fafafa] tw-font-mono tw-text-xs tw-p-2.5 tw-outline-none tw-resize-none"
 					style="border-radius: 0px;"
 				></textarea>
 			</div>
@@ -164,7 +164,7 @@
 				<button
 					type="button"
 					onclick={onClose}
-					class="tw-px-3 tw-py-2 tw-bg-transparent hover:tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-text-slate-400 hover:tw-text-white tw-font-mono tw-text-xs tw-cursor-pointer"
+					class="tw-px-3 tw-py-2 tw-bg-transparent hover:tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-text-slate-400 hover:tw-text-[#fafafa] tw-font-mono tw-text-xs tw-cursor-pointer"
 					style="border-radius: 0px;"
 				>
 					Cancel
@@ -172,7 +172,7 @@
 
 				<button
 					type="submit"
-					class="tw-px-4 tw-py-2 tw-bg-rose-950/80 hover:tw-bg-rose-600 tw-border tw-border-rose-500 tw-text-rose-200 hover:tw-text-white tw-font-mono tw-text-xs tw-font-bold tw-uppercase tw-tracking-wider tw-transition-all active:tw-scale-95 tw-cursor-pointer"
+					class="tw-px-4 tw-py-2 tw-bg-rose-950/80 hover:tw-bg-rose-600 tw-border tw-border-rose-500 tw-text-rose-200 hover:tw-text-[#fafafa] tw-font-mono tw-text-xs tw-font-bold tw-uppercase tw-tracking-wider tw-transition-all active:tw-scale-95 tw-cursor-pointer"
 					style="border-radius: 0px;"
 				>
 					⚡ Record Reminder

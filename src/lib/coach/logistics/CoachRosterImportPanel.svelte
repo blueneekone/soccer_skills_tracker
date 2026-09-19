@@ -340,7 +340,7 @@
 				<tbody>
 					{#each previewRows as row (row.line)}
 						<tr class:ops-import__row--err={row.status === 'error'}>
-							<td class="tw-font-bold tw-text-white">{row.playerName}</td>
+							<td class="tw-font-bold tw-text-[#fafafa]">{row.playerName}</td>
 							<td class="tw-text-slate-400">{row.dob || '—'}</td>
 							<td class="tw-text-[#14b8a6]">
 								{#if row.parentPhone}

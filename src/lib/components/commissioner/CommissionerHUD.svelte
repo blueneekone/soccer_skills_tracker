@@ -34,7 +34,7 @@
 		<div class="tw-w-px tw-h-8 tw-bg-[#1E293B]"></div>
 		<div class="tw-flex tw-flex-col tw-text-right">
 			<span class="tw-uppercase tw-tracking-widest tw-text-slate-400">Nodes</span>
-			<span class="tw-text-white tw-font-bold">1,024 ACTIVE</span>
+			<span class="tw-text-[#fafafa] tw-font-bold">1,024 ACTIVE</span>
 		</div>
 	</div>
 </header>

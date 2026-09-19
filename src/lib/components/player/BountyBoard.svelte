@@ -56,7 +56,7 @@
 		<div class="tw-flex tw-items-center tw-justify-between tw-mb-6">
 			<div class="tw-flex tw-items-center tw-gap-3">
 				<Icon name={"action.dollar" as IconName} class="tw-w-6 tw-h-6 tw-text-[#f59e0b]" />
-				<h2 class="tw-text-white tw-font-bold tw-text-xl">Bounty Board</h2>
+				<h2 class="tw-text-[#fafafa] tw-font-bold tw-text-xl">Bounty Board</h2>
 			</div>
 			<span class="tw-text-[#94a3b8] tw-text-xs tw-font-mono tw-tracking-widest">PARENT ESCROWS</span>
 		</div>
@@ -66,7 +66,7 @@
 		{:else if bounties.length === 0}
 			<div class="tw-bg-[#1e293b] tw-rounded-xl tw-p-6 tw-border tw-border-[#334155] tw-flex-1 tw-flex tw-flex-col tw-items-center tw-justify-center tw-text-center">
 				<Icon name={"status.info" as IconName} class="tw-w-8 tw-h-8 tw-text-[#14b8a6] tw-mb-3" />
-				<h3 class="tw-text-white tw-font-bold tw-mb-1">No Active Bounties</h3>
+				<h3 class="tw-text-[#fafafa] tw-font-bold tw-mb-1">No Active Bounties</h3>
 				<p class="tw-text-[#94a3b8] tw-text-sm">Your parent hasn't set up any bounties. Keep grinding!</p>
 			</div>
 		{:else}
@@ -74,12 +74,12 @@
 				{#each bounties as b (b.id)}
 					<div class="tw-bg-[#1e293b] tw-rounded-xl tw-p-4 tw-border tw-border-[#334155] tw-flex tw-items-center tw-justify-between hover:tw-border-[#f59e0b] tw-transition-colors">
 						<div class="tw-flex-1">
-							<div class="tw-text-white tw-font-bold tw-text-lg">{b.title}</div>
+							<div class="tw-text-[#fafafa] tw-font-bold tw-text-lg">{b.title}</div>
 							<div class="tw-text-[#94a3b8] tw-text-sm">{b.description}</div>
 							<div class="tw-mt-2 tw-text-[#f59e0b] tw-font-mono tw-text-sm">REWARD: ${b.rewardAmount}</div>
 						</div>
 						<button 
-							class="tw-ml-4 tw-px-6 tw-py-3 tw-bg-[#fbbf24] tw-text-black tw-font-bold tw-rounded-xl hover:tw-bg-[#fbbf24] tw-transition-colors"
+							class="tw-ml-4 tw-px-6 tw-py-3 tw-bg-[#fbbf24] tw-text-[#000000] tw-font-bold tw-rounded-xl hover:tw-bg-[#fbbf24] tw-transition-colors"
 							onclick={() => handleClaim(b)}
 						>
 							CLAIM

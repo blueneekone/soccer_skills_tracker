@@ -139,28 +139,28 @@
 	<div class="tw-grid tw-grid-cols-2 sm:tw-grid-cols-4 tw-gap-2 tw-mt-2 tw-font-mono tw-text-xs tw-font-bold">
 		<button
 			type="button"
-			class="tw-py-2.5 tw-px-3 tw-border tw-transition-all tw-rounded {activeTab === 'players' ? 'tw-bg-[#0f172a] tw-border-[#14b8a6] tw-text-[#14b8a6] tw-shadow-[0_0_10px_rgba(20,184,166,0.2)]' : 'tw-bg-[#020617] tw-border-slate-800 tw-text-slate-400 hover:tw-border-slate-700 hover:tw-text-white'}"
+			class="tw-py-2.5 tw-px-3 tw-border tw-transition-all tw-rounded {activeTab === 'players' ? 'tw-bg-[#0f172a] tw-border-[#14b8a6] tw-text-[#14b8a6] tw-shadow-[0_0_10px_rgba(20,184,166,0.2)]' : 'tw-bg-[#020617] tw-border-slate-800 tw-text-slate-400 hover:tw-border-slate-700 hover:tw-text-[#fafafa]'}"
 			onclick={() => activeTab = 'players'}
 		>
 			⚽ PLAYERS ({engine.players.length})
 		</button>
 		<button
 			type="button"
-			class="tw-py-2.5 tw-px-3 tw-border tw-transition-all tw-rounded {activeTab === 'households' ? 'tw-bg-[#0f172a] tw-border-[#14b8a6] tw-text-[#14b8a6] tw-shadow-[0_0_10px_rgba(20,184,166,0.2)]' : 'tw-bg-[#020617] tw-border-slate-800 tw-text-slate-400 hover:tw-border-slate-700 hover:tw-text-white'}"
+			class="tw-py-2.5 tw-px-3 tw-border tw-transition-all tw-rounded {activeTab === 'households' ? 'tw-bg-[#0f172a] tw-border-[#14b8a6] tw-text-[#14b8a6] tw-shadow-[0_0_10px_rgba(20,184,166,0.2)]' : 'tw-bg-[#020617] tw-border-slate-800 tw-text-slate-400 hover:tw-border-slate-700 hover:tw-text-[#fafafa]'}"
 			onclick={() => activeTab = 'households'}
 		>
 			🏠 HOUSEHOLDS
 		</button>
 		<button
 			type="button"
-			class="tw-py-2.5 tw-px-3 tw-border tw-transition-all tw-rounded {activeTab === 'season_fees' ? 'tw-bg-[#0f172a] tw-border-[#fbbf24] tw-text-[#fbbf24] tw-shadow-[0_0_10px_rgba(251,191,36,0.2)]' : 'tw-bg-[#020617] tw-border-slate-800 tw-text-slate-400 hover:tw-border-slate-700 hover:tw-text-white'}"
+			class="tw-py-2.5 tw-px-3 tw-border tw-transition-all tw-rounded {activeTab === 'season_fees' ? 'tw-bg-[#0f172a] tw-border-[#fbbf24] tw-text-[#fbbf24] tw-shadow-[0_0_10px_rgba(251,191,36,0.2)]' : 'tw-bg-[#020617] tw-border-slate-800 tw-text-slate-400 hover:tw-border-slate-700 hover:tw-text-[#fafafa]'}"
 			onclick={() => activeTab = 'season_fees'}
 		>
 			💵 SEASON FEES
 		</button>
 		<button
 			type="button"
-			class="tw-py-2.5 tw-px-3 tw-border tw-transition-all tw-rounded {activeTab === 'tournament_fees' ? 'tw-bg-[#0f172a] tw-border-[#daff0a] tw-text-[#daff0a] tw-shadow-[0_0_10px_rgba(218,255,10,0.2)]' : 'tw-bg-[#020617] tw-border-slate-800 tw-text-slate-400 hover:tw-border-slate-700 hover:tw-text-white'}"
+			class="tw-py-2.5 tw-px-3 tw-border tw-transition-all tw-rounded {activeTab === 'tournament_fees' ? 'tw-bg-[#0f172a] tw-border-[#daff0a] tw-text-[#daff0a] tw-shadow-[0_0_10px_rgba(218,255,10,0.2)]' : 'tw-bg-[#020617] tw-border-slate-800 tw-text-slate-400 hover:tw-border-slate-700 hover:tw-text-[#fafafa]'}"
 			onclick={() => activeTab = 'tournament_fees'}
 		>
 			🏆 TOURNAMENTS

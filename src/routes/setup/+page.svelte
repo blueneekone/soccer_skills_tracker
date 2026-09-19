@@ -477,7 +477,7 @@
 								bind:value={firstName}
 								placeholder="e.g. Sarah"
 								autocomplete="given-name"
-								class="tw-w-full tw-bg-[#0f172a] tw-border tw-border-slate-700 tw-rounded tw-px-3 tw-py-2 tw-text-white tw-font-mono tw-text-sm focus:tw-border-cyan-500 focus:tw-outline-none"
+								class="tw-w-full tw-bg-[#0f172a] tw-border tw-border-slate-700 tw-rounded tw-px-3 tw-py-2 tw-text-[#fafafa] tw-font-mono tw-text-sm focus:tw-border-cyan-500 focus:tw-outline-none"
 							/>
 						</div>
 						<div>
@@ -490,7 +490,7 @@
 								bind:value={lastName}
 								placeholder="e.g. Vance"
 								autocomplete="family-name"
-								class="tw-w-full tw-bg-[#0f172a] tw-border tw-border-slate-700 tw-rounded tw-px-3 tw-py-2 tw-text-white tw-font-mono tw-text-sm focus:tw-border-cyan-500 focus:tw-outline-none"
+								class="tw-w-full tw-bg-[#0f172a] tw-border tw-border-slate-700 tw-rounded tw-px-3 tw-py-2 tw-text-[#fafafa] tw-font-mono tw-text-sm focus:tw-border-cyan-500 focus:tw-outline-none"
 							/>
 						</div>
 					</div>
@@ -630,7 +630,7 @@
 				{/if}
 				{#if isFinalStep}
 					<button
-						class="tw-flex-1 tw-py-3 tw-rounded-lg tw-bg-[#fbbf24] tw-text-black hover:tw-bg-[#f59e0b] tw-transition-colors tw-font-bold tw-text-sm"
+						class="tw-flex-1 tw-py-3 tw-rounded-lg tw-bg-[#fbbf24] tw-text-[#000000] hover:tw-bg-[#f59e0b] tw-transition-colors tw-font-bold tw-text-sm"
 						type="button"
 						disabled={saving}
 						onclick={completeSetup}
@@ -642,11 +642,11 @@
 						{/if}
 					</button>
 				{:else}
-					<button class="tw-flex-1 tw-py-3 tw-rounded-lg tw-bg-white tw-text-black hover:tw-bg-gray-200 tw-transition-colors tw-font-bold tw-text-sm" type="button" onclick={goNext}>Continue</button>
+					<button class="tw-flex-1 tw-py-3 tw-rounded-lg tw-tw-bg-[#0f172a] tw-text-[#000000] hover:tw-bg-gray-200 tw-transition-colors tw-font-bold tw-text-sm" type="button" onclick={goNext}>Continue</button>
 				{/if}
 			</div>
 
-			<button class="tw-w-full tw-mt-3 tw-py-3 tw-text-sm tw-text-gray-500 hover:tw-text-white hover:tw-bg-gray-800/50 tw-rounded-lg tw-transition-colors" type="button" onclick={handleLogout}>
+			<button class="tw-w-full tw-mt-3 tw-py-3 tw-text-sm tw-text-gray-500 hover:tw-text-[#fafafa] hover:tw-bg-gray-800/50 tw-rounded-lg tw-transition-colors" type="button" onclick={handleLogout}>
 				Cancel &amp; logout
 			</button>
 		{/if}

@@ -77,7 +77,7 @@
 		<!-- Tactical Hub Trigger Button -->
 		<button
 			type="button"
-			class="tw-bg-[#030712]/90 tw-backdrop-blur-md tw-border tw-border-slate-700/80 tw-px-3.5 tw-py-2 tw-font-mono tw-text-xs tw-font-semibold tw-tracking-wide {isTacticsHubOpen ? 'tw-bg-teal-950/70 tw-border-teal-500/80 tw-text-teal-300 tw-shadow-[0_0_15px_rgba(20,184,166,0.3)]' : 'tw-text-slate-200 hover:tw-text-white hover:tw-border-slate-500 hover:tw-bg-[#0f172a]/80'} active:tw-scale-[0.98] tw-transition-all tw-rounded-xl tw-shadow-xl tw-flex tw-items-center tw-gap-2"
+			class="tw-bg-[#030712]/90 tw-backdrop-blur-md tw-border tw-border-slate-700/80 tw-px-3.5 tw-py-2 tw-font-mono tw-text-xs tw-font-semibold tw-tracking-wide {isTacticsHubOpen ? 'tw-bg-teal-950/70 tw-border-teal-500/80 tw-text-teal-300 tw-shadow-[0_0_15px_rgba(20,184,166,0.3)]' : 'tw-text-slate-200 hover:tw-text-[#fafafa] hover:tw-border-slate-500 hover:tw-bg-[#0f172a]/80'} active:tw-scale-[0.98] tw-transition-all tw-rounded-xl tw-shadow-xl tw-flex tw-items-center tw-gap-2"
 			onclick={() => { isTacticsHubOpen = !isTacticsHubOpen; }}
 			title="Toggle Tactics Hub Drawer"
 			aria-label="Toggle Tactics Hub Drawer"

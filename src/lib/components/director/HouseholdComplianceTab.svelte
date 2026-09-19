@@ -58,7 +58,7 @@
 			type="text"
 			bind:value={searchQuery}
 			placeholder="Search households by parent name or email..."
-			class="tw-block tw-w-full tw-pl-10 tw-pr-3 tw-py-2 tw-border tw-border-[#334155] tw-rounded-none tw-bg-[#0f172a] tw-text-sm tw-text-white tw-placeholder-slate-400 focus:tw-outline-none focus:tw-ring-1 focus:tw-ring-teal-500 focus:tw-border-teal-500"
+			class="tw-block tw-w-full tw-pl-10 tw-pr-3 tw-py-2 tw-border tw-border-[#334155] tw-rounded-none tw-bg-[#0f172a] tw-text-sm tw-text-[#fafafa] tw-placeholder-slate-400 focus:tw-outline-none focus:tw-ring-1 focus:tw-ring-teal-500 focus:tw-border-teal-500"
 		/>
 	</div>
 
@@ -81,7 +81,7 @@
 					<tr class="ec-table__row-click tw-border-t tw-border-[#334155] hover:tw-bg-[#0f172a]/50 tw-cursor-pointer tw-transition-colors" onclick={() => openHouseholdDrawer(hh.id)}>
 						<td class="tw-px-6 tw-py-4">
 							<div class="tw-flex tw-flex-col">
-								<span class="tw-text-sm tw-font-bold tw-text-white">{hh.parentName}</span>
+								<span class="tw-text-sm tw-font-bold tw-text-[#fafafa]">{hh.parentName}</span>
 								<span class="tw-text-xs tw-text-slate-400 tw-font-mono">{hh.parentEmail}</span>
 							</div>
 						</td>
@@ -98,8 +98,8 @@
 									<span class="tw-text-xs tw-text-[#fbbf24] tw-font-bold">Pending</span>
 								{:else}
 									<div class="tw-relative tw-flex tw-h-2 tw-w-2">
-										<span class="tw-animate-ping tw-absolute tw-inline-flex tw-h-full tw-w-full tw-rounded-none tw-bg-red-400 tw-opacity-75"></span>
-										<span class="tw-relative tw-inline-flex tw-rounded-none tw-h-2 tw-w-2 tw-bg-red-500"></span>
+										<span class="tw-animate-ping tw-absolute tw-inline-flex tw-h-full tw-w-full tw-rounded-none tw-bg-[#f59e0b] tw-opacity-75"></span>
+										<span class="tw-relative tw-inline-flex tw-rounded-none tw-h-2 tw-w-2 tw-bg-[#f59e0b]"></span>
 									</div>
 									<span class="tw-text-xs tw-text-red-400 tw-font-bold">Action Required</span>
 								{/if}
@@ -107,7 +107,7 @@
 						</td>
 						<td class="tw-px-6 tw-py-4">
 							{#if hh.safeSportFlags > 0}
-								<span class="tw-px-2 tw-py-1 tw-rounded tw-bg-red-500/10 tw-text-red-400 tw-font-mono tw-text-xs tw-font-bold">{hh.safeSportFlags} FLAG{hh.safeSportFlags > 1 ? 'S' : ''}</span>
+								<span class="tw-px-2 tw-py-1 tw-rounded tw-bg-[#f59e0b]/10 tw-text-red-400 tw-font-mono tw-text-xs tw-font-bold">{hh.safeSportFlags} FLAG{hh.safeSportFlags > 1 ? 'S' : ''}</span>
 							{:else}
 								<span class="tw-text-slate-500 tw-font-mono tw-text-xs tw-font-bold">0 FLAGS</span>
 							{/if}

@@ -52,7 +52,7 @@
 .wsd-lede-strong {
 	font-weight: 800;
 	color: #a5f3fc;
-	color: color-mix(in srgb, var(--ec-ops-accent, #14b8a6) 72%, #ffffff);
+	color: color-mix(in srgb, var(--ec-ops-accent, #14b8a6) 72%, #fafafa);
 	letter-spacing: 0.02em;
 	text-transform: uppercase;
 	font-size: 0.72em;

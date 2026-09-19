@@ -95,12 +95,12 @@
 	{#if loading}
 		<!-- Loading skeleton state -->
 		<div class="tw-flex tw-flex-col tw-gap-3 tw-animate-pulse">
-			<div class="tw-h-2 tw-w-32 tw-rounded tw-bg-white/10"></div>
-			<div class="tw-h-10 tw-w-24 tw-rounded-lg tw-bg-white/10"></div>
-			<div class="tw-h-2 tw-w-full tw-rounded tw-bg-white/10"></div>
+			<div class="tw-h-2 tw-w-32 tw-rounded tw-tw-bg-[#0f172a]/10"></div>
+			<div class="tw-h-10 tw-w-24 tw-rounded-lg tw-tw-bg-[#0f172a]/10"></div>
+			<div class="tw-h-2 tw-w-full tw-rounded tw-tw-bg-[#0f172a]/10"></div>
 			<div class="tw-flex tw-justify-between">
-				<div class="tw-h-2 tw-w-20 tw-rounded tw-bg-white/10"></div>
-				<div class="tw-h-2 tw-w-10 tw-rounded tw-bg-white/10"></div>
+				<div class="tw-h-2 tw-w-20 tw-rounded tw-tw-bg-[#0f172a]/10"></div>
+				<div class="tw-h-2 tw-w-10 tw-rounded tw-tw-bg-[#0f172a]/10"></div>
 			</div>
 		</div>
 	{:else}
@@ -146,7 +146,7 @@
 					{gviFormatted}
 				</span>
 				<span
-					class="tw-font-mono tw-tracking-wide tw-text-white/40 tw-uppercase"
+					class="tw-font-mono tw-tracking-wide tw-text-[#fafafa]/40 tw-uppercase"
 					style="font-size: clamp(7px, 0.9vw, 9px);"
 				>
 					{gviLabel}
@@ -158,22 +158,22 @@
 		<div class="tw-flex tw-flex-col tw-gap-1.5">
 			<div class="tw-flex tw-items-center tw-justify-between">
 				<span
-					class="tw-font-mono tw-tracking-widest tw-text-white/30 tw-uppercase"
+					class="tw-font-mono tw-tracking-widest tw-text-[#fafafa]/30 tw-uppercase"
 					style="font-size: clamp(7px, 0.85vw, 9px);"
 				>
 					LAST MO
 				</span>
 				<span
-					class="tw-font-mono tw-tracking-widest tw-text-white/30 tw-uppercase"
+					class="tw-font-mono tw-tracking-widest tw-text-[#fafafa]/30 tw-uppercase"
 					style="font-size: clamp(7px, 0.85vw, 9px);"
 				>
 					THIS MO
 				</span>
 			</div>
-			<div class="tw-relative tw-flex tw-h-2 tw-rounded-full tw-overflow-hidden tw-bg-white/5">
+			<div class="tw-relative tw-flex tw-h-2 tw-rounded-full tw-overflow-hidden tw-tw-bg-[#0f172a]/5">
 				<!-- Last month segment -->
 				<div
-					class="tw-h-full tw-bg-white/20 tw-transition-all tw-duration-700"
+					class="tw-h-full tw-tw-bg-[#0f172a]/20 tw-transition-all tw-duration-700"
 					style="width: {lastPct}%;"
 				></div>
 				<!-- Divider -->
@@ -186,7 +186,7 @@
 			</div>
 			<div class="tw-flex tw-items-center tw-justify-between">
 				<span
-					class="tw-font-mono tw-tabular-nums tw-text-white/30"
+					class="tw-font-mono tw-tabular-nums tw-text-[#fafafa]/30"
 					style="font-size: clamp(7px, 0.85vw, 9px);"
 				>
 					{lastMonthXp.toLocaleString()} XP
@@ -210,7 +210,7 @@
 					aria-hidden="true"
 				></span>
 				<span
-					class="tw-font-mono tw-tracking-wider tw-text-white/30 tw-uppercase"
+					class="tw-font-mono tw-tracking-wider tw-text-[#fafafa]/30 tw-uppercase"
 					style="font-size: clamp(7px, 0.85vw, 9px);"
 				>
 					LIVE
@@ -218,13 +218,13 @@
 			</div>
 			<div class="tw-flex tw-flex-col tw-items-end">
 				<span
-					class="tw-font-mono tw-font-bold tw-tabular-nums tw-text-white/50"
+					class="tw-font-mono tw-font-bold tw-tabular-nums tw-text-[#fafafa]/50"
 					style="font-size: clamp(0.9rem, 2vw, 1.1rem);"
 				>
 					{monthsActive}
 				</span>
 				<span
-					class="tw-font-mono tw-tracking-widest tw-text-white/20 tw-uppercase"
+					class="tw-font-mono tw-tracking-widest tw-text-[#fafafa]/20 tw-uppercase"
 					style="font-size: clamp(6px, 0.8vw, 8px);"
 				>
 					MOS ACTIVE

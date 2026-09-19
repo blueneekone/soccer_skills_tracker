@@ -40,7 +40,7 @@
 		OFFLINE: '#666666',
 		'INJURY RISK': '#ff003c',
 	};
-	const statusColor = $derived(player ? (STATUS_COLORS[player.status] ?? '#ffffff') : '#ffffff');
+	const statusColor = $derived(player ? (STATUS_COLORS[player.status] ?? '#fafafa') : '#fafafa');
 	const isAtRisk = $derived(player?.status === 'INJURY RISK');
 	const isOffline = $derived(player?.status === 'OFFLINE');
 	/** Deterministic skill bar values — fall back if roster row omits skills. */
@@ -152,7 +152,7 @@
 		<div class="tw-mb-3 tw-flex tw-items-start tw-justify-between tw-gap-2">
 			<div class="tw-flex tw-min-w-0 tw-items-center tw-gap-3">
 				<div
-					class="tw-relative tw-flex tw-h-11 tw-w-11 tw-shrink-0 tw-items-center tw-justify-center tw-rounded-full tw-border tw-border-white/15 tw-bg-[#0a0a14] tw-font-mono tw-text-sm tw-font-bold tw-text-white/80"
+					class="tw-relative tw-flex tw-h-11 tw-w-11 tw-shrink-0 tw-items-center tw-justify-center tw-rounded-full tw-border tw-border-white/15 tw-bg-[#0a0a14] tw-font-mono tw-text-sm tw-font-bold tw-text-[#fafafa]/80"
 					style="box-shadow: 0 0 0 2px {statusColor}33;"
 				>
 					{initials}
@@ -162,8 +162,8 @@
 					></span>
 				</div>
 				<div class="tw-min-w-0">
-					<p class="tw-truncate tw-font-mono tw-text-xs tw-font-bold tw-text-white/90">{player.name}</p>
-					<p class="tw-font-mono tw-text-[10px] tw-text-white/40">{player.position} · #{player.number}</p>
+					<p class="tw-truncate tw-font-mono tw-text-xs tw-font-bold tw-text-[#fafafa]/90">{player.name}</p>
+					<p class="tw-font-mono tw-text-[10px] tw-text-[#fafafa]/40">{player.position} · #{player.number}</p>
 				</div>
 			</div>
 			<span
@@ -175,16 +175,16 @@
 		</div>
 
 		<!-- Biometrics + VPC consent gate -->
-		<div class="tw-relative tw-mb-3 tw-rounded-xl tw-border tw-border-white/5 tw-bg-white/[0.02] tw-p-3">
+		<div class="tw-relative tw-mb-3 tw-rounded-xl tw-border tw-border-white/5 tw-tw-bg-[#0f172a]/[0.02] tw-p-3">
 			<div class="tw-grid tw-grid-cols-2 tw-gap-3" class:tw-opacity-0={!player.vpc_approved}>
 				<div>
-					<p class="tw-mb-0.5 tw-font-mono tw-text-[9px] tw-uppercase tw-tracking-widest tw-text-white/30">
+					<p class="tw-mb-0.5 tw-font-mono tw-text-[9px] tw-uppercase tw-tracking-widest tw-text-[#fafafa]/30">
 						STAMINA
 					</p>
 					<p class="tw-font-mono tw-text-lg tw-font-bold tw-tabular-nums" style="color: {staminaColor};">
 						{player.stamina}<span class="tw-text-[10px] tw-opacity-60">%</span>
 					</p>
-					<div class="tw-mt-1 tw-h-0.5 tw-overflow-hidden tw-rounded-full tw-bg-white/10">
+					<div class="tw-mt-1 tw-h-0.5 tw-overflow-hidden tw-rounded-full tw-tw-bg-[#0f172a]/10">
 						<div
 							class="tw-h-full tw-rounded-full"
 							style="width: {player.stamina}%; background: {staminaColor};"
@@ -192,7 +192,7 @@
 					</div>
 				</div>
 				<div>
-					<p class="tw-mb-0.5 tw-font-mono tw-text-[9px] tw-uppercase tw-tracking-widest tw-text-white/30">
+					<p class="tw-mb-0.5 tw-font-mono tw-text-[9px] tw-uppercase tw-tracking-widest tw-text-[#fafafa]/30">
 						HEART RATE
 					</p>
 					<p class="tw-font-mono tw-text-lg tw-font-bold tw-tabular-nums" style="color: {hrColor};">
@@ -249,7 +249,7 @@
 					/>
 				{/each}
 			</svg>
-			<div class="tw-mt-1 tw-flex tw-justify-between tw-px-1 tw-font-mono tw-text-[7px] tw-font-bold tw-tracking-widest tw-text-white/35">
+			<div class="tw-mt-1 tw-flex tw-justify-between tw-px-1 tw-font-mono tw-text-[7px] tw-font-bold tw-tracking-widest tw-text-[#fafafa]/35">
 				{#each SKILL_LABELS as lbl, i (lbl + i)}
 					<span>{lbl}</span>
 				{/each}

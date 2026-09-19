@@ -770,7 +770,7 @@
 			<button
 				type="button"
 				onclick={createNewMatch}
-				class="tw-bg-[#14b8a6]/20 tw-border tw-border-[#14b8a6] tw-text-[#14b8a6] hover:tw-bg-[#14b8a6] hover:tw-text-black tw-font-mono tw-font-bold tw-text-xs tw-px-3 tw-py-1.5 tw-transition-colors"
+				class="tw-bg-[#14b8a6]/20 tw-border tw-border-[#14b8a6] tw-text-[#14b8a6] hover:tw-bg-[#14b8a6] hover:tw-text-[#000000] tw-font-mono tw-font-bold tw-text-xs tw-px-3 tw-py-1.5 tw-transition-colors"
 			>
 				+ NEW MATCH
 			</button>
@@ -790,7 +790,7 @@
 				{#if matchState === 'not_started'}
 					<button
 						type="button"
-						class="tw-bg-[#daff0a] tw-text-black tw-font-mono tw-font-black tw-text-xs tw-px-5 tw-py-2.5 tw-tracking-wider tw-uppercase hover:tw-bg-lime-400 tw-transition-all tw-shadow-[0_0_15px_rgba(218,255,10,0.3)]"
+						class="tw-bg-[#daff0a] tw-text-[#000000] tw-font-mono tw-font-black tw-text-xs tw-px-5 tw-py-2.5 tw-tracking-wider tw-uppercase hover:tw-bg-lime-400 tw-transition-all tw-shadow-[0_0_15px_rgba(218,255,10,0.3)]"
 						onclick={startMatch}
 					>
 						▶ START MATCH
@@ -798,14 +798,14 @@
 				{:else if matchState === 'running'}
 					<button
 						type="button"
-						class="tw-bg-[#f59e0b] tw-text-black tw-font-mono tw-font-bold tw-text-xs tw-px-4 tw-py-2.5 tw-tracking-wider tw-uppercase hover:tw-bg-[#fbbf24] tw-transition-colors"
+						class="tw-bg-[#f59e0b] tw-text-[#000000] tw-font-mono tw-font-bold tw-text-xs tw-px-4 tw-py-2.5 tw-tracking-wider tw-uppercase hover:tw-bg-[#fbbf24] tw-transition-colors"
 						onclick={pauseMatch}
 					>
 						⏸ PAUSE MATCH
 					</button>
 					<button
 						type="button"
-						class="tw-bg-red-600 tw-text-white tw-font-mono tw-font-bold tw-text-xs tw-px-4 tw-py-2.5 tw-tracking-wider tw-uppercase hover:tw-bg-red-500 tw-transition-colors"
+						class="tw-bg-[#f59e0b] tw-text-[#fafafa] tw-font-mono tw-font-bold tw-text-xs tw-px-4 tw-py-2.5 tw-tracking-wider tw-uppercase hover:tw-bg-[#f59e0b] tw-transition-colors"
 						onclick={endMatch}
 					>
 						🏁 FINAL WHISTLE
@@ -813,26 +813,26 @@
 				{:else if matchState === 'paused'}
 					<button
 						type="button"
-						class="tw-bg-[#14b8a6] tw-text-black tw-font-mono tw-font-black tw-text-xs tw-px-4 tw-py-2.5 tw-tracking-wider tw-uppercase hover:tw-bg-[#14b8a6] tw-transition-colors"
+						class="tw-bg-[#14b8a6] tw-text-[#000000] tw-font-mono tw-font-black tw-text-xs tw-px-4 tw-py-2.5 tw-tracking-wider tw-uppercase hover:tw-bg-[#14b8a6] tw-transition-colors"
 						onclick={resumeMatch}
 					>
 						▶ RESUME MATCH
 					</button>
 					<button
 						type="button"
-						class="tw-bg-red-600 tw-text-white tw-font-mono tw-font-bold tw-text-xs tw-px-4 tw-py-2.5 tw-tracking-wider tw-uppercase hover:tw-bg-red-500 tw-transition-colors"
+						class="tw-bg-[#f59e0b] tw-text-[#fafafa] tw-font-mono tw-font-bold tw-text-xs tw-px-4 tw-py-2.5 tw-tracking-wider tw-uppercase hover:tw-bg-[#f59e0b] tw-transition-colors"
 						onclick={endMatch}
 					>
 						🏁 FINAL WHISTLE
 					</button>
 				{:else if matchState === 'ended'}
 					<div class="tw-flex tw-items-center tw-gap-2">
-						<span class="tw-px-3 tw-py-2 tw-bg-red-950/60 tw-border tw-border-red-500/60 tw-text-red-300 tw-font-mono tw-text-xs tw-font-bold tw-uppercase">
+						<span class="tw-px-3 tw-py-2 tw-bg-[#f59e0b]/60 tw-border tw-border-red-500/60 tw-text-red-300 tw-font-mono tw-text-xs tw-font-bold tw-uppercase">
 							FINAL SCORE: {homeScore} - {awayScore}
 						</span>
 						<button
 							type="button"
-							class="tw-bg-[#14b8a6] tw-text-black tw-font-mono tw-font-bold tw-text-xs tw-px-4 tw-py-2 tw-uppercase hover:tw-bg-teal-300 tw-transition-colors"
+							class="tw-bg-[#14b8a6] tw-text-[#000000] tw-font-mono tw-font-bold tw-text-xs tw-px-4 tw-py-2 tw-uppercase hover:tw-bg-teal-300 tw-transition-colors"
 							onclick={createNewMatch}
 						>
 							+ NEW MATCH

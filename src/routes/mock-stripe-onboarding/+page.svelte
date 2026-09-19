@@ -19,7 +19,7 @@
 			<span class="tw-text-[#fbbf24] tw-text-xs tw-font-bold tw-tracking-widest tw-uppercase">
 				[ STRIPE CONNECT EXPRESS SANDBOX ]
 			</span>
-			<h1 class="tw-text-xl tw-font-bold tw-text-white tw-mt-2">
+			<h1 class="tw-text-xl tw-font-bold tw-text-[#fafafa] tw-mt-2">
 				Mock Stripe Express Gateway Onboarding
 			</h1>
 		</div>
@@ -42,7 +42,7 @@
 		<button
 			type="button"
 			onclick={handleSimulateComplete}
-			class="tw-w-full tw-py-3 tw-px-4 tw-bg-[#fbbf24] tw-text-black tw-font-bold tw-text-sm tw-rounded-none hover:tw-bg-[#f59e0b] tw-transition-colors tw-border-none tw-cursor-pointer"
+			class="tw-w-full tw-py-3 tw-px-4 tw-bg-[#fbbf24] tw-text-[#000000] tw-font-bold tw-text-sm tw-rounded-none hover:tw-bg-[#f59e0b] tw-transition-colors tw-border-none tw-cursor-pointer"
 		>
 			[ SIMULATE COMPLETE ONBOARDING ]
 		</button>

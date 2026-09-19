@@ -6,10 +6,10 @@
 	<title>SSTracker · Legal Vault</title>
 </svelte:head>
 
-<div class="tw-min-h-dvh tw-bg-[#000000] tw-text-white tw-font-sans tw-pt-24 tw-pb-16 tw-px-6">
+<div class="tw-min-h-dvh tw-bg-[#000000] tw-text-[#fafafa] tw-font-sans tw-pt-24 tw-pb-16 tw-px-6">
 	<div class="tw-max-w-3xl tw-mx-auto tw-space-y-16">
 		<header class="tw-text-center tw-mb-16">
-			<h1 class="tw-text-4xl tw-font-bold tw-font-mono tw-text-white tw-tracking-tight tw-mb-4">
+			<h1 class="tw-text-4xl tw-font-bold tw-font-mono tw-text-[#fafafa] tw-tracking-tight tw-mb-4">
 				Legal Vault
 			</h1>
 			<p class="tw-text-[#94a3b8] tw-text-lg tw-font-mono tw-max-w-2xl tw-mx-auto">
@@ -19,7 +19,7 @@
 
 		<!-- Privacy Policy Shell -->
 		<section class="tw-space-y-6">
-			<h2 class="tw-text-2xl tw-font-bold tw-text-white tw-border-b tw-border-[#334155] tw-pb-2">
+			<h2 class="tw-text-2xl tw-font-bold tw-text-[#fafafa] tw-border-b tw-border-[#334155] tw-pb-2">
 				Privacy Policy
 			</h2>
 			<div class="tw-prose tw-prose-invert tw-prose-slate tw-max-w-none">
@@ -43,7 +43,7 @@
 
 		<!-- Terms of Service Shell -->
 		<section class="tw-space-y-6">
-			<h2 class="tw-text-2xl tw-font-bold tw-text-white tw-border-b tw-border-[#334155] tw-pb-2">
+			<h2 class="tw-text-2xl tw-font-bold tw-text-[#fafafa] tw-border-b tw-border-[#334155] tw-pb-2">
 				Terms of Service
 			</h2>
 			<div class="tw-prose tw-prose-invert tw-prose-slate tw-max-w-none">
@@ -55,7 +55,7 @@
 
 		<!-- EULA Shell -->
 		<section class="tw-space-y-6">
-			<h2 class="tw-text-2xl tw-font-bold tw-text-white tw-border-b tw-border-[#334155] tw-pb-2">
+			<h2 class="tw-text-2xl tw-font-bold tw-text-[#fafafa] tw-border-b tw-border-[#334155] tw-pb-2">
 				End User License Agreement (EULA)
 			</h2>
 			<div class="tw-prose tw-prose-invert tw-prose-slate tw-max-w-none">

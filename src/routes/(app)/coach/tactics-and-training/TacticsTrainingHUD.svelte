@@ -36,7 +36,7 @@
 		<div class="tw-flex tw-items-center tw-gap-3">
 			<div class="tw-flex tw-items-center tw-gap-2">
 				<span class="tw-w-2.5 tw-h-2.5 tw-bg-[#14b8a6] tw-animate-pulse" style="border-radius: 0px;"></span>
-				<h1 class="tw-font-mono tw-font-black tw-text-sm sm:tw-text-base tw-tracking-widest tw-text-white tw-uppercase tw-m-0">
+				<h1 class="tw-font-mono tw-font-black tw-text-sm sm:tw-text-base tw-tracking-widest tw-text-[#fafafa] tw-uppercase tw-m-0">
 					TACTICS & TRAINING
 				</h1>
 			</div>
@@ -71,7 +71,7 @@
 			<!-- Telemetry Readout Pill -->
 			<div class="tw-flex tw-items-center tw-gap-2 tw-font-mono tw-text-[11px]">
 				<span class="tw-px-2.5 tw-py-1 tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-text-[#14b8a6]" style="border-radius: 0px;">
-					STATUS: <strong class="tw-text-white">ONLINE</strong>
+					STATUS: <strong class="tw-text-[#fafafa]">ONLINE</strong>
 				</span>
 			</div>
 		</div>
@@ -86,7 +86,7 @@
 					<button
 						type="button"
 						onclick={() => engine.setTab(tab.id)}
-						class="tw-flex tw-items-center tw-gap-2.5 tw-px-4 tw-py-2 tw-font-mono tw-text-xs tw-font-bold tw-uppercase tw-tracking-wider tw-transition-all tw-whitespace-nowrap tw-cursor-pointer {isActive ? 'tw-bg-[#0f172a] tw-text-[#fbbf24] tw-border tw-border-[#fbbf24] tw-shadow-lg' : 'tw-bg-transparent tw-text-slate-400 tw-border tw-border-transparent hover:tw-text-white hover:tw-bg-[#0f172a]/60'}"
+						class="tw-flex tw-items-center tw-gap-2.5 tw-px-4 tw-py-2 tw-font-mono tw-text-xs tw-font-bold tw-uppercase tw-tracking-wider tw-transition-all tw-whitespace-nowrap tw-cursor-pointer {isActive ? 'tw-bg-[#0f172a] tw-text-[#fbbf24] tw-border tw-border-[#fbbf24] tw-shadow-lg' : 'tw-bg-transparent tw-text-slate-400 tw-border tw-border-transparent hover:tw-text-[#fafafa] hover:tw-bg-[#0f172a]/60'}"
 						style="border-radius: 0px;"
 					>
 						<span class="tw-text-sm">{tab.icon}</span>

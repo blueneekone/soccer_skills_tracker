@@ -32,7 +32,7 @@
 	function deltaClass(delta: number): string {
 		if (delta > 0) return 'tw-text-[#14b8a6]';
 		if (delta < 0) return 'tw-text-orange-400';
-		return 'tw-text-white/30';
+		return 'tw-text-[#fafafa]/30';
 	}
 
 	const xpBarMax = $derived(
@@ -66,7 +66,7 @@
 			[ TIME-LAPSE MEMORY CAPSULE ]
 		</span>
 		<h2
-			class="tw-text-white tw-font-semibold tw-leading-tight"
+			class="tw-text-[#fafafa] tw-font-semibold tw-leading-tight"
 			style="font-size: clamp(1rem, 2.5vw, 1.5rem);"
 		>
 			{capsuleHeadline}
@@ -74,7 +74,7 @@
 		<div class="tw-flex tw-items-center tw-gap-2">
 			<span class="tw-w-8 tw-h-px tw-bg-[#14b8a6]/30"></span>
 			<span
-				class="tw-font-mono tw-tracking-widest tw-text-white/40 tw-uppercase"
+				class="tw-font-mono tw-tracking-widest tw-text-[#fafafa]/40 tw-uppercase"
 				style="font-size: clamp(8px, 1vw, 10px);"
 			>
 				{capsule.deltaSummary.daySpan} DAY SPAN · CAPSULE {capsule.capsuleId}
@@ -88,7 +88,7 @@
 		style="padding-inline: clamp(0.25rem, 1vw, 0.5rem);"
 	>
 		<span
-			class="tw-font-mono tw-tracking-widest tw-text-white/40 tw-uppercase"
+			class="tw-font-mono tw-tracking-widest tw-text-[#fafafa]/40 tw-uppercase"
 			style="font-size: clamp(8px, 1vw, 10px);"
 		>
 			BASELINE / {baselineDaysAgo} DAYS AGO
@@ -117,11 +117,11 @@
 				<!-- Baseline value -->
 				<div class="tw-flex tw-items-center tw-gap-3">
 					<span
-						class="tw-font-mono tw-text-white/30 tw-uppercase tw-tracking-widest tw-shrink-0"
+						class="tw-font-mono tw-text-[#fafafa]/30 tw-uppercase tw-tracking-widest tw-shrink-0"
 						style="font-size: clamp(8px, 1vw, 10px); width: 2.5ch;">{key}</span
 					>
 					<span
-						class="tw-font-mono tw-text-white/60 tw-tabular-nums"
+						class="tw-font-mono tw-text-[#fafafa]/60 tw-tabular-nums"
 						style="font-size: clamp(0.75rem, 1.5vw, 0.9rem);"
 					>
 						{capsule.baselineSnapshot.scoutsSix[key]}
@@ -153,13 +153,13 @@
 							? 'tw-text-[#14b8a6]'
 							: delta < 0
 								? 'tw-text-orange-400'
-								: 'tw-text-white/80'}"
+								: 'tw-text-[#fafafa]/80'}"
 						style="font-size: clamp(0.75rem, 1.5vw, 0.9rem);"
 					>
 						{capsule.currentSnapshot.scoutsSix[key]}
 					</span>
 					<span
-						class="tw-font-mono tw-text-white/30 tw-uppercase tw-tracking-widest tw-shrink-0 tw-text-right"
+						class="tw-font-mono tw-text-[#fafafa]/30 tw-uppercase tw-tracking-widest tw-shrink-0 tw-text-right"
 						style="font-size: clamp(8px, 1vw, 10px); width: 2.5ch;">{key}</span
 					>
 				</div>
@@ -178,7 +178,7 @@
 			style="padding: clamp(0.5rem, 1.5vw, 0.75rem);"
 		>
 			<span
-				class="tw-font-mono tw-tracking-widest tw-text-white/40 tw-uppercase"
+				class="tw-font-mono tw-tracking-widest tw-text-[#fafafa]/40 tw-uppercase"
 				style="font-size: clamp(8px, 1vw, 10px);"
 			>
 				XP GAINED
@@ -189,7 +189,7 @@
 			>
 				+{capsule.deltaSummary.xpGained.toLocaleString()}
 			</span>
-			<div class="tw-h-1 tw-w-full tw-rounded-full tw-bg-white/5 tw-overflow-hidden">
+			<div class="tw-h-1 tw-w-full tw-rounded-full tw-tw-bg-[#0f172a]/5 tw-overflow-hidden">
 				<div
 					class="tw-h-full tw-rounded-full tw-bg-[#14b8a6] tw-shadow-[0_0_8px_rgba(20, 184, 166,0.6)] tw-transition-all tw-duration-700"
 					style="width: {xpBarPct}%;"
@@ -203,7 +203,7 @@
 			style="padding: clamp(0.5rem, 1.5vw, 0.75rem);"
 		>
 			<span
-				class="tw-font-mono tw-tracking-widest tw-text-white/40 tw-uppercase"
+				class="tw-font-mono tw-tracking-widest tw-text-[#fafafa]/40 tw-uppercase"
 				style="font-size: clamp(8px, 1vw, 10px);"
 			>
 				LEVEL Δ
@@ -217,7 +217,7 @@
 				{capsule.deltaSummary.levelDelta >= 0 ? '+' : ''}{capsule.deltaSummary.levelDelta}
 			</span>
 			<span
-				class="tw-font-mono tw-text-white/30 tw-tabular-nums"
+				class="tw-font-mono tw-text-[#fafafa]/30 tw-tabular-nums"
 				style="font-size: clamp(8px, 1vw, 10px);"
 			>
 				LVL {capsule.baselineSnapshot.level} → {capsule.currentSnapshot.level}
@@ -230,7 +230,7 @@
 			style="padding: clamp(0.5rem, 1.5vw, 0.75rem);"
 		>
 			<span
-				class="tw-font-mono tw-tracking-widest tw-text-white/40 tw-uppercase"
+				class="tw-font-mono tw-tracking-widest tw-text-[#fafafa]/40 tw-uppercase"
 				style="font-size: clamp(8px, 1vw, 10px);"
 			>
 				STREAK Δ
@@ -244,7 +244,7 @@
 				{capsule.deltaSummary.streakDelta >= 0 ? '+' : ''}{capsule.deltaSummary.streakDelta}
 			</span>
 			<span
-				class="tw-font-mono tw-text-white/30 tw-tabular-nums"
+				class="tw-font-mono tw-text-[#fafafa]/30 tw-tabular-nums"
 				style="font-size: clamp(8px, 1vw, 10px);"
 			>
 				{capsule.baselineSnapshot.streakDays}d → {capsule.currentSnapshot.streakDays}d

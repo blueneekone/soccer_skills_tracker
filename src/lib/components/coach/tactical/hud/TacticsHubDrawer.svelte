@@ -178,7 +178,7 @@
 		<div class="tw-flex tw-items-center tw-justify-between tw-border-b tw-border-[#334155] tw-bg-[#0f172a] tw-px-5 tw-py-4">
 			<div class="tw-flex tw-items-center tw-gap-2.5">
 				<span class="tw-inline-block tw-h-2.5 tw-w-2.5 tw-bg-[#daff0a] tw-shadow-[0_0_8px_#daff0a]"></span>
-				<h2 class="tw-m-0 tw-text-xs tw-font-black tw-tracking-widest tw-text-white tw-uppercase">
+				<h2 class="tw-m-0 tw-text-xs tw-font-black tw-tracking-widest tw-text-[#fafafa] tw-uppercase">
 					[ TACTICS HUB ]
 				</h2>
 			</div>
@@ -254,7 +254,7 @@
 											<span class="tw-flex tw-h-7 tw-w-7 tw-items-center tw-justify-center tw-border tw-border-[#14b8a6] tw-bg-[#14b8a6]/20 tw-text-[11px] tw-font-mono tw-font-black tw-text-[#14b8a6] tw-rounded-md">
 												{p.number || initials}
 											</span>
-											<span class="tw-truncate tw-font-mono tw-text-xs tw-font-bold tw-text-white">{p.name}</span>
+											<span class="tw-truncate tw-font-mono tw-text-xs tw-font-bold tw-text-[#fafafa]">{p.name}</span>
 										</div>
 										<div class="tw-flex tw-items-center tw-gap-2">
 											<span class="tw-border tw-border-[#334155] tw-bg-[#020617] tw-px-2 tw-py-0.5 tw-text-[10px] tw-font-mono tw-font-bold tw-text-[#daff0a] tw-rounded">
@@ -284,7 +284,7 @@
 						</div>
 						<a
 							href="/coach/forge?tab=designer"
-							class="tw-flex-shrink-0 tw-bg-[#0f172a] hover:tw-bg-[#0f172a] tw-border tw-border-slate-700 tw-text-slate-400 hover:tw-text-white tw-font-mono tw-text-[10px] tw-px-2 tw-py-1 tw-rounded-lg tw-no-underline tw-transition-all"
+							class="tw-flex-shrink-0 tw-bg-[#0f172a] hover:tw-bg-[#0f172a] tw-border tw-border-slate-700 tw-text-slate-400 hover:tw-text-[#fafafa] tw-font-mono tw-text-[10px] tw-px-2 tw-py-1 tw-rounded-lg tw-no-underline tw-transition-all"
 							title="Design new drill in The Forge"
 						>
 							+ New Drill
@@ -310,7 +310,7 @@
 								<div class="tw-bg-[#0f172a] tw-border tw-border-[#334155] hover:tw-border-[#14b8a6]/50 tw-rounded-xl tw-p-3 tw-flex tw-flex-col tw-gap-2.5 tw-transition-all">
 									<div class="tw-flex tw-items-start tw-justify-between tw-gap-2">
 										<div class="tw-min-w-0">
-											<p class="tw-text-xs tw-font-bold tw-text-white tw-truncate tw-mb-0.5">
+											<p class="tw-text-xs tw-font-bold tw-text-[#fafafa] tw-truncate tw-mb-0.5">
 												{drill.name}
 											</p>
 											<div class="tw-flex tw-items-center tw-gap-1.5">
@@ -400,7 +400,7 @@
 						>👥 RECALL BENCH</button>
 						<button
 							type="button"
-							class="tw-border tw-border-red-900/60 tw-bg-red-950/40 tw-px-3 tw-py-2.5 tw-text-xs tw-text-left tw-text-red-400 hover:tw-bg-red-950/80 hover:tw-border-red-500 tw-transition-colors tw-rounded"
+							class="tw-border tw-border-red-900/60 tw-bg-[#f59e0b]/40 tw-px-3 tw-py-2.5 tw-text-xs tw-text-left tw-text-red-400 hover:tw-bg-[#f59e0b]/80 hover:tw-border-red-500 tw-transition-colors tw-rounded"
 							onclick={(e) => { e.stopPropagation(); engine.clearRoutesOnly(); }}
 						>⊗ CLEAR ALL ROUTES</button>
 						<button
@@ -410,7 +410,7 @@
 						>🛡 CLEAR OPPONENTS ONLY</button>
 						<button
 							type="button"
-							class="tw-border tw-border-red-700 tw-bg-red-950/70 tw-px-3 tw-py-2.5 tw-text-xs tw-text-left tw-text-red-200 hover:tw-bg-red-900 hover:tw-text-white tw-font-bold tw-transition-colors tw-rounded"
+							class="tw-border tw-border-red-700 tw-bg-[#f59e0b]/70 tw-px-3 tw-py-2.5 tw-text-xs tw-text-left tw-text-red-200 hover:tw-bg-[#f59e0b] hover:tw-text-[#fafafa] tw-font-bold tw-transition-colors tw-rounded"
 							onclick={(e) => { e.stopPropagation(); engine.clearPitch?.(); }}
 						>✕ CLEAR ENTIRE PITCH</button>
 					</div>

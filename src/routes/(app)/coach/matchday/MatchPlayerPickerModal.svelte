@@ -72,14 +72,14 @@
 			<div class="tw-flex tw-items-center tw-justify-between tw-border-b tw-border-[#334155] tw-pb-3 tw-mb-4">
 				<div class="tw-flex tw-items-center tw-gap-2.5">
 					<span class="tw-w-2.5 tw-h-2.5 tw-bg-[#daff0a]"></span>
-					<h3 class="tw-font-mono tw-text-sm tw-font-black tw-text-white tw-uppercase tw-tracking-wider tw-m-0">
+					<h3 class="tw-font-mono tw-text-sm tw-font-black tw-text-[#fafafa] tw-uppercase tw-tracking-wider tw-m-0">
 						ATTRIBUTE {displayStat} TO ATHLETE
 					</h3>
 				</div>
 				<button
 					type="button"
 					onclick={onClose}
-					class="tw-text-slate-400 hover:tw-text-white tw-font-mono tw-text-xs tw-px-2 tw-py-1"
+					class="tw-text-slate-400 hover:tw-text-[#fafafa] tw-font-mono tw-text-xs tw-px-2 tw-py-1"
 				>
 					✕
 				</button>
@@ -120,7 +120,7 @@
 				<button
 					type="button"
 					onclick={onSelectUnassigned}
-					class="tw-font-mono tw-text-xs tw-text-slate-400 hover:tw-text-white tw-underline tw-bg-transparent tw-border-none tw-cursor-pointer"
+					class="tw-font-mono tw-text-xs tw-text-slate-400 hover:tw-text-[#fafafa] tw-underline tw-bg-transparent tw-border-none tw-cursor-pointer"
 				>
 					Log as Unassigned Team Stat
 				</button>

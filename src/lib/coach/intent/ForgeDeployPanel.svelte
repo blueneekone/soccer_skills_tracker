@@ -129,7 +129,7 @@
 		<div class="tw-flex tw-items-center tw-gap-3">
 			<span class="tw-w-2.5 tw-h-2.5 tw-bg-[#14b8a6] tw-shadow-[0_0_10px_#14b8a6]"></span>
 			<div>
-				<h2 class="tw-text-sm tw-font-black tw-tracking-widest tw-text-white tw-uppercase tw-m-0">
+				<h2 class="tw-text-sm tw-font-black tw-tracking-widest tw-text-[#fafafa] tw-uppercase tw-m-0">
 					TACTICAL INTENT DISPATCH
 				</h2>
 				<span class="tw-text-[11px] tw-text-slate-400 tw-tracking-wider tw-uppercase">
@@ -186,7 +186,7 @@
 				id="forge-benchmark"
 				bind:value={draftBenchmarkDrillId}
 				onchange={() => onBenchmarkDrillChange()}
-				class="tw-w-full tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-text-white tw-px-3.5 tw-py-2.5 tw-text-xs focus:tw-border-[#daff0a] tw-outline-none"
+				class="tw-w-full tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-text-[#fafafa] tw-px-3.5 tw-py-2.5 tw-text-xs focus:tw-border-[#daff0a] tw-outline-none"
 			>
 				{#each benchmarkDrills as drill (drill.id)}
 					<option value={drill.id}>
@@ -205,7 +205,7 @@
 					min="0"
 					placeholder="e.g. 25 reps or 12.4 seconds"
 					bind:value={draftBenchmarkTargetValue}
-					class="tw-w-full tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-text-white tw-px-3.5 tw-py-2 tw-text-xs focus:tw-border-[#daff0a] tw-outline-none placeholder:tw-text-slate-600"
+					class="tw-w-full tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-text-[#fafafa] tw-px-3.5 tw-py-2 tw-text-xs focus:tw-border-[#daff0a] tw-outline-none placeholder:tw-text-slate-600"
 				/>
 			</div>
 		</div>
@@ -241,7 +241,7 @@
 							class="tw-w-3 tw-h-3 tw-rounded-full tw-shrink-0"
 							style="background: {attr.hexColor || '#14b8a6'}; box-shadow: 0 0 6px {attr.hexColor || '#14b8a6'};"
 						></span>
-						<span class="tw-text-xs tw-font-bold tw-text-white tw-truncate">{attr.name}</span>
+						<span class="tw-text-xs tw-font-bold tw-text-[#fafafa] tw-truncate">{attr.name}</span>
 					</button>
 				{/each}
 			</div>
@@ -266,7 +266,7 @@
 					id="forge-drill"
 					bind:value={draftDrillId}
 					disabled={isLoadingDrills}
-					class="tw-w-full tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-text-white tw-px-3.5 tw-py-2.5 tw-text-xs focus:tw-border-[#14b8a6] tw-outline-none"
+					class="tw-w-full tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-text-[#fafafa] tw-px-3.5 tw-py-2.5 tw-text-xs focus:tw-border-[#14b8a6] tw-outline-none"
 				>
 					<option value="">— Open intent (RL suggests drill) —</option>
 					{#each availableDrills as drill (drill.id)}
@@ -288,7 +288,7 @@
 						maxlength="200"
 						placeholder="e.g. Wall Pass Precision & First Touch"
 						bind:value={draftDrillTitle}
-						class="tw-w-full tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-text-white tw-px-3.5 tw-py-2 tw-text-xs focus:tw-border-[#14b8a6] tw-outline-none placeholder:tw-text-slate-600"
+						class="tw-w-full tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-text-[#fafafa] tw-px-3.5 tw-py-2 tw-text-xs focus:tw-border-[#14b8a6] tw-outline-none placeholder:tw-text-slate-600"
 					/>
 				</div>
 			{/if}
@@ -300,7 +300,7 @@
 					<div class="tw-flex tw-items-center">
 						<button
 							type="button"
-							class="tw-px-3 tw-py-1.5 tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-text-slate-300 hover:tw-text-white"
+							class="tw-px-3 tw-py-1.5 tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-text-slate-300 hover:tw-text-[#fafafa]"
 							onclick={() => draftPrescriptionSets = Math.max(1, draftPrescriptionSets - 1)}
 						>-</button>
 						<input
@@ -313,7 +313,7 @@
 						/>
 						<button
 							type="button"
-							class="tw-px-3 tw-py-1.5 tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-text-slate-300 hover:tw-text-white"
+							class="tw-px-3 tw-py-1.5 tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-text-slate-300 hover:tw-text-[#fafafa]"
 							onclick={() => draftPrescriptionSets = draftPrescriptionSets + 1}
 						>+</button>
 					</div>
@@ -324,7 +324,7 @@
 					<div class="tw-flex tw-items-center">
 						<button
 							type="button"
-							class="tw-px-3 tw-py-1.5 tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-text-slate-300 hover:tw-text-white"
+							class="tw-px-3 tw-py-1.5 tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-text-slate-300 hover:tw-text-[#fafafa]"
 							onclick={() => draftPrescriptionRepsPerSet = Math.max(0, draftPrescriptionRepsPerSet - 5)}
 						>-</button>
 						<input
@@ -337,7 +337,7 @@
 						/>
 						<button
 							type="button"
-							class="tw-px-3 tw-py-1.5 tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-text-slate-300 hover:tw-text-white"
+							class="tw-px-3 tw-py-1.5 tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-text-slate-300 hover:tw-text-[#fafafa]"
 							onclick={() => draftPrescriptionRepsPerSet = draftPrescriptionRepsPerSet + 5}
 						>+</button>
 					</div>
@@ -464,14 +464,14 @@
 			<div class="tw-flex tw-gap-2">
 				<button
 					type="button"
-					class="tw-px-3 tw-py-1 tw-text-xs tw-font-bold tw-border tw-transition-all {draftScope === 'team' ? 'tw-bg-[#14b8a6] tw-text-black tw-border-[#14b8a6]' : 'tw-bg-[#020617] tw-border-[#334155] tw-text-slate-400'}"
+					class="tw-px-3 tw-py-1 tw-text-xs tw-font-bold tw-border tw-transition-all {draftScope === 'team' ? 'tw-bg-[#14b8a6] tw-text-[#000000] tw-border-[#14b8a6]' : 'tw-bg-[#020617] tw-border-[#334155] tw-text-slate-400'}"
 					onclick={() => draftScope = 'team'}
 				>
 					ENTIRE SQUAD
 				</button>
 				<button
 					type="button"
-					class="tw-px-3 tw-py-1 tw-text-xs tw-font-bold tw-border tw-transition-all {draftScope === 'players' ? 'tw-bg-[#14b8a6] tw-text-black tw-border-[#14b8a6]' : 'tw-bg-[#020617] tw-border-[#334155] tw-text-slate-400'}"
+					class="tw-px-3 tw-py-1 tw-text-xs tw-font-bold tw-border tw-transition-all {draftScope === 'players' ? 'tw-bg-[#14b8a6] tw-text-[#000000] tw-border-[#14b8a6]' : 'tw-bg-[#020617] tw-border-[#334155] tw-text-slate-400'}"
 					onclick={() => draftScope = 'players'}
 				>
 					SPECIFIC ATHLETES
@@ -491,7 +491,7 @@
 					</button>
 					<button
 						type="button"
-						class="tw-px-3 tw-py-1 tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-text-xs tw-text-slate-400 hover:tw-text-white"
+						class="tw-px-3 tw-py-1 tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-text-xs tw-text-slate-400 hover:tw-text-[#fafafa]"
 						onclick={onClearSelection}
 					>
 						CLEAR
@@ -514,7 +514,7 @@
 					<p class="tw-text-xs tw-text-[#fbbf24] tw-font-bold tw-mb-2">NO ATHLETES DETECTED ON SQUAD</p>
 					<button
 						type="button"
-						class="tw-px-3 tw-py-1.5 tw-bg-[#14b8a6] tw-text-black tw-text-xs tw-font-bold"
+						class="tw-px-3 tw-py-1.5 tw-bg-[#14b8a6] tw-text-[#000000] tw-text-xs tw-font-bold"
 						onclick={() => onRefreshRoster()}
 					>
 						REFRESH SQUAD ROSTER
@@ -538,7 +538,7 @@
 								{initials}
 							</span>
 							<div class="tw-truncate">
-								<div class="tw-text-xs tw-font-bold tw-text-white tw-truncate">{player.playerName}</div>
+								<div class="tw-text-xs tw-font-bold tw-text-[#fafafa] tw-truncate">{player.playerName}</div>
 								{#if !isAssignable}
 									<div class="tw-text-[10px] tw-text-[#fbbf24] tw-truncate">Add email to assign</div>
 								{:else}
@@ -590,7 +590,7 @@
 
 	<!-- Error / Block Reason Banner -->
 	{#if deployPhase === 'error' && deployError}
-		<div class="tw-p-3 tw-bg-red-950/60 tw-border tw-border-red-500 tw-text-red-300 tw-text-xs tw-font-bold tw-uppercase" role="alert">
+		<div class="tw-p-3 tw-bg-[#f59e0b]/60 tw-border tw-border-red-500 tw-text-red-300 tw-text-xs tw-font-bold tw-uppercase" role="alert">
 			[ ERR ] {deployError}
 		</div>
 	{:else if !canDeploy && deployBlockReason}
@@ -602,7 +602,7 @@
 	<!-- 7. Primary Call-To-Action (Mandated Action Gold #fbbf24) -->
 	<button
 		type="button"
-		class="tw-w-full tw-py-4 tw-px-6 tw-bg-[#fbbf24] hover:tw-bg-[#f59e0b] tw-text-black tw-font-mono tw-text-sm tw-font-black tw-uppercase tw-tracking-widest tw-transition-all active:tw-scale-[0.99] disabled:tw-opacity-40 disabled:tw-cursor-not-allowed tw-shadow-[0_0_20px_rgba(251,191,36,0.3)]"
+		class="tw-w-full tw-py-4 tw-px-6 tw-bg-[#fbbf24] hover:tw-bg-[#f59e0b] tw-text-[#000000] tw-font-mono tw-text-sm tw-font-black tw-uppercase tw-tracking-widest tw-transition-all active:tw-scale-[0.99] disabled:tw-opacity-40 disabled:tw-cursor-not-allowed tw-shadow-[0_0_20px_rgba(251,191,36,0.3)]"
 		disabled={!canDeploy || deployPhase === 'saving'}
 		onclick={onDeploy}
 	>

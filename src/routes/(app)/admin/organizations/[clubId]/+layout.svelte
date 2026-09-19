@@ -88,7 +88,7 @@
 	<div class="tw-flex tw-items-center tw-justify-between tw-flex-wrap tw-gap-3 tw-border-b tw-border-[#334155] tw-pb-4 tw-mb-6">
 		<nav class="tw-flex tw-gap-1 tw-bg-[#020617] tw-border tw-border-[#334155] tw-p-1" aria-label="Organization Views">
 			<a
-				class="tw-flex tw-items-center tw-gap-2 tw-px-4 tw-py-2 tw-text-xs tw-font-mono tw-font-bold tw-uppercase tw-tracking-wider tw-transition-colors {page.url.pathname === `/admin/organizations/${clubId}` ? 'tw-bg-[#0f172a] tw-text-[#14b8a6] tw-border-b-2 tw-border-[#14b8a6]' : 'tw-text-[#94A3B8] hover:tw-text-[#FAFAFA] hover:tw-bg-white/[0.04]'}"
+				class="tw-flex tw-items-center tw-gap-2 tw-px-4 tw-py-2 tw-text-xs tw-font-mono tw-font-bold tw-uppercase tw-tracking-wider tw-transition-colors {page.url.pathname === `/admin/organizations/${clubId}` ? 'tw-bg-[#0f172a] tw-text-[#14b8a6] tw-border-b-2 tw-border-[#14b8a6]' : 'tw-text-[#94A3B8] hover:tw-text-[#FAFAFA] hover:tw-tw-bg-[#0f172a]/[0.04]'}"
 				href="/admin/organizations/{clubId}"
 				aria-current={page.url.pathname === `/admin/organizations/${clubId}` ? 'page' : undefined}
 			>
@@ -96,7 +96,7 @@
 				Overview
 			</a>
 			<a
-				class="tw-flex tw-items-center tw-gap-2 tw-px-4 tw-py-2 tw-text-xs tw-font-mono tw-font-bold tw-uppercase tw-tracking-wider tw-transition-colors {page.url.pathname.startsWith(`/admin/organizations/${clubId}/teams`) ? 'tw-bg-[#0f172a] tw-text-[#14b8a6] tw-border-b-2 tw-border-[#14b8a6]' : 'tw-text-[#94A3B8] hover:tw-text-[#FAFAFA] hover:tw-bg-white/[0.04]'}"
+				class="tw-flex tw-items-center tw-gap-2 tw-px-4 tw-py-2 tw-text-xs tw-font-mono tw-font-bold tw-uppercase tw-tracking-wider tw-transition-colors {page.url.pathname.startsWith(`/admin/organizations/${clubId}/teams`) ? 'tw-bg-[#0f172a] tw-text-[#14b8a6] tw-border-b-2 tw-border-[#14b8a6]' : 'tw-text-[#94A3B8] hover:tw-text-[#FAFAFA] hover:tw-tw-bg-[#0f172a]/[0.04]'}"
 				href="/admin/organizations/{clubId}/teams"
 				aria-current={page.url.pathname.startsWith(`/admin/organizations/${clubId}/teams`) ? 'page' : undefined}
 			>
@@ -104,7 +104,7 @@
 				Teams
 			</a>
 			<a
-				class="tw-flex tw-items-center tw-gap-2 tw-px-4 tw-py-2 tw-text-xs tw-font-mono tw-font-bold tw-uppercase tw-tracking-wider tw-transition-colors {page.url.pathname.startsWith(`/admin/organizations/${clubId}/users`) ? 'tw-bg-[#0f172a] tw-text-[#14b8a6] tw-border-b-2 tw-border-[#14b8a6]' : 'tw-text-[#94A3B8] hover:tw-text-[#FAFAFA] hover:tw-bg-white/[0.04]'}"
+				class="tw-flex tw-items-center tw-gap-2 tw-px-4 tw-py-2 tw-text-xs tw-font-mono tw-font-bold tw-uppercase tw-tracking-wider tw-transition-colors {page.url.pathname.startsWith(`/admin/organizations/${clubId}/users`) ? 'tw-bg-[#0f172a] tw-text-[#14b8a6] tw-border-b-2 tw-border-[#14b8a6]' : 'tw-text-[#94A3B8] hover:tw-text-[#FAFAFA] hover:tw-tw-bg-[#0f172a]/[0.04]'}"
 				href="/admin/organizations/{clubId}/users"
 				aria-current={page.url.pathname.startsWith(`/admin/organizations/${clubId}/users`) ? 'page' : undefined}
 			>
@@ -112,7 +112,7 @@
 				Users
 			</a>
 			<a
-				class="tw-flex tw-items-center tw-gap-2 tw-px-4 tw-py-2 tw-text-xs tw-font-mono tw-font-bold tw-uppercase tw-tracking-wider tw-transition-colors {page.url.pathname.startsWith(`/admin/organizations/${clubId}/marketing`) ? 'tw-bg-[#0f172a] tw-text-[#14b8a6] tw-border-b-2 tw-border-[#14b8a6]' : 'tw-text-[#94A3B8] hover:tw-text-[#FAFAFA] hover:tw-bg-white/[0.04]'}"
+				class="tw-flex tw-items-center tw-gap-2 tw-px-4 tw-py-2 tw-text-xs tw-font-mono tw-font-bold tw-uppercase tw-tracking-wider tw-transition-colors {page.url.pathname.startsWith(`/admin/organizations/${clubId}/marketing`) ? 'tw-bg-[#0f172a] tw-text-[#14b8a6] tw-border-b-2 tw-border-[#14b8a6]' : 'tw-text-[#94A3B8] hover:tw-text-[#FAFAFA] hover:tw-tw-bg-[#0f172a]/[0.04]'}"
 				href="/admin/organizations/{clubId}/marketing"
 				aria-current={page.url.pathname.startsWith(`/admin/organizations/${clubId}/marketing`) ? 'page' : undefined}
 			>

@@ -56,7 +56,7 @@
 			<div class="tw-flex tw-items-center tw-gap-3">
 				<div class="tw-flex tw-items-center tw-gap-2">
 					<div class="tw-h-2.5 tw-w-2.5 tw-rounded-full tw-bg-[#14b8a6] tw-shadow-[0_0_10px_rgba(52,211,153,0.6)]"></div>
-					<span class="tw-font-mono tw-font-black tw-text-base tw-tracking-widest tw-text-white">
+					<span class="tw-font-mono tw-font-black tw-text-base tw-tracking-widest tw-text-[#fafafa]">
 						THE FORGE
 					</span>
 				</div>
@@ -87,7 +87,7 @@
 
 				<a
 					href="/coach/tactical"
-					class="tw-bg-[#0f172a] hover:tw-bg-[#0f172a] tw-border tw-border-slate-800 hover:tw-border-slate-700 tw-text-slate-300 hover:tw-text-white tw-font-mono tw-text-xs tw-font-medium tw-px-3.5 tw-py-1.5 tw-rounded-lg active:tw-scale-[0.98] tw-transition-all tw-no-underline tw-inline-flex tw-items-center tw-gap-2"
+					class="tw-bg-[#0f172a] hover:tw-bg-[#0f172a] tw-border tw-border-slate-800 hover:tw-border-slate-700 tw-text-slate-300 hover:tw-text-[#fafafa] tw-font-mono tw-text-xs tw-font-medium tw-px-3.5 tw-py-1.5 tw-rounded-lg active:tw-scale-[0.98] tw-transition-all tw-no-underline tw-inline-flex tw-items-center tw-gap-2"
 					title="Open War Room Tactical Whiteboard"
 				>
 					<span class="tw-text-slate-400">⚡</span>
@@ -103,7 +103,7 @@
 				<nav class="tw-flex tw-items-center tw-gap-2 -tw-mb-px tw-overflow-x-auto tw-py-1.5">
 					<button
 						type="button"
-						class="tw-flex tw-items-center tw-gap-2 tw-px-4 tw-py-2 tw-rounded-lg tw-font-mono tw-text-xs tw-font-semibold tw-transition-all tw-whitespace-nowrap {activeTab === 'intent' ? 'tw-bg-[#1e293b] tw-text-white tw-border tw-border-slate-700/90 tw-shadow-sm' : 'tw-text-slate-400 hover:tw-text-slate-200 hover:tw-bg-[#0f172a]/60 tw-border tw-border-transparent'}"
+						class="tw-flex tw-items-center tw-gap-2 tw-px-4 tw-py-2 tw-rounded-lg tw-font-mono tw-text-xs tw-font-semibold tw-transition-all tw-whitespace-nowrap {activeTab === 'intent' ? 'tw-bg-[#1e293b] tw-text-[#fafafa] tw-border tw-border-slate-700/90 tw-shadow-sm' : 'tw-text-slate-400 hover:tw-text-slate-200 hover:tw-bg-[#0f172a]/60 tw-border tw-border-transparent'}"
 						onclick={() => setTab('intent')}
 					>
 						<span class="{activeTab === 'intent' ? 'tw-opacity-100' : 'tw-opacity-50'}">🎯</span>
@@ -111,7 +111,7 @@
 					</button>
 					<button
 						type="button"
-						class="tw-flex tw-items-center tw-gap-2 tw-px-4 tw-py-2 tw-rounded-lg tw-font-mono tw-text-xs tw-font-semibold tw-transition-all tw-whitespace-nowrap {activeTab === 'designer' ? 'tw-bg-[#1e293b] tw-text-white tw-border tw-border-slate-700/90 tw-shadow-sm' : 'tw-text-slate-400 hover:tw-text-slate-200 hover:tw-bg-[#0f172a]/60 tw-border tw-border-transparent'}"
+						class="tw-flex tw-items-center tw-gap-2 tw-px-4 tw-py-2 tw-rounded-lg tw-font-mono tw-text-xs tw-font-semibold tw-transition-all tw-whitespace-nowrap {activeTab === 'designer' ? 'tw-bg-[#1e293b] tw-text-[#fafafa] tw-border tw-border-slate-700/90 tw-shadow-sm' : 'tw-text-slate-400 hover:tw-text-slate-200 hover:tw-bg-[#0f172a]/60 tw-border tw-border-transparent'}"
 						onclick={() => setTab('designer')}
 					>
 						<span class="{activeTab === 'designer' ? 'tw-opacity-100' : 'tw-opacity-50'}">📐</span>
@@ -119,7 +119,7 @@
 					</button>
 					<button
 						type="button"
-						class="tw-flex tw-items-center tw-gap-2 tw-px-4 tw-py-2 tw-rounded-lg tw-font-mono tw-text-xs tw-font-semibold tw-transition-all tw-whitespace-nowrap {activeTab === 'library' ? 'tw-bg-[#1e293b] tw-text-white tw-border tw-border-slate-700/90 tw-shadow-sm' : 'tw-text-slate-400 hover:tw-text-slate-200 hover:tw-bg-[#0f172a]/60 tw-border tw-border-transparent'}"
+						class="tw-flex tw-items-center tw-gap-2 tw-px-4 tw-py-2 tw-rounded-lg tw-font-mono tw-text-xs tw-font-semibold tw-transition-all tw-whitespace-nowrap {activeTab === 'library' ? 'tw-bg-[#1e293b] tw-text-[#fafafa] tw-border tw-border-slate-700/90 tw-shadow-sm' : 'tw-text-slate-400 hover:tw-text-slate-200 hover:tw-bg-[#0f172a]/60 tw-border tw-border-transparent'}"
 						onclick={() => setTab('library')}
 					>
 						<span class="{activeTab === 'library' ? 'tw-opacity-100' : 'tw-opacity-50'}">📚</span>

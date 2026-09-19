@@ -138,7 +138,7 @@
 			<p class="tw-font-mono tw-text-sm tw-text-vanguard-accent">Clearance confirmed. Routing…</p>
 
 		{:else if phase === 'error'}
-			<div class="tw-rounded-md tw-border tw-border-red-500/40 tw-bg-red-950/60 tw-px-3 tw-py-3 tw-font-mono tw-text-xs tw-text-red-300" role="alert">
+			<div class="tw-rounded-md tw-border tw-border-red-500/40 tw-bg-[#f59e0b]/60 tw-px-3 tw-py-3 tw-font-mono tw-text-xs tw-text-red-300" role="alert">
 				{errorMsg}
 			</div>
 			<a

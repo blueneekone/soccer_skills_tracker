@@ -221,7 +221,7 @@
 						<h2 class="tw-font-mono tw-text-xs tw-font-bold tw-tracking-[0.2em] tw-text-[var(--accent)] tw-mb-2">{tier.name}</h2>
 						<div class="tw-text-[#64748b] tw-text-sm tw-font-mono tw-mb-4">{tier.seats}</div>
 						<div class="tw-flex tw-items-baseline tw-gap-2">
-							<span class="tw-text-4xl tw-font-bold tw-text-white">{tier.price}</span>
+							<span class="tw-text-4xl tw-font-bold tw-text-[#fafafa]">{tier.price}</span>
 							<span class="tw-text-xs tw-font-mono tw-text-[#64748b]">{tier.priceSub}</span>
 						</div>
 					</div>

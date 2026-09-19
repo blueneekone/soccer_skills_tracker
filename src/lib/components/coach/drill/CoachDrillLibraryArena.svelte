@@ -167,12 +167,12 @@
 					type="text"
 					bind:value={searchTerm}
 					placeholder="Search drills by title, focus, or skill..."
-					class="tw-w-full tw-bg-[#020617] tw-border tw-border-[#334155] tw-rounded-xl tw-px-4 tw-py-2.5 tw-text-xs tw-text-white focus:tw-border-[#14b8a6] focus:tw-outline-none tw-font-sans"
+					class="tw-w-full tw-bg-[#020617] tw-border tw-border-[#334155] tw-rounded-xl tw-px-4 tw-py-2.5 tw-text-xs tw-text-[#fafafa] focus:tw-border-[#14b8a6] focus:tw-outline-none tw-font-sans"
 				/>
 				{#if searchTerm}
 					<button
 						type="button"
-						class="tw-absolute tw-right-3 tw-top-2.5 tw-text-slate-400 hover:tw-text-white tw-text-xs"
+						class="tw-absolute tw-right-3 tw-top-2.5 tw-text-slate-400 hover:tw-text-[#fafafa] tw-text-xs"
 						onclick={() => (searchTerm = '')}
 					>
 						✕
@@ -184,7 +184,7 @@
 			<div class="md:tw-col-span-5 tw-flex tw-items-center tw-bg-[#020617] tw-border tw-border-[#334155] tw-rounded-xl tw-p-1 tw-gap-1">
 				<button
 					type="button"
-					class="tw-flex-1 tw-py-1.5 tw-rounded-lg tw-font-mono tw-text-[11px] tw-font-bold tw-transition-all {selectedScope === 'ALL' ? 'tw-bg-[#1e293b] tw-text-white tw-border tw-border-slate-600' : 'tw-text-slate-400 hover:tw-text-slate-200'}"
+					class="tw-flex-1 tw-py-1.5 tw-rounded-lg tw-font-mono tw-text-[11px] tw-font-bold tw-transition-all {selectedScope === 'ALL' ? 'tw-bg-[#1e293b] tw-text-[#fafafa] tw-border tw-border-slate-600' : 'tw-text-slate-400 hover:tw-text-slate-200'}"
 					onclick={() => (selectedScope = 'ALL')}
 				>
 					All ({allDrills.length})
@@ -211,7 +211,7 @@
 			{#each CATEGORIES as cat (cat)}
 				<button
 					type="button"
-					class="tw-px-3 tw-py-1.5 tw-rounded-lg tw-font-mono tw-text-[11px] tw-font-semibold tw-transition-all tw-whitespace-nowrap {selectedCategory === cat ? 'tw-bg-[#daff0a] tw-text-black' : 'tw-bg-[#020617] tw-border tw-border-[#334155] tw-text-slate-400 hover:tw-text-white'}"
+					class="tw-px-3 tw-py-1.5 tw-rounded-lg tw-font-mono tw-text-[11px] tw-font-semibold tw-transition-all tw-whitespace-nowrap {selectedCategory === cat ? 'tw-bg-[#daff0a] tw-text-[#000000]' : 'tw-bg-[#020617] tw-border tw-border-[#334155] tw-text-slate-400 hover:tw-text-[#fafafa]'}"
 					onclick={() => (selectedCategory = cat)}
 				>
 					{cat}
@@ -231,7 +231,7 @@
 			<p class="tw-text-slate-500 tw-text-xs tw-mt-1">Try broadening your search or design a new drill.</p>
 			<button
 				type="button"
-				class="tw-mt-4 tw-bg-[#14b8a6] tw-text-black tw-font-mono tw-text-xs tw-font-bold tw-px-4 tw-py-2 tw-rounded-xl"
+				class="tw-mt-4 tw-bg-[#14b8a6] tw-text-[#000000] tw-font-mono tw-text-xs tw-font-bold tw-px-4 tw-py-2 tw-rounded-xl"
 				onclick={onNewDrill}
 			>
 				Create New Drill in Studio →
@@ -262,7 +262,7 @@
 
 						<!-- Drill Title & Description -->
 						<div>
-							<h3 class="tw-text-white tw-font-bold tw-text-sm group-hover:tw-text-[#14b8a6] tw-transition-colors">
+							<h3 class="tw-text-[#fafafa] tw-font-bold tw-text-sm group-hover:tw-text-[#14b8a6] tw-transition-colors">
 								{drill.title}
 							</h3>
 							<p class="tw-text-slate-400 tw-text-xs tw-mt-1.5 tw-line-clamp-2 tw-leading-relaxed">
@@ -282,7 +282,7 @@
 					<div class="tw-grid tw-grid-cols-2 tw-gap-2 tw-pt-3 tw-border-t tw-border-[#1e293b]">
 						<button
 							type="button"
-							class="tw-bg-[#020617] hover:tw-bg-[#1e293b] tw-border tw-border-[#334155] hover:tw-border-slate-400 tw-text-slate-300 hover:tw-text-white tw-font-mono tw-text-[11px] tw-font-semibold tw-py-2 tw-px-2 tw-rounded-xl tw-transition-all tw-text-center"
+							class="tw-bg-[#020617] hover:tw-bg-[#1e293b] tw-border tw-border-[#334155] hover:tw-border-slate-400 tw-text-slate-300 hover:tw-text-[#fafafa] tw-font-mono tw-text-[11px] tw-font-semibold tw-py-2 tw-px-2 tw-rounded-xl tw-transition-all tw-text-center"
 							onclick={() => onOpenInDesigner(drill)}
 						>
 							📐 In Designer
@@ -290,7 +290,7 @@
 
 						<button
 							type="button"
-							class="tw-bg-[#fbbf24] hover:tw-bg-[#fbbf24] tw-text-black tw-font-mono tw-text-[11px] tw-font-bold tw-py-2 tw-px-2 tw-rounded-xl active:tw-scale-[0.98] tw-transition-all tw-text-center"
+							class="tw-bg-[#fbbf24] hover:tw-bg-[#fbbf24] tw-text-[#000000] tw-font-mono tw-text-[11px] tw-font-bold tw-py-2 tw-px-2 tw-rounded-xl active:tw-scale-[0.98] tw-transition-all tw-text-center"
 							onclick={() => onDeployToIntent(drill)}
 						>
 							🚀 Deploy Intent

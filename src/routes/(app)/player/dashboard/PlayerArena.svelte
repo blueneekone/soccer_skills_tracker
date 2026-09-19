@@ -101,7 +101,7 @@
 						/>
 					</div>
 					<div class="tw-mt-4 tw-flex tw-justify-center">
-						<button class="tw-bg-[#fbbf24] cta-gold tw-text-black tw-font-bold tw-px-6 tw-py-2 tw-rounded-none">
+						<button class="tw-bg-[#fbbf24] cta-gold tw-text-[#000000] tw-font-bold tw-px-6 tw-py-2 tw-rounded-none">
 							LAUNCH MISSION
 						</button>
 					</div>

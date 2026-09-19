@@ -60,7 +60,7 @@
 				class="tactical-vector-route route-dash-pass"
 				d="M {route.cx} {route.cy} L {route.x2} {route.y2}"
 				fill="none"
-				stroke="#ffffff"
+				stroke="#fafafa"
 				stroke-width={isSelected ? 6 : 4}
 				stroke-linecap="round"
 				stroke-linejoin="round"
@@ -87,7 +87,7 @@
 				class="tactical-vector-route"
 				d={pathD}
 				fill="none"
-				stroke="#ffffff"
+				stroke="#fafafa"
 				stroke-width={isSelected ? 6 : 4}
 				stroke-linecap="round"
 				stroke-linejoin="round"
@@ -131,8 +131,8 @@
 		<animate attributeName="opacity" values="0.25;0.55;0.25" dur="1.5s" repeatCount="indefinite" />
 		<circle cx="0" cy="0" r="18" fill="none" stroke={probColor} stroke-width="2" filter="url(#premium-neon)" />
 		<circle cx="0" cy="0" r="5" fill={probColor} opacity="0.25" />
-		<line x1="-13" y1="0" x2="13" y2="0" stroke="#ffffff" stroke-width="1" opacity="0.45" />
-		<line x1="0" y1="-13" x2="0" y2="13" stroke="#ffffff" stroke-width="1" opacity="0.45" />
+		<line x1="-13" y1="0" x2="13" y2="0" stroke="#fafafa" stroke-width="1" opacity="0.45" />
+		<line x1="0" y1="-13" x2="0" y2="13" stroke="#fafafa" stroke-width="1" opacity="0.45" />
 		<text
 			x="0"
 			y="28"
@@ -167,7 +167,7 @@
 				stroke={route.color}
 				stroke-width="2"
 			/>
-			<circle cx="0" cy="0" r="2.5" fill="#ffffff" />
+			<circle cx="0" cy="0" r="2.5" fill="#fafafa" />
 		</g>
 		<!-- Pivot Point / Mid Anchor -->
 		<!-- svelte-ignore a11y_no_static_element_interactions -->
@@ -195,7 +195,7 @@
 						stroke={route.color}
 						stroke-width="2"
 					/>
-					<circle cx="0" cy="0" r="2.5" fill="#ffffff" />
+					<circle cx="0" cy="0" r="2.5" fill="#fafafa" />
 				</g>
 			{/if}
 		</g>
@@ -209,7 +209,7 @@
 		>
 			<circle cx="0" cy="0" r="22" fill="transparent" pointer-events="all" />
 			<circle cx="0" cy="0" r="11" fill="#050505" stroke={route.color} stroke-width="2" opacity="0.85" />
-			<circle cx="0" cy="0" r="4.5" fill="#ffffff" />
+			<circle cx="0" cy="0" r="4.5" fill="#fafafa" />
 			<line x1="-16" y1="0" x2="16" y2="0" stroke={route.color} stroke-width="1.5" opacity="0.5" />
 			<line x1="0" y1="-16" x2="0" y2="16" stroke={route.color} stroke-width="1.5" opacity="0.5" />
 		</g>

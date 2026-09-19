@@ -25,7 +25,7 @@
                 {#each cells as cell}
                     <div class="tw-flex tw-justify-between tw-items-center tw-p-3 tw-bg-[#111] tw-border tw-border-[#334155] tw-rounded-none">
                         <span class="tw-font-mono tw-text-sm">{cell.id}</span>
-                        <span class="tw-text-xs tw-uppercase tw-px-2 tw-py-1 {cell.status === 'active' ? 'tw-bg-[#14b8a6] tw-text-black' : 'tw-bg-[#f59e0b] tw-text-black'} tw-font-bold">
+                        <span class="tw-text-xs tw-uppercase tw-px-2 tw-py-1 {cell.status === 'active' ? 'tw-bg-[#14b8a6] tw-text-[#000000]' : 'tw-bg-[#f59e0b] tw-text-[#000000]'} tw-font-bold">
                             {cell.status}
                         </span>
                         <span class="tw-font-mono tw-text-sm tw-text-slate-400">Load: {cell.load}</span>
@@ -53,13 +53,13 @@
                             name="tenantId"
                             placeholder="Tenant ID (e.g. club-123)"
                             bind:value={targetTenantId}
-                            class="tw-flex-1 tw-bg-[#0a0a0a] tw-border tw-border-[#334155] focus:tw-border-[#14b8a6] tw-text-white tw-px-3 tw-py-2 tw-text-sm tw-font-mono tw-rounded-none tw-outline-none"
+                            class="tw-flex-1 tw-bg-[#0a0a0a] tw-border tw-border-[#334155] focus:tw-border-[#14b8a6] tw-text-[#fafafa] tw-px-3 tw-py-2 tw-text-sm tw-font-mono tw-rounded-none tw-outline-none"
                             required
                         />
                         <select
                             name="targetCell"
                             bind:value={targetCellId}
-                            class="tw-flex-1 tw-bg-[#0a0a0a] tw-border tw-border-[#334155] focus:tw-border-[#14b8a6] tw-text-white tw-px-3 tw-py-2 tw-text-sm tw-font-mono tw-rounded-none tw-outline-none"
+                            class="tw-flex-1 tw-bg-[#0a0a0a] tw-border tw-border-[#334155] focus:tw-border-[#14b8a6] tw-text-[#fafafa] tw-px-3 tw-py-2 tw-text-sm tw-font-mono tw-rounded-none tw-outline-none"
                             required
                         >
                             <option value="" disabled>Select Target Cell</option>
@@ -71,14 +71,14 @@
                     <button
                         type="submit"
                         disabled={isProcessing || !targetTenantId || !targetCellId}
-                        class="tw-w-full tw-bg-amber-600 hover:tw-bg-[#f59e0b] disabled:tw-bg-slate-700 tw-text-white tw-font-bold tw-py-3 tw-px-4 tw-rounded-none tw-transition-colors"
+                        class="tw-w-full tw-bg-amber-600 hover:tw-bg-[#f59e0b] disabled:tw-bg-slate-700 tw-text-[#fafafa] tw-font-bold tw-py-3 tw-px-4 tw-rounded-none tw-transition-colors"
                     >
                         {isProcessing ? 'Processing Migration...' : 'Trigger Cell Cutover'}
                     </button>
                 </form>
 
                 {#if form}
-                    <div class="tw-mt-6 tw-p-4 tw-border tw-rounded-none tw-font-mono tw-text-sm {form.success ? 'tw-bg-green-900 tw-text-green-200 tw-border-green-500' : 'tw-bg-red-900 tw-text-red-200 tw-border-red-500'}">
+                    <div class="tw-mt-6 tw-p-4 tw-border tw-rounded-none tw-font-mono tw-text-sm {form.success ? 'tw-bg-[#14b8a6] tw-text-green-200 tw-border-green-500' : 'tw-bg-[#f59e0b] tw-text-red-200 tw-border-red-500'}">
                         {#if form.success}
                             <div class="tw-font-bold tw-uppercase tw-mb-2">✔ Migration Successfully Handled</div>
                             <div class="tw-opacity-80">>{form.auditLog}</div>

@@ -198,7 +198,7 @@
 			</span>
 			{#if dispatchCode}
 				<span class="tw-font-mono tw-text-[10px] tw-text-[#94a3b8] tw-bg-[#020617] tw-border tw-border-[#334155] tw-px-2 tw-py-0.5 tw-rounded tw-hidden sm:tw-inline-block">
-					CODE: <strong class="tw-text-white">{dispatchCode}</strong>
+					CODE: <strong class="tw-text-[#fafafa]">{dispatchCode}</strong>
 				</span>
 			{/if}
 		</div>

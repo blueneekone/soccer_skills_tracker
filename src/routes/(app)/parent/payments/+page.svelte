@@ -262,7 +262,7 @@
 			<span class="tw-font-mono tw-text-sm">Loading payment status…</span>
 		</div>
 	{:else if err}
-		<div class="tw-rounded-xl tw-border tw-border-red-500/30 tw-bg-red-950/30 tw-p-5">
+		<div class="tw-rounded-xl tw-border tw-border-red-500/30 tw-bg-[#f59e0b]/30 tw-p-5">
 			<p class="tw-font-mono tw-text-sm tw-text-red-400">{err}</p>
 		</div>
 	{:else if !activeSeason}
@@ -330,7 +330,7 @@
 							{:else if canPay(player.ledger)}
 								<button
 									type="button"
-									class="tw-inline-flex tw-items-center tw-justify-center tw-gap-1.5 tw-rounded-none tw-border tw-border-[#f59e0b] tw-bg-[#f59e0b] tw-px-3.5 tw-py-2 tw-font-mono tw-text-xs tw-font-bold tw-tracking-wide tw-text-black tw-transition-all hover:tw-bg-[#fbbf24] hover:tw-shadow-[0_0_15px_rgba(251, 191, 36,0.5)]"
+									class="tw-inline-flex tw-items-center tw-justify-center tw-gap-1.5 tw-rounded-none tw-border tw-border-[#f59e0b] tw-bg-[#f59e0b] tw-px-3.5 tw-py-2 tw-font-mono tw-text-xs tw-font-bold tw-tracking-wide tw-text-[#000000] tw-transition-all hover:tw-bg-[#fbbf24] hover:tw-shadow-[0_0_15px_rgba(251, 191, 36,0.5)]"
 									onclick={() => openPayment(player.email)}
 								>
 									<Icon name={"sys.credit-card" as IconName} size={14} />

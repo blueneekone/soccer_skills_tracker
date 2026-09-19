@@ -26,7 +26,7 @@
   }
 </script>
 
-<div class="tw-p-6 tw-bg-[#0f172a] tw-text-white tw-rounded-[24px] tw-border tw-border-slate-700 parent-os-root">
+<div class="tw-p-6 tw-bg-[#0f172a] tw-text-[#fafafa] tw-rounded-[24px] tw-border tw-border-slate-700 parent-os-root">
   <h1 class="tw-text-2xl tw-font-bold tw-mb-4">Parent OS - COPPA Gates & Cryptographic Digital Waivers</h1>
 
   {#if !challengeSubmitted}
@@ -36,12 +36,12 @@
         id="child-dob-input"
         type="date"
         bind:value={childDob}
-        class="tw-bg-[#0f172a] tw-border tw-border-slate-600 tw-p-2 tw-rounded-md tw-text-white tw-mb-4"
+        class="tw-bg-[#0f172a] tw-border tw-border-slate-600 tw-p-2 tw-rounded-md tw-text-[#fafafa] tw-mb-4"
       />
       <button
         id="submit-dob-btn"
         onclick={checkDobChallenge}
-        class="tw-block tw-bg-blue-600 tw-text-white tw-px-4 tw-py-2 tw-rounded-md"
+        class="tw-block tw-bg-[#fbbf24] tw-text-[#000000] tw-px-4 tw-py-2 tw-rounded-md"
       >
         Verify DOB Challenge
       </button>
@@ -69,7 +69,7 @@
         id="commit-digital-signature-btn"
         disabled={isUnder13 ? (!parentConsentSigned || !safeSportSigned) : !safeSportSigned}
         onclick={handleSignWaivers}
-        class="tw-bg-[#14b8a6] disabled:tw-opacity-50 tw-text-white tw-px-4 tw-py-2 tw-rounded-md"
+        class="tw-bg-[#14b8a6] disabled:tw-opacity-50 tw-text-[#fafafa] tw-px-4 tw-py-2 tw-rounded-md"
       >
         Commit Cryptographic Signature to Cloud Storage
       </button>

@@ -133,14 +133,14 @@
 					{#each rows as row (row.id)}
 						{@const balanceCents = Math.max(0, row.duesCents - row.paidCents)}
 						<tr class="hover:tw-bg-[#0f172a] tw-transition-colors">
-							<td class="tw-p-3 tw-text-white tw-font-bold">
+							<td class="tw-p-3 tw-text-[#fafafa] tw-font-bold">
 								<span class="tw-text-[#daff0a] tw-mr-1.5">{row.jersey ? `#${row.jersey}` : '—'}</span>
 								{row.playerName}
 							</td>
 							<td class="tw-p-3 tw-text-slate-300">
 								{row.parentEmail || '—'}
 							</td>
-							<td class="tw-p-3 tw-text-white">
+							<td class="tw-p-3 tw-text-[#fafafa]">
 								${(row.duesCents / 100).toFixed(2)}
 							</td>
 							<td class="tw-p-3 tw-text-[#14b8a6]">
@@ -159,11 +159,11 @@
 										⏳ PARTIAL
 									</span>
 								{:else if row.status === 'SCHOLARSHIP'}
-									<span class="tw-bg-purple-500/20 tw-border tw-border-purple-500 tw-text-purple-300 tw-px-2 tw-py-0.5 tw-rounded tw-font-bold tw-text-[10px]">
+									<span class="tw-bg-[#14b8a6]/20 tw-border tw-border-purple-500 tw-text-purple-300 tw-px-2 tw-py-0.5 tw-rounded tw-font-bold tw-text-[10px]">
 										★ SCHOLARSHIP
 									</span>
 								{:else}
-									<span class="tw-bg-red-500/20 tw-border tw-border-red-500 tw-text-red-400 tw-px-2 tw-py-0.5 tw-rounded tw-font-bold tw-text-[10px]">
+									<span class="tw-bg-[#f59e0b]/20 tw-border tw-border-red-500 tw-text-red-400 tw-px-2 tw-py-0.5 tw-rounded tw-font-bold tw-text-[10px]">
 										✕ UNPAID
 									</span>
 								{/if}

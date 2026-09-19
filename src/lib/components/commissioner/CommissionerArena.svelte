@@ -33,7 +33,7 @@
 			</header>
 
 			<div class="tw-flex-1 tw-overflow-auto">
-				<table class="tw-w-full tw-text-left tw-font-mono tw-text-xs tw-text-white tw-border-collapse">
+				<table class="tw-w-full tw-text-left tw-font-mono tw-text-xs tw-text-[#fafafa] tw-border-collapse">
 					<thead>
 						<tr class="tw-border-b tw-border-[#334155] tw-text-slate-400">
 							<th class="tw-py-2 tw-px-2 tw-font-bold tw-uppercase tw-text-[10px]">Club ID</th>
@@ -61,9 +61,9 @@
 						{:then complianceData}
 							{#each complianceData as item}
 								<tr class="tw-border-b tw-border-[#334155] tw-border-opacity-30 tw-bg-[#000000] hover:tw-bg-[#0f172a] tw-transition-colors">
-									<td class="tw-py-2.5 tw-px-2 tw-uppercase tw-font-bold tw-text-white">{item.clubId}</td>
+									<td class="tw-py-2.5 tw-px-2 tw-uppercase tw-font-bold tw-text-[#fafafa]">{item.clubId}</td>
 									<td class="tw-py-2.5 tw-px-2">
-										<span class="tw-px-2 tw-py-0.5 tw-rounded-none tw-font-mono tw-font-bold tw-text-[10px] status-dot-indicator {item.complianceStatus === 'green' ? 'tw-bg-[#14b8a6] tw-text-black' : 'tw-bg-[#f59e0b] tw-text-black'}">
+										<span class="tw-px-2 tw-py-0.5 tw-rounded-none tw-font-mono tw-font-bold tw-text-[10px] status-dot-indicator {item.complianceStatus === 'green' ? 'tw-bg-[#14b8a6] tw-text-[#000000]' : 'tw-bg-[#f59e0b] tw-text-[#000000]'}">
 											{item.complianceStatus.toUpperCase()}
 										</span>
 									</td>
@@ -100,7 +100,7 @@
 			</header>
 
 			<div class="tw-flex-1 tw-overflow-auto">
-				<table class="tw-w-full tw-text-left tw-font-mono tw-text-xs tw-text-white tw-border-collapse">
+				<table class="tw-w-full tw-text-left tw-font-mono tw-text-xs tw-text-[#fafafa] tw-border-collapse">
 					<thead>
 						<tr class="tw-border-b tw-border-[#334155] tw-text-slate-400">
 							<th class="tw-py-2 tw-px-2 tw-font-bold tw-uppercase tw-text-[10px]">Event ID</th>
@@ -123,10 +123,10 @@
 						{:then operationsData}
 							{#each operationsData as item}
 								<tr class="tw-border-b tw-border-[#334155] tw-border-opacity-30 tw-bg-[#000000] hover:tw-bg-[#0f172a] tw-transition-colors">
-									<td class="tw-py-2.5 tw-px-2 tw-uppercase tw-font-bold tw-text-white">{item.tournamentId}</td>
+									<td class="tw-py-2.5 tw-px-2 tw-uppercase tw-font-bold tw-text-[#fafafa]">{item.tournamentId}</td>
 									<td class="tw-py-2.5 tw-px-2 tw-text-center">
 										{#if item.status === 'live'}
-											<span class="tw-px-2 tw-py-0.5 tw-bg-[#14b8a6] tw-text-black tw-font-mono tw-font-bold tw-text-[10px] tw-rounded-none">LIVE</span>
+											<span class="tw-px-2 tw-py-0.5 tw-bg-[#14b8a6] tw-text-[#000000] tw-font-mono tw-font-bold tw-text-[10px] tw-rounded-none">LIVE</span>
 										{:else}
 											<span class="tw-px-2 tw-py-0.5 tw-bg-[#1E293B] tw-text-[#f59e0b] tw-font-mono tw-font-bold tw-text-[10px] tw-border tw-border-slate-700 tw-rounded-none">SCHEDULING</span>
 										{/if}

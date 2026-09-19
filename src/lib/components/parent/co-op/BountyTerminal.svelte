@@ -24,7 +24,7 @@
 
 <div class="tw-bg-[#0f172a] tw-rounded-[24px] tw-border tw-border-[#334155] tw-p-6 tw-h-full tw-flex tw-flex-col">
 	<div class="tw-flex tw-items-center tw-justify-between tw-mb-6">
-		<h2 class="tw-text-white tw-font-bold tw-text-lg tw-flex tw-items-center tw-gap-2">
+		<h2 class="tw-text-[#fafafa] tw-font-bold tw-text-lg tw-flex tw-items-center tw-gap-2">
 			<span class="tw-text-[#14b8a6]">●</span> Tremendous Escrow
 		</h2>
 		<span class="tw-text-[#94a3b8] tw-text-xs tw-font-mono tw-tracking-widest">BOUNTY TERMINAL</span>
@@ -33,13 +33,13 @@
 	<div class="bento-grid-container tw-grid-cols-2 tw-gap-4 tw-mb-6" style="grid-template-columns: repeat(2, minmax(0, 1fr)); width: auto;">
 		<div class="tw-bg-[#1e293b] tw-p-4 tw-rounded-xl tw-border tw-border-[#334155]">
 			<p class="tw-text-[#94a3b8] tw-text-xs tw-font-mono tw-tracking-widest tw-mb-1">FUNDING SOURCE</p>
-			<p class="tw-text-white tw-text-sm tw-font-bold tw-truncate" title={fundingLabel}>
+			<p class="tw-text-[#fafafa] tw-text-sm tw-font-bold tw-truncate" title={fundingLabel}>
 				{hasFunding ? fundingLabel : 'No funding source linked'}
 			</p>
 		</div>
 		<div class="tw-bg-[#1e293b] tw-p-4 tw-rounded-xl tw-border tw-border-[#334155]">
 			<p class="tw-text-[#94a3b8] tw-text-xs tw-font-mono tw-tracking-widest tw-mb-1">ACTIVE BOUNTIES</p>
-			<p class="tw-text-white tw-text-3xl tw-font-bold">{activeBounties}</p>
+			<p class="tw-text-[#fafafa] tw-text-3xl tw-font-bold">{activeBounties}</p>
 		</div>
 	</div>
 
@@ -49,7 +49,7 @@
 		<div class="tw-flex tw-gap-3">
 			<select 
 				bind:value={depositAmount}
-				class="tw-bg-[#1e293b] tw-text-white tw-border tw-border-[#334155] tw-rounded-lg tw-px-4 tw-py-2 tw-font-mono focus:tw-outline-none focus:tw-border-[#14b8a6] tw-transition-colors"
+				class="tw-bg-[#1e293b] tw-text-[#fafafa] tw-border tw-border-[#334155] tw-rounded-lg tw-px-4 tw-py-2 tw-font-mono focus:tw-outline-none focus:tw-border-[#14b8a6] tw-transition-colors"
 			>
 				<option value={25}>$25.00</option>
 				<option value={50}>$50.00</option>
@@ -58,7 +58,7 @@
 			</select>
 			
 			<button 
-				class="tw-flex-1 tw-bg-white tw-text-black tw-font-bold tw-rounded-lg tw-hover:bg-gray-200 tw-transition-colors"
+				class="tw-flex-1 tw-tw-bg-[#0f172a] tw-text-[#000000] tw-font-bold tw-rounded-lg tw-hover:bg-gray-200 tw-transition-colors"
 				onclick={depositFunds}
 			>
 				Deposit Funds via Stripe

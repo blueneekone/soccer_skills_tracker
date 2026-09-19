@@ -196,7 +196,7 @@
 		></div>
 
 		<!-- ── Card content ─────────────────────────────────────────────── -->
-		<div class="tw-relative tw-z-10 tw-flex tw-h-full tw-flex-col tw-p-5 tw-font-mono tw-text-white">
+		<div class="tw-relative tw-z-10 tw-flex tw-h-full tw-flex-col tw-p-5 tw-font-mono tw-text-[#fafafa]">
 			<!--
 			  HEADER — two columns:
 			  Left  : classification label + player name + tier line.
@@ -207,11 +207,11 @@
 			<header class="tw-flex tw-items-start tw-justify-between tw-gap-3">
 				<!-- Left column -->
 				<div class="tw-min-w-0 tw-flex-1">
-					<p class="tw-text-[8px] tw-uppercase tw-tracking-[0.32em] tw-text-white/35">
+					<p class="tw-text-[8px] tw-uppercase tw-tracking-[0.32em] tw-text-[#fafafa]/35">
 						OPERATIVE · {classification}
 					</p>
 					<h2
-						class="tw-mt-1 tw-truncate tw-text-[15px] tw-font-sans tw-font-bold tw-uppercase tw-tracking-[0.18em] tw-text-white"
+						class="tw-mt-1 tw-truncate tw-text-[15px] tw-font-sans tw-font-bold tw-uppercase tw-tracking-[0.18em] tw-text-[#fafafa]"
 					>
 						{name}
 					</h2>
@@ -230,7 +230,7 @@
 							aria-hidden="true"
 						></span>
 					</div>
-					<p class="tw-mt-0.5 tw-text-[7px] tw-uppercase tw-tracking-[0.36em] tw-text-white/30">
+					<p class="tw-mt-0.5 tw-text-[7px] tw-uppercase tw-tracking-[0.36em] tw-text-[#fafafa]/30">
 						TIER · CLEARANCE LVL
 					</p>
 				</div>
@@ -249,7 +249,7 @@
 					>
 						{vanRating}
 					</span>
-					<span class="tw-text-[7px] tw-uppercase tw-tracking-[0.45em] tw-text-white/35">
+					<span class="tw-text-[7px] tw-uppercase tw-tracking-[0.45em] tw-text-[#fafafa]/35">
 						VAN
 					</span>
 				<!-- Jersey badge sits below the rating -->
@@ -318,7 +318,7 @@
 						>
 							{metric.label}
 						</span>
-						<span class="tw-text-lg tw-font-bold tw-text-white tw-tracking-wide tw-tabular-nums">
+						<span class="tw-text-lg tw-font-bold tw-text-[#fafafa] tw-tracking-wide tw-tabular-nums">
 							{metric.value}
 						</span>
 					</div>
@@ -331,15 +331,15 @@
 			<!-- XP BAR -->
 			<footer class="tw-mt-4">
 				<div
-					class="tw-mb-1.5 tw-flex tw-items-center tw-justify-between tw-text-[8px] tw-uppercase tw-tracking-[0.3em] tw-text-white/40"
+					class="tw-mb-1.5 tw-flex tw-items-center tw-justify-between tw-text-[8px] tw-uppercase tw-tracking-[0.3em] tw-text-[#fafafa]/40"
 				>
 					<span>XP</span>
-					<span class="tw-tabular-nums tw-text-white/60">
+					<span class="tw-tabular-nums tw-text-[#fafafa]/60">
 						{armory.totalXP.toLocaleString()} / {armory.nextTierFloor.toLocaleString()}
 					</span>
 				</div>
 				<div
-					class="tw-relative tw-h-1 tw-w-full tw-overflow-hidden tw-rounded-full tw-bg-white/10"
+					class="tw-relative tw-h-1 tw-w-full tw-overflow-hidden tw-rounded-full tw-tw-bg-[#0f172a]/10"
 				>
 					<!--
 					  `transition-all duration-500` smoothly animates the bar
@@ -353,7 +353,7 @@
 						style:box-shadow="0 0 10px {accent}, 0 0 4px {accent}"
 					></div>
 				</div>
-				<p class="tw-mt-2 tw-text-[7px] tw-uppercase tw-tracking-[0.4em] tw-text-white/30">
+				<p class="tw-mt-2 tw-text-[7px] tw-uppercase tw-tracking-[0.4em] tw-text-[#fafafa]/30">
 					NEXT TIER · <span style:color="{accent}99">{armory.nextTier?.label ?? 'MAX'}</span>
 				</p>
 			</footer>

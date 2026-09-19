@@ -101,7 +101,7 @@
 			width: 140,
 			height: 50,
 			fill: 'transparent',
-			stroke: '#ffffff',
+			stroke: '#fafafa',
 			strokeWidth: 3,
 			left: cx - 70,
 			top: cy - 25,
@@ -117,7 +117,7 @@
 		const { Line } = fabricMod;
 		const { cx, cy } = center();
 		const line = new Line([cx - 60, cy, cx + 60, cy], {
-			stroke: '#ffffff',
+			stroke: '#fafafa',
 			strokeWidth: 3,
 		});
 		applyInteract(line);
@@ -131,7 +131,7 @@
 		const { IText } = fabricMod;
 		const { cx, cy } = center();
 		const t = new IText('Label', {
-			fill: '#ffffff',
+			fill: '#fafafa',
 			fontSize: 18,
 			fontFamily: 'system-ui, sans-serif',
 			left: cx,

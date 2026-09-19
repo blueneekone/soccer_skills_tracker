@@ -114,7 +114,7 @@
 
 		{#if gamertagChangesLeft === 0}
 			<div
-				class="tw-mb-4 tw-rounded-lg tw-border tw-border-red-500/30 tw-bg-red-950/30 tw-px-3 tw-py-2 tw-text-sm tw-text-red-200/95"
+				class="tw-mb-4 tw-rounded-lg tw-border tw-border-red-500/30 tw-bg-[#f59e0b]/30 tw-px-3 tw-py-2 tw-text-sm tw-text-red-200/95"
 				role="status"
 			>
 				Maximum callsign changes reached. Callsign permanently locked.

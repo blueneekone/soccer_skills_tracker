@@ -874,17 +874,17 @@
 				<!-- Telemetry Status Badges -->
 				<div class="tw-flex tw-flex-wrap tw-items-center tw-gap-2">
 					<span class="tw-font-mono tw-text-[10px] tw-font-bold tw-px-2 tw-py-1 tw-rounded tw-bg-[#14b8a6]/15 tw-border tw-border-[#14b8a6]/40 tw-text-[#14b8a6]">
-						● COMBAT READY: <span class="tw-text-white tw-ml-1">{rmReady}</span>
+						● COMBAT READY: <span class="tw-text-[#fafafa] tw-ml-1">{rmReady}</span>
 					</span>
 					<span class="tw-font-mono tw-text-[10px] tw-font-bold tw-px-2 tw-py-1 tw-rounded tw-bg-[#f59e0b]/15 tw-border tw-border-[#f59e0b]/40 tw-text-[#f59e0b]">
-						⏳ CONSENT PENDING: <span class="tw-text-white tw-ml-1">{rmConsent}</span>
+						⏳ CONSENT PENDING: <span class="tw-text-[#fafafa] tw-ml-1">{rmConsent}</span>
 					</span>
 					<span class="tw-font-mono tw-text-[10px] tw-font-bold tw-px-2 tw-py-1 tw-rounded tw-bg-[#0f172a] tw-border tw-border-slate-700 tw-text-slate-400">
-						○ OFFLINE: <span class="tw-text-white tw-ml-1">{rmOffline}</span>
+						○ OFFLINE: <span class="tw-text-[#fafafa] tw-ml-1">{rmOffline}</span>
 					</span>
 					{#if rmAtRisk > 0}
 						<span class="tw-font-mono tw-text-[10px] tw-font-bold tw-px-2 tw-py-1 tw-rounded tw-bg-[#ef4444]/15 tw-border tw-border-[#ef4444]/40 tw-text-[#ef4444]">
-							⚠ INJURY RISK: <span class="tw-text-white tw-ml-1">{rmAtRisk}</span>
+							⚠ INJURY RISK: <span class="tw-text-[#fafafa] tw-ml-1">{rmAtRisk}</span>
 						</span>
 					{/if}
 				</div>
@@ -951,7 +951,7 @@
 						<!-- Top: Jersey, Position, and Edit Action -->
 						<div class="tw-flex tw-items-center tw-justify-between tw-gap-2">
 							<div class="tw-flex tw-items-center tw-gap-1.5">
-								<span class="tw-font-mono tw-text-xs tw-font-black tw-px-1.5 tw-py-0.5 tw-rounded {active ? 'tw-bg-[#daff0a] tw-text-black' : 'tw-bg-[#0f172a] tw-text-[#daff0a]'}">
+								<span class="tw-font-mono tw-text-xs tw-font-black tw-px-1.5 tw-py-0.5 tw-rounded {active ? 'tw-bg-[#daff0a] tw-text-[#000000]' : 'tw-bg-[#0f172a] tw-text-[#daff0a]'}">
 									#{p.number}
 								</span>
 								<span class="tw-font-mono tw-text-[10px] tw-font-bold tw-text-[#14b8a6] tw-bg-[#14b8a6]/10 tw-px-1.5 tw-py-0.5 tw-rounded tw-border tw-border-[#14b8a6]/30">
@@ -966,7 +966,7 @@
 									e.stopPropagation();
 									openDrawer(p.rosterKey);
 								}}
-								class="tw-bg-[#0f172a] hover:tw-bg-slate-700 tw-border tw-border-slate-700 hover:tw-border-[#14b8a6] tw-text-slate-300 hover:tw-text-white tw-font-mono tw-text-[10px] tw-px-2.5 tw-py-1 tw-rounded tw-transition-colors tw-cursor-pointer"
+								class="tw-bg-[#0f172a] hover:tw-bg-slate-700 tw-border tw-border-slate-700 hover:tw-border-[#14b8a6] tw-text-slate-300 hover:tw-text-[#fafafa] tw-font-mono tw-text-[10px] tw-px-2.5 tw-py-1 tw-rounded tw-transition-colors tw-cursor-pointer"
 								title="Edit profile in drawer"
 							>
 								✎ Edit Profile
@@ -975,7 +975,7 @@
 
 						<!-- Middle: Athlete Name & Status -->
 						<div class="tw-my-3">
-							<h3 class="tw-font-mono tw-text-xs tw-font-black tw-text-white tw-tracking-wide tw-m-0 tw-truncate" title={p.name}>
+							<h3 class="tw-font-mono tw-text-xs tw-font-black tw-text-[#fafafa] tw-tracking-wide tw-m-0 tw-truncate" title={p.name}>
 								{p.name}
 							</h3>
 							<div class="tw-flex tw-items-center tw-gap-1.5 tw-mt-1.5">

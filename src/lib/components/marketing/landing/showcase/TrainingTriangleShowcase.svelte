@@ -223,7 +223,7 @@
 							{hudContent[activeNode].title}
 						</h4>
 					</div>
-					<div class="tw-w-full tw-h-[1px] tw-my-3 tw-bg-gradient-to-r tw-from-transparent tw-via-[#ffffff20] tw-to-transparent"></div>
+					<div class="tw-w-full tw-h-[1px] tw-my-3 tw-bg-gradient-to-r tw-from-transparent tw-via-[#fafafa20] tw-to-transparent"></div>
 					<p class="tw-text-[#d4d4d8] tw-font-sans tw-text-xs md:tw-text-sm tw-leading-relaxed tw-max-w-[200px] md:tw-max-w-[250px]" style="font-family: 'Switzer', sans-serif;">
 						{displayedDesc}<span class="tw-animate-pulse" style="color: {hudContent[activeNode].color};">_</span>
 					</p>

@@ -32,10 +32,10 @@
 		<!-- Status Telemetry Readouts -->
 		<div class="tw-flex tw-items-center tw-gap-2 tw-font-mono tw-text-[11px]">
 			<span class="tw-px-2.5 tw-py-1 tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-text-[#14b8a6]">
-				LATENCY: <strong class="tw-text-white">12ms</strong>
+				LATENCY: <strong class="tw-text-[#fafafa]">12ms</strong>
 			</span>
 			<span class="tw-px-2.5 tw-py-1 tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-text-[#fbbf24]">
-				SHIELD: <strong class="tw-text-white">{engine.isShieldActive ? 'ARMED' : 'STANDBY'}</strong>
+				SHIELD: <strong class="tw-text-[#fafafa]">{engine.isShieldActive ? 'ARMED' : 'STANDBY'}</strong>
 			</span>
 		</div>
 	</header>

@@ -159,7 +159,7 @@
 				cy="0"
 				r={DISC_R - 4}
 				fill="none"
-				stroke="#ffffff"
+				stroke="#fafafa"
 				stroke-width="1.5"
 				stroke-dasharray="12 6"
 				opacity="0.4"
@@ -178,7 +178,7 @@
 				cx="0"
 				cy="0"
 				r="2.5"
-				fill="#ffffff"
+				fill="#fafafa"
 				class="tw-pointer-events-none"
 			/>
 			<!-- Route-mode anchor ring: pulses to show players are snap targets -->
@@ -226,7 +226,7 @@
 					font-family="var(--font-mono, 'Geist Mono', monospace)"
 					font-size="12px"
 					font-weight="600"
-					fill={player.side === 'opponent' ? '#ffffff' : '#d4d4d8'}
+					fill={player.side === 'opponent' ? '#fafafa' : '#d4d4d8'}
 					text-anchor="middle"
 					alignment-baseline="central"
 					dy="1"

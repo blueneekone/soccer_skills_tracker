@@ -6,7 +6,7 @@
 	let { engine }: { engine: TrustCenterEngine } = $props();
 </script>
 
-<main class="pd-page-root compliance-vault st-bento z0-canvas tw-bg-[#0B0F19] tw-text-white tw-p-6 lg:tw-p-8 tw-overflow-y-auto">
+<main class="pd-page-root compliance-vault st-bento z0-canvas tw-bg-[#0B0F19] tw-text-[#fafafa] tw-p-6 lg:tw-p-8 tw-overflow-y-auto">
 	<div class="tw-max-w-6xl tw-mx-auto tw-space-y-6">
 		
 		<!-- Header -->
@@ -17,7 +17,7 @@
 				</div>
 				<div>
 					<div class="tw-flex tw-items-center tw-gap-2.5">
-						<h1 class="tw-text-xl lg:tw-text-2xl tw-font-bold tw-tracking-tight tw-text-white tw-uppercase" style="font-family: 'Geist Sans', sans-serif;">
+						<h1 class="tw-text-xl lg:tw-text-2xl tw-font-bold tw-tracking-tight tw-text-[#fafafa] tw-uppercase" style="font-family: 'Geist Sans', sans-serif;">
 							Co-op Trust Center
 						</h1>
 						<span class="tw-text-[9px] tw-px-2 tw-py-0.5 tw-font-mono tw-border tw-border-[#f59e0b]/40 tw-bg-[#f59e0b]/10 tw-text-[#f59e0b] tw-font-bold tw-rounded-none">
@@ -34,7 +34,7 @@
 		<!-- CSO: WebAuthn Biometric Enclave -->
 		<section class="st-bento tw-bg-[#0F172A] tw-border tw-border-[#1E293B] tw-p-6 lg:tw-p-8 tw-rounded-[24px]">
 			<div class="tw-flex tw-items-center tw-justify-between tw-mb-4">
-				<h2 class="tw-text-lg tw-font-bold tw-text-white tw-flex tw-items-center tw-gap-2 tw-m-0">
+				<h2 class="tw-text-lg tw-font-bold tw-text-[#fafafa] tw-flex tw-items-center tw-gap-2 tw-m-0">
 					<Icon name={"sys.fingerprint" as IconName} size={20} class="tw-text-[#f59e0b]" />
 					<span>Verifiable Parental Consent (VPC)</span>
 				</h2>
@@ -52,7 +52,7 @@
 			{:else}
 				<button 
 					onclick={() => engine.initiateBiometricConsent()} 
-					class="tw-inline-flex tw-items-center tw-gap-2 tw-bg-[#f59e0b] tw-text-black tw-px-6 tw-py-3 tw-rounded-none tw-font-mono tw-text-xs tw-font-bold tw-tracking-widest tw-uppercase hover:tw-bg-[#fbbf24] hover:tw-shadow-[0_0_20px_rgba(251, 191, 36,0.5)] tw-transition-all"
+					class="tw-inline-flex tw-items-center tw-gap-2 tw-bg-[#f59e0b] tw-text-[#000000] tw-px-6 tw-py-3 tw-rounded-none tw-font-mono tw-text-xs tw-font-bold tw-tracking-widest tw-uppercase hover:tw-bg-[#fbbf24] hover:tw-shadow-[0_0_20px_rgba(251, 191, 36,0.5)] tw-transition-all"
 				>
 					<Icon name={"sys.fingerprint" as IconName} size={16} />
 					<span>Attest via TouchID / FaceID / Windows Hello</span>
@@ -69,7 +69,7 @@
 			<!-- CSO: The Triad Protocol (Shadow CC Audit Log) (8 cols) -->
 			<section class="st-bento bento-col-8 lg:tw-col-span-8 tw-bg-[#0F172A] tw-border tw-border-[#1E293B] tw-p-6 tw-flex tw-flex-col tw-min-w-0 tw-rounded-[24px]">
 				<div class="tw-flex tw-items-center tw-justify-between tw-mb-4">
-					<h2 class="tw-text-lg tw-font-bold tw-text-white tw-flex tw-items-center tw-gap-2 tw-m-0">
+					<h2 class="tw-text-lg tw-font-bold tw-text-[#fafafa] tw-flex tw-items-center tw-gap-2 tw-m-0">
 						<Icon name={"comm.chats" as IconName} size={18} class="tw-text-[#14b8a6]" />
 						<span>Communication Audit Log</span>
 					</h2>
@@ -106,7 +106,7 @@
 			<!-- CMO: Tremendous Bounty Terminal (Escrow) (4 cols) -->
 			<section class="st-bento bento-col-4 lg:tw-col-span-4 tw-bg-[#0F172A] tw-border tw-border-[#1E293B] tw-p-6 tw-rounded-[24px] tw-flex tw-flex-col">
 				<div class="tw-flex tw-items-center tw-justify-between tw-mb-4">
-					<h2 class="tw-text-lg tw-font-bold tw-text-white tw-flex tw-items-center tw-gap-2 tw-m-0">
+					<h2 class="tw-text-lg tw-font-bold tw-text-[#fafafa] tw-flex tw-items-center tw-gap-2 tw-m-0">
 						<Icon name={"sys.escrow" as IconName} size={18} class="tw-text-[#f59e0b]" />
 						<span>Bounty Escrow</span>
 					</h2>
@@ -120,7 +120,7 @@
 					<input 
 						type="number" 
 						bind:value={engine.bountyAmount} 
-						class="tw-w-full tw-px-3 tw-py-2 tw-bg-[#0B0F19] tw-border tw-border-[#1E293B] tw-text-white tw-font-mono tw-text-sm focus:tw-outline-none focus:tw-border-[#f59e0b] tw-rounded-none" 
+						class="tw-w-full tw-px-3 tw-py-2 tw-bg-[#0B0F19] tw-border tw-border-[#1E293B] tw-text-[#fafafa] tw-font-mono tw-text-sm focus:tw-outline-none focus:tw-border-[#f59e0b] tw-rounded-none" 
 						placeholder="Enter amount" 
 						min="0" 
 						step="5"
@@ -128,7 +128,7 @@
 				</div>
 				<button 
 					onclick={() => engine.fundBounty()} 
-					class="tw-w-full tw-py-3 tw-bg-[#f59e0b] tw-text-black tw-font-mono tw-text-xs tw-font-bold tw-tracking-widest tw-uppercase hover:tw-bg-[#fbbf24] hover:tw-shadow-[0_0_15px_rgba(251, 191, 36,0.5)] tw-transition-all tw-flex tw-items-center tw-justify-center tw-gap-2 tw-rounded-none tw-mt-auto"
+					class="tw-w-full tw-py-3 tw-bg-[#f59e0b] tw-text-[#000000] tw-font-mono tw-text-xs tw-font-bold tw-tracking-widest tw-uppercase hover:tw-bg-[#fbbf24] hover:tw-shadow-[0_0_15px_rgba(251, 191, 36,0.5)] tw-transition-all tw-flex tw-items-center tw-justify-center tw-gap-2 tw-rounded-none tw-mt-auto"
 				>
 					<Icon name={"sys.lock" as IconName} size={14} />
 					<span>Lock Funds in Escrow</span>
@@ -140,7 +140,7 @@
 		<!-- CMO: The Car Ride Home Protocol Banner -->
 		<section class="st-bento tw-bg-[#0F172A] tw-border tw-border-[#1E293B] tw-p-6 tw-rounded-[24px]">
 			<div class="tw-flex tw-items-center tw-justify-between tw-mb-3">
-				<h2 class="tw-text-base tw-font-bold tw-text-white tw-flex tw-items-center tw-gap-2 tw-m-0">
+				<h2 class="tw-text-base tw-font-bold tw-text-[#fafafa] tw-flex tw-items-center tw-gap-2 tw-m-0">
 					<Icon name={"status.warning" as IconName} size={18} class="tw-text-[#f59e0b]" />
 					<span>The Car Ride Home Protocol</span>
 				</h2>
@@ -154,7 +154,7 @@
 				<p class="tw-text-[#f59e0b] tw-text-[10px] tw-font-mono tw-uppercase tw-tracking-widest tw-font-semibold tw-mb-1">
 					Empathetic Conversation Anchor:
 				</p>
-				<p class="tw-text-base tw-text-white tw-font-mono tw-italic tw-m-0">
+				<p class="tw-text-base tw-text-[#fafafa] tw-font-mono tw-italic tw-m-0">
 					"I loved watching you play today."
 				</p>
 			</div>

@@ -22,11 +22,11 @@
 			</div>
 			<div class="tw-flex tw-items-center">
 				{#if isUnlocked}
-					<button class="tw-font-mono tw-text-xs tw-px-3 tw-py-1.5 tw-rounded tw-cursor-pointer tw-uppercase tw-font-bold tw-border-none {isEquipped ? 'tw-bg-[#14b8a6] tw-text-black' : 'tw-bg-[#334155] tw-text-[#f8fafc]'}" onclick={() => engine.equipItem(item)}>
+					<button class="tw-font-mono tw-text-xs tw-px-3 tw-py-1.5 tw-rounded tw-cursor-pointer tw-uppercase tw-font-bold tw-border-none {isEquipped ? 'tw-bg-[#14b8a6] tw-text-[#000000]' : 'tw-bg-[#334155] tw-text-[#f8fafc]'}" onclick={() => engine.equipItem(item)}>
 						{isEquipped ? 'Equipped' : 'Equip'}
 					</button>
 				{:else}
-					<button class="tw-font-mono tw-text-xs tw-px-3 tw-py-1.5 tw-rounded tw-cursor-pointer tw-uppercase tw-font-bold tw-border-none tw-bg-[#f59e0b] tw-text-black" onclick={() => engine.unlockItem(item.id)}>
+					<button class="tw-font-mono tw-text-xs tw-px-3 tw-py-1.5 tw-rounded tw-cursor-pointer tw-uppercase tw-font-bold tw-border-none tw-bg-[#f59e0b] tw-text-[#000000]" onclick={() => engine.unlockItem(item.id)}>
 						{item.cost} XP
 					</button>
 				{/if}

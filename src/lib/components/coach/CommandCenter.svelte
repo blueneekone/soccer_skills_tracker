@@ -360,16 +360,16 @@
 	<!-- ── PAGE HEADER ─────────────────────────────────────────────────── -->
 	<div class="cc-page-header">
 		<div>
-			<p class="tw-text-[8px] tw-uppercase tw-tracking-[0.5em] tw-text-white/25">
+			<p class="tw-text-[8px] tw-uppercase tw-tracking-[0.5em] tw-text-[#fafafa]/25">
 				VANGUARD SYSTEM · COACH CLEARANCE
 			</p>
-			<h1 class="tw-mt-0.5 tw-text-[13px] tw-font-bold tw-uppercase tw-tracking-[0.28em] tw-text-white">
+			<h1 class="tw-mt-0.5 tw-text-[13px] tw-font-bold tw-uppercase tw-tracking-[0.28em] tw-text-[#fafafa]">
 				COMMAND CENTER
-				<span class="tw-text-white/25">·</span>
+				<span class="tw-text-[#fafafa]/25">·</span>
 				OPERATIONAL CONTROL
 			</h1>
 		</div>
-		<div class="tw-flex tw-items-center tw-gap-4 tw-text-[9px] tw-font-mono tw-text-white/30 tw-tracking-[0.25em]">
+		<div class="tw-flex tw-items-center tw-gap-4 tw-text-[9px] tw-font-mono tw-text-[#fafafa]/30 tw-tracking-[0.25em]">
 			{#if rosterLoading}
 				<span class="cc-pulse">SYNCING ROSTER…</span>
 			{:else if rosterError}
@@ -388,7 +388,7 @@
 		<!-- ─────────────────────────────────────────────────────────────── -->
 		<section class="cc-roster-pane">
 			<div class="tw-px-5 tw-py-3 tw-border-b tw-border-white/6 tw-flex tw-items-center tw-justify-between">
-				<p class="tw-text-[8px] tw-uppercase tw-tracking-[0.42em] tw-text-white/30">
+				<p class="tw-text-[8px] tw-uppercase tw-tracking-[0.42em] tw-text-[#fafafa]/30">
 					ROSTER GRID · {roster.length} OPERATIVE{roster.length !== 1 ? 'S' : ''}
 				</p>
 				<span class="cc-live-dot" aria-label="Live connection active"></span>
@@ -401,21 +401,21 @@
 					<div class="tw-p-8 tw-space-y-3">
 						{#each Array(4) as _, i (i)}
 							<div
-								class="tw-h-8 tw-rounded tw-bg-white/4 tw-animate-pulse"
+								class="tw-h-8 tw-rounded tw-tw-bg-[#0f172a]/4 tw-animate-pulse"
 								style:opacity={1 - i * 0.15}
 							></div>
 						{/each}
 					</div>
 				{:else if rosterError}
-					<div class="tw-p-10 tw-text-center tw-text-[10px] tw-text-white/30 tw-font-mono tw-uppercase tw-tracking-widest">
+					<div class="tw-p-10 tw-text-center tw-text-[10px] tw-text-[#fafafa]/30 tw-font-mono tw-uppercase tw-tracking-widest">
 						<p class="tw-text-[#ff4444] tw-mb-2">⚠ ROSTER SYNC FAILURE</p>
-						<p class="tw-text-[8px] tw-text-white/20">{rosterError}</p>
+						<p class="tw-text-[8px] tw-text-[#fafafa]/20">{rosterError}</p>
 					</div>
 				{:else if roster.length === 0}
 					<div class="tw-p-10 tw-text-center tw-font-mono">
-						<p class="tw-text-[42px] tw-text-white/8 tw-mb-3">⊘</p>
-						<p class="tw-text-[10px] tw-uppercase tw-tracking-[0.4em] tw-text-white/25">NO OPERATIVES ASSIGNED</p>
-						<p class="tw-mt-1 tw-text-[8px] tw-tracking-[0.2em] tw-text-white/15">
+						<p class="tw-text-[42px] tw-text-[#fafafa]/8 tw-mb-3">⊘</p>
+						<p class="tw-text-[10px] tw-uppercase tw-tracking-[0.4em] tw-text-[#fafafa]/25">NO OPERATIVES ASSIGNED</p>
+						<p class="tw-mt-1 tw-text-[8px] tw-tracking-[0.2em] tw-text-[#fafafa]/15">
 							{teamId ? 'No players are assigned to this team.' : 'No player accounts found.'}
 						</p>
 					</div>
@@ -446,16 +446,16 @@
 								>
 									<!-- Name -->
 									<td class="cc-td-name">
-										<span class="tw-text-white/85 tw-font-semibold">
+										<span class="tw-text-[#fafafa]/85 tw-font-semibold">
 											{player.playerName ?? player.id}
 										</span>
-										<span class="tw-block tw-text-[8px] tw-text-white/25 tw-tracking-[0.15em] tw-mt-0.5 tw-uppercase">
+										<span class="tw-block tw-text-[8px] tw-text-[#fafafa]/25 tw-tracking-[0.15em] tw-mt-0.5 tw-uppercase">
 											{player.id}
 										</span>
 									</td>
 
 									<!-- Guardian -->
-									<td class="tw-text-[10px] tw-text-white/50 tw-font-mono tw-max-w-[140px] tw-truncate" title={guardianLine(player)}>
+									<td class="tw-text-[10px] tw-text-[#fafafa]/50 tw-font-mono tw-max-w-[140px] tw-truncate" title={guardianLine(player)}>
 										<span class:tw-text-[#ff6666]={guardianLine(player) === 'Unlinked'}>
 											{guardianLine(player)}
 										</span>
@@ -470,7 +470,7 @@
 									</td>
 
 									<!-- Position -->
-									<td class="tw-text-white/45 tw-uppercase tw-tracking-widest">
+									<td class="tw-text-[#fafafa]/45 tw-uppercase tw-tracking-widest">
 										{player.position ?? '—'}
 									</td>
 
@@ -499,7 +499,7 @@
 									</td>
 
 									<!-- Last active -->
-									<td class="tw-text-white/35 tw-tabular-nums tw-tracking-[0.12em]">
+									<td class="tw-text-[#fafafa]/35 tw-tabular-nums tw-tracking-[0.12em]">
 										{formatLastActive(player.lastActivityDate)}
 									</td>
 
@@ -549,7 +549,7 @@
 		<!-- ─────────────────────────────────────────────────────────────── -->
 		<aside class="cc-mission-pane">
 			<div class="tw-px-5 tw-py-3 tw-border-b tw-border-white/6">
-				<p class="tw-text-[8px] tw-uppercase tw-tracking-[0.42em] tw-text-white/30">
+				<p class="tw-text-[8px] tw-uppercase tw-tracking-[0.42em] tw-text-[#fafafa]/30">
 					MISSION CONSOLE · DIRECTIVE AUTHORING
 				</p>
 			</div>
@@ -569,7 +569,7 @@
 					</select>
 					{#if selectedDrillId}
 						{@const drill = DRILL_CATALOG.find(d => d.id === selectedDrillId)}
-						<p class="tw-mt-1.5 tw-text-[8px] tw-tracking-[0.2em] tw-text-white/25 tw-uppercase">
+						<p class="tw-mt-1.5 tw-text-[8px] tw-tracking-[0.2em] tw-text-[#fafafa]/25 tw-uppercase">
 							WRITES → <span class="tw-text-[#14b8a6]/60">{drill?.statKey}</span> METRIC
 						</p>
 					{/if}
@@ -621,18 +621,18 @@
 										checked={selectedPlayerIds.includes(p.id)}
 										onchange={() => togglePlayer(p.id)}
 									/>
-									<span class="tw-text-[10px] tw-text-white/65 tw-tracking-[0.15em]">
+									<span class="tw-text-[10px] tw-text-[#fafafa]/65 tw-tracking-[0.15em]">
 										{p.playerName ?? p.id}
 									</span>
 									{#if p.position}
-										<span class="tw-ml-auto tw-text-[8px] tw-text-white/25 tw-uppercase tw-tracking-widest">
+										<span class="tw-ml-auto tw-text-[8px] tw-text-[#fafafa]/25 tw-uppercase tw-tracking-widest">
 											{p.position}
 										</span>
 									{/if}
 								</label>
 							{/each}
 							{#if roster.length === 0}
-								<p class="tw-text-[9px] tw-text-white/25 tw-text-center tw-py-4 tw-uppercase tw-tracking-widest">
+								<p class="tw-text-[9px] tw-text-[#fafafa]/25 tw-text-center tw-py-4 tw-uppercase tw-tracking-widest">
 									No operatives loaded
 								</p>
 							{/if}
@@ -640,7 +640,7 @@
 					{/if}
 
 					<!-- Target count summary -->
-					<p class="tw-mt-2 tw-text-[8px] tw-uppercase tw-tracking-[0.28em] tw-text-white/25">
+					<p class="tw-mt-2 tw-text-[8px] tw-uppercase tw-tracking-[0.28em] tw-text-[#fafafa]/25">
 						{missionTargetIds.length} OPERATIVE{missionTargetIds.length !== 1 ? 'S' : ''} TARGETED
 					</p>
 				</div>
@@ -680,7 +680,7 @@
 					</button>
 
 					<!-- Pre-flight checklist -->
-					<ul class="tw-mt-3 tw-space-y-1.5 tw-text-[8px] tw-font-mono tw-tracking-[0.2em] tw-text-white/25">
+					<ul class="tw-mt-3 tw-space-y-1.5 tw-text-[8px] tw-font-mono tw-tracking-[0.2em] tw-text-[#fafafa]/25">
 						<li class={selectedDrillId ? 'tw-text-[#14b8a6]/50' : ''}>
 							{selectedDrillId ? '◉' : '○'} DRILL SELECTED
 						</li>

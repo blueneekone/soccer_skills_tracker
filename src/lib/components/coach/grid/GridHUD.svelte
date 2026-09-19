@@ -4,12 +4,12 @@
 	const ARES = '#ff003c';
 	const CYAN = '#14b8a6';
 
-	const INK_PALETTE = /** @type {const} */ (['#14b8a6', '#ff00ff', '#ffff00', '#ffffff']);
+	const INK_PALETTE = /** @type {const} */ (['#14b8a6', '#ff00ff', '#ffff00', '#fafafa']);
 
 	const glassPanel = 'vanguard-surface';
 
 	const segBtn =
-		'tw-pointer-events-auto tw-rounded-full tw-border tw-border-white/12 tw-bg-[#000000]/40 tw-px-3 tw-py-2 tw-font-mono tw-text-[9px] tw-font-bold tw-tracking-[0.14em] tw-text-white/75 tw-transition-colors hover:tw-border-[#14b8a6]/40 hover:tw-text-[#14b8a6]';
+		'tw-pointer-events-auto tw-rounded-full tw-border tw-border-white/12 tw-bg-[#000000]/40 tw-px-3 tw-py-2 tw-font-mono tw-text-[9px] tw-font-bold tw-tracking-[0.14em] tw-text-[#fafafa]/75 tw-transition-colors hover:tw-border-[#14b8a6]/40 hover:tw-text-[#14b8a6]';
 
 	const segBtnOn =
 		'tw-border-[#14b8a6]/50 tw-bg-[#14b8a6]/10 tw-text-[#14b8a6] tw-shadow-[inset_0_0_10px_rgba(20, 184, 166,0.12)]';
@@ -37,7 +37,7 @@
 >
 	<!-- Left console -->
 	<div class="tw-flex tw-min-h-0 tw-min-w-0 tw-flex-col tw-overflow-visible tw-p-3 {glassPanel}">
-		<span class="tw-mb-2 tw-text-[9px] tw-font-mono tw-font-bold tw-tracking-widest tw-text-white/40"
+		<span class="tw-mb-2 tw-text-[9px] tw-font-mono tw-font-bold tw-tracking-widest tw-text-[#fafafa]/40"
 			>TACTICAL_SYS</span
 		>
 		<div class="tw-flex tw-min-h-0 tw-flex-wrap tw-gap-1.5">
@@ -109,7 +109,7 @@
 				{/each}
 			</div>
 		</div>
-		<p class="tw-m-0 tw-text-center tw-text-[8px] tw-font-mono tw-tracking-widest tw-text-white/35">
+		<p class="tw-m-0 tw-text-center tw-text-[8px] tw-font-mono tw-tracking-widest tw-text-[#fafafa]/35">
 			TIMELINE · DECK REACTOR
 		</p>
 	</div>
@@ -128,18 +128,18 @@
 				aria-live="polite"
 			>
 				<div class="tw-min-w-0 tw-text-[10px] tw-leading-tight">
-					<span class="tw-block tw-text-[8px] tw-text-white/40">LOCK</span>
+					<span class="tw-block tw-text-[8px] tw-text-[#fafafa]/40">LOCK</span>
 					<span class="tw-block tw-truncate tw-font-bold tw-tracking-normal">
 						{target?.name?.trim() || 'UNKNOWN'}
-						<span class="tw-text-white/50">[{target?.position || target?.number || '—'}]</span>
+						<span class="tw-text-[#fafafa]/50">[{target?.position || target?.number || '—'}]</span>
 					</span>
 				</div>
 				<div class="tw-space-y-2 tw-text-[8px]">
 					<div>
-						<div class="tw-mb-0.5 tw-flex tw-justify-between tw-text-white/50">
+						<div class="tw-mb-0.5 tw-flex tw-justify-between tw-text-[#fafafa]/50">
 							<span>STM</span><span class="tw-font-mono tw-tabular-nums">92%</span>
 						</div>
-						<div class="tw-h-1 tw-w-full tw-overflow-hidden tw-rounded-full tw-bg-white/10">
+						<div class="tw-h-1 tw-w-full tw-overflow-hidden tw-rounded-full tw-tw-bg-[#0f172a]/10">
 							<div
 								class="tw-h-full tw-w-[92%] tw-rounded-full"
 								style="background-color: {ARES}; box-shadow: 0 0 8px {ARES};"
@@ -147,10 +147,10 @@
 						</div>
 					</div>
 					<div>
-						<div class="tw-mb-0.5 tw-flex tw-justify-between tw-text-white/50">
+						<div class="tw-mb-0.5 tw-flex tw-justify-between tw-text-[#fafafa]/50">
 							<span>HR</span><span class="tw-font-mono tw-tabular-nums">145</span>
 						</div>
-						<div class="tw-h-1 tw-w-full tw-overflow-hidden tw-rounded-full tw-bg-white/10">
+						<div class="tw-h-1 tw-w-full tw-overflow-hidden tw-rounded-full tw-tw-bg-[#0f172a]/10">
 							<div
 								class="tw-h-full tw-w-[72%] tw-rounded-full"
 								style="background-color: {CYAN}; box-shadow: 0 0 8px {CYAN};"

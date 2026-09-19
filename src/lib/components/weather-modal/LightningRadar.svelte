@@ -196,7 +196,7 @@
 				{@const compass = bearingToCompass(nearestStrike.bearingDeg)}
 				{@const isDanger = nearestStrike.distMiles <= 8}
 				{@const isCaution = nearestStrike.distMiles <= 15 && !isDanger}
-				<span class="tw-px-2 tw-py-0.5 tw-rounded tw-text-xs tw-font-black {isDanger ? 'tw-bg-red-950 tw-border tw-border-red-600 tw-text-red-400 animate-pulse' : isCaution ? 'tw-bg-amber-950 tw-border tw-border-amber-600 tw-text-[#fbbf24]' : 'tw-bg-teal-950 tw-border tw-border-[#14b8a6] tw-text-[#14b8a6]'}">
+				<span class="tw-px-2 tw-py-0.5 tw-rounded tw-text-xs tw-font-black {isDanger ? 'tw-bg-[#f59e0b] tw-border tw-border-red-600 tw-text-red-400 animate-pulse' : isCaution ? 'tw-bg-amber-950 tw-border tw-border-amber-600 tw-text-[#fbbf24]' : 'tw-bg-teal-950 tw-border tw-border-[#14b8a6] tw-text-[#14b8a6]'}">
 					⚡ {nearestStrike.distMiles} MI · {nearestStrike.bearingDeg}° {compass}
 				</span>
 			{:else}
@@ -210,7 +210,7 @@
 			{#each [15, 30, 50] as r}
 				<button
 					type="button"
-					class="tw-px-2 tw-py-0.5 tw-text-[10px] tw-font-bold tw-border tw-transition-colors {rangeMiles === r ? 'tw-border-[#14b8a6] tw-text-[#14b8a6] tw-bg-[#14b8a6]/20' : 'tw-border-[#334155] tw-text-slate-400 hover:tw-text-white'}"
+					class="tw-px-2 tw-py-0.5 tw-text-[10px] tw-font-bold tw-border tw-transition-colors {rangeMiles === r ? 'tw-border-[#14b8a6] tw-text-[#14b8a6] tw-bg-[#14b8a6]/20' : 'tw-border-[#334155] tw-text-slate-400 hover:tw-text-[#fafafa]'}"
 					onclick={() => (rangeMiles = r as 15 | 30 | 50)}
 				>
 					{r} MI
@@ -333,7 +333,7 @@
 				{#if ageCat === 'critical'}
 					<!-- Shockwave ripple -->
 					<circle cx={cx} cy={cy} r="3" fill="none" stroke="#daff0a" stroke-width="0.4" class="tw-animate-ping" />
-					<circle cx={cx} cy={cy} r="1.2" fill="#ffffff" stroke="#daff0a" stroke-width="0.4" />
+					<circle cx={cx} cy={cy} r="1.2" fill="#fafafa" stroke="#daff0a" stroke-width="0.4" />
 				{:else if ageCat === 'recent'}
 					<circle cx={cx} cy={cy} r="1" fill="#f59e0b" opacity="0.9" />
 				{:else}
@@ -367,11 +367,11 @@
 
 		<!-- 30-Minute Safety Lockout Overlay -->
 		{#if weatherLockout}
-			<div class="tw-absolute tw-top-3 tw-left-1/2 -tw-translate-x-1/2 tw-z-30 tw-bg-red-950/95 tw-border tw-border-red-600 tw-px-4 tw-py-2 tw-rounded-lg tw-shadow-[0_0_30px_rgba(220,38,38,0.7)] tw-backdrop-blur-md tw-text-center">
+			<div class="tw-absolute tw-top-3 tw-left-1/2 -tw-translate-x-1/2 tw-z-30 tw-bg-[#f59e0b]/95 tw-border tw-border-red-600 tw-px-4 tw-py-2 tw-rounded-lg tw-shadow-[0_0_30px_rgba(220,38,38,0.7)] tw-backdrop-blur-md tw-text-center">
 				<div class="tw-text-red-400 tw-font-bold tw-text-[11px] tw-tracking-widest tw-uppercase tw-animate-pulse">
 					⚠ 30-MINUTE SAFETY LOCKOUT // STRIKE WITHIN 8 MILES
 				</div>
-				<div class="tw-text-2xl tw-font-black tw-text-white tw-font-mono tw-tabular-nums tw-mt-0.5">
+				<div class="tw-text-2xl tw-font-black tw-text-[#fafafa] tw-font-mono tw-tabular-nums tw-mt-0.5">
 					{fmtTime(countdown)}
 				</div>
 				<div class="tw-text-[9px] tw-text-red-300 tw-tracking-wider">

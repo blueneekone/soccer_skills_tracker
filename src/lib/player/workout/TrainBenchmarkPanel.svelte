@@ -42,7 +42,7 @@
 		<p class="pw-mono pw-dim tw-text-[10px] tw-uppercase tw-tracking-widest tw-font-mono">
 			{drill.category} · {drill.statKey} axis
 		</p>
-		<h2 class="pw-mono tw-text-lg tw-font-bold tw-uppercase tw-tracking-wide tw-text-white tw-font-mono">
+		<h2 class="pw-mono tw-text-lg tw-font-bold tw-uppercase tw-tracking-wide tw-text-[#fafafa] tw-font-mono">
 			{drill.label}
 		</h2>
 		<p class="pw-mono pw-dim tw-text-xs tw-leading-relaxed">{drill.description}</p>

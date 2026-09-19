@@ -104,7 +104,7 @@
 	<div class="album-set-panel pd-glass-panel tw-rounded-2xl tw-p-4 sm:tw-p-5">
 		<div class="tw-mb-5 tw-flex tw-flex-wrap tw-items-baseline tw-justify-between tw-gap-3">
 			<div>
-				<h2 class="tw-m-0 tw-text-lg tw-font-black tw-tracking-wide tw-text-white sm:tw-text-xl tw-font-mono">
+				<h2 class="tw-m-0 tw-text-lg tw-font-black tw-tracking-wide tw-text-[#fafafa] sm:tw-text-xl tw-font-mono">
 					{selectedAlbumSetMeta?.title ?? 'Set'}
 				</h2>
 				<p class="tw-m-0 tw-mt-1 tw-max-w-prose tw-text-sm tw-text-slate-400">

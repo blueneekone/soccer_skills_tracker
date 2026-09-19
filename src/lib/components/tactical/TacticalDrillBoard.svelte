@@ -217,7 +217,7 @@
 
     <!-- Bottom: drill title -->
     <div>
-      <span class="tw-font-mono tw-text-xs tw-text-white/70">{title}</span>
+      <span class="tw-font-mono tw-text-xs tw-text-[#fafafa]/70">{title}</span>
     </div>
   </div>
 </div>

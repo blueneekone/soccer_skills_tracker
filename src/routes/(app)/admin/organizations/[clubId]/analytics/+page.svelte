@@ -15,7 +15,7 @@
 <div class="tw-h-[100dvh] tw-overflow-hidden tw-bg-[#09090b] tw-p-8 tw-text-slate-300 admin-os-root">
 	<div class="tw-max-w-7xl tw-mx-auto tw-space-y-6">
 		<header class="tw-mb-8">
-			<h1 class="tw-text-3xl tw-font-bold tw-text-white tw-tracking-tight">Macro-Telemetry Dashboard</h1>
+			<h1 class="tw-text-3xl tw-font-bold tw-text-[#fafafa] tw-tracking-tight">Macro-Telemetry Dashboard</h1>
 			<p class="tw-text-slate-400 tw-mt-2">Global organizational health and automated reporting pipeline.</p>
 		</header>
 

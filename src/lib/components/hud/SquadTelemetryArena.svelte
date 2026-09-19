@@ -100,7 +100,7 @@
 		<div class="tw-flex tw-flex-col tw-gap-3 sm:tw-flex-row sm:tw-items-center sm:tw-justify-between">
 			<div class="tw-min-w-0">
 				<p id="stw-dispatch" class="stw__eyebrow tw-mb-1 tw-text-cyan-400/90">Persistent Squad Code</p>
-				<p class="stw__meta tw-m-0 tw-text-xs tw-text-white/60">
+				<p class="stw__meta tw-m-0 tw-text-xs tw-text-[#fafafa]/60">
 					Permanent team code. Parents enter this persistent code to link their player to this specific squad.
 				</p>
 			</div>

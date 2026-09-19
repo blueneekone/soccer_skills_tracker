@@ -9,17 +9,17 @@
 
 {#if isOpen}
 	<div class="tw-fixed tw-inset-0 tw-z-[10005] tw-flex tw-items-center tw-justify-center tw-bg-[#000000]/85 tw-backdrop-blur-md tw-p-3 sm:tw-p-6" use:portal>
-		<div class="tw-bg-[#020617] tw-border tw-border-[#334155] tw-rounded-xl tw-w-full tw-max-w-6xl tw-h-full tw-max-h-[92vh] tw-flex tw-flex-col tw-font-mono tw-text-white tw-shadow-[0_0_50px_rgba(0,0,0,0.9)] tw-overflow-hidden">
+		<div class="tw-bg-[#020617] tw-border tw-border-[#334155] tw-rounded-xl tw-w-full tw-max-w-6xl tw-h-full tw-max-h-[92vh] tw-flex tw-flex-col tw-font-mono tw-text-[#fafafa] tw-shadow-[0_0_50px_rgba(0,0,0,0.9)] tw-overflow-hidden">
 			<!-- Header -->
 			<div class="tw-flex tw-justify-between tw-items-center tw-p-3 sm:tw-p-4 tw-border-b tw-border-[#334155] tw-shrink-0">
 				<h2 class="tw-text-base sm:tw-text-lg tw-font-bold tw-text-[#14b8a6]">AEGIS WEATHER MONITORING</h2>
-				<button onclick={onClose} class="tw-text-gray-400 hover:tw-text-white" aria-label="Close"><Icon name="sys.close" size={24} /></button>
+				<button onclick={onClose} class="tw-text-gray-400 hover:tw-text-[#fafafa]" aria-label="Close"><Icon name="sys.close" size={24} /></button>
 			</div>
 
 			<!-- Status Bar -->
 			<div class="tw-p-2 sm:tw-p-4 tw-shrink-0">
 				{#if lockout}
-					<div class="tw-bg-red-600/20 tw-border tw-border-red-600 tw-text-red-500 tw-p-2 sm:tw-p-3 tw-text-center tw-font-bold tw-text-xs sm:tw-text-sm">[ ADVISORY STATUS // LOCKOUT ACTIVE: IMMEDIATELY CLEAR FIELDS ]</div>
+					<div class="tw-bg-[#f59e0b]/20 tw-border tw-border-red-600 tw-text-red-500 tw-p-2 sm:tw-p-3 tw-text-center tw-font-bold tw-text-xs sm:tw-text-sm">[ ADVISORY STATUS // LOCKOUT ACTIVE: IMMEDIATELY CLEAR FIELDS ]</div>
 				{:else}
 					<div class="tw-bg-[#14b8a6]/20 tw-border tw-border-[#14b8a6] tw-text-[#14b8a6] tw-p-2 sm:tw-p-3 tw-text-center tw-font-bold tw-text-xs sm:tw-text-sm">[ ADVISORY STATUS // SAFE TO PLAY ]</div>
 				{/if}

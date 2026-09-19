@@ -47,7 +47,7 @@
 					{@const score = engine.publicScore}
 					<div class="tw-flex tw-flex-col tw-items-center tw-gap-2">
 						<div class="tw-flex tw-items-center tw-gap-4">
-							<span class="tw-font-mono tw-text-[36px] tw-font-bold tw-text-white tw-tabular-nums tw-leading-none">
+							<span class="tw-font-mono tw-text-[36px] tw-font-bold tw-text-[#fafafa] tw-tabular-nums tw-leading-none">
 								{score.scoreHome}
 							</span>
 							<span class="tw-font-mono tw-text-[16px] tw-text-[#a0a0a0]/40">—</span>
@@ -83,7 +83,7 @@
 				<button
 					onclick={() => engine.attest()}
 					disabled={engine.isAttesting || engine.isTemporallyEmbargoed}
-					class="tw-w-full tw-font-mono tw-text-[11px] tw-font-bold tw-tracking-widest tw-uppercase tw-flex tw-items-center tw-justify-center tw-gap-2 tw-border tw-border-[#f59e0b] tw-text-black tw-bg-[#f59e0b] tw-rounded-none tw-px-6 tw-py-4 tw-transition-all tw-duration-200
+					class="tw-w-full tw-font-mono tw-text-[11px] tw-font-bold tw-tracking-widest tw-uppercase tw-flex tw-items-center tw-justify-center tw-gap-2 tw-border tw-border-[#f59e0b] tw-text-[#000000] tw-bg-[#f59e0b] tw-rounded-none tw-px-6 tw-py-4 tw-transition-all tw-duration-200
 						{engine.isAttesting || engine.isTemporallyEmbargoed ? 'tw-opacity-50 tw-cursor-not-allowed' : 'hover:tw-bg-[#fbbf24] hover:tw-shadow-[0_0_20px_rgba(251, 191, 36,0.5)] active:tw-scale-[0.98]'}"
 				>
 					<Icon name={"status.shield-check" as IconName} size={16} />

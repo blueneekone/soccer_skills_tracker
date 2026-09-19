@@ -31,14 +31,14 @@
     </div>
 
     {#if form && form.message}
-        <div class="tw-mb-6 tw-p-4 tw-border tw-rounded-none tw-font-mono tw-text-sm tw-bg-red-900 tw-text-red-200 tw-border-red-500">
+        <div class="tw-mb-6 tw-p-4 tw-border tw-rounded-none tw-font-mono tw-text-sm tw-bg-[#f59e0b] tw-text-red-200 tw-border-red-500">
             <div class="tw-font-bold tw-uppercase tw-mb-2">✖ Synchronization Failed</div>
             <div class="tw-opacity-80">>{form.message}</div>
         </div>
     {/if}
 
     {#if form && form.success}
-        <div class="tw-mb-6 tw-p-4 tw-border tw-rounded-none tw-font-mono tw-text-sm tw-bg-green-900 tw-text-green-200 tw-border-green-500">
+        <div class="tw-mb-6 tw-p-4 tw-border tw-rounded-none tw-font-mono tw-text-sm tw-bg-[#14b8a6] tw-text-green-200 tw-border-green-500">
             <div class="tw-font-bold tw-uppercase tw-mb-2">✔ Synchronization Handled</div>
             <div class="tw-opacity-80">>{form.auditLog}</div>
         </div>
@@ -67,8 +67,8 @@
                         </td>
                         <td class="tw-px-4 tw-py-4">
                             <span class="tw-text-xs tw-uppercase tw-px-2 tw-py-1 tw-font-bold
-                                {row.status === 'synced' ? 'tw-bg-green-900 tw-text-green-300' :
-                                 row.status === 'discrepancy' ? 'tw-bg-red-900 tw-text-red-300' :
+                                {row.status === 'synced' ? 'tw-bg-[#14b8a6] tw-text-green-300' :
+                                 row.status === 'discrepancy' ? 'tw-bg-[#f59e0b] tw-text-red-300' :
                                  'tw-bg-amber-900 tw-text-amber-300'}">
                                 {row.status.replace('_', ' ')}
                             </span>
@@ -86,7 +86,7 @@
                                 <button
                                     type="submit"
                                     disabled={row.status === 'synced' || processingClub === row.clubId}
-                                    class="tw-bg-amber-600 hover:tw-bg-[#f59e0b] disabled:tw-bg-slate-700 tw-text-white tw-font-bold tw-py-1 tw-px-3 tw-text-xs tw-rounded-none tw-transition-colors"
+                                    class="tw-bg-amber-600 hover:tw-bg-[#f59e0b] disabled:tw-bg-slate-700 tw-text-[#fafafa] tw-font-bold tw-py-1 tw-px-3 tw-text-xs tw-rounded-none tw-transition-colors"
                                 >
                                     {processingClub === row.clubId ? 'Syncing...' : 'Force Sync'}
                                 </button>

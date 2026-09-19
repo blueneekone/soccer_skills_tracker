@@ -269,7 +269,7 @@
 				</div>
 				<button
 					type="button"
-					class="tw-bg-[#020617] hover:tw-bg-[#1e293b] tw-border tw-border-[#334155] tw-text-slate-300 hover:tw-text-white tw-font-mono tw-text-xs tw-px-3 tw-py-2 tw-rounded-lg tw-transition-colors"
+					class="tw-bg-[#020617] hover:tw-bg-[#1e293b] tw-border tw-border-[#334155] tw-text-slate-300 hover:tw-text-[#fafafa] tw-font-mono tw-text-xs tw-px-3 tw-py-2 tw-rounded-lg tw-transition-colors"
 					onclick={openWarRoom}
 				>
 					Launch War Room Board
@@ -284,13 +284,13 @@
 					<span class="tw-font-mono tw-text-[10px] tw-font-bold tw-text-[#fbbf24] tw-uppercase tw-tracking-widest">
 						Physical Drill Sheet
 					</span>
-					<h3 class="tw-text-base tw-font-bold tw-text-white tw-mt-0.5">
+					<h3 class="tw-text-base tw-font-bold tw-text-[#fafafa] tw-mt-0.5">
 						Session Specifications
 					</h3>
 				</div>
 				<button
 					type="button"
-					class="tw-text-slate-400 hover:tw-text-white tw-font-mono tw-text-xs tw-flex tw-items-center tw-gap-1 tw-border tw-border-slate-700 tw-rounded-lg tw-px-2.5 tw-py-1.5 tw-bg-[#020617]"
+					class="tw-text-slate-400 hover:tw-text-[#fafafa] tw-font-mono tw-text-xs tw-flex tw-items-center tw-gap-1 tw-border tw-border-slate-700 tw-rounded-lg tw-px-2.5 tw-py-1.5 tw-bg-[#020617]"
 					onclick={printDrillCard}
 					title="Print Drill Card"
 				>
@@ -306,7 +306,7 @@
 						type="text"
 						bind:value={drillTitle}
 						placeholder="e.g. 4v3 Half-Space Penetration"
-						class="tw-w-full tw-bg-[#020617] tw-border tw-border-[#334155] tw-rounded-lg tw-px-3 tw-py-2 tw-text-white focus:tw-border-[#14b8a6] focus:tw-outline-none tw-mt-1 tw-font-sans"
+						class="tw-w-full tw-bg-[#020617] tw-border tw-border-[#334155] tw-rounded-lg tw-px-3 tw-py-2 tw-text-[#fafafa] focus:tw-border-[#14b8a6] focus:tw-outline-none tw-mt-1 tw-font-sans"
 					/>
 				</label>
 
@@ -315,7 +315,7 @@
 						<span class="tw-font-mono tw-text-[11px] tw-text-slate-400 tw-uppercase">Focus Area</span>
 						<select
 							bind:value={focusArea}
-							class="tw-w-full tw-bg-[#020617] tw-border tw-border-[#334155] tw-rounded-lg tw-px-3 tw-py-2 tw-text-white focus:tw-border-[#14b8a6] focus:tw-outline-none tw-mt-1 tw-font-mono"
+							class="tw-w-full tw-bg-[#020617] tw-border tw-border-[#334155] tw-rounded-lg tw-px-3 tw-py-2 tw-text-[#fafafa] focus:tw-border-[#14b8a6] focus:tw-outline-none tw-mt-1 tw-font-mono"
 						>
 							<option value="gameday">Tactics & Shape</option>
 							<option value="ball_mastery">Passing & Receiving</option>
@@ -329,7 +329,7 @@
 						<span class="tw-font-mono tw-text-[11px] tw-text-slate-400 tw-uppercase">Age Bracket</span>
 						<select
 							bind:value={ageGroup}
-							class="tw-w-full tw-bg-[#020617] tw-border tw-border-[#334155] tw-rounded-lg tw-px-3 tw-py-2 tw-text-white focus:tw-border-[#14b8a6] focus:tw-outline-none tw-mt-1 tw-font-mono"
+							class="tw-w-full tw-bg-[#020617] tw-border tw-border-[#334155] tw-rounded-lg tw-px-3 tw-py-2 tw-text-[#fafafa] focus:tw-border-[#14b8a6] focus:tw-outline-none tw-mt-1 tw-font-mono"
 						>
 							<option value="U6-U8">U6 / U8 (FUNdamentals)</option>
 							<option value="U10-U12">U10 / U12 (Learn to Train)</option>
@@ -348,7 +348,7 @@
 							bind:value={durationMinutes}
 							min="1"
 							max="120"
-							class="tw-w-full tw-bg-[#020617] tw-border tw-border-[#334155] tw-rounded-lg tw-px-2.5 tw-py-2 tw-text-white focus:tw-border-[#14b8a6] focus:tw-outline-none tw-mt-1 tw-font-mono"
+							class="tw-w-full tw-bg-[#020617] tw-border tw-border-[#334155] tw-rounded-lg tw-px-2.5 tw-py-2 tw-text-[#fafafa] focus:tw-border-[#14b8a6] focus:tw-outline-none tw-mt-1 tw-font-mono"
 						/>
 					</label>
 
@@ -358,7 +358,7 @@
 							type="text"
 							bind:value={playerCount}
 							placeholder="8-12 Players"
-							class="tw-w-full tw-bg-[#020617] tw-border tw-border-[#334155] tw-rounded-lg tw-px-2.5 tw-py-2 tw-text-white focus:tw-border-[#14b8a6] focus:tw-outline-none tw-mt-1"
+							class="tw-w-full tw-bg-[#020617] tw-border tw-border-[#334155] tw-rounded-lg tw-px-2.5 tw-py-2 tw-text-[#fafafa] focus:tw-border-[#14b8a6] focus:tw-outline-none tw-mt-1"
 						/>
 					</label>
 
@@ -368,7 +368,7 @@
 							type="text"
 							bind:value={gridDimensions}
 							placeholder="40x30 yds"
-							class="tw-w-full tw-bg-[#020617] tw-border tw-border-[#334155] tw-rounded-lg tw-px-2.5 tw-py-2 tw-text-white focus:tw-border-[#14b8a6] focus:tw-outline-none tw-mt-1"
+							class="tw-w-full tw-bg-[#020617] tw-border tw-border-[#334155] tw-rounded-lg tw-px-2.5 tw-py-2 tw-text-[#fafafa] focus:tw-border-[#14b8a6] focus:tw-outline-none tw-mt-1"
 						/>
 					</label>
 				</div>
@@ -379,7 +379,7 @@
 						type="text"
 						bind:value={equipment}
 						placeholder="Cones, balls, pinnies, agility poles"
-						class="tw-w-full tw-bg-[#020617] tw-border tw-border-[#334155] tw-rounded-lg tw-px-3 tw-py-2 tw-text-white focus:tw-border-[#14b8a6] focus:tw-outline-none tw-mt-1"
+						class="tw-w-full tw-bg-[#020617] tw-border tw-border-[#334155] tw-rounded-lg tw-px-3 tw-py-2 tw-text-[#fafafa] focus:tw-border-[#14b8a6] focus:tw-outline-none tw-mt-1"
 					/>
 				</label>
 
@@ -389,7 +389,7 @@
 						bind:value={setupDescription}
 						rows="2"
 						placeholder="Explain positioning, ball flow, and rotation pattern..."
-						class="tw-w-full tw-bg-[#020617] tw-border tw-border-[#334155] tw-rounded-lg tw-px-3 tw-py-2 tw-text-white focus:tw-border-[#14b8a6] focus:tw-outline-none tw-mt-1 tw-font-sans"
+						class="tw-w-full tw-bg-[#020617] tw-border tw-border-[#334155] tw-rounded-lg tw-px-3 tw-py-2 tw-text-[#fafafa] focus:tw-border-[#14b8a6] focus:tw-outline-none tw-mt-1 tw-font-sans"
 					></textarea>
 				</label>
 
@@ -399,7 +399,7 @@
 						bind:value={coachingPoints}
 						rows="2"
 						placeholder="Key cues for body shape, timing, and scanning..."
-						class="tw-w-full tw-bg-[#020617] tw-border tw-border-[#334155] tw-rounded-lg tw-px-3 tw-py-2 tw-text-white focus:tw-border-[#14b8a6] focus:tw-outline-none tw-mt-1 tw-font-sans"
+						class="tw-w-full tw-bg-[#020617] tw-border tw-border-[#334155] tw-rounded-lg tw-px-3 tw-py-2 tw-text-[#fafafa] focus:tw-border-[#14b8a6] focus:tw-outline-none tw-mt-1 tw-font-sans"
 					></textarea>
 				</label>
 			</div>
@@ -409,7 +409,7 @@
 				<div class="tw-flex tw-items-center tw-justify-between">
 					<div class="tw-flex tw-items-center tw-gap-2">
 						<span class="tw-text-[#fbbf24]">📖</span>
-						<span class="tw-font-mono tw-text-xs tw-font-bold tw-text-white tw-uppercase">Team Playbook Publication</span>
+						<span class="tw-font-mono tw-text-xs tw-font-bold tw-text-[#fafafa] tw-uppercase">Team Playbook Publication</span>
 					</div>
 					<span class="tw-font-mono tw-text-[10px] tw-text-[#14b8a6] tw-bg-[#14b8a6]/10 tw-border tw-border-[#14b8a6]/30 tw-px-2 tw-py-0.5 tw-rounded">
 						War Room Sync
@@ -421,7 +421,7 @@
 				<div class="tw-flex tw-flex-col sm:tw-flex-row tw-gap-2.5 tw-pt-1">
 					<button
 						type="button"
-						class="tw-flex-1 tw-bg-[#14b8a6] hover:tw-bg-teal-400 tw-text-black tw-font-mono tw-text-xs tw-font-bold tw-py-3 tw-px-4 tw-rounded-xl tw-shadow-[0_0_15px_rgba(20,184,166,0.3)] active:tw-scale-[0.98] tw-transition-all tw-flex tw-items-center tw-justify-center tw-gap-2"
+						class="tw-flex-1 tw-bg-[#14b8a6] hover:tw-bg-teal-400 tw-text-[#000000] tw-font-mono tw-text-xs tw-font-bold tw-py-3 tw-px-4 tw-rounded-xl tw-shadow-[0_0_15px_rgba(20,184,166,0.3)] active:tw-scale-[0.98] tw-transition-all tw-flex tw-items-center tw-justify-center tw-gap-2"
 						disabled={isSaving}
 						onclick={() => saveDrill(false)}
 					>
@@ -430,7 +430,7 @@
 
 					<button
 						type="button"
-						class="tw-flex-1 tw-bg-[#fbbf24] hover:tw-bg-[#fbbf24] tw-text-black tw-font-mono tw-text-xs tw-font-bold tw-py-3 tw-px-4 tw-rounded-xl tw-shadow-[0_0_15px_rgba(251,191,36,0.3)] active:tw-scale-[0.98] tw-transition-all tw-flex tw-items-center tw-justify-center tw-gap-2"
+						class="tw-flex-1 tw-bg-[#fbbf24] hover:tw-bg-[#fbbf24] tw-text-[#000000] tw-font-mono tw-text-xs tw-font-bold tw-py-3 tw-px-4 tw-rounded-xl tw-shadow-[0_0_15px_rgba(251,191,36,0.3)] active:tw-scale-[0.98] tw-transition-all tw-flex tw-items-center tw-justify-center tw-gap-2"
 						disabled={isSaving}
 						onclick={() => saveDrill(true)}
 					>

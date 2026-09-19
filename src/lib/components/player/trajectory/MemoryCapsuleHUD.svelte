@@ -60,11 +60,11 @@
 				<!-- Message -->
 				<div class="tw-flex-1 tw-min-w-0">
 					<p
-						class="tw-font-mono tw-tracking-wide tw-text-white tw-uppercase tw-leading-snug"
+						class="tw-font-mono tw-tracking-wide tw-text-[#fafafa] tw-uppercase tw-leading-snug"
 						style="font-size: clamp(0.65rem, 1.2vw, 0.8rem);"
 					>
 						{baselineDaysAgo} DAYS AGO YOU WERE AT
-						<span class="tw-text-white/50">LVL {capsule.baselineSnapshot.level}</span>
+						<span class="tw-text-[#fafafa]/50">LVL {capsule.baselineSnapshot.level}</span>
 						— YOU'VE GROWN
 						<span
 							class="tw-text-[#14b8a6] tw-font-bold tw-tabular-nums tw-shadow-[0_0_8px_rgba(20, 184, 166,0.5)]"
@@ -73,7 +73,7 @@
 						</span>
 					</p>
 					<p
-						class="tw-font-mono tw-tracking-widest tw-text-white/30 tw-uppercase tw-mt-1"
+						class="tw-font-mono tw-tracking-widest tw-text-[#fafafa]/30 tw-uppercase tw-mt-1"
 						style="font-size: clamp(7px, 0.8vw, 9px);"
 					>
 						CURRENT LEVEL {capsule.currentSnapshot.level} · STREAK {capsule.currentSnapshot.streakDays}D
@@ -86,7 +86,7 @@
 				<button
 					type="button"
 					onclick={dismiss}
-					class="tw-ml-3 tw-flex tw-items-center tw-justify-center tw-rounded-lg tw-border tw-border-[#14b8a6]/20 tw-bg-[#14b8a6]/5 tw-text-white/50 tw-font-mono tw-tracking-widest tw-uppercase tw-transition-all tw-duration-200 hover:tw-border-[#14b8a6]/60 hover:tw-bg-[#14b8a6]/15 hover:tw-text-[#14b8a6] hover:tw-shadow-[0_0_12px_rgba(20, 184, 166,0.3)] focus-visible:tw-outline-none focus-visible:tw-ring-2 focus-visible:tw-ring-[#14b8a6]/50"
+					class="tw-ml-3 tw-flex tw-items-center tw-justify-center tw-rounded-lg tw-border tw-border-[#14b8a6]/20 tw-bg-[#14b8a6]/5 tw-text-[#fafafa]/50 tw-font-mono tw-tracking-widest tw-uppercase tw-transition-all tw-duration-200 hover:tw-border-[#14b8a6]/60 hover:tw-bg-[#14b8a6]/15 hover:tw-text-[#14b8a6] hover:tw-shadow-[0_0_12px_rgba(20, 184, 166,0.3)] focus-visible:tw-outline-none focus-visible:tw-ring-2 focus-visible:tw-ring-[#14b8a6]/50"
 					style="font-size: clamp(7px, 0.9vw, 9px); padding: clamp(0.4rem, 1vw, 0.5rem) clamp(0.6rem, 1.5vw, 0.75rem);"
 					aria-label="Dismiss memory capsule"
 				>

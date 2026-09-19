@@ -70,7 +70,7 @@
 					<span class="tw-font-mono tw-text-2xl tw-font-black md:tw-text-3xl">{engine.nexusBadgeLetter}</span>
 				</div>
 				<div class="tw-min-w-0 tw-flex-1">
-					<h1 class="tw-m-0 tw-truncate tw-font-mono tw-text-lg tw-font-black tw-uppercase tw-tracking-[0.18em] tw-text-white md:tw-text-xl">
+					<h1 class="tw-m-0 tw-truncate tw-font-mono tw-text-lg tw-font-black tw-uppercase tw-tracking-[0.18em] tw-text-[#fafafa] md:tw-text-xl">
 						Nexus Command
 					</h1>
 					<p class="tw-mt-1 tw-truncate tw-font-mono tw-text-[10px] tw-tracking-[0.22em] tw-text-[#14b8a6] tw-uppercase">

@@ -9,7 +9,7 @@
 <div class="tw-flex tw-flex-col tw-gap-4">
 	<div class="tw-p-6 tw-bg-[#0F172A] tw-rounded-none tw-border tw-border-[#1E293B]">
 		<div class="tw-flex tw-items-center tw-justify-between tw-mb-2">
-			<h1 class="tw-text-xl tw-font-sans tw-font-bold tw-text-white tw-flex tw-items-center tw-gap-2">
+			<h1 class="tw-text-xl tw-font-sans tw-font-bold tw-text-[#fafafa] tw-flex tw-items-center tw-gap-2">
 				<Icon name={"status.shield-check" as IconName} size={20} class="tw-text-[#f59e0b]" />
 				<span>Verifiable Parental Consent (VPC)</span>
 			</h1>

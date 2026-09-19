@@ -46,7 +46,7 @@
 					<button
 						type="button"
 						onclick={() => engine.setForgeSubTab('intent')}
-						class="tw-flex tw-items-center tw-gap-2 tw-px-3.5 tw-py-1.5 tw-font-mono tw-text-xs tw-font-bold tw-uppercase tw-transition-all tw-cursor-pointer {engine.forgeSubTab === 'intent' ? 'tw-bg-[#0f172a] tw-text-[#14b8a6] tw-border tw-border-[#14b8a6]' : 'tw-bg-transparent tw-text-slate-400 tw-border tw-border-transparent hover:tw-text-white'}"
+						class="tw-flex tw-items-center tw-gap-2 tw-px-3.5 tw-py-1.5 tw-font-mono tw-text-xs tw-font-bold tw-uppercase tw-transition-all tw-cursor-pointer {engine.forgeSubTab === 'intent' ? 'tw-bg-[#0f172a] tw-text-[#14b8a6] tw-border tw-border-[#14b8a6]' : 'tw-bg-transparent tw-text-slate-400 tw-border tw-border-transparent hover:tw-text-[#fafafa]'}"
 						style="border-radius: 0px;"
 					>
 						<span>🎯</span>
@@ -55,7 +55,7 @@
 					<button
 						type="button"
 						onclick={() => engine.setForgeSubTab('designer')}
-						class="tw-flex tw-items-center tw-gap-2 tw-px-3.5 tw-py-1.5 tw-font-mono tw-text-xs tw-font-bold tw-uppercase tw-transition-all tw-cursor-pointer {engine.forgeSubTab === 'designer' ? 'tw-bg-[#0f172a] tw-text-[#14b8a6] tw-border tw-border-[#14b8a6]' : 'tw-bg-transparent tw-text-slate-400 tw-border tw-border-transparent hover:tw-text-white'}"
+						class="tw-flex tw-items-center tw-gap-2 tw-px-3.5 tw-py-1.5 tw-font-mono tw-text-xs tw-font-bold tw-uppercase tw-transition-all tw-cursor-pointer {engine.forgeSubTab === 'designer' ? 'tw-bg-[#0f172a] tw-text-[#14b8a6] tw-border tw-border-[#14b8a6]' : 'tw-bg-transparent tw-text-slate-400 tw-border tw-border-transparent hover:tw-text-[#fafafa]'}"
 						style="border-radius: 0px;"
 					>
 						<span>📐</span>
@@ -64,7 +64,7 @@
 					<button
 						type="button"
 						onclick={() => engine.setForgeSubTab('library')}
-						class="tw-flex tw-items-center tw-gap-2 tw-px-3.5 tw-py-1.5 tw-font-mono tw-text-xs tw-font-bold tw-uppercase tw-transition-all tw-cursor-pointer {engine.forgeSubTab === 'library' ? 'tw-bg-[#0f172a] tw-text-[#14b8a6] tw-border tw-border-[#14b8a6]' : 'tw-bg-transparent tw-text-slate-400 tw-border tw-border-transparent hover:tw-text-white'}"
+						class="tw-flex tw-items-center tw-gap-2 tw-px-3.5 tw-py-1.5 tw-font-mono tw-text-xs tw-font-bold tw-uppercase tw-transition-all tw-cursor-pointer {engine.forgeSubTab === 'library' ? 'tw-bg-[#0f172a] tw-text-[#14b8a6] tw-border tw-border-[#14b8a6]' : 'tw-bg-transparent tw-text-slate-400 tw-border tw-border-transparent hover:tw-text-[#fafafa]'}"
 						style="border-radius: 0px;"
 					>
 						<span>📚</span>
@@ -73,7 +73,7 @@
 				</nav>
 
 				<span class="tw-font-mono tw-text-xs tw-text-slate-400 tw-hidden md:inline">
-					Active Squad: <strong class="tw-text-white">{engine.teamScope.teamLabel || 'Your Squad'}</strong>
+					Active Squad: <strong class="tw-text-[#fafafa]">{engine.teamScope.teamLabel || 'Your Squad'}</strong>
 				</span>
 			</div>
 
@@ -108,7 +108,7 @@
 			<!-- Close button to exit fullscreen War Room back to Forge -->
 			<button
 				type="button"
-				class="tw-absolute tw-top-4 tw-right-4 tw-z-[2000] tw-bg-[#0f172a]/90 hover:tw-bg-[#0f172a] tw-backdrop-blur-md tw-border tw-border-[#ef4444]/60 hover:tw-border-[#ef4444] tw-text-[#ef4444] hover:tw-text-white tw-font-mono tw-text-xs tw-font-bold tw-px-3.5 tw-py-2 tw-rounded-lg tw-shadow-lg tw-flex tw-items-center tw-gap-2 tw-transition-all tw-cursor-pointer"
+				class="tw-absolute tw-top-4 tw-right-4 tw-z-[2000] tw-bg-[#0f172a]/90 hover:tw-bg-[#0f172a] tw-backdrop-blur-md tw-border tw-border-[#ef4444]/60 hover:tw-border-[#ef4444] tw-text-[#ef4444] hover:tw-text-[#fafafa] tw-font-mono tw-text-xs tw-font-bold tw-px-3.5 tw-py-2 tw-rounded-lg tw-shadow-lg tw-flex tw-items-center tw-gap-2 tw-transition-all tw-cursor-pointer"
 				onclick={() => engine.setTab('forge')}
 				aria-label="Exit War Room"
 			>

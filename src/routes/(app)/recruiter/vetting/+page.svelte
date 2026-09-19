@@ -16,14 +16,14 @@
   );
 </script>
 
-<div class="tw-min-h-screen tw-bg-[#000000] tw-text-white tw-p-6">
+<div class="tw-min-h-screen tw-bg-[#000000] tw-text-[#fafafa] tw-p-6">
   <div class="tw-border tw-border-[#334155] tw-p-6">
     <h1 class="tw-font-mono tw-text-xl tw-text-[#fbbf24] tw-uppercase tw-mb-4">
       RECRUITER VETTING & TALENT SCOUT HUD
     </h1>
 
     {#if userRole !== 'recruiter'}
-      <div id="recruiter-access-blocked" class="tw-bg-red-950 tw-border tw-border-red-500 tw-p-4 tw-text-red-300 tw-font-mono tw-text-sm">
+      <div id="recruiter-access-blocked" class="tw-bg-[#f59e0b] tw-border tw-border-red-500 tw-p-4 tw-text-red-300 tw-font-mono tw-text-sm">
         ⛔ ACCESS DENIED: RECRUITER CUSTOM CLAIM REQUIRED
       </div>
     {:else}
@@ -32,14 +32,14 @@
           type="text"
           bind:value={searchKeyword}
           placeholder="Search prospects..."
-          class="tw-w-full tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-p-2 tw-font-mono tw-text-sm tw-text-white"
+          class="tw-w-full tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-p-2 tw-font-mono tw-text-sm tw-text-[#fafafa]"
         />
 
         <div id="recruiter-prospects-list" class="tw-space-y-2">
           {#each filteredAthletes as prospect}
             <div class="tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-p-4 tw-flex tw-justify-between tw-items-center">
               <div>
-                <div class="tw-font-mono tw-text-base tw-font-bold tw-text-white">{prospect.name}</div>
+                <div class="tw-font-mono tw-text-base tw-font-bold tw-text-[#fafafa]">{prospect.name}</div>
                 <div class="tw-font-mono tw-text-xs tw-text-slate-400">{prospect.position} | AGE {prospect.age}</div>
               </div>
               <div class="tw-font-mono tw-text-xs tw-text-[#fbbf24]">

@@ -204,7 +204,7 @@
 		<!-- EXIT WAR ROOM Button on Bottom Tray -->
 		<button
 			type="button"
-			class="coach-tac-z4-btn coach-tac-z4-btn--exit tw-bg-red-950/50 tw-border tw-border-red-600/60 tw-text-red-300 hover:tw-bg-red-600 hover:tw-text-white tw-font-bold tw-transition-colors"
+			class="coach-tac-z4-btn coach-tac-z4-btn--exit tw-bg-[#f59e0b]/50 tw-border tw-border-red-600/60 tw-text-red-300 hover:tw-bg-[#f59e0b] hover:tw-text-[#fafafa] tw-font-bold tw-transition-colors"
 			onclick={handleExitClick}
 			title="Exit War Room to Coach Dashboard"
 			aria-label="Exit War Room"

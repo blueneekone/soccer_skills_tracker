@@ -20,7 +20,7 @@
 {#if benchmarks}
 <div class="mt-8 rounded-lg border border-slate-700/50 bg-[#0B0F19] p-4 text-slate-300 shadow-xl">
 	<div class="mb-4 flex items-center justify-between border-b border-slate-700/50 pb-2">
-		<h3 class="font-sans text-sm font-semibold tracking-wide text-white uppercase tw-font-mono">
+		<h3 class="font-sans text-sm font-semibold tracking-wide text-[#fafafa] uppercase tw-font-mono">
 			Pro-League Benchmarks
 		</h3>
 		<span class="font-mono text-xs text-slate-500">Sportradar API</span>
@@ -35,7 +35,7 @@
 				<span class="font-mono text-[10px] text-slate-400 uppercase tracking-widest tw-font-mono">{axis.label}</span>
 				<div class="mt-1 flex items-baseline justify-between">
 					<div class="flex items-baseline space-x-1">
-						<span class="font-mono text-lg font-bold text-white">{myScore}</span>
+						<span class="font-mono text-lg font-bold text-[#fafafa]">{myScore}</span>
 						<span class="font-mono text-xs text-slate-500">/ {proScore}</span>
 					</div>
 					{#if diff > 0}

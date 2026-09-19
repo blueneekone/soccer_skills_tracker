@@ -183,7 +183,7 @@
 	});
 </script>
 
-<div class="ad-shell tw-h-[100dvh] tw-overflow-hidden tw-bg-[#010409] tw-text-white tw-font-mono">
+<div class="ad-shell tw-h-[100dvh] tw-overflow-hidden tw-bg-[#010409] tw-text-[#fafafa] tw-font-mono">
 
 	<!-- ── COMMAND BAR ──────────────────────────────────────────────────── -->
 	<header
@@ -192,18 +192,18 @@
 		<!-- Title row -->
 		<div class="tw-flex tw-items-center tw-justify-between tw-mb-4">
 			<div>
-				<p class="tw-text-[8px] tw-uppercase tw-tracking-[0.45em] tw-text-white/25">
+				<p class="tw-text-[8px] tw-uppercase tw-tracking-[0.45em] tw-text-[#fafafa]/25">
 					VANGUARD SYSTEM · SCOUT CLEARANCE ACTIVE
 				</p>
-				<h1 class="tw-text-[13px] tw-font-bold tw-uppercase tw-tracking-[0.3em] tw-text-white tw-mt-0.5">
-					ARMORY <span class="tw-text-white/30">·</span> OPERATIVE ROSTER
+				<h1 class="tw-text-[13px] tw-font-bold tw-uppercase tw-tracking-[0.3em] tw-text-[#fafafa] tw-mt-0.5">
+					ARMORY <span class="tw-text-[#fafafa]/30">·</span> OPERATIVE ROSTER
 				</h1>
 			</div>
 			<!-- Live unit count -->
 			<span
-				class="tw-tabular-nums tw-text-[9px] tw-font-mono tw-tracking-[0.35em] tw-text-white/30 tw-border tw-border-white/10 tw-rounded tw-px-2 tw-py-1"
+				class="tw-tabular-nums tw-text-[9px] tw-font-mono tw-tracking-[0.35em] tw-text-[#fafafa]/30 tw-border tw-border-white/10 tw-rounded tw-px-2 tw-py-1"
 			>
-				{filteredRoster.length}<span class="tw-text-white/15">/{ROSTER.length}</span> UNITS
+				{filteredRoster.length}<span class="tw-text-[#fafafa]/15">/{ROSTER.length}</span> UNITS
 			</span>
 		</div>
 
@@ -213,7 +213,7 @@
 			<!-- Search input -->
 			<div class="ad-search-wrap tw-relative tw-flex-1 tw-min-w-[160px] tw-max-w-xs">
 				<span
-					class="tw-pointer-events-none tw-absolute tw-left-0 tw-top-1/2 -tw-translate-y-1/2 tw-text-white/20 tw-text-[11px]"
+					class="tw-pointer-events-none tw-absolute tw-left-0 tw-top-1/2 -tw-translate-y-1/2 tw-text-[#fafafa]/20 tw-text-[11px]"
 					aria-hidden="true"
 				>⌕</span>
 				<!-- svelte-ignore a11y_label_has_associated_control -->
@@ -222,7 +222,7 @@
 					type="search"
 					placeholder="SEARCH OPERATIVE…"
 					bind:value={searchQuery}
-					class="ad-search tw-w-full tw-bg-transparent tw-border-0 tw-border-b tw-border-white/15 tw-pl-5 tw-pr-0 tw-py-1.5 tw-text-[10px] tw-uppercase tw-tracking-[0.25em] tw-text-white tw-placeholder-white/20 focus:tw-outline-none tw-transition-colors tw-duration-200"
+					class="ad-search tw-w-full tw-bg-transparent tw-border-0 tw-border-b tw-border-white/15 tw-pl-5 tw-pr-0 tw-py-1.5 tw-text-[10px] tw-uppercase tw-tracking-[0.25em] tw-text-[#fafafa] tw-placeholder-white/20 focus:tw-outline-none tw-transition-colors tw-duration-200"
 				/>
 			</div>
 
@@ -249,7 +249,7 @@
 			<select
 				id="ad-sort"
 				bind:value={sortKey}
-				class="tw-bg-[#0a0e14] tw-border tw-border-white/12 tw-rounded tw-px-3 tw-py-1.5 tw-text-[9px] tw-uppercase tw-tracking-[0.3em] tw-text-white/55 tw-font-mono tw-cursor-pointer tw-transition-colors tw-duration-150 hover:tw-border-white/25 focus:tw-outline-none focus:tw-border-[#14b8a6]/40"
+				class="tw-bg-[#0a0e14] tw-border tw-border-white/12 tw-rounded tw-px-3 tw-py-1.5 tw-text-[9px] tw-uppercase tw-tracking-[0.3em] tw-text-[#fafafa]/55 tw-font-mono tw-cursor-pointer tw-transition-colors tw-duration-150 hover:tw-border-white/25 focus:tw-outline-none focus:tw-border-[#14b8a6]/40"
 			>
 				{#each SORT_OPTIONS as opt (opt.value)}
 					<option value={opt.value}>{opt.label}</option>
@@ -274,11 +274,11 @@
 			{:else}
 				<!-- Empty state -->
 				<div
-					class="tw-col-span-full tw-flex tw-flex-col tw-items-center tw-justify-center tw-py-32 tw-text-white/20"
+					class="tw-col-span-full tw-flex tw-flex-col tw-items-center tw-justify-center tw-py-32 tw-text-[#fafafa]/20"
 				>
 					<span class="tw-text-6xl tw-mb-5 tw-leading-none" aria-hidden="true">⊘</span>
 					<p class="tw-text-[11px] tw-uppercase tw-tracking-[0.45em]">NO OPERATIVES FOUND</p>
-					<p class="tw-mt-2 tw-text-[9px] tw-tracking-[0.25em] tw-text-white/12">
+					<p class="tw-mt-2 tw-text-[9px] tw-tracking-[0.25em] tw-text-[#fafafa]/12">
 						ADJUST FILTER PARAMETERS
 					</p>
 				</div>

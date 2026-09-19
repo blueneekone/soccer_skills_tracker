@@ -83,7 +83,7 @@
 			{/if}
 
 			{#if showConfirmRemove}
-				<div class="tw-mt-3 tw-p-3 tw-border tw-border-red-500/40 tw-bg-red-950/30 tw-rounded">
+				<div class="tw-mt-3 tw-p-3 tw-border tw-border-red-500/40 tw-bg-[#f59e0b]/30 tw-rounded">
 					<p class="tw-text-xs tw-text-red-300 tw-m-0">Remove <strong>{player.displayName}</strong> from team roster?</p>
 					<div class="tw-flex tw-items-center tw-gap-3 tw-mt-2">
 						<button class="rpr-btn-danger" onclick={handleRemove} disabled={removing}>

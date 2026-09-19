@@ -67,12 +67,12 @@
 <div class="grid grid-cols-12 gap-6 p-6 tw-font-mono director-os-root">
     <!-- Search Banner (Span 12) -->
     <div class="col-span-12 bg-gray-900 border border-teal-500/20 p-6 rounded-xl flex items-center justify-between">
-        <h1 class="text-2xl font-bold text-white">Sport Tutoring Marketplace</h1>
+        <h1 class="text-2xl font-bold text-[#fafafa]">Sport Tutoring Marketplace</h1>
         <input
             type="text"
             bind:value={searchSkill}
             placeholder="Search by skill (e.g. Shooting, Agility)..."
-            class="bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-teal-500 w-1/3"
+            class="bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-[#fafafa] focus:outline-none focus:border-teal-500 w-1/3"
         />
     </div>
 
@@ -85,7 +85,7 @@
             <div class="col-span-12 md:col-span-4 bg-gray-900 border border-gray-800 hover:border-teal-500/50 transition p-6 rounded-xl flex flex-col justify-between h-64">
                 <div>
                     <div class="flex justify-between items-start">
-                        <h3 class="text-lg font-bold text-white">{tutor.displayName}</h3>
+                        <h3 class="text-lg font-bold text-[#fafafa]">{tutor.displayName}</h3>
                         <!-- Nuclear Lime styling for active rates -->
                         <span class="text-[#daff0a] font-mono font-bold text-lg">${tutor.tutorProfile.ratePerHour}/hr</span>
                     </div>

@@ -129,7 +129,7 @@
 		<span class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-teal-400/60">
 			[ // DRILL EXECUTION TERMINAL ]
 		</span>
-		<span class="tw-font-mono tw-text-base tw-text-white tw-leading-snug">
+		<span class="tw-font-mono tw-text-base tw-text-[#fafafa] tw-leading-snug">
 			{drillTitle}
 		</span>
 	</div>

@@ -182,7 +182,7 @@
 			{#if mode === 'loading'}
 				<span class="tw-text-[10px] tw-tracking-widest tw-font-mono tw-text-[#14b8a6]/50">…</span>
 			{:else if mode === 'empty'}
-				<span class="tw-text-[11px] tw-font-mono tw-tracking-wide tw-text-white/50">
+				<span class="tw-text-[11px] tw-font-mono tw-tracking-wide tw-text-[#fafafa]/50">
 					Log a workout to start a streak.
 				</span>
 			{:else if mode === 'active'}
@@ -195,7 +195,7 @@
 				<span class="pas__num pas__num--frozen">{streakDays}</span>
 				<span class="pas__unit tw-text-[#14b8a6]">day{streakDays === 1 ? '' : 's'} protected</span>
 			{:else if mode === 'broken'}
-				<span class="tw-text-[11px] tw-font-mono tw-tracking-wide tw-text-white/60">
+				<span class="tw-text-[11px] tw-font-mono tw-tracking-wide tw-text-[#fafafa]/60">
 					Your streak reset. Log a session to restart.
 				</span>
 			{/if}
@@ -210,7 +210,7 @@
 				Streak Freeze active — you're covered for today.
 			</p>
 		{:else if mode === 'broken'}
-			<p class="pas__hint tw-text-white/40">
+			<p class="pas__hint tw-text-[#fafafa]/40">
 				Consistency is built one session at a time. Start fresh today.
 			</p>
 		{:else}

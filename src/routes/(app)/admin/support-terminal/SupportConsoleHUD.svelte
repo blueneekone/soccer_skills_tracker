@@ -16,7 +16,7 @@
 		{#each tabs as tab}
 			<button
 				type="button"
-				class="tw-px-4 tw-py-2 tw-text-xs tw-font-mono tw-font-bold tw-uppercase tw-tracking-widest tw-rounded-none tw-transition-all {engine.activeTab === tab.id ? 'tw-bg-[#0f172a] tw-text-[#14b8a6] tw-border-b-2 tw-border-[#14b8a6]' : 'tw-bg-transparent tw-text-[#94A3B8] hover:tw-text-[#FAFAFA] hover:tw-bg-white/[0.03]'}"
+				class="tw-px-4 tw-py-2 tw-text-xs tw-font-mono tw-font-bold tw-uppercase tw-tracking-widest tw-rounded-none tw-transition-all {engine.activeTab === tab.id ? 'tw-bg-[#0f172a] tw-text-[#14b8a6] tw-border-b-2 tw-border-[#14b8a6]' : 'tw-bg-transparent tw-text-[#94A3B8] hover:tw-text-[#FAFAFA] hover:tw-tw-bg-[#0f172a]/[0.03]'}"
 				onclick={() => engine.setActiveTab(tab.id)}
 			>
 				{tab.label}

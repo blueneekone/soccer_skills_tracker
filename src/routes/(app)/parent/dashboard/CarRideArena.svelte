@@ -41,7 +41,7 @@
 
 			<!-- Score display -->
 			<div class="tw-flex tw-items-center tw-justify-center tw-gap-6 tw-py-3">
-				<span class="tw-font-mono tw-text-[48px] tw-font-bold tw-text-white tw-leading-none tw-tabular-nums">
+				<span class="tw-font-mono tw-text-[48px] tw-font-bold tw-text-[#fafafa] tw-leading-none tw-tabular-nums">
 					{score.scoreHome}
 				</span>
 				<span class="tw-font-mono tw-text-[20px] tw-text-[#a0a0a0]/40">—</span>
@@ -155,7 +155,7 @@
 	<!-- ── Error state ────────────────────────────────────────────────────── -->
 	{#if engine.error}
 		<div
-			class="tw-rounded-none tw-border tw-border-red-500/40 tw-bg-red-950/30 tw-p-4 tw-font-mono tw-text-[10px] tw-text-red-300 tw-tracking-wide tw-flex tw-items-center tw-gap-2"
+			class="tw-rounded-none tw-border tw-border-red-500/40 tw-bg-[#f59e0b]/30 tw-p-4 tw-font-mono tw-text-[10px] tw-text-red-300 tw-tracking-wide tw-flex tw-items-center tw-gap-2"
 		>
 			<Icon name={"status.error" as IconName} size={14} class="tw-text-red-400" />
 			<span>{engine.error}</span>

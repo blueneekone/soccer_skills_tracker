@@ -201,8 +201,8 @@
 
 			<!-- Per-state node radial gradients -->
 			<radialGradient id="{uid}-node-grad-locked" cx="50%" cy="50%" r="50%">
-				<stop offset="0%"   stop-color="#ffffff" stop-opacity="0.06" />
-				<stop offset="100%" stop-color="#ffffff" stop-opacity="0.01" />
+				<stop offset="0%"   stop-color="#fafafa" stop-opacity="0.06" />
+				<stop offset="100%" stop-color="#fafafa" stop-opacity="0.01" />
 			</radialGradient>
 			<radialGradient id="{uid}-node-grad-unlocked" cx="50%" cy="50%" r="50%">
 				<stop offset="0%"   stop-color={tierAccent} stop-opacity="0.4"  />

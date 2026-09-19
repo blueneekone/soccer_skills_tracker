@@ -134,7 +134,7 @@
 			{:else if currentTeam}
 				<div class="team-ops-squad-badge">
 					<span class="tw-font-mono tw-text-[10px] tw-uppercase tw-tracking-widest tw-text-slate-500">SQUAD</span>
-					<span class="tw-font-mono tw-text-sm tw-font-black tw-text-white tw-truncate">{teamLabel}</span>
+					<span class="tw-font-mono tw-text-sm tw-font-black tw-text-[#fafafa] tw-truncate">{teamLabel}</span>
 				</div>
 			{/if}
 		</div>
@@ -190,7 +190,7 @@
 						class="tw-inline-block tw-h-1.5 tw-w-1.5 tw-rounded-full"
 						style="background: {activeTabMeta.accent}; box-shadow: 0 0 8px {activeTabMeta.accent}80;"
 					></span>
-					<span class="tw-font-mono tw-text-[11px] tw-font-black tw-uppercase tw-tracking-[0.2em] tw-text-white">
+					<span class="tw-font-mono tw-text-[11px] tw-font-black tw-uppercase tw-tracking-[0.2em] tw-text-[#fafafa]">
 						{activeTabMeta.icon} {activeTabMeta.label}
 					</span>
 				</div>

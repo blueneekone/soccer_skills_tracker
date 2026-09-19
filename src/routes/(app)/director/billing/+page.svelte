@@ -69,7 +69,7 @@
 				<span class="tw-text-[#fbbf24] tw-text-xs tw-font-bold tw-tracking-widest tw-uppercase">
 					[ DIRECTOR OS · BILLING GATEWAY ]
 				</span>
-				<h1 class="tw-text-2xl tw-font-bold tw-text-white tw-mt-1">
+				<h1 class="tw-text-2xl tw-font-bold tw-text-[#fafafa] tw-mt-1">
 					Merchant Payment & Payout Hub
 				</h1>
 			</div>
@@ -93,13 +93,13 @@
 		{/if}
 
 		<div class="tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-p-6 tw-rounded-none tw-space-y-4">
-			<h2 class="tw-text-lg tw-font-bold tw-text-white">Stripe Express Gateway Onboarding</h2>
+			<h2 class="tw-text-lg tw-font-bold tw-text-[#fafafa]">Stripe Express Gateway Onboarding</h2>
 			<p class="tw-text-xs tw-text-slate-400 tw-leading-relaxed">
 				SSTracker enforces a strict $0 base platform fee model with a 5% transaction split on registration revenues. Connect your club account to process season fees securely.
 			</p>
 
 			{#if error}
-				<div class="tw-bg-red-500/10 tw-border tw-border-red-500 tw-text-red-400 tw-p-3 tw-text-xs">
+				<div class="tw-bg-[#f59e0b]/10 tw-border tw-border-red-500 tw-text-red-400 tw-p-3 tw-text-xs">
 					{error}
 				</div>
 			{/if}
@@ -110,7 +110,7 @@
 					onclick={handleInitiateGateway}
 					disabled={isConnecting}
 					style="border-radius: 0px;"
-					class="tw-py-3 tw-px-6 tw-bg-[#fbbf24] tw-text-black tw-font-bold tw-text-sm tw-rounded-none hover:tw-bg-[#f59e0b] tw-transition-colors tw-border-none tw-cursor-pointer disabled:tw-opacity-50"
+					class="tw-py-3 tw-px-6 tw-bg-[#fbbf24] tw-text-[#000000] tw-font-bold tw-text-sm tw-rounded-none hover:tw-bg-[#f59e0b] tw-transition-colors tw-border-none tw-cursor-pointer disabled:tw-opacity-50"
 				>
 					{isConnecting ? '[ CONNECTING... ]' : '[ SECURE STRIPE GATEWAY ]'}
 				</button>
@@ -118,7 +118,7 @@
 				<div class="tw-pt-2">
 					<span
 						style="border-radius: 0px;"
-						class="tw-inline-block tw-py-3 tw-px-6 tw-bg-[#14b8a6] tw-text-black tw-font-bold tw-text-sm tw-rounded-none"
+						class="tw-inline-block tw-py-3 tw-px-6 tw-bg-[#14b8a6] tw-text-[#000000] tw-font-bold tw-text-sm tw-rounded-none"
 					>
 						[ ACTIVE / CONNECTED ]
 					</span>

@@ -119,14 +119,14 @@
 		>
 			<div class="tw-flex tw-justify-between tw-items-center tw-mb-8">
 				<h2 class="tw-text-[#FAFAFA] tw-text-2xl tw-font-bold tw-m-0">Add Organization</h2>
-				<button type="button" class="tw-bg-transparent tw-border-none tw-outline-none tw-p-2 hover:tw-bg-white/10 tw-rounded-none tw-text-[#A1A1AA] hover:tw-text-[#FAFAFA] tw-transition-colors tw-flex tw-items-center tw-justify-center" onclick={onClose}>
+				<button type="button" class="tw-bg-transparent tw-border-none tw-outline-none tw-p-2 hover:tw-tw-bg-[#0f172a]/10 tw-rounded-none tw-text-[#A1A1AA] hover:tw-text-[#FAFAFA] tw-transition-colors tw-flex tw-items-center tw-justify-center" onclick={onClose}>
 					<Icon name={'sys.close' as IconName} />
 				</button>
 			</div>
 
 			<div class="tw-flex tw-flex-col tw-gap-6">
 				{#if err}
-					<div class="tw-bg-red-500/10 tw-border tw-border-red-500/30 tw-text-red-400 tw-px-4 tw-py-3 tw-rounded-none" role="alert">
+					<div class="tw-bg-[#f59e0b]/10 tw-border tw-border-red-500/30 tw-text-red-400 tw-px-4 tw-py-3 tw-rounded-none" role="alert">
 						{err}
 					</div>
 				{/if}
@@ -283,7 +283,7 @@
 				<div class="tw-flex tw-justify-end tw-items-center tw-gap-4 tw-mt-4 tw-pt-6 tw-border-t tw-border-[#334155]">
 					<button 
 						type="button" 
-						class="tw-text-[#A1A1AA] hover:tw-text-white tw-font-bold tw-px-5 tw-py-2.5 tw-bg-transparent hover:tw-bg-white/10 tw-border tw-border-transparent tw-rounded-none tw-transition-colors tw-cursor-pointer tw-flex tw-items-center tw-gap-2"
+						class="tw-text-[#A1A1AA] hover:tw-text-[#fafafa] tw-font-bold tw-px-5 tw-py-2.5 tw-bg-transparent hover:tw-tw-bg-[#0f172a]/10 tw-border tw-border-transparent tw-rounded-none tw-transition-colors tw-cursor-pointer tw-flex tw-items-center tw-gap-2"
 						onclick={onClose} 
 						disabled={saving}
 					>

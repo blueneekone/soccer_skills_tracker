@@ -95,7 +95,7 @@
 		<div class="tw-absolute tw-inset-0" onclick={onClose}></div>
 
 		<div
-			class="tw-relative tw-z-10 tw-w-full tw-max-w-xl tw-bg-[#0b0f19] tw-border tw-border-[#334155] tw-rounded-xl tw-p-5 tw-font-mono tw-text-white tw-shadow-[0_0_40px_rgba(0,0,0,0.9)] tw-border-t-[rgba(255,255,255,0.12)] tw-flex tw-flex-col tw-gap-4"
+			class="tw-relative tw-z-10 tw-w-full tw-max-w-xl tw-bg-[#0b0f19] tw-border tw-border-[#334155] tw-rounded-xl tw-p-5 tw-font-mono tw-text-[#fafafa] tw-shadow-[0_0_40px_rgba(0,0,0,0.9)] tw-border-t-[rgba(255,255,255,0.12)] tw-flex tw-flex-col tw-gap-4"
 		>
 			<!-- Top Header: Avatar, Name, Position, Status & Close -->
 			<div class="tw-flex tw-items-start tw-justify-between tw-gap-3 tw-border-b tw-border-[#334155] tw-pb-4">
@@ -103,10 +103,10 @@
 					<VanguardAvatar seed={player.rosterKey || player.name} size={48} />
 					<div>
 						<div class="tw-flex tw-items-center tw-gap-2">
-							<span class="tw-bg-[#daff0a] tw-text-black tw-font-black tw-text-xs tw-px-1.5 tw-py-0.5 tw-rounded">
+							<span class="tw-bg-[#daff0a] tw-text-[#000000] tw-font-black tw-text-xs tw-px-1.5 tw-py-0.5 tw-rounded">
 								#{player.number}
 							</span>
-							<h2 class="tw-font-black tw-text-base tw-tracking-wide tw-m-0 tw-text-white">
+							<h2 class="tw-font-black tw-text-base tw-tracking-wide tw-m-0 tw-text-[#fafafa]">
 								{player.name}
 							</h2>
 						</div>
@@ -130,7 +130,7 @@
 				<button
 					type="button"
 					onclick={onClose}
-					class="tw-text-slate-400 hover:tw-text-white tw-bg-[#020617] hover:tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-rounded-lg tw-p-1.5 tw-transition-colors tw-cursor-pointer"
+					class="tw-text-slate-400 hover:tw-text-[#fafafa] tw-bg-[#020617] hover:tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-rounded-lg tw-p-1.5 tw-transition-colors tw-cursor-pointer"
 					aria-label="Close modal"
 				>
 					<Icon name="sys.close" size={18} />
@@ -153,7 +153,7 @@
 				</div>
 				<div class="tw-bg-[#020617] tw-border tw-border-[#334155] tw-rounded-lg tw-p-2">
 					<div class="tw-text-[9px] tw-text-slate-400 tw-uppercase">TOTAL XP</div>
-					<div class="tw-text-xl tw-font-black tw-text-white tw-tabular-nums">{totalXp}</div>
+					<div class="tw-text-xl tw-font-black tw-text-[#fafafa] tw-tabular-nums">{totalXp}</div>
 				</div>
 			</div>
 
@@ -219,7 +219,7 @@
 										style="width: {score}%;"
 									></div>
 								</div>
-								<span class="tw-w-7 tw-text-right tw-font-bold tw-text-white tw-tabular-nums">{score}</span>
+								<span class="tw-w-7 tw-text-right tw-font-bold tw-text-[#fafafa] tw-tabular-nums">{score}</span>
 							</div>
 						</div>
 					{/each}
@@ -234,7 +234,7 @@
 				<button
 					type="button"
 					onclick={onClose}
-					class="tw-px-4 tw-py-1.5 tw-text-xs tw-font-mono tw-text-slate-300 hover:tw-text-white tw-bg-[#020617] hover:tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-rounded-lg tw-transition-colors tw-cursor-pointer"
+					class="tw-px-4 tw-py-1.5 tw-text-xs tw-font-mono tw-text-slate-300 hover:tw-text-[#fafafa] tw-bg-[#020617] hover:tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-rounded-lg tw-transition-colors tw-cursor-pointer"
 				>
 					Close
 				</button>

@@ -51,7 +51,7 @@
 		<div class="tw-flex tw-items-center tw-justify-between tw-mb-6">
 			<div class="tw-flex tw-items-center tw-gap-3">
 				<Icon name={"ai.sparkle" as IconName} class="tw-w-6 tw-h-6 tw-text-[#14b8a6]" />
-				<h2 class="tw-text-white tw-font-bold tw-text-xl">Squad Telemetry</h2>
+				<h2 class="tw-text-[#fafafa] tw-font-bold tw-text-xl">Squad Telemetry</h2>
 			</div>
 			<span class="tw-text-[#94a3b8] tw-text-xs tw-font-mono tw-tracking-widest">LIVE DATA FEED</span>
 		</div>
@@ -77,14 +77,14 @@
 					<tbody class="tw-divide-y tw-divide-[#334155]/50">
 						{#each squadTelemetry as row (row.id)}
 							<tr class="hover:tw-bg-[#1e293b]/50 tw-transition-colors">
-								<td class="tw-px-4 tw-py-4 tw-text-white tw-font-bold">{row.name}</td>
+								<td class="tw-px-4 tw-py-4 tw-text-[#fafafa] tw-font-bold">{row.name}</td>
 								<td class="tw-px-4 tw-py-4 tw-text-[#14b8a6] tw-font-mono tw-text-right">{row.xp.toLocaleString()}</td>
-								<td class="tw-px-4 tw-py-4 tw-text-white tw-font-mono tw-text-right">
+								<td class="tw-px-4 tw-py-4 tw-text-[#fafafa] tw-font-mono tw-text-right">
 									<span class="{row.readiness > 80 ? 'tw-text-[#10b981]' : row.readiness > 60 ? 'tw-text-[#14b8a6]' : 'tw-text-[#ef4444]'}">
 										{row.readiness}%
 									</span>
 								</td>
-								<td class="tw-px-4 tw-py-4 tw-text-white tw-font-mono tw-text-right">
+								<td class="tw-px-4 tw-py-4 tw-text-[#fafafa] tw-font-mono tw-text-right">
 									<span class="{row.fatigue < 20 ? 'tw-text-[#10b981]' : row.fatigue < 50 ? 'tw-text-[#14b8a6]' : 'tw-text-[#ef4444]'}">
 										{row.fatigue}
 									</span>

@@ -191,7 +191,7 @@
 		place-items: center;
 		padding: 20px;
 		background:
-			radial-gradient(ellipse 100% 60% at 50% 0%, rgba(0, 255, 255, 0.05), transparent 55%),
+			radial-gradient(ellipse 100% 60% at 50% 0%, rgba(20, 184, 166, 0.05), transparent 55%),
 			#000810;
 		font-family: 'Geist Mono', 'Space Mono', ui-monospace, monospace;
 		color: #e2e8f0;
@@ -217,10 +217,10 @@
 		z-index: 1;
 		width: min(440px, 100%);
 		background: rgba(0, 8, 20, 0.95);
-		border: 1px solid rgba(0, 255, 255, 0.18);
+		border: 1px solid rgba(20, 184, 166, 0.18);
 		border-radius: 4px;
 		box-shadow:
-			0 0 60px rgba(0, 255, 255, 0.04),
+			0 0 60px rgba(20, 184, 166, 0.04),
 			0 40px 100px -20px rgba(0, 0, 0, 0.9);
 		overflow: hidden;
 	}
@@ -231,14 +231,14 @@
 		align-items: center;
 		gap: 12px;
 		padding: 14px 20px 12px;
-		background: rgba(0, 255, 255, 0.03);
-		border-bottom: 1px solid rgba(0, 255, 255, 0.1);
+		background: rgba(20, 184, 166, 0.03);
+		border-bottom: 1px solid rgba(20, 184, 166, 0.1);
 	}
 	.cr-header-dot {
 		width: 8px; height: 8px;
 		border-radius: 50%;
 		flex-shrink: 0;
-		background: rgba(0, 255, 255, 0.4);
+		background: rgba(20, 184, 166, 0.4);
 		animation: cr-dot 2.5s ease-in-out infinite;
 	}
 	.cr-header-dot--sent {
@@ -248,18 +248,18 @@
 	}
 	@keyframes cr-dot {
 		0%, 100% { opacity: 0.4; box-shadow: none; }
-		50%       { opacity: 1;   box-shadow: 0 0 8px rgba(0, 255, 255, 0.6); }
+		50%       { opacity: 1;   box-shadow: 0 0 8px rgba(20, 184, 166, 0.6); }
 	}
 	.cr-header-title {
 		font-size: 8px;
 		font-weight: 700;
 		letter-spacing: 0.22em;
-		color: rgba(0, 255, 255, 0.8);
+		color: rgba(20, 184, 166, 0.8);
 	}
 	.cr-header-sub {
 		font-size: 7px;
 		letter-spacing: 0.1em;
-		color: rgba(0, 255, 255, 0.25);
+		color: rgba(20, 184, 166, 0.25);
 		margin-top: 2px;
 	}
 
@@ -268,7 +268,7 @@
 
 	.cr-desc {
 		font-size: 10px;
-		color: rgba(0, 255, 255, 0.35);
+		color: rgba(20, 184, 166, 0.35);
 		line-height: 1.6;
 		margin: 0 0 18px;
 	}
@@ -278,7 +278,7 @@
 		font-size: 8px;
 		font-weight: 700;
 		letter-spacing: 0.22em;
-		color: rgba(0, 255, 255, 0.5);
+		color: rgba(20, 184, 166, 0.5);
 		margin-bottom: 6px;
 	}
 
@@ -286,19 +286,19 @@
 		display: flex;
 		align-items: center;
 		background: rgba(0, 0, 0, 0.5);
-		border: 1px solid rgba(0, 255, 255, 0.18);
+		border: 1px solid rgba(20, 184, 166, 0.18);
 		border-radius: 2px;
 		transition: border-color 0.15s;
 		margin-bottom: 12px;
 	}
 	.cr-input-row:focus-within {
-		border-color: rgba(0, 255, 255, 0.45);
-		box-shadow: 0 0 0 1px rgba(0, 255, 255, 0.12);
+		border-color: rgba(20, 184, 166, 0.45);
+		box-shadow: 0 0 0 1px rgba(20, 184, 166, 0.12);
 	}
 	.cr-input-prefix {
 		padding: 0 10px;
 		font-size: 13px;
-		color: rgba(0, 255, 255, 0.3);
+		color: rgba(20, 184, 166, 0.3);
 		flex-shrink: 0;
 		user-select: none;
 	}
@@ -310,11 +310,11 @@
 		background: transparent;
 		border: none;
 		outline: none;
-		color: rgba(0, 255, 255, 0.85);
+		color: rgba(20, 184, 166, 0.85);
 		caret-color: #14b8a6;
 		min-width: 0;
 	}
-	.cr-input::placeholder { color: rgba(0, 255, 255, 0.18); }
+	.cr-input::placeholder { color: rgba(20, 184, 166, 0.18); }
 	.cr-input:disabled { opacity: 0.5; }
 
 	.cr-error {
@@ -339,8 +339,8 @@
 		font-weight: 700;
 		letter-spacing: 0.2em;
 		color: #14b8a6;
-		background: rgba(0, 255, 255, 0.08);
-		border: 1px solid rgba(0, 255, 255, 0.4);
+		background: rgba(20, 184, 166, 0.08);
+		border: 1px solid rgba(20, 184, 166, 0.4);
 		border-radius: 2px;
 		cursor: pointer;
 		transition: background 0.15s, box-shadow 0.15s;
@@ -351,8 +351,8 @@
 		min-height: 42px;
 	}
 	.cr-submit:hover:not(:disabled) {
-		background: rgba(0, 255, 255, 0.16);
-		box-shadow: 0 0 18px rgba(0, 255, 255, 0.18);
+		background: rgba(20, 184, 166, 0.16);
+		box-shadow: 0 0 18px rgba(20, 184, 166, 0.18);
 	}
 	.cr-submit:disabled { opacity: 0.4; cursor: not-allowed; }
 
@@ -372,11 +372,11 @@
 	.cr-link {
 		font-size: 8px;
 		letter-spacing: 0.14em;
-		color: rgba(0, 255, 255, 0.3);
+		color: rgba(20, 184, 166, 0.3);
 		text-decoration: none;
 		transition: color 0.15s;
 	}
-	.cr-link:hover { color: rgba(0, 255, 255, 0.7); }
+	.cr-link:hover { color: rgba(20, 184, 166, 0.7); }
 
 	/* ── Sent state ────────────────────────────────────────────────────────── */
 	.cr-sent {
@@ -403,7 +403,7 @@
 	}
 	.cr-sent-body {
 		font-size: 10px;
-		color: rgba(0, 255, 255, 0.4);
+		color: rgba(20, 184, 166, 0.4);
 		line-height: 1.6;
 		margin: 0 0 8px;
 	}
@@ -412,21 +412,21 @@
 	.cr-redirect-label {
 		font-size: 8px;
 		letter-spacing: 0.14em;
-		color: rgba(0, 255, 255, 0.3);
+		color: rgba(20, 184, 166, 0.3);
 		margin-bottom: 6px;
 		text-align: center;
 	}
 	.cr-redirect-count { color: #14b8a6; font-weight: 700; }
 	.cr-redirect-bar {
 		height: 2px;
-		background: rgba(0, 255, 255, 0.08);
+		background: rgba(20, 184, 166, 0.08);
 		border-radius: 1px;
 		overflow: hidden;
 	}
 	.cr-redirect-progress {
 		height: 100%;
-		background: rgba(0, 255, 255, 0.5);
-		box-shadow: 0 0 6px rgba(0, 255, 255, 0.4);
+		background: rgba(20, 184, 166, 0.5);
+		box-shadow: 0 0 6px rgba(20, 184, 166, 0.4);
 		transition: width 1s linear;
 	}
 
@@ -435,9 +435,9 @@
 		margin-top: 4px;
 		font-size: 8px;
 		letter-spacing: 0.14em;
-		color: rgba(0, 255, 255, 0.25);
+		color: rgba(20, 184, 166, 0.25);
 		text-decoration: none;
 		transition: color 0.15s;
 	}
-	.cr-back-link:hover { color: rgba(0, 255, 255, 0.6); }
+	.cr-back-link:hover { color: rgba(20, 184, 166, 0.6); }
 </style>

@@ -70,14 +70,14 @@
         <button
             onclick={replayRows}
             disabled={replaying || exceptions.every(e => !e.corrected) || exceptions.length === 0}
-            class="tw-bg-[#14b8a6] hover:tw-bg-teal-400 disabled:tw-bg-slate-700 tw-text-black disabled:tw-text-slate-400 tw-font-bold tw-py-2 tw-px-6 tw-rounded-none tw-transition-colors"
+            class="tw-bg-[#14b8a6] hover:tw-bg-teal-400 disabled:tw-bg-slate-700 tw-text-[#000000] disabled:tw-text-slate-400 tw-font-bold tw-py-2 tw-px-6 tw-rounded-none tw-transition-colors"
         >
             {replaying ? 'Executing Batch...' : 'Replay Corrected Rows'}
         </button>
     </div>
 
     {#if replayResult}
-        <div class="tw-mb-6 tw-p-4 tw-border tw-rounded-none tw-font-mono tw-text-sm {replayResult.includes('Error') ? 'tw-bg-red-900 tw-text-red-200 tw-border-red-500' : 'tw-bg-green-900 tw-text-green-200 tw-border-green-500'}">
+        <div class="tw-mb-6 tw-p-4 tw-border tw-rounded-none tw-font-mono tw-text-sm {replayResult.includes('Error') ? 'tw-bg-[#f59e0b] tw-text-red-200 tw-border-red-500' : 'tw-bg-[#14b8a6] tw-text-green-200 tw-border-green-500'}">
             {replayResult}
         </div>
     {/if}
@@ -105,7 +105,7 @@
                             <div class="tw-text-xs tw-text-slate-500 tw-font-mono">Row {row.row || 'N/A'} in {row.file || 'unknown'}</div>
                         </td>
                         <td class="tw-px-4 tw-py-4">
-                            <span class="tw-text-xs tw-uppercase tw-px-2 tw-py-1 tw-font-bold tw-bg-red-900 tw-text-red-300">
+                            <span class="tw-text-xs tw-uppercase tw-px-2 tw-py-1 tw-font-bold tw-bg-[#f59e0b] tw-text-red-300">
                                 {row.type}
                             </span>
                         </td>
@@ -115,7 +115,7 @@
                                 type="text"
                                 bind:value={row.corrected}
                                 placeholder="Enter correction..."
-                                class="tw-w-full tw-bg-[#0a0a0a] tw-border tw-border-[#334155] focus:tw-border-[#14b8a6] tw-text-white tw-px-3 tw-py-2 tw-text-sm tw-font-mono tw-rounded-none tw-outline-none"
+                                class="tw-w-full tw-bg-[#0a0a0a] tw-border tw-border-[#334155] focus:tw-border-[#14b8a6] tw-text-[#fafafa] tw-px-3 tw-py-2 tw-text-sm tw-font-mono tw-rounded-none tw-outline-none"
                             />
                         </td>
                     </tr>

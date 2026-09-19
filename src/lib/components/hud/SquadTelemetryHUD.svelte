@@ -19,7 +19,7 @@
 			</p>
 		</div>
 		<div class="hud-telemetry-uptime__score">
-			<span class="tw-text-[10px] tw-font-bold tw-uppercase tw-tracking-widest tw-text-white/35 tw-font-mono">READINESS SCORE</span>
+			<span class="tw-text-[10px] tw-font-bold tw-uppercase tw-tracking-widest tw-text-[#fafafa]/35 tw-font-mono">READINESS SCORE</span>
 			<span class="tw-text-3xl tw-font-black tw-tabular-nums tw-text-[#14b8a6] tw-drop-shadow-[0_0_12px_rgba(20, 184, 166,0.55)] tw-font-mono">{engine.squadUptimePct}%</span>
 		</div>
 		<div class="hud-telemetry-uptime__bar">
@@ -44,27 +44,27 @@
 			</h2>
 		</div>
 		<div class="hud-telemetry-matrix__stats">
-			<span class="tw-font-mono tw-text-[10px] tw-font-bold tw-uppercase tw-tracking-widest tw-text-white/35">
+			<span class="tw-font-mono tw-text-[10px] tw-font-bold tw-uppercase tw-tracking-widest tw-text-[#fafafa]/35">
 				COMBAT READY <span class="tw-ml-1 tw-tabular-nums tw-text-[#14b8a6]">{engine.rmReady}</span>
 			</span>
-			<span class="tw-font-mono tw-text-[10px] tw-font-bold tw-uppercase tw-tracking-widest tw-text-white/35">
+			<span class="tw-font-mono tw-text-[10px] tw-font-bold tw-uppercase tw-tracking-widest tw-text-[#fafafa]/35">
 				CONSENT PENDING <span class="tw-ml-1 tw-tabular-nums tw-text-[#ff003c]">{engine.rmConsent}</span>
 			</span>
-			<span class="tw-font-mono tw-text-[10px] tw-font-bold tw-uppercase tw-tracking-widest tw-text-white/35">
-				OFFLINE <span class="tw-ml-1 tw-tabular-nums tw-text-white/50">{engine.rmOffline}</span>
+			<span class="tw-font-mono tw-text-[10px] tw-font-bold tw-uppercase tw-tracking-widest tw-text-[#fafafa]/35">
+				OFFLINE <span class="tw-ml-1 tw-tabular-nums tw-text-[#fafafa]/50">{engine.rmOffline}</span>
 			</span>
-			<span class="tw-font-mono tw-text-[10px] tw-font-bold tw-uppercase tw-tracking-widest tw-text-white/35">
+			<span class="tw-font-mono tw-text-[10px] tw-font-bold tw-uppercase tw-tracking-widest tw-text-[#fafafa]/35">
 				INJURY RISK <span class="tw-ml-1 tw-tabular-nums tw-text-[#ff003c]">{engine.rmAtRisk}</span>
 			</span>
 		</div>
 	</div>
 
 	{#if engine.loading}
-		<p class="tw-font-mono tw-text-[11px] tw-uppercase tw-tracking-widest tw-text-white/40 tw-m-0 tw-py-4">
+		<p class="tw-font-mono tw-text-[11px] tw-uppercase tw-tracking-widest tw-text-[#fafafa]/40 tw-m-0 tw-py-4">
 			Loading roster…
 		</p>
 	{:else if engine.readinessRoster.length === 0}
-		<p class="tw-font-mono tw-text-[11px] tw-uppercase tw-tracking-widest tw-text-white/40 tw-m-0 tw-py-4">
+		<p class="tw-font-mono tw-text-[11px] tw-uppercase tw-tracking-widest tw-text-[#fafafa]/40 tw-m-0 tw-py-4">
 			No athletes on roster — ingest below or
 			<a class="tw-text-[#14b8a6] tw-underline tw-underline-offset-2" href="/coach/logistics?tab=roster"
 				>import CSV on Team Ops</a
@@ -93,7 +93,7 @@
 						/>
 					</div>
 					<div class="hud-readiness-card__meta">
-						<p class="tw-font-mono tw-text-[10px] tw-font-black tw-uppercase tw-tracking-wider tw-text-white tw-m-0">{p.name}</p>
+						<p class="tw-font-mono tw-text-[10px] tw-font-black tw-uppercase tw-tracking-wider tw-text-[#fafafa] tw-m-0">{p.name}</p>
 						<p class="tw-font-mono tw-text-[10px] tw-text-[#14b8a6] tw-m-0">{p.position} · #{p.number}</p>
 						<p class="tw-font-mono tw-text-[10px] tw-uppercase tw-tracking-widest tw-m-0" style="color: {p.status === 'READY' ? '#14b8a6' : p.status === 'INJURY RISK' ? '#ff003c' : '#666'}">{p.status}</p>
 					</div>

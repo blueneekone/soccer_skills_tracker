@@ -33,7 +33,7 @@
 				<p class="tw-text-xs tw-text-[#94a3b8] tw-mt-1">High-Definition SafeSport Certified Broadcast Relay</p>
 			</div>
 			<div class="tw-absolute tw-bottom-3 tw-left-3 tw-flex tw-items-center tw-gap-2 tw-bg-[#000000]/60 tw-backdrop-blur-sm tw-px-3 tw-py-1 tw-rounded-md tw-border tw-border-slate-700/50">
-				<span class="tw-inline-block tw-w-2 tw-h-2 tw-rounded-full tw-bg-red-500"></span>
+				<span class="tw-inline-block tw-w-2 tw-h-2 tw-rounded-full tw-bg-[#f59e0b]"></span>
 				<span class="tw-font-mono tw-text-[11px] tw-text-slate-200">1080p 60FPS</span>
 			</div>
 		</div>

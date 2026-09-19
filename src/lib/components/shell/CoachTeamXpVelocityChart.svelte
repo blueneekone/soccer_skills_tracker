@@ -153,7 +153,7 @@
 								borderColor: EC_INK,
 								backgroundColor: 'rgba(63, 63, 70, 0.16)',
 								pointBackgroundColor: EC_ACCENT,
-								pointBorderColor: '#ffffff',
+								pointBorderColor: '#fafafa',
 								pointHoverBackgroundColor: EC_ACCENT,
 							},
 						],

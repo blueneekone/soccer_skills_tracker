@@ -11,18 +11,18 @@
 		<p class="tw-font-mono tw-text-[#f59e0b]">{engine.error}</p>
 	{:else if engine.status === 'not_found'}
 		<div class="tw-bg-[#0f172a] tw-p-6 tw-rounded-[24px] tw-border tw-border-slate-700">
-			<h2 class="tw-text-xl tw-font-bold tw-mb-4 tw-text-white">Application Required</h2>
+			<h2 class="tw-text-xl tw-font-bold tw-mb-4 tw-text-[#fafafa]">Application Required</h2>
 			<p class="tw-text-slate-300">Your recruiter profile was not found. Please contact administration or apply to initiate vetting.</p>
 		</div>
 	{:else if engine.status === 'pending'}
 		<div class="tw-bg-[#0f172a] tw-p-6 tw-rounded-[24px] tw-border tw-border-slate-700">
-			<h2 class="tw-text-xl tw-font-bold tw-mb-4 tw-text-white">Vetting Underway</h2>
+			<h2 class="tw-text-xl tw-font-bold tw-mb-4 tw-text-[#fafafa]">Vetting Underway</h2>
 			<p class="tw-text-slate-300 tw-mb-4">Your application is being reviewed. If approved, you will receive a Checkr invitation here.</p>
 			<button class="tw-bg-[#f59e0b] tw-text-slate-900 tw-font-bold tw-py-2 tw-px-4 tw-rounded tw-cursor-pointer hover:tw-bg-[#fbbf24]" onclick={() => engine.forcePoll()}>Refresh Status</button>
 		</div>
 	{:else if engine.status === 'invited'}
 		<div class="tw-bg-[#0f172a] tw-p-6 tw-rounded-[24px] tw-border tw-border-slate-700">
-			<h2 class="tw-text-xl tw-font-bold tw-mb-4 tw-text-white">Background Check Required</h2>
+			<h2 class="tw-text-xl tw-font-bold tw-mb-4 tw-text-[#fafafa]">Background Check Required</h2>
 			<p class="tw-text-slate-300 tw-mb-4">Please check your email for the Checkr background check invitation and complete it to gain platform access.</p>
 			{#if engine.candidateId}
 				<p class="tw-font-mono tw-text-sm tw-text-slate-400 tw-mt-4">Candidate ID: {engine.candidateId}</p>

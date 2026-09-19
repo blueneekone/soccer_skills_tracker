@@ -225,7 +225,7 @@
 		</div>
 	{/if}
 	{#if errorMsg}
-		<div class="tw-bg-red-950/40 tw-border tw-border-red-500 tw-text-red-300 tw-px-3 tw-py-2 tw-text-xs tw-font-mono tw-rounded">
+		<div class="tw-bg-[#f59e0b]/40 tw-border tw-border-red-500 tw-text-red-300 tw-px-3 tw-py-2 tw-text-xs tw-font-mono tw-rounded">
 			⚠ {errorMsg}
 		</div>
 	{/if}
@@ -255,9 +255,9 @@
 					{#each households as hh (hh.id)}
 						{@const primaryEmail = hh.parentEmails[0] || '—'}
 						<tr class="hover:tw-bg-[#0f172a] tw-transition-colors">
-							<td class="tw-p-3 tw-text-white tw-font-bold">
+							<td class="tw-p-3 tw-text-[#fafafa] tw-font-bold">
 								{#if hh.parentName}
-									<span class="tw-text-white tw-font-bold">{hh.parentName}</span>
+									<span class="tw-text-[#fafafa] tw-font-bold">{hh.parentName}</span>
 								{:else}
 									<span class="tw-text-[#fbbf24]/90 tw-text-[10px] tw-font-mono tw-border tw-border-[#f59e0b]/30 tw-bg-amber-950/30 tw-px-2 tw-py-0.5 tw-rounded">
 										⏳ Pending Onboarding

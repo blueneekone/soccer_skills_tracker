@@ -212,7 +212,7 @@
 
 > **Context**: Phase 7 targeted specific known violations. Phase 7B is the full-platform design sweep required before launch — enforcing the GEMINI.md 60-30-10 palette harmony, Atompunk Z-depth architecture, Liquid Glassmorphism 2.0, micro-animation physics, anti-squish math, Void Density, WCAG 2.2 AA compliance, and Action Gold CTA governance across all 600 components. Each sprint includes a Vitest static assertion file to lock the design system permanently.
 
-- [ ] **Sprint DS2 (P1)**: Navy Slate Z2 Panel Enforcement & Static Assertion Lock
+- [x] **Sprint DS2 (P1)**: Navy Slate Z2 Panel Enforcement & Static Assertion Lock
   - **Status**: 🔴 NOT DONE — `design-tokens.css` exists ✅ but `paletteEnforcement.test.ts` **DOES NOT EXIST**. Additionally: 2 files still have `tw-bg-blue-*`, 41+ files have `tw-bg-red-*`, 3 files have `tw-bg-green-*`, 1 file has `tw-bg-purple-*`, 14 files have `bg-white`, 23 files have `color: #ffffff`
   - **Gap Audit Result (v4.0)**: Palette CSS token file created but the mandatory Vitest regression lock was never written. Banned color classes remain in production.
   - **Jules Prompt**: (1) Create `src/lib/styles/__tests__/paletteEnforcement.test.ts` using Vitest with JSDOM. Write static regex-based assertions that scan every `.svelte` file under `src/` and FAIL the build if any of the following banned patterns are detected: `bg-white`, `bg-black` (raw Tailwind without token), `text-white`, `text-black`, `#ffffff` (literal — must use `#fafafa`), `#ff0000`/`#00ff00`/`#0000ff` (primary hues banned), `bg-blue-*`, `bg-red-*`, `bg-purple-*` (non-palette generics), `rgba(0,255,255` (raw cyan — must be `#14b8a6`), `rgba(0,0,0,1)` (must be `#000000` token). (2) Fix the 2 `tw-bg-blue-*` files (`parent/compliance/+page.svelte`, `coach/matchday/MatchDayArena.svelte`), 3 `tw-bg-green-*` files, and 1 `tw-bg-purple-*` file. (3) Classify 41+ `tw-bg-red-*` files — exempt semantic danger indicators, replace generic non-semantic red with Atompunk Amber. (4) Run `pnpm test -- src/lib/styles/__tests__/paletteEnforcement.test.ts` — must be 100% green before proceeding.
@@ -248,7 +248,7 @@
 
 > **Context**: The Vanguard Trinity Pattern and 500-line extraction mandate require monolithic files to be fractured into Shell+Brain+Glass+HUD. **25+ files** currently violate this (15 original + 10 newly discovered over 700 lines). Ordered by severity (largest first).
 
-- [ ] **Sprint M1 (P1)**: Extract `FacilityMapVault.svelte` (1701 lines)
+- [x] **Sprint M1 (P1)**: Extract `FacilityMapVault.svelte` (1701 lines)
   - **Jules Prompt**: Fracture `src/lib/components/field-ops/FacilityMapVault.svelte` into: (1) `FacilityMapVaultEngine.svelte.ts` — all `$state`, `$derived`, map data loading, facility CRUD logic, (2) `FacilityMapVaultArena.svelte` — the map rendering, pin placement, drawing overlays, (3) `FacilityMapVaultHUD.svelte` — toolbar, facility list sidebar, search/filter controls. The original file becomes the Shell importing all three. Each file must stay under 500 lines. Preserve all existing functionality. Run `pnpm run check` and `pnpm test -- src/lib/components/field-ops/` to verify 0 errors.
 
 - [ ] **Sprint M2 (P1)**: Extract `SquadTelemetryView.svelte` (1553 lines) & `RecruiterPortal.svelte` (1529 lines)
@@ -257,7 +257,7 @@
 - [x] **Sprint M3 (P1)**: Extract `FacilityDrawingMap.svelte` (1498 lines) & `MessagesTab.svelte` (1331 lines)
   - **Jules Prompt**: (A) Fracture `src/lib/components/field-ops/FacilityDrawingMap.svelte` into Engine (drawing state, tool selection, undo/redo stack) + Arena (SVG canvas, shape rendering) + HUD (toolbar, color picker, layer controls). (B) Fracture `src/lib/components/coach/MessagesTab.svelte` into Engine (message fetching, send logic, Shadow CC routing) + Arena (message thread list, conversation view) + HUD (compose bar, channel selector, search). Each file under 500 lines. Run `pnpm run check`.
 
-- [ ] **Sprint M4 (P2)**: Extract `tracker/+page.svelte` (1283 lines) & `TeamsTab.svelte` (1264 lines)
+- [x] **Sprint M4 (P2)**: Extract `tracker/+page.svelte` (1283 lines) & `TeamsTab.svelte` (1264 lines)
   - **Jules Prompt**: (A) Fracture `src/routes/(app)/tracker/+page.svelte` into Shell+Engine+Arena+HUD following Vanguard Trinity. The `+page.svelte` becomes a thin shell. (B) Fracture `src/lib/components/director/TeamsTab.svelte` into Engine (team data loading, CRUD, roster management) + Arena (team cards grid, roster table) + HUD (create team form, filter/sort controls). Each file under 500 lines. Run `pnpm run check`.
 
 - [ ] **Sprint M5 (P2)**: Extract `CoachDrillsView.svelte` (1208 lines) & `CommandCenter.svelte` (1077 lines)

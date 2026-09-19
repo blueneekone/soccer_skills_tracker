@@ -147,7 +147,7 @@
                 Votes: <span class="tw-text-slate-100 tw-font-bold">{option.votes}</span>
               </span>
               <button 
-                class="tw-border tw-border-[#14b8a6] tw-bg-[#000000] hover:tw-bg-[#14b8a6] hover:tw-text-black tw-px-3 tw-py-1 tw-text-xs tw-transition-colors"
+                class="tw-border tw-border-[#14b8a6] tw-bg-[#000000] hover:tw-bg-[#14b8a6] hover:tw-text-[#000000] tw-px-3 tw-py-1 tw-text-xs tw-transition-colors"
                 onclick={() => castVote(option.id)}>
                 +1 VOTE
               </button>
@@ -171,7 +171,7 @@
             class="tw-bg-[#0f172a] tw-border tw-border-slate-800 tw-p-2 tw-text-xs tw-text-slate-100 tw-flex-1 focus:tw-outline-none focus:tw-border-[#14b8a6]"
             bind:value={customOptionDesc} />
           <button 
-            class="tw-bg-[#000000] tw-border tw-border-[#14b8a6] tw-text-[#14b8a6] hover:tw-bg-[#14b8a6] hover:tw-text-black tw-px-4 tw-py-2 tw-text-xs tw-transition-colors tw-font-bold"
+            class="tw-bg-[#000000] tw-border tw-border-[#14b8a6] tw-text-[#14b8a6] hover:tw-bg-[#14b8a6] hover:tw-text-[#000000] tw-px-4 tw-py-2 tw-text-xs tw-transition-colors tw-font-bold"
             onclick={addCustomOption}>
             ADD SLOT
           </button>
@@ -202,7 +202,7 @@
 
       <!-- Action Button (No Action Gold in Coach OS) -->
       <button 
-        class="tw-w-full tw-bg-[#14b8a6] tw-text-black hover:tw-bg-[#000000] hover:tw-text-[#14b8a6] tw-border tw-border-[#14b8a6] tw-py-3 tw-text-xs tw-font-bold tw-transition-colors tw-mt-auto"
+        class="tw-w-full tw-bg-[#14b8a6] tw-text-[#000000] hover:tw-bg-[#000000] hover:tw-text-[#14b8a6] tw-border tw-border-[#14b8a6] tw-py-3 tw-text-xs tw-font-bold tw-transition-colors tw-mt-auto"
         onclick={commitHalftimePlan}
         disabled={isSubmitting}>
         {#if isSubmitting}

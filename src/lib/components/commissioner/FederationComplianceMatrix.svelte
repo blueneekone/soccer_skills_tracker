@@ -50,45 +50,45 @@
 						<td class="tw-p-3 tw-text-[#FAFAFA] tw-font-sans tw-font-bold tw-text-xs">{club.name}</td>
 						<td class="tw-p-3">
 							{#if club.safesport === 'green'}
-								<span class="tw-inline-flex tw-items-center tw-gap-1 tw-px-2 tw-py-0.5 tw-text-[10px] tw-font-mono tw-font-bold tw-bg-[#14b8a6] tw-text-black tw-rounded-none">
+								<span class="tw-inline-flex tw-items-center tw-gap-1 tw-px-2 tw-py-0.5 tw-text-[10px] tw-font-mono tw-font-bold tw-bg-[#14b8a6] tw-text-[#000000] tw-rounded-none">
 									<Icon name={"status.check" as IconName} size={10} /> PASS
 								</span>
 							{:else if club.safesport === 'amber'}
-								<span class="tw-inline-flex tw-items-center tw-gap-1 tw-px-2 tw-py-0.5 tw-text-[10px] tw-font-mono tw-font-bold tw-bg-[#f59e0b] tw-text-black tw-rounded-none">
+								<span class="tw-inline-flex tw-items-center tw-gap-1 tw-px-2 tw-py-0.5 tw-text-[10px] tw-font-mono tw-font-bold tw-bg-[#f59e0b] tw-text-[#000000] tw-rounded-none">
 									<Icon name={"status.warning" as IconName} size={10} /> AUDIT
 								</span>
 							{:else}
-								<span class="tw-inline-flex tw-items-center tw-gap-1 tw-px-2 tw-py-0.5 tw-text-[10px] tw-font-mono tw-font-bold tw-bg-red-500 tw-text-white tw-rounded-none">
+								<span class="tw-inline-flex tw-items-center tw-gap-1 tw-px-2 tw-py-0.5 tw-text-[10px] tw-font-mono tw-font-bold tw-bg-[#f59e0b] tw-text-[#fafafa] tw-rounded-none">
 									<Icon name={"status.error" as IconName} size={10} /> ALERT
 								</span>
 							{/if}
 						</td>
 						<td class="tw-p-3">
 							{#if club.background === 'green'}
-								<span class="tw-inline-flex tw-items-center tw-gap-1 tw-px-2 tw-py-0.5 tw-text-[10px] tw-font-mono tw-font-bold tw-bg-[#14b8a6] tw-text-black tw-rounded-none">
+								<span class="tw-inline-flex tw-items-center tw-gap-1 tw-px-2 tw-py-0.5 tw-text-[10px] tw-font-mono tw-font-bold tw-bg-[#14b8a6] tw-text-[#000000] tw-rounded-none">
 									<Icon name={"status.check" as IconName} size={10} /> PASS
 								</span>
 							{:else if club.background === 'amber'}
-								<span class="tw-inline-flex tw-items-center tw-gap-1 tw-px-2 tw-py-0.5 tw-text-[10px] tw-font-mono tw-font-bold tw-bg-[#f59e0b] tw-text-black tw-rounded-none">
+								<span class="tw-inline-flex tw-items-center tw-gap-1 tw-px-2 tw-py-0.5 tw-text-[10px] tw-font-mono tw-font-bold tw-bg-[#f59e0b] tw-text-[#000000] tw-rounded-none">
 									<Icon name={"status.warning" as IconName} size={10} /> AUDIT
 								</span>
 							{:else}
-								<span class="tw-inline-flex tw-items-center tw-gap-1 tw-px-2 tw-py-0.5 tw-text-[10px] tw-font-mono tw-font-bold tw-bg-red-500 tw-text-white tw-rounded-none">
+								<span class="tw-inline-flex tw-items-center tw-gap-1 tw-px-2 tw-py-0.5 tw-text-[10px] tw-font-mono tw-font-bold tw-bg-[#f59e0b] tw-text-[#fafafa] tw-rounded-none">
 									<Icon name={"status.error" as IconName} size={10} /> ALERT
 								</span>
 							{/if}
 						</td>
 						<td class="tw-p-3">
 							{#if club.coppa === 'green'}
-								<span class="tw-inline-flex tw-items-center tw-gap-1 tw-px-2 tw-py-0.5 tw-text-[10px] tw-font-mono tw-font-bold tw-bg-[#14b8a6] tw-text-black tw-rounded-none">
+								<span class="tw-inline-flex tw-items-center tw-gap-1 tw-px-2 tw-py-0.5 tw-text-[10px] tw-font-mono tw-font-bold tw-bg-[#14b8a6] tw-text-[#000000] tw-rounded-none">
 									<Icon name={"status.check" as IconName} size={10} /> PASS
 								</span>
 							{:else if club.coppa === 'amber'}
-								<span class="tw-inline-flex tw-items-center tw-gap-1 tw-px-2 tw-py-0.5 tw-text-[10px] tw-font-mono tw-font-bold tw-bg-[#f59e0b] tw-text-black tw-rounded-none">
+								<span class="tw-inline-flex tw-items-center tw-gap-1 tw-px-2 tw-py-0.5 tw-text-[10px] tw-font-mono tw-font-bold tw-bg-[#f59e0b] tw-text-[#000000] tw-rounded-none">
 									<Icon name={"status.warning" as IconName} size={10} /> AUDIT
 								</span>
 							{:else}
-								<span class="tw-inline-flex tw-items-center tw-gap-1 tw-px-2 tw-py-0.5 tw-text-[10px] tw-font-mono tw-font-bold tw-bg-red-500 tw-text-white tw-rounded-none">
+								<span class="tw-inline-flex tw-items-center tw-gap-1 tw-px-2 tw-py-0.5 tw-text-[10px] tw-font-mono tw-font-bold tw-bg-[#f59e0b] tw-text-[#fafafa] tw-rounded-none">
 									<Icon name={"status.error" as IconName} size={10} /> ALERT
 								</span>
 							{/if}

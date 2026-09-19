@@ -184,7 +184,7 @@
 		<div class="tw-flex tw-items-center tw-gap-3">
 			<span class="tw-w-2.5 tw-h-2.5 tw-bg-[#14b8a6] tw-shadow-[0_0_10px_#14b8a6]"></span>
 			<div>
-				<h3 class="tw-text-xs tw-font-black tw-tracking-widest tw-text-white tw-uppercase tw-m-0">
+				<h3 class="tw-text-xs tw-font-black tw-tracking-widest tw-text-[#fafafa] tw-uppercase tw-m-0">
 					PITCH RADAR PROBE & RESERVATION
 				</h3>
 				<span class="tw-text-[10px] tw-text-slate-400 tw-uppercase">FACILITY COLLISION AVOIDANCE</span>
@@ -216,7 +216,7 @@
 			</div>
 			{#each conflicts as c}
 				<div class="tw-p-3 tw-bg-[#020617] tw-border-l-4 tw-border-rose-500 tw-text-xs">
-					<div class="tw-font-bold tw-text-white">{c.label}</div>
+					<div class="tw-font-bold tw-text-[#fafafa]">{c.label}</div>
 					<div class="tw-text-slate-400 tw-mt-1">
 						{msToHHMM(c.startMs)} – {msToHHMM(c.endMs)}
 						{#if c.teamId}<span class="tw-ml-2 tw-text-[#14b8a6]">· Team: {c.teamId}</span>{/if}
@@ -243,7 +243,7 @@
 			<select
 				id="fs-pitch"
 				bind:value={selectedFacilityId}
-				class="tw-w-full tw-px-3.5 tw-py-2.5 tw-text-xs tw-bg-[#020617] tw-border tw-border-[#334155] focus:tw-border-[#14b8a6] tw-text-white tw-outline-none"
+				class="tw-w-full tw-px-3.5 tw-py-2.5 tw-text-xs tw-bg-[#020617] tw-border tw-border-[#334155] focus:tw-border-[#14b8a6] tw-text-[#fafafa] tw-outline-none"
 				style="border-radius: 0px;"
 			>
 				{#each facilities as f}
@@ -265,7 +265,7 @@
 				id="fs-date"
 				type="date"
 				bind:value={date}
-				class="tw-w-full tw-px-3.5 tw-py-2.5 tw-text-xs tw-bg-[#020617] tw-border tw-border-[#334155] focus:tw-border-[#14b8a6] tw-text-white tw-outline-none"
+				class="tw-w-full tw-px-3.5 tw-py-2.5 tw-text-xs tw-bg-[#020617] tw-border tw-border-[#334155] focus:tw-border-[#14b8a6] tw-text-[#fafafa] tw-outline-none"
 				style="border-radius: 0px;"
 				min={todayISO()}
 			/>
@@ -279,7 +279,7 @@
 				id="fs-start"
 				type="time"
 				bind:value={startTime}
-				class="tw-w-full tw-px-3.5 tw-py-2.5 tw-text-xs tw-bg-[#020617] tw-border tw-border-[#334155] focus:tw-border-[#14b8a6] tw-text-white tw-outline-none"
+				class="tw-w-full tw-px-3.5 tw-py-2.5 tw-text-xs tw-bg-[#020617] tw-border tw-border-[#334155] focus:tw-border-[#14b8a6] tw-text-[#fafafa] tw-outline-none"
 				style="border-radius: 0px;"
 			/>
 		</div>
@@ -292,7 +292,7 @@
 				id="fs-end"
 				type="time"
 				bind:value={endTime}
-				class="tw-w-full tw-px-3.5 tw-py-2.5 tw-text-xs tw-bg-[#020617] tw-border tw-border-[#334155] focus:tw-border-[#14b8a6] tw-text-white tw-outline-none"
+				class="tw-w-full tw-px-3.5 tw-py-2.5 tw-text-xs tw-bg-[#020617] tw-border tw-border-[#334155] focus:tw-border-[#14b8a6] tw-text-[#fafafa] tw-outline-none"
 				style="border-radius: 0px;"
 			/>
 		</div>
@@ -316,7 +316,7 @@
 			type="text"
 			bind:value={label}
 			placeholder="e.g. U14 Tactical Shape & High Press Workshop"
-			class="tw-w-full tw-px-3.5 tw-py-2.5 tw-text-xs tw-bg-[#020617] tw-border tw-border-[#334155] focus:tw-border-[#14b8a6] tw-text-white tw-outline-none placeholder:tw-text-slate-600"
+			class="tw-w-full tw-px-3.5 tw-py-2.5 tw-text-xs tw-bg-[#020617] tw-border tw-border-[#334155] focus:tw-border-[#14b8a6] tw-text-[#fafafa] tw-outline-none placeholder:tw-text-slate-600"
 			style="border-radius: 0px;"
 		/>
 	</div>
@@ -362,7 +362,7 @@
 		type="button"
 		onclick={handleBook}
 		disabled={isBooking || availStatus === 'conflict' || !isValidTimeBlock || !label.trim() || !selectedFacilityId}
-		class="tw-w-full tw-py-3.5 tw-bg-[#fbbf24] hover:tw-bg-[#f59e0b] tw-text-black tw-text-xs tw-font-black tw-tracking-widest tw-uppercase tw-transition-all active:tw-scale-[0.99] disabled:tw-opacity-40 disabled:tw-cursor-not-allowed tw-shadow-[0_0_15px_rgba(251,191,36,0.3)]"
+		class="tw-w-full tw-py-3.5 tw-bg-[#fbbf24] hover:tw-bg-[#f59e0b] tw-text-[#000000] tw-text-xs tw-font-black tw-tracking-widest tw-uppercase tw-transition-all active:tw-scale-[0.99] disabled:tw-opacity-40 disabled:tw-cursor-not-allowed tw-shadow-[0_0_15px_rgba(251,191,36,0.3)]"
 		style="border-radius: 0px;"
 	>
 		{#if isBooking}LOCKING TIME BLOCK IN DATABASE…

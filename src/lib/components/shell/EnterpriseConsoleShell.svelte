@@ -591,7 +591,7 @@ import { untrack } from 'svelte';
 	}
 	.ec-anomaly-ctx-val {
 		font-size: 9px;
-		color: rgba(0, 255, 255, 0.55);
+		color: rgba(20, 184, 166, 0.55);
 		word-break: break-all;
 	}
 	.ec-anomaly-label {
@@ -624,7 +624,7 @@ import { untrack } from 'svelte';
 	.ec-anomaly-hint {
 		margin: 0;
 		font-size: 9px;
-		color: rgba(0, 255, 255, 0.3);
+		color: rgba(20, 184, 166, 0.3);
 		line-height: 1.5;
 	}
 	.ec-anomaly-submit {

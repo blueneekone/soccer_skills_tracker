@@ -129,7 +129,7 @@
 	<!-- Flash: Error -->
 	{#if saveError}
 		<div
-			class="tw-flex tw-items-center tw-justify-center tw-py-2 tw-rounded-lg tw-border tw-border-red-500/40 tw-bg-red-500/10"
+			class="tw-flex tw-items-center tw-justify-center tw-py-2 tw-rounded-lg tw-border tw-border-red-500/40 tw-bg-[#f59e0b]/10"
 		>
 			<span class="tw-font-mono tw-text-[10px] tw-tracking-widest tw-text-red-400">
 				[ ⚠ WRITE FAILED ]

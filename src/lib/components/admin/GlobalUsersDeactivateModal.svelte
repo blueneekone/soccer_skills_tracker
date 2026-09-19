@@ -62,7 +62,7 @@
 			<button type="button" class="btn-secondary tw-px-[clamp(16px,2vw,24px)] tw-py-2 tw-text-sm tw-font-bold tw-flex tw-items-center tw-gap-1.5" onclick={onClose} disabled={busy}>
 				<Icon name={"sys.close" as IconName} size={14} /> Cancel
 			</button>
-			<button type="button" class="btn-primary tw-bg-red-600 hover:tw-bg-red-700 tw-text-[#FAFAFA] tw-px-[clamp(16px,2vw,24px)] tw-py-2 tw-text-sm tw-font-bold disabled:tw-opacity-50 disabled:tw-cursor-not-allowed tw-flex tw-items-center tw-gap-1.5" onclick={onConfirm} disabled={busy || isSelf}>
+			<button type="button" class="btn-primary tw-bg-[#f59e0b] hover:tw-bg-[#f59e0b] tw-text-[#FAFAFA] tw-px-[clamp(16px,2vw,24px)] tw-py-2 tw-text-sm tw-font-bold disabled:tw-opacity-50 disabled:tw-cursor-not-allowed tw-flex tw-items-center tw-gap-1.5" onclick={onConfirm} disabled={busy || isSelf}>
 				<Icon name={"sys.ban" as IconName} size={14} />
 				{busy ? 'Applying…' : 'Revoke access now'}
 			</button>

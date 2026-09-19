@@ -104,14 +104,14 @@
 	border-radius: var(--vanguard-radius-sm);
 	border: 1px solid transparent;
 	cursor: pointer;
-	color: #ffffff;
+	color: #fafafa;
 	background: #0a0a0a;
 	box-shadow: none;
 	transition: opacity var(--motion-fast) var(--motion-ease), transform var(--motion-fast) var(--motion-ease);
 }
 
 html.dark .dir-os-btn-primary {
-	background: #ffffff;
+	background: #fafafa;
 	color: #0a0a0a;
 }
 
@@ -311,7 +311,7 @@ html.dark .dir-os-btn-primary.dir-os-btn--readonly {
 	padding: 4px 6px;
 	overflow: hidden;
 	background: var(--brand-primary);
-	color: #ffffff;
+	color: #fafafa;
 	font-size: 10px;
 	font-weight: 600;
 	line-height: 1.2;
@@ -337,7 +337,7 @@ html.dark .dir-os-btn-primary.dir-os-btn--readonly {
 	border-radius: var(--vanguard-radius-sm);
 	padding: 6px 12px;
 	border: 1px solid rgba(0, 0, 0, 0.1);
-	background: #ffffff;
+	background: #fafafa;
 	cursor: grab;
 	font-size: 12px;
 	font-weight: 600;

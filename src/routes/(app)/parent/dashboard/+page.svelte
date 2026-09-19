@@ -51,7 +51,7 @@
 </svelte:head>
 
 <!-- Parent OS Trusted Co-Op Partner Aesthetic -->
-<div class="pd-page-root compliance-vault tw-bg-[#0B0F19] tw-text-white tw-p-6 lg:tw-p-8 tw-font-sans tw-min-h-0 parent-os-root">
+<div class="pd-page-root compliance-vault tw-bg-[#0B0F19] tw-text-[#fafafa] tw-p-6 lg:tw-p-8 tw-font-sans tw-min-h-0 parent-os-root">
 	<div class="tw-max-w-[1600px] tw-mx-auto tw-space-y-6">
 		
 		<!-- Header / Command Plane Status HUD -->
@@ -62,7 +62,7 @@
 				</div>
 				<div>
 					<div class="tw-flex tw-items-center tw-gap-2.5">
-						<h1 class="tw-text-xl lg:tw-text-2xl tw-font-bold tw-tracking-tight tw-text-white tw-uppercase" style="font-family: 'Geist Sans', sans-serif;">
+						<h1 class="tw-text-xl lg:tw-text-2xl tw-font-bold tw-tracking-tight tw-text-[#fafafa] tw-uppercase" style="font-family: 'Geist Sans', sans-serif;">
 							Parent OS
 						</h1>
 						<span class="tw-text-[9px] tw-px-2 tw-py-0.5 tw-font-mono tw-border tw-border-[#f59e0b]/40 tw-bg-[#f59e0b]/10 tw-text-[#f59e0b] tw-font-bold tw-rounded-none">
@@ -142,7 +142,7 @@
 			<!-- Parent Lounge / Announcements (8 cols) -->
 			<div data-panel="true" class="st-bento bento-col-8 lg:tw-col-span-8 parent-panel tw-bg-[#0F172A] tw-border tw-border-[#1E293B] tw-p-6 tw-relative tw-min-w-0 tw-rounded-[24px]">
 				<div class="tw-flex tw-items-center tw-justify-between tw-mb-4">
-					<h3 class="tw-text-white tw-font-bold tw-text-lg tw-flex tw-items-center tw-gap-2.5 tw-m-0" style="font-family: 'Geist Sans', sans-serif;">
+					<h3 class="tw-text-[#fafafa] tw-font-bold tw-text-lg tw-flex tw-items-center tw-gap-2.5 tw-m-0" style="font-family: 'Geist Sans', sans-serif;">
 						<Icon name={"comm.broadcast" as IconName} size={18} class="tw-text-[#f59e0b]" />
 						<span>Parent Lounge Telemetry</span>
 					</h3>
@@ -156,7 +156,7 @@
 			<!-- Household Thread / SafeSport Oversight (4 cols) -->
 			<div data-panel="true" class="st-bento bento-col-4 lg:tw-col-span-4 parent-panel tw-bg-[#0F172A] tw-border tw-border-[#1E293B] tw-p-6 tw-relative tw-min-w-0 tw-rounded-[24px]">
 				<div class="tw-flex tw-items-center tw-justify-between tw-mb-4">
-					<h3 class="tw-text-white tw-font-bold tw-text-lg tw-flex tw-items-center tw-gap-2.5 tw-m-0" style="font-family: 'Geist Sans', sans-serif;">
+					<h3 class="tw-text-[#fafafa] tw-font-bold tw-text-lg tw-flex tw-items-center tw-gap-2.5 tw-m-0" style="font-family: 'Geist Sans', sans-serif;">
 						<Icon name={"status.shield-check" as IconName} size={18} class="tw-text-[#f59e0b]" />
 						<span>Household Thread</span>
 					</h3>

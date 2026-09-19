@@ -30,7 +30,7 @@
 	});
 </script>
 
-<div class="tw-h-full tw-w-full tw-flex tw-flex-col tw-p-4 tw-font-geist-mono tw-transition-colors tw-duration-500 {engine.threatLevel === 'Red' ? 'tw-bg-[#ff0000]/10' : ''}">
+<div class="tw-h-full tw-w-full tw-flex tw-flex-col tw-p-4 tw-font-geist-mono tw-transition-colors tw-duration-500 {engine.threatLevel === 'Red' ? 'tw-bg-[#f59e0b]/10' : ''}">
 	<!-- Header -->
 	<div class="tw-border-b tw-border-[#334155] tw-pb-4 tw-mb-4">
 		<h2 class="tw-text-xs tw-uppercase tw-tracking-[0.2em] tw-text-gray-400">Tactical Telemetry</h2>
@@ -77,7 +77,7 @@
 			<div class="tw-flex tw-gap-1">
 				{#each tabs as t}
 					<button
-						class="tw-px-2 tw-py-1 tw-text-[10px] tw-font-bold tw-border tw-transition-colors {view === t ? 'tw-border-[#14b8a6] tw-text-[#14b8a6] tw-bg-[#14b8a6]/15' : 'tw-border-[#334155] tw-text-slate-400 hover:tw-text-white'}"
+						class="tw-px-2 tw-py-1 tw-text-[10px] tw-font-bold tw-border tw-transition-colors {view === t ? 'tw-border-[#14b8a6] tw-text-[#14b8a6] tw-bg-[#14b8a6]/15' : 'tw-border-[#334155] tw-text-slate-400 hover:tw-text-[#fafafa]'}"
 						onclick={() => view = t}
 					>
 						{t}D
@@ -90,7 +90,7 @@
 			{#each forecastDays as day}
 				<div class="tw-flex-1 tw-min-w-[60px] tw-border {day.isSevere ? 'tw-border-[#f59e0b] tw-bg-[#f59e0b]/10' : 'tw-border-[#334155] tw-bg-[#000000]'} tw-p-2 tw-flex tw-flex-col tw-items-center tw-text-center">
 					<span class="tw-text-[10px] tw-font-bold tw-text-slate-400">{day.date}</span>
-					<span class="tw-text-sm tw-font-bold tw-font-mono tw-text-white tw-mt-1">{day.temp}°</span>
+					<span class="tw-text-sm tw-font-bold tw-font-mono tw-text-[#fafafa] tw-mt-1">{day.temp}°</span>
 					<span class="tw-text-[9px] tw-font-bold tw-font-mono tw-mt-1 {day.isSevere ? 'tw-text-[#f59e0b]' : 'tw-text-[#14b8a6]'}">
 						{day.precip}% RAIN
 					</span>
@@ -102,7 +102,7 @@
 	<!-- Controls (Dev mode) -->
 	<div class="tw-pt-4 tw-border-t tw-border-[#334155] tw-mt-2">
 		<button
-			class="tw-w-full tw-py-2 tw-text-xs tw-uppercase tw-tracking-widest tw-bg-[#fbbf24] tw-text-black tw-font-bold hover:tw-bg-white tw-transition-colors"
+			class="tw-w-full tw-py-2 tw-text-xs tw-uppercase tw-tracking-widest tw-bg-[#fbbf24] tw-text-[#000000] tw-font-bold hover:tw-tw-bg-[#0f172a] tw-transition-colors"
 			onclick={() => engine.simulateStrike(Math.random() * 20)}
 		>
 			Inject Test Strike

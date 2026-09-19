@@ -59,7 +59,7 @@
 	const hourlyRows = $derived(getHourlyForDay(activeDayData));
 </script>
 
-<div class="tw-bg-[#020617] tw-border tw-border-[#334155] tw-p-3 sm:tw-p-4 tw-font-mono tw-text-white tw-w-full tw-flex tw-flex-col tw-h-full">
+<div class="tw-bg-[#020617] tw-border tw-border-[#334155] tw-p-3 sm:tw-p-4 tw-font-mono tw-text-[#fafafa] tw-w-full tw-flex tw-flex-col tw-h-full">
 	<!-- Tab Switcher -->
 	<div class="tw-flex tw-items-center tw-justify-between tw-gap-2 tw-mb-3 tw-border-b tw-border-[#334155] tw-pb-2.5 tw-shrink-0">
 		<span class="tw-text-[10px] tw-font-bold tw-text-slate-400 tw-tracking-widest tw-uppercase">
@@ -69,7 +69,7 @@
 			{#each tabs as t}
 				<button
 					type="button"
-					class="tw-px-2.5 tw-py-1 tw-text-[11px] tw-font-mono tw-font-bold tw-border tw-transition-colors {view === t ? 'tw-border-[#14b8a6] tw-text-[#14b8a6] tw-bg-[#14b8a6]/15' : 'tw-border-[#334155] tw-text-slate-400 hover:tw-border-slate-400 hover:tw-text-white'}"
+					class="tw-px-2.5 tw-py-1 tw-text-[11px] tw-font-mono tw-font-bold tw-border tw-transition-colors {view === t ? 'tw-border-[#14b8a6] tw-text-[#14b8a6] tw-bg-[#14b8a6]/15' : 'tw-border-[#334155] tw-text-slate-400 hover:tw-border-slate-400 hover:tw-text-[#fafafa]'}"
 					onclick={() => { 
 						view = t; 
 						if (!weatherData.slice(0, t).find(d => d.date === selectedDate)) {
@@ -95,7 +95,7 @@
 				<span class="tw-text-[10px] tw-font-bold {active ? 'tw-text-[#14b8a6]' : 'tw-text-slate-400'}">{day.date}</span>
 				<span class="tw-text-xl sm:tw-text-2xl tw-my-1" aria-hidden="true">{day.icon}</span>
 				<div class="tw-flex tw-items-baseline tw-gap-1">
-					<span class="tw-text-xs tw-font-bold tw-text-white">{day.tempMax}°</span>
+					<span class="tw-text-xs tw-font-bold tw-text-[#fafafa]">{day.tempMax}°</span>
 					<span class="tw-text-[10px] tw-text-slate-500">{day.tempMin}°</span>
 				</div>
 				<span class="tw-text-[9px] tw-font-bold tw-mt-1 {day.precip >= 50 ? 'tw-text-[#f59e0b]' : 'tw-text-[#14b8a6]'}">
@@ -112,7 +112,7 @@
 				HOURLY STORM TRACKING · {selectedDate}
 			</span>
 			<span class="tw-text-[10px] tw-font-mono tw-text-slate-400">
-				PEAK PRECIP: <strong class="tw-text-white">{activeDayData.precip}%</strong>
+				PEAK PRECIP: <strong class="tw-text-[#fafafa]">{activeDayData.precip}%</strong>
 			</span>
 		</div>
 
@@ -125,7 +125,7 @@
 					</div>
 
 					<!-- Temperature -->
-					<div class="tw-w-14 tw-text-center tw-font-mono tw-font-bold tw-text-white">
+					<div class="tw-w-14 tw-text-center tw-font-mono tw-font-bold tw-text-[#fafafa]">
 						{row.temp}°F
 					</div>
 

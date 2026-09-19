@@ -50,7 +50,7 @@ import { untrack } from 'svelte';
 				<Icon name={sportIconName as IconName} size={24} class="tw-text-[#14b8a6]" />
 			{/if}
 			<div class="tw-min-w-0">
-				<h3 class="tw-m-0 tw-font-mono tw-text-sm tw-font-black tw-uppercase tw-tracking-[0.16em] tw-text-white">
+				<h3 class="tw-m-0 tw-font-mono tw-text-sm tw-font-black tw-uppercase tw-tracking-[0.16em] tw-text-[#fafafa]">
 					{title.trim() || brandingStore.appName || 'SSTRACKER'}
 				</h3>
 				<p class="tw-m-0 tw-mt-0.5 tw-font-mono tw-text-[9px] tw-tracking-[0.22em] tw-text-[#14b8a6]/80 tw-uppercase">

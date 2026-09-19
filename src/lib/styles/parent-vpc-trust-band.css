@@ -106,7 +106,7 @@
 	font-weight: 700;
 	letter-spacing: 0.12em;
 	text-transform: uppercase;
-	color: #ffffff;
+	color: #fafafa;
 }
 
 .parent-os-root .parent-vpc-status-label {
@@ -143,7 +143,7 @@
 	font-weight: 700;
 	letter-spacing: 0.1em;
 	text-transform: uppercase;
-	color: #ffffff;
+	color: #fafafa;
 	background: transparent;
 	border: 1px solid var(--pd-grey-trim, #334155);
 	border-radius: 12px;
@@ -154,7 +154,7 @@
 
 .parent-os-root .parent-vpc-btn-update:hover:not(:disabled) {
 	border-color: var(--pd-data-cyan, #14b8a6);
-	color: #ffffff;
+	color: #fafafa;
 }
 
 .parent-os-root .parent-vpc-btn-update:disabled {
@@ -328,7 +328,7 @@
 	font-weight: 700;
 	letter-spacing: 0.1em;
 	text-transform: uppercase;
-	color: #ffffff;
+	color: #fafafa;
 }
 
 .parent-os-root .parent-vpc-done__body {
@@ -416,7 +416,7 @@
 	font-weight: 700;
 	letter-spacing: 0.1em;
 	text-transform: uppercase;
-	color: #ffffff;
+	color: #fafafa;
 }
 
 .parent-os-root .parent-vpc-step-sub {

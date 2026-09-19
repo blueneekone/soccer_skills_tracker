@@ -61,7 +61,7 @@
 	<div class="tw-flex tw-items-center tw-justify-between tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-p-3.5">
 		<div class="tw-flex tw-items-center tw-gap-2">
 			<span class="tw-w-2 tw-h-2 tw-bg-[#daff0a] tw-shadow-[0_0_8px_#daff0a]"></span>
-			<span class="tw-text-xs tw-font-black tw-tracking-widest tw-text-white tw-uppercase">
+			<span class="tw-text-xs tw-font-black tw-tracking-widest tw-text-[#fafafa] tw-uppercase">
 				ACTIVE TACTICAL CARTRIDGES ({intents.length})
 			</span>
 		</div>
@@ -90,7 +90,7 @@
 	<!-- Mutation error banner -->
 	{#if mutationError}
 		<div
-			class="tw-w-full tw-px-4 tw-py-3 tw-border tw-border-red-500 tw-bg-red-950/60 tw-text-xs tw-text-red-300 tw-font-bold tw-uppercase"
+			class="tw-w-full tw-px-4 tw-py-3 tw-border tw-border-red-500 tw-bg-[#f59e0b]/60 tw-text-xs tw-text-red-300 tw-font-bold tw-uppercase"
 			role="alert"
 		>
 			[ ERR ] {mutationError}
@@ -141,7 +141,7 @@
 							class="tw-w-3 tw-h-3 tw-rounded-full tw-shrink-0"
 							style="background: {intent.attributeHexColor || '#14b8a6'}; box-shadow: 0 0 8px {intent.attributeHexColor || '#14b8a6'};"
 						></span>
-						<span class="tw-text-sm tw-font-black tw-tracking-wider tw-text-white tw-uppercase">
+						<span class="tw-text-sm tw-font-black tw-tracking-wider tw-text-[#fafafa] tw-uppercase">
 							{intent.attributeName}
 						</span>
 						<span class="tw-text-[10px] tw-font-bold tw-px-2 tw-py-0.5 tw-bg-[#020617] tw-border tw-border-[#334155] tw-text-[#14b8a6]">
@@ -209,7 +209,7 @@
 				<div class="tw-flex tw-items-center tw-justify-between tw-pt-3 tw-border-t tw-border-[#334155]">
 					<button
 						type="button"
-						class="tw-px-3 tw-py-1.5 tw-bg-[#020617] tw-border tw-border-[#14b8a6] tw-text-[#14b8a6] hover:tw-bg-[#14b8a6] hover:tw-text-black tw-text-xs tw-font-bold tw-uppercase tw-transition-all active:tw-scale-95"
+						class="tw-px-3 tw-py-1.5 tw-bg-[#020617] tw-border tw-border-[#14b8a6] tw-text-[#14b8a6] hover:tw-bg-[#14b8a6] hover:tw-text-[#000000] tw-text-xs tw-font-bold tw-uppercase tw-transition-all active:tw-scale-95"
 						onclick={() => onExtend(intent.intentId, 7)}
 					>
 						+ EXTEND 7 DAYS
@@ -217,7 +217,7 @@
 
 					<button
 						type="button"
-						class="tw-px-3 tw-py-1.5 tw-bg-red-950/40 tw-border tw-border-red-600/60 tw-text-red-300 hover:tw-bg-red-600 hover:tw-text-white tw-text-xs tw-font-bold tw-uppercase tw-transition-all active:tw-scale-95 disabled:tw-opacity-40"
+						class="tw-px-3 tw-py-1.5 tw-bg-[#f59e0b]/40 tw-border tw-border-red-600/60 tw-text-red-300 hover:tw-bg-[#f59e0b] hover:tw-text-[#fafafa] tw-text-xs tw-font-bold tw-uppercase tw-transition-all active:tw-scale-95 disabled:tw-opacity-40"
 						disabled={cancellingIntentIds.includes(intent.intentId)}
 						onclick={() => onCancel(intent.intentId)}
 					>

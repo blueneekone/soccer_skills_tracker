@@ -19,12 +19,12 @@
 	<!-- Main Arena spans 8 columns -->
 	<div class="bento-span-8 lg:tw-col-span-8 tw-bg-[#0f172a] tw-rounded-[var(--radius-premium,24px)] tw-border tw-border-[#334155] tw-flex tw-flex-col tw-overflow-hidden">
 		<div class="tw-p-4 tw-border-b tw-border-[#334155] tw-flex tw-justify-between tw-items-center">
-			<h2 class="tw-text-white tw-font-bold tw-text-lg">Drill Designer</h2>
+			<h2 class="tw-text-[#fafafa] tw-font-bold tw-text-lg">Drill Designer</h2>
 			<span class="tw-text-xs tw-text-[#94a3b8] tw-font-mono">Spatial Layout</span>
 		</div>
 		<div class="tw-p-4 tw-flex-1">
 			<DrillDesignerArena {engine} />
-			<button class="tw-w-full tw-mt-4 tw-bg-[#14b8a6] tw-text-black tw-font-bold tw-py-3 tw-rounded-xl tw-hover:bg-[#0d9488] tw-transition-colors" onclick={() => engine.saveWorkout()}>
+			<button class="tw-w-full tw-mt-4 tw-bg-[#14b8a6] tw-text-[#000000] tw-font-bold tw-py-3 tw-rounded-xl tw-hover:bg-[#0d9488] tw-transition-colors" onclick={() => engine.saveWorkout()}>
 				Save to Team Library
 			</button>
 		</div>
@@ -40,13 +40,13 @@
 			<h3 class="tw-text-[#94a3b8] tw-text-xs tw-font-mono tw-tracking-widest tw-mb-4">TEAM DRILL LIBRARY</h3>
 			<ul class="tw-space-y-2">
 				{#if engine.loadingSaved}
-					<li class="tw-text-white">Loading team drills…</li>
+					<li class="tw-text-[#fafafa]">Loading team drills…</li>
 				{:else if engine.savedTeamDrills.length === 0}
 					<li class="tw-text-[#94a3b8] tw-text-sm">No team drills yet — save one above to assign from Intent Engine.</li>
 				{:else}
 					{#each engine.savedTeamDrills as d (d.id)}
 						<li class="tw-bg-[#1e293b] tw-border tw-border-[#334155] tw-rounded-xl tw-p-3 tw-flex tw-flex-col">
-							<span class="tw-text-white tw-font-bold">{d.title}</span>
+							<span class="tw-text-[#fafafa] tw-font-bold">{d.title}</span>
 							{#if d.attributeId}
 								<span class="tw-text-[#14b8a6] tw-text-xs tw-font-mono mt-1">[{d.attributeId}]</span>
 							{/if}

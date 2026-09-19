@@ -120,7 +120,7 @@
 			<span class="tw-w-2.5 tw-h-2.5 tw-bg-[#14b8a6]"></span>
 			<h2
 				id="roster-eval-heading"
-				class="tw-m-0 tw-text-sm sm:tw-text-base tw-font-bold tw-uppercase tw-tracking-widest tw-text-white"
+				class="tw-m-0 tw-text-sm sm:tw-text-base tw-font-bold tw-uppercase tw-tracking-widest tw-text-[#fafafa]"
 			>
 				ROSTER QUICK LOG (TRIALS & BENCHMARKS)
 			</h2>
@@ -147,7 +147,7 @@
 					SQUAD ATHLETE
 				</span>
 				<select
-					class="tw-bg-[#080d1a] tw-border tw-border-[#334155] tw-text-white tw-px-3 tw-py-2 tw-text-xs tw-font-mono tw-outline-none focus:tw-border-[#14b8a6]"
+					class="tw-bg-[#080d1a] tw-border tw-border-[#334155] tw-text-[#fafafa] tw-px-3 tw-py-2 tw-text-xs tw-font-mono tw-outline-none focus:tw-border-[#14b8a6]"
 					style="border-radius: 0px;"
 					bind:value={playerName}
 				>
@@ -163,7 +163,7 @@
 					ATTRIBUTE SLOT ({schema.canonicalKey})
 				</span>
 				<select
-					class="tw-bg-[#080d1a] tw-border tw-border-[#334155] tw-text-white tw-px-3 tw-py-2 tw-text-xs tw-font-mono tw-outline-none focus:tw-border-[#14b8a6]"
+					class="tw-bg-[#080d1a] tw-border tw-border-[#334155] tw-text-[#fafafa] tw-px-3 tw-py-2 tw-text-xs tw-font-mono tw-outline-none focus:tw-border-[#14b8a6]"
 					style="border-radius: 0px;"
 					bind:value={skillKey}
 				>
@@ -179,7 +179,7 @@
 					RESULT (SCORE, TIME, REPS)
 				</span>
 				<input
-					class="tw-bg-[#080d1a] tw-border tw-border-[#334155] tw-text-white tw-px-3 tw-py-2 tw-text-xs tw-font-mono tw-outline-none focus:tw-border-[#14b8a6] placeholder:tw-text-slate-600"
+					class="tw-bg-[#080d1a] tw-border tw-border-[#334155] tw-text-[#fafafa] tw-px-3 tw-py-2 tw-text-xs tw-font-mono tw-outline-none focus:tw-border-[#14b8a6] placeholder:tw-text-slate-600"
 					style="border-radius: 0px;"
 					type="text"
 					autocomplete="off"
@@ -199,7 +199,7 @@
 		<div class="tw-mt-5 tw-flex tw-flex-wrap tw-items-center tw-justify-between tw-gap-3 tw-border-t tw-border-[#334155] tw-pt-4">
 			<button
 				type="button"
-				class="tw-px-6 tw-py-3 tw-bg-[#14b8a6] hover:tw-bg-[#0d9488] tw-text-black tw-font-bold tw-text-xs tw-uppercase tw-tracking-wider tw-cursor-pointer tw-transition-all active:tw-scale-[0.98] disabled:tw-opacity-50"
+				class="tw-px-6 tw-py-3 tw-bg-[#14b8a6] hover:tw-bg-[#0d9488] tw-text-[#000000] tw-font-bold tw-text-xs tw-uppercase tw-tracking-wider tw-cursor-pointer tw-transition-all active:tw-scale-[0.98] disabled:tw-opacity-50"
 				style="border-radius: 0px;"
 				disabled={saving || !rosterNames.length}
 				onclick={() => void submitTrial()}

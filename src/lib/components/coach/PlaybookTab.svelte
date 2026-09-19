@@ -73,7 +73,7 @@
 	<div class="bento-span-5 lg:tw-col-span-5 tw-bg-[#0f172a] tw-rounded-[var(--radius-premium,24px)] tw-border tw-border-[#334155] tw-p-6">
 		<div class="tw-flex tw-items-center tw-gap-3 tw-mb-6">
 			<Icon name={"ai.sparkle" as IconName} class="tw-w-6 tw-h-6 tw-text-[#14b8a6]" />
-			<h2 class="tw-text-white tw-font-bold tw-text-xl">Intent Engine</h2>
+			<h2 class="tw-text-[#fafafa] tw-font-bold tw-text-xl">Intent Engine</h2>
 		</div>
 		
 		<p class="tw-text-[#94a3b8] tw-text-sm tw-mb-6">
@@ -84,7 +84,7 @@
 		<select 
 			id="tactical-intent"
 			bind:value={intent}
-			class="tw-w-full tw-bg-[#1e293b] tw-text-white tw-border tw-border-[#334155] tw-rounded-xl tw-p-3 tw-font-mono focus:tw-outline-none focus:tw-border-[#14b8a6] tw-transition-colors tw-mb-6"
+			class="tw-w-full tw-bg-[#1e293b] tw-text-[#fafafa] tw-border tw-border-[#334155] tw-rounded-xl tw-p-3 tw-font-mono focus:tw-outline-none focus:tw-border-[#14b8a6] tw-transition-colors tw-mb-6"
 		>
 			<option value="possession">Possession & Build-Up</option>
 			<option value="transition_def">Defensive Transitions</option>
@@ -95,7 +95,7 @@
 
 	<!-- Homework Assignment spans 7 columns -->
 	<div class="bento-span-7 lg:tw-col-span-7 tw-bg-[#0f172a] tw-rounded-[var(--radius-premium,24px)] tw-border tw-border-[#334155] tw-p-6 tw-flex tw-flex-col">
-		<h2 class="tw-text-white tw-font-bold tw-text-xl tw-mb-6">Homework Deployment</h2>
+		<h2 class="tw-text-[#fafafa] tw-font-bold tw-text-xl tw-mb-6">Homework Deployment</h2>
 		
 		{#if loadingDrills}
 			<div class="tw-text-[#94a3b8] tw-flex-1 tw-flex tw-items-center tw-justify-center tw-font-mono">
@@ -104,7 +104,7 @@
 		{:else if availableDrills.length === 0}
 			<div class="tw-bg-[#1e293b] tw-rounded-xl tw-p-6 tw-border tw-border-[#334155] tw-flex-1 tw-flex tw-flex-col tw-items-center tw-justify-center tw-text-center">
 				<Icon name={"status.warning" as IconName} class="tw-w-8 tw-h-8 tw-text-[#14b8a6] tw-mb-3" />
-				<h3 class="tw-text-white tw-font-bold tw-mb-1">No Matching Drills</h3>
+				<h3 class="tw-text-[#fafafa] tw-font-bold tw-mb-1">No Matching Drills</h3>
 				<p class="tw-text-[#94a3b8] tw-text-sm">Design a drill with this tactical intent in the Drill Designer first.</p>
 			</div>
 		{:else}
@@ -114,7 +114,7 @@
 					<label class="tw-flex tw-items-center tw-gap-3 tw-bg-[#1e293b] tw-p-4 tw-rounded-xl tw-border tw-border-[#334155] tw-cursor-pointer hover:tw-border-[#14b8a6] tw-transition-colors">
 						<input type="radio" bind:group={selectedDrillId} value={drill.id} class="tw-accent-[#14b8a6]" />
 						<div class="tw-flex-1">
-							<div class="tw-text-white tw-font-bold">{drill.title || 'Untitled Drill'}</div>
+							<div class="tw-text-[#fafafa] tw-font-bold">{drill.title || 'Untitled Drill'}</div>
 							<div class="tw-text-[#94a3b8] tw-text-xs tw-font-mono">{drill.id}</div>
 						</div>
 					</label>
@@ -123,7 +123,7 @@
 
 			<div class="tw-mt-6 tw-pt-6 tw-border-t tw-border-[#334155]">
 				<button 
-					class="tw-w-full tw-bg-[#14b8a6] tw-text-black tw-font-bold tw-py-3 tw-rounded-xl hover:tw-bg-[#0d9488] tw-transition-colors disabled:tw-opacity-50 disabled:tw-cursor-not-allowed"
+					class="tw-w-full tw-bg-[#14b8a6] tw-text-[#000000] tw-font-bold tw-py-3 tw-rounded-xl hover:tw-bg-[#0d9488] tw-transition-colors disabled:tw-opacity-50 disabled:tw-cursor-not-allowed"
 					onclick={assignDrill}
 					disabled={assigning || !selectedDrillId}
 				>

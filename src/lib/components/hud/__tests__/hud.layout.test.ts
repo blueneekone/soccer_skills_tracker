@@ -7,7 +7,7 @@ const STYLES = join(__dirname, '../../../styles/hud-telemetry.css');
 
 describe('Epic 1.2 — HUD bento + canvas ring layout', () => {
 	const activeBounties = readFileSync(join(HUD, 'ActiveBounties.svelte'), 'utf8');
-	const squadTelemetry = readFileSync(join(HUD, 'SquadTelemetryView.svelte'), 'utf8');
+	const squadTelemetry = readFileSync(join(HUD, 'SquadTelemetryHUD.svelte'), 'utf8');
 	const ringCanvas = readFileSync(join(HUD, 'HudSeededRingCanvas.svelte'), 'utf8');
 	const styles = readFileSync(STYLES, 'utf8');
 

@@ -18,7 +18,7 @@
 		16px 100%,
 		0 calc(100% - 16px)
 	);
-	border: 1px solid rgba(0, 255, 255, 0.15);
+	border: 1px solid rgba(20, 184, 166, 0.15);
 }
 
 .quest-log-panel--embedded {
@@ -148,7 +148,7 @@
 	font-weight: 800;
 	letter-spacing: 0.05em;
 	text-transform: uppercase;
-	color: rgba(0, 255, 255, 0.55);
+	color: rgba(20, 184, 166, 0.55);
 }
 
 .quest-log__section-tag:first-child {

@@ -126,13 +126,13 @@
 							<td class="tw-p-3 tw-text-[#14b8a6] tw-font-bold">
 								{row.tournamentName}
 							</td>
-							<td class="tw-p-3 tw-text-white tw-font-bold">
+							<td class="tw-p-3 tw-text-[#fafafa] tw-font-bold">
 								{row.playerName}
 							</td>
 							<td class="tw-p-3 tw-text-slate-300">
 								{row.parentEmail || '—'}
 							</td>
-							<td class="tw-p-3 tw-text-white">
+							<td class="tw-p-3 tw-text-[#fafafa]">
 								${(row.feeCents / 100).toFixed(2)}
 							</td>
 							<td class="tw-p-3">
@@ -145,7 +145,7 @@
 										⏳ PENDING
 									</span>
 								{:else}
-									<span class="tw-bg-red-500/20 tw-border tw-border-red-500 tw-text-red-400 tw-px-2 tw-py-0.5 tw-rounded tw-font-bold tw-text-[10px]">
+									<span class="tw-bg-[#f59e0b]/20 tw-border tw-border-red-500 tw-text-red-400 tw-px-2 tw-py-0.5 tw-rounded tw-font-bold tw-text-[10px]">
 										✕ DUE
 									</span>
 								{/if}

@@ -8,7 +8,7 @@
   let annualSavings = $derived(totalTeamSnapCost - totalSstCost);
 </script>
 
-<div class="tw-min-h-screen tw-bg-[#000000] tw-text-white tw-p-8 tw-font-sans">
+<div class="tw-min-h-screen tw-bg-[#000000] tw-text-[#fafafa] tw-p-8 tw-font-sans">
   <div class="tw-max-w-4xl tw-mx-auto tw-border tw-border-[#334155] tw-p-6">
     <h1 class="tw-font-mono tw-text-3xl tw-font-bold tw-text-[#fbbf24] tw-mb-6 tw-uppercase">
       B2B COST SAVINGS CALCULATOR

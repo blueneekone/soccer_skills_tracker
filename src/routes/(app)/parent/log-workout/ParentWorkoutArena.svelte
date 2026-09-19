@@ -32,7 +32,7 @@
 	});
 </script>
 
-<div class="tw-bg-[#000000] tw-min-h-dvh tw-text-white tw-font-sans tw-overflow-y-auto tw-p-4 lg:tw-p-8">
+<div class="tw-bg-[#000000] tw-min-h-dvh tw-text-[#fafafa] tw-font-sans tw-overflow-y-auto tw-p-4 lg:tw-p-8">
 	<div class="tw-max-w-5xl tw-mx-auto tw-space-y-6">
 		<header class="tw-bg-[#0F172A] tw-border tw-border-[#334155] tw-p-6 tw-flex tw-flex-col md:tw-flex-row md:tw-items-center md:tw-justify-between tw-gap-4 tw-rounded-none">
 			<div class="tw-flex tw-items-center tw-gap-4">
@@ -57,7 +57,7 @@
 					{:else if engine.children.length === 0}
 						<p class="tw-text-red-400 tw-font-mono tw-text-xs">No operatives found in household.</p>
 					{:else}
-						<select id="operative-select" class="tw-w-full tw-bg-[#000000] tw-border tw-border-[#334155] tw-text-white tw-p-3 tw-font-mono tw-text-sm focus:tw-outline-none focus:tw-border-[#fbbf24] tw-rounded-none tw-transition-colors" bind:value={engine.selectedChildEmail} onchange={() => engine.handleChildChange()}>
+						<select id="operative-select" class="tw-w-full tw-bg-[#000000] tw-border tw-border-[#334155] tw-text-[#fafafa] tw-p-3 tw-font-mono tw-text-sm focus:tw-outline-none focus:tw-border-[#fbbf24] tw-rounded-none tw-transition-colors" bind:value={engine.selectedChildEmail} onchange={() => engine.handleChildChange()}>
 							<option value="">— Select Operative —</option>
 							{#each engine.children as c}
 								<option value={c.email}>{c.playerName}</option>
@@ -74,7 +74,7 @@
 					<div class="tw-bg-[#000000] tw-border tw-border-[#334155] tw-p-4 tw-rounded-none">
 						<div class="tw-flex tw-justify-between tw-items-center tw-mb-2">
 							<span class="tw-text-[#a5b4fc] tw-font-mono tw-text-[10px] tw-uppercase tw-tracking-widest">Rank</span>
-							<span class="tw-text-white tw-font-bold tw-text-sm">Lvl {engine.level}</span>
+							<span class="tw-text-[#fafafa] tw-font-bold tw-text-sm">Lvl {engine.level}</span>
 						</div>
 						<div class="tw-w-full tw-h-1.5 tw-bg-[#1E293B] tw-mb-4" bind:this={xpTrackEl}>
 							<div class="tw-h-full tw-bg-[#fbbf24] tw-transition-all tw-duration-500" style="width: var(--fill, 0%);"></div>
@@ -99,7 +99,7 @@
 						{#each WORKOUT_FOCUS_AREAS as focus}
 							<button class="tw-flex tw-flex-col tw-items-center tw-p-3 tw-border tw-border-[#334155] tw-rounded-none tw-transition-colors {engine.selectedFocus === focus.id ? 'tw-bg-[#14b8a6]/10 tw-border-[#14b8a6]' : 'tw-bg-[#000000] hover:tw-border-[#94a3b8]'}" disabled={!engine.selectedChildEmail} onclick={() => { engine.selectedFocus = focus.id; engine.selectedDrill = null; engine.loadDrills(); }}>
 								<span class="tw-font-mono tw-text-[10px] tw-mb-1 {engine.selectedFocus === focus.id ? 'tw-text-[#14b8a6]' : 'tw-text-[#64748b]'}">{focus.op}</span>
-								<span class="tw-text-xs tw-font-bold {engine.selectedFocus === focus.id ? 'tw-text-white' : 'tw-text-[#94a3b8]'}">{focus.label}</span>
+								<span class="tw-text-xs tw-font-bold {engine.selectedFocus === focus.id ? 'tw-text-[#fafafa]' : 'tw-text-[#94a3b8]'}">{focus.label}</span>
 							</button>
 						{/each}
 					</div>
@@ -144,7 +144,7 @@
 
 				<ParentWorkoutHUD {engine} />
 
-				<button class="tw-w-full tw-py-4 tw-px-6 tw-flex tw-items-center tw-justify-center tw-gap-2 tw-bg-[#fbbf24] tw-text-black tw-font-mono tw-text-sm tw-font-bold tw-uppercase tw-tracking-widest hover:tw-bg-[#f59e0b] hover:tw-shadow-[0_0_20px_rgba(251,191,36,0.4)] tw-transition-all tw-rounded-none disabled:tw-opacity-50 disabled:tw-cursor-not-allowed" disabled={!engine.selectedChildEmail || !engine.selectedDrill || engine.logSubmitting || !engine.parentVerifiedAck || !engine.verifierLegalName.trim()} onclick={() => engine.submitWorkout()}>
+				<button class="tw-w-full tw-py-4 tw-px-6 tw-flex tw-items-center tw-justify-center tw-gap-2 tw-bg-[#fbbf24] tw-text-[#000000] tw-font-mono tw-text-sm tw-font-bold tw-uppercase tw-tracking-widest hover:tw-bg-[#f59e0b] hover:tw-shadow-[0_0_20px_rgba(251,191,36,0.4)] tw-transition-all tw-rounded-none disabled:tw-opacity-50 disabled:tw-cursor-not-allowed" disabled={!engine.selectedChildEmail || !engine.selectedDrill || engine.logSubmitting || !engine.parentVerifiedAck || !engine.verifierLegalName.trim()} onclick={() => engine.submitWorkout()}>
 					{#if engine.logSubmitting}
 						<span>TRANSMITTING...</span>
 					{:else}

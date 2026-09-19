@@ -51,7 +51,7 @@
 			<div class="tw-h-3 tw-w-3 tw-bg-[#14b8a6]"></div>
 			<div>
 				<div class="tw-font-mono tw-text-[10px] tw-text-[#14b8a6] tw-uppercase tw-tracking-widest">HOME SQUAD</div>
-				<div class="tw-font-mono tw-text-sm sm:tw-text-base tw-font-black tw-text-white tw-uppercase tw-truncate tw-max-w-[200px]">
+				<div class="tw-font-mono tw-text-sm sm:tw-text-base tw-font-black tw-text-[#fafafa] tw-uppercase tw-truncate tw-max-w-[200px]">
 					{engine.teamScope.teamLabel || 'OUR SQUAD'}
 				</div>
 			</div>
@@ -63,7 +63,7 @@
 				<button
 					type="button"
 					onclick={() => { if (engine.homeScore > 0) engine.homeScore -= 1; engine.finalScore = `${engine.homeScore} - ${engine.awayScore}`; }}
-					class="tw-w-6 tw-h-6 tw-bg-[#0f172a] hover:tw-bg-[#0f172a] tw-border tw-border-slate-700 tw-text-slate-400 hover:tw-text-white tw-font-mono tw-text-xs tw-flex tw-items-center tw-justify-center tw-cursor-pointer"
+					class="tw-w-6 tw-h-6 tw-bg-[#0f172a] hover:tw-bg-[#0f172a] tw-border tw-border-slate-700 tw-text-slate-400 hover:tw-text-[#fafafa] tw-font-mono tw-text-xs tw-flex tw-items-center tw-justify-center tw-cursor-pointer"
 					title="Decrease Home Score"
 				>
 					-
@@ -74,7 +74,7 @@
 				<button
 					type="button"
 					onclick={() => { engine.homeScore += 1; engine.finalScore = `${engine.homeScore} - ${engine.awayScore}`; }}
-					class="tw-w-6 tw-h-6 tw-bg-[#0f172a] hover:tw-bg-[#0f172a] tw-border tw-border-slate-700 tw-text-slate-400 hover:tw-text-white tw-font-mono tw-text-xs tw-flex tw-items-center tw-justify-center tw-cursor-pointer"
+					class="tw-w-6 tw-h-6 tw-bg-[#0f172a] hover:tw-bg-[#0f172a] tw-border tw-border-slate-700 tw-text-slate-400 hover:tw-text-[#fafafa] tw-font-mono tw-text-xs tw-flex tw-items-center tw-justify-center tw-cursor-pointer"
 					title="Increase Home Score"
 				>
 					+
@@ -91,7 +91,7 @@
 					<button
 						type="button"
 						onclick={() => { engine.awayScore += 1; engine.finalScore = `${engine.homeScore} - ${engine.awayScore}`; }}
-						class="tw-w-5 tw-h-3.5 tw-bg-[#0f172a] hover:tw-bg-[#0f172a] tw-border tw-border-slate-700 tw-text-slate-400 hover:tw-text-white tw-font-mono tw-text-[9px] tw-flex tw-items-center tw-justify-center tw-cursor-pointer"
+						class="tw-w-5 tw-h-3.5 tw-bg-[#0f172a] hover:tw-bg-[#0f172a] tw-border tw-border-slate-700 tw-text-slate-400 hover:tw-text-[#fafafa] tw-font-mono tw-text-[9px] tw-flex tw-items-center tw-justify-center tw-cursor-pointer"
 						title="Opponent Goal (+1)"
 					>
 						▲
@@ -99,7 +99,7 @@
 					<button
 						type="button"
 						onclick={() => { if (engine.awayScore > 0) engine.awayScore -= 1; engine.finalScore = `${engine.homeScore} - ${engine.awayScore}`; }}
-						class="tw-w-5 tw-h-3.5 tw-bg-[#0f172a] hover:tw-bg-[#0f172a] tw-border tw-border-slate-700 tw-text-slate-400 hover:tw-text-white tw-font-mono tw-text-[9px] tw-flex tw-items-center tw-justify-center tw-cursor-pointer"
+						class="tw-w-5 tw-h-3.5 tw-bg-[#0f172a] hover:tw-bg-[#0f172a] tw-border tw-border-slate-700 tw-text-slate-400 hover:tw-text-[#fafafa] tw-font-mono tw-text-[9px] tw-flex tw-items-center tw-justify-center tw-cursor-pointer"
 						title="Opponent Goal (-1)"
 					>
 						▼
@@ -116,7 +116,7 @@
 					type="text"
 					bind:value={engine.opponentName}
 					placeholder="OPPONENT NAME"
-					class="tw-bg-[#0f172a] tw-border tw-border-[#334155] focus:tw-border-[#fbbf24] tw-text-white tw-font-mono tw-text-xs tw-px-2 tw-py-1 tw-w-36 tw-text-right tw-uppercase tw-outline-none"
+					class="tw-bg-[#0f172a] tw-border tw-border-[#334155] focus:tw-border-[#fbbf24] tw-text-[#fafafa] tw-font-mono tw-text-xs tw-px-2 tw-py-1 tw-w-36 tw-text-right tw-uppercase tw-outline-none"
 				/>
 			</div>
 			<div class="tw-h-3 tw-w-3 tw-bg-[#fbbf24]"></div>
@@ -142,7 +142,7 @@
 				<button
 					type="button"
 					onclick={() => engine.startMatch()}
-					class="tw-inline-flex tw-items-center tw-justify-center tw-bg-[#fbbf24] tw-text-black tw-font-mono tw-font-black tw-text-xs tw-px-5 tw-h-10 tw-uppercase tw-tracking-wider hover:tw-bg-lime-400 tw-transition-all active:tw-scale-95 tw-shadow-md"
+					class="tw-inline-flex tw-items-center tw-justify-center tw-bg-[#fbbf24] tw-text-[#000000] tw-font-mono tw-font-black tw-text-xs tw-px-5 tw-h-10 tw-uppercase tw-tracking-wider hover:tw-bg-lime-400 tw-transition-all active:tw-scale-95 tw-shadow-md"
 					style="border-radius: 0px;"
 				>
 					▶ START MATCH
@@ -151,7 +151,7 @@
 				<button
 					type="button"
 					onclick={() => engine.pauseMatch()}
-					class="tw-inline-flex tw-items-center tw-justify-center tw-bg-[#f59e0b]/20 tw-text-amber-300 tw-border tw-border-[#f59e0b] tw-font-mono tw-font-bold tw-text-xs tw-px-4 tw-h-10 tw-uppercase hover:tw-bg-[#f59e0b] hover:tw-text-black tw-transition-all active:tw-scale-95"
+					class="tw-inline-flex tw-items-center tw-justify-center tw-bg-[#f59e0b]/20 tw-text-amber-300 tw-border tw-border-[#f59e0b] tw-font-mono tw-font-bold tw-text-xs tw-px-4 tw-h-10 tw-uppercase hover:tw-bg-[#f59e0b] hover:tw-text-[#000000] tw-transition-all active:tw-scale-95"
 					style="border-radius: 0px;"
 				>
 					⏸ PAUSE
@@ -159,7 +159,7 @@
 				<button
 					type="button"
 					onclick={() => engine.endMatch()}
-					class="tw-inline-flex tw-items-center tw-justify-center tw-bg-rose-950/50 tw-text-rose-300 tw-border tw-border-rose-500 tw-font-mono tw-font-bold tw-text-xs tw-px-4 tw-h-10 tw-uppercase hover:tw-bg-rose-600 hover:tw-text-white tw-transition-all active:tw-scale-95"
+					class="tw-inline-flex tw-items-center tw-justify-center tw-bg-rose-950/50 tw-text-rose-300 tw-border tw-border-rose-500 tw-font-mono tw-font-bold tw-text-xs tw-px-4 tw-h-10 tw-uppercase hover:tw-bg-rose-600 hover:tw-text-[#fafafa] tw-transition-all active:tw-scale-95"
 					style="border-radius: 0px;"
 				>
 					🏁 FINAL WHISTLE
@@ -168,7 +168,7 @@
 				<button
 					type="button"
 					onclick={() => engine.resumeMatch()}
-					class="tw-inline-flex tw-items-center tw-justify-center tw-bg-[#14b8a6]/20 tw-text-[#14b8a6] tw-border tw-border-[#14b8a6] tw-font-mono tw-font-bold tw-text-xs tw-px-4 tw-h-10 tw-uppercase hover:tw-bg-[#14b8a6] hover:tw-text-black tw-transition-all active:tw-scale-95"
+					class="tw-inline-flex tw-items-center tw-justify-center tw-bg-[#14b8a6]/20 tw-text-[#14b8a6] tw-border tw-border-[#14b8a6] tw-font-mono tw-font-bold tw-text-xs tw-px-4 tw-h-10 tw-uppercase hover:tw-bg-[#14b8a6] hover:tw-text-[#000000] tw-transition-all active:tw-scale-95"
 					style="border-radius: 0px;"
 				>
 					▶ RESUME
@@ -176,7 +176,7 @@
 				<button
 					type="button"
 					onclick={() => engine.endMatch()}
-					class="tw-inline-flex tw-items-center tw-justify-center tw-bg-rose-950/50 tw-text-rose-300 tw-border tw-border-rose-500 tw-font-mono tw-font-bold tw-text-xs tw-px-4 tw-h-10 tw-uppercase hover:tw-bg-rose-600 hover:tw-text-white tw-transition-all active:tw-scale-95"
+					class="tw-inline-flex tw-items-center tw-justify-center tw-bg-rose-950/50 tw-text-rose-300 tw-border tw-border-rose-500 tw-font-mono tw-font-bold tw-text-xs tw-px-4 tw-h-10 tw-uppercase hover:tw-bg-rose-600 hover:tw-text-[#fafafa] tw-transition-all active:tw-scale-95"
 					style="border-radius: 0px;"
 				>
 					🏁 FINAL WHISTLE
@@ -185,7 +185,7 @@
 				<button
 					type="button"
 					onclick={() => engine.resetClock()}
-					class="tw-inline-flex tw-items-center tw-justify-center tw-bg-[#14b8a6]/20 tw-text-[#14b8a6] tw-border tw-border-[#14b8a6] tw-font-mono tw-font-bold tw-text-xs tw-px-4 tw-h-10 tw-uppercase hover:tw-bg-[#14b8a6] hover:tw-text-black tw-transition-all active:tw-scale-95"
+					class="tw-inline-flex tw-items-center tw-justify-center tw-bg-[#14b8a6]/20 tw-text-[#14b8a6] tw-border tw-border-[#14b8a6] tw-font-mono tw-font-bold tw-text-xs tw-px-4 tw-h-10 tw-uppercase hover:tw-bg-[#14b8a6] hover:tw-text-[#000000] tw-transition-all active:tw-scale-95"
 					style="border-radius: 0px;"
 				>
 					+ NEW MATCH
@@ -218,7 +218,7 @@
 				type="button"
 				aria-label="Toggle Car Ride Home Shield"
 				onclick={() => engine.toggleShield()}
-				class="tw-h-8 tw-bg-[#000000] tw-text-[#fbbf24] tw-border tw-border-[#fbbf24]/70 tw-px-3 tw-font-mono tw-text-xs tw-font-bold hover:tw-bg-[#fbbf24] hover:tw-text-black tw-transition-colors"
+				class="tw-h-8 tw-bg-[#000000] tw-text-[#fbbf24] tw-border tw-border-[#fbbf24]/70 tw-px-3 tw-font-mono tw-text-xs tw-font-bold hover:tw-bg-[#fbbf24] hover:tw-text-[#000000] tw-transition-colors"
 				style="border-radius: 0px;"
 			>
 				TOGGLE SHIELD
@@ -227,7 +227,7 @@
 				type="button"
 				aria-label="Toggle Game Whistle"
 				onclick={() => engine.toggleWhistle()}
-				class="tw-h-8 tw-bg-[#000000] tw-text-[#14b8a6] tw-border tw-border-[#14b8a6]/70 tw-px-3 tw-font-mono tw-text-xs tw-font-bold hover:tw-bg-[#14b8a6] hover:tw-text-black tw-transition-colors"
+				class="tw-h-8 tw-bg-[#000000] tw-text-[#14b8a6] tw-border tw-border-[#14b8a6]/70 tw-px-3 tw-font-mono tw-text-xs tw-font-bold hover:tw-bg-[#14b8a6] hover:tw-text-[#000000] tw-transition-colors"
 				style="border-radius: 0px;"
 			>
 				{engine.isWhistleActive ? 'GAME WHISTLE: ACTIVE' : 'GAME WHISTLE: INACTIVE'}
@@ -236,7 +236,7 @@
 			<button
 				type="button"
 				onclick={() => engine.isHelpDrawerOpen = true}
-				class="tw-h-8 tw-bg-[#000000] tw-text-slate-400 tw-border tw-border-[#334155] tw-px-3 tw-font-mono tw-text-xs tw-font-bold hover:tw-text-white hover:tw-border-slate-400 tw-transition-colors"
+				class="tw-h-8 tw-bg-[#000000] tw-text-slate-400 tw-border tw-border-[#334155] tw-px-3 tw-font-mono tw-text-xs tw-font-bold hover:tw-text-[#fafafa] hover:tw-border-slate-400 tw-transition-colors"
 				style="border-radius: 0px;"
 			>
 				⚙ SETTINGS
@@ -270,18 +270,18 @@
 	<div class="tw-fixed tw-inset-y-0 tw-right-0 tw-w-80 tw-bg-[#000000] tw-border-l tw-border-[#334155] tw-z-50 tw-p-6 tw-shadow-2xl tw-transform tw-transition-transform">
 		<div class="tw-flex tw-justify-between tw-items-center tw-mb-6 tw-border-b tw-border-[#334155] tw-pb-3">
 			<h2 class="tw-font-mono tw-text-sm tw-text-[#fbbf24] tw-font-bold tw-uppercase tw-tracking-wider">Match Day Settings</h2>
-			<button onclick={() => engine.isHelpDrawerOpen = false} class="tw-text-slate-400 hover:tw-text-white tw-font-mono tw-text-xs">✕ CLOSE</button>
+			<button onclick={() => engine.isHelpDrawerOpen = false} class="tw-text-slate-400 hover:tw-text-[#fafafa] tw-font-mono tw-text-xs">✕ CLOSE</button>
 		</div>
 
 		<div class="tw-space-y-5">
 			<div class="tw-flex tw-flex-col tw-gap-3.5">
 				<div>
 					<label for="md-opp-name" class="tw-block tw-font-mono tw-text-[10px] tw-text-slate-400 tw-uppercase tw-mb-1">Opposing Team Name</label>
-					<input id="md-opp-name" type="text" bind:value={engine.opponentName} class="tw-w-full tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-text-white tw-px-3 tw-py-1.5 tw-font-mono tw-text-xs focus:tw-border-[#14b8a6] focus:tw-outline-none" placeholder="Enter opponent..." style="border-radius: 0px;" />
+					<input id="md-opp-name" type="text" bind:value={engine.opponentName} class="tw-w-full tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-text-[#fafafa] tw-px-3 tw-py-1.5 tw-font-mono tw-text-xs focus:tw-border-[#14b8a6] focus:tw-outline-none" placeholder="Enter opponent..." style="border-radius: 0px;" />
 				</div>
 				<div>
 					<label for="md-final-score" class="tw-block tw-font-mono tw-text-[10px] tw-text-slate-400 tw-uppercase tw-mb-1">Final Score</label>
-					<input id="md-final-score" type="text" bind:value={engine.finalScore} class="tw-w-full tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-text-white tw-px-3 tw-py-1.5 tw-font-mono tw-text-xs focus:tw-border-[#14b8a6] focus:tw-outline-none" placeholder="e.g. 2-1" style="border-radius: 0px;" />
+					<input id="md-final-score" type="text" bind:value={engine.finalScore} class="tw-w-full tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-text-[#fafafa] tw-px-3 tw-py-1.5 tw-font-mono tw-text-xs focus:tw-border-[#14b8a6] focus:tw-outline-none" placeholder="e.g. 2-1" style="border-radius: 0px;" />
 				</div>
 				<div>
 					<span class="tw-block tw-font-mono tw-text-[10px] tw-text-slate-400 tw-uppercase tw-mb-1">Match Start Time</span>

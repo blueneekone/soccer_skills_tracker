@@ -129,7 +129,7 @@
 			>
 				⛔ ACCESS DENIED — DIRECTOR CLEARANCE REQUIRED
 			</p>
-			<p class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-white/30 tw-mt-2">
+			<p class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-[#fafafa]/30 tw-mt-2">
 				FAILSAFE TERMINAL RESTRICTED TO DIRECTOR / SUPER-ADMIN
 			</p>
 		</div>
@@ -151,7 +151,7 @@
 			>
 				// FAILSAFE OVERRIDE TERMINAL
 			</p>
-			<p class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-white/40 tw-uppercase">
+			<p class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-[#fafafa]/40 tw-uppercase">
 				[ ALPHA EXCEPTION HANDLING — DIRECTOR CLEARANCE ACTIVE ]
 			</p>
 
@@ -191,7 +191,7 @@
 
 		<!-- ── PENDING NODE LIST ─────────────────────────────────────────────── -->
 		<div class="tw-space-y-2">
-			<p class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-white/30 tw-uppercase">
+			<p class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-[#fafafa]/30 tw-uppercase">
 				PENDING ESCROW NODES
 			</p>
 
@@ -233,10 +233,10 @@
 								: 'tw-border-[#1E293B] hover:tw-border-[#14b8a6]/30'}"
 						>
 							<div class="tw-space-y-0.5">
-								<p class="tw-font-mono tw-text-[10px] tw-tracking-wider tw-text-white/80">
+								<p class="tw-font-mono tw-text-[10px] tw-tracking-wider tw-text-[#fafafa]/80">
 									{node.email ?? node.id}
 								</p>
-								<p class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-white/30">
+								<p class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-[#fafafa]/30">
 									UID: {node.id.slice(0, 12)}…
 								</p>
 							</div>
@@ -257,7 +257,7 @@
 									class="tw-font-mono tw-text-[8px] tw-tracking-widest tw-uppercase
 									       {selectedNodeId === node.id
 										? 'tw-text-[#14b8a6]'
-										: 'tw-text-white/30'}"
+										: 'tw-text-[#fafafa]/30'}"
 								>
 									{selectedNodeId === node.id ? '[ SELECTED ]' : '[ SELECT ]'}
 								</span>
@@ -275,14 +275,14 @@
 			>
 				<!-- Selected node info -->
 				<div>
-					<p class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-white/30 tw-uppercase tw-mb-1">
+					<p class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-[#fafafa]/30 tw-uppercase tw-mb-1">
 						SELECTED NODE
 					</p>
-					<p class="tw-font-mono tw-text-[12px] tw-tracking-wider tw-text-white/90 tw-font-semibold">
+					<p class="tw-font-mono tw-text-[12px] tw-tracking-wider tw-text-[#fafafa]/90 tw-font-semibold">
 						{selectedNode.email ?? selectedNode.id}
 					</p>
 					<p class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-mt-0.5">
-						<span class="tw-text-white/30">STATUS: </span>
+						<span class="tw-text-[#fafafa]/30">STATUS: </span>
 						<span class="tw-text-[#ff0055]">{selectedNode.status}</span>
 					</p>
 				</div>
@@ -293,20 +293,20 @@
 					       tw-px-4 tw-py-3"
 				>
 					<p
-						class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-white/30
+						class="tw-font-mono tw-text-[9px] tw-tracking-widest tw-text-[#fafafa]/30
 						       tw-uppercase tw-mb-2"
 					>
 						INJECTED TELEMETRY PREVIEW
 					</p>
 					<div class="tw-space-y-0.5">
 						<p class="tw-font-mono tw-text-[9px] tw-tracking-wide tw-text-[#14b8a6]/70">
-							attestedVia: <span class="tw-text-white/60">'manual_director_override'</span>
+							attestedVia: <span class="tw-text-[#fafafa]/60">'manual_director_override'</span>
 						</p>
 						<p class="tw-font-mono tw-text-[9px] tw-tracking-wide tw-text-[#14b8a6]/70">
-							overrideUid: <span class="tw-text-white/60">{authStore.user?.uid ?? 'unknown'}</span>
+							overrideUid: <span class="tw-text-[#fafafa]/60">{authStore.user?.uid ?? 'unknown'}</span>
 						</p>
 						<p class="tw-font-mono tw-text-[9px] tw-tracking-wide tw-text-[#14b8a6]/70">
-							overrideTimestamp: <span class="tw-text-white/60">[NOW]</span>
+							overrideTimestamp: <span class="tw-text-[#fafafa]/60">[NOW]</span>
 						</p>
 					</div>
 				</div>
@@ -345,7 +345,7 @@
 							onclick={cancelConfirm}
 							disabled={isClearing}
 							class="tw-w-full tw-py-2 tw-font-mono tw-text-[9px] tw-tracking-widest
-							       tw-text-white/30 tw-uppercase hover:tw-text-white/60
+							       tw-text-[#fafafa]/30 tw-uppercase hover:tw-text-[#fafafa]/60
 							       tw-transition-colors tw-duration-150
 							       disabled:tw-opacity-40 disabled:tw-cursor-not-allowed"
 						>

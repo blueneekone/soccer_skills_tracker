@@ -8,7 +8,7 @@
 
 {#if open}
 	<div
-		class="tw-pointer-events-auto tw-fixed tw-inset-0 tw-z-[100] tw-flex tw-items-center tw-justify-center tw-bg-red-950/80 tw-backdrop-blur-md tw-animate-pulse tw-px-4 tw-py-6"
+		class="tw-pointer-events-auto tw-fixed tw-inset-0 tw-z-[100] tw-flex tw-items-center tw-justify-center tw-bg-[#f59e0b]/80 tw-backdrop-blur-md tw-animate-pulse tw-px-4 tw-py-6"
 		role="alertdialog"
 		aria-modal="true"
 		aria-labelledby="red-alert-title"
@@ -23,7 +23,7 @@
 			></div>
 			<div class="tw-relative tw-flex tw-flex-col tw-items-center tw-text-center">
 				<div
-					class="tw-mb-4 tw-flex tw-h-20 tw-w-20 tw-items-center tw-justify-center tw-rounded-2xl tw-border tw-border-red-500/50 tw-bg-red-950/60 tw-text-red-400 tw-shadow-[0_0_24px_rgba(239,68,68,0.45)]"
+					class="tw-mb-4 tw-flex tw-h-20 tw-w-20 tw-items-center tw-justify-center tw-rounded-2xl tw-border tw-border-red-500/50 tw-bg-[#f59e0b]/60 tw-text-red-400 tw-shadow-[0_0_24px_rgba(239,68,68,0.45)]"
 					aria-hidden="true"
 				>
 					<Icon name={"status.warning-circle" as IconName} size={48} />
@@ -43,7 +43,7 @@
 				<div class="tw-flex tw-w-full tw-min-w-0 tw-flex-col tw-gap-3 sm:tw-flex-row sm:tw-gap-3">
 					<button
 						type="button"
-						class="tw-order-1 tw-min-h-12 tw-flex-1 tw-touch-manipulation tw-rounded-xl tw-border tw-border-red-400/50 tw-bg-gradient-to-b tw-from-red-600 tw-to-red-800 tw-px-4 tw-py-3 tw-text-center tw-font-mono tw-text-[11px] tw-font-bold tw-uppercase tw-tracking-[0.15em] tw-text-white tw-shadow-[0_0_20px_rgba(239,68,68,0.4)] tw-transition tw-ring-1 tw-ring-red-400/30 hover:tw-brightness-110 active:tw-scale-[0.99] sm:tw-order-2"
+						class="tw-order-1 tw-min-h-12 tw-flex-1 tw-touch-manipulation tw-rounded-xl tw-border tw-border-red-400/50 tw-bg-gradient-to-b tw-from-red-600 tw-to-red-800 tw-px-4 tw-py-3 tw-text-center tw-font-mono tw-text-[11px] tw-font-bold tw-uppercase tw-tracking-[0.15em] tw-text-[#fafafa] tw-shadow-[0_0_20px_rgba(239,68,68,0.4)] tw-transition tw-ring-1 tw-ring-red-400/30 hover:tw-brightness-110 active:tw-scale-[0.99] sm:tw-order-2"
 						onclick={onAccept}
 					>
 						Accept mission

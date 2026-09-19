@@ -134,7 +134,7 @@ import { untrack } from 'svelte';
 					Follow the OS prompt to create a passkey for <span class="tw-text-[#14b8a6]">{auth.currentUser?.email ?? 'your account'}</span>.
 				</p>
 				{#if loginEngine.error}
-					<div class="tw-mb-4 tw-w-full tw-rounded-xl tw-border tw-border-red-500/20 tw-bg-red-500/10 tw-px-4 tw-py-3 tw-font-mono tw-text-xs tw-text-red-400 tw-text-center" role="alert">
+					<div class="tw-mb-4 tw-w-full tw-rounded-xl tw-border tw-border-red-500/20 tw-bg-[#f59e0b]/10 tw-px-4 tw-py-3 tw-font-mono tw-text-xs tw-text-red-400 tw-text-center" role="alert">
 						{loginEngine.error}
 					</div>
 				{/if}

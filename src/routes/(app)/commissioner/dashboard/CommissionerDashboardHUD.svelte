@@ -55,7 +55,7 @@
 
 			<button
 				type="button"
-				class="tw-px-3 tw-py-1.5 tw-text-xs tw-font-mono tw-font-bold tw-tracking-widest tw-uppercase tw-rounded-none tw-border tw-border-[#14b8a6] tw-bg-[#1E293B] tw-text-[#14b8a6] hover:tw-bg-[#14b8a6] hover:tw-text-black tw-transition-colors tw-flex tw-items-center tw-gap-2 cursor-pointer"
+				class="tw-px-3 tw-py-1.5 tw-text-xs tw-font-mono tw-font-bold tw-tracking-widest tw-uppercase tw-rounded-none tw-border tw-border-[#14b8a6] tw-bg-[#1E293B] tw-text-[#14b8a6] hover:tw-bg-[#14b8a6] hover:tw-text-[#000000] tw-transition-colors tw-flex tw-items-center tw-gap-2 cursor-pointer"
 				onclick={() => engine.fetchFederationData()}
 				title="Refresh Federation Telemetry"
 			>

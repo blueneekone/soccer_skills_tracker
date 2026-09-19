@@ -125,7 +125,7 @@ type ExtendedAdvancedMarkerElement = any & { __facilityMarkerIndex?: number };
 	}
 
 	function facilityPinGlyphHex() {
-		return cssVarHex('--enterprise-primary-fg', '#ffffff');
+		return cssVarHex('--enterprise-primary-fg', '#fafafa');
 	}
 
 	/** @param {string | undefined} hex */

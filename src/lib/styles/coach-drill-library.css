@@ -100,7 +100,7 @@
 }
 
 .coach-os-root .coach-drill-z4-cta:hover:not(:disabled) {
-	background: color-mix(in srgb, var(--pd-data-cyan, #14b8a6) 88%, #ffffff);
+	background: color-mix(in srgb, var(--pd-data-cyan, #14b8a6) 88%, #fafafa);
 }
 
 .coach-os-root .coach-drill-z4-cta:disabled {

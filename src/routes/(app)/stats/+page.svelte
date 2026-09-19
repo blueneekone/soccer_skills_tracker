@@ -459,7 +459,7 @@
 			{/snippet}
 		</PlayerOsPageStrap>
 	{:else}
-	<h1 class="tw-text-2xl tw-font-bold tw-text-white tw-mb-6">Operative Analytics</h1>
+	<h1 class="tw-text-2xl tw-font-bold tw-text-[#fafafa] tw-mb-6">Operative Analytics</h1>
 	{/if}
 
 	<div

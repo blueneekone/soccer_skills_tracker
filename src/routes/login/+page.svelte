@@ -264,7 +264,7 @@
 			<!-- Operative error -->
 			{#if opError}
 				<div
-					class="tw-mt-4 tw-w-full tw-rounded-xl tw-border tw-border-red-500/20 tw-bg-red-500/10 tw-px-4 tw-py-3 tw-font-mono tw-text-xs tw-text-red-400"
+					class="tw-mt-4 tw-w-full tw-rounded-xl tw-border tw-border-red-500/20 tw-bg-[#f59e0b]/10 tw-px-4 tw-py-3 tw-font-mono tw-text-xs tw-text-red-400"
 					role="alert"
 				>{opError}</div>
 			{/if}
@@ -367,12 +367,12 @@
 
 			<!-- Error alerts -->
 			{#if loginEngine.error}
-				<div class="tw-mt-3 tw-rounded-xl tw-border tw-border-red-500/20 tw-bg-red-500/10 tw-px-4 tw-py-3 tw-font-mono tw-text-xs tw-text-red-400" role="alert">
+				<div class="tw-mt-3 tw-rounded-xl tw-border tw-border-red-500/20 tw-bg-[#f59e0b]/10 tw-px-4 tw-py-3 tw-font-mono tw-text-xs tw-text-red-400" role="alert">
 					{loginEngine.error}
 				</div>
 			{/if}
 			{#if googleError}
-				<div class="tw-mt-3 tw-rounded-xl tw-border tw-border-red-500/20 tw-bg-red-500/10 tw-px-4 tw-py-3 tw-font-mono tw-text-xs tw-text-red-400" role="alert">
+				<div class="tw-mt-3 tw-rounded-xl tw-border tw-border-red-500/20 tw-bg-[#f59e0b]/10 tw-px-4 tw-py-3 tw-font-mono tw-text-xs tw-text-red-400" role="alert">
 					{googleError}
 				</div>
 			{/if}

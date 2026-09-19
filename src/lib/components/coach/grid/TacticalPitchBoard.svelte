@@ -261,7 +261,7 @@
 						class="route-draft-pulse route-draft-pulse--slow"
 						d={routePathD(routeDraft)}
 						fill="none"
-						stroke="#ffffff"
+						stroke="#fafafa"
 						stroke-width="1.5"
 						stroke-linecap="round"
 						stroke-linejoin="round"

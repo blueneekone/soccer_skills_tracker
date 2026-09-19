@@ -29,7 +29,7 @@
   }
 </script>
 
-<div class="tw-bg-[#000000] tw-border tw-border-[#334155] tw-p-6 tw-text-white tw-clip-polygon" style="clip-path: polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px);">
+<div class="tw-bg-[#000000] tw-border tw-border-[#334155] tw-p-6 tw-text-[#fafafa] tw-clip-polygon" style="clip-path: polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px);">
   <div class="tw-flex tw-justify-between tw-items-center tw-mb-4">
     <h2 class="tw-font-mono tw-text-xl tw-uppercase tw-tracking-wider tw-text-[#fbbf24]">
       DAILY ARENA - DELIBERATE PLAY TRACKER
@@ -38,7 +38,7 @@
   </div>
 
   {#if capStatus.exceedsCap}
-    <div id="hour-cap-warning" class="tw-bg-red-900/40 tw-border tw-border-red-500 tw-p-3 tw-mb-4 tw-text-red-300 tw-font-mono tw-text-xs">
+    <div id="hour-cap-warning" class="tw-bg-[#f59e0b]/40 tw-border tw-border-red-500 tw-p-3 tw-mb-4 tw-text-red-300 tw-font-mono tw-text-xs">
       ⚠️ {capStatus.warningMessage}
     </div>
   {/if}
@@ -49,7 +49,7 @@
       <select
         id="daily-arena-session-type"
         bind:value={sessionType}
-        class="tw-w-full tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-p-2 tw-font-mono tw-text-sm tw-text-white"
+        class="tw-w-full tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-p-2 tw-font-mono tw-text-sm tw-text-[#fafafa]"
       >
         <option value="backyard_juggle">BACKYARD JUGGLING</option>
         <option value="wall_rebound">WALL REBOUNDER</option>
@@ -63,7 +63,7 @@
         id="daily-arena-touches"
         type="number"
         bind:value={touchCount}
-        class="tw-w-full tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-p-2 tw-font-mono tw-text-sm tw-text-white"
+        class="tw-w-full tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-p-2 tw-font-mono tw-text-sm tw-text-[#fafafa]"
       />
     </div>
 
@@ -74,7 +74,7 @@
         type="number"
         step="0.5"
         bind:value={durationHours}
-        class="tw-w-full tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-p-2 tw-font-mono tw-text-sm tw-text-white"
+        class="tw-w-full tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-p-2 tw-font-mono tw-text-sm tw-text-[#fafafa]"
       />
     </div>
   </div>
@@ -82,7 +82,7 @@
   <button
     id="log-deliberate-play-btn"
     onclick={handleLogTouchSession}
-    class="tw-w-full tw-bg-[#fbbf24] tw-text-black tw-font-mono tw-font-bold tw-py-2 tw-uppercase hover:tw-bg-[#fbbf24] tw-transition-colors"
+    class="tw-w-full tw-bg-[#fbbf24] tw-text-[#000000] tw-font-mono tw-font-bold tw-py-2 tw-uppercase hover:tw-bg-[#fbbf24] tw-transition-colors"
   >
     LOG BACKYARD TOUCHES
   </button>
@@ -94,7 +94,7 @@
     </div>
     <div class="tw-w-full tw-bg-[#0f172a] tw-h-2">
       <div
-        class="tw-h-2 {capStatus.exceedsCap ? 'tw-bg-red-500' : 'tw-bg-[#14b8a6]'}"
+        class="tw-h-2 {capStatus.exceedsCap ? 'tw-bg-[#f59e0b]' : 'tw-bg-[#14b8a6]'}"
         style="width: {Math.min(100, (capStatus.totalWeeklyHours / (capStatus.ageYears || 1)) * 100)}%"
       ></div>
     </div>

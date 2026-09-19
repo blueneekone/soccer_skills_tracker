@@ -359,7 +359,7 @@
 				<span class="tw-w-2.5 tw-h-2.5 tw-bg-[#14b8a6] tw-animate-pulse" style="border-radius: 0px;"></span>
 				<div>
 					<div class="tw-flex tw-items-center tw-gap-2">
-						<h1 class="tw-font-black tw-text-base sm:tw-text-lg tw-tracking-widest tw-text-white tw-uppercase tw-m-0">
+						<h1 class="tw-font-black tw-text-base sm:tw-text-lg tw-tracking-widest tw-text-[#fafafa] tw-uppercase tw-m-0">
 							SCOUTING DOSSIER & TALENT MATRIX
 						</h1>
 						<span class="tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-text-[#daff0a] tw-text-[10px] tw-font-bold tw-px-2 tw-py-0.5" style="border-radius: 0px;">
@@ -378,7 +378,7 @@
 					<label class="tw-flex tw-items-center tw-gap-2 tw-text-xs tw-text-slate-400">
 						<span>SQUAD:</span>
 						<select
-							class="tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-text-white tw-px-3 tw-py-1.5 tw-text-xs tw-font-mono tw-outline-none focus:tw-border-[#14b8a6]"
+							class="tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-text-[#fafafa] tw-px-3 tw-py-1.5 tw-text-xs tw-font-mono tw-outline-none focus:tw-border-[#14b8a6]"
 							style="border-radius: 0px;"
 							bind:value={teamScope.selectedTeamId}
 						>
@@ -401,7 +401,7 @@
 				type="button"
 				role="tab"
 				aria-selected={activeTab === 'prospect-eval'}
-				class="tw-px-4 tw-py-2 tw-font-mono tw-text-xs tw-font-bold tw-uppercase tw-tracking-wider tw-transition-all tw-cursor-pointer {activeTab === 'prospect-eval' ? 'tw-bg-[#0f172a] tw-text-[#14b8a6] tw-border tw-border-[#14b8a6]' : 'tw-bg-transparent tw-text-slate-400 tw-border tw-border-transparent hover:tw-text-white'}"
+				class="tw-px-4 tw-py-2 tw-font-mono tw-text-xs tw-font-bold tw-uppercase tw-tracking-wider tw-transition-all tw-cursor-pointer {activeTab === 'prospect-eval' ? 'tw-bg-[#0f172a] tw-text-[#14b8a6] tw-border tw-border-[#14b8a6]' : 'tw-bg-transparent tw-text-slate-400 tw-border tw-border-transparent hover:tw-text-[#fafafa]'}"
 				style="border-radius: 0px;"
 				onclick={() => setScoutingTab('prospect-eval')}
 			>
@@ -411,7 +411,7 @@
 				type="button"
 				role="tab"
 				aria-selected={activeTab === 'roster-eval'}
-				class="tw-px-4 tw-py-2 tw-font-mono tw-text-xs tw-font-bold tw-uppercase tw-tracking-wider tw-transition-all tw-cursor-pointer {activeTab === 'roster-eval' ? 'tw-bg-[#0f172a] tw-text-[#14b8a6] tw-border tw-border-[#14b8a6]' : 'tw-bg-transparent tw-text-slate-400 tw-border tw-border-transparent hover:tw-text-white'}"
+				class="tw-px-4 tw-py-2 tw-font-mono tw-text-xs tw-font-bold tw-uppercase tw-tracking-wider tw-transition-all tw-cursor-pointer {activeTab === 'roster-eval' ? 'tw-bg-[#0f172a] tw-text-[#14b8a6] tw-border tw-border-[#14b8a6]' : 'tw-bg-transparent tw-text-slate-400 tw-border tw-border-transparent hover:tw-text-[#fafafa]'}"
 				style="border-radius: 0px;"
 				onclick={() => setScoutingTab('roster-eval')}
 			>
@@ -468,14 +468,14 @@
 							type="text"
 							placeholder="Search by name, position, email…"
 							autocomplete="off"
-							class="tw-w-full tw-bg-[#080d1a] tw-border tw-border-[#334155] tw-px-3 tw-py-2 tw-text-xs tw-font-mono tw-text-white tw-outline-none focus:tw-border-[#14b8a6]"
+							class="tw-w-full tw-bg-[#080d1a] tw-border tw-border-[#334155] tw-px-3 tw-py-2 tw-text-xs tw-font-mono tw-text-[#fafafa] tw-outline-none focus:tw-border-[#14b8a6]"
 							style="border-radius: 0px;"
 							bind:value={searchQuery}
 						/>
 						{#if searchQuery}
 							<button
 								type="button"
-								class="tw-absolute tw-right-2.5 tw-top-2 tw-text-slate-500 hover:tw-text-white tw-text-xs"
+								class="tw-absolute tw-right-2.5 tw-top-2 tw-text-slate-500 hover:tw-text-[#fafafa] tw-text-xs"
 								onclick={() => (searchQuery = '')}
 							>
 								✕
@@ -488,7 +488,7 @@
 						{#each ['ALL', 'FW', 'MF', 'DF', 'GK'] as pos}
 							<button
 								type="button"
-								class="tw-px-2.5 tw-py-1 tw-text-[10px] tw-font-bold tw-uppercase tw-transition-all tw-cursor-pointer {positionFilter === pos ? 'tw-bg-[#14b8a6] tw-text-black' : 'tw-bg-[#080d1a] tw-text-slate-400 tw-border tw-border-[#334155] hover:tw-text-white'}"
+								class="tw-px-2.5 tw-py-1 tw-text-[10px] tw-font-bold tw-uppercase tw-transition-all tw-cursor-pointer {positionFilter === pos ? 'tw-bg-[#14b8a6] tw-text-[#000000]' : 'tw-bg-[#080d1a] tw-text-slate-400 tw-border tw-border-[#334155] hover:tw-text-[#fafafa]'}"
 								style="border-radius: 0px;"
 								onclick={() => (positionFilter = pos)}
 							>
@@ -517,7 +517,7 @@
 											{prospect.jerseyNumber || prospect.label.slice(0, 2).toUpperCase()}
 										</div>
 										<div class="tw-min-w-0">
-											<div class="tw-text-xs tw-font-bold tw-text-white tw-truncate">{prospect.label}</div>
+											<div class="tw-text-xs tw-font-bold tw-text-[#fafafa] tw-truncate">{prospect.label}</div>
 											<div class="tw-text-[10px] tw-text-slate-400 tw-truncate">{prospect.role}</div>
 										</div>
 									</div>
@@ -553,7 +553,7 @@
 								</div>
 								<div class="tw-min-w-0">
 									<div class="tw-flex tw-items-center tw-gap-2">
-										<h2 class="tw-font-black tw-text-lg sm:tw-text-xl tw-text-white tw-truncate tw-m-0">
+										<h2 class="tw-font-black tw-text-lg sm:tw-text-xl tw-text-[#fafafa] tw-truncate tw-m-0">
 											{activeProspect.label}
 										</h2>
 										<span class="tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-text-slate-300 tw-text-[11px] tw-px-2 tw-py-0.5" style="border-radius: 0px;">
@@ -654,14 +654,14 @@
 									<div class="tw-bg-[#080d1a] tw-border tw-border-[#334155] tw-p-3" style="border-radius: 0px;">
 										<div class="tw-flex tw-items-center tw-justify-between tw-mb-1.5">
 											<div>
-												<span class="tw-text-xs tw-font-bold tw-text-white tw-uppercase">{item.label}</span>
+												<span class="tw-text-xs tw-font-bold tw-text-[#fafafa] tw-uppercase">{item.label}</span>
 												<span class="tw-block tw-text-[10px] tw-text-slate-400">{item.desc}</span>
 											</div>
 
 											<div class="tw-flex tw-items-center tw-gap-2">
 												<button
 													type="button"
-													class="tw-w-7 tw-h-6 tw-bg-[#0f172a] hover:tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-text-xs tw-text-white tw-cursor-pointer"
+													class="tw-w-7 tw-h-6 tw-bg-[#0f172a] hover:tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-text-xs tw-text-[#fafafa] tw-cursor-pointer"
 													style="border-radius: 0px;"
 													onclick={() => adjustScore(item.key, -5)}
 												>
@@ -672,7 +672,7 @@
 												</span>
 												<button
 													type="button"
-													class="tw-w-7 tw-h-6 tw-bg-[#0f172a] hover:tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-text-xs tw-text-white tw-cursor-pointer"
+													class="tw-w-7 tw-h-6 tw-bg-[#0f172a] hover:tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-text-xs tw-text-[#fafafa] tw-cursor-pointer"
 													style="border-radius: 0px;"
 													onclick={() => adjustScore(item.key, 5)}
 												>
@@ -703,7 +703,7 @@
 									{@const selected = (tagsByProspect[activeProspect.id] ?? []).includes(tag)}
 									<button
 										type="button"
-										class="tw-px-2.5 tw-py-1 tw-text-[10px] tw-font-bold tw-transition-all tw-cursor-pointer tw-border {selected ? 'tw-bg-[#14b8a6] tw-text-black tw-border-[#14b8a6]' : 'tw-bg-[#0f172a] tw-text-slate-400 tw-border-[#334155] hover:tw-text-white'}"
+										class="tw-px-2.5 tw-py-1 tw-text-[10px] tw-font-bold tw-transition-all tw-cursor-pointer tw-border {selected ? 'tw-bg-[#14b8a6] tw-text-[#000000] tw-border-[#14b8a6]' : 'tw-bg-[#0f172a] tw-text-slate-400 tw-border-[#334155] hover:tw-text-[#fafafa]'}"
 										style="border-radius: 0px;"
 										onclick={() => toggleTag(tag)}
 									>
@@ -722,7 +722,7 @@
 								id="scouting-notes"
 								rows="3"
 								placeholder="Capture observations on tactical discipline, coachability, match impact, and recruitment priority…"
-								class="tw-w-full tw-bg-[#000000] tw-border tw-border-[#334155] tw-p-3 tw-text-xs tw-font-mono tw-text-white tw-outline-none focus:tw-border-[#14b8a6]"
+								class="tw-w-full tw-bg-[#000000] tw-border tw-border-[#334155] tw-p-3 tw-text-xs tw-font-mono tw-text-[#fafafa] tw-outline-none focus:tw-border-[#14b8a6]"
 								style="border-radius: 0px;"
 								value={notesByProspect[activeProspect.id] || ''}
 								oninput={(e) => {

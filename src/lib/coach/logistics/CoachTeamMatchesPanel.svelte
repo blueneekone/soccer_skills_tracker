@@ -224,7 +224,7 @@
 			<div>
 				<div class="tw-flex tw-items-center tw-gap-2 tw-mb-1">
 					<span class="tw-w-2.5 tw-h-2.5 tw-bg-[#14b8a6]"></span>
-					<h2 class="tw-font-mono tw-text-sm sm:tw-text-base tw-font-black tw-text-white tw-uppercase tw-tracking-wider tw-m-0">
+					<h2 class="tw-font-mono tw-text-sm sm:tw-text-base tw-font-black tw-text-[#fafafa] tw-uppercase tw-tracking-wider tw-m-0">
 						PREVIOUS MATCH REVIEWS & TACTICAL DOSSIERS
 					</h2>
 				</div>
@@ -235,7 +235,7 @@
 
 			<a
 				href="/coach/matchday"
-				class="tw-inline-flex tw-items-center tw-gap-2 tw-px-4 tw-py-2 tw-bg-[#fbbf24] hover:tw-bg-[#fbbf24] active:tw-scale-95 tw-text-black tw-font-mono tw-text-xs tw-font-black tw-uppercase tw-tracking-wider tw-transition-all tw-no-underline"
+				class="tw-inline-flex tw-items-center tw-gap-2 tw-px-4 tw-py-2 tw-bg-[#fbbf24] hover:tw-bg-[#fbbf24] active:tw-scale-95 tw-text-[#000000] tw-font-mono tw-text-xs tw-font-black tw-uppercase tw-tracking-wider tw-transition-all tw-no-underline"
 				style="border-radius: 0px;"
 			>
 				<span>▶</span>
@@ -247,7 +247,7 @@
 		<div class="tw-grid tw-grid-cols-2 sm:tw-grid-cols-4 tw-gap-3">
 			<div class="tw-bg-[#000000] tw-border tw-border-[#334155] tw-p-3">
 				<div class="tw-font-mono tw-text-[10px] tw-text-slate-400 tw-uppercase">MATCHES PLAYED</div>
-				<div class="tw-font-mono tw-text-xl tw-font-black tw-text-white">
+				<div class="tw-font-mono tw-text-xl tw-font-black tw-text-[#fafafa]">
 					{kpis.total}
 				</div>
 			</div>
@@ -284,7 +284,7 @@
 	{:else if matches.length === 0}
 		<div class="tw-p-10 tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-text-center" style="border-radius: 0px;">
 			<span class="tw-text-3xl tw-mb-2 tw-block">⚽</span>
-			<h3 class="tw-font-mono tw-text-sm tw-font-bold tw-text-white tw-uppercase tw-mb-1">
+			<h3 class="tw-font-mono tw-text-sm tw-font-bold tw-text-[#fafafa] tw-uppercase tw-mb-1">
 				NO SAVED MATCH RECORDS FOUND
 			</h3>
 			<p class="tw-font-mono tw-text-xs tw-text-slate-400 tw-max-w-md tw-mx-auto tw-mb-4">
@@ -292,7 +292,7 @@
 			</p>
 			<a
 				href="/coach/matchday"
-				class="tw-inline-flex tw-items-center tw-gap-2 tw-px-4 tw-py-2 tw-bg-[#14b8a6] hover:tw-bg-teal-400 tw-text-black tw-font-mono tw-text-xs tw-font-bold tw-uppercase tw-no-underline"
+				class="tw-inline-flex tw-items-center tw-gap-2 tw-px-4 tw-py-2 tw-bg-[#14b8a6] hover:tw-bg-teal-400 tw-text-[#000000] tw-font-mono tw-text-xs tw-font-bold tw-uppercase tw-no-underline"
 				style="border-radius: 0px;"
 			>
 				Open Match Day Console →
@@ -312,7 +312,7 @@
 							</span>
 
 							<div>
-								<div class="tw-font-mono tw-text-base sm:tw-text-lg tw-font-black tw-text-white tw-flex tw-items-center tw-gap-2">
+								<div class="tw-font-mono tw-text-base sm:tw-text-lg tw-font-black tw-text-[#fafafa] tw-flex tw-items-center tw-gap-2">
 									<span>{m.teamName || 'OUR SQUAD'}</span>
 									<span class="tw-text-[#daff0a] tw-bg-[#000000] tw-px-2 tw-py-0.5 tw-border tw-border-[#334155]">
 										{m.homeScore ?? 0} - {m.awayScore ?? 0}
@@ -342,7 +342,7 @@
 							<button
 								type="button"
 								onclick={() => selectedMatch = m}
-								class="tw-px-4 tw-py-2 tw-bg-[#000000] hover:tw-bg-[#14b8a6] hover:tw-text-black tw-border tw-border-[#14b8a6] tw-text-[#14b8a6] tw-font-mono tw-text-xs tw-font-bold tw-uppercase tw-tracking-wider tw-transition-all tw-cursor-pointer"
+								class="tw-px-4 tw-py-2 tw-bg-[#000000] hover:tw-bg-[#14b8a6] hover:tw-text-[#000000] tw-border tw-border-[#14b8a6] tw-text-[#14b8a6] tw-font-mono tw-text-xs tw-font-bold tw-uppercase tw-tracking-wider tw-transition-all tw-cursor-pointer"
 								style="border-radius: 0px;"
 							>
 								Review Match Dossier →
@@ -386,7 +386,7 @@
 						{selBadge.label}
 					</span>
 					<div>
-						<h3 class="tw-font-mono tw-text-base sm:tw-text-lg tw-font-black tw-text-white tw-uppercase tw-m-0">
+						<h3 class="tw-font-mono tw-text-base sm:tw-text-lg tw-font-black tw-text-[#fafafa] tw-uppercase tw-m-0">
 							{selectedMatch.teamName || 'OUR SQUAD'} {selectedMatch.homeScore ?? 0} - {selectedMatch.awayScore ?? 0} {selectedMatch.opponentName || selectedMatch.opponentTeam || 'Opponent'}
 						</h3>
 						<div class="tw-font-mono tw-text-xs tw-text-slate-400">
@@ -398,7 +398,7 @@
 				<button
 					type="button"
 					onclick={() => selectedMatch = null}
-					class="tw-text-slate-400 hover:tw-text-white tw-font-mono tw-text-sm tw-p-1.5 tw-cursor-pointer"
+					class="tw-text-slate-400 hover:tw-text-[#fafafa] tw-font-mono tw-text-sm tw-p-1.5 tw-cursor-pointer"
 				>
 					✕
 				</button>
@@ -430,7 +430,7 @@
 									<span class="tw-font-mono tw-text-xs tw-font-bold tw-text-rose-400 tw-bg-rose-950/60 tw-px-2 tw-py-0.5 tw-border tw-border-rose-800">
 										{m.minute}'
 									</span>
-									<span class="tw-font-mono tw-text-xs tw-font-bold tw-text-white">
+									<span class="tw-font-mono tw-text-xs tw-font-bold tw-text-[#fafafa]">
 										{m.playerName}
 									</span>
 								</div>
@@ -481,7 +481,7 @@
 							<tbody class="tw-divide-y tw-divide-[#334155]/40">
 								{#each statsList as player (player.id || player.name)}
 									<tr class="hover:tw-bg-[#000000]/60 tw-transition-colors">
-										<td class="tw-p-2.5 tw-font-mono tw-text-xs tw-font-bold tw-text-white">{player.name}</td>
+										<td class="tw-p-2.5 tw-font-mono tw-text-xs tw-font-bold tw-text-[#fafafa]">{player.name}</td>
 										<td class="tw-p-2.5 tw-font-mono tw-text-xs tw-text-slate-400">{player.jersey ? `#${player.jersey}` : '-'}</td>
 										<td class="tw-p-2.5 tw-font-mono tw-text-xs tw-text-center tw-font-bold {player.goals > 0 ? 'tw-text-[#14b8a6]' : 'tw-text-slate-500'}">{player.goals}</td>
 										<td class="tw-p-2.5 tw-font-mono tw-text-xs tw-text-center tw-font-bold {player.assists > 0 ? 'tw-text-teal-400' : 'tw-text-slate-500'}">{player.assists}</td>
@@ -533,7 +533,7 @@
 									<span class="tw-px-1.5 tw-py-0.5 tw-text-[10px] tw-border {evt.type === 'GOAL' ? 'tw-bg-[#14b8a6] tw-border-[#14b8a6] tw-text-[#14b8a6]' : evt.type.includes('CARD') ? 'tw-bg-amber-950 tw-border-amber-400 tw-text-amber-300' : evt.type === 'MISTAKE' ? 'tw-bg-rose-950 tw-border-rose-500 tw-text-rose-300' : 'tw-bg-[#0f172a] tw-border-slate-700 tw-text-slate-300'}">
 										{evt.type}
 									</span>
-									<span class="tw-text-white tw-font-bold">{evt.label}</span>
+									<span class="tw-text-[#fafafa] tw-font-bold">{evt.label}</span>
 								</div>
 								{#if evt.minute !== undefined}
 									<span class="tw-text-slate-500 tw-text-[10px]">{evt.minute}'</span>

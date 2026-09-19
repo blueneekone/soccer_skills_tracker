@@ -85,7 +85,7 @@
 		</div>
 		<div class="tw-flex tw-items-center tw-gap-2">
 			<span class="tw-text-[11px] tw-font-bold tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-px-3 tw-py-1 tw-rounded tw-text-[#94a3b8]">
-				TOTAL EVENTS: <strong class="tw-text-white">{rows.length}</strong>
+				TOTAL EVENTS: <strong class="tw-text-[#fafafa]">{rows.length}</strong>
 			</span>
 		</div>
 	</div>

@@ -173,7 +173,7 @@ import { functions } from '$lib/firebase.js';
 				<Icon name="status.shield-check" size={24} class="tw-text-data-cyan tw-drop-shadow-[0_0_8px_rgba(20,184,166,0.5)]" />
 			</div>
 			<div>
-				<h2 class="tw-m-0 tw-text-sm tw-font-bold tw-uppercase tw-tracking-widest tw-text-white tw-font-mono">
+				<h2 class="tw-m-0 tw-text-sm tw-font-bold tw-uppercase tw-tracking-widest tw-text-[#fafafa] tw-font-mono">
 					Vanguard transfer protocol
 				</h2>
 				<div class="tw-text-xs tw-text-slate-400 tw-mt-1 tw-tracking-wide">

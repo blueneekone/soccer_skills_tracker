@@ -53,7 +53,7 @@
 			<div>
 				<div class="tw-flex tw-items-center tw-gap-2 tw-mb-1">
 					<span class="tw-w-2.5 tw-h-2.5 tw-bg-[#14b8a6]"></span>
-					<h2 class="tw-font-mono tw-text-sm sm:tw-text-base tw-font-black tw-text-white tw-uppercase tw-tracking-wider tw-m-0">
+					<h2 class="tw-font-mono tw-text-sm sm:tw-text-base tw-font-black tw-text-[#fafafa] tw-uppercase tw-tracking-wider tw-m-0">
 						POST-MATCH TELEMETRY & COACH REVIEW DOSSIER
 					</h2>
 				</div>
@@ -73,7 +73,7 @@
 					type="button"
 					onclick={handleSaveRecord}
 					disabled={engine.isSavingMatch}
-					class="tw-inline-flex tw-items-center tw-gap-2 tw-px-5 tw-py-2.5 tw-bg-[#fbbf24] hover:tw-bg-[#fbbf24] active:tw-scale-95 tw-text-black tw-font-mono tw-text-xs tw-font-black tw-uppercase tw-tracking-wider tw-transition-all tw-cursor-pointer disabled:tw-opacity-50"
+					class="tw-inline-flex tw-items-center tw-gap-2 tw-px-5 tw-py-2.5 tw-bg-[#fbbf24] hover:tw-bg-[#fbbf24] active:tw-scale-95 tw-text-[#000000] tw-font-mono tw-text-xs tw-font-black tw-uppercase tw-tracking-wider tw-transition-all tw-cursor-pointer disabled:tw-opacity-50"
 					style="border-radius: 0px;"
 				>
 					<span>💾</span>
@@ -93,7 +93,7 @@
 
 			<div class="tw-bg-[#000000] tw-border tw-border-[#334155] tw-p-3">
 				<div class="tw-font-mono tw-text-[10px] tw-text-slate-400 tw-uppercase">MATCH DURATION</div>
-				<div class="tw-font-mono tw-text-lg tw-font-black tw-text-white">
+				<div class="tw-font-mono tw-text-lg tw-font-black tw-text-[#fafafa]">
 					{Math.round(engine.elapsedSeconds / 60)} MINS
 				</div>
 			</div>
@@ -140,7 +140,7 @@
 							<span class="tw-font-mono tw-text-xs tw-font-bold tw-text-rose-400 tw-bg-rose-950/60 tw-px-2 tw-py-0.5 tw-border tw-border-rose-800">
 								{m.minute}'
 							</span>
-							<span class="tw-font-mono tw-text-xs tw-font-black tw-text-white">
+							<span class="tw-font-mono tw-text-xs tw-font-black tw-text-[#fafafa]">
 								{m.playerName}
 							</span>
 						</div>
@@ -184,7 +184,7 @@
 				<tbody class="tw-divide-y tw-divide-[#334155]/40">
 					{#each playersList as player (player.id)}
 						<tr class="hover:tw-bg-[#000000]/60 tw-transition-colors">
-							<td class="tw-p-2.5 tw-font-mono tw-text-xs tw-font-bold tw-text-white">
+							<td class="tw-p-2.5 tw-font-mono tw-text-xs tw-font-bold tw-text-[#fafafa]">
 								{player.name}
 							</td>
 							<td class="tw-p-2.5 tw-font-mono tw-text-xs tw-text-slate-400">
@@ -263,7 +263,7 @@
 									type="text"
 									value={evt.label}
 									onchange={(e) => engine.editEvent(evt.id, e.currentTarget.value)}
-									class="tw-bg-[#000000] tw-border tw-border-[#334155] tw-text-white tw-font-mono tw-text-xs tw-w-full tw-px-2.5 tw-py-1 focus:tw-border-[#14b8a6] focus:tw-outline-none"
+									class="tw-bg-[#000000] tw-border tw-border-[#334155] tw-text-[#fafafa] tw-font-mono tw-text-xs tw-w-full tw-px-2.5 tw-py-1 focus:tw-border-[#14b8a6] focus:tw-outline-none"
 									style="border-radius: 0px;"
 								/>
 							</td>

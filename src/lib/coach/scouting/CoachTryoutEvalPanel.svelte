@@ -224,7 +224,7 @@
 		<div>
 			<div class="tw-flex tw-items-center tw-gap-2">
 				<span class="tw-w-2 tw-h-2 tw-bg-[#fbbf24]"></span>
-				<h2 class="tw-font-bold tw-text-sm sm:tw-text-base tw-tracking-wider tw-text-white tw-uppercase tw-m-0">
+				<h2 class="tw-font-bold tw-text-sm sm:tw-text-base tw-tracking-wider tw-text-[#fafafa] tw-uppercase tw-m-0">
 					TRYOUT EVALUATIONS & PIPELINE
 				</h2>
 			</div>
@@ -238,7 +238,7 @@
 			<label class="tw-flex tw-items-center tw-gap-2 tw-text-xs tw-text-slate-300">
 				<span>PROGRAM:</span>
 				<select
-					class="tw-bg-[#080d1a] tw-border tw-border-[#334155] tw-text-white tw-px-3 tw-py-1.5 tw-text-xs tw-font-mono tw-outline-none focus:tw-border-[#14b8a6]"
+					class="tw-bg-[#080d1a] tw-border tw-border-[#334155] tw-text-[#fafafa] tw-px-3 tw-py-1.5 tw-text-xs tw-font-mono tw-outline-none focus:tw-border-[#14b8a6]"
 					style="border-radius: 0px;"
 					bind:value={selectedProgramId}
 				>
@@ -282,7 +282,7 @@
 							onclick={() => (activeAthleteId = a.id)}
 						>
 							<div class="tw-flex tw-items-center tw-justify-between">
-								<span class="tw-font-bold tw-text-xs tw-text-white tw-truncate">{a.playerName}</span>
+								<span class="tw-font-bold tw-text-xs tw-text-[#fafafa] tw-truncate">{a.playerName}</span>
 								{#if a.overallGrade != null}
 									<span class="tw-text-xs tw-font-bold tw-text-[#daff0a]">{a.overallGrade}</span>
 								{:else}
@@ -305,7 +305,7 @@
 					<!-- Candidate Header -->
 					<div class="tw-flex tw-items-center tw-justify-between tw-border-b tw-border-[#334155] tw-pb-3">
 						<div>
-							<h3 class="tw-font-black tw-text-base tw-text-white tw-m-0">{activeAthlete.playerName}</h3>
+							<h3 class="tw-font-black tw-text-base tw-text-[#fafafa] tw-m-0">{activeAthlete.playerName}</h3>
 							<span class="tw-text-[11px] tw-text-slate-400">
 								{activeAthlete.ageBand} · Status: <strong class="tw-text-[#14b8a6]">{activeAthlete.pipelineStatus.replace('_', ' ')}</strong>
 							</span>
@@ -327,7 +327,7 @@
 									<div class="tw-flex tw-items-center tw-gap-2">
 										<button
 											type="button"
-											class="tw-w-6 tw-h-5 tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-text-[10px] tw-text-white tw-cursor-pointer"
+											class="tw-w-6 tw-h-5 tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-text-[10px] tw-text-[#fafafa] tw-cursor-pointer"
 											onclick={() => adjustScore(c.key, -5)}
 										>
 											-5
@@ -335,7 +335,7 @@
 										<span class="tw-text-xs tw-font-bold tw-w-6 tw-text-center" style="color: {c.color};">{val}</span>
 										<button
 											type="button"
-											class="tw-w-6 tw-h-5 tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-text-[10px] tw-text-white tw-cursor-pointer"
+											class="tw-w-6 tw-h-5 tw-bg-[#0f172a] tw-border tw-border-[#334155] tw-text-[10px] tw-text-[#fafafa] tw-cursor-pointer"
 											onclick={() => adjustScore(c.key, 5)}
 										>
 											+5
@@ -363,7 +363,7 @@
 							id="tryout-notes"
 							rows="2"
 							placeholder="Comments on technical execution, coachability, and tactical discipline…"
-							class="tw-w-full tw-bg-[#000000] tw-border tw-border-[#334155] tw-p-2.5 tw-text-xs tw-font-mono tw-text-white tw-outline-none focus:tw-border-[#14b8a6]"
+							class="tw-w-full tw-bg-[#000000] tw-border tw-border-[#334155] tw-p-2.5 tw-text-xs tw-font-mono tw-text-[#fafafa] tw-outline-none focus:tw-border-[#14b8a6]"
 							style="border-radius: 0px;"
 							bind:value={notes}
 						></textarea>
@@ -377,7 +377,7 @@
 						</div>
 						<button
 							type="button"
-							class="tw-px-4 tw-py-2 tw-bg-[#fbbf24] hover:tw-bg-[#fbbf24] tw-text-black tw-font-bold tw-text-xs tw-uppercase tw-tracking-wider tw-cursor-pointer active:tw-scale-[0.98]"
+							class="tw-px-4 tw-py-2 tw-bg-[#fbbf24] hover:tw-bg-[#fbbf24] tw-text-[#000000] tw-font-bold tw-text-xs tw-uppercase tw-tracking-wider tw-cursor-pointer active:tw-scale-[0.98]"
 							style="border-radius: 0px;"
 							disabled={saving}
 							onclick={() => void lockEval()}

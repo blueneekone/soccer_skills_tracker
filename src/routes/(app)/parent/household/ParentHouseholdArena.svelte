@@ -35,7 +35,7 @@
 	<header class="phh-page-head bento-mb-lg">
 		<div class="tw-text-center">
 			<p class="phh-eyebrow tw-mb-1">Parent OS · TIER-0 ACCESS</p>
-			<h1 class="phh-title tw-mb-2 tw-text-xl tw-font-extrabold tw-tracking-tight tw-text-white md:tw-text-2xl">
+			<h1 class="phh-title tw-mb-2 tw-text-xl tw-font-extrabold tw-tracking-tight tw-text-[#fafafa] md:tw-text-2xl">
 				Household Clearance Center
 			</h1>
 			<p class="tw-text-sm tw-text-[var(--text-secondary)]">
@@ -47,7 +47,7 @@
 
 	{#if engine.loadErr}
 		<div
-			class="bento-mb-md tw-border tw-border-red-500/50 tw-bg-red-950/30 tw-px-4 tw-py-3 tw-text-sm tw-text-red-200"
+			class="bento-mb-md tw-border tw-border-red-500/50 tw-bg-[#f59e0b]/30 tw-px-4 tw-py-3 tw-text-sm tw-text-red-200"
 			role="alert"
 		>
 			{engine.loadErr}
@@ -103,7 +103,7 @@
 						<span class="phh-eyebrow tw-text-cyan-200/80">Household roster</span>
 						<h2
 							id="phh-active-ops"
-							class="tw-m-0 tw-text-sm tw-font-bold tw-uppercase tw-tracking-widest tw-text-white tw-font-mono"
+							class="tw-m-0 tw-text-sm tw-font-bold tw-uppercase tw-tracking-widest tw-text-[#fafafa] tw-font-mono"
 						>
 							Active operatives
 						</h2>
@@ -267,7 +267,7 @@
 			>
 				<div class="tw-mb-3">
 					<span class="phh-eyebrow tw-text-cyan-200/80">Operative generation</span>
-					<h2 id="phh-ops" class="tw-m-0 tw-text-sm tw-font-bold tw-uppercase tw-tracking-widest tw-text-white tw-font-mono">
+					<h2 id="phh-ops" class="tw-m-0 tw-text-sm tw-font-bold tw-uppercase tw-tracking-widest tw-text-[#fafafa] tw-font-mono">
 						Credential dispatch
 					</h2>
 				</div>
@@ -359,7 +359,7 @@
             >
                 <div class="tw-mb-3">
                     <span class="phh-eyebrow tw-text-[#fbbf24]/80">Household Management</span>
-                    <h2 id="phh-coparent" class="tw-m-0 tw-text-sm tw-font-bold tw-uppercase tw-tracking-widest tw-text-white tw-font-mono">
+                    <h2 id="phh-coparent" class="tw-m-0 tw-text-sm tw-font-bold tw-uppercase tw-tracking-widest tw-text-[#fafafa] tw-font-mono">
                         Invite Co-Parent
                     </h2>
                 </div>
