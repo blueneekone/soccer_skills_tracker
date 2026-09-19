@@ -588,8 +588,9 @@
 					</div>
 
 					<button
+						id="cta-coach-full-passport"
 						type="button"
-						class="tw-bg-[#fbbf24] hover:tw-bg-[#fbbf24] tw-text-[#000000] tw-font-mono tw-font-bold tw-text-[11px] tw-px-3 tw-py-2 tw-rounded-lg tw-transition-colors"
+						class="tw-bg-[#fbbf24] hover:tw-bg-[#f59e0b] tw-text-[#000000] tw-font-mono tw-font-bold tw-text-[11px] tw-px-3 tw-py-2 tw-rounded-lg tw-transition-colors"
 						onclick={() => openPassport(selectedPlayer)}
 					>
 						Full Passport →

@@ -51,8 +51,9 @@
 				</div>
 			{:else}
 				<button 
+					id="cta-parent-vpc-attest"
 					onclick={() => engine.initiateBiometricConsent()} 
-					class="tw-inline-flex tw-items-center tw-gap-2 tw-bg-[#f59e0b] tw-text-[#000000] tw-px-6 tw-py-3 tw-rounded-none tw-font-mono tw-text-xs tw-font-bold tw-tracking-widest tw-uppercase hover:tw-bg-[#fbbf24] hover:tw-shadow-[0_0_20px_rgba(251, 191, 36,0.5)] tw-transition-all"
+					class="tw-inline-flex tw-items-center tw-gap-2 tw-bg-[#fbbf24] tw-text-[#000000] tw-px-6 tw-py-3 tw-rounded-none tw-font-mono tw-text-xs tw-font-bold tw-tracking-widest tw-uppercase hover:tw-bg-[#f59e0b] tw-transition-all"
 				>
 					<Icon name={"sys.fingerprint" as IconName} size={16} />
 					<span>Attest via TouchID / FaceID / Windows Hello</span>
@@ -127,8 +128,9 @@
 					/>
 				</div>
 				<button 
+					id="cta-parent-fund-bounty"
 					onclick={() => engine.fundBounty()} 
-					class="tw-w-full tw-py-3 tw-bg-[#f59e0b] tw-text-[#000000] tw-font-mono tw-text-xs tw-font-bold tw-tracking-widest tw-uppercase hover:tw-bg-[#fbbf24] hover:tw-shadow-[0_0_15px_rgba(251, 191, 36,0.5)] tw-transition-all tw-flex tw-items-center tw-justify-center tw-gap-2 tw-rounded-none tw-mt-auto"
+					class="tw-w-full tw-py-3 tw-bg-[#334155] tw-text-[#fafafa] tw-font-mono tw-text-xs tw-font-bold tw-tracking-widest tw-uppercase hover:tw-bg-[#475569] tw-transition-all tw-flex tw-items-center tw-justify-center tw-gap-2 tw-rounded-none tw-mt-auto"
 				>
 					<Icon name={"sys.lock" as IconName} size={14} />
 					<span>Lock Funds in Escrow</span>

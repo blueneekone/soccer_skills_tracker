@@ -60,7 +60,7 @@
 		<button type="button" class="mission-hero-modal__terminate" onclick={() => onTerminate?.()}>
 			TERMINATE_LINK
 		</button>
-		<button type="button" class="mission-hero-modal__engage" onclick={() => onEngage?.()}>
+		<button id="cta-player-engage-mission" type="button" class="mission-hero-modal__engage" onclick={() => onEngage?.()}>
 			ENGAGE MISSION
 		</button>
 	</div>

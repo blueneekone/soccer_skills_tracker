@@ -61,7 +61,7 @@
 		<button type="button" class="skill-tier-modal__defer" onclick={() => onDefer?.()}>
 			DEFER_INTEGRATION
 		</button>
-		<button type="button" class="skill-tier-modal__commit" onclick={() => onCommit?.()}>
+		<button id="cta-player-commit-upgrade" type="button" class="skill-tier-modal__commit" onclick={() => onCommit?.()}>
 			COMMIT_UPGRADE
 		</button>
 	</div>

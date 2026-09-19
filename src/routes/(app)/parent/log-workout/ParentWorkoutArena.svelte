@@ -77,7 +77,7 @@
 							<span class="tw-text-[#fafafa] tw-font-bold tw-text-sm">Lvl {engine.level}</span>
 						</div>
 						<div class="tw-w-full tw-h-1.5 tw-bg-[#1E293B] tw-mb-4" bind:this={xpTrackEl}>
-							<div class="tw-h-full tw-bg-[#fbbf24] tw-transition-all tw-duration-500" style="width: var(--fill, 0%);"></div>
+							<div class="tw-h-full tw-bg-[#14b8a6] tw-transition-all tw-duration-500" style="width: var(--fill, 0%);"></div>
 						</div>
 						<div class="tw-flex tw-justify-between tw-items-center tw-mb-1">
 							<span class="tw-text-[#a5b4fc] tw-font-mono tw-text-[10px] tw-uppercase tw-tracking-widest">Total XP</span>
@@ -112,7 +112,7 @@
 					{/if}
 					<div class="tw-flex tw-flex-wrap tw-gap-2">
 						{#each engine.availableDrills as drill}
-							<button class="tw-px-3 tw-py-1.5 tw-font-mono tw-text-xs tw-border tw-rounded-none tw-transition-colors {engine.selectedDrill === drill ? 'tw-bg-[#fbbf24]/10 tw-border-[#fbbf24] tw-text-[#fbbf24]' : 'tw-bg-[#000000] tw-border-[#334155] tw-text-[#94a3b8] hover:tw-border-[#94a3b8]'}" disabled={!engine.selectedChildEmail} onclick={() => engine.selectedDrill = drill}>
+							<button class="tw-px-3 tw-py-1.5 tw-font-mono tw-text-xs tw-border tw-rounded-none tw-transition-colors {engine.selectedDrill === drill ? 'tw-bg-[#14b8a6]/10 tw-border-[#14b8a6] tw-text-[#14b8a6]' : 'tw-bg-[#000000] tw-border-[#334155] tw-text-[#94a3b8] hover:tw-border-[#94a3b8]'}" disabled={!engine.selectedChildEmail} onclick={() => engine.selectedDrill = drill}>
 								{drill}
 							</button>
 						{/each}
@@ -144,7 +144,7 @@
 
 				<ParentWorkoutHUD {engine} />
 
-				<button class="tw-w-full tw-py-4 tw-px-6 tw-flex tw-items-center tw-justify-center tw-gap-2 tw-bg-[#fbbf24] tw-text-[#000000] tw-font-mono tw-text-sm tw-font-bold tw-uppercase tw-tracking-widest hover:tw-bg-[#f59e0b] hover:tw-shadow-[0_0_20px_rgba(251,191,36,0.4)] tw-transition-all tw-rounded-none disabled:tw-opacity-50 disabled:tw-cursor-not-allowed" disabled={!engine.selectedChildEmail || !engine.selectedDrill || engine.logSubmitting || !engine.parentVerifiedAck || !engine.verifierLegalName.trim()} onclick={() => engine.submitWorkout()}>
+				<button id="cta-parent-log-workout" class="tw-w-full tw-py-4 tw-px-6 tw-flex tw-items-center tw-justify-center tw-gap-2 tw-bg-[#fbbf24] tw-text-[#000000] tw-font-mono tw-text-sm tw-font-bold tw-uppercase tw-tracking-widest hover:tw-bg-[#f59e0b] hover:tw-shadow-[0_0_20px_rgba(251,191,36,0.4)] tw-transition-all tw-rounded-none disabled:tw-opacity-50 disabled:tw-cursor-not-allowed" disabled={!engine.selectedChildEmail || !engine.selectedDrill || engine.logSubmitting || !engine.parentVerifiedAck || !engine.verifierLegalName.trim()} onclick={() => engine.submitWorkout()}>
 					{#if engine.logSubmitting}
 						<span>TRANSMITTING...</span>
 					{:else}

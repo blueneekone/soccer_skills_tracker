@@ -70,10 +70,11 @@
 					</span>
 				{/if}
 				<button
+					id="cta-coach-save-match"
 					type="button"
 					onclick={handleSaveRecord}
 					disabled={engine.isSavingMatch}
-					class="tw-inline-flex tw-items-center tw-gap-2 tw-px-5 tw-py-2.5 tw-bg-[#fbbf24] hover:tw-bg-[#fbbf24] active:tw-scale-95 tw-text-[#000000] tw-font-mono tw-text-xs tw-font-black tw-uppercase tw-tracking-wider tw-transition-all tw-cursor-pointer disabled:tw-opacity-50"
+					class="tw-inline-flex tw-items-center tw-gap-2 tw-px-5 tw-py-2.5 tw-bg-[#fbbf24] hover:tw-bg-[#f59e0b] active:tw-scale-95 tw-text-[#000000] tw-font-mono tw-text-xs tw-font-black tw-uppercase tw-tracking-wider tw-transition-all tw-cursor-pointer disabled:tw-opacity-50"
 					style="border-radius: 0px;"
 				>
 					<span>💾</span>

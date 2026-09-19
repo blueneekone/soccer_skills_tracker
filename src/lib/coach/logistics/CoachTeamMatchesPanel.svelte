@@ -234,8 +234,9 @@
 			</div>
 
 			<a
+				id="cta-coach-launch-match-day"
 				href="/coach/matchday"
-				class="tw-inline-flex tw-items-center tw-gap-2 tw-px-4 tw-py-2 tw-bg-[#fbbf24] hover:tw-bg-[#fbbf24] active:tw-scale-95 tw-text-[#000000] tw-font-mono tw-text-xs tw-font-black tw-uppercase tw-tracking-wider tw-transition-all tw-no-underline"
+				class="tw-inline-flex tw-items-center tw-gap-2 tw-px-4 tw-py-2 tw-bg-[#fbbf24] hover:tw-bg-[#f59e0b] active:tw-scale-95 tw-text-[#000000] tw-font-mono tw-text-xs tw-font-black tw-uppercase tw-tracking-wider tw-transition-all tw-no-underline"
 				style="border-radius: 0px;"
 			>
 				<span>▶</span>

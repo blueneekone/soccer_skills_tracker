@@ -80,9 +80,9 @@
   </div>
 
   <button
-    id="log-deliberate-play-btn"
+    id="cta-player-log-touches"
     onclick={handleLogTouchSession}
-    class="tw-w-full tw-bg-[#fbbf24] tw-text-[#000000] tw-font-mono tw-font-bold tw-py-2 tw-uppercase hover:tw-bg-[#fbbf24] tw-transition-colors"
+    class="tw-w-full tw-bg-[#fbbf24] tw-text-[#000000] tw-font-mono tw-font-bold tw-py-2 tw-uppercase hover:tw-bg-[#f59e0b] tw-transition-colors"
   >
     LOG BACKYARD TOUCHES
   </button>

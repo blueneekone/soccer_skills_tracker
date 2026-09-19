@@ -196,7 +196,7 @@
 				<button
 					type="button"
 					onclick={() => handleStatClick('YELLOW_CARD')}
-					class="tw-flex tw-flex-col tw-items-center tw-justify-center tw-h-16 tw-p-2 tw-bg-amber-950/40 tw-border tw-border-amber-400/80 tw-text-amber-300 hover:tw-bg-[#fbbf24] hover:tw-text-[#000000] tw-transition-all active:tw-scale-95 group tw-cursor-pointer"
+					class="tw-flex tw-flex-col tw-items-center tw-justify-center tw-h-16 tw-p-2 tw-bg-amber-950/40 tw-border tw-border-amber-400/80 tw-text-amber-300 hover:tw-bg-[#f59e0b] hover:tw-text-[#000000] tw-transition-all active:tw-scale-95 group tw-cursor-pointer"
 					style="border-radius: 0px;"
 				>
 					<span class="tw-font-mono tw-text-xs tw-font-black tw-tracking-wider group-hover:tw-text-[#000000]">+ YELLOW</span>
@@ -289,7 +289,7 @@
 			<button
 				type="button"
 				onclick={() => engine.syncHalftimeChoice()}
-				class="tw-w-full tw-h-11 tw-bg-[#000000] tw-text-[#fbbf24] tw-border tw-border-[#fbbf24] tw-px-4 tw-font-mono tw-text-xs tw-font-bold tw-uppercase tw-tracking-wider hover:tw-bg-[#fbbf24] hover:tw-text-[#000000] tw-transition-all active:tw-scale-95 tw-shadow-lg"
+				class="tw-w-full tw-h-11 tw-bg-[#000000] tw-text-[#f59e0b] tw-border tw-border-[#f59e0b] tw-px-4 tw-font-mono tw-text-xs tw-font-bold tw-uppercase tw-tracking-wider hover:tw-bg-[#f59e0b] hover:tw-text-[#000000] tw-transition-all active:tw-scale-95 tw-shadow-lg"
 				style="border-radius: 0px;"
 			>
 				⚡ SYNC HALFTIME CHOICE

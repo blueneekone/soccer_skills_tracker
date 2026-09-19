@@ -152,7 +152,7 @@
 
 			<!-- Live Match Telemetry Overlay HUD (High Contrast) -->
 			<div class="hud-top-bar" style="position: absolute; top: 12px; left: 12px; right: 12px; display: flex; justify-content: space-between; align-items: center; pointer-events: none; z-index: 30;">
-				<div class="hud-badge font-mono-tech tw-bg-[#fbbf24] tw-text-[#000000] tw-px-2 py-1 tw-font-bold" style="font-size: 0.75rem; letter-spacing: 0.05em;">
+				<div class="hud-badge font-mono-tech tw-bg-[#334155] tw-text-[#FAFAFA] tw-px-2 py-1 tw-font-bold" style="font-size: 0.75rem; letter-spacing: 0.05em;">
 					● LIVE RE-FEED
 				</div>
 				<div class="hud-timer font-mono-tech tw-text-[#FAFAFA]" style="font-size: 0.875rem; background: rgba(0,0,0,0.75); padding: 2px 8px; border: 1px solid #334155;">
@@ -248,6 +248,7 @@
 
 			<!-- Support Athlete primary CTA -->
 			<button
+				id="cta-fan-support-athlete"
 				type="button"
 				data-primary-cta
 				class="support-athlete-btn font-sans-header tw-px-6 tw-py-3 tw-bg-[#fbbf24] tw-text-[#000000] tw-font-bold tw-tracking-widest tw-uppercase tw-font-mono"

@@ -376,8 +376,9 @@
 							{#if err}<span class="tw-text-xs tw-text-rose-400">⚠ {err}</span>{/if}
 						</div>
 						<button
+							id="cta-coach-lock-evaluation"
 							type="button"
-							class="tw-px-4 tw-py-2 tw-bg-[#fbbf24] hover:tw-bg-[#fbbf24] tw-text-[#000000] tw-font-bold tw-text-xs tw-uppercase tw-tracking-wider tw-cursor-pointer active:tw-scale-[0.98]"
+							class="tw-px-4 tw-py-2 tw-bg-[#fbbf24] hover:tw-bg-[#f59e0b] tw-text-[#000000] tw-font-bold tw-text-xs tw-uppercase tw-tracking-wider tw-cursor-pointer active:tw-scale-[0.98]"
 							style="border-radius: 0px;"
 							disabled={saving}
 							onclick={() => void lockEval()}

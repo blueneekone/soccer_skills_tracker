@@ -307,11 +307,12 @@
 			{/if}
 
 			<button
+				id="cta-player-log-homework"
 				type="button"
 				data-primary-cta
 				class="tw-w-full tw-py-2.5 tw-rounded-xl tw-font-mono tw-text-[10px] tw-tracking-widest
-				       tw-uppercase tw-border tw-border-amber-400/35 tw-text-[#fbbf24] tw-bg-[#fbbf24]/10
-				       hover:tw-bg-[#fbbf24]/20 tw-transition-colors"
+				       tw-uppercase tw-border tw-border-[#fbbf24] tw-bg-[#fbbf24] tw-text-[#000000]
+				       hover:tw-bg-[#f59e0b] hover:tw-border-[#f59e0b] tw-transition-colors"
 				disabled={!suggestedDrill}
 				onclick={logOnTrain}
 			>

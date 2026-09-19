@@ -140,9 +140,10 @@
 		<div class="tw-flex tw-items-center tw-gap-2">
 			{#if engine.matchStatus === 'not_started'}
 				<button
+					id="cta-coach-start-match"
 					type="button"
 					onclick={() => engine.startMatch()}
-					class="tw-inline-flex tw-items-center tw-justify-center tw-bg-[#fbbf24] tw-text-[#000000] tw-font-mono tw-font-black tw-text-xs tw-px-5 tw-h-10 tw-uppercase tw-tracking-wider hover:tw-bg-lime-400 tw-transition-all active:tw-scale-95 tw-shadow-md"
+					class="tw-inline-flex tw-items-center tw-justify-center tw-bg-[#fbbf24] tw-text-[#000000] tw-font-mono tw-font-black tw-text-xs tw-px-5 tw-h-10 tw-uppercase tw-tracking-wider hover:tw-bg-[#f59e0b] tw-transition-all active:tw-scale-95 tw-shadow-md"
 					style="border-radius: 0px;"
 				>
 					▶ START MATCH
@@ -218,7 +219,7 @@
 				type="button"
 				aria-label="Toggle Car Ride Home Shield"
 				onclick={() => engine.toggleShield()}
-				class="tw-h-8 tw-bg-[#000000] tw-text-[#fbbf24] tw-border tw-border-[#fbbf24]/70 tw-px-3 tw-font-mono tw-text-xs tw-font-bold hover:tw-bg-[#fbbf24] hover:tw-text-[#000000] tw-transition-colors"
+				class="tw-h-8 tw-bg-[#000000] tw-text-[#f59e0b] tw-border tw-border-[#f59e0b]/70 tw-px-3 tw-font-mono tw-text-xs tw-font-bold hover:tw-bg-[#f59e0b] hover:tw-text-[#000000] tw-transition-colors"
 				style="border-radius: 0px;"
 			>
 				TOGGLE SHIELD

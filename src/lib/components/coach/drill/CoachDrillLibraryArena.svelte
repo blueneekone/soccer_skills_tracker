@@ -289,8 +289,9 @@
 						</button>
 
 						<button
+							id="cta-coach-deploy-intent"
 							type="button"
-							class="tw-bg-[#fbbf24] hover:tw-bg-[#fbbf24] tw-text-[#000000] tw-font-mono tw-text-[11px] tw-font-bold tw-py-2 tw-px-2 tw-rounded-xl active:tw-scale-[0.98] tw-transition-all tw-text-center"
+							class="tw-bg-[#fbbf24] hover:tw-bg-[#f59e0b] tw-text-[#000000] tw-font-mono tw-text-[11px] tw-font-bold tw-py-2 tw-px-2 tw-rounded-xl active:tw-scale-[0.98] tw-transition-all tw-text-center"
 							onclick={() => onDeployToIntent(drill)}
 						>
 							🚀 Deploy Intent
