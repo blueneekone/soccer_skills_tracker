@@ -87,6 +87,22 @@
 			visible = true;
 		}
 
+		// Handle service worker lifecycle update event
+		if ('serviceWorker' in navigator) {
+			navigator.serviceWorker.ready.then((registration) => {
+				registration.onupdatefound = () => {
+					const installingWorker = registration.installing;
+					if (installingWorker) {
+						installingWorker.onstatechange = () => {
+							if (installingWorker.state === 'installed' && navigator.serviceWorker.controller) {
+								visible = true;
+							}
+						};
+					}
+				};
+			}).catch(() => {});
+		}
+
 		// Clean up on appinstalled (Android)
 		window.addEventListener('appinstalled', () => {
 			visible = false;

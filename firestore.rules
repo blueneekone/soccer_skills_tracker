@@ -103,6 +103,11 @@ service cloud.firestore {
       match /attendance_sessions/{sessionId} {
         allow read, write: if isAuthenticated();
       }
+
+      match /matches/{matchId} {
+        allow read: if isAuthenticated() && (isParent() || isCoach() || isDirector() || isGlobalAdmin());
+        allow write: if isCoach() || isDirector() || isGlobalAdmin();
+      }
       allow read: if isGlobalAdmin() || (isAuthenticated() && isCleared() && (
         (request.auth.token.clubId != null && (resource == null || resource.data.clubId == request.auth.token.clubId)) ||
         (request.auth.token.email != null && resource != null && (
@@ -362,6 +367,16 @@ service cloud.firestore {
       allow create, update, delete: if false;
     }
 
+    match /match_sessions/{sessionId} {
+      allow read: if isAuthenticated();
+      allow write: if isCoach() || isDirector() || isGlobalAdmin();
+    }
+
+    match /passports/{passportId} {
+      allow read: if isOwner(passportId) || isGlobalAdmin();
+      allow write: if isOwner(passportId) || isGlobalAdmin();
+    }
+
     match /workouts/{docId} {
       allow read: if isGlobalAdmin() || (isAuthenticated() && (
         resource.data.get('clubId', null) == tokenClub()
@@ -461,7 +476,7 @@ service cloud.firestore {
     }
 
     function canReadStaffInternalChannel(ch) {
-      return isGlobalAdmin() || (isAuthenticated() && (isDirector() || isCoach() || isRegistrar()));
+      return isGlobalAdmin() || (isAuthenticated() && (isCoach() || isDirector() || isRegistrar()));
     }
 
     function canReadSponsorPartnerChannel(ch) {

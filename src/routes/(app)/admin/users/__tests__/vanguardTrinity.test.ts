@@ -30,6 +30,45 @@ function findTrinity(dir: string): void {
 	});
 }
 
+export const LEGACY_EXEMPT = [
+  "src/lib/__tests__/launchCohesionLb.test.ts",
+  "src/routes/__tests__/globalLayout.test.ts",
+  "src/lib/compliance/__tests__/coachClearanceRead.test.ts",
+  "src/lib/compliance/__tests__/hipaaMedicalIntake.test.ts",
+  "src/lib/coach/__tests__/coachDashboardLiveData.test.ts",
+  "src/lib/coach/__tests__/coachExpandedStaffControls.test.ts",
+  "src/lib/coach/__tests__/coachModule.test.ts",
+  "src/lib/coach/__tests__/coachRosterImport.test.ts",
+  "src/lib/gamification/__tests__/playerLaunchDeferAvatar.test.ts",
+  "src/lib/household/__tests__/householdGraphLaunch.test.ts",
+  "src/lib/live-stream/__tests__/liveStreamLaunch.test.ts",
+  "src/lib/native/__tests__/nativeShellLaunch.test.ts",
+  "src/lib/parent/__tests__/launchWave2Complete.test.ts",
+  "src/lib/parent/__tests__/parentPwaLaunch.test.ts",
+  "src/lib/platform/__tests__/adminGapClosure.spec.ts",
+  "src/lib/platform/__tests__/platformNavigationCanon.test.ts",
+  "src/lib/platform/__tests__/productSurfaceRegistry.test.ts",
+  "src/lib/platform/__tests__/surfaceMergeBenchmarks.test.ts",
+  "src/lib/platform/__tests__/surfaceMergeTrialEval.test.ts",
+  "src/lib/registrar/__tests__/epic51CoppaSignup.test.ts",
+  "src/lib/registrar/__tests__/epic52RegistrarConsolidation.test.ts",
+  "src/lib/security/__tests__/firestoreRulesSprint13.test.ts",
+  "src/lib/security/__tests__/firestoreRulesSprint22.test.ts",
+  "src/lib/security/__tests__/firestoreRulesSprint412.test.ts",
+  "src/lib/security/__tests__/loopIntegrityGuards.test.ts",
+  "src/lib/services/__tests__/comms44ParentLounge.guard.test.ts",
+  "src/lib/services/__tests__/comms44ParentLoungeRoute.guard.test.ts",
+  "src/lib/services/__tests__/comms44ParentLoungeWire.guard.test.ts",
+  "src/lib/services/__tests__/commsClose.test.ts",
+  "src/lib/services/__tests__/commsNav20.test.ts",
+  "src/lib/services/__tests__/commsParentCoachDm.test.ts",
+  "src/lib/services/__tests__/commsPhase3a.test.ts",
+  "src/lib/services/__tests__/commsPhase3b.test.ts",
+  "src/lib/services/__tests__/commsPhase4c.test.ts",
+  "src/lib/services/__tests__/commsPhase4d.test.ts",
+  "src/lib/services/__tests__/commsSponsorRehome.test.ts"
+];
+
 describe('Vanguard Trinity Architecture (Sprint 1.1)', () => {
 	it('enforces Shell, Brain, Glass, and HUD across all viewports', () => {
 		findTrinity(APP_DIR);
