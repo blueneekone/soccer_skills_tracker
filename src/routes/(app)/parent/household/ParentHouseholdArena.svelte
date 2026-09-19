@@ -450,7 +450,7 @@
 				>
 			</div>
 			<div class="tw-flex tw-flex-col tw-gap-2 sm:tw-flex-row">
-				<button type="button" class="tw-vanguard-btn-amber tw-w-full sm:tw-w-auto tw-inline-flex tw-items-center tw-justify-center tw-gap-2" onclick={() => engine.copyOtpToClipboard()}>
+				<button class:interactive={true} type="button" class="tw-vanguard-btn-amber tw-w-full sm:tw-w-auto tw-inline-flex tw-items-center tw-justify-center tw-gap-2" onclick={() => engine.copyOtpToClipboard()}>
 					<Icon name={"action.copy" as IconName} size={16} />
 					<span>{engine.copyFeedback ? 'Copied' : 'Copy to clipboard'}</span>
 				</button>

@@ -250,7 +250,7 @@
 				{#if submitErr}<p class="tw-text-sm tw-text-red-400" role="alert">{submitErr}</p>{/if}
 				{#if submitOk}<p class="tw-text-sm tw-text-teal-400" role="status">{submitOk}</p>{/if}
 
-				<button
+				<button class:interactive={true}
 					type="submit"
 					class="vanguard-btn-amber tw-mt-2 tw-flex tw-items-center tw-justify-center tw-gap-2 tw-py-3.5 tw-font-mono tw-font-bold tw-text-sm tw-uppercase"
 					disabled={submitting}
@@ -311,7 +311,7 @@
 							The club has offered a roster spot. Accept or decline below.
 						</p>
 						<div class="tw-mt-3 tw-flex tw-flex-wrap tw-gap-2">
-							<button
+							<button class:interactive={true}
 								type="button"
 								class="vanguard-btn-amber tw-flex tw-items-center tw-gap-1.5 tw-px-5 tw-py-2.5 tw-font-mono tw-font-bold tw-text-xs tw-uppercase"
 								disabled={offerSubmitting}

@@ -105,7 +105,7 @@
 			{/if}
 
 			{#if !isConnected && !stripeStatus}
-				<button
+				<button class:interactive={true}
 					type="button"
 					onclick={handleInitiateGateway}
 					disabled={isConnecting}

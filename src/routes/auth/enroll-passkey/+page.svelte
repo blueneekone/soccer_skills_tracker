@@ -124,7 +124,7 @@ import { untrack } from 'svelte';
 					You can continue using standard authentication.
 				</div>
 				<div class="tw-mt-5 tw-flex tw-w-full tw-flex-col tw-gap-3">
-					<button type="button" class="vanguard-btn-amber tw-flex tw-h-11 tw-w-full tw-items-center tw-justify-center tw-px-6 tw-font-mono tw-text-xs tw-uppercase tw-tracking-[0.2em] tw-font-bold tw-transition-colors tw-duration-200 active:tw-scale-[0.98]" onclick={() => void navigateAfterLogin({ replaceState: true })}>
+					<button class:interactive={true} type="button" class="vanguard-btn-amber tw-flex tw-h-11 tw-w-full tw-items-center tw-justify-center tw-px-6 tw-font-mono tw-text-xs tw-uppercase tw-tracking-[0.2em] tw-font-bold tw-transition-colors tw-duration-200 active:tw-scale-[0.98]" onclick={() => void navigateAfterLogin({ replaceState: true })}>
 						Continue to Dashboard
 					</button>
 					<button type="button" class="tw-flex tw-h-11 tw-w-full tw-items-center tw-justify-center tw-border tw-border-[#1e293b] tw-bg-transparent tw-font-mono tw-text-xs tw-uppercase tw-tracking-[0.15em] tw-text-[#475569] tw-transition-all hover:tw-bg-[#1e293b] hover:tw-text-[#94a3b8] focus-visible:tw-outline-none" onclick={() => void handleSignOut()}>Sign out</button>
@@ -139,7 +139,7 @@ import { untrack } from 'svelte';
 					</div>
 				{/if}
 				<div class="tw-flex tw-w-full tw-flex-col tw-gap-3 tw-mt-2">
-					<button
+					<button class:interactive={true}
 						type="button"
 						class="vanguard-btn-amber tw-flex tw-h-11 tw-w-full tw-items-center tw-justify-center tw-px-6 tw-font-mono tw-text-xs tw-uppercase tw-tracking-[0.2em] tw-font-bold tw-transition-colors tw-duration-200 active:tw-scale-[0.98] disabled:tw-pointer-events-none disabled:tw-opacity-40"
 						disabled={loginEngine.busy}

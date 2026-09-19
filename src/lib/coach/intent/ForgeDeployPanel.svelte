@@ -600,7 +600,7 @@
 	{/if}
 
 	<!-- 7. Primary Call-To-Action (Mandated Action Gold #fbbf24) -->
-	<button
+	<button class:interactive={true}
 		type="button"
 		class="tw-w-full tw-py-4 tw-px-6 tw-bg-[#fbbf24] hover:tw-bg-[#f59e0b] tw-text-[#000000] tw-font-mono tw-text-sm tw-font-black tw-uppercase tw-tracking-widest tw-transition-all active:tw-scale-[0.99] disabled:tw-opacity-40 disabled:tw-cursor-not-allowed tw-shadow-[0_0_20px_rgba(251,191,36,0.3)]"
 		disabled={!canDeploy || deployPhase === 'saving'}

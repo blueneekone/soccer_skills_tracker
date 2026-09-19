@@ -428,7 +428,7 @@
 						<span>💾 SAVE PLAYBOOK</span>
 					</button>
 
-					<button
+					<button class:interactive={true}
 						id="cta-coach-deploy-as-intent"
 						type="button"
 						class="tw-flex-1 tw-bg-[#fbbf24] hover:tw-bg-[#f59e0b] tw-text-[#000000] tw-font-mono tw-text-xs tw-font-bold tw-py-3 tw-px-4 tw-rounded-xl tw-shadow-[0_0_15px_rgba(251,191,36,0.3)] active:tw-scale-[0.98] tw-transition-all tw-flex tw-items-center tw-justify-center tw-gap-2"

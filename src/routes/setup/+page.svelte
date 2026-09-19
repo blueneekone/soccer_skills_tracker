@@ -629,7 +629,7 @@
 					<button class="tw-flex-1 tw-py-3 tw-rounded-lg tw-border tw-border-gray-700 tw-text-gray-300 hover:tw-bg-gray-800 tw-transition-colors tw-font-semibold tw-text-sm" type="button" disabled={saving} onclick={goBack}>Back</button>
 				{/if}
 				{#if isFinalStep}
-					<button
+					<button class:interactive={true}
 						class="tw-flex-1 tw-py-3 tw-rounded-lg tw-bg-[#fbbf24] tw-text-[#000000] hover:tw-bg-[#f59e0b] tw-transition-colors tw-font-bold tw-text-sm"
 						type="button"
 						disabled={saving}

@@ -306,7 +306,7 @@
 				</div>
 			{/if}
 
-			<button
+			<button class:interactive={true}
 				id="cta-player-log-homework"
 				type="button"
 				data-primary-cta

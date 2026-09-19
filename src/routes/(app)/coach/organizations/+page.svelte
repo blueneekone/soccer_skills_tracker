@@ -111,7 +111,7 @@
 						<p class="tw-font-sans tw-text-xs tw-text-slate-400 tw-max-w-md tw-mx-auto tw-mb-4">
 							You are not currently assigned to any team in an active organization. Reach out to your Club Director to assign your coach account.
 						</p>
-						<a
+						<a class:interactive={true}
 							href="/coach/dashboard"
 							class="tw-inline-flex tw-items-center tw-gap-2 tw-px-4 tw-py-2 tw-bg-[#daff0a] tw-text-[#000000] tw-font-mono tw-font-bold tw-text-xs tw-uppercase tw-no-underline hover:tw-bg-[#fbbf24] tw-transition-colors"
 						>

@@ -18,7 +18,7 @@
 					A systemic anomaly has been detected and logged to our secure telemetry grid. 
 					Your current session data has been preserved.
 				</p>
-				<button 
+				<button class:interactive={true} 
 					class="tw-px-4 tw-py-2 tw-bg-[#fbbf24] tw-text-[#000000] tw-font-semibold tw-rounded tw-text-sm tw-transition-colors hover:tw-bg-[#f59e0b]"
 					onclick={() => window.location.reload()}
 				>

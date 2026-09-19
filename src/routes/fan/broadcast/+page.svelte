@@ -247,7 +247,7 @@
 			</div>
 
 			<!-- Support Athlete primary CTA -->
-			<button
+			<button class:interactive={true}
 				id="cta-fan-support-athlete"
 				type="button"
 				data-primary-cta

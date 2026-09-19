@@ -104,7 +104,7 @@
 
 		<div class="tw-mt-8 tw-flex tw-flex-col tw-gap-3">
 			{#if isLoggedIn && isParent}
-				<a href="/parent/payments" class="vanguard-btn-amber tw-text-center tw-flex tw-items-center tw-justify-center tw-gap-2 tw-py-3.5 tw-font-mono tw-font-bold tw-text-sm tw-uppercase">
+				<a class:interactive={true} href="/parent/payments" class="vanguard-btn-amber tw-text-center tw-flex tw-items-center tw-justify-center tw-gap-2 tw-py-3.5 tw-font-mono tw-font-bold tw-text-sm tw-uppercase">
 					Continue to payment
 					<Icon name={"nav.arrow-right" as IconName} size={16} />
 				</a>
@@ -117,7 +117,7 @@
 					Switch account
 				</a>
 			{:else}
-				<a
+				<a class:interactive={true}
 					href="/login?redirect={encodeURIComponent(`/parent/payments`)}"
 					class="vanguard-btn-amber tw-text-center tw-flex tw-items-center tw-justify-center tw-gap-2 tw-py-3.5 tw-font-mono tw-font-bold tw-text-sm tw-uppercase"
 				>

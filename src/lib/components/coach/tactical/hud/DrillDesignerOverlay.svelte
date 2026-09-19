@@ -62,7 +62,7 @@
 					>
 						CANCEL
 					</button>
-					<button
+					<button class:interactive={true}
 						id="cta-coach-finalize-deploy"
 						type="button"
 						class="tw-bg-[#fbbf24] tw-text-[#000000] tw-font-mono tw-font-bold tw-text-xs tw-px-6 tw-py-2 tw-uppercase hover:tw-bg-[#f59e0b] tw-transition-colors"

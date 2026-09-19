@@ -38,7 +38,7 @@
         bind:value={childDob}
         class="tw-bg-[#0f172a] tw-border tw-border-slate-600 tw-p-2 tw-rounded-md tw-text-[#fafafa] tw-mb-4"
       />
-      <button
+      <button class:interactive={true}
         id="submit-dob-btn"
         onclick={checkDobChallenge}
         class="tw-block tw-bg-[#fbbf24] tw-text-[#000000] tw-px-4 tw-py-2 tw-rounded-md"

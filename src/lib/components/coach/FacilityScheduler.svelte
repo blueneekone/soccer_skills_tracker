@@ -358,7 +358,7 @@
 	{/if}
 
 	<!-- Primary CTA (Action Gold #fbbf24) -->
-	<button
+	<button class:interactive={true}
 		type="button"
 		onclick={handleBook}
 		disabled={isBooking || availStatus === 'conflict' || !isValidTimeBlock || !label.trim() || !selectedFacilityId}

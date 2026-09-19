@@ -116,7 +116,7 @@
 		{#if !isStripeConnected}
 			<div class="tw-flex tw-items-center tw-justify-between">
 				<p class="tw-text-[#A1A1AA] tw-text-sm">Bank account is unconnected. Platform revenue splitting requires an active Stripe Express account.</p>
-				<button 
+				<button class:interactive={true} 
 					class="tw-bg-[#fbbf24] hover:tw-bg-[#f59e0b] tw-text-[#0f172a] tw-px-6 tw-py-3 tw-rounded-none tw-font-bold tw-text-sm tw-transition-colors disabled:tw-opacity-50"
 					onclick={handleConnectBank}
 					disabled={isConnecting}

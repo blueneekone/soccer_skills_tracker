@@ -587,7 +587,7 @@
 						<span class="tw-text-xs tw-text-[#14b8a6] tw-font-mono">Position: {selectedPlayer.position}</span>
 					</div>
 
-					<button
+					<button class:interactive={true}
 						id="cta-coach-full-passport"
 						type="button"
 						class="tw-bg-[#fbbf24] hover:tw-bg-[#f59e0b] tw-text-[#000000] tw-font-mono tw-font-bold tw-text-[11px] tw-px-3 tw-py-2 tw-rounded-lg tw-transition-colors"

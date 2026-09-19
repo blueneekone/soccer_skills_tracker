@@ -71,7 +71,7 @@
 							</span>
 						</div>
 
-						<button
+						<button class:interactive={true}
 							type="button"
 							class="tw-px-3 tw-py-1.5 tw-bg-[#fbbf24] hover:tw-bg-[#f59e0b] tw-text-slate-950 tw-font-bold tw-text-xs tw-rounded-lg tw-transition-colors disabled:tw-opacity-50"
 							disabled={!engine.isVotingOpen || votingSubmitting}

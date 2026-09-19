@@ -166,7 +166,7 @@
 				</div>
 			{/if}
 
-			<button
+			<button class:interactive={true}
 				type="button"
 				onclick={handleSignOff}
 				disabled={controller.loading}

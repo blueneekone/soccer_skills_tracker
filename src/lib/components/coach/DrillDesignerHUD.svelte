@@ -136,7 +136,7 @@
 
 	<!-- Section 4: Actions -->
 	<div class="tw-pt-2 tw-flex tw-flex-col tw-gap-2">
-		<button
+		<button class:interactive={true}
 			id="cta-coach-save-drill"
 			type="button"
 			class="tw-w-full tw-bg-[#fbbf24] hover:tw-bg-[#f59e0b] tw-text-[#000000] tw-font-mono tw-font-bold tw-py-2.5 tw-px-4 tw-rounded-lg tw-text-xs tw-uppercase tw-transition-colors tw-shadow-[0_0_15px_rgba(251,191,36,0.2)]"

@@ -111,6 +111,19 @@ function snapshotOnline(): boolean {
 	return navigator.onLine !== false;
 }
 
+let lastCommit = $state(0);
+
+if (browser) {
+	$effect.root(() => {
+		$effect(() => {
+			if (lastCommit > 0) {
+				document.body.classList.add('pulse-confirm');
+				setTimeout(() => document.body.classList.remove('pulse-confirm'), 250);
+			}
+		});
+	});
+}
+
 /**
  * Common commit wrapper — runs `batch.commit()`, swallows the offline
  * "no network" error path (the SDK queues the write transparently), and
@@ -122,6 +135,7 @@ function snapshotOnline(): boolean {
 async function runBatch(batch: WriteBatch, batchId: string): Promise<BatchWriteResult> {
 	const online = snapshotOnline();
 	await batch.commit();
+	lastCommit = Date.now();
 	return { committed: true, batchId, offlineQueued: !online };
 }
 

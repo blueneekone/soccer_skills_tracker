@@ -69,7 +69,7 @@
 						{saveFeedback}
 					</span>
 				{/if}
-				<button
+				<button class:interactive={true}
 					id="cta-coach-save-match"
 					type="button"
 					onclick={handleSaveRecord}

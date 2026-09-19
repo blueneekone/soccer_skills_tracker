@@ -184,7 +184,7 @@
 			<Icon name={"sys.refresh-cw" as IconName} size={14} />
 			Reset All
 		</button>
-		<button 
+		<button class:interactive={true} 
 			id="cta-admin-apply-filter"
 			type="button" 
 			class="tw-bg-[#fbbf24] tw-text-void-black tw-px-6 tw-py-2 tw-font-mono tw-font-extrabold tw-text-sm tw-uppercase tw-tracking-widest hover:tw-bg-[#f59e0b] tw-transition-colors tw-flex tw-items-center tw-gap-2"

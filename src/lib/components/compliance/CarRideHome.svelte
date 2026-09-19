@@ -72,7 +72,7 @@
 				</div>
 			{/if}
 			
-			<button 
+			<button class:interactive={true} 
 				id="cta-parent-acknowledge-safety"
 				class="tw-bg-[#fbbf24] tw-text-[#000000] tw-px-6 tw-py-3 tw-rounded-xl tw-font-mono tw-font-bold tw-text-xs tw-tracking-widest tw-uppercase hover:tw-bg-[#f59e0b] tw-transition-colors"
 				onclick={signAttestation}

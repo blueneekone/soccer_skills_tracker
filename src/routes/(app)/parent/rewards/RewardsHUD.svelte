@@ -29,7 +29,7 @@
             />
         </label>
         
-        <button 
+        <button class:interactive={true} 
             type="button" 
             class="tw-bg-[#fbbf24] tw-text-[#000000] tw-font-bold tw-px-4 tw-py-2 tw-rounded-[24px] tw-text-sm hover:tw-shadow-[0_0_15px_rgba(251,191,36,0.3)] disabled:tw-opacity-50"
             disabled={engine.saving}

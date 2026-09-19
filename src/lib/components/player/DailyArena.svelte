@@ -79,7 +79,7 @@
     </div>
   </div>
 
-  <button
+  <button class:interactive={true}
     id="cta-player-log-touches"
     onclick={handleLogTouchSession}
     class="tw-w-full tw-bg-[#fbbf24] tw-text-[#000000] tw-font-mono tw-font-bold tw-py-2 tw-uppercase hover:tw-bg-[#f59e0b] tw-transition-colors"

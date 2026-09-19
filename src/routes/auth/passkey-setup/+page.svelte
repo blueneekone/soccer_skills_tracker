@@ -152,7 +152,7 @@
 				{/if}
 
 				<div class="tw-flex tw-w-full tw-flex-col tw-gap-3">
-					<button
+					<button class:interactive={true}
 						type="button"
 						class="vanguard-btn-amber tw-flex tw-h-11 tw-w-full tw-items-center tw-justify-center tw-px-6 tw-font-mono tw-text-xs tw-uppercase tw-tracking-[0.2em] tw-font-bold tw-transition-colors disabled:tw-pointer-events-none disabled:tw-opacity-40"
 						disabled={loginEngine.busy}

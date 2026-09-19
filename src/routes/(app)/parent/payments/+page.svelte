@@ -328,7 +328,7 @@
 									</span>
 								{/if}
 							{:else if canPay(player.ledger)}
-								<button
+								<button class:interactive={true}
 									type="button"
 									class="tw-inline-flex tw-items-center tw-justify-center tw-gap-1.5 tw-rounded-none tw-border tw-border-[#f59e0b] tw-bg-[#f59e0b] tw-px-3.5 tw-py-2 tw-font-mono tw-text-xs tw-font-bold tw-tracking-wide tw-text-[#000000] tw-transition-all hover:tw-bg-[#fbbf24] hover:tw-shadow-[0_0_15px_rgba(251, 191, 36,0.5)]"
 									onclick={() => openPayment(player.email)}

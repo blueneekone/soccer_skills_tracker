@@ -28,7 +28,7 @@
 			</div>
 
 			<div class="tw-flex tw-justify-end tw-gap-4">
-				<a href={`/admin/organizations/${licenseEntitlementStore.clubIdResolved}/billing`} class="tw-bg-[#fbbf24] tw-text-[#000000] tw-px-6 tw-py-2 tw-rounded-lg tw-font-bold tw-hover:bg-[#f59e0b] tw-transition-colors">
+				<a class:interactive={true} href={`/admin/organizations/${licenseEntitlementStore.clubIdResolved}/billing`} class="tw-bg-[#fbbf24] tw-text-[#000000] tw-px-6 tw-py-2 tw-rounded-lg tw-font-bold tw-hover:bg-[#f59e0b] tw-transition-colors">
 					Update Payment Method
 				</a>
 			</div>

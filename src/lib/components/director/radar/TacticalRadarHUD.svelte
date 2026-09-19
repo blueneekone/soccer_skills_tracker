@@ -101,7 +101,7 @@
 
 	<!-- Controls (Dev mode) -->
 	<div class="tw-pt-4 tw-border-t tw-border-[#334155] tw-mt-2">
-		<button
+		<button class:interactive={true}
 			class="tw-w-full tw-py-2 tw-text-xs tw-uppercase tw-tracking-widest tw-bg-[#fbbf24] tw-text-[#000000] tw-font-bold hover:tw-tw-bg-[#0f172a] tw-transition-colors"
 			onclick={() => engine.simulateStrike(Math.random() * 20)}
 		>

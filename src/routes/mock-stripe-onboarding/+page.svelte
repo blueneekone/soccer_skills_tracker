@@ -39,7 +39,7 @@
 			</div>
 		</div>
 
-		<button
+		<button class:interactive={true}
 			type="button"
 			onclick={handleSimulateComplete}
 			class="tw-w-full tw-py-3 tw-px-4 tw-bg-[#fbbf24] tw-text-[#000000] tw-font-bold tw-text-sm tw-rounded-none hover:tw-bg-[#f59e0b] tw-transition-colors tw-border-none tw-cursor-pointer"

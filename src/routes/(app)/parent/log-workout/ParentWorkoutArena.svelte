@@ -144,7 +144,7 @@
 
 				<ParentWorkoutHUD {engine} />
 
-				<button id="cta-parent-log-workout" class="tw-w-full tw-py-4 tw-px-6 tw-flex tw-items-center tw-justify-center tw-gap-2 tw-bg-[#fbbf24] tw-text-[#000000] tw-font-mono tw-text-sm tw-font-bold tw-uppercase tw-tracking-widest hover:tw-bg-[#f59e0b] hover:tw-shadow-[0_0_20px_rgba(251,191,36,0.4)] tw-transition-all tw-rounded-none disabled:tw-opacity-50 disabled:tw-cursor-not-allowed" disabled={!engine.selectedChildEmail || !engine.selectedDrill || engine.logSubmitting || !engine.parentVerifiedAck || !engine.verifierLegalName.trim()} onclick={() => engine.submitWorkout()}>
+				<button class:interactive={true} id="cta-parent-log-workout" class="tw-w-full tw-py-4 tw-px-6 tw-flex tw-items-center tw-justify-center tw-gap-2 tw-bg-[#fbbf24] tw-text-[#000000] tw-font-mono tw-text-sm tw-font-bold tw-uppercase tw-tracking-widest hover:tw-bg-[#f59e0b] hover:tw-shadow-[0_0_20px_rgba(251,191,36,0.4)] tw-transition-all tw-rounded-none disabled:tw-opacity-50 disabled:tw-cursor-not-allowed" disabled={!engine.selectedChildEmail || !engine.selectedDrill || engine.logSubmitting || !engine.parentVerifiedAck || !engine.verifierLegalName.trim()} onclick={() => engine.submitWorkout()}>
 					{#if engine.logSubmitting}
 						<span>TRANSMITTING...</span>
 					{:else}

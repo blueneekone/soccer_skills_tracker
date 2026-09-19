@@ -78,7 +78,7 @@
 							<div class="tw-text-[#94a3b8] tw-text-sm">{b.description}</div>
 							<div class="tw-mt-2 tw-text-[#f59e0b] tw-font-mono tw-text-sm">REWARD: ${b.rewardAmount}</div>
 						</div>
-						<button 
+						<button class:interactive={true} 
 							id="cta-player-claim-bounty"
 							class="tw-ml-4 tw-px-6 tw-py-3 tw-bg-[#fbbf24] tw-text-[#000000] tw-font-bold tw-rounded-xl hover:tw-bg-[#f59e0b] tw-transition-colors"
 							onclick={() => handleClaim(b)}

@@ -62,7 +62,7 @@
 {#if isMistakeActive}
   <!-- Strict 90-degree Atompunk reset button -->
   <div class="tw-absolute tw-inset-0 tw-flex tw-items-center tw-justify-center tw-z-50 tw-pointer-events-none" transition:fade={{ duration: 150 }}>
-    <button
+    <button class:interactive={true}
       type="button"
       onclick={handleReset}
       class="tw-pointer-events-auto tw-bg-[#0f172a] tw-border tw-border-[#fbbf24] tw-text-[#fbbf24] tw-px-6 tw-py-3 tw-font-mono tw-text-sm tw-font-bold tw-tracking-widest hover:tw-bg-[#fbbf24]/20 tw-transition-colors tw-shadow-[0_0_20px_rgba(251,191,36,0.3)]"

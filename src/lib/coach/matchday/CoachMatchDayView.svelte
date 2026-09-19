@@ -796,7 +796,7 @@
 						▶ START MATCH
 					</button>
 				{:else if matchState === 'running'}
-					<button
+					<button class:interactive={true}
 						type="button"
 						class="tw-bg-[#f59e0b] tw-text-[#000000] tw-font-mono tw-font-bold tw-text-xs tw-px-4 tw-py-2.5 tw-tracking-wider tw-uppercase hover:tw-bg-[#fbbf24] tw-transition-colors"
 						onclick={pauseMatch}
